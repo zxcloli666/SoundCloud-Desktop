@@ -1,37 +1,31 @@
-import { useRef, useEffect, type ReactNode } from 'react'
+import { useRef, useEffect, type ReactNode } from 'react';
 
 interface HorizontalScrollProps {
-    children: ReactNode
-    className?: string
+  children: ReactNode;
+  className?: string;
 }
 
-export function HorizontalScroll({
-    children,
-    className = '',
-}: HorizontalScrollProps) {
-    const ref = useRef<HTMLDivElement>(null)
+export function HorizontalScroll({ children, className = '' }: HorizontalScrollProps) {
+  const ref = useRef<HTMLDivElement>(null);
 
-    useEffect(() => {
-        const el = ref.current
-        if (!el) return
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
 
-        const onWheel = (e: WheelEvent) => {
-            if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
-                e.preventDefault()
-                el.scrollLeft += e.deltaY
-            }
-        }
+    const onWheel = (e: WheelEvent) => {
+      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+        e.preventDefault();
+        el.scrollLeft += e.deltaY;
+      }
+    };
 
-        el.addEventListener('wheel', onWheel, { passive: false })
-        return () => el.removeEventListener('wheel', onWheel)
-    }, [])
+    el.addEventListener('wheel', onWheel, { passive: false });
+    return () => el.removeEventListener('wheel', onWheel);
+  }, []);
 
-    return (
-        <div
-            ref={ref}
-            className={`flex gap-4 overflow-x-auto pb-2 scrollbar-hide ${className}`}
-        >
-            {children}
-        </div>
-    )
+  return (
+    <div ref={ref} className={`flex gap-4 overflow-x-auto pb-2 scrollbar-hide ${className}`}>
+      {children}
+    </div>
+  );
 }

@@ -18,11 +18,15 @@
   --ease-apple: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
-html, body, #root {
+html,
+body,
+#root {
   height: 100%;
   margin: 0;
   padding: 0;
@@ -72,8 +76,12 @@ html, body, #root {
 
 /* ── Shimmer ───────────────────────────────────────────────── */
 @keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 .skeleton-shimmer {
@@ -88,8 +96,13 @@ html, body, #root {
 }
 
 /* ── Scrollbar hide ────────────────────────────────────────── */
-.scrollbar-hide::-webkit-scrollbar { display: none; }
-.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
 
 /* ── Selection ─────────────────────────────────────────────── */
 ::selection {
@@ -98,8 +111,14 @@ html, body, #root {
 }
 
 /* ── Focus reset ───────────────────────────────────────────── */
-:focus { outline: none; }
-:focus-visible { outline: 1px solid rgba(255, 85, 0, 0.4); outline-offset: 2px; border-radius: 8px; }
+:focus {
+  outline: none;
+}
+:focus-visible {
+  outline: 1px solid rgba(255, 85, 0, 0.4);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
 
 /* ── Feed animations ──────────────────────────────────────── */
 @keyframes fadeInUp {
