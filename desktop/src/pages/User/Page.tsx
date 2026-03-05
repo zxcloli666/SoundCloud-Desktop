@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import {
@@ -30,6 +30,7 @@ import {
 } from '../../lib/utils.ts'
 import { PlaylistCard } from '../../components/playlist/PlaylistCard.tsx'
 import { UserFollowButton } from './UserFollowButton.tsx'
+import { SegmentedTabs } from '../../components/common/SegmentedTabs.tsx'
 
 function getWebIcon(service: string) {
     switch (service.toLowerCase()) {
@@ -45,15 +46,14 @@ function getWebIcon(service: string) {
             return <LinkIcon size={14} />
     }
 }
+type TabsId = 'tracks' | 'playlists' | 'likes'
 
 export function UserPage() {
     const { urn } = useParams<{ urn: string }>()
     const { t } = useTranslation()
     const currentUser = useAuthStore((s) => s.user)
 
-    const [activeTab, setActiveTab] = useState<
-        'tracks' | 'playlists' | 'likes'
-    >('tracks')
+    const [activeTab, setActiveTab] = useState<TabsId>('tracks')
 
     // Profile data
     const { data: user, isLoading: userLoading } = useUser(urn)
@@ -103,17 +103,17 @@ export function UserPage() {
     const avatar = replaceArtSize(user.avatar_url, 't500x500')
     const isOwnProfile = currentUser?.urn === user.urn
 
-    const tabs = [
-        { id: 'tracks', label: t('user.tracks'), count: user.track_count },
+    const tabs: { id: TabsId; label: string; count: number }[] = [
+        { id: 'tracks', label: t('user.tracks'), count: user.track_count || 0 },
         {
             id: 'playlists',
             label: t('user.playlists'),
-            count: user.playlist_count,
+            count: user.playlist_count || 0,
         },
         {
             id: 'likes',
             label: t('user.likes'),
-            count: user.public_favorites_count,
+            count: user.public_favorites_count || 0,
         },
     ] as const
 
@@ -338,35 +338,13 @@ export function UserPage() {
                 {/* Left Column (Main Content) */}
                 <div className="min-w-0 flex flex-col gap-6">
                     {/* Apple-style Segmented Control for Tabs */}
-                    <div className="flex items-center gap-1.5 p-1.5 bg-white/[0.02] border border-white/[0.05] rounded-2xl w-fit backdrop-blur-2xl shadow-lg">
-                        {tabs.map((tab) => {
-                            const isActive = activeTab === tab.id
-                            return (
-                                <button
-                                    key={tab.id}
-                                    onClick={() => setActiveTab(tab.id)}
-                                    className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-300 ease-[var(--ease-apple)] ${
-                                        isActive
-                                            ? 'bg-white/[0.12] text-white shadow-md border border-white/[0.05]'
-                                            : 'text-white/40 hover:text-white/80 hover:bg-white/[0.04] border border-transparent cursor-pointer'
-                                    }`}
-                                >
-                                    {tab.label}
-                                    {tab.count != null && (
-                                        <span
-                                            className={`text-[11px] tabular-nums px-2 py-0.5 rounded-full transition-colors ${
-                                                isActive
-                                                    ? 'bg-white/20 text-white'
-                                                    : 'bg-white/5 text-white/30'
-                                            }`}
-                                        >
-                                            {toCompactCount(tab.count)}
-                                        </span>
-                                    )}
-                                </button>
-                            )
-                        })}
-                    </div>
+                    <SegmentedTabs
+                        items={tabs}
+                        value={activeTab}
+                        onChange={setActiveTab}
+                        align="start"
+                        className="mx-auto md:mx-0"
+                    />
 
                     {/* Grid/List Content */}
                     <div className="min-h-[400px]">
