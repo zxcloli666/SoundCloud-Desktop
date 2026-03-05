@@ -16,8 +16,6 @@ finish-args:
   - --socket=pulseaudio
   - --device=dri
   - --talk-name=org.freedesktop.Notifications
-  # wayland
-  - --env=WEBKIT_DISABLE_DMABUF_RENDERER=1
   # Discord RPC
   - --filesystem=xdg-run/discord-ipc-0
   - --filesystem=xdg-run/app/com.discordapp.Discord
