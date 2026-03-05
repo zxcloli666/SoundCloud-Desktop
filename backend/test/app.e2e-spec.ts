@@ -1,6 +1,6 @@
 import { INestApplication } from '@nestjs/common';
-import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigModule } from '@nestjs/config';
+import { Test, TestingModule } from '@nestjs/testing';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import { HealthController } from '../src/health/health.controller';

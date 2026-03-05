@@ -1,189 +1,228 @@
-export interface ScUser {
-  avatar_url: string;
-  city: string;
-  country: string;
-  description: string;
-  discogs_name: string;
-  first_name: string;
-  followers_count: number;
-  followings_count: number;
-  full_name: string;
-  urn: string;
-  kind: string;
-  created_at: string;
-  last_modified: string;
-  last_name: string;
-  permalink: string;
-  permalink_url: string;
-  plan: string;
-  playlist_count: number;
-  public_favorites_count: number;
-  reposts_count: number;
-  track_count: number;
-  uri: string;
-  username: string;
-  website: string;
-  website_title: string;
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+
+export class ScUser {
+  @ApiProperty() avatar_url: string;
+  @ApiPropertyOptional() city: string;
+  @ApiPropertyOptional() country: string;
+  @ApiPropertyOptional() description: string;
+  @ApiPropertyOptional() discogs_name: string;
+  @ApiPropertyOptional() first_name: string;
+  @ApiProperty() followers_count: number;
+  @ApiProperty() followings_count: number;
+  @ApiPropertyOptional() full_name: string;
+  @ApiProperty() urn: string;
+  @ApiProperty() kind: string;
+  @ApiProperty() created_at: string;
+  @ApiPropertyOptional() last_modified: string;
+  @ApiPropertyOptional() last_name: string;
+  @ApiProperty() permalink: string;
+  @ApiProperty() permalink_url: string;
+  @ApiPropertyOptional() plan: string;
+  @ApiProperty() playlist_count: number;
+  @ApiProperty() public_favorites_count: number;
+  @ApiProperty() reposts_count: number;
+  @ApiProperty() track_count: number;
+  @ApiProperty() uri: string;
+  @ApiProperty() username: string;
+  @ApiPropertyOptional() website: string;
+  @ApiPropertyOptional() website_title: string;
 }
 
-export interface ScMe extends ScUser {
-  comments_count: number;
-  likes_count: number;
-  locale: string;
-  online: boolean;
-  private_playlists_count: number;
-  private_tracks_count: number;
-  primary_email_confirmed: boolean;
-  quota: {
-    unlimited_upload_quota: boolean;
-    upload_seconds_used: number;
-    upload_seconds_left: number;
-  };
-  upload_seconds_left: number;
+export class ScQuota {
+  @ApiProperty() unlimited_upload_quota: boolean;
+  @ApiProperty() upload_seconds_used: number;
+  @ApiProperty() upload_seconds_left: number;
 }
 
-export interface ScTrack {
+export class ScMe extends ScUser {
+  @ApiProperty() comments_count: number;
+  @ApiProperty() likes_count: number;
+  @ApiPropertyOptional() locale: string;
+  @ApiProperty() online: boolean;
+  @ApiProperty() private_playlists_count: number;
+  @ApiProperty() private_tracks_count: number;
+  @ApiProperty() primary_email_confirmed: boolean;
+  @ApiProperty({ type: ScQuota }) quota: ScQuota;
+  @ApiProperty() upload_seconds_left: number;
+}
+
+export class ScTranscoding {
+  @ApiProperty() url: string;
+  @ApiProperty() preset: string;
+  @ApiProperty() duration: number;
+  @ApiProperty() snipped: boolean;
+  @ApiProperty({
+    type: 'object',
+    properties: {
+      protocol: { type: 'string' },
+      mime_type: { type: 'string' },
+    },
+  })
+  format: { protocol: string; mime_type: string };
+  @ApiPropertyOptional() quality: string;
+}
+
+export class ScMedia {
+  @ApiProperty({ type: [ScTranscoding] }) transcodings: ScTranscoding[];
+}
+
+export class ScTrack {
+  @ApiProperty({ enum: ['playable', 'preview', 'blocked'] })
   access: 'playable' | 'preview' | 'blocked';
-  artwork_url: string;
-  caption: string;
-  commentable: boolean;
-  comment_count: number;
-  created_at: string;
-  description: string;
-  download_count: number;
-  downloadable: boolean;
-  duration: number;
-  embeddable_by: string;
-  full_duration: number;
-  genre: string;
-  has_downloads_left: boolean;
-  urn: string;
-  kind: string;
-  label_name: string;
-  last_modified: string;
-  license: string;
-  likes_count: number;
-  media: {
-    transcodings: ScTranscoding[];
-  };
-  monetization_model: string;
-  permalink: string;
-  permalink_url: string;
-  playback_count: number;
-  policy: string;
-  public: boolean;
-  publisher_metadata: Record<string, unknown>;
-  purchase_title: string;
-  purchase_url: string;
-  release_date: string;
-  reposts_count: number;
-  secret_token: string;
-  sharing: string;
-  state: string;
-  station_permalink: string;
-  station_urn: string;
-  streamable: boolean;
-  stream_url: string;
-  tag_list: string;
-  title: string;
-  track_format: string;
-  uri: string;
-  user: ScUser;
-  user_id: number;
-  waveform_url: string;
-  display_date: string;
+  @ApiPropertyOptional() artwork_url: string;
+  @ApiPropertyOptional() caption: string;
+  @ApiProperty() commentable: boolean;
+  @ApiProperty() comment_count: number;
+  @ApiProperty() created_at: string;
+  @ApiPropertyOptional() description: string;
+  @ApiProperty() download_count: number;
+  @ApiProperty() downloadable: boolean;
+  @ApiProperty() duration: number;
+  @ApiPropertyOptional() embeddable_by: string;
+  @ApiProperty() full_duration: number;
+  @ApiPropertyOptional() genre: string;
+  @ApiProperty() has_downloads_left: boolean;
+  @ApiProperty() urn: string;
+  @ApiProperty() kind: string;
+  @ApiPropertyOptional() label_name: string;
+  @ApiPropertyOptional() last_modified: string;
+  @ApiPropertyOptional() license: string;
+  @ApiProperty() likes_count: number;
+  @ApiProperty({ type: ScMedia }) media: ScMedia;
+  @ApiPropertyOptional() monetization_model: string;
+  @ApiProperty() permalink: string;
+  @ApiProperty() permalink_url: string;
+  @ApiProperty() playback_count: number;
+  @ApiPropertyOptional() policy: string;
+  @ApiProperty() public: boolean;
+  @ApiPropertyOptional({ type: 'object', additionalProperties: true }) publisher_metadata: Record<
+    string,
+    unknown
+  >;
+  @ApiPropertyOptional() purchase_title: string;
+  @ApiPropertyOptional() purchase_url: string;
+  @ApiPropertyOptional() release_date: string;
+  @ApiProperty() reposts_count: number;
+  @ApiPropertyOptional() secret_token: string;
+  @ApiProperty() sharing: string;
+  @ApiProperty() state: string;
+  @ApiPropertyOptional() station_permalink: string;
+  @ApiPropertyOptional() station_urn: string;
+  @ApiProperty() streamable: boolean;
+  @ApiPropertyOptional() stream_url: string;
+  @ApiPropertyOptional() tag_list: string;
+  @ApiProperty() title: string;
+  @ApiPropertyOptional() track_format: string;
+  @ApiProperty() uri: string;
+  @ApiProperty({ type: ScUser }) user: ScUser;
+  @ApiProperty() user_id: number;
+  @ApiPropertyOptional() waveform_url: string;
+  @ApiPropertyOptional() display_date: string;
 }
 
-export interface ScTranscoding {
-  url: string;
-  preset: string;
-  duration: number;
-  snipped: boolean;
-  format: {
-    protocol: string;
-    mime_type: string;
-  };
-  quality: string;
+export class ScPlaylist {
+  @ApiPropertyOptional() artwork_url: string;
+  @ApiProperty() created_at: string;
+  @ApiPropertyOptional() description: string;
+  @ApiProperty() duration: number;
+  @ApiPropertyOptional() embeddable_by: string;
+  @ApiPropertyOptional() genre: string;
+  @ApiProperty() urn: string;
+  @ApiProperty() kind: string;
+  @ApiPropertyOptional() label_name: string;
+  @ApiPropertyOptional() last_modified: string;
+  @ApiPropertyOptional() license: string;
+  @ApiProperty() likes_count: number;
+  @ApiProperty() managed_by_feeds: boolean;
+  @ApiProperty() permalink: string;
+  @ApiProperty() permalink_url: string;
+  @ApiProperty() public: boolean;
+  @ApiPropertyOptional() purchase_title: string;
+  @ApiPropertyOptional() purchase_url: string;
+  @ApiPropertyOptional() release_date: string;
+  @ApiProperty() reposts_count: number;
+  @ApiPropertyOptional() secret_token: string;
+  @ApiProperty() sharing: string;
+  @ApiPropertyOptional() tag_list: string;
+  @ApiProperty() title: string;
+  @ApiProperty() track_count: number;
+  @ApiProperty({ type: [ScTrack] }) tracks: ScTrack[];
+  @ApiProperty() uri: string;
+  @ApiProperty({ type: ScUser }) user: ScUser;
+  @ApiProperty() user_id: number;
 }
 
-export interface ScPlaylist {
-  artwork_url: string;
-  created_at: string;
-  description: string;
-  duration: number;
-  embeddable_by: string;
-  genre: string;
-  urn: string;
-  kind: string;
-  label_name: string;
-  last_modified: string;
-  license: string;
-  likes_count: number;
-  managed_by_feeds: boolean;
-  permalink: string;
-  permalink_url: string;
-  public: boolean;
-  purchase_title: string;
-  purchase_url: string;
-  release_date: string;
-  reposts_count: number;
-  secret_token: string;
-  set_type: string;
-  sharing: string;
-  tag_list: string;
-  title: string;
-  track_count: number;
-  tracks: ScTrack[];
-  uri: string;
-  user: ScUser;
-  user_id: number;
+export class ScComment {
+  @ApiProperty() body: string;
+  @ApiProperty() created_at: string;
+  @ApiProperty() urn: string;
+  @ApiProperty() kind: string;
+  @ApiProperty() timestamp: number;
+  @ApiProperty() track_id: number;
+  @ApiProperty() uri: string;
+  @ApiProperty({ type: ScUser }) user: ScUser;
+  @ApiProperty() user_id: number;
 }
 
-export interface ScComment {
-  body: string;
-  created_at: string;
-  urn: string;
-  kind: string;
-  timestamp: number;
-  track_id: number;
-  uri: string;
-  user: ScUser;
-  user_id: number;
+export class ScWebProfile {
+  @ApiProperty() created_at: string;
+  @ApiProperty() kind: string;
+  @ApiProperty() urn: string;
+  @ApiProperty() network: string;
+  @ApiProperty() title: string;
+  @ApiProperty() url: string;
+  @ApiProperty() username: string;
 }
 
-export interface ScWebProfile {
-  created_at: string;
-  kind: string;
-  urn: string;
-  network: string;
-  title: string;
-  url: string;
-  username: string;
+export class ScStreams {
+  @ApiPropertyOptional() http_mp3_128_url?: string;
+  @ApiPropertyOptional() hls_mp3_128_url?: string;
+  @ApiPropertyOptional() hls_aac_160_url?: string;
+  @ApiPropertyOptional() hls_opus_64_url?: string;
+  @ApiPropertyOptional() preview_mp3_128_url?: string;
 }
 
-export interface ScStreams {
-  http_mp3_128_url?: string;
-  hls_mp3_128_url?: string;
-  hls_aac_160_url?: string;
-  hls_opus_64_url?: string;
-  preview_mp3_128_url?: string;
-}
-
-export interface ScPaginatedResponse<T> {
+export class ScPaginatedResponse<T> {
   collection: T[];
-  next_href?: string;
+  @ApiPropertyOptional() next_href?: string;
 }
 
-export interface ScActivity {
-  type: string;
-  created_at: string;
-  origin: ScTrack | ScPlaylist;
+export class ScActivity {
+  @ApiProperty() type: string;
+  @ApiProperty() created_at: string;
+  @ApiProperty() origin: ScTrack | ScPlaylist;
 }
 
-export interface ScTokenResponse {
+export class ScTokenResponse {
   access_token: string;
   refresh_token: string;
   expires_in: number;
   scope: string;
   token_type: string;
+}
+
+// Concrete paginated response classes for Swagger
+export class PaginatedTrackResponse {
+  @ApiProperty({ type: [ScTrack] }) collection: ScTrack[];
+  @ApiPropertyOptional() next_href?: string;
+}
+
+export class PaginatedPlaylistResponse {
+  @ApiProperty({ type: [ScPlaylist] }) collection: ScPlaylist[];
+  @ApiPropertyOptional() next_href?: string;
+}
+
+export class PaginatedUserResponse {
+  @ApiProperty({ type: [ScUser] }) collection: ScUser[];
+  @ApiPropertyOptional() next_href?: string;
+}
+
+export class PaginatedCommentResponse {
+  @ApiProperty({ type: [ScComment] }) collection: ScComment[];
+  @ApiPropertyOptional() next_href?: string;
+}
+
+export class PaginatedActivityResponse {
+  @ApiProperty({ type: [ScActivity] }) collection: ScActivity[];
+  @ApiPropertyOptional() next_href?: string;
 }

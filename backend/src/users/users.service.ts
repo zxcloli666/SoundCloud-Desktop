@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { SoundcloudService } from '../soundcloud/soundcloud.service.js';
-import type {
+import {
   ScPaginatedResponse,
   ScPlaylist,
   ScTrack,
@@ -36,16 +36,12 @@ export class UsersService {
     return this.sc.apiGet(`/users/${userUrn}/followings`, token, params);
   }
 
-  async getIsFollowing(
-      token: string,
-      userUrn: string,
-      followingUrn: string,
-  ): Promise<boolean> {
+  async getIsFollowing(token: string, userUrn: string, followingUrn: string): Promise<boolean> {
     try {
-      const response = await this.sc.apiGet(
-          `/users/${userUrn}/followings/${followingUrn}`,
-          token,
-      ) as { urn?: string } | null;
+      const response = (await this.sc.apiGet(
+        `/users/${userUrn}/followings/${followingUrn}`,
+        token,
+      )) as { urn?: string } | null;
 
       return response?.urn === followingUrn;
     } catch {

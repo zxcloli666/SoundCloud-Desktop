@@ -1,10 +1,37 @@
 import {
-  Body, Controller, Delete, Get, Headers, HttpStatus, Param, Post, Put, Query, Res, StreamableFile, UseGuards,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Headers,
+  HttpStatus,
+  Param,
+  Post,
+  Put,
+  Query,
+  Res,
+  StreamableFile,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiBody, ApiHeader, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiHeader,
+  ApiOkResponse,
+  ApiOperation,
+  ApiQuery,
+  ApiTags,
+} from '@nestjs/swagger';
 import { AccessToken } from '../common/decorators/access-token.decorator.js';
 import { PaginationQuery } from '../common/dto/pagination.dto.js';
 import { AuthGuard } from '../common/guards/auth.guard.js';
+import {
+  PaginatedCommentResponse,
+  PaginatedTrackResponse,
+  PaginatedUserResponse,
+  ScComment,
+  ScStreams,
+  ScTrack,
+} from '../soundcloud/soundcloud.types.js';
 import { TracksService } from './tracks.service.js';
 
 @ApiTags('tracks')
@@ -21,6 +48,7 @@ export class TracksController {
   @ApiQuery({ name: 'genres', required: false, description: 'Comma-separated genres' })
   @ApiQuery({ name: 'tags', required: false, description: 'Comma-separated tags' })
   @ApiQuery({ name: 'access', required: false, enum: ['playable', 'preview', 'blocked'] })
+  @ApiOkResponse({ type: PaginatedTrackResponse })
   search(
     @AccessToken() token: string,
     @Query() query: PaginationQuery,
@@ -42,6 +70,7 @@ export class TracksController {
   @Get(':trackUrn')
   @ApiOperation({ summary: 'Get track by URN' })
   @ApiQuery({ name: 'secret_token', required: false })
+  @ApiOkResponse({ type: ScTrack })
   getById(
     @AccessToken() token: string,
     @Param('trackUrn') trackUrn: string,
@@ -54,6 +83,7 @@ export class TracksController {
 
   @Put(':trackUrn')
   @ApiOperation({ summary: 'Update track metadata' })
+  @ApiOkResponse({ type: ScTrack })
   update(
     @AccessToken() token: string,
     @Param('trackUrn') trackUrn: string,
@@ -70,7 +100,12 @@ export class TracksController {
 
   @Get(':trackUrn/streams')
   @ApiOperation({ summary: 'Get track stream URLs' })
-  @ApiQuery({ name: 'secret_token', required: false, description: 'Token for accessing private tracks (the s-xxx part from private share URLs)' })
+  @ApiQuery({
+    name: 'secret_token',
+    required: false,
+    description: 'Token for accessing private tracks (the s-xxx part from private share URLs)',
+  })
+  @ApiOkResponse({ type: ScStreams })
   getStreams(
     @AccessToken() token: string,
     @Param('trackUrn') trackUrn: string,
@@ -84,11 +119,22 @@ export class TracksController {
   @Get(':trackUrn/stream')
   @ApiOperation({
     summary: 'Proxy audio stream',
-    description: 'Proxies the actual audio stream from SoundCloud with proper auth. Use the format query param to pick a transcoding. Supports Range requests for seeking.',
+    description:
+      'Proxies the actual audio stream from SoundCloud with proper auth. Use the format query param to pick a transcoding. Supports Range requests for seeking.',
   })
-  @ApiQuery({ name: 'format', required: false, description: 'Stream format: http_mp3_128, hls_mp3_128, hls_aac_160, hls_opus_64, preview_mp3_128', example: 'http_mp3_128' })
+  @ApiQuery({
+    name: 'format',
+    required: false,
+    description:
+      'Stream format: http_mp3_128, hls_mp3_128, hls_aac_160, hls_opus_64, preview_mp3_128',
+    example: 'http_mp3_128',
+  })
   @ApiQuery({ name: 'secret_token', required: false })
-  @ApiHeader({ name: 'range', required: false, description: 'HTTP Range header for seeking (e.g. bytes=0-999999)' })
+  @ApiHeader({
+    name: 'range',
+    required: false,
+    description: 'HTTP Range header for seeking (e.g. bytes=0-999999)',
+  })
   async proxyStream(
     @AccessToken() token: string,
     @Res({ passthrough: true }) res: any,
@@ -108,7 +154,9 @@ export class TracksController {
       return {
         statusCode: HttpStatus.NOT_FOUND,
         error: 'Stream format not available',
-        available: Object.keys(streams).filter((k) => k.endsWith('_url') && streams[k as keyof typeof streams]),
+        available: Object.keys(streams).filter(
+          (k) => k.endsWith('_url') && streams[k as keyof typeof streams],
+        ),
       };
     }
 
@@ -128,6 +176,7 @@ export class TracksController {
 
   @Get(':trackUrn/comments')
   @ApiOperation({ summary: 'Get track comments' })
+  @ApiOkResponse({ type: PaginatedCommentResponse })
   getComments(
     @AccessToken() token: string,
     @Param('trackUrn') trackUrn: string,
@@ -153,6 +202,7 @@ export class TracksController {
       },
     },
   })
+  @ApiOkResponse({ type: ScComment })
   createComment(
     @AccessToken() token: string,
     @Param('trackUrn') trackUrn: string,
@@ -163,6 +213,7 @@ export class TracksController {
 
   @Get(':trackUrn/favoriters')
   @ApiOperation({ summary: 'Get users who favorited a track' })
+  @ApiOkResponse({ type: PaginatedUserResponse })
   getFavoriters(
     @AccessToken() token: string,
     @Param('trackUrn') trackUrn: string,
@@ -173,6 +224,7 @@ export class TracksController {
 
   @Get(':trackUrn/reposters')
   @ApiOperation({ summary: 'Get users who reposted a track' })
+  @ApiOkResponse({ type: PaginatedUserResponse })
   getReposters(
     @AccessToken() token: string,
     @Param('trackUrn') trackUrn: string,
@@ -184,6 +236,7 @@ export class TracksController {
   @Get(':trackUrn/related')
   @ApiOperation({ summary: 'Get related tracks' })
   @ApiQuery({ name: 'access', required: false, enum: ['playable', 'preview', 'blocked'] })
+  @ApiOkResponse({ type: PaginatedTrackResponse })
   getRelated(
     @AccessToken() token: string,
     @Param('trackUrn') trackUrn: string,

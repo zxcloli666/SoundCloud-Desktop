@@ -4,7 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { SoundcloudService } from '../soundcloud/soundcloud.service.js';
-import type { ScMe } from '../soundcloud/soundcloud.types.js';
+import { ScMe } from '../soundcloud/soundcloud.types.js';
 import { Session } from './entities/session.entity.js';
 
 @Injectable()
@@ -104,14 +104,19 @@ export class AuthService {
       throw new UnauthorizedException('No refresh token available');
     }
 
-    const tokenResponse = await this.soundcloudService.refreshAccessToken(session.refreshToken);
+    try {
+      const tokenResponse = await this.soundcloudService.refreshAccessToken(session.refreshToken);
 
-    session.accessToken = tokenResponse.access_token;
-    session.refreshToken = tokenResponse.refresh_token;
-    session.expiresAt = new Date(Date.now() + tokenResponse.expires_in * 1000);
+      session.accessToken = tokenResponse.access_token;
+      session.refreshToken = tokenResponse.refresh_token;
+      session.expiresAt = new Date(Date.now() + tokenResponse.expires_in * 1000);
 
-    await this.sessionRepo.save(session);
-    return session;
+      await this.sessionRepo.save(session);
+      return session;
+    } catch {
+      await this.sessionRepo.remove(session);
+      throw new UnauthorizedException('Refresh token expired or invalid. Please re-authenticate.');
+    }
   }
 
   async logout(sessionId: string): Promise<void> {

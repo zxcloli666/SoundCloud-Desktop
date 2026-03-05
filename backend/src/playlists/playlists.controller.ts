@@ -1,8 +1,21 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
-import { ApiBody, ApiHeader, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiHeader,
+  ApiOkResponse,
+  ApiOperation,
+  ApiQuery,
+  ApiTags,
+} from '@nestjs/swagger';
 import { AccessToken } from '../common/decorators/access-token.decorator.js';
 import { PaginationQuery } from '../common/dto/pagination.dto.js';
 import { AuthGuard } from '../common/guards/auth.guard.js';
+import {
+  PaginatedPlaylistResponse,
+  PaginatedTrackResponse,
+  PaginatedUserResponse,
+  ScPlaylist,
+} from '../soundcloud/soundcloud.types.js';
 import { PlaylistsService } from './playlists.service.js';
 
 @ApiTags('playlists')
@@ -17,6 +30,7 @@ export class PlaylistsController {
   @ApiQuery({ name: 'q', required: false, description: 'Search query' })
   @ApiQuery({ name: 'access', required: false, enum: ['playable', 'preview', 'blocked'] })
   @ApiQuery({ name: 'show_tracks', required: false, type: Boolean })
+  @ApiOkResponse({ type: PaginatedPlaylistResponse })
   search(
     @AccessToken() token: string,
     @Query() query: PaginationQuery,
@@ -53,6 +67,7 @@ export class PlaylistsController {
       },
     },
   })
+  @ApiOkResponse({ type: ScPlaylist })
   create(@AccessToken() token: string, @Body() body: Record<string, unknown>) {
     return this.playlistsService.create(token, body);
   }
@@ -62,6 +77,7 @@ export class PlaylistsController {
   @ApiQuery({ name: 'secret_token', required: false })
   @ApiQuery({ name: 'access', required: false, enum: ['playable', 'preview', 'blocked'] })
   @ApiQuery({ name: 'show_tracks', required: false, type: Boolean })
+  @ApiOkResponse({ type: ScPlaylist })
   getById(
     @AccessToken() token: string,
     @Param('playlistUrn') playlistUrn: string,
@@ -78,6 +94,7 @@ export class PlaylistsController {
 
   @Put(':playlistUrn')
   @ApiOperation({ summary: 'Update a playlist' })
+  @ApiOkResponse({ type: ScPlaylist })
   update(
     @AccessToken() token: string,
     @Param('playlistUrn') playlistUrn: string,
@@ -96,6 +113,7 @@ export class PlaylistsController {
   @ApiOperation({ summary: 'Get playlist tracks' })
   @ApiQuery({ name: 'secret_token', required: false })
   @ApiQuery({ name: 'access', required: false, enum: ['playable', 'preview', 'blocked'] })
+  @ApiOkResponse({ type: PaginatedTrackResponse })
   getTracks(
     @AccessToken() token: string,
     @Param('playlistUrn') playlistUrn: string,
@@ -111,6 +129,7 @@ export class PlaylistsController {
 
   @Get(':playlistUrn/reposters')
   @ApiOperation({ summary: 'Get playlist reposters' })
+  @ApiOkResponse({ type: PaginatedUserResponse })
   getReposters(
     @AccessToken() token: string,
     @Param('playlistUrn') playlistUrn: string,
