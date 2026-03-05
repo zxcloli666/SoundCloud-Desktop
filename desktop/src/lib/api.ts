@@ -1,4 +1,5 @@
 import { fetch } from '@tauri-apps/plugin-http';
+import { toast } from 'sonner';
 import { API_BASE } from './constants.ts';
 
 let sessionId: string | null = null;
@@ -26,7 +27,21 @@ export async function api<T = unknown>(path: string, options: RequestInit = {}):
   });
 
   if (!res.ok) {
-    throw new ApiError(res.status, await res.text());
+    const body = await res.text();
+    const err = new ApiError(res.status, body);
+    if (res.status >= 500) {
+      toast.error(`Server error (${res.status})`);
+    } else if (res.status === 401) {
+      toast.error('Session expired');
+    } else if (res.status >= 400) {
+      try {
+        const parsed = JSON.parse(body);
+        toast.error(parsed.message || parsed.error || `Error ${res.status}`);
+      } catch {
+        toast.error(`Error ${res.status}`);
+      }
+    }
+    throw err;
   }
 
   const contentType = res.headers.get('content-type');

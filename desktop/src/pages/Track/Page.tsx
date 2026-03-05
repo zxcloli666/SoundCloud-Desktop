@@ -1,37 +1,38 @@
-import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { useTranslation } from 'react-i18next';
 import {
-  Play,
-  Pause,
-  Heart,
-  Repeat2,
-  Loader2,
-  Music,
-  Headphones,
-  MessageCircle,
+  Calendar,
   ChevronDown,
   ChevronUp,
   Clock,
-  Calendar,
   Hash,
+  Headphones,
+  Heart,
+  Loader2,
+  MessageCircle,
+  Music,
+  Pause,
+  Play,
+  Repeat2,
 } from 'lucide-react';
+import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useNavigate, useParams } from 'react-router-dom';
+import { ScdnImg } from '../../components/common/ScdnImg.tsx';
 import { api } from '../../lib/api.ts';
-import type { Track } from '../../stores/player.ts';
+import { useTrackPlayback } from '../../lib/hooks/useTrackPlayback.ts';
 import {
-  useTrackComments,
-  useRelatedTracks,
-  useTrackFavoriters,
   useInfiniteScroll,
+  useRelatedTracks,
+  useTrackComments,
+  useTrackFavoriters,
 } from '../../lib/hooks.ts';
 import { dateFormatted, replaceArtSize, toCompactCount, toHourMinSec } from '../../lib/utils.ts';
+import type { Track } from '../../stores/player.ts';
 import { TrackCommentForm } from './TrackCommentForm.tsx';
 import { TrackCommentItem } from './TrackCommentItem.tsx';
 import { TrackLikeButton } from './TrackLikeButton.tsx';
-import { TrackRepostButton } from './TrackRepostButton.tsx';
 import { TrackRelatedRow } from './TrackRelatedRow.tsx';
-import { useTrackPlayback } from '../../lib/hooks/useTrackPlayback.ts';
+import { TrackRepostButton } from './TrackRepostButton.tsx';
 
 function parseTags(tagList?: string): string[] {
   if (!tagList) return [];
@@ -101,7 +102,7 @@ const TrackPageBase = () => {
         {/* Blurred bg */}
         {cover && (
           <div className="absolute inset-0 pointer-events-none">
-            <img
+            <ScdnImg
               src={cover}
               alt=""
               className="w-full h-full object-cover scale-[1.5] blur-[100px] opacity-25 saturate-150"
@@ -117,7 +118,7 @@ const TrackPageBase = () => {
             onClick={togglePlay}
           >
             {cover ? (
-              <img
+              <ScdnImg
                 src={cover}
                 alt={track.title}
                 className="w-full h-full object-cover transition-transform duration-500 ease-[var(--ease-apple)] group-hover/cover:scale-[1.04]"
@@ -167,7 +168,7 @@ const TrackPageBase = () => {
               onClick={() => navigate(`/user/${encodeURIComponent(track.user.urn)}`)}
             >
               {track.user.avatar_url && (
-                <img
+                <ScdnImg
                   src={replaceArtSize(track.user.avatar_url, 'small') ?? ''}
                   alt=""
                   className="w-6 h-6 rounded-full ring-1 ring-white/[0.08] group-hover/artist:ring-white/[0.15] transition-all duration-150"
@@ -333,7 +334,7 @@ const TrackPageBase = () => {
             onClick={() => navigate(`/user/${encodeURIComponent(track.user.urn)}`)}
           >
             <div className="flex items-center gap-3">
-              <img
+              <ScdnImg
                 src={replaceArtSize(track.user.avatar_url, 't200x200') ?? ''}
                 alt=""
                 className="w-12 h-12 rounded-full ring-1 ring-white/[0.08] group-hover/ac:ring-white/[0.15] transition-all duration-150"
@@ -362,7 +363,7 @@ const TrackPageBase = () => {
               </h3>
               <div className="flex flex-wrap gap-1.5">
                 {favorites.map((u) => (
-                  <img
+                  <ScdnImg
                     key={u.urn}
                     src={replaceArtSize(u.avatar_url, 'small') ?? ''}
                     alt={u.username}

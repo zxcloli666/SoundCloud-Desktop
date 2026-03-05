@@ -1,11 +1,12 @@
-import type { FeedItem } from '../../lib/hooks.ts';
-import type { Track } from '../../stores/player.ts';
-import { useNavigate } from 'react-router-dom';
-import { replaceArtSize, toCompactCount, toMinSec, toRelativeTime } from '../../lib/utils.ts';
-import { preloadTrack } from '../../lib/audio.ts';
 import { Headphones, Heart, Music, Pause, Play, Repeat2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
+import { ScdnImg } from '../../components/common/ScdnImg.tsx';
+import { preloadTrack } from '../../lib/audio.ts';
 import { useTrackPlayback } from '../../lib/hooks/useTrackPlayback.ts';
+import type { FeedItem } from '../../lib/hooks.ts';
+import { replaceArtSize, toCompactCount, toMinSec, toRelativeTime } from '../../lib/utils.ts';
+import type { Track } from '../../stores/player.ts';
 
 export function FeaturedCard({ item, queue }: { item: FeedItem; queue: Track[] }) {
   const { t } = useTranslation();
@@ -26,7 +27,7 @@ export function FeaturedCard({ item, queue }: { item: FeedItem; queue: Track[] }
       {/* Blurred artwork background */}
       {cover && (
         <div className="absolute inset-0 pointer-events-none">
-          <img
+          <ScdnImg
             src={cover}
             alt=""
             className="w-full h-full object-cover scale-[1.4] blur-[80px] opacity-20 saturate-150"
@@ -43,7 +44,7 @@ export function FeaturedCard({ item, queue }: { item: FeedItem; queue: Track[] }
           onClick={togglePlay}
         >
           {cover ? (
-            <img
+            <ScdnImg
               src={cover}
               alt={track.title}
               className="w-full h-full object-cover transition-transform duration-500 ease-[var(--ease-apple)] group-hover/cover:scale-[1.05]"
@@ -101,7 +102,7 @@ export function FeaturedCard({ item, queue }: { item: FeedItem; queue: Track[] }
             onClick={() => navigate(`/user/${encodeURIComponent(track.user.urn)}`)}
           >
             {avatar && (
-              <img
+              <ScdnImg
                 src={avatar}
                 alt=""
                 className="w-5 h-5 rounded-full ring-1 ring-white/[0.08] group-hover/artist:ring-white/[0.15] transition-all duration-150"

@@ -1,11 +1,12 @@
+import { fetch } from '@tauri-apps/plugin-http';
+import { openUrl } from '@tauri-apps/plugin-opener';
+import { Disc3 } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Disc3 } from 'lucide-react';
-import { openUrl } from '@tauri-apps/plugin-opener';
-import { fetch } from '@tauri-apps/plugin-http';
-import { useAuthStore } from '../../stores/auth.ts';
 import { api } from '../../lib/api.ts';
 import { API_BASE } from '../../lib/constants.ts';
+import { queryClient } from '../../main.tsx';
+import { useAuthStore } from '../../stores/auth.ts';
 
 interface LoginResponse {
   url: string;
@@ -37,6 +38,7 @@ export function Login() {
             clearInterval(poll);
             setSession(sessionId);
             await fetchUser();
+            queryClient.invalidateQueries();
           }
         } catch {}
       }, 2000);

@@ -1,22 +1,25 @@
-import React from 'react';
 import {
-  Play,
+  ListMusic,
   Pause,
-  SkipBack,
-  SkipForward,
-  Shuffle,
+  Play,
   Repeat,
   Repeat1,
-  ListMusic,
+  Shuffle,
+  SkipBack,
+  SkipForward,
 } from 'lucide-react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { usePlayerStore } from '../../stores/player.ts';
 import { useShallow } from 'zustand/shallow';
+import { useCdnUrl } from '../../lib/hooks/useCdnUrl.ts';
+import { replaceArtSize } from '../../lib/utils.ts';
+import { usePlayerStore } from '../../stores/player.ts';
+import { ScdnImg } from '../common/ScdnImg.tsx';
 import { LikeButton } from '../track/LikeButton.tsx';
-import { ProgressSlider } from './ProgressSlider.tsx';
 import { ControlButton } from './ControlButton.tsx';
-import { ProgressTime } from './ProgressTime.tsx';
 import { ControlVolumeButton } from './ControlVolumeButton.tsx';
+import { ProgressSlider } from './ProgressSlider.tsx';
+import { ProgressTime } from './ProgressTime.tsx';
 import { VolumeSlider } from './VolumeSlider.tsx';
 
 const VolumeValue = React.memo(() => {
@@ -66,7 +69,8 @@ export const NowPlayingBarBase = ({
     })),
   );
 
-  const artwork = currentTrack?.artwork_url?.replace('-large', '-t200x200');
+  const rawArtwork = replaceArtSize(currentTrack?.artwork_url, 't200x200');
+  const artwork = useCdnUrl(rawArtwork);
 
   return (
     <div className="shrink-0 relative">
@@ -95,7 +99,7 @@ export const NowPlayingBarBase = ({
                 onClick={() => navigate(`/track/${encodeURIComponent(currentTrack.urn)}`)}
               >
                 {artwork ? (
-                  <img src={artwork} alt="" className="w-full h-full object-cover" />
+                  <ScdnImg src={artwork} alt="" className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full bg-white/[0.04]" />
                 )}

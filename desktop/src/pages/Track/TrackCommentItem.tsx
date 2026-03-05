@@ -1,8 +1,9 @@
-import React from 'react';
-import type { Comment } from '../../lib/hooks.ts';
-import { useNavigate } from 'react-router-dom';
-import { replaceArtSize, toHourMinSec, toRelativeTime } from '../../lib/utils.ts';
 import { Clock } from 'lucide-react';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ScdnImg } from '../../components/common/ScdnImg.tsx';
+import type { Comment } from '../../lib/hooks.ts';
+import { replaceArtSize, toHourMinSec, toRelativeTime } from '../../lib/utils.ts';
 
 const TrackCommentItemBase = ({ comment }: { comment: Comment }) => {
   const navigate = useNavigate();
@@ -10,7 +11,7 @@ const TrackCommentItemBase = ({ comment }: { comment: Comment }) => {
 
   return (
     <div className="flex gap-3 group">
-      <img
+      <ScdnImg
         src={avatar ?? ''}
         alt=""
         className="w-8 h-8 rounded-full shrink-0 ring-1 ring-white/[0.06] mt-0.5 cursor-pointer hover:ring-white/[0.15] transition-all duration-150"

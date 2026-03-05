@@ -1,12 +1,13 @@
-import React from 'react';
-import type { FeedItem } from '../../lib/hooks.ts';
-import type { Track } from '../../stores/player.ts';
-import { useNavigate } from 'react-router-dom';
-import { replaceArtSize, toCompactCount, toMinSec, toRelativeTime } from '../../lib/utils.ts';
-import { preloadTrack } from '../../lib/audio.ts';
 import { Headphones, Heart, Music, Pause, Play, Repeat2 } from 'lucide-react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
+import { ScdnImg } from '../../components/common/ScdnImg.tsx';
+import { preloadTrack } from '../../lib/audio.ts';
 import { useTrackPlayback } from '../../lib/hooks/useTrackPlayback.ts';
+import type { FeedItem } from '../../lib/hooks.ts';
+import { replaceArtSize, toCompactCount, toMinSec, toRelativeTime } from '../../lib/utils.ts';
+import type { Track } from '../../stores/player.ts';
 
 export const FeedTrackCardBase = ({ item, queue }: { item: FeedItem; queue: Track[] }) => {
   const { t } = useTranslation();
@@ -31,7 +32,7 @@ export const FeedTrackCardBase = ({ item, queue }: { item: FeedItem; queue: Trac
         onClick={togglePlay}
       >
         {cover ? (
-          <img src={cover} alt={track.title} className="w-full h-full object-cover" />
+          <ScdnImg src={cover} alt={track.title} className="w-full h-full object-cover" />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-white/[0.04] to-white/[0.01]">
             <Music size={22} className="text-white/15" />

@@ -1,3 +1,5 @@
+import { replaceArtSize } from '../../lib/utils.ts';
+
 interface AvatarProps {
   src?: string | null;
   alt?: string;
@@ -7,6 +9,7 @@ interface AvatarProps {
 
 export function Avatar({ src, alt = '', size = 32, className = '' }: AvatarProps) {
   const sizeStyle = { width: size, height: size, minWidth: size };
+  const artwork = replaceArtSize(src, 't200x200');
 
   if (!src || src.includes('default_avatar')) {
     return (
@@ -24,7 +27,7 @@ export function Avatar({ src, alt = '', size = 32, className = '' }: AvatarProps
 
   return (
     <img
-      src={src.replace('-large', '-t200x200')}
+      src={artwork ?? undefined}
       alt={alt}
       className={`rounded-full object-cover ${className}`}
       style={sizeStyle}

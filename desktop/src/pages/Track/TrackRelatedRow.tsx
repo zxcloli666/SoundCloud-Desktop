@@ -1,10 +1,11 @@
-import React from 'react';
-import type { Track } from '../../stores/player.ts';
-import { useNavigate } from 'react-router-dom';
-import { replaceArtSize, toCompactCount, toMinSec } from '../../lib/utils.ts';
-import { preloadTrack } from '../../lib/audio.ts';
 import { Headphones, Music, Pause, Play } from 'lucide-react';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ScdnImg } from '../../components/common/ScdnImg.tsx';
+import { preloadTrack } from '../../lib/audio.ts';
 import { useTrackPlayback } from '../../lib/hooks/useTrackPlayback.ts';
+import { replaceArtSize, toCompactCount, toMinSec } from '../../lib/utils.ts';
+import type { Track } from '../../stores/player.ts';
 
 export const TrackRelatedRowBase = ({ track, queue }: { track: Track; queue: Track[] }) => {
   const { isCurrent, isCurrentPlaying, togglePlay } = useTrackPlayback(track, queue);
@@ -24,7 +25,7 @@ export const TrackRelatedRowBase = ({ track, queue }: { track: Track; queue: Tra
         onClick={togglePlay}
       >
         {cover ? (
-          <img src={cover} alt="" className="w-full h-full object-cover" />
+          <ScdnImg src={cover} alt="" className="w-full h-full object-cover" />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-white/[0.03]">
             <Music size={14} className="text-white/15" />

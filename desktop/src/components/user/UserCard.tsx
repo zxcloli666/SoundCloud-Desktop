@@ -1,10 +1,11 @@
-import React from 'react';
-import type { SCUser } from '../../lib/hooks.ts';
-import { useNavigate } from 'react-router-dom';
 import { User, Users } from 'lucide-react';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import type { SCUser } from '../../lib/hooks.ts';
 import { replaceArtSize, toCompactCount } from '../../lib/utils.ts';
+import { ScdnImg } from '../common/ScdnImg.tsx';
 
-const ArtistCardBase = ({ user }: { user: SCUser }) => {
+const UserCardBase = ({ user }: { user: SCUser }) => {
   const navigate = useNavigate();
   const avatar = replaceArtSize(user.avatar_url, 't300x300');
 
@@ -15,7 +16,7 @@ const ArtistCardBase = ({ user }: { user: SCUser }) => {
     >
       <div className="relative w-24 h-24 rounded-full shadow-xl overflow-hidden ring-2 ring-white/[0.05] group-hover:ring-white/[0.15] group-hover:scale-105 transition-all duration-500">
         {avatar ? (
-          <img
+          <ScdnImg
             src={avatar}
             alt={user.username}
             className="w-full h-full object-cover"
@@ -43,4 +44,4 @@ const ArtistCardBase = ({ user }: { user: SCUser }) => {
   );
 };
 
-export const ArtistCard = React.memo(ArtistCardBase);
+export const UserCard = React.memo(UserCardBase);

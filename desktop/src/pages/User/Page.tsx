@@ -1,32 +1,33 @@
-import { useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
 import {
-  Loader2,
-  Users,
-  MapPin,
+  AlertCircle,
   Calendar,
   Globe,
   Instagram,
-  Twitter,
-  Youtube,
-  AlertCircle,
   Link as LinkIcon,
+  Loader2,
+  MapPin,
+  Twitter,
+  Users,
+  Youtube,
 } from 'lucide-react';
-import {
-  useUser,
-  useUserTracks,
-  useUserPlaylists,
-  useUserLikedTracks,
-  useUserWebProfiles,
-  useInfiniteScroll,
-} from '../../lib/hooks.ts';
-import { useAuthStore } from '../../stores/auth.ts';
-import { TrackRow } from '../../components/track/TrackRow.tsx';
-import { dateFormatted, replaceArtSize, toCompactCount } from '../../lib/utils.ts';
-import { PlaylistCard } from '../../components/playlist/PlaylistCard.tsx';
-import { UserFollowButton } from './UserFollowButton.tsx';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useParams } from 'react-router-dom';
+import { ScdnImg } from '../../components/common/ScdnImg.tsx';
 import { SegmentedTabs } from '../../components/common/SegmentedTabs.tsx';
+import { PlaylistCard } from '../../components/playlist/PlaylistCard.tsx';
+import { TrackRow } from '../../components/track/TrackRow.tsx';
+import {
+  useInfiniteScroll,
+  useUser,
+  useUserLikedTracks,
+  useUserPlaylists,
+  useUserTracks,
+  useUserWebProfiles,
+} from '../../lib/hooks.ts';
+import { dateFormatted, replaceArtSize, toCompactCount } from '../../lib/utils.ts';
+import { useAuthStore } from '../../stores/auth.ts';
+import { UserFollowButton } from './UserFollowButton.tsx';
 
 function getWebIcon(service: string) {
   switch (service.toLowerCase()) {
@@ -191,7 +192,7 @@ export function UserPage() {
         {/* Deep blur background */}
         {avatar && (
           <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            <img
+            <ScdnImg
               src={avatar}
               alt=""
               className="w-full h-full object-cover scale-[2] blur-[100px] opacity-30 saturate-200"
@@ -204,7 +205,7 @@ export function UserPage() {
           {/* Avatar */}
           <div className="w-[180px] h-[180px] md:w-[200px] md:h-[200px] rounded-full overflow-hidden shrink-0 shadow-[0_0_60px_rgba(0,0,0,0.6)] ring-2 ring-white/[0.15] bg-black/40 relative group">
             {avatar ? (
-              <img
+              <ScdnImg
                 src={avatar}
                 alt={user.username}
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"

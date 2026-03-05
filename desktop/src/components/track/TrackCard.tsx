@@ -1,10 +1,11 @@
-import { Play, Pause } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import type { Track } from '../../stores/player.ts';
-import { preloadTrack } from '../../lib/audio.ts';
+import { Pause, Play } from 'lucide-react';
 import React from 'react';
-import { toCompactCount } from '../../lib/utils.ts';
+import { useNavigate } from 'react-router-dom';
+import { preloadTrack } from '../../lib/audio.ts';
 import { useTrackPlayback } from '../../lib/hooks/useTrackPlayback.ts';
+import { replaceArtSize, toCompactCount } from '../../lib/utils.ts';
+import type { Track } from '../../stores/player.ts';
+import { ScdnImg } from '../common/ScdnImg.tsx';
 
 interface TrackCardProps {
   track: Track;
@@ -20,7 +21,7 @@ function formatDuration(ms: number) {
 
 export const TrackCardBase = ({ track, queue }: TrackCardProps) => {
   const navigate = useNavigate();
-  const artwork = track.artwork_url?.replace('-large', '-t300x300');
+  const artwork = replaceArtSize(track.artwork_url, 't300x300');
 
   const { isCurrentPlaying, togglePlay } = useTrackPlayback(track, queue ?? []);
 
@@ -32,7 +33,7 @@ export const TrackCardBase = ({ track, queue }: TrackCardProps) => {
         onClick={togglePlay}
       >
         {artwork ? (
-          <img
+          <ScdnImg
             src={artwork}
             alt={track.title}
             className="w-full h-full object-cover transition-transform duration-500 ease-[var(--ease-apple)] group-hover:scale-[1.04]"

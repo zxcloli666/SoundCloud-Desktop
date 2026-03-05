@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
-import { Titlebar } from './Titlebar';
-import { Sidebar } from './Sidebar';
+import { useCdnUrl } from '../../lib/hooks/useCdnUrl.ts';
+import { replaceArtSize } from '../../lib/utils.ts';
+import { usePlayerStore } from '../../stores/player';
 import { NowPlayingBar } from '../playback/NowPlayingBar.tsx';
 import { QueuePanel } from '../playback/QueuePanel.tsx';
-import { usePlayerStore } from '../../stores/player';
+import { Sidebar } from './Sidebar';
+import { Titlebar } from './Titlebar';
 
 const AppShellBase = () => {
   const [queueOpen, setQueueOpen] = useState(false);
-  const artwork = usePlayerStore((s) =>
-    s.currentTrack?.artwork_url?.replace('-large', '-t500x500'),
-  );
+  const rawArtwork = usePlayerStore((s) => replaceArtSize(s.currentTrack?.artwork_url, 't500x500'));
+  const artwork = useCdnUrl(rawArtwork);
 
   return (
     <div className="flex flex-col h-screen relative overflow-hidden">

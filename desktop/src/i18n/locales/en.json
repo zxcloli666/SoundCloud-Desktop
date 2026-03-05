@@ -75,7 +75,9 @@
     "yourFeed": "Your Feed",
     "freshReleases": "Fresh Releases",
     "reposted": "Reposted",
-    "endOfFeed": "You're all caught up"
+    "endOfFeed": "You're all caught up",
+    "recommended": "Recommended For You",
+    "discover": "Discover"
   },
   "common": {
     "loading": "Loading...",

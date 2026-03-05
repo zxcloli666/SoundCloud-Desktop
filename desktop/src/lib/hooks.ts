@@ -1,7 +1,7 @@
-import { useInfiniteQuery, useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef } from 'react';
-import { api } from './api';
 import type { Track } from '../stores/player';
+import { api } from './api';
 
 /* ── Types ─────────────────────────────────────────────────────── */
 
@@ -575,6 +575,29 @@ export function useSearchUsers(q: string) {
     }
   }
   return { users, ...query };
+}
+
+/* ── Discover ──────────────────────────────────────────────────── */
+
+export function useGenreTracks(genre: string, limit = 20) {
+  return useQuery({
+    queryKey: ['discover', 'genre', genre, limit],
+    queryFn: () =>
+      api<TrackListResponse>(
+        `/tracks?genres=${encodeURIComponent(genre)}&limit=${limit}&linked_partitioning=true&access=playable`,
+      ),
+    staleTime: 1000 * 60 * 10,
+  });
+}
+
+export function useRecommendedTracks(seedTrackUrn: string | undefined, limit = 20) {
+  return useQuery({
+    queryKey: ['discover', 'related', seedTrackUrn, limit],
+    queryFn: () =>
+      api<TrackListResponse>(`/tracks/${encodeURIComponent(seedTrackUrn!)}/related?limit=${limit}`),
+    enabled: !!seedTrackUrn,
+    staleTime: 1000 * 60 * 10,
+  });
 }
 
 /* ── Infinite scroll ───────────────────────────────────────────── */

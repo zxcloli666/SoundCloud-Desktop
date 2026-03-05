@@ -1,9 +1,10 @@
+import { ListMusic } from 'lucide-react';
 import React from 'react';
 
 import { useNavigate } from 'react-router-dom';
 import type { Playlist } from '../../lib/hooks.ts';
 import { replaceArtSize } from '../../lib/utils.ts';
-import { ListMusic } from 'lucide-react';
+import { ScdnImg } from '../common/ScdnImg.tsx';
 
 const PlaylistCardBase = ({ playlist }: { playlist: Playlist }) => {
   const navigate = useNavigate();
@@ -16,7 +17,7 @@ const PlaylistCardBase = ({ playlist }: { playlist: Playlist }) => {
     >
       <div className="relative aspect-square rounded-2xl overflow-hidden bg-white/[0.02] ring-1 ring-white/[0.06] shadow-lg group-hover:shadow-2xl group-hover:ring-white/[0.15] transition-all duration-500 ease-[var(--ease-apple)]">
         {cover ? (
-          <img
+          <ScdnImg
             src={cover}
             alt={playlist.title}
             className="w-full h-full object-cover transition-transform duration-700 ease-[var(--ease-apple)] group-hover:scale-[1.05]"

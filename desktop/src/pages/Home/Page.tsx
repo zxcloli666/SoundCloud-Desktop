@@ -1,17 +1,32 @@
+import { ChevronRight, Compass, Heart, Loader2, Music, Sparkles } from 'lucide-react';
 import type React from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Heart, ChevronRight, Loader2, Music } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useFeed, useLikedTracks, useFollowingTracks, useInfiniteScroll } from '../../lib/hooks.ts';
-import { TrackCard } from '../../components/track/TrackCard.tsx';
 import { HorizontalScroll } from '../../components/common/HorizontalScroll.tsx';
 import { Skeleton } from '../../components/common/Skeleton.tsx';
+import { TrackCard } from '../../components/track/TrackCard.tsx';
+import {
+  useFeed,
+  useFollowingTracks,
+  useGenreTracks,
+  useInfiniteScroll,
+  useLikedTracks,
+  useRecommendedTracks,
+} from '../../lib/hooks.ts';
 import { useAuthStore } from '../../stores/auth.ts';
 import type { Track } from '../../stores/player.ts';
 import { FeaturedCard } from './HomeFeaturedCard.tsx';
-import { FeedTrackCard } from './HomeFeedTrackCard.tsx';
 import { FeedPlaylistCard } from './HomeFeedPlaylistCard.tsx';
+import { FeedTrackCard } from './HomeFeedTrackCard.tsx';
 
+function greetingKey() {
+  const h = new Date().getHours();
+  if (h < 6) return 'home.goodNight';
+  if (h < 12) return 'home.goodMorning';
+  if (h < 18) return 'home.goodAfternoon';
+  return 'home.goodEvening';
+}
 /* ── Section Header ───────────────────────────────────────── */
 
 function SectionHeader({
@@ -108,13 +123,39 @@ export function Home() {
     isFetchingNextPage,
     isLoading: feedLoading,
   } = useFeed();
-  const { data: likes, isLoading: likesLoading } = useLikedTracks(20);
+  const { data: likes, isLoading: likesLoading } = useLikedTracks(50);
   const { data: following, isLoading: followingLoading } = useFollowingTracks(20);
 
   const sentinelRef = useInfiniteScroll(hasNextPage, isFetchingNextPage, fetchNextPage);
 
   const likedTracks = likes?.collection ?? [];
   const followingTracks = following?.collection ?? [];
+
+  // Discover: pick a random liked track as seed for recommendations
+  const seedUrn = useMemo(() => {
+    if (likedTracks.length === 0) return undefined;
+    const i = Math.floor(Math.random() * Math.min(likedTracks.length, 10));
+    return likedTracks[i]?.urn;
+  }, [likedTracks]);
+
+  const { data: recommended, isLoading: recommendedLoading } = useRecommendedTracks(seedUrn, 20);
+  const recommendedTracks = recommended?.collection ?? [];
+
+  // Genre discovery — extract top genres from liked tracks
+  const topGenres = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const t of likedTracks) {
+      const g = t.genre?.trim().toLowerCase();
+      if (g) counts.set(g, (counts.get(g) ?? 0) + 1);
+    }
+    return [...counts.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 7)
+      .map(([g]) => g);
+  }, [likedTracks]);
+  const [activeGenre, setActiveGenre] = useState<string | null>(null);
+  const selectedGenre = activeGenre ?? topGenres[0] ?? null;
+  const { data: genreData, isLoading: genreLoading } = useGenreTracks(selectedGenre!, 20);
 
   // First track in feed → featured hero card
   const featuredItem = feedItems.find((i) => i.type.includes('track'));
@@ -190,6 +231,64 @@ export function Home() {
         </section>
       )}
 
+      {/* ── Recommended For You ───────────────────────── */}
+      {(recommendedLoading || recommendedTracks.length > 0) && (
+        <section>
+          <SectionHeader
+            title={t('home.recommended', 'Recommended For You')}
+            icon={<Sparkles size={15} className="text-amber-400/70" />}
+          />
+          <HorizontalScroll>
+            {recommendedLoading ? (
+              <ShelfSkeleton />
+            ) : (
+              recommendedTracks.map((track) => (
+                <div key={track.urn} className="w-[180px] shrink-0">
+                  <TrackCard track={track} queue={recommendedTracks} />
+                </div>
+              ))
+            )}
+          </HorizontalScroll>
+        </section>
+      )}
+
+      {/* ── Discover by Genre ──────────────────────────── */}
+      {topGenres.length > 0 && (
+        <section>
+          <SectionHeader
+            title={t('home.discover', 'Discover')}
+            icon={<Compass size={15} className="text-cyan-400/70" />}
+          />
+          <div className="flex items-center gap-1.5 mb-4 flex-wrap">
+            {topGenres.map((g) => (
+              <button
+                key={g}
+                type="button"
+                onClick={() => setActiveGenre(g)}
+                className={`px-3.5 py-1.5 rounded-full text-[12px] font-medium transition-all duration-200 cursor-pointer capitalize ${
+                  selectedGenre === g
+                    ? 'bg-white/[0.12] text-white border border-white/[0.08]'
+                    : 'bg-white/[0.03] text-white/40 border border-white/[0.04] hover:bg-white/[0.06] hover:text-white/60'
+                }`}
+              >
+                {g}
+              </button>
+            ))}
+          </div>
+          <HorizontalScroll>
+            {genreLoading ? (
+              <ShelfSkeleton />
+            ) : (
+              (genreData?.collection ?? []).map((track) => (
+                <div key={track.urn} className="w-[180px] shrink-0">
+                  <TrackCard track={track} queue={genreData?.collection ?? []} />
+                </div>
+              ))
+            )}
+          </HorizontalScroll>
+        </section>
+      )}
+
       {/* ── Feed Stream ────────────────────────────────── */}
       <section>
         <SectionHeader
@@ -233,14 +332,4 @@ export function Home() {
       </section>
     </div>
   );
-}
-
-/* ── Helpers ──────────────────────────────────────────────── */
-
-function greetingKey() {
-  const h = new Date().getHours();
-  if (h < 6) return 'home.goodNight';
-  if (h < 12) return 'home.goodMorning';
-  if (h < 18) return 'home.goodAfternoon';
-  return 'home.goodEvening';
 }

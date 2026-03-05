@@ -76,7 +76,9 @@
     "yourFeed": "Ваш фид",
     "freshReleases": "Свежие релизы",
     "reposted": "Репост",
-    "endOfFeed": "Вы всё посмотрели"
+    "endOfFeed": "Вы всё посмотрели",
+    "recommended": "Рекомендации для вас",
+    "discover": "Открывайте новое"
   },
   "common": {
     "loading": "Загрузка...",

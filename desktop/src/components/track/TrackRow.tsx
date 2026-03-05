@@ -1,11 +1,12 @@
-import React from 'react';
 import { Headphones, Music, Pause, Play } from 'lucide-react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { preloadTrack } from '../../lib/audio.ts';
-import type { Track } from '../../stores/player.ts';
-import { LikeButton } from './LikeButton.tsx';
-import { replaceArtSize, toCompactCount, toMinSec } from '../../lib/utils.ts';
 import { useTrackPlayback } from '../../lib/hooks/useTrackPlayback.ts';
+import { replaceArtSize, toCompactCount, toMinSec } from '../../lib/utils.ts';
+import type { Track } from '../../stores/player.ts';
+import { ScdnImg } from '../common/ScdnImg.tsx';
+import { LikeButton } from './LikeButton.tsx';
 
 type TrackRowProps = {
   track: Track;
@@ -62,7 +63,7 @@ export const TrackRowBase = ({ track, queue, index, source = 'default' }: TrackR
 
       <div className="relative w-12 h-12 rounded-xl overflow-hidden shrink-0 ring-1 ring-white/[0.08] shadow-md">
         {cover ? (
-          <img src={cover} alt="" className="w-full h-full object-cover" loading="lazy" />
+          <ScdnImg src={cover} alt="" className="w-full h-full object-cover" loading="lazy" />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
             <Music size={16} className="text-white/20" />

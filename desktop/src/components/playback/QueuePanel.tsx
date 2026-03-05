@@ -1,8 +1,10 @@
+import { GripVertical, Pause, Play, Trash2, X } from 'lucide-react';
 import React, { useRef, useState } from 'react';
-import { X, Play, Pause, GripVertical, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { usePlayerStore, type Track } from '../../stores/player.ts';
 import { useShallow } from 'zustand/shallow';
+import { replaceArtSize } from '../../lib/utils.ts';
+import { type Track, usePlayerStore } from '../../stores/player.ts';
+import { ScdnImg } from '../common/ScdnImg.tsx';
 
 function formatDuration(ms: number) {
   const totalSec = Math.floor(ms / 1000);
@@ -22,7 +24,7 @@ const NowPlayingItem = React.memo(() => {
     })),
   );
   if (!currentTrack) return null;
-  const artwork = currentTrack.artwork_url?.replace('-large', '-t200x200');
+  const artwork = replaceArtSize(currentTrack.artwork_url, 't200x200');
 
   return (
     <div
@@ -135,7 +137,7 @@ const DraggableQueue = React.memo(({ startIndex }: { startIndex: number }) => {
         const isCurrent = absIdx === queueIndex;
         const isDragging = absIdx === dragIdx;
         const isOver = absIdx === overIdx && dragIdx !== null && dragIdx !== overIdx;
-        const artwork = track.artwork_url?.replace('-large', '-t200x200');
+        const artwork = replaceArtSize(track.artwork_url, 't200x200');
 
         return (
           <div
@@ -163,7 +165,7 @@ const DraggableQueue = React.memo(({ startIndex }: { startIndex: number }) => {
               onClick={() => handleClick(track, absIdx)}
             >
               {artwork ? (
-                <img src={artwork} alt="" className="w-full h-full object-cover" />
+                <ScdnImg src={artwork} alt="" className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full" />
               )}

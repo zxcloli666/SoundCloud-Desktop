@@ -35,11 +35,9 @@ export function UserFollowButton({ userUrn }: { userUrn: string }) {
       await api(`/me/followings/${encodeURIComponent(userUrn)}`, {
         method: next ? 'PUT' : 'DELETE',
       });
-      // update follwrs counts
-      qc.invalidateQueries({
-        queryKey: ['following', currentUser?.urn, userUrn],
-      });
+      qc.invalidateQueries({ queryKey: ['following', currentUser?.urn, userUrn] });
       qc.invalidateQueries({ queryKey: ['user', userUrn] });
+      qc.invalidateQueries({ queryKey: ['me', 'followings'] });
     } catch (_e) {
       // Revert on failure
       setFollowing(!next);

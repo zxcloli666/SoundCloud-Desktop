@@ -1,16 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import { Loader2, Search as SearchIcon, X } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Search as SearchIcon, X, Loader2 } from 'lucide-react';
-import {
-  useSearchTracks,
-  useSearchPlaylists,
-  useSearchUsers,
-  useInfiniteScroll,
-} from '../../lib/hooks.ts';
-import { TrackRow } from '../../components/track/TrackRow.tsx';
-import { PlaylistCard } from '../../components/playlist/PlaylistCard.tsx';
-import { ArtistCard } from '../../components/user/ArtistCard.tsx';
 import { SegmentedTabs } from '../../components/common/SegmentedTabs.tsx';
+import { PlaylistCard } from '../../components/playlist/PlaylistCard.tsx';
+import { TrackRow } from '../../components/track/TrackRow.tsx';
+import { UserCard } from '../../components/user/UserCard.tsx';
+import {
+  useInfiniteScroll,
+  useSearchPlaylists,
+  useSearchTracks,
+  useSearchUsers,
+} from '../../lib/hooks.ts';
+
 type TabsId = 'tracks' | 'playlists' | 'users';
 
 const SearchBase = () => {
@@ -117,7 +118,7 @@ const SearchBase = () => {
       return (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
           {uniqueUsers.map((u, i) => (
-            <ArtistCard key={`${u.urn}-${i}`} user={u} />
+            <UserCard key={`${u.urn}-${i}`} user={u} />
           ))}
         </div>
       );

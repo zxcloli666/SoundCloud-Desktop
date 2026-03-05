@@ -1,19 +1,20 @@
+import { Heart, Loader2, Play, Users } from 'lucide-react';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Heart, Play, Loader2, Users } from 'lucide-react';
-import { useAuthStore } from '../../stores/auth.ts';
+import { ScdnImg } from '../../components/common/ScdnImg.tsx';
+import { SegmentedTabs } from '../../components/common/SegmentedTabs.tsx';
+import { PlaylistCard } from '../../components/playlist/PlaylistCard.tsx';
+import { TrackRow } from '../../components/track/TrackRow.tsx';
+import { UserCard } from '../../components/user/UserCard.tsx';
+import { useQueuePlayback } from '../../lib/hooks/useQueuePlayback.ts';
 import {
   useLikedTracks,
   useMyFollowings,
   useMyLikedPlaylists,
   useMyPlaylists,
 } from '../../lib/hooks.ts';
-import { TrackRow } from '../../components/track/TrackRow.tsx';
-import { ArtistCard } from '../../components/user/ArtistCard.tsx';
-import { PlaylistCard } from '../../components/playlist/PlaylistCard.tsx';
 import { replaceArtSize, toCompactCount } from '../../lib/utils.ts';
-import { SegmentedTabs } from '../../components/common/SegmentedTabs.tsx';
-import { useQueuePlayback } from '../../lib/hooks/useQueuePlayback.ts';
+import { useAuthStore } from '../../stores/auth.ts';
 
 type TabsId = 'playlists' | 'likes' | 'following';
 
@@ -121,7 +122,7 @@ const LibraryBase = () => {
                   key={u.id}
                   className="w-14 h-14 rounded-full ring-4 ring-[#121214] bg-neutral-800 overflow-hidden shadow-lg transition-transform group-hover:translate-x-2"
                 >
-                  <img
+                  <ScdnImg
                     src={replaceArtSize(u.avatar_url, 'small') || ''}
                     className="w-full h-full object-cover"
                     alt=""
@@ -221,7 +222,7 @@ const LibraryBase = () => {
             ) : followings.length > 0 ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                 {followings.map((u) => (
-                  <ArtistCard key={u.urn} user={u} />
+                  <UserCard key={u.urn} user={u} />
                 ))}
               </div>
             ) : (

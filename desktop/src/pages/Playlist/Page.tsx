@@ -1,12 +1,13 @@
-import { useParams, useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import { Play, Pause, Shuffle, Loader2, ListMusic, Heart, Clock, Calendar } from 'lucide-react';
-import type { Track } from '../../stores/player.ts';
-import { usePlaylist, usePlaylistTracks } from '../../lib/hooks.ts';
+import { Calendar, Clock, Heart, ListMusic, Loader2, Pause, Play, Shuffle } from 'lucide-react';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { useNavigate, useParams } from 'react-router-dom';
+import { ScdnImg } from '../../components/common/ScdnImg.tsx';
 import { TrackRow } from '../../components/track/TrackRow.tsx';
-import { dateFormatted, replaceArtSize, toCompactCount, toHourMinSec } from '../../lib/utils.ts';
 import { useQueuePlayback } from '../../lib/hooks/useQueuePlayback.ts';
+import { usePlaylist, usePlaylistTracks } from '../../lib/hooks.ts';
+import { dateFormatted, replaceArtSize, toCompactCount, toHourMinSec } from '../../lib/utils.ts';
+import type { Track } from '../../stores/player.ts';
 
 const PlaylistPageBase = () => {
   const { urn } = useParams<{ urn: string }>();
@@ -35,11 +36,10 @@ const PlaylistPageBase = () => {
 
   return (
     <div className="p-6 pb-4 space-y-7 animate-fade-in-up">
-      {/* ── Hero ─────────────────────────────────────── */}
       <section className="relative rounded-3xl overflow-hidden glass-featured">
         {cover && (
           <div className="absolute inset-0 pointer-events-none">
-            <img
+            <ScdnImg
               src={cover}
               alt=""
               className="w-full h-full object-cover scale-[1.5] blur-[100px] opacity-25 saturate-150"
@@ -55,7 +55,7 @@ const PlaylistPageBase = () => {
             onClick={playAll}
           >
             {cover ? (
-              <img
+              <ScdnImg
                 src={cover}
                 alt={playlist.title}
                 className="w-full h-full object-cover transition-transform duration-500 ease-[var(--ease-apple)] group-hover/cover:scale-[1.04]"
@@ -112,7 +112,7 @@ const PlaylistPageBase = () => {
               onClick={() => navigate(`/user/${encodeURIComponent(playlist.user.urn)}`)}
             >
               {playlist.user.avatar_url && (
-                <img
+                <ScdnImg
                   src={replaceArtSize(playlist.user.avatar_url, 'small') ?? ''}
                   alt=""
                   className="w-6 h-6 rounded-full ring-1 ring-white/[0.08] group-hover/artist:ring-white/[0.15] transition-all duration-150"
