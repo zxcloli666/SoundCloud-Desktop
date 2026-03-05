@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { SoundcloudService } from '../soundcloud/soundcloud.service.js';
-import type {
+import {
   ScActivity,
   ScMe,
   ScPaginatedResponse,

@@ -1,7 +1,7 @@
 import type { Readable } from 'node:stream';
 import { Injectable } from '@nestjs/common';
 import { SoundcloudService } from '../soundcloud/soundcloud.service.js';
-import type {
+import {
   ScComment,
   ScPaginatedResponse,
   ScStreams,

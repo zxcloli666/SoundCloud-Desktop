@@ -3,6 +3,7 @@ import { NestFactory } from '@nestjs/core';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module.js';
+import { SoundcloudExceptionFilter } from './common/filters/soundcloud-exception.filter.js';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter());
@@ -20,6 +21,7 @@ async function bootstrap() {
       forbidNonWhitelisted: false,
     }),
   );
+  app.useGlobalFilters(new SoundcloudExceptionFilter());
 
   const swaggerConfig = new DocumentBuilder()
     .setTitle('SoundCloud Desktop API')

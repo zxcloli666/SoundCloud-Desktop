@@ -1,6 +1,6 @@
 import { Readable } from 'node:stream';
 import { HttpService } from '@nestjs/axios';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { AxiosRequestConfig } from 'axios';
 import { firstValueFrom } from 'rxjs';
@@ -101,17 +101,10 @@ export class SoundcloudService {
       params,
     };
 
-    try {
-      const { data } = await firstValueFrom(
-        this.httpService.get<T>(`${this.apiBaseUrl}${path}`, config),
-      );
-      return data;
-    } catch (error: any) {
-      if (error?.response?.status === 401) {
-        throw new UnauthorizedException('SoundCloud token expired or invalid');
-      }
-      throw error;
-    }
+    const { data } = await firstValueFrom(
+      this.httpService.get<T>(`${this.apiBaseUrl}${path}`, config),
+    );
+    return data;
   }
 
   async apiPost<T>(
@@ -130,17 +123,10 @@ export class SoundcloudService {
       },
     };
 
-    try {
-      const { data } = await firstValueFrom(
-        this.httpService.post<T>(`${this.apiBaseUrl}${path}`, body, mergedConfig),
-      );
-      return data;
-    } catch (error: any) {
-      if (error?.response?.status === 401) {
-        throw new UnauthorizedException('SoundCloud token expired or invalid');
-      }
-      throw error;
-    }
+    const { data } = await firstValueFrom(
+      this.httpService.post<T>(`${this.apiBaseUrl}${path}`, body, mergedConfig),
+    );
+    return data;
   }
 
   async apiPut<T>(
@@ -159,17 +145,10 @@ export class SoundcloudService {
       },
     };
 
-    try {
-      const { data } = await firstValueFrom(
-        this.httpService.put<T>(`${this.apiBaseUrl}${path}`, body, mergedConfig),
-      );
-      return data;
-    } catch (error: any) {
-      if (error?.response?.status === 401) {
-        throw new UnauthorizedException('SoundCloud token expired or invalid');
-      }
-      throw error;
-    }
+    const { data } = await firstValueFrom(
+      this.httpService.put<T>(`${this.apiBaseUrl}${path}`, body, mergedConfig),
+    );
+    return data;
   }
 
   async proxyStream(
@@ -211,19 +190,12 @@ export class SoundcloudService {
       validateStatus: (status) => status >= 200 && status < 300,
     };
 
-    try {
-      const { data, status } = await firstValueFrom(
-        this.httpService.delete<T>(`${this.apiBaseUrl}${path}`, config),
-      );
-      if (status === 204 || data === undefined || data === null || data === '') {
-        return null as T;
-      }
-      return data;
-    } catch (error: any) {
-      if (error?.response?.status === 401) {
-        throw new UnauthorizedException('SoundCloud token expired or invalid');
-      }
-      throw error;
+    const { data, status } = await firstValueFrom(
+      this.httpService.delete<T>(`${this.apiBaseUrl}${path}`, config),
+    );
+    if (status === 204 || data === undefined || data === null || data === '') {
+      return null as T;
     }
+    return data;
   }
 }

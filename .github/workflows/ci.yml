@@ -43,17 +43,21 @@ jobs:
         run: pnpm build
 
   desktop:
-    name: Desktop
+    if: "!contains(github.event.head_commit.message, '!release')"
+    name: Desktop (${{ matrix.job_name }})
     strategy:
       fail-fast: false
       matrix:
         include:
           - platform: ubuntu-22.04
             args: ""
+            job_name: linux
           - platform: macos-latest
             args: "--target aarch64-apple-darwin"
+            job_name: macos
           - platform: windows-latest
             args: ""
+            job_name: windows
     runs-on: ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@v4
@@ -93,3 +97,56 @@ jobs:
         with:
           projectPath: desktop
           args: ${{ matrix.args }}
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-${{ matrix.job_name }}
+          retention-days: 3
+          path: |
+            desktop/src-tauri/target/**/release/bundle/deb/*.deb
+            desktop/src-tauri/target/**/release/bundle/rpm/*.rpm
+            desktop/src-tauri/target/**/release/bundle/appimage/*.AppImage
+            desktop/src-tauri/target/**/release/bundle/nsis/*.exe
+            desktop/src-tauri/target/**/release/bundle/msi/*.msi
+            desktop/src-tauri/target/**/release/bundle/dmg/*.dmg
+            desktop/src-tauri/target/**/release/bundle/macos/*.tar.gz
+
+  flatpak:
+    if: "!contains(github.event.head_commit.message, '!release')"
+    name: Flatpak
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/flathub-infra/flatpak-github-actions:gnome-49
+      options: --privileged
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install flatpak-builder-tools
+        run: |
+          git clone --depth=1 https://github.com/flatpak/flatpak-builder-tools.git /tmp/fbt
+          pip3 install --root-user-action=ignore --break-system-packages --prefix=/app tomlkit
+          pip3 install --root-user-action=ignore --break-system-packages --prefix=/app /tmp/fbt/node
+
+      - name: Generate offline sources
+        run: |
+          cd desktop && npm install --package-lock-only --legacy-peer-deps && cd ..
+          flatpak-node-generator npm desktop/package-lock.json -o .github/flatpak/node-sources.json
+          python3 /tmp/fbt/cargo/flatpak-cargo-generator.py desktop/src-tauri/Cargo.lock -o .github/flatpak/cargo-sources.json
+
+      - name: Build Flatpak
+        uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+        with:
+          manifest-path: .github/flatpak/io.github.zxcloli666.SoundcloudDesktop.yml
+          bundle: soundcloud-desktop.flatpak
+
+      - name: Upload Flatpak
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-flatpak
+          retention-days: 3
+          path: soundcloud-desktop.flatpak
