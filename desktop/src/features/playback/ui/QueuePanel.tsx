@@ -259,7 +259,7 @@ export const QueuePanel = React.memo(
         >
           {/* Header */}
           <div className="flex items-center justify-between px-5 pt-5 pb-3">
-            <h2 className="text-base font-semibold tracking-tight">{t('playback.queue')}</h2>
+            <h2 className="text-base font-semibold tracking-tight">{t('player.queue')}</h2>
             <div className="flex items-center gap-1">
               {queue.length > 0 && (
                 <button
@@ -268,7 +268,7 @@ export const QueuePanel = React.memo(
                   className="h-7 px-2.5 rounded-lg text-[11px] text-white/30 hover:text-white/60 hover:bg-white/[0.06] transition-all duration-150 cursor-pointer flex items-center gap-1.5"
                 >
                   <Trash2 size={12} />
-                  {t('playback.clearQueue')}
+                  {t('player.clearQueue')}
                 </button>
               )}
               <button
@@ -285,7 +285,7 @@ export const QueuePanel = React.memo(
           {currentTrack && (
             <div className="px-4 pb-2">
               <p className="text-[10px] text-white/25 uppercase tracking-wider font-medium mb-2 px-1">
-                {t('playback.nowPlaying')}
+                {t('player.nowPlaying')}
               </p>
               <NowPlayingItem />
             </div>
@@ -296,7 +296,7 @@ export const QueuePanel = React.memo(
             {upNextCount > 0 && (
               <>
                 <p className="text-[10px] text-white/25 uppercase tracking-wider font-medium mb-2 mt-3 px-1">
-                  {t('playback.upNext')} · {upNextCount}
+                  {t('player.upNext')} · {upNextCount}
                 </p>
                 <DraggableQueue startIndex={queueIndex + 1} />
               </>
