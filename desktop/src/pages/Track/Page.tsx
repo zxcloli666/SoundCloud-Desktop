@@ -17,17 +17,13 @@ import {
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useRelatedTracks, useTrackComments, useTrackFavoriters } from '../../api/index.ts';
+import type { Track } from '../../api/types.ts';
 import { ScdnImg } from '../../components/common/ScdnImg.tsx';
-import { api } from '../../lib/api.ts';
-import { useTrackPlayback } from '../../lib/hooks/useTrackPlayback.ts';
-import {
-  useInfiniteScroll,
-  useRelatedTracks,
-  useTrackComments,
-  useTrackFavoriters,
-} from '../../lib/hooks.ts';
+import { useTrackPlayback } from '../../features/playback/index.ts';
+import { api } from '../../lib/http.ts';
+import { useInfiniteScroll } from '../../lib/useInfiniteScroll.ts';
 import { dateFormatted, replaceArtSize, toCompactCount, toHourMinSec } from '../../lib/utils.ts';
-import type { Track } from '../../stores/player.ts';
 import { TrackCommentForm } from './TrackCommentForm.tsx';
 import { TrackCommentItem } from './TrackCommentItem.tsx';
 import { TrackLikeButton } from './TrackLikeButton.tsx';

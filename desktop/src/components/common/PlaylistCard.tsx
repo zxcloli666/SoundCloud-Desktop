@@ -2,9 +2,9 @@ import { ListMusic } from 'lucide-react';
 import React from 'react';
 
 import { useNavigate } from 'react-router-dom';
-import type { Playlist } from '../../lib/hooks.ts';
+import type { Playlist } from '../../api';
 import { replaceArtSize } from '../../lib/utils.ts';
-import { ScdnImg } from '../common/ScdnImg.tsx';
+import { ScdnImg } from './ScdnImg.tsx';
 
 const PlaylistCardBase = ({ playlist }: { playlist: Playlist }) => {
   const navigate = useNavigate();

@@ -1,25 +1,10 @@
-import React, { useState } from 'react';
-import { api } from '../../lib/api.ts';
 import { Repeat2 } from 'lucide-react';
+import React from 'react';
+import { useRepostTrack } from '../../components/track/useRepostTrack.ts';
 import { toCompactCount } from '../../lib/utils.ts';
 
 const TrackRepostButtonBase = ({ trackUrn, count }: { trackUrn: string; count?: number }) => {
-  const [reposted, setReposted] = useState(false);
-  const [localCount, setLocalCount] = useState(count ?? 0);
-
-  const toggle = async () => {
-    const next = !reposted;
-    setReposted(next);
-    setLocalCount((c) => c + (next ? 1 : -1));
-    try {
-      await api(`/reposts/tracks/${encodeURIComponent(trackUrn)}`, {
-        method: next ? 'POST' : 'DELETE',
-      });
-    } catch {
-      setReposted(!next);
-      setLocalCount((c) => c + (next ? -1 : 1));
-    }
-  };
+  const { reposted, count: localCount, toggle } = useRepostTrack(trackUrn, count ?? 0);
 
   return (
     <button

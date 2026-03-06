@@ -11,11 +11,11 @@ import {
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useShallow } from 'zustand/shallow';
-import { useCdnUrl } from '../../lib/hooks/useCdnUrl.ts';
-import { replaceArtSize } from '../../lib/utils.ts';
-import { usePlayerStore } from '../../stores/player.ts';
-import { ScdnImg } from '../common/ScdnImg.tsx';
-import { LikeButton } from '../track/LikeButton.tsx';
+import { ScdnImg } from '../../../components/common/ScdnImg.tsx';
+import { LikeButton } from '../../../components/track/LikeButton.tsx';
+import { useCdnUrl } from '../../../lib/useCdnUrl.ts';
+import { replaceArtSize } from '../../../lib/utils.ts';
+import { usePlayerStore } from '../../../stores/player.ts';
 import { ControlButton } from './ControlButton.tsx';
 import { ControlVolumeButton } from './ControlVolumeButton.tsx';
 import { ProgressSlider } from './ProgressSlider.tsx';
@@ -118,7 +118,10 @@ export const NowPlayingBarBase = ({
                   {currentTrack.user.username}
                 </p>
               </div>
-              <LikeButton trackUrn={currentTrack.urn} />
+              <LikeButton
+                trackUrn={currentTrack.urn}
+                initialLiked={currentTrack.user_favorite ?? false}
+              />
             </>
           ) : (
             <p className="text-[13px] text-white/15">Not playing</p>

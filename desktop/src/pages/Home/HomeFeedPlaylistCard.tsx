@@ -3,9 +3,10 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useShallow } from 'zustand/shallow';
-import type { FeedItem } from '../../lib/hooks.ts';
+import type { FeedItem } from '../../api/index.ts';
+import type { Track } from '../../api/types.ts';
 import { replaceArtSize, toRelativeTime } from '../../lib/utils.ts';
-import { type Track, usePlayerStore } from '../../stores/player.ts';
+import { usePlayerStore } from '../../stores/player.ts';
 
 const FeedPlaylistCardBase = ({ item }: { item: FeedItem }) => {
   const { t } = useTranslation();
@@ -49,7 +50,7 @@ const FeedPlaylistCardBase = ({ item }: { item: FeedItem }) => {
     // Fetch tracks from API
     setLoading(true);
     try {
-      const data = await import('../../lib/api.ts').then((m) =>
+      const data = await import('../../lib/http.ts').then((m) =>
         m.api<{ collection: Track[] }>(`/playlists/${encodeURIComponent(origin.urn)}/tracks`),
       );
       const tracks = data.collection;

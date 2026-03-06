@@ -1,7 +1,7 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { usePlayerStore } from '../../stores/player.ts';
-import { useShallow } from 'zustand/shallow';
 import { throttle } from 'lodash';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useShallow } from 'zustand/shallow';
+import { usePlayerStore } from '../../../stores/player.ts';
 
 const ProgressSliderBase = () => {
   const { duration: max, seek: onChange } = usePlayerStore(
@@ -12,13 +12,16 @@ const ProgressSliderBase = () => {
   );
 
   const [value, setValue] = useState(() => usePlayerStore.getState().progress);
+  const [dragging, setDragging] = useState(false);
+  const draggingRef = useRef(false);
 
   useEffect(() => {
-    const throttledUpdate = throttle((newProgress) => {
+    const throttledUpdate = throttle((newProgress: number) => {
       setValue(newProgress);
-    }, 200);
+    }, 60);
 
     const unsubscribe = usePlayerStore.subscribe((state, prevState) => {
+      if (draggingRef.current) return;
       if (state.progress !== prevState.progress) {
         throttledUpdate(state.progress);
       }
@@ -31,7 +34,6 @@ const ProgressSliderBase = () => {
   }, []);
 
   const ref = useRef<HTMLDivElement>(null);
-  const [dragging, setDragging] = useState(false);
   const [hoverRatio, setHoverRatio] = useState<number | null>(null);
 
   const ratio = max > 0 ? Math.min(value / max, 1) : 0;
@@ -46,20 +48,35 @@ const ProgressSliderBase = () => {
 
   const handlePointerDown = (e: React.PointerEvent) => {
     e.preventDefault();
+    const r = calcRatio(e.clientX);
+    draggingRef.current = true;
     setDragging(true);
-    (e.target as HTMLElement).setPointerCapture(e.pointerId);
-    onChange(calcRatio(e.clientX) * max);
+    setHoverRatio(r);
+    setValue(r * max);
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
     const r = calcRatio(e.clientX);
     setHoverRatio(r);
-    if (dragging) onChange(r * max);
+    if (draggingRef.current) {
+      setValue(r * max);
+    }
   };
 
-  const handlePointerUp = () => setDragging(false);
+  const handlePointerUp = (e: React.PointerEvent) => {
+    if (!draggingRef.current) return;
+    const r = calcRatio(e.clientX);
+    const next = r * max;
+    setValue(next);
+    onChange(next);
+    draggingRef.current = false;
+    setDragging(false);
+    setHoverRatio(null);
+  };
+
   const handlePointerLeave = () => {
-    if (!dragging) setHoverRatio(null);
+    if (!draggingRef.current) setHoverRatio(null);
   };
 
   return (
@@ -69,11 +86,10 @@ const ProgressSliderBase = () => {
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerUp}
       onPointerLeave={handlePointerLeave}
     >
-      {/* Track bg */}
       <div className="absolute inset-x-0 h-[3px] rounded-full bg-white/[0.08] group-hover:h-[5px] transition-all duration-150">
-        {/* Hover preview zone (lighter, behind active) */}
         {previewRatio !== null && !dragging && previewRatio > ratio && (
           <div
             className="absolute top-0 h-full rounded-full bg-white/[0.08] transition-[width] duration-75"
@@ -83,16 +99,15 @@ const ProgressSliderBase = () => {
             }}
           />
         )}
-        {/* Active fill */}
+
         <div
-          className="h-full rounded-full bg-accent transition-[width] duration-75"
+          className={`h-full rounded-full bg-accent ${dragging ? '' : 'transition-[width] duration-50 ease-linear'}`}
           style={{ width: `${activeRatio * 100}%` }}
         />
       </div>
 
-      {/* Thumb */}
       <div
-        className={`absolute top-1/2 -translate-y-1/2 -translate-x-1/2 rounded-full transition-all duration-150 ${
+        className={`absolute top-1/2 -translate-y-1/2 -translate-x-1/2 rounded-full ${
           dragging
             ? 'w-4 h-4 scale-100 opacity-100 bg-accent shadow-[0_0_12px_var(--color-accent-glow)]'
             : 'w-3 h-3 scale-0 opacity-0 group-hover:scale-100 group-hover:opacity-100 bg-accent shadow-[0_0_10px_var(--color-accent-glow)]'

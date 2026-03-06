@@ -1,13 +1,10 @@
-import { useQuery } from '@tanstack/react-query';
 import { Heart } from 'lucide-react';
-import { api } from '../../lib/api.ts';
-import type { Track } from '../../stores/player.ts';
-import { useTrackLike } from '../../hooks/useTrackLike.ts';
 import React from 'react';
+import { useTrackLike } from './useTrackLike.ts';
 
 type LikeButtonProps = {
   trackUrn: string;
-  initialLiked?: boolean;
+  initialLiked: boolean;
   className?: string;
   stopPropagation?: boolean;
 };
@@ -18,17 +15,7 @@ const LikeButtonBase = ({
   className = '',
   stopPropagation = true,
 }: LikeButtonProps) => {
-  const { data: trackData } = useQuery({
-    queryKey: ['track', trackUrn],
-    queryFn: () => api<Track>(`/tracks/${encodeURIComponent(trackUrn)}`),
-    enabled: !!trackUrn && initialLiked === undefined,
-    staleTime: 30_000,
-  });
-
-  const { isLiked, toggle } = useTrackLike(
-    trackUrn,
-    initialLiked ?? trackData?.user_favorite ?? false,
-  );
+  const { isLiked, toggle } = useTrackLike(trackUrn, initialLiked);
 
   const onClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     if (stopPropagation) e.stopPropagation();

@@ -1,16 +1,12 @@
 import { Loader2, Search as SearchIcon, X } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSearchPlaylists, useSearchTracks, useSearchUsers } from '../../api/index.ts';
+import { PlaylistCard } from '../../components/common/PlaylistCard.tsx';
 import { SegmentedTabs } from '../../components/common/SegmentedTabs.tsx';
-import { PlaylistCard } from '../../components/playlist/PlaylistCard.tsx';
 import { TrackRow } from '../../components/track/TrackRow.tsx';
 import { UserCard } from '../../components/user/UserCard.tsx';
-import {
-  useInfiniteScroll,
-  useSearchPlaylists,
-  useSearchTracks,
-  useSearchUsers,
-} from '../../lib/hooks.ts';
+import { useInfiniteScroll } from '../../lib/useInfiniteScroll.ts';
 
 type TabsId = 'tracks' | 'playlists' | 'users';
 
@@ -152,15 +148,7 @@ const SearchBase = () => {
 
       {/* ── Tabs ── */}
       {debouncedQuery && (
-        <div className="flex items-center justify-center gap-1.5 p-1.5 bg-white/[0.02] border border-white/[0.05] rounded-2xl w-fit backdrop-blur-2xl shadow-lg mx-auto">
-          <SegmentedTabs
-            items={tabs}
-            value={activeTab}
-            onChange={setActiveTab}
-            align="start"
-            className="mx-auto md:mx-0"
-          />
-        </div>
+        <SegmentedTabs items={tabs} value={activeTab} onChange={setActiveTab} align="center" />
       )}
 
       {/* ── Content ── */}

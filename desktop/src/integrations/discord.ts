@@ -1,8 +1,9 @@
 import { invoke } from '@tauri-apps/api/core';
-import { usePlayerStore } from '../stores/player';
-import type { Track } from '../stores/player';
+import type { Track } from '../api/types.ts';
+import { usePlayerStore } from '../stores/player.ts';
 
 let connected = false;
+let initialized = false;
 
 async function ensureConnected(): Promise<boolean> {
   if (connected) return true;
@@ -55,24 +56,29 @@ async function clearPresence() {
 let lastUrn: string | null = null;
 let lastPlaying = false;
 
-usePlayerStore.subscribe((state) => {
-  const { currentTrack, isPlaying, progress } = state;
+export function initDiscordIntegration() {
+  if (initialized) return;
+  initialized = true;
 
-  const trackChanged = currentTrack?.urn !== lastUrn;
-  const playChanged = isPlaying !== lastPlaying;
+  usePlayerStore.subscribe((state) => {
+    const { currentTrack, isPlaying, progress } = state;
 
-  if (!currentTrack || !isPlaying) {
-    if (lastPlaying || trackChanged) {
-      clearPresence();
+    const trackChanged = currentTrack?.urn !== lastUrn;
+    const playChanged = isPlaying !== lastPlaying;
+
+    if (!currentTrack || !isPlaying) {
+      if (lastPlaying || trackChanged) {
+        clearPresence();
+      }
+      lastUrn = currentTrack?.urn ?? null;
+      lastPlaying = false;
+      return;
     }
-    lastUrn = currentTrack?.urn ?? null;
-    lastPlaying = false;
-    return;
-  }
 
-  if (trackChanged || playChanged) {
-    lastUrn = currentTrack.urn;
-    lastPlaying = isPlaying;
-    updatePresence(currentTrack, progress);
-  }
-});
+    if (trackChanged || playChanged) {
+      lastUrn = currentTrack.urn;
+      lastPlaying = isPlaying;
+      updatePresence(currentTrack, progress);
+    }
+  });
+}

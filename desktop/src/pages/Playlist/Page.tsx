@@ -2,12 +2,12 @@ import { Calendar, Clock, Heart, ListMusic, Loader2, Pause, Play, Shuffle } from
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
+import { usePlaylist, usePlaylistTracks } from '../../api/index.ts';
+import type { Track } from '../../api/types.ts';
 import { ScdnImg } from '../../components/common/ScdnImg.tsx';
 import { TrackRow } from '../../components/track/TrackRow.tsx';
-import { useQueuePlayback } from '../../lib/hooks/useQueuePlayback.ts';
-import { usePlaylist, usePlaylistTracks } from '../../lib/hooks.ts';
+import { useQueuePlayback } from '../../features/playback/index.ts';
 import { dateFormatted, replaceArtSize, toCompactCount, toHourMinSec } from '../../lib/utils.ts';
-import type { Track } from '../../stores/player.ts';
 
 const PlaylistPageBase = () => {
   const { urn } = useParams<{ urn: string }>();

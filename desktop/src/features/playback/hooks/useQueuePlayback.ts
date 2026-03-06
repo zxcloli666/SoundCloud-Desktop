@@ -1,6 +1,6 @@
-import { type Track, usePlayerStore } from '../../stores/player.ts';
-import { useShallow } from 'zustand/shallow';
 import { useCallback, useMemo } from 'react';
+import type { Track } from '../../../api/types.ts';
+import { usePlaybackControls } from './usePlaybackControls.ts';
 
 function shuffleArray<T>(arr: T[]): T[] {
   const a = [...arr];
@@ -12,15 +12,7 @@ function shuffleArray<T>(arr: T[]): T[] {
 }
 
 export function useQueuePlayback(tracks: Track[]) {
-  const { play, pause, resume, currentTrack, isPlaying } = usePlayerStore(
-    useShallow((s) => ({
-      play: s.play,
-      pause: s.pause,
-      resume: s.resume,
-      currentTrack: s.currentTrack,
-      isPlaying: s.isPlaying,
-    })),
-  );
+  const { play, pause, resume, currentTrack, isPlaying } = usePlaybackControls();
 
   const isCurrentInQueue = useMemo(() => {
     const urn = currentTrack?.urn;

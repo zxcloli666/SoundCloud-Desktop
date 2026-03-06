@@ -1,8 +1,8 @@
 import { Clock } from 'lucide-react';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import type { Comment } from '../../api/index.ts';
 import { ScdnImg } from '../../components/common/ScdnImg.tsx';
-import type { Comment } from '../../lib/hooks.ts';
 import { replaceArtSize, toHourMinSec, toRelativeTime } from '../../lib/utils.ts';
 
 const TrackCommentItemBase = ({ comment }: { comment: Comment }) => {

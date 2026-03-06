@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
 import { fetch } from '@tauri-apps/plugin-http';
 import { openUrl } from '@tauri-apps/plugin-opener';
-import { X, ExternalLink, Sparkles } from 'lucide-react';
+import { ExternalLink, Sparkles, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import Markdown from 'react-markdown';
-import { GITHUB_OWNER, GITHUB_REPO, APP_VERSION } from '../lib/constants';
+import { APP_VERSION, GITHUB_OWNER, GITHUB_REPO } from '../lib/constants.ts';
 
 interface GithubRelease {
   tag_name: string;

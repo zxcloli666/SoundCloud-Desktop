@@ -1,5 +1,5 @@
-import { Minus, Square, X, Disc3 } from 'lucide-react';
 import { getCurrentWindow } from '@tauri-apps/api/window';
+import { Disc3, Minus, Square, X } from 'lucide-react';
 import React from 'react';
 
 const TitlebarBase = () => {

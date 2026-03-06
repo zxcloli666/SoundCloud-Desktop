@@ -3,9 +3,9 @@ import { openUrl } from '@tauri-apps/plugin-opener';
 import { Disc3 } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { api } from '../../lib/api.ts';
 import { API_BASE } from '../../lib/constants.ts';
-import { queryClient } from '../../main.tsx';
+import { api } from '../../lib/http.ts';
+import { queryClient } from '../../lib/queryClient.ts';
 import { useAuthStore } from '../../stores/auth.ts';
 
 interface LoginResponse {
@@ -15,6 +15,18 @@ interface LoginResponse {
 
 interface SessionResponse {
   authenticated: boolean;
+  sessionId?: string;
+  soundcloudUserId?: string | null;
+  expiresAt?: string;
+}
+function isSessionReady(data: SessionResponse, expectedSessionId: string) {
+  if (!data.authenticated) return false;
+  if (!data.sessionId || data.sessionId !== expectedSessionId) return false;
+
+  const exp = data.expiresAt ? new Date(data.expiresAt).getTime() : 0;
+  if (!Number.isFinite(exp) || exp <= Date.now() + 5000) return false;
+
+  return true;
 }
 
 export function Login() {
@@ -23,26 +35,50 @@ export function Login() {
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
+    console.log('[Auth/Login] Start login flow');
     setLoading(true);
     try {
       const { url, sessionId } = await api<LoginResponse>('/auth/login');
+      console.log('[Auth/Login] Received login URL and sessionId', {
+        sessionId: `${sessionId.slice(0, 8)}...`,
+        url,
+      });
       await openUrl(url);
+      console.log('[Auth/Login] Browser opened');
 
       const poll = setInterval(async () => {
         try {
+          console.log('[Auth/Login] Poll /auth/session');
           const res = await fetch(`${API_BASE}/auth/session`, {
             headers: { 'x-session-id': sessionId },
           });
+          console.log('[Auth/Login] Poll response status', res.status);
+          if (!res.ok) {
+            const text = await res.text().catch(() => '<failed to read body>');
+            console.warn('[Auth/Login] Poll non-OK response', text);
+            return;
+          }
           const data: SessionResponse = await res.json();
-          if (data.authenticated) {
+          console.log('[Auth/Login] Poll payload', data);
+          if (isSessionReady(data, sessionId)) {
+            console.log('[Auth/Login] Session authenticated, finalizing login');
             clearInterval(poll);
             setSession(sessionId);
-            await fetchUser();
-            queryClient.invalidateQueries();
+            await fetchUser().catch((err) => {
+              console.error('[Auth/Login] fetchUser failed', err);
+              throw err;
+            });
+            await queryClient.invalidateQueries();
+            console.log('[Auth/Login] Login flow completed');
+          } else {
+            console.log('[Auth/Login] Session not ready yet, continue polling');
           }
-        } catch {}
+        } catch (err) {
+          console.error('[Auth/Login] Poll failed', err);
+        }
       }, 2000);
-    } catch {
+    } catch (err) {
+      console.error('[Auth/Login] Login flow failed', err);
       setLoading(false);
     }
   };

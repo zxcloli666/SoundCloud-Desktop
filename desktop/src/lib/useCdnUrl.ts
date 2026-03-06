@@ -1,13 +1,5 @@
 import { useEffect, useState } from 'react';
-import { isCdnBlocked, markCdnBlocked, proxiedUrl } from '../cdn.ts';
-
-function isSndcdnHost(url: string): boolean {
-  try {
-    return new URL(url).hostname.endsWith('.sndcdn.com');
-  } catch {
-    return false;
-  }
-}
+import { isCdnBlocked, isSndcdnHost, markCdnBlocked, proxiedUrl } from './cdn.ts';
 
 export function useCdnUrl(url: string | null | undefined): string | null {
   const [useProxy, setUseProxy] = useState(() => isCdnBlocked());

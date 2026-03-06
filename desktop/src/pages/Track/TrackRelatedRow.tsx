@@ -2,10 +2,9 @@ import { Headphones, Music, Pause, Play } from 'lucide-react';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ScdnImg } from '../../components/common/ScdnImg.tsx';
-import { preloadTrack } from '../../lib/audio.ts';
-import { useTrackPlayback } from '../../lib/hooks/useTrackPlayback.ts';
+import { preloadTrack, useTrackPlayback } from '../../features/playback/index.ts';
 import { replaceArtSize, toCompactCount, toMinSec } from '../../lib/utils.ts';
-import type { Track } from '../../stores/player.ts';
+import type { Track } from '../../api/types.ts';
 
 export const TrackRelatedRowBase = ({ track, queue }: { track: Track; queue: Track[] }) => {
   const { isCurrent, isCurrentPlaying, togglePlay } = useTrackPlayback(track, queue);

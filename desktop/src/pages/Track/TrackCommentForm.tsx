@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { usePostComment } from '../../lib/hooks.ts';
-import { usePlayerStore } from '../../stores/player.ts';
 import { Loader2, Send } from 'lucide-react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { usePostComment } from '../../api/index.ts';
+import { usePlayerStore } from '../../stores/player.ts';
 
 const TrackCommentFormBase = ({ trackUrn }: { trackUrn: string }) => {
   const { t } = useTranslation();

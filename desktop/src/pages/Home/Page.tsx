@@ -3,19 +3,19 @@ import type React from 'react';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { HorizontalScroll } from '../../components/common/HorizontalScroll.tsx';
-import { Skeleton } from '../../components/common/Skeleton.tsx';
-import { TrackCard } from '../../components/track/TrackCard.tsx';
 import {
   useFeed,
   useFollowingTracks,
   useGenreTracks,
-  useInfiniteScroll,
   useLikedTracks,
   useRecommendedTracks,
-} from '../../lib/hooks.ts';
+} from '../../api/index.ts';
+import type { Track } from '../../api/types.ts';
+import { HorizontalScroll } from '../../components/common/HorizontalScroll.tsx';
+import { Skeleton } from '../../components/common/Skeleton.tsx';
+import { TrackCard } from '../../components/track/TrackCard.tsx';
+import { useInfiniteScroll } from '../../lib/useInfiniteScroll.ts';
 import { useAuthStore } from '../../stores/auth.ts';
-import type { Track } from '../../stores/player.ts';
 import { FeaturedCard } from './HomeFeaturedCard.tsx';
 import { FeedPlaylistCard } from './HomeFeedPlaylistCard.tsx';
 import { FeedTrackCard } from './HomeFeedTrackCard.tsx';

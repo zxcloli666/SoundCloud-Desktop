@@ -13,18 +13,18 @@ import {
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
-import { ScdnImg } from '../../components/common/ScdnImg.tsx';
-import { SegmentedTabs } from '../../components/common/SegmentedTabs.tsx';
-import { PlaylistCard } from '../../components/playlist/PlaylistCard.tsx';
-import { TrackRow } from '../../components/track/TrackRow.tsx';
 import {
-  useInfiniteScroll,
   useUser,
   useUserLikedTracks,
   useUserPlaylists,
   useUserTracks,
   useUserWebProfiles,
-} from '../../lib/hooks.ts';
+} from '../../api/index.ts';
+import { PlaylistCard } from '../../components/common/PlaylistCard.tsx';
+import { ScdnImg } from '../../components/common/ScdnImg.tsx';
+import { SegmentedTabs } from '../../components/common/SegmentedTabs.tsx';
+import { TrackRow } from '../../components/track/TrackRow.tsx';
+import { useInfiniteScroll } from '../../lib/useInfiniteScroll.ts';
 import { dateFormatted, replaceArtSize, toCompactCount } from '../../lib/utils.ts';
 import { useAuthStore } from '../../stores/auth.ts';
 import { UserFollowButton } from './UserFollowButton.tsx';

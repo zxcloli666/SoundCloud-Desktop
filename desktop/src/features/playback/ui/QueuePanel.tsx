@@ -2,9 +2,10 @@ import { GripVertical, Pause, Play, Trash2, X } from 'lucide-react';
 import React, { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useShallow } from 'zustand/shallow';
-import { replaceArtSize } from '../../lib/utils.ts';
-import { type Track, usePlayerStore } from '../../stores/player.ts';
-import { ScdnImg } from '../common/ScdnImg.tsx';
+import type { Track } from '../../../api/types.ts';
+import { ScdnImg } from '../../../components/common/ScdnImg.tsx';
+import { replaceArtSize } from '../../../lib/utils.ts';
+import { usePlayerStore } from '../../../stores/player.ts';
 
 function formatDuration(ms: number) {
   const totalSec = Math.floor(ms / 1000);

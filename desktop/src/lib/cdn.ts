@@ -1,4 +1,4 @@
-import { API_BASE } from './constants';
+import { API_BASE } from './constants.ts';
 
 let cdnBlocked = false;
 
@@ -10,7 +10,8 @@ export function markCdnBlocked() {
   cdnBlocked = true;
 }
 
-function isSndcdnHost(url: string): boolean {
+export function isSndcdnHost(url: string | undefined): boolean {
+  if (!url) return false;
   try {
     return new URL(url).hostname.endsWith('.sndcdn.com');
   } catch {

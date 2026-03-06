@@ -1,6 +1,6 @@
 import React from 'react';
-import { usePlayerStore } from '../../stores/player.ts';
 import { useShallow } from 'zustand/shallow';
+import { usePlayerStore } from '../../../stores/player.ts';
 
 function formatTime(seconds: number) {
   if (!seconds || !Number.isFinite(seconds)) return '0:00';

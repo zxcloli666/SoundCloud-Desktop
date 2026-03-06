@@ -1,6 +1,6 @@
 import React, { useCallback, useRef, useState } from 'react';
-import { usePlayerStore } from '../../stores/player.ts';
 import { useShallow } from 'zustand/shallow';
+import { usePlayerStore } from '../../../stores/player.ts';
 
 const VolumeSliderBase = ({ className = '' }: { className?: string }) => {
   const { volume, setVolume: onChange } = usePlayerStore(

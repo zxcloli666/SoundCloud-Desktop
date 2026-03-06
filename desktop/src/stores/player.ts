@@ -1,31 +1,8 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import type { Track } from '../api/types.ts';
 
-export interface Track {
-  id: number;
-  urn: string;
-  title: string;
-  duration: number;
-  artwork_url: string | null;
-  waveform_url?: string;
-  genre?: string;
-  tag_list?: string;
-  description?: string;
-  created_at?: string;
-  comment_count?: number;
-  playback_count?: number;
-  likes_count?: number;
-  favoritings_count?: number;
-  reposts_count?: number;
-  user_favorite?: boolean;
-  user: {
-    id: number;
-    urn: string;
-    username: string;
-    avatar_url: string;
-    permalink_url: string;
-  };
-}
+export type { Track } from '../api/types.ts';
 
 type RepeatMode = 'off' | 'one' | 'all';
 

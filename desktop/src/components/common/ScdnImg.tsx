@@ -1,24 +1,14 @@
 import { useCallback, useRef, useState } from 'react';
-import { isCdnBlocked, markCdnBlocked } from '../../lib/cdn';
-import { API_BASE } from '../../lib/constants';
+import { isCdnBlocked, isSndcdnHost, markCdnBlocked } from '../../lib/cdn.ts';
+import { API_BASE } from '../../lib/constants.ts';
 
 type ScdnImgProps = React.ImgHTMLAttributes<HTMLImageElement>;
-
-function isSndcdnHost(url: string | undefined): boolean {
-  if (!url) return false;
-  try {
-    return new URL(url).hostname.endsWith('.sndcdn.com');
-  } catch {
-    return false;
-  }
-}
 
 export function ScdnImg({ src, onError, ...props }: ScdnImgProps) {
   const [useProxy, setUseProxy] = useState(() => isCdnBlocked());
   const failed = useRef(false);
 
   const sndcdn = isSndcdnHost(src);
-
   const actualSrc =
     useProxy && sndcdn ? `${API_BASE}/proxy/cdn?url=${encodeURIComponent(src!)}` : src;
 

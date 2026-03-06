@@ -1,18 +1,18 @@
 import { Heart, Loader2, Play, Users } from 'lucide-react';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ScdnImg } from '../../components/common/ScdnImg.tsx';
-import { SegmentedTabs } from '../../components/common/SegmentedTabs.tsx';
-import { PlaylistCard } from '../../components/playlist/PlaylistCard.tsx';
-import { TrackRow } from '../../components/track/TrackRow.tsx';
-import { UserCard } from '../../components/user/UserCard.tsx';
-import { useQueuePlayback } from '../../lib/hooks/useQueuePlayback.ts';
 import {
   useLikedTracks,
   useMyFollowings,
   useMyLikedPlaylists,
   useMyPlaylists,
-} from '../../lib/hooks.ts';
+} from '../../api/index.ts';
+import { PlaylistCard } from '../../components/common/PlaylistCard.tsx';
+import { ScdnImg } from '../../components/common/ScdnImg.tsx';
+import { SegmentedTabs } from '../../components/common/SegmentedTabs.tsx';
+import { TrackRow } from '../../components/track/TrackRow.tsx';
+import { UserCard } from '../../components/user/UserCard.tsx';
+import { useQueuePlayback } from '../../features/playback/index.ts';
 import { replaceArtSize, toCompactCount } from '../../lib/utils.ts';
 import { useAuthStore } from '../../stores/auth.ts';
 

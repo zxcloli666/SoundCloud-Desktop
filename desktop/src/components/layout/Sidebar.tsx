@@ -1,9 +1,9 @@
-import { NavLink } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import { Home, Search, Library, Globe } from 'lucide-react';
-import { Avatar } from '../user/Avatar.tsx';
-import { useAuthStore } from '../../stores/auth';
+import { Globe, Home, Library, Search } from 'lucide-react';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { NavLink } from 'react-router-dom';
+import { useAuthStore } from '../../stores/auth.ts';
+import { Avatar } from '../user/Avatar.tsx';
 
 const languages = [
   { code: 'en', label: 'English' },

@@ -1,12 +1,11 @@
 import { Headphones, Heart, Music, Pause, Play, Repeat2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import type { FeedItem } from '../../api/index.ts';
+import type { Track } from '../../api/types.ts';
 import { ScdnImg } from '../../components/common/ScdnImg.tsx';
-import { preloadTrack } from '../../lib/audio.ts';
-import { useTrackPlayback } from '../../lib/hooks/useTrackPlayback.ts';
-import type { FeedItem } from '../../lib/hooks.ts';
+import { preloadTrack, useTrackPlayback } from '../../features/playback/index.ts';
 import { replaceArtSize, toCompactCount, toMinSec, toRelativeTime } from '../../lib/utils.ts';
-import type { Track } from '../../stores/player.ts';
 
 export function FeaturedCard({ item, queue }: { item: FeedItem; queue: Track[] }) {
   const { t } = useTranslation();

@@ -1,7 +1,7 @@
-import React from 'react';
-import { usePlayerStore } from '../../stores/player.ts';
-import { useShallow } from 'zustand/shallow';
 import { Volume1, Volume2, VolumeX } from 'lucide-react';
+import React from 'react';
+import { useShallow } from 'zustand/shallow';
+import { usePlayerStore } from '../../../stores/player.ts';
 
 const ControlVolumeButtonBase = ({ size = 'default' }: { size?: 'default' | 'sm' }) => {
   const { setVolume, volume } = usePlayerStore(

@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
-import { useCdnUrl } from '../../lib/hooks/useCdnUrl.ts';
+import { NowPlayingBar, QueuePanel } from '../../features/playback/index.ts';
+import { useCdnUrl } from '../../lib/useCdnUrl.ts';
 import { replaceArtSize } from '../../lib/utils.ts';
-import { usePlayerStore } from '../../stores/player';
-import { NowPlayingBar } from '../playback/NowPlayingBar.tsx';
-import { QueuePanel } from '../playback/QueuePanel.tsx';
+import { usePlayerStore } from '../../stores/player.ts';
 import { Sidebar } from './Sidebar';
 import { Titlebar } from './Titlebar';
 

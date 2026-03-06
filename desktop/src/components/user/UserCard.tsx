@@ -1,7 +1,7 @@
 import { User, Users } from 'lucide-react';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { SCUser } from '../../lib/hooks.ts';
+import type { SCUser } from '../../api/index.ts';
 import { replaceArtSize, toCompactCount } from '../../lib/utils.ts';
 import { ScdnImg } from '../common/ScdnImg.tsx';
 

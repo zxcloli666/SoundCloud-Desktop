@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { useShallow } from 'zustand/shallow';
-import { AppShell } from './components/layout/AppShell';
-import { UpdateChecker } from './components/UpdateChecker';
+import { UpdateChecker } from './components/UpdateChecker.tsx';
+import { AppShell } from './components/layout/AppShell.tsx';
+import { AudioRuntime } from './features/playback/index.ts';
 import { Home } from './pages/Home/Page.tsx';
 import { Library } from './pages/Library/Page.tsx';
 import { Login } from './pages/Login/Page.tsx';
@@ -24,11 +25,19 @@ export default function App() {
   const [checking, setChecking] = useState(true);
 
   useEffect(() => {
+    console.log('[Auth/App] auth gate effect', { hasSessionId: !!sessionId });
     if (sessionId) {
       fetchUser()
-        .catch(() => useAuthStore.getState().logout())
-        .finally(() => setChecking(false));
+        .catch((err) => {
+          console.error('[Auth/App] fetchUser from gate failed, logging out', err);
+          useAuthStore.getState().logout();
+        })
+        .finally(() => {
+          console.log('[Auth/App] auth gate done (session branch)');
+          setChecking(false);
+        });
     } else {
+      console.log('[Auth/App] no sessionId, skip fetchUser');
       setChecking(false);
     }
   }, [sessionId, fetchUser]);
@@ -47,6 +56,7 @@ export default function App() {
 
   return (
     <BrowserRouter>
+      <AudioRuntime />
       <Toaster
         theme="dark"
         position="bottom-right"
