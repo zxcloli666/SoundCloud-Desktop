@@ -1,4 +1,4 @@
-use tauri::State;
+use tauri::{AppHandle, Manager, State};
 
 use crate::audio::device;
 use crate::audio::engine;
@@ -7,11 +7,18 @@ use crate::audio::timing;
 use crate::audio::types::{AudioLoadResult, AudioSink};
 
 #[tauri::command]
-pub fn audio_load_file(
+pub async fn audio_load_file(
     path: String,
+    cache_key: Option<String>,
+    app: AppHandle,
     state: State<'_, AudioState>,
 ) -> Result<AudioLoadResult, String> {
-    engine::load_file(path, state)
+    let normalization_cache_dir = app
+        .path()
+        .app_cache_dir()
+        .ok()
+        .map(|dir| dir.join("audio-normalization"));
+    engine::load_file(path, normalization_cache_dir, cache_key, state).await
 }
 
 #[tauri::command]
@@ -19,9 +26,24 @@ pub async fn audio_load_url(
     url: String,
     session_id: Option<String>,
     cache_path: Option<String>,
+    cache_key: Option<String>,
+    app: AppHandle,
     state: State<'_, AudioState>,
 ) -> Result<AudioLoadResult, String> {
-    engine::load_url(url, session_id, cache_path, state).await
+    let normalization_cache_dir = app
+        .path()
+        .app_cache_dir()
+        .ok()
+        .map(|dir| dir.join("audio-normalization"));
+    engine::load_url(
+        url,
+        session_id,
+        cache_path,
+        normalization_cache_dir,
+        cache_key,
+        state,
+    )
+    .await
 }
 
 #[tauri::command]

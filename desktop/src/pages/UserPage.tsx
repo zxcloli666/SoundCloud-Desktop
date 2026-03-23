@@ -143,7 +143,7 @@ const TrackRow = React.memo(
 
     return (
       <div
-        className={`group flex items-center gap-4 px-4 py-3 rounded-2xl transition-all duration-300 ease-[var(--ease-apple)] ${
+        className={`group flex items-center gap-4 px-4 py-3 rounded-2xl transition-all duration-300 ease-[var(--ease-apple)] select-none ${
           isThis
             ? 'bg-accent/[0.06] ring-1 ring-accent/20 shadow-[inset_0_0_20px_rgba(255,85,0,0.05)]'
             : 'hover:bg-white/[0.04]'
@@ -267,7 +267,7 @@ const UserTracksTab = React.memo(function UserTracksTab({ urn }: { urn: string }
       ) : (
         <VirtualList
           items={tracksQuery.tracks}
-          rowHeight={96}
+          rowHeight={68}
           overscan={8}
           className="flex flex-col gap-1"
           disabled={tracksQuery.tracks.length < 40}
@@ -330,7 +330,7 @@ const UserPopularTab = React.memo(function UserPopularTab({ urn }: { urn: string
       ) : (
         <VirtualList
           items={visibleTracks}
-          rowHeight={96}
+          rowHeight={68}
           overscan={8}
           className="flex flex-col gap-1"
           disabled={visibleTracks.length < 40}
@@ -398,7 +398,7 @@ const UserLikesTab = React.memo(function UserLikesTab({ urn }: { urn: string }) 
       ) : (
         <VirtualList
           items={likesQuery.tracks}
-          rowHeight={96}
+          rowHeight={68}
           overscan={8}
           className="flex flex-col gap-1"
           disabled={likesQuery.tracks.length < 40}

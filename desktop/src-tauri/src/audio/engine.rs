@@ -1,32 +1,89 @@
 use std::sync::atomic::Ordering;
+use std::path::PathBuf;
 use std::time::Duration;
 
 use tauri::State;
+use tokio::task;
 
-use crate::audio::decode::create_player_from_bytes;
+use crate::audio::decode::{create_player_from_bytes, resolve_normalization_gain};
 use crate::audio::state::AudioState;
 use crate::audio::types::{AudioLoadResult, MediaCmd, EQ_BANDS};
+
+const ENDED_SUPPRESS_MS: u64 = 1200;
+
+pub fn now_ms() -> u64 {
+    std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|duration| duration.as_millis() as u64)
+        .unwrap_or(0)
+}
+
+fn suppress_ended_temporarily(state: &AudioState) {
+    state
+        .suppress_ended_until_ms
+        .store(now_ms() + ENDED_SUPPRESS_MS, Ordering::Relaxed);
+}
 
 fn volume_to_rodio(v: f64) -> f32 {
     (v / 100.0).clamp(0.0, 2.0) as f32
 }
 
 fn stop_current_player(state: &AudioState) {
+    suppress_ended_temporarily(state);
     let mut player = state.player.lock().unwrap();
     if let Some(old) = player.take() {
         old.stop();
     }
 }
 
-fn commit_loaded_track(state: &AudioState, bytes: Vec<u8>, new_player: rodio::Player) {
+fn commit_loaded_track(
+    state: &AudioState,
+    bytes: Vec<u8>,
+    new_player: rodio::Player,
+    normalization_gain: f32,
+) {
     *state.player.lock().unwrap() = Some(new_player);
     *state.source_bytes.lock().unwrap() = Some(bytes);
+    *state.normalization_gain.lock().unwrap() = normalization_gain;
     state.has_track.store(true, Ordering::Relaxed);
     state.ended_notified.store(false, Ordering::Relaxed);
     state.device_error.store(false, Ordering::Relaxed);
 }
 
+async fn build_player_from_bytes(
+    bytes: Vec<u8>,
+    mixer: rodio::mixer::Mixer,
+    volume: f32,
+    normalization_enabled: bool,
+    normalization_cache_dir: Option<PathBuf>,
+    normalization_cache_key: Option<String>,
+    eq_params: std::sync::Arc<std::sync::RwLock<crate::audio::types::EqParams>>,
+) -> Result<(Vec<u8>, rodio::Player, Option<f64>, f32), String> {
+    task::spawn_blocking(move || {
+        let normalization_gain = if normalization_enabled {
+            resolve_normalization_gain(
+                &bytes,
+                normalization_cache_dir.as_deref(),
+                normalization_cache_key.as_deref(),
+            )?
+        } else {
+            1.0
+        };
+        let (player, duration_secs) = create_player_from_bytes(
+            &bytes,
+            &mixer,
+            volume,
+            normalization_gain,
+            eq_params,
+        )?;
+        Ok((bytes, player, duration_secs, normalization_gain))
+    })
+    .await
+    .map_err(|e| format!("audio decode task failed: {e}"))?
+}
+
 pub fn reload_current_track(state: &AudioState) -> Result<(), String> {
+    suppress_ended_temporarily(state);
     let bytes = state.source_bytes.lock().unwrap().clone();
     let Some(bytes) = bytes else {
         return Ok(());
@@ -43,11 +100,12 @@ pub fn reload_current_track(state: &AudioState) -> Result<(), String> {
     let mixer = state.mixer.lock().unwrap().clone();
     let vol = *state.volume.lock().unwrap();
     let normalization_enabled = state.normalization_enabled.load(Ordering::Relaxed);
+    let normalization_gain = *state.normalization_gain.lock().unwrap();
     let (new_player, _) = create_player_from_bytes(
         &bytes,
         &mixer,
         vol,
-        normalization_enabled,
+        if normalization_enabled { normalization_gain } else { 1.0 },
         state.eq_params.clone(),
     )?;
 
@@ -70,23 +128,36 @@ pub fn reload_current_track(state: &AudioState) -> Result<(), String> {
     Ok(())
 }
 
-pub fn load_file(path: String, state: State<'_, AudioState>) -> Result<AudioLoadResult, String> {
-    let bytes = std::fs::read(&path).map_err(|e| format!("Failed to read {}: {}", path, e))?;
+pub async fn load_file(
+    path: String,
+    normalization_cache_dir: Option<PathBuf>,
+    normalization_cache_key: Option<String>,
+    state: State<'_, AudioState>,
+) -> Result<AudioLoadResult, String> {
+    let bytes = task::spawn_blocking({
+        let path = path.clone();
+        move || std::fs::read(&path).map_err(|e| format!("Failed to read {}: {}", path, e))
+    })
+    .await
+    .map_err(|e| format!("audio file read task failed: {e}"))??;
 
     stop_current_player(&state);
 
     let mixer = state.mixer.lock().unwrap().clone();
     let vol = *state.volume.lock().unwrap();
     let normalization_enabled = state.normalization_enabled.load(Ordering::Relaxed);
-    let (new_player, duration_secs) = create_player_from_bytes(
-        &bytes,
-        &mixer,
+    let (bytes, new_player, duration_secs, normalization_gain) = build_player_from_bytes(
+        bytes,
+        mixer,
         vol,
         normalization_enabled,
+        normalization_cache_dir,
+        normalization_cache_key,
         state.eq_params.clone(),
-    )?;
+    )
+    .await?;
 
-    commit_loaded_track(&state, bytes, new_player);
+    commit_loaded_track(&state, bytes, new_player, normalization_gain);
 
     Ok(AudioLoadResult { duration_secs })
 }
@@ -95,6 +166,8 @@ pub async fn load_url(
     url: String,
     session_id: Option<String>,
     cache_path: Option<String>,
+    normalization_cache_dir: Option<PathBuf>,
+    normalization_cache_key: Option<String>,
     state: State<'_, AudioState>,
 ) -> Result<AudioLoadResult, String> {
     let generation = state.load_gen.load(Ordering::Relaxed);
@@ -135,15 +208,18 @@ pub async fn load_url(
     let mixer = state.mixer.lock().unwrap().clone();
     let vol = *state.volume.lock().unwrap();
     let normalization_enabled = state.normalization_enabled.load(Ordering::Relaxed);
-    let (new_player, duration_secs) = create_player_from_bytes(
-        &bytes,
-        &mixer,
+    let (bytes, new_player, duration_secs, normalization_gain) = build_player_from_bytes(
+        bytes,
+        mixer,
         vol,
         normalization_enabled,
+        normalization_cache_dir,
+        normalization_cache_key,
         state.eq_params.clone(),
-    )?;
+    )
+    .await?;
 
-    commit_loaded_track(&state, bytes, new_player);
+    commit_loaded_track(&state, bytes, new_player, normalization_gain);
 
     Ok(AudioLoadResult { duration_secs })
 }
@@ -178,6 +254,7 @@ pub fn stop(state: State<'_, AudioState>) {
 }
 
 pub fn seek(position: f64, state: State<'_, AudioState>) -> Result<(), String> {
+    suppress_ended_temporarily(&state);
     let target = Duration::from_secs_f64(position);
     let was_paused = state
         .player
@@ -204,11 +281,12 @@ pub fn seek(position: f64, state: State<'_, AudioState>) -> Result<(), String> {
     let mixer = state.mixer.lock().unwrap().clone();
     let vol = *state.volume.lock().unwrap();
     let normalization_enabled = state.normalization_enabled.load(Ordering::Relaxed);
+    let normalization_gain = *state.normalization_gain.lock().unwrap();
     let (new_player, _) = create_player_from_bytes(
         &bytes,
         &mixer,
         vol,
-        normalization_enabled,
+        if normalization_enabled { normalization_gain } else { 1.0 },
         state.eq_params.clone(),
     )?;
 

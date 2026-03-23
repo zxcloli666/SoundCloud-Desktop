@@ -150,7 +150,7 @@ const SortableTrackRow = React.memo(
       <div
         ref={setNodeRef}
         style={style}
-        className={`group flex items-center gap-3.5 px-4 py-3 rounded-xl transition-colors duration-200 ease-[var(--ease-apple)] ${
+        className={`group flex items-center gap-3.5 px-4 py-3 rounded-xl transition-colors duration-200 ease-[var(--ease-apple)] select-none ${
           isThis ? 'bg-accent/[0.05] ring-1 ring-accent/15' : 'hover:bg-white/[0.03]'
         }`}
       >
@@ -272,7 +272,7 @@ const TrackRow = React.memo(
 
     return (
       <div
-        className={`group flex items-center gap-3.5 px-4 py-3 rounded-xl transition-all duration-200 ease-[var(--ease-apple)] ${
+        className={`group flex items-center gap-3.5 px-4 py-3 rounded-xl transition-all duration-200 ease-[var(--ease-apple)] select-none ${
           isThis ? 'bg-accent/[0.05] ring-1 ring-accent/15' : 'hover:bg-white/[0.03]'
         }`}
       >
@@ -767,7 +767,7 @@ export const PlaylistPage = React.memo(() => {
 
             <VirtualList
               items={tracks}
-              rowHeight={84}
+              rowHeight={68}
               overscan={10}
               className="space-y-0.5"
               disabled={tracks.length < 60}

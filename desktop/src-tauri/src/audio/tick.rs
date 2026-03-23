@@ -41,7 +41,11 @@ pub fn start_tick_emitter(app: &AppHandle) {
                 let player_guard = state.player.lock().unwrap();
                 if let Some(ref player) = *player_guard {
                     if player.empty() {
+                        let suppress_ended =
+                            super::engine::now_ms()
+                                < state.suppress_ended_until_ms.load(Ordering::Relaxed);
                         if !state.device_error.load(Ordering::Relaxed)
+                            && !suppress_ended
                             && !state.ended_notified.swap(true, Ordering::Relaxed)
                         {
                             handle.emit("audio:ended", ()).ok();

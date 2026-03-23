@@ -152,7 +152,7 @@ const FeaturedCard = React.memo(
 
     return (
       <div
-        className="relative rounded-3xl overflow-hidden group glass-featured"
+        className="relative rounded-3xl overflow-hidden group glass-featured select-none"
         onMouseEnter={() => preloadTrack(track.urn)}
       >
         {/* Blurred artwork background */}
@@ -297,7 +297,7 @@ const FeedTrackCard = React.memo(
 
     return (
       <div
-        className={`group glass-flat rounded-2xl p-3 flex items-center gap-3.5 transition-all duration-300 ease-[var(--ease-apple)] ${
+        className={`group glass-flat rounded-2xl p-3 flex items-center gap-3.5 transition-all duration-300 ease-[var(--ease-apple)] select-none ${
           isThis ? 'ring-1 ring-accent/20 bg-accent/[0.02]' : 'hover:bg-white/[0.035]'
         }`}
         onMouseEnter={() => preloadTrack(track.urn)}
@@ -451,7 +451,7 @@ const FeedPlaylistCard = React.memo(
 
     return (
       <div
-        className={`group glass-flat rounded-2xl p-3 flex items-center gap-3.5 transition-all duration-300 ease-[var(--ease-apple)] ${
+        className={`group glass-flat rounded-2xl p-3 flex items-center gap-3.5 transition-all duration-300 ease-[var(--ease-apple)] select-none ${
           isPlayingFromThis ? 'ring-1 ring-accent/20 bg-accent/[0.02]' : 'hover:bg-white/[0.035]'
         }`}
       >

@@ -106,6 +106,7 @@ async function loadTrack(track: Track) {
     if (cachedPath) {
       result = await invoke<{ duration_secs: number | null }>('audio_load_file', {
         path: cachedPath,
+        cacheKey: urn,
       });
     } else {
       const url = `${API_BASE}/tracks/${encodeURIComponent(urn)}/stream`;
@@ -114,6 +115,7 @@ async function loadTrack(track: Track) {
         url,
         sessionId: sessionId || null,
         cachePath: null,
+        cacheKey: urn,
       });
       // Background cache for next time
       fetchAndCacheTrack(urn).catch(() => {});

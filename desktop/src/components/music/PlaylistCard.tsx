@@ -57,7 +57,7 @@ export const PlaylistCard = React.memo(
 
     return (
       <div
-        className="group relative flex flex-col gap-3 cursor-pointer"
+        className="group relative flex flex-col gap-3 cursor-pointer select-none"
         onClick={() => navigate(`/playlist/${encodeURIComponent(playlist.urn)}`)}
       >
         <div className="relative aspect-square rounded-2xl overflow-hidden bg-white/[0.02] ring-1 ring-white/[0.06] shadow-lg group-hover:shadow-2xl group-hover:ring-white/[0.15] transition-all duration-500 ease-[var(--ease-apple)]">

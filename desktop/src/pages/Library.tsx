@@ -381,7 +381,7 @@ const LikesTab = React.memo(function LikesTab({ filter }: { filter: string }) {
         ) : filtered.length > 0 ? (
           <VirtualList
             items={filtered}
-            rowHeight={96}
+            rowHeight={68}
             overscan={8}
             className="flex flex-col gap-1"
             disabled={filtered.length < 40}

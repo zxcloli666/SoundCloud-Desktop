@@ -1,18 +1,22 @@
 use std::io::Cursor;
 use std::num::NonZero;
+use std::path::{Path, PathBuf};
 use std::sync::{Arc, RwLock};
 use std::time::Duration;
 
 use rodio::mixer::Mixer;
 use rodio::source::SeekError;
 use rodio::{Decoder, Player, Source};
+use sha2::{Digest, Sha256};
 
 use crate::audio::eq::{EqSource, GainSource};
 use crate::audio::types::{
-    ChannelCount, EqParams, SampleRate, NORMALIZATION_ANALYSIS_SAMPLES,
+    ChannelCount, EqParams, SampleRate, NORMALIZATION_ANALYSIS_SAMPLES, NORMALIZATION_BLOCK_SAMPLES,
     NORMALIZATION_MAX_ATTENUATION_DB, NORMALIZATION_MAX_BOOST_DB, NORMALIZATION_TARGET_PEAK,
     NORMALIZATION_TARGET_RMS,
 };
+
+const NORMALIZATION_CACHE_VERSION: u8 = 2;
 
 struct OpusSource {
     reader: ogg::reading::PacketReader<Cursor<Vec<u8>>>,
@@ -163,27 +167,81 @@ impl Source for OpusSource {
     }
 }
 
+fn normalization_cache_file(cache_dir: &Path, cache_key: &str) -> PathBuf {
+    let mut hasher = Sha256::new();
+    hasher.update(cache_key.as_bytes());
+    let hash = hex::encode(hasher.finalize());
+    cache_dir.join(format!("{hash}.gain"))
+}
+
+fn read_cached_normalization_gain(cache_dir: Option<&Path>, cache_key: Option<&str>) -> Option<f32> {
+    let path = normalization_cache_file(cache_dir?, cache_key?);
+    let raw = std::fs::read_to_string(path).ok()?;
+    let (version, value) = raw.trim().split_once(':')?;
+    if version != NORMALIZATION_CACHE_VERSION.to_string() {
+        return None;
+    }
+    value.parse::<f32>().ok()
+}
+
+fn write_cached_normalization_gain(cache_dir: Option<&Path>, cache_key: Option<&str>, gain: f32) {
+    let Some(cache_dir) = cache_dir else {
+        return;
+    };
+    let Some(cache_key) = cache_key else {
+        return;
+    };
+
+    if std::fs::create_dir_all(cache_dir).is_err() {
+        return;
+    }
+
+    let path = normalization_cache_file(cache_dir, cache_key);
+    let _ = std::fs::write(path, format!("{NORMALIZATION_CACHE_VERSION}:{gain:.6}"));
+}
+
 fn normalization_gain_from_samples<I>(samples: I) -> f32
 where
     I: IntoIterator<Item = f32>,
 {
-    let mut sum_sq = 0.0f64;
     let mut peak = 0.0f64;
     let mut count = 0usize;
+    let mut block_sum_sq = 0.0f64;
+    let mut block_count = 0usize;
+    let mut block_powers = Vec::new();
 
     for sample in samples.into_iter().take(NORMALIZATION_ANALYSIS_SAMPLES) {
         let value = sample as f64;
         let abs = value.abs();
         peak = peak.max(abs);
-        sum_sq += value * value;
+        block_sum_sq += value * value;
+        block_count += 1;
         count += 1;
+
+        if block_count >= NORMALIZATION_BLOCK_SAMPLES {
+            block_powers.push(block_sum_sq / block_count as f64);
+            block_sum_sq = 0.0;
+            block_count = 0;
+        }
+    }
+
+    if block_count > 0 {
+        block_powers.push(block_sum_sq / block_count as f64);
     }
 
     if count == 0 {
         return 1.0;
     }
 
-    let rms = (sum_sq / count as f64).sqrt().max(1e-6);
+    if block_powers.is_empty() {
+        return 1.0;
+    }
+
+    block_powers.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
+    let keep_from = ((block_powers.len() as f64) * 0.4).floor() as usize;
+    let kept = &block_powers[keep_from.min(block_powers.len().saturating_sub(1))..];
+    let gated_power = kept.iter().copied().sum::<f64>() / kept.len() as f64;
+    let rms = gated_power.sqrt().max(1e-6);
     let target_gain = NORMALIZATION_TARGET_RMS / rms;
     let peak_safe_gain = if peak > 0.0 {
         NORMALIZATION_TARGET_PEAK / peak
@@ -204,39 +262,54 @@ where
     }
 }
 
+pub fn resolve_normalization_gain(
+    bytes: &[u8],
+    cache_dir: Option<&Path>,
+    cache_key: Option<&str>,
+) -> Result<f32, String> {
+    if let Some(gain) = read_cached_normalization_gain(cache_dir, cache_key) {
+        return Ok(gain);
+    }
+
+    let gain = if let Ok(source) = Decoder::new(Cursor::new(bytes.to_vec())) {
+        normalization_gain_from_samples(source)
+    } else {
+        normalization_gain_from_samples(
+            OpusSource::new(bytes.to_vec()).map_err(|e| format!("Failed to decode: {}", e))?,
+        )
+    };
+
+    write_cached_normalization_gain(cache_dir, cache_key, gain);
+    Ok(gain)
+}
+
 pub fn create_player_from_bytes(
     bytes: &[u8],
     mixer: &Mixer,
     volume: f32,
-    normalization_enabled: bool,
+    normalization_gain: f32,
     eq_params: Arc<RwLock<EqParams>>,
 ) -> Result<(Player, Option<f64>), String> {
     let player = Player::connect_new(mixer);
     player.set_volume(volume);
 
     let duration;
-    if let Ok(source) = Decoder::new(Cursor::new(bytes.to_vec())) {
-        let gain = if normalization_enabled {
-            normalization_gain_from_samples(source)
-        } else {
-            1.0
-        };
+    if Decoder::new(Cursor::new(bytes.to_vec())).is_ok() {
         let source = Decoder::new(Cursor::new(bytes.to_vec()))
             .map_err(|e| format!("Failed to decode: {}", e))?;
         duration = source.total_duration().map(|d| d.as_secs_f64());
-        player.append(EqSource::new(GainSource::new(source, gain), eq_params));
+        player.append(EqSource::new(
+            GainSource::new(source, normalization_gain),
+            eq_params,
+        ));
     } else {
-        let gain = if normalization_enabled {
-            normalization_gain_from_samples(
-                OpusSource::new(bytes.to_vec()).map_err(|e| format!("Failed to decode: {}", e))?,
-            )
-        } else {
-            1.0
-        };
         let source =
             OpusSource::new(bytes.to_vec()).map_err(|e| format!("Failed to decode: {}", e))?;
         duration = source.total_duration().map(|d| d.as_secs_f64());
-        player.append(EqSource::new(GainSource::new(source, gain), eq_params));
+        player.append(EqSource::new(
+            GainSource::new(source, normalization_gain),
+            eq_params,
+        ));
     }
 
     Ok((player, duration))

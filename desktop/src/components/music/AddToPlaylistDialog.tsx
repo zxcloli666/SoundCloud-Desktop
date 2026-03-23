@@ -1,5 +1,5 @@
 import * as Dialog from '@radix-ui/react-dialog';
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { api } from '../../lib/api';
@@ -21,19 +21,26 @@ const PlaylistOption = React.memo(function PlaylistOption({
   playlist,
   onSelect,
   loading,
+  containsAll,
+  containsSome,
 }: {
   playlist: Playlist;
   onSelect: (p: Playlist) => void;
   loading: boolean;
+  containsAll: boolean;
+  containsSome: boolean;
 }) {
+  const { t } = useTranslation();
   const cover = art(playlist.artwork_url ?? playlist.tracks?.[0]?.artwork_url, 'small');
 
   return (
     <button
       type="button"
       onClick={() => onSelect(playlist)}
-      disabled={loading}
-      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/[0.06] transition-all duration-200 text-left disabled:opacity-50"
+      disabled={loading || containsAll}
+      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 text-left disabled:opacity-50 ${
+        containsAll ? 'bg-white/[0.04]' : 'hover:bg-white/[0.06]'
+      }`}
     >
       <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0 ring-1 ring-white/[0.06] bg-white/[0.03]">
         {cover ? (
@@ -48,6 +55,15 @@ const PlaylistOption = React.memo(function PlaylistOption({
         <p className="text-[13px] font-medium text-white/85 truncate">{playlist.title}</p>
         <p className="text-[11px] text-white/30">{fc(playlist.track_count)} tracks</p>
       </div>
+      {containsAll ? (
+        <span className="shrink-0 text-[10px] font-semibold px-2 py-1 rounded-full bg-accent/12 text-accent border border-accent/20">
+          {t('playlist.alreadyAdded')}
+        </span>
+      ) : containsSome ? (
+        <span className="shrink-0 text-[10px] font-semibold px-2 py-1 rounded-full bg-white/[0.06] text-white/55 border border-white/[0.06]">
+          {t('playlist.containsSome')}
+        </span>
+      ) : null}
       {playlist.sharing === 'private' && <Lock size={12} className="text-white/20 shrink-0" />}
     </button>
   );
@@ -130,29 +146,98 @@ export const AddToPlaylistDialog = React.memo(function AddToPlaylistDialog({
   const [showCreate, setShowCreate] = useState(false);
   const { playlists, isLoading } = useMyPlaylists();
   const addToPlaylist = useAddToPlaylist();
+  const [playlistTrackMap, setPlaylistTrackMap] = useState<Record<string, string[]>>({});
+  const [loadingPlaylistUrns, setLoadingPlaylistUrns] = useState<Record<string, boolean>>({});
+  const normalizedTrackUrns = useMemo(() => [...new Set(trackUrns)], [trackUrns]);
+  const requestedPlaylistUrnsRef = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (!open || playlists.length === 0) return;
+
+    let cancelled = false;
+
+    const loadMembership = async () => {
+      const pending: string[] = [];
+      const nextMap: Record<string, string[]> = {};
+
+      for (const playlist of playlists) {
+        const embeddedUrns = playlist.tracks?.map((t) => t.urn) ?? [];
+        if (embeddedUrns.length > 0 || playlist.track_count === 0) {
+          nextMap[playlist.urn] = embeddedUrns;
+          continue;
+        }
+        if (requestedPlaylistUrnsRef.current.has(playlist.urn)) continue;
+        requestedPlaylistUrnsRef.current.add(playlist.urn);
+        pending.push(playlist.urn);
+      }
+
+      if (Object.keys(nextMap).length > 0) {
+        setPlaylistTrackMap((prev) => ({ ...prev, ...nextMap }));
+      }
+
+      if (pending.length === 0) return;
+
+      setLoadingPlaylistUrns((prev) => {
+        const next = { ...prev };
+        for (const urn of pending) next[urn] = true;
+        return next;
+      });
+
+      await Promise.all(
+        pending.map(async (playlistUrn) => {
+          try {
+            const res = await api<{ collection: { urn: string }[] }>(
+              `/playlists/${encodeURIComponent(playlistUrn)}/tracks?limit=200`,
+            );
+            if (cancelled) return;
+            setPlaylistTrackMap((prev) => ({
+              ...prev,
+              [playlistUrn]: res.collection.map((t) => t.urn),
+            }));
+          } catch {
+            if (cancelled) return;
+            setPlaylistTrackMap((prev) => ({ ...prev, [playlistUrn]: [] }));
+          } finally {
+            if (cancelled) return;
+            setLoadingPlaylistUrns((prev) => ({ ...prev, [playlistUrn]: false }));
+          }
+        }),
+      );
+    };
+
+    void loadMembership();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [open, playlists]);
+
+  const playlistMembership = useMemo(() => {
+    const entries = new Map<string, { containsAll: boolean; containsSome: boolean }>();
+
+    for (const playlist of playlists) {
+      const existingUrns = playlistTrackMap[playlist.urn] ?? playlist.tracks?.map((t) => t.urn) ?? [];
+      const existingSet = new Set(existingUrns);
+      const matchedCount = normalizedTrackUrns.filter((urn) => existingSet.has(urn)).length;
+      entries.set(playlist.urn, {
+        containsAll: normalizedTrackUrns.length > 0 && matchedCount === normalizedTrackUrns.length,
+        containsSome: matchedCount > 0 && matchedCount < normalizedTrackUrns.length,
+      });
+    }
+
+    return entries;
+  }, [playlists, playlistTrackMap, normalizedTrackUrns]);
 
   const handleSelect = async (playlist: Playlist) => {
-    const existingUrns = playlist.tracks?.map((t) => t.urn) ?? [];
-
-    // Fetch full track list if not embedded
-    let finalExistingUrns = existingUrns;
-    if (existingUrns.length === 0 && playlist.track_count > 0) {
-      try {
-        const res = await api<{ collection: { urn: string }[] }>(
-          `/playlists/${encodeURIComponent(playlist.urn)}/tracks?limit=200`,
-        );
-        finalExistingUrns = res.collection.map((t) => t.urn);
-      } catch {
-        finalExistingUrns = [];
-      }
-    }
+    const existingUrns = playlistTrackMap[playlist.urn] ?? playlist.tracks?.map((t) => t.urn) ?? [];
+    const finalExistingUrns = existingUrns;
 
     // Filter out duplicates
     const existingSet = new Set(finalExistingUrns);
     const newUrns = trackUrns.filter((u) => !existingSet.has(u));
 
     if (newUrns.length === 0) {
-      toast.info('Already in playlist');
+      toast.info(t('playlist.alreadyInPlaylist'));
       setOpen(false);
       return;
     }
@@ -185,6 +270,9 @@ export const AddToPlaylistDialog = React.memo(function AddToPlaylistDialog({
               <ListPlus size={18} />
               {t('playlist.addToPlaylist')}
             </Dialog.Title>
+            <Dialog.Description className="sr-only">
+              Choose a playlist for the selected track.
+            </Dialog.Description>
             <Dialog.Close className="w-7 h-7 rounded-lg flex items-center justify-center text-white/30 hover:text-white/70 hover:bg-white/[0.08] transition-all">
               <X size={14} />
             </Dialog.Close>
@@ -236,7 +324,9 @@ export const AddToPlaylistDialog = React.memo(function AddToPlaylistDialog({
                     key={p.urn}
                     playlist={p}
                     onSelect={handleSelect}
-                    loading={addToPlaylist.isPending}
+                    loading={addToPlaylist.isPending || !!loadingPlaylistUrns[p.urn]}
+                    containsAll={playlistMembership.get(p.urn)?.containsAll ?? false}
+                    containsSome={playlistMembership.get(p.urn)?.containsSome ?? false}
                   />
                 ))}
               </div>

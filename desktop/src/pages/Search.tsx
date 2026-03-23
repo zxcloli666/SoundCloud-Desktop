@@ -273,7 +273,7 @@ const SearchTracksTab = React.memo(function SearchTracksTab({ query }: { query: 
       ) : (
         <VirtualList
           items={tracksQuery.tracks}
-          rowHeight={96}
+          rowHeight={68}
           overscan={8}
           className="flex flex-col gap-1"
           disabled={tracksQuery.tracks.length < 40}

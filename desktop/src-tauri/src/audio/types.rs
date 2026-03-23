@@ -9,6 +9,7 @@ pub const EQ_FREQS: [f64; EQ_BANDS] = [
 ];
 pub const EQ_Q: f64 = 1.414;
 pub const NORMALIZATION_ANALYSIS_SAMPLES: usize = 48_000 * 2 * 30;
+pub const NORMALIZATION_BLOCK_SAMPLES: usize = 48_000 * 2 / 2;
 pub const NORMALIZATION_TARGET_RMS: f64 = 0.14;
 pub const NORMALIZATION_TARGET_PEAK: f64 = 0.95;
 pub const NORMALIZATION_MAX_BOOST_DB: f64 = 9.0;
