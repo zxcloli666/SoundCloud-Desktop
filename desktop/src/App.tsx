@@ -19,9 +19,7 @@ const Login = lazy(() => import('./pages/Login').then((module) => ({ default: mo
 const PlaylistPage = lazy(() =>
   import('./pages/PlaylistPage').then((module) => ({ default: module.PlaylistPage })),
 );
-const Search = lazy(() =>
-  import('./pages/Search').then((module) => ({ default: module.Search })),
-);
+const Search = lazy(() => import('./pages/Search').then((module) => ({ default: module.Search })));
 const Settings = lazy(() =>
   import('./pages/Settings').then((module) => ({ default: module.Settings })),
 );

@@ -21,10 +21,7 @@ export class MeService {
     return this.sc.apiGet<ScMe>('/me', token);
   }
 
-  private async applyLocalLikeFlags(
-    sessionId: string,
-    tracks: ScTrack[],
-  ): Promise<ScTrack[]> {
+  private async applyLocalLikeFlags(sessionId: string, tracks: ScTrack[]): Promise<ScTrack[]> {
     const urns = tracks.map((track) => track.urn).filter(Boolean);
     const likedUrns = await this.localLikes.getLikedTrackIds(sessionId, urns);
     if (likedUrns.size === 0) {
@@ -63,7 +60,11 @@ export class MeService {
     sessionId: string,
     params?: Record<string, unknown>,
   ): Promise<ScPaginatedResponse<ScActivity>> {
-    const response = await this.sc.apiGet<ScPaginatedResponse<ScActivity>>('/me/feed', token, params);
+    const response = await this.sc.apiGet<ScPaginatedResponse<ScActivity>>(
+      '/me/feed',
+      token,
+      params,
+    );
     response.collection = await this.applyLocalLikeFlagsToActivities(
       sessionId,
       response.collection ?? [],
@@ -172,7 +173,11 @@ export class MeService {
     sessionId: string,
     params?: Record<string, unknown>,
   ): Promise<ScPaginatedResponse<ScTrack>> {
-    const response = await this.sc.apiGet<ScPaginatedResponse<ScTrack>>('/me/tracks', token, params);
+    const response = await this.sc.apiGet<ScPaginatedResponse<ScTrack>>(
+      '/me/tracks',
+      token,
+      params,
+    );
     response.collection = await this.applyLocalLikeFlags(sessionId, response.collection ?? []);
     return response;
   }

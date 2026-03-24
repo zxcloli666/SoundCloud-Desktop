@@ -28,7 +28,12 @@ export class PlaylistsController {
   @Get()
   @ApiOperation({ summary: 'Search playlists' })
   @ApiQuery({ name: 'q', required: false, description: 'Search query' })
-  @ApiQuery({ name: 'access', required: false, enum: ['playable', 'preview', 'blocked'], default: ['playable', 'preview', 'blocked'] })
+  @ApiQuery({
+    name: 'access',
+    required: false,
+    enum: ['playable', 'preview', 'blocked'],
+    default: ['playable', 'preview', 'blocked'],
+  })
   @ApiQuery({ name: 'show_tracks', required: false, type: Boolean })
   @ApiOkResponse({ type: PaginatedPlaylistResponse })
   search(
@@ -74,7 +79,12 @@ export class PlaylistsController {
   @Get(':playlistUrn')
   @ApiOperation({ summary: 'Get playlist by URN' })
   @ApiQuery({ name: 'secret_token', required: false })
-  @ApiQuery({ name: 'access', required: false, enum: ['playable', 'preview', 'blocked'], default: ['playable', 'preview', 'blocked'] })
+  @ApiQuery({
+    name: 'access',
+    required: false,
+    enum: ['playable', 'preview', 'blocked'],
+    default: ['playable', 'preview', 'blocked'],
+  })
   @ApiQuery({ name: 'show_tracks', required: false, type: Boolean })
   @ApiOkResponse({ type: ScPlaylist })
   getById(
@@ -110,7 +120,12 @@ export class PlaylistsController {
   @Get(':playlistUrn/tracks')
   @ApiOperation({ summary: 'Get playlist tracks' })
   @ApiQuery({ name: 'secret_token', required: false })
-  @ApiQuery({ name: 'access', required: false, enum: ['playable', 'preview', 'blocked'], default: ['playable', 'preview', 'blocked'] })
+  @ApiQuery({
+    name: 'access',
+    required: false,
+    enum: ['playable', 'preview', 'blocked'],
+    default: ['playable', 'preview', 'blocked'],
+  })
   @ApiOkResponse({ type: PaginatedTrackResponse })
   getTracks(
     @AccessToken() token: string,

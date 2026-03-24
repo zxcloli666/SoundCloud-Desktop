@@ -86,7 +86,7 @@ function renderReleaseBody(body: string) {
       nodes.push(
         <h4 key={index} className="text-[13px] font-semibold text-white/80 mt-3 first:mt-0">
           {renderInlineMarkdown(trimmed.slice(4), `h4-${index}`)}
-        </h4>
+        </h4>,
       );
       continue;
     }
@@ -94,7 +94,7 @@ function renderReleaseBody(body: string) {
       nodes.push(
         <h3 key={index} className="text-[14px] font-semibold text-white/85 mt-3 first:mt-0">
           {renderInlineMarkdown(trimmed.replace(/^#+\s*/, ''), `h3-${index}`)}
-        </h3>
+        </h3>,
       );
       continue;
     }
@@ -102,7 +102,7 @@ function renderReleaseBody(body: string) {
       nodes.push(
         <p key={index} className="text-[12px] leading-relaxed text-white/60 pl-3">
           {'\u2022'} {renderInlineMarkdown(trimmed.slice(2), `li-${index}`)}
-        </p>
+        </p>,
       );
       continue;
     }
@@ -121,10 +121,7 @@ function renderReleaseBody(body: string) {
       }
 
       nodes.push(
-        <div
-          key={index}
-          className={`rounded-xl border px-3 py-2.5 mt-2 ${calloutTone(kind)}`}
-        >
+        <div key={index} className={`rounded-xl border px-3 py-2.5 mt-2 ${calloutTone(kind)}`}>
           <div className="flex items-start gap-2">
             <AlertCircle size={14} className="mt-0.5 shrink-0" />
             <div className="min-w-0">
@@ -170,9 +167,7 @@ export function UpdateChecker({ release }: { release: GithubRelease }) {
               <Sparkles size={16} className="text-accent" />
             </div>
             <div>
-              <h2 className="text-sm font-semibold">
-                {t('update.available')}
-              </h2>
+              <h2 className="text-sm font-semibold">{t('update.available')}</h2>
               <p className="text-[11px] text-white/30 mt-0.5">
                 {stripLeadingV(APP_VERSION)} → {stripLeadingV(release.tag_name)}
               </p>

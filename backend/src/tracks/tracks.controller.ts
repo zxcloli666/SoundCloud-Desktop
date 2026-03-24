@@ -48,7 +48,12 @@ export class TracksController {
   @ApiQuery({ name: 'ids', required: false, description: 'Comma-separated track IDs' })
   @ApiQuery({ name: 'genres', required: false, description: 'Comma-separated genres' })
   @ApiQuery({ name: 'tags', required: false, description: 'Comma-separated tags' })
-  @ApiQuery({ name: 'access', required: false, enum: ['playable', 'preview', 'blocked'], default: ['playable', 'preview', 'blocked'] })
+  @ApiQuery({
+    name: 'access',
+    required: false,
+    enum: ['playable', 'preview', 'blocked'],
+    default: ['playable', 'preview', 'blocked'],
+  })
   @ApiOkResponse({ type: PaginatedTrackResponse })
   search(
     @AccessToken() token: string,
@@ -148,7 +153,13 @@ export class TracksController {
     const params: Record<string, unknown> = {};
     if (secretToken) params.secret_token = secretToken;
 
-    let streamData = await this.tracksService.tryOAuthStream(token, trackUrn, format, params, range);
+    let streamData = await this.tracksService.tryOAuthStream(
+      token,
+      trackUrn,
+      format,
+      params,
+      range,
+    );
 
     if (!streamData) {
       streamData = await this.tracksService.getPublicStream(trackUrn, format);
@@ -235,7 +246,12 @@ export class TracksController {
 
   @Get(':trackUrn/related')
   @ApiOperation({ summary: 'Get related tracks' })
-  @ApiQuery({ name: 'access', required: false, enum: ['playable', 'preview', 'blocked'], default: ['playable', 'preview', 'blocked'] })
+  @ApiQuery({
+    name: 'access',
+    required: false,
+    enum: ['playable', 'preview', 'blocked'],
+    default: ['playable', 'preview', 'blocked'],
+  })
   @ApiOkResponse({ type: PaginatedTrackResponse })
   getRelated(
     @AccessToken() token: string,

@@ -153,7 +153,9 @@ export async function clearCache(): Promise<void> {
   }
 }
 
-export async function enforceAudioCacheLimit(limitMb = useSettingsStore.getState().audioCacheLimitMB): Promise<void> {
+export async function enforceAudioCacheLimit(
+  limitMb = useSettingsStore.getState().audioCacheLimitMB,
+): Promise<void> {
   if (!limitMb || limitMb <= 0) return;
 
   try {
@@ -168,10 +170,7 @@ export async function enforceAudioCacheLimit(limitMb = useSettingsStore.getState
       const info = await stat(path);
       const size = info.size ?? 0;
       const lastUsed =
-        info.atime?.getTime() ??
-        info.mtime?.getTime() ??
-        info.birthtime?.getTime() ??
-        0;
+        info.atime?.getTime() ?? info.mtime?.getTime() ?? info.birthtime?.getTime() ?? 0;
 
       total += size;
       files.push({ path, size, lastUsed });

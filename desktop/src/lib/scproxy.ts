@@ -8,6 +8,13 @@ const WHITELIST = [
   'unpkg.com',
 ];
 const IS_WINDOWS = navigator.userAgent.includes('Windows');
+const RETRY_BYPASS_CACHE_PARAM = '__scproxy_bust';
+
+type PatchedImage = HTMLImageElement & {
+  __origSrc?: string;
+  __proxyRetryStage?: number;
+  __skipProxyOnce?: boolean;
+};
 
 function isWhitelisted(url: string): boolean {
   try {
@@ -18,8 +25,20 @@ function isWhitelisted(url: string): boolean {
   }
 }
 
-function scproxyUrl(url: string): string {
-  const encoded = btoa(url);
+function withCacheBust(url: string): string {
+  try {
+    const next = new URL(url);
+    next.searchParams.set(RETRY_BYPASS_CACHE_PARAM, `${Date.now()}`);
+    return next.toString();
+  } catch {
+    const sep = url.includes('?') ? '&' : '?';
+    return `${url}${sep}${RETRY_BYPASS_CACHE_PARAM}=${Date.now()}`;
+  }
+}
+
+function scproxyUrl(url: string, { bypassCache = false } = {}): string {
+  const target = bypassCache ? withCacheBust(url) : url;
+  const encoded = btoa(target);
   return IS_WINDOWS ? `http://scproxy.localhost/${encoded}` : `scproxy://localhost/${encoded}`;
 }
 
@@ -27,8 +46,16 @@ function scproxyUrl(url: string): string {
 const imgSrcDesc = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, 'src')!;
 Object.defineProperty(HTMLImageElement.prototype, 'src', {
   set(url: string) {
+    const img = this as PatchedImage;
+    if (img.__skipProxyOnce) {
+      img.__skipProxyOnce = false;
+      imgSrcDesc.set!.call(this, url);
+      return;
+    }
+
     if (url?.startsWith('http') && !isWhitelisted(url)) {
-      (this as HTMLImageElement & { __origSrc: string }).__origSrc = url;
+      img.__origSrc = url;
+      img.__proxyRetryStage = 0;
       url = scproxyUrl(url);
     }
     imgSrcDesc.set!.call(this, url);
@@ -43,7 +70,26 @@ document.addEventListener(
   'error',
   (e) => {
     if (e.target instanceof HTMLImageElement) {
-      e.target.style.display = 'none';
+      const img = e.target as PatchedImage;
+      const originalUrl = img.__origSrc;
+      const retryStage = img.__proxyRetryStage ?? 0;
+
+      if (originalUrl && retryStage === 0) {
+        img.__proxyRetryStage = 1;
+        img.style.removeProperty('display');
+        imgSrcDesc.set!.call(img, scproxyUrl(originalUrl, { bypassCache: true }));
+        return;
+      }
+
+      if (originalUrl && retryStage === 1) {
+        img.__proxyRetryStage = 2;
+        img.__skipProxyOnce = true;
+        img.style.removeProperty('display');
+        imgSrcDesc.set!.call(img, originalUrl);
+        return;
+      }
+
+      img.style.display = 'none';
     }
   },
   true,

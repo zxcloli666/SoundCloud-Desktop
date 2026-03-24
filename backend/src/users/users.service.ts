@@ -16,10 +16,7 @@ export class UsersService {
     private readonly localLikes: LocalLikesService,
   ) {}
 
-  private async applyLocalLikeFlags(
-    sessionId: string,
-    tracks: ScTrack[],
-  ): Promise<ScTrack[]> {
+  private async applyLocalLikeFlags(sessionId: string, tracks: ScTrack[]): Promise<ScTrack[]> {
     const urns = tracks.map((track) => track.urn).filter(Boolean);
     const likedUrns = await this.localLikes.getLikedTrackIds(sessionId, urns);
     if (likedUrns.size === 0) {

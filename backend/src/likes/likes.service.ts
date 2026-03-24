@@ -1,11 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { LocalLikesService } from '../local-likes/local-likes.service.js';
 import { SoundcloudService } from '../soundcloud/soundcloud.service.js';
-import {
-  ScPaginatedResponse,
-  ScPlaylist,
-  ScTrack,
-} from '../soundcloud/soundcloud.types.js';
+import { ScPaginatedResponse, ScPlaylist, ScTrack } from '../soundcloud/soundcloud.types.js';
 
 const LIKES_PLAYLIST_NAME = 'Лайки | SoundCloud Desktop';
 const LIKE_RETRY_ATTEMPTS = 3;

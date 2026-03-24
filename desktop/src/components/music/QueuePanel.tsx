@@ -176,7 +176,11 @@ const DraggableQueue = React.memo(({ startIndex }: { startIndex: number }) => {
       <SortableContext items={itemIds} strategy={verticalListSortingStrategy}>
         <div className="flex flex-col gap-0.5">
           {items.map((track, localIdx) => (
-            <QueueRow key={`${track.urn}-${startIndex + localIdx}`} track={track} absIdx={startIndex + localIdx} />
+            <QueueRow
+              key={`${track.urn}-${startIndex + localIdx}`}
+              track={track}
+              absIdx={startIndex + localIdx}
+            />
           ))}
         </div>
       </SortableContext>

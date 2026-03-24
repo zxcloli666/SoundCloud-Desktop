@@ -79,7 +79,12 @@ export class UsersController {
 
   @Get(':userUrn/tracks')
   @ApiOperation({ summary: 'Get user tracks' })
-  @ApiQuery({ name: 'access', required: false, enum: ['playable', 'preview', 'blocked'], default: ['playable', 'preview', 'blocked'] })
+  @ApiQuery({
+    name: 'access',
+    required: false,
+    enum: ['playable', 'preview', 'blocked'],
+    default: ['playable', 'preview', 'blocked'],
+  })
   @ApiOkResponse({ type: PaginatedTrackResponse })
   getTracks(
     @AccessToken() token: string,
@@ -94,7 +99,12 @@ export class UsersController {
 
   @Get(':userUrn/playlists')
   @ApiOperation({ summary: 'Get user playlists' })
-  @ApiQuery({ name: 'access', required: false, enum: ['playable', 'preview', 'blocked'], default: ['playable', 'preview', 'blocked'] })
+  @ApiQuery({
+    name: 'access',
+    required: false,
+    enum: ['playable', 'preview', 'blocked'],
+    default: ['playable', 'preview', 'blocked'],
+  })
   @ApiQuery({ name: 'show_tracks', required: false, type: Boolean })
   @ApiOkResponse({ type: PaginatedPlaylistResponse })
   getPlaylists(
@@ -109,7 +119,12 @@ export class UsersController {
 
   @Get(':userUrn/likes/tracks')
   @ApiOperation({ summary: 'Get user liked tracks' })
-  @ApiQuery({ name: 'access', required: false, enum: ['playable', 'preview', 'blocked'], default: ['playable', 'preview', 'blocked'] })
+  @ApiQuery({
+    name: 'access',
+    required: false,
+    enum: ['playable', 'preview', 'blocked'],
+    default: ['playable', 'preview', 'blocked'],
+  })
   @ApiOkResponse({ type: PaginatedTrackResponse })
   getLikedTracks(
     @AccessToken() token: string,

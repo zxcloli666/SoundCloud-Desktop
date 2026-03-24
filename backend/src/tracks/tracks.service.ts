@@ -21,10 +21,7 @@ export class TracksService {
     private readonly localLikes: LocalLikesService,
   ) {}
 
-  private async applyLocalLikeFlags(
-    sessionId: string,
-    tracks: ScTrack[],
-  ): Promise<ScTrack[]> {
+  private async applyLocalLikeFlags(sessionId: string, tracks: ScTrack[]): Promise<ScTrack[]> {
     const urns = tracks.map((track) => track.urn).filter(Boolean);
     const likedUrns = await this.localLikes.getLikedTrackIds(sessionId, urns);
     if (likedUrns.size === 0) {
@@ -93,7 +90,9 @@ export class TracksService {
       const urlKey = `${format}_url` as keyof typeof streams;
 
       const fallbackOrder: (keyof ScStreams)[] = [
-        'hls_aac_160_url', 'http_mp3_128_url', 'hls_mp3_128_url',
+        'hls_aac_160_url',
+        'http_mp3_128_url',
+        'hls_mp3_128_url',
       ];
 
       // Build ordered list: requested format first, then fallbacks

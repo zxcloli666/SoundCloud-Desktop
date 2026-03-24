@@ -216,7 +216,8 @@ export const AddToPlaylistDialog = React.memo(function AddToPlaylistDialog({
     const entries = new Map<string, { containsAll: boolean; containsSome: boolean }>();
 
     for (const playlist of playlists) {
-      const existingUrns = playlistTrackMap[playlist.urn] ?? playlist.tracks?.map((t) => t.urn) ?? [];
+      const existingUrns =
+        playlistTrackMap[playlist.urn] ?? playlist.tracks?.map((t) => t.urn) ?? [];
       const existingSet = new Set(existingUrns);
       const matchedCount = normalizedTrackUrns.filter((urn) => existingSet.has(urn)).length;
       entries.set(playlist.urn, {

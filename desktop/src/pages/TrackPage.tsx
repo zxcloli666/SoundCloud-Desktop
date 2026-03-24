@@ -508,7 +508,7 @@ export const TrackPage = React.memo(() => {
               <RepostBtn trackUrn={track.urn} count={track.reposts_count} />
               <button
                 type="button"
-                onClick={openLyrics}
+                onClick={() => openLyrics('lyrics')}
                 className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium glass hover:bg-white/[0.05] text-white/60 hover:text-white/80 transition-all duration-200 cursor-pointer"
               >
                 <Music size={16} />

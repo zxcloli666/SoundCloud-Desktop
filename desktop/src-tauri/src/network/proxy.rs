@@ -3,6 +3,7 @@ use std::sync::OnceLock;
 
 use base64::{engine::general_purpose::STANDARD as BASE64, Engine as _};
 use sha2::{Digest, Sha256};
+use tokio::fs;
 
 use crate::shared::constants::{is_domain_whitelisted, PROXY_URL};
 
@@ -22,6 +23,55 @@ pub struct ProxyResult {
 
 fn cache_key(url: &str) -> String {
     hex::encode(Sha256::digest(url.as_bytes()))
+}
+
+fn cache_meta_path(cache_path: &std::path::Path) -> PathBuf {
+    PathBuf::from(format!("{}.meta", cache_path.display()))
+}
+
+async fn read_cached_asset(cache_path: &std::path::Path) -> Option<(String, Vec<u8>)> {
+    let meta_path = cache_meta_path(cache_path);
+    let (content_type_raw, data) = tokio::join!(fs::read_to_string(&meta_path), fs::read(cache_path));
+
+    let content_type = content_type_raw.ok()?.trim().to_string();
+    let data = data.ok()?;
+
+    if content_type.is_empty() || data.is_empty() {
+        let _ = fs::remove_file(cache_path).await;
+        let _ = fs::remove_file(meta_path).await;
+        return None;
+    }
+
+    Some((content_type, data))
+}
+
+async fn write_cached_asset(cache_path: PathBuf, content_type: String, data: Vec<u8>) {
+    let tmp_suffix = format!(".tmp-{}", std::process::id());
+    let tmp_cache_path = PathBuf::from(format!("{}{}", cache_path.display(), tmp_suffix));
+    let meta_path = cache_meta_path(&cache_path);
+    let tmp_meta_path = PathBuf::from(format!("{}{}", meta_path.display(), tmp_suffix));
+
+    if fs::write(&tmp_cache_path, &data).await.is_err() {
+        let _ = fs::remove_file(&tmp_cache_path).await;
+        return;
+    }
+
+    if fs::write(&tmp_meta_path, content_type.as_bytes()).await.is_err() {
+        let _ = fs::remove_file(&tmp_cache_path).await;
+        let _ = fs::remove_file(&tmp_meta_path).await;
+        return;
+    }
+
+    if fs::rename(&tmp_cache_path, &cache_path).await.is_err() {
+        let _ = fs::remove_file(&tmp_cache_path).await;
+        let _ = fs::remove_file(&tmp_meta_path).await;
+        return;
+    }
+
+    if fs::rename(&tmp_meta_path, &meta_path).await.is_err() {
+        let _ = fs::remove_file(&cache_path).await;
+        let _ = fs::remove_file(&tmp_meta_path).await;
+    }
 }
 
 pub async fn proxy_request(encoded: &str) -> ProxyResult {
@@ -75,12 +125,12 @@ pub async fn proxy_request(encoded: &str) -> ProxyResult {
     let key = cache_key(&target_url);
     let cache_path = state.assets_dir.join(&key);
     if cache_path.exists() {
-        if let Ok(data) = tokio::fs::read(&cache_path).await {
+        if let Some((content_type, data)) = read_cached_asset(&cache_path).await {
             #[cfg(debug_assertions)]
             println!("[Proxy] cache HIT {}", target_url);
             return ProxyResult {
                 status: 200,
-                content_type: "application/octet-stream".into(),
+                content_type,
                 data,
             };
         }
@@ -135,8 +185,9 @@ pub async fn proxy_request(encoded: &str) -> ProxyResult {
     if is_cacheable {
         let data_clone = data.clone();
         let path = cache_path.clone();
+        let content_type_clone = content_type.clone();
         tokio::spawn(async move {
-            let _ = tokio::fs::write(&path, &data_clone).await;
+            write_cached_asset(path, content_type_clone, data_clone).await;
         });
     }
 

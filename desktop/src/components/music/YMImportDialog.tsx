@@ -101,7 +101,9 @@ function YMImportDialog({
 
       return all
         .filter((p) => getPlaylistChunkIndex(p.title) != null)
-        .sort((a, b) => (getPlaylistChunkIndex(a.title) ?? 0) - (getPlaylistChunkIndex(b.title) ?? 0));
+        .sort(
+          (a, b) => (getPlaylistChunkIndex(a.title) ?? 0) - (getPlaylistChunkIndex(b.title) ?? 0),
+        );
     } catch {
       return [];
     }
@@ -125,10 +127,13 @@ function YMImportDialog({
 
           let result: ScPlaylist;
           if (existingPlaylist) {
-            result = await api<ScPlaylist>(`/playlists/${encodeURIComponent(existingPlaylist.urn)}`, {
-              method: 'PUT',
-              body: JSON.stringify({ playlist: { tracks: trackObjects } }),
-            });
+            result = await api<ScPlaylist>(
+              `/playlists/${encodeURIComponent(existingPlaylist.urn)}`,
+              {
+                method: 'PUT',
+                body: JSON.stringify({ playlist: { tracks: trackObjects } }),
+              },
+            );
           } else {
             result = await api<ScPlaylist>('/playlists', {
               method: 'POST',
@@ -253,7 +258,9 @@ function YMImportDialog({
                     <p className="text-[15px] font-bold text-white/90 truncate">{playlist.title}</p>
                     <p className="text-[12px] text-white/40 mt-0.5">
                       {progress?.found || 0} {t('search.tracks').toLowerCase()}
-                      {playlistCount > 1 ? ` • ${playlistCount} ${t('search.playlists').toLowerCase()}` : ''}
+                      {playlistCount > 1
+                        ? ` • ${playlistCount} ${t('search.playlists').toLowerCase()}`
+                        : ''}
                     </p>
                     <p className="text-[11px] text-green-400/80 mt-1">{t('ym.done')}</p>
                   </div>

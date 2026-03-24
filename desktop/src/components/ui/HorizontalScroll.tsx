@@ -15,6 +15,10 @@ export function HorizontalScroll({ children, className = '' }: HorizontalScrollP
     startScrollLeft: 0,
   });
 
+  const isInteractiveTarget = (target: EventTarget | null) =>
+    target instanceof Element &&
+    target.closest('button, a, input, textarea, select, summary, [role="button"]') != null;
+
   useEffect(() => {
     return () => {
       document.body.style.removeProperty('user-select');
@@ -23,6 +27,7 @@ export function HorizontalScroll({ children, className = '' }: HorizontalScrollP
 
   const handlePointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
     if (e.pointerType === 'mouse' && e.button !== 0) return;
+    if (isInteractiveTarget(e.target)) return;
 
     const el = ref.current;
     if (!el) return;
@@ -97,7 +102,7 @@ export function HorizontalScroll({ children, className = '' }: HorizontalScrollP
         contentVisibility: 'auto',
         contain: 'layout paint style',
         containIntrinsicSize: '240px',
-        touchAction: 'none',
+        touchAction: 'pan-y',
       }}
     >
       {children}

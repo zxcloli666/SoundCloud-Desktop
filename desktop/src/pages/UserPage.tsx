@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { AddToPlaylistDialog } from '../components/music/AddToPlaylistDialog';
@@ -7,6 +7,7 @@ import { LikeButton } from '../components/music/LikeButton';
 import { PlaylistCard } from '../components/music/PlaylistCard';
 import { Avatar } from '../components/ui/Avatar';
 import { CopyLinkButton } from '../components/ui/CopyLinkButton';
+import { VirtualGrid } from '../components/ui/VirtualGrid';
 import { VirtualList } from '../components/ui/VirtualList';
 import { api } from '../lib/api';
 import { preloadTrack } from '../lib/audio';
@@ -14,6 +15,7 @@ import { art, dur, fc } from '../lib/formatters';
 import {
   useInfiniteScroll,
   useUser,
+  useUserFollowers,
   useUserFollowings,
   useUserLikedTracks,
   useUserPlaylists,
@@ -270,11 +272,8 @@ const UserTracksTab = React.memo(function UserTracksTab({ urn }: { urn: string }
           rowHeight={68}
           overscan={8}
           className="flex flex-col gap-1"
-          disabled={tracksQuery.tracks.length < 40}
           getItemKey={(track) => track.urn}
-          renderItem={(track, i) => (
-            <TrackRow track={track} index={i} queue={tracksQuery.tracks} />
-          )}
+          renderItem={(track, i) => <TrackRow track={track} index={i} queue={tracksQuery.tracks} />}
         />
       )}
       <div ref={sentinelRef} className="h-16 flex items-center justify-center mt-6">
@@ -286,38 +285,9 @@ const UserTracksTab = React.memo(function UserTracksTab({ urn }: { urn: string }
   );
 });
 
-const POPULAR_PAGE_SIZE = 20;
-
 const UserPopularTab = React.memo(function UserPopularTab({ urn }: { urn: string }) {
   const { data, isLoading } = useUserPopularTracks(urn);
   const allTracks = data ?? [];
-  const [visibleCount, setVisibleCount] = useState(POPULAR_PAGE_SIZE);
-
-  const visibleTracks = useMemo(() => allTracks.slice(0, visibleCount), [allTracks, visibleCount]);
-  const hasMore = visibleCount < allTracks.length;
-
-  const sentinelRef = useRef<HTMLDivElement>(null);
-  const loadMore = useCallback(() => {
-    setVisibleCount((c) => Math.min(c + POPULAR_PAGE_SIZE, allTracks.length));
-  }, [allTracks.length]);
-
-  useEffect(() => {
-    const el = sentinelRef.current;
-    if (!el || !hasMore) return;
-    const obs = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) loadMore();
-      },
-      { rootMargin: '200px' },
-    );
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, [hasMore, loadMore]);
-
-  // Reset visible count when user changes
-  useEffect(() => {
-    setVisibleCount(POPULAR_PAGE_SIZE);
-  }, [urn]);
 
   return (
     <div className="min-h-[400px]">
@@ -329,25 +299,20 @@ const UserPopularTab = React.memo(function UserPopularTab({ urn }: { urn: string
         <div className="py-12 text-center text-white/30 text-sm">No popular tracks found.</div>
       ) : (
         <VirtualList
-          items={visibleTracks}
+          items={allTracks}
           rowHeight={68}
           overscan={8}
           className="flex flex-col gap-1"
-          disabled={visibleTracks.length < 40}
           getItemKey={(track) => track.urn}
           renderItem={(track, i) => <TrackRow track={track} index={i} queue={allTracks} />}
         />
-      )}
-      {hasMore && (
-        <div ref={sentinelRef} className="h-16 flex items-center justify-center mt-6">
-          <Loader2 size={24} className="text-white/20 animate-spin" />
-        </div>
       )}
     </div>
   );
 });
 
 const UserPlaylistsTab = React.memo(function UserPlaylistsTab({ urn }: { urn: string }) {
+  const { t } = useTranslation();
   const playlistsQuery = useUserPlaylists(urn);
   const sentinelRef = useInfiniteScroll(
     !!playlistsQuery.hasNextPage,
@@ -362,13 +327,19 @@ const UserPlaylistsTab = React.memo(function UserPlaylistsTab({ urn }: { urn: st
           <Loader2 size={24} className="animate-spin text-white/20" />
         </div>
       ) : playlistsQuery.playlists.length === 0 ? (
-        <div className="py-12 text-center text-white/30 text-sm">No playlists found.</div>
-      ) : (
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-6">
-          {playlistsQuery.playlists.map((playlist, i) => (
-            <PlaylistCard key={`${playlist.urn}-${i}`} playlist={playlist} showPlayback />
-          ))}
+        <div className="py-12 text-center text-white/30 text-sm">
+          {t('playlist.noPlaylists', 'No playlists found.')}
         </div>
+      ) : (
+        <VirtualGrid
+          items={playlistsQuery.playlists}
+          itemHeight={320}
+          minColumnWidth={180}
+          gap={24}
+          overscan={3}
+          getItemKey={(playlist, i) => `${playlist.urn}-${i}`}
+          renderItem={(playlist) => <PlaylistCard playlist={playlist} showPlayback />}
+        />
       )}
       <div ref={sentinelRef} className="h-16 flex items-center justify-center mt-6">
         {playlistsQuery.isFetchingNextPage && (
@@ -401,7 +372,6 @@ const UserLikesTab = React.memo(function UserLikesTab({ urn }: { urn: string }) 
           rowHeight={68}
           overscan={8}
           className="flex flex-col gap-1"
-          disabled={likesQuery.tracks.length < 40}
           getItemKey={(track) => track.urn}
           renderItem={(track, i) => <TrackRow track={track} index={i} queue={likesQuery.tracks} />}
         />
@@ -415,52 +385,82 @@ const UserLikesTab = React.memo(function UserLikesTab({ urn }: { urn: string }) 
   );
 });
 
-const UserFollowingTab = React.memo(function UserFollowingTab({ urn }: { urn: string }) {
+const UserConnectionsGrid = React.memo(function UserConnectionsGrid({
+  users,
+}: {
+  users: Array<{
+    urn: string;
+    username: string;
+    avatar_url: string;
+    followers_count?: number;
+  }>;
+}) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
-  const followingsQuery = useUserFollowings(urn);
+  return (
+    <VirtualGrid
+      items={users}
+      itemHeight={184}
+      minColumnWidth={160}
+      gap={16}
+      overscan={3}
+      getItemKey={(user) => user.urn}
+      renderItem={(user) => (
+        <div
+          onClick={() => navigate(`/user/${encodeURIComponent(user.urn)}`)}
+          className="h-full group flex flex-col items-center gap-3 p-5 rounded-3xl bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.05] hover:border-white/[0.08] transition-all duration-300 ease-[var(--ease-apple)] cursor-pointer shadow-lg hover:shadow-xl"
+        >
+          <div className="w-20 h-20 rounded-full overflow-hidden ring-2 ring-white/[0.08] group-hover:ring-white/[0.15] transition-all duration-300 shadow-lg">
+            <Avatar src={user.avatar_url} alt={user.username} size={80} />
+          </div>
+          <div className="text-center min-w-0 w-full">
+            <p className="text-[13px] font-semibold text-white/80 truncate group-hover:text-white transition-colors">
+              {user.username}
+            </p>
+            {user.followers_count != null && (
+              <p className="text-[11px] text-white/30 mt-1 tabular-nums">
+                {fc(user.followers_count)} {t('user.followers').toLowerCase()}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+    />
+  );
+});
+
+const UserConnectionsTab = React.memo(function UserConnectionsTab({
+  urn,
+  mode,
+}: {
+  urn: string;
+  mode: 'followers' | 'followings';
+}) {
+  const { t } = useTranslation();
+  const query = mode === 'followers' ? useUserFollowers(urn) : useUserFollowings(urn);
   const sentinelRef = useInfiniteScroll(
-    !!followingsQuery.hasNextPage,
-    !!followingsQuery.isFetchingNextPage,
-    followingsQuery.fetchNextPage,
+    !!query.hasNextPage,
+    !!query.isFetchingNextPage,
+    query.fetchNextPage,
   );
 
   return (
     <div className="min-h-[400px]">
-      {followingsQuery.isLoading ? (
+      {query.isLoading ? (
         <div className="py-12 flex justify-center">
           <Loader2 size={24} className="animate-spin text-white/20" />
         </div>
-      ) : followingsQuery.users.length === 0 ? (
-        <div className="py-12 text-center text-white/30 text-sm">No followings found.</div>
-      ) : (
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-4">
-          {followingsQuery.users.map((user) => (
-            <div
-              key={user.urn}
-              onClick={() => navigate(`/user/${encodeURIComponent(user.urn)}`)}
-              className="group flex flex-col items-center gap-3 p-5 rounded-3xl bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.05] hover:border-white/[0.08] transition-all duration-300 ease-[var(--ease-apple)] cursor-pointer shadow-lg hover:shadow-xl"
-            >
-              <div className="w-20 h-20 rounded-full overflow-hidden ring-2 ring-white/[0.08] group-hover:ring-white/[0.15] transition-all duration-300 shadow-lg">
-                <Avatar src={user.avatar_url} alt={user.username} size={80} />
-              </div>
-              <div className="text-center min-w-0 w-full">
-                <p className="text-[13px] font-semibold text-white/80 truncate group-hover:text-white transition-colors">
-                  {user.username}
-                </p>
-                {user.followers_count != null && (
-                  <p className="text-[11px] text-white/30 mt-1 tabular-nums">
-                    {fc(user.followers_count)} followers
-                  </p>
-                )}
-              </div>
-            </div>
-          ))}
+      ) : query.users.length === 0 ? (
+        <div className="py-12 text-center text-white/30 text-sm">
+          {mode === 'followers'
+            ? t('user.noFollowers', 'No followers found.')
+            : t('user.noFollowings', 'No followings found.')}
         </div>
+      ) : (
+        <UserConnectionsGrid users={query.users} />
       )}
       <div ref={sentinelRef} className="h-16 flex items-center justify-center mt-6">
-        {followingsQuery.isFetchingNextPage && (
-          <Loader2 size={24} className="text-white/20 animate-spin" />
-        )}
+        {query.isFetchingNextPage && <Loader2 size={24} className="text-white/20 animate-spin" />}
       </div>
     </div>
   );
@@ -474,7 +474,7 @@ export function UserPage() {
   const currentUser = useAuthStore((s) => s.user);
 
   const [activeTab, setActiveTab] = useState<
-    'popular' | 'tracks' | 'playlists' | 'likes' | 'following'
+    'popular' | 'tracks' | 'playlists' | 'likes' | 'following' | 'followers'
   >('popular');
 
   const { data: user, isLoading: userLoading } = useUser(urn);
@@ -496,6 +496,7 @@ export function UserPage() {
     { id: 'tracks', label: t('user.tracks'), count: user.track_count },
     { id: 'playlists', label: t('user.playlists'), count: user.playlist_count },
     { id: 'likes', label: t('user.likes'), count: user.public_favorites_count },
+    { id: 'followers', label: t('user.followers'), count: user.followers_count },
     { id: 'following', label: t('user.following'), count: user.followings_count },
   ] as const;
 
@@ -515,7 +516,7 @@ export function UserPage() {
             <img
               src={avatar}
               alt=""
-              className="w-full h-full object-cover scale-[2] blur-[100px] opacity-30 saturate-200"
+              className="absolute left-1/2 top-1/2 min-w-full min-h-full max-w-none -translate-x-1/2 -translate-y-1/2 object-cover scale-[2.2] blur-[110px] opacity-30 saturate-200"
             />
             <div className="absolute inset-0 bg-gradient-to-b from-[rgb(8,8,10)]/50 via-[rgb(8,8,10)]/40 to-[rgb(8,8,10)]/90" />
           </div>
@@ -538,7 +539,7 @@ export function UserPage() {
 
           <div className="flex-1 min-w-0 flex flex-col items-center md:items-start text-center md:text-left">
             {user.plan && user.plan !== 'Free' && (
-              <span className="inline-block text-[10px] font-extrabold px-3 py-1 rounded-full bg-gradient-to-r from-accent to-accent-hover text-white shadow-[0_0_20px_var(--color-accent-glow)] mb-4 uppercase tracking-widest">
+              <span className="inline-block text-[10px] font-extrabold px-3 py-1 rounded-full bg-accent text-accent-contrast ring-1 ring-black/10 shadow-[0_0_20px_var(--color-accent-glow)] mb-4 uppercase tracking-widest">
                 {user.plan}
               </span>
             )}
@@ -594,34 +595,36 @@ export function UserPage() {
       </section>
 
       {/* Two Column Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8 items-start">
+      <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_320px] gap-8 items-start">
         <div className="min-w-0 flex flex-col gap-6">
-          <div className="flex items-center gap-1.5 p-1.5 bg-white/[0.02] border border-white/[0.05] rounded-2xl w-fit backdrop-blur-2xl shadow-lg">
-            {tabs.map((tab) => {
-              const isActive = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-300 ease-[var(--ease-apple)] ${
-                    isActive
-                      ? 'bg-white/[0.12] text-white shadow-md border border-white/[0.05]'
-                      : 'text-white/40 hover:text-white/80 hover:bg-white/[0.04] border border-transparent cursor-pointer'
-                  }`}
-                >
-                  {tab.label}
-                  {tab.count != null && (
-                    <span
-                      className={`text-[11px] tabular-nums px-2 py-0.5 rounded-full transition-colors ${
-                        isActive ? 'bg-white/20 text-white' : 'bg-white/5 text-white/30'
-                      }`}
-                    >
-                      {fc(tab.count)}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
+          <div className="w-full overflow-x-auto">
+            <div className="inline-flex min-w-full md:min-w-0 items-center gap-1.5 p-1.5 bg-white/[0.02] border border-white/[0.05] rounded-2xl backdrop-blur-2xl shadow-lg">
+              {tabs.map((tab) => {
+                const isActive = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-300 ease-[var(--ease-apple)] ${
+                      isActive
+                        ? 'bg-white/[0.12] text-white shadow-md border border-white/[0.05]'
+                        : 'text-white/40 hover:text-white/80 hover:bg-white/[0.04] border border-transparent cursor-pointer'
+                    }`}
+                  >
+                    {tab.label}
+                    {tab.count != null && (
+                      <span
+                        className={`text-[11px] tabular-nums px-2 py-0.5 rounded-full transition-colors ${
+                          isActive ? 'bg-white/20 text-white' : 'bg-white/5 text-white/30'
+                        }`}
+                      >
+                        {fc(tab.count)}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           {/* Each tab only fetches its own data */}
@@ -629,7 +632,8 @@ export function UserPage() {
           {activeTab === 'tracks' && <UserTracksTab urn={urn!} />}
           {activeTab === 'playlists' && <UserPlaylistsTab urn={urn!} />}
           {activeTab === 'likes' && <UserLikesTab urn={urn!} />}
-          {activeTab === 'following' && <UserFollowingTab urn={urn!} />}
+          {activeTab === 'followers' && <UserConnectionsTab urn={urn!} mode="followers" />}
+          {activeTab === 'following' && <UserConnectionsTab urn={urn!} mode="followings" />}
         </div>
 
         {/* Sidebar */}

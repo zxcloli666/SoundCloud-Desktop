@@ -42,8 +42,8 @@ async function updatePresence(track: Track) {
         title: track.title,
         artist: track.user.username,
         artwork_url: artworkToLarge(track.artwork_url),
-        track_url: track.user.permalink_url
-          ? `${track.user.permalink_url}`.replace(/\?.*$/, '')
+        track_url: track.permalink_url
+          ? `${track.permalink_url}`.replace(/\?.*$/, '')
           : undefined,
         duration_secs: Math.round(track.duration / 1000),
         elapsed_secs: Math.round(getCurrentTime()),

@@ -691,6 +691,37 @@ export function useUserFollowings(userUrn: string | undefined) {
   return { users, ...query };
 }
 
+export function useUserFollowers(userUrn: string | undefined) {
+  const query = useInfiniteQuery({
+    queryKey: ['user', userUrn, 'followers'],
+    queryFn: async ({ pageParam }) => {
+      const params = new URLSearchParams({ limit: '30' });
+      if (pageParam) {
+        for (const [key, val] of Object.entries(pageParam)) {
+          params.set(key, val);
+        }
+      }
+      return api<UserListResponse>(`/users/${encodeURIComponent(userUrn!)}/followers?${params}`);
+    },
+    initialPageParam: undefined as PageParam | undefined,
+    gcTime: INFINITE_GC_MS,
+    maxPages: 8,
+    getNextPageParam: (last, _all, lastPageParam) => {
+      const next = extractPagination(last.next_href);
+      if (!next) return undefined;
+      if (lastPageParam && JSON.stringify(next) === JSON.stringify(lastPageParam)) return undefined;
+      return next;
+    },
+    enabled: !!userUrn,
+    staleTime: SHORT_CACHE_MS,
+  });
+
+  const users = useMemo(() => {
+    return dedupeByUrn(flattenCollectionPages(query.data?.pages));
+  }, [query.data]);
+  return { users, ...query };
+}
+
 export function useUserWebProfiles(userUrn: string | undefined) {
   return useQuery({
     queryKey: ['user', userUrn, 'web-profiles'],

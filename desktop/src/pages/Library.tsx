@@ -4,6 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { AddToPlaylistDialog } from '../components/music/AddToPlaylistDialog';
 import { LikeButton } from '../components/music/LikeButton';
 import { PlaylistCard } from '../components/music/PlaylistCard';
+import { VirtualGrid } from '../components/ui/VirtualGrid';
 import { VirtualList } from '../components/ui/VirtualList';
 import { api } from '../lib/api';
 import { preloadTrack } from '../lib/audio';
@@ -445,16 +446,16 @@ const FollowingTab = React.memo(function FollowingTab({ filter }: { filter: stri
           <Loader2 size={32} className="animate-spin text-white/20" />
         </div>
       ) : filtered.length > 0 ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-          {filtered.map((u) => (
-            <div
-              key={u.urn}
-              style={{ contentVisibility: 'auto', containIntrinsicSize: '220px' }}
-            >
-              <UserCard user={u} />
-            </div>
-          ))}
-        </div>
+        <VirtualGrid
+          items={filtered}
+          itemHeight={220}
+          minColumnWidth={160}
+          gap={16}
+          overscan={3}
+          disabled={filtered.length < 30}
+          getItemKey={(user) => user.urn}
+          renderItem={(user) => <UserCard user={user} />}
+        />
       ) : (
         <div className="py-20 text-center text-white/20">
           {filter ? t('library.noMatches') : t('library.notFollowing')}
@@ -517,16 +518,16 @@ const PlaylistsTab = React.memo(function PlaylistsTab({ filter }: { filter: stri
             <h3 className="text-lg font-bold text-white/80 mb-5 px-1">
               {t('library.yourPlaylists')}
             </h3>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-              {filteredCreated.map((p) => (
-                <div
-                  key={p.urn}
-                  style={{ contentVisibility: 'auto', containIntrinsicSize: '320px' }}
-                >
-                  <PlaylistCard playlist={p} />
-                </div>
-              ))}
-            </div>
+            <VirtualGrid
+              items={filteredCreated}
+              itemHeight={320}
+              minColumnWidth={180}
+              gap={24}
+              overscan={3}
+              disabled={filteredCreated.length < 30}
+              getItemKey={(playlist) => playlist.urn}
+              renderItem={(playlist) => <PlaylistCard playlist={playlist} />}
+            />
           </section>
         ) : null}
 
@@ -539,16 +540,16 @@ const PlaylistsTab = React.memo(function PlaylistsTab({ filter }: { filter: stri
             <h3 className="text-lg font-bold text-white/80 mb-5 px-1">
               {t('library.likedPlaylists')}
             </h3>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-              {filteredLiked.map((p) => (
-                <div
-                  key={p.urn}
-                  style={{ contentVisibility: 'auto', containIntrinsicSize: '320px' }}
-                >
-                  <PlaylistCard playlist={p} />
-                </div>
-              ))}
-            </div>
+            <VirtualGrid
+              items={filteredLiked}
+              itemHeight={320}
+              minColumnWidth={180}
+              gap={24}
+              overscan={3}
+              disabled={filteredLiked.length < 30}
+              getItemKey={(playlist) => playlist.urn}
+              renderItem={(playlist) => <PlaylistCard playlist={playlist} />}
+            />
           </section>
         ) : null}
 
@@ -598,19 +599,23 @@ const HistoryTab = React.memo(function HistoryTab() {
     historyQuery.refetch();
   }, [historyQuery]);
 
-  // Group entries by date
-  const grouped = useMemo(() => {
-    const groups: { label: string; items: HistoryEntry[] }[] = [];
+  const rows = useMemo(() => {
+    const flat: Array<
+      | { type: 'header'; id: string; label: string }
+      | { type: 'entry'; id: string; entry: HistoryEntry }
+    > = [];
     let currentLabel = '';
+
     for (const entry of entries) {
       const label = formatHistoryDate(entry.playedAt, t);
       if (label !== currentLabel) {
         currentLabel = label;
-        groups.push({ label, items: [] });
+        flat.push({ type: 'header', id: `header:${label}`, label });
       }
-      groups[groups.length - 1].items.push(entry);
+      flat.push({ type: 'entry', id: entry.id, entry });
     }
-    return groups;
+
+    return flat;
   }, [entries, t]);
 
   return (
@@ -630,62 +635,60 @@ const HistoryTab = React.memo(function HistoryTab() {
         <div className="flex justify-center py-20">
           <Loader2 size={32} className="animate-spin text-white/20" />
         </div>
-      ) : grouped.length > 0 ? (
-        <div className="space-y-6">
-          {grouped.map((group) => (
-            <div
-              key={group.label}
-              style={{ contentVisibility: 'auto', containIntrinsicSize: '320px' }}
-            >
-              <h3 className="text-[13px] font-bold text-white/30 uppercase tracking-wider mb-3 px-1">
-                {group.label}
-              </h3>
-              <div className="flex flex-col gap-1">
-                {group.items.map((entry) => (
-                  <div
-                    key={entry.id}
-                    className="group flex items-center gap-4 px-4 py-3 rounded-2xl hover:bg-white/[0.04] transition-all duration-300"
-                    style={{ contentVisibility: 'auto', containIntrinsicSize: '76px' }}
-                  >
-                    <div className="relative w-11 h-11 rounded-xl overflow-hidden shrink-0 ring-1 ring-white/[0.08] shadow-md">
-                      {entry.artworkUrl ? (
-                        <img
-                          src={entry.artworkUrl.replace('large', 't200x200')}
-                          alt=""
-                          className="w-full h-full object-cover"
-                          decoding="async"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-white/[0.05] to-transparent">
-                          <Music size={14} className="text-white/20" />
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="flex-1 min-w-0 flex flex-col justify-center">
-                      <p
-                        className="text-[14px] font-medium truncate text-white/90 hover:text-white cursor-pointer transition-colors"
-                        onClick={() => navigate(`/track/${encodeURIComponent(entry.scTrackId)}`)}
-                      >
-                        {entry.title}
-                      </p>
-                      <p className="text-[12px] text-white/40 truncate mt-0.5">
-                        {entry.artistName}
-                      </p>
-                    </div>
-
-                    <span className="text-[11px] text-white/20 tabular-nums shrink-0">
-                      {new Date(entry.playedAt).toLocaleTimeString([], {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
-                    </span>
-                  </div>
-                ))}
+      ) : rows.length > 0 ? (
+        <VirtualList
+          items={rows}
+          rowHeight={60}
+          overscan={10}
+          className="flex flex-col"
+          disabled={rows.length < 60}
+          getItemKey={(row) => row.id}
+          renderItem={(row) =>
+            row.type === 'header' ? (
+              <div className="py-3">
+                <h3 className="text-[13px] font-bold text-white/30 uppercase tracking-wider px-1">
+                  {row.label}
+                </h3>
               </div>
-            </div>
-          ))}
-        </div>
+            ) : (
+              <div className="group flex items-center gap-4 px-4 py-3 rounded-2xl hover:bg-white/[0.04] transition-all duration-300">
+                <div className="relative w-11 h-11 rounded-xl overflow-hidden shrink-0 ring-1 ring-white/[0.08] shadow-md">
+                  {row.entry.artworkUrl ? (
+                    <img
+                      src={row.entry.artworkUrl.replace('large', 't200x200')}
+                      alt=""
+                      className="w-full h-full object-cover"
+                      decoding="async"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-white/[0.05] to-transparent">
+                      <Music size={14} className="text-white/20" />
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex-1 min-w-0 flex flex-col justify-center">
+                  <p
+                    className="text-[14px] font-medium truncate text-white/90 hover:text-white cursor-pointer transition-colors"
+                    onClick={() => navigate(`/track/${encodeURIComponent(row.entry.scTrackId)}`)}
+                  >
+                    {row.entry.title}
+                  </p>
+                  <p className="text-[12px] text-white/40 truncate mt-0.5">
+                    {row.entry.artistName}
+                  </p>
+                </div>
+
+                <span className="text-[11px] text-white/20 tabular-nums shrink-0">
+                  {new Date(row.entry.playedAt).toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
+                </span>
+              </div>
+            )
+          }
+        />
       ) : (
         <div className="py-20 text-center text-white/20">{t('library.historyEmpty')}</div>
       )}

@@ -13,9 +13,6 @@ import { NowPlayingBar } from './NowPlayingBar';
 import { Sidebar } from './Sidebar';
 import { Titlebar } from './Titlebar';
 
-const ArtworkPanel = lazy(() =>
-  import('../music/LyricsPanel').then((module) => ({ default: module.ArtworkPanel })),
-);
 const LyricsPanel = lazy(() =>
   import('../music/LyricsPanel').then((module) => ({ default: module.LyricsPanel })),
 );
@@ -149,23 +146,48 @@ const KeybindingsDialog = React.memo(
 /* ── Backgrounds ───────────────────────────────────────────── */
 
 const CustomBackground = React.memo(() => {
-  const { bgName, bgOpacity } = useSettingsStore(
+  const { bgName, bgOpacity, bgBlur } = useSettingsStore(
     useShallow((s) => ({
       bgName: s.backgroundImage,
       bgOpacity: s.backgroundOpacity,
+      bgBlur: s.backgroundBlur,
     })),
   );
 
   const bgUrl = bgName ? getWallpaperUrl(bgName) : null;
   if (!bgUrl) return null;
+  const blurInset = Math.max(24, bgBlur * 2);
+  const blurScale = 1 + bgBlur / 160;
   return (
-    <div
-      className="absolute inset-0 pointer-events-none bg-cover bg-center bg-no-repeat transition-opacity duration-1000"
-      style={{
-        backgroundImage: `url(${bgUrl})`,
-        opacity: bgOpacity,
-      }}
-    />
+    <div className="absolute inset-0 pointer-events-none overflow-hidden">
+      <div
+        className="absolute transition-[filter,transform] duration-500 ease-out"
+        style={{
+          inset: -blurInset,
+          contain: 'paint',
+          transform: 'translateZ(0)',
+          willChange: 'filter',
+        }}
+      >
+        <img
+          src={bgUrl}
+          alt=""
+          aria-hidden="true"
+          decoding="async"
+          className="w-full h-full object-cover select-none"
+          style={{
+            opacity: 0.18,
+            filter: bgBlur > 0 ? `blur(${bgBlur}px)` : 'none',
+            transform: `translateZ(0) scale(${blurScale})`,
+            transformOrigin: 'center',
+          }}
+        />
+      </div>
+      <div
+        className="absolute inset-0 bg-[rgb(8,8,10)] transition-opacity duration-300"
+        style={{ opacity: bgOpacity }}
+      />
+    </div>
   );
 });
 
@@ -345,9 +367,6 @@ export const AppShell = React.memo(() => {
           <LyricsPanel />
         </Suspense>
       )}
-      <Suspense fallback={null}>
-        <ArtworkPanel />
-      </Suspense>
       <KeybindingsDialog open={kbOpen} onOpenChange={setKbOpen} />
     </div>
   );

@@ -440,9 +440,11 @@ const ThemeSection = React.memo(function ThemeSection() {
   const themePreset = useSettingsStore((s) => s.themePreset);
   const backgroundImage = useSettingsStore((s) => s.backgroundImage);
   const backgroundOpacity = useSettingsStore((s) => s.backgroundOpacity);
+  const backgroundBlur = useSettingsStore((s) => s.backgroundBlur);
   const setAccentColor = useSettingsStore((s) => s.setAccentColor);
   const setThemePreset = useSettingsStore((s) => s.setThemePreset);
   const setBackgroundOpacity = useSettingsStore((s) => s.setBackgroundOpacity);
+  const setBackgroundBlur = useSettingsStore((s) => s.setBackgroundBlur);
   const resetTheme = useSettingsStore((s) => s.resetTheme);
 
   const colorInputRef = useRef<HTMLInputElement>(null);
@@ -567,7 +569,7 @@ const ThemeSection = React.memo(function ThemeSection() {
       {/* Background Image */}
       <WallpaperPicker />
 
-      {/* Background Opacity */}
+      {/* Background Darkness */}
       {backgroundImage && (
         <div className="space-y-3">
           <div className="flex items-center justify-between">
@@ -585,6 +587,24 @@ const ThemeSection = React.memo(function ThemeSection() {
             step={0.01}
             value={backgroundOpacity}
             onChange={(e) => setBackgroundOpacity(Number(e.target.value))}
+            className="w-full accent-[var(--color-accent)] h-1 bg-white/10 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow-lg"
+          />
+        </div>
+      )}
+
+      {backgroundImage && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <label className="text-[13px] text-white/50 font-medium">{t('settings.bgBlur')}</label>
+            <span className="text-[12px] text-white/30 tabular-nums">{backgroundBlur}px</span>
+          </div>
+          <input
+            type="range"
+            min={0}
+            max={40}
+            step={1}
+            value={backgroundBlur}
+            onChange={(e) => setBackgroundBlur(Number(e.target.value))}
             className="w-full accent-[var(--color-accent)] h-1 bg-white/10 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow-lg"
           />
         </div>

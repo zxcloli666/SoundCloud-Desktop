@@ -58,6 +58,7 @@ export interface SettingsState {
   themePreset: ThemePreset;
   backgroundImage: string;
   backgroundOpacity: number;
+  backgroundBlur: number;
   glassBlur: number;
   audioCacheLimitMB: number;
   language: string;
@@ -77,6 +78,7 @@ export interface SettingsState {
   setThemePreset: (id: ThemePreset) => void;
   setBackgroundImage: (url: string) => void;
   setBackgroundOpacity: (opacity: number) => void;
+  setBackgroundBlur: (blur: number) => void;
   setGlassBlur: (blur: number) => void;
   setAudioCacheLimitMB: (limit: number) => void;
   setLanguage: (lang: string) => void;
@@ -104,6 +106,7 @@ const DEFAULTS = {
   themePreset: 'soundcloud' as ThemePreset,
   backgroundImage: '',
   backgroundOpacity: 0.15,
+  backgroundBlur: 0,
   glassBlur: 40,
   audioCacheLimitMB: 1024,
   language: navigator.language?.split('-')[0] || 'en',
@@ -136,6 +139,7 @@ export const useSettingsStore = create<SettingsState>()(
       },
       setBackgroundImage: (backgroundImage) => set({ backgroundImage }),
       setBackgroundOpacity: (backgroundOpacity) => set({ backgroundOpacity }),
+      setBackgroundBlur: (backgroundBlur) => set({ backgroundBlur }),
       setGlassBlur: (glassBlur) => set({ glassBlur }),
       setAudioCacheLimitMB: (audioCacheLimitMB) => set({ audioCacheLimitMB }),
       setLanguage: (language) => set({ language }),
@@ -173,13 +177,14 @@ export const useSettingsStore = create<SettingsState>()(
           themePreset: DEFAULTS.themePreset,
           backgroundImage: DEFAULTS.backgroundImage,
           backgroundOpacity: DEFAULTS.backgroundOpacity,
+          backgroundBlur: DEFAULTS.backgroundBlur,
           glassBlur: DEFAULTS.glassBlur,
         }),
     }),
     {
       name: 'sc-settings',
       storage: createJSONStorage(() => tauriStorage),
-      version: 7,
+      version: 8,
       migrate: (persistedState) =>
         ({
           ...DEFAULTS,
@@ -191,6 +196,7 @@ export const useSettingsStore = create<SettingsState>()(
         themePreset: s.themePreset,
         backgroundImage: s.backgroundImage,
         backgroundOpacity: s.backgroundOpacity,
+        backgroundBlur: s.backgroundBlur,
         glassBlur: s.glassBlur,
         audioCacheLimitMB: s.audioCacheLimitMB,
         language: s.language,

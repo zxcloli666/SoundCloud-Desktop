@@ -84,6 +84,8 @@ async function loadTrack(track: Track) {
   currentUrn = track.urn;
   const urn = track.urn;
 
+  void hydrateTrackMetadata(urn, gen);
+
   fallbackDuration = track.duration / 1000;
   cachedDuration = fallbackDuration;
   cachedTime = 0;
@@ -102,16 +104,15 @@ async function loadTrack(track: Track) {
   if (gen !== loadGen) return;
 
   try {
-    let result: { duration_secs: number | null };
     if (cachedPath) {
-      result = await invoke<{ duration_secs: number | null }>('audio_load_file', {
+      await invoke<{ duration_secs: number | null }>('audio_load_file', {
         path: cachedPath,
         cacheKey: urn,
       });
     } else {
       const url = `${API_BASE}/tracks/${encodeURIComponent(urn)}/stream`;
       const sessionId = getSessionId();
-      result = await invoke<{ duration_secs: number | null }>('audio_load_url', {
+      await invoke<{ duration_secs: number | null }>('audio_load_url', {
         url,
         sessionId: sessionId || null,
         cachePath: null,
@@ -119,13 +120,6 @@ async function loadTrack(track: Track) {
       });
       // Background cache for next time
       fetchAndCacheTrack(urn).catch(() => {});
-    }
-    // Detect preview: real audio duration is much shorter than track metadata duration
-    if (result.duration_secs != null && fallbackDuration > 0) {
-      const ratio = result.duration_secs / fallbackDuration;
-      if (ratio < 0.5) {
-        usePlayerStore.getState().setCurrentTrackAccess('preview');
-      }
     }
   } catch (e) {
     console.error('[Audio] Load failed:', e);
@@ -162,6 +156,23 @@ async function loadTrack(track: Track) {
   updatePlaybackState(usePlayerStore.getState().isPlaying);
   updateMediaPosition();
   preloadQueue();
+}
+
+async function hydrateTrackMetadata(urn: string, gen: number) {
+  try {
+    const freshTrack = await api<Track>(`/tracks/${encodeURIComponent(urn)}`);
+    if (gen !== loadGen || currentUrn !== urn) return;
+
+    usePlayerStore.getState().replaceTrackMetadata(freshTrack);
+
+    if (typeof freshTrack.duration === 'number' && freshTrack.duration > 0) {
+      fallbackDuration = freshTrack.duration / 1000;
+      cachedDuration = fallbackDuration;
+      notify();
+    }
+  } catch (error) {
+    console.warn('[Audio] Failed to hydrate track metadata:', error);
+  }
 }
 
 function handleTrackEnd() {

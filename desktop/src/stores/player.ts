@@ -67,6 +67,7 @@ interface PlayerState {
   toggleShuffle: () => void;
   toggleRepeat: () => void;
   setCurrentTrackAccess: (access: Track['access']) => void;
+  replaceTrackMetadata: (track: Track) => void;
 }
 
 export const usePlayerStore = create<PlayerState>()(
@@ -274,6 +275,19 @@ export const usePlayerStore = create<PlayerState>()(
 
       setCurrentTrackAccess: (access) =>
         set((s) => (s.currentTrack ? { currentTrack: { ...s.currentTrack, access } } : {})),
+
+      replaceTrackMetadata: (track) =>
+        set((s) => {
+          const mergeTrack = (item: Track) =>
+            item.urn === track.urn ? { ...item, ...track } : item;
+
+          return {
+            currentTrack:
+              s.currentTrack?.urn === track.urn ? { ...s.currentTrack, ...track } : s.currentTrack,
+            queue: s.queue.map(mergeTrack),
+            originalQueue: s.originalQueue?.map(mergeTrack) ?? null,
+          };
+        }),
     }),
     {
       name: 'sc-player',
