@@ -47,7 +47,11 @@ export function toScproxyUrl(url: string, { bypassCache = false } = {}): string 
   const encodedPath = encodeURIComponent(btoa(target));
   const proxyPort = getProxyPort();
 
-  if (proxyPort) {
+  // В dev режиме используем HTTP для hot reload совместимости
+  // В production используем scproxy:// протокол (обходит ATS на macOS)
+  const isDev = import.meta.env.DEV;
+
+  if (isDev && proxyPort) {
     const shard = hashShard(target);
     return `http://scproxy-${shard}.localhost:${proxyPort}/p/${encodedPath}`;
   }
@@ -61,11 +65,6 @@ export function proxiedAssetUrl(
 ): string | null {
   if (!url) return null;
   if (!url.startsWith('http') || isWhitelistedAssetUrl(url)) return url;
-
-  const proxyPort = getProxyPort();
-  if (!proxyPort) {
-    return url;
-  }
 
   return toScproxyUrl(url, { bypassCache });
 }
