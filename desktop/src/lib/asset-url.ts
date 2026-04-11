@@ -13,6 +13,7 @@ const WHITELIST = [
 ];
 const RETRY_BYPASS_CACHE_PARAM = '__scproxy_bust';
 const LOCAL_PROXY_SHARDS = 20;
+const IS_MACOS = navigator.platform?.startsWith('Mac') || navigator.userAgent.includes('Mac');
 
 function withCacheBust(url: string): string {
   try {
@@ -47,11 +48,7 @@ export function toScproxyUrl(url: string, { bypassCache = false } = {}): string 
   const encodedPath = encodeURIComponent(btoa(target));
   const proxyPort = getProxyPort();
 
-  // В dev режиме используем HTTP для hot reload совместимости
-  // В production используем scproxy:// протокол (обходит ATS на macOS)
-  const isDev = import.meta.env.DEV;
-
-  if (isDev && proxyPort) {
+  if (proxyPort && (!IS_MACOS || import.meta.env.DEV)) {
     const shard = hashShard(target);
     return `http://scproxy-${shard}.localhost:${proxyPort}/p/${encodedPath}`;
   }
