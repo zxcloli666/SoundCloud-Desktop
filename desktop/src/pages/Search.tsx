@@ -30,9 +30,9 @@ import {
   Users,
   X,
 } from '../lib/icons';
-import { useSearchHistoryStore } from '../stores/searchHistory';
 import { useTrackPlay } from '../lib/useTrackPlay';
 import type { Track } from '../stores/player';
+import { useSearchHistoryStore } from '../stores/searchHistory';
 
 /* ── Components ───────────────────────────────────────────── */
 
@@ -45,10 +45,10 @@ const TrackRow = React.memo(
 
     return (
       <div
-        className={`group flex items-center gap-4 px-4 py-3 rounded-2xl transition-all duration-300 ease-[var(--ease-apple)] ${
+        className={`group flex items-center gap-4 rounded-[24px] px-4 py-3 transition-all duration-300 ease-[var(--ease-apple)] ${
           isThis
-            ? 'bg-accent/[0.06] ring-1 ring-accent/20 shadow-[inset_0_0_20px_rgba(255,85,0,0.05)]'
-            : 'hover:bg-white/[0.04]'
+            ? 'liquid-control text-white ring-1 ring-accent/25 shadow-[0_0_18px_color-mix(in_srgb,var(--color-accent-glow)_100%,transparent)]'
+            : 'hover:bg-white/[0.07]'
         }`}
         onMouseEnter={() => preloadTrack(track.urn)}
       >
@@ -57,11 +57,11 @@ const TrackRow = React.memo(
           onClick={togglePlay}
         >
           {isThisPlaying ? (
-            <div className="w-9 h-9 rounded-full bg-accent text-accent-contrast flex items-center justify-center shadow-[0_0_15px_var(--color-accent-glow)] scale-100 animate-fade-in-up">
+            <div className="liquid-button-primary flex h-9 w-9 scale-100 animate-fade-in-up items-center justify-center rounded-full text-accent-contrast">
               <Pause size={16} fill="currentColor" strokeWidth={0} />
             </div>
           ) : (
-            <div className="w-9 h-9 rounded-full bg-white/[0.06] group-hover:bg-white/10 flex items-center justify-center transition-all">
+            <div className="liquid-control flex h-9 w-9 items-center justify-center rounded-full transition-all">
               <Play
                 size={16}
                 fill="white"
@@ -72,7 +72,7 @@ const TrackRow = React.memo(
           )}
         </div>
 
-        <div className="relative w-12 h-12 rounded-xl overflow-hidden shrink-0 ring-1 ring-white/[0.08] shadow-md">
+        <div className="liquid-surface relative h-12 w-12 shrink-0 overflow-hidden rounded-2xl">
           {cover ? (
             <img src={cover} alt="" className="w-full h-full object-cover" decoding="async" />
           ) : (
@@ -86,7 +86,7 @@ const TrackRow = React.memo(
           <p
             className={`text-[14px] font-medium truncate cursor-pointer transition-colors duration-200 ${
               isThis
-                ? 'text-accent drop-shadow-[0_0_8px_rgba(255,85,0,0.4)]'
+                ? 'text-accent drop-shadow-[0_0_8px_color-mix(in_srgb,var(--color-accent-glow)_100%,transparent)]'
                 : 'text-white/90 hover:text-white'
             }`}
             onClick={() => navigate(`/track/${encodeURIComponent(track.urn)}`)}
@@ -143,7 +143,7 @@ const UserCard = React.memo(({ user }: { user: SCUser }) => {
 
   return (
     <div
-      className="group flex flex-col items-center gap-4 p-5 rounded-3xl bg-white/[0.02] hover:bg-white/[0.04] border border-white/[0.04] hover:border-white/[0.08] transition-all duration-300 cursor-pointer"
+      className="liquid-surface group flex cursor-pointer flex-col items-center gap-4 rounded-[30px] p-5 transition-all duration-300 hover:scale-[1.01]"
       onClick={() => navigate(`/user/${encodeURIComponent(user.urn)}`)}
     >
       <div className="relative w-24 h-24 rounded-full shadow-xl overflow-hidden ring-2 ring-white/[0.05] group-hover:ring-white/[0.15] group-hover:scale-105 transition-all duration-500">
@@ -179,6 +179,7 @@ const UserCard = React.memo(({ user }: { user: SCUser }) => {
 /* ── URL Detection ───────────────────────────────────────── */
 
 const SC_URL_RE = /^https?:\/\/(www\.|m\.|on\.)?soundcloud\.com\/.+/i;
+type SearchTabId = 'tracks' | 'playlists' | 'users';
 
 function isSoundCloudUrl(input: string): boolean {
   return SC_URL_RE.test(input.trim());
@@ -187,6 +188,7 @@ function isSoundCloudUrl(input: string): boolean {
 /* ── Resolve Card ────────────────────────────────────────── */
 
 function ResolveCard({ url, onDone }: { url: string; onDone: () => void }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [state, setState] = useState<'loading' | 'error' | 'success'>('loading');
   const [errorMsg, setErrorMsg] = useState('');
@@ -208,25 +210,25 @@ function ResolveCard({ url, onDone }: { url: string; onDone: () => void }) {
         } else if (kind === 'user') {
           navigate(`/user/${encodeURIComponent(urn)}`);
         } else {
-          setErrorMsg(`Unknown resource: ${kind}`);
+          setErrorMsg(t('search.resolveUnknown', { kind }));
           setState('error');
         }
         onDone();
       })
       .catch((e) => {
         if (cancelled) return;
-        setErrorMsg(e?.body ? 'Link not found' : 'Failed to resolve');
+        setErrorMsg(e?.body ? t('search.linkNotFound') : t('search.resolveFailed'));
         setState('error');
       });
 
     return () => {
       cancelled = true;
     };
-  }, [url, navigate, onDone]);
+  }, [url, navigate, onDone, t]);
 
   return (
     <div className="max-w-lg mx-auto mt-12 animate-fade-in-up">
-      <div className="glass rounded-3xl p-6 border border-white/[0.06]">
+      <div className="glass rounded-[30px] border border-white/[0.12] p-6">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 rounded-2xl bg-accent/10 flex items-center justify-center shrink-0">
             <ExternalLink size={20} className="text-accent" />
@@ -234,10 +236,10 @@ function ResolveCard({ url, onDone }: { url: string; onDone: () => void }) {
           <div className="flex-1 min-w-0">
             <p className="text-[13px] font-semibold text-white/80">
               {state === 'loading'
-                ? 'Resolving link...'
+                ? t('search.resolvingLink')
                 : state === 'error'
-                  ? 'Could not resolve'
-                  : 'Redirecting...'}
+                  ? t('search.couldNotResolve')
+                  : t('search.redirecting')}
             </p>
             <p className="text-[11px] text-white/30 truncate mt-0.5">{url.trim()}</p>
           </div>
@@ -282,7 +284,7 @@ const SearchHistory = React.memo(function SearchHistory({
         {queries.map((query) => (
           <div
             key={query}
-            className="group flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/[0.04] transition-all duration-200 cursor-pointer"
+            className="group flex cursor-pointer items-center gap-3 rounded-[18px] px-3 py-2.5 transition-all duration-200 hover:bg-white/[0.075]"
             onClick={() => onSelect(query)}
           >
             <Clock size={13} className="text-white/20 shrink-0" />
@@ -427,7 +429,7 @@ export const Search = React.memo(() => {
   const { t } = useTranslation();
   const [inputValue, setInputValue] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
-  const [activeTab, setActiveTab] = useState<'tracks' | 'playlists' | 'users'>('tracks');
+  const [activeTab, setActiveTab] = useState<SearchTabId>('tracks');
   const [resolveUrl, setResolveUrl] = useState<string | null>(null);
 
   const addQuery = useSearchHistoryStore((s) => s.addQuery);
@@ -470,7 +472,7 @@ export const Search = React.memo(() => {
     setDebouncedQuery(query);
   };
 
-  const tabs = [
+  const tabs: { id: SearchTabId; label: string }[] = [
     { id: 'tracks', label: t('search.tracks') },
     { id: 'playlists', label: t('search.playlists') },
     { id: 'users', label: t('search.users') },
@@ -481,9 +483,9 @@ export const Search = React.memo(() => {
   const showEmpty = !inputValue && !resolveUrl && historyQueries.length === 0;
 
   return (
-    <div className="p-6 pb-4 space-y-8">
+    <div className="space-y-8 p-6 pb-4">
       {/* Search Input */}
-      <div className="relative max-w-2xl mx-auto">
+      <div className="relative mx-auto max-w-2xl">
         <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
           {isUrl ? (
             <ExternalLink size={20} className="text-accent" />
@@ -498,7 +500,7 @@ export const Search = React.memo(() => {
           onKeyDown={handleKeyDown}
           onPaste={handlePaste}
           placeholder={t('search.placeholder')}
-          className={`w-full bg-white/[0.04] hover:bg-white/[0.06] focus:bg-white/[0.08] text-white placeholder:text-white/30 text-[16px] py-4 pl-12 pr-12 rounded-[20px] outline-none border transition-all duration-300 shadow-xl backdrop-blur-md ${
+          className={`liquid-panel w-full rounded-[28px] py-4 pl-12 pr-12 text-[16px] text-white shadow-xl outline-none transition-all duration-300 placeholder:text-white/34 ${
             isUrl
               ? 'border-accent/30 ring-1 ring-accent/20'
               : 'border-white/[0.05] focus:border-accent/30 focus:ring-1 focus:ring-accent/30'
@@ -519,24 +521,24 @@ export const Search = React.memo(() => {
         {isUrl && !resolveUrl && (
           <div className="absolute -bottom-7 left-0 text-[11px] text-accent/60 flex items-center gap-1.5">
             <ExternalLink size={10} />
-            Press Enter to open link
+            {t('search.pressEnterToOpen')}
           </div>
         )}
       </div>
 
       {/* Tabs */}
       {debouncedQuery && (
-        <div className="flex items-center justify-center gap-1.5 p-1.5 bg-white/[0.02] border border-white/[0.05] rounded-2xl w-fit backdrop-blur-2xl shadow-lg mx-auto">
+        <div className="liquid-panel mx-auto flex w-fit items-center justify-center gap-1.5 rounded-[24px] p-1.5">
           {tabs.map((tab) => {
             const isActive = activeTab === tab.id;
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
-                className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-300 ease-[var(--ease-apple)] ${
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-2 rounded-[18px] px-6 py-2.5 text-[13px] font-semibold transition-all duration-300 ease-[var(--ease-apple)] ${
                   isActive
-                    ? 'bg-white/[0.12] text-white shadow-md border border-white/[0.05]'
-                    : 'text-white/40 hover:text-white/80 hover:bg-white/[0.04] border border-transparent'
+                    ? 'liquid-control text-white'
+                    : 'border border-transparent text-white/48 hover:bg-white/[0.075] hover:text-white/80'
                 }`}
               >
                 {tab.label}

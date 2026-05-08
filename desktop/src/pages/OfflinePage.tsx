@@ -147,7 +147,7 @@ const PendingBadge = React.memo(function PendingBadge({
 
   return (
     <div className="inline-flex flex-wrap items-center gap-2">
-      <div className="inline-flex items-center gap-1.5 rounded-full border border-accent/18 bg-accent/[0.10] px-3 py-1.5 text-[11px] font-semibold text-white/78 shadow-[0_0_16px_rgba(255,85,0,0.08)] backdrop-blur-sm">
+      <div className="inline-flex items-center gap-1.5 rounded-full border border-accent/18 bg-accent/[0.10] px-3 py-1.5 text-[11px] font-semibold text-white/78 shadow-[0_0_16px_color-mix(in_srgb,var(--color-accent-glow)_100%,transparent)] backdrop-blur-sm">
         <Clock size={11} />
         {t('offline.pendingCount', { count: stats.pending })}
         {stats.failed > 0 && (
@@ -317,7 +317,7 @@ const SectionSwitchCard = React.memo(function SectionSwitchCard({
       activeBg: 'bg-accent/[0.09]',
       activeIcon: 'border-accent/18 bg-accent/[0.14] text-white/88',
       activeCount: 'border-accent/18 bg-accent/[0.14] text-white/88',
-      glow: 'shadow-[0_18px_50px_rgba(255,85,0,0.08)]',
+      glow: 'shadow-[0_18px_50px_color-mix(in_srgb,var(--color-accent-glow)_100%,transparent)]',
     },
     cached: {
       activeBorder: 'border-sky-400/18',
@@ -403,7 +403,7 @@ function OfflineSection({
       border: 'border-accent/14',
       icon: 'border-accent/18 bg-accent/[0.14] text-white/88',
       badge: 'border-accent/18 bg-accent/[0.14] text-white/88',
-      glow: 'bg-[radial-gradient(circle_at_top_left,rgba(255,85,0,0.18),transparent_58%)]',
+      glow: 'bg-[radial-gradient(circle_at_top_left,color-mix(in_srgb,var(--color-accent-glow)_100%,transparent),transparent_58%)]',
     },
     cached: {
       border: 'border-sky-400/14',

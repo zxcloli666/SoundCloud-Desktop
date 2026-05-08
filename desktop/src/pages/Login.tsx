@@ -72,7 +72,7 @@ export function Login() {
       >
         <div className="relative">
           <div className="absolute inset-0 bg-accent/25 blur-2xl rounded-full scale-150" />
-          <div className="relative w-20 h-20 rounded-[24px] bg-white/[0.06] backdrop-blur-2xl border border-white/[0.12] flex items-center justify-center shadow-[0_0_40px_rgba(255,85,0,0.12),inset_0_1px_0_rgba(255,255,255,0.16)]">
+          <div className="liquid-panel relative flex h-20 w-20 items-center justify-center rounded-[26px]">
             <Disc3 size={36} className="text-accent" strokeWidth={1.5} />
           </div>
         </div>
@@ -117,14 +117,14 @@ export function Login() {
             <button
               type="button"
               onClick={handleLogin}
-              className="w-full py-3.5 rounded-2xl bg-accent text-accent-contrast font-semibold text-sm hover:bg-accent-hover active:scale-[0.97] transition-all duration-200 ease-[var(--ease-apple)] cursor-pointer shadow-[0_0_40px_var(--color-accent-glow),0_4px_12px_rgba(0,0,0,0.3)] hover:shadow-[0_0_60px_var(--color-accent-glow),0_4px_16px_rgba(0,0,0,0.4)]"
+              className="liquid-button-primary w-full cursor-pointer rounded-[22px] py-3.5 text-sm font-semibold text-accent-contrast transition-all duration-200 ease-[var(--ease-apple)] hover:scale-[1.01] active:scale-[0.97]"
             >
               {t('auth.signIn')}
             </button>
             <button
               type="button"
               onClick={() => setQrOpen(true)}
-              className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[12px] text-white/40 hover:text-white/70 hover:bg-white/[0.04] transition-all cursor-pointer"
+              className="liquid-control flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-[18px] py-2.5 text-[12px] text-white/58 transition-all hover:text-white/82"
             >
               <Smartphone size={13} />
               {t('qrLink.scanQr')}
@@ -151,7 +151,7 @@ function OfflineEntryCard({ onClick }: { onClick: () => void }) {
     <button
       type="button"
       onClick={onClick}
-      className="group relative w-full overflow-hidden rounded-[22px] border border-white/[0.10] bg-[linear-gradient(140deg,rgba(255,255,255,0.10),rgba(255,255,255,0.02)_55%,rgba(255,255,255,0.06))] p-[1px] text-left shadow-[0_18px_50px_rgba(0,0,0,0.35),0_0_1px_rgba(255,255,255,0.08)] backdrop-blur-[40px] transition-all duration-300 ease-[var(--ease-apple)] hover:border-white/[0.18] hover:shadow-[0_24px_70px_rgba(0,0,0,0.45),0_0_60px_rgba(56,189,248,0.10)] active:scale-[0.985] cursor-pointer"
+      className="liquid-panel group relative w-full cursor-pointer rounded-[24px] p-[1px] text-left transition-all duration-300 ease-[var(--ease-apple)] active:scale-[0.985]"
     >
       <span
         className="pointer-events-none absolute inset-0 rounded-[22px] bg-[radial-gradient(ellipse_at_top_left,rgba(255,255,255,0.18),transparent_55%)] opacity-80"

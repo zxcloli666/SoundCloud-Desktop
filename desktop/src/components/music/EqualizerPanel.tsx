@@ -203,7 +203,7 @@ export const EqualizerPanel = React.memo(function EqualizerPanel({
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm animate-fade-in" />
         <Dialog.Content className="fixed z-50 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[520px] max-w-[95vw] animate-fade-in-up outline-none">
-          <div className="bg-[#1a1a1e]/95 backdrop-blur-[60px] border border-white/[0.08] rounded-3xl shadow-2xl shadow-black/40 overflow-hidden">
+          <div className="liquid-panel overflow-hidden rounded-[32px]">
             {/* Header */}
             <div className="flex items-center justify-between px-6 pt-5 pb-3">
               <div className="flex items-center gap-3">

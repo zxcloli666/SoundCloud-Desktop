@@ -5,7 +5,7 @@ import App from './App';
 import { changeAppLanguage } from './i18n';
 import { setupCacheMaintenance } from './lib/cache';
 import { setServerPorts } from './lib/constants';
-import { setupUiWatchdog, trackedInvoke as invoke } from './lib/diagnostics';
+import { trackedInvoke as invoke, setupUiWatchdog } from './lib/diagnostics';
 import { queryClient } from './lib/query-client';
 import './index.css';
 import { useSettingsStore } from './stores/settings';

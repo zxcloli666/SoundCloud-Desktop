@@ -81,6 +81,13 @@
     "playlists": "Плейлисты",
     "users": "Пользователи",
     "noResults": "Ничего не найдено",
+    "pressEnterToOpen": "Нажмите Enter, чтобы открыть ссылку",
+    "resolvingLink": "Открываем ссылку...",
+    "couldNotResolve": "Не удалось открыть",
+    "redirecting": "Переходим...",
+    "resolveUnknown": "Неизвестный ресурс: {{kind}}",
+    "linkNotFound": "Ссылка не найдена",
+    "resolveFailed": "Не удалось обработать ссылку",
     "hint": "Исполнители, треки, плейлисты, подкасты",
     "history": "Недавние запросы",
     "clearHistory": "Очистить"

@@ -9,14 +9,13 @@ interface GlassButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const base =
-  'inline-flex items-center justify-center gap-2 rounded-xl font-medium transition-all duration-200 ease-[var(--ease-apple)] cursor-pointer select-none disabled:opacity-40 disabled:pointer-events-none';
+  'inline-flex items-center justify-center gap-2 rounded-2xl font-medium transition-all duration-200 ease-[var(--ease-apple)] cursor-pointer select-none disabled:opacity-40 disabled:pointer-events-none';
 
 const variants: Record<Variant, string> = {
   ghost:
-    'px-3 py-2 text-sm text-text-secondary hover:text-text-primary hover:bg-bg-glass-hover active:bg-bg-glass-active',
-  primary:
-    'px-5 py-2.5 text-sm bg-accent text-accent-contrast hover:bg-accent-hover active:scale-[0.97] shadow-[0_0_20px_var(--color-accent-glow)]',
-  icon: 'w-9 h-9 text-text-secondary hover:text-text-primary hover:bg-bg-glass-hover active:bg-bg-glass-active rounded-lg',
+    'liquid-control px-3 py-2 text-sm text-text-secondary hover:text-text-primary active:scale-[0.98]',
+  primary: 'liquid-button-primary px-5 py-2.5 text-sm text-accent-contrast active:scale-[0.97]',
+  icon: 'liquid-control w-9 h-9 text-text-secondary hover:text-text-primary active:scale-[0.97] rounded-full',
 };
 
 export function GlassButton({
@@ -28,7 +27,7 @@ export function GlassButton({
 }: GlassButtonProps) {
   return (
     <button
-      className={`${base} ${variants[variant]} ${active ? 'text-text-primary bg-bg-glass-hover' : ''} ${className}`}
+      className={`${base} ${variants[variant]} ${active ? 'text-text-primary bg-bg-glass-active' : ''} ${className}`}
       {...props}
     >
       {children}

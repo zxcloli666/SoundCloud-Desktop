@@ -13,7 +13,7 @@
  */
 
 @property --qr-rim-angle {
-  syntax: '<angle>';
+  syntax: "<angle>";
   initial-value: 0deg;
   inherits: false;
 }
@@ -44,8 +44,12 @@
 }
 
 @keyframes qr-aurora-drift {
-  0%   { transform: translate3d(0, 0, 0) scale(1); }
-  100% { transform: translate3d(2%, -2%, 0) scale(1.04); }
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  100% {
+    transform: translate3d(2%, -2%, 0) scale(1.04);
+  }
 }
 
 .qr-rim {
@@ -55,15 +59,14 @@
   height: 100%;
   border-radius: 36px;
   padding: 1.5px;
-  background:
-    conic-gradient(
-      from var(--qr-rim-angle),
-      rgba(255, 255, 255, 0.7) 0deg,
-      var(--qr-accent-light) 90deg,
-      rgba(255, 255, 255, 0.06) 180deg,
-      var(--qr-accent) 270deg,
-      rgba(255, 255, 255, 0.7) 360deg
-    );
+  background: conic-gradient(
+    from var(--qr-rim-angle),
+    rgba(255, 255, 255, 0.7) 0deg,
+    var(--qr-accent-light) 90deg,
+    rgba(255, 255, 255, 0.06) 180deg,
+    var(--qr-accent) 270deg,
+    rgba(255, 255, 255, 0.7) 360deg
+  );
   box-shadow:
     0 24px 80px rgba(0, 0, 0, 0.5),
     0 0 60px var(--qr-accent-glow),
@@ -73,7 +76,9 @@
 }
 
 @keyframes qr-rim-spin {
-  to { --qr-rim-angle: 360deg; }
+  to {
+    --qr-rim-angle: 360deg;
+  }
 }
 
 .qr-frame {
@@ -85,8 +90,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background:
-    linear-gradient(165deg, rgba(20, 16, 38, 0.85), rgba(10, 8, 24, 0.92) 60%, rgba(6, 4, 16, 0.96));
+  background: linear-gradient(
+    165deg,
+    rgba(20, 16, 38, 0.85),
+    rgba(10, 8, 24, 0.92) 60%,
+    rgba(6, 4, 16, 0.96)
+  );
   backdrop-filter: blur(40px) saturate(1.6);
   -webkit-backdrop-filter: blur(40px) saturate(1.6);
   box-shadow:
@@ -137,5 +146,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .qr-rim,
-  .qr-aurora { animation: none; }
+  .qr-aurora {
+    animation: none;
+  }
 }

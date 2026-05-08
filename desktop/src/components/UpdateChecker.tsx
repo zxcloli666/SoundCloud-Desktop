@@ -214,7 +214,7 @@ export function UpdateChecker({
           <button
             type="button"
             onClick={() => openUrl(release.html_url)}
-            className="flex-1 py-2.5 rounded-xl bg-accent hover:bg-accent-hover text-[13px] text-accent-contrast font-semibold transition-colors cursor-pointer flex items-center justify-center gap-1.5 shadow-[0_0_20px_var(--color-accent-glow)]"
+            className="flex-1 py-2.5 rounded-xl bg-accent hover:bg-accent-hover text-[13px] text-accent-contrast font-semibold transition-colors cursor-pointer flex items-center justify-center gap-1.5 shadow-[0_0_20px_color-mix(in_srgb,var(--color-accent-glow)_100%,transparent)]"
           >
             {t('update.download')}
             <ExternalLink size={13} />

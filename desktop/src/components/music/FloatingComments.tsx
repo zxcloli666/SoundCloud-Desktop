@@ -1,5 +1,5 @@
-import { listen } from '@tauri-apps/api/event';
 import { invoke } from '@tauri-apps/api/core';
+import { listen } from '@tauri-apps/api/event';
 import React, { useEffect, useRef } from 'react';
 import { art } from '../../lib/formatters';
 import type { Comment } from '../../lib/hooks';

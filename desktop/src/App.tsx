@@ -44,6 +44,30 @@ const NewsToast = lazy(() =>
   import('./components/NewsToast').then((module) => ({ default: module.NewsToast })),
 );
 
+function LiquidGlassDefs() {
+  return (
+    <svg className="pointer-events-none absolute h-0 w-0" aria-hidden="true" focusable="false">
+      <filter id="liquid-glass-soft" x="-20%" y="-20%" width="140%" height="140%">
+        <feTurbulence
+          type="fractalNoise"
+          baseFrequency="0.015 0.035"
+          numOctaves="2"
+          seed="12"
+          result="noise"
+        />
+        <feGaussianBlur in="noise" stdDeviation="2" result="blurredNoise" />
+        <feDisplacementMap
+          in="SourceGraphic"
+          in2="blurredNoise"
+          scale="14"
+          xChannelSelector="R"
+          yChannelSelector="G"
+        />
+      </filter>
+    </svg>
+  );
+}
+
 const STARTUP_PAGE_ROUTES: Record<StartupPage, string> = {
   home: '/home',
   search: '/search',
@@ -182,6 +206,7 @@ export default function App() {
           },
         }}
       />
+      <LiquidGlassDefs />
       <ReAuthOverlay />
       <YMImportFloatingStatus />
       <BrowserRouter>

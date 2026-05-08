@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-
+import { type CallStatus, callIsEnabled, callSetEnabled, callStatus } from '../../lib/call';
 import { Lock } from '../../lib/icons';
-import { callIsEnabled, callSetEnabled, callStatus, type CallStatus } from '../../lib/call';
 import { StarModal, useStarSubscription } from '../layout/StarSubscription';
 
 const STATUS_POLL_MS = 5000;
@@ -26,7 +25,9 @@ export const CallProxySection: React.FC = React.memo(() => {
     callIsEnabled()
       .then((v) => {
         setEnabled(v);
-        callStatus().then(setStatus).catch(() => {});
+        callStatus()
+          .then(setStatus)
+          .catch(() => {});
       })
       .catch(() => {});
   }, []);
@@ -34,7 +35,9 @@ export const CallProxySection: React.FC = React.memo(() => {
   useEffect(() => {
     if (!enabled) return;
     const id = setInterval(() => {
-      callStatus().then(setStatus).catch(() => {});
+      callStatus()
+        .then(setStatus)
+        .catch(() => {});
     }, STATUS_POLL_MS);
     return () => clearInterval(id);
   }, [enabled]);
@@ -64,7 +67,7 @@ export const CallProxySection: React.FC = React.memo(() => {
   return (
     <>
       <section
-        className="relative overflow-hidden rounded-3xl"
+        className="liquid-panel relative overflow-hidden rounded-[30px]"
         style={{ contain: 'layout paint style' }}
       >
         <div
@@ -73,8 +76,6 @@ export const CallProxySection: React.FC = React.memo(() => {
           style={{
             background:
               'radial-gradient(ellipse 80% 60% at 80% 0%, var(--color-accent-glow) 0%, transparent 60%), linear-gradient(165deg, rgba(20,20,28,0.55) 0%, rgba(10,10,14,0.65) 100%)',
-            backdropFilter: 'blur(40px) saturate(160%)',
-            WebkitBackdropFilter: 'blur(40px) saturate(160%)',
             contain: 'strict',
             transform: 'translateZ(0)',
           }}
@@ -89,7 +90,7 @@ export const CallProxySection: React.FC = React.memo(() => {
         />
         <div
           aria-hidden
-          className="absolute inset-0 rounded-3xl pointer-events-none"
+          className="absolute inset-0 rounded-[30px] pointer-events-none"
           style={{ border: '0.5px solid rgba(255,255,255,0.08)' }}
         />
 
@@ -115,9 +116,7 @@ export const CallProxySection: React.FC = React.memo(() => {
             <h3 className="text-[15px] font-semibold tracking-tight text-white">
               {t('call.title')}
             </h3>
-            <p className="text-[11px] text-white/45 mt-0.5">
-              {t(`call.status.${status.kind}`)}
-            </p>
+            <p className="text-[11px] text-white/45 mt-0.5">{t(`call.status.${status.kind}`)}</p>
             {status.kind === 'failed' && status.error ? (
               <p
                 className="text-[10px] text-red-400/80 mt-1 font-mono break-all"

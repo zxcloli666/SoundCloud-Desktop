@@ -15,7 +15,7 @@ export function GlassCard({
 }: GlassCardProps) {
   return (
     <div
-      className={`glass rounded-2xl ${hover ? 'glass-hover transition-all duration-200 ease-[var(--ease-apple)]' : ''} ${padding ? 'p-4' : ''} ${className}`}
+      className={`glass rounded-[26px] ${hover ? 'glass-hover transition-all duration-200 ease-[var(--ease-apple)]' : ''} ${padding ? 'p-4' : ''} ${className}`}
       {...props}
     >
       {children}

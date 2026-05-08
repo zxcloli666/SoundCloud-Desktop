@@ -82,6 +82,13 @@
     "users": "Users",
     "noResults": "No results found",
     "hint": "Search for artists, bands, tracks, podcasts",
+    "pressEnterToOpen": "Press Enter to open link",
+    "resolvingLink": "Resolving link...",
+    "couldNotResolve": "Could not resolve",
+    "redirecting": "Redirecting...",
+    "resolveUnknown": "Unknown resource: {{kind}}",
+    "linkNotFound": "Link not found",
+    "resolveFailed": "Failed to resolve",
     "history": "Recent searches",
     "clearHistory": "Clear all"
   },

@@ -80,7 +80,7 @@ const EngagementChip = React.memo(function EngagementChip({
   const tone = activeTone === 'accent' ? 'text-accent' : 'text-emerald-400';
   const toneBg =
     activeTone === 'accent'
-      ? 'bg-accent/15 border-accent/25 shadow-[0_0_16px_rgba(255,85,0,0.18)]'
+      ? 'bg-accent/15 border-accent/25 shadow-[0_0_16px_color-mix(in_srgb,var(--color-accent-glow)_100%,transparent)]'
       : 'bg-emerald-500/15 border-emerald-500/25';
 
   return (
@@ -89,9 +89,7 @@ const EngagementChip = React.memo(function EngagementChip({
       onClick={onClick}
       title={label}
       className={`inline-flex items-center gap-1.5 px-3 h-10 rounded-xl text-[12.5px] font-semibold tabular-nums transition-all duration-200 ease-[var(--ease-apple)] cursor-pointer border ${
-        active
-          ? `${toneBg} ${tone}`
-          : 'bg-white/[0.04] border-white/[0.06] text-white/65 hover:bg-white/[0.07] hover:text-white/90 hover:border-white/[0.1]'
+        active ? `${toneBg} ${tone}` : 'liquid-control text-white/72 hover:text-white/95'
       }`}
     >
       {icon}
@@ -190,12 +188,12 @@ const IconAction = React.memo(function IconAction({
   active?: boolean;
 }) {
   const base =
-    'inline-flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 ease-[var(--ease-apple)] cursor-pointer';
+    'inline-flex items-center justify-center w-10 h-10 rounded-2xl transition-all duration-200 ease-[var(--ease-apple)] cursor-pointer';
   const tone = danger
     ? 'text-white/55 hover:text-red-400 hover:bg-red-500/10'
     : active
       ? 'text-accent bg-accent/15'
-      : 'text-white/60 hover:text-white/95 hover:bg-white/[0.07]';
+      : 'text-white/66 hover:text-white/95 hover:bg-white/[0.09]';
   return (
     <button
       type="button"
@@ -239,10 +237,10 @@ const CopyIconAction = React.memo(function CopyIconAction({ url }: { url: string
       onClick={handleCopy}
       title={copied ? t('auth.copied') : t('auth.copyLink')}
       aria-label={copied ? t('auth.copied') : t('auth.copyLink')}
-      className={`inline-flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 ease-[var(--ease-apple)] cursor-pointer ${
+      className={`inline-flex items-center justify-center w-10 h-10 rounded-2xl transition-all duration-200 ease-[var(--ease-apple)] cursor-pointer ${
         copied
           ? 'text-emerald-400 bg-emerald-500/12'
-          : 'text-white/60 hover:text-white/95 hover:bg-white/[0.07]'
+          : 'text-white/66 hover:text-white/95 hover:bg-white/[0.09]'
       }`}
     >
       {copied ? <Check size={16} /> : <LinkIcon size={16} />}
@@ -307,7 +305,7 @@ const CommentForm = React.memo(({ trackUrn }: { trackUrn: string }) => {
   };
 
   return (
-    <div className="flex gap-3 glass rounded-xl px-4 py-3">
+    <div className="glass flex gap-3 rounded-[24px] px-4 py-3">
       <textarea
         value={body}
         onChange={(e) => setBody(e.target.value)}
@@ -343,8 +341,8 @@ const RelatedRow = React.memo(
 
     return (
       <div
-        className={`group flex items-center gap-3 p-2.5 rounded-xl transition-all duration-200 ease-[var(--ease-apple)] ${
-          isThis ? 'bg-accent/[0.04] ring-1 ring-accent/15' : 'hover:bg-white/[0.03]'
+        className={`group flex items-center gap-3 p-2.5 rounded-[22px] transition-all duration-200 ease-[var(--ease-apple)] ${
+          isThis ? 'liquid-control ring-1 ring-accent/20' : 'hover:bg-white/[0.07]'
         }`}
         onMouseEnter={() => preloadTrack(track.urn)}
       >
@@ -355,7 +353,7 @@ const RelatedRow = React.memo(
           {cover ? (
             <img src={cover} alt="" className="w-full h-full object-cover" />
           ) : (
-            <div className="w-full h-full flex items-center justify-center bg-white/[0.03]">
+            <div className="w-full h-full flex items-center justify-center bg-white/[0.06]">
               {musicIcon14}
             </div>
           )}
@@ -430,7 +428,7 @@ const DownloadButton = React.memo(({ track }: { track: Track }) => {
       disabled={loading}
       title={t('track.download')}
       aria-label={t('track.download')}
-      className="inline-flex items-center justify-center w-10 h-10 rounded-xl text-white/60 hover:text-white/95 hover:bg-white/[0.07] transition-all duration-200 cursor-pointer disabled:opacity-50"
+      className="inline-flex items-center justify-center w-10 h-10 rounded-2xl text-white/66 hover:text-white/95 hover:bg-white/[0.09] transition-all duration-200 cursor-pointer disabled:opacity-50"
     >
       {loading ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
     </button>
@@ -506,9 +504,9 @@ export const TrackPage = React.memo(() => {
   };
 
   return (
-    <div className="p-6 pb-4 space-y-7">
+    <div className="space-y-7 p-6 pb-4">
       {/* ── Hero ─────────────────────────────────────── */}
-      <section className="relative rounded-3xl overflow-hidden glass-featured">
+      <section className="glass-featured relative overflow-hidden rounded-[36px]">
         {/* Blurred bg */}
         {cover && (
           <div className="absolute inset-0 pointer-events-none">
@@ -560,7 +558,7 @@ export const TrackPage = React.memo(() => {
           {/* Info */}
           <div className="flex-1 min-w-0 py-2">
             {track.genre && (
-              <span className="inline-block text-[10px] font-semibold px-2.5 py-1 rounded-full bg-white/[0.06] text-white/40 border border-white/[0.06] mb-3 uppercase tracking-wider">
+              <span className="inline-block text-[10px] font-semibold px-2.5 py-1 liquid-chip rounded-full text-white/62 mb-3 uppercase tracking-wider">
                 {track.genre}
               </span>
             )}
@@ -633,7 +631,7 @@ export const TrackPage = React.memo(() => {
                     type="button"
                     title={t('playlist.addToPlaylist')}
                     aria-label={t('playlist.addToPlaylist')}
-                    className="inline-flex items-center justify-center w-10 h-10 rounded-xl text-white/60 hover:text-white/95 hover:bg-white/[0.07] transition-all duration-200 cursor-pointer"
+                    className="inline-flex items-center justify-center w-10 h-10 rounded-2xl text-white/66 hover:text-white/95 hover:bg-white/[0.09] transition-all duration-200 cursor-pointer"
                   >
                     <ListPlus size={16} />
                   </button>
@@ -719,7 +717,7 @@ export const TrackPage = React.memo(() => {
               {tags.map((tag) => (
                 <span
                   key={tag}
-                  className="text-[10px] font-medium px-2.5 py-1 rounded-full bg-white/[0.04] text-white/35 border border-white/[0.04] hover:bg-white/[0.06] hover:text-white/50 transition-all duration-150 cursor-default"
+                  className="text-[10px] font-medium px-2.5 py-1 liquid-chip rounded-full text-white/50 hover:text-white/70 transition-all duration-150 cursor-default"
                 >
                   {tag}
                 </span>
@@ -769,7 +767,7 @@ export const TrackPage = React.memo(() => {
         <div className="space-y-6">
           {/* Artist card */}
           <section
-            className="glass rounded-2xl p-4 cursor-pointer hover:bg-white/[0.04] transition-all duration-200 group/ac"
+            className="glass rounded-[26px] p-4 cursor-pointer hover:bg-white/[0.08] transition-all duration-200 group/ac"
             onClick={() => navigate(`/user/${encodeURIComponent(track.user.urn)}`)}
           >
             <div className="flex items-center gap-3">

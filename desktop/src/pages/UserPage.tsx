@@ -147,10 +147,8 @@ const TrackRow = React.memo(
 
     return (
       <div
-        className={`group flex items-center gap-4 px-4 py-3 rounded-2xl transition-all duration-300 ease-[var(--ease-apple)] select-none ${
-          isThis
-            ? 'bg-accent/[0.06] ring-1 ring-accent/20 shadow-[inset_0_0_20px_rgba(255,85,0,0.05)]'
-            : 'hover:bg-white/[0.04]'
+        className={`group flex items-center gap-4 px-4 py-3 rounded-[24px] transition-all duration-300 ease-[var(--ease-apple)] select-none ${
+          isThis ? 'liquid-control ring-1 ring-accent/20' : 'hover:bg-white/[0.07]'
         }`}
         onMouseEnter={() => preloadTrack(track.urn)}
       >
@@ -160,7 +158,7 @@ const TrackRow = React.memo(
           onClick={togglePlay}
         >
           {isThisPlaying ? (
-            <div className="w-8 h-8 rounded-full bg-accent text-accent-contrast flex items-center justify-center shadow-[0_0_15px_var(--color-accent-glow)] scale-100 animate-fade-in-up">
+            <div className="w-8 h-8 rounded-full bg-accent text-accent-contrast flex items-center justify-center shadow-[0_0_15px_color-mix(in_srgb,var(--color-accent-glow)_100%,transparent)] scale-100 animate-fade-in-up">
               {pauseWhite14}
             </div>
           ) : (
@@ -191,7 +189,7 @@ const TrackRow = React.memo(
           <p
             className={`text-[14px] font-medium truncate cursor-pointer transition-colors duration-200 ${
               isThis
-                ? 'text-accent drop-shadow-[0_0_8px_rgba(255,85,0,0.4)]'
+                ? 'text-accent drop-shadow-[0_0_8px_color-mix(in_srgb,var(--color-accent-glow)_100%,transparent)]'
                 : 'text-white/90 hover:text-white'
             }`}
             onClick={() => navigate(`/track/${encodeURIComponent(track.urn)}`)}
@@ -410,7 +408,7 @@ const UserConnectionsGrid = React.memo(function UserConnectionsGrid({
       renderItem={(user) => (
         <div
           onClick={() => navigate(`/user/${encodeURIComponent(user.urn)}`)}
-          className="h-full group flex flex-col items-center gap-3 p-5 rounded-3xl bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.05] hover:border-white/[0.08] transition-all duration-300 ease-[var(--ease-apple)] cursor-pointer shadow-lg hover:shadow-xl"
+          className="liquid-surface h-full group flex cursor-pointer flex-col items-center gap-3 rounded-[30px] p-5 transition-all duration-300 ease-[var(--ease-apple)] hover:scale-[1.01]"
         >
           <div className="w-20 h-20 rounded-full overflow-hidden ring-2 ring-white/[0.08] group-hover:ring-white/[0.15] transition-all duration-300 shadow-lg">
             <Avatar src={user.avatar_url} alt={user.username} size={80} />
@@ -439,7 +437,9 @@ const UserConnectionsTab = React.memo(function UserConnectionsTab({
   mode: 'followers' | 'followings';
 }) {
   const { t } = useTranslation();
-  const query = mode === 'followers' ? useUserFollowers(urn) : useUserFollowings(urn);
+  const followersQuery = useUserFollowers(mode === 'followers' ? urn : undefined);
+  const followingsQuery = useUserFollowings(mode === 'followings' ? urn : undefined);
+  const query = mode === 'followers' ? followersQuery : followingsQuery;
   const sentinelRef = useInfiniteScroll(
     !!query.hasNextPage,
     !!query.isFetchingNextPage,
@@ -504,7 +504,7 @@ export function UserPage() {
   ] as const;
 
   return (
-    <div className="p-6 pb-4 space-y-8">
+    <div className="space-y-8 p-6 pb-4">
       {isOwnProfile && (
         <div className="bg-gradient-to-r from-amber-500/10 to-amber-500/5 border border-amber-500/20 text-amber-400/90 px-5 py-3.5 rounded-2xl flex items-center gap-3 text-[13px] font-medium backdrop-blur-xl shadow-lg">
           <AlertCircle size={18} />
@@ -554,7 +554,7 @@ export function UserPage() {
             {((user.plan && user.plan !== 'Free') || hasStar) && (
               <div className="flex items-center flex-wrap justify-center md:justify-start gap-2 mb-4">
                 {user.plan && user.plan !== 'Free' && (
-                  <span className="inline-block text-[10px] font-extrabold px-3 py-1 rounded-full bg-accent text-accent-contrast ring-1 ring-black/10 shadow-[0_0_20px_var(--color-accent-glow)] uppercase tracking-widest">
+                  <span className="inline-block text-[10px] font-extrabold px-3 py-1 rounded-full bg-accent text-accent-contrast ring-1 ring-black/10 shadow-[0_0_20px_color-mix(in_srgb,var(--color-accent-glow)_100%,transparent)] uppercase tracking-widest">
                     {user.plan}
                   </span>
                 )}
@@ -616,7 +616,7 @@ export function UserPage() {
       <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_320px] gap-8 items-start">
         <div className="min-w-0 flex flex-col gap-6">
           <div className="w-full overflow-x-auto">
-            <div className="inline-flex min-w-full md:min-w-0 items-center gap-1.5 p-1.5 bg-white/[0.02] border border-white/[0.05] rounded-2xl backdrop-blur-2xl shadow-lg">
+            <div className="liquid-panel inline-flex min-w-full items-center gap-1.5 rounded-[24px] p-1.5 md:min-w-0">
               {tabs.map((tab) => {
                 const isActive = activeTab === tab.id;
                 return (
@@ -625,8 +625,8 @@ export function UserPage() {
                     onClick={() => setActiveTab(tab.id)}
                     className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-300 ease-[var(--ease-apple)] ${
                       isActive
-                        ? 'bg-white/[0.12] text-white shadow-md border border-white/[0.05]'
-                        : 'text-white/40 hover:text-white/80 hover:bg-white/[0.04] border border-transparent cursor-pointer'
+                        ? 'liquid-control text-white'
+                        : 'border border-transparent text-white/48 hover:bg-white/[0.075] hover:text-white/80 cursor-pointer'
                     }`}
                   >
                     {tab.label}
@@ -657,7 +657,7 @@ export function UserPage() {
         {/* Sidebar */}
         <div className="space-y-5 lg:sticky lg:top-6">
           {user.description && (
-            <section className="bg-white/[0.02] border border-white/[0.05] backdrop-blur-[60px] rounded-3xl p-6 shadow-xl">
+            <section className="liquid-panel rounded-[30px] p-6">
               <h3 className="text-[14px] font-bold text-white/60 mb-4 tracking-tight">
                 {t('user.about')}
               </h3>
@@ -668,7 +668,7 @@ export function UserPage() {
           )}
 
           {user.created_at && new Date(user.created_at).getFullYear() > 1970 && (
-            <section className="bg-white/[0.02] border border-white/[0.05] backdrop-blur-[60px] rounded-3xl p-6 shadow-xl flex flex-col gap-4">
+            <section className="liquid-panel rounded-[30px] p-6 flex flex-col gap-4">
               <div className="flex items-center justify-between text-[13px]">
                 <span className="text-white/40 font-medium">{t('user.memberSince')}</span>
                 <span className="text-white/80 font-semibold flex items-center gap-2">
@@ -680,7 +680,7 @@ export function UserPage() {
           )}
 
           {webProfiles && webProfiles.length > 0 && (
-            <section className="bg-white/[0.02] border border-white/[0.05] backdrop-blur-[60px] rounded-3xl p-6 shadow-xl">
+            <section className="liquid-panel rounded-[30px] p-6">
               <h3 className="text-[14px] font-bold text-white/60 mb-4 tracking-tight">
                 {t('user.links')}
               </h3>
@@ -693,7 +693,7 @@ export function UserPage() {
                     rel="noopener noreferrer"
                     className="flex items-center gap-3 p-3 rounded-2xl hover:bg-white/[0.06] transition-all duration-200 group/link border border-transparent hover:border-white/[0.04]"
                   >
-                    <div className="w-10 h-10 rounded-full bg-white/[0.04] flex items-center justify-center text-white/40 group-hover/link:text-white group-hover/link:bg-white/[0.1] group-hover:scale-105 transition-all duration-300 shadow-sm">
+                    <div className="w-10 h-10 rounded-full bg-white/[0.075] flex items-center justify-center text-white/40 group-hover/link:text-white group-hover/link:bg-white/[0.1] group-hover:scale-105 transition-all duration-300 shadow-sm">
                       {getWebIcon(link.service)}
                     </div>
                     <div className="flex-1 min-w-0">

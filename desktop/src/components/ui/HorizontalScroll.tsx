@@ -1,4 +1,4 @@
-import { type PointerEvent as ReactPointerEvent, type ReactNode, useEffect, useRef } from 'react';
+import { type ReactNode, type PointerEvent as ReactPointerEvent, useEffect, useRef } from 'react';
 
 interface HorizontalScrollProps {
   children: ReactNode;

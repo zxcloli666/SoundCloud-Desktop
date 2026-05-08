@@ -1,5 +1,5 @@
+import { BaseDirectory, exists, mkdir, readTextFile, writeTextFile } from '@tauri-apps/plugin-fs';
 import type { StateStorage } from 'zustand/middleware';
-import { readTextFile, writeTextFile, exists, mkdir, BaseDirectory } from '@tauri-apps/plugin-fs';
 
 const BASE_DIR = BaseDirectory.AppData;
 

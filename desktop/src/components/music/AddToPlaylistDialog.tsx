@@ -198,8 +198,9 @@ export const AddToPlaylistDialog = React.memo(function AddToPlaylistDialog({
             if (cancelled) return;
             setPlaylistTrackMap((prev) => ({ ...prev, [playlistUrn]: [] }));
           } finally {
-            if (cancelled) return;
-            setLoadingPlaylistUrns((prev) => ({ ...prev, [playlistUrn]: false }));
+            if (!cancelled) {
+              setLoadingPlaylistUrns((prev) => ({ ...prev, [playlistUrn]: false }));
+            }
           }
         }),
       );

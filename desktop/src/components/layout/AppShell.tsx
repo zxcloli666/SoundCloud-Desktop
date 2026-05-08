@@ -87,7 +87,7 @@ const KeybindingsDialog = React.memo(
       <Dialog.Root open={open} onOpenChange={onOpenChange}>
         <Dialog.Portal>
           <Dialog.Overlay className="dialog-overlay fixed inset-0 z-[80] bg-black/60 backdrop-blur-sm" />
-          <Dialog.Content className="dialog-content fixed z-[80] top-1/2 left-1/2 w-full max-w-[520px] bg-[#1a1a1e]/95 backdrop-blur-2xl border border-white/[0.08] rounded-3xl shadow-2xl overflow-hidden">
+          <Dialog.Content className="dialog-content liquid-panel fixed top-1/2 left-1/2 z-[80] w-full max-w-[520px] overflow-hidden rounded-[32px]">
             {/* Header */}
             <div className="px-7 pt-6 pb-4 border-b border-white/[0.06]">
               <Dialog.Title className="text-[18px] font-bold text-white/90 tracking-tight">
@@ -159,6 +159,19 @@ const CustomBackground = React.memo(() => {
   const blurScale = 1 + bgBlur / 160;
   return (
     <div className="absolute inset-0 pointer-events-none overflow-hidden">
+      <div className="liquid-aurora" />
+      <div
+        className="liquid-orb top-[8%] left-[6%] h-[420px] w-[420px] opacity-70 blur-[120px]"
+        data-tone="accent"
+      />
+      <div
+        className="liquid-orb right-[-8%] top-[18%] h-[520px] w-[520px] opacity-60 blur-[140px]"
+        data-tone="cyan"
+      />
+      <div
+        className="liquid-orb bottom-[-18%] left-[24%] h-[560px] w-[560px] opacity-50 blur-[150px]"
+        data-tone="violet"
+      />
       <div
         className="absolute transition-[filter,transform] duration-500 ease-out"
         style={{
@@ -183,9 +196,12 @@ const CustomBackground = React.memo(() => {
         />
       </div>
       <div
-        className="absolute inset-0 bg-[rgb(8,8,10)] transition-opacity duration-300"
+        className="absolute inset-0 transition-opacity duration-300"
         style={{ opacity: bgOpacity }}
-      />
+      >
+        <div className="absolute inset-0 bg-[rgba(3,5,10,0.74)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.08),transparent_42%)]" />
+      </div>
     </div>
   );
 });
@@ -352,11 +368,14 @@ export const AppShell = React.memo(() => {
   }, [navigate, queueOpen, kbOpen]);
 
   return (
-    <div className="flex flex-col h-screen relative overflow-hidden">
+    <div className="flex h-screen flex-col overflow-hidden">
       <CustomBackground />
       <AmbientGlow />
       <Titlebar />
-      <div className="flex flex-1 min-h-0 relative z-10" style={{ isolation: 'isolate' }}>
+      <div
+        className="relative z-10 mx-3 mb-3 flex flex-1 min-h-0 overflow-hidden rounded-[34px] border border-white/[0.10] bg-white/[0.025] shadow-[0_24px_90px_rgba(0,0,0,0.28)]"
+        style={{ isolation: 'isolate' }}
+      >
         <Sidebar />
         <main className="flex-1 overflow-y-auto overflow-x-hidden">
           <StableOutlet />

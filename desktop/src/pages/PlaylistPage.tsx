@@ -104,8 +104,8 @@ const PlaylistLikeBtn = React.memo(
         title={t('track.likes')}
         className={`inline-flex items-center gap-1.5 px-3 h-10 rounded-xl text-[12.5px] font-semibold tabular-nums transition-all duration-200 ease-[var(--ease-apple)] cursor-pointer border ${
           liked
-            ? 'bg-accent/15 text-accent border-accent/25 shadow-[0_0_16px_rgba(255,85,0,0.18)]'
-            : 'bg-white/[0.04] border-white/[0.06] text-white/65 hover:bg-white/[0.07] hover:text-white/90 hover:border-white/[0.1]'
+            ? 'bg-accent/15 text-accent border-accent/25 shadow-[0_0_16px_color-mix(in_srgb,var(--color-accent-glow)_100%,transparent)]'
+            : 'liquid-control text-white/72 hover:text-white/95'
         }`}
       >
         <Heart size={14} fill={liked ? 'currentColor' : 'none'} />
@@ -192,8 +192,8 @@ const SortableTrackRow = React.memo(
           contentVisibility: 'auto',
           containIntrinsicSize: '68px',
         }}
-        className={`group flex items-center gap-3.5 px-4 py-3 rounded-xl transition-colors duration-200 ease-[var(--ease-apple)] select-none ${
-          isThis ? 'bg-accent/[0.05] ring-1 ring-accent/15' : 'hover:bg-white/[0.03]'
+        className={`group flex items-center gap-3.5 px-4 py-3 rounded-[22px] transition-colors duration-200 ease-[var(--ease-apple)] select-none ${
+          isThis ? 'liquid-control ring-1 ring-accent/20' : 'hover:bg-white/[0.07]'
         }`}
       >
         {isOwner && (
@@ -212,7 +212,7 @@ const SortableTrackRow = React.memo(
           onMouseEnter={() => preloadTrack(track.urn)}
         >
           {isThisPlaying ? (
-            <div className="w-7 h-7 rounded-full bg-accent text-accent-contrast flex items-center justify-center shadow-[0_0_12px_var(--color-accent-glow)]">
+            <div className="w-7 h-7 rounded-full bg-accent text-accent-contrast flex items-center justify-center shadow-[0_0_12px_color-mix(in_srgb,var(--color-accent-glow)_100%,transparent)]">
               {pauseWhite12}
             </div>
           ) : (
@@ -309,8 +309,8 @@ const TrackRow = React.memo(
     return (
       <div
         style={{ contentVisibility: 'auto', containIntrinsicSize: '68px' }}
-        className={`group flex items-center gap-3.5 px-4 py-3 rounded-xl transition-all duration-200 ease-[var(--ease-apple)] select-none ${
-          isThis ? 'bg-accent/[0.05] ring-1 ring-accent/15' : 'hover:bg-white/[0.03]'
+        className={`group flex items-center gap-3.5 px-4 py-3 rounded-[22px] transition-all duration-200 ease-[var(--ease-apple)] select-none ${
+          isThis ? 'liquid-control ring-1 ring-accent/20' : 'hover:bg-white/[0.07]'
         }`}
       >
         <div
@@ -319,7 +319,7 @@ const TrackRow = React.memo(
           onMouseEnter={() => preloadTrack(track.urn)}
         >
           {isThisPlaying ? (
-            <div className="w-7 h-7 rounded-full bg-accent text-accent-contrast flex items-center justify-center shadow-[0_0_12px_var(--color-accent-glow)]">
+            <div className="w-7 h-7 rounded-full bg-accent text-accent-contrast flex items-center justify-center shadow-[0_0_12px_color-mix(in_srgb,var(--color-accent-glow)_100%,transparent)]">
               {pauseWhite12}
             </div>
           ) : (
@@ -562,9 +562,9 @@ export const PlaylistPage = React.memo(() => {
   };
 
   return (
-    <div className="p-6 pb-4 space-y-7 animate-fade-in-up">
+    <div className="space-y-7 p-6 pb-4 animate-fade-in-up">
       {/* ── Hero ─────────────────────────────────────── */}
-      <section className="relative rounded-3xl overflow-hidden glass-featured">
+      <section className="glass-featured relative overflow-hidden rounded-[36px]">
         {cover && (
           <div className="absolute inset-0 pointer-events-none">
             <img
@@ -673,7 +673,7 @@ export const PlaylistPage = React.memo(() => {
                   type="button"
                   onClick={handleShuffle}
                   title={t('playlist.shuffle')}
-                  className="inline-flex items-center gap-1.5 px-3 h-10 rounded-xl text-[12.5px] font-semibold transition-all duration-200 ease-[var(--ease-apple)] cursor-pointer border bg-white/[0.04] border-white/[0.06] text-white/65 hover:bg-white/[0.07] hover:text-white/90 hover:border-white/[0.1]"
+                  className="liquid-control inline-flex h-10 cursor-pointer items-center gap-1.5 rounded-[18px] px-3 text-[12.5px] font-semibold text-white/72 transition-all duration-200 ease-[var(--ease-apple)] hover:text-white/95"
                 >
                   <Shuffle size={14} />
                   <span>{t('playlist.shuffle')}</span>
@@ -684,8 +684,8 @@ export const PlaylistPage = React.memo(() => {
                   title={isPinned ? t('sidebar.unpinPlaylist') : t('sidebar.pinPlaylist')}
                   className={`inline-flex items-center justify-center w-10 h-10 rounded-xl border transition-all duration-200 ease-[var(--ease-apple)] cursor-pointer ${
                     isPinned
-                      ? 'bg-accent/15 border-accent/25 text-accent shadow-[0_0_16px_rgba(255,85,0,0.18)]'
-                      : 'bg-white/[0.04] border-white/[0.06] text-white/65 hover:bg-white/[0.07] hover:text-white/90 hover:border-white/[0.1]'
+                      ? 'bg-accent/15 border-accent/25 text-accent shadow-[0_0_16px_color-mix(in_srgb,var(--color-accent-glow)_100%,transparent)]'
+                      : 'liquid-control text-white/72 hover:text-white/95'
                   }`}
                 >
                   <MapPin size={15} />
@@ -748,7 +748,7 @@ export const PlaylistPage = React.memo(() => {
 
       {/* ── Description ──────────────────────────────── */}
       {playlist.description && (
-        <section className="glass rounded-2xl p-5">
+        <section className="glass rounded-[28px] p-5">
           <p className="text-[13px] text-white/45 leading-relaxed whitespace-pre-wrap break-words">
             {playlist.description}
           </p>
@@ -776,7 +776,7 @@ export const PlaylistPage = React.memo(() => {
               </span>
               <span className="w-7" />
             </div>
-            <div className="h-px bg-white/[0.04] mx-4 mb-1" />
+            <div className="h-px bg-white/[0.075] mx-4 mb-1" />
 
             <DndContext
               sensors={sensors}
@@ -823,7 +823,7 @@ export const PlaylistPage = React.memo(() => {
                 <Clock size={10} className="inline" />
               </span>
             </div>
-            <div className="h-px bg-white/[0.04] mx-4 mb-1" />
+            <div className="h-px bg-white/[0.075] mx-4 mb-1" />
 
             <VirtualList
               items={tracks}

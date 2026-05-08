@@ -1,6 +1,7 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import { useSettingsStore } from '../stores/settings';
+
 const FALLBACK_LANGUAGE = 'en';
 const localeLoaders = {
   en: () => import('./locales/en.json'),

@@ -65,7 +65,7 @@ export const SoundWaveSimilarBlock = React.memo(function SoundWaveSimilarBlock({
 
   return (
     <section
-      className="relative rounded-3xl overflow-hidden glass-featured select-none"
+      className="relative overflow-hidden rounded-[34px] glass-featured select-none"
       style={{
         boxShadow:
           '0 0 0 1px rgba(255,255,255,0.04) inset, 0 10px 40px rgba(0,0,0,0.35), 0 0 40px var(--color-accent-glow)',

@@ -74,8 +74,7 @@ export const ReAuthOverlay = React.memo(() => {
           <div
             className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-24 pointer-events-none"
             style={{
-              background:
-                'radial-gradient(ellipse, var(--color-accent-glow, rgba(255,85,0,0.15)) 0%, transparent 70%)',
+              background: 'radial-gradient(ellipse, var(--color-accent-glow) 0%, transparent 70%)',
               transform: 'translateZ(0)',
             }}
           />
@@ -141,7 +140,7 @@ export const ReAuthOverlay = React.memo(() => {
                 <button
                   type="button"
                   onClick={handleLogin}
-                  className="w-full py-3 rounded-xl bg-accent text-accent-contrast font-semibold text-[13px] hover:bg-accent-hover active:scale-[0.97] transition-all duration-200 cursor-pointer shadow-[0_0_30px_var(--color-accent-glow),0_2px_8px_rgba(0,0,0,0.3)]"
+                  className="w-full py-3 rounded-xl bg-accent text-accent-contrast font-semibold text-[13px] hover:bg-accent-hover active:scale-[0.97] transition-all duration-200 cursor-pointer shadow-[0_0_30px_color-mix(in_srgb,var(--color-accent-glow)_100%,transparent),0_2px_8px_rgba(0,0,0,0.3)]"
                 >
                   {t('reauth.signIn')}
                 </button>

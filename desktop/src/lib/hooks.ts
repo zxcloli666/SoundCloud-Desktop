@@ -262,7 +262,7 @@ export function useHistory(limit = 50) {
 
 export interface FeaturedResponse {
   type: 'track' | 'playlist' | 'user';
-  data: any;
+  data: Track | Playlist | SCUser;
 }
 
 export function useFeatured() {

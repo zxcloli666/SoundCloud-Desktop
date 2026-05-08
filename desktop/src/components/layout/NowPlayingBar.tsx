@@ -90,7 +90,7 @@ const DownloadProgressPanel = React.memo(() => {
   return (
     <div className="pointer-events-none absolute left-1/2 top-0 z-30 -translate-x-1/2 -translate-y-[calc(100%+8px)]">
       <div
-        className="flex min-w-[148px] items-center gap-2.5 rounded-full border border-white/[0.08] bg-white/[0.045] px-3 py-2 shadow-[0_10px_34px_rgba(0,0,0,0.32),inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-[22px]"
+        className="liquid-control flex min-w-[148px] items-center gap-2.5 rounded-full px-3 py-2"
         style={{ contain: 'strict', transform: 'translateZ(0)' }}
       >
         <div className="relative h-1.5 w-20 overflow-hidden rounded-full bg-white/[0.09]">
@@ -188,15 +188,15 @@ export const ProgressSlider = React.memo(() => {
       onValueChange={onValueChange}
       onValueCommit={onValueCommit}
     >
-      <Slider.Track className="relative h-[3px] grow rounded-full bg-white/[0.08] group-hover:h-[5px] transition-all duration-150">
+      <Slider.Track className="relative h-[4px] grow rounded-full bg-white/[0.12] shadow-[inset_0_1px_2px_rgba(0,0,0,0.25)] transition-all duration-150 group-hover:h-[6px]">
         <Slider.Range
           ref={rangeRef}
-          className="absolute h-full rounded-full bg-accent will-change-transform"
+          className="absolute h-full rounded-full bg-[linear-gradient(90deg,var(--color-accent),var(--color-accent-hover))] shadow-[0_0_14px_color-mix(in_srgb,var(--color-accent-glow)_100%,transparent)] will-change-transform"
         />
       </Slider.Track>
       <Slider.Thumb
         ref={thumbRef}
-        className="block w-3 h-3 rounded-full bg-accent shadow-[0_0_10px_var(--color-accent-glow)] scale-0 opacity-0 group-hover:scale-100 group-hover:opacity-100 transition-all duration-150 outline-none will-change-transform"
+        className="block w-3 h-3 rounded-full bg-accent shadow-[0_0_10px_color-mix(in_srgb,var(--color-accent-glow)_100%,transparent)] scale-0 opacity-0 group-hover:scale-100 group-hover:opacity-100 transition-all duration-150 outline-none will-change-transform"
       />
     </Slider.Root>
   );
@@ -234,7 +234,7 @@ export const VolumeSlider = React.memo(({ className = '' }: { className?: string
           setVolume(Math.max(0, Math.min(200, volume + (e.deltaY < 0 ? 1 : -1))));
         }}
       >
-        <Slider.Track className="relative h-[3px] grow rounded-full bg-white/[0.08] group-hover:h-[4px] transition-all duration-150">
+        <Slider.Track className="relative h-[4px] grow rounded-full bg-white/[0.12] shadow-[inset_0_1px_2px_rgba(0,0,0,0.24)] transition-all duration-150 group-hover:h-[5px]">
           <Slider.Range
             className={`absolute h-full rounded-full ${isOver100 ? 'bg-amber-400/80' : 'bg-white/60'}`}
           />
@@ -447,8 +447,10 @@ export function NowBarDislikeButton({ trackUrn }: { trackUrn: string }) {
 /* ── Isolated control buttons ────────────────────────────────── */
 
 const btnClass = (active: boolean, size: 'default' | 'sm') =>
-  `${size === 'sm' ? 'w-9 h-9' : 'w-10 h-10'} rounded-full flex items-center justify-center transition-all duration-150 ease-[var(--ease-apple)] cursor-pointer hover:bg-white/[0.04] ${
-    active ? 'text-accent' : 'text-white/40 hover:text-white/70'
+  `${size === 'sm' ? 'w-9 h-9' : 'w-10 h-10'} rounded-full flex items-center justify-center transition-all duration-150 ease-[var(--ease-apple)] cursor-pointer hover:bg-white/[0.10] hover:shadow-[inset_1px_1px_0_rgba(255,255,255,0.18)] ${
+    active
+      ? 'bg-white/[0.10] text-accent shadow-[0_0_16px_color-mix(in_srgb,var(--color-accent-glow)_100%,transparent)]'
+      : 'text-white/48 hover:text-white/86'
   }`;
 
 const PlayPauseBtn = React.memo(() => {
@@ -458,7 +460,7 @@ const PlayPauseBtn = React.memo(() => {
     <button
       type="button"
       onClick={togglePlay}
-      className="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center text-black hover:bg-white hover:scale-105 active:scale-95 transition-all duration-200 ease-[var(--ease-apple)] cursor-pointer mx-1.5"
+      className="liquid-button-primary mx-1.5 flex h-12 w-12 cursor-pointer items-center justify-center rounded-full text-accent-contrast transition-all duration-200 ease-[var(--ease-apple)] hover:scale-105 active:scale-95"
     >
       {isPlaying ? pauseBlack20 : playBlack20}
     </button>
@@ -585,7 +587,7 @@ export const PlaybackRateSlider = React.memo(() => {
         <Slider.Track className="relative h-[3px] grow rounded-full bg-white/[0.08] transition-all duration-150 group-hover/rate:h-[4px]">
           <Slider.Range className="absolute h-full rounded-full bg-accent" />
         </Slider.Track>
-        <Slider.Thumb className="block h-2.5 w-2.5 rounded-full bg-accent shadow-[0_0_10px_var(--color-accent-glow)] outline-none transition-all duration-150 scale-0 opacity-0 group-hover/rate:scale-100 group-hover/rate:opacity-100" />
+        <Slider.Thumb className="block h-2.5 w-2.5 rounded-full bg-accent shadow-[0_0_10px_color-mix(in_srgb,var(--color-accent-glow)_100%,transparent)] outline-none transition-all duration-150 scale-0 opacity-0 group-hover/rate:scale-100 group-hover/rate:opacity-100" />
       </Slider.Root>
       {/* 1.00x tick mark */}
       <div className="relative mt-1 h-2 w-full pointer-events-none">
@@ -698,7 +700,7 @@ export const PitchSlider = React.memo(() => {
         <Slider.Track className="relative h-[3px] grow rounded-full bg-white/[0.08] transition-all duration-150 group-hover/pitch:h-[4px]">
           <Slider.Range className="absolute h-full rounded-full bg-accent" />
         </Slider.Track>
-        <Slider.Thumb className="block h-2.5 w-2.5 rounded-full bg-accent shadow-[0_0_10px_var(--color-accent-glow)] outline-none transition-all duration-150 scale-0 opacity-0 group-hover/pitch:scale-100 group-hover/pitch:opacity-100 disabled:scale-0 disabled:opacity-0" />
+        <Slider.Thumb className="block h-2.5 w-2.5 rounded-full bg-accent shadow-[0_0_10px_color-mix(in_srgb,var(--color-accent-glow)_100%,transparent)] outline-none transition-all duration-150 scale-0 opacity-0 group-hover/pitch:scale-100 group-hover/pitch:opacity-100 disabled:scale-0 disabled:opacity-0" />
       </Slider.Root>
       {/* 0 semi tick */}
       <div className="relative mt-1 h-2 w-full pointer-events-none">
@@ -845,14 +847,17 @@ const BackgroundGlow = React.memo(() => {
 export const NowPlayingBar = React.memo(
   ({ onQueueToggle, queueOpen }: { onQueueToggle: () => void; queueOpen: boolean }) => {
     return (
-      <div className="shrink-0 relative z-[50]">
+      <div className="relative z-[50] mx-3 mb-3 shrink-0">
         <BackgroundGlow />
         {/* Isolated layer — repaints here won't cascade to blur background */}
-        <div className="relative" style={{ isolation: 'isolate' }}>
+        <div
+          className="liquid-panel relative overflow-visible rounded-[30px]"
+          style={{ isolation: 'isolate' }}
+        >
           <DownloadProgressPanel />
           <ProgressSlider />
 
-          <div className="h-[76px] flex items-center px-5 gap-3 relative">
+          <div className="relative flex h-[82px] items-center gap-3 px-5">
             {/* Left: track info */}
             <TrackInfo />
 

@@ -71,9 +71,9 @@ function SectionHeader({
 }) {
   const { t } = useTranslation();
   return (
-    <div className="flex items-center justify-between mb-5">
+    <div className="mb-5 flex items-center justify-between">
       <div className="flex items-center gap-2.5">
-        <div className="w-8 h-8 rounded-xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center">
+        <div className="liquid-control flex h-8 w-8 items-center justify-center rounded-2xl">
           {icon}
         </div>
         <h2 className="text-[15px] font-semibold tracking-tight text-white/90">{title}</h2>
@@ -82,7 +82,7 @@ function SectionHeader({
         <button
           type="button"
           onClick={onSeeAll}
-          className="flex items-center gap-1 text-[11px] text-white/30 hover:text-white/60 transition-colors duration-200 cursor-pointer"
+          className="liquid-chip flex cursor-pointer items-center gap-1 rounded-full px-3 py-1.5 text-[11px] text-white/52 transition-colors duration-200 hover:text-white/86"
         >
           {t('common.seeAll')}
           <ChevronRight size={12} />
@@ -110,7 +110,7 @@ function ShelfSkeleton({ count = 8 }: { count?: number }) {
 
 function FeaturedSkeleton() {
   return (
-    <div className="glass rounded-3xl p-6 flex items-center gap-6">
+    <div className="glass rounded-[30px] p-6 flex items-center gap-6">
       <Skeleton className="w-[160px] h-[160px] shrink-0" rounded="lg" />
       <div className="flex-1 space-y-3">
         <Skeleton className="h-6 w-3/4" rounded="sm" />
@@ -127,7 +127,7 @@ function FeedSkeleton({ count = 6 }: { count?: number }) {
   return (
     <div className="grid grid-cols-[repeat(auto-fill,minmax(380px,1fr))] gap-2.5">
       {Array.from({ length: count }).map((_, i) => (
-        <div key={i} className="glass-flat rounded-2xl p-3 flex items-center gap-3.5">
+        <div key={i} className="glass-flat rounded-[24px] p-3 flex items-center gap-3.5">
           <Skeleton className="w-[76px] h-[76px] shrink-0" rounded="lg" />
           <div className="flex-1 space-y-2">
             <Skeleton className="h-4 w-3/4" rounded="sm" />
@@ -154,7 +154,7 @@ const FeaturedCard = React.memo(
 
     return (
       <div
-        className="relative rounded-3xl overflow-hidden group glass-featured select-none"
+        className="relative overflow-hidden rounded-[34px] group glass-featured select-none"
         onMouseEnter={() => preloadTrack(track.urn)}
       >
         {/* Blurred artwork background */}
@@ -248,7 +248,7 @@ const FeaturedCard = React.memo(
 
             <div className="flex items-center gap-3 mt-4 flex-wrap">
               {track.genre && (
-                <span className="text-[10px] font-medium px-2.5 py-1 rounded-full bg-white/[0.06] text-white/45 border border-white/[0.06]">
+                <span className="text-[10px] font-medium px-2.5 py-1 liquid-chip rounded-full text-white/68">
                   {track.genre}
                 </span>
               )}
@@ -299,7 +299,7 @@ const FeedTrackCard = React.memo(
 
     return (
       <div
-        className={`group glass-flat rounded-2xl p-3 flex items-center gap-3.5 transition-all duration-300 ease-[var(--ease-apple)] select-none ${
+        className={`group glass-flat rounded-[24px] p-3 flex items-center gap-3.5 transition-all duration-300 ease-[var(--ease-apple)] select-none ${
           isThis ? 'ring-1 ring-accent/20 bg-accent/[0.02]' : 'hover:bg-white/[0.035]'
         }`}
         onMouseEnter={() => preloadTrack(track.urn)}
@@ -363,7 +363,7 @@ const FeedTrackCard = React.memo(
           </p>
           <div className="flex items-center gap-2 mt-1.5 text-[10px] text-white/20 tabular-nums">
             {track.genre && (
-              <span className="px-1.5 py-px rounded-full bg-white/[0.04] text-white/30 border border-white/[0.04] text-[9px]">
+              <span className="px-1.5 py-px liquid-chip rounded-full text-white/50 text-[9px]">
                 {track.genre}
               </span>
             )}
@@ -455,7 +455,7 @@ const FeedPlaylistCard = React.memo(
 
     return (
       <div
-        className={`group glass-flat rounded-2xl p-3 flex items-center gap-3.5 transition-all duration-300 ease-[var(--ease-apple)] select-none ${
+        className={`group glass-flat rounded-[24px] p-3 flex items-center gap-3.5 transition-all duration-300 ease-[var(--ease-apple)] select-none ${
           isPlayingFromThis ? 'ring-1 ring-accent/20 bg-accent/[0.02]' : 'hover:bg-white/[0.035]'
         }`}
       >
@@ -606,7 +606,7 @@ const FeaturedPlaylistHero = React.memo(function FeaturedPlaylistHero({
   };
 
   return (
-    <div className="relative rounded-3xl overflow-hidden group glass-featured select-none">
+    <div className="relative overflow-hidden rounded-[34px] group glass-featured select-none">
       {cover && (
         <div className="absolute inset-0 pointer-events-none">
           <img
@@ -692,7 +692,7 @@ const FeaturedPlaylistHero = React.memo(function FeaturedPlaylistHero({
 
           <div className="flex items-center gap-3 mt-4 text-[11px] text-white/25 tabular-nums">
             {playlist.genre && (
-              <span className="text-[10px] font-medium px-2.5 py-1 rounded-full bg-white/[0.06] text-white/45 border border-white/[0.06]">
+              <span className="text-[10px] font-medium px-2.5 py-1 liquid-chip rounded-full text-white/68">
                 {playlist.genre}
               </span>
             )}
@@ -734,7 +734,7 @@ const FeaturedUserHero = React.memo(function FeaturedUserHero({ user }: { user: 
 
   return (
     <div
-      className="relative rounded-3xl overflow-hidden group glass-featured select-none cursor-pointer"
+      className="relative overflow-hidden rounded-[34px] group glass-featured select-none cursor-pointer"
       onClick={() => navigate(`/user/${encodeURIComponent(user.urn)}`)}
     >
       {avatar && (
@@ -866,7 +866,7 @@ const FallbackShelf = React.memo(function FallbackShelf() {
   return (
     <>
       {/* Hint to start liking */}
-      <section className="glass-flat rounded-2xl p-5 flex items-center gap-4">
+      <section className="glass-flat rounded-[26px] p-5 flex items-center gap-4">
         <div className="w-10 h-10 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center shrink-0">
           <Heart size={18} className="text-accent" />
         </div>
@@ -1023,8 +1023,8 @@ const DiscoverSection = React.memo(function DiscoverSection({
                 onClick={() => setActiveGenre(g)}
                 className={`px-3.5 py-1.5 rounded-full text-[12px] font-medium transition-all duration-200 cursor-pointer capitalize ${
                   selectedGenre === g
-                    ? 'bg-white/[0.12] text-white border border-white/[0.08]'
-                    : 'bg-white/[0.03] text-white/40 border border-white/[0.04] hover:bg-white/[0.06] hover:text-white/60'
+                    ? 'liquid-control text-white'
+                    : 'text-white/48 hover:bg-white/[0.075] hover:text-white/76'
                 }`}
               >
                 {g}
@@ -1148,14 +1148,17 @@ export function Home() {
   );
 
   return (
-    <div className="p-6 pb-4 space-y-8">
+    <div className="space-y-8 p-6 pb-4">
       {/* Hero Greeting — no data hooks, won't re-render */}
-      <section className="pt-1">
-        <h1 className="hero-greeting text-3xl font-bold tracking-tight leading-tight pb-1">
-          {t(greetingKey())}
-          {user?.username ? `, ${user.username}` : ''}
-        </h1>
-        <div className="mt-3 h-px bg-gradient-to-r from-white/[0.06] via-white/[0.03] to-transparent" />
+      <section className="liquid-panel rounded-[34px] px-7 py-6">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_0%,rgba(255,255,255,0.10),transparent_38%)]" />
+        <div className="relative">
+          <h1 className="liquid-hero-text pb-1 text-4xl font-bold leading-tight tracking-tight">
+            {t(greetingKey())}
+            {user?.username ? `, ${user.username}` : ''}
+          </h1>
+          <div className="mt-4 h-px bg-gradient-to-r from-white/[0.18] via-white/[0.06] to-transparent" />
+        </div>
       </section>
 
       {/* SoundWave — AI-powered recommendations, at the very top */}

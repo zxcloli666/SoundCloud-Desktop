@@ -57,10 +57,10 @@ export const PlaylistCard = React.memo(
 
     return (
       <div
-        className="group relative flex flex-col gap-3 cursor-pointer select-none"
+        className="group relative flex cursor-pointer select-none flex-col gap-3 rounded-[26px] p-2 transition-all duration-300 ease-[var(--ease-apple)] hover:bg-white/[0.045]"
         onClick={() => navigate(`/playlist/${encodeURIComponent(playlist.urn)}`)}
       >
-        <div className="relative aspect-square rounded-2xl overflow-hidden bg-white/[0.02] ring-1 ring-white/[0.06] shadow-lg group-hover:shadow-2xl group-hover:ring-white/[0.15] transition-all duration-500 ease-[var(--ease-apple)]">
+        <div className="liquid-surface relative aspect-square overflow-hidden rounded-[24px] transition-all duration-500 ease-[var(--ease-apple)] group-hover:scale-[1.015]">
           {cover ? (
             <img
               src={cover}
@@ -79,16 +79,16 @@ export const PlaylistCard = React.memo(
             <div
               className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ${
                 isPlayingFromThis
-                  ? 'bg-black/40 backdrop-blur-sm opacity-100'
-                  : 'bg-black/0 opacity-0 group-hover:bg-black/40 group-hover:backdrop-blur-sm group-hover:opacity-100'
+                  ? 'bg-black/26 backdrop-blur-[5px] opacity-100'
+                  : 'bg-black/0 opacity-0 group-hover:bg-black/26 group-hover:backdrop-blur-[5px] group-hover:opacity-100'
               }`}
             >
               <div
                 onClick={handlePlay}
                 className={`w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 ease-[var(--ease-apple)] shadow-2xl hover:scale-110 active:scale-95 ${
                   isPlayingFromThis
-                    ? 'bg-white scale-100'
-                    : 'bg-white/90 scale-75 group-hover:scale-100'
+                    ? 'liquid-button-primary text-accent-contrast scale-100'
+                    : 'liquid-control text-white scale-75 group-hover:scale-100'
                 }`}
               >
                 {isPlayingFromThis ? (
@@ -99,12 +99,12 @@ export const PlaylistCard = React.memo(
               </div>
             </div>
           ) : (
-            <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <div className="absolute inset-0 bg-black/24 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
           )}
 
           {playlist.track_count != null && (
             <div
-              className={`absolute bottom-2.5 right-2.5 flex items-center gap-1.5 text-[11px] font-medium bg-black/60 backdrop-blur-md text-white/90 px-2.5 py-1 rounded-full shadow-lg ${
+              className={`liquid-chip absolute bottom-2.5 right-2.5 flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium text-white/90 ${
                 showPlayback
                   ? 'opacity-0 group-hover:opacity-100 transition-opacity duration-300'
                   : ''

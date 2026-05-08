@@ -45,7 +45,7 @@ export const SoundWaveLockOverlay = React.memo(function SoundWaveLockOverlay() {
 
   return (
     <div
-      className="absolute inset-0 z-20 rounded-3xl overflow-hidden"
+      className="absolute inset-0 z-20 overflow-hidden rounded-[34px]"
       style={{ contain: 'layout paint style' }}
     >
       {/* Vision Pro glass: heavy blur of underlying SoundWave content */}

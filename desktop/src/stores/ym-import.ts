@@ -303,24 +303,19 @@ async function flushPlaylistSync(
   } finally {
     syncInFlight = false;
 
-    if (!currentRunIsActive(runId)) {
-      return;
-    }
-
-    if (syncQueued) {
+    if (currentRunIsActive(runId) && syncQueued) {
       const nextFinalize = queuedFinalize;
       const nextDeleteStale = queuedDeleteStale;
       syncQueued = false;
       queuedFinalize = false;
       queuedDeleteStale = false;
       await flushPlaylistSync(runId, nextFinalize, nextDeleteStale);
-      return;
+    } else if (currentRunIsActive(runId)) {
+      const { phase } = useYmImportStore.getState();
+      useYmImportStore.setState({
+        saving: phase === 'running' || phase === 'stopping',
+      });
     }
-
-    const { phase } = useYmImportStore.getState();
-    useYmImportStore.setState({
-      saving: phase === 'running' || phase === 'stopping',
-    });
   }
 }
 

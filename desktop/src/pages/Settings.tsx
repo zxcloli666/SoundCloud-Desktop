@@ -80,7 +80,7 @@ const LanguageSection = React.memo(function LanguageSection() {
   const { t, i18n } = useTranslation();
 
   return (
-    <section className="bg-white/[0.02] border border-white/[0.05] backdrop-blur-[60px] rounded-3xl p-6 shadow-xl">
+    <section className="liquid-panel rounded-[30px] p-6">
       <h3 className="text-[15px] font-bold text-white/80 tracking-tight mb-4">
         {t('settings.language')}
       </h3>
@@ -89,10 +89,10 @@ const LanguageSection = React.memo(function LanguageSection() {
           <button
             key={lang.code}
             onClick={() => void changeAppLanguage(lang.code)}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-200 cursor-pointer border ${
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-[18px] text-[13px] font-semibold transition-all duration-200 cursor-pointer border ${
               i18n.language === lang.code
-                ? 'bg-white/[0.1] text-white/90 border-white/[0.15]'
-                : 'bg-white/[0.02] text-white/40 border-white/[0.05] hover:bg-white/[0.06] hover:text-white/60'
+                ? 'liquid-control text-white/90 border-white/[0.20]'
+                : 'text-white/48 border-white/[0.08] hover:bg-white/[0.075] hover:text-white/76'
             }`}
           >
             <Globe size={14} strokeWidth={1.8} />
@@ -139,7 +139,7 @@ function CacheRow({
       <button
         onClick={onClear}
         disabled={clearing || size === 0}
-        className="flex items-center gap-2 px-4 py-2 rounded-xl text-[12px] font-semibold bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/10 hover:border-red-500/20 transition-all duration-300 disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
+        className="flex items-center gap-2 px-4 py-2 rounded-[18px] text-[12px] font-semibold bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/10 hover:border-red-500/20 transition-all duration-300 disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
       >
         {clearing ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
         {t('settings.clearCache')}
@@ -307,7 +307,7 @@ const CacheSection = React.memo(function CacheSection() {
       : 0;
 
   return (
-    <section className="bg-white/[0.02] border border-white/[0.05] backdrop-blur-[60px] rounded-3xl p-6 shadow-xl space-y-2">
+    <section className="liquid-panel rounded-[30px] p-6 space-y-2">
       <div className="flex items-center justify-between mb-2">
         <h3 className="text-[15px] font-bold text-white/80 tracking-tight">
           {t('settings.cache')}
@@ -330,7 +330,7 @@ const CacheSection = React.memo(function CacheSection() {
         onClear={handleClearAudio}
         t={t}
       />
-      <div className="border-t border-white/[0.04]" />
+      <div className="border-t border-white/[0.10]" />
       <CacheRow
         label={t('settings.assetsCacheSize')}
         size={imagesSize}
@@ -338,7 +338,7 @@ const CacheSection = React.memo(function CacheSection() {
         onClear={handleClearImages}
         t={t}
       />
-      <div className="border-t border-white/[0.04]" />
+      <div className="border-t border-white/[0.10]" />
       <CacheRow
         label={t('settings.likedCacheSize')}
         size={likedSize}
@@ -375,7 +375,7 @@ const CacheSection = React.memo(function CacheSection() {
             </div>
             <button
               onClick={handleCancelCacheLikes}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl text-[12px] font-semibold bg-white/[0.04] text-white/60 hover:bg-white/[0.08] border border-white/[0.06] hover:border-white/[0.12] transition-all duration-200 cursor-pointer"
+              className="flex items-center gap-2 px-4 py-2 rounded-[18px] text-[12px] font-semibold liquid-control text-white/66 transition-all duration-200 cursor-pointer"
             >
               <X size={12} />
               {t('common.cancel')}
@@ -384,7 +384,7 @@ const CacheSection = React.memo(function CacheSection() {
         ) : (
           <button
             onClick={handleCacheLikes}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-[12px] font-semibold bg-white/[0.06] text-white/75 hover:bg-white/[0.1] border border-white/[0.06] hover:border-white/[0.12] transition-all duration-200 cursor-pointer"
+            className="liquid-control flex cursor-pointer items-center gap-2 rounded-[18px] px-4 py-2 text-[12px] font-semibold text-white/78 transition-all duration-200"
           >
             <Download size={12} />
             {t('settings.cacheLikes')}
@@ -392,7 +392,7 @@ const CacheSection = React.memo(function CacheSection() {
         )}
       </div>
 
-      <div className="border-t border-white/[0.04]" />
+      <div className="border-t border-white/[0.10]" />
       <div className="pt-3 space-y-3">
         <div className="flex items-center justify-between">
           <div>
@@ -504,7 +504,7 @@ const WallpaperPicker = React.memo(function WallpaperPicker() {
           className={`w-20 h-14 rounded-xl border-2 transition-all duration-200 cursor-pointer flex items-center justify-center ${
             !backgroundImage
               ? 'border-white/40 bg-white/[0.08]'
-              : 'border-white/[0.06] bg-white/[0.02] hover:border-white/[0.12]'
+              : 'border-white/[0.12] bg-white/[0.045] hover:border-white/[0.12]'
           }`}
         >
           <span className="text-[10px] text-white/40 font-semibold">{t('settings.none')}</span>
@@ -519,7 +519,7 @@ const WallpaperPicker = React.memo(function WallpaperPicker() {
               className={`relative group w-20 h-14 rounded-xl overflow-hidden border-2 transition-all duration-200 cursor-pointer ${
                 backgroundImage === name
                   ? 'border-white/40 shadow-[0_0_12px_rgba(255,255,255,0.1)]'
-                  : 'border-white/[0.06] hover:border-white/[0.15]'
+                  : 'border-white/[0.12] hover:border-white/[0.15]'
               }`}
               onClick={() => handleSelect(name)}
             >
@@ -543,7 +543,7 @@ const WallpaperPicker = React.memo(function WallpaperPicker() {
         })}
 
         {loading && (
-          <div className="w-20 h-14 rounded-xl bg-white/[0.02] border border-white/[0.06] flex items-center justify-center">
+          <div className="w-20 h-14 rounded-xl bg-white/[0.045] border border-white/[0.12] flex items-center justify-center">
             <Loader2 size={14} className="animate-spin text-white/20" />
           </div>
         )}
@@ -551,7 +551,7 @@ const WallpaperPicker = React.memo(function WallpaperPicker() {
         {/* Add from file */}
         <button
           onClick={() => fileInputRef.current?.click()}
-          className="w-20 h-14 rounded-xl border-2 border-dashed border-white/[0.1] hover:border-white/[0.2] transition-all cursor-pointer flex flex-col items-center justify-center gap-0.5 hover:bg-white/[0.02]"
+          className="w-20 h-14 rounded-xl border-2 border-dashed border-white/[0.1] hover:border-white/[0.2] transition-all cursor-pointer flex flex-col items-center justify-center gap-0.5 hover:bg-white/[0.045]"
         >
           <span className="text-[14px] text-white/30 font-light leading-none">+</span>
           <span className="text-[9px] text-white/25 font-medium">{t('settings.addFile')}</span>
@@ -569,8 +569,8 @@ const WallpaperPicker = React.memo(function WallpaperPicker() {
           onClick={() => setShowUrlInput(!showUrlInput)}
           className={`w-20 h-14 rounded-xl border-2 border-dashed transition-all cursor-pointer flex flex-col items-center justify-center gap-0.5 ${
             showUrlInput
-              ? 'border-white/[0.2] bg-white/[0.04]'
-              : 'border-white/[0.1] hover:border-white/[0.2] hover:bg-white/[0.02]'
+              ? 'border-white/[0.2] bg-white/[0.075]'
+              : 'border-white/[0.1] hover:border-white/[0.2] hover:bg-white/[0.045]'
           }`}
         >
           <Link size={12} className="text-white/30" />
@@ -587,13 +587,13 @@ const WallpaperPicker = React.memo(function WallpaperPicker() {
             onChange={(e) => setUrlInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleDownloadUrl()}
             placeholder={t('settings.bgUrlPlaceholder')}
-            className="flex-1 px-4 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.06] text-[13px] text-white/80 placeholder:text-white/20 focus:border-white/[0.12] focus:bg-white/[0.06] transition-all duration-200 outline-none"
+            className="liquid-surface flex-1 rounded-[18px] px-4 py-2.5 text-[13px] text-white/84 outline-none transition-all duration-200 placeholder:text-white/28 focus:border-white/[0.20]"
             autoFocus
           />
           <button
             onClick={handleDownloadUrl}
             disabled={downloading || !urlInput.trim()}
-            className="px-4 py-2.5 rounded-xl text-[12px] font-semibold bg-white/[0.08] text-white/70 hover:bg-white/[0.12] border border-white/[0.06] transition-all disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
+            className="px-4 py-2.5 rounded-[18px] text-[12px] font-semibold bg-white/[0.08] text-white/70 hover:bg-white/[0.12] border border-white/[0.12] transition-all disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
           >
             {downloading ? <Loader2 size={14} className="animate-spin" /> : t('settings.download')}
           </button>
@@ -623,7 +623,7 @@ const ThemeSection = React.memo(function ThemeSection() {
   const colorInputRef = useRef<HTMLInputElement>(null);
 
   return (
-    <section className="bg-white/[0.02] border border-white/[0.05] backdrop-blur-[60px] rounded-3xl p-6 shadow-xl space-y-6">
+    <section className="liquid-panel rounded-[30px] p-6 space-y-6">
       <div className="flex items-center justify-between">
         <h3 className="text-[15px] font-bold text-white/80 tracking-tight">
           {t('settings.appearance')}
@@ -650,7 +650,7 @@ const ThemeSection = React.memo(function ThemeSection() {
                 className={`group relative rounded-2xl overflow-hidden border transition-all duration-200 cursor-pointer hover:scale-[1.03] active:scale-[0.97] ${
                   isActive
                     ? 'border-white/30 ring-1 ring-white/20'
-                    : 'border-white/[0.06] hover:border-white/15'
+                    : 'border-white/[0.12] hover:border-white/15'
                 }`}
               >
                 <div
@@ -683,7 +683,7 @@ const ThemeSection = React.memo(function ThemeSection() {
             }}
             className={`group relative rounded-2xl overflow-hidden border border-dashed transition-all duration-200 cursor-pointer hover:scale-[1.03] active:scale-[0.97] ${
               themePreset === 'custom'
-                ? 'border-white/30 bg-white/[0.04]'
+                ? 'border-white/30 bg-white/[0.075]'
                 : 'border-white/[0.1] hover:border-white/20'
             }`}
           >
@@ -692,7 +692,7 @@ const ThemeSection = React.memo(function ThemeSection() {
                 +
               </span>
             </div>
-            <div className="px-3 py-2 bg-white/[0.02] text-center">
+            <div className="px-3 py-2 bg-white/[0.045] text-center">
               <span
                 className={`text-[12px] font-medium ${themePreset === 'custom' ? 'text-white/90' : 'text-white/40'}`}
               >
@@ -829,7 +829,7 @@ const AudioDeviceSection = React.memo(function AudioDeviceSection() {
   if (sinks.length === 0) return null;
 
   return (
-    <section className="bg-white/[0.02] border border-white/[0.05] backdrop-blur-[60px] rounded-3xl p-6 shadow-xl">
+    <section className="liquid-panel rounded-[30px] p-6">
       <h3 className="text-[15px] font-bold text-white/80 tracking-tight mb-4">
         {t('settings.audioDevice')}
       </h3>
@@ -839,10 +839,10 @@ const AudioDeviceSection = React.memo(function AudioDeviceSection() {
             key={sink.name}
             onClick={() => handleSwitch(sink.name)}
             disabled={switching}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-200 cursor-pointer border ${
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-[18px] text-[13px] font-semibold transition-all duration-200 cursor-pointer border ${
               sink.is_default
-                ? 'bg-white/[0.1] text-white/90 border-white/[0.15]'
-                : 'bg-white/[0.02] text-white/40 border-white/[0.05] hover:bg-white/[0.06] hover:text-white/60'
+                ? 'liquid-control text-white/90 border-white/[0.20]'
+                : 'text-white/48 border-white/[0.08] hover:bg-white/[0.075] hover:text-white/76'
             } disabled:opacity-50`}
           >
             {sink.description}
@@ -859,7 +859,7 @@ const StartupSection = React.memo(function StartupSection() {
   const setStartupPage = useSettingsStore((s) => s.setStartupPage);
 
   return (
-    <section className="bg-white/[0.02] border border-white/[0.05] backdrop-blur-[60px] rounded-3xl p-6 shadow-xl space-y-4">
+    <section className="liquid-panel rounded-[30px] p-6 space-y-4">
       <div>
         <h3 className="text-[15px] font-bold text-white/80 tracking-tight">
           {t('settings.startup')}
@@ -876,7 +876,7 @@ const StartupSection = React.memo(function StartupSection() {
               className={`rounded-2xl border px-4 py-3 text-left transition-all duration-200 cursor-pointer ${
                 active
                   ? 'border-white/[0.16] bg-white/[0.08] text-white/90'
-                  : 'border-white/[0.05] bg-white/[0.02] text-white/45 hover:bg-white/[0.05] hover:text-white/70'
+                  : 'border-white/[0.12] bg-white/[0.045] text-white/45 hover:bg-white/[0.05] hover:text-white/70'
               }`}
             >
               <span className="text-[13px] font-semibold">{t(page.labelKey)}</span>
@@ -911,7 +911,7 @@ const PlaybackSection = React.memo(function PlaybackSection() {
   const discordRpcShowButton = useSettingsStore((s) => s.discordRpcShowButton);
   const setDiscordRpcShowButton = useSettingsStore((s) => s.setDiscordRpcShowButton);
   return (
-    <section className="bg-white/[0.02] border border-white/[0.05] backdrop-blur-[60px] rounded-3xl p-6 shadow-xl space-y-5">
+    <section className="liquid-panel rounded-[30px] p-6 space-y-5">
       <h3 className="text-[15px] font-bold text-white/80 tracking-tight">
         {t('settings.playback')}
       </h3>
@@ -1055,7 +1055,7 @@ const PlaybackSection = React.memo(function PlaybackSection() {
         )}
       </div>
 
-      <div className="border-t border-white/[0.04]" />
+      <div className="border-t border-white/[0.10]" />
 
       <div className="space-y-4">
         <div className="flex items-center justify-between">
@@ -1093,7 +1093,7 @@ const PlaybackSection = React.memo(function PlaybackSection() {
                       className={`rounded-2xl border px-3 py-2.5 text-[12px] font-semibold transition-all duration-200 cursor-pointer ${
                         active
                           ? 'border-white/[0.16] bg-white/[0.08] text-white/90'
-                          : 'border-white/[0.05] bg-white/[0.02] text-white/45 hover:bg-white/[0.05] hover:text-white/70'
+                          : 'border-white/[0.12] bg-white/[0.045] text-white/45 hover:bg-white/[0.05] hover:text-white/70'
                       }`}
                     >
                       {t(mode.labelKey)}
@@ -1139,13 +1139,13 @@ const ImportSection = React.memo(function ImportSection() {
   const [ymOpen, setYmOpen] = useState(false);
 
   return (
-    <section className="bg-white/[0.02] border border-white/[0.05] backdrop-blur-[60px] rounded-3xl p-6 shadow-xl">
+    <section className="liquid-panel rounded-[30px] p-6">
       <h3 className="text-[15px] font-bold text-white/80 tracking-tight mb-4">
         {t('settings.import')}
       </h3>
       <button
         onClick={() => setYmOpen(true)}
-        className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-[13px] font-semibold bg-white/[0.06] text-white/70 hover:bg-white/[0.1] border border-white/[0.06] hover:border-white/[0.12] transition-all duration-300 cursor-pointer"
+        className="flex items-center gap-2 px-5 py-2.5 rounded-[18px] text-[13px] font-semibold liquid-control text-white/78 transition-all duration-300 cursor-pointer"
       >
         {t('settings.importYandex')}
       </button>
@@ -1172,7 +1172,7 @@ const AccountSection = React.memo(function AccountSection() {
   const [transferOpen, setTransferOpen] = useState(false);
 
   return (
-    <section className="bg-white/[0.02] border border-white/[0.05] backdrop-blur-[60px] rounded-3xl p-6 shadow-xl">
+    <section className="liquid-panel rounded-[30px] p-6">
       <h3 className="text-[15px] font-bold text-white/80 tracking-tight mb-5">
         {t('settings.account')}
       </h3>
@@ -1180,14 +1180,14 @@ const AccountSection = React.memo(function AccountSection() {
         <button
           type="button"
           onClick={() => setTransferOpen(true)}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-[13px] font-semibold bg-white/[0.04] text-white/75 hover:bg-white/[0.08] border border-white/[0.06] hover:border-white/[0.12] transition-all duration-300 cursor-pointer w-fit"
+          className="flex items-center gap-2 px-5 py-2.5 rounded-[18px] text-[13px] font-semibold liquid-control text-white/78 transition-all duration-300 cursor-pointer w-fit"
         >
           {t('qrLink.transferSession')}
         </button>
         <button
           type="button"
           onClick={logout}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-[13px] font-semibold bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/10 hover:border-red-500/20 transition-all duration-300 cursor-pointer w-fit"
+          className="flex items-center gap-2 px-5 py-2.5 rounded-[18px] text-[13px] font-semibold bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/10 hover:border-red-500/20 transition-all duration-300 cursor-pointer w-fit"
         >
           {t('auth.signOut')}
         </button>
@@ -1207,8 +1207,10 @@ export function Settings() {
   const { t } = useTranslation();
 
   return (
-    <div className="p-6 pb-4 max-w-2xl mx-auto space-y-6">
-      <h1 className="text-3xl font-extrabold text-white tracking-tight">{t('settings.title')}</h1>
+    <div className="mx-auto max-w-2xl space-y-6 p-6 pb-4">
+      <h1 className="liquid-hero-text text-4xl font-extrabold tracking-tight">
+        {t('settings.title')}
+      </h1>
       <LanguageSection />
       <CacheSection />
       <ThemeSection />
