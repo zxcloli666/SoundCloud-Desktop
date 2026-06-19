@@ -9,6 +9,7 @@ dist/
 Thumbs.db
 .flatpak-builder
 .claude
+.pnpm-store/
 
 # Rust build output
 target

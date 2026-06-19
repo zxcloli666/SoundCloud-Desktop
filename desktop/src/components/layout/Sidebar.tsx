@@ -30,6 +30,7 @@ const languages = [
   { code: 'en', label: 'English' },
   { code: 'ru', label: 'Русский' },
   { code: 'tr', label: 'Turkce' },
+  { code: 'ko', label: '한국어' },
 ] as const;
 
 const navItems: { to: string; icon: IconCmp; label: string }[] = [
