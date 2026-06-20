@@ -19,7 +19,6 @@ pub async fn start() -> u16 {
                         .status(result.status)
                         .header("Content-Type", &result.content_type)
                         .header("Cache-Control", cache_control_for(result.status))
-                        .header("Access-Control-Allow-Origin", "*")
                         .body(Body::from(result.data))
                         .unwrap(),
                 )
@@ -36,7 +35,6 @@ pub async fn start() -> u16 {
                         .status(result.status)
                         .header("Content-Type", &result.content_type)
                         .header("Cache-Control", cache_control_for(result.status))
-                        .header("Access-Control-Allow-Origin", "*")
                         .body(Body::from(result.data))
                         .unwrap(),
                 )
