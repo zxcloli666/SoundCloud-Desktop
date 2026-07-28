@@ -10,7 +10,7 @@ use tokio::sync::Mutex;
 use tracing::{info, warn};
 
 const FLAG_FILE: &str = "call_enabled.json";
-const DEFAULT_ENDPOINT: &str = "https://call.scdinternal.site:444";
+const DEFAULT_ENDPOINT: &str = "https://call.scnative.space:444";
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(tag = "kind", rename_all = "snake_case")]

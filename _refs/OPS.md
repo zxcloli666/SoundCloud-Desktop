@@ -76,15 +76,15 @@ docker exec <name> sh -c 'cat /proc/net/tcp | awk "NR>1 {print \$3, \$4}"'
 
 ```bash
 # DNS-резолюция с хоста
-dig +short api.scdinternal.site
-getent hosts infra.scdinternal.site
+dig +short api.scnative.space
+getent hosts infra.scnative.space
 
 # DNS изнутри контейнера + /etc/hosts
 docker exec <name> sh -c '
   echo "=== /etc/hosts ==="
   cat /etc/hosts
   echo "=== resolve ==="
-  for h in infra.scdinternal.site prx-internal.scdinternal.site; do
+  for h in infra.scnative.space prx-internal.scnative.space; do
     echo "$h:"
     getent hosts $h
   done
@@ -100,14 +100,14 @@ docker network inspect <network-name>
 ```
 
 Что искать:
-- внутренний домен (`infra.scdinternal.site`) резолвится во внешний публичный IP → трафик уходит через интернет → лечить через `extra_hosts` в compose
+- внутренний домен (`infra.scnative.space`) резолвится во внешний публичный IP → трафик уходит через интернет → лечить через `extra_hosts` в compose
 - хост, на котором всё крутится, светится в SYN-таргетах → значит идём наружу и обратно
 
 Лечение в `docker-compose.yml`:
 ```yaml
 backend:
   extra_hosts:
-    - "infra.scdinternal.site:host-gateway"
+    - "infra.scnative.space:host-gateway"
     # host-gateway = алиас Docker'а на IP хоста на bridge (172.17.0.1 обычно)
 ```
 
@@ -254,7 +254,7 @@ docker exec <backend> sh -c '
   echo "=== через прокси ==="
   TARGET=$(printf "https://secure.soundcloud.com/oauth/token" | base64 -w0)
   time curl -sS -o /dev/null -w "code=%{http_code} total=%{time_total}s\n" \
-    --max-time 15 https://prx-internal.scdinternal.site \
+    --max-time 15 https://prx-internal.scnative.space \
     -H "X-Target: $TARGET" \
     -H "Content-Type: application/x-www-form-urlencoded" -d "grant_type=test"
 '
@@ -279,7 +279,7 @@ timeout 5 tcpdump -ni any 'tcp[tcpflags] & tcp-syn != 0 and not src net 127.0.0.
 lsof -p $PID -n -i 2>/dev/null | head -30
 
 # 5. DNS с контейнера
-docker exec <backend-name> sh -c 'cat /etc/hosts; for h in infra.scdinternal.site; do echo "$h:"; getent hosts $h; done'
+docker exec <backend-name> sh -c 'cat /etc/hosts; for h in infra.scnative.space; do echo "$h:"; getent hosts $h; done'
 ```
 
 По результатам:

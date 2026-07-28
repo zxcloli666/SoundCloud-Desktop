@@ -1,7 +1,7 @@
 //! Транспортные тиры до наших доменов.
 //!
-//! `direct` → `relay` (`*.temp.scdinternal.site`, хост-в-хост, гоняет и gRPC)
-//! → `worker` (Cloudflare, контракт `X-Target: base64(url)`).
+//! `direct` → `relay` (`<сервис>.<нода>.relay.scnative.space`, хост-в-хост,
+//! гоняет и gRPC) → `worker` (Cloudflare, контракт `X-Target: base64(url)`).
 //!
 //! Тир липнет к origin'у: как только прямой путь лёг у конкретного юзера, он не
 //! пытается ходить туда на каждом запросе. Раз в `REVALIDATE` прямой путь
@@ -25,30 +25,42 @@ const REVALIDATE: Duration = Duration::from_secs(600);
 const WORKER_BAN_RATELIMIT: Duration = Duration::from_secs(3600);
 const WORKER_BAN_ERROR: Duration = Duration::from_secs(60);
 
-/// origin → relay-хост. Relay всегда https/443, порт origin'а отбрасывается
-/// (call ходит на :444 напрямую, через relay — на обычный 443).
+/// Зона relay-пула. Имя ноды подставляется между сервисом и зоной:
+/// `<сервис>.<нода>.relay.scnative.space`.
+const RELAY_ZONE: &str = "relay.scnative.space";
+
+/// Ноды relay-пула в порядке обхода: r1, дальше по списку. Поднялась ещё одна —
+/// дописать сюда `"r2"`, остальное (план хопов, конфиг фронта, health) само
+/// подхватит. Ноды в пределах тира перебираются подряд, как воркеры.
+const RELAY_NODES: &[&str] = &["r1"];
+
+/// origin → сервисная метка в relay-пуле. Relay всегда https/443, порт origin'а
+/// отбрасывается (call ходит на :444 напрямую, через relay — на обычный 443).
 const RELAYS: &[(&str, &str)] = &[
-    ("api.scdinternal.site", "api.temp.scdinternal.site"),
-    ("api-star.scdinternal.site", "api-star.temp.scdinternal.site"),
-    ("stream.scdinternal.site", "stream.temp.scdinternal.site"),
-    (
-        "stream-star.scdinternal.site",
-        "stream-star.temp.scdinternal.site",
-    ),
-    ("images.scdinternal.site", "images.temp.scdinternal.site"),
-    ("storage.scdinternal.site", "storage.temp.scdinternal.site"),
-    ("pay.scdinternal.site", "pay.temp.scdinternal.site"),
-    ("call.scdinternal.site", "call.temp.scdinternal.site"),
+    ("api.scnative.space", "api"),
+    ("api-star.scnative.space", "api-star"),
+    ("stream.scnative.space", "stream"),
+    ("stream-star.scnative.space", "stream-star"),
+    ("images.scnative.space", "images"),
+    ("storage.scnative.space", "storage"),
+    ("pay.scnative.space", "pay"),
+    ("call.scnative.space", "call"),
 ];
 
 /// gRPC через X-Target-воркер не пролезает — у call тира воркеров нет.
-const NO_WORKER: &[&str] = &["call.scdinternal.site"];
+const NO_WORKER: &[&str] = &["call.scnative.space"];
+
+/// Origin'ы, где ЛЮБАЯ 5xx от воркера читается как рейт-лимит, а не как разовая
+/// ошибка: images гоняет через воркеров сплошным потоком тумбочек, и Cloudflare
+/// на нём срывается в 5xx вместо честного 1015. Минутного бана там мало —
+/// воркер тут же ловит следующую пачку и выжигает лимит впустую.
+const WORKER_5XX_IS_RATELIMIT: &[&str] = &["images.scnative.space"];
 
 /// origin → сосед, чей вердикт наследуем пока своего нет. storage-байты тянет
 /// только ядро (read-only), сам вердикт не наберёт быстро; но storage и stream
 /// на одном main-host и банятся вместе, а stream активно щупает фронт — так
 /// storage переезжает на relay сразу, без холодного таймаута.
-const INHERIT: &[(&str, &str)] = &[("storage.scdinternal.site", "stream.scdinternal.site")];
+const INHERIT: &[(&str, &str)] = &[("storage.scnative.space", "stream.scnative.space")];
 
 const WORKERS: &[&str] = &[
     "https://sc.w942oonlso.workers.dev",
@@ -225,8 +237,28 @@ fn host_of(url: &str) -> Option<String> {
         .map(|h| h.to_ascii_lowercase())
 }
 
-fn relay_host(origin: &str) -> Option<&'static str> {
+fn relay_label(origin: &str) -> Option<&'static str> {
     RELAYS.iter().find(|(o, _)| *o == origin).map(|(_, r)| *r)
+}
+
+/// Хост сервиса на первой ноде пула. Для мест, где нужен ровно один relay-адрес
+/// (bootstrap health-топологии) — веер по нодам там не нужен, а имя зоны должно
+/// жить в одном месте, чтобы `r2` не пришлось искать по репозиторию.
+pub fn primary_relay_host(service: &str) -> String {
+    let node = RELAY_NODES.first().copied().unwrap_or("r1");
+    format!("{service}.{node}.{RELAY_ZONE}")
+}
+
+/// Relay-хосты origin'а по всем нодам пула, в порядке `RELAY_NODES`.
+/// Пусто = домен не наш.
+fn relay_hosts(origin: &str) -> Vec<String> {
+    let Some(label) = relay_label(origin) else {
+        return vec![];
+    };
+    RELAY_NODES
+        .iter()
+        .map(|node| format!("{label}.{node}.{RELAY_ZONE}"))
+        .collect()
 }
 
 /// Вердикт origin'а, а если своего нет — унаследованный от соседа (см. `INHERIT`).
@@ -258,9 +290,10 @@ pub fn plan(url: &str) -> Vec<Hop> {
     let Some(origin) = host_of(url) else {
         return vec![];
     };
-    let Some(relay) = relay_host(&origin) else {
+    let relays = relay_hosts(&origin);
+    if relays.is_empty() {
         return vec![];
-    };
+    }
 
     let mut inner = match state().lock() {
         Ok(g) => g,
@@ -277,11 +310,15 @@ pub fn plan(url: &str) -> Vec<Hop> {
         tier
     };
 
-    let workers = if worker_capable(&origin) {
+    let can_worker = worker_capable(&origin);
+    let workers = if can_worker {
         live_workers(&mut inner, now)
     } else {
         vec![]
     };
+    // Все воркеры сидят в рейт-лимите. Без этого залипший на worker-тире юзер
+    // остался бы вообще без хопов, и запрос падал бы, ни разу не попробовав сеть.
+    let workers_exhausted = can_worker && workers.is_empty();
 
     let mut hops: Vec<Hop> = Vec::new();
     let mut push = |t: Tier, url: Option<String>| {
@@ -298,10 +335,15 @@ pub fn plan(url: &str) -> Vec<Hop> {
         push(Tier::Direct, Some(url.to_string()));
     }
     if from <= Tier::Relay {
-        push(Tier::Relay, swap_host(url, relay));
+        for relay in &relays {
+            push(Tier::Relay, swap_host(url, relay));
+        }
     }
     for w in workers {
         push(Tier::Worker, Some(w));
+    }
+    if workers_exhausted && from > Tier::Direct {
+        push(Tier::Direct, Some(url.to_string()));
     }
     hops
 }
@@ -389,12 +431,16 @@ pub fn hop_ok(hop: &Hop, resp: &reqwest::Response) -> bool {
                 return false;
             }
             if status >= 500 {
-                ban_worker(&hop.url, false);
+                ban_worker(&hop.url, worker_5xx_is_ratelimit(&hop.origin));
                 return false;
             }
             true
         }
     }
+}
+
+fn worker_5xx_is_ratelimit(origin: &str) -> bool {
+    WORKER_5XX_IS_RATELIMIT.contains(&origin)
 }
 
 fn cloudflare_edge_error(resp: &reqwest::Response) -> bool {
@@ -468,13 +514,14 @@ pub fn audio_plan(url: &str) -> Vec<Hop> {
             origin: String::new(),
         }];
     };
-    let Some(relay) = relay_host(&origin) else {
+    let relays = relay_hosts(&origin);
+    if relays.is_empty() {
         return vec![Hop {
             url: url.to_string(),
             tier: Tier::Direct,
             origin,
         }];
-    };
+    }
     let inner = match state().lock() {
         Ok(g) => g,
         Err(e) => e.into_inner(),
@@ -483,19 +530,28 @@ pub fn audio_plan(url: &str) -> Vec<Hop> {
     let state = resolved_state(&inner, &origin);
     let revalidate = state.map(|s| now >= s.revalidate_at).unwrap_or(true);
     let tiers = audio_tier_order(state.map(|s| s.tier), revalidate);
-    let relay_url = swap_host(url, relay).unwrap_or_else(|| url.to_string());
+    let relay_urls: Vec<String> = relays
+        .iter()
+        .map(|relay| swap_host(url, relay).unwrap_or_else(|| url.to_string()))
+        .collect();
 
-    tiers
-        .into_iter()
-        .map(|tier| Hop {
-            url: match tier {
-                Tier::Direct => url.to_string(),
-                Tier::Relay | Tier::Worker => relay_url.clone(),
-            },
-            tier,
-            origin: origin.clone(),
-        })
-        .collect()
+    let mut hops = Vec::with_capacity(tiers.len() + relay_urls.len() - 1);
+    for tier in tiers {
+        match tier {
+            Tier::Direct => hops.push(Hop {
+                url: url.to_string(),
+                tier,
+                origin: origin.clone(),
+            }),
+            // Relay-слот разворачивается в хоп на каждую ноду пула.
+            Tier::Relay | Tier::Worker => hops.extend(relay_urls.iter().map(|u| Hop {
+                url: u.clone(),
+                tier,
+                origin: origin.clone(),
+            })),
+        }
+    }
+    hops
 }
 
 fn audio_tier_order(current: Option<Tier>, revalidate: bool) -> [Tier; 2] {
@@ -513,7 +569,7 @@ pub fn note_url(url: &str, tier: Tier, ok: bool) {
     let Some(origin) = host_of(url) else {
         return;
     };
-    if relay_host(&origin).is_some() {
+    if relay_label(&origin).is_some() {
         note(&origin, tier, ok);
     }
 }
@@ -555,12 +611,14 @@ pub fn call_endpoints(endpoint: &str) -> Vec<Hop> {
 
 #[derive(Serialize)]
 pub struct EdgeConfig {
-    /// origin → relay-хост.
-    relays: Vec<(String, String)>,
+    /// origin → relay-хосты по нодам пула, в порядке обхода.
+    relays: Vec<(String, Vec<String>)>,
     /// Воркеры в порядке этой установки.
     workers: Vec<String>,
     /// Origin'ы без воркер-тира.
     no_worker: Vec<String>,
+    /// Origin'ы, где 5xx воркера считается рейт-лимитом (длинный бан).
+    worker_5xx_is_ratelimit: Vec<String>,
     /// Уже известный тир — фронт стартует с него, не платя таймаутом.
     hints: HashMap<String, Tier>,
     revalidate_ms: u64,
@@ -575,10 +633,14 @@ pub fn edge_config() -> EdgeConfig {
     EdgeConfig {
         relays: RELAYS
             .iter()
-            .map(|(o, r)| (o.to_string(), r.to_string()))
+            .map(|(o, _)| (o.to_string(), relay_hosts(o)))
             .collect(),
         workers: inner.workers.clone(),
         no_worker: NO_WORKER.iter().map(|s| s.to_string()).collect(),
+        worker_5xx_is_ratelimit: WORKER_5XX_IS_RATELIMIT
+            .iter()
+            .map(|s| s.to_string())
+            .collect(),
         hints: inner
             .origins
             .iter()
@@ -600,7 +662,37 @@ pub fn edge_ban_worker(url: String, rate_limited: bool) {
 
 #[cfg(test)]
 mod tests {
-    use super::{audio_tier_order, Tier};
+    use super::{
+        audio_tier_order, relay_hosts, worker_5xx_is_ratelimit, Tier, RELAYS, RELAY_NODES,
+    };
+
+    #[test]
+    fn relay_host_is_built_per_pool_node() {
+        assert_eq!(
+            relay_hosts("api.scnative.space"),
+            vec!["api.r1.relay.scnative.space"]
+        );
+        // Каждая нода пула даёт свой хоп — добавление r2 не требует правок кода.
+        assert_eq!(
+            relay_hosts("storage.scnative.space").len(),
+            RELAY_NODES.len()
+        );
+        assert!(relay_hosts("soundcloud.com").is_empty());
+    }
+
+    #[test]
+    fn no_legacy_domain_survives_in_the_relay_table() {
+        for (origin, label) in RELAYS {
+            assert!(!origin.contains("scdinternal"), "legacy origin {origin}");
+            assert!(!label.contains('.'), "label {label} must be a bare service");
+        }
+    }
+
+    #[test]
+    fn images_treats_worker_5xx_as_a_rate_limit() {
+        assert!(worker_5xx_is_ratelimit("images.scnative.space"));
+        assert!(!worker_5xx_is_ratelimit("api.scnative.space"));
+    }
 
     #[test]
     fn audio_prefers_direct_when_unknown_or_due_for_revalidation() {

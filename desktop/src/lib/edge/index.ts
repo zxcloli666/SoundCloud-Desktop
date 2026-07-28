@@ -2,7 +2,7 @@
 // (прямой → relay → воркеры) и запоминает, что сработало.
 
 import { fetch } from '@tauri-apps/plugin-http';
-import { banWorker, type Hop, noteHop, planHops } from './config';
+import { banWorker, type Hop, noteHop, noteWorkerServerError, planHops } from './config';
 
 export type { Tier } from './config';
 export { initEdge, tierOf } from './config';
@@ -37,7 +37,9 @@ function hopUsable(hop: Hop, res: Response): boolean {
     return false;
   }
   if (res.status >= 500) {
-    banWorker(hop.url, false);
+    // На части origin'ов (images) 5xx воркера — это и есть рейт-лимит CF,
+    // и минутного бана там мало: см. `worker_5xx_is_ratelimit` в ядре.
+    noteWorkerServerError(hop);
     return false;
   }
   return true;

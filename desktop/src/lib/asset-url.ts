@@ -1,15 +1,17 @@
-import {getProxyPort, IMAGES_BASE} from './constants';
-import {isMac} from './platform';
+import { getProxyPort, IMAGES_BASE } from './constants';
+import { isMac } from './platform';
 
 const WHITELIST = [
   'localhost',
   '127.0.0.1',
   'tauri.localhost',
   'scproxy.localhost',
-  'images.scdinternal.site',
-  'api.scdinternal.site',
-  'api-star.scdinternal.site',
-  'stream-star.scdinternal.site',
+  'images.scnative.space',
+  'api.scnative.space',
+  'api-star.scnative.space',
+  'stream.scnative.space',
+  'stream-star.scnative.space',
+  'storage.scnative.space',
   'unpkg.com',
 ];
 const RETRY_BYPASS_CACHE_PARAM = '__scproxy_bust';
@@ -50,7 +52,7 @@ function buildEncodedPayload(
 ): { encoded: string; target: string } {
   const target = bypassCache ? withCacheBust(url) : url;
   return {
-      encoded: encodeURIComponent(btoa(JSON.stringify([target, upstream]))),
+    encoded: encodeURIComponent(btoa(JSON.stringify([target, upstream]))),
     target,
   };
 }
@@ -58,12 +60,12 @@ function buildEncodedPayload(
 /** `direct` makes the local proxy fetch the target itself with a browser
  *  User-Agent instead of relaying through the image CDN — needed for hosts that
  *  403 non-browser clients (Wallhaven, Konachan). */
-export function toScproxyUrl(url: string, {bypassCache = false, direct = false} = {}): string {
-    const {encoded, target} = buildEncodedPayload(
-        url,
-        bypassCache,
-        direct ? 'direct' : IMAGES_BASE,
-    );
+export function toScproxyUrl(url: string, { bypassCache = false, direct = false } = {}): string {
+  const { encoded, target } = buildEncodedPayload(
+    url,
+    bypassCache,
+    direct ? 'direct' : IMAGES_BASE,
+  );
 
   const proxyPort = getProxyPort();
   if (proxyPort && !isMac()) {

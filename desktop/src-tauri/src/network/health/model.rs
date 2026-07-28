@@ -1,5 +1,18 @@
 use serde::{Deserialize, Serialize};
 
+use crate::network::edge::primary_relay_host;
+
+/// Зона прямых origin'ов. Relay-имена живут в `network::edge`.
+const ORIGIN_ZONE: &str = "scnative.space";
+
+fn relay_host(service: &str) -> String {
+    primary_relay_host(service)
+}
+
+fn report_url(service: &str) -> String {
+    format!("https://{service}.{ORIGIN_ZONE}/report")
+}
+
 #[derive(Clone, Debug, Deserialize)]
 pub struct Topology {
     pub meta: Meta,
@@ -87,16 +100,20 @@ impl Topology {
     /// Built-in route only bootstraps discovery/reporting. The live server
     /// topology replaces it before the first probe whenever any ingest path works.
     pub fn bootstrap() -> Self {
-        let sink = |tier: &str, url: &str| IngestSink {
+        let sink = |tier: &str, url: String| IngestSink {
             tier: tier.to_string(),
-            url: Some(url.to_string()),
+            url: Some(url),
             target: None,
         };
-        let endpoint = |id: &str, host: &str, direct: &str, relay: &str| Endpoint {
+        // Имена собираются из одного источника (`network::edge`), поэтому
+        // добавление ноды `r2` в пул не требует правок здесь.
+        let direct_url = |service: &str| format!("https://{service}.{ORIGIN_ZONE}/health");
+        let relay_url = |service: &str| format!("https://{}/health", relay_host(service));
+        let endpoint = |id: &str, host: &str, service: &str| Endpoint {
             id: id.to_string(),
             host: host.to_string(),
-            direct: direct.to_string(),
-            relay: Some(relay.to_string()),
+            direct: direct_url(service),
+            relay: Some(relay_url(service)),
         };
 
         Self {
@@ -105,42 +122,20 @@ impl Topology {
                 probe_interval_secs: default_probe_interval(),
             },
             ingest: vec![
-                sink("direct", "https://health.scdinternal.site/report"),
-                sink("direct", "https://health-star.scdinternal.site/report"),
-                sink("relay", "https://health.temp.scdinternal.site/report"),
-                sink("relay", "https://health-star.temp.scdinternal.site/report"),
+                sink("direct", report_url("health")),
+                sink("direct", report_url("health-star")),
+                sink("relay", format!("https://{}/report", relay_host("health"))),
+                sink(
+                    "relay",
+                    format!("https://{}/report", relay_host("health-star")),
+                ),
             ],
             endpoints: vec![
-                endpoint(
-                    "api",
-                    "main",
-                    "https://api.scdinternal.site/health",
-                    "https://api.temp.scdinternal.site/health",
-                ),
-                endpoint(
-                    "stream",
-                    "main",
-                    "https://stream.scdinternal.site/health",
-                    "https://stream.temp.scdinternal.site/health",
-                ),
-                endpoint(
-                    "storage",
-                    "main",
-                    "https://storage.scdinternal.site/health",
-                    "https://storage.temp.scdinternal.site/health",
-                ),
-                endpoint(
-                    "images",
-                    "main",
-                    "https://images.scdinternal.site/health",
-                    "https://images.temp.scdinternal.site/health",
-                ),
-                endpoint(
-                    "pay",
-                    "main",
-                    "https://pay.scdinternal.site/health",
-                    "https://pay.temp.scdinternal.site/health",
-                ),
+                endpoint("api", "main", "api"),
+                endpoint("stream", "main", "stream"),
+                endpoint("storage", "main", "storage"),
+                endpoint("images", "main", "images"),
+                endpoint("pay", "main", "pay"),
             ],
             workers: Workers::default(),
         }
@@ -152,14 +147,32 @@ mod tests {
     use super::Topology;
 
     #[test]
-    fn bootstrap_can_reach_both_health_nodes_through_temp() {
+    fn bootstrap_can_reach_both_health_nodes_through_the_relay_pool() {
         let topology = Topology::bootstrap();
         assert_eq!(topology.meta.probe_interval_secs, 300);
         assert!(topology.ingest.iter().any(|sink| {
-            sink.url.as_deref() == Some("https://health.temp.scdinternal.site/report")
+            sink.url.as_deref() == Some("https://health.r1.relay.scnative.space/report")
         }));
         assert!(topology.ingest.iter().any(|sink| {
-            sink.url.as_deref() == Some("https://health-star.temp.scdinternal.site/report")
+            sink.url.as_deref() == Some("https://health-star.r1.relay.scnative.space/report")
         }));
+    }
+
+    #[test]
+    fn bootstrap_carries_no_legacy_domain() {
+        let topology = Topology::bootstrap();
+        for sink in &topology.ingest {
+            let url = sink.url.as_deref().unwrap_or_default();
+            assert!(!url.contains("scdinternal"), "legacy ingest sink {url}");
+        }
+        for endpoint in &topology.endpoints {
+            assert!(
+                !endpoint.direct.contains("scdinternal"),
+                "legacy direct {}",
+                endpoint.direct
+            );
+            let relay = endpoint.relay.as_deref().unwrap_or_default();
+            assert!(!relay.contains("scdinternal"), "legacy relay {relay}");
+        }
     }
 }

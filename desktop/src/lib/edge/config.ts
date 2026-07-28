@@ -1,7 +1,9 @@
-// Транспортные тиры до наших доменов: прямой хост → relay (`*.temp.…`) → CF-воркеры.
+// Транспортные тиры до наших доменов: прямой хост → relay-пул
+// (`<сервис>.<нода>.relay.scnative.space`) → CF-воркеры.
 // Таблица и персист живут в Rust (`network/edge.rs`), здесь — зеркало вердикта для
 // запросов, которые фронт делает сам. Политика та же, чтобы оба мира сходились к
 // одному тиру; в ядро уходит только СМЕНА вердикта, не каждый запрос.
+// Состав relay-пула приезжает из ядра — новую ноду сюда дописывать не нужно.
 
 import { trackedInvoke as invoke } from '../diagnostics';
 
@@ -16,9 +18,10 @@ export interface Hop {
 }
 
 interface RustConfig {
-  relays: [string, string][];
+  relays: [string, string[]][];
   workers: string[];
   no_worker: string[];
+  worker_5xx_is_ratelimit: string[];
   hints: Record<string, Tier>;
   revalidate_ms: number;
 }
@@ -34,9 +37,10 @@ const DIRECT_FAIL_THRESHOLD = 2;
 const WORKER_BAN_RATELIMIT_MS = 60 * 60_000;
 const WORKER_BAN_ERROR_MS = 60_000;
 
-let relays = new Map<string, string>();
+let relays = new Map<string, string[]>();
 let workers: string[] = [];
 let noWorker = new Set<string>();
+let worker5xxIsRateLimit = new Set<string>();
 let revalidateMs = 600_000;
 const origins = new Map<string, OriginState>();
 const workerBan = new Map<string, number>();
@@ -48,6 +52,7 @@ export async function initEdge(): Promise<void> {
     relays = new Map(cfg.relays);
     workers = cfg.workers ?? [];
     noWorker = new Set(cfg.no_worker ?? []);
+    worker5xxIsRateLimit = new Set(cfg.worker_5xx_is_ratelimit ?? []);
     revalidateMs = cfg.revalidate_ms || revalidateMs;
     const now = Date.now();
     for (const [host, tier] of Object.entries(cfg.hints ?? {})) {
@@ -99,8 +104,8 @@ function liveWorkers(now: number): string[] {
 export function planHops(url: string): Hop[] {
   const origin = hostOf(url);
   if (!origin) return [];
-  const relay = relays.get(origin);
-  if (!relay) return [];
+  const pool = relays.get(origin);
+  if (!pool?.length) return [];
 
   const now = Date.now();
   const state = origins.get(origin);
@@ -111,12 +116,26 @@ export function planHops(url: string): Hop[] {
 
   const hops: Hop[] = [];
   if (min <= TIER_ORDER.direct) hops.push({ url, tier: 'direct', origin });
-  if (min <= TIER_ORDER.relay) hops.push({ url: swapHost(url, relay), tier: 'relay', origin });
-  if (!noWorker.has(origin)) {
+  if (min <= TIER_ORDER.relay) {
+    for (const relay of pool) hops.push({ url: swapHost(url, relay), tier: 'relay', origin });
+  }
+
+  const canWorker = !noWorker.has(origin);
+  const live = canWorker ? liveWorkers(now) : [];
+  if (live.length) {
     const xTarget = b64(url);
-    for (const w of liveWorkers(now)) hops.push({ url: w, tier: 'worker', origin, xTarget });
+    for (const w of live) hops.push({ url: w, tier: 'worker', origin, xTarget });
+  } else if (canWorker && min > TIER_ORDER.direct) {
+    // Все воркеры в рейт-лимите — прямой origin последним шансом, иначе
+    // залипший на worker-тире юзер остался бы вообще без хопов.
+    hops.push({ url, tier: 'direct', origin });
   }
   return hops;
+}
+
+/** Воркер отдал 5xx. Для части origin'ов это фактический рейт-лимит CF. */
+export function noteWorkerServerError(hop: Hop): void {
+  banWorker(hop.url, worker5xxIsRateLimit.has(hop.origin));
 }
 
 /**
