@@ -22,7 +22,7 @@ function resolveStreamingBases(): string[] {
 
 // ─── Streaming JSON ─────────────────────────────────────────
 
-async function streamingJson<T = unknown>(path: string): Promise<T> {
+async function streamingJson<T = unknown>(path: string, signal?: AbortSignal): Promise<T> {
   let lastError: unknown = null;
 
   const label = `GET ${path}`;
@@ -30,7 +30,7 @@ async function streamingJson<T = unknown>(path: string): Promise<T> {
   for (const base of resolveStreamingBases()) {
     const url = `${base}${path}`;
     try {
-      const res = await trackAsync(`streaming:${label}`, edgeFetch(url));
+      const res = await trackAsync(`streaming:${label}`, edgeFetch(url, { signal }));
 
       if (!res.ok) {
         const body = await res.text();
@@ -53,6 +53,7 @@ async function streamingJson<T = unknown>(path: string): Promise<T> {
         lastError = error;
         continue;
       }
+      if (signal?.aborted) throw error;
       logHttpFailure(`streaming:${label}`, url, error);
       markUnhealthy(base);
       lastError = error;
@@ -64,8 +65,8 @@ async function streamingJson<T = unknown>(path: string): Promise<T> {
 
 // ─── Public API ─────────────────────────────────────────────
 
-export function resolveTrackFromStreaming(url: string) {
-  return streamingJson<ResolvedStreamingTrack>(`/resolve?url=${encodeURIComponent(url)}`);
+export function resolveTrackFromStreaming(url: string, signal?: AbortSignal) {
+  return streamingJson<ResolvedStreamingTrack>(`/resolve?url=${encodeURIComponent(url)}`, signal);
 }
 
 function buildStreamUrl(base: string, trackUrn: string, hq: boolean) {

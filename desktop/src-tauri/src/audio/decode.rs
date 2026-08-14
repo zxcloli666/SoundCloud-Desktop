@@ -350,3 +350,33 @@ pub fn create_player_from_bytes(
 
     Ok((player, duration))
 }
+
+pub fn create_player_from_stream(
+    reader: crate::audio::streaming::StreamingReader,
+    mime: Option<&str>,
+    mixer: &Mixer,
+    volume: f32,
+    start_paused: bool,
+    eq_params: Arc<RwLock<EqParams>>,
+    analyser_buffer: Arc<AnalyserBuffer>,
+) -> Result<Player, String> {
+    let builder = Decoder::builder()
+        .with_data(reader)
+        .with_seekable(false);
+    let source = match mime {
+        Some(mime) if !mime.is_empty() => builder.with_mime_type(mime).build(),
+        _ => builder.build(),
+    }
+    .map_err(|error| format!("Failed to decode stream: {error}"))?;
+
+    let player = Player::connect_new(mixer);
+    player.set_volume(volume);
+    if start_paused {
+        player.pause();
+    }
+    player.append(AnalyserSource::new(
+        EqSource::new(GainSource::new(source, 1.0), eq_params),
+        analyser_buffer,
+    ));
+    Ok(player)
+}

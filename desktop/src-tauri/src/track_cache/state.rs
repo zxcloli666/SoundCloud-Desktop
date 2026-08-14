@@ -30,7 +30,9 @@ const DOWNLOAD_READ_TIMEOUT_SECS: u64 = 130;
 const DIRECT_CONNECT_TIMEOUT_MS: u64 = 5_000;
 const DIRECT_READ_TIMEOUT_SECS: u64 = 70;
 const RETRY_DELAYS_MS: [u64; 3] = [200, 600, 1500];
-const MAX_PARALLEL_PRELOADS: usize = 20;
+// Preloading full tracks is network-heavy. Keep a single speculative download in
+// flight so it can help the next track without starving a foreground play.
+const MAX_PARALLEL_PRELOADS: usize = 1;
 const MAX_PARALLEL_LIKES: usize = 4;
 /// Transcoding is CPU-bound; keep it modest so it never starves playback on weak
 /// machines. Most cached tracks are already AAC (a near-free remux), so a small
@@ -255,7 +257,7 @@ pub enum PlaybackQuality {
 }
 
 impl PlaybackQuality {
-    fn label(self) -> &'static str {
+    pub(crate) fn label(self) -> &'static str {
         match self {
             Self::Hq => "hq",
             Self::Sq => "sq",
@@ -266,6 +268,7 @@ impl PlaybackQuality {
 /// Tracks active downloads so duplicate requests coalesce.
 struct ActiveDownload {
     notify: Arc<Notify>,
+    cancel: Arc<Notify>,
     result: Arc<Mutex<Option<Result<PathBuf, String>>>>,
 }
 
@@ -279,7 +282,7 @@ pub enum DownloadSource {
 }
 
 impl DownloadSource {
-    fn label(self) -> &'static str {
+    pub(crate) fn label(self) -> &'static str {
         match self {
             Self::Storage => "storage",
             Self::Anon => "anon",
@@ -1165,18 +1168,20 @@ impl TrackCacheState {
         }
 
         let notify = Arc::new(Notify::new());
+        let cancel = Arc::new(Notify::new());
         let result_slot: Arc<Mutex<Option<Result<PathBuf, String>>>> = Arc::new(Mutex::new(None));
         active.insert(
             urn.to_string(),
             ActiveDownload {
                 notify: notify.clone(),
+                cancel: cancel.clone(),
                 result: result_slot.clone(),
             },
         );
         drop(active);
 
-        let download_result = self
-            .download_with_fallback(FallbackParams {
+        let (download_result, cancelled) = {
+            let download = self.download_with_fallback(FallbackParams {
                 target_dir,
                 urn,
                 urls,
@@ -1184,8 +1189,20 @@ impl TrackCacheState {
                 storage_urls,
                 session_id,
                 hq,
-            })
-            .await;
+            });
+            tokio::pin!(download);
+            tokio::select! {
+                // Prefer a result that became ready at the same instant as a cancel.
+                biased;
+                result = &mut download => (result, false),
+                _ = cancel.notified() => (Err("download cancelled".to_string()), true),
+            }
+        };
+        // The cancelled future (and any open BufWriter it owned) is dropped at the
+        // end of the block above, so Windows can now remove its staging file.
+        if cancelled {
+            cleanup_temp_file(&temp_file_path(target_dir, urn)).await;
+        }
 
         // Stamp the raw file with routing + integrity info, then kick off the
         // background transcode (А → Б). Playback uses the raw path immediately.
@@ -1209,6 +1226,59 @@ impl TrackCacheState {
             let current = self.resolve_path(urn).unwrap_or(path);
             TrackCacheEntry::from_path_and_meta(&current, read_cache_metadata(&current))
         })
+    }
+
+    /// Cancel an in-flight download that is no longer needed by the player.
+    /// Coalesced callers are woken with the same cancellation result.
+    pub async fn cancel_download(&self, urn: &str) -> bool {
+        let active = self.active.lock().await;
+        let Some(download) = active.get(urn) else {
+            return false;
+        };
+        let notify = download.notify.clone();
+        let result = download.result.clone();
+        let finished = notify.notified();
+        tokio::pin!(finished);
+        finished.as_mut().enable();
+        // `notify_one` retains a permit if the owner has not entered select yet,
+        // which closes the start-vs-cancel race.
+        download.cancel.notify_one();
+        drop(active);
+        if result.lock().await.is_none() {
+            finished.await;
+        }
+        true
+    }
+
+    /// Commit bytes collected by the fast-start player into the normal raw cache
+    /// and hand them to the existing transcode pipeline. Playback owns a separate
+    /// in-memory buffer, so this write cannot invalidate the live decoder.
+    pub(crate) async fn store_streamed_bytes(
+        &self,
+        urn: &str,
+        data: &[u8],
+        quality: PlaybackQuality,
+        source: DownloadSource,
+        expected_duration_ms: Option<u64>,
+    ) -> Result<TrackCacheEntry, String> {
+        if let Some(entry) = self.get_cache_entry(urn) {
+            return Ok(entry);
+        }
+
+        let result = write_bytes_to_cache(&self.incoming_dir, urn, data, quality, source)
+            .await
+            .map_err(|error| match error {
+                DownloadError::Fatal(message) | DownloadError::Retryable(message) => message,
+            })?;
+        self.finalize_incoming(&result.path, false, expected_duration_ms)
+            .await;
+        self.spawn_transcode(urn.to_string());
+
+        let current = self.resolve_path(urn).unwrap_or(result.path);
+        Ok(TrackCacheEntry::from_path_and_meta(
+            &current,
+            read_cache_metadata(&current),
+        ))
     }
 
     /// Record the destination (liked vs normal) and API duration on the raw

@@ -1,0 +1,177 @@
+use futures_util::StreamExt;
+use reqwest::{Client, Response};
+use tauri::{Emitter, Manager};
+
+use super::buffer::{StreamingBuffer, MIN_VALID_BYTES};
+use crate::audio::state::AudioState;
+use crate::rt::AppHandle;
+use crate::track_cache::sc_anon::hls::{fetch_bytes, parse_m3u8};
+use crate::track_cache::state::{DownloadSource, PlaybackQuality, TrackCacheState};
+
+#[derive(Clone)]
+pub(super) struct ProducerContext {
+    app: AppHandle,
+    cache: TrackCacheState,
+    urn: String,
+    generation: u64,
+    quality: PlaybackQuality,
+    source: DownloadSource,
+    expected_duration_ms: Option<u64>,
+}
+
+pub(super) fn context(
+    app: &AppHandle,
+    cache: &TrackCacheState,
+    urn: &str,
+    generation: u64,
+    quality: PlaybackQuality,
+    source: DownloadSource,
+    expected_duration_ms: Option<u64>,
+) -> ProducerContext {
+    ProducerContext {
+        app: app.clone(),
+        cache: cache.clone(),
+        urn: urn.to_string(),
+        generation,
+        quality,
+        source,
+        expected_duration_ms,
+    }
+}
+
+pub(super) fn is_current(app: &AppHandle, generation: u64) -> bool {
+    app.state::<AudioState>()
+        .load_gen
+        .load(std::sync::atomic::Ordering::Relaxed)
+        == generation
+}
+
+fn emit_progress(context: &ProducerContext, downloaded: u64, total: u64) {
+    if total == 0 {
+        return;
+    }
+    let _ = context.app.emit(
+        "track:download-progress",
+        serde_json::json!({
+            "urn": context.urn,
+            "downloaded": downloaded,
+            "total": total,
+            "progress": (downloaded as f64 / total as f64).min(1.0),
+            "source": context.source.label(),
+        }),
+    );
+}
+
+async fn commit_finished(buffer: &StreamingBuffer, context: &ProducerContext) {
+    if !is_current(&context.app, context.generation) {
+        return;
+    }
+    let data = buffer.snapshot();
+    if data.len() < MIN_VALID_BYTES {
+        return;
+    }
+
+    // Device reconnects and seeks can rebuild from memory as soon as the transfer
+    // completes, even if the disk cache/transcode is still catching up.
+    *context
+        .app
+        .state::<AudioState>()
+        .source_bytes
+        .lock()
+        .unwrap() = Some(data.clone());
+
+    if let Err(error) = context
+        .cache
+        .store_streamed_bytes(
+            &context.urn,
+            &data,
+            context.quality,
+            context.source,
+            context.expected_duration_ms,
+        )
+        .await
+    {
+        eprintln!("[AudioStream] cache {} failed: {error}", context.urn);
+    }
+}
+
+pub(super) async fn pump_response(
+    response: Response,
+    buffer: StreamingBuffer,
+    context: ProducerContext,
+) {
+    let total = response.content_length().unwrap_or(0);
+    let mut downloaded = 0u64;
+    let mut stream = response.bytes_stream();
+    while let Some(chunk) = stream.next().await {
+        if !is_current(&context.app, context.generation) {
+            buffer.fail("stream cancelled".to_string());
+            return;
+        }
+        match chunk {
+            Ok(bytes) => {
+                downloaded += bytes.len() as u64;
+                buffer.push(&bytes);
+                emit_progress(&context, downloaded, total);
+            }
+            Err(error) => {
+                buffer.fail(format!("stream body: {error}"));
+                return;
+            }
+        }
+    }
+    buffer.finish();
+    emit_progress(&context, downloaded, downloaded.max(total));
+    commit_finished(&buffer, &context).await;
+}
+
+pub(super) async fn pump_hls(
+    client: Client,
+    manifest_url: String,
+    buffer: StreamingBuffer,
+    context: ProducerContext,
+) {
+    let manifest = match fetch_bytes(&client, &manifest_url).await {
+        Ok(bytes) => bytes,
+        Err(error) => {
+            buffer.fail(format!("HLS manifest: {error}"));
+            return;
+        }
+    };
+    let manifest_text = String::from_utf8_lossy(&manifest);
+    let (init_url, segments) = parse_m3u8(&manifest_text, &manifest_url);
+    if segments.is_empty() {
+        buffer.fail("HLS manifest has no segments".to_string());
+        return;
+    }
+
+    if let Some(init_url) = init_url {
+        match fetch_bytes(&client, &init_url).await {
+            Ok(bytes) => buffer.push(&bytes),
+            Err(error) => {
+                buffer.fail(format!("HLS init: {error}"));
+                return;
+            }
+        }
+    }
+
+    let total = segments.len() as u64;
+    for (index, segment_url) in segments.into_iter().enumerate() {
+        if !is_current(&context.app, context.generation) {
+            buffer.fail("stream cancelled".to_string());
+            return;
+        }
+        match fetch_bytes(&client, &segment_url).await {
+            Ok(bytes) => {
+                buffer.push(&bytes);
+                emit_progress(&context, index as u64 + 1, total);
+            }
+            Err(error) => {
+                buffer.fail(format!("HLS segment {}: {error}", index + 1));
+                return;
+            }
+        }
+    }
+    buffer.finish();
+    commit_finished(&buffer, &context).await;
+}

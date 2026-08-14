@@ -13,6 +13,8 @@ import {
   streamFallbackUrls,
 } from './api';
 import {
+  buildTrackRequest,
+  cancelTrackDownload,
   enforceAudioCacheLimit,
   ensureTrackCached,
   getCacheInfo,
@@ -46,6 +48,7 @@ let cachedDuration = 0;
 let downloadProgress: number | null = null;
 let loadGen = 0;
 let lastEndedUrn: string | null = null;
+let metadataAbort: AbortController | null = null;
 const listeners = new Set<() => void>();
 const API_PREVIEW_DURATION_MS = 30_000;
 
@@ -108,8 +111,8 @@ export function handlePrev() {
 
 /* ── Native audio control ────────────────────────────────────── */
 
-function stopTrack() {
-  invoke('audio_stop').catch(console.error);
+async function stopTrack() {
+  await invoke('audio_stop').catch(console.error);
   hasTrack = false;
   cachedTime = 0;
 }
@@ -247,24 +250,33 @@ function commitTrackMetadata(track: Track) {
   notify();
 }
 
-async function fetchFreshTrackMetadata(track: Track): Promise<Track> {
+function isAbortError(error: unknown): boolean {
+  return (
+    (error instanceof DOMException && error.name === 'AbortError') ||
+    (error instanceof Error && /abort|cancel/i.test(error.message))
+  );
+}
+
+async function fetchFreshTrackMetadata(track: Track, signal: AbortSignal): Promise<Track> {
   try {
-    const freshTrack = await api<Track>(`/tracks/${encodeURIComponent(track.urn)}`);
+    const freshTrack = await api<Track>(`/tracks/${encodeURIComponent(track.urn)}`, { signal });
     return mergeTrackMetadata(track, freshTrack);
   } catch (error) {
+    if (signal.aborted || isAbortError(error)) return track;
     console.warn('[Audio] Failed to hydrate track metadata:', error);
     return track;
   }
 }
 
-async function resolveTrackMetadata(track: Track): Promise<Track> {
+async function resolveTrackMetadata(track: Track, signal: AbortSignal): Promise<Track> {
   const resolveUrl = getPreviewResolveUrl(track);
   if (!resolveUrl) return track;
 
   try {
-    const resolvedTrack = await resolveTrackFromStreaming(resolveUrl);
+    const resolvedTrack = await resolveTrackFromStreaming(resolveUrl, signal);
     return mergeTrackMetadata(track, resolvedTrack);
   } catch (error) {
+    if (signal.aborted || isAbortError(error)) return track;
     console.warn('[Audio] Failed to resolve preview duration:', error);
     return track;
   }
@@ -308,8 +320,16 @@ async function loadCachedFile(
 
 async function loadTrack(track: Track) {
   const gen = ++loadGen;
+  const previousUrn = currentUrn;
+  metadataAbort?.abort();
+  const metadataController = new AbortController();
+  metadataAbort = metadataController;
+  if (previousUrn && previousUrn !== track.urn) {
+    void cancelTrackDownload(previousUrn).catch(console.error);
+  }
   const isNewTrack = currentUrn !== track.urn;
-  stopTrack();
+  await stopTrack();
+  if (gen !== loadGen) return;
   currentUrn = track.urn;
   const urn = track.urn;
 
@@ -321,7 +341,7 @@ async function loadTrack(track: Track) {
     usePlayerStore.getState().clearAbLoop();
   }
 
-  void hydrateTrackMetadata(track, gen);
+  void hydrateTrackMetadata(track, gen, metadataController);
 
   fallbackDuration = track.duration / 1000;
   cachedDuration = fallbackDuration;
@@ -377,13 +397,39 @@ async function loadTrack(track: Track) {
       return;
     }
 
-    // Strategy 2: Download full track to cache — Rust picks storage/API internally
+    // Strategy 2: start from a small progressive/HLS buffer while Rust keeps
+    // receiving the track and commits the same bytes to the regular cache.
     setDownloadProgress(0);
 
+    try {
+      await cancelTrackDownload(urn);
+      if (gen !== loadGen || currentUrn !== urn) return;
+      const request = await buildTrackRequest(urn, highQualityStreaming, track.duration);
+      const streamed = await invoke<{
+        duration_secs: number | null;
+        quality: 'hq' | 'sq';
+        source: 'direct' | 'api';
+      }>('audio_load_streaming', {
+        request,
+        startPaused: !usePlayerStore.getState().isPlaying,
+      });
+      if (gen !== loadGen || currentUrn !== urn) return;
+      setDownloadProgress(null);
+      usePlayerStore.getState().setPlaybackTransport(streamed.quality, streamed.source);
+      console.log('[Audio] Fast stream started:', urn);
+      afterLoad(track, gen);
+      return;
+    } catch (error) {
+      if (gen !== loadGen || currentUrn !== urn) return;
+      console.warn('[Audio] Fast stream failed, falling back to full download:', error);
+    }
+
+    // Strategy 3: full-download fallback for an unsupported/broken stream.
     let cachedInfo: TrackCacheInfo;
     try {
       cachedInfo = await ensureTrackCached(urn, highQualityStreaming, track.duration);
     } catch (error) {
+      if (gen !== loadGen || currentUrn !== urn) return;
       if (!highQualityStreaming) throw error;
       console.warn('[Audio] HQ load failed, retrying without hq:', error);
       cachedInfo = await ensureTrackCached(urn, false, track.duration);
@@ -457,13 +503,14 @@ function afterLoad(track: Track, gen: number) {
   preloadQueue();
 }
 
-async function hydrateTrackMetadata(track: Track, gen: number) {
-  let nextTrack = await fetchFreshTrackMetadata(track);
+async function hydrateTrackMetadata(track: Track, gen: number, controller: AbortController) {
+  let nextTrack = await fetchFreshTrackMetadata(track, controller.signal);
   if (gen !== loadGen || currentUrn !== track.urn) return;
 
-  nextTrack = await resolveTrackMetadata(nextTrack);
+  nextTrack = await resolveTrackMetadata(nextTrack, controller.signal);
   if (gen !== loadGen || currentUrn !== track.urn) return;
   commitTrackMetadata(nextTrack);
+  if (metadataAbort === controller) metadataAbort = null;
 }
 
 /** Трек «закончился» через пару секунд при заявленных минутах — в кеше битый
@@ -535,7 +582,7 @@ listen<number>('audio:tick', (event) => {
 listen<{ urn: string; progress: number }>('track:download-progress', (event) => {
   const { urn, progress } = event.payload;
   if (urn === currentUrn) {
-    setDownloadProgress(progress);
+    setDownloadProgress(progress >= 0.999 ? null : progress);
   }
 });
 
@@ -595,6 +642,10 @@ usePlayerStore.subscribe((state, prev) => {
     if (state.currentTrack) {
       // Автоскип дизлайкнутых треков: пропускаем без загрузки/плэя.
       if (isUrnDisliked(state.currentTrack.urn)) {
+        loadGen += 1;
+        metadataAbort?.abort();
+        metadataAbort = null;
+        if (previousUrn) void cancelTrackDownload(previousUrn).catch(console.error);
         currentUrn = null;
         fallbackDuration = 0;
         cachedDuration = 0;
@@ -608,7 +659,11 @@ usePlayerStore.subscribe((state, prev) => {
       updateMetadata(state.currentTrack);
       void loadTrack(state.currentTrack);
     } else {
-      stopTrack();
+      loadGen += 1;
+      metadataAbort?.abort();
+      metadataAbort = null;
+      if (previousUrn) void cancelTrackDownload(previousUrn).catch(console.error);
+      void stopTrack();
       currentUrn = null;
       fallbackDuration = 0;
       cachedDuration = 0;
@@ -760,7 +815,7 @@ export function preloadQueue() {
   const sessionId = getSessionId();
   const hq = useSettingsStore.getState().highQualityStreaming;
 
-  for (let i = 1; i <= 3; i++) {
+  for (let i = 1; i <= 1; i++) {
     const idx = queueIndex + i;
     if (idx < queue.length) {
       entries.push({

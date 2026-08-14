@@ -1,6 +1,6 @@
 mod commands;
-mod direct_download;
-mod sc_anon;
+pub(crate) mod direct_download;
+pub(crate) mod sc_anon;
 mod state;
 mod transcode;
 

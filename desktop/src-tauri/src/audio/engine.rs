@@ -40,6 +40,9 @@ fn volume_to_rodio(v: f64) -> f32 {
 
 fn stop_current_player(state: &AudioState) {
     suppress_ended_temporarily(state);
+    if let Some(task) = state.stream_task.lock().unwrap().take() {
+        task.abort();
+    }
     let mut player = state.player.lock().unwrap();
     if let Some(old) = player.take() {
         old.stop();
@@ -90,6 +93,23 @@ fn commit_loaded_track(
     state.has_track.store(true, Ordering::Relaxed);
     state.ended_notified.store(false, Ordering::Relaxed);
     state.device_error.store(false, Ordering::Relaxed);
+}
+
+pub(crate) fn install_streaming_player(state: &AudioState, new_player: rodio::Player) {
+    stop_current_player(state);
+    apply_current_rate(state, &new_player);
+    *state.player.lock().unwrap() = Some(new_player);
+    *state.normalization_gain.lock().unwrap() = 1.0;
+    set_pos_anchor(state, 0.0, 0.0);
+    state.has_track.store(true, Ordering::Relaxed);
+    state.ended_notified.store(false, Ordering::Relaxed);
+    state.device_error.store(false, Ordering::Relaxed);
+}
+
+pub(crate) fn set_stream_task(state: &AudioState, task: tokio::task::JoinHandle<()>) {
+    if let Some(previous) = state.stream_task.lock().unwrap().replace(task) {
+        previous.abort();
+    }
 }
 
 // Все 9 параметров — это один build шаг плеера: mixer/volume/normalization-кеш
@@ -353,6 +373,11 @@ pub fn pause(state: State<'_, AudioState>) {
 pub fn stop(state: State<'_, AudioState>) {
     state.has_track.store(false, Ordering::Relaxed);
     state.load_gen.fetch_add(1, Ordering::Relaxed);
+    if let Ok(mut task) = state.stream_task.try_lock()
+        && let Some(task) = task.take()
+    {
+        task.abort();
+    }
     if let Ok(mut player) = state.player.try_lock()
         && let Some(old) = player.take() {
             old.stop();

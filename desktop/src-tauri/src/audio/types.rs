@@ -60,6 +60,29 @@ pub struct AudioLoadResult {
     pub duration_secs: Option<f64>,
 }
 
+#[derive(serde::Serialize)]
+pub struct AudioStreamLoadResult {
+    pub duration_secs: Option<f64>,
+    pub quality: String,
+    pub source: String,
+}
+
+#[derive(serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AudioStreamRequest {
+    pub urn: String,
+    #[serde(default)]
+    pub urls: Vec<String>,
+    #[serde(default)]
+    pub download_urls: Vec<String>,
+    #[serde(default)]
+    pub session_id: Option<String>,
+    #[serde(default)]
+    pub hq: bool,
+    #[serde(default)]
+    pub duration_ms: Option<u64>,
+}
+
 #[derive(serde::Serialize, Clone)]
 pub struct AudioSink {
     pub name: String,

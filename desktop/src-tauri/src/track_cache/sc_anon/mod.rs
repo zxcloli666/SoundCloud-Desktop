@@ -5,7 +5,7 @@
 //! between local storage and the streaming server: if the user can reach
 //! SoundCloud directly, we save a round trip to our infra.
 
-pub(super) mod hls;
+pub(crate) mod hls;
 
 use bytes::Bytes;
 use reqwest::Client;

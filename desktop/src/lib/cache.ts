@@ -32,6 +32,10 @@ export function getCacheInfo(urn: string): Promise<TrackCacheInfo | null> {
   return invoke<TrackCacheInfo | null>('track_get_cache_info', { urn });
 }
 
+export function cancelTrackDownload(urn: string): Promise<boolean> {
+  return invoke<boolean>('track_cancel_download', { urn });
+}
+
 export type FfmpegState = 'ready' | 'preparing' | 'unavailable';
 
 /** Live snapshot of the А→Б transcode pipeline (Rust `TranscodeStatus`). */
@@ -56,7 +60,7 @@ export function getTranscodeStatus(): Promise<TranscodeStatus> {
 /** Builds the Rust-side cache request (stream/download/storage fallbacks + the
  *  API duration used to detect truncated downloads). `durationMs` is the track's
  *  API-reported length in milliseconds. */
-async function buildCacheRequest(urn: string, hq: boolean, durationMs?: number) {
+export async function buildTrackRequest(urn: string, hq: boolean, durationMs?: number) {
   const { buildStorageUrls, downloadFallbackUrls, streamFallbackUrls, getSessionId } = await import(
     './api'
   );
@@ -81,7 +85,7 @@ export async function ensureTrackCached(
     return cached;
   }
 
-  const request = await buildCacheRequest(urn, highQualityStreaming, durationMs);
+  const request = await buildTrackRequest(urn, highQualityStreaming, durationMs);
   return invoke<TrackCacheInfo>('track_ensure_cached', { request });
 }
 
@@ -331,7 +335,7 @@ export async function downloadTrack(
   if (!dest) throw new Error('cancelled');
 
   const hq = useSettingsStore.getState().highQualityStreaming;
-  const request = await buildCacheRequest(urn, hq, options.durationMs);
+  const request = await buildTrackRequest(urn, hq, options.durationMs);
   return invoke<string>('track_export', {
     request,
     destPath: dest,

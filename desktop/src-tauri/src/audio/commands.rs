@@ -4,8 +4,12 @@ use tauri::{Manager, State};
 use crate::audio::device;
 use crate::audio::engine;
 use crate::audio::state::AudioState;
+use crate::audio::streaming;
 use crate::audio::timing;
-use crate::audio::types::{AudioLoadResult, AudioSink};
+use crate::audio::types::{
+    AudioLoadResult, AudioSink, AudioStreamLoadResult, AudioStreamRequest,
+};
+use crate::track_cache::state::TrackCacheState;
 
 #[tauri::command]
 pub async fn audio_load_file(
@@ -55,6 +59,17 @@ pub async fn audio_load_url(
         state,
     )
     .await
+}
+
+#[tauri::command]
+pub async fn audio_load_streaming(
+    request: AudioStreamRequest,
+    start_paused: bool,
+    app: AppHandle,
+    state: State<'_, AudioState>,
+    cache: State<'_, TrackCacheState>,
+) -> Result<AudioStreamLoadResult, String> {
+    streaming::load(request, start_paused, app, state, cache).await
 }
 
 #[tauri::command]

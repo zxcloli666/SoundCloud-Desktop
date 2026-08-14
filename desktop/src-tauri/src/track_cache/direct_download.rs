@@ -24,17 +24,21 @@ pub struct DownloadResponse {
 pub enum Candidate {
     Progressive {
         #[serde(default = "default_sq")]
-        quality: String,
+        pub(crate) quality: String,
         #[serde(default)]
-        preset: String,
-        url: String,
+        pub(crate) preset: String,
+        #[serde(default)]
+        pub(crate) mime: String,
+        pub(crate) url: String,
     },
     Hls {
         #[serde(default = "default_sq")]
-        quality: String,
+        pub(crate) quality: String,
         #[serde(default)]
-        preset: String,
-        manifest_url: String,
+        pub(crate) preset: String,
+        #[serde(default)]
+        pub(crate) mime: String,
+        pub(crate) manifest_url: String,
     },
     #[serde(other)]
     Unsupported,
@@ -45,7 +49,7 @@ fn default_sq() -> String {
 }
 
 impl Candidate {
-    fn quality(&self) -> &str {
+    pub(crate) fn quality(&self) -> &str {
         match self {
             Candidate::Progressive { quality, .. } => quality,
             Candidate::Hls { quality, .. } => quality,
@@ -53,7 +57,7 @@ impl Candidate {
         }
     }
 
-    fn preset(&self) -> &str {
+    pub(crate) fn preset(&self) -> &str {
         match self {
             Candidate::Progressive { preset, .. } => preset,
             Candidate::Hls { preset, .. } => preset,
@@ -61,7 +65,7 @@ impl Candidate {
         }
     }
 
-    fn kind_label(&self) -> &'static str {
+    pub(crate) fn kind_label(&self) -> &'static str {
         match self {
             Candidate::Progressive { .. } => "progressive",
             Candidate::Hls { .. } => "hls",
@@ -77,7 +81,7 @@ impl Candidate {
         }
     }
 
-    fn playback_quality(&self) -> PlaybackQuality {
+    pub(crate) fn playback_quality(&self) -> PlaybackQuality {
         if self.quality() == "hq" {
             PlaybackQuality::Hq
         } else {
@@ -109,7 +113,15 @@ pub async fn try_download(
                 let endpoint = url.clone();
                 let session_id = session_id.map(str::to_string);
                 Box::pin(async move {
-                    try_one_endpoint(&client, &endpoint, session_id.as_deref(), hq_pref).await
+                    let candidates = resolve_one_endpoint(
+                        &client,
+                        &endpoint,
+                        session_id.as_deref(),
+                        hq_pref,
+                    )
+                    .await
+                    .ok()?;
+                    consume_candidates(&client, candidates).await
                 }) as Pin<Box<dyn Future<Output = Option<DirectResult>> + Send>>
             })
             .collect();
@@ -124,17 +136,53 @@ pub async fn try_download(
     None
 }
 
-async fn try_one_endpoint(
+pub(crate) async fn resolve_candidates(
+    client: &Client,
+    download_urls: &[String],
+    session_id: Option<&str>,
+    hq_pref: bool,
+) -> Result<Vec<Candidate>, String> {
+    if download_urls.is_empty() {
+        return Err("no download endpoints".to_string());
+    }
+
+    type ResolveFuture = Pin<Box<dyn Future<Output = Result<Vec<Candidate>, String>> + Send>>;
+    let mut futures: Vec<ResolveFuture> = download_urls
+        .iter()
+        .map(|url| {
+            let client = client.clone();
+            let endpoint = url.clone();
+            let session_id = session_id.map(str::to_string);
+            Box::pin(async move {
+                resolve_one_endpoint(&client, &endpoint, session_id.as_deref(), hq_pref).await
+            }) as ResolveFuture
+        })
+        .collect();
+
+    let mut last_error = "all download endpoints failed".to_string();
+    while !futures.is_empty() {
+        let (result, _idx, remaining) = select_all(futures).await;
+        match result {
+            Ok(candidates) if !candidates.is_empty() => return Ok(candidates),
+            Ok(_) => last_error = "download endpoint returned no usable candidates".to_string(),
+            Err(error) => last_error = error,
+        }
+        futures = remaining;
+    }
+    Err(last_error)
+}
+
+async fn resolve_one_endpoint(
     client: &Client,
     endpoint: &str,
     session_id: Option<&str>,
     hq_pref: bool,
-) -> Option<DirectResult> {
+) -> Result<Vec<Candidate>, String> {
     let resp = match fetch_download(client, endpoint, session_id).await {
         Ok(r) => r,
         Err(e) => {
             eprintln!("[direct] {endpoint} failed: {e}");
-            return None;
+            return Err(e);
         }
     };
     let sorted = sort_candidates(resp.candidates, hq_pref);
@@ -148,6 +196,10 @@ async fn try_one_endpoint(
             .join(", ");
         println!("[direct] {endpoint} candidates: [{listing}]");
     }
+    Ok(sorted)
+}
+
+async fn consume_candidates(client: &Client, sorted: Vec<Candidate>) -> Option<DirectResult> {
     for cand in sorted {
         let q = cand.playback_quality();
         match consume(client, &cand).await {

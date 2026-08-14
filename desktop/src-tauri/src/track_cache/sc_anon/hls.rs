@@ -70,7 +70,7 @@ pub async fn download_hls_full(client: &Client, m3u8_url: &str) -> Result<Bytes,
     Ok(buf.freeze())
 }
 
-async fn fetch_bytes(client: &Client, url: &str) -> Result<Bytes, String> {
+pub(crate) async fn fetch_bytes(client: &Client, url: &str) -> Result<Bytes, String> {
     let resp = client
         .get(url)
         .send()
@@ -83,7 +83,7 @@ async fn fetch_bytes(client: &Client, url: &str) -> Result<Bytes, String> {
     resp.bytes().await.map_err(|e| format!("body: {e}"))
 }
 
-fn parse_m3u8(content: &str, base_url: &str) -> (Option<String>, Vec<String>) {
+pub(crate) fn parse_m3u8(content: &str, base_url: &str) -> (Option<String>, Vec<String>) {
     let base = Url::parse(base_url).unwrap_or_else(|_| Url::parse("https://localhost").unwrap());
     let mut init_url = None;
     let mut segment_urls = Vec::new();

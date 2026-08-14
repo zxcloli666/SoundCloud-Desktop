@@ -133,6 +133,14 @@ pub fn track_get_cache_info(
 }
 
 #[tauri::command]
+pub async fn track_cancel_download(
+    urn: String,
+    state: State<'_, TrackCacheState>,
+) -> bool {
+    state.cancel_download(&urn).await
+}
+
+#[tauri::command]
 pub async fn track_preload(
     entries: Vec<PreloadEntry>,
     state: State<'_, TrackCacheState>,

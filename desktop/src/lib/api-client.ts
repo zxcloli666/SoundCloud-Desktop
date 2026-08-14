@@ -163,6 +163,9 @@ export async function apiRequest<T = unknown>(
     return reply as T;
   } catch (error) {
     if (error instanceof ApiError) throw error;
+    // Caller cancellation (track changed, view unmounted) is not a host failure
+    // and must not poison edge health or trigger auth/network recovery.
+    if (init.signal?.aborted) throw error;
     markUnhealthy(API_BASE);
     if (isTimeoutError(error)) noteRequestTimeout();
     logHttpFailure(label, url, error, performance.now() - startedAt);
