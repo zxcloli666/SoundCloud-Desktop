@@ -1,8 +1,0 @@
-[Desktop Entry]
-Name=SoundCloud Desktop
-Comment=SoundCloud music player
-Exec=soundcloud-desktop
-Icon=io.github.zxcloli666.SoundcloudDesktop
-Type=Application
-Categories=Audio;Music;Player;
-Keywords=soundcloud;music;player;

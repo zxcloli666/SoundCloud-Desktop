@@ -109,7 +109,10 @@ pub fn run() {
             }));
             app::diagnostics::mark_session_started(app.handle());
             app::diagnostics::start_linux_fd_monitor(app.handle());
-            network::health::start(data_dir.clone(), app.handle().clone(), rt_handle.clone());
+            // The old health reporter persisted a stable device UUID. Reporting is gone;
+            // remove its legacy identifier as part of the migration.
+            std::fs::remove_file(data_dir.join("health_identity.json")).ok();
+            network::health::start(app.handle().clone(), rt_handle.clone());
             app.manage(Arc::new(DiscordState {
                 client: Mutex::new(None),
             }));
@@ -144,10 +147,6 @@ pub fn run() {
             let auth_state =
                 auth::SessionStore::init(data_dir.clone(), auth_http_client, rt_handle.clone());
             app.manage(auth_state);
-
-            let call_state = network::call::CallState::init(data_dir.clone(), rt_handle);
-            network::call::manage_state(app.handle(), call_state.clone());
-            network::call::maybe_autostart(app.handle(), call_state);
 
             Ok(())
         })
@@ -224,13 +223,9 @@ pub fn run() {
             track_cache::track_cancel_cache_likes,
             network::image_cache::image_cache_size,
             network::image_cache::image_cache_clear,
-            network::call::call_set_enabled,
-            network::call::call_is_enabled,
-            network::call::call_status,
             auth::auth_status,
             auth::auth_set_session,
             auth::auth_logout,
-            auth::auth_set_premium,
             network::edge::edge_config,
             network::edge::edge_note,
             network::wallpapers::wallpaper_search,

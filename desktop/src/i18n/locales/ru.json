@@ -20,7 +20,6 @@
     "search": "Поиск",
     "discover": "Каталог",
     "library": "Библиотека",
-    "star": "STAR",
     "offline": "Оффлайн",
     "following": "Подписки",
     "settings": "Настройки",
@@ -388,24 +387,17 @@
     "serverError": "Ошибка сервера ({{status}})"
   },
   "hostStatus": {
-    "starOffer": {
-      "title": "Основной хост недоступен",
-      "body": "Основной хост лёг, но резервный Star-хост работает. Оформите STAR прямо здесь — выдадим сразу, и приложение продолжит работать через резервный хост.",
-      "how": "Можно оформить в приложении или через Boosty / Discord:"
-    },
     "allDown": {
       "title": "Все хосты лежат",
       "body": "Сервис временно недоступен, мы уже чиним. Скачанная музыка доступна в оффлайн-библиотеке."
     },
     "banner": {
-      "viaStar": "Основной хост недоступен — работаем через резервный Star.",
       "outage": "Хосты недоступны",
       "details": "Подробнее"
     },
     "actions": {
       "retry": "Проверить снова",
-      "offlineLibrary": "Оффлайн-библиотека",
-      "buyStar": "Оформить STAR"
+      "offlineLibrary": "Оффлайн-библиотека"
     }
   },
   "home": {
@@ -623,10 +615,8 @@
     "startup": "Запуск",
     "startupPageDesc": "Какая страница должна открываться при старте приложения",
     "playback": "Воспроизведение",
-    "floatingComments": "Плавающие комментарии",
     "lyricsVisualizer": "Визуализатор в лирике",
     "lyricsVisualizerDesc": "FFT-волна по биту трека на фоне фуллскрин лирики. По умолчанию выключено.",
-    "floatingCommentsDesc": "Показывать комментарии как всплывающие пилюли во время воспроизведения",
     "discordRpc": "Discord Rich Presence",
     "discordRpcDesc": "Показывать текущий статус прослушивания SoundCloud в Discord",
     "discordRpcMode": "Что отображать",
@@ -639,14 +629,9 @@
     "normalizeVolumeDesc": "Выравнивает тихие и громкие треки до более ровного уровня",
     "highQualityStreaming": "Высокое качество стрима",
     "highQualityStreamingDesc": "Стараться воспроизводить треки в максимально доступном качестве",
-    "bypassWhitelist": "Обход белых списков",
-    "bypassWhitelistDesc": "Альтернативная маршрутизация при блокировках и отключениях интернета",
-    "bypassWhitelistSoon": "Скоро будет",
-    "bypassTitle": "Соединение",
     "catGeneral": "Общее",
     "catAppearance": "Оформление",
     "catAudio": "Звук",
-    "catNetwork": "Сеть",
     "catIntegrations": "Интеграции",
     "catStorage": "Хранилище",
     "catAccount": "Аккаунт",
@@ -667,7 +652,6 @@
     "wpKeyPlaceholder": "API-ключ Wallhaven",
     "wpKeyHint": "Хранится локально. Получить — в настройках аккаунта Wallhaven.",
     "wpKeyNeeded": "Введи API-ключ Wallhaven, чтобы открыть контент 18+.",
-    "bypassWhitelistSoonDesc": "Готовим обход — следите за обновлениями",
     "import": "Импорт",
     "importYandex": "Импорт из Yandex Music"
   },
@@ -719,11 +703,6 @@
     "savingPlaylist": "Сохраняем плейлист...",
     "backgroundHint": "Импорт идет в фоне, окно можно закрыть"
   },
-  "update": {
-    "available": "Доступно обновление",
-    "later": "Позже",
-    "download": "Скачать"
-  },
   "common": {
     "loading": "Загрузка...",
     "error": "Что-то пошло не так",
@@ -735,246 +714,6 @@
     "empty": "Здесь пока пусто",
     "expand": "Подробнее",
     "collapse": "Свернуть"
-  },
-  "star": {
-    "title": "Подписка Star",
-    "active": "Активна",
-    "getIt": "Узнать больше",
-    "modalTitle": "Star",
-    "modalSub": "Поддержи проект — получи бонусы",
-    "perkGoPlus": "Доступ к GO+ трекам",
-    "perkServer": "Выделенный сервер стриминга",
-    "perkHQ": "Больше HQ треков",
-    "bypassWhitelist": "Обход белых списков и лучшая доступность",
-    "perkSupport": "Ну и просто поддержать проект монеткой.\nКоличество бонусов будет увеличиваться!",
-    "howTo": "Как получить",
-    "step1": "Перейдите на Boosty",
-    "step2": "Привяжите Discord к своему Boosty",
-    "step3": "Зайдите на наш Discord-сервер",
-    "step4": "Купите подписку на Boosty",
-    "step5": "В нашем Discord-сервере привяжите SoundCloud командой /sc-link",
-    "goBoosty": "Boosty",
-    "goDiscord": "Discord"
-  },
-  "starpass": {
-    "guestHandle": "@ты",
-    "member": "Участник",
-    "allAccess": "CLASS · ALL-ACCESS",
-    "activatedStamp": "Активирован",
-    "bestValue": "Выгоднее всего",
-    "perMonth": " / мес",
-    "starsLabel": "В Telegram Stars",
-    "classLabel": "Class {{cls}}",
-    "afterPurchase": "после покупки",
-    "daysLeft_one": "{{count}} день",
-    "daysLeft_few": "{{count}} дня",
-    "daysLeft_many": "{{count}} дней",
-    "tierPreview": "Tier · превью",
-    "tierActive": "Активный пропуск",
-    "fieldSerial": "Серийный №",
-    "fieldIssued": "Выпущен",
-    "fieldActivated": "Активирован",
-    "fieldValidUntil": "Действует до",
-    "fieldMethod": "Метод",
-    "fieldOrder": "Заказ №",
-    "fieldRemaining": "Осталось",
-    "eyebrow": "Членский пропуск",
-    "heroTitle1": "Не подписка.",
-    "heroTitle2": "Пропуск в звук.",
-    "heroLead": "Именной пропуск: выделенный сервер, HQ и весь каталог — без компромиссов.",
-    "choosePass": "Выбрать пропуск",
-    "haveCode": "У меня есть код",
-    "plan": {
-      "month": "Месячный",
-      "quarter": "Квартальный",
-      "year": "Годовой"
-    },
-    "perksTitle": "Что внутри",
-    "ignite": "Зажечь звезду",
-    "back": "Назад",
-    "perMonthShort": "мес",
-    "recurringSub": "спишется автоматически, можно отменить",
-    "perk": {
-      "goPlus": {
-        "title": "Полный каталог",
-        "tag": "Весь каталог"
-      },
-      "server": {
-        "title": "Быстрый сервер",
-        "tag": "Без очередей"
-      },
-      "hq": {
-        "title": "Звук в HQ",
-        "tag": "Высокое качество"
-      },
-      "whitelist": {
-        "title": "Без блокировок РФ",
-        "tag": "В обход региона"
-      },
-      "soundwave": {
-        "title": "SoundWave",
-        "tag": "Ранний доступ"
-      },
-      "support": {
-        "title": "Поддержка проекта",
-        "tag": "Серверы и разработка"
-      }
-    },
-    "method": {
-      "sbp": {
-        "title": "СБП",
-        "body": "QR из приложения банка"
-      },
-      "cardRu": {
-        "title": "Карта РФ",
-        "body": "МИР, Visa/MC рос. банков"
-      },
-      "cardIntl": {
-        "title": "Карта зарубеж.",
-        "body": "Иностранный эмитент"
-      },
-      "cryptoPlatega": {
-        "title": "Криптовалюта",
-        "body": "On-chain, напрямую"
-      },
-      "cryptoBot": {
-        "title": "CryptoBot",
-        "body": "кошелёк CryptoBot"
-      },
-      "tgStars": {
-        "title": "Telegram Stars",
-        "body": "оплата звёздами TG"
-      }
-    },
-    "caption": {
-      "member": "Member pass · SoundCloud client",
-      "boarding": "Boarding · ожидает оплаты",
-      "active": "Member pass · активен"
-    },
-    "planTitle": "Класс пропуска",
-    "planSub": "Длиннее срок — дешевле месяц.",
-    "toActivation": "К активации",
-    "providerTitle": "Способ оплаты",
-    "providerSub": "Цена одна — путь на выбор.",
-    "recurring": "Автопродление (Telegram Stars, помесячно)",
-    "creating": "Создаём заказ…",
-    "continueWith": "Продолжить с {{method}}",
-    "continue": "Продолжить",
-    "toPay": "К оплате",
-    "checkoutError": "Не удалось создать заказ. Попробуй другой способ.",
-    "payTitle": "Оплата",
-    "paySub": "Заверши платёж — пропуск активируется сам.",
-    "retry": "Попробовать снова",
-    "sbpStep": {
-      "1": "Открой приложение банка и отсканируй QR.",
-      "2": "Подтверди перевод.",
-      "3": "Не закрывай экран — пропуск штампуется сам."
-    },
-    "changeMethod": "Другой способ",
-    "externalHint": "Оплата открыта в браузере. Заверши там — экран обновится сам.",
-    "openCheckout": "Открыть оплату",
-    "openInBrowser": "Открыть в браузере",
-    "qrExpired": "Время заказа вышло — начни заново",
-    "successTitle": "Пропуск активирован",
-    "successSub": "Всё включено. Возвращайся к музыке.",
-    "welcome": "Добро пожаловать в STAR, {{handle}}.",
-    "welcomeBody": "Действует до {{date}}. Сервер, HQ и SoundWave уже включены.",
-    "until": "до",
-    "backToMusic": "К музыке",
-    "managePass": "Управление",
-    "redeemTitle": "Активация по коду",
-    "redeemSub": "Код с чека от реселлера.",
-    "status": {
-      "waiting": "Ждём оплату…",
-      "polling": "проверяем каждые 2.5 с",
-      "paid": "Оплата получена",
-      "activated": "пропуск активирован",
-      "failed": "Оплата не прошла",
-      "failedHint": "заказ не оплачен — попробуй снова"
-    },
-    "redeem": {
-      "heading": "Один код — целый пропуск.",
-      "lead": "Четыре блока после префикса STAR. Регистр и дефисы — не важны.",
-      "center": "введи код активации",
-      "format": "формат",
-      "oneTime": "одноразовый",
-      "label": "Код активации",
-      "progress": "Введено {{count}} из 16 символов",
-      "activate": "Активировать STAR",
-      "activating": "Активируем…",
-      "paste": "Вставить из буфера",
-      "errUsed": "Этот код уже использован.",
-      "errUnknown": "Не знаем такой код. Проверь символы.",
-      "errRevoked": "Этот код отозван.",
-      "errExpired": "Срок действия кода истёк.",
-      "errGeneric": "Не удалось активировать код. Попробуй снова."
-    },
-    "manage": {
-      "title": "Твой пропуск",
-      "sub": "Срок, автопродление и источник.",
-      "autoRenew": "Автопродление",
-      "autoRenewOn": "спишем снова {{date}}",
-      "autoRenewOff": "Выключено. Доступ — до конца оплаченного срока.",
-      "source": "Источник",
-      "sourceSub": "Откуда подписка",
-      "afterExpiry": "Потом — бесплатный режим",
-      "extend": "Продлить",
-      "redeem": "Ввести код",
-      "canceled": "Автопродление выключено",
-      "cancelError": "Не удалось выключить автопродление"
-    },
-    "discord": {
-      "label": "Discord",
-      "linkedAs": "Привязан",
-      "unlinked": "Discord не привязан",
-      "linkHint": "Открой наш Discord-сервер и набери /sc-link",
-      "booster": "Бустер",
-      "starRole": "Роль STAR",
-      "member": "Участник"
-    },
-    "boosty": {
-      "title": "Подписка через Boosty",
-      "sub": "STAR придёт по буст-роли в Discord после /sc-link"
-    },
-    "openVia": "Где открыть оплату",
-    "openIn": {
-      "tg": "Открыть в Telegram",
-      "webapp": "Открыть в браузере",
-      "miniapp": "Telegram Mini App"
-    },
-    "loadError": "Не удалось загрузить тарифы",
-    "loading": "Загрузка тарифов…"
-  },
-  "soundwaveLock": {
-    "wordmark": "САУНД ВОЛНА",
-    "badge": "Эксклюзив Star",
-    "title": "Доступно только по подписке",
-    "subtitle": "SoundWave будет доступна бесплатно через",
-    "cta": "Купить подписку",
-    "days": "дн",
-    "hours": "ч",
-    "minutes": "мин",
-    "seconds": "сек"
-  },
-  "news": {
-    "close": "Закрыть",
-    "discord": {
-      "title": "У нас появился Discord!",
-      "description": "Присоединяйся — обсуждения, предложения, баг-репорты",
-      "body": "Мы запустили официальный Discord-сервер SoundCloud Desktop!\n\nЗаходи, чтобы общаться с другими пользователями, предлагать фичи, сообщать о багах и быть в курсе последних новостей.\n\nhttps://discord.gg/xQcGBP8fGG"
-    }
-  },
-  "call": {
-    "title": "Сеть пользователей",
-    "enable": "Включить",
-    "disable": "Выключить",
-    "status": {
-      "disabled": "выкл",
-      "connecting": "подключение",
-      "provisioning": "регистрация",
-      "active": "активен",
-      "failed": "ошибка"
-    }
   },
   "artist": {
     "title": "Артист",

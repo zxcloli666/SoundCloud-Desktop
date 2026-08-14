@@ -37,10 +37,43 @@
       "identifier": "http:default",
       "allow": [
         {
-          "url": "https://*:*"
+          "url": "https://api.scnative.space"
         },
         {
-          "url": "http://*:*"
+          "url": "https://stream.scnative.space"
+        },
+        {
+          "url": "https://images.scnative.space"
+        },
+        {
+          "url": "https://storage.scnative.space"
+        },
+        {
+          "url": "https://*.relay.scnative.space"
+        },
+        {
+          "url": "https://*.sndcdn.com"
+        },
+        {
+          "url": "https://*.soundcloud.com"
+        },
+        {
+          "url": "https://www.gstatic.com"
+        },
+        {
+          "url": "https://detectportal.firefox.com"
+        },
+        {
+          "url": "https://www.cloudflare.com"
+        },
+        {
+          "url": "http://*.localhost:*"
+        },
+        {
+          "url": "http://localhost:*"
+        },
+        {
+          "url": "http://127.0.0.1:*"
         }
       ]
     }

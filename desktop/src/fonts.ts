@@ -12,10 +12,3 @@ import '@fontsource/fraunces/500-italic.css';
 import '@fontsource/jetbrains-mono/400.css';
 import '@fontsource/jetbrains-mono/500.css';
 import '@fontsource/jetbrains-mono/600.css';
-// STAR membership display pair (scoped to /star via local --font-serif/--font-mono).
-import '@fontsource/unbounded/500.css';
-import '@fontsource/unbounded/600.css';
-import '@fontsource/unbounded/700.css';
-import '@fontsource/geist-mono/400.css';
-import '@fontsource/geist-mono/500.css';
-import '@fontsource/geist-mono/600.css';

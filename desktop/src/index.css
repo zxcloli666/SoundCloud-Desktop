@@ -20,9 +20,7 @@
   --font-serif: "Fraunces", Georgia, "Times New Roman", serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   /* Geometric techno-display for hero numerals (STAR price) — bold, energy-core vibe. */
-  --font-display: "Unbounded", "Inter", system-ui, sans-serif;
   /* Console mono with cyrillic + ₽ coverage (STAR labels/serials/tags). */
-  --font-mono-console: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   --ease-apple: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -619,7 +617,7 @@ select,
   background: rgba(168, 85, 247, 0.4);
 }
 
-/* ── Star subscription particles ────────────────────────────── */
+/* ── Ambient star particles ─────────────────────────────────── */
 @keyframes star-float {
   from {
     transform: translateY(0) scale(1);

@@ -1,7 +1,7 @@
-import {create} from 'zustand';
-import {createJSONStorage, persist} from 'zustand/middleware';
-import type {PerfMode} from '../lib/perf';
-import {tauriStorage} from '../lib/tauri-storage';
+import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
+import type { PerfMode } from '../lib/perf';
+import { tauriStorage } from '../lib/tauri-storage';
 
 export type ThemePreset = 'soundcloud' | 'dark' | 'neon' | 'forest' | 'crimson' | 'custom';
 export type StartupPage = 'home' | 'search' | 'library' | 'settings';
@@ -70,9 +70,7 @@ export interface SettingsState {
   eqPreset: string;
   normalizeVolume: boolean;
   highQualityStreaming: boolean;
-  bypassWhitelist: boolean;
   sidebarCollapsed: boolean;
-  floatingComments: boolean;
   startupPage: StartupPage;
   pinnedPlaylists: SidebarPinnedPlaylist[];
   discordRpcEnabled: boolean;
@@ -102,9 +100,7 @@ export interface SettingsState {
   setEqBand: (index: number, gain: number) => void;
   setNormalizeVolume: (enabled: boolean) => void;
   setHighQualityStreaming: (enabled: boolean) => void;
-  setBypassWhitelist: (enabled: boolean) => void;
   toggleSidebar: () => void;
-  setFloatingComments: (v: boolean) => void;
   setStartupPage: (page: StartupPage) => void;
   pinPlaylist: (playlist: SidebarPinnedPlaylist) => void;
   unpinPlaylist: (urn: string) => void;
@@ -140,9 +136,7 @@ const DEFAULTS = {
   eqPreset: 'flat',
   normalizeVolume: true,
   highQualityStreaming: false,
-  bypassWhitelist: false,
   sidebarCollapsed: false,
-  floatingComments: true,
   startupPage: 'home' as StartupPage,
   pinnedPlaylists: [] as SidebarPinnedPlaylist[],
   discordRpcEnabled: true,
@@ -190,9 +184,7 @@ export const useSettingsStore = create<SettingsState>()(
         }),
       setNormalizeVolume: (normalizeVolume) => set({ normalizeVolume }),
       setHighQualityStreaming: (highQualityStreaming) => set({ highQualityStreaming }),
-      setBypassWhitelist: (bypassWhitelist) => set({ bypassWhitelist }),
       toggleSidebar: () => set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
-      setFloatingComments: (floatingComments) => set({ floatingComments }),
       setStartupPage: (startupPage) => set({ startupPage }),
       pinPlaylist: (playlist) =>
         set((s) => ({
@@ -264,9 +256,7 @@ export const useSettingsStore = create<SettingsState>()(
         eqPreset: s.eqPreset,
         normalizeVolume: s.normalizeVolume,
         highQualityStreaming: s.highQualityStreaming,
-        bypassWhitelist: s.bypassWhitelist,
         sidebarCollapsed: s.sidebarCollapsed,
-        floatingComments: s.floatingComments,
         startupPage: s.startupPage,
         pinnedPlaylists: s.pinnedPlaylists,
         discordRpcEnabled: s.discordRpcEnabled,

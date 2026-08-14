@@ -25,7 +25,6 @@
     "home": "Ana Sayfa",
     "search": "Ara",
     "library": "Kutuphane",
-    "star": "STAR",
     "offline": "Offline",
     "following": "Takip Edilenler",
     "settings": "Ayarlar",
@@ -301,24 +300,17 @@
     "serverError": "Sunucu hatasi ({{status}})"
   },
   "hostStatus": {
-    "starOffer": {
-      "title": "Ana sunucu kapali",
-      "body": "Ana sunucu kapali ama yedek Star sunucusu calisiyor. STAR'i hemen buradan alin — aninda taninir ve uygulama yedek sunucuda calismaya devam eder.",
-      "how": "Uygulamadan ya da Boosty / Discord uzerinden alin:"
-    },
     "allDown": {
       "title": "Tum sunucular kapali",
       "body": "Servis gecici olarak kullanilamiyor, duzeltiyoruz. Indirilen muzik cevrimdisi kitaplikta kullanilabilir."
     },
     "banner": {
-      "viaStar": "Ana sunucu kapali — yedek Star sunucusu uzerinden calisiyoruz.",
       "outage": "Sunucular kullanilamiyor",
       "details": "Ayrintilar"
     },
     "actions": {
       "retry": "Tekrar dene",
-      "offlineLibrary": "Cevrimdisi kitaplik",
-      "buyStar": "STAR al"
+      "offlineLibrary": "Cevrimdisi kitaplik"
     }
   },
   "home": {
@@ -525,8 +517,6 @@
     "startup": "Baslangic",
     "startupPageDesc": "Uygulama acildiginda hangi sayfanin gosterilecegini secin",
     "playback": "Oynatma",
-    "floatingComments": "Yuzen yorumlar",
-    "floatingCommentsDesc": "Calarken yorumlari kayan baloncuklar olarak goster",
     "discordRpc": "Discord Rich Presence",
     "discordRpcDesc": "Mevcut SoundCloud oynatma durumunu Discord'da goster",
     "discordRpcMode": "Gosterim modu",
@@ -539,14 +529,9 @@
     "normalizeVolumeDesc": "Sessiz ve yuksek parcarlari daha esit bir seviyeye getirir",
     "highQualityStreaming": "Yuksek kalite akis",
     "highQualityStreamingDesc": "Oynatma sirasinda mevcut en yuksek kaliteyi tercih et",
-    "bypassWhitelist": "Beyaz listeleri atla",
-    "bypassWhitelistDesc": "Ag kisitlamalari ve kesintilerde alternatif yonlendirme (Russia)",
-    "bypassWhitelistSoon": "Yakinda",
-    "bypassTitle": "Baglanti",
     "catGeneral": "Genel",
     "catAppearance": "Gorunum",
     "catAudio": "Ses",
-    "catNetwork": "Ag",
     "catIntegrations": "Entegrasyonlar",
     "catStorage": "Depolama",
     "catAccount": "Hesap",
@@ -567,7 +552,6 @@
     "wpKeyPlaceholder": "Wallhaven API anahtari",
     "wpKeyHint": "Yerel olarak saklanir. Wallhaven hesap ayarlarindan alabilirsiniz.",
     "wpKeyNeeded": "18+ sonuclar icin Wallhaven API anahtarini girin.",
-    "bypassWhitelistSoonDesc": "Atlatma rotalamasi gelistirme asamasinda",
     "import": "Ice aktar",
     "importYandex": "Yandex Music'ten ice aktar"
   },
@@ -619,11 +603,6 @@
     "savingPlaylist": "Calma listesi kaydediliyor...",
     "backgroundHint": "Ice aktarma arka planda surer, bu pencereyi kapatabilirsiniz"
   },
-  "update": {
-    "available": "Guncelleme mevcut",
-    "later": "Daha sonra",
-    "download": "Indir"
-  },
   "common": {
     "loading": "Yukleniyor...",
     "error": "Bir seyler ters gitti",
@@ -632,240 +611,6 @@
     "cancel": "Iptal",
     "back": "Geri",
     "empty": "Burada henuz bir sey yok"
-  },
-  "star": {
-    "title": "Star Abonelik",
-    "active": "Aktif",
-    "getIt": "Daha fazla bilgi",
-    "modalTitle": "Star",
-    "modalSub": "Projeyi destekle — bonuslar kazan",
-    "perkGoPlus": "GO+ parcalarina erisim",
-    "perkServer": "Ozel streaming sunucusu",
-    "perkHQ": "Daha fazla HQ parca",
-    "bypassWhitelist": "Beyaz listeleri atla (in Russia)",
-    "perkSupport": "Ya da sadece projeyi kucuk bir bagisla destekle.\nDaha fazla bonus yakinda!",
-    "howTo": "Nasil alinir",
-    "step1": "Boosty'ye gidin",
-    "step2": "Discord'u Boosty hesabiniza baglayin",
-    "step3": "Discord sunucumuza katilin",
-    "step4": "Boosty'de abonelik satin alin",
-    "step5": "Discord sunucumuzda /sc-link komutuyla SoundCloud'u baglayin",
-    "goBoosty": "Boosty",
-    "goDiscord": "Discord"
-  },
-  "starpass": {
-    "guestHandle": "@sen",
-    "member": "Uye",
-    "allAccess": "CLASS · ALL-ACCESS",
-    "activatedStamp": "Aktif",
-    "bestValue": "En avantajli",
-    "perMonth": " / ay",
-    "starsLabel": "Telegram Stars olarak",
-    "classLabel": "Class {{cls}}",
-    "afterPurchase": "satin alimdan sonra",
-    "daysLeft_one": "{{count}} gun",
-    "daysLeft_other": "{{count}} gun",
-    "tierPreview": "Tier · onizleme",
-    "tierActive": "Aktif pass",
-    "fieldSerial": "Seri №",
-    "fieldIssued": "Verilis",
-    "fieldActivated": "Aktif edildi",
-    "fieldValidUntil": "Gecerlilik",
-    "fieldMethod": "Yontem",
-    "fieldOrder": "Siparis №",
-    "fieldRemaining": "Kalan",
-    "eyebrow": "Uyelik pasosu · seri 2026",
-    "heroTitle1": "Abonelik degil.",
-    "heroTitle2": "Sese bir paso.",
-    "heroLead": "STAR, kendi seri numarasi olan kisisel bir pasodur. Ozel sunucuyu, HQ parcalari ve SoundWave'i acar. Satin al — karti al; aktif et — canlanir.",
-    "choosePass": "Paso sec",
-    "haveCode": "Kodum var",
-    "plan": {
-      "month": "Aylik",
-      "quarter": "3 aylik",
-      "year": "Yillik"
-    },
-    "perk": {
-      "goPlus": {
-        "title": "GO+ parcalar",
-        "body": "Ucretsiz pakette kilitli olanlar dahil tum katalog."
-      },
-      "server": {
-        "title": "Ozel sunucu",
-        "body": "Ayri streaming dugumu: daha hizli baslangic, kuyruksuz stabil HQ."
-      },
-      "hq": {
-        "title": "Daha fazla HQ parca",
-        "body": "Eskiden sikistirma alinan yerde yuksek kalite."
-      },
-      "whitelist": {
-        "title": "RF beyaz listelerini atla",
-        "body": "Bolge icin engelli parcalar bizim rotamizdan calar."
-      },
-      "soundwave": {
-        "title": "SoundWave ozel",
-        "body": "Dalga'ya ve kimsede olmayan seemelere erken erisim."
-      },
-      "support": {
-        "title": "Projeyi destekle",
-        "body": "Paso dogrudan sunuculari ve gelistirmeyi besler. Tesekkurler."
-      }
-    },
-    "method": {
-      "sbp": {
-        "title": "SBP",
-        "body": "Banka uygulamasindan QR"
-      },
-      "cardRu": {
-        "title": "RF karti",
-        "body": "MIR, Rus bankalarinin Visa/MC'si"
-      },
-      "cardIntl": {
-        "title": "Yabanci kart",
-        "body": "Yabanci banka"
-      },
-      "cryptoPlatega": {
-        "title": "Kripto",
-        "body": "On-chain, dogrudan"
-      },
-      "cryptoBot": {
-        "title": "CryptoBot",
-        "body": "CryptoBot cuzdani"
-      },
-      "tgStars": {
-        "title": "Telegram Stars",
-        "body": "TG yildizlariyla ode"
-      }
-    },
-    "caption": {
-      "member": "Member pass · SoundCloud client",
-      "boarding": "Boarding · odeme bekleniyor",
-      "active": "Member pass · aktif"
-    },
-    "planTitle": "Paso sinifini sec",
-    "planSub": "Sure uzadikca ay ucuzlar. Tum siniflar ayni ayricaliklari acar.",
-    "toActivation": "Aktivasyona gec",
-    "providerTitle": "Aktivasyon yontemi",
-    "providerSub": "Tek paso — ona birkac yol. Uygun olani sec, fiyat degismez.",
-    "recurring": "Otomatik yenileme (Telegram Stars, aylik)",
-    "creating": "Siparis olusturuluyor…",
-    "continueWith": "{{method}} ile devam et",
-    "continue": "Devam et",
-    "toPay": "Odenecek",
-    "checkoutError": "Siparis olusturulamadi. Baska bir yontem dene.",
-    "payTitle": "Paso damgasini bekliyor",
-    "paySub": "Odemeyi tamamla — kart otomatik aktif olur.",
-    "retry": "Tekrar dene",
-    "sbpStep": {
-      "1": "Banka uygulamani ac ve QR'i tara.",
-      "2": "Transferi onayla.",
-      "3": "Bu ekrani kapatma — paso kendini damgalar."
-    },
-    "changeMethod": "Odeme yontemini degistir",
-    "externalHint": "Saglayicinin odeme sayfasini tarayicinda actik. Odemeyi orada tamamla — bu ekran kendini gunceller.",
-    "openCheckout": "Odemeyi ac",
-    "openInBrowser": "Tarayicida ac",
-    "qrExpired": "Siparis suresi doldu — bastan basla",
-    "successTitle": "Paso aktif edildi",
-    "successSub": "Kart damgasini aldi ve folyoyla parliyor. Muzige donebilirsin.",
-    "welcome": "STAR'a hos geldin, {{handle}}.",
-    "welcomeBody": "Paso {{date}} tarihine kadar gecerli. Ozel sunucu, HQ ve SoundWave zaten acik — bir sey yeniden yuklemen gerekmiyor.",
-    "until": "kadar",
-    "backToMusic": "Muzige don",
-    "managePass": "Pasoyu yonet",
-    "redeemTitle": "Kodla aktivasyon",
-    "redeemSub": "Pasoyu bayiden mi aldin? Fisteki kodu gir.",
-    "status": {
-      "waiting": "Odeme bekleniyor…",
-      "polling": "her 2.5 sn kontrol",
-      "paid": "Odeme alindi",
-      "activated": "paso aktif edildi",
-      "failed": "Odeme basarisiz",
-      "failedHint": "siparis gecmedi — tekrar dene"
-    },
-    "redeem": {
-      "heading": "Tek kod — bir paso.",
-      "lead": "Kod, STAR onekinden sonra dort bloktur. Buyuk-kucuk harf onemli degil, tireleri biz koyariz. Sure aktivasyonda baslar.",
-      "format": "format",
-      "oneTime": "tek kullanimlik",
-      "label": "Aktivasyon kodu",
-      "progress": "16 karakterden {{count}} girildi",
-      "activate": "STAR'i aktif et",
-      "activating": "Aktif ediliyor…",
-      "paste": "Panodan yapistir",
-      "errUsed": "Bu kod zaten kullanildi.",
-      "errUnknown": "Bu kodu bilmiyoruz. Karakterleri kontrol et.",
-      "errRevoked": "Bu kod iptal edildi.",
-      "errExpired": "Bu kodun suresi doldu.",
-      "errGeneric": "Kod aktif edilemedi. Tekrar dene."
-    },
-    "manage": {
-      "title": "Pason",
-      "sub": "Pasin suresi, otomatik yenileme ve kaynagi.",
-      "autoRenew": "Otomatik yenileme",
-      "autoRenewOn": "{{date}} tarihinde tekrar tahsil edecegiz",
-      "autoRenewOff": "Kapali. Erisim odenen surenin sonuna kadar.",
-      "source": "Kaynak",
-      "sourceSub": "Nereden geldigi",
-      "afterExpiry": "Sonra ucretsiz moda gecer",
-      "extend": "Uzat",
-      "redeem": "Kod gir",
-      "canceled": "Otomatik yenileme kapatildi",
-      "cancelError": "Otomatik yenileme kapatilamadi"
-    },
-    "discord": {
-      "label": "Discord",
-      "linkedAs": "Bagli",
-      "unlinked": "Discord bagli degil",
-      "linkHint": "Discord sunucumuzu ac ve /sc-link yaz",
-      "booster": "Booster",
-      "starRole": "STAR rolu",
-      "member": "Uye"
-    },
-    "boosty": {
-      "title": "Boosty ile abone ol",
-      "sub": "Boosty'de abone ol — STAR, /sc-link sonrasi Discord boost rolunle acilir"
-    },
-    "openVia": "Odemeyi nerede ac",
-    "openIn": {
-      "tg": "Telegram'da ac",
-      "webapp": "Tarayicida ac",
-      "miniapp": "Telegram Mini App"
-    },
-    "loadError": "Tarifeler yuklenemedi",
-    "loading": "Tarifeler yukleniyor…"
-  },
-  "soundwaveLock": {
-    "wordmark": "SES DALGASI",
-    "badge": "Star Ozel",
-    "title": "Yalnizca abonelikle kullanilabilir",
-    "subtitle": "SoundWave ucretsiz olarak sunulacak:",
-    "cta": "Abonelik al",
-    "days": "g",
-    "hours": "s",
-    "minutes": "dk",
-    "seconds": "sn"
-  },
-  "news": {
-    "dismissOnce": "Kapat",
-    "dismissForever": "Bir daha gosterme",
-    "discord": {
-      "title": "Discord sunucumuz var!",
-      "description": "Toplulugumuza katilin — tartisma, oneriler, hata bildirimi",
-      "body": "SoundCloud Desktop icin resmi Discord sunucumuzu actik!\n\nDiger kullanicilarla sohbet etmek, yeni ozellikler onermek, hata bildirmek ve en son haberleri takip etmek icin katilin.\n\nhttps://discord.gg/xQcGBP8fGG"
-    }
-  },
-  "call": {
-    "title": "Eslesme agi",
-    "enable": "Etkinlestir",
-    "disable": "Devre disi birak",
-    "status": {
-      "disabled": "kapali",
-      "connecting": "baglaniyor",
-      "provisioning": "kaydediliyor",
-      "active": "aktif",
-      "failed": "hata"
-    }
   },
   "artist": {
     "tracks": "Parçalar",

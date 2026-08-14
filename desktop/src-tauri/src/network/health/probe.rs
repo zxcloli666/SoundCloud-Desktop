@@ -5,40 +5,31 @@ use reqwest::Client;
 
 use super::link;
 use super::model::{PROBE_PATH, Sample, Topology};
+use crate::network::backend;
 use crate::network::edge::{self, Tier};
 
 const PROBE_TIMEOUT: Duration = Duration::from_secs(5);
 const MAX_PARALLEL: usize = 4;
-const ORIGIN_ZONE: &str = "scnative.space";
 
 pub struct Pool {
     pub relays: Vec<String>,
-    pub calls: Vec<String>,
 }
 
 /// Каждый круг все пути щупаются пробой, которая заведомо переваливает за порог
 /// счётчика: только так видно «дошло N килобайт и тишина». Глубокий замер полосы
 /// дорогой, поэтому за круг его получает одна нода, по очереди.
 pub async fn probe_paths(client: &Client, pool: &Pool, round: usize) -> Vec<Sample> {
-    let mut targets: Vec<(String, String)> = pool
-        .relays
-        .iter()
-        .map(|node| {
-            (
-                node.clone(),
-                format!("https://{node}.{}{PROBE_PATH}", edge::relay_zone()),
-            )
-        })
-        .collect();
-    targets.extend(
-        pool.calls
+    let mut targets: Vec<(String, String)> = match edge::relay_zone() {
+        Some(zone) => pool
+            .relays
             .iter()
-            .map(|node| (node.clone(), format!("https://{node}.{ORIGIN_ZONE}{PROBE_PATH}"))),
-    );
-    targets.push((
-        "direct".to_string(),
-        format!("https://health.{ORIGIN_ZONE}{PROBE_PATH}"),
-    ));
+            .map(|node| (node.clone(), format!("https://{node}.{zone}{PROBE_PATH}")))
+            .collect(),
+        None => Vec::new(),
+    };
+    if let Some(base) = backend::config().health_base.as_deref() {
+        targets.push(("direct".to_string(), format!("{base}{PROBE_PATH}")));
+    }
 
     let deep_at = if targets.is_empty() {
         0

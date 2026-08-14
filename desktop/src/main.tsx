@@ -11,29 +11,15 @@ import { trackedInvoke as invoke, setupUiWatchdog } from './lib/diagnostics';
 import { initEdge } from './lib/edge';
 import { installFpsCap } from './lib/fps-cap';
 import { queryClient } from './lib/query-client';
-import { bootstrapPremium } from './lib/subscription';
 import './fonts';
 import './index.css';
 import { useSettingsStore } from './stores/settings';
 
-// Кап 60 fps: троттл requestAnimationFrame (см. lib/fps-cap.ts). На высокогерцовых
-// дисплеях убирает лишние кадры (CPU/GPU), на ≤60 Гц — no-op. Ставить максимально
-// рано, до первых rAF-циклов.
 installFpsCap(60);
 
-// Sync language from persisted settings → i18n after tauriStorage rehydration
 useSettingsStore.persist.onFinishHydration((state) => {
-  if (state.language) {
-    void changeAppLanguage(state.language);
-  }
+  if (state.language) void changeAppLanguage(state.language);
 });
-
-if (import.meta.env.DEV) {
-  const script = document.createElement('script');
-  script.src = 'https://unpkg.com/react-scan/dist/auto.global.js';
-  script.crossOrigin = 'anonymous';
-  document.head.appendChild(script);
-}
 
 function scheduleAfterFirstPaint(task: () => void) {
   requestAnimationFrame(() => {
@@ -56,7 +42,7 @@ function startDeferredRuntime() {
     void import('./lib/audio');
     void import('./lib/queue-autopilot');
     void import('./lib/discord');
-    void import('./lib/host-status').then((m) => m.initHostStatus());
+    void import('./lib/host-status').then((module) => module.initHostStatus());
   });
 }
 
@@ -82,19 +68,8 @@ async function bootstrap() {
   const [staticPort, proxyPort] = await invoke<[number, number]>('get_server_ports');
   setServerPorts(staticPort, proxyPort);
 
-  // Вердикт транспорта (прямой / relay / воркеры) — до первого запроса,
-  // иначе забаненный юзер платит таймаутом на логине.
   await initEdge();
-
-  // Seed the Rust-owned session into the frontend mirror + subscribe to
-  // auth:changed before the first render so the shell/login gate is correct.
   await initAuthBridge();
-
-  // «Есть ли подписка?» — у ОБОИХ хостов сразу, до первого рендера. Первый
-  // рендер поднимает пачку запросов; если premium к этому моменту неизвестен,
-  // вся пачка уходит на main, и при сломанном main экран остаётся пустым.
-  // Ответ нужен до неё, поэтому дожидаемся (свой короткий бюджет внутри).
-  await bootstrapPremium();
 
   ReactDOM.createRoot(document.getElementById('root')!).render(
     <React.StrictMode>
@@ -106,7 +81,7 @@ async function bootstrap() {
     </React.StrictMode>,
   );
 
-  void startDeferredRuntime();
+  startDeferredRuntime();
 }
 
 void bootstrap();

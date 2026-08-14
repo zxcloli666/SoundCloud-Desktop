@@ -1,6 +1,6 @@
 <p align="center">
 <a href="https://github.com/zxcloli666/SoundCloud-Desktop/releases/latest">
-<img src="https://raw.githubusercontent.com/zxcloli666/SoundCloud-Desktop/main/_refs/soundcloud.png" width="180px" style="border-radius: 50%;" />
+<img src="https://raw.githubusercontent.com/zxcloli666/SoundCloud-Desktop/legacy/icons/appLogo.png" width="180px" style="border-radius: 50%;" />
 </a>
 </p>
 
@@ -84,7 +84,6 @@ SoundCloud заблокирован Роскомнадзором — веб-ве
 - **Управление из системы** — медиа-кнопки на клавиатуре, системный центр уведомлений (Windows), MPRIS (Linux)
 - **Discord Rich Presence** — показывай друзьям, что слушаешь
 - **Трей** — приложение работает в фоне
-- **Автообновления** — новые версии устанавливаются в один клик
 
 ---
 
@@ -105,7 +104,6 @@ SoundCloud заблокирован Роскомнадзором — веб-ве
 | `.deb` | amd64, arm64 | Ubuntu, Debian, Mint, Pop!_OS |
 | `.rpm` | amd64, arm64 | Fedora, openSUSE, CentOS |
 | `.AppImage` | amd64, arm64 | Универсальный, работает везде |
-| `.flatpak` | amd64 | Песочница, автообновления |
 
 Скачай нужный формат со [страницы релизов](https://github.com/zxcloli666/SoundCloud-Desktop/releases/latest).
 
@@ -239,4 +237,3 @@ SoundCloud — торговая марка SoundCloud Ltd. Это приложе
 <img src="https://img.shields.io/badge/Скачать_SoundCloud_Desktop-FF5500?style=for-the-badge&logoColor=white" alt="Download" height="50"/>
 </a>
 </p>
-

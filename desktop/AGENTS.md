@@ -33,7 +33,6 @@
 - **souvlaki** — системные media controls (MPRIS / SMTC / NowPlaying)
 - **discord-rich-presence** — Discord RPC
 - **chrono / tracing / serde / sha2 / base64 / hex** — служебные
-- Внутренние крейты из `../utils/`: `call-client`, `decrypt-client`, `dpi-desync`
 
 ## Структура
 
@@ -42,16 +41,16 @@ desktop/
   src/
     App.tsx, main.tsx
     components/
-      layout/        AppShell, Sidebar, Titlebar, NowPlayingBar, StarSubscription
-      ui/            VirtualList, VirtualGrid, GlassButton, GlassCard, GlassHeroPanel,
+      layout/        AppShell, Sidebar, Titlebar, NowPlayingBar
+      ui/            VirtualList, VirtualGrid, GlassHeroPanel,
                      HorizontalScroll, Skeleton, Avatar, CopyLinkButton
       music/         TrackCard, PlaylistCard, LikeButton, EqualizerPanel, LyricsPanel,
-                     QueuePanel, FloatingComments, AddToPlaylistDialog,
+                     QueuePanel, AddToPlaylistDialog,
                      TrackStatusBadges, TrackTitleArtist, UploadKindDot,
                      YMImportDialog, YMImportFloatingStatus,
                      cluster/   (рекомендательные «соседи»: ClusterHeader/Row, NeighborCard…)
                      soundwave/ (бесконечная лента «волны»: home-block, similar-block,
-                                 waveform, vibe-search-bar, strip, ambient, lock-overlay/…)
+                                 waveform, vibe-search-bar, strip, ambient…)
       album/         AlbumHero, AlbumCast, AlbumTrackList, AlbumTrackRow,
                      AlbumPlayButton, AlbumCoverArtifact, useAlbumData
       artist/        ArtistHero, Artist*Tab (About/Tracks/Albums/Covers/Related),
@@ -63,24 +62,24 @@ desktop/
                      ArtistsCatalog, *GridCard, FilterRow, InfiniteSentinel,
                      useDebouncedValue, visuals
       auth/          QrCode, QrLinkSheet, useQrLink
-      settings/      CallProxySection
-      NewsToast.tsx, SessionRecoveryModal.tsx, ThemeProvider.tsx, UpdateChecker.tsx
+      settings/      карточки настроек и реестр категорий
+      SessionRecoveryModal.tsx, ThemeProvider.tsx
     pages/           Home, Library, Search, Discover, Login, Settings, OfflinePage,
                      TrackPage, UserPage, PlaylistPage, AlbumPage, ArtistPage
     stores/          player, auth, auth-recovery, settings, app-status,
-                     lyrics, news, searchHistory, searchPrefs, ym-import
+                     lyrics, searchHistory, searchPrefs, ym-import
     lib/             api / api-client / streaming — HTTP к нашему бэку
                      audio — оркестратор плеера + слушатель `audio:*` событий
                      asset-url, scproxy — проксирование изображений
-                     cache, premium-cache, offline-index, host-health — клиентские кеши
+                     cache, offline-index, host-status — клиентские кеши и состояние сети
                      equalizer, lyrics, waveform, soundwave, discover, dislikes,
-                     likes, recsFeedback, subscription, track-display, queue-autopilot,
+                     likes, recsFeedback, track-display, queue-autopilot,
                      useTrackPlay — фичевая логика
                      auth-recovery, auth-status, use-oauth-flow, qr-link — авторизация
                      events, hooks, useAutoHide — общие утилиты
                      diagnostics — `trackedInvoke`, watchdog event-loop, slow-call логи
                      tauri-storage — `StateStorage` для zustand persist на ФС
-                     call, discord, dpi, tray, window, platform, update-check, semver
+                     discord, dpi, tray, window, platform
                      query-client, formatters, icons, constants
     i18n/locales/    en.json, ru.json
   src-tauri/
@@ -97,8 +96,7 @@ desktop/
                          static_server (warp: `/wallpapers/...`),
                          server (общий cors + регистрация портов),
                          image_cache (постоянный кеш картинок в app_data_dir/images),
-                         dpi (dpi-desync через SOCKS, подмешивается в reqwest builder),
-                         call (call-client agent, флаг enabled в `call_enabled.json`)
+                         dpi (маршрутизация через SOCKS, подмешивается в reqwest builder)
       track_cache/       commands, state, direct_download, sc_anon/{mod,hls}
       discord/           mod + commands
       import/            ym (Yandex Music likes → SoundCloud)

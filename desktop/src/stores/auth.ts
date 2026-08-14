@@ -1,8 +1,8 @@
-import {create} from 'zustand';
-import {fetchWithAuthFallback, getSessionId} from '../lib/api';
-import {applyAuthFromServer} from '../lib/auth-session';
-import {trackedInvoke as invoke} from '../lib/diagnostics';
-import {preferredControlBase} from '../lib/host-status';
+import { create } from 'zustand';
+import { fetchWithAuthFallback, getSessionId } from '../lib/api';
+import { applyAuthFromServer } from '../lib/auth-session';
+import { API_BASE } from '../lib/constants';
+import { trackedInvoke as invoke } from '../lib/diagnostics';
 
 interface User {
   id: number;
@@ -19,46 +19,46 @@ interface User {
 }
 
 interface AuthState {
-    /** Validated session — `/me` resolved. Gates premium/auth-only UI. */
+  /** Validated session — `/me` resolved. Gates authenticated UI. */
   isAuthenticated: boolean;
-    /** Token present (Rust-owned). Lets the shell render before `/me` lands. */
-    hasSession: boolean;
-    user: User | null;
-    setSession: (token: string) => Promise<void>;
+  /** Token present (Rust-owned). Lets the shell render before `/me` lands. */
+  hasSession: boolean;
+  user: User | null;
+  setSession: (token: string) => Promise<void>;
   fetchUser: () => Promise<void>;
   renewSession: () => Promise<void>;
-    logout: () => Promise<void>;
+  logout: () => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>()((set, get) => ({
-    isAuthenticated: false,
-    hasSession: false,
-    user: null,
+  isAuthenticated: false,
+  hasSession: false,
+  user: null,
 
-    setSession: async (token: string) => {
-        await invoke('auth_set_session', {token});
-        // Apply synchronously so the mirror is set before any fetchUser() that
-        // follows — the auth:changed broadcast may not have landed yet.
-        applyAuthFromServer(token);
-    },
+  setSession: async (token: string) => {
+    await invoke('auth_set_session', { token });
+    // Apply synchronously so the mirror is set before any fetchUser() that
+    // follows — the auth:changed broadcast may not have landed yet.
+    applyAuthFromServer(token);
+  },
 
-    fetchUser: async () => {
-        const token = getSessionId();
-        if (!token) return;
-        const user = await fetchWithAuthFallback<User>('/me/cold');
-        // Session changed (logout / re-login) while we awaited — drop the result.
-        if (getSessionId() !== token) return;
-        set({user, isAuthenticated: true});
-    },
+  fetchUser: async () => {
+    const token = getSessionId();
+    if (!token) return;
+    const user = await fetchWithAuthFallback<User>('/me/cold');
+    // Session changed (logout / re-login) while we awaited — drop the result.
+    if (getSessionId() !== token) return;
+    set({ user, isAuthenticated: true });
+  },
 
-    renewSession: async () => {
-        await fetchWithAuthFallback('/auth/refresh', {method: 'POST'});
-        await get().fetchUser();
-    },
+  renewSession: async () => {
+    await fetchWithAuthFallback('/auth/refresh', { method: 'POST' });
+    await get().fetchUser();
+  },
 
-    logout: async () => {
-        // При мёртвом main revoke уходит на star; локальная чистка безусловна (Rust чистит до сети).
-        await invoke('auth_logout', {apiBase: preferredControlBase()});
-        applyAuthFromServer(null);
-    },
+  logout: async () => {
+    // Локальная чистка безусловна: Rust удаляет сессию до сетевого revoke.
+    await invoke('auth_logout', { apiBase: API_BASE });
+    applyAuthFromServer(null);
+  },
 }));

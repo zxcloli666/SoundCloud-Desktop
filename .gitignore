@@ -1,8 +1,8 @@
 node_modules/
+.pnpm-store/
 dist/
 .env
 .env.*
-!.env.example
 *.log
 *.tsbuildinfo
 .DS_Store
@@ -22,9 +22,6 @@ __pycache__/
 *.pyo
 .venv/
 worker/venv/
-
-# CI checkout slot for sibling repos.
-/_internal
 
 # IDE
 .idea/

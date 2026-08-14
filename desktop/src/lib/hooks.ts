@@ -2,18 +2,18 @@ import {
   type DefaultError,
   type InfiniteData,
   type QueryKey,
-  useInfiniteQuery,
   type UseInfiniteQueryResult,
+  useInfiniteQuery,
   useMutation,
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
-import {useEffect, useMemo, useRef} from 'react';
-import type {Track} from '../stores/player';
-import {api} from './api';
-import {initLikedUrns} from './likes';
-import {rememberLikedTracks, rememberTracks} from './offline-index';
-import {fetchRelatedTracks} from './related';
+import { useEffect, useMemo, useRef } from 'react';
+import type { Track } from '../stores/player';
+import { api } from './api';
+import { initLikedUrns } from './likes';
+import { rememberLikedTracks, rememberTracks } from './offline-index';
+import { fetchRelatedTracks } from './related';
 
 /* ── Types ─────────────────────────────────────────────────────── */
 
@@ -594,17 +594,6 @@ export function useUserWebProfiles(userUrn: string | undefined) {
     enabled: !!userUrn,
     staleTime: MEDIUM_CACHE_MS,
     gcTime: INFINITE_GC_MS,
-  });
-}
-
-export function useUserSubscription(userUrn: string | undefined) {
-  return useQuery({
-    queryKey: ['user', userUrn, 'subscription'],
-    queryFn: () => api<{ premium: boolean }>(`/users/${encodeURIComponent(userUrn!)}/subscription`),
-    enabled: !!userUrn,
-    staleTime: MEDIUM_CACHE_MS,
-    gcTime: INFINITE_GC_MS,
-    select: (d) => d.premium,
   });
 }
 

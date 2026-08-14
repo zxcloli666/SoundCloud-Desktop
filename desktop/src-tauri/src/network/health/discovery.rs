@@ -4,20 +4,13 @@ use crate::network::edge;
 
 pub const MAX_INDEX: usize = 16;
 const STOP_AFTER_MISSES: usize = 2;
-const ORIGIN_ZONE: &str = "scnative.space";
 
 pub async fn relays(known: &[String]) -> Vec<String> {
-    let zone = edge::relay_zone();
+    let Some(zone) = edge::relay_zone() else {
+        return known.to_vec();
+    };
     let found = scan(known, |index| format!("r{index}"), move |node| {
         format!("{node}.{zone}")
-    })
-    .await;
-    merge(known.to_vec(), found)
-}
-
-pub async fn calls(known: &[String]) -> Vec<String> {
-    let found = scan(known, |index| format!("call-{index}"), |node| {
-        format!("{node}.{ORIGIN_ZONE}")
     })
     .await;
     merge(known.to_vec(), found)
@@ -124,7 +117,7 @@ mod tests {
     fn scanning_resumes_after_the_nodes_topology_already_named() {
         assert_eq!(next_index(&[]), 1);
         assert_eq!(next_index(&["r1".into(), "r2".into()]), 3);
-        assert_eq!(next_index(&["call-1".into(), "call-3".into()]), 4);
+        assert_eq!(next_index(&["node-1".into(), "node-3".into()]), 4);
     }
 
     #[test]

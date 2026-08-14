@@ -1,8 +1,0 @@
-[package]
-name = "call-client"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-reqwest = { version = "0.12", default-features = false, features = ["rustls-tls"] }
-thiserror = "2"

@@ -1,4 +1,4 @@
-import { lazy, type ReactNode, Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import { lazy, type ReactNode, Suspense, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { Toaster } from 'sonner';
@@ -11,8 +11,6 @@ import YMImportFloatingStatus from './components/music/YMImportFloatingStatus';
 import { SessionRecoveryModal } from './components/SessionRecoveryModal';
 import { ThemeProvider } from './components/ThemeProvider';
 import { ApiError } from './lib/api';
-import { CHECK_UPDATES } from './lib/constants';
-import { checkForAppUpdate, type GithubRelease } from './lib/update-check';
 import { getAppMode, useAppMode, useAppStatusStore } from './stores/app-status';
 import { useAuthStore } from './stores/auth';
 import { type StartupPage, useSettingsStore } from './stores/settings';
@@ -51,15 +49,6 @@ const AlbumPage = lazy(() =>
 const Discover = lazy(() =>
   import('./pages/Discover').then((module) => ({ default: module.Discover })),
 );
-const StarPage = lazy(() =>
-  import('./pages/StarPage').then((module) => ({ default: module.StarPage })),
-);
-const UpdateChecker = lazy(() =>
-  import('./components/UpdateChecker').then((module) => ({ default: module.UpdateChecker })),
-);
-const NewsToast = lazy(() =>
-  import('./components/NewsToast').then((module) => ({ default: module.NewsToast })),
-);
 
 const STARTUP_PAGE_ROUTES: Record<StartupPage, string> = {
   home: '/home',
@@ -81,14 +70,6 @@ export default function App() {
       fetchUser: s.fetchUser,
     })),
   );
-  const [availableRelease, setAvailableRelease] = useState<GithubRelease | null>(null);
-  const dismissedReleaseTagRef = useRef<string | null>(null);
-  const handleUpdateDismiss = useCallback(() => {
-    setAvailableRelease((prev) => {
-      if (prev) dismissedReleaseTagRef.current = prev.tag_name;
-      return null;
-    });
-  }, []);
   const appMode = useAppMode();
   const offlineBypass = useAppStatusStore((s) => s.offlineBypass);
   const canUseMainShell = isAuthenticated || hasSession;
@@ -153,38 +134,6 @@ export default function App() {
     };
   }, [appMode, fetchUser, hasSession]);
 
-  useEffect(() => {
-    if (!CHECK_UPDATES || !isAuthenticated || appMode !== 'online') {
-      setAvailableRelease(null);
-      return;
-    }
-
-    let cancelled = false;
-    const checkUpdates = () => {
-      checkForAppUpdate()
-        .then((release) => {
-          if (cancelled) return;
-          if (release && release.tag_name === dismissedReleaseTagRef.current) return;
-          setAvailableRelease(release);
-        })
-        .catch(() => {});
-    };
-
-    if ('requestIdleCallback' in window) {
-      const id = window.requestIdleCallback(checkUpdates, { timeout: 1200 });
-      return () => {
-        cancelled = true;
-        window.cancelIdleCallback(id);
-      };
-    }
-
-    const id = setTimeout(checkUpdates, 1);
-    return () => {
-      cancelled = true;
-      clearTimeout(id);
-    };
-  }, [appMode, isAuthenticated]);
-
   return (
     <ThemeProvider>
       <Toaster
@@ -235,125 +184,107 @@ export default function App() {
             <Login />
           </Suspense>
         ) : (
-          <>
-            {availableRelease && (
-              <Suspense fallback={null}>
-                <UpdateChecker release={availableRelease} onDismiss={handleUpdateDismiss} />
-              </Suspense>
-            )}
-            <Suspense fallback={null}>
-              <NewsToast />
-            </Suspense>
-            <Routes>
-              <Route element={<AppShell />}>
-                <Route index element={<StartPageRedirect />} />
-                <Route
-                  path="home"
-                  element={
-                    <RouteLoader>
-                      <Home />
-                    </RouteLoader>
-                  }
-                />
-                <Route
-                  path="search"
-                  element={
-                    <RouteLoader>
-                      <Search />
-                    </RouteLoader>
-                  }
-                />
-                <Route
-                  path="library"
-                  element={
-                    <RouteLoader>
-                      <Library />
-                    </RouteLoader>
-                  }
-                />
-                <Route
-                  path="library/:section"
-                  element={
-                    <RouteLoader>
-                      <LibraryCollection />
-                    </RouteLoader>
-                  }
-                />
-                <Route
-                  path="offline"
-                  element={
-                    <RouteLoader>
-                      <OfflinePage />
-                    </RouteLoader>
-                  }
-                />
-                <Route
-                  path="track/:urn"
-                  element={
-                    <RouteLoader>
-                      <TrackPage />
-                    </RouteLoader>
-                  }
-                />
-                <Route
-                  path="playlist/:urn"
-                  element={
-                    <RouteLoader>
-                      <PlaylistPage />
-                    </RouteLoader>
-                  }
-                />
-                <Route
-                  path="user/:urn"
-                  element={
-                    <RouteLoader>
-                      <UserPage />
-                    </RouteLoader>
-                  }
-                />
-                <Route
-                  path="artist/:id"
-                  element={
-                    <RouteLoader>
-                      <ArtistPage />
-                    </RouteLoader>
-                  }
-                />
-                <Route
-                  path="album/:id"
-                  element={
-                    <RouteLoader>
-                      <AlbumPage />
-                    </RouteLoader>
-                  }
-                />
-                <Route
-                  path="discover"
-                  element={
-                    <RouteLoader>
-                      <Discover />
-                    </RouteLoader>
-                  }
-                />
-                <Route
-                  path="star"
-                  element={
-                    <RouteLoader>
-                      <StarPage />
-                    </RouteLoader>
-                  }
-                />
-                <Route
-                  path="settings"
-                  element={
-                    <RouteLoader>
-                      <Settings />
-                    </RouteLoader>
-                  }
-                />
-              </Route>
-            </Routes>
-          </>
+          <Routes>
+            <Route element={<AppShell />}>
+              <Route index element={<StartPageRedirect />} />
+              <Route
+                path="home"
+                element={
+                  <RouteLoader>
+                    <Home />
+                  </RouteLoader>
+                }
+              />
+              <Route
+                path="search"
+                element={
+                  <RouteLoader>
+                    <Search />
+                  </RouteLoader>
+                }
+              />
+              <Route
+                path="library"
+                element={
+                  <RouteLoader>
+                    <Library />
+                  </RouteLoader>
+                }
+              />
+              <Route
+                path="library/:section"
+                element={
+                  <RouteLoader>
+                    <LibraryCollection />
+                  </RouteLoader>
+                }
+              />
+              <Route
+                path="offline"
+                element={
+                  <RouteLoader>
+                    <OfflinePage />
+                  </RouteLoader>
+                }
+              />
+              <Route
+                path="track/:urn"
+                element={
+                  <RouteLoader>
+                    <TrackPage />
+                  </RouteLoader>
+                }
+              />
+              <Route
+                path="playlist/:urn"
+                element={
+                  <RouteLoader>
+                    <PlaylistPage />
+                  </RouteLoader>
+                }
+              />
+              <Route
+                path="user/:urn"
+                element={
+                  <RouteLoader>
+                    <UserPage />
+                  </RouteLoader>
+                }
+              />
+              <Route
+                path="artist/:id"
+                element={
+                  <RouteLoader>
+                    <ArtistPage />
+                  </RouteLoader>
+                }
+              />
+              <Route
+                path="album/:id"
+                element={
+                  <RouteLoader>
+                    <AlbumPage />
+                  </RouteLoader>
+                }
+              />
+              <Route
+                path="discover"
+                element={
+                  <RouteLoader>
+                    <Discover />
+                  </RouteLoader>
+                }
+              />
+              <Route
+                path="settings"
+                element={
+                  <RouteLoader>
+                    <Settings />
+                  </RouteLoader>
+                }
+              />
+            </Route>
+          </Routes>
         )}
       </BrowserRouter>
     </ThemeProvider>

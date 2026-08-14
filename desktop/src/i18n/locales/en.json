@@ -20,7 +20,6 @@
     "search": "Search",
     "discover": "Discover",
     "library": "Library",
-    "star": "STAR",
     "offline": "Offline",
     "following": "Following",
     "settings": "Settings",
@@ -384,24 +383,17 @@
     "serverError": "Server error ({{status}})"
   },
   "hostStatus": {
-    "starOffer": {
-      "title": "Main host is down",
-      "body": "The main host is down, but the Star backup host is up. Get STAR right here — it's granted instantly and the app keeps working on the backup host.",
-      "how": "Buy in the app, or via Boosty / Discord:"
-    },
     "allDown": {
       "title": "All hosts are down",
       "body": "The service is temporarily unavailable — we're on it. Your downloaded music is available in the offline library."
     },
     "banner": {
-      "viaStar": "Main host is down — running on the Star backup host.",
       "outage": "Hosts are unavailable",
       "details": "Details"
     },
     "actions": {
       "retry": "Check again",
-      "offlineLibrary": "Offline library",
-      "buyStar": "Get STAR"
+      "offlineLibrary": "Offline library"
     }
   },
   "home": {
@@ -613,8 +605,6 @@
     "startup": "Startup",
     "startupPageDesc": "Choose which page opens when the app launches",
     "playback": "Playback",
-    "floatingComments": "Floating comments",
-    "floatingCommentsDesc": "Show comments as floating pills during playback",
     "lyricsVisualizer": "Lyrics visualizer",
     "lyricsVisualizerDesc": "Real-time FFT wave behind the fullscreen lyrics. Off by default to save GPU.",
     "discordRpc": "Discord Rich Presence",
@@ -629,14 +619,9 @@
     "normalizeVolumeDesc": "Balances quiet and loud tracks to a more even level",
     "highQualityStreaming": "High quality streaming",
     "highQualityStreamingDesc": "Prefer the highest available quality during playback",
-    "bypassWhitelist": "Bypass whitelists",
-    "bypassWhitelistDesc": "Alternative routing for network restrictions and outages (Russia)",
-    "bypassWhitelistSoon": "Coming soon",
-    "bypassTitle": "Connection",
     "catGeneral": "General",
     "catAppearance": "Appearance",
     "catAudio": "Audio",
-    "catNetwork": "Network",
     "catIntegrations": "Integrations",
     "catStorage": "Storage",
     "catAccount": "Account",
@@ -657,7 +642,6 @@
     "wpKeyPlaceholder": "Wallhaven API key",
     "wpKeyHint": "Stored locally. Grab one in your Wallhaven account settings.",
     "wpKeyNeeded": "Enter your Wallhaven API key to unlock 18+ results.",
-    "bypassWhitelistSoonDesc": "We're shipping bypass routing — stay tuned",
     "import": "Import",
     "importYandex": "Import from Yandex Music"
   },
@@ -709,11 +693,6 @@
     "savingPlaylist": "Saving playlist...",
     "backgroundHint": "Import continues in the background. You can close this window"
   },
-  "update": {
-    "available": "Update available",
-    "later": "Later",
-    "download": "Download"
-  },
   "common": {
     "loading": "Loading...",
     "error": "Something went wrong",
@@ -725,245 +704,6 @@
     "empty": "Nothing here yet",
     "expand": "Read more",
     "collapse": "Collapse"
-  },
-  "star": {
-    "title": "Star Subscription",
-    "active": "Active",
-    "getIt": "Learn more",
-    "modalTitle": "Star",
-    "modalSub": "Support the project — get perks",
-    "perkGoPlus": "Access to GO+ tracks",
-    "perkServer": "Dedicated streaming server",
-    "perkHQ": "More HQ tracks",
-    "bypassWhitelist": "Bypass whitelists (in Russia)",
-    "perkSupport": "And just support the project with a small donation.\nMore perks coming soon!",
-    "howTo": "How to get",
-    "step1": "Go to Boosty",
-    "step2": "Link Discord to your Boosty account",
-    "step3": "Join our Discord server",
-    "step4": "Purchase a subscription on Boosty",
-    "step5": "Link your SoundCloud in our Discord with the /sc-link command",
-    "goBoosty": "Boosty",
-    "goDiscord": "Discord"
-  },
-  "starpass": {
-    "guestHandle": "@you",
-    "member": "Member",
-    "allAccess": "CLASS · ALL-ACCESS",
-    "activatedStamp": "Activated",
-    "bestValue": "Best value",
-    "perMonth": " / month",
-    "starsLabel": "In Telegram Stars",
-    "classLabel": "Class {{cls}}",
-    "afterPurchase": "after purchase",
-    "daysLeft_one": "{{count}} day",
-    "daysLeft_other": "{{count}} days",
-    "tierPreview": "Tier · preview",
-    "tierActive": "Active pass",
-    "fieldSerial": "Serial №",
-    "fieldIssued": "Issued",
-    "fieldActivated": "Activated",
-    "fieldValidUntil": "Valid until",
-    "fieldMethod": "Method",
-    "fieldOrder": "Order №",
-    "fieldRemaining": "Remaining",
-    "eyebrow": "Member pass",
-    "heroTitle1": "Not a subscription.",
-    "heroTitle2": "A pass into sound.",
-    "heroLead": "A personal pass: dedicated server, HQ and the full catalog — no compromises.",
-    "choosePass": "Choose a pass",
-    "haveCode": "I have a code",
-    "plan": {
-      "month": "Monthly",
-      "quarter": "Quarterly",
-      "year": "Yearly"
-    },
-    "perksTitle": "What's inside",
-    "ignite": "Ignite your star",
-    "back": "Back",
-    "perMonthShort": "mo",
-    "recurringSub": "charged automatically, cancel anytime",
-    "perk": {
-      "goPlus": {
-        "title": "Full catalog",
-        "tag": "Everything"
-      },
-      "server": {
-        "title": "Fast server",
-        "tag": "No queues"
-      },
-      "hq": {
-        "title": "HQ sound",
-        "tag": "High quality"
-      },
-      "whitelist": {
-        "title": "No RU blocks",
-        "tag": "Region bypass"
-      },
-      "soundwave": {
-        "title": "SoundWave",
-        "tag": "Early access"
-      },
-      "support": {
-        "title": "Support the project",
-        "tag": "Servers & dev"
-      }
-    },
-    "method": {
-      "sbp": {
-        "title": "SBP",
-        "body": "QR from your bank app"
-      },
-      "cardRu": {
-        "title": "RU card",
-        "body": "MIR, Visa/MC of Russian banks"
-      },
-      "cardIntl": {
-        "title": "Foreign card",
-        "body": "International issuer"
-      },
-      "cryptoPlatega": {
-        "title": "Crypto",
-        "body": "On-chain, direct"
-      },
-      "cryptoBot": {
-        "title": "CryptoBot",
-        "body": "CryptoBot wallet"
-      },
-      "tgStars": {
-        "title": "Telegram Stars",
-        "body": "pay with TG stars"
-      }
-    },
-    "caption": {
-      "member": "Member pass · SoundCloud client",
-      "boarding": "Boarding · awaiting payment",
-      "active": "Member pass · active"
-    },
-    "planTitle": "Pass class",
-    "planSub": "Longer term, cheaper month.",
-    "toActivation": "To activation",
-    "providerTitle": "Payment method",
-    "providerSub": "One price — your choice of route.",
-    "recurring": "Auto-renew (Telegram Stars, monthly)",
-    "creating": "Creating order…",
-    "continueWith": "Continue with {{method}}",
-    "continue": "Continue",
-    "toPay": "To pay",
-    "checkoutError": "Couldn't create the order. Try another method.",
-    "payTitle": "Payment",
-    "paySub": "Complete the payment — the pass activates itself.",
-    "retry": "Try again",
-    "sbpStep": {
-      "1": "Open your bank app and scan the QR.",
-      "2": "Confirm the transfer.",
-      "3": "Keep this screen open — the pass stamps itself."
-    },
-    "changeMethod": "Another method",
-    "externalHint": "Checkout opened in your browser. Finish there — this screen updates itself.",
-    "openCheckout": "Open checkout",
-    "openInBrowser": "Open in browser",
-    "qrExpired": "This order has expired — start over",
-    "successTitle": "Pass activated",
-    "successSub": "Everything's on. Back to the music.",
-    "welcome": "Welcome to STAR, {{handle}}.",
-    "welcomeBody": "Valid until {{date}}. Server, HQ and SoundWave are already on.",
-    "until": "until",
-    "backToMusic": "To music",
-    "managePass": "Manage",
-    "redeemTitle": "Activate by code",
-    "redeemSub": "The code from a reseller's receipt.",
-    "status": {
-      "waiting": "Waiting for payment…",
-      "polling": "checking every 2.5s",
-      "paid": "Payment received",
-      "activated": "pass activated",
-      "failed": "Payment failed",
-      "failedHint": "the order didn't go through — try again"
-    },
-    "redeem": {
-      "heading": "One code — a whole pass.",
-      "lead": "Four blocks after the STAR prefix. Case and dashes don't matter.",
-      "center": "enter your code",
-      "format": "format",
-      "oneTime": "one-time",
-      "label": "Activation code",
-      "progress": "{{count}} of 16 characters entered",
-      "activate": "Activate STAR",
-      "activating": "Activating…",
-      "paste": "Paste from clipboard",
-      "errUsed": "This code was already used.",
-      "errUnknown": "We don't know this code. Check the characters.",
-      "errRevoked": "This code was revoked.",
-      "errExpired": "This code has expired.",
-      "errGeneric": "Couldn't activate the code. Try again."
-    },
-    "manage": {
-      "title": "Your pass",
-      "sub": "Term, auto-renew and source.",
-      "autoRenew": "Auto-renew",
-      "autoRenewOn": "we'll charge again on {{date}}",
-      "autoRenewOff": "Off. Access lasts to the end of the paid term.",
-      "source": "Source",
-      "sourceSub": "Where it came from",
-      "afterExpiry": "Then switches to free",
-      "extend": "Extend",
-      "redeem": "Redeem a code",
-      "canceled": "Auto-renew turned off",
-      "cancelError": "Couldn't turn off auto-renew"
-    },
-    "discord": {
-      "label": "Discord",
-      "linkedAs": "Linked",
-      "unlinked": "Discord not linked",
-      "linkHint": "Open our Discord server and run /sc-link",
-      "booster": "Booster",
-      "starRole": "STAR role",
-      "member": "Member"
-    },
-    "boosty": {
-      "title": "Subscribe via Boosty",
-      "sub": "STAR arrives via your Discord boost role after /sc-link"
-    },
-    "openVia": "Open payment via",
-    "openIn": {
-      "tg": "Open in Telegram",
-      "webapp": "Open in browser",
-      "miniapp": "Telegram Mini App"
-    },
-    "loadError": "Couldn't load plans",
-    "loading": "Loading plans…"
-  },
-  "soundwaveLock": {
-    "wordmark": "SOUND WAVE",
-    "badge": "Star Exclusive",
-    "title": "Available only with subscription",
-    "subtitle": "SoundWave unlocks for free in",
-    "cta": "Get subscription",
-    "days": "d",
-    "hours": "h",
-    "minutes": "m",
-    "seconds": "s"
-  },
-  "news": {
-    "close": "Close",
-    "discord": {
-      "title": "We have a Discord server!",
-      "description": "Join our community — discuss, suggest features, report bugs",
-      "body": "We've launched an official Discord server for SoundCloud Desktop!\n\nJoin to chat with other users, suggest new features, report bugs, and stay up to date with the latest news.\n\nhttps://discord.gg/xQcGBP8fGG"
-    }
-  },
-  "call": {
-    "title": "Peer network",
-    "enable": "Enable",
-    "disable": "Disable",
-    "status": {
-      "disabled": "off",
-      "connecting": "connecting",
-      "provisioning": "registering",
-      "active": "active",
-      "failed": "failed"
-    }
   },
   "artist": {
     "title": "Artist",

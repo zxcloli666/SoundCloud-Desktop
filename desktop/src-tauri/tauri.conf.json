@@ -10,7 +10,6 @@
     "frontendDist": "../dist"
   },
   "app": {
-    "macOSPrivateApi": true,
     "windows": [
       {
         "title": "SoundCloud Desktop",
@@ -22,7 +21,18 @@
       }
     ],
     "security": {
-      "csp": null
+      "csp": {
+        "default-src": "'self' customprotocol: asset:",
+        "connect-src": "ipc: http://ipc.localhost http://localhost:* http://127.0.0.1:* http://*.localhost:* ws://localhost:* ws://127.0.0.1:* scproxy:",
+        "font-src": "'self' data:",
+        "img-src": "'self' asset: http://asset.localhost http://127.0.0.1:* http://*.localhost:* scproxy: blob: data: https:",
+        "media-src": "'self' http://127.0.0.1:* http://*.localhost:* scproxy: blob: data:",
+        "style-src": "'self' 'unsafe-inline'",
+        "object-src": "'none'",
+        "base-uri": "'none'",
+        "form-action": "'none'",
+        "frame-src": "'none'"
+      }
     }
   },
   "bundle": {

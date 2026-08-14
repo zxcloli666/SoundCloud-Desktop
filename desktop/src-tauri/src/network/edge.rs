@@ -5,28 +5,12 @@ use std::time::{Duration, Instant};
 
 use serde::{Deserialize, Serialize};
 
+use crate::network::backend;
+
 const STATE_FILE: &str = "edge_state.json";
 const REVALIDATE: Duration = Duration::from_secs(600);
 
-const RELAY_ZONE: &str = "relay.scnative.space";
-
 const BOOTSTRAP_NODE: &str = "r1";
-
-const RELAYS: &[(&str, &str)] = &[
-    ("api.scnative.space", "api"),
-    ("api-star.scnative.space", "api-star"),
-    ("stream.scnative.space", "stream"),
-    ("stream-star.scnative.space", "stream-star"),
-    ("images.scnative.space", "images"),
-    ("storage.scnative.space", "storage"),
-    ("storage-star.scnative.space", "storage-star"),
-    ("pay.scnative.space", "pay"),
-];
-
-const INHERIT: &[(&str, &str)] = &[
-    ("storage.scnative.space", "stream.scnative.space"),
-    ("storage-star.scnative.space", "stream-star.scnative.space"),
-];
 
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -67,7 +51,6 @@ const DIRECT_FAIL_THRESHOLD: u8 = 2;
 #[derive(Default)]
 struct Pool {
     relays: Vec<String>,
-    calls: Vec<(String, f64)>,
 }
 
 struct Inner {
@@ -106,8 +89,9 @@ pub fn init(data_dir: PathBuf) {
     };
     inner.dir = Some(data_dir);
     let now = Instant::now();
+    let allowed = backend::backend_hosts();
     for (host, tier) in loaded.tiers {
-        if tier == Tier::Direct {
+        if tier == Tier::Direct || !allowed.contains(&host) {
             continue;
         }
         inner.origins.insert(
@@ -149,19 +133,16 @@ fn host_of(url: &str) -> Option<String> {
 }
 
 fn relay_label(origin: &str) -> Option<&'static str> {
-    RELAYS.iter().find(|(o, _)| *o == origin).map(|(_, r)| *r)
+    backend::service_label(origin)
 }
 
-pub fn set_pool(relays: Vec<String>, calls: Vec<(String, f64)>) {
+pub fn set_pool(relays: Vec<String>) {
     let mut inner = match state().lock() {
         Ok(guard) => guard,
         Err(poison) => poison.into_inner(),
     };
     if !relays.is_empty() {
         inner.pool.relays = relays;
-    }
-    if !calls.is_empty() {
-        inner.pool.calls = calls;
     }
 }
 
@@ -176,24 +157,17 @@ pub fn relay_pool() -> Vec<String> {
     inner.pool.relays.clone()
 }
 
-pub fn call_pool() -> Vec<(String, f64)> {
-    let inner = match state().lock() {
-        Ok(guard) => guard,
-        Err(poison) => poison.into_inner(),
-    };
-    inner.pool.calls.clone()
+pub fn relay_zone() -> Option<&'static str> {
+    backend::config().relay_zone.as_deref()
 }
 
-pub fn relay_zone() -> &'static str {
-    RELAY_ZONE
-}
-
-pub fn primary_relay_host(service: &str) -> String {
+pub fn primary_relay_host(service: &str) -> Option<String> {
+    let zone = relay_zone()?;
     let node = relay_pool()
         .first()
         .cloned()
         .unwrap_or_else(|| BOOTSTRAP_NODE.to_string());
-    format!("{service}.{node}.{RELAY_ZONE}")
+    Some(format!("{service}.{node}.{zone}"))
 }
 
 pub fn relay_hosts(origin: &str) -> Vec<String> {
@@ -204,8 +178,11 @@ fn relay_hosts_over(origin: &str, pool: &[String]) -> Vec<String> {
     let Some(label) = relay_label(origin) else {
         return vec![];
     };
+    let Some(zone) = relay_zone() else {
+        return vec![];
+    };
     pool.iter()
-        .map(|node| format!("{label}.{node}.{RELAY_ZONE}"))
+        .map(|node| format!("{label}.{node}.{zone}"))
         .collect()
 }
 
@@ -217,8 +194,8 @@ fn resolved_state<'a>(inner: &'a Inner, origin: &str) -> Option<&'a OriginState>
     if let Some(s) = inner.origins.get(origin) {
         return Some(s);
     }
-    let src = INHERIT.iter().find(|(o, _)| *o == origin).map(|(_, s)| *s)?;
-    inner.origins.get(src)
+    let source = backend::inherited_origin(origin)?;
+    inner.origins.get(&source)
 }
 
 fn swap_host(url: &str, host: &str) -> Option<String> {
@@ -485,9 +462,13 @@ pub fn edge_config() -> EdgeConfig {
         Err(e) => e.into_inner(),
     };
     EdgeConfig {
-        relays: RELAYS
-            .iter()
-            .map(|(o, _)| (o.to_string(), relay_hosts_over(o, &pool)))
+        relays: backend::service_origins()
+            .into_iter()
+            .map(|(origin, _)| {
+                let hosts = relay_hosts_over(&origin, &pool);
+                (origin, hosts)
+            })
+            .filter(|(_, hosts)| !hosts.is_empty())
             .collect(),
         hints: inner
             .origins
@@ -506,8 +487,7 @@ pub fn edge_note(origin: String, tier: Tier, ok: bool) {
 #[cfg(test)]
 mod tests {
     use super::{
-        audio_tier_order, direct_infrastructure_headers, relay_hosts_over, set_pool, Tier, INHERIT,
-        RELAYS,
+        audio_tier_order, direct_infrastructure_headers, relay_hosts_over, set_pool, Tier,
     };
 
     fn hosts(origin: &str) -> Vec<String> {
@@ -515,36 +495,35 @@ mod tests {
     }
 
     #[test]
-    fn every_inherit_pair_is_a_domain_we_route() {
-        for (origin, source) in INHERIT {
-            assert!(
-                !hosts(origin).is_empty(),
-                "origin {origin} наследует вердикт, но сам не в RELAYS"
-            );
-            assert!(
-                !hosts(source).is_empty(),
-                "{origin} наследует у {source}, которого нет в RELAYS"
-            );
+    fn every_configured_service_is_routable() {
+        for (origin, _) in crate::network::backend::service_origins() {
+            if super::relay_zone().is_some() {
+                assert!(!hosts(&origin).is_empty(), "configured origin {origin} is not routed");
+            }
         }
     }
 
     #[test]
     fn relay_host_is_built_per_pool_node() {
-        assert_eq!(
-            hosts("api.scnative.space"),
-            ["api.r1.relay.scnative.space", "api.r2.relay.scnative.space"]
-        );
+        let api = url::Url::parse(&crate::network::backend::config().api_base).unwrap();
+        let origin = api.host_str().unwrap();
+        let label = crate::network::backend::service_label(origin).unwrap();
+        let zone = super::relay_zone().unwrap();
+        assert_eq!(hosts(origin), [format!("{label}.r1.{zone}"), format!("{label}.r2.{zone}")]);
         assert!(hosts("soundcloud.com").is_empty());
     }
 
     #[test]
     fn a_node_the_server_publishes_needs_no_code_change() {
-        set_pool(vec!["r1".into(), "r7".into()], vec![("call-1".into(), 1.0)]);
+        set_pool(vec!["r1".into(), "r7".into()]);
+        let api = url::Url::parse(&crate::network::backend::config().api_base).unwrap();
+        let origin = api.host_str().unwrap();
+        let label = crate::network::backend::service_label(origin).unwrap();
+        let zone = super::relay_zone().unwrap();
         assert_eq!(
-            super::relay_hosts("api.scnative.space"),
-            ["api.r1.relay.scnative.space", "api.r7.relay.scnative.space"]
+            super::relay_hosts(origin),
+            [format!("{label}.r1.{zone}"), format!("{label}.r7.{zone}")]
         );
-        assert_eq!(super::call_pool(), [("call-1".to_string(), 1.0)]);
     }
 
     #[test]
@@ -563,7 +542,7 @@ mod tests {
 
     #[test]
     fn no_legacy_domain_survives_in_the_relay_table() {
-        for (origin, label) in RELAYS {
+        for (origin, label) in crate::network::backend::service_origins() {
             assert!(!origin.contains("scdinternal"), "legacy origin {origin}");
             assert!(!label.contains('.'), "label {label} must be a bare service");
         }

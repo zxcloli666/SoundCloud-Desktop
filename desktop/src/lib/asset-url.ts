@@ -1,4 +1,4 @@
-import { getProxyPort, IMAGES_BASE } from './constants';
+import { BACKEND_HOSTS, getProxyPort, IMAGES_BASE } from './constants';
 import { isMac } from './platform';
 
 const WHITELIST = [
@@ -6,13 +6,7 @@ const WHITELIST = [
   '127.0.0.1',
   'tauri.localhost',
   'scproxy.localhost',
-  'images.scnative.space',
-  'api.scnative.space',
-  'api-star.scnative.space',
-  'stream.scnative.space',
-  'stream-star.scnative.space',
-  'storage.scnative.space',
-  'unpkg.com',
+  ...BACKEND_HOSTS,
 ];
 const RETRY_BYPASS_CACHE_PARAM = '__scproxy_bust';
 const LOCAL_PROXY_SHARDS = 20;

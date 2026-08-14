@@ -2,12 +2,11 @@
 //! напрямую с SC, наш сервер только резолвит ссылки.
 //!
 //! Порядок: при `hq=true` сначала hq-группа, иначе sq. Внутри группы —
-//! progressive → hls → encrypted-hls.
+//! progressive → hls. Неизвестные типы кандидатов игнорируются.
 
 use std::future::Future;
 use std::pin::Pin;
 
-use base64::Engine as _;
 use bytes::Bytes;
 use futures_util::future::select_all;
 use reqwest::Client;
@@ -37,15 +36,8 @@ pub enum Candidate {
         preset: String,
         manifest_url: String,
     },
-    EncryptedHls {
-        #[serde(default = "default_sq")]
-        quality: String,
-        #[serde(default)]
-        preset: String,
-        init_base64: String,
-        segments: Vec<String>,
-        key_base64: String,
-    },
+    #[serde(other)]
+    Unsupported,
 }
 
 fn default_sq() -> String {
@@ -57,7 +49,7 @@ impl Candidate {
         match self {
             Candidate::Progressive { quality, .. } => quality,
             Candidate::Hls { quality, .. } => quality,
-            Candidate::EncryptedHls { quality, .. } => quality,
+            Candidate::Unsupported => "unsupported",
         }
     }
 
@@ -65,7 +57,7 @@ impl Candidate {
         match self {
             Candidate::Progressive { preset, .. } => preset,
             Candidate::Hls { preset, .. } => preset,
-            Candidate::EncryptedHls { preset, .. } => preset,
+            Candidate::Unsupported => "",
         }
     }
 
@@ -73,7 +65,7 @@ impl Candidate {
         match self {
             Candidate::Progressive { .. } => "progressive",
             Candidate::Hls { .. } => "hls",
-            Candidate::EncryptedHls { .. } => "encrypted-hls",
+            Candidate::Unsupported => "unsupported",
         }
     }
 
@@ -81,7 +73,7 @@ impl Candidate {
         match self {
             Candidate::Progressive { .. } => 0,
             Candidate::Hls { .. } => 1,
-            Candidate::EncryptedHls { .. } => 2,
+            Candidate::Unsupported => u32::MAX,
         }
     }
 
@@ -200,7 +192,12 @@ async fn fetch_download(
 }
 
 fn sort_candidates(cands: Vec<Candidate>, hq_pref: bool) -> Vec<Candidate> {
-    let mut filtered: Vec<Candidate> = cands.into_iter().filter(|c| c.quality() != "lq").collect();
+    let mut filtered: Vec<Candidate> = cands
+        .into_iter()
+        .filter(|candidate| {
+            !matches!(candidate, Candidate::Unsupported) && candidate.quality() != "lq"
+        })
+        .collect();
     filtered.sort_by_key(|c| {
         let is_hq = c.quality() == "hq";
         let q_score = if hq_pref == is_hq { 0u32 } else { 1u32 };
@@ -213,45 +210,6 @@ async fn consume(client: &Client, cand: &Candidate) -> Result<Bytes, String> {
     match cand {
         Candidate::Progressive { url, .. } => download_progressive(client, url).await,
         Candidate::Hls { manifest_url, .. } => download_hls_full(client, manifest_url).await,
-        Candidate::EncryptedHls {
-            init_base64,
-            segments,
-            key_base64,
-            ..
-        } => consume_encrypted(client, init_base64, segments, key_base64).await,
+        Candidate::Unsupported => Err("unsupported download candidate".to_string()),
     }
-}
-
-async fn consume_encrypted(
-    client: &Client,
-    init_b64: &str,
-    segments: &[String],
-    key_b64: &str,
-) -> Result<Bytes, String> {
-    let b64 = base64::engine::general_purpose::STANDARD;
-    let init = b64.decode(init_b64).map_err(|e| format!("init: {e}"))?;
-    let key_bytes = b64.decode(key_b64).map_err(|e| format!("key: {e}"))?;
-    if key_bytes.len() != 16 {
-        return Err(format!("key length {}", key_bytes.len()));
-    }
-    let mut key = [0u8; 16];
-    key.copy_from_slice(&key_bytes);
-
-    let mut buf = Vec::with_capacity(init.len());
-    buf.extend_from_slice(&init);
-
-    for url in segments {
-        let resp = client
-            .get(url)
-            .send()
-            .await
-            .map_err(|e| format!("seg request: {e}"))?;
-        if !resp.status().is_success() {
-            return Err(format!("seg HTTP {}", resp.status()));
-        }
-        let bytes = resp.bytes().await.map_err(|e| format!("seg body: {e}"))?;
-        let plain = decrypt_client::decrypt_segment(&bytes, &key).map_err(|e| format!("{e}"))?;
-        buf.extend_from_slice(&plain);
-    }
-    Ok(Bytes::from(buf))
 }
