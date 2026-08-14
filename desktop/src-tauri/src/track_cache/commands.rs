@@ -136,8 +136,8 @@ pub fn track_get_cache_info(
 pub async fn track_cancel_download(
     urn: String,
     state: State<'_, TrackCacheState>,
-) -> bool {
-    state.cancel_download(&urn).await
+) -> Result<bool, String> {
+    Ok(state.cancel_download(&urn).await)
 }
 
 #[tauri::command]

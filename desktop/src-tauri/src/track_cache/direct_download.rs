@@ -24,21 +24,21 @@ pub struct DownloadResponse {
 pub enum Candidate {
     Progressive {
         #[serde(default = "default_sq")]
-        pub(crate) quality: String,
+        quality: String,
         #[serde(default)]
-        pub(crate) preset: String,
+        preset: String,
         #[serde(default)]
-        pub(crate) mime: String,
-        pub(crate) url: String,
+        mime: String,
+        url: String,
     },
     Hls {
         #[serde(default = "default_sq")]
-        pub(crate) quality: String,
+        quality: String,
         #[serde(default)]
-        pub(crate) preset: String,
+        preset: String,
         #[serde(default)]
-        pub(crate) mime: String,
-        pub(crate) manifest_url: String,
+        mime: String,
+        manifest_url: String,
     },
     #[serde(other)]
     Unsupported,
