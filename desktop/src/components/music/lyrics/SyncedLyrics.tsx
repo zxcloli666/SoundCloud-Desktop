@@ -1,6 +1,6 @@
 import {invoke} from '@tauri-apps/api/core';
 import {listen} from '@tauri-apps/api/event';
-import React, {useEffect, useMemo, useRef} from 'react';
+import React, {useEffect, useRef} from 'react';
 import {useTranslation} from 'react-i18next';
 import {getCurrentTime, seek} from '../../../lib/audio';
 import {Search} from '../../../lib/icons';
@@ -16,40 +16,6 @@ const SOURCE_LABELS: Record<LyricsSource, string> = {
     self_gen: 'AI',
     none: '',
 };
-
-const PAUSE_MARKER = '♪♪♪';
-const PAUSE_GAP_THRESHOLD = 4.5; // seconds — when to insert ♪♪♪
-
-type DisplayLine = LyricLine & { pause?: boolean; duration?: number };
-
-function buildDisplayLines(lines: LyricLine[]): DisplayLine[] {
-    if (!lines.length) return [];
-    const out: DisplayLine[] = [];
-    for (let i = 0; i < lines.length; i++) {
-        const cur = lines[i];
-        const prev = lines[i - 1];
-        if (prev) {
-            const gap = cur.time - prev.time;
-            if (gap >= PAUSE_GAP_THRESHOLD) {
-                out.push({
-                    time: prev.time + 0.5,
-                    text: PAUSE_MARKER,
-                    pause: true,
-                    duration: gap - 0.6,
-                });
-            }
-        } else if (cur.time >= PAUSE_GAP_THRESHOLD) {
-            out.push({
-                time: 0.05,
-                text: PAUSE_MARKER,
-                pause: true,
-                duration: Math.max(0.5, cur.time - 0.1),
-            });
-        }
-        out.push(cur);
-    }
-    return out;
-}
 
 function clamp01(v: number) {
     return v < 0 ? 0 : v > 1 ? 1 : v;
@@ -91,18 +57,17 @@ function splitWordsForChars(cells: CharCell[]): CharCell[][] {
 export const SyncedLyrics = React.memo(({lines}: { lines: LyricLine[] }) => {
     const perf = usePerfMode();
     const perChar = perf.mode !== 'light';
-    const displayLines = useMemo(() => buildDisplayLines(lines), [lines]);
     const containerRef = useRef<HTMLDivElement>(null);
     const activeRef = useRef(-1);
-    const linesRef = useRef(displayLines);
+    const linesRef = useRef(lines);
     const lineElsRef = useRef<HTMLElement[]>([]);
     const lineCharElsRef = useRef<HTMLElement[][]>([]);
-    const pauseBarsRef = useRef<Array<HTMLElement | null>>([]);
     const manualScrollRef = useRef(false);
     const lastScrollTsRef = useRef(0);
     const lineProgressRef = useRef(0);
-    linesRef.current = displayLines;
+    linesRef.current = lines;
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: perChar changes rendered lyric nodes.
     useEffect(() => {
         const container = containerRef.current;
         if (!container) return;
@@ -110,9 +75,6 @@ export const SyncedLyrics = React.memo(({lines}: { lines: LyricLine[] }) => {
         lineElsRef.current = Array.from(container.querySelectorAll<HTMLElement>('.lyric-line'));
         lineCharElsRef.current = lineElsRef.current.map((el) =>
             Array.from(el.querySelectorAll<HTMLElement>('[data-char-index]')),
-        );
-        pauseBarsRef.current = lineElsRef.current.map((el) =>
-            el.querySelector<HTMLElement>('.lyric-pause-bar'),
         );
         activeRef.current = -1;
         lineProgressRef.current = 0;
@@ -126,7 +88,7 @@ export const SyncedLyrics = React.memo(({lines}: { lines: LyricLine[] }) => {
         container.addEventListener('pointerdown', markManual);
 
         void invoke('audio_set_lyrics_timeline', {
-            lines: displayLines.map((line) => ({timeSecs: line.time})),
+            lines: lines.map((line) => ({timeSecs: line.time})),
         });
 
         /** Per-char "head" sweeps left-to-right across the line.
@@ -155,11 +117,6 @@ export const SyncedLyrics = React.memo(({lines}: { lines: LyricLine[] }) => {
                 }
             }
 
-            const line = linesRef.current[i];
-            const bar = pauseBarsRef.current[i];
-            if (bar && line.pause) {
-                bar.style.width = `${(value * 100).toFixed(2)}%`;
-            }
         };
 
         const setLineState = (i: number, state: string) => {
@@ -167,17 +124,10 @@ export const SyncedLyrics = React.memo(({lines}: { lines: LyricLine[] }) => {
             if (!el || el.dataset.state === state) return;
             el.dataset.state = state;
 
-            const line = linesRef.current[i];
-            const bar = pauseBarsRef.current[i];
-
             if (state === 'past' || state === 'past-near') {
                 writeLineProgress(i, 1);
-                if (bar && line.pause) bar.dataset.state = 'past';
             } else if (state === 'next' || state === 'next-near') {
                 writeLineProgress(i, 0);
-                if (bar && line.pause) bar.dataset.state = '';
-            } else if (state === 'active') {
-                if (bar && line.pause) bar.dataset.state = 'active';
             }
         };
 
@@ -270,7 +220,7 @@ export const SyncedLyrics = React.memo(({lines}: { lines: LyricLine[] }) => {
             unlistenPromise.then((unlisten) => unlisten());
             unsubPlayer();
         };
-    }, [displayLines, perChar]);
+    }, [lines, perChar]);
 
     return (
         <div
@@ -281,21 +231,7 @@ export const SyncedLyrics = React.memo(({lines}: { lines: LyricLine[] }) => {
             }}
         >
             <div className="flex flex-col gap-2">
-                {displayLines.map((line, i) => {
-                    if (line.pause) {
-                        return (
-                            <div
-                                key={`p-${line.time}-${i}`}
-                                className="lyric-line lyric-pause"
-                                style={{['--pause-duration' as string]: `${line.duration ?? 2}s`}}
-                            >
-                                <span className="note-gradient-text">{PAUSE_MARKER}</span>
-                                <div className="lyric-pause-track">
-                                    <div className="lyric-pause-bar"/>
-                                </div>
-                            </div>
-                        );
-                    }
+                {lines.map((line, i) => {
                     if (!perChar) {
                         // Light: per-line highlight only — no per-char spans (hundreds of
                         // text-shadow nodes). The active line lights up via its [data-state]

@@ -95,7 +95,6 @@
 [data-perf="light"] .soundwave-bar,
 [data-perf="light"] .vp-chev,
 [data-perf="light"] .vp-mote,
-[data-perf="light"] .lyric-line[data-state="active"] .note-gradient-text,
 [data-perf="light"] .npb-dock[data-playing="true"] .npb-ring,
 [data-perf="light"] .npb-dock[data-playing="true"] .npb-play::after {
     animation: none !important;
@@ -418,92 +417,6 @@ select,
   color: rgba(255, 255, 255, 0.32);
   opacity: 0.28;
   transform: scale(0.968) translate3d(12px, 0, 0);
-}
-
-/* ── Lyrics pause marker (♪♪♪) ─────────────────────────── */
-.lyric-pause {
-  cursor: default;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-}
-
-.lyric-pause-track {
-  margin-top: 10px;
-  height: 3px;
-  width: 96px;
-  border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.08);
-  overflow: hidden;
-}
-
-.lyric-pause-bar {
-  height: 100%;
-  width: 0%;
-  border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.7);
-  transition: none;
-}
-
-.lyric-pause-bar[data-state="active"] {
-  width: 100%;
-  transition: width var(--pause-duration, 2s) linear;
-}
-
-.lyric-pause-bar[data-state="past"] {
-  width: 100%;
-}
-
-@keyframes noteGradientFlow {
-  0% {
-    background-position: 0 50%;
-  }
-  100% {
-    background-position: 144px 50%;
-  }
-}
-
-.note-gradient-text {
-  display: inline-block;
-  color: rgba(255, 255, 255, 0.32);
-  background-image: none;
-  background-size: 144px 100%;
-  background-repeat: repeat-x;
-  font-size: 28px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  transition:
-    color 0.3s var(--ease-apple),
-    filter 0.3s var(--ease-apple);
-  will-change: background-position, color;
-}
-
-.lyric-line[data-state="active"] .note-gradient-text {
-  color: transparent;
-  -webkit-text-fill-color: transparent;
-  -webkit-background-clip: text;
-  background-clip: text;
-  background-image: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.06) 0px,
-    rgba(255, 255, 255, 0.06) 16px,
-    rgba(255, 255, 255, 0.18) 32px,
-    rgba(255, 255, 255, 0.45) 50px,
-    rgba(255, 255, 255, 0.95) 72px,
-    rgba(255, 255, 255, 0.45) 94px,
-    rgba(255, 255, 255, 0.18) 112px,
-    rgba(255, 255, 255, 0.06) 128px,
-    rgba(255, 255, 255, 0.06) 144px
-  );
-  filter: drop-shadow(0 0 18px rgba(255, 255, 255, 0.38));
-  animation: noteGradientFlow 3.2s linear infinite both;
-}
-
-.lyric-line[data-state="past"] .note-gradient-text,
-.lyric-line[data-state="past-near"] .note-gradient-text {
-  color: rgba(255, 255, 255, 0.92);
-  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.08));
 }
 
 /* ── Active-line karaoke fill — driven by --lyric-progress (rAF) ── */
