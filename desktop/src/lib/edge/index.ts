@@ -8,12 +8,20 @@ export type { Tier } from './config';
 export { initEdge, tierOf } from './config';
 
 function timedFetch(url: string, init: RequestInit, timeoutMs?: number): Promise<Response> {
-  if (!timeoutMs || init.signal) return fetch(url, init) as Promise<Response>;
+  if (!timeoutMs) return fetch(url, init) as Promise<Response>;
+
   const controller = new AbortController();
+  const callerSignal = init.signal;
+  const abortFromCaller = () => controller.abort();
+
+  if (callerSignal?.aborted) controller.abort();
+  else callerSignal?.addEventListener('abort', abortFromCaller, { once: true });
+
   const timer = setTimeout(() => controller.abort(), timeoutMs);
-  return fetch(url, { ...init, signal: controller.signal }).finally(() =>
-    clearTimeout(timer),
-  ) as Promise<Response>;
+  return fetch(url, { ...init, signal: controller.signal }).finally(() => {
+    clearTimeout(timer);
+    callerSignal?.removeEventListener('abort', abortFromCaller);
+  }) as Promise<Response>;
 }
 
 /**
