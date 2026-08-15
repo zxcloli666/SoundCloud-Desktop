@@ -91,24 +91,30 @@ async function firstAvailableLyrics(
       let pending = loaders.length;
       let sawEmptyResult = false;
       let firstError: unknown = null;
+      let generatedFallback: LyricsResult | null = null;
 
       const finish = (result: LyricsResult | null, error?: unknown) => {
         if (settled) return;
-        if (hasLyrics(result)) {
+        if (hasLyrics(result) && result.source !== 'self_gen') {
           settled = true;
           abortAll();
           resolve(result);
           return;
         }
 
-        sawEmptyResult ||= error === undefined;
+        // AI transcription is a last resort: keep it ready, but let every provider-backed
+        // lookup finish before accepting it. A cached self_gen response must not cancel
+        // a slightly slower LRCLIB/Musixmatch/Genius/NetEase result.
+        if (hasLyrics(result)) generatedFallback ??= result;
+        else sawEmptyResult ||= error === undefined;
         firstError ??= error;
         pending -= 1;
         if (pending > 0) return;
 
         settled = true;
         abortAll();
-        if (sawEmptyResult) resolve(null);
+        if (generatedFallback) resolve(generatedFallback);
+        else if (sawEmptyResult) resolve(null);
         else reject(firstError ?? new Error('Lyrics lookup failed'));
       };
 
