@@ -4,5 +4,6 @@
   "imagesBase": "https://images.scnative.space",
   "storageBase": "https://storage.scnative.space",
   "healthBase": "https://health.scnative.space",
-  "relayZone": "relay.scnative.space"
+  "relayZone": "relay.scnative.space",
+  "sendBehavioralData": false
 }

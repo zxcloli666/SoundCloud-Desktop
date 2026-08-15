@@ -1,9 +1,9 @@
-import {listen} from '@tauri-apps/api/event';
-import {toast} from 'sonner';
+import { listen } from '@tauri-apps/api/event';
+import { toast } from 'sonner';
 import i18n from '../i18n';
-import type {Track} from '../stores/player';
-import {usePlayerStore} from '../stores/player';
-import {useSettingsStore} from '../stores/settings';
+import type { Track } from '../stores/player';
+import { usePlayerStore } from '../stores/player';
+import { useSettingsStore } from '../stores/settings';
 import {
   api,
   buildStorageUrls,
@@ -21,13 +21,14 @@ import {
   removeCachedTrack,
   type TrackCacheInfo,
 } from './cache';
-import {trackedInvoke as invoke} from './diagnostics';
-import {isUrnDisliked} from './dislikes';
-import {recordEvent} from './events';
-import {art} from './formatters';
-import {rememberTracks} from './offline-index';
-import {getUrnCluster, recordClusterFeedback} from './recsFeedback';
-import {getArtistDisplay, getDisplayTitle} from './track-display';
+import { SEND_BEHAVIORAL_DATA } from './constants';
+import { trackedInvoke as invoke } from './diagnostics';
+import { isUrnDisliked } from './dislikes';
+import { recordEvent } from './events';
+import { art } from './formatters';
+import { rememberTracks } from './offline-index';
+import { getUrnCluster, recordClusterFeedback } from './recsFeedback';
+import { getArtistDisplay, getDisplayTitle } from './track-display';
 
 const SKIP_THRESHOLD_SEC = 30;
 /** Минимум, чтобы засчитать «прослушано полностью» для коротких треков (50% длительности). */
@@ -482,7 +483,12 @@ function afterLoad(track: Track, gen: number) {
       : track;
 
   // Record to listening history (fire-and-forget), skip on repeat-one (same track looping)
-  if (historyTrack?.urn && historyTrack.title && usePlayerStore.getState().repeat !== 'one') {
+  if (
+    SEND_BEHAVIORAL_DATA &&
+    historyTrack?.urn &&
+    historyTrack.title &&
+    usePlayerStore.getState().repeat !== 'one'
+  ) {
     api('/history', {
       method: 'POST',
       body: JSON.stringify({

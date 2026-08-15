@@ -52,4 +52,8 @@ if (config.relayZone !== null && config.relayZone !== undefined) {
   }
 }
 
+if (typeof config.sendBehavioralData !== 'boolean') {
+  throw new Error('backend.config.json sendBehavioralData must be a boolean');
+}
+
 console.log('Backend configuration and Tauri HTTP scope agree.');

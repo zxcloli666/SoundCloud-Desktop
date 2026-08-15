@@ -1,5 +1,6 @@
 import { createContext, useContext } from 'react';
 import { api } from './api';
+import { SEND_BEHAVIORAL_DATA } from './constants';
 
 const trackToCluster = new Map<string, string>();
 
@@ -12,6 +13,7 @@ export function getUrnCluster(urn: string): string | undefined {
 }
 
 export function recordClusterFeedback(cluster: string, type: 'click' | 'complete'): void {
+  if (!SEND_BEHAVIORAL_DATA) return;
   if (!cluster) return;
   api('/recommendations/feedback', {
     method: 'POST',

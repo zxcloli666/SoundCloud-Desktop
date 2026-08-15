@@ -1,5 +1,6 @@
 import { useAuthStore } from '../stores/auth';
 import { api } from './api';
+import { SEND_BEHAVIORAL_DATA } from './constants';
 
 export type SoundWaveEvent =
   | 'like'
@@ -19,6 +20,7 @@ export function recordEvent(
   scTrackId: string,
   positionPct?: number,
 ): void {
+  if (!SEND_BEHAVIORAL_DATA) return;
   if (!scTrackId) return;
   const scUserId = useAuthStore.getState().user?.urn;
   if (!scUserId) return;

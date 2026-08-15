@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Track } from '../stores/player';
 import { api } from './api';
+import { SEND_BEHAVIORAL_DATA } from './constants';
 
 export interface RecommendResult {
   id: string | number;
@@ -120,6 +121,7 @@ export async function sendWaveFeedback(opts: {
   negatives: number;
   positives: number;
 }): Promise<string | null> {
+  if (!SEND_BEHAVIORAL_DATA) return null;
   if (!opts.cursor) return null;
   try {
     const res = await api<{ ok: boolean; cursor?: string | null }>(
