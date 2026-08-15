@@ -46,20 +46,9 @@ export const GlobalSearch = memo(function GlobalSearch() {
   };
 
   return (
-    <div className="relative w-full max-w-[680px]" style={{ isolation: 'isolate' }}>
-      <div
-        className="relative flex h-9 items-center gap-2.5 overflow-hidden rounded-[3px] border bg-[#111113] pl-3 pr-2"
-        style={{
-          borderColor: focused ? 'rgba(222,104,49,0.7)' : 'rgba(255,255,255,0.11)',
-          boxShadow: focused ? 'inset 0 -1px 0 var(--color-accent)' : undefined,
-          transition: 'border-color 160ms ease, box-shadow 160ms ease',
-        }}
-      >
-        <SearchIcon
-          size={15}
-          className="shrink-0 transition-colors duration-300"
-          style={{ color: focused ? 'var(--color-accent)' : 'rgba(255,255,255,0.38)' }}
-        />
+    <div className="relative w-full max-w-[620px]" style={{ isolation: 'isolate' }}>
+      <div className="relative flex h-9 items-center gap-2.5 overflow-hidden rounded-full border border-white/[0.10] bg-[#18181b] pl-3 pr-2 transition-colors duration-150 focus-within:border-white/[0.18] focus-within:bg-[#1d1d20]">
+        <SearchIcon size={15} className="shrink-0 text-white/38 transition-colors duration-150" />
         <input
           id="global-search-input"
           value={q}
@@ -81,7 +70,7 @@ export const GlobalSearch = memo(function GlobalSearch() {
           }}
           placeholder={t('search.globalPlaceholder')}
           spellCheck={false}
-          className="min-w-0 flex-1 bg-transparent text-[12px] text-white/86 outline-none placeholder:text-white/30 select-text"
+          className="min-w-0 flex-1 appearance-none border-0 bg-transparent text-[12px] text-white/86 outline-none focus:outline-none focus-visible:outline-none placeholder:text-white/30 select-text"
         />
         {isUrl && (
           <span className="shrink-0 border border-accent/20 bg-accent/10 px-2 py-0.5 text-[9px] uppercase tracking-wide text-accent/90">
@@ -108,7 +97,7 @@ export const GlobalSearch = memo(function GlobalSearch() {
 
       {showHistory && (
         <div
-          className="absolute left-0 right-0 mt-2 overflow-hidden rounded-[3px] border border-white/[0.11] bg-[#111113] p-1.5"
+          className="absolute left-0 right-0 mt-2 overflow-hidden rounded-xl bg-[#171719] p-1.5"
           style={{
             boxShadow: '0 18px 40px rgba(0,0,0,0.48)',
           }}

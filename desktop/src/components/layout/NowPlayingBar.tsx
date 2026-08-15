@@ -1,62 +1,61 @@
 import * as Popover from '@radix-ui/react-popover';
 import * as Slider from '@radix-ui/react-slider';
-import {useQuery, useQueryClient} from '@tanstack/react-query';
-import React, {useCallback, useEffect, useRef, useState, useSyncExternalStore} from 'react';
-import {useTranslation} from 'react-i18next';
-import {useNavigate} from 'react-router-dom';
-import {useShallow} from 'zustand/shallow';
-import {api} from '../../lib/api';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import React, { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
+import { useShallow } from 'zustand/shallow';
+import { api } from '../../lib/api';
 import {
-    getCurrentTime,
-    getDownloadProgress,
-    getDuration,
-    handlePrev,
-    seek,
-    subscribe,
+  getCurrentTime,
+  getDownloadProgress,
+  getDuration,
+  handlePrev,
+  seek,
+  subscribe,
 } from '../../lib/audio';
-import {toggleDislike, useDislikeStatus} from '../../lib/dislikes';
-import {designPreviewTracks, isDesignPreview} from '../../lib/design-preview';
-import {art, formatTime} from '../../lib/formatters';
-import {invalidateAllLikesCache} from '../../lib/hooks';
+import { designPreviewTracks, isDesignPreview } from '../../lib/design-preview';
+import { toggleDislike, useDislikeStatus } from '../../lib/dislikes';
+import { art, formatTime } from '../../lib/formatters';
+import { invalidateAllLikesCache } from '../../lib/hooks';
 import {
-    audioLines16,
-    Heart,
-    listMusic16,
-    MicVocal,
-    pauseBlack20,
-    playBlack20,
-    repeat1Icon16,
-    repeatAbIcon16,
-    repeatIcon16,
-    shuffleIcon16,
-    skipBack20,
-    skipForward20,
-    slidersHorizontal16,
-    ThumbsDown,
-    volume1Icon16,
-    volume2Icon16,
-    volumeXIcon16,
+  audioLines16,
+  Heart,
+  listMusic16,
+  MicVocal,
+  pauseBlack20,
+  playBlack20,
+  repeat1Icon16,
+  repeatAbIcon16,
+  repeatIcon16,
+  shuffleIcon16,
+  skipBack20,
+  skipForward20,
+  slidersHorizontal16,
+  ThumbsDown,
+  volume1Icon16,
+  volume2Icon16,
+  volumeXIcon16,
 } from '../../lib/icons';
-import {optimisticToggleLike} from '../../lib/likes';
-import {useArtistDisplay, useArtistLinkItems, useDisplayTitle} from '../../lib/track-display';
-import {useLyricsStore} from '../../stores/lyrics';
+import { optimisticToggleLike } from '../../lib/likes';
+import { useArtistDisplay, useArtistLinkItems, useDisplayTitle } from '../../lib/track-display';
+import { useLyricsStore } from '../../stores/lyrics';
 import {
-    AB_MIN_GAP,
-    getEffectivePitchSemitones,
-    PITCH_SEMITONES_MAX,
-    PITCH_SEMITONES_MIN,
-    PITCH_SEMITONES_STEP,
-    PLAYBACK_RATE_MAX,
-    PLAYBACK_RATE_MIN,
-    PLAYBACK_RATE_STEP,
-    type Track,
-    usePlayerStore,
+  AB_MIN_GAP,
+  getEffectivePitchSemitones,
+  PITCH_SEMITONES_MAX,
+  PITCH_SEMITONES_MIN,
+  PITCH_SEMITONES_STEP,
+  PLAYBACK_RATE_MAX,
+  PLAYBACK_RATE_MIN,
+  PLAYBACK_RATE_STEP,
+  type Track,
+  usePlayerStore,
 } from '../../stores/player';
-import {useSettingsStore} from '../../stores/settings';
-import {ArtistNameLinks} from '../music/ArtistNameLinks';
-import {EqualizerPanel} from '../music/EqualizerPanel';
-import {UploadKindDot} from '../music/UploadKindDot';
-import {LiveWaveform} from '../music/soundwave/waveform';
+import { useSettingsStore } from '../../stores/settings';
+import { ArtistNameLinks } from '../music/ArtistNameLinks';
+import { EqualizerPanel } from '../music/EqualizerPanel';
+import { UploadKindDot } from '../music/UploadKindDot';
 
 /* ── Track loading progress (SC → SCD download) ──────────────── */
 
@@ -301,20 +300,9 @@ export const ProgressSlider = React.memo(() => {
 });
 
 const DockProgress = React.memo(() => {
-  const storeTrack = usePlayerStore((state) => state.currentTrack);
-  const preview = isDesignPreview();
-  const track = preview ? designPreviewTracks[0] : storeTrack;
-
   return (
     <div className="npb-waveform">
-      <LiveWaveform
-        track={track}
-        isCurrent={Boolean(track)}
-        progressOverride={preview ? 46 : undefined}
-      />
-      <div className="npb-progress-overlay">
-        <ProgressSlider />
-      </div>
+      <ProgressSlider />
     </div>
   );
 });
@@ -664,9 +652,13 @@ const NextBtn = React.memo(() => {
 });
 
 const QueueBtn = React.memo(({ onClick, active }: { onClick: () => void; active: boolean }) => {
-  const {t} = useTranslation();
+  const { t } = useTranslation();
   return (
-    <button type="button" onClick={onClick} className={`${btnClass(active, 'sm')} npb-labeled-tool`}>
+    <button
+      type="button"
+      onClick={onClick}
+      className={`${btnClass(active, 'sm')} npb-labeled-tool`}
+    >
       {listMusic16}
       <span>{t('player.queue')}</span>
     </button>
@@ -674,7 +666,7 @@ const QueueBtn = React.memo(({ onClick, active }: { onClick: () => void; active:
 });
 
 const LyricsBtn = React.memo(() => {
-  const {t} = useTranslation();
+  const { t } = useTranslation();
   const open = useLyricsStore((s) => s.open);
   const closePanel = useLyricsStore((s) => s.close);
   const openPanel = useLyricsStore((s) => s.openPanel);
@@ -1071,11 +1063,7 @@ export const NowPlayingBar = React.memo(
           className={`npb-dock${loadProgress != null ? ' is-loading' : ''}`}
           data-playing={playingNow ? 'true' : 'false'}
         >
-          {/* glass — the only backdrop-filter, isolated in its own layer */}
-
-          {/* accent outline that fills as the track downloads (SC → SCD) */}
-
-          {/* content — repaints here never re-blur the glass below */}
+          {/* Opaque content layer keeps transport updates cheap. */}
           <div className="npb-content">
             <div className="npb-row">
               <div className="npb-left">

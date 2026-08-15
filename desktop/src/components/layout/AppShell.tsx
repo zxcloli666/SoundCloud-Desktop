@@ -1,19 +1,19 @@
 import * as Dialog from '@radix-ui/react-dialog';
-import React, {lazy, Suspense, useCallback, useEffect, useRef, useState} from 'react';
-import {useTranslation} from 'react-i18next';
-import {Outlet} from 'react-router-dom';
-import {useShallow} from 'zustand/shallow';
-import {getCurrentTime, getDuration, handlePrev, seek} from '../../lib/audio';
-import {getWallpaperUrl} from '../../lib/cache';
-import {usePerfMode} from '../../lib/perf';
-import {isMac} from '../../lib/platform';
-import {toggleWindowFullscreen} from '../../lib/window';
-import {useLyricsStore} from '../../stores/lyrics';
-import {usePlayerStore} from '../../stores/player';
-import {useSettingsStore} from '../../stores/settings';
-import {NowPlayingBar} from './NowPlayingBar';
-import {Sidebar} from './Sidebar';
-import {Titlebar} from './Titlebar';
+import React, { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Outlet } from 'react-router-dom';
+import { useShallow } from 'zustand/shallow';
+import { getCurrentTime, getDuration, handlePrev, seek } from '../../lib/audio';
+import { getWallpaperUrl } from '../../lib/cache';
+import { isMac } from '../../lib/platform';
+import { toggleWindowFullscreen } from '../../lib/window';
+import { useLyricsStore } from '../../stores/lyrics';
+import { usePlayerStore } from '../../stores/player';
+import { useSettingsStore } from '../../stores/settings';
+import { NowPlayingBar } from './NowPlayingBar';
+import { NowPlayingContext } from './NowPlayingContext';
+import { Sidebar } from './Sidebar';
+import { Titlebar } from './Titlebar';
 
 const LyricsPanel = lazy(() =>
   import('../music/LyricsPanel').then((module) => ({ default: module.LyricsPanel })),
@@ -39,7 +39,7 @@ const keybindings: Keybinding[] = [
   { key: 'p', label: 'kb.prevTrack', group: 'playback', display: 'P' },
   { key: 's', label: 'kb.shuffle', group: 'playback', display: 'S' },
   { key: 'r', label: 'kb.repeat', group: 'playback', display: 'R' },
-    {key: 'b', label: 'kb.abLoop', group: 'playback', display: 'B'},
+  { key: 'b', label: 'kb.abLoop', group: 'playback', display: 'B' },
   { key: 'ArrowUp', label: 'kb.volumeUp', group: 'playback', display: '↑' },
   { key: 'ArrowDown', label: 'kb.volumeDown', group: 'playback', display: '↓' },
   { key: 'm', label: 'kb.mute', group: 'playback', display: 'M' },
@@ -145,91 +145,25 @@ const KeybindingsDialog = React.memo(
 
 /* ── Backgrounds ───────────────────────────────────────────── */
 
-// Fine film grain (SVG turbulence) — one static tile, no animation. Gives the
-// wallpaper a photographic, premium feel instead of a flat poster.
-const GRAIN_BG =
-    "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")";
-
-/** Wallpaper layer — the photo lives at the very back, full-bleed and crisp. A
- *  cinematic vignette sinks the edges (so the page's aura orbs read as light
- *  blooming from the corners) while the centre stays vivid; soft chrome
- *  gradients keep the titlebar / dock / sidebar legible. The aura orbs and star
- *  field still mount over this — wallpaper + glow + stars as one composition.
- *  `bgOpacity` is the readability dim on top; no motion (it's a backdrop). */
+/** Optional custom wallpaper: one image and one static dim layer. */
 const CustomBackground = React.memo(() => {
-    const perf = usePerfMode();
-    const {bgName, bgOpacity, bgDim, bgBlur} = useSettingsStore(
+  const { bgName, bgOpacity, bgDim } = useSettingsStore(
     useShallow((s) => ({
       bgName: s.backgroundImage,
       bgOpacity: s.backgroundOpacity,
-        bgDim: s.backgroundDim,
-      bgBlur: s.backgroundBlur,
+      bgDim: s.backgroundDim,
     })),
   );
 
   const bgUrl = bgName ? getWallpaperUrl(bgName) : null;
   if (!bgUrl) return null;
 
-    const effBlur = perf.blur(bgBlur);
-    const dim = bgOpacity; // edge/vignette + chrome readability framing
+  const dim = Math.min(0.94, 0.58 + bgOpacity * 0.22 + bgDim * 0.24);
 
   return (
-      <div
-          className="absolute inset-0 pointer-events-none overflow-hidden"
-          style={{contain: 'strict', transform: 'translateZ(0)'}}
-      >
-          <img
-              src={bgUrl}
-              alt=""
-              aria-hidden="true"
-              decoding="async"
-              className="absolute inset-0 w-full h-full object-cover select-none"
-              style={{
-                  filter: effBlur > 0 ? `blur(${effBlur}px)` : undefined,
-                  transform: 'translateZ(0)',
-              }}
-          />
-
-          {/* cinematic vignette — vivid centre, sunken edges where the orbs glow */}
-          <div
-              className="absolute inset-0"
-              style={{
-                  background: `radial-gradient(125% 110% at 50% 38%, transparent 38%, rgba(6,6,9,${(0.4 + dim * 0.45).toFixed(3)}) 100%)`,
-              }}
-          />
-          {/* chrome legibility gradients */}
-          <div
-              className="absolute inset-x-0 top-0 h-36"
-              style={{
-                  background: `linear-gradient(to bottom, rgba(6,6,9,${(0.45 + dim * 0.4).toFixed(3)}), transparent)`,
-              }}
-          />
-          <div
-              className="absolute inset-x-0 bottom-0 h-52"
-              style={{
-                  background: `linear-gradient(to top, rgba(6,6,9,${(0.52 + dim * 0.4).toFixed(3)}), transparent)`,
-              }}
-          />
-          <div
-              className="absolute inset-y-0 left-0 w-40"
-              style={{
-                  background: `linear-gradient(to right, rgba(6,6,9,${(0.28 + dim * 0.35).toFixed(3)}), transparent)`,
-              }}
-          />
-          {/* uniform full-frame dim — tames very bright wallpapers everywhere,
-          not just the edges (separate from the vignette above) */}
-          {bgDim > 0 && (
-              <div
-                  className="absolute inset-0 bg-[rgb(6,6,9)] transition-opacity duration-300"
-                  style={{opacity: bgDim}}
-              />
-          )}
-          {perf.atmosphere && (
-              <div
-                  className="absolute inset-0 mix-blend-overlay opacity-[0.06]"
-                  style={{backgroundImage: GRAIN_BG, backgroundSize: '140px 140px'}}
-              />
-          )}
+    <div className="sonveil-wallpaper" aria-hidden="true">
+      <img src={bgUrl} alt="" decoding="async" />
+      <span style={{ backgroundColor: `rgba(7, 7, 9, ${dim})` }} />
     </div>
   );
 });
@@ -256,44 +190,44 @@ export const AppShell = React.memo(() => {
   });
   const onQueueToggle = useCallback(() => setQueueOpen((v) => !v), []);
   const onQueueClose = useCallback(() => setQueueOpen(false), []);
-    const mainRef = useRef<HTMLElement>(null);
+  const mainRef = useRef<HTMLElement>(null);
 
-    // Mirror panel state into refs so the global keydown listener binds once.
-    const queueOpenRef = useRef(queueOpen);
-    queueOpenRef.current = queueOpen;
-    const kbOpenRef = useRef(kbOpen);
-    kbOpenRef.current = kbOpen;
+  // Mirror panel state into refs so the global keydown listener binds once.
+  const queueOpenRef = useRef(queueOpen);
+  queueOpenRef.current = queueOpen;
+  const kbOpenRef = useRef(kbOpen);
+  kbOpenRef.current = kbOpen;
 
-    // Anti-sticky-hover: WebKitGTK doesn't re-hit-test :hover while the content
-    // scrolls under a stationary cursor, so cards "freeze" hovered or light up the
-    // wrong tile. Flag the scroll container while scrolling (CSS drops pointer
-    // events app-wide); clear the instant the pointer actually moves or presses.
-    useEffect(() => {
-        const main = mainRef.current;
-        if (!main) return;
-        let t: ReturnType<typeof setTimeout> | null = null;
-        const clear = () => {
-            if (t) {
-                clearTimeout(t);
-                t = null;
-            }
-            if (main.hasAttribute('data-scrolling')) main.removeAttribute('data-scrolling');
-        };
-        const onScroll = () => {
-            if (!main.hasAttribute('data-scrolling')) main.setAttribute('data-scrolling', '1');
-            if (t) clearTimeout(t);
-            t = setTimeout(clear, 120);
-        };
-        main.addEventListener('scroll', onScroll, {passive: true});
-        main.addEventListener('pointermove', clear, {passive: true});
-        main.addEventListener('pointerdown', clear, {passive: true});
-        return () => {
-            main.removeEventListener('scroll', onScroll);
-            main.removeEventListener('pointermove', clear);
-            main.removeEventListener('pointerdown', clear);
-            if (t) clearTimeout(t);
-        };
-    }, []);
+  // Anti-sticky-hover: WebKitGTK doesn't re-hit-test :hover while the content
+  // scrolls under a stationary cursor, so cards "freeze" hovered or light up the
+  // wrong tile. Flag the scroll container while scrolling (CSS drops pointer
+  // events app-wide); clear the instant the pointer actually moves or presses.
+  useEffect(() => {
+    const main = mainRef.current;
+    if (!main) return;
+    let t: ReturnType<typeof setTimeout> | null = null;
+    const clear = () => {
+      if (t) {
+        clearTimeout(t);
+        t = null;
+      }
+      if (main.hasAttribute('data-scrolling')) main.removeAttribute('data-scrolling');
+    };
+    const onScroll = () => {
+      if (!main.hasAttribute('data-scrolling')) main.setAttribute('data-scrolling', '1');
+      if (t) clearTimeout(t);
+      t = setTimeout(clear, 120);
+    };
+    main.addEventListener('scroll', onScroll, { passive: true });
+    main.addEventListener('pointermove', clear, { passive: true });
+    main.addEventListener('pointerdown', clear, { passive: true });
+    return () => {
+      main.removeEventListener('scroll', onScroll);
+      main.removeEventListener('pointermove', clear);
+      main.removeEventListener('pointerdown', clear);
+      if (t) clearTimeout(t);
+    };
+  }, []);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -311,7 +245,7 @@ export const AppShell = React.memo(() => {
       // Ctrl+K — focus search (always, even in input)
       if (code === 'KeyK' && (e.ctrlKey || e.metaKey)) {
         e.preventDefault();
-          document.getElementById('global-search-input')?.focus();
+        document.getElementById('global-search-input')?.focus();
         return;
       }
 
@@ -325,7 +259,7 @@ export const AppShell = React.memo(() => {
       // / — focus search (not in input)
       if ((e.key === '/' || code === 'Slash') && !inInput) {
         e.preventDefault();
-          document.getElementById('global-search-input')?.focus();
+        document.getElementById('global-search-input')?.focus();
         return;
       }
 
@@ -381,9 +315,9 @@ export const AppShell = React.memo(() => {
         case 'KeyR':
           player.toggleRepeat();
           break;
-          case 'KeyB':
-              player.cycleAbPoint(getCurrentTime());
-              break;
+        case 'KeyB':
+          player.cycleAbPoint(getCurrentTime());
+          break;
         case 'KeyL':
           useLyricsStore.getState().toggle();
           break;
@@ -394,7 +328,7 @@ export const AppShell = React.memo(() => {
           useSettingsStore.getState().toggleSidebar();
           break;
         case 'Escape':
-            if (kbOpenRef.current) {
+          if (kbOpenRef.current) {
             setKbOpen(false);
             break;
           }
@@ -419,15 +353,18 @@ export const AppShell = React.memo(() => {
   }, []);
 
   return (
-    <div className="relative h-screen overflow-hidden bg-[#09090b]">
+    <div className="sonveil-app">
       <CustomBackground />
-      <div className="relative z-10 flex h-full min-h-0 pb-[112px]" style={{ isolation: 'isolate' }}>
+      <div className="sonveil-workspace">
         <Sidebar />
-        <div className="flex min-w-0 flex-1 flex-col">
+        <div className="sonveil-stage">
           <Titlebar />
-          <main ref={mainRef} className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
-            <StableOutlet />
-          </main>
+          <div className="sonveil-stage-grid">
+            <main ref={mainRef} className="sonveil-main">
+              <StableOutlet />
+            </main>
+            <NowPlayingContext onQueueToggle={onQueueToggle} queueOpen={queueOpen} />
+          </div>
         </div>
       </div>
       <NowPlayingBar onQueueToggle={onQueueToggle} queueOpen={queueOpen} />

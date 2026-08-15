@@ -5,12 +5,9 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { isDesignPreview } from '../../lib/design-preview';
 import { ChevronLeft, ChevronRight, Fullscreen, Minus, Square, X } from '../../lib/icons';
 import { toggleWindowFullscreen } from '../../lib/window';
-import { useAuthStore } from '../../stores/auth';
-import { Avatar } from '../ui/Avatar';
 import { GlobalSearch } from './GlobalSearch';
 
-const navClass =
-  'grid size-8 place-items-center border-0 bg-transparent text-white/34 transition-colors duration-150 hover:bg-white/[0.035] hover:text-white/76 disabled:cursor-default disabled:opacity-20';
+const navClass = 'sonveil-title-button disabled:cursor-default disabled:opacity-20';
 
 const NavButtons = React.memo(() => {
   const { t } = useTranslation();
@@ -58,7 +55,7 @@ function WindowButton({
       aria-label={label}
       title={label}
       onClick={onClick}
-      className={`grid h-[34px] w-9 place-items-center border-0 bg-transparent text-white/26 transition-colors duration-150 ${danger ? 'hover:bg-red-500/80 hover:text-white' : 'hover:bg-white/[0.04] hover:text-white/68'}`}
+      className={`sonveil-window-button${danger ? ' is-danger' : ''}`}
     >
       {children}
     </button>
@@ -67,20 +64,15 @@ function WindowButton({
 
 export const Titlebar = React.memo(() => {
   const { t } = useTranslation();
-  const user = useAuthStore((state) => state.user);
   const win = isDesignPreview() ? null : getCurrentWindow();
 
   return (
-    <header
-      className="relative z-40 flex h-[68px] shrink-0 items-center gap-8 border-b border-white/[0.09] bg-[#0c0c0e] px-8"
-      data-tauri-drag-region
-    >
+    <header className="sonveil-titlebar" data-tauri-drag-region>
       <NavButtons />
-      <div className="min-w-0 flex-1" data-tauri-drag-region>
+      <div className="sonveil-title-search" data-tauri-drag-region>
         <GlobalSearch />
       </div>
-      <div className="flex shrink-0 items-center gap-2">
-        {user && <Avatar src={user.avatar_url} alt={user.username} size={28} />}
+      <div className="sonveil-window-controls">
         <div className="flex items-center">
           <WindowButton onClick={() => void toggleWindowFullscreen()} label={t('kb.fullscreen')}>
             <Fullscreen size={12} />
