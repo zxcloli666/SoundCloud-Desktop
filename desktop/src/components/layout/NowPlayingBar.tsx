@@ -15,6 +15,7 @@ import {
     subscribe,
 } from '../../lib/audio';
 import {toggleDislike, useDislikeStatus} from '../../lib/dislikes';
+import {designPreviewTracks, isDesignPreview} from '../../lib/design-preview';
 import {art, formatTime} from '../../lib/formatters';
 import {invalidateAllLikesCache} from '../../lib/hooks';
 import {
@@ -37,7 +38,6 @@ import {
     volumeXIcon16,
 } from '../../lib/icons';
 import {optimisticToggleLike} from '../../lib/likes';
-import {usePerfMode} from '../../lib/perf';
 import {useArtistDisplay, useArtistLinkItems, useDisplayTitle} from '../../lib/track-display';
 import {useLyricsStore} from '../../stores/lyrics';
 import {
@@ -56,6 +56,7 @@ import {useSettingsStore} from '../../stores/settings';
 import {ArtistNameLinks} from '../music/ArtistNameLinks';
 import {EqualizerPanel} from '../music/EqualizerPanel';
 import {UploadKindDot} from '../music/UploadKindDot';
+import {LiveWaveform} from '../music/soundwave/waveform';
 
 /* ── Track loading progress (SC → SCD download) ──────────────── */
 
@@ -102,25 +103,6 @@ function useLoadProgress(): number | null {
 /** Whole percentage (1-100) shown to the user while a track loads. */
 const loadPercent = (progress: number) =>
   Math.max(1, Math.min(100, Math.round(Math.max(0, Math.min(1, progress)) * 100)));
-
-/** Accent outline that traces the capsule's perimeter as the track downloads. */
-const DockLoadingRing = React.memo(({ progress }: { progress: number | null }) => {
-  if (progress == null) return null;
-  return (
-    <svg className="npb-loadring" aria-hidden="true">
-      {/* width/height/rx attrs are a fallback; CSS refines the 1px inset when supported */}
-      <rect className="npb-loadring-track" width="100%" height="100%" rx={28} />
-      <rect
-        className="npb-loadring-fill"
-        width="100%"
-        height="100%"
-        rx={28}
-        pathLength={100}
-        style={{ strokeDashoffset: 100 - loadPercent(progress) }}
-      />
-    </svg>
-  );
-});
 
 /* ── A-B loop markers (overlay on the progress track) ────────── */
 
@@ -315,6 +297,25 @@ export const ProgressSlider = React.memo(() => {
       />
       <AbLoopOverlay duration={duration} />
     </Slider.Root>
+  );
+});
+
+const DockProgress = React.memo(() => {
+  const storeTrack = usePlayerStore((state) => state.currentTrack);
+  const preview = isDesignPreview();
+  const track = preview ? designPreviewTracks[0] : storeTrack;
+
+  return (
+    <div className="npb-waveform">
+      <LiveWaveform
+        track={track}
+        isCurrent={Boolean(track)}
+        progressOverride={preview ? 46 : undefined}
+      />
+      <div className="npb-progress-overlay">
+        <ProgressSlider />
+      </div>
+    </div>
   );
 });
 
@@ -662,13 +663,18 @@ const NextBtn = React.memo(() => {
   );
 });
 
-const QueueBtn = React.memo(({ onClick, active }: { onClick: () => void; active: boolean }) => (
-  <button type="button" onClick={onClick} className={btnClass(active, 'sm')}>
-    {listMusic16}
-  </button>
-));
+const QueueBtn = React.memo(({ onClick, active }: { onClick: () => void; active: boolean }) => {
+  const {t} = useTranslation();
+  return (
+    <button type="button" onClick={onClick} className={`${btnClass(active, 'sm')} npb-labeled-tool`}>
+      {listMusic16}
+      <span>{t('player.queue')}</span>
+    </button>
+  );
+});
 
 const LyricsBtn = React.memo(() => {
+  const {t} = useTranslation();
   const open = useLyricsStore((s) => s.open);
   const closePanel = useLyricsStore((s) => s.close);
   const openPanel = useLyricsStore((s) => s.openPanel);
@@ -679,9 +685,10 @@ const LyricsBtn = React.memo(() => {
         if (open) closePanel();
         else openPanel({ tab: 'lyrics', rightPanelOpen: true });
       }}
-      className={btnClass(open, 'sm')}
+      className={`${btnClass(open, 'sm')} npb-labeled-tool`}
     >
       <MicVocal size={16} />
+      <span>{t('track.lyrics')}</span>
     </button>
   );
 });
@@ -924,7 +931,8 @@ const TuningBtn = React.memo(() => {
 const PillTrack = React.memo(({ loadProgress }: { loadProgress: number | null }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const currentTrack = usePlayerStore((s) => s.currentTrack);
+  const storeTrack = usePlayerStore((s) => s.currentTrack);
+  const currentTrack = isDesignPreview() ? designPreviewTracks[0] : storeTrack;
 
   if (!currentTrack) {
     return (
@@ -1014,8 +1022,17 @@ const ReactClusterBody = React.memo(({ urn }: { urn: string }) => {
 /* ── Lane time readout (current · total), ~1fps ──────────────── */
 
 const LaneTimes = React.memo(() => {
+  const preview = isDesignPreview();
   const current = useSyncExternalStore(subscribe, () => Math.floor(getCurrentTime()));
   const duration = useSyncExternalStore(subscribe, getDuration);
+  if (preview) {
+    return (
+      <div className="npb-times">
+        <b>1:48</b>
+        <span>-2:24</span>
+      </div>
+    );
+  }
   return (
     <div className="npb-times">
       <b>{formatTime(current)}</b>
@@ -1039,26 +1056,6 @@ function useDocHidden(): boolean {
 
 /* ── Background glow ─────────────────────────────────────────── */
 
-const BackgroundGlow = React.memo(() => {
-  const perf = usePerfMode();
-  const artworkUrl = usePlayerStore((s) => s.currentTrack?.artwork_url);
-  const artwork = art(artworkUrl, 't200x200');
-
-  if (!perf.bloom || !artwork) return null;
-  return (
-    <div
-      className="absolute inset-0 opacity-[0.05] blur-3xl pointer-events-none"
-      style={{
-        backgroundImage: `url(${artwork})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        contain: 'strict',
-        transform: 'translateZ(0)',
-      }}
-    />
-  );
-});
-
 /* ── NowPlayingBar ───────────────────────────────────────────── */
 
 export const NowPlayingBar = React.memo(
@@ -1070,28 +1067,28 @@ export const NowPlayingBar = React.memo(
 
     return (
       <div className="npb">
-        <BackgroundGlow />
-        <div className="npb-underglow" />
-
         <div
           className={`npb-dock${loadProgress != null ? ' is-loading' : ''}`}
           data-playing={playingNow ? 'true' : 'false'}
         >
           {/* glass — the only backdrop-filter, isolated in its own layer */}
-          <div className="npb-glass" />
 
           {/* accent outline that fills as the track downloads (SC → SCD) */}
-          <DockLoadingRing progress={loadProgress} />
 
           {/* content — repaints here never re-blur the glass below */}
           <div className="npb-content">
             <div className="npb-row">
-              <PillTrack loadProgress={loadProgress} />
-              <ReactCluster />
+              <div className="npb-left">
+                <PillTrack loadProgress={loadProgress} />
+                <ReactCluster />
+              </div>
 
-              <div className="npb-sep" />
+              <div className="npb-lane">
+                <LaneTimes />
+                <DockProgress />
+              </div>
 
-              <div className="flex items-center gap-0.5">
+              <div className="npb-transport">
                 <ShuffleBtn />
                 <PrevBtn />
                 <PlayPauseBtn />
@@ -1100,24 +1097,19 @@ export const NowPlayingBar = React.memo(
                 <AbLoopBtn />
               </div>
 
-              <div className="npb-sep" />
-
-              <div className="flex items-center gap-0.5">
-                <TuningBtn />
-                <EqBtn />
-                <LyricsBtn />
-                <QueueBtn onClick={onQueueToggle} active={queueOpen} />
+              <div className="npb-tools">
+                <div className="npb-secondary-tools">
+                  <TuningBtn />
+                  <EqBtn />
+                </div>
                 <ControlVolumeBtn size="sm" />
                 <div className="npb-vol-slider flex items-center gap-2 pl-1">
                   <VolumeSlider className="w-[72px]" />
                   <VolumeLabel />
                 </div>
+                <QueueBtn onClick={onQueueToggle} active={queueOpen} />
+                <LyricsBtn />
               </div>
-            </div>
-
-            <div className="npb-lane">
-              <LaneTimes />
-              <ProgressSlider />
             </div>
           </div>
         </div>

@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme {
-  --color-bg-primary: rgba(10, 10, 12, 0.95);
+  --color-bg-primary: #09090b;
   --color-bg-glass: rgba(255, 255, 255, 0.03);
   --color-bg-glass-hover: rgba(255, 255, 255, 0.06);
   --color-bg-glass-active: rgba(255, 255, 255, 0.09);
@@ -10,10 +10,10 @@
   --color-text-primary: rgba(255, 255, 255, 0.92);
   --color-text-secondary: rgba(255, 255, 255, 0.55);
   --color-text-tertiary: rgba(255, 255, 255, 0.25);
-  --color-accent: #ff5500;
-  --color-accent-hover: #ff6a1a;
-  --color-accent-glow: rgba(255, 85, 0, 0.2);
-  --color-accent-selection: rgba(255, 85, 0, 0.3);
+  --color-accent: #d96d3d;
+  --color-accent-hover: #e57b49;
+  --color-accent-glow: rgba(217, 109, 61, 0.16);
+  --color-accent-selection: rgba(217, 109, 61, 0.28);
   --color-accent-contrast: #ffffff;
 
   --font-sans: "Inter", "SF Pro Display", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
@@ -174,9 +174,10 @@ select,
 
 /* ── Glass ──────────────────────────────────────────────────── */
 .glass {
-  background: rgba(255, 255, 255, 0.025);
-    backdrop-filter: blur(var(--glass-blur)) saturate(1.8);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: #111114;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: 1px solid rgba(255, 255, 255, 0.07);
 }
 
 .glass-hover:hover {
@@ -185,8 +186,8 @@ select,
 }
 
 .glass-flat {
-  background: rgba(255, 255, 255, 0.025);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: #111114;
+  border: 1px solid rgba(255, 255, 255, 0.07);
 }
 
 /* ── Shimmer ───────────────────────────────────────────────── */
@@ -351,12 +352,11 @@ select,
 
 /* ── Featured card glass ──────────────────────────────────── */
 .glass-featured {
-  background: rgba(255, 255, 255, 0.02);
-    backdrop-filter: blur(var(--glass-blur-strong)) saturate(2);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.03) inset,
-    0 8px 40px rgba(0, 0, 0, 0.3);
+  background: #111114;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  box-shadow: none;
 }
 
 .glass-featured:hover {

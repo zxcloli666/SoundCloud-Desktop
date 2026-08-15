@@ -579,20 +579,23 @@ function handleTrackEnd() {
 
 /* ── Tauri event listeners ───────────────────────────────────── */
 
-listen<number>('audio:tick', (event) => {
+const hasTauriRuntime = typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
+const listenNative: typeof listen = hasTauriRuntime ? listen : async () => () => {};
+
+listenNative<number>('audio:tick', (event) => {
   cachedTime = event.payload;
   if (cachedDuration <= 0) cachedDuration = fallbackDuration;
   notify();
 });
 
-listen<{ urn: string; progress: number }>('track:download-progress', (event) => {
+listenNative<{ urn: string; progress: number }>('track:download-progress', (event) => {
   const { urn, progress } = event.payload;
   if (urn === currentUrn) {
     setDownloadProgress(progress >= 0.999 ? null : progress);
   }
 });
 
-listen('audio:ended', () => {
+listenNative('audio:ended', () => {
   if (maybeHealEarlyEnd()) return;
   if (currentUrn) {
     // Засчитываем full_play только если трек реально игрался: либо ≥30s,
@@ -613,11 +616,11 @@ listen('audio:ended', () => {
   handleTrackEnd();
 });
 
-listen('audio:device-reconnected', () => {
+listenNative('audio:device-reconnected', () => {
   console.log('[Audio] Device reconnected');
 });
 
-listen<string>('audio:default-device-changed', (event) => {
+listenNative<string>('audio:default-device-changed', (event) => {
   console.log(`[Audio] Default output changed to '${event.payload}'`);
 });
 
@@ -768,13 +771,13 @@ function updateMediaPosition() {
 }
 
 // Listen for media control events from souvlaki (MPRIS/SMTC)
-listen('media:play', () => usePlayerStore.getState().resume());
-listen('media:pause', () => usePlayerStore.getState().pause());
-listen('media:toggle', () => usePlayerStore.getState().togglePlay());
-listen('media:next', () => usePlayerStore.getState().next());
-listen('media:prev', () => handlePrev());
-listen<number>('media:seek', (e) => seek(e.payload));
-listen<number>('media:seek-relative', (e) => {
+listenNative('media:play', () => usePlayerStore.getState().resume());
+listenNative('media:pause', () => usePlayerStore.getState().pause());
+listenNative('media:toggle', () => usePlayerStore.getState().togglePlay());
+listenNative('media:next', () => usePlayerStore.getState().next());
+listenNative('media:prev', () => handlePrev());
+listenNative<number>('media:seek', (e) => seek(e.payload));
+listenNative<number>('media:seek-relative', (e) => {
   const offset = e.payload;
   if (offset > 0) {
     seek(Math.min(getCurrentTime() + offset, getDuration()));

@@ -22,10 +22,10 @@ export interface ThemePresetDef {
 
 export const THEME_PRESETS: Record<Exclude<ThemePreset, 'custom'>, ThemePresetDef> = {
   soundcloud: {
-    accent: '#ff5500',
-    bg: '#08080a',
-    name: 'SoundCloud',
-    preview: ['#ff5500', '#08080a', '#1a1a1e'],
+    accent: '#d96d3d',
+    bg: '#09090b',
+    name: 'Sonveil',
+    preview: ['#d96d3d', '#09090b', '#171719'],
   },
   dark: {
     accent: '#ffffff',
@@ -120,8 +120,8 @@ export interface SettingsState {
 const DEFAULT_EQ_GAINS = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
 const DEFAULTS = {
-  accentColor: '#ff5500',
-  bgPrimary: '#08080a',
+  accentColor: '#d96d3d',
+  bgPrimary: '#09090b',
   themePreset: 'soundcloud' as ThemePreset,
   perfMode: 'beauty' as PerfMode,
   backgroundImage: '',
@@ -222,8 +222,8 @@ export const useSettingsStore = create<SettingsState>()(
     {
       name: 'sc-settings',
       storage: createJSONStorage(() => tauriStorage),
-      version: 19,
-      migrate: (persistedState) => {
+      version: 20,
+      migrate: (persistedState, version) => {
         const prev = (persistedState ?? {}) as Partial<SettingsState> & {
           soundwaveDiversity?: number;
         };
@@ -233,9 +233,17 @@ export const useSettingsStore = create<SettingsState>()(
           typeof prev.soundwaveDiversity === 'number' && prev.soundwaveDiversity > 0.5
             ? 'diverse'
             : 'similar';
+        const migrateSonveilAccent =
+          version < 20 && prev.themePreset === 'soundcloud' && prev.accentColor === '#ff5500';
         return {
           ...DEFAULTS,
           ...prev,
+          accentColor: migrateSonveilAccent
+            ? DEFAULTS.accentColor
+            : (prev.accentColor ?? DEFAULTS.accentColor),
+          bgPrimary: migrateSonveilAccent
+            ? DEFAULTS.bgPrimary
+            : (prev.bgPrimary ?? DEFAULTS.bgPrimary),
           soundwaveMode: prev.soundwaveMode ?? inferredMode,
         } as SettingsState;
       },

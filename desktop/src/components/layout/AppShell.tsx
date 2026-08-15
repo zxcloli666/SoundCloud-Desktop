@@ -5,7 +5,6 @@ import {Outlet} from 'react-router-dom';
 import {useShallow} from 'zustand/shallow';
 import {getCurrentTime, getDuration, handlePrev, seek} from '../../lib/audio';
 import {getWallpaperUrl} from '../../lib/cache';
-import {art} from '../../lib/formatters';
 import {usePerfMode} from '../../lib/perf';
 import {isMac} from '../../lib/platform';
 import {toggleWindowFullscreen} from '../../lib/window';
@@ -235,24 +234,6 @@ const CustomBackground = React.memo(() => {
   );
 });
 
-const AmbientGlow = React.memo(() => {
-    const perf = usePerfMode();
-  const artwork = usePlayerStore((s) => art(s.currentTrack?.artwork_url, 't500x500'));
-    if (!perf.bloom || !artwork) return null;
-  return (
-    <div
-      className="absolute bottom-0 left-0 right-0 h-[400px] opacity-[0.06] blur-[100px] pointer-events-none transition-all duration-[2s] ease-out"
-      style={{
-        backgroundImage: `url(${artwork})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        contain: 'strict',
-        transform: 'translateZ(0)',
-      }}
-    />
-  );
-});
-
 const StableOutlet = React.memo(() => <Outlet />);
 
 /* ── Helpers ───────────────────────────────────────────────── */
@@ -438,16 +419,16 @@ export const AppShell = React.memo(() => {
   }, []);
 
   return (
-    <div className="flex flex-col h-screen relative overflow-hidden">
+    <div className="relative h-screen overflow-hidden bg-[#09090b]">
       <CustomBackground />
-      <AmbientGlow />
-      <Titlebar />
-      <div className="flex flex-1 min-h-0 relative z-10" style={{ isolation: 'isolate' }}>
+      <div className="relative z-10 flex h-full min-h-0 pb-[112px]" style={{ isolation: 'isolate' }}>
         <Sidebar />
-          {/* pb clears the floating now-playing dock, which overlays (doesn't push) content */}
-          <main ref={mainRef} className="flex-1 overflow-y-auto overflow-x-hidden pb-[136px]">
-          <StableOutlet />
-        </main>
+        <div className="flex min-w-0 flex-1 flex-col">
+          <Titlebar />
+          <main ref={mainRef} className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
+            <StableOutlet />
+          </main>
+        </div>
       </div>
       <NowPlayingBar onQueueToggle={onQueueToggle} queueOpen={queueOpen} />
       {queueOpen && (

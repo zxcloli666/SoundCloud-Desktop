@@ -7,17 +7,21 @@ import { changeAppLanguage } from './i18n';
 import { initAuthBridge } from './lib/auth-session';
 import { setupCacheMaintenance } from './lib/cache';
 import { setServerPorts } from './lib/constants';
+import { designPreviewTracks, isDesignPreview } from './lib/design-preview';
 import { trackedInvoke as invoke, setupUiWatchdog } from './lib/diagnostics';
 import { initEdge } from './lib/edge';
 import { installFpsCap } from './lib/fps-cap';
 import { queryClient } from './lib/query-client';
 import './fonts';
 import './index.css';
+import './sonveil.css';
+import { useAuthStore } from './stores/auth';
 import { useSettingsStore } from './stores/settings';
 
 installFpsCap(60);
 
 useSettingsStore.persist.onFinishHydration((state) => {
+  if (isDesignPreview()) return;
   if (state.language) void changeAppLanguage(state.language);
 });
 
@@ -59,6 +63,38 @@ async function fixWebviewScale() {
 }
 
 async function bootstrap() {
+  if (isDesignPreview()) {
+    await changeAppLanguage('en');
+    useSettingsStore.setState({
+      accentColor: '#d96d3d',
+      backgroundImage: '',
+      sidebarCollapsed: false,
+    });
+    useAuthStore.setState({
+      isAuthenticated: true,
+      hasSession: true,
+      user: {
+        id: 1,
+        urn: 'soundcloud:users:1',
+        username: 'sonveil',
+        avatar_url: designPreviewTracks[0].artwork_url || '',
+        permalink_url: '',
+        followers_count: 0,
+        followings_count: 0,
+        track_count: 0,
+        playlist_count: 0,
+      },
+    });
+    ReactDOM.createRoot(document.getElementById('root')!).render(
+      <QueryClientProvider client={queryClient}>
+        <ErrorBoundary fullscreen>
+          <App />
+        </ErrorBoundary>
+      </QueryClientProvider>,
+    );
+    return;
+  }
+
   await fixWebviewScale();
   await useSettingsStore.persist.rehydrate();
 

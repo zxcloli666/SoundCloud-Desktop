@@ -258,7 +258,7 @@ export interface HistoryEntry {
   playedAt: string;
 }
 
-export function useHistory(limit = 50) {
+export function useHistory(limit = 50, enabled = true) {
   const query = useInfiniteQuery({
     queryKey: ['history'],
     queryFn: async ({ pageParam = 0 }) => {
@@ -274,6 +274,7 @@ export function useHistory(limit = 50) {
       return nextOffset < last.total ? nextOffset : undefined;
     },
     staleTime: 0,
+    enabled,
   });
 
   const entries = useMemo(() => flattenCollectionPages(query.data?.pages), [query.data]);
@@ -298,12 +299,13 @@ export function useFeatured() {
 
 /* ── Liked tracks ──────────────────────────────────────────────── */
 
-export function useLikedTracks(limit = 30) {
+export function useLikedTracks(limit = 30, enabled = true) {
   const query = usePagedQuery<Track>({
     queryKey: ['me', 'likes', 'tracks', limit],
     url: (page, l) => pagedUrl('/me/likes/tracks', page, l),
     limit,
     staleTime: COLD_CACHE_MS,
+    enabled,
   });
 
   const tracks = query.items;

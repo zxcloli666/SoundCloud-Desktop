@@ -11,6 +11,7 @@ import YMImportFloatingStatus from './components/music/YMImportFloatingStatus';
 import { SessionRecoveryModal } from './components/SessionRecoveryModal';
 import { ThemeProvider } from './components/ThemeProvider';
 import { ApiError } from './lib/api';
+import { isDesignPreview } from './lib/design-preview';
 import { getAppMode, useAppMode, useAppStatusStore } from './stores/app-status';
 import { useAuthStore } from './stores/auth';
 import { type StartupPage, useSettingsStore } from './stores/settings';
@@ -63,6 +64,7 @@ function StartPageRedirect() {
 }
 
 export default function App() {
+  const designPreview = isDesignPreview();
   const { isAuthenticated, hasSession, fetchUser } = useAuthStore(
     useShallow((s) => ({
       isAuthenticated: s.isAuthenticated,
@@ -72,16 +74,18 @@ export default function App() {
   );
   const appMode = useAppMode();
   const offlineBypass = useAppStatusStore((s) => s.offlineBypass);
-  const canUseMainShell = isAuthenticated || hasSession;
+  const canUseMainShell = designPreview || isAuthenticated || hasSession;
   // Offline-only shell is the explicit "browse offline" choice from Login — NOT
   // a fallback for being logged out. An explicit logout always lands on <Login/>.
   const showOfflineOnlyShell = !canUseMainShell && offlineBypass;
 
   useEffect(() => {
+    if (designPreview) return;
     useYmImportStore.getState().initBridge();
-  }, []);
+  }, [designPreview]);
 
   useEffect(() => {
+    if (designPreview) return;
     const syncOnline = () => {
       const online = navigator.onLine;
       const appStatus = useAppStatusStore.getState();
@@ -98,9 +102,10 @@ export default function App() {
       window.removeEventListener('online', syncOnline);
       window.removeEventListener('offline', syncOnline);
     };
-  }, []);
+  }, [designPreview]);
 
   useEffect(() => {
+    if (designPreview) return;
     if (!hasSession || appMode !== 'online') {
       return;
     }
@@ -132,7 +137,7 @@ export default function App() {
     return () => {
       cancelled = true;
     };
-  }, [appMode, fetchUser, hasSession]);
+  }, [appMode, designPreview, fetchUser, hasSession]);
 
   return (
     <ThemeProvider>
@@ -150,12 +155,12 @@ export default function App() {
           },
         }}
       />
-      <SessionRecoveryModal />
-      <YMImportFloatingStatus />
+      {!designPreview && <SessionRecoveryModal />}
+      {!designPreview && <YMImportFloatingStatus />}
       <BrowserRouter>
         {/* Внутри Router ради navigate('/offline'); видны и над Login (он тоже в Router). */}
-        <HostStatusModal />
-        <HostStatusBanner />
+        {!designPreview && <HostStatusModal />}
+        {!designPreview && <HostStatusBanner />}
         {showOfflineOnlyShell ? (
           <Routes>
             <Route element={<AppShell />}>
@@ -306,13 +311,13 @@ function AppLoadingScreen({ fullscreen = false }: { fullscreen?: boolean }) {
     <div
       className={`flex items-center justify-center px-6 py-8 ${fullscreen ? 'h-screen' : 'min-h-[42vh]'}`}
     >
-      <div className="flex items-center gap-3 rounded-[24px] border border-white/8 bg-white/[0.035] px-4 py-3 shadow-[0_18px_44px_rgba(0,0,0,0.24)] backdrop-blur-[28px]">
-        <div className="flex size-10 items-center justify-center rounded-[16px] border border-accent/18 bg-accent/[0.10]">
+      <div className="flex items-center gap-3 border border-white/8 bg-[#111114] px-4 py-3">
+        <div className="flex size-9 items-center justify-center border border-white/10 bg-black/20">
           <div className="size-4 rounded-full border-2 border-accent border-t-transparent animate-spin" />
         </div>
         <div className="min-w-0">
-          <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/28">
-            SoundCloud
+          <div className="font-serif text-[10px] uppercase tracking-[0.28em] text-white/36">
+            Sonveil
           </div>
           <div className="mt-0.5 text-[13px] font-medium text-white/62">{t('common.loading')}</div>
         </div>

@@ -403,7 +403,22 @@
     "recommended": "Recommended For You",
     "startListening": "Start Listening",
     "startLikingTitle": "Like tracks — more music will appear here",
-    "startLikingDesc": "The more likes, the better recommendations and richer home page"
+    "startLikingDesc": "The more likes, the better recommendations and richer home page",
+    "editorial": {
+      "morningRotation": "Morning rotation",
+      "dayRotation": "Day rotation",
+      "nightRotation": "Night rotation",
+      "featuredRelease": "Featured release",
+      "featuredDescription": "A focused selection from your listening history, chosen for the hour.",
+      "independent": "Independent",
+      "playRelease": "Play release",
+      "recentlyPlayed": "Recently played",
+      "librarySelection": "Library selection",
+      "title": "Title",
+      "artist": "Artist",
+      "album": "Album",
+      "time": "Time"
+    }
   },
   "soundwave": {
     "tagline": "Your personal radio — picked just for you",
@@ -701,9 +716,17 @@
     "cancel": "Cancel",
     "close": "Close",
     "back": "Back",
+    "forward": "Forward",
+    "like": "Like",
+    "unlike": "Unlike",
     "empty": "Nothing here yet",
     "expand": "Read more",
     "collapse": "Collapse"
+  },
+  "window": {
+    "minimize": "Minimize",
+    "maximize": "Maximize",
+    "close": "Close"
   },
   "artist": {
     "title": "Artist",

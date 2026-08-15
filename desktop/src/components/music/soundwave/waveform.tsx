@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import { getCurrentTime, getDuration, seek, subscribe } from '../../../lib/audio';
-import {type PerfMode, usePerfMode} from '../../../lib/perf';
+import { type PerfMode, usePerfMode } from '../../../lib/perf';
 import { useTrackWaveform } from '../../../lib/waveform';
 import type { Track } from '../../../stores/player';
 
@@ -8,9 +8,9 @@ const BAR_COUNT = 160;
 
 /** Rendered bars per mode (drawn twice: muted + accent layer). */
 function barsForMode(mode: PerfMode): number {
-    if (mode === 'light') return 64;
-    if (mode === 'medium') return 120;
-    return BAR_COUNT;
+  if (mode === 'light') return 64;
+  if (mode === 'medium') return 120;
+  return BAR_COUNT;
 }
 
 /** Downsample SC waveform samples into BAR_COUNT averaged bars (0..1). */
@@ -35,9 +35,9 @@ function downsample(samples: number[], height: number, count: number): number[] 
 
 /** Decorative fallback pattern used during load / when SC has no waveform. */
 function fallbackBars(count: number): number[] {
-    const arr = new Array<number>(count);
-    for (let i = 0; i < count; i++) {
-        const x = i / count;
+  const arr = new Array<number>(count);
+  for (let i = 0; i < count; i++) {
+    const x = i / count;
     const base = 0.35 + 0.28 * Math.sin(x * Math.PI * 2);
     const detail = 0.18 * Math.sin(x * Math.PI * 14 + 1.3);
     arr[i] = Math.max(0.22, Math.min(0.95, base + detail));
@@ -50,6 +50,8 @@ interface Props {
   track: Track | null;
   /** Whether `track` is the one currently loaded in the audio engine. */
   isCurrent: boolean;
+  /** Optional fixed progress for non-playing visual previews. */
+  progressOverride?: number;
 }
 
 /**
@@ -58,14 +60,14 @@ interface Props {
  * audio tick — no React re-renders while the track plays.
  */
 export const LiveWaveform = React.memo(
-  function LiveWaveform({ track, isCurrent }: Props) {
+  function LiveWaveform({ track, isCurrent, progressOverride }: Props) {
     const { data: samples, isLoading } = useTrackWaveform(track);
-      const {mode} = usePerfMode();
-      const barCount = barsForMode(mode);
+    const { mode } = usePerfMode();
+    const barCount = barsForMode(mode);
 
     const bars = useMemo(() => {
-        if (!samples) return fallbackBars(barCount);
-        return downsample(samples.values, samples.height, barCount);
+      if (!samples) return fallbackBars(barCount);
+      return downsample(samples.values, samples.height, barCount);
     }, [samples, barCount]);
 
     const rootRef = useRef<HTMLDivElement>(null);
@@ -78,6 +80,12 @@ export const LiveWaveform = React.memo(
         return;
       }
       const paint = () => {
+        if (progressOverride != null) {
+          const pct = Math.min(100, Math.max(0, progressOverride));
+          if (rootRef.current) rootRef.current.style.setProperty('--sw-progress', `${pct}%`);
+          if (hintRef.current) hintRef.current.style.left = `${pct}%`;
+          return;
+        }
         const t = getCurrentTime();
         const d = getDuration();
         const pct = d > 0 ? Math.min(100, Math.max(0, (t / d) * 100)) : 0;
@@ -86,7 +94,7 @@ export const LiveWaveform = React.memo(
       };
       paint();
       return subscribe(paint);
-    }, [isCurrent]);
+    }, [isCurrent, progressOverride]);
 
     const handleBarClick = (e: React.MouseEvent<HTMLDivElement>) => {
       if (!isCurrent) return;
@@ -138,5 +146,8 @@ export const LiveWaveform = React.memo(
       </div>
     );
   },
-  (prev, next) => prev.track?.urn === next.track?.urn && prev.isCurrent === next.isCurrent,
+  (prev, next) =>
+    prev.track?.urn === next.track?.urn &&
+    prev.isCurrent === next.isCurrent &&
+    prev.progressOverride === next.progressOverride,
 );

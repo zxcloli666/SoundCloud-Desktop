@@ -1,0 +1,239 @@
+/* Sonveil's fixed transport is kept after the legacy global stylesheet so it
+   can replace the former floating glass dock without touching playback logic. */
+.npb {
+  height: 112px;
+  align-items: stretch;
+  justify-content: stretch;
+  padding: 0;
+  pointer-events: auto;
+  animation: none;
+  background: #0b0b0d;
+  border-top: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.npb-dock,
+.npb-dock.is-loading {
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.npb-content {
+  display: block;
+  height: 100%;
+  padding: 12px 22px;
+}
+
+.npb-row {
+  display: grid;
+  grid-template-columns: minmax(377px, 0.9fr) minmax(290px, 1.35fr) auto auto;
+  align-items: center;
+  gap: 24px;
+  height: 100%;
+}
+
+.npb-left,
+.npb-transport,
+.npb-tools {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.npb-left {
+  gap: 8px;
+}
+
+.npb-transport,
+.npb-tools {
+  gap: 2px;
+}
+
+.npb-transport {
+  transform: translateX(18px);
+}
+
+.npb-secondary-tools {
+  display: none;
+  align-items: center;
+}
+
+@media (min-width: 1600px) {
+  .npb-secondary-tools {
+    display: flex;
+  }
+}
+
+.npb .npb-labeled-tool {
+  width: auto;
+  gap: 6px;
+  padding-inline: 7px;
+  border-radius: 2px;
+  font-size: 10px;
+}
+
+.npb-meta {
+  gap: 18px;
+  min-width: 0;
+}
+
+.npb-art {
+  width: 80px;
+  height: 80px;
+  border-radius: 2px;
+  box-shadow: none;
+  transition: opacity 160ms ease;
+}
+
+.npb-art:hover {
+  transform: none;
+  opacity: 0.86;
+  box-shadow: none;
+}
+
+.npb-artfb {
+  background: #1b1b1e;
+}
+
+.npb-ring,
+.npb-eq {
+  display: none;
+}
+
+.npb-txt {
+  max-width: 210px;
+  gap: 4px;
+}
+
+.npb-ttl {
+  color: #f1eee8;
+  font-size: 13px;
+  font-weight: 620;
+}
+
+.npb-sub {
+  color: rgba(241, 238, 232, 0.48);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.npb-play {
+  width: 50px;
+  height: 50px;
+  margin: 0 4px;
+  border: 1px solid rgba(241, 238, 232, 0.84);
+  background: transparent;
+  box-shadow: none;
+}
+
+.npb-play:hover {
+  transform: none;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.npb-play:active {
+  transform: scale(0.96);
+}
+
+.npb-play::after,
+.npb-dock[data-playing="true"] .npb-play::after {
+  display: none;
+  animation: none;
+}
+
+.npb-lane {
+  min-width: 0;
+  gap: 3px;
+}
+
+.npb-waveform {
+  position: relative;
+  height: 38px;
+  min-width: 0;
+}
+
+.npb-waveform .sw-bars {
+  height: 38px;
+  opacity: 0.9;
+}
+
+.npb-waveform .sw-layer-muted,
+.npb-waveform .sw-layer-accent {
+  gap: 1px;
+}
+
+.npb-waveform .sw-bar {
+  min-height: 1px;
+  border-radius: 0;
+}
+
+.npb-progress-overlay {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+}
+
+.npb-times {
+  padding: 0;
+  color: rgba(241, 238, 232, 0.38);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 9px;
+  font-weight: 500;
+}
+
+.npb-times b {
+  color: rgba(241, 238, 232, 0.78);
+  font-weight: 500;
+}
+
+.npb-art-load {
+  inset: auto 4px 4px auto;
+  width: auto;
+  height: auto;
+  padding: 2px 4px;
+  border-radius: 2px;
+  background: rgba(9, 9, 11, 0.88);
+  color: rgba(241, 238, 232, 0.8);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 8px;
+  font-weight: 500;
+  text-shadow: none;
+}
+
+@media (max-width: 1180px) {
+  .npb-row {
+    grid-template-columns: minmax(230px, 0.8fr) minmax(220px, 1fr) auto;
+    gap: 16px;
+  }
+
+  .npb-tools {
+    display: none;
+  }
+
+  .npb-transport {
+    transform: none;
+  }
+}
+
+@media (max-width: 840px) {
+  .npb-content {
+    padding-inline: 14px;
+  }
+
+  .npb-row {
+    grid-template-columns: minmax(190px, 1fr) auto;
+  }
+
+  .npb-lane {
+    position: absolute;
+    right: 14px;
+    bottom: 5px;
+    left: 14px;
+  }
+
+  .npb-times {
+    display: none;
+  }
+}

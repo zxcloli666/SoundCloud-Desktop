@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import { useShallow } from 'zustand/shallow';
 import { changeAppLanguage } from '../../i18n';
 import { art } from '../../lib/formatters';
@@ -9,6 +9,7 @@ import {
   Compass,
   Download,
   Globe,
+  Heart,
   Home,
   Library,
   ListMusic,
@@ -28,44 +29,28 @@ type IconCmp = React.ComponentType<{ size?: number; strokeWidth?: number; classN
 const languages = [
   { code: 'en', label: 'English' },
   { code: 'ru', label: 'Русский' },
-  { code: 'tr', label: 'Turkce' },
+  { code: 'tr', label: 'Türkçe' },
 ] as const;
 
-const navItems: { to: string; icon: IconCmp; label: string }[] = [
+const primaryNav: { to: string; icon: IconCmp; label: string; tab?: string }[] = [
   { to: '/home', icon: Home, label: 'nav.home' },
   { to: '/search', icon: Search, label: 'nav.search' },
-  { to: '/discover', icon: Compass, label: 'nav.discover' },
   { to: '/library', icon: Library, label: 'nav.library' },
-  { to: '/offline', icon: Download, label: 'nav.offline' },
+  { to: '/library?tab=likes', icon: Heart, label: 'user.likes', tab: 'likes' },
+  { to: '/library?tab=playlists', icon: ListMusic, label: 'user.playlists', tab: 'playlists' },
 ];
 
-const ROW = 'group relative w-full flex items-center h-10 rounded-xl transition-all duration-200';
-const LABEL_T = 'max-width 320ms cubic-bezier(0.2,0.8,0.2,1), opacity 240ms ease';
+const ROW = 'group relative flex h-11 w-full items-center transition-colors duration-150';
 
-// Active = accent-glow glass pill (matches the header). Readable on any accent
-// because the accent is a translucent wash over dark glass, text stays white.
-const ACTIVE: React.CSSProperties = {
-  color: '#fff',
-  background:
-    'linear-gradient(180deg, var(--color-accent-glow), transparent), rgba(255,255,255,0.05)',
-  boxShadow: '0 0 18px var(--color-accent-glow), inset 0 0.5px 0 rgba(255,255,255,0.14)',
-};
-
-/** A label that always exists but folds away purely via CSS on collapse — no JS
- *  mount/unmount, so the sidebar width + labels glide together. */
-function Label({
-  collapsed,
-  children,
-  className,
-}: {
-  collapsed: boolean;
-  children: React.ReactNode;
-  className?: string;
-}) {
+function Label({ collapsed, children }: { collapsed: boolean; children: React.ReactNode }) {
   return (
     <span
-      className={`overflow-hidden whitespace-nowrap ${className ?? ''}`}
-      style={{ maxWidth: collapsed ? 0 : '142px', opacity: collapsed ? 0 : 1, transition: LABEL_T }}
+      className="overflow-hidden whitespace-nowrap text-[12.5px] font-medium"
+      style={{
+        maxWidth: collapsed ? 0 : 148,
+        opacity: collapsed ? 0 : 1,
+        transition: 'max-width 260ms var(--ease-apple), opacity 180ms ease',
+      }}
     >
       {children}
     </span>
@@ -73,7 +58,7 @@ function Label({
 }
 
 function IconBox({ children }: { children: React.ReactNode }) {
-  return <span className="w-10 shrink-0 flex items-center justify-center">{children}</span>;
+  return <span className="flex w-[54px] shrink-0 items-center justify-center">{children}</span>;
 }
 
 function NavItem({
@@ -81,140 +66,154 @@ function NavItem({
   icon: Icon,
   label,
   collapsed,
-  title,
+  active,
   alert,
 }: {
   to: string;
   icon: IconCmp;
   label: string;
   collapsed: boolean;
-  title?: string;
+  active: boolean;
   alert?: boolean;
 }) {
   return (
     <NavLink
       to={to}
-      title={title}
-      className={({ isActive }) =>
-        `${ROW} ${
-          isActive
-            ? ''
-            : alert
-              ? 'text-white/85 bg-accent/[0.08] ring-1 ring-accent/20 hover:text-white'
-              : 'text-white/45 hover:text-white/80 hover:bg-white/[0.05]'
-        }`
+      title={collapsed ? label : undefined}
+      aria-current={active ? 'page' : undefined}
+      className={`${ROW} ${active ? 'text-white' : alert ? 'text-accent' : 'text-white/46 hover:bg-white/[0.035] hover:text-white/80'}`}
+      style={
+        active
+          ? {
+              background: 'rgba(255,255,255,0.045)',
+              boxShadow: 'inset 3px 0 0 var(--color-accent)',
+            }
+          : undefined
       }
-      style={({ isActive }) => (isActive ? ACTIVE : undefined)}
     >
       <IconBox>
-        <Icon size={18} strokeWidth={1.9} />
+        <Icon size={17} strokeWidth={1.75} />
       </IconBox>
-      <Label collapsed={collapsed} className="text-[13px] font-medium pr-3">
-        {label}
-      </Label>
+      <Label collapsed={collapsed}>{label}</Label>
     </NavLink>
   );
 }
 
 export const Sidebar = React.memo(() => {
   const { t, i18n } = useTranslation();
-  const user = useAuthStore((s) => s.user);
+  const location = useLocation();
+  const user = useAuthStore((state) => state.user);
   const appMode = useAppMode();
   const { collapsed, pinnedPlaylists, toggleSidebar } = useSettingsStore(
-    useShallow((s) => ({
-      collapsed: s.sidebarCollapsed,
-      pinnedPlaylists: s.pinnedPlaylists,
-      toggleSidebar: s.toggleSidebar,
+    useShallow((state) => ({
+      collapsed: state.sidebarCollapsed,
+      pinnedPlaylists: state.pinnedPlaylists,
+      toggleSidebar: state.toggleSidebar,
     })),
   );
   const perf = usePerfMode();
-
-  const toggleLanguage = () => {
-    void changeAppLanguage(i18n.language === 'ru' ? 'en' : 'ru');
+  const params = new URLSearchParams(location.search);
+  const activeTab = params.get('tab');
+  const currentLang = languages.find((language) => language.code === i18n.language) ?? languages[0];
+  const toggleLanguage = () => void changeAppLanguage(i18n.language === 'ru' ? 'en' : 'ru');
+  const isPrimaryActive = (to: string, tab?: string) => {
+    const path = to.split('?')[0];
+    if (location.pathname !== path) return false;
+    if (path !== '/library') return true;
+    return tab ? activeTab === tab : !activeTab;
   };
-  const currentLang = languages.find((l) => l.code === i18n.language) ?? languages[0];
-
-  const btnCls = `${ROW} text-white/45 hover:text-white/80 hover:bg-white/[0.05] cursor-pointer`;
 
   return (
     <aside
-      className="shrink-0 flex flex-col h-full overflow-hidden border-r border-white/[0.05] pb-3 transition-[width] duration-300 ease-[var(--ease-apple)]"
+      className="sonveil-sidebar relative z-20 flex h-full shrink-0 flex-col overflow-hidden border-r border-white/[0.09] bg-[#0b0b0d]"
       style={{
-        width: collapsed ? 56 : 196,
-        transitionDuration: perf.mode === 'light' ? '0ms' : undefined,
+        width: collapsed ? 62 : 208,
+        transition: `width ${perf.mode === 'light' ? '0ms' : '280ms'} var(--ease-apple)`,
       }}
     >
-      <nav className="flex flex-col gap-0.5 px-2 pt-3">
-        {navItems.map((item) => (
+      <div className="flex h-[68px] shrink-0 items-center border-b border-white/[0.08]">
+        <span
+          className="flex h-full shrink-0 items-center overflow-hidden whitespace-nowrap font-serif text-[14px] tracking-[0.36em] text-[#f0ede6]"
+          style={{
+            width: collapsed ? 62 : 208,
+            justifyContent: collapsed ? 'center' : 'flex-start',
+            paddingLeft: collapsed ? 0 : 22,
+            transition: 'width 260ms var(--ease-apple), padding 260ms var(--ease-apple)',
+          }}
+        >
+          {collapsed ? 'S' : 'SONVEIL'}
+        </span>
+      </div>
+
+      <nav className="flex flex-col py-3">
+        {primaryNav.map((item) => (
           <NavItem
             key={item.to}
             to={item.to}
             icon={item.icon}
             label={t(item.label)}
             collapsed={collapsed}
-            title={collapsed ? t(item.label) : undefined}
-            alert={item.to === '/offline' && appMode !== 'online'}
+            active={isPrimaryActive(item.to, item.tab)}
           />
         ))}
       </nav>
 
-      <div className="px-2 pt-4 space-y-0.5">
-        {/* Section header — folds to a hairline divider when collapsed. */}
-        <div className="relative h-5 mx-1 mb-0.5">
-          <span
-            className="absolute inset-x-0 top-1/2 h-px"
-            style={{
-              background: 'rgba(255,255,255,0.07)',
-              opacity: collapsed ? 1 : 0,
-              transition: 'opacity 240ms ease',
-            }}
-          />
-          <span
-            className="absolute inset-0 flex items-center gap-2 px-2 text-[10px] uppercase tracking-[0.18em] text-white/25 font-semibold whitespace-nowrap"
-            style={{ opacity: collapsed ? 0 : 1, transition: 'opacity 240ms ease' }}
-          >
+      <div className="mx-4 border-t border-white/[0.075]" />
+      <div className="flex flex-col py-3">
+        {!collapsed && (
+          <p className="mb-1 px-[18px] text-[9px] font-semibold uppercase tracking-[0.16em] text-white/24">
             {t('sidebar.quickAccess')}
-          </span>
-        </div>
-
+          </p>
+        )}
+        <NavItem
+          to="/discover"
+          icon={Compass}
+          label={t('nav.discover')}
+          collapsed={collapsed}
+          active={location.pathname === '/discover'}
+        />
         <NavItem
           to="/library?tab=history"
           icon={Clock}
           label={t('library.history')}
           collapsed={collapsed}
-          title={collapsed ? t('library.history') : undefined}
+          active={location.pathname === '/library' && activeTab === 'history'}
+        />
+        <NavItem
+          to="/offline"
+          icon={Download}
+          label={t('nav.offline')}
+          collapsed={collapsed}
+          active={location.pathname === '/offline'}
+          alert={appMode !== 'online'}
         />
 
         {pinnedPlaylists.map((playlist) => {
           const artwork = art(playlist.artworkUrl, 'small');
+          const active = location.pathname === `/playlist/${encodeURIComponent(playlist.urn)}`;
           return (
             <NavLink
               key={playlist.urn}
               to={`/playlist/${encodeURIComponent(playlist.urn)}`}
               title={collapsed ? playlist.title : undefined}
-              className={({ isActive }) =>
-                `${ROW} ${
-                  isActive ? '' : 'text-white/45 hover:text-white/80 hover:bg-white/[0.05]'
-                }`
+              className={`${ROW} ${active ? 'text-white' : 'text-white/46 hover:bg-white/[0.035] hover:text-white/80'}`}
+              style={
+                active
+                  ? {
+                      background: 'rgba(255,255,255,0.045)',
+                      boxShadow: 'inset 3px 0 0 var(--color-accent)',
+                    }
+                  : undefined
               }
-              style={({ isActive }) => (isActive ? ACTIVE : undefined)}
             >
               <IconBox>
                 {artwork ? (
-                  <img
-                    src={artwork}
-                    alt=""
-                    className="w-[18px] h-[18px] rounded-[5px] object-cover ring-1 ring-white/[0.1]"
-                    decoding="async"
-                    loading="lazy"
-                  />
+                  <img src={artwork} alt="" className="size-[18px] rounded-[2px] object-cover" />
                 ) : (
-                  <ListMusic size={17} strokeWidth={1.9} />
+                  <ListMusic size={16} strokeWidth={1.75} />
                 )}
               </IconBox>
-              <Label collapsed={collapsed} className="text-[12.5px] font-medium pr-3">
-                {playlist.title}
-              </Label>
+              <Label collapsed={collapsed}>{playlist.title}</Label>
             </NavLink>
           );
         })}
@@ -222,66 +221,46 @@ export const Sidebar = React.memo(() => {
 
       <div className="flex-1" />
 
-      <div className="px-2 pb-1 flex flex-col gap-0.5">
+      <div className="border-t border-white/[0.075] py-2">
         <button
           type="button"
           onClick={toggleSidebar}
-          title={collapsed ? t('nav.expand') : undefined}
-          className={btnCls}
+          className={`${ROW} text-white/42 hover:bg-white/[0.035] hover:text-white/78`}
         >
           <IconBox>
-            {collapsed ? (
-              <PanelLeftOpen size={17} strokeWidth={1.9} />
-            ) : (
-              <PanelLeftClose size={17} strokeWidth={1.9} />
-            )}
+            {collapsed ? <PanelLeftOpen size={17} /> : <PanelLeftClose size={17} />}
           </IconBox>
-          <Label collapsed={collapsed} className="text-[12.5px] font-medium pr-3">
-            {t('nav.collapse')}
-          </Label>
+          <Label collapsed={collapsed}>{t('nav.collapse')}</Label>
         </button>
-
         <button
           type="button"
           onClick={toggleLanguage}
-          title={collapsed ? currentLang.label : undefined}
-          className={btnCls}
+          className={`${ROW} text-white/42 hover:bg-white/[0.035] hover:text-white/78`}
         >
           <IconBox>
-            <Globe size={17} strokeWidth={1.9} />
+            <Globe size={17} />
           </IconBox>
-          <Label collapsed={collapsed} className="text-[12.5px] font-medium pr-3">
-            {currentLang.label}
-          </Label>
+          <Label collapsed={collapsed}>{currentLang.label}</Label>
         </button>
-
         <NavItem
           to="/settings"
           icon={Settings}
           label={t('nav.settings')}
           collapsed={collapsed}
-          title={collapsed ? t('nav.settings') : undefined}
+          active={location.pathname === '/settings'}
         />
       </div>
 
       {user && (
-        <div className="px-2 pb-3">
-          <NavLink
-            to={`/user/${encodeURIComponent(user.urn)}`}
-            title={collapsed ? user.username : undefined}
-            className={({ isActive }) => `${ROW} ${isActive ? '' : 'hover:bg-white/[0.05]'}`}
-            style={({ isActive }) => (isActive ? ACTIVE : undefined)}
-          >
-            <span className="w-10 shrink-0 flex items-center justify-center">
-              <Avatar src={user.avatar_url} alt={user.username} size={26} />
-            </span>
-            <Label collapsed={collapsed} className="flex items-center gap-1.5 pr-3">
-              <span className="text-[12.5px] text-white/55 truncate font-medium">
-                {user.username}
-              </span>
-            </Label>
-          </NavLink>
-        </div>
+        <NavLink
+          to={`/user/${encodeURIComponent(user.urn)}`}
+          className={`${ROW} h-[58px] border-t border-white/[0.075] text-white/56 hover:bg-white/[0.035] hover:text-white/84`}
+        >
+          <IconBox>
+            <Avatar src={user.avatar_url} alt={user.username} size={28} />
+          </IconBox>
+          <Label collapsed={collapsed}>{user.username}</Label>
+        </NavLink>
       )}
     </aside>
   );

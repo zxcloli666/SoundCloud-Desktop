@@ -1,5 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import React, { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { api } from '../../lib/api';
 import { invalidateAllLikesCache } from '../../lib/hooks';
 import { Heart } from '../../lib/icons';
@@ -11,8 +12,9 @@ export const LikeButton = React.memo(function LikeButton({
   variant = 'inline',
 }: {
   track: Track;
-  variant?: 'overlay' | 'inline';
+  variant?: 'overlay' | 'inline' | 'editorial';
 }) {
+  const { t } = useTranslation();
   const liked = useLiked(track.urn);
 
   // Seed from API data when available
@@ -48,6 +50,19 @@ export const LikeButton = React.memo(function LikeButton({
         }`}
       >
         <Heart size={14} fill={liked ? 'currentColor' : 'none'} />
+      </button>
+    );
+  }
+
+  if (variant === 'editorial') {
+    return (
+      <button
+        type="button"
+        onClick={toggle}
+        className={`editorial-like-button ${liked ? 'is-liked' : ''}`}
+        aria-label={liked ? t('common.unlike') : t('common.like')}
+      >
+        <Heart size={15} fill={liked ? 'currentColor' : 'none'} />
       </button>
     );
   }
