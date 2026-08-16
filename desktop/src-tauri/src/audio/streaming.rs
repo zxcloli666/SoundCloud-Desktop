@@ -31,6 +31,38 @@ const RESOLVE_TIMEOUT: Duration = Duration::from_secs(5);
 const REQUEST_TIMEOUT: Duration = Duration::from_secs(6);
 const RETRY_DELAY: Duration = Duration::from_millis(180);
 
+/// Re-creatable view of the currently growing network buffer. Manual seeks use a
+/// fresh reader so a failed seek can never corrupt or drain the player that is
+/// already producing sound.
+#[derive(Clone)]
+pub(crate) struct ActiveStream {
+    buffer: StreamingBuffer,
+    mime: Option<String>,
+    byte_len: Option<u64>,
+}
+
+impl ActiveStream {
+    fn new(buffer: StreamingBuffer, mime: Option<String>, byte_len: Option<u64>) -> Self {
+        Self {
+            buffer,
+            mime,
+            byte_len,
+        }
+    }
+
+    pub(crate) fn reader(&self) -> StreamingReader {
+        self.buffer.reader()
+    }
+
+    pub(crate) fn mime(&self) -> Option<&str> {
+        self.mime.as_deref()
+    }
+
+    pub(crate) fn byte_len(&self) -> Option<u64> {
+        self.byte_len
+    }
+}
+
 fn retryable_status(status: reqwest::StatusCode) -> bool {
     status.as_u16() == 429 || status.is_server_error()
 }
@@ -86,12 +118,14 @@ async fn wait_for_start(
 async fn install_buffer(
     buffer: &StreamingBuffer,
     mime: Option<String>,
+    byte_len: Option<u64>,
     start_paused: bool,
     app: &AppHandle,
     generation: u64,
     state: &AudioState,
 ) -> Result<(), String> {
     wait_for_start(buffer, app, generation).await?;
+    let active_stream = ActiveStream::new(buffer.clone(), mime.clone(), byte_len);
     let reader = buffer.reader();
     let mixer = state.mixer.lock().unwrap().clone();
     let volume = *state.volume.lock().unwrap();
@@ -101,6 +135,7 @@ async fn install_buffer(
         create_player_from_stream(
             reader,
             mime.as_deref(),
+            byte_len,
             &mixer,
             volume,
             start_paused,
@@ -116,6 +151,7 @@ async fn install_buffer(
         return Err("load cancelled".to_string());
     }
     engine::install_streaming_player(state, player);
+    *state.active_stream.lock().unwrap() = Some(active_stream);
     Ok(())
 }
 
@@ -142,9 +178,10 @@ async fn try_direct_candidate(
     );
     let buffer = StreamingBuffer::new();
 
-    let (mime, producer): (Option<String>, JoinHandle<()>) = match candidate {
+    let (mime, byte_len, producer): (Option<String>, Option<u64>, JoinHandle<()>) = match candidate {
         Candidate::Progressive { mime, url, .. } => {
             let response = open_progressive(client, &url).await?;
+            let byte_len = response.content_length();
             let mime = (!mime.is_empty()).then_some(mime).or_else(|| {
                 response
                     .headers()
@@ -156,6 +193,7 @@ async fn try_direct_candidate(
             let task_buffer = buffer.clone();
             (
                 mime,
+                byte_len,
                 tokio::spawn(pump_response(response, task_buffer, producer_context)),
             )
         }
@@ -168,6 +206,7 @@ async fn try_direct_candidate(
             let task_client = client.clone();
             (
                 (!mime.is_empty()).then_some(mime),
+                None,
                 tokio::spawn(pump_hls(
                     task_client,
                     manifest_url,
@@ -179,7 +218,17 @@ async fn try_direct_candidate(
         Candidate::Unsupported => return Err("unsupported stream candidate".to_string()),
     };
 
-    match install_buffer(&buffer, mime, start_paused, app, generation, state).await {
+    match install_buffer(
+        &buffer,
+        mime,
+        byte_len,
+        start_paused,
+        app,
+        generation,
+        state,
+    )
+    .await
+    {
         Ok(()) => {
             engine::set_stream_task(state, producer);
             Ok(AudioStreamLoadResult {
@@ -344,6 +393,7 @@ pub async fn load(
                 .get("content-type")
                 .and_then(|value| value.to_str().ok())
                 .map(str::to_string);
+            let byte_len = response.content_length();
             let quality = if request.hq {
                 PlaybackQuality::Hq
             } else {
@@ -360,7 +410,17 @@ pub async fn load(
             );
             let buffer = StreamingBuffer::new();
             let producer = tokio::spawn(pump_response(response, buffer.clone(), producer_context));
-            match install_buffer(&buffer, mime, start_paused, &app, generation, &state).await {
+            match install_buffer(
+                &buffer,
+                mime,
+                byte_len,
+                start_paused,
+                &app,
+                generation,
+                &state,
+            )
+            .await
+            {
                 Ok(()) => {
                     engine::set_stream_task(&state, producer);
                     return Ok(AudioStreamLoadResult {

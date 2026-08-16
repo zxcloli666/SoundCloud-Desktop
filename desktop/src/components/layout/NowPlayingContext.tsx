@@ -3,14 +3,22 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { designPreviewTracks, isDesignPreview } from '../../lib/design-preview';
 import { art } from '../../lib/formatters';
-import { ListMusic, MicVocal, Play } from '../../lib/icons';
+import { ListMusic, MicVocal, Play, X } from '../../lib/icons';
 import { getArtistDisplay, getDisplayTitle } from '../../lib/track-display';
 import { useLyricsStore } from '../../stores/lyrics';
 import { usePlayerStore } from '../../stores/player';
 import { LikeButton } from '../music/LikeButton';
 
 export const NowPlayingContext = React.memo(
-  ({ onQueueToggle, queueOpen }: { onQueueToggle: () => void; queueOpen: boolean }) => {
+  ({
+    onQueueToggle,
+    queueOpen,
+    onClose,
+  }: {
+    onQueueToggle: () => void;
+    queueOpen: boolean;
+    onClose: () => void;
+  }) => {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const storeTrack = usePlayerStore((state) => state.currentTrack);
@@ -23,7 +31,23 @@ export const NowPlayingContext = React.memo(
 
     if (!track) {
       return (
-        <aside className="sonveil-context" aria-label={t('player.nowPlaying')}>
+        <aside
+          className="sonveil-context sonveil-context-drawer"
+          role="dialog"
+          aria-modal="false"
+          aria-label={t('player.nowPlaying')}
+        >
+          <header className="sonveil-context-header">
+            <span>{t('player.nowPlaying')}</span>
+            <button
+              type="button"
+              className="sonveil-context-close"
+              onClick={onClose}
+              aria-label={t('common.close')}
+            >
+              <X size={16} />
+            </button>
+          </header>
           <div className="sonveil-context-empty">
             <span>
               <Play size={18} fill="currentColor" />
@@ -43,10 +67,25 @@ export const NowPlayingContext = React.memo(
       : null;
 
     return (
-      <aside className="sonveil-context" aria-label={t('player.nowPlaying')}>
+      <aside
+        className="sonveil-context sonveil-context-drawer"
+        role="dialog"
+        aria-modal="false"
+        aria-label={t('player.nowPlaying')}
+      >
         <header className="sonveil-context-header">
           <span>{t('player.nowPlaying')}</span>
-          <LikeButton track={track} variant="editorial" />
+          <div className="sonveil-context-header-actions">
+            <LikeButton track={track} variant="editorial" />
+            <button
+              type="button"
+              className="sonveil-context-close"
+              onClick={onClose}
+              aria-label={t('common.close')}
+            >
+              <X size={16} />
+            </button>
+          </div>
         </header>
 
         <button
@@ -66,7 +105,13 @@ export const NowPlayingContext = React.memo(
         </div>
 
         <div className="sonveil-context-actions">
-          <button type="button" onClick={() => openLyrics({ rightPanelOpen: false })}>
+          <button
+            type="button"
+            onClick={() => {
+              onClose();
+              openLyrics({ rightPanelOpen: false });
+            }}
+          >
             <MicVocal size={16} />
             <span>{t('track.lyrics')}</span>
           </button>

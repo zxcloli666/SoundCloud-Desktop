@@ -5,7 +5,9 @@ use std::time::Duration;
 use tauri::State;
 use tokio::task;
 
-use crate::audio::decode::{create_player_from_bytes, resolve_normalization_gain};
+use crate::audio::decode::{
+    create_player_from_bytes, create_player_from_stream, resolve_normalization_gain,
+};
 use crate::audio::state::AudioState;
 use crate::audio::types::{AudioLoadResult, MediaCmd, EQ_BANDS, STALL_SUPPRESS_MS, TICK_INTERVAL_MS};
 
@@ -47,6 +49,7 @@ fn stop_current_player(state: &AudioState) {
     if let Some(old) = player.take() {
         old.stop();
     }
+    *state.active_stream.lock().unwrap() = None;
 }
 
 fn apply_current_rate(state: &AudioState, player: &rodio::Player) {
@@ -385,6 +388,9 @@ pub fn stop(state: State<'_, AudioState>) {
     if let Ok(mut bytes) = state.source_bytes.try_lock() {
         *bytes = None;
     }
+    if let Ok(mut stream) = state.active_stream.try_lock() {
+        *stream = None;
+    }
 }
 
 pub fn seek(position: f64, state: State<'_, AudioState>) -> Result<(), String> {
@@ -398,11 +404,16 @@ pub fn seek(position: f64, state: State<'_, AudioState>) -> Result<(), String> {
 /// take effect (the manual slider, the A-B loop snap-back in tick.rs) must route
 /// through here. Takes `&AudioState` so the tick thread can call it without `State`.
 pub fn seek_to(state: &AudioState, position: f64) -> Result<(), String> {
+    if !position.is_finite() {
+        return Err("Invalid seek position".into());
+    }
+
     // `position` is in source seconds (the timeline the whole app uses). rodio's
     // try_seek operates in output time = source/rate on a speed-applied player, so
     // convert before handing it the target.
     let rate = current_rate(state);
-    let output_target = (position / rate).max(0.0);
+    let position = position.max(0.0);
+    let output_target = position / rate;
     let target = Duration::from_secs_f64(output_target);
     let was_paused = state
         .player
@@ -411,6 +422,53 @@ pub fn seek_to(state: &AudioState, position: f64) -> Result<(), String> {
         .as_ref()
         .map(|player| player.is_paused())
         .unwrap_or(false);
+
+    // Never probe a growing decoder in place. Some formats leave the decoder at EOF
+    // after an unsupported/out-of-buffer seek; the tick thread then mistakes that
+    // for a real track end and advances the queue. Build and seek a candidate player
+    // from a fresh reader, and swap it in only after the seek succeeds.
+    let has_complete_source = state.source_bytes.lock().unwrap().is_some();
+    let active_stream = if has_complete_source {
+        None
+    } else {
+        state.active_stream.lock().unwrap().clone()
+    };
+    if let Some(active_stream) = active_stream {
+        if active_stream.byte_len().is_none() {
+            return Err("The stream is still buffering and cannot seek safely yet".into());
+        }
+        let mixer = state.mixer.lock().unwrap().clone();
+        let vol = *state.volume.lock().unwrap();
+        let new_player = create_player_from_stream(
+            active_stream.reader(),
+            active_stream.mime(),
+            active_stream.byte_len(),
+            &mixer,
+            vol,
+            true,
+            state.eq_params.clone(),
+            state.analyser_buffer.clone(),
+        )?;
+        apply_current_rate(state, &new_player);
+        if position > 0.0
+            && let Err(error) = new_player.try_seek(target)
+        {
+            new_player.stop();
+            return Err(format!("Seek target is not buffered yet: {error}"));
+        }
+
+        let mut player = state.player.lock().unwrap();
+        if let Some(old) = player.take() {
+            old.stop();
+        }
+        if !was_paused {
+            new_player.play();
+        }
+        *player = Some(new_player);
+        set_pos_anchor(state, position, output_target);
+        state.ended_notified.store(false, Ordering::Relaxed);
+        return Ok(());
+    }
 
     // For position 0, always recreate the player to avoid decoder state issues
     if position > 0.0 {

@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
-import { AuraField } from '../components/user/AuraField';
 import { IdentityHub } from '../components/user/IdentityHub';
 import { USER_PAGE_KEYFRAMES } from '../components/user/keyframes';
 import { TabDock, type TabId } from '../components/user/TabDock';
@@ -19,7 +18,6 @@ import { useEditableUserAura, useUserAura } from '../components/user/useUserAura
 import { useUser, useUserWebProfiles } from '../lib/hooks';
 import { Loader2 } from '../lib/icons';
 import { likedTracksCount } from '../lib/likes';
-import { usePerfMode } from '../lib/perf';
 import { useAuthStore } from '../stores/auth';
 
 /**
@@ -39,7 +37,6 @@ function searchableScopeLabelKey(tab: TabId): string {
 export function UserPage() {
   const { urn } = useParams<{ urn: string }>();
   const { t } = useTranslation();
-  const perf = usePerfMode();
   const currentUser = useAuthStore((s) => s.user);
 
   const [activeTab, setActiveTab] = useState<TabId>('popular');
@@ -99,13 +96,8 @@ export function UserPage() {
   return (
     <>
       <style>{USER_PAGE_KEYFRAMES}</style>
-      <div className="relative w-full min-h-screen">
-        <AuraField aura={aura} isStar={hasStar} />
-
-        <div
-          className="relative z-10 w-full max-w-[1480px] mx-auto px-4 md:px-8 pt-10 md:pt-16 pb-32"
-          style={{ isolation: 'isolate' }}
-        >
+      <div className="sonveil-detail-page">
+        <div className="sonveil-detail-content" style={{ isolation: 'isolate' }}>
           <IdentityHub
             user={user}
             hasStar={hasStar}
@@ -129,21 +121,7 @@ export function UserPage() {
             </div>
           </div>
 
-          <div
-            className="rounded-[2rem] p-3 md:p-5"
-            style={{
-              background:
-                perf.blur(28) > 0
-                  ? 'linear-gradient(180deg, rgba(255,255,255,0.035) 0%, rgba(255,255,255,0.015) 100%)'
-                  : 'rgba(18,18,22,0.85)',
-              backdropFilter:
-                perf.blur(28) > 0 ? `blur(${perf.blur(28)}px) saturate(160%)` : undefined,
-              WebkitBackdropFilter:
-                perf.blur(28) > 0 ? `blur(${perf.blur(28)}px) saturate(160%)` : undefined,
-              boxShadow:
-                '0 30px 80px rgba(0,0,0,0.30), inset 0 0 0 1px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.05)',
-            }}
-          >
+          <div className="sonveil-detail-surface">
             {(() => {
               const searching = !!debouncedSearch && isSearchableScope(activeTab);
               if (searching && (activeTab === 'tracks' || activeTab === 'popular')) {

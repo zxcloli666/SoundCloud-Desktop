@@ -73,12 +73,11 @@ async fn commit_finished(buffer: &StreamingBuffer, context: &ProducerContext) {
 
     // Device reconnects and seeks can rebuild from memory as soon as the transfer
     // completes, even if the disk cache/transcode is still catching up.
-    *context
-        .app
-        .state::<AudioState>()
-        .source_bytes
-        .lock()
-        .unwrap() = Some(data.clone());
+    let audio = context.app.state::<AudioState>();
+    *audio.source_bytes.lock().unwrap() = Some(data.clone());
+    // The complete byte source is now the canonical seek fallback. Dropping this
+    // handle only releases our extra Arc; the live decoder keeps its own reader.
+    *audio.active_stream.lock().unwrap() = None;
 
     if let Err(error) = context
         .cache

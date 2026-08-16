@@ -46,6 +46,7 @@ let cachedTime = 0;
 let cachedDuration = 0;
 let downloadProgress: number | null = null;
 let loadGen = 0;
+let seekGen = 0;
 let lastEndedUrn: string | null = null;
 let metadataAbort: AbortController | null = null;
 const listeners = new Set<() => void>();
@@ -94,10 +95,26 @@ function setDownloadProgress(value: number | null): void {
 
 export function seek(seconds: number) {
   if (!hasTrack) return;
-  invoke('audio_seek', { position: seconds }).catch(console.error);
-  cachedTime = seconds;
+  const position = Math.max(0, Math.min(seconds, cachedDuration || fallbackDuration || seconds));
+  const gen = ++seekGen;
+  cachedTime = position;
   notify();
-  setTimeout(() => updateMediaPosition(), 150);
+  void invoke('audio_seek', { position })
+    .then(() => {
+      if (gen === seekGen) updateMediaPosition();
+    })
+    .catch((error) => {
+      console.warn('[Audio] seek rejected:', error);
+      if (gen !== seekGen) return;
+      void invoke<number>('audio_get_position')
+        .then((actualPosition) => {
+          if (gen !== seekGen) return;
+          cachedTime = actualPosition;
+          notify();
+          updateMediaPosition();
+        })
+        .catch(console.error);
+    });
 }
 
 export function handlePrev() {
@@ -111,6 +128,7 @@ export function handlePrev() {
 /* ── Native audio control ────────────────────────────────────── */
 
 async function stopTrack() {
+  seekGen += 1;
   await invoke('audio_stop').catch(console.error);
   hasTrack = false;
   cachedTime = 0;

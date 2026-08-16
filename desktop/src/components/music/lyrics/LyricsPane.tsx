@@ -74,7 +74,8 @@ export const LyricsPane = React.memo(({ track }: { track: Track }) => {
   const { t } = useTranslation();
   const [isEditing, setIsEditing] = useState(false);
   const [manualQuery, setManualQuery] = useState<{ artist: string; title: string } | null>(null);
-  const [transcriptionRequested, setTranscriptionRequested] = useState(false);
+  const [transcriptionAttempt, setTranscriptionAttempt] = useState(0);
+  const transcriptionRequested = transcriptionAttempt > 0;
   const display = getTrackDisplay(track);
   const artist = display.artistLine || track.user.username;
 
@@ -82,7 +83,7 @@ export const LyricsPane = React.memo(({ track }: { track: Track }) => {
   useEffect(() => {
     setManualQuery(null);
     setIsEditing(false);
-    setTranscriptionRequested(false);
+    setTranscriptionAttempt(0);
   }, [track.urn]);
 
   const {
@@ -95,7 +96,7 @@ export const LyricsPane = React.memo(({ track }: { track: Track }) => {
     queryKey: manualQuery
       ? ['lyrics', 'search', manualQuery.artist, manualQuery.title, track.duration]
       : transcriptionRequested
-        ? ['lyrics', 'transcription', track.urn]
+        ? ['lyrics', 'transcription', track.urn, transcriptionAttempt]
         : ['lyrics', 'track', track.urn],
     queryFn: ({ signal }) =>
       manualQuery
@@ -124,7 +125,7 @@ export const LyricsPane = React.memo(({ track }: { track: Track }) => {
   });
 
   const startSearch = () => {
-    setTranscriptionRequested(false);
+    setTranscriptionAttempt(0);
     setIsEditing(true);
     if (!manualQuery) {
       setManualQuery(
@@ -143,7 +144,7 @@ export const LyricsPane = React.memo(({ track }: { track: Track }) => {
         initialTitle={initialTitle}
         onCancel={() => setIsEditing(false)}
         onSubmit={(artist, title) => {
-          setTranscriptionRequested(false);
+          setTranscriptionAttempt(0);
           setManualQuery({ artist, title });
           setIsEditing(false);
         }}
@@ -151,7 +152,7 @@ export const LyricsPane = React.memo(({ track }: { track: Track }) => {
     );
   }
 
-  if (isLoading) {
+  if (isLoading || (transcriptionRequested && isFetching)) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center gap-3">
         <Loader2 size={24} className="animate-spin text-white/15" />
@@ -174,11 +175,16 @@ export const LyricsPane = React.memo(({ track }: { track: Track }) => {
           <Search size={14} />
         </button>
         <MicVocal size={40} className="text-white/[0.06]" />
-        <p className="text-[15px] text-white/30 font-medium">{t('common.error')}</p>
+        <p className="text-[15px] text-white/30 font-medium">
+          {t(transcriptionRequested ? 'track.lyricsTranscriptionFailed' : 'common.error')}
+        </p>
         <button
           type="button"
           disabled={isFetching}
-          onClick={() => void refetch()}
+          onClick={() => {
+            if (transcriptionRequested) setTranscriptionAttempt((attempt) => attempt + 1);
+            else void refetch();
+          }}
           className="px-5 py-2 rounded-full text-[13px] font-medium text-white/60 bg-white/10 hover:text-white hover:bg-white/15 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
         >
           {t('common.retry')}
@@ -218,22 +224,23 @@ export const LyricsPane = React.memo(({ track }: { track: Track }) => {
       <MicVocal size={40} className="text-white/[0.06]" />
       <p className="text-[15px] text-white/30 font-medium">{t('track.lyricsNotFound')}</p>
       <p className="text-[12px] text-white/15 leading-relaxed max-w-[300px]">
-        {t('track.lyricsNotFoundHint')}
+        {t(
+          transcriptionRequested
+            ? 'track.lyricsTranscriptionUnavailable'
+            : 'track.lyricsNotFoundHint',
+        )}
       </p>
       <button
         type="button"
         disabled={isFetching}
         onClick={() => {
-          if (transcriptionRequested) void refetch();
-          else {
-            setManualQuery(null);
-            setTranscriptionRequested(true);
-          }
+          setManualQuery(null);
+          setTranscriptionAttempt((attempt) => attempt + 1);
         }}
         className="inline-flex items-center gap-2 px-5 py-2 rounded-full text-[13px] font-medium text-white/60 bg-white/[0.08] hover:text-white hover:bg-white/[0.13] transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
       >
         <Sparkles size={14} />
-        {t('track.lyricsTranscribe')}
+        {t(transcriptionRequested ? 'track.lyricsTranscribeRetry' : 'track.lyricsTranscribe')}
       </button>
     </div>
   );

@@ -354,15 +354,21 @@ pub fn create_player_from_bytes(
 pub fn create_player_from_stream(
     reader: crate::audio::streaming::StreamingReader,
     mime: Option<&str>,
+    byte_len: Option<u64>,
     mixer: &Mixer,
     volume: f32,
     start_paused: bool,
     eq_params: Arc<RwLock<EqParams>>,
     analyser_buffer: Arc<AnalyserBuffer>,
 ) -> Result<Player, String> {
-    let builder = Decoder::builder()
-        .with_data(reader)
-        .with_seekable(false);
+    let builder = Decoder::builder().with_data(reader);
+    // Content-Length makes progressive MP3/AAC seeking reliable. HLS/chunked
+    // responses have no trustworthy byte length, so keep them non-seekable until
+    // the producer commits the complete byte source.
+    let builder = match byte_len {
+        Some(byte_len) => builder.with_byte_len(byte_len),
+        None => builder.with_seekable(false),
+    };
     let source = match mime {
         Some(mime) if !mime.is_empty() => builder.with_mime_type(mime).build(),
         _ => builder.build(),

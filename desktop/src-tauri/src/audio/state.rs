@@ -7,6 +7,7 @@ use rodio::Player;
 
 use crate::audio::analyser::AnalyserBuffer;
 use crate::audio::device::open_device_sink;
+use crate::audio::streaming::ActiveStream;
 use crate::audio::types::{
     AudioThreadCmd, EqParams, FloatingCommentEvent, LyricsTimingLine, MediaCmd,
 };
@@ -65,6 +66,9 @@ pub struct AudioState {
     pub media_tx: Mutex<Option<std::sync::mpsc::Sender<MediaCmd>>>,
     pub audio_tx: std::sync::mpsc::Sender<AudioThreadCmd>,
     pub source_bytes: Mutex<Option<Vec<u8>>>,
+    /// The growing source behind the fast-start player. Kept separately so seek can
+    /// probe a fresh reader without touching the live decoder.
+    pub(crate) active_stream: Mutex<Option<ActiveStream>>,
     /// Background producer feeding the growing fast-start buffer. Aborted on
     /// track changes so a skipped track cannot keep consuming bandwidth.
     pub stream_task: Mutex<Option<tokio::task::JoinHandle<()>>>,
@@ -168,6 +172,7 @@ pub fn init() -> AudioState {
         media_tx: Mutex::new(None),
         audio_tx: cmd_tx,
         source_bytes: Mutex::new(None),
+        active_stream: Mutex::new(None),
         stream_task: Mutex::new(None),
         follow_default_output: AtomicBool::new(true),
         last_known_default_output: Mutex::new(None),

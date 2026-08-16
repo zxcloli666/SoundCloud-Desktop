@@ -235,6 +235,9 @@
     "lyricsLoading": "Searching lyrics...",
     "lyricsTranscribing": "Creating a transcription...",
     "lyricsTranscribe": "Transcribe with AI",
+    "lyricsTranscribeRetry": "Try transcribing again",
+    "lyricsTranscriptionUnavailable": "The server could not create a transcription for this track. You can retry or use manual search.",
+    "lyricsTranscriptionFailed": "Could not start AI transcription",
     "hidePanel": "Hide panel",
     "showPanel": "Show panel",
     "manualSearch": "Manual Search",
@@ -345,6 +348,13 @@
     }
   },
   "library": {
+    "yourMusic": "Your music",
+    "featuredAlbum": "Your collection",
+    "playAlbum": "Play",
+    "recentTracks": "Recent tracks",
+    "noAlbums": "No albums or singles in your library yet",
+    "trackCount_one": "{{count}} track",
+    "trackCount_other": "{{count}} tracks",
     "soundprint": "Your soundprint",
     "playYourSound": "Play your sound",
     "greetMorning": "Good morning, {{name}}",

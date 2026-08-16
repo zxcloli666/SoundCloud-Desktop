@@ -154,4 +154,19 @@ mod tests {
         let mut reader = buffer.reader();
         assert!(reader.seek(SeekFrom::Start(8)).is_err());
     }
+
+    #[test]
+    fn growing_reader_can_rewind_inside_buffered_bytes() {
+        let buffer = StreamingBuffer::new();
+        buffer.push(b"abcdef");
+        let mut reader = buffer.reader();
+        let mut first = [0u8; 4];
+        reader.read_exact(&mut first).unwrap();
+        assert_eq!(&first, b"abcd");
+
+        reader.seek(SeekFrom::Start(1)).unwrap();
+        let mut replayed = [0u8; 2];
+        reader.read_exact(&mut replayed).unwrap();
+        assert_eq!(&replayed, b"bc");
+    }
 }

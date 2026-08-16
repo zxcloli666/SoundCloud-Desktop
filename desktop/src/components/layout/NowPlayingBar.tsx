@@ -20,6 +20,7 @@ import { art, formatTime } from '../../lib/formatters';
 import { invalidateAllLikesCache } from '../../lib/hooks';
 import {
   audioLines16,
+  Disc3,
   Heart,
   listMusic16,
   MicVocal,
@@ -631,6 +632,23 @@ const QueueBtn = React.memo(({ onClick, active }: { onClick: () => void; active:
   );
 });
 
+const ContextBtn = React.memo(({ onClick, active }: { onClick: () => void; active: boolean }) => {
+  const { t } = useTranslation();
+  return (
+    <button
+      type="button"
+      title={t('player.nowPlaying')}
+      aria-label={t('player.nowPlaying')}
+      aria-pressed={active}
+      onClick={onClick}
+      className={`${btnClass(active, 'sm')} npb-labeled-tool`}
+    >
+      <Disc3 size={16} />
+      <span>{t('player.nowPlaying')}</span>
+    </button>
+  );
+});
+
 const LyricsBtn = React.memo(() => {
   const { t } = useTranslation();
   const open = useLyricsStore((s) => s.open);
@@ -886,38 +904,60 @@ const TuningBtn = React.memo(() => {
 
 /* ── Track meta (art + title) for the pill ───────────────────── */
 
-const PillTrack = React.memo(({ loadProgress }: { loadProgress: number | null }) => {
-  const { t } = useTranslation();
-  const navigate = useNavigate();
-  const storeTrack = usePlayerStore((s) => s.currentTrack);
-  const currentTrack = isDesignPreview() ? designPreviewTracks[0] : storeTrack;
+const PillTrack = React.memo(
+  ({
+    loadProgress,
+    onContextToggle,
+    contextOpen,
+  }: {
+    loadProgress: number | null;
+    onContextToggle: () => void;
+    contextOpen: boolean;
+  }) => {
+    const { t } = useTranslation();
+    const navigate = useNavigate();
+    const storeTrack = usePlayerStore((s) => s.currentTrack);
+    const currentTrack = isDesignPreview() ? designPreviewTracks[0] : storeTrack;
 
-  if (!currentTrack) {
+    if (!currentTrack) {
+      return (
+        <div className="npb-meta">
+          <div className="npb-art">
+            <div className="npb-artfb" />
+          </div>
+          <div className="npb-txt">
+            <span className="npb-sub">{t('player.notPlaying')}</span>
+          </div>
+        </div>
+      );
+    }
+
     return (
-      <div className="npb-meta">
-        <div className="npb-art">
-          <div className="npb-artfb" />
-        </div>
-        <div className="npb-txt">
-          <span className="npb-sub">{t('player.notPlaying')}</span>
-        </div>
-      </div>
+      <PillTrackBody
+        track={currentTrack}
+        navigate={navigate}
+        loadProgress={loadProgress}
+        onContextToggle={onContextToggle}
+        contextOpen={contextOpen}
+      />
     );
-  }
-
-  return <PillTrackBody track={currentTrack} navigate={navigate} loadProgress={loadProgress} />;
-});
+  },
+);
 
 const PillTrackBody = React.memo(function PillTrackBody({
   track,
   navigate,
   loadProgress,
+  onContextToggle,
+  contextOpen,
 }: {
   track: Track;
   navigate: ReturnType<typeof useNavigate>;
   loadProgress: number | null;
+  onContextToggle: () => void;
+  contextOpen: boolean;
 }) {
-  const openLyricsPanel = useLyricsStore((s) => s.openPanel);
+  const { t } = useTranslation();
   const artistDisplay = useArtistDisplay(track);
   const displayTitle = useDisplayTitle(track);
   const artistLinks = useArtistLinkItems(track);
@@ -926,7 +966,13 @@ const PillTrackBody = React.memo(function PillTrackBody({
 
   return (
     <div className="npb-meta">
-      <div className="npb-art" onClick={() => openLyricsPanel({ rightPanelOpen: false })}>
+      <button
+        type="button"
+        className="npb-art"
+        onClick={onContextToggle}
+        aria-label={t('player.nowPlaying')}
+        aria-pressed={contextOpen}
+      >
         {artworkSmall ? <img src={artworkSmall} alt="" /> : <div className="npb-artfb" />}
         {/* spinning vinyl ring + live "playing" equaliser — animated only while playing */}
         <span className="npb-ring" />
@@ -937,7 +983,7 @@ const PillTrackBody = React.memo(function PillTrackBody({
           <i />
         </span>
         {loadProgress != null && <div className="npb-art-load">{loadPercent(loadProgress)}%</div>}
-      </div>
+      </button>
       <div className="npb-txt">
         <span
           className="npb-ttl"
@@ -1019,7 +1065,17 @@ function useDocHidden(): boolean {
 /* ── NowPlayingBar ───────────────────────────────────────────── */
 
 export const NowPlayingBar = React.memo(
-  ({ onQueueToggle, queueOpen }: { onQueueToggle: () => void; queueOpen: boolean }) => {
+  ({
+    onQueueToggle,
+    queueOpen,
+    onContextToggle,
+    contextOpen,
+  }: {
+    onQueueToggle: () => void;
+    queueOpen: boolean;
+    onContextToggle: () => void;
+    contextOpen: boolean;
+  }) => {
     const isPlaying = usePlayerStore((s) => s.isPlaying);
     const hidden = useDocHidden();
     const playingNow = isPlaying && !hidden;
@@ -1035,7 +1091,11 @@ export const NowPlayingBar = React.memo(
           <div className="npb-content">
             <div className="npb-row">
               <div className="npb-left">
-                <PillTrack loadProgress={loadProgress} />
+                <PillTrack
+                  loadProgress={loadProgress}
+                  onContextToggle={onContextToggle}
+                  contextOpen={contextOpen}
+                />
                 <ReactCluster />
               </div>
 
@@ -1058,6 +1118,7 @@ export const NowPlayingBar = React.memo(
                   <TuningBtn />
                   <EqBtn />
                 </div>
+                <ContextBtn onClick={onContextToggle} active={contextOpen} />
                 <QueueBtn onClick={onQueueToggle} active={queueOpen} />
                 <LyricsBtn />
                 <ControlVolumeBtn size="sm" />

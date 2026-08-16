@@ -1,32 +1,30 @@
-import type {DragEndEvent} from '@dnd-kit/core';
+import type { DragEndEvent } from '@dnd-kit/core';
 import * as Dialog from '@radix-ui/react-dialog';
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {useTranslation} from 'react-i18next';
-import {useNavigate, useParams} from 'react-router-dom';
-import {toast} from 'sonner';
-import {useShallow} from 'zustand/shallow';
-import {CrateLedger} from '../components/playlist/CrateLedger';
-import {PLAYLIST_KEYFRAMES} from '../components/playlist/keyframes';
-import {MoreCrates} from '../components/playlist/MoreCrates';
-import {PlaylistHero} from '../components/playlist/PlaylistHero';
-import {SequenceList} from '../components/playlist/SequenceList';
-import {SetRibbon} from '../components/playlist/SetRibbon';
-import {usePlaylistAura} from '../components/playlist/usePlaylistAura';
-import {Atmosphere} from '../components/search/Atmosphere';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useNavigate, useParams } from 'react-router-dom';
+import { toast } from 'sonner';
+import { useShallow } from 'zustand/shallow';
+import { CrateLedger } from '../components/playlist/CrateLedger';
+import { PLAYLIST_KEYFRAMES } from '../components/playlist/keyframes';
+import { MoreCrates } from '../components/playlist/MoreCrates';
+import { PlaylistHero } from '../components/playlist/PlaylistHero';
+import { SequenceList } from '../components/playlist/SequenceList';
+import { SetRibbon } from '../components/playlist/SetRibbon';
+import { usePlaylistAura } from '../components/playlist/usePlaylistAura';
 import {
-    useDeletePlaylist,
-    useInfiniteScroll,
-    usePlaylist,
-    usePlaylistTracks,
-    useUpdatePlaylistTracks,
+  useDeletePlaylist,
+  useInfiniteScroll,
+  usePlaylist,
+  usePlaylistTracks,
+  useUpdatePlaylistTracks,
 } from '../lib/hooks';
-import {AlertCircle, ChevronLeft, X} from '../lib/icons';
-import {usePerfMode} from '../lib/perf';
-import {rawPlaylistCover} from '../lib/playlist-cover';
-import {armPlaylistContinuation} from '../lib/queue-continuation';
-import {useAuthStore} from '../stores/auth';
-import {type Track, usePlayerStore} from '../stores/player';
-import {useSettingsStore} from '../stores/settings';
+import { AlertCircle, ChevronLeft, X } from '../lib/icons';
+import { rawPlaylistCover } from '../lib/playlist-cover';
+import { armPlaylistContinuation } from '../lib/queue-continuation';
+import { useAuthStore } from '../stores/auth';
+import { type Track, usePlayerStore } from '../stores/player';
+import { useSettingsStore } from '../stores/settings';
 
 function HeroSkeleton() {
   return (
@@ -48,7 +46,6 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
   const { urn } = useParams<{ urn: string }>();
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const perf = usePerfMode();
   const myUrn = useAuthStore((s) => s.user?.urn);
 
   const { data: playlist, isLoading: playlistLoading } = usePlaylist(urn);
@@ -214,13 +211,9 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
 
   if (isLoading || !playlist) {
     return (
-      <div className="relative min-h-full w-full">
+      <div className="sonveil-detail-page">
         <style>{PLAYLIST_KEYFRAMES}</style>
-        {perf.atmosphere && <Atmosphere />}
-        <div
-          className="relative z-10 max-w-[1320px] mx-auto px-4 md:px-8 pt-5 pb-10"
-          style={{ isolation: 'isolate' }}
-        >
+        <div className="sonveil-detail-content" style={{ isolation: 'isolate' }}>
           <HeroSkeleton />
         </div>
       </div>
@@ -230,19 +223,10 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
   const trackCount = playlist.track_count || tracks.length;
 
   return (
-    <div className="relative min-h-full w-full">
+    <div className="sonveil-detail-page">
       <style>{PLAYLIST_KEYFRAMES}</style>
-      {perf.atmosphere && (
-        <Atmosphere
-          tint={aura.tint}
-          energy={isPlayingFromThis ? Math.min(1, aura.energy + 0.12) : aura.energy}
-        />
-      )}
 
-      <div
-        className="relative z-10 max-w-[1320px] mx-auto px-4 md:px-8 pt-5 pb-10 space-y-7"
-        style={{ isolation: 'isolate' }}
-      >
+      <div className="sonveil-detail-content space-y-7" style={{ isolation: 'isolate' }}>
         <button
           type="button"
           onClick={() => navigate(-1)}

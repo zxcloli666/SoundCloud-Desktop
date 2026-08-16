@@ -1,25 +1,26 @@
-import {Lock} from 'lucide-react';
+import { Lock } from 'lucide-react';
 import React from 'react';
-import {useTranslation} from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import {fc} from '../../lib/formatters';
+import { fc } from '../../lib/formatters';
 import type { Playlist } from '../../lib/hooks';
 import { Heart, ListMusic, Play, pauseBlack22 } from '../../lib/icons';
 import { useAutoHide } from '../../lib/useAutoHide';
 import type { Track } from '../../stores/player';
 import { usePlayerStore } from '../../stores/player';
-import {PlaylistCover} from './PlaylistCover';
+import { PlaylistCover } from './PlaylistCover';
 
 interface PlaylistCardProps {
   playlist: Playlist;
   /** Show play button, playlist type badge, likes count */
   showPlayback?: boolean;
+  className?: string;
 }
 
 export const PlaylistCard = React.memo(
-  function PlaylistCard({ playlist, showPlayback }: PlaylistCardProps) {
+  function PlaylistCard({ playlist, showPlayback, className }: PlaylistCardProps) {
     const navigate = useNavigate();
-      const {t} = useTranslation();
+    const { t } = useTranslation();
 
     const trackUrns = React.useMemo(
       () => new Set((playlist.tracks ?? []).map((t: Track) => t.urn)),
@@ -61,18 +62,18 @@ export const PlaylistCard = React.memo(
 
     return (
       <div
-        className="group relative flex flex-col gap-3 cursor-pointer select-none"
+        className={`group relative flex flex-col gap-3 cursor-pointer select-none${className ? ` ${className}` : ''}`}
         onClick={() => navigate(`/playlist/${encodeURIComponent(playlist.urn)}`)}
       >
         <div className="relative aspect-square rounded-2xl overflow-hidden bg-white/[0.02] ring-1 ring-white/[0.06] shadow-lg group-hover:shadow-2xl group-hover:ring-white/[0.15] transition-all duration-500 ease-[var(--ease-apple)]">
-            <PlaylistCover
-                artworkUrl={playlist.artwork_url}
-                tracks={playlist.tracks}
-                urn={playlist.urn}
-                alt={playlist.title}
-                iconSize={32}
-                className="transition-transform duration-700 ease-[var(--ease-apple)] group-hover:scale-[1.05]"
-            />
+          <PlaylistCover
+            artworkUrl={playlist.artwork_url}
+            tracks={playlist.tracks}
+            urn={playlist.urn}
+            alt={playlist.title}
+            iconSize={32}
+            className="transition-transform duration-700 ease-[var(--ease-apple)] group-hover:scale-[1.05]"
+          />
 
           {/* Hover / playing overlay */}
           {showPlayback ? (
@@ -100,15 +101,15 @@ export const PlaylistCard = React.memo(
             <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           )}
 
-            {playlist.sharing === 'private' && (
-                <div
-                    title={t('sharing.private')}
-                    aria-label={t('sharing.private')}
-                    className="absolute top-2.5 left-2.5 flex items-center justify-center w-6 h-6 rounded-full bg-black/60 backdrop-blur-md text-amber-300/90 shadow-lg"
-                >
-                    <Lock size={11}/>
-                </div>
-            )}
+          {playlist.sharing === 'private' && (
+            <div
+              title={t('sharing.private')}
+              aria-label={t('sharing.private')}
+              className="absolute top-2.5 left-2.5 flex items-center justify-center w-6 h-6 rounded-full bg-black/60 backdrop-blur-md text-amber-300/90 shadow-lg"
+            >
+              <Lock size={11} />
+            </div>
+          )}
 
           {playlist.track_count != null && (
             <div
@@ -150,5 +151,7 @@ export const PlaylistCard = React.memo(
     );
   },
   (prev, next) =>
-    prev.playlist.urn === next.playlist.urn && prev.showPlayback === next.showPlayback,
+    prev.playlist.urn === next.playlist.urn &&
+    prev.showPlayback === next.showPlayback &&
+    prev.className === next.className,
 );

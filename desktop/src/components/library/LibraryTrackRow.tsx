@@ -1,15 +1,23 @@
 import React from 'react';
-import {useTranslation} from 'react-i18next';
-import {preloadTrack} from '../../lib/audio';
-import {art, dur, fc} from '../../lib/formatters';
-import {headphones11, heart11, ListMusic, ListPlus, Music, pauseWhite14, playWhite14,} from '../../lib/icons';
-import {useTrackPlay} from '../../lib/useTrackPlay';
-import type {Track} from '../../stores/player';
-import {usePlayerStore} from '../../stores/player';
-import {AddToPlaylistDialog} from '../music/AddToPlaylistDialog';
-import {LikeButton} from '../music/LikeButton';
-import {sameScdMeta, TrackStatusBadges} from '../music/TrackStatusBadges';
-import {TrackTitleArtist} from '../music/TrackTitleArtist';
+import { useTranslation } from 'react-i18next';
+import { preloadTrack } from '../../lib/audio';
+import { art, dur, fc } from '../../lib/formatters';
+import {
+  headphones11,
+  heart11,
+  ListMusic,
+  ListPlus,
+  Music,
+  pauseWhite14,
+  playWhite14,
+} from '../../lib/icons';
+import { useTrackPlay } from '../../lib/useTrackPlay';
+import type { Track } from '../../stores/player';
+import { usePlayerStore } from '../../stores/player';
+import { AddToPlaylistDialog } from '../music/AddToPlaylistDialog';
+import { LikeButton } from '../music/LikeButton';
+import { sameScdMeta, TrackStatusBadges } from '../music/TrackStatusBadges';
+import { TrackTitleArtist } from '../music/TrackTitleArtist';
 
 export const LibraryTrackRow = React.memo(
   function LibraryTrackRow({
@@ -36,9 +44,9 @@ export const LibraryTrackRow = React.memo(
 
     return (
       <div
-        className={`group flex items-center gap-4 px-4 py-3 rounded-2xl transition-all duration-300 ease-[var(--ease-apple)] ${
+        className={`sonveil-collection-track-row group flex items-center gap-4 px-4 py-3 rounded-2xl transition-all duration-300 ease-[var(--ease-apple)] ${
           isThis
-            ? 'bg-accent/[0.06] ring-1 ring-accent/20 shadow-[inset_0_0_20px_rgba(255,85,0,0.05)]'
+            ? 'is-current bg-accent/[0.06] ring-1 ring-accent/20 shadow-[inset_0_0_20px_rgba(255,85,0,0.05)]'
             : 'hover:bg-white/[0.04]'
         }`}
       >

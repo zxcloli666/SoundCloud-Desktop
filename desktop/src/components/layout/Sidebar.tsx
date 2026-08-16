@@ -1,13 +1,11 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { NavLink, useLocation } from 'react-router-dom';
-import { changeAppLanguage } from '../../i18n';
 import { art } from '../../lib/formatters';
 import {
   Clock,
   Compass,
   Download,
-  Globe,
   Heart,
   Home,
   Library,
@@ -22,11 +20,11 @@ import { Avatar } from '../ui/Avatar';
 
 type IconCmp = React.ComponentType<{ size?: number; strokeWidth?: number; className?: string }>;
 
-const primaryNav: { to: string; icon: IconCmp; label: string; tab?: string }[] = [
+const primaryNav: { to: string; icon: IconCmp; label: string }[] = [
   { to: '/home', icon: Home, label: 'nav.home' },
   { to: '/search', icon: Search, label: 'nav.search' },
   { to: '/library', icon: Library, label: 'nav.library' },
-  { to: '/library?tab=likes', icon: Heart, label: 'user.likes', tab: 'likes' },
+  { to: '/library/likes', icon: Heart, label: 'user.likes' },
 ];
 
 function RailLink({
@@ -56,19 +54,12 @@ function RailLink({
 }
 
 export const Sidebar = React.memo(() => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const location = useLocation();
   const user = useAuthStore((state) => state.user);
   const pinnedPlaylists = useSettingsStore((state) => state.pinnedPlaylists);
   const appMode = useAppMode();
-  const params = new URLSearchParams(location.search);
-  const activeTab = params.get('tab');
-  const isPrimaryActive = (to: string, tab?: string) => {
-    const path = to.split('?')[0];
-    if (location.pathname !== path) return false;
-    if (path !== '/library') return true;
-    return tab ? activeTab === tab : !activeTab;
-  };
+  const isPrimaryActive = (to: string) => location.pathname === to;
 
   return (
     <aside className="sonveil-sidebar" aria-label={t('nav.library')}>
@@ -83,7 +74,7 @@ export const Sidebar = React.memo(() => {
             to={item.to}
             icon={item.icon}
             label={t(item.label)}
-            active={isPrimaryActive(item.to, item.tab)}
+            active={isPrimaryActive(item.to)}
           />
         ))}
         <RailLink
@@ -93,8 +84,6 @@ export const Sidebar = React.memo(() => {
           active={location.pathname === '/discover'}
         />
       </nav>
-
-      <div className="sonveil-rail-divider" />
 
       <div className="sonveil-rail-covers" aria-label={t('sidebar.quickAccess')}>
         {pinnedPlaylists.slice(0, 5).map((playlist) => {
@@ -120,10 +109,10 @@ export const Sidebar = React.memo(() => {
 
       <div className="sonveil-rail-footer">
         <RailLink
-          to="/library?tab=history"
+          to="/library/history"
           icon={Clock}
           label={t('library.history')}
-          active={location.pathname === '/library' && activeTab === 'history'}
+          active={location.pathname === '/library/history'}
         />
         <RailLink
           to="/offline"
@@ -132,15 +121,6 @@ export const Sidebar = React.memo(() => {
           active={location.pathname === '/offline'}
           alert={appMode !== 'online'}
         />
-        <button
-          type="button"
-          className="sonveil-rail-button"
-          title={i18n.language === 'ru' ? 'English' : 'Русский'}
-          aria-label={i18n.language === 'ru' ? 'English' : 'Русский'}
-          onClick={() => void changeAppLanguage(i18n.language === 'ru' ? 'en' : 'ru')}
-        >
-          <Globe size={18} strokeWidth={1.75} />
-        </button>
         <RailLink
           to="/settings"
           icon={Settings}

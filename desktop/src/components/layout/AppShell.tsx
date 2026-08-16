@@ -180,7 +180,9 @@ const isInputEl = (el: EventTarget | null) =>
 /* ── AppShell ──────────────────────────────────────────────── */
 
 export const AppShell = React.memo(() => {
+  const { t } = useTranslation();
   const [queueOpen, setQueueOpen] = useState(false);
+  const [contextOpen, setContextOpen] = useState(false);
   const [kbOpen, setKbOpen] = useState(false);
   const lyricsOpen = useLyricsStore((s) => s.open);
   const volumeHoldRef = useRef<{ key: string | null; repeatCount: number; lastAt: number }>({
@@ -188,15 +190,35 @@ export const AppShell = React.memo(() => {
     repeatCount: 0,
     lastAt: 0,
   });
-  const onQueueToggle = useCallback(() => setQueueOpen((v) => !v), []);
+  const onQueueToggle = useCallback(() => {
+    setContextOpen(false);
+    setQueueOpen((v) => !v);
+  }, []);
   const onQueueClose = useCallback(() => setQueueOpen(false), []);
+  const onContextToggle = useCallback(() => {
+    setContextOpen((open) => {
+      const next = !open;
+      if (next) {
+        setQueueOpen(false);
+        useLyricsStore.getState().close();
+      }
+      return next;
+    });
+  }, []);
+  const onContextClose = useCallback(() => setContextOpen(false), []);
   const mainRef = useRef<HTMLElement>(null);
 
   // Mirror panel state into refs so the global keydown listener binds once.
   const queueOpenRef = useRef(queueOpen);
   queueOpenRef.current = queueOpen;
+  const contextOpenRef = useRef(contextOpen);
+  contextOpenRef.current = contextOpen;
   const kbOpenRef = useRef(kbOpen);
   kbOpenRef.current = kbOpen;
+
+  useEffect(() => {
+    if (lyricsOpen) setContextOpen(false);
+  }, [lyricsOpen]);
 
   // Anti-sticky-hover: WebKitGTK doesn't re-hit-test :hover while the content
   // scrolls under a stationary cursor, so cards "freeze" hovered or light up the
@@ -319,9 +341,11 @@ export const AppShell = React.memo(() => {
           player.cycleAbPoint(getCurrentTime());
           break;
         case 'KeyL':
+          setContextOpen(false);
           useLyricsStore.getState().toggle();
           break;
         case 'KeyQ':
+          setContextOpen(false);
           setQueueOpen((v) => !v);
           break;
         case 'BracketLeft':
@@ -334,6 +358,7 @@ export const AppShell = React.memo(() => {
           }
           if (useLyricsStore.getState().open) useLyricsStore.getState().close();
           else if (queueOpenRef.current) setQueueOpen(false);
+          else if (contextOpenRef.current) setContextOpen(false);
           break;
       }
     };
@@ -363,11 +388,30 @@ export const AppShell = React.memo(() => {
             <main ref={mainRef} className="sonveil-main">
               <StableOutlet />
             </main>
-            <NowPlayingContext onQueueToggle={onQueueToggle} queueOpen={queueOpen} />
           </div>
         </div>
       </div>
-      <NowPlayingBar onQueueToggle={onQueueToggle} queueOpen={queueOpen} />
+      <NowPlayingBar
+        onQueueToggle={onQueueToggle}
+        queueOpen={queueOpen}
+        onContextToggle={onContextToggle}
+        contextOpen={contextOpen}
+      />
+      {contextOpen && (
+        <>
+          <button
+            type="button"
+            className="sonveil-context-backdrop"
+            aria-label={t('common.close')}
+            onClick={onContextClose}
+          />
+          <NowPlayingContext
+            onQueueToggle={onQueueToggle}
+            queueOpen={queueOpen}
+            onClose={onContextClose}
+          />
+        </>
+      )}
       {queueOpen && (
         <Suspense fallback={null}>
           <QueuePanel open={queueOpen} onClose={onQueueClose} />

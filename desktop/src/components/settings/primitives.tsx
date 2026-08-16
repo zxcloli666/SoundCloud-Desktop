@@ -20,12 +20,11 @@ export function Toggle({
       onClick={onChange}
       className={`relative w-11 h-6 rounded-full transition-all duration-200 shrink-0 ${
         disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'
-      } ${checked ? 'bg-accent' : 'bg-white/10'}`}
-      style={checked && !disabled ? { boxShadow: '0 0 16px var(--color-accent-glow)' } : undefined}
+      } ${checked ? 'bg-white' : 'bg-white/10'}`}
     >
       <span
         className={`absolute top-0.5 w-5 h-5 rounded-full shadow-md transition-all duration-200 ${
-          checked ? 'left-[22px] bg-accent-contrast' : 'left-0.5 bg-white'
+          checked ? 'left-[22px] bg-[#111113]' : 'left-0.5 bg-white'
         }`}
       />
     </button>
@@ -72,38 +71,11 @@ export function Card({
   children: ReactNode;
 }) {
   return (
-    <section
-      className="group relative rounded-3xl p-6 overflow-hidden transition-[box-shadow,border-color] duration-500 hover:border-white/[0.14]"
-      style={{
-        border: '0.5px solid rgba(255,255,255,0.1)',
-        background:
-          'linear-gradient(165deg, rgba(255,255,255,0.055), rgba(255,255,255,0.015) 58%, rgba(255,255,255,0.03))',
-        backdropFilter: 'blur(40px) saturate(1.4)',
-        WebkitBackdropFilter: 'blur(40px) saturate(1.4)',
-        boxShadow: '0 18px 50px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06)',
-      }}
-    >
-      {/* top specular hairline */}
-      <span
-        aria-hidden
-        className="absolute inset-x-6 top-0 h-px"
-        style={{
-          background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.22), transparent)',
-        }}
-      />
-      <div className="relative flex items-start justify-between gap-4 mb-5">
+    <section className="relative overflow-hidden rounded-[14px] border border-white/[0.07] bg-[#151517] p-6">
+      <div className="flex items-start justify-between gap-4 mb-5">
         <div className="flex items-center gap-3 min-w-0">
           {icon && (
-            <div
-              className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 text-[var(--color-accent)]"
-              style={{
-                background:
-                  'linear-gradient(135deg, var(--color-accent-glow), rgba(255,255,255,0.04))',
-                border: '0.5px solid var(--color-accent-glow)',
-                boxShadow:
-                  '0 0 18px var(--color-accent-glow), inset 0 1px 0 rgba(255,255,255,0.18)',
-              }}
-            >
+            <div className="w-9 h-9 rounded-[10px] border border-white/[0.07] bg-[#222225] flex items-center justify-center shrink-0 text-white/65">
               {icon}
             </div>
           )}
@@ -142,21 +114,11 @@ export function Segmented<T extends string>({
             key={o.id}
             type="button"
             onClick={() => onChange(o.id)}
-            className={`rounded-xl border px-3 py-2.5 text-[12.5px] font-semibold transition-all duration-200 cursor-pointer ${
+            className={`rounded-[9px] border px-3 py-2.5 text-[12.5px] font-semibold transition-colors duration-150 cursor-pointer ${
               active
-                ? 'text-white'
+                ? 'border-white bg-white text-[#111113]'
                 : 'text-white/45 hover:text-white/70 hover:bg-white/[0.05] border-white/[0.05] bg-white/[0.02]'
             }`}
-            style={
-              active
-                ? {
-                    background:
-                      'linear-gradient(180deg, var(--color-accent-glow), transparent), rgba(255,255,255,0.05)',
-                    borderColor: 'var(--color-accent)',
-                    boxShadow: '0 0 16px var(--color-accent-glow)',
-                  }
-                : undefined
-            }
           >
             {o.label}
           </button>
