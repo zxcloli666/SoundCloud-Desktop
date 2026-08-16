@@ -1,5 +1,12 @@
 import { ApiError, api } from './api';
 import { edgeFetch } from './edge';
+import {
+  cacheLyrics,
+  getCachedLyrics,
+  searchLyricsCacheKey,
+  trackLyricsCacheKey,
+  transcriptionLyricsCacheKey,
+} from './lyrics-cache';
 
 export type LyricsSource = 'lrclib' | 'musixmatch' | 'genius' | 'netease' | 'self_gen' | 'none';
 
@@ -25,6 +32,9 @@ interface BackendLyricsResponse {
 }
 
 interface LrcLibResponse {
+  trackName?: string;
+  artistName?: string;
+  duration?: number;
   plainLyrics: string | null;
   syncedLyrics: string | null;
   instrumental: boolean;
@@ -37,18 +47,21 @@ export interface LyricsTrackLookup {
   durationMs?: number;
 }
 
-const DIRECT_LYRICS_TIMEOUT_MS = 12_000;
-const BACKEND_LYRICS_TIMEOUT_MS = 25_000;
+const DIRECT_LYRICS_TIMEOUT_MS = 5_500;
+const BACKEND_LYRICS_TIMEOUT_MS = 8_000;
+const AUTO_LOOKUP_TIMEOUT_MS = 9_000;
+const TRANSCRIPTION_TIMEOUT_MS = 90_000;
 const BACKEND_SILENT_STATUSES = [404, 500, 502, 503, 504];
+const LRCLIB_HEADERS = { 'User-Agent': 'Sonveil (https://github.com/hexnow/Hellishfy)' };
 
 /** Parse LRC format: [mm:ss.xx] text */
 export function parseLRC(lrc: string): LyricLine[] {
   const lines: LyricLine[] = [];
   for (const raw of lrc.split('\n')) {
-    const m = raw.match(/^\[(\d{2}):(\d{2})\.(\d{2,3})\]\s*(.*)/);
-    if (!m) continue;
-    const time = +m[1] * 60 + +m[2] + +m[3].padEnd(3, '0') / 1000;
-    const text = m[4].trim();
+    const match = raw.match(/^\[(\d{2}):(\d{2})\.(\d{2,3})\]\s*(.*)/);
+    if (!match) continue;
+    const time = +match[1] * 60 + +match[2] + +match[3].padEnd(3, '0') / 1000;
+    const text = match[4].trim();
     if (text) lines.push({ time, text });
   }
   return lines;
@@ -65,6 +78,18 @@ function toResult(data: BackendLyricsResponse | null): LyricsResult | null {
   };
 }
 
+function toLrcLibResult(data: LrcLibResponse | null): LyricsResult | null {
+  if (!data || data.instrumental) return null;
+  const synced = data.syncedLyrics ? parseLRC(data.syncedLyrics) : null;
+  const result: LyricsResult = {
+    plain: data.plainLyrics,
+    synced: synced && synced.length > 0 ? synced : null,
+    source: 'lrclib',
+    language: null,
+  };
+  return hasLyrics(result) ? result : null;
+}
+
 function hasLyrics(result: LyricsResult | null): result is LyricsResult {
   return !!(result?.plain?.trim() || (result?.synced && result.synced.length > 0));
 }
@@ -76,6 +101,7 @@ function abortError(): DOMException {
 async function firstAvailableLyrics(
   loaders: Array<(signal: AbortSignal) => Promise<LyricsResult | null>>,
   signal?: AbortSignal,
+  timeoutMs = AUTO_LOOKUP_TIMEOUT_MS,
 ): Promise<LyricsResult | null> {
   if (signal?.aborted) throw abortError();
 
@@ -91,36 +117,40 @@ async function firstAvailableLyrics(
       let pending = loaders.length;
       let sawEmptyResult = false;
       let firstError: unknown = null;
-      let generatedFallback: LyricsResult | null = null;
+
+      const timer = setTimeout(() => {
+        if (settled) return;
+        settled = true;
+        abortAll();
+        resolve(null);
+      }, timeoutMs);
 
       const finish = (result: LyricsResult | null, error?: unknown) => {
         if (settled) return;
-        if (hasLyrics(result) && result.source !== 'self_gen') {
+        if (hasLyrics(result)) {
           settled = true;
+          clearTimeout(timer);
           abortAll();
           resolve(result);
           return;
         }
 
-        // AI transcription is a last resort: keep it ready, but let every provider-backed
-        // lookup finish before accepting it. A cached self_gen response must not cancel
-        // a slightly slower LRCLIB/Musixmatch/Genius/NetEase result.
-        if (hasLyrics(result)) generatedFallback ??= result;
-        else sawEmptyResult ||= error === undefined;
+        sawEmptyResult ||= error === undefined;
         firstError ??= error;
         pending -= 1;
         if (pending > 0) return;
 
         settled = true;
+        clearTimeout(timer);
         abortAll();
-        if (generatedFallback) resolve(generatedFallback);
-        else if (sawEmptyResult) resolve(null);
+        if (sawEmptyResult) resolve(null);
         else reject(firstError ?? new Error('Lyrics lookup failed'));
       };
 
       const onParentAbort = () => {
         if (settled) return;
         settled = true;
+        clearTimeout(timer);
         abortAll();
         reject(abortError());
       };
@@ -139,7 +169,7 @@ async function firstAvailableLyrics(
   }
 }
 
-async function getDirectLyrics(
+async function getDirectExactLyrics(
   artist: string,
   title: string,
   durationMs: number | undefined,
@@ -152,71 +182,189 @@ async function getDirectLyrics(
 
   const response = await edgeFetch(
     `https://lrclib.net/api/get?${params}`,
-    {
-      signal,
-      headers: { 'User-Agent': 'Hellishfy (https://github.com/hexnow/Hellishfy)' },
-    },
+    { signal, headers: LRCLIB_HEADERS },
     DIRECT_LYRICS_TIMEOUT_MS,
   );
   if (response.status === 404) return null;
-  if (!response.ok) throw new Error(`LRCLIB ${response.status}`);
-
-  const data = (await response.json()) as LrcLibResponse;
-  if (data.instrumental) return null;
-  const synced = data.syncedLyrics ? parseLRC(data.syncedLyrics) : null;
-  return {
-    plain: data.plainLyrics,
-    synced: synced && synced.length > 0 ? synced : null,
-    source: 'lrclib',
-    language: null,
-  };
+  if (!response.ok) throw new Error(`LRCLIB get ${response.status}`);
+  return toLrcLibResult((await response.json()) as LrcLibResponse);
 }
 
-async function getBackendLyrics(path: string, signal: AbortSignal): Promise<LyricsResult | null> {
+function normalized(value: string): string {
+  return value
+    .toLocaleLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, ' ')
+    .trim();
+}
+
+function searchScore(
+  candidate: LrcLibResponse,
+  artist: string,
+  title: string,
+  durationMs?: number,
+): number {
+  const expectedArtist = normalized(artist);
+  const expectedTitle = normalized(title);
+  const candidateArtist = normalized(candidate.artistName ?? '');
+  const candidateTitle = normalized(candidate.trackName ?? '');
+  let score = 0;
+
+  if (candidateArtist === expectedArtist) score += 5;
+  else if (candidateArtist.includes(expectedArtist) || expectedArtist.includes(candidateArtist)) {
+    score += 2;
+  }
+  if (candidateTitle === expectedTitle) score += 7;
+  else if (candidateTitle.includes(expectedTitle) || expectedTitle.includes(candidateTitle)) {
+    score += 3;
+  }
+
+  if (durationMs && candidate.duration) {
+    const delta = Math.abs(candidate.duration - durationMs / 1000);
+    if (delta <= 3) score += 4;
+    else if (delta <= 8) score += 1;
+    else if (delta > 20) score -= 3;
+  }
+  return score;
+}
+
+async function getDirectSearchLyrics(
+  artist: string,
+  title: string,
+  durationMs: number | undefined,
+  signal: AbortSignal,
+): Promise<LyricsResult | null> {
+  const params = new URLSearchParams({ artist_name: artist, track_name: title });
+  const response = await edgeFetch(
+    `https://lrclib.net/api/search?${params}`,
+    { signal, headers: LRCLIB_HEADERS },
+    DIRECT_LYRICS_TIMEOUT_MS,
+  );
+  if (!response.ok) throw new Error(`LRCLIB search ${response.status}`);
+  const candidates = (await response.json()) as LrcLibResponse[];
+  const ranked = candidates
+    .filter((candidate) => !candidate.instrumental)
+    .map((candidate) => ({ candidate, score: searchScore(candidate, artist, title, durationMs) }))
+    .sort((left, right) => right.score - left.score);
+  if (!ranked[0] || ranked[0].score < 7) return null;
+  return toLrcLibResult(ranked[0].candidate);
+}
+
+async function getLrcLibLyrics(
+  artist: string,
+  title: string,
+  durationMs: number | undefined,
+  signal: AbortSignal,
+): Promise<LyricsResult | null> {
+  try {
+    const exact = await getDirectExactLyrics(artist, title, durationMs, signal);
+    if (exact || signal.aborted) return exact;
+  } catch (error) {
+    if (signal.aborted) throw error;
+  }
+  return getDirectSearchLyrics(artist, title, durationMs, signal);
+}
+
+async function getBackendLyrics(
+  path: string,
+  signal: AbortSignal,
+  allowGenerated: boolean,
+  timeoutMs = BACKEND_LYRICS_TIMEOUT_MS,
+): Promise<LyricsResult | null> {
   try {
     const data = await api<BackendLyricsResponse>(
       path,
       { signal, silentStatuses: BACKEND_SILENT_STATUSES },
-      BACKEND_LYRICS_TIMEOUT_MS,
+      timeoutMs,
     );
-    return toResult(data);
+    const result = toResult(data);
+    if (!allowGenerated && result?.source === 'self_gen') return null;
+    return result;
   } catch (error) {
     if (error instanceof ApiError && error.status === 404) return null;
     throw error;
   }
 }
 
-/** Load lyrics by track URN/id. Backend resolves artist/title itself and writes to cache. */
-export function getLyricsByTrack(
+/** Load provider-backed lyrics. AI transcription is explicitly excluded here. */
+export async function getLyricsByTrack(
   track: LyricsTrackLookup,
   signal?: AbortSignal,
 ): Promise<LyricsResult | null> {
-  return firstAvailableLyrics(
+  const cacheKey = trackLyricsCacheKey(track.scTrackId);
+  const cached = await getCachedLyrics(cacheKey);
+  if (cached) return cached;
+
+  const params = new URLSearchParams({
+    artist: track.artist,
+    title: track.title,
+    transcribe: 'false',
+  });
+  if (track.durationMs && Number.isFinite(track.durationMs) && track.durationMs > 0) {
+    params.set('duration', String(Math.round(track.durationMs / 1000)));
+  }
+  const result = await firstAvailableLyrics(
     [
-      (childSignal) => getDirectLyrics(track.artist, track.title, track.durationMs, childSignal),
-      (childSignal) =>
-        getBackendLyrics(`/lyrics/${encodeURIComponent(track.scTrackId)}`, childSignal),
+      (childSignal) => getLrcLibLyrics(track.artist, track.title, track.durationMs, childSignal),
+      (childSignal) => getBackendLyrics(`/lyrics/search?${params}`, childSignal, false),
     ],
     signal,
   );
+  if (result) await cacheLyrics(cacheKey, result);
+  return result;
 }
 
-/** Manual search — preview only. Backend does NOT read or write cache. */
-export function searchLyricsManual(
+/** Manual provider search. It never starts transcription. */
+export async function searchLyricsManual(
   artist: string,
   title: string,
   durationMs?: number,
   signal?: AbortSignal,
 ): Promise<LyricsResult | null> {
-  const params = new URLSearchParams({ artist, title });
+  const cacheKey = searchLyricsCacheKey(artist, title, durationMs);
+  const cached = await getCachedLyrics(cacheKey);
+  if (cached) return cached;
+
+  const params = new URLSearchParams({ artist, title, transcribe: 'false' });
   if (durationMs && Number.isFinite(durationMs) && durationMs > 0) {
-    params.set('duration', String(Math.round(durationMs)));
+    params.set('duration', String(Math.round(durationMs / 1000)));
   }
-  return firstAvailableLyrics(
+  const result = await firstAvailableLyrics(
     [
-      (childSignal) => getDirectLyrics(artist, title, durationMs, childSignal),
-      (childSignal) => getBackendLyrics(`/lyrics/search?${params}`, childSignal),
+      (childSignal) => getLrcLibLyrics(artist, title, durationMs, childSignal),
+      (childSignal) => getBackendLyrics(`/lyrics/search?${params}`, childSignal, false),
     ],
     signal,
   );
+  if (result) await cacheLyrics(cacheKey, result);
+  return result;
+}
+
+/** Explicit opt-in for the backend's transcription fallback. */
+export async function requestLyricsTranscription(
+  track: LyricsTrackLookup,
+  signal?: AbortSignal,
+): Promise<LyricsResult | null> {
+  const transcriptionKey = transcriptionLyricsCacheKey(track.scTrackId);
+  const cached = await getCachedLyrics(transcriptionKey);
+  if (cached) return cached;
+
+  const params = new URLSearchParams({ transcribe: 'true' });
+  const result = await firstAvailableLyrics(
+    [
+      (childSignal) =>
+        getBackendLyrics(
+          `/lyrics/${encodeURIComponent(track.scTrackId)}?${params}`,
+          childSignal,
+          true,
+          TRANSCRIPTION_TIMEOUT_MS,
+        ),
+    ],
+    signal,
+    TRANSCRIPTION_TIMEOUT_MS,
+  );
+  if (result) {
+    await cacheLyrics(transcriptionKey, result);
+    await cacheLyrics(trackLyricsCacheKey(track.scTrackId), result);
+  }
+  return result;
 }

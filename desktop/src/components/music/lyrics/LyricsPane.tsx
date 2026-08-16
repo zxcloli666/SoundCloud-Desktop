@@ -1,8 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Loader2, MicVocal, Search } from '../../../lib/icons';
-import { getLyricsByTrack, searchLyricsManual } from '../../../lib/lyrics';
+import { Loader2, MicVocal, Search, Sparkles } from '../../../lib/icons';
+import {
+  getLyricsByTrack,
+  requestLyricsTranscription,
+  searchLyricsManual,
+} from '../../../lib/lyrics';
 import { getTrackDisplay } from '../../../lib/track-display';
 import type { Track } from '../../../stores/player';
 import { LyricsSourceBadge, PlainLyrics, SyncedLyrics } from './SyncedLyrics';
@@ -70,6 +74,7 @@ export const LyricsPane = React.memo(({ track }: { track: Track }) => {
   const { t } = useTranslation();
   const [isEditing, setIsEditing] = useState(false);
   const [manualQuery, setManualQuery] = useState<{ artist: string; title: string } | null>(null);
+  const [transcriptionRequested, setTranscriptionRequested] = useState(false);
   const display = getTrackDisplay(track);
   const artist = display.artistLine || track.user.username;
 
@@ -77,6 +82,7 @@ export const LyricsPane = React.memo(({ track }: { track: Track }) => {
   useEffect(() => {
     setManualQuery(null);
     setIsEditing(false);
+    setTranscriptionRequested(false);
   }, [track.urn]);
 
   const {
@@ -88,24 +94,37 @@ export const LyricsPane = React.memo(({ track }: { track: Track }) => {
   } = useQuery({
     queryKey: manualQuery
       ? ['lyrics', 'search', manualQuery.artist, manualQuery.title, track.duration]
-      : ['lyrics', 'track', track.urn],
+      : transcriptionRequested
+        ? ['lyrics', 'transcription', track.urn]
+        : ['lyrics', 'track', track.urn],
     queryFn: ({ signal }) =>
       manualQuery
         ? searchLyricsManual(manualQuery.artist, manualQuery.title, track.duration, signal)
-        : getLyricsByTrack(
-            {
-              scTrackId: track.urn,
-              artist,
-              title: display.title,
-              durationMs: track.duration,
-            },
-            signal,
-          ),
+        : transcriptionRequested
+          ? requestLyricsTranscription(
+              {
+                scTrackId: track.urn,
+                artist,
+                title: display.title,
+                durationMs: track.duration,
+              },
+              signal,
+            )
+          : getLyricsByTrack(
+              {
+                scTrackId: track.urn,
+                artist,
+                title: display.title,
+                durationMs: track.duration,
+              },
+              signal,
+            ),
     staleTime: Number.POSITIVE_INFINITY,
     retry: false,
   });
 
   const startSearch = () => {
+    setTranscriptionRequested(false);
     setIsEditing(true);
     if (!manualQuery) {
       setManualQuery(
@@ -124,6 +143,7 @@ export const LyricsPane = React.memo(({ track }: { track: Track }) => {
         initialTitle={initialTitle}
         onCancel={() => setIsEditing(false)}
         onSubmit={(artist, title) => {
+          setTranscriptionRequested(false);
           setManualQuery({ artist, title });
           setIsEditing(false);
         }}
@@ -135,7 +155,9 @@ export const LyricsPane = React.memo(({ track }: { track: Track }) => {
     return (
       <div className="flex-1 flex flex-col items-center justify-center gap-3">
         <Loader2 size={24} className="animate-spin text-white/15" />
-        <p className="text-[13px] text-white/25">{t('track.lyricsLoading')}</p>
+        <p className="text-[13px] text-white/25">
+          {t(transcriptionRequested ? 'track.lyricsTranscribing' : 'track.lyricsLoading')}
+        </p>
       </div>
     );
   }
@@ -198,6 +220,21 @@ export const LyricsPane = React.memo(({ track }: { track: Track }) => {
       <p className="text-[12px] text-white/15 leading-relaxed max-w-[300px]">
         {t('track.lyricsNotFoundHint')}
       </p>
+      <button
+        type="button"
+        disabled={isFetching}
+        onClick={() => {
+          if (transcriptionRequested) void refetch();
+          else {
+            setManualQuery(null);
+            setTranscriptionRequested(true);
+          }
+        }}
+        className="inline-flex items-center gap-2 px-5 py-2 rounded-full text-[13px] font-medium text-white/60 bg-white/[0.08] hover:text-white hover:bg-white/[0.13] transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+      >
+        <Sparkles size={14} />
+        {t('track.lyricsTranscribe')}
+      </button>
     </div>
   );
 });

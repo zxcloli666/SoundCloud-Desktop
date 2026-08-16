@@ -9,7 +9,7 @@ mod producer;
 
 use std::time::{Duration, Instant};
 
-use reqwest::Client;
+use reqwest::{Client, Response};
 use tauri::State;
 use tokio::task::JoinHandle;
 
@@ -25,9 +25,36 @@ use crate::rt::AppHandle;
 use crate::track_cache::direct_download::{resolve_candidates, Candidate};
 use crate::track_cache::state::{DownloadSource, PlaybackQuality, TrackCacheState};
 
-const MIN_START_BYTES: usize = 128 * 1024;
-const START_TIMEOUT: Duration = Duration::from_secs(15);
-const RESOLVE_TIMEOUT: Duration = Duration::from_secs(12);
+const MIN_START_BYTES: usize = 64 * 1024;
+const START_TIMEOUT: Duration = Duration::from_secs(7);
+const RESOLVE_TIMEOUT: Duration = Duration::from_secs(5);
+const REQUEST_TIMEOUT: Duration = Duration::from_secs(6);
+const RETRY_DELAY: Duration = Duration::from_millis(180);
+
+fn retryable_status(status: reqwest::StatusCode) -> bool {
+    status.as_u16() == 429 || status.is_server_error()
+}
+
+async fn open_progressive(client: &Client, url: &str) -> Result<Response, String> {
+    let mut last_error = "progressive request failed".to_string();
+    for attempt in 0..2 {
+        if attempt > 0 {
+            tokio::time::sleep(RETRY_DELAY).await;
+        }
+        match tokio::time::timeout(REQUEST_TIMEOUT, client.get(url).send()).await {
+            Ok(Ok(response)) if response.status().is_success() => return Ok(response),
+            Ok(Ok(response)) => {
+                last_error = format!("progressive HTTP {}", response.status());
+                if !retryable_status(response.status()) {
+                    return Err(last_error);
+                }
+            }
+            Ok(Err(error)) => last_error = format!("progressive request: {error}"),
+            Err(_) => last_error = "progressive request timed out".to_string(),
+        }
+    }
+    Err(last_error)
+}
 
 async fn wait_for_start(
     buffer: &StreamingBuffer,
@@ -117,14 +144,7 @@ async fn try_direct_candidate(
 
     let (mime, producer): (Option<String>, JoinHandle<()>) = match candidate {
         Candidate::Progressive { mime, url, .. } => {
-            let response = client
-                .get(&url)
-                .send()
-                .await
-                .map_err(|error| format!("progressive request: {error}"))?;
-            if !response.status().is_success() {
-                return Err(format!("progressive HTTP {}", response.status()));
-            }
+            let response = open_progressive(client, &url).await?;
             let mime = (!mime.is_empty()).then_some(mime).or_else(|| {
                 response
                     .headers()
@@ -175,6 +195,49 @@ async fn try_direct_candidate(
     }
 }
 
+#[allow(clippy::too_many_arguments)]
+async fn try_direct_candidates(
+    candidates: Vec<Candidate>,
+    client: &Client,
+    app: &AppHandle,
+    cache: &TrackCacheState,
+    urn: &str,
+    generation: u64,
+    expected_duration_ms: Option<u64>,
+    start_paused: bool,
+    state: &AudioState,
+) -> Result<AudioStreamLoadResult, String> {
+    let mut last_error = "no direct stream candidate succeeded".to_string();
+    for candidate in candidates {
+        let attempts = if candidate.kind_label() == "hls" { 2 } else { 1 };
+        for attempt in 0..attempts {
+            if !is_current(app, generation) {
+                return Err("load cancelled".to_string());
+            }
+            if attempt > 0 {
+                tokio::time::sleep(RETRY_DELAY).await;
+            }
+            match try_direct_candidate(
+                candidate.clone(),
+                client,
+                app,
+                cache,
+                urn,
+                generation,
+                expected_duration_ms,
+                start_paused,
+                state,
+            )
+            .await
+            {
+                Ok(result) => return Ok(result),
+                Err(error) => last_error = error,
+            }
+        }
+    }
+    Err(last_error)
+}
+
 pub async fn load(
     request: AudioStreamRequest,
     start_paused: bool,
@@ -188,6 +251,25 @@ pub async fn load(
     *state.source_bytes.lock().unwrap() = None;
     let mut last_error = "no fast stream source succeeded".to_string();
 
+    if let Some(candidates) = cache.take_preloaded_candidates(&request.urn) {
+        match try_direct_candidates(
+            candidates,
+            &cache.direct_client,
+            &app,
+            &cache,
+            &request.urn,
+            generation,
+            request.duration_ms,
+            start_paused,
+            &state,
+        )
+        .await
+        {
+            Ok(result) => return Ok(result),
+            Err(error) => last_error = error,
+        }
+    }
+
     let resolve = tokio::time::timeout(
         RESOLVE_TIMEOUT,
         resolve_candidates(
@@ -196,14 +278,12 @@ pub async fn load(
             request.session_id.as_deref(),
             request.hq,
         ),
-    );
-    if let Ok(Ok(candidates)) = resolve.await {
-        for candidate in candidates {
-            if !is_current(&app, generation) {
-                return Err("load cancelled".to_string());
-            }
-            match try_direct_candidate(
-                candidate,
+    )
+    .await;
+    match resolve {
+        Ok(Ok(candidates)) => {
+            match try_direct_candidates(
+                candidates,
                 &cache.direct_client,
                 &app,
                 &cache,
@@ -219,71 +299,80 @@ pub async fn load(
                 Err(error) => last_error = error,
             }
         }
+        Ok(Err(error)) => last_error = error,
+        Err(_) => last_error = "stream resolve timed out".to_string(),
     }
 
     for url in &request.urls {
-        if !is_current(&app, generation) {
-            return Err("load cancelled".to_string());
-        }
-        let response = match crate::network::audio_route::get(
-            &cache.client,
-            url,
-            request.session_id.as_deref(),
-        )
-        .await
-        {
-            Ok((response, _)) if response.status().is_success() => response,
-            Ok((response, _)) => {
-                last_error = format!("stream API HTTP {}", response.status());
-                continue;
+        for attempt in 0..2 {
+            if !is_current(&app, generation) {
+                return Err("load cancelled".to_string());
             }
-            Err(error) => {
-                last_error = error;
-                continue;
+            if attempt > 0 {
+                tokio::time::sleep(RETRY_DELAY).await;
             }
-        };
-        let mime = response
-            .headers()
-            .get("content-type")
-            .and_then(|value| value.to_str().ok())
-            .map(str::to_string);
-        let quality = if request.hq {
-            PlaybackQuality::Hq
-        } else {
-            PlaybackQuality::Sq
-        };
-        let producer_context = context(
-            &app,
-            &cache,
-            &request.urn,
-            generation,
-            quality,
-            DownloadSource::Api,
-            request.duration_ms,
-        );
-        let buffer = StreamingBuffer::new();
-        let producer = tokio::spawn(pump_response(response, buffer.clone(), producer_context));
-        match install_buffer(
-            &buffer,
-            mime,
-            start_paused,
-            &app,
-            generation,
-            &state,
-        )
-        .await
-        {
-            Ok(()) => {
-                engine::set_stream_task(&state, producer);
-                return Ok(AudioStreamLoadResult {
-                    duration_secs: None,
-                    quality: quality.label().to_string(),
-                    source: DownloadSource::Api.label().to_string(),
-                });
-            }
-            Err(error) => {
-                producer.abort();
-                last_error = error;
+            let response = match tokio::time::timeout(
+                REQUEST_TIMEOUT,
+                crate::network::audio_route::get(
+                    &cache.client,
+                    url,
+                    request.session_id.as_deref(),
+                ),
+            )
+            .await
+            {
+                Ok(Ok((response, _))) if response.status().is_success() => response,
+                Ok(Ok((response, _))) => {
+                    let status = response.status();
+                    last_error = format!("stream API HTTP {status}");
+                    if !retryable_status(status) {
+                        break;
+                    }
+                    continue;
+                }
+                Ok(Err(error)) => {
+                    last_error = error;
+                    continue;
+                }
+                Err(_) => {
+                    last_error = "stream API request timed out".to_string();
+                    continue;
+                }
+            };
+            let mime = response
+                .headers()
+                .get("content-type")
+                .and_then(|value| value.to_str().ok())
+                .map(str::to_string);
+            let quality = if request.hq {
+                PlaybackQuality::Hq
+            } else {
+                PlaybackQuality::Sq
+            };
+            let producer_context = context(
+                &app,
+                &cache,
+                &request.urn,
+                generation,
+                quality,
+                DownloadSource::Api,
+                request.duration_ms,
+            );
+            let buffer = StreamingBuffer::new();
+            let producer = tokio::spawn(pump_response(response, buffer.clone(), producer_context));
+            match install_buffer(&buffer, mime, start_paused, &app, generation, &state).await {
+                Ok(()) => {
+                    engine::set_stream_task(&state, producer);
+                    return Ok(AudioStreamLoadResult {
+                        duration_secs: None,
+                        quality: quality.label().to_string(),
+                        source: DownloadSource::Api.label().to_string(),
+                    });
+                }
+                Err(error) => {
+                    producer.abort();
+                    last_error = error;
+                }
             }
         }
     }

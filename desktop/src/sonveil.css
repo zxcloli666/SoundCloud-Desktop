@@ -24,7 +24,7 @@
   display: grid;
   grid-template-columns: 64px minmax(0, 1fr);
   gap: 8px;
-  height: calc(100% - 98px);
+  height: calc(100% - 88px);
   min-height: 0;
   padding: 8px 8px 0;
   isolation: isolate;
@@ -466,13 +466,14 @@
 
 /* Player: opaque dock, simple progress slider, no wave/blur/pulse loops. */
 .npb {
-  height: 98px;
+  height: 88px;
   align-items: stretch;
   justify-content: stretch;
-  padding: 8px 8px 10px 80px;
+  padding: 0;
   pointer-events: auto;
   animation: none;
   background: #09090a;
+  border-top: 1px solid var(--sonveil-line);
 }
 
 .npb-dock,
@@ -480,31 +481,38 @@
   width: 100%;
   max-width: none;
   height: 100%;
-  border: 1px solid var(--sonveil-line);
-  border-radius: 16px;
-  background: #101012;
+  border: 0;
+  border-radius: 0;
+  background: #0b0b0d;
   box-shadow: none;
 }
 
 .npb-content {
   display: block;
   height: 100%;
-  padding: 10px 16px;
+  padding: 6px 18px;
 }
 
 .npb-row {
   display: grid;
-  grid-template-columns: minmax(220px, 0.8fr) minmax(220px, 1.35fr) auto minmax(170px, 0.65fr);
+  grid-template-columns: minmax(260px, 0.8fr) minmax(380px, 1.7fr) minmax(270px, 0.8fr);
   align-items: center;
-  gap: 18px;
+  gap: 20px;
   height: 100%;
 }
 
 .npb-left,
+.npb-center,
 .npb-transport,
 .npb-tools {
-  display: flex;
   min-width: 0;
+}
+
+.npb-left,
+.npb-transport,
+.npb-tools,
+.npb-reactions {
+  display: flex;
   align-items: center;
 }
 
@@ -512,17 +520,26 @@
   gap: 6px;
 }
 
-.npb-transport,
-.npb-tools {
-  gap: 2px;
+.npb-center {
+  display: grid;
+  grid-template-rows: 38px 24px;
+  align-self: stretch;
+  align-content: center;
 }
 
 .npb-transport {
-  transform: none;
+  justify-content: center;
+  gap: 2px;
+}
+
+.npb-tools {
+  justify-content: flex-end;
+  gap: 3px;
 }
 
 .npb-secondary-tools {
-  display: none;
+  display: flex;
+  align-items: center;
 }
 
 .npb .npb-labeled-tool {
@@ -538,9 +555,9 @@
 }
 
 .npb-art {
-  width: 56px;
-  height: 56px;
-  border-radius: 9px;
+  width: 54px;
+  height: 54px;
+  border-radius: 7px;
   box-shadow: none;
   transition: opacity 120ms ease;
 }
@@ -564,7 +581,7 @@
 }
 
 .npb-txt {
-  max-width: 180px;
+  max-width: 172px;
   gap: 3px;
 }
 
@@ -581,9 +598,9 @@
 }
 
 .npb-play {
-  width: 44px;
-  height: 44px;
-  margin: 0 3px;
+  width: 36px;
+  height: 36px;
+  margin: 0 4px;
   overflow: hidden;
   border: 0;
   background: #f7f7f5;
@@ -602,7 +619,6 @@
 
 .npb-lane {
   min-width: 0;
-  gap: 2px;
 }
 
 .npb-waveform {
@@ -622,6 +638,10 @@
 }
 
 .npb-times {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) 38px;
+  align-items: center;
+  gap: 8px;
   padding: 0;
   color: rgba(255, 255, 255, 0.35);
   font-family: "JetBrains Mono", monospace;
@@ -632,6 +652,16 @@
 .npb-times b {
   color: rgba(255, 255, 255, 0.72);
   font-weight: 500;
+  text-align: right;
+}
+
+.npb-times > span {
+  text-align: left;
+}
+
+.npb-reactions {
+  flex: 0 0 auto;
+  gap: 0;
 }
 
 .npb-art-load {
@@ -654,11 +684,12 @@
   }
 
   .npb-row {
-    grid-template-columns: minmax(205px, 0.8fr) minmax(190px, 1fr) auto;
-    gap: 14px;
+    grid-template-columns: minmax(230px, 0.8fr) minmax(330px, 1.45fr) minmax(190px, 0.7fr);
+    gap: 12px;
   }
 
-  .npb-tools {
+  .npb-secondary-tools,
+  .npb-vol-slider {
     display: none;
   }
 }
@@ -694,23 +725,18 @@
     grid-template-columns: 76px minmax(0, 1fr);
   }
 
-  .npb {
-    padding-left: 70px;
-  }
-
   .npb-row {
-    grid-template-columns: minmax(150px, 1fr) auto;
+    grid-template-columns: minmax(175px, 0.8fr) minmax(280px, 1.3fr);
+    gap: 10px;
   }
 
-  .npb-lane {
-    position: absolute;
-    right: 14px;
-    bottom: 4px;
-    left: 14px;
-  }
-
-  .npb-times {
+  .npb-tools,
+  .npb-reactions {
     display: none;
+  }
+
+  .npb-txt {
+    max-width: 105px;
   }
 }
 

@@ -233,6 +233,8 @@
     "lyricsNotFound": "Lyrics not found",
     "lyricsNotFoundHint": "Try a manual search with a different artist or title.",
     "lyricsLoading": "Searching lyrics...",
+    "lyricsTranscribing": "Creating a transcription...",
+    "lyricsTranscribe": "Transcribe with AI",
     "hidePanel": "Hide panel",
     "showPanel": "Show panel",
     "manualSearch": "Manual Search",

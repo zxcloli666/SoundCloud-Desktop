@@ -4,7 +4,7 @@ use std::path::Path;
 use std::path::PathBuf;
 use std::sync::Arc;
 use std::sync::Mutex as StdMutex;
-use std::time::{Duration, SystemTime, UNIX_EPOCH};
+use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use futures_util::StreamExt;
 use reqwest::{Client, Url};
@@ -14,7 +14,7 @@ use tokio::io::{AsyncWriteExt, BufWriter};
 use tokio::sync::{Mutex, Notify, OwnedSemaphorePermit, Semaphore};
 
 use crate::app::diagnostics::log_native;
-use crate::track_cache::direct_download::try_download;
+use crate::track_cache::direct_download::{try_download, Candidate};
 use crate::track_cache::sc_anon::AnonClient;
 use crate::track_cache::transcode;
 
@@ -30,9 +30,11 @@ const DOWNLOAD_READ_TIMEOUT_SECS: u64 = 130;
 const DIRECT_CONNECT_TIMEOUT_MS: u64 = 5_000;
 const DIRECT_READ_TIMEOUT_SECS: u64 = 70;
 const RETRY_DELAYS_MS: [u64; 3] = [200, 600, 1500];
-// Preloading full tracks is network-heavy. Keep a single speculative download in
-// flight so it can help the next track without starving a foreground play.
+// Preloading resolves and warms only a tiny stream prefix. Keep one speculative
+// request in flight so it cannot compete with foreground playback.
 const MAX_PARALLEL_PRELOADS: usize = 1;
+const STREAM_PRELOAD_TTL: Duration = Duration::from_secs(45);
+const MAX_STREAM_PRELOADS: usize = 8;
 const MAX_PARALLEL_LIKES: usize = 4;
 /// Transcoding is CPU-bound; keep it modest so it never starves playback on weak
 /// machines. Most cached tracks are already AAC (a near-free remux), so a small
@@ -556,6 +558,7 @@ pub struct TrackCacheState {
     ffmpeg_probe_done: Arc<std::sync::atomic::AtomicBool>,
     active: Arc<Mutex<HashMap<String, ActiveDownload>>>,
     preload_limiter: Arc<Semaphore>,
+    preloaded_streams: Arc<StdMutex<HashMap<String, (Instant, Vec<Candidate>)>>>,
     likes_limiter: Arc<Semaphore>,
     transcode_limiter: Arc<Semaphore>,
     /// URNs with a transcode in flight, so live + recovery requests coalesce.
@@ -627,6 +630,7 @@ pub fn init(audio_dir: PathBuf, liked_dir: PathBuf, incoming_dir: PathBuf) -> Tr
         ffmpeg_probe_done: Arc::new(std::sync::atomic::AtomicBool::new(false)),
         active: Arc::new(Mutex::new(HashMap::new())),
         preload_limiter: Arc::new(Semaphore::new(MAX_PARALLEL_PRELOADS)),
+        preloaded_streams: Arc::new(StdMutex::new(HashMap::new())),
         likes_limiter: Arc::new(Semaphore::new(MAX_PARALLEL_LIKES)),
         transcode_limiter: Arc::new(Semaphore::new(MAX_PARALLEL_TRANSCODES)),
         transcoding: Arc::new(StdMutex::new(HashSet::new())),
@@ -947,6 +951,31 @@ async fn download_api(
 impl TrackCacheState {
     pub fn try_acquire_preload_slot(&self) -> Option<OwnedSemaphorePermit> {
         self.preload_limiter.clone().try_acquire_owned().ok()
+    }
+
+    pub(crate) fn store_preloaded_candidates(&self, urn: String, candidates: Vec<Candidate>) {
+        if candidates.is_empty() {
+            return;
+        }
+        let Ok(mut preloaded) = self.preloaded_streams.lock() else {
+            return;
+        };
+        preloaded.retain(|_, (created_at, _)| created_at.elapsed() <= STREAM_PRELOAD_TTL);
+        if preloaded.len() >= MAX_STREAM_PRELOADS
+            && let Some(oldest) = preloaded
+                .iter()
+                .min_by_key(|(_, (created_at, _))| *created_at)
+                .map(|(urn, _)| urn.clone())
+        {
+            preloaded.remove(&oldest);
+        }
+        preloaded.insert(urn, (Instant::now(), candidates));
+    }
+
+    pub(crate) fn take_preloaded_candidates(&self, urn: &str) -> Option<Vec<Candidate>> {
+        let mut preloaded = self.preloaded_streams.lock().ok()?;
+        let (created_at, candidates) = preloaded.remove(urn)?;
+        (created_at.elapsed() <= STREAM_PRELOAD_TTL).then_some(candidates)
     }
 
     /// Wire up the Tauri AppHandle so that anon/cache writes can persist

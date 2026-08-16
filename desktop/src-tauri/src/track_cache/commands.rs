@@ -1,5 +1,6 @@
 use tauri::State;
 
+use crate::track_cache::direct_download::{resolve_candidates, warm_candidate};
 use crate::track_cache::state::{
     CacheInventoryEntry, CacheRequest, LikeCacheEntry, TrackCacheEntry, TrackCacheState,
     TranscodeStatus,
@@ -151,6 +152,11 @@ pub async fn track_preload(
             continue;
         }
 
+        let download_urls = entry.download_urls.unwrap_or_default();
+        if download_urls.is_empty() {
+            continue;
+        }
+
         let Some(permit) = state.try_acquire_preload_slot() else {
             continue;
         };
@@ -158,39 +164,38 @@ pub async fn track_preload(
         queued += 1;
         let state = state.inner().clone();
         let urn = entry.urn;
-        let fallback_urls: Vec<String> = match (entry.urls, entry.url) {
-            (Some(u), _) if !u.is_empty() => u,
-            (_, Some(u)) => vec![u],
-            _ => continue,
-        };
-        let storage_urls = entry.storage_urls.unwrap_or_default();
-        let download_urls = entry.download_urls.unwrap_or_default();
         let session_id = entry.session_id;
         let hq = entry.hq;
-        let duration_ms = entry.duration_ms;
 
         tokio::spawn(async move {
             let _permit = permit;
-            println!("[TrackCache] preloading {urn}");
-            if let Err(err) = state
-                .ensure_cached(CacheRequest {
-                    urn: &urn,
-                    urls: &fallback_urls,
-                    download_urls: &download_urls,
-                    storage_urls: &storage_urls,
-                    session_id: session_id.as_deref(),
+            println!("[TrackCache] warming stream {urn}");
+            let resolved = tokio::time::timeout(
+                std::time::Duration::from_secs(6),
+                resolve_candidates(
+                    &state.direct_client,
+                    &download_urls,
+                    session_id.as_deref(),
                     hq,
-                    liked: false,
-                    expected_duration_ms: duration_ms,
-                })
-                .await
-            {
-                eprintln!("[TrackCache] preload {urn}: {err}");
+                ),
+            )
+            .await;
+            match resolved {
+                Ok(Ok(candidates)) => {
+                    if let Some(candidate) = candidates.first()
+                        && let Err(error) = warm_candidate(&state.direct_client, candidate).await
+                    {
+                        eprintln!("[TrackCache] warm {urn}: {error}");
+                    }
+                    state.store_preloaded_candidates(urn, candidates);
+                }
+                Ok(Err(error)) => eprintln!("[TrackCache] preload resolve {urn}: {error}"),
+                Err(_) => eprintln!("[TrackCache] preload resolve {urn}: timed out"),
             }
         });
     }
     if queued > 0 {
-        println!("[TrackCache] queued {queued} preloads");
+        println!("[TrackCache] queued {queued} lightweight preloads");
     }
     Ok(())
 }

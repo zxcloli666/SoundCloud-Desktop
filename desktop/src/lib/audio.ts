@@ -15,11 +15,9 @@ import {
 import {
   buildTrackRequest,
   cancelTrackDownload,
-  enforceAudioCacheLimit,
   ensureTrackCached,
   getCacheInfo,
   removeCachedTrack,
-  type TrackCacheInfo,
 } from './cache';
 import { SEND_BEHAVIORAL_DATA } from './constants';
 import { trackedInvoke as invoke } from './diagnostics';
@@ -405,15 +403,31 @@ async function loadTrack(track: Track) {
     try {
       await cancelTrackDownload(urn);
       if (gen !== loadGen || currentUrn !== urn) return;
-      const request = await buildTrackRequest(urn, highQualityStreaming, track.duration);
-      const streamed = await invoke<{
+      const startFastStream = async (hq: boolean) => {
+        const request = await buildTrackRequest(urn, hq, track.duration);
+        return invoke<{
+          duration_secs: number | null;
+          quality: 'hq' | 'sq';
+          source: 'direct' | 'api';
+        }>('audio_load_streaming', {
+          request,
+          startPaused: !usePlayerStore.getState().isPlaying,
+        });
+      };
+
+      let streamed: {
         duration_secs: number | null;
         quality: 'hq' | 'sq';
         source: 'direct' | 'api';
-      }>('audio_load_streaming', {
-        request,
-        startPaused: !usePlayerStore.getState().isPlaying,
-      });
+      };
+      try {
+        streamed = await startFastStream(highQualityStreaming);
+      } catch (error) {
+        if (!highQualityStreaming) throw error;
+        console.warn('[Audio] HQ fast stream failed, retrying standard quality:', error);
+        if (gen !== loadGen || currentUrn !== urn) return;
+        streamed = await startFastStream(false);
+      }
       if (gen !== loadGen || currentUrn !== urn) return;
       setDownloadProgress(null);
       usePlayerStore.getState().setPlaybackTransport(streamed.quality, streamed.source);
@@ -422,41 +436,8 @@ async function loadTrack(track: Track) {
       return;
     } catch (error) {
       if (gen !== loadGen || currentUrn !== urn) return;
-      console.warn('[Audio] Fast stream failed, falling back to full download:', error);
+      throw error;
     }
-
-    // Strategy 3: full-download fallback for an unsupported/broken stream.
-    let cachedInfo: TrackCacheInfo;
-    try {
-      cachedInfo = await ensureTrackCached(urn, highQualityStreaming, track.duration);
-    } catch (error) {
-      if (gen !== loadGen || currentUrn !== urn) return;
-      if (!highQualityStreaming) throw error;
-      console.warn('[Audio] HQ load failed, retrying without hq:', error);
-      cachedInfo = await ensureTrackCached(urn, false, track.duration);
-    }
-
-    if (gen !== loadGen) return;
-    setDownloadProgress(null);
-    usePlayerStore.getState().setPlaybackTransport(cachedInfo.quality, cachedInfo.source);
-
-    console.log('[Audio] Playing downloaded track:', urn);
-    const loadResult = await loadCachedFile(
-      urn,
-      cachedInfo.path,
-      !usePlayerStore.getState().isPlaying,
-      reResolve,
-    );
-    if (loadResult?.duration_secs) {
-      fallbackDuration = loadResult.duration_secs;
-      cachedDuration = loadResult.duration_secs;
-      updateMetadata(track, loadResult.duration_secs);
-      notify();
-    }
-    void enforceAudioCacheLimit().catch(console.error);
-
-    if (gen !== loadGen) return;
-    afterLoad(track, gen);
   } catch (e) {
     console.error('[Audio] Load failed:', e);
     setDownloadProgress(null);

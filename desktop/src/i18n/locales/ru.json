@@ -233,6 +233,8 @@
     "lyricsNotFound": "Текст не найден",
     "lyricsNotFoundHint": "Попробуйте поиск с другим артистом или названием.",
     "lyricsLoading": "Ищем текст...",
+    "lyricsTranscribing": "Создаём транскрипцию...",
+    "lyricsTranscribe": "Расшифровать с помощью ИИ",
     "hidePanel": "Скрыть панель",
     "showPanel": "Показать панель",
     "manualSearch": "Ручной поиск",

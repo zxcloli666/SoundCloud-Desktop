@@ -413,47 +413,13 @@ export const ProgressTime = React.memo(() => {
   );
 });
 
-const PlaybackQualityBadge = React.memo(() => {
-  const { t } = useTranslation();
-  const { playbackQuality, playbackSource } = usePlayerStore(
-    useShallow((s) => ({
-      playbackQuality: s.playbackQuality,
-      playbackSource: s.playbackSource,
-    })),
-  );
-
-  if (!playbackQuality) return null;
-
-  const isHq = playbackQuality === 'hq';
-
-  return (
-    <div className="flex shrink-0 items-center gap-1.5">
-      <span
-        className={`inline-flex h-6 shrink-0 items-center rounded-md border px-2 text-[9px] font-semibold tracking-[0.14em] ${
-          isHq
-            ? 'border-white/[0.14] bg-white/[0.08] text-white/92'
-            : 'border-white/[0.08] bg-white/[0.04] text-white/68'
-        }`}
-      >
-        {isHq ? t('player.qualityHQ') : t('player.qualitySQ')}
-      </span>
-      {playbackSource === 'storage' && (
-        <span className="inline-flex h-6 shrink-0 items-center gap-1.5 rounded-md border border-[#b7ffd8]/[0.16] bg-[#b7ffd8]/[0.07] px-2 text-[8px] font-medium tracking-[0.12em] text-[#dff7e9]/82">
-          <span className="h-1.5 w-1.5 rounded-full bg-[#b7ffd8] shadow-[0_0_8px_rgba(183,255,216,0.55)]" />
-          {t('player.qualityCDN')}
-        </span>
-      )}
-    </div>
-  );
-});
-
 /* ── Like / Dislike buttons ──────────────────────────────────── */
 
 function useTrackReactions(trackUrn: string) {
   const { data: trackData } = useQuery({
     queryKey: ['track', trackUrn],
     queryFn: () => api<Track>(`/tracks/${encodeURIComponent(trackUrn)}`),
-    enabled: !!trackUrn,
+    enabled: !!trackUrn && !isDesignPreview(),
     staleTime: 30_000,
   });
   return trackData;
@@ -993,7 +959,8 @@ const PillTrackBody = React.memo(function PillTrackBody({
 /* ── Like / Dislike / quality cluster for the current track ──── */
 
 const ReactCluster = React.memo(() => {
-  const urn = usePlayerStore((s) => s.currentTrack?.urn);
+  const storeUrn = usePlayerStore((s) => s.currentTrack?.urn);
+  const urn = isDesignPreview() ? designPreviewTracks[0].urn : storeUrn;
   if (!urn) return null;
   return <ReactClusterBody urn={urn} />;
 });
@@ -1001,12 +968,11 @@ const ReactCluster = React.memo(() => {
 // Single track-query + dislike observer shared by both reaction buttons.
 const ReactClusterBody = React.memo(({ urn }: { urn: string }) => {
   const trackData = useTrackReactions(urn);
-  const disliked = useDislikeStatus(urn);
+  const disliked = useDislikeStatus(isDesignPreview() ? undefined : urn);
   return (
-    <div className="flex items-center gap-0.5">
+    <div className="npb-reactions">
       <LikeButton trackUrn={urn} trackData={trackData} disliked={disliked} />
       <NowBarDislikeButton trackUrn={urn} trackData={trackData} disliked={disliked} />
-      <PlaybackQualityBadge />
     </div>
   );
 });
@@ -1021,6 +987,7 @@ const LaneTimes = React.memo(() => {
     return (
       <div className="npb-times">
         <b>1:48</b>
+        <DockProgress />
         <span>-2:24</span>
       </div>
     );
@@ -1028,6 +995,7 @@ const LaneTimes = React.memo(() => {
   return (
     <div className="npb-times">
       <b>{formatTime(current)}</b>
+      <DockProgress />
       <span>{formatTime(duration)}</span>
     </div>
   );
@@ -1071,18 +1039,18 @@ export const NowPlayingBar = React.memo(
                 <ReactCluster />
               </div>
 
-              <div className="npb-lane">
-                <LaneTimes />
-                <DockProgress />
-              </div>
-
-              <div className="npb-transport">
-                <ShuffleBtn />
-                <PrevBtn />
-                <PlayPauseBtn />
-                <NextBtn />
-                <RepeatBtn />
-                <AbLoopBtn />
+              <div className="npb-center">
+                <div className="npb-transport">
+                  <ShuffleBtn />
+                  <PrevBtn />
+                  <PlayPauseBtn />
+                  <NextBtn />
+                  <RepeatBtn />
+                  <AbLoopBtn />
+                </div>
+                <div className="npb-lane">
+                  <LaneTimes />
+                </div>
               </div>
 
               <div className="npb-tools">
@@ -1090,13 +1058,13 @@ export const NowPlayingBar = React.memo(
                   <TuningBtn />
                   <EqBtn />
                 </div>
-                <ControlVolumeBtn size="sm" />
-                <div className="npb-vol-slider flex items-center gap-2 pl-1">
-                  <VolumeSlider className="w-[72px]" />
-                  <VolumeLabel />
-                </div>
                 <QueueBtn onClick={onQueueToggle} active={queueOpen} />
                 <LyricsBtn />
+                <ControlVolumeBtn size="sm" />
+                <div className="npb-vol-slider flex items-center gap-2 pl-1">
+                  <VolumeSlider className="w-[76px]" />
+                  <VolumeLabel />
+                </div>
               </div>
             </div>
           </div>

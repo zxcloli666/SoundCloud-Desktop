@@ -8,7 +8,7 @@ use std::future::Future;
 use std::pin::Pin;
 
 use bytes::Bytes;
-use futures_util::future::select_all;
+use futures_util::{future::select_all, StreamExt};
 use reqwest::Client;
 
 use super::sc_anon::hls::{download_hls_full, download_progressive};
@@ -19,7 +19,7 @@ pub struct DownloadResponse {
     pub candidates: Vec<Candidate>,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(Clone, serde::Deserialize)]
 #[serde(tag = "kind", rename_all = "kebab-case")]
 pub enum Candidate {
     Progressive {
@@ -42,6 +42,37 @@ pub enum Candidate {
     },
     #[serde(other)]
     Unsupported,
+}
+
+/// Warm only the control path and the first response chunk for a future stream.
+/// Dropping the response immediately keeps speculative playback cheap even when
+/// an origin ignores the Range header.
+pub(crate) async fn warm_candidate(client: &Client, candidate: &Candidate) -> Result<(), String> {
+    const WARM_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(3);
+
+    tokio::time::timeout(WARM_TIMEOUT, async {
+        let request = match candidate {
+            Candidate::Progressive { url, .. } => client
+                .get(url)
+                .header(reqwest::header::RANGE, "bytes=0-65535"),
+            Candidate::Hls { manifest_url, .. } => client.get(manifest_url),
+            Candidate::Unsupported => return Err("unsupported preload candidate".to_string()),
+        };
+        let response = request
+            .send()
+            .await
+            .map_err(|error| format!("preload request: {error}"))?;
+        if !response.status().is_success() {
+            return Err(format!("preload HTTP {}", response.status()));
+        }
+        let mut body = response.bytes_stream();
+        match body.next().await {
+            Some(Ok(_)) | None => Ok(()),
+            Some(Err(error)) => Err(format!("preload body: {error}")),
+        }
+    })
+    .await
+    .map_err(|_| "preload timed out".to_string())?
 }
 
 fn default_sq() -> String {
