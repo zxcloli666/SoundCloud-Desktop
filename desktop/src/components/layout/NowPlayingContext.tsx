@@ -8,13 +8,16 @@ import { getArtistDisplay, getDisplayTitle } from '../../lib/track-display';
 import { useLyricsStore } from '../../stores/lyrics';
 import { usePlayerStore } from '../../stores/player';
 import { LikeButton } from '../music/LikeButton';
+import { RightPanelShell } from './RightPanelShell';
 
 export const NowPlayingContext = React.memo(
   ({
+    open,
     onQueueToggle,
     queueOpen,
     onClose,
   }: {
+    open: boolean;
     onQueueToggle: () => void;
     queueOpen: boolean;
     onClose: () => void;
@@ -31,30 +34,27 @@ export const NowPlayingContext = React.memo(
 
     if (!track) {
       return (
-        <aside
-          className="sonveil-context sonveil-context-drawer"
-          role="dialog"
-          aria-modal="false"
-          aria-label={t('player.nowPlaying')}
-        >
-          <header className="sonveil-context-header">
-            <span>{t('player.nowPlaying')}</span>
-            <button
-              type="button"
-              className="sonveil-context-close"
-              onClick={onClose}
-              aria-label={t('common.close')}
-            >
-              <X size={16} />
-            </button>
-          </header>
-          <div className="sonveil-context-empty">
-            <span>
-              <Play size={18} fill="currentColor" />
-            </span>
-            <p>{t('player.notPlaying')}</p>
+        <RightPanelShell open={open} onClose={onClose} ariaLabel={t('player.nowPlaying')}>
+          <div className="sonveil-context">
+            <header className="sonveil-context-header" data-tauri-drag-region>
+              <span>{t('player.nowPlaying')}</span>
+              <button
+                type="button"
+                className="sonveil-context-close"
+                onClick={onClose}
+                aria-label={t('common.close')}
+              >
+                <X size={16} />
+              </button>
+            </header>
+            <div className="sonveil-context-empty">
+              <span>
+                <Play size={18} fill="currentColor" />
+              </span>
+              <p>{t('player.notPlaying')}</p>
+            </div>
           </div>
-        </aside>
+        </RightPanelShell>
       );
     }
 
@@ -67,77 +67,83 @@ export const NowPlayingContext = React.memo(
       : null;
 
     return (
-      <aside
-        className="sonveil-context sonveil-context-drawer"
-        role="dialog"
-        aria-modal="false"
-        aria-label={t('player.nowPlaying')}
-      >
-        <header className="sonveil-context-header">
-          <span>{t('player.nowPlaying')}</span>
-          <div className="sonveil-context-header-actions">
-            <LikeButton track={track} variant="editorial" />
+      <RightPanelShell open={open} onClose={onClose} ariaLabel={t('player.nowPlaying')}>
+        <div className="sonveil-context">
+          <header className="sonveil-context-header" data-tauri-drag-region>
+            <span>{t('player.nowPlaying')}</span>
+            <div className="sonveil-context-header-actions">
+              <LikeButton track={track} variant="editorial" />
+              <button
+                type="button"
+                className="sonveil-context-close"
+                onClick={onClose}
+                aria-label={t('common.close')}
+              >
+                <X size={16} />
+              </button>
+            </div>
+          </header>
+
+          <div className="sonveil-context-scroll">
             <button
               type="button"
-              className="sonveil-context-close"
-              onClick={onClose}
-              aria-label={t('common.close')}
+              className="sonveil-context-art"
+              onClick={() => navigate(`/track/${encodeURIComponent(track.urn)}`)}
+              aria-label={t('track.openTrackPage')}
             >
-              <X size={16} />
+              {artwork ? <img src={artwork} alt="" decoding="async" /> : <span />}
             </button>
+
+            <div className="sonveil-context-copy">
+              <button
+                type="button"
+                onClick={() => navigate(`/track/${encodeURIComponent(track.urn)}`)}
+              >
+                {getDisplayTitle(track)}
+              </button>
+              <p>{getArtistDisplay(track).primary}</p>
+            </div>
+
+            <div className="sonveil-context-actions">
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  openLyrics({ rightPanelOpen: false });
+                }}
+              >
+                <MicVocal size={16} />
+                <span>{t('track.lyrics')}</span>
+              </button>
+              <button
+                type="button"
+                className={queueOpen ? 'is-active' : ''}
+                onClick={onQueueToggle}
+              >
+                <ListMusic size={16} />
+                <span>{t('player.queue')}</span>
+              </button>
+            </div>
+
+            {nextTrack && (
+              <section className="sonveil-context-next">
+                <span>{t('player.upNext')}</span>
+                <button type="button" onClick={onQueueToggle}>
+                  <span className="sonveil-context-next-art">
+                    {nextArtwork ? (
+                      <img src={nextArtwork} alt="" loading="lazy" decoding="async" />
+                    ) : null}
+                  </span>
+                  <span className="sonveil-context-next-copy">
+                    <b>{getDisplayTitle(nextTrack)}</b>
+                    <small>{getArtistDisplay(nextTrack).primary}</small>
+                  </span>
+                </button>
+              </section>
+            )}
           </div>
-        </header>
-
-        <button
-          type="button"
-          className="sonveil-context-art"
-          onClick={() => navigate(`/track/${encodeURIComponent(track.urn)}`)}
-          aria-label={t('track.openTrackPage')}
-        >
-          {artwork ? <img src={artwork} alt="" decoding="async" /> : <span />}
-        </button>
-
-        <div className="sonveil-context-copy">
-          <button type="button" onClick={() => navigate(`/track/${encodeURIComponent(track.urn)}`)}>
-            {getDisplayTitle(track)}
-          </button>
-          <p>{getArtistDisplay(track).primary}</p>
         </div>
-
-        <div className="sonveil-context-actions">
-          <button
-            type="button"
-            onClick={() => {
-              onClose();
-              openLyrics({ rightPanelOpen: false });
-            }}
-          >
-            <MicVocal size={16} />
-            <span>{t('track.lyrics')}</span>
-          </button>
-          <button type="button" className={queueOpen ? 'is-active' : ''} onClick={onQueueToggle}>
-            <ListMusic size={16} />
-            <span>{t('player.queue')}</span>
-          </button>
-        </div>
-
-        {nextTrack && (
-          <section className="sonveil-context-next">
-            <span>{t('player.upNext')}</span>
-            <button type="button" onClick={onQueueToggle}>
-              <span className="sonveil-context-next-art">
-                {nextArtwork ? (
-                  <img src={nextArtwork} alt="" loading="lazy" decoding="async" />
-                ) : null}
-              </span>
-              <span className="sonveil-context-next-copy">
-                <b>{getDisplayTitle(nextTrack)}</b>
-                <small>{getArtistDisplay(nextTrack).primary}</small>
-              </span>
-            </button>
-          </section>
-        )}
-      </aside>
+      </RightPanelShell>
     );
   },
 );

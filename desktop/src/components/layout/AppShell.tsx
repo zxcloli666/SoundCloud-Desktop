@@ -180,7 +180,6 @@ const isInputEl = (el: EventTarget | null) =>
 /* ── AppShell ──────────────────────────────────────────────── */
 
 export const AppShell = React.memo(() => {
-  const { t } = useTranslation();
   const [queueOpen, setQueueOpen] = useState(false);
   const [contextOpen, setContextOpen] = useState(false);
   const [kbOpen, setKbOpen] = useState(false);
@@ -398,19 +397,12 @@ export const AppShell = React.memo(() => {
         contextOpen={contextOpen}
       />
       {contextOpen && (
-        <>
-          <button
-            type="button"
-            className="sonveil-context-backdrop"
-            aria-label={t('common.close')}
-            onClick={onContextClose}
-          />
-          <NowPlayingContext
-            onQueueToggle={onQueueToggle}
-            queueOpen={queueOpen}
-            onClose={onContextClose}
-          />
-        </>
+        <NowPlayingContext
+          open={contextOpen}
+          onQueueToggle={onQueueToggle}
+          queueOpen={queueOpen}
+          onClose={onContextClose}
+        />
       )}
       {queueOpen && (
         <Suspense fallback={null}>

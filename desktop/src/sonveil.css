@@ -1142,42 +1142,24 @@
   box-shadow: none;
 }
 
-/* Right track context uses static opaque surfaces to keep repaint cost low. */
+/* Track context shares the full-height drawer shell used by the queue. */
 .sonveil-context {
   display: flex;
+  width: 100%;
+  height: 100%;
   min-width: 0;
   min-height: 0;
   flex-direction: column;
   overflow: hidden;
   padding: 16px;
-  border: 1px solid var(--sonveil-line);
-  border-radius: 16px;
-  background: var(--sonveil-panel);
-}
-
-.sonveil-context-backdrop {
-  position: fixed;
-  z-index: 54;
-  inset: 0 0 88px;
-  padding: 0;
   border: 0;
+  border-radius: 0;
   background: transparent;
-  cursor: default;
-}
-
-.sonveil-context-drawer {
-  position: fixed;
-  z-index: 55;
-  top: 60px;
-  right: 8px;
-  bottom: 96px;
-  width: min(320px, calc(100vw - 88px));
-  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.45);
 }
 
 .sonveil-context-header {
   display: flex;
-  height: 32px;
+  min-height: 38px;
   flex: 0 0 auto;
   align-items: center;
   justify-content: space-between;
@@ -1199,16 +1181,44 @@
   gap: 4px;
 }
 
-.sonveil-context-close {
+.sonveil-context-header-actions .editorial-like-button {
   display: grid;
-  width: 30px;
-  height: 30px;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
   padding: 0;
   place-items: center;
   border: 0;
-  border-radius: 9px;
-  background: #1b1b1e;
-  color: rgba(255, 255, 255, 0.52);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.07);
+  color: rgba(255, 255, 255, 0.64);
+  cursor: pointer;
+  transition:
+    background-color 120ms ease,
+    color 120ms ease;
+}
+
+.sonveil-context-header-actions .editorial-like-button:hover,
+.sonveil-context-header-actions .editorial-like-button:focus-visible {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+.sonveil-context-header-actions .editorial-like-button.is-liked {
+  color: var(--color-accent);
+}
+
+.sonveil-context-close {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  padding: 0;
+  place-items: center;
+  border: 0;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.07);
+  color: rgba(255, 255, 255, 0.64);
   cursor: pointer;
   transition:
     background-color 120ms ease,
@@ -1217,8 +1227,19 @@
 
 .sonveil-context-close:hover,
 .sonveil-context-close:focus-visible {
-  background: #242428;
+  background: rgba(255, 255, 255, 0.12);
   color: #fff;
+}
+
+.sonveil-context-scroll {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  overflow-y: auto;
+  padding-right: 2px;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
 }
 
 .sonveil-context-art {
@@ -1611,10 +1632,6 @@
 }
 
 @media (max-width: 980px) {
-  .sonveil-context-backdrop {
-    background: rgba(0, 0, 0, 0.28);
-  }
-
   .sonveil-library-content {
     padding-inline: 24px;
   }

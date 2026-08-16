@@ -6,7 +6,6 @@ import {
   Clock,
   Compass,
   Download,
-  Heart,
   Home,
   Library,
   ListMusic,
@@ -23,8 +22,7 @@ type IconCmp = React.ComponentType<{ size?: number; strokeWidth?: number; classN
 const primaryNav: { to: string; icon: IconCmp; label: string }[] = [
   { to: '/home', icon: Home, label: 'nav.home' },
   { to: '/search', icon: Search, label: 'nav.search' },
-  { to: '/library', icon: Library, label: 'nav.library' },
-  { to: '/library/likes', icon: Heart, label: 'user.likes' },
+  { to: '/library/likes', icon: Library, label: 'nav.library' },
 ];
 
 function RailLink({
@@ -59,7 +57,13 @@ export const Sidebar = React.memo(() => {
   const user = useAuthStore((state) => state.user);
   const pinnedPlaylists = useSettingsStore((state) => state.pinnedPlaylists);
   const appMode = useAppMode();
-  const isPrimaryActive = (to: string) => location.pathname === to;
+  const libraryActive =
+    location.pathname === '/library' ||
+    location.pathname === '/library/likes' ||
+    location.pathname === '/library/following' ||
+    location.pathname === '/library/playlists';
+  const isPrimaryActive = (to: string) =>
+    to === '/library/likes' ? libraryActive : location.pathname === to;
 
   return (
     <aside className="sonveil-sidebar" aria-label={t('nav.library')}>
