@@ -9,6 +9,14 @@ import { GlobalSearch } from './GlobalSearch';
 
 const navClass = 'sonveil-title-button disabled:cursor-default disabled:opacity-20';
 
+const isInteractiveTitlebarTarget = (target: EventTarget | null) =>
+  target instanceof Element &&
+  Boolean(
+    target.closest(
+      'button, input, textarea, select, a, [role="button"], [contenteditable="true"], .sonveil-title-search',
+    ),
+  );
+
 const NavButtons = React.memo(() => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -66,10 +74,16 @@ export const Titlebar = React.memo(() => {
   const { t } = useTranslation();
   const win = isDesignPreview() ? null : getCurrentWindow();
 
+  const handleMouseDown = (event: React.MouseEvent<HTMLElement>) => {
+    if (event.button !== 0 || !win || isInteractiveTitlebarTarget(event.target)) return;
+    event.preventDefault();
+    void win.startDragging();
+  };
+
   return (
-    <header className="sonveil-titlebar" data-tauri-drag-region>
+    <header className="sonveil-titlebar" onMouseDown={handleMouseDown}>
       <NavButtons />
-      <div className="sonveil-title-search" data-tauri-drag-region>
+      <div className="sonveil-title-search">
         <GlobalSearch />
       </div>
       <div className="sonveil-window-controls">

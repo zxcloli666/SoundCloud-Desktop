@@ -355,7 +355,7 @@ export const AppShell = React.memo(() => {
   return (
     <div className="sonveil-app">
       <CustomBackground />
-      <div className="sonveil-workspace">
+      <div className="sonveil-workspace" data-tauri-drag-region>
         <Sidebar />
         <div className="sonveil-stage">
           <Titlebar />

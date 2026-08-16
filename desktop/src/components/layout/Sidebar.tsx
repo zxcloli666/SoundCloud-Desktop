@@ -17,7 +17,6 @@ import {
 } from '../../lib/icons';
 import { useAppMode } from '../../stores/app-status';
 import { useAuthStore } from '../../stores/auth';
-import { usePlayerStore } from '../../stores/player';
 import { useSettingsStore } from '../../stores/settings';
 import { Avatar } from '../ui/Avatar';
 
@@ -60,7 +59,6 @@ export const Sidebar = React.memo(() => {
   const { t, i18n } = useTranslation();
   const location = useLocation();
   const user = useAuthStore((state) => state.user);
-  const currentTrack = usePlayerStore((state) => state.currentTrack);
   const pinnedPlaylists = useSettingsStore((state) => state.pinnedPlaylists);
   const appMode = useAppMode();
   const params = new URLSearchParams(location.search);
@@ -99,23 +97,6 @@ export const Sidebar = React.memo(() => {
       <div className="sonveil-rail-divider" />
 
       <div className="sonveil-rail-covers" aria-label={t('sidebar.quickAccess')}>
-        {currentTrack && (
-          <NavLink
-            to={`/track/${encodeURIComponent(currentTrack.urn)}`}
-            className="sonveil-rail-cover is-current"
-            title={currentTrack.title}
-          >
-            {art(currentTrack.artwork_url || currentTrack.user.avatar_url, 'small') ? (
-              <img
-                src={art(currentTrack.artwork_url || currentTrack.user.avatar_url, 'small') || ''}
-                alt=""
-                decoding="async"
-              />
-            ) : (
-              <ListMusic size={17} />
-            )}
-          </NavLink>
-        )}
         {pinnedPlaylists.slice(0, 5).map((playlist) => {
           const artwork = art(playlist.artworkUrl, 'small');
           return (

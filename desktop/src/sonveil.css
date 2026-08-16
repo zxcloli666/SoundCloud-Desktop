@@ -26,7 +26,7 @@
   gap: 8px;
   height: calc(100% - 88px);
   min-height: 0;
-  padding: 8px 8px 0;
+  padding: 8px;
   isolation: isolate;
 }
 
@@ -183,10 +183,6 @@
   border-radius: 10px;
   background: #1b1b1e;
   color: rgba(255, 255, 255, 0.5);
-}
-
-.sonveil-rail-cover.is-current {
-  border-color: color-mix(in srgb, var(--color-accent) 65%, transparent);
 }
 
 .sonveil-rail-cover img {
