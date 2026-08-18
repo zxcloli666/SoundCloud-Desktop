@@ -10,11 +10,14 @@
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use std::time::Duration;
 
 /// Browser User-Agent. Wallhaven and Konachan 403 anything else; the proxy's
 /// `direct` mode reuses this for image fetches too.
 pub const BROWSER_UA: &str =
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36";
+const WALLPAPER_CONNECT_TIMEOUT_MS: u64 = 8_000;
+const WALLPAPER_REQUEST_TIMEOUT_MS: u64 = 12_000;
 const BOORU_LIMIT: usize = 24;
 const PINTEREST_PAGE: u32 = 25;
 
@@ -60,12 +63,22 @@ pub async fn wallpaper_search(args: WallpaperQuery) -> Result<WallpaperSearchRes
     }
 }
 
+fn wallpaper_client() -> Result<reqwest::Client, String> {
+    reqwest::Client::builder()
+        .connect_timeout(Duration::from_millis(WALLPAPER_CONNECT_TIMEOUT_MS))
+        .timeout(Duration::from_millis(WALLPAPER_REQUEST_TIMEOUT_MS))
+        .user_agent(BROWSER_UA)
+        .build()
+        .map_err(|error| format!("wallpaper client: {error}"))
+}
+
 // ── shared helpers ──────────────────────────────────────────
 
 async fn send_json(req: reqwest::RequestBuilder) -> Result<Value, String> {
     let resp = req
         .header("User-Agent", BROWSER_UA)
         .header("Accept", "application/json")
+        .timeout(Duration::from_millis(WALLPAPER_REQUEST_TIMEOUT_MS))
         .send()
         .await
         .map_err(|e| format!("request: {e}"))?;
@@ -166,8 +179,9 @@ async fn search_wallhaven(a: &WallpaperQuery) -> Result<WallpaperSearchResult, S
         params.push(("colors", c.to_string()));
     }
 
+    let client = wallpaper_client()?;
     let json = send_json(
-        reqwest::Client::new()
+        client
             .get("https://wallhaven.cc/api/v1/search")
             .query(&params),
     )
@@ -218,7 +232,8 @@ async fn search_konachan(a: &WallpaperQuery) -> Result<WallpaperSearchResult, St
         tags.push("order:score".to_string());
     }
 
-    let json = send_json(reqwest::Client::new().get("https://konachan.com/post.json").query(&[
+    let client = wallpaper_client()?;
+    let json = send_json(client.get("https://konachan.com/post.json").query(&[
         ("limit", BOORU_LIMIT.to_string()),
         ("page", page.to_string()),
         ("tags", tags.join(" ")),
@@ -254,7 +269,8 @@ async fn search_safebooru(a: &WallpaperQuery) -> Result<WallpaperSearchResult, S
         tags.push("sort:score:desc".to_string());
     }
 
-    let json = send_json(reqwest::Client::new().get("https://safebooru.org/index.php").query(&[
+    let client = wallpaper_client()?;
+    let json = send_json(client.get("https://safebooru.org/index.php").query(&[
         ("page", "dapi".to_string()),
         ("s", "post".to_string()),
         ("q", "index".to_string()),
@@ -302,8 +318,9 @@ async fn search_pinterest(a: &WallpaperQuery) -> Result<WallpaperSearchResult, S
     let data = serde_json::json!({ "options": options, "context": {} }).to_string();
     let source = format!("/search/pins/?q={query}");
 
+    let client = wallpaper_client()?;
     let json = send_json(
-        reqwest::Client::new()
+        client
             .get("https://www.pinterest.com/resource/BaseSearchResource/get/")
             .query(&[("source_url", source), ("data", data)])
             .header("x-pinterest-pws-handler", "www/search/[scope].js"),

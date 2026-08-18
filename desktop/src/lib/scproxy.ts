@@ -80,16 +80,32 @@ document.addEventListener(
 );
 
 // Hook fetch()
+const DEFAULT_SC_FETCH_TIMEOUT_MS = 12_000;
 const origFetch = window.fetch.bind(window);
 window.fetch = ((input: RequestInfo | URL, init?: RequestInit) => {
+  const existingSignal = init?.signal;
+  const controller = existingSignal ? null : new AbortController();
+  const signal = existingSignal ?? controller?.signal;
+  const timeout = controller ? setTimeout(() => controller.abort(), DEFAULT_SC_FETCH_TIMEOUT_MS) : null;
+
   if (typeof input === 'string' && input.startsWith('http') && !isWhitelistedAssetUrl(input)) {
     input = toScproxyUrl(input);
   } else if (
     input instanceof Request &&
     input.url.startsWith('http') &&
     !isWhitelistedAssetUrl(input.url)
-  ) {
+    ) {
     input = new Request(toScproxyUrl(input.url), input);
   }
-  return origFetch(input, init);
+
+  const timedInit: RequestInit = {
+    ...(init ?? {}),
+    signal,
+  };
+
+  return origFetch(input, timedInit).finally(() => {
+    if (timeout !== null) {
+      clearTimeout(timeout);
+    }
+  });
 }) as typeof fetch;

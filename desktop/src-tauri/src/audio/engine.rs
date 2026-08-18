@@ -260,7 +260,13 @@ pub async fn load_url(
 ) -> Result<AudioLoadResult, String> {
     let generation = state.load_gen.load(Ordering::Relaxed);
 
-    let client = reqwest::Client::new();
+    const AUDIO_LOAD_CONNECT_TIMEOUT_MS: u64 = 8_000;
+    const AUDIO_LOAD_TIMEOUT_MS: u64 = 20_000;
+    let client = reqwest::Client::builder()
+        .connect_timeout(Duration::from_millis(AUDIO_LOAD_CONNECT_TIMEOUT_MS))
+        .timeout(Duration::from_millis(AUDIO_LOAD_TIMEOUT_MS))
+        .build()
+        .map_err(|e| format!("http client: {e}"))?;
     let retry_delays = [300u64, 800, 2000];
     let mut last_err = String::new();
     let mut bytes: Vec<u8> = Vec::new();

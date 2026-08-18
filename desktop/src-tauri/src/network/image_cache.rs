@@ -5,6 +5,7 @@ use base64::{engine::general_purpose::STANDARD as BASE64, Engine as _};
 use sha2::{Digest, Sha256};
 use tokio::fs::{self, File};
 use tokio::io::AsyncWriteExt;
+use std::time::Duration;
 
 use crate::shared::constants::is_domain_whitelisted;
 
@@ -166,15 +167,21 @@ pub async fn handle(encoded: &str) -> ImageResult {
     let mut data: Vec<u8> = Vec::new();
 
     for hop in crate::network::edge::expand_upstreams(upstreams) {
-        let resp = match state
-            .http_client
-            .get(&hop.url)
-            .header("X-Target", &encoded_for_header)
-            .send()
-            .await
+        const IMAGE_CACHE_HOP_TIMEOUT_MS: u64 = 10_000;
+        const IMAGE_CACHE_BODY_TIMEOUT_MS: u64 = 16_000;
+
+        let resp = match tokio::time::timeout(
+            Duration::from_millis(IMAGE_CACHE_HOP_TIMEOUT_MS),
+            state
+                .http_client
+                .get(&hop.url)
+                .header("X-Target", &encoded_for_header)
+                .send(),
+        )
+        .await
         {
-            Ok(r) => r,
-            Err(_) => {
+            Ok(Ok(r)) => r,
+            Ok(Err(_)) | Err(_) => {
                 hop.note(false);
                 continue;
             }
@@ -184,13 +191,19 @@ pub async fn handle(encoded: &str) -> ImageResult {
         if !crate::network::edge::hop_ok(&hop, &resp) {
             continue;
         }
-        match resp.bytes().await {
-            Ok(b) => data = b.to_vec(),
-            Err(_) => {
+        let bytes = match tokio::time::timeout(
+            Duration::from_millis(IMAGE_CACHE_BODY_TIMEOUT_MS),
+            resp.bytes(),
+        )
+        .await
+        {
+            Ok(Ok(b)) => b,
+            Ok(Err(_)) | Err(_) => {
                 hop.note(false);
                 continue;
             }
-        }
+        };
+        data = bytes.to_vec();
 
         hop.note(status < 500);
         if status < 500 {

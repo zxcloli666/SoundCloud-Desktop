@@ -13,6 +13,8 @@ interface ScWaveformJson {
   samples: number[];
 }
 
+const WAVEFORM_FETCH_TIMEOUT_MS = 8_000;
+
 /** Convert SC's PNG waveform URL (`_m.png`) to the JSON variant (`_m.json`). */
 function normalizeWaveformUrl(raw: string): string | null {
   if (!raw) return null;
@@ -22,17 +24,23 @@ function normalizeWaveformUrl(raw: string): string | null {
 }
 
 async function fetchWaveform(rawUrl: string): Promise<WaveformSamples> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), WAVEFORM_FETCH_TIMEOUT_MS);
   const url = normalizeWaveformUrl(rawUrl);
   if (!url) throw new Error('Invalid waveform url');
 
-  const res = await tauriFetch(url, { method: 'GET' });
-  if (!res.ok) throw new Error(`waveform ${res.status}`);
-  const json = (await res.json()) as ScWaveformJson;
+  try {
+    const res = await tauriFetch(url, { method: 'GET', signal: controller.signal });
+    if (!res.ok) throw new Error(`waveform ${res.status}`);
+    const json = (await res.json()) as ScWaveformJson;
 
-  if (!Array.isArray(json.samples) || json.samples.length === 0) {
-    throw new Error('waveform: empty samples');
+    if (!Array.isArray(json.samples) || json.samples.length === 0) {
+      throw new Error('waveform: empty samples');
+    }
+    return { values: json.samples, height: json.height || 140 };
+  } finally {
+    clearTimeout(timer);
   }
-  return { values: json.samples, height: json.height || 140 };
 }
 
 /** Fetch + cache a track's raw SC waveform JSON. 30-min cache per track URN. */

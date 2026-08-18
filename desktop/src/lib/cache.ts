@@ -9,6 +9,7 @@ import {trackedInvoke as invoke} from './diagnostics';
 
 const WALLPAPERS_DIR = 'wallpapers';
 const CACHE_MAINTENANCE_INTERVAL_MS = 60 * 1000;
+const WALLPAPER_FETCH_TIMEOUT_MS = 12_000;
 
 let cacheMaintenanceStarted = false;
 
@@ -238,16 +239,25 @@ function extensionFromType(mime: string): string {
  *  Идём через локальный прокси в режиме `direct` — он фетчит с браузерным UA
  *  (Wallhaven/Konachan 403-ят не-браузер), webview-fetch так не умеет. */
 export async function downloadWallpaper(url: string): Promise<string> {
-  const res = await tauriFetch(toScproxyUrl(url, { direct: true }));
-  if (!res.ok) throw new Error(`Download failed: ${res.status}`);
-  const ct = res.headers.get('content-type') ?? 'image/jpeg';
-  const ext = extensionFromType(ct);
-  const name = `wallpaper_${Date.now()}${ext}`;
-  const dir = await getWallpapersDir();
-  const path = await join(dir, name);
-  const buffer = await res.arrayBuffer();
-  await writeFile(path, new Uint8Array(buffer));
-  return name;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), WALLPAPER_FETCH_TIMEOUT_MS);
+
+  try {
+    const res = await tauriFetch(toScproxyUrl(url, { direct: true }), {
+      signal: controller.signal,
+    });
+    if (!res.ok) throw new Error(`Download failed: ${res.status}`);
+    const ct = res.headers.get('content-type') ?? 'image/jpeg';
+    const ext = extensionFromType(ct);
+    const name = `wallpaper_${Date.now()}${ext}`;
+    const dir = await getWallpapersDir();
+    const path = await join(dir, name);
+    const buffer = await res.arrayBuffer();
+    await writeFile(path, new Uint8Array(buffer));
+    return name;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 /** Сохраняет ArrayBuffer (из input type=file) как wallpaper. Возвращает имя файла. */

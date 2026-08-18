@@ -1,5 +1,6 @@
 use std::path::PathBuf;
 use std::sync::OnceLock;
+use std::time::Duration;
 
 use base64::{engine::general_purpose::STANDARD as BASE64, Engine as _};
 use sha2::{Digest, Sha256};
@@ -158,6 +159,9 @@ pub async fn proxy_request(encoded: &str) -> ProxyResult {
     let mut data: Vec<u8> = Vec::new();
 
     for hop in crate::network::edge::expand_upstreams(upstreams) {
+        const PROXY_HOP_TIMEOUT_MS: u64 = 10_000;
+        const PROXY_HOP_BODY_TIMEOUT_MS: u64 = 16_000;
+
         // `direct` = fetch the target ourselves with a browser User-Agent
         // (hosts like wallhaven/konachan 403 a non-browser UA). Otherwise relay
         // the request to the proxy upstream via the X-Target header.
@@ -172,9 +176,14 @@ pub async fn proxy_request(encoded: &str) -> ProxyResult {
                 .get(&hop.url)
                 .header("X-Target", &encoded_for_header)
         };
-        let resp = match builder.send().await {
-            Ok(r) => r,
-            Err(_) => {
+        let resp = match tokio::time::timeout(
+            Duration::from_millis(PROXY_HOP_TIMEOUT_MS),
+            builder.send(),
+        )
+        .await
+        {
+            Ok(Ok(r)) => r,
+            Ok(Err(_)) | Err(_) => {
                 hop.note(false);
                 continue;
             }
@@ -184,13 +193,19 @@ pub async fn proxy_request(encoded: &str) -> ProxyResult {
         if !crate::network::edge::hop_ok(&hop, &resp) {
             continue;
         }
-        match resp.bytes().await {
-            Ok(b) => data = b.to_vec(),
-            Err(_) => {
+        let bytes = match tokio::time::timeout(
+            Duration::from_millis(PROXY_HOP_BODY_TIMEOUT_MS),
+            resp.bytes(),
+        )
+        .await
+        {
+            Ok(Ok(b)) => b,
+            Ok(Err(_)) | Err(_) => {
                 hop.note(false);
                 continue;
             }
-        }
+        };
+        data = bytes.to_vec();
 
         hop.note(status < 500);
         if status < 500 {

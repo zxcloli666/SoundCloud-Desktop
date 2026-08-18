@@ -2,6 +2,8 @@ use futures_util::StreamExt;
 use reqwest::{Client, Response};
 use tauri::{Emitter, Manager};
 
+use std::time::Duration;
+
 use super::buffer::{StreamingBuffer, MIN_VALID_BYTES};
 use crate::audio::state::AudioState;
 use crate::rt::AppHandle;
@@ -18,6 +20,8 @@ pub(super) struct ProducerContext {
     source: DownloadSource,
     expected_duration_ms: Option<u64>,
 }
+
+const STREAM_CHUNK_TIMEOUT_MS: u64 = 12_000;
 
 pub(super) fn context(
     app: &AppHandle,
@@ -102,22 +106,31 @@ pub(super) async fn pump_response(
     let total = response.content_length().unwrap_or(0);
     let mut downloaded = 0u64;
     let mut stream = response.bytes_stream();
-    while let Some(chunk) = stream.next().await {
+    loop {
+        let chunk = match tokio::time::timeout(
+            Duration::from_millis(STREAM_CHUNK_TIMEOUT_MS),
+            stream.next(),
+        )
+        .await
+        {
+            Ok(Some(Ok(chunk))) => chunk,
+            Ok(Some(Err(error))) => {
+                buffer.fail(format!("stream body: {error}"));
+                return;
+            }
+            Ok(None) => break,
+            Err(_) => {
+                buffer.fail(format!("stream body timed out"));
+                return;
+            }
+        };
         if !is_current(&context.app, context.generation) {
             buffer.fail("stream cancelled".to_string());
             return;
         }
-        match chunk {
-            Ok(bytes) => {
-                downloaded += bytes.len() as u64;
-                buffer.push(&bytes);
-                emit_progress(&context, downloaded, total);
-            }
-            Err(error) => {
-                buffer.fail(format!("stream body: {error}"));
-                return;
-            }
-        }
+        downloaded += chunk.len() as u64;
+        buffer.push(&chunk);
+        emit_progress(&context, downloaded, total);
     }
     buffer.finish();
     emit_progress(&context, downloaded, downloaded.max(total));

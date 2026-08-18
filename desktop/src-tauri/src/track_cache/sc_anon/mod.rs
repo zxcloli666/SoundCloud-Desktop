@@ -33,6 +33,7 @@ const PRESET_ORDER: &[&str] = &["mp3_1_0", "aac_160k", "opus_0_0", "abr_sq"];
 const FAIL_THRESHOLD: u8 = 3;
 const COOLDOWN_SECS: u64 = 300;
 const CLIENT_ID_MIN_REFRESH: Duration = Duration::from_secs(30);
+const SC_ANON_REQUEST_TIMEOUT_MS: u64 = 12_000;
 
 fn now_secs() -> u64 {
     SystemTime::now()
@@ -386,6 +387,7 @@ impl AnonClient {
             .client
             .get(url)
             .header("User-Agent", SC_USER_AGENT)
+            .timeout(Duration::from_millis(SC_ANON_REQUEST_TIMEOUT_MS))
             .send()
             .await
             .map_err(|e| format!("request: {e}"))?;
@@ -394,7 +396,13 @@ impl AnonClient {
         if !status.is_success() {
             return Err(format!("HTTP {status}"));
         }
-        resp.json::<T>().await.map_err(|e| format!("decode: {e}"))
+        tokio::time::timeout(
+            Duration::from_millis(SC_ANON_REQUEST_TIMEOUT_MS),
+            resp.json::<T>(),
+        )
+        .await
+        .map_err(|_| "json decode timed out".to_string())?
+        .map_err(|e| format!("decode: {e}"))
     }
 }
 

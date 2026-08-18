@@ -29,6 +29,9 @@ const DOWNLOAD_CONNECT_TIMEOUT_MS: u64 = 3_000;
 const DOWNLOAD_READ_TIMEOUT_SECS: u64 = 130;
 const DIRECT_CONNECT_TIMEOUT_MS: u64 = 5_000;
 const DIRECT_READ_TIMEOUT_SECS: u64 = 70;
+const TRACK_CACHE_CHUNK_TIMEOUT_MS: u64 = 12_000;
+const TRACK_CACHE_TEXT_TIMEOUT_MS: u64 = 10_000;
+const TRACK_CACHE_COVER_TIMEOUT_MS: u64 = 8_000;
 const RETRY_DELAYS_MS: [u64; 3] = [200, 600, 1500];
 // Preloading resolves and warms only a tiny stream prefix. Keep one speculative
 // request in flight so it cannot compete with foreground playback.
@@ -713,12 +716,24 @@ async fn write_response_to_cache(
     let mut sniff = Vec::with_capacity(AUDIO_SNIFF_LEN);
     let mut emitted_progress = -1.0f64;
 
-    while let Some(chunk) = stream.next().await {
-        let chunk = match chunk {
-            Ok(chunk) => chunk,
-            Err(err) => {
+    loop {
+        let chunk = match tokio::time::timeout(
+            Duration::from_millis(TRACK_CACHE_CHUNK_TIMEOUT_MS),
+            stream.next(),
+        )
+        .await
+        {
+            Ok(Some(Ok(chunk))) => chunk,
+            Ok(Some(Err(err))) => {
                 cleanup_temp_file(&temp_path).await;
                 return Err(DownloadError::Retryable(format!("body read: {err}")));
+            }
+            Ok(None) => break,
+            Err(_) => {
+                cleanup_temp_file(&temp_path).await;
+                return Err(DownloadError::Retryable(format!(
+                    "body read timed out after {TRACK_CACHE_CHUNK_TIMEOUT_MS}ms"
+                )));
             }
         };
 
@@ -933,12 +948,18 @@ async fn download_api(
         return result;
     }
 
-    let body = match response.text().await {
-        Ok(body) => normalize_error_body(&body),
-        Err(err) => Some(format!(
+    let body = match tokio::time::timeout(
+        Duration::from_millis(TRACK_CACHE_TEXT_TIMEOUT_MS),
+        response.text(),
+    )
+    .await
+    {
+        Ok(Ok(body)) => normalize_error_body(&body),
+        Ok(Err(err)) => Some(format!(
             "failed to read response body: {}",
             format_reqwest_error(err)
         )),
+        Err(_) => Some("response body timed out".to_string()),
     };
     let message = if let Some(body) = body {
         format!("HTTP {}: {}", status, body)
@@ -1540,14 +1561,30 @@ impl TrackCacheState {
     }
 
     async fn fetch_cover(&self, url: &str) -> Option<Vec<u8>> {
-        let resp = self.client.get(url).send().await.ok()?;
+        let resp = match tokio::time::timeout(
+            Duration::from_millis(TRACK_CACHE_COVER_TIMEOUT_MS),
+            self.client.get(url).send(),
+        )
+        .await
+        {
+            Ok(Ok(resp)) => resp,
+            _ => return None,
+        };
         if !resp.status().is_success() {
             return None;
         }
         if resp.content_length().map(|l| l > MAX_COVER_BYTES).unwrap_or(false) {
             return None;
         }
-        let bytes = resp.bytes().await.ok()?;
+        let bytes = match tokio::time::timeout(
+            Duration::from_millis(TRACK_CACHE_COVER_TIMEOUT_MS),
+            resp.bytes(),
+        )
+        .await
+        {
+            Ok(Ok(bytes)) => bytes,
+            _ => return None,
+        };
         if bytes.is_empty() || bytes.len() as u64 > MAX_COVER_BYTES {
             return None;
         }
@@ -1655,46 +1692,58 @@ impl TrackCacheState {
                 continue;
             };
 
-            match self.client.get(&redirect_url).send().await {
-                Ok(resp) if resp.status().is_success() => {
-                    let quality = PlaybackQuality::Hq;
-                    println!("[TrackCache] {urn} → storage (redirect via {host})");
-                    match write_response_to_cache(
-                        target_dir,
-                        urn,
-                        resp,
-                        quality,
-                        DownloadSource::Storage,
-                        self.app_handle.as_ref(),
-                    )
-                    .await
-                    {
-                        Ok(result) => {
-                            let kb = std::fs::metadata(&result.path)
-                                .map(|m| m.len() / 1024)
-                                .unwrap_or(0);
-                            let ms = start.elapsed().as_millis();
-                            println!("[TrackCache] downloaded {urn} via s3 — {kb} KB in {ms}ms");
-                            return Ok(result.path);
-                        }
-                        Err(DownloadError::Fatal(e)) => {
-                            eprintln!("[TrackCache] s3 write failed for {urn}: {e}");
-                        }
-                        Err(DownloadError::Retryable(e)) => {
-                            eprintln!("[TrackCache] s3 download failed for {urn}: {e}");
-                        }
+            let response = match tokio::time::timeout(
+                Duration::from_millis(STORAGE_TIMEOUT_MS),
+                self.client.get(&redirect_url).send(),
+            )
+            .await
+            {
+                Ok(Ok(resp)) => resp,
+                Ok(Err(err)) => {
+                    eprintln!("[TrackCache] s3 redirect failed for {urn} ({host}): {err}");
+                    continue;
+                }
+                Err(_) => {
+                    eprintln!(
+                        "[TrackCache] s3 redirect timed out for {urn} ({host}) after {STORAGE_TIMEOUT_MS}ms"
+                    );
+                    continue;
+                }
+            };
+            if response.status().is_success() {
+                let quality = PlaybackQuality::Hq;
+                println!("[TrackCache] {urn} → storage (redirect via {host})");
+                match write_response_to_cache(
+                    target_dir,
+                    urn,
+                    response,
+                    quality,
+                    DownloadSource::Storage,
+                    self.app_handle.as_ref(),
+                )
+                .await
+                {
+                    Ok(result) => {
+                        let kb = std::fs::metadata(&result.path)
+                            .map(|m| m.len() / 1024)
+                            .unwrap_or(0);
+                        let ms = start.elapsed().as_millis();
+                        println!("[TrackCache] downloaded {urn} via s3 — {kb} KB in {ms}ms");
+                        return Ok(result.path);
+                    }
+                    Err(DownloadError::Fatal(e)) => {
+                        eprintln!("[TrackCache] s3 write failed for {urn}: {e}");
+                    }
+                    Err(DownloadError::Retryable(e)) => {
+                        eprintln!("[TrackCache] s3 download failed for {urn}: {e}");
                     }
                 }
-                Ok(resp) if resp.status().as_u16() == 404 || resp.status().as_u16() == 410 => {}
-                Ok(resp) => {
-                    eprintln!(
-                        "[TrackCache] s3 redirect HTTP {} for {urn} ({host})",
-                        resp.status()
-                    );
-                }
-                Err(err) => {
-                    eprintln!("[TrackCache] s3 redirect failed for {urn} ({host}): {err}");
-                }
+            } else if response.status().as_u16() == 404 || response.status().as_u16() == 410 {
+            } else {
+                eprintln!(
+                    "[TrackCache] s3 redirect HTTP {} for {urn} ({host})",
+                    response.status()
+                );
             }
         }
 
@@ -1773,28 +1822,46 @@ impl TrackCacheState {
                 } else {
                     &self.client
                 };
-                let resp = match client.get(&hop.url).send().await {
-                    Ok(r) => r,
-                    Err(err) => {
+                let request_timeout = if hop.tier_label() == "direct" {
+                    Duration::from_millis(STORAGE_TIMEOUT_MS)
+                } else {
+                    Duration::from_secs(6)
+                };
+                let response = match tokio::time::timeout(
+                    request_timeout,
+                    client.get(&hop.url).send(),
+                )
+                .await
+                {
+                    Ok(Ok(r)) => r,
+                    Ok(Err(err)) => {
                         hop.note(false);
                         eprintln!("[TrackCache] storage {} failed for {urn}: {err}", hop.tier_label());
                         continue;
                     }
+                    Err(_) => {
+                        hop.note(false);
+                        eprintln!(
+                            "[TrackCache] storage {} timed out for {urn}",
+                            hop.tier_label()
+                        );
+                        continue;
+                    }
                 };
-                if !crate::network::edge::hop_ok(&hop, &resp) {
+                if !crate::network::edge::hop_ok(&hop, &response) {
                     continue; // транспорт тира виноват — исход записан, следующий тир
                 }
                 transport_ok = true;
-                hop.note(resp.status().as_u16() < 500);
+                hop.note(response.status().as_u16() < 500);
 
-                let status = resp.status();
+                let status = response.status();
                 if status.is_success() {
                     self.mark_storage_host_ok(&host);
                     println!("[TrackCache] {urn} → storage stream ({host} via {})", hop.tier_label());
                     match write_response_to_cache(
                         target_dir,
                         urn,
-                        resp,
+                        response,
                         PlaybackQuality::Hq,
                         DownloadSource::Storage,
                         self.app_handle.as_ref(),

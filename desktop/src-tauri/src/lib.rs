@@ -9,6 +9,7 @@ mod shared;
 mod track_cache;
 
 use std::sync::{Arc, Mutex};
+use std::time::Duration;
 use tauri::Manager;
 
 use discord::DiscordState;
@@ -18,6 +19,8 @@ use network::server::ServerState;
 #[cfg_attr(feature = "cef", tauri::cef_entry_point)]
 pub fn run() {
     let builder = tauri::Builder::<rt::Rt>::new();
+    const HTTP_CLIENT_CONNECT_TIMEOUT_MS: u64 = 8_000;
+    const HTTP_CLIENT_TIMEOUT_MS: u64 = 30_000;
 
     builder
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
@@ -77,7 +80,12 @@ pub fn run() {
 
             network::edge::init(data_dir.clone());
 
-            let http_client = reqwest::Client::new();
+            let http_client = reqwest::Client::builder()
+                .connect_timeout(Duration::from_millis(HTTP_CLIENT_CONNECT_TIMEOUT_MS))
+                .timeout(Duration::from_millis(HTTP_CLIENT_TIMEOUT_MS))
+                .tcp_nodelay(true)
+                .build()
+                .expect("failed to build http client");
             let auth_http_client = http_client.clone();
             let rt = tokio::runtime::Runtime::new().expect("failed to create tokio runtime");
 

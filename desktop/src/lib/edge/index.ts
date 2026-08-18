@@ -8,7 +8,8 @@ export type { Tier } from './config';
 export { initEdge, tierOf } from './config';
 
 function timedFetch(url: string, init: RequestInit, timeoutMs?: number): Promise<Response> {
-  if (!timeoutMs) return fetch(url, init) as Promise<Response>;
+  const budgetMs = timeoutMs ?? 10_000;
+  if (budgetMs <= 0) return fetch(url, init) as Promise<Response>;
 
   const controller = new AbortController();
   const callerSignal = init.signal;
@@ -17,12 +18,14 @@ function timedFetch(url: string, init: RequestInit, timeoutMs?: number): Promise
   if (callerSignal?.aborted) controller.abort();
   else callerSignal?.addEventListener('abort', abortFromCaller, { once: true });
 
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  const timer = setTimeout(() => controller.abort(), budgetMs);
   return fetch(url, { ...init, signal: controller.signal }).finally(() => {
     clearTimeout(timer);
     callerSignal?.removeEventListener('abort', abortFromCaller);
   }) as Promise<Response>;
 }
+
+const DEFAULT_EDGE_TIMEOUT_MS = 10_000;
 
 /**
  * Ответ пришёл — но виноват ли транспорт? Relay отдаёт свои 421/502/503/504,
@@ -91,13 +94,15 @@ export async function edgeFetch(
   timeoutMs?: number,
 ): Promise<Response> {
   const hops = planHops(url);
-  if (hops.length === 0) return timedFetch(url, init, timeoutMs);
+  const effectiveTimeoutMs = timeoutMs ?? DEFAULT_EDGE_TIMEOUT_MS;
+
+  if (hops.length === 0) return timedFetch(url, init, effectiveTimeoutMs);
 
   const weakBudget = timeoutMs !== undefined && timeoutMs < WEAK_BUDGET_MS;
   // Бюджет — на ВЕСЬ вызов, а не на каждый хоп. Иначе таймаут молча умножается
   // на длину плана: 10 с control-plane превращались в 20 с на двух хопах и в
   // 40 с на двух базах, и вызывающий получал «Request canceled» вместо ответа.
-  const deadline = timeoutMs === undefined ? undefined : Date.now() + timeoutMs;
+  const deadline = effectiveTimeoutMs === undefined ? undefined : Date.now() + effectiveTimeoutMs;
   let lastError: unknown = null;
 
   for (let i = 0; i < hops.length; i++) {

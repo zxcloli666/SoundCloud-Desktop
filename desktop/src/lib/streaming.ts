@@ -20,6 +20,8 @@ function resolveStreamingBases(): string[] {
   return [STREAMING_BASE];
 }
 
+const STREAMING_JSON_TIMEOUT_MS = 10_000;
+
 // ─── Streaming JSON ─────────────────────────────────────────
 
 async function streamingJson<T = unknown>(path: string, signal?: AbortSignal): Promise<T> {
@@ -30,7 +32,10 @@ async function streamingJson<T = unknown>(path: string, signal?: AbortSignal): P
   for (const base of resolveStreamingBases()) {
     const url = `${base}${path}`;
     try {
-      const res = await trackAsync(`streaming:${label}`, edgeFetch(url, { signal }));
+      const res = await trackAsync(
+        `streaming:${label}`,
+        edgeFetch(url, { signal }, STREAMING_JSON_TIMEOUT_MS),
+      );
 
       if (!res.ok) {
         const body = await res.text();

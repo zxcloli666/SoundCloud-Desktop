@@ -1,5 +1,6 @@
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
+use std::time::Duration;
 use crate::rt::AppHandle;
 use tauri::Emitter;
 
@@ -96,7 +97,13 @@ pub async fn ym_import_start(
 ) -> Result<(), String> {
     CANCEL_FLAG.store(false, Ordering::Relaxed);
 
-    let client = reqwest::Client::new();
+    const YM_CONNECT_TIMEOUT_MS: u64 = 8_000;
+    const YM_REQUEST_TIMEOUT_MS: u64 = 12_000;
+    let client = reqwest::Client::builder()
+        .connect_timeout(Duration::from_millis(YM_CONNECT_TIMEOUT_MS))
+        .timeout(Duration::from_millis(YM_REQUEST_TIMEOUT_MS))
+        .build()
+        .map_err(|e| e.to_string())?;
 
     let uid_resp = client
         .get("https://api.music.yandex.net/account/status")

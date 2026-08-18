@@ -15,9 +15,11 @@ use reqwest::{Client, Response};
 use super::edge::{self, Hop};
 
 const HEDGE_DELAY: Duration = Duration::from_millis(300);
+const REQUEST_TIMEOUT: Duration = Duration::from_secs(6);
 
-type Attempt =
-    Pin<Box<dyn Future<Output = (Hop, Result<Response, reqwest::Error>)> + Send + 'static>>;
+type Attempt = Pin<
+    Box<dyn Future<Output = (Hop, Result<Response, String>)> + Send + 'static>,
+>;
 
 pub async fn get(
     client: &Client,
@@ -45,7 +47,11 @@ async fn get_from_hops(
             if let Some(session_id) = session_id {
                 request = request.header("x-session-id", session_id);
             }
-            let result = request.send().await;
+
+            let result = match tokio::time::timeout(REQUEST_TIMEOUT, request.send()).await {
+                Ok(result) => result.map_err(|error| error.to_string()),
+                Err(_) => Err("audio route request timed out".to_string()),
+            };
             (hop, result)
         }));
     }

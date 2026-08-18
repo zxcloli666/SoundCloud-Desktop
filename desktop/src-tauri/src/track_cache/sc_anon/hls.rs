@@ -8,6 +8,7 @@
 use bytes::{Bytes, BytesMut};
 use reqwest::Client;
 use url::Url;
+use std::time::Duration;
 
 const HLS_PREFETCH_SEGMENTS: usize = 3;
 
@@ -71,8 +72,10 @@ pub async fn download_hls_full(client: &Client, m3u8_url: &str) -> Result<Bytes,
 }
 
 pub(crate) async fn fetch_bytes(client: &Client, url: &str) -> Result<Bytes, String> {
+    const HLS_BYTES_TIMEOUT_MS: u64 = 12_000;
     let resp = client
         .get(url)
+        .timeout(Duration::from_millis(HLS_BYTES_TIMEOUT_MS))
         .send()
         .await
         .map_err(|e| format!("request: {e}"))?;
@@ -80,7 +83,10 @@ pub(crate) async fn fetch_bytes(client: &Client, url: &str) -> Result<Bytes, Str
     if !status.is_success() {
         return Err(format!("HTTP {status}"));
     }
-    resp.bytes().await.map_err(|e| format!("body: {e}"))
+    tokio::time::timeout(Duration::from_millis(HLS_BYTES_TIMEOUT_MS), resp.bytes())
+        .await
+        .map_err(|_| "hls segment timed out".to_string())?
+        .map_err(|e| format!("body: {e}"))
 }
 
 pub(crate) fn parse_m3u8(content: &str, base_url: &str) -> (Option<String>, Vec<String>) {

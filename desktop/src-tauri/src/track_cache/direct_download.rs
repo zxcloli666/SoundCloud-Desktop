@@ -6,6 +6,7 @@
 
 use std::future::Future;
 use std::pin::Pin;
+use std::time::Duration;
 
 use bytes::Bytes;
 use futures_util::{future::select_all, StreamExt};
@@ -269,9 +270,14 @@ async fn fetch_download(
         return Err(format!("HTTP {status}"));
     }
     println!("[direct] endpoint via {}", hop.tier_label());
-    resp.json::<DownloadResponse>()
-        .await
-        .map_err(|e| format!("decode: {e}"))
+    const DIRECT_METADATA_TIMEOUT_MS: u64 = 12_000;
+    tokio::time::timeout(
+        Duration::from_millis(DIRECT_METADATA_TIMEOUT_MS),
+        resp.json::<DownloadResponse>(),
+    )
+    .await
+    .map_err(|_| "download metadata timed out".to_string())?
+    .map_err(|e| format!("decode: {e}"))
 }
 
 fn sort_candidates(cands: Vec<Candidate>, hq_pref: bool) -> Vec<Candidate> {
