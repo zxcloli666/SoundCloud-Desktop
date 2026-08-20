@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { NavLink, useLocation } from 'react-router-dom';
+import appIcon from '../../assets/app-icon.png';
 import { art } from '../../lib/formatters';
 import {
   Clock,
@@ -68,7 +69,7 @@ export const Sidebar = React.memo(() => {
   return (
     <aside className="sonveil-sidebar" aria-label={t('nav.library')}>
       <NavLink to="/home" className="sonveil-mark" aria-label="Sonveil">
-        <span>S</span>
+        <img src={appIcon} alt="" draggable={false} />
       </NavLink>
 
       <nav className="sonveil-rail-nav" aria-label={t('nav.home')}>

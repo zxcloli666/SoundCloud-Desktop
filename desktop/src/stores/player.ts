@@ -1,6 +1,7 @@
-import {create} from 'zustand';
-import {persist} from 'zustand/middleware';
-import {createThrottledJsonStorage} from '../lib/tauri-storage';
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+import { nextQueueIndex, previousQueueIndex } from '../lib/player-navigation';
+import { createThrottledJsonStorage } from '../lib/tauri-storage';
 
 const PERSISTED_QUEUE_BEHIND = 30;
 const PERSISTED_QUEUE_WINDOW = 300;
@@ -47,9 +48,9 @@ export interface TrackEnrichment {
 }
 
 export interface TrackScdMeta {
-    storage_state: 'pending' | 'ok' | 'failed' | 'missing' | 'too_long';
+  storage_state: 'pending' | 'ok' | 'failed' | 'missing' | 'too_long';
   storage_quality?: 'sq' | 'hq';
-    index_state: 'pending' | 'indexed' | 'failed' | 'too_long';
+  index_state: 'pending' | 'indexed' | 'failed' | 'too_long';
   enrich_state: 'pending' | 'done' | 'failed';
 }
 
@@ -99,7 +100,7 @@ export interface Track {
   _scd_meta?: TrackScdMeta;
 }
 
-type RepeatMode = 'off' | 'one' | 'all';
+export type RepeatMode = 'off' | 'one' | 'all';
 export type PlaybackQuality = 'hq' | 'sq';
 
 /**
@@ -108,8 +109,8 @@ export type PlaybackQuality = 'hq' | 'sq';
  * active yet. Both set → playback loops the `[a, b]` segment.
  */
 export interface AbLoop {
-    a: number;
-    b: number | null;
+  a: number;
+  b: number | null;
 }
 
 /** Smallest meaningful loop width / handle gap, in seconds. */
@@ -132,7 +133,7 @@ export function setEndOfQueueFallback(fn: (lastTrack: Track) => void): void {
 let onPlaybackContextReset: (() => void) | null = null;
 
 export function setPlaybackContextResetHandler(fn: () => void): void {
-    onPlaybackContextReset = fn;
+  onPlaybackContextReset = fn;
 }
 
 // Mirrors the Rust DownloadSource enum (serde rename_all = "lowercase").
@@ -192,8 +193,8 @@ interface PlayerState {
   volumeBeforeMute: number;
   shuffle: boolean;
   repeat: RepeatMode;
-    /** A-B segment loop for the current track, or null when disabled. */
-    abLoop: AbLoop | null;
+  /** A-B segment loop for the current track, or null when disabled. */
+  abLoop: AbLoop | null;
   playbackQuality: PlaybackQuality | null;
   playbackSource: PlaybackSource | null;
 
@@ -221,11 +222,11 @@ interface PlayerState {
   clearQueue: () => void;
   toggleShuffle: () => void;
   toggleRepeat: () => void;
-    /** Tap-to-set cycle at the given source-seconds position: set A → set B → clear. */
-    cycleAbPoint: (pos: number) => void;
-    /** Drag a single loop bound (used by the markers on the progress bar). */
-    nudgeAbBound: (which: 'a' | 'b', value: number) => void;
-    clearAbLoop: () => void;
+  /** Tap-to-set cycle at the given source-seconds position: set A → set B → clear. */
+  cycleAbPoint: (pos: number) => void;
+  /** Drag a single loop bound (used by the markers on the progress bar). */
+  nudgeAbBound: (which: 'a' | 'b', value: number) => void;
+  clearAbLoop: () => void;
   setCurrentTrackAccess: (access: Track['access']) => void;
   replaceTrackMetadata: (track: Track) => void;
   setPlaybackTransport: (quality: PlaybackQuality | null, source: PlaybackSource | null) => void;
@@ -243,7 +244,7 @@ export const usePlayerStore = create<PlayerState>()(
       volumeBeforeMute: 50,
       shuffle: false,
       repeat: 'off',
-        abLoop: null,
+      abLoop: null,
       playbackQuality: null,
       playbackSource: null,
       playbackRate: PLAYBACK_RATE_DEFAULT,
@@ -251,7 +252,7 @@ export const usePlayerStore = create<PlayerState>()(
       pitchControlMode: 'auto',
 
       play: (track, queue) => {
-          onPlaybackContextReset?.();
+        onPlaybackContextReset?.();
         if (queue) {
           const { shuffle } = get();
           const idx = queue.findIndex((t) => t.urn === track.urn);
@@ -308,13 +309,10 @@ export const usePlayerStore = create<PlayerState>()(
 
       next: () => {
         const { queue, queueIndex, repeat } = get();
-        if (queue.length === 0) return;
+        const nextIdx = nextQueueIndex(queue.length, queueIndex, repeat);
 
-        let nextIdx = queueIndex + 1;
-
-        if (nextIdx >= queue.length) {
-          if (repeat === 'all') nextIdx = 0;
-          else {
+        if (nextIdx === null) {
+          if (queue.length > 0) {
             // Конец очереди + repeat=off → отдаём управление autopilot'у
             // (см. lib/queue-autopilot.ts). Если он зарегистрирован — он сам
             // дозагрузит треки и пнёт next() ещё раз. Если нет — просто пауза.
@@ -324,8 +322,8 @@ export const usePlayerStore = create<PlayerState>()(
               return;
             }
             set({ isPlaying: false });
-            return;
           }
+          return;
         }
 
         set({
@@ -337,7 +335,8 @@ export const usePlayerStore = create<PlayerState>()(
 
       prev: () => {
         const { queue, queueIndex } = get();
-        const prevIdx = Math.max(0, queueIndex - 1);
+        const prevIdx = previousQueueIndex(queue.length, queueIndex);
+        if (prevIdx === null) return;
         set({
           currentTrack: queue[prevIdx],
           queueIndex: prevIdx,
@@ -480,37 +479,37 @@ export const usePlayerStore = create<PlayerState>()(
           repeat: s.repeat === 'off' ? 'all' : s.repeat === 'all' ? 'one' : 'off',
         })),
 
-        cycleAbPoint: (pos) =>
-            set((s) => {
-                const at = Math.max(0, pos);
-                const ab = s.abLoop;
-                // No loop yet → drop point A.
-                if (!ab) return {abLoop: {a: at, b: null}};
-                // A set, awaiting B → place the second point, ordering the pair.
-                if (ab.b == null) {
-                    if (at > ab.a + AB_MIN_GAP) return {abLoop: {a: ab.a, b: at}};
-                    if (at < ab.a - AB_MIN_GAP) return {abLoop: {a: at, b: ab.a}};
-                    return {abLoop: null}; // too close to A → cancel
-                }
-                // Active loop → clear.
-                return {abLoop: null};
-            }),
+      cycleAbPoint: (pos) =>
+        set((s) => {
+          const at = Math.max(0, pos);
+          const ab = s.abLoop;
+          // No loop yet → drop point A.
+          if (!ab) return { abLoop: { a: at, b: null } };
+          // A set, awaiting B → place the second point, ordering the pair.
+          if (ab.b == null) {
+            if (at > ab.a + AB_MIN_GAP) return { abLoop: { a: ab.a, b: at } };
+            if (at < ab.a - AB_MIN_GAP) return { abLoop: { a: at, b: ab.a } };
+            return { abLoop: null }; // too close to A → cancel
+          }
+          // Active loop → clear.
+          return { abLoop: null };
+        }),
 
-        nudgeAbBound: (which, value) =>
-            set((s) => {
-                if (!s.abLoop) return {};
-                const {a, b} = s.abLoop;
-                if (which === 'a') {
-                    const na = Math.max(0, value);
-                    if (b != null && na > b - AB_MIN_GAP) return {};
-                    return {abLoop: {a: na, b}};
-                }
-                const nb = Math.max(0, value);
-                if (nb < a + AB_MIN_GAP) return {};
-                return {abLoop: {a, b: nb}};
-            }),
+      nudgeAbBound: (which, value) =>
+        set((s) => {
+          if (!s.abLoop) return {};
+          const { a, b } = s.abLoop;
+          if (which === 'a') {
+            const na = Math.max(0, value);
+            if (b != null && na > b - AB_MIN_GAP) return {};
+            return { abLoop: { a: na, b } };
+          }
+          const nb = Math.max(0, value);
+          if (nb < a + AB_MIN_GAP) return {};
+          return { abLoop: { a, b: nb } };
+        }),
 
-        clearAbLoop: () => set((s) => (s.abLoop ? {abLoop: null} : {})),
+      clearAbLoop: () => set((s) => (s.abLoop ? { abLoop: null } : {})),
 
       setCurrentTrackAccess: (access) =>
         set((s) => (s.currentTrack ? { currentTrack: { ...s.currentTrack, access } } : {})),

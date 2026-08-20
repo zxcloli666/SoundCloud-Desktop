@@ -6,6 +6,7 @@ import { noteAuthGap, noteRateLimit, noteSuccess } from './auth-recovery';
 import { API_BASE } from './constants';
 import { logHttpError, logHttpFailure, trackAsync } from './diagnostics';
 import { edgeFetch } from './edge';
+import { withTimeout } from './request-timeout';
 import {
   getHostVerdict,
   isIncidentActive,
@@ -83,9 +84,10 @@ export type ApiRequestOptions = RequestInit & {
   silentStatuses?: number[];
 };
 
-const AUTH_TIMEOUT_MS = 30_000;
-const DATA_PLANE_TIMEOUT_MS = 90_000;
-const DOWN_HOST_TIMEOUT_MS = 10_000;
+const AUTH_TIMEOUT_MS = 20_000;
+const DATA_PLANE_TIMEOUT_MS = 20_000;
+const DOWN_HOST_TIMEOUT_MS = 6_000;
+const RESPONSE_BODY_TIMEOUT_MS = 8_000;
 
 function requestTimeout(path: string): number {
   return path.startsWith('/auth/') ? AUTH_TIMEOUT_MS : DATA_PLANE_TIMEOUT_MS;
@@ -125,7 +127,7 @@ export async function apiRequest<T = unknown>(
     useAppStatusStore.getState().setBackendReachable(true);
 
     if (!response.ok) {
-      const body = await response.text();
+      const body = await withTimeout(response.text(), RESPONSE_BODY_TIMEOUT_MS, `${label} body`);
       const error = new ApiError(response.status, body);
       if (silentStatuses?.includes(response.status)) throw error;
 
@@ -152,8 +154,8 @@ export async function apiRequest<T = unknown>(
     noteSuccess(authenticated);
     const contentType = response.headers.get('content-type');
     const reply: unknown = contentType?.includes('application/json')
-      ? await response.json()
-      : await response.text();
+      ? await withTimeout(response.json(), RESPONSE_BODY_TIMEOUT_MS, `${label} JSON body`)
+      : await withTimeout(response.text(), RESPONSE_BODY_TIMEOUT_MS, `${label} text body`);
 
     if (typeof reply === 'string') {
       try {

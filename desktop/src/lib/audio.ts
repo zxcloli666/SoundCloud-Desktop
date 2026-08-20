@@ -26,6 +26,7 @@ import { recordEvent } from './events';
 import { art } from './formatters';
 import { rememberTracks } from './offline-index';
 import { getUrnCluster, recordClusterFeedback } from './recsFeedback';
+import { withTimeout } from './request-timeout';
 import { getArtistDisplay, getDisplayTitle } from './track-display';
 
 const SKIP_THRESHOLD_SEC = 30;
@@ -36,6 +37,16 @@ const EARLY_END_PLAYED_SEC = 10;
 const EARLY_END_MIN_EXPECTED_SEC = 30;
 /** Один лечебный перекач на урн за сессию — защита от лупа на 30s-превью и мёртвых источниках. */
 const healedUrns = new Set<string>();
+const TRACK_START_BUDGET_MS = 18_000;
+
+export type TrackLoadStage =
+  | 'idle'
+  | 'checkingCache'
+  | 'resolving'
+  | 'buffering'
+  | 'retrying'
+  | 'ready'
+  | 'failed';
 
 /* ── Audio engine state ──────────────────────────────────────── */
 
@@ -45,6 +56,7 @@ let fallbackDuration = 0;
 let cachedTime = 0;
 let cachedDuration = 0;
 let downloadProgress: number | null = null;
+let loadStage: TrackLoadStage = 'idle';
 let loadGen = 0;
 let seekGen = 0;
 let lastEndedUrn: string | null = null;
@@ -85,6 +97,16 @@ export function getDuration(): number {
 
 export function getDownloadProgress(): number | null {
   return downloadProgress;
+}
+
+export function getLoadStage(): TrackLoadStage {
+  return loadStage;
+}
+
+function setLoadStage(value: TrackLoadStage): void {
+  if (loadStage === value) return;
+  loadStage = value;
+  notify();
 }
 
 function setDownloadProgress(value: number | null): void {
@@ -132,6 +154,21 @@ async function stopTrack() {
   await invoke('audio_stop').catch(console.error);
   hasTrack = false;
   cachedTime = 0;
+  setLoadStage('idle');
+}
+
+function withTrackStartDeadline<T>(
+  operation: Promise<T>,
+  deadline: number,
+  gen: number,
+  urn: string,
+): Promise<T> {
+  const remainingMs = Math.max(1, deadline - performance.now());
+  return withTimeout(operation, remainingMs, 'track start', () => {
+    if (gen === loadGen && currentUrn === urn) {
+      void invoke('audio_stop').catch(console.error);
+    }
+  });
 }
 
 export async function switchAudioDevice(deviceName: string | null, manual = false) {
@@ -349,6 +386,7 @@ async function loadTrack(track: Track) {
   if (gen !== loadGen) return;
   currentUrn = track.urn;
   const urn = track.urn;
+  const startDeadline = performance.now() + TRACK_START_BUDGET_MS;
 
   // A-B loop is per-track: drop it only when loading a genuinely different track —
   // NOT on same-track reloads (repeat-one, device/EQ reload, or the loop's own
@@ -378,6 +416,7 @@ async function loadTrack(track: Track) {
 
   try {
     const highQualityStreaming = useSettingsStore.getState().highQualityStreaming;
+    setLoadStage('checkingCache');
 
     // The cached file can be swapped (raw А → clean Б) or evicted between resolve
     // and read; re-resolve through the cache to recover the current path.
@@ -411,26 +450,35 @@ async function loadTrack(track: Track) {
         notify();
       }
       afterLoad(track, gen);
+      setLoadStage('ready');
       return;
     }
 
     // Strategy 2: start from a small progressive/HLS buffer while Rust keeps
     // receiving the track and commits the same bytes to the regular cache.
     setDownloadProgress(0);
+    setLoadStage('resolving');
 
     try {
       await cancelTrackDownload(urn);
       if (gen !== loadGen || currentUrn !== urn) return;
       const startFastStream = async (hq: boolean) => {
         const request = await buildTrackRequest(urn, hq, track.duration);
-        return invoke<{
-          duration_secs: number | null;
-          quality: 'hq' | 'sq';
-          source: 'direct' | 'api';
-        }>('audio_load_streaming', {
-          request,
-          startPaused: !usePlayerStore.getState().isPlaying,
-        });
+        if (gen !== loadGen || currentUrn !== urn) throw new Error('load cancelled');
+        setLoadStage('buffering');
+        return withTrackStartDeadline(
+          invoke<{
+            duration_secs: number | null;
+            quality: 'hq' | 'sq';
+            source: 'direct' | 'api';
+          }>('audio_load_streaming', {
+            request,
+            startPaused: !usePlayerStore.getState().isPlaying,
+          }),
+          startDeadline,
+          gen,
+          urn,
+        );
       };
 
       let streamed: {
@@ -444,6 +492,7 @@ async function loadTrack(track: Track) {
         if (!highQualityStreaming) throw error;
         console.warn('[Audio] HQ fast stream failed, retrying standard quality:', error);
         if (gen !== loadGen || currentUrn !== urn) return;
+        setLoadStage('retrying');
         streamed = await startFastStream(false);
       }
       if (gen !== loadGen || currentUrn !== urn) return;
@@ -451,6 +500,7 @@ async function loadTrack(track: Track) {
       usePlayerStore.getState().setPlaybackTransport(streamed.quality, streamed.source);
       console.log('[Audio] Fast stream started:', urn);
       afterLoad(track, gen);
+      setLoadStage('ready');
       return;
     } catch (error) {
       if (gen !== loadGen || currentUrn !== urn) return;
@@ -461,7 +511,11 @@ async function loadTrack(track: Track) {
     setDownloadProgress(null);
     usePlayerStore.getState().setPlaybackTransport(null, null);
     if (gen !== loadGen) return;
-    const errorText = getLoadErrorText(e);
+    setLoadStage('failed');
+    const rawErrorText = getLoadErrorText(e);
+    const errorText = rawErrorText?.toLowerCase().includes('track start timed out')
+      ? i18n.t('track.loadTimeout')
+      : rawErrorText;
     toast.error(i18n.t('track.loadError'), {
       description: errorText ? `${track.title}: ${errorText}` : track.title,
     });

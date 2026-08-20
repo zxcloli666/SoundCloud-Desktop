@@ -5,7 +5,7 @@ use base64::{engine::general_purpose::STANDARD as BASE64, Engine as _};
 use sha2::{Digest, Sha256};
 use tokio::fs::{self, File};
 use tokio::io::AsyncWriteExt;
-use std::time::Duration;
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use crate::shared::constants::is_domain_whitelisted;
 
@@ -261,6 +261,71 @@ async fn dir_size(path: &Path) -> u64 {
     total
 }
 
+struct CachedImageFile {
+    path: PathBuf,
+    bytes: u64,
+    modified: SystemTime,
+}
+
+async fn collect_cache_files(path: &Path) -> Vec<CachedImageFile> {
+    let mut files = Vec::new();
+    let mut stack = vec![path.to_path_buf()];
+    while let Some(dir) = stack.pop() {
+        let mut entries = match fs::read_dir(&dir).await {
+            Ok(entries) => entries,
+            Err(_) => continue,
+        };
+        while let Ok(Some(entry)) = entries.next_entry().await {
+            let Ok(file_type) = entry.file_type().await else {
+                continue;
+            };
+            if file_type.is_dir() {
+                stack.push(entry.path());
+                continue;
+            }
+            if !file_type.is_file() {
+                continue;
+            }
+            let Ok(metadata) = entry.metadata().await else {
+                continue;
+            };
+            files.push(CachedImageFile {
+                path: entry.path(),
+                bytes: metadata.len(),
+                modified: metadata.modified().unwrap_or(UNIX_EPOCH),
+            });
+        }
+    }
+    files
+}
+
+async fn enforce_dir_limit(path: &Path, limit_bytes: u64) -> Result<usize, String> {
+    if limit_bytes == 0 {
+        return Ok(0);
+    }
+    let mut files = collect_cache_files(path).await;
+    let mut total = files.iter().map(|file| file.bytes).sum::<u64>();
+    if total <= limit_bytes {
+        return Ok(0);
+    }
+
+    // Leave headroom so a cache near the boundary is not scanned and trimmed
+    // after every newly downloaded cover.
+    let target = limit_bytes.saturating_mul(9) / 10;
+    files.sort_by_key(|file| file.modified);
+    let mut removed = 0usize;
+    for file in files {
+        if total <= target {
+            break;
+        }
+        if fs::remove_file(&file.path).await.is_ok() {
+            total = total.saturating_sub(file.bytes);
+            removed += 1;
+        }
+    }
+    Ok(removed)
+}
+
 #[tauri::command]
 pub async fn image_cache_size() -> u64 {
     let Some(state) = STATE.get() else { return 0 };
@@ -279,4 +344,39 @@ pub async fn image_cache_clear() -> Result<(), String> {
         }
     fs::create_dir_all(&dir).await.map_err(|e| e.to_string())?;
     Ok(())
+}
+
+#[tauri::command]
+pub async fn image_cache_enforce_limit(limit_mb: u64) -> Result<usize, String> {
+    let Some(state) = STATE.get() else {
+        return Err("image cache not ready".into());
+    };
+    enforce_dir_limit(&state.dir, limit_mb.saturating_mul(1024 * 1024)).await
+}
+
+#[cfg(test)]
+mod maintenance_tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn evicts_files_until_the_image_cache_is_below_limit() {
+        let unique = format!(
+            "sonveil-image-cache-test-{}-{}",
+            std::process::id(),
+            SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        );
+        let dir = std::env::temp_dir().join(unique);
+        fs::create_dir_all(dir.join("aa")).await.unwrap();
+        fs::write(dir.join("aa/one"), vec![1u8; 700]).await.unwrap();
+        fs::write(dir.join("aa/two"), vec![2u8; 700]).await.unwrap();
+
+        let removed = enforce_dir_limit(&dir, 1_000).await.unwrap();
+        assert!(removed >= 1);
+        assert!(dir_size(&dir).await <= 1_000);
+
+        fs::remove_dir_all(&dir).await.unwrap();
+    }
 }

@@ -983,17 +983,18 @@
   text-decoration: none;
 }
 
-.sonveil-mark span {
-  display: grid;
-  width: 30px;
-  height: 30px;
-  place-items: center;
-  border-radius: 9px;
-  background: var(--color-accent);
-  color: var(--color-accent-contrast);
-  font-family: var(--font-serif);
-  font-size: 14px;
-  font-weight: 700;
+.sonveil-mark img {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  transition:
+    filter 150ms ease,
+    transform 150ms ease;
+}
+
+.sonveil-mark:hover img {
+  filter: brightness(1.08);
+  transform: scale(1.04);
 }
 
 .sonveil-rail-nav,

@@ -303,24 +303,21 @@ async function flushPlaylistSync(
   } finally {
     syncInFlight = false;
 
-    if (!currentRunIsActive(runId)) {
-      return;
+    if (currentRunIsActive(runId)) {
+      if (syncQueued) {
+        const nextFinalize = queuedFinalize;
+        const nextDeleteStale = queuedDeleteStale;
+        syncQueued = false;
+        queuedFinalize = false;
+        queuedDeleteStale = false;
+        await flushPlaylistSync(runId, nextFinalize, nextDeleteStale);
+      } else {
+        const { phase } = useYmImportStore.getState();
+        useYmImportStore.setState({
+          saving: phase === 'running' || phase === 'stopping',
+        });
+      }
     }
-
-    if (syncQueued) {
-      const nextFinalize = queuedFinalize;
-      const nextDeleteStale = queuedDeleteStale;
-      syncQueued = false;
-      queuedFinalize = false;
-      queuedDeleteStale = false;
-      await flushPlaylistSync(runId, nextFinalize, nextDeleteStale);
-      return;
-    }
-
-    const { phase } = useYmImportStore.getState();
-    useYmImportStore.setState({
-      saving: phase === 'running' || phase === 'stopping',
-    });
   }
 }
 

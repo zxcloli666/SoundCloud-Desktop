@@ -52,6 +52,26 @@ jobs:
         working-directory: desktop
         run: pnpm install --frozen-lockfile
 
+      - name: Generate Sonveil application icons
+        working-directory: desktop
+        run: pnpm exec tauri icon src/assets/sonveil-app-icon.png
+
+      - name: Check frontend types
+        working-directory: desktop
+        run: pnpm exec tsc --noEmit
+
+      - name: Lint frontend
+        working-directory: desktop
+        run: pnpm exec biome lint src
+
+      - name: Run frontend regression tests
+        working-directory: desktop
+        run: pnpm test
+
+      - name: Run Rust unit tests
+        working-directory: desktop/src-tauri
+        run: cargo test --lib
+
       - name: Build portable executable
         uses: tauri-apps/tauri-action@v1
         with:

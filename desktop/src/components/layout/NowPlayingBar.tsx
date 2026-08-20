@@ -6,14 +6,8 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useShallow } from 'zustand/shallow';
 import { api } from '../../lib/api';
-import {
-  getCurrentTime,
-  getDownloadProgress,
-  getDuration,
-  handlePrev,
-  seek,
-  subscribe,
-} from '../../lib/audio';
+import { getCurrentTime, getDuration, handlePrev, seek, subscribe } from '../../lib/audio';
+import type { TrackLoadStage } from '../../lib/audio';
 import { designPreviewTracks, isDesignPreview } from '../../lib/design-preview';
 import { toggleDislike, useDislikeStatus } from '../../lib/dislikes';
 import { art, formatTime } from '../../lib/formatters';
@@ -57,52 +51,7 @@ import { useSettingsStore } from '../../stores/settings';
 import { ArtistNameLinks } from '../music/ArtistNameLinks';
 import { EqualizerPanel } from '../music/EqualizerPanel';
 import { UploadKindDot } from '../music/UploadKindDot';
-
-/* ── Track loading progress (SC → SCD download) ──────────────── */
-
-/** Smoothed download-progress value (0-1) for display, or null when not loading.
- *  Holds briefly after completion so a finished load doesn't flicker away. */
-function useLoadProgress(): number | null {
-  const downloadProgress = useSyncExternalStore(subscribe, getDownloadProgress);
-  const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const lastProgressRef = useRef<number | null>(null);
-  const [visibleProgress, setVisibleProgress] = useState<number | null>(null);
-
-  useEffect(() => {
-    if (hideTimerRef.current) {
-      clearTimeout(hideTimerRef.current);
-      hideTimerRef.current = null;
-    }
-
-    if (downloadProgress === null) {
-      if (lastProgressRef.current !== null && lastProgressRef.current >= 1) {
-        hideTimerRef.current = setTimeout(() => {
-          setVisibleProgress(null);
-          hideTimerRef.current = null;
-        }, 320);
-      } else {
-        setVisibleProgress(null);
-      }
-      return;
-    }
-
-    lastProgressRef.current = downloadProgress;
-    setVisibleProgress(downloadProgress);
-
-    return () => {
-      if (hideTimerRef.current) {
-        clearTimeout(hideTimerRef.current);
-        hideTimerRef.current = null;
-      }
-    };
-  }, [downloadProgress]);
-
-  return visibleProgress;
-}
-
-/** Whole percentage (1-100) shown to the user while a track loads. */
-const loadPercent = (progress: number) =>
-  Math.max(1, Math.min(100, Math.round(Math.max(0, Math.min(1, progress)) * 100)));
+import { loadPercent, useTrackLoading } from './useTrackLoading';
 
 /* ── A-B loop markers (overlay on the progress track) ────────── */
 
@@ -907,10 +856,12 @@ const TuningBtn = React.memo(() => {
 const PillTrack = React.memo(
   ({
     loadProgress,
+    loadStage,
     onContextToggle,
     contextOpen,
   }: {
     loadProgress: number | null;
+    loadStage: TrackLoadStage;
     onContextToggle: () => void;
     contextOpen: boolean;
   }) => {
@@ -937,6 +888,7 @@ const PillTrack = React.memo(
         track={currentTrack}
         navigate={navigate}
         loadProgress={loadProgress}
+        loadStage={loadStage}
         onContextToggle={onContextToggle}
         contextOpen={contextOpen}
       />
@@ -948,12 +900,14 @@ const PillTrackBody = React.memo(function PillTrackBody({
   track,
   navigate,
   loadProgress,
+  loadStage,
   onContextToggle,
   contextOpen,
 }: {
   track: Track;
   navigate: ReturnType<typeof useNavigate>;
   loadProgress: number | null;
+  loadStage: TrackLoadStage;
   onContextToggle: () => void;
   contextOpen: boolean;
 }) {
@@ -982,7 +936,13 @@ const PillTrackBody = React.memo(function PillTrackBody({
           <i />
           <i />
         </span>
-        {loadProgress != null && <div className="npb-art-load">{loadPercent(loadProgress)}%</div>}
+        {loadProgress != null && (
+          <div className="npb-art-load">
+            {loadStage === 'buffering' && loadProgress >= 0.05
+              ? `${loadPercent(loadProgress)}%`
+              : t(`track.loadStage.${loadStage}`)}
+          </div>
+        )}
       </button>
       <div className="npb-txt">
         <span
@@ -1079,7 +1039,7 @@ export const NowPlayingBar = React.memo(
     const isPlaying = usePlayerStore((s) => s.isPlaying);
     const hidden = useDocHidden();
     const playingNow = isPlaying && !hidden;
-    const loadProgress = useLoadProgress();
+    const { progress: loadProgress, stage: loadStage } = useTrackLoading();
 
     return (
       <div className="npb">
@@ -1093,6 +1053,7 @@ export const NowPlayingBar = React.memo(
               <div className="npb-left">
                 <PillTrack
                   loadProgress={loadProgress}
+                  loadStage={loadStage}
                   onContextToggle={onContextToggle}
                   contextOpen={contextOpen}
                 />

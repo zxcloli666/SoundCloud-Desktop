@@ -233,6 +233,7 @@ pub fn run() {
             track_cache::track_cancel_cache_likes,
             network::image_cache::image_cache_size,
             network::image_cache::image_cache_clear,
+            network::image_cache::image_cache_enforce_limit,
             auth::auth_status,
             auth::auth_set_session,
             auth::auth_logout,

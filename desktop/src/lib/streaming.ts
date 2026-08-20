@@ -5,6 +5,7 @@ import { STORAGE_BASE, STREAMING_BASE } from './constants';
 import { logHttpError, logHttpFailure, trackAsync } from './diagnostics';
 import { edgeFetch } from './edge';
 import { markHealthy, markUnhealthy } from './host-status';
+import { withTimeout } from './request-timeout';
 
 // ─── Types ──────────────────────────────────────────────────
 
@@ -21,6 +22,7 @@ function resolveStreamingBases(): string[] {
 }
 
 const STREAMING_JSON_TIMEOUT_MS = 10_000;
+const STREAMING_BODY_TIMEOUT_MS = 6_000;
 
 // ─── Streaming JSON ─────────────────────────────────────────
 
@@ -38,7 +40,11 @@ async function streamingJson<T = unknown>(path: string, signal?: AbortSignal): P
       );
 
       if (!res.ok) {
-        const body = await res.text();
+        const body = await withTimeout(
+          res.text(),
+          STREAMING_BODY_TIMEOUT_MS,
+          `streaming:${label} error body`,
+        );
         logHttpError(`streaming:${label}`, res.status, url, body);
         markUnhealthy(base);
         lastError = new ApiError(res.status, body);
@@ -52,7 +58,11 @@ async function streamingJson<T = unknown>(path: string, signal?: AbortSignal): P
         throw new Error(`Unexpected content-type: ${contentType ?? 'unknown'}`);
       }
 
-      return res.json();
+      return await withTimeout(
+        res.json() as Promise<T>,
+        STREAMING_BODY_TIMEOUT_MS,
+        `streaming:${label} JSON body`,
+      );
     } catch (error) {
       if (error instanceof ApiError) {
         lastError = error;

@@ -17,6 +17,11 @@ export interface IndexingStats {
 
 const SW_STALE_MS = 0;
 const SW_GC_MS = 1000 * 60 * 5;
+const HYDRATE_BATCH_SIZE = 50;
+
+interface HydratedTrackPage {
+  collection?: Track[];
+}
 
 function normLanguages(langs: string[] | undefined): string | undefined {
   if (!langs || langs.length === 0) return undefined;
@@ -26,26 +31,44 @@ function normLanguages(langs: string[] | undefined): string | undefined {
 /**
  * Hydrate Qdrant numeric IDs → full SC track metadata, preserving recommendation order.
  *
- * Per-track `/tracks/:urn` returns full metadata with real duration (vs. the
- * preview-only public search endpoint). Backend caches these for 10m so a warm
- * cache is effectively free; a cold cache fans out the requests in parallel.
+ * The batch `/tracks?ids=` endpoint returns full metadata with real duration.
+ * Chunking avoids a request fan-out when a recommendation response contains
+ * several shelves while preserving the model's original ranking.
  */
 export async function hydrateByIds(recs: RecommendResult[]): Promise<Track[]> {
-  const urns = recs
-    .map((r) => {
-      const id = String(r.id);
-      return id ? `soundcloud:tracks:${id}` : null;
-    })
-    .filter((u): u is string => u !== null);
-  if (!urns.length) return [];
+  const ids: string[] = [];
+  const seen = new Set<string>();
+  for (const recommendation of recs) {
+    const id = String(recommendation.id).trim();
+    if (!id || seen.has(id)) continue;
+    seen.add(id);
+    ids.push(id);
+  }
+  if (ids.length === 0) return [];
 
-  const results = await Promise.all(
-    urns.map((urn) =>
-      api<Track>(`/tracks/${encodeURIComponent(urn)}`).catch(() => null as Track | null),
-    ),
+  const batches: string[][] = [];
+  for (let offset = 0; offset < ids.length; offset += HYDRATE_BATCH_SIZE) {
+    batches.push(ids.slice(offset, offset + HYDRATE_BATCH_SIZE));
+  }
+
+  const pages = await Promise.all(
+    batches.map((batch) => {
+      const encodedIds = encodeURIComponent(batch.join(','));
+      return api<HydratedTrackPage>(`/tracks?ids=${encodedIds}&page=0&limit=${batch.length}`).catch(
+        () => ({ collection: [] }) as HydratedTrackPage,
+      );
+    }),
   );
 
-  return results.filter((t): t is Track => t !== null);
+  const byId = new Map<string, Track>();
+  for (const page of pages) {
+    for (const track of page.collection ?? []) {
+      const id = track.urn.split(':').pop() || String(track.id);
+      if (id) byId.set(id, track);
+    }
+  }
+
+  return ids.map((id) => byId.get(id)).filter((track): track is Track => track !== undefined);
 }
 
 export type SmartWaveSeedKind = 'user' | 'track' | 'artist';

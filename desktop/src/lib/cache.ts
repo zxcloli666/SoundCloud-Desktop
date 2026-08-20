@@ -1,14 +1,16 @@
-import {appCacheDir, join} from '@tauri-apps/api/path';
-import {mkdir, readDir, remove, writeFile} from '@tauri-apps/plugin-fs';
-import {fetch as tauriFetch} from '@tauri-apps/plugin-http';
-import type {PlaybackQuality, PlaybackSource} from '../stores/player';
-import {useSettingsStore} from '../stores/settings';
-import {toScproxyUrl} from './asset-url';
-import {getStaticPort} from './constants';
-import {trackedInvoke as invoke} from './diagnostics';
+import { appCacheDir, join } from '@tauri-apps/api/path';
+import { mkdir, readDir, remove, writeFile } from '@tauri-apps/plugin-fs';
+import { fetch as tauriFetch } from '@tauri-apps/plugin-http';
+import type { PlaybackQuality, PlaybackSource } from '../stores/player';
+import { useSettingsStore } from '../stores/settings';
+import { toScproxyUrl } from './asset-url';
+import { getStaticPort } from './constants';
+import { trackedInvoke as invoke } from './diagnostics';
 
 const WALLPAPERS_DIR = 'wallpapers';
 const CACHE_MAINTENANCE_INTERVAL_MS = 60 * 1000;
+const IMAGE_CACHE_MAINTENANCE_INTERVAL_MS = 30 * 60 * 1000;
+const IMAGE_CACHE_LIMIT_MB = 384;
 const WALLPAPER_FETCH_TIMEOUT_MS = 12_000;
 
 let cacheMaintenanceStarted = false;
@@ -172,6 +174,8 @@ export function setupCacheMaintenance() {
   cacheMaintenanceStarted = true;
 
   void enforceAudioCacheLimit();
+  void enforceImageCacheLimit();
+  let lastImageMaintenance = Date.now();
 
   useSettingsStore.subscribe((state, prev) => {
     if (state.audioCacheLimitMB !== prev.audioCacheLimitMB) {
@@ -185,6 +189,10 @@ export function setupCacheMaintenance() {
     if (maintenanceTimer !== null) return;
     maintenanceTimer = window.setInterval(() => {
       void enforceAudioCacheLimit();
+      if (Date.now() - lastImageMaintenance >= IMAGE_CACHE_MAINTENANCE_INTERVAL_MS) {
+        lastImageMaintenance = Date.now();
+        void enforceImageCacheLimit();
+      }
     }, CACHE_MAINTENANCE_INTERVAL_MS);
   };
   const stopTimer = () => {
@@ -198,6 +206,10 @@ export function setupCacheMaintenance() {
       stopTimer();
     } else {
       void enforceAudioCacheLimit();
+      if (Date.now() - lastImageMaintenance >= IMAGE_CACHE_MAINTENANCE_INTERVAL_MS) {
+        lastImageMaintenance = Date.now();
+        void enforceImageCacheLimit();
+      }
       startTimer();
     }
   });
@@ -213,6 +225,10 @@ export function getImageCacheSize(): Promise<number> {
 
 export function clearImageCache(): Promise<void> {
   return invoke('image_cache_clear');
+}
+
+export function enforceImageCacheLimit(limitMb = IMAGE_CACHE_LIMIT_MB): Promise<number> {
+  return invoke<number>('image_cache_enforce_limit', { limitMb });
 }
 
 /* ── Wallpapers ──────────────────────────────────────────── */

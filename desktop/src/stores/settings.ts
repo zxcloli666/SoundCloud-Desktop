@@ -123,7 +123,9 @@ const DEFAULTS = {
   accentColor: '#d96d3d',
   bgPrimary: '#09090b',
   themePreset: 'soundcloud' as ThemePreset,
-  perfMode: 'beauty' as PerfMode,
+  // Medium keeps the Sonveil atmosphere while avoiding the most expensive
+  // always-on blur/bloom work on a fresh install. Beauty remains opt-in.
+  perfMode: 'medium' as PerfMode,
   backgroundImage: '',
   backgroundOpacity: 0.15,
   backgroundDim: 0,

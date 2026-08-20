@@ -29,6 +29,10 @@ const MIN_START_BYTES: usize = 64 * 1024;
 const START_TIMEOUT: Duration = Duration::from_secs(7);
 const RESOLVE_TIMEOUT: Duration = Duration::from_secs(5);
 const REQUEST_TIMEOUT: Duration = Duration::from_secs(6);
+/// Hard wall-clock budget for the whole uncached-track startup path. Individual
+/// candidate timeouts are useful, but without an outer deadline their retries
+/// accumulate and the UI looks stuck even though every single request is bounded.
+const TOTAL_START_TIMEOUT: Duration = Duration::from_secs(16);
 const RETRY_DELAY: Duration = Duration::from_millis(180);
 
 /// Re-creatable view of the currently growing network buffer. Manual seeks use a
@@ -287,12 +291,12 @@ async fn try_direct_candidates(
     Err(last_error)
 }
 
-pub async fn load(
+async fn load_inner(
     request: AudioStreamRequest,
     start_paused: bool,
-    app: AppHandle,
-    state: State<'_, AudioState>,
-    cache: State<'_, TrackCacheState>,
+    app: &AppHandle,
+    state: &AudioState,
+    cache: &TrackCacheState,
 ) -> Result<AudioStreamLoadResult, String> {
     let generation = state
         .load_gen
@@ -304,13 +308,13 @@ pub async fn load(
         match try_direct_candidates(
             candidates,
             &cache.direct_client,
-            &app,
-            &cache,
+            app,
+            cache,
             &request.urn,
             generation,
             request.duration_ms,
             start_paused,
-            &state,
+            state,
         )
         .await
         {
@@ -334,13 +338,13 @@ pub async fn load(
             match try_direct_candidates(
                 candidates,
                 &cache.direct_client,
-                &app,
-                &cache,
+                app,
+                cache,
                 &request.urn,
                 generation,
                 request.duration_ms,
                 start_paused,
-                &state,
+                state,
             )
             .await
             {
@@ -354,7 +358,7 @@ pub async fn load(
 
     for url in &request.urls {
         for attempt in 0..2 {
-            if !is_current(&app, generation) {
+            if !is_current(app, generation) {
                 return Err("load cancelled".to_string());
             }
             if attempt > 0 {
@@ -400,8 +404,8 @@ pub async fn load(
                 PlaybackQuality::Sq
             };
             let producer_context = context(
-                &app,
-                &cache,
+                app,
+                cache,
                 &request.urn,
                 generation,
                 quality,
@@ -415,14 +419,14 @@ pub async fn load(
                 mime,
                 byte_len,
                 start_paused,
-                &app,
+                app,
                 generation,
-                &state,
+                state,
             )
             .await
             {
                 Ok(()) => {
-                    engine::set_stream_task(&state, producer);
+                    engine::set_stream_task(state, producer);
                     return Ok(AudioStreamLoadResult {
                         duration_secs: None,
                         quality: quality.label().to_string(),
@@ -438,4 +442,36 @@ pub async fn load(
     }
 
     Err(last_error)
+}
+
+pub async fn load(
+    request: AudioStreamRequest,
+    start_paused: bool,
+    app: AppHandle,
+    state: State<'_, AudioState>,
+    cache: State<'_, TrackCacheState>,
+) -> Result<AudioStreamLoadResult, String> {
+    match tokio::time::timeout(
+        TOTAL_START_TIMEOUT,
+        load_inner(
+            request,
+            start_paused,
+            &app,
+            state.inner(),
+            cache.inner(),
+        ),
+    )
+    .await
+    {
+        Ok(result) => result,
+        Err(_) => {
+            // Invalidate any detached producer spawned by the timed-out future
+            // and clear partial player/buffer state before the UI retries SQ.
+            engine::stop_state(state.inner());
+            Err(format!(
+                "track start timed out after {} seconds",
+                TOTAL_START_TIMEOUT.as_secs()
+            ))
+        }
+    }
 }

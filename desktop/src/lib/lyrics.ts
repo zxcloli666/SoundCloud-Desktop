@@ -1,5 +1,6 @@
 import { ApiError, api } from './api';
 import { edgeFetch } from './edge';
+import { RequestTimeoutError, withTimeout } from './request-timeout';
 import {
   cacheLyrics,
   getCachedLyrics,
@@ -50,8 +51,9 @@ export interface LyricsTrackLookup {
 const DIRECT_LYRICS_TIMEOUT_MS = 5_500;
 const BACKEND_LYRICS_TIMEOUT_MS = 8_000;
 const AUTO_LOOKUP_TIMEOUT_MS = 9_000;
-const TRANSCRIPTION_TIMEOUT_MS = 90_000;
-const BACKEND_SILENT_STATUSES = [404, 500, 502, 503, 504];
+const TRANSCRIPTION_TIMEOUT_MS = 45_000;
+const LYRICS_BODY_TIMEOUT_MS = 4_000;
+const BACKEND_SILENT_STATUSES = [404, 500, 501, 502, 503, 504];
 const LRCLIB_HEADERS = { 'User-Agent': 'Sonveil (https://github.com/hexnow/Hellishfy)' };
 
 /** Parse LRC format: [mm:ss.xx] text */
@@ -102,6 +104,7 @@ async function firstAvailableLyrics(
   loaders: Array<(signal: AbortSignal) => Promise<LyricsResult | null>>,
   signal?: AbortSignal,
   timeoutMs = AUTO_LOOKUP_TIMEOUT_MS,
+  timeoutAsError = false,
 ): Promise<LyricsResult | null> {
   if (signal?.aborted) throw abortError();
 
@@ -122,7 +125,11 @@ async function firstAvailableLyrics(
         if (settled) return;
         settled = true;
         abortAll();
-        resolve(null);
+        if (timeoutAsError) {
+          reject(new RequestTimeoutError('lyrics transcription', timeoutMs));
+        } else {
+          resolve(null);
+        }
       }, timeoutMs);
 
       const finish = (result: LyricsResult | null, error?: unknown) => {
@@ -187,7 +194,13 @@ async function getDirectExactLyrics(
   );
   if (response.status === 404) return null;
   if (!response.ok) throw new Error(`LRCLIB get ${response.status}`);
-  return toLrcLibResult((await response.json()) as LrcLibResponse);
+  return toLrcLibResult(
+    await withTimeout(
+      response.json() as Promise<LrcLibResponse>,
+      LYRICS_BODY_TIMEOUT_MS,
+      'LRCLIB exact body',
+    ),
+  );
 }
 
 function normalized(value: string): string {
@@ -240,7 +253,11 @@ async function getDirectSearchLyrics(
     DIRECT_LYRICS_TIMEOUT_MS,
   );
   if (!response.ok) throw new Error(`LRCLIB search ${response.status}`);
-  const candidates = (await response.json()) as LrcLibResponse[];
+  const candidates = await withTimeout(
+    response.json() as Promise<LrcLibResponse[]>,
+    LYRICS_BODY_TIMEOUT_MS,
+    'LRCLIB search body',
+  );
   const ranked = candidates
     .filter((candidate) => !candidate.instrumental)
     .map((candidate) => ({ candidate, score: searchScore(candidate, artist, title, durationMs) }))
@@ -361,6 +378,7 @@ export async function requestLyricsTranscription(
     ],
     signal,
     TRANSCRIPTION_TIMEOUT_MS,
+    true,
   );
   if (result) {
     await cacheLyrics(transcriptionKey, result);

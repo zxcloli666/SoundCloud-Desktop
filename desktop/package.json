@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "node scripts/check-backend-config.mjs && tsc && vite build",
     "preview": "vite preview",
+    "test": "vitest run",
     "tauri": "tauri",
     "tauri:cef": "cargo build --manifest-path src-tauri/Cargo.toml --features cef && cp -ru \"$(find src-tauri/target/debug/build -type d -path '*cef-dll-sys*/out/cef_linux_x86_64' | head -1)/.\" src-tauri/target/debug/ && tauri dev -f cef -- -- --no-sandbox --ozone-platform=x11",
     "lint": "biome lint --write src/",
@@ -52,6 +53,7 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
     "typescript": "~6.0.2",
-    "vite": "^8.0.14"
+    "vite": "^8.0.14",
+    "vitest": "^4.1.11"
   }
 }

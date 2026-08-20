@@ -379,7 +379,7 @@ pub fn pause(state: State<'_, AudioState>) {
         }
 }
 
-pub fn stop(state: State<'_, AudioState>) {
+pub(crate) fn stop_state(state: &AudioState) {
     state.has_track.store(false, Ordering::Relaxed);
     state.load_gen.fetch_add(1, Ordering::Relaxed);
     if let Ok(mut task) = state.stream_task.try_lock()
@@ -397,6 +397,10 @@ pub fn stop(state: State<'_, AudioState>) {
     if let Ok(mut stream) = state.active_stream.try_lock() {
         *stream = None;
     }
+}
+
+pub fn stop(state: State<'_, AudioState>) {
+    stop_state(state.inner());
 }
 
 pub fn seek(position: f64, state: State<'_, AudioState>) -> Result<(), String> {

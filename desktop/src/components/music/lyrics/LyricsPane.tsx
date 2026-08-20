@@ -7,6 +7,7 @@ import {
   requestLyricsTranscription,
   searchLyricsManual,
 } from '../../../lib/lyrics';
+import { RequestTimeoutError } from '../../../lib/request-timeout';
 import { getTrackDisplay } from '../../../lib/track-display';
 import type { Track } from '../../../stores/player';
 import { LyricsSourceBadge, PlainLyrics, SyncedLyrics } from './SyncedLyrics';
@@ -33,14 +34,14 @@ const ManualSearchPanel = React.memo(
         <input
           value={artist}
           onChange={(e) => setArtist(e.target.value)}
-          placeholder="Artist"
+          placeholder={t('track.artistPlaceholder')}
           autoFocus
           className="w-full max-w-[280px] bg-white/10 px-4 py-2.5 rounded-xl text-white text-[14px] outline-none border border-transparent focus:border-white/20 placeholder:text-white/30"
         />
         <input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="Title"
+          placeholder={t('track.titlePlaceholder')}
           onKeyDown={(e) => {
             if (e.key === 'Enter' && artist.trim() && title.trim()) {
               onSubmit(artist.trim(), title.trim());
@@ -90,6 +91,7 @@ export const LyricsPane = React.memo(({ track }: { track: Track }) => {
     data: lyrics,
     isLoading,
     isError,
+    error,
     isFetching,
     refetch,
   } = useQuery({
@@ -176,7 +178,13 @@ export const LyricsPane = React.memo(({ track }: { track: Track }) => {
         </button>
         <MicVocal size={40} className="text-white/[0.06]" />
         <p className="text-[15px] text-white/30 font-medium">
-          {t(transcriptionRequested ? 'track.lyricsTranscriptionFailed' : 'common.error')}
+          {t(
+            transcriptionRequested && error instanceof RequestTimeoutError
+              ? 'track.lyricsTranscriptionTimeout'
+              : transcriptionRequested
+                ? 'track.lyricsTranscriptionFailed'
+                : 'common.error',
+          )}
         </p>
         <button
           type="button"
