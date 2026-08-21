@@ -38,14 +38,15 @@ export function useClusterWave(opts: UseClusterWaveOptions): UseQueryResult<Clus
     enabled: opts.enabled !== false && !!opts.url,
     staleTime: opts.staleMs ?? STALE_MS,
     gcTime: opts.gcMs ?? GC_MS,
-    queryFn: () => fetchAndHydrate(opts.url!),
+    queryFn: ({ signal }) => fetchAndHydrate(opts.url!, signal),
   });
 }
 
-export async function fetchAndHydrate(url: string): Promise<ClusterData> {
-  const dto = await api<ClusterResponseDto>(url).catch(
-    () => ({ clusters: [] }) as ClusterResponseDto,
-  );
+export async function fetchAndHydrate(url: string, signal?: AbortSignal): Promise<ClusterData> {
+  const dto = await api<ClusterResponseDto>(url, { signal }).catch((error) => {
+    if (signal?.aborted) throw error;
+    return { clusters: [] } as ClusterResponseDto;
+  });
 
   const uniqueIds = collectUniqueIds(dto);
   if (uniqueIds.length === 0) {
@@ -53,7 +54,7 @@ export async function fetchAndHydrate(url: string): Promise<ClusterData> {
   }
 
   const fakeRecs: RecommendResult[] = uniqueIds.map((id) => ({ id }));
-  const hydrated = await hydrateByIds(fakeRecs);
+  const hydrated = await hydrateByIds(fakeRecs, signal);
 
   const byId = new Map<string, Track>();
   for (const t of hydrated) {

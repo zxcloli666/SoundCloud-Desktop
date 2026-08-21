@@ -7,7 +7,7 @@ const STALE_DETAIL = 60_000;
 export function useAlbumDetail(id: string | undefined) {
   return useQuery({
     queryKey: ['album', id],
-    queryFn: () => api<AlbumDetail>(`/albums/${encodeURIComponent(id!)}`),
+    queryFn: ({ signal }) => api<AlbumDetail>(`/albums/${encodeURIComponent(id!)}`, { signal }),
     enabled: !!id,
     staleTime: STALE_DETAIL,
   });

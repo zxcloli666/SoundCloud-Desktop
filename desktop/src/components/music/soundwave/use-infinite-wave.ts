@@ -43,6 +43,7 @@ export function useInfiniteWave(opts: {
   const ownedRef = useRef<Set<string>>(new Set());
   const cursorRef = useRef<string>(initialCursor ?? '');
   const fetchingRef = useRef(false);
+  const abortRef = useRef<AbortController | null>(null);
   const negCountRef = useRef(0);
   const posCountRef = useRef(0);
   const languagesRef = useRef(languages);
@@ -68,9 +69,14 @@ export function useInfiniteWave(opts: {
   }, [initialTracks]);
 
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled) {
+      abortRef.current?.abort();
+      abortRef.current = null;
+      fetchingRef.current = false;
+      return;
+    }
 
-    return usePlayerStore.subscribe((state, prev) => {
+    const unsubscribe = usePlayerStore.subscribe((state, prev) => {
       const { queue, queueIndex, currentTrack, isPlaying } = state;
       // Narrowed: only react to refill-relevant fields.
       if (
@@ -90,13 +96,16 @@ export function useInfiniteWave(opts: {
       if (fetchingRef.current) return;
 
       fetchingRef.current = true;
-      (async () => {
+      const controller = new AbortController();
+      abortRef.current = controller;
+      void (async () => {
         try {
           if (cursorRef.current && (negCountRef.current > 0 || posCountRef.current > 0)) {
             const updated = await sendWaveFeedback({
               cursor: cursorRef.current,
               negatives: negCountRef.current,
               positives: posCountRef.current,
+              signal: controller.signal,
             });
             negCountRef.current = 0;
             posCountRef.current = 0;
@@ -109,7 +118,9 @@ export function useInfiniteWave(opts: {
             limit: batchLimit,
             languages: languagesRef.current,
             hideListened: hideListenedRef.current,
+            signal: controller.signal,
           });
+          if (controller.signal.aborted) return;
           if (batch.cursor) cursorRef.current = batch.cursor;
           const filterFn = filterRef.current;
           const existing = new Set(usePlayerStore.getState().queue.map((t) => t.urn));
@@ -121,12 +132,23 @@ export function useInfiniteWave(opts: {
             for (const t of fresh) ownedRef.current.add(t.urn);
           }
         } catch (e) {
-          console.debug('[soundwave] infinite refill failed:', e);
+          if (!controller.signal.aborted) console.debug('[soundwave] infinite refill failed:', e);
         } finally {
-          fetchingRef.current = false;
+          if (abortRef.current === controller) {
+            abortRef.current = null;
+            fetchingRef.current = false;
+          }
         }
       })();
     });
+
+    return () => {
+      unsubscribe();
+      const controller = abortRef.current;
+      abortRef.current = null;
+      controller?.abort();
+      fetchingRef.current = false;
+    };
   }, [enabled, seedKind, seedId, minTail, batchLimit]);
 
   return {

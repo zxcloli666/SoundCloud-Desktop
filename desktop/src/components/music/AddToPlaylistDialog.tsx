@@ -1,16 +1,16 @@
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {useTranslation} from 'react-i18next';
-import {toast} from 'sonner';
-import {api} from '../../lib/api';
-import {fc} from '../../lib/formatters';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
+import { api } from '../../lib/api';
+import { fc } from '../../lib/formatters';
 import {
   type Playlist,
   useAddToPlaylist,
   useCreatePlaylist,
   useMyPlaylists,
 } from '../../lib/hooks';
-import {Globe, ListMusic, ListPlus, Loader2, Lock, Plus, X} from '../../lib/icons';
-import {playlistCoverUrl} from '../../lib/playlist-cover';
+import { Globe, ListMusic, ListPlus, Loader2, Lock, Plus, X } from '../../lib/icons';
+import { playlistCoverUrl } from '../../lib/playlist-cover';
 import {
   Modal,
   ModalClose,
@@ -52,7 +52,13 @@ const PlaylistOption = React.memo(function PlaylistOption({
     >
       <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0 ring-1 ring-white/[0.06] bg-white/[0.03]">
         {cover ? (
-          <img src={cover} alt="" className="w-full h-full object-cover" />
+          <img
+            src={cover}
+            alt=""
+            className="w-full h-full object-cover"
+            loading="lazy"
+            decoding="async"
+          />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
             <ListMusic size={14} className="text-white/20" />
@@ -206,7 +212,7 @@ export const AddToPlaylistDialog = React.memo(function AddToPlaylistDialog({
             if (cancelled) return;
             setPlaylistTrackMap((prev) => ({ ...prev, [playlistUrn]: [] }));
           } finally {
-            if (!cancelled) setLoadingPlaylistUrns((prev) => ({...prev, [playlistUrn]: false}));
+            if (!cancelled) setLoadingPlaylistUrns((prev) => ({ ...prev, [playlistUrn]: false }));
           }
         }),
       );
@@ -250,7 +256,7 @@ export const AddToPlaylistDialog = React.memo(function AddToPlaylistDialog({
     }
 
     addToPlaylist.mutate(
-        {playlistUrn: playlist.urn, trackUrns: newUrns},
+      { playlistUrn: playlist.urn, trackUrns: newUrns },
       {
         onSuccess: () => {
           toast.success(t('playlist.addedToPlaylist'));
@@ -266,80 +272,78 @@ export const AddToPlaylistDialog = React.memo(function AddToPlaylistDialog({
   };
 
   return (
-      <Modal open={open} onOpenChange={handleOpenChange}>
-        <ModalTrigger asChild>{children}</ModalTrigger>
-        <ModalContent size="sm" showClose={false} zClass="z-[90]">
-          {/* Header */}
-          <div className="flex items-center justify-between px-5 pt-5 pb-3">
-            <ModalTitle className="text-[15px] font-bold text-white/90 flex items-center gap-2">
-              <ListPlus size={18}/>
-              {t('playlist.addToPlaylist')}
-            </ModalTitle>
-            <ModalDescription className="sr-only">
-              Choose a playlist for the selected track.
-            </ModalDescription>
-            <ModalClose
-                className="w-7 h-7 rounded-lg flex items-center justify-center text-white/30 hover:text-white/70 hover:bg-white/[0.08] transition-all">
-              <X size={14}/>
-            </ModalClose>
-          </div>
+    <Modal open={open} onOpenChange={handleOpenChange}>
+      <ModalTrigger asChild>{children}</ModalTrigger>
+      <ModalContent size="sm" showClose={false} zClass="z-[90]">
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 pt-5 pb-3">
+          <ModalTitle className="text-[15px] font-bold text-white/90 flex items-center gap-2">
+            <ListPlus size={18} />
+            {t('playlist.addToPlaylist')}
+          </ModalTitle>
+          <ModalDescription className="sr-only">
+            Choose a playlist for the selected track.
+          </ModalDescription>
+          <ModalClose className="w-7 h-7 rounded-lg flex items-center justify-center text-white/30 hover:text-white/70 hover:bg-white/[0.08] transition-all">
+            <X size={14} />
+          </ModalClose>
+        </div>
 
-          {/* New playlist button / form */}
-          {showCreate ? (
-              <CreatePlaylistForm
-                  trackUrns={trackUrns}
-                  onCreated={() => {
-                    setShowCreate(false);
-                    setOpen(false);
-                  }}
-              />
-          ) : (
-              <div className="px-3 pb-2">
-                <button
-                    type="button"
-                    onClick={() => setShowCreate(true)}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/[0.06] transition-all duration-200 text-left"
-                >
-                  <div
-                      className="w-10 h-10 rounded-lg flex items-center justify-center bg-accent/10 ring-1 ring-accent/20">
-                    <Plus size={18} className="text-accent"/>
-                  </div>
-                  <span className="text-[13px] font-medium text-accent">
+        {/* New playlist button / form */}
+        {showCreate ? (
+          <CreatePlaylistForm
+            trackUrns={trackUrns}
+            onCreated={() => {
+              setShowCreate(false);
+              setOpen(false);
+            }}
+          />
+        ) : (
+          <div className="px-3 pb-2">
+            <button
+              type="button"
+              onClick={() => setShowCreate(true)}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/[0.06] transition-all duration-200 text-left"
+            >
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-accent/10 ring-1 ring-accent/20">
+                <Plus size={18} className="text-accent" />
+              </div>
+              <span className="text-[13px] font-medium text-accent">
                 {t('playlist.newPlaylist')}
               </span>
-                </button>
-              </div>
-          )}
-
-          {/* Divider */}
-          <div className="h-px bg-white/[0.04] mx-5"/>
-
-          {/* Playlist list */}
-          <div className="px-3 py-2 pb-4 overflow-y-auto flex-1 min-h-0">
-            {isLoading ? (
-                <div className="flex justify-center py-10">
-                  <Loader2 size={20} className="animate-spin text-white/20"/>
-                </div>
-            ) : playlists.length === 0 ? (
-                <div className="py-10 text-center text-[13px] text-white/25">
-                  {t('playlist.noPlaylists')}
-                </div>
-            ) : (
-                <div className="space-y-0.5">
-                  {playlists.map((p) => (
-                      <PlaylistOption
-                          key={p.urn}
-                          playlist={p}
-                          onSelect={handleSelect}
-                          loading={addToPlaylist.isPending || !!loadingPlaylistUrns[p.urn]}
-                          containsAll={playlistMembership.get(p.urn)?.containsAll ?? false}
-                          containsSome={playlistMembership.get(p.urn)?.containsSome ?? false}
-                      />
-                  ))}
-                </div>
-            )}
+            </button>
           </div>
-        </ModalContent>
-      </Modal>
+        )}
+
+        {/* Divider */}
+        <div className="h-px bg-white/[0.04] mx-5" />
+
+        {/* Playlist list */}
+        <div className="px-3 py-2 pb-4 overflow-y-auto flex-1 min-h-0">
+          {isLoading ? (
+            <div className="flex justify-center py-10">
+              <Loader2 size={20} className="animate-spin text-white/20" />
+            </div>
+          ) : playlists.length === 0 ? (
+            <div className="py-10 text-center text-[13px] text-white/25">
+              {t('playlist.noPlaylists')}
+            </div>
+          ) : (
+            <div className="space-y-0.5">
+              {playlists.map((p) => (
+                <PlaylistOption
+                  key={p.urn}
+                  playlist={p}
+                  onSelect={handleSelect}
+                  loading={addToPlaylist.isPending || !!loadingPlaylistUrns[p.urn]}
+                  containsAll={playlistMembership.get(p.urn)?.containsAll ?? false}
+                  containsSome={playlistMembership.get(p.urn)?.containsSome ?? false}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </ModalContent>
+    </Modal>
   );
 });

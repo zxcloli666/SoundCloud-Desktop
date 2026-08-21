@@ -1,8 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { api } from '../../lib/api';
-import { type Aura, auraFromHex, DEFAULT_AURA, DEFAULT_CUSTOM_HEX, resolveAura } from '../../lib/aura';
-import {useViewerAura} from '../../lib/useViewerAura';
+import {
+  type Aura,
+  auraFromHex,
+  DEFAULT_AURA,
+  DEFAULT_CUSTOM_HEX,
+  resolveAura,
+} from '../../lib/aura';
+import { useViewerAura } from '../../lib/useViewerAura';
 
 type AuraResponse = {
   aura_id: string | null;
@@ -17,16 +23,17 @@ const auraKey = (urn: string | undefined) => ['user', urn, 'aura'] as const;
 export function useUserAura(urn: string | undefined, hasStar: boolean) {
   const query = useQuery({
     queryKey: auraKey(urn),
-    queryFn: () => api<AuraResponse>(`/users/${encodeURIComponent(urn!)}/aura`),
+    queryFn: ({ signal }) =>
+      api<AuraResponse>(`/users/${encodeURIComponent(urn!)}/aura`, { signal }),
     enabled: !!urn && hasStar,
     staleTime: STALE_MS,
     gcTime: GC_MS,
   });
 
-    const viewerAura = useViewerAura();
+  const viewerAura = useViewerAura();
   const aura = useMemo(
-      () => (hasStar ? resolveAura(query.data?.aura_id, query.data?.custom_hex) : viewerAura),
-      [hasStar, query.data?.aura_id, query.data?.custom_hex, viewerAura],
+    () => (hasStar ? resolveAura(query.data?.aura_id, query.data?.custom_hex) : viewerAura),
+    [hasStar, query.data?.aura_id, query.data?.custom_hex, viewerAura],
   );
 
   const initialCustomHex = query.data?.custom_hex ?? DEFAULT_CUSTOM_HEX;
@@ -39,13 +46,14 @@ export function useEditableUserAura(urn: string | undefined, enabled: boolean) {
   const qc = useQueryClient();
   const remote = useQuery({
     queryKey: auraKey(urn),
-    queryFn: () => api<AuraResponse>(`/users/${encodeURIComponent(urn!)}/aura`),
+    queryFn: ({ signal }) =>
+      api<AuraResponse>(`/users/${encodeURIComponent(urn!)}/aura`, { signal }),
     enabled: !!urn && enabled,
     staleTime: STALE_MS,
     gcTime: GC_MS,
   });
 
-    const viewerAura = useViewerAura();
+  const viewerAura = useViewerAura();
   const [aura, setAura] = useState<Aura>(DEFAULT_AURA);
   const [customHex, setCustomHex] = useState<string>(DEFAULT_CUSTOM_HEX);
   const initRef = useRef(false);
@@ -110,6 +118,6 @@ export function useEditableUserAura(urn: string | undefined, enabled: boolean) {
     [queueSave],
   );
 
-    // Без «звезды» кастомизация недоступна — отдаём ауру по теме смотрящего.
-    return {aura: enabled ? aura : viewerAura, customHex, onPickAura, onPickCustom};
+  // Без «звезды» кастомизация недоступна — отдаём ауру по теме смотрящего.
+  return { aura: enabled ? aura : viewerAura, customHex, onPickAura, onPickCustom };
 }

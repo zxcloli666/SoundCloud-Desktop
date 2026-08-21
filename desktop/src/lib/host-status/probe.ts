@@ -118,6 +118,7 @@ function timeoutBurst(): boolean {
 }
 
 function startRecheckTimer(): void {
+  if (document.visibilityState === 'hidden') return;
   recheckTimer ??= setInterval(() => requestProbe(), RECHECK_MS);
 }
 
@@ -152,7 +153,12 @@ export function noteRequestTimeout(): void {
 }
 
 export function requestProbe(options?: { force?: boolean }): void {
-  if (!navigator.onLine || useHostStatusStore.getState().probing) return;
+  if (
+    !navigator.onLine ||
+    useHostStatusStore.getState().probing ||
+    (document.visibilityState === 'hidden' && !options?.force)
+  )
+    return;
   const sinceLast = Date.now() - lastRunAt;
   if (sinceLast < PROBE_MIN_GAP_MS && !options?.force) {
     if (trailingTimer === null) {
@@ -209,4 +215,18 @@ export function initHostStatus(): void {
   };
   window.addEventListener('online', onWake);
   window.addEventListener('focus', onWake);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') {
+      stopRecheckTimer();
+      if (trailingTimer !== null) {
+        clearTimeout(trailingTimer);
+        trailingTimer = null;
+      }
+      return;
+    }
+    if (useHostStatusStore.getState().main !== 'up') {
+      requestProbe();
+      startRecheckTimer();
+    }
+  });
 }

@@ -12,7 +12,7 @@ const STALE_ALBUMS = 120_000;
 export function useArtistDetail(id: string | undefined) {
   return useQuery({
     queryKey: ['artist', id],
-    queryFn: () => api<ArtistDetail>(`/artists/${encodeURIComponent(id!)}`),
+    queryFn: ({ signal }) => api<ArtistDetail>(`/artists/${encodeURIComponent(id!)}`, { signal }),
     enabled: !!id,
     staleTime: STALE_DETAIL,
   });
@@ -26,9 +26,10 @@ export function useArtistTracks(
 ) {
   return useQuery({
     queryKey: ['artist', id, 'tracks', role, sort, limit],
-    queryFn: () =>
+    queryFn: ({ signal }) =>
       api<{ collection: Track[] }>(
         `/artists/${encodeURIComponent(id!)}/tracks?role=${role}&sort=${sort}&limit=${limit}`,
+        { signal },
       ),
     enabled: !!id,
     staleTime: STALE_TRACKS,
@@ -39,8 +40,10 @@ export function useArtistTracks(
 export function useArtistCovers(id: string | undefined) {
   return useQuery({
     queryKey: ['artist', id, 'covers'],
-    queryFn: () =>
-      api<{ collection: Track[] }>(`/artists/${encodeURIComponent(id!)}/covers?limit=80`),
+    queryFn: ({ signal }) =>
+      api<{ collection: Track[] }>(`/artists/${encodeURIComponent(id!)}/covers?limit=80`, {
+        signal,
+      }),
     enabled: !!id,
     staleTime: STALE_TRACKS,
     select: (d) => d.collection,
@@ -50,7 +53,8 @@ export function useArtistCovers(id: string | undefined) {
 export function useArtistAlbums(id: string | undefined) {
   return useQuery({
     queryKey: ['artist', id, 'albums'],
-    queryFn: () => api<ArtistAlbum[]>(`/artists/${encodeURIComponent(id!)}/albums`),
+    queryFn: ({ signal }) =>
+      api<ArtistAlbum[]>(`/artists/${encodeURIComponent(id!)}/albums`, { signal }),
     enabled: !!id,
     staleTime: STALE_ALBUMS,
   });

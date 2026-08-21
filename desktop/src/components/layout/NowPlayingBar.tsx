@@ -368,7 +368,7 @@ export const ProgressTime = React.memo(() => {
 function useTrackReactions(trackUrn: string) {
   const { data: trackData } = useQuery({
     queryKey: ['track', trackUrn],
-    queryFn: () => api<Track>(`/tracks/${encodeURIComponent(trackUrn)}`),
+    queryFn: ({ signal }) => api<Track>(`/tracks/${encodeURIComponent(trackUrn)}`, { signal }),
     enabled: !!trackUrn && !isDesignPreview(),
     staleTime: 30_000,
   });
@@ -927,7 +927,11 @@ const PillTrackBody = React.memo(function PillTrackBody({
         aria-label={t('player.nowPlaying')}
         aria-pressed={contextOpen}
       >
-        {artworkSmall ? <img src={artworkSmall} alt="" /> : <div className="npb-artfb" />}
+        {artworkSmall ? (
+          <img src={artworkSmall} alt="" decoding="async" />
+        ) : (
+          <div className="npb-artfb" />
+        )}
         {/* spinning vinyl ring + live "playing" equaliser — animated only while playing */}
         <span className="npb-ring" />
         <span className="npb-eq">

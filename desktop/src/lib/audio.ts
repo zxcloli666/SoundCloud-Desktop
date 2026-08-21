@@ -842,38 +842,75 @@ listenNative<number>('media:seek-relative', (e) => {
 /* ── Preloading ──────────────────────────────────────────────── */
 
 let preloadTimer: ReturnType<typeof setTimeout> | null = null;
+const PRELOAD_DEDUPE_MS = 15_000;
+const PRELOAD_HISTORY_CAP = 64;
+const recentPreloads = new Map<string, number>();
+
+interface PreloadRequestEntry {
+  urn: string;
+  urls: string[];
+  downloadUrls: string[];
+  storageUrls: string[];
+  sessionId: string | null;
+  hq: boolean;
+  durationMs?: number;
+}
+
+function takeFreshPreload(entries: PreloadRequestEntry[]): PreloadRequestEntry[] {
+  if (document.visibilityState === 'hidden') return [];
+  const now = Date.now();
+  const fresh = entries.filter((entry) => {
+    if (entry.urn === currentUrn) return false;
+    const last = recentPreloads.get(entry.urn) ?? 0;
+    if (now - last < PRELOAD_DEDUPE_MS) return false;
+    recentPreloads.set(entry.urn, now);
+    return true;
+  });
+
+  if (recentPreloads.size > PRELOAD_HISTORY_CAP) {
+    for (const [urn, timestamp] of recentPreloads) {
+      if (now - timestamp >= PRELOAD_DEDUPE_MS) recentPreloads.delete(urn);
+    }
+    while (recentPreloads.size > PRELOAD_HISTORY_CAP) {
+      const oldest = recentPreloads.keys().next().value;
+      if (typeof oldest !== 'string') break;
+      recentPreloads.delete(oldest);
+    }
+  }
+  return fresh;
+}
+
+function dispatchPreload(entries: PreloadRequestEntry[]): void {
+  const fresh = takeFreshPreload(entries);
+  if (fresh.length === 0) return;
+  invoke('track_preload', { entries: fresh }).catch((error) => {
+    for (const entry of fresh) recentPreloads.delete(entry.urn);
+    console.error(error);
+  });
+}
 
 export function preloadTrack(urn: string) {
   if (preloadTimer) clearTimeout(preloadTimer);
   preloadTimer = setTimeout(() => {
     const sessionId = getSessionId();
     const hq = useSettingsStore.getState().highQualityStreaming;
-    invoke('track_preload', {
-      entries: [
-        {
-          urn,
-          urls: streamFallbackUrls(urn, hq),
-          downloadUrls: downloadFallbackUrls(urn, hq),
-          storageUrls: buildStorageUrls(urn),
-          sessionId,
-          hq,
-        },
-      ],
-    }).catch(console.error);
+    preloadTimer = null;
+    dispatchPreload([
+      {
+        urn,
+        urls: streamFallbackUrls(urn, hq),
+        downloadUrls: downloadFallbackUrls(urn, hq),
+        storageUrls: buildStorageUrls(urn),
+        sessionId,
+        hq,
+      },
+    ]);
   }, 500);
 }
 
 export function preloadQueue() {
   const { queue, queueIndex } = usePlayerStore.getState();
-  const entries: Array<{
-    urn: string;
-    urls: string[];
-    downloadUrls: string[];
-    storageUrls: string[];
-    sessionId: string | null;
-    hq: boolean;
-    durationMs?: number;
-  }> = [];
+  const entries: PreloadRequestEntry[] = [];
   const sessionId = getSessionId();
   const hq = useSettingsStore.getState().highQualityStreaming;
 
@@ -892,9 +929,7 @@ export function preloadQueue() {
     }
   }
 
-  if (entries.length > 0) {
-    invoke('track_preload', { entries }).catch(console.error);
-  }
+  dispatchPreload(entries);
 }
 
 usePlayerStore.subscribe((state, prev) => {

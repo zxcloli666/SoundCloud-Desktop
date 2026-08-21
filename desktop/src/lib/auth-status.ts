@@ -25,7 +25,7 @@ const POLL_MS = 30_000;
 export function useAuthStatus(opts?: { enabled?: boolean }) {
   return useQuery<AuthStatus>({
     queryKey: ['auth', 'status'],
-    queryFn: () => api<AuthStatus>('/auth/status'),
+    queryFn: ({ signal }) => api<AuthStatus>('/auth/status', { signal }),
     staleTime: POLL_MS / 2,
     refetchInterval: POLL_MS,
     enabled: opts?.enabled ?? true,

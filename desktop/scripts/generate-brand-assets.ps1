@@ -150,7 +150,10 @@ function Find-VisibleBounds([System.Drawing.Bitmap]$Bitmap) {
   }
 
   $contentSize = [Math]::Max($right - $left + 1, $bottom - $top + 1)
-  $padding = [Math]::Ceiling($contentSize * 0.09)
+  # Windows visually adds its own breathing room around taskbar/start-menu
+  # icons. Keep only a narrow safety edge in the source so the mark does not
+  # look undersized after the shell applies that treatment.
+  $padding = [Math]::Ceiling($contentSize * 0.035)
   $squareSize = [Math]::Min(
     [Math]::Max($contentSize + (2 * $padding), 1),
     [Math]::Min($Bitmap.Width, $Bitmap.Height)

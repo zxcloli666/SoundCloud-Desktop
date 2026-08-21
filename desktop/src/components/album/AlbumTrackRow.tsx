@@ -1,15 +1,22 @@
-import {memo} from 'react';
-import {preloadTrack} from '../../lib/audio';
-import {type Aura, auraRgb, auraRgba, isLight} from '../../lib/aura';
-import {art, dur} from '../../lib/formatters';
-import {ListPlus, Music, pauseBlack14, pauseWhite14, playBlack14, playWhite14,} from '../../lib/icons';
-import {usePerfMode} from '../../lib/perf';
-import {useTrackPlay} from '../../lib/useTrackPlay';
-import type {Track} from '../../stores/player';
-import {AddToPlaylistDialog} from '../music/AddToPlaylistDialog';
-import {LikeButton} from '../music/LikeButton';
-import {sameScdMeta, TrackStatusBadges} from '../music/TrackStatusBadges';
-import {TrackTitleArtist} from '../music/TrackTitleArtist';
+import { memo } from 'react';
+import { preloadTrack } from '../../lib/audio';
+import { type Aura, auraRgb, auraRgba, isLight } from '../../lib/aura';
+import { art, dur } from '../../lib/formatters';
+import {
+  ListPlus,
+  Music,
+  pauseBlack14,
+  pauseWhite14,
+  playBlack14,
+  playWhite14,
+} from '../../lib/icons';
+import { usePerfMode } from '../../lib/perf';
+import { useTrackPlay } from '../../lib/useTrackPlay';
+import type { Track } from '../../stores/player';
+import { AddToPlaylistDialog } from '../music/AddToPlaylistDialog';
+import { LikeButton } from '../music/LikeButton';
+import { sameScdMeta, TrackStatusBadges } from '../music/TrackStatusBadges';
+import { TrackTitleArtist } from '../music/TrackTitleArtist';
 
 interface AlbumTrackRowProps {
   track: Track;
@@ -67,10 +74,10 @@ function AlbumTrackRowImpl({ track, position, queue, aura }: AlbumTrackRowProps)
                 className="w-9 h-9 rounded-full flex items-center justify-center"
                 style={{
                   background: lightAura
-                      ? auraRgba(aura, 0.85)
-                      : hoverB > 0
-                          ? 'rgba(255,255,255,0.12)'
-                          : 'rgba(54,54,60,0.92)',
+                    ? auraRgba(aura, 0.85)
+                    : hoverB > 0
+                      ? 'rgba(255,255,255,0.12)'
+                      : 'rgba(54,54,60,0.92)',
                   boxShadow: `inset 0 0 0 1px ${auraRgba(aura, 0.3)}`,
                   backdropFilter: hoverB > 0 ? `blur(${hoverB}px)` : undefined,
                   WebkitBackdropFilter: hoverB > 0 ? `blur(${hoverB}px)` : undefined,
@@ -88,7 +95,13 @@ function AlbumTrackRowImpl({ track, position, queue, aura }: AlbumTrackRowProps)
         style={{ boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.08)' }}
       >
         {cover ? (
-          <img src={cover} alt="" className="w-full h-full object-cover" loading="lazy" />
+          <img
+            src={cover}
+            alt=""
+            className="w-full h-full object-cover"
+            loading="lazy"
+            decoding="async"
+          />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-white/[0.04]">
             <Music size={14} className="text-white/20" />
@@ -129,6 +142,6 @@ const areEqual = (prev: AlbumTrackRowProps, next: AlbumTrackRowProps) =>
   prev.aura.accent[1] === next.aura.accent[1] &&
   prev.aura.accent[2] === next.aura.accent[2] &&
   prev.track.user_favorite === next.track.user_favorite &&
-    sameScdMeta(prev.track._scd_meta, next.track._scd_meta);
+  sameScdMeta(prev.track._scd_meta, next.track._scd_meta);
 
 export const AlbumTrackRow = memo(AlbumTrackRowImpl, areEqual);

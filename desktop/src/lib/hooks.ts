@@ -137,6 +137,8 @@ const SHORT_CACHE_MS = 1000 * 60 * 2;
 const MEDIUM_CACHE_MS = 1000 * 60 * 5;
 const SEARCH_CACHE_MS = 1000 * 60 * 2;
 const INFINITE_GC_MS = 1000 * 60 * 3;
+const RELATED_POOL_SEEDS = 12;
+const RELATED_POOL_CONCURRENCY = 4;
 
 /**
  * Cold-эндпоинты (треки/плейлисты/лайки/фолловинги юзеров, /me/*) живут в
@@ -208,7 +210,8 @@ function usePagedQuery<T>(opts: PagedQueryOptions<T>): PagedQueryResult<T> {
     number
   >({
     queryKey: opts.queryKey,
-    queryFn: ({ pageParam }) => api<PagedResponse<T>>(opts.url(pageParam, limit)),
+    queryFn: ({ pageParam, signal }) =>
+      api<PagedResponse<T>>(opts.url(pageParam, limit), { signal }),
     initialPageParam: 0,
     getNextPageParam: (last) => (last.has_more ? last.page + 1 : undefined),
     staleTime: opts.staleTime,
@@ -261,9 +264,10 @@ export interface HistoryEntry {
 export function useHistory(limit = 50, enabled = true) {
   const query = useInfiniteQuery({
     queryKey: ['history'],
-    queryFn: async ({ pageParam = 0 }) => {
+    queryFn: ({ pageParam = 0, signal }) => {
       return api<{ collection: HistoryEntry[]; total: number }>(
         `/history?limit=${limit}&offset=${pageParam}`,
+        { signal },
       );
     },
     initialPageParam: 0,
@@ -273,7 +277,9 @@ export function useHistory(limit = 50, enabled = true) {
       const nextOffset = (lastOffset as number) + limit;
       return nextOffset < last.total ? nextOffset : undefined;
     },
-    staleTime: 0,
+    staleTime: 60_000,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
     enabled,
   });
 
@@ -292,7 +298,7 @@ export interface FeaturedResponse {
 export function useFeatured() {
   return useQuery<FeaturedResponse | null>({
     queryKey: ['featured'],
-    queryFn: () => api<FeaturedResponse | null>('/featured'),
+    queryFn: ({ signal }) => api<FeaturedResponse | null>('/featured', { signal }),
     staleTime: 5 * 60_000,
   });
 }
@@ -381,7 +387,8 @@ export function fetchAllPlaylistTracks(playlistUrn: string, pageSize = 200): Pro
 export function useFollowingTracks(limit = 20) {
   return useQuery({
     queryKey: ['me', 'followings', 'tracks', limit],
-    queryFn: () => api<TrackPage>(`/me/followings/tracks?limit=${limit}&page=0`),
+    queryFn: ({ signal }) =>
+      api<TrackPage>(`/me/followings/tracks?limit=${limit}&page=0`, { signal }),
     staleTime: SHORT_CACHE_MS,
     gcTime: INFINITE_GC_MS,
   });
@@ -428,7 +435,7 @@ export function usePostComment(trackUrn: string | undefined) {
 export function useRelatedTracks(trackUrn: string | undefined, limit = 10) {
   return useQuery({
     queryKey: ['track', trackUrn, 'related', limit],
-    queryFn: () => fetchRelatedTracks(trackUrn!, limit),
+    queryFn: ({ signal }) => fetchRelatedTracks(trackUrn!, limit, 0, signal),
     enabled: !!trackUrn,
     staleTime: SHORT_CACHE_MS,
     gcTime: INFINITE_GC_MS,
@@ -440,9 +447,10 @@ export function useRelatedTracks(trackUrn: string | undefined, limit = 10) {
 export function useTrackFavoriters(trackUrn: string | undefined, limit = 12) {
   return useQuery({
     queryKey: ['track', trackUrn, 'favoriters', limit],
-    queryFn: () =>
+    queryFn: ({ signal }) =>
       api<PagedResponse<SCUser>>(
         `/tracks/${encodeURIComponent(trackUrn!)}/favoriters?limit=${limit}&page=0`,
+        { signal },
       ),
     enabled: !!trackUrn,
     staleTime: SHORT_CACHE_MS,
@@ -455,7 +463,8 @@ export function useTrackFavoriters(trackUrn: string | undefined, limit = 12) {
 export function usePlaylist(playlistUrn: string | undefined) {
   return useQuery({
     queryKey: ['playlist', playlistUrn],
-    queryFn: () => api<Playlist>(`/playlists/${encodeURIComponent(playlistUrn!)}`),
+    queryFn: ({ signal }) =>
+      api<Playlist>(`/playlists/${encodeURIComponent(playlistUrn!)}`, { signal }),
     enabled: !!playlistUrn,
     staleTime: COLD_CACHE_MS,
     gcTime: INFINITE_GC_MS,
@@ -483,7 +492,7 @@ export function usePlaylistTracks(playlistUrn: string | undefined) {
 export function useUser(userUrn: string | undefined) {
   return useQuery({
     queryKey: ['user', userUrn],
-    queryFn: () => api<UserProfile>(`/users/${encodeURIComponent(userUrn!)}`),
+    queryFn: ({ signal }) => api<UserProfile>(`/users/${encodeURIComponent(userUrn!)}`, { signal }),
     enabled: !!userUrn,
     staleTime: COLD_CACHE_MS,
     gcTime: INFINITE_GC_MS,
@@ -510,12 +519,14 @@ export function useUserTracks(userUrn: string | undefined) {
 export function useUserPopularTracks(userUrn: string | undefined) {
   return useQuery({
     queryKey: ['user', userUrn, 'tracks', 'popular'],
-    queryFn: async () => {
+    queryFn: async ({ signal }) => {
       const all: Track[] = [];
       const pageSize = 100;
       for (let page = 0; ; page++) {
+        if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
         const data = await api<TrackPage>(
           pagedUrl(`/users/${encodeURIComponent(userUrn!)}/tracks`, page, pageSize),
+          { signal },
         );
         for (const t of data.collection) all.push(t);
         if (!data.has_more) break;
@@ -592,7 +603,8 @@ export function useUserFollowers(userUrn: string | undefined) {
 export function useUserWebProfiles(userUrn: string | undefined) {
   return useQuery({
     queryKey: ['user', userUrn, 'web-profiles'],
-    queryFn: () => api<WebProfile[]>(`/users/${encodeURIComponent(userUrn!)}/web-profiles`),
+    queryFn: ({ signal }) =>
+      api<WebProfile[]>(`/users/${encodeURIComponent(userUrn!)}/web-profiles`, { signal }),
     enabled: !!userUrn,
     staleTime: MEDIUM_CACHE_MS,
     gcTime: INFINITE_GC_MS,
@@ -926,10 +938,10 @@ export function useVibeSearch(q: string, opts?: { limit?: number; languages?: st
     // While the worker is still encoding the query (preparing), poll until the
     // vector lands and the backend flips to ready.
     refetchInterval: (q2) => (q2.state.data?.status === 'preparing' ? 2500 : false),
-    queryFn: () => {
+    queryFn: ({ signal }) => {
       const usp = new URLSearchParams({ q: q.trim(), limit: String(limit) });
       if (langs) usp.set('languages', langs);
-      return api<VibeSearchResponse>(`/search/vibe?${usp}`, undefined, 30_000);
+      return api<VibeSearchResponse>(`/search/vibe?${usp}`, { signal }, 30_000);
     },
   });
   return {
@@ -974,7 +986,8 @@ const FALLBACK_TRACK_IDS = '2028682452,2065341288,2028677636,2209249766,20608184
 export function useFallbackTracks() {
   return useQuery({
     queryKey: ['fallback', 'tracks'],
-    queryFn: () => api<TrackPage>(`/tracks?ids=${FALLBACK_TRACK_IDS}&page=0&limit=30`),
+    queryFn: ({ signal }) =>
+      api<TrackPage>(`/tracks?ids=${FALLBACK_TRACK_IDS}&page=0&limit=30`, { signal }),
     staleTime: 1000 * 60 * 30,
   });
 }
@@ -1000,14 +1013,14 @@ function sampleTrackUrns(tracks: Track[], limit: number): string[] {
 }
 
 /**
- * Shared pool: fetches related tracks for up to 30 random liked tracks,
+ * Shared pool: fetches related tracks for a bounded sample of liked tracks,
  * counts frequency of each related track. Used by both Recommended and Discover.
  */
 export function useRelatedPool(likedTracks: Track[]) {
   // Stable seed — compute once when liked tracks first arrive, don't recompute on likes
   const seedRef = useRef<string[]>([]);
   if (seedRef.current.length === 0 && likedTracks.length > 0) {
-    seedRef.current = sampleTrackUrns(likedTracks, 30);
+    seedRef.current = sampleTrackUrns(likedTracks, RELATED_POOL_SEEDS);
   }
   const seedUrns = seedRef.current;
 
@@ -1015,13 +1028,23 @@ export function useRelatedPool(likedTracks: Track[]) {
 
   return useQuery({
     queryKey: ['discover', 'related-pool', seedUrns],
-    queryFn: async () => {
-      const results = await Promise.all(
-        seedUrns.map((urn) =>
-          fetchRelatedTracks(urn, 20).catch(
-            () => ({ collection: [], page: 0, page_size: 20, has_more: false }) as TrackPage,
-          ),
-        ),
+    queryFn: async ({ signal }) => {
+      const results: TrackPage[] = new Array(seedUrns.length);
+      let cursor = 0;
+      const worker = async () => {
+        while (cursor < seedUrns.length) {
+          if (signal.aborted) throw new DOMException('Aborted', 'AbortError');
+          const index = cursor++;
+          try {
+            results[index] = await fetchRelatedTracks(seedUrns[index], 20, 0, signal);
+          } catch (error) {
+            if (signal.aborted) throw error;
+            results[index] = { collection: [], page: 0, page_size: 20, has_more: false };
+          }
+        }
+      };
+      await Promise.all(
+        Array.from({ length: Math.min(RELATED_POOL_CONCURRENCY, seedUrns.length) }, () => worker()),
       );
 
       const freq: RelatedPool = new Map();

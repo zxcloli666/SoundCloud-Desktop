@@ -35,7 +35,10 @@ function normLanguages(langs: string[] | undefined): string | undefined {
  * Chunking avoids a request fan-out when a recommendation response contains
  * several shelves while preserving the model's original ranking.
  */
-export async function hydrateByIds(recs: RecommendResult[]): Promise<Track[]> {
+export async function hydrateByIds(
+  recs: RecommendResult[],
+  signal?: AbortSignal,
+): Promise<Track[]> {
   const ids: string[] = [];
   const seen = new Set<string>();
   for (const recommendation of recs) {
@@ -54,9 +57,12 @@ export async function hydrateByIds(recs: RecommendResult[]): Promise<Track[]> {
   const pages = await Promise.all(
     batches.map((batch) => {
       const encodedIds = encodeURIComponent(batch.join(','));
-      return api<HydratedTrackPage>(`/tracks?ids=${encodedIds}&page=0&limit=${batch.length}`).catch(
-        () => ({ collection: [] }) as HydratedTrackPage,
-      );
+      return api<HydratedTrackPage>(`/tracks?ids=${encodedIds}&page=0&limit=${batch.length}`, {
+        signal,
+      }).catch((error) => {
+        if (signal?.aborted) throw error;
+        return { collection: [] } as HydratedTrackPage;
+      });
     }),
   );
 
@@ -111,6 +117,7 @@ export async function fetchSmartWave(opts: {
   limit?: number;
   languages?: string[];
   hideListened?: boolean;
+  signal?: AbortSignal;
 }): Promise<SmartWaveBatch> {
   const qs = new URLSearchParams();
   qs.set('limit', String(opts.limit ?? 20));
@@ -120,9 +127,12 @@ export async function fetchSmartWave(opts: {
   // Бэк дефолтит hide_listened=ON; шлём явный флаг только когда он задан.
   if (opts.hideListened !== undefined) qs.set('hide_listened', opts.hideListened ? '1' : '0');
 
-  const payload = await api<SmartWavePayload>(smartWaveUrl(opts.seedKind, opts.seedId, qs)).catch(
-    () => ({ tracks: [], cursor: '' }) as SmartWavePayload,
-  );
+  const payload = await api<SmartWavePayload>(smartWaveUrl(opts.seedKind, opts.seedId, qs), {
+    signal: opts.signal,
+  }).catch((error) => {
+    if (opts.signal?.aborted) throw error;
+    return { tracks: [], cursor: '' } as SmartWavePayload;
+  });
 
   // Don't trust the API shape: a resolved-but-null/garbage body must not crash.
   const ids = Array.isArray(payload?.tracks) ? payload.tracks : [];
@@ -130,7 +140,7 @@ export async function fetchSmartWave(opts: {
   if (ids.length === 0) {
     return { tracks: [], cursor };
   }
-  const tracks = await hydrateByIds(ids);
+  const tracks = await hydrateByIds(ids, opts.signal);
   return { tracks, cursor };
 }
 
@@ -143,20 +153,24 @@ export async function sendWaveFeedback(opts: {
   cursor: string;
   negatives: number;
   positives: number;
+  signal?: AbortSignal;
 }): Promise<string | null> {
   if (!SEND_BEHAVIORAL_DATA) return null;
   if (!opts.cursor) return null;
+  const { signal, ...payload } = opts;
   try {
     const res = await api<{ ok: boolean; cursor?: string | null }>(
       '/recommendations/wave/feedback',
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(opts),
+        body: JSON.stringify(payload),
+        signal,
       },
     );
     return res?.cursor ?? null;
-  } catch {
+  } catch (error) {
+    if (signal?.aborted) throw error;
     return null;
   }
 }
@@ -188,13 +202,14 @@ export function useSmartWave(opts: {
     enabled,
     staleTime: SW_STALE_MS,
     gcTime: SW_GC_MS,
-    queryFn: () =>
+    queryFn: ({ signal }) =>
       fetchSmartWave({
         seedKind: opts.seedKind,
         seedId: opts.seedId,
         languages: opts.languages,
         limit: opts.limit,
         hideListened: opts.hideListened,
+        signal,
       }),
   });
 }
@@ -229,38 +244,55 @@ export function useWaveBoard(opts?: {
   const cursorRef = useRef<string | undefined>(undefined);
   const seenRef = useRef<Set<string>>(new Set());
   const fetchingRef = useRef(false);
+  const pageAbortRef = useRef<AbortController | null>(null);
 
   // Свежий старт при каждом заходе / смене языка: топ волны, не хвост.
   // biome-ignore lint/correctness/useExhaustiveDependencies: langKey намеренно триггерит fresh-волну при смене языка (значение читаем через ref, чтобы не словить stale-замыкание).
   useEffect(() => {
+    const pendingPage = pageAbortRef.current;
+    pageAbortRef.current = null;
+    pendingPage?.abort();
     if (!enabled) {
+      fetchingRef.current = false;
       setTracks([]);
       setHasNextPage(true);
+      setIsLoading(false);
+      setIsFetchingNextPage(false);
       return;
     }
     let cancelled = false;
+    const controller = new AbortController();
     cursorRef.current = undefined;
     seenRef.current = new Set();
     fetchingRef.current = true;
     setTracks([]);
     setHasNextPage(true);
     setIsLoading(true);
-    (async () => {
-      const batch = await fetchSmartWave({
-        seedKind: 'user',
-        limit: 24,
-        languages: languagesRef.current,
-        hideListened: hideListenedRef.current,
-      });
-      if (cancelled) return;
-      cursorRef.current = batch.cursor || undefined;
-      setTracks(dedupeNew(batch.tracks, seenRef.current));
-      setHasNextPage(batch.tracks.length > 0 && !!batch.cursor);
-      setIsLoading(false);
-      fetchingRef.current = false;
+    void (async () => {
+      try {
+        const batch = await fetchSmartWave({
+          seedKind: 'user',
+          limit: 24,
+          languages: languagesRef.current,
+          hideListened: hideListenedRef.current,
+          signal: controller.signal,
+        });
+        if (cancelled) return;
+        cursorRef.current = batch.cursor || undefined;
+        setTracks(dedupeNew(batch.tracks, seenRef.current));
+        setHasNextPage(batch.tracks.length > 0 && !!batch.cursor);
+      } catch {
+        if (!cancelled) setHasNextPage(false);
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false);
+          fetchingRef.current = false;
+        }
+      }
     })();
     return () => {
       cancelled = true;
+      controller.abort();
     };
   }, [enabled, langKey, hideListened]);
 
@@ -268,6 +300,8 @@ export function useWaveBoard(opts?: {
     if (!enabled || fetchingRef.current || !hasNextPage) return;
     fetchingRef.current = true;
     setIsFetchingNextPage(true);
+    const controller = new AbortController();
+    pageAbortRef.current = controller;
     try {
       const batch = await fetchSmartWave({
         seedKind: 'user',
@@ -275,16 +309,31 @@ export function useWaveBoard(opts?: {
         limit: 24,
         languages: languagesRef.current,
         hideListened: hideListenedRef.current,
+        signal: controller.signal,
       });
       cursorRef.current = batch.cursor || cursorRef.current;
       const fresh = dedupeNew(batch.tracks, seenRef.current);
       if (fresh.length > 0) setTracks((prev) => [...prev, ...fresh]);
       setHasNextPage(batch.tracks.length > 0); // пусто = волна иссякла
+    } catch {
+      if (!controller.signal.aborted) setHasNextPage(false);
     } finally {
-      fetchingRef.current = false;
-      setIsFetchingNextPage(false);
+      if (pageAbortRef.current === controller) {
+        pageAbortRef.current = null;
+        fetchingRef.current = false;
+        setIsFetchingNextPage(false);
+      }
     }
   }, [enabled, hasNextPage]);
+
+  useEffect(
+    () => () => {
+      const controller = pageAbortRef.current;
+      pageAbortRef.current = null;
+      controller?.abort();
+    },
+    [],
+  );
 
   return { tracks, isLoading, hasNextPage, isFetchingNextPage, fetchNextPage };
 }
@@ -307,6 +356,10 @@ export function useIndexingStats() {
     staleTime: 1000 * 30,
     gcTime: 1000 * 60 * 5,
     retry: false,
-    queryFn: () => api<IndexingStats>('/indexing/stats').catch(() => null as IndexingStats | null),
+    queryFn: ({ signal }) =>
+      api<IndexingStats>('/indexing/stats', { signal }).catch((error) => {
+        if (signal.aborted) throw error;
+        return null as IndexingStats | null;
+      }),
   });
 }

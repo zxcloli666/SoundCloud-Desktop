@@ -1,14 +1,14 @@
-import {useSortable} from '@dnd-kit/sortable';
-import {CSS} from '@dnd-kit/utilities';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import React from 'react';
-import {art, dur} from '../../../lib/formatters';
-import {GripVertical, X} from '../../../lib/icons';
-import {useArtistDisplay, useArtistLinkItems, useDisplayTitle} from '../../../lib/track-display';
-import {type Track, usePlayerStore} from '../../../stores/player';
-import {ArtistNameLinks} from '../ArtistNameLinks';
-import {TrackStatusBadges} from '../TrackStatusBadges';
-import {UploadKindDot} from '../UploadKindDot';
-import {PlayingOverlay} from './PlayingOverlay';
+import { art, dur } from '../../../lib/formatters';
+import { GripVertical, X } from '../../../lib/icons';
+import { useArtistDisplay, useArtistLinkItems, useDisplayTitle } from '../../../lib/track-display';
+import { type Track, usePlayerStore } from '../../../stores/player';
+import { ArtistNameLinks } from '../ArtistNameLinks';
+import { TrackStatusBadges } from '../TrackStatusBadges';
+import { UploadKindDot } from '../UploadKindDot';
+import { PlayingOverlay } from './PlayingOverlay';
 
 const QueueTrackRowBody = React.memo(function QueueTrackRowBody({
   track,
@@ -97,7 +97,13 @@ export const QueueRow = React.memo(function QueueRow({
         onClick={handleClick}
       >
         {artwork ? (
-          <img src={artwork} alt="" className="w-full h-full object-cover" decoding="async" />
+          <img
+            src={artwork}
+            alt=""
+            className="w-full h-full object-cover"
+            loading="lazy"
+            decoding="async"
+          />
         ) : (
           <div className="w-full h-full" />
         )}
@@ -134,7 +140,13 @@ export const QueueRowClone = React.memo(function QueueRowClone({ track }: { trac
       <GripVertical size={14} className="text-white/45 shrink-0" />
       <div className="w-9 h-9 rounded-lg overflow-hidden shrink-0 bg-white/[0.04]">
         {artwork && (
-          <img src={artwork} alt="" className="w-full h-full object-cover" decoding="async" />
+          <img
+            src={artwork}
+            alt=""
+            className="w-full h-full object-cover"
+            loading="lazy"
+            decoding="async"
+          />
         )}
       </div>
       <QueueTrackRowBody track={track} isCurrent={false} />

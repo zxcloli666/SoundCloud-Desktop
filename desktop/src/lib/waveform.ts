@@ -23,8 +23,11 @@ function normalizeWaveformUrl(raw: string): string | null {
   return raw.replace(/\.png(\?.*)?$/i, '.json$1').replace(/^http:\/\//i, 'https://');
 }
 
-async function fetchWaveform(rawUrl: string): Promise<WaveformSamples> {
+async function fetchWaveform(rawUrl: string, callerSignal?: AbortSignal): Promise<WaveformSamples> {
   const controller = new AbortController();
+  const abortFromCaller = () => controller.abort();
+  if (callerSignal?.aborted) controller.abort();
+  else callerSignal?.addEventListener('abort', abortFromCaller, { once: true });
   const timer = setTimeout(() => controller.abort(), WAVEFORM_FETCH_TIMEOUT_MS);
   const url = normalizeWaveformUrl(rawUrl);
   if (!url) throw new Error('Invalid waveform url');
@@ -40,6 +43,7 @@ async function fetchWaveform(rawUrl: string): Promise<WaveformSamples> {
     return { values: json.samples, height: json.height || 140 };
   } finally {
     clearTimeout(timer);
+    callerSignal?.removeEventListener('abort', abortFromCaller);
   }
 }
 
@@ -52,6 +56,6 @@ export function useTrackWaveform(track: Track | null) {
     staleTime: 1000 * 60 * 30,
     gcTime: 1000 * 60 * 60,
     retry: false,
-    queryFn: () => fetchWaveform(rawUrl!),
+    queryFn: ({ signal }) => fetchWaveform(rawUrl!, signal),
   });
 }

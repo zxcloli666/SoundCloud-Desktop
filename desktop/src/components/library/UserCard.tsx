@@ -16,7 +16,7 @@ export const UserCard = React.memo(({ user }: { user: SCUser }) => {
     >
       <span className="sonveil-user-card-art">
         {avatar ? (
-          <img src={avatar} alt="" decoding="async" />
+          <img src={avatar} alt="" loading="lazy" decoding="async" />
         ) : (
           <span className="sonveil-art-fallback">
             <User size={28} />

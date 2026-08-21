@@ -37,15 +37,30 @@ export function setupUiWatchdog() {
   logInfo('[Perf] UI watchdog started');
 
   let expectedAt = performance.now() + EVENT_LOOP_TICK_MS;
-  window.setInterval(() => {
-    const now = performance.now();
-    const lag = now - expectedAt;
-    expectedAt = now + EVENT_LOOP_TICK_MS;
+  let timer: number | null = null;
+  const stop = () => {
+    if (timer === null) return;
+    window.clearInterval(timer);
+    timer = null;
+  };
+  const start = () => {
+    if (timer !== null || document.visibilityState === 'hidden') return;
+    expectedAt = performance.now() + EVENT_LOOP_TICK_MS;
+    timer = window.setInterval(() => {
+      const now = performance.now();
+      const lag = now - expectedAt;
+      expectedAt = now + EVENT_LOOP_TICK_MS;
 
-    if (document.visibilityState === 'visible' && lag > EVENT_LOOP_WARN_MS) {
-      logWarn(`[Perf] UI event loop lag detected: ${roundMs(lag)}ms`);
-    }
-  }, EVENT_LOOP_TICK_MS);
+      if (lag > EVENT_LOOP_WARN_MS) {
+        logWarn(`[Perf] UI event loop lag detected: ${roundMs(lag)}ms`);
+      }
+    }, EVENT_LOOP_TICK_MS);
+  };
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') stop();
+    else start();
+  });
+  start();
 
   window.addEventListener('error', (event) => {
     logError(`[UI] Unhandled error: ${event.message}`);

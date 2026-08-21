@@ -4,14 +4,11 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { useShallow } from 'zustand/shallow';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import { HostStatusBanner } from './components/host-status/HostStatusBanner';
-import { HostStatusModal } from './components/host-status/HostStatusModal';
 import { AppShell } from './components/layout/AppShell';
-import YMImportFloatingStatus from './components/music/YMImportFloatingStatus';
-import { SessionRecoveryModal } from './components/SessionRecoveryModal';
 import { ThemeProvider } from './components/ThemeProvider';
 import { ApiError } from './lib/api';
 import { isDesignPreview } from './lib/design-preview';
+import { usePerfMode } from './lib/perf';
 import { getAppMode, useAppMode, useAppStatusStore } from './stores/app-status';
 import { useAuthStore } from './stores/auth';
 import { type StartupPage, useSettingsStore } from './stores/settings';
@@ -50,6 +47,22 @@ const AlbumPage = lazy(() =>
 const Discover = lazy(() =>
   import('./pages/Discover').then((module) => ({ default: module.Discover })),
 );
+const SessionRecoveryModal = lazy(() =>
+  import('./components/SessionRecoveryModal').then((module) => ({
+    default: module.SessionRecoveryModal,
+  })),
+);
+const YMImportFloatingStatus = lazy(() => import('./components/music/YMImportFloatingStatus'));
+const HostStatusModal = lazy(() =>
+  import('./components/host-status/HostStatusModal').then((module) => ({
+    default: module.HostStatusModal,
+  })),
+);
+const HostStatusBanner = lazy(() =>
+  import('./components/host-status/HostStatusBanner').then((module) => ({
+    default: module.HostStatusBanner,
+  })),
+);
 
 const STARTUP_PAGE_ROUTES: Record<StartupPage, string> = {
   home: '/home',
@@ -65,6 +78,8 @@ function StartPageRedirect() {
 
 export default function App() {
   const designPreview = isDesignPreview();
+  const perf = usePerfMode();
+  const toastBlur = perf.blur(20);
   const { isAuthenticated, hasSession, fetchUser } = useAuthStore(
     useShallow((s) => ({
       isAuthenticated: s.isAuthenticated,
@@ -148,19 +163,28 @@ export default function App() {
         toastOptions={{
           style: {
             background: 'rgba(30, 30, 34, 0.9)',
-            backdropFilter: 'blur(20px)',
+            backdropFilter: toastBlur > 0 ? `blur(${toastBlur}px)` : undefined,
+            WebkitBackdropFilter: toastBlur > 0 ? `blur(${toastBlur}px)` : undefined,
             border: '1px solid rgba(255,255,255,0.08)',
             color: 'rgba(255,255,255,0.85)',
             fontSize: '13px',
           },
         }}
       />
-      {!designPreview && <SessionRecoveryModal />}
-      {!designPreview && <YMImportFloatingStatus />}
+      {!designPreview && (
+        <Suspense fallback={null}>
+          <SessionRecoveryModal />
+          <YMImportFloatingStatus />
+        </Suspense>
+      )}
       <BrowserRouter>
         {/* Внутри Router ради navigate('/offline'); видны и над Login (он тоже в Router). */}
-        {!designPreview && <HostStatusModal />}
-        {!designPreview && <HostStatusBanner />}
+        {!designPreview && (
+          <Suspense fallback={null}>
+            <HostStatusModal />
+            <HostStatusBanner />
+          </Suspense>
+        )}
         {showOfflineOnlyShell ? (
           <Routes>
             <Route element={<AppShell />}>

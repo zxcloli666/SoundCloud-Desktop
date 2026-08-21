@@ -36,12 +36,27 @@ export function VirtualGrid<T>({
     const node = containerRef.current;
     if (!node) return;
 
-    const update = () => setWidth(node.clientWidth);
+    let raf = 0;
+    const update = () =>
+      setWidth((current) => {
+        const next = node.clientWidth;
+        return Math.abs(current - next) >= 0.5 ? next : current;
+      });
+    const scheduleUpdate = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        update();
+      });
+    };
     update();
 
-    const observer = new ResizeObserver(update);
+    const observer = new ResizeObserver(scheduleUpdate);
     observer.observe(node);
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      if (raf) cancelAnimationFrame(raf);
+    };
   }, []);
 
   const { columns, itemWidth, rowCount } = useMemo(() => {

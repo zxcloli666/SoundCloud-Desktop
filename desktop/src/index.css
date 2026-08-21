@@ -38,9 +38,9 @@
 }
 
 [data-perf="medium"] {
-    --glass-blur: 18px;
-    --glass-blur-strong: 26px;
-    --glass-blur-soft: 16px;
+    --glass-blur: 8px;
+    --glass-blur-strong: 12px;
+    --glass-blur-soft: 8px;
 }
 
 [data-perf="light"] {
@@ -97,6 +97,15 @@
 [data-perf="light"] .vp-mote,
 [data-perf="light"] .npb-dock[data-playing="true"] .npb-ring,
 [data-perf="light"] .npb-dock[data-playing="true"] .npb-play::after {
+    animation: none !important;
+}
+
+/* Medium is the default profile. Keep functional loading/progress motion, but
+   stop decorative loops that otherwise repaint continuously on every screen. */
+[data-perf="medium"] .vp-chev,
+[data-perf="medium"] .vp-mote,
+[data-perf="medium"] .npb-dock[data-playing="true"] .npb-ring,
+[data-perf="medium"] .npb-dock[data-playing="true"] .npb-play::after {
     animation: none !important;
 }
 

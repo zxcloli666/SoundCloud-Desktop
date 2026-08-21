@@ -51,7 +51,7 @@ export const TrackPage = React.memo(function TrackPage() {
     isError,
   } = useQuery({
     queryKey: ['track', urn],
-    queryFn: () => api<Track>(`/tracks/${encodeURIComponent(urn!)}`),
+    queryFn: ({ signal }) => api<Track>(`/tracks/${encodeURIComponent(urn!)}`, { signal }),
     enabled: !!urn,
     staleTime: 30_000,
   });

@@ -33,13 +33,15 @@ export function installFpsCap(targetFps: number = DEFAULT_FPS): void {
   let nextHandle = 1;
   let nativeId: number | null = null;
   let last = 0;
+  let suspended = document.visibilityState === 'hidden';
 
   function schedule(): void {
-    if (nativeId === null) nativeId = rafNative(pump);
+    if (!suspended && nativeId === null) nativeId = rafNative(pump);
   }
 
   function pump(now: number): void {
     nativeId = null;
+    if (suspended) return;
     if (now - last < minDelta - 1) {
       schedule(); // кадр пропускаем целиком — вместе со всеми, без исключений
       return;
@@ -63,4 +65,15 @@ export function installFpsCap(targetFps: number = DEFAULT_FPS): void {
     // id не из нашего пула (например, выдан до установки капа) — в нативный.
     if (!pending.delete(handle)) cafNative(handle);
   };
+
+  document.addEventListener('visibilitychange', () => {
+    suspended = document.visibilityState === 'hidden';
+    if (suspended) {
+      if (nativeId !== null) cafNative(nativeId);
+      nativeId = null;
+      return;
+    }
+    last = 0;
+    if (pending.size > 0) schedule();
+  });
 }
