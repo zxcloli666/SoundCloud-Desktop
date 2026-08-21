@@ -931,7 +931,7 @@ export interface VibeSearchResponse {
 export function useVibeSearch(q: string, opts?: { limit?: number; languages?: string[] }) {
   const limit = opts?.limit ?? 48;
   const langs = (opts?.languages ?? []).slice().sort().join(',');
-  const query = useQuery({
+  const query = useQuery<VibeSearchResponse>({
     queryKey: ['search', 'vibe', q, limit, langs],
     enabled: q.trim().length >= 2,
     staleTime: SEARCH_CACHE_MS,
