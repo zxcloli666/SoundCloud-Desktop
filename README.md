@@ -7,6 +7,7 @@
 <h1 align="center"><a href="https://soundcloud-desktop.fun/">SoundCloud Desktop</a></h1>
 
 <p align="center">
+<b>[<a href="https://github.com/okeydw/SoundCloud-Android">Android версия</a>]</b><br>
 <b>Нативное десктопное приложение для SoundCloud</b><br>
 Без рекламы · Без капчи · Без цензуры · Доступно в России
 </p>
