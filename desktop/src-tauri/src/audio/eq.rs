@@ -7,6 +7,11 @@ use rodio::Source;
 
 use crate::audio::types::{ChannelCount, EqParams, SampleRate, EQ_BANDS, EQ_FREQS, EQ_Q};
 
+// Polling shared EQ parameters per PCM sample takes a contended RwLock tens of
+// thousands of times per second. ~2k samples is still only ~23ms at 44.1kHz
+// stereo, imperceptible for a slider while making the disabled hot path cheap.
+const EQ_PARAM_POLL_SAMPLES: u16 = 2048;
+
 pub struct GainSource<S: Source<Item = f32>> {
     source: S,
     gain: f32,
@@ -60,6 +65,7 @@ pub struct EqSource<S: Source<Item = f32>> {
     current_channel: u16,
     cached_gains: [f64; EQ_BANDS],
     cached_enabled: bool,
+    param_poll_countdown: u16,
 }
 
 impl<S: Source<Item = f32>> EqSource<S> {
@@ -98,6 +104,7 @@ impl<S: Source<Item = f32>> EqSource<S> {
             current_channel: 0,
             cached_gains: [0.0; EQ_BANDS],
             cached_enabled: false,
+            param_poll_countdown: 0,
         }
     }
 
@@ -141,14 +148,20 @@ impl<S: Source<Item = f32>> Iterator for EqSource<S> {
         let ch = self.current_channel;
         self.current_channel = (ch + 1) % self.channels.get();
 
-        let snapshot = self.params.try_read().ok().map(|p| (p.enabled, p.gains));
-        if let Some((enabled, gains)) = snapshot
-            && (enabled != self.cached_enabled || gains != self.cached_gains) {
+        if self.param_poll_countdown == 0 {
+            self.param_poll_countdown = EQ_PARAM_POLL_SAMPLES;
+            let snapshot = self.params.try_read().ok().map(|p| (p.enabled, p.gains));
+            if let Some((enabled, gains)) = snapshot
+                && (enabled != self.cached_enabled || gains != self.cached_gains)
+            {
                 if enabled {
                     self.update_coefficients(&gains);
                 }
                 self.cached_enabled = enabled;
             }
+        } else {
+            self.param_poll_countdown -= 1;
+        }
 
         if !self.cached_enabled {
             return Some(sample);

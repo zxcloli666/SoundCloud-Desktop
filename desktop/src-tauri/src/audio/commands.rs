@@ -123,6 +123,11 @@ pub fn audio_set_normalization(enabled: bool, state: State<'_, AudioState>) {
 }
 
 #[tauri::command]
+pub fn audio_set_analyser_enabled(enabled: bool, state: State<'_, AudioState>) {
+    state.analyser_buffer.set_enabled(enabled);
+}
+
+#[tauri::command]
 pub fn audio_is_playing(state: State<'_, AudioState>) -> bool {
     engine::is_playing(state)
 }

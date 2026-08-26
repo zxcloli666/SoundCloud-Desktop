@@ -1,6 +1,9 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { type Aura, auraRgb, auraRgba, isLight } from '../../../lib/aura';
+import { isUrnDisliked, useDislikeVersion } from '../../../lib/dislikes';
+import { isRecommendationTrackPlayable } from '../../../lib/home-recommendations';
+import { curateWithLocalTaste } from '../../../lib/local-recommendations';
 import {
   AudioLines,
   ChevronDown,
@@ -91,19 +94,56 @@ export const ArtistSoundWave = React.memo(function ArtistSoundWave({
   const collapsed = useSettingsStore((s) => s.artistWaveCollapsed);
   const setCollapsed = useSettingsStore((s) => s.setArtistWaveCollapsed);
   const hideListened = useSettingsStore((s) => s.soundwaveHideListened);
+  const recommendationMode = useSettingsStore((s) => s.soundwaveMode);
+  const [bodyMounted, setBodyMounted] = useState(!collapsed);
+  const dislikeVersion = useDislikeVersion();
 
-  const { data, isLoading } = useClusterWave({
+  useEffect(() => {
+    if (!collapsed) {
+      setBodyMounted(true);
+      return;
+    }
+    const timer = setTimeout(() => setBodyMounted(false), 560);
+    return () => clearTimeout(timer);
+  }, [collapsed]);
+
+  const { data, isLoading, isFetching, refetch } = useClusterWave({
     queryKey: ['cluster-wave', 'artist', artistId, hideListened],
     url: artistId
       ? `/recommendations/artist/${encodeURIComponent(artistId)}?hide_listened=${hideListened ? '1' : '0'}`
       : null,
+    enabled: !collapsed,
   });
 
   const currentUrn = usePlayerStore((s) => s.currentTrack?.urn);
   const isPlaying = usePlayerStore((s) => s.isPlaying);
 
-  const clusters = useMemo(() => data?.clusters ?? [], [data]);
-  const allTracks = useMemo(() => data?.allTracks ?? [], [data]);
+  const clusters = useMemo(
+    () => {
+      void dislikeVersion;
+      return (data?.clusters ?? [])
+        .map((cluster) => ({
+          ...cluster,
+          tracks: cluster.tracks.filter(
+            (track) => !isUrnDisliked(track.urn) && isRecommendationTrackPlayable(track),
+          ),
+        }))
+        .filter((cluster) => cluster.tracks.length > 0);
+    },
+    [data, dislikeVersion],
+  );
+  const allTracks = useMemo(
+    () => {
+      void dislikeVersion;
+      const inputs = data?.candidates?.length ? data.candidates : (data?.allTracks ?? []);
+      return curateWithLocalTaste(inputs, {
+        hideListened,
+        mode: recommendationMode,
+        limit: inputs.length,
+      });
+    },
+    [data, dislikeVersion, hideListened, recommendationMode],
+  );
   const waveUrns = useMemo(() => new Set(allTracks.map((t) => t.urn)), [allTracks]);
   const isPlayingFromWave = isPlaying && !!currentUrn && waveUrns.has(currentUrn);
   const perf = usePerfMode();
@@ -120,7 +160,7 @@ export const ArtistSoundWave = React.memo(function ArtistSoundWave({
   );
 
   useInfiniteWave({
-    enabled: !!artistId,
+    enabled: !!artistId && !collapsed,
     seedKind: 'artist',
     seedId: artistId,
     initialTracks: waveCluster?.tracks ?? [],
@@ -128,24 +168,45 @@ export const ArtistSoundWave = React.memo(function ArtistSoundWave({
     hideListened,
   });
 
-  const handlePlay = useCallback(() => {
-    if (allTracks.length === 0) return;
+  const handlePlay = useCallback(async () => {
     const { play, pause, resume } = usePlayerStore.getState();
-    if (isPlayingFromWave) {
-      pause();
+    if (allTracks.length > 0) {
+      if (isPlayingFromWave) {
+        pause();
+        return;
+      }
+      if (currentUrn && waveUrns.has(currentUrn)) {
+        resume();
+        return;
+      }
+      play(allTracks[0], allTracks);
       return;
     }
-    if (currentUrn && waveUrns.has(currentUrn)) {
-      resume();
-      return;
+
+    // A persisted collapsed state intentionally disables the background query.
+    // Play remains a direct user intent, so fetch once on demand without forcing
+    // the whole animated body open.
+    const result = await refetch();
+    const fetchedInputs = result.data?.candidates?.length
+      ? result.data.candidates
+      : (result.data?.allTracks ?? []);
+    const fetchedTracks = curateWithLocalTaste(fetchedInputs, {
+      hideListened,
+      mode: recommendationMode,
+      limit: fetchedInputs.length,
+    });
+    if (fetchedTracks.length > 0) {
+      usePlayerStore.getState().play(fetchedTracks[0], fetchedTracks);
     }
-    play(allTracks[0], allTracks);
-  }, [allTracks, currentUrn, isPlayingFromWave, waveUrns]);
+  }, [allTracks, currentUrn, hideListened, isPlayingFromWave, recommendationMode, refetch, waveUrns]);
+
+  const handleToggleCollapsed = useCallback(() => {
+    if (collapsed) setBodyMounted(true);
+    setCollapsed(!collapsed);
+  }, [collapsed, setCollapsed]);
 
   const lightAura = isLight(aura);
   const showEmpty = !isLoading && orderedClusters.length === 0;
-  const canPlay = allTracks.length > 0;
-
   const playIcon = isPlayingFromWave
     ? lightAura
       ? pauseBlack14
@@ -261,7 +322,7 @@ export const ArtistSoundWave = React.memo(function ArtistSoundWave({
           <button
             type="button"
             onClick={handlePlay}
-            disabled={!canPlay || isLoading}
+            disabled={!artistId || isLoading || isFetching}
             className="artist-wave-btn relative overflow-hidden inline-flex items-center gap-2 h-10 pl-1.5 pr-3.5 rounded-full text-[12.5px] font-bold cursor-pointer transition-all duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)] hover:scale-[1.04] active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
             style={{
               background: `linear-gradient(180deg, ${auraRgba(aura, 0.95)}, ${auraRgba(aura, 0.7)})`,
@@ -300,7 +361,7 @@ export const ArtistSoundWave = React.memo(function ArtistSoundWave({
           {/* chevron (rotates via CSS transform transition) */}
           <button
             type="button"
-            onClick={() => setCollapsed(!collapsed)}
+            onClick={handleToggleCollapsed}
             aria-label={collapsed ? t('nav.expand') : t('nav.collapse')}
             title={collapsed ? t('nav.expand') : t('nav.collapse')}
             className="relative w-9 h-9 rounded-full flex items-center justify-center cursor-pointer transition-transform duration-300 hover:scale-110 text-white/55 hover:text-white shrink-0"
@@ -330,15 +391,14 @@ export const ArtistSoundWave = React.memo(function ArtistSoundWave({
           }}
         >
           <div className="overflow-hidden min-h-0">
-            {/* Subtree stays mounted across the collapse so grid-template-rows has
-                real content height to animate against; opacity fades it out. */}
-            <div
-              style={{
-                transition: `opacity 0.4s ${EASE}`,
-                transitionDelay: '0.12s',
-                opacity: collapsed ? 0 : 1,
-              }}
-            >
+            {bodyMounted && (
+              <div
+                style={{
+                  transition: `opacity 0.4s ${EASE}`,
+                  transitionDelay: '0.12s',
+                  opacity: collapsed ? 0 : 1,
+                }}
+              >
               {/* divider — sits between header and clusters when expanded */}
               <div
                 className="mx-4 md:mx-5 h-px"
@@ -386,7 +446,8 @@ export const ArtistSoundWave = React.memo(function ArtistSoundWave({
                   </div>
                 )}
               </div>
-            </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

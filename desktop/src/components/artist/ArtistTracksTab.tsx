@@ -222,7 +222,7 @@ const YearBlock = memo(
     const { t } = useTranslation();
     const total = bucket.items.reduce((acc, x) => acc + (x.duration ?? 0), 0);
     return (
-      <div className="flex flex-col md:flex-row md:gap-8 gap-3">
+      <div className="deferred-year-group deferred-year-group--tracks flex flex-col md:flex-row md:gap-8 gap-3">
         {/* Year marker — same look as albums timeline */}
         <div className="md:w-[200px] md:shrink-0 flex md:flex-col md:items-end items-center md:sticky md:top-24 self-start">
           <div className="flex items-baseline gap-3 md:flex-col md:items-end md:gap-1 min-w-0 max-w-full">

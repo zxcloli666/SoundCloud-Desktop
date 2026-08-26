@@ -1,10 +1,11 @@
-import React, {useEffect, useMemo} from 'react';
+import React, {useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
 import {useInfiniteScroll, useLikedTracks} from '../../lib/hooks';
 import {Loader2} from '../../lib/icons';
 import {armLikesContinuation} from '../../lib/queue-continuation';
 import {VirtualList} from '../ui/VirtualList';
 import {LibraryTrackRow} from './LibraryTrackRow';
+import {useBoundedFilterPages} from './useBoundedFilterPages';
 
 export const LikesTab = React.memo(function LikesTab({filter}: { filter: string }) {
     const {t} = useTranslation();
@@ -16,13 +17,6 @@ export const LikesTab = React.memo(function LikesTab({filter}: { filter: string 
         likesQuery.fetchNextPage,
     );
 
-    // Auto-fetch remaining pages when filtering
-    useEffect(() => {
-        if (filter && likesQuery.hasNextPage && !likesQuery.isFetchingNextPage) {
-            likesQuery.fetchNextPage();
-        }
-    }, [filter, likesQuery.hasNextPage, likesQuery.isFetchingNextPage]);
-
     const filtered = useMemo(() => {
         if (!filter) return likedTracks;
         const q = filter.toLowerCase();
@@ -30,6 +24,14 @@ export const LikesTab = React.memo(function LikesTab({filter}: { filter: string 
             (tr) => tr.title.toLowerCase().includes(q) || tr.user.username.toLowerCase().includes(q),
         );
     }, [likedTracks, filter]);
+    const isFilteringMore = useBoundedFilterPages(
+        filter,
+        filtered.length,
+        likesQuery.hasNextPage,
+        isLoading,
+        likesQuery.isFetchingNextPage,
+        likesQuery.fetchNextPage,
+    );
 
     // Включили трек из лайков → ставим прослойку: она доиграет ВСЕ лайки,
     // подкачивая страницы по мере опустошения очереди, а как кончатся — отдаст
@@ -46,7 +48,7 @@ export const LikesTab = React.memo(function LikesTab({filter}: { filter: string 
     return (
         <div className="min-h-[400px]">
             <div className="flex flex-col gap-1">
-                {isLoading ? (
+                {isLoading || (isFilteringMore && filtered.length === 0) ? (
                     <div className="flex justify-center py-20">
                         <Loader2 size={32} className="animate-spin text-white/20"/>
                     </div>
@@ -64,11 +66,9 @@ export const LikesTab = React.memo(function LikesTab({filter}: { filter: string 
                     />
                 ) : (
                     <div className="py-20 text-center text-white/20">
-                        {filter && likesQuery.hasNextPage
-                            ? t('common.loading')
-                            : filter
-                                ? t('library.noMatches')
-                                : t('library.noLikedTracks')}
+                    {filter
+                        ? t(likesQuery.hasNextPage ? 'library.noMatchesLoaded' : 'library.noMatches')
+                        : t('library.noLikedTracks')}
                     </div>
                 )}
             </div>
@@ -78,7 +78,7 @@ export const LikesTab = React.memo(function LikesTab({filter}: { filter: string 
                         <Loader2 size={20} className="text-white/15 animate-spin"/>
                     )}
                 </div>
-            ) : likesQuery.isFetchingNextPage ? (
+            ) : isFilteringMore && filtered.length > 0 ? (
                 <div className="h-12 flex items-center justify-center mt-4">
                     <Loader2 size={20} className="text-white/15 animate-spin"/>
                 </div>

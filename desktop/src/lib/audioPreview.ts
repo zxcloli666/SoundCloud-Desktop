@@ -1,6 +1,6 @@
 import {useSyncExternalStore} from 'react';
 import {usePlayerStore} from '../stores/player';
-import {ensureTrackCached} from './cache';
+import {getCacheInfo} from './cache';
 import {trackedInvoke as invoke} from './diagnostics';
 
 /* ── Hover-preview controller ─────────────────────────────────────
@@ -40,7 +40,13 @@ function canPreview(urn: string): boolean {
     return true;
 }
 
-/** Hover a tile: after a debounce, ensure it's cached and start a preview. */
+/** Hover a tile: after a debounce, preview only an already-cached track.
+ *
+ * A hover must never start a full background download: moving across the search
+ * wall could otherwise fill every network/cache slot and make the track the user
+ * actually clicked wait behind speculative work. Lightweight stream resolution
+ * is handled separately by `preloadTrack`.
+ */
 export function startHoverPreview(urn: string): void {
     if (activeUrn === urn || pendingUrn === urn) return;
     if (hoverTimer) clearTimeout(hoverTimer);
@@ -54,10 +60,7 @@ export function startHoverPreview(urn: string): void {
         }
         const gen = ++startGen;
         try {
-            // Reuse the cache at the user's normal quality — never force a low-quality
-            // download that could become the canonical cached copy (coalesces with the
-            // hq preloadTrack fired on the same hover).
-            const info = await ensureTrackCached(urn);
+            const info = await getCacheInfo(urn);
             // Superseded by a newer hover, or no longer allowed.
             if (gen !== startGen || pendingUrn !== urn || !info?.path || !canPreview(urn)) return;
             const volume = (usePlayerStore.getState().volume / 100) * PREVIEW_VOLUME_FACTOR;

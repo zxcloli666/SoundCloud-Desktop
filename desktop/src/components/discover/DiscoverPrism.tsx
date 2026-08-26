@@ -1,20 +1,29 @@
 import {memo, useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {stopHoverPreview, wirePreviewGuards} from '../../lib/audioPreview';
+import {rotateDiscoverRanking} from '../../lib/discover-recommendations';
 import {parseCssColor, type Rgb, rgbaCss} from '../../lib/genre-aura';
+import type {
+    HomeRecommendationFeedback,
+    HomeRecommendationInput,
+} from '../../lib/home-recommendations';
 import {useDiscoverFeed} from '../../lib/hooks';
 import {Compass, Shuffle} from '../../lib/icons';
 import {usePerfMode} from '../../lib/perf';
+import {recordClusterFeedback, setUrnCluster} from '../../lib/recsFeedback';
+import {useAuthStore} from '../../stores/auth';
 import type {Track} from '../../stores/player';
+import {useRecommendationTasteStore} from '../../stores/recommendation-taste';
+import {useSettingsStore} from '../../stores/settings';
 import {
     genreColor,
     genreEnergy,
-    hashStr,
     isHeroUrn,
     WALL_KEYFRAMES,
     type WallItem,
 } from '../search/utils';
 import {useTabHidden, Wall} from '../search/Wall';
+import {useClusterWave} from '../music/cluster';
 import {PrismBand, type PrismSegment} from './PrismBand';
 
 /** A generous-but-bounded mosaic — enough to feel lush, capped so a busy genre
@@ -22,30 +31,107 @@ import {PrismBand, type PrismSegment} from './PrismBand';
 const TRACK_CAP = 24;
 /** Tint used only if a genre's colour can't be parsed (never hit for real genres). */
 const FALLBACK_RGB: Rgb = [130, 130, 150];
+const EMPTY_DISCOVER_CANDIDATES: readonly HomeRecommendationInput[] = [];
 
-/** Deterministic seeded shuffle (LCG-driven Fisher-Yates). Reshuffle re-weaves a
- *  genre's mosaic — and surfaces deeper cuts past the cap — with NO refetch. Seed
- *  0 keeps the backend's relatedness order for the first paint. */
-function seededOrder(items: Track[], seed: number): Track[] {
-    if (seed === 0) return items;
-    const a = items.slice();
-    let s = seed >>> 0;
-    for (let i = a.length - 1; i > 0; i--) {
-        s = (s * 1664525 + 1013904223) >>> 0;
-        const j = s % (i + 1);
-        [a[i], a[j]] = [a[j], a[i]];
+function recommendationAttribution(input: HomeRecommendationInput): [string, string] | null {
+    if (!('track' in input) || !Array.isArray(input.sources) || input.sources.length === 0) {
+        return null;
     }
-    return a;
+    const source = [...input.sources].sort(
+        (left, right) =>
+            left.rank - right.rank ||
+            (right.score ?? Number.NEGATIVE_INFINITY) -
+                (left.score ?? Number.NEGATIVE_INFINITY),
+    )[0];
+    return source ? [input.track.urn, source.clusterId] : null;
 }
 
-/** "Открывай новое" — your taste as a prism. The data is unchanged (related tracks
- *  to your likes, grouped by your top genres); the surface is the Search aesthetic
- *  aimed back at you: a taste-spectrum selector tunes a breathing, hover-samplable
- *  cover mosaic, and the whole panel re-tints to the genre you're on. */
+interface DiscoverTasteEpoch {
+    candidateSource: readonly HomeRecommendationInput[];
+    candidateUpdatedAt: number;
+    ownerKey: string;
+    languageKey: string;
+    hideListened: boolean;
+    mode: 'similar' | 'diverse';
+    recentTracks: readonly Track[];
+    feedback: HomeRecommendationFeedback;
+}
+
+/** "Открывай новое" — cluster recommendations first, with a bounded related fallback.
+ *  The taste-spectrum selector tunes a hover-samplable cover mosaic, and the panel
+ *  re-tints to the genre you're on. */
 export const DiscoverPrism = memo(function DiscoverPrism() {
     const {t} = useTranslation();
     const perf = usePerfMode();
-    const {likedTracks, byGenre: discoverData} = useDiscoverFeed();
+    const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+    const languages = useSettingsStore((state) => state.soundwaveLanguages);
+    const hideListened = useSettingsStore((state) => state.soundwaveHideListened);
+    const mode = useSettingsStore((state) => state.soundwaveMode);
+    const tasteOwnerUrn = useRecommendationTasteStore((state) => state.ownerUrn);
+    const tasteOwnerReady = useRecommendationTasteStore((state) => state.ownerReady);
+    const localRecentTracks = useRecommendationTasteStore((state) => state.recentTracks);
+    const localTrackTaste = useRecommendationTasteStore((state) => state.tracks);
+    const localClusterTaste = useRecommendationTasteStore((state) => state.clusters);
+    const stableLanguages = useMemo(() => [...languages].sort(), [languages]);
+    const recommendationUrl = useMemo(() => {
+        if (!isAuthenticated) return null;
+        const query = new URLSearchParams();
+        if (stableLanguages.length > 0) query.set('languages', stableLanguages.join(','));
+        query.set('hide_listened', hideListened ? '1' : '0');
+        return `/recommendations?${query}`;
+    }, [hideListened, isAuthenticated, stableLanguages]);
+    const recommendationQuery = useClusterWave({
+        queryKey: [
+            'cluster-wave',
+            'editorial-home',
+            stableLanguages.join(',') || 'all',
+            hideListened,
+        ],
+        url: recommendationUrl,
+        enabled: isAuthenticated,
+        staleMs: 5 * 60_000,
+        gcMs: 30 * 60_000,
+    });
+    const candidateSource = recommendationQuery.data?.candidates ?? EMPTY_DISCOVER_CANDIDATES;
+    const ownerKey = tasteOwnerReady ? (tasteOwnerUrn ?? 'anonymous') : 'pending';
+    const languageKey = stableLanguages.join(',');
+    const tasteEpochRef = useRef<DiscoverTasteEpoch | null>(null);
+    const previousEpoch = tasteEpochRef.current;
+    if (
+        !previousEpoch ||
+        previousEpoch.candidateSource !== candidateSource ||
+        previousEpoch.candidateUpdatedAt !== recommendationQuery.dataUpdatedAt ||
+        previousEpoch.ownerKey !== ownerKey ||
+        previousEpoch.languageKey !== languageKey ||
+        previousEpoch.hideListened !== hideListened ||
+        previousEpoch.mode !== mode
+    ) {
+        const canUseLocalTaste = tasteOwnerReady && Boolean(tasteOwnerUrn);
+        tasteEpochRef.current = {
+            candidateSource,
+            candidateUpdatedAt: recommendationQuery.dataUpdatedAt,
+            ownerKey,
+            languageKey,
+            hideListened,
+            mode,
+            recentTracks: canUseLocalTaste ? [...localRecentTracks] : [],
+            feedback: canUseLocalTaste
+                ? {tracks: localTrackTaste, clusters: localClusterTaste}
+                : {},
+        };
+    }
+    const tasteEpoch = tasteEpochRef.current!;
+    const {
+        likedTracks,
+        byGenre: discoverData,
+        isLoading,
+    } = useDiscoverFeed({
+        primaryCandidates: tasteEpoch.candidateSource,
+        primaryLoading: recommendationQuery.isLoading,
+        recentTracks: tasteEpoch.recentTracks,
+        mode: tasteEpoch.mode,
+        feedback: tasteEpoch.feedback,
+    });
 
     const [activeGenre, setActiveGenre] = useState<string | null>(null);
     const [hoveredGenre, setHoveredGenre] = useState<string | null>(null);
@@ -73,17 +159,33 @@ export const DiscoverPrism = memo(function DiscoverPrism() {
         [discoverData, selectedGenre],
     );
     const items = useMemo<WallItem[]>(() => {
-        const seed = nonce === 0 ? 0 : hashStr(`${selectedGenre}:${nonce}`);
-        return seededOrder(rawTracks, seed)
+        return rotateDiscoverRanking(rawTracks, nonce, TRACK_CAP)
             .filter((tr) => tr?.urn)
-            .slice(0, TRACK_CAP)
             .map((track) => ({track, kind: 'wave' as const, hero: isHeroUrn(track.urn)}));
-    }, [rawTracks, selectedGenre, nonce]);
+    }, [rawTracks, nonce]);
 
     // Stable queue thunk — a fresh array on each re-tint would defeat every tile's memo.
     const itemsRef = useRef(items);
     itemsRef.current = items;
     const getQueue = useCallback(() => itemsRef.current.map((i) => i.track), []);
+    const attribution = useMemo(
+        () =>
+            new Map(
+                tasteEpoch.candidateSource
+                    .map(recommendationAttribution)
+                    .filter((entry): entry is [string, string] => entry !== null),
+            ),
+        [tasteEpoch.candidateSource],
+    );
+    const onRecommendationPlay = useCallback(
+        (track: Track) => {
+            const cluster = attribution.get(track.urn);
+            if (!cluster) return;
+            setUrnCluster(track.urn, cluster);
+            recordClusterFeedback(cluster, 'click');
+        },
+        [attribution],
+    );
 
     const hidden = useTabHidden();
 
@@ -110,7 +212,7 @@ export const DiscoverPrism = memo(function DiscoverPrism() {
     const tint = useCallback((alpha: number) => rgbaCss(tintRgb, alpha), [tintRgb]);
     const driftDur = `${(24 * (1.6 - genreEnergy(tintGenre))).toFixed(1)}s`;
 
-    if (genres.length === 0) return null;
+    if (genres.length === 0 && !isLoading) return null;
 
     return (
         <section className="relative" data-tg-hidden={hidden ? '1' : '0'}>
@@ -179,7 +281,12 @@ export const DiscoverPrism = memo(function DiscoverPrism() {
                     </div>
                 )}
                 <div className="relative" style={{isolation: 'isolate'}}>
-                    <Wall items={items} getQueue={getQueue} isLoading={false}/>
+                    <Wall
+                        items={items}
+                        getQueue={getQueue}
+                        isLoading={isLoading}
+                        onPlay={onRecommendationPlay}
+                    />
                 </div>
             </div>
         </section>

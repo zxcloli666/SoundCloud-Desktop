@@ -94,12 +94,21 @@ export function Search() {
     return topGenres.map((g) => ({ key: g, label: g, color: genreColor(g) }));
   }, [topGenreKey]);
 
-  const seedGenre = (g: string) => {
-    setMode('vibe');
-    setSource('db');
-    setQ(g);
-  };
-  const onDive = (track: Track) => setDive({ urn: track.urn, title: track.title });
+  const seedGenre = useCallback(
+    (g: string) => {
+      setMode('vibe');
+      setSource('db');
+      setQ(g);
+    },
+    [setMode, setQ, setSource],
+  );
+  const onDive = useCallback(
+    (track: Track) => setDive({ urn: track.urn, title: track.title }),
+    [],
+  );
+  const loadMoreRef = useRef(wall.loadMore);
+  loadMoreRef.current = wall.loadMore;
+  const loadMore = useCallback(() => loadMoreRef.current(), []);
 
   // The wall would otherwise paint blank here (cold board, empty result, dive
   // with no neighbors, or a failed request). Show an inviting plaque instead.
@@ -225,7 +234,7 @@ export function Search() {
                 isLoading={wall.isLoading}
                 hasMore={wall.hasMore}
                 isFetchingMore={wall.isFetchingMore}
-                onLoadMore={wall.loadMore}
+                onLoadMore={loadMore}
                 onDive={onDive}
               />
             )}

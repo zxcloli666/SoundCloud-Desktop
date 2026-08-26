@@ -9,6 +9,7 @@ function sameStatus(a: TranscodeStatus | null, b: TranscodeStatus): boolean {
     a.ffmpeg === b.ffmpeg &&
     a.incoming === b.incoming &&
     a.incomingBytes === b.incomingBytes &&
+    a.queued === b.queued &&
     a.transcoding === b.transcoding &&
     a.clean === b.clean &&
     a.cleanBytes === b.cleanBytes &&

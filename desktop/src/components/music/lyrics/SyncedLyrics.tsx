@@ -56,7 +56,10 @@ function splitWordsForChars(cells: CharCell[]): CharCell[][] {
 
 export const SyncedLyrics = React.memo(({lines}: { lines: LyricLine[] }) => {
     const perf = usePerfMode();
-    const perChar = perf.mode !== 'light';
+    // Thousands of glyph spans plus 30fps inline-style writes are a deliberate
+    // Beauty-only effect. The default profile follows the native active-line
+    // timeline without a permanent animation loop.
+    const perChar = perf.mode === 'beauty';
     const containerRef = useRef<HTMLDivElement>(null);
     const activeRef = useRef(-1);
     const linesRef = useRef(lines);
@@ -192,10 +195,10 @@ export const SyncedLyrics = React.memo(({lines}: { lines: LyricLine[] }) => {
             lineProgressRef.current = smoothed;
             writeLineProgress(idx, smoothed);
         };
-        rafId = requestAnimationFrame(tick);
+        if (perChar) rafId = requestAnimationFrame(tick);
 
         const onVisibility = () => {
-            if (document.visibilityState !== 'hidden' && !rafId) {
+            if (perChar && document.visibilityState !== 'hidden' && !rafId) {
                 lastTickTs = 0;
                 rafId = requestAnimationFrame(tick);
             }

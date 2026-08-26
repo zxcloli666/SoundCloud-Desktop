@@ -25,6 +25,12 @@ interface AddToPlaylistDialogProps {
   children: React.ReactNode;
 }
 
+interface AddToPlaylistDialogContentProps {
+  trackUrns: string[];
+  onRequestClose: () => void;
+  active: boolean;
+}
+
 const PlaylistOption = React.memo(function PlaylistOption({
   playlist,
   onSelect,
@@ -151,12 +157,12 @@ const CreatePlaylistForm = React.memo(function CreatePlaylistForm({
 
 /* ── Main Dialog ─────────────────────────────────────────────── */
 
-export const AddToPlaylistDialog = React.memo(function AddToPlaylistDialog({
+const AddToPlaylistDialogContent = React.memo(function AddToPlaylistDialogContent({
   trackUrns,
-  children,
-}: AddToPlaylistDialogProps) {
+  onRequestClose,
+  active,
+}: AddToPlaylistDialogContentProps) {
   const { t } = useTranslation();
-  const [open, setOpen] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
   const { playlists, isLoading } = useMyPlaylists();
   const addToPlaylist = useAddToPlaylist();
@@ -166,9 +172,12 @@ export const AddToPlaylistDialog = React.memo(function AddToPlaylistDialog({
   const requestedPlaylistUrnsRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
-    if (!open || playlists.length === 0) return;
+    if (!active || playlists.length === 0) return;
 
     let cancelled = false;
+    let completed = false;
+    const controller = new AbortController();
+    const requestedThisRun: string[] = [];
 
     const loadMembership = async () => {
       const pending: string[] = [];
@@ -182,6 +191,7 @@ export const AddToPlaylistDialog = React.memo(function AddToPlaylistDialog({
         }
         if (requestedPlaylistUrnsRef.current.has(playlist.urn)) continue;
         requestedPlaylistUrnsRef.current.add(playlist.urn);
+        requestedThisRun.push(playlist.urn);
         pending.push(playlist.urn);
       }
 
@@ -189,7 +199,10 @@ export const AddToPlaylistDialog = React.memo(function AddToPlaylistDialog({
         setPlaylistTrackMap((prev) => ({ ...prev, ...nextMap }));
       }
 
-      if (pending.length === 0) return;
+      if (pending.length === 0) {
+        completed = true;
+        return;
+      }
 
       setLoadingPlaylistUrns((prev) => {
         const next = { ...prev };
@@ -197,33 +210,49 @@ export const AddToPlaylistDialog = React.memo(function AddToPlaylistDialog({
         return next;
       });
 
-      await Promise.all(
-        pending.map(async (playlistUrn) => {
+      const loaded: Record<string, string[]> = {};
+      let cursor = 0;
+      const worker = async () => {
+        while (cursor < pending.length) {
+          const playlistUrn = pending[cursor++];
           try {
             const res = await api<{ collection: { urn: string }[] }>(
               `/playlists/${encodeURIComponent(playlistUrn)}/tracks?limit=200`,
+              { signal: controller.signal },
             );
             if (cancelled) return;
-            setPlaylistTrackMap((prev) => ({
-              ...prev,
-              [playlistUrn]: res.collection.map((t) => t.urn),
-            }));
+            loaded[playlistUrn] = res.collection.map((t) => t.urn);
           } catch {
             if (cancelled) return;
-            setPlaylistTrackMap((prev) => ({ ...prev, [playlistUrn]: [] }));
-          } finally {
-            if (!cancelled) setLoadingPlaylistUrns((prev) => ({ ...prev, [playlistUrn]: false }));
+            loaded[playlistUrn] = [];
           }
-        }),
+        }
+      };
+      await Promise.all(
+        Array.from({ length: Math.min(4, pending.length) }, () => worker()),
       );
+      if (cancelled) return;
+      setPlaylistTrackMap((prev) => ({ ...prev, ...loaded }));
+      setLoadingPlaylistUrns((prev) => {
+        const next = { ...prev };
+        for (const urn of pending) next[urn] = false;
+        return next;
+      });
+      completed = true;
     };
 
     void loadMembership();
 
     return () => {
       cancelled = true;
+      controller.abort();
+      if (!completed) {
+        for (const urn of requestedThisRun) {
+          requestedPlaylistUrnsRef.current.delete(urn);
+        }
+      }
     };
-  }, [open, playlists]);
+  }, [active, playlists]);
 
   const playlistMembership = useMemo(() => {
     const entries = new Map<string, { containsAll: boolean; containsSome: boolean }>();
@@ -251,7 +280,7 @@ export const AddToPlaylistDialog = React.memo(function AddToPlaylistDialog({
 
     if (newUrns.length === 0) {
       toast.info(t('playlist.alreadyInPlaylist'));
-      setOpen(false);
+      onRequestClose();
       return;
     }
 
@@ -260,21 +289,14 @@ export const AddToPlaylistDialog = React.memo(function AddToPlaylistDialog({
       {
         onSuccess: () => {
           toast.success(t('playlist.addedToPlaylist'));
-          setOpen(false);
+          onRequestClose();
         },
       },
     );
   };
 
-  const handleOpenChange = (v: boolean) => {
-    setOpen(v);
-    if (!v) setShowCreate(false);
-  };
-
   return (
-    <Modal open={open} onOpenChange={handleOpenChange}>
-      <ModalTrigger asChild>{children}</ModalTrigger>
-      <ModalContent size="sm" showClose={false} zClass="z-[90]">
+    <ModalContent size="sm" showClose={false} zClass="z-[90]">
         {/* Header */}
         <div className="flex items-center justify-between px-5 pt-5 pb-3">
           <ModalTitle className="text-[15px] font-bold text-white/90 flex items-center gap-2">
@@ -295,7 +317,7 @@ export const AddToPlaylistDialog = React.memo(function AddToPlaylistDialog({
             trackUrns={trackUrns}
             onCreated={() => {
               setShowCreate(false);
-              setOpen(false);
+              onRequestClose();
             }}
           />
         ) : (
@@ -343,7 +365,43 @@ export const AddToPlaylistDialog = React.memo(function AddToPlaylistDialog({
             </div>
           )}
         </div>
-      </ModalContent>
+    </ModalContent>
+  );
+});
+
+/**
+ * Keep list rows cheap: the playlist query, mutation observers and membership
+ * fan-out only exist while the user has actually opened one dialog. Previously
+ * every visible track card mounted the complete data layer up front.
+ */
+export const AddToPlaylistDialog = React.memo(function AddToPlaylistDialog({
+  trackUrns,
+  children,
+}: AddToPlaylistDialogProps) {
+  const [open, setOpen] = useState(false);
+  const [contentMounted, setContentMounted] = useState(false);
+  const close = useCallback(() => setOpen(false), []);
+  const handleOpenChange = useCallback((nextOpen: boolean) => {
+    if (nextOpen) setContentMounted(true);
+    setOpen(nextOpen);
+  }, []);
+
+  useEffect(() => {
+    if (open || !contentMounted) return;
+    const timer = setTimeout(() => setContentMounted(false), 200);
+    return () => clearTimeout(timer);
+  }, [contentMounted, open]);
+
+  return (
+    <Modal open={open} onOpenChange={handleOpenChange}>
+      <ModalTrigger asChild>{children}</ModalTrigger>
+      {contentMounted && (
+        <AddToPlaylistDialogContent
+          trackUrns={trackUrns}
+          onRequestClose={close}
+          active={open}
+        />
+      )}
     </Modal>
   );
 });

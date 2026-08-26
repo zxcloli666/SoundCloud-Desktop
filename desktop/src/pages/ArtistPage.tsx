@@ -33,8 +33,11 @@ export function ArtistPage() {
   const [primaryView, setPrimaryView] = useState<TracksView>('list');
   const [featuredView, setFeaturedView] = useState<TracksView>('list');
 
-  const coversQuery = useArtistCovers(id);
-  const coversCount = coversQuery.data?.length ?? 0;
+  // The full covers collection belongs to the Covers tab. The page header only
+  // needs an existence probe, and waits for detail so it does not compete with
+  // the artist's first meaningful paint.
+  const coversQuery = useArtistCovers(artist ? id : undefined, 1);
+  const hasCovers = (coversQuery.data?.length ?? 0) > 0;
 
   const tabs = useMemo<ReadonlyArray<TabDescriptor<ArtistTabId>>>(() => {
     if (!artist) return [];
@@ -48,8 +51,8 @@ export function ArtistPage() {
         count: artist.track_count_featured,
       });
     }
-    if (coversCount > 0) {
-      out.push({ id: 'covers', label: t('artist.covers', 'Covers'), count: coversCount });
+    if (hasCovers) {
+      out.push({ id: 'covers', label: t('artist.covers', 'Covers'), count: undefined });
     }
     out.push({ id: 'albums', label: t('artist.albums'), count: artist.album_count });
     out.push({
@@ -59,7 +62,7 @@ export function ArtistPage() {
     });
     out.push({ id: 'about', label: t('artist.about'), count: undefined });
     return out;
-  }, [artist, t, coversCount]);
+  }, [artist, t, hasCovers]);
 
   if (detail.isLoading || (!artist && !detail.error)) {
     return (

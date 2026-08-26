@@ -6,7 +6,7 @@ import {getDuration, handlePrev, seek} from './audio';
 import {isUrnDisliked, toggleDislike} from './dislikes';
 import {art} from './formatters';
 import {invalidateAllLikesCache} from './hooks';
-import {isUrnLiked, optimisticToggleLike} from './likes';
+import {commitOptimisticLike, isUrnLiked, optimisticToggleLike} from './likes';
 import {queryClient} from './query-client';
 import {getArtistDisplay, getDisplayTitle} from './track-display';
 
@@ -95,8 +95,9 @@ async function toggleLikeCurrent() {
     pushNp();
     try {
         await api(`/likes/tracks/${encodeURIComponent(tr.urn)}`, {method: next ? 'POST' : 'DELETE'});
+        commitOptimisticLike(tr.urn, next);
     } catch {
-        optimisticToggleLike(queryClient, tr, !next);
+        optimisticToggleLike(queryClient, tr, !next, {emitEvent: false});
         pushNp();
     }
 }

@@ -1,6 +1,5 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useRef } from 'react';
 import { type Track, usePlayerStore } from '../stores/player';
-import { rememberTracks } from './offline-index';
 
 /**
  * Optimized hook for track play/pause.
@@ -15,29 +14,30 @@ import { rememberTracks } from './offline-index';
  * «лайки до конца». Pass a STABLE ref to keep memo'd tiles happy.
  */
 export function useTrackPlay(track: Track, queue?: Track[] | (() => Track[]), onPlay?: () => void) {
-  const isThis = usePlayerStore((s) => s.currentTrack?.urn === track.urn);
-  const isThisPlaying = usePlayerStore((s) => s.currentTrack?.urn === track.urn && s.isPlaying);
+  // One compact selector per card instead of two subscriptions. Large search
+  // and year grids otherwise doubled the callbacks run for every player change.
+  const playbackState = usePlayerStore((state) =>
+    state.currentTrack?.urn === track.urn ? (state.isPlaying ? 2 : 1) : 0,
+  );
+  const isThis = playbackState !== 0;
+  const isThisPlaying = playbackState === 2;
 
   const trackRef = useRef(track);
   const queueRef = useRef(queue);
-    const onPlayRef = useRef(onPlay);
+  const onPlayRef = useRef(onPlay);
   trackRef.current = track;
   queueRef.current = queue;
-    onPlayRef.current = onPlay;
-
-  useEffect(() => {
-    void rememberTracks([track]);
-  }, [track]);
+  onPlayRef.current = onPlay;
 
   const togglePlay = useCallback(() => {
     const { play, pause, resume } = usePlayerStore.getState();
     if (isThisPlaying) pause();
     else if (isThis) resume();
     else {
-        const q = queueRef.current;
-        const resolved = typeof q === 'function' ? q() : q;
-        play(trackRef.current, resolved?.length ? resolved : [trackRef.current]);
-        onPlayRef.current?.();
+      const q = queueRef.current;
+      const resolved = typeof q === 'function' ? q() : q;
+      play(trackRef.current, resolved?.length ? resolved : [trackRef.current]);
+      onPlayRef.current?.();
     }
   }, [isThis, isThisPlaying]);
 

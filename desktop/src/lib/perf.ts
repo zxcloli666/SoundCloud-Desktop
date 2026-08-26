@@ -41,10 +41,13 @@ const PROFILES: Record<PerfMode, Omit<PerfProfile, 'mode'>> = {
     bloom: true,
   },
   medium: {
-    blur: (px) => Math.round(px * 0.3),
-    particles: (n) => Math.ceil(n * 0.2),
+    // The default profile must stay cheap on integrated GPUs. Static gradients
+    // preserve the visual hierarchy; live backdrop/particle effects are opt-in
+    // through Beauty because they repaint large surfaces during scrolling.
+    blur: () => 0,
+    particles: () => 0,
     idleAnim: false,
-    atmosphere: true,
+    atmosphere: false,
     glow: false,
     bloom: false,
   },

@@ -1,4 +1,8 @@
 import { useEffect, useRef } from 'react';
+import { isUrnDisliked } from '../../../lib/dislikes';
+import { subscribeSoundWaveOutcomes } from '../../../lib/events';
+import { isRecommendationTrackPlayable } from '../../../lib/home-recommendations';
+import { curateWithLocalTaste } from '../../../lib/local-recommendations';
 import { fetchSmartWave, type SmartWaveSeedKind, sendWaveFeedback } from '../../../lib/soundwave';
 import type { Track } from '../../../stores/player';
 import { usePlayerStore } from '../../../stores/player';
@@ -76,6 +80,20 @@ export function useInfiniteWave(opts: {
       return;
     }
 
+    const unsubscribeOutcomes = subscribeSoundWaveOutcomes((outcome) => {
+      if (!ownedRef.current.has(outcome.scTrackId)) return;
+      if (
+        outcome.eventType === 'full_play' ||
+        outcome.eventType === 'like' ||
+        outcome.eventType === 'local_like' ||
+        outcome.eventType === 'playlist_add'
+      ) {
+        posCountRef.current += 1;
+      } else if (outcome.eventType === 'skip' || outcome.eventType === 'dislike') {
+        negCountRef.current += 1;
+      }
+    });
+
     const unsubscribe = usePlayerStore.subscribe((state, prev) => {
       const { queue, queueIndex, currentTrack, isPlaying } = state;
       // Narrowed: only react to refill-relevant fields.
@@ -124,9 +142,18 @@ export function useInfiniteWave(opts: {
           if (batch.cursor) cursorRef.current = batch.cursor;
           const filterFn = filterRef.current;
           const existing = new Set(usePlayerStore.getState().queue.map((t) => t.urn));
-          const fresh = batch.tracks.filter(
-            (t) => !existing.has(t.urn) && (!filterFn || filterFn(t)),
+          const eligible = batch.tracks.filter(
+            (t) =>
+              !existing.has(t.urn) &&
+              !isUrnDisliked(t.urn) &&
+              isRecommendationTrackPlayable(t) &&
+              (!filterFn || filterFn(t)),
           );
+          const hideRecent = hideListenedRef.current === true;
+          const fresh = curateWithLocalTaste(eligible, {
+            hideListened: hideRecent,
+            limit: eligible.length,
+          });
           if (fresh.length > 0) {
             usePlayerStore.getState().addToQueue(fresh);
             for (const t of fresh) ownedRef.current.add(t.urn);
@@ -144,6 +171,7 @@ export function useInfiniteWave(opts: {
 
     return () => {
       unsubscribe();
+      unsubscribeOutcomes();
       const controller = abortRef.current;
       abortRef.current = null;
       controller?.abort();

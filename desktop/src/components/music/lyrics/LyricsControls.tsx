@@ -20,7 +20,7 @@ import {
     shuffleIcon16,
     ThumbsDown,
 } from '../../../lib/icons';
-import {optimisticToggleLike, useLiked} from '../../../lib/likes';
+import {commitOptimisticLike, optimisticToggleLike, useLiked} from '../../../lib/likes';
 import {useLyricsStore} from '../../../stores/lyrics';
 import {type Track, usePlayerStore} from '../../../stores/player';
 import {AddToPlaylistDialog} from '../AddToPlaylistDialog';
@@ -37,8 +37,9 @@ const FullscreenLikeButton = React.memo(({track}: { track: Track }) => {
             await api(`/likes/tracks/${encodeURIComponent(track.urn)}`, {
                 method: next ? 'POST' : 'DELETE',
             });
+            commitOptimisticLike(track.urn, next);
         } catch {
-            optimisticToggleLike(qc, track, !next);
+            optimisticToggleLike(qc, track, !next, {emitEvent: false});
         }
     };
 

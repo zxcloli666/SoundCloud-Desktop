@@ -2,7 +2,7 @@ use futures_util::StreamExt;
 use reqwest::{Client, Response};
 use tauri::{Emitter, Manager};
 
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use super::buffer::{StreamingBuffer, MIN_VALID_BYTES};
 use crate::audio::state::AudioState;
@@ -22,6 +22,14 @@ pub(super) struct ProducerContext {
 }
 
 const STREAM_CHUNK_TIMEOUT_MS: u64 = 12_000;
+const PROGRESS_EMIT_INTERVAL: Duration = Duration::from_millis(200);
+const PROGRESS_EMIT_STEP: f64 = 0.02;
+
+#[derive(Default)]
+struct ProgressThrottle {
+    last_at: Option<Instant>,
+    last_value: f64,
+}
 
 pub(super) fn context(
     app: &AppHandle,
@@ -50,17 +58,34 @@ pub(super) fn is_current(app: &AppHandle, generation: u64) -> bool {
         == generation
 }
 
-fn emit_progress(context: &ProducerContext, downloaded: u64, total: u64) {
+fn emit_progress(
+    context: &ProducerContext,
+    downloaded: u64,
+    total: u64,
+    throttle: &mut ProgressThrottle,
+    force: bool,
+) {
     if total == 0 {
         return;
     }
+    let progress = (downloaded as f64 / total as f64).min(1.0);
+    let now = Instant::now();
+    if !force
+        && let Some(last_at) = throttle.last_at
+        && (now.duration_since(last_at) < PROGRESS_EMIT_INTERVAL
+            || progress - throttle.last_value < PROGRESS_EMIT_STEP)
+    {
+        return;
+    }
+    throttle.last_at = Some(now);
+    throttle.last_value = progress;
     let _ = context.app.emit(
         "track:download-progress",
         serde_json::json!({
             "urn": context.urn,
             "downloaded": downloaded,
             "total": total,
-            "progress": (downloaded as f64 / total as f64).min(1.0),
+            "progress": progress,
             "source": context.source.label(),
         }),
     );
@@ -78,10 +103,21 @@ async fn commit_finished(buffer: &StreamingBuffer, context: &ProducerContext) {
     // Device reconnects and seeks can rebuild from memory as soon as the transfer
     // completes, even if the disk cache/transcode is still catching up.
     let audio = context.app.state::<AudioState>();
-    *audio.source_bytes.lock().unwrap() = Some(data.clone());
+    // Lock both destinations before the final generation check. If a newer load
+    // increments `load_gen`, it either wins before this check (we abort) or waits
+    // for these locks and clears our data afterwards. An old producer can no
+    // longer overwrite the source of the newly selected track.
+    let mut source_bytes = audio.source_bytes.lock().unwrap();
+    let mut active_stream = audio.active_stream.lock().unwrap();
+    if !is_current(&context.app, context.generation) {
+        return;
+    }
+    *source_bytes = Some(data.clone());
     // The complete byte source is now the canonical seek fallback. Dropping this
     // handle only releases our extra Arc; the live decoder keeps its own reader.
-    *audio.active_stream.lock().unwrap() = None;
+    *active_stream = None;
+    drop(active_stream);
+    drop(source_bytes);
 
     if let Err(error) = context
         .cache
@@ -105,6 +141,7 @@ pub(super) async fn pump_response(
 ) {
     let total = response.content_length().unwrap_or(0);
     let mut downloaded = 0u64;
+    let mut progress_throttle = ProgressThrottle::default();
     let mut stream = response.bytes_stream();
     loop {
         let chunk = match tokio::time::timeout(
@@ -130,10 +167,28 @@ pub(super) async fn pump_response(
         }
         downloaded += chunk.len() as u64;
         buffer.push(&chunk);
-        emit_progress(&context, downloaded, total);
+        emit_progress(
+            &context,
+            downloaded,
+            total,
+            &mut progress_throttle,
+            false,
+        );
+    }
+    if total > 0 && downloaded != total {
+        buffer.fail(format!(
+            "stream ended early: received {downloaded} of {total} bytes"
+        ));
+        return;
     }
     buffer.finish();
-    emit_progress(&context, downloaded, downloaded.max(total));
+    emit_progress(
+        &context,
+        downloaded,
+        downloaded.max(total),
+        &mut progress_throttle,
+        true,
+    );
     commit_finished(&buffer, &context).await;
 }
 
@@ -168,6 +223,7 @@ pub(super) async fn pump_hls(
     }
 
     let total = segments.len() as u64;
+    let mut progress_throttle = ProgressThrottle::default();
     for (index, segment_url) in segments.into_iter().enumerate() {
         if !is_current(&context.app, context.generation) {
             buffer.fail("stream cancelled".to_string());
@@ -176,7 +232,13 @@ pub(super) async fn pump_hls(
         match fetch_bytes(&client, &segment_url).await {
             Ok(bytes) => {
                 buffer.push(&bytes);
-                emit_progress(&context, index as u64 + 1, total);
+                emit_progress(
+                    &context,
+                    index as u64 + 1,
+                    total,
+                    &mut progress_throttle,
+                    index as u64 + 1 == total,
+                );
             }
             Err(error) => {
                 buffer.fail(format!("HLS segment {}: {error}", index + 1));

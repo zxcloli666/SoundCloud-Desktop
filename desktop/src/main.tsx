@@ -40,13 +40,18 @@ function scheduleAfterFirstPaint(task: () => void) {
 function startDeferredRuntime() {
   scheduleAfterFirstPaint(() => {
     setupUiWatchdog();
-    setupCacheMaintenance();
-    void import('./lib/scproxy');
+    // Audio owns the player-store subscription, so initialise it first. Less
+    // urgent integrations are staggered to avoid six chunks parsing in the same
+    // post-paint task and freezing the first interaction.
     void import('./lib/tray');
     void import('./lib/audio');
     void import('./lib/queue-autopilot');
-    void import('./lib/discord');
-    void import('./lib/host-status').then((module) => module.initHostStatus());
+    window.setTimeout(() => void import('./lib/discord'), 1000);
+    window.setTimeout(
+      () => void import('./lib/host-status').then((module) => module.initHostStatus()),
+      1500,
+    );
+    window.setTimeout(setupCacheMaintenance, 2500);
   });
 }
 
@@ -103,6 +108,10 @@ async function bootstrap() {
 
   const [staticPort, proxyPort] = await invoke<[number, number]>('get_server_ports');
   setServerPorts(staticPort, proxyPort);
+
+  // Install URL routing before React assigns the first remote <img>.src. Cache
+  // maintenance and unrelated integrations remain deferred below.
+  await import('./lib/scproxy');
 
   await initEdge();
   await initAuthBridge();

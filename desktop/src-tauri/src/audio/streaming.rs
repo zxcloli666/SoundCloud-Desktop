@@ -65,6 +65,30 @@ impl ActiveStream {
     pub(crate) fn byte_len(&self) -> Option<u64> {
         self.byte_len
     }
+
+    /// True only while the producer can still append bytes. A terminal network
+    /// error leaves the buffer readable, but must not suppress device-stall
+    /// recovery forever.
+    pub(crate) fn is_growing(&self) -> bool {
+        let (_, complete, error) = self.buffer.status();
+        !complete && error.is_none()
+    }
+
+    /// Return a producer failure only after it is terminal. The decoder can
+    /// still drain bytes buffered before that failure, so the tick thread emits
+    /// this separately from a natural end once the player becomes empty.
+    pub(crate) fn terminal_error(&self) -> Option<String> {
+        let (_, complete, error) = self.buffer.status();
+        if complete {
+            error
+        } else {
+            None
+        }
+    }
+
+    pub(crate) fn cancel(&self) {
+        self.buffer.fail("stream cancelled".to_string());
+    }
 }
 
 fn retryable_status(status: reqwest::StatusCode) -> bool {
@@ -155,7 +179,23 @@ async fn install_buffer(
         return Err("load cancelled".to_string());
     }
     engine::install_streaming_player(state, player);
-    *state.active_stream.lock().unwrap() = Some(active_stream);
+    // The producer can finish while the decoder is being built. Publish the
+    // live stream under the same source_bytes -> active_stream lock order used
+    // by commit_finished: if complete bytes already won the race, do not leave
+    // a stale completed ActiveStream that would suppress the natural end event.
+    let source_bytes = state.source_bytes.lock().unwrap();
+    let mut installed_stream = state.active_stream.lock().unwrap();
+    if !is_current(app, generation) {
+        drop(installed_stream);
+        drop(source_bytes);
+        active_stream.cancel();
+        return Err("load cancelled".to_string());
+    }
+    if source_bytes.is_none() {
+        *installed_stream = Some(active_stream);
+    } else {
+        *installed_stream = None;
+    }
     Ok(())
 }
 

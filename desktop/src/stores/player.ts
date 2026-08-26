@@ -3,8 +3,8 @@ import { persist } from 'zustand/middleware';
 import { nextQueueIndex, previousQueueIndex } from '../lib/player-navigation';
 import { createThrottledJsonStorage } from '../lib/tauri-storage';
 
-const PERSISTED_QUEUE_BEHIND = 30;
-const PERSISTED_QUEUE_WINDOW = 300;
+const PERSISTED_QUEUE_BEHIND = 20;
+const PERSISTED_QUEUE_WINDOW = 120;
 
 export interface EnrichmentArtist {
   id: string;
@@ -536,7 +536,7 @@ export const usePlayerStore = create<PlayerState>()(
     }),
     {
       name: 'sc-player',
-      storage: createThrottledJsonStorage(),
+      storage: createThrottledJsonStorage(1_500),
       version: 3,
       partialize: (state) => {
         const start = Math.max(0, state.queueIndex - PERSISTED_QUEUE_BEHIND);

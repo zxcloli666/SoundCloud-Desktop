@@ -32,7 +32,7 @@ import {
   volume2Icon16,
   volumeXIcon16,
 } from '../../lib/icons';
-import { optimisticToggleLike } from '../../lib/likes';
+import { commitOptimisticLike, optimisticToggleLike } from '../../lib/likes';
 import { useArtistDisplay, useArtistLinkItems, useDisplayTitle } from '../../lib/track-display';
 import { useLyricsStore } from '../../stores/lyrics';
 import {
@@ -412,10 +412,11 @@ function LikeButton({
       await api(`/likes/tracks/${encodeURIComponent(trackUrn)}`, {
         method: next ? 'POST' : 'DELETE',
       });
+      commitOptimisticLike(trackUrn, next);
       qc.invalidateQueries({ queryKey: ['track', trackUrn, 'favoriters'] });
     } catch {
       setLiked(!next);
-      if (trackData) optimisticToggleLike(qc, trackData, !next);
+      if (trackData) optimisticToggleLike(qc, trackData, !next, { emitEvent: false });
     }
   };
 

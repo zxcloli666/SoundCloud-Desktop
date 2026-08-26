@@ -394,6 +394,7 @@
     "earlier": "Earlier",
     "filter": "Filter...",
     "noMatches": "No matches",
+    "noMatchesLoaded": "No matches in the loaded results",
     "noLikedTracks": "No liked tracks yet",
     "notFollowing": "You are not following anyone",
     "noPlaylists": "No playlists found"

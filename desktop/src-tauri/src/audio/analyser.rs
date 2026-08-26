@@ -39,6 +39,7 @@ pub struct AnalyserBuffer {
     samples: Mutex<VecDeque<f32>>,
     pub sample_rate: AtomicU32,
     pub running: AtomicBool,
+    enabled: AtomicBool,
 }
 
 impl AnalyserBuffer {
@@ -47,7 +48,22 @@ impl AnalyserBuffer {
             samples: Mutex::new(VecDeque::with_capacity(RING_CAPACITY)),
             sample_rate: AtomicU32::new(44_100),
             running: AtomicBool::new(true),
+            // The visualizer is opt-in. Keeping the PCM tap active while its UI
+            // is closed used to take a mutex once per audio frame and run FFTs
+            // for every track even though no frontend was listening.
+            enabled: AtomicBool::new(false),
         })
+    }
+
+    pub fn set_enabled(&self, enabled: bool) {
+        self.enabled.store(enabled, Ordering::Release);
+        if let Ok(mut samples) = self.samples.lock() {
+            samples.clear();
+        }
+    }
+
+    fn is_enabled(&self) -> bool {
+        self.enabled.load(Ordering::Acquire)
     }
 }
 
@@ -83,6 +99,11 @@ impl<S: Source<Item = f32>> Iterator for AnalyserSource<S> {
 
     fn next(&mut self) -> Option<f32> {
         let sample = self.source.next()?;
+        if !self.buffer.is_enabled() {
+            self.cur_channel = 0;
+            self.accum = 0.0;
+            return Some(sample);
+        }
         self.accum += sample;
         self.cur_channel += 1;
 
@@ -152,14 +173,24 @@ fn run_fft_loop(app: AppHandle, buffer: Arc<AnalyserBuffer>) {
         if !buffer.running.load(Ordering::Relaxed) {
             break;
         }
+        if !buffer.is_enabled() {
+            silence_skips = 0;
+            prev_emit_was_silent = true;
+            continue;
+        }
 
         let snapshot: Option<Vec<f32>> = {
-            let q = buffer.samples.lock().unwrap();
+            let mut q = buffer.samples.lock().unwrap();
             if q.len() < FFT_SIZE {
                 None
             } else {
                 let start = q.len() - FFT_SIZE;
-                Some(q.iter().skip(start).copied().collect())
+                let samples = q.iter().skip(start).copied().collect();
+                // Consume the window. If playback is paused no fresh samples
+                // arrive, so the analyser emits one zero frame and then parks
+                // instead of recomputing the same stale spectrum at 30 Hz.
+                q.clear();
+                Some(samples)
             }
         };
 

@@ -1,12 +1,20 @@
 use std::path::PathBuf;
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::OnceLock;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use base64::{engine::general_purpose::STANDARD as BASE64, Engine as _};
 use sha2::{Digest, Sha256};
 use tokio::fs;
 
+use crate::network::edge::{self, Hop};
 use crate::shared::constants::is_domain_whitelisted;
+
+const MAX_PROXY_HOPS: usize = 3;
+const PROXY_TOTAL_TIMEOUT: Duration = Duration::from_secs(18);
+const PROXY_HOP_TIMEOUT: Duration = Duration::from_secs(6);
+const PROXY_HOP_BODY_TIMEOUT: Duration = Duration::from_secs(12);
+static CACHE_TEMP_SEQUENCE: AtomicU64 = AtomicU64::new(0);
 
 pub struct State {
     pub assets_dir: PathBuf,
@@ -24,6 +32,39 @@ pub struct ProxyResult {
 
 fn cache_key(url: &str) -> String {
     hex::encode(Sha256::digest(url.as_bytes()))
+}
+
+fn bounded_proxy_hops(hops: Vec<Hop>) -> Vec<Hop> {
+    let Some(first) = hops.first() else {
+        return Vec::new();
+    };
+    if hops.len() <= MAX_PROXY_HOPS {
+        return hops;
+    }
+
+    let mut selected = Vec::with_capacity(MAX_PROXY_HOPS);
+    selected.push(first.clone());
+    if let Some(alternate) = hops.iter().skip(1).find(|hop| hop.tier != first.tier) {
+        selected.push(alternate.clone());
+    }
+    for hop in hops.iter().skip(1) {
+        if selected.len() >= MAX_PROXY_HOPS {
+            break;
+        }
+        if selected.iter().all(|selected_hop| selected_hop.url != hop.url) {
+            selected.push(hop.clone());
+        }
+    }
+    selected
+}
+
+fn deadline_budget(deadline: Instant, per_operation: Duration) -> Option<Duration> {
+    let remaining = deadline.saturating_duration_since(Instant::now());
+    if remaining.is_zero() {
+        None
+    } else {
+        Some(remaining.min(per_operation))
+    }
 }
 
 /// Sniff the content type from the leading bytes. Single source of truth so we
@@ -52,10 +93,12 @@ fn sniff_content_type(data: &[u8]) -> &'static str {
 }
 
 async fn write_cached_asset(cache_path: PathBuf, data: Vec<u8>) {
+    let sequence = CACHE_TEMP_SEQUENCE.fetch_add(1, Ordering::Relaxed);
     let tmp = PathBuf::from(format!(
-        "{}.tmp-{}",
+        "{}.tmp-{}-{}",
         cache_path.display(),
-        std::process::id()
+        std::process::id(),
+        sequence,
     ));
     if fs::write(&tmp, &data).await.is_err() {
         let _ = fs::remove_file(&tmp).await;
@@ -157,10 +200,13 @@ pub async fn proxy_request(encoded: &str) -> ProxyResult {
     let encoded_for_header = BASE64.encode(target_url.as_bytes());
     let mut status = 502u16;
     let mut data: Vec<u8> = Vec::new();
+    let deadline = Instant::now() + PROXY_TOTAL_TIMEOUT;
 
-    for hop in crate::network::edge::expand_upstreams(upstreams) {
-        const PROXY_HOP_TIMEOUT_MS: u64 = 10_000;
-        const PROXY_HOP_BODY_TIMEOUT_MS: u64 = 16_000;
+    for hop in bounded_proxy_hops(edge::expand_upstreams(upstreams)) {
+        let Some(header_budget) = deadline_budget(deadline, PROXY_HOP_TIMEOUT) else {
+            status = 504;
+            break;
+        };
 
         // `direct` = fetch the target ourselves with a browser User-Agent
         // (hosts like wallhaven/konachan 403 a non-browser UA). Otherwise relay
@@ -176,32 +222,35 @@ pub async fn proxy_request(encoded: &str) -> ProxyResult {
                 .get(&hop.url)
                 .header("X-Target", &encoded_for_header)
         };
-        let resp = match tokio::time::timeout(
-            Duration::from_millis(PROXY_HOP_TIMEOUT_MS),
-            builder.send(),
-        )
-        .await
-        {
+        let resp = match tokio::time::timeout(header_budget, builder.send()).await {
             Ok(Ok(r)) => r,
             Ok(Err(_)) | Err(_) => {
                 hop.note(false);
+                if Instant::now() >= deadline {
+                    status = 504;
+                    break;
+                }
                 continue;
             }
         };
 
         status = resp.status().as_u16();
-        if !crate::network::edge::hop_ok(&hop, &resp) {
+        if !edge::hop_ok(&hop, &resp) {
             continue;
         }
-        let bytes = match tokio::time::timeout(
-            Duration::from_millis(PROXY_HOP_BODY_TIMEOUT_MS),
-            resp.bytes(),
-        )
-        .await
-        {
+        let Some(body_budget) = deadline_budget(deadline, PROXY_HOP_BODY_TIMEOUT) else {
+            hop.note(false);
+            status = 504;
+            break;
+        };
+        let bytes = match tokio::time::timeout(body_budget, resp.bytes()).await {
             Ok(Ok(b)) => b,
             Ok(Err(_)) | Err(_) => {
                 hop.note(false);
+                if Instant::now() >= deadline {
+                    status = 504;
+                    break;
+                }
                 continue;
             }
         };

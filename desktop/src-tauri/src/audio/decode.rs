@@ -330,22 +330,25 @@ pub fn create_player_from_bytes(
             EqSource::new(GainSource::new(source, normalization_gain), eq_params),
             analyser_buffer,
         ));
-    } else if Decoder::new(Cursor::new(bytes.to_vec())).is_ok() {
-        let source = Decoder::new(Cursor::new(bytes.to_vec()))
-            .map_err(|e| format!("Failed to decode: {}", e))?;
-        duration = source.total_duration().map(|d| d.as_secs_f64());
-        player.append(AnalyserSource::new(
-            EqSource::new(GainSource::new(source, normalization_gain), eq_params),
-            analyser_buffer,
-        ));
     } else {
-        let source =
-            OpusSource::new(bytes.to_vec()).map_err(|e| format!("Failed to decode: {}", e))?;
-        duration = source.total_duration().map(|d| d.as_secs_f64());
-        player.append(AnalyserSource::new(
-            EqSource::new(GainSource::new(source, normalization_gain), eq_params),
-            analyser_buffer,
-        ));
+        match Decoder::new(Cursor::new(bytes.to_vec())) {
+            Ok(source) => {
+                duration = source.total_duration().map(|d| d.as_secs_f64());
+                player.append(AnalyserSource::new(
+                    EqSource::new(GainSource::new(source, normalization_gain), eq_params),
+                    analyser_buffer,
+                ));
+            }
+            Err(_) => {
+                let source = OpusSource::new(bytes.to_vec())
+                    .map_err(|e| format!("Failed to decode: {}", e))?;
+                duration = source.total_duration().map(|d| d.as_secs_f64());
+                player.append(AnalyserSource::new(
+                    EqSource::new(GainSource::new(source, normalization_gain), eq_params),
+                    analyser_buffer,
+                ));
+            }
+        }
     }
 
     Ok((player, duration))

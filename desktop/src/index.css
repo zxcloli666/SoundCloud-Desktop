@@ -38,9 +38,9 @@
 }
 
 [data-perf="medium"] {
-    --glass-blur: 8px;
-    --glass-blur-strong: 12px;
-    --glass-blur-soft: 8px;
+    --glass-blur: 0px;
+    --glass-blur-strong: 0px;
+    --glass-blur-soft: 0px;
 }
 
 [data-perf="light"] {
@@ -52,19 +52,23 @@
 /* Light mode: drop the live backdrop blur, keep the dark frosted look via a flat
    solid tint (visually close on a dark UI, zero per-repaint blur cost). */
 [data-perf="light"] .glass,
-[data-perf="light"] .glass-flat {
+[data-perf="light"] .glass-flat,
+[data-perf="medium"] .glass,
+[data-perf="medium"] .glass-flat {
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
     background: rgba(22, 22, 26, 0.82);
 }
 
-[data-perf="light"] .glass-featured {
+[data-perf="light"] .glass-featured,
+[data-perf="medium"] .glass-featured {
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
     background: rgba(16, 16, 20, 0.86);
 }
 
-[data-perf="light"] .npb-glass {
+[data-perf="light"] .npb-glass,
+[data-perf="medium"] .npb-glass {
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
     background: linear-gradient(
@@ -76,8 +80,18 @@
     rgba(15, 15, 19, 0.92);
 }
 
-[data-perf="light"] .npb-glass::after {
+[data-perf="light"] .npb-glass::after,
+[data-perf="medium"] .npb-glass::after {
     display: none;
+}
+
+/* Tailwind backdrop-blur utilities bypass the semantic glass variables above
+   and are used by repeated cards/dialog chrome. Flatten every such surface in
+   the two performance profiles; Beauty remains the explicit live-blur mode. */
+[data-perf="light"] [class*="backdrop-blur"],
+[data-perf="medium"] [class*="backdrop-blur"] {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
 }
 
 /* Global idle-animation gate — the WebView never throttles a hidden window, so
@@ -119,10 +133,42 @@
    doesn't re-hit-test on wheel scroll, so cards otherwise "stick" or light up the
    wrong tile. The guard is set on scroll and cleared on pointer move/down (see
    AppShell), so real hover/click intent re-enables instantly. */
-main[data-scrolling] *,
-main[data-scrolling] *::before,
-main[data-scrolling] *::after {
+main[data-scrolling] > * {
     pointer-events: none !important;
+}
+
+/* Keep every search result reachable while allowing WebView to skip the heavy
+   image/card subtree for tiles that are well outside the viewport. Grid tracks
+   provide the real outer geometry, so this does not need a fake spacer. */
+.deferred-search-tile {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 220px;
+}
+
+/* Year timelines can contain hundreds of cards/rows. Album grids and track
+   lists have very different natural heights, so sharing one 640px placeholder
+   caused scroll-height corrections as a group approached the viewport. */
+.deferred-year-group {
+    content-visibility: auto;
+    contain-intrinsic-size: auto var(--deferred-year-size, 1400px);
+}
+
+.deferred-year-group--albums {
+    --deferred-year-size: 1200px;
+}
+
+.deferred-year-group--tracks {
+    --deferred-year-size: 1700px;
+}
+
+@media (max-width: 767px) {
+    .deferred-year-group--albums {
+        --deferred-year-size: 2400px;
+    }
+
+    .deferred-year-group--tracks {
+        --deferred-year-size: 1900px;
+    }
 }
 
 html,
@@ -440,8 +486,14 @@ select,
 
 /* Light mode renders the active line as one .lyric-fill span (no per-char nodes),
    so brighten its text directly — the per-char sweep that lights beauty is absent. */
-[data-perf="light"] .lyric-line[data-state="active"] .lyric-fill {
+[data-perf="light"] .lyric-line[data-state="active"] .lyric-fill,
+[data-perf="medium"] .lyric-line[data-state="active"] .lyric-fill {
     color: #fff;
+}
+
+[data-perf="light"] .lyric-line[data-state="active"],
+[data-perf="medium"] .lyric-line[data-state="active"] {
+    filter: none;
 }
 
 /* A "word" wrapper just keeps characters from breaking mid-word. */

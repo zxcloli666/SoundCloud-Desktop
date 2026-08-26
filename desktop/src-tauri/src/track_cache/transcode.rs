@@ -152,7 +152,13 @@ pub async fn is_m4a(path: &Path) -> bool {
 
 fn base_command(ffmpeg: &Path) -> Command {
     let mut cmd = Command::new(ffmpeg);
-    cmd.args(["-nostdin", "-hide_banner", "-loglevel", "error", "-y"])
+    cmd.args([
+        "-nostdin",
+        "-hide_banner",
+        "-loglevel",
+        "error",
+        "-y",
+    ])
         .stdin(Stdio::null())
         .stdout(Stdio::null())
         .stderr(Stdio::piped());
@@ -160,7 +166,8 @@ fn base_command(ffmpeg: &Path) -> Command {
     {
         // CREATE_NO_WINDOW — don't flash a console on Windows.
         use std::os::windows::process::CommandExt;
-        cmd.creation_flags(0x0800_0000);
+        // CREATE_NO_WINDOW | BELOW_NORMAL_PRIORITY_CLASS
+        cmd.creation_flags(0x0800_0000 | 0x0000_4000);
     }
     cmd
 }
@@ -220,6 +227,8 @@ pub async fn transcode_to_m4a(
             "-vn",
             "-c:a",
             "aac",
+            "-threads:a",
+            "1",
             "-b:a",
             AAC_BITRATE,
             "-movflags",

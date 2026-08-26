@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { type Aura, auraRgba } from '../../lib/aura';
 import type { CatalogAlbum } from '../../lib/discover';
-import { dur } from '../../lib/formatters';
+import { art, dur } from '../../lib/formatters';
 import { Disc3, ListMusic, Star } from '../../lib/icons';
 import {usePerfMode} from '../../lib/perf';
 import { gradientForId, monogramOf } from './visuals';
@@ -56,12 +56,14 @@ function AlbumGridCardImpl({ album, aura }: AlbumGridCardProps) {
       >
         {album.cover_url ? (
           <img
-            src={album.cover_url}
+            src={art(album.cover_url, 't300x300') ?? undefined}
             alt={album.title}
             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.08]"
             decoding="async"
             loading="lazy"
             draggable={false}
+            width={300}
+            height={300}
           />
         ) : (
           <>

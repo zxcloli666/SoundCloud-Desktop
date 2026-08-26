@@ -7,7 +7,7 @@ import {usePerfMode} from '../../../lib/perf';
 import {Card} from '../primitives';
 
 /** How often we poll the live pipeline snapshot while the card is visible. */
-const POLL_MS = 1200;
+const POLL_MS = 5000;
 
 /* Forge motion — transform/opacity only; idle motion gates on perf.idleAnim and
  * the global app-hidden pause. Scoped names so it can live in one injected block. */
@@ -271,6 +271,7 @@ export function SoundForgeCard() {
 
     const engine: FfmpegState = status?.ffmpeg ?? 'preparing';
     const incoming = status?.incoming ?? 0;
+    const queued = status?.queued ?? 0;
     const transcoding = status?.transcoding ?? 0;
     const clean = status?.clean ?? 0;
     const active = engine === 'ready' && transcoding > 0;
@@ -290,8 +291,8 @@ export function SoundForgeCard() {
             ? t('forge.msgPreparing')
             : engine === 'unavailable'
                 ? t('forge.msgUnavailable')
-                : transcoding > 0 || incoming > 0
-                    ? t('forge.msgWorking', {active: transcoding, queued: incoming})
+                : transcoding > 0 || queued > 0
+                    ? t('forge.msgWorking', {active: transcoding, queued})
                     : t('forge.msgReady');
 
     const num = (n: number) => (status === null ? '·' : String(n));
@@ -326,8 +327,8 @@ export function SoundForgeCard() {
             {/* Rail: glyphs + conduits + core, all centered so the energy line runs
           glyph-to-glyph through the reactor. */}
             <div className="grid grid-cols-[68px_1fr_104px_1fr_68px] items-center pt-1">
-                <Glyph icon={<AudioLines size={22}/>} accent={false} pulse={incoming > 0}/>
-                <Conduit active={incoming > 0 || active} color={main}/>
+                <Glyph icon={<AudioLines size={22}/>} accent={false} pulse={active}/>
+                <Conduit active={active} color={main}/>
                 <Core state={engine} transcoding={transcoding}/>
                 <Conduit active={active} color="var(--color-accent)"/>
                 <Glyph icon={<Disc3 size={22}/>} accent pulse={false}/>

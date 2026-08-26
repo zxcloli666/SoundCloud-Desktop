@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import i18n from '../i18n';
 import type { Track } from '../stores/player';
 import { usePlayerStore } from '../stores/player';
+import { recordLocalPlayStart } from '../stores/recommendation-taste';
 import { useSettingsStore } from '../stores/settings';
 import {
   api,
@@ -25,11 +26,13 @@ import { isUrnDisliked } from './dislikes';
 import { recordEvent } from './events';
 import { art } from './formatters';
 import { rememberTracks } from './offline-index';
-import { getUrnCluster, recordClusterFeedback } from './recsFeedback';
+import { clearUrnCluster, recordClusterFeedback, takeUrnCluster } from './recsFeedback';
 import { withTimeout } from './request-timeout';
 import { getArtistDisplay, getDisplayTitle } from './track-display';
 
 const SKIP_THRESHOLD_SEC = 30;
+const MIN_ACTUAL_PLAYBACK_FOR_SKIP_SEC = 1;
+const MAX_CONTIGUOUS_TASTE_TICK_SEC = 3;
 /** Минимум, чтобы засчитать «прослушано полностью» для коротких треков (50% длительности). */
 const FULL_PLAY_RATIO = 0.5;
 /** Битый кеш: сыграло меньше этого на треке от EARLY_END_MIN_EXPECTED_SEC — лечим перекачкой. */
@@ -38,6 +41,7 @@ const EARLY_END_MIN_EXPECTED_SEC = 30;
 /** Один лечебный перекач на урн за сессию — защита от лупа на 30s-превью и мёртвых источниках. */
 const healedUrns = new Set<string>();
 const TRACK_START_BUDGET_MS = 18_000;
+const MAX_STREAM_ERROR_RETRIES = 1;
 
 export type TrackLoadStage =
   | 'idle'
@@ -61,6 +65,12 @@ let loadGen = 0;
 let seekGen = 0;
 let lastEndedUrn: string | null = null;
 let metadataAbort: AbortController | null = null;
+let streamRetryUrn: string | null = null;
+let streamRetryCount = 0;
+let tasteTrackingUrn: string | null = null;
+let tastePlayedSeconds = 0;
+let tasteLastPosition: number | null = null;
+let qualifiedPlayRecorded = false;
 const listeners = new Set<() => void>();
 const API_PREVIEW_DURATION_MS = 30_000;
 
@@ -120,6 +130,7 @@ export function seek(seconds: number) {
   const position = Math.max(0, Math.min(seconds, cachedDuration || fallbackDuration || seconds));
   const gen = ++seekGen;
   cachedTime = position;
+  if (tasteTrackingUrn === currentUrn) tasteLastPosition = position;
   notify();
   void invoke('audio_seek', { position })
     .then(() => {
@@ -137,6 +148,60 @@ export function seek(seconds: number) {
         })
         .catch(console.error);
     });
+}
+
+function resetTastePlaybackTracking(urn: string | null): void {
+  tasteTrackingUrn = urn;
+  tastePlayedSeconds = 0;
+  tasteLastPosition = urn ? 0 : null;
+  qualifiedPlayRecorded = false;
+}
+
+function qualifiedPlayThreshold(durationSeconds: number): number {
+  if (!Number.isFinite(durationSeconds) || durationSeconds <= 0) return 5;
+  return Math.min(5, Math.max(1, durationSeconds * 0.25));
+}
+
+function recordQualifiedPlay(track: Track): void {
+  if (qualifiedPlayRecorded || !track.urn || !track.title) return;
+  qualifiedPlayRecorded = true;
+  recordLocalPlayStart(track);
+
+  if (!SEND_BEHAVIORAL_DATA) return;
+  api('/history', {
+    method: 'POST',
+    body: JSON.stringify({
+      scTrackId: track.urn,
+      title: getDisplayTitle(track),
+      artistName: getArtistDisplay(track).primary || track.user?.username || '',
+      artistUrn: track.user?.urn || null,
+      artworkUrl: track.artwork_url || null,
+      duration: track.duration || 0,
+    }),
+  }).catch(() => {});
+}
+
+function noteActualPlayback(position: number): void {
+  const state = usePlayerStore.getState();
+  const track = state.currentTrack;
+  if (!currentUrn || !hasTrack || !track || track.urn !== currentUrn) {
+    tasteLastPosition = Number.isFinite(position) ? position : null;
+    return;
+  }
+  if (tasteTrackingUrn !== currentUrn) resetTastePlaybackTracking(currentUrn);
+
+  const previousPosition = tasteLastPosition;
+  tasteLastPosition = position;
+  if (state.isPlaying && previousPosition != null) {
+    const delta = position - previousPosition;
+    // Large jumps are seeks or stale native ticks, never actual listening time.
+    if (delta > 0 && delta <= MAX_CONTIGUOUS_TASTE_TICK_SEC) {
+      tastePlayedSeconds += delta;
+    }
+  }
+
+  const duration = cachedDuration > 0 ? cachedDuration : fallbackDuration;
+  if (tastePlayedSeconds >= qualifiedPlayThreshold(duration)) recordQualifiedPlay(track);
 }
 
 export function handlePrev() {
@@ -372,7 +437,14 @@ async function loadCachedFile(
   }
 }
 
-async function loadTrack(track: Track) {
+async function loadTrack(
+  track: Track,
+  options: { preserveStreamRetry?: boolean } = {},
+) {
+  if (!options.preserveStreamRetry || streamRetryUrn !== track.urn) {
+    streamRetryUrn = track.urn;
+    streamRetryCount = 0;
+  }
   const gen = ++loadGen;
   const previousUrn = currentUrn;
   metadataAbort?.abort();
@@ -382,6 +454,7 @@ async function loadTrack(track: Track) {
     void cancelTrackDownload(previousUrn).catch(console.error);
   }
   const isNewTrack = currentUrn !== track.urn;
+  if (isNewTrack) resetTastePlaybackTracking(track.urn);
   await stopTrack();
   if (gen !== loadGen) return;
   currentUrn = track.urn;
@@ -449,7 +522,7 @@ async function loadTrack(track: Track) {
         updateMetadata(track, loadResult.duration_secs);
         notify();
       }
-      afterLoad(track, gen);
+      afterLoad(gen);
       setLoadStage('ready');
       return;
     }
@@ -499,7 +572,7 @@ async function loadTrack(track: Track) {
       setDownloadProgress(null);
       usePlayerStore.getState().setPlaybackTransport(streamed.quality, streamed.source);
       console.log('[Audio] Fast stream started:', urn);
-      afterLoad(track, gen);
+      afterLoad(gen);
       setLoadStage('ready');
       return;
     } catch (error) {
@@ -523,37 +596,12 @@ async function loadTrack(track: Track) {
   }
 }
 
-function afterLoad(track: Track, gen: number) {
+function afterLoad(gen: number) {
   if (gen !== loadGen) {
     invoke('audio_stop').catch(console.error);
     return;
   }
   hasTrack = true;
-
-  const historyTrack =
-    usePlayerStore.getState().currentTrack?.urn === track.urn
-      ? usePlayerStore.getState().currentTrack
-      : track;
-
-  // Record to listening history (fire-and-forget), skip on repeat-one (same track looping)
-  if (
-    SEND_BEHAVIORAL_DATA &&
-    historyTrack?.urn &&
-    historyTrack.title &&
-    usePlayerStore.getState().repeat !== 'one'
-  ) {
-    api('/history', {
-      method: 'POST',
-      body: JSON.stringify({
-        scTrackId: historyTrack.urn,
-        title: getDisplayTitle(historyTrack),
-        artistName: getArtistDisplay(historyTrack).primary || historyTrack.user?.username || '',
-        artistUrn: historyTrack.user?.urn || null,
-        artworkUrl: historyTrack.artwork_url || null,
-        duration: historyTrack.duration || 0,
-      }),
-    }).catch(() => {});
-  }
 
   const isPlaying = usePlayerStore.getState().isPlaying;
   invoke(isPlaying ? 'audio_play' : 'audio_pause').catch(console.error);
@@ -638,6 +686,7 @@ const listenNative: typeof listen = hasTauriRuntime ? listen : async () => () =>
 listenNative<number>('audio:tick', (event) => {
   cachedTime = event.payload;
   if (cachedDuration <= 0) cachedDuration = fallbackDuration;
+  noteActualPlayback(event.payload);
   notify();
 });
 
@@ -655,18 +704,55 @@ listenNative('audio:ended', () => {
     // либо проиграно ≥50% длительности (для коротких треков). Иначе это
     // зависшая загрузка / зеро-длительность баг — не отправляем.
     const playedEnough =
-      cachedTime >= SKIP_THRESHOLD_SEC ||
-      (cachedDuration > 0 && cachedTime >= cachedDuration * FULL_PLAY_RATIO);
+      tastePlayedSeconds >= SKIP_THRESHOLD_SEC ||
+      (cachedDuration > 0 && tastePlayedSeconds >= cachedDuration * FULL_PLAY_RATIO);
+    const cluster = takeUrnCluster(currentUrn);
     if (playedEnough) {
       const positionPct = cachedDuration > 0 ? Math.min(1, cachedTime / cachedDuration) : undefined;
-      recordEvent('full_play', currentUrn, positionPct);
-      const cluster = getUrnCluster(currentUrn);
+      recordEvent('full_play', currentUrn, positionPct, usePlayerStore.getState().currentTrack);
       if (cluster) recordClusterFeedback(cluster, 'complete');
     }
     lastEndedUrn = currentUrn;
   }
   hasTrack = false;
   handleTrackEnd();
+});
+
+listenNative<string>('audio:stream-error', (event) => {
+  const track = usePlayerStore.getState().currentTrack;
+  const urn = currentUrn;
+  if (!track || !urn || track.urn !== urn) return;
+
+  const errorText = getLoadErrorText(event.payload) ?? 'stream interrupted';
+  if (streamRetryUrn !== urn) {
+    streamRetryUrn = urn;
+    streamRetryCount = 0;
+  }
+
+  if (streamRetryCount < MAX_STREAM_ERROR_RETRIES) {
+    streamRetryCount += 1;
+    console.warn(
+      `[Audio] stream failed; retrying current track (${streamRetryCount}/${MAX_STREAM_ERROR_RETRIES}):`,
+      errorText,
+    );
+    setLoadStage('retrying');
+    setDownloadProgress(null);
+    void loadTrack(track, { preserveStreamRetry: true });
+    return;
+  }
+
+  // A failed installed stream is not a natural end: never advance the queue.
+  // Leave the same track selected so a manual Play starts a fresh bounded load.
+  console.error('[Audio] stream retry exhausted:', errorText);
+  hasTrack = false;
+  setLoadStage('failed');
+  setDownloadProgress(null);
+  usePlayerStore.getState().setPlaybackTransport(null, null);
+  void invoke('audio_stop').catch(console.error);
+  toast.error(i18n.t('track.loadError'), {
+    description: `${track.title}: ${errorText}`,
+  });
+  usePlayerStore.getState().pause();
 });
 
 listenNative('audio:device-reconnected', () => {
@@ -679,6 +765,35 @@ listenNative<string>('audio:default-device-changed', (event) => {
 
 /* ── Store subscriber ────────────────────────────────────────── */
 
+let volumeSyncTimer: ReturnType<typeof setTimeout> | null = null;
+let rateSyncTimer: ReturnType<typeof setTimeout> | null = null;
+let eqSyncTimer: ReturnType<typeof setTimeout> | null = null;
+
+function scheduleVolumeSync() {
+  if (volumeSyncTimer) return;
+  volumeSyncTimer = setTimeout(() => {
+    volumeSyncTimer = null;
+    invoke('audio_set_volume', { volume: usePlayerStore.getState().volume }).catch(console.error);
+  }, 40);
+}
+
+function scheduleRateSync() {
+  if (rateSyncTimer) return;
+  rateSyncTimer = setTimeout(() => {
+    rateSyncTimer = null;
+    invoke('audio_set_playback_rate', { rate: getEffectivePlaybackRate() }).catch(console.error);
+  }, 40);
+}
+
+function scheduleEqSync() {
+  if (eqSyncTimer) return;
+  eqSyncTimer = setTimeout(() => {
+    eqSyncTimer = null;
+    const { eqEnabled, eqGains } = useSettingsStore.getState();
+    invoke('audio_set_eq', { enabled: eqEnabled, gains: eqGains }).catch(console.error);
+  }, 60);
+}
+
 usePlayerStore.subscribe((state, prev) => {
   const nextUrn = state.currentTrack?.urn ?? null;
   const trackChanged = nextUrn !== currentUrn;
@@ -688,17 +803,21 @@ usePlayerStore.subscribe((state, prev) => {
     const previousUrn = currentUrn;
     const previousTime = cachedTime;
     const previousHadTrack = hasTrack;
+    const previousTastePlayedSeconds = tastePlayedSeconds;
 
     if (
       previousUrn &&
       previousHadTrack &&
-      previousTime < SKIP_THRESHOLD_SEC &&
+      previousTastePlayedSeconds >= MIN_ACTUAL_PLAYBACK_FOR_SKIP_SEC &&
+      previousTastePlayedSeconds < SKIP_THRESHOLD_SEC &&
       previousUrn !== lastEndedUrn
     ) {
       const previousDuration = cachedDuration > 0 ? cachedDuration : fallbackDuration;
-      const positionPct = previousDuration > 0 ? previousTime / previousDuration : undefined;
-      recordEvent('skip', previousUrn, positionPct);
+      const positionPct =
+        previousDuration > 0 ? Math.min(1, previousTime / previousDuration) : undefined;
+      recordEvent('skip', previousUrn, positionPct, prev.currentTrack);
     }
+    if (previousUrn) clearUrnCluster(previousUrn);
     lastEndedUrn = null;
 
     if (state.currentTrack) {
@@ -713,6 +832,7 @@ usePlayerStore.subscribe((state, prev) => {
         cachedDuration = 0;
         cachedTime = 0;
         hasTrack = false;
+        resetTastePlaybackTracking(null);
         usePlayerStore.getState().setPlaybackTransport(null, null);
         notify();
         usePlayerStore.getState().next();
@@ -729,6 +849,7 @@ usePlayerStore.subscribe((state, prev) => {
       currentUrn = null;
       fallbackDuration = 0;
       cachedDuration = 0;
+      resetTastePlaybackTracking(null);
       usePlayerStore.getState().setPlaybackTransport(null, null);
       notify();
     }
@@ -749,7 +870,7 @@ usePlayerStore.subscribe((state, prev) => {
   }
 
   if (state.volume !== prev.volume) {
-    invoke('audio_set_volume', { volume: state.volume }).catch(console.error);
+    scheduleVolumeSync();
   }
 
   if (
@@ -757,7 +878,7 @@ usePlayerStore.subscribe((state, prev) => {
     state.pitchSemitones !== prev.pitchSemitones ||
     state.pitchControlMode !== prev.pitchControlMode
   ) {
-    invoke('audio_set_playback_rate', { rate: getEffectivePlaybackRate() }).catch(console.error);
+    scheduleRateSync();
   }
 
   // A-B loop: only push an active region (both bounds set); otherwise clear it.
@@ -787,7 +908,7 @@ function getEffectivePlaybackRate(): number {
 
 useSettingsStore.subscribe((state, prev) => {
   if (state.eqEnabled !== prev.eqEnabled || state.eqGains !== prev.eqGains) {
-    invoke('audio_set_eq', { enabled: state.eqEnabled, gains: state.eqGains }).catch(console.error);
+    scheduleEqSync();
   }
 
   if (state.normalizeVolume !== prev.normalizeVolume) {

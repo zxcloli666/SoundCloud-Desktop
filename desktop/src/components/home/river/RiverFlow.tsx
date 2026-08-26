@@ -6,6 +6,8 @@
 import React, {useCallback, useMemo, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {api} from '../../../lib/api';
+import {isUrnDisliked, useDislikeVersion} from '../../../lib/dislikes';
+import {isRecommendationTrackPlayable} from '../../../lib/home-recommendations';
 import {Sparkles} from '../../../lib/icons';
 import {isUrnLiked, useLiked} from '../../../lib/likes';
 import {useAuthStore} from '../../../stores/auth';
@@ -65,6 +67,7 @@ export const RiverFlow = React.memo(function RiverFlow({ tint }: { tint?: string
   const setHideListened = useSettingsStore((s) => s.setSoundwaveHideListened);
   const currentTrack = usePlayerStore((s) => s.currentTrack);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const dislikeVersion = useDislikeVersion();
 
   const stableLanguages = useMemo(() => [...selectedLanguages].sort(), [selectedLanguages]);
   const langKey = stableLanguages.join(',') || 'all';
@@ -94,13 +97,18 @@ export const RiverFlow = React.memo(function RiverFlow({ tint }: { tint?: string
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: likesVersion тикает живой isUrnLiked.
   const filteredAllTracks = useMemo(() => {
-    if (!hideLiked) return rawAllTracks;
-    return rawAllTracks.filter((tr) => !tr.user_favorite && !isUrnLiked(tr.urn));
-  }, [rawAllTracks, hideLiked, likesVersion]);
+    void dislikeVersion;
+    return rawAllTracks.filter(
+      (track) =>
+        !isUrnDisliked(track.urn) &&
+        isRecommendationTrackPlayable(track) &&
+        (!hideLiked || (!track.user_favorite && !isUrnLiked(track.urn))),
+    );
+  }, [rawAllTracks, hideLiked, likesVersion, dislikeVersion]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: likesVersion тикает живой isUrnLiked.
   const filteredClusters = useMemo(() => {
-    if (!hideLiked) return rawClusters;
+    void dislikeVersion;
     return rawClusters
       .map((c) => {
         const trackById = new Map<string, Track>();
@@ -110,16 +118,25 @@ export const RiverFlow = React.memo(function RiverFlow({ tint }: { tint?: string
         }
         return {
           ...c,
-          tracks: c.tracks.filter((tr) => !tr.user_favorite && !isUrnLiked(tr.urn)),
+          tracks: c.tracks.filter(
+            (track) =>
+              !isUrnDisliked(track.urn) &&
+              isRecommendationTrackPlayable(track) &&
+              (!hideLiked || (!track.user_favorite && !isUrnLiked(track.urn))),
+          ),
           neighbors: c.neighbors?.filter((n) => {
             const matchTrack = trackById.get(String(n.track_id));
             if (!matchTrack) return true;
-            return !matchTrack.user_favorite && !isUrnLiked(matchTrack.urn);
+            return (
+              !isUrnDisliked(matchTrack.urn) &&
+              isRecommendationTrackPlayable(matchTrack) &&
+              (!hideLiked || (!matchTrack.user_favorite && !isUrnLiked(matchTrack.urn)))
+            );
           }),
         };
       })
       .filter((c) => c.tracks.length > 0) as ClusterHydrated[];
-  }, [rawClusters, hideLiked, likesVersion]);
+  }, [rawClusters, hideLiked, likesVersion, dislikeVersion]);
 
   const clusterById = useMemo(
     () => new Map(filteredClusters.map((c) => [c.id as ClusterId, c])),

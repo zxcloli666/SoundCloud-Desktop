@@ -42,6 +42,12 @@ fn volume_to_rodio(v: f64) -> f32 {
 
 fn stop_current_player(state: &AudioState) {
     suppress_ended_temporarily(state);
+    let stream = state.active_stream.lock().unwrap().take();
+    if let Some(stream) = stream {
+        // Wake a decoder blocked on the progressive buffer before aborting its
+        // producer; aborting the future alone cannot notify the Condvar reader.
+        stream.cancel();
+    }
     if let Some(task) = state.stream_task.lock().unwrap().take() {
         task.abort();
     }
@@ -49,7 +55,6 @@ fn stop_current_player(state: &AudioState) {
     if let Some(old) = player.take() {
         old.stop();
     }
-    *state.active_stream.lock().unwrap() = None;
 }
 
 fn apply_current_rate(state: &AudioState, player: &rodio::Player) {
@@ -219,6 +224,10 @@ pub async fn load_file(
     start_paused: bool,
     state: State<'_, AudioState>,
 ) -> Result<AudioLoadResult, String> {
+    let generation = state.load_gen.load(Ordering::Relaxed);
+    let empty_result = AudioLoadResult {
+        duration_secs: None,
+    };
     let bytes = task::spawn_blocking({
         let path = path.clone();
         move || std::fs::read(&path).map_err(|e| format!("Failed to read {}: {}", path, e))
@@ -226,7 +235,13 @@ pub async fn load_file(
     .await
     .map_err(|e| format!("audio file read task failed: {e}"))??;
 
+    if state.load_gen.load(Ordering::Relaxed) != generation {
+        return Ok(empty_result);
+    }
     stop_current_player(&state);
+    if state.load_gen.load(Ordering::Relaxed) != generation {
+        return Ok(empty_result);
+    }
 
     let mixer = state.mixer.lock().unwrap().clone();
     let vol = *state.volume.lock().unwrap();
@@ -243,6 +258,11 @@ pub async fn load_file(
         state.analyser_buffer.clone(),
     )
     .await?;
+
+    if state.load_gen.load(Ordering::Relaxed) != generation {
+        new_player.stop();
+        return Ok(empty_result);
+    }
 
     commit_loaded_track(&state, bytes, new_player, normalization_gain);
 
@@ -351,6 +371,11 @@ pub async fn load_url(
     )
     .await?;
 
+    if state.load_gen.load(Ordering::Relaxed) != generation {
+        new_player.stop();
+        return Ok(empty_result);
+    }
+
     commit_loaded_track(&state, bytes, new_player, normalization_gain);
 
     Ok(AudioLoadResult { duration_secs })
@@ -382,21 +407,17 @@ pub fn pause(state: State<'_, AudioState>) {
 pub(crate) fn stop_state(state: &AudioState) {
     state.has_track.store(false, Ordering::Relaxed);
     state.load_gen.fetch_add(1, Ordering::Relaxed);
-    if let Ok(mut task) = state.stream_task.try_lock()
-        && let Some(task) = task.take()
-    {
+    let stream = state.active_stream.lock().unwrap().take();
+    if let Some(stream) = stream {
+        stream.cancel();
+    }
+    if let Some(task) = state.stream_task.lock().unwrap().take() {
         task.abort();
     }
-    if let Ok(mut player) = state.player.try_lock()
-        && let Some(old) = player.take() {
-            old.stop();
-        }
-    if let Ok(mut bytes) = state.source_bytes.try_lock() {
-        *bytes = None;
+    if let Some(old) = state.player.lock().unwrap().take() {
+        old.stop();
     }
-    if let Ok(mut stream) = state.active_stream.try_lock() {
-        *stream = None;
-    }
+    *state.source_bytes.lock().unwrap() = None;
 }
 
 pub fn stop(state: State<'_, AudioState>) {

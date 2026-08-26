@@ -11,6 +11,22 @@ import {
 import { useEffect, useMemo, useRef } from 'react';
 import type { Track } from '../stores/player';
 import { api } from './api';
+import {
+  aggregateRelatedCandidates,
+  buildDiscoverGenreGroups,
+  type DiscoverRankOptions,
+  type DiscoverRelatedCandidate,
+  rankDiscoverCandidates,
+  selectDiscoverSeeds,
+} from './discover-recommendations';
+import { isUrnDisliked, useDislikeVersion } from './dislikes';
+import { recordEvent } from './events';
+import {
+  curateHomeRecommendations,
+  type HomeRecommendationFeedback,
+  type HomeRecommendationInput,
+  type HomeRecommendationMode,
+} from './home-recommendations';
 import { initLikedUrns } from './likes';
 import { rememberLikedTracks, rememberTracks } from './offline-index';
 import { fetchRelatedTracks } from './related';
@@ -137,8 +153,8 @@ const SHORT_CACHE_MS = 1000 * 60 * 2;
 const MEDIUM_CACHE_MS = 1000 * 60 * 5;
 const SEARCH_CACHE_MS = 1000 * 60 * 2;
 const INFINITE_GC_MS = 1000 * 60 * 3;
-const RELATED_POOL_SEEDS = 12;
-const RELATED_POOL_CONCURRENCY = 4;
+const RELATED_POOL_SEEDS = 8;
+const RELATED_POOL_CONCURRENCY = 3;
 
 /**
  * Cold-эндпоинты (треки/плейлисты/лайки/фолловинги юзеров, /me/*) живут в
@@ -685,6 +701,7 @@ export function useAddToPlaylist() {
           method: 'POST',
           body: JSON.stringify({ add: urn }),
         });
+        recordEvent('playlist_add', urn);
       }
       return last;
     },
@@ -699,8 +716,12 @@ export function useAddToPlaylist() {
 export function useCreatePlaylist() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (params: { title: string; sharing?: 'public' | 'private'; trackUrns?: string[] }) =>
-      api<Playlist>('/playlists', {
+    mutationFn: async (params: {
+      title: string;
+      sharing?: 'public' | 'private';
+      trackUrns?: string[];
+    }) => {
+      const playlist = await api<Playlist>('/playlists', {
         method: 'POST',
         body: JSON.stringify({
           playlist: {
@@ -711,7 +732,10 @@ export function useCreatePlaylist() {
               : {}),
           },
         }),
-      }),
+      });
+      for (const urn of params.trackUrns ?? []) recordEvent('playlist_add', urn);
+      return playlist;
+    },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['me', 'playlists'] });
     },
@@ -935,9 +959,14 @@ export function useVibeSearch(q: string, opts?: { limit?: number; languages?: st
     queryKey: ['search', 'vibe', q, limit, langs],
     enabled: q.trim().length >= 2,
     staleTime: SEARCH_CACHE_MS,
-    // While the worker is still encoding the query (preparing), poll until the
-    // vector lands and the backend flips to ready.
-    refetchInterval: (q2) => (q2.state.data?.status === 'preparing' ? 2500 : false),
+    // While the worker is encoding, use bounded backoff. An overloaded backend
+    // must not leave a hidden 2.5s poll running forever.
+    refetchInterval: (q2) => {
+      if (q2.state.data?.status !== 'preparing') return false;
+      const attempts = q2.state.dataUpdateCount;
+      if (attempts >= 7) return false;
+      return Math.min(2_500 + Math.max(0, attempts - 1) * 1_500, 10_000);
+    },
     queryFn: ({ signal }) => {
       const usp = new URLSearchParams({ q: q.trim(), limit: String(limit) });
       if (langs) usp.set('languages', langs);
@@ -994,42 +1023,42 @@ export function useFallbackTracks() {
 
 /* ── Discover ──────────────────────────────────────────────────── */
 
-type RelatedPool = Map<string, { count: number; track: Track }>;
-
-function sampleTrackUrns(tracks: Track[], limit: number): string[] {
-  if (tracks.length <= limit) {
-    return tracks.map((track) => track.urn);
-  }
-
-  const sample = tracks.slice(0, limit);
-  for (let i = limit; i < tracks.length; i++) {
-    const swapIndex = Math.floor(Math.random() * (i + 1));
-    if (swapIndex < limit) {
-      sample[swapIndex] = tracks[i];
-    }
-  }
-
-  return sample.map((track) => track.urn);
-}
+type RelatedPool = DiscoverRelatedCandidate[];
 
 /**
- * Shared pool: fetches related tracks for a bounded sample of liked tracks,
- * counts frequency of each related track. Used by both Recommended and Discover.
+ * Related fallback for backends without cluster candidates. Seeds are stable
+ * and taste-stratified; fan-out stays deliberately below browser connection
+ * pressure and only runs when the primary cluster response is unavailable.
  */
-export function useRelatedPool(likedTracks: Track[]) {
-  // Stable seed — compute once when liked tracks first arrive, don't recompute on likes
-  const seedRef = useRef<string[]>([]);
-  if (seedRef.current.length === 0 && likedTracks.length > 0) {
-    seedRef.current = sampleTrackUrns(likedTracks, RELATED_POOL_SEEDS);
-  }
-  const seedUrns = seedRef.current;
+export function useRelatedPool(
+  likedTracks: readonly Track[],
+  recentTracks: readonly Track[] = EMPTY_TRACKS,
+  enabled = true,
+) {
+  const dislikeVersion = useDislikeVersion();
+  const blockedSeedUrns = useMemo(() => {
+    void dislikeVersion;
+    const blocked = new Set<string>();
+    for (const track of [...recentTracks, ...likedTracks]) {
+      if (isUrnDisliked(track.urn)) blocked.add(track.urn);
+    }
+    return blocked;
+  }, [dislikeVersion, likedTracks, recentTracks]);
+  const seeds = useMemo(
+    () =>
+      selectDiscoverSeeds(likedTracks, recentTracks, {
+        limit: RELATED_POOL_SEEDS,
+        blockedUrns: blockedSeedUrns,
+      }),
+    [blockedSeedUrns, likedTracks, recentTracks],
+  );
+  const seedUrns = useMemo(() => seeds.map((track) => track.urn), [seeds]);
 
-  const likedUrns = useMemo(() => new Set(likedTracks.map((t) => t.urn)), [likedTracks]);
-
-  return useQuery({
+  return useQuery<RelatedPool>({
     queryKey: ['discover', 'related-pool', seedUrns],
     queryFn: async ({ signal }) => {
       const results: TrackPage[] = new Array(seedUrns.length);
+      let successfulRequests = 0;
       let cursor = 0;
       const worker = async () => {
         while (cursor < seedUrns.length) {
@@ -1037,6 +1066,7 @@ export function useRelatedPool(likedTracks: Track[]) {
           const index = cursor++;
           try {
             results[index] = await fetchRelatedTracks(seedUrns[index], 20, 0, signal);
+            successfulRequests += 1;
           } catch (error) {
             if (signal.aborted) throw error;
             results[index] = { collection: [], page: 0, page_size: 20, has_more: false };
@@ -1046,85 +1076,143 @@ export function useRelatedPool(likedTracks: Track[]) {
       await Promise.all(
         Array.from({ length: Math.min(RELATED_POOL_CONCURRENCY, seedUrns.length) }, () => worker()),
       );
-
-      const freq: RelatedPool = new Map();
-      for (const res of results) {
-        for (const track of res.collection) {
-          if (likedUrns.has(track.urn)) continue;
-          const entry = freq.get(track.urn);
-          if (entry) entry.count++;
-          else freq.set(track.urn, { count: 1, track });
-        }
+      if (successfulRequests === 0 && seedUrns.length > 0) {
+        throw new Error('all related recommendation requests failed');
       }
-      return freq;
+      return aggregateRelatedCandidates(results.map((result) => result?.collection ?? []));
     },
-    enabled: seedUrns.length > 0,
-    staleTime: 1000 * 60 * 10,
-    gcTime: INFINITE_GC_MS,
+    enabled: enabled && seedUrns.length > 0,
+    staleTime: 1000 * 60 * 15,
+    gcTime: 1000 * 60 * 30,
   });
 }
 
-/** Top related tracks sorted by frequency — "Recommended For You" */
-export function useRecommendedTracks(pool: RelatedPool | undefined, limit = 40) {
-  return useMemo(() => {
-    if (!pool) return [];
-    return [...pool.values()]
-      .sort((a, b) => b.count - a.count)
-      .slice(0, limit)
-      .map((e) => e.track);
-  }, [pool, limit]);
+/** Weighted related tracks with hard eligibility filters and artist-aware MMR. */
+export function useRecommendedTracks(
+  pool: RelatedPool | undefined,
+  limit = 40,
+  options: Omit<DiscoverRankOptions, 'limit'> = {},
+) {
+  const { blockedUrns, excludedUrns, mode } = options;
+  return useMemo(
+    () =>
+      rankDiscoverCandidates(pool ?? [], {
+        blockedUrns,
+        excludedUrns,
+        mode,
+        limit,
+      }),
+    [blockedUrns, excludedUrns, limit, mode, pool],
+  );
 }
 
-/** Related tracks grouped by genre, sorted by frequency — "Discover" */
-export function useDiscoverData(pool: RelatedPool | undefined, likedTracks: Track[]) {
-  const genreRanking = useMemo(() => {
-    const counts = new Map<string, number>();
-    for (const t of likedTracks) {
-      const g = t.genre?.trim().toLowerCase();
-      if (g) counts.set(g, (counts.get(g) ?? 0) + 1);
-    }
-    return [...counts.entries()].sort((a, b) => b[1] - a[1]).map(([g]) => g);
-  }, [likedTracks]);
+/** Evidence-ranked genre groups, including adjacent genres absent from likes. */
+export function useDiscoverData(rankedTracks: readonly Track[], likedTracks: readonly Track[]) {
+  return useMemo(
+    () => buildDiscoverGenreGroups(rankedTracks, likedTracks),
+    [likedTracks, rankedTracks],
+  );
+}
 
-  return useMemo(() => {
-    if (!pool) return [];
+export interface DiscoverFeedOptions {
+  primaryCandidates?: readonly HomeRecommendationInput[];
+  primaryLoading?: boolean;
+  recentTracks?: readonly Track[];
+  mode?: HomeRecommendationMode;
+  feedback?: HomeRecommendationFeedback;
+}
 
-    const byGenre = new Map<string, { count: number; track: Track }[]>();
-    for (const entry of pool.values()) {
-      const g = entry.track.genre?.trim().toLowerCase();
-      if (!g) continue;
-      const arr = byGenre.get(g);
-      if (arr) arr.push(entry);
-      else byGenre.set(g, [entry]);
-    }
-
-    for (const arr of byGenre.values()) {
-      arr.sort((a, b) => b.count - a.count);
-    }
-
-    const result: { genre: string; tracks: Track[] }[] = [];
-    for (const genre of genreRanking) {
-      const entries = byGenre.get(genre);
-      if (!entries || entries.length <= 3) continue;
-      result.push({ genre, tracks: entries.map((e) => e.track) });
-      if (result.length >= 7) break;
-    }
-
-    return result;
-  }, [pool, genreRanking]);
+function recommendationInputTrack(input: HomeRecommendationInput): Track {
+  return 'track' in input && Array.isArray(input.sources) ? input.track : input;
 }
 
 /**
- * Общий related-pool фид: рекомендации + дискавери по жанрам, всё из лайков
- * зрителя. Только данные (без рендера), чтобы полка «Recommended» на Home и
- * призма Discover читали один источник, а не пересобирали пул каждая у себя.
+ * Shared Discover feed. Hydrated cluster candidates are the primary source;
+ * the bounded related fan-out only starts after that source resolves empty.
  */
-export function useDiscoverFeed() {
-  const { tracks: likedTracks } = useLikedTracks(100);
-  const { data: pool, isLoading } = useRelatedPool(likedTracks);
-  const recommended = useRecommendedTracks(pool, 40);
-  const byGenre = useDiscoverData(pool, likedTracks);
-  return { likedTracks, isLoading, recommended, byGenre };
+export function useDiscoverFeed(options: DiscoverFeedOptions = {}) {
+  const dislikeVersion = useDislikeVersion();
+  const likedQuery = useLikedTracks(100);
+  const likedTracks = likedQuery.tracks;
+  const recentTracks: readonly Track[] = options.recentTracks ?? EMPTY_TRACKS;
+  const primaryCandidates: readonly HomeRecommendationInput[] =
+    options.primaryCandidates ?? EMPTY_TRACKS;
+  const mode = options.mode ?? 'similar';
+  const excludedUrns = useMemo(
+    () => new Set([...likedTracks, ...recentTracks].map((track) => track.urn)),
+    [likedTracks, recentTracks],
+  );
+  const primaryTracks = useMemo(
+    () => primaryCandidates.map(recommendationInputTrack),
+    [primaryCandidates],
+  );
+  const primaryBlockedUrns = useMemo(
+    () => {
+      void dislikeVersion;
+      return new Set(
+        primaryTracks.filter((track) => isUrnDisliked(track.urn)).map((track) => track.urn),
+      );
+    },
+    [dislikeVersion, primaryTracks],
+  );
+  const primary = useMemo(
+    () =>
+      curateHomeRecommendations(primaryCandidates, {
+        excludedUrns,
+        blockedUrns: primaryBlockedUrns,
+        likedTracks,
+        recentTracks,
+        mode,
+        feedback: options.feedback,
+        limit: 60,
+      }).filter((track) => !excludedUrns.has(track.urn)),
+    [
+      excludedUrns,
+      likedTracks,
+      mode,
+      options.feedback,
+      primaryBlockedUrns,
+      primaryCandidates,
+      recentTracks,
+    ],
+  );
+  const primaryLoading = options.primaryLoading === true;
+  const relatedQuery = useRelatedPool(
+    likedTracks,
+    recentTracks,
+    !primaryLoading && primary.length === 0,
+  );
+  const fallbackBlockedUrns = useMemo(
+    () => {
+      void dislikeVersion;
+      return new Set(
+        (relatedQuery.data ?? [])
+          .map((candidate) => candidate.track)
+          .filter((track) => isUrnDisliked(track.urn))
+          .map((track) => track.urn),
+      );
+    },
+    [dislikeVersion, relatedQuery.data],
+  );
+  const fallback = useRecommendedTracks(relatedQuery.data, 60, {
+    excludedUrns,
+    blockedUrns: fallbackBlockedUrns,
+    mode,
+  });
+  const recommended = primary.length > 0 ? primary : fallback;
+  const byGenre = useDiscoverData(recommended, likedTracks);
+  const isLoading =
+    likedQuery.isLoading ||
+    primaryLoading ||
+    (primary.length === 0 && relatedQuery.isLoading);
+
+  return {
+    likedTracks,
+    isLoading,
+    recommended,
+    byGenre,
+    source: primary.length > 0 ? ('clusters' as const) : ('related' as const),
+  };
 }
 
 /* ── Infinite scroll ───────────────────────────────────────────── */

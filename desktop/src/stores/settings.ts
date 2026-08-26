@@ -1,7 +1,7 @@
 import { create } from 'zustand';
-import { createJSONStorage, persist } from 'zustand/middleware';
+import { persist } from 'zustand/middleware';
 import type { PerfMode } from '../lib/perf';
-import { tauriStorage } from '../lib/tauri-storage';
+import { createThrottledJsonStorage } from '../lib/tauri-storage';
 
 export type ThemePreset = 'soundcloud' | 'dark' | 'neon' | 'forest' | 'crimson' | 'custom';
 export type StartupPage = 'home' | 'search' | 'library' | 'settings';
@@ -153,6 +153,40 @@ const DEFAULTS = {
   wallhavenApiKey: '',
 };
 
+const partializeSettings = (state: SettingsState) => ({
+  accentColor: state.accentColor,
+  bgPrimary: state.bgPrimary,
+  themePreset: state.themePreset,
+  perfMode: state.perfMode,
+  backgroundImage: state.backgroundImage,
+  backgroundOpacity: state.backgroundOpacity,
+  backgroundDim: state.backgroundDim,
+  backgroundBlur: state.backgroundBlur,
+  glassBlur: state.glassBlur,
+  audioCacheLimitMB: state.audioCacheLimitMB,
+  language: state.language,
+  eqEnabled: state.eqEnabled,
+  eqGains: state.eqGains,
+  eqPreset: state.eqPreset,
+  normalizeVolume: state.normalizeVolume,
+  highQualityStreaming: state.highQualityStreaming,
+  sidebarCollapsed: state.sidebarCollapsed,
+  startupPage: state.startupPage,
+  pinnedPlaylists: state.pinnedPlaylists,
+  discordRpcEnabled: state.discordRpcEnabled,
+  discordRpcMode: state.discordRpcMode,
+  discordRpcShowButton: state.discordRpcShowButton,
+  soundwaveLanguages: state.soundwaveLanguages,
+  soundwaveMode: state.soundwaveMode,
+  soundwaveHideLiked: state.soundwaveHideLiked,
+  soundwaveHideListened: state.soundwaveHideListened,
+  lyricsVisualizer: state.lyricsVisualizer,
+  artistWaveCollapsed: state.artistWaveCollapsed,
+  wallhavenApiKey: state.wallhavenApiKey,
+});
+
+type PersistedSettingsState = ReturnType<typeof partializeSettings>;
+
 export const useSettingsStore = create<SettingsState>()(
   persist(
     (set) => ({
@@ -223,10 +257,13 @@ export const useSettingsStore = create<SettingsState>()(
     }),
     {
       name: 'sc-settings',
-      storage: createJSONStorage(() => tauriStorage),
+      // Sliders (EQ, wallpaper opacity, volume-related settings) may emit dozens
+      // of updates per second. Persist one coalesced snapshot instead of doing a
+      // filesystem IPC write for every pointer move.
+      storage: createThrottledJsonStorage<PersistedSettingsState>(750),
       version: 20,
       migrate: (persistedState, version) => {
-        const prev = (persistedState ?? {}) as Partial<SettingsState> & {
+        const prev = (persistedState ?? {}) as Partial<PersistedSettingsState> & {
           soundwaveDiversity?: number;
         };
         // v13 → v14: diversity-slider (0..1) → toggle ('similar' | 'diverse').
@@ -247,39 +284,9 @@ export const useSettingsStore = create<SettingsState>()(
             ? DEFAULTS.bgPrimary
             : (prev.bgPrimary ?? DEFAULTS.bgPrimary),
           soundwaveMode: prev.soundwaveMode ?? inferredMode,
-        } as SettingsState;
+        } as PersistedSettingsState;
       },
-      partialize: (s) => ({
-        accentColor: s.accentColor,
-        bgPrimary: s.bgPrimary,
-        themePreset: s.themePreset,
-        perfMode: s.perfMode,
-        backgroundImage: s.backgroundImage,
-        backgroundOpacity: s.backgroundOpacity,
-        backgroundDim: s.backgroundDim,
-        backgroundBlur: s.backgroundBlur,
-        glassBlur: s.glassBlur,
-        audioCacheLimitMB: s.audioCacheLimitMB,
-        language: s.language,
-        eqEnabled: s.eqEnabled,
-        eqGains: s.eqGains,
-        eqPreset: s.eqPreset,
-        normalizeVolume: s.normalizeVolume,
-        highQualityStreaming: s.highQualityStreaming,
-        sidebarCollapsed: s.sidebarCollapsed,
-        startupPage: s.startupPage,
-        pinnedPlaylists: s.pinnedPlaylists,
-        discordRpcEnabled: s.discordRpcEnabled,
-        discordRpcMode: s.discordRpcMode,
-        discordRpcShowButton: s.discordRpcShowButton,
-        soundwaveLanguages: s.soundwaveLanguages,
-        soundwaveMode: s.soundwaveMode,
-        soundwaveHideLiked: s.soundwaveHideLiked,
-        soundwaveHideListened: s.soundwaveHideListened,
-        lyricsVisualizer: s.lyricsVisualizer,
-        artistWaveCollapsed: s.artistWaveCollapsed,
-        wallhavenApiKey: s.wallhavenApiKey,
-      }),
+      partialize: partializeSettings,
     },
   ),
 );

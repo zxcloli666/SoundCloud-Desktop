@@ -121,6 +121,7 @@ export const ForgeModule = React.memo(function ForgeModule({
   const { t } = useTranslation();
   const perf = usePerfMode();
   const incoming = status?.incoming ?? 0;
+  const queued = status?.queued ?? 0;
   const transcoding = status?.transcoding ?? 0;
   const clean = status?.clean ?? 0;
   const ffmpeg = status?.ffmpeg ?? 'preparing';
@@ -134,10 +135,10 @@ export const ForgeModule = React.memo(function ForgeModule({
   const log =
     transcoding > 0 && forgingTitle
       ? t('offline.forgeLogActive', { title: forgingTitle })
-      : incoming > 0 && ffmpeg !== 'ready'
+      : queued > 0 && ffmpeg !== 'ready'
         ? t('offline.forgeLogWaiting')
-        : incoming > 0
-          ? t('offline.forgeLogQueued', { count: incoming })
+        : queued > 0
+          ? t('offline.forgeLogQueued', { count: queued })
           : t('offline.forgeLogIdle');
 
   return (
@@ -165,7 +166,7 @@ export const ForgeModule = React.memo(function ForgeModule({
 
       <div className="grid flex-1 content-center grid-cols-[auto_1fr_auto_1fr_auto] items-center gap-4">
         <Station label={t('offline.stRaw')} value={incoming} sub={t('offline.stRawSub')} />
-        <Belt active={incoming > 0 && ffmpeg === 'ready'} warm={false} />
+        <Belt active={queued > 0 && ffmpeg === 'ready'} warm={false} />
         <Station
           label={t('offline.stForge')}
           value={transcoding}

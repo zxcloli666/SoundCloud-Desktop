@@ -1,17 +1,23 @@
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import appIcon from '../../../assets/app-icon.png';
 import { designPreviewTracks, isDesignPreview } from '../../../lib/design-preview';
-import { isUrnDisliked } from '../../../lib/dislikes';
+import { isUrnDisliked, useDislikeVersion } from '../../../lib/dislikes';
 import { art, dur } from '../../../lib/formatters';
-import { curateHomeRecommendations } from '../../../lib/home-recommendations';
+import {
+  curateHomeRecommendations,
+  type HomeRecommendationFeedback,
+  type HomeRecommendationInput,
+} from '../../../lib/home-recommendations';
 import { useHistory, useLikedTracks } from '../../../lib/hooks';
 import { Pause, Play, Plus, RefreshCw } from '../../../lib/icons';
+import { recordClusterFeedback, setUrnCluster } from '../../../lib/recsFeedback';
 import { getArtistDisplay, getDisplayTitle } from '../../../lib/track-display';
 import { useTrackPlay } from '../../../lib/useTrackPlay';
 import { useAuthStore } from '../../../stores/auth';
 import { type Track, usePlayerStore } from '../../../stores/player';
+import { useRecommendationTasteStore } from '../../../stores/recommendation-taste';
 import { useSettingsStore } from '../../../stores/settings';
 import { historyEntryToTrack } from '../../library/history-utils';
 import { LikeButton } from '../../music/LikeButton';
@@ -26,6 +32,30 @@ function uniqueTracks(tracks: Track[]): Track[] {
     return true;
   });
 }
+
+function recommendationTrack(input: HomeRecommendationInput): Track {
+  return 'track' in input && Array.isArray(input.sources) ? input.track : input;
+}
+
+function recommendationCluster(input: HomeRecommendationInput): string | null {
+  if (!('track' in input) || !Array.isArray(input.sources) || input.sources.length === 0) {
+    return null;
+  }
+  let best = input.sources[0];
+  for (let index = 1; index < input.sources.length; index++) {
+    const source = input.sources[index];
+    if (
+      source.rank < best.rank ||
+      (source.rank === best.rank && (source.score ?? Number.NEGATIVE_INFINITY) >
+        (best.score ?? Number.NEGATIVE_INFINITY))
+    ) {
+      best = source;
+    }
+  }
+  return best.clusterId;
+}
+
+type RecommendationPlayHandler = (track: Track) => void;
 
 function trackArtwork(track: Track, size: 't200x200' | 't500x500') {
   const source = track.enrichment?.album?.cover_url || track.artwork_url || track.user.avatar_url;
@@ -62,16 +92,19 @@ const FeaturedRelease = React.memo(function FeaturedRelease({
   queue,
   eyebrow,
   fallbackDescription,
+  onPlay,
 }: {
   track: Track;
   queue: Track[];
   eyebrow: string;
   fallbackDescription: string;
+  onPlay?: RecommendationPlayHandler;
 }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const addToQueue = usePlayerStore((state) => state.addToQueue);
-  const { isThisPlaying, togglePlay } = useTrackPlay(track, queue);
+  const handleNewPlay = useCallback(() => onPlay?.(track), [onPlay, track]);
+  const { isThisPlaying, togglePlay } = useTrackPlay(track, queue, handleNewPlay);
   const artist = getArtistDisplay(track).primary;
   const title = track.enrichment?.album?.title || getDisplayTitle(track);
   const year =
@@ -127,13 +160,16 @@ const FeaturedRelease = React.memo(function FeaturedRelease({
 const RecentCard = React.memo(function RecentCard({
   track,
   queue,
+  onPlay,
 }: {
   track: Track;
   queue: Track[];
+  onPlay?: RecommendationPlayHandler;
 }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { isThisPlaying, togglePlay } = useTrackPlay(track, queue);
+  const handleNewPlay = useCallback(() => onPlay?.(track), [onPlay, track]);
+  const { isThisPlaying, togglePlay } = useTrackPlay(track, queue, handleNewPlay);
   const displayTitle = getDisplayTitle(track);
   const artist = getArtistDisplay(track).primary;
 
@@ -175,13 +211,16 @@ const RecentCard = React.memo(function RecentCard({
 const EditorialTrackRow = React.memo(function EditorialTrackRow({
   track,
   queue,
+  onPlay,
 }: {
   track: Track;
   queue: Track[];
+  onPlay?: RecommendationPlayHandler;
 }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { isThis, isThisPlaying, togglePlay } = useTrackPlay(track, queue);
+  const handleNewPlay = useCallback(() => onPlay?.(track), [onPlay, track]);
+  const { isThis, isThisPlaying, togglePlay } = useTrackPlay(track, queue, handleNewPlay);
   const displayTitle = getDisplayTitle(track);
   const artist = getArtistDisplay(track).primary;
   const album = track.enrichment?.album?.title || track.genre || '—';
@@ -246,13 +285,54 @@ function RecommendationShelfSkeleton() {
   );
 }
 
+interface EditorialRecommendationEpoch {
+  ownerKey: string;
+  sourceUpdatedAt: number;
+  mode: 'similar' | 'diverse';
+  rawRecommendations: HomeRecommendationInput[];
+  likedTracks: Track[];
+  recentTracks: Track[];
+  feedback: HomeRecommendationFeedback;
+  exposureCounts: ReadonlyMap<string, number>;
+  rotationEpoch: number;
+  previousTopUrn?: string;
+  now: number;
+}
+
+interface RecommendationRotationState {
+  ownerKey: string;
+  exposureCounts: ReadonlyMap<string, number>;
+  epoch: number;
+  previousTopUrn?: string;
+}
+
+const EMPTY_EXPOSURE_COUNTS: ReadonlyMap<string, number> = new Map();
+
 export function EditorialHome() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const preview = isDesignPreview();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const recommendationLanguages = useSettingsStore((state) => state.soundwaveLanguages);
+  const hideLiked = useSettingsStore((state) => state.soundwaveHideLiked);
   const hideListened = useSettingsStore((state) => state.soundwaveHideListened);
+  const recommendationMode = useSettingsStore((state) => state.soundwaveMode);
+  const tasteOwnerUrn = useRecommendationTasteStore((state) => state.ownerUrn);
+  const tasteOwnerReady = useRecommendationTasteStore((state) => state.ownerReady);
+  const ownerKey = tasteOwnerReady ? (tasteOwnerUrn ?? 'anonymous') : 'pending';
+  const dislikeVersion = useDislikeVersion();
+  const [rotationState, setRotationState] = useState<RecommendationRotationState>(() => ({
+    ownerKey,
+    exposureCounts: EMPTY_EXPOSURE_COUNTS,
+    epoch: 0,
+  }));
+  const exposureCounts =
+    rotationState.ownerKey === ownerKey
+      ? rotationState.exposureCounts
+      : EMPTY_EXPOSURE_COUNTS;
+  const rotationEpoch = rotationState.ownerKey === ownerKey ? rotationState.epoch : 0;
+  const previousTopUrn =
+    rotationState.ownerKey === ownerKey ? rotationState.previousTopUrn : undefined;
   const likedQuery = useLikedTracks(60, !preview);
   const historyQuery = useHistory(24, !preview);
 
@@ -274,45 +354,162 @@ export function EditorialHome() {
     staleMs: 5 * 60_000,
     gcMs: 30 * 60_000,
   });
+  const refetchRecommendationsQuery = recommendationQuery.refetch;
 
-  const recentTracks = useMemo(
-    () => uniqueTracks(historyQuery.entries.map(historyEntryToTrack)),
-    [historyQuery.entries],
+  const candidateSource = useMemo<HomeRecommendationInput[]>(
+    () => (preview ? designPreviewTracks : (recommendationQuery.data?.candidates ?? [])),
+    [preview, recommendationQuery.data?.candidates],
   );
-  const rawRecommendations = useMemo(
-    () => (preview ? designPreviewTracks : (recommendationQuery.data?.allTracks ?? [])),
-    [preview, recommendationQuery.data?.allTracks],
-  );
+  const rankingEpoch = useMemo<EditorialRecommendationEpoch>(() => {
+    const localTaste = useRecommendationTasteStore.getState();
+    const canUseLocalTaste =
+      !preview &&
+      tasteOwnerReady &&
+      Boolean(tasteOwnerUrn) &&
+      localTaste.ownerReady &&
+      localTaste.ownerUrn === tasteOwnerUrn;
+    return {
+      ownerKey,
+      sourceUpdatedAt: recommendationQuery.dataUpdatedAt,
+      mode: recommendationMode,
+      rawRecommendations: [...candidateSource],
+      likedTracks: [...likedQuery.tracks],
+      recentTracks: uniqueTracks([
+        ...(canUseLocalTaste ? localTaste.recentTracks : []),
+        ...historyQuery.entries.map(historyEntryToTrack),
+      ]),
+      feedback: canUseLocalTaste
+        ? { tracks: localTaste.tracks, clusters: localTaste.clusters }
+        : {},
+      exposureCounts,
+      rotationEpoch,
+      previousTopUrn,
+      now: Date.now(),
+    };
+  }, [
+    candidateSource,
+    exposureCounts,
+    historyQuery.entries,
+    likedQuery.tracks,
+    ownerKey,
+    preview,
+    recommendationMode,
+    recommendationQuery.dataUpdatedAt,
+    rotationEpoch,
+    previousTopUrn,
+    tasteOwnerReady,
+    tasteOwnerUrn,
+  ]);
+  const rawRecommendations = rankingEpoch.rawRecommendations;
+  const recentTracks = rankingEpoch.recentTracks;
+  const likedTracks = rankingEpoch.likedTracks;
   const excludedRecommendationUrns = useMemo(
-    () => new Set([...recentTracks, ...likedQuery.tracks].map((track) => track.urn)),
-    [likedQuery.tracks, recentTracks],
-  );
-  const blockedRecommendationUrns = useMemo(
     () =>
       new Set(
-        rawRecommendations.filter((track) => isUrnDisliked(track.urn)).map((track) => track.urn),
+        [
+          ...(hideListened ? [] : recentTracks),
+          ...(hideLiked ? [] : likedTracks),
+        ].map((track) => track.urn),
       ),
-    [rawRecommendations],
+    [hideLiked, hideListened, likedTracks, recentTracks],
+  );
+  const blockedRecommendationUrns = useMemo(
+    () => {
+      void dislikeVersion;
+      const blocked = new Set<string>();
+      for (const input of rawRecommendations) {
+        const track = recommendationTrack(input);
+        if (isUrnDisliked(track.urn)) blocked.add(track.urn);
+      }
+      if (hideListened) {
+        for (const track of recentTracks) blocked.add(track.urn);
+      }
+      if (hideLiked) {
+        for (const track of likedTracks) blocked.add(track.urn);
+      }
+      return blocked;
+    },
+    [dislikeVersion, hideLiked, hideListened, likedTracks, rawRecommendations, recentTracks],
   );
   const recommendations = useMemo(
     () =>
       curateHomeRecommendations(rawRecommendations, {
         excludedUrns: excludedRecommendationUrns,
         blockedUrns: blockedRecommendationUrns,
+        likedTracks,
+        recentTracks,
+        mode: rankingEpoch.mode,
+        feedback: rankingEpoch.feedback,
+        exposureCounts: rankingEpoch.exposureCounts,
+        rotationEpoch: rankingEpoch.rotationEpoch,
+        previousTopUrn: rankingEpoch.previousTopUrn,
         limit: 20,
+        now: rankingEpoch.now,
       }),
-    [blockedRecommendationUrns, excludedRecommendationUrns, rawRecommendations],
+    [
+      blockedRecommendationUrns,
+      excludedRecommendationUrns,
+      likedTracks,
+      rawRecommendations,
+      recentTracks,
+      rankingEpoch,
+    ],
+  );
+  const recommendationAttribution = useMemo(() => {
+    const attribution = new Map<string, string>();
+    if (preview) return attribution;
+    for (const input of rawRecommendations) {
+      const cluster = recommendationCluster(input);
+      if (cluster) attribution.set(recommendationTrack(input).urn, cluster);
+    }
+    return attribution;
+  }, [preview, rawRecommendations]);
+  const handleRecommendationPlay = useCallback<RecommendationPlayHandler>(
+    (track) => {
+      const cluster = recommendationAttribution.get(track.urn);
+      if (!cluster) return;
+      setUrnCluster(track.urn, cluster);
+      recordClusterFeedback(cluster, 'click');
+    },
+    [recommendationAttribution],
   );
   const allTracks = useMemo(() => {
-    return uniqueTracks([...recommendations, ...recentTracks, ...likedQuery.tracks]);
-  }, [likedQuery.tracks, recentTracks, recommendations]);
+    return uniqueTracks([...recommendations, ...recentTracks, ...likedTracks]);
+  }, [likedTracks, recentTracks, recommendations]);
   const recent = recentTracks.slice(0, 8);
-  const featured = recommendations[0] || recent[0] || likedQuery.tracks[0];
+  const featured = recommendations[0] || recent[0] || likedTracks[0];
   const featuredIsRecommendation = featured?.urn === recommendations[0]?.urn;
   const recommendationStart = featuredIsRecommendation ? 1 : 0;
   const recommendationCards = recommendations.slice(recommendationStart, recommendationStart + 6);
   const tableTracks = recommendations.slice(recommendationStart + 6, recommendationStart + 13);
   const title = timeOfDayTitle(preview ? 23 : new Date().getHours(), t);
+  const refreshRecommendations = useCallback(() => {
+    setRotationState((previousState) => {
+      const nextExposureCounts = new Map(
+        previousState.ownerKey === ownerKey
+          ? previousState.exposureCounts
+          : EMPTY_EXPOSURE_COUNTS,
+      );
+      recommendations.slice(0, 14).forEach((track, index) => {
+        const previous = nextExposureCounts.get(track.urn) ?? 0;
+        const positionWeight = 1 + (14 - index) / 14;
+        nextExposureCounts.delete(track.urn);
+        nextExposureCounts.set(track.urn, Math.min(4, previous + positionWeight));
+      });
+      while (nextExposureCounts.size > 200) {
+        const oldest = nextExposureCounts.keys().next().value;
+        if (typeof oldest !== 'string') break;
+        nextExposureCounts.delete(oldest);
+      }
+      return {
+        ownerKey,
+        exposureCounts: nextExposureCounts,
+        epoch: previousState.ownerKey === ownerKey ? previousState.epoch + 1 : 1,
+        previousTopUrn: recommendations[0]?.urn,
+      };
+    });
+    void refetchRecommendationsQuery();
+  }, [ownerKey, recommendations, refetchRecommendationsQuery]);
   const loading =
     !featured && (likedQuery.isLoading || historyQuery.isLoading || recommendationQuery.isLoading);
   const showRecommendationEmpty =
@@ -320,7 +517,7 @@ export function EditorialHome() {
     !preview &&
     !recommendationQuery.isLoading &&
     recommendations.length === 0 &&
-    (recent.length > 0 || likedQuery.tracks.length > 0);
+    (recent.length > 0 || likedTracks.length > 0);
 
   return (
     <div className="editorial-home">
@@ -340,6 +537,7 @@ export function EditorialHome() {
               ? t('home.editorial.recommendationDescription')
               : t('home.editorial.featuredDescription')
           }
+          onPlay={featuredIsRecommendation ? handleRecommendationPlay : undefined}
         />
       ) : loading ? (
         <EditorialSkeleton />
@@ -373,7 +571,7 @@ export function EditorialHome() {
             {!preview && (
               <button
                 type="button"
-                onClick={() => void recommendationQuery.refetch()}
+                onClick={refreshRecommendations}
                 disabled={recommendationQuery.isFetching}
                 aria-label={t('soundwave.refresh')}
               >
@@ -387,7 +585,12 @@ export function EditorialHome() {
           </header>
           <div className="editorial-recent-grid">
             {recommendationCards.map((track) => (
-              <RecentCard key={track.urn} track={track} queue={recommendations} />
+              <RecentCard
+                key={track.urn}
+                track={track}
+                queue={recommendations}
+                onPlay={handleRecommendationPlay}
+              />
             ))}
           </div>
         </section>
@@ -402,7 +605,7 @@ export function EditorialHome() {
           <button
             type="button"
             className="editorial-recommendation-refresh"
-            onClick={() => void recommendationQuery.refetch()}
+            onClick={refreshRecommendations}
             disabled={recommendationQuery.isFetching}
           >
             <RefreshCw
@@ -444,7 +647,12 @@ export function EditorialHome() {
             <span>{t('home.editorial.time')}</span>
           </div>
           {tableTracks.map((track) => (
-            <EditorialTrackRow key={track.urn} track={track} queue={allTracks} />
+            <EditorialTrackRow
+              key={track.urn}
+              track={track}
+              queue={allTracks}
+              onPlay={handleRecommendationPlay}
+            />
           ))}
         </section>
       )}

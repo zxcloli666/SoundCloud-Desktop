@@ -15,9 +15,13 @@ export interface IndexingStats {
   pending: number;
 }
 
-const SW_STALE_MS = 0;
+// Navigating away and back should reuse the same wave. A new server session on
+// every remount added latency and network contention without improving ranking.
+const SW_STALE_MS = 2 * 60 * 1000;
 const SW_GC_MS = 1000 * 60 * 5;
 const HYDRATE_BATCH_SIZE = 50;
+const HYDRATE_TIMEOUT_MS = 10_000;
+const WAVE_REQUEST_TIMEOUT_MS = 10_000;
 
 interface HydratedTrackPage {
   collection?: Track[];
@@ -54,17 +58,24 @@ export async function hydrateByIds(
     batches.push(ids.slice(offset, offset + HYDRATE_BATCH_SIZE));
   }
 
+  let failedBatches = 0;
   const pages = await Promise.all(
     batches.map((batch) => {
       const encodedIds = encodeURIComponent(batch.join(','));
-      return api<HydratedTrackPage>(`/tracks?ids=${encodedIds}&page=0&limit=${batch.length}`, {
-        signal,
-      }).catch((error) => {
+      return api<HydratedTrackPage>(
+        `/tracks?ids=${encodedIds}&page=0&limit=${batch.length}`,
+        { signal },
+        HYDRATE_TIMEOUT_MS,
+      ).catch((error) => {
         if (signal?.aborted) throw error;
+        failedBatches += 1;
         return { collection: [] } as HydratedTrackPage;
       });
     }),
   );
+  if (failedBatches === batches.length) {
+    throw new Error('recommendation metadata hydration failed');
+  }
 
   const byId = new Map<string, Track>();
   for (const page of pages) {
@@ -127,12 +138,13 @@ export async function fetchSmartWave(opts: {
   // Бэк дефолтит hide_listened=ON; шлём явный флаг только когда он задан.
   if (opts.hideListened !== undefined) qs.set('hide_listened', opts.hideListened ? '1' : '0');
 
-  const payload = await api<SmartWavePayload>(smartWaveUrl(opts.seedKind, opts.seedId, qs), {
-    signal: opts.signal,
-  }).catch((error) => {
-    if (opts.signal?.aborted) throw error;
-    return { tracks: [], cursor: '' } as SmartWavePayload;
-  });
+  // A transport failure is not an empty recommendation set. Let React Query or
+  // the caller expose/fallback from the error instead of caching a fake success.
+  const payload = await api<SmartWavePayload>(
+    smartWaveUrl(opts.seedKind, opts.seedId, qs),
+    { signal: opts.signal },
+    WAVE_REQUEST_TIMEOUT_MS,
+  );
 
   // Don't trust the API shape: a resolved-but-null/garbage body must not crash.
   const ids = Array.isArray(payload?.tracks) ? payload.tracks : [];

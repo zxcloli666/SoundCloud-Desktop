@@ -8,8 +8,9 @@ import { getStaticPort } from './constants';
 import { trackedInvoke as invoke } from './diagnostics';
 
 const WALLPAPERS_DIR = 'wallpapers';
-const CACHE_MAINTENANCE_INTERVAL_MS = 60 * 1000;
+const CACHE_MAINTENANCE_INTERVAL_MS = 15 * 60 * 1000;
 const IMAGE_CACHE_MAINTENANCE_INTERVAL_MS = 30 * 60 * 1000;
+const INITIAL_CACHE_MAINTENANCE_DELAY_MS = 60 * 1000;
 const IMAGE_CACHE_LIMIT_MB = 384;
 const WALLPAPER_FETCH_TIMEOUT_MS = 12_000;
 
@@ -44,9 +45,11 @@ export type FfmpegState = 'ready' | 'preparing' | 'unavailable';
 /** Live snapshot of the А→Б transcode pipeline (Rust `TranscodeStatus`). */
 export interface TranscodeStatus {
   ffmpeg: FfmpegState;
-  /** Raw files staged in folder А, awaiting transcode. */
+  /** Raw playable cache files in folder А (only liked entries are queued for transcode). */
   incoming: number;
   incomingBytes: number;
+  /** Liked raw entries waiting for the single background transcode worker. */
+  queued: number;
   /** Transcodes running right now. */
   transcoding: number;
   /** URNs being forged right now, for per-row UI state. */
@@ -173,12 +176,32 @@ export function setupCacheMaintenance() {
   if (cacheMaintenanceStarted) return;
   cacheMaintenanceStarted = true;
 
-  void enforceAudioCacheLimit();
-  void enforceImageCacheLimit();
+  let lastAudioMaintenance = Date.now();
   let lastImageMaintenance = Date.now();
+
+  const runDueMaintenance = () => {
+    const now = Date.now();
+    if (now - lastAudioMaintenance >= CACHE_MAINTENANCE_INTERVAL_MS) {
+      lastAudioMaintenance = now;
+      void enforceAudioCacheLimit();
+    }
+    if (now - lastImageMaintenance >= IMAGE_CACHE_MAINTENANCE_INTERVAL_MS) {
+      lastImageMaintenance = now;
+      void enforceImageCacheLimit();
+    }
+  };
+
+  // Directory walks are maintenance, not startup work. Delay the first pass so
+  // route data, artwork and audio get uncontested I/O during launch.
+  window.setTimeout(() => {
+    lastAudioMaintenance = 0;
+    lastImageMaintenance = 0;
+    if (document.visibilityState !== 'hidden') runDueMaintenance();
+  }, INITIAL_CACHE_MAINTENANCE_DELAY_MS);
 
   useSettingsStore.subscribe((state, prev) => {
     if (state.audioCacheLimitMB !== prev.audioCacheLimitMB) {
+      lastAudioMaintenance = Date.now();
       void enforceAudioCacheLimit(state.audioCacheLimitMB);
     }
   });
@@ -188,11 +211,7 @@ export function setupCacheMaintenance() {
   const startTimer = () => {
     if (maintenanceTimer !== null) return;
     maintenanceTimer = window.setInterval(() => {
-      void enforceAudioCacheLimit();
-      if (Date.now() - lastImageMaintenance >= IMAGE_CACHE_MAINTENANCE_INTERVAL_MS) {
-        lastImageMaintenance = Date.now();
-        void enforceImageCacheLimit();
-      }
+      runDueMaintenance();
     }, CACHE_MAINTENANCE_INTERVAL_MS);
   };
   const stopTimer = () => {
@@ -204,12 +223,8 @@ export function setupCacheMaintenance() {
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'hidden') {
       stopTimer();
+      runDueMaintenance();
     } else {
-      void enforceAudioCacheLimit();
-      if (Date.now() - lastImageMaintenance >= IMAGE_CACHE_MAINTENANCE_INTERVAL_MS) {
-        lastImageMaintenance = Date.now();
-        void enforceImageCacheLimit();
-      }
       startTimer();
     }
   });

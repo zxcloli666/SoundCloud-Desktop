@@ -1,6 +1,6 @@
 import { create } from 'zustand';
-import { createJSONStorage, persist } from 'zustand/middleware';
-import { tauriStorage } from '../lib/tauri-storage';
+import { persist } from 'zustand/middleware';
+import { createThrottledJsonStorage } from '../lib/tauri-storage';
 
 const MAX_HISTORY = 20;
 
@@ -13,11 +13,12 @@ interface SearchHistoryState {
 
 export const useSearchHistoryStore = create<SearchHistoryState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       queries: [],
       addQuery: (query) => {
         const q = query.trim();
         if (!q) return;
+        if (get().queries[0] === q) return;
         set((s) => ({
           queries: [q, ...s.queries.filter((item) => item !== q)].slice(0, MAX_HISTORY),
         }));
@@ -27,7 +28,7 @@ export const useSearchHistoryStore = create<SearchHistoryState>()(
     }),
     {
       name: 'sc-search-history',
-      storage: createJSONStorage(() => tauriStorage),
+      storage: createThrottledJsonStorage<SearchHistoryState>(1000),
     },
   ),
 );

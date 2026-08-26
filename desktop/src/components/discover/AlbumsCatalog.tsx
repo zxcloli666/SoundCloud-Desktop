@@ -157,7 +157,7 @@ const YearGroup = memo(function YearGroup({
 }) {
   const { t } = useTranslation();
   return (
-    <div className="flex flex-col md:flex-row md:gap-8 gap-4">
+    <div className="deferred-year-group deferred-year-group--albums flex flex-col md:flex-row md:gap-8 gap-4">
       <div className="md:w-[200px] md:shrink-0 flex md:flex-col md:items-end items-center md:sticky md:top-24 self-start">
         <div className="flex items-baseline gap-3 md:flex-col md:items-end md:gap-1 min-w-0 max-w-full">
           <span

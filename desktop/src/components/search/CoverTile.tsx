@@ -1,5 +1,5 @@
 import {Compass, Pause, Play, Sparkles} from 'lucide-react';
-import {memo} from 'react';
+import {memo, useCallback} from 'react';
 import {useTranslation} from 'react-i18next';
 import {preloadTrack} from '../../lib/audio';
 import {
@@ -21,6 +21,7 @@ interface CoverTileProps {
   /** Stable thunk → live play queue, resolved lazily so tile memo isn't broken. */
   getQueue: () => Track[];
   onDive?: (track: Track) => void;
+  onPlay?: (track: Track) => void;
 }
 
 /** Breathing phase seeded from the track's urn (stable across re-weaves), so a
@@ -33,13 +34,14 @@ function breathStyle(urn: string): React.CSSProperties {
   return { animation: `tg-breathe ${dur}s ease-in-out ${delay}s infinite` };
 }
 
-export const CoverTile = memo(function CoverTile({ item, getQueue, onDive }: CoverTileProps) {
+export const CoverTile = memo(function CoverTile({ item, getQueue, onDive, onPlay }: CoverTileProps) {
   const { t } = useTranslation();
   const perf = usePerfMode();
   const { track, kind, matchedLine, hero } = item;
   const displayTitle = useDisplayTitle(track);
   const artistDisplay = useArtistDisplay(track);
-  const { isThis, isThisPlaying, togglePlay } = useTrackPlay(track, getQueue);
+  const handleNewPlay = useCallback(() => onPlay?.(track), [onPlay, track]);
+  const { isThis, isThisPlaying, togglePlay } = useTrackPlay(track, getQueue, handleNewPlay);
   const previewing = useIsPreviewActive(track.urn);
 
   const cover = art(track.artwork_url, hero ? 't500x500' : 't300x300');
@@ -57,7 +59,7 @@ export const CoverTile = memo(function CoverTile({ item, getQueue, onDive }: Cov
 
   return (
     <div
-      className={`tg-tile group relative${kind === 'vibe' ? ' tg-vibe' : ''}`}
+      className={`tg-tile deferred-search-tile group relative${kind === 'vibe' ? ' tg-vibe' : ''}`}
       style={{
         gridColumn: span,
         gridRow: span,
@@ -243,5 +245,17 @@ export const CoverTile = memo(function CoverTile({ item, getQueue, onDive }: Cov
         )}
       </div>
     </div>
+  );
+}, (previous, next) => {
+  const before = previous.item;
+  const after = next.item;
+  return (
+    previous.getQueue === next.getQueue &&
+    previous.onDive === next.onDive &&
+    previous.onPlay === next.onPlay &&
+    before.track === after.track &&
+    before.kind === after.kind &&
+    before.hero === after.hero &&
+    before.matchedLine === after.matchedLine
   );
 });

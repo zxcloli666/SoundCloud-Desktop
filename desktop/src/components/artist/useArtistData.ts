@@ -37,11 +37,11 @@ export function useArtistTracks(
   });
 }
 
-export function useArtistCovers(id: string | undefined) {
+export function useArtistCovers(id: string | undefined, limit = 80) {
   return useQuery({
-    queryKey: ['artist', id, 'covers'],
+    queryKey: ['artist', id, 'covers', limit],
     queryFn: ({ signal }) =>
-      api<{ collection: Track[] }>(`/artists/${encodeURIComponent(id!)}/covers?limit=80`, {
+      api<{ collection: Track[] }>(`/artists/${encodeURIComponent(id!)}/covers?limit=${limit}`, {
         signal,
       }),
     enabled: !!id,

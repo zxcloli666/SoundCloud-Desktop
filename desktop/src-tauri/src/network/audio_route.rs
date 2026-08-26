@@ -16,6 +16,7 @@ use super::edge::{self, Hop};
 
 const HEDGE_DELAY: Duration = Duration::from_millis(300);
 const REQUEST_TIMEOUT: Duration = Duration::from_secs(6);
+const MAX_AUDIO_ROUTE_HOPS: usize = 3;
 
 type Attempt = Pin<
     Box<dyn Future<Output = (Hop, Result<Response, String>)> + Send + 'static>,
@@ -36,12 +37,12 @@ async fn get_from_hops(
     hedge_delay: Duration,
 ) -> Result<(Response, Hop), String> {
     let mut attempts = FuturesUnordered::<Attempt>::new();
-    for (index, hop) in hops.into_iter().enumerate() {
+    for (index, hop) in bounded_hops(hops).into_iter().enumerate() {
         let client = client.clone();
         let session_id = session_id.map(str::to_string);
         attempts.push(Box::pin(async move {
             if index > 0 {
-                tokio::time::sleep(hedge_delay).await;
+                tokio::time::sleep(hedge_delay.saturating_mul(index as u32)).await;
             }
             let mut request = client.get(&hop.url);
             if let Some(session_id) = session_id {
@@ -80,12 +81,42 @@ async fn get_from_hops(
     })
 }
 
+/// Keep the preferred route, its opposite tier and one spare. Relay pools may
+/// contain many nodes, but racing all of them for every play request multiplies
+/// TLS/HTTP work without materially improving the common case.
+fn bounded_hops(hops: Vec<Hop>) -> Vec<Hop> {
+    let Some(first) = hops.first() else {
+        return Vec::new();
+    };
+    if hops.len() <= MAX_AUDIO_ROUTE_HOPS {
+        return hops;
+    }
+
+    let mut selected = Vec::with_capacity(MAX_AUDIO_ROUTE_HOPS);
+    selected.push(first.clone());
+
+    if let Some(alternate) = hops.iter().skip(1).find(|hop| hop.tier != first.tier) {
+        selected.push(alternate.clone());
+    }
+
+    for hop in hops.iter().skip(1) {
+        if selected.len() >= MAX_AUDIO_ROUTE_HOPS {
+            break;
+        }
+        if selected.iter().all(|selected_hop| selected_hop.url != hop.url) {
+            selected.push(hop.clone());
+        }
+    }
+
+    selected
+}
+
 #[cfg(test)]
 mod tests {
     use std::convert::Infallible;
     use std::time::{Duration, Instant};
 
-    use super::get_from_hops;
+    use super::{bounded_hops, get_from_hops};
     use crate::network::edge::{Hop, Tier};
     use warp::Filter;
 
@@ -127,5 +158,38 @@ mod tests {
         assert_eq!(hop.tier, Tier::Relay);
         assert_eq!(response.text().await.unwrap(), "fast");
         assert!(started.elapsed() < Duration::from_secs(1));
+    }
+
+    #[test]
+    fn route_fan_out_is_bounded_and_keeps_both_tiers() {
+        let hops = vec![
+            Hop {
+                url: "relay-1".into(),
+                tier: Tier::Relay,
+                origin: String::new(),
+            },
+            Hop {
+                url: "relay-2".into(),
+                tier: Tier::Relay,
+                origin: String::new(),
+            },
+            Hop {
+                url: "relay-3".into(),
+                tier: Tier::Relay,
+                origin: String::new(),
+            },
+            Hop {
+                url: "direct".into(),
+                tier: Tier::Direct,
+                origin: String::new(),
+            },
+        ];
+
+        let selected = bounded_hops(hops);
+        assert_eq!(selected.len(), 3);
+        assert_eq!(selected[0].url, "relay-1");
+        assert_eq!(selected[1].url, "direct");
+        assert!(selected.iter().any(|hop| hop.tier == Tier::Relay));
+        assert!(selected.iter().any(|hop| hop.tier == Tier::Direct));
     }
 }

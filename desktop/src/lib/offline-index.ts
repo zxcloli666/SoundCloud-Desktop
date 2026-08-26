@@ -3,6 +3,8 @@ import type {Track} from '../stores/player';
 
 const BASE_DIR = BaseDirectory.AppData;
 const INDEX_PATH = 'offline-index.json';
+const MAX_REMEMBERED_TRACKS = 2500;
+const PERSIST_DELAY_MS = 900;
 
 interface OfflineIndex {
   likedUrns: string[];
@@ -21,7 +23,8 @@ const EMPTY_INDEX: OfflineIndex = {
 
 let indexCache: OfflineIndex | null = null;
 let loadPromise: Promise<OfflineIndex> | null = null;
-let persistTimer: ReturnType<typeof setTimeout> | null = null;
+let cancelScheduledPersist: (() => void) | null = null;
+let writeChain = Promise.resolve();
 let dirReady: Promise<void> | null = null;
 
 function ensureDir() {
@@ -36,6 +39,28 @@ function cloneTrack(track: Track): Track {
     ...track,
     user: { ...track.user },
   };
+}
+
+function trackChanged(previous: Track | undefined, next: Track): boolean {
+  if (!previous) return true;
+  // Metadata objects arrive as new references on every request. A structural
+  // comparison is still far cheaper than serialising and rewriting the entire
+  // offline index when the actual track did not change.
+  return JSON.stringify(previous) !== JSON.stringify(next);
+}
+
+function pruneTrackIndex(index: OfflineIndex): void {
+  const keys = Object.keys(index.tracksByUrn);
+  if (keys.length <= MAX_REMEMBERED_TRACKS) return;
+
+  const protectedUrns = new Set([...index.likedUrns, ...index.cacheOrder]);
+  let removeCount = keys.length - MAX_REMEMBERED_TRACKS;
+  for (const urn of keys) {
+    if (removeCount <= 0) break;
+    if (protectedUrns.has(urn)) continue;
+    delete index.tracksByUrn[urn];
+    removeCount--;
+  }
 }
 
 async function readIndexFile(): Promise<OfflineIndex> {
@@ -78,19 +103,32 @@ async function loadIndex(): Promise<OfflineIndex> {
   return loadPromise;
 }
 
+function persistSnapshot() {
+  cancelScheduledPersist?.();
+  cancelScheduledPersist = null;
+  if (!indexCache) return;
+
+  pruneTrackIndex(indexCache);
+  const snapshot = JSON.stringify(indexCache);
+  writeChain = writeChain
+    .then(() => ensureDir())
+    .then(() => writeTextFile(INDEX_PATH, snapshot, { baseDir: BASE_DIR }))
+    .catch(() => {});
+}
+
 function schedulePersist() {
-  if (persistTimer) {
-    clearTimeout(persistTimer);
+  cancelScheduledPersist?.();
+
+  if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+    const handle = window.requestIdleCallback(() => persistSnapshot(), {
+      timeout: PERSIST_DELAY_MS * 2,
+    });
+    cancelScheduledPersist = () => window.cancelIdleCallback(handle);
+    return;
   }
 
-  persistTimer = setTimeout(() => {
-    persistTimer = null;
-    if (!indexCache) return;
-
-    void ensureDir().then(() =>
-      writeTextFile(INDEX_PATH, JSON.stringify(indexCache), { baseDir: BASE_DIR }).catch(() => {}),
-    );
-  }, 120);
+  const handle = setTimeout(persistSnapshot, PERSIST_DELAY_MS);
+  cancelScheduledPersist = () => clearTimeout(handle);
 }
 
 export async function rememberTracks(tracks: Track[]) {
@@ -101,6 +139,10 @@ export async function rememberTracks(tracks: Track[]) {
 
   for (const track of tracks) {
     if (!track?.urn) continue;
+    if (!trackChanged(index.tracksByUrn[track.urn], track)) continue;
+    // Reinsert changed tracks at the end so object insertion order doubles as
+    // a cheap LRU signal for bounded pruning.
+    delete index.tracksByUrn[track.urn];
     index.tracksByUrn[track.urn] = cloneTrack(track);
     changed = true;
   }
@@ -112,14 +154,25 @@ export async function rememberTracks(tracks: Track[]) {
 
 export async function rememberLikedTracks(tracks: Track[]) {
   const index = await loadIndex();
+  let changed = false;
   for (const track of tracks) {
     if (!track?.urn) continue;
+    if (!trackChanged(index.tracksByUrn[track.urn], track)) continue;
+    delete index.tracksByUrn[track.urn];
     index.tracksByUrn[track.urn] = cloneTrack(track);
+    changed = true;
   }
 
-  index.likedUrns = tracks.map((track) => track.urn);
-  index.updatedAt = Date.now();
-  schedulePersist();
+  const likedUrns = tracks.map((track) => track.urn);
+  const likedChanged =
+    likedUrns.length !== index.likedUrns.length ||
+    likedUrns.some((urn, indexPosition) => urn !== index.likedUrns[indexPosition]);
+  if (likedChanged) {
+    index.likedUrns = likedUrns;
+    index.updatedAt = Date.now();
+    changed = true;
+  }
+  if (changed) schedulePersist();
 }
 
 export async function getOfflineLikedTracks() {
@@ -148,6 +201,21 @@ export async function getCacheOrder(): Promise<string[]> {
 
 export async function saveCacheOrder(urns: string[]) {
   const index = await loadIndex();
+  if (
+    urns.length === index.cacheOrder.length &&
+    urns.every((urn, indexPosition) => urn === index.cacheOrder[indexPosition])
+  ) {
+    return;
+  }
   index.cacheOrder = urns;
   schedulePersist();
+}
+
+if (typeof document !== 'undefined') {
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden' && cancelScheduledPersist) persistSnapshot();
+  });
+  window.addEventListener('beforeunload', () => {
+    if (cancelScheduledPersist) persistSnapshot();
+  });
 }

@@ -6,13 +6,53 @@ const INVOKE_WARN_MS = 1500;
 const ASYNC_WARN_MS = 2500;
 
 let watchdogStarted = false;
+const LOG_BATCH_DELAY_MS = 750;
+const LOG_BATCH_CAP = 80;
+
+interface DiagnosticLogEntry {
+  level: 'INFO' | 'WARN' | 'ERROR';
+  message: string;
+}
+
+let pendingLogs: DiagnosticLogEntry[] = [];
+let logFlushTimer: ReturnType<typeof setTimeout> | null = null;
+let logFlushChain: Promise<void> = Promise.resolve();
 
 function roundMs(value: number) {
   return Math.round(value);
 }
 
-function writeLog(level: 'INFO' | 'WARN' | 'ERROR', message: string) {
-  void coreInvoke('diagnostics_log', { level, message }).catch(() => undefined);
+function flushLogs() {
+  if (logFlushTimer) {
+    clearTimeout(logFlushTimer);
+    logFlushTimer = null;
+  }
+  if (pendingLogs.length === 0) return;
+  const entries = pendingLogs;
+  pendingLogs = [];
+  logFlushChain = logFlushChain
+    .catch(() => undefined)
+    .then(() => coreInvoke('diagnostics_log_batch', { entries }))
+    .then(
+      () => undefined,
+      () => undefined,
+    );
+}
+
+function writeLog(level: DiagnosticLogEntry['level'], message: string) {
+  pendingLogs.push({ level, message });
+  if (pendingLogs.length >= LOG_BATCH_CAP) {
+    flushLogs();
+    return;
+  }
+  if (!logFlushTimer) logFlushTimer = setTimeout(flushLogs, LOG_BATCH_DELAY_MS);
+}
+
+if (typeof document !== 'undefined') {
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') flushLogs();
+  });
+  window.addEventListener('beforeunload', flushLogs);
 }
 
 export function logInfo(message: string) {

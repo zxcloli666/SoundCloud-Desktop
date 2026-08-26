@@ -1,4 +1,4 @@
-import {memo, useEffect, useLayoutEffect, useMemo, useRef, useState} from 'react';
+import {memo, useEffect, useLayoutEffect, useRef, useState} from 'react';
 import type {Track} from '../../stores/player';
 import {InfiniteSentinel} from '../discover/InfiniteSentinel';
 import {CoverTile} from './CoverTile';
@@ -14,17 +14,12 @@ interface WallProps {
     isFetchingMore?: boolean;
     onLoadMore?: () => void;
     onDive?: (track: Track) => void;
+    onPlay?: (track: Track) => void;
 }
 
 const GAP = 12;
 const MIN_COLS = 2;
 const MAX_COLS = 10;
-/** Retained-tile cap: infinite scroll appends without bound, so window the DOM to
- *  the most recent tiles, capping DOM nodes / decoded images / memory. A leading
- *  spacer holds the grid rows the dropped tiles occupied so the visible layout and
- *  scroll position don't shift. */
-const RETAIN_CAP = 150;
-
 /** Target tile edge scales with the viewport — bigger tiles on big screens. */
 function targetFor(width: number): number {
     if (width >= 2200) return 252;
@@ -47,8 +42,8 @@ function computeGrid(width: number): { columns: number; cellPx: number } {
 /* The wall: one deterministic packed mosaic of square tiles. Columns + cell size
  * come from a ResizeObserver; grid-auto-rows is a fixed px height so a tile can
  * never collapse (even mid-image-load), and grid-auto-flow:dense slots the seeded
- * 2×2 heroes into the rhythm. The DOM is bounded by RETAIN_CAP, so every retained
- * tile renders. */
+ * 2×2 heroes into the rhythm. Off-screen tiles use content-visibility so early
+ * results stay reachable without paying their paint cost on every scroll frame. */
 export const Wall = memo(function Wall({
                                            items,
                                            getQueue,
@@ -57,6 +52,7 @@ export const Wall = memo(function Wall({
                                            isFetchingMore,
                                            onLoadMore,
                                            onDive,
+                                           onPlay,
                                        }: WallProps) {
     const ref = useRef<HTMLDivElement | null>(null);
     const fillAtRef = useRef(-1);
@@ -78,18 +74,6 @@ export const Wall = memo(function Wall({
     }, []);
 
     const showSkeleton = isLoading && items.length === 0;
-
-    // Window to the most recent RETAIN_CAP tiles; estimate the grid rows the dropped
-    // leading tiles consumed (heroes = 4 cells, others = 1) and reserve them with a
-    // full-width spacer so packed tiles below keep their position. Off by a hero or
-    // two vs. dense-flow exact packing, but it pins scroll and bounds the DOM.
-    const {visible, spacerRows} = useMemo(() => {
-        if (items.length <= RETAIN_CAP) return {visible: items, spacerRows: 0};
-        const start = items.length - RETAIN_CAP;
-        let cells = 0;
-        for (let i = 0; i < start; i++) cells += items[i].hero ? 4 : 1;
-        return {visible: items.slice(start), spacerRows: Math.ceil(cells / columns)};
-    }, [items, columns]);
 
     // A grid change (resize → more/taller cells) can re-open empty space below the
     // last page. Clear the "grew nothing" latch so auto-fill re-evaluates instead
@@ -141,14 +125,15 @@ export const Wall = memo(function Wall({
                         />
                     ))
                 ) : (
-                    <>
-                        {spacerRows > 0 && (
-                            <div aria-hidden style={{gridColumn: '1 / -1', gridRow: `span ${spacerRows}`}}/>
-                        )}
-                        {visible.map((item) => (
-                            <CoverTile key={trackKey(item)} item={item} getQueue={getQueue} onDive={onDive}/>
-                        ))}
-                    </>
+                    items.map((item) => (
+                        <CoverTile
+                            key={trackKey(item)}
+                            item={item}
+                            getQueue={getQueue}
+                            onDive={onDive}
+                            onPlay={onPlay}
+                        />
+                    ))
                 )}
             </div>
 

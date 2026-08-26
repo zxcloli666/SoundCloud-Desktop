@@ -179,6 +179,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             network::server::get_server_ports,
             app::diagnostics::diagnostics_log,
+            app::diagnostics::diagnostics_log_batch,
             discord::discord_connect,
             discord::discord_disconnect,
             discord::discord_set_activity,
@@ -196,6 +197,7 @@ pub fn run() {
             audio::audio_get_position,
             audio::audio_set_eq,
             audio::audio_set_normalization,
+            audio::audio_set_analyser_enabled,
             audio::audio_is_playing,
             audio::audio_set_metadata,
             audio::audio_set_playback_state,

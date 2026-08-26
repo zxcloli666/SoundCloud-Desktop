@@ -1,11 +1,14 @@
 use std::fs::{self, OpenOptions};
 use std::io::Write;
+use std::sync::{Mutex, OnceLock};
 
 use chrono::Local;
-use crate::rt::AppHandle;
 use tauri::Manager;
 
+use crate::rt::AppHandle;
+
 const LOG_FILE_NAME: &str = "desktop.log";
+static LOG_WRITE_LOCK: OnceLock<Mutex<()>> = OnceLock::new();
 
 fn log_file_path(app: &AppHandle) -> Result<std::path::PathBuf, String> {
     let dir = app
@@ -17,6 +20,10 @@ fn log_file_path(app: &AppHandle) -> Result<std::path::PathBuf, String> {
 }
 
 fn append_log_line(app: &AppHandle, line: &str) -> Result<(), String> {
+    let _write_guard = LOG_WRITE_LOCK
+        .get_or_init(|| Mutex::new(()))
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
     let path = log_file_path(app)?;
     let mut file = OpenOptions::new()
         .create(true)
@@ -53,6 +60,56 @@ pub fn mark_session_started(app: &AppHandle) {
 #[tauri::command]
 pub fn diagnostics_log(app: AppHandle, level: String, message: String) -> Result<(), String> {
     append_log_line(&app, &format_log_line(&level, &message))
+}
+
+#[derive(serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DiagnosticLogEntry {
+    level: String,
+    message: String,
+}
+
+/// Flush a frontend log burst with a single open/write cycle. Slow network
+/// fan-outs used to invoke `diagnostics_log` for every warning and repeatedly
+/// open the same file, adding I/O pressure exactly while the app was struggling.
+#[tauri::command]
+pub async fn diagnostics_log_batch(
+    app: AppHandle,
+    entries: Vec<DiagnosticLogEntry>,
+) -> Result<(), String> {
+    if entries.is_empty() {
+        return Ok(());
+    }
+
+    let dir = app
+        .path()
+        .app_log_dir()
+        .map_err(|e| format!("failed to resolve app log dir: {e}"))?;
+    let lines: Vec<String> = entries
+        .into_iter()
+        .map(|entry| format_log_line(&entry.level, &entry.message))
+        .collect();
+
+    tokio::task::spawn_blocking(move || {
+        let _write_guard = LOG_WRITE_LOCK
+            .get_or_init(|| Mutex::new(()))
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        fs::create_dir_all(&dir).map_err(|e| format!("failed to create app log dir: {e}"))?;
+        let path = dir.join(LOG_FILE_NAME);
+        let mut file = OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(&path)
+            .map_err(|e| format!("failed to open log file: {e}"))?;
+
+        for line in lines {
+            writeln!(file, "{line}").map_err(|e| format!("failed to write log file: {e}"))?;
+        }
+        Ok(())
+    })
+    .await
+    .map_err(|e| format!("diagnostics log task failed: {e}"))?
 }
 
 #[cfg(target_os = "linux")]

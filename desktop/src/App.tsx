@@ -11,6 +11,11 @@ import { isDesignPreview } from './lib/design-preview';
 import { usePerfMode } from './lib/perf';
 import { getAppMode, useAppMode, useAppStatusStore } from './stores/app-status';
 import { useAuthStore } from './stores/auth';
+import {
+  resetRecommendationTaste,
+  setRecommendationTasteOwner,
+  setRecommendationTasteOwnerPending,
+} from './stores/recommendation-taste';
 import { type StartupPage, useSettingsStore } from './stores/settings';
 import { useYmImportStore } from './stores/ym-import';
 
@@ -80,10 +85,11 @@ export default function App() {
   const designPreview = isDesignPreview();
   const perf = usePerfMode();
   const toastBlur = perf.blur(20);
-  const { isAuthenticated, hasSession, fetchUser } = useAuthStore(
+  const { isAuthenticated, hasSession, userUrn, fetchUser } = useAuthStore(
     useShallow((s) => ({
       isAuthenticated: s.isAuthenticated,
       hasSession: s.hasSession,
+      userUrn: s.user?.urn ?? null,
       fetchUser: s.fetchUser,
     })),
   );
@@ -145,14 +151,50 @@ export default function App() {
       useAuthStore.setState({ isAuthenticated: true });
     });
 
-    void import('./lib/dislikes').then(({ loadAllDislikedIds }) => {
-      if (!cancelled) void loadAllDislikedIds();
-    });
-
     return () => {
       cancelled = true;
     };
   }, [appMode, designPreview, fetchUser, hasSession]);
+
+  useEffect(() => {
+    if (designPreview) return;
+    let cancelled = false;
+
+    if (!hasSession) {
+      resetRecommendationTaste();
+      void Promise.all([import('./lib/dislikes'), import('./lib/likes')]).then(
+        ([dislikes, likes]) => {
+          if (cancelled) return;
+          dislikes.setDislikeAccount(null);
+          likes.setLikeAccount(null);
+        },
+      );
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    if (!userUrn) {
+      // The session token is known, but /me has not identified its owner yet.
+      // Keep persisted taste hidden rather than briefly showing another account.
+      setRecommendationTasteOwnerPending();
+      return;
+    }
+
+    setRecommendationTasteOwner(userUrn);
+    void Promise.all([import('./lib/dislikes'), import('./lib/likes')]).then(
+      ([dislikes, likes]) => {
+        if (cancelled) return;
+        dislikes.setDislikeAccount(userUrn);
+        likes.setLikeAccount(userUrn);
+        void dislikes.loadAllDislikedIds();
+      },
+    );
+
+    return () => {
+      cancelled = true;
+    };
+  }, [designPreview, hasSession, userUrn]);
 
   return (
     <ThemeProvider>

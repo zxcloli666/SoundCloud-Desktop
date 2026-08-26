@@ -8,7 +8,9 @@ pub const EQ_FREQS: [f64; EQ_BANDS] = [
     32.0, 64.0, 125.0, 250.0, 500.0, 1000.0, 2000.0, 4000.0, 8000.0, 16000.0,
 ];
 pub const EQ_Q: f64 = 1.414;
-pub const NORMALIZATION_ANALYSIS_SAMPLES: usize = 48_000 * 2 * 30;
+// Eight seconds is enough for stable gated loudness while keeping a first
+// uncached play responsive. The previous 30-second pre-decode blocked startup.
+pub const NORMALIZATION_ANALYSIS_SAMPLES: usize = 48_000 * 2 * 8;
 pub const NORMALIZATION_BLOCK_SAMPLES: usize = 48_000 * 2 / 2;
 pub const NORMALIZATION_TARGET_RMS: f64 = 0.14;
 pub const NORMALIZATION_TARGET_PEAK: f64 = 0.95;

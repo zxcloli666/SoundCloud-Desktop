@@ -1,9 +1,10 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useInfiniteScroll, useMyLikedPlaylists, useMyPlaylists } from '../../lib/hooks';
 import { Loader2 } from '../../lib/icons';
 import { PlaylistCard } from '../music/PlaylistCard';
 import { VirtualGrid } from '../ui/VirtualGrid';
+import { useBoundedFilterPages } from './useBoundedFilterPages';
 
 export const PlaylistsTab = React.memo(function PlaylistsTab({ filter }: { filter: string }) {
   const { t } = useTranslation();
@@ -31,13 +32,27 @@ export const PlaylistsTab = React.memo(function PlaylistsTab({ filter }: { filte
     ? likedPlaylistsQuery.fetchNextPage
     : myPlaylistsQuery.fetchNextPage;
   const sentinelRef = useInfiniteScroll(!!hasNextPage, !!isFetchingNextPage, fetchNextPage);
-
-  // Auto-fetch remaining pages when filtering
-  useEffect(() => {
-    if (filter && hasNextPage && !isFetchingNextPage) {
-      fetchNextPage();
-    }
-  }, [filter, hasNextPage, isFetchingNextPage, fetchNextPage]);
+  // This tab has two independent collections. One bounded page from each keeps
+  // the whole filter generation at no more than two automatic requests.
+  const isFilteringCreated = useBoundedFilterPages(
+    filter,
+    filteredCreated.length,
+    myPlaylistsQuery.hasNextPage,
+    myPlaylistsQuery.isLoading,
+    myPlaylistsQuery.isFetchingNextPage,
+    myPlaylistsQuery.fetchNextPage,
+    1,
+  );
+  const isFilteringLiked = useBoundedFilterPages(
+    filter,
+    filteredLiked.length,
+    likedPlaylistsQuery.hasNextPage,
+    likedPlaylistsQuery.isLoading,
+    likedPlaylistsQuery.isFetchingNextPage,
+    likedPlaylistsQuery.fetchNextPage,
+    1,
+  );
+  const isFilteringMore = isFilteringCreated || isFilteringLiked;
 
   return (
     <div className="min-h-[400px]">
@@ -93,15 +108,23 @@ export const PlaylistsTab = React.memo(function PlaylistsTab({ filter }: { filte
         {!myPlaylistsQuery.isLoading &&
           !likedPlaylistsQuery.isLoading &&
           filteredCreated.length === 0 &&
-          filteredLiked.length === 0 && (
+          filteredLiked.length === 0 &&
+          !isFilteringMore && (
             <div className="py-20 text-center text-white/20">
-              {filter ? t('library.noMatches') : t('library.noPlaylists')}
+              {filter
+                ? t(hasNextPage ? 'library.noMatchesLoaded' : 'library.noMatches')
+                : t('library.noPlaylists')}
             </div>
           )}
       </div>
       {!filter && (
         <div ref={sentinelRef} className="h-12 flex items-center justify-center mt-4">
           {isFetchingNextPage && <Loader2 size={20} className="text-white/15 animate-spin" />}
+        </div>
+      )}
+      {filter && isFilteringMore && (
+        <div className="h-12 flex items-center justify-center mt-4">
+          <Loader2 size={20} className="text-white/15 animate-spin" />
         </div>
       )}
     </div>

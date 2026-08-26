@@ -1,4 +1,4 @@
-import { memo, useCallback, useState } from 'react';
+import { lazy, memo, Suspense, useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { AlbumsCatalog } from '../components/discover/AlbumsCatalog';
@@ -11,6 +11,11 @@ import { useViewerAura } from '../lib/useViewerAura';
 type DiscoverTabId = 'albums' | 'artists';
 
 const SEARCH_DEBOUNCE_MS = 220;
+const DiscoverPrism = lazy(() =>
+  import('../components/discover/DiscoverPrism').then((module) => ({
+    default: module.DiscoverPrism,
+  })),
+);
 
 export const Discover = memo(function Discover() {
   const { t } = useTranslation();
@@ -53,6 +58,12 @@ export const Discover = memo(function Discover() {
             {t('discover.surpriseMe')}
           </button>
         </header>
+
+        {!query.trim() ? (
+          <Suspense fallback={<div className="min-h-24" aria-hidden="true" />}>
+            <DiscoverPrism />
+          </Suspense>
+        ) : null}
 
         <div className="sonveil-page-toolbar">
           <nav className="sonveil-page-tabs" aria-label={t('discover.title')}>

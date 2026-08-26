@@ -107,20 +107,28 @@ export function useSearchWall(
 
   const hideListened = useSettingsStore((s) => s.soundwaveHideListened);
   const wave = useWaveBoard({ enabled: landing, hideListened });
-  const vibeQ = vibeMode || textMode ? trimmed : '';
+  // Make the primary track search responsive before spending transport slots on
+  // semantic/lyrics/entity enrichment. This avoids six requests racing audio on
+  // every debounced keystroke while keeping all secondary results available.
+  const lex = useSearchDbTracks(textMode ? trimmed : '');
+  const primaryTextReady = textMode && !lex.isLoading;
+  const lyric = useLyricSearch(primaryTextReady ? trimmed : '', 'auto');
+  const vibeQ = vibeMode || primaryTextReady ? trimmed : '';
   // Text mode only needs a pinch of vibe tiles (+ a genre sample for atmosphere),
   // so cap it small instead of the full 48 used in dedicated vibe mode.
   const vibe = useVibeSearch(vibeQ, textMode ? { limit: 12 } : undefined);
-  const lex = useSearchDbTracks(textMode ? trimmed : '');
-  const lyric = useLyricSearch(textMode ? trimmed : '', 'auto');
-  const artists = useSearchDbArtists(textMode ? trimmed : '');
-  const users = useSearchDbUsers(textMode ? trimmed : '');
-  const playlists = useSearchDbPlaylists(textMode ? trimmed : '');
+  // Entity lookup is cheap and must not sit behind the optional lyric/vibe
+  // enrichment requests (the vibe worker alone may legitimately take 30s).
+  const entityQ = primaryTextReady ? trimmed : '';
+  const artists = useSearchDbArtists(entityQ);
+  const users = useSearchDbUsers(entityQ);
+  const playlists = useSearchDbPlaylists(entityQ);
   // Live SoundCloud fan-out (only when the user opted into the SC source).
   const scQ = scMode ? trimmed : '';
   const scTracks = useSearchTracks(scQ);
-  const scPlaylists = useSearchPlaylists(scQ);
-  const scUsers = useSearchUsers(scQ);
+  const scEntityQ = scMode && !scTracks.isLoading ? trimmed : '';
+  const scPlaylists = useSearchPlaylists(scEntityQ);
+  const scUsers = useSearchUsers(scEntityQ);
   // The wave/from-track endpoint parses the path segment as a bare numeric id;
   // a full URN (soundcloud:tracks:123) fails the parse and returns nothing, so
   // strip it down like the soundwave similar-block does.
@@ -259,7 +267,8 @@ export function useSearchWall(
       isLoading: scTracks.isLoading && items.length === 0,
       hasMore: scTracks.hasNextPage,
       isFetchingMore: scTracks.isFetchingNextPage,
-      entitiesLoading: (scPlaylists.isLoading || scUsers.isLoading) && entities.length === 0,
+      entitiesLoading:
+        (scTracks.isLoading || scPlaylists.isLoading || scUsers.isLoading) && entities.length === 0,
       loadMore: () => scTracks.fetchNextPage(),
     };
   }
@@ -286,7 +295,8 @@ export function useSearchWall(
     hasMore: lex.hasNextPage,
     isFetchingMore: lex.isFetchingNextPage,
     entitiesLoading:
-      (artists.isLoading || playlists.isLoading || users.isLoading) && entities.length === 0,
+      (!entityQ || artists.isLoading || playlists.isLoading || users.isLoading) &&
+      entities.length === 0,
     loadMore: () => lex.fetchNextPage(),
   };
 }

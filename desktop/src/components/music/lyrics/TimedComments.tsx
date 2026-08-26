@@ -69,6 +69,7 @@ export const TimedCommentsRail = React.memo(({trackUrn}: { trackUrn: string }) =
     const containerRef = useRef<HTMLDivElement>(null);
     const itemRefs = useRef(new Map<number, HTMLDivElement>());
     const [activeIndex, setActiveIndex] = useState(-1);
+    const autoPagesRef = useRef({trackUrn, fetched: 0});
     const {comments, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} =
         useTrackComments(trackUrn);
 
@@ -81,9 +82,15 @@ export const TimedCommentsRail = React.memo(({trackUrn}: { trackUrn: string }) =
     );
 
     useEffect(() => {
-        if (!hasNextPage || isFetchingNextPage) return;
+        if (autoPagesRef.current.trackUrn !== trackUrn) {
+            autoPagesRef.current = {trackUrn, fetched: 0};
+        }
+        // A comments rail used to walk every page immediately. Keep a useful
+        // 60-comment timeline, but never let a popular track monopolise the API.
+        if (!hasNextPage || isFetchingNextPage || autoPagesRef.current.fetched >= 2) return;
+        autoPagesRef.current.fetched += 1;
         void fetchNextPage();
-    }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
+    }, [fetchNextPage, hasNextPage, isFetchingNextPage, trackUrn]);
 
     useEffect(() => {
         const getIndexForTime = (timeMs: number) => {

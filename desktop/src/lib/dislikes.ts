@@ -1,22 +1,60 @@
 import type { QueryClient } from '@tanstack/react-query';
 import { useEffect, useSyncExternalStore } from 'react';
 import type { Track } from '../stores/player';
+import {
+  getLocalRecommendationPreference,
+  setLocalRecommendationPreference,
+} from '../stores/recommendation-taste';
 import { api } from './api';
-import { recordEvent } from './events';
+import { publishSoundWaveOutcome, recordNetworkRecommendationEvent } from './events';
+import { isUrnLiked } from './likes';
 
 const _dislikedUrns = new Map<string, boolean>();
 const _listeners = new Set<() => void>();
+let _version = 0;
+let _ownerUrn: string | null | undefined;
+let _accountGeneration = 0;
 
 function notify() {
+  _version += 1;
   for (const l of _listeners) l();
 }
 
 export function setDislikedUrn(urn: string, disliked: boolean) {
+  const wasDisliked = _dislikedUrns.has(urn);
+  if (wasDisliked === disliked) return;
   if (disliked) {
     _dislikedUrns.set(urn, true);
   } else {
     _dislikedUrns.delete(urn);
   }
+  notify();
+}
+
+/** Reactive invalidation token for bulk loads and imperative recommendation filters. */
+export function useDislikeVersion(): number {
+  return useSyncExternalStore(
+    (cb) => {
+      _listeners.add(cb);
+      return () => _listeners.delete(cb);
+    },
+    () => _version,
+  );
+}
+
+/** Clear session-global dislike state before loading another account. */
+export function setDislikeAccount(ownerUrn: string | null): void {
+  const normalized = ownerUrn?.trim() || null;
+  if (_ownerUrn === normalized) return;
+  const hadOwner = _ownerUrn !== undefined;
+  _ownerUrn = normalized;
+  // The first resolved owner belongs to the current bootstrap session; keep
+  // any statuses that individual hooks may already have fetched for it.
+  if (!hadOwner) return;
+  _accountGeneration += 1;
+  _bulkLoaded = false;
+  _inflightStatus.clear();
+  _dislikedUrns.clear();
   notify();
 }
 
@@ -41,17 +79,20 @@ export async function fetchDislikeStatus(urn: string): Promise<boolean> {
   if (_dislikedUrns.has(urn)) return true;
   const existing = _inflightStatus.get(urn);
   if (existing) return existing;
-  const p = api<{ disliked: boolean }>(`/dislikes/status/${encodeURIComponent(urn)}`)
+  const generation = _accountGeneration;
+  let request: Promise<boolean>;
+  request = api<{ disliked: boolean }>(`/dislikes/status/${encodeURIComponent(urn)}`)
     .then((r) => {
+      if (generation !== _accountGeneration) return false;
       if (r.disliked) setDislikedUrn(urn, true);
       return r.disliked;
     })
     .catch(() => false)
     .finally(() => {
-      _inflightStatus.delete(urn);
+      if (_inflightStatus.get(urn) === request) _inflightStatus.delete(urn);
     });
-  _inflightStatus.set(urn, p);
-  return p;
+  _inflightStatus.set(urn, request);
+  return request;
 }
 
 /** Hook: subscribe to dislike state and trigger fetch on mount. */
@@ -76,9 +117,11 @@ export function useDislikeStatus(urn: string | undefined): boolean {
  */
 let _bulkLoaded = false;
 export async function loadAllDislikedIds(): Promise<void> {
-  if (_bulkLoaded) return;
+  if (_bulkLoaded || !_ownerUrn) return;
+  const generation = _accountGeneration;
   try {
     const r = await api<{ ids: string[] }>('/dislikes/ids');
+    if (generation !== _accountGeneration) return;
     for (const id of r.ids) {
       const urn = id.startsWith('soundcloud:tracks:') ? id : `soundcloud:tracks:${id}`;
       _dislikedUrns.set(urn, true);
@@ -95,8 +138,14 @@ export async function toggleDislike(
   track: Track,
   nowDisliked: boolean,
 ): Promise<void> {
+  const previousPreference = getLocalRecommendationPreference(track.urn);
+  const nextPreference = nowDisliked
+    ? 'disliked'
+    : isUrnLiked(track.urn) || track.user_favorite
+      ? 'liked'
+      : null;
   setDislikedUrn(track.urn, nowDisliked);
-  if (nowDisliked) recordEvent('dislike', track.urn);
+  setLocalRecommendationPreference(track, nextPreference);
 
   try {
     if (nowDisliked) {
@@ -107,8 +156,13 @@ export async function toggleDislike(
     } else {
       await api(`/dislikes/${encodeURIComponent(track.urn)}`, { method: 'DELETE' });
     }
+    if (nowDisliked) {
+      publishSoundWaveOutcome('dislike', track.urn);
+      recordNetworkRecommendationEvent('dislike', track.urn);
+    }
     qc.invalidateQueries({ queryKey: ['dislikes'] });
   } catch {
     setDislikedUrn(track.urn, !nowDisliked);
+    setLocalRecommendationPreference(track, previousPreference);
   }
 }

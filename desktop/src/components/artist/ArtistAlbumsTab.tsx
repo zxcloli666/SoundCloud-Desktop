@@ -2,6 +2,7 @@ import {memo, useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
 import {useNavigate} from 'react-router-dom';
 import {type Aura, auraRgba} from '../../lib/aura';
+import {art} from '../../lib/formatters';
 import {Disc3, Loader2} from '../../lib/icons';
 import {usePerfMode} from '../../lib/perf';
 import type {ArtistAlbum} from './types';
@@ -82,7 +83,7 @@ const YearGroup = memo(
   ({ year, items, aura }: { year: number | null; items: ArtistAlbum[]; aura: Aura }) => {
     const { t } = useTranslation();
     return (
-        <div className="flex flex-col md:flex-row md:gap-8 gap-4">
+        <div className="deferred-year-group deferred-year-group--albums flex flex-col md:flex-row md:gap-8 gap-4">
         {/* Year marker */}
         <div className="md:w-[200px] md:shrink-0 flex md:flex-col md:items-end items-center md:sticky md:top-24 self-start">
           <div className="flex items-baseline gap-3 md:flex-col md:items-end md:gap-1 min-w-0 max-w-full">
@@ -145,11 +146,13 @@ const AlbumCard = memo(({ album, aura }: { album: ArtistAlbum; aura: Aura }) => 
       >
         {album.cover_url ? (
           <img
-            src={album.cover_url}
+            src={art(album.cover_url, 't300x300') ?? undefined}
             alt={album.title}
             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
             decoding="async"
             loading="lazy"
+            width={300}
+            height={300}
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">

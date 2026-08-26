@@ -72,8 +72,36 @@ pub fn start_tick_emitter(app: &AppHandle) {
                     if player.empty() {
                         let suppress_ended = super::engine::now_ms()
                             < state.suppress_ended_until_ms.load(Ordering::Relaxed);
+                        if suppress_ended {
+                            continue;
+                        }
+
+                        // Hold no blocking lock in the reverse of engine's
+                        // active_stream -> player order. While a completed stream
+                        // is being committed, wait for it to clear instead of
+                        // briefly misclassifying it as a natural end.
+                        let stream_error = match state.active_stream.try_lock() {
+                            Ok(stream) => match stream.as_ref() {
+                                Some(active) => {
+                                    let error = active.terminal_error();
+                                    if error.is_none() {
+                                        continue;
+                                    }
+                                    error
+                                }
+                                None => None,
+                            },
+                            Err(_) => continue,
+                        };
+
+                        if let Some(error) = stream_error {
+                            if !state.ended_notified.swap(true, Ordering::Relaxed) {
+                                handle.emit("audio:stream-error", error).ok();
+                            }
+                            continue;
+                        }
+
                         if !state.device_error.load(Ordering::Relaxed)
-                            && !suppress_ended
                             && !state.ended_notified.swap(true, Ordering::Relaxed)
                         {
                             handle.emit("audio:ended", ()).ok();
@@ -142,9 +170,33 @@ pub fn start_tick_emitter(app: &AppHandle) {
                             continue;
                         }
 
+                        // A progressive decoder may legitimately wait while the
+                        // network buffer grows. Reconnecting the output device in
+                        // that state restarts a healthy player and can look like a
+                        // track switch. Device-stall recovery resumes once the
+                        // producer commits the complete source and clears it.
+                        let (stream_is_growing, stream_error) =
+                            match state.active_stream.try_lock() {
+                                Ok(stream) => stream
+                                    .as_ref()
+                                    .map(|active| (active.is_growing(), active.terminal_error()))
+                                    .unwrap_or((false, None)),
+                                Err(_) => continue,
+                            };
+                        if stream_is_growing {
+                            last_progress_at = now;
+                            continue;
+                        }
+
                         if now.duration_since(last_progress_at).as_millis() as u64
                             > STALL_THRESHOLD_MS
                         {
+                            if let Some(error) = stream_error {
+                                if !state.ended_notified.swap(true, Ordering::Relaxed) {
+                                    handle.emit("audio:stream-error", error).ok();
+                                }
+                                continue;
+                            }
                             drop(player_guard);
                             diagnostics::log_native(
                                 &handle,

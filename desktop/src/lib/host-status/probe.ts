@@ -136,7 +136,14 @@ export function noteMainAlive(): void {
   useHostStatusStore.setState({ main: 'up', net: 'online' });
   useAppStatusStore.getState().setBackendReachable(true);
   stopRecheckTimer();
-  if (previous === 'down') void queryClient.invalidateQueries();
+  if (previous === 'down') {
+    // Only retry active requests that actually failed during the outage. A
+    // blanket invalidation refetched every shelf/search fan-out at once.
+    void queryClient.invalidateQueries({
+      predicate: (query) => query.state.status === 'error',
+      refetchType: 'active',
+    });
+  }
 }
 
 export function markHealthy(host: string): void {

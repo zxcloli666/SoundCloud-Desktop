@@ -1,13 +1,23 @@
+use std::collections::HashMap;
 use std::path::{Path, PathBuf};
-use std::sync::OnceLock;
+use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::{Mutex, OnceLock};
+use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use base64::{engine::general_purpose::STANDARD as BASE64, Engine as _};
 use sha2::{Digest, Sha256};
 use tokio::fs::{self, File};
 use tokio::io::AsyncWriteExt;
-use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
+use crate::network::edge::{self, Hop};
 use crate::shared::constants::is_domain_whitelisted;
+
+const MAX_IMAGE_CACHE_HOPS: usize = 3;
+const IMAGE_CACHE_TOTAL_TIMEOUT: Duration = Duration::from_secs(18);
+const IMAGE_CACHE_HOP_TIMEOUT: Duration = Duration::from_secs(6);
+const IMAGE_CACHE_BODY_TIMEOUT: Duration = Duration::from_secs(12);
+const NEGATIVE_CACHE_TTL: Duration = Duration::from_secs(12);
+const NEGATIVE_CACHE_MAX_ENTRIES: usize = 512;
 
 /// Permanent on-disk image cache.
 ///
@@ -21,6 +31,8 @@ pub struct ImageCache {
 }
 
 pub static STATE: OnceLock<ImageCache> = OnceLock::new();
+static NEGATIVE_CACHE: OnceLock<Mutex<HashMap<String, Instant>>> = OnceLock::new();
+static CACHE_TEMP_SEQUENCE: AtomicU64 = AtomicU64::new(0);
 
 pub struct ImageResult {
     pub status: u16,
@@ -34,6 +46,72 @@ fn cache_key(url: &str) -> String {
 
 fn cache_path(dir: &Path, key: &str) -> PathBuf {
     dir.join(&key[..2]).join(key)
+}
+
+fn bounded_image_hops(hops: Vec<Hop>) -> Vec<Hop> {
+    let Some(first) = hops.first() else {
+        return Vec::new();
+    };
+    if hops.len() <= MAX_IMAGE_CACHE_HOPS {
+        return hops;
+    }
+
+    let mut selected = Vec::with_capacity(MAX_IMAGE_CACHE_HOPS);
+    selected.push(first.clone());
+    if let Some(alternate) = hops.iter().skip(1).find(|hop| hop.tier != first.tier) {
+        selected.push(alternate.clone());
+    }
+    for hop in hops.iter().skip(1) {
+        if selected.len() >= MAX_IMAGE_CACHE_HOPS {
+            break;
+        }
+        if selected.iter().all(|selected_hop| selected_hop.url != hop.url) {
+            selected.push(hop.clone());
+        }
+    }
+    selected
+}
+
+fn deadline_budget(deadline: Instant, per_operation: Duration) -> Option<Duration> {
+    let remaining = deadline.saturating_duration_since(Instant::now());
+    if remaining.is_zero() {
+        None
+    } else {
+        Some(remaining.min(per_operation))
+    }
+}
+
+fn negative_cache() -> &'static Mutex<HashMap<String, Instant>> {
+    NEGATIVE_CACHE.get_or_init(|| Mutex::new(HashMap::new()))
+}
+
+fn is_negative_cached(key: &str) -> bool {
+    let now = Instant::now();
+    let mut entries = match negative_cache().lock() {
+        Ok(guard) => guard,
+        Err(poison) => poison.into_inner(),
+    };
+    entries.retain(|_, expires_at| *expires_at > now);
+    entries.contains_key(key)
+}
+
+fn note_negative_cache(key: &str) {
+    let mut entries = match negative_cache().lock() {
+        Ok(guard) => guard,
+        Err(poison) => poison.into_inner(),
+    };
+    if entries.len() >= NEGATIVE_CACHE_MAX_ENTRIES {
+        entries.clear();
+    }
+    entries.insert(key.to_string(), Instant::now() + NEGATIVE_CACHE_TTL);
+}
+
+fn clear_negative_cache(key: &str) {
+    let mut entries = match negative_cache().lock() {
+        Ok(guard) => guard,
+        Err(poison) => poison.into_inner(),
+    };
+    entries.remove(key);
 }
 
 fn sniff_content_type(data: &[u8]) -> &'static str {
@@ -59,17 +137,24 @@ fn sniff_content_type(data: &[u8]) -> &'static str {
     }
 }
 
-/// Atomic write: tmp -> fsync -> rename. Survives crashes — we either have
-/// the old file or the fully-written new one, never a partial blob.
+/// Publish a disposable cache entry atomically so readers never observe a
+/// partial image. Durability across power loss is unnecessary for this cache.
 async fn write_atomic(path: &Path, data: &[u8]) -> std::io::Result<()> {
     if let Some(parent) = path.parent() {
         fs::create_dir_all(parent).await?;
     }
-    let tmp = path.with_extension(format!("tmp-{}", std::process::id()));
+    let nonce = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_nanos();
+    let sequence = CACHE_TEMP_SEQUENCE.fetch_add(1, Ordering::Relaxed);
+    let tmp = path.with_extension(format!(
+        "tmp-{}-{nonce}-{sequence}",
+        std::process::id()
+    ));
     {
         let mut f = File::create(&tmp).await?;
         f.write_all(data).await?;
-        f.sync_all().await?;
     }
     if let Err(e) = fs::rename(&tmp, path).await {
         let _ = fs::remove_file(&tmp).await;
@@ -162,16 +247,27 @@ pub async fn handle(encoded: &str) -> ImageResult {
     #[cfg(debug_assertions)]
     println!("[ImageCache] MISS {}", target_url);
 
+    if is_negative_cached(&key) {
+        return ImageResult {
+            status: 502,
+            content_type: "text/plain".into(),
+            data: b"image temporarily unavailable".to_vec(),
+        };
+    }
+
     let encoded_for_header = BASE64.encode(target_url.as_bytes());
     let mut status = 502u16;
     let mut data: Vec<u8> = Vec::new();
+    let deadline = Instant::now() + IMAGE_CACHE_TOTAL_TIMEOUT;
 
-    for hop in crate::network::edge::expand_upstreams(upstreams) {
-        const IMAGE_CACHE_HOP_TIMEOUT_MS: u64 = 10_000;
-        const IMAGE_CACHE_BODY_TIMEOUT_MS: u64 = 16_000;
+    for hop in bounded_image_hops(edge::expand_upstreams(upstreams)) {
+        let Some(header_budget) = deadline_budget(deadline, IMAGE_CACHE_HOP_TIMEOUT) else {
+            status = 504;
+            break;
+        };
 
         let resp = match tokio::time::timeout(
-            Duration::from_millis(IMAGE_CACHE_HOP_TIMEOUT_MS),
+            header_budget,
             state
                 .http_client
                 .get(&hop.url)
@@ -183,23 +279,31 @@ pub async fn handle(encoded: &str) -> ImageResult {
             Ok(Ok(r)) => r,
             Ok(Err(_)) | Err(_) => {
                 hop.note(false);
+                if Instant::now() >= deadline {
+                    status = 504;
+                    break;
+                }
                 continue;
             }
         };
 
         status = resp.status().as_u16();
-        if !crate::network::edge::hop_ok(&hop, &resp) {
+        if !edge::hop_ok(&hop, &resp) {
             continue;
         }
-        let bytes = match tokio::time::timeout(
-            Duration::from_millis(IMAGE_CACHE_BODY_TIMEOUT_MS),
-            resp.bytes(),
-        )
-        .await
-        {
+        let Some(body_budget) = deadline_budget(deadline, IMAGE_CACHE_BODY_TIMEOUT) else {
+            hop.note(false);
+            status = 504;
+            break;
+        };
+        let bytes = match tokio::time::timeout(body_budget, resp.bytes()).await {
             Ok(Ok(b)) => b,
             Ok(Err(_)) | Err(_) => {
                 hop.note(false);
+                if Instant::now() >= deadline {
+                    status = 504;
+                    break;
+                }
                 continue;
             }
         };
@@ -217,7 +321,9 @@ pub async fn handle(encoded: &str) -> ImageResult {
         String::new()
     };
 
-    if status == 200 && !data.is_empty() && content_type.starts_with("image/") {
+    let is_image = status == 200 && !data.is_empty() && content_type.starts_with("image/");
+    if is_image {
+        clear_negative_cache(&key);
         let path_clone = path.clone();
         let data_clone = data.clone();
         tokio::spawn(async move {
@@ -227,6 +333,8 @@ pub async fn handle(encoded: &str) -> ImageResult {
                 let _ = e;
             }
         });
+    } else {
+        note_negative_cache(&key);
     }
 
     ImageResult {

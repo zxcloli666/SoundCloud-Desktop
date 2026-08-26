@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import {auraRgba, resolveAura} from '../../lib/aura';
 import type { CatalogArtist } from '../../lib/discover';
-import { fc } from '../../lib/formatters';
+import { art, fc } from '../../lib/formatters';
 import { Check, Disc3, Globe, Headphones, MicVocal, Star } from '../../lib/icons';
 import {usePerfMode} from '../../lib/perf';
 import {useViewerAura} from '../../lib/useViewerAura';
@@ -85,12 +85,14 @@ function ArtistGridCardImpl({ artist }: ArtistGridCardProps) {
         >
           {artist.avatar_url ? (
             <img
-              src={artist.avatar_url}
+              src={art(artist.avatar_url, 't300x300') ?? undefined}
               alt={artist.name}
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.08]"
               decoding="async"
               loading="lazy"
               draggable={false}
+              width={300}
+              height={300}
             />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center">

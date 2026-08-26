@@ -16,13 +16,21 @@ interface AppStatusState {
 
 export const useAppStatusStore = create<AppStatusState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       navigatorOnline: typeof navigator === 'undefined' ? true : navigator.onLine,
       backendReachable: true,
       offlineBypass: false,
-      setNavigatorOnline: (online) => set({ navigatorOnline: online }),
-      setBackendReachable: (backendReachable) => set({ backendReachable }),
-      setOfflineBypass: (offlineBypass) => set({ offlineBypass }),
+      setNavigatorOnline: (online) => {
+        if (get().navigatorOnline !== online) set({ navigatorOnline: online });
+      },
+      setBackendReachable: (backendReachable) => {
+        // Successful requests call this hot path. Avoid a global Zustand notify
+        // and persisted-file rewrite for the overwhelmingly common true -> true.
+        if (get().backendReachable !== backendReachable) set({ backendReachable });
+      },
+      setOfflineBypass: (offlineBypass) => {
+        if (get().offlineBypass !== offlineBypass) set({ offlineBypass });
+      },
       resetConnectivity: () =>
         set({
           navigatorOnline: typeof navigator === 'undefined' ? true : navigator.onLine,

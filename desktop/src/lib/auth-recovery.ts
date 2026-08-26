@@ -85,7 +85,10 @@ async function runRenew(manual: boolean): Promise<void> {
       clearRetryTimer();
       logInfo('[Recovery] renew удался → сессия жива');
       useAuthRecoveryStore.getState().markRecovered();
-      queryClient.invalidateQueries();
+      void queryClient.invalidateQueries({
+        predicate: (query) => query.state.status === 'error',
+        refetchType: 'active',
+      });
     } catch (e) {
       // Само-восстановилось параллельным успешным запросом — модалку не лепим.
       if (cancelledGen === myGen) {

@@ -1,5 +1,37 @@
 import {listen} from '@tauri-apps/api/event';
 import React, {useEffect, useRef} from 'react';
+import {trackedInvoke as invoke} from '../../../lib/diagnostics';
+
+let analyserConsumers = 0;
+let analyserDisableTimer: ReturnType<typeof setTimeout> | null = null;
+
+function retainAnalyser(): () => void {
+    const disableWasPending = analyserDisableTimer !== null;
+    if (analyserDisableTimer) {
+        clearTimeout(analyserDisableTimer);
+        analyserDisableTimer = null;
+    }
+    if (analyserConsumers === 0 && !disableWasPending) {
+        void invoke('audio_set_analyser_enabled', {enabled: true});
+    }
+    analyserConsumers += 1;
+
+    let released = false;
+    return () => {
+        if (released) return;
+        released = true;
+        analyserConsumers = Math.max(0, analyserConsumers - 1);
+        if (analyserConsumers > 0 || analyserDisableTimer) return;
+        // Coalesce React StrictMode's setup -> cleanup -> setup cycle and keep
+        // one visualizer from disabling FFT while another instance still uses it.
+        analyserDisableTimer = setTimeout(() => {
+            analyserDisableTimer = null;
+            if (analyserConsumers === 0) {
+                void invoke('audio_set_analyser_enabled', {enabled: false});
+            }
+        }, 0);
+    };
+}
 
 /* ── Fullscreen wave visualizer — driven by real FFT from Rust ────── */
 /* Rust `audio:fft` event delivers 64 log-spaced magnitude bins ~30Hz.
@@ -219,11 +251,13 @@ export const LyricsVisualizer = React.memo(() => {
             dirty = true;
             ensureLoop();
         });
+        const releaseAnalyser = retainAnalyser();
 
         return () => {
             if (rafId) cancelAnimationFrame(rafId);
             ro.disconnect();
             unlistenPromise.then((u) => u());
+            releaseAnalyser();
         };
     }, []);
 

@@ -2,6 +2,7 @@ use std::collections::{HashMap, HashSet};
 use std::error::Error as _;
 use std::path::Path;
 use std::path::PathBuf;
+use std::sync::atomic::AtomicU64;
 use std::sync::Arc;
 use std::sync::Mutex as StdMutex;
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
@@ -42,7 +43,9 @@ const MAX_PARALLEL_LIKES: usize = 4;
 /// Transcoding is CPU-bound; keep it modest so it never starves playback on weak
 /// machines. Most cached tracks are already AAC (a near-free remux), so a small
 /// pool drains the queue fast in practice.
-const MAX_PARALLEL_TRANSCODES: usize = 2;
+// Cache cleanup is background work and must never compete with playback/UI for
+// every CPU core. One low-thread ffmpeg job is enough; additional tracks queue.
+const MAX_PARALLEL_TRANSCODES: usize = 1;
 const CACHE_METADATA_EXT: &str = ".meta.json";
 /// Cover art fetched for download-to-file export is capped to avoid pathological
 /// payloads sneaking into the muxer.
@@ -59,6 +62,7 @@ const MAX_TRUNCATED_RETRIES: u8 = 2;
 /// handed to the player is read in a separate command a few ms later; this keeps
 /// that file alive across the gap so playback never reads a just-deleted file.
 const INCOMING_GRACE_SECS: u64 = 30;
+static CACHE_TEMP_SEQUENCE: AtomicU64 = AtomicU64::new(0);
 
 /// Magic-byte validation for audio files
 fn is_valid_audio(prefix: &[u8], total_size: u64) -> bool {
@@ -359,6 +363,8 @@ pub struct TranscodeStatus {
     /// Raw files staged in А.
     pub incoming: u32,
     pub incoming_bytes: u64,
+    /// Liked raw files waiting behind the currently running transcodes.
+    pub queued: u32,
     /// Transcodes in flight right now.
     pub transcoding: u32,
     /// URNs being forged right now, for per-row UI state.
@@ -472,6 +478,69 @@ fn clear_audio_dir(dir: &Path) {
             }
         }
     }
+}
+
+fn incoming_is_liked(path: &Path) -> bool {
+    read_cache_metadata(path)
+        .map(|metadata| metadata.liked)
+        .unwrap_or(false)
+}
+
+/// Raw files share one staging directory, but liked/offline entries belong to
+/// the protected quota. Keep their size and clear operations independent.
+fn incoming_size_by_liked(dir: &Path, liked: bool) -> u64 {
+    let Ok(entries) = std::fs::read_dir(dir) else {
+        return 0;
+    };
+    entries
+        .flatten()
+        .filter_map(|entry| {
+            let path = entry.path();
+            let metadata = entry.metadata().ok()?;
+            (metadata.is_file()
+                && is_audio_cache_file(&path)
+                && incoming_is_liked(&path) == liked)
+                .then_some(metadata.len())
+        })
+        .sum()
+}
+
+fn clear_incoming_by_liked(dir: &Path, liked: bool) {
+    let Ok(entries) = std::fs::read_dir(dir) else {
+        return;
+    };
+    for entry in entries.flatten() {
+        let path = entry.path();
+        if entry.metadata().map(|m| m.is_file()).unwrap_or(false)
+            && is_audio_cache_file(&path)
+            && incoming_is_liked(&path) == liked
+        {
+            std::fs::remove_file(&path).ok();
+            remove_cache_metadata(&path);
+        }
+    }
+}
+
+fn queued_liked_raw_count(dir: &Path, in_flight: &HashSet<String>) -> u32 {
+    let Ok(entries) = std::fs::read_dir(dir) else {
+        return 0;
+    };
+    entries
+        .flatten()
+        .filter(|entry| {
+            let path = entry.path();
+            let valid = entry
+                .metadata()
+                .map(|metadata| metadata.is_file() && metadata.len() >= MIN_AUDIO_SIZE)
+                .unwrap_or(false);
+            if !valid || !is_audio_cache_file(&path) || !incoming_is_liked(&path) {
+                return false;
+            }
+            filename_to_urn(&entry.file_name().to_string_lossy())
+                .map(|urn| !in_flight.contains(&urn))
+                .unwrap_or(false)
+        })
+        .count() as u32
 }
 
 fn collect_cached_urns(
@@ -666,11 +735,32 @@ fn temp_file_path(target_dir: &Path, urn: &str) -> PathBuf {
         .duration_since(UNIX_EPOCH)
         .unwrap_or_default()
         .as_nanos();
-    target_dir.join(format!("{}.{}.part", urn_to_filename(urn), nonce))
+    let sequence = CACHE_TEMP_SEQUENCE.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+    target_dir.join(format!(
+        "{}.{}.{}.{}.part",
+        urn_to_filename(urn),
+        std::process::id(),
+        nonce,
+        sequence
+    ))
 }
 
 async fn cleanup_temp_file(path: &Path) {
     tokio::fs::remove_file(path).await.ok();
+}
+
+async fn cleanup_temp_files_for_urn(target_dir: &Path, urn: &str) {
+    let prefix = format!("{}.", urn_to_filename(urn));
+    let Ok(mut entries) = tokio::fs::read_dir(target_dir).await else {
+        return;
+    };
+    while let Ok(Some(entry)) = entries.next_entry().await {
+        let name = entry.file_name();
+        let name = name.to_string_lossy();
+        if name.starts_with(&prefix) && name.ends_with(".part") {
+            cleanup_temp_file(&entry.path()).await;
+        }
+    }
 }
 
 fn read_cache_metadata(path: &Path) -> Option<TrackCacheMetadata> {
@@ -685,14 +775,31 @@ async fn write_cache_metadata(path: &Path, meta: &TrackCacheMetadata) {
     };
 
     let final_path = cache_metadata_path(path);
-    let temp_path = PathBuf::from(format!("{}.tmp", final_path.display()));
+    let nonce = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_nanos();
+    let sequence = CACHE_TEMP_SEQUENCE.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+    let temp_path = PathBuf::from(format!(
+        "{}.{}.{}.{}.tmp",
+        final_path.display(),
+        std::process::id(),
+        nonce,
+        sequence
+    ));
     if tokio::fs::write(&temp_path, raw).await.is_err() {
         tokio::fs::remove_file(&temp_path).await.ok();
         return;
     }
 
     if tokio::fs::rename(&temp_path, &final_path).await.is_err() {
-        tokio::fs::remove_file(&temp_path).await.ok();
+        // Windows rename does not replace an existing sidecar. Retry after
+        // removing the old value; callers that require the update verify the
+        // newly written metadata and propagate a failure.
+        tokio::fs::remove_file(&final_path).await.ok();
+        if tokio::fs::rename(&temp_path, &final_path).await.is_err() {
+            tokio::fs::remove_file(&temp_path).await.ok();
+        }
     }
 }
 
@@ -725,11 +832,13 @@ async fn write_response_to_cache(
         {
             Ok(Some(Ok(chunk))) => chunk,
             Ok(Some(Err(err))) => {
+                drop(writer);
                 cleanup_temp_file(&temp_path).await;
                 return Err(DownloadError::Retryable(format!("body read: {err}")));
             }
             Ok(None) => break,
             Err(_) => {
+                drop(writer);
                 cleanup_temp_file(&temp_path).await;
                 return Err(DownloadError::Retryable(format!(
                     "body read timed out after {TRACK_CACHE_CHUNK_TIMEOUT_MS}ms"
@@ -744,6 +853,7 @@ async fn write_response_to_cache(
         }
 
         if let Err(err) = writer.write_all(&chunk).await {
+            drop(writer);
             cleanup_temp_file(&temp_path).await;
             return Err(DownloadError::Fatal(format!("Cache write failed: {err}")));
         }
@@ -767,6 +877,14 @@ async fn write_response_to_cache(
             }
     }
 
+    if content_length > 0 && total_size != content_length {
+        drop(writer);
+        cleanup_temp_file(&temp_path).await;
+        return Err(DownloadError::Retryable(format!(
+            "body ended early: received {total_size} of {content_length} bytes"
+        )));
+    }
+
     if let Some(app) = app_handle
         && content_length > 0
         && emitted_progress < 1.0
@@ -784,6 +902,7 @@ async fn write_response_to_cache(
     }
 
     if let Err(err) = writer.flush().await {
+        drop(writer);
         cleanup_temp_file(&temp_path).await;
         return Err(DownloadError::Fatal(format!("Cache flush failed: {err}")));
     }
@@ -862,10 +981,12 @@ async fn write_bytes_to_cache(
         .map_err(|err| DownloadError::Fatal(format!("Cache create failed: {err}")))?;
     let mut writer = BufWriter::with_capacity(STREAM_WRITE_BUFFER_SIZE, file);
     if let Err(err) = writer.write_all(data).await {
+        drop(writer);
         cleanup_temp_file(&temp_path).await;
         return Err(DownloadError::Fatal(format!("Cache write failed: {err}")));
     }
     if let Err(err) = writer.flush().await {
+        drop(writer);
         cleanup_temp_file(&temp_path).await;
         return Err(DownloadError::Fatal(format!("Cache flush failed: {err}")));
     }
@@ -1057,15 +1178,18 @@ impl TrackCacheState {
         let (incoming, incoming_bytes) = dir_stats(&self.incoming_dir);
         let (audio_count, audio_bytes) = dir_stats(&self.audio_dir);
         let (liked_count, liked_bytes) = dir_stats(&self.liked_dir);
-        let transcoding_urns: Vec<String> = self
+        let in_flight = self
             .transcoding
             .lock()
-            .map(|s| s.iter().cloned().collect())
+            .map(|set| set.clone())
             .unwrap_or_default();
+        let queued = queued_liked_raw_count(&self.incoming_dir, &in_flight);
+        let transcoding_urns: Vec<String> = in_flight.into_iter().collect();
         TranscodeStatus {
             ffmpeg,
             incoming,
             incoming_bytes,
+            queued,
             transcoding: transcoding_urns.len() as u32,
             transcoding_urns,
             clean: audio_count + liked_count,
@@ -1175,7 +1299,16 @@ impl TrackCacheState {
 
         if let Some(entry) = self.get_cache_entry(urn) {
             println!("[TrackCache] hit: {urn}");
-            return Ok(entry);
+            if !liked {
+                return Ok(entry);
+            }
+            let current = self
+                .promote_cached_for_liked(urn, PathBuf::from(entry.path), expected_duration_ms)
+                .await?;
+            return Ok(TrackCacheEntry::from_path_and_meta(
+                &current,
+                read_cache_metadata(&current),
+            ));
         }
 
         // Fresh bytes always land in the raw staging dir ("А"); a background
@@ -1206,7 +1339,12 @@ impl TrackCacheState {
                 Some(Ok(path)) => {
                     // Re-resolve: the transcode may have already promoted А→Б and
                     // deleted the raw path stored in the slot.
-                    let current = self.resolve_path(urn).unwrap_or(path);
+                    let mut current = self.resolve_path(urn).unwrap_or(path);
+                    if liked {
+                        current = self
+                            .promote_cached_for_liked(urn, current, expected_duration_ms)
+                            .await?;
+                    }
                     Ok(TrackCacheEntry::from_path_and_meta(
                         &current,
                         read_cache_metadata(&current),
@@ -1251,15 +1389,19 @@ impl TrackCacheState {
         // The cancelled future (and any open BufWriter it owned) is dropped at the
         // end of the block above, so Windows can now remove its staging file.
         if cancelled {
-            cleanup_temp_file(&temp_file_path(target_dir, urn)).await;
+            cleanup_temp_files_for_urn(target_dir, urn).await;
         }
 
-        // Stamp the raw file with routing + integrity info, then kick off the
-        // background transcode (А → Б). Playback uses the raw path immediately.
+        // Stamp the raw file with routing + integrity info. Only explicit liked/
+        // offline downloads are promoted in the background; ordinary playback
+        // keeps the already playable raw cache and never competes with audio/UI
+        // for an ffmpeg encode.
         if let Ok(ref incoming_path) = download_result {
             self.finalize_incoming(incoming_path, liked, expected_duration_ms)
                 .await;
-            self.spawn_transcode(urn.to_string());
+            if liked {
+                self.spawn_transcode(urn.to_string());
+            }
         }
 
         {
@@ -1301,8 +1443,8 @@ impl TrackCacheState {
     }
 
     /// Commit bytes collected by the fast-start player into the normal raw cache
-    /// and hand them to the existing transcode pipeline. Playback owns a separate
-    /// in-memory buffer, so this write cannot invalidate the live decoder.
+    /// cache. Ordinary playback bytes remain raw; export can transcode them on
+    /// demand, so listening never launches CPU-heavy ffmpeg work.
     pub(crate) async fn store_streamed_bytes(
         &self,
         urn: &str,
@@ -1322,8 +1464,6 @@ impl TrackCacheState {
             })?;
         self.finalize_incoming(&result.path, false, expected_duration_ms)
             .await;
-        self.spawn_transcode(urn.to_string());
-
         let current = self.resolve_path(urn).unwrap_or(result.path);
         Ok(TrackCacheEntry::from_path_and_meta(
             &current,
@@ -1356,6 +1496,40 @@ impl TrackCacheState {
             meta.expected_duration_ms = expected_duration_ms;
         }
         write_cache_metadata(incoming_path, &meta).await;
+    }
+
+    /// Upgrade an already cached entry when it becomes explicitly liked. Raw
+    /// playback bytes stay protected while their on-demand transcode runs;
+    /// already-clean entries are moved into the protected liked cache.
+    async fn promote_cached_for_liked(
+        &self,
+        urn: &str,
+        path: PathBuf,
+        expected_duration_ms: Option<u64>,
+    ) -> Result<PathBuf, String> {
+        if path.starts_with(&self.liked_dir) {
+            return Ok(path);
+        }
+        if path.starts_with(&self.incoming_dir) {
+            self.finalize_incoming(&path, true, expected_duration_ms)
+                .await;
+            if !incoming_is_liked(&path) {
+                return Err(format!("failed to mark raw cache as liked: {urn}"));
+            }
+            self.spawn_transcode(urn.to_string());
+            return Ok(self.resolve_path(urn).unwrap_or(path));
+        }
+        if path.starts_with(&self.audio_dir) {
+            if !self.promote_to_liked(urn).await {
+                return Err(format!("failed to promote cached track to liked: {urn}"));
+            }
+            let liked = self.liked_file_path(urn);
+            if !is_valid_file(&liked) {
+                return Err(format!("liked cache file is missing after promotion: {urn}"));
+            }
+            return Ok(liked);
+        }
+        Err(format!("cached track is outside managed cache directories: {urn}"))
     }
 
     /// Queue a background transcode of a raw incoming file into the clean cache.
@@ -1511,15 +1685,21 @@ impl TrackCacheState {
         }
     }
 
-    /// On startup (after ffmpeg is acquired): re-queue transcodes for any raw
-    /// files left in the staging dir by a crash or by downloads that happened
-    /// before ffmpeg was ready. Temp files were already swept synchronously in
-    /// `init()`, before any live writer could exist.
+    /// On startup (after ffmpeg is acquired), resume only explicit liked/offline
+    /// jobs. Raw playback cache is intentionally left as-is and remains directly
+    /// playable; converting every listened track caused sustained CPU/disk load.
     pub async fn recover_incoming(&self) {
         if self.ffmpeg().is_none() {
             return;
         }
-        let urns = list_incoming_urns(&self.incoming_dir);
+        let urns: Vec<String> = list_incoming_urns(&self.incoming_dir)
+            .into_iter()
+            .filter(|urn| {
+                read_cache_metadata(&self.incoming_file_path(urn))
+                    .map(|metadata| metadata.liked)
+                    .unwrap_or(false)
+            })
+            .collect();
         if !urns.is_empty() {
             let line = format!("[TrackCache] recovering {} incoming track(s)", urns.len());
             println!("{line}");
@@ -2119,11 +2299,11 @@ impl TrackCacheState {
     }
 
     pub fn cache_size(&self) -> u64 {
-        dir_size(&self.audio_dir) + dir_size(&self.incoming_dir)
+        dir_size(&self.audio_dir) + incoming_size_by_liked(&self.incoming_dir, false)
     }
 
     pub fn liked_cache_size(&self) -> u64 {
-        dir_size(&self.liked_dir)
+        dir_size(&self.liked_dir) + incoming_size_by_liked(&self.incoming_dir, true)
     }
 
     pub fn cache_likes_running(&self) -> bool {
@@ -2132,10 +2312,12 @@ impl TrackCacheState {
     }
 
     fn liked_has_file(&self, urn: &str) -> bool {
-        let path = self.liked_file_path(urn);
-        std::fs::metadata(&path)
-            .map(|m| m.len() >= MIN_AUDIO_SIZE)
-            .unwrap_or(false)
+        let liked = self.liked_file_path(urn);
+        if is_valid_file(&liked) {
+            return true;
+        }
+        let incoming = self.incoming_file_path(urn);
+        is_valid_file(&incoming) && incoming_is_liked(&incoming)
     }
 
     /// If the track lives only in the regular audio cache, move it to the
@@ -2143,38 +2325,78 @@ impl TrackCacheState {
     /// copy+remove when the dirs are on different filesystems.
     /// Returns `true` when the track ends up in `liked_dir`.
     async fn promote_to_liked(&self, urn: &str) -> bool {
-        if self.liked_has_file(urn) {
+        let liked = self.liked_file_path(urn);
+        if is_valid_file(&liked) {
             return true;
         }
         let audio = self.file_path(urn);
-        if !std::fs::metadata(&audio)
-            .map(|m| m.len() >= MIN_AUDIO_SIZE)
-            .unwrap_or(false)
-        {
-            return false;
-        }
+        let audio_len = match std::fs::metadata(&audio) {
+            Ok(metadata) if metadata.len() >= MIN_AUDIO_SIZE => metadata.len(),
+            _ => return false,
+        };
 
-        let liked = self.liked_file_path(urn);
         let audio_meta = cache_metadata_path(&audio);
         let liked_meta = cache_metadata_path(&liked);
+
+        // A crash from an older non-atomic copy may have left an invalid final
+        // file. It is never a usable cache entry and would block rename on
+        // Windows, so discard it before publishing a complete replacement.
+        if let Ok(metadata) = tokio::fs::metadata(&liked).await {
+            if metadata.len() >= MIN_AUDIO_SIZE {
+                return true;
+            }
+            tokio::fs::remove_file(&liked).await.ok();
+            tokio::fs::remove_file(&liked_meta).await.ok();
+        }
 
         if tokio::fs::rename(&audio, &liked).await.is_ok() {
             tokio::fs::rename(&audio_meta, &liked_meta).await.ok();
             return true;
         }
 
-        let bytes = match tokio::fs::read(&audio).await {
-            Ok(bytes) => bytes,
-            Err(_) => return false,
+        // Cross-filesystem or open-file fallback: copy to a unique sibling and
+        // atomically rename only after the full payload is present. Concurrent
+        // promoters can never share or truncate each other's temporary file.
+        let liked_temp = temp_file_path(&self.liked_dir, urn);
+        let liked_meta_temp = cache_metadata_path(&liked_temp);
+        let copied = match tokio::fs::copy(&audio, &liked_temp).await {
+            Ok(copied) => copied,
+            Err(_) => {
+                cleanup_temp_file(&liked_temp).await;
+                return is_valid_file(&liked);
+            }
         };
-        if tokio::fs::write(&liked, &bytes).await.is_err() {
+        if copied != audio_len {
+            cleanup_temp_file(&liked_temp).await;
             return false;
         }
+
         if let Ok(meta_bytes) = tokio::fs::read(&audio_meta).await {
-            tokio::fs::write(&liked_meta, &meta_bytes).await.ok();
+            if tokio::fs::write(&liked_meta_temp, &meta_bytes)
+                .await
+                .is_err()
+            {
+                tokio::fs::remove_file(&liked_meta_temp).await.ok();
+            }
+        }
+
+        if tokio::fs::rename(&liked_temp, &liked).await.is_err() {
+            cleanup_temp_file(&liked_temp).await;
+            tokio::fs::remove_file(&liked_meta_temp).await.ok();
+            // Another concurrent promoter may have won the final rename.
+            return is_valid_file(&liked);
+        }
+        if tokio::fs::metadata(&liked_meta_temp).await.is_ok() {
+            if tokio::fs::rename(&liked_meta_temp, &liked_meta)
+                .await
+                .is_err()
+            {
+                tokio::fs::remove_file(&liked_meta_temp).await.ok();
+            }
+        }
+        if tokio::fs::remove_file(&audio).await.is_ok() {
             tokio::fs::remove_file(&audio_meta).await.ok();
         }
-        tokio::fs::remove_file(&audio).await.ok();
         true
     }
 
@@ -2367,11 +2589,12 @@ impl TrackCacheState {
 
     pub fn clear_cache(&self) {
         clear_audio_dir(&self.audio_dir);
-        clear_audio_dir(&self.incoming_dir);
+        clear_incoming_by_liked(&self.incoming_dir, false);
     }
 
     pub fn clear_liked_cache(&self) {
         clear_audio_dir(&self.liked_dir);
+        clear_incoming_by_liked(&self.incoming_dir, true);
     }
 
     pub fn remove_cached(&self, urn: &str) -> bool {
