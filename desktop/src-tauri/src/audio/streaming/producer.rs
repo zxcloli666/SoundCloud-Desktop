@@ -107,17 +107,17 @@ async fn commit_finished(buffer: &StreamingBuffer, context: &ProducerContext) {
     // increments `load_gen`, it either wins before this check (we abort) or waits
     // for these locks and clears our data afterwards. An old producer can no
     // longer overwrite the source of the newly selected track.
-    let mut source_bytes = audio.source_bytes.lock().unwrap();
-    let mut active_stream = audio.active_stream.lock().unwrap();
-    if !is_current(&context.app, context.generation) {
-        return;
+    {
+        let mut source_bytes = audio.source_bytes.lock().unwrap();
+        let mut active_stream = audio.active_stream.lock().unwrap();
+        if !is_current(&context.app, context.generation) {
+            return;
+        }
+        *source_bytes = Some(data.clone());
+        // The complete byte source is now the canonical seek fallback. Dropping this
+        // handle only releases our extra Arc; the live decoder keeps its own reader.
+        *active_stream = None;
     }
-    *source_bytes = Some(data.clone());
-    // The complete byte source is now the canonical seek fallback. Dropping this
-    // handle only releases our extra Arc; the live decoder keeps its own reader.
-    *active_stream = None;
-    drop(active_stream);
-    drop(source_bytes);
 
     if let Err(error) = context
         .cache
