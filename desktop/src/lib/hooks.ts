@@ -26,6 +26,7 @@ import {
   type HomeRecommendationFeedback,
   type HomeRecommendationInput,
   type HomeRecommendationMode,
+  recommendationTrackFromInput,
 } from './home-recommendations';
 import { initLikedUrns } from './likes';
 import { rememberLikedTracks, rememberTracks } from './offline-index';
@@ -1122,10 +1123,6 @@ export interface DiscoverFeedOptions {
   feedback?: HomeRecommendationFeedback;
 }
 
-function recommendationInputTrack(input: HomeRecommendationInput): Track {
-  return 'track' in input && Array.isArray(input.sources) ? input.track : input;
-}
-
 /**
  * Shared Discover feed. Hydrated cluster candidates are the primary source;
  * the bounded related fan-out only starts after that source resolves empty.
@@ -1143,7 +1140,7 @@ export function useDiscoverFeed(options: DiscoverFeedOptions = {}) {
     [likedTracks, recentTracks],
   );
   const primaryTracks = useMemo(
-    () => primaryCandidates.map(recommendationInputTrack),
+    () => primaryCandidates.map(recommendationTrackFromInput),
     [primaryCandidates],
   );
   const primaryBlockedUrns = useMemo(

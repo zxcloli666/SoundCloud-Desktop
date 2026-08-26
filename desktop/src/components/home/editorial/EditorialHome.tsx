@@ -9,6 +9,7 @@ import {
   curateHomeRecommendations,
   type HomeRecommendationFeedback,
   type HomeRecommendationInput,
+  recommendationTrackFromInput,
 } from '../../../lib/home-recommendations';
 import { useHistory, useLikedTracks } from '../../../lib/hooks';
 import { Pause, Play, Plus, RefreshCw } from '../../../lib/icons';
@@ -31,10 +32,6 @@ function uniqueTracks(tracks: Track[]): Track[] {
     seen.add(track.urn);
     return true;
   });
-}
-
-function recommendationTrack(input: HomeRecommendationInput): Track {
-  return 'track' in input && Array.isArray(input.sources) ? input.track : input;
 }
 
 function recommendationCluster(input: HomeRecommendationInput): string | null {
@@ -418,7 +415,7 @@ export function EditorialHome() {
       void dislikeVersion;
       const blocked = new Set<string>();
       for (const input of rawRecommendations) {
-        const track = recommendationTrack(input);
+        const track = recommendationTrackFromInput(input);
         if (isUrnDisliked(track.urn)) blocked.add(track.urn);
       }
       if (hideListened) {
@@ -460,7 +457,7 @@ export function EditorialHome() {
     if (preview) return attribution;
     for (const input of rawRecommendations) {
       const cluster = recommendationCluster(input);
-      if (cluster) attribution.set(recommendationTrack(input).urn, cluster);
+      if (cluster) attribution.set(recommendationTrackFromInput(input).urn, cluster);
     }
     return attribution;
   }, [preview, rawRecommendations]);

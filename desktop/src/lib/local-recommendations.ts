@@ -1,14 +1,12 @@
-import type { HomeRecommendationInput, HomeRecommendationMode } from './home-recommendations';
 import {
   curateHomeRecommendations,
+  type HomeRecommendationInput,
+  type HomeRecommendationMode,
+  recommendationTrackFromInput,
 } from './home-recommendations';
 import { isUrnDisliked } from './dislikes';
 import { useRecommendationTasteStore } from '../stores/recommendation-taste';
 import { useSettingsStore } from '../stores/settings';
-
-function inputUrn(input: HomeRecommendationInput): string {
-  return 'track' in input && Array.isArray(input.sources) ? input.track.urn : input.urn;
-}
 
 /**
  * Imperative local rerank for queue refill and seed-specific recommendation
@@ -30,7 +28,7 @@ export function curateWithLocalTaste(
   const recentUrns = new Set(recentTracks.map((track) => track.urn));
   const blockedUrns = new Set<string>();
   for (const input of inputs) {
-    const urn = inputUrn(input);
+    const urn = recommendationTrackFromInput(input).urn;
     if (isUrnDisliked(urn)) blockedUrns.add(urn);
   }
   if (options.hideListened) {

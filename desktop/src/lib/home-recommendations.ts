@@ -82,6 +82,10 @@ function isClusterCandidate(input: HomeRecommendationInput): input is ClusterCan
   return 'track' in input && Array.isArray(input.sources);
 }
 
+export function recommendationTrackFromInput(input: HomeRecommendationInput): Track {
+  return isClusterCandidate(input) ? input.track : input;
+}
+
 function artistKey(track: Track): string {
   const urn = track.user?.urn?.trim();
   if (urn) return urn;
