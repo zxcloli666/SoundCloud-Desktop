@@ -2,7 +2,6 @@ import { memo, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Clock, Search as SearchIcon, X } from '../../lib/icons';
-import { isMac } from '../../lib/platform';
 import { useSearchHistoryStore } from '../../stores/searchHistory';
 import { useSearchQueryStore } from '../../stores/searchQuery';
 import { isSoundCloudUrl } from '../search/utils';
@@ -10,7 +9,7 @@ import { isSoundCloudUrl } from '../search/utils';
 /* The one global search field — lives in the titlebar, present on every page.
  * Writes the shared query store and routes to /search; the Search page reads
  * that store, so there's a single search input app-wide. Glass lens, accent glow
- * on focus, ⌘K hint, recent-search dropdown. */
+ * on focus and a recent-search dropdown. */
 export const GlobalSearch = memo(function GlobalSearch() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -77,7 +76,7 @@ export const GlobalSearch = memo(function GlobalSearch() {
             {t('search.urlHint')}
           </span>
         )}
-        {q ? (
+        {q && (
           <button
             type="button"
             onClick={() => setQ('')}
@@ -86,12 +85,6 @@ export const GlobalSearch = memo(function GlobalSearch() {
           >
             <X size={15} />
           </button>
-        ) : (
-          !focused && (
-            <kbd className="mr-1 hidden h-5 shrink-0 items-center gap-0.5 border border-white/[0.08] px-1.5 text-[9px] font-semibold tracking-wide text-white/24 sm:flex">
-              {isMac() ? '⌘' : 'Ctrl'} K
-            </kbd>
-          )
         )}
       </div>
 

@@ -4,6 +4,7 @@ import {changeAppLanguage} from '../i18n';
 import {applyAccentVars, applyBgVars, applyPerfMode} from '../lib/apply-theme';
 import {setupVisibilityGate} from '../lib/perf';
 import {useSettingsStore} from '../stores/settings';
+import '../fonts';
 import '../index.css';
 import './tray.css';
 import {MiniPlayer} from './MiniPlayer';

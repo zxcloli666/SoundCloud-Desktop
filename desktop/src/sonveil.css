@@ -1586,14 +1586,14 @@
   gap: 8px;
   padding: 0;
   color: rgba(255, 255, 255, 0.35);
-  font-family: "JetBrains Mono", monospace;
+  font-family: var(--font-sans);
   font-size: 9px;
-  font-weight: 500;
+  font-weight: 700;
 }
 
 .npb-times b {
   color: rgba(255, 255, 255, 0.72);
-  font-weight: 500;
+  font-weight: 700;
   text-align: right;
 }
 
@@ -1614,9 +1614,9 @@
   border-radius: 4px;
   background: rgba(9, 9, 11, 0.9);
   color: rgba(255, 255, 255, 0.8);
-  font-family: "JetBrains Mono", monospace;
+  font-family: var(--font-sans);
   font-size: 8px;
-  font-weight: 500;
+  font-weight: 700;
   text-shadow: none;
 }
 

@@ -3,16 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { NavLink, useLocation } from 'react-router-dom';
 import sonveilMark from '../../assets/sonveil-mark.svg';
 import { art } from '../../lib/formatters';
-import {
-  Clock,
-  Compass,
-  Download,
-  Home,
-  Library,
-  ListMusic,
-  Search,
-  Settings,
-} from '../../lib/icons';
+import { Clock, Compass, Download, Home, Library, ListMusic, Settings } from '../../lib/icons';
 import { useAppMode } from '../../stores/app-status';
 import { useAuthStore } from '../../stores/auth';
 import { useSettingsStore } from '../../stores/settings';
@@ -22,7 +13,6 @@ type IconCmp = React.ComponentType<{ size?: number; strokeWidth?: number; classN
 
 const primaryNav: { to: string; icon: IconCmp; label: string }[] = [
   { to: '/home', icon: Home, label: 'nav.home' },
-  { to: '/search', icon: Search, label: 'nav.search' },
   { to: '/library/likes', icon: Library, label: 'nav.library' },
 ];
 
