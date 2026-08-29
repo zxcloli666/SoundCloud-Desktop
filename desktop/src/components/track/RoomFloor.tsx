@@ -31,9 +31,12 @@ export const RoomFloor = React.memo(function RoomFloor({
             if (elapsedRef.current) elapsedRef.current.textContent = '0:00';
             return;
         }
+        let lastSecond = -1;
         const paint = () => {
-            if (elapsedRef.current)
-                elapsedRef.current.textContent = durLong(Math.floor(getCurrentTime() * 1000));
+            const second = Math.floor(getCurrentTime());
+            if (second === lastSecond) return;
+            lastSecond = second;
+            if (elapsedRef.current) elapsedRef.current.textContent = durLong(second * 1000);
         };
         paint();
         return subscribe(paint);

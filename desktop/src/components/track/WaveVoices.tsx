@@ -13,6 +13,17 @@ interface Dot {
 const SLOTS = 46;
 const BLOOM_MS = 4600;
 
+function firstDotAfter(dots: Dot[], pct: number): number {
+    let lo = 0;
+    let hi = dots.length;
+    while (lo < hi) {
+        const mid = (lo + hi) >> 1;
+        if (dots[mid].pct <= pct) lo = mid + 1;
+        else hi = mid;
+    }
+    return lo;
+}
+
 /** Comments live ON the wave: a faint dot at each timestamped comment's moment.
  *  Hover peeks it; click jumps there; and while this track plays, a dot blooms
  *  upward as the playhead sweeps past it — all DOM-driven, no per-frame React. */
@@ -55,6 +66,7 @@ export const WaveVoices = React.memo(function WaveVoices({
             const d = getDuration();
             return d > 0 ? getCurrentTime() / d : 0;
         })();
+        let cursor = firstDotAfter(dots, prev);
 
         const tick = () => {
             const d = getDuration();
@@ -62,9 +74,14 @@ export const WaveVoices = React.memo(function WaveVoices({
             const cur = Math.min(1, Math.max(0, getCurrentTime() / d));
             const delta = cur - prev;
             if (delta > 0 && delta < 0.03) {
-                for (let i = 0; i < dots.length; i++) {
-                    if (dots[i].pct > prev && dots[i].pct <= cur) bloom(i);
+                while (cursor < dots.length && dots[cursor].pct <= cur) {
+                    if (dots[cursor].pct > prev) bloom(cursor);
+                    cursor++;
                 }
+            } else if (delta < 0 || delta >= 0.03) {
+                // A backwards/large jump is a seek: skip the burst and place the
+                // cursor directly after the new playhead for subsequent natural ticks.
+                cursor = firstDotAfter(dots, cur);
             }
             prev = cur;
         };

@@ -16,7 +16,7 @@
   --color-accent-selection: rgba(217, 109, 61, 0.28);
   --color-accent-contrast: #ffffff;
 
-  --font-sans: "Inter", "SF Pro Display", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-sans: "Manrope", "SF Pro Display", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   --font-serif: "Fraunces", Georgia, "Times New Roman", serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   /* Geometric techno-display for hero numerals (STAR price) — bold, energy-core vibe. */

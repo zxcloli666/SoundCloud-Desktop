@@ -1,7 +1,7 @@
 import {useCallback, useState} from 'react';
 import {fetchAllLikedTracks, useLikedTracks} from '../../lib/hooks';
 import {armLikesContinuation} from '../../lib/queue-continuation';
-import {usePlayerStore} from '../../stores/player';
+import {getPlayerQueueRevision, usePlayerStore} from '../../stores/player';
 
 function pickRandom<T>(arr: T[]): T {
     return arr[Math.floor(Math.random() * arr.length)];
@@ -29,14 +29,14 @@ export function useShuffleLikes() {
         }
 
         play(pickRandom(likedTracks), likedTracks);
-        const started = usePlayerStore.getState().queue;
+        const startedRevision = getPlayerQueueRevision();
         armLikesContinuation();
 
         setLoading(true);
         try {
             const all = await fetchAllLikedTracks();
             const {queue, addToQueue} = usePlayerStore.getState();
-            if (queue !== started) return;
+            if (getPlayerQueueRevision() !== startedRevision) return;
             const queued = new Set(queue.map((t) => t.urn));
             const rest = all.filter((t) => !queued.has(t.urn));
             if (rest.length > 0) addToQueue(rest);

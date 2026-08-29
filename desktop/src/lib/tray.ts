@@ -9,6 +9,7 @@ import {invalidateAllLikesCache} from './hooks';
 import {commitOptimisticLike, isUrnLiked, optimisticToggleLike} from './likes';
 import {queryClient} from './query-client';
 import {getArtistDisplay, getDisplayTitle} from './track-display';
+import {areTraySnapshotsEqual, type TrayNowPlayingSnapshot} from './tray-snapshot';
 
 /* ── Tray-popover bridge ─────────────────────────────────────────
    The tray-popover is a separate webview with no player state. This window stays
@@ -16,23 +17,7 @@ import {getArtistDisplay, getDisplayTitle} from './track-display';
    and replies to `tray:hello`, while the popover sends `tray:cmd` back here so all
    queue/seek/like logic runs in exactly one place. */
 
-interface TrayNp {
-    hasTrack: boolean;
-    title: string;
-    artist: string;
-    artworkUrl: string | null;
-    artworkLarge: string | null;
-    isPlaying: boolean;
-    volume: number;
-    liked: boolean;
-    disliked: boolean;
-    shuffle: boolean;
-    repeat: 'off' | 'one' | 'all';
-    durationSec: number;
-    abLoop: { a: number; b: number | null } | null;
-}
-
-function buildNp(): TrayNp {
+function buildNp(): TrayNowPlayingSnapshot {
     const s = usePlayerStore.getState();
     const tr = s.currentTrack;
     if (!tr) {
@@ -69,8 +54,13 @@ function buildNp(): TrayNp {
     };
 }
 
-function emitNp() {
-    void emit('tray:np', buildNp());
+let lastEmittedNp: TrayNowPlayingSnapshot | null = null;
+
+function emitNp(force = false) {
+    const next = buildNp();
+    if (!force && lastEmittedNp && areTraySnapshotsEqual(lastEmittedNp, next)) return;
+    lastEmittedNp = next;
+    void emit('tray:np', next);
 }
 
 // Coalesce bursty change sources (volume drag, query-cache churn) to one emit per frame.
@@ -112,9 +102,10 @@ async function toggleDislikeCurrent() {
         api(`/likes/tracks/${encodeURIComponent(tr.urn)}`, {method: 'DELETE'}).catch(() => {
         });
     }
+    const dislikePromise = toggleDislike(queryClient, tr, next);
     // Disliking the current track skips it, mirroring the now-bar dislike button.
-    if (next) usePlayerStore.getState().next();
-    await toggleDislike(queryClient, tr, next);
+    if (next) usePlayerStore.getState().next('dislike');
+    await dislikePromise;
     pushNp();
 }
 
@@ -183,15 +174,32 @@ listen<{ action: string; value?: number }>('tray:cmd', (event) => {
 });
 
 // Fresh snapshot whenever the popover (re)opens.
-listen('tray:hello', () => emitNp());
+listen('tray:hello', () => emitNp(true));
 
 /* ── Snapshot fan-out ────────────────────────────────────────── */
 
-usePlayerStore.subscribe(pushNp);
+usePlayerStore.subscribe((state, prev) => {
+    if (
+        state.currentTrack !== prev.currentTrack ||
+        state.isPlaying !== prev.isPlaying ||
+        state.volume !== prev.volume ||
+        state.shuffle !== prev.shuffle ||
+        state.repeat !== prev.repeat ||
+        state.abLoop !== prev.abLoop
+    ) {
+        pushNp();
+    }
+});
 
 // Like/dislike state lives in TanStack Query — re-push when the current track's
 // reaction caches change (toggles from the main UI).
 queryClient.getQueryCache().subscribe((ev) => {
     const k = ev?.query?.queryKey;
-    if (Array.isArray(k) && (k[0] === 'track' || k[0] === 'dislikes')) pushNp();
+    if (!Array.isArray(k)) return;
+    if (k[0] === 'dislikes') {
+        pushNp();
+        return;
+    }
+    const currentUrn = usePlayerStore.getState().currentTrack?.urn;
+    if (k[0] === 'track' && k[1] === currentUrn) pushNp();
 });

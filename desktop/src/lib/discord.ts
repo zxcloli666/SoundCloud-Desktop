@@ -7,6 +7,7 @@ import { getArtistDisplay, getDisplayTitle } from './track-display';
 
 let connected = false;
 let lastConnectAttemptAt = 0;
+let connectPromise: Promise<boolean> | null = null;
 const CONNECT_RETRY_MS = 5000;
 
 async function ensureConnected(): Promise<boolean> {
@@ -14,17 +15,22 @@ async function ensureConnected(): Promise<boolean> {
     return false;
   }
   if (connected) return true;
+  if (connectPromise) return connectPromise;
   const now = Date.now();
   if (now - lastConnectAttemptAt < CONNECT_RETRY_MS) {
     return false;
   }
   lastConnectAttemptAt = now;
-  try {
-    connected = await invoke<boolean>('discord_connect');
-    return connected;
-  } catch {
-    return false;
-  }
+  connectPromise = invoke<boolean>('discord_connect')
+    .then((result) => {
+      connected = result;
+      return result;
+    })
+    .catch(() => false)
+    .finally(() => {
+      connectPromise = null;
+    });
+  return connectPromise;
 }
 
 function artworkToLarge(url: string | null): string | undefined {
@@ -35,17 +41,30 @@ function artworkToLarge(url: string | null): string | undefined {
 async function updatePresence(track: Track) {
   if (!(await ensureConnected())) return;
 
+  // A connect can outlive a fast track switch or a settings toggle. Never let
+  // that stale continuation publish metadata for a track that is no longer active.
+  const activeTrack = usePlayerStore.getState().currentTrack;
+  if (
+    !activeTrack ||
+    activeTrack.urn !== track.urn ||
+    !useSettingsStore.getState().discordRpcEnabled
+  ) {
+    return;
+  }
+
   try {
     const isPlaying = usePlayerStore.getState().isPlaying;
     const { discordRpcMode, discordRpcShowButton } = useSettingsStore.getState();
-    const display = getArtistDisplay(track);
+    const display = getArtistDisplay(activeTrack);
     await invoke('discord_set_activity', {
       track: {
-        title: getDisplayTitle(track),
-        artist: display.primary || track.user.username,
-        artwork_url: artworkToLarge(track.artwork_url),
-        track_url: track.permalink_url ? `${track.permalink_url}`.replace(/\?.*$/, '') : undefined,
-        duration_secs: Math.round(track.duration / 1000),
+        title: getDisplayTitle(activeTrack),
+        artist: display.primary || activeTrack.user.username,
+        artwork_url: artworkToLarge(activeTrack.artwork_url),
+        track_url: activeTrack.permalink_url
+          ? `${activeTrack.permalink_url}`.replace(/\?.*$/, '')
+          : undefined,
+        duration_secs: Math.round(activeTrack.duration / 1000),
         elapsed_secs: Math.round(getCurrentTime()),
         is_playing: isPlaying,
         mode: discordRpcMode,
@@ -77,7 +96,7 @@ function schedulePresenceSync(track: Track, delayMs: number) {
   seekSyncTimer = setTimeout(() => {
     seekSyncTimer = null;
     lastElapsed = Math.round(getCurrentTime());
-    updatePresence(track);
+    void updatePresence(track);
   }, delayMs);
 }
 
@@ -109,7 +128,7 @@ usePlayerStore.subscribe((state) => {
     lastUrn = currentTrack.urn;
     lastPlaying = isPlaying;
     lastElapsed = Math.round(getCurrentTime());
-    updatePresence(currentTrack);
+    void updatePresence(currentTrack);
   }
 });
 
@@ -151,6 +170,7 @@ subscribeAudioTime(() => {
   if (!isPlaying) return;
 
   const elapsed = Math.round(getCurrentTime());
+  if (elapsed === lastElapsed) return;
   const drift = Math.abs(elapsed - lastElapsed);
 
   // Re-sync Discord timestamps on manual seek / large jumps without spamming updates every second.

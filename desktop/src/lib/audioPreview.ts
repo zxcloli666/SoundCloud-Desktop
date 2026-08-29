@@ -48,6 +48,8 @@ function canPreview(urn: string): boolean {
  * is handled separately by `preloadTrack`.
  */
 export function startHoverPreview(urn: string): void {
+    if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
+    if (!canPreview(urn)) return;
     if (activeUrn === urn || pendingUrn === urn) return;
     if (hoverTimer) clearTimeout(hoverTimer);
     pendingUrn = urn;

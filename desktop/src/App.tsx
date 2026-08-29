@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { useShallow } from 'zustand/shallow';
+import sonveilMark from './assets/sonveil-mark.svg';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { AppShell } from './components/layout/AppShell';
 import { ThemeProvider } from './components/ThemeProvider';
@@ -378,14 +379,17 @@ function AppLoadingScreen({ fullscreen = false }: { fullscreen?: boolean }) {
       className={`flex items-center justify-center px-6 py-8 ${fullscreen ? 'h-screen' : 'min-h-[42vh]'}`}
     >
       <div className="flex items-center gap-3 border border-white/8 bg-[#111114] px-4 py-3">
-        <div className="flex size-9 items-center justify-center border border-white/10 bg-black/20">
-          <div className="size-4 rounded-full border-2 border-accent border-t-transparent animate-spin" />
+        <div className="flex h-9 w-12 items-center justify-center border border-white/10 bg-black/20">
+          <img className="w-10" src={sonveilMark} alt="" draggable={false} />
         </div>
         <div className="min-w-0">
-          <div className="font-serif text-[10px] uppercase tracking-[0.28em] text-white/36">
-            Sonveil
+          <div className="text-[10px] font-bold lowercase tracking-[-0.02em] text-white/36">
+            sonveil
           </div>
-          <div className="mt-0.5 text-[13px] font-medium text-white/62">{t('common.loading')}</div>
+          <div className="mt-0.5 flex items-center gap-2 text-[13px] font-medium text-white/62">
+            {t('common.loading')}
+            <span className="size-3 rounded-full border-2 border-accent border-t-transparent animate-spin" />
+          </div>
         </div>
       </div>
     </div>

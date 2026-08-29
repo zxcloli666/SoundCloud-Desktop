@@ -8,15 +8,12 @@ import { type Track, usePlayerStore } from '../../../stores/player';
 import { ArtistNameLinks } from '../ArtistNameLinks';
 import { TrackStatusBadges } from '../TrackStatusBadges';
 import { UploadKindDot } from '../UploadKindDot';
-import { PlayingOverlay } from './PlayingOverlay';
 
 const QueueTrackRowBody = React.memo(function QueueTrackRowBody({
   track,
-  isCurrent,
   onClick,
 }: {
   track: Track;
-  isCurrent: boolean;
   onClick?: () => void;
 }) {
   const artistDisplay = useArtistDisplay(track);
@@ -25,7 +22,7 @@ const QueueTrackRowBody = React.memo(function QueueTrackRowBody({
   return (
     <div className="flex-1 min-w-0 cursor-pointer" onClick={onClick}>
       <p
-        className={`text-[12px] truncate leading-snug ${isCurrent ? 'text-accent font-medium' : 'text-white/80'}`}
+        className="text-[12px] truncate leading-snug text-white/80"
       >
         {displayTitle}
       </p>
@@ -46,15 +43,11 @@ export const QueueRow = React.memo(function QueueRow({
   track,
   absIdx,
   position,
-  isCurrent,
-  isPlaying,
 }: {
   track: Track;
   absIdx: number;
   /** 1-based position in the up-next list (shown until hovered → grip). */
   position: number;
-  isCurrent: boolean;
-  isPlaying: boolean;
 }) {
   const artwork = art(track.artwork_url, 't200x200');
 
@@ -63,10 +56,7 @@ export const QueueRow = React.memo(function QueueRow({
   });
 
   const handleClick = () => {
-    const s = usePlayerStore.getState();
-    if (absIdx === s.queueIndex && s.isPlaying) s.pause();
-    else if (absIdx === s.queueIndex) s.resume();
-    else s.playFromQueue(absIdx);
+    usePlayerStore.getState().playFromQueue(absIdx);
   };
 
   const handleRemove = () => usePlayerStore.getState().removeFromQueue(absIdx);
@@ -76,11 +66,7 @@ export const QueueRow = React.memo(function QueueRow({
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition }}
       className={`flex items-center gap-2.5 pl-2 pr-2.5 py-2 rounded-xl group transition-colors duration-150 select-none ${
-        isDragging
-          ? 'opacity-30'
-          : isCurrent
-            ? 'bg-white/[0.08] ring-1 ring-white/[0.08]'
-            : 'hover:bg-white/[0.05]'
+        isDragging ? 'opacity-30' : 'hover:bg-white/[0.05]'
       }`}
     >
       <div
@@ -107,10 +93,9 @@ export const QueueRow = React.memo(function QueueRow({
         ) : (
           <div className="w-full h-full" />
         )}
-        {isCurrent && <PlayingOverlay isPlaying={isPlaying} />}
       </div>
 
-      <QueueTrackRowBody track={track} isCurrent={isCurrent} onClick={handleClick} />
+      <QueueTrackRowBody track={track} onClick={handleClick} />
 
       <div className="shrink-0">
         <TrackStatusBadges meta={track._scd_meta} />
@@ -149,7 +134,7 @@ export const QueueRowClone = React.memo(function QueueRowClone({ track }: { trac
           />
         )}
       </div>
-      <QueueTrackRowBody track={track} isCurrent={false} />
+      <QueueTrackRowBody track={track} />
     </div>
   );
 });

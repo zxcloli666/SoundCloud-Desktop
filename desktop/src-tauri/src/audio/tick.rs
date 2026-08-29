@@ -40,6 +40,7 @@ pub fn start_tick_emitter(app: &AppHandle) {
         .name("audio-tick".into())
         .spawn(move || {
             let mut last_pos_ms = 0u64;
+            let mut last_emitted_source_ms: Option<u64> = None;
             let mut last_progress_at = std::time::Instant::now();
             let mut stall_cooldown_until = std::time::Instant::now();
 
@@ -63,6 +64,7 @@ pub fn start_tick_emitter(app: &AppHandle) {
 
                 if !state.has_track.load(Ordering::Relaxed) {
                     last_pos_ms = 0;
+                    last_emitted_source_ms = None;
                     last_progress_at = std::time::Instant::now();
                     continue;
                 }
@@ -125,12 +127,22 @@ pub fn start_tick_emitter(app: &AppHandle) {
                                 drop(player_guard);
                                 engine::seek_to(&state, a).ok();
                                 handle.emit("audio:tick", a).ok();
+                                last_emitted_source_ms = Some((a.max(0.0) * 1000.0) as u64);
                                 last_pos_ms = ((a / rate).max(0.0) * 1000.0) as u64;
                                 last_progress_at = std::time::Instant::now();
                                 continue;
                             }
 
-                        handle.emit("audio:tick", pos).ok();
+                        // A paused rodio player reports the same position forever. Avoid
+                        // pushing an identical global Tauri event 10 times per second;
+                        // the tray and every frontend audio subscriber otherwise wake up
+                        // for a frame that cannot change. A seek still emits immediately
+                        // because its source position differs at millisecond precision.
+                        let source_pos_ms = (pos.max(0.0) * 1000.0) as u64;
+                        if last_emitted_source_ms != Some(source_pos_ms) {
+                            handle.emit("audio:tick", pos).ok();
+                            last_emitted_source_ms = Some(source_pos_ms);
+                        }
                         timing::process_lyrics_timeline(&handle, &state, pos);
                         timing::process_comments_timeline(&handle, &state, pos);
 

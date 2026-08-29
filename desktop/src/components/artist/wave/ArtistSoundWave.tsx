@@ -64,6 +64,10 @@ const WAVE_KEYFRAMES = `
 
 const EASE = 'cubic-bezier(0.32, 0.72, 0.24, 1)';
 
+function trackId(track: { urn: string }): string | null {
+  return track.urn.split(':').pop() ?? null;
+}
+
 function EqualizerBars({ aura }: { aura: Aura }) {
   const color = auraRgb(aura);
   return (
@@ -93,10 +97,13 @@ export const ArtistSoundWave = React.memo(function ArtistSoundWave({
   const { t } = useTranslation();
   const collapsed = useSettingsStore((s) => s.artistWaveCollapsed);
   const setCollapsed = useSettingsStore((s) => s.setArtistWaveCollapsed);
+  const languages = useSettingsStore((s) => s.soundwaveLanguages);
+  const hideLiked = useSettingsStore((s) => s.soundwaveHideLiked);
   const hideListened = useSettingsStore((s) => s.soundwaveHideListened);
   const recommendationMode = useSettingsStore((s) => s.soundwaveMode);
   const [bodyMounted, setBodyMounted] = useState(!collapsed);
   const dislikeVersion = useDislikeVersion();
+  const stableLanguages = useMemo(() => [...languages].sort(), [languages]);
 
   useEffect(() => {
     if (!collapsed) {
@@ -107,11 +114,25 @@ export const ArtistSoundWave = React.memo(function ArtistSoundWave({
     return () => clearTimeout(timer);
   }, [collapsed]);
 
+  const recommendationUrl = useMemo(() => {
+    if (!artistId) return null;
+    const query = new URLSearchParams();
+    if (stableLanguages.length > 0) query.set('languages', stableLanguages.join(','));
+    query.set('hide_liked', hideLiked ? '1' : '0');
+    query.set('hide_listened', hideListened ? '1' : '0');
+    return `/recommendations/artist/${encodeURIComponent(artistId)}?${query}`;
+  }, [artistId, hideLiked, hideListened, stableLanguages]);
+
   const { data, isLoading, isFetching, refetch } = useClusterWave({
-    queryKey: ['cluster-wave', 'artist', artistId, hideListened],
-    url: artistId
-      ? `/recommendations/artist/${encodeURIComponent(artistId)}?hide_listened=${hideListened ? '1' : '0'}`
-      : null,
+    queryKey: [
+      'cluster-wave',
+      'artist',
+      artistId,
+      stableLanguages.join(',') || 'all',
+      hideLiked,
+      hideListened,
+    ],
+    url: recommendationUrl,
     enabled: !collapsed,
   });
 
@@ -122,27 +143,48 @@ export const ArtistSoundWave = React.memo(function ArtistSoundWave({
     () => {
       void dislikeVersion;
       return (data?.clusters ?? [])
-        .map((cluster) => ({
-          ...cluster,
-          tracks: cluster.tracks.filter(
+        .map((cluster) => {
+          const eligible = cluster.tracks.filter(
             (track) => !isUrnDisliked(track.urn) && isRecommendationTrackPlayable(track),
-          ),
-        }))
+          );
+          const curatedTracks = curateWithLocalTaste(eligible, {
+            hideLiked,
+            hideListened,
+            mode: recommendationMode,
+            limit: eligible.length,
+          });
+          if (!cluster.neighbors) return { ...cluster, tracks: curatedTracks };
+
+          const neighborByTrackId = new Map(
+            cluster.neighbors.map((neighbor) => [String(neighbor.track_id), neighbor]),
+          );
+          const tracks = curatedTracks.filter((track) => {
+            const id = trackId(track);
+            return id !== null && neighborByTrackId.has(id);
+          });
+          const neighbors = tracks.flatMap((track) => {
+            const id = trackId(track);
+            const neighbor = id === null ? undefined : neighborByTrackId.get(id);
+            return neighbor ? [neighbor] : [];
+          });
+          return { ...cluster, tracks, neighbors };
+        })
         .filter((cluster) => cluster.tracks.length > 0);
     },
-    [data, dislikeVersion],
+    [data, dislikeVersion, hideLiked, hideListened, recommendationMode],
   );
   const allTracks = useMemo(
     () => {
       void dislikeVersion;
       const inputs = data?.candidates?.length ? data.candidates : (data?.allTracks ?? []);
       return curateWithLocalTaste(inputs, {
+        hideLiked,
         hideListened,
         mode: recommendationMode,
         limit: inputs.length,
       });
     },
-    [data, dislikeVersion, hideListened, recommendationMode],
+    [data, dislikeVersion, hideLiked, hideListened, recommendationMode],
   );
   const waveUrns = useMemo(() => new Set(allTracks.map((t) => t.urn)), [allTracks]);
   const isPlayingFromWave = isPlaying && !!currentUrn && waveUrns.has(currentUrn);
@@ -165,6 +207,8 @@ export const ArtistSoundWave = React.memo(function ArtistSoundWave({
     seedId: artistId,
     initialTracks: waveCluster?.tracks ?? [],
     initialCursor: null,
+    languages: stableLanguages,
+    hideLiked,
     hideListened,
   });
 
@@ -191,6 +235,7 @@ export const ArtistSoundWave = React.memo(function ArtistSoundWave({
       ? result.data.candidates
       : (result.data?.allTracks ?? []);
     const fetchedTracks = curateWithLocalTaste(fetchedInputs, {
+      hideLiked,
       hideListened,
       mode: recommendationMode,
       limit: fetchedInputs.length,
@@ -198,7 +243,16 @@ export const ArtistSoundWave = React.memo(function ArtistSoundWave({
     if (fetchedTracks.length > 0) {
       usePlayerStore.getState().play(fetchedTracks[0], fetchedTracks);
     }
-  }, [allTracks, currentUrn, hideListened, isPlayingFromWave, recommendationMode, refetch, waveUrns]);
+  }, [
+    allTracks,
+    currentUrn,
+    hideLiked,
+    hideListened,
+    isPlayingFromWave,
+    recommendationMode,
+    refetch,
+    waveUrns,
+  ]);
 
   const handleToggleCollapsed = useCallback(() => {
     if (collapsed) setBodyMounted(true);
@@ -428,7 +482,7 @@ export const ArtistSoundWave = React.memo(function ArtistSoundWave({
                           icon={CLUSTER_ICON[c.id]}
                           index={idx}
                           cluster={c}
-                          queue={allTracks}
+                          queue={c.tracks}
                         />
                       ) : (
                         <ClusterRow
@@ -439,7 +493,7 @@ export const ArtistSoundWave = React.memo(function ArtistSoundWave({
                           icon={CLUSTER_ICON[c.id]}
                           index={idx}
                           tracks={c.tracks}
-                          queue={allTracks}
+                          queue={c.tracks}
                         />
                       ),
                     )}

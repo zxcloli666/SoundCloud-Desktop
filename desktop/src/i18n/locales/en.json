@@ -96,9 +96,9 @@
   },
   "qrLink": {
     "pullTitle": "Sign in with another device",
-    "pullSubtitle": "Open SoundCloud Desktop on your phone or another device that's already signed in, then scan this code.",
+    "pullSubtitle": "Open Sonveil on your phone or another device that's already signed in, then scan this code.",
     "pushTitle": "Add another device",
-    "pushSubtitle": "Open SoundCloud Desktop on your phone (or another device) and scan this code to sign in there.",
+    "pushSubtitle": "Open Sonveil on your phone (or another device) and scan this code to sign in there.",
     "preparing": "Generating secure code…",
     "expiresIn": "Expires in {{seconds}}s",
     "pullSuccess": "You're signed in.",

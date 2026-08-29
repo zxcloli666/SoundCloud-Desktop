@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { type PersistStorage, persist } from 'zustand/middleware';
 import { nextQueueIndex, previousQueueIndex } from '../lib/player-navigation';
 import { createThrottledJsonStorage } from '../lib/tauri-storage';
 
@@ -102,6 +102,7 @@ export interface Track {
 
 export type RepeatMode = 'off' | 'one' | 'all';
 export type PlaybackQuality = 'hq' | 'sq';
+export type QueueAdvanceReason = 'manual' | 'ended' | 'dislike';
 
 /**
  * A-B loop ("best part" repeat). Bounds are in **source seconds**.
@@ -120,8 +121,10 @@ export const AB_MIN_GAP = 0.2;
  * Module-level slot для обработчика "очередь кончилась". Не часть PlayerState,
  * чтобы persist его не сериализовал. Регистрирует lib/queue-autopilot.ts.
  */
-let endOfQueueFallback: ((lastTrack: Track) => void) | null = null;
-export function setEndOfQueueFallback(fn: (lastTrack: Track) => void): void {
+let endOfQueueFallback: ((lastTrack: Track, reason: QueueAdvanceReason) => void) | null = null;
+export function setEndOfQueueFallback(
+  fn: (lastTrack: Track, reason: QueueAdvanceReason) => void,
+): void {
   endOfQueueFallback = fn;
 }
 
@@ -131,9 +134,19 @@ export function setEndOfQueueFallback(fn: (lastTrack: Track) => void): void {
  * (напр. лайки) не дотягивался в чужую очередь. Регистрирует queue-autopilot.ts.
  */
 let onPlaybackContextReset: (() => void) | null = null;
+let queueRevision = 0;
 
 export function setPlaybackContextResetHandler(fn: () => void): void {
   onPlaybackContextReset = fn;
+}
+
+/** Structural queue version; metadata-only replacements intentionally do not advance it. */
+export function getPlayerQueueRevision(): number {
+  return queueRevision;
+}
+
+function markQueueChanged(): void {
+  queueRevision += 1;
 }
 
 // Mirrors the Rust DownloadSource enum (serde rename_all = "lowercase").
@@ -177,10 +190,132 @@ export function getEffectivePitchSemitones(
 }
 
 export function shuffleArray<T>(arr: T[]): void {
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+  shuffleArrayRange(arr, 0);
+}
+
+function shuffleArrayRange<T>(arr: T[], start: number): void {
+  for (let i = arr.length - 1; i > start; i--) {
+    const j = start + Math.floor(Math.random() * (i - start + 1));
     [arr[i], arr[j]] = [arr[j], arr[i]];
   }
+}
+
+interface PersistedPlayerState {
+  volume: number;
+  volumeBeforeMute: number;
+  currentTrack: Track | null;
+  queue: Track[];
+  queueIndex: number;
+  shuffle: boolean;
+  repeat: RepeatMode;
+  playbackRate: number;
+  pitchSemitones: number;
+  pitchControlMode: PitchControlMode;
+}
+
+let persistedQueueSource: Track[] | null = null;
+let persistedQueueStart = -1;
+let persistedQueueWindow: Track[] = [];
+let persistedSnapshot: PersistedPlayerState | null = null;
+
+function partializePlayerState(state: PlayerState): PersistedPlayerState {
+  const start = Math.max(0, state.queueIndex - PERSISTED_QUEUE_BEHIND);
+  if (state.queue !== persistedQueueSource || start !== persistedQueueStart) {
+    persistedQueueSource = state.queue;
+    persistedQueueStart = start;
+    persistedQueueWindow = state.queue.slice(start, start + PERSISTED_QUEUE_WINDOW);
+  }
+
+  const queueIndex = state.queueIndex < 0 ? state.queueIndex : state.queueIndex - start;
+  if (
+    persistedSnapshot &&
+    persistedSnapshot.volume === state.volume &&
+    persistedSnapshot.volumeBeforeMute === state.volumeBeforeMute &&
+    persistedSnapshot.currentTrack === state.currentTrack &&
+    persistedSnapshot.queue === persistedQueueWindow &&
+    persistedSnapshot.queueIndex === queueIndex &&
+    persistedSnapshot.shuffle === state.shuffle &&
+    persistedSnapshot.repeat === state.repeat &&
+    persistedSnapshot.playbackRate === state.playbackRate &&
+    persistedSnapshot.pitchSemitones === state.pitchSemitones &&
+    persistedSnapshot.pitchControlMode === state.pitchControlMode
+  ) {
+    return persistedSnapshot;
+  }
+
+  persistedSnapshot = {
+    volume: state.volume,
+    volumeBeforeMute: state.volumeBeforeMute,
+    currentTrack: state.currentTrack,
+    queue: persistedQueueWindow,
+    queueIndex,
+    shuffle: state.shuffle,
+    repeat: state.repeat,
+    playbackRate: state.playbackRate,
+    pitchSemitones: state.pitchSemitones,
+    pitchControlMode: state.pitchControlMode,
+  };
+  return persistedSnapshot;
+}
+
+/** Zustand persist calls storage after every set(), even when partialize() is unchanged. */
+function deduplicatePersistedState<S>(storage: PersistStorage<S>): PersistStorage<S> {
+  let hasLastState = false;
+  let lastState: S | undefined;
+  return {
+    getItem: (name) => storage.getItem(name),
+    setItem: (name, value) => {
+      if (hasLastState && Object.is(lastState, value.state)) return;
+      hasLastState = true;
+      lastState = value.state;
+      return storage.setItem(name, value);
+    },
+    removeItem: (name) => {
+      hasLastState = false;
+      lastState = undefined;
+      return storage.removeItem?.(name);
+    },
+  };
+}
+
+function appendTracksToQueue(
+  state: Pick<PlayerState, 'originalQueue' | 'queue' | 'queueIndex' | 'shuffle'>,
+  tracks: readonly Track[],
+): Pick<PlayerState, 'originalQueue' | 'queue'> {
+  const originalQueue = state.originalQueue
+    ? [...state.originalQueue, ...tracks]
+    : state.originalQueue;
+  if (state.shuffle && state.queueIndex >= 0) {
+    const queue = [...state.queue];
+    for (const track of tracks) {
+      const position =
+        state.queueIndex + 1 + Math.floor(Math.random() * (queue.length - state.queueIndex));
+      queue.splice(position, 0, track);
+    }
+    return { queue, originalQueue };
+  }
+  return { queue: [...state.queue, ...tracks], originalQueue };
+}
+
+function mergeTrackMetadata(item: Track, incoming: Track): Track {
+  if (item.urn !== incoming.urn) return item;
+  for (const key of Object.keys(incoming) as (keyof Track)[]) {
+    if (Object.getOwnPropertyDescriptor(item, key) === undefined || item[key] !== incoming[key]) {
+      return { ...item, ...incoming };
+    }
+  }
+  return item;
+}
+
+function replaceTrackInList(tracks: Track[], incoming: Track): Track[] {
+  let result: Track[] | null = null;
+  for (let index = 0; index < tracks.length; index++) {
+    const merged = mergeTrackMetadata(tracks[index], incoming);
+    if (merged === tracks[index]) continue;
+    if (!result) result = [...tracks];
+    result[index] = merged;
+  }
+  return result ?? tracks;
 }
 
 interface PlayerState {
@@ -203,7 +338,7 @@ interface PlayerState {
   pause: () => void;
   resume: () => void;
   togglePlay: () => void;
-  next: () => void;
+  next: (reason?: QueueAdvanceReason) => void;
   prev: () => void;
   setVolume: (v: number) => void;
   playbackRate: number;
@@ -216,6 +351,7 @@ interface PlayerState {
   setPitchControlMode: (mode: PitchControlMode) => void;
   setQueue: (queue: Track[]) => void;
   addToQueue: (tracks: Track[]) => void;
+  appendToQueueAndPlayNext: (tracks: Track[]) => void;
   addToQueueNext: (tracks: Track[]) => void;
   removeFromQueue: (index: number) => void;
   moveInQueue: (from: number, to: number) => void;
@@ -233,7 +369,7 @@ interface PlayerState {
 }
 
 export const usePlayerStore = create<PlayerState>()(
-  persist(
+  persist<PlayerState, [], [], PersistedPlayerState>(
     (set, get) => ({
       currentTrack: null,
       queue: [],
@@ -253,6 +389,7 @@ export const usePlayerStore = create<PlayerState>()(
 
       play: (track, queue) => {
         onPlaybackContextReset?.();
+        markQueueChanged();
         if (queue) {
           const { shuffle } = get();
           const idx = queue.findIndex((t) => t.urn === track.urn);
@@ -260,7 +397,8 @@ export const usePlayerStore = create<PlayerState>()(
 
           if (shuffle) {
             const original = [...queue];
-            const rest = [...queue.slice(0, realIdx), ...queue.slice(realIdx + 1)];
+            const rest = [...queue];
+            rest.splice(realIdx, 1);
             shuffleArray(rest);
             set({
               currentTrack: track,
@@ -290,8 +428,12 @@ export const usePlayerStore = create<PlayerState>()(
       },
 
       playFromQueue: (index) => {
-        const { queue } = get();
-        if (index < 0 || index >= queue.length) return;
+        const state = get();
+        const { queue } = state;
+        if (!Number.isInteger(index) || index < 0 || index >= queue.length) return;
+        if (state.queueIndex === index && state.currentTrack === queue[index] && state.isPlaying) {
+          return;
+        }
         set({
           currentTrack: queue[index],
           queueIndex: index,
@@ -299,16 +441,21 @@ export const usePlayerStore = create<PlayerState>()(
         });
       },
 
-      pause: () => set({ isPlaying: false }),
-      resume: () => set({ isPlaying: true }),
+      pause: () => {
+        if (get().isPlaying) set({ isPlaying: false });
+      },
+      resume: () => {
+        if (!get().isPlaying) set({ isPlaying: true });
+      },
 
       togglePlay: () => {
         const { isPlaying, currentTrack } = get();
         if (currentTrack) set({ isPlaying: !isPlaying });
       },
 
-      next: () => {
-        const { queue, queueIndex, repeat } = get();
+      next: (reason: QueueAdvanceReason = 'manual') => {
+        const state = get();
+        const { queue, queueIndex, repeat } = state;
         const nextIdx = nextQueueIndex(queue.length, queueIndex, repeat);
 
         if (nextIdx === null) {
@@ -318,7 +465,7 @@ export const usePlayerStore = create<PlayerState>()(
             // дозагрузит треки и пнёт next() ещё раз. Если нет — просто пауза.
             const last = queue[queueIndex];
             if (endOfQueueFallback && last) {
-              endOfQueueFallback(last);
+              endOfQueueFallback(last, reason);
               return;
             }
             set({ isPlaying: false });
@@ -326,6 +473,9 @@ export const usePlayerStore = create<PlayerState>()(
           return;
         }
 
+        if (queueIndex === nextIdx && state.currentTrack === queue[nextIdx] && state.isPlaying) {
+          return;
+        }
         set({
           currentTrack: queue[nextIdx],
           queueIndex: nextIdx,
@@ -334,9 +484,13 @@ export const usePlayerStore = create<PlayerState>()(
       },
 
       prev: () => {
-        const { queue, queueIndex } = get();
+        const state = get();
+        const { queue, queueIndex } = state;
         const prevIdx = previousQueueIndex(queue.length, queueIndex);
         if (prevIdx === null) return;
+        if (queueIndex === prevIdx && state.currentTrack === queue[prevIdx] && state.isPlaying) {
+          return;
+        }
         set({
           currentTrack: queue[prevIdx],
           queueIndex: prevIdx,
@@ -347,24 +501,42 @@ export const usePlayerStore = create<PlayerState>()(
       setVolume: (v) => {
         const clamped = Math.round(Math.max(0, Math.min(200, v)));
         const prev = get().volume;
+        if (clamped === prev) return;
         set({
           volume: clamped,
           ...(clamped === 0 && prev > 0 ? { volumeBeforeMute: prev } : {}),
         });
       },
 
-      setPlaybackRate: (rate) => set({ playbackRate: clampPlaybackRate(rate) }),
-      resetPlaybackRate: () => set({ playbackRate: PLAYBACK_RATE_DEFAULT }),
-      setPitchSemitones: (value) => set({ pitchSemitones: clampPitchSemitones(value) }),
-      resetPitchSemitones: () => set({ pitchSemitones: 0 }),
-      setPitchControlMode: (mode) => set({ pitchControlMode: mode }),
+      setPlaybackRate: (rate) => {
+        const nextRate = clampPlaybackRate(rate);
+        if (get().playbackRate !== nextRate) set({ playbackRate: nextRate });
+      },
+      resetPlaybackRate: () => {
+        if (get().playbackRate !== PLAYBACK_RATE_DEFAULT) {
+          set({ playbackRate: PLAYBACK_RATE_DEFAULT });
+        }
+      },
+      setPitchSemitones: (value) => {
+        const nextPitch = clampPitchSemitones(value);
+        if (get().pitchSemitones !== nextPitch) set({ pitchSemitones: nextPitch });
+      },
+      resetPitchSemitones: () => {
+        if (get().pitchSemitones !== 0) set({ pitchSemitones: 0 });
+      },
+      setPitchControlMode: (mode) => {
+        if (get().pitchControlMode !== mode) set({ pitchControlMode: mode });
+      },
 
-      setQueue: (queue) =>
+      setQueue: (queue) => {
+        if (get().queue === queue) return;
+        markQueueChanged();
         set((s) => {
           const idx = s.currentTrack ? queue.findIndex((t) => t.urn === s.currentTrack!.urn) : -1;
           if (s.shuffle && idx >= 0) {
             // Shuffle everything after current track
-            const after = [...queue.slice(0, idx), ...queue.slice(idx + 1)];
+            const after = [...queue];
+            after.splice(idx, 1);
             shuffleArray(after);
             return {
               queue: [queue[idx], ...after],
@@ -377,30 +549,34 @@ export const usePlayerStore = create<PlayerState>()(
             queueIndex: idx >= 0 ? idx : s.queueIndex,
             originalQueue: s.shuffle ? [...queue] : null,
           };
-        }),
+        });
+      },
 
-      addToQueue: (tracks) =>
+      addToQueue: (tracks) => {
+        if (tracks.length === 0) return;
+        markQueueChanged();
+        set((s) => appendTracksToQueue(s, tracks));
+      },
+
+      appendToQueueAndPlayNext: (tracks) => {
+        if (tracks.length === 0) return;
+        markQueueChanged();
         set((s) => {
-          if (s.shuffle && s.queueIndex >= 0) {
-            // Insert new tracks at random positions after current index
-            const queue = [...s.queue];
-            for (const track of tracks) {
-              const pos =
-                s.queueIndex + 1 + Math.floor(Math.random() * (queue.length - s.queueIndex));
-              queue.splice(pos, 0, track);
-            }
-            return {
-              queue,
-              originalQueue: s.originalQueue ? [...s.originalQueue, ...tracks] : null,
-            };
-          }
+          const appended = appendTracksToQueue(s, tracks);
+          const nextIndex = nextQueueIndex(appended.queue.length, s.queueIndex, s.repeat);
+          if (nextIndex === null) return appended;
           return {
-            queue: [...s.queue, ...tracks],
-            originalQueue: s.originalQueue ? [...s.originalQueue, ...tracks] : null,
+            ...appended,
+            currentTrack: appended.queue[nextIndex],
+            queueIndex: nextIndex,
+            isPlaying: true,
           };
-        }),
+        });
+      },
 
-      addToQueueNext: (tracks) =>
+      addToQueueNext: (tracks) => {
+        if (tracks.length === 0) return;
+        markQueueChanged();
         set((s) => {
           const queue = [...s.queue];
           const insertIndex = s.queueIndex >= 0 ? s.queueIndex + 1 : 0;
@@ -409,12 +585,16 @@ export const usePlayerStore = create<PlayerState>()(
             queue,
             originalQueue: s.originalQueue ? [...s.originalQueue, ...tracks] : null,
           };
-        }),
+        });
+      },
 
-      removeFromQueue: (index) =>
+      removeFromQueue: (index) => {
+        if (!Number.isInteger(index) || index < 0 || index >= get().queue.length) return;
+        markQueueChanged();
         set((s) => {
           const removed = s.queue[index];
-          const queue = s.queue.filter((_, i) => i !== index);
+          const queue = [...s.queue];
+          queue.splice(index, 1);
           const queueIndex =
             index < s.queueIndex
               ? s.queueIndex - 1
@@ -429,9 +609,23 @@ export const usePlayerStore = create<PlayerState>()(
             originalQueue = oq;
           }
           return { queue, queueIndex, originalQueue };
-        }),
+        });
+      },
 
-      moveInQueue: (from, to) =>
+      moveInQueue: (from, to) => {
+        const length = get().queue.length;
+        if (
+          !Number.isInteger(from) ||
+          !Number.isInteger(to) ||
+          from < 0 ||
+          to < 0 ||
+          from >= length ||
+          to >= length ||
+          from === to
+        ) {
+          return;
+        }
+        markQueueChanged();
         set((s) => {
           const queue = [...s.queue];
           const [item] = queue.splice(from, 1);
@@ -441,21 +635,29 @@ export const usePlayerStore = create<PlayerState>()(
           else if (from < s.queueIndex && to >= s.queueIndex) queueIndex--;
           else if (from > s.queueIndex && to <= s.queueIndex) queueIndex++;
           return { queue, queueIndex };
-        }),
+        });
+      },
 
-      clearQueue: () => set({ queue: [], queueIndex: -1, originalQueue: null }),
+      clearQueue: () => {
+        const state = get();
+        if (state.queue.length > 0 || state.queueIndex !== -1 || state.originalQueue) {
+          markQueueChanged();
+          set({ queue: [], queueIndex: -1, originalQueue: null });
+        }
+      },
 
       toggleShuffle: () => {
         const { shuffle, queue, queueIndex, currentTrack } = get();
+        markQueueChanged();
         if (!shuffle) {
           // ON: save original order, shuffle everything after current track
           const original = [...queue];
-          const after = [...queue.slice(queueIndex + 1)];
-          shuffleArray(after);
+          const shuffled = [...queue];
+          shuffleArrayRange(shuffled, Math.max(0, queueIndex + 1));
           set({
             shuffle: true,
             originalQueue: original,
-            queue: [...queue.slice(0, queueIndex + 1), ...after],
+            queue: shuffled,
           });
         } else {
           // OFF: restore original order
@@ -495,64 +697,62 @@ export const usePlayerStore = create<PlayerState>()(
           return { abLoop: null };
         }),
 
-      nudgeAbBound: (which, value) =>
-        set((s) => {
-          if (!s.abLoop) return {};
-          const { a, b } = s.abLoop;
-          if (which === 'a') {
-            const na = Math.max(0, value);
-            if (b != null && na > b - AB_MIN_GAP) return {};
-            return { abLoop: { a: na, b } };
-          }
-          const nb = Math.max(0, value);
-          if (nb < a + AB_MIN_GAP) return {};
-          return { abLoop: { a, b: nb } };
-        }),
+      nudgeAbBound: (which, value) => {
+        const abLoop = get().abLoop;
+        if (!abLoop) return;
+        const { a, b } = abLoop;
+        if (which === 'a') {
+          const nextA = Math.max(0, value);
+          if ((b != null && nextA > b - AB_MIN_GAP) || nextA === a) return;
+          set({ abLoop: { a: nextA, b } });
+          return;
+        }
+        const nextB = Math.max(0, value);
+        if (nextB < a + AB_MIN_GAP || nextB === b) return;
+        set({ abLoop: { a, b: nextB } });
+      },
 
-      clearAbLoop: () => set((s) => (s.abLoop ? { abLoop: null } : {})),
+      clearAbLoop: () => {
+        if (get().abLoop) set({ abLoop: null });
+      },
 
-      setCurrentTrackAccess: (access) =>
-        set((s) => (s.currentTrack ? { currentTrack: { ...s.currentTrack, access } } : {})),
+      setCurrentTrackAccess: (access) => {
+        const currentTrack = get().currentTrack;
+        if (currentTrack && currentTrack.access !== access) {
+          set({ currentTrack: { ...currentTrack, access } });
+        }
+      },
 
-      replaceTrackMetadata: (track) =>
-        set((s) => {
-          const mergeTrack = (item: Track) =>
-            item.urn === track.urn ? { ...item, ...track } : item;
+      replaceTrackMetadata: (track) => {
+        const state = get();
+        const currentTrack = state.currentTrack
+          ? mergeTrackMetadata(state.currentTrack, track)
+          : state.currentTrack;
+        const queue = replaceTrackInList(state.queue, track);
+        const originalQueue = state.originalQueue
+          ? replaceTrackInList(state.originalQueue, track)
+          : state.originalQueue;
+        if (
+          currentTrack !== state.currentTrack ||
+          queue !== state.queue ||
+          originalQueue !== state.originalQueue
+        ) {
+          set({ currentTrack, queue, originalQueue });
+        }
+      },
 
-          return {
-            currentTrack:
-              s.currentTrack?.urn === track.urn ? { ...s.currentTrack, ...track } : s.currentTrack,
-            queue: s.queue.map(mergeTrack),
-            originalQueue: s.originalQueue?.map(mergeTrack) ?? null,
-          };
-        }),
-
-      setPlaybackTransport: (quality, source) =>
-        set((state) =>
-          state.playbackQuality === quality && state.playbackSource === source
-            ? state
-            : { playbackQuality: quality, playbackSource: source },
-        ),
+      setPlaybackTransport: (quality, source) => {
+        const state = get();
+        if (state.playbackQuality !== quality || state.playbackSource !== source) {
+          set({ playbackQuality: quality, playbackSource: source });
+        }
+      },
     }),
     {
       name: 'sc-player',
-      storage: createThrottledJsonStorage(1_500),
+      storage: deduplicatePersistedState(createThrottledJsonStorage<PersistedPlayerState>(1_500)),
       version: 3,
-      partialize: (state) => {
-        const start = Math.max(0, state.queueIndex - PERSISTED_QUEUE_BEHIND);
-        return {
-          volume: state.volume,
-          volumeBeforeMute: state.volumeBeforeMute,
-          currentTrack: state.currentTrack,
-          queue: state.queue.slice(start, start + PERSISTED_QUEUE_WINDOW),
-          queueIndex: state.queueIndex < 0 ? state.queueIndex : state.queueIndex - start,
-          shuffle: state.shuffle,
-          repeat: state.repeat,
-          playbackRate: state.playbackRate,
-          pitchSemitones: state.pitchSemitones,
-          pitchControlMode: state.pitchControlMode,
-        };
-      },
+      partialize: partializePlayerState,
     },
   ),
 );

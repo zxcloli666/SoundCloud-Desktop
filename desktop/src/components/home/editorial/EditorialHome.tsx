@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import appIcon from '../../../assets/app-icon.png';
+import appIcon from '../../../assets/sonveil-app-icon.svg';
 import { designPreviewTracks, isDesignPreview } from '../../../lib/design-preview';
 import { isUrnDisliked, useDislikeVersion } from '../../../lib/dislikes';
 import { art, dur } from '../../../lib/formatters';
@@ -523,7 +523,7 @@ export function EditorialHome() {
       {featured ? (
         <FeaturedRelease
           track={featured}
-          queue={allTracks}
+          queue={featuredIsRecommendation ? recommendations : allTracks}
           eyebrow={
             featuredIsRecommendation
               ? t('home.editorial.recommendationSpotlight')
@@ -647,7 +647,7 @@ export function EditorialHome() {
             <EditorialTrackRow
               key={track.urn}
               track={track}
-              queue={allTracks}
+              queue={recommendations}
               onPlay={handleRecommendationPlay}
             />
           ))}

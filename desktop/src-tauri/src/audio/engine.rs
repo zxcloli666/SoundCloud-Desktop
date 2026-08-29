@@ -1,5 +1,6 @@
 use std::path::PathBuf;
 use std::sync::atomic::Ordering;
+use std::sync::Arc;
 use std::time::Duration;
 
 use tauri::State;
@@ -88,10 +89,14 @@ fn set_pos_anchor(state: &AudioState, source: f64, output: f64) {
 
 fn commit_loaded_track(
     state: &AudioState,
-    bytes: Vec<u8>,
+    bytes: Arc<[u8]>,
     new_player: rodio::Player,
     normalization_gain: f32,
 ) {
+    // Decoding a cached file may outlive the suppression window opened by the
+    // previous stop. Re-arm it at install time so an empty/very short source
+    // cannot emit `audio:ended` before the load command reaches the frontend.
+    suppress_ended_temporarily(state);
     apply_current_rate(state, &new_player);
     *state.player.lock().unwrap() = Some(new_player);
     *state.source_bytes.lock().unwrap() = Some(bytes);
@@ -134,8 +139,9 @@ async fn build_player_from_bytes(
     start_paused: bool,
     eq_params: std::sync::Arc<std::sync::RwLock<crate::audio::types::EqParams>>,
     analyser_buffer: std::sync::Arc<crate::audio::analyser::AnalyserBuffer>,
-) -> Result<(Vec<u8>, rodio::Player, Option<f64>, f32), String> {
+) -> Result<(Arc<[u8]>, rodio::Player, Option<f64>, f32), String> {
     task::spawn_blocking(move || {
+        let bytes: Arc<[u8]> = bytes.into();
         let normalization_gain = if normalization_enabled {
             resolve_normalization_gain(
                 &bytes,
@@ -146,7 +152,7 @@ async fn build_player_from_bytes(
             1.0
         };
         let (player, duration_secs) = create_player_from_bytes(
-            &bytes,
+            Arc::clone(&bytes),
             &mixer,
             volume,
             normalization_gain,
@@ -182,7 +188,7 @@ pub fn reload_current_track(state: &AudioState) -> Result<(), String> {
     let normalization_enabled = state.normalization_enabled.load(Ordering::Relaxed);
     let normalization_gain = *state.normalization_gain.lock().unwrap();
     let (new_player, _) = create_player_from_bytes(
-        &bytes,
+        bytes,
         &mixer,
         vol,
         if normalization_enabled {
@@ -522,7 +528,7 @@ pub fn seek_to(state: &AudioState, position: f64) -> Result<(), String> {
     let normalization_enabled = state.normalization_enabled.load(Ordering::Relaxed);
     let normalization_gain = *state.normalization_gain.lock().unwrap();
     let (new_player, _) = create_player_from_bytes(
-        &bytes,
+        bytes,
         &mixer,
         vol,
         if normalization_enabled {
@@ -709,7 +715,7 @@ pub async fn preview_play(
     // audible the instant it loads (a zero-start + tick fade-in left it silent).
     let analyser = crate::audio::analyser::AnalyserBuffer::new();
     let player = task::spawn_blocking(move || {
-        create_player_from_bytes(&bytes, &mixer, target, 1.0, false, eq_params, analyser)
+        create_player_from_bytes(bytes.into(), &mixer, target, 1.0, false, eq_params, analyser)
             .map(|(player, _)| player)
     })
         .await

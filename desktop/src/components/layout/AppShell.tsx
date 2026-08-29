@@ -216,7 +216,10 @@ export const AppShell = React.memo(() => {
   kbOpenRef.current = kbOpen;
 
   useEffect(() => {
-    if (lyricsOpen) setContextOpen(false);
+    if (lyricsOpen) {
+      setContextOpen(false);
+      setQueueOpen(false);
+    }
   }, [lyricsOpen]);
 
   // Anti-sticky-hover: WebKitGTK doesn't re-hit-test :hover while the content
@@ -284,7 +287,9 @@ export const AppShell = React.memo(() => {
         return;
       }
 
-      if (inInput) return;
+      // Radix sliders and other focused controls prevent their own key events.
+      // Do not stack a global player shortcut on top of the local interaction.
+      if (e.defaultPrevented || inInput) return;
 
       const player = usePlayerStore.getState();
 
@@ -390,12 +395,14 @@ export const AppShell = React.memo(() => {
           </div>
         </div>
       </div>
-      <NowPlayingBar
-        onQueueToggle={onQueueToggle}
-        queueOpen={queueOpen}
-        onContextToggle={onContextToggle}
-        contextOpen={contextOpen}
-      />
+      {!lyricsOpen && (
+        <NowPlayingBar
+          onQueueToggle={onQueueToggle}
+          queueOpen={queueOpen}
+          onContextToggle={onContextToggle}
+          contextOpen={contextOpen}
+        />
+      )}
       {contextOpen && (
         <NowPlayingContext
           open={contextOpen}

@@ -1,23 +1,25 @@
-import {useMemo} from 'react';
-import {useNavigate} from 'react-router-dom';
-import {art} from '../../lib/formatters';
+import { useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useDislikeVersion } from '../../lib/dislikes';
+import { art } from '../../lib/formatters';
 import {
-    useLyricSearch,
-    useSearchDbArtists,
-    useSearchDbPlaylists,
-    useSearchDbTracks,
-    useSearchDbUsers,
-    useSearchPlaylists,
-    useSearchTracks,
-    useSearchUsers,
-    useVibeSearch,
+  useLyricSearch,
+  useSearchDbArtists,
+  useSearchDbPlaylists,
+  useSearchDbTracks,
+  useSearchDbUsers,
+  useSearchPlaylists,
+  useSearchTracks,
+  useSearchUsers,
+  useVibeSearch,
 } from '../../lib/hooks';
-import {useSmartWave, useWaveBoard} from '../../lib/soundwave';
-import type {Track} from '../../stores/player';
-import type {SearchMode, SearchSource} from '../../stores/searchPrefs';
-import {useSettingsStore} from '../../stores/settings';
-import type {EntityItem} from './EntityStrip';
-import {genreColor, isHeroPos, isHeroUrn, vibeEnergy, type WallItem} from './utils';
+import { curateQueueRecommendations } from '../../lib/queue-recommendations';
+import { useSmartWave, useWaveBoard } from '../../lib/soundwave';
+import type { Track } from '../../stores/player';
+import type { SearchMode, SearchSource } from '../../stores/searchPrefs';
+import { useSettingsStore } from '../../stores/settings';
+import type { EntityItem } from './EntityStrip';
+import { genreColor, isHeroPos, isHeroUrn, vibeEnergy, type WallItem } from './utils';
 
 export interface DiveSeed {
   urn: string;
@@ -105,8 +107,20 @@ export function useSearchWall(
   const textMode = hasQuery && mode === 'text' && db && !dive;
   const vibeMode = hasQuery && mode === 'vibe' && db && !dive;
 
+  const recommendationLanguages = useSettingsStore((s) => s.soundwaveLanguages);
+  const hideLiked = useSettingsStore((s) => s.soundwaveHideLiked);
   const hideListened = useSettingsStore((s) => s.soundwaveHideListened);
-  const wave = useWaveBoard({ enabled: landing, hideListened });
+  const recommendationMode = useSettingsStore((s) => s.soundwaveMode);
+  const dislikeVersion = useDislikeVersion();
+  const stableLanguages = useMemo(
+    () => [...recommendationLanguages].sort(),
+    [recommendationLanguages],
+  );
+  const wave = useWaveBoard({
+    enabled: landing,
+    languages: stableLanguages,
+    hideListened,
+  });
   // Make the primary track search responsive before spending transport slots on
   // semantic/lyrics/entity enrichment. This avoids six requests racing audio on
   // every debounced keystroke while keeping all secondary results available.
@@ -138,21 +152,44 @@ export function useSearchWall(
     seedId: diveSeedId,
     enabled: !!dive,
     limit: 32,
+    languages: stableLanguages,
     hideListened,
   });
 
+  const landingTracks = useMemo(() => {
+    void dislikeVersion;
+    return curateQueueRecommendations(wave.tracks, [], {
+      hideLiked,
+      hideListened,
+      mode: recommendationMode,
+      limit: wave.tracks.length,
+    });
+  }, [wave.tracks, dislikeVersion, hideLiked, hideListened, recommendationMode]);
+  const diveTracks = useMemo(() => {
+    void dislikeVersion;
+    const candidates = dive
+      ? (diveWave.data?.tracks ?? []).filter((track) => track.urn !== dive.urn)
+      : [];
+    return curateQueueRecommendations(candidates, [], {
+      hideLiked,
+      hideListened,
+      mode: recommendationMode,
+      limit: candidates.length,
+    });
+  }, [dive, diveWave.data?.tracks, dislikeVersion, hideLiked, hideListened, recommendationMode]);
+
   const items = useMemo<WallItem[]>(() => {
-    if (dive) return toTiles(diveWave.data?.tracks ?? [], 'vibe');
-    if (landing) return toTiles(wave.tracks, 'wave');
+    if (dive) return toTiles(diveTracks, 'vibe');
+    if (landing) return toTiles(landingTracks, 'wave');
     if (scMode) return toTiles(scTracks.items, 'lexical');
     if (vibeMode) return toTiles(vibe.tracks, 'vibe');
     if (textMode) return weaveText(lex.tracks, lyric.hits, vibe.tracks.slice(0, 8));
     return [];
   }, [
     dive,
-    diveWave.data?.tracks,
+    diveTracks,
     landing,
-    wave.tracks,
+    landingTracks,
     scMode,
     scTracks.items,
     vibeMode,

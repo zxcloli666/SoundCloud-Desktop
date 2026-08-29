@@ -7,6 +7,20 @@ import { RightPanelShell } from '../layout/RightPanelShell';
 import { NowPlayingCard } from './queue/NowPlayingCard';
 import { QueueList } from './queue/QueueList';
 
+const NowPlayingSection = React.memo(() => {
+  const { t } = useTranslation();
+  const hasCurrentTrack = usePlayerStore((s) => s.currentTrack !== null);
+  if (!hasCurrentTrack) return null;
+  return (
+    <div className="px-3.5 pb-2">
+      <p className="text-[10px] text-white/25 uppercase tracking-wider font-medium mb-2 px-1.5">
+        {t('player.nowPlaying')}
+      </p>
+      <NowPlayingCard />
+    </div>
+  );
+});
+
 /* ── Queue drawer ─────────────────────────────────────────────
  * Right-side glass drawer. The blur lives on its own GPU-isolated layer behind
  * an isolated content stack, so the scrolling list / drag never re-rasterizes
@@ -15,12 +29,10 @@ import { QueueList } from './queue/QueueList';
 export const QueuePanel = React.memo(
   ({ open, onClose }: { open: boolean; onClose: () => void }) => {
     const { t } = useTranslation();
-    const { currentTrack, queueLength, queueIndex, isPlaying } = usePlayerStore(
+    const { queueLength, queueIndex } = usePlayerStore(
       useShallow((s) => ({
-        currentTrack: s.currentTrack,
         queueLength: s.queue.length,
         queueIndex: s.queueIndex,
-        isPlaying: s.isPlaying,
       })),
     );
 
@@ -64,14 +76,7 @@ export const QueuePanel = React.memo(
           </div>
 
           {/* Now Playing */}
-          {currentTrack && (
-            <div className="px-3.5 pb-2">
-              <p className="text-[10px] text-white/25 uppercase tracking-wider font-medium mb-2 px-1.5">
-                {t('player.nowPlaying')}
-              </p>
-              <NowPlayingCard />
-            </div>
-          )}
+          <NowPlayingSection />
 
           {/* Up Next */}
           <div className="flex-1 overflow-y-auto scrollbar-hide px-3.5 pb-4">
@@ -80,11 +85,7 @@ export const QueuePanel = React.memo(
                 <p className="text-[10px] text-white/25 uppercase tracking-wider font-medium mb-2 mt-3 px-1.5">
                   {t('player.upNext')} · {upNextCount}
                 </p>
-                <QueueList
-                  startIndex={queueIndex + 1}
-                  queueIndex={queueIndex}
-                  isPlaying={isPlaying}
-                />
+                <QueueList startIndex={queueIndex + 1} queueIndex={queueIndex} />
               </>
             )}
 

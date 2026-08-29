@@ -88,20 +88,29 @@ export const TrackColumn = React.memo(({ track, maxArt }: { track: Track; maxArt
   const artistDisplay = useArtistDisplay(track);
   const artistLinks = useArtistLinkItems(track);
   const displayTitle = useDisplayTitle(track);
-  const [loaded, setLoaded] = useState(false);
+  const [loadedArtwork, setLoadedArtwork] = useState<string | null>(null);
   const [isSwitching, setIsSwitching] = useState(false);
-  const [showFullArt, setShowFullArt] = useState(false);
+  const [fullArtTrackUrn, setFullArtTrackUrn] = useState<string | null>(null);
   const switchTimerRef = useRef<number | null>(null);
+  const loaded = loadedArtwork === artwork500;
+  const showFullArt = fullArtTrackUrn === track.urn;
 
   const prevUrlRef = useRef(track.artwork_url);
-  if (prevUrlRef.current !== track.artwork_url) {
+  useEffect(() => {
+    if (prevUrlRef.current === track.artwork_url) return;
     prevUrlRef.current = track.artwork_url;
-    setLoaded(false);
-    setShowFullArt(false);
     if (artwork200 && artwork500 && artwork200 !== artwork500) {
       setIsSwitching(true);
+    } else {
+      setIsSwitching(false);
     }
-  }
+  }, [artwork200, artwork500, track.artwork_url]);
+
+  useEffect(() => {
+    if (fullArtTrackUrn !== null && fullArtTrackUrn !== track.urn) {
+      setFullArtTrackUrn(null);
+    }
+  }, [fullArtTrackUrn, track.urn]);
 
   useEffect(() => {
     if (!isSwitching) return;
@@ -140,14 +149,14 @@ export const TrackColumn = React.memo(({ track, maxArt }: { track: Track; maxArt
               alt=""
               decoding="async"
               onLoad={() => {
-                setLoaded(true);
+                setLoadedArtwork(artwork500);
                 setIsSwitching(false);
               }}
               className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-[var(--ease-apple)] ${loaded ? 'opacity-100' : 'opacity-0'}`}
             />
             <button
               type="button"
-              onClick={() => setShowFullArt(true)}
+              onClick={() => setFullArtTrackUrn(track.urn)}
               className="absolute inset-0 bg-black/40 opacity-0 group-hover/art:opacity-100 transition-opacity duration-300 flex items-center justify-center text-white/90 backdrop-blur-[2px] cursor-pointer outline-none"
             >
               <div className="flex flex-col items-center gap-2 scale-90 group-hover/art:scale-100 transition-transform duration-300">
@@ -172,7 +181,7 @@ export const TrackColumn = React.memo(({ track, maxArt }: { track: Track; maxArt
           src={artwork500}
           title={displayTitle}
           subtitle={artistDisplay.primary}
-          onClose={() => setShowFullArt(false)}
+          onClose={() => setFullArtTrackUrn(null)}
         />
       )}
 

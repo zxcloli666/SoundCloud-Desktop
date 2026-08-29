@@ -5,7 +5,7 @@ import { isRecommendationTrackPlayable } from '../../../lib/home-recommendations
 import { curateWithLocalTaste } from '../../../lib/local-recommendations';
 import { fetchSmartWave, type SmartWaveSeedKind, sendWaveFeedback } from '../../../lib/soundwave';
 import type { Track } from '../../../stores/player';
-import { usePlayerStore } from '../../../stores/player';
+import { getPlayerQueueRevision, usePlayerStore } from '../../../stores/player';
 
 /**
  * Бесконечная SmartWave-волна на стороне клиента.
@@ -27,6 +27,7 @@ export function useInfiniteWave(opts: {
   initialCursor: string | null;
   languages?: string[];
   filterTrack?: (t: Track) => boolean;
+  hideLiked?: boolean;
   hideListened?: boolean;
   minTail?: number;
   batchLimit?: number;
@@ -39,6 +40,7 @@ export function useInfiniteWave(opts: {
     initialCursor,
     languages,
     filterTrack,
+    hideLiked,
     hideListened,
     minTail = 5,
     batchLimit = 20,
@@ -50,9 +52,16 @@ export function useInfiniteWave(opts: {
   const abortRef = useRef<AbortController | null>(null);
   const negCountRef = useRef(0);
   const posCountRef = useRef(0);
+  const seedRef = useRef<{ kind: SmartWaveSeedKind; id?: string } | null>(null);
+  const initialTracksRef = useRef(initialTracks);
+  const initialCursorRef = useRef(initialCursor);
   const languagesRef = useRef(languages);
   const filterRef = useRef(filterTrack);
+  const hideLikedRef = useRef(hideLiked);
   const hideListenedRef = useRef(hideListened);
+
+  initialTracksRef.current = initialTracks;
+  initialCursorRef.current = initialCursor;
 
   useEffect(() => {
     languagesRef.current = languages;
@@ -60,6 +69,9 @@ export function useInfiniteWave(opts: {
   useEffect(() => {
     filterRef.current = filterTrack;
   }, [filterTrack]);
+  useEffect(() => {
+    hideLikedRef.current = hideLiked;
+  }, [hideLiked]);
   useEffect(() => {
     hideListenedRef.current = hideListened;
   }, [hideListened]);
@@ -73,6 +85,21 @@ export function useInfiniteWave(opts: {
   }, [initialTracks]);
 
   useEffect(() => {
+    const previousSeed = seedRef.current;
+    const seedChanged =
+      previousSeed === null || previousSeed.kind !== seedKind || previousSeed.id !== seedId;
+    seedRef.current = { kind: seedKind, id: seedId };
+    if (seedChanged) {
+      const controller = abortRef.current;
+      abortRef.current = null;
+      controller?.abort();
+      fetchingRef.current = false;
+      cursorRef.current = initialCursorRef.current ?? '';
+      ownedRef.current = new Set(initialTracksRef.current.map((track) => track.urn));
+      negCountRef.current = 0;
+      posCountRef.current = 0;
+    }
+
     if (!enabled) {
       abortRef.current?.abort();
       abortRef.current = null;
@@ -114,19 +141,23 @@ export function useInfiniteWave(opts: {
       if (fetchingRef.current) return;
 
       fetchingRef.current = true;
+      const refillQueueRevision = getPlayerQueueRevision();
       const controller = new AbortController();
       abortRef.current = controller;
       void (async () => {
         try {
           if (cursorRef.current && (negCountRef.current > 0 || posCountRef.current > 0)) {
+            const negatives = negCountRef.current;
+            const positives = posCountRef.current;
             const updated = await sendWaveFeedback({
               cursor: cursorRef.current,
-              negatives: negCountRef.current,
-              positives: posCountRef.current,
+              negatives,
+              positives,
               signal: controller.signal,
             });
-            negCountRef.current = 0;
-            posCountRef.current = 0;
+            if (controller.signal.aborted) return;
+            negCountRef.current = Math.max(0, negCountRef.current - negatives);
+            posCountRef.current = Math.max(0, posCountRef.current - positives);
             if (updated) cursorRef.current = updated;
           }
           const batch = await fetchSmartWave({
@@ -151,11 +182,20 @@ export function useInfiniteWave(opts: {
           );
           const hideRecent = hideListenedRef.current === true;
           const fresh = curateWithLocalTaste(eligible, {
+            hideLiked: hideLikedRef.current === true,
             hideListened: hideRecent,
             limit: eligible.length,
           });
           if (fresh.length > 0) {
-            usePlayerStore.getState().addToQueue(fresh);
+            const livePlayer = usePlayerStore.getState();
+            if (
+              getPlayerQueueRevision() !== refillQueueRevision ||
+              !livePlayer.currentTrack ||
+              !ownedRef.current.has(livePlayer.currentTrack.urn)
+            ) {
+              return;
+            }
+            livePlayer.addToQueue(fresh);
             for (const t of fresh) ownedRef.current.add(t.urn);
           }
         } catch (e) {

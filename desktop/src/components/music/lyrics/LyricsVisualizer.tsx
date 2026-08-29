@@ -11,7 +11,11 @@ function retainAnalyser(): () => void {
         clearTimeout(analyserDisableTimer);
         analyserDisableTimer = null;
     }
-    if (analyserConsumers === 0 && !disableWasPending) {
+    if (
+        analyserConsumers === 0 &&
+        !disableWasPending &&
+        (typeof document === 'undefined' || document.visibilityState !== 'hidden')
+    ) {
         void invoke('audio_set_analyser_enabled', {enabled: true});
     }
     analyserConsumers += 1;
@@ -84,6 +88,8 @@ export const LyricsVisualizer = React.memo(() => {
         let dpr = Math.min(window.devicePixelRatio || 1, 2);
         let cssW = 0;
         let cssH = 0;
+        let sampleXs: Float32Array | null = null;
+        let fillGradient: CanvasGradient | null = null;
 
         const resize = () => {
             const r = wrap.getBoundingClientRect();
@@ -95,6 +101,14 @@ export const LyricsVisualizer = React.memo(() => {
             canvas.style.width = `${cssW}px`;
             canvas.style.height = `${cssH}px`;
             ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            sampleXs = null;
+            fillGradient = ctx.createLinearGradient(0, 0, 0, cssH);
+            fillGradient.addColorStop(0, `rgba(${accent[0]}, ${accent[1]}, ${accent[2]}, 0)`);
+            fillGradient.addColorStop(
+                0.5,
+                `rgba(${accent[0]}, ${accent[1]}, ${accent[2]}, 0.18)`,
+            );
+            fillGradient.addColorStop(1, `rgba(${accent[0]}, ${accent[1]}, ${accent[2]}, 0.32)`);
         };
         resize();
         const ro = new ResizeObserver(resize);
@@ -103,7 +117,6 @@ export const LyricsVisualizer = React.memo(() => {
         // Reusable smoothed-bins buffer; refilled per-frame to avoid GC churn.
         const smoothedBins = new Float32Array(VIS_BINS);
         // X-coords for each bin, evenly spread across the full viewport width.
-        let sampleXs: Float32Array | null = null;
         const buildSampleXs = () => {
             const xs = new Float32Array(VIS_BINS);
             for (let i = 0; i < VIS_BINS; i++) xs[i] = (i / (VIS_BINS - 1)) * cssW;
@@ -154,24 +167,14 @@ export const LyricsVisualizer = React.memo(() => {
                 ctx.lineTo(xs[VIS_BINS - 1], baseY - smoothedBins[VIS_BINS - 1] * maxAmp * ampScale);
             };
 
-            // Filled body with vertical accent gradient.
-            const fillGrad = ctx.createLinearGradient(0, 0, 0, cssH);
-            fillGrad.addColorStop(0, `rgba(${accent[0]}, ${accent[1]}, ${accent[2]}, 0)`);
-            fillGrad.addColorStop(
-                0.5,
-                `rgba(${accent[0]}, ${accent[1]}, ${accent[2]}, ${(0.18 * Math.min(1, peak * 1.3)).toFixed(3)})`,
-            );
-            fillGrad.addColorStop(
-                1,
-                `rgba(${accent[0]}, ${accent[1]}, ${accent[2]}, ${(0.32 * Math.min(1, peak * 1.3)).toFixed(3)})`,
-            );
-
             tracePath(1.0);
             ctx.lineTo(cssW, baseY);
             ctx.lineTo(0, baseY);
             ctx.closePath();
-            ctx.fillStyle = fillGrad;
+            ctx.globalAlpha = Math.min(1, peak * 1.3);
+            ctx.fillStyle = fillGradient ?? 'transparent';
             ctx.fill();
+            ctx.globalAlpha = 1;
 
             // Strokes — 3 layered for depth.
             const drawStroke = (
@@ -209,6 +212,10 @@ export const LyricsVisualizer = React.memo(() => {
             rafId = requestAnimationFrame(loop);
         };
         const loop = (ts: number) => {
+            if (document.visibilityState === 'hidden') {
+                rafId = 0;
+                return;
+            }
             const dt = Math.min(0.05, (ts - lastDecayTs) / 1000);
             lastDecayTs = ts;
 
@@ -249,13 +256,28 @@ export const LyricsVisualizer = React.memo(() => {
             for (let i = 0; i < n; i++) target[i] = bins[i];
             lastEventTs = performance.now();
             dirty = true;
-            ensureLoop();
+            if (document.visibilityState !== 'hidden') ensureLoop();
         });
         const releaseAnalyser = retainAnalyser();
+        const onVisibility = () => {
+            const visible = document.visibilityState !== 'hidden';
+            if (analyserConsumers > 0) {
+                void invoke('audio_set_analyser_enabled', {enabled: visible});
+            }
+            if (!visible) {
+                if (rafId) cancelAnimationFrame(rafId);
+                rafId = 0;
+                return;
+            }
+            lastDecayTs = performance.now();
+            if (dirty) ensureLoop();
+        };
+        document.addEventListener('visibilitychange', onVisibility);
 
         return () => {
             if (rafId) cancelAnimationFrame(rafId);
             ro.disconnect();
+            document.removeEventListener('visibilitychange', onVisibility);
             unlistenPromise.then((u) => u());
             releaseAnalyser();
         };

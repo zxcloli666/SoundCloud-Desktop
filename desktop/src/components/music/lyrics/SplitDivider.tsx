@@ -20,8 +20,12 @@ export const SplitDivider = React.memo(
     }) => {
         const {t} = useTranslation();
         const [active, setActive] = useState(false);
+        const dividerRef = useRef<HTMLDivElement>(null);
         const draggingRef = useRef(false);
+        const latestRatioRef = useRef(splitRatio);
+        const dragRectRef = useRef<{left: number; width: number} | null>(null);
         const splitPercent = splitRatio * 100;
+        latestRatioRef.current = splitRatio;
 
         useEffect(() => {
             if (!active) return;
@@ -38,18 +42,31 @@ export const SplitDivider = React.memo(
         const updateFromX = (clientX: number) => {
             const layout = layoutRef.current;
             if (!layout) return;
-            const rect = layout.getBoundingClientRect();
+            const rect = dragRectRef.current ?? layout.getBoundingClientRect();
             if (rect.width <= 0) return;
-            onChange(clampLyricsSplit((clientX - rect.left) / rect.width));
+            const ratio = clampLyricsSplit((clientX - rect.left) / rect.width);
+            latestRatioRef.current = ratio;
+            const percent = ratio * 100;
+            // The grid must relayout while dragging, but React and Zustand do not:
+            // persist the final ratio once on release instead of on every pointermove.
+            layout.style.gridTemplateColumns = `${percent}% ${100 - percent}%`;
+            if (dividerRef.current) {
+                dividerRef.current.style.left = `${percent}%`;
+                dividerRef.current.setAttribute('aria-valuenow', String(Math.round(percent)));
+            }
         };
 
         const stop = () => {
+            if (!draggingRef.current) return;
             draggingRef.current = false;
+            dragRectRef.current = null;
             setActive(false);
+            onChange(latestRatioRef.current);
         };
 
         return (
             <div
+                ref={dividerRef}
                 role="separator"
                 aria-label={t('track.resizeLayout')}
                 aria-orientation="vertical"
@@ -62,6 +79,8 @@ export const SplitDivider = React.memo(
                 onPointerDown={(event) => {
                     event.preventDefault();
                     draggingRef.current = true;
+                    const rect = layoutRef.current?.getBoundingClientRect();
+                    dragRectRef.current = rect ? {left: rect.left, width: rect.width} : null;
                     setActive(true);
                     event.currentTarget.setPointerCapture(event.pointerId);
                     updateFromX(event.clientX);
@@ -69,7 +88,9 @@ export const SplitDivider = React.memo(
                 onDoubleClick={(event) => {
                     event.preventDefault();
                     draggingRef.current = false;
+                    dragRectRef.current = null;
                     setActive(false);
+                    latestRatioRef.current = LYRICS_SPLIT_DEFAULT;
                     onChange(LYRICS_SPLIT_DEFAULT);
                 }}
                 onPointerMove={(event) => {

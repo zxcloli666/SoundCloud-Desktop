@@ -65,7 +65,10 @@ pub struct AudioState {
     pub load_gen: AtomicU64,
     pub media_tx: Mutex<Option<std::sync::mpsc::Sender<MediaCmd>>>,
     pub audio_tx: std::sync::mpsc::Sender<AudioThreadCmd>,
-    pub source_bytes: Mutex<Option<Vec<u8>>>,
+    /// Immutable complete source shared by seek/reconnect rebuilds. Keeping this
+    /// behind an `Arc` makes taking a rebuild snapshot O(1) instead of cloning an
+    /// entire track while the audio thread is recovering.
+    pub source_bytes: Mutex<Option<Arc<[u8]>>>,
     /// The growing source behind the fast-start player. Kept separately so seek can
     /// probe a fresh reader without touching the live decoder.
     pub(crate) active_stream: Mutex<Option<ActiveStream>>,

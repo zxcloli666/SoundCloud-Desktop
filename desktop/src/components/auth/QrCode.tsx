@@ -1,6 +1,6 @@
 import QRCodeStyling, { type Options } from 'qr-code-styling';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import scLogoUrl from '../../assets/sc-logo.png';
+import sonveilAppIconUrl from '../../assets/sonveil-app-icon.svg';
 import { useSettingsStore } from '../../stores/settings';
 import './qr-code.css';
 
@@ -37,7 +37,7 @@ function loadLogo(): Promise<HTMLImageElement> {
       resolve(img);
     };
     img.onerror = () => reject(new Error('logo load failed'));
-    img.src = scLogoUrl;
+    img.src = sonveilAppIconUrl;
   });
 }
 

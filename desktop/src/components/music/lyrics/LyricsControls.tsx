@@ -2,7 +2,6 @@ import {useQueryClient} from '@tanstack/react-query';
 import React from 'react';
 import {useTranslation} from 'react-i18next';
 import {useNavigate} from 'react-router-dom';
-import {useShallow} from 'zustand/shallow';
 import {api} from '../../../lib/api';
 import {handlePrev} from '../../../lib/audio';
 import {toggleDislike, useDislikeStatus} from '../../../lib/dislikes';
@@ -60,7 +59,6 @@ const FullscreenDislikeButton = React.memo(({track}: { track: Track }) => {
     const {t} = useTranslation();
     const qc = useQueryClient();
     const disliked = useDislikeStatus(track.urn);
-    const next = usePlayerStore((s) => s.next);
 
     const toggle = async () => {
         const nowDisliked = !disliked;
@@ -70,10 +68,11 @@ const FullscreenDislikeButton = React.memo(({track}: { track: Track }) => {
             api(`/likes/tracks/${encodeURIComponent(track.urn)}`, {method: 'DELETE'}).catch(() => {
             });
         }
+        const dislikePromise = toggleDislike(qc, track, nowDisliked);
         if (nowDisliked && usePlayerStore.getState().currentTrack?.urn === track.urn) {
-            next();
+            usePlayerStore.getState().next('dislike');
         }
-        await toggleDislike(qc, track, nowDisliked);
+        await dislikePromise;
     };
 
     return (
@@ -89,6 +88,70 @@ const FullscreenDislikeButton = React.memo(({track}: { track: Track }) => {
         </button>
     );
 });
+
+const controlClass =
+    'w-10 h-10 rounded-full flex items-center justify-center transition-all duration-150 cursor-pointer hover:bg-white/[0.06] outline-none';
+const smallControlClass =
+    'w-9 h-9 rounded-full flex items-center justify-center transition-all duration-150 cursor-pointer hover:bg-white/[0.06] outline-none';
+
+const FullscreenShuffleButton = React.memo(() => {
+    const shuffle = usePlayerStore((s) => s.shuffle);
+    return (
+        <button
+            type="button"
+            onClick={() => usePlayerStore.getState().toggleShuffle()}
+            className={`${smallControlClass} ${shuffle ? 'text-accent' : 'text-white/35 hover:text-white/60'}`}
+        >
+            {shuffleIcon16}
+        </button>
+    );
+});
+
+const FullscreenPlayPauseButton = React.memo(() => {
+    const isPlaying = usePlayerStore((s) => s.isPlaying);
+    return (
+        <button
+            type="button"
+            onClick={() => usePlayerStore.getState().togglePlay()}
+            className="w-14 h-14 rounded-full bg-white flex items-center justify-center hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer shadow-lg outline-none"
+        >
+            {isPlaying ? pauseBlack18 : playBlack18}
+        </button>
+    );
+});
+
+const FullscreenRepeatButton = React.memo(() => {
+    const repeat = usePlayerStore((s) => s.repeat);
+    return (
+        <button
+            type="button"
+            onClick={() => usePlayerStore.getState().toggleRepeat()}
+            className={`${smallControlClass} ${repeat !== 'off' ? 'text-accent' : 'text-white/35 hover:text-white/60'}`}
+        >
+            {repeat === 'one' ? repeat1Icon16 : repeatIcon16}
+        </button>
+    );
+});
+
+const FullscreenPreviousButton = React.memo(() => (
+    <button
+        type="button"
+        onClick={handlePrev}
+        className={`${controlClass} text-white/60 hover:text-white`}
+    >
+        <SkipBack size={20} fill="currentColor"/>
+    </button>
+));
+
+const FullscreenNextButton = React.memo(() => (
+    <button
+        type="button"
+        onClick={() => usePlayerStore.getState().next()}
+        className={`${controlClass} text-white/60 hover:text-white`}
+    >
+        <SkipForward size={20} fill="currentColor"/>
+    </button>
+));
 
 const FullscreenOpenTrackButton = React.memo(({track}: { track: Track }) => {
     const {t} = useTranslation();
@@ -110,63 +173,22 @@ const FullscreenOpenTrackButton = React.memo(({track}: { track: Track }) => {
 });
 
 export const Controls = React.memo(({track}: { track: Track }) => {
-    const {isPlaying, next, repeat, shuffle, togglePlay, toggleRepeat, toggleShuffle} =
-        usePlayerStore(
-            useShallow((s) => ({
-                isPlaying: s.isPlaying,
-                next: s.next,
-                repeat: s.repeat,
-                shuffle: s.shuffle,
-                togglePlay: s.togglePlay,
-                toggleRepeat: s.toggleRepeat,
-                toggleShuffle: s.toggleShuffle,
-            })),
-        );
-
-    const ctrl =
-        'w-10 h-10 rounded-full flex items-center justify-center transition-all duration-150 cursor-pointer hover:bg-white/[0.06] outline-none';
-    const small =
-        'w-9 h-9 rounded-full flex items-center justify-center transition-all duration-150 cursor-pointer hover:bg-white/[0.06] outline-none';
-
     return (
         <div className="flex items-center justify-center gap-2">
             <AddToPlaylistDialog trackUrns={[track.urn]}>
-                <button type="button" className={`${small} text-white/30 hover:text-white/60`}>
+                <button
+                    type="button"
+                    className={`${smallControlClass} text-white/30 hover:text-white/60`}
+                >
                     <ListPlus size={20}/>
                 </button>
             </AddToPlaylistDialog>
             <FullscreenLikeButton track={track}/>
-            <button
-                type="button"
-                onClick={toggleShuffle}
-                className={`${small} ${shuffle ? 'text-accent' : 'text-white/35 hover:text-white/60'}`}
-            >
-                {shuffleIcon16}
-            </button>
-            <button
-                type="button"
-                onClick={handlePrev}
-                className={`${ctrl} text-white/60 hover:text-white`}
-            >
-                <SkipBack size={20} fill="currentColor"/>
-            </button>
-            <button
-                type="button"
-                onClick={togglePlay}
-                className="w-14 h-14 rounded-full bg-white flex items-center justify-center hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer shadow-lg outline-none"
-            >
-                {isPlaying ? pauseBlack18 : playBlack18}
-            </button>
-            <button type="button" onClick={next} className={`${ctrl} text-white/60 hover:text-white`}>
-                <SkipForward size={20} fill="currentColor"/>
-            </button>
-            <button
-                type="button"
-                onClick={toggleRepeat}
-                className={`${small} ${repeat !== 'off' ? 'text-accent' : 'text-white/35 hover:text-white/60'}`}
-            >
-                {repeat === 'one' ? repeat1Icon16 : repeatIcon16}
-            </button>
+            <FullscreenShuffleButton/>
+            <FullscreenPreviousButton/>
+            <FullscreenPlayPauseButton/>
+            <FullscreenNextButton/>
+            <FullscreenRepeatButton/>
             <FullscreenDislikeButton track={track}/>
             <FullscreenOpenTrackButton track={track}/>
         </div>

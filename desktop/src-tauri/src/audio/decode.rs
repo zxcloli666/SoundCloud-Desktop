@@ -39,8 +39,8 @@ struct OpusSource<R: std::io::Read + std::io::Seek> {
     samples_skipped: usize,
 }
 
-impl OpusSource<Cursor<Vec<u8>>> {
-    fn new(data: Vec<u8>) -> Result<Self, String> {
+impl OpusSource<Cursor<Arc<[u8]>>> {
+    fn new(data: Arc<[u8]>) -> Result<Self, String> {
         Self::from_reader(Cursor::new(data))
     }
 }
@@ -97,21 +97,27 @@ impl<R: std::io::Read + std::io::Seek> OpusSource<R> {
                         continue;
                     }
                     let channels = self.channels.get() as usize;
-                    let mut buf = vec![0f32; 5760 * channels];
-                    match self.decoder.decode_float(Some(&pkt.data), &mut buf, false) {
+                    // Reuse the PCM packet buffer. Opus packets arrive continuously;
+                    // allocating a fresh 5,760-frame Vec for every packet creates
+                    // avoidable allocator pressure on the decode hot path.
+                    self.buffer.resize(5760 * channels, 0.0);
+                    match self
+                        .decoder
+                        .decode_float(Some(&pkt.data), &mut self.buffer, false)
+                    {
                         Ok(samples_per_ch) => {
                             let total = samples_per_ch * channels;
-                            buf.truncate(total);
+                            self.buffer.truncate(total);
 
                             if self.samples_skipped < self.pre_skip {
                                 let skip = (self.pre_skip - self.samples_skipped).min(total);
                                 self.samples_skipped += skip;
                                 if skip >= total {
+                                    self.buffer.clear();
                                     continue;
                                 }
-                                self.buffer = buf[skip..].to_vec();
-                            } else {
-                                self.buffer = buf;
+                                self.buffer.copy_within(skip..total, 0);
+                                self.buffer.truncate(total - skip);
                             }
                             self.buf_pos = 0;
                             return true;
@@ -282,7 +288,7 @@ where
 }
 
 pub fn resolve_normalization_gain(
-    bytes: &[u8],
+    bytes: &Arc<[u8]>,
     cache_dir: Option<&Path>,
     cache_key: Option<&str>,
 ) -> Result<f32, String> {
@@ -290,15 +296,17 @@ pub fn resolve_normalization_gain(
         return Ok(gain);
     }
 
-    let gain = if is_ogg_opus(bytes) {
+    let gain = if is_ogg_opus(bytes.as_ref()) {
         normalization_gain_from_samples(
-            OpusSource::new(bytes.to_vec()).map_err(|e| format!("Failed to decode: {}", e))?,
+            OpusSource::new(Arc::clone(bytes))
+                .map_err(|e| format!("Failed to decode: {}", e))?,
         )
-    } else { match Decoder::new(Cursor::new(bytes.to_vec())) { Ok(source) => {
+    } else { match Decoder::new(Cursor::new(Arc::clone(bytes))) { Ok(source) => {
         normalization_gain_from_samples(source)
     } _ => {
         normalization_gain_from_samples(
-            OpusSource::new(bytes.to_vec()).map_err(|e| format!("Failed to decode: {}", e))?,
+            OpusSource::new(Arc::clone(bytes))
+                .map_err(|e| format!("Failed to decode: {}", e))?,
         )
     }}};
 
@@ -307,7 +315,7 @@ pub fn resolve_normalization_gain(
 }
 
 pub fn create_player_from_bytes(
-    bytes: &[u8],
+    bytes: Arc<[u8]>,
     mixer: &Mixer,
     volume: f32,
     normalization_gain: f32,
@@ -322,16 +330,16 @@ pub fn create_player_from_bytes(
     }
 
     let duration;
-    if is_ogg_opus(bytes) {
+    if is_ogg_opus(bytes.as_ref()) {
         let source =
-            OpusSource::new(bytes.to_vec()).map_err(|e| format!("Failed to decode: {}", e))?;
+            OpusSource::new(Arc::clone(&bytes)).map_err(|e| format!("Failed to decode: {}", e))?;
         duration = source.total_duration().map(|d| d.as_secs_f64());
         player.append(AnalyserSource::new(
             EqSource::new(GainSource::new(source, normalization_gain), eq_params),
             analyser_buffer,
         ));
     } else {
-        match Decoder::new(Cursor::new(bytes.to_vec())) {
+        match Decoder::new(Cursor::new(Arc::clone(&bytes))) {
             Ok(source) => {
                 duration = source.total_duration().map(|d| d.as_secs_f64());
                 player.append(AnalyserSource::new(
@@ -340,7 +348,7 @@ pub fn create_player_from_bytes(
                 ));
             }
             Err(_) => {
-                let source = OpusSource::new(bytes.to_vec())
+                let source = OpusSource::new(Arc::clone(&bytes))
                     .map_err(|e| format!("Failed to decode: {}", e))?;
                 duration = source.total_duration().map(|d| d.as_secs_f64());
                 player.append(AnalyserSource::new(

@@ -11,6 +11,7 @@ import { RoomVoices } from '../components/track/RoomVoices';
 import { useTrackAura } from '../components/track/useTrackAura';
 import { api } from '../lib/api';
 import { seek } from '../lib/audio';
+import { useDislikeVersion } from '../lib/dislikes';
 import {
   useInfiniteScroll,
   useRelatedTracks,
@@ -19,9 +20,11 @@ import {
 } from '../lib/hooks';
 import { ChevronLeft, Loader2 } from '../lib/icons';
 import { setLikedUrn } from '../lib/likes';
+import { curateQueueRecommendations } from '../lib/queue-recommendations';
 import { useScdMeta } from '../lib/scdMeta';
 import { useAuthStore } from '../stores/auth';
 import { type Track, usePlayerStore } from '../stores/player';
+import { useSettingsStore } from '../stores/settings';
 
 function HeroSkeleton() {
   return (
@@ -65,11 +68,24 @@ export const TrackPage = React.memo(function TrackPage() {
   } = useTrackComments(urn);
   const commentsSentinel = useInfiniteScroll(hasNextPage, isFetchingNextPage, fetchNextPage);
 
-  const { data: relatedData, isLoading: relatedLoading } = useRelatedTracks(urn, 10);
+  const { data: relatedData, isLoading: relatedLoading } = useRelatedTracks(urn, 24);
   const { data: favoritersData } = useTrackFavoriters(urn, 12);
 
   const relatedRaw = useMemo(() => relatedData?.collection ?? [], [relatedData]);
-  const related = useScdMeta(relatedRaw);
+  const hideLiked = useSettingsStore((s) => s.soundwaveHideLiked);
+  const hideListened = useSettingsStore((s) => s.soundwaveHideListened);
+  const recommendationMode = useSettingsStore((s) => s.soundwaveMode);
+  const dislikeVersion = useDislikeVersion();
+  const relatedCurated = useMemo(() => {
+    void dislikeVersion;
+    return curateQueueRecommendations(relatedRaw, track ? [track] : [], {
+      hideLiked,
+      hideListened,
+      mode: recommendationMode,
+      limit: 10,
+    });
+  }, [relatedRaw, track, dislikeVersion, hideLiked, hideListened, recommendationMode]);
+  const related = useScdMeta(relatedCurated);
   const favoriters = useMemo(() => favoritersData?.collection ?? [], [favoritersData]);
 
   const trackUrn = track?.urn;

@@ -56,6 +56,66 @@ import { loadPercent, useTrackLoading } from './useTrackLoading';
 /* ── A-B loop markers (overlay on the progress track) ────────── */
 
 const clampPct = (v: number) => Math.max(0, Math.min(100, v));
+const CONTROL_COMMIT_INTERVAL_MS = 40;
+
+function useThrottledControlCommit(commit: (value: number) => void) {
+  const commitRef = useRef(commit);
+  const pendingRef = useRef<number | null>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastCommitRef = useRef(0);
+  commitRef.current = commit;
+
+  const flush = useCallback(() => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+    const pending = pendingRef.current;
+    pendingRef.current = null;
+    if (pending == null) return;
+    lastCommitRef.current = performance.now();
+    commitRef.current(pending);
+  }, []);
+
+  const schedule = useCallback(
+    (value: number) => {
+      pendingRef.current = value;
+      const remaining = CONTROL_COMMIT_INTERVAL_MS - (performance.now() - lastCommitRef.current);
+      if (remaining <= 0) flush();
+      else if (!timerRef.current) timerRef.current = setTimeout(flush, remaining);
+    },
+    [flush],
+  );
+
+  const commitNow = useCallback(
+    (value: number) => {
+      pendingRef.current = value;
+      flush();
+    },
+    [flush],
+  );
+
+  const cancel = useCallback(() => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+    pendingRef.current = null;
+  }, []);
+
+  useEffect(
+    () => () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      const pending = pendingRef.current;
+      pendingRef.current = null;
+      if (pending != null) commitRef.current(pending);
+    },
+    [],
+  );
+
+  return { schedule, commitNow, cancel };
+}
+
 const handleClass =
   'absolute top-1/2 z-[3] flex h-5 w-3.5 -translate-x-1/2 -translate-y-1/2 cursor-ew-resize touch-none items-center justify-center';
 const tipClass =
@@ -63,11 +123,18 @@ const tipClass =
 
 const AbLoopOverlay = React.memo(({ duration }: { duration: number }) => {
   const abLoop = usePlayerStore((s) => s.abLoop);
-  const nudgeAbBound = usePlayerStore((s) => s.nudgeAbBound);
   const bandRef = useRef<HTMLSpanElement>(null);
   const aRef = useRef<HTMLSpanElement>(null);
   const bRef = useRef<HTMLSpanElement>(null);
   const tipRef = useRef<HTMLSpanElement>(null);
+  const dragCleanupRef = useRef<(() => void) | null>(null);
+
+  useEffect(
+    () => () => {
+      dragCleanupRef.current?.();
+    },
+    [],
+  );
 
   if (!abLoop || duration <= 0) return null;
 
@@ -115,13 +182,19 @@ const AbLoopOverlay = React.memo(({ duration }: { duration: number }) => {
         if (bandRef.current) bandRef.current.style.width = `${Math.max(0, pct - aPct)}%`;
       }
     };
-    const onUp = () => {
+    dragCleanupRef.current?.();
+    const cleanup = () => {
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
       window.removeEventListener('pointercancel', onUp);
-      if (tipRef.current) tipRef.current.style.opacity = '0';
-      nudgeAbBound(which, latest);
+      dragCleanupRef.current = null;
     };
+    const onUp = () => {
+      cleanup();
+      if (tipRef.current) tipRef.current.style.opacity = '0';
+      usePlayerStore.getState().nudgeAbBound(which, latest);
+    };
+    dragCleanupRef.current = cleanup;
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onUp);
     window.addEventListener('pointercancel', onUp);
@@ -190,6 +263,16 @@ export const ProgressSlider = React.memo(() => {
   // Safety net: if Radix onValueCommit doesn't fire (pointer leaves window, fast flick),
   // reset dragging state on any pointerup so the progress bar doesn't freeze.
   const pendingCommitRef = useRef<number | null>(null);
+  const pointerSafetyCleanupRef = useRef<(() => void) | null>(null);
+  const pointerSafetyFrameRef = useRef(0);
+
+  useEffect(
+    () => () => {
+      pointerSafetyCleanupRef.current?.();
+      if (pointerSafetyFrameRef.current) cancelAnimationFrame(pointerSafetyFrameRef.current);
+    },
+    [],
+  );
 
   const onValueChange = useCallback(([v]: number[]) => {
     setDragValue(v);
@@ -199,10 +282,10 @@ export const ProgressSlider = React.memo(() => {
       setDragging(true);
 
       const resetDrag = () => {
-        window.removeEventListener('pointerup', resetDrag);
-        window.removeEventListener('pointercancel', resetDrag);
+        pointerSafetyCleanupRef.current?.();
         // Give Radix a frame to fire onValueCommit first
-        requestAnimationFrame(() => {
+        pointerSafetyFrameRef.current = requestAnimationFrame(() => {
+          pointerSafetyFrameRef.current = 0;
           if (draggingRef.current) {
             const val = pendingCommitRef.current;
             if (val != null) seek(val);
@@ -212,12 +295,22 @@ export const ProgressSlider = React.memo(() => {
           }
         });
       };
+      pointerSafetyCleanupRef.current = () => {
+        window.removeEventListener('pointerup', resetDrag);
+        window.removeEventListener('pointercancel', resetDrag);
+        pointerSafetyCleanupRef.current = null;
+      };
       window.addEventListener('pointerup', resetDrag);
       window.addEventListener('pointercancel', resetDrag);
     }
   }, []);
 
   const onValueCommit = useCallback(([v]: number[]) => {
+    pointerSafetyCleanupRef.current?.();
+    if (pointerSafetyFrameRef.current) {
+      cancelAnimationFrame(pointerSafetyFrameRef.current);
+      pointerSafetyFrameRef.current = 0;
+    }
     seek(v);
     draggingRef.current = false;
     pendingCommitRef.current = null;
@@ -260,9 +353,9 @@ const DockProgress = React.memo(() => {
 /* ── Volume Slider ───────────────────────────────────────────── */
 
 export const VolumeSlider = React.memo(({ className = '' }: { className?: string }) => {
-  const { volume, setVolume } = usePlayerStore(
-    useShallow((s) => ({ volume: s.volume, setVolume: s.setVolume })),
-  );
+  const volume = usePlayerStore((s) => s.volume);
+  const setVolume = usePlayerStore.getState().setVolume;
+  const volumeCommit = useThrottledControlCommit(setVolume);
   const isOver100 = volume > 100;
 
   return (
@@ -272,7 +365,8 @@ export const VolumeSlider = React.memo(({ className = '' }: { className?: string
         value={[volume]}
         max={200}
         step={1}
-        onValueChange={([v]) => setVolume(v)}
+        onValueChange={([v]) => volumeCommit.schedule(v)}
+        onValueCommit={([v]) => volumeCommit.commitNow(v)}
         onKeyDown={(e) => {
           // Prevent slider from handling arrows itself, otherwise it stacks with global hotkeys.
           if (
@@ -286,7 +380,9 @@ export const VolumeSlider = React.memo(({ className = '' }: { className?: string
         }}
         onWheel={(e) => {
           e.preventDefault();
-          setVolume(Math.max(0, Math.min(200, volume + (e.deltaY < 0 ? 1 : -1))));
+          volumeCommit.commitNow(
+            Math.max(0, Math.min(200, volume + (e.deltaY < 0 ? 1 : -1))),
+          );
         }}
       >
         <Slider.Track className="relative h-[3px] grow rounded-full bg-white/[0.08] group-hover:h-[4px] transition-all duration-150">
@@ -310,18 +406,17 @@ export const VolumeSlider = React.memo(({ className = '' }: { className?: string
 /* ── Volume button ───────────────────────────────────────────── */
 
 export const ControlVolumeBtn = React.memo(({ size = 'default' }: { size?: 'default' | 'sm' }) => {
-  const { volume, volumeBeforeMute, setVolume } = usePlayerStore(
+  const { volume, volumeBeforeMute } = usePlayerStore(
     useShallow((s) => ({
       volume: s.volume,
       volumeBeforeMute: s.volumeBeforeMute,
-      setVolume: s.setVolume,
     })),
   );
   const s = size === 'sm' ? 'w-9 h-9' : 'w-10 h-10';
   return (
     <button
       type="button"
-      onClick={() => setVolume(volume > 0 ? 0 : volumeBeforeMute)}
+      onClick={() => usePlayerStore.getState().setVolume(volume > 0 ? 0 : volumeBeforeMute)}
       className={`${s} rounded-full flex items-center justify-center transition-all duration-150 ease-[var(--ease-apple)] cursor-pointer hover:bg-white/[0.04] ${
         volume === 0 ? 'text-accent' : 'text-white/40 hover:text-white/70'
       }`}
@@ -347,8 +442,7 @@ export const VolumeLabel = React.memo(() => {
 /* ── Progress Time (updates once per second) ─────────────────── */
 
 export const ProgressTime = React.memo(() => {
-  const currentSecond = useSyncExternalStore(subscribe, () => Math.floor(getCurrentTime()));
-  const duration = useSyncExternalStore(subscribe, getDuration);
+  const { currentSecond, duration } = usePlayerClock();
 
   return (
     <div className="flex items-center gap-1.5">
@@ -362,6 +456,32 @@ export const ProgressTime = React.memo(() => {
     </div>
   );
 });
+
+interface PlayerClockSnapshot {
+  currentSecond: number;
+  duration: number;
+}
+
+let playerClockSnapshot: PlayerClockSnapshot = {
+  currentSecond: Math.floor(getCurrentTime()),
+  duration: getDuration(),
+};
+
+function getPlayerClockSnapshot(): PlayerClockSnapshot {
+  const currentSecond = Math.floor(getCurrentTime());
+  const duration = getDuration();
+  if (
+    currentSecond !== playerClockSnapshot.currentSecond ||
+    duration !== playerClockSnapshot.duration
+  ) {
+    playerClockSnapshot = { currentSecond, duration };
+  }
+  return playerClockSnapshot;
+}
+
+function usePlayerClock(): PlayerClockSnapshot {
+  return useSyncExternalStore(subscribe, getPlayerClockSnapshot);
+}
 
 /* ── Like / Dislike buttons ──────────────────────────────────── */
 
@@ -456,12 +576,14 @@ export function NowBarDislikeButton({
       api(`/likes/tracks/${encodeURIComponent(trackUrn)}`, { method: 'DELETE' }).catch(() => {});
     }
 
+    const dislikePromise = toggleDislike(qc, trackData, next);
+
     if (next) {
       const { currentTrack, next: skip } = usePlayerStore.getState();
-      if (currentTrack?.urn === trackUrn) skip();
+      if (currentTrack?.urn === trackUrn) skip('dislike');
     }
 
-    await toggleDislike(qc, trackData, next);
+    await dislikePromise;
   };
 
   return (
@@ -488,11 +610,10 @@ const btnClass = (active: boolean, size: 'default' | 'sm') =>
 const PlayPauseBtn = React.memo(() => {
   const { t } = useTranslation();
   const isPlaying = usePlayerStore((s) => s.isPlaying);
-  const togglePlay = usePlayerStore((s) => s.togglePlay);
   return (
     <button
       type="button"
-      onClick={togglePlay}
+      onClick={() => usePlayerStore.getState().togglePlay()}
       title={isPlaying ? t('track.pause') : t('track.play')}
       className="npb-play"
     >
@@ -503,9 +624,12 @@ const PlayPauseBtn = React.memo(() => {
 
 const ShuffleBtn = React.memo(() => {
   const shuffle = usePlayerStore((s) => s.shuffle);
-  const toggleShuffle = usePlayerStore((s) => s.toggleShuffle);
   return (
-    <button type="button" onClick={toggleShuffle} className={btnClass(shuffle, 'sm')}>
+    <button
+      type="button"
+      onClick={() => usePlayerStore.getState().toggleShuffle()}
+      className={btnClass(shuffle, 'sm')}
+    >
       {shuffleIcon16}
     </button>
   );
@@ -513,9 +637,12 @@ const ShuffleBtn = React.memo(() => {
 
 const RepeatBtn = React.memo(() => {
   const repeat = usePlayerStore((s) => s.repeat);
-  const toggleRepeat = usePlayerStore((s) => s.toggleRepeat);
   return (
-    <button type="button" onClick={toggleRepeat} className={btnClass(repeat !== 'off', 'sm')}>
+    <button
+      type="button"
+      onClick={() => usePlayerStore.getState().toggleRepeat()}
+      className={btnClass(repeat !== 'off', 'sm')}
+    >
       {repeat === 'one' ? repeat1Icon16 : repeatIcon16}
     </button>
   );
@@ -524,7 +651,6 @@ const RepeatBtn = React.memo(() => {
 const AbLoopBtn = React.memo(() => {
   const { t } = useTranslation();
   const abLoop = usePlayerStore((s) => s.abLoop);
-  const cycleAbPoint = usePlayerStore((s) => s.cycleAbPoint);
   const awaitingB = abLoop != null && abLoop.b == null;
   const title = !abLoop
     ? t('player.abLoopSetA')
@@ -538,7 +664,7 @@ const AbLoopBtn = React.memo(() => {
       type="button"
       title={title}
       aria-label={title}
-      onClick={() => cycleAbPoint(getCurrentTime())}
+      onClick={() => usePlayerStore.getState().cycleAbPoint(getCurrentTime())}
       className={`relative w-[30px] h-[30px] rounded-full flex items-center justify-center transition-all duration-200 ease-[var(--ease-apple)] cursor-pointer active:scale-90 ${
         active
           ? 'text-accent bg-accent/15 shadow-[0_0_14px_-4px_var(--color-accent-glow)]'
@@ -560,9 +686,12 @@ const PrevBtn = React.memo(() => (
 ));
 
 const NextBtn = React.memo(() => {
-  const next = usePlayerStore((s) => s.next);
   return (
-    <button type="button" onClick={next} className={btnClass(false, 'default')}>
+    <button
+      type="button"
+      onClick={() => usePlayerStore.getState().next()}
+      className={btnClass(false, 'default')}
+    >
       {skipForward20}
     </button>
   );
@@ -602,14 +731,13 @@ const ContextBtn = React.memo(({ onClick, active }: { onClick: () => void; activ
 const LyricsBtn = React.memo(() => {
   const { t } = useTranslation();
   const open = useLyricsStore((s) => s.open);
-  const closePanel = useLyricsStore((s) => s.close);
-  const openPanel = useLyricsStore((s) => s.openPanel);
   return (
     <button
       type="button"
       onClick={() => {
-        if (open) closePanel();
-        else openPanel({ tab: 'lyrics', rightPanelOpen: true });
+        const lyrics = useLyricsStore.getState();
+        if (open) lyrics.close();
+        else lyrics.openPanel({ tab: 'lyrics', rightPanelOpen: true });
       }}
       className={`${btnClass(open, 'sm')} npb-labeled-tool`}
     >
@@ -641,8 +769,8 @@ const formatPlaybackRate = (rate: number) =>
 export const PlaybackRateSlider = React.memo(() => {
   const { t } = useTranslation();
   const playbackRate = usePlayerStore((s) => s.playbackRate);
-  const setPlaybackRate = usePlayerStore((s) => s.setPlaybackRate);
-  const resetPlaybackRate = usePlayerStore((s) => s.resetPlaybackRate);
+  const setPlaybackRate = usePlayerStore.getState().setPlaybackRate;
+  const playbackRateCommit = useThrottledControlCommit(setPlaybackRate);
   const isDefault = Math.abs(playbackRate - 1) < 0.001;
 
   return (
@@ -655,7 +783,10 @@ export const PlaybackRateSlider = React.memo(() => {
           type="button"
           title={isDefault ? t('player.playbackSpeed') : t('player.playbackSpeedReset')}
           onClick={() => {
-            if (!isDefault) resetPlaybackRate();
+            if (!isDefault) {
+              playbackRateCommit.cancel();
+              usePlayerStore.getState().resetPlaybackRate();
+            }
           }}
           className={`min-w-[42px] text-right text-[11px] font-semibold tabular-nums transition-colors cursor-pointer ${
             isDefault ? 'text-white/45' : 'text-accent hover:text-accent/80'
@@ -671,10 +802,13 @@ export const PlaybackRateSlider = React.memo(() => {
         min={PLAYBACK_RATE_MIN}
         max={PLAYBACK_RATE_MAX}
         step={PLAYBACK_RATE_STEP}
-        onValueChange={([v]) => setPlaybackRate(v)}
+        onValueChange={([v]) => playbackRateCommit.schedule(v)}
+        onValueCommit={([v]) => playbackRateCommit.commitNow(v)}
         onWheel={(e) => {
           if (e.cancelable) e.preventDefault();
-          setPlaybackRate(playbackRate + (e.deltaY < 0 ? PLAYBACK_RATE_STEP : -PLAYBACK_RATE_STEP));
+          playbackRateCommit.commitNow(
+            playbackRate + (e.deltaY < 0 ? PLAYBACK_RATE_STEP : -PLAYBACK_RATE_STEP),
+          );
         }}
       >
         <Slider.Track className="relative h-[3px] grow rounded-full bg-white/[0.08] transition-all duration-150 group-hover/rate:h-[4px]">
@@ -703,13 +837,12 @@ const formatPitchSemitones = (semi: number) => {
 export const PitchModeToggle = React.memo(() => {
   const { t } = useTranslation();
   const mode = usePlayerStore((s) => s.pitchControlMode);
-  const setMode = usePlayerStore((s) => s.setPitchControlMode);
   return (
     <div className="grid grid-cols-2 gap-1 rounded-[14px] border border-white/[0.07] bg-white/[0.03] p-[3px]">
       <button
         type="button"
         title={t('player.pitchModeAuto')}
-        onClick={() => setMode('auto')}
+        onClick={() => usePlayerStore.getState().setPitchControlMode('auto')}
         className={`h-7 rounded-[10px] text-[10px] font-semibold uppercase tracking-[0.08em] transition-colors cursor-pointer ${
           mode === 'auto' ? 'bg-white text-black' : 'text-white/45 hover:text-white/75'
         }`}
@@ -719,7 +852,7 @@ export const PitchModeToggle = React.memo(() => {
       <button
         type="button"
         title={t('player.pitchModeManual')}
-        onClick={() => setMode('manual')}
+        onClick={() => usePlayerStore.getState().setPitchControlMode('manual')}
         className={`h-7 rounded-[10px] text-[10px] font-semibold uppercase tracking-[0.08em] transition-colors cursor-pointer ${
           mode === 'manual' ? 'bg-white text-black' : 'text-white/45 hover:text-white/75'
         }`}
@@ -732,11 +865,15 @@ export const PitchModeToggle = React.memo(() => {
 
 export const PitchSlider = React.memo(() => {
   const { t } = useTranslation();
-  const playbackRate = usePlayerStore((s) => s.playbackRate);
-  const pitchSemitones = usePlayerStore((s) => s.pitchSemitones);
-  const mode = usePlayerStore((s) => s.pitchControlMode);
-  const setPitch = usePlayerStore((s) => s.setPitchSemitones);
-  const resetPitch = usePlayerStore((s) => s.resetPitchSemitones);
+  const { playbackRate, pitchSemitones, mode } = usePlayerStore(
+    useShallow((s) => ({
+      playbackRate: s.playbackRate,
+      pitchSemitones: s.pitchSemitones,
+      mode: s.pitchControlMode,
+    })),
+  );
+  const setPitch = usePlayerStore.getState().setPitchSemitones;
+  const pitchCommit = useThrottledControlCommit(setPitch);
   const effective = getEffectivePitchSemitones(playbackRate, mode, pitchSemitones);
   const isManual = mode === 'manual';
   const canReset = isManual && Math.abs(pitchSemitones) >= 0.001;
@@ -766,7 +903,10 @@ export const PitchSlider = React.memo(() => {
           type="button"
           title={canReset ? t('player.pitchReset') : t('player.pitch')}
           onClick={() => {
-            if (canReset) resetPitch();
+            if (canReset) {
+              pitchCommit.cancel();
+              usePlayerStore.getState().resetPitchSemitones();
+            }
           }}
           className={`min-w-[42px] text-right text-[11px] font-semibold tabular-nums transition-colors cursor-pointer ${
             canReset ? 'text-accent hover:text-accent/80' : 'text-white/45'
@@ -783,11 +923,14 @@ export const PitchSlider = React.memo(() => {
         max={PITCH_SEMITONES_MAX}
         step={PITCH_SEMITONES_STEP}
         disabled={!isManual}
-        onValueChange={([v]) => isManual && setPitch(v)}
+        onValueChange={([v]) => isManual && pitchCommit.schedule(v)}
+        onValueCommit={([v]) => isManual && pitchCommit.commitNow(v)}
         onWheel={(e) => {
           if (!isManual) return;
           if (e.cancelable) e.preventDefault();
-          setPitch(pitchSemitones + (e.deltaY < 0 ? PITCH_SEMITONES_STEP : -PITCH_SEMITONES_STEP));
+          pitchCommit.commitNow(
+            pitchSemitones + (e.deltaY < 0 ? PITCH_SEMITONES_STEP : -PITCH_SEMITONES_STEP),
+          );
         }}
       >
         <Slider.Track className="relative h-[3px] grow rounded-full bg-white/[0.08] transition-all duration-150 group-hover/pitch:h-[4px]">
@@ -805,9 +948,13 @@ export const PitchSlider = React.memo(() => {
 
 const TuningBtn = React.memo(() => {
   const { t } = useTranslation();
-  const playbackRate = usePlayerStore((s) => s.playbackRate);
-  const pitchSemitones = usePlayerStore((s) => s.pitchSemitones);
-  const pitchMode = usePlayerStore((s) => s.pitchControlMode);
+  const { playbackRate, pitchSemitones, pitchMode } = usePlayerStore(
+    useShallow((s) => ({
+      playbackRate: s.playbackRate,
+      pitchSemitones: s.pitchSemitones,
+      pitchMode: s.pitchControlMode,
+    })),
+  );
   const isActive =
     Math.abs(playbackRate - 1) >= 0.001 ||
     (pitchMode === 'manual' && Math.abs(pitchSemitones) >= 0.001);
@@ -992,8 +1139,7 @@ const ReactClusterBody = React.memo(({ urn }: { urn: string }) => {
 
 const LaneTimes = React.memo(() => {
   const preview = isDesignPreview();
-  const current = useSyncExternalStore(subscribe, () => Math.floor(getCurrentTime()));
-  const duration = useSyncExternalStore(subscribe, getDuration);
+  const { currentSecond: current, duration } = usePlayerClock();
   if (preview) {
     return (
       <div className="npb-times">
@@ -1012,7 +1158,8 @@ const LaneTimes = React.memo(() => {
   );
 });
 
-/* Pause looping animations while the window is hidden (WebView doesn't throttle). */
+/* ── Background glow ─────────────────────────────────────────── */
+
 function useDocHidden(): boolean {
   const [hidden, setHidden] = useState(
     () => typeof document !== 'undefined' && document.visibilityState === 'hidden',
@@ -1025,7 +1172,20 @@ function useDocHidden(): boolean {
   return hidden;
 }
 
-/* ── Background glow ─────────────────────────────────────────── */
+const NowPlayingDock = React.memo(
+  ({ loading, children }: { loading: boolean; children: React.ReactNode }) => {
+    const isPlaying = usePlayerStore((s) => s.isPlaying);
+    const hidden = useDocHidden();
+    return (
+      <div
+        className={`npb-dock${loading ? ' is-loading' : ''}`}
+        data-playing={isPlaying && !hidden ? 'true' : 'false'}
+      >
+        {children}
+      </div>
+    );
+  },
+);
 
 /* ── NowPlayingBar ───────────────────────────────────────────── */
 
@@ -1041,17 +1201,11 @@ export const NowPlayingBar = React.memo(
     onContextToggle: () => void;
     contextOpen: boolean;
   }) => {
-    const isPlaying = usePlayerStore((s) => s.isPlaying);
-    const hidden = useDocHidden();
-    const playingNow = isPlaying && !hidden;
     const { progress: loadProgress, stage: loadStage } = useTrackLoading();
 
     return (
       <div className="npb">
-        <div
-          className={`npb-dock${loadProgress != null ? ' is-loading' : ''}`}
-          data-playing={playingNow ? 'true' : 'false'}
-        >
+        <NowPlayingDock loading={loadProgress != null}>
           {/* Opaque content layer keeps transport updates cheap. */}
           <div className="npb-content">
             <div className="npb-row">
@@ -1095,7 +1249,7 @@ export const NowPlayingBar = React.memo(
               </div>
             </div>
           </div>
-        </div>
+        </NowPlayingDock>
       </div>
     );
   },

@@ -51,6 +51,7 @@ interface DiscoverTasteEpoch {
     candidateUpdatedAt: number;
     ownerKey: string;
     languageKey: string;
+    hideLiked: boolean;
     hideListened: boolean;
     mode: 'similar' | 'diverse';
     recentTracks: readonly Track[];
@@ -65,6 +66,7 @@ export const DiscoverPrism = memo(function DiscoverPrism() {
     const perf = usePerfMode();
     const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
     const languages = useSettingsStore((state) => state.soundwaveLanguages);
+    const hideLiked = useSettingsStore((state) => state.soundwaveHideLiked);
     const hideListened = useSettingsStore((state) => state.soundwaveHideListened);
     const mode = useSettingsStore((state) => state.soundwaveMode);
     const tasteOwnerUrn = useRecommendationTasteStore((state) => state.ownerUrn);
@@ -103,6 +105,7 @@ export const DiscoverPrism = memo(function DiscoverPrism() {
         previousEpoch.candidateUpdatedAt !== recommendationQuery.dataUpdatedAt ||
         previousEpoch.ownerKey !== ownerKey ||
         previousEpoch.languageKey !== languageKey ||
+        previousEpoch.hideLiked !== hideLiked ||
         previousEpoch.hideListened !== hideListened ||
         previousEpoch.mode !== mode
     ) {
@@ -112,6 +115,7 @@ export const DiscoverPrism = memo(function DiscoverPrism() {
             candidateUpdatedAt: recommendationQuery.dataUpdatedAt,
             ownerKey,
             languageKey,
+            hideLiked,
             hideListened,
             mode,
             recentTracks: canUseLocalTaste ? [...localRecentTracks] : [],
@@ -129,6 +133,8 @@ export const DiscoverPrism = memo(function DiscoverPrism() {
         primaryCandidates: tasteEpoch.candidateSource,
         primaryLoading: recommendationQuery.isLoading,
         recentTracks: tasteEpoch.recentTracks,
+        hideLiked: tasteEpoch.hideLiked,
+        hideListened: tasteEpoch.hideListened,
         mode: tasteEpoch.mode,
         feedback: tasteEpoch.feedback,
     });

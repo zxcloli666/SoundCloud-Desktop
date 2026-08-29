@@ -1,4 +1,4 @@
-import React, {useEffect, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {getCurrentTime, seek} from '../../../lib/audio';
 import {ago, art, durLong} from '../../../lib/formatters';
@@ -72,6 +72,7 @@ export const TimedCommentsRail = React.memo(({trackUrn}: { trackUrn: string }) =
     const autoPagesRef = useRef({trackUrn, fetched: 0});
     const {comments, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} =
         useTrackComments(trackUrn);
+    const handleSeek = useCallback((seconds: number) => seek(seconds), []);
 
     const timedComments = useMemo(
         () =>
@@ -201,7 +202,7 @@ export const TimedCommentsRail = React.memo(({trackUrn}: { trackUrn: string }) =
                             <TimedCommentCard
                                 comment={comment}
                                 state={state}
-                                onSeek={(seconds) => seek(seconds)}
+                                onSeek={handleSeek}
                             />
                         </div>
                     );

@@ -984,8 +984,8 @@
 }
 
 .sonveil-mark img {
-  width: 34px;
-  height: 34px;
+  width: 46px;
+  height: auto;
   object-fit: contain;
   transition:
     filter 150ms ease,

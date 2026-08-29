@@ -1,4 +1,5 @@
-import React, {useEffect, useRef} from 'react';
+import React, {useCallback, useRef} from 'react';
+import {useShallow} from 'zustand/shallow';
 import {art} from '../../lib/formatters';
 import {useLyricsStore} from '../../stores/lyrics';
 import {usePlayerStore} from '../../stores/player';
@@ -17,48 +18,43 @@ import {TrackColumn} from './lyrics/TrackColumn';
  * All the heavy pieces live in ./lyrics/*. */
 
 export const LyricsPanel = React.memo(() => {
-  const open = useLyricsStore((s) => s.open);
-  const close = useLyricsStore((s) => s.close);
-  const tab = useLyricsStore((s) => s.tab);
-  const setTab = useLyricsStore((s) => s.setTab);
-  const rightPanelOpen = useLyricsStore((s) => s.rightPanelOpen);
-  const setRightPanelOpen = useLyricsStore((s) => s.setRightPanelOpen);
-  const toggleRightPanel = useLyricsStore((s) => s.toggleRightPanel);
-  const splitRatio = useLyricsStore((s) => s.splitRatio);
-  const setSplitRatio = useLyricsStore((s) => s.setSplitRatio);
+  const { tab, rightPanelOpen, splitRatio } = useLyricsStore(
+    useShallow((s) => ({
+      tab: s.tab,
+      rightPanelOpen: s.rightPanelOpen,
+      splitRatio: s.splitRatio,
+    })),
+  );
   const track = usePlayerStore((s) => s.currentTrack);
-  const colorRef = useArtworkColor(track?.artwork_url ?? null);
+  const artworkColor = useArtworkColor(track?.artwork_url ?? null);
   const splitLayoutRef = useRef<HTMLDivElement>(null);
   const visualizerEnabled = useSettingsStore((s) => s.lyricsVisualizer);
 
-  useEffect(() => {
-    if (!open) return;
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') close();
-    };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
-  }, [open, close]);
+  const selectTab = useCallback(
+    (next: typeof tab) => {
+      const lyrics = useLyricsStore.getState();
+      lyrics.setTab(next);
+      lyrics.setRightPanelOpen(true);
+    },
+    [],
+  );
 
-  if (!open || !track) return null;
+  if (!track) return null;
 
   const artwork500 = art(track.artwork_url, 't500x500');
   const splitPercent = splitRatio * 100;
 
   return (
     <div className="fixed inset-0 z-[60] flex flex-col overflow-hidden animate-fade-in-up bg-[#08080a]">
-        <LyricsBackdrop artworkSrc={artwork500} color={colorRef.current}/>
+        <LyricsBackdrop artworkSrc={artwork500} color={artworkColor}/>
         {visualizerEnabled && <LyricsVisualizer/>}
 
         <LyricsHeader
             tab={tab}
             rightPanelOpen={rightPanelOpen}
-            onSelectTab={(next) => {
-                setTab(next);
-                setRightPanelOpen(true);
-            }}
-            onTogglePanel={toggleRightPanel}
-            onClose={close}
+            onSelectTab={selectTab}
+            onTogglePanel={useLyricsStore.getState().toggleRightPanel}
+            onClose={useLyricsStore.getState().close}
         />
 
       {rightPanelOpen ? (
@@ -76,7 +72,7 @@ export const LyricsPanel = React.memo(() => {
 
           <SplitDivider
             splitRatio={splitRatio}
-            onChange={setSplitRatio}
+            onChange={useLyricsStore.getState().setSplitRatio}
             layoutRef={splitLayoutRef}
           />
 

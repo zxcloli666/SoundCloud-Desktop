@@ -1119,6 +1119,8 @@ export interface DiscoverFeedOptions {
   primaryCandidates?: readonly HomeRecommendationInput[];
   primaryLoading?: boolean;
   recentTracks?: readonly Track[];
+  hideLiked?: boolean;
+  hideListened?: boolean;
   mode?: HomeRecommendationMode;
   feedback?: HomeRecommendationFeedback;
 }
@@ -1134,42 +1136,72 @@ export function useDiscoverFeed(options: DiscoverFeedOptions = {}) {
   const recentTracks: readonly Track[] = options.recentTracks ?? EMPTY_TRACKS;
   const primaryCandidates: readonly HomeRecommendationInput[] =
     options.primaryCandidates ?? EMPTY_TRACKS;
+  // Preserve the legacy hard-hide behavior for callers that have no settings
+  // surface. DiscoverPrism passes both flags explicitly.
+  const hideLiked = options.hideLiked ?? true;
+  const hideListened = options.hideListened ?? true;
   const mode = options.mode ?? 'similar';
-  const excludedUrns = useMemo(
-    () => new Set([...likedTracks, ...recentTracks].map((track) => track.urn)),
-    [likedTracks, recentTracks],
+  const likedUrns = useMemo(
+    () => new Set(likedTracks.map((track) => track.urn)),
+    [likedTracks],
   );
+  const recentUrns = useMemo(
+    () => new Set(recentTracks.map((track) => track.urn)),
+    [recentTracks],
+  );
+  const softExcludedUrns = useMemo(() => {
+    const excluded = new Set<string>();
+    if (!hideLiked) for (const urn of likedUrns) excluded.add(urn);
+    if (!hideListened) for (const urn of recentUrns) excluded.add(urn);
+    return excluded;
+  }, [hideLiked, hideListened, likedUrns, recentUrns]);
+  const hardFamiliarUrns = useMemo(() => {
+    const blocked = new Set<string>();
+    if (hideLiked) for (const urn of likedUrns) blocked.add(urn);
+    if (hideListened) for (const urn of recentUrns) blocked.add(urn);
+    return blocked;
+  }, [hideLiked, hideListened, likedUrns, recentUrns]);
   const primaryTracks = useMemo(
     () => primaryCandidates.map(recommendationTrackFromInput),
     [primaryCandidates],
   );
-  const primaryBlockedUrns = useMemo(
-    () => {
-      void dislikeVersion;
-      return new Set(
-        primaryTracks.filter((track) => isUrnDisliked(track.urn)).map((track) => track.urn),
-      );
-    },
-    [dislikeVersion, primaryTracks],
-  );
+  const primaryExcludedUrns = useMemo(() => {
+    const excluded = new Set(softExcludedUrns);
+    if (!hideLiked) {
+      for (const track of primaryTracks) {
+        if (track.user_favorite) excluded.add(track.urn);
+      }
+    }
+    return excluded;
+  }, [hideLiked, primaryTracks, softExcludedUrns]);
+  const primaryBlockedUrns = useMemo(() => {
+    void dislikeVersion;
+    const blocked = new Set(hardFamiliarUrns);
+    for (const track of primaryTracks) {
+      if (isUrnDisliked(track.urn) || (hideLiked && track.user_favorite)) {
+        blocked.add(track.urn);
+      }
+    }
+    return blocked;
+  }, [dislikeVersion, hardFamiliarUrns, hideLiked, primaryTracks]);
   const primary = useMemo(
     () =>
       curateHomeRecommendations(primaryCandidates, {
-        excludedUrns,
+        excludedUrns: primaryExcludedUrns,
         blockedUrns: primaryBlockedUrns,
         likedTracks,
         recentTracks,
         mode,
         feedback: options.feedback,
         limit: 60,
-      }).filter((track) => !excludedUrns.has(track.urn)),
+      }),
     [
-      excludedUrns,
       likedTracks,
       mode,
       options.feedback,
       primaryBlockedUrns,
       primaryCandidates,
+      primaryExcludedUrns,
       recentTracks,
     ],
   );
@@ -1179,23 +1211,46 @@ export function useDiscoverFeed(options: DiscoverFeedOptions = {}) {
     recentTracks,
     !primaryLoading && primary.length === 0,
   );
-  const fallbackBlockedUrns = useMemo(
-    () => {
-      void dislikeVersion;
-      return new Set(
-        (relatedQuery.data ?? [])
-          .map((candidate) => candidate.track)
-          .filter((track) => isUrnDisliked(track.urn))
-          .map((track) => track.urn),
-      );
-    },
-    [dislikeVersion, relatedQuery.data],
-  );
-  const fallback = useRecommendedTracks(relatedQuery.data, 60, {
-    excludedUrns,
+  const fallbackExcludedUrns = useMemo(() => {
+    const excluded = new Set(softExcludedUrns);
+    if (!hideLiked) {
+      for (const candidate of relatedQuery.data ?? []) {
+        if (candidate.track.user_favorite) excluded.add(candidate.track.urn);
+      }
+    }
+    return excluded;
+  }, [hideLiked, relatedQuery.data, softExcludedUrns]);
+  const fallbackBlockedUrns = useMemo(() => {
+    void dislikeVersion;
+    const blocked = new Set(hardFamiliarUrns);
+    for (const candidate of relatedQuery.data ?? []) {
+      const track = candidate.track;
+      if (isUrnDisliked(track.urn) || (hideLiked && track.user_favorite)) {
+        blocked.add(track.urn);
+      }
+    }
+    return blocked;
+  }, [dislikeVersion, hardFamiliarUrns, hideLiked, relatedQuery.data]);
+  const freshFallback = useRecommendedTracks(relatedQuery.data, 60, {
+    excludedUrns: fallbackExcludedUrns,
     blockedUrns: fallbackBlockedUrns,
     mode,
   });
+  const fallbackWithFamiliar = useRecommendedTracks(relatedQuery.data, 60, {
+    blockedUrns: fallbackBlockedUrns,
+    mode,
+  });
+  const fallback = useMemo(() => {
+    const seen = new Set<string>();
+    const tracks: Track[] = [];
+    for (const track of [...freshFallback, ...fallbackWithFamiliar]) {
+      if (seen.has(track.urn)) continue;
+      seen.add(track.urn);
+      tracks.push(track);
+      if (tracks.length >= 60) break;
+    }
+    return tracks;
+  }, [fallbackWithFamiliar, freshFallback]);
   const recommended = primary.length > 0 ? primary : fallback;
   const byGenre = useDiscoverData(recommended, likedTracks);
   const isLoading =

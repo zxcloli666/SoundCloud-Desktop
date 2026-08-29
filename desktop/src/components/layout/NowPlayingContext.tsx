@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { useShallow } from 'zustand/shallow';
 import { designPreviewTracks, isDesignPreview } from '../../lib/design-preview';
 import { art } from '../../lib/formatters';
 import { ListMusic, MicVocal, Play, X } from '../../lib/icons';
@@ -24,13 +25,15 @@ export const NowPlayingContext = React.memo(
   }) => {
     const { t } = useTranslation();
     const navigate = useNavigate();
-    const storeTrack = usePlayerStore((state) => state.currentTrack);
-    const queue = usePlayerStore((state) => state.queue);
-    const queueIndex = usePlayerStore((state) => state.queueIndex);
+    const { storeTrack, queuedNextTrack } = usePlayerStore(
+      useShallow((state) => ({
+        storeTrack: state.currentTrack,
+        queuedNextTrack: state.queue[state.queueIndex + 1],
+      })),
+    );
     const preview = isDesignPreview();
     const track = preview ? designPreviewTracks[0] : storeTrack;
-    const nextTrack = preview ? designPreviewTracks[1] : queue[queueIndex + 1];
-    const openLyrics = useLyricsStore((state) => state.openPanel);
+    const nextTrack = preview ? designPreviewTracks[1] : queuedNextTrack;
 
     if (!track) {
       return (
@@ -107,9 +110,9 @@ export const NowPlayingContext = React.memo(
             <div className="sonveil-context-actions">
               <button
                 type="button"
-                onClick={() => {
+                  onClick={() => {
                   onClose();
-                  openLyrics({ rightPanelOpen: false });
+                  useLyricsStore.getState().openPanel({ rightPanelOpen: false });
                 }}
               >
                 <MicVocal size={16} />

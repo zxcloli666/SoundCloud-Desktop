@@ -1,4 +1,4 @@
-import React, {useEffect, useRef} from 'react';
+import React, {useEffect, useState} from 'react';
 import {getWallpaperUrl} from '../../../lib/cache';
 import {art} from '../../../lib/formatters';
 import {usePerfMode} from '../../../lib/perf';
@@ -6,7 +6,13 @@ import {useSettingsStore} from '../../../stores/settings';
 
 /* ── Dominant-colour extraction from the artwork ───────────── */
 
-function extractColor(src: string): Promise<[number, number, number]> {
+type ArtworkColor = [number, number, number];
+
+const DEFAULT_ARTWORK_COLOR: ArtworkColor = [255, 85, 0];
+const artworkColorCache = new Map<string, ArtworkColor>();
+const ARTWORK_COLOR_CACHE_CAP = 48;
+
+function extractColor(src: string): Promise<ArtworkColor> {
     return new Promise((resolve) => {
         const img = new Image();
         img.crossOrigin = 'anonymous';
@@ -42,19 +48,37 @@ function extractColor(src: string): Promise<[number, number, number]> {
 }
 
 export function useArtworkColor(artworkUrl: string | null) {
-    const colorRef = useRef<[number, number, number]>([255, 85, 0]);
-    const prevArtRef = useRef<string | null>(null);
+    const initialSrc = art(artworkUrl, 't200x200');
+    const [color, setColor] = useState<ArtworkColor>(
+        () => (initialSrc ? artworkColorCache.get(initialSrc) : null) ?? DEFAULT_ARTWORK_COLOR,
+    );
 
     useEffect(() => {
         const src = art(artworkUrl, 't200x200');
-        if (!src || src === prevArtRef.current) return;
-        prevArtRef.current = src;
+        if (!src) {
+            setColor(DEFAULT_ARTWORK_COLOR);
+            return;
+        }
+        const cached = artworkColorCache.get(src);
+        if (cached) {
+            setColor(cached);
+            return;
+        }
+        let cancelled = false;
         extractColor(src).then((c) => {
-            colorRef.current = c;
+            if (artworkColorCache.size >= ARTWORK_COLOR_CACHE_CAP) {
+                const oldest = artworkColorCache.keys().next().value;
+                if (typeof oldest === 'string') artworkColorCache.delete(oldest);
+            }
+            artworkColorCache.set(src, c);
+            if (!cancelled) setColor(c);
         });
+        return () => {
+            cancelled = true;
+        };
     }, [artworkUrl]);
 
-    return colorRef;
+    return color;
 }
 
 /* ── Immersive backdrop ────────────────────────────────────────

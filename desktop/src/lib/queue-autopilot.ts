@@ -1,147 +1,121 @@
 /**
- * Единая точка дозагрузки очереди когда она кончилась.
+ * Single end-of-queue continuation path.
  *
- * Триггерится из player store: как только `next()` упирается в конец очереди
- * с repeat='off', она зовёт зарегистрированный здесь fallback вместо паузы.
- * Это покрывает оба сценария:
- *   1) трек докрутился до конца естественно → audio:ended → handleTrackEnd → next()
- *   2) юзер вручную клацнул "Next" на последнем треке → next()
- *
- * Стратегия (по приоритету):
- *   0) контекстный источник (лайки/плейлист/…), если активен — доигрываем его
- *      ДО КОНЦА, подкачивая страницы (см. lib/queue-continuation.ts);
- *   1) "волна от трека" (Qdrant + bandit);
- *   2) фоллбек на SC `/tracks/{urn}/related`.
- * Волна одинакова для всех источников (home, артист, лайки, поиск, плейлист).
- *
- * Не вызывать параллельно: повторный вызов пока летит первый — игнор.
+ * Likes/playlists are exhausted first. Afterwards one cursor-backed SmartWave
+ * session keeps its original positive seed for the whole autoplay run, while
+ * every batch is locally filtered and reranked before it reaches the player.
  */
 
 import {
+  getPlayerQueueRevision,
+  type QueueAdvanceReason,
   setEndOfQueueFallback,
   setPlaybackContextResetHandler,
   type Track,
   usePlayerStore,
 } from '../stores/player';
-import { useSettingsStore } from '../stores/settings';
-import { getQueueContinuationSource, setQueueContinuationSource } from './queue-continuation';
-import { fetchRelatedTracks } from './related';
-import { fetchSmartWave } from './soundwave';
+import { chooseAutopilotContinuationSeed } from './autopilot-seed';
+import { markAutopilotWaveTracks, resetAutopilotWaveSession } from './autopilot-wave-session';
+import { setQueueContinuationSource } from './queue-continuation';
+import { fetchQueueRecommendationContinuation } from './queue-recommendation-fetch';
+import { continueFromQueueContext } from './queue-source-continuation';
 
-let inFlight = false;
+interface AutopilotRun {
+  controller: AbortController;
+  generation: number;
+  id: number;
+  lastUrn: string;
+  queue: Track[];
+  queueIndex: number;
+  queueRevision: number;
+}
 
-export async function autopilotContinueFromTrack(lastTrack: Track): Promise<void> {
-  if (inFlight) {
-    console.debug('[autopilot] skipping — already in flight');
-    return;
+let activeRun: AutopilotRun | null = null;
+let playbackGeneration = 0;
+let runSequence = 0;
+
+function isRunCurrent(run: AutopilotRun): boolean {
+  const state = usePlayerStore.getState();
+  return (
+    !run.controller.signal.aborted &&
+    run.generation === playbackGeneration &&
+    getPlayerQueueRevision() === run.queueRevision &&
+    state.queueIndex === run.queueIndex &&
+    state.currentTrack?.urn === run.lastUrn &&
+    state.repeat === 'off'
+  );
+}
+
+export async function autopilotContinueFromTrack(
+  lastTrack: Track,
+  reason: QueueAdvanceReason = 'manual',
+): Promise<void> {
+  if (activeRun) {
+    if (isRunCurrent(activeRun)) {
+      console.debug('[autopilot] skipping duplicate refill');
+      return;
+    }
+    activeRun.controller.abort();
+    activeRun = null;
+    resetAutopilotWaveSession();
   }
-  inFlight = true;
+
+  const state = usePlayerStore.getState();
+  const run: AutopilotRun = {
+    controller: new AbortController(),
+    generation: playbackGeneration,
+    id: ++runSequence,
+    lastUrn: lastTrack.urn,
+    queue: state.queue,
+    queueIndex: state.queueIndex,
+    queueRevision: getPlayerQueueRevision(),
+  };
+  activeRun = run;
 
   try {
-    // 0) Контекст (лайки/…) доигрывается до конца перед волной.
-    if (await continueFromContextSource()) return;
+    const context = await continueFromQueueContext(run.queue, () => isRunCurrent(run));
+    if (context === 'continued' || context === 'stale' || !isRunCurrent(run)) return;
 
-    // 1–2) Источник иссяк или его нет → волна от последнего трека.
-    console.debug('[autopilot] wave continuation from', lastTrack.urn, lastTrack.title);
-    const fresh = await fetchContinuation(lastTrack);
-    if (fresh.length === 0) {
-      console.warn('[autopilot] no continuation tracks (wave + SC related both empty)');
+    const seed = chooseAutopilotContinuationSeed(lastTrack, reason, run.queue, run.queueIndex);
+    console.debug('[autopilot] recommendation continuation from', seed.wave);
+    const continuation = await fetchQueueRecommendationContinuation(seed, {
+      signal: run.controller.signal,
+      isCurrent: () => isRunCurrent(run),
+    });
+    if (!isRunCurrent(run)) return;
+    if (!continuation || continuation.tracks.length === 0) {
+      console.warn('[autopilot] no eligible continuation tracks');
       usePlayerStore.getState().pause();
       return;
     }
-    console.debug('[autopilot] adding', fresh.length, 'wave tracks to queue');
-    usePlayerStore.getState().addToQueue(fresh);
-    usePlayerStore.getState().next();
-  } catch (e) {
-    console.error('[autopilot] continuation failed:', e);
-    usePlayerStore.getState().pause();
+
+    console.debug(
+      '[autopilot] adding',
+      continuation.tracks.length,
+      continuation.source,
+      'tracks to queue',
+    );
+    if (continuation.source === 'wave') {
+      markAutopilotWaveTracks(continuation.tracks.map((track) => track.urn));
+    }
+    usePlayerStore.getState().appendToQueueAndPlayNext(continuation.tracks);
+  } catch (error) {
+    if (!run.controller.signal.aborted && isRunCurrent(run)) {
+      console.error('[autopilot] continuation failed:', error);
+      usePlayerStore.getState().pause();
+    }
   } finally {
-    inFlight = false;
+    if (activeRun?.id === run.id) activeRun = null;
   }
 }
 
-/**
- * Дотягивает очередь из активного контекстного источника.
- * @returns true — добавили порцию свежих треков и поехали дальше; false —
- *   источника нет / он исчерпан / упал (тогда вызывающий уходит в волну).
- */
-async function continueFromContextSource(): Promise<boolean> {
-  const source = getQueueContinuationSource();
-  if (!source) return false;
-
-  const existing = new Set(usePlayerStore.getState().queue.map((t) => t.urn));
-  // Тянем страницы пока не наберём свежие треки либо источник не кончится
-  // (страница может оказаться целиком из дублей, уже доскролленных в очередь).
-  for (;;) {
-    let batch: Track[];
-    try {
-      batch = await source.next();
-    } catch (e) {
-      console.debug(`[autopilot] source "${source.kind}" failed → wave:`, e);
-      setQueueContinuationSource(null);
-      return false;
-    }
-    if (batch.length === 0) {
-      console.debug(`[autopilot] source "${source.kind}" exhausted → wave`);
-      setQueueContinuationSource(null);
-      return false;
-    }
-    const freshOnes = batch.filter((t) => !existing.has(t.urn));
-    if (freshOnes.length > 0) {
-      console.debug(`[autopilot] source "${source.kind}" +${freshOnes.length} tracks`);
-      usePlayerStore.getState().addToQueue(freshOnes);
-      usePlayerStore.getState().next();
-      return true;
-    }
-    for (const t of batch) existing.add(t.urn);
-  }
+function resetPlaybackContext(): void {
+  playbackGeneration += 1;
+  activeRun?.controller.abort();
+  activeRun = null;
+  resetAutopilotWaveSession();
+  setQueueContinuationSource(null);
 }
 
-async function fetchContinuation(seed: Track): Promise<Track[]> {
-  const existing = new Set(usePlayerStore.getState().queue.map((t) => t.urn));
-
-  const fromWave = await fetchWaveContinuation(seed);
-  const waveFresh = fromWave.filter((t) => !existing.has(t.urn));
-  if (waveFresh.length > 0) {
-    console.debug('[autopilot] using wave-from-track,', waveFresh.length, 'fresh tracks');
-    return waveFresh;
-  }
-
-  console.debug('[autopilot] wave empty → falling back to SC related');
-  const fromSc = await fetchScRelated(seed);
-  const scFresh = fromSc.filter((t) => !existing.has(t.urn));
-  console.debug('[autopilot] SC related returned', scFresh.length, 'fresh tracks');
-  return scFresh;
-}
-
-async function fetchWaveContinuation(seed: Track): Promise<Track[]> {
-  const trackId = seed.urn.split(':').pop();
-  if (!trackId) return [];
-  try {
-    const batch = await fetchSmartWave({
-      seedKind: 'track',
-      seedId: trackId,
-      limit: 20,
-      hideListened: useSettingsStore.getState().soundwaveHideListened,
-    });
-    return batch.tracks;
-  } catch (e) {
-    console.debug('[autopilot] wave fetch failed:', e);
-    return [];
-  }
-}
-
-async function fetchScRelated(seed: Track): Promise<Track[]> {
-  try {
-    const res = await fetchRelatedTracks(seed.urn, 20);
-    return res.collection;
-  } catch (e) {
-    console.debug('[autopilot] SC related fetch failed:', e);
-    return [];
-  }
-}
-
-// Регистрируем при загрузке модуля. Сторе пнёт сюда при end-of-queue,
-// а при старте нового play() — сбросит контекстный источник.
 setEndOfQueueFallback(autopilotContinueFromTrack);
-setPlaybackContextResetHandler(() => setQueueContinuationSource(null));
+setPlaybackContextResetHandler(resetPlaybackContext);

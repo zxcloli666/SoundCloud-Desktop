@@ -12,11 +12,9 @@ export const QueueList = React.memo(
   ({
     startIndex,
     queueIndex,
-    isPlaying,
   }: {
     startIndex: number;
     queueIndex: number;
-    isPlaying: boolean;
   }) => {
     const queue = usePlayerStore((s) => s.queue);
     const [activeId, setActiveId] = useState<number | null>(null);
@@ -42,17 +40,12 @@ export const QueueList = React.memo(
           <div className="flex flex-col gap-0.5">
             {items.map((track, localIdx) => {
               const absIdx = startIndex + localIdx;
-              const isCurrent = absIdx === queueIndex;
               return (
                 <QueueRow
                   key={`${track.urn}-${absIdx}`}
                   track={track}
                   absIdx={absIdx}
                   position={absIdx - queueIndex}
-                  isCurrent={isCurrent}
-                  // Only the current row reads isPlaying; pass a stable false to the
-                  // rest so play/pause re-renders just one memoized row.
-                  isPlaying={isCurrent && isPlaying}
                 />
               );
             })}

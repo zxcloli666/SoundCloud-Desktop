@@ -1,8 +1,8 @@
-import {invoke} from '@tauri-apps/api/core';
 import {listen} from '@tauri-apps/api/event';
 import React, {useEffect, useRef} from 'react';
 import {useTranslation} from 'react-i18next';
-import {getCurrentTime, seek} from '../../../lib/audio';
+import {getCurrentTime, seek, subscribe as subscribeAudio} from '../../../lib/audio';
+import {trackedInvoke as invoke} from '../../../lib/diagnostics';
 import {Search} from '../../../lib/icons';
 import type {LyricLine, LyricsSource} from '../../../lib/lyrics';
 import {usePerfMode} from '../../../lib/perf';
@@ -65,12 +65,12 @@ export const SyncedLyrics = React.memo(({lines}: { lines: LyricLine[] }) => {
     const linesRef = useRef(lines);
     const lineElsRef = useRef<HTMLElement[]>([]);
     const lineCharElsRef = useRef<HTMLElement[][]>([]);
+    const lineCharProgressRef = useRef<number[][]>([]);
     const manualScrollRef = useRef(false);
     const lastScrollTsRef = useRef(0);
     const lineProgressRef = useRef(0);
     linesRef.current = lines;
 
-    // biome-ignore lint/correctness/useExhaustiveDependencies: perChar changes rendered lyric nodes.
     useEffect(() => {
         const container = containerRef.current;
         if (!container) return;
@@ -78,6 +78,9 @@ export const SyncedLyrics = React.memo(({lines}: { lines: LyricLine[] }) => {
         lineElsRef.current = Array.from(container.querySelectorAll<HTMLElement>('.lyric-line'));
         lineCharElsRef.current = lineElsRef.current.map((el) =>
             Array.from(el.querySelectorAll<HTMLElement>('[data-char-index]')),
+        );
+        lineCharProgressRef.current = lineCharElsRef.current.map((chars) =>
+            Array.from({length: chars.length}, () => Number.NaN),
         );
         activeRef.current = -1;
         lineProgressRef.current = 0;
@@ -109,6 +112,7 @@ export const SyncedLyrics = React.memo(({lines}: { lines: LyricLine[] }) => {
             el.style.setProperty('--lyric-progress-value', value.toFixed(4));
 
             const chars = lineCharElsRef.current[i];
+            const previousValues = lineCharProgressRef.current[i];
             if (chars && chars.length > 0) {
                 const total = chars.length;
                 const head = value * total;
@@ -116,10 +120,16 @@ export const SyncedLyrics = React.memo(({lines}: { lines: LyricLine[] }) => {
                     const local = clamp01((head - c + SOFT_LEAD) / SOFT_TAIL);
                     // smoothstep
                     const eased = local * local * (3 - 2 * local);
-                    chars[c].style.setProperty('--char-progress', eased.toFixed(4));
+                    if (
+                        !previousValues ||
+                        !Number.isFinite(previousValues[c]) ||
+                        Math.abs(previousValues[c] - eased) > 0.0001
+                    ) {
+                        chars[c].style.setProperty('--char-progress', eased.toFixed(4));
+                        if (previousValues) previousValues[c] = eased;
+                    }
                 }
             }
-
         };
 
         const setLineState = (i: number, state: string) => {
@@ -132,6 +142,26 @@ export const SyncedLyrics = React.memo(({lines}: { lines: LyricLine[] }) => {
             } else if (state === 'next' || state === 'next-near') {
                 writeLineProgress(i, 0);
             }
+        };
+
+        let playing = usePlayerStore.getState().isPlaying;
+        const syncActiveProgress = (smooth: boolean) => {
+            const idx = activeRef.current;
+            if (idx < 0 || idx >= linesRef.current.length) return;
+            const cur = linesRef.current[idx];
+            const next = linesRef.current[idx + 1];
+            const dur = Math.max(0.4, (next?.time ?? cur.time + 2.6) - cur.time);
+            const target = clamp01((getCurrentTime() - cur.time) / dur);
+            const prev = lineProgressRef.current;
+            const diff = target - prev;
+            const value = smooth
+                ? diff < 0
+                    ? target
+                    : prev + diff * (diff > 0.18 || target > 0.92 ? 0.7 : 0.32)
+                : target;
+            if (Math.abs(value - prev) < 0.0001) return;
+            lineProgressRef.current = value;
+            writeLineProgress(idx, value);
         };
 
         const unlistenPromise = listen<number | null>('lyrics:active_line', (event) => {
@@ -154,6 +184,9 @@ export const SyncedLyrics = React.memo(({lines}: { lines: LyricLine[] }) => {
                 else state = 'next';
                 setLineState(i, state);
             }
+            if (perChar && !playing && document.visibilityState !== 'hidden') {
+                syncActiveProgress(false);
+            }
 
             if (idx >= 0 && idx < lineEls.length && !manualScrollRef.current) {
                 const el = lineEls[idx];
@@ -172,35 +205,37 @@ export const SyncedLyrics = React.memo(({lines}: { lines: LyricLine[] }) => {
         let lastTickTs = 0;
         const FRAME_BUDGET_MS = 33; // ~30fps — sweep is per-char so 30fps still looks smooth
         const tick = (ts: number) => {
-            // Park the rAF entirely while hidden; visibilitychange restarts it.
-            if (document.visibilityState === 'hidden') {
-                rafId = 0;
-                return;
-            }
+            rafId = 0;
+            // Park the rAF entirely while paused or hidden. It is restarted by
+            // the existing player/visibility listeners instead of burning an idle loop.
+            if (!playing || document.visibilityState === 'hidden') return;
             rafId = requestAnimationFrame(tick);
             if (ts - lastTickTs < FRAME_BUDGET_MS) return;
             lastTickTs = ts;
 
-            const idx = activeRef.current;
-            if (idx < 0 || idx >= linesRef.current.length) return;
-            const cur = linesRef.current[idx];
-            const next = linesRef.current[idx + 1];
-            const dur = Math.max(0.4, (next?.time ?? cur.time + 2.6) - cur.time);
-            const target = clamp01((getCurrentTime() - cur.time) / dur);
-
-            const prev = lineProgressRef.current;
-            const diff = target - prev;
-            const smoothed =
-                diff < 0 ? target : prev + diff * (diff > 0.18 || target > 0.92 ? 0.7 : 0.32);
-            lineProgressRef.current = smoothed;
-            writeLineProgress(idx, smoothed);
+            syncActiveProgress(true);
         };
-        if (perChar) rafId = requestAnimationFrame(tick);
+
+        const startLoop = () => {
+            if (
+                perChar &&
+                playing &&
+                document.visibilityState !== 'hidden' &&
+                rafId === 0
+            ) {
+                rafId = requestAnimationFrame(tick);
+            }
+        };
+        startLoop();
 
         const onVisibility = () => {
-            if (perChar && document.visibilityState !== 'hidden' && !rafId) {
+            if (document.visibilityState === 'hidden') {
+                if (rafId) cancelAnimationFrame(rafId);
+                rafId = 0;
+            } else {
                 lastTickTs = 0;
-                rafId = requestAnimationFrame(tick);
+                if (playing) startLoop();
+                else if (perChar) syncActiveProgress(false);
             }
         };
         document.addEventListener('visibilitychange', onVisibility);
@@ -208,10 +243,27 @@ export const SyncedLyrics = React.memo(({lines}: { lines: LyricLine[] }) => {
         const applyPaused = (paused: boolean) => {
             container.classList.toggle('lyrics-paused', paused);
         };
-        applyPaused(!usePlayerStore.getState().isPlaying);
+        applyPaused(!playing);
         const unsubPlayer = usePlayerStore.subscribe((s, prev) => {
-            if (s.isPlaying !== prev.isPlaying) applyPaused(!s.isPlaying);
+            if (s.isPlaying === prev.isPlaying) return;
+            playing = s.isPlaying;
+            applyPaused(!playing);
+            if (playing) {
+                lastTickTs = 0;
+                startLoop();
+            } else {
+                if (rafId) cancelAnimationFrame(rafId);
+                rafId = 0;
+                if (perChar && document.visibilityState !== 'hidden') syncActiveProgress(false);
+            }
         });
+        const unsubAudio = perChar
+            ? subscribeAudio(() => {
+                if (!playing && document.visibilityState !== 'hidden') {
+                    syncActiveProgress(false);
+                }
+            })
+            : () => {};
 
         return () => {
             cancelAnimationFrame(rafId);
@@ -222,6 +274,7 @@ export const SyncedLyrics = React.memo(({lines}: { lines: LyricLine[] }) => {
             void invoke('audio_clear_lyrics_timeline');
             unlistenPromise.then((unlisten) => unlisten());
             unsubPlayer();
+            unsubAudio();
         };
     }, [lines, perChar]);
 

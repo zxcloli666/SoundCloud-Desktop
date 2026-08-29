@@ -1,8 +1,45 @@
 param(
-  [string]$Source = "src/assets/sonveil-logo-source.png"
+  [string]$Source = "src/assets/sonveil-app-icon.svg"
 )
 
 $ErrorActionPreference = "Stop"
+
+if ([System.IO.Path]::GetExtension($Source) -eq ".svg") {
+  $projectRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot "..")).Path
+  $sourcePath = (Resolve-Path -LiteralPath (Join-Path $projectRoot $Source)).Path
+  $iconsPath = Join-Path $projectRoot "src-tauri/icons"
+  $tauriCli = Join-Path $projectRoot "node_modules/@tauri-apps/cli/tauri.js"
+  $nodeCommand = Get-Command node -ErrorAction Stop
+
+  if (-not (Test-Path -LiteralPath $tauriCli)) {
+    throw "Tauri CLI is not installed. Install workspace dependencies before generating icons."
+  }
+
+  Push-Location $projectRoot
+  try {
+    # Generate PNG, Windows ICO/AppX tiles, macOS ICNS, iOS and Android assets.
+    & $nodeCommand.Source $tauriCli icon $sourcePath --output $iconsPath
+    if ($LASTEXITCODE -ne 0) {
+      throw "Tauri icon generation failed with exit code $LASTEXITCODE."
+    }
+
+    # Tauri's default icon.png is 512px. Keep an explicit 1024px PNG master too.
+    & $nodeCommand.Source $tauriCli icon $sourcePath --output $iconsPath --png 1024
+    if ($LASTEXITCODE -ne 0) {
+      throw "1024px icon generation failed with exit code $LASTEXITCODE."
+    }
+
+    Copy-Item -LiteralPath (Join-Path $iconsPath "1024x1024.png") -Destination "src/assets/sonveil-app-icon.png" -Force
+    Copy-Item -LiteralPath (Join-Path $iconsPath "128x128.png") -Destination "src/assets/app-icon.png" -Force
+    Copy-Item -LiteralPath (Join-Path $iconsPath "icon.png") -Destination "src/assets/app-icon@2x.png" -Force
+    Copy-Item -LiteralPath (Join-Path $iconsPath "128x128.png") -Destination "src/assets/sc-logo.png" -Force
+  } finally {
+    Pop-Location
+  }
+
+  Write-Output "Generated Sonveil brand assets from $sourcePath"
+  return
+}
 
 Add-Type -AssemblyName System.Drawing
 

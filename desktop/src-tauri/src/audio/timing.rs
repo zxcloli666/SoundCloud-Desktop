@@ -3,6 +3,12 @@ use tauri::{Emitter, State};
 use crate::audio::state::{AudioState, CommentsTimelineState, LyricsTimelineState};
 use crate::audio::types::{FloatingCommentEvent, LyricsTimingLine};
 
+fn active_lyrics_index(lines: &[LyricsTimingLine], pos_secs: f64) -> Option<usize> {
+    lines
+        .partition_point(|line| line.time_secs <= pos_secs)
+        .checked_sub(1)
+}
+
 pub fn audio_set_lyrics_timeline(lines: Vec<LyricsTimingLine>, state: State<'_, AudioState>) {
     let mut sorted = lines;
     sorted.sort_by(|a, b| a.time_secs.total_cmp(&b.time_secs));
@@ -38,19 +44,38 @@ pub fn process_lyrics_timeline(handle: &crate::rt::AppHandle, state: &AudioState
         return;
     };
 
-    let mut next_active = None;
-    for (index, line) in timeline.lines.iter().enumerate().rev() {
-        if line.time_secs <= pos_secs {
-            next_active = Some(index);
-            break;
-        }
-    }
+    let next_active = active_lyrics_index(&timeline.lines, pos_secs);
 
     if timeline.active_index != next_active {
         timeline.active_index = next_active;
         handle
             .emit("lyrics:active_line", next_active.map(|index| index as i64))
             .ok();
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn line(time_secs: f64) -> LyricsTimingLine {
+        LyricsTimingLine { time_secs }
+    }
+
+    #[test]
+    fn lyrics_lookup_handles_boundaries_and_seeks() {
+        let lines = vec![line(1.0), line(4.5), line(9.0), line(12.0)];
+
+        assert_eq!(active_lyrics_index(&lines, 0.0), None);
+        assert_eq!(active_lyrics_index(&lines, 1.0), Some(0));
+        assert_eq!(active_lyrics_index(&lines, 8.99), Some(1));
+        assert_eq!(active_lyrics_index(&lines, 12.0), Some(3));
+        assert_eq!(active_lyrics_index(&lines, 100.0), Some(3));
+    }
+
+    #[test]
+    fn lyrics_lookup_handles_empty_timeline() {
+        assert_eq!(active_lyrics_index(&[], 10.0), None);
     }
 }
 

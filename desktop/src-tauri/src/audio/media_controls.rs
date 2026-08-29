@@ -41,7 +41,7 @@ pub fn start_media_controls(app: &AppHandle) {
             };
 
             let config = PlatformConfig {
-                display_name: "SoundCloud Desktop",
+                display_name: "Sonveil",
                 dbus_name: "soundcloud_desktop",
                 hwnd,
             };

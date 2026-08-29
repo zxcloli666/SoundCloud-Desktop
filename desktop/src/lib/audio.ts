@@ -13,6 +13,7 @@ import {
   resolveTrackFromStreaming,
   streamFallbackUrls,
 } from './api';
+import { createAudioCommandSync } from './audio-command-sync';
 import {
   buildTrackRequest,
   cancelTrackDownload,
@@ -38,6 +39,7 @@ const FULL_PLAY_RATIO = 0.5;
 /** Битый кеш: сыграло меньше этого на треке от EARLY_END_MIN_EXPECTED_SEC — лечим перекачкой. */
 const EARLY_END_PLAYED_SEC = 10;
 const EARLY_END_MIN_EXPECTED_SEC = 30;
+const HEALED_URN_HISTORY_CAP = 256;
 /** Один лечебный перекач на урн за сессию — защита от лупа на 30s-превью и мёртвых источниках. */
 const healedUrns = new Set<string>();
 const TRACK_START_BUDGET_MS = 18_000;
@@ -62,6 +64,7 @@ let cachedDuration = 0;
 let downloadProgress: number | null = null;
 let loadStage: TrackLoadStage = 'idle';
 let loadGen = 0;
+let activeLoad: { gen: number; urn: string } | null = null;
 let seekGen = 0;
 let lastEndedUrn: string | null = null;
 let metadataAbort: AbortController | null = null;
@@ -216,10 +219,10 @@ export function handlePrev() {
 
 async function stopTrack() {
   seekGen += 1;
-  await invoke('audio_stop').catch(console.error);
   hasTrack = false;
   cachedTime = 0;
   setLoadStage('idle');
+  await invoke('audio_stop').catch(console.error);
 }
 
 function withTrackStartDeadline<T>(
@@ -248,11 +251,11 @@ export async function switchAudioDevice(deviceName: string | null, manual = fals
 export async function reloadCurrentTrack() {
   const track = usePlayerStore.getState().currentTrack;
   if (!track) return;
-  const wasPlaying = usePlayerStore.getState().isPlaying;
   const pos = cachedTime;
-  await loadTrack(track);
-  if (pos > 0) seek(pos);
-  if (!wasPlaying) invoke('audio_pause').catch(console.error);
+  const loadPromise = loadTrack(track);
+  const gen = loadGen;
+  await loadPromise;
+  if (isCurrentLoad(gen, track.urn) && pos > 0) seek(pos);
 }
 
 function getLoadErrorText(error: unknown): string | null {
@@ -417,6 +420,7 @@ async function loadCachedFile(
   path: string,
   startPaused: boolean,
   reResolve: () => Promise<string | null>,
+  isCurrent: () => boolean,
 ): Promise<{ duration_secs: number | null }> {
   try {
     return await invoke<{ duration_secs: number | null }>('audio_load_file', {
@@ -426,9 +430,10 @@ async function loadCachedFile(
     });
   } catch (e) {
     if (!isFileMissing(e)) throw e;
+    if (!isCurrent()) throw e;
     console.warn('[Audio] cached file vanished, re-resolving:', urn);
     const fresh = await reResolve();
-    if (!fresh) throw e;
+    if (!fresh || !isCurrent()) throw e;
     return await invoke<{ duration_secs: number | null }>('audio_load_file', {
       path: fresh,
       cacheKey: urn,
@@ -437,27 +442,41 @@ async function loadCachedFile(
   }
 }
 
-async function loadTrack(
-  track: Track,
-  options: { preserveStreamRetry?: boolean } = {},
-) {
+function loadTrack(track: Track, options: { preserveStreamRetry?: boolean } = {}): Promise<void> {
+  const promise = runTrackLoad(track, options);
+  const attempt = { gen: loadGen, urn: track.urn };
+  activeLoad = attempt;
+  return promise.finally(() => {
+    if (activeLoad === attempt) activeLoad = null;
+  });
+}
+
+function isCurrentLoad(gen: number, urn: string): boolean {
+  return gen === loadGen && currentUrn === urn;
+}
+
+async function runTrackLoad(track: Track, options: { preserveStreamRetry?: boolean } = {}) {
   if (!options.preserveStreamRetry || streamRetryUrn !== track.urn) {
     streamRetryUrn = track.urn;
     streamRetryCount = 0;
   }
   const gen = ++loadGen;
   const previousUrn = currentUrn;
-  metadataAbort?.abort();
-  const metadataController = new AbortController();
-  metadataAbort = metadataController;
+  const isNewTrack = previousUrn !== track.urn;
+  let metadataController: AbortController | null = null;
+  if (isNewTrack) {
+    metadataAbort?.abort();
+    metadataController = new AbortController();
+    metadataAbort = metadataController;
+  }
   if (previousUrn && previousUrn !== track.urn) {
     void cancelTrackDownload(previousUrn).catch(console.error);
   }
-  const isNewTrack = currentUrn !== track.urn;
   if (isNewTrack) resetTastePlaybackTracking(track.urn);
-  await stopTrack();
-  if (gen !== loadGen) return;
   currentUrn = track.urn;
+  cancelPendingPreload();
+  await stopTrack();
+  if (!isCurrentLoad(gen, track.urn)) return;
   const urn = track.urn;
   const startDeadline = performance.now() + TRACK_START_BUDGET_MS;
 
@@ -469,7 +488,9 @@ async function loadTrack(
     usePlayerStore.getState().clearAbLoop();
   }
 
-  void hydrateTrackMetadata(track, gen, metadataController);
+  if (metadataController) {
+    void hydrateTrackMetadata(track, metadataController);
+  }
 
   fallbackDuration = track.duration / 1000;
   cachedDuration = fallbackDuration;
@@ -478,14 +499,15 @@ async function loadTrack(
   usePlayerStore.getState().setPlaybackTransport(null, null);
   notify();
 
-  // Sync EQ state to Rust
-  const { eqEnabled, eqGains, normalizeVolume } = useSettingsStore.getState();
-  invoke('audio_set_eq', { enabled: eqEnabled, gains: eqGains }).catch(console.error);
-  invoke('audio_set_normalization', { enabled: normalizeVolume }).catch(console.error);
-
-  // Sync volume + playback rate (pitch is folded into the speed value sent to Rust)
-  invoke('audio_set_volume', { volume: usePlayerStore.getState().volume }).catch(console.error);
-  invoke('audio_set_playback_rate', { rate: getEffectivePlaybackRate() }).catch(console.error);
+  // Apply control state before the decoder/player reads it. The sync layer deduplicates
+  // values already present in Rust, so steady-state track changes do not add IPC work.
+  await Promise.all([
+    eqCommandSync.syncNow(),
+    normalizationCommandSync.syncNow(),
+    volumeCommandSync.syncNow(),
+    rateCommandSync.syncNow(),
+  ]);
+  if (!isCurrentLoad(gen, urn)) return;
 
   try {
     const highQualityStreaming = useSettingsStore.getState().highQualityStreaming;
@@ -495,9 +517,11 @@ async function loadTrack(
     // and read; re-resolve through the cache to recover the current path.
     const reResolve = async (): Promise<string | null> => {
       const info = await getCacheInfo(urn);
+      if (!isCurrentLoad(gen, urn)) return null;
       if (info?.path) return info.path;
       try {
-        return (await ensureTrackCached(urn, highQualityStreaming, track.duration)).path;
+        const ensured = await ensureTrackCached(urn, highQualityStreaming, track.duration);
+        return isCurrentLoad(gen, urn) ? ensured.path : null;
       } catch {
         return null;
       }
@@ -505,24 +529,22 @@ async function loadTrack(
 
     // Strategy 1: Cache hit — instant
     const cached = await getCacheInfo(urn);
+    if (!isCurrentLoad(gen, urn)) return;
     if (cached?.path) {
-      if (gen !== loadGen) return;
       usePlayerStore.getState().setPlaybackTransport(cached.quality, cached.source);
       console.log('[Audio] Playing from cache:', urn);
-      const loadResult = await loadCachedFile(
-        urn,
-        cached.path,
-        !usePlayerStore.getState().isPlaying,
-        reResolve,
+      const startPaused = !usePlayerStore.getState().isPlaying;
+      const loadResult = await loadCachedFile(urn, cached.path, startPaused, reResolve, () =>
+        isCurrentLoad(gen, urn),
       );
-      if (gen !== loadGen) return;
+      if (!isCurrentLoad(gen, urn)) return;
       if (loadResult?.duration_secs) {
         fallbackDuration = loadResult.duration_secs;
         cachedDuration = loadResult.duration_secs;
         updateMetadata(track, loadResult.duration_secs);
         notify();
       }
-      afterLoad(gen);
+      afterLoad(gen, urn, startPaused);
       setLoadStage('ready');
       return;
     }
@@ -534,24 +556,28 @@ async function loadTrack(
 
     try {
       await cancelTrackDownload(urn);
-      if (gen !== loadGen || currentUrn !== urn) return;
+      if (!isCurrentLoad(gen, urn)) return;
+      let installedStartPaused = false;
       const startFastStream = async (hq: boolean) => {
         const request = await buildTrackRequest(urn, hq, track.duration);
-        if (gen !== loadGen || currentUrn !== urn) throw new Error('load cancelled');
+        if (!isCurrentLoad(gen, urn)) throw new Error('load cancelled');
         setLoadStage('buffering');
-        return withTrackStartDeadline(
+        const startPaused = !usePlayerStore.getState().isPlaying;
+        const result = await withTrackStartDeadline(
           invoke<{
             duration_secs: number | null;
             quality: 'hq' | 'sq';
             source: 'direct' | 'api';
           }>('audio_load_streaming', {
             request,
-            startPaused: !usePlayerStore.getState().isPlaying,
+            startPaused,
           }),
           startDeadline,
           gen,
           urn,
         );
+        installedStartPaused = startPaused;
+        return result;
       };
 
       let streamed: {
@@ -564,26 +590,26 @@ async function loadTrack(
       } catch (error) {
         if (!highQualityStreaming) throw error;
         console.warn('[Audio] HQ fast stream failed, retrying standard quality:', error);
-        if (gen !== loadGen || currentUrn !== urn) return;
+        if (!isCurrentLoad(gen, urn)) return;
         setLoadStage('retrying');
         streamed = await startFastStream(false);
       }
-      if (gen !== loadGen || currentUrn !== urn) return;
+      if (!isCurrentLoad(gen, urn)) return;
       setDownloadProgress(null);
       usePlayerStore.getState().setPlaybackTransport(streamed.quality, streamed.source);
       console.log('[Audio] Fast stream started:', urn);
-      afterLoad(gen);
+      afterLoad(gen, urn, installedStartPaused);
       setLoadStage('ready');
       return;
     } catch (error) {
-      if (gen !== loadGen || currentUrn !== urn) return;
+      if (!isCurrentLoad(gen, urn)) return;
       throw error;
     }
   } catch (e) {
+    if (!isCurrentLoad(gen, track.urn)) return;
     console.error('[Audio] Load failed:', e);
     setDownloadProgress(null);
     usePlayerStore.getState().setPlaybackTransport(null, null);
-    if (gen !== loadGen) return;
     setLoadStage('failed');
     const rawErrorText = getLoadErrorText(e);
     const errorText = rawErrorText?.toLowerCase().includes('track start timed out')
@@ -596,26 +622,25 @@ async function loadTrack(
   }
 }
 
-function afterLoad(gen: number) {
-  if (gen !== loadGen) {
-    invoke('audio_stop').catch(console.error);
-    return;
-  }
+function afterLoad(gen: number, urn: string, startPaused: boolean) {
+  if (!isCurrentLoad(gen, urn)) return;
   hasTrack = true;
 
   const isPlaying = usePlayerStore.getState().isPlaying;
-  invoke(isPlaying ? 'audio_play' : 'audio_pause').catch(console.error);
+  if (isPlaying === startPaused) {
+    invoke(isPlaying ? 'audio_play' : 'audio_pause').catch(console.error);
+  }
   updatePlaybackState(isPlaying);
   updateMediaPosition();
   preloadQueue();
 }
 
-async function hydrateTrackMetadata(track: Track, gen: number, controller: AbortController) {
+async function hydrateTrackMetadata(track: Track, controller: AbortController) {
   let nextTrack = await fetchFreshTrackMetadata(track, controller.signal);
-  if (gen !== loadGen || currentUrn !== track.urn) return;
+  if (metadataAbort !== controller || currentUrn !== track.urn) return;
 
   nextTrack = await resolveTrackMetadata(nextTrack, controller.signal);
-  if (gen !== loadGen || currentUrn !== track.urn) return;
+  if (metadataAbort !== controller || currentUrn !== track.urn) return;
   commitTrackMetadata(nextTrack);
   if (metadataAbort === controller) metadataAbort = null;
 }
@@ -633,6 +658,10 @@ function maybeHealEarlyEnd(): boolean {
   if (cachedTime >= EARLY_END_PLAYED_SEC) return false;
   if (healedUrns.has(track.urn)) return false;
   healedUrns.add(track.urn);
+  if (healedUrns.size > HEALED_URN_HISTORY_CAP) {
+    const oldestUrn = healedUrns.values().next().value;
+    if (typeof oldestUrn === 'string') healedUrns.delete(oldestUrn);
+  }
   console.warn(
     `[Audio] ended after ${cachedTime.toFixed(1)}s of ${(track.duration / 1000).toFixed(0)}s — purging cache and refetching:`,
     track.urn,
@@ -675,7 +704,7 @@ function handleTrackEnd() {
   // autopilot (см. setEndOfQueueFallback в lib/queue-autopilot.ts).
   // Clear currentUrn so subscriber detects change even if next track has same URN.
   currentUrn = null;
-  usePlayerStore.getState().next();
+  usePlayerStore.getState().next('ended');
 }
 
 /* ── Tauri event listeners ───────────────────────────────────── */
@@ -684,6 +713,7 @@ const hasTauriRuntime = typeof window !== 'undefined' && '__TAURI_INTERNALS__' i
 const listenNative: typeof listen = hasTauriRuntime ? listen : async () => () => {};
 
 listenNative<number>('audio:tick', (event) => {
+  if (!hasTrack) return;
   cachedTime = event.payload;
   if (cachedDuration <= 0) cachedDuration = fallbackDuration;
   noteActualPlayback(event.payload);
@@ -698,6 +728,7 @@ listenNative<{ urn: string; progress: number }>('track:download-progress', (even
 });
 
 listenNative('audio:ended', () => {
+  if (!hasTrack) return;
   if (maybeHealEarlyEnd()) return;
   if (currentUrn) {
     // Засчитываем full_play только если трек реально игрался: либо ≥30s,
@@ -719,6 +750,7 @@ listenNative('audio:ended', () => {
 });
 
 listenNative<string>('audio:stream-error', (event) => {
+  if (!hasTrack) return;
   const track = usePlayerStore.getState().currentTrack;
   const urn = currentUrn;
   if (!track || !urn || track.urn !== urn) return;
@@ -765,34 +797,50 @@ listenNative<string>('audio:default-device-changed', (event) => {
 
 /* ── Store subscriber ────────────────────────────────────────── */
 
-let volumeSyncTimer: ReturnType<typeof setTimeout> | null = null;
-let rateSyncTimer: ReturnType<typeof setTimeout> | null = null;
-let eqSyncTimer: ReturnType<typeof setTimeout> | null = null;
-
-function scheduleVolumeSync() {
-  if (volumeSyncTimer) return;
-  volumeSyncTimer = setTimeout(() => {
-    volumeSyncTimer = null;
-    invoke('audio_set_volume', { volume: usePlayerStore.getState().volume }).catch(console.error);
-  }, 40);
+interface EqCommandState {
+  enabled: boolean;
+  gains: number[];
 }
 
-function scheduleRateSync() {
-  if (rateSyncTimer) return;
-  rateSyncTimer = setTimeout(() => {
-    rateSyncTimer = null;
-    invoke('audio_set_playback_rate', { rate: getEffectivePlaybackRate() }).catch(console.error);
-  }, 40);
+function equalEqState(left: EqCommandState, right: EqCommandState): boolean {
+  return (
+    left.enabled === right.enabled &&
+    left.gains.length === right.gains.length &&
+    left.gains.every((gain, index) => gain === right.gains[index])
+  );
 }
 
-function scheduleEqSync() {
-  if (eqSyncTimer) return;
-  eqSyncTimer = setTimeout(() => {
-    eqSyncTimer = null;
+const volumeCommandSync = createAudioCommandSync({
+  delayMs: 40,
+  read: () => usePlayerStore.getState().volume,
+  send: (volume) => invoke('audio_set_volume', { volume }),
+  onError: console.error,
+});
+
+const rateCommandSync = createAudioCommandSync({
+  delayMs: 40,
+  read: getEffectivePlaybackRate,
+  send: (rate) => invoke('audio_set_playback_rate', { rate }),
+  onError: console.error,
+});
+
+const eqCommandSync = createAudioCommandSync<EqCommandState>({
+  delayMs: 60,
+  read: () => {
     const { eqEnabled, eqGains } = useSettingsStore.getState();
-    invoke('audio_set_eq', { enabled: eqEnabled, gains: eqGains }).catch(console.error);
-  }, 60);
-}
+    return { enabled: eqEnabled, gains: [...eqGains] };
+  },
+  equals: equalEqState,
+  send: ({ enabled, gains }) => invoke('audio_set_eq', { enabled, gains }),
+  onError: console.error,
+});
+
+const normalizationCommandSync = createAudioCommandSync({
+  delayMs: 0,
+  read: () => useSettingsStore.getState().normalizeVolume,
+  send: (enabled) => invoke('audio_set_normalization', { enabled }),
+  onError: console.error,
+});
 
 usePlayerStore.subscribe((state, prev) => {
   const nextUrn = state.currentTrack?.urn ?? null;
@@ -809,7 +857,6 @@ usePlayerStore.subscribe((state, prev) => {
       previousUrn &&
       previousHadTrack &&
       previousTastePlayedSeconds >= MIN_ACTUAL_PLAYBACK_FOR_SKIP_SEC &&
-      previousTastePlayedSeconds < SKIP_THRESHOLD_SEC &&
       previousUrn !== lastEndedUrn
     ) {
       const previousDuration = cachedDuration > 0 ? cachedDuration : fallbackDuration;
@@ -835,7 +882,7 @@ usePlayerStore.subscribe((state, prev) => {
         resetTastePlaybackTracking(null);
         usePlayerStore.getState().setPlaybackTransport(null, null);
         notify();
-        usePlayerStore.getState().next();
+        usePlayerStore.getState().next('dislike');
         return;
       }
       updateMetadata(state.currentTrack);
@@ -859,7 +906,9 @@ usePlayerStore.subscribe((state, prev) => {
   if (playToggled && !trackChanged) {
     if (state.isPlaying) {
       if (!hasTrack && state.currentTrack) {
-        void loadTrack(state.currentTrack);
+        if (activeLoad?.urn !== state.currentTrack.urn) {
+          void loadTrack(state.currentTrack);
+        }
       } else {
         invoke('audio_play').catch(console.error);
       }
@@ -870,7 +919,7 @@ usePlayerStore.subscribe((state, prev) => {
   }
 
   if (state.volume !== prev.volume) {
-    scheduleVolumeSync();
+    volumeCommandSync.schedule();
   }
 
   if (
@@ -878,7 +927,7 @@ usePlayerStore.subscribe((state, prev) => {
     state.pitchSemitones !== prev.pitchSemitones ||
     state.pitchControlMode !== prev.pitchControlMode
   ) {
-    scheduleRateSync();
+    rateCommandSync.schedule();
   }
 
   // A-B loop: only push an active region (both bounds set); otherwise clear it.
@@ -908,11 +957,11 @@ function getEffectivePlaybackRate(): number {
 
 useSettingsStore.subscribe((state, prev) => {
   if (state.eqEnabled !== prev.eqEnabled || state.eqGains !== prev.eqGains) {
-    scheduleEqSync();
+    eqCommandSync.schedule();
   }
 
   if (state.normalizeVolume !== prev.normalizeVolume) {
-    invoke('audio_set_normalization', { enabled: state.normalizeVolume }).catch(console.error);
+    void normalizationCommandSync.syncNow();
     if (usePlayerStore.getState().currentTrack) {
       void reloadCurrentTrack();
     }
@@ -921,20 +970,39 @@ useSettingsStore.subscribe((state, prev) => {
 
 /* ── Native Media Controls (souvlaki: MPRIS/SMTC) ───────────── */
 
+let lastMetadataKey: string | null = null;
+let metadataCommandGeneration = 0;
+let lastPlaybackState: boolean | null = null;
+let playbackStateCommandGeneration = 0;
+
 function updateMetadata(track: Track, durationSecs?: number) {
   const coverUrl = art(track.artwork_url, 't500x500') || undefined;
   const display = getArtistDisplay(track);
   const title = getDisplayTitle(track);
-  invoke('audio_set_metadata', {
+  const metadata = {
     title,
     artist: display.primary || track.user.username,
     coverUrl: coverUrl || null,
     durationSecs: durationSecs ?? track.duration / 1000,
-  }).catch(console.error);
+  };
+  const key = JSON.stringify(metadata);
+  if (key === lastMetadataKey) return;
+  lastMetadataKey = key;
+  const generation = ++metadataCommandGeneration;
+  invoke('audio_set_metadata', metadata).catch((error) => {
+    if (generation === metadataCommandGeneration) lastMetadataKey = null;
+    console.error(error);
+  });
 }
 
 function updatePlaybackState(playing: boolean) {
-  invoke('audio_set_playback_state', { playing }).catch(console.error);
+  if (playing === lastPlaybackState) return;
+  lastPlaybackState = playing;
+  const generation = ++playbackStateCommandGeneration;
+  invoke('audio_set_playback_state', { playing }).catch((error) => {
+    if (generation === playbackStateCommandGeneration) lastPlaybackState = null;
+    console.error(error);
+  });
 }
 
 function updateMediaPosition() {
@@ -977,13 +1045,23 @@ interface PreloadRequestEntry {
   durationMs?: number;
 }
 
+function cancelPendingPreload(): void {
+  if (!preloadTimer) return;
+  clearTimeout(preloadTimer);
+  preloadTimer = null;
+}
+
+function canPreload(urn: string, now = Date.now()): boolean {
+  if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return false;
+  if (urn === currentUrn) return false;
+  const last = recentPreloads.get(urn);
+  return last == null || now - last >= PRELOAD_DEDUPE_MS;
+}
+
 function takeFreshPreload(entries: PreloadRequestEntry[]): PreloadRequestEntry[] {
-  if (document.visibilityState === 'hidden') return [];
   const now = Date.now();
   const fresh = entries.filter((entry) => {
-    if (entry.urn === currentUrn) return false;
-    const last = recentPreloads.get(entry.urn) ?? 0;
-    if (now - last < PRELOAD_DEDUPE_MS) return false;
+    if (!canPreload(entry.urn, now)) return false;
     recentPreloads.set(entry.urn, now);
     return true;
   });
@@ -1011,7 +1089,8 @@ function dispatchPreload(entries: PreloadRequestEntry[]): void {
 }
 
 export function preloadTrack(urn: string) {
-  if (preloadTimer) clearTimeout(preloadTimer);
+  cancelPendingPreload();
+  if (!canPreload(urn)) return;
   preloadTimer = setTimeout(() => {
     const sessionId = getSessionId();
     const hq = useSettingsStore.getState().highQualityStreaming;
@@ -1031,30 +1110,36 @@ export function preloadTrack(urn: string) {
 
 export function preloadQueue() {
   const { queue, queueIndex } = usePlayerStore.getState();
-  const entries: PreloadRequestEntry[] = [];
+  const track = queue[queueIndex + 1];
+  if (!track || !canPreload(track.urn)) return;
   const sessionId = getSessionId();
   const hq = useSettingsStore.getState().highQualityStreaming;
-
-  for (let i = 1; i <= 1; i++) {
-    const idx = queueIndex + i;
-    if (idx < queue.length) {
-      entries.push({
-        urn: queue[idx].urn,
-        urls: streamFallbackUrls(queue[idx].urn, hq),
-        downloadUrls: downloadFallbackUrls(queue[idx].urn, hq),
-        storageUrls: buildStorageUrls(queue[idx].urn),
-        sessionId,
-        hq,
-        durationMs: queue[idx].duration,
-      });
-    }
-  }
-
-  dispatchPreload(entries);
+  dispatchPreload([
+    {
+      urn: track.urn,
+      urls: streamFallbackUrls(track.urn, hq),
+      downloadUrls: downloadFallbackUrls(track.urn, hq),
+      storageUrls: buildStorageUrls(track.urn),
+      sessionId,
+      hq,
+      durationMs: track.duration,
+    },
+  ]);
 }
 
 usePlayerStore.subscribe((state, prev) => {
-  if (state.queueIndex !== prev.queueIndex || state.queue !== prev.queue) {
+  const nextUrn = state.queue[state.queueIndex + 1]?.urn;
+  const previousNextUrn = prev.queue[prev.queueIndex + 1]?.urn;
+  if (nextUrn !== previousNextUrn) {
     preloadQueue();
   }
 });
+
+if (typeof document !== 'undefined') {
+  document.addEventListener('visibilitychange', () => {
+    // Speculative work is suppressed while hidden; resume the one useful queue
+    // preload when the player becomes interactive again.
+    if (document.visibilityState === 'visible') preloadQueue();
+    else cancelPendingPreload();
+  });
+}

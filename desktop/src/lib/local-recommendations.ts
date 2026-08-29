@@ -1,12 +1,13 @@
+import { useRecommendationTasteStore } from '../stores/recommendation-taste';
+import { useSettingsStore } from '../stores/settings';
+import { isUrnDisliked } from './dislikes';
 import {
   curateHomeRecommendations,
   type HomeRecommendationInput,
   type HomeRecommendationMode,
   recommendationTrackFromInput,
 } from './home-recommendations';
-import { isUrnDisliked } from './dislikes';
-import { useRecommendationTasteStore } from '../stores/recommendation-taste';
-import { useSettingsStore } from '../stores/settings';
+import { isUrnLiked } from './likes';
 
 /**
  * Imperative local rerank for queue refill and seed-specific recommendation
@@ -17,6 +18,9 @@ import { useSettingsStore } from '../stores/settings';
 export function curateWithLocalTaste(
   inputs: readonly HomeRecommendationInput[],
   options: {
+    blockedUrns?: ReadonlySet<string>;
+    excludedUrns?: ReadonlySet<string>;
+    hideLiked?: boolean;
     hideListened?: boolean;
     limit?: number;
     mode?: HomeRecommendationMode;
@@ -26,17 +30,23 @@ export function curateWithLocalTaste(
   const canUseTaste = taste.ownerReady && Boolean(taste.ownerUrn);
   const recentTracks = canUseTaste ? taste.recentTracks : [];
   const recentUrns = new Set(recentTracks.map((track) => track.urn));
-  const blockedUrns = new Set<string>();
+  const blockedUrns = new Set(options.blockedUrns);
+  const excludedUrns = new Set(options.excludedUrns);
   for (const input of inputs) {
-    const urn = recommendationTrackFromInput(input).urn;
-    if (isUrnDisliked(urn)) blockedUrns.add(urn);
+    const track = recommendationTrackFromInput(input);
+    if (isUrnDisliked(track.urn)) blockedUrns.add(track.urn);
+    if (options.hideLiked && (track.user_favorite || isUrnLiked(track.urn))) {
+      blockedUrns.add(track.urn);
+    }
   }
   if (options.hideListened) {
     for (const urn of recentUrns) blockedUrns.add(urn);
+  } else {
+    for (const urn of recentUrns) excludedUrns.add(urn);
   }
 
   return curateHomeRecommendations(inputs, {
-    excludedUrns: options.hideListened ? undefined : recentUrns,
+    excludedUrns,
     blockedUrns,
     recentTracks,
     feedback: canUseTaste ? { tracks: taste.tracks, clusters: taste.clusters } : undefined,

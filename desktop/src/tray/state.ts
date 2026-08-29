@@ -1,4 +1,9 @@
 import {emit, listen} from '@tauri-apps/api/event';
+import {
+    areTraySnapshotsEqual,
+    type TrayNowPlayingSnapshot,
+    type TrayRepeatMode,
+} from '../lib/tray-snapshot';
 
 /* ── Now-playing snapshot, pushed by the main window ─────────────
    The popover is a separate webview context — it owns no player state and runs no
@@ -6,23 +11,8 @@ import {emit, listen} from '@tauri-apps/api/event';
    `tray:np` on every relevant change, and the live scrubber position rides the
    already-broadcast `audio:tick` (10Hz) — so the popover adds zero extra IPC. */
 
-export type RepeatMode = 'off' | 'one' | 'all';
-
-export interface TrayNp {
-    hasTrack: boolean;
-    title: string;
-    artist: string;
-    artworkUrl: string | null;
-    artworkLarge: string | null;
-    isPlaying: boolean;
-    volume: number;
-    liked: boolean;
-    disliked: boolean;
-    shuffle: boolean;
-    repeat: RepeatMode;
-    durationSec: number;
-    abLoop: { a: number; b: number | null } | null;
-}
+export type RepeatMode = TrayRepeatMode;
+export type TrayNp = TrayNowPlayingSnapshot;
 
 export type TrayCmd =
     | 'play_pause'
@@ -74,7 +64,9 @@ const hidden = () => typeof document !== 'undefined' && document.visibilityState
 
 /** Optimistically patch the local snapshot for snappy UI before the main window echoes back. */
 export function patchNp(patch: Partial<TrayNp>) {
-    snapshot = {...snapshot, ...patch};
+    const next = {...snapshot, ...patch};
+    if (areTraySnapshotsEqual(snapshot, next)) return;
+    snapshot = next;
     for (const l of snapListeners) l();
 }
 
@@ -84,6 +76,7 @@ export function sendCmd(action: TrayCmd, value?: number) {
 }
 
 void listen<TrayNp>('tray:np', (e) => {
+    if (areTraySnapshotsEqual(snapshot, e.payload)) return;
     snapshot = e.payload;
     for (const l of snapListeners) l();
 });

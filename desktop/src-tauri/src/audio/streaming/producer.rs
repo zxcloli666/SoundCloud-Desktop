@@ -2,6 +2,7 @@ use futures_util::StreamExt;
 use reqwest::{Client, Response};
 use tauri::{Emitter, Manager};
 
+use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 use super::buffer::{StreamingBuffer, MIN_VALID_BYTES};
@@ -95,7 +96,7 @@ async fn commit_finished(buffer: &StreamingBuffer, context: &ProducerContext) {
     if !is_current(&context.app, context.generation) {
         return;
     }
-    let data = buffer.snapshot();
+    let data: Arc<[u8]> = buffer.snapshot().into();
     if data.len() < MIN_VALID_BYTES {
         return;
     }
@@ -113,7 +114,7 @@ async fn commit_finished(buffer: &StreamingBuffer, context: &ProducerContext) {
         if !is_current(&context.app, context.generation) {
             return;
         }
-        *source_bytes = Some(data.clone());
+        *source_bytes = Some(Arc::clone(&data));
         // The complete byte source is now the canonical seek fallback. Dropping this
         // handle only releases our extra Arc; the live decoder keeps its own reader.
         *active_stream = None;

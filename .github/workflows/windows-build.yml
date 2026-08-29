@@ -54,7 +54,7 @@ jobs:
 
       - name: Generate Sonveil application icons
         working-directory: desktop
-        run: pnpm exec tauri icon src/assets/sonveil-app-icon.png
+        run: pwsh -File scripts/generate-brand-assets.ps1
 
       - name: Check frontend types
         working-directory: desktop

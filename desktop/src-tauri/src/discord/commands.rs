@@ -83,13 +83,10 @@ pub fn discord_set_activity(
     let mode = track.mode.unwrap_or(DiscordRpcMode::Track);
     let show_button = track.show_button.unwrap_or(true);
 
-    let large_image = track.artwork_url.as_deref().unwrap_or("soundcloud_logo");
-
-    let assets = Assets::new().large_image(large_image);
-
-    let mut activity = Activity::new()
-        .activity_type(ActivityType::Listening)
-        .assets(assets);
+    let mut activity = Activity::new().activity_type(ActivityType::Listening);
+    if let Some(artwork_url) = track.artwork_url.as_deref() {
+        activity = activity.assets(Assets::new().large_image(artwork_url));
+    }
 
     activity = match mode {
         DiscordRpcMode::Track => activity.details(&track.title).state(if is_playing {

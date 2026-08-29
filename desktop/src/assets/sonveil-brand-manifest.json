@@ -1,0 +1,30 @@
+{
+  "name": "Sonveil",
+  "sourceReferences": [
+    "sonveil-logo-source.png",
+    "sonveil-lockup-source.png"
+  ],
+  "masters": {
+    "mark": {
+      "file": "sonveil-mark.svg",
+      "viewBox": "0 0 619 290"
+    },
+    "appIcon": {
+      "file": "sonveil-app-icon.svg",
+      "viewBox": "0 0 1024 1024",
+      "background": "#000000"
+    }
+  },
+  "palette": {
+    "ribbonFace": "#D96D3D",
+    "ribbonUnderside": "#FFFFFF",
+    "appIconBackground": "#000000"
+  },
+  "exports": {
+    "script": "../../scripts/generate-brand-assets.ps1",
+    "tauriDirectory": "../../src-tauri/icons",
+    "maximumPng": 1024,
+    "maximumIco": 256,
+    "maximumIcns": 1024
+  }
+}

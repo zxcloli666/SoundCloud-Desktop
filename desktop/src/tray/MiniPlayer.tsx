@@ -26,6 +26,7 @@ const t = (key: string) => i18n.t(key);
 const hideSelf = () => void getCurrentWindow().hide();
 
 const bloomEnabled = () => document.documentElement.dataset.perf !== 'light';
+const VOLUME_SEND_INTERVAL_MS = 40;
 
 /** Replays the entrance animation each time the popover is re-shown. */
 function useShowPulse(): number {
@@ -69,29 +70,41 @@ function Scrubber({duration}: { duration: number }) {
         return pct * d;
     };
 
+    const paintTo = (clientX: number) => {
+        const d = getNp().durationSec || duration;
+        if (d <= 0) return;
+        const pct = (valueAt(clientX) / d) * 100;
+        if (fillRef.current) fillRef.current.style.width = `${Math.max(0, Math.min(100, pct))}%`;
+    };
+
     const onPointerDown = (e: React.PointerEvent) => {
         const d = getNp().durationSec || duration;
         if (d <= 0) return;
         draggingRef.current = true;
-        const paintTo = (clientX: number) => {
-            const pct = (valueAt(clientX) / d) * 100;
-            if (fillRef.current) fillRef.current.style.width = `${Math.max(0, Math.min(100, pct))}%`;
-        };
+        e.currentTarget.setPointerCapture(e.pointerId);
         paintTo(e.clientX);
-        const onMove = (ev: PointerEvent) => paintTo(ev.clientX);
-        const onUp = (ev: PointerEvent) => {
-            window.removeEventListener('pointermove', onMove);
-            window.removeEventListener('pointerup', onUp);
-            const v = valueAt(ev.clientX);
-            draggingRef.current = false;
-            sendCmd('seek', v);
-        };
-        window.addEventListener('pointermove', onMove);
-        window.addEventListener('pointerup', onUp);
     };
 
     return (
-        <div ref={trackRef} className="tp-scrub group" onPointerDown={onPointerDown}>
+        <div
+            ref={trackRef}
+            className="tp-scrub group"
+            onPointerDown={onPointerDown}
+            onPointerMove={(event) => {
+                if (draggingRef.current) paintTo(event.clientX);
+            }}
+            onPointerUp={(event) => {
+                if (!draggingRef.current) return;
+                draggingRef.current = false;
+                sendCmd('seek', valueAt(event.clientX));
+            }}
+            onPointerCancel={() => {
+                draggingRef.current = false;
+            }}
+            onLostPointerCapture={() => {
+                draggingRef.current = false;
+            }}
+        >
             <div className="tp-scrub-track">
                 <div ref={fillRef} className="tp-scrub-fill"/>
             </div>
@@ -113,26 +126,56 @@ function TimeRow({duration}: { duration: number }) {
 
 function VolumeControl({volume}: { volume: number }) {
     const trackRef = useRef<HTMLDivElement>(null);
-    const set = useCallback((clientX: number) => {
+    const fillRef = useRef<HTMLDivElement>(null);
+    const draggingRef = useRef(false);
+    const pendingVolumeRef = useRef(volume);
+    const lastVolumeSendRef = useRef(0);
+    const volumeSendTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const valueAt = useCallback((clientX: number) => {
         const el = trackRef.current;
-        if (!el) return;
+        if (!el) return volume;
         const rect = el.getBoundingClientRect();
-        if (rect.width <= 0) return;
+        if (rect.width <= 0) return volume;
         const pct = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
-        const v = Math.round(pct * 100);
-        patchNp({volume: v});
-        sendCmd('volume', v);
+        return Math.round(pct * 100);
+    }, [volume]);
+
+    const sendPendingVolume = useCallback(() => {
+        if (volumeSendTimerRef.current) {
+            clearTimeout(volumeSendTimerRef.current);
+            volumeSendTimerRef.current = null;
+        }
+        lastVolumeSendRef.current = performance.now();
+        sendCmd('volume', pendingVolumeRef.current);
     }, []);
 
+    const scheduleVolumeSend = useCallback(() => {
+        const remaining = VOLUME_SEND_INTERVAL_MS - (performance.now() - lastVolumeSendRef.current);
+        if (remaining <= 0) {
+            sendPendingVolume();
+        } else if (!volumeSendTimerRef.current) {
+            volumeSendTimerRef.current = setTimeout(sendPendingVolume, remaining);
+        }
+    }, [sendPendingVolume]);
+
+    useEffect(
+        () => () => {
+            if (volumeSendTimerRef.current) clearTimeout(volumeSendTimerRef.current);
+        },
+        [],
+    );
+
+    const paintAt = (clientX: number) => {
+        const next = valueAt(clientX);
+        pendingVolumeRef.current = next;
+        if (fillRef.current) fillRef.current.style.width = `${next}%`;
+        scheduleVolumeSend();
+    };
+
     const onPointerDown = (e: React.PointerEvent) => {
-        set(e.clientX);
-        const onMove = (ev: PointerEvent) => set(ev.clientX);
-        const onUp = () => {
-            window.removeEventListener('pointermove', onMove);
-            window.removeEventListener('pointerup', onUp);
-        };
-        window.addEventListener('pointermove', onMove);
-        window.addEventListener('pointerup', onUp);
+        draggingRef.current = true;
+        e.currentTarget.setPointerCapture(e.pointerId);
+        paintAt(e.clientX);
     };
 
     const Icon = volume === 0 ? VolumeX : volume < 50 ? Volume1 : Volume2;
@@ -151,8 +194,36 @@ function VolumeControl({volume}: { volume: number }) {
             >
                 <Icon size={15}/>
             </button>
-            <div ref={trackRef} className="tp-vol-track group" onPointerDown={onPointerDown}>
-                <div className="tp-vol-fill" style={{width: `${pct}%`}}/>
+            <div
+                ref={trackRef}
+                className="tp-vol-track group"
+                onPointerDown={onPointerDown}
+                onPointerMove={(event) => {
+                    if (draggingRef.current) paintAt(event.clientX);
+                }}
+                onPointerUp={() => {
+                    if (!draggingRef.current) return;
+                    draggingRef.current = false;
+                    const next = pendingVolumeRef.current;
+                    patchNp({volume: next});
+                    sendPendingVolume();
+                }}
+                onPointerCancel={() => {
+                    if (draggingRef.current) {
+                        patchNp({volume: pendingVolumeRef.current});
+                        sendPendingVolume();
+                    }
+                    draggingRef.current = false;
+                }}
+                onLostPointerCapture={() => {
+                    if (draggingRef.current) {
+                        patchNp({volume: pendingVolumeRef.current});
+                        sendPendingVolume();
+                    }
+                    draggingRef.current = false;
+                }}
+            >
+                <div ref={fillRef} className="tp-vol-fill" style={{width: `${pct}%`}}/>
             </div>
         </div>
     );

@@ -165,6 +165,9 @@ fn run_fft_loop(app: AppHandle, buffer: Arc<AnalyserBuffer>) {
 
     let mut fft_buf = vec![Complex::new(0.0f32, 0.0); FFT_SIZE];
     let mut bins_smooth = vec![0.0f32; NUM_BINS];
+    let mut samples = vec![0.0f32; FFT_SIZE];
+    let mut bins = vec![0.0f32; NUM_BINS];
+    let zero_bins = vec![0.0f32; NUM_BINS];
     let mut silence_skips: u32 = 0;
     let mut prev_emit_was_silent = true;
 
@@ -179,32 +182,33 @@ fn run_fft_loop(app: AppHandle, buffer: Arc<AnalyserBuffer>) {
             continue;
         }
 
-        let snapshot: Option<Vec<f32>> = {
+        let has_snapshot = {
             let mut q = buffer.samples.lock().unwrap();
             if q.len() < FFT_SIZE {
-                None
+                false
             } else {
                 let start = q.len() - FFT_SIZE;
-                let samples = q.iter().skip(start).copied().collect();
+                for (target, sample) in samples.iter_mut().zip(q.iter().skip(start)) {
+                    *target = *sample;
+                }
                 // Consume the window. If playback is paused no fresh samples
                 // arrive, so the analyser emits one zero frame and then parks
                 // instead of recomputing the same stale spectrum at 30 Hz.
                 q.clear();
-                Some(samples)
+                true
             }
         };
 
-        let Some(samples) = snapshot else {
+        if !has_snapshot {
             // No fresh samples (paused / loading). After ~4 ticks (~130ms) of
             // silence, emit one zero frame so the canvas can fade out, then go quiet.
             silence_skips = silence_skips.saturating_add(1);
             if !prev_emit_was_silent && silence_skips >= 4 {
-                let zeros = vec![0.0f32; NUM_BINS];
-                let _ = app.emit("audio:fft", &zeros);
+                let _ = app.emit("audio:fft", &zero_bins);
                 prev_emit_was_silent = true;
             }
             continue;
-        };
+        }
 
         // Quick silence detection — skip FFT for fully zeroed buffers.
         let mut peak = 0.0f32;
@@ -217,8 +221,7 @@ fn run_fft_loop(app: AppHandle, buffer: Arc<AnalyserBuffer>) {
         if peak < 1e-4 {
             silence_skips = silence_skips.saturating_add(1);
             if !prev_emit_was_silent {
-                let zeros = vec![0.0f32; NUM_BINS];
-                let _ = app.emit("audio:fft", &zeros);
+                let _ = app.emit("audio:fft", &zero_bins);
                 prev_emit_was_silent = true;
             }
             continue;
@@ -239,7 +242,7 @@ fn run_fft_loop(app: AppHandle, buffer: Arc<AnalyserBuffer>) {
         let log_range = (log_max - log_min).max(1e-3);
 
         // Bin-bucketing: distribute FFT magnitudes into log-spaced bins, take max.
-        let mut bins = vec![0.0f32; NUM_BINS];
+        bins.fill(0.0);
         let nbins = NUM_BINS as f32;
         for (i, c) in fft_buf.iter().take(mag_count).enumerate() {
             let freq = (i as f32) * nyquist / (mag_count as f32);

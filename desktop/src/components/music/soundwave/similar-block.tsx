@@ -2,8 +2,8 @@ import React, { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { isUrnDisliked, useDislikeVersion } from '../../../lib/dislikes';
 import { isRecommendationTrackPlayable } from '../../../lib/home-recommendations';
-import { curateWithLocalTaste } from '../../../lib/local-recommendations';
 import { AudioLines, Compass, Disc3, Headphones, playBlack14, Sparkles } from '../../../lib/icons';
+import { curateWithLocalTaste } from '../../../lib/local-recommendations';
 import { usePlayerStore } from '../../../stores/player';
 import { useSettingsStore } from '../../../stores/settings';
 import {
@@ -42,43 +42,64 @@ export const SoundWaveSimilarBlock = React.memo(function SoundWaveSimilarBlock({
 }: Props) {
   const { t } = useTranslation();
   const trackId = useMemo(() => trackUrn.split(':').pop() ?? '', [trackUrn]);
+  const recommendationLanguages = useSettingsStore((s) => s.soundwaveLanguages);
+  const hideLiked = useSettingsStore((s) => s.soundwaveHideLiked);
   const hideListened = useSettingsStore((s) => s.soundwaveHideListened);
   const recommendationMode = useSettingsStore((s) => s.soundwaveMode);
   const dislikeVersion = useDislikeVersion();
+  const stableLanguages = useMemo(
+    () => [...recommendationLanguages].sort(),
+    [recommendationLanguages],
+  );
+  const recommendationUrl = useMemo(() => {
+    if (!trackId) return null;
+    const query = new URLSearchParams();
+    if (stableLanguages.length > 0) query.set('languages', stableLanguages.join(','));
+    query.set('hide_listened', hideListened ? '1' : '0');
+    return `/recommendations/similar/${encodeURIComponent(trackId)}?${query}`;
+  }, [hideListened, stableLanguages, trackId]);
 
   const { data, isLoading } = useClusterWave({
-    queryKey: ['cluster-wave', 'similar', trackId, hideListened],
-    url: trackId
-      ? `/recommendations/similar/${encodeURIComponent(trackId)}?hide_listened=${hideListened ? '1' : '0'}`
-      : null,
+    queryKey: [
+      'cluster-wave',
+      'similar',
+      trackId,
+      stableLanguages.join(',') || 'all',
+      hideLiked,
+      hideListened,
+    ],
+    url: recommendationUrl,
   });
 
-  const clusters = useMemo(
-    () => {
-      void dislikeVersion;
-      return (data?.clusters ?? [])
-        .map((cluster) => ({
+  const clusters = useMemo(() => {
+    void dislikeVersion;
+    return (data?.clusters ?? [])
+      .map((cluster) => {
+        const eligible = cluster.tracks.filter(
+          (track) => !isUrnDisliked(track.urn) && isRecommendationTrackPlayable(track),
+        );
+        return {
           ...cluster,
-          tracks: cluster.tracks.filter(
-            (track) => !isUrnDisliked(track.urn) && isRecommendationTrackPlayable(track),
-          ),
-        }))
-        .filter((cluster) => cluster.tracks.length > 0);
-    },
-    [data, dislikeVersion],
-  );
-  const allTracks = useMemo(
-    () => {
-      void dislikeVersion;
-      const inputs = data?.candidates?.length ? data.candidates : (data?.allTracks ?? []);
-      return curateWithLocalTaste(inputs, {
-        hideListened,
-        mode: recommendationMode,
-        limit: inputs.length,
-      });
-    },
-    [data, dislikeVersion, hideListened, recommendationMode],
-  );
+          tracks: curateWithLocalTaste(eligible, {
+            hideLiked,
+            hideListened,
+            mode: recommendationMode,
+            limit: eligible.length,
+          }),
+        };
+      })
+      .filter((cluster) => cluster.tracks.length > 0);
+  }, [data, dislikeVersion, hideLiked, hideListened, recommendationMode]);
+  const allTracks = useMemo(() => {
+    void dislikeVersion;
+    const inputs = data?.candidates?.length ? data.candidates : (data?.allTracks ?? []);
+    return curateWithLocalTaste(inputs, {
+      hideLiked,
+      hideListened,
+      mode: recommendationMode,
+      limit: inputs.length,
+    });
+  }, [data, dislikeVersion, hideLiked, hideListened, recommendationMode]);
 
   const orderedClusters = useMemo(() => {
     const byId = new Map(clusters.map((c) => [c.id, c]));
@@ -96,6 +117,8 @@ export const SoundWaveSimilarBlock = React.memo(function SoundWaveSimilarBlock({
     seedId: trackId,
     initialTracks: waveCluster?.tracks ?? [],
     initialCursor: null,
+    languages: stableLanguages,
+    hideLiked,
     hideListened,
   });
 
