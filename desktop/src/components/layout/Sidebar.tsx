@@ -2,18 +2,23 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { NavLink, useLocation } from 'react-router-dom';
 import sonveilMark from '../../assets/sonveil-mark.svg';
-import { art } from '../../lib/formatters';
-import { Clock, Compass, Download, Home, Library, ListMusic, Settings } from '../../lib/icons';
-import { useAppMode } from '../../stores/app-status';
+import { Home, Library, Search, Settings } from '../../lib/icons';
 import { useAuthStore } from '../../stores/auth';
-import { useSettingsStore } from '../../stores/settings';
 import { Avatar } from '../ui/Avatar';
 
-type IconCmp = React.ComponentType<{ size?: number; strokeWidth?: number; className?: string }>;
+type IconCmp = React.ComponentType<{
+  size?: number;
+  strokeWidth?: number;
+  className?: string;
+  fill?: string;
+  fillOpacity?: number;
+}>;
 
-const primaryNav: { to: string; icon: IconCmp; label: string }[] = [
-  { to: '/home', icon: Home, label: 'nav.home' },
+const primaryNav: { to: string; icon: IconCmp; label: string; solid?: boolean }[] = [
+  { to: '/home', icon: Home, label: 'nav.home', solid: true },
+  { to: '/search', icon: Search, label: 'nav.search' },
   { to: '/library/likes', icon: Library, label: 'nav.library' },
+  { to: '/settings', icon: Settings, label: 'nav.settings' },
 ];
 
 function RailLink({
@@ -21,13 +26,13 @@ function RailLink({
   icon: Icon,
   label,
   active,
-  alert,
+  solid,
 }: {
   to: string;
   icon: IconCmp;
   label: string;
   active: boolean;
-  alert?: boolean;
+  solid?: boolean;
 }) {
   return (
     <NavLink
@@ -35,9 +40,14 @@ function RailLink({
       title={label}
       aria-label={label}
       aria-current={active ? 'page' : undefined}
-      className={`sonveil-rail-button${active ? ' is-active' : ''}${alert ? ' is-alert' : ''}`}
+      className={`sonveil-rail-button${active ? ' is-active' : ''}`}
     >
-      <Icon size={19} strokeWidth={1.75} />
+      <Icon
+        size={22}
+        strokeWidth={active ? 2.15 : 1.75}
+        fill={active ? 'currentColor' : 'none'}
+        fillOpacity={active ? (solid ? 1 : 0.16) : undefined}
+      />
     </NavLink>
   );
 }
@@ -46,13 +56,8 @@ export const Sidebar = React.memo(() => {
   const { t } = useTranslation();
   const location = useLocation();
   const user = useAuthStore((state) => state.user);
-  const pinnedPlaylists = useSettingsStore((state) => state.pinnedPlaylists);
-  const appMode = useAppMode();
   const libraryActive =
-    location.pathname === '/library' ||
-    location.pathname === '/library/likes' ||
-    location.pathname === '/library/following' ||
-    location.pathname === '/library/playlists';
+    location.pathname === '/library' || location.pathname.startsWith('/library/');
   const isPrimaryActive = (to: string) =>
     to === '/library/likes' ? libraryActive : location.pathname === to;
 
@@ -70,59 +75,12 @@ export const Sidebar = React.memo(() => {
             icon={item.icon}
             label={t(item.label)}
             active={isPrimaryActive(item.to)}
+            solid={item.solid}
           />
         ))}
-        <RailLink
-          to="/discover"
-          icon={Compass}
-          label={t('nav.discover')}
-          active={location.pathname === '/discover'}
-        />
       </nav>
 
-      <div className="sonveil-rail-covers" aria-label={t('sidebar.quickAccess')}>
-        {pinnedPlaylists.slice(0, 5).map((playlist) => {
-          const artwork = art(playlist.artworkUrl, 'small');
-          return (
-            <NavLink
-              key={playlist.urn}
-              to={`/playlist/${encodeURIComponent(playlist.urn)}`}
-              className="sonveil-rail-cover"
-              title={playlist.title}
-            >
-              {artwork ? (
-                <img src={artwork} alt="" loading="lazy" decoding="async" />
-              ) : (
-                <ListMusic size={17} />
-              )}
-            </NavLink>
-          );
-        })}
-      </div>
-
       <div className="sonveil-rail-spacer" />
-
-      <div className="sonveil-rail-footer">
-        <RailLink
-          to="/library/history"
-          icon={Clock}
-          label={t('library.history')}
-          active={location.pathname === '/library/history'}
-        />
-        <RailLink
-          to="/offline"
-          icon={Download}
-          label={t('nav.offline')}
-          active={location.pathname === '/offline'}
-          alert={appMode !== 'online'}
-        />
-        <RailLink
-          to="/settings"
-          icon={Settings}
-          label={t('nav.settings')}
-          active={location.pathname === '/settings'}
-        />
-      </div>
 
       {user && (
         <NavLink
@@ -131,7 +89,7 @@ export const Sidebar = React.memo(() => {
           title={user.username}
           aria-label={user.username}
         >
-          <Avatar src={user.avatar_url} alt={user.username} size={30} />
+          <Avatar src={user.avatar_url} alt={user.username} size={36} />
         </NavLink>
       )}
     </aside>

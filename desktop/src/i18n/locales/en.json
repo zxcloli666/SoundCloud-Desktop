@@ -431,6 +431,7 @@
     "startLikingTitle": "Like tracks — more music will appear here",
     "startLikingDesc": "The more likes, the better recommendations and richer home page",
     "editorial": {
+      "todaySound": "Your sound today",
       "morningRotation": "Morning rotation",
       "dayRotation": "Day rotation",
       "nightRotation": "Night rotation",

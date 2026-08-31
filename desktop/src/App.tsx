@@ -380,7 +380,7 @@ function AppLoadingScreen({ fullscreen = false }: { fullscreen?: boolean }) {
     >
       <div className="flex items-center gap-3 border border-white/8 bg-[#111114] px-4 py-3">
         <div className="flex h-9 w-12 items-center justify-center border border-white/10 bg-black/20">
-          <img className="w-10" src={sonveilMark} alt="" draggable={false} />
+          <img className="h-7 w-auto" src={sonveilMark} alt="" draggable={false} />
         </div>
         <div className="min-w-0">
           <div className="text-[10px] font-bold lowercase tracking-[-0.02em] text-white/36">

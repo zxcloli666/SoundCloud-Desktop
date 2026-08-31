@@ -1,7 +1,7 @@
 import * as Dialog from '@radix-ui/react-dialog';
 import React, { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
 import { useShallow } from 'zustand/shallow';
 import { getCurrentTime, getDuration, handlePrev, seek } from '../../lib/audio';
 import { getWallpaperUrl } from '../../lib/cache';
@@ -180,6 +180,7 @@ const isInputEl = (el: EventTarget | null) =>
 /* ── AppShell ──────────────────────────────────────────────── */
 
 export const AppShell = React.memo(() => {
+  const navigate = useNavigate();
   const [queueOpen, setQueueOpen] = useState(false);
   const [contextOpen, setContextOpen] = useState(false);
   const [kbOpen, setKbOpen] = useState(false);
@@ -254,6 +255,11 @@ export const AppShell = React.memo(() => {
   }, []);
 
   useEffect(() => {
+    const openSearch = () => {
+      navigate('/search');
+      requestAnimationFrame(() => document.getElementById('global-search-input')?.focus());
+    };
+
     const handler = (e: KeyboardEvent) => {
       const inInput = isInputEl(e.target);
       // e.code = physical key (layout-independent), e.key = character
@@ -266,10 +272,10 @@ export const AppShell = React.memo(() => {
         return;
       }
 
-      // Ctrl+K — focus search (always, even in input)
+      // Ctrl+K — open and focus search (always, even in input)
       if (code === 'KeyK' && (e.ctrlKey || e.metaKey)) {
         e.preventDefault();
-        document.getElementById('global-search-input')?.focus();
+        openSearch();
         return;
       }
 
@@ -280,10 +286,10 @@ export const AppShell = React.memo(() => {
         return;
       }
 
-      // / — focus search (not in input)
+      // / — open and focus search (not in input)
       if ((e.key === '/' || code === 'Slash') && !inInput) {
         e.preventDefault();
-        document.getElementById('global-search-input')?.focus();
+        openSearch();
         return;
       }
 
@@ -379,7 +385,7 @@ export const AppShell = React.memo(() => {
       window.removeEventListener('keydown', handler);
       window.removeEventListener('keyup', resetVolumeHold);
     };
-  }, []);
+  }, [navigate]);
 
   return (
     <div className="sonveil-app">

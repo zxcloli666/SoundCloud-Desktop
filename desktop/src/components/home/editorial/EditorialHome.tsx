@@ -12,18 +12,19 @@ import {
   recommendationTrackFromInput,
 } from '../../../lib/home-recommendations';
 import { useHistory, useLikedTracks } from '../../../lib/hooks';
-import { Pause, Play, Plus, RefreshCw } from '../../../lib/icons';
+import { Pause, Play, RefreshCw } from '../../../lib/icons';
 import { recordClusterFeedback, setUrnCluster } from '../../../lib/recsFeedback';
 import { getArtistDisplay, getDisplayTitle } from '../../../lib/track-display';
 import { useTrackPlay } from '../../../lib/useTrackPlay';
 import { useAuthStore } from '../../../stores/auth';
-import { type Track, usePlayerStore } from '../../../stores/player';
+import type { Track } from '../../../stores/player';
 import { useRecommendationTasteStore } from '../../../stores/recommendation-taste';
 import { useSettingsStore } from '../../../stores/settings';
 import { historyEntryToTrack } from '../../library/history-utils';
-import { LikeButton } from '../../music/LikeButton';
 import { useClusterWave } from '../../music/cluster';
+import { LikeButton } from '../../music/LikeButton';
 import './editorial-home.css';
+import './sonveil-home.css';
 
 function uniqueTracks(tracks: Track[]): Track[] {
   const seen = new Set<string>();
@@ -43,8 +44,8 @@ function recommendationCluster(input: HomeRecommendationInput): string | null {
     const source = input.sources[index];
     if (
       source.rank < best.rank ||
-      (source.rank === best.rank && (source.score ?? Number.NEGATIVE_INFINITY) >
-        (best.score ?? Number.NEGATIVE_INFINITY))
+      (source.rank === best.rank &&
+        (source.score ?? Number.NEGATIVE_INFINITY) > (best.score ?? Number.NEGATIVE_INFINITY))
     ) {
       best = source;
     }
@@ -57,12 +58,6 @@ type RecommendationPlayHandler = (track: Track) => void;
 function trackArtwork(track: Track, size: 't200x200' | 't500x500') {
   const source = track.enrichment?.album?.cover_url || track.artwork_url || track.user.avatar_url;
   return art(source, size) || appIcon;
-}
-
-function timeOfDayTitle(hour: number, t: (key: string) => string) {
-  if (hour < 6 || hour >= 20) return t('home.editorial.nightRotation');
-  if (hour < 12) return t('home.editorial.morningRotation');
-  return t('home.editorial.dayRotation');
 }
 
 const Artwork = React.memo(function Artwork({
@@ -87,26 +82,18 @@ const Artwork = React.memo(function Artwork({
 const FeaturedRelease = React.memo(function FeaturedRelease({
   track,
   queue,
-  eyebrow,
-  fallbackDescription,
   onPlay,
 }: {
   track: Track;
   queue: Track[];
-  eyebrow: string;
-  fallbackDescription: string;
   onPlay?: RecommendationPlayHandler;
 }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const addToQueue = usePlayerStore((state) => state.addToQueue);
   const handleNewPlay = useCallback(() => onPlay?.(track), [onPlay, track]);
   const { isThisPlaying, togglePlay } = useTrackPlay(track, queue, handleNewPlay);
   const artist = getArtistDisplay(track).primary;
-  const title = track.enrichment?.album?.title || getDisplayTitle(track);
-  const year =
-    track.enrichment?.album?.year || track.enrichment?.release_year || track.release_year;
-  const description = track.description?.trim() || fallbackDescription;
+  const title = getDisplayTitle(track);
 
   return (
     <section className="editorial-feature" aria-labelledby="featured-title">
@@ -120,33 +107,21 @@ const FeaturedRelease = React.memo(function FeaturedRelease({
       </button>
 
       <div className="editorial-feature-copy">
-        <p className="editorial-eyebrow">{eyebrow}</p>
+        <h1>{t('home.editorial.todaySound')}</h1>
         <h2 id="featured-title">{title}</h2>
         <p className="editorial-feature-artist">{artist}</p>
-        <div className="editorial-feature-meta">
-          {year && <span>{year}</span>}
-          <span>{track.genre || t('home.editorial.independent')}</span>
-          <span>{dur(track.full_duration ?? track.duration)}</span>
-        </div>
-        <p className="editorial-feature-description selectable">{description}</p>
         <div className="editorial-feature-actions">
-          <button type="button" className="editorial-primary-action" onClick={togglePlay}>
-            {isThisPlaying ? (
-              <Pause size={15} fill="currentColor" />
-            ) : (
-              <Play size={15} fill="currentColor" />
-            )}
-            <span>{isThisPlaying ? t('track.pause') : t('home.editorial.playRelease')}</span>
-          </button>
-          <LikeButton track={track} variant="editorial" />
           <button
             type="button"
-            className="editorial-icon-action"
-            onClick={() => addToQueue([track])}
-            aria-label={t('player.addToQueue')}
-            title={t('player.addToQueue')}
+            className="editorial-primary-action"
+            onClick={togglePlay}
+            aria-label={isThisPlaying ? t('track.pause') : t('track.play')}
           >
-            <Plus size={17} />
+            {isThisPlaying ? (
+              <Pause size={24} fill="currentColor" strokeWidth={0} />
+            ) : (
+              <Play size={24} fill="currentColor" strokeWidth={0} />
+            )}
           </button>
         </div>
       </div>
@@ -158,10 +133,12 @@ const RecentCard = React.memo(function RecentCard({
   track,
   queue,
   onPlay,
+  variant = 'cover',
 }: {
   track: Track;
   queue: Track[];
   onPlay?: RecommendationPlayHandler;
+  variant?: 'cover' | 'recommendation';
 }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -171,8 +148,10 @@ const RecentCard = React.memo(function RecentCard({
   const artist = getArtistDisplay(track).primary;
 
   return (
-    <article className="editorial-recent-card">
-      <div className="editorial-recent-art">
+    <article
+      className={variant === 'recommendation' ? 'editorial-side-card' : 'editorial-recent-card'}
+    >
+      <div className={variant === 'recommendation' ? 'editorial-side-art' : 'editorial-recent-art'}>
         <button
           type="button"
           onClick={() => navigate(`/track/${encodeURIComponent(track.urn)}`)}
@@ -193,14 +172,15 @@ const RecentCard = React.memo(function RecentCard({
           )}
         </button>
       </div>
-      <button
-        type="button"
-        className="editorial-recent-title"
-        onClick={() => navigate(`/track/${encodeURIComponent(track.urn)}`)}
-      >
-        {displayTitle}
-      </button>
-      <p>{artist}</p>
+      {variant === 'recommendation' ? (
+        <div className="editorial-side-copy">
+          <button type="button" onClick={() => navigate(`/track/${encodeURIComponent(track.urn)}`)}>
+            {displayTitle}
+          </button>
+          <p>{artist}</p>
+          <span>{dur(track.full_duration ?? track.duration)}</span>
+        </div>
+      ) : null}
     </article>
   );
 });
@@ -259,7 +239,6 @@ const EditorialTrackRow = React.memo(function EditorialTrackRow({
 function EditorialSkeleton() {
   return (
     <div className="editorial-skeleton" aria-hidden="true">
-      <div className="editorial-skeleton-feature" />
       <div className="editorial-skeleton-lines">
         <span />
         <span />
@@ -272,9 +251,8 @@ function EditorialSkeleton() {
 function RecommendationShelfSkeleton() {
   return (
     <section className="editorial-recommendation-skeleton" aria-hidden="true">
-      <span className="editorial-recommendation-skeleton-title" />
       <div className="editorial-recommendation-skeleton-grid">
-        {Array.from({ length: 6 }, (_, index) => (
+        {Array.from({ length: 3 }, (_, index) => (
           <span key={index} className="editorial-recommendation-skeleton-card" />
         ))}
       </div>
@@ -324,9 +302,7 @@ export function EditorialHome() {
     epoch: 0,
   }));
   const exposureCounts =
-    rotationState.ownerKey === ownerKey
-      ? rotationState.exposureCounts
-      : EMPTY_EXPOSURE_COUNTS;
+    rotationState.ownerKey === ownerKey ? rotationState.exposureCounts : EMPTY_EXPOSURE_COUNTS;
   const rotationEpoch = rotationState.ownerKey === ownerKey ? rotationState.epoch : 0;
   const previousTopUrn =
     rotationState.ownerKey === ownerKey ? rotationState.previousTopUrn : undefined;
@@ -403,31 +379,27 @@ export function EditorialHome() {
   const excludedRecommendationUrns = useMemo(
     () =>
       new Set(
-        [
-          ...(hideListened ? [] : recentTracks),
-          ...(hideLiked ? [] : likedTracks),
-        ].map((track) => track.urn),
+        [...(hideListened ? [] : recentTracks), ...(hideLiked ? [] : likedTracks)].map(
+          (track) => track.urn,
+        ),
       ),
     [hideLiked, hideListened, likedTracks, recentTracks],
   );
-  const blockedRecommendationUrns = useMemo(
-    () => {
-      void dislikeVersion;
-      const blocked = new Set<string>();
-      for (const input of rawRecommendations) {
-        const track = recommendationTrackFromInput(input);
-        if (isUrnDisliked(track.urn)) blocked.add(track.urn);
-      }
-      if (hideListened) {
-        for (const track of recentTracks) blocked.add(track.urn);
-      }
-      if (hideLiked) {
-        for (const track of likedTracks) blocked.add(track.urn);
-      }
-      return blocked;
-    },
-    [dislikeVersion, hideLiked, hideListened, likedTracks, rawRecommendations, recentTracks],
-  );
+  const blockedRecommendationUrns = useMemo(() => {
+    void dislikeVersion;
+    const blocked = new Set<string>();
+    for (const input of rawRecommendations) {
+      const track = recommendationTrackFromInput(input);
+      if (isUrnDisliked(track.urn)) blocked.add(track.urn);
+    }
+    if (hideListened) {
+      for (const track of recentTracks) blocked.add(track.urn);
+    }
+    if (hideLiked) {
+      for (const track of likedTracks) blocked.add(track.urn);
+    }
+    return blocked;
+  }, [dislikeVersion, hideLiked, hideListened, likedTracks, rawRecommendations, recentTracks]);
   const recommendations = useMemo(
     () =>
       curateHomeRecommendations(rawRecommendations, {
@@ -473,19 +445,16 @@ export function EditorialHome() {
   const allTracks = useMemo(() => {
     return uniqueTracks([...recommendations, ...recentTracks, ...likedTracks]);
   }, [likedTracks, recentTracks, recommendations]);
-  const recent = recentTracks.slice(0, 8);
+  const recent = (preview ? designPreviewTracks.slice(3, 8) : recentTracks).slice(0, 5);
   const featured = recommendations[0] || recent[0] || likedTracks[0];
   const featuredIsRecommendation = featured?.urn === recommendations[0]?.urn;
   const recommendationStart = featuredIsRecommendation ? 1 : 0;
-  const recommendationCards = recommendations.slice(recommendationStart, recommendationStart + 6);
-  const tableTracks = recommendations.slice(recommendationStart + 6, recommendationStart + 13);
-  const title = timeOfDayTitle(preview ? 23 : new Date().getHours(), t);
+  const recommendationCards = recommendations.slice(recommendationStart, recommendationStart + 3);
+  const tableTracks = recommendations.slice(recommendationStart + 3, recommendationStart + 10);
   const refreshRecommendations = useCallback(() => {
     setRotationState((previousState) => {
       const nextExposureCounts = new Map(
-        previousState.ownerKey === ownerKey
-          ? previousState.exposureCounts
-          : EMPTY_EXPOSURE_COUNTS,
+        previousState.ownerKey === ownerKey ? previousState.exposureCounts : EMPTY_EXPOSURE_COUNTS,
       );
       recommendations.slice(0, 14).forEach((track, index) => {
         const previous = nextExposureCounts.get(track.urn) ?? 0;
@@ -518,109 +487,86 @@ export function EditorialHome() {
 
   return (
     <div className="editorial-home">
-      <h1>{title}</h1>
+      <div className="editorial-top-grid">
+        {featured ? (
+          <FeaturedRelease
+            track={featured}
+            queue={featuredIsRecommendation ? recommendations : allTracks}
+            onPlay={featuredIsRecommendation ? handleRecommendationPlay : undefined}
+          />
+        ) : loading ? (
+          <EditorialSkeleton />
+        ) : (
+          <div className="editorial-empty">
+            <p>{t('home.startLikingTitle')}</p>
+            <button
+              type="button"
+              className="editorial-empty-action"
+              onClick={() => navigate('/search')}
+            >
+              {t('nav.search')}
+            </button>
+          </div>
+        )}
 
-      {featured ? (
-        <FeaturedRelease
-          track={featured}
-          queue={featuredIsRecommendation ? recommendations : allTracks}
-          eyebrow={
-            featuredIsRecommendation
-              ? t('home.editorial.recommendationSpotlight')
-              : t('home.editorial.featuredRelease')
-          }
-          fallbackDescription={
-            featuredIsRecommendation
-              ? t('home.editorial.recommendationDescription')
-              : t('home.editorial.featuredDescription')
-          }
-          onPlay={featuredIsRecommendation ? handleRecommendationPlay : undefined}
-        />
-      ) : loading ? (
-        <EditorialSkeleton />
-      ) : (
-        <div className="editorial-empty">
-          <p>{t('home.startLikingTitle')}</p>
-          <button
-            type="button"
-            className="editorial-empty-action"
-            onClick={() => navigate('/search')}
-          >
-            {t('nav.search')}
-          </button>
-        </div>
-      )}
+        <section className="editorial-recommendation-panel" aria-label={t('home.recommended')}>
+          {recommendationCards.length > 0 && !preview && (
+            <button
+              type="button"
+              className="editorial-side-refresh"
+              onClick={refreshRecommendations}
+              disabled={recommendationQuery.isFetching}
+              aria-label={t('soundwave.refresh')}
+              title={t('soundwave.refresh')}
+            >
+              <RefreshCw
+                size={15}
+                className={recommendationQuery.isFetching ? 'animate-spin' : undefined}
+              />
+            </button>
+          )}
 
-      {recommendationQuery.isLoading && recommendations.length === 0 && (
-        <RecommendationShelfSkeleton />
-      )}
-
-      {recommendationCards.length > 0 && (
-        <section
-          className="editorial-recent editorial-recommendations"
-          aria-labelledby="recommendations-title"
-        >
-          <header>
-            <div className="editorial-section-copy">
-              <h2 id="recommendations-title">{t('home.recommended')}</h2>
-              <p>{t('home.editorial.recommendationSubtitle')}</p>
-            </div>
-            {!preview && (
-              <button
-                type="button"
-                onClick={refreshRecommendations}
-                disabled={recommendationQuery.isFetching}
-                aria-label={t('soundwave.refresh')}
-              >
-                <RefreshCw
-                  size={13}
-                  className={recommendationQuery.isFetching ? 'animate-spin' : undefined}
-                />
-                <span>{t('soundwave.refresh')}</span>
-              </button>
-            )}
-          </header>
-          <div className="editorial-recent-grid">
-            {recommendationCards.map((track) => (
+          {recommendationQuery.isLoading && recommendations.length === 0 ? (
+            <RecommendationShelfSkeleton />
+          ) : (
+            recommendationCards.map((track) => (
               <RecentCard
                 key={track.urn}
                 track={track}
                 queue={recommendations}
                 onPlay={handleRecommendationPlay}
+                variant="recommendation"
               />
-            ))}
-          </div>
-        </section>
-      )}
+            ))
+          )}
 
-      {showRecommendationEmpty && (
-        <section className="editorial-recommendation-empty" aria-live="polite">
-          <div>
-            <h2>{t('home.recommended')}</h2>
-            <p>{t('home.editorial.recommendationsEmpty')}</p>
-          </div>
-          <button
-            type="button"
-            className="editorial-recommendation-refresh"
-            onClick={refreshRecommendations}
-            disabled={recommendationQuery.isFetching}
-          >
-            <RefreshCw
-              size={14}
-              className={recommendationQuery.isFetching ? 'animate-spin' : undefined}
-            />
-            {t('soundwave.refresh')}
-          </button>
+          {showRecommendationEmpty && (
+            <div className="editorial-recommendation-empty" aria-live="polite">
+              <div>
+                <h2>{t('home.recommended')}</h2>
+                <p>{t('home.editorial.recommendationsEmpty')}</p>
+              </div>
+              <button
+                type="button"
+                className="editorial-recommendation-refresh"
+                onClick={refreshRecommendations}
+                disabled={recommendationQuery.isFetching}
+              >
+                <RefreshCw
+                  size={14}
+                  className={recommendationQuery.isFetching ? 'animate-spin' : undefined}
+                />
+                {t('soundwave.refresh')}
+              </button>
+            </div>
+          )}
         </section>
-      )}
+      </div>
 
       {recent.length > 0 && (
         <section className="editorial-recent" aria-labelledby="recent-title">
           <header>
             <h2 id="recent-title">{t('home.editorial.recentlyPlayed')}</h2>
-            <button type="button" onClick={() => navigate('/library?tab=history')}>
-              {t('common.seeAll')}
-            </button>
           </header>
           <div className="editorial-recent-grid">
             {recent.map((track) => (
@@ -632,7 +578,7 @@ export function EditorialHome() {
 
       {tableTracks.length > 0 && (
         <section
-          className="editorial-track-table"
+          className="editorial-track-table editorial-below-fold"
           aria-label={t('home.editorial.recommendationMore')}
         >
           <div className="editorial-track-label">{t('home.editorial.recommendationMore')}</div>

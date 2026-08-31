@@ -72,7 +72,10 @@ function WindowButton({
 
 export const Titlebar = React.memo(() => {
   const { t } = useTranslation();
+  const location = useLocation();
   const win = isDesignPreview() ? null : getCurrentWindow();
+  const showSearch = location.pathname === '/search';
+  const showHistoryNavigation = location.pathname !== '/home';
 
   const handleMouseDown = (event: React.MouseEvent<HTMLElement>) => {
     if (event.button !== 0 || !win || isInteractiveTitlebarTarget(event.target)) return;
@@ -82,9 +85,9 @@ export const Titlebar = React.memo(() => {
 
   return (
     <header className="sonveil-titlebar" onMouseDown={handleMouseDown}>
-      <NavButtons />
-      <div className="sonveil-title-search">
-        <GlobalSearch />
+      {showHistoryNavigation ? <NavButtons /> : <div />}
+      <div className={showSearch ? 'sonveil-title-search' : undefined}>
+        {showSearch && <GlobalSearch />}
       </div>
       <div className="sonveil-window-controls">
         <div className="flex items-center">

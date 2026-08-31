@@ -6,8 +6,8 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useShallow } from 'zustand/shallow';
 import { api } from '../../lib/api';
-import { getCurrentTime, getDuration, handlePrev, seek, subscribe } from '../../lib/audio';
 import type { TrackLoadStage } from '../../lib/audio';
+import { getCurrentTime, getDuration, handlePrev, seek, subscribe } from '../../lib/audio';
 import { designPreviewTracks, isDesignPreview } from '../../lib/design-preview';
 import { toggleDislike, useDislikeStatus } from '../../lib/dislikes';
 import { art, formatTime } from '../../lib/formatters';
@@ -235,6 +235,7 @@ const AbLoopOverlay = React.memo(({ duration }: { duration: number }) => {
 /* ── Progress Slider ─────────────────────────────────────────── */
 
 export const ProgressSlider = React.memo(() => {
+  const preview = isDesignPreview();
   const duration = useSyncExternalStore(subscribe, getDuration);
 
   const [dragging, setDragging] = useState(false);
@@ -258,7 +259,7 @@ export const ProgressSlider = React.memo(() => {
     });
   }, []);
 
-  const displayValue = dragging ? dragValue : syncedValue;
+  const displayValue = preview ? 66 : dragging ? dragValue : syncedValue;
 
   // Safety net: if Radix onValueCommit doesn't fire (pointer leaves window, fast flick),
   // reset dragging state on any pointerup so the progress bar doesn't freeze.
@@ -322,7 +323,7 @@ export const ProgressSlider = React.memo(() => {
     <Slider.Root
       className="relative flex items-center w-full h-5 cursor-pointer group select-none touch-none"
       value={[displayValue]}
-      max={duration || 1}
+      max={preview ? 122 : duration || 1}
       step={0.1}
       onValueChange={onValueChange}
       onValueCommit={onValueCommit}
@@ -380,9 +381,7 @@ export const VolumeSlider = React.memo(({ className = '' }: { className?: string
         }}
         onWheel={(e) => {
           e.preventDefault();
-          volumeCommit.commitNow(
-            Math.max(0, Math.min(200, volume + (e.deltaY < 0 ? 1 : -1))),
-          );
+          volumeCommit.commitNow(Math.max(0, Math.min(200, volume + (e.deltaY < 0 ? 1 : -1))));
         }}
       >
         <Slider.Track className="relative h-[3px] grow rounded-full bg-white/[0.08] group-hover:h-[4px] transition-all duration-150">
@@ -1143,9 +1142,9 @@ const LaneTimes = React.memo(() => {
   if (preview) {
     return (
       <div className="npb-times">
-        <b>1:48</b>
+        <b>1:06</b>
         <DockProgress />
-        <span>-2:24</span>
+        <span>2:02</span>
       </div>
     );
   }
@@ -1216,7 +1215,6 @@ export const NowPlayingBar = React.memo(
                   onContextToggle={onContextToggle}
                   contextOpen={contextOpen}
                 />
-                <ReactCluster />
               </div>
 
               <div className="npb-center">
@@ -1226,7 +1224,6 @@ export const NowPlayingBar = React.memo(
                   <PlayPauseBtn />
                   <NextBtn />
                   <RepeatBtn />
-                  <AbLoopBtn />
                 </div>
                 <div className="npb-lane">
                   <LaneTimes />
@@ -1234,13 +1231,15 @@ export const NowPlayingBar = React.memo(
               </div>
 
               <div className="npb-tools">
+                <ReactCluster />
+                <LyricsBtn />
+                <QueueBtn onClick={onQueueToggle} active={queueOpen} />
+                <ContextBtn onClick={onContextToggle} active={contextOpen} />
+                <AbLoopBtn />
                 <div className="npb-secondary-tools">
                   <TuningBtn />
                   <EqBtn />
                 </div>
-                <ContextBtn onClick={onContextToggle} active={contextOpen} />
-                <QueueBtn onClick={onQueueToggle} active={queueOpen} />
-                <LyricsBtn />
                 <ControlVolumeBtn size="sm" />
                 <div className="npb-vol-slider flex items-center gap-2 pl-1">
                   <VolumeSlider className="w-[76px]" />

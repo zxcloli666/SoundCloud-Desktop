@@ -1,13 +1,12 @@
 {
   "name": "Sonveil",
   "sourceReferences": [
-    "sonveil-logo-source.png",
-    "sonveil-lockup-source.png"
+    "sonveil-note-source.png"
   ],
   "masters": {
     "mark": {
       "file": "sonveil-mark.svg",
-      "viewBox": "0 0 619 290"
+      "format": "vector"
     },
     "appIcon": {
       "file": "sonveil-app-icon.svg",
@@ -16,8 +15,8 @@
     }
   },
   "palette": {
-    "ribbonFace": "#D96D3D",
-    "ribbonUnderside": "#FFFFFF",
+    "mark": "#D96D3D",
+    "innerWave": "#FFFFFF",
     "appIconBackground": "#000000"
   },
   "exports": {
