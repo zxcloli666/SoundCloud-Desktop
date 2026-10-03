@@ -3,6 +3,7 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Duration;
 
+use super::system_proxy::follow;
 use crate::rt::AppHandle;
 use call_client::{AgentConfig, Identity, IdentityStore, ProvisionInput, run_agent_session};
 use serde::{Deserialize, Serialize};
@@ -148,7 +149,7 @@ async fn endpoint_candidates(device_id: &str) -> Vec<String> {
             .collect()
     };
 
-    let http = sc_fingerprint::builder(None)
+    let http = follow(sc_fingerprint::builder(None))
         .connect_timeout(Duration::from_secs(5))
         .build()
         .ok();
@@ -257,7 +258,7 @@ async fn run_call_loop(
 
     *state.status.lock().await = CallStatus::Connecting;
 
-    let http = sc_fingerprint::builder(None)
+    let http = follow(sc_fingerprint::builder(None))
         .connect_timeout(Duration::from_secs(5))
         .build()
         .map_err(|e| fmt_chain(&e))?;
