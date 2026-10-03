@@ -912,7 +912,15 @@ async fn download_api(
     let status = response.status();
 
     if status.is_success() {
-        let quality = quality_from_url(url);
+        let served = response
+            .headers()
+            .get("x-audio-quality")
+            .and_then(|value| value.to_str().ok());
+        let quality = match served {
+            Some("hq") => PlaybackQuality::Hq,
+            Some("sq") => PlaybackQuality::Sq,
+            _ => quality_from_url(url),
+        };
         let result = write_response_to_cache(
             target_dir,
             urn,
@@ -1635,53 +1643,11 @@ impl TrackCacheState {
         // 2. Try anon: download directly from SC public API v2.
         //    Saves a hop through our streaming infra when the user can reach
         //    SoundCloud directly.
-        match self.anon.get_stream(urn).await {
-            Ok(Some(result)) => {
-                let line = format!("[TrackCache] {urn} → anon (SC api v2)");
-                println!("{line}");
-                self.diag("INFO", line);
-                match write_bytes_to_cache(
-                    target_dir,
-                    urn,
-                    &result.data,
-                    PlaybackQuality::Sq,
-                    DownloadSource::Anon,
-                )
-                .await
-                {
-                    Ok(res) => {
-                        let kb = std::fs::metadata(&res.path)
-                            .map(|m| m.len() / 1024)
-                            .unwrap_or(0);
-                        let ms = start.elapsed().as_millis();
-                        let line =
-                            format!("[TrackCache] downloaded {urn} via anon — {kb} KB in {ms}ms");
-                        println!("{line}");
-                        self.diag("INFO", line);
-                        return Ok(res.path);
-                    }
-                    Err(DownloadError::Fatal(e)) => {
-                        let line = format!("[TrackCache] anon write failed for {urn}: {e}");
-                        eprintln!("{line}");
-                        self.diag("ERROR", line);
-                    }
-                    Err(DownloadError::Retryable(e)) => {
-                        let line = format!("[TrackCache] anon write failed for {urn}: {e}");
-                        eprintln!("{line}");
-                        self.diag("ERROR", line);
-                    }
-                }
-            }
-            Ok(None) => {
-                let line = format!("[TrackCache] anon: no usable transcoding for {urn}");
-                println!("{line}");
-                self.diag("INFO", line);
-            }
-            Err(e) => {
-                let line = format!("[TrackCache] anon failed for {urn}: {e}");
-                eprintln!("{line}");
-                self.diag("WARN", line);
-                last_err = format!("anon: {e}");
+        if !hq {
+            match self.try_anon(target_dir, urn, start).await {
+                Ok(Some(path)) => return Ok(path),
+                Ok(None) => {}
+                Err(e) => last_err = format!("anon: {e}"),
             }
         }
 
@@ -1778,8 +1744,65 @@ impl TrackCacheState {
             }
         }
 
+        if hq && let Ok(Some(path)) = self.try_anon(target_dir, urn, start).await {
+            return Ok(path);
+        }
+
         eprintln!("[TrackCache] gave up on {urn}: {last_err}");
         Err(last_err)
+    }
+
+    async fn try_anon(
+        &self,
+        target_dir: &Path,
+        urn: &str,
+        start: std::time::Instant,
+    ) -> Result<Option<PathBuf>, String> {
+        let result = match self.anon.get_stream(urn).await {
+            Ok(Some(result)) => result,
+            Ok(None) => {
+                let line = format!("[TrackCache] anon: no usable transcoding for {urn}");
+                println!("{line}");
+                self.diag("INFO", line);
+                return Ok(None);
+            }
+            Err(e) => {
+                let line = format!("[TrackCache] anon failed for {urn}: {e}");
+                eprintln!("{line}");
+                self.diag("WARN", line);
+                return Err(e);
+            }
+        };
+
+        let line = format!("[TrackCache] {urn} → anon (SC api v2)");
+        println!("{line}");
+        self.diag("INFO", line);
+        match write_bytes_to_cache(
+            target_dir,
+            urn,
+            &result.data,
+            PlaybackQuality::Sq,
+            DownloadSource::Anon,
+        )
+        .await
+        {
+            Ok(res) => {
+                let kb = std::fs::metadata(&res.path)
+                    .map(|m| m.len() / 1024)
+                    .unwrap_or(0);
+                let ms = start.elapsed().as_millis();
+                let line = format!("[TrackCache] downloaded {urn} via anon — {kb} KB in {ms}ms");
+                println!("{line}");
+                self.diag("INFO", line);
+                Ok(Some(res.path))
+            }
+            Err(DownloadError::Fatal(e)) | Err(DownloadError::Retryable(e)) => {
+                let line = format!("[TrackCache] anon write failed for {urn}: {e}");
+                eprintln!("{line}");
+                self.diag("ERROR", line);
+                Ok(None)
+            }
+        }
     }
 
     /// Resolve a `/download/:urn` endpoint into a cached file.
