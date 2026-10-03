@@ -29,7 +29,7 @@ function buildDisplayLines(lines: LyricLine[]): DisplayLine[] {
     let prevEnd: number | null = null;
     for (const cur of lines) {
         if (!cur.text) {
-            if (prev) prevEnd = cur.time;
+            if (prev) prevEnd ??= cur.time;
             continue;
         }
         if (prev) {
