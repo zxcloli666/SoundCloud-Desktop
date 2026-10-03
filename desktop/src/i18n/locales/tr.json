@@ -234,7 +234,12 @@
     "deleted": "Calma listesi silindi",
     "private": "Gizli",
     "public": "Herkese acik",
-    "partialTracks": "{{total}} parcadan {{shown}} tanesi kullanilabilir"
+    "partialTracks": "{{total}} parcadan {{shown}} tanesi kullanilabilir",
+    "awaitingSync": "Calma listesi hala SoundCloud ile esitleniyor, bir dakika sonra tekrar deneyin",
+    "changedElsewhere": "Calma listesi baska bir yerde degisti, yenileyip tekrar deneyin",
+    "trackNotSynced": "Bu parca henuz esitlenmedi, bir dakika sonra tekrar deneyin",
+    "editFailed": "Calma listesi degistirilemedi",
+    "createQueued": "Calma listesi olusturuluyor, birazdan gorunecek"
   },
   "user": {
     "followers": "Takipciler",

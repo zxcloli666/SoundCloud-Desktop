@@ -317,7 +317,12 @@
     "moreCrates": "More crates by {{name}}",
     "lastEdited": "Updated {{date}}",
     "emptyCrate": "This crate is empty — start digging",
-    "partialTracks": "{{shown}} of {{total}} tracks are available"
+    "partialTracks": "{{shown}} of {{total}} tracks are available",
+    "awaitingSync": "This playlist is still syncing with SoundCloud, try again in a minute",
+    "changedElsewhere": "The playlist changed elsewhere, reload it and try again",
+    "trackNotSynced": "This track isn't synced yet, try again in a minute",
+    "editFailed": "Couldn't change the playlist",
+    "createQueued": "Playlist is being created, it will appear shortly"
   },
   "user": {
     "followers": "Followers",

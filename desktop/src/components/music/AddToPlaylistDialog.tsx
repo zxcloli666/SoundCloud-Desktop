@@ -98,8 +98,10 @@ const CreatePlaylistForm = React.memo(function CreatePlaylistForm({
     createPlaylist.mutate(
       { title, sharing: isPrivate ? 'private' : 'public', trackUrns },
       {
-        onSuccess: () => {
-          toast.success(t('playlist.created'));
+        onSuccess: (result) => {
+          toast.success(
+            result?.status === 'queued' ? t('playlist.createQueued') : t('playlist.created'),
+          );
           onCreated();
         },
       },
@@ -163,6 +165,7 @@ export const AddToPlaylistDialog = React.memo(function AddToPlaylistDialog({
     if (!open || playlists.length === 0) return;
 
     let cancelled = false;
+    const inFlight = new Set<string>();
 
     const loadMembership = async () => {
       const pending: string[] = [];
@@ -185,6 +188,7 @@ export const AddToPlaylistDialog = React.memo(function AddToPlaylistDialog({
 
       if (pending.length === 0) return;
 
+      for (const urn of pending) inFlight.add(urn);
       setLoadingPlaylistUrns((prev) => {
         const next = { ...prev };
         for (const urn of pending) next[urn] = true;
@@ -203,9 +207,9 @@ export const AddToPlaylistDialog = React.memo(function AddToPlaylistDialog({
               [playlistUrn]: res.collection.map((t) => t.urn),
             }));
           } catch {
-            if (cancelled) return;
-            setPlaylistTrackMap((prev) => ({ ...prev, [playlistUrn]: [] }));
+            if (!cancelled) requestedPlaylistUrnsRef.current.delete(playlistUrn);
           } finally {
+            inFlight.delete(playlistUrn);
             if (!cancelled) setLoadingPlaylistUrns((prev) => ({...prev, [playlistUrn]: false}));
           }
         }),
@@ -216,6 +220,13 @@ export const AddToPlaylistDialog = React.memo(function AddToPlaylistDialog({
 
     return () => {
       cancelled = true;
+      if (inFlight.size === 0) return;
+      for (const urn of inFlight) requestedPlaylistUrnsRef.current.delete(urn);
+      setLoadingPlaylistUrns((prev) => {
+        const next = { ...prev };
+        for (const urn of inFlight) next[urn] = false;
+        return next;
+      });
     };
   }, [open, playlists]);
 

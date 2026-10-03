@@ -19,6 +19,7 @@ import {
 } from './collection-sync';
 import {initLikedUrns} from './likes';
 import {rememberLikedTracks, rememberTracks} from './offline-index';
+import {editPlaylistTracks, toastPlaylistEditError} from './playlist-edits';
 import {fetchRelatedTracks} from './related';
 
 /* ── Types ─────────────────────────────────────────────────────── */
@@ -148,6 +149,7 @@ const COLD_CACHE_MS = Number.POSITIVE_INFINITY;
 const PARTIAL_REFETCH_MS = 30_000;
 const PARTIAL_REFETCH_LIMIT = 20;
 const REFRESH_PENDING_RETRIES = 8;
+const QUEUED_CREATE_REFRESH_MS = [3_000, 10_000, 30_000];
 
 export const retryWhileRefreshing = {
   retry: (failureCount: number, error: unknown) =>
@@ -688,11 +690,8 @@ export function useMyPlaylists(limit = 30) {
 export function useUpdatePlaylistTracks(playlistUrn: string | undefined) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (trackUrns: string[]) =>
-      api(`/playlists/${encodeURIComponent(playlistUrn!)}/tracks`, {
-        method: 'POST',
-        body: JSON.stringify({ order: trackUrns }),
-      }),
+    mutationFn: (trackUrns: string[]) => editPlaylistTracks(playlistUrn!, { order: trackUrns }),
+    onError: toastPlaylistEditError,
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['playlist', playlistUrn] });
       qc.invalidateQueries({ queryKey: ['playlist', playlistUrn, 'tracks'] });
@@ -716,13 +715,11 @@ export function useAddToPlaylist() {
     }) => {
       let last: unknown;
       for (const urn of trackUrns) {
-        last = await api(`/playlists/${encodeURIComponent(playlistUrn)}/tracks`, {
-          method: 'POST',
-          body: JSON.stringify({ add: urn }),
-        });
+        last = await editPlaylistTracks(playlistUrn, { add: urn });
       }
       return last;
     },
+    onError: toastPlaylistEditError,
     onSuccess: (_data, vars) => {
       qc.invalidateQueries({ queryKey: ['playlist', vars.playlistUrn] });
       qc.invalidateQueries({ queryKey: ['playlist', vars.playlistUrn, 'tracks'] });
@@ -735,7 +732,7 @@ export function useCreatePlaylist() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (params: { title: string; sharing?: 'public' | 'private'; trackUrns?: string[] }) =>
-      api<Playlist>('/playlists', {
+      api<{ status?: string }>('/playlists', {
         method: 'POST',
         body: JSON.stringify({
           playlist: {
@@ -747,8 +744,11 @@ export function useCreatePlaylist() {
           },
         }),
       }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['me', 'playlists'] });
+    onSuccess: (result) => {
+      const refresh = () => qc.invalidateQueries({ queryKey: ['me', 'playlists'] });
+      void refresh();
+      if (result?.status !== 'queued') return;
+      for (const delay of QUEUED_CREATE_REFRESH_MS) setTimeout(refresh, delay);
     },
   });
 }
