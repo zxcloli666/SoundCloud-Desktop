@@ -30,8 +30,6 @@ import {useAuthStore} from '../stores/auth';
 import {type Track, usePlayerStore} from '../stores/player';
 import {useSettingsStore} from '../stores/settings';
 
-const UNREADABLE_SYNC_STATUSES = ['auth_required', 'conflict'];
-
 function HeroSkeleton() {
   return (
     <div className="relative rounded-[2.5rem] overflow-hidden glass-featured p-6 md:p-10">
@@ -230,7 +228,8 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
   const declaredCount = playlist?.track_count ?? 0;
   const missingTracks = !hasNextPage && tracks.length < declaredCount;
   const tracksSyncStatus = tracksSync?.status ?? '';
-  const awaitingCatalog = tracksSync?.conflictCode === 'catalog_incomplete';
+  const tracksUnreadable =
+    tracksSyncStatus === 'auth_required' || tracksSync?.conflictCode === 'remote_not_found';
   const listNotice = useMemo(() => {
     const retry = () => void refetchTracks();
     const notice = syncNoticeOf({
@@ -239,10 +238,10 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
     });
     if (notice) return <SyncNotice kind={notice} onRetry={retry} />;
     if (!missingTracks) return null;
-    if (!awaitingCatalog && UNREADABLE_SYNC_STATUSES.includes(tracksSyncStatus)) {
+    if (tracksUnreadable) {
       return <SyncNotice kind="failed" text={t('playlist.tracksUnavailable')} onRetry={retry} />;
     }
-    if (tracksSyncStatus !== 'clean' && !awaitingCatalog) return null;
+    if (tracksSyncStatus !== 'clean' && tracksSyncStatus !== 'conflict') return null;
     return (
       <p className="text-center text-[13px] text-white/30">
         {t('playlist.partialTracks', {
@@ -256,7 +255,7 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
     tracksFailed,
     tracksSyncState,
     tracksSyncStatus,
-    awaitingCatalog,
+    tracksUnreadable,
     missingTracks,
     tracks.length,
     declaredCount,
