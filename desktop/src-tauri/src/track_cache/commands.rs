@@ -188,18 +188,21 @@ pub async fn track_preload(
 }
 
 #[tauri::command]
-pub fn track_cache_size(state: State<'_, TrackCacheState>) -> u64 {
-    state.cache_size()
+pub async fn track_cache_size(state: State<'_, TrackCacheState>) -> Result<u64, String> {
+    let state = state.inner().clone();
+    run_blocking(move || state.cache_size()).await
 }
 
 #[tauri::command]
-pub fn track_liked_cache_size(state: State<'_, TrackCacheState>) -> u64 {
-    state.liked_cache_size()
+pub async fn track_liked_cache_size(state: State<'_, TrackCacheState>) -> Result<u64, String> {
+    let state = state.inner().clone();
+    run_blocking(move || state.liked_cache_size()).await
 }
 
 #[tauri::command]
-pub fn track_clear_cache(state: State<'_, TrackCacheState>) {
-    state.clear_cache();
+pub async fn track_clear_cache(state: State<'_, TrackCacheState>) -> Result<(), String> {
+    let state = state.inner().clone();
+    run_blocking(move || state.clear_cache()).await
 }
 
 #[tauri::command]
@@ -208,23 +211,32 @@ pub fn track_remove_cached(urn: String, state: State<'_, TrackCacheState>) -> bo
 }
 
 #[tauri::command]
-pub fn track_clear_liked_cache(state: State<'_, TrackCacheState>) {
-    state.clear_liked_cache();
+pub async fn track_clear_liked_cache(state: State<'_, TrackCacheState>) -> Result<(), String> {
+    let state = state.inner().clone();
+    run_blocking(move || state.clear_liked_cache()).await
 }
 
 #[tauri::command]
-pub fn track_list_cached(state: State<'_, TrackCacheState>) -> Vec<String> {
-    state.list_cached_urns()
+pub async fn track_list_cached(state: State<'_, TrackCacheState>) -> Result<Vec<String>, String> {
+    let state = state.inner().clone();
+    run_blocking(move || state.list_cached_urns()).await
 }
 
 #[tauri::command]
-pub fn track_cache_inventory(state: State<'_, TrackCacheState>) -> Vec<CacheInventoryEntry> {
-    state.cache_inventory()
+pub async fn track_cache_inventory(
+    state: State<'_, TrackCacheState>,
+) -> Result<Vec<CacheInventoryEntry>, String> {
+    let state = state.inner().clone();
+    run_blocking(move || state.cache_inventory()).await
 }
 
 #[tauri::command]
-pub fn track_enforce_cache_limit(limit_mb: u64, state: State<'_, TrackCacheState>) {
-    state.enforce_limit(limit_mb);
+pub async fn track_enforce_cache_limit(
+    limit_mb: u64,
+    state: State<'_, TrackCacheState>,
+) -> Result<(), String> {
+    let state = state.inner().clone();
+    run_blocking(move || state.enforce_limit(limit_mb)).await
 }
 
 #[tauri::command]
@@ -249,4 +261,12 @@ pub fn track_cache_likes_running(state: State<'_, TrackCacheState>) -> bool {
 #[tauri::command]
 pub fn track_cancel_cache_likes(state: State<'_, TrackCacheState>) {
     state.cancel_cache_likes();
+}
+
+async fn run_blocking<T: Send + 'static>(
+    work: impl FnOnce() -> T + Send + 'static,
+) -> Result<T, String> {
+    tokio::task::spawn_blocking(work)
+        .await
+        .map_err(|e| e.to_string())
 }

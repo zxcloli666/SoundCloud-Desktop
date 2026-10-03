@@ -134,16 +134,20 @@ pub fn audio_set_media_position(position: f64, state: State<'_, AudioState>) {
 }
 
 #[tauri::command]
-pub fn audio_list_devices() -> Vec<AudioSink> {
-    device::list_devices()
+pub async fn audio_list_devices() -> Result<Vec<AudioSink>, String> {
+    tokio::task::spawn_blocking(device::list_devices)
+        .await
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-pub fn audio_switch_device(
+pub async fn audio_switch_device(
     device_name: Option<String>,
-    state: State<'_, AudioState>,
+    app: AppHandle,
 ) -> Result<(), String> {
-    device::switch_device(state, device_name)
+    tokio::task::spawn_blocking(move || device::switch_device(app.state(), device_name))
+        .await
+        .map_err(|e| e.to_string())?
 }
 
 #[tauri::command]
