@@ -76,14 +76,22 @@ function emitNp() {
 // Coalesce bursty change sources (volume drag, query-cache churn) to one emit per frame.
 let npScheduled = false;
 
+function flushNp() {
+    if (!npScheduled) return;
+    npScheduled = false;
+    emitNp();
+}
+
 function pushNp() {
     if (npScheduled) return;
     npScheduled = true;
-    requestAnimationFrame(() => {
-        npScheduled = false;
-        emitNp();
-    });
+    if (document.hidden) queueMicrotask(flushNp);
+    else requestAnimationFrame(flushNp);
 }
+
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden) flushNp();
+});
 
 async function toggleLikeCurrent() {
     const tr = usePlayerStore.getState().currentTrack;
