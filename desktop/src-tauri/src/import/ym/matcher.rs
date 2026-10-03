@@ -6,7 +6,7 @@ use wreq::StatusCode;
 
 use super::yandex::YmTrack;
 
-const REQUEST_TIMEOUT: Duration = Duration::from_secs(20);
+const REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
 const MAX_RETRIES: u32 = 3;
 const DEFAULT_RETRY_AFTER_SECS: u64 = 5;
 const MAX_RETRY_AFTER_SECS: u64 = 120;
