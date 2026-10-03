@@ -91,7 +91,12 @@ function Scrubber({duration}: { duration: number }) {
     };
 
     return (
-        <div ref={trackRef} className="tp-scrub group" onPointerDown={onPointerDown}>
+        <div
+            ref={trackRef}
+            className="tp-scrub group"
+            data-tauri-drag-region="false"
+            onPointerDown={onPointerDown}
+        >
             <div className="tp-scrub-track">
                 <div ref={fillRef} className="tp-scrub-fill"/>
             </div>
@@ -151,7 +156,12 @@ function VolumeControl({volume}: { volume: number }) {
             >
                 <Icon size={15}/>
             </button>
-            <div ref={trackRef} className="tp-vol-track group" onPointerDown={onPointerDown}>
+            <div
+                ref={trackRef}
+                className="tp-vol-track group"
+                data-tauri-drag-region="false"
+                onPointerDown={onPointerDown}
+            >
                 <div className="tp-vol-fill" style={{width: `${pct}%`}}/>
             </div>
         </div>
@@ -169,7 +179,7 @@ export function MiniPlayer() {
     const RepeatIcon = np.repeat === 'one' ? Repeat1 : Repeat;
 
     return (
-        <div className="tp" data-playing={playing ? 'true' : 'false'}>
+        <div className="tp" data-playing={playing ? 'true' : 'false'} data-tauri-drag-region="deep">
             <div className="tp-dock" key={pulse}>
                 {bloom && np.artworkLarge && (
                     <div
