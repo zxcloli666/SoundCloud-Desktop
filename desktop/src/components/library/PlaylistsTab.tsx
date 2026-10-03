@@ -3,6 +3,7 @@ import {useTranslation} from 'react-i18next';
 import {useInfiniteScroll, useMyLikedPlaylists, useMyPlaylists} from '../../lib/hooks';
 import {Loader2} from '../../lib/icons';
 import {PlaylistCard} from '../music/PlaylistCard';
+import {SyncNotice, syncNoticeOf} from '../ui/SyncNotice';
 import {VirtualGrid} from '../ui/VirtualGrid';
 
 export const PlaylistsTab = React.memo(function PlaylistsTab({filter}: { filter: string }) {
@@ -38,6 +39,12 @@ export const PlaylistsTab = React.memo(function PlaylistsTab({filter}: { filter:
             fetchNextPage();
         }
     }, [filter, hasNextPage, isFetchingNextPage]);
+
+    const notice = syncNoticeOf(myPlaylistsQuery) ?? syncNoticeOf(likedPlaylistsQuery);
+    const retry = () => {
+        void myPlaylistsQuery.refetch();
+        void likedPlaylistsQuery.refetch();
+    };
 
     return (
         <div className="min-h-[400px]">
@@ -89,11 +96,16 @@ export const PlaylistsTab = React.memo(function PlaylistsTab({filter}: { filter:
                 {!myPlaylistsQuery.isLoading &&
                     !likedPlaylistsQuery.isLoading &&
                     filteredCreated.length === 0 &&
-                    filteredLiked.length === 0 && (
+                    filteredLiked.length === 0 &&
+                    (!filter && notice ? (
+                        <div className="py-20">
+                            <SyncNotice kind={notice} onRetry={retry}/>
+                        </div>
+                    ) : (
                         <div className="py-20 text-center text-white/20">
                             {filter ? t('library.noMatches') : t('library.noPlaylists')}
                         </div>
-                    )}
+                    ))}
             </div>
             {!filter && (
                 <div ref={sentinelRef} className="h-12 flex items-center justify-center mt-4">

@@ -9,6 +9,7 @@ import {
   useQueryClient,
 } from '@tanstack/react-query';
 import {useEffect, useMemo, useRef} from 'react';
+import {useAuthStore} from '../stores/auth';
 import type {Track} from '../stores/player';
 import {ApiError, api, isRefreshPending} from './api';
 import {
@@ -236,7 +237,7 @@ function usePagedQuery<T>(opts: PagedQueryOptions<T>): PagedQueryResult<T> {
     // reconnect не должен перетягивать весь infinite-query: для SC cursor-лент
     // это перепроходит сдвинувшийся курсор и тасует выдачу. Focus-рефетч уже
     // выключен глобально в query-client.
-    refetchOnMount: false,
+    refetchOnMount: (query) => query.state.isInvalidated,
     refetchOnReconnect: false,
   });
 
@@ -337,10 +338,11 @@ export function useLikedTracks(limit = 30) {
     if (tracks.length > 0) initLikedUrns(tracks);
   }, [tracks]);
 
+  const complete = !query.hasNextPage && query.syncState === 'complete';
   useEffect(() => {
     if (!query.data) return;
-    void rememberLikedTracks(tracks);
-  }, [query.data, tracks]);
+    void (complete ? rememberLikedTracks(tracks) : rememberTracks(tracks));
+  }, [query.data, tracks, complete]);
 
   return { tracks, ...query };
 }
@@ -350,11 +352,14 @@ export function useLikedTracks(limit = 30) {
  * Optional onPage callback fires per page during the fetch.
  */
 let _allLikesPromise: Promise<Track[]> | null = null;
+let _allLikesOwner: string | undefined;
 
 export function fetchAllLikedTracks(
   pageSize = 200,
   onPage?: (tracks: Track[]) => void,
 ): Promise<Track[]> {
+  const owner = useAuthStore.getState().user?.urn;
+  if (_allLikesOwner !== owner) _allLikesPromise = null;
   if (_allLikesPromise && !onPage) return _allLikesPromise;
 
   let partial = false;
@@ -368,12 +373,13 @@ export function fetchAllLikedTracks(
       onPage?.(data.collection);
       if (!data.has_more) break;
     }
-    void rememberLikedTracks(all);
+    if (!partial) void rememberLikedTracks(all);
     return all;
   })();
 
   if (!onPage) {
     _allLikesPromise = promise;
+    _allLikesOwner = owner;
     promise.then(
       () => {
         if (partial && _allLikesPromise === promise) _allLikesPromise = null;
