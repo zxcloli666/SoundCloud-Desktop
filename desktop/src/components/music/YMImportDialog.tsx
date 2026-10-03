@@ -147,6 +147,7 @@ function YMImportDialog({
                   <li>{t('ym.step2')}</li>
                   <li>{t('ym.step3')}</li>
                 </ol>
+                <p className="text-[12px] text-white/30">{t('ym.limitHint')}</p>
               </div>
 
               {/* Token input */}
@@ -192,7 +193,15 @@ function YMImportDialog({
                 <span className="text-red-400">
                   {t('ym.notFound')}: {progress.not_found}
                 </span>
+                {progress.errors > 0 && (
+                  <span className="text-amber-400">
+                    {t('ym.errors')}: {progress.errors}
+                  </span>
+                )}
               </div>
+              {phase === 'done' && progress.total > 0 && progress.found === 0 && (
+                <p className="text-[12px] text-amber-300/80">{t('ym.nothingFound')}</p>
+              )}
               {progress.current_track && (
                 <p className="text-[12px] text-white/30 truncate">{progress.current_track}</p>
               )}

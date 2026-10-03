@@ -13,6 +13,7 @@ export interface YmImportProgress {
   current: number;
   found: number;
   not_found: number;
+  errors: number;
   current_track: string;
 }
 

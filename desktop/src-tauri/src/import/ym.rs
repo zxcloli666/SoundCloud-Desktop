@@ -1,7 +1,15 @@
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
+use std::time::Duration;
+use crate::app::diagnostics::log_native;
 use crate::rt::AppHandle;
 use tauri::Emitter;
+
+use super::ym_search;
+
+const YM_TRACKS_ATTEMPTS: u64 = 3;
+const MAX_SEARCH_ERRORS_IN_ROW: usize = 15;
+const SEARCH_ERROR_PAUSE: Duration = Duration::from_secs(1);
 
 static CANCEL_FLAG: std::sync::LazyLock<Arc<AtomicBool>> =
     std::sync::LazyLock::new(|| Arc::new(AtomicBool::new(false)));
@@ -12,6 +20,7 @@ pub struct YmImportProgress {
     pub current: usize,
     pub found: usize,
     pub not_found: usize,
+    pub errors: usize,
     pub current_track: String,
 }
 
@@ -56,22 +65,13 @@ struct YmArtist {
     name: Option<String>,
 }
 
-#[derive(serde::Deserialize)]
-struct ScSearchResult {
-    collection: Vec<ScTrackResult>,
-}
-
-#[derive(serde::Deserialize)]
-struct ScTrackResult {
-    urn: Option<String>,
-}
-
 fn emit_progress(
     app: &AppHandle,
     total: usize,
     current: usize,
     found: usize,
     not_found: usize,
+    errors: usize,
     current_track: String,
 ) {
     app.emit(
@@ -81,10 +81,50 @@ fn emit_progress(
             current,
             found,
             not_found,
+            errors,
             current_track,
         },
     )
     .ok();
+}
+
+async fn fetch_ym_tracks(
+    client: &wreq::Client,
+    ym_token: &str,
+    ids: &str,
+) -> Result<Vec<YmTrack>, String> {
+    let mut last_error = String::new();
+
+    for attempt in 0..YM_TRACKS_ATTEMPTS {
+        if attempt > 0 {
+            tokio::time::sleep(Duration::from_millis(500 * attempt)).await;
+        }
+
+        let resp = match client
+            .get(format!("https://api.music.yandex.net/tracks?trackIds={ids}"))
+            .header("Authorization", format!("OAuth {ym_token}"))
+            .send()
+            .await
+        {
+            Ok(resp) => resp,
+            Err(e) => {
+                last_error = e.to_string();
+                continue;
+            }
+        };
+
+        if !resp.status().is_success() {
+            last_error = format!("HTTP {}", resp.status());
+            continue;
+        }
+
+        match resp.json::<YmTrackInfo>().await {
+            Ok(info) => return Ok(info.result),
+            Err(e) => last_error = e.to_string(),
+        }
+    }
+
+    Err(last_error)
 }
 
 #[tauri::command]
@@ -124,6 +164,13 @@ pub async fn ym_import_start(
         .await
         .map_err(|e| format!("Failed to fetch YM likes: {}", e))?;
 
+    if !likes_resp.status().is_success() {
+        return Err(format!(
+            "Failed to fetch YM likes: HTTP {}",
+            likes_resp.status()
+        ));
+    }
+
     let likes: YmLikesResponse = likes_resp.json().await.map_err(|e| e.to_string())?;
     let track_ids: Vec<String> = likes
         .result
@@ -140,6 +187,8 @@ pub async fn ym_import_start(
     let total = track_ids.len();
     let mut found = 0usize;
     let mut not_found = 0usize;
+    let mut errors = 0usize;
+    let mut search_errors_in_row = 0usize;
     let mut processed = 0usize;
 
     'batches: for chunk in track_ids.chunks(50) {
@@ -147,37 +196,15 @@ pub async fn ym_import_start(
             break;
         }
 
-        let ids_param = chunk.join(",");
-        let info_resp = client
-            .get(format!(
-                "https://api.music.yandex.net/tracks?trackIds={}",
-                ids_param
-            ))
-            .header("Authorization", format!("OAuth {}", ym_token))
-            .send()
-            .await;
-
-        let tracks: Vec<YmTrack> = match info_resp {
-            Ok(r) => match r.json::<YmTrackInfo>().await {
-                Ok(info) => info.result,
-                Err(_) => {
-                    let remaining = total.saturating_sub(processed);
-                    let missed = chunk.len().min(remaining);
-                    for _ in 0..missed {
-                        processed += 1;
-                        not_found += 1;
-                        emit_progress(&app, total, processed, found, not_found, String::new());
-                    }
-                    continue;
-                }
-            },
-            Err(_) => {
+        let tracks = match fetch_ym_tracks(&client, &ym_token, &chunk.join(",")).await {
+            Ok(tracks) => tracks,
+            Err(reason) => {
+                log_native(&app, "WARN", format!("[YM Import] tracks request failed: {reason}"));
                 let remaining = total.saturating_sub(processed);
-                let missed = chunk.len().min(remaining);
-                for _ in 0..missed {
+                for _ in 0..chunk.len().min(remaining) {
                     processed += 1;
-                    not_found += 1;
-                    emit_progress(&app, total, processed, found, not_found, String::new());
+                    errors += 1;
+                    emit_progress(&app, total, processed, found, not_found, errors, String::new());
                 }
                 continue;
             }
@@ -199,44 +226,42 @@ pub async fn ym_import_start(
 
             if title.is_empty() && artist.is_empty() {
                 not_found += 1;
-                emit_progress(&app, total, processed, found, not_found, String::new());
+                emit_progress(&app, total, processed, found, not_found, errors, String::new());
                 continue;
             }
 
             let current_track = format!("{} - {}", artist, title);
 
-            let query = format!("{} {}", artist, title);
-            let search_url = format!(
-                "{}/tracks?q={}&limit=3&linked_partitioning=true",
-                backend_url,
-                urlencoding::encode(&query)
-            );
-
-            let search_resp = client
-                .get(&search_url)
-                .header("x-session-id", &session_id)
-                .send()
-                .await;
-
-            if let Ok(resp) = search_resp {
-                match resp.json::<ScSearchResult>().await { Ok(results) => {
-                    if let Some(urn) = results.collection.first().and_then(|t| t.urn.as_deref()) {
-                        found += 1;
-                        app.emit(
-                            "ym_import:match",
-                            YmImportMatch {
-                                urn: urn.to_string(),
-                            },
-                        )
-                        .ok();
-                    } else {
-                        not_found += 1;
-                    }
-                } _ => {
+            match ym_search::find_track(&client, &backend_url, &session_id, artist, title).await {
+                Ok(Some(urn)) => {
+                    search_errors_in_row = 0;
+                    found += 1;
+                    app.emit("ym_import:match", YmImportMatch { urn }).ok();
+                }
+                Ok(None) => {
+                    search_errors_in_row = 0;
                     not_found += 1;
-                }}
-            } else {
-                not_found += 1;
+                }
+                Err(reason) => {
+                    errors += 1;
+                    search_errors_in_row += 1;
+                    if search_errors_in_row == 1 {
+                        log_native(&app, "WARN", format!("[YM Import] search failed: {reason}"));
+                    }
+                    if search_errors_in_row >= MAX_SEARCH_ERRORS_IN_ROW {
+                        emit_progress(
+                            &app,
+                            total,
+                            processed,
+                            found,
+                            not_found,
+                            errors,
+                            current_track,
+                        );
+                        return Err(format!("SoundCloud search unavailable: {reason}"));
+                    }
+                    tokio::time::sleep(SEARCH_ERROR_PAUSE).await;
+                }
             }
 
             emit_progress(
@@ -245,10 +270,11 @@ pub async fn ym_import_start(
                 processed,
                 found,
                 not_found,
+                errors,
                 current_track.clone(),
             );
 
-            tokio::time::sleep(std::time::Duration::from_millis(150)).await;
+            tokio::time::sleep(Duration::from_millis(150)).await;
         }
 
         if tracks.len() < chunk.len() {
@@ -257,12 +283,12 @@ pub async fn ym_import_start(
             for _ in 0..missed.min(remaining) {
                 processed += 1;
                 not_found += 1;
-                emit_progress(&app, total, processed, found, not_found, String::new());
+                emit_progress(&app, total, processed, found, not_found, errors, String::new());
             }
         }
     }
 
-    emit_progress(&app, total, processed, found, not_found, String::new());
+    emit_progress(&app, total, processed, found, not_found, errors, String::new());
 
     Ok(())
 }
