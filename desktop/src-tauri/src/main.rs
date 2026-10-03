@@ -3,6 +3,14 @@
 
 #[cfg(target_os = "linux")]
 fn apply_linux_gpu_workarounds() {
+    if std::env::args().any(|arg| arg == "--safe-render") {
+        unsafe {
+            std::env::set_var("WEBKIT_DISABLE_DMABUF_RENDERER", "1");
+            std::env::set_var("WEBKIT_DISABLE_COMPOSITING_MODE", "1");
+        }
+        return;
+    }
+
     let is_wayland = std::env::var("WAYLAND_DISPLAY").is_ok()
         || std::env::var("XDG_SESSION_TYPE")
             .map(|v| v == "wayland")
