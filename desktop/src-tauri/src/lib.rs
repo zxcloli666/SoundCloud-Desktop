@@ -116,6 +116,7 @@ pub fn run() {
                 proxy_port,
             }));
             app::diagnostics::mark_session_started(app.handle());
+            app::diagnostics::log_linux_render_env(app.handle());
             app::diagnostics::start_linux_fd_monitor(app.handle());
             network::health::start(data_dir.clone(), app.handle().clone(), rt_handle.clone());
             app.manage(Arc::new(DiscordState {
