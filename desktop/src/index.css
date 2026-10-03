@@ -1102,6 +1102,19 @@ select,
     }
 }
 
+.npb-vol {
+    position: relative;
+}
+
+.npb-vol-pop {
+    display: none;
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    padding-bottom: 12px;
+    transform: translateX(-50%);
+}
+
 .npb-txt {
     display: flex;
     flex-direction: column;
@@ -1297,6 +1310,10 @@ select,
 @media (max-width: 1040px) {
     .npb .npb-vol-slider {
         display: none;
+    }
+
+    .npb-vol:hover .npb-vol-pop {
+        display: block;
     }
 
     .npb-txt {

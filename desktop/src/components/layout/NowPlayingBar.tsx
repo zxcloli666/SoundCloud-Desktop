@@ -32,9 +32,6 @@ import {
     skipForward20,
     slidersHorizontal16,
     ThumbsDown,
-    volume1Icon16,
-    volume2Icon16,
-    volumeXIcon16,
 } from '../../lib/icons';
 import {optimisticToggleLike} from '../../lib/likes';
 import {usePerfMode} from '../../lib/perf';
@@ -56,6 +53,7 @@ import {useSettingsStore} from '../../stores/settings';
 import {ArtistNameLinks} from '../music/ArtistNameLinks';
 import {EqualizerPanel} from '../music/EqualizerPanel';
 import {UploadKindDot} from '../music/UploadKindDot';
+import {VolumeFlyout, VolumeLabel, VolumeSlider} from './VolumeControls';
 
 /* ── Track loading progress (SC → SCD download) ──────────────── */
 
@@ -315,93 +313,6 @@ export const ProgressSlider = React.memo(() => {
       />
       <AbLoopOverlay duration={duration} />
     </Slider.Root>
-  );
-});
-
-/* ── Volume Slider ───────────────────────────────────────────── */
-
-export const VolumeSlider = React.memo(({ className = '' }: { className?: string }) => {
-  const { volume, setVolume } = usePlayerStore(
-    useShallow((s) => ({ volume: s.volume, setVolume: s.setVolume })),
-  );
-  const isOver100 = volume > 100;
-
-  return (
-    <div className={`relative ${className}`}>
-      <Slider.Root
-        className="relative flex items-center h-5 w-full cursor-pointer group select-none touch-none"
-        value={[volume]}
-        max={200}
-        step={1}
-        onValueChange={([v]) => setVolume(v)}
-        onKeyDown={(e) => {
-          // Prevent slider from handling arrows itself, otherwise it stacks with global hotkeys.
-          if (
-            e.key === 'ArrowLeft' ||
-            e.key === 'ArrowRight' ||
-            e.key === 'ArrowUp' ||
-            e.key === 'ArrowDown'
-          ) {
-            e.preventDefault();
-          }
-        }}
-        onWheel={(e) => {
-          e.preventDefault();
-          setVolume(Math.max(0, Math.min(200, volume + (e.deltaY < 0 ? 1 : -1))));
-        }}
-      >
-        <Slider.Track className="relative h-[3px] grow rounded-full bg-white/[0.08] group-hover:h-[4px] transition-all duration-150">
-          <Slider.Range
-            className={`absolute h-full rounded-full ${isOver100 ? 'bg-amber-400/80' : 'bg-white/60'}`}
-          />
-        </Slider.Track>
-        <Slider.Thumb
-          className={`block w-2.5 h-2.5 rounded-full transition-all duration-150 outline-none scale-0 opacity-0 group-hover:scale-100 group-hover:opacity-100 ${isOver100 ? 'bg-amber-400' : 'bg-white'}`}
-        />
-      </Slider.Root>
-      {/* 100% tick mark (visual only, outside Slider tree) */}
-      <div
-        className="absolute top-1/2 -translate-y-1/2 h-[3px] w-px bg-white/20 pointer-events-none"
-        style={{ left: '50%' }}
-      />
-    </div>
-  );
-});
-
-/* ── Volume button ───────────────────────────────────────────── */
-
-export const ControlVolumeBtn = React.memo(({ size = 'default' }: { size?: 'default' | 'sm' }) => {
-  const { volume, volumeBeforeMute, setVolume } = usePlayerStore(
-    useShallow((s) => ({
-      volume: s.volume,
-      volumeBeforeMute: s.volumeBeforeMute,
-      setVolume: s.setVolume,
-    })),
-  );
-  const s = size === 'sm' ? 'w-9 h-9' : 'w-10 h-10';
-  return (
-    <button
-      type="button"
-      onClick={() => setVolume(volume > 0 ? 0 : volumeBeforeMute)}
-      className={`${s} rounded-full flex items-center justify-center transition-all duration-150 ease-[var(--ease-apple)] cursor-pointer hover:bg-white/[0.04] ${
-        volume === 0 ? 'text-accent' : 'text-white/40 hover:text-white/70'
-      }`}
-    >
-      {volume === 0 ? volumeXIcon16 : volume < 50 ? volume1Icon16 : volume2Icon16}
-    </button>
-  );
-});
-
-/* ── Volume % label ──────────────────────────────────────────── */
-
-export const VolumeLabel = React.memo(() => {
-  const volume = usePlayerStore((s) => s.volume);
-  return (
-    <span
-      className={`text-[10px] tabular-nums w-[34px] text-right shrink-0 ${volume > 100 ? 'text-amber-400/70' : 'text-white/30'}`}
-    >
-      {volume}%
-    </span>
   );
 });
 
@@ -1109,7 +1020,7 @@ export const NowPlayingBar = React.memo(
                 <EqBtn />
                 <LyricsBtn />
                 <QueueBtn onClick={onQueueToggle} active={queueOpen} />
-                <ControlVolumeBtn size="sm" />
+                <VolumeFlyout />
                 <div className="npb-vol-slider flex items-center gap-2 pl-1">
                   <VolumeSlider className="w-[72px]" />
                   <VolumeLabel />
