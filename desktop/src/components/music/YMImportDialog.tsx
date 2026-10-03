@@ -123,6 +123,7 @@ function YMImportDialog({
                       : ''}
                   </p>
                   <p className="text-[11px] mt-1 text-green-400/80">{playlistStatus}</p>
+                  {pending && <p className="text-[11px] text-white/50 mt-0.5">{t('ym.pending')}</p>}
                 </div>
                 <button
                   onClick={handleGoToPlaylist}

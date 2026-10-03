@@ -6,6 +6,8 @@ import { ApiError, api, getSessionId } from '../lib/api';
 import { API_BASE } from '../lib/constants';
 import { trackedInvoke as invoke } from '../lib/diagnostics';
 import { queryClient } from '../lib/query-client';
+import { loadPendingCreates, rememberPendingCreate } from '../lib/ym-pending-playlists';
+import { useAuthStore } from './auth';
 
 const PLAYLIST_NAME = 'Yandex Music';
 const PLAYLIST_TRACK_LIMIT = 500;
@@ -162,11 +164,10 @@ async function replacePlaylistTracks(playlistUrn: string, urns: string[]) {
 }
 
 async function saveChunk(
-  index: number,
+  title: string,
   urns: string[],
   existing: ScPlaylist[],
-): Promise<ScPlaylist | null> {
-  const title = getPlaylistName(index);
+): Promise<ScPlaylist | QueuedPlaylistMutation> {
   const existingPlaylist = existing.find((playlist) => playlist.title === title);
 
   if (existingPlaylist) {
@@ -174,7 +175,7 @@ async function saveChunk(
     return existingPlaylist;
   }
 
-  const result = await api<ScPlaylist | QueuedPlaylistMutation>('/playlists', {
+  return api<ScPlaylist | QueuedPlaylistMutation>('/playlists', {
     method: 'POST',
     body: JSON.stringify({
       playlist: {
@@ -184,8 +185,6 @@ async function saveChunk(
       },
     }),
   });
-
-  return isScPlaylist(result) ? result : null;
 }
 
 async function deleteStalePlaylists(existing: ScPlaylist[], targetCount: number) {
@@ -209,6 +208,11 @@ async function savePlaylists(runId: number, deleteStale: boolean) {
   useYmImportStore.setState({ saving: true, error: null });
 
   const existing = await findExistingPlaylists();
+  const owner = useAuthStore.getState().user?.urn ?? '';
+  const pendingTitles = await loadPendingCreates(
+    owner,
+    existing.map((playlist) => playlist.title),
+  );
   if (!currentRunIsActive(runId)) return;
 
   const chunks = chunkArray([...matchedUrns].reverse(), PLAYLIST_TRACK_LIMIT);
@@ -217,15 +221,21 @@ async function savePlaylists(runId: number, deleteStale: boolean) {
   let failure: unknown = null;
 
   for (const [index, urns] of chunks.entries()) {
+    const title = getPlaylistName(index);
+    if (pendingTitles.has(title)) {
+      queued++;
+      continue;
+    }
     try {
-      const playlist = await saveChunk(index, urns, existing);
-      if (playlist) {
-        saved.push(playlist);
+      const result = await saveChunk(title, urns, existing);
+      if (isScPlaylist(result)) {
+        saved.push(result);
       } else {
         queued++;
+        await rememberPendingCreate(owner, title, result.targetUrn);
       }
     } catch (error) {
-      console.error(`[YM Import] saving "${getPlaylistName(index)}" failed:`, error);
+      console.error(`[YM Import] saving "${title}" failed:`, error);
       failure ??= error;
     }
     if (!currentRunIsActive(runId)) return;
