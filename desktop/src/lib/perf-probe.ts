@@ -3,6 +3,7 @@ import i18n from '../i18n';
 import { useSettingsStore } from '../stores/settings';
 
 const PROBE_DELAY_MS = 5000;
+const RESAMPLE_DELAY_MS = 5000;
 const PROBE_DURATION_MS = 3000;
 const SLOW_FRAME_MS = 40;
 const SOFTWARE_RENDERER = /swiftshader|basic render|llvmpipe|softpipe/i;
@@ -35,6 +36,20 @@ function medianFrameMs(): Promise<number> {
   });
 }
 
+function canSample(): boolean {
+  return !document.hidden && document.hasFocus();
+}
+
+function wait(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function framesStaySlow(): Promise<boolean> {
+  if (!canSample() || (await medianFrameMs()) <= SLOW_FRAME_MS) return false;
+  await wait(RESAMPLE_DELAY_MS);
+  return canSample() && (await medianFrameMs()) > SLOW_FRAME_MS;
+}
+
 function stillOnDefault(): boolean {
   const { perfMode, perfModeUserSet } = useSettingsStore.getState();
   return perfMode === 'beauty' && !perfModeUserSet;
@@ -43,8 +58,7 @@ function stillOnDefault(): boolean {
 export function probePerfMode(): void {
   if (!stillOnDefault()) return;
   setTimeout(async () => {
-    if (document.hidden || !document.hasFocus()) return;
-    const weak = isSoftwareRendered() || (await medianFrameMs()) > SLOW_FRAME_MS;
+    const weak = isSoftwareRendered() || (await framesStaySlow());
     if (!weak || !stillOnDefault()) return;
     useSettingsStore.setState({ perfMode: 'light' });
     toast(i18n.t('settings.perfAutoLight'), {
