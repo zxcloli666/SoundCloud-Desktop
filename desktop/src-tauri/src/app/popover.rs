@@ -150,7 +150,7 @@ fn show(app: &AppHandle, cursor: Option<(f64, f64)>, pinned: bool) {
     // re-open (honored on Win/Mac; on Wayland/Hyprland the compositor owns stacking,
     // so pair this with a `pin` windowrule).
     let _ = win.set_always_on_top(true);
-    visibility::set_page_visible(app, LABEL, true);
+    visibility::set_page_visible(&win, true);
 
     #[cfg(not(feature = "cef"))]
     {
@@ -189,7 +189,7 @@ fn hide_if_visible(app: &AppHandle) -> bool {
     if let Some(win) = app.get_webview_window(LABEL)
         && win.is_visible().unwrap_or(false) {
             let _ = win.hide();
-            visibility::set_page_visible(app, LABEL, false);
+            visibility::set_page_visible(&win, false);
             app.state::<TrayState>().mark_hidden();
             return true;
         }
