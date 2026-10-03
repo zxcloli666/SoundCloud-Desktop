@@ -82,6 +82,13 @@
     display: none;
 }
 
+[data-perf="light"] *,
+[data-perf="light"] *::before,
+[data-perf="light"] *::after {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
 /* Global idle-animation gate — the WebView never throttles a hidden window, so
    pause every animation while minimized (all modes, zero visual change while shown). */
 [data-app-hidden="1"] *,

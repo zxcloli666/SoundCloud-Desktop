@@ -1,4 +1,5 @@
 import {useTranslation} from 'react-i18next';
+import {usePerfMode} from '../../lib/perf';
 import type {SettingsCategory, SettingsCategoryId} from './registry';
 
 /** Left rail — a sticky frosted panel of category pills, lit by the accent. */
@@ -12,15 +13,20 @@ export function SettingsNav({
     onChange: (id: SettingsCategoryId) => void;
 }) {
     const {t} = useTranslation();
+    const perf = usePerfMode();
+    const b = perf.blur(40);
     return (
         <nav className="w-[212px] shrink-0 hidden md:block">
             <div
                 className="sticky top-8 rounded-[1.75rem] p-2.5"
                 style={{
                     border: '0.5px solid rgba(255,255,255,0.07)',
-                    background: 'linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.012))',
-                    backdropFilter: 'blur(40px) saturate(1.3)',
-                    WebkitBackdropFilter: 'blur(40px) saturate(1.3)',
+                    background:
+                        b > 0
+                            ? 'linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.012))'
+                            : 'rgba(18,18,22,0.85)',
+                    backdropFilter: b > 0 ? `blur(${b}px) saturate(1.3)` : undefined,
+                    WebkitBackdropFilter: b > 0 ? `blur(${b}px) saturate(1.3)` : undefined,
                     boxShadow: '0 18px 50px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.05)',
                 }}
             >
