@@ -60,7 +60,6 @@ export function IdentityHub({
 }: IdentityHubProps) {
   const { t } = useTranslation();
     const perf = usePerfMode();
-    const cpB = perf.blur(20);
     const lb = perf.blur(16);
   const formattedDate = dateFormattedLong(user.created_at);
   const country = [user.city, user.country_code].filter(Boolean).join(', ');
@@ -142,19 +141,7 @@ export function IdentityHub({
 
           <div className="flex flex-wrap items-center gap-3 pt-1 justify-center lg:justify-start">
             {!isOwnProfile && <FollowBtn userUrn={user.urn} aura={aura} />}
-            {user.permalink_url && (
-              <div
-                className="h-11 px-1 inline-flex items-center rounded-full"
-                style={{
-                    background: cpB > 0 ? 'rgba(255,255,255,0.04)' : 'rgba(28,28,32,0.85)',
-                  border: '0.5px solid rgba(255,255,255,0.08)',
-                    backdropFilter: cpB > 0 ? `blur(${cpB}px)` : undefined,
-                    WebkitBackdropFilter: cpB > 0 ? `blur(${cpB}px)` : undefined,
-                }}
-              >
-                <CopyLinkButton url={user.permalink_url} />
-              </div>
-            )}
+            {user.permalink_url && <CopyLinkButton url={user.permalink_url} />}
             {hasStar && isOwnProfile && (
               <AuraPicker
                 aura={aura}
