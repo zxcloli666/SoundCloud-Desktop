@@ -2,6 +2,8 @@ import type { Track } from '../stores/player';
 import { useSettingsStore } from '../stores/settings';
 import { ApiError, getSessionId } from './api-client';
 import {
+  API_BASE,
+  API_STAR_BASE,
   STORAGE_BASE,
   STORAGE_PREMIUM_BASE,
   STREAMING_BASE,
@@ -26,6 +28,11 @@ export type ResolvedStreamingTrack = Partial<Track> & {
 
 function resolveStreamingBases(): string[] {
   return [...new Set([STREAMING_PREMIUM_BASE, STREAMING_BASE])];
+}
+
+function resolveTicketBases(): string[] {
+  const bases = getIsPremium() ? [API_STAR_BASE, API_BASE] : [API_BASE];
+  return [...new Set(bases)];
 }
 
 // ─── Streaming JSON ─────────────────────────────────────────
@@ -77,11 +84,8 @@ export function resolveTrackFromStreaming(url: string) {
 }
 
 function buildStreamUrl(base: string, trackUrn: string, hq: boolean) {
-  const params = new URLSearchParams();
-  if (hq) params.set('hq', 'true');
-  const sid = getSessionId();
-  if (sid) params.set('session_id', sid);
-  return `${base}/stream/${encodeURIComponent(trackUrn)}?${params.toString()}`;
+  const suffix = hq ? '?hq=true' : '';
+  return `${base}/tracks/${encodeURIComponent(trackUrn)}/stream${suffix}`;
 }
 
 /**
@@ -102,7 +106,7 @@ export function streamFallbackUrls(
   trackUrn: string,
   hq = useSettingsStore.getState().highQualityStreaming,
 ): string[] {
-  const bases = resolveStreamingBases();
+  const bases = resolveTicketBases();
   const urls: string[] = [];
   const seen = new Set<string>();
 

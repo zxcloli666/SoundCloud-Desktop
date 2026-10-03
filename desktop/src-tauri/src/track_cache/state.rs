@@ -905,7 +905,8 @@ async fn download_api(
     session_id: Option<&str>,
     app_handle: Option<&crate::rt::AppHandle>,
 ) -> Result<DownloadResult, DownloadError> {
-    let (response, hop) = crate::network::audio_route::get(client, url, session_id)
+    let stream_url = open_stream(client, url, session_id).await?;
+    let (response, hop) = crate::network::audio_route::get(client, &stream_url, session_id)
         .await
         .map_err(|err| DownloadError::Retryable(format!("request: {err}")))?;
     let status = response.status();
@@ -927,6 +928,33 @@ async fn download_api(
         return result;
     }
 
+    Err(http_failure(status, response).await)
+}
+
+async fn open_stream(
+    client: &Client,
+    url: &str,
+    session_id: Option<&str>,
+) -> Result<String, DownloadError> {
+    let (response, hop) =
+        crate::network::audio_route::get_without_redirects(client, url, session_id)
+            .await
+            .map_err(|err| DownloadError::Retryable(format!("ticket: {err}")))?;
+    let status = response.status();
+    if !status.is_redirection() {
+        return Err(http_failure(status, response).await);
+    }
+
+    response
+        .headers()
+        .get(wreq::header::LOCATION)
+        .and_then(|location| location.to_str().ok())
+        .and_then(|location| Url::parse(&hop.url).ok()?.join(location).ok())
+        .map(String::from)
+        .ok_or_else(|| DownloadError::Retryable("ticket: redirect without location".into()))
+}
+
+async fn http_failure(status: wreq::StatusCode, response: wreq::Response) -> DownloadError {
     let body = match response.text().await {
         Ok(body) => normalize_error_body(&body),
         Err(err) => Some(format!(
@@ -939,7 +967,7 @@ async fn download_api(
     } else {
         format!("HTTP {}", status)
     };
-    Err(DownloadError::Retryable(message))
+    DownloadError::Retryable(message)
 }
 
 impl TrackCacheState {

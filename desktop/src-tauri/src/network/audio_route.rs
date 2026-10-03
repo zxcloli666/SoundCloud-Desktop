@@ -10,6 +10,7 @@ use std::pin::Pin;
 use std::time::Duration;
 
 use futures_util::stream::{FuturesUnordered, StreamExt};
+use wreq::redirect::Policy;
 use wreq::{Client, Response};
 
 use super::edge::{self, Hop};
@@ -24,7 +25,15 @@ pub async fn get(
     url: &str,
     session_id: Option<&str>,
 ) -> Result<(Response, Hop), String> {
-    get_from_hops(client, edge::audio_plan(url), session_id, HEDGE_DELAY).await
+    get_from_hops(client, edge::audio_plan(url), session_id, HEDGE_DELAY, true).await
+}
+
+pub async fn get_without_redirects(
+    client: &Client,
+    url: &str,
+    session_id: Option<&str>,
+) -> Result<(Response, Hop), String> {
+    get_from_hops(client, edge::audio_plan(url), session_id, HEDGE_DELAY, false).await
 }
 
 async fn get_from_hops(
@@ -32,6 +41,7 @@ async fn get_from_hops(
     hops: Vec<Hop>,
     session_id: Option<&str>,
     hedge_delay: Duration,
+    follow_redirects: bool,
 ) -> Result<(Response, Hop), String> {
     let mut attempts = FuturesUnordered::<Attempt>::new();
     for (index, hop) in hops.into_iter().enumerate() {
@@ -42,6 +52,9 @@ async fn get_from_hops(
                 tokio::time::sleep(hedge_delay).await;
             }
             let mut request = client.get(&hop.url);
+            if !follow_redirects {
+                request = request.redirect(Policy::none());
+            }
             if let Some(session_id) = session_id {
                 request = request.header("x-session-id", session_id);
             }
@@ -114,6 +127,7 @@ mod tests {
             hops,
             None,
             Duration::from_millis(40),
+            true,
         )
         .await
         .unwrap();
