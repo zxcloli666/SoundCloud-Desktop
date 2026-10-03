@@ -9,6 +9,7 @@ import {SoundPrintMasthead} from '../components/library/SoundPrintMasthead';
 import {useSoundprint} from '../components/library/useSoundprint';
 import {PlaylistCard} from '../components/music/PlaylistCard';
 import {TrackCard} from '../components/music/TrackCard';
+import {SyncNotice, syncNoticeOf} from '../components/ui/SyncNotice';
 import {useLikedTracks, useMyFollowings, useMyLikedPlaylists, useMyPlaylists} from '../lib/hooks';
 import {Bookmark, Heart, ListMusic, Users} from '../lib/icons';
 import {likedTracksCount} from '../lib/likes';
@@ -21,14 +22,25 @@ import {useAuthStore} from '../stores/auth';
 export const Library = React.memo(() => {
   const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
-  const { tracks: likedTracks } = useLikedTracks();
+  const likesQuery = useLikedTracks();
+  const likedTracks = likesQuery.tracks;
   // Picked genre tag — retints the whole hub and filters its genre-aware shelves.
   const [genre, setGenre] = useState<string | null>(null);
   const sound = useSoundprint(likedTracks, genre);
 
-  const { playlists } = useMyPlaylists();
-  const { playlists: likedPlaylists } = useMyLikedPlaylists();
-  const { users: followings } = useMyFollowings();
+  const playlistsQuery = useMyPlaylists();
+  const likedPlaylistsQuery = useMyLikedPlaylists();
+  const followingsQuery = useMyFollowings();
+  const { playlists } = playlistsQuery;
+  const { playlists: likedPlaylists } = likedPlaylistsQuery;
+  const { users: followings } = followingsQuery;
+
+  const collections = [likesQuery, playlistsQuery, likedPlaylistsQuery, followingsQuery];
+  const libraryEmpty = collections.every((query) => !query.isLoading && query.items.length === 0);
+  const notice = collections.map(syncNoticeOf).find((kind) => kind !== null);
+  const retryAll = () => {
+    for (const query of collections) void query.refetch();
+  };
 
   const playlistPreview = useMemo(() => {
     const base = genre ? playlists.filter((p) => p.genre?.trim() === genre) : playlists;
@@ -56,6 +68,16 @@ export const Library = React.memo(() => {
           selected={genre}
           onSelect={setGenre}
         />
+
+        {libraryEmpty && (
+          <div className="py-6">
+            {notice ? (
+              <SyncNotice kind={notice} onRetry={retryAll} />
+            ) : (
+              <p className="text-center text-[13px] text-white/30">{t('common.empty')}</p>
+            )}
+          </div>
+        )}
 
         <FreshDrops genre={genre} />
 
