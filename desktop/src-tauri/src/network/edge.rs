@@ -500,8 +500,8 @@ pub fn edge_note(origin: String, tier: Tier, ok: bool) {
 #[cfg(test)]
 mod tests {
     use super::{
-        audio_tier_order, direct_infrastructure_headers, relay_hosts_over, set_pool, Tier, INHERIT,
-        RELAYS,
+        audio_tier_order, direct_infrastructure_headers, relay_failure_headers, relay_hosts_over,
+        set_pool, Tier, INHERIT, RELAYS,
     };
 
     fn hosts(origin: &str) -> Vec<String> {
