@@ -18,6 +18,7 @@ import {
 } from '../components/search/utils';
 import {useTabHidden, Wall} from '../components/search/Wall';
 import {stopHoverPreview, wirePreviewGuards} from '../lib/audioPreview';
+import {armTrackWaveContinuation} from '../lib/queue-continuation';
 import type { Track } from '../stores/player';
 import { useSearchHistoryStore } from '../stores/searchHistory';
 import { useSearchPrefsStore } from '../stores/searchPrefs';
@@ -70,7 +71,15 @@ export function Search() {
     // array each append would defeat every tile's memo. Keep a ref + stable thunk.
     const itemsRef = useRef(wall.items);
     itemsRef.current = wall.items;
-    const getQueue = useCallback(() => itemsRef.current.map((i) => i.track), []);
+    const radioRef = useRef(false);
+    radioRef.current = hasQuery && !dive && (mode === 'text' || source === 'sc');
+    const getQueue = useCallback(
+        () => (radioRef.current ? [] : itemsRef.current.map((i) => i.track)),
+        [],
+    );
+    const onPlay = useCallback(() => {
+        if (radioRef.current) void armTrackWaveContinuation();
+    }, []);
 
     // Genre ribbon reflects what's actually on the wall (top genres present),
     // falling back to the curated set when too few tracks are tagged. Keyed on the
@@ -224,6 +233,7 @@ export function Search() {
                               isFetchingMore={wall.isFetchingMore}
                               onLoadMore={wall.loadMore}
                               onDive={onDive}
+                              onPlay={onPlay}
                           />
                       )}
                   </>

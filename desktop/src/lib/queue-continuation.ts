@@ -11,8 +11,10 @@
  */
 
 import {shuffleArray, type Track, usePlayerStore} from '../stores/player';
+import {useSettingsStore} from '../stores/settings';
 import {api} from './api';
 import {fetchAllLikedTracks, fetchAllPlaylistTracks} from './hooks';
+import {fetchSmartWave} from './soundwave';
 
 export interface QueueContinuationSource {
   /** Имя для логов. */
@@ -178,4 +180,36 @@ export function armPlaylistContinuation(playlistUrn: string): void {
       },
     ),
   );
+}
+
+const TRACK_WAVE_PAGE_SIZE = 20;
+
+function createTrackWaveContinuationSource(seedId: string): QueueContinuationSource {
+  let cursor: string | undefined;
+  return {
+    kind: 'track-wave',
+    async next() {
+      const batch = await fetchSmartWave({
+        seedKind: 'track',
+        seedId,
+        cursor,
+        limit: TRACK_WAVE_PAGE_SIZE,
+        hideListened: useSettingsStore.getState().soundwaveHideListened,
+      });
+      if (batch.cursor) cursor = batch.cursor;
+      return batch.tracks;
+    },
+  };
+}
+
+export async function armTrackWaveContinuation(): Promise<void> {
+  const seedId = usePlayerStore.getState().currentTrack?.urn.split(':').pop();
+  if (!seedId) return;
+  const source = createTrackWaveContinuationSource(seedId);
+  setQueueContinuationSource(source);
+  const first = await source.next();
+  if (active !== source) return;
+  const queued = new Set(usePlayerStore.getState().queue.map((t) => t.urn));
+  const fresh = first.filter((t) => !queued.has(t.urn));
+  if (fresh.length > 0) usePlayerStore.getState().addToQueue(fresh);
 }
