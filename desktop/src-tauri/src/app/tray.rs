@@ -67,9 +67,16 @@ fn toggle_popover(app: &AppHandle, cursor: Option<(f64, f64)>) {
 // ---------------------------------------------------------------------------
 #[cfg(target_os = "linux")]
 mod linux {
-    use ksni::{MenuItem, Tray, TrayMethods};
+    use std::path::Path;
 
+    use ksni::{MenuItem, OfflineReason, Tray, TrayMethods};
+
+    use crate::app::diagnostics::log_native;
     use crate::rt::AppHandle;
+
+    fn is_flatpak() -> bool {
+        Path::new("/.flatpak-info").exists()
+    }
 
     struct ScTray {
         app: AppHandle,
@@ -111,6 +118,17 @@ mod linux {
                 item("Quit", "quit"),
             ]
         }
+        fn watcher_online(&self) {
+            log_native(&self.app, "INFO", "[tray] status notifier watcher is back");
+        }
+        fn watcher_offline(&self, reason: OfflineReason) -> bool {
+            log_native(
+                &self.app,
+                "WARN",
+                format!("[tray] status notifier watcher is offline: {reason:?}"),
+            );
+            true
+        }
     }
 
     pub fn setup(app: &crate::rt::App) {
@@ -118,10 +136,20 @@ mod linux {
         let icon = icon_pixmap(app);
         // ksni поднимает D-Bus-сервис на нашем tokio-рантайме; держим задачу живой.
         tauri::async_runtime::spawn(async move {
-            let tray = ScTray { app: handle, icon };
-            match tray.spawn().await {
+            let tray = ScTray {
+                app: handle.clone(),
+                icon,
+            };
+            let spawned = tray
+                .assume_sni_available(true)
+                .disable_dbus_name(is_flatpak())
+                .spawn()
+                .await;
+            match spawned {
                 Ok(_handle) => std::future::pending::<()>().await,
-                Err(err) => eprintln!("[tray] ksni spawn failed: {err}"),
+                Err(err) => {
+                    log_native(&handle, "ERROR", format!("[tray] ksni spawn failed: {err}"));
+                }
             }
         });
     }
