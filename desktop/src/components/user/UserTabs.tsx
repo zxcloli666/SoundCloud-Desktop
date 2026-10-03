@@ -94,17 +94,17 @@ export function UserTracksTab({ urn, aura }: { urn: string; aura: Aura }) {
 
 export function UserPopularTab({ urn, aura }: { urn: string; aura: Aura }) {
   const popular = useUserPopularTracks(urn);
-  const { data = [], isLoading } = popular;
+  const { tracks, isLoading } = popular;
   const renderItem = useCallback(
-    (track: (typeof data)[number], i: number) => (
-      <ThemedTrackRow track={track} index={i} queue={data} aura={aura} />
+    (track: (typeof tracks)[number], i: number) => (
+      <ThemedTrackRow track={track} index={i} queue={tracks} aura={aura} />
     ),
-    [aura, data],
+    [aura, tracks],
   );
   return (
-    <TabWrapper isLoading={isLoading} isEmpty={data.length === 0} query={popular}>
+    <TabWrapper isLoading={isLoading} isEmpty={tracks.length === 0} query={popular}>
       <VirtualList
-        items={data}
+        items={tracks}
         rowHeight={72}
         overscan={8}
         className="flex flex-col gap-1"

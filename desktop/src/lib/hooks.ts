@@ -546,8 +546,10 @@ export function useUserTracks(userUrn: string | undefined) {
 }
 
 export function useUserPopularTracks(userUrn: string | undefined) {
-  return useQuery({
-    queryKey: ['user', userUrn, 'tracks', 'popular'],
+  const qc = useQueryClient();
+  const queryKey = ['user', userUrn, 'tracks', 'popular'];
+  const query = useQuery({
+    queryKey,
     queryFn: async () => {
       const all: Track[] = [];
       let partial = false;
@@ -563,7 +565,6 @@ export function useUserPopularTracks(userUrn: string | undefined) {
       all.sort((a, b) => (b.playback_count ?? 0) - (a.playback_count ?? 0));
       return { tracks: all, partial };
     },
-    select: (data) => data.tracks,
     refetchInterval: (query) =>
       query.state.data?.partial && query.state.dataUpdateCount < PARTIAL_REFETCH_LIMIT
         ? PARTIAL_REFETCH_MS
@@ -572,6 +573,14 @@ export function useUserPopularTracks(userUrn: string | undefined) {
     staleTime: COLD_CACHE_MS,
     gcTime: INFINITE_GC_MS,
   });
+
+  const refetches = qc.getQueryState(queryKey)?.dataUpdateCount ?? 0;
+  const syncState: CollectionSyncState = !query.data?.partial
+    ? 'complete'
+    : refetches >= PARTIAL_REFETCH_LIMIT
+      ? 'stalled'
+      : 'syncing';
+  return { ...query, tracks: query.data?.tracks ?? EMPTY_TRACKS, syncState };
 }
 
 export function useUserPlaylists(userUrn: string | undefined) {
