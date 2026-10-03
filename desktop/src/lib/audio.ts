@@ -51,7 +51,7 @@ const API_PREVIEW_DURATION_MS = 30_000;
 
 // The 10Hz tick fan-out drives every UI subscriber (progress, waveform clip-path,
 // time readouts). When the window is hidden it's pure waste — the WebView doesn't
-// throttle us, and MediaSession/Discord presence run off Rust events, not this.
+// throttle us, and MediaSession runs off Rust events, not this.
 // cachedTime/cachedDuration keep updating; we just skip the DOM-touching fan-out.
 function notify() {
   if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;

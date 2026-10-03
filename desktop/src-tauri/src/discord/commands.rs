@@ -1,4 +1,5 @@
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, mpsc};
+use std::time::Duration;
 
 use discord_rich_presence::{
     activity::{Activity, ActivityType, Assets, Button, Timestamps},
@@ -6,6 +7,8 @@ use discord_rich_presence::{
 };
 
 use crate::shared::constants::DISCORD_CLIENT_ID;
+
+const CONNECT_TIMEOUT: Duration = Duration::from_secs(5);
 
 pub struct DiscordState {
     pub client: Mutex<Option<DiscordIpcClient>>,
@@ -32,15 +35,25 @@ pub enum DiscordRpcMode {
     Activity,
 }
 
-#[tauri::command]
+fn connect_client() -> Result<DiscordIpcClient, String> {
+    let (tx, rx) = mpsc::channel();
+    std::thread::spawn(move || {
+        let mut client = DiscordIpcClient::new(DISCORD_CLIENT_ID);
+        let result = client.connect().map(|_| client).map_err(|e| e.to_string());
+        let _ = tx.send(result);
+    });
+    rx.recv_timeout(CONNECT_TIMEOUT)
+        .map_err(|_| "timed out".to_string())?
+}
+
+#[tauri::command(async)]
 pub fn discord_connect(state: tauri::State<'_, Arc<DiscordState>>) -> Result<bool, String> {
     let mut guard = state.client.lock().map_err(|e| e.to_string())?;
     if guard.is_some() {
         return Ok(true);
     }
-    let mut client = DiscordIpcClient::new(DISCORD_CLIENT_ID);
-    match client.connect() {
-        Ok(_) => {
+    match connect_client() {
+        Ok(client) => {
             println!("[Discord] Connected");
             *guard = Some(client);
             Ok(true)
@@ -52,19 +65,18 @@ pub fn discord_connect(state: tauri::State<'_, Arc<DiscordState>>) -> Result<boo
     }
 }
 
-#[tauri::command]
-pub fn discord_disconnect(state: tauri::State<'_, Arc<DiscordState>>) {
-    let Ok(mut guard) = state.client.lock() else {
-        return;
-    };
+#[tauri::command(async)]
+pub fn discord_disconnect(state: tauri::State<'_, Arc<DiscordState>>) -> Result<(), String> {
+    let mut guard = state.client.lock().map_err(|e| e.to_string())?;
     if let Some(ref mut client) = *guard {
         let _ = client.close();
         println!("[Discord] Disconnected");
     }
     *guard = None;
+    Ok(())
 }
 
-#[tauri::command]
+#[tauri::command(async)]
 pub fn discord_set_activity(
     state: tauri::State<'_, Arc<DiscordState>>,
     track: DiscordTrackInfo,
@@ -138,13 +150,15 @@ pub fn discord_set_activity(
     Ok(())
 }
 
-#[tauri::command]
+#[tauri::command(async)]
 pub fn discord_clear_activity(state: tauri::State<'_, Arc<DiscordState>>) -> Result<(), String> {
     let mut guard = state.client.lock().map_err(|e| e.to_string())?;
     if let Some(ref mut client) = *guard {
-        client
-            .clear_activity()
-            .map_err(|e| format!("clear_activity: {e}"))?;
+        let result = client.clear_activity();
+        if result.is_err() {
+            *guard = None;
+        }
+        result.map_err(|e| format!("clear_activity: {e}"))?;
     }
     Ok(())
 }

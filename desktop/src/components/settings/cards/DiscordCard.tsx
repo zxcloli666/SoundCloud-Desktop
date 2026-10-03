@@ -1,5 +1,6 @@
 import {useTranslation} from 'react-i18next';
 import {MessageCircle} from '../../../lib/icons';
+import {useDiscordStatusStore} from '../../../stores/discord-status';
 import {type DiscordRpcMode, useSettingsStore} from '../../../stores/settings';
 import {Card, Row, Segmented, Toggle} from '../primitives';
 
@@ -17,6 +18,7 @@ export function DiscordCard() {
     const setMode = useSettingsStore((s) => s.setDiscordRpcMode);
     const showButton = useSettingsStore((s) => s.discordRpcShowButton);
     const setShowButton = useSettingsStore((s) => s.setDiscordRpcShowButton);
+    const status = useDiscordStatusStore((s) => s.status);
 
     return (
         <Card
@@ -27,6 +29,20 @@ export function DiscordCard() {
         >
             {enabled ? (
                 <div className="space-y-4">
+                    <div className="space-y-1">
+                        {status !== 'idle' && (
+                            <p className="text-[12.5px] text-white/60 font-medium">
+                                {t(
+                                    status === 'connected'
+                                        ? 'settings.discordRpcConnected'
+                                        : 'settings.discordRpcUnavailable',
+                                )}
+                            </p>
+                        )}
+                        <p className="text-[11.5px] text-white/35 leading-snug">
+                            {t('settings.discordRpcHint')}
+                        </p>
+                    </div>
                     <div className="space-y-2">
                         <p className="text-[12.5px] text-white/50 font-medium">
                             {t('settings.discordRpcMode')}
