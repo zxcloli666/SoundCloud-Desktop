@@ -12,6 +12,12 @@ import {useEffect, useMemo, useRef} from 'react';
 import type {Track} from '../stores/player';
 import {api} from './api';
 import type {ApiRequestOptions} from './api-client';
+import {
+  type CollectionSync,
+  type CollectionSyncState,
+  isPartialSync,
+  useCollectionSync,
+} from './collection-sync';
 import {initLikedUrns} from './likes';
 import {rememberLikedTracks, rememberTracks} from './offline-index';
 import {fetchRelatedTracks} from './related';
@@ -35,6 +41,7 @@ export interface PagedResponse<T> {
   page: number;
   page_size: number;
   has_more: boolean;
+  sync?: CollectionSync;
 }
 
 type TrackPage = PagedResponse<Track>;
@@ -133,15 +140,9 @@ export interface WebProfile {
 const SHORT_CACHE_MS = 1000 * 60 * 2;
 const MEDIUM_CACHE_MS = 1000 * 60 * 5;
 const INFINITE_GC_MS = 1000 * 60 * 3;
-
-/**
- * Cold-эндпоинты (треки/плейлисты/лайки/фолловинги юзеров, /me/*) живут в
- * нашей БД и обновляются бэком SWR-cron'ом без участия фронта. tanstack-query
- * не должен сам дёргать refetch на каждый mount — бэк всё равно отдаст cold
- * копию мгновенно. Полагаемся на явные invalidate'ы из мутаций
- * (like/unlike/follow/playlist updates).
- */
 const COLD_CACHE_MS = Number.POSITIVE_INFINITY;
+const PARTIAL_REFETCH_MS = 30_000;
+const PARTIAL_REFETCH_LIMIT = 20;
 
 /* ── Helpers ───────────────────────────────────────────────────── */
 
@@ -171,6 +172,10 @@ export function dedupeByUrn<T extends { urn: string }>(items: T[]): T[] {
   return dedupeByKey(items, (item) => item.urn);
 }
 
+function urnOf(item: { urn: string }): string {
+  return item.urn;
+}
+
 interface PagedQueryOptions<T> {
   queryKey: QueryKey;
   /** Builds the URL for a given page index. limit and page are appended automatically. */
@@ -192,7 +197,7 @@ interface PagedQueryOptions<T> {
 export type PagedQueryResult<T> = UseInfiniteQueryResult<
   InfiniteData<PagedResponse<T>, number>,
   DefaultError
-> & { items: T[] };
+> & { items: T[]; syncState: CollectionSyncState };
 
 /**
  * Унифицированный page-based useInfiniteQuery helper. Бэк отдаёт
@@ -239,7 +244,14 @@ export function usePagedQuery<T>(opts: PagedQueryOptions<T>): PagedQueryResult<T
     return opts.dedupe ? dedupeByKey(flat, opts.dedupe) : flat;
   }, [query.data, opts.dedupe]);
 
-  return Object.assign(query, { items }) as PagedQueryResult<T>;
+  const syncState = useCollectionSync(
+    opts.queryKey,
+    opts.url(0, 1),
+    query.data?.pages[0],
+    query.dataUpdatedAt,
+  );
+
+  return Object.assign(query, { items, syncState }) as PagedQueryResult<T>;
 }
 
 export function pagedUrl(base: string, page: number, limit: number, extra?: string): string {
@@ -314,6 +326,7 @@ export function useLikedTracks(limit = 30) {
     url: (page, l) => pagedUrl('/me/likes/tracks', page, l),
     limit,
     staleTime: COLD_CACHE_MS,
+    dedupe: urnOf,
   });
 
   const tracks = query.items;
@@ -342,10 +355,12 @@ export function fetchAllLikedTracks(
 ): Promise<Track[]> {
   if (_allLikesPromise && !onPage) return _allLikesPromise;
 
+  let partial = false;
   const promise = (async () => {
     const all: Track[] = [];
     for (let page = 0; ; page++) {
       const data = await api<TrackPage>(pagedUrl('/me/likes/tracks', page, pageSize));
+      partial ||= isPartialSync(data.sync);
       for (const t of data.collection) all.push(t);
       void rememberTracks(data.collection);
       onPage?.(data.collection);
@@ -357,9 +372,14 @@ export function fetchAllLikedTracks(
 
   if (!onPage) {
     _allLikesPromise = promise;
-    promise.catch(() => {
-      _allLikesPromise = null;
-    });
+    promise.then(
+      () => {
+        if (partial && _allLikesPromise === promise) _allLikesPromise = null;
+      },
+      () => {
+        _allLikesPromise = null;
+      },
+    );
   }
 
   return promise;
@@ -520,17 +540,24 @@ export function useUserPopularTracks(userUrn: string | undefined) {
     queryKey: ['user', userUrn, 'tracks', 'popular'],
     queryFn: async () => {
       const all: Track[] = [];
+      let partial = false;
       const pageSize = 100;
       for (let page = 0; ; page++) {
         const data = await api<TrackPage>(
           pagedUrl(`/users/${encodeURIComponent(userUrn!)}/tracks`, page, pageSize),
         );
+        partial ||= isPartialSync(data.sync);
         for (const t of data.collection) all.push(t);
         if (!data.has_more) break;
       }
       all.sort((a, b) => (b.playback_count ?? 0) - (a.playback_count ?? 0));
-      return all;
+      return { tracks: all, partial };
     },
+    select: (data) => data.tracks,
+    refetchInterval: (query) =>
+      query.state.data?.partial && query.state.dataUpdateCount < PARTIAL_REFETCH_LIMIT
+        ? PARTIAL_REFETCH_MS
+        : false,
     enabled: !!userUrn,
     staleTime: COLD_CACHE_MS,
     gcTime: INFINITE_GC_MS,
