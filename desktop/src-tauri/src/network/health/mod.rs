@@ -97,6 +97,7 @@ impl Agent {
             edge::set_pool(pool.relays.clone(), topology.weighted_calls(&pool.calls));
 
             let paths = probe::probe_paths(&self.probe_client, &pool, round).await;
+            edge::set_pool(probe::usable_first(&pool.relays, &paths), Vec::new());
             let early = self
                 .delivery
                 .report(&topology, &self.client_id, &self.app_version, &paths)

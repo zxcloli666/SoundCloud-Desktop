@@ -70,6 +70,16 @@ pub async fn probe_paths(client: &Client, pool: &Pool, round: usize) -> Vec<Samp
         .await
 }
 
+pub fn usable_first(relays: &[String], paths: &[Sample]) -> Vec<String> {
+    let usable = |node: &String| {
+        let ep = format!("@{node}");
+        paths.iter().any(|sample| sample.ok && sample.ep == ep)
+    };
+    let mut ordered = relays.to_vec();
+    ordered.sort_by_key(|node| !usable(node));
+    ordered
+}
+
 /// Задушенный путь отдаёт маленький объект на полной скорости, а большой ползёт:
 /// до срабатывания счётчика он просто не доходит. Узкий канал ползёт на обоих.
 async fn measure_bandwidth(client: &Client, url: &str) -> link::Measured {
@@ -186,7 +196,7 @@ async fn hit(client: &Client, url: &str) -> Outcome {
 
 #[cfg(test)]
 mod tests {
-    use super::{Sample, direct_bytes};
+    use super::{Sample, direct_bytes, usable_first};
     use crate::network::health::model::Link;
 
     fn sample(node: &str, ok: bool) -> Sample {
@@ -198,6 +208,21 @@ mod tests {
             fail: None,
             link: None,
         }
+    }
+
+    fn pool(nodes: &[&str]) -> Vec<String> {
+        nodes.iter().map(|node| node.to_string()).collect()
+    }
+
+    #[test]
+    fn a_relay_that_failed_its_probe_goes_to_the_back_of_the_pool() {
+        let paths = [sample("r1", false), sample("r2", true), sample("r3", true)];
+        assert_eq!(usable_first(&pool(&["r1", "r2", "r3"]), &paths), ["r2", "r3", "r1"]);
+    }
+
+    #[test]
+    fn an_unprobed_pool_keeps_its_order() {
+        assert_eq!(usable_first(&pool(&["r1", "r2"]), &[]), ["r1", "r2"]);
     }
 
     #[test]
