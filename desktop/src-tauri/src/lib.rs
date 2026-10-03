@@ -162,8 +162,12 @@ pub fn run() {
         })
         .on_window_event(|window, event| match event {
             tauri::WindowEvent::CloseRequested { api, .. } => {
-                api.prevent_close();
-                let _ = window.hide();
+                if window.label() == "main" && !app::tray::is_available() {
+                    app::tray::run_action(window.app_handle(), "quit");
+                } else {
+                    api.prevent_close();
+                    let _ = window.hide();
+                }
             }
             // Transient popover (tray left-click) dismisses on blur; a pinned one
             // (opened from the "Mini player" menu) stays put — closed only by its ✕.
