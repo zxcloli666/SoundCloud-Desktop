@@ -20,6 +20,7 @@ import {invalidateAllLikesCache} from '../../lib/hooks';
 import {
     audioLines16,
     Heart,
+    Loader2,
     listMusic16,
     MicVocal,
     pauseBlack20,
@@ -99,9 +100,9 @@ function useLoadProgress(): number | null {
   return visibleProgress;
 }
 
-/** Whole percentage (1-100) shown to the user while a track loads. */
+/** Whole percentage (0-100) shown to the user while a track loads. */
 const loadPercent = (progress: number) =>
-  Math.max(1, Math.min(100, Math.round(Math.max(0, Math.min(1, progress)) * 100)));
+  Math.min(100, Math.round(Math.max(0, Math.min(1, progress)) * 100));
 
 /** Accent outline that traces the capsule's perimeter as the track downloads. */
 const DockLoadingRing = React.memo(({ progress }: { progress: number | null }) => {
@@ -970,7 +971,15 @@ const PillTrackBody = React.memo(function PillTrackBody({
           <i />
           <i />
         </span>
-        {loadProgress != null && <div className="npb-art-load">{loadPercent(loadProgress)}%</div>}
+        {loadProgress != null && (
+          <div className="npb-art-load">
+            {loadProgress > 0 ? (
+              `${loadPercent(loadProgress)}%`
+            ) : (
+              <Loader2 size={16} className="animate-spin" />
+            )}
+          </div>
+        )}
       </div>
       <div className="npb-txt">
         <span
