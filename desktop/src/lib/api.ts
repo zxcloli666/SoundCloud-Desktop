@@ -4,6 +4,7 @@ export {
   apiRequest as api,
   fetchWithAuthFallback,
   getSessionId,
+  isRefreshPending,
   setSessionId,
 } from './api-client';
 export type { ResolvedStreamingTrack } from './streaming';

@@ -3,9 +3,15 @@ import {useTranslation} from 'react-i18next';
 import {useInfiniteScroll, useLikedTracks} from '../../lib/hooks';
 import {Loader2} from '../../lib/icons';
 import {armLikesContinuation} from '../../lib/queue-continuation';
+import {SyncNotice, syncNoticeOf} from '../ui/SyncNotice';
 import {VirtualList} from '../ui/VirtualList';
 import {LibraryTrackRow} from './LibraryTrackRow';
-import {LikesNotice, type LikesNoticeKind} from './LikesNotice';
+
+const LIKES_NOTICE_TEXT = {
+    failed: 'library.likesLoadFailed',
+    syncing: 'library.likesSyncing',
+    stalled: 'library.likesSyncSlow',
+} as const;
 
 export const LikesTab = React.memo(function LikesTab({filter}: { filter: string }) {
     const {t} = useTranslation();
@@ -44,8 +50,7 @@ export const LikesTab = React.memo(function LikesTab({filter}: { filter: string 
         if (!filterRef.current) armLikesContinuation();
     }, []);
 
-    const failed = likesQuery.isError && likedTracks.length === 0;
-    const notice: LikesNoticeKind | null = failed ? 'failed' : syncState === 'complete' ? null : syncState;
+    const notice = syncNoticeOf({isError: likesQuery.isError && likedTracks.length === 0, syncState});
     const retry = () => {
         void likesQuery.refetch();
     };
@@ -75,7 +80,7 @@ export const LikesTab = React.memo(function LikesTab({filter}: { filter: string 
                     </div>
                 ) : notice ? (
                     <div className="py-20">
-                        <LikesNotice kind={notice} onRetry={retry}/>
+                        <SyncNotice kind={notice} text={t(LIKES_NOTICE_TEXT[notice])} onRetry={retry}/>
                     </div>
                 ) : (
                     <div className="py-20 text-center text-white/20">{t('library.noLikedTracks')}</div>
@@ -94,7 +99,7 @@ export const LikesTab = React.memo(function LikesTab({filter}: { filter: string 
             ) : null}
             {!filter && notice && likedTracks.length > 0 && !likesQuery.hasNextPage && (
                 <div className="pb-6">
-                    <LikesNotice kind={notice} onRetry={retry}/>
+                    <SyncNotice kind={notice} text={t(LIKES_NOTICE_TEXT[notice])} onRetry={retry}/>
                 </div>
             )}
         </div>

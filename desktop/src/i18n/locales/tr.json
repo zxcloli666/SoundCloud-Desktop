@@ -233,7 +233,8 @@
     "deleteConfirm": "\"{{title}}\" silinsin mi? Bu islem geri alinamaz.",
     "deleted": "Calma listesi silindi",
     "private": "Gizli",
-    "public": "Herkese acik"
+    "public": "Herkese acik",
+    "partialTracks": "{{total}} parcadan {{shown}} tanesi kullanilabilir"
   },
   "user": {
     "followers": "Takipciler",
@@ -634,7 +635,12 @@
     "seeAll": "Tumunu Gor",
     "cancel": "Iptal",
     "back": "Geri",
-    "empty": "Burada henuz bir sey yok"
+    "empty": "Burada henuz bir sey yok",
+    "loadFailed": "Yuklenemedi",
+    "syncing": "SoundCloud ile esitleniyor...",
+    "syncSlow": "SoundCloud ile esitleme normalden uzun suruyor",
+    "stillLoading": "SoundCloud'dan hala yukleniyor, biraz sonra tekrar deneyin",
+    "pageLoadFailed": "Sayfa yuklenemedi"
   },
   "star": {
     "title": "Star Abonelik",

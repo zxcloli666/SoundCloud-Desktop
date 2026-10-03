@@ -18,9 +18,14 @@ interface SyncedPage {
 const MIN_PROBE_MS = 10_000;
 const MAX_PROBE_MS = 60_000;
 const PROBE_BUDGET_MS = 15 * 60_000;
+const UNOBSERVED_PLAYLIST_STATUSES = ['unhydrated', 'legacy_review', 'retry_wait'];
+
+function isWaiting(status: string | undefined): boolean {
+  return status === 'refreshing' || UNOBSERVED_PLAYLIST_STATUSES.includes(status ?? '');
+}
 
 export function isPartialSync(sync: CollectionSync | undefined): boolean {
-  if (sync?.status === 'unhydrated') return true;
+  if (UNOBSERVED_PLAYLIST_STATUSES.includes(sync?.status ?? '')) return true;
   return sync?.status === 'refreshing' && !sync.lastCompletedAt;
 }
 
@@ -39,7 +44,7 @@ export function useCollectionSync(
   const lastCompletedAt = head?.sync?.lastCompletedAt ?? null;
   const retryAfterSeconds = head?.sync?.retryAfterSeconds ?? 0;
   const hasItems = (head?.collection.length ?? 0) > 0;
-  const waiting = status === 'refreshing' || status === 'unhydrated';
+  const waiting = isWaiting(status);
 
   useEffect(() => {
     if (!waiting) return;

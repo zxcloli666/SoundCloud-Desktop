@@ -10,7 +10,7 @@ import {
 } from '@tanstack/react-query';
 import {useEffect, useMemo, useRef} from 'react';
 import type {Track} from '../stores/player';
-import {api} from './api';
+import {ApiError, api, isRefreshPending} from './api';
 import {
   type CollectionSync,
   type CollectionSyncState,
@@ -147,6 +147,16 @@ const INFINITE_GC_MS = 1000 * 60 * 3;
 const COLD_CACHE_MS = Number.POSITIVE_INFINITY;
 const PARTIAL_REFETCH_MS = 30_000;
 const PARTIAL_REFETCH_LIMIT = 20;
+const REFRESH_PENDING_RETRIES = 8;
+
+export const retryWhileRefreshing = {
+  retry: (failureCount: number, error: unknown) =>
+    failureCount < (isRefreshPending(error) ? REFRESH_PENDING_RETRIES : 1),
+  retryDelay: (failureCount: number, error: unknown) =>
+    error instanceof ApiError && isRefreshPending(error)
+      ? Math.min(Math.max(error.retryAfterSeconds ?? 5, 3), 30) * 1000
+      : Math.min(1000 * 2 ** failureCount, 30_000),
+};
 
 /* ── Helpers ───────────────────────────────────────────────────── */
 
@@ -477,6 +487,7 @@ export function usePlaylist(playlistUrn: string | undefined) {
     enabled: !!playlistUrn,
     staleTime: COLD_CACHE_MS,
     gcTime: INFINITE_GC_MS,
+    ...retryWhileRefreshing,
   });
 }
 

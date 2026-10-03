@@ -2,29 +2,49 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Loader2, RotateCcw } from '../../lib/icons';
 
-export type LikesNoticeKind = 'failed' | 'syncing' | 'stalled';
+export type SyncNoticeKind = 'failed' | 'syncing' | 'stalled';
 
-export const LikesNotice = React.memo(function LikesNotice({
+const DEFAULT_TEXT = {
+  failed: 'common.loadFailed',
+  syncing: 'common.syncing',
+  stalled: 'common.syncSlow',
+} as const;
+
+export interface SyncedQuery {
+  isError: boolean;
+  syncState?: 'complete' | SyncNoticeKind;
+}
+
+export function syncNoticeOf(query: SyncedQuery): SyncNoticeKind | null {
+  if (query.isError) return 'failed';
+  if (!query.syncState || query.syncState === 'complete') return null;
+  return query.syncState;
+}
+
+export const SyncNotice = React.memo(function SyncNotice({
   kind,
+  text,
   onRetry,
 }: {
-  kind: LikesNoticeKind;
+  kind: SyncNoticeKind;
+  text?: string;
   onRetry: () => void;
 }) {
   const { t } = useTranslation();
+  const message = text ?? t(DEFAULT_TEXT[kind]);
 
   if (kind === 'syncing') {
     return (
       <div className="flex items-center justify-center gap-2 text-[13px] text-white/30">
         <Loader2 size={14} className="animate-spin" />
-        {t('library.likesSyncing')}
+        {message}
       </div>
     );
   }
 
   return (
     <div className="flex flex-col items-center gap-3 text-[13px] text-white/30">
-      {kind === 'failed' ? t('library.likesLoadFailed') : t('library.likesSyncSlow')}
+      {message}
       <button
         type="button"
         onClick={onRetry}
