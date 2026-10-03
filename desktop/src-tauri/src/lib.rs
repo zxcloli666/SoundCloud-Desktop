@@ -8,7 +8,7 @@ mod rt;
 mod shared;
 mod track_cache;
 
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 use tauri::Manager;
 
 use discord::DiscordState;
@@ -119,9 +119,7 @@ pub fn run() {
             app::diagnostics::log_linux_render_env(app.handle());
             app::diagnostics::start_linux_fd_monitor(app.handle());
             network::health::start(data_dir.clone(), app.handle().clone(), rt_handle.clone());
-            app.manage(Arc::new(DiscordState {
-                client: Mutex::new(None),
-            }));
+            app.manage(Arc::new(DiscordState::default()));
 
             let ffmpeg_dir = cache_dir.join("ffmpeg");
             std::fs::create_dir_all(&ffmpeg_dir).ok();

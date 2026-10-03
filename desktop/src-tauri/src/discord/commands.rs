@@ -1,14 +1,22 @@
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
+use std::time::Duration;
 
 use discord_rich_presence::{
     activity::{Activity, ActivityType, Assets, Button, Timestamps},
     DiscordIpc, DiscordIpcClient,
 };
 
+use crate::app::diagnostics::log_native;
+use crate::rt::AppHandle;
 use crate::shared::constants::DISCORD_CLIENT_ID;
 
+const CONNECT_TIMEOUT: Duration = Duration::from_secs(3);
+
+#[derive(Default)]
 pub struct DiscordState {
-    pub client: Mutex<Option<DiscordIpcClient>>,
+    client: Mutex<Option<DiscordIpcClient>>,
+    connecting: AtomicBool,
 }
 
 #[derive(serde::Deserialize)]
@@ -33,43 +41,67 @@ pub enum DiscordRpcMode {
 }
 
 #[tauri::command]
-pub fn discord_connect(state: tauri::State<'_, Arc<DiscordState>>) -> Result<bool, String> {
-    let mut guard = state.client.lock().map_err(|e| e.to_string())?;
-    if guard.is_some() {
+pub async fn discord_connect(
+    app: AppHandle,
+    state: tauri::State<'_, Arc<DiscordState>>,
+) -> Result<bool, String> {
+    if state.connecting.swap(true, Ordering::AcqRel) {
+        return Err("Connection in progress".into());
+    }
+    let state = state.inner().clone();
+    let connect = tokio::task::spawn_blocking(move || {
+        let result = open_client(&state);
+        state.connecting.store(false, Ordering::Release);
+        result
+    });
+    match tokio::time::timeout(CONNECT_TIMEOUT, connect).await {
+        Ok(joined) => joined.map_err(|e| e.to_string())?,
+        Err(_) => {
+            log_native(&app, "WARN", "[Discord] IPC handshake timed out");
+            Err("Connection timed out".into())
+        }
+    }
+}
+
+fn open_client(state: &DiscordState) -> Result<bool, String> {
+    if state.client.lock().map_err(|e| e.to_string())?.is_some() {
         return Ok(true);
     }
     let mut client = DiscordIpcClient::new(DISCORD_CLIENT_ID);
-    match client.connect() {
-        Ok(_) => {
-            println!("[Discord] Connected");
-            *guard = Some(client);
-            Ok(true)
-        }
-        Err(e) => {
-            println!("[Discord] Connection failed: {e}");
-            Err(format!("Connection failed: {e}"))
-        }
-    }
+    client
+        .connect()
+        .map_err(|e| format!("Connection failed: {e}"))?;
+    *state.client.lock().map_err(|e| e.to_string())? = Some(client);
+    Ok(true)
 }
 
 #[tauri::command]
-pub fn discord_disconnect(state: tauri::State<'_, Arc<DiscordState>>) {
-    let Ok(mut guard) = state.client.lock() else {
-        return;
-    };
-    if let Some(ref mut client) = *guard {
-        let _ = client.close();
-        println!("[Discord] Disconnected");
-    }
-    *guard = None;
+pub async fn discord_disconnect(state: tauri::State<'_, Arc<DiscordState>>) -> Result<(), String> {
+    let state = state.inner().clone();
+    tokio::task::spawn_blocking(move || {
+        if let Ok(mut guard) = state.client.lock()
+            && let Some(mut client) = guard.take()
+        {
+            let _ = client.close();
+        }
+    })
+    .await
+    .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-pub fn discord_set_activity(
+pub async fn discord_set_activity(
     state: tauri::State<'_, Arc<DiscordState>>,
     track: DiscordTrackInfo,
 ) -> Result<(), String> {
-    let mut guard = state.client.lock().map_err(|e| e.to_string())?;
+    let state = state.inner().clone();
+    tokio::task::spawn_blocking(move || set_activity(&state, track))
+        .await
+        .map_err(|e| e.to_string())?
+}
+
+fn set_activity(state: &DiscordState, track: DiscordTrackInfo) -> Result<(), String> {
+    let mut guard = state.client.try_lock().map_err(|e| e.to_string())?;
     let client = guard.as_mut().ok_or("Discord not connected")?;
 
     let now = std::time::SystemTime::now()
@@ -139,8 +171,17 @@ pub fn discord_set_activity(
 }
 
 #[tauri::command]
-pub fn discord_clear_activity(state: tauri::State<'_, Arc<DiscordState>>) -> Result<(), String> {
-    let mut guard = state.client.lock().map_err(|e| e.to_string())?;
+pub async fn discord_clear_activity(
+    state: tauri::State<'_, Arc<DiscordState>>,
+) -> Result<(), String> {
+    let state = state.inner().clone();
+    tokio::task::spawn_blocking(move || clear_activity(&state))
+        .await
+        .map_err(|e| e.to_string())?
+}
+
+fn clear_activity(state: &DiscordState) -> Result<(), String> {
+    let mut guard = state.client.try_lock().map_err(|e| e.to_string())?;
     if let Some(ref mut client) = *guard {
         client
             .clear_activity()
