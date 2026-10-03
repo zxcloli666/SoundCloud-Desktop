@@ -105,6 +105,7 @@
     "pullSuccess": "Вы вошли.",
     "pushSuccess": "Другое устройство залогинено.",
     "failed": "Не удалось.",
+    "signInRequired": "Войдите в аккаунт, чтобы передать сессию.",
     "retry": "Сгенерировать новый код",
     "scanQr": "Войти по QR",
     "transferSession": "Передать сессию на другое устройство"
@@ -601,6 +602,7 @@
     "bgBlur": "Блюр фона",
     "resetDefaults": "Сбросить",
     "account": "Аккаунт",
+    "signIn": "Войти",
     "language": "Язык",
     "audioDevice": "Аудиовыход",
     "audioDeviceDefault": "Системный по умолчанию",

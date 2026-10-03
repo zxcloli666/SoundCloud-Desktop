@@ -105,6 +105,7 @@
     "pullSuccess": "You're signed in.",
     "pushSuccess": "The other device is signed in.",
     "failed": "QR link failed.",
+    "signInRequired": "Sign in to your account to transfer the session.",
     "retry": "Generate new code",
     "scanQr": "Sign in with QR",
     "transferSession": "Transfer session to another device"
@@ -591,6 +592,7 @@
     "bgBlur": "Background blur",
     "resetDefaults": "Reset to defaults",
     "account": "Account",
+    "signIn": "Sign in",
     "language": "Language",
     "audioDevice": "Audio output",
     "audioDeviceDefault": "System default",

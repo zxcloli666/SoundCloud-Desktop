@@ -127,6 +127,7 @@ async function runRenew(manual: boolean): Promise<void> {
 }
 
 function startRecovery(): void {
+  if (!useAuthStore.getState().hasSession) return;
   const s = useAuthRecoveryStore.getState();
   if (s.phase !== 'idle') return; // renew уже идёт либо модалка уже висит
   if (Date.now() - s.recoveredAt < RECOVERED_COOLDOWN_MS) {
