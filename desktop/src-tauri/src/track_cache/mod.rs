@@ -1,3 +1,4 @@
+mod api_download;
 mod commands;
 mod direct_download;
 mod sc_anon;

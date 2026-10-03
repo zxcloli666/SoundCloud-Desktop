@@ -1,5 +1,4 @@
 use std::collections::{HashMap, HashSet};
-use std::error::Error as _;
 use std::path::Path;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -17,6 +16,7 @@ use tokio::sync::{Mutex, Notify, OwnedSemaphorePermit, Semaphore};
 use crate::app::diagnostics::log_native;
 use crate::network::edge::{Hop, Tier};
 use crate::network::system_proxy::follow;
+use crate::track_cache::api_download::{StreamJob, download_api};
 use crate::track_cache::direct_download::try_download;
 use crate::track_cache::sc_anon::AnonClient;
 use crate::track_cache::transcode;
@@ -158,101 +158,6 @@ fn remove_cache_metadata(path: &Path) {
     std::fs::remove_file(cache_metadata_path(path)).ok();
 }
 
-fn truncate_error_text(text: &str, max_chars: usize) -> String {
-    let truncated: String = text.chars().take(max_chars).collect();
-    if text.chars().count() > max_chars {
-        format!("{}...", truncated.trim_end())
-    } else {
-        truncated
-    }
-}
-
-fn extract_json_error(value: &serde_json::Value) -> Option<String> {
-    if let Some(message) = value.get("message").and_then(|v| v.as_str()) {
-        return Some(message.to_string());
-    }
-    if let Some(error) = value.get("error").and_then(|v| v.as_str()) {
-        return Some(error.to_string());
-    }
-    if let Some(errors) = value.get("errors").and_then(|v| v.as_array()) {
-        let parts = errors
-            .iter()
-            .filter_map(|entry| {
-                entry
-                    .get("error_message")
-                    .and_then(|v| v.as_str())
-                    .or_else(|| entry.get("message").and_then(|v| v.as_str()))
-                    .or_else(|| entry.get("error").and_then(|v| v.as_str()))
-                    .map(str::to_string)
-            })
-            .collect::<Vec<_>>();
-        if !parts.is_empty() {
-            return Some(parts.join("; "));
-        }
-    }
-    None
-}
-
-fn normalize_error_body(body: &str) -> Option<String> {
-    let trimmed = body.trim();
-    if trimmed.is_empty() {
-        return None;
-    }
-
-    let compact = if let Ok(value) = serde_json::from_str::<serde_json::Value>(trimmed) {
-        extract_json_error(&value).unwrap_or_else(|| value.to_string())
-    } else {
-        trimmed.to_string()
-    };
-
-    let single_line = compact.split_whitespace().collect::<Vec<_>>().join(" ");
-    if single_line.is_empty() {
-        None
-    } else {
-        Some(truncate_error_text(&single_line, 220))
-    }
-}
-
-fn format_reqwest_error(err: wreq::Error) -> String {
-    let mut details = Vec::new();
-    if err.is_timeout() {
-        details.push("timeout".to_string());
-    } else if err.is_connect() {
-        details.push("connect".to_string());
-    } else if err.is_redirect() {
-        details.push("redirect".to_string());
-    } else if err.is_body() {
-        details.push("body".to_string());
-    } else if err.is_decode() {
-        details.push("decode".to_string());
-    } else if err.is_request() {
-        details.push("request".to_string());
-    }
-
-    if let Some(status) = err.status() {
-        details.push(format!("HTTP {status}"));
-    }
-
-    let mut causes = Vec::new();
-    let mut source = err.source();
-    while let Some(next) = source {
-        let text = next.to_string();
-        if !text.is_empty() && !causes.iter().any(|existing| existing == &text) {
-            causes.push(text);
-        }
-        source = next.source();
-    }
-
-    let mut message = err.without_url().to_string();
-    if !details.is_empty() {
-        message.push_str(&format!(" [{}]", details.join(", ")));
-    }
-    if !causes.is_empty() {
-        message.push_str(&format!(": {}", causes.join(": ")));
-    }
-    message
-}
-
 #[derive(Clone, Copy, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum PlaybackQuality {
@@ -366,13 +271,13 @@ pub struct TranscodeStatus {
     pub clean_bytes: u64,
 }
 
-enum DownloadError {
+pub(super) enum DownloadError {
     Fatal(String),
     Retryable(String),
 }
 
-struct DownloadResult {
-    path: PathBuf,
+pub(super) struct DownloadResult {
+    pub path: PathBuf,
 }
 
 #[derive(serde::Deserialize)]
@@ -403,6 +308,15 @@ pub struct CacheRequest<'a> {
     /// API-reported track length (ms), if known — enables truncated-download
     /// detection. `None` falls back to the size + magic-byte gate only.
     pub expected_duration_ms: Option<u64>,
+}
+
+struct RaceJob<'a> {
+    target_dir: &'a Path,
+    urn: &'a str,
+    session_id: Option<&'a str>,
+    hq: bool,
+    start: std::time::Instant,
+    receiving: Arc<std::sync::atomic::AtomicBool>,
 }
 
 struct FallbackParams<'a> {
@@ -642,22 +556,6 @@ pub fn init(audio_dir: PathBuf, liked_dir: PathBuf, incoming_dir: PathBuf) -> Tr
     }
 }
 
-fn quality_from_url(url: &str) -> PlaybackQuality {
-    if Url::parse(url)
-        .ok()
-        .map(|parsed| {
-            parsed
-                .query_pairs()
-                .any(|(key, value)| key == "hq" && value == "true")
-        })
-        .unwrap_or(false)
-    {
-        PlaybackQuality::Hq
-    } else {
-        PlaybackQuality::Sq
-    }
-}
-
 fn temp_file_path(target_dir: &Path, urn: &str) -> PathBuf {
     let nonce = SystemTime::now()
         .duration_since(UNIX_EPOCH)
@@ -693,7 +591,7 @@ async fn write_cache_metadata(path: &Path, meta: &TrackCacheMetadata) {
     }
 }
 
-async fn write_response_to_cache(
+pub(super) async fn write_response_to_cache(
     target_dir: &Path,
     urn: &str,
     response: wreq::Response,
@@ -910,136 +808,8 @@ async fn write_bytes_to_cache(
     }
 }
 
-/// Download a track from an API URL to cache.
-async fn download_api(
-    client: &Client,
-    target_dir: &Path,
-    urn: &str,
-    url: &str,
-    session_id: Option<&str>,
-    app_handle: Option<&crate::rt::AppHandle>,
-    receiving: &std::sync::atomic::AtomicBool,
-) -> Result<DownloadResult, DownloadError> {
-    let stream_url = open_stream(client, url, session_id).await?;
-    let hops = crate::network::edge::audio_plan(&stream_url);
-    download_over(
-        client,
-        &hops,
-        target_dir,
-        urn,
-        quality_from_url(url),
-        session_id,
-        app_handle,
-        receiving,
-    )
-    .await
-}
-
-#[allow(clippy::too_many_arguments)]
-async fn download_over(
-    client: &Client,
-    hops: &[Hop],
-    target_dir: &Path,
-    urn: &str,
-    requested: PlaybackQuality,
-    session_id: Option<&str>,
-    app_handle: Option<&crate::rt::AppHandle>,
-    receiving: &std::sync::atomic::AtomicBool,
-) -> Result<DownloadResult, DownloadError> {
-    let mut rest = hops;
-    loop {
-        let (response, at) = crate::network::audio_route::first_answer(client, rest, session_id)
-            .await
-            .map_err(|err| DownloadError::Retryable(format!("request: {err}")))?;
-        let hop = &rest[at];
-        rest = &rest[at + 1..];
-        let status = response.status();
-        if !status.is_success() {
-            return Err(http_failure(status, response).await);
-        }
-
-        receiving.store(true, std::sync::atomic::Ordering::Relaxed);
-        let served = response
-            .headers()
-            .get("x-audio-quality")
-            .and_then(|value| value.to_str().ok());
-        let quality = match served {
-            Some("hq") => PlaybackQuality::Hq,
-            Some("sq") => PlaybackQuality::Sq,
-            _ => requested,
-        };
-        let result = write_response_to_cache(
-            target_dir,
-            urn,
-            response,
-            quality,
-            DownloadSource::Api,
-            app_handle,
-        )
-        .await;
-        match &result {
-            Ok(done) => hop.note_delivered(file_len(&done.path)),
-            Err(DownloadError::Retryable(err)) => {
-                hop.note(false);
-                if !rest.is_empty() {
-                    eprintln!(
-                        "[TrackCache] {urn} body via {} broke ({err}), next route",
-                        hop.tier_label()
-                    );
-                    continue;
-                }
-            }
-            Err(DownloadError::Fatal(_)) => {}
-        }
-        return result;
-    }
-}
-
-fn file_len(path: &Path) -> u64 {
+pub(super) fn file_len(path: &Path) -> u64 {
     std::fs::metadata(path).map(|meta| meta.len()).unwrap_or(0)
-}
-
-async fn open_stream(
-    client: &Client,
-    url: &str,
-    session_id: Option<&str>,
-) -> Result<String, DownloadError> {
-    let (response, hop) =
-        crate::network::audio_route::get_without_redirects(client, url, session_id)
-            .await
-            .map_err(|err| DownloadError::Retryable(format!("ticket: {err}")))?;
-    let status = response.status();
-    if !status.is_redirection() {
-        return Err(http_failure(status, response).await);
-    }
-
-    response
-        .headers()
-        .get(wreq::header::LOCATION)
-        .and_then(|location| location.to_str().ok())
-        .and_then(|location| Url::parse(&hop.url).ok()?.join(location).ok())
-        .map(String::from)
-        .ok_or_else(|| DownloadError::Retryable("ticket: redirect without location".into()))
-}
-
-async fn http_failure(status: wreq::StatusCode, response: wreq::Response) -> DownloadError {
-    let body = match response.text().await {
-        Ok(body) => normalize_error_body(&body),
-        Err(err) => Some(format!(
-            "failed to read response body: {}",
-            format_reqwest_error(err)
-        )),
-    };
-    let message = if let Some(body) = body {
-        format!("HTTP {}: {}", status, body)
-    } else {
-        format!("HTTP {}", status)
-    };
-    if status.is_client_error() && !matches!(status.as_u16(), 408 | 421 | 429) {
-        DownloadError::Fatal(message)
-    } else {
-        DownloadError::Retryable(message)
-    }
 }
 
 impl TrackCacheState {
@@ -1808,20 +1578,17 @@ impl TrackCacheState {
         // Race /download (direct from SC) vs /stream (proxy via streaming API).
         // First success wins, the loser is dropped → reqwest cancels its connection.
         if !download_urls.is_empty() || !urls.is_empty() {
-            let receiving = Arc::new(std::sync::atomic::AtomicBool::new(false));
-            let race = self.race_direct_and_api(
+            let job = RaceJob {
                 target_dir,
                 urn,
-                download_urls,
-                urls,
                 session_id,
                 hq,
                 start,
-                &receiving,
-            );
+                receiving: Arc::new(std::sync::atomic::AtomicBool::new(false)),
+            };
+            let race = self.race_direct_and_api(&job, download_urls, urls);
             let result = if hq {
-                self.race_with_anon_backup(target_dir, urn, race, &receiving, start)
-                    .await
+                self.race_with_anon_backup(&job, race).await
             } else {
                 race.await
             };
@@ -1841,12 +1608,15 @@ impl TrackCacheState {
 
     async fn race_with_anon_backup(
         &self,
-        target_dir: &Path,
-        urn: &str,
+        job: &RaceJob<'_>,
         hq_race: impl Future<Output = Result<PathBuf, String>>,
-        receiving: &std::sync::atomic::AtomicBool,
-        start: std::time::Instant,
     ) -> Result<PathBuf, String> {
+        let RaceJob {
+            target_dir,
+            urn,
+            start,
+            ..
+        } = *job;
         tokio::pin!(hq_race);
         let finished = tokio::select! {
             res = &mut hq_race => Some(res),
@@ -1855,7 +1625,7 @@ impl TrackCacheState {
 
         let hq_result = match finished {
             Some(res) => res,
-            None if receiving.load(std::sync::atomic::Ordering::Relaxed) => hq_race.await,
+            None if job.receiving.load(std::sync::atomic::Ordering::Relaxed) => hq_race.await,
             None => {
                 let line = format!(
                     "[TrackCache] hq sources still silent for {urn}, starting anon alongside"
@@ -1942,17 +1712,19 @@ impl TrackCacheState {
 
     /// Resolve a `/download/:urn` endpoint into a cached file.
     /// Returns `Ok(path)` on success, `Err(msg)` if every candidate failed.
-    #[allow(clippy::too_many_arguments)]
     async fn try_direct(
         &self,
-        target_dir: &Path,
-        urn: &str,
+        job: &RaceJob<'_>,
         download_urls: &[String],
-        session_id: Option<&str>,
-        hq: bool,
-        start: std::time::Instant,
-        receiving: &Arc<std::sync::atomic::AtomicBool>,
     ) -> Result<PathBuf, String> {
+        let RaceJob {
+            target_dir,
+            urn,
+            session_id,
+            hq,
+            start,
+            ..
+        } = *job;
         if download_urls.is_empty() {
             return Err("no download_urls".into());
         }
@@ -1965,7 +1737,7 @@ impl TrackCacheState {
             download_urls,
             session_id,
             hq,
-            receiving,
+            &job.receiving,
         )
         .await
         .ok_or_else(|| "direct: no candidate succeeded".to_string())?;
@@ -2000,15 +1772,14 @@ impl TrackCacheState {
 
     /// Race all `/stream` API URLs in parallel; first success wins, the
     /// rest are dropped → reqwest cancels their connections.
-    async fn try_api(
-        &self,
-        target_dir: &Path,
-        urn: &str,
-        urls: &[String],
-        session_id: Option<&str>,
-        start: std::time::Instant,
-        receiving: &Arc<std::sync::atomic::AtomicBool>,
-    ) -> Result<PathBuf, String> {
+    async fn try_api(&self, job: &RaceJob<'_>, urls: &[String]) -> Result<PathBuf, String> {
+        let RaceJob {
+            target_dir,
+            urn,
+            session_id,
+            start,
+            ..
+        } = *job;
         if urls.is_empty() {
             return Err("no /stream URLs".into());
         }
@@ -2025,7 +1796,7 @@ impl TrackCacheState {
                 let urn = urn.to_string();
                 let url = url.clone();
                 let session_id = session_id.map(str::to_string);
-                let receiving = receiving.clone();
+                let receiving = job.receiving.clone();
                 println!("[TrackCache] trying URL #{} for {urn} - {url}", i + 1);
                 Box::pin(async move {
                     let res = state
@@ -2067,30 +1838,14 @@ impl TrackCacheState {
 
     /// Run direct (`/download`) and api (`/stream`) in parallel; first success
     /// returns its path, the loser is cancelled by being dropped.
-    // Bundling these into a struct would only push the same 8 args from one
-    // call site into a struct literal at the same call site.
-    #[allow(clippy::too_many_arguments)]
     async fn race_direct_and_api(
         &self,
-        target_dir: &Path,
-        urn: &str,
+        job: &RaceJob<'_>,
         download_urls: &[String],
         urls: &[String],
-        session_id: Option<&str>,
-        hq: bool,
-        start: std::time::Instant,
-        receiving: &Arc<std::sync::atomic::AtomicBool>,
     ) -> Result<PathBuf, String> {
-        let direct_fut = self.try_direct(
-            target_dir,
-            urn,
-            download_urls,
-            session_id,
-            hq,
-            start,
-            receiving,
-        );
-        let api_fut = self.try_api(target_dir, urn, urls, session_id, start, receiving);
+        let direct_fut = self.try_direct(job, download_urls);
+        let api_fut = self.try_api(job, urls);
         tokio::pin!(direct_fut);
         tokio::pin!(api_fut);
 
@@ -2140,6 +1895,14 @@ impl TrackCacheState {
         session_id: Option<&str>,
         receiving: &std::sync::atomic::AtomicBool,
     ) -> Result<PathBuf, String> {
+        let job = StreamJob {
+            client: &self.client,
+            target_dir,
+            urn,
+            session_id,
+            app_handle: self.app_handle.as_ref(),
+            receiving,
+        };
         let mut last_err = String::new();
 
         for attempt in 0..=RETRY_DELAYS_MS.len() {
@@ -2148,17 +1911,7 @@ impl TrackCacheState {
                 tokio::time::sleep(Duration::from_millis(RETRY_DELAYS_MS[attempt - 1])).await;
             }
 
-            match download_api(
-                &self.client,
-                target_dir,
-                urn,
-                url,
-                session_id,
-                self.app_handle.as_ref(),
-                receiving,
-            )
-            .await
-            {
+            match download_api(&job, url).await {
                 Ok(result) => return Ok(result.path),
                 Err(DownloadError::Fatal(err)) => return Err(err),
                 Err(DownloadError::Retryable(err)) => {
@@ -2584,84 +2337,5 @@ impl TrackCacheState {
             "[TrackCache] evicted {removed} files, freed {} MB",
             (before - total) / (1024 * 1024)
         );
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use std::sync::atomic::AtomicBool;
-
-    use tokio::io::{AsyncReadExt, AsyncWriteExt};
-    use tokio::net::TcpListener;
-    use warp::Filter;
-
-    use super::{download_over, PlaybackQuality};
-    use crate::network::edge::{Hop, Tier};
-
-    const FULL: usize = 200 * 1024;
-
-    fn audio(len: usize) -> Vec<u8> {
-        let mut body = b"ID3".to_vec();
-        body.resize(len, 0);
-        body
-    }
-
-    async fn cut_after(bytes: usize) -> String {
-        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
-        let addr = listener.local_addr().unwrap();
-        tokio::spawn(async move {
-            while let Ok((mut socket, _)) = listener.accept().await {
-                let mut request = [0u8; 4096];
-                let _ = socket.read(&mut request).await;
-                let head = format!("HTTP/1.1 200 OK\r\nContent-Length: {FULL}\r\n\r\n");
-                let _ = socket.write_all(head.as_bytes()).await;
-                let _ = socket.write_all(&audio(bytes)).await;
-            }
-        });
-        format!("http://{addr}/stream")
-    }
-
-    fn whole() -> String {
-        let route = warp::path("stream").map(|| audio(FULL));
-        let (addr, server) = warp::serve(route).bind_ephemeral(([127, 0, 0, 1], 0));
-        tokio::spawn(server);
-        format!("http://{addr}/stream")
-    }
-
-    fn hop(url: String, tier: Tier) -> Hop {
-        Hop {
-            url,
-            tier,
-            origin: "cut.test.invalid".to_string(),
-        }
-    }
-
-    #[tokio::test]
-    async fn a_body_cut_on_the_direct_route_is_fetched_again_through_the_relay() {
-        let dir = std::env::temp_dir().join(format!("sc-cut-test-{}", uuid::Uuid::new_v4()));
-        std::fs::create_dir_all(&dir).unwrap();
-        let hops = [
-            hop(cut_after(16 * 1024).await, Tier::Direct),
-            hop(whole(), Tier::Relay),
-        ];
-
-        let done = download_over(
-            &wreq::Client::new(),
-            &hops,
-            &dir,
-            "soundcloud:tracks:1",
-            PlaybackQuality::Sq,
-            None,
-            None,
-            &AtomicBool::new(false),
-        )
-        .await;
-
-        let path = match done {
-            Ok(done) => done.path,
-            Err(_) => panic!("the relay route should have delivered the track"),
-        };
-        assert_eq!(std::fs::metadata(path).unwrap().len(), FULL as u64);
-        std::fs::remove_dir_all(dir).unwrap();
     }
 }
