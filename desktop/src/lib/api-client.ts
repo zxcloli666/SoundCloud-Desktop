@@ -110,6 +110,12 @@ export function isQuietAnswer(error: unknown): boolean {
   );
 }
 
+export function isRefreshPending(error: unknown): boolean {
+  return (
+    error instanceof ApiError && error.status === 503 && !!error.code?.endsWith('_refresh_pending')
+  );
+}
+
 function isRateLimitError(status: number, body: string): boolean {
   if (status === 429) return true;
   const b = body.toLowerCase();
@@ -319,7 +325,7 @@ export async function apiRequest<T = unknown>(
 
       const body = res.ok ? '' : await res.text();
       const err = res.ok ? null : new ApiError(res.status, body, retryAfterSeconds(res));
-      const answered = res.status < 500 || isQuietAnswer(err);
+      const answered = res.status < 500 || isQuietAnswer(err) || isRefreshPending(err);
 
       // Жив = ответил <500 (как probeOnce; 401/403 — валидный ответ axum, star они
       // НЕ марают — иначе протухший токен выключал бы star при мёртвом main).
@@ -350,7 +356,9 @@ export async function apiRequest<T = unknown>(
 
         // Штатный по контракту статус (напр. 404 /related = соседей пока нет):
         // глушим тихо — без тоста, без recovery, без error-лога.
-        if (silentStatuses?.includes(res.status) || isQuietAnswer(err)) throw err;
+        if (silentStatuses?.includes(res.status) || isQuietAnswer(err) || isRefreshPending(err)) {
+          throw err;
+        }
 
         if (res.status === 401) authRejection ??= err;
 

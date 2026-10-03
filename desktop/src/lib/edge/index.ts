@@ -22,13 +22,22 @@ function timedFetch(url: string, init: RequestInit, timeoutMs?: number): Promise
  * а ответ origin'а (401/404/500 приложения) — уже валидный результат.
  */
 function hopUsable(hop: Hop, res: Response): boolean {
-  if (hop.tier === 'relay') return ![421, 502, 503, 504].includes(res.status);
+  if (hop.tier === 'relay') return !isRelayError(res);
   return !isDirectInfrastructureError(res);
+}
+
+function isRelayError(res: Response): boolean {
+  if (res.status === 421) return true;
+  return [502, 503, 504].includes(res.status) && !hasContentType(res, 'application/json');
 }
 
 function isDirectInfrastructureError(res: Response): boolean {
   if (res.status < 502 || res.status > 504) return false;
-  return res.headers.get('content-type')?.toLowerCase().includes('text/html') ?? false;
+  return hasContentType(res, 'text/html');
+}
+
+function hasContentType(res: Response, type: string): boolean {
+  return res.headers.get('content-type')?.toLowerCase().includes(type) ?? false;
 }
 
 /**
