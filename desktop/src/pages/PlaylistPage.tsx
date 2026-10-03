@@ -30,6 +30,8 @@ import {useAuthStore} from '../stores/auth';
 import {type Track, usePlayerStore} from '../stores/player';
 import {useSettingsStore} from '../stores/settings';
 
+const UNREADABLE_SYNC_STATUSES = ['auth_required', 'conflict'];
+
 function HeroSkeleton() {
   return (
     <div className="relative rounded-[2.5rem] overflow-hidden glass-featured p-6 md:p-10">
@@ -66,7 +68,8 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
     isLoading: tracksLoading,
     isError: tracksFailed,
     refetch: refetchTracks,
-    syncState: tracksSync,
+    syncState: tracksSyncState,
+    sync: tracksSync,
     hasNextPage,
     isFetchingNextPage,
     fetchNextPage,
@@ -225,22 +228,39 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
   }, [playlist, deletePlaylist, navigate, t]);
 
   const declaredCount = playlist?.track_count ?? 0;
-  const missingTracks = tracks.length < declaredCount;
-  const tracksNotice = syncNoticeOf({
-    isError: tracksFailed && tracks.length === 0,
-    syncState: missingTracks ? tracksSync : 'complete',
-  });
+  const missingTracks = !hasNextPage && tracks.length < declaredCount;
+  const tracksSyncStatus = tracksSync?.status ?? '';
   const listNotice = useMemo(() => {
-    if (tracksNotice) {
-      return <SyncNotice kind={tracksNotice} onRetry={() => void refetchTracks()} />;
+    const retry = () => void refetchTracks();
+    const notice = syncNoticeOf({
+      isError: tracksFailed && tracks.length === 0,
+      syncState: missingTracks ? tracksSyncState : 'complete',
+    });
+    if (notice) return <SyncNotice kind={notice} onRetry={retry} />;
+    if (!missingTracks) return null;
+    if (UNREADABLE_SYNC_STATUSES.includes(tracksSyncStatus)) {
+      return <SyncNotice kind="failed" text={t('playlist.tracksUnavailable')} onRetry={retry} />;
     }
-    if (!missingTracks || hasNextPage) return null;
+    if (tracksSyncStatus !== 'clean') return null;
     return (
       <p className="text-center text-[13px] text-white/30">
-        {t('playlist.partialTracks', { shown: tracks.length, total: declaredCount })}
+        {t('playlist.partialTracks', {
+          shown: tracks.length,
+          total: declaredCount,
+          count: declaredCount,
+        })}
       </p>
     );
-  }, [tracksNotice, missingTracks, hasNextPage, tracks.length, declaredCount, refetchTracks, t]);
+  }, [
+    tracksFailed,
+    tracksSyncState,
+    tracksSyncStatus,
+    missingTracks,
+    tracks.length,
+    declaredCount,
+    refetchTracks,
+    t,
+  ]);
 
   if (!playlist && playlistFailed) {
     return (

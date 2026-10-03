@@ -512,7 +512,7 @@ export function usePlaylistTracks(playlistUrn: string | undefined) {
     autoFetchAll: true,
   });
 
-  return { tracks: query.items, ...query };
+  return { tracks: query.items, sync: query.data?.pages[0]?.sync, ...query };
 }
 
 /* ── User Profile (cold) ──────────────────────────────────────── */
