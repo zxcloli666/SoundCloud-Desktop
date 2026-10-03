@@ -65,7 +65,7 @@ export const HostStatusModal = React.memo(() => {
   const allDown = ui === 'all-down';
 
   const goOfflineLibrary = () => {
-    useAppStatusStore.getState().setOfflineBypass(true);
+    if (!hasSession) useAppStatusStore.getState().setOfflineBypass(true);
     dismissModal();
     navigate('/offline', { replace: true });
   };

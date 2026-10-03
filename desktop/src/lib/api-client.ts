@@ -295,7 +295,7 @@ export async function apiRequest<T = unknown>(
       }
       // Успех star для не-премиума — probe-сигнал, не «онлайн» (иначе флап offline↔online).
       if (base === API_BASE || getIsPremium()) {
-        useAppStatusStore.getState().setBackendReachable(true);
+        useAppStatusStore.getState().confirmOnline();
       }
 
       // Сосед отдал по ТОЙ ЖЕ сессии то, в чём main только что отказал. Сессия
@@ -391,7 +391,7 @@ export async function apiRequest<T = unknown>(
 
       return reply;
     } catch (error) {
-      if (error instanceof ApiError) throw error;
+      if (error instanceof ApiError || error instanceof SyntaxError) throw error;
       markUnhealthy(base);
       if (base === API_BASE) noteMainBadResponse();
       if (isTimeoutError(error)) noteRequestTimeout();

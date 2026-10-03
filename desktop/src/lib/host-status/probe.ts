@@ -41,7 +41,7 @@ export function noteMainAlive(): void {
   const prev = useHostStatusStore.getState().main;
   if (prev === 'up') return;
   useHostStatusStore.setState({ main: 'up', net: 'online' });
-  useAppStatusStore.getState().setBackendReachable(true);
+  useAppStatusStore.getState().confirmOnline();
   stopRecheckTimer();
   if (prev === 'down') void queryClient.invalidateQueries();
 }
@@ -184,7 +184,7 @@ function stopRecheckTimer(): void {
 
 /** Single-flight + min-gap с trailing-добивкой; force обходит min-gap, но не single-flight. */
 export function requestProbe(opts?: { force?: boolean }): void {
-  if (!navigator.onLine || useHostStatusStore.getState().probing) return;
+  if (useHostStatusStore.getState().probing) return;
   const sinceLast = Date.now() - lastRunAt;
   if (sinceLast < PROBE_MIN_GAP_MS && !opts?.force) {
     if (trailingTimer === null) {
@@ -208,7 +208,7 @@ async function run(): Promise<void> {
     useHostStatusStore.setState({ star: 'unknown', net: 'online' });
     markHealthy(API_BASE); // noteMainAlive: up + стоп recheck-таймера (no-op, если уже up)
     // Снимаем ложный offline и когда вердикт уже 'up' (noteMainAlive тогда no-op).
-    useAppStatusStore.getState().setBackendReachable(true);
+    useAppStatusStore.getState().confirmOnline();
     return;
   }
   const genAfterMainProbes = mainAliveGen;

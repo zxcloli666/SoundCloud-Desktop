@@ -11,7 +11,7 @@ interface AppStatusState {
   setNavigatorOnline: (online: boolean) => void;
   setBackendReachable: (reachable: boolean) => void;
   setOfflineBypass: (value: boolean) => void;
-  resetConnectivity: () => void;
+  confirmOnline: () => void;
 }
 
 export const useAppStatusStore = create<AppStatusState>()(
@@ -23,12 +23,7 @@ export const useAppStatusStore = create<AppStatusState>()(
       setNavigatorOnline: (online) => set({ navigatorOnline: online }),
       setBackendReachable: (backendReachable) => set({ backendReachable }),
       setOfflineBypass: (offlineBypass) => set({ offlineBypass }),
-      resetConnectivity: () =>
-        set({
-          navigatorOnline: typeof navigator === 'undefined' ? true : navigator.onLine,
-          backendReachable: true,
-          offlineBypass: false,
-        }),
+      confirmOnline: () => set({ navigatorOnline: true, backendReachable: true }),
     }),
     {
       name: 'sc-app-status',
