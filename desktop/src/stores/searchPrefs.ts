@@ -2,10 +2,6 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { tauriStorage } from '../lib/tauri-storage';
 
-/**
- * `db` — поиск в локальной базе SCD (быстрее, ограничен зеркалом).
- * `sc` — fan-out в SoundCloud API (медленнее, видит всё).
- */
 export type SearchSource = 'db' | 'sc';
 
 /**

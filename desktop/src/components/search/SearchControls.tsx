@@ -6,7 +6,7 @@ import {useSearchPrefsStore} from '../../stores/searchPrefs';
 /* The search-page control row: Text / Vibe mode + the SoundCloud (live) source
  * toggle. The query itself lives in the global header field — this is just how
  * the current query is interpreted. */
-export const SearchControls = memo(function SearchControls() {
+export const SearchControls = memo(function SearchControls({liveOff = false}: { liveOff?: boolean }) {
     const {t} = useTranslation();
     const mode = useSearchPrefsStore((s) => s.mode);
     const setMode = useSearchPrefsStore((s) => s.setMode);
@@ -42,7 +42,9 @@ export const SearchControls = memo(function SearchControls() {
                 type="button"
                 onClick={() => setSource(source === 'sc' ? 'db' : 'sc')}
                 title={t('search.source.scHint')}
-                className="inline-flex items-center gap-1 h-8 px-2.5 rounded-full text-[12px] font-medium transition-all duration-300 cursor-pointer"
+                className={`inline-flex items-center gap-1 h-8 px-2.5 rounded-full text-[12px] font-medium transition-all duration-300 cursor-pointer ${
+                    liveOff ? 'opacity-50' : ''
+                }`}
                 style={
                     source === 'sc'
                         ? {
