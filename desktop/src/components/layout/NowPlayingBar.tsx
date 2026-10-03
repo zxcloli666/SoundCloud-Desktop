@@ -506,6 +506,7 @@ function LikeButton({
     try {
       await api(`/likes/tracks/${encodeURIComponent(trackUrn)}`, {
         method: next ? 'POST' : 'DELETE',
+        body: next && trackData ? JSON.stringify(trackData) : undefined,
       });
       qc.invalidateQueries({ queryKey: ['track', trackUrn, 'favoriters'] });
     } catch {
