@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { AuthBackdrop } from '../components/auth/AuthBackdrop';
 import { BrandMark } from '../components/auth/BrandMark';
 import { OfflineEntryCard } from '../components/auth/OfflineEntryCard';
+import { oauthErrorText } from '../components/auth/oauth-error';
 import { QrLinkSheet } from '../components/auth/QrLinkSheet';
 import {
   AlertCircle,
@@ -40,7 +41,7 @@ export function Login() {
     queryClient.invalidateQueries();
   };
 
-  const { startLogin, authUrl, isPolling, step, error, browserFailed } =
+  const { startLogin, authUrl, isPolling, step, error, browserFailed, cancel } =
     useOAuthFlow(onLoginSuccess);
 
   const handleLogin = async () => {
@@ -51,22 +52,14 @@ export function Login() {
     }
   };
 
-  const errorTitle = !error
-    ? ''
-    : error.kind === 'unreachable'
-      ? t('auth.errorServerTitle')
-      : error.kind === 'expired'
-        ? t('auth.errorExpiredTitle')
-        : t('auth.errorFailedTitle');
-  const errorDesc =
-    error?.kind === 'unreachable' ? t('auth.errorServerDesc') : (error?.message ?? '');
+  const errorText = error ? oauthErrorText(error, t) : null;
 
   const stepLabel =
     step === 'token'
       ? t('auth.stepToken')
-      : step === 'profile'
+      : step === 'extract'
         ? t('auth.stepProfile')
-        : step === 'session'
+        : step === 'finalizing'
           ? t('auth.stepSession')
           : t('auth.stepWaiting');
 
@@ -98,16 +91,16 @@ export function Login() {
           <BrandMark subtitle={isPolling ? t('auth.signingIn') : t('auth.tagline')} />
 
           <div className="mt-8">
-            {error ? (
+            {errorText ? (
               <div className="flex flex-col items-stretch gap-4">
                 <div className="flex flex-col items-center gap-3 rounded-2xl border border-red-500/20 bg-red-500/[0.06] px-5 py-5 text-center">
                   <div className="flex size-11 items-center justify-center rounded-full border border-red-500/25 bg-red-500/10">
                     <AlertCircle size={20} className="text-red-400" strokeWidth={1.8} />
                   </div>
                   <div>
-                    <p className="text-[14px] font-semibold text-white/90">{errorTitle}</p>
+                    <p className="text-[14px] font-semibold text-white/90">{errorText.title}</p>
                     <p className="mt-1 text-[12px] leading-snug text-white/45 break-words">
-                      {errorDesc}
+                      {errorText.desc}
                     </p>
                   </div>
                 </div>
@@ -149,6 +142,13 @@ export function Login() {
                     )}
                   </button>
                 )}
+                <button
+                  type="button"
+                  onClick={cancel}
+                  className="text-[11.5px] text-white/35 hover:text-white/65 transition-colors cursor-pointer"
+                >
+                  {t('common.cancel')}
+                </button>
               </div>
             ) : (
               <div className="flex flex-col items-stretch gap-3">

@@ -64,7 +64,9 @@
     "tagline": "Muziginiz, sizin tarzinizda",
     "orSeparator": "veya",
     "continueOffline": "Giris yapmadan devam et",
-    "continueOfflineDesc": "Yerel kutuphanenizdeki indirilmis parcalari ve begenileri dinleyin"
+    "continueOfflineDesc": "Yerel kutuphanenizdeki indirilmis parcalari ve begenileri dinleyin",
+    "errorLimitedTitle": "Giris gecici olarak sinirli",
+    "errorLimitedDesc": "Sunucu su anda girisleri sinirliyor. {{seconds}} sn sonra tekrar deneyin."
   },
   "reauth": {
     "title": "Oturum Suresi Doldu",

@@ -1,6 +1,6 @@
 import { openUrl } from '@tauri-apps/plugin-opener';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { fetchWithAuthFallback } from './api-client';
+import { ApiError, fetchWithAuthFallback } from './api-client';
 import { API_BASE } from './constants';
 import { describeError, logInfo } from './diagnostics';
 import { edgeFetch } from './edge';
@@ -12,17 +12,18 @@ interface LoginResponse {
 
 interface LoginStatusResponse {
   status: 'pending' | 'completed' | 'failed' | 'expired';
-  step?: 'token' | 'profile' | 'session';
+  step?: 'token' | 'extract' | 'finalizing';
   sessionId?: string;
   username?: string;
   error?: string;
   redirectUrl?: string;
 }
 
-export type OAuthStep = 'waiting' | 'token' | 'profile' | 'session';
+export type OAuthStep = 'waiting' | 'token' | 'extract' | 'finalizing';
 export type OAuthFlowError = {
-  kind: 'failed' | 'expired' | 'unreachable';
+  kind: 'failed' | 'expired' | 'unreachable' | 'limited';
   message: string;
+  retryAfterSec?: number;
 };
 
 const POLL_INTERVAL_MS = 700;
@@ -40,12 +41,14 @@ export function useOAuthFlow(
   const [error, setError] = useState<OAuthFlowError | null>(null);
   const [browserFailed, setBrowserFailed] = useState(false);
   const pollRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const attemptRef = useRef(0);
   const onSuccessRef = useRef(onSuccess);
   const onFailureRef = useRef(onFailure);
   onSuccessRef.current = onSuccess;
   onFailureRef.current = onFailure;
 
   const cancel = useCallback(() => {
+    attemptRef.current++;
     if (pollRef.current) {
       clearTimeout(pollRef.current);
       pollRef.current = null;
@@ -60,6 +63,7 @@ export function useOAuthFlow(
 
   const fail = useCallback(
     (err: OAuthFlowError) => {
+      logInfo(`[Auth] login ${err.kind}: ${err.message}`);
       cancel();
       setError(err);
       onFailureRef.current?.(err);
@@ -69,6 +73,8 @@ export function useOAuthFlow(
 
   const startLogin = useCallback(async () => {
     cancel();
+    const attempt = attemptRef.current;
+    const isStale = () => attempt !== attemptRef.current;
     setError(null);
     setIsPolling(true);
     setStep('waiting');
@@ -77,14 +83,14 @@ export function useOAuthFlow(
     // привяжет результат к существующей сессии и sessionId не сменится.
     let login: LoginResponse;
     try {
-      login = await fetchWithAuthFallback<LoginResponse>('/auth/login');
-    } catch (e) {
-      fail({
-        kind: 'unreachable',
-        message: e instanceof Error ? e.message : 'Backend unreachable',
+      login = await fetchWithAuthFallback<LoginResponse>('/auth/login', {
+        silentStatuses: [429, 503],
       });
+    } catch (e) {
+      if (!isStale()) fail(loginRequestError(e));
       return;
     }
+    if (isStale()) return;
     const { url, loginRequestId } = login;
     setAuthUrl(url);
     try {
@@ -93,6 +99,7 @@ export function useOAuthFlow(
       logInfo(`[Auth] browser did not open the login page: ${describeError(e)}`);
       setBrowserFailed(true);
     }
+    if (isStale()) return;
 
     let failingSince: number | null = null;
     let lastRedirect: string | null = null;
@@ -117,6 +124,7 @@ export function useOAuthFlow(
       try {
         data = await tryPoll(API_BASE);
       } catch {}
+      if (isStale()) return;
 
       if (!data) {
         const now = Date.now();
@@ -155,4 +163,18 @@ export function useOAuthFlow(
   }, [cancel, fail]);
 
   return { startLogin, authUrl, isPolling, step, cancel, error, browserFailed };
+}
+
+function loginRequestError(e: unknown): OAuthFlowError {
+  if (e instanceof ApiError && (e.status === 429 || e.status === 503)) {
+    return { kind: 'limited', message: e.body, retryAfterSec: e.retryAfterSec };
+  }
+  if (!(e instanceof ApiError) || e.status >= 500) {
+    return { kind: 'unreachable', message: e instanceof Error ? e.message : 'Backend unreachable' };
+  }
+  let message = `HTTP ${e.status}`;
+  try {
+    message = JSON.parse(e.body).message || message;
+  } catch {}
+  return { kind: 'failed', message };
 }

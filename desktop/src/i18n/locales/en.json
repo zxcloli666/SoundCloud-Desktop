@@ -83,7 +83,9 @@
     "errorServerTitle": "Can't reach the server",
     "errorServerDesc": "The backend isn't responding. Check your connection or try again in a moment.",
     "errorExpiredTitle": "Sign-in expired",
-    "errorFailedTitle": "Sign-in failed"
+    "errorFailedTitle": "Sign-in failed",
+    "errorLimitedTitle": "Sign-in is temporarily limited",
+    "errorLimitedDesc": "The server is limiting sign-ins right now. Try again in {{seconds}} s."
   },
   "recovery": {
     "title": "Session Interrupted",

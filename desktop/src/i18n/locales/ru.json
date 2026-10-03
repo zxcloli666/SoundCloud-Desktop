@@ -83,7 +83,9 @@
     "errorServerTitle": "Сервер недоступен",
     "errorServerDesc": "Бэкенд не отвечает. Проверь соединение или попробуй ещё раз через минуту.",
     "errorExpiredTitle": "Время входа истекло",
-    "errorFailedTitle": "Не удалось войти"
+    "errorFailedTitle": "Не удалось войти",
+    "errorLimitedTitle": "Вход временно ограничен",
+    "errorLimitedDesc": "Сервер сейчас ограничивает входы. Попробуйте снова через {{seconds}} с."
   },
   "recovery": {
     "title": "Сессия прервана",

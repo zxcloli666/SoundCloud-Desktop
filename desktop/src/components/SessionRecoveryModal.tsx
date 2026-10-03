@@ -17,7 +17,8 @@ export const SessionRecoveryModal = React.memo(() => {
   const hasSession = useAuthStore((s) => s.hasSession);
   const [copied, setCopied] = useState(false);
 
-  const { startLogin, authUrl, isPolling, step, browserFailed } = useOAuthFlow(completeReauth);
+  const { startLogin, authUrl, isPolling, step, browserFailed, cancel } =
+    useOAuthFlow(completeReauth);
 
   // Пока идёт OAuth-поллинг — фоновый успех не должен авто-закрывать модалку.
   useEffect(() => {
@@ -35,9 +36,9 @@ export const SessionRecoveryModal = React.memo(() => {
   const stepLabel =
     step === 'token'
       ? t('auth.stepToken')
-      : step === 'profile'
+      : step === 'extract'
         ? t('auth.stepProfile')
-        : step === 'session'
+        : step === 'finalizing'
           ? t('auth.stepSession')
           : t('recovery.signingIn');
 
@@ -126,6 +127,13 @@ export const SessionRecoveryModal = React.memo(() => {
                     )}
                   </button>
                 )}
+                <button
+                  type="button"
+                  onClick={cancel}
+                  className="text-[11px] text-white/30 hover:text-white/55 transition-colors cursor-pointer"
+                >
+                  {t('common.cancel')}
+                </button>
               </div>
             )}
 

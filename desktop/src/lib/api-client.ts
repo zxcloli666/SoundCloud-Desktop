@@ -70,6 +70,7 @@ export class ApiError extends Error {
   constructor(
     public status: number,
     public body: string,
+    public retryAfterSec?: number,
   ) {
     super(`API ${status}: ${body}`);
     this.name = 'ApiError';
@@ -310,7 +311,8 @@ export async function apiRequest<T = unknown>(
 
       if (!res.ok) {
         const body = await res.text();
-        const err = new ApiError(res.status, body);
+        const retryAfter = Number(res.headers.get('retry-after'));
+        const err = new ApiError(res.status, body, retryAfter > 0 ? retryAfter : undefined);
 
         // Ожидаемый гейт-отказ star (не-премиум): не шум, а подозрение —
         // сверочный запрос сам себя не триггерит.
