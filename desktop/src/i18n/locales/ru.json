@@ -366,6 +366,9 @@
     "filter": "Фильтр...",
     "noMatches": "Ничего не найдено",
     "noLikedTracks": "Нет любимых треков",
+    "likesSyncing": "Синхронизируем лайки с SoundCloud...",
+    "likesSyncSlow": "Синхронизация с SoundCloud идёт дольше обычного",
+    "likesLoadFailed": "Не удалось загрузить лайки",
     "notFollowing": "Вы ни на кого не подписаны",
     "noPlaylists": "Плейлисты не найдены"
   },

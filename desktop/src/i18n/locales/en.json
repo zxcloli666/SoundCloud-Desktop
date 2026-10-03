@@ -362,6 +362,9 @@
     "filter": "Filter...",
     "noMatches": "No matches",
     "noLikedTracks": "No liked tracks yet",
+    "likesSyncing": "Syncing your likes with SoundCloud...",
+    "likesSyncSlow": "Syncing with SoundCloud is taking longer than usual",
+    "likesLoadFailed": "Couldn't load your likes",
     "notFollowing": "You are not following anyone",
     "noPlaylists": "No playlists found"
   },
