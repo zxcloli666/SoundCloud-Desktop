@@ -53,7 +53,8 @@
     "abLoopSetB": "En iyi bolumu dongule: bitis (B)",
     "abLoopClear": "A-B dongusunu temizle",
     "notPlaying": "Calmiyor",
-    "noContinuation": "Benzer parça bulunamadı, çalma durduruldu"
+    "noContinuation": "Benzer parça bulunamadı, çalma durduruldu",
+    "cancelLoad": "Yuklemeyi durdur"
   },
   "auth": {
     "signIn": "SoundCloud ile giris yap",

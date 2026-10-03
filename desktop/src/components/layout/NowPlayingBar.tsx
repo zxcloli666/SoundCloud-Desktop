@@ -7,6 +7,7 @@ import {useNavigate} from 'react-router-dom';
 import {useShallow} from 'zustand/shallow';
 import {api} from '../../lib/api';
 import {
+    cancelTrackLoad,
     getCurrentTime,
     getDownloadProgress,
     getDuration,
@@ -21,6 +22,7 @@ import {
     audioLines16,
     Heart,
     listMusic16,
+    Loader2,
     MicVocal,
     pauseBlack20,
     playBlack20,
@@ -35,6 +37,7 @@ import {
     volume1Icon16,
     volume2Icon16,
     volumeXIcon16,
+    X,
 } from '../../lib/icons';
 import {optimisticToggleLike} from '../../lib/likes';
 import {usePerfMode} from '../../lib/perf';
@@ -99,9 +102,8 @@ function useLoadProgress(): number | null {
   return visibleProgress;
 }
 
-/** Whole percentage (1-100) shown to the user while a track loads. */
-const loadPercent = (progress: number) =>
-  Math.max(1, Math.min(100, Math.round(Math.max(0, Math.min(1, progress)) * 100)));
+/** Whole percentage (0-100) shown to the user while a track loads. */
+const loadPercent = (progress: number) => Math.round(Math.max(0, Math.min(1, progress)) * 100);
 
 /** Accent outline that traces the capsule's perimeter as the track downloads. */
 const DockLoadingRing = React.memo(({ progress }: { progress: number | null }) => {
@@ -951,6 +953,7 @@ const PillTrackBody = React.memo(function PillTrackBody({
   navigate: ReturnType<typeof useNavigate>;
   loadProgress: number | null;
 }) {
+  const { t } = useTranslation();
   const openLyricsPanel = useLyricsStore((s) => s.openPanel);
   const artistDisplay = useArtistDisplay(track);
   const displayTitle = useDisplayTitle(track);
@@ -970,7 +973,27 @@ const PillTrackBody = React.memo(function PillTrackBody({
           <i />
           <i />
         </span>
-        {loadProgress != null && <div className="npb-art-load">{loadPercent(loadProgress)}%</div>}
+        {loadProgress != null && (
+          <button
+            type="button"
+            className="npb-art-load"
+            title={t('player.cancelLoad')}
+            aria-label={t('player.cancelLoad')}
+            onClick={(e) => {
+              e.stopPropagation();
+              cancelTrackLoad();
+            }}
+          >
+            <span className="npb-art-load-value">
+              {loadPercent(loadProgress) > 0 ? (
+                `${loadPercent(loadProgress)}%`
+              ) : (
+                <Loader2 size={16} className="animate-spin" />
+              )}
+            </span>
+            <X size={16} className="npb-art-load-cancel" />
+          </button>
+        )}
       </div>
       <div className="npb-txt">
         <span

@@ -63,7 +63,8 @@
     "next": "Next",
     "openApp": "Open SoundCloud",
     "notPlaying": "Not playing",
-    "noContinuation": "No similar tracks found, playback stopped"
+    "noContinuation": "No similar tracks found, playback stopped",
+    "cancelLoad": "Stop loading"
   },
   "auth": {
     "signIn": "Sign in with SoundCloud",

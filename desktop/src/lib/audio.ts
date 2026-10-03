@@ -90,6 +90,12 @@ function setDownloadProgress(value: number | null): void {
   notify();
 }
 
+export function cancelTrackLoad(): void {
+  loadGen++;
+  setDownloadProgress(null);
+  usePlayerStore.getState().pause();
+}
+
 export function seek(seconds: number) {
   if (!hasTrack) return;
   invoke('audio_seek', { position: seconds }).catch(console.error);
@@ -384,8 +390,9 @@ async function loadTrack(track: Track) {
     try {
       cachedInfo = await ensureTrackCached(urn, highQualityStreaming, track.duration);
     } catch (error) {
-      if (!highQualityStreaming) throw error;
+      if (!highQualityStreaming || gen !== loadGen) throw error;
       console.warn('[Audio] HQ load failed, retrying without hq:', error);
+      setDownloadProgress(0);
       cachedInfo = await ensureTrackCached(urn, false, track.duration);
     }
 
@@ -412,9 +419,9 @@ async function loadTrack(track: Track) {
     afterLoad(track, gen);
   } catch (e) {
     console.error('[Audio] Load failed:', e);
+    if (gen !== loadGen) return;
     setDownloadProgress(null);
     usePlayerStore.getState().setPlaybackTransport(null, null);
-    if (gen !== loadGen) return;
     const errorText = getLoadErrorText(e);
     toast.error(i18n.t('track.loadError'), {
       description: errorText ? `${track.title}: ${errorText}` : track.title,
@@ -534,8 +541,8 @@ listen<number>('audio:tick', (event) => {
 
 listen<{ urn: string; progress: number }>('track:download-progress', (event) => {
   const { urn, progress } = event.payload;
-  if (urn === currentUrn) {
-    setDownloadProgress(progress);
+  if (urn === currentUrn && downloadProgress !== null) {
+    setDownloadProgress(Math.max(downloadProgress, progress));
   }
 });
 
