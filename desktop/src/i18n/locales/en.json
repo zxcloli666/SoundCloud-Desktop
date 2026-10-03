@@ -307,7 +307,9 @@
     "moreCrates": "More crates by {{name}}",
     "lastEdited": "Updated {{date}}",
     "emptyCrate": "This crate is empty — start digging",
-    "partialTracks": "{{shown}} of {{total}} tracks are available"
+    "partialTracks_one": "{{shown}} of {{total}} track is available",
+    "partialTracks_other": "{{shown}} of {{total}} tracks are available",
+    "tracksUnavailable": "Couldn't load this playlist's tracks from SoundCloud"
   },
   "user": {
     "followers": "Followers",

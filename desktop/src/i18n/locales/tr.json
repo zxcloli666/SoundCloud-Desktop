@@ -226,7 +226,9 @@
     "deleted": "Calma listesi silindi",
     "private": "Gizli",
     "public": "Herkese acik",
-    "partialTracks": "{{total}} parcadan {{shown}} tanesi kullanilabilir"
+    "partialTracks_one": "{{total}} parcadan {{shown}} tanesi kullanilabilir",
+    "partialTracks_other": "{{total}} parcadan {{shown}} tanesi kullanilabilir",
+    "tracksUnavailable": "Calma listesinin parcalari SoundCloud'dan yuklenemedi"
   },
   "user": {
     "followers": "Takipciler",

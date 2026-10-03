@@ -311,7 +311,10 @@
     "moreCrates": "Ещё подборки от {{name}}",
     "lastEdited": "Обновлено {{date}}",
     "emptyCrate": "Подборка пуста — пора копать",
-    "partialTracks": "Доступно {{shown}} из {{total}} треков"
+    "partialTracks_one": "Доступно {{shown}} из {{total}} трека",
+    "partialTracks_few": "Доступно {{shown}} из {{total}} треков",
+    "partialTracks_many": "Доступно {{shown}} из {{total}} треков",
+    "tracksUnavailable": "Не удалось загрузить треки плейлиста из SoundCloud"
   },
   "user": {
     "followers": "Подписчики",
