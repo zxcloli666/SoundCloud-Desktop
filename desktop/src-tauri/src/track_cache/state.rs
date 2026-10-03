@@ -29,6 +29,7 @@ const STORAGE_COOLDOWN_SECS: u64 = 60;
 const DOWNLOAD_CONNECT_TIMEOUT_MS: u64 = 3_000;
 const DOWNLOAD_READ_TIMEOUT_SECS: u64 = 130;
 const ANON_READ_TIMEOUT_SECS: u64 = 20;
+const HQ_ANON_BACKUP_SECS: u64 = 15;
 const DIRECT_CONNECT_TIMEOUT_MS: u64 = 5_000;
 const DIRECT_READ_TIMEOUT_SECS: u64 = 70;
 const RETRY_DELAYS_MS: [u64; 3] = [200, 600, 1500];
@@ -1734,23 +1735,67 @@ impl TrackCacheState {
         // Race /download (direct from SC) vs /stream (proxy via streaming API).
         // First success wins, the loser is dropped → reqwest cancels its connection.
         if !download_urls.is_empty() || !urls.is_empty() {
-            match self
-                .race_direct_and_api(target_dir, urn, download_urls, urls, session_id, hq, start)
-                .await
-            {
+            let race = self.race_direct_and_api(
+                target_dir,
+                urn,
+                download_urls,
+                urls,
+                session_id,
+                hq,
+                start,
+            );
+            let result = if hq {
+                self.race_with_anon_backup(target_dir, urn, race, start)
+                    .await
+            } else {
+                race.await
+            };
+            match result {
                 Ok(path) => return Ok(path),
                 Err(err) => {
                     last_err = err;
                 }
             }
-        }
-
-        if hq && let Ok(Some(path)) = self.try_anon(target_dir, urn, start).await {
+        } else if hq && let Ok(Some(path)) = self.try_anon(target_dir, urn, start).await {
             return Ok(path);
         }
 
         eprintln!("[TrackCache] gave up on {urn}: {last_err}");
         Err(last_err)
+    }
+
+    async fn race_with_anon_backup(
+        &self,
+        target_dir: &Path,
+        urn: &str,
+        hq_race: impl Future<Output = Result<PathBuf, String>>,
+        start: std::time::Instant,
+    ) -> Result<PathBuf, String> {
+        tokio::pin!(hq_race);
+        tokio::select! {
+            res = &mut hq_race => return match res {
+                Ok(path) => Ok(path),
+                Err(err) => self.try_anon(target_dir, urn, start).await.ok().flatten().ok_or(err),
+            },
+            () = tokio::time::sleep(Duration::from_secs(HQ_ANON_BACKUP_SECS)) => {}
+        }
+
+        let line = format!("[TrackCache] hq sources still busy for {urn}, starting anon alongside");
+        println!("{line}");
+        self.diag("INFO", line);
+
+        let anon = self.try_anon(target_dir, urn, start);
+        tokio::pin!(anon);
+        tokio::select! {
+            res = &mut hq_race => match res {
+                Ok(path) => Ok(path),
+                Err(err) => anon.await.ok().flatten().ok_or(err),
+            },
+            res = &mut anon => match res {
+                Ok(Some(path)) => Ok(path),
+                _ => hq_race.await,
+            },
+        }
     }
 
     async fn try_anon(
