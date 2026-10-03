@@ -4,6 +4,7 @@ use std::time::Duration;
 
 use discord_rich_presence::{
     activity::{Activity, ActivityType, Assets, Button, Timestamps},
+    error::Error as IpcError,
     DiscordIpc, DiscordIpcClient,
 };
 
@@ -49,8 +50,9 @@ pub async fn discord_connect(
         return Err("Connection in progress".into());
     }
     let state = state.inner().clone();
+    let handle = app.clone();
     let connect = tokio::task::spawn_blocking(move || {
-        let result = open_client(&state);
+        let result = open_client(&handle, &state);
         state.connecting.store(false, Ordering::Release);
         result
     });
@@ -63,15 +65,19 @@ pub async fn discord_connect(
     }
 }
 
-fn open_client(state: &DiscordState) -> Result<bool, String> {
+fn open_client(app: &AppHandle, state: &DiscordState) -> Result<bool, String> {
     if state.client.lock().map_err(|e| e.to_string())?.is_some() {
         return Ok(true);
     }
     let mut client = DiscordIpcClient::new(DISCORD_CLIENT_ID);
-    client
-        .connect()
-        .map_err(|e| format!("Connection failed: {e}"))?;
+    if let Err(e) = client.connect() {
+        if !matches!(e, IpcError::IPCNotFound | IpcError::IPCConnectionFailed) {
+            log_native(app, "WARN", format!("[Discord] Connection failed: {e:?}"));
+        }
+        return Err(format!("Connection failed: {e}"));
+    }
     *state.client.lock().map_err(|e| e.to_string())? = Some(client);
+    log_native(app, "INFO", "[Discord] Connected");
     Ok(true)
 }
 
