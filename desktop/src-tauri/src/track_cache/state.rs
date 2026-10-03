@@ -967,7 +967,11 @@ async fn http_failure(status: wreq::StatusCode, response: wreq::Response) -> Dow
     } else {
         format!("HTTP {}", status)
     };
-    DownloadError::Retryable(message)
+    if status.is_client_error() && !matches!(status.as_u16(), 408 | 429) {
+        DownloadError::Fatal(message)
+    } else {
+        DownloadError::Retryable(message)
+    }
 }
 
 impl TrackCacheState {

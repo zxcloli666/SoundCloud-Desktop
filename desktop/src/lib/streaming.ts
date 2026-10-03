@@ -30,6 +30,11 @@ function resolveStreamingBases(): string[] {
   return [...new Set([STREAMING_PREMIUM_BASE, STREAMING_BASE])];
 }
 
+function resolveDownloadBases(): string[] {
+  const bases = getIsPremium() ? [STREAMING_PREMIUM_BASE, STREAMING_BASE] : [STREAMING_BASE];
+  return [...new Set(bases)];
+}
+
 function resolveTicketBases(): string[] {
   const bases = getIsPremium() ? [API_STAR_BASE, API_BASE] : [API_BASE];
   return [...new Set(bases)];
@@ -139,7 +144,7 @@ export function downloadFallbackUrls(
   trackUrn: string,
   hq = useSettingsStore.getState().highQualityStreaming,
 ): string[] {
-  const bases = resolveStreamingBases();
+  const bases = resolveDownloadBases();
   const urls: string[] = [];
   const seen = new Set<string>();
 
