@@ -13,6 +13,8 @@ import {SequenceList} from '../components/playlist/SequenceList';
 import {SetRibbon} from '../components/playlist/SetRibbon';
 import {usePlaylistAura} from '../components/playlist/usePlaylistAura';
 import {Atmosphere} from '../components/search/Atmosphere';
+import {LoadErrorState} from '../components/ui/LoadErrorState';
+import {SyncNotice, syncNoticeOf} from '../components/ui/SyncNotice';
 import {
     useDeletePlaylist,
     useInfiniteScroll,
@@ -51,14 +53,24 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
   const perf = usePerfMode();
   const myUrn = useAuthStore((s) => s.user?.urn);
 
-  const { data: playlist, isLoading: playlistLoading } = usePlaylist(urn);
+  const {
+    data: playlist,
+    isLoading: playlistLoading,
+    isError: playlistFailed,
+    isFetching: playlistFetching,
+    error: playlistError,
+    refetch: refetchPlaylist,
+  } = usePlaylist(urn);
   const {
     tracks: playlistTracks,
     isLoading: tracksLoading,
+    isError: tracksFailed,
+    refetch: refetchTracks,
+    syncState: tracksSync,
     hasNextPage,
     isFetchingNextPage,
     fetchNextPage,
-  } = usePlaylistTracks(urn);
+  } = usePlaylistTracks(playlist ? urn : undefined);
   const updateTracks = useUpdatePlaylistTracks(urn);
   const deletePlaylist = useDeletePlaylist();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -212,6 +224,37 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
     });
   }, [playlist, deletePlaylist, navigate, t]);
 
+  const declaredCount = playlist?.track_count ?? 0;
+  const missingTracks = tracks.length < declaredCount;
+  const tracksNotice = syncNoticeOf({
+    isError: tracksFailed && tracks.length === 0,
+    syncState: missingTracks ? tracksSync : 'complete',
+  });
+  const listNotice = useMemo(() => {
+    if (tracksNotice) {
+      return <SyncNotice kind={tracksNotice} onRetry={() => void refetchTracks()} />;
+    }
+    if (!missingTracks || hasNextPage) return null;
+    return (
+      <p className="text-center text-[13px] text-white/30">
+        {t('playlist.partialTracks', { shown: tracks.length, total: declaredCount })}
+      </p>
+    );
+  }, [tracksNotice, missingTracks, hasNextPage, tracks.length, declaredCount, refetchTracks, t]);
+
+  if (!playlist && playlistFailed) {
+    return (
+      <div className="relative min-h-full w-full flex items-center justify-center">
+        {perf.atmosphere && <Atmosphere />}
+        <LoadErrorState
+          error={playlistError}
+          retrying={playlistFetching}
+          onRetry={() => void refetchPlaylist()}
+        />
+      </div>
+    );
+  }
+
   if (isLoading || !playlist) {
     return (
       <div className="relative min-h-full w-full">
@@ -285,6 +328,7 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
 
         <SequenceList
           tracks={tracks}
+          notice={listNotice}
           isOwner={isOwner}
           onDragEnd={handleDragEnd}
           onRemove={handleRemoveTrack}

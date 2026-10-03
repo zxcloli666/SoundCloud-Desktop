@@ -306,7 +306,8 @@
     "yearRange": "{{from}}–{{to}}",
     "moreCrates": "More crates by {{name}}",
     "lastEdited": "Updated {{date}}",
-    "emptyCrate": "This crate is empty — start digging"
+    "emptyCrate": "This crate is empty — start digging",
+    "partialTracks": "{{shown}} of {{total}} tracks are available"
   },
   "user": {
     "followers": "Followers",
@@ -726,7 +727,12 @@
     "back": "Back",
     "empty": "Nothing here yet",
     "expand": "Read more",
-    "collapse": "Collapse"
+    "collapse": "Collapse",
+    "loadFailed": "Couldn't load this",
+    "syncing": "Syncing with SoundCloud...",
+    "syncSlow": "Syncing with SoundCloud is taking longer than usual",
+    "stillLoading": "Still loading from SoundCloud, try again in a moment",
+    "pageLoadFailed": "Couldn't load this page"
   },
   "star": {
     "title": "Star Subscription",
