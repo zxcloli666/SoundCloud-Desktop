@@ -28,9 +28,14 @@ export const QrLinkSheet = React.memo(
     // Tick every second to update remaining-time.
     useEffect(() => {
       if (state.status !== 'pending') return;
+      setNow(Date.now());
       const id = setInterval(() => setNow(Date.now()), 1000);
       return () => clearInterval(id);
     }, [state.status]);
+
+    useEffect(() => {
+      if (open && state.status === 'expired') start();
+    }, [open, state.status, start]);
 
     const remainingSec = state.expiresAt
       ? Math.max(0, Math.floor((state.expiresAt.getTime() - now) / 1000))
