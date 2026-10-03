@@ -96,3 +96,20 @@ export function setupVisibilityGate(): void {
     apply();
     document.addEventListener('visibilitychange', apply);
 }
+
+let focusGateInstalled = false;
+
+export function setupFocusGate(): void {
+    if (focusGateInstalled || typeof document === 'undefined') return;
+    focusGateInstalled = true;
+    const apply = () => {
+        if (document.hasFocus()) {
+            document.documentElement.removeAttribute('data-app-idle');
+        } else {
+            document.documentElement.setAttribute('data-app-idle', '1');
+        }
+    };
+    apply();
+    window.addEventListener('focus', apply);
+    window.addEventListener('blur', apply);
+}

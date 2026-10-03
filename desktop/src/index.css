@@ -97,6 +97,12 @@
     animation-play-state: paused !important;
 }
 
+[data-app-idle="1"] *,
+[data-app-idle="1"] *::before,
+[data-app-idle="1"] *::after {
+    animation-play-state: paused !important;
+}
+
 /* Light mode: stop decorative idle motion carried on CSS classes. Inline-styled
    motion (star fields, aurora orbs, prismatic text) is gated in JS via usePerfMode;
    functional motion (spinners, dialog transitions, live progress) is left alone. */
