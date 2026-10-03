@@ -522,6 +522,8 @@
     "perfMediumDesc": "Daha az bulaniklik ve parcacik.",
     "perfBeauty": "Guzellik",
     "perfBeautyDesc": "Tam liquid-glass tasarim.",
+    "perfAutoLight": "Efektler uygulamayi yavaslatiyordu, bu yuzden Hafif mod acildi. Ayarlar > Gorunum bolumunden degistirebilirsiniz.",
+    "perfAutoLightUndo": "Geri al",
     "startup": "Baslangic",
     "startupPageDesc": "Uygulama acildiginda hangi sayfanin gosterilecegini secin",
     "playback": "Oynatma",
