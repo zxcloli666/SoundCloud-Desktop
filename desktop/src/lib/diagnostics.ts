@@ -25,7 +25,7 @@ function logWarn(message: string) {
   writeLog('WARN', message);
 }
 
-function logError(message: string) {
+export function logError(message: string) {
   console.error(message);
   writeLog('ERROR', message);
 }
