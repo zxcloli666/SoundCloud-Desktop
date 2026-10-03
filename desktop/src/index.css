@@ -106,7 +106,10 @@
 [data-perf="light"] .vp-mote,
 [data-perf="light"] .lyric-line[data-state="active"] .note-gradient-text,
 [data-perf="light"] .npb-dock[data-playing="true"] .npb-ring,
-[data-perf="light"] .npb-dock[data-playing="true"] .npb-play::after {
+[data-perf="light"] .npb-dock[data-playing="true"] .npb-eq i,
+[data-perf="light"] .npb-dock[data-playing="true"] .npb-play::after,
+[data-perf="light"] .tp[data-playing="true"] .npb-ring,
+[data-perf="light"] .tp[data-playing="true"] .npb-eq i {
     animation: none !important;
 }
 
