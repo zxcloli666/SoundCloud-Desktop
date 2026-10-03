@@ -306,7 +306,7 @@ async function loadCachedFile(
   }
 }
 
-async function loadTrack(track: Track) {
+async function loadTrack(track: Track, resumeAt = 0) {
   const gen = ++loadGen;
   const isNewTrack = currentUrn !== track.urn;
   stopTrack();
@@ -362,7 +362,7 @@ async function loadTrack(track: Track) {
       const loadResult = await loadCachedFile(
         urn,
         cached.path,
-        !usePlayerStore.getState().isPlaying,
+        resumeAt > 0 || !usePlayerStore.getState().isPlaying,
         reResolve,
       );
       if (gen !== loadGen) return;
@@ -372,7 +372,7 @@ async function loadTrack(track: Track) {
         updateMetadata(track, loadResult.duration_secs);
         notify();
       }
-      afterLoad(track, gen);
+      await afterLoad(track, gen, resumeAt);
       return;
     }
 
@@ -396,7 +396,7 @@ async function loadTrack(track: Track) {
     const loadResult = await loadCachedFile(
       urn,
       cachedInfo.path,
-      !usePlayerStore.getState().isPlaying,
+      resumeAt > 0 || !usePlayerStore.getState().isPlaying,
       reResolve,
     );
     if (loadResult?.duration_secs) {
@@ -408,7 +408,7 @@ async function loadTrack(track: Track) {
     void enforceAudioCacheLimit().catch(console.error);
 
     if (gen !== loadGen) return;
-    afterLoad(track, gen);
+    await afterLoad(track, gen, resumeAt);
   } catch (e) {
     console.error('[Audio] Load failed:', e);
     setDownloadProgress(null);
@@ -422,10 +422,16 @@ async function loadTrack(track: Track) {
   }
 }
 
-function afterLoad(track: Track, gen: number) {
+async function afterLoad(track: Track, gen: number, resumeAt: number) {
   if (gen !== loadGen) {
     invoke('audio_stop').catch(console.error);
     return;
+  }
+  if (resumeAt > 0) {
+    await invoke('audio_seek', { position: resumeAt }).catch(console.error);
+    if (gen !== loadGen) return;
+    cachedTime = resumeAt;
+    notify();
   }
   hasTrack = true;
 
@@ -474,10 +480,10 @@ function endedEarly(track: Track): boolean {
   return cachedTime < expected - tolerance;
 }
 
-/** Трек «закончился» через пару секунд при заявленных минутах — в кеше битый
- *  файл (заголовок целый, данные обрезаны: легаси без .meta.json или яд из
- *  storage до серверного duration-гейта). Сносим файл и перекачиваем вместо
- *  тихого скипа на следующий. */
+/** Трек «закончился» заметно раньше заявленной длины — в кеше битый файл
+ *  (заголовок целый, данные обрезаны: легаси без .meta.json или яд из storage
+ *  до серверного duration-гейта). Сносим файл, перекачиваем и продолжаем с
+ *  места обрыва вместо тихого скипа на следующий. */
 function maybeHealEarlyEnd(): boolean {
   if (!currentUrn || navigator.onLine === false) return false;
   const state = usePlayerStore.getState();
@@ -501,11 +507,7 @@ function maybeHealEarlyEnd(): boolean {
     .catch(() => {})
     .then(() => {
       if (usePlayerStore.getState().currentTrack?.urn !== track.urn) return;
-      const loadPromise = loadTrack(track);
-      const gen = loadGen;
-      return loadPromise.then(() => {
-        if (gen === loadGen && endedAt > 1) seek(endedAt - 1);
-      });
+      return loadTrack(track, Math.max(0, endedAt - 1));
     });
   return true;
 }
