@@ -27,7 +27,7 @@ export interface ScdSearchTag {
   score?: number;
 }
 
-const TRANSIENT: ReadonlySet<LiveState> = new Set([
+const TRANSIENT: ReadonlySet<string> = new Set<LiveState>([
   'limited',
   'busy',
   'cooling',
@@ -36,7 +36,7 @@ const TRANSIENT: ReadonlySet<LiveState> = new Set([
   'timeout',
 ]);
 
-export function isTransientLive(state: LiveState | undefined): boolean {
+export function isTransientLive(state: string | undefined): boolean {
   return !!state && TRANSIENT.has(state);
 }
 
@@ -44,6 +44,18 @@ export function liveOf(
   data: { pages: Array<{ live?: LiveMeta }> } | undefined,
 ): LiveMeta | undefined {
   return data?.pages[0]?.live;
+}
+
+const SEARCHED: ReadonlySet<string> = new Set<LiveState>([
+  'fresh',
+  'cached',
+  'stale',
+  'local',
+  'skipped',
+]);
+
+export function liveSearched(state: string | undefined): boolean {
+  return !!state && SEARCHED.has(state);
 }
 
 export function isLiveTile(track: Track): boolean {

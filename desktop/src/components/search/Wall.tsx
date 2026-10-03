@@ -14,6 +14,7 @@ interface WallProps {
     isFetchingMore?: boolean;
     onLoadMore?: () => void;
     onDive?: (track: Track) => void;
+    dimmed?: boolean;
 }
 
 const GAP = 12;
@@ -57,6 +58,7 @@ export const Wall = memo(function Wall({
                                            isFetchingMore,
                                            onLoadMore,
                                            onDive,
+                                           dimmed,
                                        }: WallProps) {
     const ref = useRef<HTMLDivElement | null>(null);
     const fillAtRef = useRef(-1);
@@ -120,12 +122,13 @@ export const Wall = memo(function Wall({
         <>
             <div
                 ref={ref}
-                className="tg-wall grid px-4"
+                className="tg-wall grid px-4 transition-opacity duration-300"
                 style={{
                     gridTemplateColumns: `repeat(${columns}, 1fr)`,
                     gridAutoRows: `${cellPx}px`,
                     gap: GAP,
                     gridAutoFlow: 'dense',
+                    opacity: dimmed ? 0.5 : 1,
                 }}
             >
                 {showSkeleton ? (

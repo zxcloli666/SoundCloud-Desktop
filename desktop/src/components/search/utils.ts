@@ -14,6 +14,7 @@ export interface WallItem {
     matchedLine?: string | null;
     /** Seeded 2×2 anchor tile that breaks the grid rhythm. */
     hero?: boolean;
+    live?: boolean;
 }
 
 /* ── Genres ──────────────────────────────────────────────────────
