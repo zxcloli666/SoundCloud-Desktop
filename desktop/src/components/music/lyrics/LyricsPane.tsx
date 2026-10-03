@@ -1,11 +1,21 @@
-import {useQuery} from '@tanstack/react-query';
-import React, {useEffect, useState} from 'react';
-import {useTranslation} from 'react-i18next';
-import {Loader2, MicVocal, Search} from '../../../lib/icons';
-import {getLyricsByTrack, searchLyricsManual} from '../../../lib/lyrics';
-import {getTrackDisplay} from '../../../lib/track-display';
-import type {Track} from '../../../stores/player';
-import {LyricsSourceBadge, PlainLyrics, SyncedLyrics} from './SyncedLyrics';
+import { useQuery } from '@tanstack/react-query';
+import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Loader2, MicVocal, Search } from '../../../lib/icons';
+import { getLyricsByTrack, searchLyricsManual } from '../../../lib/lyrics';
+import { getTrackDisplay } from '../../../lib/track-display';
+import type { Track } from '../../../stores/player';
+import { LyricsSourceBadge, PlainLyrics, SyncedLyrics } from './SyncedLyrics';
+
+const PENDING_POLL_FAST_MS = 3_000;
+const PENDING_POLL_SLOW_MS = 10_000;
+const PENDING_FAST_WINDOW_MS = 30_000;
+const PENDING_POLL_LIMIT_MS = 180_000;
+
+function pendingPollDelay(waitedMs: number): number | false {
+  if (waitedMs >= PENDING_POLL_LIMIT_MS) return false;
+  return waitedMs < PENDING_FAST_WINDOW_MS ? PENDING_POLL_FAST_MS : PENDING_POLL_SLOW_MS;
+}
 
 const ManualSearchPanel = React.memo(
   ({
@@ -66,18 +76,65 @@ const ManualSearchPanel = React.memo(
   },
 );
 
+const LyricsMessage = ({
+  title,
+  hint,
+  onSearch,
+  onRetry,
+}: {
+  title: string;
+  hint: string;
+  onSearch: () => void;
+  onRetry?: () => void;
+}) => {
+  const { t } = useTranslation();
+
+  return (
+    <div className="flex-1 flex flex-col items-center justify-center gap-4 px-12 text-center relative">
+      <button
+        type="button"
+        onClick={onSearch}
+        aria-label={t('track.manualSearch')}
+        className="absolute right-3 top-3 w-8 h-8 flex items-center justify-center rounded-full text-white/30 hover:text-white/70 hover:bg-white/10 transition-colors cursor-pointer"
+      >
+        <Search size={14} />
+      </button>
+      <MicVocal size={40} className="text-white/[0.06]" />
+      <p className="text-[15px] text-white/30 font-medium">{title}</p>
+      <p className="text-[12px] text-white/15 leading-relaxed max-w-[300px]">{hint}</p>
+      {onRetry && (
+        <button
+          type="button"
+          onClick={onRetry}
+          className="px-5 py-2 rounded-full text-[13px] font-medium text-white/50 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+        >
+          {t('common.retry')}
+        </button>
+      )}
+    </div>
+  );
+};
+
 export const LyricsPane = React.memo(({ track }: { track: Track }) => {
   const { t } = useTranslation();
   const [isEditing, setIsEditing] = useState(false);
   const [manualQuery, setManualQuery] = useState<{ artist: string; title: string } | null>(null);
+  const [pollStartedAt, setPollStartedAt] = useState(() => Date.now());
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: reset only on track switch
   useEffect(() => {
     setManualQuery(null);
     setIsEditing(false);
+    setPollStartedAt(Date.now());
   }, [track.urn]);
 
-  const { data: lyrics, isLoading } = useQuery({
+  const {
+    data: lyrics,
+    dataUpdatedAt,
+    isFetching,
+    isError,
+    refetch,
+  } = useQuery({
     queryKey: manualQuery
       ? ['lyrics', 'search', manualQuery.artist, manualQuery.title, track.duration]
       : ['lyrics', 'track', track.urn],
@@ -85,9 +142,21 @@ export const LyricsPane = React.memo(({ track }: { track: Track }) => {
       manualQuery
         ? searchLyricsManual(manualQuery.artist, manualQuery.title, track.duration)
         : getLyricsByTrack(track.urn),
-    staleTime: Number.POSITIVE_INFINITY,
+    staleTime: (query) => (query.state.data?.status === 'pending' ? 0 : Number.POSITIVE_INFINITY),
+    refetchInterval: (query) =>
+      query.state.data?.status === 'pending'
+        ? pendingPollDelay(query.state.dataUpdatedAt - pollStartedAt)
+        : false,
     retry: 1,
   });
+
+  const pending = lyrics?.status === 'pending';
+  const polling = pending && pendingPollDelay(dataUpdatedAt - pollStartedAt) !== false;
+
+  const retry = () => {
+    setPollStartedAt(Date.now());
+    void refetch();
+  };
 
   const startSearch = () => {
     const display = getTrackDisplay(track);
@@ -117,15 +186,6 @@ export const LyricsPane = React.memo(({ track }: { track: Track }) => {
     );
   }
 
-  if (isLoading) {
-    return (
-      <div className="flex-1 flex flex-col items-center justify-center gap-3">
-        <Loader2 size={24} className="animate-spin text-white/15" />
-        <p className="text-[13px] text-white/25">{t('track.lyricsLoading')}</p>
-      </div>
-    );
-  }
-
   if (lyrics?.synced && lyrics.synced.length > 0) {
     return (
       <>
@@ -144,21 +204,42 @@ export const LyricsPane = React.memo(({ track }: { track: Track }) => {
     );
   }
 
+  if (isFetching || polling) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center gap-3">
+        <Loader2 size={24} className="animate-spin text-white/15" />
+        <p className="text-[13px] text-white/25">{t('track.lyricsLoading')}</p>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <LyricsMessage
+        title={t('track.lyricsLoadError')}
+        hint={t('track.lyricsLoadErrorHint')}
+        onSearch={startSearch}
+        onRetry={retry}
+      />
+    );
+  }
+
+  if (pending) {
+    return (
+      <LyricsMessage
+        title={t('track.lyricsPending')}
+        hint={t('track.lyricsPendingHint')}
+        onSearch={startSearch}
+        onRetry={retry}
+      />
+    );
+  }
+
   return (
-    <div className="flex-1 flex flex-col items-center justify-center gap-4 px-12 text-center relative">
-      <button
-        type="button"
-        onClick={startSearch}
-        aria-label={t('track.manualSearch')}
-        className="absolute right-3 top-3 w-8 h-8 flex items-center justify-center rounded-full text-white/30 hover:text-white/70 hover:bg-white/10 transition-colors cursor-pointer"
-      >
-        <Search size={14} />
-      </button>
-      <MicVocal size={40} className="text-white/[0.06]" />
-      <p className="text-[15px] text-white/30 font-medium">{t('track.lyricsNotFound')}</p>
-      <p className="text-[12px] text-white/15 leading-relaxed max-w-[300px]">
-        {t('track.lyricsNotFoundHint')}
-      </p>
-    </div>
+    <LyricsMessage
+      title={t('track.lyricsNotFound')}
+      hint={t('track.lyricsNotFoundHint')}
+      onSearch={startSearch}
+    />
   );
 });

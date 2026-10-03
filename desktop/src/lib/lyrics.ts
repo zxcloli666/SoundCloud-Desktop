@@ -1,6 +1,8 @@
-import {api} from './api';
+import { ApiError, api } from './api';
 
 export type LyricsSource = 'lrclib' | 'musixmatch' | 'genius' | 'netease' | 'self_gen' | 'none';
+
+export type LyricsStatus = 'found' | 'pending' | 'none';
 
 export interface LyricLine {
   time: number;
@@ -8,6 +10,7 @@ export interface LyricLine {
 }
 
 export interface LyricsResult {
+  status: LyricsStatus;
   plain: string | null;
   synced: LyricLine[] | null;
   source: LyricsSource;
@@ -21,6 +24,7 @@ interface BackendLyricsResponse {
   source: LyricsSource;
   language: string | null;
   languageConfidence: number | null;
+  status: LyricsStatus;
 }
 
 const LRC_TIME_TAG = /^\[(\d{1,3}):(\d{2})(?:[.:](\d{1,3}))?\]/;
@@ -48,6 +52,7 @@ function toResult(data: BackendLyricsResponse | null): LyricsResult | null {
   if (!data) return null;
   const synced = data.syncedLrc ? parseLRC(data.syncedLrc) : [];
   return {
+    status: data.status,
     plain: data.plainText,
     synced: synced.some((line) => line.text) ? synced : null,
     source: data.source,
@@ -57,11 +62,12 @@ function toResult(data: BackendLyricsResponse | null): LyricsResult | null {
 
 /** Load lyrics by track URN/id. Backend resolves artist/title itself and writes to cache. */
 export async function getLyricsByTrack(scTrackId: string): Promise<LyricsResult | null> {
-  const data = await api<BackendLyricsResponse>(
-    `/lyrics/${encodeURIComponent(scTrackId)}`,
-    undefined,
-    180_000,
-  ).catch(() => null);
+  const data = await api<BackendLyricsResponse>(`/lyrics/${encodeURIComponent(scTrackId)}`, {
+    silentStatuses: [404],
+  }).catch((error: unknown) => {
+    if (error instanceof ApiError && error.status === 404) return null;
+    throw error;
+  });
   return toResult(data);
 }
 
