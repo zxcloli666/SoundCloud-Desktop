@@ -99,7 +99,18 @@ fn tuned_builder(device: &cpal::Device) -> Option<DeviceSinkBuilder> {
     Some(builder.with_buffer_size(cpal::BufferSize::Fixed(LINUX_BUFFER_FRAMES)))
 }
 
-#[cfg(not(target_os = "linux"))]
+#[cfg(windows)]
+fn tuned_builder(device: &cpal::Device) -> Option<DeviceSinkBuilder> {
+    use cpal::traits::DeviceTrait;
+
+    if device.default_output_config().ok()?.channels() <= 2 {
+        return None;
+    }
+    let builder = DeviceSinkBuilder::from_device(device.clone()).ok()?;
+    Some(builder.with_channels(rodio::nz!(2)))
+}
+
+#[cfg(not(any(target_os = "linux", windows)))]
 fn tuned_builder(_device: &cpal::Device) -> Option<DeviceSinkBuilder> {
     None
 }

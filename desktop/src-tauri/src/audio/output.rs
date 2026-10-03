@@ -130,7 +130,7 @@ impl OutputThread {
             &self.handles.error_flag,
         ) {
             Ok(sink) => {
-                self.output = Output::Device(sink);
+                self.output = device_output(&self.handles, name.as_deref(), sink);
                 Ok(())
             }
             Err(error) => {
@@ -178,7 +178,7 @@ impl OutputThread {
 
         match open_device_sink(None, &self.handles.cmd_tx, &self.handles.error_flag) {
             Ok(sink) => {
-                self.output = Output::Device(sink);
+                self.output = device_output(&self.handles, None, sink);
                 self.reconnect_at = None;
             }
             Err(error) => {
@@ -199,12 +199,29 @@ impl OutputThread {
 
 fn open_default(handles: &OutputHandles) -> Output {
     match open_device_sink(None, &handles.cmd_tx, &handles.error_flag) {
-        Ok(sink) => Output::Device(sink),
+        Ok(sink) => device_output(handles, None, sink),
         Err(error) => {
             log_no_output(handles, &error);
             Output::silent()
         }
     }
+}
+
+fn device_output(handles: &OutputHandles, name: Option<&str>, sink: MixerDeviceSink) -> Output {
+    let config = sink.config();
+    diagnostics::log_native(
+        &handles.app,
+        "INFO",
+        format!(
+            "[Audio] Output opened on {}: {} ch, {} Hz, {:?}, buffer {:?}",
+            name.unwrap_or("default"),
+            config.channel_count(),
+            config.sample_rate(),
+            config.sample_format(),
+            config.buffer_size(),
+        ),
+    );
+    Output::Device(sink)
 }
 
 fn log_no_output(handles: &OutputHandles, error: &str) {
