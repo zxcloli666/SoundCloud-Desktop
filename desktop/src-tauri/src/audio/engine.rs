@@ -433,15 +433,15 @@ pub fn seek_to(state: &AudioState, position: f64) -> Result<(), String> {
     if position > 0.0 {
         new_player.try_seek(target).ok();
     }
-    if !was_paused {
-        new_player.play();
-    }
 
     let mut player = state.player.lock().unwrap();
     if let Some(old) = player.take() {
         old.stop();
     }
     new_player.set_volume(*state.volume.lock().unwrap());
+    if !was_paused {
+        new_player.play();
+    }
     *player = Some(new_player);
     set_pos_anchor(state, position, output_target);
     state.ended_notified.store(false, Ordering::Relaxed);
