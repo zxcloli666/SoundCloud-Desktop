@@ -431,7 +431,9 @@ pub fn seek_to(state: &AudioState, position: f64) -> Result<(), String> {
     )?;
     apply_current_rate(state, &new_player);
     if position > 0.0 {
-        new_player.try_seek(target).ok();
+        new_player
+            .try_seek(target)
+            .map_err(|e| format!("Seek to {position:.1}s failed: {e}"))?;
     }
 
     let mut player = state.player.lock().unwrap();

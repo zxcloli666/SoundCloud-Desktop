@@ -1,3 +1,4 @@
+use std::collections::VecDeque;
 use std::io::Cursor;
 use std::num::NonZero;
 use std::path::{Path, PathBuf};
@@ -33,6 +34,8 @@ pub fn is_ogg_opus(bytes: &[u8]) -> bool {
             .any(|w| w == b"OpusHead")
 }
 
+const OPUS_MAX_PACKET_FRAMES: usize = 5760;
+
 struct OpusSource<R: std::io::Read + std::io::Seek> {
     reader: ogg::reading::PacketReader<R>,
     decoder: audiopus::coder::Decoder,
@@ -40,8 +43,9 @@ struct OpusSource<R: std::io::Read + std::io::Seek> {
     buffer: Vec<f32>,
     buf_pos: usize,
     serial: u32,
-    pre_skip: usize,
-    samples_skipped: usize,
+    pre_skip: u64,
+    skip: usize,
+    pending: VecDeque<Vec<u8>>,
 }
 
 impl OpusSource<Cursor<Vec<u8>>> {
@@ -89,44 +93,61 @@ impl<R: std::io::Read + std::io::Seek> OpusSource<R> {
             buffer: Vec::new(),
             buf_pos: 0,
             serial,
-            pre_skip: pre_skip * channel_count as usize,
-            samples_skipped: 0,
+            pre_skip: pre_skip as u64,
+            skip: pre_skip * channel_count as usize,
+            pending: VecDeque::new(),
         })
     }
 
-    fn decode_next_packet(&mut self) -> bool {
-        loop {
-            match self.reader.read_packet() {
-                Ok(Some(pkt)) => {
-                    if pkt.data.is_empty() {
-                        continue;
-                    }
-                    let channels = self.channels.get() as usize;
-                    let mut buf = vec![0f32; 5760 * channels];
-                    match self.decoder.decode_float(Some(&pkt.data), &mut buf, false) {
-                        Ok(samples_per_ch) => {
-                            let total = samples_per_ch * channels;
-                            buf.truncate(total);
+    fn next_packet(&mut self) -> Option<Vec<u8>> {
+        if let Some(data) = self.pending.pop_front() {
+            return Some(data);
+        }
+        self.reader.read_packet().ok().flatten().map(|packet| packet.data)
+    }
 
-                            if self.samples_skipped < self.pre_skip {
-                                let skip = (self.pre_skip - self.samples_skipped).min(total);
-                                self.samples_skipped += skip;
-                                if skip >= total {
-                                    continue;
-                                }
-                                self.buffer = buf[skip..].to_vec();
-                            } else {
-                                self.buffer = buf;
-                            }
-                            self.buf_pos = 0;
-                            return true;
-                        }
-                        Err(_) => continue,
-                    }
-                }
-                _ => return false,
+    fn decode_next_packet(&mut self) -> bool {
+        while let Some(data) = self.next_packet() {
+            if data.is_empty() {
+                continue;
+            }
+            let channels = self.channels.get() as usize;
+            let mut buf = vec![0f32; OPUS_MAX_PACKET_FRAMES * channels];
+            let Ok(samples_per_ch) = self.decoder.decode_float(Some(&data), &mut buf, false) else {
+                continue;
+            };
+            let total = samples_per_ch * channels;
+            buf.truncate(total);
+
+            let skip = self.skip.min(total);
+            self.skip -= skip;
+            if skip == total {
+                continue;
+            }
+            buf.drain(..skip);
+            self.buffer = buf;
+            self.buf_pos = 0;
+            return true;
+        }
+        false
+    }
+
+    fn queue_first_page(&mut self) -> Option<u64> {
+        self.pending.clear();
+        let mut frames = 0;
+        while let Ok(Some(packet)) = self.reader.read_packet() {
+            frames += audiopus::packet::nb_samples(&packet.data, audiopus::SampleRate::Hz48000)
+                .ok()
+                .filter(|&count| count <= OPUS_MAX_PACKET_FRAMES)
+                .unwrap_or(0) as u64;
+            let page_end = packet.absgp_page();
+            let last_in_page = packet.last_in_page();
+            self.pending.push_back(packet.data);
+            if last_in_page {
+                return Some(page_end.saturating_sub(frames));
             }
         }
+        None
     }
 }
 
@@ -161,10 +182,10 @@ impl<R: std::io::Read + std::io::Seek> Source for OpusSource<R> {
     }
 
     fn try_seek(&mut self, pos: Duration) -> Result<(), SeekError> {
-        let target_gp = (pos.as_secs_f64() * 48000.0) as u64;
+        let target_gp = (pos.as_secs_f64() * 48000.0) as u64 + self.pre_skip;
 
         match self.reader.seek_absgp(Some(self.serial), target_gp) {
-            Ok(_) => {
+            Ok(true) => {
                 let opus_ch = if self.channels.get() == 1 {
                     audiopus::Channels::Mono
                 } else {
@@ -178,10 +199,11 @@ impl<R: std::io::Read + std::io::Seek> Source for OpusSource<R> {
                     )?;
                 self.buffer.clear();
                 self.buf_pos = 0;
-                self.samples_skipped = self.pre_skip;
+                let page_start = self.queue_first_page().unwrap_or(target_gp);
+                self.skip = target_gp.saturating_sub(page_start) as usize * self.channels.get() as usize;
                 Ok(())
             }
-            Err(_) => Err(SeekError::NotSupported {
+            Ok(false) | Err(_) => Err(SeekError::NotSupported {
                 underlying_source: "ogg seek failed",
             }),
         }
@@ -373,4 +395,108 @@ pub fn create_player_from_bytes(
     )));
 
     Ok((player, duration))
+}
+
+#[cfg(test)]
+mod tests {
+    use ogg::writing::{PacketWriteEndInfo, PacketWriter};
+
+    use super::*;
+
+    const RATE: usize = 48_000;
+    const PACKET_FRAMES: usize = 960;
+    const PACKETS_PER_PAGE: usize = 50;
+    const SERIAL: u32 = 7;
+
+    fn chirp(frame: usize) -> f32 {
+        let t = frame as f32 / RATE as f32;
+        (std::f32::consts::TAU * (200.0 * t + 150.0 * t * t)).sin() * 0.5
+    }
+
+    fn opus_stream(seconds: usize) -> Vec<u8> {
+        let encoder = audiopus::coder::Encoder::new(
+            audiopus::SampleRate::Hz48000,
+            audiopus::Channels::Stereo,
+            audiopus::Application::Audio,
+        )
+        .unwrap();
+        let pre_skip = encoder.lookahead().unwrap() as u16;
+        let mut writer = PacketWriter::new(Cursor::new(Vec::new()));
+
+        let mut head = b"OpusHead".to_vec();
+        head.extend([1, 2]);
+        head.extend(pre_skip.to_le_bytes());
+        head.extend((RATE as u32).to_le_bytes());
+        head.extend([0, 0, 0]);
+        writer
+            .write_packet(head, SERIAL, PacketWriteEndInfo::EndPage, 0)
+            .unwrap();
+        let mut tags = b"OpusTags".to_vec();
+        tags.extend([0; 8]);
+        writer
+            .write_packet(tags, SERIAL, PacketWriteEndInfo::EndPage, 0)
+            .unwrap();
+
+        let packets = seconds * RATE / PACKET_FRAMES;
+        for index in 0..packets {
+            let pcm = (0..PACKET_FRAMES)
+                .flat_map(|i| {
+                    let value = chirp(index * PACKET_FRAMES + i);
+                    [value, value]
+                })
+                .collect::<Vec<_>>();
+            let mut data = vec![0u8; 4000];
+            let len = encoder.encode_float(&pcm, &mut data).unwrap();
+            data.truncate(len);
+            let end = if index + 1 == packets {
+                PacketWriteEndInfo::EndStream
+            } else if (index + 1) % PACKETS_PER_PAGE == 0 {
+                PacketWriteEndInfo::EndPage
+            } else {
+                PacketWriteEndInfo::NormalPacket
+            };
+            let granule = ((index + 1) * PACKET_FRAMES) as u64;
+            writer.write_packet(data, SERIAL, end, granule).unwrap();
+        }
+        writer.into_inner().into_inner()
+    }
+
+    fn offset_of(segment: &[f32], reference: &[f32], around: usize, search: usize) -> isize {
+        let error = |start: usize| -> f32 {
+            segment
+                .iter()
+                .zip(&reference[start..])
+                .map(|(a, b)| (a - b) * (a - b))
+                .sum()
+        };
+        let best = (around - search..=around + search)
+            .step_by(2)
+            .min_by(|&a, &b| error(a).total_cmp(&error(b)))
+            .unwrap();
+        (best as isize - around as isize) / 2
+    }
+
+    #[test]
+    fn opus_seek_lands_on_the_requested_time() {
+        let bytes = opus_stream(6);
+        let reference = OpusSource::new(bytes.clone()).unwrap().collect::<Vec<_>>();
+
+        for seconds in [0.0, 0.73, 1.0, 2.37, 4.99] {
+            let mut source = OpusSource::new(bytes.clone()).unwrap();
+            source.by_ref().take(RATE).for_each(drop);
+            source.try_seek(Duration::from_secs_f64(seconds)).unwrap();
+
+            let settle = RATE / 10;
+            let segment = source.skip(settle * 2).take(RATE / 10).collect::<Vec<_>>();
+            let target = ((seconds * RATE as f64) as usize + settle) * 2;
+            let offset = offset_of(&segment, &reference, target, RATE / 10);
+            assert!(offset.abs() <= 2, "{seconds}s: off by {offset} frames");
+        }
+    }
+
+    #[test]
+    fn opus_seek_past_the_end_fails() {
+        let mut source = OpusSource::new(opus_stream(2)).unwrap();
+        assert!(source.try_seek(Duration::from_secs(10)).is_err());
+    }
 }
