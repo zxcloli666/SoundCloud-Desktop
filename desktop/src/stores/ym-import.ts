@@ -11,7 +11,12 @@ const PLAYLIST_NAME = 'Yandex Music';
 const PLAYLIST_TRACK_LIMIT = 500;
 const PLAYLIST_CONFLICT_RETRIES = 3;
 const PLAYLIST_CONFLICT_PAUSE_SEC = 5;
-const SESSION_EXPIRED = 'session_expired';
+const NATIVE_FAILURES = new Map([
+  ['session_expired', 'ym.sessionExpired'],
+  ['ym_token_invalid', 'ym.tokenInvalid'],
+  ['ym_unavailable', 'ym.ymUnavailable'],
+  ['search_unavailable', 'ym.searchUnavailable'],
+]);
 
 export interface YmImportProgress {
   total: number;
@@ -252,7 +257,8 @@ async function savePlaylists(runId: number, deleteStale: boolean) {
 }
 
 function describeFailure(error: unknown): string {
-  if (error === SESSION_EXPIRED) return i18n.t('ym.sessionExpired');
+  const nativeKey = typeof error === 'string' ? NATIVE_FAILURES.get(error) : undefined;
+  if (nativeKey) return i18n.t(nativeKey);
   if (isPlaylistConflict(error)) return i18n.t('ym.playlistNotSynced');
   if (error instanceof ApiError) return i18n.t('ym.saveFailed', { status: error.status });
   return error instanceof Error ? error.message : String(error);

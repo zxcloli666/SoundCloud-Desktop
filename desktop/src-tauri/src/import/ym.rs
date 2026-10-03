@@ -10,7 +10,13 @@ use crate::rt::AppHandle;
 use super::ym_search;
 
 const SESSION_EXPIRED: &str = "session_expired";
+const YM_TOKEN_INVALID: &str = "ym_token_invalid";
+const YM_UNAVAILABLE: &str = "ym_unavailable";
+const SEARCH_UNAVAILABLE: &str = "search_unavailable";
 
+const YM_API: &str = "https://api.music.yandex.net";
+const YM_CONNECT_TIMEOUT: Duration = Duration::from_secs(10);
+const YM_REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
 const YM_TRACKS_ATTEMPTS: u64 = 3;
 const MAX_SEARCH_ERRORS_IN_ROW: usize = 15;
 const SEARCH_ERROR_PAUSE: Duration = Duration::from_secs(1);
@@ -31,6 +37,11 @@ pub struct YmImportProgress {
 #[derive(serde::Serialize, Clone)]
 pub struct YmImportMatch {
     pub urn: String,
+}
+
+struct YmFailure {
+    code: &'static str,
+    detail: String,
 }
 
 #[derive(serde::Deserialize)]
@@ -92,41 +103,59 @@ fn emit_progress(
     .ok();
 }
 
+async fn ym_get<T: serde::de::DeserializeOwned>(
+    client: &wreq::Client,
+    ym_token: &str,
+    path: &str,
+) -> Result<T, YmFailure> {
+    let unavailable = |detail: String| YmFailure {
+        code: YM_UNAVAILABLE,
+        detail,
+    };
+    let resp = client
+        .get(format!("{YM_API}{path}"))
+        .header("Authorization", format!("OAuth {ym_token}"))
+        .send()
+        .await
+        .map_err(|e| unavailable(e.to_string()))?;
+
+    let status = resp.status();
+    if matches!(status.as_u16(), 401 | 403) {
+        return Err(YmFailure {
+            code: YM_TOKEN_INVALID,
+            detail: format!("HTTP {status}"),
+        });
+    }
+    if !status.is_success() {
+        return Err(unavailable(format!("HTTP {status}")));
+    }
+    resp.json().await.map_err(|e| unavailable(e.to_string()))
+}
+
+fn give_up(app: &AppHandle, step: &str, failure: YmFailure) -> String {
+    log_native(
+        app,
+        "WARN",
+        format!("[YM Import] {step} failed: {}", failure.detail),
+    );
+    failure.code.to_string()
+}
+
 async fn fetch_ym_tracks(
     client: &wreq::Client,
     ym_token: &str,
     ids: &str,
 ) -> Result<Vec<YmTrack>, String> {
+    let path = format!("/tracks?trackIds={ids}");
     let mut last_error = String::new();
 
     for attempt in 0..YM_TRACKS_ATTEMPTS {
         if attempt > 0 {
             tokio::time::sleep(Duration::from_millis(500 * attempt)).await;
         }
-
-        let resp = match client
-            .get(format!(
-                "https://api.music.yandex.net/tracks?trackIds={ids}"
-            ))
-            .header("Authorization", format!("OAuth {ym_token}"))
-            .send()
-            .await
-        {
-            Ok(resp) => resp,
-            Err(e) => {
-                last_error = e.to_string();
-                continue;
-            }
-        };
-
-        if !resp.status().is_success() {
-            last_error = format!("HTTP {}", resp.status());
-            continue;
-        }
-
-        match resp.json::<YmTrackInfo>().await {
+        match ym_get::<YmTrackInfo>(client, ym_token, &path).await {
             Ok(info) => return Ok(info.result),
-            Err(e) => last_error = e.to_string(),
+            Err(failure) => last_error = failure.detail,
         }
     }
 
@@ -142,42 +171,23 @@ pub async fn ym_import_start(
 ) -> Result<(), String> {
     CANCEL_FLAG.store(false, Ordering::Relaxed);
 
-    let client = wreq::Client::new();
+    let client = wreq::Client::builder()
+        .connect_timeout(YM_CONNECT_TIMEOUT)
+        .timeout(YM_REQUEST_TIMEOUT)
+        .build()
+        .map_err(|e| e.to_string())?;
 
-    let uid_resp = client
-        .get("https://api.music.yandex.net/account/status")
-        .header("Authorization", format!("OAuth {}", ym_token))
-        .send()
+    let account: serde_json::Value = ym_get(&client, &ym_token, "/account/status")
         .await
-        .map_err(|e| format!("YM auth failed: {}", e))?;
+        .map_err(|failure| give_up(&app, "account status", failure))?;
+    let Some(uid) = account["result"]["account"]["uid"].as_i64() else {
+        log_native(&app, "WARN", "[YM Import] account status has no user id");
+        return Err(YM_TOKEN_INVALID.to_string());
+    };
 
-    if !uid_resp.status().is_success() {
-        return Err(format!("YM auth failed: HTTP {}", uid_resp.status()));
-    }
-
-    let uid_json: serde_json::Value = uid_resp.json().await.map_err(|e| e.to_string())?;
-    let uid = uid_json["result"]["account"]["uid"]
-        .as_i64()
-        .ok_or("Failed to get YM user ID")?;
-
-    let likes_resp = client
-        .get(format!(
-            "https://api.music.yandex.net/users/{}/likes/tracks",
-            uid
-        ))
-        .header("Authorization", format!("OAuth {}", ym_token))
-        .send()
+    let likes: YmLikesResponse = ym_get(&client, &ym_token, &format!("/users/{uid}/likes/tracks"))
         .await
-        .map_err(|e| format!("Failed to fetch YM likes: {}", e))?;
-
-    if !likes_resp.status().is_success() {
-        return Err(format!(
-            "Failed to fetch YM likes: HTTP {}",
-            likes_resp.status()
-        ));
-    }
-
-    let likes: YmLikesResponse = likes_resp.json().await.map_err(|e| e.to_string())?;
+        .map_err(|failure| give_up(&app, "likes request", failure))?;
     let track_ids: Vec<String> = likes
         .result
         .library
@@ -294,6 +304,11 @@ pub async fn ym_import_start(
                         log_native(&app, "WARN", format!("[YM Import] search failed: {reason}"));
                     }
                     if search_errors_in_row >= MAX_SEARCH_ERRORS_IN_ROW {
+                        log_native(
+                            &app,
+                            "WARN",
+                            format!("[YM Import] search gave up: {reason}"),
+                        );
                         emit_progress(
                             &app,
                             total,
@@ -303,7 +318,7 @@ pub async fn ym_import_start(
                             errors,
                             current_track,
                         );
-                        return Err(format!("SoundCloud search unavailable: {reason}"));
+                        return Err(SEARCH_UNAVAILABLE.to_string());
                     }
                     tokio::time::sleep(SEARCH_ERROR_PAUSE).await;
                 }

@@ -725,7 +725,10 @@
     "limitHint": "SoundCloud allows 500 tracks per playlist, the rest goes to \"Yandex Music 2\", \"Yandex Music 3\" and so on",
     "sessionExpired": "Your SoundCloud session has expired. Sign in again and restart the import",
     "playlistNotSynced": "An existing \"Yandex Music\" playlist is still syncing with SoundCloud. Try the import again in a few minutes",
-    "saveFailed": "Could not save some playlists (error {{status}})"
+    "saveFailed": "Could not save some playlists (error {{status}})",
+    "tokenInvalid": "Yandex Music did not accept the token. Get a new one and try again",
+    "ymUnavailable": "Could not load your likes from Yandex Music. Check your connection and try again",
+    "searchUnavailable": "SoundCloud search is not responding. Try the import again later"
   },
   "update": {
     "available": "Update available",

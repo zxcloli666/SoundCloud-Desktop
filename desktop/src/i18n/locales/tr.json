@@ -632,7 +632,10 @@
     "limitHint": "SoundCloud calma listesine en fazla 500 sarki sigar, kalanlar \"Yandex Music 2\", \"Yandex Music 3\" listelerine gider",
     "sessionExpired": "SoundCloud oturumunuzun suresi doldu. Tekrar giris yapin ve ice aktarmayi yeniden baslatin",
     "playlistNotSynced": "Mevcut \"Yandex Music\" calma listesi hala SoundCloud ile esitleniyor. Birkac dakika sonra ice aktarmayi tekrar deneyin",
-    "saveFailed": "Bazi calma listeleri kaydedilemedi (hata {{status}})"
+    "saveFailed": "Bazi calma listeleri kaydedilemedi (hata {{status}})",
+    "tokenInvalid": "Yandex Music tokeni kabul etmedi. Yeni bir token alip tekrar deneyin",
+    "ymUnavailable": "Yandex Music begenileri yuklenemedi. Baglantinizi kontrol edip tekrar deneyin",
+    "searchUnavailable": "SoundCloud aramasi yanit vermiyor. Ice aktarmayi daha sonra tekrar deneyin"
   },
   "update": {
     "available": "Guncelleme mevcut",
