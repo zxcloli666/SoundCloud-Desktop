@@ -1006,7 +1006,9 @@ const ReactClusterBody = React.memo(({ urn }: { urn: string }) => {
     <div className="flex items-center gap-0.5">
       <LikeButton trackUrn={urn} trackData={trackData} disliked={disliked} />
       <NowBarDislikeButton trackUrn={urn} trackData={trackData} disliked={disliked} />
-      <PlaybackQualityBadge />
+      <div className="w-24 shrink-0">
+        <PlaybackQualityBadge />
+      </div>
     </div>
   );
 });

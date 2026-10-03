@@ -1106,8 +1106,9 @@ select,
     display: flex;
     flex-direction: column;
     gap: 2px;
+    flex: 0 1 150px;
+    width: 150px;
     min-width: 0;
-    max-width: 150px;
 }
 
 .npb-ttl {
@@ -1299,7 +1300,8 @@ select,
     }
 
     .npb-txt {
-        max-width: 112px;
+        flex-basis: 112px;
+        width: 112px;
     }
 }
 
