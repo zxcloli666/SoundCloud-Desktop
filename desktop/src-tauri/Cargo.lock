@@ -5219,6 +5219,7 @@ dependencies = [
  "futures-util",
  "hex",
  "http 1.4.0",
+ "hyper-util",
  "if-addrs",
  "ksni",
  "libc",

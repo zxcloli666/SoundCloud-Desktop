@@ -16,6 +16,7 @@ use tokio::sync::{Mutex, Notify, OwnedSemaphorePermit, Semaphore};
 
 use crate::app::diagnostics::log_native;
 use crate::network::edge::{Hop, Tier};
+use crate::network::system_proxy::follow;
 use crate::track_cache::direct_download::try_download;
 use crate::track_cache::sc_anon::AnonClient;
 use crate::track_cache::transcode;
@@ -581,7 +582,7 @@ pub fn init(audio_dir: PathBuf, liked_dir: PathBuf, incoming_dir: PathBuf) -> Tr
         sweep_temp_files(dir);
     }
 
-    let client = sc_fingerprint::builder(None)
+    let client = follow(sc_fingerprint::builder(None))
         .redirect(wreq::redirect::Policy::limited(10))
         .tcp_nodelay(true)
         .pool_max_idle_per_host(16)
@@ -590,7 +591,7 @@ pub fn init(audio_dir: PathBuf, liked_dir: PathBuf, incoming_dir: PathBuf) -> Tr
         .build()
         .expect("failed to build reqwest client");
 
-    let storage_client = wreq::Client::builder()
+    let storage_client = follow(wreq::Client::builder())
         .redirect(wreq::redirect::Policy::limited(10))
         .tcp_nodelay(true)
         .pool_max_idle_per_host(4)
@@ -598,7 +599,7 @@ pub fn init(audio_dir: PathBuf, liked_dir: PathBuf, incoming_dir: PathBuf) -> Tr
         .build()
         .expect("failed to build storage client");
 
-    let direct_client = sc_fingerprint::builder(None)
+    let direct_client = follow(sc_fingerprint::builder(None))
         .redirect(wreq::redirect::Policy::limited(10))
         .tcp_nodelay(true)
         .pool_max_idle_per_host(16)
@@ -607,7 +608,7 @@ pub fn init(audio_dir: PathBuf, liked_dir: PathBuf, incoming_dir: PathBuf) -> Tr
         .build()
         .expect("failed to build direct client");
 
-    let anon_client = sc_fingerprint::builder(None)
+    let anon_client = follow(sc_fingerprint::builder(None))
         .redirect(wreq::redirect::Policy::limited(10))
         .tcp_nodelay(true)
         .pool_max_idle_per_host(16)

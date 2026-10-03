@@ -81,7 +81,7 @@ pub fn run() {
 
             network::edge::init(data_dir.clone());
 
-            let http_client = sc_fingerprint::builder(None)
+            let http_client = network::system_proxy::follow(sc_fingerprint::builder(None))
                 .connect_timeout(Duration::from_secs(HTTP_CONNECT_TIMEOUT_SECS))
                 .read_timeout(Duration::from_secs(HTTP_READ_TIMEOUT_SECS))
                 .build()

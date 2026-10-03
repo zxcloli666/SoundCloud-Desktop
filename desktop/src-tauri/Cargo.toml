@@ -30,6 +30,7 @@ sc-fingerprint = { git = "https://github.com/zxcloli666/SoundCloud-Backend", tag
 wreq = { version = "5", features = ["json", "stream", "gzip", "brotli", "socks"] }
 futures-util = "0.3"
 http = "1"
+hyper-util = { version = "0.1", features = ["client-proxy", "client-proxy-system"] }
 urlencoding = "2"
 tauri-plugin-single-instance = "2.4.0"
 rodio = { version = "0.22.2", features = ["mp3", "symphonia-aac", "symphonia-isomp4", "symphonia-ogg"] }
