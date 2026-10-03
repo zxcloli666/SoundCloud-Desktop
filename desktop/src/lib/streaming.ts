@@ -1,6 +1,6 @@
 import type { Track } from '../stores/player';
 import { useSettingsStore } from '../stores/settings';
-import { ApiError, getSessionId } from './api-client';
+import { ApiError } from './api-client';
 import {
   API_BASE,
   API_STAR_BASE,
@@ -128,12 +128,7 @@ export function streamFallbackUrls(trackUrn: string, hq = isHqStreaming()): stri
 }
 
 function buildDownloadUrl(base: string, trackUrn: string, hq: boolean) {
-  const params = new URLSearchParams();
-  if (hq) params.set('hq', 'true');
-  const sid = getSessionId();
-  if (sid) params.set('session_id', sid);
-  const qs = params.toString();
-  const suffix = qs ? `?${qs}` : '';
+  const suffix = hq ? '?hq=true' : '';
   return `${base}/download/${encodeURIComponent(trackUrn)}${suffix}`;
 }
 
