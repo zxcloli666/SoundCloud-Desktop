@@ -14,7 +14,7 @@ import {
     GENRES,
     type GenreChip,
     genreColor,
-    isSoundCloudUrl,
+    extractSoundCloudLink,
     WALL_KEYFRAMES,
 } from '../components/search/utils';
 import {useTabHidden, Wall} from '../components/search/Wall';
@@ -43,8 +43,8 @@ export function Search() {
   const setSource = useSearchPrefsStore((s) => s.setSource);
     const addQuery = useSearchHistoryStore((s) => s.addQuery);
 
-    const isUrl = isSoundCloudUrl(q);
-    const query = isUrl ? '' : debounced;
+    const link = extractSoundCloudLink(q);
+    const query = link ? '' : debounced;
     const hasQuery = query.trim().length >= 2;
     const hidden = useTabHidden();
 
@@ -63,7 +63,7 @@ export function Search() {
 
   useEffect(() => {
       const trimmed = debounced.trim();
-      if (trimmed.length >= 2 && !isSoundCloudUrl(trimmed)) addQuery(trimmed);
+      if (trimmed.length >= 2 && !extractSoundCloudLink(trimmed)) addQuery(trimmed);
   }, [debounced, addQuery]);
 
     const wall = useSearchWall(query, mode, source, dive);
@@ -113,6 +113,7 @@ export function Search() {
         setSource('db');
         setQ(g);
   };
+    const clearQuery = useCallback(() => setQ(''), [setQ]);
     const onDive = (track: Track) => setDive({urn: track.urn, title: track.title});
 
     // The wall would otherwise paint blank here (cold board, empty result, dive
@@ -232,8 +233,8 @@ export function Search() {
           <Atmosphere tint={wall.atmosphere.tint} energy={wall.atmosphere.energy}/>
 
           <div className="relative pt-5" style={{isolation: 'isolate'}}>
-              {isUrl ? (
-                  <ResolveCard url={q} onDone={() => setQ('')}/>
+              {link ? (
+                  <ResolveCard url={link} onDone={clearQuery}/>
               ) : (
                   <>
                       {hasQuery && !dive && (
