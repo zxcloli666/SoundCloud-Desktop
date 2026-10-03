@@ -47,6 +47,10 @@ export function setupUiWatchdog() {
     }
   }, EVENT_LOOP_TICK_MS);
 
+  document.addEventListener('visibilitychange', () => {
+    expectedAt = performance.now() + EVENT_LOOP_TICK_MS;
+  });
+
   window.addEventListener('error', (event) => {
     logError(`[UI] Unhandled error: ${event.message}`);
   });
