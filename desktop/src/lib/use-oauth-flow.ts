@@ -114,6 +114,7 @@ export function useOAuthFlow(
     let failingSince: number | null = null;
     let lastRedirect: string | null = null;
     let stalled = false;
+    let requesting = false;
 
     const schedule = (delayMs: number) => {
       pollRef.current = setTimeout(pollOnce, delayMs);
@@ -125,9 +126,11 @@ export function useOAuthFlow(
         return;
       }
       let data: LoginStatusResponse | null = null;
+      requesting = true;
       try {
         data = await fetchLoginStatus(loginRequestId);
       } catch {}
+      requesting = false;
       if (isStale()) return;
 
       if (!data) {
@@ -169,6 +172,7 @@ export function useOAuthFlow(
       failingSince = null;
       setError(null);
       setIsPolling(true);
+      if (requesting) return;
       if (pollRef.current) clearTimeout(pollRef.current);
       schedule(0);
     };
