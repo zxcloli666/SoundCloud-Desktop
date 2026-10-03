@@ -52,7 +52,8 @@
     "abLoopSetA": "En iyi bolumu dongule: baslangic (A)",
     "abLoopSetB": "En iyi bolumu dongule: bitis (B)",
     "abLoopClear": "A-B dongusunu temizle",
-    "notPlaying": "Calmiyor"
+    "notPlaying": "Calmiyor",
+    "noContinuation": "Benzer parça bulunamadı, çalma durduruldu"
   },
   "auth": {
     "signIn": "SoundCloud ile giris yap",

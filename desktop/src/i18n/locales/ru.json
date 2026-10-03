@@ -62,7 +62,8 @@
     "previous": "Предыдущий",
     "next": "Следующий",
     "openApp": "Открыть SoundCloud",
-    "notPlaying": "Ничего не играет"
+    "notPlaying": "Ничего не играет",
+    "noContinuation": "Похожих треков не нашлось, воспроизведение остановлено"
   },
   "auth": {
     "signIn": "Войти через SoundCloud",
