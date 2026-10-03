@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use crate::network::edge::{self, Hop, Tier};
 
-const SEARCH_TIMEOUT: Duration = Duration::from_secs(20);
+const HOP_TIMEOUT: Duration = Duration::from_secs(15);
 const SEARCH_RETRIES: u32 = 2;
 const RETRY_PAUSE: Duration = Duration::from_secs(2);
 const MAX_RETRY_PAUSE: Duration = Duration::from_secs(15);
@@ -130,25 +130,6 @@ async fn search_once(
     url: &str,
     session_id: &str,
 ) -> Result<Vec<ScTrackResult>, SearchError> {
-    let resp = tokio::time::timeout(SEARCH_TIMEOUT, send(client, url, session_id))
-        .await
-        .map_err(|_| SearchError::transport("search timed out"))??;
-
-    if !resp.status().is_success() {
-        return Err(SearchError::http(&resp));
-    }
-    let result: ScSearchResult = resp
-        .json()
-        .await
-        .map_err(|e| SearchError::transport(e.to_string()))?;
-    Ok(result.collection)
-}
-
-async fn send(
-    client: &wreq::Client,
-    url: &str,
-    session_id: &str,
-) -> Result<wreq::Response, SearchError> {
     let mut hops = edge::plan(url);
     if hops.is_empty() {
         hops.push(Hop {
@@ -160,7 +141,7 @@ async fn send(
 
     let mut last_error = SearchError::transport("no route");
     for hop in hops {
-        let mut request = client.get(&hop.url);
+        let mut request = client.get(&hop.url).timeout(HOP_TIMEOUT);
         if !session_id.is_empty() {
             request = request.header("x-session-id", session_id);
         }
@@ -176,8 +157,22 @@ async fn send(
             last_error = SearchError::http(&resp);
             continue;
         }
-        hop.note(resp.status().as_u16() < 500);
-        return Ok(resp);
+        if !resp.status().is_success() {
+            hop.note(true);
+            return Err(SearchError::http(&resp));
+        }
+        match resp.json::<ScSearchResult>().await {
+            Err(e) if !e.is_decode() => {
+                hop.note(false);
+                last_error = SearchError::transport(format!("{}: {e}", hop.tier_label()));
+            }
+            result => {
+                hop.note(true);
+                return result
+                    .map(|found| found.collection)
+                    .map_err(|e| SearchError::transport(e.to_string()));
+            }
+        }
     }
     Err(last_error)
 }
