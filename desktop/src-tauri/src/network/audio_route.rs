@@ -26,7 +26,9 @@ pub async fn get_in_order(
     url: &str,
     session_id: Option<&str>,
 ) -> Result<(Response, Hop), String> {
-    get_from_hops_in_order(client, edge::audio_plan(url), session_id).await
+    let mut hops = edge::audio_plan(url);
+    let (response, at) = first_answer(client, &hops, session_id).await?;
+    Ok((response, hops.swap_remove(at)))
 }
 
 async fn get_from_hops(
@@ -60,16 +62,16 @@ async fn get_from_hops(
     Err(route_error(errors))
 }
 
-async fn get_from_hops_in_order(
+pub async fn first_answer(
     client: &Client,
-    hops: Vec<Hop>,
+    hops: &[Hop],
     session_id: Option<&str>,
-) -> Result<(Response, Hop), String> {
+) -> Result<(Response, usize), String> {
     let mut errors = Vec::new();
-    for hop in hops {
-        let result = request(client, &hop, session_id).send().await;
-        if let Some(response) = settle(&hop, result, &mut errors) {
-            return Ok((response, hop));
+    for (at, hop) in hops.iter().enumerate() {
+        let result = request(client, hop, session_id).send().await;
+        if let Some(response) = settle(hop, result, &mut errors) {
+            return Ok((response, at));
         }
     }
     Err(route_error(errors))
@@ -120,7 +122,7 @@ mod tests {
     use std::sync::atomic::{AtomicUsize, Ordering};
     use std::time::{Duration, Instant};
 
-    use super::{get_from_hops, get_from_hops_in_order};
+    use super::{first_answer, get_from_hops};
     use crate::network::edge::{Hop, Tier};
     use warp::Filter;
 
@@ -200,11 +202,11 @@ mod tests {
             hop(format!("http://{slow_addr}"), Tier::Direct),
             hop(format!("http://{relay_addr}"), Tier::Relay),
         ];
-        let (response, hop) = get_from_hops_in_order(&wreq::Client::new(), hops, None)
+        let (response, at) = first_answer(&wreq::Client::new(), &hops, None)
             .await
             .unwrap();
 
-        assert_eq!(hop.tier, Tier::Direct);
+        assert_eq!(hops[at].tier, Tier::Direct);
         assert_eq!(response.text().await.unwrap(), "slow");
         assert_eq!(relay_calls.load(Ordering::SeqCst), 0);
     }
@@ -219,11 +221,11 @@ mod tests {
             hop("http://127.0.0.1:9".to_string(), Tier::Direct),
             hop(format!("http://{relay_addr}"), Tier::Relay),
         ];
-        let (response, hop) = get_from_hops_in_order(&wreq::Client::new(), hops, None)
+        let (response, at) = first_answer(&wreq::Client::new(), &hops, None)
             .await
             .unwrap();
 
-        assert_eq!(hop.tier, Tier::Relay);
+        assert_eq!(hops[at].tier, Tier::Relay);
         assert_eq!(response.text().await.unwrap(), "relay");
     }
 }

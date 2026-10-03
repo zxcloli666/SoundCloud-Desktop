@@ -15,6 +15,7 @@ use tokio::io::{AsyncWriteExt, BufWriter};
 use tokio::sync::{Mutex, Notify, OwnedSemaphorePermit, Semaphore};
 
 use crate::app::diagnostics::log_native;
+use crate::network::edge::Hop;
 use crate::track_cache::direct_download::try_download;
 use crate::track_cache::sc_anon::AnonClient;
 use crate::track_cache::transcode;
@@ -28,6 +29,7 @@ const STORAGE_TIMEOUT_MS: u64 = 1200;
 const STORAGE_COOLDOWN_SECS: u64 = 60;
 const DOWNLOAD_CONNECT_TIMEOUT_MS: u64 = 3_000;
 const DOWNLOAD_READ_TIMEOUT_SECS: u64 = 130;
+const BODY_STALL_SECS: u64 = 15;
 const ANON_READ_TIMEOUT_SECS: u64 = 20;
 const HQ_ANON_BACKUP_SECS: u64 = 15;
 const DIRECT_CONNECT_TIMEOUT_MS: u64 = 5_000;
@@ -709,12 +711,20 @@ async fn write_response_to_cache(
     let mut sniff = Vec::with_capacity(AUDIO_SNIFF_LEN);
     let mut emitted_progress = -1.0f64;
 
-    while let Some(chunk) = stream.next().await {
-        let chunk = match chunk {
-            Ok(chunk) => chunk,
-            Err(err) => {
+    loop {
+        let next = tokio::time::timeout(Duration::from_secs(BODY_STALL_SECS), stream.next()).await;
+        let chunk = match next {
+            Ok(Some(Ok(chunk))) => chunk,
+            Ok(None) => break,
+            Ok(Some(Err(err))) => {
                 cleanup_temp_file(&temp_path).await;
                 return Err(DownloadError::Retryable(format!("body read: {err}")));
+            }
+            Err(_) => {
+                cleanup_temp_file(&temp_path).await;
+                return Err(DownloadError::Retryable(format!(
+                    "body stalled after {total_size} bytes"
+                )));
             }
         };
 
@@ -909,13 +919,43 @@ async fn download_api(
     receiving: &std::sync::atomic::AtomicBool,
 ) -> Result<DownloadResult, DownloadError> {
     let stream_url = open_stream(client, url, session_id).await?;
-    let (response, hop) =
-        crate::network::audio_route::get_in_order(client, &stream_url, session_id)
+    let hops = crate::network::edge::audio_plan(&stream_url);
+    download_over(
+        client,
+        &hops,
+        target_dir,
+        urn,
+        quality_from_url(url),
+        session_id,
+        app_handle,
+        receiving,
+    )
+    .await
+}
+
+#[allow(clippy::too_many_arguments)]
+async fn download_over(
+    client: &Client,
+    hops: &[Hop],
+    target_dir: &Path,
+    urn: &str,
+    requested: PlaybackQuality,
+    session_id: Option<&str>,
+    app_handle: Option<&crate::rt::AppHandle>,
+    receiving: &std::sync::atomic::AtomicBool,
+) -> Result<DownloadResult, DownloadError> {
+    let mut rest = hops;
+    loop {
+        let (response, at) = crate::network::audio_route::first_answer(client, rest, session_id)
             .await
             .map_err(|err| DownloadError::Retryable(format!("request: {err}")))?;
-    let status = response.status();
+        let hop = &rest[at];
+        rest = &rest[at + 1..];
+        let status = response.status();
+        if !status.is_success() {
+            return Err(http_failure(status, response).await);
+        }
 
-    if status.is_success() {
         receiving.store(true, std::sync::atomic::Ordering::Relaxed);
         let served = response
             .headers()
@@ -924,7 +964,7 @@ async fn download_api(
         let quality = match served {
             Some("hq") => PlaybackQuality::Hq,
             Some("sq") => PlaybackQuality::Sq,
-            _ => quality_from_url(url),
+            _ => requested,
         };
         let result = write_response_to_cache(
             target_dir,
@@ -935,13 +975,26 @@ async fn download_api(
             app_handle,
         )
         .await;
-        if matches!(&result, Err(DownloadError::Retryable(_))) {
-            hop.note(false);
+        match &result {
+            Ok(done) => hop.note_delivered(file_len(&done.path)),
+            Err(DownloadError::Retryable(err)) => {
+                hop.note(false);
+                if !rest.is_empty() {
+                    eprintln!(
+                        "[TrackCache] {urn} body via {} broke ({err}), next route",
+                        hop.tier_label()
+                    );
+                    continue;
+                }
+            }
+            Err(DownloadError::Fatal(_)) => {}
         }
         return result;
     }
+}
 
-    Err(http_failure(status, response).await)
+fn file_len(path: &Path) -> u64 {
+    std::fs::metadata(path).map(|meta| meta.len()).unwrap_or(0)
 }
 
 async fn open_stream(
@@ -1703,9 +1756,9 @@ impl TrackCacheState {
                     .await
                     {
                         Ok(result) => {
-                            let kb = std::fs::metadata(&result.path)
-                                .map(|m| m.len() / 1024)
-                                .unwrap_or(0);
+                            let bytes = file_len(&result.path);
+                            hop.note_delivered(bytes);
+                            let kb = bytes / 1024;
                             let ms = start.elapsed().as_millis();
                             println!(
                                 "[TrackCache] downloaded {urn} via storage stream — {kb} KB in {ms}ms"
@@ -1716,6 +1769,7 @@ impl TrackCacheState {
                             eprintln!("[TrackCache] storage write failed for {urn}: {e}");
                         }
                         Err(DownloadError::Retryable(e)) => {
+                            hop.note(false);
                             eprintln!("[TrackCache] storage download failed for {urn}: {e}");
                         }
                     }
@@ -2510,5 +2564,84 @@ impl TrackCacheState {
             "[TrackCache] evicted {removed} files, freed {} MB",
             (before - total) / (1024 * 1024)
         );
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::sync::atomic::AtomicBool;
+
+    use tokio::io::{AsyncReadExt, AsyncWriteExt};
+    use tokio::net::TcpListener;
+    use warp::Filter;
+
+    use super::{download_over, PlaybackQuality};
+    use crate::network::edge::{Hop, Tier};
+
+    const FULL: usize = 200 * 1024;
+
+    fn audio(len: usize) -> Vec<u8> {
+        let mut body = b"ID3".to_vec();
+        body.resize(len, 0);
+        body
+    }
+
+    async fn cut_after(bytes: usize) -> String {
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let addr = listener.local_addr().unwrap();
+        tokio::spawn(async move {
+            while let Ok((mut socket, _)) = listener.accept().await {
+                let mut request = [0u8; 4096];
+                let _ = socket.read(&mut request).await;
+                let head = format!("HTTP/1.1 200 OK\r\nContent-Length: {FULL}\r\n\r\n");
+                let _ = socket.write_all(head.as_bytes()).await;
+                let _ = socket.write_all(&audio(bytes)).await;
+            }
+        });
+        format!("http://{addr}/stream")
+    }
+
+    fn whole() -> String {
+        let route = warp::path("stream").map(|| audio(FULL));
+        let (addr, server) = warp::serve(route).bind_ephemeral(([127, 0, 0, 1], 0));
+        tokio::spawn(server);
+        format!("http://{addr}/stream")
+    }
+
+    fn hop(url: String, tier: Tier) -> Hop {
+        Hop {
+            url,
+            tier,
+            origin: "cut.test.invalid".to_string(),
+        }
+    }
+
+    #[tokio::test]
+    async fn a_body_cut_on_the_direct_route_is_fetched_again_through_the_relay() {
+        let dir = std::env::temp_dir().join(format!("sc-cut-test-{}", uuid::Uuid::new_v4()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let hops = [
+            hop(cut_after(16 * 1024).await, Tier::Direct),
+            hop(whole(), Tier::Relay),
+        ];
+
+        let done = download_over(
+            &wreq::Client::new(),
+            &hops,
+            &dir,
+            "soundcloud:tracks:1",
+            PlaybackQuality::Sq,
+            None,
+            None,
+            &AtomicBool::new(false),
+        )
+        .await;
+
+        let path = match done {
+            Ok(done) => done.path,
+            Err(_) => panic!("the relay route should have delivered the track"),
+        };
+        assert_eq!(std::fs::metadata(path).unwrap().len(), FULL as u64);
+        std::fs::remove_dir_all(dir).unwrap();
     }
 }
