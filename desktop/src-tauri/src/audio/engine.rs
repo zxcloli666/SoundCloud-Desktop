@@ -94,8 +94,8 @@ fn commit_loaded_track(
     state.device_error.store(false, Ordering::Relaxed);
 }
 
-// Все 9 параметров — это один build шаг плеера: mixer/volume/normalization-кеш
-// + eq + analyser идут в одну `spawn_blocking`-обертку. Заводить отдельную
+// Все 10 параметров — это один build шаг плеера: mixer/volume/normalization-кеш
+// + eq + analyser + pitch идут в одну `spawn_blocking`-обертку. Заводить отдельную
 // структуру `BuildPlayerArgs` ради одной точки вызова — лишний слой.
 #[allow(clippy::too_many_arguments)]
 async fn build_player_from_bytes(
@@ -395,10 +395,10 @@ pub fn seek_to(state: &AudioState, position: f64) -> Result<(), String> {
         .map(|player| player.is_paused())
         .unwrap_or(false);
 
-    // For position 0, always recreate the player to avoid decoder state issues
-    if position > 0.0 {
+    {
         let player = state.player.lock().unwrap();
         if let Some(ref player) = *player
+            && !player.empty()
             && player.try_seek(target).is_ok() {
                 state.ended_notified.store(false, Ordering::Relaxed);
                 set_pos_anchor(state, position, output_target);
