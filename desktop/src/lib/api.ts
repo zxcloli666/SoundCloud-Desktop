@@ -10,6 +10,7 @@ export type { ResolvedStreamingTrack } from './streaming';
 export {
   buildStorageUrls,
   downloadFallbackUrls,
+  isHqStreaming,
   resolveTrackFromStreaming,
   streamFallbackUrls,
 } from './streaming';

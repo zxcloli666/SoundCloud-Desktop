@@ -24,6 +24,10 @@ export type ResolvedStreamingTrack = Partial<Track> & {
   kind?: string;
 };
 
+export function isHqStreaming(): boolean {
+  return useSettingsStore.getState().highQualityStreaming && getIsPremium();
+}
+
 // ─── Host resolution ────────────────────────────────────────
 
 function resolveStreamingBases(): string[] {
@@ -107,10 +111,7 @@ export function buildStorageUrls(trackUrn: string): string[] {
   return [...new Set(bases)].map((base) => `${base}/${file}`);
 }
 
-export function streamFallbackUrls(
-  trackUrn: string,
-  hq = useSettingsStore.getState().highQualityStreaming,
-): string[] {
+export function streamFallbackUrls(trackUrn: string, hq = isHqStreaming()): string[] {
   const bases = resolveTicketBases();
   const urls: string[] = [];
   const seen = new Set<string>();
@@ -140,10 +141,7 @@ function buildDownloadUrl(base: string, trackUrn: string, hq: boolean) {
 /// Клиент дергает их между anon и storage stream: сервер только резолвит
 /// SoundCloud-ссылки + (для encrypted) делает Widevine handshake, скачивание
 /// сегментов идёт прямо с SC.
-export function downloadFallbackUrls(
-  trackUrn: string,
-  hq = useSettingsStore.getState().highQualityStreaming,
-): string[] {
+export function downloadFallbackUrls(trackUrn: string, hq = isHqStreaming()): string[] {
   const bases = resolveDownloadBases();
   const urls: string[] = [];
   const seen = new Set<string>();

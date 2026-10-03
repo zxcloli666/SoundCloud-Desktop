@@ -9,6 +9,7 @@ import {
   buildStorageUrls,
   downloadFallbackUrls,
   getSessionId,
+  isHqStreaming,
   resolveTrackFromStreaming,
   streamFallbackUrls,
 } from './api';
@@ -340,7 +341,7 @@ async function loadTrack(track: Track) {
   invoke('audio_set_playback_rate', { rate: getEffectivePlaybackRate() }).catch(console.error);
 
   try {
-    const highQualityStreaming = useSettingsStore.getState().highQualityStreaming;
+    const highQualityStreaming = isHqStreaming();
 
     // The cached file can be swapped (raw А → clean Б) or evicted between resolve
     // and read; re-resolve through the cache to recover the current path.
@@ -736,7 +737,7 @@ export function preloadTrack(urn: string) {
   if (preloadTimer) clearTimeout(preloadTimer);
   preloadTimer = setTimeout(() => {
     const sessionId = getSessionId();
-    const hq = useSettingsStore.getState().highQualityStreaming;
+    const hq = isHqStreaming();
     invoke('track_preload', {
       entries: [
         {
@@ -764,7 +765,7 @@ export function preloadQueue() {
     durationMs?: number;
   }> = [];
   const sessionId = getSessionId();
-  const hq = useSettingsStore.getState().highQualityStreaming;
+  const hq = isHqStreaming();
 
   for (let i = 1; i <= 3; i++) {
     const idx = queueIndex + i;

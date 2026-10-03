@@ -6,6 +6,7 @@ import {useSettingsStore} from '../stores/settings';
 import {toScproxyUrl} from './asset-url';
 import {getStaticPort} from './constants';
 import {trackedInvoke as invoke} from './diagnostics';
+import { isHqStreaming } from './streaming';
 
 const WALLPAPERS_DIR = 'wallpapers';
 const CACHE_MAINTENANCE_INTERVAL_MS = 60 * 1000;
@@ -73,7 +74,7 @@ async function buildCacheRequest(urn: string, hq: boolean, durationMs?: number) 
 
 export async function ensureTrackCached(
   urn: string,
-  highQualityStreaming = useSettingsStore.getState().highQualityStreaming,
+  highQualityStreaming = isHqStreaming(),
   durationMs?: number,
 ): Promise<TrackCacheInfo> {
   const cached = await getCacheInfo(urn);
@@ -330,7 +331,7 @@ export async function downloadTrack(
   });
   if (!dest) throw new Error('cancelled');
 
-  const hq = useSettingsStore.getState().highQualityStreaming;
+  const hq = isHqStreaming();
   const request = await buildCacheRequest(urn, hq, options.durationMs);
   return invoke<string>('track_export', {
     request,
