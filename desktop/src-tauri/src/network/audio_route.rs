@@ -33,7 +33,14 @@ pub async fn get_without_redirects(
     url: &str,
     session_id: Option<&str>,
 ) -> Result<(Response, Hop), String> {
-    get_from_hops(client, edge::audio_plan(url), session_id, HEDGE_DELAY, false).await
+    get_from_hops(
+        client,
+        edge::audio_plan(url),
+        session_id,
+        HEDGE_DELAY,
+        false,
+    )
+    .await
 }
 
 async fn get_from_hops(
