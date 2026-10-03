@@ -6,6 +6,8 @@
 
 use std::future::Future;
 use std::pin::Pin;
+use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, Ordering};
 
 use base64::Engine as _;
 use bytes::Bytes;
@@ -104,6 +106,7 @@ pub async fn try_download(
     download_urls: &[String],
     session_id: Option<&str>,
     hq_pref: bool,
+    receiving: &Arc<AtomicBool>,
 ) -> Option<DirectResult> {
     if download_urls.is_empty() {
         return None;
@@ -116,8 +119,16 @@ pub async fn try_download(
                 let client = client.clone();
                 let endpoint = url.clone();
                 let session_id = session_id.map(str::to_string);
+                let receiving = receiving.clone();
                 Box::pin(async move {
-                    try_one_endpoint(&client, &endpoint, session_id.as_deref(), hq_pref).await
+                    try_one_endpoint(
+                        &client,
+                        &endpoint,
+                        session_id.as_deref(),
+                        hq_pref,
+                        &receiving,
+                    )
+                    .await
                 }) as Pin<Box<dyn Future<Output = Option<DirectResult>> + Send>>
             })
             .collect();
@@ -137,6 +148,7 @@ async fn try_one_endpoint(
     endpoint: &str,
     session_id: Option<&str>,
     hq_pref: bool,
+    receiving: &AtomicBool,
 ) -> Option<DirectResult> {
     let resp = match fetch_download(client, endpoint, session_id).await {
         Ok(r) => r,
@@ -149,6 +161,7 @@ async fn try_one_endpoint(
     if sorted.is_empty() {
         println!("[direct] {endpoint} returned no usable candidates");
     } else {
+        receiving.store(true, Ordering::Relaxed);
         let listing = sorted
             .iter()
             .map(|c| format!("{}/{}/{}", c.kind_label(), c.quality(), c.preset()))

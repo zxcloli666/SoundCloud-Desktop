@@ -906,6 +906,7 @@ async fn download_api(
     url: &str,
     session_id: Option<&str>,
     app_handle: Option<&crate::rt::AppHandle>,
+    receiving: &std::sync::atomic::AtomicBool,
 ) -> Result<DownloadResult, DownloadError> {
     let stream_url = open_stream(client, url, session_id).await?;
     let (response, hop) =
@@ -915,6 +916,7 @@ async fn download_api(
     let status = response.status();
 
     if status.is_success() {
+        receiving.store(true, std::sync::atomic::Ordering::Relaxed);
         let served = response
             .headers()
             .get("x-audio-quality")
@@ -1732,6 +1734,7 @@ impl TrackCacheState {
         // Race /download (direct from SC) vs /stream (proxy via streaming API).
         // First success wins, the loser is dropped → reqwest cancels its connection.
         if !download_urls.is_empty() || !urls.is_empty() {
+            let receiving = Arc::new(std::sync::atomic::AtomicBool::new(false));
             let race = self.race_direct_and_api(
                 target_dir,
                 urn,
@@ -1740,9 +1743,10 @@ impl TrackCacheState {
                 session_id,
                 hq,
                 start,
+                &receiving,
             );
             let result = if hq {
-                self.race_with_anon_backup(target_dir, urn, race, start)
+                self.race_with_anon_backup(target_dir, urn, race, &receiving, start)
                     .await
             } else {
                 race.await
@@ -1766,31 +1770,45 @@ impl TrackCacheState {
         target_dir: &Path,
         urn: &str,
         hq_race: impl Future<Output = Result<PathBuf, String>>,
+        receiving: &std::sync::atomic::AtomicBool,
         start: std::time::Instant,
     ) -> Result<PathBuf, String> {
         tokio::pin!(hq_race);
-        tokio::select! {
-            res = &mut hq_race => return match res {
-                Ok(path) => Ok(path),
-                Err(err) => self.try_anon(target_dir, urn, start).await.ok().flatten().ok_or(err),
-            },
-            () = tokio::time::sleep(Duration::from_secs(HQ_ANON_BACKUP_SECS)) => {}
-        }
+        let finished = tokio::select! {
+            res = &mut hq_race => Some(res),
+            () = tokio::time::sleep(Duration::from_secs(HQ_ANON_BACKUP_SECS)) => None,
+        };
 
-        let line = format!("[TrackCache] hq sources still busy for {urn}, starting anon alongside");
-        println!("{line}");
-        self.diag("INFO", line);
+        let hq_result = match finished {
+            Some(res) => res,
+            None if receiving.load(std::sync::atomic::Ordering::Relaxed) => hq_race.await,
+            None => {
+                let line = format!(
+                    "[TrackCache] hq sources still silent for {urn}, starting anon alongside"
+                );
+                println!("{line}");
+                self.diag("INFO", line);
 
-        let anon = self.try_anon(target_dir, urn, start);
-        tokio::pin!(anon);
-        tokio::select! {
-            res = &mut hq_race => match res {
-                Ok(path) => Ok(path),
-                Err(err) => anon.await.ok().flatten().ok_or(err),
-            },
-            res = &mut anon => match res {
+                let anon = self.try_anon(target_dir, urn, start);
+                tokio::pin!(anon);
+                return tokio::select! {
+                    res = &mut hq_race => match res {
+                        Ok(path) => Ok(path),
+                        Err(err) => anon.await.ok().flatten().ok_or(err),
+                    },
+                    res = &mut anon => match res {
+                        Ok(Some(path)) => Ok(path),
+                        _ => hq_race.await,
+                    },
+                };
+            }
+        };
+
+        match hq_result {
+            Ok(path) => Ok(path),
+            Err(err) => match self.try_anon(target_dir, urn, start).await {
                 Ok(Some(path)) => Ok(path),
-                _ => hq_race.await,
+                _ => Err(err),
             },
         }
     }
@@ -1850,6 +1868,7 @@ impl TrackCacheState {
 
     /// Resolve a `/download/:urn` endpoint into a cached file.
     /// Returns `Ok(path)` on success, `Err(msg)` if every candidate failed.
+    #[allow(clippy::too_many_arguments)]
     async fn try_direct(
         &self,
         target_dir: &Path,
@@ -1858,6 +1877,7 @@ impl TrackCacheState {
         session_id: Option<&str>,
         hq: bool,
         start: std::time::Instant,
+        receiving: &Arc<std::sync::atomic::AtomicBool>,
     ) -> Result<PathBuf, String> {
         if download_urls.is_empty() {
             return Err("no download_urls".into());
@@ -1866,9 +1886,15 @@ impl TrackCacheState {
             "[TrackCache] direct: trying {urn} via {} endpoint(s)",
             download_urls.len()
         );
-        let result = try_download(&self.direct_client, download_urls, session_id, hq)
-            .await
-            .ok_or_else(|| "direct: no candidate succeeded".to_string())?;
+        let result = try_download(
+            &self.direct_client,
+            download_urls,
+            session_id,
+            hq,
+            receiving,
+        )
+        .await
+        .ok_or_else(|| "direct: no candidate succeeded".to_string())?;
         let quality = result.quality;
         match write_bytes_to_cache(
             target_dir,
@@ -1907,6 +1933,7 @@ impl TrackCacheState {
         urls: &[String],
         session_id: Option<&str>,
         start: std::time::Instant,
+        receiving: &Arc<std::sync::atomic::AtomicBool>,
     ) -> Result<PathBuf, String> {
         if urls.is_empty() {
             return Err("no /stream URLs".into());
@@ -1924,10 +1951,17 @@ impl TrackCacheState {
                 let urn = urn.to_string();
                 let url = url.clone();
                 let session_id = session_id.map(str::to_string);
+                let receiving = receiving.clone();
                 println!("[TrackCache] trying URL #{} for {urn} - {url}", i + 1);
                 Box::pin(async move {
                     let res = state
-                        .download_api_with_retries(&target_dir, &urn, &url, session_id.as_deref())
+                        .download_api_with_retries(
+                            &target_dir,
+                            &urn,
+                            &url,
+                            session_id.as_deref(),
+                            &receiving,
+                        )
                         .await;
                     (i, res)
                 }) as DownloadFut
@@ -1971,9 +2005,18 @@ impl TrackCacheState {
         session_id: Option<&str>,
         hq: bool,
         start: std::time::Instant,
+        receiving: &Arc<std::sync::atomic::AtomicBool>,
     ) -> Result<PathBuf, String> {
-        let direct_fut = self.try_direct(target_dir, urn, download_urls, session_id, hq, start);
-        let api_fut = self.try_api(target_dir, urn, urls, session_id, start);
+        let direct_fut = self.try_direct(
+            target_dir,
+            urn,
+            download_urls,
+            session_id,
+            hq,
+            start,
+            receiving,
+        );
+        let api_fut = self.try_api(target_dir, urn, urls, session_id, start, receiving);
         tokio::pin!(direct_fut);
         tokio::pin!(api_fut);
 
@@ -2021,6 +2064,7 @@ impl TrackCacheState {
         urn: &str,
         url: &str,
         session_id: Option<&str>,
+        receiving: &std::sync::atomic::AtomicBool,
     ) -> Result<PathBuf, String> {
         let mut last_err = String::new();
 
@@ -2037,6 +2081,7 @@ impl TrackCacheState {
                 url,
                 session_id,
                 self.app_handle.as_ref(),
+                receiving,
             )
             .await
             {
