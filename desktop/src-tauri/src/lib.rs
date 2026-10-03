@@ -9,10 +9,14 @@ mod shared;
 mod track_cache;
 
 use std::sync::{Arc, Mutex};
+use std::time::Duration;
 use tauri::Manager;
 
 use discord::DiscordState;
 use network::server::ServerState;
+
+const HTTP_CONNECT_TIMEOUT_SECS: u64 = 8;
+const HTTP_READ_TIMEOUT_SECS: u64 = 30;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 #[cfg_attr(feature = "cef", tauri::cef_entry_point)]
@@ -77,8 +81,10 @@ pub fn run() {
 
             network::edge::init(data_dir.clone());
 
-            let http_client = sc_fingerprint::client(None)
-                .map(|c| (*c).clone())
+            let http_client = sc_fingerprint::builder(None)
+                .connect_timeout(Duration::from_secs(HTTP_CONNECT_TIMEOUT_SECS))
+                .read_timeout(Duration::from_secs(HTTP_READ_TIMEOUT_SECS))
+                .build()
                 .expect("failed to build HTTP client");
             let auth_http_client = http_client.clone();
             let rt = tokio::runtime::Runtime::new().expect("failed to create tokio runtime");
