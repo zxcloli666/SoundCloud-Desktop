@@ -172,9 +172,9 @@ export async function edgeFetch(
     } catch (error) {
       if (error instanceof EdgeTransportError) throw error;
       lastError = error;
-      if (!(weakBudget && isTimeout(error))) noteHop(hop, false);
       // Отмена вызывающим (не таймаут хопа) — перебор бессмысленен.
       if (init.signal?.aborted) throw error;
+      if (!(weakBudget && isTimeout(error))) noteHop(hop, false);
       if (isLast || (error instanceof BodyCutError && !replayable)) throw error;
     }
   }
