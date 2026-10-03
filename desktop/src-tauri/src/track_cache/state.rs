@@ -32,7 +32,7 @@ const ANON_READ_TIMEOUT_SECS: u64 = 20;
 const HQ_ANON_BACKUP_SECS: u64 = 15;
 const DIRECT_CONNECT_TIMEOUT_MS: u64 = 5_000;
 const DIRECT_READ_TIMEOUT_SECS: u64 = 70;
-const RETRY_DELAYS_MS: [u64; 3] = [200, 600, 1500];
+const RETRY_DELAYS_MS: [u64; 1] = [600];
 const MAX_PARALLEL_PRELOADS: usize = 20;
 const MAX_PARALLEL_LIKES: usize = 4;
 /// Transcoding is CPU-bound; keep it modest so it never starves playback on weak
