@@ -11,6 +11,7 @@ import {
   Check,
   ChevronRight,
   ClipboardCopy,
+  ExternalLink,
   RefreshCw,
   Smartphone,
 } from '../lib/icons';
@@ -41,8 +42,18 @@ export function Login() {
     queryClient.invalidateQueries();
   };
 
-  const { startLogin, authUrl, isPolling, step, error, browserFailed, cancel } =
-    useOAuthFlow(onLoginSuccess);
+  const {
+    startLogin,
+    retry,
+    reopen,
+    authUrl,
+    isPolling,
+    step,
+    error,
+    browserFailed,
+    callbackSlow,
+    cancel,
+  } = useOAuthFlow(onLoginSuccess);
 
   const handleLogin = async () => {
     try {
@@ -104,7 +115,7 @@ export function Login() {
                     </p>
                   </div>
                 </div>
-                <PrimaryButton onClick={handleLogin} idle={perf.idleAnim}>
+                <PrimaryButton onClick={retry} idle={perf.idleAnim}>
                   <RefreshCw size={15} strokeWidth={2} />
                   {t('auth.retry')}
                 </PrimaryButton>
@@ -118,6 +129,21 @@ export function Login() {
                   <p className="max-w-[280px] text-center text-[11.5px] leading-snug text-amber-200/70">
                     {t('auth.browserFailed')}
                   </p>
+                )}
+                {callbackSlow && !browserFailed && (
+                  <>
+                    <p className="max-w-[280px] text-center text-[11.5px] leading-snug text-amber-200/70">
+                      {t('auth.callbackSlow')}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={reopen}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] text-[11px] text-white/55 hover:text-white/75 transition-all cursor-pointer"
+                    >
+                      <ExternalLink size={12} />
+                      {t('auth.reopenLink')}
+                    </button>
+                  </>
                 )}
                 {authUrl && (
                   <button

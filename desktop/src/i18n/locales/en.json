@@ -71,6 +71,8 @@
     "copyLink": "Copy link",
     "copied": "Copied!",
     "browserFailed": "Couldn't open the browser. Copy the link and open it manually.",
+    "callbackSlow": "Page after SoundCloud won't load? Its domain may be blocked for you. Turn on a VPN and open the link again.",
+    "reopenLink": "Open link again",
     "stepWaiting": "Waiting for SoundCloud authorization",
     "stepToken": "Exchanging authorization code",
     "stepProfile": "Fetching your profile",

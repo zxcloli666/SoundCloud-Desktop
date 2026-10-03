@@ -61,6 +61,8 @@
     "copyLink": "Baglantiyi kopyala",
     "copied": "Kopyalandi!",
     "browserFailed": "Tarayici acilamadi. Baglantiyi kopyalayip elle acin.",
+    "callbackSlow": "SoundCloud sonrasi sayfa yuklenmiyor mu? Alan adi engellenmis olabilir. VPN acin ve baglantiyi tekrar acin.",
+    "reopenLink": "Baglantiyi tekrar ac",
     "tagline": "Muziginiz, sizin tarzinizda",
     "orSeparator": "veya",
     "continueOffline": "Giris yapmadan devam et",

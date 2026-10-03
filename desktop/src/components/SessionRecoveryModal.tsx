@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { completeReauth, retryRenew } from '../lib/auth-recovery';
-import { Check, ClipboardCopy, Lock, Power, RefreshCw, X } from '../lib/icons';
+import { Check, ClipboardCopy, ExternalLink, Lock, Power, RefreshCw, X } from '../lib/icons';
 import { useOAuthFlow } from '../lib/use-oauth-flow';
 import { useAuthStore } from '../stores/auth';
 import { useAuthRecoveryStore } from '../stores/auth-recovery';
@@ -17,7 +17,7 @@ export const SessionRecoveryModal = React.memo(() => {
   const hasSession = useAuthStore((s) => s.hasSession);
   const [copied, setCopied] = useState(false);
 
-  const { startLogin, authUrl, isPolling, step, browserFailed, cancel } =
+  const { retry, reopen, authUrl, isPolling, step, browserFailed, callbackSlow, cancel } =
     useOAuthFlow(completeReauth);
 
   // Пока идёт OAuth-поллинг — фоновый успех не должен авто-закрывать модалку.
@@ -41,14 +41,6 @@ export const SessionRecoveryModal = React.memo(() => {
         : step === 'finalizing'
           ? t('auth.stepSession')
           : t('recovery.signingIn');
-
-  const handleSignIn = async () => {
-    try {
-      await startLogin();
-    } catch (e) {
-      console.error('Re-auth failed:', e);
-    }
-  };
 
   const handleLogout = () => {
     reset();
@@ -104,6 +96,21 @@ export const SessionRecoveryModal = React.memo(() => {
                     {t('auth.browserFailed')}
                   </p>
                 )}
+                {callbackSlow && !browserFailed && (
+                  <>
+                    <p className="max-w-[260px] text-center text-[11px] leading-snug text-amber-200/70">
+                      {t('auth.callbackSlow')}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={reopen}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] text-[11px] text-white/45 hover:text-white/65 transition-all cursor-pointer"
+                    >
+                      <ExternalLink size={11} />
+                      {t('auth.reopenLink')}
+                    </button>
+                  </>
+                )}
                 {authUrl && (
                   <button
                     type="button"
@@ -156,7 +163,7 @@ export const SessionRecoveryModal = React.memo(() => {
                 </button>
                 <button
                   type="button"
-                  onClick={handleSignIn}
+                  onClick={retry}
                   className="w-full py-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] text-[12.5px] text-white/55 hover:text-white/80 transition-all cursor-pointer"
                 >
                   {t('recovery.signIn')}
