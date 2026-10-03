@@ -11,6 +11,7 @@ use rodio::{Decoder, Player, Source};
 use sha2::{Digest, Sha256};
 
 use crate::audio::analyser::{AnalyserBuffer, AnalyserSource};
+use crate::audio::declick::DeclickSource;
 use crate::audio::eq::{EqSource, GainSource};
 use crate::audio::types::{
     ChannelCount, EqParams, SampleRate, NORMALIZATION_ANALYSIS_SAMPLES,
@@ -335,24 +336,24 @@ pub fn create_player_from_bytes(
         let source =
             OpusSource::new(bytes.to_vec()).map_err(|e| format!("Failed to decode: {}", e))?;
         duration = source.total_duration().map(|d| d.as_secs_f64());
-        player.append(AnalyserSource::new(
+        player.append(DeclickSource::new(AnalyserSource::new(
             EqSource::new(GainSource::new(source, normalization_gain), eq_params),
             analyser_buffer,
-        ));
+        )));
     } else if let Ok(source) = decode_bytes(bytes) {
         duration = source.total_duration().map(|d| d.as_secs_f64());
-        player.append(AnalyserSource::new(
+        player.append(DeclickSource::new(AnalyserSource::new(
             EqSource::new(GainSource::new(source, normalization_gain), eq_params),
             analyser_buffer,
-        ));
+        )));
     } else {
         let source =
             OpusSource::new(bytes.to_vec()).map_err(|e| format!("Failed to decode: {}", e))?;
         duration = source.total_duration().map(|d| d.as_secs_f64());
-        player.append(AnalyserSource::new(
+        player.append(DeclickSource::new(AnalyserSource::new(
             EqSource::new(GainSource::new(source, normalization_gain), eq_params),
             analyser_buffer,
-        ));
+        )));
     }
 
     Ok((player, duration))

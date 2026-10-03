@@ -1,5 +1,6 @@
 pub mod analyser;
 pub mod commands;
+mod declick;
 mod decode;
 mod device;
 mod engine;

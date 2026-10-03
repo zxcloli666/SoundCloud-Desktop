@@ -416,13 +416,16 @@ pub fn seek_to(state: &AudioState, position: f64) -> Result<(), String> {
         } else {
             1.0
         },
-        was_paused,
+        true,
         state.eq_params.clone(),
         state.analyser_buffer.clone(),
     )?;
     apply_current_rate(state, &new_player);
     if position > 0.0 {
         new_player.try_seek(target).ok();
+    }
+    if !was_paused {
+        new_player.play();
     }
 
     let mut player = state.player.lock().unwrap();
