@@ -62,6 +62,7 @@ export function useOAuthFlow(
     }
     setIsPolling(false);
     setAuthUrl(null);
+    setError(null);
     setBrowserFailed(false);
     setCallbackSlow(false);
     setStep('waiting');
@@ -144,7 +145,6 @@ export function useOAuthFlow(
 
       if (data.status === 'completed' && data.sessionId) {
         cancel();
-        setError(null);
         onSuccessRef.current(data.sessionId);
         return;
       }

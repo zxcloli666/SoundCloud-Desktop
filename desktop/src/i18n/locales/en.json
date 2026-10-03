@@ -93,6 +93,8 @@
     "title": "Session Interrupted",
     "description": "We couldn't refresh your session automatically. Retry, or sign in again.",
     "retry": "Try again",
+    "errorDead": "This session is no longer valid. Sign in again.",
+    "errorTransient": "The server didn't respond. Try again later.",
     "renewing": "Renewing session...",
     "signIn": "Sign in again",
     "signingIn": "Signing in...",

@@ -73,6 +73,7 @@ async function runRenew(manual: boolean): Promise<void> {
   const store = useAuthRecoveryStore.getState();
   if (manual) {
     silentAttempts = 0;
+    store.setLastFailure(null);
     store.setBusy(true);
   } else {
     movePhase('silent', 'renew пошёл');
@@ -94,6 +95,7 @@ async function runRenew(manual: boolean): Promise<void> {
       }
       const s = useAuthRecoveryStore.getState();
       s.setBusy(false);
+      if (manual) s.setLastFailure(isSessionDead(e) ? 'dead' : 'transient');
       // Отказ обновления бывает ДВУХ родов, и путать их нельзя.
       // 401 — SC отверг refresh: сессия действительно мертва, нужен ре-логин.
       // 5xx/таймаут/транспорт — лежит НАШ бэкенд: сессия цела, ре-логин её не

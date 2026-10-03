@@ -5,19 +5,21 @@ import { Check, ClipboardCopy, ExternalLink, Lock, Power, RefreshCw, X } from '.
 import { useOAuthFlow } from '../lib/use-oauth-flow';
 import { useAuthStore } from '../stores/auth';
 import { useAuthRecoveryStore } from '../stores/auth-recovery';
+import { oauthErrorText } from './auth/oauth-error';
 import { Modal, ModalClose, ModalContent, ModalTitle } from './ui/Modal';
 
 export const SessionRecoveryModal = React.memo(() => {
   const { t } = useTranslation();
   const phase = useAuthRecoveryStore((s) => s.phase);
   const busy = useAuthRecoveryStore((s) => s.busy);
+  const lastFailure = useAuthRecoveryStore((s) => s.lastFailure);
   const reset = useAuthRecoveryStore((s) => s.reset);
   const setOauthActive = useAuthRecoveryStore((s) => s.setOauthActive);
   const logout = useAuthStore((s) => s.logout);
   const hasSession = useAuthStore((s) => s.hasSession);
   const [copied, setCopied] = useState(false);
 
-  const { retry, reopen, authUrl, isPolling, step, browserFailed, callbackSlow, cancel } =
+  const { retry, reopen, authUrl, isPolling, step, error, browserFailed, callbackSlow, cancel } =
     useOAuthFlow(completeReauth);
 
   // Пока идёт OAuth-поллинг — фоновый успех не должен авто-закрывать модалку.
@@ -33,6 +35,10 @@ export const SessionRecoveryModal = React.memo(() => {
   // Пока крутится renew или идёт OAuth-поллинг — модалку не закрываем.
   const locked = busy || isPolling;
 
+  useEffect(() => {
+    if (!open) cancel();
+  }, [open, cancel]);
+
   const stepLabel =
     step === 'token'
       ? t('auth.stepToken')
@@ -41,6 +47,19 @@ export const SessionRecoveryModal = React.memo(() => {
         : step === 'finalizing'
           ? t('auth.stepSession')
           : t('recovery.signingIn');
+
+  const loginError = error ? oauthErrorText(error, t) : null;
+  const renewError =
+    lastFailure === 'dead'
+      ? t('recovery.errorDead')
+      : lastFailure === 'transient'
+        ? t('recovery.errorTransient')
+        : null;
+
+  const handleRenew = () => {
+    cancel();
+    void retryRenew();
+  };
 
   const handleLogout = () => {
     reset();
@@ -153,20 +172,34 @@ export const SessionRecoveryModal = React.memo(() => {
 
             {bodyState === 'actions' && (
               <>
-                <button
-                  type="button"
-                  onClick={() => void retryRenew()}
-                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-accent text-accent-contrast font-semibold text-[13px] hover:bg-accent-hover active:scale-[0.97] transition-all duration-200 cursor-pointer shadow-[0_0_30px_var(--color-accent-glow),0_2px_8px_rgba(0,0,0,0.3)]"
-                >
-                  <RefreshCw size={14} />
-                  {t('recovery.retry')}
-                </button>
+                {loginError ? (
+                  <div className="pb-1 text-center">
+                    <p className="text-[12px] font-semibold text-red-300/85">{loginError.title}</p>
+                    <p className="mt-0.5 text-[11px] leading-snug text-white/40 break-words">
+                      {loginError.desc}
+                    </p>
+                  </div>
+                ) : (
+                  renewError && (
+                    <p className="pb-1 text-center text-[11.5px] leading-snug text-red-300/85">
+                      {renewError}
+                    </p>
+                  )
+                )}
                 <button
                   type="button"
                   onClick={retry}
-                  className="w-full py-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] text-[12.5px] text-white/55 hover:text-white/80 transition-all cursor-pointer"
+                  className="w-full py-3 rounded-xl bg-accent text-accent-contrast font-semibold text-[13px] hover:bg-accent-hover active:scale-[0.97] transition-all duration-200 cursor-pointer shadow-[0_0_30px_var(--color-accent-glow),0_2px_8px_rgba(0,0,0,0.3)]"
                 >
                   {t('recovery.signIn')}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleRenew}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] text-[12.5px] text-white/55 hover:text-white/80 transition-all cursor-pointer"
+                >
+                  <RefreshCw size={13} />
+                  {t('recovery.retry')}
                 </button>
                 <button
                   type="button"
