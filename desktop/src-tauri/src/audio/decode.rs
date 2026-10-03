@@ -4,6 +4,7 @@ use std::path::{Path, PathBuf};
 use std::sync::{Arc, RwLock};
 use std::time::Duration;
 
+use rodio::decoder::DecoderError;
 use rodio::mixer::Mixer;
 use rodio::source::SeekError;
 use rodio::{Decoder, Player, Source};
@@ -183,6 +184,14 @@ impl<R: std::io::Read + std::io::Seek> Source for OpusSource<R> {
     }
 }
 
+fn decode_bytes(bytes: &[u8]) -> Result<Decoder<Cursor<Vec<u8>>>, DecoderError> {
+    Decoder::builder()
+        .with_data(Cursor::new(bytes.to_vec()))
+        .with_byte_len(bytes.len() as u64)
+        .build()
+        .or_else(|_| Decoder::new(Cursor::new(bytes.to_vec())))
+}
+
 fn normalization_cache_file(cache_dir: &Path, cache_key: &str) -> PathBuf {
     let mut hasher = Sha256::new();
     hasher.update(cache_key.as_bytes());
@@ -294,7 +303,7 @@ pub fn resolve_normalization_gain(
         normalization_gain_from_samples(
             OpusSource::new(bytes.to_vec()).map_err(|e| format!("Failed to decode: {}", e))?,
         )
-    } else { match Decoder::new(Cursor::new(bytes.to_vec())) { Ok(source) => {
+    } else { match decode_bytes(bytes) { Ok(source) => {
         normalization_gain_from_samples(source)
     } _ => {
         normalization_gain_from_samples(
@@ -330,9 +339,7 @@ pub fn create_player_from_bytes(
             EqSource::new(GainSource::new(source, normalization_gain), eq_params),
             analyser_buffer,
         ));
-    } else if Decoder::new(Cursor::new(bytes.to_vec())).is_ok() {
-        let source = Decoder::new(Cursor::new(bytes.to_vec()))
-            .map_err(|e| format!("Failed to decode: {}", e))?;
+    } else if let Ok(source) = decode_bytes(bytes) {
         duration = source.total_duration().map(|d| d.as_secs_f64());
         player.append(AnalyserSource::new(
             EqSource::new(GainSource::new(source, normalization_gain), eq_params),
