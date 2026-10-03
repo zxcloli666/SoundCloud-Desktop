@@ -308,18 +308,24 @@ struct TrackCacheMetadata {
 }
 
 #[derive(Clone, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct TrackCacheEntry {
     pub path: String,
     pub quality: Option<String>,
     pub source: Option<String>,
+    pub accepted_short: bool,
 }
 
 impl TrackCacheEntry {
     fn from_path_and_meta(path: &Path, meta: Option<TrackCacheMetadata>) -> Self {
+        let accepted_short = meta
+            .as_ref()
+            .is_some_and(|m| m.duration_ms.is_some() && m.duration_ms == m.expected_duration_ms);
         Self {
             path: path.to_string_lossy().into_owned(),
             quality: meta.as_ref().map(|m| m.quality.label().to_string()),
             source: meta.and_then(|m| m.source.map(|s| s.label().to_string())),
+            accepted_short,
         }
     }
 }
@@ -2482,6 +2488,21 @@ mod tests {
 
         let stamped = read_cache_metadata(&raw).unwrap().expected_duration_ms;
         assert_eq!(stamped, Some(181_000));
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[tokio::test]
+    async fn accepted_preview_is_flagged_as_short() {
+        let (root, state) = test_state("accepted-short");
+        let preview = cached_clean_file(&state, "soundcloud:tracks:4", 30_000).await;
+        cached_clean_file(&state, "soundcloud:tracks:5", 180_000).await;
+        let mut meta = read_cache_metadata(&preview).unwrap();
+        meta.expected_duration_ms = meta.duration_ms;
+        write_cache_metadata(&preview, &meta).await;
+
+        let entry = |urn| state.get_cache_entry(urn).unwrap().accepted_short;
+        assert!(entry("soundcloud:tracks:4"));
+        assert!(!entry("soundcloud:tracks:5"));
         std::fs::remove_dir_all(&root).ok();
     }
 }

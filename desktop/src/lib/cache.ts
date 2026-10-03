@@ -18,6 +18,7 @@ export interface TrackCacheInfo {
   path: string;
   quality: PlaybackQuality | null;
   source: PlaybackSource | null;
+  acceptedShort: boolean;
 }
 
 export function isCached(urn: string): Promise<boolean> {

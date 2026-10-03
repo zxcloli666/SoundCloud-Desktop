@@ -43,6 +43,7 @@ let hasTrack = false;
 let fallbackDuration = 0;
 let cachedTime = 0;
 let cachedDuration = 0;
+let acceptedShortFile = false;
 let downloadProgress: number | null = null;
 let loadGen = 0;
 let lastEndedUrn: string | null = null;
@@ -311,6 +312,7 @@ async function loadTrack(track: Track, resumeAt = 0) {
   const isNewTrack = currentUrn !== track.urn;
   stopTrack();
   currentUrn = track.urn;
+  acceptedShortFile = false;
   const urn = track.urn;
 
   // A-B loop is per-track: drop it only when loading a genuinely different track —
@@ -357,6 +359,7 @@ async function loadTrack(track: Track, resumeAt = 0) {
     const cached = await getCacheInfo(urn);
     if (cached?.path) {
       if (gen !== loadGen) return;
+      acceptedShortFile = cached.acceptedShort;
       usePlayerStore.getState().setPlaybackTransport(cached.quality, cached.source);
       console.log('[Audio] Playing from cache:', urn);
       const loadResult = await loadCachedFile(
@@ -390,6 +393,7 @@ async function loadTrack(track: Track, resumeAt = 0) {
 
     if (gen !== loadGen) return;
     setDownloadProgress(null);
+    acceptedShortFile = cachedInfo.acceptedShort;
     usePlayerStore.getState().setPlaybackTransport(cachedInfo.quality, cachedInfo.source);
 
     console.log('[Audio] Playing downloaded track:', urn);
@@ -488,7 +492,7 @@ function maybeHealEarlyEnd(): boolean {
   if (!currentUrn || navigator.onLine === false) return false;
   const state = usePlayerStore.getState();
   const track = state.currentTrack;
-  if (!track || track.urn !== currentUrn || state.abLoop) return false;
+  if (!track || track.urn !== currentUrn || state.abLoop || acceptedShortFile) return false;
   if (!endedEarly(track)) return false;
   const endedAt = cachedTime;
   if (healedUrns.has(track.urn)) {
