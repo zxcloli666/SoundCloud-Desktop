@@ -315,13 +315,18 @@ impl AnonClient {
 
         if let Some(last) = *gate
             && last.elapsed() < CLIENT_ID_MIN_REFRESH
-                && let Some(id) = self.client_id.read().await.clone() {
-                    return Ok(id);
-                }
+        {
+            return self
+                .client_id
+                .read()
+                .await
+                .clone()
+                .ok_or_else(|| "client_id refresh failed recently".to_string());
+        }
 
+        *gate = Some(Instant::now());
         let client_id = self.fetch_client_id().await?;
         *self.client_id.write().await = Some(client_id.clone());
-        *gate = Some(Instant::now());
         self.log("INFO", "refreshed public client_id".to_string());
         Ok(client_id)
     }

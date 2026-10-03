@@ -28,6 +28,7 @@ const STORAGE_TIMEOUT_MS: u64 = 1200;
 const STORAGE_COOLDOWN_SECS: u64 = 60;
 const DOWNLOAD_CONNECT_TIMEOUT_MS: u64 = 3_000;
 const DOWNLOAD_READ_TIMEOUT_SECS: u64 = 130;
+const ANON_READ_TIMEOUT_SECS: u64 = 20;
 const DIRECT_CONNECT_TIMEOUT_MS: u64 = 5_000;
 const DIRECT_READ_TIMEOUT_SECS: u64 = 70;
 const RETRY_DELAYS_MS: [u64; 3] = [200, 600, 1500];
@@ -608,7 +609,7 @@ pub fn init(audio_dir: PathBuf, liked_dir: PathBuf, incoming_dir: PathBuf) -> Tr
         .tcp_nodelay(true)
         .pool_max_idle_per_host(16)
         .connect_timeout(Duration::from_millis(DOWNLOAD_CONNECT_TIMEOUT_MS))
-        .read_timeout(Duration::from_secs(DOWNLOAD_READ_TIMEOUT_SECS))
+        .read_timeout(Duration::from_secs(ANON_READ_TIMEOUT_SECS))
         .build()
         .expect("failed to build anon client");
     let anon = Arc::new(AnonClient::new(anon_client));
