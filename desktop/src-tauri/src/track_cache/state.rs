@@ -558,6 +558,7 @@ pub struct TrackCacheState {
     transcode_limiter: Arc<Semaphore>,
     /// URNs with a transcode in flight, so live + recovery requests coalesce.
     transcoding: Arc<StdMutex<HashSet<String>>>,
+    probing: Arc<StdMutex<HashSet<PathBuf>>>,
     /// Per-URN count of consecutive "transcoded too short" results, to cap
     /// re-downloads of preview-only tracks (best-effort, per session).
     truncated_retries: Arc<StdMutex<HashMap<String, u8>>>,
@@ -628,6 +629,7 @@ pub fn init(audio_dir: PathBuf, liked_dir: PathBuf, incoming_dir: PathBuf) -> Tr
         likes_limiter: Arc::new(Semaphore::new(MAX_PARALLEL_LIKES)),
         transcode_limiter: Arc::new(Semaphore::new(MAX_PARALLEL_TRANSCODES)),
         transcoding: Arc::new(StdMutex::new(HashSet::new())),
+        probing: Arc::new(StdMutex::new(HashSet::new())),
         truncated_retries: Arc::new(StdMutex::new(HashMap::new())),
         likes_running: Arc::new(std::sync::atomic::AtomicBool::new(false)),
         likes_cancel: Arc::new(std::sync::atomic::AtomicBool::new(false)),
@@ -1120,10 +1122,9 @@ impl TrackCacheState {
             liked,
             expected_duration_ms,
         } = req;
+        let expected_duration_ms = expected_duration_ms.filter(|&ms| ms > 0);
 
-        if let Some(path) = self.resolve_path(urn) {
-            self.stamp_expected_duration(&path, expected_duration_ms).await;
-        }
+        self.stamp_expected_duration(urn, expected_duration_ms).await;
         if let Some(entry) = self.get_cache_entry(urn) {
             println!("[TrackCache] hit: {urn}");
             return Ok(entry);
@@ -1155,10 +1156,10 @@ impl TrackCacheState {
             }
             return match result {
                 Some(Ok(path)) => {
+                    self.stamp_expected_duration(urn, expected_duration_ms).await;
                     // Re-resolve: the transcode may have already promoted А→Б and
                     // deleted the raw path stored in the slot.
                     let current = self.resolve_path(urn).unwrap_or(path);
-                    self.stamp_expected_duration(&current, expected_duration_ms).await;
                     Ok(TrackCacheEntry::from_path_and_meta(
                         &current,
                         read_cache_metadata(&current),
@@ -1243,20 +1244,25 @@ impl TrackCacheState {
         write_cache_metadata(incoming_path, &meta).await;
     }
 
-    async fn stamp_expected_duration(&self, path: &Path, expected_duration_ms: Option<u64>) {
+    async fn stamp_expected_duration(&self, urn: &str, expected_duration_ms: Option<u64>) {
         let Some(expected_duration_ms) = expected_duration_ms else {
             return;
         };
-        let Some(mut meta) = read_cache_metadata(path) else {
-            return;
-        };
-        if meta.expected_duration_ms.is_some() {
-            return;
-        }
-        meta.expected_duration_ms = Some(expected_duration_ms);
-        write_cache_metadata(path, &meta).await;
-        if meta.duration_ms.is_none() && self.is_clean_path(path) {
-            self.spawn_duration_probe(path.to_path_buf());
+        for path in [
+            self.incoming_file_path(urn),
+            self.liked_file_path(urn),
+            self.file_path(urn),
+        ] {
+            let Some(mut meta) = read_cache_metadata(&path) else {
+                continue;
+            };
+            if meta.expected_duration_ms.is_none_or(|ms| ms == 0) {
+                meta.expected_duration_ms = Some(expected_duration_ms);
+                write_cache_metadata(&path, &meta).await;
+            }
+            if meta.duration_ms.is_none() && self.is_clean_path(&path) {
+                self.spawn_duration_probe(path);
+            }
         }
     }
 
@@ -1264,15 +1270,25 @@ impl TrackCacheState {
         let Some(ffmpeg) = self.ffmpeg() else {
             return;
         };
+        {
+            let Ok(mut probing) = self.probing.lock() else {
+                return;
+            };
+            if !probing.insert(path.clone()) {
+                return;
+            }
+        }
+        let state = self.clone();
         tokio::spawn(async move {
-            let Some(duration_ms) = transcode::probe_duration_ms(&ffmpeg, &path).await else {
-                return;
-            };
-            let Some(mut meta) = read_cache_metadata(&path) else {
-                return;
-            };
-            meta.duration_ms = Some(duration_ms);
-            write_cache_metadata(&path, &meta).await;
+            if let Some(duration_ms) = transcode::probe_duration_ms(&ffmpeg, &path).await
+                && let Some(mut meta) = read_cache_metadata(&path)
+            {
+                meta.duration_ms = Some(duration_ms);
+                write_cache_metadata(&path, &meta).await;
+            }
+            if let Ok(mut probing) = state.probing.lock() {
+                probing.remove(&path);
+            }
         });
     }
 
@@ -1321,7 +1337,6 @@ impl TrackCacheState {
 
         let meta = read_cache_metadata(&incoming);
         let liked = meta.as_ref().map(|m| m.liked).unwrap_or(false);
-        let expected = meta.as_ref().and_then(|m| m.expected_duration_ms);
         let quality = meta
             .as_ref()
             .map(|m| m.quality)
@@ -1344,6 +1359,9 @@ impl TrackCacheState {
         let clean_path = transcode::transcode_to_m4a(ffmpeg, &incoming, &dest_dir, &final_name).await?;
 
         let probed = transcode::probe_duration_ms(ffmpeg, &clean_path).await;
+        let expected = read_cache_metadata(&incoming)
+            .or(meta)
+            .and_then(|m| m.expected_duration_ms);
 
         // The transcode faithfully reproduces the source, so a too-short result
         // means the *download* was cut off — discard so the next play retries.
@@ -2425,26 +2443,45 @@ mod tests {
         path
     }
 
-    #[tokio::test]
-    async fn stamped_duration_drops_a_short_clean_file() {
-        let root = std::env::temp_dir().join(format!("track-cache-stamp-{}", std::process::id()));
+    fn test_state(name: &str) -> (PathBuf, TrackCacheState) {
+        let root = std::env::temp_dir().join(format!("track-cache-{name}-{}", std::process::id()));
         std::fs::remove_dir_all(&root).ok();
         let [audio, liked, incoming] = ["audio", "liked", "incoming"].map(|dir| root.join(dir));
         for dir in [&audio, &liked, &incoming] {
             std::fs::create_dir_all(dir).unwrap();
         }
-        let state = init(audio, liked, incoming);
+        (root, init(audio, liked, incoming))
+    }
+
+    #[tokio::test]
+    async fn stamped_duration_drops_a_short_clean_file() {
+        let (root, state) = test_state("stamp");
         let full = cached_clean_file(&state, "soundcloud:tracks:1", 180_000).await;
         let short = cached_clean_file(&state, "soundcloud:tracks:2", 30_000).await;
 
-        state.stamp_expected_duration(&full, Some(181_000)).await;
-        state.stamp_expected_duration(&short, Some(181_000)).await;
+        state.stamp_expected_duration("soundcloud:tracks:1", Some(181_000)).await;
+        state.stamp_expected_duration("soundcloud:tracks:2", Some(181_000)).await;
 
         let stamped = read_cache_metadata(&full).unwrap().expected_duration_ms;
         assert_eq!(stamped, Some(181_000));
         assert!(state.get_cache_entry("soundcloud:tracks:1").is_some());
         assert!(state.get_cache_entry("soundcloud:tracks:2").is_none());
         assert!(!short.exists());
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[tokio::test]
+    async fn stamp_reaches_a_raw_file_being_transcoded() {
+        let (root, state) = test_state("raw-stamp");
+        let urn = "soundcloud:tracks:3";
+        let raw = state.incoming_file_path(urn);
+        std::fs::write(&raw, vec![0u8; MIN_AUDIO_SIZE as usize]).unwrap();
+        state.finalize_incoming(&raw, false, None).await;
+
+        state.stamp_expected_duration(urn, Some(181_000)).await;
+
+        let stamped = read_cache_metadata(&raw).unwrap().expected_duration_ms;
+        assert_eq!(stamped, Some(181_000));
         std::fs::remove_dir_all(&root).ok();
     }
 }
