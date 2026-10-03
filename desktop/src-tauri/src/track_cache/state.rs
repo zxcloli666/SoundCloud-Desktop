@@ -1121,6 +1121,9 @@ impl TrackCacheState {
             expected_duration_ms,
         } = req;
 
+        if let Some(path) = self.resolve_path(urn) {
+            self.stamp_expected_duration(&path, expected_duration_ms).await;
+        }
         if let Some(entry) = self.get_cache_entry(urn) {
             println!("[TrackCache] hit: {urn}");
             return Ok(entry);
@@ -1155,6 +1158,7 @@ impl TrackCacheState {
                     // Re-resolve: the transcode may have already promoted А→Б and
                     // deleted the raw path stored in the slot.
                     let current = self.resolve_path(urn).unwrap_or(path);
+                    self.stamp_expected_duration(&current, expected_duration_ms).await;
                     Ok(TrackCacheEntry::from_path_and_meta(
                         &current,
                         read_cache_metadata(&current),
@@ -1237,6 +1241,39 @@ impl TrackCacheState {
             meta.expected_duration_ms = expected_duration_ms;
         }
         write_cache_metadata(incoming_path, &meta).await;
+    }
+
+    async fn stamp_expected_duration(&self, path: &Path, expected_duration_ms: Option<u64>) {
+        let Some(expected_duration_ms) = expected_duration_ms else {
+            return;
+        };
+        let Some(mut meta) = read_cache_metadata(path) else {
+            return;
+        };
+        if meta.expected_duration_ms.is_some() {
+            return;
+        }
+        meta.expected_duration_ms = Some(expected_duration_ms);
+        write_cache_metadata(path, &meta).await;
+        if meta.duration_ms.is_none() && self.is_clean_path(path) {
+            self.spawn_duration_probe(path.to_path_buf());
+        }
+    }
+
+    fn spawn_duration_probe(&self, path: PathBuf) {
+        let Some(ffmpeg) = self.ffmpeg() else {
+            return;
+        };
+        tokio::spawn(async move {
+            let Some(duration_ms) = transcode::probe_duration_ms(&ffmpeg, &path).await else {
+                return;
+            };
+            let Some(mut meta) = read_cache_metadata(&path) else {
+                return;
+            };
+            meta.duration_ms = Some(duration_ms);
+            write_cache_metadata(&path, &meta).await;
+        });
     }
 
     /// Queue a background transcode of a raw incoming file into the clean cache.
@@ -2367,5 +2404,47 @@ impl TrackCacheState {
             "[TrackCache] evicted {removed} files, freed {} MB",
             (before - total) / (1024 * 1024)
         );
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    async fn cached_clean_file(state: &TrackCacheState, urn: &str, duration_ms: u64) -> PathBuf {
+        let path = state.file_path(urn);
+        std::fs::write(&path, vec![0u8; MIN_AUDIO_SIZE as usize]).unwrap();
+        let meta = TrackCacheMetadata {
+            quality: PlaybackQuality::Sq,
+            source: None,
+            liked: false,
+            expected_duration_ms: None,
+            duration_ms: Some(duration_ms),
+        };
+        write_cache_metadata(&path, &meta).await;
+        path
+    }
+
+    #[tokio::test]
+    async fn stamped_duration_drops_a_short_clean_file() {
+        let root = std::env::temp_dir().join(format!("track-cache-stamp-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        let [audio, liked, incoming] = ["audio", "liked", "incoming"].map(|dir| root.join(dir));
+        for dir in [&audio, &liked, &incoming] {
+            std::fs::create_dir_all(dir).unwrap();
+        }
+        let state = init(audio, liked, incoming);
+        let full = cached_clean_file(&state, "soundcloud:tracks:1", 180_000).await;
+        let short = cached_clean_file(&state, "soundcloud:tracks:2", 30_000).await;
+
+        state.stamp_expected_duration(&full, Some(181_000)).await;
+        state.stamp_expected_duration(&short, Some(181_000)).await;
+
+        let stamped = read_cache_metadata(&full).unwrap().expected_duration_ms;
+        assert_eq!(stamped, Some(181_000));
+        assert!(state.get_cache_entry("soundcloud:tracks:1").is_some());
+        assert!(state.get_cache_entry("soundcloud:tracks:2").is_none());
+        assert!(!short.exists());
+        std::fs::remove_dir_all(&root).ok();
     }
 }
