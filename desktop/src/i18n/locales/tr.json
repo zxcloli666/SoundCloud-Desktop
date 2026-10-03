@@ -170,7 +170,7 @@
     "live": {
       "searching": "SoundCloud'da araniyor…",
       "added": "SoundCloud'dan +{{count}}",
-      "limited": "SoundCloud beklememizi istedi · {{seconds}} sn",
+      "limited": "Su anda cok fazla SoundCloud aramasi var · {{seconds}} sn",
       "unavailable": "SoundCloud yanit vermedi",
       "paused": "SoundCloud su anda kullanilamiyor",
       "off": "SoundCloud aramasi su anda kapali",

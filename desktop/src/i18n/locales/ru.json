@@ -206,7 +206,7 @@
     "live": {
       "searching": "Ищем в SoundCloud…",
       "added": "+{{count}} из SoundCloud",
-      "limited": "SoundCloud просит подождать · {{seconds}} с",
+      "limited": "Слишком много поисков в SoundCloud · {{seconds}} с",
       "unavailable": "SoundCloud не ответил",
       "paused": "SoundCloud сейчас недоступен",
       "off": "Поиск в SoundCloud сейчас выключен",
