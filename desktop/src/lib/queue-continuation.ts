@@ -186,9 +186,11 @@ const TRACK_WAVE_PAGE_SIZE = 20;
 
 function createTrackWaveContinuationSource(seedId: string): QueueContinuationSource {
   let cursor: string | undefined;
+  let done = false;
   return {
     kind: 'track-wave',
     async next() {
+      if (done) return [];
       const batch = await fetchSmartWave({
         seedKind: 'track',
         seedId,
@@ -196,7 +198,8 @@ function createTrackWaveContinuationSource(seedId: string): QueueContinuationSou
         limit: TRACK_WAVE_PAGE_SIZE,
         hideListened: useSettingsStore.getState().soundwaveHideListened,
       });
-      if (batch.cursor) cursor = batch.cursor;
+      cursor = batch.cursor;
+      done = !cursor;
       return batch.tracks;
     },
   };
