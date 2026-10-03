@@ -118,8 +118,6 @@
     "artists": "Артисты",
     "albums": "Альбомы",
     "noResults": "Ничего не найдено",
-    "noResultsDbHint": "В локальной базе SCD ничего не нашлось. Попробуй переключиться на SoundCloud.",
-    "tryScHint": "Ищем в локальной базе SCD. Переключись на SoundCloud, чтобы расширить поиск.",
     "hint": "Исполнители, треки, плейлисты, подкасты",
     "history": "Недавние запросы",
     "clearHistory": "Очистить",
@@ -160,13 +158,21 @@
       "dbBody": "По запросу «{{query}}» нет совпадений в названиях, артистах и лирике. Попробуй поиск по вайбу — опиши настроение.",
       "cta": "Искать по вайбу",
       "scTitle": "Ничего не найдено",
-      "scBody": "По запросу «{{query}}» ничего нет. Попробуй другое написание или более общий запрос.",
+      "scBody": "«{{query}}» нет в базе SCD, а поиск в SoundCloud сейчас выключен.",
       "toVibeTitle": "По словам ничего",
       "toVibeBody": "Попробуй по вайбу — опиши чувство, а не ключевые слова.",
       "toVibeCta": "Искать по вайбу",
       "toTextTitle": "Под этот вайб пусто",
       "toTextBody": "Попробуй точные слова — название, артиста или строчку из песни.",
-      "toTextCta": "Искать по тексту"
+      "toTextCta": "Искать по тексту",
+      "bothTitle": "Не нашли ни в SCD, ни в SoundCloud",
+      "bothBody": "Искали «{{query}}» в базе SCD и в SoundCloud — пусто в обоих местах.",
+      "liveDownTitle": "До SoundCloud не дотянулись",
+      "liveDownBody": "В SCD по запросу «{{query}}» пусто, а SoundCloud не ответил вовремя.",
+      "pasteHint": "Есть ссылка на SoundCloud? Вставь её в поиск — откроем сразу.",
+      "toScTitle": "В базе SCD пусто",
+      "toScBody": "«{{query}}» в SCD пока нет. Поищи в SoundCloud или опиши настроение и попробуй поиск по вайбу.",
+      "toScCta": "Искать в SoundCloud"
     },
     "dive": "Похожее",
     "diveFrom": "{{title}}",
@@ -184,14 +190,29 @@
       "errorTitle": "Не удалось открыть",
       "notFound": "Ссылка не найдена",
       "failed": "Ошибка обработки",
-      "unknown": "Неизвестный ресурс: {{kind}}"
+      "unknown": "Неизвестный ресурс: {{kind}}",
+      "gone": "Трек удалён или приватный",
+      "upstream": "SoundCloud не отвечает",
+      "notALink": "Это не ссылка на трек, плейлист или профиль",
+      "retryIn": "Повторить можно через {{seconds}} с"
     },
     "source": {
       "db": "SCD",
       "sc": "SoundCloud",
       "dbBadge": "БД",
       "dbHint": "Поиск в локальной базе SCD — быстро, по уже зеркалированному контенту.",
-      "scHint": "Поиск прямо в SoundCloud — медленнее, но охватывает всё."
+      "scHint": "SCD и SoundCloud вместе. Если SoundCloud не отвечает, покажем то, что есть в SCD"
+    },
+    "live": {
+      "searching": "Ищем в SoundCloud…",
+      "added": "+{{count}} из SoundCloud",
+      "limited": "SoundCloud просит подождать · {{seconds}} с",
+      "unavailable": "SoundCloud не ответил",
+      "paused": "SoundCloud сейчас недоступен",
+      "off": "Поиск в SoundCloud сейчас выключен",
+      "retry": "Повторить",
+      "tileHint": "Найдено в SoundCloud только что, в базе SCD этого трека ещё нет",
+      "preview": "превью"
     }
   },
   "sharing": {
@@ -735,7 +756,9 @@
     "notFound": "Не найдено",
     "done": "Импорт завершён!",
     "savingPlaylist": "Сохраняем плейлист...",
-    "backgroundHint": "Импорт идет в фоне, окно можно закрыть"
+    "backgroundHint": "Импорт идет в фоне, окно можно закрыть",
+    "uncertain": "Не уверены",
+    "failed": "Ошибка"
   },
   "update": {
     "available": "Доступно обновление",

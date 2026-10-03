@@ -118,8 +118,6 @@
     "artists": "Artists",
     "albums": "Albums",
     "noResults": "No results found",
-    "noResultsDbHint": "Nothing matched in the local SCD library. Try switching to SoundCloud.",
-    "tryScHint": "Searching in SCD library. Switch to SoundCloud to broaden the search.",
     "hint": "Search for artists, bands, tracks, podcasts",
     "history": "Recent searches",
     "clearHistory": "Clear all",
@@ -160,13 +158,21 @@
       "dbBody": "\"{{query}}\" didn't match any title, artist or lyric. Try searching by vibe — describe the feeling instead.",
       "cta": "Search by vibe",
       "scTitle": "Nothing found",
-      "scBody": "\"{{query}}\" returned no results. Try a different spelling or a broader term.",
+      "scBody": "\"{{query}}\" isn't in the SCD library, and live SoundCloud search is off right now.",
       "toVibeTitle": "Nothing matched the words",
       "toVibeBody": "Try searching by vibe — describe the feeling, not the keywords.",
       "toVibeCta": "Search by vibe",
       "toTextTitle": "This vibe came up empty",
       "toTextBody": "Try the exact words — a title, an artist, or a lyric you remember.",
-      "toTextCta": "Search by text"
+      "toTextCta": "Search by text",
+      "bothTitle": "Nothing in SCD or on SoundCloud",
+      "bothBody": "We looked for \"{{query}}\" in the SCD library and on SoundCloud and found nothing.",
+      "liveDownTitle": "Couldn't reach SoundCloud",
+      "liveDownBody": "SCD has nothing for \"{{query}}\", and SoundCloud didn't answer in time.",
+      "pasteHint": "Have a SoundCloud link? Paste it into search to open it directly.",
+      "toScTitle": "Nothing in the SCD library",
+      "toScBody": "\"{{query}}\" isn't in SCD yet. Search SoundCloud for it, or describe the mood and try the vibe search.",
+      "toScCta": "Search SoundCloud"
     },
     "dive": "Similar",
     "diveFrom": "{{title}}",
@@ -184,14 +190,29 @@
       "errorTitle": "Could not resolve",
       "notFound": "Link not found",
       "failed": "Failed to resolve",
-      "unknown": "Unknown resource: {{kind}}"
+      "unknown": "Unknown resource: {{kind}}",
+      "gone": "This track was deleted or is private",
+      "upstream": "SoundCloud isn't responding",
+      "notALink": "That's not a link to a track, playlist or profile",
+      "retryIn": "You can try again in {{seconds}} s"
     },
     "source": {
       "db": "SCD",
       "sc": "SoundCloud",
       "dbBadge": "DB",
       "dbHint": "Search inside the local SCD library — fast, scoped to mirrored content.",
-      "scHint": "Search directly on SoundCloud — slower, but covers everything."
+      "scHint": "SCD and SoundCloud together. If SoundCloud doesn't answer, we show what SCD has"
+    },
+    "live": {
+      "searching": "Searching SoundCloud…",
+      "added": "+{{count}} from SoundCloud",
+      "limited": "SoundCloud asked us to wait · {{seconds}} s",
+      "unavailable": "SoundCloud didn't answer",
+      "paused": "SoundCloud is unavailable right now",
+      "off": "SoundCloud search is off right now",
+      "retry": "Retry",
+      "tileHint": "Found on SoundCloud just now, not in the SCD library yet",
+      "preview": "preview"
     }
   },
   "sharing": {
@@ -725,7 +746,9 @@
     "notFound": "Not found",
     "done": "Import complete!",
     "savingPlaylist": "Saving playlist...",
-    "backgroundHint": "Import continues in the background. You can close this window"
+    "backgroundHint": "Import continues in the background. You can close this window",
+    "uncertain": "Unsure",
+    "failed": "Failed"
   },
   "update": {
     "available": "Update available",
