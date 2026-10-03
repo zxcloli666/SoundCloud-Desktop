@@ -11,7 +11,7 @@ import {
 import {useEffect, useMemo, useRef} from 'react';
 import {useAuthStore} from '../stores/auth';
 import type {Track} from '../stores/player';
-import {ApiError, api, isRefreshPending} from './api';
+import {api, isRefreshPending} from './api';
 import {
   type CollectionSync,
   type CollectionSyncState,
@@ -156,7 +156,7 @@ export const retryWhileRefreshing = {
   retry: (failureCount: number, error: unknown) =>
     failureCount < (isRefreshPending(error) ? REFRESH_PENDING_RETRIES : 1),
   retryDelay: (failureCount: number, error: unknown) =>
-    error instanceof ApiError && isRefreshPending(error)
+    isRefreshPending(error)
       ? Math.min(Math.max(error.retryAfterSeconds ?? 5, 3), 30) * 1000
       : Math.min(1000 * 2 ** failureCount, 30_000),
 };
