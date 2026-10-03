@@ -143,11 +143,7 @@ function VolumeControl({volume}: { volume: number }) {
             <button
                 type="button"
                 className="tp-icon-btn"
-                onClick={() => {
-                    const v = volume > 0 ? 0 : 50;
-                    patchNp({volume: v});
-                    sendCmd('volume', v);
-                }}
+                onClick={() => sendCmd('mute_toggle')}
             >
                 <Icon size={15}/>
             </button>

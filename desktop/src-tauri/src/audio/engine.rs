@@ -82,7 +82,9 @@ fn commit_loaded_track(
     normalization_gain: f32,
 ) {
     apply_current_rate(state, &new_player);
-    *state.player.lock().unwrap() = Some(new_player);
+    let mut player = state.player.lock().unwrap();
+    new_player.set_volume(*state.volume.lock().unwrap());
+    *player = Some(new_player);
     *state.source_bytes.lock().unwrap() = Some(bytes);
     *state.normalization_gain.lock().unwrap() = normalization_gain;
     // Fresh track starts at source 0 / output 0.
@@ -180,6 +182,7 @@ pub fn reload_current_track(state: &AudioState) -> Result<(), String> {
     if let Some(old) = player.take() {
         old.stop();
     }
+    new_player.set_volume(*state.volume.lock().unwrap());
     *player = Some(new_player);
     set_pos_anchor(state, source_position, output_target);
     state.has_track.store(true, Ordering::Relaxed);
@@ -432,6 +435,7 @@ pub fn seek_to(state: &AudioState, position: f64) -> Result<(), String> {
     if let Some(old) = player.take() {
         old.stop();
     }
+    new_player.set_volume(*state.volume.lock().unwrap());
     *player = Some(new_player);
     set_pos_anchor(state, position, output_target);
     state.ended_notified.store(false, Ordering::Relaxed);
