@@ -67,13 +67,37 @@ export function getSessionId() {
 // ─── Error ──────────────────────────────────────────────────
 
 export class ApiError extends Error {
+  readonly code: string | null;
+
   constructor(
     public status: number,
     public body: string,
+    public retryAfterSeconds: number | null = null,
   ) {
     super(`API ${status}: ${body}`);
     this.name = 'ApiError';
+    this.code = errorCode(body);
   }
+}
+
+function errorCode(body: string): string | null {
+  try {
+    const code = JSON.parse(body)?.code;
+    return typeof code === 'string' ? code : null;
+  } catch {
+    return null;
+  }
+}
+
+function retryAfterSeconds(res: Response): number | null {
+  const seconds = Number(res.headers.get('retry-after'));
+  return Number.isFinite(seconds) && seconds > 0 ? seconds : null;
+}
+
+export function isRefreshPending(error: unknown): boolean {
+  return (
+    error instanceof ApiError && error.status === 503 && !!error.code?.endsWith('_refresh_pending')
+  );
 }
 
 function isRateLimitError(status: number, body: string): boolean {
@@ -282,15 +306,16 @@ export async function apiRequest<T = unknown>(
         fetchWithTimeout(url, { ...init, headers }, attemptTimeout),
       );
 
+      const body = res.ok ? '' : await res.text();
+      const err = res.ok ? null : new ApiError(res.status, body, retryAfterSeconds(res));
+      const answered = res.status < 500 || isRefreshPending(err);
+
       // Жив = ответил <500 (как probeOnce; 401/403 — валидный ответ axum, star они
       // НЕ марают — иначе протухший токен выключал бы star при мёртвом main).
       // ≥500 — пассивный фейл: cooldown + проба main; вердикт down ставит только проба.
-      if (res.status < 500) markHealthy(base);
+      if (answered) markHealthy(base);
       else markUnhealthy(base);
-      if (
-        base === API_BASE &&
-        isMainBadSample(path, res.status < 500, performance.now() - attemptStart)
-      ) {
+      if (base === API_BASE && isMainBadSample(path, answered, performance.now() - attemptStart)) {
         noteMainBadResponse();
       }
       // Успех star для не-премиума — probe-сигнал, не «онлайн» (иначе флап offline↔online).
@@ -306,10 +331,7 @@ export async function apiRequest<T = unknown>(
         logInfo(`[Host] main отказал в ${label}, star отдал по той же сессии → идём со star`);
       }
 
-      if (!res.ok) {
-        const body = await res.text();
-        const err = new ApiError(res.status, body);
-
+      if (err) {
         // Ожидаемый гейт-отказ star (не-премиум): не шум, а подозрение —
         // сверочный запрос сам себя не триггерит.
         const starDeny = base === API_STAR_BASE && res.status === 403;
@@ -317,7 +339,7 @@ export async function apiRequest<T = unknown>(
 
         // Штатный по контракту статус (напр. 404 /related = соседей пока нет):
         // глушим тихо — без тоста, без recovery, без error-лога.
-        if (silentStatuses?.includes(res.status)) throw err;
+        if (silentStatuses?.includes(res.status) || isRefreshPending(err)) throw err;
 
         if (res.status === 401) authRejection ??= err;
 
