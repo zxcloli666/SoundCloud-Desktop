@@ -187,6 +187,7 @@ pub fn run() {
             audio::audio_seek,
             audio::audio_set_volume,
             audio::audio_set_playback_rate,
+            audio::audio_set_pitch_ratio,
             audio::audio_set_ab_loop,
             audio::audio_get_position,
             audio::audio_set_eq,

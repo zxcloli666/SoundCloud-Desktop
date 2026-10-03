@@ -88,6 +88,11 @@ pub fn audio_set_playback_rate(rate: f64, state: State<'_, AudioState>) {
 }
 
 #[tauri::command]
+pub fn audio_set_pitch_ratio(ratio: f64, state: State<'_, AudioState>) {
+    engine::set_pitch_ratio(ratio, state);
+}
+
+#[tauri::command]
 pub fn audio_set_ab_loop(a: Option<f64>, b: Option<f64>, state: State<'_, AudioState>) {
     engine::set_ab_loop(a, b, state);
 }

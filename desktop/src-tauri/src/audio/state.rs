@@ -1,4 +1,4 @@
-use std::sync::atomic::{AtomicBool, AtomicU64};
+use std::sync::atomic::{AtomicBool, AtomicU32, AtomicU64};
 use std::sync::{Arc, Mutex, RwLock};
 
 use rodio::mixer::Mixer;
@@ -48,6 +48,7 @@ pub struct AudioState {
     pub normalization_gain: Mutex<f32>,
     pub volume: Mutex<f32>,
     pub playback_rate: Mutex<f32>,
+    pub pitch_ratio: Arc<AtomicU32>,
     /// Source-time position integrator `(source_anchor, output_anchor)` in seconds.
     /// rodio's get_pos() is wall-clock (output) time; source time is integrated as
     /// `source_anchor + (get_pos() - output_anchor) * rate`. The anchor is re-based on
@@ -104,6 +105,7 @@ pub fn init(app: &AppHandle) -> AudioState {
         normalization_gain: Mutex::new(1.0),
         volume: Mutex::new(0.25),
         playback_rate: Mutex::new(1.0),
+        pitch_ratio: Arc::new(AtomicU32::new(1.0f32.to_bits())),
         pos_anchor: Mutex::new((0.0, 0.0)),
         has_track: AtomicBool::new(false),
         ended_notified: AtomicBool::new(false),

@@ -1,5 +1,5 @@
 use std::path::PathBuf;
-use std::sync::atomic::Ordering;
+use std::sync::atomic::{AtomicU32, Ordering};
 use std::time::Duration;
 
 use tauri::State;
@@ -108,6 +108,7 @@ async fn build_player_from_bytes(
     start_paused: bool,
     eq_params: std::sync::Arc<std::sync::RwLock<crate::audio::types::EqParams>>,
     analyser_buffer: std::sync::Arc<crate::audio::analyser::AnalyserBuffer>,
+    pitch_ratio: std::sync::Arc<AtomicU32>,
 ) -> Result<(Vec<u8>, rodio::Player, Option<f64>, f32), String> {
     task::spawn_blocking(move || {
         let normalization_gain = if normalization_enabled {
@@ -127,6 +128,7 @@ async fn build_player_from_bytes(
             start_paused,
             eq_params,
             analyser_buffer,
+            pitch_ratio,
         )?;
         Ok((bytes, player, duration_secs, normalization_gain))
     })
@@ -167,6 +169,7 @@ pub fn reload_current_track(state: &AudioState) -> Result<(), String> {
         was_paused,
         state.eq_params.clone(),
         state.analyser_buffer.clone(),
+        state.pitch_ratio.clone(),
     )?;
     // Apply speed BEFORE seeking so try_seek's argument is interpreted under the speed
     // factor: try_seek(source/rate) lands the decoder at the original source position.
@@ -221,6 +224,7 @@ pub async fn load_file(
         start_paused,
         state.eq_params.clone(),
         state.analyser_buffer.clone(),
+        state.pitch_ratio.clone(),
     )
     .await?;
 
@@ -322,6 +326,7 @@ pub async fn load_url(
         start_paused,
         state.eq_params.clone(),
         state.analyser_buffer.clone(),
+        state.pitch_ratio.clone(),
     )
     .await?;
 
@@ -422,6 +427,7 @@ pub fn seek_to(state: &AudioState, position: f64) -> Result<(), String> {
         true,
         state.eq_params.clone(),
         state.analyser_buffer.clone(),
+        state.pitch_ratio.clone(),
     )?;
     apply_current_rate(state, &new_player);
     if position > 0.0 {
@@ -473,6 +479,11 @@ pub fn set_playback_rate(rate: f64, state: State<'_, AudioState>) {
     } else {
         *state.playback_rate.lock().unwrap() = value;
     }
+}
+
+pub fn set_pitch_ratio(ratio: f64, state: State<'_, AudioState>) {
+    let value = ratio.clamp(0.25, 4.0) as f32;
+    state.pitch_ratio.store(value.to_bits(), Ordering::Relaxed);
 }
 
 pub fn get_position(state: State<'_, AudioState>) -> f64 {
@@ -602,8 +613,18 @@ pub async fn preview_play(
     // audible the instant it loads (a zero-start + tick fade-in left it silent).
     let analyser = crate::audio::analyser::AnalyserBuffer::new();
     let player = task::spawn_blocking(move || {
-        create_player_from_bytes(&bytes, &mixer, target, 1.0, false, eq_params, analyser)
-            .map(|(player, _)| player)
+        let pitch_ratio = std::sync::Arc::new(AtomicU32::new(1.0f32.to_bits()));
+        create_player_from_bytes(
+            &bytes,
+            &mixer,
+            target,
+            1.0,
+            false,
+            eq_params,
+            analyser,
+            pitch_ratio,
+        )
+        .map(|(player, _)| player)
     })
         .await
         .map_err(|e| format!("preview decode task failed: {e}"))??;

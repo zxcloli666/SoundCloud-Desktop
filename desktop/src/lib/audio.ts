@@ -335,9 +335,8 @@ async function loadTrack(track: Track) {
   invoke('audio_set_eq', { enabled: eqEnabled, gains: eqGains }).catch(console.error);
   invoke('audio_set_normalization', { enabled: normalizeVolume }).catch(console.error);
 
-  // Sync volume + playback rate (pitch is folded into the speed value sent to Rust)
   invoke('audio_set_volume', { volume: usePlayerStore.getState().volume }).catch(console.error);
-  invoke('audio_set_playback_rate', { rate: getEffectivePlaybackRate() }).catch(console.error);
+  syncPlaybackRateAndPitch();
 
   try {
     const highQualityStreaming = useSettingsStore.getState().highQualityStreaming;
@@ -658,7 +657,7 @@ usePlayerStore.subscribe((state, prev) => {
     state.pitchSemitones !== prev.pitchSemitones ||
     state.pitchControlMode !== prev.pitchControlMode
   ) {
-    invoke('audio_set_playback_rate', { rate: getEffectivePlaybackRate() }).catch(console.error);
+    syncPlaybackRateAndPitch();
   }
 
   // A-B loop: only push an active region (both bounds set); otherwise clear it.
@@ -672,16 +671,11 @@ usePlayerStore.subscribe((state, prev) => {
   }
 });
 
-/** Combine playback rate and (manual) pitch into a single Rust-side speed value.
- *  Rust uses rodio's `set_speed` which couples tempo+pitch — so manual pitch is
- *  applied as a multiplier on top of the user's rate.
- */
-function getEffectivePlaybackRate(): number {
+function syncPlaybackRateAndPitch() {
   const { playbackRate, pitchControlMode, pitchSemitones } = usePlayerStore.getState();
-  if (pitchControlMode === 'manual' && Math.abs(pitchSemitones) > 0.001) {
-    return playbackRate * 2 ** (pitchSemitones / 12);
-  }
-  return playbackRate;
+  const ratio = pitchControlMode === 'manual' ? 2 ** (pitchSemitones / 12) / playbackRate : 1;
+  invoke('audio_set_pitch_ratio', { ratio }).catch(console.error);
+  invoke('audio_set_playback_rate', { rate: playbackRate }).catch(console.error);
 }
 
 /* ── EQ settings subscriber ──────────────────────────────────── */

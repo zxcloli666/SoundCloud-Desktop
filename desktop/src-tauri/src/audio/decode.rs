@@ -1,6 +1,7 @@
 use std::io::Cursor;
 use std::num::NonZero;
 use std::path::{Path, PathBuf};
+use std::sync::atomic::AtomicU32;
 use std::sync::{Arc, RwLock};
 use std::time::Duration;
 
@@ -13,6 +14,7 @@ use sha2::{Digest, Sha256};
 use crate::audio::analyser::{AnalyserBuffer, AnalyserSource};
 use crate::audio::declick::DeclickSource;
 use crate::audio::eq::{EqSource, GainSource};
+use crate::audio::pitch::PitchSource;
 use crate::audio::types::{
     ChannelCount, EqParams, SampleRate, NORMALIZATION_ANALYSIS_SAMPLES,
     NORMALIZATION_BLOCK_SAMPLES, NORMALIZATION_MAX_ATTENUATION_DB, NORMALIZATION_MAX_BOOST_DB,
@@ -337,6 +339,7 @@ pub fn resolve_normalization_gain(
     Ok(gain)
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn create_player_from_bytes(
     bytes: &[u8],
     mixer: &Mixer,
@@ -345,6 +348,7 @@ pub fn create_player_from_bytes(
     start_paused: bool,
     eq_params: Arc<RwLock<EqParams>>,
     analyser_buffer: Arc<AnalyserBuffer>,
+    pitch_ratio: Arc<AtomicU32>,
 ) -> Result<(Player, Option<f64>), String> {
     let player = Player::connect_new(mixer);
     player.set_volume(volume);
@@ -352,30 +356,21 @@ pub fn create_player_from_bytes(
         player.pause();
     }
 
-    let duration;
-    if is_ogg_opus(bytes) {
-        let source =
-            OpusSource::new(bytes.to_vec()).map_err(|e| format!("Failed to decode: {}", e))?;
-        duration = source.total_duration().map(|d| d.as_secs_f64());
-        player.append(DeclickSource::new(AnalyserSource::new(
-            EqSource::new(GainSource::new(source, normalization_gain), eq_params),
-            analyser_buffer,
-        )));
-    } else if let Ok(source) = decode_bytes(bytes) {
-        duration = source.total_duration().map(|d| d.as_secs_f64());
-        player.append(DeclickSource::new(AnalyserSource::new(
-            EqSource::new(GainSource::new(source, normalization_gain), eq_params),
-            analyser_buffer,
-        )));
+    let source: Box<dyn Source + Send> = if is_ogg_opus(bytes) {
+        Box::new(OpusSource::new(bytes.to_vec()).map_err(|e| format!("Failed to decode: {}", e))?)
+    } else if let Ok(decoder) = decode_bytes(bytes) {
+        Box::new(decoder)
     } else {
-        let source =
-            OpusSource::new(bytes.to_vec()).map_err(|e| format!("Failed to decode: {}", e))?;
-        duration = source.total_duration().map(|d| d.as_secs_f64());
-        player.append(DeclickSource::new(AnalyserSource::new(
-            EqSource::new(GainSource::new(source, normalization_gain), eq_params),
-            analyser_buffer,
-        )));
-    }
+        Box::new(OpusSource::new(bytes.to_vec()).map_err(|e| format!("Failed to decode: {}", e))?)
+    };
+    let duration = source.total_duration().map(|d| d.as_secs_f64());
+    player.append(DeclickSource::new(AnalyserSource::new(
+        EqSource::new(
+            PitchSource::new(GainSource::new(source, normalization_gain), pitch_ratio),
+            eq_params,
+        ),
+        analyser_buffer,
+    )));
 
     Ok((player, duration))
 }
