@@ -48,6 +48,10 @@ impl Hop {
         note(&self.origin, self.tier, ok);
     }
 
+    pub fn note_delivered(&self, bytes: u64) {
+        note_delivered(&self.origin, self.tier, bytes);
+    }
+
     pub fn tier_label(&self) -> &'static str {
         match self.tier {
             Tier::Direct => "direct",
@@ -65,28 +69,76 @@ struct OriginState {
 
 const DIRECT_FAIL_THRESHOLD: u8 = 2;
 
+const PROVEN_BYTES: u64 = 64 * 1024;
+
 #[derive(Default)]
 struct Pool {
     relays: Vec<String>,
     calls: Vec<(String, f64)>,
 }
 
+#[derive(Default)]
 struct Inner {
     origins: HashMap<String, OriginState>,
     pool: Pool,
     dir: Option<PathBuf>,
 }
 
+impl Inner {
+    fn note(&mut self, origin: &str, tier: Tier, ok: bool, now: Instant) -> bool {
+        match (tier, ok) {
+            (Tier::Relay, true) => self.adopt(origin, Tier::Relay, now),
+            (Tier::Direct, false) => self.count_direct_failure(origin, now),
+            (Tier::Direct, true) | (Tier::Relay, false) => false,
+        }
+    }
+
+    fn delivered(&mut self, origin: &str, tier: Tier, bytes: u64, now: Instant) -> bool {
+        tier == Tier::Direct && bytes >= PROVEN_BYTES && self.adopt(origin, Tier::Direct, now)
+    }
+
+    fn adopt(&mut self, origin: &str, tier: Tier, now: Instant) -> bool {
+        let changed = self.origins.get(origin).map(|s| s.tier) != Some(tier);
+        if changed || tier == Tier::Direct {
+            self.origins.insert(
+                origin.to_string(),
+                OriginState {
+                    tier,
+                    revalidate_at: now + REVALIDATE,
+                    direct_fails: if tier == Tier::Direct {
+                        0
+                    } else {
+                        DIRECT_FAIL_THRESHOLD
+                    },
+                },
+            );
+        }
+        changed
+    }
+
+    fn count_direct_failure(&mut self, origin: &str, now: Instant) -> bool {
+        let entry = self.origins.entry(origin.to_string()).or_insert(OriginState {
+            tier: Tier::Direct,
+            revalidate_at: now,
+            direct_fails: 0,
+        });
+        if entry.tier == Tier::Direct && now >= entry.revalidate_at {
+            entry.direct_fails = 0;
+        }
+        entry.direct_fails = entry.direct_fails.saturating_add(1);
+        entry.revalidate_at = now + REVALIDATE;
+        if entry.tier == Tier::Direct && entry.direct_fails >= DIRECT_FAIL_THRESHOLD {
+            entry.tier = Tier::Relay;
+            return true;
+        }
+        false
+    }
+}
+
 static STATE: OnceLock<Mutex<Inner>> = OnceLock::new();
 
 fn state() -> &'static Mutex<Inner> {
-    STATE.get_or_init(|| {
-        Mutex::new(Inner {
-            origins: HashMap::new(),
-            pool: Pool::default(),
-            dir: None,
-        })
-    })
+    STATE.get_or_init(|| Mutex::new(Inner::default()))
 }
 
 #[derive(Serialize, Deserialize, Default)]
@@ -286,45 +338,33 @@ pub fn note(origin: &str, tier: Tier, ok: bool) {
         Ok(g) => g,
         Err(e) => e.into_inner(),
     };
-    let now = Instant::now();
+    if inner.note(origin, tier, ok, Instant::now()) {
+        persist(&inner);
+    }
+}
 
-    if ok {
-        let prev = inner.origins.get(origin);
-        let changed = prev.map(|s| s.tier) != Some(tier);
-
-        if !changed && tier != Tier::Direct {
-            return;
-        }
-        inner.origins.insert(
-            origin.to_string(),
-            OriginState {
-                tier,
-                revalidate_at: now + REVALIDATE,
-                direct_fails: if tier == Tier::Direct {
-                    0
-                } else {
-                    DIRECT_FAIL_THRESHOLD
-                },
-            },
-        );
-        if changed {
-            persist(&inner);
-        }
+pub fn note_delivered(origin: &str, tier: Tier, bytes: u64) {
+    if origin.is_empty() {
         return;
     }
+    let mut inner = match state().lock() {
+        Ok(g) => g,
+        Err(e) => e.into_inner(),
+    };
+    if inner.delivered(origin, tier, bytes, Instant::now()) {
+        persist(&inner);
+    }
+}
 
-    if tier != Tier::Direct {
+fn settle(origin: &str, tier: Tier) {
+    if origin.is_empty() {
         return;
     }
-    let entry = inner.origins.entry(origin.to_string()).or_insert(OriginState {
-        tier: Tier::Direct,
-        revalidate_at: now,
-        direct_fails: 0,
-    });
-    entry.direct_fails = entry.direct_fails.saturating_add(1);
-    entry.revalidate_at = now + REVALIDATE;
-    if entry.tier == Tier::Direct && entry.direct_fails >= DIRECT_FAIL_THRESHOLD {
-        entry.tier = Tier::Relay;
+    let mut inner = match state().lock() {
+        Ok(g) => g,
+        Err(e) => e.into_inner(),
+    };
+    if inner.adopt(origin, tier, Instant::now()) {
         persist(&inner);
     }
 }
@@ -453,6 +493,15 @@ pub fn note_url(url: &str, tier: Tier, ok: bool) {
     }
 }
 
+pub fn note_url_delivered(url: &str, tier: Tier, bytes: u64) {
+    let Some(origin) = host_of(url) else {
+        return;
+    };
+    if relay_label(&origin).is_some() {
+        note_delivered(&origin, tier, bytes);
+    }
+}
+
 pub fn current_tier(url: &str) -> Tier {
     let Some(origin) = host_of(url) else {
         return Tier::Direct;
@@ -501,15 +550,27 @@ pub fn edge_config() -> EdgeConfig {
 
 #[tauri::command]
 pub fn edge_note(origin: String, tier: Tier, ok: bool) {
-    note(&origin, tier, ok);
+    if ok {
+        settle(&origin, tier);
+    } else {
+        note(&origin, tier, false);
+    }
 }
 
 #[cfg(test)]
 mod tests {
+    use std::time::{Duration, Instant};
+
     use super::{
-        audio_tier_order, direct_infrastructure_headers, relay_hosts_over, set_pool, Tier, INHERIT,
-        RELAYS,
+        audio_tier_order, direct_infrastructure_headers, relay_hosts_over, set_pool, Inner, Tier,
+        INHERIT, PROVEN_BYTES, RELAYS, REVALIDATE,
     };
+
+    const ORIGIN: &str = "stream.scnative.space";
+
+    fn tier(inner: &Inner) -> Option<Tier> {
+        inner.origins.get(ORIGIN).map(|s| s.tier)
+    }
 
     fn hosts(origin: &str) -> Vec<String> {
         relay_hosts_over(origin, &["r1".to_string(), "r2".to_string()])
@@ -597,5 +658,59 @@ mod tests {
             audio_tier_order(Some(Tier::Relay), false),
             [Tier::Relay, Tier::Direct]
         );
+    }
+
+    #[test]
+    fn answered_headers_do_not_hide_bodies_that_keep_breaking() {
+        let mut inner = Inner::default();
+        let now = Instant::now();
+        inner.note(ORIGIN, Tier::Direct, false, now);
+        inner.note(ORIGIN, Tier::Direct, true, now);
+        inner.note(ORIGIN, Tier::Direct, false, now);
+        assert_eq!(tier(&inner), Some(Tier::Relay));
+    }
+
+    #[test]
+    fn a_small_direct_answer_keeps_the_origin_on_the_relay() {
+        let mut inner = Inner::default();
+        let now = Instant::now();
+        inner.note(ORIGIN, Tier::Relay, true, now);
+        inner.note(ORIGIN, Tier::Direct, true, now);
+        inner.delivered(ORIGIN, Tier::Direct, PROVEN_BYTES - 1, now);
+        assert_eq!(tier(&inner), Some(Tier::Relay));
+    }
+
+    #[test]
+    fn a_whole_direct_body_brings_the_origin_back() {
+        let mut inner = Inner::default();
+        let now = Instant::now();
+        inner.note(ORIGIN, Tier::Relay, true, now);
+        assert!(inner.delivered(ORIGIN, Tier::Direct, PROVEN_BYTES, now));
+        assert_eq!(tier(&inner), Some(Tier::Direct));
+        inner.note(ORIGIN, Tier::Direct, false, now);
+        assert_eq!(tier(&inner), Some(Tier::Direct));
+    }
+
+    #[test]
+    fn failures_far_apart_do_not_add_up() {
+        let mut inner = Inner::default();
+        let now = Instant::now();
+        inner.note(ORIGIN, Tier::Direct, false, now);
+        inner.note(
+            ORIGIN,
+            Tier::Direct,
+            false,
+            now + REVALIDATE + Duration::from_secs(1),
+        );
+        assert_eq!(tier(&inner), Some(Tier::Direct));
+    }
+
+    #[test]
+    fn a_relay_body_never_counts_as_proof_for_direct() {
+        let mut inner = Inner::default();
+        let now = Instant::now();
+        inner.note(ORIGIN, Tier::Relay, true, now);
+        assert!(!inner.delivered(ORIGIN, Tier::Relay, PROVEN_BYTES * 4, now));
+        assert_eq!(tier(&inner), Some(Tier::Relay));
     }
 }

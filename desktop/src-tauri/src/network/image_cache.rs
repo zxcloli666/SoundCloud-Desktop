@@ -194,6 +194,7 @@ pub async fn handle(encoded: &str) -> ImageResult {
 
         hop.note(status < 500);
         if status < 500 {
+            hop.note_delivered(data.len() as u64);
             break;
         }
     }

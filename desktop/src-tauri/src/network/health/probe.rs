@@ -89,7 +89,20 @@ async fn measure_bandwidth(client: &Client, url: &str) -> link::Measured {
     }
 }
 
-pub async fn probe_services(client: &Client, topology: &Topology, pool: &Pool) -> Vec<Sample> {
+pub fn direct_bytes(paths: &[Sample]) -> u64 {
+    paths
+        .iter()
+        .find(|sample| sample.ok && sample.ep == "@direct")
+        .and_then(|sample| sample.link)
+        .map_or(0, |link| link.bytes.max(0) as u64)
+}
+
+pub async fn probe_services(
+    client: &Client,
+    topology: &Topology,
+    pool: &Pool,
+    direct_bytes: u64,
+) -> Vec<Sample> {
     let batches = stream::iter(topology.endpoints.clone())
         .map(|endpoint| {
             let client = client.clone();
@@ -102,7 +115,11 @@ pub async fn probe_services(client: &Client, topology: &Topology, pool: &Pool) -
                     let outcome = hit(&client, &route.url).await;
                     if route.via == "direct" {
                         direct_ok = outcome.ok;
-                        edge::note_url(&endpoint.url, Tier::Direct, outcome.ok);
+                        if outcome.ok {
+                            edge::note_url_delivered(&endpoint.url, Tier::Direct, direct_bytes);
+                        } else {
+                            edge::note_url(&endpoint.url, Tier::Direct, false);
+                        }
                     } else {
                         relay_ok |= outcome.ok;
                     }
@@ -164,5 +181,37 @@ async fn hit(client: &Client, url: &str) -> Outcome {
             ms: None,
             fail: Some("reset"),
         },
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{Sample, direct_bytes};
+    use crate::network::health::model::Link;
+
+    fn sample(node: &str, ok: bool) -> Sample {
+        Sample {
+            ep: format!("@{node}"),
+            via: "direct".to_string(),
+            ok,
+            ms: None,
+            fail: None,
+            link: None,
+        }
+    }
+
+    #[test]
+    fn only_a_clean_direct_path_vouches_for_the_services() {
+        let link = |shape, bytes| Link {
+            shape,
+            kbps: 0,
+            bytes,
+        };
+        let mut clean = sample("direct", true);
+        clean.link = Some(link("clear", 64 * 1024));
+        let mut cut = sample("direct", false);
+        cut.link = Some(link("cut", 13 * 1024));
+        assert_eq!(direct_bytes(&[sample("r1", true), clean]), 64 * 1024);
+        assert_eq!(direct_bytes(&[cut]), 0);
     }
 }

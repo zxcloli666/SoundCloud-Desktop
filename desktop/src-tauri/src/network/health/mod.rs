@@ -102,7 +102,13 @@ impl Agent {
                 .report(&topology, &self.client_id, &self.app_version, &paths)
                 .await;
 
-            let services = probe::probe_services(&self.probe_client, &topology, &pool).await;
+            let services = probe::probe_services(
+                &self.probe_client,
+                &topology,
+                &pool,
+                probe::direct_bytes(&paths),
+            )
+            .await;
             let late = self
                 .delivery
                 .report(&topology, &self.client_id, &self.app_version, &services)

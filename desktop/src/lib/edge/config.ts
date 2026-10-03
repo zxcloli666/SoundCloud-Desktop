@@ -30,6 +30,7 @@ interface OriginState {
 
 const TIER_ORDER: Record<Tier, number> = { direct: 0, relay: 1 };
 const DIRECT_FAIL_THRESHOLD = 2;
+const PROVEN_BYTES = 64 * 1024;
 
 let relays = new Map<string, string[]>();
 let revalidateMs = 600_000;
@@ -116,11 +117,12 @@ function report(origin: string, tier: Tier): void {
   void invoke('edge_note', { origin, tier, ok: true }).catch(() => {});
 }
 
-export function noteHop(hop: Hop, ok: boolean): void {
+export function noteHop(hop: Hop, ok: boolean, bytes = 0): void {
   const now = Date.now();
   const prev = origins.get(hop.origin);
 
   if (ok) {
+    if (hop.tier === 'direct' && bytes < PROVEN_BYTES) return;
     const tier = hop.tier;
     // Часы ревалидации перезапускает только СМЕНА тира — иначе на живом
     // трафике они никогда не досчитают и юзер навсегда останется на relay.
@@ -136,6 +138,7 @@ export function noteHop(hop: Hop, ok: boolean): void {
 
   if (hop.tier !== 'direct') return;
   const state = prev ?? { tier: 'direct' as Tier, revalidateAt: now, directFails: 0 };
+  if (state.tier === 'direct' && now >= state.revalidateAt) state.directFails = 0;
   state.directFails += 1;
   state.revalidateAt = now + revalidateMs;
   if (state.tier === 'direct' && state.directFails >= DIRECT_FAIL_THRESHOLD) state.tier = 'relay';
