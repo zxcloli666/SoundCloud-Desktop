@@ -1,5 +1,6 @@
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
+import {useNavigate} from 'react-router-dom';
 import {ForgeModule} from '../components/offline/ForgeModule';
 import {OFFLINE_KEYFRAMES} from '../components/offline/keyframes';
 import {filterEntries, sortEntries} from '../components/offline/lib';
@@ -13,7 +14,7 @@ import {useOfflineLibrary} from '../components/offline/useOfflineLibrary';
 import {Atmosphere} from '../components/search/Atmosphere';
 import {useAuthStatus} from '../lib/auth-status';
 import {ensureTrackCached} from '../lib/cache';
-import {requestProbe} from '../lib/host-status';
+import {requestProbe, useHostStatusStore} from '../lib/host-status';
 import {useCacheLikes} from '../lib/likes-cache';
 import {usePerfMode} from '../lib/perf';
 import {useAppStatusStore} from '../stores/app-status';
@@ -30,12 +31,15 @@ function shuffled<T>(items: T[]): T[] {
 
 export const OfflinePage = React.memo(() => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const perf = usePerfMode();
   const lib = useOfflineLibrary();
   const forge = useForgeStatus();
   const cacheLikes = useCacheLikes(() => void lib.refreshInventory());
   const online = lib.appMode === 'online';
   const authStatus = useAuthStatus({ enabled: online });
+  const probing = useHostStatusStore((s) => s.probing);
+  const [tryingOnline, setTryingOnline] = useState(false);
 
   const [section, setSection] = useState<OfflineSection>('likes');
   const [sort, setSort] = useState<SortMode>('custom');
@@ -110,8 +114,15 @@ export const OfflinePage = React.memo(() => {
     [lib.refreshInventory],
   );
 
+  useEffect(() => {
+    if (!tryingOnline) return;
+    if (online) navigate('/home');
+    else if (!probing) setTryingOnline(false);
+  }, [tryingOnline, online, probing, navigate]);
+
   const handleTryOnline = useCallback(() => {
     useAppStatusStore.getState().setOfflineBypass(false);
+    setTryingOnline(true);
     requestProbe({ force: true });
   }, []);
 
