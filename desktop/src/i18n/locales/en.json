@@ -716,7 +716,10 @@
     "notFound": "Not found",
     "done": "Import complete!",
     "savingPlaylist": "Saving playlist...",
-    "backgroundHint": "Import continues in the background. You can close this window"
+    "backgroundHint": "Import continues in the background. You can close this window",
+    "error": "Import failed",
+    "pending": "The playlist is queued on the server and will appear in your library soon",
+    "partial": "Saved what was found before the error"
   },
   "update": {
     "available": "Update available",

@@ -7,8 +7,6 @@ import { queryClient } from '../lib/query-client';
 
 const PLAYLIST_NAME = 'Yandex Music';
 const PLAYLIST_TRACK_LIMIT = 500;
-const SAVE_DEBOUNCE_MS = 450;
-const SAVE_BATCH_SIZE = 20;
 
 export interface YmImportProgress {
   total: number;
@@ -32,9 +30,13 @@ interface ScPlaylist {
 }
 
 interface QueuedPlaylistMutation {
-  queued: true;
+  status: 'queued';
   actionType: string;
-  targetUrn?: string;
+  targetUrn: string;
+}
+
+interface PlaylistTracksPage {
+  sync: { projectionRevision: number };
 }
 
 type YmImportPhase = 'idle' | 'running' | 'stopping' | 'done' | 'stopped' | 'error';
@@ -45,6 +47,7 @@ interface YmImportState {
   progress: YmImportProgress | null;
   playlist: ScPlaylist | null;
   playlistCount: number;
+  pending: boolean;
   error: string | null;
   initBridge: () => void;
   startImport: (token: string) => Promise<void>;
@@ -58,6 +61,7 @@ const idleState = {
   progress: null,
   playlist: null,
   playlistCount: 0,
+  pending: false,
   error: null,
 };
 
@@ -65,14 +69,6 @@ let bridgeInitialized = false;
 let activeRunId = 0;
 let stopRequested = false;
 let matchedUrns: string[] = [];
-let cachedPlaylists: ScPlaylist[] | null = null;
-let syncedChunkKeys: string[] = [];
-let syncedMatchCount = 0;
-let syncTimer: number | null = null;
-let syncInFlight = false;
-let syncQueued = false;
-let queuedFinalize = false;
-let queuedDeleteStale = false;
 
 function chunkArray<T>(items: T[], size: number): T[][] {
   const chunks: T[][] = [];
@@ -105,62 +101,49 @@ function currentRunIsActive(runId: number) {
   return runId === activeRunId;
 }
 
-function clearSyncTimer() {
-  if (syncTimer != null) {
-    window.clearTimeout(syncTimer);
-    syncTimer = null;
-  }
-}
-
 function resetRuntimeState() {
-  clearSyncTimer();
   stopRequested = false;
   matchedUrns = [];
-  cachedPlaylists = null;
-  syncedChunkKeys = [];
-  syncedMatchCount = 0;
-  syncInFlight = false;
-  syncQueued = false;
-  queuedFinalize = false;
-  queuedDeleteStale = false;
 }
 
 async function findExistingPlaylists(): Promise<ScPlaylist[]> {
-  try {
-    const all: ScPlaylist[] = [];
+  const all: ScPlaylist[] = [];
 
-    for (let page = 0; ; page++) {
-      const res = await api<{ collection: ScPlaylist[]; has_more: boolean }>(
-        `/me/playlists?limit=200&page=${page}`,
-      );
-      all.push(...(res.collection ?? []));
-      if (!res.has_more) break;
-    }
-
-    return all
-      .filter((playlist) => getPlaylistChunkIndex(playlist.title) != null)
-      .sort(
-        (a, b) => (getPlaylistChunkIndex(a.title) ?? 0) - (getPlaylistChunkIndex(b.title) ?? 0),
-      );
-  } catch {
-    return [];
+  for (let page = 0; ; page++) {
+    const res = await api<{ collection: ScPlaylist[]; has_more: boolean }>(
+      `/me/playlists?limit=200&page=${page}`,
+    );
+    all.push(...(res.collection ?? []));
+    if (!res.has_more) break;
   }
+
+  return all.filter((playlist) => getPlaylistChunkIndex(playlist.title) != null);
 }
 
-async function upsertPlaylistChunk(index: number, urns: string[]): Promise<ScPlaylist | null> {
+async function replacePlaylistTracks(playlistUrn: string, urns: string[]) {
+  const path = `/playlists/${encodeURIComponent(playlistUrn)}`;
+  const { sync } = await api<PlaylistTracksPage>(`${path}/tracks?limit=1&page=0`);
+
+  await api(`${path}?replace=true`, {
+    method: 'PUT',
+    body: JSON.stringify({
+      playlist: { tracks: urns.map((urn) => ({ urn })) },
+      expectedProjectionRevision: sync.projectionRevision,
+    }),
+  });
+}
+
+async function saveChunk(
+  index: number,
+  urns: string[],
+  existing: ScPlaylist[],
+): Promise<ScPlaylist | null> {
   const title = getPlaylistName(index);
-  const trackObjects = urns.map((urn) => ({ urn }));
-  const existingPlaylist = cachedPlaylists?.find((playlist) => playlist.title === title) ?? null;
+  const existingPlaylist = existing.find((playlist) => playlist.title === title);
 
   if (existingPlaylist) {
-    const result = await api<ScPlaylist | QueuedPlaylistMutation>(
-      `/playlists/${encodeURIComponent(existingPlaylist.urn)}`,
-      {
-        method: 'PUT',
-        body: JSON.stringify({ playlist: { tracks: trackObjects } }),
-      },
-    );
-    return isScPlaylist(result) ? result : existingPlaylist;
+    await replacePlaylistTracks(existingPlaylist.urn, urns);
+    return existingPlaylist;
   }
 
   const result = await api<ScPlaylist | QueuedPlaylistMutation>('/playlists', {
@@ -169,29 +152,19 @@ async function upsertPlaylistChunk(index: number, urns: string[]): Promise<ScPla
       playlist: {
         title,
         sharing: 'private',
-        tracks: trackObjects,
+        tracks: urns.map((urn) => ({ urn })),
       },
     }),
   });
 
-  if (isScPlaylist(result)) {
-    return result;
-  }
-
-  const refreshed = await findExistingPlaylists();
-  cachedPlaylists = refreshed;
-  return refreshed.find((playlist) => playlist.title === title) ?? null;
+  return isScPlaylist(result) ? result : null;
 }
 
-async function deleteStalePlaylists(targetCount: number) {
-  const stalePlaylists = (cachedPlaylists ?? []).filter((playlist) => {
+async function deleteStalePlaylists(existing: ScPlaylist[], targetCount: number) {
+  const stalePlaylists = existing.filter((playlist) => {
     const index = getPlaylistChunkIndex(playlist.title);
     return index != null && index >= targetCount;
   });
-
-  if (stalePlaylists.length === 0) {
-    return;
-  }
 
   await Promise.all(
     stalePlaylists.map((playlist) =>
@@ -200,143 +173,52 @@ async function deleteStalePlaylists(targetCount: number) {
       ),
     ),
   );
-
-  cachedPlaylists = (cachedPlaylists ?? []).filter(
-    (playlist) => !stalePlaylists.includes(playlist),
-  );
 }
 
-async function flushPlaylistSync(
-  runId: number,
-  finalize = false,
-  deleteStale = false,
-): Promise<void> {
-  if (!currentRunIsActive(runId)) return;
+async function savePlaylists(runId: number, deleteStale: boolean) {
+  if (matchedUrns.length === 0) return;
 
-  if (syncInFlight) {
-    syncQueued = true;
-    queuedFinalize ||= finalize;
-    queuedDeleteStale ||= deleteStale;
-    return;
-  }
-
-  clearSyncTimer();
-  syncInFlight = true;
   useYmImportStore.setState({ saving: true, error: null });
 
-  try {
-    if (!cachedPlaylists) {
-      cachedPlaylists = await findExistingPlaylists();
-      if (!currentRunIsActive(runId)) return;
-    }
-
-    const orderedUrns = [...matchedUrns].reverse();
-    const chunks = chunkArray(orderedUrns, PLAYLIST_TRACK_LIMIT);
-    const chunkKeys = chunks.map((chunk) => chunk.join('\u0000'));
-    const nextPlaylists = [...(cachedPlaylists ?? [])];
-    let changed = false;
-
-    for (let index = 0; index < chunks.length; index++) {
-      if (!currentRunIsActive(runId)) return;
-
-      if (!finalize && chunkKeys[index] === syncedChunkKeys[index]) {
-        continue;
-      }
-
-      const updated = await upsertPlaylistChunk(index, chunks[index] ?? []);
-      if (!currentRunIsActive(runId)) return;
-
-      if (!updated) {
-        continue;
-      }
-
-      const existingIndex = nextPlaylists.findIndex((playlist) => playlist.title === updated.title);
-      if (existingIndex >= 0) {
-        nextPlaylists[existingIndex] = updated;
-      } else {
-        nextPlaylists.push(updated);
-      }
-      changed = true;
-    }
-
-    cachedPlaylists = nextPlaylists
-      .filter((playlist) => getPlaylistChunkIndex(playlist.title) != null)
-      .sort(
-        (a, b) => (getPlaylistChunkIndex(a.title) ?? 0) - (getPlaylistChunkIndex(b.title) ?? 0),
-      );
-
-    if (deleteStale && matchedUrns.length > 0) {
-      await deleteStalePlaylists(chunks.length);
-      if (!currentRunIsActive(runId)) return;
-    }
-
-    syncedChunkKeys = chunkKeys;
-    syncedMatchCount = matchedUrns.length;
-
-    const primaryPlaylist = cachedPlaylists[0] ?? null;
-    useYmImportStore.setState({
-      playlist: primaryPlaylist,
-      playlistCount: chunks.length,
-    });
-
-    if (changed || deleteStale) {
-      queryClient.invalidateQueries({ queryKey: ['me', 'playlists'] }).catch(() => undefined);
-      if (primaryPlaylist?.urn) {
-        queryClient
-          .invalidateQueries({ queryKey: ['playlist', primaryPlaylist.urn] })
-          .catch(() => undefined);
-        queryClient
-          .invalidateQueries({
-            queryKey: ['playlist', primaryPlaylist.urn, 'tracks'],
-          })
-          .catch(() => undefined);
-      }
-    }
-  } catch (error) {
-    console.error('[YM Import] playlist sync failed:', error);
-    useYmImportStore.setState({
-      error: error instanceof Error ? error.message : String(error),
-    });
-    if (finalize) {
-      throw error;
-    }
-  } finally {
-    syncInFlight = false;
-
-    if (!currentRunIsActive(runId)) {
-      return;
-    }
-
-    if (syncQueued) {
-      const nextFinalize = queuedFinalize;
-      const nextDeleteStale = queuedDeleteStale;
-      syncQueued = false;
-      queuedFinalize = false;
-      queuedDeleteStale = false;
-      await flushPlaylistSync(runId, nextFinalize, nextDeleteStale);
-      return;
-    }
-
-    const { phase } = useYmImportStore.getState();
-    useYmImportStore.setState({
-      saving: phase === 'running' || phase === 'stopping',
-    });
-  }
-}
-
-function schedulePlaylistSync(runId: number) {
+  const existing = await findExistingPlaylists();
   if (!currentRunIsActive(runId)) return;
 
-  clearSyncTimer();
-  const pendingMatches = matchedUrns.length - syncedMatchCount;
-  const crossedChunkBoundary =
-    matchedUrns.length === 1 || matchedUrns.length % PLAYLIST_TRACK_LIMIT === 1;
-  const delay = crossedChunkBoundary || pendingMatches >= SAVE_BATCH_SIZE ? 0 : SAVE_DEBOUNCE_MS;
+  const chunks = chunkArray([...matchedUrns].reverse(), PLAYLIST_TRACK_LIMIT);
+  const saved: ScPlaylist[] = [];
+  let queued = 0;
 
-  syncTimer = window.setTimeout(() => {
-    syncTimer = null;
-    void flushPlaylistSync(runId);
-  }, delay);
+  for (const [index, urns] of chunks.entries()) {
+    const playlist = await saveChunk(index, urns, existing);
+    if (!currentRunIsActive(runId)) return;
+
+    if (playlist) {
+      saved.push(playlist);
+    } else {
+      queued++;
+    }
+  }
+
+  if (deleteStale) {
+    await deleteStalePlaylists(existing, chunks.length);
+    if (!currentRunIsActive(runId)) return;
+  }
+
+  const primaryPlaylist = saved[0] ?? null;
+  useYmImportStore.setState({
+    playlist: primaryPlaylist,
+    playlistCount: chunks.length,
+    pending: queued > 0,
+  });
+
+  queryClient.invalidateQueries({ queryKey: ['me', 'playlists'] }).catch(() => undefined);
+  if (primaryPlaylist) {
+    queryClient
+      .invalidateQueries({ queryKey: ['playlist', primaryPlaylist.urn] })
+      .catch(() => undefined);
+    queryClient
+      .invalidateQueries({ queryKey: ['playlist', primaryPlaylist.urn, 'tracks'] })
+      .catch(() => undefined);
+  }
 }
 
 async function startImportRun(token: string) {
@@ -359,18 +241,24 @@ async function startImportRun(token: string) {
   });
 
   try {
-    await invoke<void>('ym_import_start', {
-      ymToken: trimmedToken,
-      backendUrl: API_BASE,
-      sessionId: getSessionId() || '',
-    });
+    let failure: unknown = null;
+    try {
+      await invoke<void>('ym_import_start', {
+        ymToken: trimmedToken,
+        backendUrl: API_BASE,
+        sessionId: getSessionId() || '',
+      });
+    } catch (error) {
+      failure = error;
+    }
 
     if (!currentRunIsActive(runId)) return;
 
     const wasStopped = stopRequested;
-    await flushPlaylistSync(runId, true, !wasStopped);
+    await savePlaylists(runId, !wasStopped && !failure);
 
     if (!currentRunIsActive(runId)) return;
+    if (failure) throw failure;
 
     useYmImportStore.setState({
       phase: wasStopped ? 'stopped' : 'done',
@@ -387,7 +275,6 @@ async function startImportRun(token: string) {
   } finally {
     if (currentRunIsActive(runId)) {
       stopRequested = false;
-      clearSyncTimer();
     }
   }
 }
@@ -401,10 +288,7 @@ function ensureBridge() {
   });
 
   void listen<YmImportMatch>('ym_import:match', (event) => {
-    const runId = activeRunId;
-    if (!currentRunIsActive(runId)) return;
     matchedUrns.push(event.payload.urn);
-    schedulePlaylistSync(runId);
   });
 }
 

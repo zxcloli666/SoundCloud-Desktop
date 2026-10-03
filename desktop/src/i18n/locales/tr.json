@@ -623,7 +623,10 @@
     "notFound": "Bulunamadi",
     "done": "Ice aktarma tamamlandi!",
     "savingPlaylist": "Calma listesi kaydediliyor...",
-    "backgroundHint": "Ice aktarma arka planda surer, bu pencereyi kapatabilirsiniz"
+    "backgroundHint": "Ice aktarma arka planda surer, bu pencereyi kapatabilirsiniz",
+    "error": "Ice aktarma basarisiz",
+    "pending": "Calma listesi sunucuda olusturuluyor, kisa sure sonra kitapliginizda gorunecek",
+    "partial": "Hataya kadar bulunanlar kaydedildi"
   },
   "update": {
     "available": "Guncelleme mevcut",

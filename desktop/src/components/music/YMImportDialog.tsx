@@ -23,6 +23,8 @@ function YMImportDialog({
     progress,
     playlist,
     playlistCount,
+    pending,
+    error,
     startImport,
     stopImport,
     clearFinished,
@@ -33,6 +35,8 @@ function YMImportDialog({
       progress: state.progress,
       playlist: state.playlist,
       playlistCount: state.playlistCount,
+      pending: state.pending,
+      error: state.error,
       startImport: state.startImport,
       stopImport: state.stopImport,
       clearFinished: state.clearFinished,
@@ -66,6 +70,10 @@ function YMImportDialog({
     onOpenChange(false);
     navigate(`/playlist/${encodeURIComponent(playlist.urn)}`);
   }, [playlist, navigate, onOpenChange]);
+
+  const playlistStatus = busy
+    ? t('ym.savingPlaylist')
+    : t(phase === 'error' ? 'ym.partial' : 'ym.done');
 
   const pct =
     progress && progress.total > 0 ? Math.round((progress.current / progress.total) * 100) : 0;
@@ -114,9 +122,7 @@ function YMImportDialog({
                       ? ` • ${playlistCount} ${t('search.playlists').toLowerCase()}`
                       : ''}
                   </p>
-                  <p className="text-[11px] mt-1 text-green-400/80">
-                    {busy ? t('ym.savingPlaylist') : t('ym.done')}
-                  </p>
+                  <p className="text-[11px] mt-1 text-green-400/80">{playlistStatus}</p>
                 </div>
                 <button
                   onClick={handleGoToPlaylist}
@@ -125,6 +131,11 @@ function YMImportDialog({
                   {t('common.seeAll')}
                 </button>
               </div>
+            </div>
+          ) : pending ? (
+            <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] px-5 py-4 space-y-1">
+              <p className="text-[13px] font-semibold text-green-400/80">{playlistStatus}</p>
+              <p className="text-[12px] text-white/50">{t('ym.pending')}</p>
             </div>
           ) : (
             <>
@@ -148,6 +159,13 @@ function YMImportDialog({
                 className="w-full px-4 py-3 rounded-xl bg-white/[0.04] border border-white/[0.06] text-[13px] text-white/80 placeholder:text-white/20 focus:border-white/[0.12] focus:bg-white/[0.06] transition-all duration-200 outline-none disabled:opacity-50"
               />
             </>
+          )}
+
+          {phase === 'error' && (
+            <div className="rounded-2xl border border-red-500/20 bg-red-500/[0.07] px-4 py-3 space-y-1">
+              <p className="text-[12px] font-medium text-red-300">{t('ym.error')}</p>
+              {error && <p className="text-[11px] text-white/50 break-words">{error}</p>}
+            </div>
           )}
 
           {/* Progress */}
@@ -187,7 +205,7 @@ function YMImportDialog({
         </div>
 
         {/* Footer */}
-        {(running || !playlist) && (
+        {(running || (!playlist && !pending)) && (
           <div className="px-7 py-4 border-t border-white/[0.06] flex justify-end gap-3">
             {running ? (
               <>
