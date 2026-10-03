@@ -22,6 +22,8 @@ pub struct OutputHandles {
     pub cmd_tx: Sender<AudioThreadCmd>,
     pub error_flag: Arc<AtomicBool>,
     pub reconnected: Arc<AtomicBool>,
+    pub follow_default_output: Arc<AtomicBool>,
+    pub active_output: Arc<Mutex<Option<String>>>,
 }
 
 pub fn spawn_output_thread(
@@ -131,9 +133,11 @@ impl OutputThread {
         ) {
             Ok(sink) => {
                 self.output = device_output(&self.handles, name.as_deref(), sink);
+                *self.handles.active_output.lock().unwrap() = name;
                 Ok(())
             }
             Err(error) => {
+                self.forget_selected_output();
                 self.output = open_default(&self.handles);
                 Err(error)
             }
@@ -176,9 +180,9 @@ impl OutputThread {
             self.output = Output::silent();
         }
 
-        match open_device_sink(None, &self.handles.cmd_tx, &self.handles.error_flag) {
-            Ok(sink) => {
-                self.output = device_output(&self.handles, None, sink);
+        match self.reopen() {
+            Ok((name, sink)) => {
+                self.output = device_output(&self.handles, name.as_deref(), sink);
                 self.reconnect_at = None;
             }
             Err(error) => {
@@ -194,6 +198,32 @@ impl OutputThread {
             *self.shared_mixer.lock().unwrap() = self.output.mixer().clone();
             self.handles.reconnected.store(true, Ordering::Release);
         }
+    }
+
+    fn reopen(&self) -> Result<(Option<String>, MixerDeviceSink), String> {
+        let selected = self.handles.active_output.lock().unwrap().clone();
+        if let Some(id) = selected {
+            match open_device_sink(Some(&id), &self.handles.cmd_tx, &self.handles.error_flag) {
+                Ok(sink) => return Ok((Some(id), sink)),
+                Err(error) => {
+                    diagnostics::log_native(
+                        &self.handles.app,
+                        "WARN",
+                        format!("[Audio] {error}, falling back to the default output"),
+                    );
+                    self.forget_selected_output();
+                }
+            }
+        }
+        open_device_sink(None, &self.handles.cmd_tx, &self.handles.error_flag)
+            .map(|sink| (None, sink))
+    }
+
+    fn forget_selected_output(&self) {
+        *self.handles.active_output.lock().unwrap() = None;
+        self.handles
+            .follow_default_output
+            .store(true, Ordering::Relaxed);
     }
 }
 

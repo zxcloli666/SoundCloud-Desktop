@@ -65,7 +65,8 @@ pub struct AudioState {
     pub media_tx: Mutex<Option<std::sync::mpsc::Sender<MediaCmd>>>,
     pub audio_tx: std::sync::mpsc::Sender<AudioThreadCmd>,
     pub source_bytes: Mutex<Option<Vec<u8>>>,
-    pub follow_default_output: AtomicBool,
+    pub follow_default_output: Arc<AtomicBool>,
+    pub active_output: Arc<Mutex<Option<String>>>,
     pub last_known_default_output: Mutex<Option<String>>,
     pub lyrics_timeline: Mutex<Option<LyricsTimelineState>>,
     pub comments_timeline: Mutex<Option<CommentsTimelineState>>,
@@ -80,6 +81,8 @@ pub fn init(app: &AppHandle) -> AudioState {
     let (cmd_tx, cmd_rx) = std::sync::mpsc::channel::<AudioThreadCmd>();
     let device_error_flag = Arc::new(AtomicBool::new(false));
     let reconnected_flag = Arc::new(AtomicBool::new(false));
+    let follow_default_output = Arc::new(AtomicBool::new(true));
+    let active_output = Arc::new(Mutex::new(None));
 
     let shared_mixer = spawn_output_thread(
         OutputHandles {
@@ -87,6 +90,8 @@ pub fn init(app: &AppHandle) -> AudioState {
             cmd_tx: cmd_tx.clone(),
             error_flag: device_error_flag.clone(),
             reconnected: reconnected_flag.clone(),
+            follow_default_output: follow_default_output.clone(),
+            active_output: active_output.clone(),
         },
         cmd_rx,
     );
@@ -110,7 +115,8 @@ pub fn init(app: &AppHandle) -> AudioState {
         media_tx: Mutex::new(None),
         audio_tx: cmd_tx,
         source_bytes: Mutex::new(None),
-        follow_default_output: AtomicBool::new(true),
+        follow_default_output,
+        active_output,
         last_known_default_output: Mutex::new(None),
         lyrics_timeline: Mutex::new(None),
         comments_timeline: Mutex::new(None),

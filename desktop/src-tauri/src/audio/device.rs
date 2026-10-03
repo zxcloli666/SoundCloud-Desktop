@@ -115,14 +115,15 @@ fn tuned_builder(_device: &cpal::Device) -> Option<DeviceSinkBuilder> {
     None
 }
 
-pub fn list_devices() -> Vec<AudioSink> {
+pub fn list_devices(state: &AudioState) -> Vec<AudioSink> {
     #[cfg(target_os = "linux")]
     {
-        audio_list_devices_pactl()
+        audio_list_devices_pactl(state.follow_default_output.load(Ordering::Relaxed))
     }
     #[cfg(not(target_os = "linux"))]
     {
-        audio_list_devices_cpal()
+        let active_output = state.active_output.lock().unwrap().clone();
+        audio_list_devices_cpal(active_output.as_deref())
     }
 }
 
@@ -277,10 +278,6 @@ fn start_polling_loop(handle: &AppHandle) {
 
 fn handle_default_output_change(handle: &AppHandle) {
     let state = handle.state::<AudioState>();
-    if !state.follow_default_output.load(Ordering::Relaxed) {
-        return;
-    }
-
     let Some(current_default) = current_default_output_name() else {
         return;
     };
@@ -291,6 +288,10 @@ fn handle_default_output_change(handle: &AppHandle) {
     }
     *known_default = Some(current_default.clone());
     drop(known_default);
+
+    if !state.follow_default_output.load(Ordering::Relaxed) {
+        return;
+    }
 
     diagnostics::log_native(
         handle,
@@ -313,7 +314,7 @@ fn handle_default_output_change(handle: &AppHandle) {
 }
 
 #[cfg(target_os = "linux")]
-fn audio_list_devices_pactl() -> Vec<AudioSink> {
+fn audio_list_devices_pactl(follows_default: bool) -> Vec<AudioSink> {
     let output = match std::process::Command::new("pactl")
         .args(["--format=json", "list", "sinks"])
         .output()
@@ -339,8 +340,10 @@ fn audio_list_devices_pactl() -> Vec<AudioSink> {
         .filter_map(|sink| {
             let name = sink.get("name")?.as_str()?.to_string();
             let description = sink.get("description")?.as_str()?.to_string();
+            let is_default = name == default_sink;
             Some(AudioSink {
-                is_default: name == default_sink,
+                is_default,
+                is_active: is_default && !follows_default,
                 name,
                 description,
             })
@@ -349,7 +352,7 @@ fn audio_list_devices_pactl() -> Vec<AudioSink> {
 }
 
 #[cfg(not(target_os = "linux"))]
-fn audio_list_devices_cpal() -> Vec<AudioSink> {
+fn audio_list_devices_cpal(active_output: Option<&str>) -> Vec<AudioSink> {
     use cpal::traits::{DeviceTrait, HostTrait};
 
     let host = cpal::default_host();
@@ -373,6 +376,7 @@ fn audio_list_devices_cpal() -> Vec<AudioSink> {
                 .unwrap_or_else(|| id.clone());
             Some(AudioSink {
                 is_default: default_id.as_deref() == Some(id.as_str()),
+                is_active: active_output == Some(id.as_str()),
                 name: id,
                 description,
             })

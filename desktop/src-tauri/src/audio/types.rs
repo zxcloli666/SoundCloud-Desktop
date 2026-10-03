@@ -65,6 +65,7 @@ pub struct AudioSink {
     pub name: String,
     pub description: String,
     pub is_default: bool,
+    pub is_active: bool,
 }
 
 pub const STALL_THRESHOLD_MS: u64 = 2_000;

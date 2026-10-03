@@ -134,8 +134,8 @@ pub fn audio_set_media_position(position: f64, state: State<'_, AudioState>) {
 }
 
 #[tauri::command]
-pub fn audio_list_devices() -> Vec<AudioSink> {
-    device::list_devices()
+pub fn audio_list_devices(state: State<'_, AudioState>) -> Vec<AudioSink> {
+    device::list_devices(&state)
 }
 
 #[tauri::command]
