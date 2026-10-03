@@ -2,6 +2,7 @@ import { openUrl } from '@tauri-apps/plugin-opener';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { fetchWithAuthFallback } from './api-client';
 import { API_BASE } from './constants';
+import { describeError, logInfo } from './diagnostics';
 import { edgeFetch } from './edge';
 
 interface LoginResponse {
@@ -37,6 +38,7 @@ export function useOAuthFlow(
   const [isPolling, setIsPolling] = useState(false);
   const [step, setStep] = useState<OAuthStep>('waiting');
   const [error, setError] = useState<OAuthFlowError | null>(null);
+  const [browserFailed, setBrowserFailed] = useState(false);
   const pollRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const onSuccessRef = useRef(onSuccess);
   const onFailureRef = useRef(onFailure);
@@ -50,6 +52,7 @@ export function useOAuthFlow(
     }
     setIsPolling(false);
     setAuthUrl(null);
+    setBrowserFailed(false);
     setStep('waiting');
   }, []);
 
@@ -84,7 +87,12 @@ export function useOAuthFlow(
     }
     const { url, loginRequestId } = login;
     setAuthUrl(url);
-    await openUrl(url);
+    try {
+      await openUrl(url);
+    } catch (e) {
+      logInfo(`[Auth] browser did not open the login page: ${describeError(e)}`);
+      setBrowserFailed(true);
+    }
 
     let failingSince: number | null = null;
     let lastRedirect: string | null = null;
@@ -146,5 +154,5 @@ export function useOAuthFlow(
     pollRef.current = setTimeout(pollOnce, POLL_INTERVAL_MS);
   }, [cancel, fail]);
 
-  return { startLogin, authUrl, isPolling, step, cancel, error };
+  return { startLogin, authUrl, isPolling, step, cancel, error, browserFailed };
 }

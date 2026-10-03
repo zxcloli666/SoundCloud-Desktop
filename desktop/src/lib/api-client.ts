@@ -273,8 +273,8 @@ export async function apiRequest<T = unknown>(
     const attemptStart = performance.now();
 
     // Хост с вердиктом down не держит попытку дольше 10 c.
-    const attemptTimeout =
-      getHostVerdict(base) === 'down'
+    const attemptTimeout: number =
+      getHostVerdict(base) === 'down' || authRejection
         ? Math.min(effectiveTimeout, DOWN_HOST_TIMEOUT_MS)
         : effectiveTimeout;
 
@@ -403,6 +403,11 @@ export async function apiRequest<T = unknown>(
         continue;
       }
       logHttpFailure(label, url, error, performance.now() - attemptStart);
+      if (authRejection) {
+        logInfo(`[Host] ${label}: no second opinion from ${hostLabel(base)}, keeping the 401`);
+        noteAuthGap();
+        throw authRejection;
+      }
       useAppStatusStore.getState().setBackendReachable(false);
       throw error;
     }

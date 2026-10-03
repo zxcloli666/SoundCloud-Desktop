@@ -60,6 +60,7 @@
     "signOut": "Cikis Yap",
     "copyLink": "Baglantiyi kopyala",
     "copied": "Kopyalandi!",
+    "browserFailed": "Tarayici acilamadi. Baglantiyi kopyalayip elle acin.",
     "tagline": "Muziginiz, sizin tarzinizda",
     "orSeparator": "veya",
     "continueOffline": "Giris yapmadan devam et",

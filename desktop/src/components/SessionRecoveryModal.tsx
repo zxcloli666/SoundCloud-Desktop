@@ -17,7 +17,7 @@ export const SessionRecoveryModal = React.memo(() => {
   const hasSession = useAuthStore((s) => s.hasSession);
   const [copied, setCopied] = useState(false);
 
-  const { startLogin, authUrl, isPolling, step } = useOAuthFlow(completeReauth);
+  const { startLogin, authUrl, isPolling, step, browserFailed } = useOAuthFlow(completeReauth);
 
   // Пока идёт OAuth-поллинг — фоновый успех не должен авто-закрывать модалку.
   useEffect(() => {
@@ -98,6 +98,11 @@ export const SessionRecoveryModal = React.memo(() => {
               <div className="flex flex-col items-center gap-3 py-2">
                 <div className="w-8 h-8 rounded-full border-2 border-white/[0.06] border-t-accent animate-spin" />
                 <p className="text-[11.5px] text-white/45">{stepLabel}</p>
+                {browserFailed && (
+                  <p className="max-w-[260px] text-center text-[11px] leading-snug text-amber-200/70">
+                    {t('auth.browserFailed')}
+                  </p>
+                )}
                 {authUrl && (
                   <button
                     type="button"

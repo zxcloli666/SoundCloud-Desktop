@@ -40,7 +40,8 @@ export function Login() {
     queryClient.invalidateQueries();
   };
 
-  const { startLogin, authUrl, isPolling, step, error } = useOAuthFlow(onLoginSuccess);
+  const { startLogin, authUrl, isPolling, step, error, browserFailed } =
+    useOAuthFlow(onLoginSuccess);
 
   const handleLogin = async () => {
     try {
@@ -120,6 +121,11 @@ export function Login() {
               <div className="flex flex-col items-center gap-4 py-2">
                 <div className="w-10 h-10 rounded-full border-2 border-white/[0.08] border-t-accent animate-spin" />
                 <p className="text-[12px] text-white/45">{stepLabel}</p>
+                {browserFailed && (
+                  <p className="max-w-[280px] text-center text-[11.5px] leading-snug text-amber-200/70">
+                    {t('auth.browserFailed')}
+                  </p>
+                )}
                 {authUrl && (
                   <button
                     type="button"
