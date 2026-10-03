@@ -1,8 +1,8 @@
 import {emit, listen} from '@tauri-apps/api/event';
-import {getCurrentWindow} from '@tauri-apps/api/window';
 import { usePlayerStore } from '../stores/player';
 import {api} from './api';
 import {getDuration, handlePrev, seek} from './audio';
+import {trackedInvoke as invoke} from './diagnostics';
 import {isUrnDisliked, toggleDislike} from './dislikes';
 import {art} from './formatters';
 import {invalidateAllLikesCache} from './hooks';
@@ -117,13 +117,6 @@ async function toggleDislikeCurrent() {
     pushNp();
 }
 
-async function showMainWindow() {
-    const w = getCurrentWindow();
-    await w.show();
-    await w.unminimize();
-    await w.setFocus();
-}
-
 /* ── Native tray menu (Rust-emitted) ─────────────────────────── */
 
 listen<string>('tray-action', (event) => {
@@ -175,7 +168,7 @@ listen<{ action: string; value?: number }>('tray:cmd', (event) => {
             void toggleDislikeCurrent();
             break;
         case 'show':
-            void showMainWindow();
+            void invoke('show_main_window');
             break;
     }
     pushNp();

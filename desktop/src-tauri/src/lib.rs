@@ -24,11 +24,7 @@ pub fn run() {
 
     builder
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
-            if let Some(w) = app.get_webview_window("main") {
-                let _ = w.show();
-                let _ = w.unminimize();
-                let _ = w.set_focus();
-            }
+            app::visibility::show_main(app);
         }))
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_fs::init())
@@ -165,7 +161,11 @@ pub fn run() {
                 } else {
                     api.prevent_close();
                     let _ = window.hide();
+                    app::visibility::set_page_visible(window.app_handle(), window.label(), false);
                 }
+            }
+            tauri::WindowEvent::Focused(true) if window.label() == "main" => {
+                app::visibility::set_page_visible(window.app_handle(), "main", true);
             }
             // Transient popover (tray left-click) dismisses on blur; a pinned one
             // (opened from the "Mini player" menu) stays put — closed only by its ✕.
@@ -175,6 +175,11 @@ pub fn run() {
                     let st = window.app_handle().state::<app::popover::TrayState>();
                     if !st.is_pinned() {
                         let _ = window.hide();
+                        app::visibility::set_page_visible(
+                            window.app_handle(),
+                            app::popover::LABEL,
+                            false,
+                        );
                         st.mark_hidden();
                     }
                 }
@@ -183,6 +188,8 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             network::server::get_server_ports,
             app::diagnostics::diagnostics_log,
+            app::visibility::show_main_window,
+            app::popover::tray_popover_hide,
             discord::discord_connect,
             discord::discord_disconnect,
             discord::discord_set_activity,

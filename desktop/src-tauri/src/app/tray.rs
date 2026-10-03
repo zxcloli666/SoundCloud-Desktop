@@ -10,9 +10,9 @@
 //! операции Tauri обязаны идти с main-потока → действия гоним через
 //! `run_on_main_thread`.
 
-use tauri::{Emitter, Manager};
+use tauri::Emitter;
 
-use crate::app::popover;
+use crate::app::{popover, visibility};
 use crate::rt::AppHandle;
 
 pub fn setup_tray(app: &crate::rt::App) -> Result<(), Box<dyn std::error::Error>> {
@@ -43,13 +43,7 @@ pub fn run_action(app: &AppHandle, id: &str) {
     let h = app.clone();
     let id = id.to_string();
     let _ = app.run_on_main_thread(move || match id.as_str() {
-        "show" => {
-            if let Some(w) = h.get_webview_window("main") {
-                let _ = w.show();
-                let _ = w.unminimize();
-                let _ = w.set_focus();
-            }
-        }
+        "show" => visibility::show_main(&h),
         "mini" => popover::open_pinned(&h),
         "quit" => {
             // На CEF graceful `app.exit()` может зависнуть в teardown (кросс-процессный

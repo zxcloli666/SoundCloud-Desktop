@@ -1,4 +1,3 @@
-import {getCurrentWindow} from '@tauri-apps/api/window';
 import {
     Heart,
     Maximize2,
@@ -17,13 +16,14 @@ import {
 } from 'lucide-react';
 import {useCallback, useEffect, useRef, useState, useSyncExternalStore} from 'react';
 import i18n from '../i18n';
+import {trackedInvoke as invoke} from '../lib/diagnostics';
 import {formatTime} from '../lib/formatters';
 import {getNp, getPosition, patchNp, sendCmd, subscribeNp, subscribePosition} from './state';
 
 const t = (key: string) => i18n.t(key);
 
 /** Explicit close — the reliable dismiss on compositors where focus-based hide is flaky. */
-const hideSelf = () => void getCurrentWindow().hide();
+const hideSelf = () => void invoke('tray_popover_hide');
 
 const bloomEnabled = () => document.documentElement.dataset.perf !== 'light';
 
