@@ -718,10 +718,7 @@ function updatePlaybackState(playing: boolean) {
 }
 
 function updateMediaPosition() {
-  const pos = getCurrentTime();
-  if (pos > 0) {
-    invoke('audio_set_media_position', { position: pos }).catch(console.error);
-  }
+  invoke('audio_set_media_position', { position: getCurrentTime() }).catch(console.error);
 }
 
 // Listen for media control events from souvlaki (MPRIS/SMTC)
