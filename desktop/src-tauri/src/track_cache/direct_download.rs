@@ -186,7 +186,7 @@ async fn fetch_download(
     endpoint: &str,
     session_id: Option<&str>,
 ) -> Result<DownloadResponse, String> {
-    let (resp, hop) = crate::network::audio_route::get(client, endpoint, session_id)
+    let (resp, hop) = crate::network::audio_route::get_in_order(client, endpoint, session_id)
         .await
         .map_err(|e| format!("request: {e}"))?;
     let status = resp.status();

@@ -908,9 +908,10 @@ async fn download_api(
     app_handle: Option<&crate::rt::AppHandle>,
 ) -> Result<DownloadResult, DownloadError> {
     let stream_url = open_stream(client, url, session_id).await?;
-    let (response, hop) = crate::network::audio_route::get(client, &stream_url, session_id)
-        .await
-        .map_err(|err| DownloadError::Retryable(format!("request: {err}")))?;
+    let (response, hop) =
+        crate::network::audio_route::get_in_order(client, &stream_url, session_id)
+            .await
+            .map_err(|err| DownloadError::Retryable(format!("request: {err}")))?;
     let status = response.status();
 
     if status.is_success() {
@@ -1565,10 +1566,6 @@ impl TrackCacheState {
         } = params;
         let start = std::time::Instant::now();
         let mut last_err = String::from("no stream URLs provided");
-
-        // `/stream` и `/download` сами выбирают direct/temp через hedged headers:
-        // предпочтительный тир получает 300 мс форы, затем стартует запасной.
-        // Тело читает только победитель, поэтому быстрота не удваивает аудиотрафик.
 
         // Sort storage URLs: healthy hosts first.
         let mut sorted: Vec<&String> = storage_urls.iter().collect();
