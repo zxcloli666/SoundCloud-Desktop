@@ -1,10 +1,14 @@
 use std::time::Duration;
 
-use crate::network::audio_route;
+use crate::network::edge::{self, Hop, Tier};
 
 const SEARCH_TIMEOUT: Duration = Duration::from_secs(20);
+const SEARCH_RETRIES: u32 = 2;
+const RETRY_PAUSE: Duration = Duration::from_secs(2);
+const MAX_RETRY_PAUSE: Duration = Duration::from_secs(15);
 const COMBINED_LIMIT: usize = 3;
 const TITLE_ONLY_LIMIT: usize = 20;
+const MIN_PARTIAL_ARTIST_LEN: usize = 3;
 
 #[derive(serde::Deserialize)]
 struct ScSearchResult {
@@ -22,13 +26,57 @@ struct ScUser {
     username: Option<String>,
 }
 
+pub struct SearchError {
+    pub status: Option<u16>,
+    pub retry_after: Option<Duration>,
+    pub reason: String,
+}
+
+impl SearchError {
+    fn transport(reason: impl Into<String>) -> Self {
+        Self {
+            status: None,
+            retry_after: None,
+            reason: reason.into(),
+        }
+    }
+
+    fn http(resp: &wreq::Response) -> Self {
+        let retry_after = resp
+            .headers()
+            .get(wreq::header::RETRY_AFTER)
+            .and_then(|value| value.to_str().ok())
+            .and_then(|value| value.trim().parse::<u64>().ok())
+            .map(Duration::from_secs);
+        Self {
+            status: Some(resp.status().as_u16()),
+            retry_after,
+            reason: format!("HTTP {}", resp.status()),
+        }
+    }
+
+    pub fn is_unauthorized(&self) -> bool {
+        self.status == Some(401)
+    }
+
+    fn is_retryable(&self) -> bool {
+        matches!(self.status, Some(429 | 500..=599))
+    }
+
+    fn pause(&self, retry: u32) -> Duration {
+        self.retry_after
+            .unwrap_or(RETRY_PAUSE * retry)
+            .min(MAX_RETRY_PAUSE)
+    }
+}
+
 pub async fn find_track(
     client: &wreq::Client,
     backend_url: &str,
     session_id: &str,
     artist: &str,
     title: &str,
-) -> Result<Option<String>, String> {
+) -> Result<Option<String>, SearchError> {
     let combined = search(
         client,
         backend_url,
@@ -57,26 +105,81 @@ async fn search(
     session_id: &str,
     query: &str,
     limit: usize,
-) -> Result<Vec<ScTrackResult>, String> {
+) -> Result<Vec<ScTrackResult>, SearchError> {
     let url = format!(
         "{}/tracks?q={}&limit={}&linked_partitioning=true",
         backend_url,
         urlencoding::encode(query),
         limit
     );
-    let session_id = Some(session_id).filter(|id| !id.is_empty());
 
-    let (resp, _) =
-        tokio::time::timeout(SEARCH_TIMEOUT, audio_route::get(client, &url, session_id))
-            .await
-            .map_err(|_| "search timed out".to_string())??;
-
-    let status = resp.status();
-    if !status.is_success() {
-        return Err(format!("HTTP {status}"));
+    let mut retries = 0;
+    loop {
+        match search_once(client, &url, session_id).await {
+            Err(error) if error.is_retryable() && retries < SEARCH_RETRIES => {
+                retries += 1;
+                tokio::time::sleep(error.pause(retries)).await;
+            }
+            result => return result,
+        }
     }
-    let result: ScSearchResult = resp.json().await.map_err(|e| e.to_string())?;
+}
+
+async fn search_once(
+    client: &wreq::Client,
+    url: &str,
+    session_id: &str,
+) -> Result<Vec<ScTrackResult>, SearchError> {
+    let resp = tokio::time::timeout(SEARCH_TIMEOUT, send(client, url, session_id))
+        .await
+        .map_err(|_| SearchError::transport("search timed out"))??;
+
+    if !resp.status().is_success() {
+        return Err(SearchError::http(&resp));
+    }
+    let result: ScSearchResult = resp
+        .json()
+        .await
+        .map_err(|e| SearchError::transport(e.to_string()))?;
     Ok(result.collection)
+}
+
+async fn send(
+    client: &wreq::Client,
+    url: &str,
+    session_id: &str,
+) -> Result<wreq::Response, SearchError> {
+    let mut hops = edge::plan(url);
+    if hops.is_empty() {
+        hops.push(Hop {
+            url: url.to_string(),
+            tier: Tier::Direct,
+            origin: String::new(),
+        });
+    }
+
+    let mut last_error = SearchError::transport("no route");
+    for hop in hops {
+        let mut request = client.get(&hop.url);
+        if !session_id.is_empty() {
+            request = request.header("x-session-id", session_id);
+        }
+        let resp = match request.send().await {
+            Ok(resp) => resp,
+            Err(e) => {
+                hop.note(false);
+                last_error = SearchError::transport(format!("{}: {e}", hop.tier_label()));
+                continue;
+            }
+        };
+        if !edge::hop_ok(&hop, &resp) {
+            last_error = SearchError::http(&resp);
+            continue;
+        }
+        hop.note(resp.status().as_u16() < 500);
+        return Ok(resp);
+    }
+    Err(last_error)
 }
 
 fn simplify(name: &str) -> String {
@@ -94,7 +197,9 @@ fn uploaded_by(track: &ScTrackResult, artist: &str) -> bool {
         .and_then(|user| user.username.as_deref())
         .map(simplify)
         .unwrap_or_default();
-    !artist.is_empty() && uploader.contains(&artist)
+    !artist.is_empty()
+        && (uploader == artist
+            || (artist.chars().count() >= MIN_PARTIAL_ARTIST_LEN && uploader.contains(&artist)))
 }
 
 #[cfg(test)]
@@ -133,5 +238,14 @@ mod tests {
             },
             "Boris Brejcha"
         ));
+    }
+
+    #[test]
+    fn short_artist_names_need_an_exact_uploader() {
+        assert!(uploaded_by(&track_by("MØ"), "mø"));
+        assert!(uploaded_by(&track_by("U2"), "U2"));
+        assert!(!uploaded_by(&track_by("Mumford & Sons"), "M"));
+        assert!(!uploaded_by(&track_by("U2 Tribute Band"), "U2"));
+        assert!(!uploaded_by(&track_by("Kamø"), "MØ"));
     }
 }

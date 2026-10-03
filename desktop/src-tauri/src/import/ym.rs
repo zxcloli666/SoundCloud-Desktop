@@ -1,11 +1,15 @@
-use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Duration;
-use crate::app::diagnostics::log_native;
-use crate::rt::AppHandle;
+
 use tauri::Emitter;
 
+use crate::app::diagnostics::log_native;
+use crate::rt::AppHandle;
+
 use super::ym_search;
+
+const SESSION_EXPIRED: &str = "session_expired";
 
 const YM_TRACKS_ATTEMPTS: u64 = 3;
 const MAX_SEARCH_ERRORS_IN_ROW: usize = 15;
@@ -101,7 +105,9 @@ async fn fetch_ym_tracks(
         }
 
         let resp = match client
-            .get(format!("https://api.music.yandex.net/tracks?trackIds={ids}"))
+            .get(format!(
+                "https://api.music.yandex.net/tracks?trackIds={ids}"
+            ))
             .header("Authorization", format!("OAuth {ym_token}"))
             .send()
             .await
@@ -199,12 +205,24 @@ pub async fn ym_import_start(
         let tracks = match fetch_ym_tracks(&client, &ym_token, &chunk.join(",")).await {
             Ok(tracks) => tracks,
             Err(reason) => {
-                log_native(&app, "WARN", format!("[YM Import] tracks request failed: {reason}"));
+                log_native(
+                    &app,
+                    "WARN",
+                    format!("[YM Import] tracks request failed: {reason}"),
+                );
                 let remaining = total.saturating_sub(processed);
                 for _ in 0..chunk.len().min(remaining) {
                     processed += 1;
                     errors += 1;
-                    emit_progress(&app, total, processed, found, not_found, errors, String::new());
+                    emit_progress(
+                        &app,
+                        total,
+                        processed,
+                        found,
+                        not_found,
+                        errors,
+                        String::new(),
+                    );
                 }
                 continue;
             }
@@ -226,7 +244,15 @@ pub async fn ym_import_start(
 
             if title.is_empty() && artist.is_empty() {
                 not_found += 1;
-                emit_progress(&app, total, processed, found, not_found, errors, String::new());
+                emit_progress(
+                    &app,
+                    total,
+                    processed,
+                    found,
+                    not_found,
+                    errors,
+                    String::new(),
+                );
                 continue;
             }
 
@@ -242,7 +268,26 @@ pub async fn ym_import_start(
                     search_errors_in_row = 0;
                     not_found += 1;
                 }
-                Err(reason) => {
+                Err(error) if error.is_unauthorized() => {
+                    errors += 1;
+                    log_native(
+                        &app,
+                        "WARN",
+                        "[YM Import] search rejected the session (HTTP 401)",
+                    );
+                    emit_progress(
+                        &app,
+                        total,
+                        processed,
+                        found,
+                        not_found,
+                        errors,
+                        current_track,
+                    );
+                    return Err(SESSION_EXPIRED.to_string());
+                }
+                Err(error) => {
+                    let reason = error.reason;
                     errors += 1;
                     search_errors_in_row += 1;
                     if search_errors_in_row == 1 {
@@ -283,12 +328,28 @@ pub async fn ym_import_start(
             for _ in 0..missed.min(remaining) {
                 processed += 1;
                 not_found += 1;
-                emit_progress(&app, total, processed, found, not_found, errors, String::new());
+                emit_progress(
+                    &app,
+                    total,
+                    processed,
+                    found,
+                    not_found,
+                    errors,
+                    String::new(),
+                );
             }
         }
     }
 
-    emit_progress(&app, total, processed, found, not_found, errors, String::new());
+    emit_progress(
+        &app,
+        total,
+        processed,
+        found,
+        not_found,
+        errors,
+        String::new(),
+    );
 
     Ok(())
 }
