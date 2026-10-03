@@ -25,6 +25,8 @@ interface AddToPlaylistDialogProps {
   children: React.ReactNode;
 }
 
+const MEMBERSHIP_TIMEOUT_MS = 15_000;
+
 const PlaylistOption = React.memo(function PlaylistOption({
   playlist,
   onSelect,
@@ -200,6 +202,8 @@ export const AddToPlaylistDialog = React.memo(function AddToPlaylistDialog({
           try {
             const res = await api<{ collection: { urn: string }[] }>(
               `/playlists/${encodeURIComponent(playlistUrn)}/tracks?limit=200`,
+              {},
+              MEMBERSHIP_TIMEOUT_MS,
             );
             if (cancelled) return;
             setPlaylistTrackMap((prev) => ({
