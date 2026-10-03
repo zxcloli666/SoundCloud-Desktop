@@ -702,7 +702,7 @@ export function useMyPlaylists(limit = 30) {
 
 /* ── Playlist Mutations ────────────────────────────────────────── */
 
-// Полная перестановка/удаление из свежей загруженной вью — шлём `{order}`-дельту
+// Перестановка из свежей загруженной вью — шлём `{order}`-дельту
 // (а не PUT всего списка): backend применяет к desired-state и пушит в SC фоном.
 export function useUpdatePlaylistTracks(playlistUrn: string | undefined) {
   const qc = useQueryClient();
@@ -712,6 +712,18 @@ export function useUpdatePlaylistTracks(playlistUrn: string | undefined) {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['playlist', playlistUrn] });
       qc.invalidateQueries({ queryKey: ['playlist', playlistUrn, 'tracks'] });
+      qc.invalidateQueries({ queryKey: ['me', 'playlists'] });
+    },
+  });
+}
+
+export function useRemoveFromPlaylist(playlistUrn: string | undefined) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (trackUrn: string) => editPlaylistTracks(playlistUrn!, { remove: trackUrn }),
+    onError: toastPlaylistEditError,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['playlist', playlistUrn] });
       qc.invalidateQueries({ queryKey: ['me', 'playlists'] });
     },
   });

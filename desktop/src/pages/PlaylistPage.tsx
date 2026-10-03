@@ -20,6 +20,7 @@ import {
     useInfiniteScroll,
     usePlaylist,
     usePlaylistTracks,
+    useRemoveFromPlaylist,
     useUpdatePlaylistTracks,
 } from '../lib/hooks';
 import {AlertCircle, ChevronLeft, X} from '../lib/icons';
@@ -73,6 +74,7 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
     fetchNextPage,
   } = usePlaylistTracks(playlist ? urn : undefined);
   const updateTracks = useUpdatePlaylistTracks(urn);
+  const removeTrack = useRemoveFromPlaylist(urn);
   const deletePlaylist = useDeletePlaylist();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
@@ -161,9 +163,13 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
     (trackUrn: string) => {
       const next = localTracks.filter((tr) => tr.urn !== trackUrn);
       setLocalTracks(next);
-      debouncedUpdate(next, t('playlist.trackRemoved'));
+      if (pendingMutationRef.current) debouncedUpdate(next);
+      removeTrack.mutate(trackUrn, {
+        onSuccess: () => toast.success(t('playlist.trackRemoved')),
+        onError: () => setLocalTracks(serverTracks),
+      });
     },
-    [localTracks, debouncedUpdate, t],
+    [localTracks, debouncedUpdate, removeTrack, serverTracks, t],
   );
 
   // Доигрываем плейлист ДО КОНЦА (пагинированный срез в очереди → потом волна),
