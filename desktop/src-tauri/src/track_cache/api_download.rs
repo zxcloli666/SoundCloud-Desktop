@@ -36,12 +36,18 @@ async fn download_over(
 ) -> Result<DownloadResult, DownloadError> {
     let mut rest = hops;
     loop {
+        let continuing = rest.len() < hops.len();
         let (response, at) = audio_route::first_answer(job.client, rest, job.session_id)
             .await
             .map_err(|err| DownloadError::Retryable(format!("request: {err}")))?;
         let hop = &rest[at];
         rest = &rest[at + 1..];
         let status = response.status();
+        if continuing && matches!(status.as_u16(), 401 | 403) {
+            return Err(DownloadError::Retryable(format!(
+                "HTTP {status} on the next route, the ticket needs minting again"
+            )));
+        }
         if !status.is_success() {
             return Err(http_failure(status, response).await);
         }
@@ -247,7 +253,7 @@ mod tests {
 
     use super::{StreamJob, download_over};
     use crate::network::edge::{Hop, Tier};
-    use crate::track_cache::state::PlaybackQuality;
+    use crate::track_cache::state::{DownloadError, PlaybackQuality};
 
     const FULL: usize = 200 * 1024;
 
@@ -274,6 +280,15 @@ mod tests {
 
     fn whole() -> String {
         let route = warp::path("stream").map(|| audio(FULL));
+        let (addr, server) = warp::serve(route).bind_ephemeral(([127, 0, 0, 1], 0));
+        tokio::spawn(server);
+        format!("http://{addr}/stream")
+    }
+
+    fn refusing() -> String {
+        let route = warp::path("stream").map(|| {
+            warp::reply::with_status("ticket expired", warp::http::StatusCode::UNAUTHORIZED)
+        });
         let (addr, server) = warp::serve(route).bind_ephemeral(([127, 0, 0, 1], 0));
         tokio::spawn(server);
         format!("http://{addr}/stream")
@@ -313,5 +328,17 @@ mod tests {
             hop(whole(), Tier::Relay),
         ];
         assert_eq!(fetch_over(&hops).await.ok(), Some(FULL as u64));
+    }
+
+    #[tokio::test]
+    async fn a_ticket_refused_on_the_next_route_is_minted_again() {
+        let hops = [
+            hop(cut_after(16 * 1024).await, Tier::Direct),
+            hop(refusing(), Tier::Relay),
+        ];
+        assert!(matches!(
+            fetch_over(&hops).await,
+            Err(DownloadError::Retryable(_))
+        ));
     }
 }
