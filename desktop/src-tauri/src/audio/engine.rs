@@ -81,8 +81,8 @@ fn commit_loaded_track(
     new_player: rodio::Player,
     normalization_gain: f32,
 ) {
-    apply_current_rate(state, &new_player);
     let mut player = state.player.lock().unwrap();
+    apply_current_rate(state, &new_player);
     new_player.set_volume(*state.volume.lock().unwrap());
     *player = Some(new_player);
     *state.source_bytes.lock().unwrap() = Some(bytes);
@@ -166,7 +166,7 @@ pub fn reload_current_track(state: &AudioState) -> Result<(), String> {
         } else {
             1.0
         },
-        was_paused,
+        true,
         state.eq_params.clone(),
         state.analyser_buffer.clone(),
         state.pitch_ratio.clone(),
@@ -186,6 +186,9 @@ pub fn reload_current_track(state: &AudioState) -> Result<(), String> {
         old.stop();
     }
     new_player.set_volume(*state.volume.lock().unwrap());
+    if !was_paused {
+        new_player.play();
+    }
     *player = Some(new_player);
     set_pos_anchor(state, source_position, output_target);
     state.has_track.store(true, Ordering::Relaxed);
