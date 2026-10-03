@@ -13,6 +13,7 @@ use crate::rt::AppHandle;
 
 const RECONNECT_DELAY: Duration = Duration::from_millis(500);
 const MAX_RECONNECT_DELAY: Duration = Duration::from_secs(10);
+const RECONNECT_BACKOFF_WINDOW: Duration = Duration::from_secs(30);
 const SILENT_TICK: Duration = Duration::from_millis(20);
 const SILENT_SAMPLES_PER_TICK: usize = 2 * 44_100 / 50;
 
@@ -82,6 +83,7 @@ struct OutputThread {
     shared_mixer: Arc<Mutex<Mixer>>,
     reconnect_at: Option<Instant>,
     reconnect_delay: Duration,
+    last_reconnect: Option<Instant>,
 }
 
 impl OutputThread {
@@ -95,6 +97,7 @@ impl OutputThread {
             shared_mixer,
             reconnect_at,
             reconnect_delay: RECONNECT_DELAY,
+            last_reconnect: None,
         }
     }
 
@@ -112,11 +115,7 @@ impl OutputThread {
                         .send(opened.map(|()| self.output.mixer().clone()))
                         .ok();
                 }
-                Ok(AudioThreadCmd::Reconnect) => {
-                    if self.reconnect_at.is_none() {
-                        self.reconnect_at = Some(Instant::now() + RECONNECT_DELAY);
-                    }
-                }
+                Ok(AudioThreadCmd::Reconnect) => self.schedule_reconnect(),
                 Err(RecvTimeoutError::Timeout) => self.reconnect(),
                 Err(RecvTimeoutError::Disconnected) => return,
             }
@@ -147,7 +146,31 @@ impl OutputThread {
         opened
     }
 
+    fn schedule_reconnect(&mut self) {
+        if self.reconnect_at.is_some() {
+            return;
+        }
+        let failing_again = self
+            .last_reconnect
+            .is_some_and(|at| at.elapsed() < RECONNECT_BACKOFF_WINDOW);
+        if failing_again {
+            self.reconnect_delay = (self.reconnect_delay * 2).min(MAX_RECONNECT_DELAY);
+            diagnostics::log_native(
+                &self.handles.app,
+                "WARN",
+                format!(
+                    "[Audio] Output keeps failing, reconnecting in {} ms",
+                    self.reconnect_delay.as_millis()
+                ),
+            );
+        } else {
+            self.reconnect_delay = RECONNECT_DELAY;
+        }
+        self.reconnect_at = Some(Instant::now() + self.reconnect_delay);
+    }
+
     fn reconnect(&mut self) {
+        self.last_reconnect = Some(Instant::now());
         let was_silent = self.output.is_silent();
         if !was_silent {
             self.output = Output::silent();
@@ -157,7 +180,6 @@ impl OutputThread {
             Ok(sink) => {
                 self.output = Output::Device(sink);
                 self.reconnect_at = None;
-                self.reconnect_delay = RECONNECT_DELAY;
             }
             Err(error) => {
                 if !was_silent {
