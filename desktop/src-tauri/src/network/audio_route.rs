@@ -143,4 +143,31 @@ mod tests {
         assert_eq!(response.text().await.unwrap(), "fast");
         assert!(started.elapsed() < Duration::from_secs(1));
     }
+
+    #[tokio::test]
+    async fn a_ticket_redirect_is_handed_back_instead_of_followed() {
+        let ticket = "http://127.0.0.1:9/stream/urn?ticket=signed";
+        let api = warp::path::end()
+            .map(move || warp::redirect::temporary(warp::http::Uri::from_static(ticket)));
+        let (addr, server) = warp::serve(api).bind_ephemeral(([127, 0, 0, 1], 0));
+        tokio::spawn(server);
+
+        let hops = vec![Hop {
+            url: format!("http://{addr}"),
+            tier: Tier::Direct,
+            origin: String::new(),
+        }];
+        let (response, _) = get_from_hops(
+            &wreq::Client::new(),
+            hops,
+            None,
+            Duration::from_millis(40),
+            false,
+        )
+        .await
+        .unwrap();
+
+        assert_eq!(response.status().as_u16(), 307);
+        assert_eq!(response.headers()["location"], ticket);
+    }
 }
