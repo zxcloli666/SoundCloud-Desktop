@@ -288,6 +288,9 @@
     "filter": "Filtrele...",
     "noMatches": "Eslesme yok",
     "noLikedTracks": "Henuz begenilen parca yok",
+    "likesSyncing": "Begeniler SoundCloud ile esitleniyor...",
+    "likesSyncSlow": "SoundCloud ile esitleme normalden uzun suruyor",
+    "likesLoadFailed": "Begeniler yuklenemedi",
     "notFollowing": "Kimseyi takip etmiyorsunuz",
     "noPlaylists": "Calma listesi bulunamadi"
   },

@@ -5,11 +5,12 @@ import {Loader2} from '../../lib/icons';
 import {armLikesContinuation} from '../../lib/queue-continuation';
 import {VirtualList} from '../ui/VirtualList';
 import {LibraryTrackRow} from './LibraryTrackRow';
+import {LikesNotice, type LikesNoticeKind} from './LikesNotice';
 
 export const LikesTab = React.memo(function LikesTab({filter}: { filter: string }) {
     const {t} = useTranslation();
     const likesQuery = useLikedTracks();
-    const {tracks: likedTracks, isLoading} = likesQuery;
+    const {tracks: likedTracks, isLoading, syncState} = likesQuery;
     const sentinelRef = useInfiniteScroll(
         !!likesQuery.hasNextPage,
         !!likesQuery.isFetchingNextPage,
@@ -43,6 +44,12 @@ export const LikesTab = React.memo(function LikesTab({filter}: { filter: string 
         if (!filterRef.current) armLikesContinuation();
     }, []);
 
+    const failed = likesQuery.isError && likedTracks.length === 0;
+    const notice: LikesNoticeKind | null = failed ? 'failed' : syncState === 'complete' ? null : syncState;
+    const retry = () => {
+        void likesQuery.refetch();
+    };
+
     return (
         <div className="min-h-[400px]">
             <div className="flex flex-col gap-1">
@@ -62,14 +69,16 @@ export const LikesTab = React.memo(function LikesTab({filter}: { filter: string 
                             <LibraryTrackRow track={track} index={i} queue={filtered} onPlay={onLikePlay}/>
                         )}
                     />
-                ) : (
+                ) : filter ? (
                     <div className="py-20 text-center text-white/20">
-                        {filter && likesQuery.hasNextPage
-                            ? t('common.loading')
-                            : filter
-                                ? t('library.noMatches')
-                                : t('library.noLikedTracks')}
+                        {likesQuery.hasNextPage ? t('common.loading') : t('library.noMatches')}
                     </div>
+                ) : notice ? (
+                    <div className="py-20">
+                        <LikesNotice kind={notice} onRetry={retry}/>
+                    </div>
+                ) : (
+                    <div className="py-20 text-center text-white/20">{t('library.noLikedTracks')}</div>
                 )}
             </div>
             {!filter ? (
@@ -83,6 +92,11 @@ export const LikesTab = React.memo(function LikesTab({filter}: { filter: string 
                     <Loader2 size={20} className="text-white/15 animate-spin"/>
                 </div>
             ) : null}
+            {!filter && notice && likedTracks.length > 0 && !likesQuery.hasNextPage && (
+                <div className="pb-6">
+                    <LikesNotice kind={notice} onRetry={retry}/>
+                </div>
+            )}
         </div>
     );
 });
