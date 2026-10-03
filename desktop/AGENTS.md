@@ -76,7 +76,7 @@ desktop/
                      equalizer, lyrics, waveform, soundwave, discover, dislikes,
                      likes, recsFeedback, subscription, track-display, queue-autopilot,
                      useTrackPlay — фичевая логика
-                     auth-recovery, use-oauth-flow, qr-link — авторизация
+                     auth-recovery, auth-status, use-oauth-flow, qr-link — авторизация
                      events, hooks, useAutoHide — общие утилиты
                      diagnostics — `trackedInvoke`, watchdog event-loop, slow-call логи
                      tauri-storage — `StateStorage` для zustand persist на ФС

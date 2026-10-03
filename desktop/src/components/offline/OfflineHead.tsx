@@ -1,23 +1,23 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
-import { Clock, RotateCcw, Wifi, WifiOff } from '../../lib/icons';
-import { usePerfMode } from '../../lib/perf';
-import type { SyncStatus } from '../../lib/sync-status';
+import {useTranslation} from 'react-i18next';
+import type {AuthStatus} from '../../lib/auth-status';
+import {Clock, RotateCcw, Wifi, WifiOff} from '../../lib/icons';
+import {usePerfMode} from '../../lib/perf';
 
 /** Шапка: кикер + заголовок слева, единый статус сети / очередь синка справа. */
 export const OfflineHead = React.memo(function OfflineHead({
   online,
-  syncStatus,
+  authStatus,
   onTryOnline,
 }: {
   online: boolean;
-  syncStatus: SyncStatus | undefined;
+  authStatus: AuthStatus | undefined;
   onTryOnline: () => void;
 }) {
   const { t } = useTranslation();
   const perf = usePerfMode();
-  const pending = syncStatus?.pendingCount ?? 0;
-  const failed = syncStatus?.failedCount ?? 0;
+  const pending = authStatus?.pendingSyncCount ?? 0;
+  const failed = authStatus?.failedSyncCount ?? 0;
 
   return (
     <header className="flex flex-wrap items-end justify-between gap-4">

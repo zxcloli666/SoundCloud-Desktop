@@ -1,23 +1,23 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
-import { ForgeModule } from '../components/offline/ForgeModule';
-import { OFFLINE_KEYFRAMES } from '../components/offline/keyframes';
-import { filterEntries, sortEntries } from '../components/offline/lib';
-import { OfflineHead } from '../components/offline/OfflineHead';
-import { OfflineToolbar } from '../components/offline/OfflineToolbar';
-import { OfflineTrackList } from '../components/offline/OfflineTrackList';
-import { StorageModule } from '../components/offline/StorageModule';
-import type { OfflineEntry, OfflineSection, SortMode } from '../components/offline/types';
-import { useForgeStatus } from '../components/offline/useForgeStatus';
-import { useOfflineLibrary } from '../components/offline/useOfflineLibrary';
-import { Atmosphere } from '../components/search/Atmosphere';
-import { ensureTrackCached } from '../lib/cache';
-import { useCacheLikes } from '../lib/likes-cache';
-import { usePerfMode } from '../lib/perf';
-import { useSyncStatus } from '../lib/sync-status';
-import { useAppStatusStore } from '../stores/app-status';
-import { usePlayerStore } from '../stores/player';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {useTranslation} from 'react-i18next';
+import {useNavigate} from 'react-router-dom';
+import {ForgeModule} from '../components/offline/ForgeModule';
+import {OFFLINE_KEYFRAMES} from '../components/offline/keyframes';
+import {filterEntries, sortEntries} from '../components/offline/lib';
+import {OfflineHead} from '../components/offline/OfflineHead';
+import {OfflineToolbar} from '../components/offline/OfflineToolbar';
+import {OfflineTrackList} from '../components/offline/OfflineTrackList';
+import {StorageModule} from '../components/offline/StorageModule';
+import type {OfflineEntry, OfflineSection, SortMode} from '../components/offline/types';
+import {useForgeStatus} from '../components/offline/useForgeStatus';
+import {useOfflineLibrary} from '../components/offline/useOfflineLibrary';
+import {Atmosphere} from '../components/search/Atmosphere';
+import {useAuthStatus} from '../lib/auth-status';
+import {ensureTrackCached} from '../lib/cache';
+import {useCacheLikes} from '../lib/likes-cache';
+import {usePerfMode} from '../lib/perf';
+import {useAppStatusStore} from '../stores/app-status';
+import {usePlayerStore} from '../stores/player';
 
 function shuffled<T>(items: T[]): T[] {
   const out = [...items];
@@ -36,7 +36,7 @@ export const OfflinePage = React.memo(() => {
   const forge = useForgeStatus();
   const cacheLikes = useCacheLikes(() => void lib.refreshInventory());
   const online = lib.appMode === 'online';
-  const syncStatus = useSyncStatus({ enabled: online });
+  const authStatus = useAuthStatus({ enabled: online });
 
   const [section, setSection] = useState<OfflineSection>('likes');
   const [sort, setSort] = useState<SortMode>('custom');
@@ -133,7 +133,7 @@ export const OfflinePage = React.memo(() => {
         className="relative z-10 mx-auto flex w-full max-w-[1180px] flex-col gap-5"
         style={{ isolation: 'isolate' }}
       >
-        <OfflineHead online={online} syncStatus={syncStatus.data} onTryOnline={handleTryOnline} />
+        <OfflineHead online={online} authStatus={authStatus.data} onTryOnline={handleTryOnline} />
 
         {lib.loading ? (
           <>
