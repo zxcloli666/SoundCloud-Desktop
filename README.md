@@ -132,6 +132,29 @@ chmod +x soundcloud-desktop-*.AppImage
 
 ---
 
+## zapret, VPN и списки доменов
+
+Приложение ходит только на свои домены в зоне `scnative.space`. Если провайдер режет прямой путь, оно само переключается на резервные маршруты `*.relay.scnative.space`.
+
+Правило для zapret одно:
+- приложение работает с выключенным zapret — добавьте `scnative.space` в `list-exclude`;
+- без zapret не работает, потому что блокирует провайдер — добавьте `scnative.space` в `list-general`.
+
+Запись `scnative.space` покрывает все поддомены, включая резервные маршруты:
+
+| Домен | Для чего |
+|---|---|
+| `api.scnative.space`, `api-star.scnative.space` | API |
+| `stream.scnative.space`, `stream-star.scnative.space` | аудио |
+| `storage.scnative.space`, `storage-star.scnative.space`, `s3.scnative.space` | хранилище треков |
+| `images.scnative.space` | обложки |
+| `pay.scnative.space` | оплата STAR |
+| `health.scnative.space` | проверка связи |
+| `call-*.scnative.space` | «Сеть пользователей» |
+| `*.relay.scnative.space` | резервные маршруты |
+
+---
+
 ## Скриншоты
 
 <p align="center">

@@ -395,6 +395,11 @@
       "title": "All hosts are down",
       "body": "The service is temporarily unavailable — we're on it. Your downloaded music is available in the offline library."
     },
+    "blocked": {
+      "title": "Can't reach the app's servers",
+      "body": "The internet works, but no request gets through to our servers, not even over the backup routes. This usually means a provider block or a local bypass tool such as zapret or a VPN. Your downloaded music is available in the offline library.",
+      "rule": "If the app works with zapret turned off, add scnative.space to list-exclude. If your provider blocks it, add scnative.space to list-general: that also covers *.relay.scnative.space."
+    },
     "banner": {
       "viaStar": "Main host is down — running on the Star backup host.",
       "outage": "Hosts are unavailable",

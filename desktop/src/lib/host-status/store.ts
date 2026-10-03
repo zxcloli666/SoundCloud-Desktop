@@ -10,6 +10,7 @@ export interface HostStatusState {
   main: HostVerdict;
   star: HostVerdict;
   net: NetVerdict;
+  routeBlocked: boolean;
   /** Активная проба идёт (single-flight гейт + фидбек retry-кнопки). */
   probing: boolean;
   /** ++ на подтверждённом переходе main→down при net=online. */
@@ -27,6 +28,7 @@ export const useHostStatusStore = create<HostStatusState>()((set, get) => ({
   main: 'unknown',
   star: 'unknown',
   net: 'unknown',
+  routeBlocked: false,
   probing: false,
   incidentId: 0,
   modalDismissedIncidentId: -1,

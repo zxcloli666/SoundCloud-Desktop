@@ -312,6 +312,11 @@
       "title": "Tum sunucular kapali",
       "body": "Servis gecici olarak kullanilamiyor, duzeltiyoruz. Indirilen muzik cevrimdisi kitaplikta kullanilabilir."
     },
+    "blocked": {
+      "title": "Uygulama sunucularina ulasilamiyor",
+      "body": "Internet calisiyor ama hicbir istek sunucularimiza ulasmiyor, yedek yollar dahil. Bu genelde saglayici engelinden ya da zapret veya VPN gibi yerel bir engel asma aracindan olur. Indirilen muzik cevrimdisi kitaplikta kullanilabilir.",
+      "rule": "Uygulama zapret kapaliyken calisiyorsa scnative.space'i list-exclude'a ekleyin. Saglayiciniz engelliyorsa scnative.space'i list-general'a ekleyin: bu *.relay.scnative.space'i de kapsar."
+    },
     "banner": {
       "viaStar": "Ana sunucu kapali — yedek Star sunucusu uzerinden calisiyoruz.",
       "outage": "Sunucular kullanilamiyor",

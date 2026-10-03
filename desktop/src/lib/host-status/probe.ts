@@ -213,13 +213,10 @@ async function run(): Promise<void> {
   }
   const genAfterMainProbes = mainAliveGen;
   const star = await probeConfirmed(API_STAR_BASE);
+  const unreachable = main.netFail && star.netFail;
+  const internet = unreachable ? await checkInternet() : 'online';
   // Бурст таймаутов = таймаутят все запросы → хост лёг, а не offline: модалку не глушим.
-  if (
-    main.netFail &&
-    star.netFail &&
-    !timeoutBurst() &&
-    (await checkInternet()) === 'no-internet'
-  ) {
+  if (internet === 'no-internet' && !timeoutBurst()) {
     // Не знаем, лежат ли хосты; backendReachable не трогаем — offline-флоу ведёт apiRequest.
     useHostStatusStore.setState({ main: 'unknown', star: 'unknown', net: 'no-internet' });
     startRecheckTimer();
@@ -234,6 +231,7 @@ async function run(): Promise<void> {
     main: 'down',
     star: star.alive ? 'up' : 'down',
     net: 'online',
+    routeBlocked: unreachable && internet === 'online',
     incidentId,
     // Флап-гвард: недавно закрытая модалка не возвращается на новом инциденте.
     ...(newIncident && Date.now() - prev.lastModalDismissAt < MODAL_RESHOW_SUPPRESS_MS
