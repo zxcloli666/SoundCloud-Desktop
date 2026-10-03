@@ -1,5 +1,6 @@
 import {create} from 'zustand';
 import {persist} from 'zustand/middleware';
+import type {ScdSearchTag} from '../lib/search/live';
 import {createThrottledJsonStorage} from '../lib/tauri-storage';
 
 const PERSISTED_QUEUE_BEHIND = 30;
@@ -97,6 +98,7 @@ export interface Track {
   };
   enrichment?: TrackEnrichment;
   _scd_meta?: TrackScdMeta;
+  _scd_search?: ScdSearchTag;
 }
 
 type RepeatMode = 'off' | 'one' | 'all';
