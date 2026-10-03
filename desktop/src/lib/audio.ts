@@ -385,7 +385,7 @@ async function loadTrack(track: Track) {
     try {
       cachedInfo = await ensureTrackCached(urn, highQualityStreaming, track.duration);
     } catch (error) {
-      if (!highQualityStreaming) throw error;
+      if (!highQualityStreaming || !getLoadErrorText(error)?.includes('HTTP 403')) throw error;
       console.warn('[Audio] HQ load failed, retrying without hq:', error);
       cachedInfo = await ensureTrackCached(urn, false, track.duration);
     }
