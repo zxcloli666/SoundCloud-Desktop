@@ -16,10 +16,11 @@ use crate::audio::eq::{EqSource, GainSource};
 use crate::audio::types::{
     ChannelCount, EqParams, SampleRate, NORMALIZATION_ANALYSIS_SAMPLES,
     NORMALIZATION_BLOCK_SAMPLES, NORMALIZATION_MAX_ATTENUATION_DB, NORMALIZATION_MAX_BOOST_DB,
-    NORMALIZATION_TARGET_PEAK, NORMALIZATION_TARGET_RMS,
+    NORMALIZATION_SEEK_PREROLL_SAMPLES, NORMALIZATION_SPREAD_MIN_SECS, NORMALIZATION_TARGET_PEAK,
+    NORMALIZATION_TARGET_RMS, NORMALIZATION_WINDOWS,
 };
 
-const NORMALIZATION_CACHE_VERSION: u8 = 2;
+const NORMALIZATION_CACHE_VERSION: u8 = 3;
 
 pub fn is_ogg_opus(bytes: &[u8]) -> bool {
     // OpusHead appears at byte 28 in a standard OGG Opus header page
@@ -229,17 +230,37 @@ fn write_cached_normalization_gain(cache_dir: Option<&Path>, cache_key: Option<&
     let _ = std::fs::write(path, format!("{NORMALIZATION_CACHE_VERSION}:{gain:.6}"));
 }
 
-fn normalization_gain_from_samples<I>(samples: I) -> f32
-where
-    I: IntoIterator<Item = f32>,
-{
+fn spread_samples<S: Source<Item = f32>>(mut source: S) -> impl Iterator<Item = f32> {
+    let total = source.total_duration().unwrap_or_default();
+    let spread = total.as_secs() >= NORMALIZATION_SPREAD_MIN_SECS;
+    let window = NORMALIZATION_ANALYSIS_SAMPLES / NORMALIZATION_WINDOWS;
+    let mut index = 0;
+    let mut left = 0;
+    std::iter::from_fn(move || {
+        if left == 0 {
+            if index == NORMALIZATION_WINDOWS {
+                return None;
+            }
+            let at = total.mul_f64((index as f64 + 0.5) / NORMALIZATION_WINDOWS as f64);
+            if spread && source.try_seek(at).is_ok() {
+                source.by_ref().take(NORMALIZATION_SEEK_PREROLL_SAMPLES).for_each(drop);
+            }
+            index += 1;
+            left = window;
+        }
+        left -= 1;
+        source.next()
+    })
+}
+
+fn normalization_gain_from_samples<S: Source<Item = f32>>(source: S) -> f32 {
     let mut peak = 0.0f64;
     let mut count = 0usize;
     let mut block_sum_sq = 0.0f64;
     let mut block_count = 0usize;
     let mut block_powers = Vec::new();
 
-    for sample in samples.into_iter().take(NORMALIZATION_ANALYSIS_SAMPLES) {
+    for sample in spread_samples(source) {
         let value = sample as f64;
         let abs = value.abs();
         peak = peak.max(abs);
