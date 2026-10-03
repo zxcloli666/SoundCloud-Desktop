@@ -1,6 +1,5 @@
 import {appCacheDir, join} from '@tauri-apps/api/path';
 import {mkdir, readDir, remove, writeFile} from '@tauri-apps/plugin-fs';
-import {fetch as tauriFetch} from '@tauri-apps/plugin-http';
 import type {PlaybackQuality, PlaybackSource} from '../stores/player';
 import {useSettingsStore} from '../stores/settings';
 import {toScproxyUrl} from './asset-url';
@@ -234,7 +233,7 @@ function extensionFromType(mime: string): string {
  *  Идём через локальный прокси в режиме `direct` — он фетчит с браузерным UA
  *  (Wallhaven/Konachan 403-ят не-браузер), webview-fetch так не умеет. */
 export async function downloadWallpaper(url: string): Promise<string> {
-  const res = await tauriFetch(toScproxyUrl(url, { direct: true }));
+  const res = await fetch(toScproxyUrl(url, { direct: true }));
   if (!res.ok) throw new Error(`Download failed: ${res.status}`);
   const ct = res.headers.get('content-type') ?? 'image/jpeg';
   const ext = extensionFromType(ct);
