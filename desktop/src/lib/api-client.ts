@@ -88,18 +88,31 @@ function fetchWithTimeout(url: string, options: RequestInit, timeoutMs: number):
   return edgeFetch(url, options, timeoutMs);
 }
 
+const HTML_MESSAGE = /<!doctype|<html|cloudfront|request could not be satisfied/i;
+const MAX_TOAST_MESSAGE_LENGTH = 200;
+
+function clientErrorMessage(err: ApiError): string {
+  const fallback = `Error ${err.status}`;
+  try {
+    const parsed = JSON.parse(err.body);
+    if (parsed.code === 'soundcloud_blocked') return i18n.t('errors.upstreamBlocked');
+    const message = parsed.message || parsed.error;
+    if (typeof message !== 'string' || !message) return fallback;
+    if (HTML_MESSAGE.test(message)) return i18n.t('errors.upstreamBlocked');
+    return message.length > MAX_TOAST_MESSAGE_LENGTH ? fallback : message;
+  } catch {
+    return fallback;
+  }
+}
+
 function handleApiError(err: ApiError): void {
   if (err.status >= 500) {
     if (isIncidentActive()) return; // авария уже показана модалкой/баннером
     // Фиксированный id: sonner заменяет тост, шторм не стекается.
     toast.error(i18n.t('errors.serverError', { status: err.status }), { id: 'api-server-error' });
   } else if (err.status >= 400 && err.status !== 401) {
-    try {
-      const parsed = JSON.parse(err.body);
-      toast.error(parsed.message || parsed.error || `Error ${err.status}`);
-    } catch {
-      toast.error(`Error ${err.status}`);
-    }
+    const message = clientErrorMessage(err);
+    toast.error(message, { id: `api-client-error:${message}` });
   }
 }
 

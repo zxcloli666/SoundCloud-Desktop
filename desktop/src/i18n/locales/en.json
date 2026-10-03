@@ -381,7 +381,8 @@
     "reload": "Reload",
     "home": "Home",
     "details": "Details",
-    "serverError": "Server error ({{status}})"
+    "serverError": "Server error ({{status}})",
+    "upstreamBlocked": "SoundCloud temporarily refused the request. Try again later."
   },
   "hostStatus": {
     "starOffer": {
