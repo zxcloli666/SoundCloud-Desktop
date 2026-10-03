@@ -781,6 +781,7 @@ export function preloadQueue() {
 }
 
 usePlayerStore.subscribe((state, prev) => {
+  if (!hasTrack) return;
   if (state.queueIndex !== prev.queueIndex || state.queue !== prev.queue) {
     preloadQueue();
   }
