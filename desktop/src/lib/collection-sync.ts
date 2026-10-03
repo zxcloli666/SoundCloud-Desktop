@@ -4,6 +4,7 @@ import { api } from './api';
 
 export interface CollectionSync {
   status: string;
+  conflictCode?: string | null;
   lastCompletedAt?: string | null;
   retryAfterSeconds?: number;
 }

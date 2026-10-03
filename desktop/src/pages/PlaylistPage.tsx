@@ -230,6 +230,7 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
   const declaredCount = playlist?.track_count ?? 0;
   const missingTracks = !hasNextPage && tracks.length < declaredCount;
   const tracksSyncStatus = tracksSync?.status ?? '';
+  const awaitingCatalog = tracksSync?.conflictCode === 'catalog_incomplete';
   const listNotice = useMemo(() => {
     const retry = () => void refetchTracks();
     const notice = syncNoticeOf({
@@ -238,10 +239,10 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
     });
     if (notice) return <SyncNotice kind={notice} onRetry={retry} />;
     if (!missingTracks) return null;
-    if (UNREADABLE_SYNC_STATUSES.includes(tracksSyncStatus)) {
+    if (!awaitingCatalog && UNREADABLE_SYNC_STATUSES.includes(tracksSyncStatus)) {
       return <SyncNotice kind="failed" text={t('playlist.tracksUnavailable')} onRetry={retry} />;
     }
-    if (tracksSyncStatus !== 'clean') return null;
+    if (tracksSyncStatus !== 'clean' && !awaitingCatalog) return null;
     return (
       <p className="text-center text-[13px] text-white/30">
         {t('playlist.partialTracks', {
@@ -255,6 +256,7 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
     tracksFailed,
     tracksSyncState,
     tracksSyncStatus,
+    awaitingCatalog,
     missingTracks,
     tracks.length,
     declaredCount,
