@@ -352,6 +352,12 @@
     "idleSub": "Sıradaki parça — seveceğini düşündüğümüz",
     "coldTitle": "Dalga hâlâ ısınıyor",
     "coldDesc": "Birkaç parçayı beğen — radyoyu zevkine göre ayarlayalım",
+    "buildingTitle": "Dalgan hâlâ hazırlanıyor",
+    "buildingDesc": "Beğendiğin parçaları hâlâ işliyoruz. Bu biraz sürebilir, sonra tekrar bak.",
+    "allLikedTitle": "Buradaki her şeyi zaten beğendin",
+    "allLikedDesc": "Tüm dalgayı görmek için beğenileri gizlemeyi kapat.",
+    "errorTitle": "Dalga yüklenemedi",
+    "errorDesc": "Sunucu yanıt vermedi. Biraz sonra tekrar dene.",
     "forYou": "Sana özel",
     "searchPlaceholder": "Bir havayı anlat — örn. \"yağmurda hüzünlü piyano\"",
     "searchAction": "Ara",
@@ -394,7 +400,9 @@
         "same_vibe": "Ayni vibe",
         "same_vibeDesc": "Duygusal spektrumundaki sesler.",
         "deep_cuts": "Derin kazilar",
-        "deep_cutsDesc": "Patika disi — ama senin tonunda."
+        "deep_cutsDesc": "Patika disi — ama senin tonunda.",
+        "discover": "Kesfet",
+        "discoverDesc": "Baslamak icin taze ve populer parcalar."
       }
     },
     "river": {

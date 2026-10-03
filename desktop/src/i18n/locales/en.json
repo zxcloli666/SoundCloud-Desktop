@@ -435,6 +435,12 @@
     "idleSub": "Up next — a track we think you'll love",
     "coldTitle": "Your wave is still warming up",
     "coldDesc": "Like a few tracks and we'll tune this radio to your taste",
+    "buildingTitle": "Your wave is still being built",
+    "buildingDesc": "We are still processing your liked tracks. This can take a while, check back later.",
+    "allLikedTitle": "You already liked everything here",
+    "allLikedDesc": "Turn off hiding liked tracks to see the whole wave.",
+    "errorTitle": "Could not load your wave",
+    "errorDesc": "The server did not answer. Try again in a moment.",
     "vibeCta": {
       "title": "Search by vibe",
       "subtitle": "Describe a feeling — we'll find the sound",
@@ -463,7 +469,9 @@
         "same_vibe": "Same vibe",
         "same_vibeDesc": "Sound in your emotional spectrum.",
         "deep_cuts": "Deeper",
-        "deep_cutsDesc": "Off the beaten path — but in your key."
+        "deep_cutsDesc": "Off the beaten path — but in your key.",
+        "discover": "Discover",
+        "discoverDesc": "Fresh and popular tracks to start from."
       }
     },
     "similar": {

@@ -14,7 +14,8 @@ export type ClusterId =
   | 'deep_cuts'
   | 'same_artist'
   | 'featured_with'
-  | 'fans_also';
+  | 'fans_also'
+  | 'discover';
 
 export interface ClusterNeighborDto {
   artist_id: string;
