@@ -244,6 +244,7 @@
     "download": "Download",
     "downloaded": "Saved",
     "loadError": "Failed to load track",
+    "fileDamaged": "the audio file breaks off early",
     "dislike": "Don't recommend",
     "removeDislike": "Remove dislike",
     "play": "Play",

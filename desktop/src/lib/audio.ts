@@ -30,9 +30,9 @@ import {getArtistDisplay, getDisplayTitle} from './track-display';
 const SKIP_THRESHOLD_SEC = 30;
 /** Минимум, чтобы засчитать «прослушано полностью» для коротких треков (50% длительности). */
 const FULL_PLAY_RATIO = 0.5;
-/** Битый кеш: сыграло меньше этого на треке от EARLY_END_MIN_EXPECTED_SEC — лечим перекачкой. */
-const EARLY_END_PLAYED_SEC = 10;
 const EARLY_END_MIN_EXPECTED_SEC = 30;
+const EARLY_END_TOLERANCE_SEC = 4;
+const EARLY_END_TOLERANCE_RATIO = 0.04;
 /** Один лечебный перекач на урн за сессию — защита от лупа на 30s-превью и мёртвых источниках. */
 const healedUrns = new Set<string>();
 
@@ -466,6 +466,15 @@ async function hydrateTrackMetadata(track: Track, gen: number) {
   commitTrackMetadata(nextTrack);
 }
 
+function endedEarly(track: Track): boolean {
+  if (track.access === 'preview') return false;
+  if (Math.abs(cachedTime - API_PREVIEW_DURATION_MS / 1000) < 2) return false;
+  const expected = Math.max(cachedDuration, track.duration / 1000);
+  if (expected < EARLY_END_MIN_EXPECTED_SEC) return false;
+  const tolerance = Math.max(EARLY_END_TOLERANCE_SEC, expected * EARLY_END_TOLERANCE_RATIO);
+  return cachedTime < expected - tolerance;
+}
+
 /** Трек «закончился» через пару секунд при заявленных минутах — в кеше битый
  *  файл (заголовок целый, данные обрезаны: легаси без .meta.json или яд из
  *  storage до серверного duration-гейта). Сносим файл и перекачиваем вместо
@@ -475,20 +484,29 @@ function maybeHealEarlyEnd(): boolean {
   const state = usePlayerStore.getState();
   const track = state.currentTrack;
   if (!track || track.urn !== currentUrn || state.abLoop) return false;
-  if (track.duration / 1000 < EARLY_END_MIN_EXPECTED_SEC) return false;
-  if (cachedTime >= EARLY_END_PLAYED_SEC) return false;
-  if (healedUrns.has(track.urn)) return false;
+  if (!endedEarly(track)) return false;
+  const endedAt = cachedTime;
+  if (healedUrns.has(track.urn)) {
+    console.warn(`[Audio] ended early again at ${endedAt.toFixed(1)}s, skipping:`, track.urn);
+    toast.error(i18n.t('track.loadError'), {
+      description: `${track.title}: ${i18n.t('track.fileDamaged')}`,
+    });
+    return false;
+  }
   healedUrns.add(track.urn);
   console.warn(
-    `[Audio] ended after ${cachedTime.toFixed(1)}s of ${(track.duration / 1000).toFixed(0)}s — purging cache and refetching:`,
+    `[Audio] ended after ${endedAt.toFixed(1)}s of ${(track.duration / 1000).toFixed(0)}s — purging cache and refetching:`,
     track.urn,
   );
   void removeCachedTrack(track.urn)
     .catch(() => {})
     .then(() => {
-      if (usePlayerStore.getState().currentTrack?.urn === track.urn) {
-        return loadTrack(track);
-      }
+      if (usePlayerStore.getState().currentTrack?.urn !== track.urn) return;
+      const loadPromise = loadTrack(track);
+      const gen = loadGen;
+      return loadPromise.then(() => {
+        if (gen === loadGen && endedAt > 1) seek(endedAt - 1);
+      });
     });
   return true;
 }
@@ -726,7 +744,7 @@ listen<number>('media:seek-relative', (e) => {
 
 let preloadTimer: ReturnType<typeof setTimeout> | null = null;
 
-export function preloadTrack(urn: string) {
+export function preloadTrack(urn: string, durationMs?: number) {
   if (preloadTimer) clearTimeout(preloadTimer);
   preloadTimer = setTimeout(() => {
     const sessionId = getSessionId();
@@ -740,6 +758,7 @@ export function preloadTrack(urn: string) {
           storageUrls: buildStorageUrls(urn),
           sessionId,
           hq,
+          durationMs,
         },
       ],
     }).catch(console.error);

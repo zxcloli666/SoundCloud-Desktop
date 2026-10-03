@@ -41,7 +41,7 @@ function canPreview(urn: string): boolean {
 }
 
 /** Hover a tile: after a debounce, ensure it's cached and start a preview. */
-export function startHoverPreview(urn: string): void {
+export function startHoverPreview(urn: string, durationMs?: number): void {
     if (activeUrn === urn || pendingUrn === urn) return;
     if (hoverTimer) clearTimeout(hoverTimer);
     pendingUrn = urn;
@@ -57,7 +57,7 @@ export function startHoverPreview(urn: string): void {
             // Reuse the cache at the user's normal quality — never force a low-quality
             // download that could become the canonical cached copy (coalesces with the
             // hq preloadTrack fired on the same hover).
-            const info = await ensureTrackCached(urn);
+            const info = await ensureTrackCached(urn, undefined, durationMs);
             // Superseded by a newer hover, or no longer allowed.
             if (gen !== startGen || pendingUrn !== urn || !info?.path || !canPreview(urn)) return;
             const volume = (usePlayerStore.getState().volume / 100) * PREVIEW_VOLUME_FACTOR;

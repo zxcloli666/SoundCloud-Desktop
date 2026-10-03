@@ -36,7 +36,7 @@ function AlbumTrackRowImpl({ track, position, queue, aura }: AlbumTrackRowProps)
         boxShadow: isThis ? `inset 0 0 0 1px ${auraRgba(aura, 0.35)}` : undefined,
       }}
       onMouseEnter={(e) => {
-        preloadTrack(track.urn);
+        preloadTrack(track.urn, track.duration);
         if (!isThis) e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
       }}
       onMouseLeave={(e) => {

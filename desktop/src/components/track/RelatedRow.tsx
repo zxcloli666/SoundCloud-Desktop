@@ -17,7 +17,7 @@ export const RelatedRow = React.memo(
         className={`group flex items-center gap-3 p-2.5 rounded-2xl transition-all duration-300 ease-[var(--ease-apple)] ${
           isThis ? 'bg-accent/[0.05] ring-1 ring-accent/20' : 'hover:bg-white/[0.04]'
         }`}
-        onMouseEnter={() => preloadTrack(track.urn)}
+        onMouseEnter={() => preloadTrack(track.urn, track.duration)}
       >
         <button
           type="button"
