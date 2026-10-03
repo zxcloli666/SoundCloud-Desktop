@@ -33,6 +33,7 @@ const PRESET_ORDER: &[&str] = &["mp3_1_0", "aac_160k", "opus_0_0", "abr_sq"];
 const FAIL_THRESHOLD: u8 = 3;
 const COOLDOWN_SECS: u64 = 300;
 const CLIENT_ID_MIN_REFRESH: Duration = Duration::from_secs(30);
+const RESOLVE_BUDGET: Duration = Duration::from_secs(15);
 
 fn now_secs() -> u64 {
     SystemTime::now()
@@ -68,6 +69,43 @@ pub struct ResolvedTrack {
 #[derive(Debug, serde::Deserialize)]
 struct TranscodingResolveResponse {
     url: String,
+}
+
+struct ResolveBudget {
+    left: Duration,
+}
+
+impl ResolveBudget {
+    fn new() -> Self {
+        Self {
+            left: RESOLVE_BUDGET,
+        }
+    }
+
+    fn is_spent(&self) -> bool {
+        self.left.is_zero()
+    }
+
+    async fn spend<T>(
+        &mut self,
+        step: impl Future<Output = Result<T, String>>,
+    ) -> Result<T, String> {
+        let spent = || format!("resolve took over {}s", RESOLVE_BUDGET.as_secs());
+        if self.is_spent() {
+            return Err(spent());
+        }
+        let started = Instant::now();
+        match tokio::time::timeout(self.left, step).await {
+            Ok(result) => {
+                self.left = self.left.saturating_sub(started.elapsed());
+                result
+            }
+            Err(_) => {
+                self.left = Duration::ZERO;
+                Err(spent())
+            }
+        }
+    }
 }
 
 /// Successful download from SC anon API.
@@ -155,8 +193,9 @@ impl AnonClient {
 
     async fn do_get_stream(&self, track_urn: &str) -> Result<Option<AnonStreamResult>, String> {
         let track_id = track_urn.rsplit(':').next().unwrap_or(track_urn);
+        let mut budget = ResolveBudget::new();
 
-        let track = match self.get_track_by_id(track_id).await {
+        let track = match budget.spend(self.get_track_by_id(track_id)).await {
             Ok(t) => t,
             Err(e) => {
                 self.log("WARN", format!("get track failed: {e}"));
@@ -176,8 +215,8 @@ impl AnonClient {
                     "INFO",
                     format!("no transcodings for {track_id}, refreshing client_id"),
                 );
-                self.invalidate_and_refresh().await?;
-                let retry_track = match self.get_track_by_id(track_id).await {
+                budget.spend(self.invalidate_and_refresh()).await?;
+                let retry_track = match budget.spend(self.get_track_by_id(track_id)).await {
                     Ok(t) => t,
                     Err(e) => {
                         self.log("WARN", format!("retry get track failed: {e}"));
@@ -201,7 +240,7 @@ impl AnonClient {
         };
 
         match self
-            .stream_from_transcodings(transcodings, track_auth.as_deref())
+            .stream_from_transcodings(transcodings, track_auth.as_deref(), &mut budget)
             .await
         {
             Ok(Some(r)) => Ok(Some(r)),
@@ -211,8 +250,8 @@ impl AnonClient {
                     "WARN",
                     format!("stream failed for {track_id}, refreshing client_id: {e}"),
                 );
-                self.invalidate_and_refresh().await?;
-                let retry_track = match self.get_track_by_id(track_id).await {
+                budget.spend(self.invalidate_and_refresh()).await?;
+                let retry_track = match budget.spend(self.get_track_by_id(track_id)).await {
                     Ok(t) => t,
                     Err(e2) => {
                         self.log("WARN", format!("retry get track failed: {e2}"));
@@ -227,8 +266,12 @@ impl AnonClient {
                 if retry_transcodings.is_empty() {
                     return Ok(None);
                 }
-                self.stream_from_transcodings(&retry_transcodings, retry_auth.as_deref())
-                    .await
+                self.stream_from_transcodings(
+                    &retry_transcodings,
+                    retry_auth.as_deref(),
+                    &mut budget,
+                )
+                .await
             }
         }
     }
@@ -237,6 +280,7 @@ impl AnonClient {
         &self,
         transcodings: &[Transcoding],
         track_auth: Option<&str>,
+        budget: &mut ResolveBudget,
     ) -> Result<Option<AnonStreamResult>, String> {
         let ranked = ranked_transcodings(transcodings);
         if ranked.is_empty() {
@@ -251,7 +295,8 @@ impl AnonClient {
             let is_progressive =
                 t.format.as_ref().and_then(|f| f.protocol.as_deref()) == Some("progressive");
 
-            let media_url = match self.resolve_transcoding_url(&t.url, None, track_auth).await {
+            let resolve = self.resolve_transcoding_url(&t.url, None, track_auth);
+            let media_url = match budget.spend(resolve).await {
                 Ok(u) => u,
                 Err(e) => {
                     if !looks_like_resource_gone(&e) {
@@ -261,6 +306,9 @@ impl AnonClient {
                         "resolve {} failed: {e}",
                         t.preset.as_deref().unwrap_or("?")
                     ));
+                    if budget.is_spent() {
+                        break;
+                    }
                     continue;
                 }
             };
@@ -491,7 +539,21 @@ fn build_transcoding_target(
 
 #[cfg(test)]
 mod tests {
-    use super::build_transcoding_target;
+    use super::{ResolveBudget, build_transcoding_target};
+    use std::time::Duration;
+
+    #[tokio::test]
+    async fn a_stalled_resolve_spends_the_whole_budget_and_stops_the_next_one() {
+        let mut budget = ResolveBudget {
+            left: Duration::from_millis(50),
+        };
+        let stalled = budget
+            .spend(std::future::pending::<Result<(), String>>())
+            .await;
+        assert!(stalled.is_err());
+        assert!(budget.is_spent());
+        assert!(budget.spend(async { Ok(()) }).await.is_err());
+    }
 
     const PROGRESSIVE_URL: &str =
         "https://api-v2.soundcloud.com/media/soundcloud:tracks:2028682452/1dc4586b/stream/progressive";
