@@ -48,13 +48,36 @@ pub fn open_device_sink(
         return Err(format!("Device '{}' not found", id));
     }
 
-    let mut sink = DeviceSinkBuilder::from_default_device()
-        .map_err(|e| format!("No audio output: {}", e))?
-        .with_error_callback(error_cb)
-        .open_stream()
-        .map_err(|e| format!("No audio output: {}", e))?;
+    let opened = DeviceSinkBuilder::from_default_device()
+        .and_then(|builder| builder.with_error_callback(error_cb.clone()).open_stream());
+    #[cfg(target_os = "linux")]
+    let opened = opened.or_else(|error| open_sound_server_sink(error_cb).ok_or(error));
+    let mut sink = opened.map_err(|e| format!("No audio output: {}", e))?;
     sink.log_on_drop(false);
     Ok(sink)
+}
+
+#[cfg(target_os = "linux")]
+fn open_sound_server_sink<E>(error_cb: E) -> Option<MixerDeviceSink>
+where
+    E: FnMut(cpal::StreamError) + Send + Clone + 'static,
+{
+    use cpal::traits::{DeviceTrait, HostTrait};
+
+    cpal::default_host()
+        .output_devices()
+        .ok()?
+        .filter(|dev| {
+            dev.description()
+                .is_ok_and(|desc| matches!(desc.driver(), Some("pipewire" | "pulse")))
+        })
+        .find_map(|dev| {
+            DeviceSinkBuilder::from_device(dev)
+                .ok()?
+                .with_error_callback(error_cb.clone())
+                .open_stream()
+                .ok()
+        })
 }
 
 pub fn list_devices() -> Vec<AudioSink> {

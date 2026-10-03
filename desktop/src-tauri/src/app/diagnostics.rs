@@ -37,6 +37,15 @@ pub fn log_native(app: &AppHandle, level: &str, message: impl AsRef<str>) {
     let _ = append_log_line(app, &format_log_line(level, message.as_ref()));
 }
 
+pub fn install_panic_hook(app: &AppHandle) {
+    let app = app.clone();
+    let default_hook = std::panic::take_hook();
+    std::panic::set_hook(Box::new(move |info| {
+        log_native(&app, "PANIC", info.to_string());
+        default_hook(info);
+    }));
+}
+
 pub fn mark_session_started(app: &AppHandle) {
     let _ = append_log_line(
         app,

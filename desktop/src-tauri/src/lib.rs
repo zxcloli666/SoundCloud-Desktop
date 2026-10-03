@@ -46,6 +46,7 @@ pub fn run() {
             });
         })
         .setup(move |app| {
+            app::diagnostics::install_panic_hook(app.handle());
             let cache_dir = app
                 .path()
                 .app_cache_dir()
@@ -132,7 +133,7 @@ pub fn run() {
                 recovery_state.recover_incoming().await;
             });
 
-            let audio_state = audio::init();
+            let audio_state = audio::init(app.handle());
             let analyser_buffer = audio_state.analyser_buffer.clone();
             app.manage(audio_state);
             audio::start_tick_emitter(app.handle());
