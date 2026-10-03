@@ -15,7 +15,7 @@ use tokio::io::{AsyncWriteExt, BufWriter};
 use tokio::sync::{Mutex, Notify, OwnedSemaphorePermit, Semaphore};
 
 use crate::app::diagnostics::log_native;
-use crate::network::edge::Hop;
+use crate::network::edge::{Hop, Tier};
 use crate::track_cache::direct_download::try_download;
 use crate::track_cache::sc_anon::AnonClient;
 use crate::track_cache::transcode;
@@ -25,7 +25,7 @@ const AUDIO_SNIFF_LEN: usize = 16;
 const PROGRESS_EMIT_STEP: f64 = 0.01;
 const STREAM_WRITE_BUFFER_SIZE: usize = 256 * 1024;
 const STORAGE_CONNECT_TIMEOUT_MS: u64 = 800;
-const STORAGE_TIMEOUT_MS: u64 = 1200;
+const STORAGE_HEADERS_TIMEOUT_MS: u64 = 1200;
 const STORAGE_COOLDOWN_SECS: u64 = 60;
 const DOWNLOAD_CONNECT_TIMEOUT_MS: u64 = 3_000;
 const DOWNLOAD_READ_TIMEOUT_SECS: u64 = 130;
@@ -569,6 +569,7 @@ pub struct TrackCacheState {
     likes_cancel: Arc<std::sync::atomic::AtomicBool>,
     /// Per-host storage circuit breaker: host -> epoch secs of last failure.
     storage_cooldowns: Arc<StdMutex<HashMap<String, u64>>>,
+    presign_failed_at: Arc<std::sync::atomic::AtomicU64>,
     anon: Arc<AnonClient>,
 }
 
@@ -594,7 +595,6 @@ pub fn init(audio_dir: PathBuf, liked_dir: PathBuf, incoming_dir: PathBuf) -> Tr
         .tcp_nodelay(true)
         .pool_max_idle_per_host(4)
         .connect_timeout(Duration::from_millis(STORAGE_CONNECT_TIMEOUT_MS))
-        .timeout(Duration::from_millis(STORAGE_TIMEOUT_MS))
         .build()
         .expect("failed to build storage client");
 
@@ -636,6 +636,7 @@ pub fn init(audio_dir: PathBuf, liked_dir: PathBuf, incoming_dir: PathBuf) -> Tr
         likes_running: Arc::new(std::sync::atomic::AtomicBool::new(false)),
         likes_cancel: Arc::new(std::sync::atomic::AtomicBool::new(false)),
         storage_cooldowns: Arc::new(StdMutex::new(HashMap::new())),
+        presign_failed_at: Arc::new(std::sync::atomic::AtomicU64::new(0)),
         anon,
     }
 }
@@ -1207,6 +1208,29 @@ impl TrackCacheState {
         }
     }
 
+    fn presign_available(&self) -> bool {
+        let failed_at = self
+            .presign_failed_at
+            .load(std::sync::atomic::Ordering::Relaxed);
+        now_secs().saturating_sub(failed_at) >= STORAGE_COOLDOWN_SECS
+    }
+
+    fn mark_presign_failed(&self) {
+        self.presign_failed_at
+            .store(now_secs(), std::sync::atomic::Ordering::Relaxed);
+    }
+
+    async fn storage_get(&self, hop: &Hop) -> Result<wreq::Response, String> {
+        if hop.tier == Tier::Relay {
+            return self.client.get(&hop.url).send().await.map_err(|err| err.to_string());
+        }
+        let headers = Duration::from_millis(STORAGE_HEADERS_TIMEOUT_MS);
+        match tokio::time::timeout(headers, self.storage_client.get(&hop.url).send()).await {
+            Ok(sent) => sent.map_err(|err| err.to_string()),
+            Err(_) => Err(format!("no headers in {}ms", headers.as_millis())),
+        }
+    }
+
     pub async fn ensure_cached(&self, req: CacheRequest<'_>) -> Result<TrackCacheEntry, String> {
         let CacheRequest {
             urn,
@@ -1644,7 +1668,7 @@ impl TrackCacheState {
             let Some(host) = host_of(storage_url) else {
                 continue;
             };
-            if !crate::network::edge::is_direct(storage_url) {
+            if !crate::network::edge::is_direct(storage_url) || !self.presign_available() {
                 continue;
             }
             let Some(redirect_url) = make_redirect_url(storage_url) else {
@@ -1677,18 +1701,21 @@ impl TrackCacheState {
                             eprintln!("[TrackCache] s3 write failed for {urn}: {e}");
                         }
                         Err(DownloadError::Retryable(e)) => {
+                            self.mark_presign_failed();
                             eprintln!("[TrackCache] s3 download failed for {urn}: {e}");
                         }
                     }
                 }
                 Ok(resp) if resp.status().as_u16() == 404 || resp.status().as_u16() == 410 => {}
                 Ok(resp) => {
+                    self.mark_presign_failed();
                     eprintln!(
                         "[TrackCache] s3 redirect HTTP {} for {urn} ({host})",
                         resp.status()
                     );
                 }
                 Err(err) => {
+                    self.mark_presign_failed();
                     eprintln!("[TrackCache] s3 redirect failed for {urn} ({host}): {err}");
                 }
             }
@@ -1719,15 +1746,7 @@ impl TrackCacheState {
 
             let mut transport_ok = false;
             for hop in crate::network::edge::plan(storage_url) {
-                // Прямой хост — тугой storage_client (1.2 c: быстрый отказ, если
-                // забанен). relay тянет мегабайты через полсвета → нужен
-                // потоковый клиент (read-timeout, без общего кап-таймаута).
-                let client = if hop.tier_label() == "direct" {
-                    &self.storage_client
-                } else {
-                    &self.client
-                };
-                let resp = match client.get(&hop.url).send().await {
+                let resp = match self.storage_get(&hop).await {
                     Ok(r) => r,
                     Err(err) => {
                         hop.note(false);
