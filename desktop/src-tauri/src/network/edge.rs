@@ -331,36 +331,29 @@ pub fn note(origin: &str, tier: Tier, ok: bool) {
 
 pub fn hop_ok(hop: &Hop, resp: &wreq::Response) -> bool {
     let status = resp.status().as_u16();
-    match hop.tier {
-        Tier::Direct => {
-            let bad = direct_infrastructure_error(resp);
-            if bad {
-                hop.note(false);
-            }
-            !bad
-        }
-        Tier::Relay => {
-            let bad = matches!(status, 421 | 502 | 503 | 504);
-            if bad {
-                hop.note(false);
-            }
-            !bad
-        }
-    }
-}
-
-fn direct_infrastructure_error(resp: &wreq::Response) -> bool {
-    let status = resp.status().as_u16();
     let content_type = resp
         .headers()
         .get(wreq::header::CONTENT_TYPE)
         .and_then(|v| v.to_str().ok())
         .unwrap_or("");
-    direct_infrastructure_headers(status, content_type)
+    let bad = match hop.tier {
+        Tier::Direct => direct_infrastructure_headers(status, content_type),
+        Tier::Relay => relay_failure_headers(status, content_type),
+    };
+    if bad {
+        hop.note(false);
+    }
+    !bad
 }
 
 fn direct_infrastructure_headers(status: u16, content_type: &str) -> bool {
     matches!(status, 502..=504) && content_type.to_ascii_lowercase().contains("text/html")
+}
+
+fn relay_failure_headers(status: u16, content_type: &str) -> bool {
+    status == 421
+        || (matches!(status, 502..=504)
+            && !content_type.to_ascii_lowercase().contains("application/json"))
 }
 
 pub fn expand_upstreams(upstreams: &[String]) -> Vec<Hop> {
@@ -576,6 +569,15 @@ mod tests {
         assert!(direct_infrastructure_headers(504, "TEXT/HTML"));
         assert!(!direct_infrastructure_headers(500, "text/html"));
         assert!(!direct_infrastructure_headers(503, "application/json"));
+    }
+
+    #[test]
+    fn json_5xx_through_a_relay_is_an_origin_answer() {
+        assert!(relay_failure_headers(421, "application/json"));
+        assert!(relay_failure_headers(503, "text/html"));
+        assert!(relay_failure_headers(502, ""));
+        assert!(!relay_failure_headers(503, "application/json; charset=utf-8"));
+        assert!(!relay_failure_headers(500, "text/html"));
     }
 
     #[test]
