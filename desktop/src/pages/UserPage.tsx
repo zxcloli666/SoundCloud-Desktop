@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
+import { LoadErrorState } from '../components/ui/LoadErrorState';
 import { AuraField } from '../components/user/AuraField';
 import { IdentityHub } from '../components/user/IdentityHub';
 import { USER_PAGE_KEYFRAMES } from '../components/user/keyframes';
@@ -63,7 +64,14 @@ export function UserPage() {
     setDebouncedSearch('');
   }, [activeTab]);
 
-  const { data: user, isLoading: userLoading } = useUser(urn);
+  const {
+    data: user,
+    isLoading: userLoading,
+    isError: userFailed,
+    isFetching: userFetching,
+    error: userError,
+    refetch: refetchUser,
+  } = useUser(urn);
   const { data: webProfiles } = useUserWebProfiles(urn);
 
   const isOwnProfile = !!user && currentUser?.urn === user.urn;
@@ -89,6 +97,18 @@ export function UserPage() {
       { id: 'following' as const, label: t('user.following'), count: user.followings_count },
     ] as const;
   }, [user, t]);
+
+  if (!user && userFailed) {
+    return (
+      <div className="relative w-full min-h-screen flex items-center justify-center">
+        <LoadErrorState
+          error={userError}
+          retrying={userFetching}
+          onRetry={() => void refetchUser()}
+        />
+      </div>
+    );
+  }
 
   if (userLoading || !user) {
     return (

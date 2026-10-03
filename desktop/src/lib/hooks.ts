@@ -518,6 +518,7 @@ export function useUser(userUrn: string | undefined) {
     enabled: !!userUrn,
     staleTime: COLD_CACHE_MS,
     gcTime: INFINITE_GC_MS,
+    ...retryWhileRefreshing,
   });
 }
 
@@ -634,6 +635,7 @@ export function useUserWebProfiles(userUrn: string | undefined) {
     enabled: !!userUrn,
     staleTime: MEDIUM_CACHE_MS,
     gcTime: INFINITE_GC_MS,
+    ...retryWhileRefreshing,
   });
 }
 

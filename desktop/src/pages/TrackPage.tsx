@@ -12,7 +12,13 @@ import {RoomVoices} from '../components/track/RoomVoices';
 import {useTrackAura} from '../components/track/useTrackAura';
 import {api} from '../lib/api';
 import {seek} from '../lib/audio';
-import {useInfiniteScroll, useRelatedTracks, useTrackComments, useTrackFavoriters,} from '../lib/hooks';
+import {
+  retryWhileRefreshing,
+  useInfiniteScroll,
+  useRelatedTracks,
+  useTrackComments,
+  useTrackFavoriters,
+} from '../lib/hooks';
 import {ChevronLeft, Loader2} from '../lib/icons';
 import {setLikedUrn} from '../lib/likes';
 import {usePerfMode} from '../lib/perf';
@@ -53,6 +59,7 @@ export const TrackPage = React.memo(function TrackPage() {
     queryFn: () => api<Track>(`/tracks/${encodeURIComponent(urn!)}`),
     enabled: !!urn,
     staleTime: 30_000,
+    ...retryWhileRefreshing,
   });
 
   const {
