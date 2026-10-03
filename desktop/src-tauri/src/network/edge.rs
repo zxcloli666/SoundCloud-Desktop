@@ -262,6 +262,10 @@ fn relay_hosts_over(origin: &str, pool: &[String]) -> Vec<String> {
         .collect()
 }
 
+pub fn routed_origins() -> impl Iterator<Item = &'static str> {
+    RELAYS.iter().map(|(origin, _)| *origin)
+}
+
 pub fn service_label(origin: &str) -> Option<&'static str> {
     relay_label(origin)
 }

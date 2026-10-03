@@ -28,6 +28,10 @@ pub fn follow(builder: wreq::ClientBuilder) -> wreq::ClientBuilder {
     builder.proxy(wreq::Proxy::custom(|url| current_proxy(url.as_str())))
 }
 
+pub fn proxied(url: &str) -> bool {
+    current_proxy(url).is_some()
+}
+
 fn env_proxy_set() -> bool {
     ENV_PROXIES.iter().any(|name| std::env::var_os(name).is_some())
 }

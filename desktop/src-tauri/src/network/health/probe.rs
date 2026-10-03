@@ -3,13 +3,16 @@ use std::time::{Duration, Instant};
 use futures_util::stream::{self, StreamExt};
 use wreq::Client;
 
-use super::link;
+use super::link::{self, Shape};
 use super::model::{PROBE_PATH, Sample, Topology};
 use crate::network::edge::{self, Tier};
+use crate::network::system_proxy;
 
 const PROBE_TIMEOUT: Duration = Duration::from_secs(5);
 const MAX_PARALLEL: usize = 4;
 const ORIGIN_ZONE: &str = "scnative.space";
+const DIRECT_EP: &str = "@direct";
+const CUT_SHAPES: [Shape; 4] = [Shape::Cut, Shape::Blackhole, Shape::Reset, Shape::Throttled];
 
 pub struct Pool {
     pub relays: Vec<String>,
@@ -99,10 +102,34 @@ async fn measure_bandwidth(client: &Client, url: &str) -> link::Measured {
     }
 }
 
+pub fn note_direct_cut(paths: &[Sample]) {
+    if !direct_cut_while_others_pass(paths) {
+        return;
+    }
+    for origin in edge::routed_origins() {
+        if !system_proxy::proxied(&format!("https://{origin}/")) {
+            edge::note(origin, Tier::Direct, false);
+        }
+    }
+}
+
+fn direct_cut_while_others_pass(paths: &[Sample]) -> bool {
+    let others_pass = paths
+        .iter()
+        .any(|sample| sample.ok && sample.ep != DIRECT_EP);
+    let direct_cut = paths.iter().any(|sample| {
+        sample.ep == DIRECT_EP
+            && CUT_SHAPES
+                .iter()
+                .any(|shape| sample.fail.as_deref() == Some(shape.as_str()))
+    });
+    others_pass && direct_cut
+}
+
 pub fn direct_bytes(paths: &[Sample]) -> u64 {
     paths
         .iter()
-        .find(|sample| sample.ok && sample.ep == "@direct")
+        .find(|sample| sample.ok && sample.ep == DIRECT_EP)
         .and_then(|sample| sample.link)
         .map_or(0, |link| link.bytes.max(0) as u64)
 }
@@ -196,7 +223,7 @@ async fn hit(client: &Client, url: &str) -> Outcome {
 
 #[cfg(test)]
 mod tests {
-    use super::{Sample, direct_bytes, usable_first};
+    use super::{Sample, direct_bytes, direct_cut_while_others_pass, usable_first};
     use crate::network::health::model::Link;
 
     fn sample(node: &str, ok: bool) -> Sample {
@@ -223,6 +250,37 @@ mod tests {
     #[test]
     fn an_unprobed_pool_keeps_its_order() {
         assert_eq!(usable_first(&pool(&["r1", "r2"]), &[]), ["r1", "r2"]);
+    }
+
+    fn failed(node: &str, fail: &str) -> Sample {
+        Sample {
+            fail: Some(fail.to_string()),
+            ..sample(node, false)
+        }
+    }
+
+    #[test]
+    fn a_cut_direct_path_counts_against_direct_only_while_a_relay_passes() {
+        assert!(direct_cut_while_others_pass(&[
+            failed("direct", "cut"),
+            sample("r1", true)
+        ]));
+        assert!(direct_cut_while_others_pass(&[
+            failed("direct", "reset"),
+            sample("r2", true)
+        ]));
+        assert!(!direct_cut_while_others_pass(&[
+            failed("direct", "cut"),
+            failed("r1", "reset")
+        ]));
+        assert!(!direct_cut_while_others_pass(&[
+            failed("direct", "dead"),
+            sample("r1", true)
+        ]));
+        assert!(!direct_cut_while_others_pass(&[
+            sample("direct", true),
+            sample("r1", true)
+        ]));
     }
 
     #[test]
