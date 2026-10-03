@@ -15,11 +15,14 @@ export interface YmImportProgress {
   current: number;
   found: number;
   not_found: number;
+  uncertain: number;
+  failed: number;
   current_track: string;
 }
 
 interface YmImportMatch {
   urn: string;
+  confidence: number | null;
 }
 
 interface ScPlaylist {
