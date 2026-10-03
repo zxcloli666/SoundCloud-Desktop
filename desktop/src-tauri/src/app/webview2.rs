@@ -11,11 +11,11 @@ const CAPTION: &str = "SoundCloud Desktop";
 
 const MESSAGE: &str = r"Microsoft Edge WebView2 Runtime не найден или повреждён, без него SoundCloud Desktop не запустится.
 
-Скачайте Evergreen Standalone Installer со страницы Microsoft и запустите его от имени администратора, Edge для этого не нужен. Если установщик пишет, что Runtime уже установлен, удалите ключи реестра Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5} в HKLM и HKCU и установите заново.
+Скачайте Evergreen Standalone Installer со страницы Microsoft и запустите его от имени администратора, Edge для этого не нужен. Если установщик пишет, что Runtime уже установлен, удалите ключи реестра Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5} в HKLM\SOFTWARE\WOW6432Node, HKLM\SOFTWARE и HKCU\Software и установите заново.
 
 Microsoft Edge WebView2 Runtime is missing or broken, SoundCloud Desktop cannot start without it.
 
-Download the Evergreen Standalone Installer from the Microsoft page and run it as administrator, Edge itself is not needed. If the installer says the Runtime is already installed, delete the Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5} registry keys in HKLM and HKCU and install again.
+Download the Evergreen Standalone Installer from the Microsoft page and run it as administrator, Edge itself is not needed. If the installer says the Runtime is already installed, delete the Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5} registry keys in HKLM\SOFTWARE\WOW6432Node, HKLM\SOFTWARE and HKCU\Software and install again.
 
 Открыть страницу загрузки? / Open the download page?";
 

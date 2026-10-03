@@ -118,7 +118,7 @@ chmod +x soundcloud-desktop-*.AppImage
 ./soundcloud-desktop-*.AppImage
 ```
 
-Белое или пустое окно при запуске: запусти с флагом `--safe-render` (во Flatpak это пункт "Safe render mode" в меню ярлыка). Лог: `~/.local/share/com.soundcloud.desktop/logs/desktop.log`, во Flatpak `~/.var/app/io.github.zxcloli666.SoundcloudDesktop/data/com.soundcloud.desktop/logs/desktop.log`.
+Белое или пустое окно при запуске: запусти с флагом `--safe-render` (во Flatpak это пункт "Безопасный режим отрисовки" / "Safe render mode" в меню ярлыка). Лог: `~/.local/share/com.soundcloud.desktop/logs/desktop.log`, во Flatpak `~/.var/app/io.github.zxcloli666.SoundcloudDesktop/data/com.soundcloud.desktop/logs/desktop.log`.
 
 ### macOS
 
