@@ -523,6 +523,10 @@ pub fn is_direct(url: &str) -> bool {
     current_tier(url) == Tier::Direct
 }
 
+pub fn direct_first(url: &str) -> bool {
+    plan(url).first().is_none_or(|hop| hop.tier == Tier::Direct)
+}
+
 #[derive(Serialize)]
 pub struct EdgeConfig {
     relays: Vec<(String, Vec<String>)>,
@@ -707,6 +711,13 @@ mod tests {
             now + REVALIDATE + Duration::from_secs(1),
         );
         assert_eq!(tier(&inner), Some(Tier::Direct));
+    }
+
+    #[test]
+    fn a_route_pinned_to_the_relay_is_not_tried_direct_before_revalidation() {
+        super::note("s3.scnative.space", Tier::Relay, true);
+        assert!(!super::direct_first("https://s3.scnative.space/a"));
+        assert!(super::direct_first("https://example.org/a"));
     }
 
     #[test]

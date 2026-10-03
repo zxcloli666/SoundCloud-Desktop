@@ -28,6 +28,8 @@ const STREAM_WRITE_BUFFER_SIZE: usize = 256 * 1024;
 const STORAGE_CONNECT_TIMEOUT_MS: u64 = 800;
 const STORAGE_HEADERS_TIMEOUT_MS: u64 = 1200;
 const STORAGE_COOLDOWN_SECS: u64 = 60;
+const PRESIGN_HEADERS_SECS: u64 = 5;
+const PRESIGN_ORIGIN: &str = "https://s3.scnative.space/";
 const DOWNLOAD_CONNECT_TIMEOUT_MS: u64 = 3_000;
 const DOWNLOAD_READ_TIMEOUT_SECS: u64 = 130;
 const BODY_STALL_SECS: u64 = 15;
@@ -484,7 +486,6 @@ pub struct TrackCacheState {
     likes_cancel: Arc<std::sync::atomic::AtomicBool>,
     /// Per-host storage circuit breaker: host -> epoch secs of last failure.
     storage_cooldowns: Arc<StdMutex<HashMap<String, u64>>>,
-    presign_failed_at: Arc<std::sync::atomic::AtomicU64>,
     anon: Arc<AnonClient>,
 }
 
@@ -551,7 +552,6 @@ pub fn init(audio_dir: PathBuf, liked_dir: PathBuf, incoming_dir: PathBuf) -> Tr
         likes_running: Arc::new(std::sync::atomic::AtomicBool::new(false)),
         likes_cancel: Arc::new(std::sync::atomic::AtomicBool::new(false)),
         storage_cooldowns: Arc::new(StdMutex::new(HashMap::new())),
-        presign_failed_at: Arc::new(std::sync::atomic::AtomicU64::new(0)),
         anon,
     }
 }
@@ -979,16 +979,20 @@ impl TrackCacheState {
         }
     }
 
-    fn presign_available(&self) -> bool {
-        let failed_at = self
-            .presign_failed_at
-            .load(std::sync::atomic::Ordering::Relaxed);
-        now_secs().saturating_sub(failed_at) >= STORAGE_COOLDOWN_SECS
-    }
-
-    fn mark_presign_failed(&self) {
-        self.presign_failed_at
-            .store(now_secs(), std::sync::atomic::Ordering::Relaxed);
+    async fn presigned_get(&self, redirect_url: &str) -> Result<wreq::Response, String> {
+        let headers = Duration::from_secs(PRESIGN_HEADERS_SECS);
+        match tokio::time::timeout(headers, self.client.get(redirect_url).send()).await {
+            Ok(Ok(response)) => Ok(response),
+            Ok(Err(err)) => {
+                let failed_at = err.url().map_or(PRESIGN_ORIGIN, |url| url.as_str());
+                crate::network::edge::note_url(failed_at, Tier::Direct, false);
+                Err(err.to_string())
+            }
+            Err(_) => {
+                crate::network::edge::note_url(PRESIGN_ORIGIN, Tier::Direct, false);
+                Err(format!("no headers in {}s", headers.as_secs()))
+            }
+        }
     }
 
     async fn storage_get(&self, hop: &Hop) -> Result<wreq::Response, String> {
@@ -1439,16 +1443,19 @@ impl TrackCacheState {
             let Some(host) = host_of(storage_url) else {
                 continue;
             };
-            if !crate::network::edge::is_direct(storage_url) || !self.presign_available() {
+            if !crate::network::edge::is_direct(storage_url)
+                || !crate::network::edge::direct_first(PRESIGN_ORIGIN)
+            {
                 continue;
             }
             let Some(redirect_url) = make_redirect_url(storage_url) else {
                 continue;
             };
 
-            match self.client.get(&redirect_url).send().await {
+            match self.presigned_get(&redirect_url).await {
                 Ok(resp) if resp.status().is_success() => {
                     let quality = PlaybackQuality::Hq;
+                    let landed = resp.url().to_string();
                     println!("[TrackCache] {urn} → storage (redirect via {host})");
                     match write_response_to_cache(
                         target_dir,
@@ -1461,9 +1468,9 @@ impl TrackCacheState {
                     .await
                     {
                         Ok(result) => {
-                            let kb = std::fs::metadata(&result.path)
-                                .map(|m| m.len() / 1024)
-                                .unwrap_or(0);
+                            let bytes = file_len(&result.path);
+                            crate::network::edge::note_url_delivered(&landed, Tier::Direct, bytes);
+                            let kb = bytes / 1024;
                             let ms = start.elapsed().as_millis();
                             println!("[TrackCache] downloaded {urn} via s3 — {kb} KB in {ms}ms");
                             return Ok(result.path);
@@ -1472,21 +1479,19 @@ impl TrackCacheState {
                             eprintln!("[TrackCache] s3 write failed for {urn}: {e}");
                         }
                         Err(DownloadError::Retryable(e)) => {
-                            self.mark_presign_failed();
+                            crate::network::edge::note_url(&landed, Tier::Direct, false);
                             eprintln!("[TrackCache] s3 download failed for {urn}: {e}");
                         }
                     }
                 }
                 Ok(resp) if resp.status().as_u16() == 404 || resp.status().as_u16() == 410 => {}
                 Ok(resp) => {
-                    self.mark_presign_failed();
                     eprintln!(
                         "[TrackCache] s3 redirect HTTP {} for {urn} ({host})",
                         resp.status()
                     );
                 }
                 Err(err) => {
-                    self.mark_presign_failed();
                     eprintln!("[TrackCache] s3 redirect failed for {urn} ({host}): {err}");
                 }
             }
