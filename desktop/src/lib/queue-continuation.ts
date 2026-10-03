@@ -124,14 +124,33 @@ export function createShuffledLikesContinuationSource(): QueueContinuationSource
  * страницу). Без shuffle — последовательная пагинация со стартом из живой
  * длины очереди.
  */
-export function armLikesContinuation(): void {
-  if (usePlayerStore.getState().shuffle) {
-    setQueueContinuationSource(createShuffledLikesContinuationSource());
-    return;
-  }
-  const loaded = usePlayerStore.getState().queue.length;
-  setQueueContinuationSource(createLikesContinuationSource(loaded));
+export async function armLikesContinuation(): Promise<void> {
+  const { shuffle, queue } = usePlayerStore.getState();
+  if (shuffle) await armShuffledLikes();
+  else setQueueContinuationSource(createLikesContinuationSource(queue.length));
 }
+
+async function armShuffledLikes(): Promise<void> {
+  const source = createShuffledLikesContinuationSource();
+  setQueueContinuationSource(source);
+  try {
+    const all = await fetchAllLikedTracks();
+    if (active !== source) return;
+    const queued = new Set(usePlayerStore.getState().queue.map((t) => t.urn));
+    const rest = all.filter((t) => !queued.has(t.urn));
+    if (rest.length > 0) usePlayerStore.getState().addToQueue(rest);
+    setQueueContinuationSource(null);
+  } catch (e) {
+    console.debug('[likes] full-collection fetch failed, staying on lazy continuation:', e);
+  }
+}
+
+usePlayerStore.subscribe((state, prev) => {
+  if (state.shuffle === prev.shuffle) return;
+  if (active?.kind !== 'likes' && active?.kind !== 'likes-shuffled') return;
+  if (state.shuffle) void armShuffledLikes();
+  else setQueueContinuationSource(createLikesContinuationSource());
+});
 
 /**
  * Поставить «плейлист до конца» под текущую очередь — зовётся в `onPlay` сразу
