@@ -97,9 +97,17 @@
     animation-play-state: paused !important;
 }
 
-[data-app-idle="1"] *,
-[data-app-idle="1"] *::before,
-[data-app-idle="1"] *::after {
+[data-app-idle="1"] [style*="infinite"],
+[data-app-idle="1"] .skeleton-shimmer,
+[data-app-idle="1"] .soundwave-bar,
+[data-app-idle="1"] .vp-chev,
+[data-app-idle="1"] .vp-mote,
+[data-app-idle="1"] .qr-aurora,
+[data-app-idle="1"] .qr-rim,
+[data-app-idle="1"] .lyric-line[data-state="active"] .note-gradient-text,
+[data-app-idle="1"] .npb-dock[data-playing="true"] .npb-ring,
+[data-app-idle="1"] .npb-dock[data-playing="true"] .npb-eq i,
+[data-app-idle="1"] .npb-dock[data-playing="true"] .npb-play::after {
     animation-play-state: paused !important;
 }
 
