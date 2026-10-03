@@ -144,14 +144,14 @@ export const LyricsPane = React.memo(({ track }: { track: Track }) => {
         : getLyricsByTrack(track.urn),
     staleTime: (query) => (query.state.data?.status === 'pending' ? 0 : Number.POSITIVE_INFINITY),
     refetchInterval: (query) =>
-      query.state.data?.status === 'pending'
+      query.state.data?.status === 'pending' && query.state.status !== 'error'
         ? pendingPollDelay(query.state.dataUpdatedAt - pollStartedAt)
         : false,
     retry: 1,
   });
 
   const pending = lyrics?.status === 'pending';
-  const polling = pending && pendingPollDelay(dataUpdatedAt - pollStartedAt) !== false;
+  const polling = pending && !isError && pendingPollDelay(dataUpdatedAt - pollStartedAt) !== false;
 
   const retry = () => {
     setPollStartedAt(Date.now());
