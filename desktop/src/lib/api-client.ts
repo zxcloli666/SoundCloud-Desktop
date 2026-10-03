@@ -88,17 +88,19 @@ function fetchWithTimeout(url: string, options: RequestInit, timeoutMs: number):
   return edgeFetch(url, options, timeoutMs);
 }
 
-function handleApiError(err: ApiError): void {
+function handleApiError(err: ApiError, method: string): void {
   if (err.status >= 500) {
     if (isIncidentActive()) return; // авария уже показана модалкой/баннером
     // Фиксированный id: sonner заменяет тост, шторм не стекается.
     toast.error(i18n.t('errors.serverError', { status: err.status }), { id: 'api-server-error' });
-  } else if (err.status >= 400 && err.status !== 401) {
+  } else if (err.status >= 400 && err.status !== 401 && method !== 'GET' && method !== 'HEAD') {
     try {
       const parsed = JSON.parse(err.body);
-      toast.error(parsed.message || parsed.error || `Error ${err.status}`);
+      toast.error(parsed.message || parsed.error || `Error ${err.status}`, {
+        id: 'api-client-error',
+      });
     } catch {
-      toast.error(`Error ${err.status}`);
+      toast.error(`Error ${err.status}`, { id: 'api-client-error' });
     }
   }
 }
@@ -370,7 +372,7 @@ export async function apiRequest<T = unknown>(
           throw verdict;
         }
 
-        if (!starDeny) handleApiError(err);
+        if (!starDeny) handleApiError(err, method);
         console.error(`HTTP ERROR: url: ${path}, `, err);
         throw err;
       }
