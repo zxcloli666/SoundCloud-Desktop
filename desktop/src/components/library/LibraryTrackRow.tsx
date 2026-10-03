@@ -1,6 +1,6 @@
 import React from 'react';
 import {useTranslation} from 'react-i18next';
-import {preloadTrack} from '../../lib/audio';
+import {cancelPreload, preloadTrack} from '../../lib/audio';
 import {art, dur, fc} from '../../lib/formatters';
 import {headphones11, heart11, ListMusic, ListPlus, Music, pauseWhite14, playWhite14,} from '../../lib/icons';
 import {useTrackPlay} from '../../lib/useTrackPlay';
@@ -46,6 +46,7 @@ export const LibraryTrackRow = React.memo(
           className="w-8 h-8 flex items-center justify-center shrink-0 cursor-pointer"
           onClick={togglePlay}
           onMouseEnter={() => preloadTrack(track.urn)}
+          onMouseLeave={cancelPreload}
         >
           {isThisPlaying ? (
             <div className="w-8 h-8 rounded-full bg-accent text-accent-contrast flex items-center justify-center shadow-[0_0_15px_var(--color-accent-glow)] scale-100 animate-fade-in-up">

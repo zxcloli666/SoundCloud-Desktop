@@ -1,7 +1,7 @@
 import React from 'react';
 import {useTranslation} from 'react-i18next';
 import {useNavigate} from 'react-router-dom';
-import {preloadTrack} from '../../lib/audio';
+import {cancelPreload, preloadTrack} from '../../lib/audio';
 import {art, dur, fc} from '../../lib/formatters';
 import {ListMusic, ListPlus, pauseBlack20, playBlack20, playIcon32} from '../../lib/icons';
 import {recordClusterFeedback, setUrnCluster, useClusterFeedback} from '../../lib/recsFeedback';
@@ -53,6 +53,7 @@ export const TrackCard = React.memo(
       <div
         className="group relative select-none"
         onMouseEnter={() => preloadTrack(track.urn)}
+        onMouseLeave={cancelPreload}
         style={{ contain: 'layout paint style' }}
       >
         {/* Artwork */}

@@ -1,6 +1,6 @@
 import {memo, useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
-import {preloadTrack} from '../../lib/audio';
+import {cancelPreload, preloadTrack} from '../../lib/audio';
 import {ago, art} from '../../lib/formatters';
 import {
     AudioLines,
@@ -46,6 +46,7 @@ const FreshLead = memo(function FreshLead({track, queue}: { track: Track; queue:
                 type="button"
                 onClick={togglePlay}
                 onMouseEnter={() => preloadTrack(track.urn)}
+                onMouseLeave={cancelPreload}
                 className="group relative shrink-0 w-[108px] h-[108px] md:w-[132px] md:h-[132px] rounded-2xl overflow-hidden ring-1 ring-white/10 cursor-pointer"
                 style={{boxShadow: `0 16px 42px ${aura.accentGlow}`}}
             >
@@ -109,6 +110,7 @@ const FreshDropRow = memo(function FreshDropRow({
                 type="button"
                 onClick={togglePlay}
                 onMouseEnter={() => preloadTrack(track.urn)}
+                onMouseLeave={cancelPreload}
                 className="relative w-12 h-12 rounded-xl overflow-hidden shrink-0 ring-1 ring-white/[0.08] cursor-pointer"
             >
                 {cover ? (

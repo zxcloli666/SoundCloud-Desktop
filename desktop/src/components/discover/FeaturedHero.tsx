@@ -2,7 +2,7 @@ import React, {useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {useNavigate} from 'react-router-dom';
 import {useShallow} from 'zustand/shallow';
-import {preloadTrack} from '../../lib/audio';
+import {cancelPreload, preloadTrack} from '../../lib/audio';
 import {ago, art, dur, fc} from '../../lib/formatters';
 import {type FeedItem, type Playlist, type SCUser, useFeatured} from '../../lib/hooks';
 import {
@@ -121,6 +121,7 @@ const FeaturedCard = React.memo(
       <div
         className="relative rounded-3xl overflow-hidden group glass-featured select-none"
         onMouseEnter={() => preloadTrack(track.urn)}
+        onMouseLeave={cancelPreload}
       >
         {cover && <HeroBlurBg cover={cover} />}
         <div className="relative flex items-center gap-6 p-6">

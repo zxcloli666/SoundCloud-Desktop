@@ -1,5 +1,5 @@
 import React from 'react';
-import {preloadTrack} from '../../lib/audio';
+import {cancelPreload, preloadTrack} from '../../lib/audio';
 import {art, dur, fc} from '../../lib/formatters';
 import {Headphones, musicIcon14, pauseBlack11, playBlack11} from '../../lib/icons';
 import {useTrackPlay} from '../../lib/useTrackPlay';
@@ -18,6 +18,7 @@ export const RelatedRow = React.memo(
           isThis ? 'bg-accent/[0.05] ring-1 ring-accent/20' : 'hover:bg-white/[0.04]'
         }`}
         onMouseEnter={() => preloadTrack(track.urn)}
+        onMouseLeave={cancelPreload}
       >
         <button
           type="button"

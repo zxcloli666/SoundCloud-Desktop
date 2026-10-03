@@ -727,7 +727,8 @@ listen<number>('media:seek-relative', (e) => {
 let preloadTimer: ReturnType<typeof setTimeout> | null = null;
 
 export function preloadTrack(urn: string) {
-  if (preloadTimer) clearTimeout(preloadTimer);
+  cancelPreload();
+  if (!useSettingsStore.getState().hoverPreload) return;
   preloadTimer = setTimeout(() => {
     const sessionId = getSessionId();
     const hq = useSettingsStore.getState().highQualityStreaming;
@@ -743,7 +744,12 @@ export function preloadTrack(urn: string) {
         },
       ],
     }).catch(console.error);
-  }, 500);
+  }, 800);
+}
+
+export function cancelPreload() {
+  if (preloadTimer) clearTimeout(preloadTimer);
+  preloadTimer = null;
 }
 
 export function preloadQueue() {

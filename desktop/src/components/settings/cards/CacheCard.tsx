@@ -14,7 +14,7 @@ import {Database, Download, Loader2, Trash2, X} from '../../../lib/icons';
 import {useCacheLikes} from '../../../lib/likes-cache';
 import {useSettingsStore} from '../../../stores/settings';
 import {Skeleton} from '../../ui/Skeleton';
-import {Card, Divider, RangeSlider} from '../primitives';
+import {Card, Divider, RangeSlider, Row, Toggle} from '../primitives';
 
 function CacheRow({
   label,
@@ -58,6 +58,8 @@ export function CacheCard() {
   const { t } = useTranslation();
   const audioCacheLimitMB = useSettingsStore((s) => s.audioCacheLimitMB);
   const setAudioCacheLimitMB = useSettingsStore((s) => s.setAudioCacheLimitMB);
+  const hoverPreload = useSettingsStore((s) => s.hoverPreload);
+  const setHoverPreload = useSettingsStore((s) => s.setHoverPreload);
   const [audioSize, setAudioSize] = useState<number | null>(null);
   const [imagesSize, setImagesSize] = useState<number | null>(null);
   const [likedSize, setLikedSize] = useState<number | null>(null);
@@ -227,6 +229,13 @@ export function CacheCard() {
           step={256}
           onChange={setAudioCacheLimitMB}
         />
+      </div>
+
+      <Divider />
+      <div className="pt-3">
+        <Row title={t('settings.hoverPreload')} desc={t('settings.hoverPreloadDesc')}>
+          <Toggle checked={hoverPreload} onChange={() => setHoverPreload(!hoverPreload)} />
+        </Row>
       </div>
     </Card>
   );

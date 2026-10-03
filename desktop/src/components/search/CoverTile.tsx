@@ -1,7 +1,7 @@
 import {Compass, Pause, Play, Sparkles} from 'lucide-react';
 import {memo} from 'react';
 import {useTranslation} from 'react-i18next';
-import {preloadTrack} from '../../lib/audio';
+import {cancelPreload, preloadTrack} from '../../lib/audio';
 import {
   hardStopHoverPreview,
   PREVIEW_WINDOW_MS,
@@ -55,7 +55,10 @@ export const CoverTile = memo(function CoverTile({
     preloadTrack(track.urn);
     startHoverPreview(track.urn);
   };
-  const leave = () => stopHoverPreview();
+  const leave = () => {
+    cancelPreload();
+    stopHoverPreview();
+  };
   const activate = () => {
     hardStopHoverPreview();
     togglePlay();
