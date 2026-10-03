@@ -19,23 +19,28 @@ const SOURCE_LABELS: Record<LyricsSource, string> = {
 
 const PAUSE_MARKER = '♪♪♪';
 const PAUSE_GAP_THRESHOLD = 4.5; // seconds — when to insert ♪♪♪
+const PAUSE_MIN_LENGTH = 1;
 
 type DisplayLine = LyricLine & { pause?: boolean; duration?: number };
 
 function buildDisplayLines(lines: LyricLine[]): DisplayLine[] {
-    if (!lines.length) return [];
     const out: DisplayLine[] = [];
-    for (let i = 0; i < lines.length; i++) {
-        const cur = lines[i];
-        const prev = lines[i - 1];
+    let prev: LyricLine | null = null;
+    let prevEnd: number | null = null;
+    for (const cur of lines) {
+        if (!cur.text) {
+            if (prev) prevEnd = cur.time;
+            continue;
+        }
         if (prev) {
-            const gap = cur.time - prev.time;
-            if (gap >= PAUSE_GAP_THRESHOLD) {
+            const start = prevEnd ?? prev.time + 0.5;
+            const longGap = cur.time - prev.time >= PAUSE_GAP_THRESHOLD;
+            if (longGap && cur.time - start >= PAUSE_MIN_LENGTH) {
                 out.push({
-                    time: prev.time + 0.5,
+                    time: start,
                     text: PAUSE_MARKER,
                     pause: true,
-                    duration: gap - 0.6,
+                    duration: cur.time - start - 0.1,
                 });
             }
         } else if (cur.time >= PAUSE_GAP_THRESHOLD) {
@@ -47,6 +52,8 @@ function buildDisplayLines(lines: LyricLine[]): DisplayLine[] {
             });
         }
         out.push(cur);
+        prev = cur;
+        prevEnd = null;
     }
     return out;
 }
