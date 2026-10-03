@@ -111,7 +111,9 @@
     },
     "vibe": {
       "empty": "Bu vibe ile eslesen yok",
-      "tryText": "Metinle ara"
+      "tryText": "Metinle ara",
+      "unavailableTitle": "Vibe aramasi su an kullanilamiyor",
+      "unavailableBody": "Su an yeni vibe'lari okuyamiyoruz. Kelimelerle ara veya bu vibe'i sonra dene."
     },
     "popular": {
       "artists": "Populer sanatcilar",
@@ -136,6 +138,10 @@
     "diveEmptyBody": "Baska bir parca dene veya aramaya geri don.",
     "preparingTitle": "Vibe'ini yakaliyoruz…",
     "preparingBody": "Bu sorgu yeni — hesapliyoruz. Birazdan gelecek.",
+    "error": {
+      "title": "Arama yanit vermiyor",
+      "body": "Sunucu sonuclari gondermedi. Biraz sonra tekrar dene."
+    },
     "resolve": {
       "loading": "Link aciliyor...",
       "redirecting": "Yonlendiriliyor...",

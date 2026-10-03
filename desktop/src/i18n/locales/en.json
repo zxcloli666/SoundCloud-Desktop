@@ -147,7 +147,9 @@
     },
     "vibe": {
       "empty": "Nothing matched this vibe",
-      "tryText": "Search by text instead"
+      "tryText": "Search by text instead",
+      "unavailableTitle": "Vibe search is unavailable right now",
+      "unavailableBody": "We can't read new vibes at the moment. Search by words or try this vibe later."
     },
     "popular": {
       "artists": "Popular artists",
@@ -172,6 +174,10 @@
     "diveEmptyBody": "Try another track, or head back to your search.",
     "preparingTitle": "Tuning into your vibe…",
     "preparingBody": "First time for this one — we're reading the room. It'll appear in a moment.",
+    "error": {
+      "title": "Search is not responding",
+      "body": "The server didn't send results. Try again in a moment."
+    },
     "resolve": {
       "loading": "Resolving link...",
       "redirecting": "Redirecting...",

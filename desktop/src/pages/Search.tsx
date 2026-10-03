@@ -1,4 +1,4 @@
-import {ArrowLeft, Cloud, Compass, Sparkles, Type} from 'lucide-react';
+import {ArrowLeft, Cloud, CloudOff, Compass, RefreshCw, Sparkles, Type} from 'lucide-react';
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import { useTranslation } from 'react-i18next';
 import {useDebouncedValue} from '../components/discover/useDebouncedValue';
@@ -113,6 +113,24 @@ export function Search() {
                 title: t('search.preparingTitle'),
                 body: t('search.preparingBody'),
             };
+        if (wall.vibeUnavailable)
+            return {
+                icon: <Sparkles size={26}/>,
+                title: t('search.vibe.unavailableTitle'),
+                body: t('search.vibe.unavailableBody'),
+                cta: t('search.vibe.tryText'),
+                ctaIcon: <Type size={15}/>,
+                onAction: () => setMode('text'),
+            };
+        if (wall.isError)
+            return {
+                icon: <CloudOff size={26}/>,
+                title: t('search.error.title'),
+                body: t('search.error.body'),
+                cta: t('common.retry'),
+                ctaIcon: <RefreshCw size={15}/>,
+                onAction: wall.retry,
+            };
         if (dive)
             return {
                 icon: <Compass size={26}/>,
@@ -151,7 +169,19 @@ export function Search() {
             ctaIcon: <Type size={15}/>,
             onAction: () => setMode('text'),
         };
-    }, [wall.preparing, dive, hasQuery, mode, source, query, t, setMode]);
+    }, [
+        wall.preparing,
+        wall.vibeUnavailable,
+        wall.isError,
+        wall.retry,
+        dive,
+        hasQuery,
+        mode,
+        source,
+        query,
+        t,
+        setMode,
+    ]);
 
   return (
       <div className="relative min-h-full w-full" data-tg-hidden={hidden ? '1' : '0'}>
