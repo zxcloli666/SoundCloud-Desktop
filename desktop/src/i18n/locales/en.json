@@ -577,7 +577,7 @@
     "audioCacheLimit": "Audio cache limit",
     "audioCacheLimitDesc": "Older cached tracks are deleted automatically when the limit is exceeded",
     "hoverPreload": "Preload on hover",
-    "hoverPreloadDesc": "Download a track in advance when the cursor rests on it, so it starts instantly. Off: only tracks you play get cached",
+    "hoverPreloadDesc": "Download a track in advance when the cursor rests on it, so it starts instantly",
     "clearCache": "Clear",
     "cacheCleared": "Cache cleared",
     "appearance": "Appearance",

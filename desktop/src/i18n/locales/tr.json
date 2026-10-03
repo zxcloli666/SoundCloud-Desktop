@@ -489,7 +489,7 @@
     "audioCacheLimit": "Ses onbellek limiti",
     "audioCacheLimitDesc": "Limit asildiginda eski onbelleklenmis parcilar otomatik silinir",
     "hoverPreload": "Uzerine gelince onceden yukle",
-    "hoverPreloadDesc": "Imlec bir parcanin uzerinde durunca parcayi onceden indirir, boylece hemen baslar. Kapali: yalnizca calinan parcalar onbellege alinir",
+    "hoverPreloadDesc": "Imlec bir parcanin uzerinde durunca parcayi onceden indirir, boylece hemen baslar",
     "clearCache": "Temizle",
     "cacheCleared": "Onbellek temizlendi",
     "appearance": "Gorunum",
