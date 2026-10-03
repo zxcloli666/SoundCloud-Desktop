@@ -1,12 +1,17 @@
 import { listen } from '@tauri-apps/api/event';
+import { toast } from 'sonner';
 import { create } from 'zustand';
-import { api, getSessionId } from '../lib/api';
+import i18n from '../i18n';
+import { ApiError, api, getSessionId } from '../lib/api';
 import { API_BASE } from '../lib/constants';
 import { trackedInvoke as invoke } from '../lib/diagnostics';
 import { queryClient } from '../lib/query-client';
 
 const PLAYLIST_NAME = 'Yandex Music';
 const PLAYLIST_TRACK_LIMIT = 500;
+const PLAYLIST_CONFLICT_RETRIES = 3;
+const PLAYLIST_CONFLICT_PAUSE_SEC = 5;
+const SESSION_EXPIRED = 'session_expired';
 
 export interface YmImportProgress {
   total: number;
@@ -107,6 +112,14 @@ function resetRuntimeState() {
   matchedUrns = [];
 }
 
+function wait(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function isPlaylistConflict(error: unknown): error is ApiError {
+  return error instanceof ApiError && error.status === 409;
+}
+
 async function findExistingPlaylists(): Promise<ScPlaylist[]> {
   const all: ScPlaylist[] = [];
 
@@ -123,15 +136,24 @@ async function findExistingPlaylists(): Promise<ScPlaylist[]> {
 
 async function replacePlaylistTracks(playlistUrn: string, urns: string[]) {
   const path = `/playlists/${encodeURIComponent(playlistUrn)}`;
-  const { sync } = await api<PlaylistTracksPage>(`${path}/tracks?limit=1&page=0`);
 
-  await api(`${path}?replace=true`, {
-    method: 'PUT',
-    body: JSON.stringify({
-      playlist: { tracks: urns.map((urn) => ({ urn })) },
-      expectedProjectionRevision: sync.projectionRevision,
-    }),
-  });
+  for (let retry = 0; ; retry++) {
+    const { sync } = await api<PlaylistTracksPage>(`${path}/tracks?limit=1&page=0`);
+    try {
+      await api(`${path}?replace=true`, {
+        method: 'PUT',
+        silentStatuses: [409],
+        body: JSON.stringify({
+          playlist: { tracks: urns.map((urn) => ({ urn })) },
+          expectedProjectionRevision: sync.projectionRevision,
+        }),
+      });
+      return;
+    } catch (error) {
+      if (!isPlaylistConflict(error) || retry >= PLAYLIST_CONFLICT_RETRIES) throw error;
+      await wait((error.retryAfterSec ?? PLAYLIST_CONFLICT_PAUSE_SEC) * 1000);
+    }
+  }
 }
 
 async function saveChunk(
@@ -187,19 +209,24 @@ async function savePlaylists(runId: number, deleteStale: boolean) {
   const chunks = chunkArray([...matchedUrns].reverse(), PLAYLIST_TRACK_LIMIT);
   const saved: ScPlaylist[] = [];
   let queued = 0;
+  let failure: unknown = null;
 
   for (const [index, urns] of chunks.entries()) {
-    const playlist = await saveChunk(index, urns, existing);
-    if (!currentRunIsActive(runId)) return;
-
-    if (playlist) {
-      saved.push(playlist);
-    } else {
-      queued++;
+    try {
+      const playlist = await saveChunk(index, urns, existing);
+      if (playlist) {
+        saved.push(playlist);
+      } else {
+        queued++;
+      }
+    } catch (error) {
+      console.error(`[YM Import] saving "${getPlaylistName(index)}" failed:`, error);
+      failure ??= error;
     }
+    if (!currentRunIsActive(runId)) return;
   }
 
-  if (deleteStale) {
+  if (deleteStale && !failure) {
     await deleteStalePlaylists(existing, chunks.length);
     if (!currentRunIsActive(runId)) return;
   }
@@ -207,7 +234,7 @@ async function savePlaylists(runId: number, deleteStale: boolean) {
   const primaryPlaylist = saved[0] ?? null;
   useYmImportStore.setState({
     playlist: primaryPlaylist,
-    playlistCount: chunks.length,
+    playlistCount: saved.length + queued,
     pending: queued > 0,
   });
 
@@ -220,6 +247,22 @@ async function savePlaylists(runId: number, deleteStale: boolean) {
       .invalidateQueries({ queryKey: ['playlist', primaryPlaylist.urn, 'tracks'] })
       .catch(() => undefined);
   }
+
+  if (failure) throw failure;
+}
+
+function describeFailure(error: unknown): string {
+  if (error === SESSION_EXPIRED) return i18n.t('ym.sessionExpired');
+  if (isPlaylistConflict(error)) return i18n.t('ym.playlistNotSynced');
+  if (error instanceof ApiError) return i18n.t('ym.saveFailed', { status: error.status });
+  return error instanceof Error ? error.message : String(error);
+}
+
+function reportFailure(error: unknown) {
+  console.error('[YM Import]', error);
+  const message = describeFailure(error);
+  useYmImportStore.setState({ phase: 'error', saving: false, error: message });
+  toast.error(i18n.t('ym.error'), { id: 'ym-import-error', description: message });
 }
 
 async function startImportRun(token: string) {
@@ -241,43 +284,36 @@ async function startImportRun(token: string) {
     phase: 'running',
   });
 
+  let failure: unknown = null;
   try {
-    let failure: unknown = null;
-    try {
-      await invoke<void>('ym_import_start', {
-        ymToken: trimmedToken,
-        backendUrl: API_BASE,
-        sessionId: getSessionId() || '',
-      });
-    } catch (error) {
-      failure = error;
-    }
-
-    if (!currentRunIsActive(runId)) return;
-
-    const wasStopped = stopRequested;
-    await savePlaylists(runId, !wasStopped && !failure);
-
-    if (!currentRunIsActive(runId)) return;
-    if (failure) throw failure;
-
-    useYmImportStore.setState({
-      phase: wasStopped ? 'stopped' : 'done',
-      saving: false,
+    await invoke<void>('ym_import_start', {
+      ymToken: trimmedToken,
+      backendUrl: API_BASE,
+      sessionId: getSessionId() || '',
     });
   } catch (error) {
-    if (!currentRunIsActive(runId)) return;
-    console.error('[YM Import]', error);
-    useYmImportStore.setState({
-      phase: 'error',
-      saving: false,
-      error: error instanceof Error ? error.message : String(error),
-    });
-  } finally {
-    if (currentRunIsActive(runId)) {
-      stopRequested = false;
-    }
+    failure = error;
   }
+  if (!currentRunIsActive(runId)) return;
+
+  const wasStopped = stopRequested;
+  const searchErrors = useYmImportStore.getState().progress?.errors ?? 0;
+  try {
+    await savePlaylists(runId, !wasStopped && !failure && searchErrors === 0);
+  } catch (error) {
+    failure ??= error;
+  }
+  if (!currentRunIsActive(runId)) return;
+  stopRequested = false;
+
+  if (failure) {
+    reportFailure(failure);
+    return;
+  }
+  useYmImportStore.setState({
+    phase: wasStopped ? 'stopped' : 'done',
+    saving: false,
+  });
 }
 
 function ensureBridge() {

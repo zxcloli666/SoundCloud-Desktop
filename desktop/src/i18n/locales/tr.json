@@ -629,7 +629,10 @@
     "partial": "Hataya kadar bulunanlar kaydedildi",
     "errors": "Hatalar",
     "nothingFound": "Hicbir sey bulunamadi. Baglantinizi ve tokeninizi kontrol edip tekrar deneyin",
-    "limitHint": "SoundCloud calma listesine en fazla 500 sarki sigar, kalanlar \"Yandex Music 2\", \"Yandex Music 3\" listelerine gider"
+    "limitHint": "SoundCloud calma listesine en fazla 500 sarki sigar, kalanlar \"Yandex Music 2\", \"Yandex Music 3\" listelerine gider",
+    "sessionExpired": "SoundCloud oturumunuzun suresi doldu. Tekrar giris yapin ve ice aktarmayi yeniden baslatin",
+    "playlistNotSynced": "Mevcut \"Yandex Music\" calma listesi hala SoundCloud ile esitleniyor. Birkac dakika sonra ice aktarmayi tekrar deneyin",
+    "saveFailed": "Bazi calma listeleri kaydedilemedi (hata {{status}})"
   },
   "update": {
     "available": "Guncelleme mevcut",

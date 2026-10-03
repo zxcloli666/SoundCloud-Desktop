@@ -722,7 +722,10 @@
     "partial": "Saved what was found before the error",
     "errors": "Errors",
     "nothingFound": "Nothing was found. Check your connection and token, then try again",
-    "limitHint": "SoundCloud allows 500 tracks per playlist, the rest goes to \"Yandex Music 2\", \"Yandex Music 3\" and so on"
+    "limitHint": "SoundCloud allows 500 tracks per playlist, the rest goes to \"Yandex Music 2\", \"Yandex Music 3\" and so on",
+    "sessionExpired": "Your SoundCloud session has expired. Sign in again and restart the import",
+    "playlistNotSynced": "An existing \"Yandex Music\" playlist is still syncing with SoundCloud. Try the import again in a few minutes",
+    "saveFailed": "Could not save some playlists (error {{status}})"
   },
   "update": {
     "available": "Update available",
