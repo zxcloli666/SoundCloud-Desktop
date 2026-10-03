@@ -11,10 +11,10 @@ import {ResolveCard} from '../components/search/ResolveCard';
 import {SearchControls} from '../components/search/SearchControls';
 import {type DiveSeed, useSearchWall} from '../components/search/useSearchWall';
 import {
+    extractSoundCloudLink,
     GENRES,
     type GenreChip,
     genreColor,
-    extractSoundCloudLink,
     WALL_KEYFRAMES,
 } from '../components/search/utils';
 import {useTabHidden, Wall} from '../components/search/Wall';
@@ -292,16 +292,18 @@ export function Search() {
                               onAction={empty.onAction}
                           />
                       ) : (
-                          <Wall
-                              items={wall.items}
-                              getQueue={getQueue}
-                              isLoading={wall.isLoading}
-                              hasMore={wall.hasMore}
-                              isFetchingMore={wall.isFetchingMore}
-                              onLoadMore={wall.loadMore}
-                              onDive={onDive}
-                              dimmed={wall.dimmed}
-                          />
+                          <div ref={wall.wallRef}>
+                              <Wall
+                                  items={wall.items}
+                                  getQueue={getQueue}
+                                  isLoading={wall.isLoading}
+                                  hasMore={wall.hasMore}
+                                  isFetchingMore={wall.isFetchingMore}
+                                  onLoadMore={wall.loadMore}
+                                  onDive={onDive}
+                                  dimmed={wall.dimmed}
+                              />
+                          </div>
                       )}
                   </>
               )}

@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 const SETTLE_MS = 1200;
-const INTERACTIONS = ['pointerdown', 'wheel', 'scroll', 'keydown'] as const;
+const WALL_INTERACTIONS = ['pointerdown', 'wheel', 'keydown'] as const;
 
-export function useStableOrder<T>(items: T[], keyOf: (item: T) => string, resetKey: string): T[] {
+export function useStableOrder<T>(items: T[], keyOf: (item: T) => string, resetKey: string) {
+  const [wall, setWall] = useState<HTMLElement | null>(null);
   const [lockedKey, setLockedKey] = useState<string | null>(null);
   const shownRef = useRef<{ key: string; list: T[] }>({ key: resetKey, list: [] });
   const locked = lockedKey === resetKey;
@@ -13,14 +14,19 @@ export function useStableOrder<T>(items: T[], keyOf: (item: T) => string, resetK
     if (locked || !hasItems) return;
     const lock = () => setLockedKey(resetKey);
     const timer = window.setTimeout(lock, SETTLE_MS);
-    for (const type of INTERACTIONS) {
-      window.addEventListener(type, lock, { capture: true, passive: true });
+    const scroller = wall?.closest('main');
+    for (const type of WALL_INTERACTIONS) {
+      wall?.addEventListener(type, lock, { capture: true, passive: true });
     }
+    scroller?.addEventListener('scroll', lock, { passive: true });
     return () => {
       window.clearTimeout(timer);
-      for (const type of INTERACTIONS) window.removeEventListener(type, lock, { capture: true });
+      for (const type of WALL_INTERACTIONS) {
+        wall?.removeEventListener(type, lock, { capture: true });
+      }
+      scroller?.removeEventListener('scroll', lock);
     };
-  }, [locked, hasItems, resetKey]);
+  }, [locked, hasItems, resetKey, wall]);
 
   const list = useMemo(() => {
     const shown = shownRef.current;
@@ -35,5 +41,5 @@ export function useStableOrder<T>(items: T[], keyOf: (item: T) => string, resetK
     shownRef.current = { key: resetKey, list };
   }, [resetKey, list]);
 
-  return list;
+  return { list, wallRef: setWall };
 }

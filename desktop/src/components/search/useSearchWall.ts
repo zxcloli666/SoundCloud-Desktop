@@ -48,6 +48,7 @@ export interface SearchWallResult {
   dimmed: boolean;
   live: WallLive;
   retryLive: () => void;
+  wallRef: (el: HTMLElement | null) => void;
 }
 
 export type WallLiveState = LiveState | 'searching' | 'idle';
@@ -71,7 +72,6 @@ function liveStateOf(feed: LiveFeed, active: boolean, pending: boolean): WallLiv
   if (feed.isError) return 'unavailable';
   return feed.live?.state ?? 'idle';
 }
-
 
 const MIN_LEN = 2;
 const LIVE_DEBOUNCE_MS = 650;
@@ -146,7 +146,7 @@ export function useSearchWall(
   }, [scMode, scLive, textMode, lex.tracks, lyric.hits, vibe.tracks, fillLive]);
 
   const orderKey = `${mode}|${source}|${trimmed}|${dimmed ? 'previous' : 'current'}`;
-  const ordered = useStableOrder(searchTiles, trackKey, orderKey);
+  const { list: ordered, wallRef } = useStableOrder(searchTiles, trackKey, orderKey);
 
   const items = useMemo<WallItem[]>(() => {
     if (dive) return toTiles(diveWave.data?.tracks ?? [], 'vibe');
@@ -264,7 +264,7 @@ export function useSearchWall(
     else if (fillActive) void refetchFill();
   }, [scActive, fillActive, refetchSc, refetchFill]);
 
-  const base = { items, entities, atmosphere, dimmed: false, live, retry, retryLive };
+  const base = { items, entities, atmosphere, dimmed: false, live, retry, retryLive, wallRef };
 
   if (dive) {
     return {
