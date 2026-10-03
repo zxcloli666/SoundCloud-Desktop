@@ -958,6 +958,7 @@ const PillTrackBody = React.memo(function PillTrackBody({
   const artistLinks = useArtistLinkItems(track);
   const artworkSmall = art(track.artwork_url, 't200x200');
   const hasArtistLink = artistLinks.some((it) => it.target);
+  const loadedPercent = loadProgress == null ? null : loadPercent(loadProgress);
 
   return (
     <div className="npb-meta">
@@ -971,10 +972,10 @@ const PillTrackBody = React.memo(function PillTrackBody({
           <i />
           <i />
         </span>
-        {loadProgress != null && (
+        {loadedPercent != null && (
           <div className="npb-art-load">
-            {loadProgress > 0 ? (
-              `${loadPercent(loadProgress)}%`
+            {loadedPercent > 0 ? (
+              `${loadedPercent}%`
             ) : (
               <Loader2 size={16} className="animate-spin" />
             )}
