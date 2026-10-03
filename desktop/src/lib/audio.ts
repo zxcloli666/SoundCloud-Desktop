@@ -416,9 +416,15 @@ async function loadTrack(track: Track) {
     usePlayerStore.getState().setPlaybackTransport(null, null);
     if (gen !== loadGen) return;
     const errorText = getLoadErrorText(e);
-    toast.error(i18n.t('track.loadError'), {
-      description: errorText ? `${track.title}: ${errorText}` : track.title,
-    });
+    if (errorText?.includes('no stream available')) {
+      toast.error(i18n.t('track.noStream'), {
+        description: `${track.title}: ${i18n.t('track.noStreamHint')}`,
+      });
+    } else {
+      toast.error(i18n.t('track.loadError'), {
+        description: errorText ? `${track.title}: ${errorText}` : track.title,
+      });
+    }
     usePlayerStore.getState().pause();
   }
 }
