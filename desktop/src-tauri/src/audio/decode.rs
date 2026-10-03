@@ -1,5 +1,5 @@
 use std::collections::VecDeque;
-use std::io::Cursor;
+use std::io::{Cursor, Read, Seek, SeekFrom};
 use std::num::NonZero;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::AtomicU32;
@@ -34,7 +34,40 @@ pub fn is_ogg_opus(bytes: &[u8]) -> bool {
             .any(|w| w == b"OpusHead")
 }
 
+fn is_mpeg_audio(bytes: &[u8]) -> bool {
+    let start = match bytes.get(..10) {
+        Some(tag) if tag.starts_with(b"ID3") => {
+            let size = tag[6..10]
+                .iter()
+                .fold(0usize, |size, &byte| (size << 7) | (byte & 0x7F) as usize);
+            let footer = if tag[5] & 0x10 != 0 { 10 } else { 0 };
+            10 + size + footer
+        }
+        _ => 0,
+    };
+    matches!(bytes.get(start..start + 2), Some(&[0xFF, sync]) if sync & 0xE0 == 0xE0)
+}
+
 const OPUS_MAX_PACKET_FRAMES: usize = 5760;
+const OGG_PAGE_HEADER_LEN: usize = 27;
+const OGG_TAIL_SCAN_BYTES: u64 = 128 * 1024;
+
+fn last_granule<R: Read + Seek>(reader: &mut R) -> Option<u64> {
+    let mut first_page = [0u8; OGG_PAGE_HEADER_LEN];
+    reader.read_exact(&mut first_page).ok()?;
+    let serial = &first_page[14..18];
+    let end = reader.seek(SeekFrom::End(0)).ok()?;
+    reader
+        .seek(SeekFrom::Start(end.saturating_sub(OGG_TAIL_SCAN_BYTES)))
+        .ok()?;
+    let mut tail = Vec::new();
+    reader.read_to_end(&mut tail).ok()?;
+    tail.windows(OGG_PAGE_HEADER_LEN).rev().find_map(|page| {
+        let granule = u64::from_le_bytes(page[6..14].try_into().ok()?);
+        let is_ours = page.starts_with(b"OggS") && page[4] == 0 && &page[14..18] == serial;
+        (is_ours && granule != u64::MAX).then_some(granule)
+    })
+}
 
 struct OpusSource<R: std::io::Read + std::io::Seek> {
     reader: ogg::reading::PacketReader<R>,
@@ -46,6 +79,7 @@ struct OpusSource<R: std::io::Read + std::io::Seek> {
     pre_skip: u64,
     skip: usize,
     pending: VecDeque<Vec<u8>>,
+    total_duration: Option<Duration>,
 }
 
 impl OpusSource<Cursor<Vec<u8>>> {
@@ -55,7 +89,11 @@ impl OpusSource<Cursor<Vec<u8>>> {
 }
 
 impl<R: std::io::Read + std::io::Seek> OpusSource<R> {
-    fn from_reader(reader: R) -> Result<Self, String> {
+    fn from_reader(mut reader: R) -> Result<Self, String> {
+        let end_granule = last_granule(&mut reader);
+        reader
+            .rewind()
+            .map_err(|e| format!("OGG read error: {}", e))?;
         let mut reader = ogg::reading::PacketReader::new(reader);
 
         let head_pkt = reader
@@ -85,6 +123,10 @@ impl<R: std::io::Read + std::io::Seek> OpusSource<R> {
             .map_err(|e| format!("Opus decoder error: {:?}", e))?;
 
         let channel_count = if ch_count == 1 { 1u16 } else { 2u16 };
+        let total_duration = end_granule
+            .map(|granule| granule.saturating_sub(pre_skip as u64) as f64 / 48000.0)
+            .map(Duration::from_secs_f64)
+            .filter(|duration| !duration.is_zero());
 
         Ok(Self {
             reader,
@@ -96,6 +138,7 @@ impl<R: std::io::Read + std::io::Seek> OpusSource<R> {
             pre_skip: pre_skip as u64,
             skip: pre_skip * channel_count as usize,
             pending: VecDeque::new(),
+            total_duration,
         })
     }
 
@@ -178,7 +221,7 @@ impl<R: std::io::Read + std::io::Seek> Source for OpusSource<R> {
     }
 
     fn total_duration(&self) -> Option<Duration> {
-        None
+        self.total_duration
     }
 
     fn try_seek(&mut self, pos: Duration) -> Result<(), SeekError> {
@@ -211,9 +254,13 @@ impl<R: std::io::Read + std::io::Seek> Source for OpusSource<R> {
 }
 
 fn decode_bytes(bytes: &[u8]) -> Result<Decoder<Cursor<Vec<u8>>>, DecoderError> {
-    Decoder::builder()
-        .with_data(Cursor::new(bytes.to_vec()))
-        .with_byte_len(bytes.len() as u64)
+    let builder = Decoder::builder().with_data(Cursor::new(bytes.to_vec()));
+    let builder = if is_mpeg_audio(bytes) {
+        builder.with_seekable(true)
+    } else {
+        builder.with_byte_len(bytes.len() as u64)
+    };
+    builder
         .build()
         .or_else(|_| Decoder::new(Cursor::new(bytes.to_vec())))
 }
@@ -492,6 +539,27 @@ mod tests {
             let offset = offset_of(&segment, &reference, target, RATE / 10);
             assert!(offset.abs() <= 2, "{seconds}s: off by {offset} frames");
         }
+    }
+
+    #[test]
+    fn opus_reports_its_decoded_length() {
+        let bytes = opus_stream(6);
+        let duration = OpusSource::new(bytes.clone()).unwrap().total_duration().unwrap();
+        let frames = OpusSource::new(bytes).unwrap().count() / 2;
+        let decoded = frames as f64 / RATE as f64;
+        assert!((duration.as_secs_f64() - decoded).abs() < 0.001, "{duration:?} vs {decoded}s");
+    }
+
+    #[test]
+    fn mpeg_audio_is_told_apart_from_containers() {
+        let mut tagged = b"ID3\x04\x00\x00\x00\x00\x00\x02".to_vec();
+        tagged.extend([0, 0, 0xFF, 0xFB, 0x90]);
+        assert!(is_mpeg_audio(&[0xFF, 0xFB, 0x90, 0x00]));
+        assert!(is_mpeg_audio(&[0xFF, 0xF1, 0x50, 0x80]));
+        assert!(is_mpeg_audio(&tagged));
+        assert!(!is_mpeg_audio(b"\x00\x00\x00\x20ftypM4A "));
+        assert!(!is_mpeg_audio(b"OggS\x00\x02"));
+        assert!(!is_mpeg_audio(b"fLaC\x00\x00"));
     }
 
     #[test]
