@@ -99,6 +99,8 @@ SoundCloud заблокирован Роскомнадзором — веб-ве
 
 Требования: Windows 10 (1809+) или Windows 11
 
+Нужен Microsoft Edge WebView2 Runtime. Установщики ставят его сами, для portable-версии и урезанных сборок Windows поставь [Evergreen Standalone Installer](https://developer.microsoft.com/microsoft-edge/webview2/) от имени администратора. Сам Edge не нужен.
+
 ### Linux
 
 | Формат | Архитектура | Описание |

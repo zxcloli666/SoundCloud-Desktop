@@ -17,6 +17,9 @@ use network::server::ServerState;
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 #[cfg_attr(feature = "cef", tauri::cef_entry_point)]
 pub fn run() {
+    #[cfg(all(windows, not(feature = "cef")))]
+    app::webview2::exit_if_runtime_missing();
+
     let builder = tauri::Builder::<rt::Rt>::new();
 
     builder
@@ -46,6 +49,9 @@ pub fn run() {
             });
         })
         .setup(move |app| {
+            #[cfg(all(windows, not(feature = "cef")))]
+            app::webview2::exit_if_main_window_missing(app);
+
             let cache_dir = app
                 .path()
                 .app_cache_dir()
