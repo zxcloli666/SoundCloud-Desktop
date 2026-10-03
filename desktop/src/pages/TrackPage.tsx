@@ -10,6 +10,7 @@ import {RoomHero} from '../components/track/RoomHero';
 import {RoomSleeve} from '../components/track/RoomSleeve';
 import {RoomVoices} from '../components/track/RoomVoices';
 import {useTrackAura} from '../components/track/useTrackAura';
+import {LoadErrorState} from '../components/ui/LoadErrorState';
 import {api} from '../lib/api';
 import {seek} from '../lib/audio';
 import {
@@ -19,7 +20,7 @@ import {
   useTrackComments,
   useTrackFavoriters,
 } from '../lib/hooks';
-import {ChevronLeft, Loader2} from '../lib/icons';
+import {ChevronLeft} from '../lib/icons';
 import {setLikedUrn} from '../lib/likes';
 import {usePerfMode} from '../lib/perf';
 import {useScdMeta} from '../lib/scdMeta';
@@ -54,6 +55,9 @@ export const TrackPage = React.memo(function TrackPage() {
         data: track,
         isLoading,
         isError,
+        isFetching,
+        error,
+        refetch,
     } = useQuery({
     queryKey: ['track', urn],
     queryFn: () => api<Track>(`/tracks/${encodeURIComponent(urn!)}`),
@@ -133,22 +137,7 @@ export const TrackPage = React.memo(function TrackPage() {
         return (
             <div className="relative min-h-full w-full flex items-center justify-center">
                 <Atmosphere/>
-                <div className="relative z-10 flex flex-col items-center gap-4 text-center px-6">
-                    <Loader2 size={22} className="text-white/15"/>
-                    <p className="text-white/40 text-sm">{t('track.loadError')}</p>
-                    <button
-                        type="button"
-                        onClick={() => navigate(-1)}
-                        className="inline-flex items-center gap-1.5 h-9 pl-2.5 pr-4 rounded-full text-[12px] text-white/70 hover:text-white transition-colors cursor-pointer"
-                        style={{
-                            background: 'rgba(255,255,255,0.05)',
-                            border: '0.5px solid rgba(255,255,255,0.1)',
-                        }}
-                    >
-                        <ChevronLeft size={14}/>
-                        {t('search.back')}
-                    </button>
-        </div>
+                <LoadErrorState error={error} retrying={isFetching} onRetry={() => void refetch()}/>
             </div>
         );
     }
