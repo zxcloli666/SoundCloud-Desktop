@@ -3,14 +3,10 @@ use std::time::Duration;
 use rodio::source::SeekError;
 use rodio::Source;
 
-use crate::audio::types::{ChannelCount, SampleRate};
+use crate::audio::types::{frames_in, ChannelCount, SampleRate};
 
 const PREROLL: Duration = Duration::from_millis(100);
 const FADE: Duration = Duration::from_millis(10);
-
-fn frames_in(duration: Duration, sample_rate: SampleRate) -> usize {
-    (duration.as_secs_f64() * sample_rate.get() as f64) as usize
-}
 
 pub struct DeclickSource<S: Source<Item = f32>> {
     source: S,

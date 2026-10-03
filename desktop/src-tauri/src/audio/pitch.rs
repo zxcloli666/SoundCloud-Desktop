@@ -6,19 +6,15 @@ use biquad::{Biquad, Coefficients, DirectForm1, ToHertz, Type, Q_BUTTERWORTH_F32
 use rodio::source::SeekError;
 use rodio::Source;
 
-use crate::audio::types::{ChannelCount, SampleRate};
+use crate::audio::types::{frames_in, ChannelCount, SampleRate};
 
 const HOP: Duration = Duration::from_millis(25);
 const TOLERANCE: Duration = Duration::from_millis(12);
 const COARSE_STEP: usize = 4;
 const LOWPASS_PRIME_SAMPLES: usize = 256;
 
-fn frames_for(duration: Duration, sample_rate: SampleRate) -> usize {
-    (duration.as_secs_f64() * sample_rate.get() as f64) as usize
-}
-
 fn hop_frames(sample_rate: SampleRate) -> usize {
-    frames_for(HOP, sample_rate).max(64)
+    frames_in(HOP, sample_rate).max(64)
 }
 
 fn is_unity(ratio: f32) -> bool {
@@ -171,7 +167,7 @@ impl Shifter {
             channels,
             sample_rate: sample_rate.get() as f32,
             hop,
-            tolerance: frames_for(TOLERANCE, sample_rate).max(16),
+            tolerance: frames_in(TOLERANCE, sample_rate).max(16),
             rise,
             lowpass: vec![[DirectForm1::new(passthrough()); 2]; channels],
             lowpass_ratio: 1.0,

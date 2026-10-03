@@ -1,5 +1,6 @@
 use std::num::NonZero;
 use std::sync::mpsc::Sender;
+use std::time::Duration;
 
 use rodio::mixer::Mixer;
 
@@ -21,6 +22,10 @@ pub const TICK_INTERVAL_MS: u64 = 100;
 
 pub type ChannelCount = NonZero<u16>;
 pub type SampleRate = NonZero<u32>;
+
+pub fn frames_in(duration: Duration, sample_rate: SampleRate) -> usize {
+    (duration.as_secs_f64() * sample_rate.get() as f64) as usize
+}
 
 pub struct EqParams {
     pub enabled: bool,
