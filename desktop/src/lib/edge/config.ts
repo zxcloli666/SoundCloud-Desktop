@@ -54,8 +54,9 @@ function applyConfig(cfg: RustConfig): void {
   revalidateMs = cfg.revalidate_ms || revalidateMs;
   const now = Date.now();
   for (const [host, tier] of Object.entries(cfg.hints ?? {})) {
-    reported.set(host, tier);
     const prev = origins.get(host);
+    if (tier === 'direct' && prev?.tier === 'relay' && prev.revalidateAt > now) continue;
+    reported.set(host, tier);
     if (tier === 'direct') {
       if (prev?.tier === 'relay') origins.delete(host);
       continue;
