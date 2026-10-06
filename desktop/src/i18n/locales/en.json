@@ -719,7 +719,7 @@
     "backgroundHint": "Import continues in the background. You can close this window",
     "error": "Import failed",
     "pending": "The playlist is queued on the server and will appear in your library soon",
-    "partial": "Saved what was found before the error",
+    "partial": "Part of the import was saved, see the reason below",
     "errors": "Errors",
     "nothingFound": "Nothing was found. Check your connection and token, then try again",
     "limitHint": "SoundCloud allows 500 tracks per playlist, the rest goes to \"Yandex Music 2\", \"Yandex Music 3\" and so on",

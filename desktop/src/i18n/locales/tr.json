@@ -626,7 +626,7 @@
     "backgroundHint": "Ice aktarma arka planda surer, bu pencereyi kapatabilirsiniz",
     "error": "Ice aktarma basarisiz",
     "pending": "Calma listesi sunucuda olusturuluyor, kisa sure sonra kitapliginizda gorunecek",
-    "partial": "Hataya kadar bulunanlar kaydedildi",
+    "partial": "Ice aktarmanin bir kismi kaydedildi, nedeni asagida",
     "errors": "Hatalar",
     "nothingFound": "Hicbir sey bulunamadi. Baglantinizi ve tokeninizi kontrol edip tekrar deneyin",
     "limitHint": "SoundCloud calma listesine en fazla 500 sarki sigar, kalanlar \"Yandex Music 2\", \"Yandex Music 3\" listelerine gider",
