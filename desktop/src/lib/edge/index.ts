@@ -73,12 +73,12 @@ async function readBody(res: Response, abort: () => void): Promise<Uint8Array<Ar
 }
 
 /**
- * Ответ пришёл — но виноват ли транспорт? Relay отдаёт свои 421/502/503/504,
- * прямой хост — HTML-страницу балансера. И то и другое лечится следующим хопом,
+ * Ответ пришёл — но виноват ли транспорт? Relay отдаёт свой 421, а relay и
+ * прямой хост — HTML-страницу балансера на 502-504. И то и другое лечится следующим хопом,
  * а ответ origin'а (401/404/500 приложения) — уже валидный результат.
  */
 function hopUsable(hop: Hop, res: Response): boolean {
-  if (hop.tier === 'relay') return ![421, 502, 503, 504].includes(res.status);
+  if (hop.tier === 'relay') return !(res.status === 421 || isDirectInfrastructureError(res));
   return !isDirectInfrastructureError(res);
 }
 
