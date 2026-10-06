@@ -83,6 +83,8 @@
     "artists": "Sanatcilar",
     "albums": "Albumler",
     "noResults": "Sonuc bulunamadi",
+    "noResultsDbHint": "Yerel SCD veritabaninda eslesme yok. SoundCloud'a gecmeyi dene.",
+    "tryScHint": "SCD veritabaninda araniyor. Daha genis aramak icin SoundCloud'a gec.",
     "caption": "Kesfet",
     "eyebrow": "SoundCloud · Lens",
     "heroTitle": "Bugun ne dinleyelim?",
@@ -122,21 +124,13 @@
       "dbBody": "\"{{query}}\" baslik, sanatci veya sozlerle eslesmedi. Vibe ile aramayi dene — hissi tarif et.",
       "cta": "Vibe ile ara",
       "scTitle": "Sonuc yok",
-      "scBody": "\"{{query}}\" SCD kutuphanesinde yok ve canli SoundCloud aramasi su anda kapali.",
+      "scBody": "\"{{query}}\" sonuc dondurmedi. Farkli bir yazim veya daha genel bir terim dene.",
       "toVibeTitle": "Kelimelerle eslesme yok",
       "toVibeBody": "Vibe ile aramayi dene — anahtar kelime degil, hissi tarif et.",
       "toVibeCta": "Vibe ile ara",
       "toTextTitle": "Bu vibe bos cikti",
       "toTextBody": "Tam kelimeleri dene — bir baslik, sanatci veya hatirladigin bir soz.",
-      "toTextCta": "Metinle ara",
-      "bothTitle": "Ne SCD'de ne SoundCloud'da bir sey var",
-      "bothBody": "\"{{query}}\" icin SCD kutuphanesine ve SoundCloud'a baktik, hicbir sey bulamadik.",
-      "liveDownTitle": "SoundCloud'a ulasilamadi",
-      "liveDownBody": "SCD'de \"{{query}}\" icin bir sey yok ve SoundCloud zamaninda yanit vermedi.",
-      "pasteHint": "SoundCloud linkin mi var? Dogrudan acmak icin aramaya yapistir.",
-      "toScTitle": "SCD kutuphanesinde yok",
-      "toScBody": "\"{{query}}\" henuz SCD'de yok. SoundCloud'da ara ya da ruh halini tarif edip vibe aramasini dene.",
-      "toScCta": "SoundCloud'da ara"
+      "toTextCta": "Metinle ara"
     },
     "dive": "Benzer",
     "diveFrom": "{{title}}",
@@ -154,29 +148,14 @@
       "errorTitle": "Acilmadi",
       "notFound": "Link bulunamadi",
       "failed": "Cozulemedi",
-      "unknown": "Bilinmeyen kaynak: {{kind}}",
-      "gone": "Bu parca silinmis veya gizli",
-      "upstream": "SoundCloud yanit vermiyor",
-      "notALink": "Bu bir parca, calma listesi veya profil linki degil",
-      "retryIn": "{{seconds}} sn sonra tekrar deneyebilirsin"
+      "unknown": "Bilinmeyen kaynak: {{kind}}"
     },
     "source": {
       "db": "SCD",
       "sc": "SoundCloud",
       "dbBadge": "VT",
       "dbHint": "Yerel SCD veritabaninda ara — hizli, yansitilmis icerikle sinirli.",
-      "scHint": "SCD ve SoundCloud birlikte. SoundCloud yanit vermezse SCD'de olani gosteririz"
-    },
-    "live": {
-      "searching": "SoundCloud'da araniyor…",
-      "added": "SoundCloud'dan +{{count}}",
-      "limited": "Su anda cok fazla SoundCloud aramasi var · {{seconds}} sn",
-      "unavailable": "SoundCloud yanit vermedi",
-      "paused": "SoundCloud su anda kullanilamiyor",
-      "off": "SoundCloud aramasi su anda kapali",
-      "retry": "Tekrar dene",
-      "tileHint": "Az once SoundCloud'da bulundu, henuz SCD kutuphanesinde yok",
-      "preview": "onizleme"
+      "scHint": "Dogrudan SoundCloud'da ara — yavas ama tum icerigi kapsar."
     }
   },
   "track": {
@@ -656,9 +635,7 @@
     "notFound": "Bulunamadi",
     "done": "Ice aktarma tamamlandi!",
     "savingPlaylist": "Calma listesi kaydediliyor...",
-    "backgroundHint": "Ice aktarma arka planda surer, bu pencereyi kapatabilirsiniz",
-    "uncertain": "Emin degiliz",
-    "failed": "Hata"
+    "backgroundHint": "Ice aktarma arka planda surer, bu pencereyi kapatabilirsiniz"
   },
   "update": {
     "available": "Guncelleme mevcut",

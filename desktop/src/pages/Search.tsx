@@ -6,20 +6,18 @@ import {Atmosphere} from '../components/search/Atmosphere';
 import {EmptyState} from '../components/search/EmptyState';
 import {EntityStrip} from '../components/search/EntityStrip';
 import {GenreTicker} from '../components/search/GenreTicker';
-import {LiveStatus} from '../components/search/LiveStatus';
 import {ResolveCard} from '../components/search/ResolveCard';
 import {SearchControls} from '../components/search/SearchControls';
 import {type DiveSeed, useSearchWall} from '../components/search/useSearchWall';
 import {
-    extractSoundCloudLink,
     GENRES,
     type GenreChip,
     genreColor,
+    isSoundCloudUrl,
     WALL_KEYFRAMES,
 } from '../components/search/utils';
 import {useTabHidden, Wall} from '../components/search/Wall';
 import {stopHoverPreview, wirePreviewGuards} from '../lib/audioPreview';
-import {isTransientLive, liveSearched} from '../lib/search/live';
 import type { Track } from '../stores/player';
 import { useSearchHistoryStore } from '../stores/searchHistory';
 import { useSearchPrefsStore } from '../stores/searchPrefs';
@@ -43,8 +41,8 @@ export function Search() {
   const setSource = useSearchPrefsStore((s) => s.setSource);
     const addQuery = useSearchHistoryStore((s) => s.addQuery);
 
-    const link = extractSoundCloudLink(q);
-    const query = link ? '' : debounced;
+    const isUrl = isSoundCloudUrl(q);
+    const query = isUrl ? '' : debounced;
     const hasQuery = query.trim().length >= 2;
     const hidden = useTabHidden();
 
@@ -63,21 +61,10 @@ export function Search() {
 
   useEffect(() => {
       const trimmed = debounced.trim();
-      if (trimmed.length >= 2 && !extractSoundCloudLink(trimmed)) addQuery(trimmed);
+      if (trimmed.length >= 2 && !isSoundCloudUrl(trimmed)) addQuery(trimmed);
   }, [debounced, addQuery]);
 
     const wall = useSearchWall(query, mode, source, dive);
-    const liveState = wall.live.state;
-    const [liveOff, setLiveOff] = useState(false);
-
-    useEffect(() => {
-        if (liveState !== 'searching' && liveState !== 'idle') setLiveOff(liveState === 'off');
-    }, [liveState]);
-
-    const retryAll = useCallback(() => {
-        wall.retry();
-        wall.retryLive();
-    }, [wall.retry, wall.retryLive]);
 
     // Play queue is read lazily at play time (see useTrackPlay/CoverTile): a fresh
     // array each append would defeat every tile's memo. Keep a ref + stable thunk.
@@ -113,7 +100,6 @@ export function Search() {
         setSource('db');
         setQ(g);
   };
-    const clearQuery = useCallback(() => setQ(''), [setQ]);
     const onDive = (track: Track) => setDive({urn: track.urn, title: track.title});
 
     // The wall would otherwise paint blank here (cold board, empty result, dive
@@ -160,38 +146,11 @@ export function Search() {
                 title: t('search.firstTimeTitle'),
                 body: t('search.firstTimeBody'),
             };
-        if (isTransientLive(liveState))
-            return {
-                icon: <CloudOff size={26}/>,
-                title: t('search.empty.liveDownTitle'),
-                body: t('search.empty.liveDownBody', {query: query.trim()}),
-                hint: t('search.empty.pasteHint'),
-                cta: t('search.live.retry'),
-                ctaIcon: <RefreshCw size={15}/>,
-                onAction: retryAll,
-            };
-        if (liveSearched(liveState))
-            return {
-                icon: <Cloud size={26}/>,
-                title: t('search.empty.bothTitle'),
-                body: t('search.empty.bothBody', {query: query.trim()}),
-                hint: t('search.empty.pasteHint'),
-            };
         if (source === 'sc')
             return {
                 icon: <Cloud size={26}/>,
                 title: t('search.empty.scTitle'),
                 body: t('search.empty.scBody', {query: query.trim()}),
-                hint: t('search.empty.pasteHint'),
-            };
-        if (mode === 'text' && liveState === 'off')
-            return {
-                icon: <Cloud size={26}/>,
-                title: t('search.empty.toScTitle'),
-                body: t('search.empty.toScBody', {query: query.trim()}),
-                cta: t('search.empty.toScCta'),
-                ctaIcon: <Cloud size={15}/>,
-                onAction: () => setSource('sc'),
             };
         if (mode === 'text')
             return {
@@ -215,9 +174,6 @@ export function Search() {
         wall.vibeUnavailable,
         wall.isError,
         wall.retry,
-        liveState,
-        retryAll,
-        setSource,
         dive,
         hasQuery,
         mode,
@@ -233,14 +189,13 @@ export function Search() {
           <Atmosphere tint={wall.atmosphere.tint} energy={wall.atmosphere.energy}/>
 
           <div className="relative pt-5" style={{isolation: 'isolate'}}>
-              {link ? (
-                  <ResolveCard url={link} onDone={clearQuery}/>
+              {isUrl ? (
+                  <ResolveCard url={q} onDone={() => setQ('')}/>
               ) : (
                   <>
                       {hasQuery && !dive && (
-                          <div className="flex flex-wrap items-center justify-center gap-2 px-4 mb-3">
-                              <SearchControls liveOff={liveOff}/>
-                              <LiveStatus key={query.trim()} live={wall.live} onRetry={wall.retryLive}/>
+                          <div className="flex justify-center px-4 mb-3">
+                              <SearchControls/>
                           </div>
                       )}
 
@@ -286,24 +241,20 @@ export function Search() {
                               icon={empty.icon}
                               title={empty.title}
                               body={empty.body}
-                              hint={empty.hint}
                               cta={empty.cta}
                               ctaIcon={empty.ctaIcon}
                               onAction={empty.onAction}
                           />
                       ) : (
-                          <div ref={wall.wallRef}>
-                              <Wall
-                                  items={wall.items}
-                                  getQueue={getQueue}
-                                  isLoading={wall.isLoading}
-                                  hasMore={wall.hasMore}
-                                  isFetchingMore={wall.isFetchingMore}
-                                  onLoadMore={wall.loadMore}
-                                  onDive={onDive}
-                                  dimmed={wall.dimmed}
-                              />
-                          </div>
+                          <Wall
+                              items={wall.items}
+                              getQueue={getQueue}
+                              isLoading={wall.isLoading}
+                              hasMore={wall.hasMore}
+                              isFetchingMore={wall.isFetchingMore}
+                              onLoadMore={wall.loadMore}
+                              onDive={onDive}
+                          />
                       )}
                   </>
               )}

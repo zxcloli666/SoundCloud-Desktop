@@ -1,7 +1,6 @@
 import {
   type DefaultError,
   type InfiniteData,
-  keepPreviousData,
   type QueryKey,
   useInfiniteQuery,
   type UseInfiniteQueryResult,
@@ -15,7 +14,6 @@ import {api} from './api';
 import {initLikedUrns} from './likes';
 import {rememberLikedTracks, rememberTracks} from './offline-index';
 import {fetchRelatedTracks} from './related';
-import {isTransientLive, type LiveMeta, liveOf, type SearchIntent} from './search/live';
 
 /* ── Types ─────────────────────────────────────────────────────── */
 
@@ -36,8 +34,6 @@ export interface PagedResponse<T> {
   page: number;
   page_size: number;
   has_more: boolean;
-  live?: LiveMeta;
-  weak?: boolean;
 }
 
 type TrackPage = PagedResponse<Track>;
@@ -185,14 +181,11 @@ interface PagedQueryOptions<T> {
   /** Builds the URL for a given page index. limit and page are appended automatically. */
   url: (page: number, limit: number) => string;
   limit?: number;
-  staleTime?: number | ((query: { state: { data?: InfiniteData<PagedResponse<T>, number> } }) => number);
+  staleTime?: number;
   gcTime?: number;
   enabled?: boolean;
   maxPages?: number;
   timeoutMs?: number;
-  headers?: Record<string, string>;
-  retry?: number;
-  keepPrevious?: boolean;
   /** Auto-fetch all pages until exhausted. Use sparingly. */
   autoFetchAll?: boolean;
   dedupe?: (item: T) => string;
@@ -218,16 +211,10 @@ function usePagedQuery<T>(opts: PagedQueryOptions<T>): PagedQueryResult<T> {
   >({
     queryKey: opts.queryKey,
     queryFn: ({ pageParam }) =>
-      api<PagedResponse<T>>(
-        opts.url(pageParam, limit),
-        opts.headers ? { headers: opts.headers } : undefined,
-        opts.timeoutMs,
-      ),
+      api<PagedResponse<T>>(opts.url(pageParam, limit), undefined, opts.timeoutMs),
     initialPageParam: 0,
     getNextPageParam: (last) => (last.has_more ? last.page + 1 : undefined),
     staleTime: opts.staleTime,
-    ...(opts.retry === undefined ? {} : { retry: opts.retry }),
-    placeholderData: opts.keepPrevious ? keepPreviousData : undefined,
     gcTime: opts.gcTime ?? INFINITE_GC_MS,
     maxPages: opts.maxPages,
     enabled: opts.enabled,
@@ -786,40 +773,48 @@ export function useDeletePlaylist() {
 
 /* ── Search ────────────────────────────────────────────────────── */
 
-const urnOf = (item: { urn: string }) => item.urn;
-
-function liveStaleTime(query: { state: { data?: { pages: Array<{ live?: LiveMeta }> } } }): number {
-  return isTransientLive(liveOf(query.state.data)?.state) ? 0 : SEARCH_CACHE_MS;
-}
-
-function useLiveSearch<T extends { urn: string }>(path: string, q: string, intent: SearchIntent) {
-  const query = usePagedQuery<T>({
-    queryKey: ['search', path, q, intent],
-    url: (page, limit) => pagedUrl(`/${path}`, page, limit, `q=${encodeURIComponent(q)}`),
+export function useSearchTracks(q: string) {
+  const query = usePagedQuery<Track>({
+    queryKey: ['search', 'tracks', q],
+    url: (page, limit) => pagedUrl('/tracks', page, limit, `q=${encodeURIComponent(q)}`),
     limit: 20,
-    staleTime: liveStaleTime,
+    staleTime: SEARCH_CACHE_MS,
     timeoutMs: SEARCH_TIMEOUT_MS,
-    headers: { 'x-search-intent': intent },
-    retry: 0,
     maxPages: 5,
     enabled: !!q.trim(),
-    dedupe: urnOf,
+    dedupe: (t) => t.urn,
   });
-  return Object.assign(query, { live: liveOf(query.data) });
-}
 
-export function useSearchTracks(q: string, intent: SearchIntent = 'sc') {
-  const query = useLiveSearch<Track>('tracks', q, intent);
   return { tracks: query.items, ...query };
 }
 
-export function useSearchPlaylists(q: string, intent: SearchIntent = 'sc') {
-  const query = useLiveSearch<Playlist>('playlists', q, intent);
+export function useSearchPlaylists(q: string) {
+  const query = usePagedQuery<Playlist>({
+    queryKey: ['search', 'playlists', q],
+    url: (page, limit) => pagedUrl('/playlists', page, limit, `q=${encodeURIComponent(q)}`),
+    limit: 20,
+    staleTime: SEARCH_CACHE_MS,
+    timeoutMs: SEARCH_TIMEOUT_MS,
+    maxPages: 5,
+    enabled: !!q.trim(),
+    dedupe: (p) => p.urn,
+  });
+
   return { playlists: query.items, ...query };
 }
 
-export function useSearchUsers(q: string, intent: SearchIntent = 'sc') {
-  const query = useLiveSearch<SCUser>('users', q, intent);
+export function useSearchUsers(q: string) {
+  const query = usePagedQuery<SCUser>({
+    queryKey: ['search', 'users', q],
+    url: (page, limit) => pagedUrl('/users', page, limit, `q=${encodeURIComponent(q)}`),
+    limit: 20,
+    staleTime: SEARCH_CACHE_MS,
+    timeoutMs: SEARCH_TIMEOUT_MS,
+    maxPages: 5,
+    enabled: !!q.trim(),
+    dedupe: (u) => u.urn,
+  });
+
   return { users: query.items, ...query };
 }
 
@@ -834,7 +829,6 @@ export function useSearchUsers(q: string, intent: SearchIntent = 'sc') {
 
 const SEARCH_DB_LIMIT = 20;
 const SEARCH_DB_MAX_PAGES = 10;
-const WALL_INTENT = { 'x-search-intent': 'wall' };
 
 export function useSearchDbTracks(q: string, userUrn?: string) {
   const query = usePagedQuery<Track>({
@@ -849,13 +843,11 @@ export function useSearchDbTracks(q: string, userUrn?: string) {
     limit: SEARCH_DB_LIMIT,
     staleTime: SEARCH_CACHE_MS,
     timeoutMs: SEARCH_TIMEOUT_MS,
-    headers: WALL_INTENT,
-    keepPrevious: true,
     maxPages: SEARCH_DB_MAX_PAGES,
     enabled: !!q.trim(),
     dedupe: (t) => t.urn,
   });
-  return { tracks: query.items, weak: query.data?.pages[0]?.weak, ...query };
+  return { tracks: query.items, ...query };
 }
 
 export function useSearchDbPlaylists(q: string, userUrn?: string) {
@@ -871,7 +863,6 @@ export function useSearchDbPlaylists(q: string, userUrn?: string) {
     limit: SEARCH_DB_LIMIT,
     staleTime: SEARCH_CACHE_MS,
     timeoutMs: SEARCH_TIMEOUT_MS,
-    headers: WALL_INTENT,
     maxPages: SEARCH_DB_MAX_PAGES,
     enabled: !!q.trim(),
     dedupe: (p) => p.urn,
@@ -886,7 +877,6 @@ export function useSearchDbUsers(q: string) {
     limit: SEARCH_DB_LIMIT,
     staleTime: SEARCH_CACHE_MS,
     timeoutMs: SEARCH_TIMEOUT_MS,
-    headers: WALL_INTENT,
     maxPages: SEARCH_DB_MAX_PAGES,
     enabled: !!q.trim(),
     dedupe: (u) => u.urn,
@@ -901,7 +891,6 @@ export function useSearchDbArtists(q: string) {
     limit: SEARCH_DB_LIMIT,
     staleTime: SEARCH_CACHE_MS,
     timeoutMs: SEARCH_TIMEOUT_MS,
-    headers: WALL_INTENT,
     maxPages: SEARCH_DB_MAX_PAGES,
     enabled: !!q.trim(),
     dedupe: (a) => a.id,
@@ -916,7 +905,6 @@ export function useSearchDbAlbums(q: string) {
     limit: SEARCH_DB_LIMIT,
     staleTime: SEARCH_CACHE_MS,
     timeoutMs: SEARCH_TIMEOUT_MS,
-    headers: WALL_INTENT,
     maxPages: SEARCH_DB_MAX_PAGES,
     enabled: !!q.trim(),
     dedupe: (a) => a.id,

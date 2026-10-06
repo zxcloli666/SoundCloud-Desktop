@@ -180,16 +180,6 @@ function YMImportDialog({
                               <span className="text-red-400">
                   {t('ym.notFound')}: {progress.not_found}
                 </span>
-                              {progress.uncertain > 0 && (
-                                  <span className="text-amber-300/80">
-                                      {t('ym.uncertain')}: {progress.uncertain}
-                                  </span>
-                              )}
-                              {progress.failed > 0 && (
-                                  <span className="text-white/50">
-                                      {t('ym.failed')}: {progress.failed}
-                                  </span>
-                              )}
                           </div>
                           {progress.current_track && (
                               <p className="text-[12px] text-white/30 truncate">{progress.current_track}</p>

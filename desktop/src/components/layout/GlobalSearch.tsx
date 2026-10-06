@@ -6,7 +6,7 @@ import {usePerfMode} from '../../lib/perf';
 import {isMac} from '../../lib/platform';
 import {useSearchHistoryStore} from '../../stores/searchHistory';
 import {useSearchQueryStore} from '../../stores/searchQuery';
-import {extractSoundCloudLink} from '../search/utils';
+import {isSoundCloudUrl} from '../search/utils';
 
 /* The one global search field — lives in the titlebar, present on every page.
  * Writes the shared query store and routes to /search; the Search page reads
@@ -28,7 +28,7 @@ export const GlobalSearch = memo(function GlobalSearch() {
 
     const [focused, setFocused] = useState(false);
     const blurTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-    const isUrl = extractSoundCloudLink(q) !== null;
+    const isUrl = isSoundCloudUrl(q);
     const showHistory = focused && q.trim() === '' && history.length > 0;
 
     useEffect(
@@ -44,12 +44,6 @@ export const GlobalSearch = memo(function GlobalSearch() {
     const change = (v: string) => {
         setQ(v);
         if (v) goSearch();
-    };
-    const paste = (e: React.ClipboardEvent<HTMLInputElement>) => {
-        const link = extractSoundCloudLink(e.clipboardData.getData('text'));
-        if (!link) return;
-        e.preventDefault();
-        change(link);
     };
     const pick = (value: string) => {
         setQ(value);
@@ -90,7 +84,6 @@ export const GlobalSearch = memo(function GlobalSearch() {
                     id="global-search-input"
                     value={q}
                     onChange={(e) => change(e.target.value)}
-                    onPaste={paste}
                     onFocus={() => {
                         if (blurTimer.current) clearTimeout(blurTimer.current);
                         setFocused(true);

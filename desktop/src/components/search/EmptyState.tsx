@@ -5,7 +5,6 @@ interface EmptyStateProps {
     icon: React.ReactNode;
     title: string;
     body: string;
-    hint?: string;
     /** Optional CTA — omit on the landing fallback (the lens is right above). */
     cta?: string;
     ctaIcon?: React.ReactNode;
@@ -18,7 +17,6 @@ export const EmptyState = memo(function EmptyState({
                                                        icon,
                                                        title,
                                                        body,
-                                                       hint,
                                                        cta,
                                                        ctaIcon,
                                                        onAction,
@@ -54,7 +52,6 @@ export const EmptyState = memo(function EmptyState({
                 <div className="flex flex-col gap-1.5">
                     <p className="text-lg font-bold text-white/90">{title}</p>
                     <p className="text-[13px] leading-relaxed text-white/45">{body}</p>
-                    {hint && <p className="text-[12px] leading-relaxed text-white/30">{hint}</p>}
                 </div>
                 {cta && onAction && (
                     <button

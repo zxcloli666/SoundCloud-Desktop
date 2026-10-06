@@ -1,4 +1,4 @@
-import {Cloud, Compass, Pause, Play, Sparkles} from 'lucide-react';
+import {Compass, Pause, Play, Sparkles} from 'lucide-react';
 import {memo} from 'react';
 import {useTranslation} from 'react-i18next';
 import {preloadTrack} from '../../lib/audio';
@@ -36,8 +36,7 @@ function breathStyle(urn: string): React.CSSProperties {
 export const CoverTile = memo(function CoverTile({ item, getQueue, onDive }: CoverTileProps) {
   const { t } = useTranslation();
   const perf = usePerfMode();
-  const { track, kind, matchedLine, hero, live } = item;
-  const preview = track.access === 'preview';
+  const { track, kind, matchedLine, hero } = item;
   const displayTitle = useDisplayTitle(track);
   const artistDisplay = useArtistDisplay(track);
   const { isThis, isThisPlaying, togglePlay } = useTrackPlay(track, getQueue);
@@ -156,27 +155,6 @@ export const CoverTile = memo(function CoverTile({ item, getQueue, onDive }: Cov
           {kind === 'vibe' && (
             <div className="absolute top-2 left-2 text-accent/70 group-hover:text-accent transition-colors duration-300">
               <Sparkles size={hero ? 16 : 12} />
-            </div>
-          )}
-
-          {(live || preview) && !matchedLine && (
-            <div className="absolute bottom-2 left-2 flex items-center gap-1 transition-opacity duration-300 group-hover:opacity-0">
-              {live && (
-                <span
-                  title={t('search.live.tileHint')}
-                  className="text-accent/70 drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]"
-                >
-                  <Cloud size={hero ? 16 : 12} />
-                </span>
-              )}
-              {preview && (
-                <span
-                  className="h-4 px-1.5 rounded-full text-[9px] font-semibold uppercase tracking-wide leading-4 text-white/85"
-                  style={{ background: 'rgba(0,0,0,0.62)', border: '0.5px solid rgba(255,255,255,0.18)' }}
-                >
-                  {t('search.live.preview')}
-                </span>
-              )}
             </div>
           )}
 

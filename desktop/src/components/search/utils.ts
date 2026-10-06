@@ -14,7 +14,6 @@ export interface WallItem {
     matchedLine?: string | null;
     /** Seeded 2×2 anchor tile that breaks the grid rhythm. */
     hero?: boolean;
-    live?: boolean;
 }
 
 /* ── Genres ──────────────────────────────────────────────────────
@@ -140,43 +139,10 @@ export function topGenres(
         }));
 }
 
-const SC_LINK = /(?:^|[^\w.@-])((?:https?:\/\/)?(?:(?:www|m|on|w|api)\.)?(?:soundcloud\.com|snd\.sc)\/[^\s"'<>]+)/i;
-const SC_URN = /\bsoundcloud:(tracks|playlists|users):(\d+)\b/i;
-const ENTITY_KINDS = new Set(['tracks', 'playlists', 'users']);
-const TRACKING_PARAM = /^(si|in|ref|utm_.*)$/i;
+const SC_URL = /^https?:\/\/(www\.|m\.|on\.)?soundcloud\.com\/.+/i;
 
-export function extractSoundCloudLink(text: string): string | null {
-    const urn = SC_URN.exec(text);
-    const link = SC_LINK.exec(text);
-    const linkIndex = link ? link.index + link[0].length - link[1].length : -1;
-    if (urn && (!link || urn.index < linkIndex)) {
-        return `soundcloud:${urn[1].toLowerCase()}:${urn[2]}`;
-    }
-    return link ? normalizeSoundCloudLink(link[1].replace(/[.,!?)\]]+$/, '')) : null;
-}
-
-function normalizeSoundCloudLink(raw: string): string | null {
-    let url: URL;
-    try {
-        url = new URL(/^https?:\/\//i.test(raw) ? raw : `https://${raw}`);
-    } catch {
-        return null;
-    }
-    const host = url.hostname.toLowerCase();
-    if (host === 'w.soundcloud.com') {
-        const inner = url.searchParams.get('url');
-        return inner ? extractSoundCloudLink(inner) : null;
-    }
-    if (host === 'api.soundcloud.com') {
-        const [kind, id] = url.pathname.split('/').filter(Boolean);
-        return ENTITY_KINDS.has(kind) && /^\d+$/.test(id ?? '') ? `soundcloud:${kind}:${id}` : null;
-    }
-    for (const key of [...url.searchParams.keys()]) {
-        if (TRACKING_PARAM.test(key)) url.searchParams.delete(key);
-    }
-    url.protocol = 'https:';
-    url.hash = '';
-    return url.pathname.length > 1 ? url.toString() : null;
+export function isSoundCloudUrl(input: string): boolean {
+    return SC_URL.test(input.trim());
 }
 
 /** Positional hero stride — used ONLY for the loading skeleton. */

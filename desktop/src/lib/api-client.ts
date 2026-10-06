@@ -70,16 +70,10 @@ export class ApiError extends Error {
   constructor(
     public status: number,
     public body: string,
-    public retryAfterSec?: number,
   ) {
     super(`API ${status}: ${body}`);
     this.name = 'ApiError';
   }
-}
-
-function retryAfterOf(headers: Headers): number | undefined {
-  const seconds = Number.parseInt(headers.get('retry-after') ?? '', 10);
-  return Number.isFinite(seconds) && seconds > 0 ? seconds : undefined;
 }
 
 function isRateLimitError(status: number, body: string): boolean {
@@ -314,7 +308,7 @@ export async function apiRequest<T = unknown>(
 
       if (!res.ok) {
         const body = await res.text();
-        const err = new ApiError(res.status, body, retryAfterOf(res.headers));
+        const err = new ApiError(res.status, body);
 
         // Ожидаемый гейт-отказ star (не-премиум): не шум, а подозрение —
         // сверочный запрос сам себя не триггерит.
