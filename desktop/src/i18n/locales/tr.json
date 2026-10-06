@@ -142,6 +142,7 @@
   },
   "track": {
     "comments": "Yorumlar",
+    "previewOnly": "Sadece onizleme",
     "related": "Benzer Parcalar",
     "addComment": "Yorum ekle...",
     "plays": "dinlenme",
