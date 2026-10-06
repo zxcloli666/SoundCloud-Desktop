@@ -236,7 +236,10 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
     });
   }, [playlist, deletePlaylist, navigate, t]);
 
-  const declaredCount = playlist?.track_count ?? 0;
+  const editedInApp = (tracksSync?.lastOperationSequence ?? 0) > 0;
+  const declaredCount = editedInApp
+    ? (tracksSync?.projectionTrackCount ?? 0)
+    : (playlist?.track_count ?? 0);
   const missingTracks = !hasNextPage && tracks.length < declaredCount;
   const tracksSyncStatus = tracksSync?.status ?? '';
   const tracksUnreadable =

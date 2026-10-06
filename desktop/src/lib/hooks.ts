@@ -47,6 +47,11 @@ export interface PagedResponse<T> {
 
 type TrackPage = PagedResponse<Track>;
 
+export interface PlaylistSync extends CollectionSync {
+  lastOperationSequence: number;
+  projectionTrackCount: number;
+}
+
 export interface Comment {
   id: number;
   urn: string;
@@ -512,7 +517,8 @@ export function usePlaylistTracks(playlistUrn: string | undefined) {
     autoFetchAll: true,
   });
 
-  return { tracks: query.items, sync: query.data?.pages[0]?.sync, ...query };
+  const sync = query.data?.pages[0]?.sync as PlaylistSync | undefined;
+  return { tracks: query.items, sync, ...query };
 }
 
 /* ── User Profile (cold) ──────────────────────────────────────── */
