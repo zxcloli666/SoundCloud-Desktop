@@ -1029,7 +1029,7 @@ impl TrackCacheState {
                 Err(err.to_string())
             }
             Err(_) => {
-                crate::network::edge::note_url(PRESIGN_ORIGIN, Tier::Direct, false);
+                crate::network::edge::note_url(redirect_url, Tier::Direct, false);
                 Err(format!("no headers in {}s", headers.as_secs()))
             }
         }
