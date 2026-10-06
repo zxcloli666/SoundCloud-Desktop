@@ -11,6 +11,7 @@ import {
 import {useEffect, useMemo, useRef} from 'react';
 import type {Track} from '../stores/player';
 import {api} from './api';
+import type {ApiRequestOptions} from './api-client';
 import {initLikedUrns} from './likes';
 import {rememberLikedTracks, rememberTracks} from './offline-index';
 import {fetchRelatedTracks} from './related';
@@ -189,9 +190,12 @@ interface PagedQueryOptions<T> {
   /** Auto-fetch all pages until exhausted. Use sparingly. */
   autoFetchAll?: boolean;
   dedupe?: (item: T) => string;
+  request?: ApiRequestOptions;
+  retry?: (failureCount: number, error: Error) => boolean;
+  retryDelay?: (failureCount: number, error: Error) => number;
 }
 
-type PagedQueryResult<T> = UseInfiniteQueryResult<
+export type PagedQueryResult<T> = UseInfiniteQueryResult<
   InfiniteData<PagedResponse<T>, number>,
   DefaultError
 > & { items: T[] };
@@ -200,7 +204,7 @@ type PagedQueryResult<T> = UseInfiniteQueryResult<
  * Унифицированный page-based useInfiniteQuery helper. Бэк отдаёт
  * { collection, page, page_size, has_more } — этого достаточно для пагинации.
  */
-function usePagedQuery<T>(opts: PagedQueryOptions<T>): PagedQueryResult<T> {
+export function usePagedQuery<T>(opts: PagedQueryOptions<T>): PagedQueryResult<T> {
   const limit = opts.limit ?? 30;
   const query = useInfiniteQuery<
     PagedResponse<T>,
@@ -211,13 +215,15 @@ function usePagedQuery<T>(opts: PagedQueryOptions<T>): PagedQueryResult<T> {
   >({
     queryKey: opts.queryKey,
     queryFn: ({ pageParam }) =>
-      api<PagedResponse<T>>(opts.url(pageParam, limit), undefined, opts.timeoutMs),
+      api<PagedResponse<T>>(opts.url(pageParam, limit), opts.request, opts.timeoutMs),
     initialPageParam: 0,
     getNextPageParam: (last) => (last.has_more ? last.page + 1 : undefined),
     staleTime: opts.staleTime,
     gcTime: opts.gcTime ?? INFINITE_GC_MS,
     maxPages: opts.maxPages,
     enabled: opts.enabled,
+    retry: opts.retry,
+    retryDelay: opts.retryDelay,
     // Списки рефрешатся только явными invalidate'ами из мутаций. Remount/
     // reconnect не должен перетягивать весь infinite-query: для SC cursor-лент
     // это перепроходит сдвинувшийся курсор и тасует выдачу. Focus-рефетч уже
@@ -242,7 +248,7 @@ function usePagedQuery<T>(opts: PagedQueryOptions<T>): PagedQueryResult<T> {
   return Object.assign(query, { items }) as PagedQueryResult<T>;
 }
 
-function pagedUrl(base: string, page: number, limit: number, extra?: string): string {
+export function pagedUrl(base: string, page: number, limit: number, extra?: string): string {
   const sep = base.includes('?') ? '&' : '?';
   const params = `limit=${limit}&page=${page}${extra ? `&${extra}` : ''}`;
   return `${base}${sep}${params}`;
