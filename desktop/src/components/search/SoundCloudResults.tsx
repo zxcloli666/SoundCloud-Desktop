@@ -52,6 +52,7 @@ export const SoundCloudResults = memo(function SoundCloudResults({ q }: { q: str
     !tracks.isLoading &&
     !tracks.isError &&
     !stripsLoading &&
+    failedStrips.length === 0 &&
     wallTracks.length === 0 &&
     chips.length === 0;
 
