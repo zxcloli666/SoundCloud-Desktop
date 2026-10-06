@@ -164,17 +164,27 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
 
   const handleRemoveTrack = useCallback(
     (trackUrn: string) => {
-      setLocalTracks(localTracks.filter((tr) => tr.urn !== trackUrn));
+      const index = localTracks.findIndex((tr) => tr.urn === trackUrn);
+      if (index === -1) return;
+      const removed = localTracks[index];
+      setLocalTracks((current) => current.filter((tr) => tr.urn !== trackUrn));
       pendingRemovalsRef.current += 1;
-      removeTrack.mutate(trackUrn, {
-        onSuccess: () => toast.success(t('playlist.trackRemoved')),
-        onError: () => setLocalTracks(serverTracks),
-        onSettled: () => {
+      removeTrack
+        .mutateAsync(trackUrn)
+        .then(() => toast.success(t('playlist.trackRemoved')))
+        .catch(() =>
+          setLocalTracks((current) => {
+            if (current.some((tr) => tr.urn === trackUrn)) return current;
+            const next = [...current];
+            next.splice(Math.min(index, next.length), 0, removed);
+            return next;
+          }),
+        )
+        .finally(() => {
           pendingRemovalsRef.current -= 1;
-        },
-      });
+        });
     },
-    [localTracks, removeTrack, serverTracks, t],
+    [localTracks, removeTrack, t],
   );
 
   // Доигрываем плейлист ДО КОНЦА (пагинированный срез в очереди → потом волна),
