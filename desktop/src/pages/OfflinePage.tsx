@@ -39,6 +39,8 @@ export const OfflinePage = React.memo(() => {
   const online = lib.appMode === 'online';
   const authStatus = useAuthStatus({ enabled: online });
   const probing = useHostStatusStore((s) => s.probing);
+  const mainUp = useHostStatusStore((s) => s.main === 'up');
+  const backendReachable = useAppStatusStore((s) => s.navigatorOnline && s.backendReachable);
   const [tryingOnline, setTryingOnline] = useState(false);
 
   const [section, setSection] = useState<OfflineSection>('likes');
@@ -120,13 +122,14 @@ export const OfflinePage = React.memo(() => {
   );
 
   useEffect(() => {
-    if (!tryingOnline) return;
-    if (online) navigate('/home');
-    else if (!probing) setTryingOnline(false);
-  }, [tryingOnline, online, probing, navigate]);
+    if (!tryingOnline || probing) return;
+    setTryingOnline(false);
+    if (!online && !(backendReachable && mainUp)) return;
+    useAppStatusStore.getState().setOfflineBypass(false);
+    navigate('/home');
+  }, [tryingOnline, online, probing, backendReachable, mainUp, navigate]);
 
   const handleTryOnline = useCallback(() => {
-    useAppStatusStore.getState().setOfflineBypass(false);
     setTryingOnline(true);
     requestProbe({ force: true });
   }, []);
