@@ -1,5 +1,5 @@
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::{Arc, Mutex, TryLockError};
+use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 use discord_rich_presence::{
@@ -109,11 +109,7 @@ pub async fn discord_set_activity(
 }
 
 fn set_activity(state: &DiscordState, track: DiscordTrackInfo) -> Result<(), String> {
-    let mut guard = match state.client.try_lock() {
-        Ok(guard) => guard,
-        Err(TryLockError::WouldBlock) => return Ok(()),
-        Err(e) => return Err(e.to_string()),
-    };
+    let mut guard = state.client.lock().map_err(|e| e.to_string())?;
     let client = guard.as_mut().ok_or("Discord not connected")?;
 
     let now = std::time::SystemTime::now()
@@ -191,11 +187,7 @@ pub async fn discord_clear_activity(
 }
 
 fn clear_activity(state: &DiscordState) -> Result<(), String> {
-    let mut guard = match state.client.try_lock() {
-        Ok(guard) => guard,
-        Err(TryLockError::WouldBlock) => return Ok(()),
-        Err(e) => return Err(e.to_string()),
-    };
+    let mut guard = state.client.lock().map_err(|e| e.to_string())?;
     if let Some(ref mut client) = *guard {
         client
             .clear_activity()
