@@ -4,8 +4,10 @@ use std::sync::{Mutex, OnceLock};
 use std::time::{Duration, Instant};
 
 use serde::{Deserialize, Serialize};
+use tauri::Emitter;
 
 const STATE_FILE: &str = "edge_state.json";
+const CONFIG_EVENT: &str = "edge:config";
 const REVALIDATE: Duration = Duration::from_secs(600);
 
 const RELAY_ZONE: &str = "relay.scnative.space";
@@ -515,11 +517,12 @@ pub fn direct_first(url: &str) -> bool {
     plan(url).first().is_none_or(|hop| hop.tier == Tier::Direct)
 }
 
-#[derive(Serialize)]
+#[derive(Clone, Serialize)]
 pub struct EdgeConfig {
     relays: Vec<(String, Vec<String>)>,
 
     hints: HashMap<String, Tier>,
+    revalidate_in_ms: HashMap<String, u64>,
     revalidate_ms: u64,
 }
 
@@ -530,6 +533,7 @@ pub fn edge_config() -> EdgeConfig {
         Ok(g) => g,
         Err(e) => e.into_inner(),
     };
+    let now = Instant::now();
     EdgeConfig {
         relays: RELAYS
             .iter()
@@ -540,8 +544,20 @@ pub fn edge_config() -> EdgeConfig {
             .iter()
             .map(|(h, s)| (h.clone(), s.tier))
             .collect(),
+        revalidate_in_ms: inner
+            .origins
+            .iter()
+            .map(|(h, s)| {
+                let left = s.revalidate_at.saturating_duration_since(now);
+                (h.clone(), left.as_millis() as u64)
+            })
+            .collect(),
         revalidate_ms: REVALIDATE.as_millis() as u64,
     }
+}
+
+pub fn announce(app: &crate::rt::AppHandle) {
+    app.emit(CONFIG_EVENT, edge_config()).ok();
 }
 
 #[tauri::command]
@@ -723,6 +739,15 @@ mod tests {
         super::note("s3.scnative.space", Tier::Relay, true);
         assert!(!super::direct_first("https://s3.scnative.space/a"));
         assert!(super::direct_first("https://example.org/a"));
+    }
+
+    #[test]
+    fn the_webview_learns_how_long_a_relay_pin_still_holds() {
+        super::note("pay.scnative.space", Tier::Relay, true);
+        let config = super::edge_config();
+        assert_eq!(config.hints.get("pay.scnative.space"), Some(&Tier::Relay));
+        let left = config.revalidate_in_ms["pay.scnative.space"];
+        assert!(left > 0 && left <= REVALIDATE.as_millis() as u64);
     }
 
     #[test]

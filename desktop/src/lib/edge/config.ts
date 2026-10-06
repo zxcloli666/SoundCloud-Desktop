@@ -6,6 +6,7 @@
 // одному тиру; в ядро уходит только СМЕНА вердикта, не каждый запрос.
 // Состав relay-пула приезжает из ядра — новую ноду сюда дописывать не нужно.
 
+import { listen } from '@tauri-apps/api/event';
 import { trackedInvoke as invoke } from '../diagnostics';
 
 export type Tier = 'direct' | 'relay';
@@ -19,6 +20,7 @@ export interface Hop {
 interface RustConfig {
   relays: [string, string[]][];
   hints: Record<string, Tier>;
+  revalidate_in_ms: Record<string, number>;
   revalidate_ms: number;
 }
 
@@ -35,24 +37,35 @@ const PROVEN_BYTES = 64 * 1024;
 let relays = new Map<string, string[]>();
 let revalidateMs = 600_000;
 const origins = new Map<string, OriginState>();
+const reported = new Map<string, Tier>();
 
 /** Дёргать до первого сетевого запроса. Без конфига остаётся прямой путь. */
 export async function initEdge(): Promise<void> {
+  await listen<RustConfig>('edge:config', (event) => applyConfig(event.payload)).catch(() => {});
   try {
-    const cfg = await invoke<RustConfig>('edge_config');
-    relays = new Map(cfg.relays);
-    revalidateMs = cfg.revalidate_ms || revalidateMs;
-    const now = Date.now();
-    for (const [host, tier] of Object.entries(cfg.hints ?? {})) {
-      if (tier === 'direct') continue;
-      origins.set(host, {
-        tier,
-        revalidateAt: now + revalidateMs,
-        directFails: DIRECT_FAIL_THRESHOLD,
-      });
-    }
+    applyConfig(await invoke<RustConfig>('edge_config'));
   } catch {
     // Ядро не ответило — работаем как раньше.
+  }
+}
+
+function applyConfig(cfg: RustConfig): void {
+  relays = new Map(cfg.relays);
+  revalidateMs = cfg.revalidate_ms || revalidateMs;
+  const now = Date.now();
+  for (const [host, tier] of Object.entries(cfg.hints ?? {})) {
+    reported.set(host, tier);
+    const prev = origins.get(host);
+    if (tier === 'direct') {
+      if (prev?.tier === 'relay') origins.delete(host);
+      continue;
+    }
+    const revalidateAt = now + (cfg.revalidate_in_ms[host] ?? revalidateMs);
+    origins.set(host, {
+      tier,
+      revalidateAt: prev?.tier === tier ? Math.max(prev.revalidateAt, revalidateAt) : revalidateAt,
+      directFails: DIRECT_FAIL_THRESHOLD,
+    });
   }
 }
 
@@ -109,8 +122,6 @@ export function planHops(url: string): Hop[] {
  * и одиночный «direct не ответил» его бы не сдвинул — вердикт фронта потерялся бы.
  * Шлём только смену, поэтому IPC не идёт на каждый запрос.
  */
-const reported = new Map<string, Tier>();
-
 function report(origin: string, tier: Tier): void {
   if (reported.get(origin) === tier) return;
   reported.set(origin, tier);

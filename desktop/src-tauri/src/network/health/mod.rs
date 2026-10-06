@@ -99,6 +99,7 @@ impl Agent {
                 probe::usable_first(&pool.relays, &last_paths),
                 topology.weighted_calls(&pool.calls),
             );
+            edge::announce(&self.app);
 
             let paths = probe::probe_paths(&self.probe_client, &pool, round).await;
             edge::set_pool(probe::usable_first(&pool.relays, &paths), Vec::new());
@@ -115,6 +116,7 @@ impl Agent {
                 probe::direct_bytes(&paths),
             )
             .await;
+            edge::announce(&self.app);
             let late = self
                 .delivery
                 .report(&topology, &self.client_id, &self.app_version, &services)
