@@ -41,7 +41,7 @@ export const SearchControls = memo(function SearchControls({liveOff = false}: { 
             <button
                 type="button"
                 onClick={() => setSource(source === 'sc' ? 'db' : 'sc')}
-                title={t('search.source.scHint')}
+                title={liveOff ? t('search.live.off') : t('search.source.scHint')}
                 className={`inline-flex items-center gap-1 h-8 px-2.5 rounded-full text-[12px] font-medium transition-all duration-300 cursor-pointer ${
                     liveOff ? 'opacity-50' : ''
                 }`}

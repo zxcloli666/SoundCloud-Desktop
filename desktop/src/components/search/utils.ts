@@ -140,7 +140,7 @@ export function topGenres(
         }));
 }
 
-const SC_LINK = /(?:https?:\/\/)?(?:(?:www|m|on|w|api)\.)?(?:soundcloud\.com|snd\.sc)\/[^\s"'<>]+/i;
+const SC_LINK = /(?:^|[^\w.@-])((?:https?:\/\/)?(?:(?:www|m|on|w|api)\.)?(?:soundcloud\.com|snd\.sc)\/[^\s"'<>]+)/i;
 const SC_URN = /\bsoundcloud:(tracks|playlists|users):(\d+)\b/i;
 const ENTITY_KINDS = new Set(['tracks', 'playlists', 'users']);
 const TRACKING_PARAM = /^(si|in|ref|utm_.*)$/i;
@@ -148,10 +148,11 @@ const TRACKING_PARAM = /^(si|in|ref|utm_.*)$/i;
 export function extractSoundCloudLink(text: string): string | null {
     const urn = SC_URN.exec(text);
     const link = SC_LINK.exec(text);
-    if (urn && (!link || urn.index < link.index)) {
+    const linkIndex = link ? link.index + link[0].length - link[1].length : -1;
+    if (urn && (!link || urn.index < linkIndex)) {
         return `soundcloud:${urn[1].toLowerCase()}:${urn[2]}`;
     }
-    return link ? normalizeSoundCloudLink(link[0].replace(/[.,!?)\]]+$/, '')) : null;
+    return link ? normalizeSoundCloudLink(link[1].replace(/[.,!?)\]]+$/, '')) : null;
 }
 
 function normalizeSoundCloudLink(raw: string): string | null {
