@@ -107,7 +107,12 @@ export const OfflinePage = React.memo(() => {
 
   const handleDownload = useCallback(
     (entry: OfflineEntry) => {
-      void ensureTrackCached(entry.urn, undefined, entry.track.duration, entry.track._scd_meta?.storage_quality)
+      void ensureTrackCached(
+        entry.urn,
+        undefined,
+        entry.track.duration,
+        entry.track._scd_meta?.storage_quality,
+      )
         .then(() => lib.refreshInventory())
         .catch((error) => console.warn('[Offline] Failed to cache track:', error));
     },

@@ -351,7 +351,8 @@ async function loadTrack(track: Track) {
       const info = await getCacheInfo(urn);
       if (info?.path) return info.path;
       try {
-        return (await ensureTrackCached(urn, highQualityStreaming, track.duration, storageQuality)).path;
+        return (await ensureTrackCached(urn, highQualityStreaming, track.duration, storageQuality))
+          .path;
       } catch {
         return null;
       }
@@ -391,7 +392,12 @@ async function loadTrack(track: Track) {
 
     let cachedInfo: TrackCacheInfo;
     try {
-      cachedInfo = await ensureTrackCached(urn, highQualityStreaming, track.duration, storageQuality);
+      cachedInfo = await ensureTrackCached(
+        urn,
+        highQualityStreaming,
+        track.duration,
+        storageQuality,
+      );
     } catch (error) {
       const premiumRefused = getLoadErrorText(error)?.includes('HTTP 403 Forbidden: forbidden');
       if (!highQualityStreaming || !premiumRefused) throw error;

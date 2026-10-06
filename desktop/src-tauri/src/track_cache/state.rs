@@ -1037,9 +1037,15 @@ impl TrackCacheState {
 
     async fn storage_get(&self, hop: &Hop) -> Result<wreq::Response, String> {
         let (client, headers) = if hop.tier == Tier::Relay {
-            (&self.client, Duration::from_secs(STORAGE_RELAY_HEADERS_TIMEOUT_SECS))
+            (
+                &self.client,
+                Duration::from_secs(STORAGE_RELAY_HEADERS_TIMEOUT_SECS),
+            )
         } else {
-            (&self.storage_client, Duration::from_millis(STORAGE_HEADERS_TIMEOUT_MS))
+            (
+                &self.storage_client,
+                Duration::from_millis(STORAGE_HEADERS_TIMEOUT_MS),
+            )
         };
         match tokio::time::timeout(headers, client.get(&hop.url).send()).await {
             Ok(sent) => sent.map_err(|err| err.to_string()),
@@ -1787,7 +1793,11 @@ impl TrackCacheState {
             session_id,
             hq,
             &job.receiving,
-            Arc::new(progress_emitter(self.app_handle.clone(), urn, DownloadSource::Direct)),
+            Arc::new(progress_emitter(
+                self.app_handle.clone(),
+                urn,
+                DownloadSource::Direct,
+            )),
         )
         .await
         .ok_or_else(|| "direct: no candidate succeeded".to_string())?;
