@@ -13,8 +13,7 @@ export function SettingsNav({
     onChange: (id: SettingsCategoryId) => void;
 }) {
     const {t} = useTranslation();
-    const perf = usePerfMode();
-    const b = perf.blur(40);
+    const blur = usePerfMode().blur(40);
     return (
         <nav className="w-[212px] shrink-0 hidden md:block">
             <div
@@ -22,11 +21,11 @@ export function SettingsNav({
                 style={{
                     border: '0.5px solid rgba(255,255,255,0.07)',
                     background:
-                        b > 0
+                        blur > 0
                             ? 'linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.012))'
                             : 'rgba(18,18,22,0.85)',
-                    backdropFilter: b > 0 ? `blur(${b}px) saturate(1.3)` : undefined,
-                    WebkitBackdropFilter: b > 0 ? `blur(${b}px) saturate(1.3)` : undefined,
+                    backdropFilter: blur > 0 ? `blur(${blur}px) saturate(1.3)` : undefined,
+                    WebkitBackdropFilter: blur > 0 ? `blur(${blur}px) saturate(1.3)` : undefined,
                     boxShadow: '0 18px 50px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.05)',
                 }}
             >

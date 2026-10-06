@@ -108,7 +108,7 @@ export const CallProxySection: React.FC = React.memo(() => {
   const animate = perf.idleAnim && (live || working);
   const glow = perf.glow;
   const meshOpacity = live ? 1 : working ? 0.85 : status.kind === 'failed' ? 0.7 : 0.55;
-  const b = perf.blur(40);
+  const blur = perf.blur(40);
 
   return (
     <section
@@ -116,11 +116,11 @@ export const CallProxySection: React.FC = React.memo(() => {
       style={{
         border: '0.5px solid rgba(255,255,255,0.1)',
         background:
-          b > 0
+          blur > 0
             ? 'linear-gradient(165deg, rgba(255,255,255,0.05), rgba(255,255,255,0.015) 60%, rgba(255,255,255,0.03))'
             : 'rgba(18,18,22,0.85)',
-        backdropFilter: b > 0 ? `blur(${b}px) saturate(1.4)` : undefined,
-        WebkitBackdropFilter: b > 0 ? `blur(${b}px) saturate(1.4)` : undefined,
+        backdropFilter: blur > 0 ? `blur(${blur}px) saturate(1.4)` : undefined,
+        WebkitBackdropFilter: blur > 0 ? `blur(${blur}px) saturate(1.4)` : undefined,
         boxShadow: live
           ? `0 18px 50px rgba(0,0,0,0.42), 0 0 56px ${net}33, inset 0 1px 0 rgba(255,255,255,0.06)`
           : '0 18px 50px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06)',

@@ -25,8 +25,12 @@ export default function YMImportFloatingStatus() {
   return (
     <div className="pointer-events-none fixed top-5 right-5 z-[70] animate-fade-in-up">
       <div
-        className="relative min-w-[220px] overflow-hidden rounded-[24px] border border-white/[0.14] bg-black/25 px-4 py-3 shadow-[0_16px_48px_rgba(0,0,0,0.3)] backdrop-blur-[30px]"
-        style={blur > 0 ? undefined : { background: 'rgba(18,18,22,0.85)' }}
+        className="relative min-w-[220px] overflow-hidden rounded-[24px] border border-white/[0.14] bg-black/25 px-4 py-3 shadow-[0_16px_48px_rgba(0,0,0,0.3)]"
+        style={
+          blur > 0
+            ? { backdropFilter: `blur(${blur}px)`, WebkitBackdropFilter: `blur(${blur}px)` }
+            : { background: 'rgba(18,18,22,0.85)' }
+        }
       >
         <div className="absolute inset-0 bg-[linear-gradient(145deg,rgba(255,255,255,0.18),rgba(255,255,255,0.05)_34%,rgba(255,255,255,0.02)_68%,rgba(255,255,255,0.08)_100%)]" />
         <div className="absolute inset-x-6 top-0 h-px bg-white/25" />

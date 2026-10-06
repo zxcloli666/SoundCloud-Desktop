@@ -20,17 +20,17 @@ const SOON_PARTICLES = [
  *  underlying toggle still toggles (state persists, drives nothing yet). */
 const ComingSoonOverlay = memo(function ComingSoonOverlay() {
     const {t} = useTranslation();
-    const b = usePerfMode().blur(10);
+    const blur = usePerfMode().blur(10);
     return (
         <div
             className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden rounded-2xl"
             style={{
                 background:
-                    b > 0
+                    blur > 0
                         ? 'linear-gradient(135deg, rgba(30,15,50,0.62) 0%, rgba(20,10,40,0.58) 50%, rgba(15,8,30,0.62) 100%)'
                         : 'rgba(22,12,38,0.92)',
-                backdropFilter: b > 0 ? `blur(${b}px) saturate(140%)` : undefined,
-                WebkitBackdropFilter: b > 0 ? `blur(${b}px) saturate(140%)` : undefined,
+                backdropFilter: blur > 0 ? `blur(${blur}px) saturate(140%)` : undefined,
+                WebkitBackdropFilter: blur > 0 ? `blur(${blur}px) saturate(140%)` : undefined,
                 border: '0.5px solid rgba(168,85,247,0.35)',
                 boxShadow:
                     '0 18px 50px rgba(0,0,0,0.35), 0 0 32px rgba(139,92,246,0.18), inset 0 1px 0 rgba(255,255,255,0.06)',
