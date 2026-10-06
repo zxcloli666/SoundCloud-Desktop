@@ -169,6 +169,12 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
       if (index === -1) return;
       const removed = localTracks[index];
       setLocalTracks((current) => current.filter((tr) => tr.urn !== trackUrn));
+      if (pendingMutationRef.current) {
+        debouncedUpdate(
+          localTracks.filter((tr) => tr.urn !== trackUrn),
+          t('playlist.reordered'),
+        );
+      }
       pendingRemovalsRef.current += 1;
       removeTrack
         .mutateAsync(trackUrn)
@@ -185,7 +191,7 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
           pendingRemovalsRef.current -= 1;
         });
     },
-    [localTracks, removeTrack, t],
+    [localTracks, removeTrack, debouncedUpdate, t],
   );
 
   // Доигрываем плейлист ДО КОНЦА (пагинированный срез в очереди → потом волна),
