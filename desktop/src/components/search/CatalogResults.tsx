@@ -59,6 +59,8 @@ export const CatalogResults = memo(function CatalogResults({ q }: { q: string })
     !lyrics.isLoading &&
     !stripsLoading &&
     !tracks.isError &&
+    !lyrics.isError &&
+    failedStrips.length === 0 &&
     tracks.items.length === 0 &&
     lyrics.items.length === 0 &&
     chips.length === 0;
