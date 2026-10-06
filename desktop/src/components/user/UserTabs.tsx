@@ -1,3 +1,4 @@
+import { CloudOff, RefreshCw } from 'lucide-react';
 import React, { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -5,8 +6,6 @@ import type { Aura } from '../../lib/aura';
 import { fc } from '../../lib/formatters';
 import {
   useInfiniteScroll,
-  useSearchDbPlaylists,
-  useSearchDbTracks,
   useUserFollowers,
   useUserFollowings,
   useUserLikedTracks,
@@ -16,7 +15,9 @@ import {
 } from '../../lib/hooks';
 import { Loader2, Music } from '../../lib/icons';
 import {usePerfMode} from '../../lib/perf';
+import { useCatalogPlaylists, useCatalogTracks } from '../../lib/search';
 import { PlaylistCard } from '../music/PlaylistCard';
+import { SearchState } from '../search/SearchState';
 import { Avatar } from '../ui/Avatar';
 import { VirtualGrid } from '../ui/VirtualGrid';
 import { VirtualList } from '../ui/VirtualList';
@@ -26,10 +27,19 @@ interface TabWrapperProps {
   isLoading: boolean;
   isEmpty: boolean;
   emptyText?: string;
+  isError?: boolean;
+  onRetry?: () => void;
   children: React.ReactNode;
 }
 
-function TabWrapperImpl({ children, isLoading, isEmpty, emptyText }: TabWrapperProps) {
+function TabWrapperImpl({
+  children,
+  isLoading,
+  isEmpty,
+  emptyText,
+  isError,
+  onRetry,
+}: TabWrapperProps) {
   const { t } = useTranslation();
   return (
     <div className="min-h-[420px]">
@@ -37,6 +47,14 @@ function TabWrapperImpl({ children, isLoading, isEmpty, emptyText }: TabWrapperP
         <div className="py-24 flex justify-center">
           <Loader2 size={28} className="text-white/20 animate-spin" />
         </div>
+      ) : isEmpty && isError && onRetry ? (
+        <SearchState
+          icon={<CloudOff size={26} />}
+          title={t('user.search.error')}
+          cta={t('search.error.retry')}
+          ctaIcon={<RefreshCw size={15} />}
+          onAction={onRetry}
+        />
       ) : isEmpty ? (
         <div className="py-24 flex flex-col items-center gap-4">
           <div
@@ -174,22 +192,28 @@ export function UserSearchTracksTab({
   query: string;
 }) {
   const { t } = useTranslation();
-  const q = useSearchDbTracks(query, urn);
-  const ref = useInfiniteScroll(!!q.hasNextPage, !!q.isFetchingNextPage, q.fetchNextPage);
+  const q = useCatalogTracks(query.trim(), urn);
+  const ref = useInfiniteScroll(
+    !!q.hasNextPage && !q.isFetchNextPageError,
+    !!q.isFetchingNextPage,
+    q.fetchNextPage,
+  );
   const renderItem = useCallback(
-    (track: (typeof q.tracks)[number], i: number) => (
-      <ThemedTrackRow track={track} index={i} queue={q.tracks} aura={aura} />
+    (track: (typeof q.items)[number], i: number) => (
+      <ThemedTrackRow track={track} index={i} queue={q.items} aura={aura} />
     ),
-    [aura, q.tracks],
+    [aura, q.items],
   );
   return (
     <TabWrapper
       isLoading={q.isLoading}
-      isEmpty={q.tracks.length === 0}
+      isEmpty={q.items.length === 0}
       emptyText={t('user.search.empty')}
+      isError={q.isError}
+      onRetry={() => void q.refetch()}
     >
       <VirtualList
-        items={q.tracks}
+        items={q.items}
         rowHeight={72}
         overscan={8}
         className="flex flex-col gap-1"
@@ -208,20 +232,26 @@ export function UserSearchTracksTab({
  */
 export function UserSearchPlaylistsTab({ urn, query }: { urn: string; query: string }) {
   const { t } = useTranslation();
-  const q = useSearchDbPlaylists(query, urn);
-  const ref = useInfiniteScroll(!!q.hasNextPage, !!q.isFetchingNextPage, q.fetchNextPage);
+  const q = useCatalogPlaylists(query.trim(), urn);
+  const ref = useInfiniteScroll(
+    !!q.hasNextPage && !q.isFetchNextPageError,
+    !!q.isFetchingNextPage,
+    q.fetchNextPage,
+  );
   const renderItem = useCallback(
-    (p: (typeof q.playlists)[number]) => <PlaylistCard playlist={p} showPlayback />,
+    (p: (typeof q.items)[number]) => <PlaylistCard playlist={p} showPlayback />,
     [],
   );
   return (
     <TabWrapper
       isLoading={q.isLoading}
-      isEmpty={q.playlists.length === 0}
+      isEmpty={q.items.length === 0}
       emptyText={t('user.search.empty')}
+      isError={q.isError}
+      onRetry={() => void q.refetch()}
     >
       <VirtualGrid
-        items={q.playlists}
+        items={q.items}
         itemHeight={320}
         minColumnWidth={200}
         gap={28}
