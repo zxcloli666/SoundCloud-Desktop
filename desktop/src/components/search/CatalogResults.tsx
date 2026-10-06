@@ -54,28 +54,14 @@ export const CatalogResults = memo(function CatalogResults({ q }: { q: string })
   const loadMore = useCallback(() => void tracks.fetchNextPage(), [tracks.fetchNextPage]);
   const moreLyrics = useCallback(() => void lyrics.fetchNextPage(), [lyrics.fetchNextPage]);
 
-  const settled = !tracks.isLoading && !lyrics.isLoading && !stripsLoading;
-  const nothing =
-    settled &&
+  const empty =
+    !tracks.isLoading &&
+    !lyrics.isLoading &&
+    !stripsLoading &&
     !tracks.isError &&
-    !lyrics.isError &&
-    failedStrips.length === 0 &&
     tracks.items.length === 0 &&
     lyrics.items.length === 0 &&
     chips.length === 0;
-
-  if (nothing) {
-    return (
-      <SearchState
-        icon={<Database size={26} />}
-        title={t('search.catalog.emptyTitle', { query: q })}
-        body={t('search.catalog.emptyBody')}
-        cta={t('search.catalog.emptyCta')}
-        ctaIcon={<Cloud size={15} />}
-        onAction={() => setMode('soundcloud')}
-      />
-    );
-  }
 
   return (
     <>
@@ -95,7 +81,16 @@ export const CatalogResults = memo(function CatalogResults({ q }: { q: string })
         />
       )}
       {lyrics.isFetchNextPageError && <SectionError onRetry={moreLyrics} />}
-      {tracks.isError && tracks.items.length === 0 ? (
+      {empty ? (
+        <SearchState
+          icon={<Database size={26} />}
+          title={t('search.catalog.emptyTitle', { query: q })}
+          body={t('search.catalog.emptyBody')}
+          cta={t('search.catalog.emptyCta')}
+          ctaIcon={<Cloud size={15} />}
+          onAction={() => setMode('soundcloud')}
+        />
+      ) : tracks.isError && tracks.items.length === 0 ? (
         <SearchError error={tracks.error} onRetry={() => void tracks.refetch()} />
       ) : (
         <TrackWall

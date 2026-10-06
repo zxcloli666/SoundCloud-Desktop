@@ -38,23 +38,13 @@ export const SoundCloudResults = memo(function SoundCloudResults({ q }: { q: str
   };
   const loadMore = useCallback(() => void tracks.fetchNextPage(), [tracks.fetchNextPage]);
 
-  const nothing =
+  const wallTracks = useMemo(() => tracks.items.filter((track) => track?.urn), [tracks.items]);
+  const empty =
     !tracks.isLoading &&
-    !stripsLoading &&
     !tracks.isError &&
-    failedStrips.length === 0 &&
-    tracks.items.length === 0 &&
+    !stripsLoading &&
+    wallTracks.length === 0 &&
     chips.length === 0;
-
-  if (nothing) {
-    return (
-      <SearchState
-        icon={<Cloud size={26} />}
-        title={t('search.soundcloud.emptyTitle', { query: q })}
-        body={t('search.soundcloud.emptyBody')}
-      />
-    );
-  }
 
   return (
     <>
@@ -62,7 +52,13 @@ export const SoundCloudResults = memo(function SoundCloudResults({ q }: { q: str
         {chips.length > 0 ? <EntityStrip items={chips} /> : stripsLoading && <StripSkeleton />}
         {failedStrips.length > 0 && !tracks.isError && <SectionError onRetry={retryStrips} />}
       </div>
-      {tracks.isError && tracks.items.length === 0 ? (
+      {empty ? (
+        <SearchState
+          icon={<Cloud size={26} />}
+          title={t('search.soundcloud.emptyTitle', { query: q })}
+          body={t('search.soundcloud.emptyBody')}
+        />
+      ) : tracks.isError && wallTracks.length === 0 ? (
         <SearchError
           error={tracks.error}
           onRetry={() => {
@@ -72,7 +68,7 @@ export const SoundCloudResults = memo(function SoundCloudResults({ q }: { q: str
         />
       ) : (
         <TrackWall
-          tracks={tracks.items}
+          tracks={wallTracks}
           kind="lexical"
           isLoading={tracks.isLoading}
           hasMore={!!tracks.hasNextPage && !tracks.isFetchNextPageError}
