@@ -94,18 +94,21 @@ function retryAfterSeconds(res: Response): number | null {
   return Number.isFinite(seconds) && seconds > 0 ? seconds : null;
 }
 
-const QUIET_CODES = [
-  'search_timeout',
-  'search_busy',
-  'vibe_unavailable',
-  'soundcloud_search_unavailable',
-  'soundcloud_search_busy',
-  'resolve_busy',
-];
+const QUIET_ANSWERS: Record<string, number> = {
+  search_timeout: 503,
+  search_busy: 503,
+  vibe_unavailable: 503,
+  soundcloud_search_unavailable: 503,
+  soundcloud_search_busy: 503,
+  resolve_busy: 503,
+  resolve_upstream_unavailable: 502,
+};
 
 export function isQuietAnswer(error: unknown): boolean {
   return (
-    error instanceof ApiError && error.status === 503 && QUIET_CODES.includes(error.code ?? '')
+    error instanceof ApiError &&
+    error.code != null &&
+    QUIET_ANSWERS[error.code] === error.status
   );
 }
 
