@@ -557,7 +557,7 @@ listen<number>('audio:tick', (event) => {
 listen<{ urn: string; progress: number }>('track:download-progress', (event) => {
   const { urn, progress } = event.payload;
   if (urn === currentUrn) {
-    setDownloadProgress(progress);
+    setDownloadProgress(Math.max(downloadProgress ?? 0, progress));
   }
 });
 
