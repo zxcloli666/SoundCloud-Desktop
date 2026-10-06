@@ -47,11 +47,7 @@ export const VibeResults = memo(function VibeResults({ q }: { q: string }) {
           body={t('search.vibe.emptyBody')}
         />
       );
-    return (
-      <div onClickCapture={remember}>
-        <TrackWall tracks={items} kind="vibe" isLoading={vibe.isLoading} />
-      </div>
-    );
+    return <TrackWall tracks={items} kind="vibe" isLoading={vibe.isLoading} onOpen={remember} />;
   })();
 
   return (

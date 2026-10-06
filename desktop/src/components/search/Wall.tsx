@@ -13,7 +13,7 @@ interface WallProps {
     hasMore?: boolean;
     isFetchingMore?: boolean;
     onLoadMore?: () => void;
-    onDive?: (track: Track) => void;
+    onOpen?: () => void;
 }
 
 const GAP = 12;
@@ -56,7 +56,7 @@ export const Wall = memo(function Wall({
                                            hasMore,
                                            isFetchingMore,
                                            onLoadMore,
-                                           onDive,
+                                           onOpen,
                                        }: WallProps) {
     const ref = useRef<HTMLDivElement | null>(null);
     const fillAtRef = useRef(-1);
@@ -146,7 +146,7 @@ export const Wall = memo(function Wall({
                             <div aria-hidden style={{gridColumn: '1 / -1', gridRow: `span ${spacerRows}`}}/>
                         )}
                         {visible.map((item) => (
-                            <CoverTile key={trackKey(item)} item={item} getQueue={getQueue} onDive={onDive}/>
+                            <CoverTile key={trackKey(item)} item={item} getQueue={getQueue} onOpen={onOpen}/>
                         ))}
                     </>
                 )}

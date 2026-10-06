@@ -1,4 +1,4 @@
-import {Compass, Pause, Play, Sparkles} from 'lucide-react';
+import {Pause, Play, Sparkles} from 'lucide-react';
 import {memo} from 'react';
 import {useTranslation} from 'react-i18next';
 import {preloadTrack} from '../../lib/audio';
@@ -20,7 +20,7 @@ interface CoverTileProps {
   item: WallItem;
   /** Stable thunk → live play queue, resolved lazily so tile memo isn't broken. */
   getQueue: () => Track[];
-  onDive?: (track: Track) => void;
+  onOpen?: () => void;
 }
 
 /** Breathing phase seeded from the track's urn (stable across re-weaves), so a
@@ -33,7 +33,7 @@ function breathStyle(urn: string): React.CSSProperties {
   return { animation: `tg-breathe ${dur}s ease-in-out ${delay}s infinite` };
 }
 
-export const CoverTile = memo(function CoverTile({ item, getQueue, onDive }: CoverTileProps) {
+export const CoverTile = memo(function CoverTile({ item, getQueue, onOpen }: CoverTileProps) {
   const { t } = useTranslation();
   const perf = usePerfMode();
   const { track, kind, matchedLine, hero } = item;
@@ -52,6 +52,7 @@ export const CoverTile = memo(function CoverTile({ item, getQueue, onDive }: Cov
   const leave = () => stopHoverPreview();
   const activate = () => {
     hardStopHoverPreview();
+    onOpen?.();
     togglePlay();
   };
 
@@ -190,25 +191,6 @@ export const CoverTile = memo(function CoverTile({ item, getQueue, onDive }: Cov
             )}
           </div>
 
-          {/* Hero rabbit-hole: dive into the vibe of this track */}
-          {hero && onDive && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                hardStopHoverPreview();
-                onDive(track);
-              }}
-              className="absolute bottom-2 right-2 flex items-center gap-1 h-7 px-2.5 rounded-full text-[11px] text-white/85 opacity-0 group-hover:opacity-100 transition-all duration-300 cursor-pointer"
-              style={{
-                background: 'rgba(0,0,0,0.62)',
-                border: '0.5px solid rgba(255,255,255,0.18)',
-              }}
-            >
-              <Compass size={12} />
-              {t('search.dive')}
-            </button>
-          )}
         </div>
 
         {/* Rings live OUTSIDE the hover-scaled .tg-lift so the 15s progress arc

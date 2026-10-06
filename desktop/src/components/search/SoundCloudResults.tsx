@@ -16,13 +16,20 @@ export const SoundCloudResults = memo(function SoundCloudResults({ q }: { q: str
   const playlists = useScStrip('playlists', q);
   const users = useScStrip('users', q);
   const strips = [playlists, users];
+  const open = useCallback(
+    (path: string) => {
+      remember();
+      navigate(path);
+    },
+    [remember, navigate],
+  );
 
   const chips = useMemo(
     () => [
-      ...(playlists.data ?? []).filter((p) => p?.urn).map((p) => playlistChip(p, navigate)),
-      ...(users.data ?? []).filter((u) => u?.urn).map((u) => userChip(u, navigate)),
+      ...(playlists.data ?? []).filter((p) => p?.urn).map((p) => playlistChip(p, open)),
+      ...(users.data ?? []).filter((u) => u?.urn).map((u) => userChip(u, open)),
     ],
-    [playlists.data, users.data, navigate],
+    [playlists.data, users.data, open],
   );
   const stripsLoading = strips.some((s) => s.isLoading);
   const failedStrips = strips.filter((s) => s.isError);
@@ -52,9 +59,7 @@ export const SoundCloudResults = memo(function SoundCloudResults({ q }: { q: str
   return (
     <>
       <div className="mb-2 max-w-[1100px] mx-auto w-full">
-        <div onClickCapture={remember}>
-          {chips.length > 0 ? <EntityStrip items={chips} /> : stripsLoading && <StripSkeleton />}
-        </div>
+        {chips.length > 0 ? <EntityStrip items={chips} /> : stripsLoading && <StripSkeleton />}
         {failedStrips.length > 0 && !tracks.isError && <SectionError onRetry={retryStrips} />}
       </div>
       {tracks.isError && tracks.items.length === 0 ? (
@@ -66,16 +71,15 @@ export const SoundCloudResults = memo(function SoundCloudResults({ q }: { q: str
           }}
         />
       ) : (
-        <div onClickCapture={remember}>
-          <TrackWall
-            tracks={tracks.items}
-            kind="lexical"
-            isLoading={tracks.isLoading}
-            hasMore={!!tracks.hasNextPage && !tracks.isFetchNextPageError}
-            isFetchingMore={tracks.isFetchingNextPage}
-            onLoadMore={loadMore}
-          />
-        </div>
+        <TrackWall
+          tracks={tracks.items}
+          kind="lexical"
+          isLoading={tracks.isLoading}
+          hasMore={!!tracks.hasNextPage && !tracks.isFetchNextPageError}
+          isFetchingMore={tracks.isFetchingNextPage}
+          onLoadMore={loadMore}
+          onOpen={remember}
+        />
       )}
       {tracks.isFetchNextPageError && <SectionError onRetry={loadMore} />}
     </>

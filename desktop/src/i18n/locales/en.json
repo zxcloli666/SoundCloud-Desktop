@@ -130,7 +130,6 @@
       "emptyTitle": "No tracks with this vibe yet",
       "emptyBody": "Try describing it in other words."
     },
-    "dive": "Similar",
     "error": {
       "timeout": "Search took too long, try again",
       "busy": "Search is busy, try again",

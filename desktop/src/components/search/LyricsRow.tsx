@@ -10,6 +10,7 @@ interface LyricsRowProps {
   hasMore: boolean;
   isFetchingMore: boolean;
   onMore: () => void;
+  onOpen: () => void;
 }
 
 const TILE_PX = 184;
@@ -19,6 +20,7 @@ export const LyricsRow = memo(function LyricsRow({
   hasMore,
   isFetchingMore,
   onMore,
+  onOpen,
 }: LyricsRowProps) {
   const { t } = useTranslation();
   const items = useMemo<WallItem[]>(
@@ -45,7 +47,7 @@ export const LyricsRow = memo(function LyricsRow({
         }}
       >
         {items.map((item) => (
-          <CoverTile key={item.track.urn} item={item} getQueue={getQueue} />
+          <CoverTile key={item.track.urn} item={item} getQueue={getQueue} onOpen={onOpen} />
         ))}
         {hasMore && (
           <button

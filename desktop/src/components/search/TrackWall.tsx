@@ -10,6 +10,7 @@ interface TrackWallProps {
   hasMore?: boolean;
   isFetchingMore?: boolean;
   onLoadMore?: () => void;
+  onOpen?: () => void;
 }
 
 export const TrackWall = memo(function TrackWall({
@@ -19,6 +20,7 @@ export const TrackWall = memo(function TrackWall({
   hasMore,
   isFetchingMore,
   onLoadMore,
+  onOpen,
 }: TrackWallProps) {
   const items = useMemo(() => toWallItems(tracks, kind), [tracks, kind]);
   const itemsRef = useRef(items);
@@ -32,6 +34,7 @@ export const TrackWall = memo(function TrackWall({
       hasMore={hasMore}
       isFetchingMore={isFetchingMore}
       onLoadMore={onLoadMore}
+      onOpen={onOpen}
     />
   );
 });

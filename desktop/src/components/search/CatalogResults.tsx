@@ -29,15 +29,22 @@ export const CatalogResults = memo(function CatalogResults({ q }: { q: string })
   const playlists = useCatalogStrip('playlists', q);
   const albums = useCatalogStrip('albums', q);
   const strips = [artists, users, playlists, albums];
+  const open = useCallback(
+    (path: string) => {
+      remember();
+      navigate(path);
+    },
+    [remember, navigate],
+  );
 
   const chips = useMemo(
     () => [
-      ...(artists.data ?? []).slice(0, CHIPS_PER_KIND).map((a) => artistChip(a, navigate)),
-      ...(users.data ?? []).slice(0, CHIPS_PER_KIND).map((u) => userChip(u, navigate)),
-      ...(playlists.data ?? []).slice(0, CHIPS_PER_KIND).map((p) => playlistChip(p, navigate)),
-      ...(albums.data ?? []).slice(0, CHIPS_PER_KIND).map((a) => albumChip(a, navigate)),
+      ...(artists.data ?? []).slice(0, CHIPS_PER_KIND).map((a) => artistChip(a, open)),
+      ...(users.data ?? []).slice(0, CHIPS_PER_KIND).map((u) => userChip(u, open)),
+      ...(playlists.data ?? []).slice(0, CHIPS_PER_KIND).map((p) => playlistChip(p, open)),
+      ...(albums.data ?? []).slice(0, CHIPS_PER_KIND).map((a) => albumChip(a, open)),
     ],
-    [artists.data, users.data, playlists.data, albums.data, navigate],
+    [artists.data, users.data, playlists.data, albums.data, open],
   );
   const stripsLoading = strips.some((s) => s.isLoading);
   const failedStrips = strips.filter((s) => s.isError);
@@ -73,37 +80,33 @@ export const CatalogResults = memo(function CatalogResults({ q }: { q: string })
   return (
     <>
       <div className="mb-2 max-w-[1100px] mx-auto w-full">
-        <div onClickCapture={remember}>
-          {chips.length > 0 ? <EntityStrip items={chips} /> : stripsLoading && <StripSkeleton />}
-        </div>
+        {chips.length > 0 ? <EntityStrip items={chips} /> : stripsLoading && <StripSkeleton />}
         {failedStrips.length > 0 && <SectionError onRetry={retryStrips} />}
       </div>
       {lyrics.isError && lyrics.items.length === 0 ? (
         <SectionError onRetry={() => void lyrics.refetch()} />
       ) : (
-        <div onClickCapture={remember}>
-          <LyricsRow
-            hits={lyrics.items}
-            hasMore={!!lyrics.hasNextPage && !lyrics.isFetchNextPageError}
-            isFetchingMore={lyrics.isFetchingNextPage}
-            onMore={moreLyrics}
-          />
-        </div>
+        <LyricsRow
+          hits={lyrics.items}
+          hasMore={!!lyrics.hasNextPage && !lyrics.isFetchNextPageError}
+          isFetchingMore={lyrics.isFetchingNextPage}
+          onMore={moreLyrics}
+          onOpen={remember}
+        />
       )}
       {lyrics.isFetchNextPageError && <SectionError onRetry={moreLyrics} />}
       {tracks.isError && tracks.items.length === 0 ? (
         <SearchError error={tracks.error} onRetry={() => void tracks.refetch()} />
       ) : (
-        <div onClickCapture={remember}>
-          <TrackWall
-            tracks={tracks.items}
-            kind="lexical"
-            isLoading={tracks.isLoading}
-            hasMore={!!tracks.hasNextPage && !tracks.isFetchNextPageError}
-            isFetchingMore={tracks.isFetchingNextPage}
-            onLoadMore={loadMore}
-          />
-        </div>
+        <TrackWall
+          tracks={tracks.items}
+          kind="lexical"
+          isLoading={tracks.isLoading}
+          hasMore={!!tracks.hasNextPage && !tracks.isFetchNextPageError}
+          isFetchingMore={tracks.isFetchingNextPage}
+          onLoadMore={loadMore}
+          onOpen={remember}
+        />
       )}
       {tracks.isFetchNextPageError && <SectionError onRetry={loadMore} />}
     </>
