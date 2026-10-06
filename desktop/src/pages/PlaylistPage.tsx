@@ -251,14 +251,14 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
   const declaredCount = editedInApp
     ? (tracksSync?.projectionTrackCount ?? 0)
     : (playlist?.track_count ?? 0);
-  const missingTracks = !hasNextPage && tracks.length < declaredCount;
+  const missingTracks = !hasNextPage && serverTracks.length < declaredCount;
   const tracksSyncStatus = tracksSync?.status ?? '';
   const tracksUnreadable =
     tracksSyncStatus === 'auth_required' || tracksSync?.conflictCode === 'remote_not_found';
   const listNotice = useMemo(() => {
     const retry = () => void refetchTracks();
     const notice = syncNoticeOf({
-      isError: tracksFailed && tracks.length === 0,
+      isError: tracksFailed && serverTracks.length === 0,
       syncState: missingTracks ? tracksSyncState : 'complete',
     });
     if (notice) return <SyncNotice kind={notice} onRetry={retry} />;
@@ -269,7 +269,7 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
     return (
       <p className="text-center text-[13px] text-white/30">
         {t('playlist.partialTracks', {
-          shown: tracks.length,
+          shown: serverTracks.length,
           total: declaredCount,
           count: declaredCount,
         })}
@@ -280,7 +280,7 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
     tracksSyncState,
     tracksUnreadable,
     missingTracks,
-    tracks.length,
+    serverTracks.length,
     declaredCount,
     refetchTracks,
     t,
@@ -315,7 +315,7 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
     );
   }
 
-  const trackCount = playlist.track_count || tracks.length;
+  const trackCount = declaredCount || tracks.length;
 
   return (
     <div className="relative min-h-full w-full">
