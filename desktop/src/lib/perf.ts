@@ -1,3 +1,4 @@
+import {useSyncExternalStore} from 'react';
 import {useSettingsStore} from '../stores/settings';
 
 /**
@@ -112,4 +113,23 @@ export function setupFocusGate(): void {
     apply();
     window.addEventListener('focus', apply);
     window.addEventListener('blur', apply);
+}
+
+export function isAppIdle(): boolean {
+    return document.hidden || !document.hasFocus();
+}
+
+export function subscribeAppIdle(onChange: () => void): () => void {
+    document.addEventListener('visibilitychange', onChange);
+    window.addEventListener('focus', onChange);
+    window.addEventListener('blur', onChange);
+    return () => {
+        document.removeEventListener('visibilitychange', onChange);
+        window.removeEventListener('focus', onChange);
+        window.removeEventListener('blur', onChange);
+    };
+}
+
+export function useAppIdle(): boolean {
+    return useSyncExternalStore(subscribeAppIdle, isAppIdle);
 }
