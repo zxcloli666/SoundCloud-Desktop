@@ -77,7 +77,7 @@ export function searchErrorKind(error: unknown): SearchErrorKind {
 export function searchRetry(failureCount: number, error: Error): boolean {
   if (failureCount >= 1) return false;
   if (error instanceof ApiError) return error.status === 503 && !!error.code;
-  return true;
+  return !isTimeoutError(error);
 }
 
 export function searchRetryDelay(_failureCount: number, error: Error): number {
