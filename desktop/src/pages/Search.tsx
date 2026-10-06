@@ -20,10 +20,12 @@ const DEBOUNCE_MS = 350;
 export function Search() {
   const q = useSearchQueryStore((s) => s.q);
   const mode = useSearchPrefsStore((s) => s.mode);
-  const link = findSoundCloudLink(q);
-  const query = useDebouncedValue(link ? '' : q.trim(), DEBOUNCE_MS);
+  const typed = q.trim();
+  const query = useDebouncedValue(typed, DEBOUNCE_MS);
+  const queryLink = findSoundCloudLink(query);
+  const link = query === typed ? queryLink : null;
   const hidden = useTabHidden();
-  const searching = !link && query.length >= MIN_QUERY;
+  const searching = !queryLink && !findSoundCloudLink(typed) && query.length >= MIN_QUERY;
 
   useEffect(() => {
     wirePreviewGuards();
