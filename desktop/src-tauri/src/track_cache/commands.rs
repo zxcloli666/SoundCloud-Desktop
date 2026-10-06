@@ -1,5 +1,6 @@
 use tauri::State;
 
+use crate::shared::blocking::run_blocking;
 use crate::track_cache::state::{
     CacheInventoryEntry, CacheRequest, LikeCacheEntry, TrackCacheEntry, TrackCacheState,
     TranscodeStatus,
@@ -261,12 +262,4 @@ pub fn track_cache_likes_running(state: State<'_, TrackCacheState>) -> bool {
 #[tauri::command]
 pub fn track_cancel_cache_likes(state: State<'_, TrackCacheState>) {
     state.cancel_cache_likes();
-}
-
-async fn run_blocking<T: Send + 'static>(
-    work: impl FnOnce() -> T + Send + 'static,
-) -> Result<T, String> {
-    tokio::task::spawn_blocking(work)
-        .await
-        .map_err(|e| e.to_string())
 }
