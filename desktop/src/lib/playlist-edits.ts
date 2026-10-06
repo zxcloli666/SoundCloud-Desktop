@@ -1,6 +1,6 @@
 import { toast } from 'sonner';
 import i18n from '../i18n';
-import { ApiError, api } from './api';
+import { ApiError, api, isRefreshPending } from './api';
 
 const ANSWERED_STATUSES = [404, 409];
 const BASELINE_RETRIES = 3;
@@ -38,6 +38,10 @@ export async function editPlaylistTracks(playlistUrn: string, edit: object): Pro
 }
 
 export function toastPlaylistEditError(error: unknown) {
+  if (isRefreshPending(error)) {
+    toast.error(i18n.t('playlist.awaitingSync'));
+    return;
+  }
   if (!(error instanceof ApiError) || !ANSWERED_STATUSES.includes(error.status)) return;
   toast.error(i18n.t(ERROR_TEXT[error.code ?? ''] ?? 'playlist.editFailed'));
 }
