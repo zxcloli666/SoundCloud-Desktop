@@ -1,5 +1,7 @@
 use std::future::Future;
 
+use uuid::Uuid;
+
 use crate::network::edge;
 
 pub const MAX_INDEX: usize = 16;
@@ -8,31 +10,44 @@ const ORIGIN_ZONE: &str = "scnative.space";
 
 pub async fn relays(known: &[String]) -> Vec<String> {
     let zone = edge::relay_zone();
-    let found = scan(known, |index| format!("r{index}"), move |node| {
-        format!("{node}.{zone}")
-    })
+    let found = scan(
+        known,
+        |index| format!("r{index}"),
+        move |node| format!("{node}.{zone}"),
+        resolves,
+    )
     .await;
     merge(known.to_vec(), found)
 }
 
 pub async fn calls(known: &[String]) -> Vec<String> {
-    let found = scan(known, |index| format!("call-{index}"), |node| {
-        format!("{node}.{ORIGIN_ZONE}")
-    })
+    let found = scan(
+        known,
+        |index| format!("call-{index}"),
+        |node| format!("{node}.{ORIGIN_ZONE}"),
+        resolves,
+    )
     .await;
     merge(known.to_vec(), found)
 }
 
-async fn scan<Name, Host>(known: &[String], name: Name, host: Host) -> Vec<String>
+async fn scan<Name, Host, Lookup, Fut>(
+    known: &[String],
+    name: Name,
+    host: Host,
+    lookup: Lookup,
+) -> Vec<String>
 where
     Name: Fn(usize) -> String,
     Host: Fn(&str) -> String,
+    Lookup: Fn(String) -> Fut,
+    Fut: Future<Output = bool>,
 {
-    walk(next_index(known), name, move |node| {
-        let host = host(node);
-        async move { resolves(&host).await }
-    })
-    .await
+    let nonexistent = format!("nx-{}", Uuid::new_v4().simple());
+    if lookup(host(&nonexistent)).await {
+        return Vec::new();
+    }
+    walk(next_index(known), name, |node| lookup(host(node))).await
 }
 
 pub fn next_index(known: &[String]) -> usize {
@@ -71,8 +86,8 @@ where
     found
 }
 
-async fn resolves(host: &str) -> bool {
-    tokio::net::lookup_host((host, 443))
+async fn resolves(host: String) -> bool {
+    tokio::net::lookup_host((host.as_str(), 443))
         .await
         .map(|mut addrs| addrs.next().is_some())
         .unwrap_or(false)
@@ -118,6 +133,30 @@ mod tests {
     #[tokio::test]
     async fn a_pool_that_is_already_complete_costs_two_lookups() {
         assert!(from(3, &["r1", "r2"]).await.is_empty());
+    }
+
+    #[tokio::test]
+    async fn dns_that_answers_every_name_adds_no_nodes() {
+        let found = scan(
+            &["r1".to_string()],
+            |index| format!("r{index}"),
+            |node| format!("{node}.relay.scnative.space"),
+            |_| async { true },
+        )
+        .await;
+        assert!(found.is_empty());
+    }
+
+    #[tokio::test]
+    async fn real_dns_still_finds_the_new_node() {
+        let found = scan(
+            &["r1".to_string()],
+            |index| format!("r{index}"),
+            |node| format!("{node}.relay.scnative.space"),
+            |host| async move { host == "r2.relay.scnative.space" },
+        )
+        .await;
+        assert_eq!(found, ["r2"]);
     }
 
     #[test]
