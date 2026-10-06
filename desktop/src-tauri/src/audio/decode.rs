@@ -15,6 +15,7 @@ use sha2::{Digest, Sha256};
 use crate::audio::analyser::{AnalyserBuffer, AnalyserSource};
 use crate::audio::declick::DeclickSource;
 use crate::audio::eq::{EqSource, GainSource};
+use crate::audio::mpeg::{self, is_mpeg_audio};
 use crate::audio::pitch::PitchSource;
 use crate::audio::types::{
     ChannelCount, EqParams, SampleRate, NORMALIZATION_ANALYSIS_SAMPLES,
@@ -32,20 +33,6 @@ pub fn is_ogg_opus(bytes: &[u8]) -> bool {
         && bytes[..bytes.len().min(64)]
             .windows(8)
             .any(|w| w == b"OpusHead")
-}
-
-fn is_mpeg_audio(bytes: &[u8]) -> bool {
-    let start = match bytes.get(..10) {
-        Some(tag) if tag.starts_with(b"ID3") => {
-            let size = tag[6..10]
-                .iter()
-                .fold(0usize, |size, &byte| (size << 7) | (byte & 0x7F) as usize);
-            let footer = if tag[5] & 0x10 != 0 { 10 } else { 0 };
-            10 + size + footer
-        }
-        _ => 0,
-    };
-    matches!(bytes.get(start..start + 2), Some(&[0xFF, sync]) if sync & 0xE0 == 0xE0)
 }
 
 const OPUS_MAX_PACKET_FRAMES: usize = 5760;
@@ -301,8 +288,14 @@ fn write_cached_normalization_gain(cache_dir: Option<&Path>, cache_key: Option<&
     let _ = std::fs::write(path, format!("{NORMALIZATION_CACHE_VERSION}:{gain:.6}"));
 }
 
-fn spread_samples<S: Source<Item = f32>>(mut source: S) -> impl Iterator<Item = f32> {
-    let total = source.total_duration().unwrap_or_default();
+fn spread_samples<S: Source<Item = f32>>(
+    mut source: S,
+    fallback_duration: Option<Duration>,
+) -> impl Iterator<Item = f32> {
+    let total = source
+        .total_duration()
+        .or(fallback_duration)
+        .unwrap_or_default();
     let spread = total.as_secs() >= NORMALIZATION_SPREAD_MIN_SECS;
     let window = NORMALIZATION_ANALYSIS_SAMPLES / NORMALIZATION_WINDOWS;
     let mut index = 0;
@@ -324,14 +317,17 @@ fn spread_samples<S: Source<Item = f32>>(mut source: S) -> impl Iterator<Item = 
     })
 }
 
-fn normalization_gain_from_samples<S: Source<Item = f32>>(source: S) -> f32 {
+fn normalization_gain_from_samples<S: Source<Item = f32>>(
+    source: S,
+    fallback_duration: Option<Duration>,
+) -> f32 {
     let mut peak = 0.0f64;
     let mut count = 0usize;
     let mut block_sum_sq = 0.0f64;
     let mut block_count = 0usize;
     let mut block_powers = Vec::new();
 
-    for sample in spread_samples(source) {
+    for sample in spread_samples(source, fallback_duration) {
         let value = sample as f64;
         let abs = value.abs();
         peak = peak.max(abs);
@@ -395,12 +391,17 @@ pub fn resolve_normalization_gain(
     let gain = if is_ogg_opus(bytes) {
         normalization_gain_from_samples(
             OpusSource::new(bytes.to_vec()).map_err(|e| format!("Failed to decode: {}", e))?,
+            None,
         )
     } else { match decode_bytes(bytes) { Ok(source) => {
-        normalization_gain_from_samples(source)
+        let scanned = (source.total_duration().is_none() && is_mpeg_audio(bytes))
+            .then(|| mpeg::duration(bytes))
+            .flatten();
+        normalization_gain_from_samples(source, scanned)
     } _ => {
         normalization_gain_from_samples(
             OpusSource::new(bytes.to_vec()).map_err(|e| format!("Failed to decode: {}", e))?,
+            None,
         )
     }}};
 
@@ -548,18 +549,6 @@ mod tests {
         let frames = OpusSource::new(bytes).unwrap().count() / 2;
         let decoded = frames as f64 / RATE as f64;
         assert!((duration.as_secs_f64() - decoded).abs() < 0.001, "{duration:?} vs {decoded}s");
-    }
-
-    #[test]
-    fn mpeg_audio_is_told_apart_from_containers() {
-        let mut tagged = b"ID3\x04\x00\x00\x00\x00\x00\x02".to_vec();
-        tagged.extend([0, 0, 0xFF, 0xFB, 0x90]);
-        assert!(is_mpeg_audio(&[0xFF, 0xFB, 0x90, 0x00]));
-        assert!(is_mpeg_audio(&[0xFF, 0xF1, 0x50, 0x80]));
-        assert!(is_mpeg_audio(&tagged));
-        assert!(!is_mpeg_audio(b"\x00\x00\x00\x20ftypM4A "));
-        assert!(!is_mpeg_audio(b"OggS\x00\x02"));
-        assert!(!is_mpeg_audio(b"fLaC\x00\x00"));
     }
 
     #[test]

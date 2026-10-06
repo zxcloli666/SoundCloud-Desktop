@@ -6,6 +6,7 @@ mod device;
 mod engine;
 mod eq;
 mod media_controls;
+mod mpeg;
 mod output;
 mod pitch;
 mod state;
