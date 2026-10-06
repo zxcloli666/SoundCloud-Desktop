@@ -1,7 +1,7 @@
 import {listen} from '@tauri-apps/api/event';
 import {toast} from 'sonner';
 import i18n from '../i18n';
-import type {Track} from '../stores/player';
+import type {Track, TrackScdMeta} from '../stores/player';
 import {usePlayerStore} from '../stores/player';
 import {useSettingsStore} from '../stores/settings';
 import {
@@ -342,6 +342,7 @@ async function loadTrack(track: Track) {
 
   try {
     const highQualityStreaming = isHqStreaming();
+    const storageQuality = track._scd_meta?.storage_quality;
 
     // The cached file can be swapped (raw А → clean Б) or evicted between resolve
     // and read; re-resolve through the cache to recover the current path.
@@ -349,7 +350,7 @@ async function loadTrack(track: Track) {
       const info = await getCacheInfo(urn);
       if (info?.path) return info.path;
       try {
-        return (await ensureTrackCached(urn, highQualityStreaming, track.duration)).path;
+        return (await ensureTrackCached(urn, highQualityStreaming, track.duration, storageQuality)).path;
       } catch {
         return null;
       }
@@ -383,12 +384,12 @@ async function loadTrack(track: Track) {
 
     let cachedInfo: TrackCacheInfo;
     try {
-      cachedInfo = await ensureTrackCached(urn, highQualityStreaming, track.duration);
+      cachedInfo = await ensureTrackCached(urn, highQualityStreaming, track.duration, storageQuality);
     } catch (error) {
       const premiumRefused = getLoadErrorText(error)?.includes('HTTP 403 Forbidden: forbidden');
       if (!highQualityStreaming || !premiumRefused) throw error;
       console.warn('[Audio] HQ load failed, retrying without hq:', error);
-      cachedInfo = await ensureTrackCached(urn, false, track.duration);
+      cachedInfo = await ensureTrackCached(urn, false, track.duration, storageQuality);
     }
 
     if (gen !== loadGen) return;
@@ -734,7 +735,7 @@ listen<number>('media:seek-relative', (e) => {
 
 let preloadTimer: ReturnType<typeof setTimeout> | null = null;
 
-export function preloadTrack(urn: string) {
+export function preloadTrack(urn: string, storageQuality?: TrackScdMeta['storage_quality']) {
   if (preloadTimer) clearTimeout(preloadTimer);
   preloadTimer = setTimeout(() => {
     const sessionId = getSessionId();
@@ -748,6 +749,7 @@ export function preloadTrack(urn: string) {
           storageUrls: buildStorageUrls(urn),
           sessionId,
           hq,
+          storageQuality,
         },
       ],
     }).catch(console.error);
@@ -764,6 +766,7 @@ export function preloadQueue() {
     sessionId: string | null;
     hq: boolean;
     durationMs?: number;
+    storageQuality?: TrackScdMeta['storage_quality'];
   }> = [];
   const sessionId = getSessionId();
   const hq = isHqStreaming();
@@ -779,6 +782,7 @@ export function preloadQueue() {
         sessionId,
         hq,
         durationMs: queue[idx].duration,
+        storageQuality: queue[idx]._scd_meta?.storage_quality,
       });
     }
   }

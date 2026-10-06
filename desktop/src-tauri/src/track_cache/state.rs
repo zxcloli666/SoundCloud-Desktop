@@ -168,6 +168,14 @@ pub enum PlaybackQuality {
 }
 
 impl PlaybackQuality {
+    fn stored_as(quality: Option<&str>) -> Self {
+        if quality == Some("hq") {
+            Self::Hq
+        } else {
+            Self::Sq
+        }
+    }
+
     fn label(self) -> &'static str {
         match self {
             Self::Hq => "hq",
@@ -297,6 +305,8 @@ pub struct LikeCacheEntry {
     pub hq: bool,
     #[serde(default)]
     pub duration_ms: Option<u64>,
+    #[serde(default)]
+    pub storage_quality: Option<String>,
 }
 
 pub struct CacheRequest<'a> {
@@ -306,6 +316,7 @@ pub struct CacheRequest<'a> {
     pub storage_urls: &'a [String],
     pub session_id: Option<&'a str>,
     pub hq: bool,
+    pub storage_quality: Option<&'a str>,
     pub liked: bool,
     /// API-reported track length (ms), if known — enables truncated-download
     /// detection. `None` falls back to the size + magic-byte gate only.
@@ -329,6 +340,7 @@ struct FallbackParams<'a> {
     storage_urls: &'a [String],
     session_id: Option<&'a str>,
     hq: bool,
+    storage_quality: PlaybackQuality,
 }
 
 fn now_secs() -> u64 {
@@ -1014,6 +1026,7 @@ impl TrackCacheState {
             storage_urls,
             session_id,
             hq,
+            storage_quality,
             liked,
             expected_duration_ms,
         } = req;
@@ -1082,6 +1095,7 @@ impl TrackCacheState {
                 storage_urls,
                 session_id,
                 hq,
+                storage_quality: PlaybackQuality::stored_as(storage_quality),
             })
             .await;
 
@@ -1417,6 +1431,7 @@ impl TrackCacheState {
             storage_urls,
             session_id,
             hq,
+            storage_quality,
         } = params;
         let start = std::time::Instant::now();
         let mut last_err = String::from("no stream URLs provided");
@@ -1454,14 +1469,13 @@ impl TrackCacheState {
 
             match self.presigned_get(&redirect_url).await {
                 Ok(resp) if resp.status().is_success() => {
-                    let quality = PlaybackQuality::Hq;
                     let landed = resp.url().to_string();
                     println!("[TrackCache] {urn} → storage (redirect via {host})");
                     match write_response_to_cache(
                         target_dir,
                         urn,
                         resp,
-                        quality,
+                        storage_quality,
                         DownloadSource::Storage,
                         self.app_handle.as_ref(),
                     )
@@ -1544,7 +1558,7 @@ impl TrackCacheState {
                         target_dir,
                         urn,
                         resp,
-                        PlaybackQuality::Hq,
+                        storage_quality,
                         DownloadSource::Storage,
                         self.app_handle.as_ref(),
                     )
@@ -2082,6 +2096,7 @@ impl TrackCacheState {
                     session_id,
                     hq,
                     duration_ms,
+                    storage_quality,
                 } = entry;
                 let result = state
                     .ensure_cached(CacheRequest {
@@ -2091,6 +2106,7 @@ impl TrackCacheState {
                         storage_urls: &storage_urls,
                         session_id: session_id.as_deref(),
                         hq,
+                        storage_quality: storage_quality.as_deref(),
                         liked: true,
                         expected_duration_ms: duration_ms,
                     })

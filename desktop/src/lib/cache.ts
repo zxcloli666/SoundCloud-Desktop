@@ -1,12 +1,14 @@
 import {appCacheDir, join} from '@tauri-apps/api/path';
 import {mkdir, readDir, remove, writeFile} from '@tauri-apps/plugin-fs';
 import {fetch as tauriFetch} from '@tauri-apps/plugin-http';
-import type {PlaybackQuality, PlaybackSource} from '../stores/player';
+import type {PlaybackQuality, PlaybackSource, TrackScdMeta} from '../stores/player';
 import {useSettingsStore} from '../stores/settings';
 import {toScproxyUrl} from './asset-url';
 import {getStaticPort} from './constants';
 import {trackedInvoke as invoke} from './diagnostics';
 import { isHqStreaming } from './streaming';
+
+type StorageQuality = TrackScdMeta['storage_quality'];
 
 const WALLPAPERS_DIR = 'wallpapers';
 const CACHE_MAINTENANCE_INTERVAL_MS = 60 * 1000;
@@ -57,7 +59,12 @@ export function getTranscodeStatus(): Promise<TranscodeStatus> {
 /** Builds the Rust-side cache request (stream/download/storage fallbacks + the
  *  API duration used to detect truncated downloads). `durationMs` is the track's
  *  API-reported length in milliseconds. */
-async function buildCacheRequest(urn: string, hq: boolean, durationMs?: number) {
+async function buildCacheRequest(
+  urn: string,
+  hq: boolean,
+  durationMs?: number,
+  storageQuality?: StorageQuality,
+) {
   const { buildStorageUrls, downloadFallbackUrls, streamFallbackUrls, getSessionId } = await import(
     './api'
   );
@@ -69,6 +76,7 @@ async function buildCacheRequest(urn: string, hq: boolean, durationMs?: number) 
     sessionId: getSessionId(),
     hq,
     durationMs,
+    storageQuality,
   };
 }
 
@@ -76,13 +84,14 @@ export async function ensureTrackCached(
   urn: string,
   highQualityStreaming = isHqStreaming(),
   durationMs?: number,
+  storageQuality?: StorageQuality,
 ): Promise<TrackCacheInfo> {
   const cached = await getCacheInfo(urn);
   if (cached) {
     return cached;
   }
 
-  const request = await buildCacheRequest(urn, highQualityStreaming, durationMs);
+  const request = await buildCacheRequest(urn, highQualityStreaming, durationMs, storageQuality);
   return invoke<TrackCacheInfo>('track_ensure_cached', { request });
 }
 
@@ -140,6 +149,7 @@ export interface LikeCacheEntry {
   hq: boolean;
   /** API track length (ms) — enables truncated-download detection in Rust. */
   durationMs?: number;
+  storageQuality?: StorageQuality;
 }
 
 export function cacheLikedTracks(entries: LikeCacheEntry[]): Promise<void> {
@@ -311,6 +321,7 @@ export interface DownloadTrackOptions {
   artworkUrl?: string | null;
   /** Track length in milliseconds (API `duration`). */
   durationMs?: number;
+  storageQuality?: StorageQuality;
 }
 
 /** Download-to-file: writes a clean m4a (transcoding/fetching as needed) with
@@ -332,7 +343,7 @@ export async function downloadTrack(
   if (!dest) throw new Error('cancelled');
 
   const hq = isHqStreaming();
-  const request = await buildCacheRequest(urn, hq, options.durationMs);
+  const request = await buildCacheRequest(urn, hq, options.durationMs, options.storageQuality);
   return invoke<string>('track_export', {
     request,
     destPath: dest,

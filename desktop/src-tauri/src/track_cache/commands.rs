@@ -24,6 +24,8 @@ pub struct EnsureCachedRequest {
     /// API-reported track length (ms) for truncated-download detection.
     #[serde(default)]
     pub duration_ms: Option<u64>,
+    #[serde(default)]
+    pub storage_quality: Option<String>,
 }
 
 impl EnsureCachedRequest {
@@ -51,6 +53,8 @@ pub struct PreloadEntry {
     pub hq: bool,
     #[serde(default)]
     pub duration_ms: Option<u64>,
+    #[serde(default)]
+    pub storage_quality: Option<String>,
 }
 
 #[tauri::command]
@@ -71,6 +75,7 @@ pub async fn track_ensure_cached(
             storage_urls: &storage_urls,
             session_id: request.session_id.as_deref(),
             hq: request.hq,
+            storage_quality: request.storage_quality.as_deref(),
             liked: false,
             expected_duration_ms: request.duration_ms,
         })
@@ -100,6 +105,7 @@ pub async fn track_export(
                 storage_urls: &storage_urls,
                 session_id: request.session_id.as_deref(),
                 hq: request.hq,
+                storage_quality: request.storage_quality.as_deref(),
                 liked: false,
                 expected_duration_ms: request.duration_ms,
             },
@@ -160,6 +166,7 @@ pub async fn track_preload(
         let session_id = entry.session_id;
         let hq = entry.hq;
         let duration_ms = entry.duration_ms;
+        let storage_quality = entry.storage_quality;
 
         tokio::spawn(async move {
             let _permit = permit;
@@ -172,6 +179,7 @@ pub async fn track_preload(
                     storage_urls: &storage_urls,
                     session_id: session_id.as_deref(),
                     hq,
+                    storage_quality: storage_quality.as_deref(),
                     liked: false,
                     expected_duration_ms: duration_ms,
                 })

@@ -83,6 +83,7 @@ export const OfflineTrackRow = React.memo(function OfflineTrackRow({
       await downloadTrack(track.urn, display.artistLine || track.user.username, display.title, {
         artworkUrl: track.artwork_url,
         durationMs: track.duration,
+        storageQuality: track._scd_meta?.storage_quality,
       });
       toast.success(t('track.downloaded'));
     } catch (e: unknown) {

@@ -32,6 +32,7 @@ export async function startCacheLikes(): Promise<number> {
     sessionId,
     hq,
     durationMs: track.duration,
+    storageQuality: track._scd_meta?.storage_quality,
   }));
   if (entries.length > 0) {
     await cacheLikedTracks(entries);
