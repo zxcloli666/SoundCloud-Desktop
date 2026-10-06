@@ -3,6 +3,7 @@ use std::path::Path;
 use std::path::PathBuf;
 use std::sync::Arc;
 use std::sync::Mutex as StdMutex;
+use std::sync::atomic::{AtomicU32, Ordering};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use futures_util::StreamExt;
@@ -740,6 +741,32 @@ pub(super) async fn write_response_to_cache(
                     )))
                 }
             }
+        }
+    }
+}
+
+fn progress_emitter(
+    app_handle: Option<crate::rt::AppHandle>,
+    urn: &str,
+    source: DownloadSource,
+) -> impl Fn(f64) + Send + Sync + 'static {
+    let urn = urn.to_string();
+    let emitted = AtomicU32::new(0);
+    move |progress| {
+        let Some(app) = &app_handle else {
+            return;
+        };
+        let progress = progress.clamp(0.0, 1.0);
+        let percent = (progress * 100.0) as u32;
+        if emitted.fetch_max(percent, Ordering::Relaxed) < percent {
+            let _ = app.emit(
+                "track:download-progress",
+                serde_json::json!({
+                    "urn": urn,
+                    "progress": progress,
+                    "source": source.label(),
+                }),
+            );
         }
     }
 }
@@ -1684,7 +1711,8 @@ impl TrackCacheState {
         urn: &str,
         start: std::time::Instant,
     ) -> Result<Option<PathBuf>, String> {
-        let result = match self.anon.get_stream(urn).await {
+        let progress = progress_emitter(self.app_handle.clone(), urn, DownloadSource::Anon);
+        let result = match self.anon.get_stream(urn, &progress).await {
             Ok(Some(result)) => result,
             Ok(None) => {
                 let line = format!("[TrackCache] anon: no usable transcoding for {urn}");
@@ -1759,6 +1787,7 @@ impl TrackCacheState {
             session_id,
             hq,
             &job.receiving,
+            Arc::new(progress_emitter(self.app_handle.clone(), urn, DownloadSource::Direct)),
         )
         .await
         .ok_or_else(|| "direct: no candidate succeeded".to_string())?;

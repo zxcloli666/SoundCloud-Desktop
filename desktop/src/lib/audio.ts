@@ -29,6 +29,7 @@ import {getUrnCluster, recordClusterFeedback} from './recsFeedback';
 import {getArtistDisplay, getDisplayTitle} from './track-display';
 
 const SKIP_THRESHOLD_SEC = 30;
+const SLOW_LOAD_HINT_MS = 60_000;
 /** Минимум, чтобы засчитать «прослушано полностью» для коротких треков (50% длительности). */
 const FULL_PLAY_RATIO = 0.5;
 /** Битый кеш: сыграло меньше этого на треке от EARLY_END_MIN_EXPECTED_SEC — лечим перекачкой. */
@@ -381,6 +382,12 @@ async function loadTrack(track: Track) {
 
     // Strategy 2: Download full track to cache — Rust picks storage/API internally
     setDownloadProgress(0);
+    setTimeout(() => {
+      if (gen !== loadGen || downloadProgress !== 0) return;
+      toast.info(i18n.t('track.slowLoad'), {
+        description: `${track.title}: ${i18n.t('track.slowLoadHint')}`,
+      });
+    }, SLOW_LOAD_HINT_MS);
 
     let cachedInfo: TrackCacheInfo;
     try {

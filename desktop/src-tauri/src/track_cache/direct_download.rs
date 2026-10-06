@@ -107,6 +107,7 @@ pub async fn try_download(
     session_id: Option<&str>,
     hq_pref: bool,
     receiving: &Arc<AtomicBool>,
+    progress: Arc<dyn Fn(f64) + Send + Sync>,
 ) -> Option<DirectResult> {
     if download_urls.is_empty() {
         return None;
@@ -120,6 +121,7 @@ pub async fn try_download(
                 let endpoint = url.clone();
                 let session_id = session_id.map(str::to_string);
                 let receiving = receiving.clone();
+                let progress = progress.clone();
                 Box::pin(async move {
                     try_one_endpoint(
                         &client,
@@ -127,6 +129,7 @@ pub async fn try_download(
                         session_id.as_deref(),
                         hq_pref,
                         &receiving,
+                        &*progress,
                     )
                     .await
                 }) as Pin<Box<dyn Future<Output = Option<DirectResult>> + Send>>
@@ -149,6 +152,7 @@ async fn try_one_endpoint(
     session_id: Option<&str>,
     hq_pref: bool,
     receiving: &AtomicBool,
+    progress: &(dyn Fn(f64) + Send + Sync),
 ) -> Option<DirectResult> {
     let resp = match fetch_download(client, endpoint, session_id).await {
         Ok(r) => r,
@@ -171,7 +175,7 @@ async fn try_one_endpoint(
     }
     for cand in sorted {
         let q = cand.playback_quality();
-        match consume(client, &cand).await {
+        match consume(client, &cand, progress).await {
             Ok(data) => {
                 println!(
                     "[direct] hit {} ({} {})",
@@ -222,16 +226,22 @@ fn sort_candidates(cands: Vec<Candidate>, hq_pref: bool) -> Vec<Candidate> {
     filtered
 }
 
-async fn consume(client: &Client, cand: &Candidate) -> Result<Bytes, String> {
+async fn consume(
+    client: &Client,
+    cand: &Candidate,
+    progress: &(dyn Fn(f64) + Send + Sync),
+) -> Result<Bytes, String> {
     match cand {
-        Candidate::Progressive { url, .. } => download_progressive(client, url).await,
-        Candidate::Hls { manifest_url, .. } => download_hls_full(client, manifest_url).await,
+        Candidate::Progressive { url, .. } => download_progressive(client, url, progress).await,
+        Candidate::Hls { manifest_url, .. } => {
+            download_hls_full(client, manifest_url, progress).await
+        }
         Candidate::EncryptedHls {
             init_base64,
             segments,
             key_base64,
             ..
-        } => consume_encrypted(client, init_base64, segments, key_base64).await,
+        } => consume_encrypted(client, init_base64, segments, key_base64, progress).await,
     }
 }
 
@@ -240,6 +250,7 @@ async fn consume_encrypted(
     init_b64: &str,
     segments: &[String],
     key_b64: &str,
+    progress: &(dyn Fn(f64) + Send + Sync),
 ) -> Result<Bytes, String> {
     let b64 = base64::engine::general_purpose::STANDARD;
     let init = b64.decode(init_b64).map_err(|e| format!("init: {e}"))?;
@@ -253,7 +264,7 @@ async fn consume_encrypted(
     let mut buf = Vec::with_capacity(init.len());
     buf.extend_from_slice(&init);
 
-    for url in segments {
+    for (fetched, url) in segments.iter().enumerate() {
         let resp = client
             .get(url)
             .send()
@@ -265,6 +276,7 @@ async fn consume_encrypted(
         let bytes = resp.bytes().await.map_err(|e| format!("seg body: {e}"))?;
         let plain = decrypt_client::decrypt_segment(&bytes, &key).map_err(|e| format!("{e}"))?;
         buf.extend_from_slice(&plain);
+        progress((fetched + 1) as f64 / segments.len() as f64);
     }
     Ok(Bytes::from(buf))
 }

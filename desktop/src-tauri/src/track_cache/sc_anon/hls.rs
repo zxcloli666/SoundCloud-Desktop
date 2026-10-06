@@ -6,22 +6,40 @@
 //! back to the streaming server).
 
 use bytes::{Bytes, BytesMut};
+use futures_util::StreamExt;
 use wreq::Client;
 use url::Url;
 
 const HLS_PREFETCH_SEGMENTS: usize = 3;
 
 /// Fetch a single-file (progressive) audio stream.
-pub async fn download_progressive(client: &Client, url: &str) -> Result<Bytes, String> {
-    let data = fetch_bytes(client, url).await?;
-    if data.is_empty() {
+pub async fn download_progressive(
+    client: &Client,
+    url: &str,
+    progress: &(dyn Fn(f64) + Send + Sync),
+) -> Result<Bytes, String> {
+    let resp = send_ok(client, url).await?;
+    let total = resp.content_length().unwrap_or(0);
+    let mut buf = BytesMut::with_capacity(total as usize);
+    let mut body = resp.bytes_stream();
+    while let Some(chunk) = body.next().await {
+        buf.extend_from_slice(&chunk.map_err(|e| format!("body: {e}"))?);
+        if total > 0 {
+            progress(buf.len() as f64 / total as f64);
+        }
+    }
+    if buf.is_empty() {
         return Err("progressive download returned empty body".into());
     }
-    Ok(data)
+    Ok(buf.freeze())
 }
 
 /// Fetch + concat every segment of an HLS playlist.
-pub async fn download_hls_full(client: &Client, m3u8_url: &str) -> Result<Bytes, String> {
+pub async fn download_hls_full(
+    client: &Client,
+    m3u8_url: &str,
+    progress: &(dyn Fn(f64) + Send + Sync),
+) -> Result<Bytes, String> {
     let m3u8_text = fetch_bytes(client, m3u8_url).await?;
     let m3u8_content = String::from_utf8_lossy(&m3u8_text);
     let (init_url, segment_urls) = parse_m3u8(&m3u8_content, m3u8_url);
@@ -57,10 +75,15 @@ pub async fn download_hls_full(client: &Client, m3u8_url: &str) -> Result<Bytes,
 
     fill_queue(&mut inflight, &mut next_idx, client, &segment_urls);
 
+    let mut fetched = 0usize;
     while !inflight.is_empty() {
         let handle = inflight.remove(0);
         match handle.await {
-            Ok(Ok(chunk)) => buf.extend_from_slice(&chunk),
+            Ok(Ok(chunk)) => {
+                buf.extend_from_slice(&chunk);
+                fetched += 1;
+                progress(fetched as f64 / segment_urls.len() as f64);
+            }
             Ok(Err(e)) => return Err(format!("segment download: {e}")),
             Err(e) => return Err(format!("segment task panic: {e}")),
         }
@@ -71,6 +94,11 @@ pub async fn download_hls_full(client: &Client, m3u8_url: &str) -> Result<Bytes,
 }
 
 async fn fetch_bytes(client: &Client, url: &str) -> Result<Bytes, String> {
+    let resp = send_ok(client, url).await?;
+    resp.bytes().await.map_err(|e| format!("body: {e}"))
+}
+
+async fn send_ok(client: &Client, url: &str) -> Result<wreq::Response, String> {
     let resp = client
         .get(url)
         .send()
@@ -80,7 +108,7 @@ async fn fetch_bytes(client: &Client, url: &str) -> Result<Bytes, String> {
     if !status.is_success() {
         return Err(format!("HTTP {status}"));
     }
-    resp.bytes().await.map_err(|e| format!("body: {e}"))
+    Ok(resp)
 }
 
 fn parse_m3u8(content: &str, base_url: &str) -> (Option<String>, Vec<String>) {

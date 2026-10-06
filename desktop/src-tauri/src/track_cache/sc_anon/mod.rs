@@ -178,11 +178,15 @@ impl AnonClient {
     /// Returns `Ok(None)` if SC has no usable transcoding (geo-blocked,
     /// preview-only, etc.) so the caller can fall through to the next source.
     /// `Err` is reserved for network failures and feeds the circuit breaker.
-    pub async fn get_stream(&self, track_urn: &str) -> Result<Option<AnonStreamResult>, String> {
+    pub async fn get_stream(
+        &self,
+        track_urn: &str,
+        progress: &(dyn Fn(f64) + Send + Sync),
+    ) -> Result<Option<AnonStreamResult>, String> {
         if self.in_cooldown() {
             return Ok(None);
         }
-        let result = self.do_get_stream(track_urn).await;
+        let result = self.do_get_stream(track_urn, progress).await;
         match &result {
             Ok(Some(_)) => self.note_success(),
             Err(_) => self.note_failure(),
@@ -191,7 +195,11 @@ impl AnonClient {
         result
     }
 
-    async fn do_get_stream(&self, track_urn: &str) -> Result<Option<AnonStreamResult>, String> {
+    async fn do_get_stream(
+        &self,
+        track_urn: &str,
+        progress: &(dyn Fn(f64) + Send + Sync),
+    ) -> Result<Option<AnonStreamResult>, String> {
         let track_id = track_urn.rsplit(':').next().unwrap_or(track_urn);
         let mut budget = ResolveBudget::new();
 
@@ -240,7 +248,7 @@ impl AnonClient {
         };
 
         match self
-            .stream_from_transcodings(transcodings, track_auth.as_deref(), &mut budget)
+            .stream_from_transcodings(transcodings, track_auth.as_deref(), &mut budget, progress)
             .await
         {
             Ok(Some(r)) => Ok(Some(r)),
@@ -270,6 +278,7 @@ impl AnonClient {
                     &retry_transcodings,
                     retry_auth.as_deref(),
                     &mut budget,
+                    progress,
                 )
                 .await
             }
@@ -281,6 +290,7 @@ impl AnonClient {
         transcodings: &[Transcoding],
         track_auth: Option<&str>,
         budget: &mut ResolveBudget,
+        progress: &(dyn Fn(f64) + Send + Sync),
     ) -> Result<Option<AnonStreamResult>, String> {
         let ranked = ranked_transcodings(transcodings);
         if ranked.is_empty() {
@@ -314,9 +324,9 @@ impl AnonClient {
             };
 
             let result = if is_progressive {
-                download_progressive(&self.client, &media_url).await
+                download_progressive(&self.client, &media_url, progress).await
             } else {
-                download_hls_full(&self.client, &media_url).await
+                download_hls_full(&self.client, &media_url, progress).await
             };
 
             match result {

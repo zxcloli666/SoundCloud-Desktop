@@ -246,6 +246,8 @@
     "loadError": "Failed to load track",
     "noStream": "Track is unavailable",
     "noStreamHint": "No playable stream. It may be Go+ or region-locked, or SoundCloud is limiting requests. Try again later.",
+    "slowLoad": "SoundCloud is slow to answer",
+    "slowLoadHint": "The track is warming up, it will start once it loads.",
     "dislike": "Don't recommend",
     "removeDislike": "Remove dislike",
     "play": "Play",
