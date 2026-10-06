@@ -20,6 +20,7 @@ import { useUser, useUserSubscription, useUserWebProfiles } from '../lib/hooks';
 import { Loader2 } from '../lib/icons';
 import { likedTracksCount } from '../lib/likes';
 import {usePerfMode} from '../lib/perf';
+import { MIN_SEARCH_QUERY } from '../lib/search';
 import { useSubscription } from '../lib/subscription';
 import { useAuthStore } from '../stores/auth';
 
@@ -147,7 +148,8 @@ export function UserPage() {
             }}
           >
             {(() => {
-              const searching = !!debouncedSearch && isSearchableScope(activeTab);
+              const searching =
+                debouncedSearch.length >= MIN_SEARCH_QUERY && isSearchableScope(activeTab);
               if (searching && (activeTab === 'tracks' || activeTab === 'popular')) {
                 return <UserSearchTracksTab urn={urn!} aura={aura} query={debouncedSearch} />;
               }

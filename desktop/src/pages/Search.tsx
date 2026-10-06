@@ -10,11 +10,11 @@ import { WALL_KEYFRAMES } from '../components/search/utils';
 import { VibeResults } from '../components/search/VibeResults';
 import { useTabHidden } from '../components/search/Wall';
 import { stopHoverPreview, wirePreviewGuards } from '../lib/audioPreview';
+import { MIN_SEARCH_QUERY } from '../lib/search';
 import { findSoundCloudLink } from '../lib/soundcloudLink';
 import { useSearchPrefsStore } from '../stores/searchPrefs';
 import { useSearchQueryStore } from '../stores/searchQuery';
 
-const MIN_QUERY = 2;
 const DEBOUNCE_MS = 350;
 
 export function Search() {
@@ -25,7 +25,7 @@ export function Search() {
   const queryLink = findSoundCloudLink(query);
   const link = query === typed ? queryLink : null;
   const hidden = useTabHidden();
-  const searching = !queryLink && !findSoundCloudLink(typed) && query.length >= MIN_QUERY;
+  const searching = !queryLink && !findSoundCloudLink(typed) && query.length >= MIN_SEARCH_QUERY;
 
   useEffect(() => {
     wirePreviewGuards();

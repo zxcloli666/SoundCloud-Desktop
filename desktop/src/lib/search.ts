@@ -58,7 +58,7 @@ const TIMEOUT_MS = 20_000;
 const VIBE_TIMEOUT_MS = 30_000;
 const LINK_TIMEOUT_MS = 30_000;
 const MAX_RETRY_DELAY_S = 10;
-const MIN_QUERY = 2;
+export const MIN_SEARCH_QUERY = 2;
 const QUIET: ApiRequestOptions = { quiet: true };
 
 const ERROR_KINDS: Record<string, SearchErrorKind> = {
@@ -117,7 +117,7 @@ function usePagedSearch<T>(
     queryKey: ['search', ...key, q, extra ?? {}],
     url: (page, size) => pagedUrl(base, page, size, params(q, extra)),
     limit,
-    enabled: q.length >= MIN_QUERY,
+    enabled: q.length >= MIN_SEARCH_QUERY,
     dedupe,
   });
 }
@@ -129,7 +129,7 @@ function useStrip<T>(key: unknown[], base: string, q: string) {
     queryFn: () =>
       api<PagedResponse<T>>(pagedUrl(base, 0, STRIP_LIMIT, params(q)), QUIET, TIMEOUT_MS),
     select: (data) => data.collection,
-    enabled: q.length >= MIN_QUERY,
+    enabled: q.length >= MIN_SEARCH_QUERY,
   });
 }
 
@@ -187,7 +187,7 @@ export function useVibe(q: string) {
         QUIET,
         VIBE_TIMEOUT_MS,
       ),
-    enabled: q.length >= MIN_QUERY,
+    enabled: q.length >= MIN_SEARCH_QUERY,
     refetchInterval: (state) =>
       state.state.data?.status === 'preparing' && state.state.dataUpdateCount <= VIBE_MAX_POLLS
         ? VIBE_POLL_MS
