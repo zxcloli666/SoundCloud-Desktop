@@ -27,6 +27,7 @@ const PROGRESS_EMIT_STEP: f64 = 0.01;
 const STREAM_WRITE_BUFFER_SIZE: usize = 256 * 1024;
 const STORAGE_CONNECT_TIMEOUT_MS: u64 = 800;
 const STORAGE_HEADERS_TIMEOUT_MS: u64 = 1200;
+const STORAGE_RELAY_HEADERS_TIMEOUT_SECS: u64 = 15;
 const STORAGE_COOLDOWN_SECS: u64 = 60;
 const PRESIGN_HEADERS_SECS: u64 = 5;
 const PRESIGN_ORIGIN: &str = "https://s3.scnative.space/";
@@ -1008,11 +1009,12 @@ impl TrackCacheState {
     }
 
     async fn storage_get(&self, hop: &Hop) -> Result<wreq::Response, String> {
-        if hop.tier == Tier::Relay {
-            return self.client.get(&hop.url).send().await.map_err(|err| err.to_string());
-        }
-        let headers = Duration::from_millis(STORAGE_HEADERS_TIMEOUT_MS);
-        match tokio::time::timeout(headers, self.storage_client.get(&hop.url).send()).await {
+        let (client, headers) = if hop.tier == Tier::Relay {
+            (&self.client, Duration::from_secs(STORAGE_RELAY_HEADERS_TIMEOUT_SECS))
+        } else {
+            (&self.storage_client, Duration::from_millis(STORAGE_HEADERS_TIMEOUT_MS))
+        };
+        match tokio::time::timeout(headers, client.get(&hop.url).send()).await {
             Ok(sent) => sent.map_err(|err| err.to_string()),
             Err(_) => Err(format!("no headers in {}ms", headers.as_millis())),
         }
