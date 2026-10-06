@@ -21,7 +21,8 @@ const MAX_PROBE_MS = 60_000;
 const PROBE_BUDGET_MS = 15 * 60_000;
 const UNOBSERVED_PLAYLIST_STATUSES = ['unhydrated', 'legacy_review', 'retry_wait'];
 
-function isWaiting(status: string | undefined): boolean {
+function isWaiting(status: string | undefined, conflictCode: string | null): boolean {
+  if (status === 'conflict') return conflictCode === 'catalog_incomplete';
   return status === 'refreshing' || UNOBSERVED_PLAYLIST_STATUSES.includes(status ?? '');
 }
 
@@ -42,10 +43,11 @@ export function useCollectionSync(
   const [stalledAt, setStalledAt] = useState(0);
 
   const status = head?.sync?.status;
+  const conflictCode = head?.sync?.conflictCode ?? null;
   const lastCompletedAt = head?.sync?.lastCompletedAt ?? null;
   const retryAfterSeconds = head?.sync?.retryAfterSeconds ?? 0;
   const hasItems = (head?.collection.length ?? 0) > 0;
-  const waiting = isWaiting(status);
+  const waiting = isWaiting(status, conflictCode);
 
   useEffect(() => {
     if (!waiting) return;
@@ -69,6 +71,7 @@ export function useCollectionSync(
       const moved =
         latest !== null &&
         (latest.sync?.status !== status ||
+          (latest.sync?.conflictCode ?? null) !== conflictCode ||
           (latest.sync?.lastCompletedAt ?? null) !== lastCompletedAt ||
           latest.collection.length > 0 !== hasItems);
       if (moved) {
@@ -85,7 +88,17 @@ export function useCollectionSync(
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [qc, probeUrl, waiting, status, lastCompletedAt, retryAfterSeconds, hasItems, updatedAt]);
+  }, [
+    qc,
+    probeUrl,
+    waiting,
+    status,
+    conflictCode,
+    lastCompletedAt,
+    retryAfterSeconds,
+    hasItems,
+    updatedAt,
+  ]);
 
   if (!isPartialSync(head?.sync)) return 'complete';
   return stalledAt === updatedAt ? 'stalled' : 'syncing';
