@@ -144,6 +144,7 @@ pub async fn probe_services(
         .map(|endpoint| {
             let client = client.clone();
             let routes = endpoint.routes(&pool.relays);
+            let judged = !system_proxy::proxied(&endpoint.url);
             async move {
                 let mut samples = Vec::with_capacity(routes.len());
                 let mut direct_ok = false;
@@ -152,10 +153,8 @@ pub async fn probe_services(
                     let outcome = hit(&client, &route.url).await;
                     if route.via == "direct" {
                         direct_ok = outcome.ok;
-                        if outcome.ok {
-                            edge::note_url_delivered(&endpoint.url, Tier::Direct, direct_bytes);
-                        } else {
-                            edge::note_url(&endpoint.url, Tier::Direct, false);
+                        if judged {
+                            note_direct(&endpoint.url, outcome.ok, direct_bytes);
                         }
                     } else {
                         relay_ok |= outcome.ok;
@@ -169,7 +168,7 @@ pub async fn probe_services(
                         link: None,
                     });
                 }
-                if !direct_ok && relay_ok {
+                if judged && !direct_ok && relay_ok {
                     edge::note_url(&endpoint.url, Tier::Relay, true);
                 }
                 samples
@@ -180,6 +179,14 @@ pub async fn probe_services(
         .await;
 
     batches.into_iter().flatten().collect()
+}
+
+fn note_direct(url: &str, ok: bool, direct_bytes: u64) {
+    if ok {
+        edge::note_url_delivered(url, Tier::Direct, direct_bytes);
+    } else {
+        edge::note_url(url, Tier::Direct, false);
+    }
 }
 
 struct Outcome {
