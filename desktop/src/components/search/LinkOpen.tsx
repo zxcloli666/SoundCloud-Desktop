@@ -23,9 +23,10 @@ function entityRoute(entity: ResolvedEntity): string | null {
 type Failure = 'notFound' | 'unsupported' | 'unreachable';
 
 function failureOf(error: unknown): Failure {
-  if (error instanceof ApiError && error.status === 404) return 'notFound';
-  if (error instanceof ApiError && error.status >= 400 && error.status < 500) return 'unsupported';
-  return 'unreachable';
+  if (!(error instanceof ApiError) || error.status >= 500 || error.status === 429) {
+    return 'unreachable';
+  }
+  return error.status === 400 ? 'unsupported' : 'notFound';
 }
 
 export const LinkOpen = memo(function LinkOpen({ link }: { link: SoundCloudLink }) {
