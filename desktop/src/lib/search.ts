@@ -95,6 +95,8 @@ function params(q: string, extra: Record<string, string | undefined> = {}): stri
 
 const byUrn = (item: { urn: string }) => item.urn;
 const byTrackUrn = (hit: LyricsHit) => hit.track.urn;
+const byScTrack = (track: Track) =>
+  track.urn || (track.id != null ? `soundcloud:tracks:${track.id}` : '');
 
 const shared = {
   staleTime: STALE_MS,
@@ -168,7 +170,7 @@ export function useLyricsHits(q: string) {
 }
 
 export function useScTracks(q: string) {
-  return usePagedSearch<Track>(['soundcloud', 'tracks'], '/tracks', q, PAGE_LIMIT, byUrn);
+  return usePagedSearch<Track>(['soundcloud', 'tracks'], '/tracks', q, PAGE_LIMIT, byScTrack);
 }
 
 export function useScStrip<K extends keyof ScStripItems>(kind: K, q: string) {
