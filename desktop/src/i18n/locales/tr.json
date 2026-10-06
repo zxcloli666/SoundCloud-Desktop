@@ -75,87 +75,69 @@
     "logout": "Cikis Yap"
   },
   "search": {
-    "placeholder": "Parca, calma listesi, kullanici ara...",
     "globalPlaceholder": "Ne dinlemek istersin?",
     "tracks": "Parcalar",
     "playlists": "Calma listeleri",
-    "users": "Kullanicilar",
-    "artists": "Sanatcilar",
-    "albums": "Albumler",
-    "noResults": "Sonuc bulunamadi",
-    "noResultsDbHint": "Yerel SCD veritabaninda eslesme yok. SoundCloud'a gecmeyi dene.",
-    "tryScHint": "SCD veritabaninda araniyor. Daha genis aramak icin SoundCloud'a gec.",
-    "caption": "Kesfet",
-    "eyebrow": "SoundCloud · Lens",
-    "heroTitle": "Bugun ne dinleyelim?",
-    "heroSubtitle": "Parca, calma listesi, sanatci ve albumleri ara. SoundCloud linki yapistirinca direkt ac.",
-    "constellation": "Bir mod sec",
     "firstTimeTitle": "Aramaya basla",
     "firstTimeBody": "Bir sarki, sanatci veya mod yaz. Veya yukaridan bir mod sec. Son aramalar burada birikecek.",
-    "seeAll": "Tumu",
     "back": "Geri",
-    "try": "Dene",
-    "urlHint": "Acmak icin Enter'a bas",
+    "urlHint": "SoundCloud baglantisi",
     "clear": "Temizle",
-    "resultsFor": "Sonuclar",
     "history": "Son aramalar",
     "clearHistory": "Temizle",
-    "byText": "Metne gore",
-    "byLines": "Sozlere gore",
-    "byVibe": "Vibe'a gore",
-    "aiPicks": "AI seciyor",
-    "boardEmpty": "Henuz bir sey yok — aramayi dene",
-    "mode": {
-      "text": "Metin",
-      "vibe": "Vibe"
-    },
     "vibe": {
-      "empty": "Bu vibe ile eslesen yok",
-      "tryText": "Metinle ara",
-      "unavailableTitle": "Vibe aramasi su an kullanilamiyor",
-      "unavailableBody": "Su an yeni vibe'lari okuyamiyoruz. Kelimelerle ara veya bu vibe'i sonra dene."
-    },
-    "popular": {
-      "artists": "Populer sanatcilar",
-      "albums": "Populer albumler"
-    },
-    "empty": {
-      "dbTitle": "Metinle eslesme yok",
-      "dbBody": "\"{{query}}\" baslik, sanatci veya sozlerle eslesmedi. Vibe ile aramayi dene — hissi tarif et.",
-      "cta": "Vibe ile ara",
-      "scTitle": "Sonuc yok",
-      "scBody": "\"{{query}}\" sonuc dondurmedi. Farkli bir yazim veya daha genel bir terim dene.",
-      "toVibeTitle": "Kelimelerle eslesme yok",
-      "toVibeBody": "Vibe ile aramayi dene — anahtar kelime degil, hissi tarif et.",
-      "toVibeCta": "Vibe ile ara",
-      "toTextTitle": "Bu vibe bos cikti",
-      "toTextBody": "Tam kelimeleri dene — bir baslik, sanatci veya hatirladigin bir soz.",
-      "toTextCta": "Metinle ara"
+      "preparingTitle": "Ayarlaniyor…",
+      "preparingBody": "Bu vibe ilk kez araniyor, okuyoruz. Birazdan gorunecek.",
+      "slowTitle": "Vibe aramasi normalden uzun suruyor",
+      "slowBody": "Vibe okuyucu su an yogun. Biraz sonra tekrar deneyin.",
+      "unavailableTitle": "Vibe aramasi su anda kullanilamiyor",
+      "unavailableBody": "Katalogda veya SoundCloud'da arayin ya da bu vibe'i daha sonra deneyin.",
+      "emptyTitle": "Bu vibe ile henuz parca yok",
+      "emptyBody": "Baska kelimelerle anlatmayi deneyin."
     },
     "dive": "Benzer",
-    "diveFrom": "{{title}}",
-    "diveEmpty": "\"{{title}}\" benzeri yok",
-    "diveEmptyBody": "Baska bir parca dene veya aramaya geri don.",
-    "preparingTitle": "Vibe'ini yakaliyoruz…",
-    "preparingBody": "Bu sorgu yeni — hesapliyoruz. Birazdan gelecek.",
     "error": {
-      "title": "Arama yanit vermiyor",
-      "body": "Sunucu sonuclari gondermedi. Biraz sonra tekrar dene."
-    },
-    "resolve": {
-      "loading": "Link aciliyor...",
-      "redirecting": "Yonlendiriliyor...",
-      "errorTitle": "Acilmadi",
-      "notFound": "Link bulunamadi",
-      "failed": "Cozulemedi",
-      "unknown": "Bilinmeyen kaynak: {{kind}}"
+      "timeout": "Arama cok uzun surdu, tekrar deneyin",
+      "busy": "Arama yogun, tekrar deneyin",
+      "offline": "Sunucuya ulasilamadi",
+      "failed": "Arama basarisiz oldu",
+      "retry": "Tekrar dene"
     },
     "source": {
-      "db": "SCD",
-      "sc": "SoundCloud",
       "dbBadge": "VT",
-      "dbHint": "Yerel SCD veritabaninda ara — hizli, yansitilmis icerikle sinirli.",
-      "scHint": "Dogrudan SoundCloud'da ara — yavas ama tum icerigi kapsar."
+      "dbHint": "Yerel SCD veritabaninda ara — hizli, yansitilmis icerikle sinirli."
+    },
+    "modes": {
+      "catalog": "Katalog",
+      "vibe": "Vibe",
+      "soundcloud": "SoundCloud",
+      "catalogHint": "Katalogumuz: basliklar, sanatcilar, albumler, kullanicilar ve sarki sozleri. Yazim hatalari sorun degil.",
+      "vibeHint": "Bir ruh halini veya hissi anlatin, ona benzeyen parcalari bulun.",
+      "soundcloudHint": "Dogrudan SoundCloud sonuclari, SoundCloud sirasiyla."
+    },
+    "catalog": {
+      "inLyrics": "Sarki sozlerinde bulundu",
+      "showMore": "Daha fazla goster",
+      "emptyTitle": "Katalogumuzda “{{query}}” icin sonuc yok",
+      "emptyBody": "SoundCloud'da olabilir.",
+      "emptyCta": "SoundCloud'da ara",
+      "sectionError": "Yuklenemedi"
+    },
+    "soundcloud": {
+      "emptyTitle": "SoundCloud “{{query}}” icin bir sey bulamadi",
+      "emptyBody": "Farkli bir yazim veya daha genel bir terim deneyin.",
+      "unavailableTitle": "SoundCloud aramasi su anda kullanilamiyor",
+      "unavailableBody": "Katalog aramasi calisiyor. SoundCloud'u biraz sonra tekrar deneyin.",
+      "busyTitle": "SoundCloud aramasi yogun, birazdan tekrar deneyin",
+      "busyBody": "Kisa surede cok fazla arama yapildi. Birkac saniye bekleyin."
+    },
+    "link": {
+      "opening": "Aciliyor…",
+      "notFoundTitle": "SoundCloud'da bulunamadi",
+      "notFoundBody": "Baglanti ozel veya silinmis olabilir.",
+      "unsupportedTitle": "Parca, calma listesi veya profil baglantisi degil",
+      "unreachableTitle": "SoundCloud'a ulasilamadi",
+      "unreachableBody": "Birazdan tekrar deneyin."
     }
   },
   "track": {
@@ -267,7 +249,8 @@
       "placeholder": "{{scope}} icinde ara…",
       "unavailable": "Arama burada kullanilamiyor",
       "clear": "Temizle",
-      "empty": "Bu kullanicinin icerigide eslesme yok"
+      "empty": "Bu kullanicinin icerigide eslesme yok",
+      "error": "Bu profilde arama yapilamadi"
     }
   },
   "library": {

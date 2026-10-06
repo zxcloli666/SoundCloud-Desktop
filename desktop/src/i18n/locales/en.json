@@ -110,88 +110,69 @@
     "transferSession": "Transfer session to another device"
   },
   "search": {
-    "placeholder": "Search tracks, playlists, users...",
     "globalPlaceholder": "What do you want to hear?",
     "tracks": "Tracks",
     "playlists": "Playlists",
-    "users": "Users",
-    "artists": "Artists",
-    "albums": "Albums",
-    "noResults": "No results found",
-    "noResultsDbHint": "Nothing matched in the local SCD library. Try switching to SoundCloud.",
-    "tryScHint": "Searching in SCD library. Switch to SoundCloud to broaden the search.",
-    "hint": "Search for artists, bands, tracks, podcasts",
     "history": "Recent searches",
     "clearHistory": "Clear all",
-    "caption": "Discover",
-    "eyebrow": "SoundCloud · Lens",
-    "heroTitle": "What's your sound today?",
-    "heroSubtitle": "Search tracks, playlists, artists, albums. Paste a SoundCloud link to jump straight in.",
-    "constellation": "Pick a vibe",
     "firstTimeTitle": "Start exploring",
     "firstTimeBody": "Type a song, an artist, a mood. Or pick a vibe above. Recent searches will collect here as you go.",
-    "seeAll": "See all",
     "back": "Back",
-    "try": "Try one",
-    "urlHint": "Press Enter to open link",
+    "urlHint": "SoundCloud link",
     "clear": "Clear",
-    "resultsFor": "Results for",
-    "byText": "By text",
-    "byLines": "By lyrics",
-    "byVibe": "By vibe",
-    "aiPicks": "AI picks",
-    "boardEmpty": "Nothing to show yet — try a search",
-    "mode": {
-      "text": "Text",
-      "vibe": "Vibe"
-    },
     "vibe": {
-      "empty": "Nothing matched this vibe",
-      "tryText": "Search by text instead",
+      "preparingTitle": "Tuning in…",
+      "preparingBody": "First time for this vibe, we're reading the room. It will appear in a moment.",
+      "slowTitle": "Vibe search is taking longer than usual",
+      "slowBody": "The vibe reader is busy. Try again in a moment.",
       "unavailableTitle": "Vibe search is unavailable right now",
-      "unavailableBody": "We can't read new vibes at the moment. Search by words or try this vibe later."
-    },
-    "popular": {
-      "artists": "Popular artists",
-      "albums": "Popular albums"
-    },
-    "empty": {
-      "dbTitle": "Nothing matched by text",
-      "dbBody": "\"{{query}}\" didn't match any title, artist or lyric. Try searching by vibe — describe the feeling instead.",
-      "cta": "Search by vibe",
-      "scTitle": "Nothing found",
-      "scBody": "\"{{query}}\" returned no results. Try a different spelling or a broader term.",
-      "toVibeTitle": "Nothing matched the words",
-      "toVibeBody": "Try searching by vibe — describe the feeling, not the keywords.",
-      "toVibeCta": "Search by vibe",
-      "toTextTitle": "This vibe came up empty",
-      "toTextBody": "Try the exact words — a title, an artist, or a lyric you remember.",
-      "toTextCta": "Search by text"
+      "unavailableBody": "Search our catalog or SoundCloud, or try this vibe again later.",
+      "emptyTitle": "No tracks with this vibe yet",
+      "emptyBody": "Try describing it in other words."
     },
     "dive": "Similar",
-    "diveFrom": "{{title}}",
-    "diveEmpty": "Nothing similar to \"{{title}}\"",
-    "diveEmptyBody": "Try another track, or head back to your search.",
-    "preparingTitle": "Tuning into your vibe…",
-    "preparingBody": "First time for this one — we're reading the room. It'll appear in a moment.",
     "error": {
-      "title": "Search is not responding",
-      "body": "The server didn't send results. Try again in a moment."
-    },
-    "resolve": {
-      "loading": "Resolving link...",
-      "redirecting": "Redirecting...",
-      "errorTitle": "Could not resolve",
-      "notFound": "Link not found",
-      "failed": "Failed to resolve",
-      "unknown": "Unknown resource: {{kind}}"
+      "timeout": "Search took too long, try again",
+      "busy": "Search is busy, try again",
+      "offline": "Couldn't reach the server",
+      "failed": "Search failed",
+      "retry": "Retry"
     },
     "source": {
-      "db": "SCD",
-      "sc": "SoundCloud",
       "dbBadge": "DB",
-      "dbHint": "Search inside the local SCD library — fast, scoped to mirrored content.",
-      "scHint": "Search directly on SoundCloud — slower, but covers everything."
+      "dbHint": "Search inside the local SCD library — fast, scoped to mirrored content."
+    },
+    "modes": {
+      "catalog": "Catalog",
+      "vibe": "Vibe",
+      "soundcloud": "SoundCloud",
+      "catalogHint": "Our catalog: titles, artists, albums, users and lyrics. Typos are fine.",
+      "vibeHint": "Describe a mood or a feeling and get tracks that sound like it.",
+      "soundcloudHint": "Live results from SoundCloud itself, in SoundCloud order."
+    },
+    "catalog": {
+      "inLyrics": "Found in lyrics",
+      "showMore": "Show more",
+      "emptyTitle": "Nothing in our catalog for “{{query}}”",
+      "emptyBody": "SoundCloud may still have it.",
+      "emptyCta": "Search on SoundCloud",
+      "sectionError": "Couldn't load"
+    },
+    "soundcloud": {
+      "emptyTitle": "SoundCloud found nothing for “{{query}}”",
+      "emptyBody": "Try a different spelling or a broader term.",
+      "unavailableTitle": "SoundCloud search is unavailable right now",
+      "unavailableBody": "Our catalog search still works. Try SoundCloud again in a moment.",
+      "busyTitle": "SoundCloud search is busy, try again shortly",
+      "busyBody": "Too many searches in a short time. Wait a few seconds."
+    },
+    "link": {
+      "opening": "Opening…",
+      "notFoundTitle": "Not found on SoundCloud",
+      "notFoundBody": "The link may be private or deleted.",
+      "unsupportedTitle": "Not a track, playlist or profile link",
+      "unreachableTitle": "Couldn't reach SoundCloud",
+      "unreachableBody": "Try again in a moment."
     }
   },
   "sharing": {
@@ -350,7 +331,8 @@
       "placeholder": "Search in their {{scope}}…",
       "unavailable": "Search not available here",
       "clear": "Clear search",
-      "empty": "No matches in this user's content"
+      "empty": "No matches in this user's content",
+      "error": "Couldn't search this profile"
     }
   },
   "library": {
