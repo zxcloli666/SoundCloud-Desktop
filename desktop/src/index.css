@@ -107,7 +107,9 @@
 [data-app-idle="1"] .lyric-line[data-state="active"] .note-gradient-text,
 [data-app-idle="1"] .npb-dock[data-playing="true"] .npb-ring,
 [data-app-idle="1"] .npb-dock[data-playing="true"] .npb-eq i,
-[data-app-idle="1"] .npb-dock[data-playing="true"] .npb-play::after {
+[data-app-idle="1"] .npb-dock[data-playing="true"] .npb-play::after,
+[data-app-idle="1"] .tp[data-playing="true"] .npb-ring,
+[data-app-idle="1"] .tp[data-playing="true"] .npb-eq i {
     animation-play-state: paused !important;
 }
 

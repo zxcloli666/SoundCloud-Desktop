@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import {changeAppLanguage} from '../i18n';
 import {applyAccentVars, applyBgVars, applyPerfMode} from '../lib/apply-theme';
-import {setupVisibilityGate} from '../lib/perf';
+import {setupFocusGate, setupVisibilityGate} from '../lib/perf';
 import {useSettingsStore} from '../stores/settings';
 import '../index.css';
 import './tray.css';
@@ -49,6 +49,7 @@ async function bootstrap() {
     );
 
     setupVisibilityGate();
+    setupFocusGate();
 
     // Re-pick theme/language changes made in the main window each time the popover re-shows
     // (separate store instance — it only reads the shared on-disk state on demand).
