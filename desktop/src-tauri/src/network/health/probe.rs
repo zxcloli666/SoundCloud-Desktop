@@ -294,6 +294,18 @@ mod tests {
     }
 
     #[test]
+    fn a_throttled_direct_path_counts_against_direct() {
+        assert!(direct_cut_while_others_pass(&[
+            failed("direct", "throttled"),
+            sample("r1", true)
+        ]));
+        assert!(!direct_cut_while_others_pass(&[
+            failed("direct", "slow"),
+            sample("r1", true)
+        ]));
+    }
+
+    #[test]
     fn only_a_clean_direct_path_vouches_for_the_services() {
         let link = |shape, bytes| Link {
             shape,
