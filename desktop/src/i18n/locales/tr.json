@@ -81,67 +81,67 @@
     "firstTimeTitle": "Aramaya basla",
     "firstTimeBody": "Bir sarki, sanatci veya mod yaz. Veya yukaridan bir mod sec. Son aramalar burada birikecek.",
     "back": "Geri",
-    "urlHint": "SoundCloud baglantisi",
+    "urlHint": "SoundCloud bağlantısı",
     "clear": "Temizle",
     "history": "Son aramalar",
     "clearHistory": "Temizle",
     "vibe": {
-      "preparingTitle": "Ayarlaniyor…",
-      "preparingBody": "Bu vibe ilk kez araniyor, okuyoruz. Birazdan gorunecek.",
-      "slowTitle": "Vibe aramasi normalden uzun suruyor",
-      "slowBody": "Vibe okuyucu su an yogun. Biraz sonra tekrar deneyin.",
-      "unavailableTitle": "Vibe aramasi su anda kullanilamiyor",
-      "unavailableBody": "Katalogda veya SoundCloud'da arayin ya da bu vibe'i daha sonra deneyin.",
-      "emptyTitle": "Bu vibe ile henuz parca yok",
-      "emptyBody": "Baska kelimelerle anlatmayi deneyin."
+      "preparingTitle": "Ayarlanıyor…",
+      "preparingBody": "Bu vibe ilk kez aranıyor, okuyoruz. Birazdan görünecek.",
+      "slowTitle": "Vibe araması normalden uzun sürüyor",
+      "slowBody": "Vibe okuyucu şu an yoğun. Biraz sonra tekrar deneyin.",
+      "unavailableTitle": "Vibe araması şu anda kullanılamıyor",
+      "unavailableBody": "Katalogda veya SoundCloud'da arayın ya da bu vibe'ı daha sonra deneyin.",
+      "emptyTitle": "Bu vibe ile henüz parça yok",
+      "emptyBody": "Başka kelimelerle anlatmayı deneyin."
     },
     "error": {
-      "timeout": "Arama cok uzun surdu, tekrar deneyin",
-      "busy": "Arama yogun, tekrar deneyin",
-      "offline": "Sunucuya ulasilamadi",
-      "failed": "Arama basarisiz oldu",
+      "timeout": "Arama çok uzun sürdü, tekrar deneyin",
+      "busy": "Arama yoğun, tekrar deneyin",
+      "offline": "Sunucuya ulaşılamadı",
+      "failed": "Arama başarısız oldu",
       "retry": "Tekrar dene"
     },
     "source": {
       "dbBadge": "VT",
-      "dbHint": "Yerel SCD veritabaninda ara — hizli, yansitilmis icerikle sinirli."
+      "dbHint": "Yerel SCD veritabanında ara — hızlı, yansıtılmış içerikle sınırlı."
     },
     "modes": {
       "catalog": "Katalog",
       "vibe": "Vibe",
       "soundcloud": "SoundCloud",
-      "catalogHint": "Katalogumuz: basliklar, sanatcilar, albumler, kullanicilar ve sarki sozleri. Yazim hatalari sorun degil.",
-      "vibeHint": "Bir ruh halini veya hissi anlatin, ona benzeyen parcalari bulun.",
-      "soundcloudHint": "Dogrudan SoundCloud sonuclari, SoundCloud sirasiyla."
+      "catalogHint": "Kataloğumuz: başlıklar, sanatçılar, albümler, kullanıcılar ve şarkı sözleri. Yazım hataları sorun değil.",
+      "vibeHint": "Bir ruh halini veya hissi anlatın, ona benzeyen parçaları bulun.",
+      "soundcloudHint": "Doğrudan SoundCloud sonuçları, SoundCloud sırasıyla."
     },
     "catalog": {
-      "inLyrics": "Sarki sozlerinde bulundu",
-      "showMore": "Daha fazla goster",
-      "emptyTitle": "Katalogumuzda “{{query}}” icin sonuc yok",
+      "inLyrics": "Şarkı sözlerinde bulundu",
+      "showMore": "Daha fazla göster",
+      "emptyTitle": "Kataloğumuzda “{{query}}” için sonuç yok",
       "emptyBody": "SoundCloud'da olabilir.",
       "emptyCta": "SoundCloud'da ara",
-      "sectionError": "Yuklenemedi"
+      "sectionError": "Yüklenemedi"
     },
     "soundcloud": {
-      "emptyTitle": "SoundCloud “{{query}}” icin bir sey bulamadi",
-      "emptyBody": "Farkli bir yazim veya daha genel bir terim deneyin.",
-      "unavailableTitle": "SoundCloud aramasi su anda kullanilamiyor",
-      "unavailableBody": "Katalog aramasi calisiyor. SoundCloud'u biraz sonra tekrar deneyin.",
-      "busyTitle": "SoundCloud aramasi yogun, birazdan tekrar deneyin",
-      "busyBody": "Kisa surede cok fazla arama yapildi. Birkac saniye bekleyin."
+      "emptyTitle": "SoundCloud “{{query}}” için bir şey bulamadı",
+      "emptyBody": "Farklı bir yazım veya daha genel bir terim deneyin.",
+      "unavailableTitle": "SoundCloud araması şu anda kullanılamıyor",
+      "unavailableBody": "Katalog araması çalışıyor. SoundCloud'u biraz sonra tekrar deneyin.",
+      "busyTitle": "SoundCloud araması yoğun, birazdan tekrar deneyin",
+      "busyBody": "Kısa sürede çok fazla arama yapıldı. Birkaç saniye bekleyin."
     },
     "link": {
-      "opening": "Aciliyor…",
-      "notFoundTitle": "SoundCloud'da bulunamadi",
-      "notFoundBody": "Baglanti ozel veya silinmis olabilir.",
-      "unsupportedTitle": "Parca, calma listesi veya profil baglantisi degil",
-      "unreachableTitle": "SoundCloud'a ulasilamadi",
+      "opening": "Açılıyor…",
+      "notFoundTitle": "SoundCloud'da bulunamadı",
+      "notFoundBody": "Bağlantı özel veya silinmiş olabilir.",
+      "unsupportedTitle": "Parça, çalma listesi veya profil bağlantısı değil",
+      "unreachableTitle": "SoundCloud'a ulaşılamadı",
       "unreachableBody": "Birazdan tekrar deneyin."
     }
   },
   "track": {
     "comments": "Yorumlar",
-    "previewOnly": "Sadece onizleme",
+    "previewOnly": "Sadece önizleme",
     "related": "Benzer Parcalar",
     "addComment": "Yorum ekle...",
     "plays": "dinlenme",
@@ -167,7 +167,7 @@
       "tooLong": "Cok uzun — onbellege alinmaz",
       "failed": "Isleme basarisiz"
     },
-    "notFoundOnSc": "SoundCloud'da bulunamadi",
+    "notFoundOnSc": "SoundCloud'da bulunamadı",
     "wantedHint": "Sarki biliniyor ama henuz yuklenmedi",
     "description": "Aciklama",
     "noComments": "Henuz yorum yok",
@@ -249,8 +249,8 @@
       "placeholder": "{{scope}} icinde ara…",
       "unavailable": "Arama burada kullanilamiyor",
       "clear": "Temizle",
-      "empty": "Bu kullanicinin icerigide eslesme yok",
-      "error": "Bu profilde arama yapilamadi"
+      "empty": "Bu kullanıcının içeriğinde eşleşme yok",
+      "error": "Bu profilde arama yapılamadı"
     }
   },
   "library": {
