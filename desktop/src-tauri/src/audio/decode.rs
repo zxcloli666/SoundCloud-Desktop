@@ -462,12 +462,26 @@ mod tests {
     }
 
     fn opus_stream(seconds: usize) -> Vec<u8> {
-        let encoder = audiopus::coder::Encoder::new(
+        opus_stream_with(seconds, None, PACKETS_PER_PAGE)
+    }
+
+    fn opus_stream_with(
+        seconds: usize,
+        bitrate: Option<i32>,
+        packets_per_page: usize,
+    ) -> Vec<u8> {
+        let mut encoder = audiopus::coder::Encoder::new(
             audiopus::SampleRate::Hz48000,
             audiopus::Channels::Stereo,
             audiopus::Application::Audio,
         )
         .unwrap();
+        if let Some(bitrate) = bitrate {
+            encoder.set_vbr(false).unwrap();
+            encoder
+                .set_bitrate(audiopus::Bitrate::BitsPerSecond(bitrate))
+                .unwrap();
+        }
         let pre_skip = encoder.lookahead().unwrap() as u16;
         let mut writer = PacketWriter::new(Cursor::new(Vec::new()));
 
@@ -498,7 +512,7 @@ mod tests {
             data.truncate(len);
             let end = if index + 1 == packets {
                 PacketWriteEndInfo::EndStream
-            } else if (index + 1) % PACKETS_PER_PAGE == 0 {
+            } else if (index + 1) % packets_per_page == 0 {
                 PacketWriteEndInfo::EndPage
             } else {
                 PacketWriteEndInfo::NormalPacket
@@ -526,7 +540,21 @@ mod tests {
 
     #[test]
     fn opus_seek_lands_on_the_requested_time() {
-        let bytes = opus_stream(6);
+        assert_seeks_land(opus_stream(6));
+    }
+
+    #[test]
+    fn opus_seek_lands_when_packets_span_pages() {
+        let bytes = opus_stream_with(6, Some(510_000), usize::MAX);
+        let continued = bytes
+            .windows(6)
+            .filter(|page| page.starts_with(b"OggS") && page[5] & 0x01 != 0)
+            .count();
+        assert!(continued >= 3);
+        assert_seeks_land(bytes);
+    }
+
+    fn assert_seeks_land(bytes: Vec<u8>) {
         let reference = OpusSource::new(bytes.clone()).unwrap().collect::<Vec<_>>();
 
         for seconds in [0.0, 0.73, 1.0, 2.37, 4.99] {
