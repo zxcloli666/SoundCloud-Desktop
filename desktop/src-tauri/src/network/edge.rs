@@ -374,37 +374,25 @@ fn settle(origin: &str, tier: Tier) {
 }
 
 pub fn hop_ok(hop: &Hop, resp: &wreq::Response) -> bool {
-    let status = resp.status().as_u16();
-    match hop.tier {
-        Tier::Direct => {
-            let bad = direct_infrastructure_error(resp);
-            if bad {
-                hop.note(false);
-            }
-            !bad
-        }
-        Tier::Relay => {
-            let bad = matches!(status, 421 | 502 | 503 | 504);
-            if bad {
-                hop.note(false);
-            }
-            !bad
-        }
-    }
-}
-
-fn direct_infrastructure_error(resp: &wreq::Response) -> bool {
-    let status = resp.status().as_u16();
     let content_type = resp
         .headers()
         .get(wreq::header::CONTENT_TYPE)
         .and_then(|v| v.to_str().ok())
         .unwrap_or("");
-    direct_infrastructure_headers(status, content_type)
+    let bad = transport_failure(hop.tier, resp.status().as_u16(), content_type);
+    if bad {
+        hop.note(false);
+    }
+    !bad
 }
 
-fn direct_infrastructure_headers(status: u16, content_type: &str) -> bool {
-    matches!(status, 502..=504) && content_type.to_ascii_lowercase().contains("text/html")
+fn transport_failure(tier: Tier, status: u16, content_type: &str) -> bool {
+    let gateway_page =
+        matches!(status, 502..=504) && content_type.to_ascii_lowercase().contains("text/html");
+    match tier {
+        Tier::Direct => gateway_page,
+        Tier::Relay => status == 421 || gateway_page,
+    }
 }
 
 pub fn expand_upstreams(upstreams: &[String]) -> Vec<Hop> {
@@ -570,8 +558,8 @@ mod tests {
     use std::time::{Duration, Instant};
 
     use super::{
-        audio_tier_order, direct_infrastructure_headers, relay_hosts_over, set_pool, Inner, Tier,
-        INHERIT, PROVEN_BYTES, RELAYS, REVALIDATE,
+        INHERIT, Inner, PROVEN_BYTES, RELAYS, REVALIDATE, Tier, audio_tier_order, relay_hosts_over,
+        set_pool, transport_failure,
     };
 
     const ORIGIN: &str = "stream.scnative.space";
@@ -641,10 +629,27 @@ mod tests {
 
     #[test]
     fn html_gateway_5xx_is_a_direct_transport_error() {
-        assert!(direct_infrastructure_headers(503, "text/html; charset=utf-8"));
-        assert!(direct_infrastructure_headers(504, "TEXT/HTML"));
-        assert!(!direct_infrastructure_headers(500, "text/html"));
-        assert!(!direct_infrastructure_headers(503, "application/json"));
+        assert!(transport_failure(
+            Tier::Direct,
+            503,
+            "text/html; charset=utf-8"
+        ));
+        assert!(transport_failure(Tier::Direct, 504, "TEXT/HTML"));
+        assert!(!transport_failure(Tier::Direct, 500, "text/html"));
+        assert!(!transport_failure(Tier::Direct, 503, "application/json"));
+        assert!(!transport_failure(Tier::Direct, 421, "text/plain"));
+    }
+
+    #[test]
+    fn an_origin_timeout_through_a_relay_is_the_server_answer() {
+        assert!(!transport_failure(
+            Tier::Relay,
+            504,
+            "text/plain; charset=utf-8"
+        ));
+        assert!(transport_failure(Tier::Relay, 504, "text/html"));
+        assert!(transport_failure(Tier::Relay, 502, "text/html"));
+        assert!(transport_failure(Tier::Relay, 421, ""));
     }
 
     #[test]
