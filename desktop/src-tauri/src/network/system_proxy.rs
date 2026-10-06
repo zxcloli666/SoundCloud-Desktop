@@ -33,7 +33,9 @@ pub fn proxied(url: &str) -> bool {
 }
 
 fn env_proxy_set() -> bool {
-    ENV_PROXIES.iter().any(|name| std::env::var_os(name).is_some())
+    ENV_PROXIES
+        .iter()
+        .any(|name| std::env::var_os(name).is_some())
 }
 
 fn current_proxy(url: &str) -> Option<String> {
@@ -107,9 +109,7 @@ fn registry_matcher(server: &str, overrides: &str) -> Matcher {
 
 fn proxy_url(matcher: &Matcher, url: &str) -> Option<String> {
     let dst = url.parse::<http::Uri>().ok()?;
-    matcher
-        .intercept(&dst)
-        .map(|proxy| proxy.uri().to_string())
+    matcher.intercept(&dst).map(|proxy| proxy.uri().to_string())
 }
 
 #[cfg(test)]
@@ -187,7 +187,9 @@ mod tests {
         tokio::spawn(server);
         let matcher = Matcher::builder().http(format!("http://{addr}")).build();
         let client = wreq::Client::builder()
-            .proxy(wreq::Proxy::custom(move |url| proxy_url(&matcher, url.as_str())))
+            .proxy(wreq::Proxy::custom(move |url| {
+                proxy_url(&matcher, url.as_str())
+            }))
             .build()
             .unwrap();
 

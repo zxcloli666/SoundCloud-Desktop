@@ -251,7 +251,10 @@ mod tests {
     #[test]
     fn a_relay_that_failed_its_probe_goes_to_the_back_of_the_pool() {
         let paths = [sample("r1", false), sample("r2", true), sample("r3", true)];
-        assert_eq!(usable_first(&pool(&["r1", "r2", "r3"]), &paths), ["r2", "r3", "r1"]);
+        assert_eq!(
+            usable_first(&pool(&["r1", "r2", "r3"]), &paths),
+            ["r2", "r3", "r1"]
+        );
     }
 
     #[test]
