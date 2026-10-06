@@ -10,7 +10,7 @@ import {RoomHero} from '../components/track/RoomHero';
 import {RoomSleeve} from '../components/track/RoomSleeve';
 import {RoomVoices} from '../components/track/RoomVoices';
 import {useTrackAura} from '../components/track/useTrackAura';
-import {LoadErrorState} from '../components/ui/LoadErrorState';
+import {LoadErrorState, RefreshPendingHint} from '../components/ui/LoadErrorState';
 import {api} from '../lib/api';
 import {seek} from '../lib/audio';
 import {
@@ -57,6 +57,7 @@ export const TrackPage = React.memo(function TrackPage() {
         isError,
         isFetching,
         error,
+        failureReason,
         refetch,
     } = useQuery({
     queryKey: ['track', urn],
@@ -128,6 +129,7 @@ export const TrackPage = React.memo(function TrackPage() {
                 style={{isolation: 'isolate'}}
             >
                 <HeroSkeleton/>
+                <RefreshPendingHint reason={failureReason}/>
             </div>
         </div>
     );

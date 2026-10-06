@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
-import { LoadErrorState } from '../components/ui/LoadErrorState';
+import { LoadErrorState, RefreshPendingHint } from '../components/ui/LoadErrorState';
 import { AuraField } from '../components/user/AuraField';
 import { IdentityHub } from '../components/user/IdentityHub';
 import { USER_PAGE_KEYFRAMES } from '../components/user/keyframes';
@@ -70,6 +70,7 @@ export function UserPage() {
     isError: userFailed,
     isFetching: userFetching,
     error: userError,
+    failureReason: userFailureReason,
     refetch: refetchUser,
   } = useUser(urn);
   const { data: webProfiles } = useUserWebProfiles(urn);
@@ -112,8 +113,9 @@ export function UserPage() {
 
   if (userLoading || !user) {
     return (
-      <div className="relative w-full min-h-screen flex items-center justify-center">
+      <div className="relative w-full min-h-screen flex flex-col items-center justify-center">
         <Loader2 size={28} className="text-white/30 animate-spin" />
+        <RefreshPendingHint reason={userFailureReason} />
       </div>
     );
   }

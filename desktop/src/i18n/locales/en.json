@@ -740,6 +740,7 @@
     "syncing": "Syncing with SoundCloud...",
     "syncSlow": "Syncing with SoundCloud is taking longer than usual",
     "stillLoading": "Still loading from SoundCloud, try again in a moment",
+    "loadingFromSoundcloud": "Loading this from SoundCloud, it can take a minute",
     "pageLoadFailed": "Couldn't load this page"
   },
   "star": {

@@ -37,3 +37,13 @@ export const LoadErrorState = React.memo(function LoadErrorState({
     </div>
   );
 });
+
+export function RefreshPendingHint({ reason }: { reason: unknown }) {
+  const { t } = useTranslation();
+  if (!isRefreshPending(reason)) return null;
+  return (
+    <p className="relative z-10 mt-6 text-center text-[13px] text-white/35">
+      {t('common.loadingFromSoundcloud')}
+    </p>
+  );
+}

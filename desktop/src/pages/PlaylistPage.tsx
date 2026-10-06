@@ -13,7 +13,7 @@ import {SequenceList} from '../components/playlist/SequenceList';
 import {SetRibbon} from '../components/playlist/SetRibbon';
 import {usePlaylistAura} from '../components/playlist/usePlaylistAura';
 import {Atmosphere} from '../components/search/Atmosphere';
-import {LoadErrorState} from '../components/ui/LoadErrorState';
+import {LoadErrorState, RefreshPendingHint} from '../components/ui/LoadErrorState';
 import {SyncNotice, syncNoticeOf} from '../components/ui/SyncNotice';
 import {
     useDeletePlaylist,
@@ -60,6 +60,7 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
     isError: playlistFailed,
     isFetching: playlistFetching,
     error: playlistError,
+    failureReason: playlistFailureReason,
     refetch: refetchPlaylist,
   } = usePlaylist(urn);
   const {
@@ -308,6 +309,7 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
           style={{ isolation: 'isolate' }}
         >
           <HeroSkeleton />
+          <RefreshPendingHint reason={playlistFailureReason} />
         </div>
       </div>
     );
