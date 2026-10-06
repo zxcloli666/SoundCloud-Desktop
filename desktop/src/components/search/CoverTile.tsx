@@ -158,6 +158,15 @@ export const CoverTile = memo(function CoverTile({ item, getQueue, onDive }: Cov
             </div>
           )}
 
+          {track.access === 'preview' && (
+            <span
+              className={`absolute ${kind === 'vibe' ? 'top-7' : 'top-2'} left-2 h-4 px-1.5 rounded-full text-[9px] font-semibold uppercase tracking-wide leading-4 text-amber-300/90`}
+              style={{ background: 'rgba(0,0,0,0.62)', border: '0.5px solid rgba(255,255,255,0.18)' }}
+            >
+              {t('track.previewOnly')}
+            </span>
+          )}
+
           {/* Play affordance */}
           <div
             className={`absolute top-2 right-2 flex items-center justify-center rounded-full transition-all duration-300 ${
