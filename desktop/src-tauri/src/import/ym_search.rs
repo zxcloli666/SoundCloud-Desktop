@@ -1,3 +1,4 @@
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Duration;
 
 use crate::network::edge::{self, Hop, Tier};
@@ -76,6 +77,7 @@ pub async fn find_track(
     session_id: &str,
     artist: &str,
     title: &str,
+    cancel: &AtomicBool,
 ) -> Result<Option<String>, SearchError> {
     let combined = search(
         client,
@@ -83,16 +85,25 @@ pub async fn find_track(
         session_id,
         &format!("{artist} {title}"),
         COMBINED_LIMIT,
+        cancel,
     )
     .await?;
     if let Some(first) = combined.into_iter().next() {
         return Ok(first.urn);
     }
-    if artist.is_empty() || title.is_empty() {
+    if artist.is_empty() || title.is_empty() || cancel.load(Ordering::Relaxed) {
         return Ok(None);
     }
 
-    let by_title = search(client, backend_url, session_id, title, TITLE_ONLY_LIMIT).await?;
+    let by_title = search(
+        client,
+        backend_url,
+        session_id,
+        title,
+        TITLE_ONLY_LIMIT,
+        cancel,
+    )
+    .await?;
     Ok(by_title
         .into_iter()
         .find(|track| uploaded_by(track, artist))
@@ -105,6 +116,7 @@ async fn search(
     session_id: &str,
     query: &str,
     limit: usize,
+    cancel: &AtomicBool,
 ) -> Result<Vec<ScTrackResult>, SearchError> {
     let url = format!(
         "{}/tracks?q={}&limit={}&linked_partitioning=true",
@@ -115,7 +127,8 @@ async fn search(
 
     let mut retries = 0;
     loop {
-        match search_once(client, &url, session_id).await {
+        match search_once(client, &url, session_id, cancel).await {
+            Err(_) if cancel.load(Ordering::Relaxed) => return Ok(Vec::new()),
             Err(error) if error.is_retryable() && retries < SEARCH_RETRIES => {
                 retries += 1;
                 tokio::time::sleep(error.pause(retries)).await;
@@ -129,6 +142,7 @@ async fn search_once(
     client: &wreq::Client,
     url: &str,
     session_id: &str,
+    cancel: &AtomicBool,
 ) -> Result<Vec<ScTrackResult>, SearchError> {
     let mut hops = edge::plan(url);
     if hops.is_empty() {
@@ -141,6 +155,9 @@ async fn search_once(
 
     let mut last_error = SearchError::transport("no route");
     for hop in hops {
+        if cancel.load(Ordering::Relaxed) {
+            break;
+        }
         let mut request = client.get(&hop.url).timeout(HOP_TIMEOUT);
         if !session_id.is_empty() {
             request = request.header("x-session-id", session_id);

@@ -154,7 +154,11 @@ async fn fetch_ym_tracks(
         match ym_get::<YmTrackInfo>(client, ym_token, &path).await {
             Ok(info) => return Ok(info.result),
             Err(failure) if failure.code == YM_TOKEN_INVALID => return Err(failure),
-            Err(failure) if attempt + 1 >= YM_TRACKS_ATTEMPTS => return Err(failure),
+            Err(failure)
+                if attempt + 1 >= YM_TRACKS_ATTEMPTS || CANCEL_FLAG.load(Ordering::Relaxed) =>
+            {
+                return Err(failure);
+            }
             Err(_) => {
                 attempt += 1;
                 tokio::time::sleep(Duration::from_millis(500 * attempt)).await;
@@ -222,6 +226,7 @@ pub async fn ym_import_start(
             Err(failure) if failure.code == YM_TOKEN_INVALID => {
                 return Err(give_up(&app, "tracks request", failure));
             }
+            Err(_) if CANCEL_FLAG.load(Ordering::Relaxed) => break,
             Err(failure) => {
                 ym_failures_in_row += 1;
                 if ym_failures_in_row >= MAX_YM_FAILURES_IN_ROW {
@@ -280,7 +285,16 @@ pub async fn ym_import_start(
 
             let current_track = format!("{} - {}", artist, title);
 
-            match ym_search::find_track(&client, &backend_url, &session_id, artist, title).await {
+            match ym_search::find_track(
+                &client,
+                &backend_url,
+                &session_id,
+                artist,
+                title,
+                &CANCEL_FLAG,
+            )
+            .await
+            {
                 Ok(Some(urn)) => {
                     search_errors_in_row = 0;
                     found += 1;
