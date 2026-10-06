@@ -1259,7 +1259,13 @@ impl TrackCacheState {
             self.liked_file_path(urn),
             self.file_path(urn),
         ] {
-            let Some(mut meta) = read_cache_metadata(&path) else {
+            if !tokio::fs::try_exists(&path).await.unwrap_or(false) {
+                continue;
+            }
+            let Ok(raw) = tokio::fs::read_to_string(cache_metadata_path(&path)).await else {
+                continue;
+            };
+            let Ok(mut meta) = serde_json::from_str::<TrackCacheMetadata>(&raw) else {
                 continue;
             };
             if meta.expected_duration_ms.is_none_or(|ms| ms == 0) {
