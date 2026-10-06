@@ -98,8 +98,11 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
   // Local order for DnD; skip server sync while a debounced save is in flight.
   const [localTracks, setLocalTracks] = useState<Track[]>([]);
   const pendingMutationRef = useRef(false);
+  const pendingRemovalsRef = useRef(0);
   useEffect(() => {
-    if (!pendingMutationRef.current) setLocalTracks(serverTracks);
+    if (!pendingMutationRef.current && pendingRemovalsRef.current === 0) {
+      setLocalTracks(serverTracks);
+    }
   }, [serverTracks]);
 
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout>>(null!);
@@ -161,15 +164,17 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
 
   const handleRemoveTrack = useCallback(
     (trackUrn: string) => {
-      const next = localTracks.filter((tr) => tr.urn !== trackUrn);
-      setLocalTracks(next);
-      if (pendingMutationRef.current) debouncedUpdate(next);
+      setLocalTracks(localTracks.filter((tr) => tr.urn !== trackUrn));
+      pendingRemovalsRef.current += 1;
       removeTrack.mutate(trackUrn, {
         onSuccess: () => toast.success(t('playlist.trackRemoved')),
         onError: () => setLocalTracks(serverTracks),
+        onSettled: () => {
+          pendingRemovalsRef.current -= 1;
+        },
       });
     },
-    [localTracks, debouncedUpdate, removeTrack, serverTracks, t],
+    [localTracks, removeTrack, serverTracks, t],
   );
 
   // Доигрываем плейлист ДО КОНЦА (пагинированный срез в очереди → потом волна),
@@ -247,7 +252,6 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
     if (tracksUnreadable) {
       return <SyncNotice kind="failed" text={t('playlist.tracksUnavailable')} onRetry={retry} />;
     }
-    if (tracksSyncStatus !== 'clean' && tracksSyncStatus !== 'conflict') return null;
     return (
       <p className="text-center text-[13px] text-white/30">
         {t('playlist.partialTracks', {
@@ -260,7 +264,6 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
   }, [
     tracksFailed,
     tracksSyncState,
-    tracksSyncStatus,
     tracksUnreadable,
     missingTracks,
     tracks.length,
