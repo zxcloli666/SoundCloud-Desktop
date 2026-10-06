@@ -1,6 +1,7 @@
 import { toast } from 'sonner';
 import i18n from '../i18n';
 import { useSettingsStore } from '../stores/settings';
+import { isLinux } from './platform';
 
 const PROBE_DELAY_MS = 5000;
 const RESAMPLE_DELAY_MS = 5000;
@@ -45,7 +46,7 @@ function wait(ms: number): Promise<void> {
 }
 
 async function framesStaySlow(): Promise<boolean> {
-  if (!canSample() || (await medianFrameMs()) <= SLOW_FRAME_MS) return false;
+  if ((await medianFrameMs()) <= SLOW_FRAME_MS) return false;
   await wait(RESAMPLE_DELAY_MS);
   return canSample() && (await medianFrameMs()) > SLOW_FRAME_MS;
 }
@@ -56,10 +57,15 @@ function stillOnDefault(): boolean {
 }
 
 export function probePerfMode(): void {
-  if (!stillOnDefault()) return;
+  if (useSettingsStore.getState().perfProbed || !stillOnDefault()) return;
   setTimeout(async () => {
-    const weak = isSoftwareRendered() || (await framesStaySlow());
-    if (!weak || !stillOnDefault()) return;
+    if (!canSample()) return;
+    const weak = (!isLinux() && isSoftwareRendered()) || (await framesStaySlow());
+    if (!stillOnDefault()) return;
+    if (!weak) {
+      if (canSample()) useSettingsStore.setState({ perfProbed: true });
+      return;
+    }
     useSettingsStore.setState({ perfMode: 'light' });
     toast(i18n.t('settings.perfAutoLight'), {
       duration: 10000,
