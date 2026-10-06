@@ -18,6 +18,7 @@ const YM_API: &str = "https://api.music.yandex.net";
 const YM_CONNECT_TIMEOUT: Duration = Duration::from_secs(10);
 const YM_REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
 const YM_TRACKS_ATTEMPTS: u64 = 3;
+const MAX_YM_FAILURES_IN_ROW: usize = 3;
 const MAX_SEARCH_ERRORS_IN_ROW: usize = 15;
 const SEARCH_ERROR_PAUSE: Duration = Duration::from_secs(1);
 
@@ -145,21 +146,21 @@ async fn fetch_ym_tracks(
     client: &wreq::Client,
     ym_token: &str,
     ids: &str,
-) -> Result<Vec<YmTrack>, String> {
+) -> Result<Vec<YmTrack>, YmFailure> {
     let path = format!("/tracks?trackIds={ids}");
-    let mut last_error = String::new();
+    let mut attempt = 0;
 
-    for attempt in 0..YM_TRACKS_ATTEMPTS {
-        if attempt > 0 {
-            tokio::time::sleep(Duration::from_millis(500 * attempt)).await;
-        }
+    loop {
         match ym_get::<YmTrackInfo>(client, ym_token, &path).await {
             Ok(info) => return Ok(info.result),
-            Err(failure) => last_error = failure.detail,
+            Err(failure) if failure.code == YM_TOKEN_INVALID => return Err(failure),
+            Err(failure) if attempt + 1 >= YM_TRACKS_ATTEMPTS => return Err(failure),
+            Err(_) => {
+                attempt += 1;
+                tokio::time::sleep(Duration::from_millis(500 * attempt)).await;
+            }
         }
     }
-
-    Err(last_error)
 }
 
 #[tauri::command]
@@ -205,6 +206,7 @@ pub async fn ym_import_start(
     let mut not_found = 0usize;
     let mut errors = 0usize;
     let mut search_errors_in_row = 0usize;
+    let mut ym_failures_in_row = 0usize;
     let mut processed = 0usize;
 
     'batches: for chunk in track_ids.chunks(50) {
@@ -213,12 +215,22 @@ pub async fn ym_import_start(
         }
 
         let tracks = match fetch_ym_tracks(&client, &ym_token, &chunk.join(",")).await {
-            Ok(tracks) => tracks,
-            Err(reason) => {
+            Ok(tracks) => {
+                ym_failures_in_row = 0;
+                tracks
+            }
+            Err(failure) if failure.code == YM_TOKEN_INVALID => {
+                return Err(give_up(&app, "tracks request", failure));
+            }
+            Err(failure) => {
+                ym_failures_in_row += 1;
+                if ym_failures_in_row >= MAX_YM_FAILURES_IN_ROW {
+                    return Err(give_up(&app, "tracks request", failure));
+                }
                 log_native(
                     &app,
                     "WARN",
-                    format!("[YM Import] tracks request failed: {reason}"),
+                    format!("[YM Import] tracks request failed: {}", failure.detail),
                 );
                 let remaining = total.saturating_sub(processed);
                 for _ in 0..chunk.len().min(remaining) {
