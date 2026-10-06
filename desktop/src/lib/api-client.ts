@@ -106,9 +106,7 @@ const QUIET_ANSWERS: Record<string, number> = {
 
 export function isQuietAnswer(error: unknown): boolean {
   return (
-    error instanceof ApiError &&
-    error.code != null &&
-    QUIET_ANSWERS[error.code] === error.status
+    error instanceof ApiError && error.code != null && QUIET_ANSWERS[error.code] === error.status
   );
 }
 
