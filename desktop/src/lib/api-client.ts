@@ -78,10 +78,6 @@ export class ApiError extends Error {
     this.name = 'ApiError';
     this.code = errorCode(body);
   }
-
-  get refreshPending(): boolean {
-    return this.status === 503 && !!this.code?.endsWith('_refresh_pending');
-  }
 }
 
 function errorCode(body: string): string | null {
@@ -98,10 +94,6 @@ function retryAfterSeconds(res: Response): number | null {
   return Number.isFinite(seconds) && seconds > 0 ? seconds : null;
 }
 
-export function isRefreshPending(error: unknown): error is ApiError {
-  return error instanceof ApiError && error.refreshPending;
-}
-
 const QUIET_CODES = [
   'search_timeout',
   'search_busy',
@@ -112,8 +104,9 @@ const QUIET_CODES = [
 ];
 
 export function isQuietAnswer(error: unknown): boolean {
-  if (!(error instanceof ApiError)) return false;
-  return error.refreshPending || (error.status === 503 && QUIET_CODES.includes(error.code ?? ''));
+  return (
+    error instanceof ApiError && error.status === 503 && QUIET_CODES.includes(error.code ?? '')
+  );
 }
 
 function isRateLimitError(status: number, body: string): boolean {
