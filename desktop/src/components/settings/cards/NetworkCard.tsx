@@ -1,6 +1,7 @@
 import {memo} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Power, Sparkles} from '../../../lib/icons';
+import {usePerfMode} from '../../../lib/perf';
 import {useSubscription} from '../../../lib/subscription';
 import {useAuthStore} from '../../../stores/auth';
 import {useSettingsStore} from '../../../stores/settings';
@@ -19,14 +20,17 @@ const SOON_PARTICLES = [
  *  underlying toggle still toggles (state persists, drives nothing yet). */
 const ComingSoonOverlay = memo(function ComingSoonOverlay() {
     const {t} = useTranslation();
+    const b = usePerfMode().blur(10);
     return (
         <div
             className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden rounded-2xl"
             style={{
                 background:
-                    'linear-gradient(135deg, rgba(30,15,50,0.62) 0%, rgba(20,10,40,0.58) 50%, rgba(15,8,30,0.62) 100%)',
-                backdropFilter: 'blur(10px) saturate(140%)',
-                WebkitBackdropFilter: 'blur(10px) saturate(140%)',
+                    b > 0
+                        ? 'linear-gradient(135deg, rgba(30,15,50,0.62) 0%, rgba(20,10,40,0.58) 50%, rgba(15,8,30,0.62) 100%)'
+                        : 'rgba(22,12,38,0.92)',
+                backdropFilter: b > 0 ? `blur(${b}px) saturate(140%)` : undefined,
+                WebkitBackdropFilter: b > 0 ? `blur(${b}px) saturate(140%)` : undefined,
                 border: '0.5px solid rgba(168,85,247,0.35)',
                 boxShadow:
                     '0 18px 50px rgba(0,0,0,0.35), 0 0 32px rgba(139,92,246,0.18), inset 0 1px 0 rgba(255,255,255,0.06)',
