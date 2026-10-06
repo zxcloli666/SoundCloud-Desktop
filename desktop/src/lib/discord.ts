@@ -1,3 +1,4 @@
+import { invoke as coreInvoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
 import type { Track } from '../stores/player';
 import { usePlayerStore } from '../stores/player';
@@ -21,7 +22,7 @@ async function ensureConnected(): Promise<boolean> {
   }
   lastConnectAttemptAt = now;
   try {
-    connected = await invoke<boolean>('discord_connect');
+    connected = await coreInvoke<boolean>('discord_connect');
     return connected;
   } catch {
     return false;
