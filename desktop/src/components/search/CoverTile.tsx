@@ -159,7 +159,7 @@ export const CoverTile = memo(function CoverTile({ item, getQueue, onOpen }: Cov
             </div>
           )}
 
-          {track.access === 'preview' && (
+          {(track.access === 'preview' || track.policy === 'SNIP') && (
             <span
               className={`absolute ${kind === 'vibe' ? 'top-7' : 'top-2'} left-2 h-4 px-1.5 rounded-full text-[9px] font-semibold uppercase tracking-wide leading-4 text-amber-300/90`}
               style={{ background: 'rgba(0,0,0,0.62)', border: '0.5px solid rgba(255,255,255,0.18)' }}

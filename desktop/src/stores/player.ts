@@ -78,6 +78,7 @@ export interface Track {
   reposts_count?: number;
   user_favorite?: boolean;
   access?: 'playable' | 'preview' | 'blocked';
+  policy?: string;
   publisher_metadata?: {
     isrc?: string;
   };
