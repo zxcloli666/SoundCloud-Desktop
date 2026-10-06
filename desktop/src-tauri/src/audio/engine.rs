@@ -94,9 +94,6 @@ fn commit_loaded_track(
     state.device_error.store(false, Ordering::Relaxed);
 }
 
-// Все 10 параметров — это один build шаг плеера: mixer/volume/normalization-кеш
-// + eq + analyser + pitch идут в одну `spawn_blocking`-обертку. Заводить отдельную
-// структуру `BuildPlayerArgs` ради одной точки вызова — лишний слой.
 #[allow(clippy::too_many_arguments)]
 async fn build_player_from_bytes(
     bytes: Vec<u8>,
@@ -185,6 +182,7 @@ pub fn reload_current_track(state: &AudioState) -> Result<(), String> {
     if let Some(old) = player.take() {
         old.stop();
     }
+    new_player.set_speed(*state.playback_rate.lock().unwrap());
     new_player.set_volume(*state.volume.lock().unwrap());
     if !was_paused {
         new_player.play();
@@ -443,6 +441,7 @@ pub fn seek_to(state: &AudioState, position: f64) -> Result<(), String> {
     if let Some(old) = player.take() {
         old.stop();
     }
+    new_player.set_speed(*state.playback_rate.lock().unwrap());
     new_player.set_volume(*state.volume.lock().unwrap());
     if !was_paused {
         new_player.play();
