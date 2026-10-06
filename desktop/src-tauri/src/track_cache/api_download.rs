@@ -45,7 +45,8 @@ async fn download_over(
         let status = response.status();
         if continuing && matches!(status.as_u16(), 401 | 403) {
             return Err(DownloadError::Retryable(format!(
-                "HTTP {status} on the next route, the ticket needs minting again"
+                "ticket refused on the next route ({}), minting again",
+                status.as_u16()
             )));
         }
         if !status.is_success() {
