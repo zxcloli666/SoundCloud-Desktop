@@ -6,8 +6,17 @@ const PENDING_TTL_MS = 24 * 60 * 60 * 1000;
 interface PendingCreate {
   owner: string;
   title: string;
-  targetUrn: string;
   queuedAt: number;
+}
+
+interface ImportPlaylist {
+  urn: string;
+  title: string;
+}
+
+export interface PendingCreates {
+  titles: Set<string>;
+  createdUrns: string[];
 }
 
 function isPendingCreate(value: unknown): value is PendingCreate {
@@ -40,22 +49,28 @@ async function writeEntries(entries: PendingCreate[]) {
 
 export async function loadPendingCreates(
   owner: string,
-  existingTitles: string[],
-): Promise<Set<string>> {
+  existing: ImportPlaylist[],
+): Promise<PendingCreates> {
   const now = Date.now();
   const entries = await readEntries();
-  const kept = entries.filter(
-    (entry) =>
-      now - entry.queuedAt < PENDING_TTL_MS &&
-      !(entry.owner === owner && existingTitles.includes(entry.title)),
-  );
+  const createdUrns: string[] = [];
+  const kept = entries.filter((entry) => {
+    const created =
+      entry.owner === owner && existing.find((playlist) => playlist.title === entry.title);
+    if (created) {
+      createdUrns.push(created.urn);
+      return false;
+    }
+    return now - entry.queuedAt < PENDING_TTL_MS;
+  });
   if (kept.length !== entries.length) await writeEntries(kept);
 
-  return new Set(kept.filter((entry) => entry.owner === owner).map((entry) => entry.title));
+  const titles = new Set(kept.filter((entry) => entry.owner === owner).map((entry) => entry.title));
+  return { titles, createdUrns };
 }
 
-export async function rememberPendingCreate(owner: string, title: string, targetUrn: string) {
+export async function rememberPendingCreate(owner: string, title: string) {
   const entries = await readEntries();
   const others = entries.filter((entry) => entry.owner !== owner || entry.title !== title);
-  await writeEntries([...others, { owner, title, targetUrn, queuedAt: Date.now() }]);
+  await writeEntries([...others, { owner, title, queuedAt: Date.now() }]);
 }

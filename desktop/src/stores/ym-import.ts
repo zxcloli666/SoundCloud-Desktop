@@ -169,18 +169,7 @@ async function replacePlaylistTracks(playlistUrn: string, urns: string[]) {
   }
 }
 
-async function saveChunk(
-  title: string,
-  urns: string[],
-  existing: ScPlaylist[],
-): Promise<ScPlaylist | QueuedPlaylistMutation> {
-  const existingPlaylist = existing.find((playlist) => playlist.title === title);
-
-  if (existingPlaylist) {
-    await replacePlaylistTracks(existingPlaylist.urn, urns);
-    return existingPlaylist;
-  }
-
+function createPlaylist(title: string, urns: string[]) {
   return api<ScPlaylist | QueuedPlaylistMutation>('/playlists', {
     method: 'POST',
     body: JSON.stringify({
@@ -221,31 +210,35 @@ async function savePlaylists(runId: number, deleteStale: boolean) {
 
   const existing = await findExistingPlaylists();
   const owner = useAuthStore.getState().user?.urn ?? '';
-  const pendingTitles = await loadPendingCreates(
-    owner,
-    existing.map((playlist) => playlist.title),
-  );
+  const pending = await loadPendingCreates(owner, existing);
+  await rememberOwnedPlaylists(owner, pending.createdUrns);
   if (!currentRunIsActive(runId)) return;
 
-  const chunks = chunkArray([...matchedUrns].reverse(), PLAYLIST_TRACK_LIMIT);
+  const chunks = chunkArray([...new Set(matchedUrns)].reverse(), PLAYLIST_TRACK_LIMIT);
   const saved: ScPlaylist[] = [];
   let queued = 0;
   let failure: unknown = null;
 
   for (const [index, urns] of chunks.entries()) {
     const title = getPlaylistName(index);
-    if (pendingTitles.has(title)) {
+    if (pending.titles.has(title)) {
       queued++;
       continue;
     }
+    const existingPlaylist = existing.find((playlist) => playlist.title === title);
     try {
-      const result = await saveChunk(title, urns, existing);
-      if (isScPlaylist(result)) {
-        saved.push(result);
+      if (existingPlaylist) {
+        await replacePlaylistTracks(existingPlaylist.urn, urns);
+        saved.push(existingPlaylist);
       } else {
-        queued++;
-        await rememberPendingCreate(owner, title, result.targetUrn);
-        await rememberOwnedPlaylists(owner, [result.targetUrn]);
+        const result = await createPlaylist(title, urns);
+        if (isScPlaylist(result)) {
+          saved.push(result);
+          await rememberOwnedPlaylists(owner, [result.urn]);
+        } else {
+          queued++;
+          await rememberPendingCreate(owner, title);
+        }
       }
     } catch (error) {
       console.error(`[YM Import] saving "${title}" failed:`, error);
@@ -253,11 +246,6 @@ async function savePlaylists(runId: number, deleteStale: boolean) {
     }
     if (!currentRunIsActive(runId)) return;
   }
-
-  await rememberOwnedPlaylists(
-    owner,
-    saved.map((playlist) => playlist.urn),
-  );
 
   if (deleteStale && !failure) {
     await deleteStalePlaylists(owner, existing, chunks.length);
