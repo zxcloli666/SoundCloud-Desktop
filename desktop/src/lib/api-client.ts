@@ -186,6 +186,10 @@ function apiBasesFor(path: string): string[] {
     : [API_BASE, API_STAR_BASE];
 }
 
+export function preferredDataBase(): string {
+  return apiBasesFor('/tracks')[0] ?? API_BASE;
+}
+
 /** Бюджет запроса по его пути. */
 function planeTimeout(path: string): number {
   if (path.startsWith('/auth/')) return AUTH_TIMEOUT_MS;

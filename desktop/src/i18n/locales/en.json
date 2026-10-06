@@ -728,7 +728,8 @@
     "saveFailed": "Could not save some playlists (error {{status}})",
     "tokenInvalid": "Yandex Music did not accept the token. Get a new one and try again",
     "ymUnavailable": "Could not load your likes from Yandex Music. Check your connection and try again",
-    "searchUnavailable": "SoundCloud search is not responding. Try the import again later"
+    "searchUnavailable": "SoundCloud search is not responding. Try the import again later",
+    "unknownError": "Something went wrong during the import. Try again later"
   },
   "update": {
     "available": "Update available",

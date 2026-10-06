@@ -3,9 +3,15 @@ import { toast } from 'sonner';
 import { create } from 'zustand';
 import i18n from '../i18n';
 import { ApiError, api, getSessionId } from '../lib/api';
-import { API_BASE } from '../lib/constants';
+import { preferredDataBase } from '../lib/api-client';
+import { noteAuthGap } from '../lib/auth-recovery';
 import { trackedInvoke as invoke } from '../lib/diagnostics';
 import { queryClient } from '../lib/query-client';
+import {
+  forgetOwnedPlaylists,
+  loadOwnedPlaylists,
+  rememberOwnedPlaylists,
+} from '../lib/ym-owned-playlists';
 import { loadPendingCreates, rememberPendingCreate } from '../lib/ym-pending-playlists';
 import { useAuthStore } from './auth';
 
@@ -187,18 +193,24 @@ async function saveChunk(
   });
 }
 
-async function deleteStalePlaylists(existing: ScPlaylist[], targetCount: number) {
+async function deleteStalePlaylists(owner: string, existing: ScPlaylist[], targetCount: number) {
+  const owned = await loadOwnedPlaylists(owner);
   const stalePlaylists = existing.filter((playlist) => {
     const index = getPlaylistChunkIndex(playlist.title);
-    return index != null && index >= targetCount;
+    return index != null && index >= targetCount && owned.has(playlist.urn);
   });
 
-  await Promise.all(
+  const deleted = await Promise.all(
     stalePlaylists.map((playlist) =>
-      api(`/playlists/${encodeURIComponent(playlist.urn)}`, { method: 'DELETE' }).catch(
-        () => undefined,
+      api(`/playlists/${encodeURIComponent(playlist.urn)}`, { method: 'DELETE' }).then(
+        () => playlist.urn,
+        () => null,
       ),
     ),
+  );
+  await forgetOwnedPlaylists(
+    owner,
+    deleted.filter((urn): urn is string => urn != null),
   );
 }
 
@@ -233,6 +245,7 @@ async function savePlaylists(runId: number, deleteStale: boolean) {
       } else {
         queued++;
         await rememberPendingCreate(owner, title, result.targetUrn);
+        await rememberOwnedPlaylists(owner, [result.targetUrn]);
       }
     } catch (error) {
       console.error(`[YM Import] saving "${title}" failed:`, error);
@@ -241,8 +254,13 @@ async function savePlaylists(runId: number, deleteStale: boolean) {
     if (!currentRunIsActive(runId)) return;
   }
 
+  await rememberOwnedPlaylists(
+    owner,
+    saved.map((playlist) => playlist.urn),
+  );
+
   if (deleteStale && !failure) {
-    await deleteStalePlaylists(existing, chunks.length);
+    await deleteStalePlaylists(owner, existing, chunks.length);
     if (!currentRunIsActive(runId)) return;
   }
 
@@ -271,11 +289,12 @@ function describeFailure(error: unknown): string {
   if (nativeKey) return i18n.t(nativeKey);
   if (isPlaylistConflict(error)) return i18n.t('ym.playlistNotSynced');
   if (error instanceof ApiError) return i18n.t('ym.saveFailed', { status: error.status });
-  return error instanceof Error ? error.message : String(error);
+  return i18n.t('ym.unknownError');
 }
 
 function reportFailure(error: unknown) {
   console.error('[YM Import]', error);
+  if (error === 'session_expired') noteAuthGap();
   const message = describeFailure(error);
   useYmImportStore.setState({ phase: 'error', saving: false, error: message });
   toast.error(i18n.t('ym.error'), { id: 'ym-import-error', description: message });
@@ -304,7 +323,7 @@ async function startImportRun(token: string) {
   try {
     await invoke<void>('ym_import_start', {
       ymToken: trimmedToken,
-      backendUrl: API_BASE,
+      backendUrl: preferredDataBase(),
       sessionId: getSessionId() || '',
     });
   } catch (error) {
