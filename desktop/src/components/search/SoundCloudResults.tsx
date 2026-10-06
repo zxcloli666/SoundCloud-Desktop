@@ -8,6 +8,15 @@ import { playlistChip, userChip } from './entityChips';
 import { SearchError, SearchState, SectionError, StripSkeleton } from './SearchState';
 import { TrackWall } from './TrackWall';
 
+type ScItem = { urn?: string | null; id?: number | string | null };
+
+function withUrns<T extends ScItem>(items: T[] | undefined, ns: string): T[] {
+  return (items ?? []).flatMap((item) => {
+    if (item?.urn) return [item];
+    return item?.id != null ? [{ ...item, urn: `soundcloud:${ns}:${item.id}` }] : [];
+  });
+}
+
 export const SoundCloudResults = memo(function SoundCloudResults({ q }: { q: string }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -26,8 +35,8 @@ export const SoundCloudResults = memo(function SoundCloudResults({ q }: { q: str
 
   const chips = useMemo(
     () => [
-      ...(playlists.data ?? []).filter((p) => p?.urn).map((p) => playlistChip(p, open)),
-      ...(users.data ?? []).filter((u) => u?.urn).map((u) => userChip(u, open)),
+      ...withUrns(playlists.data, 'playlists').map((p) => playlistChip(p, open)),
+      ...withUrns(users.data, 'users').map((u) => userChip(u, open)),
     ],
     [playlists.data, users.data, open],
   );
@@ -38,7 +47,7 @@ export const SoundCloudResults = memo(function SoundCloudResults({ q }: { q: str
   };
   const loadMore = useCallback(() => void tracks.fetchNextPage(), [tracks.fetchNextPage]);
 
-  const wallTracks = useMemo(() => tracks.items.filter((track) => track?.urn), [tracks.items]);
+  const wallTracks = useMemo(() => withUrns(tracks.items, 'tracks'), [tracks.items]);
   const empty =
     !tracks.isLoading &&
     !tracks.isError &&
