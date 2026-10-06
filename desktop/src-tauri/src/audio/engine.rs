@@ -141,13 +141,16 @@ pub fn reload_current_track(state: &AudioState) -> Result<(), String> {
         return Ok(());
     };
 
-    let rate = current_rate(state);
-    let (source_position, was_paused) = {
+    let (rate, source_position, was_paused) = {
         let player = state.player.lock().unwrap();
         let Some(player) = player.as_ref() else {
             return Ok(());
         };
-        (source_pos(state, player), player.is_paused())
+        (
+            current_rate(state),
+            source_pos(state, player),
+            player.is_paused(),
+        )
     };
 
     let mixer = state.mixer.lock().unwrap().clone();
@@ -171,7 +174,7 @@ pub fn reload_current_track(state: &AudioState) -> Result<(), String> {
     // Apply speed BEFORE seeking so try_seek's argument is interpreted under the speed
     // factor: try_seek(source/rate) lands the decoder at the original source position.
     let output_target = source_position / rate;
-    apply_current_rate(state, &new_player);
+    new_player.set_speed(rate as f32);
     if source_position > 0.0 {
         new_player
             .try_seek(Duration::from_secs_f64(output_target))
@@ -385,27 +388,27 @@ pub fn seek_to(state: &AudioState, position: f64) -> Result<(), String> {
     // `position` is in source seconds (the timeline the whole app uses). rodio's
     // try_seek operates in output time = source/rate on a speed-applied player, so
     // convert before handing it the target.
-    let rate = current_rate(state);
-    let output_target = (position / rate).max(0.0);
-    let target = Duration::from_secs_f64(output_target);
-    let was_paused = state
-        .player
-        .lock()
-        .unwrap()
-        .as_ref()
-        .map(|player| player.is_paused())
-        .unwrap_or(false);
-
-    {
+    let (rate, output_target, was_paused) = {
         let player = state.player.lock().unwrap();
+        let rate = current_rate(state);
+        let output_target = (position / rate).max(0.0);
         if let Some(ref player) = *player
             && !player.empty()
-            && player.try_seek(target).is_ok() {
-                state.ended_notified.store(false, Ordering::Relaxed);
-                set_pos_anchor(state, position, output_target);
-                return Ok(());
-            }
-    }
+            && player
+                .try_seek(Duration::from_secs_f64(output_target))
+                .is_ok()
+        {
+            state.ended_notified.store(false, Ordering::Relaxed);
+            set_pos_anchor(state, position, output_target);
+            return Ok(());
+        }
+        (
+            rate,
+            output_target,
+            player.as_ref().is_some_and(|player| player.is_paused()),
+        )
+    };
+    let target = Duration::from_secs_f64(output_target);
 
     let bytes = state.source_bytes.lock().unwrap().clone();
     let Some(bytes) = bytes else {
@@ -430,7 +433,7 @@ pub fn seek_to(state: &AudioState, position: f64) -> Result<(), String> {
         state.analyser_buffer.clone(),
         state.pitch_ratio.clone(),
     )?;
-    apply_current_rate(state, &new_player);
+    new_player.set_speed(rate as f32);
     if position > 0.0 {
         new_player
             .try_seek(target)
