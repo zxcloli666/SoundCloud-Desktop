@@ -1,7 +1,7 @@
 import { fetch } from '@tauri-apps/plugin-http';
 import { useAppStatusStore } from '../../stores/app-status';
 import { API_BASE, API_STAR_BASE } from '../constants';
-import { edgeFetch } from '../edge';
+import { EdgeTransportError, edgeFetch } from '../edge';
 import { requestPremiumRecheck } from '../premium-cache';
 import { queryClient } from '../query-client';
 import { type NetVerdict, useHostStatusStore } from './store';
@@ -101,8 +101,8 @@ async function probeOnce(base: string): Promise<ProbeResult> {
   try {
     const res = await fetchWithAbort(`${base}/health`);
     return { alive: res.status < 500, netFail: false };
-  } catch {
-    return { alive: false, netFail: true };
+  } catch (error) {
+    return { alive: false, netFail: !(error instanceof EdgeTransportError) };
   }
 }
 
