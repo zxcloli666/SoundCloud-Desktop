@@ -6,6 +6,7 @@ import { api } from './api';
 import { ApiError, type ApiRequestOptions } from './api-client';
 import type { CatalogAlbum, CatalogArtist } from './discover';
 import { type PagedResponse, type Playlist, pagedUrl, type SCUser, usePagedQuery } from './hooks';
+import { isTimeoutError } from './host-status';
 
 export interface LyricsHit {
   track: Track;
@@ -69,7 +70,7 @@ const ERROR_KINDS: Record<string, SearchErrorKind> = {
 };
 
 export function searchErrorKind(error: unknown): SearchErrorKind {
-  if (!(error instanceof ApiError)) return 'offline';
+  if (!(error instanceof ApiError)) return isTimeoutError(error) ? 'timeout' : 'offline';
   return ERROR_KINDS[error.code ?? ''] ?? 'failed';
 }
 
