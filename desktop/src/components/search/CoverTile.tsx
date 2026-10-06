@@ -47,7 +47,7 @@ export const CoverTile = memo(function CoverTile({ item, getQueue, onDive }: Cov
 
   const enter = () => {
     preloadTrack(track.urn, track._scd_meta?.storage_quality);
-    startHoverPreview(track.urn);
+    startHoverPreview(track.urn, track._scd_meta?.storage_quality);
   };
   const leave = () => stopHoverPreview();
   const activate = () => {
