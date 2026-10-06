@@ -52,7 +52,7 @@ export const CoverTile = memo(function CoverTile({ item, getQueue, onOpen }: Cov
   const leave = () => stopHoverPreview();
   const activate = () => {
     hardStopHoverPreview();
-    onOpen?.();
+    if (!isThisPlaying) onOpen?.();
     togglePlay();
   };
 
