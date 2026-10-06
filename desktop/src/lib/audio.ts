@@ -15,6 +15,7 @@ import {
 import {
   enforceAudioCacheLimit,
   ensureTrackCached,
+  expectedDurationMs,
   getCacheInfo,
   removeCachedTrack,
   type TrackCacheInfo,
@@ -349,7 +350,7 @@ async function loadTrack(track: Track, resumeAt = 0) {
       const info = await getCacheInfo(urn);
       if (info?.path) return info.path;
       try {
-        return (await ensureTrackCached(urn, highQualityStreaming, track.duration)).path;
+        return (await ensureTrackCached(urn, highQualityStreaming, expectedDurationMs(track))).path;
       } catch {
         return null;
       }
@@ -384,11 +385,11 @@ async function loadTrack(track: Track, resumeAt = 0) {
 
     let cachedInfo: TrackCacheInfo;
     try {
-      cachedInfo = await ensureTrackCached(urn, highQualityStreaming, track.duration);
+      cachedInfo = await ensureTrackCached(urn, highQualityStreaming, expectedDurationMs(track));
     } catch (error) {
       if (!highQualityStreaming) throw error;
       console.warn('[Audio] HQ load failed, retrying without hq:', error);
-      cachedInfo = await ensureTrackCached(urn, false, track.duration);
+      cachedInfo = await ensureTrackCached(urn, false, expectedDurationMs(track));
     }
 
     if (gen !== loadGen) return;
@@ -484,10 +485,6 @@ function endedEarly(track: Track): boolean {
   return cachedTime < expected - tolerance;
 }
 
-/** Трек «закончился» заметно раньше заявленной длины — в кеше битый файл
- *  (заголовок целый, данные обрезаны: легаси без .meta.json или яд из storage
- *  до серверного duration-гейта). Сносим файл, перекачиваем и продолжаем с
- *  места обрыва вместо тихого скипа на следующий. */
 function maybeHealEarlyEnd(): boolean {
   if (!currentUrn || navigator.onLine === false) return false;
   const state = usePlayerStore.getState();
@@ -741,7 +738,8 @@ listen<number>('media:seek-relative', (e) => {
 
 let preloadTimer: ReturnType<typeof setTimeout> | null = null;
 
-export function preloadTrack(urn: string, durationMs?: number) {
+export function preloadTrack(track: Track) {
+  const urn = track.urn;
   if (preloadTimer) clearTimeout(preloadTimer);
   preloadTimer = setTimeout(() => {
     const sessionId = getSessionId();
@@ -755,7 +753,7 @@ export function preloadTrack(urn: string, durationMs?: number) {
           storageUrls: buildStorageUrls(urn),
           sessionId,
           hq,
-          durationMs,
+          durationMs: expectedDurationMs(track),
         },
       ],
     }).catch(console.error);
@@ -786,7 +784,7 @@ export function preloadQueue() {
         storageUrls: buildStorageUrls(queue[idx].urn),
         sessionId,
         hq,
-        durationMs: queue[idx].duration,
+        durationMs: expectedDurationMs(queue[idx]),
       });
     }
   }

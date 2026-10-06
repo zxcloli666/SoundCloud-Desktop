@@ -45,7 +45,7 @@ export const LibraryTrackRow = React.memo(
         <div
           className="w-8 h-8 flex items-center justify-center shrink-0 cursor-pointer"
           onClick={togglePlay}
-          onMouseEnter={() => preloadTrack(track.urn, track.duration)}
+          onMouseEnter={() => preloadTrack(track)}
         >
           {isThisPlaying ? (
             <div className="w-8 h-8 rounded-full bg-accent text-accent-contrast flex items-center justify-center shadow-[0_0_15px_var(--color-accent-glow)] scale-100 animate-fade-in-up">
