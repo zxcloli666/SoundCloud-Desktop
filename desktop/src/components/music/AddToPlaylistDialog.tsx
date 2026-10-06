@@ -162,76 +162,68 @@ export const AddToPlaylistDialog = React.memo(function AddToPlaylistDialog({
   const [loadingPlaylistUrns, setLoadingPlaylistUrns] = useState<Record<string, boolean>>({});
   const normalizedTrackUrns = useMemo(() => [...new Set(trackUrns)], [trackUrns]);
   const requestedPlaylistUrnsRef = useRef<Set<string>>(new Set());
+  const openSessionRef = useRef(0);
+
+  useEffect(() => {
+    if (open) return;
+    openSessionRef.current += 1;
+    requestedPlaylistUrnsRef.current.clear();
+    setLoadingPlaylistUrns({});
+  }, [open]);
 
   useEffect(() => {
     if (!open || playlists.length === 0) return;
 
-    let cancelled = false;
-    const inFlight = new Set<string>();
+    const session = openSessionRef.current;
+    const isCurrent = () => openSessionRef.current === session;
+    const pending: string[] = [];
+    const nextMap: Record<string, string[]> = {};
 
-    const loadMembership = async () => {
-      const pending: string[] = [];
-      const nextMap: Record<string, string[]> = {};
-
-      for (const playlist of playlists) {
-        const embeddedUrns = playlist.tracks?.map((t) => t.urn) ?? [];
-        if (embeddedUrns.length > 0 || playlist.track_count === 0) {
-          nextMap[playlist.urn] = embeddedUrns;
-          continue;
-        }
-        if (requestedPlaylistUrnsRef.current.has(playlist.urn)) continue;
-        requestedPlaylistUrnsRef.current.add(playlist.urn);
-        pending.push(playlist.urn);
+    for (const playlist of playlists) {
+      const embeddedUrns = playlist.tracks?.map((t) => t.urn) ?? [];
+      if (embeddedUrns.length > 0 || playlist.track_count === 0) {
+        nextMap[playlist.urn] = embeddedUrns;
+        continue;
       }
+      if (requestedPlaylistUrnsRef.current.has(playlist.urn)) continue;
+      requestedPlaylistUrnsRef.current.add(playlist.urn);
+      pending.push(playlist.urn);
+    }
 
-      if (Object.keys(nextMap).length > 0) {
-        setPlaylistTrackMap((prev) => ({ ...prev, ...nextMap }));
-      }
+    if (Object.keys(nextMap).length > 0) {
+      setPlaylistTrackMap((prev) => ({ ...prev, ...nextMap }));
+    }
 
-      if (pending.length === 0) return;
+    if (pending.length === 0) return;
 
-      for (const urn of pending) inFlight.add(urn);
-      setLoadingPlaylistUrns((prev) => {
-        const next = { ...prev };
-        for (const urn of pending) next[urn] = true;
-        return next;
-      });
+    setLoadingPlaylistUrns((prev) => {
+      const next = { ...prev };
+      for (const urn of pending) next[urn] = true;
+      return next;
+    });
 
-      await Promise.all(
-        pending.map(async (playlistUrn) => {
-          try {
-            const res = await api<{ collection: { urn: string }[] }>(
-              `/playlists/${encodeURIComponent(playlistUrn)}/tracks?limit=200`,
-              {},
-              MEMBERSHIP_TIMEOUT_MS,
-            );
-            if (cancelled) return;
-            setPlaylistTrackMap((prev) => ({
-              ...prev,
-              [playlistUrn]: res.collection.map((t) => t.urn),
-            }));
-          } catch {
-            if (!cancelled) requestedPlaylistUrnsRef.current.delete(playlistUrn);
-          } finally {
-            inFlight.delete(playlistUrn);
-            if (!cancelled) setLoadingPlaylistUrns((prev) => ({...prev, [playlistUrn]: false}));
-          }
-        }),
-      );
-    };
+    for (const playlistUrn of pending) {
+      const stopLoading = () => {
+        if (isCurrent()) setLoadingPlaylistUrns((prev) => ({ ...prev, [playlistUrn]: false }));
+      };
+      const deadline = setTimeout(stopLoading, MEMBERSHIP_TIMEOUT_MS);
 
-    void loadMembership();
-
-    return () => {
-      cancelled = true;
-      if (inFlight.size === 0) return;
-      for (const urn of inFlight) requestedPlaylistUrnsRef.current.delete(urn);
-      setLoadingPlaylistUrns((prev) => {
-        const next = { ...prev };
-        for (const urn of inFlight) next[urn] = false;
-        return next;
-      });
-    };
+      api<{ collection: { urn: string }[] }>(
+        `/playlists/${encodeURIComponent(playlistUrn)}/tracks?limit=200`,
+      )
+        .then((res) => {
+          if (!isCurrent()) return;
+          setPlaylistTrackMap((prev) => ({
+            ...prev,
+            [playlistUrn]: res.collection.map((t) => t.urn),
+          }));
+        })
+        .catch(() => {})
+        .finally(() => {
+          clearTimeout(deadline);
+          stopLoading();
+        });
+    }
   }, [open, playlists]);
 
   const playlistMembership = useMemo(() => {
