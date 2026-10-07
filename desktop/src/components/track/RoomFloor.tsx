@@ -3,6 +3,7 @@ import {useTranslation} from 'react-i18next';
 import {getCurrentTime, subscribe} from '../../lib/audio';
 import {durLong} from '../../lib/formatters';
 import type {Comment} from '../../lib/hooks';
+import {isPreviewOnly} from '../../lib/track-access';
 import type {Track} from '../../stores/player';
 import {LiveWaveform} from '../music/soundwave/waveform';
 import type {TrackAura} from './useTrackAura';
@@ -41,7 +42,7 @@ export const RoomFloor = React.memo(function RoomFloor({
 
     const durationMs = track.full_duration ?? track.duration;
     const playableFrac = durationMs > 0 ? Math.min(1, track.duration / durationMs) : 1;
-    const previewTail = track.access === 'preview' && playableFrac < 0.995 ? 1 - playableFrac : 0;
+    const previewTail = isPreviewOnly(track) && playableFrac < 0.995 ? 1 - playableFrac : 0;
 
     return (
         <div
