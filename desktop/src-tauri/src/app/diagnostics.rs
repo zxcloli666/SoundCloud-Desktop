@@ -2,19 +2,20 @@ use std::backtrace::Backtrace;
 use std::fs;
 use std::path::PathBuf;
 
-use crate::app::log_sink;
+use crate::app::{APP_IDENTIFIER, log_sink};
 use crate::rt::AppHandle;
-use tauri::Manager;
 use tauri_plugin_opener::OpenerExt;
 
-fn log_dir(app: &AppHandle) -> Result<PathBuf, String> {
-    app.path()
-        .app_log_dir()
-        .map_err(|e| format!("failed to resolve app log dir: {e}"))
+fn log_dir() -> Result<PathBuf, String> {
+    #[cfg(target_os = "macos")]
+    let dir = dirs::home_dir().map(|home| home.join("Library").join("Logs").join(APP_IDENTIFIER));
+    #[cfg(not(target_os = "macos"))]
+    let dir = dirs::data_local_dir().map(|data| data.join(APP_IDENTIFIER).join("logs"));
+    dir.ok_or_else(|| "failed to resolve app log dir".to_string())
 }
 
-pub fn init_log_file(app: &AppHandle) {
-    if let Err(err) = log_dir(app).and_then(|dir| log_sink::init(&dir)) {
+pub fn init_log_file() {
+    if let Err(err) = log_dir().and_then(|dir| log_sink::init(&dir)) {
         eprintln!("[Diagnostics] {err}");
     }
 }
@@ -73,13 +74,13 @@ pub fn diagnostics_log(level: String, message: String) -> Result<(), String> {
 }
 
 #[tauri::command]
-pub fn diagnostics_log_dir(app: AppHandle) -> Result<String, String> {
-    log_dir(&app).map(|dir| dir.to_string_lossy().into_owned())
+pub fn diagnostics_log_dir() -> Result<String, String> {
+    log_dir().map(|dir| dir.to_string_lossy().into_owned())
 }
 
 #[tauri::command]
 pub fn diagnostics_open_log_dir(app: AppHandle) -> Result<(), String> {
-    let dir = log_dir(&app)?;
+    let dir = log_dir()?;
     fs::create_dir_all(&dir).map_err(|e| format!("failed to create app log dir: {e}"))?;
     let target = log_sink::path()
         .filter(|path| path.exists())

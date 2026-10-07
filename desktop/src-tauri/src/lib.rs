@@ -21,6 +21,7 @@ const HTTP_READ_TIMEOUT_SECS: u64 = 30;
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 #[cfg_attr(feature = "cef", tauri::cef_entry_point)]
 pub fn run() {
+    app::diagnostics::init_log_file();
     app::diagnostics::install_panic_hook();
     app::render_mode::apply_before_launch();
     #[cfg(all(windows, not(feature = "cef")))]
@@ -54,7 +55,6 @@ pub fn run() {
             });
         })
         .setup(move |app| {
-            app::diagnostics::init_log_file(app.handle());
             #[cfg(all(windows, not(feature = "cef")))]
             app::webview2::exit_if_main_window_missing(app);
             app::autostart::reveal_main_window(app);
