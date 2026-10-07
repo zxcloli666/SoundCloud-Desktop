@@ -652,7 +652,7 @@
     "startupPageDesc": "Choose which page opens when the app launches",
     "playback": "Playback",
     "floatingComments": "Floating comments",
-    "floatingCommentsDesc": "Show comments as floating pills during playback",
+    "floatingCommentsDesc": "Show listener comments on the track waveform and pop them up as the playhead passes",
     "lyricsVisualizer": "Lyrics visualizer",
     "lyricsVisualizerDesc": "Real-time FFT wave behind the fullscreen lyrics. Off by default to save GPU.",
     "discordRpc": "Discord Rich Presence",

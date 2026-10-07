@@ -563,7 +563,7 @@
     "startupPageDesc": "Uygulama acildiginda hangi sayfanin gosterilecegini secin",
     "playback": "Oynatma",
     "floatingComments": "Yuzen yorumlar",
-    "floatingCommentsDesc": "Calarken yorumlari kayan baloncuklar olarak goster",
+    "floatingCommentsDesc": "Dinleyici yorumlarini parca dalga formunda goster ve calma noktasi geldiginde baloncuk olarak ac",
     "discordRpc": "Discord Rich Presence",
     "discordRpcDesc": "Mevcut SoundCloud oynatma durumunu Discord'da goster",
     "discordRpcMode": "Gosterim modu",

@@ -665,7 +665,7 @@
     "floatingComments": "Плавающие комментарии",
     "lyricsVisualizer": "Визуализатор в лирике",
     "lyricsVisualizerDesc": "FFT-волна по биту трека на фоне фуллскрин лирики. По умолчанию выключено.",
-    "floatingCommentsDesc": "Показывать комментарии как всплывающие пилюли во время воспроизведения",
+    "floatingCommentsDesc": "Показывать комментарии слушателей на волне трека и всплывающие пилюли, когда до них доходит воспроизведение",
     "discordRpc": "Discord Rich Presence",
     "discordRpcDesc": "Показывать текущий статус прослушивания SoundCloud в Discord",
     "discordRpcMode": "Что отображать",
