@@ -3,6 +3,7 @@ mod audio;
 mod auth;
 mod discord;
 mod import;
+mod local_library;
 mod network;
 mod rt;
 mod shared;
@@ -71,6 +72,9 @@ pub fn run() {
             let wallpapers_dir = cache_dir.join("wallpapers");
             std::fs::create_dir_all(&wallpapers_dir).ok();
 
+            let local_covers_dir = local_library::covers_dir(&data_dir);
+            std::fs::create_dir_all(&local_covers_dir).ok();
+
             let images_dir = data_dir.join("images");
             std::fs::create_dir_all(&images_dir).ok();
 
@@ -99,7 +103,10 @@ pub fn run() {
                 })
                 .ok();
 
-            let (static_port, proxy_port) = rt.block_on(network::server::start_all(wallpapers_dir));
+            let (static_port, proxy_port) = rt.block_on(network::server::start_all(
+                wallpapers_dir,
+                local_covers_dir,
+            ));
             let rt_handle = rt.handle().clone();
 
             std::thread::spawn(move || {
@@ -222,6 +229,9 @@ pub fn run() {
             audio::save_track_to_path,
             import::ym_import_start,
             import::ym_import_stop,
+            local_library::local_library_scan,
+            local_library::local_library_missing,
+            local_library::local_library_forget,
             track_cache::track_ensure_cached,
             track_cache::track_export,
             track_cache::track_export_to_dir,
