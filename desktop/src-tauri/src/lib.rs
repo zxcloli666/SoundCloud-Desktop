@@ -4,6 +4,7 @@ mod auth;
 mod discord;
 mod import;
 mod network;
+mod obs;
 mod rt;
 mod scrobble;
 mod shared;
@@ -15,6 +16,7 @@ use tauri::Manager;
 
 use discord::DiscordState;
 use network::server::ServerState;
+use obs::ObsState;
 use scrobble::ScrobbleState;
 
 const HTTP_CONNECT_TIMEOUT_SECS: u64 = 8;
@@ -125,6 +127,7 @@ pub fn run() {
             app::diagnostics::start_linux_fd_monitor(app.handle());
             network::health::start(data_dir.clone(), app.handle().clone(), rt_handle.clone());
             app.manage(Arc::new(DiscordState::default()));
+            app.manage(Arc::new(ObsState::default()));
 
             let ffmpeg_dir = cache_dir.join("ffmpeg");
             std::fs::create_dir_all(&ffmpeg_dir).ok();
@@ -203,6 +206,9 @@ pub fn run() {
             discord::discord_disconnect,
             discord::discord_set_activity,
             discord::discord_clear_activity,
+            obs::obs_configure,
+            obs::obs_update,
+            obs::obs_status,
             scrobble::scrobble_status,
             scrobble::scrobble_refresh,
             scrobble::scrobble_disconnect,
