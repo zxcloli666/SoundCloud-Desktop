@@ -232,6 +232,8 @@ jobs:
     container:
       image: ghcr.io/flathub-infra/flatpak-github-actions:gnome-49
       options: --privileged
+    env:
+      HAS_INTERNAL_PAT: ${{ secrets.INTERNAL_PAT != '' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -241,6 +243,24 @@ jobs:
         run: |
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
           git pull origin main
+
+      - name: Checkout internal repo (when PAT present)
+        if: ${{ env.HAS_INTERNAL_PAT == 'true' }}
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/SoundCloud-Internal
+          token: ${{ secrets.INTERNAL_PAT }}
+          path: _internal
+
+      - name: Replace mock crates with real
+        if: ${{ env.HAS_INTERNAL_PAT == 'true' }}
+        run: |
+          rm -rf utils/call utils/decrypt-client
+          cp -r _internal/call ./utils/call
+          cp -r _internal/decrypt-client ./utils/decrypt-client
+          rm -rf _internal
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal
+          "$HOME/.cargo/bin/cargo" metadata --format-version 1 --manifest-path desktop/src-tauri/Cargo.toml > /dev/null
 
       - uses: actions/setup-node@v4
         with:
