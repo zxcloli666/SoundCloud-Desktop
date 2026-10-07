@@ -1,5 +1,10 @@
+import { IMAGES_BASE } from './constants';
 import type { GithubAsset } from './update-check';
 import type { InstallKind, UpdaterInfo } from './updater';
+
+export const DOWNLOAD_PAGE_URL = 'https://soundcloud-desktop.fun/download';
+const FLATPAK_APP_ID = 'io.github.zxcloli666.SoundcloudDesktop';
+const AUR_PACKAGE = 'soundcloud-bin';
 
 const HINT_KEYS: Record<InstallKind, string> = {
   nsis: 'update.hintInstaller',
@@ -59,4 +64,29 @@ export function pickReleaseAsset(
   const pattern = assetPattern(info);
   if (!pattern || !assets) return null;
   return assets.find((asset) => pattern.test(asset.name)) ?? null;
+}
+
+export function mirroredDownloadUrl(url: string): string {
+  return `${IMAGES_BASE}/x-target/${btoa(url)}`;
+}
+
+export function updateCommands(info: UpdaterInfo, asset: GithubAsset | null): string[] {
+  const file = asset?.name;
+  switch (info.kind) {
+    case 'aur':
+      return [`yay -Syu ${AUR_PACKAGE}`];
+    case 'flatpak':
+      return [
+        `flatpak update ${FLATPAK_APP_ID}`,
+        `flatpak install --user --reinstall ${file ?? 'soundcloud-desktop.flatpak'}`,
+      ];
+    case 'deb':
+      return file ? [`sudo apt install ./${file}`] : [];
+    case 'rpm':
+      return file ? [`sudo dnf install ./${file}`] : [];
+    case 'appImage':
+      return file ? [`chmod +x ${file}`] : [];
+    default:
+      return [];
+  }
 }
