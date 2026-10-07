@@ -329,18 +329,29 @@
     },
     "blocked": {
       "title": "Uygulama sunucularina ulasilamiyor",
-      "body": "Internet calisiyor ama hicbir istek sunucularimiza ulasmiyor, yedek yollar dahil. Bu genelde saglayici engelinden ya da zapret veya VPN gibi yerel bir engel asma aracindan olur. Indirilen muzik cevrimdisi kitaplikta kullanilabilir.",
+      "body": "Internet calisiyor ama hicbir istek sunucularimiza ulasmiyor, yedek yollar dahil. Bu bizim tarafimizda bir ariza ya da saglayicinin, zapret'in veya bir VPN'in engeli olabilir. Durum sayfasinda her sey yesilse sorun sizin aginizda. Indirilen muzik cevrimdisi kitaplikta kullanilabilir.",
       "rule": "Uygulama zapret kapaliyken calisiyorsa scnative.space'i list-exclude'a ekleyin. Saglayiciniz engelliyorsa scnative.space'i list-general'a ekleyin: bu *.relay.scnative.space'i de kapsar."
+    },
+    "reachable": {
+      "title": "Sunucular calisiyor ama aginiz onlara ulasamiyor",
+      "body": "Dunyanin dort bir yanindan yapilan kontrol uygulama sunucularinin calistigini gosteriyor, ancak aginizdan hicbir istek onlara ulasmiyor, yedek yollar dahil. Bu genelde saglayicidan, DNS'ten, bir VPN'den ya da zapret'ten olur. Indirilen muzik cevrimdisi kitaplikta kullanilabilir."
+    },
+    "remote": {
+      "up": "Dis kontrol: sunucular calisiyor",
+      "down": "Dis kontrol: sunucular kapali",
+      "unknown": "Dis kontrol kullanilamiyor"
     },
     "banner": {
       "viaStar": "Ana sunucu kapali — yedek Star sunucusu uzerinden calisiyoruz.",
       "outage": "Sunucular kullanilamiyor",
-      "details": "Ayrintilar"
+      "details": "Ayrintilar",
+      "network": "Sunucular calisiyor ama aginizdan ulasilamiyor"
     },
     "actions": {
       "retry": "Tekrar dene",
       "offlineLibrary": "Cevrimdisi kitaplik",
-      "buyStar": "STAR al"
+      "buyStar": "STAR al",
+      "statusPage": "Durum sayfasi"
     }
   },
   "home": {

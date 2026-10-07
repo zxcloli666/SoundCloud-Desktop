@@ -413,18 +413,29 @@
     },
     "blocked": {
       "title": "Can't reach the app's servers",
-      "body": "The internet works, but no request gets through to our servers, not even over the backup routes. This usually means a provider block or a local bypass tool such as zapret or a VPN. Your downloaded music is available in the offline library.",
+      "body": "The internet works, but no request gets through to our servers, not even over the backup routes. It may be an outage on our side or a block by your provider, zapret or a VPN. If the status page is all green, the problem is on your network. Your downloaded music is available in the offline library.",
       "rule": "If the app works with zapret turned off, add scnative.space to list-exclude. If your provider blocks it, add scnative.space to list-general: that also covers *.relay.scnative.space."
+    },
+    "reachable": {
+      "title": "Servers are up, your network can't reach them",
+      "body": "A check from around the world shows the app's servers are working, but no request from your network gets through to them, not even over the backup routes. This is usually your provider, DNS, a VPN or zapret. Your downloaded music is available in the offline library."
+    },
+    "remote": {
+      "up": "Outside check: servers are up",
+      "down": "Outside check: servers are down",
+      "unknown": "Outside check is unavailable"
     },
     "banner": {
       "viaStar": "Main host is down — running on the Star backup host.",
       "outage": "Hosts are unavailable",
-      "details": "Details"
+      "details": "Details",
+      "network": "Servers are up but unreachable from your network"
     },
     "actions": {
       "retry": "Check again",
       "offlineLibrary": "Offline library",
-      "buyStar": "Get STAR"
+      "buyStar": "Get STAR",
+      "statusPage": "Status page"
     }
   },
   "home": {

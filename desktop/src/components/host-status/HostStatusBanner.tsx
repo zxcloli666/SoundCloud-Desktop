@@ -3,6 +3,7 @@ import {useTranslation} from 'react-i18next';
 import {useShallow} from 'zustand/shallow';
 import {useHostStatusStore} from '../../lib/host-status';
 import {Star, X} from '../../lib/icons';
+import {outageCopy} from './outage-copy';
 import {useFailoverUi} from './useFailoverUi';
 
 // Плоский тёмный tint с фиолетовой подсветкой (в духе StarBadge), БЕЗ backdrop-filter.
@@ -24,6 +25,8 @@ export const HostStatusBanner = React.memo(() => {
       bannerDismissedIncidentId: s.bannerDismissedIncidentId,
     })),
   );
+  const routeBlocked = useHostStatusStore((s) => s.routeBlocked);
+  const remote = useHostStatusStore((s) => s.remote);
   const dismissBanner = useHostStatusStore((s) => s.dismissBanner);
   const reopenModal = useHostStatusStore((s) => s.reopenModal);
 
@@ -63,7 +66,9 @@ export const HostStatusBanner = React.memo(() => {
       ) : (
         <>
           <span className="min-w-0 truncate text-[11.5px] font-medium text-white/85">
-            {t('hostStatus.banner.outage')}
+            {ui === 'all-down' && outageCopy(routeBlocked, remote) === 'reachable'
+              ? t('hostStatus.banner.network')
+              : t('hostStatus.banner.outage')}
           </span>
           <button
             type="button"
