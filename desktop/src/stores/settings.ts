@@ -1,6 +1,7 @@
 import {create} from 'zustand';
 import {createJSONStorage, persist} from 'zustand/middleware';
 import type {InterfaceFont} from '../lib/interface-font';
+import {EMPTY_LAYOUT, type LayoutEntry, type LayoutScope, type LayoutState, type RiverSectionId,} from '../lib/layout';
 import type {PerfMode} from '../lib/perf';
 import {tauriStorage} from '../lib/tauri-storage';
 
@@ -103,6 +104,8 @@ export interface SettingsState {
   coverAccent: boolean;
   customCss: string;
   customCssEnabled: boolean;
+  layouts: LayoutState;
+  riverHidden: RiverSectionId[];
   setAccentColor: (color: string) => void;
   setBgPrimary: (bg: string) => void;
   setThemePreset: (id: ThemePreset) => void;
@@ -131,6 +134,7 @@ export interface SettingsState {
   setStartupPage: (page: StartupPage) => void;
   pinPlaylist: (playlist: SidebarPinnedPlaylist) => void;
   unpinPlaylist: (urn: string) => void;
+  reorderPinnedPlaylists: (urns: string[]) => void;
   setDiscordRpcEnabled: (enabled: boolean) => void;
   setDiscordRpcMode: (mode: DiscordRpcMode) => void;
   setDiscordRpcShowButton: (show: boolean) => void;
@@ -149,6 +153,9 @@ export interface SettingsState {
   setCoverAccent: (v: boolean) => void;
   setCustomCss: (css: string) => void;
   setCustomCssEnabled: (v: boolean) => void;
+  setLayout: (scope: LayoutScope, entries: LayoutEntry[]) => void;
+  resetLayout: (scope: LayoutScope) => void;
+  setRiverHidden: (ids: RiverSectionId[]) => void;
   resetTheme: () => void;
 }
 
@@ -201,6 +208,8 @@ const DEFAULTS = {
   coverAccent: false,
   customCss: '',
   customCssEnabled: true,
+  layouts: EMPTY_LAYOUT,
+  riverHidden: [] as RiverSectionId[],
 };
 
 export const useSettingsStore = create<SettingsState>()(
@@ -256,6 +265,13 @@ export const useSettingsStore = create<SettingsState>()(
         set((s) => ({
           pinnedPlaylists: s.pinnedPlaylists.filter((item) => item.urn !== urn),
         })),
+      reorderPinnedPlaylists: (urns) =>
+        set((s) => {
+          const byUrn = new Map(s.pinnedPlaylists.map((p) => [p.urn, p]));
+          const ordered = urns.flatMap((urn) => byUrn.get(urn) ?? []);
+          const rest = s.pinnedPlaylists.filter((p) => !urns.includes(p.urn));
+          return { pinnedPlaylists: [...ordered, ...rest] };
+        }),
       setDiscordRpcEnabled: (discordRpcEnabled) => set({ discordRpcEnabled }),
       setDiscordRpcMode: (discordRpcMode) => set({ discordRpcMode }),
       setDiscordRpcShowButton: (discordRpcShowButton) => set({ discordRpcShowButton }),
@@ -274,6 +290,14 @@ export const useSettingsStore = create<SettingsState>()(
       setCoverAccent: (coverAccent) => set({ coverAccent }),
       setCustomCss: (customCss) => set({ customCss }),
       setCustomCssEnabled: (customCssEnabled) => set({ customCssEnabled }),
+      setLayout: (scope, entries) =>
+        set((s) => ({ layouts: { ...EMPTY_LAYOUT, ...s.layouts, [scope]: entries } })),
+      resetLayout: (scope) =>
+        set((s) => ({
+          layouts: { ...EMPTY_LAYOUT, ...s.layouts, [scope]: [] },
+          riverHidden: scope === 'home' ? [] : s.riverHidden,
+        })),
+      setRiverHidden: (riverHidden) => set({ riverHidden }),
       resetTheme: () =>
         set({
           accentColor: DEFAULTS.accentColor,
@@ -361,6 +385,8 @@ export const useSettingsStore = create<SettingsState>()(
         coverAccent: s.coverAccent,
         customCss: s.customCss,
         customCssEnabled: s.customCssEnabled,
+        layouts: s.layouts,
+        riverHidden: s.riverHidden,
       }),
     },
   ),
