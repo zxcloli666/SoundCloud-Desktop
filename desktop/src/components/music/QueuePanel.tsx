@@ -6,6 +6,7 @@ import {ListMusic, Trash2, X} from '../../lib/icons';
 import {usePerfMode} from '../../lib/perf';
 import { usePlayerStore } from '../../stores/player';
 import {useSettingsStore} from '../../stores/settings';
+import {AutoplayRow} from './queue/AutoplayRow';
 import {NowPlayingCard} from './queue/NowPlayingCard';
 import {QueueList} from './queue/QueueList';
 
@@ -165,6 +166,8 @@ export const QueuePanel = React.memo(
                   />
                         </>
                     )}
+
+                    {currentTrack && <AutoplayRow/>}
 
               {queueLength === 0 && (
                   <div className="flex flex-col items-center justify-center h-full gap-3 text-center px-8">
