@@ -1,5 +1,7 @@
 import type { Track } from '../../stores/player';
 
+export const ROOM_CAPACITY = 10;
+
 export type RoomStatus = 'idle' | 'loading' | 'playing' | 'paused';
 
 export interface RoomMember {

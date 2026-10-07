@@ -3,9 +3,11 @@ import { listen } from '@tauri-apps/api/event';
 import { useDiscordStatusStore } from '../stores/discord-status';
 import { usePlayerStore } from '../stores/player';
 import { useSettingsStore } from '../stores/settings';
+import { useTogetherStore } from '../stores/together';
 import { getCurrentTime } from './audio';
 import { trackedInvoke as invoke } from './diagnostics';
 import { discordLyricLine, resetDiscordLyrics } from './discord-lyrics';
+import { ROOM_CAPACITY } from './together/types';
 import { getArtistDisplay, getDisplayTitle } from './track-display';
 
 let connected = false;
@@ -73,6 +75,16 @@ function currentLyric(): string | null {
   return discordLyricLine(currentTrack.urn, getCurrentTime());
 }
 
+function listeningParty() {
+  const room = useTogetherStore.getState().room;
+  if (!room) return undefined;
+  return {
+    id: `together-${room.hostId}-${room.createdAt}`,
+    size: Math.max(1, room.online.length),
+    max: ROOM_CAPACITY,
+  };
+}
+
 async function pushPresence(): Promise<boolean> {
   if (!usePlayerStore.getState().currentTrack) {
     await clearPresence();
@@ -102,6 +114,7 @@ async function pushPresence(): Promise<boolean> {
         status: discordRpcStatus,
         show_button: discordRpcShowButton,
         lyric_line: lyric ? fitText(lyric) : undefined,
+        party: listeningParty(),
       },
     });
     return true;
@@ -231,6 +244,12 @@ useSettingsStore.subscribe((state, prev) => {
   }
 
   void updatePresence();
+});
+
+useTogetherStore.subscribe((state, prev) => {
+  if (state.room?.online.length !== prev.room?.online.length) {
+    schedulePresenceSync(CHANGE_DEBOUNCE_MS);
+  }
 });
 
 listen<number>('audio:tick', (event) => {
