@@ -2,6 +2,7 @@ import {create} from 'zustand';
 import {createJSONStorage, persist} from 'zustand/middleware';
 import type {PerfMode} from '../lib/perf';
 import {tauriStorage} from '../lib/tauri-storage';
+import type {TrackSort} from '../lib/track-sort';
 
 export type ThemePreset = 'soundcloud' | 'dark' | 'neon' | 'forest' | 'crimson' | 'custom';
 export type StartupPage = 'home' | 'search' | 'library' | 'settings';
@@ -90,6 +91,8 @@ export interface SettingsState {
   artistWaveCollapsed: boolean;
   wallhavenApiKey: string;
   ymImportOrder: YmImportOrder;
+  likesSort: TrackSort;
+  playlistSorts: Record<string, TrackSort>;
   setAccentColor: (color: string) => void;
   setBgPrimary: (bg: string) => void;
   setThemePreset: (id: ThemePreset) => void;
@@ -126,6 +129,8 @@ export interface SettingsState {
   setArtistWaveCollapsed: (v: boolean) => void;
   setWallhavenApiKey: (key: string) => void;
   setYmImportOrder: (order: YmImportOrder) => void;
+  setLikesSort: (sort: TrackSort) => void;
+  setPlaylistSort: (urn: string, sort: TrackSort) => void;
   resetTheme: () => void;
 }
 
@@ -167,6 +172,8 @@ const DEFAULTS = {
   artistWaveCollapsed: false,
   wallhavenApiKey: '',
   ymImportOrder: 'newest' as YmImportOrder,
+  likesSort: 'default' as TrackSort,
+  playlistSorts: {} as Record<string, TrackSort>,
 };
 
 export const useSettingsStore = create<SettingsState>()(
@@ -235,6 +242,12 @@ export const useSettingsStore = create<SettingsState>()(
       setArtistWaveCollapsed: (artistWaveCollapsed) => set({ artistWaveCollapsed }),
       setWallhavenApiKey: (wallhavenApiKey) => set({ wallhavenApiKey }),
       setYmImportOrder: (ymImportOrder) => set({ ymImportOrder }),
+      setLikesSort: (likesSort) => set({ likesSort }),
+      setPlaylistSort: (urn, sort) =>
+        set((s) => {
+          const { [urn]: _, ...rest } = s.playlistSorts;
+          return { playlistSorts: sort === 'default' ? rest : { ...rest, [urn]: sort } };
+        }),
       resetTheme: () =>
         set({
           accentColor: DEFAULTS.accentColor,
@@ -303,6 +316,8 @@ export const useSettingsStore = create<SettingsState>()(
         artistWaveCollapsed: s.artistWaveCollapsed,
         wallhavenApiKey: s.wallhavenApiKey,
         ymImportOrder: s.ymImportOrder,
+        likesSort: s.likesSort,
+        playlistSorts: s.playlistSorts,
       }),
     },
   ),

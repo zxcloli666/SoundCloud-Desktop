@@ -10,7 +10,7 @@ import {
     useSensors,
 } from '@dnd-kit/core';
 import {SortableContext, verticalListSortingStrategy} from '@dnd-kit/sortable';
-import React, {useMemo, useState} from 'react';
+import React, {useCallback, useMemo, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Clock, ListMusic, Loader2} from '../../lib/icons';
 import type {Track} from '../../stores/player';
@@ -23,25 +23,27 @@ const PANEL = {
   boxShadow: '0 24px 60px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.04)',
 } as const;
 
-function Header({ count }: { count: number }) {
+function Header({ count, toolbar }: { count: number; toolbar?: React.ReactNode }) {
   const { t } = useTranslation();
   return (
-    <div className="flex items-center justify-between px-3 pt-1 pb-3">
+    <div className="flex items-center justify-between gap-3 px-3 pt-1 pb-3">
       <span className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.22em] text-white/55">
         <ListMusic size={12} /> {t('playlist.theSequence')}
         <span className="text-white/25 ml-1 tabular-nums">{count}</span>
       </span>
-      <Clock size={12} className="text-white/25" />
+      <div className="flex items-center gap-3">
+        {toolbar}
+        <Clock size={12} className="text-white/25" />
+      </div>
     </div>
   );
 }
 
-/** The Sequence — virtualized tracklist. Owner gets drag-to-reorder + remove;
- *  everyone gets play-on-hover, now-playing highlight and the genre hue-ticks. */
 export const SequenceList = React.memo(function SequenceList({
   tracks,
   notice,
-  isOwner,
+  toolbar,
+  reorderable,
   onDragEnd,
   onRemove,
   onPlay,
@@ -51,10 +53,10 @@ export const SequenceList = React.memo(function SequenceList({
 }: {
   tracks: Track[];
   notice: React.ReactNode;
-  isOwner: boolean;
+  toolbar?: React.ReactNode;
+  reorderable: boolean;
   onDragEnd: (e: DragEndEvent) => void;
-  onRemove: (urn: string) => void;
-  /** Армит continuation-источник после старта НОВОГО трека (стабильный ref). */
+  onRemove?: (urn: string) => void;
   onPlay?: () => void;
   sentinelRef: React.Ref<HTMLDivElement>;
   hasNextPage: boolean;
@@ -69,6 +71,9 @@ export const SequenceList = React.memo(function SequenceList({
   const [activeId, setActiveId] = useState<string | null>(null);
   const activeIndex = activeId ? tracks.findIndex((tr) => tr.urn === activeId) : -1;
   const activeTrack = activeIndex >= 0 ? tracks[activeIndex] : null;
+  const tracksRef = useRef(tracks);
+  tracksRef.current = tracks;
+  const getQueue = useCallback(() => tracksRef.current, []);
 
   if (tracks.length === 0 && notice) {
     return <div className="py-20">{notice}</div>;
@@ -99,8 +104,8 @@ export const SequenceList = React.memo(function SequenceList({
 
   return (
     <div className="rounded-[2rem] p-3 md:p-4" style={PANEL}>
-      <Header count={tracks.length} />
-      {isOwner ? (
+      <Header count={tracks.length} toolbar={toolbar} />
+      {reorderable && onRemove ? (
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
@@ -122,7 +127,7 @@ export const SequenceList = React.memo(function SequenceList({
                 <SortableSequenceRow
                   track={track}
                   index={i}
-                  queue={tracks}
+                  queue={getQueue}
                   onRemove={onRemove}
                   onPlay={onPlay}
                 />
@@ -131,7 +136,7 @@ export const SequenceList = React.memo(function SequenceList({
           </SortableContext>
           <DragOverlay>
             {activeTrack ? (
-              <SequenceRowOverlay track={activeTrack} index={activeIndex} queue={tracks} />
+              <SequenceRowOverlay track={activeTrack} index={activeIndex} queue={getQueue} />
             ) : null}
           </DragOverlay>
         </DndContext>
@@ -143,7 +148,13 @@ export const SequenceList = React.memo(function SequenceList({
           className="space-y-0.5"
           getItemKey={(tr) => tr.urn}
           renderItem={(track, i) => (
-            <SequenceRow track={track} index={i} queue={tracks} onPlay={onPlay} />
+            <SequenceRow
+              track={track}
+              index={i}
+              queue={getQueue}
+              onRemove={onRemove}
+              onPlay={onPlay}
+            />
           )}
         />
       )}

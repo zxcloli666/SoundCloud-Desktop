@@ -961,5 +961,21 @@
     "scAccounts": "SoundCloud hesapları",
     "mainAccount": "Ana",
     "demoAccount": "Demo"
+  },
+  "trackSort": {
+    "label": "Sırala",
+    "playlist_default": "Çalma listesi sırası",
+    "playlist_reverse": "Son eklenenler",
+    "likes_default": "Son beğenilenler",
+    "likes_reverse": "İlk beğenilenler",
+    "released": "Çıkış tarihi",
+    "plays": "En çok dinlenen",
+    "likes": "En çok beğenilen",
+    "reposts": "En çok yeniden paylaşılan",
+    "title": "Başlık",
+    "artist": "Sanatçı",
+    "duration": "Süre",
+    "saveOrder": "Bu sırayı kaydet",
+    "saveOrderHint": "Bu sırayı herkes için çalma listesinin sırası yap"
   }
 }

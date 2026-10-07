@@ -5,6 +5,7 @@ import {useTranslation} from 'react-i18next';
 import {useNavigate, useParams} from 'react-router-dom';
 import {toast} from 'sonner';
 import {useShallow} from 'zustand/shallow';
+import {TrackSortMenu} from '../components/music/TrackSortMenu';
 import {CrateLedger} from '../components/playlist/CrateLedger';
 import {EditPlaylistDialog} from '../components/playlist/EditPlaylistDialog';
 import {PLAYLIST_KEYFRAMES} from '../components/playlist/keyframes';
@@ -24,11 +25,12 @@ import {
     useRemoveFromPlaylist,
     useUpdatePlaylistTracks,
 } from '../lib/hooks';
-import {AlertCircle, ChevronLeft, X} from '../lib/icons';
+import {AlertCircle, Check, ChevronLeft, X} from '../lib/icons';
 import {usePerfMode} from '../lib/perf';
 import {rawPlaylistCover} from '../lib/playlist-cover';
 import {armPlaylistContinuation} from '../lib/queue-continuation';
 import {type ArrangeMode, arrangeTracks} from '../lib/track-order';
+import {sortTracks, type TrackSort} from '../lib/track-sort';
 import {useAuthStore} from '../stores/auth';
 import {type Track, usePlayerStore} from '../stores/player';
 import {useSettingsStore} from '../stores/settings';
@@ -82,12 +84,23 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
 
-  const { pinnedPlaylists, pinPlaylist, unpinPlaylist } = useSettingsStore(
+  const { pinnedPlaylists, pinPlaylist, unpinPlaylist, setPlaylistSort } = useSettingsStore(
     useShallow((s) => ({
       pinnedPlaylists: s.pinnedPlaylists,
       pinPlaylist: s.pinPlaylist,
       unpinPlaylist: s.unpinPlaylist,
+      setPlaylistSort: s.setPlaylistSort,
     })),
+  );
+  const sort = useSettingsStore((s): TrackSort => (urn && s.playlistSorts[urn]) || 'default');
+  const sorted = sort !== 'default';
+  const sortedRef = useRef(sorted);
+  sortedRef.current = sorted;
+  const changeSort = useCallback(
+    (next: TrackSort) => {
+      if (urn) setPlaylistSort(urn, next);
+    },
+    [urn, setPlaylistSort],
   );
 
   const isLoading = playlistLoading || tracksLoading;
@@ -99,7 +112,6 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
     return playlistTracks.length > 0 ? playlistTracks : (playlist.tracks ?? []);
   }, [isLoading, playlist, playlistTracks]);
 
-  // Local order for DnD; skip server sync while a debounced save is in flight.
   const [localTracks, setLocalTracks] = useState<Track[]>([]);
   const pendingMutationRef = useRef(false);
   const pendingRemovalsRef = useRef(0);
@@ -137,9 +149,17 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
 
   const toastReordered = useCallback(() => toast.success(t('playlist.reordered')), [t]);
 
-  const tracks = isOwner ? localTracks : serverTracks;
+  const ownTracks = isOwner ? localTracks : serverTracks;
+  const tracks = useMemo(
+    () => sortTracks(ownTracks, sort, i18n.language),
+    [ownTracks, sort, i18n.language],
+  );
 
-  const trackUrnSet = useMemo(() => new Set(tracks.map((tr) => tr.urn)), [tracks]);
+  useEffect(() => {
+    if (sorted && hasNextPage && !isFetchingNextPage) void fetchNextPage();
+  }, [sorted, hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  const trackUrnSet = useMemo(() => new Set(ownTracks.map((tr) => tr.urn)), [ownTracks]);
   const { isPausedFromThis, isPlayingFromThis } = usePlayerStore(
     useShallow((s) => ({
       isPlayingFromThis:
@@ -149,7 +169,7 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
     })),
   );
 
-  const aura = usePlaylistAura(tracks, playlist?.genre);
+  const aura = usePlaylistAura(ownTracks, playlist?.genre);
   const scrollRef = useInfiniteScroll(hasNextPage ?? false, isFetchingNextPage, fetchNextPage);
 
   const handleDragEnd = useCallback(
@@ -168,10 +188,10 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
     [localTracks, debouncedUpdate, toastReordered],
   );
 
-  const handleArrange = useCallback(
-    (mode: ArrangeMode) => {
+  const commitOrder = useCallback(
+    (next: Track[]) => {
       const previous = localTracks;
-      const next = arrangeTracks(previous, mode, i18n.language);
+      changeSort('default');
       setLocalTracks(next);
       debouncedUpdate(next, () =>
         toast.success(t('playlist.arranged'), {
@@ -185,7 +205,12 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
         }),
       );
     },
-    [localTracks, debouncedUpdate, toastReordered, i18n.language, t],
+    [localTracks, debouncedUpdate, toastReordered, changeSort, t],
+  );
+
+  const handleArrange = useCallback(
+    (mode: ArrangeMode) => commitOrder(arrangeTracks(localTracks, mode, i18n.language)),
+    [commitOrder, localTracks, i18n.language],
   );
 
   const handleRemoveTrack = useCallback(
@@ -219,10 +244,8 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
     [localTracks, removeTrack, debouncedUpdate, toastReordered, t],
   );
 
-  // Доигрываем плейлист ДО КОНЦА (пагинированный срез в очереди → потом волна),
-  // как у лайков. Армить ПОСЛЕ play(): он сбрасывает прошлый источник.
   const armContinuation = useCallback(() => {
-    if (urn) armPlaylistContinuation(urn);
+    if (urn && !sortedRef.current) armPlaylistContinuation(urn);
   }, [urn]);
 
   const handlePlayAll = useCallback(() => {
@@ -263,10 +286,10 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
     pinPlaylist({
       urn: playlist.urn,
       title: playlist.title,
-      artworkUrl: rawPlaylistCover(playlist.artwork_url, tracks),
+      artworkUrl: rawPlaylistCover(playlist.artwork_url, ownTracks),
     });
     toast.success(t('sidebar.pinned'));
-  }, [playlist, isPinned, unpinPlaylist, pinPlaylist, tracks, t]);
+  }, [playlist, isPinned, unpinPlaylist, pinPlaylist, ownTracks, t]);
 
   const handleDelete = useCallback(() => {
     if (!playlist) return;
@@ -348,6 +371,28 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
 
   const trackCount = declaredCount || tracks.length;
   const canArrange = !hasNextPage && localTracks.length > 1;
+  const sortToolbar = (
+    <div className="flex items-center gap-2">
+      {isOwner && sorted && canArrange && (
+        <button
+          type="button"
+          onClick={() => commitOrder(tracks)}
+          title={t('trackSort.saveOrderHint')}
+          aria-label={t('trackSort.saveOrder')}
+          className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-[10px] border border-white/[0.07] bg-white/[0.03] px-3 text-[11.5px] font-semibold text-white/60 transition-all duration-200 ease-[var(--ease-apple)] hover:border-white/[0.14] hover:text-white/90 active:scale-[0.97]"
+        >
+          <Check size={12} />
+          <span className="hidden sm:inline">{t('trackSort.saveOrder')}</span>
+        </button>
+      )}
+      <TrackSortMenu
+        sort={sort}
+        context="playlist"
+        loading={sorted && !!hasNextPage}
+        onSort={changeSort}
+      />
+    </div>
+  );
 
   return (
     <div className="relative min-h-full w-full">
@@ -374,7 +419,7 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
 
         <PlaylistHero
           playlist={playlist}
-          tracks={tracks}
+          tracks={ownTracks}
           aura={aura}
           isOwner={isOwner}
           isPlaying={isPlayingFromThis}
@@ -389,7 +434,7 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
           onArrange={handleArrange}
         />
 
-        <CrateLedger playlist={playlist} tracks={tracks} accentGlow={aura.accentGlow} />
+        <CrateLedger playlist={playlist} tracks={ownTracks} accentGlow={aura.accentGlow} />
 
         {tracks.length > 1 && (
           <div
@@ -409,9 +454,10 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
         <SequenceList
           tracks={tracks}
           notice={listNotice}
-          isOwner={isOwner}
+          toolbar={tracks.length > 1 ? sortToolbar : undefined}
+          reorderable={isOwner && !sorted}
           onDragEnd={handleDragEnd}
-          onRemove={handleRemoveTrack}
+          onRemove={isOwner ? handleRemoveTrack : undefined}
           onPlay={armContinuation}
           sentinelRef={scrollRef}
           hasNextPage={hasNextPage ?? false}

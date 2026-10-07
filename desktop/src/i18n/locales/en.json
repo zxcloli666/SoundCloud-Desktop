@@ -1158,5 +1158,21 @@
     "noMatches": "Nothing matches “{{query}}”",
     "capAlbums": "That's the cream of the crop — narrow the genre or search to dig deeper.",
     "capArtists": "That's the cream of the crop — pick a tag or search to dig deeper."
+  },
+  "trackSort": {
+    "label": "Sort",
+    "playlist_default": "Playlist order",
+    "playlist_reverse": "Recently added",
+    "likes_default": "Recently liked",
+    "likes_reverse": "First liked",
+    "released": "Release date",
+    "plays": "Most played",
+    "likes": "Most liked",
+    "reposts": "Most reposted",
+    "title": "Title",
+    "artist": "Artist",
+    "duration": "Duration",
+    "saveOrder": "Save this order",
+    "saveOrderHint": "Make this the playlist's own order for everyone"
   }
 }
