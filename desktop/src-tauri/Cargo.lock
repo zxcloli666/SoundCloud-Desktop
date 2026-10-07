@@ -5219,6 +5219,7 @@ dependencies = [
  "futures-util",
  "hex",
  "http 1.4.0",
+ "hyper-util",
  "if-addrs",
  "ksni",
  "libc",
@@ -5245,6 +5246,7 @@ dependencies = [
  "urlencoding",
  "uuid 1.22.0",
  "warp",
+ "windows-registry 0.6.1",
  "wreq",
 ]
 

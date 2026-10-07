@@ -1,7 +1,7 @@
 import { fetch } from '@tauri-apps/plugin-http';
 import { useAppStatusStore } from '../../stores/app-status';
 import { API_BASE, API_STAR_BASE } from '../constants';
-import { edgeFetch } from '../edge';
+import { EdgeTransportError, edgeFetch } from '../edge';
 import { requestPremiumRecheck } from '../premium-cache';
 import { queryClient } from '../query-client';
 import { type NetVerdict, useHostStatusStore } from './store';
@@ -41,7 +41,7 @@ export function noteMainAlive(): void {
   const prev = useHostStatusStore.getState().main;
   if (prev === 'up') return;
   useHostStatusStore.setState({ main: 'up', net: 'online' });
-  useAppStatusStore.getState().setBackendReachable(true);
+  useAppStatusStore.getState().confirmOnline();
   stopRecheckTimer();
   if (prev === 'down') void queryClient.invalidateQueries();
 }
@@ -101,8 +101,8 @@ async function probeOnce(base: string): Promise<ProbeResult> {
   try {
     const res = await fetchWithAbort(`${base}/health`);
     return { alive: res.status < 500, netFail: false };
-  } catch {
-    return { alive: false, netFail: true };
+  } catch (error) {
+    return { alive: false, netFail: !(error instanceof EdgeTransportError) };
   }
 }
 
@@ -184,7 +184,7 @@ function stopRecheckTimer(): void {
 
 /** Single-flight + min-gap с trailing-добивкой; force обходит min-gap, но не single-flight. */
 export function requestProbe(opts?: { force?: boolean }): void {
-  if (!navigator.onLine || useHostStatusStore.getState().probing) return;
+  if (useHostStatusStore.getState().probing) return;
   const sinceLast = Date.now() - lastRunAt;
   if (sinceLast < PROBE_MIN_GAP_MS && !opts?.force) {
     if (trailingTimer === null) {
@@ -208,18 +208,15 @@ async function run(): Promise<void> {
     useHostStatusStore.setState({ star: 'unknown', net: 'online' });
     markHealthy(API_BASE); // noteMainAlive: up + стоп recheck-таймера (no-op, если уже up)
     // Снимаем ложный offline и когда вердикт уже 'up' (noteMainAlive тогда no-op).
-    useAppStatusStore.getState().setBackendReachable(true);
+    useAppStatusStore.getState().confirmOnline();
     return;
   }
   const genAfterMainProbes = mainAliveGen;
   const star = await probeConfirmed(API_STAR_BASE);
+  const unreachable = main.netFail && star.netFail;
+  const internet = unreachable ? await checkInternet() : 'online';
   // Бурст таймаутов = таймаутят все запросы → хост лёг, а не offline: модалку не глушим.
-  if (
-    main.netFail &&
-    star.netFail &&
-    !timeoutBurst() &&
-    (await checkInternet()) === 'no-internet'
-  ) {
+  if (internet === 'no-internet' && !timeoutBurst()) {
     // Не знаем, лежат ли хосты; backendReachable не трогаем — offline-флоу ведёт apiRequest.
     useHostStatusStore.setState({ main: 'unknown', star: 'unknown', net: 'no-internet' });
     startRecheckTimer();
@@ -234,6 +231,7 @@ async function run(): Promise<void> {
     main: 'down',
     star: star.alive ? 'up' : 'down',
     net: 'online',
+    routeBlocked: unreachable && internet === 'online',
     incidentId,
     // Флап-гвард: недавно закрытая модалка не возвращается на новом инциденте.
     ...(newIncident && Date.now() - prev.lastModalDismissAt < MODAL_RESHOW_SUPPRESS_MS

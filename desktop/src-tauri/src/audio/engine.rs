@@ -8,6 +8,7 @@ use tokio::task;
 use crate::audio::decode::{create_player_from_bytes, resolve_normalization_gain};
 use crate::audio::state::AudioState;
 use crate::audio::types::{AudioLoadResult, MediaCmd, EQ_BANDS, STALL_SUPPRESS_MS, TICK_INTERVAL_MS};
+use crate::network::system_proxy::follow;
 
 const ENDED_SUPPRESS_MS: u64 = 1200;
 
@@ -237,7 +238,9 @@ pub async fn load_url(
 ) -> Result<AudioLoadResult, String> {
     let generation = state.load_gen.load(Ordering::Relaxed);
 
-    let client = wreq::Client::new();
+    let client = follow(wreq::Client::builder())
+        .build()
+        .map_err(|e| format!("http client: {e}"))?;
     let retry_delays = [300u64, 800, 2000];
     let mut last_err = String::new();
     let mut bytes: Vec<u8> = Vec::new();

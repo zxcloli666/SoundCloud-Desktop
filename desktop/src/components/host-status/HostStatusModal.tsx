@@ -52,6 +52,7 @@ export const HostStatusModal = React.memo(() => {
   const modalDismissedIncidentId = useHostStatusStore((s) => s.modalDismissedIncidentId);
   const dismissModal = useHostStatusStore((s) => s.dismissModal);
   const probing = useHostStatusStore((s) => s.probing);
+  const routeBlocked = useHostStatusStore((s) => s.routeBlocked);
   const recoveryPhase = useAuthRecoveryStore((s) => s.phase);
   const hasSession = useAuthStore((s) => s.hasSession);
   const navigate = useNavigate();
@@ -63,9 +64,10 @@ export const HostStatusModal = React.memo(() => {
     modalDismissedIncidentId !== incidentId;
 
   const allDown = ui === 'all-down';
+  const copy = allDown ? (routeBlocked ? 'blocked' : 'allDown') : 'starOffer';
 
   const goOfflineLibrary = () => {
-    useAppStatusStore.getState().setOfflineBypass(true);
+    if (!hasSession) useAppStatusStore.getState().setOfflineBypass(true);
     dismissModal();
     navigate('/offline', { replace: true });
   };
@@ -100,11 +102,16 @@ export const HostStatusModal = React.memo(() => {
               )}
             </IconTile>
             <ModalTitle className="text-lg font-bold text-white/90 tracking-tight">
-              {t(allDown ? 'hostStatus.allDown.title' : 'hostStatus.starOffer.title')}
+              {t(`hostStatus.${copy}.title`)}
             </ModalTitle>
             <p className="text-[12.5px] text-white/35 mt-1.5 leading-relaxed max-w-[300px]">
-              {t(allDown ? 'hostStatus.allDown.body' : 'hostStatus.starOffer.body')}
+              {t(`hostStatus.${copy}.body`)}
             </p>
+            {copy === 'blocked' && (
+              <p className="text-[11.5px] text-white/45 mt-3 leading-relaxed max-w-[300px]">
+                {t('hostStatus.blocked.rule')}
+              </p>
+            )}
             {!allDown && (
               <p className="text-[11.5px] text-white/45 mt-3">{t('hostStatus.starOffer.how')}</p>
             )}

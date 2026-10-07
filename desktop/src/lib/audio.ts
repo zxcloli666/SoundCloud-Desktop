@@ -1,7 +1,7 @@
 import {listen} from '@tauri-apps/api/event';
 import {toast} from 'sonner';
 import i18n from '../i18n';
-import type {Track} from '../stores/player';
+import type {Track, TrackScdMeta} from '../stores/player';
 import {usePlayerStore} from '../stores/player';
 import {useSettingsStore} from '../stores/settings';
 import {
@@ -9,6 +9,7 @@ import {
   buildStorageUrls,
   downloadFallbackUrls,
   getSessionId,
+  isHqStreaming,
   resolveTrackFromStreaming,
   streamFallbackUrls,
 } from './api';
@@ -29,6 +30,7 @@ import {getUrnCluster, recordClusterFeedback} from './recsFeedback';
 import {getArtistDisplay, getDisplayTitle} from './track-display';
 
 const SKIP_THRESHOLD_SEC = 30;
+const SLOW_LOAD_HINT_MS = 60_000;
 /** Минимум, чтобы засчитать «прослушано полностью» для коротких треков (50% длительности). */
 const FULL_PLAY_RATIO = 0.5;
 /** Битый кеш: сыграло меньше этого на треке от EARLY_END_MIN_EXPECTED_SEC — лечим перекачкой. */
@@ -341,7 +343,8 @@ async function loadTrack(track: Track) {
   invoke('audio_set_playback_rate', { rate: getEffectivePlaybackRate() }).catch(console.error);
 
   try {
-    const highQualityStreaming = useSettingsStore.getState().highQualityStreaming;
+    const highQualityStreaming = isHqStreaming();
+    const storageQuality = track._scd_meta?.storage_quality;
 
     // The cached file can be swapped (raw А → clean Б) or evicted between resolve
     // and read; re-resolve through the cache to recover the current path.
@@ -349,7 +352,8 @@ async function loadTrack(track: Track) {
       const info = await getCacheInfo(urn);
       if (info?.path) return info.path;
       try {
-        return (await ensureTrackCached(urn, highQualityStreaming, track.duration)).path;
+        return (await ensureTrackCached(urn, highQualityStreaming, track.duration, storageQuality))
+          .path;
       } catch {
         return null;
       }
@@ -380,14 +384,26 @@ async function loadTrack(track: Track) {
 
     // Strategy 2: Download full track to cache — Rust picks storage/API internally
     setDownloadProgress(0);
+    setTimeout(() => {
+      if (gen !== loadGen || downloadProgress !== 0) return;
+      toast.info(i18n.t('track.slowLoad'), {
+        description: `${track.title}: ${i18n.t('track.slowLoadHint')}`,
+      });
+    }, SLOW_LOAD_HINT_MS);
 
     let cachedInfo: TrackCacheInfo;
     try {
-      cachedInfo = await ensureTrackCached(urn, highQualityStreaming, track.duration);
+      cachedInfo = await ensureTrackCached(
+        urn,
+        highQualityStreaming,
+        track.duration,
+        storageQuality,
+      );
     } catch (error) {
-      if (!highQualityStreaming) throw error;
+      const premiumRefused = getLoadErrorText(error)?.includes('HTTP 403 Forbidden: forbidden');
+      if (!highQualityStreaming || !premiumRefused) throw error;
       console.warn('[Audio] HQ load failed, retrying without hq:', error);
-      cachedInfo = await ensureTrackCached(urn, false, track.duration);
+      cachedInfo = await ensureTrackCached(urn, false, track.duration, storageQuality);
     }
 
     if (gen !== loadGen) return;
@@ -417,9 +433,15 @@ async function loadTrack(track: Track) {
     usePlayerStore.getState().setPlaybackTransport(null, null);
     if (gen !== loadGen) return;
     const errorText = getLoadErrorText(e);
-    toast.error(i18n.t('track.loadError'), {
-      description: errorText ? `${track.title}: ${errorText}` : track.title,
-    });
+    if (errorText?.includes('no stream available')) {
+      toast.error(i18n.t('track.noStream'), {
+        description: `${track.title}: ${i18n.t('track.noStreamHint')}`,
+      });
+    } else {
+      toast.error(i18n.t('track.loadError'), {
+        description: errorText ? `${track.title}: ${errorText}` : track.title,
+      });
+    }
     usePlayerStore.getState().pause();
   }
 }
@@ -537,7 +559,7 @@ listen<number>('audio:tick', (event) => {
 listen<{ urn: string; progress: number }>('track:download-progress', (event) => {
   const { urn, progress } = event.payload;
   if (urn === currentUrn) {
-    setDownloadProgress(progress);
+    setDownloadProgress(Math.max(downloadProgress ?? 0, progress));
   }
 });
 
@@ -728,11 +750,11 @@ listen<number>('media:seek-relative', (e) => {
 
 let preloadTimer: ReturnType<typeof setTimeout> | null = null;
 
-export function preloadTrack(urn: string) {
+export function preloadTrack(urn: string, storageQuality?: TrackScdMeta['storage_quality']) {
   if (preloadTimer) clearTimeout(preloadTimer);
   preloadTimer = setTimeout(() => {
     const sessionId = getSessionId();
-    const hq = useSettingsStore.getState().highQualityStreaming;
+    const hq = isHqStreaming();
     invoke('track_preload', {
       entries: [
         {
@@ -742,6 +764,7 @@ export function preloadTrack(urn: string) {
           storageUrls: buildStorageUrls(urn),
           sessionId,
           hq,
+          storageQuality,
         },
       ],
     }).catch(console.error);
@@ -758,9 +781,10 @@ export function preloadQueue() {
     sessionId: string | null;
     hq: boolean;
     durationMs?: number;
+    storageQuality?: TrackScdMeta['storage_quality'];
   }> = [];
   const sessionId = getSessionId();
-  const hq = useSettingsStore.getState().highQualityStreaming;
+  const hq = isHqStreaming();
 
   for (let i = 1; i <= 3; i++) {
     const idx = queueIndex + i;
@@ -773,6 +797,7 @@ export function preloadQueue() {
         sessionId,
         hq,
         durationMs: queue[idx].duration,
+        storageQuality: queue[idx]._scd_meta?.storage_quality,
       });
     }
   }
@@ -783,6 +808,7 @@ export function preloadQueue() {
 }
 
 usePlayerStore.subscribe((state, prev) => {
+  if (!hasTrack) return;
   if (state.queueIndex !== prev.queueIndex || state.queue !== prev.queue) {
     preloadQueue();
   }

@@ -7,18 +7,74 @@ import { type Hop, noteHop, planHops } from './config';
 export type { Tier } from './config';
 export { initEdge, tierOf } from './config';
 
-function timedFetch(url: string, init: RequestInit, timeoutMs?: number): Promise<Response> {
-  if (!timeoutMs || init.signal) return fetch(url, init) as Promise<Response>;
+const CONNECT_TIMEOUT_MS = 10_000;
+const BODY_STALL_MS = 10_000;
+
+interface Fetched {
+  res: Response;
+  bytes: number;
+}
+
+class BodyCutError extends Error {
+  constructor(reason: unknown) {
+    super(`edge: response body broke off (${String(reason)})`);
+    this.name = 'BodyCutError';
+  }
+}
+
+async function fetchWhole(url: string, init: RequestInit, timeoutMs?: number): Promise<Fetched> {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
-  return fetch(url, { ...init, signal: controller.signal }).finally(() =>
-    clearTimeout(timer),
-  ) as Promise<Response>;
+  const abort = () => controller.abort();
+  if (init.signal?.aborted) abort();
+  init.signal?.addEventListener('abort', abort, { once: true });
+  const deadline = timeoutMs ? setTimeout(abort, timeoutMs) : undefined;
+  try {
+    const res = await fetch(url, {
+      ...init,
+      signal: controller.signal,
+      connectTimeout: CONNECT_TIMEOUT_MS,
+    });
+    const body = await readBody(res, abort).catch((reason: unknown) => {
+      throw new BodyCutError(reason);
+    });
+    return {
+      res: new Response(body.byteLength > 0 ? body : null, {
+        status: res.status,
+        statusText: res.statusText,
+        headers: res.headers,
+      }),
+      bytes: body.byteLength,
+    };
+  } finally {
+    clearTimeout(deadline);
+    init.signal?.removeEventListener('abort', abort);
+  }
+}
+
+async function readBody(res: Response, abort: () => void): Promise<Uint8Array<ArrayBuffer>> {
+  if (!res.body) return new Uint8Array();
+  const reader = res.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+  for (;;) {
+    const stall = setTimeout(abort, BODY_STALL_MS);
+    const { done, value } = await reader.read().finally(() => clearTimeout(stall));
+    if (done) break;
+    chunks.push(value);
+    size += value.byteLength;
+  }
+  const body = new Uint8Array(size);
+  let offset = 0;
+  for (const chunk of chunks) {
+    body.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return body;
 }
 
 /**
- * Ответ пришёл — но виноват ли транспорт? Relay отдаёт свои 421/502/503/504,
- * прямой хост — HTML-страницу балансера. И то и другое лечится следующим хопом,
+ * Ответ пришёл — но виноват ли транспорт? Relay отдаёт свой 421, а relay и
+ * прямой хост — HTML-страницу балансера на 502-504. И то и другое лечится следующим хопом,
  * а ответ origin'а (401/404/500 приложения) — уже валидный результат.
  */
 function hopUsable(hop: Hop, res: Response): boolean {
@@ -28,7 +84,8 @@ function hopUsable(hop: Hop, res: Response): boolean {
 
 function isRelayError(res: Response): boolean {
   if (res.status === 421) return true;
-  return [502, 503, 504].includes(res.status) && !hasContentType(res, 'application/json');
+  if (res.status < 502 || res.status > 504) return false;
+  return hasContentType(res, 'text/html') || !res.headers.get('content-type');
 }
 
 function isDirectInfrastructureError(res: Response): boolean {
@@ -51,8 +108,13 @@ const WEAK_BUDGET_MS = 5_000;
 
 function isTimeout(error: unknown): boolean {
   if (error instanceof DOMException && error.name === 'AbortError') return true;
-  const msg = error instanceof Error ? error.message.toLowerCase() : '';
-  return msg.includes('abort') || msg.includes('timeout') || msg.includes('timed out');
+  const msg = (error instanceof Error ? error.message : String(error)).toLowerCase();
+  return (
+    msg.includes('abort') ||
+    msg.includes('cancel') ||
+    msg.includes('timeout') ||
+    msg.includes('timed out')
+  );
 }
 
 /**
@@ -92,9 +154,10 @@ export async function edgeFetch(
   timeoutMs?: number,
 ): Promise<Response> {
   const hops = planHops(url);
-  if (hops.length === 0) return timedFetch(url, init, timeoutMs);
+  if (hops.length === 0) return (await fetchWhole(url, init, timeoutMs)).res;
 
   const weakBudget = timeoutMs !== undefined && timeoutMs < WEAK_BUDGET_MS;
+  const replayable = ['GET', 'HEAD'].includes((init.method ?? 'GET').toUpperCase());
   // Бюджет — на ВЕСЬ вызов, а не на каждый хоп. Иначе таймаут молча умножается
   // на длину плана: 10 с control-plane превращались в 20 с на двух хопах и в
   // 40 с на двух базах, и вызывающий получал «Request canceled» вместо ответа.
@@ -109,9 +172,9 @@ export async function edgeFetch(
     const hopBudget = remaining === undefined ? undefined : hopBudgetMs(remaining, hops.length - i);
 
     try {
-      const res = await timedFetch(hop.url, init, hopBudget);
+      const { res, bytes } = await fetchWhole(hop.url, init, hopBudget);
       if (hopUsable(hop, res)) {
-        noteHop(hop, true);
+        noteHop(hop, true, bytes);
         return res;
       }
       if (hop.tier === 'direct') noteHop(hop, false);
@@ -119,10 +182,10 @@ export async function edgeFetch(
     } catch (error) {
       if (error instanceof EdgeTransportError) throw error;
       lastError = error;
-      if (!(weakBudget && isTimeout(error))) noteHop(hop, false);
       // Отмена вызывающим (не таймаут хопа) — перебор бессмысленен.
       if (init.signal?.aborted) throw error;
-      if (isLast) throw error;
+      if (!(weakBudget && isTimeout(error))) noteHop(hop, false);
+      if (isLast || (error instanceof BodyCutError && !replayable)) throw error;
     }
   }
   throw lastError ?? new Error('edge: budget exhausted before any hop answered');

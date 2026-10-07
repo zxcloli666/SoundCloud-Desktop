@@ -13,6 +13,7 @@ import {useForgeStatus} from '../components/offline/useForgeStatus';
 import {useOfflineLibrary} from '../components/offline/useOfflineLibrary';
 import {Atmosphere} from '../components/search/Atmosphere';
 import {ensureTrackCached} from '../lib/cache';
+import {requestProbe, useHostStatusStore} from '../lib/host-status';
 import {idOf} from '../lib/ids';
 import {useCacheLikes} from '../lib/likes-cache';
 import {usePerfMode} from '../lib/perf';
@@ -36,6 +37,10 @@ export const OfflinePage = React.memo(() => {
   const forge = useForgeStatus();
   const cacheLikes = useCacheLikes(() => void lib.refreshInventory());
   const online = lib.appMode === 'online';
+  const probing = useHostStatusStore((s) => s.probing);
+  const mainUp = useHostStatusStore((s) => s.main === 'up');
+  const backendReachable = useAppStatusStore((s) => s.navigatorOnline && s.backendReachable);
+  const [tryingOnline, setTryingOnline] = useState(false);
 
   const [section, setSection] = useState<OfflineSection>('likes');
   const [sort, setSort] = useState<SortMode>('custom');
@@ -103,17 +108,30 @@ export const OfflinePage = React.memo(() => {
 
   const handleDownload = useCallback(
     (entry: OfflineEntry) => {
-      void ensureTrackCached(entry.urn, undefined, entry.track.duration)
+      void ensureTrackCached(
+        entry.urn,
+        undefined,
+        entry.track.duration,
+        entry.track._scd_meta?.storage_quality,
+      )
         .then(() => lib.refreshInventory())
         .catch((error) => console.warn('[Offline] Failed to cache track:', error));
     },
     [lib.refreshInventory],
   );
 
-  const handleTryOnline = useCallback(() => {
-    useAppStatusStore.getState().resetConnectivity();
+  useEffect(() => {
+    if (!tryingOnline || probing) return;
+    setTryingOnline(false);
+    if (!online && !(backendReachable && mainUp)) return;
+    useAppStatusStore.getState().setOfflineBypass(false);
     navigate('/home');
-  }, [navigate]);
+  }, [tryingOnline, online, probing, backendReachable, mainUp, navigate]);
+
+  const handleTryOnline = useCallback(() => {
+    setTryingOnline(true);
+    requestProbe({ force: true });
+  }, []);
 
   const sortable = section === 'cached' && sort === 'custom' && query.trim() === '';
   const deckBlur = perf.blur(24);

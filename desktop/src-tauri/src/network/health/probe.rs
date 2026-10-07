@@ -3,13 +3,16 @@ use std::time::{Duration, Instant};
 use futures_util::stream::{self, StreamExt};
 use wreq::Client;
 
-use super::link;
+use super::link::{self, Shape};
 use super::model::{PROBE_PATH, Sample, Topology};
 use crate::network::edge::{self, Tier};
+use crate::network::system_proxy;
 
 const PROBE_TIMEOUT: Duration = Duration::from_secs(5);
 const MAX_PARALLEL: usize = 4;
 const ORIGIN_ZONE: &str = "scnative.space";
+const DIRECT_EP: &str = "@direct";
+const CUT_SHAPES: [Shape; 4] = [Shape::Cut, Shape::Blackhole, Shape::Reset, Shape::Throttled];
 
 pub struct Pool {
     pub relays: Vec<String>,
@@ -70,6 +73,16 @@ pub async fn probe_paths(client: &Client, pool: &Pool, round: usize) -> Vec<Samp
         .await
 }
 
+pub fn usable_first(relays: &[String], paths: &[Sample]) -> Vec<String> {
+    let usable = |node: &String| {
+        let ep = format!("@{node}");
+        paths.iter().any(|sample| sample.ok && sample.ep == ep)
+    };
+    let mut ordered = relays.to_vec();
+    ordered.sort_by_key(|node| !usable(node));
+    ordered
+}
+
 /// Задушенный путь отдаёт маленький объект на полной скорости, а большой ползёт:
 /// до срабатывания счётчика он просто не доходит. Узкий канал ползёт на обоих.
 async fn measure_bandwidth(client: &Client, url: &str) -> link::Measured {
@@ -89,11 +102,49 @@ async fn measure_bandwidth(client: &Client, url: &str) -> link::Measured {
     }
 }
 
-pub async fn probe_services(client: &Client, topology: &Topology, pool: &Pool) -> Vec<Sample> {
+pub fn note_direct_cut(paths: &[Sample]) {
+    if !direct_cut_while_others_pass(paths) {
+        return;
+    }
+    for origin in edge::routed_origins() {
+        if !system_proxy::proxied(&format!("https://{origin}/")) {
+            edge::note(origin, Tier::Direct, false);
+        }
+    }
+}
+
+fn direct_cut_while_others_pass(paths: &[Sample]) -> bool {
+    let others_pass = paths
+        .iter()
+        .any(|sample| sample.ok && sample.ep != DIRECT_EP);
+    let direct_cut = paths.iter().any(|sample| {
+        sample.ep == DIRECT_EP
+            && CUT_SHAPES
+                .iter()
+                .any(|shape| sample.fail.as_deref() == Some(shape.as_str()))
+    });
+    others_pass && direct_cut
+}
+
+pub fn direct_bytes(paths: &[Sample]) -> u64 {
+    paths
+        .iter()
+        .find(|sample| sample.ok && sample.ep == DIRECT_EP)
+        .and_then(|sample| sample.link)
+        .map_or(0, |link| link.bytes.max(0) as u64)
+}
+
+pub async fn probe_services(
+    client: &Client,
+    topology: &Topology,
+    pool: &Pool,
+    direct_bytes: u64,
+) -> Vec<Sample> {
     let batches = stream::iter(topology.endpoints.clone())
         .map(|endpoint| {
             let client = client.clone();
             let routes = endpoint.routes(&pool.relays);
+            let judged = !system_proxy::proxied(&endpoint.url);
             async move {
                 let mut samples = Vec::with_capacity(routes.len());
                 let mut direct_ok = false;
@@ -102,7 +153,9 @@ pub async fn probe_services(client: &Client, topology: &Topology, pool: &Pool) -
                     let outcome = hit(&client, &route.url).await;
                     if route.via == "direct" {
                         direct_ok = outcome.ok;
-                        edge::note_url(&endpoint.url, Tier::Direct, outcome.ok);
+                        if judged {
+                            note_direct(&endpoint.url, outcome.ok, direct_bytes);
+                        }
                     } else {
                         relay_ok |= outcome.ok;
                     }
@@ -115,7 +168,7 @@ pub async fn probe_services(client: &Client, topology: &Topology, pool: &Pool) -
                         link: None,
                     });
                 }
-                if !direct_ok && relay_ok {
+                if judged && !direct_ok && relay_ok {
                     edge::note_url(&endpoint.url, Tier::Relay, true);
                 }
                 samples
@@ -126,6 +179,14 @@ pub async fn probe_services(client: &Client, topology: &Topology, pool: &Pool) -
         .await;
 
     batches.into_iter().flatten().collect()
+}
+
+fn note_direct(url: &str, ok: bool, direct_bytes: u64) {
+    if ok {
+        edge::note_url_delivered(url, Tier::Direct, direct_bytes);
+    } else {
+        edge::note_url(url, Tier::Direct, false);
+    }
 }
 
 struct Outcome {
@@ -164,5 +225,98 @@ async fn hit(client: &Client, url: &str) -> Outcome {
             ms: None,
             fail: Some("reset"),
         },
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{Sample, direct_bytes, direct_cut_while_others_pass, usable_first};
+    use crate::network::health::model::Link;
+
+    fn sample(node: &str, ok: bool) -> Sample {
+        Sample {
+            ep: format!("@{node}"),
+            via: "direct".to_string(),
+            ok,
+            ms: None,
+            fail: None,
+            link: None,
+        }
+    }
+
+    fn pool(nodes: &[&str]) -> Vec<String> {
+        nodes.iter().map(|node| node.to_string()).collect()
+    }
+
+    #[test]
+    fn a_relay_that_failed_its_probe_goes_to_the_back_of_the_pool() {
+        let paths = [sample("r1", false), sample("r2", true), sample("r3", true)];
+        assert_eq!(
+            usable_first(&pool(&["r1", "r2", "r3"]), &paths),
+            ["r2", "r3", "r1"]
+        );
+    }
+
+    #[test]
+    fn an_unprobed_pool_keeps_its_order() {
+        assert_eq!(usable_first(&pool(&["r1", "r2"]), &[]), ["r1", "r2"]);
+    }
+
+    fn failed(node: &str, fail: &str) -> Sample {
+        Sample {
+            fail: Some(fail.to_string()),
+            ..sample(node, false)
+        }
+    }
+
+    #[test]
+    fn a_cut_direct_path_counts_against_direct_only_while_a_relay_passes() {
+        assert!(direct_cut_while_others_pass(&[
+            failed("direct", "cut"),
+            sample("r1", true)
+        ]));
+        assert!(direct_cut_while_others_pass(&[
+            failed("direct", "reset"),
+            sample("r2", true)
+        ]));
+        assert!(!direct_cut_while_others_pass(&[
+            failed("direct", "cut"),
+            failed("r1", "reset")
+        ]));
+        assert!(!direct_cut_while_others_pass(&[
+            failed("direct", "dead"),
+            sample("r1", true)
+        ]));
+        assert!(!direct_cut_while_others_pass(&[
+            sample("direct", true),
+            sample("r1", true)
+        ]));
+    }
+
+    #[test]
+    fn a_throttled_direct_path_counts_against_direct() {
+        assert!(direct_cut_while_others_pass(&[
+            failed("direct", "throttled"),
+            sample("r1", true)
+        ]));
+        assert!(!direct_cut_while_others_pass(&[
+            failed("direct", "slow"),
+            sample("r1", true)
+        ]));
+    }
+
+    #[test]
+    fn only_a_clean_direct_path_vouches_for_the_services() {
+        let link = |shape, bytes| Link {
+            shape,
+            kbps: 0,
+            bytes,
+        };
+        let mut clean = sample("direct", true);
+        clean.link = Some(link("clear", 64 * 1024));
+        let mut cut = sample("direct", false);
+        cut.link = Some(link("cut", 13 * 1024));
+        assert_eq!(direct_bytes(&[sample("r1", true), clean]), 64 * 1024);
+        assert_eq!(direct_bytes(&[cut]), 0);
     }
 }

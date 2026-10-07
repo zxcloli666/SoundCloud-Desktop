@@ -199,6 +199,10 @@
     "download": "Indir",
     "downloaded": "Kaydedildi",
     "loadError": "Parca yuklenemedi",
+    "noStream": "Parca kullanilamiyor",
+    "noStreamHint": "Calinabilir akis yok. Go+ ya da bolgede kisitli olabilir veya SoundCloud istekleri sinirliyor. Daha sonra deneyin.",
+    "slowLoad": "Parca gec yukleniyor",
+    "slowLoadHint": "Parca hazirlaniyor, yuklenince calmaya baslayacak.",
     "dislike": "Onerme",
     "removeDislike": "Begenmemeyi kaldir",
     "play": "Calistir",
@@ -320,6 +324,11 @@
       "title": "Tum sunucular kapali",
       "body": "Servis gecici olarak kullanilamiyor, duzeltiyoruz. Indirilen muzik cevrimdisi kitaplikta kullanilabilir."
     },
+    "blocked": {
+      "title": "Uygulama sunucularina ulasilamiyor",
+      "body": "Internet calisiyor ama hicbir istek sunucularimiza ulasmiyor, yedek yollar dahil. Bu genelde saglayici engelinden ya da zapret veya VPN gibi yerel bir engel asma aracindan olur. Indirilen muzik cevrimdisi kitaplikta kullanilabilir.",
+      "rule": "Uygulama zapret kapaliyken calisiyorsa scnative.space'i list-exclude'a ekleyin. Saglayiciniz engelliyorsa scnative.space'i list-general'a ekleyin: bu *.relay.scnative.space'i de kapsar."
+    },
     "banner": {
       "viaStar": "Ana sunucu kapali — yedek Star sunucusu uzerinden calisiyoruz.",
       "outage": "Sunucular kullanilamiyor",
@@ -423,7 +432,9 @@
     "kicker": "Cevrimdisi · donusum atolyesi",
     "title": "Yerel kutuphane",
     "netOnline": "cevrimici",
-    "netOffline": "cevrimdisi",
+    "netChosen": "cevrimdisi mod",
+    "netNoInternet": "internet yok",
+    "netServerDown": "sunucuya ulasilamiyor",
     "tryOnline": "Tekrar dene",
     "pendingCount": "{{count}} bekliyor",
     "failedCount": "{{count}} basarisiz",

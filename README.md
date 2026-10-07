@@ -136,6 +136,31 @@ chmod +x soundcloud-desktop-*.AppImage
 
 ---
 
+## zapret, VPN и списки доменов
+
+Приложение ходит на свои домены в зоне `scnative.space` и напрямую к SoundCloud за треками. Если провайдер режет прямой путь к `scnative.space`, приложение само переключается на резервные маршруты `*.relay.scnative.space`.
+
+Правила для zapret:
+- приложение работает с выключенным zapret — добавьте `scnative.space` в `list-exclude`;
+- без zapret не работает, потому что блокирует провайдер — добавьте `scnative.space` в `list-general`;
+- провайдер блокирует SoundCloud — добавьте `soundcloud.com` и `sndcdn.com` в `list-general`, иначе треки идут через сервер и грузятся дольше.
+
+Каждая запись покрывает все поддомены: `scnative.space` включает резервные маршруты, `soundcloud.com` включает `api-v2.soundcloud.com`.
+
+| Домен | Для чего |
+|---|---|
+| `api.scnative.space`, `api-star.scnative.space` | API |
+| `stream.scnative.space`, `stream-star.scnative.space` | аудио |
+| `storage.scnative.space`, `storage-star.scnative.space`, `s3.scnative.space` | хранилище треков |
+| `images.scnative.space` | обложки |
+| `pay.scnative.space` | оплата STAR |
+| `health.scnative.space` | проверка связи |
+| `call-*.scnative.space` | «Сеть пользователей» |
+| `*.relay.scnative.space` | резервные маршруты |
+| `soundcloud.com`, `api-v2.soundcloud.com`, `*.sndcdn.com` | прямая загрузка трека с SoundCloud |
+
+---
+
 ## Скриншоты
 
 <p align="center">

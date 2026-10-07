@@ -3,7 +3,6 @@
 
 import {listen} from '@tauri-apps/api/event';
 import {useCallback, useEffect, useRef, useState} from 'react';
-import {useSettingsStore} from '../stores/settings';
 import {cacheLikedTracks, cancelCacheLikes, isCacheLikesRunning, type LikeCacheEntry,} from './cache';
 
 export interface CacheLikesProgress {
@@ -20,9 +19,9 @@ export interface CacheLikesProgress {
 export async function startCacheLikes(): Promise<number> {
   const [
     { fetchAllLikedTracks },
-    { buildStorageUrls, downloadFallbackUrls, streamFallbackUrls, getSessionId },
+    { buildStorageUrls, downloadFallbackUrls, streamFallbackUrls, getSessionId, isHqStreaming },
   ] = await Promise.all([import('./hooks'), import('./api')]);
-  const hq = useSettingsStore.getState().highQualityStreaming;
+  const hq = isHqStreaming();
   const sessionId = getSessionId();
   const tracks = await fetchAllLikedTracks(200);
   const entries: LikeCacheEntry[] = tracks.map((track) => ({
@@ -33,6 +32,7 @@ export async function startCacheLikes(): Promise<number> {
     sessionId,
     hq,
     durationMs: track.duration,
+    storageQuality: track._scd_meta?.storage_quality,
   }));
   if (entries.length > 0) {
     await cacheLikedTracks(entries);

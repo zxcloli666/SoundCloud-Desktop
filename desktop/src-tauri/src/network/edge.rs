@@ -4,8 +4,10 @@ use std::sync::{Mutex, OnceLock};
 use std::time::{Duration, Instant};
 
 use serde::{Deserialize, Serialize};
+use tauri::Emitter;
 
 const STATE_FILE: &str = "edge_state.json";
+const CONFIG_EVENT: &str = "edge:config";
 const REVALIDATE: Duration = Duration::from_secs(600);
 
 const RELAY_ZONE: &str = "relay.scnative.space";
@@ -48,6 +50,10 @@ impl Hop {
         note(&self.origin, self.tier, ok);
     }
 
+    pub fn note_delivered(&self, bytes: u64) {
+        note_delivered(&self.origin, self.tier, bytes);
+    }
+
     pub fn tier_label(&self) -> &'static str {
         match self.tier {
             Tier::Direct => "direct",
@@ -65,28 +71,76 @@ struct OriginState {
 
 const DIRECT_FAIL_THRESHOLD: u8 = 2;
 
+const PROVEN_BYTES: u64 = 64 * 1024;
+
 #[derive(Default)]
 struct Pool {
     relays: Vec<String>,
     calls: Vec<(String, f64)>,
 }
 
+#[derive(Default)]
 struct Inner {
     origins: HashMap<String, OriginState>,
     pool: Pool,
     dir: Option<PathBuf>,
 }
 
+impl Inner {
+    fn note(&mut self, origin: &str, tier: Tier, ok: bool, now: Instant) -> bool {
+        match (tier, ok) {
+            (Tier::Relay, true) => self.adopt(origin, Tier::Relay, now),
+            (Tier::Direct, false) => self.count_direct_failure(origin, now),
+            (Tier::Direct, true) | (Tier::Relay, false) => false,
+        }
+    }
+
+    fn delivered(&mut self, origin: &str, tier: Tier, bytes: u64, now: Instant) -> bool {
+        tier == Tier::Direct && bytes >= PROVEN_BYTES && self.adopt(origin, Tier::Direct, now)
+    }
+
+    fn adopt(&mut self, origin: &str, tier: Tier, now: Instant) -> bool {
+        let changed = self.origins.get(origin).map(|s| s.tier) != Some(tier);
+        if changed || tier == Tier::Direct {
+            self.origins.insert(
+                origin.to_string(),
+                OriginState {
+                    tier,
+                    revalidate_at: now + REVALIDATE,
+                    direct_fails: if tier == Tier::Direct {
+                        0
+                    } else {
+                        DIRECT_FAIL_THRESHOLD
+                    },
+                },
+            );
+        }
+        changed
+    }
+
+    fn count_direct_failure(&mut self, origin: &str, now: Instant) -> bool {
+        let entry = self.origins.entry(origin.to_string()).or_insert(OriginState {
+            tier: Tier::Direct,
+            revalidate_at: now,
+            direct_fails: 0,
+        });
+        if entry.tier == Tier::Direct && now >= entry.revalidate_at {
+            entry.direct_fails = 0;
+        }
+        entry.direct_fails = entry.direct_fails.saturating_add(1);
+        entry.revalidate_at = now + REVALIDATE;
+        if entry.tier == Tier::Direct && entry.direct_fails >= DIRECT_FAIL_THRESHOLD {
+            entry.tier = Tier::Relay;
+            return true;
+        }
+        false
+    }
+}
+
 static STATE: OnceLock<Mutex<Inner>> = OnceLock::new();
 
 fn state() -> &'static Mutex<Inner> {
-    STATE.get_or_init(|| {
-        Mutex::new(Inner {
-            origins: HashMap::new(),
-            pool: Pool::default(),
-            dir: None,
-        })
-    })
+    STATE.get_or_init(|| Mutex::new(Inner::default()))
 }
 
 #[derive(Serialize, Deserialize, Default)]
@@ -210,6 +264,10 @@ fn relay_hosts_over(origin: &str, pool: &[String]) -> Vec<String> {
         .collect()
 }
 
+pub fn routed_origins() -> impl Iterator<Item = &'static str> {
+    RELAYS.iter().map(|(origin, _)| *origin)
+}
+
 pub fn service_label(origin: &str) -> Option<&'static str> {
     relay_label(origin)
 }
@@ -286,74 +344,57 @@ pub fn note(origin: &str, tier: Tier, ok: bool) {
         Ok(g) => g,
         Err(e) => e.into_inner(),
     };
-    let now = Instant::now();
+    if inner.note(origin, tier, ok, Instant::now()) {
+        persist(&inner);
+    }
+}
 
-    if ok {
-        let prev = inner.origins.get(origin);
-        let changed = prev.map(|s| s.tier) != Some(tier);
-
-        if !changed && tier != Tier::Direct {
-            return;
-        }
-        inner.origins.insert(
-            origin.to_string(),
-            OriginState {
-                tier,
-                revalidate_at: now + REVALIDATE,
-                direct_fails: if tier == Tier::Direct {
-                    0
-                } else {
-                    DIRECT_FAIL_THRESHOLD
-                },
-            },
-        );
-        if changed {
-            persist(&inner);
-        }
+pub fn note_delivered(origin: &str, tier: Tier, bytes: u64) {
+    if origin.is_empty() {
         return;
     }
+    let mut inner = match state().lock() {
+        Ok(g) => g,
+        Err(e) => e.into_inner(),
+    };
+    if inner.delivered(origin, tier, bytes, Instant::now()) {
+        persist(&inner);
+    }
+}
 
-    if tier != Tier::Direct {
+fn settle(origin: &str, tier: Tier) {
+    if origin.is_empty() {
         return;
     }
-    let entry = inner.origins.entry(origin.to_string()).or_insert(OriginState {
-        tier: Tier::Direct,
-        revalidate_at: now,
-        direct_fails: 0,
-    });
-    entry.direct_fails = entry.direct_fails.saturating_add(1);
-    entry.revalidate_at = now + REVALIDATE;
-    if entry.tier == Tier::Direct && entry.direct_fails >= DIRECT_FAIL_THRESHOLD {
-        entry.tier = Tier::Relay;
+    let mut inner = match state().lock() {
+        Ok(g) => g,
+        Err(e) => e.into_inner(),
+    };
+    if inner.adopt(origin, tier, Instant::now()) {
         persist(&inner);
     }
 }
 
 pub fn hop_ok(hop: &Hop, resp: &wreq::Response) -> bool {
-    let status = resp.status().as_u16();
     let content_type = resp
         .headers()
         .get(wreq::header::CONTENT_TYPE)
         .and_then(|v| v.to_str().ok())
         .unwrap_or("");
-    let bad = match hop.tier {
-        Tier::Direct => direct_infrastructure_headers(status, content_type),
-        Tier::Relay => relay_failure_headers(status, content_type),
-    };
+    let bad = transport_failure(hop.tier, resp.status().as_u16(), content_type);
     if bad {
         hop.note(false);
     }
     !bad
 }
 
-fn direct_infrastructure_headers(status: u16, content_type: &str) -> bool {
-    matches!(status, 502..=504) && content_type.to_ascii_lowercase().contains("text/html")
-}
-
-fn relay_failure_headers(status: u16, content_type: &str) -> bool {
-    status == 421
-        || (matches!(status, 502..=504)
-            && !content_type.to_ascii_lowercase().contains("application/json"))
+fn transport_failure(tier: Tier, status: u16, content_type: &str) -> bool {
+    let gateway = matches!(status, 502..=504);
+    let gateway_page = gateway && content_type.to_ascii_lowercase().contains("text/html");
+    match tier {
+        Tier::Direct => gateway_page,
+        Tier::Relay => status == 421 || gateway_page || (gateway && content_type.trim().is_empty()),
+    }
 }
 
 pub fn expand_upstreams(upstreams: &[String]) -> Vec<Hop> {
@@ -446,6 +487,15 @@ pub fn note_url(url: &str, tier: Tier, ok: bool) {
     }
 }
 
+pub fn note_url_delivered(url: &str, tier: Tier, bytes: u64) {
+    let Some(origin) = host_of(url) else {
+        return;
+    };
+    if relay_label(&origin).is_some() {
+        note_delivered(&origin, tier, bytes);
+    }
+}
+
 pub fn current_tier(url: &str) -> Tier {
     let Some(origin) = host_of(url) else {
         return Tier::Direct;
@@ -463,11 +513,16 @@ pub fn is_direct(url: &str) -> bool {
     current_tier(url) == Tier::Direct
 }
 
-#[derive(Serialize)]
+pub fn direct_first(url: &str) -> bool {
+    plan(url).first().is_none_or(|hop| hop.tier == Tier::Direct)
+}
+
+#[derive(Clone, Serialize)]
 pub struct EdgeConfig {
     relays: Vec<(String, Vec<String>)>,
 
     hints: HashMap<String, Tier>,
+    revalidate_in_ms: HashMap<String, u64>,
     revalidate_ms: u64,
 }
 
@@ -478,6 +533,7 @@ pub fn edge_config() -> EdgeConfig {
         Ok(g) => g,
         Err(e) => e.into_inner(),
     };
+    let now = Instant::now();
     EdgeConfig {
         relays: RELAYS
             .iter()
@@ -488,21 +544,45 @@ pub fn edge_config() -> EdgeConfig {
             .iter()
             .map(|(h, s)| (h.clone(), s.tier))
             .collect(),
+        revalidate_in_ms: inner
+            .origins
+            .iter()
+            .map(|(h, s)| {
+                let left = s.revalidate_at.saturating_duration_since(now);
+                (h.clone(), left.as_millis() as u64)
+            })
+            .collect(),
         revalidate_ms: REVALIDATE.as_millis() as u64,
     }
 }
 
+pub fn announce(app: &crate::rt::AppHandle) {
+    app.emit(CONFIG_EVENT, edge_config()).ok();
+}
+
 #[tauri::command]
 pub fn edge_note(origin: String, tier: Tier, ok: bool) {
-    note(&origin, tier, ok);
+    if ok {
+        settle(&origin, tier);
+    } else {
+        note(&origin, tier, false);
+    }
 }
 
 #[cfg(test)]
 mod tests {
+    use std::time::{Duration, Instant};
+
     use super::{
-        audio_tier_order, direct_infrastructure_headers, relay_failure_headers, relay_hosts_over,
-        set_pool, Tier, INHERIT, RELAYS,
+        INHERIT, Inner, PROVEN_BYTES, RELAYS, REVALIDATE, Tier, audio_tier_order, relay_hosts_over,
+        set_pool, transport_failure,
     };
+
+    const ORIGIN: &str = "stream.scnative.space";
+
+    fn tier(inner: &Inner) -> Option<Tier> {
+        inner.origins.get(ORIGIN).map(|s| s.tier)
+    }
 
     fn hosts(origin: &str) -> Vec<String> {
         relay_hosts_over(origin, &["r1".to_string(), "r2".to_string()])
@@ -565,19 +645,40 @@ mod tests {
 
     #[test]
     fn html_gateway_5xx_is_a_direct_transport_error() {
-        assert!(direct_infrastructure_headers(503, "text/html; charset=utf-8"));
-        assert!(direct_infrastructure_headers(504, "TEXT/HTML"));
-        assert!(!direct_infrastructure_headers(500, "text/html"));
-        assert!(!direct_infrastructure_headers(503, "application/json"));
+        assert!(transport_failure(
+            Tier::Direct,
+            503,
+            "text/html; charset=utf-8"
+        ));
+        assert!(transport_failure(Tier::Direct, 504, "TEXT/HTML"));
+        assert!(!transport_failure(Tier::Direct, 500, "text/html"));
+        assert!(!transport_failure(Tier::Direct, 503, "application/json"));
+        assert!(!transport_failure(Tier::Direct, 421, "text/plain"));
+    }
+
+    #[test]
+    fn an_origin_timeout_through_a_relay_is_the_server_answer() {
+        assert!(!transport_failure(
+            Tier::Relay,
+            504,
+            "text/plain; charset=utf-8"
+        ));
+        assert!(transport_failure(Tier::Relay, 504, "text/html"));
+        assert!(transport_failure(Tier::Relay, 502, "text/html"));
+        assert!(transport_failure(Tier::Relay, 421, ""));
     }
 
     #[test]
     fn json_5xx_through_a_relay_is_an_origin_answer() {
-        assert!(relay_failure_headers(421, "application/json"));
-        assert!(relay_failure_headers(503, "text/html"));
-        assert!(relay_failure_headers(502, ""));
-        assert!(!relay_failure_headers(503, "application/json; charset=utf-8"));
-        assert!(!relay_failure_headers(500, "text/html"));
+        assert!(transport_failure(Tier::Relay, 421, "application/json"));
+        assert!(transport_failure(Tier::Relay, 503, "text/html"));
+        assert!(transport_failure(Tier::Relay, 502, ""));
+        assert!(!transport_failure(
+            Tier::Relay,
+            503,
+            "application/json; charset=utf-8"
+        ));
+        assert!(!transport_failure(Tier::Relay, 500, "text/html"));
     }
 
     #[test]
@@ -599,5 +700,75 @@ mod tests {
             audio_tier_order(Some(Tier::Relay), false),
             [Tier::Relay, Tier::Direct]
         );
+    }
+
+    #[test]
+    fn answered_headers_do_not_hide_bodies_that_keep_breaking() {
+        let mut inner = Inner::default();
+        let now = Instant::now();
+        inner.note(ORIGIN, Tier::Direct, false, now);
+        inner.note(ORIGIN, Tier::Direct, true, now);
+        inner.note(ORIGIN, Tier::Direct, false, now);
+        assert_eq!(tier(&inner), Some(Tier::Relay));
+    }
+
+    #[test]
+    fn a_small_direct_answer_keeps_the_origin_on_the_relay() {
+        let mut inner = Inner::default();
+        let now = Instant::now();
+        inner.note(ORIGIN, Tier::Relay, true, now);
+        inner.note(ORIGIN, Tier::Direct, true, now);
+        inner.delivered(ORIGIN, Tier::Direct, PROVEN_BYTES - 1, now);
+        assert_eq!(tier(&inner), Some(Tier::Relay));
+    }
+
+    #[test]
+    fn a_whole_direct_body_brings_the_origin_back() {
+        let mut inner = Inner::default();
+        let now = Instant::now();
+        inner.note(ORIGIN, Tier::Relay, true, now);
+        assert!(inner.delivered(ORIGIN, Tier::Direct, PROVEN_BYTES, now));
+        assert_eq!(tier(&inner), Some(Tier::Direct));
+        inner.note(ORIGIN, Tier::Direct, false, now);
+        assert_eq!(tier(&inner), Some(Tier::Direct));
+    }
+
+    #[test]
+    fn failures_far_apart_do_not_add_up() {
+        let mut inner = Inner::default();
+        let now = Instant::now();
+        inner.note(ORIGIN, Tier::Direct, false, now);
+        inner.note(
+            ORIGIN,
+            Tier::Direct,
+            false,
+            now + REVALIDATE + Duration::from_secs(1),
+        );
+        assert_eq!(tier(&inner), Some(Tier::Direct));
+    }
+
+    #[test]
+    fn a_route_pinned_to_the_relay_is_not_tried_direct_before_revalidation() {
+        super::note("s3.scnative.space", Tier::Relay, true);
+        assert!(!super::direct_first("https://s3.scnative.space/a"));
+        assert!(super::direct_first("https://example.org/a"));
+    }
+
+    #[test]
+    fn the_webview_learns_how_long_a_relay_pin_still_holds() {
+        super::note("pay.scnative.space", Tier::Relay, true);
+        let config = super::edge_config();
+        assert_eq!(config.hints.get("pay.scnative.space"), Some(&Tier::Relay));
+        let left = config.revalidate_in_ms["pay.scnative.space"];
+        assert!(left > 0 && left <= REVALIDATE.as_millis() as u64);
+    }
+
+    #[test]
+    fn a_relay_body_never_counts_as_proof_for_direct() {
+        let mut inner = Inner::default();
+        let now = Instant::now();
+        inner.note(ORIGIN, Tier::Relay, true, now);
+        assert!(!inner.delivered(ORIGIN, Tier::Relay, PROVEN_BYTES * 4, now));
+        assert_eq!(tier(&inner), Some(Tier::Relay));
     }
 }

@@ -48,7 +48,7 @@ function ThemedTrackRowImpl({ track, index, queue, aura }: ThemedTrackRowProps) 
         boxShadow: isThis ? `inset 0 0 0 0.5px ${auraRgba(aura, 0.35)}` : undefined,
       }}
       onMouseEnter={(e) => {
-        preloadTrack(track.urn);
+        preloadTrack(track.urn, track._scd_meta?.storage_quality);
         if (!isThis) e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
       }}
       onMouseLeave={(e) => {

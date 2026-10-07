@@ -1,8 +1,20 @@
 import React from 'react';
 import {useTranslation} from 'react-i18next';
+import {useHostStatusStore} from '../../lib/host-status';
 import {RotateCcw, Wifi, WifiOff} from '../../lib/icons';
 import {usePerfMode} from '../../lib/perf';
+import {useAppStatusStore} from '../../stores/app-status';
 import {SyncQueueChip} from '../library/SyncQueueChip';
+
+function useOfflineLabel(): string {
+  const { t } = useTranslation();
+  const bypass = useAppStatusStore((s) => s.offlineBypass);
+  const navigatorOnline = useAppStatusStore((s) => s.navigatorOnline);
+  const net = useHostStatusStore((s) => s.net);
+  if (bypass) return t('offline.netChosen');
+  if (!navigatorOnline || net === 'no-internet') return t('offline.netNoInternet');
+  return t('offline.netServerDown');
+}
 
 /** Шапка: кикер + заголовок слева, единый статус сети / очередь синка справа. */
 export const OfflineHead = React.memo(function OfflineHead({
@@ -14,6 +26,8 @@ export const OfflineHead = React.memo(function OfflineHead({
 }) {
   const { t } = useTranslation();
   const perf = usePerfMode();
+  const offlineLabel = useOfflineLabel();
+  const probing = useHostStatusStore((s) => s.probing);
 
   return (
     <header className="flex flex-wrap items-end justify-between gap-4">
@@ -43,15 +57,16 @@ export const OfflineHead = React.memo(function OfflineHead({
             }}
           />
           {online ? <Wifi size={11} /> : <WifiOff size={11} />}
-          {online ? t('offline.netOnline') : t('offline.netOffline')}
+          {online ? t('offline.netOnline') : offlineLabel}
         </span>
         {!online && (
           <button
             type="button"
             onClick={onTryOnline}
-            className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-3.5 py-1.5 text-[12px] font-semibold text-white/75 transition-colors hover:border-white/[0.16] hover:bg-white/[0.09] hover:text-white/95"
+            disabled={probing}
+            className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-3.5 py-1.5 text-[12px] font-semibold text-white/75 transition-colors hover:border-white/[0.16] hover:bg-white/[0.09] hover:text-white/95 disabled:cursor-default disabled:opacity-50"
           >
-            <RotateCcw size={12} />
+            <RotateCcw size={12} className={probing ? 'animate-spin' : undefined} />
             {t('offline.tryOnline')}
           </button>
         )}

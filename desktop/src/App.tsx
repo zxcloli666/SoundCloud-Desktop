@@ -12,6 +12,7 @@ import { SessionRecoveryModal } from './components/SessionRecoveryModal';
 import { ThemeProvider } from './components/ThemeProvider';
 import { ApiError } from './lib/api';
 import { CHECK_UPDATES } from './lib/constants';
+import { requestProbe } from './lib/host-status';
 import { usePerfMode } from './lib/perf';
 import { checkForAppUpdate, type GithubRelease } from './lib/update-check';
 import { getAppMode, useAppMode, useAppStatusStore } from './stores/app-status';
@@ -102,16 +103,16 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    if (hasSession && offlineBypass) useAppStatusStore.getState().setOfflineBypass(false);
+  }, [hasSession, offlineBypass]);
+
+  useEffect(() => {
+    useAppStatusStore.getState().setNavigatorOnline(navigator.onLine);
     const syncOnline = () => {
-      const online = navigator.onLine;
-      const appStatus = useAppStatusStore.getState();
-      appStatus.setNavigatorOnline(online);
-      if (online) {
-        appStatus.setBackendReachable(true);
-      }
+      useAppStatusStore.getState().setNavigatorOnline(navigator.onLine);
+      requestProbe({ force: true });
     };
 
-    syncOnline();
     window.addEventListener('online', syncOnline);
     window.addEventListener('offline', syncOnline);
     return () => {

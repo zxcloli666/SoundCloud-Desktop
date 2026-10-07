@@ -30,6 +30,7 @@ sc-fingerprint = { git = "https://github.com/zxcloli666/SoundCloud-Backend", tag
 wreq = { version = "5", features = ["json", "stream", "gzip", "brotli", "socks"] }
 futures-util = "0.3"
 http = "1"
+hyper-util = { version = "0.1", features = ["client-proxy", "client-proxy-system"] }
 urlencoding = "2"
 tauri-plugin-single-instance = "2.4.0"
 rodio = { version = "0.22.2", features = ["mp3", "symphonia-aac", "symphonia-isomp4", "symphonia-ogg"] }
@@ -70,6 +71,9 @@ lto = true
 [patch.crates-io]
 tauri = { git = "https://github.com/tauri-apps/tauri", branch = "feat/cef" }
 tauri-build = { git = "https://github.com/tauri-apps/tauri", branch = "feat/cef" }
+
+[target.'cfg(windows)'.dependencies]
+windows-registry = "0.6"
 
 [target.'cfg(target_os = "linux")'.dependencies]
 ksni = { version = "0.3.5", default-features = false, features = ["tokio"] }

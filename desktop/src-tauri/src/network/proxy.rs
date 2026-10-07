@@ -194,6 +194,7 @@ pub async fn proxy_request(encoded: &str) -> ProxyResult {
 
         hop.note(status < 500);
         if status < 500 {
+            hop.note_delivered(data.len() as u64);
             break;
         }
     }
