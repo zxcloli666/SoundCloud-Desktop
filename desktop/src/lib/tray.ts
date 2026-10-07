@@ -1,4 +1,5 @@
 import {emit, listen} from '@tauri-apps/api/event';
+import {useAddToPlaylistRequest} from '../stores/add-to-playlist';
 import { usePlayerStore } from '../stores/player';
 import {api} from './api';
 import {getDuration, handlePrev, seek} from './audio';
@@ -127,6 +128,13 @@ async function toggleDislikeCurrent() {
     pushNp();
 }
 
+function addCurrentToPlaylist() {
+    const tr = usePlayerStore.getState().currentTrack;
+    if (!tr) return;
+    void invoke('show_main_window');
+    useAddToPlaylistRequest.getState().request([tr.urn]);
+}
+
 /* ── Native tray menu (Rust-emitted) ─────────────────────────── */
 
 listen<string>('tray-action', (event) => {
@@ -179,6 +187,9 @@ listen<{ action: string; value?: number }>('tray:cmd', (event) => {
             break;
         case 'dislike':
             void toggleDislikeCurrent();
+            break;
+        case 'add_to_playlist':
+            addCurrentToPlaylist();
             break;
         case 'show':
             void invoke('show_main_window');
