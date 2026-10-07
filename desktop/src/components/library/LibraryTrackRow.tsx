@@ -20,7 +20,7 @@ export const LibraryTrackRow = React.memo(
   }: {
     track: Track;
     index: number;
-    queue: Track[];
+    queue: Track[] | (() => Track[]);
     onPlay?: () => void;
   }) {
     const { t } = useTranslation();

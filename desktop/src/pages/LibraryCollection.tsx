@@ -8,9 +8,11 @@ import {LibrarySubHeader} from '../components/library/LibrarySubHeader';
 import {LikesTab} from '../components/library/LikesTab';
 import {PlaylistsTab} from '../components/library/PlaylistsTab';
 import {useSoundprint} from '../components/library/useSoundprint';
+import {TrackSortMenu} from '../components/music/TrackSortMenu';
 import {useLikedTracks} from '../lib/hooks';
 import {likedTracksCount} from '../lib/likes';
 import {useAuthStore} from '../stores/auth';
+import {useSettingsStore} from '../stores/settings';
 
 type Section = 'likes' | 'playlists' | 'following' | 'history';
 const SECTIONS: Section[] = ['likes', 'playlists', 'following', 'history'];
@@ -28,7 +30,9 @@ export const LibraryCollection = React.memo(() => {
     const {t} = useTranslation();
     const {section} = useParams<{ section: string }>();
     const user = useAuthStore((s) => s.user);
-    const {tracks: likedTracks} = useLikedTracks();
+    const {tracks: likedTracks, hasNextPage: likesHaveMore} = useLikedTracks();
+    const likesSort = useSettingsStore((s) => s.likesSort);
+    const setLikesSort = useSettingsStore((s) => s.setLikesSort);
     const sound = useSoundprint(likedTracks);
     const [filter, setFilter] = useState('');
     const deferredFilter = useDeferredValue(filter);
@@ -56,6 +60,16 @@ export const LibraryCollection = React.memo(() => {
                 count={count}
                 filter={sec === 'history' ? undefined : filter}
                 onFilter={sec === 'history' ? undefined : setFilter}
+                actions={
+                    sec === 'likes' ? (
+                        <TrackSortMenu
+                            sort={likesSort}
+                            context="likes"
+                            loading={likesSort !== 'default' && !!likesHaveMore}
+                            onSort={setLikesSort}
+                        />
+                    ) : undefined
+                }
             />
 
             {sec === 'likes' && <LikesTab filter={deferredFilter}/>}
