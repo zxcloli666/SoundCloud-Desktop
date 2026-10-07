@@ -189,6 +189,7 @@ pub fn run() {
             network::server::get_server_ports,
             app::diagnostics::diagnostics_log,
             app::diagnostics::diagnostics_reveal_log,
+            app::launch_flags::custom_css_suppressed,
             app::visibility::show_main_window,
             app::popover::tray_popover_hide,
             discord::discord_connect,

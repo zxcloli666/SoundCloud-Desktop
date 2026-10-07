@@ -1,4 +1,5 @@
 pub mod diagnostics;
+pub mod launch_flags;
 pub mod popover;
 pub mod tray;
 pub mod visibility;
