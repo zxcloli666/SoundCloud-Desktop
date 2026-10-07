@@ -7,6 +7,9 @@ use tokio::fs::{self, File};
 use tokio::io::AsyncWriteExt;
 
 use crate::shared::constants::is_domain_whitelisted;
+use crate::shared::file_lru::mark_used;
+
+pub mod maintenance;
 
 /// Permanent on-disk image cache.
 ///
@@ -75,6 +78,10 @@ async fn write_atomic(path: &Path, data: &[u8]) -> std::io::Result<()> {
         return Err(e);
     }
     Ok(())
+}
+
+pub(crate) fn spawn_mark_used(path: PathBuf) {
+    tokio::task::spawn_blocking(move || mark_used(&path));
 }
 
 fn decode_payload(encoded: &str) -> Result<Vec<String>, ImageResult> {
@@ -148,6 +155,7 @@ pub async fn handle(encoded: &str) -> ImageResult {
         if !data.is_empty() {
             #[cfg(debug_assertions)]
             println!("[ImageCache] HIT  {}", target_url);
+            spawn_mark_used(path);
             let ct = sniff_content_type(&data).to_string();
             return ImageResult {
                 status: 200,
@@ -222,49 +230,4 @@ pub async fn handle(encoded: &str) -> ImageResult {
         content_type,
         data,
     }
-}
-
-/* ── Maintenance commands (size / clear) ─────────────────── */
-
-async fn dir_size(path: &Path) -> u64 {
-    let mut total = 0u64;
-    let mut stack = vec![path.to_path_buf()];
-    while let Some(p) = stack.pop() {
-        let mut entries = match fs::read_dir(&p).await {
-            Ok(e) => e,
-            Err(_) => continue,
-        };
-        while let Ok(Some(entry)) = entries.next_entry().await {
-            let Ok(ft) = entry.file_type().await else {
-                continue;
-            };
-            if ft.is_dir() {
-                stack.push(entry.path());
-            } else if ft.is_file()
-                && let Ok(meta) = entry.metadata().await {
-                    total = total.saturating_add(meta.len());
-                }
-        }
-    }
-    total
-}
-
-#[tauri::command]
-pub async fn image_cache_size() -> u64 {
-    let Some(state) = STATE.get() else { return 0 };
-    dir_size(&state.dir).await
-}
-
-#[tauri::command]
-pub async fn image_cache_clear() -> Result<(), String> {
-    let Some(state) = STATE.get() else {
-        return Err("image cache not ready".into());
-    };
-    let dir = state.dir.clone();
-    if let Err(e) = fs::remove_dir_all(&dir).await
-        && e.kind() != std::io::ErrorKind::NotFound {
-            return Err(e.to_string());
-        }
-    fs::create_dir_all(&dir).await.map_err(|e| e.to_string())?;
-    Ok(())
 }
