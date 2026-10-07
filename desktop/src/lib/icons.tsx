@@ -12,6 +12,7 @@ import {
   AudioLines as _AudioLines,
   Bookmark as _Bookmark,
   Calendar as _Calendar,
+  ChartNoAxesColumn as _ChartNoAxesColumn,
   Check as _Check,
   ChevronDown as _ChevronDown,
   ChevronLeft as _ChevronLeft,
@@ -22,6 +23,7 @@ import {
   Cloud as _Cloud,
   Compass as _Compass,
   Copy as _Copy,
+  Crown as _Crown,
   Database as _Database,
   Disc3 as _Disc3,
   Download as _Download,
@@ -50,6 +52,7 @@ import {
   MicVocal as _MicVocal,
   Minus as _Minus,
   MonitorPlay as _MonitorPlay,
+  Moon as _Moon,
   Music as _Music,
   PanelLeftClose as _PanelLeftClose,
   PanelLeftOpen as _PanelLeftOpen,
@@ -74,8 +77,14 @@ import {
   Sparkles as _Sparkles,
   Square as _Square,
   Star as _Star,
+  Sun as _Sun,
+  Sunrise as _Sunrise,
+  Sunset as _Sunset,
   ThumbsDown as _ThumbsDown,
   Trash2 as _Trash2,
+  TrendingDown as _TrendingDown,
+  TrendingUp as _TrendingUp,
+  Trophy as _Trophy,
   User as _User,
   Users as _Users,
   Volume1 as _Volume1,
@@ -109,10 +118,19 @@ const SimpleIcon = memo(
 export const AlertCircle = memo(_AlertCircle);
 export const ArrowDownToLine = memo(_ArrowDownToLine);
 export const Calendar = memo(_Calendar);
+export const ChartNoAxesColumn = memo(_ChartNoAxesColumn);
+export const Crown = memo(_Crown);
 export const FileDown = memo(_FileDown);
 export const FileText = memo(_FileText);
 export const FolderOpen = memo(_FolderOpen);
 export const Flame = memo(_Flame);
+export const Moon = memo(_Moon);
+export const Sun = memo(_Sun);
+export const Sunrise = memo(_Sunrise);
+export const Sunset = memo(_Sunset);
+export const TrendingDown = memo(_TrendingDown);
+export const TrendingUp = memo(_TrendingUp);
+export const Trophy = memo(_Trophy);
 export const Wifi = memo(_Wifi);
 export const WifiOff = memo(_WifiOff);
 export const Check = memo(_Check);
