@@ -766,7 +766,9 @@
     "coverTintDesc": "Tint the whole window with a soft gradient in the cover colours",
     "coverAccent": "Accent from the cover",
     "coverAccentDesc": "Buttons, sliders and highlights take the cover colour while a track plays",
-    "coverPreviewIdle": "Play a track to see its colours"
+    "coverPreviewIdle": "Play a track to see its colours",
+    "customCssOffToast": "Custom CSS is off. Press the same keys or open Settings > Appearance to turn it back on",
+    "customCssOnToast": "Custom CSS is on"
   },
   "eq": {
     "title": "Equalizer",
@@ -799,7 +801,8 @@
     "sidebar": "Toggle sidebar",
     "fullscreen": "Toggle fullscreen",
     "close": "Close",
-    "showBindings": "Show shortcuts"
+    "showBindings": "Show shortcuts",
+    "customCss": "Turn custom CSS on or off"
   },
   "ym": {
     "instructions": "How to get your Yandex Music token:",

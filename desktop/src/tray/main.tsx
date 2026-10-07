@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import {changeAppLanguage} from '../i18n';
 import {applyAccentVars, applyBgVars, applyPerfMode} from '../lib/apply-theme';
+import {applyCustomCss, effectiveCustomCss} from '../lib/custom-css';
 import {applyFontVars} from '../lib/interface-font';
 import {setupFocusGate, setupVisibilityGate} from '../lib/perf';
 import {useSettingsStore} from '../stores/settings';
@@ -16,6 +17,7 @@ function applyTheme() {
     applyBgVars(s.bgPrimary);
     applyPerfMode(s.perfMode);
     void applyFontVars(s.interfaceFont, s.customFontName);
+    applyCustomCss(effectiveCustomCss(s));
 }
 
 /**

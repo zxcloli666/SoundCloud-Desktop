@@ -677,7 +677,9 @@
     "coverTintDesc": "Tüm pencereyi kapak renklerinde yumuşak bir gradyanla boya",
     "coverAccent": "Kapaktan vurgu rengi",
     "coverAccentDesc": "Parça çalarken düğmeler, kaydırıcılar ve vurgular kapağın rengini alır",
-    "coverPreviewIdle": "Renklerini görmek için bir parça çalın"
+    "coverPreviewIdle": "Renklerini görmek için bir parça çalın",
+    "customCssOffToast": "Özel CSS kapatıldı. Yeniden açmak için aynı tuşlara basın veya Ayarlar > Görünüm bölümünü açın",
+    "customCssOnToast": "Özel CSS açık"
   },
   "eq": {
     "title": "Ekolayzir",
@@ -710,7 +712,8 @@
     "sidebar": "Kenar cubugunu ac/kapat",
     "fullscreen": "Tam ekran modunu degistir",
     "close": "Kapat",
-    "showBindings": "Kisayollari goster"
+    "showBindings": "Kisayollari goster",
+    "customCss": "Özel CSS aç veya kapat"
   },
   "ym": {
     "instructions": "Yandex Music tokeninizi nasil alirsiniz:",

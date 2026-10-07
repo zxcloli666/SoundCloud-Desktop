@@ -96,6 +96,8 @@ export interface SettingsState {
   customFontName: string;
   coverTint: boolean;
   coverAccent: boolean;
+  customCss: string;
+  customCssEnabled: boolean;
   setAccentColor: (color: string) => void;
   setBgPrimary: (bg: string) => void;
   setThemePreset: (id: ThemePreset) => void;
@@ -136,6 +138,8 @@ export interface SettingsState {
   setCustomFontName: (name: string) => void;
   setCoverTint: (v: boolean) => void;
   setCoverAccent: (v: boolean) => void;
+  setCustomCss: (css: string) => void;
+  setCustomCssEnabled: (v: boolean) => void;
   resetTheme: () => void;
 }
 
@@ -182,6 +186,8 @@ const DEFAULTS = {
   customFontName: '',
   coverTint: false,
   coverAccent: false,
+  customCss: '',
+  customCssEnabled: true,
 };
 
 export const useSettingsStore = create<SettingsState>()(
@@ -249,6 +255,8 @@ export const useSettingsStore = create<SettingsState>()(
       setCustomFontName: (customFontName) => set({ customFontName }),
       setCoverTint: (coverTint) => set({ coverTint }),
       setCoverAccent: (coverAccent) => set({ coverAccent }),
+      setCustomCss: (customCss) => set({ customCss }),
+      setCustomCssEnabled: (customCssEnabled) => set({ customCssEnabled }),
       resetTheme: () =>
         set({
           accentColor: DEFAULTS.accentColor,
@@ -326,6 +334,8 @@ export const useSettingsStore = create<SettingsState>()(
         customFontName: s.customFontName,
         coverTint: s.coverTint,
         coverAccent: s.coverAccent,
+        customCss: s.customCss,
+        customCssEnabled: s.customCssEnabled,
       }),
     },
   ),

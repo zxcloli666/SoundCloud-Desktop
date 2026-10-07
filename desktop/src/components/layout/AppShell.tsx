@@ -5,6 +5,7 @@ import {Outlet} from 'react-router-dom';
 import {useShallow} from 'zustand/shallow';
 import {getCurrentTime, getDuration, handlePrev, seek} from '../../lib/audio';
 import {getWallpaperUrl} from '../../lib/cache';
+import {customCssHotkeyLabel} from '../../lib/custom-css';
 import {art} from '../../lib/formatters';
 import {usePerfMode} from '../../lib/perf';
 import {isMac} from '../../lib/platform';
@@ -55,6 +56,7 @@ const keybindings: Keybinding[] = [
   { key: 'F11', label: 'kb.fullscreen', group: 'panels', display: 'F11' },
   { key: 'Escape', label: 'kb.close', group: 'panels', display: 'Esc' },
   { key: 'Ctrl+/', label: 'kb.showBindings', group: 'panels', display: isMac() ? '⌘ /' : 'Ctrl /' },
+  { key: 'Ctrl+Alt+Shift+C', label: 'kb.customCss', group: 'panels', display: customCssHotkeyLabel().join(' ') },
 ];
 
 const groupLabels = {
