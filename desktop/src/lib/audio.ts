@@ -2,7 +2,7 @@ import {listen} from '@tauri-apps/api/event';
 import {toast} from 'sonner';
 import i18n from '../i18n';
 import type {Track, TrackScdMeta} from '../stores/player';
-import {usePlayerStore} from '../stores/player';
+import {playbackAllowed, usePlayerStore} from '../stores/player';
 import {useSettingsStore} from '../stores/settings';
 import {
   api,
@@ -52,7 +52,9 @@ let acceptedShortFile = false;
 let downloadProgress: number | null = null;
 let loadGen = 0;
 let lastEndedUrn: string | null = null;
+let startGate: ((urn: string) => Promise<number | null>) | null = null;
 const listeners = new Set<() => void>();
+const seekListeners = new Set<(seconds: number) => void>();
 const API_PREVIEW_DURATION_MS = 30_000;
 
 // The 10Hz tick fan-out drives every UI subscriber (progress, waveform clip-path,
@@ -102,12 +104,36 @@ export function cancelTrackLoad(): void {
   usePlayerStore.getState().pause();
 }
 
+export function isTrackLoaded(): boolean {
+  return hasTrack;
+}
+
+export function setStartGate(gate: ((urn: string) => Promise<number | null>) | null): void {
+  startGate = gate;
+}
+
+export function subscribeSeek(listener: (seconds: number) => void): () => void {
+  seekListeners.add(listener);
+  return () => seekListeners.delete(listener);
+}
+
 export function seek(seconds: number) {
+  if (!playbackAllowed('seek')) return;
+  alignTo(seconds);
+}
+
+export function alignTo(seconds: number) {
   if (!hasTrack) return;
   invoke('audio_seek', { position: seconds }).catch(console.error);
   cachedTime = seconds;
   notify();
   setTimeout(() => updateMediaPosition(), 150);
+  for (const listener of seekListeners) listener(seconds);
+}
+
+export function replayCurrent(): void {
+  const track = usePlayerStore.getState().currentTrack;
+  if (track) void loadTrack(track);
 }
 
 export function handlePrev() {
@@ -141,7 +167,7 @@ export async function reloadCurrentTrack() {
   const wasPlaying = usePlayerStore.getState().isPlaying;
   const pos = cachedTime;
   await loadTrack(track);
-  if (pos > 0) seek(pos);
+  if (pos > 0) alignTo(pos);
   if (!wasPlaying) invoke('audio_pause').catch(console.error);
 }
 
@@ -384,7 +410,7 @@ async function loadTrack(track: Track, resumeAt = 0) {
       const loadResult = await loadCachedFile(
         urn,
         cached.path,
-        resumeAt > 0 || !usePlayerStore.getState().isPlaying,
+        resumeAt > 0 || !usePlayerStore.getState().isPlaying || startGate != null,
         reResolve,
       );
       if (gen !== loadGen) return;
@@ -432,7 +458,7 @@ async function loadTrack(track: Track, resumeAt = 0) {
     const loadResult = await loadCachedFile(
       urn,
       cachedInfo.path,
-      resumeAt > 0 || !usePlayerStore.getState().isPlaying,
+      resumeAt > 0 || !usePlayerStore.getState().isPlaying || startGate != null,
       reResolve,
     );
     if (loadResult?.duration_secs) {
@@ -498,6 +524,17 @@ async function afterLoad(track: Track, gen: number, resumeAt: number) {
     }).catch(() => {});
   }
 
+  if (startGate) {
+    const startAt = await startGate(track.urn).catch(() => null);
+    if (gen !== loadGen) return;
+    if (startAt != null) {
+      await invoke('audio_seek', { position: startAt }).catch(console.error);
+      if (gen !== loadGen) return;
+      cachedTime = startAt;
+      notify();
+    }
+  }
+
   const isPlaying = usePlayerStore.getState().isPlaying;
   invoke(isPlaying ? 'audio_play' : 'audio_pause').catch(console.error);
   updatePlaybackState(isPlaying);
@@ -552,6 +589,7 @@ function maybeHealEarlyEnd(): boolean {
 }
 
 function handleTrackEnd() {
+  if (!playbackAllowed('advance')) return;
   const state = usePlayerStore.getState();
   // A-B loop whose end sits at (or within a tick of) the track end: the Rust-side
   // loop can't catch it before the sink drains, so restart the segment from A here.
@@ -652,7 +690,7 @@ usePlayerStore.subscribe((state, prev) => {
 
     if (state.currentTrack) {
       // Автоскип дизлайкнутых треков: пропускаем без загрузки/плэя.
-      if (isUrnDisliked(state.currentTrack.urn)) {
+      if (isUrnDisliked(state.currentTrack.urn) && playbackAllowed('advance')) {
         currentUrn = null;
         fallbackDuration = 0;
         cachedDuration = 0;
