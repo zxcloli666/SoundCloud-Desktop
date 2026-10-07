@@ -70,6 +70,11 @@ export function mirroredDownloadUrl(url: string): string {
   return `${IMAGES_BASE}/x-target/${btoa(url)}`;
 }
 
+function flatpakInstallCommand(info: UpdaterInfo, file: string): string {
+  const scope = info.flatpakScope ? ` --${info.flatpakScope}` : '';
+  return `flatpak install${scope} --reinstall ${file}`;
+}
+
 export function updateCommands(info: UpdaterInfo, asset: GithubAsset | null): string[] {
   const file = asset?.name;
   switch (info.kind) {
@@ -78,7 +83,7 @@ export function updateCommands(info: UpdaterInfo, asset: GithubAsset | null): st
     case 'flatpak':
       return [
         `flatpak update ${FLATPAK_APP_ID}`,
-        `flatpak install --user --reinstall ${file ?? 'soundcloud-desktop.flatpak'}`,
+        flatpakInstallCommand(info, file ?? 'soundcloud-desktop.flatpak'),
       ];
     case 'deb':
       return file ? [`sudo apt install ./${file}`] : [];

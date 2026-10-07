@@ -18,6 +18,7 @@ export interface UpdaterInfo {
   arch: string;
   kind: InstallKind;
   selfUpdate: boolean;
+  flatpakScope: 'user' | 'system' | null;
 }
 
 export type InstallProgress =
