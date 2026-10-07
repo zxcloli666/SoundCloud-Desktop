@@ -17,6 +17,7 @@ use tokio::sync::{Mutex, Notify, OwnedSemaphorePermit, Semaphore};
 use crate::app::diagnostics::log_native;
 use crate::network::edge::{Hop, Tier};
 use crate::network::system_proxy::follow;
+use crate::shared::file_lru::mark_used;
 use crate::shared::urn::{canonical_track_urn, track_urn_from_storage_name};
 use crate::track_cache::api_download::{StreamJob, download_api};
 use crate::track_cache::direct_download::try_download;
@@ -1031,6 +1032,7 @@ impl TrackCacheState {
             self.remove_cached(urn);
             return None;
         }
+        mark_used(&path);
         Some(TrackCacheEntry::from_path_and_meta(&path, meta))
     }
 

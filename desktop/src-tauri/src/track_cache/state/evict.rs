@@ -1,6 +1,8 @@
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
 
+use crate::shared::file_lru::last_used;
+
 use super::{
     TrackCacheState, filename_to_urn, is_audio_cache_file, read_cache_metadata,
     remove_cache_metadata,
@@ -10,7 +12,7 @@ struct EvictableFile {
     path: PathBuf,
     urn: Option<String>,
     size: u64,
-    accessed: SystemTime,
+    last_used: SystemTime,
 }
 
 impl TrackCacheState {
@@ -51,10 +53,7 @@ impl TrackCacheState {
                     path,
                     urn,
                     size: meta.len(),
-                    accessed: meta
-                        .accessed()
-                        .or_else(|_| meta.modified())
-                        .unwrap_or(SystemTime::UNIX_EPOCH),
+                    last_used: last_used(&meta),
                 });
             }
         }
@@ -62,10 +61,12 @@ impl TrackCacheState {
     }
 
     pub fn enforce_limit(&self, limit_mb: u64) {
-        if limit_mb == 0 {
-            return;
+        if limit_mb > 0 {
+            self.enforce_limit_bytes(limit_mb * 1024 * 1024);
         }
-        let limit_bytes = limit_mb * 1024 * 1024;
+    }
+
+    fn enforce_limit_bytes(&self, limit_bytes: u64) {
         let mut files = self.evictable_files();
         let mut total: u64 = files.iter().map(|f| f.size).sum();
         if total <= limit_bytes {
@@ -73,7 +74,7 @@ impl TrackCacheState {
         }
 
         let before = total;
-        files.sort_by_key(|f| f.accessed);
+        files.sort_by_key(|f| f.last_used);
         let mut removed = 0u32;
         for file in files {
             if total <= limit_bytes {
@@ -114,11 +115,43 @@ fn remove_audio_file(path: &Path) -> bool {
 
 #[cfg(test)]
 mod tests {
+    use std::fs::FileTimes;
+    use std::time::{Duration, SystemTime};
+
     use super::super::MIN_AUDIO_SIZE;
     use super::super::tests::test_state;
 
     fn write_file(path: &std::path::Path) {
         std::fs::write(path, vec![0u8; MIN_AUDIO_SIZE as usize]).unwrap();
+    }
+
+    fn age(path: &std::path::Path, secs: u64) {
+        let at = SystemTime::now() - Duration::from_secs(secs);
+        let times = FileTimes::new().set_accessed(at).set_modified(at);
+        std::fs::File::options()
+            .write(true)
+            .open(path)
+            .unwrap()
+            .set_times(times)
+            .unwrap();
+    }
+
+    #[test]
+    fn limit_evicts_the_least_recently_played_track() {
+        let (root, state) = test_state("lru");
+        let replayed = "soundcloud:tracks:30";
+        let forgotten = "soundcloud:tracks:31";
+        write_file(&state.file_path(replayed));
+        write_file(&state.file_path(forgotten));
+        age(&state.file_path(replayed), 600);
+        age(&state.file_path(forgotten), 300);
+
+        assert!(state.get_cache_entry(replayed).is_some());
+        state.enforce_limit_bytes(MIN_AUDIO_SIZE);
+
+        assert!(state.file_path(replayed).exists());
+        assert!(!state.file_path(forgotten).exists());
+        std::fs::remove_dir_all(&root).ok();
     }
 
     #[test]
