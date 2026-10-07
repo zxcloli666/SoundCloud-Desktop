@@ -3,10 +3,10 @@ use std::sync::OnceLock;
 
 use serde::{Deserialize, Serialize};
 
+use crate::app::APP_IDENTIFIER;
 use crate::rt::AppHandle;
 
 const FLAG_FILE: &str = "render_mode.json";
-const APP_IDENTIFIER: &str = "com.soundcloud.desktop";
 const SUPPORTED: bool = cfg!(all(not(feature = "cef"), any(windows, target_os = "linux")));
 
 #[cfg(all(windows, not(feature = "cef")))]

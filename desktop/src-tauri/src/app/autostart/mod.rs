@@ -8,13 +8,14 @@ mod portal;
 mod windows;
 
 use std::path::PathBuf;
+use std::sync::atomic::{AtomicBool, Ordering};
 
 use serde::{Deserialize, Serialize};
 use tauri::Manager;
 
 use crate::app::diagnostics::log_native;
-use crate::app::{tray, visibility};
-use crate::rt::App;
+use crate::app::{APP_IDENTIFIER, tray, visibility};
+use crate::rt::{App, AppHandle};
 
 #[cfg(target_os = "linux")]
 use linux as platform;
@@ -25,7 +26,8 @@ use windows as platform;
 
 pub const LOGIN_ARG: &str = "--autostart";
 const FLAG_FILE: &str = "autostart.json";
-const APP_IDENTIFIER: &str = "com.soundcloud.desktop";
+
+static HIDDEN_AT_LOGIN: AtomicBool = AtomicBool::new(false);
 
 #[derive(Serialize, Deserialize)]
 #[serde(default, rename_all = "camelCase")]
@@ -74,10 +76,11 @@ fn update_flag(change: impl FnOnce(&mut Flag)) -> Result<(), String> {
 }
 
 fn current() -> AutostartState {
+    let tray_available = tray::is_available();
     AutostartState {
         enabled: platform::is_enabled(),
-        start_minimized: load_flag().start_minimized,
-        tray_available: tray::is_available(),
+        start_minimized: load_flag().start_minimized && tray_available,
+        tray_available,
     }
 }
 
@@ -86,9 +89,7 @@ pub fn is_login_launch<S: AsRef<str>>(args: &[S]) -> bool {
 }
 
 fn starts_hidden() -> bool {
-    std::env::args_os().any(|arg| arg == LOGIN_ARG)
-        && load_flag().start_minimized
-        && tray::is_available()
+    std::env::args_os().any(|arg| arg == LOGIN_ARG) && load_flag().start_minimized && tray::probe()
 }
 
 pub fn reveal_main_window(app: &App) {
@@ -96,10 +97,26 @@ pub fn reveal_main_window(app: &App) {
         return;
     };
     if starts_hidden() {
+        HIDDEN_AT_LOGIN.store(true, Ordering::Relaxed);
         visibility::set_page_visible(&window, false);
     } else {
         let _ = window.show();
     }
+}
+
+pub fn reveal_if_hidden(app: &AppHandle) {
+    if !HIDDEN_AT_LOGIN.swap(false, Ordering::Relaxed) {
+        return;
+    }
+    let handle = app.clone();
+    let _ = app.run_on_main_thread(move || {
+        let hidden = handle
+            .get_webview_window("main")
+            .is_some_and(|window| !window.is_visible().unwrap_or(true));
+        if hidden {
+            visibility::show_main(&handle);
+        }
+    });
 }
 
 pub fn refresh_entry(app: &App) {

@@ -11,3 +11,5 @@ pub mod updater;
 pub mod visibility;
 #[cfg(all(windows, not(feature = "cef")))]
 pub mod webview2;
+
+pub const APP_IDENTIFIER: &str = "com.soundcloud.desktop";
