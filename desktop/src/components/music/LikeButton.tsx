@@ -2,6 +2,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../lib/api';
+import { clearDislike } from '../../lib/dislike-actions';
 import { invalidateAllLikesCache } from '../../lib/hooks';
 import { Heart } from '../../lib/icons';
 import { optimisticToggleLike, setLikedUrn, useLiked } from '../../lib/likes';
@@ -31,6 +32,7 @@ export const LikeButton = React.memo(function LikeButton({
     const next = !liked;
     optimisticToggleLike(qc, track, next);
     invalidateAllLikesCache();
+    if (next) clearDislike(track.urn);
     try {
       await api(`/likes/tracks/${encodeURIComponent(track.urn)}`, {
         method: next ? 'POST' : 'DELETE',
