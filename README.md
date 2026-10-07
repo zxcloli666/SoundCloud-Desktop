@@ -173,6 +173,20 @@ chmod +x soundcloud-desktop-*.AppImage
 
 ---
 
+## Логи
+
+Если приложение вылетает или что-то не играет, приложите к баг-репорту файл `desktop.log`. В него пишут и интерфейс, и нативная часть, включая паники с трассировкой. Токены и `session_id` в ссылках скрываются. Когда файл больше 5 МБ, при запуске он переименовывается в `desktop.old.log`.
+
+Папку открывает кнопка «Открыть папку» в **Настройки → Общее → Диагностика**. Пути:
+
+| ОС | Папка |
+|---|---|
+| Windows | `%LOCALAPPDATA%\com.soundcloud.desktop\logs` |
+| macOS | `~/Library/Logs/com.soundcloud.desktop` |
+| Linux | `~/.local/share/com.soundcloud.desktop/logs` |
+
+---
+
 ## Обратная связь
 
 | | |
