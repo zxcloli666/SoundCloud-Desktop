@@ -411,7 +411,8 @@
     "likesSyncSlow": "Syncing with SoundCloud is taking longer than usual",
     "likesLoadFailed": "Couldn't load your likes",
     "notFollowing": "You are not following anyone",
-    "noPlaylists": "No playlists found"
+    "noPlaylists": "No playlists found",
+    "likedAlbums": "Liked Albums"
   },
   "errors": {
     "title": "Something went wrong",

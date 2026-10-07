@@ -327,7 +327,8 @@
     "likesSyncSlow": "SoundCloud ile esitleme normalden uzun suruyor",
     "likesLoadFailed": "Begeniler yuklenemedi",
     "notFollowing": "Kimseyi takip etmiyorsunuz",
-    "noPlaylists": "Calma listesi bulunamadi"
+    "noPlaylists": "Calma listesi bulunamadi",
+    "likedAlbums": "Beğenilen Albümler"
   },
   "errors": {
     "title": "Bir seyler ters gitti",
@@ -966,7 +967,13 @@
     "noBio": "Biyografi yok",
     "scAccounts": "SoundCloud hesapları",
     "mainAccount": "Ana",
-    "demoAccount": "Demo"
+    "demoAccount": "Demo",
+    "kind": {
+      "album": "Albüm",
+      "ep": "EP",
+      "single": "Single",
+      "compilation": "Derleme"
+    }
   },
   "trackSort": {
     "label": "Sırala",

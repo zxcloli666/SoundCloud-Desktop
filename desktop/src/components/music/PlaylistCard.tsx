@@ -4,7 +4,8 @@ import {useTranslation} from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import {fc} from '../../lib/formatters';
 import type { Playlist } from '../../lib/hooks';
-import { Heart, ListMusic, Play, pauseBlack22 } from '../../lib/icons';
+import { Disc3, Heart, ListMusic, Play, pauseBlack22 } from '../../lib/icons';
+import {releaseKindOf} from '../../lib/playlist-kind';
 import { useAutoHide } from '../../lib/useAutoHide';
 import type { Track } from '../../stores/player';
 import { usePlayerStore } from '../../stores/player';
@@ -20,6 +21,8 @@ export const PlaylistCard = React.memo(
   function PlaylistCard({ playlist, showPlayback }: PlaylistCardProps) {
     const navigate = useNavigate();
       const {t} = useTranslation();
+    const releaseKind = releaseKindOf(playlist);
+    const kindLabel = releaseKind ? t(`artist.kind.${releaseKind}`) : t('playlist.kind.set');
 
     const trackUrns = React.useMemo(
       () => new Set((playlist.tracks ?? []).map((t: Track) => t.urn)),
@@ -110,6 +113,13 @@ export const PlaylistCard = React.memo(
                 </div>
             )}
 
+            {releaseKind && !showPlayback && (
+                <div className="absolute top-2.5 right-2.5 flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider bg-black/60 backdrop-blur-md text-white/90 px-2 py-1 rounded-full shadow-lg">
+                    <Disc3 size={11}/>
+                    {kindLabel}
+                </div>
+            )}
+
           {playlist.track_count != null && (
             <div
               className={`absolute bottom-2.5 right-2.5 flex items-center gap-1.5 text-[11px] font-medium bg-black/60 backdrop-blur-md text-white/90 px-2.5 py-1 rounded-full shadow-lg ${
@@ -131,7 +141,7 @@ export const PlaylistCard = React.memo(
           {showPlayback ? (
             <div className="flex items-center gap-2 mt-1">
               <span className="text-[10px] font-bold text-white/30 uppercase tracking-wider bg-white/[0.05] px-1.5 py-0.5 rounded-md">
-                {playlist.playlist_type || 'Playlist'}
+                {kindLabel}
               </span>
               {(playlist.likes_count ?? 0) > 0 && (
                 <span className="text-[11px] text-white/30 tabular-nums flex items-center gap-1">
