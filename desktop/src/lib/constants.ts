@@ -13,6 +13,8 @@ export const STORAGE_PREMIUM_BASE =
   import.meta.env.VITE_STORAGE_PREMIUM_BASE || 'https://storage-star.scnative.space';
 /** STAR payment backend (separate service; not host-routed like the catalog API). */
 export const PAY_BASE = import.meta.env.VITE_PAY_BASE || 'https://pay.scnative.space';
+export const STATUS_PAGE_URL =
+  import.meta.env.VITE_STATUS_PAGE_URL || 'https://status.soundcloud-desktop.fun';
 
 export const GITHUB_OWNER = 'zxcloli666';
 export const GITHUB_REPO = 'SoundCloud-Desktop';
