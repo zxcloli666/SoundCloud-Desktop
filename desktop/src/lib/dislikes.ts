@@ -1,5 +1,5 @@
-import type { QueryClient } from '@tanstack/react-query';
-import { useEffect, useSyncExternalStore } from 'react';
+import { type QueryClient, useInfiniteQuery } from '@tanstack/react-query';
+import { useEffect, useMemo, useSyncExternalStore } from 'react';
 import type { Track } from '../stores/player';
 import { api } from './api';
 import { recordEvent } from './events';
@@ -32,6 +32,42 @@ export function useDisliked(urn: string): boolean {
     },
     () => _dislikedUrns.has(urn),
   );
+}
+
+export function useDislikedCount(): number {
+  return useSyncExternalStore(
+    (cb) => {
+      _listeners.add(cb);
+      return () => _listeners.delete(cb);
+    },
+    () => _dislikedUrns.size,
+  );
+}
+
+interface DislikesPage {
+  collection: Track[];
+  next_href: string | null;
+}
+
+export function useDislikedTracks() {
+  const query = useInfiniteQuery({
+    queryKey: ['me', 'dislikes'],
+    queryFn: async ({ pageParam }) => {
+      const page = await api<DislikesPage>(`/dislikes${pageParam}`);
+      for (const track of page.collection) _dislikedUrns.set(track.urn, true);
+      if (page.collection.length > 0) notify();
+      return page;
+    },
+    initialPageParam: '?limit=50',
+    getNextPageParam: (last) => last.next_href ?? undefined,
+    staleTime: 0,
+    refetchOnMount: 'always',
+  });
+  const tracks = useMemo(
+    () => query.data?.pages.flatMap((page) => page.collection) ?? [],
+    [query.data],
+  );
+  return { ...query, tracks };
 }
 
 const _inflightStatus = new Map<string, Promise<boolean>>();
