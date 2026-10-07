@@ -3,7 +3,6 @@ import {useTranslation} from 'react-i18next';
 import {useDiscoverFeed} from '../../../lib/hooks';
 import {usePerfMode} from '../../../lib/perf';
 import {armLikesContinuation} from '../../../lib/queue-continuation';
-import {useScdMeta} from '../../../lib/scdMeta';
 import type {Track} from '../../../stores/player';
 import {TrackCard} from '../../music/TrackCard';
 import {HorizontalScroll} from '../../ui/HorizontalScroll';
@@ -74,7 +73,7 @@ export const ArchiveStation = React.memo(function ArchiveStation({
 }) {
   const { t } = useTranslation();
   const discover = useDiscoverFeed();
-  const recommended = useScdMeta(discover.recommended);
+  const recommended = discover.recommended;
 
   if (
     !likedLoading &&

@@ -17,8 +17,8 @@ export const ContinueRow = memo(function ContinueRow({genre}: { genre?: string |
         const seen = new Set<string>();
         const out = [];
         for (const e of entries) {
-            if (seen.has(e.scTrackId)) continue;
-            seen.add(e.scTrackId);
+            if (seen.has(e.trackUrn)) continue;
+            seen.add(e.trackUrn);
             out.push(historyEntryToTrack(e));
             if (out.length >= 14) break;
         }

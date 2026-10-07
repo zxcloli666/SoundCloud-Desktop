@@ -17,6 +17,7 @@ use crate::rt::AppHandle;
 use tokio::sync::{Mutex, RwLock};
 
 use crate::app::diagnostics::log_native;
+use crate::shared::urn;
 use hls::{download_hls_full, download_progressive};
 
 const SC_BASE_URL: &str = "https://soundcloud.com";
@@ -154,7 +155,9 @@ impl AnonClient {
     }
 
     async fn do_get_stream(&self, track_urn: &str) -> Result<Option<AnonStreamResult>, String> {
-        let track_id = track_urn.rsplit(':').next().unwrap_or(track_urn);
+        let Some(track_id) = urn::track_id(track_urn) else {
+            return Ok(None);
+        };
 
         let track = match self.get_track_by_id(track_id).await {
             Ok(t) => t,

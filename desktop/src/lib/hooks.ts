@@ -10,7 +10,14 @@ import {
 } from '@tanstack/react-query';
 import {useEffect, useMemo, useRef} from 'react';
 import type {Track} from '../stores/player';
-import {api} from './api';
+import {ApiError, api, isRefreshPending} from './api';
+import type {ApiRequestOptions} from './api-client';
+import {
+  type CollectionSync,
+  type CollectionSyncState,
+  isPartialSync,
+  useCollectionSync,
+} from './collection-sync';
 import {initLikedUrns} from './likes';
 import {rememberLikedTracks, rememberTracks} from './offline-index';
 import {fetchRelatedTracks} from './related';
@@ -34,6 +41,7 @@ export interface PagedResponse<T> {
   page: number;
   page_size: number;
   has_more: boolean;
+  sync?: CollectionSync;
 }
 
 type TrackPage = PagedResponse<Track>;
@@ -98,10 +106,7 @@ export interface SCUser {
   followings_count?: number;
   track_count?: number;
   city?: string | null;
-  /// Backend now emits `country_code` (ISO-2). Legacy `country` оставляем
-  /// для совместимости со старыми payload'ами SC.
   country_code?: string | null;
-  country?: string | null;
 }
 
 export interface UserProfile extends SCUser {
@@ -112,7 +117,6 @@ export interface UserProfile extends SCUser {
   last_name: string;
   full_name: string;
   description: string | null;
-  country: string | null;
   public_favorites_count: number;
   reposts_count: number;
   plan: string;
@@ -135,18 +139,20 @@ export interface WebProfile {
 
 const SHORT_CACHE_MS = 1000 * 60 * 2;
 const MEDIUM_CACHE_MS = 1000 * 60 * 5;
-const SEARCH_CACHE_MS = 1000 * 60 * 2;
-const SEARCH_TIMEOUT_MS = 20_000;
 const INFINITE_GC_MS = 1000 * 60 * 3;
-
-/**
- * Cold-эндпоинты (треки/плейлисты/лайки/фолловинги юзеров, /me/*) живут в
- * нашей БД и обновляются бэком SWR-cron'ом без участия фронта. tanstack-query
- * не должен сам дёргать refetch на каждый mount — бэк всё равно отдаст cold
- * копию мгновенно. Полагаемся на явные invalidate'ы из мутаций
- * (like/unlike/follow/playlist updates).
- */
 const COLD_CACHE_MS = Number.POSITIVE_INFINITY;
+const PARTIAL_REFETCH_MS = 30_000;
+const PARTIAL_REFETCH_LIMIT = 20;
+const REFRESH_PENDING_RETRIES = 8;
+
+export const retryWhileRefreshing = {
+  retry: (failureCount: number, error: unknown) =>
+    failureCount < (isRefreshPending(error) ? REFRESH_PENDING_RETRIES : 1),
+  retryDelay: (failureCount: number, error: unknown) =>
+    error instanceof ApiError && isRefreshPending(error)
+      ? Math.min(Math.max(error.retryAfterSeconds ?? 5, 3), 30) * 1000
+      : Math.min(1000 * 2 ** failureCount, 30_000),
+};
 
 /* ── Helpers ───────────────────────────────────────────────────── */
 
@@ -176,6 +182,10 @@ export function dedupeByUrn<T extends { urn: string }>(items: T[]): T[] {
   return dedupeByKey(items, (item) => item.urn);
 }
 
+function urnOf(item: { urn: string }): string {
+  return item.urn;
+}
+
 interface PagedQueryOptions<T> {
   queryKey: QueryKey;
   /** Builds the URL for a given page index. limit and page are appended automatically. */
@@ -189,18 +199,21 @@ interface PagedQueryOptions<T> {
   /** Auto-fetch all pages until exhausted. Use sparingly. */
   autoFetchAll?: boolean;
   dedupe?: (item: T) => string;
+  request?: ApiRequestOptions;
+  retry?: (failureCount: number, error: Error) => boolean;
+  retryDelay?: (failureCount: number, error: Error) => number;
 }
 
-type PagedQueryResult<T> = UseInfiniteQueryResult<
+export type PagedQueryResult<T> = UseInfiniteQueryResult<
   InfiniteData<PagedResponse<T>, number>,
   DefaultError
-> & { items: T[] };
+> & { items: T[]; syncState: CollectionSyncState };
 
 /**
  * Унифицированный page-based useInfiniteQuery helper. Бэк отдаёт
  * { collection, page, page_size, has_more } — этого достаточно для пагинации.
  */
-function usePagedQuery<T>(opts: PagedQueryOptions<T>): PagedQueryResult<T> {
+export function usePagedQuery<T>(opts: PagedQueryOptions<T>): PagedQueryResult<T> {
   const limit = opts.limit ?? 30;
   const query = useInfiniteQuery<
     PagedResponse<T>,
@@ -211,13 +224,15 @@ function usePagedQuery<T>(opts: PagedQueryOptions<T>): PagedQueryResult<T> {
   >({
     queryKey: opts.queryKey,
     queryFn: ({ pageParam }) =>
-      api<PagedResponse<T>>(opts.url(pageParam, limit), undefined, opts.timeoutMs),
+      api<PagedResponse<T>>(opts.url(pageParam, limit), opts.request, opts.timeoutMs),
     initialPageParam: 0,
     getNextPageParam: (last) => (last.has_more ? last.page + 1 : undefined),
     staleTime: opts.staleTime,
     gcTime: opts.gcTime ?? INFINITE_GC_MS,
     maxPages: opts.maxPages,
     enabled: opts.enabled,
+    retry: opts.retry,
+    retryDelay: opts.retryDelay,
     // Списки рефрешатся только явными invalidate'ами из мутаций. Remount/
     // reconnect не должен перетягивать весь infinite-query: для SC cursor-лент
     // это перепроходит сдвинувшийся курсор и тасует выдачу. Focus-рефетч уже
@@ -239,10 +254,17 @@ function usePagedQuery<T>(opts: PagedQueryOptions<T>): PagedQueryResult<T> {
     return opts.dedupe ? dedupeByKey(flat, opts.dedupe) : flat;
   }, [query.data, opts.dedupe]);
 
-  return Object.assign(query, { items }) as PagedQueryResult<T>;
+  const syncState = useCollectionSync(
+    opts.queryKey,
+    opts.url(0, 1),
+    query.data?.pages[0],
+    query.dataUpdatedAt,
+  );
+
+  return Object.assign(query, { items, syncState }) as PagedQueryResult<T>;
 }
 
-function pagedUrl(base: string, page: number, limit: number, extra?: string): string {
+export function pagedUrl(base: string, page: number, limit: number, extra?: string): string {
   const sep = base.includes('?') ? '&' : '?';
   const params = `limit=${limit}&page=${page}${extra ? `&${extra}` : ''}`;
   return `${base}${sep}${params}`;
@@ -252,7 +274,7 @@ function pagedUrl(base: string, page: number, limit: number, extra?: string): st
 
 export interface HistoryEntry {
   id: string;
-  scTrackId: string;
+  trackUrn: string;
   title: string;
   artistName: string;
   artistUrn: string | null;
@@ -261,11 +283,15 @@ export interface HistoryEntry {
   playedAt: string;
 }
 
+type HistoryRow = Omit<HistoryEntry, 'trackUrn'> & { trackUrn: string | null };
+
+const hasTrackUrn = (row: HistoryRow): row is HistoryEntry => !!row.trackUrn;
+
 export function useHistory(limit = 50) {
   const query = useInfiniteQuery({
     queryKey: ['history'],
     queryFn: async ({ pageParam = 0 }) => {
-      return api<{ collection: HistoryEntry[]; total: number }>(
+      return api<{ collection: HistoryRow[]; total: number }>(
         `/history?limit=${limit}&offset=${pageParam}`,
       );
     },
@@ -279,7 +305,10 @@ export function useHistory(limit = 50) {
     staleTime: 0,
   });
 
-  const entries = useMemo(() => flattenCollectionPages(query.data?.pages), [query.data]);
+  const entries = useMemo(
+    () => flattenCollectionPages(query.data?.pages).filter(hasTrackUrn),
+    [query.data],
+  );
 
   return { entries, ...query };
 }
@@ -307,6 +336,7 @@ export function useLikedTracks(limit = 30) {
     url: (page, l) => pagedUrl('/me/likes/tracks', page, l),
     limit,
     staleTime: COLD_CACHE_MS,
+    dedupe: urnOf,
   });
 
   const tracks = query.items;
@@ -335,10 +365,12 @@ export function fetchAllLikedTracks(
 ): Promise<Track[]> {
   if (_allLikesPromise && !onPage) return _allLikesPromise;
 
+  let partial = false;
   const promise = (async () => {
     const all: Track[] = [];
     for (let page = 0; ; page++) {
       const data = await api<TrackPage>(pagedUrl('/me/likes/tracks', page, pageSize));
+      partial ||= isPartialSync(data.sync);
       for (const t of data.collection) all.push(t);
       void rememberTracks(data.collection);
       onPage?.(data.collection);
@@ -350,9 +382,14 @@ export function fetchAllLikedTracks(
 
   if (!onPage) {
     _allLikesPromise = promise;
-    promise.catch(() => {
-      _allLikesPromise = null;
-    });
+    promise.then(
+      () => {
+        if (partial && _allLikesPromise === promise) _allLikesPromise = null;
+      },
+      () => {
+        _allLikesPromise = null;
+      },
+    );
   }
 
   return promise;
@@ -460,6 +497,7 @@ export function usePlaylist(playlistUrn: string | undefined) {
     enabled: !!playlistUrn,
     staleTime: COLD_CACHE_MS,
     gcTime: INFINITE_GC_MS,
+    ...retryWhileRefreshing,
   });
 }
 
@@ -476,7 +514,7 @@ export function usePlaylistTracks(playlistUrn: string | undefined) {
     autoFetchAll: true,
   });
 
-  return { tracks: query.items, ...query };
+  return { tracks: query.items, sync: query.data?.pages[0]?.sync, ...query };
 }
 
 /* ── User Profile (cold) ──────────────────────────────────────── */
@@ -513,17 +551,24 @@ export function useUserPopularTracks(userUrn: string | undefined) {
     queryKey: ['user', userUrn, 'tracks', 'popular'],
     queryFn: async () => {
       const all: Track[] = [];
+      let partial = false;
       const pageSize = 100;
       for (let page = 0; ; page++) {
         const data = await api<TrackPage>(
           pagedUrl(`/users/${encodeURIComponent(userUrn!)}/tracks`, page, pageSize),
         );
+        partial ||= isPartialSync(data.sync);
         for (const t of data.collection) all.push(t);
         if (!data.has_more) break;
       }
       all.sort((a, b) => (b.playback_count ?? 0) - (a.playback_count ?? 0));
-      return all;
+      return { tracks: all, partial };
     },
+    select: (data) => data.tracks,
+    refetchInterval: (query) =>
+      query.state.data?.partial && query.state.dataUpdateCount < PARTIAL_REFETCH_LIMIT
+        ? PARTIAL_REFETCH_MS
+        : false,
     enabled: !!userUrn,
     staleTime: COLD_CACHE_MS,
     gcTime: INFINITE_GC_MS,
@@ -768,243 +813,6 @@ export function useDeletePlaylist() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['me', 'playlists'] });
     },
-  });
-}
-
-/* ── Search ────────────────────────────────────────────────────── */
-
-export function useSearchTracks(q: string) {
-  const query = usePagedQuery<Track>({
-    queryKey: ['search', 'tracks', q],
-    url: (page, limit) => pagedUrl('/tracks', page, limit, `q=${encodeURIComponent(q)}`),
-    limit: 20,
-    staleTime: SEARCH_CACHE_MS,
-    timeoutMs: SEARCH_TIMEOUT_MS,
-    maxPages: 5,
-    enabled: !!q.trim(),
-    dedupe: (t) => t.urn,
-  });
-
-  return { tracks: query.items, ...query };
-}
-
-export function useSearchPlaylists(q: string) {
-  const query = usePagedQuery<Playlist>({
-    queryKey: ['search', 'playlists', q],
-    url: (page, limit) => pagedUrl('/playlists', page, limit, `q=${encodeURIComponent(q)}`),
-    limit: 20,
-    staleTime: SEARCH_CACHE_MS,
-    timeoutMs: SEARCH_TIMEOUT_MS,
-    maxPages: 5,
-    enabled: !!q.trim(),
-    dedupe: (p) => p.urn,
-  });
-
-  return { playlists: query.items, ...query };
-}
-
-export function useSearchUsers(q: string) {
-  const query = usePagedQuery<SCUser>({
-    queryKey: ['search', 'users', q],
-    url: (page, limit) => pagedUrl('/users', page, limit, `q=${encodeURIComponent(q)}`),
-    limit: 20,
-    staleTime: SEARCH_CACHE_MS,
-    timeoutMs: SEARCH_TIMEOUT_MS,
-    maxPages: 5,
-    enabled: !!q.trim(),
-    dedupe: (u) => u.urn,
-  });
-
-  return { users: query.items, ...query };
-}
-
-/* ── Search: SCD-DB ───────────────────────────────────────────── */
-
-/**
- * Поиск в нашей базе (зеркало SoundCloud). Возвращает только то, что мы уже
- * индексировали — но без сетевого fan-out'а в SC API, поэтому в разы быстрее.
- * Бэк зашит на trgm-индексы + statement_timeout, фронту достаточно поднести
- * `q` и опционально `userUrn` для скоупа.
- */
-
-const SEARCH_DB_LIMIT = 20;
-const SEARCH_DB_MAX_PAGES = 10;
-
-export function useSearchDbTracks(q: string, userUrn?: string) {
-  const query = usePagedQuery<Track>({
-    queryKey: ['search', 'db', 'tracks', q, userUrn ?? ''],
-    url: (page, limit) =>
-      pagedUrl(
-        '/search/db/tracks',
-        page,
-        limit,
-        `q=${encodeURIComponent(q)}${userUrn ? `&user_urn=${encodeURIComponent(userUrn)}` : ''}`,
-      ),
-    limit: SEARCH_DB_LIMIT,
-    staleTime: SEARCH_CACHE_MS,
-    timeoutMs: SEARCH_TIMEOUT_MS,
-    maxPages: SEARCH_DB_MAX_PAGES,
-    enabled: !!q.trim(),
-    dedupe: (t) => t.urn,
-  });
-  return { tracks: query.items, ...query };
-}
-
-export function useSearchDbPlaylists(q: string, userUrn?: string) {
-  const query = usePagedQuery<Playlist>({
-    queryKey: ['search', 'db', 'playlists', q, userUrn ?? ''],
-    url: (page, limit) =>
-      pagedUrl(
-        '/search/db/playlists',
-        page,
-        limit,
-        `q=${encodeURIComponent(q)}${userUrn ? `&user_urn=${encodeURIComponent(userUrn)}` : ''}`,
-      ),
-    limit: SEARCH_DB_LIMIT,
-    staleTime: SEARCH_CACHE_MS,
-    timeoutMs: SEARCH_TIMEOUT_MS,
-    maxPages: SEARCH_DB_MAX_PAGES,
-    enabled: !!q.trim(),
-    dedupe: (p) => p.urn,
-  });
-  return { playlists: query.items, ...query };
-}
-
-export function useSearchDbUsers(q: string) {
-  const query = usePagedQuery<SCUser>({
-    queryKey: ['search', 'db', 'users', q],
-    url: (page, limit) => pagedUrl('/search/db/users', page, limit, `q=${encodeURIComponent(q)}`),
-    limit: SEARCH_DB_LIMIT,
-    staleTime: SEARCH_CACHE_MS,
-    timeoutMs: SEARCH_TIMEOUT_MS,
-    maxPages: SEARCH_DB_MAX_PAGES,
-    enabled: !!q.trim(),
-    dedupe: (u) => u.urn,
-  });
-  return { users: query.items, ...query };
-}
-
-export function useSearchDbArtists(q: string) {
-  const query = usePagedQuery<import('./discover').CatalogArtist>({
-    queryKey: ['search', 'db', 'artists', q],
-    url: (page, limit) => pagedUrl('/search/db/artists', page, limit, `q=${encodeURIComponent(q)}`),
-    limit: SEARCH_DB_LIMIT,
-    staleTime: SEARCH_CACHE_MS,
-    timeoutMs: SEARCH_TIMEOUT_MS,
-    maxPages: SEARCH_DB_MAX_PAGES,
-    enabled: !!q.trim(),
-    dedupe: (a) => a.id,
-  });
-  return { artists: query.items, ...query };
-}
-
-export function useSearchDbAlbums(q: string) {
-  const query = usePagedQuery<import('./discover').CatalogAlbum>({
-    queryKey: ['search', 'db', 'albums', q],
-    url: (page, limit) => pagedUrl('/search/db/albums', page, limit, `q=${encodeURIComponent(q)}`),
-    limit: SEARCH_DB_LIMIT,
-    staleTime: SEARCH_CACHE_MS,
-    timeoutMs: SEARCH_TIMEOUT_MS,
-    maxPages: SEARCH_DB_MAX_PAGES,
-    enabled: !!q.trim(),
-    dedupe: (a) => a.id,
-  });
-  return { albums: query.items, ...query };
-}
-
-/* ── Search: Vibe + Lyrics (AI) ───────────────────────────────── */
-
-const EMPTY_TRACKS: Track[] = [];
-const EMPTY_ATMOSPHERE: SearchAtmosphere = { topGenres: [] };
-const VIBE_PREPARING_POLLS = 6;
-
-export interface SearchAtmosphere {
-  /** Dominant genres of the result set — used to tint the page atmosphere. */
-  topGenres: string[];
-}
-
-export interface VibeSearchResponse {
-  items: Track[];
-  atmosphere: SearchAtmosphere;
-  /** "preparing" = the query vector is still being computed by the worker
-   *  (high load); items is empty, the UI shows a "preparing vibe" plaque and
-   *  this query auto-refetches until it flips to "ready". */
-  status?: 'ready' | 'preparing';
-}
-
-/**
- * Semantic "by vibe" search. Backend encodes the query (MuLan→CLAP, cached) and
- * returns SC-shaped tracks in similarity order plus an `atmosphere` hint
- * (dominant genres) the UI uses to recolour the page.
- */
-export function useVibeSearch(q: string, opts?: { limit?: number; languages?: string[] }) {
-  const queryClient = useQueryClient();
-  const limit = opts?.limit ?? 48;
-  const langs = (opts?.languages ?? []).slice().sort().join(',');
-  const queryKey = ['search', 'vibe', q, limit, langs];
-  const query = useQuery({
-    queryKey,
-    enabled: q.trim().length >= 2,
-    staleTime: SEARCH_CACHE_MS,
-    refetchInterval: (q2) =>
-      q2.state.data?.status === 'preparing' && q2.state.dataUpdateCount < VIBE_PREPARING_POLLS
-        ? 2500
-        : false,
-    queryFn: () => {
-      const usp = new URLSearchParams({ q: q.trim(), limit: String(limit) });
-      if (langs) usp.set('languages', langs);
-      return api<VibeSearchResponse>(`/search/vibe?${usp}`, undefined, 30_000);
-    },
-  });
-  const preparing = query.data?.status === 'preparing';
-  const polls = queryClient.getQueryState(queryKey)?.dataUpdateCount ?? 0;
-  const unavailable = preparing && polls >= VIBE_PREPARING_POLLS;
-  return {
-    tracks: query.data?.items ?? EMPTY_TRACKS,
-    atmosphere: query.data?.atmosphere ?? EMPTY_ATMOSPHERE,
-    preparing: preparing && !unavailable,
-    unavailable,
-    ...query,
-  };
-}
-
-export type LyricMode = 'text' | 'semantic' | 'auto';
-
-export interface LyricHit {
-  track: Track;
-  /** The matched lyric line (text mode); null for pure semantic hits. */
-  matchedLine: string | null;
-  score: number;
-}
-
-/**
- * Lyric search. `text` = keyword match over stored lyrics (returns the matched
- * line); `semantic` = lyric-embedding similarity; `auto` = both, merged.
- */
-export function useLyricSearch(q: string, mode: LyricMode = 'auto') {
-  const query = usePagedQuery<LyricHit>({
-    queryKey: ['search', 'lyrics', q, mode],
-    url: (page, limit) =>
-      pagedUrl('/search/lyrics', page, limit, `q=${encodeURIComponent(q)}&mode=${mode}`),
-    limit: SEARCH_DB_LIMIT,
-    staleTime: SEARCH_CACHE_MS,
-    timeoutMs: SEARCH_TIMEOUT_MS,
-    maxPages: SEARCH_DB_MAX_PAGES,
-    enabled: q.trim().length >= 2,
-    dedupe: (h) => h.track.urn,
-  });
-  return { hits: query.items, ...query };
-}
-
-/* ── Fallback / Seed Tracks ────────────────────────────────────── */
-
-const FALLBACK_TRACK_IDS = '2028682452,2065341288,2028677636,2209249766,2060818444,2064016848';
-
-export function useFallbackTracks() {
-  return useQuery({
-    queryKey: ['fallback', 'tracks'],
-    queryFn: () => api<TrackPage>(`/tracks?ids=${FALLBACK_TRACK_IDS}&page=0&limit=30`),
-    staleTime: 1000 * 60 * 30,
   });
 }
 

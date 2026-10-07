@@ -40,6 +40,7 @@ function Header({ count }: { count: number }) {
  *  everyone gets play-on-hover, now-playing highlight and the genre hue-ticks. */
 export const SequenceList = React.memo(function SequenceList({
   tracks,
+  notice,
   isOwner,
   onDragEnd,
   onRemove,
@@ -49,6 +50,7 @@ export const SequenceList = React.memo(function SequenceList({
   isFetchingNextPage,
 }: {
   tracks: Track[];
+  notice: React.ReactNode;
   isOwner: boolean;
   onDragEnd: (e: DragEndEvent) => void;
   onRemove: (urn: string) => void;
@@ -67,6 +69,10 @@ export const SequenceList = React.memo(function SequenceList({
   const [activeId, setActiveId] = useState<string | null>(null);
   const activeIndex = activeId ? tracks.findIndex((tr) => tr.urn === activeId) : -1;
   const activeTrack = activeIndex >= 0 ? tracks[activeIndex] : null;
+
+  if (tracks.length === 0 && notice) {
+    return <div className="py-20">{notice}</div>;
+  }
 
   if (tracks.length === 0) {
     return (
@@ -142,6 +148,7 @@ export const SequenceList = React.memo(function SequenceList({
         />
       )}
       {sentinel}
+      {notice && <div className="py-6">{notice}</div>}
     </div>
   );
 });

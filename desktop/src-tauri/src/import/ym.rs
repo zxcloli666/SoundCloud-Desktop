@@ -1,6 +1,7 @@
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use crate::rt::AppHandle;
+use crate::shared::urn::canonical_track_urn;
 use tauri::Emitter;
 
 static CANCEL_FLAG: std::sync::LazyLock<Arc<AtomicBool>> =
@@ -207,7 +208,7 @@ pub async fn ym_import_start(
 
             let query = format!("{} {}", artist, title);
             let search_url = format!(
-                "{}/tracks?q={}&limit=3&linked_partitioning=true",
+                "{}/tracks?q={}&limit=3",
                 backend_url,
                 urlencoding::encode(&query)
             );
@@ -220,15 +221,14 @@ pub async fn ym_import_start(
 
             if let Ok(resp) = search_resp {
                 match resp.json::<ScSearchResult>().await { Ok(results) => {
-                    if let Some(urn) = results.collection.first().and_then(|t| t.urn.as_deref()) {
+                    if let Some(urn) = results
+                        .collection
+                        .first()
+                        .and_then(|t| t.urn.as_deref())
+                        .and_then(canonical_track_urn)
+                    {
                         found += 1;
-                        app.emit(
-                            "ym_import:match",
-                            YmImportMatch {
-                                urn: urn.to_string(),
-                            },
-                        )
-                        .ok();
+                        app.emit("ym_import:match", YmImportMatch { urn }).ok();
                     } else {
                         not_found += 1;
                     }

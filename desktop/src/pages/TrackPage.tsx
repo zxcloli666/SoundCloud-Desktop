@@ -16,7 +16,6 @@ import {useInfiniteScroll, useRelatedTracks, useTrackComments, useTrackFavoriter
 import {ChevronLeft, Loader2} from '../lib/icons';
 import {setLikedUrn} from '../lib/likes';
 import {usePerfMode} from '../lib/perf';
-import {useScdMeta} from '../lib/scdMeta';
 import {useAuthStore} from '../stores/auth';
 import {type Track, usePlayerStore} from '../stores/player';
 
@@ -67,8 +66,7 @@ export const TrackPage = React.memo(function TrackPage() {
   const { data: relatedData, isLoading: relatedLoading } = useRelatedTracks(urn, 10);
   const { data: favoritersData } = useTrackFavoriters(urn, 12);
 
-    const relatedRaw = useMemo(() => relatedData?.collection ?? [], [relatedData]);
-    const related = useScdMeta(relatedRaw);
+    const related = useMemo(() => relatedData?.collection ?? [], [relatedData]);
     const favoriters = useMemo(() => favoritersData?.collection ?? [], [favoritersData]);
 
   const trackUrn = track?.urn;

@@ -78,11 +78,8 @@ let _bulkLoaded = false;
 export async function loadAllDislikedIds(): Promise<void> {
   if (_bulkLoaded) return;
   try {
-    const r = await api<{ ids: string[] }>('/dislikes/ids');
-    for (const id of r.ids) {
-      const urn = id.startsWith('soundcloud:tracks:') ? id : `soundcloud:tracks:${id}`;
-      _dislikedUrns.set(urn, true);
-    }
+    const r = await api<{ urns: string[] }>('/dislikes/ids');
+    for (const urn of r.urns) _dislikedUrns.set(urn, true);
     _bulkLoaded = true;
     notify();
   } catch {
@@ -99,14 +96,9 @@ export async function toggleDislike(
   if (nowDisliked) recordEvent('dislike', track.urn);
 
   try {
-    if (nowDisliked) {
-      await api(`/dislikes/${encodeURIComponent(track.urn)}`, {
-        method: 'POST',
-        body: JSON.stringify(track),
-      });
-    } else {
-      await api(`/dislikes/${encodeURIComponent(track.urn)}`, { method: 'DELETE' });
-    }
+    await api(`/dislikes/${encodeURIComponent(track.urn)}`, {
+      method: nowDisliked ? 'POST' : 'DELETE',
+    });
     qc.invalidateQueries({ queryKey: ['dislikes'] });
   } catch {
     setDislikedUrn(track.urn, !nowDisliked);

@@ -139,12 +139,6 @@ export function topGenres(
         }));
 }
 
-const SC_URL = /^https?:\/\/(www\.|m\.|on\.)?soundcloud\.com\/.+/i;
-
-export function isSoundCloudUrl(input: string): boolean {
-    return SC_URL.test(input.trim());
-}
-
 /** Positional hero stride — used ONLY for the loading skeleton. */
 export function isHeroIndex(index: number): boolean {
     return index > 0 && (index + 4) % 9 === 0;
@@ -172,6 +166,10 @@ export function isHeroUrn(urn: string): boolean {
 export function isHeroPos(index: number): boolean {
     const m = index % 10;
     return m === 2 || m === 7;
+}
+
+export function toWallItems(tracks: Track[], kind: TileKind): WallItem[] {
+    return tracks.filter((track) => track?.urn).map((track, i) => ({track, kind, hero: isHeroPos(i)}));
 }
 
 /** Key tiles by stable identity (urn), never array index — a tile that shifts

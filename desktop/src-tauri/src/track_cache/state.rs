@@ -15,6 +15,7 @@ use tokio::io::{AsyncWriteExt, BufWriter};
 use tokio::sync::{Mutex, Notify, OwnedSemaphorePermit, Semaphore};
 
 use crate::app::diagnostics::log_native;
+use crate::shared::urn::{canonical_track_urn, track_urn_from_storage_name};
 use crate::track_cache::direct_download::try_download;
 use crate::track_cache::sc_anon::AnonClient;
 use crate::track_cache::transcode;
@@ -111,8 +112,7 @@ fn urn_to_filename(urn: &str) -> String {
 }
 
 fn filename_to_urn(filename: &str) -> Option<String> {
-    let stripped = filename.strip_suffix(".audio")?;
-    Some(stripped.replace('_', ":"))
+    track_urn_from_storage_name(filename.strip_suffix(".audio")?)
 }
 
 fn is_audio_cache_file(path: &Path) -> bool {
@@ -510,6 +510,34 @@ fn sweep_temp_files(dir: &Path) {
     }
 }
 
+fn rename_legacy_files(dir: &Path) {
+    let Ok(entries) = std::fs::read_dir(dir) else {
+        return;
+    };
+    for entry in entries.flatten() {
+        let name = entry.file_name();
+        let Some(urn) = name
+            .to_str()
+            .and_then(|name| name.strip_suffix(".audio"))
+            .and_then(canonical_track_urn)
+        else {
+            continue;
+        };
+        let legacy = entry.path();
+        let canonical = dir.join(urn_to_filename(&urn));
+        if canonical.exists() {
+            std::fs::remove_file(&legacy).ok();
+            remove_cache_metadata(&legacy);
+        } else if std::fs::rename(&legacy, &canonical).is_ok() {
+            std::fs::rename(
+                cache_metadata_path(&legacy),
+                cache_metadata_path(&canonical),
+            )
+            .ok();
+        }
+    }
+}
+
 /// Valid raw URNs awaiting transcode; drops undersized stragglers in passing.
 fn list_incoming_urns(dir: &Path) -> Vec<String> {
     let mut out = Vec::new();
@@ -574,6 +602,7 @@ pub fn init(audio_dir: PathBuf, liked_dir: PathBuf, incoming_dir: PathBuf) -> Tr
     // sweep matches is live.
     for dir in [&incoming_dir, &audio_dir, &liked_dir] {
         sweep_temp_files(dir);
+        rename_legacy_files(dir);
     }
 
     let client = sc_fingerprint::builder(None)
@@ -2367,5 +2396,52 @@ impl TrackCacheState {
             "[TrackCache] evicted {removed} files, freed {} MB",
             (before - total) / (1024 * 1024)
         );
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{cache_metadata_path, filename_to_urn, rename_legacy_files};
+
+    #[test]
+    fn filename_to_urn_decodes_only_canonical_track_files() {
+        assert_eq!(
+            filename_to_urn("soundcloud_tracks_42.audio").as_deref(),
+            Some("soundcloud:tracks:42")
+        );
+        for name in [
+            "42.audio",
+            "soundcloud_tracks_42",
+            "soundcloud_tracks_042.audio",
+            "soundcloud_users_42.audio",
+            "soundcloud_tracks_42.audio.meta.json",
+        ] {
+            assert_eq!(filename_to_urn(name), None, "{name:?}");
+        }
+    }
+
+    #[test]
+    fn legacy_bare_id_files_move_to_canonical_names() {
+        let dir = std::env::temp_dir().join(format!("scd-track-cache-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        std::fs::write(dir.join("42.audio"), b"legacy").unwrap();
+        std::fs::write(cache_metadata_path(&dir.join("42.audio")), b"{}").unwrap();
+        std::fs::write(dir.join("7.audio"), b"duplicate").unwrap();
+        std::fs::write(dir.join("soundcloud_tracks_7.audio"), b"kept").unwrap();
+        std::fs::write(dir.join("notes.audio"), b"other").unwrap();
+
+        rename_legacy_files(&dir);
+
+        let renamed = dir.join("soundcloud_tracks_42.audio");
+        assert_eq!(std::fs::read(&renamed).unwrap(), b"legacy");
+        assert!(cache_metadata_path(&renamed).exists());
+        assert!(!dir.join("42.audio").exists());
+        assert_eq!(
+            std::fs::read(dir.join("soundcloud_tracks_7.audio")).unwrap(),
+            b"kept"
+        );
+        assert!(!dir.join("7.audio").exists());
+        assert!(dir.join("notes.audio").exists());
+        std::fs::remove_dir_all(&dir).ok();
     }
 }

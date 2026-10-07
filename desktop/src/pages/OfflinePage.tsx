@@ -14,6 +14,7 @@ import {useOfflineLibrary} from '../components/offline/useOfflineLibrary';
 import {Atmosphere} from '../components/search/Atmosphere';
 import {useAuthStatus} from '../lib/auth-status';
 import {ensureTrackCached} from '../lib/cache';
+import {idOf} from '../lib/ids';
 import {useCacheLikes} from '../lib/likes-cache';
 import {usePerfMode} from '../lib/perf';
 import {useAppStatusStore} from '../stores/app-status';
@@ -81,7 +82,7 @@ export const OfflinePage = React.memo(() => {
     const urn = forge?.transcodingUrns[0];
     if (!urn) return null;
     const entry = lib.cachedEntries.find((e) => e.urn === urn);
-    const title = entry?.track.title ?? urn.split(':').pop() ?? urn;
+    const title = entry?.track.title ?? idOf(urn) ?? urn;
     const extra = (forge?.transcodingUrns.length ?? 0) - 1;
     return extra > 0 ? `${title} +${extra}` : title;
   }, [forge?.transcodingUrns, lib.cachedEntries]);

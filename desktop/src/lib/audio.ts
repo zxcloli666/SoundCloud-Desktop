@@ -23,6 +23,7 @@ import {trackedInvoke as invoke} from './diagnostics';
 import {isUrnDisliked} from './dislikes';
 import {recordEvent} from './events';
 import {art} from './formatters';
+import {trackUrn} from './ids';
 import {rememberTracks} from './offline-index';
 import {getUrnCluster, recordClusterFeedback} from './recsFeedback';
 import {getArtistDisplay, getDisplayTitle} from './track-display';
@@ -436,11 +437,12 @@ function afterLoad(track: Track, gen: number) {
       : track;
 
   // Record to listening history (fire-and-forget), skip on repeat-one (same track looping)
-  if (historyTrack?.urn && historyTrack.title && usePlayerStore.getState().repeat !== 'one') {
+  const historyUrn = trackUrn(historyTrack?.urn);
+  if (historyUrn && historyTrack?.title && usePlayerStore.getState().repeat !== 'one') {
     api('/history', {
       method: 'POST',
       body: JSON.stringify({
-        scTrackId: historyTrack.urn,
+        scTrackId: historyUrn,
         title: getDisplayTitle(historyTrack),
         artistName: getArtistDisplay(historyTrack).primary || historyTrack.user?.username || '',
         artistUrn: historyTrack.user?.urn || null,

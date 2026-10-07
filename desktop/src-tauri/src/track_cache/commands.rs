@@ -1,5 +1,6 @@
 use tauri::State;
 
+use crate::shared::urn::canonical_track_urn;
 use crate::track_cache::state::{
     CacheInventoryEntry, CacheRequest, LikeCacheEntry, TrackCacheEntry, TrackCacheState,
     TranscodeStatus,
@@ -24,6 +25,10 @@ pub struct EnsureCachedRequest {
     /// API-reported track length (ms) for truncated-download detection.
     #[serde(default)]
     pub duration_ms: Option<u64>,
+}
+
+fn require_track_urn(urn: &str) -> Result<String, String> {
+    canonical_track_urn(urn).ok_or_else(|| format!("invalid track urn: {urn}"))
 }
 
 impl EnsureCachedRequest {
@@ -58,6 +63,7 @@ pub async fn track_ensure_cached(
     request: EnsureCachedRequest,
     state: State<'_, TrackCacheState>,
 ) -> Result<TrackCacheEntry, String> {
+    let urn = require_track_urn(&request.urn)?;
     let fallback_urls = request
         .fallback_urls()
         .ok_or_else(|| "no stream URL provided".to_string())?;
@@ -65,7 +71,7 @@ pub async fn track_ensure_cached(
     let download_urls = request.download_urls.unwrap_or_default();
     state
         .ensure_cached(CacheRequest {
-            urn: &request.urn,
+            urn: &urn,
             urls: &fallback_urls,
             download_urls: &download_urls,
             storage_urls: &storage_urls,
@@ -86,6 +92,7 @@ pub async fn track_export(
     cover_url: Option<String>,
     state: State<'_, TrackCacheState>,
 ) -> Result<String, String> {
+    let urn = require_track_urn(&request.urn)?;
     let fallback_urls = request
         .fallback_urls()
         .ok_or_else(|| "no stream URL provided".to_string())?;
@@ -94,7 +101,7 @@ pub async fn track_export(
     state
         .export_track(
             CacheRequest {
-                urn: &request.urn,
+                urn: &urn,
                 urls: &fallback_urls,
                 download_urls: &download_urls,
                 storage_urls: &storage_urls,
@@ -111,7 +118,7 @@ pub async fn track_export(
 
 #[tauri::command]
 pub fn track_is_cached(urn: String, state: State<'_, TrackCacheState>) -> bool {
-    state.is_cached(&urn)
+    canonical_track_urn(&urn).is_some_and(|urn| state.is_cached(&urn))
 }
 
 #[tauri::command]
@@ -121,7 +128,7 @@ pub fn track_transcode_status(state: State<'_, TrackCacheState>) -> TranscodeSta
 
 #[tauri::command]
 pub fn track_get_cache_path(urn: String, state: State<'_, TrackCacheState>) -> Option<String> {
-    state.get_cache_path(&urn)
+    canonical_track_urn(&urn).and_then(|urn| state.get_cache_path(&urn))
 }
 
 #[tauri::command]
@@ -129,7 +136,7 @@ pub fn track_get_cache_info(
     urn: String,
     state: State<'_, TrackCacheState>,
 ) -> Option<TrackCacheEntry> {
-    state.get_cache_entry(&urn)
+    canonical_track_urn(&urn).and_then(|urn| state.get_cache_entry(&urn))
 }
 
 #[tauri::command]
@@ -139,7 +146,10 @@ pub async fn track_preload(
 ) -> Result<(), String> {
     let mut queued = 0u32;
     for entry in entries {
-        if state.is_cached(&entry.urn) {
+        let Some(urn) = canonical_track_urn(&entry.urn) else {
+            continue;
+        };
+        if state.is_cached(&urn) {
             continue;
         }
 
@@ -149,7 +159,6 @@ pub async fn track_preload(
 
         queued += 1;
         let state = state.inner().clone();
-        let urn = entry.urn;
         let fallback_urls: Vec<String> = match (entry.urls, entry.url) {
             (Some(u), _) if !u.is_empty() => u,
             (_, Some(u)) => vec![u],
@@ -204,7 +213,7 @@ pub fn track_clear_cache(state: State<'_, TrackCacheState>) {
 
 #[tauri::command]
 pub fn track_remove_cached(urn: String, state: State<'_, TrackCacheState>) -> bool {
-    state.remove_cached(&urn)
+    canonical_track_urn(&urn).is_some_and(|urn| state.remove_cached(&urn))
 }
 
 #[tauri::command]
@@ -232,6 +241,13 @@ pub async fn track_cache_likes(
     entries: Vec<LikeCacheEntry>,
     state: State<'_, TrackCacheState>,
 ) -> Result<(), String> {
+    let entries: Vec<LikeCacheEntry> = entries
+        .into_iter()
+        .filter_map(|mut entry| {
+            entry.urn = canonical_track_urn(&entry.urn)?;
+            Some(entry)
+        })
+        .collect();
     let state = state.inner().clone();
     tokio::spawn(async move {
         if let Err(err) = state.cache_likes(entries).await {

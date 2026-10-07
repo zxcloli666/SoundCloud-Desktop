@@ -2,36 +2,32 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { tauriStorage } from '../lib/tauri-storage';
 
-/**
- * `db` — поиск в локальной базе SCD (быстрее, ограничен зеркалом).
- * `sc` — fan-out в SoundCloud API (медленнее, видит всё).
- */
-export type SearchSource = 'db' | 'sc';
-
-/**
- * `text` — лексический поиск (название/артист + строчки лирики) с тизером «по вайбу».
- * `vibe` — чисто семантический поиск по вайбу (борда + атмосфера под выдачу).
- */
-export type SearchMode = 'text' | 'vibe';
+export type SearchMode = 'catalog' | 'vibe' | 'soundcloud';
 
 interface SearchPrefsState {
-  source: SearchSource;
-  setSource: (s: SearchSource) => void;
-    mode: SearchMode;
-    setMode: (m: SearchMode) => void;
+  mode: SearchMode;
+  setMode: (mode: SearchMode) => void;
+}
+
+export function migrateSearchPrefs(persisted: unknown, version: number): SearchPrefsState {
+  if (version >= 1) return persisted as SearchPrefsState;
+  const old = persisted as { source?: string; mode?: string } | null;
+  const mode: SearchMode =
+    old?.source === 'sc' ? 'soundcloud' : old?.mode === 'vibe' ? 'vibe' : 'catalog';
+  return { mode } as SearchPrefsState;
 }
 
 export const useSearchPrefsStore = create<SearchPrefsState>()(
   persist(
     (set) => ({
-      source: 'db',
-      setSource: (source) => set({ source }),
-        mode: 'text',
-        setMode: (mode) => set({mode}),
+      mode: 'catalog',
+      setMode: (mode) => set({ mode }),
     }),
     {
       name: 'sc-search-prefs',
+      version: 1,
       storage: createJSONStorage(() => tauriStorage),
+      migrate: migrateSearchPrefs,
     },
   ),
 );

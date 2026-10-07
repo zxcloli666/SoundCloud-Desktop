@@ -7,7 +7,7 @@ import {type HistoryEntry, useHistory, useInfiniteScroll} from '../../lib/hooks'
 import {Loader2, Music, playWhite14} from '../../lib/icons';
 import {usePlayerStore} from '../../stores/player';
 import {VirtualList} from '../ui/VirtualList';
-import {formatHistoryDate, historyEntryToTrack, historyTrackUrn} from './history-utils';
+import {formatHistoryDate, historyEntryToTrack} from './history-utils';
 
 export const HistoryTab = React.memo(function HistoryTab() {
     const {t} = useTranslation();
@@ -112,7 +112,7 @@ export const HistoryTab = React.memo(function HistoryTab() {
                                     <p
                                         className="text-[14px] font-medium truncate text-white/90 hover:text-white cursor-pointer transition-colors"
                                         onClick={() =>
-                                            navigate(`/track/${encodeURIComponent(historyTrackUrn(row.entry.scTrackId))}`)
+                                            navigate(`/track/${encodeURIComponent(row.entry.trackUrn)}`)
                                         }
                                     >
                                         {row.entry.title}
