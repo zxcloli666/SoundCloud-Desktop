@@ -6,6 +6,7 @@ import {tauriStorage} from '../lib/tauri-storage';
 export type ThemePreset = 'soundcloud' | 'dark' | 'neon' | 'forest' | 'crimson' | 'custom';
 export type StartupPage = 'home' | 'search' | 'library' | 'settings';
 export type DiscordRpcMode = 'track' | 'artist' | 'activity';
+export type StreamQuality = 'auto' | 'sq' | 'hq';
 export interface SidebarPinnedPlaylist {
   urn: string;
   title: string;
@@ -72,7 +73,7 @@ export interface SettingsState {
   eqGains: number[];
   eqPreset: string;
   normalizeVolume: boolean;
-  highQualityStreaming: boolean;
+  streamQuality: StreamQuality;
   bypassWhitelist: boolean;
   sidebarCollapsed: boolean;
   floatingComments: boolean;
@@ -105,7 +106,7 @@ export interface SettingsState {
   setEqPreset: (preset: string) => void;
   setEqBand: (index: number, gain: number) => void;
   setNormalizeVolume: (enabled: boolean) => void;
-  setHighQualityStreaming: (enabled: boolean) => void;
+  setStreamQuality: (quality: StreamQuality) => void;
   setBypassWhitelist: (enabled: boolean) => void;
   toggleSidebar: () => void;
   setFloatingComments: (v: boolean) => void;
@@ -146,7 +147,7 @@ const DEFAULTS = {
   eqGains: DEFAULT_EQ_GAINS,
   eqPreset: 'flat',
   normalizeVolume: true,
-  highQualityStreaming: false,
+  streamQuality: 'auto' as StreamQuality,
   bypassWhitelist: false,
   sidebarCollapsed: false,
   floatingComments: true,
@@ -197,7 +198,7 @@ export const useSettingsStore = create<SettingsState>()(
           return { eqGains, eqPreset: 'custom' };
         }),
       setNormalizeVolume: (normalizeVolume) => set({ normalizeVolume }),
-      setHighQualityStreaming: (highQualityStreaming) => set({ highQualityStreaming }),
+      setStreamQuality: (streamQuality) => set({ streamQuality }),
       setBypassWhitelist: (bypassWhitelist) => set({ bypassWhitelist }),
       toggleSidebar: () => set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
       setFloatingComments: (floatingComments) => set({ floatingComments }),
@@ -238,11 +239,13 @@ export const useSettingsStore = create<SettingsState>()(
     {
       name: 'sc-settings',
       storage: createJSONStorage(() => tauriStorage),
-      version: 19,
+      version: 20,
       migrate: (persistedState) => {
         const prev = (persistedState ?? {}) as Partial<SettingsState> & {
           soundwaveDiversity?: number;
+          highQualityStreaming?: boolean;
         };
+        const { highQualityStreaming, ...kept } = prev;
         // v13 → v14: diversity-slider (0..1) → toggle ('similar' | 'diverse').
         // > 0.5 трактуем как 'diverse', иначе 'similar'.
         const inferredMode: 'similar' | 'diverse' =
@@ -251,8 +254,9 @@ export const useSettingsStore = create<SettingsState>()(
             : 'similar';
         return {
           ...DEFAULTS,
-          ...prev,
+          ...kept,
           soundwaveMode: prev.soundwaveMode ?? inferredMode,
+          streamQuality: prev.streamQuality ?? (highQualityStreaming ? 'hq' : 'auto'),
         } as SettingsState;
       },
       partialize: (s) => ({
@@ -274,7 +278,7 @@ export const useSettingsStore = create<SettingsState>()(
         eqGains: s.eqGains,
         eqPreset: s.eqPreset,
         normalizeVolume: s.normalizeVolume,
-        highQualityStreaming: s.highQualityStreaming,
+        streamQuality: s.streamQuality,
         bypassWhitelist: s.bypassWhitelist,
         sidebarCollapsed: s.sidebarCollapsed,
         floatingComments: s.floatingComments,

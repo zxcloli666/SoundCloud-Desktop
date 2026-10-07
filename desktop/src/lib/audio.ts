@@ -12,6 +12,7 @@ import {
   isHqStreaming,
   resolveTrackFromStreaming,
   streamFallbackUrls,
+  wantsHqUpgrade,
 } from './api';
 import {
   enforceAudioCacheLimit,
@@ -20,6 +21,7 @@ import {
   getCacheInfo,
   removeCachedTrack,
   type TrackCacheInfo,
+  upgradeCachedTrack,
 } from './cache';
 import {trackedInvoke as invoke} from './diagnostics';
 import {isUrnDisliked} from './dislikes';
@@ -381,6 +383,9 @@ async function loadTrack(track: Track, resumeAt = 0) {
       acceptedShortFile = cached.acceptedShort;
       usePlayerStore.getState().setPlaybackTransport(cached.quality, cached.source);
       console.log('[Audio] Playing from cache:', urn);
+      if (cached.quality !== 'hq' && !cached.acceptedShort && wantsHqUpgrade()) {
+        void upgradeCachedTrack(urn, expectedDurationMs(track), storageQuality).catch(console.error);
+      }
       const loadResult = await loadCachedFile(
         urn,
         cached.path,

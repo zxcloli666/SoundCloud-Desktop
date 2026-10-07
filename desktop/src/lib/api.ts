@@ -14,4 +14,5 @@ export {
   isHqStreaming,
   resolveTrackFromStreaming,
   streamFallbackUrls,
+  wantsHqUpgrade,
 } from './streaming';

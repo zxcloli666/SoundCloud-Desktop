@@ -131,7 +131,7 @@ export function Segmented<T extends string>({
                                                 columns,
                                             }: {
     value: T;
-    options: ReadonlyArray<{ id: T; label: string }>;
+    options: ReadonlyArray<{ id: T; label: string; disabled?: boolean; adornment?: ReactNode }>;
     onChange: (v: T) => void;
     columns?: number;
 }) {
@@ -146,14 +146,17 @@ export function Segmented<T extends string>({
                     <button
                         key={o.id}
                         type="button"
+                        disabled={o.disabled}
                         onClick={() => onChange(o.id)}
-                        className={`rounded-xl border px-3 py-2.5 text-[12.5px] font-semibold transition-all duration-200 cursor-pointer ${
-                            active
-                                ? 'text-white'
-                                : 'text-white/45 hover:text-white/70 hover:bg-white/[0.05] border-white/[0.05] bg-white/[0.02]'
+                        className={`inline-flex items-center justify-center gap-1.5 rounded-xl border px-3 py-2.5 text-[12.5px] font-semibold transition-all duration-200 ${
+                            o.disabled
+                                ? 'cursor-not-allowed text-white/30 border-white/[0.04] bg-white/[0.015]'
+                                : active
+                                    ? 'cursor-pointer text-white'
+                                    : 'cursor-pointer text-white/45 hover:text-white/70 hover:bg-white/[0.05] border-white/[0.05] bg-white/[0.02]'
                         }`}
                         style={
-                            active
+                            active && !o.disabled
                                 ? {
                                     background:
                                         'linear-gradient(180deg, var(--color-accent-glow), transparent), rgba(255,255,255,0.05)',
@@ -164,6 +167,7 @@ export function Segmented<T extends string>({
                         }
                     >
                         {o.label}
+                        {o.adornment}
                     </button>
                 );
             })}
