@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { DISCORD_URL } from '../../lib/constants';
 import { requestProbe, useHostStatusStore } from '../../lib/host-status';
 import { Download, ExternalLink, RefreshCw, Star, WifiOff, X } from '../../lib/icons';
 import { useAppStatusStore } from '../../stores/app-status';
@@ -10,7 +11,6 @@ import { Modal, ModalClose, ModalContent, ModalTitle } from '../ui/Modal';
 import { useFailoverUi } from './useFailoverUi';
 
 const BOOSTY_URL = 'https://boosty.to/lolinamide';
-const DISCORD_URL = 'https://discord.gg/xQcGBP8fGG';
 
 function LinkButton({ href, label }: { href: string; label: string }) {
   return (

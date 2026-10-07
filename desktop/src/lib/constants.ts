@@ -17,6 +17,7 @@ export const PAY_BASE = import.meta.env.VITE_PAY_BASE || 'https://pay.scnative.s
 export const GITHUB_OWNER = 'zxcloli666';
 export const GITHUB_REPO = 'SoundCloud-Desktop';
 export const GITHUB_REPO_EN = 'SoundCloud-Desktop-EN';
+export const DISCORD_URL = 'https://discord.gg/xQcGBP8fGG';
 export const APP_VERSION = __APP_VERSION__;
 
 export const SHOW_NEWS = true;

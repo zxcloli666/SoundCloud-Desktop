@@ -5,6 +5,7 @@ import {AccountCard} from './cards/AccountCard';
 import {AudioDeviceCard} from './cards/AudioDeviceCard';
 import {CacheCard} from './cards/CacheCard';
 import {DiscordCard} from './cards/DiscordCard';
+import {HelpCard} from './cards/HelpCard';
 import {ImportCard} from './cards/ImportCard';
 import {LanguageCard} from './cards/LanguageCard';
 import {NetworkCard} from './cards/NetworkCard';
@@ -43,6 +44,7 @@ export const SETTINGS_CATEGORIES: SettingsCategory[] = [
                 <LanguageCard/>
                 <StartupCard/>
                 <NotificationsCard/>
+                <HelpCard/>
             </>
         ),
     },

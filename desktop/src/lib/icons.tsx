@@ -12,6 +12,7 @@ import {
   AudioLines as _AudioLines,
   Bell as _Bell,
   Bookmark as _Bookmark,
+  BookOpen as _BookOpen,
   Calendar as _Calendar,
   Check as _Check,
   ChevronDown as _ChevronDown,
@@ -29,6 +30,7 @@ import {
   Eye as _Eye,
   FileDown as _FileDown,
   Flame as _Flame,
+  FolderOpen as _FolderOpen,
   Fullscreen as _Fullscreen,
   Globe as _Globe,
   GripVertical as _GripVertical,
@@ -37,6 +39,7 @@ import {
   Heart as _Heart,
   Home as _Home,
   Library as _Library,
+  LifeBuoy as _LifeBuoy,
   Link as _Link,
   Link2 as _Link2,
   ListMusic as _ListMusic,
@@ -107,6 +110,7 @@ export const ArrowDownToLine = memo(_ArrowDownToLine);
 export const Calendar = memo(_Calendar);
 export const FileDown = memo(_FileDown);
 export const Flame = memo(_Flame);
+export const FolderOpen = memo(_FolderOpen);
 export const Wifi = memo(_Wifi);
 export const WifiOff = memo(_WifiOff);
 export const Check = memo(_Check);
@@ -119,6 +123,7 @@ export const ChevronRight = memo(_ChevronRight);
 export const ChevronUp = memo(_ChevronUp);
 export const Clock = memo(_Clock);
 export const Bell = memo(_Bell);
+export const BookOpen = memo(_BookOpen);
 export const Bookmark = memo(_Bookmark);
 export const Cloud = memo(_Cloud);
 export const Compass = memo(_Compass);
@@ -133,6 +138,7 @@ export const Hash = memo(_Hash);
 export const Headphones = memo(_Headphones);
 export const Heart = memo(_Heart);
 export const Home = memo(_Home);
+export const LifeBuoy = memo(_LifeBuoy);
 export const Instagram = memo(({ size, className }: { size?: number; className?: string }) => (
   <SimpleIcon icon={siInstagram} size={size} className={className} />
 ));
