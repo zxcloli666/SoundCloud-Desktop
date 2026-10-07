@@ -12,6 +12,8 @@ import {toggleWindowFullscreen} from '../../lib/window';
 import {useLyricsStore} from '../../stores/lyrics';
 import {usePlayerStore} from '../../stores/player';
 import {useSettingsStore} from '../../stores/settings';
+import {KeyCaps} from '../ui/KeyCap';
+import {GlobalBindingsGroup} from './GlobalBindingsGroup';
 import {NowPlayingBar} from './NowPlayingBar';
 import {Sidebar} from './Sidebar';
 import {Titlebar} from './Titlebar';
@@ -69,12 +71,6 @@ function getVolumeStep(repeatCount: number): number {
 
 /* ── Keybindings dialog ───────────────────────────────────── */
 
-const KeyCap = ({ children }: { children: React.ReactNode }) => (
-  <kbd className="inline-flex items-center justify-center min-w-[28px] h-[28px] px-1.5 rounded-lg bg-white/[0.08] border border-white/[0.1] text-[12px] font-semibold text-white/70 font-mono shadow-[0_1px_2px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.06)]">
-    {children}
-  </kbd>
-);
-
 const KeybindingsDialog = React.memo(
   ({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) => {
     const { t } = useTranslation();
@@ -114,16 +110,13 @@ const KeybindingsDialog = React.memo(
                         className="flex items-center justify-between py-2 px-3 rounded-xl hover:bg-white/[0.03] transition-colors"
                       >
                         <span className="text-[13px] text-white/60">{t(bind.label)}</span>
-                        <div className="flex items-center gap-1">
-                          {bind.display.split(' ').map((part, i) => (
-                            <KeyCap key={i}>{part}</KeyCap>
-                          ))}
-                        </div>
+                        <KeyCaps labels={bind.display.split(' ')} />
                       </div>
                     ))}
                   </div>
                 </div>
               ))}
+              <GlobalBindingsGroup />
             </div>
 
             {/* Footer */}
