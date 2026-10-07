@@ -18,12 +18,21 @@ export interface CacheLikesProgress {
  *  Возвращает число поставленных в очередь треков (0 = лайков нет). */
 export async function startCacheLikes(): Promise<number> {
   const [
-    { fetchAllLikedTracks },
+    { fetchLikedTracksSnapshot },
     { buildStorageUrls, downloadFallbackUrls, streamFallbackUrls, getSessionId, isHqStreaming },
-  ] = await Promise.all([import('./hooks'), import('./api')]);
+    { getOfflineLikedTracks },
+    { mergeLikedTracks },
+  ] = await Promise.all([
+    import('./hooks'),
+    import('./api'),
+    import('./offline-index'),
+    import('./liked-merge'),
+  ]);
   const hq = isHqStreaming();
   const sessionId = getSessionId();
-  const tracks = await fetchAllLikedTracks(200);
+  const result = await fetchLikedTracksSnapshot(200).catch(() => null);
+  const local = await getOfflineLikedTracks();
+  const tracks = result ? mergeLikedTracks(local, result.tracks, result) : local;
   const entries: LikeCacheEntry[] = tracks.map((track) => ({
     urn: track.urn,
     urls: streamFallbackUrls(track.urn, hq),
