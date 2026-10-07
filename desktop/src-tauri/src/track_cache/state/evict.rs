@@ -146,7 +146,7 @@ mod tests {
         age(&state.file_path(replayed), 600);
         age(&state.file_path(forgotten), 300);
 
-        assert!(state.get_cache_entry(replayed).is_some());
+        state.mark_played(replayed);
         state.enforce_limit_bytes(MIN_AUDIO_SIZE);
 
         assert!(state.file_path(replayed).exists());

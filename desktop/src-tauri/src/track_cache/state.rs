@@ -17,7 +17,6 @@ use tokio::sync::{Mutex, Notify, OwnedSemaphorePermit, Semaphore};
 use crate::app::diagnostics::log_native;
 use crate::network::edge::{Hop, Tier};
 use crate::network::system_proxy::follow;
-use crate::shared::file_lru::mark_used;
 use crate::shared::urn::{canonical_track_urn, track_urn_from_storage_name};
 use crate::track_cache::api_download::{StreamJob, download_api};
 use crate::track_cache::direct_download::try_download;
@@ -27,6 +26,7 @@ use crate::track_cache::transcode;
 mod bulk;
 mod evict;
 mod export;
+mod pinned;
 
 pub use bulk::{BulkCacheEntry, BulkCacheStatus};
 pub use export::ExportOutcome;
@@ -241,10 +241,11 @@ pub struct TrackCacheEntry {
     pub quality: Option<String>,
     pub source: Option<String>,
     pub accepted_short: bool,
+    pub pinned: bool,
 }
 
 impl TrackCacheEntry {
-    fn from_path_and_meta(path: &Path, meta: Option<TrackCacheMetadata>) -> Self {
+    fn from_path_and_meta(path: &Path, meta: Option<TrackCacheMetadata>, pinned: bool) -> Self {
         let accepted_short = meta
             .as_ref()
             .is_some_and(|m| m.duration_ms.is_some() && m.duration_ms == m.expected_duration_ms);
@@ -253,6 +254,7 @@ impl TrackCacheEntry {
             quality: meta.as_ref().map(|m| m.quality.label().to_string()),
             source: meta.and_then(|m| m.source.map(|s| s.label().to_string())),
             accepted_short,
+            pinned,
         }
     }
 }
@@ -514,6 +516,7 @@ pub struct TrackCacheState {
     /// URNs with a transcode in flight, so live + recovery requests coalesce.
     transcoding: Arc<StdMutex<HashSet<String>>>,
     probing: Arc<StdMutex<HashSet<PathBuf>>>,
+    exporting: Arc<StdMutex<HashMap<String, u32>>>,
     /// Per-URN count of consecutive "transcoded too short" results, to cap
     /// re-downloads of preview-only tracks (best-effort, per session).
     truncated_retries: Arc<StdMutex<HashMap<String, u8>>>,
@@ -586,6 +589,7 @@ pub fn init(audio_dir: PathBuf, liked_dir: PathBuf, incoming_dir: PathBuf) -> Tr
         transcode_limiter: Arc::new(Semaphore::new(MAX_PARALLEL_TRANSCODES)),
         transcoding: Arc::new(StdMutex::new(HashSet::new())),
         probing: Arc::new(StdMutex::new(HashSet::new())),
+        exporting: Arc::new(StdMutex::new(HashMap::new())),
         truncated_retries: Arc::new(StdMutex::new(HashMap::new())),
         bulk_status: Arc::new(StdMutex::new(None)),
         bulk_cancel: Arc::new(std::sync::atomic::AtomicBool::new(false)),
@@ -1017,8 +1021,7 @@ impl TrackCacheState {
             self.remove_cached(urn);
             return None;
         }
-        mark_used(&path);
-        Some(TrackCacheEntry::from_path_and_meta(&path, meta))
+        Some(self.entry_at(&path, meta))
     }
 
     /// Download track, save to cache. Coalesces concurrent requests for the same URN.
@@ -1129,10 +1132,7 @@ impl TrackCacheState {
                     // Re-resolve: the transcode may have already promoted А→Б and
                     // deleted the raw path stored in the slot.
                     let current = self.resolve_path(urn).unwrap_or(path);
-                    Ok(TrackCacheEntry::from_path_and_meta(
-                        &current,
-                        read_cache_metadata(&current),
-                    ))
+                    Ok(self.entry_at(&current, read_cache_metadata(&current)))
                 }
                 Some(Err(e)) => Err(e),
                 None => Err("download completed without result".into()),
@@ -1183,7 +1183,7 @@ impl TrackCacheState {
             // already done, else the raw А path) so the caller never receives a
             // path the background transcode is about to delete.
             let current = self.resolve_path(urn).unwrap_or(path);
-            TrackCacheEntry::from_path_and_meta(&current, read_cache_metadata(&current))
+            self.entry_at(&current, read_cache_metadata(&current))
         })
     }
 

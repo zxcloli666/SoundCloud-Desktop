@@ -103,6 +103,10 @@ export const SaveOfflineRowButton = React.memo(function SaveOfflineRowButton({
   const { progress, saving, cached } = useSaveState(track.urn);
   const label = useLabel(saving, cached, progress);
 
+  useEffect(() => {
+    void refreshOfflineCached(track.urn);
+  }, [track.urn]);
+
   return (
     <button
       type="button"

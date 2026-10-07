@@ -20,6 +20,7 @@ import {
   getCacheInfo,
   isAudioCacheDisabled,
   isHoverPreloadEnabled,
+  markTrackPlayed,
   removeCachedTrack,
   type TrackCacheInfo,
 } from './cache';
@@ -506,7 +507,9 @@ async function afterLoad(track: Track, gen: number, resumeAt: number) {
     notify();
   }
   hasTrack = true;
-  void enforceAudioCacheLimit().catch(console.error);
+  void markTrackPlayed(track.urn)
+    .catch(console.error)
+    .finally(() => enforceAudioCacheLimit().catch(console.error));
 
   const historyTrack =
     usePlayerStore.getState().currentTrack?.urn === track.urn

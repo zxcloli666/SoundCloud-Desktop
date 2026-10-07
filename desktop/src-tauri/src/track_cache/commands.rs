@@ -113,7 +113,7 @@ impl ResolvedRequest {
         })
     }
 
-    fn cache_request(&self) -> CacheRequest<'_> {
+    fn cache_request(&self, liked: bool) -> CacheRequest<'_> {
         CacheRequest {
             urn: &self.urn,
             urls: &self.urls,
@@ -122,7 +122,7 @@ impl ResolvedRequest {
             session_id: self.request.session_id.as_deref(),
             hq: self.request.hq,
             storage_quality: self.request.storage_quality.as_deref(),
-            liked: false,
+            liked,
             expected_duration_ms: self.request.duration_ms,
         }
     }
@@ -140,7 +140,7 @@ pub async fn track_export(
     let resolved = ResolvedRequest::new(request)?;
     state
         .export_track(
-            resolved.cache_request(),
+            resolved.cache_request(false),
             Path::new(&dest_path),
             cover_url,
             format.unwrap_or(ExportFormat::M4a),
@@ -163,7 +163,7 @@ pub async fn track_export_to_dir(
     let resolved = ResolvedRequest::new(request)?;
     state
         .export_to_dir(
-            resolved.cache_request(),
+            resolved.cache_request(false),
             Path::new(&dir),
             &file_name,
             cover_url,
@@ -184,28 +184,24 @@ pub async fn track_save_offline(
     refetch: bool,
     state: State<'_, TrackCacheState>,
 ) -> Result<TrackCacheEntry, String> {
-    let urn = require_track_urn(&request.urn)?;
-    let fallback_urls = request
-        .fallback_urls()
-        .ok_or_else(|| "no stream URL provided".to_string())?;
-    let storage_urls = request.storage_urls.unwrap_or_default();
-    let download_urls = request.download_urls.unwrap_or_default();
+    let resolved = ResolvedRequest::new(request)?;
     state
-        .save_offline(
-            CacheRequest {
-                urn: &urn,
-                urls: &fallback_urls,
-                download_urls: &download_urls,
-                storage_urls: &storage_urls,
-                session_id: request.session_id.as_deref(),
-                hq: request.hq,
-                storage_quality: request.storage_quality.as_deref(),
-                liked: true,
-                expected_duration_ms: request.duration_ms,
-            },
-            refetch,
-        )
+        .save_offline(resolved.cache_request(true), refetch)
         .await
+}
+
+#[tauri::command]
+pub fn track_pinned_urns(urns: Vec<String>, state: State<'_, TrackCacheState>) -> Vec<String> {
+    urns.into_iter()
+        .filter(|urn| canonical_track_urn(urn).is_some_and(|urn| state.is_pinned(&urn)))
+        .collect()
+}
+
+#[tauri::command]
+pub fn track_mark_played(urn: String, state: State<'_, TrackCacheState>) {
+    if let Some(urn) = canonical_track_urn(&urn) {
+        state.mark_played(&urn);
+    }
 }
 
 #[tauri::command]

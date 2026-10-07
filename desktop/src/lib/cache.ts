@@ -33,6 +33,7 @@ export interface TrackCacheInfo {
   quality: PlaybackQuality | null;
   source: PlaybackSource | null;
   acceptedShort: boolean;
+  pinned: boolean;
 }
 
 export function isCached(urn: string): Promise<boolean> {
@@ -45,6 +46,14 @@ export function getCacheFilePath(urn: string): Promise<string | null> {
 
 export function getCacheInfo(urn: string): Promise<TrackCacheInfo | null> {
   return invoke<TrackCacheInfo | null>('track_get_cache_info', { urn });
+}
+
+export function getPinnedUrns(urns: string[]): Promise<string[]> {
+  return invoke<string[]>('track_pinned_urns', { urns });
+}
+
+export function markTrackPlayed(urn: string): Promise<void> {
+  return invoke('track_mark_played', { urn });
 }
 
 export type FfmpegState = 'ready' | 'preparing' | 'unavailable';

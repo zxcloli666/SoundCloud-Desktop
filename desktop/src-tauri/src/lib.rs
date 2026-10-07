@@ -241,6 +241,8 @@ pub fn run() {
             track_cache::track_transcode_status,
             track_cache::track_get_cache_path,
             track_cache::track_get_cache_info,
+            track_cache::track_pinned_urns,
+            track_cache::track_mark_played,
             track_cache::track_preload,
             track_cache::track_cache_size,
             track_cache::track_liked_cache_size,
