@@ -84,6 +84,8 @@ export interface SettingsState {
   discordRpcStatus: DiscordRpcStatus;
   discordRpcShowButton: boolean;
   discordRpcLyrics: boolean;
+  scrobbleEnabled: boolean;
+  scrobbleNowPlaying: boolean;
   soundwaveLanguages: string[];
   soundwaveMode: 'similar' | 'diverse';
   soundwaveHideLiked: boolean;
@@ -120,6 +122,8 @@ export interface SettingsState {
   setDiscordRpcStatus: (status: DiscordRpcStatus) => void;
   setDiscordRpcShowButton: (show: boolean) => void;
   setDiscordRpcLyrics: (enabled: boolean) => void;
+  setScrobbleEnabled: (enabled: boolean) => void;
+  setScrobbleNowPlaying: (enabled: boolean) => void;
   setSoundwaveLanguages: (langs: string[]) => void;
   setSoundwaveMode: (mode: 'similar' | 'diverse') => void;
   setSoundwaveHideLiked: (v: boolean) => void;
@@ -162,6 +166,8 @@ const DEFAULTS = {
   discordRpcStatus: 'track' as DiscordRpcStatus,
   discordRpcShowButton: true,
   discordRpcLyrics: false,
+  scrobbleEnabled: true,
+  scrobbleNowPlaying: true,
   soundwaveLanguages: [] as string[],
   soundwaveMode: 'similar' as 'similar' | 'diverse',
   soundwaveHideLiked: false,
@@ -225,6 +231,8 @@ export const useSettingsStore = create<SettingsState>()(
       setDiscordRpcStatus: (discordRpcStatus) => set({ discordRpcStatus }),
       setDiscordRpcShowButton: (discordRpcShowButton) => set({ discordRpcShowButton }),
       setDiscordRpcLyrics: (discordRpcLyrics) => set({ discordRpcLyrics }),
+      setScrobbleEnabled: (scrobbleEnabled) => set({ scrobbleEnabled }),
+      setScrobbleNowPlaying: (scrobbleNowPlaying) => set({ scrobbleNowPlaying }),
       setSoundwaveLanguages: (soundwaveLanguages) => set({ soundwaveLanguages }),
       setSoundwaveMode: (soundwaveMode) => set({ soundwaveMode }),
       setSoundwaveHideLiked: (soundwaveHideLiked) => set({ soundwaveHideLiked }),
@@ -294,6 +302,8 @@ export const useSettingsStore = create<SettingsState>()(
         discordRpcStatus: s.discordRpcStatus,
         discordRpcShowButton: s.discordRpcShowButton,
         discordRpcLyrics: s.discordRpcLyrics,
+        scrobbleEnabled: s.scrobbleEnabled,
+        scrobbleNowPlaying: s.scrobbleNowPlaying,
         soundwaveLanguages: s.soundwaveLanguages,
         soundwaveMode: s.soundwaveMode,
         soundwaveHideLiked: s.soundwaveHideLiked,
