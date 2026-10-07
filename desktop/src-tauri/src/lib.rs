@@ -62,16 +62,8 @@ pub fn run() {
                 .app_data_dir()
                 .expect("failed to resolve app data dir");
 
-            let audio_dir = cache_dir.join("audio");
-            std::fs::create_dir_all(&audio_dir).ok();
-
-            let liked_audio_dir = cache_dir.join("audio_liked");
-            std::fs::create_dir_all(&liked_audio_dir).ok();
-
-            // Raw staging ("А") for freshly downloaded bytes pending transcode
-            // into the clean m4a caches ("Б" = audio_dir / audio_liked).
-            let incoming_audio_dir = cache_dir.join("audio_incoming");
-            std::fs::create_dir_all(&incoming_audio_dir).ok();
+            let storage = Arc::new(app::storage::StorageLocation::init(&cache_dir, &data_dir));
+            let audio_dirs = storage.audio_dirs();
 
             let assets_dir = cache_dir.join("assets");
             std::fs::create_dir_all(&assets_dir).ok();
@@ -128,10 +120,13 @@ pub fn run() {
             std::fs::create_dir_all(&ffmpeg_dir).ok();
 
             let mut track_cache_state =
-                track_cache::init(audio_dir, liked_audio_dir, incoming_audio_dir);
+                track_cache::init(audio_dirs.audio, audio_dirs.liked, audio_dirs.incoming);
             track_cache_state.set_app_handle(app.handle().clone());
             let recovery_state = track_cache_state.clone();
             app.manage(track_cache_state);
+            let sweeper = storage.clone();
+            std::thread::spawn(move || sweeper.sweep_stale_roots());
+            app.manage(storage);
             // Acquire ffmpeg (system PATH or one-time download) in the background,
             // then sweep interrupted temps and resume transcoding raw files left
             // by a previous crash/close.
@@ -190,6 +185,10 @@ pub fn run() {
             app::diagnostics::diagnostics_log,
             app::visibility::show_main_window,
             app::popover::tray_popover_hide,
+            app::storage::storage_location_info,
+            app::storage::storage_relocate,
+            app::storage::storage_open_folder,
+            app::storage::app_restart,
             discord::discord_connect,
             discord::discord_disconnect,
             discord::discord_set_activity,
