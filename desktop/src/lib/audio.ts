@@ -759,7 +759,7 @@ function maybeStartCrossfade() {
   if (duration <= lengthSec * 2 || cachedTime < duration - lengthSec - CROSSFADE_LEAD_SEC) return;
   crossfadeCheckedGen = loadGen;
   const next = upcomingTrack();
-  if (!canCrossfade() || !next || isUrnDisliked(next.urn)) return;
+  if (!canCrossfade() || !next || isUrnDisliked(next.urn) || isTrackBlocked(next)) return;
   const gen = loadGen;
   void getCacheInfo(next.urn).then((info) => {
     if (!info?.path || gen !== loadGen || !hasTrack || !currentUrn) return;
