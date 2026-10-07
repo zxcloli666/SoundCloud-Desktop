@@ -28,9 +28,12 @@ import {
   Eye as _Eye,
   FileDown as _FileDown,
   Flame as _Flame,
+  FolderInput as _FolderInput,
+  FolderOpen as _FolderOpen,
   Fullscreen as _Fullscreen,
   Globe as _Globe,
   GripVertical as _GripVertical,
+  HardDrive as _HardDrive,
   Hash as _Hash,
   Headphones as _Headphones,
   Heart as _Heart,
@@ -71,6 +74,7 @@ import {
   Star as _Star,
   ThumbsDown as _ThumbsDown,
   Trash2 as _Trash2,
+  TriangleAlert as _TriangleAlert,
   User as _User,
   Users as _Users,
   Volume1 as _Volume1,
@@ -106,6 +110,10 @@ export const ArrowDownToLine = memo(_ArrowDownToLine);
 export const Calendar = memo(_Calendar);
 export const FileDown = memo(_FileDown);
 export const Flame = memo(_Flame);
+export const FolderInput = memo(_FolderInput);
+export const FolderOpen = memo(_FolderOpen);
+export const HardDrive = memo(_HardDrive);
+export const TriangleAlert = memo(_TriangleAlert);
 export const Wifi = memo(_Wifi);
 export const WifiOff = memo(_WifiOff);
 export const Check = memo(_Check);
