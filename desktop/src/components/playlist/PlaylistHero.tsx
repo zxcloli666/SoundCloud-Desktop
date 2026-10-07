@@ -3,6 +3,7 @@ import {useTranslation} from 'react-i18next';
 import {dateFormatted, durLong} from '../../lib/formatters';
 import type {Playlist} from '../../lib/hooks';
 import {Calendar, Clock, Library} from '../../lib/icons';
+import type {ArrangeMode} from '../../lib/track-order';
 import type {Track} from '../../stores/player';
 import {GlassHeroPanel} from '../ui/GlassHeroPanel';
 import {CrateStack} from './CrateStack';
@@ -48,6 +49,8 @@ export const PlaylistHero = React.memo(function PlaylistHero({
                                                                  onTogglePin,
                                                                  onEdit,
                                                                  onDelete,
+                                                                 canArrange,
+                                                                 onArrange,
                                                              }: {
     playlist: Playlist;
     tracks: Track[];
@@ -61,6 +64,8 @@ export const PlaylistHero = React.memo(function PlaylistHero({
     onTogglePin: () => void;
     onEdit: () => void;
     onDelete: () => void;
+    canArrange: boolean;
+    onArrange: (mode: ArrangeMode) => void;
 }) {
     const {t} = useTranslation();
     const kl = kindLabelKey(playlist.kind);
@@ -155,6 +160,8 @@ export const PlaylistHero = React.memo(function PlaylistHero({
                             onTogglePin={onTogglePin}
                             onEdit={onEdit}
                             onDelete={onDelete}
+                            canArrange={canArrange}
+                            onArrange={onArrange}
                         />
                     </div>
 

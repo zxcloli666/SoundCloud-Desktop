@@ -28,6 +28,7 @@ import {AlertCircle, ChevronLeft, X} from '../lib/icons';
 import {usePerfMode} from '../lib/perf';
 import {rawPlaylistCover} from '../lib/playlist-cover';
 import {armPlaylistContinuation} from '../lib/queue-continuation';
+import {type ArrangeMode, arrangeTracks} from '../lib/track-order';
 import {useAuthStore} from '../stores/auth';
 import {type Track, usePlayerStore} from '../stores/player';
 import {useSettingsStore} from '../stores/settings';
@@ -50,7 +51,7 @@ function HeroSkeleton() {
 
 export const PlaylistPage = React.memo(function PlaylistPage() {
   const { urn } = useParams<{ urn: string }>();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const perf = usePerfMode();
   const myUrn = useAuthStore((s) => s.user?.urn);
@@ -110,7 +111,7 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
 
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout>>(null!);
   const debouncedUpdate = useCallback(
-    (next: Track[], successMsg?: string) => {
+    (next: Track[], onSaved?: () => void) => {
       pendingMutationRef.current = true;
       clearTimeout(debounceTimerRef.current);
       debounceTimerRef.current = setTimeout(() => {
@@ -119,7 +120,7 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
           {
             onSuccess: () => {
               pendingMutationRef.current = false;
-              if (successMsg) toast.success(successMsg);
+              onSaved?.();
             },
             onError: () => {
               pendingMutationRef.current = false;
@@ -133,6 +134,8 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
   );
 
   useEffect(() => () => clearTimeout(debounceTimerRef.current), []);
+
+  const toastReordered = useCallback(() => toast.success(t('playlist.reordered')), [t]);
 
   const tracks = isOwner ? localTracks : serverTracks;
 
@@ -160,9 +163,29 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
       const [moved] = next.splice(oldIndex, 1);
       next.splice(newIndex, 0, moved);
       setLocalTracks(next);
-      debouncedUpdate(next, t('playlist.reordered'));
+      debouncedUpdate(next, toastReordered);
     },
-    [localTracks, debouncedUpdate, t],
+    [localTracks, debouncedUpdate, toastReordered],
+  );
+
+  const handleArrange = useCallback(
+    (mode: ArrangeMode) => {
+      const previous = localTracks;
+      const next = arrangeTracks(previous, mode, i18n.language);
+      setLocalTracks(next);
+      debouncedUpdate(next, () =>
+        toast.success(t('playlist.arranged'), {
+          action: {
+            label: t('playlist.undo'),
+            onClick: () => {
+              setLocalTracks(previous);
+              debouncedUpdate(previous, toastReordered);
+            },
+          },
+        }),
+      );
+    },
+    [localTracks, debouncedUpdate, toastReordered, i18n.language, t],
   );
 
   const handleRemoveTrack = useCallback(
@@ -174,7 +197,7 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
       if (pendingMutationRef.current) {
         debouncedUpdate(
           localTracks.filter((tr) => tr.urn !== trackUrn),
-          t('playlist.reordered'),
+          toastReordered,
         );
       }
       pendingRemovalsRef.current += 1;
@@ -193,7 +216,7 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
           pendingRemovalsRef.current -= 1;
         });
     },
-    [localTracks, removeTrack, debouncedUpdate, t],
+    [localTracks, removeTrack, debouncedUpdate, toastReordered, t],
   );
 
   // Доигрываем плейлист ДО КОНЦА (пагинированный срез в очереди → потом волна),
@@ -324,6 +347,7 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
   }
 
   const trackCount = declaredCount || tracks.length;
+  const canArrange = !hasNextPage && localTracks.length > 1;
 
   return (
     <div className="relative min-h-full w-full">
@@ -361,6 +385,8 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
           onTogglePin={handleTogglePin}
           onEdit={() => setShowEdit(true)}
           onDelete={() => setShowDeleteConfirm(true)}
+          canArrange={canArrange}
+          onArrange={handleArrange}
         />
 
         <CrateLedger playlist={playlist} tracks={tracks} accentGlow={aura.accentGlow} />

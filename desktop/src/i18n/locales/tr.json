@@ -254,7 +254,15 @@
     "descriptionPlaceholder": "Dinleyicilere bu çalma listesinin ne hakkında olduğunu anlatın",
     "save": "Kaydet",
     "saving": "Kaydediliyor...",
-    "detailsSaved": "Çalma listesi güncellendi"
+    "detailsSaved": "Çalma listesi güncellendi",
+    "arrange": "Parçaları düzenle",
+    "arrangeWait": "Düzenlemek için tüm parçaların yüklenmesini bekleyin",
+    "arrange_reverse": "Sırayı ters çevir",
+    "arrange_title": "Ada göre, A'dan Z'ye",
+    "arrange_artist": "Sanatçıya göre, A'dan Z'ye",
+    "arrange_duration": "Süreye göre, kısadan uzuna",
+    "arranged": "Parçaların sırası değişti",
+    "undo": "Geri al"
   },
   "user": {
     "followers": "Takipciler",

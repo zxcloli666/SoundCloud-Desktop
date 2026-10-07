@@ -338,7 +338,15 @@
     "descriptionPlaceholder": "Tell listeners what this playlist is about",
     "save": "Save",
     "saving": "Saving...",
-    "detailsSaved": "Playlist updated"
+    "detailsSaved": "Playlist updated",
+    "arrange": "Arrange tracks",
+    "arrangeWait": "Wait until all tracks load to arrange them",
+    "arrange_reverse": "Reverse order",
+    "arrange_title": "By title, A to Z",
+    "arrange_artist": "By artist, A to Z",
+    "arrange_duration": "By duration, shortest first",
+    "arranged": "Tracks rearranged",
+    "undo": "Undo"
   },
   "user": {
     "followers": "Followers",

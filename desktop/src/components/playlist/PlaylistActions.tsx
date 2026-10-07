@@ -15,7 +15,9 @@ import {
     Shuffle,
     Trash2,
 } from '../../lib/icons';
+import type {ArrangeMode} from '../../lib/track-order';
 import {SharingToggle} from '../music/SharingToggle';
+import {ArrangeMenu} from './ArrangeMenu';
 
 const PlaylistLikeBtn = React.memo(function PlaylistLikeBtn({
                                                                 playlistUrn,
@@ -121,6 +123,8 @@ export const PlaylistActions = React.memo(function PlaylistActions({
                                                                        onTogglePin,
                                                                        onEdit,
                                                                        onDelete,
+                                                                       canArrange,
+                                                                       onArrange,
                                                                    }: {
     playlist: Playlist;
     isOwner: boolean;
@@ -131,6 +135,8 @@ export const PlaylistActions = React.memo(function PlaylistActions({
     onTogglePin: () => void;
     onEdit: () => void;
     onDelete: () => void;
+    canArrange: boolean;
+    onArrange: (mode: ArrangeMode) => void;
 }) {
     const {t} = useTranslation();
 
@@ -201,6 +207,7 @@ export const PlaylistActions = React.memo(function PlaylistActions({
                         >
                             <Pencil size={15}/>
                         </button>
+                        <ArrangeMenu disabled={!canArrange} onArrange={onArrange}/>
                         <SharingToggle kind="playlist" urn={playlist.urn} sharing={playlist.sharing}/>
                         <button
                             type="button"

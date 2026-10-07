@@ -7,8 +7,10 @@
  */
 import {
   AlertCircle as _AlertCircle,
+  ArrowDownAZ as _ArrowDownAZ,
   ArrowDownToLine as _ArrowDownToLine,
   ArrowRight as _ArrowRight,
+  ArrowUpDown as _ArrowUpDown,
   AudioLines as _AudioLines,
   Bookmark as _Bookmark,
   Calendar as _Calendar,
@@ -103,6 +105,7 @@ const SimpleIcon = memo(
 
 // ── Memo-wrapped icon components ────────────────────────────
 export const AlertCircle = memo(_AlertCircle);
+export const ArrowDownAZ = memo(_ArrowDownAZ);
 export const ArrowDownToLine = memo(_ArrowDownToLine);
 export const Calendar = memo(_Calendar);
 export const FileDown = memo(_FileDown);
@@ -115,6 +118,7 @@ export const Download = memo(_Download);
 export const ChevronDown = memo(_ChevronDown);
 export const ChevronLeft = memo(_ChevronLeft);
 export const ArrowRight = memo(_ArrowRight);
+export const ArrowUpDown = memo(_ArrowUpDown);
 export const ChevronRight = memo(_ChevronRight);
 export const ChevronUp = memo(_ChevronUp);
 export const Clock = memo(_Clock);
