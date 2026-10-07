@@ -422,7 +422,9 @@
     "likedAlbums": "Liked Albums"
   },
   "dislikes": {
-    "playingDisliked": "This track is in Not recommended"
+    "playingDisliked": "This track is in Not recommended",
+    "added": "Won't recommend this track",
+    "undo": "Undo"
   },
   "errors": {
     "title": "Something went wrong",

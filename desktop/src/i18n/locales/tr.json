@@ -338,7 +338,9 @@
     "likedAlbums": "Beğenilen Albümler"
   },
   "dislikes": {
-    "playingDisliked": "Bu parça Önerilmeyenler listesinde"
+    "playingDisliked": "Bu parça Önerilmeyenler listesinde",
+    "added": "Bu parça artık önerilmeyecek",
+    "undo": "Geri al"
   },
   "errors": {
     "title": "Bir seyler ters gitti",

@@ -4,7 +4,8 @@ import { usePlayerStore } from '../stores/player';
 import {api} from './api';
 import {getDuration, handlePrev, seek} from './audio';
 import {trackedInvoke as invoke} from './diagnostics';
-import {isUrnDisliked, toggleDislike} from './dislikes';
+import {clearDislike, dislikeTrack} from './dislike-actions';
+import {isUrnDisliked} from './dislikes';
 import {art} from './formatters';
 import {invalidateAllLikesCache} from './hooks';
 import {isUrnLiked, optimisticToggleLike} from './likes';
@@ -100,7 +101,7 @@ async function toggleLikeCurrent() {
     const next = !(isUrnLiked(tr.urn) || !!tr.user_favorite);
     optimisticToggleLike(queryClient, tr, next); // also updates isUrnLiked
     invalidateAllLikesCache();
-    if (next && isUrnDisliked(tr.urn)) void toggleDislike(queryClient, tr, false);
+    if (next) clearDislike(tr.urn);
     pushNp();
     try {
         await api(`/likes/tracks/${encodeURIComponent(tr.urn)}`, {
@@ -115,16 +116,8 @@ async function toggleLikeCurrent() {
 async function toggleDislikeCurrent() {
     const tr = usePlayerStore.getState().currentTrack;
     if (!tr) return;
-    const next = !isUrnDisliked(tr.urn);
-    if (next && (isUrnLiked(tr.urn) || tr.user_favorite)) {
-        optimisticToggleLike(queryClient, tr, false);
-        invalidateAllLikesCache();
-        api(`/likes/tracks/${encodeURIComponent(tr.urn)}`, {method: 'DELETE'}).catch(() => {
-        });
-    }
-    // Disliking the current track skips it, mirroring the now-bar dislike button.
-    if (next) usePlayerStore.getState().next();
-    await toggleDislike(queryClient, tr, next);
+    if (isUrnDisliked(tr.urn)) clearDislike(tr.urn);
+    else await dislikeTrack(tr, {undo: false});
     pushNp();
 }
 

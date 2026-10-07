@@ -15,7 +15,8 @@ import {
     seek,
     subscribe,
 } from '../../lib/audio';
-import {toggleDislike, useDislikeStatus} from '../../lib/dislikes';
+import {clearDislike, dislikeTrack} from '../../lib/dislike-actions';
+import {useDislikeStatus} from '../../lib/dislikes';
 import {art, formatTime} from '../../lib/formatters';
 import {invalidateAllLikesCache} from '../../lib/hooks';
 import {
@@ -393,11 +394,9 @@ function useTrackReactions(trackUrn: string) {
 function LikeButton({
   trackUrn,
   trackData,
-  disliked,
 }: {
   trackUrn: string;
   trackData: Track | undefined;
-  disliked: boolean;
 }) {
   const { t } = useTranslation();
   const qc = useQueryClient();
@@ -419,9 +418,7 @@ function LikeButton({
     if (trackData) optimisticToggleLike(qc, trackData, next);
     invalidateAllLikesCache();
 
-    if (next && disliked && trackData) {
-      toggleDislike(qc, trackData, false);
-    }
+    if (next) clearDislike(trackUrn);
 
     try {
       await api(`/likes/tracks/${encodeURIComponent(trackUrn)}`, {
@@ -458,24 +455,10 @@ export function NowBarDislikeButton({
   disliked: boolean;
 }) {
   const { t } = useTranslation();
-  const qc = useQueryClient();
 
-  const toggle = async () => {
-    if (!trackData) return;
-    const next = !disliked;
-
-    if (next && trackData.user_favorite) {
-      optimisticToggleLike(qc, trackData, false);
-      invalidateAllLikesCache();
-      api(`/likes/tracks/${encodeURIComponent(trackUrn)}`, { method: 'DELETE' }).catch(() => {});
-    }
-
-    if (next) {
-      const { currentTrack, next: skip } = usePlayerStore.getState();
-      if (currentTrack?.urn === trackUrn) skip();
-    }
-
-    await toggleDislike(qc, trackData, next);
+  const toggle = () => {
+    if (disliked) clearDislike(trackUrn);
+    else if (trackData) void dislikeTrack(trackData);
   };
 
   return (
@@ -963,7 +946,7 @@ const ReactClusterBody = React.memo(({ urn }: { urn: string }) => {
   const disliked = useDislikeStatus(urn);
   return (
     <div className="flex items-center gap-0.5">
-      <LikeButton trackUrn={urn} trackData={trackData} disliked={disliked} />
+      <LikeButton trackUrn={urn} trackData={trackData} />
       <NowBarDislikeButton trackUrn={urn} trackData={trackData} disliked={disliked} />
       <NowBarAddToPlaylistButton trackUrn={urn} />
       {trackData && (

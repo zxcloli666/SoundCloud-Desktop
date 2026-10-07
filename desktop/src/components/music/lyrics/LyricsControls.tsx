@@ -5,7 +5,8 @@ import {useNavigate} from 'react-router-dom';
 import {useShallow} from 'zustand/shallow';
 import {api} from '../../../lib/api';
 import {handlePrev} from '../../../lib/audio';
-import {toggleDislike, useDislikeStatus} from '../../../lib/dislikes';
+import {clearDislike, dislikeTrack} from '../../../lib/dislike-actions';
+import {useDislikeStatus} from '../../../lib/dislikes';
 import {invalidateAllLikesCache} from '../../../lib/hooks';
 import {
     ExternalLink,
@@ -57,22 +58,11 @@ const FullscreenLikeButton = React.memo(({track}: { track: Track }) => {
 
 const FullscreenDislikeButton = React.memo(({track}: { track: Track }) => {
     const {t} = useTranslation();
-    const qc = useQueryClient();
     const disliked = useDislikeStatus(track.urn);
-    const next = usePlayerStore((s) => s.next);
 
-    const toggle = async () => {
-        const nowDisliked = !disliked;
-        if (nowDisliked && track.user_favorite) {
-            optimisticToggleLike(qc, track, false);
-            invalidateAllLikesCache();
-            api(`/likes/tracks/${encodeURIComponent(track.urn)}`, {method: 'DELETE'}).catch(() => {
-            });
-        }
-        if (nowDisliked && usePlayerStore.getState().currentTrack?.urn === track.urn) {
-            next();
-        }
-        await toggleDislike(qc, track, nowDisliked);
+    const toggle = () => {
+        if (disliked) clearDislike(track.urn);
+        else void dislikeTrack(track);
     };
 
     return (
