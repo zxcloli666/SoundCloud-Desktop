@@ -14,6 +14,7 @@ import {getStaticPort} from './constants';
 import {trackedInvoke as invoke} from './diagnostics';
 import {sanitizeFilename} from './filename';
 import {onIdle} from './idle';
+import {forgetAllPinned, forgetPinned} from './offline-index';
 import { isHqStreaming } from './streaming';
 import {isPreviewOnly} from './track-access';
 
@@ -144,12 +145,15 @@ export function clearCache(): Promise<void> {
   return invoke('track_clear_cache');
 }
 
-export function clearLikedCache(): Promise<void> {
-  return invoke('track_clear_liked_cache');
+export async function clearLikedCache(): Promise<void> {
+  await invoke('track_clear_liked_cache');
+  await forgetAllPinned();
 }
 
-export function removeCachedTrack(urn: string): Promise<boolean> {
-  return invoke<boolean>('track_remove_cached', { urn });
+export async function removeCachedTrack(urn: string): Promise<boolean> {
+  const removed = await invoke<boolean>('track_remove_cached', { urn });
+  await forgetPinned(urn);
+  return removed;
 }
 
 export function listCachedUrns(): Promise<string[]> {

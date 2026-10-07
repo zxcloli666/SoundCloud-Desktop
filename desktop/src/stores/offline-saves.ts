@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 import { create } from 'zustand';
 import i18n from '../i18n';
 import { expectedDurationMs, getPinnedUrns, saveTrackOffline } from '../lib/cache';
-import { rememberPinned, rememberTracks } from '../lib/offline-index';
+import { forgetPinned, rememberPinned, rememberTracks } from '../lib/offline-index';
 import type { Track } from './player';
 
 interface OfflineSavesState {
@@ -86,6 +86,7 @@ export async function saveOffline(track: Track, refetch = false): Promise<boolea
   useOfflineSaves.setState((s) => ({ progress: { ...s.progress, [urn]: 0 } }));
   try {
     void rememberTracks([track]);
+    if (refetch) await forgetPinned(urn);
     const info = await saveTrackOffline(
       urn,
       refetch,

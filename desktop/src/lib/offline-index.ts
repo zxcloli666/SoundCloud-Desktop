@@ -181,6 +181,20 @@ export async function rememberPinned(urn: string) {
   schedulePersist();
 }
 
+export async function forgetPinned(urn: string) {
+  const index = await loadIndex();
+  if (!index.pinnedUrns.includes(urn)) return;
+  index.pinnedUrns = index.pinnedUrns.filter((pinned) => pinned !== urn);
+  schedulePersist();
+}
+
+export async function forgetAllPinned() {
+  const index = await loadIndex();
+  if (index.pinnedUrns.length === 0) return;
+  index.pinnedUrns = [];
+  schedulePersist();
+}
+
 export async function rememberCollection(
   scope: string,
   meta: OfflineCollectionMeta,
