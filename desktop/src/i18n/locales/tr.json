@@ -56,7 +56,10 @@
     "abLoopClear": "A-B dongusunu temizle",
     "notPlaying": "Calmiyor",
     "noContinuation": "Benzer parça bulunamadı, çalma durduruldu",
-    "cancelLoad": "Yuklemeyi durdur"
+    "cancelLoad": "Yuklemeyi durdur",
+    "autoplay": "Otomatik devam",
+    "autoplayOn": "Sıra bitince benzer parçalar çalmaya devam edecek",
+    "autoplayOff": "Sıra bitince çalma durur"
   },
   "auth": {
     "signIn": "SoundCloud ile giris yap",
@@ -633,7 +636,14 @@
     "wpKeyNeeded": "18+ sonuclar icin Wallhaven API anahtarini girin.",
     "bypassWhitelistSoonDesc": "Atlatma rotalamasi gelistirme asamasinda",
     "import": "Ice aktar",
-    "importYandex": "Yandex Music'ten ice aktar"
+    "importYandex": "Yandex Music'ten ice aktar",
+    "autoplay": "Otomatik devam",
+    "autoplayDesc": "Sıra bittiğinde son parçanın dalgasından benzer parçalar çalmaya devam eder",
+    "searchPlayback": "Aramadan çalma",
+    "searchPlaybackSimilar": "Benzer parçalar",
+    "searchPlaybackResults": "Arama sonuçları",
+    "searchPlaybackSimilarDesc": "Seçilen parça, sonraki arama sonucu yerine benzer müzik dalgası başlatır",
+    "searchPlaybackResultsDesc": "Arama sonuçları sırayla art arda çalar"
   },
   "eq": {
     "title": "Ekolayzir",

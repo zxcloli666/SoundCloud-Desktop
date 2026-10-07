@@ -66,7 +66,10 @@
     "openApp": "Открыть SoundCloud",
     "notPlaying": "Ничего не играет",
     "noContinuation": "Похожих треков не нашлось, воспроизведение остановлено",
-    "cancelLoad": "Остановить загрузку"
+    "cancelLoad": "Остановить загрузку",
+    "autoplay": "Автопродолжение",
+    "autoplayOn": "После очереди продолжат играть похожие треки",
+    "autoplayOff": "Воспроизведение остановится в конце очереди"
   },
   "auth": {
     "signIn": "Войти через SoundCloud",
@@ -735,7 +738,14 @@
     "wpKeyNeeded": "Введи API-ключ Wallhaven, чтобы открыть контент 18+.",
     "bypassWhitelistSoonDesc": "Готовим обход — следите за обновлениями",
     "import": "Импорт",
-    "importYandex": "Импорт из Yandex Music"
+    "importYandex": "Импорт из Yandex Music",
+    "autoplay": "Автопродолжение",
+    "autoplayDesc": "Когда очередь закончится, дальше играют похожие треки из волны от последнего",
+    "searchPlayback": "Воспроизведение из поиска",
+    "searchPlaybackSimilar": "Похожие треки",
+    "searchPlaybackResults": "Результаты поиска",
+    "searchPlaybackSimilarDesc": "Выбранный трек запускает волну похожей музыки вместо следующего результата поиска",
+    "searchPlaybackResultsDesc": "Результаты поиска играют подряд в порядке выдачи"
   },
   "eq": {
     "title": "Эквалайзер",

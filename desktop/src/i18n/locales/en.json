@@ -66,7 +66,10 @@
     "openApp": "Open SoundCloud",
     "notPlaying": "Not playing",
     "noContinuation": "No similar tracks found, playback stopped",
-    "cancelLoad": "Stop loading"
+    "cancelLoad": "Stop loading",
+    "autoplay": "Autoplay",
+    "autoplayOn": "Similar tracks will keep playing after the queue",
+    "autoplayOff": "Playback stops when the queue ends"
   },
   "auth": {
     "signIn": "Sign in with SoundCloud",
@@ -724,7 +727,14 @@
     "wpKeyNeeded": "Enter your Wallhaven API key to unlock 18+ results.",
     "bypassWhitelistSoonDesc": "We're shipping bypass routing — stay tuned",
     "import": "Import",
-    "importYandex": "Import from Yandex Music"
+    "importYandex": "Import from Yandex Music",
+    "autoplay": "Autoplay",
+    "autoplayDesc": "When the queue runs out, keep playing similar tracks from the wave of the last one",
+    "searchPlayback": "Playing from search",
+    "searchPlaybackSimilar": "Similar tracks",
+    "searchPlaybackResults": "Search results",
+    "searchPlaybackSimilarDesc": "The picked track starts a wave of similar music instead of the next search result",
+    "searchPlaybackResultsDesc": "Search results play one after another in their order"
   },
   "eq": {
     "title": "Equalizer",
