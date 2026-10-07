@@ -178,7 +178,7 @@ function ArtistTracksTabImpl({
       )}
 
       {view === 'years' && yearBuckets.length > 0 && (
-        <div className="flex flex-col gap-10">
+        <div className="@container flex flex-col gap-10">
           {yearBuckets.map((bucket, idx) => (
             <YearBlock
               key={bucket.year ?? `unknown-${idx}`}
@@ -222,10 +222,10 @@ const YearBlock = memo(
     const { t } = useTranslation();
     const total = bucket.items.reduce((acc, x) => acc + (x.duration ?? 0), 0);
     return (
-      <div className="flex flex-col md:flex-row md:gap-8 gap-3">
+      <div className="flex flex-col @4xl:flex-row @4xl:gap-8 gap-3">
         {/* Year marker — same look as albums timeline */}
-        <div className="md:w-[200px] md:shrink-0 flex md:flex-col md:items-end items-center md:sticky md:top-24 self-start">
-          <div className="flex items-baseline gap-3 md:flex-col md:items-end md:gap-1 min-w-0 max-w-full">
+        <div className="@4xl:w-[200px] @4xl:shrink-0 flex @4xl:flex-col @4xl:items-end items-center @4xl:sticky @4xl:top-24 self-start">
+          <div className="flex items-baseline gap-3 @4xl:flex-col @4xl:items-end @4xl:gap-1 min-w-0 max-w-full">
             <span
               className="font-black leading-none tabular-nums tracking-tight whitespace-nowrap text-[clamp(48px,7vw,80px)]"
               style={{
@@ -238,7 +238,7 @@ const YearBlock = memo(
             >
               {bucket.year ?? '∞'}
             </span>
-            <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/30 md:text-right whitespace-nowrap">
+            <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/30 @4xl:text-right whitespace-nowrap">
               {bucket.year != null ? t('artist.releaseYear') : t('artist.unknownYear')} ·{' '}
               {bucket.items.length} · {dur(total)}
             </span>
@@ -380,7 +380,7 @@ const WantedRow = memo(({ track, index }: { track: Track; index: number }) => {
   const artistDisplay = useArtistDisplay(track);
   return (
     <div
-      className="flex items-center gap-4 px-4 py-2.5 rounded-2xl opacity-50"
+      className="@container flex items-center gap-4 px-4 py-2.5 rounded-2xl opacity-50"
       style={{ background: 'rgba(255,255,255,0.015)' }}
     >
       <div className="w-10 h-10 flex items-center justify-center shrink-0">
@@ -399,7 +399,7 @@ const WantedRow = memo(({ track, index }: { track: Track; index: number }) => {
         <p className="text-[13px] font-medium text-white/55 truncate">{displayTitle}</p>
         <p className="text-[11px] text-white/25 truncate">{artistDisplay.primary}</p>
       </div>
-      <div className="hidden md:flex shrink-0">
+      <div className="hidden @lg:flex shrink-0">
         <TrackStatusBadges meta={track._scd_meta} />
       </div>
       {track.enrichment?.release_year && (
