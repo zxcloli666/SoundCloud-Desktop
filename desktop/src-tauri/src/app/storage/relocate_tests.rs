@@ -137,7 +137,7 @@ fn rescue_moves_only_missing_saved_tracks() {
     write(&to.liked.join("soundcloud_tracks_2.audio"), b"newer");
     write(&from.audio.join("soundcloud_tracks_3.audio"), b"played");
 
-    rescue_saved(&from, &to);
+    assert!(rescue_saved(&from, &to));
 
     assert_eq!(
         std::fs::read(to.liked.join("soundcloud_tracks_1.audio")).unwrap(),
@@ -148,6 +148,24 @@ fn rescue_moves_only_missing_saved_tracks() {
         b"newer"
     );
     assert!(!to.audio.join("soundcloud_tracks_3.audio").exists());
+    assert!(!from.liked.join("soundcloud_tracks_1.audio").exists());
+}
+
+#[test]
+fn failed_rescue_keeps_saved_tracks_at_the_source() {
+    let tmp = TempRoot::new();
+    let from = AudioDirs::under(&tmp.0.join("fallback"));
+    from.create().unwrap();
+    std::fs::create_dir_all(tmp.0.join("drive")).unwrap();
+    let to = AudioDirs::under(&tmp.0.join("drive"));
+    write(&to.liked, b"not a folder");
+    write(&from.liked.join("soundcloud_tracks_1.audio"), b"saved");
+
+    assert!(!rescue_saved(&from, &to));
+    assert_eq!(
+        std::fs::read(from.liked.join("soundcloud_tracks_1.audio")).unwrap(),
+        b"saved"
+    );
 }
 
 #[test]
@@ -161,7 +179,7 @@ fn fallback_root_is_cleaned_once_the_drive_returns() {
         &config_path,
         &config::LocationConfig {
             audio_root: Some(drive.clone()),
-            stale_roots: Vec::new(),
+            ..Default::default()
         },
     )
     .unwrap();
@@ -186,5 +204,91 @@ fn fallback_root_is_cleaned_once_the_drive_returns() {
             .join("soundcloud_tracks_2.audio")
             .is_file()
     );
-    assert!(config::load(&config_path).stale_roots.is_empty());
+    let config = config::load(&config_path);
+    assert!(config.stale_roots.is_empty());
+    assert!(config.fallback_roots.is_empty());
+}
+
+#[test]
+fn fallback_root_keeps_saved_tracks_until_they_reach_the_drive() {
+    let tmp = TempRoot::new();
+    let default_root = tmp.0.join("default");
+    let data_dir = tmp.0.join("data");
+    let drive = tmp.0.join("drive");
+    let config_path = config::config_path(&data_dir);
+    config::save(
+        &config_path,
+        &config::LocationConfig {
+            audio_root: Some(drive.clone()),
+            ..Default::default()
+        },
+    )
+    .unwrap();
+
+    let fallback = StorageLocation::init(&default_root, &data_dir).audio_dirs();
+    write(&fallback.audio.join("soundcloud_tracks_1.audio"), b"played");
+    write(&fallback.liked.join("soundcloud_tracks_2.audio"), b"saved");
+
+    std::fs::create_dir_all(&drive).unwrap();
+    let back = StorageLocation::init(&default_root, &data_dir);
+    let target_liked = back.audio_dirs().liked;
+    std::fs::remove_dir(&target_liked).unwrap();
+    write(&target_liked, b"not a folder");
+    back.sweep_stale_roots();
+
+    assert!(!fallback.audio.exists());
+    assert_eq!(
+        std::fs::read(fallback.liked.join("soundcloud_tracks_2.audio")).unwrap(),
+        b"saved"
+    );
+    assert_eq!(
+        config::load(&config_path).fallback_roots,
+        vec![default_root]
+    );
+}
+
+#[test]
+fn starting_empty_drops_the_old_cache_without_copying() {
+    let tmp = TempRoot::new();
+    let default_root = tmp.0.join("default");
+    let data_dir = tmp.0.join("data");
+    let drive = tmp.0.join("drive");
+    let first = StorageLocation::init(&default_root, &data_dir);
+    let old = first.audio_dirs();
+    write(&old.liked.join("soundcloud_tracks_1.audio"), b"saved");
+    write(&old.audio.join("soundcloud_tracks_2.audio"), b"played");
+    prepare_target(&drive).unwrap();
+    first.commit(&drive).unwrap();
+
+    let moved = StorageLocation::init(&default_root, &data_dir);
+    moved.sweep_stale_roots();
+
+    assert!(!old.liked.exists());
+    assert!(!old.audio.exists());
+    assert!(
+        !moved
+            .audio_dirs()
+            .liked
+            .join("soundcloud_tracks_1.audio")
+            .exists()
+    );
+    assert!(
+        config::load(&config::config_path(&data_dir))
+            .stale_roots
+            .is_empty()
+    );
+}
+
+#[cfg(target_os = "linux")]
+#[test]
+fn rejects_document_portal_targets() {
+    let tmp = TempRoot::new();
+    let active = tmp.0.join("active");
+    assert_eq!(
+        validate_target(
+            &active,
+            Path::new("/run/user/1000/doc/ab12cd/Music/SoundCloud Desktop")
+        ),
+        Err(RelocateError::Sandboxed)
+    );
 }

@@ -811,6 +811,7 @@
       "nested": "Pick a folder outside the current cache",
       "not_writable": "No permission to write to this folder",
       "no_space": "Not enough free space on that drive",
+      "sandboxed": "This folder is only reachable through the sandbox portal. Pick a folder on a drive under /media, /run/media or /mnt, or inside Music or Downloads",
       "failed": "Could not move the cache"
     }
   },

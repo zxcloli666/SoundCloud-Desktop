@@ -10,6 +10,8 @@ pub struct LocationConfig {
     pub audio_root: Option<PathBuf>,
     #[serde(default)]
     pub stale_roots: Vec<PathBuf>,
+    #[serde(default)]
+    pub fallback_roots: Vec<PathBuf>,
 }
 
 pub fn config_path(data_dir: &Path) -> PathBuf {

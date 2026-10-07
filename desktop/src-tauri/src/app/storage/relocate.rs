@@ -17,6 +17,7 @@ pub enum RelocateError {
     Nested,
     NotWritable,
     NoSpace,
+    Sandboxed,
     Failed,
 }
 
@@ -29,6 +30,7 @@ impl RelocateError {
             Self::Nested => "nested",
             Self::NotWritable => "not_writable",
             Self::NoSpace => "no_space",
+            Self::Sandboxed => "sandboxed",
             Self::Failed => "failed",
         }
     }
@@ -66,6 +68,9 @@ pub fn root_for_pick(picked: &Path) -> PathBuf {
 }
 
 pub fn validate_target(active_root: &Path, target_root: &Path) -> Result<(), RelocateError> {
+    if is_portal_path(target_root) {
+        return Err(RelocateError::Sandboxed);
+    }
     let parent = target_root.parent().ok_or(RelocateError::Missing)?;
     if !target_root.is_absolute() || !parent.is_dir() {
         return Err(RelocateError::Missing);
@@ -212,46 +217,65 @@ fn copy_times(src: &Path, dst: &Path) {
         .and_then(|file| file.set_times(times));
 }
 
-pub fn rescue_saved(from: &AudioDirs, to: &AudioDirs) {
+pub fn rescue_saved(from: &AudioDirs, to: &AudioDirs) -> bool {
     let Ok(entries) = std::fs::read_dir(&from.liked) else {
-        return;
+        return true;
     };
-    std::fs::create_dir_all(&to.liked).ok();
+    if std::fs::create_dir_all(&to.liked).is_err() {
+        return false;
+    }
+    let mut rescued_all = true;
     for entry in entries.flatten() {
         let name = entry.file_name();
         if !is_cache_artifact(&name.to_string_lossy()) {
             continue;
         }
+        let src = entry.path();
         let dst = to.liked.join(&name);
-        if dst.exists() {
-            continue;
+        if dst.exists() || rescue_file(src.clone(), dst) {
+            std::fs::remove_file(&src).ok();
+        } else {
+            rescued_all = false;
         }
-        let Ok(meta) = entry.metadata() else {
-            continue;
-        };
-        let transfer = Transfer {
-            src: entry.path(),
-            dst,
-            len: meta.len(),
-        };
-        transfer_file(&transfer, &mut Vec::new()).ok();
     }
+    rescued_all
+}
+
+fn rescue_file(src: PathBuf, dst: PathBuf) -> bool {
+    let Ok(meta) = std::fs::metadata(&src) else {
+        return !src.exists();
+    };
+    let transfer = Transfer {
+        src,
+        dst,
+        len: meta.len(),
+    };
+    transfer_file(&transfer, &mut Vec::new()).is_ok()
 }
 
 pub fn remove_cache_files(dirs: &AudioDirs) {
     for dir in dirs.all() {
-        let Ok(entries) = std::fs::read_dir(dir) else {
-            continue;
-        };
-        for entry in entries.flatten() {
-            let name = entry.file_name();
-            let name = name.to_string_lossy();
-            if is_cache_artifact(&name) || is_leftover_temp(&name) {
-                std::fs::remove_file(entry.path()).ok();
-            }
-        }
-        std::fs::remove_dir(dir).ok();
+        remove_cache_dir(dir);
     }
+}
+
+pub fn remove_evictable_files(dirs: &AudioDirs) {
+    remove_cache_dir(&dirs.audio);
+    remove_cache_dir(&dirs.incoming);
+}
+
+fn remove_cache_dir(dir: &Path) {
+    let Ok(entries) = std::fs::read_dir(dir) else {
+        return;
+    };
+    for entry in entries.flatten() {
+        let name = entry.file_name();
+        let name = name.to_string_lossy();
+        if is_cache_artifact(&name) || is_leftover_temp(&name) {
+            std::fs::remove_file(entry.path()).ok();
+        }
+    }
+    std::fs::remove_dir(dir).ok();
 }
 
 fn is_cache_artifact(name: &str) -> bool {
@@ -260,6 +284,20 @@ fn is_cache_artifact(name: &str) -> bool {
 
 fn is_leftover_temp(name: &str) -> bool {
     name.contains(PART_SUFFIX) || name.ends_with(".tmp")
+}
+
+#[cfg(target_os = "linux")]
+fn is_portal_path(path: &Path) -> bool {
+    let mut parts = path.components().skip(1).map(|part| part.as_os_str());
+    parts.next() == Some("run".as_ref())
+        && parts.next() == Some("user".as_ref())
+        && parts.next().is_some()
+        && parts.next() == Some("doc".as_ref())
+}
+
+#[cfg(not(target_os = "linux"))]
+fn is_portal_path(_path: &Path) -> bool {
+    false
 }
 
 fn resolved(path: &Path) -> PathBuf {

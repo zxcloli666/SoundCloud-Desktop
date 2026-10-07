@@ -18,7 +18,15 @@ export interface RelocateProgress {
   totalBytes: number;
 }
 
-const RELOCATE_ERRORS = new Set(['busy', 'missing', 'same', 'nested', 'not_writable', 'no_space']);
+const RELOCATE_ERRORS = new Set([
+  'busy',
+  'missing',
+  'same',
+  'nested',
+  'not_writable',
+  'no_space',
+  'sandboxed',
+]);
 
 export function getStorageLocation(): Promise<StorageLocationInfo> {
   return invoke<StorageLocationInfo>('storage_location_info');

@@ -720,6 +720,7 @@
       "nested": "Mevcut önbelleğin dışında bir klasör seçin",
       "not_writable": "Bu klasöre yazma izni yok",
       "no_space": "Bu sürücüde yeterli boş alan yok",
+      "sandboxed": "Bu klasöre yalnızca korumalı alan portalı üzerinden erişilebiliyor. /media, /run/media veya /mnt altındaki bir sürücüde ya da Müzik veya İndirilenler içinde bir klasör seçin",
       "failed": "Önbellek taşınamadı"
     }
   },

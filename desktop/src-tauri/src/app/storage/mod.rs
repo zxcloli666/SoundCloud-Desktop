@@ -89,34 +89,44 @@ impl StorageLocation {
     pub fn sweep_stale_roots(&self) {
         let _guard = self.config_lock.lock();
         let mut config = config::load(&self.config_path);
-        if config.stale_roots.is_empty() {
-            return;
+        let before = (config.stale_roots.len(), config.fallback_roots.len());
+        config
+            .stale_roots
+            .retain(|root| !self.sweep_root(root, false));
+        if !self.is_unavailable() {
+            config
+                .fallback_roots
+                .retain(|root| !self.sweep_root(root, true));
         }
-        let before = config.stale_roots.len();
-        config.stale_roots.retain(|root| {
-            if self.configured_root.as_ref() == Some(root) {
-                return false;
-            }
-            if *root == self.active_root || !root.is_dir() {
-                return true;
-            }
-            let stale = AudioDirs::under(root);
-            relocate::rescue_saved(&stale, &self.audio_dirs());
-            relocate::remove_cache_files(&stale);
-            if *root != self.default_root {
-                std::fs::remove_dir(root).ok();
-            }
-            false
-        });
-        if config.stale_roots.len() != before {
+        if (config.stale_roots.len(), config.fallback_roots.len()) != before {
             config::save(&self.config_path, &config).ok();
         }
+    }
+
+    fn sweep_root(&self, root: &Path, rescue: bool) -> bool {
+        if self.configured_root.as_deref() == Some(root) {
+            return true;
+        }
+        if root == self.active_root || !root.is_dir() {
+            return false;
+        }
+        let stale = AudioDirs::under(root);
+        if rescue && !relocate::rescue_saved(&stale, &self.audio_dirs()) {
+            relocate::remove_evictable_files(&stale);
+            return false;
+        }
+        relocate::remove_cache_files(&stale);
+        if root != self.default_root {
+            std::fs::remove_dir(root).ok();
+        }
+        true
     }
 
     fn commit(&self, target_root: &Path) -> std::io::Result<()> {
         let _guard = self.config_lock.lock();
         let mut config = config::load(&self.config_path);
         let mut stale: Vec<PathBuf> = std::mem::take(&mut config.stale_roots);
+        stale.append(&mut config.fallback_roots);
         stale.push(self.active_root.clone());
         stale.retain(|root| root != target_root);
         stale.sort();
@@ -127,6 +137,7 @@ impl StorageLocation {
             &LocationConfig {
                 audio_root,
                 stale_roots: stale,
+                fallback_roots: Vec::new(),
             },
         )
     }
@@ -134,10 +145,14 @@ impl StorageLocation {
 
 fn remember_fallback(config_path: &Path, fallback_root: &Path) {
     let mut config = config::load(config_path);
-    if config.stale_roots.iter().any(|root| root == fallback_root) {
+    if config
+        .fallback_roots
+        .iter()
+        .any(|root| root == fallback_root)
+    {
         return;
     }
-    config.stale_roots.push(fallback_root.to_path_buf());
+    config.fallback_roots.push(fallback_root.to_path_buf());
     config::save(config_path, &config).ok();
 }
 
