@@ -1,5 +1,6 @@
 import {create} from 'zustand';
 import {createJSONStorage, persist} from 'zustand/middleware';
+import {EQ_CUSTOM_PRESET_LIMIT, EQ_PRESET_NAME_MAX, type EqCustomPreset} from '../lib/equalizer';
 import type {PerfMode} from '../lib/perf';
 import {tauriStorage} from '../lib/tauri-storage';
 
@@ -72,6 +73,7 @@ export interface SettingsState {
   eqEnabled: boolean;
   eqGains: number[];
   eqPreset: string;
+  eqCustomPresets: EqCustomPreset[];
   normalizeVolume: boolean;
   streamQuality: StreamQuality;
   bypassWhitelist: boolean;
@@ -105,6 +107,8 @@ export interface SettingsState {
   setEqGains: (gains: number[]) => void;
   setEqPreset: (preset: string) => void;
   setEqBand: (index: number, gain: number) => void;
+  saveEqCustomPreset: (name: string) => void;
+  deleteEqCustomPreset: (id: string) => void;
   setNormalizeVolume: (enabled: boolean) => void;
   setStreamQuality: (quality: StreamQuality) => void;
   setBypassWhitelist: (enabled: boolean) => void;
@@ -146,6 +150,7 @@ const DEFAULTS = {
   eqEnabled: false,
   eqGains: DEFAULT_EQ_GAINS,
   eqPreset: 'flat',
+  eqCustomPresets: [] as EqCustomPreset[],
   normalizeVolume: true,
   streamQuality: 'auto' as StreamQuality,
   bypassWhitelist: false,
@@ -197,6 +202,31 @@ export const useSettingsStore = create<SettingsState>()(
           eqGains[index] = gain;
           return { eqGains, eqPreset: 'custom' };
         }),
+      saveEqCustomPreset: (rawName) =>
+        set((s) => {
+          const name = rawName.trim().slice(0, EQ_PRESET_NAME_MAX);
+          if (!name) return {};
+          const gains = [...s.eqGains];
+          const existing = s.eqCustomPresets.find(
+            (p) => p.name.toLocaleLowerCase() === name.toLocaleLowerCase(),
+          );
+          if (existing) {
+            return {
+              eqCustomPresets: s.eqCustomPresets.map((p) =>
+                p.id === existing.id ? { ...p, name, gains } : p,
+              ),
+              eqPreset: existing.id,
+            };
+          }
+          if (s.eqCustomPresets.length >= EQ_CUSTOM_PRESET_LIMIT) return {};
+          const id = `user-${Date.now().toString(36)}`;
+          return { eqCustomPresets: [...s.eqCustomPresets, { id, name, gains }], eqPreset: id };
+        }),
+      deleteEqCustomPreset: (id) =>
+        set((s) => ({
+          eqCustomPresets: s.eqCustomPresets.filter((p) => p.id !== id),
+          eqPreset: s.eqPreset === id ? 'custom' : s.eqPreset,
+        })),
       setNormalizeVolume: (normalizeVolume) => set({ normalizeVolume }),
       setStreamQuality: (streamQuality) => set({ streamQuality }),
       setBypassWhitelist: (bypassWhitelist) => set({ bypassWhitelist }),
@@ -277,6 +307,7 @@ export const useSettingsStore = create<SettingsState>()(
         eqEnabled: s.eqEnabled,
         eqGains: s.eqGains,
         eqPreset: s.eqPreset,
+        eqCustomPresets: s.eqCustomPresets,
         normalizeVolume: s.normalizeVolume,
         streamQuality: s.streamQuality,
         bypassWhitelist: s.bypassWhitelist,

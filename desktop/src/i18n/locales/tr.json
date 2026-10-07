@@ -624,7 +624,14 @@
     "preset": "Hazir ayar",
     "reset": "Sifirla",
     "custom": "Ozel",
-    "streamingNote": "EQ onbellege alinmis parcalarda calisir (Web Audio)"
+    "streamingNote": "EQ onbellege alinmis parcalarda calisir (Web Audio)",
+    "saveAsPreset": "Ön ayarı kaydet",
+    "savePreset": "Kaydet",
+    "deletePreset": "Ön ayarı sil",
+    "presetName": "Ön ayar adı",
+    "presetNamePlaceholder": "Ön ayarına bir ad ver",
+    "presetLimit": "En fazla {{count}} ön ayar",
+    "myPresets": "Ön ayarlarım"
   },
   "kb": {
     "title": "Klavye Kisayollari",

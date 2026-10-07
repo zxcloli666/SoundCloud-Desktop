@@ -726,7 +726,14 @@
     "preset": "Пресет",
     "reset": "Сброс",
     "custom": "Свой",
-    "streamingNote": "EQ работает с кэшированными треками (Web Audio)"
+    "streamingNote": "EQ работает с кэшированными треками (Web Audio)",
+    "saveAsPreset": "Сохранить пресет",
+    "savePreset": "Сохранить",
+    "deletePreset": "Удалить пресет",
+    "presetName": "Название пресета",
+    "presetNamePlaceholder": "Название пресета",
+    "presetLimit": "Не больше {{count}} пресетов",
+    "myPresets": "Мои пресеты"
   },
   "kb": {
     "title": "Горячие клавиши",

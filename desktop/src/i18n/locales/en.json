@@ -715,7 +715,14 @@
     "preset": "Preset",
     "reset": "Reset",
     "custom": "Custom",
-    "streamingNote": "EQ works with cached tracks (Web Audio)"
+    "streamingNote": "EQ works with cached tracks (Web Audio)",
+    "saveAsPreset": "Save preset",
+    "savePreset": "Save",
+    "deletePreset": "Delete preset",
+    "presetName": "Preset name",
+    "presetNamePlaceholder": "Name your preset",
+    "presetLimit": "Up to {{count}} presets",
+    "myPresets": "My presets"
   },
   "kb": {
     "title": "Keyboard Shortcuts",
