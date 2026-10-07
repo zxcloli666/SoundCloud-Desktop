@@ -6,6 +6,7 @@ import {tauriStorage} from '../lib/tauri-storage';
 export type ThemePreset = 'soundcloud' | 'dark' | 'neon' | 'forest' | 'crimson' | 'custom';
 export type StartupPage = 'home' | 'search' | 'library' | 'settings';
 export type DiscordRpcMode = 'track' | 'artist' | 'activity';
+export type LyricsHighlight = 'word' | 'line';
 export interface SidebarPinnedPlaylist {
   urn: string;
   title: string;
@@ -86,6 +87,7 @@ export interface SettingsState {
   soundwaveHideLiked: boolean;
   soundwaveHideListened: boolean;
   lyricsVisualizer: boolean;
+  lyricsHighlight: LyricsHighlight;
   artistWaveCollapsed: boolean;
   wallhavenApiKey: string;
   showErrorToasts: boolean;
@@ -121,6 +123,7 @@ export interface SettingsState {
   setSoundwaveHideLiked: (v: boolean) => void;
   setSoundwaveHideListened: (v: boolean) => void;
   setLyricsVisualizer: (v: boolean) => void;
+  setLyricsHighlight: (v: LyricsHighlight) => void;
   setArtistWaveCollapsed: (v: boolean) => void;
   setWallhavenApiKey: (key: string) => void;
   setShowErrorToasts: (v: boolean) => void;
@@ -162,6 +165,7 @@ const DEFAULTS = {
   soundwaveHideLiked: false,
   soundwaveHideListened: true,
   lyricsVisualizer: false,
+  lyricsHighlight: 'word' as LyricsHighlight,
   artistWaveCollapsed: false,
   wallhavenApiKey: '',
   showErrorToasts: true,
@@ -224,6 +228,7 @@ export const useSettingsStore = create<SettingsState>()(
       setSoundwaveHideLiked: (soundwaveHideLiked) => set({ soundwaveHideLiked }),
       setSoundwaveHideListened: (soundwaveHideListened) => set({ soundwaveHideListened }),
       setLyricsVisualizer: (lyricsVisualizer) => set({ lyricsVisualizer }),
+      setLyricsHighlight: (lyricsHighlight) => set({ lyricsHighlight }),
       setArtistWaveCollapsed: (artistWaveCollapsed) => set({ artistWaveCollapsed }),
       setWallhavenApiKey: (wallhavenApiKey) => set({ wallhavenApiKey }),
       setShowErrorToasts: (showErrorToasts) => set({ showErrorToasts }),
@@ -292,6 +297,7 @@ export const useSettingsStore = create<SettingsState>()(
         soundwaveHideLiked: s.soundwaveHideLiked,
         soundwaveHideListened: s.soundwaveHideListened,
         lyricsVisualizer: s.lyricsVisualizer,
+        lyricsHighlight: s.lyricsHighlight,
         artistWaveCollapsed: s.artistWaveCollapsed,
         wallhavenApiKey: s.wallhavenApiKey,
         showErrorToasts: s.showErrorToasts,

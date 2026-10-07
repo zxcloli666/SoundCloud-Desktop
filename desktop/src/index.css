@@ -560,10 +560,8 @@ select,
   color: rgba(255, 255, 255, 0.32);
 }
 
-/* Light mode renders the active line as one .lyric-fill span (no per-char nodes),
-   so brighten its text directly — the per-char sweep that lights beauty is absent. */
-[data-perf="light"] .lyric-line[data-state="active"] .lyric-fill {
-    color: #fff;
+[data-highlight="line"] .lyric-fill {
+  color: inherit;
 }
 
 /* A "word" wrapper just keeps characters from breaking mid-word. */

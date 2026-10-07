@@ -7,6 +7,7 @@ import {Search} from '../../../lib/icons';
 import type {LyricLine, LyricsSource} from '../../../lib/lyrics';
 import {usePerfMode} from '../../../lib/perf';
 import {usePlayerStore} from '../../../stores/player';
+import {useSettingsStore} from '../../../stores/settings';
 
 const SOURCE_LABELS: Record<LyricsSource, string> = {
     lrclib: 'LRCLib',
@@ -97,7 +98,8 @@ function splitWordsForChars(cells: CharCell[]): CharCell[][] {
 
 export const SyncedLyrics = React.memo(({lines}: { lines: LyricLine[] }) => {
     const perf = usePerfMode();
-    const perChar = perf.mode !== 'light';
+    const highlight = useSettingsStore((s) => s.lyricsHighlight);
+    const perChar = perf.mode !== 'light' && highlight === 'word';
     const displayLines = useMemo(() => buildDisplayLines(lines), [lines]);
     const containerRef = useRef<HTMLDivElement>(null);
     const activeRef = useRef(-1);
@@ -121,6 +123,7 @@ export const SyncedLyrics = React.memo(({lines}: { lines: LyricLine[] }) => {
         pauseBarsRef.current = lineElsRef.current.map((el) =>
             el.querySelector<HTMLElement>('.lyric-pause-bar'),
         );
+        for (const bar of pauseBarsRef.current) bar?.style.removeProperty('width');
         activeRef.current = -1;
         lineProgressRef.current = 0;
         manualScrollRef.current = false;
@@ -145,7 +148,7 @@ export const SyncedLyrics = React.memo(({lines}: { lines: LyricLine[] }) => {
 
         const writeLineProgress = (i: number, p: number) => {
             const el = lineElsRef.current[i];
-            if (!el) return;
+            if (!el || !perChar) return;
             const value = clamp01(p);
             el.style.setProperty('--lyric-progress', `${(value * 100).toFixed(2)}%`);
             el.style.setProperty('--lyric-progress-value', value.toFixed(4));
@@ -249,10 +252,10 @@ export const SyncedLyrics = React.memo(({lines}: { lines: LyricLine[] }) => {
             lineProgressRef.current = smoothed;
             writeLineProgress(idx, smoothed);
         };
-        rafId = requestAnimationFrame(tick);
+        if (perChar) rafId = requestAnimationFrame(tick);
 
         const onVisibility = () => {
-            if (document.visibilityState !== 'hidden' && !rafId) {
+            if (perChar && document.visibilityState !== 'hidden' && !rafId) {
                 lastTickTs = 0;
                 rafId = requestAnimationFrame(tick);
             }
@@ -282,6 +285,7 @@ export const SyncedLyrics = React.memo(({lines}: { lines: LyricLine[] }) => {
     return (
         <div
             ref={containerRef}
+            data-highlight={perChar ? 'word' : 'line'}
             className="flex-1 overflow-y-auto scrollbar-hide px-12 py-16 relative"
             style={{
                 maskImage: 'linear-gradient(transparent 0%, black 10%, black 90%, transparent 100%)',
@@ -304,9 +308,6 @@ export const SyncedLyrics = React.memo(({lines}: { lines: LyricLine[] }) => {
                         );
                     }
                     if (!perChar) {
-                        // Light: per-line highlight only — no per-char spans (hundreds of
-                        // text-shadow nodes). The active line lights up via its [data-state]
-                        // line styling (index.css), not the per-char sweep.
                         return (
                             <div
                                 key={`${line.time}-${i}`}
