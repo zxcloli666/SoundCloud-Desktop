@@ -127,7 +127,7 @@ async function toggleDislikeCurrent() {
 
 function addCurrentToPlaylist() {
     const tr = usePlayerStore.getState().currentTrack;
-    if (!tr) return;
+    if (!tr || isLocalUrn(tr.urn)) return;
     void invoke('show_main_window');
     useAddToPlaylistRequest.getState().request([tr.urn]);
 }
