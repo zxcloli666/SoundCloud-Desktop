@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { LocalPlaylist, LocalTrack, LocalTrackInfo } from '../lib/local-library';
+import { isMac, isWindows } from '../lib/platform';
 import { createThrottledJsonStorage } from '../lib/tauri-storage';
 
 export interface ScanProgress {
@@ -36,9 +37,25 @@ function newId(): string {
   return `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
 }
 
+const caseInsensitivePaths = isWindows() || isMac();
+
+function pathKey(path: string): string {
+  const key = path.replace(/[\\/]+/g, '/').replace(/\/$/, '');
+  return caseInsensitivePaths ? key.toLowerCase() : key;
+}
+
 function underFolder(path: string, folder: string): boolean {
-  const base = folder.replace(/[\\/]+$/, '');
-  return path.startsWith(`${base}/`) || path.startsWith(`${base}\\`);
+  return pathKey(path).startsWith(`${pathKey(folder)}/`);
+}
+
+function uniquePaths(paths: string[]): string[] {
+  const seen = new Set<string>();
+  return paths.filter((path) => {
+    const key = pathKey(path);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }
 
 function patchPlaylist(
@@ -78,15 +95,15 @@ export const useLocalLibrary = create<LocalLibraryState>()(
       scanning: null,
 
       merge: (found, explicitPaths) => {
-        const explicit = new Set(explicitPaths);
-        const excluded = get().excluded.filter((p) => !explicit.has(p));
-        const blocked = new Set(excluded);
+        const explicit = new Set(explicitPaths.map(pathKey));
+        const excluded = get().excluded.filter((p) => !explicit.has(pathKey(p)));
+        const blocked = new Set(excluded.map(pathKey));
         const tracks = { ...get().tracks };
         const missing = { ...get().missing };
         const added: string[] = [];
         const now = Date.now();
         for (const info of found) {
-          if (blocked.has(info.path)) continue;
+          if (blocked.has(pathKey(info.path))) continue;
           const existing = tracks[info.id];
           tracks[info.id] = {
             ...info,
@@ -105,11 +122,11 @@ export const useLocalLibrary = create<LocalLibraryState>()(
           const paths = ids.flatMap((id) => (s.tracks[id] ? [s.tracks[id].path] : []));
           return {
             ...withoutTracks(s, ids),
-            excluded: [...new Set([...s.excluded, ...paths])],
+            excluded: uniquePaths([...s.excluded, ...paths]),
           };
         }),
 
-      addFolders: (folders) => set((s) => ({ folders: [...new Set([...s.folders, ...folders])] })),
+      addFolders: (folders) => set((s) => ({ folders: uniquePaths([...s.folders, ...folders]) })),
 
       removeFolder: (folder) => {
         const ids = Object.values(get().tracks)
@@ -117,7 +134,7 @@ export const useLocalLibrary = create<LocalLibraryState>()(
           .map((t) => t.id);
         set((s) => ({
           ...withoutTracks(s, ids),
-          folders: s.folders.filter((f) => f !== folder),
+          folders: s.folders.filter((f) => pathKey(f) !== pathKey(folder)),
           excluded: s.excluded.filter((p) => !underFolder(p, folder)),
         }));
         return ids;
