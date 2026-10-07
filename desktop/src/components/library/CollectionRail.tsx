@@ -10,6 +10,7 @@ interface CollectionRailProps {
     title: string;
     count?: number;
     to: string;
+    state?: unknown;
     children: ReactNode;
 }
 
@@ -20,6 +21,7 @@ export const CollectionRail = memo(function CollectionRail({
                                                                title,
                                                                count,
                                                                to,
+                                                               state,
                                                                children,
                                                            }: CollectionRailProps) {
     const {t} = useTranslation();
@@ -33,6 +35,7 @@ export const CollectionRail = memo(function CollectionRail({
                 )}
                 <Link
                     to={to}
+                    state={state}
                     className="ml-auto flex items-center gap-0.5 text-[12px] font-semibold text-white/45 hover:text-white/90 transition-colors"
                 >
                     {t('library.seeAll')}

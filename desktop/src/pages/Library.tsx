@@ -5,6 +5,7 @@ import {CollectionRail} from '../components/library/CollectionRail';
 import {ContinueRow} from '../components/library/ContinueRow';
 import {FreshDrops} from '../components/library/FreshDrops';
 import {LibraryFrame} from '../components/library/LibraryFrame';
+import {LocalFilesRail} from '../components/library/LocalFilesRail';
 import {SoundPrintMasthead} from '../components/library/SoundPrintMasthead';
 import {useSoundprint} from '../components/library/useSoundprint';
 import {PlaylistCard} from '../components/music/PlaylistCard';
@@ -111,6 +112,8 @@ export const Library = React.memo(() => {
             ))}
           </CollectionRail>
         )}
+
+        <LocalFilesRail />
 
         {artistPreview.length > 0 && (
           <CollectionRail
