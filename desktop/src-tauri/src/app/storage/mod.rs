@@ -92,7 +92,7 @@ impl StorageLocation {
         let before = (config.stale_roots.len(), config.fallback_roots.len());
         config
             .stale_roots
-            .retain(|root| !self.sweep_root(root, false));
+            .retain(|root| !self.sweep_root(root, true));
         if !self.is_unavailable() {
             config
                 .fallback_roots

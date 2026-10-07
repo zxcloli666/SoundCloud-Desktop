@@ -248,7 +248,7 @@ fn fallback_root_keeps_saved_tracks_until_they_reach_the_drive() {
 }
 
 #[test]
-fn starting_empty_drops_the_old_cache_without_copying() {
+fn starting_empty_still_carries_saved_tracks_over() {
     let tmp = TempRoot::new();
     let default_root = tmp.0.join("default");
     let data_dir = tmp.0.join("data");
@@ -259,17 +259,30 @@ fn starting_empty_drops_the_old_cache_without_copying() {
     write(&old.audio.join("soundcloud_tracks_2.audio"), b"played");
     prepare_target(&drive).unwrap();
     first.commit(&drive).unwrap();
+    write(
+        &old.liked.join("soundcloud_tracks_3.audio"),
+        b"saved after commit",
+    );
 
     let moved = StorageLocation::init(&default_root, &data_dir);
     moved.sweep_stale_roots();
 
+    let liked = moved.audio_dirs().liked;
     assert!(!old.liked.exists());
     assert!(!old.audio.exists());
+    assert_eq!(
+        std::fs::read(liked.join("soundcloud_tracks_1.audio")).unwrap(),
+        b"saved"
+    );
+    assert_eq!(
+        std::fs::read(liked.join("soundcloud_tracks_3.audio")).unwrap(),
+        b"saved after commit"
+    );
     assert!(
         !moved
             .audio_dirs()
-            .liked
-            .join("soundcloud_tracks_1.audio")
+            .audio
+            .join("soundcloud_tracks_2.audio")
             .exists()
     );
     assert!(
