@@ -47,6 +47,12 @@ const keybindings: Keybinding[] = [
   { key: 'm', label: 'kb.mute', group: 'playback', display: 'M' },
   { key: '/', label: 'kb.search', group: 'navigation', display: '/' },
   { key: 'Ctrl+K', label: 'kb.search', group: 'navigation', display: isMac() ? '⌘ K' : 'Ctrl K' },
+  {
+    key: 'Ctrl+F',
+    label: 'kb.findInPlaylist',
+    group: 'navigation',
+    display: isMac() ? '⌘ F' : 'Ctrl F',
+  },
   { key: 'q', label: 'kb.queue', group: 'panels', display: 'Q' },
   { key: 'l', label: 'kb.lyrics', group: 'panels', display: 'L' },
   { key: '[', label: 'kb.sidebar', group: 'panels', display: '[' },

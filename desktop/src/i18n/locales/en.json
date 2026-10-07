@@ -346,7 +346,12 @@
     "arrange_artist": "By artist, A to Z",
     "arrange_duration": "By duration, shortest first",
     "arranged": "Tracks rearranged",
-    "undo": "Undo"
+    "undo": "Undo",
+    "find": "Find in playlist",
+    "findClear": "Clear",
+    "findCount": "{{count}} of {{total}}",
+    "findNoMatches": "Nothing in this playlist matches “{{query}}”",
+    "findLoading": "Loading the whole playlist…"
   },
   "user": {
     "followers": "Followers",
@@ -750,7 +755,8 @@
     "sidebar": "Toggle sidebar",
     "fullscreen": "Toggle fullscreen",
     "close": "Close",
-    "showBindings": "Show shortcuts"
+    "showBindings": "Show shortcuts",
+    "findInPlaylist": "Find in playlist"
   },
   "ym": {
     "instructions": "How to get your Yandex Music token:",

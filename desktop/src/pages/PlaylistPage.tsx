@@ -96,6 +96,12 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
   const sorted = sort !== 'default';
   const sortedRef = useRef(sorted);
   sortedRef.current = sorted;
+  const [query, setQuery] = useState('');
+  const filtering = query.trim() !== '';
+
+  useEffect(() => {
+    if (urn) setQuery('');
+  }, [urn]);
   const changeSort = useCallback(
     (next: TrackSort) => {
       if (urn) setPlaylistSort(urn, next);
@@ -155,9 +161,10 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
     [ownTracks, sort, i18n.language],
   );
 
+  const loadAll = sorted || filtering;
   useEffect(() => {
-    if (sorted && hasNextPage && !isFetchingNextPage) void fetchNextPage();
-  }, [sorted, hasNextPage, isFetchingNextPage, fetchNextPage]);
+    if (loadAll && hasNextPage && !isFetchingNextPage) void fetchNextPage();
+  }, [loadAll, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const trackUrnSet = useMemo(() => new Set(ownTracks.map((tr) => tr.urn)), [ownTracks]);
   const { isPausedFromThis, isPlayingFromThis } = usePlayerStore(
@@ -455,10 +462,13 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
           tracks={tracks}
           notice={listNotice}
           toolbar={tracks.length > 1 ? sortToolbar : undefined}
+          query={query}
+          searching={filtering && !!hasNextPage}
+          onQueryChange={setQuery}
           reorderable={isOwner && !sorted}
           onDragEnd={handleDragEnd}
           onRemove={isOwner ? handleRemoveTrack : undefined}
-          onPlay={armContinuation}
+          onPlay={filtering ? undefined : armContinuation}
           sentinelRef={scrollRef}
           hasNextPage={hasNextPage ?? false}
           isFetchingNextPage={isFetchingNextPage}

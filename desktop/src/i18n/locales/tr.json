@@ -262,7 +262,12 @@
     "arrange_artist": "Sanatçıya göre, A'dan Z'ye",
     "arrange_duration": "Süreye göre, kısadan uzuna",
     "arranged": "Parçaların sırası değişti",
-    "undo": "Geri al"
+    "undo": "Geri al",
+    "find": "Çalma listesinde bul",
+    "findClear": "Temizle",
+    "findCount": "{{count}} / {{total}}",
+    "findNoMatches": "Bu çalma listesinde “{{query}}” ile eşleşen bir şey yok",
+    "findLoading": "Çalma listesinin tamamı yükleniyor…"
   },
   "user": {
     "followers": "Takipciler",
@@ -659,7 +664,8 @@
     "sidebar": "Kenar cubugunu ac/kapat",
     "fullscreen": "Tam ekran modunu degistir",
     "close": "Kapat",
-    "showBindings": "Kisayollari goster"
+    "showBindings": "Kisayollari goster",
+    "findInPlaylist": "Çalma listesinde bul"
   },
   "ym": {
     "instructions": "Yandex Music tokeninizi nasil alirsiniz:",

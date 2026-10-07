@@ -351,7 +351,12 @@
     "arrange_artist": "По исполнителю, от А до Я",
     "arrange_duration": "По длительности, сначала короткие",
     "arranged": "Порядок треков изменён",
-    "undo": "Отменить"
+    "undo": "Отменить",
+    "find": "Найти в плейлисте",
+    "findClear": "Очистить",
+    "findCount": "{{count}} из {{total}}",
+    "findNoMatches": "В этом плейлисте ничего не нашлось по «{{query}}»",
+    "findLoading": "Загружаем весь плейлист…"
   },
   "user": {
     "followers": "Подписчики",
@@ -761,7 +766,8 @@
     "sidebar": "Боковая панель",
     "fullscreen": "Полноэкранный режим",
     "close": "Закрыть",
-    "showBindings": "Горячие клавиши"
+    "showBindings": "Горячие клавиши",
+    "findInPlaylist": "Поиск в плейлисте"
   },
   "ym": {
     "instructions": "Как получить токен Yandex Music:",
