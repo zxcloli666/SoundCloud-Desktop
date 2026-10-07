@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { ArrowDownToLine, Check } from '../../lib/icons';
-import { ProgressRing } from './ProgressRing';
+import { ProgressRing } from '../ui/ProgressRing';
 
 interface Activity {
   done: number;

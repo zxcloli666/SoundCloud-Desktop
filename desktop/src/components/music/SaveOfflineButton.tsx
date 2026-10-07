@@ -3,43 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { ArrowDownToLine, Check, RefreshCw } from '../../lib/icons';
 import { refreshOfflineCached, saveOffline, useOfflineSaves } from '../../stores/offline-saves';
 import type { Track } from '../../stores/player';
-
-const RING_RADIUS = 9;
-const RING_LENGTH = 2 * Math.PI * RING_RADIUS;
-
-function ProgressRing({ progress, size }: { progress: number; size: number }) {
-  const offset = RING_LENGTH * (1 - Math.max(progress, 0.04));
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      className="-rotate-90 drop-shadow-[0_0_6px_var(--color-accent-glow)]"
-      aria-hidden
-    >
-      <circle
-        cx="12"
-        cy="12"
-        r={RING_RADIUS}
-        fill="none"
-        stroke="rgba(255,255,255,0.1)"
-        strokeWidth="2.25"
-      />
-      <circle
-        cx="12"
-        cy="12"
-        r={RING_RADIUS}
-        fill="none"
-        stroke="var(--color-accent)"
-        strokeWidth="2.25"
-        strokeLinecap="round"
-        strokeDasharray={RING_LENGTH}
-        strokeDashoffset={offset}
-        className="transition-[stroke-dashoffset] duration-300 ease-[var(--ease-apple)]"
-      />
-    </svg>
-  );
-}
+import { ProgressRing } from '../ui/ProgressRing';
 
 function useSaveState(urn: string) {
   const progress = useOfflineSaves((s) => s.progress[urn]);
@@ -80,7 +44,7 @@ export const SaveOfflineAction = React.memo(function SaveOfflineAction({
     >
       {saving ? (
         <>
-          <ProgressRing progress={progress ?? 0} size={26} />
+          <ProgressRing value={progress ?? 0} size={26} />
           <ArrowDownToLine size={11} className="absolute text-white/80 animate-pulse" />
         </>
       ) : cached ? (
@@ -122,7 +86,7 @@ export const SaveOfflineRowButton = React.memo(function SaveOfflineRowButton({
       } ${cached ? 'text-accent' : 'text-white/30 hover:text-white/80 hover:bg-white/[0.06]'}`}
     >
       {saving ? (
-        <ProgressRing progress={progress ?? 0} size={20} />
+        <ProgressRing value={progress ?? 0} size={20} />
       ) : cached ? (
         <>
           <Check size={14} className="group-hover/offline:hidden" />
