@@ -54,6 +54,7 @@ let acceptedShortFile = false;
 let downloadProgress: number | null = null;
 let loadGen = 0;
 let lastEndedUrn: string | null = null;
+let pendingStart: {urn: string; at: number} | null = null;
 const listeners = new Set<() => void>();
 const API_PREVIEW_DURATION_MS = 30_000;
 
@@ -110,6 +111,25 @@ export function seek(seconds: number) {
   cachedTime = seconds;
   notify();
   setTimeout(() => updateMediaPosition(), 150);
+}
+
+export function playAt(track: Track, seconds: number) {
+  const st = usePlayerStore.getState();
+  const isCurrent = st.currentTrack?.urn === track.urn;
+  if (isCurrent && hasTrack) {
+    seek(seconds);
+    if (!st.isPlaying) st.resume();
+    return;
+  }
+  pendingStart = {urn: track.urn, at: seconds};
+  if (isCurrent) st.resume();
+  else st.play(track, [track]);
+}
+
+function takePendingStart(urn: string): number {
+  const at = pendingStart?.urn === urn ? pendingStart.at : 0;
+  pendingStart = null;
+  return at;
 }
 
 export function handlePrev() {
@@ -677,7 +697,7 @@ usePlayerStore.subscribe((state, prev) => {
         return;
       }
       updateMetadata(state.currentTrack);
-      void loadTrack(state.currentTrack);
+      void loadTrack(state.currentTrack, takePendingStart(state.currentTrack.urn));
     } else {
       stopTrack();
       currentUrn = null;
@@ -692,7 +712,7 @@ usePlayerStore.subscribe((state, prev) => {
   if (playToggled && !trackChanged) {
     if (state.isPlaying) {
       if (!hasTrack && state.currentTrack) {
-        void loadTrack(state.currentTrack);
+        void loadTrack(state.currentTrack, takePendingStart(state.currentTrack.urn));
       } else {
         invoke('audio_play').catch(console.error);
       }

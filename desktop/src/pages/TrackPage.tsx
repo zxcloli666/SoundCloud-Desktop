@@ -12,7 +12,7 @@ import {RoomVoices} from '../components/track/RoomVoices';
 import {useTrackAura} from '../components/track/useTrackAura';
 import {LoadErrorState, RefreshPendingHint} from '../components/ui/LoadErrorState';
 import {api} from '../lib/api';
-import {seek} from '../lib/audio';
+import {playAt} from '../lib/audio';
 import {
   retryWhileRefreshing,
   useInfiniteScroll,
@@ -105,14 +105,9 @@ export const TrackPage = React.memo(function TrackPage() {
         }
     }, [track]);
 
-    // Jump into the song from a comment: seek when it's already loaded, else
-    // start it (and its voices begin to rise as the playhead sweeps).
     const jumpTo = useCallback(
         (seconds: number) => {
-            if (!track) return;
-            const st = usePlayerStore.getState();
-            if (st.currentTrack?.urn === track.urn) seek(seconds);
-            else st.play(track, [track]);
+            if (track) playAt(track, seconds);
         },
         [track],
     );
