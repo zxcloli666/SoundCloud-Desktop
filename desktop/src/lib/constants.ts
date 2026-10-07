@@ -19,6 +19,7 @@ export const GITHUB_REPO = 'SoundCloud-Desktop';
 export const GITHUB_REPO_EN = 'SoundCloud-Desktop-EN';
 export const DOCS_URL = `https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}/blob/main/docs`;
 export const DISCORD_URL = 'https://discord.gg/xQcGBP8fGG';
+export const BOOSTY_URL = 'https://boosty.to/lolinamide';
 export const APP_VERSION = __APP_VERSION__;
 
 export const SHOW_NEWS = true;
