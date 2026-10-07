@@ -136,6 +136,18 @@ export function setPlaybackContextResetHandler(fn: () => void): void {
     onPlaybackContextReset = fn;
 }
 
+export type PlaybackAction = 'play' | 'skip' | 'advance' | 'seek';
+
+let playbackDirector: ((action: PlaybackAction) => boolean) | null = null;
+
+export function setPlaybackDirector(fn: ((action: PlaybackAction) => boolean) | null): void {
+  playbackDirector = fn;
+}
+
+export function playbackAllowed(action: PlaybackAction): boolean {
+  return playbackDirector?.(action) ?? true;
+}
+
 // Mirrors the Rust DownloadSource enum (serde rename_all = "lowercase").
 export type PlaybackSource = 'storage' | 'anon' | 'direct' | 'api';
 
@@ -261,6 +273,7 @@ export const usePlayerStore = create<PlayerState>()(
       playNextCursor: null,
 
       play: (track, queue) => {
+        if (!playbackAllowed('play')) return;
           onPlaybackContextReset?.();
         if (queue) {
           const { shuffle } = get();
@@ -299,6 +312,7 @@ export const usePlayerStore = create<PlayerState>()(
       },
 
       playFromQueue: (index) => {
+        if (!playbackAllowed('play')) return;
         const { queue } = get();
         if (index < 0 || index >= queue.length) return;
         set({
@@ -317,6 +331,7 @@ export const usePlayerStore = create<PlayerState>()(
       },
 
       next: () => {
+        if (!playbackAllowed('skip')) return;
         const { queue, queueIndex, repeat } = get();
         if (queue.length === 0) return;
 
@@ -346,6 +361,7 @@ export const usePlayerStore = create<PlayerState>()(
       },
 
       prev: () => {
+        if (!playbackAllowed('skip')) return;
         const { queue, queueIndex } = get();
         const prevIdx = Math.max(0, queueIndex - 1);
         set({

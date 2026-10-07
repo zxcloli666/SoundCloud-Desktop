@@ -184,7 +184,7 @@ export const Sidebar = React.memo(() => {
         </div>
 
         <NavItem
-          to="/library?tab=history"
+          to="/library/history"
           icon={Clock}
           label={t('library.history')}
           collapsed={collapsed}

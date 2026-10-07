@@ -7,6 +7,7 @@ import {FreshDrops} from '../components/library/FreshDrops';
 import {LibraryFrame} from '../components/library/LibraryFrame';
 import {LocalFilesRail} from '../components/library/LocalFilesRail';
 import {SoundPrintMasthead} from '../components/library/SoundPrintMasthead';
+import {StatsTeaser} from '../components/library/stats/StatsTeaser';
 import {useSoundprint} from '../components/library/useSoundprint';
 import {PlaylistCard} from '../components/music/PlaylistCard';
 import {TrackCard} from '../components/music/TrackCard';
@@ -83,6 +84,8 @@ export const Library = React.memo(() => {
         <FreshDrops genre={genre} />
 
         <ContinueRow genre={genre} />
+
+        <StatsTeaser aura={sound.aura} genre={genre} />
 
         {playlistPreview.length > 0 && (
           <CollectionRail

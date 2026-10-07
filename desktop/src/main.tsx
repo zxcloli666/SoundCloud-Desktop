@@ -66,6 +66,8 @@ function startDeferredRuntime() {
     void import('./lib/queue-autopilot');
     void import('./lib/discord');
     void import('./lib/hotkeys').then((m) => m.initGlobalHotkeys());
+    void import('./lib/scrobble/tracker');
+    void import('./lib/obs/bridge');
     void import('./lib/perf-probe').then((m) => m.probePerfMode());
     void import('./lib/host-status').then((m) => m.initHostStatus());
     void import('./lib/storage-location').then((m) => m.warnIfStorageUnavailable());

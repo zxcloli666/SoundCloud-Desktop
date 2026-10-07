@@ -228,6 +228,7 @@ function apiBasesFor(path: string): string[] {
     return [primary, primary === API_BASE ? API_STAR_BASE : API_BASE];
   }
   if (path.startsWith('/auth/')) return [preferredControlBase()];
+  if (path.startsWith('/rooms')) return [API_BASE];
   if (!getIsPremium() || !sessionId) return [API_BASE];
   // Cooldown star'а уводит премиум на main только пока main есть чем ответить.
   // Иначе star остаётся первым: его 30-секундная отсидка — это одна осечка, а

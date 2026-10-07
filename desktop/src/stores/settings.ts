@@ -18,6 +18,8 @@ export type StreamQuality = 'auto' | 'sq' | 'hq';
 export type SkipStuckAfterSec = 0 | 10 | 20 | 30 | 60;
 export type SearchPlayback = 'similar' | 'results';
 export const CROSSFADE_MAX_SEC = 12;
+export type DiscordRpcStatus = 'app' | 'track' | 'artist';
+export type ObsTheme = 'card' | 'minimal' | 'vinyl';
 export interface SidebarPinnedPlaylist {
   urn: string;
   title: string;
@@ -101,7 +103,20 @@ export interface SettingsState {
   pinnedPlaylists: SidebarPinnedPlaylist[];
   discordRpcEnabled: boolean;
   discordRpcMode: DiscordRpcMode;
+  discordRpcStatus: DiscordRpcStatus;
   discordRpcShowButton: boolean;
+  discordRpcLyrics: boolean;
+  scrobbleEnabled: boolean;
+  scrobbleNowPlaying: boolean;
+  obsEnabled: boolean;
+  obsServer: boolean;
+  obsPort: number;
+  obsTheme: ObsTheme;
+  obsProgress: boolean;
+  obsHidePaused: boolean;
+  obsTxt: boolean;
+  obsTxtPath: string;
+  obsTemplate: string;
   soundwaveLanguages: string[];
   soundwaveMode: 'similar' | 'diverse';
   soundwaveHideLiked: boolean;
@@ -147,7 +162,20 @@ export interface SettingsState {
   unpinPlaylist: (urn: string) => void;
   setDiscordRpcEnabled: (enabled: boolean) => void;
   setDiscordRpcMode: (mode: DiscordRpcMode) => void;
+  setDiscordRpcStatus: (status: DiscordRpcStatus) => void;
   setDiscordRpcShowButton: (show: boolean) => void;
+  setDiscordRpcLyrics: (enabled: boolean) => void;
+  setScrobbleEnabled: (enabled: boolean) => void;
+  setScrobbleNowPlaying: (enabled: boolean) => void;
+  setObsEnabled: (enabled: boolean) => void;
+  setObsServer: (enabled: boolean) => void;
+  setObsPort: (port: number) => void;
+  setObsTheme: (theme: ObsTheme) => void;
+  setObsProgress: (enabled: boolean) => void;
+  setObsHidePaused: (enabled: boolean) => void;
+  setObsTxt: (enabled: boolean) => void;
+  setObsTxtPath: (path: string) => void;
+  setObsTemplate: (template: string) => void;
   setSoundwaveLanguages: (langs: string[]) => void;
   setSoundwaveMode: (mode: 'similar' | 'diverse') => void;
   setSoundwaveHideLiked: (v: boolean) => void;
@@ -199,7 +227,20 @@ const DEFAULTS = {
   pinnedPlaylists: [] as SidebarPinnedPlaylist[],
   discordRpcEnabled: true,
   discordRpcMode: 'track' as DiscordRpcMode,
+  discordRpcStatus: 'track' as DiscordRpcStatus,
   discordRpcShowButton: true,
+  discordRpcLyrics: false,
+  scrobbleEnabled: true,
+  scrobbleNowPlaying: true,
+  obsEnabled: false,
+  obsServer: true,
+  obsPort: 48555,
+  obsTheme: 'card' as ObsTheme,
+  obsProgress: true,
+  obsHidePaused: false,
+  obsTxt: false,
+  obsTxtPath: '',
+  obsTemplate: '{artist} - {title}',
   soundwaveLanguages: [] as string[],
   soundwaveMode: 'similar' as 'similar' | 'diverse',
   soundwaveHideLiked: false,
@@ -296,7 +337,20 @@ export const useSettingsStore = create<SettingsState>()(
         })),
       setDiscordRpcEnabled: (discordRpcEnabled) => set({ discordRpcEnabled }),
       setDiscordRpcMode: (discordRpcMode) => set({ discordRpcMode }),
+      setDiscordRpcStatus: (discordRpcStatus) => set({ discordRpcStatus }),
       setDiscordRpcShowButton: (discordRpcShowButton) => set({ discordRpcShowButton }),
+      setDiscordRpcLyrics: (discordRpcLyrics) => set({ discordRpcLyrics }),
+      setScrobbleEnabled: (scrobbleEnabled) => set({ scrobbleEnabled }),
+      setScrobbleNowPlaying: (scrobbleNowPlaying) => set({ scrobbleNowPlaying }),
+      setObsEnabled: (obsEnabled) => set({ obsEnabled }),
+      setObsServer: (obsServer) => set({ obsServer }),
+      setObsPort: (obsPort) => set({ obsPort }),
+      setObsTheme: (obsTheme) => set({ obsTheme }),
+      setObsProgress: (obsProgress) => set({ obsProgress }),
+      setObsHidePaused: (obsHidePaused) => set({ obsHidePaused }),
+      setObsTxt: (obsTxt) => set({ obsTxt }),
+      setObsTxtPath: (obsTxtPath) => set({ obsTxtPath }),
+      setObsTemplate: (obsTemplate) => set({ obsTemplate }),
       setSoundwaveLanguages: (soundwaveLanguages) => set({ soundwaveLanguages }),
       setSoundwaveMode: (soundwaveMode) => set({ soundwaveMode }),
       setSoundwaveHideLiked: (soundwaveHideLiked) => set({ soundwaveHideLiked }),
@@ -386,7 +440,20 @@ export const useSettingsStore = create<SettingsState>()(
         pinnedPlaylists: s.pinnedPlaylists,
         discordRpcEnabled: s.discordRpcEnabled,
         discordRpcMode: s.discordRpcMode,
+        discordRpcStatus: s.discordRpcStatus,
         discordRpcShowButton: s.discordRpcShowButton,
+        discordRpcLyrics: s.discordRpcLyrics,
+        scrobbleEnabled: s.scrobbleEnabled,
+        scrobbleNowPlaying: s.scrobbleNowPlaying,
+        obsEnabled: s.obsEnabled,
+        obsServer: s.obsServer,
+        obsPort: s.obsPort,
+        obsTheme: s.obsTheme,
+        obsProgress: s.obsProgress,
+        obsHidePaused: s.obsHidePaused,
+        obsTxt: s.obsTxt,
+        obsTxtPath: s.obsTxtPath,
+        obsTemplate: s.obsTemplate,
         soundwaveLanguages: s.soundwaveLanguages,
         soundwaveMode: s.soundwaveMode,
         soundwaveHideLiked: s.soundwaveHideLiked,

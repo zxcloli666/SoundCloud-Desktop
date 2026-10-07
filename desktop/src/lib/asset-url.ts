@@ -107,3 +107,8 @@ export function proxiedAssetUrl(
 
   return toImageCacheUrl(url, { bypassCache });
 }
+
+export function imageCacheKey(url: string): string | null {
+  if (!url.startsWith('http') || isWhitelistedAssetUrl(url)) return null;
+  return buildEncodedPayload(url, false).encoded;
+}

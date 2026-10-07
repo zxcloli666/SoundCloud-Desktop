@@ -62,6 +62,7 @@ import {ArtistNameLinks} from '../music/ArtistNameLinks';
 import {EqualizerPanel} from '../music/EqualizerPanel';
 import {TrackSoundToggle} from '../music/TrackSoundToggle';
 import {UploadKindDot} from '../music/UploadKindDot';
+import {TogetherButton} from '../together/TogetherButton';
 import {VolumeFlyout, VolumeLabel, VolumeSlider} from './VolumeControls';
 
 /* ── Track loading progress (SC → SCD download) ──────────────── */
@@ -1069,6 +1070,7 @@ export const NowPlayingBar = React.memo(
               <div className="npb-sep" />
 
               <div className="flex items-center gap-0.5">
+                <TogetherButton />
                 <TuningBtn />
                 <EqBtn />
                 <LyricsBtn />

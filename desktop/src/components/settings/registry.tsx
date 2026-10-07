@@ -11,11 +11,13 @@ import {HotkeysCard} from './cards/HotkeysCard';
 import {ImportCard} from './cards/ImportCard';
 import {LanguageCard} from './cards/LanguageCard';
 import {NetworkCard} from './cards/NetworkCard';
+import {ObsCard} from './cards/obs/ObsCard';
 import {PerformanceCard} from './cards/PerformanceCard';
 import {PlaybackCard} from './cards/PlaybackCard';
 import {SoundForgeCard} from './cards/SoundForgeCard';
 import {StartupCard} from './cards/StartupCard';
 import {StorageLocationCard} from './cards/StorageLocationCard';
+import {ScrobbleCard} from './cards/scrobble/ScrobbleCard';
 import {ThemeCard} from './cards/ThemeCard';
 import {UiScaleCard} from './cards/UiScaleCard';
 import {UpdatesCard} from './cards/UpdatesCard';
@@ -96,6 +98,8 @@ export const SETTINGS_CATEGORIES: SettingsCategory[] = [
         Body: () => (
             <>
                 <DiscordCard/>
+                <ScrobbleCard/>
+                <ObsCard/>
                 <ImportCard/>
             </>
         ),

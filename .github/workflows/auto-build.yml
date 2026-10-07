@@ -194,6 +194,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          LASTFM_API_KEY: ${{ secrets.LASTFM_API_KEY }}
+          LASTFM_API_SECRET: ${{ secrets.LASTFM_API_SECRET }}
         with:
           projectPath: desktop
           args: ${{ matrix.args }}${{ env.HAS_UPDATER_KEY == 'true' && format(' --config {0}/desktop/src-tauri/tauri.updater.conf.json', github.workspace) || '' }}

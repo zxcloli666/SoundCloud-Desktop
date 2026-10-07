@@ -3,9 +3,9 @@ use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 use discord_rich_presence::{
-    activity::{Activity, ActivityType, Assets, Button, Timestamps},
-    error::Error as IpcError,
     DiscordIpc, DiscordIpcClient,
+    activity::{Activity, ActivityType, Assets, Button, Party, StatusDisplayType, Timestamps},
+    error::Error as IpcError,
 };
 
 use crate::app::diagnostics::log_native;
@@ -39,7 +39,27 @@ pub struct DiscordTrackInfo {
     elapsed_secs: Option<i64>,
     is_playing: Option<bool>,
     mode: Option<DiscordRpcMode>,
+    status: Option<DiscordRpcStatus>,
     show_button: Option<bool>,
+    lyric_line: Option<String>,
+    party: Option<DiscordParty>,
+}
+
+#[derive(serde::Deserialize)]
+pub struct DiscordParty {
+    id: String,
+    size: i32,
+    max: i32,
+}
+
+fn party_of(party: Option<&DiscordParty>) -> Option<Party<'_>> {
+    let party = party.filter(|p| !p.id.is_empty())?;
+    let max = party.max.max(1);
+    Some(
+        Party::new()
+            .id(party.id.as_str())
+            .size([party.size.clamp(1, max), max]),
+    )
 }
 
 #[derive(Clone, Copy, serde::Deserialize)]
@@ -48,6 +68,34 @@ pub enum DiscordRpcMode {
     Track,
     Artist,
     Activity,
+}
+
+#[derive(Clone, Copy, serde::Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum DiscordRpcStatus {
+    App,
+    Track,
+    Artist,
+}
+
+fn status_display(
+    mode: DiscordRpcMode,
+    status: DiscordRpcStatus,
+    is_playing: bool,
+) -> StatusDisplayType {
+    match (mode, status) {
+        (DiscordRpcMode::Activity, _) | (_, DiscordRpcStatus::App) => StatusDisplayType::Name,
+        (DiscordRpcMode::Track, DiscordRpcStatus::Artist) if is_playing => StatusDisplayType::State,
+        _ => StatusDisplayType::Details,
+    }
+}
+
+fn lyric_to_show(mode: DiscordRpcMode, is_playing: bool, line: Option<&str>) -> Option<&str> {
+    match mode {
+        DiscordRpcMode::Activity => None,
+        _ if !is_playing => None,
+        _ => line.filter(|text| !text.trim().is_empty()),
+    }
 }
 
 #[tauri::command]
@@ -121,28 +169,34 @@ fn set_activity(state: &DiscordState, track: DiscordTrackInfo) -> Result<(), Str
     let start = now - elapsed;
     let is_playing = track.is_playing.unwrap_or(true);
     let mode = track.mode.unwrap_or(DiscordRpcMode::Track);
+    let status = track.status.unwrap_or(DiscordRpcStatus::Track);
     let show_button = track.show_button.unwrap_or(true);
 
     let large_image = track.artwork_url.as_deref().unwrap_or("soundcloud_logo");
+    let lyric = lyric_to_show(mode, is_playing, track.lyric_line.as_deref());
 
-    let assets = Assets::new().large_image(large_image);
+    let mut assets = Assets::new().large_image(large_image);
+    if lyric.is_some() && matches!(mode, DiscordRpcMode::Track) {
+        assets = assets.large_text(&track.artist);
+    }
 
     let mut activity = Activity::new()
         .activity_type(ActivityType::Listening)
+        .status_display_type(status_display(mode, status, is_playing))
         .assets(assets);
 
     activity = match mode {
-        DiscordRpcMode::Track => activity.details(&track.title).state(if is_playing {
-            track.artist.as_str()
-        } else {
-            "Paused"
+        DiscordRpcMode::Track => activity.details(&track.title).state(match lyric {
+            Some(line) => line,
+            None if is_playing => track.artist.as_str(),
+            None => "Paused",
         }),
         DiscordRpcMode::Artist => {
             let activity = activity.details(&track.artist);
-            if is_playing {
-                activity
-            } else {
-                activity.state("Paused")
+            match lyric {
+                Some(line) => activity.state(line),
+                None if is_playing => activity,
+                None => activity.state("Paused"),
             }
         }
         DiscordRpcMode::Activity => {
@@ -162,10 +216,13 @@ fn set_activity(state: &DiscordState, track: DiscordTrackInfo) -> Result<(), Str
         activity = activity.timestamps(timestamps);
     }
 
-    if show_button
-        && let Some(ref url) = track.track_url {
-            activity = activity.buttons(vec![Button::new("Listen on SoundCloud", url)]);
-        }
+    if let Some(party) = party_of(track.party.as_ref()) {
+        activity = activity.party(party);
+    }
+
+    if show_button && let Some(ref url) = track.track_url {
+        activity = activity.buttons(vec![Button::new("Listen on SoundCloud", url)]);
+    }
 
     let result = client.set_activity(activity);
 
@@ -196,4 +253,106 @@ fn clear_activity(state: &DiscordState) -> Result<(), String> {
         result.map_err(|e| format!("clear_activity: {e}"))?;
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn shown(mode: DiscordRpcMode, status: DiscordRpcStatus, is_playing: bool) -> u8 {
+        status_display(mode, status, is_playing) as u8
+    }
+
+    #[test]
+    fn track_mode_follows_status_choice() {
+        assert_eq!(
+            shown(DiscordRpcMode::Track, DiscordRpcStatus::Track, true),
+            StatusDisplayType::Details as u8
+        );
+        assert_eq!(
+            shown(DiscordRpcMode::Track, DiscordRpcStatus::Artist, true),
+            StatusDisplayType::State as u8
+        );
+        assert_eq!(
+            shown(DiscordRpcMode::Track, DiscordRpcStatus::App, true),
+            StatusDisplayType::Name as u8
+        );
+    }
+
+    #[test]
+    fn paused_track_never_shows_paused_label_as_artist() {
+        assert_eq!(
+            shown(DiscordRpcMode::Track, DiscordRpcStatus::Artist, false),
+            StatusDisplayType::Details as u8
+        );
+    }
+
+    #[test]
+    fn lyric_line_only_while_playing_outside_activity_mode() {
+        assert_eq!(
+            lyric_to_show(DiscordRpcMode::Track, true, Some("line")),
+            Some("line")
+        );
+        assert_eq!(
+            lyric_to_show(DiscordRpcMode::Artist, true, Some("line")),
+            Some("line")
+        );
+        assert_eq!(
+            lyric_to_show(DiscordRpcMode::Track, false, Some("line")),
+            None
+        );
+        assert_eq!(
+            lyric_to_show(DiscordRpcMode::Activity, true, Some("line")),
+            None
+        );
+        assert_eq!(lyric_to_show(DiscordRpcMode::Track, true, Some("  ")), None);
+        assert_eq!(lyric_to_show(DiscordRpcMode::Track, true, None), None);
+    }
+
+    #[test]
+    fn party_size_stays_within_its_bounds() {
+        let party = |size, max| DiscordParty {
+            id: "room".into(),
+            size,
+            max,
+        };
+        assert!(party_of(None).is_none());
+        assert!(
+            party_of(Some(&DiscordParty {
+                id: String::new(),
+                size: 2,
+                max: 10
+            }))
+            .is_none()
+        );
+        let json = |p: Party<'_>| serde_json::to_value(p).unwrap()["size"].clone();
+        assert_eq!(
+            json(party_of(Some(&party(3, 10))).unwrap()),
+            serde_json::json!([3, 10])
+        );
+        assert_eq!(
+            json(party_of(Some(&party(0, 10))).unwrap()),
+            serde_json::json!([1, 10])
+        );
+        assert_eq!(
+            json(party_of(Some(&party(12, 10))).unwrap()),
+            serde_json::json!([10, 10])
+        );
+    }
+
+    #[test]
+    fn artist_and_activity_modes() {
+        assert_eq!(
+            shown(DiscordRpcMode::Artist, DiscordRpcStatus::Track, true),
+            StatusDisplayType::Details as u8
+        );
+        assert_eq!(
+            shown(DiscordRpcMode::Artist, DiscordRpcStatus::Artist, false),
+            StatusDisplayType::Details as u8
+        );
+        assert_eq!(
+            shown(DiscordRpcMode::Activity, DiscordRpcStatus::Track, true),
+            StatusDisplayType::Name as u8
+        );
+    }
 }

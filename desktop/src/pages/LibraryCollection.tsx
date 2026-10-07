@@ -7,19 +7,21 @@ import {LibraryFrame} from '../components/library/LibraryFrame';
 import {LibrarySubHeader} from '../components/library/LibrarySubHeader';
 import {LikesTab} from '../components/library/LikesTab';
 import {PlaylistsTab} from '../components/library/PlaylistsTab';
+import {StatsView} from '../components/library/stats/StatsView';
 import {useSoundprint} from '../components/library/useSoundprint';
 import {useLikedTracks} from '../lib/hooks';
 import {likedTracksCount} from '../lib/likes';
 import {useAuthStore} from '../stores/auth';
 
-type Section = 'likes' | 'playlists' | 'following' | 'history';
-const SECTIONS: Section[] = ['likes', 'playlists', 'following', 'history'];
+type Section = 'likes' | 'playlists' | 'following' | 'history' | 'stats';
+const SECTIONS: Section[] = ['likes', 'playlists', 'following', 'history', 'stats'];
 
 const TITLE_KEY: Record<Section, string> = {
     likes: 'library.likedTracks',
     playlists: 'search.playlists',
     following: 'nav.following',
     history: 'library.history',
+    stats: 'stats.title',
 };
 
 /** A deep collection page (/library/:section) — the full, filterable, virtualized
@@ -38,6 +40,7 @@ export const LibraryCollection = React.memo(() => {
         return <Navigate to="/library" replace/>;
     }
     const sec = section as Section;
+    const filterable = sec !== 'history' && sec !== 'stats';
 
     const count =
         sec === 'likes'
@@ -54,14 +57,15 @@ export const LibraryCollection = React.memo(() => {
                 title={t(TITLE_KEY[sec])}
                 aura={sound.aura}
                 count={count}
-                filter={sec === 'history' ? undefined : filter}
-                onFilter={sec === 'history' ? undefined : setFilter}
+                filter={filterable ? filter : undefined}
+                onFilter={filterable ? setFilter : undefined}
             />
 
             {sec === 'likes' && <LikesTab filter={deferredFilter}/>}
             {sec === 'playlists' && <PlaylistsTab filter={deferredFilter}/>}
             {sec === 'following' && <FollowingTab filter={deferredFilter}/>}
             {sec === 'history' && <HistoryTab/>}
+            {sec === 'stats' && <StatsView aura={sound.aura} accentGlow={sound.accentGlow}/>}
         </LibraryFrame>
     );
 });
