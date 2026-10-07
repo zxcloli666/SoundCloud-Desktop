@@ -3,9 +3,9 @@ use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 use discord_rich_presence::{
-    activity::{Activity, ActivityType, Assets, Button, Timestamps},
-    error::Error as IpcError,
     DiscordIpc, DiscordIpcClient,
+    activity::{Activity, ActivityType, Assets, Button, StatusDisplayType, Timestamps},
+    error::Error as IpcError,
 };
 
 use crate::app::diagnostics::log_native;
@@ -39,6 +39,7 @@ pub struct DiscordTrackInfo {
     elapsed_secs: Option<i64>,
     is_playing: Option<bool>,
     mode: Option<DiscordRpcMode>,
+    status: Option<DiscordRpcStatus>,
     show_button: Option<bool>,
 }
 
@@ -48,6 +49,26 @@ pub enum DiscordRpcMode {
     Track,
     Artist,
     Activity,
+}
+
+#[derive(Clone, Copy, serde::Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum DiscordRpcStatus {
+    App,
+    Track,
+    Artist,
+}
+
+fn status_display(
+    mode: DiscordRpcMode,
+    status: DiscordRpcStatus,
+    is_playing: bool,
+) -> StatusDisplayType {
+    match (mode, status) {
+        (DiscordRpcMode::Activity, _) | (_, DiscordRpcStatus::App) => StatusDisplayType::Name,
+        (DiscordRpcMode::Track, DiscordRpcStatus::Artist) if is_playing => StatusDisplayType::State,
+        _ => StatusDisplayType::Details,
+    }
 }
 
 #[tauri::command]
@@ -121,6 +142,7 @@ fn set_activity(state: &DiscordState, track: DiscordTrackInfo) -> Result<(), Str
     let start = now - elapsed;
     let is_playing = track.is_playing.unwrap_or(true);
     let mode = track.mode.unwrap_or(DiscordRpcMode::Track);
+    let status = track.status.unwrap_or(DiscordRpcStatus::Track);
     let show_button = track.show_button.unwrap_or(true);
 
     let large_image = track.artwork_url.as_deref().unwrap_or("soundcloud_logo");
@@ -129,6 +151,7 @@ fn set_activity(state: &DiscordState, track: DiscordTrackInfo) -> Result<(), Str
 
     let mut activity = Activity::new()
         .activity_type(ActivityType::Listening)
+        .status_display_type(status_display(mode, status, is_playing))
         .assets(assets);
 
     activity = match mode {
@@ -162,10 +185,9 @@ fn set_activity(state: &DiscordState, track: DiscordTrackInfo) -> Result<(), Str
         activity = activity.timestamps(timestamps);
     }
 
-    if show_button
-        && let Some(ref url) = track.track_url {
-            activity = activity.buttons(vec![Button::new("Listen on SoundCloud", url)]);
-        }
+    if show_button && let Some(ref url) = track.track_url {
+        activity = activity.buttons(vec![Button::new("Listen on SoundCloud", url)]);
+    }
 
     let result = client.set_activity(activity);
 
@@ -196,4 +218,53 @@ fn clear_activity(state: &DiscordState) -> Result<(), String> {
         result.map_err(|e| format!("clear_activity: {e}"))?;
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn shown(mode: DiscordRpcMode, status: DiscordRpcStatus, is_playing: bool) -> u8 {
+        status_display(mode, status, is_playing) as u8
+    }
+
+    #[test]
+    fn track_mode_follows_status_choice() {
+        assert_eq!(
+            shown(DiscordRpcMode::Track, DiscordRpcStatus::Track, true),
+            StatusDisplayType::Details as u8
+        );
+        assert_eq!(
+            shown(DiscordRpcMode::Track, DiscordRpcStatus::Artist, true),
+            StatusDisplayType::State as u8
+        );
+        assert_eq!(
+            shown(DiscordRpcMode::Track, DiscordRpcStatus::App, true),
+            StatusDisplayType::Name as u8
+        );
+    }
+
+    #[test]
+    fn paused_track_never_shows_paused_label_as_artist() {
+        assert_eq!(
+            shown(DiscordRpcMode::Track, DiscordRpcStatus::Artist, false),
+            StatusDisplayType::Details as u8
+        );
+    }
+
+    #[test]
+    fn artist_and_activity_modes() {
+        assert_eq!(
+            shown(DiscordRpcMode::Artist, DiscordRpcStatus::Track, true),
+            StatusDisplayType::Details as u8
+        );
+        assert_eq!(
+            shown(DiscordRpcMode::Artist, DiscordRpcStatus::Artist, false),
+            StatusDisplayType::Details as u8
+        );
+        assert_eq!(
+            shown(DiscordRpcMode::Activity, DiscordRpcStatus::Track, true),
+            StatusDisplayType::Name as u8
+        );
+    }
 }
