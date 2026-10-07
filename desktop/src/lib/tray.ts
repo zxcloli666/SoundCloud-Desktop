@@ -1,10 +1,12 @@
 import {emit, listen} from '@tauri-apps/api/event';
+import {useAddToPlaylistRequest} from '../stores/add-to-playlist';
 import { usePlayerStore } from '../stores/player';
 import {api} from './api';
 import {getDuration, handlePrev, seek} from './audio';
 import {forgetOfflineLike} from './cache';
 import {trackedInvoke as invoke} from './diagnostics';
-import {isUrnDisliked, toggleDislike} from './dislikes';
+import {clearDislike, dislikeTrack} from './dislike-actions';
+import {isUrnDisliked} from './dislikes';
 import {art} from './formatters';
 import {invalidateAllLikesCache} from './hooks';
 import {isUrnLiked, optimisticToggleLike} from './likes';
@@ -102,7 +104,7 @@ export async function toggleLikeCurrent() {
     const next = !(isUrnLiked(tr.urn) || !!tr.user_favorite);
     optimisticToggleLike(queryClient, tr, next); // also updates isUrnLiked
     invalidateAllLikesCache();
-    if (next && isUrnDisliked(tr.urn)) void toggleDislike(queryClient, tr, false);
+    if (next) clearDislike(tr.urn);
     pushNp();
     try {
         await api(`/likes/tracks/${encodeURIComponent(tr.urn)}`, {
@@ -118,19 +120,16 @@ export async function toggleLikeCurrent() {
 async function toggleDislikeCurrent() {
     const tr = usePlayerStore.getState().currentTrack;
     if (!tr || isLocalUrn(tr.urn)) return;
-    const next = !isUrnDisliked(tr.urn);
-    if (next && (isUrnLiked(tr.urn) || tr.user_favorite)) {
-        optimisticToggleLike(queryClient, tr, false);
-        invalidateAllLikesCache();
-        api(`/likes/tracks/${encodeURIComponent(tr.urn)}`, {method: 'DELETE'})
-            .then(() => forgetOfflineLike(tr.urn))
-            .catch(() => {
-            });
-    }
-    // Disliking the current track skips it, mirroring the now-bar dislike button.
-    if (next) usePlayerStore.getState().next();
-    await toggleDislike(queryClient, tr, next);
+    if (isUrnDisliked(tr.urn)) clearDislike(tr.urn);
+    else await dislikeTrack(tr, {undo: false});
     pushNp();
+}
+
+function addCurrentToPlaylist() {
+    const tr = usePlayerStore.getState().currentTrack;
+    if (!tr) return;
+    void invoke('show_main_window');
+    useAddToPlaylistRequest.getState().request([tr.urn]);
 }
 
 /* ── Native tray menu (Rust-emitted) ─────────────────────────── */
@@ -185,6 +184,9 @@ listen<{ action: string; value?: number }>('tray:cmd', (event) => {
             break;
         case 'dislike':
             void toggleDislikeCurrent();
+            break;
+        case 'add_to_playlist':
+            addCurrentToPlaylist();
             break;
         case 'show':
             void invoke('show_main_window');

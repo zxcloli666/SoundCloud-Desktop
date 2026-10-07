@@ -7933,6 +7933,7 @@ dependencies = [
  "log",
  "lru",
  "mime",
+ "mime_guess",
  "percent-encoding",
  "pin-project-lite",
  "serde",

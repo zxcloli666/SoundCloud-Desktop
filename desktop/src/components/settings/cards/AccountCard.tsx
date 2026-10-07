@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { ChevronRight, Smartphone, User } from '../../../lib/icons';
 import { useAppStatusStore } from '../../../stores/app-status';
 import { useAuthStore } from '../../../stores/auth';
+import { SyncStatusRow } from '../../sync/SyncStatusRow';
 import { Card } from '../primitives';
 
 const QrLinkSheetLazy = React.lazy(() =>
@@ -39,6 +40,7 @@ export function AccountCard() {
 
   return (
     <Card title={t('settings.account')} icon={<User size={17} />}>
+      <SyncStatusRow />
       <div className="flex flex-col gap-2.5">
         <button
           type="button"

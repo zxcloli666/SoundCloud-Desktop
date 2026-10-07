@@ -1,5 +1,6 @@
 import {
     Heart,
+    ListPlus,
     Maximize2,
     Pause,
     Play,
@@ -303,6 +304,18 @@ export function MiniPlayer() {
                             onClick={() => sendCmd('dislike')}
                         >
                             <ThumbsDown size={16} fill={np.disliked ? 'currentColor' : 'none'}/>
+                        </button>
+                        <button
+                            type="button"
+                            className="tp-icon-btn"
+                            title={t('playlist.addToPlaylist')}
+                            aria-label={t('playlist.addToPlaylist')}
+                            onClick={() => {
+                                sendCmd('add_to_playlist');
+                                hideSelf();
+                            }}
+                        >
+                            <ListPlus size={16}/>
                         </button>
                         <VolumeControl volume={np.volume}/>
                     </div>

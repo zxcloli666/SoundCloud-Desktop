@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Duration;
@@ -38,6 +39,7 @@ pub struct YmImportProgress {
 #[derive(serde::Serialize, Clone)]
 pub struct YmImportMatch {
     pub urn: String,
+    pub position: usize,
 }
 
 struct YmFailure {
@@ -63,6 +65,7 @@ struct YmLibrary {
 #[derive(serde::Deserialize)]
 struct YmLikedTrack {
     id: serde_json::Value,
+    timestamp: Option<String>,
 }
 
 #[derive(serde::Deserialize)]
@@ -72,6 +75,7 @@ struct YmTrackInfo {
 
 #[derive(serde::Deserialize)]
 struct YmTrack {
+    id: Option<serde_json::Value>,
     title: Option<String>,
     artists: Option<Vec<YmArtist>>,
 }
@@ -79,6 +83,25 @@ struct YmTrack {
 #[derive(serde::Deserialize)]
 struct YmArtist {
     name: Option<String>,
+}
+
+fn ym_id(value: &serde_json::Value) -> String {
+    match value {
+        serde_json::Value::Number(n) => n.to_string(),
+        serde_json::Value::String(s) => s.clone(),
+        v => v.to_string(),
+    }
+}
+
+fn liked_at(track: &YmLikedTrack) -> Option<chrono::DateTime<chrono::FixedOffset>> {
+    chrono::DateTime::parse_from_rfc3339(track.timestamp.as_deref()?).ok()
+}
+
+fn newest_first(mut tracks: Vec<YmLikedTrack>) -> Vec<String> {
+    if tracks.iter().all(|track| liked_at(track).is_some()) {
+        tracks.sort_by_key(|track| std::cmp::Reverse(liked_at(track)));
+    }
+    tracks.iter().map(|track| ym_id(&track.id)).collect()
 }
 
 fn emit_progress(
@@ -193,17 +216,7 @@ pub async fn ym_import_start(
     let likes: YmLikesResponse = ym_get(&client, &ym_token, &format!("/users/{uid}/likes/tracks"))
         .await
         .map_err(|failure| give_up(&app, "likes request", failure))?;
-    let track_ids: Vec<String> = likes
-        .result
-        .library
-        .tracks
-        .iter()
-        .map(|t| match &t.id {
-            serde_json::Value::Number(n) => n.to_string(),
-            serde_json::Value::String(s) => s.clone(),
-            v => v.to_string(),
-        })
-        .collect();
+    let track_ids = newest_first(likes.result.library.tracks);
 
     let total = track_ids.len();
     let mut found = 0usize;
@@ -213,10 +226,16 @@ pub async fn ym_import_start(
     let mut ym_failures_in_row = 0usize;
     let mut processed = 0usize;
 
-    'batches: for chunk in track_ids.chunks(50) {
+    'batches: for (batch, chunk) in track_ids.chunks(50).enumerate() {
         if CANCEL_FLAG.load(Ordering::Relaxed) {
             break;
         }
+        let offset = batch * 50;
+        let positions: HashMap<&str, usize> = chunk
+            .iter()
+            .enumerate()
+            .map(|(index, id)| (id.as_str(), offset + index))
+            .collect();
 
         let tracks = match fetch_ym_tracks(&client, &ym_token, &chunk.join(",")).await {
             Ok(tracks) => {
@@ -255,7 +274,7 @@ pub async fn ym_import_start(
             }
         };
 
-        for track in tracks.iter() {
+        for (index, track) in tracks.iter().enumerate() {
             if CANCEL_FLAG.load(Ordering::Relaxed) {
                 break 'batches;
             }
@@ -298,7 +317,13 @@ pub async fn ym_import_start(
                 Ok(Some(urn)) => {
                     search_errors_in_row = 0;
                     found += 1;
-                    app.emit("ym_import:match", YmImportMatch { urn }).ok();
+                    let position = track
+                        .id
+                        .as_ref()
+                        .and_then(|id| positions.get(ym_id(id).as_str()).copied())
+                        .unwrap_or(offset + index);
+                    app.emit("ym_import:match", YmImportMatch { urn, position })
+                        .ok();
                 }
                 Ok(None) => {
                     search_errors_in_row = 0;
@@ -398,4 +423,36 @@ pub async fn ym_import_start(
 #[tauri::command]
 pub fn ym_import_stop() {
     CANCEL_FLAG.store(true, Ordering::Relaxed);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn liked(id: serde_json::Value, timestamp: Option<&str>) -> YmLikedTrack {
+        YmLikedTrack {
+            id,
+            timestamp: timestamp.map(str::to_string),
+        }
+    }
+
+    #[test]
+    fn orders_likes_from_newest_to_oldest() {
+        let tracks = vec![
+            liked(serde_json::json!(1), Some("2021-03-01T10:00:00+00:00")),
+            liked(serde_json::json!("3"), Some("2024-01-05T09:00:00+03:00")),
+            liked(serde_json::json!(2), Some("2022-07-12T18:30:00+00:00")),
+        ];
+        assert_eq!(newest_first(tracks), vec!["3", "2", "1"]);
+    }
+
+    #[test]
+    fn keeps_api_order_without_timestamps() {
+        let tracks = vec![
+            liked(serde_json::json!(5), Some("2021-03-01T10:00:00+00:00")),
+            liked(serde_json::json!(4), None),
+            liked(serde_json::json!(9), Some("2024-01-05T09:00:00+00:00")),
+        ];
+        assert_eq!(newest_first(tracks), vec!["5", "4", "9"]);
+    }
 }

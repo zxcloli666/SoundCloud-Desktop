@@ -12,9 +12,11 @@ import {toggleWindowFullscreen} from '../../lib/window';
 import {useLyricsStore} from '../../stores/lyrics';
 import {usePlayerStore} from '../../stores/player';
 import {useSettingsStore} from '../../stores/settings';
+import {AddToPlaylistHost} from '../music/AddToPlaylistHost';
 import {TrackContextMenu} from '../music/track-menu/TrackContextMenu';
 import {DropImportOverlay} from '../offline/local/DropImportOverlay';
 import {KeyCaps} from '../ui/KeyCap';
+import {UploadTrackDialog} from '../upload/UploadTrackDialog';
 import {GlobalBindingsGroup} from './GlobalBindingsGroup';
 import {NowPlayingBar} from './NowPlayingBar';
 import {Sidebar} from './Sidebar';
@@ -51,6 +53,12 @@ const keybindings: Keybinding[] = [
   { key: 'm', label: 'kb.mute', group: 'playback', display: 'M' },
   { key: '/', label: 'kb.search', group: 'navigation', display: '/' },
   { key: 'Ctrl+K', label: 'kb.search', group: 'navigation', display: isMac() ? '⌘ K' : 'Ctrl K' },
+  {
+    key: 'Ctrl+F',
+    label: 'kb.findInPlaylist',
+    group: 'navigation',
+    display: isMac() ? '⌘ F' : 'Ctrl F',
+  },
   { key: 'q', label: 'kb.queue', group: 'panels', display: 'Q' },
   { key: 'l', label: 'kb.lyrics', group: 'panels', display: 'L' },
   { key: '[', label: 'kb.sidebar', group: 'panels', display: '[' },
@@ -450,6 +458,8 @@ export const AppShell = React.memo(() => {
         </main>
       </div>
       <NowPlayingBar onQueueToggle={onQueueToggle} queueOpen={queueOpen} />
+      <AddToPlaylistHost />
+      <UploadTrackDialog />
       {queueOpen && (
         <Suspense fallback={null}>
           <QueuePanel open={queueOpen} onClose={onQueueClose} />

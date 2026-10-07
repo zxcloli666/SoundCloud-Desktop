@@ -4,8 +4,52 @@ import { useNavigate } from 'react-router';
 import { useShallow } from 'zustand/shallow';
 import { proxiedAssetUrl } from '../../lib/asset-url';
 import { X } from '../../lib/icons';
+import { useSettingsStore, type YmImportOrder } from '../../stores/settings';
 import { isYmImportBusy, useYmImportStore } from '../../stores/ym-import';
 import { Modal, ModalClose, ModalContent, ModalTitle } from '../ui/Modal';
+
+const ORDERS: { value: YmImportOrder; label: string }[] = [
+  { value: 'newest', label: 'ym.orderNewest' },
+  { value: 'oldest', label: 'ym.orderOldest' },
+];
+
+function OrderPicker({ disabled }: { disabled: boolean }) {
+  const { t } = useTranslation();
+  const order = useSettingsStore((s) => s.ymImportOrder);
+  const setOrder = useSettingsStore((s) => s.setYmImportOrder);
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-[12px] font-medium text-white/60">{t('ym.orderLabel')}</p>
+        <div
+          role="radiogroup"
+          aria-label={t('ym.orderLabel')}
+          className="flex gap-0.5 rounded-[11px] border border-white/[0.08] bg-white/[0.02] p-[3px]"
+        >
+          {ORDERS.map(({ value, label }) => (
+            <button
+              key={value}
+              type="button"
+              role="radio"
+              aria-checked={order === value}
+              disabled={disabled}
+              onClick={() => setOrder(value)}
+              className={`rounded-lg px-3 py-[6px] text-[12px] font-medium transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 ${
+                order === value
+                  ? 'bg-white/[0.08] text-white/92 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]'
+                  : 'text-white/50 hover:text-white/80'
+              }`}
+            >
+              {t(label)}
+            </button>
+          ))}
+        </div>
+      </div>
+      <p className="text-[11px] text-white/30">{t('ym.orderHint')}</p>
+    </div>
+  );
+}
 
 function YMImportDialog({
   open,
@@ -160,6 +204,8 @@ function YMImportDialog({
                 disabled={busy}
                 className="w-full px-4 py-3 rounded-xl bg-white/[0.04] border border-white/[0.06] text-[13px] text-white/80 placeholder:text-white/20 focus:border-white/[0.12] focus:bg-white/[0.06] transition-all duration-200 outline-none disabled:opacity-50"
               />
+
+              <OrderPicker disabled={busy} />
             </>
           )}
 

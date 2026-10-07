@@ -3,6 +3,7 @@ import {useTranslation} from 'react-i18next';
 import {useNavigate} from 'react-router-dom';
 import {dateFormatted, durLong} from '../../lib/formatters';
 import {ChevronDown, ChevronUp, Hash} from '../../lib/icons';
+import {getAlbumTarget} from '../../lib/track-display';
 import type {Track} from '../../stores/player';
 import {StatOrb} from '../user/StatOrb';
 import type {TrackAura} from './useTrackAura';
@@ -62,6 +63,7 @@ export const LinerNotes = React.memo(function LinerNotes({
     const tags = parseTags(track.tag_list);
 
     const album = track.enrichment?.album;
+    const albumTarget = getAlbumTarget(track);
     const released = track.release_date
         ? dateFormatted(track.release_date)
         : track.release_year
@@ -76,7 +78,7 @@ export const LinerNotes = React.memo(function LinerNotes({
         credits.push({
             label: t('track.album'),
             value: album.title,
-            onClick: album.id ? () => navigate(`/album/${encodeURIComponent(album.id)}`) : undefined,
+            onClick: albumTarget ? () => navigate(albumTarget) : undefined,
         });
     if (released) credits.push({label: t('track.released'), value: released});
     if (track.language) credits.push({label: t('track.language'), value: track.language});

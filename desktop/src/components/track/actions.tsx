@@ -4,6 +4,7 @@ import {useTranslation} from 'react-i18next';
 import {toast} from 'sonner';
 import {api} from '../../lib/api';
 import {forgetOfflineLike} from '../../lib/cache';
+import {clearDislike} from '../../lib/dislike-actions';
 import {fc} from '../../lib/formatters';
 import {invalidateAllLikesCache} from '../../lib/hooks';
 import {Check, Download, Heart, LinkIcon, Loader2, pauseCurrent16, playCurrent16,} from '../../lib/icons';
@@ -60,6 +61,7 @@ export const LikeBtn = React.memo(({ trackUrn, count }: { trackUrn: string; coun
     if (cached) optimisticToggleLike(qc, cached, next);
     else setLikedUrn(trackUrn, next);
     invalidateAllLikesCache();
+    if (next) clearDislike(trackUrn);
     try {
       await api(`/likes/tracks/${encodeURIComponent(trackUrn)}`, {
         method: next ? 'POST' : 'DELETE',

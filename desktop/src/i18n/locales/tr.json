@@ -37,7 +37,13 @@
     "pinPlaylist": "Calma listesini sabitle",
     "unpinPlaylist": "Calma listesinin sabitini kaldir",
     "pinned": "Kenar cubuguna sabitlendi",
-    "unpinned": "Kenar cubugundan kaldirildi"
+    "unpinned": "Kenar cubugundan kaldirildi",
+    "pinArtist": "Kenar cubuguna sabitle",
+    "unpinArtist": "Kenar cubugundan kaldir",
+    "pinArtistShort": "Sabitle",
+    "pinnedArtist": "Sabitlendi",
+    "artistPinned": "Kenar cubuguna sabitlendi",
+    "artistUnpinned": "Kenar cubugundan kaldirildi"
   },
   "player": {
     "queue": "Kuyruk",
@@ -222,8 +228,28 @@
     "skipHaltedHint": "Oynatma duraklatildi. Baglantinizi kontrol edin ve tekrar denemek icin oynat tusuna basin.",
     "dislike": "Onerme",
     "removeDislike": "Begenmemeyi kaldir",
+    "like": "Beğen",
+    "unlike": "Beğenilerden kaldır",
     "play": "Calistir",
-    "pause": "Duraklat"
+    "pause": "Duraklat",
+    "openAlbum": "\"{{title}}\" albümünü aç",
+    "manage": "Parçayı yönet",
+    "edit": "Parçayı düzenle",
+    "titleLabel": "Başlık",
+    "genreLabel": "Tür",
+    "genrePlaceholder": "Örneğin Electronic",
+    "tagsLabel": "Etiketler",
+    "tagsPlaceholder": "Virgülle ayırın",
+    "descriptionLabel": "Açıklama",
+    "descriptionPlaceholder": "Dinleyicilere bu parçadan bahsedin",
+    "save": "Kaydet",
+    "saving": "Kaydediliyor...",
+    "detailsSaved": "Parça güncellendi",
+    "delete": "Parçayı sil",
+    "deleteAction": "Sil",
+    "deleteConfirm": "\"{{title}}\" SoundCloud'dan kalıcı olarak silinecek. Dinlenmeler, beğeniler ve yorumlar da gider.",
+    "deleted": "Parça silindi",
+    "notSyncedYet": "Bu parça henüz senkronize edilmedi, bir dakika sonra tekrar deneyin"
   },
   "playlist": {
     "playAll": "Hepsini Cal",
@@ -259,7 +285,27 @@
     "changedElsewhere": "Calma listesi baska bir yerde degisti, yenileyip tekrar deneyin",
     "trackNotSynced": "Bu parca henuz esitlenmedi, bir dakika sonra tekrar deneyin",
     "editFailed": "Calma listesi degistirilemedi",
-    "createQueued": "Calma listesi olusturuluyor, birazdan gorunecek"
+    "createQueued": "Calma listesi olusturuluyor, birazdan gorunecek",
+    "edit": "Çalma listesini düzenle",
+    "titleLabel": "Başlık",
+    "descriptionLabel": "Açıklama",
+    "descriptionPlaceholder": "Dinleyicilere bu çalma listesinin ne hakkında olduğunu anlatın",
+    "save": "Kaydet",
+    "saving": "Kaydediliyor...",
+    "detailsSaved": "Çalma listesi güncellendi",
+    "arrange": "Parçaları düzenle",
+    "arrangeWait": "Düzenlemek için tüm parçaların yüklenmesini bekleyin",
+    "arrange_reverse": "Sırayı ters çevir",
+    "arrange_title": "Ada göre, A'dan Z'ye",
+    "arrange_artist": "Sanatçıya göre, A'dan Z'ye",
+    "arrange_duration": "Süreye göre, kısadan uzuna",
+    "arranged": "Parçaların sırası değişti",
+    "undo": "Geri al",
+    "find": "Çalma listesinde bul",
+    "findClear": "Temizle",
+    "findCount": "{{count}} / {{total}}",
+    "findNoMatches": "Bu çalma listesinde “{{query}}” ile eşleşen bir şey yok",
+    "findLoading": "Çalma listesinin tamamı yükleniyor…"
   },
   "user": {
     "followers": "Takipciler",
@@ -319,7 +365,19 @@
     "likesSyncSlow": "SoundCloud ile esitleme normalden uzun suruyor",
     "likesLoadFailed": "Begeniler yuklenemedi",
     "notFollowing": "Kimseyi takip etmiyorsunuz",
-    "noPlaylists": "Calma listesi bulunamadi"
+    "noPlaylists": "Calma listesi bulunamadi",
+    "likedAlbums": "Beğenilen Albümler"
+  },
+  "dislikes": {
+    "playingDisliked": "Bu parça Önerilmeyenler listesinde",
+    "added": "Bu parça artık önerilmeyecek",
+    "undo": "Geri al",
+    "title": "Önerilmeyenler",
+    "summary_one": "{{count}} parça kuyrukta ve önerilerde atlanıyor",
+    "summary_other": "{{count}} parça kuyrukta ve önerilerde atlanıyor",
+    "hint": "Bu parçalar kuyrukta atlanır ve önerilmez. Bir parçayı geri getirmek için beğenmemeyi kaldırın ya da yine de buradan çalın.",
+    "empty": "Burada bir şey yok",
+    "loadFailed": "Önerilmeyen parçalar yüklenemedi"
   },
   "errors": {
     "title": "Bir seyler ters gitti",
@@ -464,7 +522,6 @@
     "netNoInternet": "internet yok",
     "netServerDown": "sunucuya ulasilamiyor",
     "tryOnline": "Tekrar dene",
-    "pendingCount": "{{count}} bekliyor",
     "failedCount": "{{count}} basarisiz",
     "forgeTitle": "Demirhane",
     "forgeSub": "hat A → B",
@@ -947,6 +1004,7 @@
     "fullscreen": "Tam ekran modunu degistir",
     "close": "Kapat",
     "showBindings": "Kisayollari goster",
+    "findInPlaylist": "Çalma listesinde bul",
     "groupGlobal": "Genel (her uygulamada)",
     "zoomIn": "Arayüzü büyüt",
     "zoomOut": "Arayüzü küçült",
@@ -978,7 +1036,11 @@
     "tokenInvalid": "Yandex Music tokeni kabul etmedi. Yeni bir token alip tekrar deneyin",
     "ymUnavailable": "Yandex Music begenileri yuklenemedi. Baglantinizi kontrol edip tekrar deneyin",
     "searchUnavailable": "SoundCloud aramasi yanit vermiyor. Ice aktarmayi daha sonra tekrar deneyin",
-    "unknownError": "Ice aktarma sirasinda bir sorun olustu. Daha sonra tekrar deneyin"
+    "unknownError": "Ice aktarma sirasinda bir sorun olustu. Daha sonra tekrar deneyin",
+    "orderLabel": "Çalma listesindeki sıra",
+    "orderNewest": "En yeniler üstte",
+    "orderOldest": "En eskiler üstte",
+    "orderHint": "Yeniden içe aktarma, \"Yandex Music\" listelerini bu sırayla yeniden yazar"
   },
   "update": {
     "available": "Güncelleme mevcut",
@@ -1280,7 +1342,88 @@
     "noBio": "Biyografi yok",
     "scAccounts": "SoundCloud hesapları",
     "mainAccount": "Ana",
-    "demoAccount": "Demo"
+    "demoAccount": "Demo",
+    "kind": {
+      "album": "Albüm",
+      "ep": "EP",
+      "single": "Single",
+      "compilation": "Derleme"
+    }
+  },
+  "trackSort": {
+    "label": "Sırala",
+    "playlist_default": "Çalma listesi sırası",
+    "playlist_reverse": "Son eklenenler",
+    "likes_default": "Son beğenilenler",
+    "likes_reverse": "İlk beğenilenler",
+    "released": "Çıkış tarihi",
+    "plays": "En çok dinlenen",
+    "likes": "En çok beğenilen",
+    "reposts": "En çok yeniden paylaşılan",
+    "title": "Başlık",
+    "artist": "Sanatçı",
+    "duration": "Süre",
+    "saveOrder": "Bu sırayı kaydet",
+    "saveOrderHint": "Bu sırayı herkes için çalma listesinin sırası yap"
+  },
+  "sync": {
+    "title": "SoundCloud senkronizasyonu",
+    "retrySoon": "bir dakikadan az",
+    "retryMinutes": "~{{count}} dk",
+    "retryHours": "~{{count}} sa",
+    "chip": {
+      "synced": "Senkronize",
+      "syncing": "{{count}} sırada",
+      "delayed": "SoundCloud sınırlıyor · {{time}} sonra tekrar",
+      "failed": "{{count}} senkronize edilmedi"
+    },
+    "hint": {
+      "synced": "Beğeniler ve çalma listeleri soundcloud.com ile otomatik olarak senkronize edilir. Her şey güncel.",
+      "syncing": "Uygulamaya kaydedildi. Değişiklikleriniz soundcloud.com'a gönderiliyor.",
+      "delayed": "SoundCloud uygulamadan gelen değişiklikleri geçici olarak kabul etmiyor. {{count}} değişiklik kaydedildi ve otomatik olarak gönderilecek, sonraki deneme {{time}} sonra.",
+      "failed": "SoundCloud bazı değişiklikleri reddetti. Uygulamada kalırlar ve SoundCloud izin verdikçe yeniden denenirler."
+    }
+  },
+  "upload": {
+    "button": "Parça yükle",
+    "buttonBusy": "Yükleniyor %{{percent}}",
+    "title": "Parça yükle",
+    "subtitle": "Kendi müziğini SoundCloud'da yayınla",
+    "chooseAudio": "Bir ses dosyası seç",
+    "formats": "WAV, FLAC, AIFF, MP3, AAC, OGG veya WMA, en fazla 300 MB",
+    "audioFiles": "Ses",
+    "images": "Görseller",
+    "change": "Değiştir",
+    "addArtwork": "Kapak ekle",
+    "removeArtwork": "Kapağı kaldır",
+    "rights": "Yalnızca kendi yaptığın veya hakkına sahip olduğun müziği yükle. SoundCloud telif hakkını ihlal eden parçaları kaldırabilir ve hesabı cezalandırabilir.",
+    "start": "Yükle",
+    "sending": "Dosya gönderiliyor...",
+    "handingOff": "SoundCloud'a aktarılıyor...",
+    "keepsRunning": "Bu pencereyi kapatabilirsin, yükleme devam eder",
+    "cancel": "Yüklemeyi iptal et",
+    "cancelled": "Yükleme iptal edildi",
+    "done": "\"{{title}}\" SoundCloud'da",
+    "doneToast": "\"{{title}}\" SoundCloud'a yüklendi",
+    "failedToast": "Parça yüklenemedi",
+    "processingHint": "SoundCloud sesi işliyor. Parça birkaç dakika içinde dinlenebilir olacak.",
+    "another": "Başka bir tane yükle",
+    "openTrack": "Parçayı aç",
+    "tryAgain": "Tekrar dene",
+    "errors": {
+      "failed": "Parça yüklenemedi, daha sonra tekrar dene",
+      "network": "Yükleme sırasında bağlantı koptu, tekrar dene",
+      "fileUnreadable": "Ses dosyası okunamadı",
+      "artwork": "Kapak JPEG veya PNG olmalı",
+      "artworkTooLarge": "Kapak 8 MB'tan büyük",
+      "tooLarge": "Dosya 300 MB'tan büyük",
+      "format": "SoundCloud bu ses biçimini kabul etmiyor",
+      "inProgress": "Hesabından başka bir yükleme hâlâ sürüyor",
+      "busy": "Şu anda çok fazla yükleme var, bir dakika sonra tekrar dene",
+      "invalid": "Başlığı ve diğer alanları kontrol et",
+      "session": "Oturumun sona erdi, tekrar giriş yap",
+      "rejected": "SoundCloud yüklemeyi reddetti. Hesabın yükleme sınırına ulaşmış olabilir."
+    }
   },
   "stats": {
     "title": "Dinleme istatistikleri",

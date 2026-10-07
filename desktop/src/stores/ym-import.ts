@@ -14,6 +14,7 @@ import {
 } from '../lib/ym-owned-playlists';
 import { loadPendingCreates, rememberPendingCreate } from '../lib/ym-pending-playlists';
 import { useAuthStore } from './auth';
+import { useSettingsStore, type YmImportOrder } from './settings';
 
 const PLAYLIST_NAME = 'Yandex Music';
 const PLAYLIST_TRACK_LIMIT = 500;
@@ -37,6 +38,7 @@ export interface YmImportProgress {
 
 interface YmImportMatch {
   urn: string;
+  position: number;
 }
 
 interface ScPlaylist {
@@ -87,7 +89,7 @@ const idleState = {
 let bridgeInitialized = false;
 let activeRunId = 0;
 let stopRequested = false;
-let matchedUrns: string[] = [];
+let matches: YmImportMatch[] = [];
 
 function chunkArray<T>(items: T[], size: number): T[][] {
   const chunks: T[][] = [];
@@ -122,7 +124,13 @@ function currentRunIsActive(runId: number) {
 
 function resetRuntimeState() {
   stopRequested = false;
-  matchedUrns = [];
+  matches = [];
+}
+
+function orderedUrns(order: YmImportOrder): string[] {
+  const newestFirst = [...matches].sort((a, b) => a.position - b.position).map((m) => m.urn);
+  const unique = [...new Set(newestFirst)];
+  return order === 'oldest' ? unique.reverse() : unique;
 }
 
 function wait(ms: number) {
@@ -204,7 +212,7 @@ async function deleteStalePlaylists(owner: string, existing: ScPlaylist[], targe
 }
 
 async function savePlaylists(runId: number, deleteStale: boolean) {
-  if (matchedUrns.length === 0) return;
+  if (matches.length === 0) return;
 
   useYmImportStore.setState({ saving: true, error: null });
 
@@ -214,7 +222,8 @@ async function savePlaylists(runId: number, deleteStale: boolean) {
   await rememberOwnedPlaylists(owner, pending.createdUrns);
   if (!currentRunIsActive(runId)) return;
 
-  const chunks = chunkArray([...new Set(matchedUrns)].reverse(), PLAYLIST_TRACK_LIMIT);
+  const order = useSettingsStore.getState().ymImportOrder;
+  const chunks = chunkArray(orderedUrns(order), PLAYLIST_TRACK_LIMIT);
   const saved: ScPlaylist[] = [];
   let queued = 0;
   let failure: unknown = null;
@@ -348,7 +357,7 @@ function ensureBridge() {
   });
 
   void listen<YmImportMatch>('ym_import:match', (event) => {
-    matchedUrns.push(event.payload.urn);
+    matches.push(event.payload);
   });
 }
 

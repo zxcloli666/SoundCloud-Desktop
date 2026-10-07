@@ -9,6 +9,7 @@ import {
 } from '../lib/hotkeys/actions';
 import type {PerfMode} from '../lib/perf';
 import {tauriStorage} from '../lib/tauri-storage';
+import type {TrackSort} from '../lib/track-sort';
 
 export type ThemePreset = 'soundcloud' | 'dark' | 'neon' | 'forest' | 'crimson' | 'custom';
 export type StartupPage = 'home' | 'search' | 'library' | 'settings';
@@ -20,10 +21,18 @@ export type SearchPlayback = 'similar' | 'results';
 export const CROSSFADE_MAX_SEC = 12;
 export type DiscordRpcStatus = 'app' | 'track' | 'artist';
 export type ObsTheme = 'card' | 'minimal' | 'vinyl';
+export type YmImportOrder = 'newest' | 'oldest';
 export interface SidebarPinnedPlaylist {
   urn: string;
   title: string;
   artworkUrl: string | null;
+}
+
+export interface SidebarPinnedArtist {
+  id: string;
+  name: string;
+  avatarUrl: string | null;
+  path: string;
 }
 
 export interface ThemePresetDef {
@@ -101,6 +110,7 @@ export interface SettingsState {
   closeAction: CloseAction;
   uiScale: number;
   pinnedPlaylists: SidebarPinnedPlaylist[];
+  pinnedArtists: SidebarPinnedArtist[];
   discordRpcEnabled: boolean;
   discordRpcMode: DiscordRpcMode;
   discordRpcStatus: DiscordRpcStatus;
@@ -126,6 +136,9 @@ export interface SettingsState {
   wallhavenApiKey: string;
   globalHotkeysEnabled: boolean;
   globalHotkeys: GlobalHotkeyMap;
+  ymImportOrder: YmImportOrder;
+  likesSort: TrackSort;
+  playlistSorts: Record<string, TrackSort>;
   setAccentColor: (color: string) => void;
   setBgPrimary: (bg: string) => void;
   setThemePreset: (id: ThemePreset) => void;
@@ -160,6 +173,10 @@ export interface SettingsState {
   setUiScale: (scale: number) => void;
   pinPlaylist: (playlist: SidebarPinnedPlaylist) => void;
   unpinPlaylist: (urn: string) => void;
+  renamePinnedPlaylist: (urn: string, title: string) => void;
+  pinArtist: (artist: SidebarPinnedArtist) => void;
+  unpinArtist: (id: string) => void;
+  refreshPinnedArtist: (artist: SidebarPinnedArtist) => void;
   setDiscordRpcEnabled: (enabled: boolean) => void;
   setDiscordRpcMode: (mode: DiscordRpcMode) => void;
   setDiscordRpcStatus: (status: DiscordRpcStatus) => void;
@@ -186,6 +203,9 @@ export interface SettingsState {
   setGlobalHotkeysEnabled: (enabled: boolean) => void;
   setGlobalHotkey: (action: GlobalHotkeyAction, accelerator: string) => void;
   resetGlobalHotkeys: () => void;
+  setYmImportOrder: (order: YmImportOrder) => void;
+  setLikesSort: (sort: TrackSort) => void;
+  setPlaylistSort: (urn: string, sort: TrackSort) => void;
   resetTheme: () => void;
 }
 
@@ -225,6 +245,7 @@ const DEFAULTS = {
   closeAction: 'tray' as CloseAction,
   uiScale: 100,
   pinnedPlaylists: [] as SidebarPinnedPlaylist[],
+  pinnedArtists: [] as SidebarPinnedArtist[],
   discordRpcEnabled: true,
   discordRpcMode: 'track' as DiscordRpcMode,
   discordRpcStatus: 'track' as DiscordRpcStatus,
@@ -250,6 +271,9 @@ const DEFAULTS = {
   wallhavenApiKey: '',
   globalHotkeysEnabled: false,
   globalHotkeys: DEFAULT_GLOBAL_HOTKEYS,
+  ymImportOrder: 'newest' as YmImportOrder,
+  likesSort: 'default' as TrackSort,
+  playlistSorts: {} as Record<string, TrackSort>,
 };
 
 export const useSettingsStore = create<SettingsState>()(
@@ -335,6 +359,27 @@ export const useSettingsStore = create<SettingsState>()(
         set((s) => ({
           pinnedPlaylists: s.pinnedPlaylists.filter((item) => item.urn !== urn),
         })),
+      renamePinnedPlaylist: (urn, title) =>
+        set((s) => ({
+          pinnedPlaylists: s.pinnedPlaylists.map((item) =>
+            item.urn === urn ? { ...item, title } : item,
+          ),
+        })),
+      pinArtist: (artist) =>
+        set((s) => ({
+          pinnedArtists: [artist, ...s.pinnedArtists.filter((item) => item.id !== artist.id)].slice(
+            0,
+            8,
+          ),
+        })),
+      unpinArtist: (id) =>
+        set((s) => ({
+          pinnedArtists: s.pinnedArtists.filter((item) => item.id !== id),
+        })),
+      refreshPinnedArtist: (artist) =>
+        set((s) => ({
+          pinnedArtists: s.pinnedArtists.map((item) => (item.id === artist.id ? artist : item)),
+        })),
       setDiscordRpcEnabled: (discordRpcEnabled) => set({ discordRpcEnabled }),
       setDiscordRpcMode: (discordRpcMode) => set({ discordRpcMode }),
       setDiscordRpcStatus: (discordRpcStatus) => set({ discordRpcStatus }),
@@ -362,6 +407,13 @@ export const useSettingsStore = create<SettingsState>()(
       setGlobalHotkey: (action, accelerator) =>
         set((s) => ({ globalHotkeys: { ...s.globalHotkeys, [action]: accelerator } })),
       resetGlobalHotkeys: () => set({ globalHotkeys: DEFAULT_GLOBAL_HOTKEYS }),
+      setYmImportOrder: (ymImportOrder) => set({ ymImportOrder }),
+      setLikesSort: (likesSort) => set({ likesSort }),
+      setPlaylistSort: (urn, sort) =>
+        set((s) => {
+          const { [urn]: _, ...rest } = s.playlistSorts;
+          return { playlistSorts: sort === 'default' ? rest : { ...rest, [urn]: sort } };
+        }),
       resetTheme: () =>
         set({
           accentColor: DEFAULTS.accentColor,
@@ -438,6 +490,7 @@ export const useSettingsStore = create<SettingsState>()(
         closeAction: s.closeAction,
         uiScale: s.uiScale,
         pinnedPlaylists: s.pinnedPlaylists,
+        pinnedArtists: s.pinnedArtists,
         discordRpcEnabled: s.discordRpcEnabled,
         discordRpcMode: s.discordRpcMode,
         discordRpcStatus: s.discordRpcStatus,
@@ -463,6 +516,9 @@ export const useSettingsStore = create<SettingsState>()(
         wallhavenApiKey: s.wallhavenApiKey,
         globalHotkeysEnabled: s.globalHotkeysEnabled,
         globalHotkeys: s.globalHotkeys,
+        ymImportOrder: s.ymImportOrder,
+        likesSort: s.likesSort,
+        playlistSorts: s.playlistSorts,
       }),
     },
   ),

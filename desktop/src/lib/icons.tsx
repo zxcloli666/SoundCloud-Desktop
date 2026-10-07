@@ -7,8 +7,10 @@
  */
 import {
   AlertCircle as _AlertCircle,
+  ArrowDownAZ as _ArrowDownAZ,
   ArrowDownToLine as _ArrowDownToLine,
   ArrowRight as _ArrowRight,
+  ArrowUpDown as _ArrowUpDown,
   AudioLines as _AudioLines,
   Bookmark as _Bookmark,
   Calendar as _Calendar,
@@ -18,6 +20,7 @@ import {
   ChevronLeft as _ChevronLeft,
   ChevronRight as _ChevronRight,
   ChevronUp as _ChevronUp,
+  CircleCheck as _CircleCheck,
   ClipboardCopy as _ClipboardCopy,
   Clock as _Clock,
   Cloud as _Cloud,
@@ -27,6 +30,7 @@ import {
   Database as _Database,
   Disc3 as _Disc3,
   Download as _Download,
+  Ellipsis as _Ellipsis,
   ExternalLink as _ExternalLink,
   Eye as _Eye,
   FastForward as _FastForward,
@@ -45,6 +49,7 @@ import {
   Headphones as _Headphones,
   Heart as _Heart,
   Home as _Home,
+  Image as _Image,
   Info as _Info,
   Keyboard as _Keyboard,
   Library as _Library,
@@ -81,6 +86,7 @@ import {
   Search as _Search,
   Send as _Send,
   Settings as _Settings,
+  Shield as _Shield,
   Shuffle as _Shuffle,
   SkipBack as _SkipBack,
   SkipForward as _SkipForward,
@@ -98,6 +104,7 @@ import {
   TrendingUp as _TrendingUp,
   TriangleAlert as _TriangleAlert,
   Trophy as _Trophy,
+  Upload as _Upload,
   User as _User,
   Users as _Users,
   Volume1 as _Volume1,
@@ -129,6 +136,7 @@ const SimpleIcon = memo(
 
 // ── Memo-wrapped icon components ────────────────────────────
 export const AlertCircle = memo(_AlertCircle);
+export const ArrowDownAZ = memo(_ArrowDownAZ);
 export const ArrowDownToLine = memo(_ArrowDownToLine);
 export const Calendar = memo(_Calendar);
 export const ChartNoAxesColumn = memo(_ChartNoAxesColumn);
@@ -157,8 +165,10 @@ export const Download = memo(_Download);
 export const ChevronDown = memo(_ChevronDown);
 export const ChevronLeft = memo(_ChevronLeft);
 export const ArrowRight = memo(_ArrowRight);
+export const ArrowUpDown = memo(_ArrowUpDown);
 export const ChevronRight = memo(_ChevronRight);
 export const ChevronUp = memo(_ChevronUp);
+export const CircleCheck = memo(_CircleCheck);
 export const Clock = memo(_Clock);
 export const Bookmark = memo(_Bookmark);
 export const Cloud = memo(_Cloud);
@@ -176,6 +186,7 @@ export const Hash = memo(_Hash);
 export const Headphones = memo(_Headphones);
 export const Heart = memo(_Heart);
 export const Home = memo(_Home);
+export const ImageIcon = memo(_Image);
 export const Info = memo(_Info);
 export const Keyboard = memo(_Keyboard);
 export const Instagram = memo(({ size, className }: { size?: number; className?: string }) => (
@@ -200,6 +211,7 @@ export const PanelLeftClose = memo(_PanelLeftClose);
 export const PanelLeftOpen = memo(_PanelLeftOpen);
 export const Pause = memo(_Pause);
 export const Pencil = memo(_Pencil);
+export const Ellipsis = memo(_Ellipsis);
 export const Play = memo(_Play);
 export const Plus = memo(_Plus);
 export const Repeat = memo(_Repeat);
@@ -210,6 +222,7 @@ export const Repeat2 = memo(_Repeat2);
 export const Search = memo(_Search);
 export const Send = memo(_Send);
 export const Settings = memo(_Settings);
+export const Shield = memo(_Shield);
 export const Shuffle = memo(_Shuffle);
 export const Smartphone = memo(_Smartphone);
 export const SkipBack = memo(_SkipBack);
@@ -222,6 +235,7 @@ export const Trash2 = memo(_Trash2);
 export const Twitter = memo(({ size, className }: { size?: number; className?: string }) => (
   <SimpleIcon icon={siX} size={size} className={className} />
 ));
+export const Upload = memo(_Upload);
 export const User = memo(_User);
 export const Users = memo(_Users);
 export const Volume1 = memo(_Volume1);

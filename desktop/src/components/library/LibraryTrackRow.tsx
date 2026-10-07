@@ -7,6 +7,7 @@ import {useTrackContextMenu} from '../../lib/useTrackContextMenu';
 import {useTrackPlay} from '../../lib/useTrackPlay';
 import type {Track} from '../../stores/player';
 import {AddToPlaylistDialog} from '../music/AddToPlaylistDialog';
+import {AlbumLinkButton} from '../music/AlbumLinkButton';
 import {LikeButton} from '../music/LikeButton';
 import {PlayNextButton} from '../music/PlayNextButton';
 import {SaveOfflineRowButton} from '../music/SaveOfflineButton';
@@ -22,7 +23,7 @@ export const LibraryTrackRow = React.memo(
   }: {
     track: Track;
     index: number;
-    queue: Track[];
+    queue: Track[] | (() => Track[]);
     onPlay?: () => void;
   }) {
     const { t } = useTranslation();
@@ -95,6 +96,11 @@ export const LibraryTrackRow = React.memo(
             <ListPlus size={16} />
           </button>
         </AddToPlaylistDialog>
+
+        <AlbumLinkButton
+          track={track}
+          className="opacity-0 group-hover:opacity-100 w-8 h-8 rounded-lg flex items-center justify-center text-white/30 hover:text-white/80 hover:bg-white/[0.08] transition-all duration-200 shrink-0"
+        />
 
         <PlayNextButton
           track={track}

@@ -203,6 +203,7 @@ interface PlayNextCursor {
 
 interface PlayerState {
   currentTrack: Track | null;
+  startedUrn: string | null;
   queue: Track[];
   originalQueue: Track[] | null;
   queueIndex: number;
@@ -256,6 +257,7 @@ export const usePlayerStore = create<PlayerState>()(
   persist(
     (set, get) => ({
       currentTrack: null,
+      startedUrn: null,
       queue: [],
       originalQueue: null,
       queueIndex: -1,
@@ -286,6 +288,7 @@ export const usePlayerStore = create<PlayerState>()(
             shuffleArray(rest);
             set({
               currentTrack: track,
+              startedUrn: track.urn,
               queue: [track, ...rest],
               queueIndex: 0,
               isPlaying: true,
@@ -294,6 +297,7 @@ export const usePlayerStore = create<PlayerState>()(
           } else {
             set({
               currentTrack: track,
+              startedUrn: track.urn,
               queue,
               queueIndex: realIdx,
               isPlaying: true,
@@ -304,6 +308,7 @@ export const usePlayerStore = create<PlayerState>()(
           const { queue: currentQueue } = get();
           set({
             currentTrack: track,
+            startedUrn: track.urn,
             queue: [...currentQueue, track],
             queueIndex: currentQueue.length,
             isPlaying: true,
@@ -317,6 +322,7 @@ export const usePlayerStore = create<PlayerState>()(
         if (index < 0 || index >= queue.length) return;
         set({
           currentTrack: queue[index],
+          startedUrn: queue[index].urn,
           queueIndex: index,
           isPlaying: true,
         });
@@ -355,6 +361,7 @@ export const usePlayerStore = create<PlayerState>()(
 
         set({
           currentTrack: queue[nextIdx],
+          startedUrn: null,
           queueIndex: nextIdx,
           isPlaying: true,
         });
@@ -366,6 +373,7 @@ export const usePlayerStore = create<PlayerState>()(
         const prevIdx = Math.max(0, queueIndex - 1);
         set({
           currentTrack: queue[prevIdx],
+          startedUrn: null,
           queueIndex: prevIdx,
           isPlaying: true,
         });

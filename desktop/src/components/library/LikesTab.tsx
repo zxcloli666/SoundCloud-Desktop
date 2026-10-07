@@ -1,8 +1,11 @@
-import React, {useEffect, useMemo} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef} from 'react';
 import {useTranslation} from 'react-i18next';
 import {useInfiniteScroll, useLikedTracks} from '../../lib/hooks';
 import {Loader2} from '../../lib/icons';
 import {armLikesContinuation} from '../../lib/queue-continuation';
+import {filterTracks} from '../../lib/text-match';
+import {sortTracks} from '../../lib/track-sort';
+import {useSettingsStore} from '../../stores/settings';
 import {SyncNotice, syncNoticeOf} from '../ui/SyncNotice';
 import {VirtualList} from '../ui/VirtualList';
 import {LibraryTrackRow} from './LibraryTrackRow';
@@ -14,7 +17,9 @@ const LIKES_NOTICE_TEXT = {
 } as const;
 
 export const LikesTab = React.memo(function LikesTab({filter}: { filter: string }) {
-    const {t} = useTranslation();
+    const {t, i18n} = useTranslation();
+    const sort = useSettingsStore((s) => s.likesSort);
+    const sorted = sort !== 'default';
     const likesQuery = useLikedTracks();
     const {tracks: likedTracks, isLoading, syncState} = likesQuery;
     const sentinelRef = useInfiniteScroll(
@@ -23,31 +28,29 @@ export const LikesTab = React.memo(function LikesTab({filter}: { filter: string 
         likesQuery.fetchNextPage,
     );
 
-    // Auto-fetch remaining pages when filtering
+    const loadAll = !!filter || sorted;
+
     useEffect(() => {
-        if (filter && likesQuery.hasNextPage && !likesQuery.isFetchingNextPage) {
+        if (loadAll && likesQuery.hasNextPage && !likesQuery.isFetchingNextPage) {
             likesQuery.fetchNextPage();
         }
-    }, [filter, likesQuery.hasNextPage, likesQuery.isFetchingNextPage]);
+    }, [loadAll, likesQuery.hasNextPage, likesQuery.isFetchingNextPage]);
 
-    const filtered = useMemo(() => {
-        if (!filter) return likedTracks;
-        const q = filter.toLowerCase();
-        return likedTracks.filter(
-            (tr) => tr.title.toLowerCase().includes(q) || tr.user.username.toLowerCase().includes(q),
-        );
-    }, [likedTracks, filter]);
+    const ordered = useMemo(
+        () => sortTracks(likedTracks, sort, i18n.language),
+        [likedTracks, sort, i18n.language],
+    );
 
-    // Включили трек из лайков → ставим прослойку: она доиграет ВСЕ лайки,
-    // подкачивая страницы по мере опустошения очереди, а как кончатся — отдаст
-    // управление волне (lib/queue-autopilot.ts). Под активным фильтром очередь
-    // уже = весь матч (страницы дотянуты выше), источник не нужен (play() и так
-    // сбросил прошлый) → сразу волна. filterRef — чтобы колбэк был стабильным
-    // для memo'нутых строк и при этом видел свежий фильтр.
-    const filterRef = React.useRef(filter);
-    filterRef.current = filter;
-    const onLikePlay = React.useCallback(() => {
-        if (!filterRef.current) armLikesContinuation();
+    const filtered = useMemo(() => filterTracks(ordered, filter), [ordered, filter]);
+
+    const filteredRef = useRef(filtered);
+    filteredRef.current = filtered;
+    const getQueue = useCallback(() => filteredRef.current, []);
+
+    const loadAllRef = useRef(loadAll);
+    loadAllRef.current = loadAll;
+    const onLikePlay = useCallback(() => {
+        if (!loadAllRef.current) armLikesContinuation();
     }, []);
 
     const notice = syncNoticeOf({isError: likesQuery.isError && likedTracks.length === 0, syncState});
@@ -71,7 +74,7 @@ export const LikesTab = React.memo(function LikesTab({filter}: { filter: string 
                         disabled={filtered.length < 40}
                         getItemKey={(track) => track.urn}
                         renderItem={(track, i) => (
-                            <LibraryTrackRow track={track} index={i} queue={filtered} onPlay={onLikePlay}/>
+                            <LibraryTrackRow track={track} index={i} queue={getQueue} onPlay={onLikePlay}/>
                         )}
                     />
                 ) : filter ? (
@@ -86,7 +89,7 @@ export const LikesTab = React.memo(function LikesTab({filter}: { filter: string 
                     <div className="py-20 text-center text-white/20">{t('library.noLikedTracks')}</div>
                 )}
             </div>
-            {!filter ? (
+            {!loadAll ? (
                 <div ref={sentinelRef} className="h-12 flex items-center justify-center mt-4">
                     {likesQuery.isFetchingNextPage && (
                         <Loader2 size={20} className="text-white/15 animate-spin"/>
@@ -97,7 +100,7 @@ export const LikesTab = React.memo(function LikesTab({filter}: { filter: string 
                     <Loader2 size={20} className="text-white/15 animate-spin"/>
                 </div>
             ) : null}
-            {!filter && notice && likedTracks.length > 0 && !likesQuery.hasNextPage && (
+            {!loadAll && notice && likedTracks.length > 0 && !likesQuery.hasNextPage && (
                 <div className="pb-6">
                     <SyncNotice kind={notice} text={t(LIKES_NOTICE_TEXT[notice])} onRetry={retry}/>
                 </div>

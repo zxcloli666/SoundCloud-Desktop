@@ -10,15 +10,18 @@ import {
     Heart,
     LinkIcon,
     MapPin,
+    Pencil,
     pauseCurrent16,
     playCurrent16,
     Shuffle,
     Trash2,
 } from '../../lib/icons';
 import {rawPlaylistCover} from '../../lib/playlist-cover';
+import type {ArrangeMode} from '../../lib/track-order';
 import type {Track} from '../../stores/player';
 import {SaveCollectionMenu} from '../collection-save/SaveCollectionMenu';
 import {SharingToggle} from '../music/SharingToggle';
+import {ArrangeMenu} from './ArrangeMenu';
 
 const PlaylistLikeBtn = React.memo(function PlaylistLikeBtn({
                                                                 playlistUrn,
@@ -124,7 +127,10 @@ export const PlaylistActions = React.memo(function PlaylistActions({
                                                                        onPlayAll,
                                                                        onShuffle,
                                                                        onTogglePin,
+                                                                       onEdit,
                                                                        onDelete,
+                                                                       canArrange,
+                                                                       onArrange,
                                                                    }: {
     playlist: Playlist;
     isOwner: boolean;
@@ -135,7 +141,10 @@ export const PlaylistActions = React.memo(function PlaylistActions({
     onPlayAll: () => void;
     onShuffle: () => void;
     onTogglePin: () => void;
+    onEdit: () => void;
     onDelete: () => void;
+    canArrange: boolean;
+    onArrange: (mode: ArrangeMode) => void;
 }) {
     const {t} = useTranslation();
     const playlistUrn = playlist.urn;
@@ -217,6 +226,16 @@ export const PlaylistActions = React.memo(function PlaylistActions({
                 {isOwner && (
                     <>
                         <span className="w-px h-5 bg-white/[0.08] mx-0.5" aria-hidden/>
+                        <button
+                            type="button"
+                            onClick={onEdit}
+                            title={t('playlist.edit')}
+                            aria-label={t('playlist.edit')}
+                            className="inline-flex items-center justify-center w-10 h-10 rounded-xl text-white/55 hover:text-white/95 hover:bg-white/[0.07] transition-all duration-200 ease-[var(--ease-apple)] cursor-pointer"
+                        >
+                            <Pencil size={15}/>
+                        </button>
+                        <ArrangeMenu disabled={!canArrange} onArrange={onArrange}/>
                         <SharingToggle kind="playlist" urn={playlist.urn} sharing={playlist.sharing}/>
                         <button
                             type="button"

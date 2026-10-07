@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useShallow } from 'zustand/shallow';
 import { changeAppLanguage } from '../../i18n';
-import { art } from '../../lib/formatters';
 import {
   Clock,
   Compass,
@@ -11,7 +10,6 @@ import {
   Globe,
   Home,
   Library,
-  ListMusic,
   PanelLeftClose,
   PanelLeftOpen,
   Search,
@@ -23,6 +21,8 @@ import { useAppMode } from '../../stores/app-status';
 import { useAuthStore } from '../../stores/auth';
 import { useSettingsStore } from '../../stores/settings';
 import { Avatar } from '../ui/Avatar';
+import { ACTIVE, IconBox, Label, ROW } from './SidebarChrome';
+import { SidebarPins } from './SidebarPins';
 import { StarBadge, StarCard, useStarSubscription } from './StarSubscription';
 
 type IconCmp = React.ComponentType<{ size?: number; strokeWidth?: number; className?: string }>;
@@ -41,43 +41,6 @@ const navItems: { to: string; icon: IconCmp; label: string }[] = [
   { to: '/star', icon: Star, label: 'nav.star' },
   { to: '/offline', icon: Download, label: 'nav.offline' },
 ];
-
-const ROW = 'group relative w-full flex items-center h-10 rounded-xl transition-all duration-200';
-const LABEL_T = 'max-width 320ms cubic-bezier(0.2,0.8,0.2,1), opacity 240ms ease';
-
-// Active = accent-glow glass pill (matches the header). Readable on any accent
-// because the accent is a translucent wash over dark glass, text stays white.
-const ACTIVE: React.CSSProperties = {
-  color: '#fff',
-  background:
-    'linear-gradient(180deg, var(--color-accent-glow), transparent), rgba(255,255,255,0.05)',
-  boxShadow: '0 0 18px var(--color-accent-glow), inset 0 0.5px 0 rgba(255,255,255,0.14)',
-};
-
-/** A label that always exists but folds away purely via CSS on collapse — no JS
- *  mount/unmount, so the sidebar width + labels glide together. */
-function Label({
-  collapsed,
-  children,
-  className,
-}: {
-  collapsed: boolean;
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <span
-      className={`overflow-hidden whitespace-nowrap ${className ?? ''}`}
-      style={{ maxWidth: collapsed ? 0 : '142px', opacity: collapsed ? 0 : 1, transition: LABEL_T }}
-    >
-      {children}
-    </span>
-  );
-}
-
-function IconBox({ children }: { children: React.ReactNode }) {
-  return <span className="w-10 shrink-0 flex items-center justify-center">{children}</span>;
-}
 
 function NavItem({
   to,
@@ -123,10 +86,9 @@ export const Sidebar = React.memo(() => {
   const { t, i18n } = useTranslation();
   const user = useAuthStore((s) => s.user);
   const appMode = useAppMode();
-  const { collapsed, pinnedPlaylists, toggleSidebar } = useSettingsStore(
+  const { collapsed, toggleSidebar } = useSettingsStore(
     useShallow((s) => ({
       collapsed: s.sidebarCollapsed,
-      pinnedPlaylists: s.pinnedPlaylists,
       toggleSidebar: s.toggleSidebar,
     })),
   );
@@ -164,8 +126,7 @@ export const Sidebar = React.memo(() => {
         ))}
       </nav>
 
-      <div className="px-2 pt-4 space-y-0.5">
-        {/* Section header — folds to a hairline divider when collapsed. */}
+      <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide px-2 pt-4 pb-2 space-y-0.5">
         <div className="relative h-5 mx-1 mb-0.5">
           <span
             className="absolute inset-x-0 top-1/2 h-px"
@@ -191,42 +152,8 @@ export const Sidebar = React.memo(() => {
           title={collapsed ? t('library.history') : undefined}
         />
 
-        {pinnedPlaylists.map((playlist) => {
-          const artwork = art(playlist.artworkUrl, 'small');
-          return (
-            <NavLink
-              key={playlist.urn}
-              to={`/playlist/${encodeURIComponent(playlist.urn)}`}
-              title={collapsed ? playlist.title : undefined}
-              className={({ isActive }) =>
-                `${ROW} ${
-                  isActive ? '' : 'text-white/45 hover:text-white/80 hover:bg-white/[0.05]'
-                }`
-              }
-              style={({ isActive }) => (isActive ? ACTIVE : undefined)}
-            >
-              <IconBox>
-                {artwork ? (
-                  <img
-                    src={artwork}
-                    alt=""
-                    className="w-[18px] h-[18px] rounded-[5px] object-cover ring-1 ring-white/[0.1]"
-                    decoding="async"
-                    loading="lazy"
-                  />
-                ) : (
-                  <ListMusic size={17} strokeWidth={1.9} />
-                )}
-              </IconBox>
-              <Label collapsed={collapsed} className="text-[12.5px] font-medium pr-3">
-                {playlist.title}
-              </Label>
-            </NavLink>
-          );
-        })}
+        <SidebarPins collapsed={collapsed} />
       </div>
-
-      <div className="flex-1" />
 
       <div className="px-2 pb-1 flex flex-col gap-0.5">
         <div className="mb-1">

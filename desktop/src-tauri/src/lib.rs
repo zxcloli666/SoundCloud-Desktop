@@ -10,6 +10,7 @@ mod rt;
 mod scrobble;
 mod shared;
 mod track_cache;
+mod upload;
 
 use std::sync::Arc;
 use std::time::Duration;
@@ -290,6 +291,8 @@ pub fn run() {
             local_library::local_library_scan,
             local_library::local_library_missing,
             local_library::local_library_forget,
+            upload::track_upload_start,
+            upload::track_upload_cancel,
             track_cache::track_ensure_cached,
             track_cache::track_upgrade_cached,
             track_cache::track_export,

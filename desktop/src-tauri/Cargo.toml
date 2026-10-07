@@ -29,7 +29,7 @@ sha2 = "0.10"
 md-5 = "0.10"
 hex = "0.4"
 sc-fingerprint = { git = "https://github.com/zxcloli666/SoundCloud-Backend", tag = "v8.5.8" }
-wreq = { version = "5", features = ["json", "stream", "gzip", "brotli", "socks"] }
+wreq = { version = "5", features = ["json", "stream", "gzip", "brotli", "socks", "multipart"] }
 futures-util = "0.3"
 http = "1"
 hyper-util = { version = "0.1", features = ["client-proxy", "client-proxy-system"] }

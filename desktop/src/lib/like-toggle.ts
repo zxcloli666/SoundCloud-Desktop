@@ -2,6 +2,7 @@ import type { QueryClient } from '@tanstack/react-query';
 import type { Track } from '../stores/player';
 import { api } from './api';
 import { forgetOfflineLike } from './cache';
+import { clearDislike } from './dislike-actions';
 import { invalidateAllLikesCache } from './hooks';
 import { optimisticToggleLike } from './likes';
 import { rememberLikedUrn } from './offline-index';
@@ -9,6 +10,7 @@ import { rememberLikedUrn } from './offline-index';
 export async function setTrackLiked(qc: QueryClient, track: Track, liked: boolean) {
   optimisticToggleLike(qc, track, liked);
   invalidateAllLikesCache();
+  if (liked) clearDislike(track.urn);
   try {
     await api(`/likes/tracks/${encodeURIComponent(track.urn)}`, {
       method: liked ? 'POST' : 'DELETE',

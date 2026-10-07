@@ -8,6 +8,7 @@ import {type HistoryEntry, useHistory, useInfiniteScroll} from '../../lib/hooks'
 import {ChartNoAxesColumn, Loader2, Music, playWhite14} from '../../lib/icons';
 import {openTrackMenu} from '../../lib/useTrackContextMenu';
 import {usePlayerStore} from '../../stores/player';
+import {LikeButton} from '../music/LikeButton';
 import {VirtualList} from '../ui/VirtualList';
 import {formatHistoryDate, historyEntryToTrack} from './history-utils';
 import {STATS_QUERY_KEY} from './stats/useListeningStats';
@@ -140,6 +141,8 @@ export const HistoryTab = React.memo(function HistoryTab() {
                                         {row.entry.artistName}
                                     </p>
                                 </div>
+
+                                <LikeButton track={historyEntryToTrack(row.entry)}/>
 
                                 <span className="text-[11px] text-white/20 tabular-nums shrink-0">
                   {new Date(row.entry.playedAt).toLocaleTimeString([], {

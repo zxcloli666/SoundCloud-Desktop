@@ -125,6 +125,22 @@ function activeCls(isThis: boolean) {
   return isThis ? 'bg-accent/[0.06] ring-1 ring-accent/20' : 'hover:bg-white/[0.03]';
 }
 
+type RowQueue = Track[] | (() => Track[]);
+
+function RemoveButton({ urn, onRemove }: { urn: string; onRemove: (urn: string) => void }) {
+  const { t } = useTranslation();
+  return (
+    <button
+      type="button"
+      onClick={() => onRemove(urn)}
+      className="opacity-0 group-hover:opacity-100 w-7 h-7 rounded-lg flex items-center justify-center text-white/20 hover:text-red-400 hover:bg-red-400/10 transition-all duration-200 shrink-0"
+      title={t('playlist.removeTrack')}
+    >
+      <Trash2 size={13} />
+    </button>
+  );
+}
+
 /** Owner row — drag-to-reorder with a "pulled sleeve" tilt; remove on hover. */
 export const SortableSequenceRow = React.memo(
   function SortableSequenceRow({
@@ -136,11 +152,10 @@ export const SortableSequenceRow = React.memo(
   }: {
     track: Track;
     index: number;
-    queue: Track[];
+    queue: RowQueue;
     onRemove: (urn: string) => void;
     onPlay?: () => void;
   }) {
-    const { t } = useTranslation();
     const { isThis, isThisPlaying, togglePlay } = useTrackPlay(track, queue, onPlay);
     const onContextMenu = useTrackContextMenu(track);
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
@@ -179,14 +194,7 @@ export const SortableSequenceRow = React.memo(
           togglePlay={togglePlay}
         />
 
-        <button
-          type="button"
-          onClick={() => onRemove(track.urn)}
-          className="opacity-0 group-hover:opacity-100 w-7 h-7 rounded-lg flex items-center justify-center text-white/20 hover:text-red-400 hover:bg-red-400/10 transition-all duration-200 shrink-0"
-          title={t('playlist.removeTrack')}
-        >
-          <Trash2 size={13} />
-        </button>
+        <RemoveButton urn={track.urn} onRemove={onRemove} />
       </div>
     );
   },
@@ -208,7 +216,7 @@ export function SequenceRowOverlay({
 }: {
   track: Track;
   index: number;
-  queue: Track[];
+  queue: RowQueue;
 }) {
   const { isThis, isThisPlaying, togglePlay } = useTrackPlay(track, queue);
   return (
@@ -233,17 +241,18 @@ export function SequenceRowOverlay({
   );
 }
 
-/** Read-only row (non-owner). */
 export const SequenceRow = React.memo(
   function SequenceRow({
     track,
     index,
     queue,
+    onRemove,
     onPlay,
   }: {
     track: Track;
     index: number;
-    queue: Track[];
+    queue: RowQueue;
+    onRemove?: (urn: string) => void;
     onPlay?: () => void;
   }) {
     const { isThis, isThisPlaying, togglePlay } = useTrackPlay(track, queue, onPlay);
@@ -257,6 +266,7 @@ export const SequenceRow = React.memo(
           isThisPlaying={isThisPlaying}
           togglePlay={togglePlay}
         />
+        {onRemove && <RemoveButton urn={track.urn} onRemove={onRemove} />}
       </div>
     );
   },

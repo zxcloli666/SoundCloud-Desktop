@@ -5,6 +5,7 @@ import {Headphones, musicIcon14, pauseBlack11, playBlack11} from '../../lib/icon
 import {useTrackContextMenu} from '../../lib/useTrackContextMenu';
 import {useTrackPlay} from '../../lib/useTrackPlay';
 import type {Track} from '../../stores/player';
+import {LikeButton} from '../music/LikeButton';
 import {PlayNextButton} from '../music/PlayNextButton';
 import {sameScdMeta, TrackStatusBadges} from '../music/TrackStatusBadges';
 import {TrackTitleArtist} from '../music/TrackTitleArtist';
@@ -54,6 +55,8 @@ export const RelatedRow = React.memo(
         <div className="shrink-0">
           <TrackStatusBadges meta={track._scd_meta} />
         </div>
+
+        <LikeButton track={track} />
 
         <PlayNextButton
           track={track}

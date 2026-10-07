@@ -994,6 +994,11 @@ select,
     gap: 12px;
 }
 
+.npb-quality {
+    flex: 0 0 auto;
+    width: 96px;
+}
+
 .npb-sep {
     width: 1px;
     height: 30px;
@@ -1358,6 +1363,19 @@ select,
     .npb-txt {
         flex-basis: 112px;
         width: 112px;
+    }
+
+    .npb-quality {
+        width: auto;
+    }
+
+    .npb-cdn {
+        gap: 0;
+        padding-inline: 9px;
+    }
+
+    .npb-cdn-label {
+        display: none;
     }
 }
 

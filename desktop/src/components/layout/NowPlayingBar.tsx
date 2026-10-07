@@ -16,13 +16,15 @@ import {
     subscribe,
 } from '../../lib/audio';
 import {forgetOfflineLike} from '../../lib/cache';
-import {toggleDislike, useDislikeStatus} from '../../lib/dislikes';
+import {clearDislike, dislikeTrack} from '../../lib/dislike-actions';
+import {useDislikeStatus} from '../../lib/dislikes';
 import {art, formatTime} from '../../lib/formatters';
 import {invalidateAllLikesCache} from '../../lib/hooks';
 import {
     audioLines16,
     HardDrive,
     Heart,
+    ListPlus,
     Loader2,
     listMusic16,
     MicVocal,
@@ -44,6 +46,7 @@ import {rememberLikedUrn} from '../../lib/offline-index';
 import {usePerfMode} from '../../lib/perf';
 import {useArtistDisplay, useArtistLinkItems, useDisplayTitle} from '../../lib/track-display';
 import {useTrackContextMenu} from '../../lib/useTrackContextMenu';
+import {useAddToPlaylistRequest} from '../../stores/add-to-playlist';
 import {useLyricsStore} from '../../stores/lyrics';
 import {
     AB_MIN_GAP,
@@ -58,6 +61,7 @@ import {
     usePlayerStore,
 } from '../../stores/player';
 import {useSettingsStore} from '../../stores/settings';
+import {AlbumLinkButton} from '../music/AlbumLinkButton';
 import {ArtistNameLinks} from '../music/ArtistNameLinks';
 import {EqualizerPanel} from '../music/EqualizerPanel';
 import {TrackSoundToggle} from '../music/TrackSoundToggle';
@@ -370,9 +374,12 @@ const PlaybackQualityBadge = React.memo(() => {
         {isHq ? t('player.qualityHQ') : t('player.qualitySQ')}
       </span>
       {playbackSource === 'storage' && (
-        <span className="inline-flex h-6 shrink-0 items-center gap-1.5 rounded-md border border-[#b7ffd8]/[0.16] bg-[#b7ffd8]/[0.07] px-2 text-[8px] font-medium tracking-[0.12em] text-[#dff7e9]/82">
+        <span
+          title={t('player.qualityCDN')}
+          className="npb-cdn inline-flex h-6 shrink-0 items-center gap-1.5 rounded-md border border-[#b7ffd8]/[0.16] bg-[#b7ffd8]/[0.07] px-2 text-[8px] font-medium tracking-[0.12em] text-[#dff7e9]/82"
+        >
           <span className="h-1.5 w-1.5 rounded-full bg-[#b7ffd8] shadow-[0_0_8px_rgba(183,255,216,0.55)]" />
-          {t('player.qualityCDN')}
+          <span className="npb-cdn-label">{t('player.qualityCDN')}</span>
         </span>
       )}
     </div>
@@ -394,11 +401,9 @@ function useTrackReactions(trackUrn: string) {
 function LikeButton({
   trackUrn,
   trackData,
-  disliked,
 }: {
   trackUrn: string;
   trackData: Track | undefined;
-  disliked: boolean;
 }) {
   const { t } = useTranslation();
   const qc = useQueryClient();
@@ -420,9 +425,7 @@ function LikeButton({
     if (trackData) optimisticToggleLike(qc, trackData, next);
     invalidateAllLikesCache();
 
-    if (next && disliked && trackData) {
-      toggleDislike(qc, trackData, false);
-    }
+    if (next) clearDislike(trackUrn);
 
     try {
       await api(`/likes/tracks/${encodeURIComponent(trackUrn)}`, {
@@ -460,26 +463,10 @@ export function NowBarDislikeButton({
   disliked: boolean;
 }) {
   const { t } = useTranslation();
-  const qc = useQueryClient();
 
-  const toggle = async () => {
-    if (!trackData) return;
-    const next = !disliked;
-
-    if (next && trackData.user_favorite) {
-      optimisticToggleLike(qc, trackData, false);
-      invalidateAllLikesCache();
-      api(`/likes/tracks/${encodeURIComponent(trackUrn)}`, { method: 'DELETE' })
-        .then(() => forgetOfflineLike(trackUrn))
-        .catch(() => {});
-    }
-
-    if (next) {
-      const { currentTrack, next: skip } = usePlayerStore.getState();
-      if (currentTrack?.urn === trackUrn) skip();
-    }
-
-    await toggleDislike(qc, trackData, next);
+  const toggle = () => {
+    if (disliked) clearDislike(trackUrn);
+    else if (trackData) void dislikeTrack(trackData);
   };
 
   return (
@@ -492,6 +479,23 @@ export function NowBarDislikeButton({
       }`}
     >
       <ThumbsDown size={16} fill={disliked ? 'currentColor' : 'none'} />
+    </button>
+  );
+}
+
+function NowBarAddToPlaylistButton({ trackUrn }: { trackUrn: string }) {
+  const { t } = useTranslation();
+  const request = useAddToPlaylistRequest((s) => s.request);
+
+  return (
+    <button
+      type="button"
+      onClick={() => request([trackUrn])}
+      title={t('playlist.addToPlaylist')}
+      aria-label={t('playlist.addToPlaylist')}
+      className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-all duration-200 cursor-pointer hover:bg-white/[0.04] text-white/30 hover:text-white/60"
+    >
+      <ListPlus size={16} />
     </button>
   );
 }
@@ -969,9 +973,16 @@ const ReactClusterBody = React.memo(({ urn }: { urn: string }) => {
   const disliked = useDislikeStatus(urn);
   return (
     <div className="flex items-center gap-0.5">
-      <LikeButton trackUrn={urn} trackData={trackData} disliked={disliked} />
+      <LikeButton trackUrn={urn} trackData={trackData} />
       <NowBarDislikeButton trackUrn={urn} trackData={trackData} disliked={disliked} />
-      <div className="w-24 shrink-0">
+      <NowBarAddToPlaylistButton trackUrn={urn} />
+      {trackData && (
+        <AlbumLinkButton
+          track={trackData}
+          className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-all duration-200 cursor-pointer hover:bg-white/[0.04] text-white/30 hover:text-white/60"
+        />
+      )}
+      <div className="npb-quality">
         <PlaybackQualityBadge />
       </div>
     </div>
