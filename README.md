@@ -179,6 +179,7 @@ chmod +x soundcloud-desktop-*.AppImage
 |---|---|
 | Предложить идею | [Обсуждение #121](https://github.com/zxcloli666/SoundCloud-Desktop/discussions/121) |
 | Что значит ошибка? | [Справка по ошибкам](docs/ERRORS.ru.md) |
+| Свой CSS | [Как писать темы](docs/CUSTOM_CSS.ru.md) |
 | Что-то не работает? | [Обсуждение #144](https://github.com/zxcloli666/SoundCloud-Desktop/discussions/144) |
 | Поставить звезду | [GitHub Stars](https://github.com/zxcloli666/SoundCloud-Desktop/stargazers) — помогает продвижению! |
 
