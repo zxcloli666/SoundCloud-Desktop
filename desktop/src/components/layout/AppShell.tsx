@@ -36,6 +36,7 @@ interface Keybinding {
 
 const keybindings: Keybinding[] = [
   { key: ' ', label: 'kb.playPause', group: 'playback', display: 'Space' },
+  { key: 'k', label: 'kb.playPause', group: 'playback', display: 'K' },
   { key: 'ArrowLeft', label: 'kb.seekBack', group: 'playback', display: '←' },
   { key: 'ArrowRight', label: 'kb.seekForward', group: 'playback', display: '→' },
   { key: 'n', label: 'kb.nextTrack', group: 'playback', display: 'N' },
@@ -347,6 +348,7 @@ export const AppShell = React.memo(() => {
 
       switch (code) {
         case 'Space':
+        case 'KeyK':
           e.preventDefault();
           player.togglePlay();
           break;
