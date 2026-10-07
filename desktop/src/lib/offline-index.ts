@@ -1,5 +1,6 @@
 import {BaseDirectory, exists, mkdir, readTextFile, writeTextFile} from '@tauri-apps/plugin-fs';
 import type {Track} from '../stores/player';
+import {isLocalUrn} from './local-library';
 
 const BASE_DIR = BaseDirectory.AppData;
 const INDEX_PATH = 'offline-index.json';
@@ -121,7 +122,7 @@ export async function rememberTracks(tracks: Track[]) {
   let changed = false;
 
   for (const track of tracks) {
-    if (!track?.urn) continue;
+    if (!track?.urn || isLocalUrn(track.urn)) continue;
     index.tracksByUrn[track.urn] = cloneTrack(track);
     changed = true;
   }
