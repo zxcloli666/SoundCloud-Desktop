@@ -37,7 +37,13 @@
     "pinPlaylist": "Calma listesini sabitle",
     "unpinPlaylist": "Calma listesinin sabitini kaldir",
     "pinned": "Kenar cubuguna sabitlendi",
-    "unpinned": "Kenar cubugundan kaldirildi"
+    "unpinned": "Kenar cubugundan kaldirildi",
+    "pinArtist": "Kenar cubuguna sabitle",
+    "unpinArtist": "Kenar cubugundan kaldir",
+    "pinArtistShort": "Sabitle",
+    "pinnedArtist": "Sabitlendi",
+    "artistPinned": "Kenar cubuguna sabitlendi",
+    "artistUnpinned": "Kenar cubugundan kaldirildi"
   },
   "player": {
     "queue": "Kuyruk",

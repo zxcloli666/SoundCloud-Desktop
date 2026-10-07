@@ -14,6 +14,13 @@ export interface SidebarPinnedPlaylist {
   artworkUrl: string | null;
 }
 
+export interface SidebarPinnedArtist {
+  id: string;
+  name: string;
+  avatarUrl: string | null;
+  path: string;
+}
+
 export interface ThemePresetDef {
   accent: string;
   bg: string;
@@ -80,6 +87,7 @@ export interface SettingsState {
   floatingComments: boolean;
   startupPage: StartupPage;
   pinnedPlaylists: SidebarPinnedPlaylist[];
+  pinnedArtists: SidebarPinnedArtist[];
   discordRpcEnabled: boolean;
   discordRpcMode: DiscordRpcMode;
   discordRpcShowButton: boolean;
@@ -118,6 +126,9 @@ export interface SettingsState {
   pinPlaylist: (playlist: SidebarPinnedPlaylist) => void;
   unpinPlaylist: (urn: string) => void;
   renamePinnedPlaylist: (urn: string, title: string) => void;
+  pinArtist: (artist: SidebarPinnedArtist) => void;
+  unpinArtist: (id: string) => void;
+  refreshPinnedArtist: (artist: SidebarPinnedArtist) => void;
   setDiscordRpcEnabled: (enabled: boolean) => void;
   setDiscordRpcMode: (mode: DiscordRpcMode) => void;
   setDiscordRpcShowButton: (show: boolean) => void;
@@ -161,6 +172,7 @@ const DEFAULTS = {
   floatingComments: true,
   startupPage: 'home' as StartupPage,
   pinnedPlaylists: [] as SidebarPinnedPlaylist[],
+  pinnedArtists: [] as SidebarPinnedArtist[],
   discordRpcEnabled: true,
   discordRpcMode: 'track' as DiscordRpcMode,
   discordRpcShowButton: true,
@@ -230,6 +242,21 @@ export const useSettingsStore = create<SettingsState>()(
           pinnedPlaylists: s.pinnedPlaylists.map((item) =>
             item.urn === urn ? { ...item, title } : item,
           ),
+        })),
+      pinArtist: (artist) =>
+        set((s) => ({
+          pinnedArtists: [artist, ...s.pinnedArtists.filter((item) => item.id !== artist.id)].slice(
+            0,
+            8,
+          ),
+        })),
+      unpinArtist: (id) =>
+        set((s) => ({
+          pinnedArtists: s.pinnedArtists.filter((item) => item.id !== id),
+        })),
+      refreshPinnedArtist: (artist) =>
+        set((s) => ({
+          pinnedArtists: s.pinnedArtists.map((item) => (item.id === artist.id ? artist : item)),
         })),
       setDiscordRpcEnabled: (discordRpcEnabled) => set({ discordRpcEnabled }),
       setDiscordRpcMode: (discordRpcMode) => set({ discordRpcMode }),
@@ -305,6 +332,7 @@ export const useSettingsStore = create<SettingsState>()(
         floatingComments: s.floatingComments,
         startupPage: s.startupPage,
         pinnedPlaylists: s.pinnedPlaylists,
+        pinnedArtists: s.pinnedArtists,
         discordRpcEnabled: s.discordRpcEnabled,
         discordRpcMode: s.discordRpcMode,
         discordRpcShowButton: s.discordRpcShowButton,

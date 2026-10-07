@@ -5,6 +5,7 @@ import { useShallow } from 'zustand/shallow';
 import { art } from '../../lib/formatters';
 import { ListMusic, X } from '../../lib/icons';
 import { useSettingsStore } from '../../stores/settings';
+import { Avatar } from '../ui/Avatar';
 import { ACTIVE, IconBox, Label, ROW } from './SidebarChrome';
 
 function PinnedRow({
@@ -57,10 +58,12 @@ function PinnedRow({
 
 export function SidebarPins({ collapsed }: { collapsed: boolean }) {
   const { t } = useTranslation();
-  const { pinnedPlaylists, unpinPlaylist } = useSettingsStore(
+  const { pinnedPlaylists, pinnedArtists, unpinPlaylist, unpinArtist } = useSettingsStore(
     useShallow((s) => ({
       pinnedPlaylists: s.pinnedPlaylists,
+      pinnedArtists: s.pinnedArtists,
       unpinPlaylist: s.unpinPlaylist,
+      unpinArtist: s.unpinArtist,
     })),
   );
 
@@ -92,6 +95,24 @@ export function SidebarPins({ collapsed }: { collapsed: boolean }) {
           />
         );
       })}
+
+      {pinnedPlaylists.length > 0 && pinnedArtists.length > 0 && (
+        <div className="mx-3 my-1.5 h-px bg-white/[0.06]" />
+      )}
+
+      {pinnedArtists.map((artist) => (
+        <PinnedRow
+          key={artist.id}
+          to={artist.path}
+          title={artist.name}
+          collapsed={collapsed}
+          unpinLabel={t('sidebar.unpinArtist')}
+          onUnpin={() => unpinArtist(artist.id)}
+          icon={
+            <Avatar src={artist.avatarUrl} alt="" size={20} className="ring-1 ring-white/[0.12]" />
+          }
+        />
+      ))}
     </>
   );
 }

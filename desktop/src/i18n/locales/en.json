@@ -32,7 +32,13 @@
     "pinPlaylist": "Pin playlist",
     "unpinPlaylist": "Unpin playlist",
     "pinned": "Pinned to sidebar",
-    "unpinned": "Removed from sidebar"
+    "unpinned": "Removed from sidebar",
+    "pinArtist": "Pin to sidebar",
+    "unpinArtist": "Unpin from sidebar",
+    "pinArtistShort": "Pin",
+    "pinnedArtist": "Pinned",
+    "artistPinned": "Pinned to sidebar",
+    "artistUnpinned": "Removed from sidebar"
   },
   "player": {
     "queue": "Queue",

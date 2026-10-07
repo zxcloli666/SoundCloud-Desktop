@@ -6,6 +6,7 @@ import {Check, ChevronDown, Globe, ListMusic, MicVocal, Music, Users} from '../.
 import {userUrn} from '../../lib/ids';
 import {usePerfMode} from '../../lib/perf';
 import {GlassHeroPanel} from '../ui/GlassHeroPanel';
+import {PinArtistButton} from '../ui/PinArtistButton';
 import {AvatarArtifact} from '../user/AvatarArtifact';
 import {StatOrb} from '../user/StatOrb';
 import {InfoChip, VerifiedBadge} from '../user/UserChips';
@@ -141,6 +142,17 @@ function ArtistHeroImpl({ artist, hasStar, aura }: ArtistHeroProps) {
               </span>
             </button>
           )}
+
+          <div className="flex flex-wrap items-center gap-3 justify-center lg:justify-start">
+            <PinArtistButton
+              artist={{
+                id: `artist:${artist.id}`,
+                name: artist.name,
+                avatarUrl: artist.avatar_url ?? null,
+                path: `/artist/${encodeURIComponent(artist.id)}`,
+              }}
+            />
+          </div>
 
           {/* Socials + SC accounts */}
           {(artist.socials.length > 0 || artist.sc_accounts.length > 0) && (

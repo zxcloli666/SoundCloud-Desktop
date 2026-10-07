@@ -5,6 +5,7 @@ import {likedTracksCount} from '../../lib/likes';
 import {usePerfMode} from '../../lib/perf';
 import {CopyLinkButton} from '../ui/CopyLinkButton';
 import {GlassHeroPanel} from '../ui/GlassHeroPanel';
+import {PinArtistButton} from '../ui/PinArtistButton';
 import {AuraPicker} from './AuraPicker';
 import {AvatarArtifact} from './AvatarArtifact';
 import {FollowBtn} from './FollowBtn';
@@ -141,6 +142,16 @@ export function IdentityHub({
 
           <div className="flex flex-wrap items-center gap-3 pt-1 justify-center lg:justify-start">
             {!isOwnProfile && <FollowBtn userUrn={user.urn} aura={aura} />}
+            {!isOwnProfile && (
+              <PinArtistButton
+                artist={{
+                  id: user.urn,
+                  name: user.username,
+                  avatarUrl: user.avatar_url ?? null,
+                  path: `/user/${encodeURIComponent(user.urn)}`,
+                }}
+              />
+            )}
             {user.permalink_url && <CopyLinkButton url={user.permalink_url} />}
             {hasStar && isOwnProfile && (
               <AuraPicker
