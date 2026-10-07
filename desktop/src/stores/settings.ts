@@ -10,6 +10,7 @@ import {tauriStorage} from '../lib/tauri-storage';
 
 export type ThemePreset = 'soundcloud' | 'dark' | 'neon' | 'forest' | 'crimson' | 'custom';
 export type StartupPage = 'home' | 'search' | 'library' | 'settings';
+export type CloseAction = 'tray' | 'quit';
 export type DiscordRpcMode = 'track' | 'artist' | 'activity';
 export interface SidebarPinnedPlaylist {
   urn: string;
@@ -82,6 +83,7 @@ export interface SettingsState {
   sidebarCollapsed: boolean;
   floatingComments: boolean;
   startupPage: StartupPage;
+  closeAction: CloseAction;
   pinnedPlaylists: SidebarPinnedPlaylist[];
   discordRpcEnabled: boolean;
   discordRpcMode: DiscordRpcMode;
@@ -117,6 +119,7 @@ export interface SettingsState {
   toggleSidebar: () => void;
   setFloatingComments: (v: boolean) => void;
   setStartupPage: (page: StartupPage) => void;
+  setCloseAction: (action: CloseAction) => void;
   pinPlaylist: (playlist: SidebarPinnedPlaylist) => void;
   unpinPlaylist: (urn: string) => void;
   setDiscordRpcEnabled: (enabled: boolean) => void;
@@ -161,6 +164,7 @@ const DEFAULTS = {
   sidebarCollapsed: false,
   floatingComments: true,
   startupPage: 'home' as StartupPage,
+  closeAction: 'tray' as CloseAction,
   pinnedPlaylists: [] as SidebarPinnedPlaylist[],
   discordRpcEnabled: true,
   discordRpcMode: 'track' as DiscordRpcMode,
@@ -214,6 +218,7 @@ export const useSettingsStore = create<SettingsState>()(
       toggleSidebar: () => set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
       setFloatingComments: (floatingComments) => set({ floatingComments }),
       setStartupPage: (startupPage) => set({ startupPage }),
+      setCloseAction: (closeAction) => set({ closeAction }),
       pinPlaylist: (playlist) =>
         set((s) => ({
           pinnedPlaylists: [
@@ -295,6 +300,7 @@ export const useSettingsStore = create<SettingsState>()(
         sidebarCollapsed: s.sidebarCollapsed,
         floatingComments: s.floatingComments,
         startupPage: s.startupPage,
+        closeAction: s.closeAction,
         pinnedPlaylists: s.pinnedPlaylists,
         discordRpcEnabled: s.discordRpcEnabled,
         discordRpcMode: s.discordRpcMode,

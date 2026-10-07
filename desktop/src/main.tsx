@@ -7,6 +7,7 @@ import { ErrorScreen } from './components/ui/ErrorScreen';
 import { changeAppLanguage } from './i18n';
 import { initAuthBridge } from './lib/auth-session';
 import { setupCacheMaintenance } from './lib/cache';
+import { initCloseAction } from './lib/close-action';
 import { setServerPorts } from './lib/constants';
 import {
   describeError,
@@ -86,6 +87,7 @@ async function bootstrap() {
 
   const settings = useSettingsStore.getState();
   await changeAppLanguage(settings.language);
+  initCloseAction();
 
   const [staticPort, proxyPort] = await invoke<[number, number]>('get_server_ports');
   setServerPorts(staticPort, proxyPort);
