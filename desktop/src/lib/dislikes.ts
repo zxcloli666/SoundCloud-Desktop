@@ -78,11 +78,8 @@ let _bulkLoaded = false;
 export async function loadAllDislikedIds(): Promise<void> {
   if (_bulkLoaded) return;
   try {
-    const r = await api<{ ids: string[] }>('/dislikes/ids');
-    for (const id of r.ids) {
-      const urn = id.startsWith('soundcloud:tracks:') ? id : `soundcloud:tracks:${id}`;
-      _dislikedUrns.set(urn, true);
-    }
+    const r = await api<{ urns: string[] }>('/dislikes/ids');
+    for (const urn of r.urns) _dislikedUrns.set(urn, true);
     _bulkLoaded = true;
     notify();
   } catch {
