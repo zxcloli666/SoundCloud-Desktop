@@ -1,4 +1,5 @@
-import {type PointerEvent as ReactPointerEvent, type ReactNode, useEffect, useRef} from 'react';
+import { type ReactNode, type PointerEvent as ReactPointerEvent, useEffect, useRef } from 'react';
+import { useHorizontalWheel } from './useHorizontalWheel';
 
 interface HorizontalScrollProps {
   children: ReactNode;
@@ -16,6 +17,8 @@ export function HorizontalScroll({ children, className = '' }: HorizontalScrollP
     startX: 0,
     startScrollLeft: 0,
   });
+
+  useHorizontalWheel(ref);
 
   useEffect(() => {
     return () => {
