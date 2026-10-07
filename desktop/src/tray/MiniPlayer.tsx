@@ -18,6 +18,7 @@ import {useCallback, useEffect, useRef, useState, useSyncExternalStore} from 're
 import i18n from '../i18n';
 import {trackedInvoke as invoke} from '../lib/diagnostics';
 import {formatTime} from '../lib/formatters';
+import {snapVolume} from '../lib/volume';
 import {getNp, getPosition, patchNp, sendCmd, subscribeNp, subscribePosition} from './state';
 
 const t = (key: string) => i18n.t(key);
@@ -116,22 +117,25 @@ function TimeRow({duration}: { duration: number }) {
 
 /* ── Volume (custom drag) ───────────────────────────────────────── */
 
+const TRAY_SNAP_POINTS = [50, 100];
+
 function VolumeControl({volume}: { volume: number }) {
     const trackRef = useRef<HTMLDivElement>(null);
-    const set = useCallback((clientX: number) => {
+    const set = useCallback((clientX: number, precise: boolean) => {
         const el = trackRef.current;
         if (!el) return;
         const rect = el.getBoundingClientRect();
         if (rect.width <= 0) return;
         const pct = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
-        const v = Math.round(pct * 100);
+        const raw = Math.round(pct * 100);
+        const v = precise ? raw : snapVolume(raw, 100 / rect.width, TRAY_SNAP_POINTS);
         patchNp({volume: v});
         sendCmd('volume', v);
     }, []);
 
     const onPointerDown = (e: React.PointerEvent) => {
-        set(e.clientX);
-        const onMove = (ev: PointerEvent) => set(ev.clientX);
+        set(e.clientX, e.shiftKey);
+        const onMove = (ev: PointerEvent) => set(ev.clientX, ev.shiftKey);
         const onUp = () => {
             window.removeEventListener('pointermove', onMove);
             window.removeEventListener('pointerup', onUp);
