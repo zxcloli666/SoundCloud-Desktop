@@ -36,7 +36,7 @@ export const LibraryTrackRow = React.memo(
 
     return (
       <div
-        className={`group flex items-center gap-4 px-4 py-3 rounded-2xl transition-all duration-300 ease-[var(--ease-apple)] ${
+        className={`@container group flex items-center gap-4 px-4 py-3 rounded-2xl transition-all duration-300 ease-[var(--ease-apple)] ${
           isThis
             ? 'bg-accent/[0.06] ring-1 ring-accent/20 shadow-[inset_0_0_20px_rgba(255,85,0,0.05)]'
             : 'hover:bg-white/[0.04]'
@@ -81,7 +81,7 @@ export const LibraryTrackRow = React.memo(
           className="flex flex-col justify-center"
         />
 
-        <div className="hidden md:flex shrink-0">
+        <div className="hidden @lg:flex shrink-0">
           <TrackStatusBadges meta={track._scd_meta} />
         </div>
 
@@ -106,7 +106,7 @@ export const LibraryTrackRow = React.memo(
           <ListMusic size={16} />
         </button>
 
-        <div className="hidden sm:flex items-center gap-4 shrink-0 pr-4">
+        <div className="hidden @3xl:flex items-center gap-4 shrink-0 pr-4">
           {track.playback_count != null && (
             <span className="text-[11px] text-white/30 tabular-nums flex items-center gap-1.5 w-16">
               {headphones11}
