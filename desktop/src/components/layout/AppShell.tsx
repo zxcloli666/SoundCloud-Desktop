@@ -12,6 +12,7 @@ import {toggleWindowFullscreen} from '../../lib/window';
 import {useLyricsStore} from '../../stores/lyrics';
 import {usePlayerStore} from '../../stores/player';
 import {useSettingsStore} from '../../stores/settings';
+import {DropImportOverlay} from '../offline/local/DropImportOverlay';
 import {NowPlayingBar} from './NowPlayingBar';
 import {Sidebar} from './Sidebar';
 import {Titlebar} from './Titlebar';
@@ -461,6 +462,7 @@ export const AppShell = React.memo(() => {
         </Suspense>
       )}
       <KeybindingsDialog open={kbOpen} onOpenChange={setKbOpen} />
+      <DropImportOverlay />
     </div>
   );
 });
