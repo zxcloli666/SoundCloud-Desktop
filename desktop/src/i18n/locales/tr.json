@@ -670,7 +670,14 @@
     "fontCustomPlaceholder": "Yazı tipi adı, ör. Segoe UI",
     "fontCustomHint": "Bu bilgisayarda yüklü bir yazı tipinin adını yazın",
     "fontFound": "Yazı tipi bulundu, arayüz artık onu kullanıyor",
-    "fontNotFound": "Bu yazı tipi yüklü değil, yerine Inter kullanılıyor"
+    "fontNotFound": "Bu yazı tipi yüklü değil, yerine Inter kullanılıyor",
+    "coverTitle": "Kapak renkleri",
+    "coverDesc": "Çalan parçanın kapağı uygulamayı renklendirsin",
+    "coverTint": "Kapak gradyanı",
+    "coverTintDesc": "Tüm pencereyi kapak renklerinde yumuşak bir gradyanla boya",
+    "coverAccent": "Kapaktan vurgu rengi",
+    "coverAccentDesc": "Parça çalarken düğmeler, kaydırıcılar ve vurgular kapağın rengini alır",
+    "coverPreviewIdle": "Renklerini görmek için bir parça çalın"
   },
   "eq": {
     "title": "Ekolayzir",

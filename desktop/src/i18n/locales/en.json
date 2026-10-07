@@ -759,7 +759,14 @@
     "fontCustomPlaceholder": "Font name, e.g. Segoe UI",
     "fontCustomHint": "Type the name of a font installed on this computer",
     "fontFound": "Font found, the interface uses it now",
-    "fontNotFound": "This font is not installed, Inter is used instead"
+    "fontNotFound": "This font is not installed, Inter is used instead",
+    "coverTitle": "Colours from the cover",
+    "coverDesc": "Let the artwork of the playing track paint the app",
+    "coverTint": "Cover gradient",
+    "coverTintDesc": "Tint the whole window with a soft gradient in the cover colours",
+    "coverAccent": "Accent from the cover",
+    "coverAccentDesc": "Buttons, sliders and highlights take the cover colour while a track plays",
+    "coverPreviewIdle": "Play a track to see its colours"
   },
   "eq": {
     "title": "Equalizer",

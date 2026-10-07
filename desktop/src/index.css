@@ -1383,3 +1383,30 @@ select,
         animation: none;
     }
 }
+
+@property --cover-a {
+    syntax: "<color>";
+    inherits: false;
+    initial-value: transparent;
+}
+
+@property --cover-b {
+    syntax: "<color>";
+    inherits: false;
+    initial-value: transparent;
+}
+
+.cover-tint {
+    background:
+        radial-gradient(75% 65% at 0% 0%, color-mix(in srgb, var(--cover-a) 26%, transparent) 0%, transparent 72%),
+        radial-gradient(60% 55% at 100% 6%, color-mix(in srgb, var(--cover-b) 18%, transparent) 0%, transparent 70%),
+        radial-gradient(90% 60% at 50% 108%, color-mix(in srgb, var(--cover-a) 16%, transparent) 0%, transparent 70%),
+        linear-gradient(180deg, color-mix(in srgb, var(--cover-a) 7%, transparent), color-mix(in srgb, var(--cover-b) 4%, transparent));
+}
+
+.cover-tint[data-animate] {
+    transition:
+        --cover-a 1.4s var(--ease-apple),
+        --cover-b 1.4s var(--ease-apple),
+        opacity 0.9s ease;
+}

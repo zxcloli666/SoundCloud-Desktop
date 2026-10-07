@@ -14,6 +14,7 @@ import {usePlayerStore} from '../../stores/player';
 import {useSettingsStore} from '../../stores/settings';
 import {ContextMenuHost} from '../ui/ContextMenu';
 import {useAppContextMenu} from './AppContextMenu';
+import {CoverTint} from './CoverTint';
 import {NowPlayingBar} from './NowPlayingBar';
 import {Sidebar} from './Sidebar';
 import {Titlebar} from './Titlebar';
@@ -444,6 +445,7 @@ export const AppShell = React.memo(() => {
   return (
     <div className="flex flex-col h-screen relative overflow-hidden">
       <CustomBackground />
+      <CoverTint />
       <AmbientGlow />
       <Titlebar />
       <div className="flex flex-1 min-h-0 relative z-10" style={{ isolation: 'isolate' }}>

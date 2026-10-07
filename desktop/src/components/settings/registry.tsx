@@ -4,6 +4,7 @@ import {CallProxySection} from './CallProxySection';
 import {AccountCard} from './cards/AccountCard';
 import {AudioDeviceCard} from './cards/AudioDeviceCard';
 import {CacheCard} from './cards/CacheCard';
+import {CoverColorsCard} from './cards/CoverColorsCard';
 import {DiscordCard} from './cards/DiscordCard';
 import {FontCard} from './cards/FontCard';
 import {HelpCard} from './cards/HelpCard';
@@ -56,6 +57,7 @@ export const SETTINGS_CATEGORIES: SettingsCategory[] = [
         Body: () => (
             <>
                 <ThemeCard/>
+                <CoverColorsCard/>
                 <FontCard/>
                 <WallpaperCard/>
                 <PerformanceCard/>

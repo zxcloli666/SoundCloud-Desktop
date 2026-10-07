@@ -94,6 +94,8 @@ export interface SettingsState {
   showErrorToasts: boolean;
   interfaceFont: InterfaceFont;
   customFontName: string;
+  coverTint: boolean;
+  coverAccent: boolean;
   setAccentColor: (color: string) => void;
   setBgPrimary: (bg: string) => void;
   setThemePreset: (id: ThemePreset) => void;
@@ -132,6 +134,8 @@ export interface SettingsState {
   setShowErrorToasts: (v: boolean) => void;
   setInterfaceFont: (font: InterfaceFont) => void;
   setCustomFontName: (name: string) => void;
+  setCoverTint: (v: boolean) => void;
+  setCoverAccent: (v: boolean) => void;
   resetTheme: () => void;
 }
 
@@ -176,6 +180,8 @@ const DEFAULTS = {
   showErrorToasts: true,
   interfaceFont: 'inter' as InterfaceFont,
   customFontName: '',
+  coverTint: false,
+  coverAccent: false,
 };
 
 export const useSettingsStore = create<SettingsState>()(
@@ -241,6 +247,8 @@ export const useSettingsStore = create<SettingsState>()(
       setShowErrorToasts: (showErrorToasts) => set({ showErrorToasts }),
       setInterfaceFont: (interfaceFont) => set({ interfaceFont }),
       setCustomFontName: (customFontName) => set({ customFontName }),
+      setCoverTint: (coverTint) => set({ coverTint }),
+      setCoverAccent: (coverAccent) => set({ coverAccent }),
       resetTheme: () =>
         set({
           accentColor: DEFAULTS.accentColor,
@@ -253,6 +261,8 @@ export const useSettingsStore = create<SettingsState>()(
           glassBlur: DEFAULTS.glassBlur,
           interfaceFont: DEFAULTS.interfaceFont,
           customFontName: DEFAULTS.customFontName,
+          coverTint: DEFAULTS.coverTint,
+          coverAccent: DEFAULTS.coverAccent,
         }),
     }),
     {
@@ -314,6 +324,8 @@ export const useSettingsStore = create<SettingsState>()(
         showErrorToasts: s.showErrorToasts,
         interfaceFont: s.interfaceFont,
         customFontName: s.customFontName,
+        coverTint: s.coverTint,
+        coverAccent: s.coverAccent,
       }),
     },
   ),

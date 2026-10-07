@@ -51,6 +51,7 @@ import {
   MicVocal as _MicVocal,
   Minus as _Minus,
   Music as _Music,
+  Palette as _Palette,
   PanelLeftClose as _PanelLeftClose,
   PanelLeftOpen as _PanelLeftOpen,
   Pause as _Pause,
@@ -154,6 +155,7 @@ export const MicVocal = memo(_MicVocal);
 export const MessageCircle = memo(_MessageCircle);
 export const Minus = memo(_Minus);
 export const Music = memo(_Music);
+export const Palette = memo(_Palette);
 export const PanelLeftClose = memo(_PanelLeftClose);
 export const PanelLeftOpen = memo(_PanelLeftOpen);
 export const Pause = memo(_Pause);
