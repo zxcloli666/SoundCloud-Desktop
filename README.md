@@ -108,9 +108,21 @@ SoundCloud заблокирован Роскомнадзором — веб-ве
 | `.deb` | amd64, arm64 | Ubuntu, Debian, Mint, Pop!_OS |
 | `.rpm` | amd64, arm64 | Fedora, openSUSE, CentOS |
 | `.AppImage` | amd64, arm64 | Универсальный, работает везде |
-| `.flatpak` | amd64 | Песочница, автообновления |
+| `.flatpak` | amd64 | Песочница |
+| AUR `soundcloud-bin` | amd64, arm64 | Arch, Manjaro, EndeavourOS |
 
-Скачай нужный формат со [страницы релизов](https://github.com/zxcloli666/SoundCloud-Desktop/releases/latest).
+Скачай нужный формат со [страницы релизов](https://github.com/zxcloli666/SoundCloud-Desktop/releases/latest) или с [сайта](https://soundcloud-desktop.fun/download), если GitHub не открывается.
+
+Arch и производные: официальный пакет [`soundcloud-bin`](https://aur.archlinux.org/packages/soundcloud-bin) публикуется в AUR автоматически через минуту после каждого релиза.
+```bash
+yay -S soundcloud-bin
+```
+Есть и пакет от сообщества [`soundcloud-desktop-bin`](https://aur.archlinux.org/packages/soundcloud-desktop-bin), его ведёт не автор приложения. Ставь только один из двух.
+
+Flatpak:
+```bash
+flatpak install --user soundcloud-desktop.flatpak
+```
 
 Для AppImage:
 ```bash
@@ -183,7 +195,7 @@ chmod +x soundcloud-desktop-*.AppImage
 | Windows portable | Закрой приложение из трея (правый клик по иконке → «Выход») и замени exe скачанным |
 | `.deb` / `.rpm` | Установи новый пакет поверх старого |
 | AUR | `yay -Syu soundcloud-bin` |
-| Flatpak | `flatpak install --user soundcloud-desktop.flatpak` с новым файлом |
+| Flatpak | Скачай новый `.flatpak` и выполни `flatpak install --user --reinstall soundcloud-desktop.flatpak`. Без `--reinstall` будет ошибка «Каталог не пуст», а центр приложений покажет только «Открыть» |
 | Сборка из исходников | `git pull` и пересборка |
 
 Если поставил новую версию, а открывается старая, значит старая ещё работает в трее: закрой её через «Выход» и запусти снова.
