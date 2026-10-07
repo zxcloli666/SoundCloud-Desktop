@@ -10,6 +10,7 @@ import {
   ArrowDownToLine as _ArrowDownToLine,
   ArrowRight as _ArrowRight,
   AudioLines as _AudioLines,
+  Ban as _Ban,
   Bookmark as _Bookmark,
   Calendar as _Calendar,
   Check as _Check,
@@ -178,6 +179,7 @@ export const X = memo(_X);
 export const Link = memo(_Link2);
 export const SlidersHorizontal = memo(_SlidersHorizontal);
 export const AudioLines = memo(_AudioLines);
+export const Ban = memo(_Ban);
 export const Power = memo(_Power);
 export const RotateCcw = memo(_RotateCcw);
 export const Youtube = memo(({ size, className }: { size?: number; className?: string }) => (

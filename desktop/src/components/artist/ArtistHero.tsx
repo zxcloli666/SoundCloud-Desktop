@@ -1,10 +1,12 @@
-import {memo, useState} from 'react';
+import {memo, useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {useNavigate} from 'react-router-dom';
 import {type Aura, auraRgba} from '../../lib/aura';
 import {Check, ChevronDown, Globe, ListMusic, MicVocal, Music, Users} from '../../lib/icons';
 import {userUrn} from '../../lib/ids';
 import {usePerfMode} from '../../lib/perf';
+import {BlockArtistButton} from '../music/blocklist/BlockArtistButton';
+import {artistTarget} from '../music/blocklist/targets';
 import {GlassHeroPanel} from '../ui/GlassHeroPanel';
 import {AvatarArtifact} from '../user/AvatarArtifact';
 import {StatOrb} from '../user/StatOrb';
@@ -75,6 +77,7 @@ function ArtistHeroImpl({ artist, hasStar, aura }: ArtistHeroProps) {
   const [bioExpanded, setBioExpanded] = useState(false);
     const perf = usePerfMode();
   const accent = auraRgba(aura, 0.18);
+  const blockTarget = useMemo(() => artistTarget(artist), [artist]);
 
   return (
     <GlassHeroPanel hasStar={hasStar} aura={aura}>
@@ -144,7 +147,7 @@ function ArtistHeroImpl({ artist, hasStar, aura }: ArtistHeroProps) {
 
           {/* Socials + SC accounts */}
           {(artist.socials.length > 0 || artist.sc_accounts.length > 0) && (
-            <div className="flex flex-wrap gap-1.5 justify-center lg:justify-start lg:mt-auto lg:pt-2">
+            <div className="flex flex-wrap gap-1.5 justify-center lg:justify-start lg:pt-2">
               {artist.sc_accounts.map((acc) => (
                 <ScAccountChip
                   key={acc.sc_user_id}
@@ -158,6 +161,10 @@ function ArtistHeroImpl({ artist, hasStar, aura }: ArtistHeroProps) {
               ))}
             </div>
           )}
+
+          <div className="flex flex-wrap items-center gap-3 justify-center lg:justify-start lg:mt-auto">
+            <BlockArtistButton target={blockTarget} />
+          </div>
         </div>
 
         {/* Right column stats */}

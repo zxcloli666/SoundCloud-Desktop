@@ -1,8 +1,11 @@
+import {useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
 import {type Aura, auraRgba} from '../../lib/aura';
 import {Calendar, Globe, Sparkles} from '../../lib/icons';
 import {likedTracksCount} from '../../lib/likes';
 import {usePerfMode} from '../../lib/perf';
+import {BlockArtistButton} from '../music/blocklist/BlockArtistButton';
+import {userTarget} from '../music/blocklist/targets';
 import {CopyLinkButton} from '../ui/CopyLinkButton';
 import {GlassHeroPanel} from '../ui/GlassHeroPanel';
 import {AuraPicker} from './AuraPicker';
@@ -62,6 +65,7 @@ export function IdentityHub({
     const perf = usePerfMode();
     const lb = perf.blur(16);
   const formattedDate = dateFormattedLong(user.created_at);
+  const blockTarget = useMemo(() => userTarget(user), [user]);
   const country = [user.city, user.country_code].filter(Boolean).join(', ');
 
   return (
@@ -142,6 +146,7 @@ export function IdentityHub({
           <div className="flex flex-wrap items-center gap-3 pt-1 justify-center lg:justify-start">
             {!isOwnProfile && <FollowBtn userUrn={user.urn} aura={aura} />}
             {user.permalink_url && <CopyLinkButton url={user.permalink_url} />}
+            {!isOwnProfile && <BlockArtistButton target={blockTarget} />}
             {hasStar && isOwnProfile && (
               <AuraPicker
                 aura={aura}

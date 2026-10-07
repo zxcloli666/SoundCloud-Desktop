@@ -54,6 +54,7 @@ import {
 } from '../../stores/player';
 import {useSettingsStore} from '../../stores/settings';
 import {ArtistNameLinks} from '../music/ArtistNameLinks';
+import {PlayerBlockButton} from '../music/blocklist/PlayerBlockButton';
 import {EqualizerPanel} from '../music/EqualizerPanel';
 import {UploadKindDot} from '../music/UploadKindDot';
 import {VolumeFlyout, VolumeLabel, VolumeSlider} from './VolumeControls';
@@ -937,11 +938,13 @@ const ReactCluster = React.memo(() => {
 // Single track-query + dislike observer shared by both reaction buttons.
 const ReactClusterBody = React.memo(({ urn }: { urn: string }) => {
   const trackData = useTrackReactions(urn);
+  const currentTrack = usePlayerStore((s) => s.currentTrack);
   const disliked = useDislikeStatus(urn);
   return (
     <div className="flex items-center gap-0.5">
       <LikeButton trackUrn={urn} trackData={trackData} disliked={disliked} />
       <NowBarDislikeButton trackUrn={urn} trackData={trackData} disliked={disliked} />
+      <PlayerBlockButton key={urn} track={trackData ?? currentTrack} />
       <div className="w-24 shrink-0">
         <PlaybackQualityBadge />
       </div>
