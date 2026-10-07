@@ -3,6 +3,7 @@ import { memo, useCallback, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { armTrackWaveContinuation } from '../../lib/queue-continuation';
 import type { LyricsHit } from '../../lib/search';
+import { useSettingsStore } from '../../stores/settings';
 import { CoverTile } from './CoverTile';
 import type { WallItem } from './utils';
 
@@ -32,9 +33,10 @@ export const LyricsRow = memo(function LyricsRow({
   );
   const itemsRef = useRef(items);
   itemsRef.current = items;
+  const similar = useSettingsStore((s) => !!wave && s.searchPlayback === 'similar');
   const getQueue = useCallback(
-    () => (wave ? [] : itemsRef.current.map((item) => item.track)),
-    [wave],
+    () => (similar ? [] : itemsRef.current.map((item) => item.track)),
+    [similar],
   );
 
   if (items.length === 0) return null;
@@ -58,7 +60,7 @@ export const LyricsRow = memo(function LyricsRow({
             item={item}
             getQueue={getQueue}
             onOpen={onOpen}
-            onPlay={wave ? armTrackWaveContinuation : undefined}
+            onPlay={similar ? armTrackWaveContinuation : undefined}
           />
         ))}
         {hasMore && (
