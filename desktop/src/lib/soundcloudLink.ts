@@ -3,8 +3,7 @@ import { type EntityKind, isEntityKind, kindOf, toUrn } from './ids';
 export type SoundCloudLink = { kind: 'urn'; urn: string } | { kind: 'url'; url: string };
 
 const BARE_URN = /^soundcloud:(tracks|playlists|users):(\d+)$/i;
-const LINK =
-  /(?:^|[^\w.@-])((?:https?:\/\/)?(?:[a-z0-9-]+\.)?soundcloud\.com\/[^\s<>"']+)/gi;
+const LINK = /(?:^|[^\w.@-])((?:https?:\/\/)?(?:[a-z0-9-]+\.)?soundcloud\.com\/[^\s<>"']+)/gi;
 const TRAILING = /[).,!?»;:\]}…*]+$/;
 const API_HOSTS = new Set(['api.soundcloud.com', 'api-v2.soundcloud.com']);
 const KEPT_PARAMS = new Set(['secret_token']);
