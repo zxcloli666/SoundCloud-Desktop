@@ -21,13 +21,16 @@ import {
   Clock as _Clock,
   Cloud as _Cloud,
   Compass as _Compass,
+  Copy as _Copy,
   Database as _Database,
   Disc3 as _Disc3,
   Download as _Download,
   ExternalLink as _ExternalLink,
   Eye as _Eye,
   FileDown as _FileDown,
+  FileText as _FileText,
   Flame as _Flame,
+  FolderOpen as _FolderOpen,
   Fullscreen as _Fullscreen,
   Globe as _Globe,
   GripVertical as _GripVertical,
@@ -46,6 +49,7 @@ import {
   MessageCircle as _MessageCircle,
   MicVocal as _MicVocal,
   Minus as _Minus,
+  MonitorPlay as _MonitorPlay,
   Music as _Music,
   PanelLeftClose as _PanelLeftClose,
   PanelLeftOpen as _PanelLeftOpen,
@@ -53,6 +57,7 @@ import {
   Play as _Play,
   Plus as _Plus,
   Power as _Power,
+  Radio as _Radio,
   RefreshCw as _RefreshCw,
   Repeat as _Repeat,
   Repeat1 as _Repeat1,
@@ -105,6 +110,8 @@ export const AlertCircle = memo(_AlertCircle);
 export const ArrowDownToLine = memo(_ArrowDownToLine);
 export const Calendar = memo(_Calendar);
 export const FileDown = memo(_FileDown);
+export const FileText = memo(_FileText);
+export const FolderOpen = memo(_FolderOpen);
 export const Flame = memo(_Flame);
 export const Wifi = memo(_Wifi);
 export const WifiOff = memo(_WifiOff);
@@ -120,6 +127,7 @@ export const Clock = memo(_Clock);
 export const Bookmark = memo(_Bookmark);
 export const Cloud = memo(_Cloud);
 export const Compass = memo(_Compass);
+export const Copy = memo(_Copy);
 export const Database = memo(_Database);
 export const Disc3 = memo(_Disc3);
 export const ExternalLink = memo(_ExternalLink);
@@ -142,6 +150,7 @@ export const Loader2 = memo(_Loader2);
 export const Lock = memo(_Lock);
 export const MapPin = memo(_MapPin);
 export const MicVocal = memo(_MicVocal);
+export const MonitorPlay = memo(_MonitorPlay);
 export const MessageCircle = memo(_MessageCircle);
 export const Minus = memo(_Minus);
 export const Music = memo(_Music);
@@ -179,6 +188,7 @@ export const Link = memo(_Link2);
 export const SlidersHorizontal = memo(_SlidersHorizontal);
 export const AudioLines = memo(_AudioLines);
 export const Power = memo(_Power);
+export const Radio = memo(_Radio);
 export const RotateCcw = memo(_RotateCcw);
 export const Youtube = memo(({ size, className }: { size?: number; className?: string }) => (
   <SimpleIcon icon={siYoutube} size={size} className={className} />
