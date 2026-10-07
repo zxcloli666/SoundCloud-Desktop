@@ -224,6 +224,7 @@ pub fn run() {
             import::ym_import_start,
             import::ym_import_stop,
             track_cache::track_ensure_cached,
+            track_cache::track_upgrade_cached,
             track_cache::track_export,
             track_cache::track_is_cached,
             track_cache::track_transcode_status,

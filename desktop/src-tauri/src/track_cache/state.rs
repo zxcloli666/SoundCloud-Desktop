@@ -23,6 +23,11 @@ use crate::track_cache::direct_download::try_download;
 use crate::track_cache::sc_anon::AnonClient;
 use crate::track_cache::transcode;
 
+mod storage;
+mod upgrade;
+
+use storage::StorageJob;
+
 const MIN_AUDIO_SIZE: u64 = 8192;
 const AUDIO_SNIFF_LEN: usize = 16;
 const PROGRESS_EMIT_STEP: f64 = 0.01;
@@ -535,6 +540,7 @@ pub struct TrackCacheState {
     likes_cancel: Arc<std::sync::atomic::AtomicBool>,
     /// Per-host storage circuit breaker: host -> epoch secs of last failure.
     storage_cooldowns: Arc<StdMutex<HashMap<String, u64>>>,
+    upgrade_attempts: Arc<StdMutex<HashSet<String>>>,
     anon: Arc<AnonClient>,
 }
 
@@ -603,6 +609,7 @@ pub fn init(audio_dir: PathBuf, liked_dir: PathBuf, incoming_dir: PathBuf) -> Tr
         likes_running: Arc::new(std::sync::atomic::AtomicBool::new(false)),
         likes_cancel: Arc::new(std::sync::atomic::AtomicBool::new(false)),
         storage_cooldowns: Arc::new(StdMutex::new(HashMap::new())),
+        upgrade_attempts: Arc::new(StdMutex::new(HashSet::new())),
         anon,
     }
 }
@@ -1337,7 +1344,8 @@ impl TrackCacheState {
 
         // Clean file already present (e.g. promoted by a prior run) — drop the
         // raw file after a grace period (a player may still hold its path).
-        if is_valid_file(&dest_dir.join(urn_to_filename(urn))) {
+        let existing = dest_dir.join(urn_to_filename(urn));
+        if is_valid_file(&existing) && !upgrade::upgrades_existing(&existing, quality) {
             self.schedule_remove_incoming(urn.to_string());
             return Ok(());
         }
@@ -1552,7 +1560,6 @@ impl TrackCacheState {
         Err("Cannot export to m4a: audio transcoder is still preparing or unavailable".into())
     }
 
-    /// Try each storage URL once (healthy hosts first), then API URLs with retries.
     async fn download_with_fallback(&self, params: FallbackParams<'_>) -> Result<PathBuf, String> {
         let FallbackParams {
             target_dir,
@@ -1566,167 +1573,25 @@ impl TrackCacheState {
         } = params;
         let start = std::time::Instant::now();
         let mut last_err = String::from("no stream URLs provided");
+        let storage = self.storage_job(target_dir, urn, storage_urls, storage_quality, start);
+        let storage_after_race = hq && matches!(storage_quality, PlaybackQuality::Sq);
 
-        // Sort storage URLs: healthy hosts first.
-        let mut sorted: Vec<&String> = storage_urls.iter().collect();
-        sorted.sort_by_key(|url| {
-            let healthy = host_of(url)
-                .map(|h| self.storage_host_available(&h))
-                .unwrap_or(true);
-            if healthy {
-                0
-            } else {
-                1
+        if !storage_after_race {
+            if let Some(path) = self.try_storage_redirect(&storage).await {
+                return Ok(path);
             }
-        });
-
-        // 1. Try storage `/redirect/...` URLs — fast 307 to presigned S3.
-        //    Saves storage server bandwidth when the upstream is reachable.
-        //    ПРОПУСКАЕМ на проксируемом тире: 307 ведёт на s3 (его НЕ проксируем),
-        //    у забаненного он тоже мёртв — бросок туда лишь жрёт connect-таймаут.
-        //    На relay/воркер идём сразу к storage-stream (шаг 3).
-        for storage_url in &sorted {
-            let Some(host) = host_of(storage_url) else {
-                continue;
-            };
-            if !crate::network::edge::is_direct(storage_url)
-                || !crate::network::edge::direct_first(PRESIGN_ORIGIN)
-            {
-                continue;
+            if !hq {
+                match self.try_anon(target_dir, urn, start).await {
+                    Ok(Some(path)) => return Ok(path),
+                    Ok(None) => {}
+                    Err(e) => last_err = format!("anon: {e}"),
+                }
             }
-            let Some(redirect_url) = make_redirect_url(storage_url) else {
-                continue;
-            };
-
-            match self.presigned_get(&redirect_url).await {
-                Ok(resp) if resp.status().is_success() => {
-                    let landed = resp.url().to_string();
-                    println!("[TrackCache] {urn} → storage (redirect via {host})");
-                    match write_response_to_cache(
-                        target_dir,
-                        urn,
-                        resp,
-                        storage_quality,
-                        DownloadSource::Storage,
-                        self.app_handle.as_ref(),
-                    )
-                    .await
-                    {
-                        Ok(result) => {
-                            let bytes = file_len(&result.path);
-                            crate::network::edge::note_url_delivered(&landed, Tier::Direct, bytes);
-                            let kb = bytes / 1024;
-                            let ms = start.elapsed().as_millis();
-                            println!("[TrackCache] downloaded {urn} via s3 — {kb} KB in {ms}ms");
-                            return Ok(result.path);
-                        }
-                        Err(DownloadError::Fatal(e)) => {
-                            eprintln!("[TrackCache] s3 write failed for {urn}: {e}");
-                        }
-                        Err(DownloadError::Retryable(e)) => {
-                            crate::network::edge::note_url(&landed, Tier::Direct, false);
-                            eprintln!("[TrackCache] s3 download failed for {urn}: {e}");
-                        }
-                    }
-                }
-                Ok(resp) if resp.status().as_u16() == 404 || resp.status().as_u16() == 410 => {}
-                Ok(resp) => {
-                    eprintln!(
-                        "[TrackCache] s3 redirect HTTP {} for {urn} ({host})",
-                        resp.status()
-                    );
-                }
-                Err(err) => {
-                    eprintln!("[TrackCache] s3 redirect failed for {urn} ({host}): {err}");
-                }
+            if let Some(path) = self.try_storage_stream(&storage).await {
+                return Ok(path);
             }
         }
 
-        // 2. Try anon: download directly from SC public API v2.
-        //    Saves a hop through our streaming infra when the user can reach
-        //    SoundCloud directly.
-        if !hq {
-            match self.try_anon(target_dir, urn, start).await {
-                Ok(Some(path)) => return Ok(path),
-                Ok(None) => {}
-                Err(e) => last_err = format!("anon: {e}"),
-            }
-        }
-
-        // Storage stream — proxies bytes through our storage server. Каждый
-        // storage-URL разворачивается в тиры edge: прямой хост → relay →
-        // CF-воркеры (X-Target). Транспортный провал тира ротатит на следующий,
-        // ответ самого storage (200/404/5xx) — уже результат.
-        for storage_url in &sorted {
-            let Some(host) = host_of(storage_url) else {
-                continue;
-            };
-            if !self.storage_host_available(&host) {
-                continue;
-            }
-
-            let mut transport_ok = false;
-            for hop in crate::network::edge::plan(storage_url) {
-                let resp = match self.storage_get(&hop).await {
-                    Ok(r) => r,
-                    Err(err) => {
-                        hop.note(false);
-                        eprintln!("[TrackCache] storage {} failed for {urn}: {err}", hop.tier_label());
-                        continue;
-                    }
-                };
-                if !crate::network::edge::hop_ok(&hop, &resp) {
-                    continue; // транспорт тира виноват — исход записан, следующий тир
-                }
-                transport_ok = true;
-                hop.note(resp.status().as_u16() < 500);
-
-                let status = resp.status();
-                if status.is_success() {
-                    self.mark_storage_host_ok(&host);
-                    println!("[TrackCache] {urn} → storage stream ({host} via {})", hop.tier_label());
-                    match write_response_to_cache(
-                        target_dir,
-                        urn,
-                        resp,
-                        storage_quality,
-                        DownloadSource::Storage,
-                        self.app_handle.as_ref(),
-                    )
-                    .await
-                    {
-                        Ok(result) => {
-                            let bytes = file_len(&result.path);
-                            hop.note_delivered(bytes);
-                            let kb = bytes / 1024;
-                            let ms = start.elapsed().as_millis();
-                            println!(
-                                "[TrackCache] downloaded {urn} via storage stream — {kb} KB in {ms}ms"
-                            );
-                            return Ok(result.path);
-                        }
-                        Err(DownloadError::Fatal(e)) => {
-                            eprintln!("[TrackCache] storage write failed for {urn}: {e}");
-                        }
-                        Err(DownloadError::Retryable(e)) => {
-                            hop.note(false);
-                            eprintln!("[TrackCache] storage download failed for {urn}: {e}");
-                        }
-                    }
-                } else if matches!(status.as_u16(), 404 | 410) {
-                    break; // объект отсутствует — другие тиры не помогут
-                } else {
-                    eprintln!("[TrackCache] storage HTTP {status} for {urn} ({host})");
-                }
-            }
-
-            if !transport_ok {
-                self.mark_storage_host_failed(&host);
-            }
-        }
-
-        // Race /download (direct from SC) vs /stream (proxy via streaming API).
-        // First success wins, the loser is dropped → reqwest cancels its connection.
         if !download_urls.is_empty() || !urls.is_empty() {
             let job = RaceJob {
                 target_dir,
@@ -1738,7 +1603,8 @@ impl TrackCacheState {
             };
             let race = self.race_direct_and_api(&job, download_urls, urls);
             let result = if hq {
-                self.race_with_anon_backup(&job, race).await
+                self.race_with_anon_backup(&job, race, storage_after_race.then_some(&storage))
+                    .await
             } else {
                 race.await
             };
@@ -1748,7 +1614,11 @@ impl TrackCacheState {
                     last_err = err;
                 }
             }
-        } else if hq && let Ok(Some(path)) = self.try_anon(target_dir, urn, start).await {
+        } else if hq
+            && let Ok(Some(path)) = self
+                .sq_fallback(target_dir, urn, start, storage_after_race.then_some(&storage))
+                .await
+        {
             return Ok(path);
         }
 
@@ -1760,6 +1630,7 @@ impl TrackCacheState {
         &self,
         job: &RaceJob<'_>,
         hq_race: impl Future<Output = Result<PathBuf, String>>,
+        sq_storage: Option<&StorageJob<'_>>,
     ) -> Result<PathBuf, String> {
         let RaceJob {
             target_dir,
@@ -1778,12 +1649,12 @@ impl TrackCacheState {
             None if job.receiving.load(std::sync::atomic::Ordering::Relaxed) => hq_race.await,
             None => {
                 let line = format!(
-                    "[TrackCache] hq sources still silent for {urn}, starting anon alongside"
+                    "[TrackCache] hq sources still silent for {urn}, starting sq fallback alongside"
                 );
                 println!("{line}");
                 self.diag("INFO", line);
 
-                let anon = self.try_anon(target_dir, urn, start);
+                let anon = self.sq_fallback(target_dir, urn, start, sq_storage);
                 tokio::pin!(anon);
                 return tokio::select! {
                     res = &mut hq_race => match res {
@@ -1800,11 +1671,26 @@ impl TrackCacheState {
 
         match hq_result {
             Ok(path) => Ok(path),
-            Err(err) => match self.try_anon(target_dir, urn, start).await {
+            Err(err) => match self.sq_fallback(target_dir, urn, start, sq_storage).await {
                 Ok(Some(path)) => Ok(path),
                 _ => Err(err),
             },
         }
+    }
+
+    async fn sq_fallback(
+        &self,
+        target_dir: &Path,
+        urn: &str,
+        start: std::time::Instant,
+        storage: Option<&StorageJob<'_>>,
+    ) -> Result<Option<PathBuf>, String> {
+        if let Some(storage) = storage
+            && let Some(path) = self.try_storage(storage).await
+        {
+            return Ok(Some(path));
+        }
+        self.try_anon(target_dir, urn, start).await
     }
 
     async fn try_anon(
@@ -2566,6 +2452,21 @@ mod tests {
             std::fs::create_dir_all(dir).unwrap();
         }
         (root, init(audio, liked, incoming))
+    }
+
+    #[tokio::test]
+    async fn only_hq_bytes_replace_an_sq_clean_file() {
+        let (root, state) = test_state("upgrade");
+        let sq = cached_clean_file(&state, "soundcloud:tracks:3", 180_000).await;
+
+        assert!(upgrade::upgrades_existing(&sq, PlaybackQuality::Hq));
+        assert!(!upgrade::upgrades_existing(&sq, PlaybackQuality::Sq));
+
+        let mut meta = read_cache_metadata(&sq).unwrap();
+        meta.quality = PlaybackQuality::Hq;
+        write_cache_metadata(&sq, &meta).await;
+        assert!(!upgrade::upgrades_existing(&sq, PlaybackQuality::Hq));
+        std::fs::remove_dir_all(&root).ok();
     }
 
     #[tokio::test]
