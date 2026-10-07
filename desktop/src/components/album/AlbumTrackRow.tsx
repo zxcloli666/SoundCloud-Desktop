@@ -1,5 +1,5 @@
 import {memo} from 'react';
-import {preloadTrack} from '../../lib/audio';
+import {cancelPreload, preloadTrack} from '../../lib/audio';
 import {type Aura, auraRgb, auraRgba, isLight} from '../../lib/aura';
 import {art, dur} from '../../lib/formatters';
 import {ListPlus, Music, pauseBlack14, pauseWhite14, playBlack14, playWhite14,} from '../../lib/icons';
@@ -40,6 +40,7 @@ function AlbumTrackRowImpl({ track, position, queue, aura }: AlbumTrackRowProps)
         if (!isThis) e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
       }}
       onMouseLeave={(e) => {
+        cancelPreload();
         if (!isThis) e.currentTarget.style.background = '';
       }}
     >

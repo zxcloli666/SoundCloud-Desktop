@@ -1323,6 +1323,7 @@ select,
     z-index: 4;
     display: grid;
     place-items: center;
+    cursor: pointer;
     border-radius: inherit;
     background: linear-gradient(180deg, rgba(8, 8, 10, 0.34), rgba(8, 8, 10, 0.62));
     font-size: 11px;
@@ -1331,6 +1332,18 @@ select,
     letter-spacing: 0.02em;
     color: #fff;
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+
+.npb-art-load-cancel {
+    display: none;
+}
+
+.npb-art-load:hover .npb-art-load-value {
+    display: none;
+}
+
+.npb-art-load:hover .npb-art-load-cancel {
+    display: block;
 }
 
 @media (max-width: 1040px) {

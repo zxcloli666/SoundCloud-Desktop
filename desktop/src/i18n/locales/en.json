@@ -62,7 +62,9 @@
     "previous": "Previous",
     "next": "Next",
     "openApp": "Open SoundCloud",
-    "notPlaying": "Not playing"
+    "notPlaying": "Not playing",
+    "noContinuation": "No similar tracks found, playback stopped",
+    "cancelLoad": "Stop loading"
   },
   "auth": {
     "signIn": "Sign in with SoundCloud",
@@ -605,6 +607,8 @@
     "cacheLikesEmpty": "No liked tracks",
     "audioCacheLimit": "Audio cache limit",
     "audioCacheLimitDesc": "Older cached tracks are deleted automatically when the limit is exceeded",
+    "hoverPreload": "Preload on hover",
+    "hoverPreloadDesc": "Download a track in advance when the cursor rests on it, so it starts instantly",
     "clearCache": "Clear",
     "cacheCleared": "Cache cleared",
     "appearance": "Appearance",
@@ -659,6 +663,9 @@
     "discordRpcModeActivity": "Activity only",
     "discordRpcButton": "Show SoundCloud button",
     "discordRpcButtonDesc": "Display the button that opens the track in SoundCloud",
+    "discordRpcHint": "Discord must be running, and activity sharing must be on in Discord Settings > Activity Privacy.",
+    "discordRpcConnected": "Connected to Discord",
+    "discordRpcUnavailable": "Discord not found. Start the Discord app.",
     "normalizeVolume": "Volume normalization",
     "normalizeVolumeDesc": "Balances quiet and loud tracks to a more even level",
     "highQualityStreaming": "High quality streaming",

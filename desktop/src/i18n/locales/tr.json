@@ -52,7 +52,9 @@
     "abLoopSetA": "En iyi bolumu dongule: baslangic (A)",
     "abLoopSetB": "En iyi bolumu dongule: bitis (B)",
     "abLoopClear": "A-B dongusunu temizle",
-    "notPlaying": "Calmiyor"
+    "notPlaying": "Calmiyor",
+    "noContinuation": "Benzer parça bulunamadı, çalma durduruldu",
+    "cancelLoad": "Yuklemeyi durdur"
   },
   "auth": {
     "signIn": "SoundCloud ile giris yap",
@@ -516,6 +518,8 @@
     "cacheLikesEmpty": "Begenilen parca yok",
     "audioCacheLimit": "Ses onbellek limiti",
     "audioCacheLimitDesc": "Limit asildiginda eski onbelleklenmis parcilar otomatik silinir",
+    "hoverPreload": "Uzerine gelince onceden yukle",
+    "hoverPreloadDesc": "Imlec bir parcanin uzerinde durunca parcayi onceden indirir, boylece hemen baslar",
     "clearCache": "Temizle",
     "cacheCleared": "Onbellek temizlendi",
     "appearance": "Gorunum",
@@ -568,6 +572,9 @@
     "discordRpcModeActivity": "Yalnizca etkinlik",
     "discordRpcButton": "SoundCloud dugmesi",
     "discordRpcButtonDesc": "Parcayi SoundCloud'da acan dugmeyi goster",
+    "discordRpcHint": "Discord acik olmali ve Discord Ayarlar > Etkinlik Gizliligi bolumunde etkinlik paylasimi acik olmali.",
+    "discordRpcConnected": "Discord'a baglandi",
+    "discordRpcUnavailable": "Discord bulunamadi. Discord uygulamasini baslatin.",
     "normalizeVolume": "Ses duzeyi dengeleme",
     "normalizeVolumeDesc": "Sessiz ve yuksek parcarlari daha esit bir seviyeye getirir",
     "highQualityStreaming": "Yuksek kalite akis",

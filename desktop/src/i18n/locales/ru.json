@@ -62,7 +62,9 @@
     "previous": "Предыдущий",
     "next": "Следующий",
     "openApp": "Открыть SoundCloud",
-    "notPlaying": "Ничего не играет"
+    "notPlaying": "Ничего не играет",
+    "noContinuation": "Похожих треков не нашлось, воспроизведение остановлено",
+    "cancelLoad": "Остановить загрузку"
   },
   "auth": {
     "signIn": "Войти через SoundCloud",
@@ -616,6 +618,8 @@
     "cacheLikesEmpty": "Лайков пока нет",
     "audioCacheLimit": "Лимит аудиокэша",
     "audioCacheLimitDesc": "Старые кэшированные треки будут удаляться автоматически при превышении лимита",
+    "hoverPreload": "Предзагрузка при наведении",
+    "hoverPreloadDesc": "Скачивать трек заранее, когда курсор задерживается на нём, чтобы он включался сразу",
     "clearCache": "Очистить",
     "cacheCleared": "Кэш очищен",
     "appearance": "Оформление",
@@ -670,6 +674,9 @@
     "discordRpcModeActivity": "Только активность",
     "discordRpcButton": "Кнопка SoundCloud",
     "discordRpcButtonDesc": "Показывать кнопку перехода к треку в SoundCloud",
+    "discordRpcHint": "Discord должен быть запущен, а в его настройках (Конфиденциальность активности) включён показ статуса.",
+    "discordRpcConnected": "Подключено к Discord",
+    "discordRpcUnavailable": "Discord не найден. Запустите приложение Discord.",
     "normalizeVolume": "Нормализация громкости",
     "normalizeVolumeDesc": "Выравнивает тихие и громкие треки до более ровного уровня",
     "highQualityStreaming": "Высокое качество стрима",

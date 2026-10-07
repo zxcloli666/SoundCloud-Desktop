@@ -29,19 +29,9 @@ export function useShuffleLikes() {
         }
 
         play(pickRandom(likedTracks), likedTracks);
-        const started = usePlayerStore.getState().queue;
-        armLikesContinuation();
-
         setLoading(true);
         try {
-            const all = await fetchAllLikedTracks();
-            const {queue, addToQueue} = usePlayerStore.getState();
-            if (queue !== started) return;
-            const queued = new Set(queue.map((t) => t.urn));
-            const rest = all.filter((t) => !queued.has(t.urn));
-            if (rest.length > 0) addToQueue(rest);
-        } catch (e) {
-            console.debug('[likes] full-collection fetch failed, staying on lazy continuation:', e);
+            await armLikesContinuation();
         } finally {
             setLoading(false);
         }

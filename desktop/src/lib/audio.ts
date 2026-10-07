@@ -57,7 +57,7 @@ const API_PREVIEW_DURATION_MS = 30_000;
 
 // The 10Hz tick fan-out drives every UI subscriber (progress, waveform clip-path,
 // time readouts). When the window is hidden it's pure waste — the WebView doesn't
-// throttle us, and MediaSession/Discord presence run off Rust events, not this.
+// throttle us, and MediaSession runs off Rust events, not this.
 // cachedTime/cachedDuration keep updating; we just skip the DOM-touching fan-out.
 function notify() {
   if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
@@ -94,6 +94,12 @@ function setDownloadProgress(value: number | null): void {
   if (downloadProgress === value) return;
   downloadProgress = value;
   notify();
+}
+
+export function cancelTrackLoad(): void {
+  loadGen++;
+  setDownloadProgress(null);
+  usePlayerStore.getState().pause();
 }
 
 export function seek(seconds: number) {
@@ -411,8 +417,9 @@ async function loadTrack(track: Track, resumeAt = 0) {
       );
     } catch (error) {
       const premiumRefused = getLoadErrorText(error)?.includes('HTTP 403 Forbidden: forbidden');
-      if (!highQualityStreaming || !premiumRefused) throw error;
+      if (!highQualityStreaming || !premiumRefused || gen !== loadGen) throw error;
       console.warn('[Audio] HQ load failed, retrying without hq:', error);
+      setDownloadProgress(0);
       cachedInfo = await ensureTrackCached(urn, false, expectedDurationMs(track), storageQuality);
     }
 
@@ -440,9 +447,9 @@ async function loadTrack(track: Track, resumeAt = 0) {
     await afterLoad(track, gen, resumeAt);
   } catch (e) {
     console.error('[Audio] Load failed:', e);
+    if (gen !== loadGen) return;
     setDownloadProgress(null);
     usePlayerStore.getState().setPlaybackTransport(null, null);
-    if (gen !== loadGen) return;
     const errorText = getLoadErrorText(e);
     if (errorText?.includes('no stream available')) {
       toast.error(i18n.t('track.noStream'), {
@@ -585,8 +592,8 @@ listen<number>('audio:tick', (event) => {
 
 listen<{ urn: string; progress: number }>('track:download-progress', (event) => {
   const { urn, progress } = event.payload;
-  if (urn === currentUrn) {
-    setDownloadProgress(Math.max(downloadProgress ?? 0, progress));
+  if (urn === currentUrn && downloadProgress !== null) {
+    setDownloadProgress(Math.max(downloadProgress, progress));
   }
 });
 
@@ -771,7 +778,8 @@ let preloadTimer: ReturnType<typeof setTimeout> | null = null;
 
 export function preloadTrack(track: Track) {
   const urn = track.urn;
-  if (preloadTimer) clearTimeout(preloadTimer);
+  cancelPreload();
+  if (!useSettingsStore.getState().hoverPreload) return;
   preloadTimer = setTimeout(() => {
     const sessionId = getSessionId();
     const hq = isHqStreaming();
@@ -789,7 +797,12 @@ export function preloadTrack(track: Track) {
         },
       ],
     }).catch(console.error);
-  }, 500);
+  }, 800);
+}
+
+export function cancelPreload() {
+  if (preloadTimer) clearTimeout(preloadTimer);
+  preloadTimer = null;
 }
 
 export function preloadQueue() {

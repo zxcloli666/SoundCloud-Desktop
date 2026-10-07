@@ -17,6 +17,8 @@
  * Не вызывать параллельно: повторный вызов пока летит первый — игнор.
  */
 
+import { toast } from 'sonner';
+import i18n from '../i18n';
 import {
   setEndOfQueueFallback,
   setPlaybackContextResetHandler,
@@ -29,24 +31,34 @@ import { getQueueContinuationSource, setQueueContinuationSource } from './queue-
 import { fetchRelatedTracks } from './related';
 import { fetchSmartWave } from './soundwave';
 
-let inFlight = false;
+let playbackGen = 0;
+let inFlightGen = -1;
+
+function isStale(gen: number, lastTrack: Track): boolean {
+  return gen !== playbackGen || usePlayerStore.getState().currentTrack?.urn !== lastTrack.urn;
+}
 
 export async function autopilotContinueFromTrack(lastTrack: Track): Promise<void> {
-  if (inFlight) {
+  if (inFlightGen === playbackGen) {
     console.debug('[autopilot] skipping — already in flight');
     return;
   }
-  inFlight = true;
+  const gen = playbackGen;
+  inFlightGen = gen;
+  const stale = () => isStale(gen, lastTrack);
 
   try {
     // 0) Контекст (лайки/…) доигрывается до конца перед волной.
-    if (await continueFromContextSource()) return;
+    if (await continueFromContextSource(stale)) return;
+    if (stale()) return;
 
     // 1–2) Источник иссяк или его нет → волна от последнего трека.
     console.debug('[autopilot] wave continuation from', lastTrack.urn, lastTrack.title);
     const fresh = await fetchContinuation(lastTrack);
+    if (stale()) return;
     if (fresh.length === 0) {
       console.warn('[autopilot] no continuation tracks (wave + related both empty)');
+      toast(i18n.t('player.noContinuation'));
       usePlayerStore.getState().pause();
       return;
     }
@@ -55,9 +67,9 @@ export async function autopilotContinueFromTrack(lastTrack: Track): Promise<void
     usePlayerStore.getState().next();
   } catch (e) {
     console.error('[autopilot] continuation failed:', e);
-    usePlayerStore.getState().pause();
+    if (!stale()) usePlayerStore.getState().pause();
   } finally {
-    inFlight = false;
+    if (inFlightGen === gen) inFlightGen = -1;
   }
 }
 
@@ -66,7 +78,7 @@ export async function autopilotContinueFromTrack(lastTrack: Track): Promise<void
  * @returns true — добавили порцию свежих треков и поехали дальше; false —
  *   источника нет / он исчерпан / упал (тогда вызывающий уходит в волну).
  */
-async function continueFromContextSource(): Promise<boolean> {
+async function continueFromContextSource(stale: () => boolean): Promise<boolean> {
   const source = getQueueContinuationSource();
   if (!source) return false;
 
@@ -78,10 +90,12 @@ async function continueFromContextSource(): Promise<boolean> {
     try {
       batch = await source.next();
     } catch (e) {
+      if (stale()) return false;
       console.debug(`[autopilot] source "${source.kind}" failed → wave:`, e);
       setQueueContinuationSource(null);
       return false;
     }
+    if (stale()) return false;
     if (batch.length === 0) {
       console.debug(`[autopilot] source "${source.kind}" exhausted → wave`);
       setQueueContinuationSource(null);
@@ -145,4 +159,7 @@ async function fetchRelated(seed: Track): Promise<Track[]> {
 // Регистрируем при загрузке модуля. Сторе пнёт сюда при end-of-queue,
 // а при старте нового play() — сбросит контекстный источник.
 setEndOfQueueFallback(autopilotContinueFromTrack);
-setPlaybackContextResetHandler(() => setQueueContinuationSource(null));
+setPlaybackContextResetHandler(() => {
+  playbackGen++;
+  setQueueContinuationSource(null);
+});

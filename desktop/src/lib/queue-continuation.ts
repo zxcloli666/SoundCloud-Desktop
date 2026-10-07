@@ -11,8 +11,10 @@
  */
 
 import {shuffleArray, type Track, usePlayerStore} from '../stores/player';
+import {useSettingsStore} from '../stores/settings';
 import {api} from './api';
 import {fetchAllLikedTracks, fetchAllPlaylistTracks} from './hooks';
+import {fetchSmartWave} from './soundwave';
 
 export interface QueueContinuationSource {
   /** Имя для логов. */
@@ -124,14 +126,33 @@ export function createShuffledLikesContinuationSource(): QueueContinuationSource
  * страницу). Без shuffle — последовательная пагинация со стартом из живой
  * длины очереди.
  */
-export function armLikesContinuation(): void {
-  if (usePlayerStore.getState().shuffle) {
-    setQueueContinuationSource(createShuffledLikesContinuationSource());
-    return;
-  }
-  const loaded = usePlayerStore.getState().queue.length;
-  setQueueContinuationSource(createLikesContinuationSource(loaded));
+export async function armLikesContinuation(): Promise<void> {
+  const { shuffle, queue } = usePlayerStore.getState();
+  if (shuffle) await armShuffledLikes();
+  else setQueueContinuationSource(createLikesContinuationSource(queue.length));
 }
+
+async function armShuffledLikes(): Promise<void> {
+  const source = createShuffledLikesContinuationSource();
+  setQueueContinuationSource(source);
+  try {
+    const all = await fetchAllLikedTracks();
+    if (active !== source) return;
+    const queued = new Set(usePlayerStore.getState().queue.map((t) => t.urn));
+    const rest = all.filter((t) => !queued.has(t.urn));
+    if (rest.length > 0) usePlayerStore.getState().addToQueue(rest);
+    setQueueContinuationSource(null);
+  } catch (e) {
+    console.debug('[likes] full-collection fetch failed, staying on lazy continuation:', e);
+  }
+}
+
+usePlayerStore.subscribe((state, prev) => {
+  if (state.shuffle === prev.shuffle) return;
+  if (active?.kind !== 'likes' && active?.kind !== 'likes-shuffled') return;
+  if (state.shuffle) void armShuffledLikes();
+  else setQueueContinuationSource(createLikesContinuationSource());
+});
 
 /**
  * Поставить «плейлист до конца» под текущую очередь — зовётся в `onPlay` сразу
@@ -159,4 +180,39 @@ export function armPlaylistContinuation(playlistUrn: string): void {
       },
     ),
   );
+}
+
+const TRACK_WAVE_PAGE_SIZE = 20;
+
+function createTrackWaveContinuationSource(seedId: string): QueueContinuationSource {
+  let cursor: string | undefined;
+  let done = false;
+  return {
+    kind: 'track-wave',
+    async next() {
+      if (done) return [];
+      const batch = await fetchSmartWave({
+        seedKind: 'track',
+        seedId,
+        cursor,
+        limit: TRACK_WAVE_PAGE_SIZE,
+        hideListened: useSettingsStore.getState().soundwaveHideListened,
+      });
+      cursor = batch.cursor;
+      done = !cursor;
+      return batch.tracks;
+    },
+  };
+}
+
+export async function armTrackWaveContinuation(): Promise<void> {
+  const seedId = usePlayerStore.getState().currentTrack?.urn.split(':').pop();
+  if (!seedId) return;
+  const source = createTrackWaveContinuationSource(seedId);
+  setQueueContinuationSource(source);
+  const first = await source.next();
+  if (active !== source) return;
+  const queued = new Set(usePlayerStore.getState().queue.map((t) => t.urn));
+  const fresh = first.filter((t) => !queued.has(t.urn));
+  if (fresh.length > 0) usePlayerStore.getState().addToQueue(fresh);
 }

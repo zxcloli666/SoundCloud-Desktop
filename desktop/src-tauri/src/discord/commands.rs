@@ -13,7 +13,7 @@ use crate::rt::AppHandle;
 use crate::shared::blocking::run_blocking;
 use crate::shared::constants::DISCORD_CLIENT_ID;
 
-const CONNECT_TIMEOUT: Duration = Duration::from_secs(3);
+const CONNECT_TIMEOUT: Duration = Duration::from_secs(5);
 
 #[derive(Default)]
 pub struct DiscordState {
@@ -189,9 +189,11 @@ pub async fn discord_clear_activity(
 fn clear_activity(state: &DiscordState) -> Result<(), String> {
     let mut guard = state.client.lock().map_err(|e| e.to_string())?;
     if let Some(ref mut client) = *guard {
-        client
-            .clear_activity()
-            .map_err(|e| format!("clear_activity: {e}"))?;
+        let result = client.clear_activity();
+        if result.is_err() {
+            *guard = None;
+        }
+        result.map_err(|e| format!("clear_activity: {e}"))?;
     }
     Ok(())
 }

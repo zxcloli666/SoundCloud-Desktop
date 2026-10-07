@@ -2,7 +2,7 @@ import {useSortable} from '@dnd-kit/sortable';
 import {CSS} from '@dnd-kit/utilities';
 import React from 'react';
 import {useTranslation} from 'react-i18next';
-import {preloadTrack} from '../../lib/audio';
+import {cancelPreload, preloadTrack} from '../../lib/audio';
 import {art, dur, fc} from '../../lib/formatters';
 import {GripVertical, headphones9, heart9, musicIcon12, pauseWhite12, playWhite12, Trash2,} from '../../lib/icons';
 import {useTrackPlay} from '../../lib/useTrackPlay';
@@ -46,6 +46,7 @@ function RowBody({
         className="w-8 h-8 flex items-center justify-center shrink-0 cursor-pointer"
         onClick={togglePlay}
         onMouseEnter={() => preloadTrack(track)}
+        onMouseLeave={cancelPreload}
       >
         {isThisPlaying ? (
           <div className="w-7 h-7 rounded-full bg-accent text-accent-contrast flex items-center justify-center shadow-[0_0_12px_var(--color-accent-glow)]">

@@ -1,7 +1,7 @@
 import {Lock} from 'lucide-react';
 import React from 'react';
 import {useTranslation} from 'react-i18next';
-import { preloadTrack } from '../../lib/audio';
+import { cancelPreload, preloadTrack } from '../../lib/audio';
 import {type Aura, auraRgb, auraRgba, isLight} from '../../lib/aura';
 import { art, dur, fc } from '../../lib/formatters';
 import {
@@ -52,6 +52,7 @@ function ThemedTrackRowImpl({ track, index, queue, aura }: ThemedTrackRowProps) 
         if (!isThis) e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
       }}
       onMouseLeave={(e) => {
+        cancelPreload();
         if (!isThis) e.currentTarget.style.background = '';
       }}
     >

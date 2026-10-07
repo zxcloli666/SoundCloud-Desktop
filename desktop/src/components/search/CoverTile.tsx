@@ -1,7 +1,7 @@
 import {Pause, Play, Sparkles} from 'lucide-react';
 import {memo} from 'react';
 import {useTranslation} from 'react-i18next';
-import {preloadTrack} from '../../lib/audio';
+import {cancelPreload, preloadTrack} from '../../lib/audio';
 import {
   hardStopHoverPreview,
   PREVIEW_WINDOW_MS,
@@ -22,6 +22,7 @@ interface CoverTileProps {
   /** Stable thunk → live play queue, resolved lazily so tile memo isn't broken. */
   getQueue: () => Track[];
   onOpen?: () => void;
+  onPlay?: () => void;
 }
 
 /** Breathing phase seeded from the track's urn (stable across re-weaves), so a
@@ -34,13 +35,18 @@ function breathStyle(urn: string): React.CSSProperties {
   return { animation: `tg-breathe ${dur}s ease-in-out ${delay}s infinite` };
 }
 
-export const CoverTile = memo(function CoverTile({ item, getQueue, onOpen }: CoverTileProps) {
+export const CoverTile = memo(function CoverTile({
+  item,
+  getQueue,
+  onOpen,
+  onPlay,
+}: CoverTileProps) {
   const { t } = useTranslation();
   const perf = usePerfMode();
   const { track, kind, matchedLine, hero } = item;
   const displayTitle = useDisplayTitle(track);
   const artistDisplay = useArtistDisplay(track);
-  const { isThis, isThisPlaying, togglePlay } = useTrackPlay(track, getQueue);
+  const { isThis, isThisPlaying, togglePlay } = useTrackPlay(track, getQueue, onPlay);
   const previewing = useIsPreviewActive(track.urn);
 
   const cover = art(track.artwork_url, hero ? 't500x500' : 't300x300');
@@ -50,7 +56,10 @@ export const CoverTile = memo(function CoverTile({ item, getQueue, onOpen }: Cov
     preloadTrack(track);
     startHoverPreview(track);
   };
-  const leave = () => stopHoverPreview();
+  const leave = () => {
+    cancelPreload();
+    stopHoverPreview();
+  };
   const activate = () => {
     hardStopHoverPreview();
     if (!isThisPlaying) onOpen?.();
