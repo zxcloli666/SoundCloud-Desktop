@@ -1,16 +1,14 @@
 import { openUrl } from '@tauri-apps/plugin-opener';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { DISCORD_URL, GITHUB_OWNER, GITHUB_REPO } from '../../../lib/constants';
+import { DISCORD_URL, DOCS_URL } from '../../../lib/constants';
 import { trackedInvoke } from '../../../lib/diagnostics';
 import { BookOpen, FolderOpen, LifeBuoy, MessageCircle } from '../../../lib/icons';
 import { notifyError } from '../../../lib/notify';
 import { Card, Divider, Row } from '../primitives';
 
-const DOCS_BASE = `https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}/blob/main/docs`;
-
 function errorGuideUrl(language: string): string {
-  return `${DOCS_BASE}/${language.startsWith('ru') ? 'ERRORS.ru.md' : 'ERRORS.md'}`;
+  return `${DOCS_URL}/${language.startsWith('ru') ? 'ERRORS.ru.md' : 'ERRORS.md'}`;
 }
 
 function ActionButton({
