@@ -5,6 +5,7 @@ mod discord;
 mod import;
 mod network;
 mod rt;
+mod scrobble;
 mod shared;
 mod track_cache;
 
@@ -14,6 +15,7 @@ use tauri::Manager;
 
 use discord::DiscordState;
 use network::server::ServerState;
+use scrobble::ScrobbleState;
 
 const HTTP_CONNECT_TIMEOUT_SECS: u64 = 8;
 const HTTP_READ_TIMEOUT_SECS: u64 = 30;
@@ -151,6 +153,13 @@ pub fn run() {
             app.manage(app::popover::TrayState::default());
             app::tray::setup_tray(app).expect("failed to setup tray");
 
+            app.manage(ScrobbleState::init(
+                data_dir.clone(),
+                auth_http_client.clone(),
+                app.handle().clone(),
+                &rt_handle,
+            ));
+
             let auth_state =
                 auth::SessionStore::init(data_dir.clone(), auth_http_client, rt_handle.clone());
             app.manage(auth_state);
@@ -194,6 +203,15 @@ pub fn run() {
             discord::discord_disconnect,
             discord::discord_set_activity,
             discord::discord_clear_activity,
+            scrobble::scrobble_status,
+            scrobble::scrobble_refresh,
+            scrobble::scrobble_disconnect,
+            scrobble::scrobble_now_playing,
+            scrobble::scrobble_submit,
+            scrobble::lastfm_auth_start,
+            scrobble::lastfm_auth_finish,
+            scrobble::lastfm_auth_cancel,
+            scrobble::listenbrainz_connect,
             audio::audio_load_file,
             audio::audio_load_url,
             audio::audio_play,
