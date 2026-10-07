@@ -15,6 +15,7 @@ import {isPreviewOnly} from '../../lib/track-access';
 import {useArtistDisplay, useDisplayTitle} from '../../lib/track-display';
 import {useTrackPlay} from '../../lib/useTrackPlay';
 import type {Track} from '../../stores/player';
+import {LikeButton} from '../music/LikeButton';
 import {hashStr, type WallItem} from './utils';
 
 interface CoverTileProps {
@@ -102,105 +103,111 @@ export const CoverTile = memo(function CoverTile({
         className="tg-breath relative w-full h-full"
         style={perf.idleAnim ? breathStyle(track.urn) : undefined}
       >
-        <div
-          role="button"
-          tabIndex={0}
-          onMouseEnter={enter}
-          onMouseLeave={leave}
-          onClick={activate}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              activate();
-            }
-          }}
-          className="tg-lift relative block w-full h-full rounded-2xl overflow-hidden cursor-pointer bg-white/[0.03]"
-        >
-          {cover ? (
-            <img
-              src={cover}
-              alt=""
-              loading="lazy"
-              decoding="async"
-              draggable={false}
-              className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.08]"
-            />
-          ) : (
-            <div
-              className="absolute inset-0"
-              style={{
-                background:
-                  'linear-gradient(140deg, rgba(255,255,255,0.06), rgba(255,255,255,0.01))',
-              }}
-            />
-          )}
-
-          {/* Lyric hit: the matched line is the signal — a pull-quote over the cover. */}
-          {matchedLine ? (
-            <div
-              className="absolute inset-x-0 bottom-0 px-3 pt-8 pb-3 pointer-events-none"
-              style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.82), transparent)' }}
-            >
-              <p
-                className="font-serif italic text-white/95 leading-snug border-l-2 pl-2 line-clamp-3"
-                style={{ borderColor: 'var(--color-accent)', fontSize: hero ? '17px' : '12px' }}
-              >
-                {matchedLine}
-              </p>
-            </div>
-          ) : (
-            <div
-              className="absolute inset-x-0 bottom-0 px-2.5 pt-8 pb-2.5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-              style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.78), transparent)' }}
-            >
-              <p
-                className={`truncate font-semibold text-white ${hero ? 'text-sm' : 'text-[12px]'}`}
-              >
-                {displayTitle}
-              </p>
-              <p className="truncate text-[11px] text-white/55">{artistDisplay.primary}</p>
-            </div>
-          )}
-
-          {/* AI-vibe glyph (subtle at rest, firms on hover) */}
-          {kind === 'vibe' && (
-            <div className="absolute top-2 left-2 text-accent/70 group-hover:text-accent transition-colors duration-300">
-              <Sparkles size={hero ? 16 : 12} />
-            </div>
-          )}
-
-          {isPreviewOnly(track) && (
-            <span
-              className={`absolute ${kind === 'vibe' ? 'top-7' : 'top-2'} left-2 h-4 px-1.5 rounded-full text-[9px] font-semibold uppercase tracking-wide leading-4 text-amber-300/90`}
-              style={{ background: 'rgba(0,0,0,0.62)', border: '0.5px solid rgba(255,255,255,0.18)' }}
-            >
-              {t('track.previewOnly')}
-            </span>
-          )}
-
-          {/* Play affordance */}
+        <div className="tg-lift relative w-full h-full rounded-2xl overflow-hidden bg-white/[0.03]">
           <div
-            className={`absolute top-2 right-2 flex items-center justify-center rounded-full transition-all duration-300 ${
-              isThisPlaying ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
-            }`}
-            style={{
-              width: hero ? 40 : 30,
-              height: hero ? 40 : 30,
-              background: 'rgba(0,0,0,0.62)',
-              border: '0.5px solid rgba(255,255,255,0.18)',
+            role="button"
+            tabIndex={0}
+            onMouseEnter={enter}
+            onMouseLeave={leave}
+            onClick={activate}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                activate();
+              }
             }}
+            className="absolute inset-0 cursor-pointer"
           >
-            {isThisPlaying ? (
-              <Pause size={hero ? 18 : 14} className="text-white" fill="currentColor" />
+            {cover ? (
+              <img
+                src={cover}
+                alt=""
+                loading="lazy"
+                decoding="async"
+                draggable={false}
+                className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.08]"
+              />
             ) : (
-              <Play
-                size={hero ? 18 : 14}
-                className="text-white translate-x-[1px]"
-                fill="currentColor"
+              <div
+                className="absolute inset-0"
+                style={{
+                  background:
+                    'linear-gradient(140deg, rgba(255,255,255,0.06), rgba(255,255,255,0.01))',
+                }}
               />
             )}
-          </div>
 
+            {/* Lyric hit: the matched line is the signal — a pull-quote over the cover. */}
+            {matchedLine ? (
+              <div
+                className="absolute inset-x-0 bottom-0 px-3 pt-8 pb-3 pointer-events-none"
+                style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.82), transparent)' }}
+              >
+                <p
+                  className="font-serif italic text-white/95 leading-snug border-l-2 pl-2 line-clamp-3"
+                  style={{ borderColor: 'var(--color-accent)', fontSize: hero ? '17px' : '12px' }}
+                >
+                  {matchedLine}
+                </p>
+              </div>
+            ) : (
+              <div
+                className="absolute inset-x-0 bottom-0 px-2.5 pt-8 pb-2.5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+                style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.78), transparent)' }}
+              >
+                <p
+                  className={`truncate font-semibold text-white ${hero ? 'text-sm' : 'text-[12px]'}`}
+                >
+                  {displayTitle}
+                </p>
+                <p className="truncate text-[11px] text-white/55">{artistDisplay.primary}</p>
+              </div>
+            )}
+
+            {/* AI-vibe glyph (subtle at rest, firms on hover) */}
+            {kind === 'vibe' && (
+              <div className="absolute top-2 left-2 text-accent/70 group-hover:text-accent transition-colors duration-300">
+                <Sparkles size={hero ? 16 : 12} />
+              </div>
+            )}
+
+            {isPreviewOnly(track) && (
+              <span
+                className={`absolute ${kind === 'vibe' ? 'top-7' : 'top-2'} left-2 h-4 px-1.5 rounded-full text-[9px] font-semibold uppercase tracking-wide leading-4 text-amber-300/90`}
+                style={{ background: 'rgba(0,0,0,0.62)', border: '0.5px solid rgba(255,255,255,0.18)' }}
+              >
+                {t('track.previewOnly')}
+              </span>
+            )}
+
+            {/* Play affordance */}
+            <div
+              className={`absolute top-2 right-2 flex items-center justify-center rounded-full transition-all duration-300 ${
+                isThisPlaying ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+              }`}
+              style={{
+                width: hero ? 40 : 30,
+                height: hero ? 40 : 30,
+                background: 'rgba(0,0,0,0.62)',
+                border: '0.5px solid rgba(255,255,255,0.18)',
+              }}
+            >
+              {isThisPlaying ? (
+                <Pause size={hero ? 18 : 14} className="text-white" fill="currentColor" />
+              ) : (
+                <Play
+                  size={hero ? 18 : 14}
+                  className="text-white translate-x-[1px]"
+                  fill="currentColor"
+                />
+              )}
+            </div>
+          </div>
+          <LikeButton
+            track={track}
+            variant="overlay"
+            position={hero ? 'top-14 right-3' : 'top-11 right-[7px]'}
+          />
         </div>
 
         {/* Rings live OUTSIDE the hover-scaled .tg-lift so the 15s progress arc
