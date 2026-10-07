@@ -4,7 +4,7 @@ use std::time::Duration;
 
 use discord_rich_presence::{
     DiscordIpc, DiscordIpcClient,
-    activity::{Activity, ActivityType, Assets, Button, StatusDisplayType, Timestamps},
+    activity::{Activity, ActivityType, Assets, Button, Party, StatusDisplayType, Timestamps},
     error::Error as IpcError,
 };
 
@@ -42,6 +42,24 @@ pub struct DiscordTrackInfo {
     status: Option<DiscordRpcStatus>,
     show_button: Option<bool>,
     lyric_line: Option<String>,
+    party: Option<DiscordParty>,
+}
+
+#[derive(serde::Deserialize)]
+pub struct DiscordParty {
+    id: String,
+    size: i32,
+    max: i32,
+}
+
+fn party_of(party: Option<&DiscordParty>) -> Option<Party<'_>> {
+    let party = party.filter(|p| !p.id.is_empty())?;
+    let max = party.max.max(1);
+    Some(
+        Party::new()
+            .id(party.id.as_str())
+            .size([party.size.clamp(1, max), max]),
+    )
 }
 
 #[derive(Clone, Copy, serde::Deserialize)]
@@ -198,6 +216,10 @@ fn set_activity(state: &DiscordState, track: DiscordTrackInfo) -> Result<(), Str
         activity = activity.timestamps(timestamps);
     }
 
+    if let Some(party) = party_of(track.party.as_ref()) {
+        activity = activity.party(party);
+    }
+
     if show_button && let Some(ref url) = track.track_url {
         activity = activity.buttons(vec![Button::new("Listen on SoundCloud", url)]);
     }
@@ -285,6 +307,37 @@ mod tests {
         );
         assert_eq!(lyric_to_show(DiscordRpcMode::Track, true, Some("  ")), None);
         assert_eq!(lyric_to_show(DiscordRpcMode::Track, true, None), None);
+    }
+
+    #[test]
+    fn party_size_stays_within_its_bounds() {
+        let party = |size, max| DiscordParty {
+            id: "room".into(),
+            size,
+            max,
+        };
+        assert!(party_of(None).is_none());
+        assert!(
+            party_of(Some(&DiscordParty {
+                id: String::new(),
+                size: 2,
+                max: 10
+            }))
+            .is_none()
+        );
+        let json = |p: Party<'_>| serde_json::to_value(p).unwrap()["size"].clone();
+        assert_eq!(
+            json(party_of(Some(&party(3, 10))).unwrap()),
+            serde_json::json!([3, 10])
+        );
+        assert_eq!(
+            json(party_of(Some(&party(0, 10))).unwrap()),
+            serde_json::json!([1, 10])
+        );
+        assert_eq!(
+            json(party_of(Some(&party(12, 10))).unwrap()),
+            serde_json::json!([10, 10])
+        );
     }
 
     #[test]
