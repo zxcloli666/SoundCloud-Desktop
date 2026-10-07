@@ -59,8 +59,8 @@ pub fn hotkeys_backend() -> HotkeyBackend {
     #[cfg(target_os = "linux")]
     {
         let wayland_display = std::env::var_os("WAYLAND_DISPLAY").is_some();
-        let gdk_backend = std::env::var("GDK_BACKEND").unwrap_or_default();
-        if runs_on_wayland(wayland_display, &gdk_backend) {
+        let session_type = std::env::var("XDG_SESSION_TYPE").unwrap_or_default();
+        if runs_on_wayland(wayland_display, &session_type) {
             return HotkeyBackend::Wayland;
         }
     }
@@ -92,8 +92,8 @@ fn register(app: &AppHandle, binding: &HotkeyBinding) -> HotkeyStatus {
 }
 
 #[cfg(any(target_os = "linux", test))]
-fn runs_on_wayland(wayland_display: bool, gdk_backend: &str) -> bool {
-    wayland_display && !gdk_backend.trim().to_ascii_lowercase().starts_with("x11")
+fn runs_on_wayland(wayland_display: bool, session_type: &str) -> bool {
+    wayland_display || session_type.trim().eq_ignore_ascii_case("wayland")
 }
 
 #[cfg(test)]
@@ -101,15 +101,15 @@ mod tests {
     use super::*;
 
     #[test]
-    fn wayland_session_without_x11_backend_is_wayland() {
+    fn wayland_display_or_session_is_wayland_even_under_xwayland() {
         assert!(runs_on_wayland(true, ""));
-        assert!(runs_on_wayland(true, "wayland,x11"));
+        assert!(runs_on_wayland(true, "x11"));
+        assert!(runs_on_wayland(false, "Wayland"));
     }
 
     #[test]
-    fn forced_x11_backend_or_plain_x11_is_native() {
-        assert!(!runs_on_wayland(true, "x11"));
-        assert!(!runs_on_wayland(true, "X11,wayland"));
+    fn plain_x11_session_is_native() {
+        assert!(!runs_on_wayland(false, "x11"));
         assert!(!runs_on_wayland(false, ""));
     }
 
