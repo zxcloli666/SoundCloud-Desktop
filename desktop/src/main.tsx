@@ -19,6 +19,7 @@ import { initEdge } from './lib/edge';
 import { installFpsCap } from './lib/fps-cap';
 import { queryClient } from './lib/query-client';
 import { bootstrapPremium } from './lib/subscription';
+import { initUiScale } from './lib/ui-scale';
 import './fonts';
 import './index.css';
 import { useSettingsStore } from './stores/settings';
@@ -69,21 +70,9 @@ function startDeferredRuntime() {
   });
 }
 
-async function fixWebviewScale() {
-  try {
-    const { getCurrentWindow } = await import('@tauri-apps/api/window');
-    const { getCurrentWebview } = await import('@tauri-apps/api/webview');
-    const monitorScale = await getCurrentWindow().scaleFactor();
-    const webviewDpr = window.devicePixelRatio;
-    if (monitorScale > 1 && webviewDpr < monitorScale * 0.8) {
-      await getCurrentWebview().setZoom(monitorScale / webviewDpr);
-    }
-  } catch {}
-}
-
 async function bootstrap() {
-  await fixWebviewScale();
   await useSettingsStore.persist.rehydrate();
+  await initUiScale();
 
   const settings = useSettingsStore.getState();
   await changeAppLanguage(settings.language);

@@ -740,7 +740,16 @@
     "wpKeyNeeded": "Введи API-ключ Wallhaven, чтобы открыть контент 18+.",
     "bypassWhitelistSoonDesc": "Готовим обход — следите за обновлениями",
     "import": "Импорт",
-    "importYandex": "Импорт из Yandex Music"
+    "importYandex": "Импорт из Yandex Music",
+    "uiScale": "Масштаб интерфейса",
+    "uiScaleDesc": "Сделайте текст и кнопки крупнее или мельче. Масштабируется всё окно, чётко на любом экране.",
+    "uiScaleReset": "Сбросить",
+    "uiScaleDefault": "По умолчанию",
+    "uiScaleWheel": "Колесо",
+    "uiScaleKeysStep": "увеличить / уменьшить",
+    "uiScaleKeysReset": "вернуть 100%",
+    "uiScaleKeysWheel": "масштаб колесом",
+    "uiScaleToast": "Масштаб интерфейса: {{value}}%"
   },
   "eq": {
     "title": "Эквалайзер",
@@ -774,7 +783,10 @@
     "fullscreen": "Полноэкранный режим",
     "close": "Закрыть",
     "showBindings": "Горячие клавиши",
-    "groupGlobal": "Глобальные (в любом приложении)"
+    "groupGlobal": "Глобальные (в любом приложении)",
+    "zoomIn": "Увеличить интерфейс",
+    "zoomOut": "Уменьшить интерфейс",
+    "zoomReset": "Сбросить масштаб интерфейса"
   },
   "ym": {
     "instructions": "Как получить токен Yandex Music:",

@@ -84,6 +84,7 @@ export interface SettingsState {
   floatingComments: boolean;
   startupPage: StartupPage;
   closeAction: CloseAction;
+  uiScale: number;
   pinnedPlaylists: SidebarPinnedPlaylist[];
   discordRpcEnabled: boolean;
   discordRpcMode: DiscordRpcMode;
@@ -120,6 +121,7 @@ export interface SettingsState {
   setFloatingComments: (v: boolean) => void;
   setStartupPage: (page: StartupPage) => void;
   setCloseAction: (action: CloseAction) => void;
+  setUiScale: (scale: number) => void;
   pinPlaylist: (playlist: SidebarPinnedPlaylist) => void;
   unpinPlaylist: (urn: string) => void;
   setDiscordRpcEnabled: (enabled: boolean) => void;
@@ -165,6 +167,7 @@ const DEFAULTS = {
   floatingComments: true,
   startupPage: 'home' as StartupPage,
   closeAction: 'tray' as CloseAction,
+  uiScale: 100,
   pinnedPlaylists: [] as SidebarPinnedPlaylist[],
   discordRpcEnabled: true,
   discordRpcMode: 'track' as DiscordRpcMode,
@@ -219,6 +222,7 @@ export const useSettingsStore = create<SettingsState>()(
       setFloatingComments: (floatingComments) => set({ floatingComments }),
       setStartupPage: (startupPage) => set({ startupPage }),
       setCloseAction: (closeAction) => set({ closeAction }),
+      setUiScale: (uiScale) => set({ uiScale }),
       pinPlaylist: (playlist) =>
         set((s) => ({
           pinnedPlaylists: [
@@ -301,6 +305,7 @@ export const useSettingsStore = create<SettingsState>()(
         floatingComments: s.floatingComments,
         startupPage: s.startupPage,
         closeAction: s.closeAction,
+        uiScale: s.uiScale,
         pinnedPlaylists: s.pinnedPlaylists,
         discordRpcEnabled: s.discordRpcEnabled,
         discordRpcMode: s.discordRpcMode,

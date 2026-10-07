@@ -638,7 +638,16 @@
     "wpKeyNeeded": "18+ sonuclar icin Wallhaven API anahtarini girin.",
     "bypassWhitelistSoonDesc": "Atlatma rotalamasi gelistirme asamasinda",
     "import": "Ice aktar",
-    "importYandex": "Yandex Music'ten ice aktar"
+    "importYandex": "Yandex Music'ten ice aktar",
+    "uiScale": "Arayüz ölçeği",
+    "uiScaleDesc": "Metinleri ve düğmeleri büyütün ya da küçültün. Tüm pencere ölçeklenir, her ekranda net görünür.",
+    "uiScaleReset": "Sıfırla",
+    "uiScaleDefault": "Varsayılan",
+    "uiScaleWheel": "Tekerlek",
+    "uiScaleKeysStep": "yakınlaştır / uzaklaştır",
+    "uiScaleKeysReset": "%100'e döndür",
+    "uiScaleKeysWheel": "tekerlekle yakınlaştır",
+    "uiScaleToast": "Arayüz ölçeği: %{{value}}"
   },
   "eq": {
     "title": "Ekolayzir",
@@ -672,7 +681,10 @@
     "fullscreen": "Tam ekran modunu degistir",
     "close": "Kapat",
     "showBindings": "Kisayollari goster",
-    "groupGlobal": "Genel (her uygulamada)"
+    "groupGlobal": "Genel (her uygulamada)",
+    "zoomIn": "Arayüzü büyüt",
+    "zoomOut": "Arayüzü küçült",
+    "zoomReset": "Arayüz ölçeğini sıfırla"
   },
   "ym": {
     "instructions": "Yandex Music tokeninizi nasil alirsiniz:",

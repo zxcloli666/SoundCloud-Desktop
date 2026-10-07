@@ -729,7 +729,16 @@
     "wpKeyNeeded": "Enter your Wallhaven API key to unlock 18+ results.",
     "bypassWhitelistSoonDesc": "We're shipping bypass routing — stay tuned",
     "import": "Import",
-    "importYandex": "Import from Yandex Music"
+    "importYandex": "Import from Yandex Music",
+    "uiScale": "Interface scale",
+    "uiScaleDesc": "Make text and buttons larger or smaller. The whole window scales, crisp on any display.",
+    "uiScaleReset": "Reset",
+    "uiScaleDefault": "Default",
+    "uiScaleWheel": "Wheel",
+    "uiScaleKeysStep": "zoom in / out",
+    "uiScaleKeysReset": "reset to 100%",
+    "uiScaleKeysWheel": "scroll to zoom",
+    "uiScaleToast": "Interface scale: {{value}}%"
   },
   "eq": {
     "title": "Equalizer",
@@ -763,7 +772,10 @@
     "fullscreen": "Toggle fullscreen",
     "close": "Close",
     "showBindings": "Show shortcuts",
-    "groupGlobal": "Global (any app)"
+    "groupGlobal": "Global (any app)",
+    "zoomIn": "Zoom interface in",
+    "zoomOut": "Zoom interface out",
+    "zoomReset": "Reset interface scale"
   },
   "ym": {
     "instructions": "How to get your Yandex Music token:",
