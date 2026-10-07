@@ -11,6 +11,7 @@ import {
   forgetCollection,
   getCacheOrder,
   getOfflineCollections,
+  getOfflineKeptUrns,
   getOfflineLikedTracks,
   getOfflineTracksByUrns,
   type OfflineCollection,
@@ -33,16 +34,21 @@ export function useOfflineLibrary() {
   const [downloads, setDownloads] = useState<Record<string, number>>({});
   const [collections, setCollections] = useState<OfflineCollection[]>([]);
   const [collectionTracks, setCollectionTracks] = useState<Track[]>([]);
+  const [keptUrns, setKeptUrns] = useState<Set<string>>(() => new Set());
   const bgFetchDone = useRef(false);
   const disposed = useRef(false);
 
   const refreshInventory = useCallback(async () => {
     try {
       const inv = await getCacheInventory();
-      const tracks = await getOfflineTracksByUrns(inv.map((e) => e.urn));
+      const [tracks, kept] = await Promise.all([
+        getOfflineTracksByUrns(inv.map((e) => e.urn)),
+        getOfflineKeptUrns(),
+      ]);
       if (disposed.current) return;
       setInventory(inv);
       setResolvedTracks(tracks);
+      setKeptUrns(new Set(kept));
       // Файл в инвентаре = докачка завершена; чистим прогресс даже если
       // финальное событие не дошло до 1.0.
       const landed = new Set(inv.map((e) => e.urn));
@@ -189,8 +195,8 @@ export function useOfflineLibrary() {
   }, [collectionTracks, resolvedTracks, likedTracks]);
 
   const likesEntries = useMemo(
-    () => buildLikesEntries(likedTracks, inventory, trackByUrn),
-    [likedTracks, inventory, trackByUrn],
+    () => buildLikesEntries(likedTracks, inventory, trackByUrn, keptUrns),
+    [likedTracks, inventory, trackByUrn, keptUrns],
   );
   const cachedEntries = useMemo(
     () => buildCachedEntries(inventory, trackByUrn),

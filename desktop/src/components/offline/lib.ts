@@ -38,6 +38,7 @@ export function buildLikesEntries(
   likedTracks: Track[],
   inventory: CacheInventoryEntry[],
   trackByUrn: Map<string, Track>,
+  keptUrns: Set<string>,
 ): OfflineEntry[] {
   const invByUrn = new Map(inventory.map((e) => [e.urn, e]));
   const seen = new Set<string>();
@@ -48,7 +49,7 @@ export function buildLikesEntries(
     entries.push({ urn: track.urn, track, inv: invByUrn.get(track.urn) ?? null });
   }
   for (const inv of inventory) {
-    if (!inv.liked || seen.has(inv.urn)) continue;
+    if (!inv.liked || seen.has(inv.urn) || keptUrns.has(inv.urn)) continue;
     seen.add(inv.urn);
     const track = trackByUrn.get(inv.urn);
     entries.push(

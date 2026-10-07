@@ -1,7 +1,7 @@
 import {BaseDirectory, exists, mkdir, readTextFile, writeTextFile} from '@tauri-apps/plugin-fs';
 import type {Track} from '../stores/player';
-import {isLocalUrn} from './local-library';
 import {type LikedSnapshot, mergeLikedUrns} from './liked-merge';
+import {isLocalUrn} from './local-library';
 
 const BASE_DIR = BaseDirectory.AppData;
 const INDEX_PATH = 'offline-index.json';
@@ -207,6 +207,16 @@ export async function forgetPinned(urn: string) {
   if (!index.pinnedUrns.includes(urn)) return;
   index.pinnedUrns = index.pinnedUrns.filter((pinned) => pinned !== urn);
   schedulePersist();
+}
+
+export async function getOfflineKeptUrns(): Promise<string[]> {
+  const index = await loadIndex();
+  return [
+    ...new Set([
+      ...index.pinnedUrns,
+      ...Object.values(index.collections).flatMap((c) => c.trackUrns),
+    ]),
+  ];
 }
 
 export async function forgetAllPinned() {
