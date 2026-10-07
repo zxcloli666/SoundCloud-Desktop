@@ -4,6 +4,7 @@ import {useSubscription} from '../../../lib/subscription';
 import {useAuthStore} from '../../../stores/auth';
 import {useSettingsStore} from '../../../stores/settings';
 import {Card, Row, Toggle} from '../primitives';
+import {CrossfadePicker} from './CrossfadePicker';
 import {SkipStuckPicker} from './SkipStuckPicker';
 import {StreamQualityPicker} from './StreamQualityPicker';
 
@@ -43,6 +44,7 @@ export function PlaybackCard() {
                 <Row title={t('settings.skipSilence')} desc={t('settings.skipSilenceDesc')}>
                     <Toggle checked={skipSilence} onChange={() => setSkipSilence(!skipSilence)}/>
                 </Row>
+                <CrossfadePicker/>
                 <SkipStuckPicker/>
             </div>
         </Card>
