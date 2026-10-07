@@ -15,6 +15,7 @@ import {
     seek,
     subscribe,
 } from '../../lib/audio';
+import {forgetOfflineLike} from '../../lib/cache';
 import {toggleDislike, useDislikeStatus} from '../../lib/dislikes';
 import {art, formatTime} from '../../lib/formatters';
 import {invalidateAllLikesCache} from '../../lib/hooks';
@@ -39,6 +40,7 @@ import {
 } from '../../lib/icons';
 import {optimisticToggleLike} from '../../lib/likes';
 import {isLocalUrn} from '../../lib/local-library';
+import {rememberLikedUrn} from '../../lib/offline-index';
 import {usePerfMode} from '../../lib/perf';
 import {useArtistDisplay, useArtistLinkItems, useDisplayTitle} from '../../lib/track-display';
 import {useLyricsStore} from '../../stores/lyrics';
@@ -423,6 +425,7 @@ function LikeButton({
       await api(`/likes/tracks/${encodeURIComponent(trackUrn)}`, {
         method: next ? 'POST' : 'DELETE',
       });
+      void (next ? rememberLikedUrn(trackUrn, trackData) : forgetOfflineLike(trackUrn));
       qc.invalidateQueries({ queryKey: ['track', trackUrn, 'favoriters'] });
     } catch {
       setLiked(!next);
@@ -463,7 +466,9 @@ export function NowBarDislikeButton({
     if (next && trackData.user_favorite) {
       optimisticToggleLike(qc, trackData, false);
       invalidateAllLikesCache();
-      api(`/likes/tracks/${encodeURIComponent(trackUrn)}`, { method: 'DELETE' }).catch(() => {});
+      api(`/likes/tracks/${encodeURIComponent(trackUrn)}`, { method: 'DELETE' })
+        .then(() => forgetOfflineLike(trackUrn))
+        .catch(() => {});
     }
 
     if (next) {

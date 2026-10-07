@@ -1,6 +1,7 @@
 import {BaseDirectory, exists, mkdir, readTextFile, writeTextFile} from '@tauri-apps/plugin-fs';
 import type {Track} from '../stores/player';
 import {isLocalUrn} from './local-library';
+import {type LikedSnapshot, mergeLikedUrns} from './liked-merge';
 
 const BASE_DIR = BaseDirectory.AppData;
 const INDEX_PATH = 'offline-index.json';
@@ -132,16 +133,36 @@ export async function rememberTracks(tracks: Track[]) {
   }
 }
 
-export async function rememberLikedTracks(tracks: Track[]) {
+export async function rememberLikedTracks(tracks: Track[], snapshot: LikedSnapshot) {
   const index = await loadIndex();
   for (const track of tracks) {
     if (!track?.urn) continue;
     index.tracksByUrn[track.urn] = cloneTrack(track);
   }
 
-  index.likedUrns = tracks.map((track) => track.urn);
-  index.updatedAt = Date.now();
+  const urns = tracks.filter((track) => track?.urn).map((track) => track.urn);
+  index.likedUrns = mergeLikedUrns(index.likedUrns, urns, snapshot);
+  if (snapshot.complete) index.updatedAt = Date.now();
   schedulePersist();
+}
+
+export async function rememberLikedUrn(urn: string, track?: Track) {
+  const index = await loadIndex();
+  if (track?.urn === urn) index.tracksByUrn[urn] = cloneTrack(track);
+  index.likedUrns = [urn, ...index.likedUrns.filter((u) => u !== urn)];
+  schedulePersist();
+}
+
+export async function forgetLikedUrn(urn: string) {
+  const index = await loadIndex();
+  if (!index.likedUrns.includes(urn)) return;
+  index.likedUrns = index.likedUrns.filter((u) => u !== urn);
+  schedulePersist();
+}
+
+export async function getOfflineLikedUrns() {
+  const index = await loadIndex();
+  return [...index.likedUrns];
 }
 
 export async function getOfflineLikedTracks() {

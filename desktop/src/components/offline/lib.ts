@@ -36,13 +36,35 @@ export function stubTrack(inv: CacheInventoryEntry): Track {
 
 export function buildLikesEntries(
   likedTracks: Track[],
-  invByUrn: Map<string, CacheInventoryEntry>,
+  inventory: CacheInventoryEntry[],
+  trackByUrn: Map<string, Track>,
 ): OfflineEntry[] {
-  return likedTracks.map((track) => ({
-    urn: track.urn,
-    track,
-    inv: invByUrn.get(track.urn) ?? null,
-  }));
+  const invByUrn = new Map(inventory.map((e) => [e.urn, e]));
+  const seen = new Set<string>();
+  const entries: OfflineEntry[] = [];
+  for (const track of likedTracks) {
+    if (seen.has(track.urn)) continue;
+    seen.add(track.urn);
+    entries.push({ urn: track.urn, track, inv: invByUrn.get(track.urn) ?? null });
+  }
+  for (const inv of inventory) {
+    if (!inv.liked || seen.has(inv.urn)) continue;
+    seen.add(inv.urn);
+    const track = trackByUrn.get(inv.urn);
+    entries.push(
+      track
+        ? { urn: inv.urn, track, inv }
+        : { urn: inv.urn, track: stubTrack(inv), inv, stub: true },
+    );
+  }
+  return entries;
+}
+
+export function likedCoverage(likesEntries: OfflineEntry[]) {
+  return {
+    likedCount: likesEntries.length,
+    likedCachedCount: likesEntries.reduce((n, e) => n + (e.inv ? 1 : 0), 0),
+  };
 }
 
 export function buildCachedEntries(

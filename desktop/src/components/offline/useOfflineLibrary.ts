@@ -5,7 +5,8 @@
 import {listen} from '@tauri-apps/api/event';
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {type CacheInventoryEntry, getCacheInventory, removeCachedTrack} from '../../lib/cache';
-import {fetchAllLikedTracks} from '../../lib/hooks';
+import {fetchLikedTracksSnapshot} from '../../lib/hooks';
+import {mergeLikedTracks} from '../../lib/liked-merge';
 import {
   forgetCollection,
   getCacheOrder,
@@ -17,7 +18,7 @@ import {
 } from '../../lib/offline-index';
 import {useAppMode} from '../../stores/app-status';
 import type {Track} from '../../stores/player';
-import {buildCachedEntries, buildCollectionViews, buildLikesEntries} from './lib';
+import {buildCachedEntries, buildCollectionViews, buildLikesEntries, likedCoverage} from './lib';
 
 const DOWNLOADS_FLUSH_MS = 250;
 const INVENTORY_REFRESH_DEBOUNCE_MS = 1500;
@@ -94,10 +95,11 @@ export function useOfflineLibrary() {
   useEffect(() => {
     if (appMode !== 'online' || bgFetchDone.current) return;
     let cancelled = false;
-    void fetchAllLikedTracks()
-      .then((allLikes) => {
+    void fetchLikedTracksSnapshot()
+      .then(async (result) => {
         bgFetchDone.current = true;
-        if (!cancelled) setLikedTracks(allLikes);
+        const local = await getOfflineLikedTracks();
+        if (!cancelled) setLikedTracks(mergeLikedTracks(local, result.tracks, result));
       })
       .catch(() => {
         // Офлайн-режим продолжает жить на локальном индексе.
@@ -187,8 +189,8 @@ export function useOfflineLibrary() {
   }, [collectionTracks, resolvedTracks, likedTracks]);
 
   const likesEntries = useMemo(
-    () => buildLikesEntries(likedTracks, invByUrn),
-    [likedTracks, invByUrn],
+    () => buildLikesEntries(likedTracks, inventory, trackByUrn),
+    [likedTracks, inventory, trackByUrn],
   );
   const cachedEntries = useMemo(
     () => buildCachedEntries(inventory, trackByUrn),
@@ -210,14 +212,13 @@ export function useOfflineLibrary() {
       if (e.stage === 'raw') rawCount += 1;
     }
     return {
-      likedCount: likedTracks.length,
-      likedCachedCount: likedTracks.reduce((n, t) => n + (invByUrn.has(t.urn) ? 1 : 0), 0),
+      ...likedCoverage(likesEntries),
       cachedCount: inventory.length,
       totalBytes,
       likedBytes,
       rawCount,
     };
-  }, [inventory, invByUrn, likedTracks]);
+  }, [inventory, likesEntries]);
 
   return {
     loading,

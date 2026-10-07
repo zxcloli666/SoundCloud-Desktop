@@ -2,12 +2,14 @@ import {emit, listen} from '@tauri-apps/api/event';
 import { usePlayerStore } from '../stores/player';
 import {api} from './api';
 import {getDuration, handlePrev, seek} from './audio';
+import {forgetOfflineLike} from './cache';
 import {trackedInvoke as invoke} from './diagnostics';
 import {isUrnDisliked, toggleDislike} from './dislikes';
 import {art} from './formatters';
 import {invalidateAllLikesCache} from './hooks';
 import {isUrnLiked, optimisticToggleLike} from './likes';
 import {isLocalUrn} from './local-library';
+import {rememberLikedUrn} from './offline-index';
 import {queryClient} from './query-client';
 import {getArtistDisplay, getDisplayTitle} from './track-display';
 
@@ -106,6 +108,7 @@ async function toggleLikeCurrent() {
         await api(`/likes/tracks/${encodeURIComponent(tr.urn)}`, {
             method: next ? 'POST' : 'DELETE',
         });
+        void (next ? rememberLikedUrn(tr.urn, tr) : forgetOfflineLike(tr.urn));
     } catch {
         optimisticToggleLike(queryClient, tr, !next);
         pushNp();
@@ -119,8 +122,10 @@ async function toggleDislikeCurrent() {
     if (next && (isUrnLiked(tr.urn) || tr.user_favorite)) {
         optimisticToggleLike(queryClient, tr, false);
         invalidateAllLikesCache();
-        api(`/likes/tracks/${encodeURIComponent(tr.urn)}`, {method: 'DELETE'}).catch(() => {
-        });
+        api(`/likes/tracks/${encodeURIComponent(tr.urn)}`, {method: 'DELETE'})
+            .then(() => forgetOfflineLike(tr.urn))
+            .catch(() => {
+            });
     }
     // Disliking the current track skips it, mirroring the now-bar dislike button.
     if (next) usePlayerStore.getState().next();

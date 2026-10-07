@@ -19,6 +19,7 @@ import {
   isPartialSync,
   useCollectionSync,
 } from './collection-sync';
+import type {LikedSnapshot} from './liked-merge';
 import {initLikedUrns} from './likes';
 import {rememberLikedTracks, rememberTracks} from './offline-index';
 import {editPlaylistTracks, toastPlaylistEditError} from './playlist-edits';
@@ -353,51 +354,73 @@ export function useLikedTracks(limit = 30) {
     if (tracks.length > 0) initLikedUrns(tracks);
   }, [tracks]);
 
-  const complete = !query.hasNextPage && query.syncState === 'complete';
+  const pages = query.data?.pages;
+  const hasNextPage = query.hasNextPage;
   useEffect(() => {
-    if (!query.data) return;
-    void (complete ? rememberLikedTracks(tracks) : rememberTracks(tracks));
-  }, [query.data, tracks, complete]);
+    if (!pages) return;
+    const snapshot = hasNextPage ? INCOMPLETE_LIKES : likedSnapshotOf(pages.map((p) => p.sync));
+    void rememberLikedTracks(tracks, snapshot);
+  }, [pages, tracks, hasNextPage]);
 
   return { tracks, ...query };
+}
+
+const INCOMPLETE_LIKES: LikedSnapshot = { complete: false };
+
+function likedSnapshotOf(syncs: (CollectionSync | undefined)[]): LikedSnapshot {
+  const complete =
+    syncs.length > 0 && syncs.every((sync) => !!sync?.lastCompletedAt && !isPartialSync(sync));
+  return { complete, confirmedEmpty: complete && syncs.every((sync) => sync?.status === 'ready') };
+}
+
+export interface LikedTracksResult extends LikedSnapshot {
+  tracks: Track[];
 }
 
 /**
  * Fetch ALL liked tracks. Page-based pagination, shared promise.
  * Optional onPage callback fires per page during the fetch.
  */
-let _allLikesPromise: Promise<Track[]> | null = null;
+let _allLikesPromise: Promise<LikedTracksResult> | null = null;
 let _allLikesOwner: string | undefined;
 
 export function fetchAllLikedTracks(
   pageSize = 200,
   onPage?: (tracks: Track[]) => void,
 ): Promise<Track[]> {
+  return fetchLikedTracksSnapshot(pageSize, onPage).then((result) => result.tracks);
+}
+
+export function fetchLikedTracksSnapshot(
+  pageSize = 200,
+  onPage?: (tracks: Track[]) => void,
+): Promise<LikedTracksResult> {
   const owner = useAuthStore.getState().user?.urn;
   if (_allLikesOwner !== owner) _allLikesPromise = null;
   if (_allLikesPromise && !onPage) return _allLikesPromise;
 
-  let partial = false;
   const promise = (async () => {
     const all: Track[] = [];
+    const syncs: (CollectionSync | undefined)[] = [];
     for (let page = 0; ; page++) {
       const data = await api<TrackPage>(pagedUrl('/me/likes/tracks', page, pageSize));
-      partial ||= isPartialSync(data.sync);
+      syncs.push(data.sync);
       for (const t of data.collection) all.push(t);
       void rememberTracks(data.collection);
       onPage?.(data.collection);
       if (!data.has_more) break;
     }
-    if (!partial) void rememberLikedTracks(all);
-    return all;
+    const snapshot = likedSnapshotOf(syncs);
+    void rememberLikedTracks(all, snapshot);
+    return { tracks: all, ...snapshot };
   })();
 
   if (!onPage) {
     _allLikesPromise = promise;
     _allLikesOwner = owner;
     promise.then(
-      () => {
-        if (partial && _allLikesPromise === promise) _allLikesPromise = null;
+      (result) => {
+        if (!result.complete && _allLikesPromise === promise) _allLikesPromise = null;
       },
       () => {
         _allLikesPromise = null;

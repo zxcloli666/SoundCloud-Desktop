@@ -310,6 +310,18 @@ pub fn track_remove_cached(urn: String, state: State<'_, TrackCacheState>) -> bo
 }
 
 #[tauri::command]
+pub async fn track_demote_liked(
+    urn: String,
+    state: State<'_, TrackCacheState>,
+) -> Result<bool, String> {
+    let Some(urn) = canonical_track_urn(&urn) else {
+        return Ok(false);
+    };
+    let state = state.inner().clone();
+    run_blocking(move || state.demote_from_liked(&urn)).await
+}
+
+#[tauri::command]
 pub async fn track_clear_liked_cache(state: State<'_, TrackCacheState>) -> Result<(), String> {
     let state = state.inner().clone();
     run_blocking(move || state.clear_liked_cache()).await

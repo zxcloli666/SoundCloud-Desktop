@@ -159,8 +159,11 @@ export function useBulkCache(
 }
 
 const collectLikes = async () => {
-  const { fetchAllLikedTracks } = await import('./hooks');
-  return fetchAllLikedTracks(200);
+  const [{ fetchLikedTracksSnapshot }, { getOfflineLikedTracks }, { mergeLikedTracks }] =
+    await Promise.all([import('./hooks'), import('./offline-index'), import('./liked-merge')]);
+  const result = await fetchLikedTracksSnapshot(200).catch(() => null);
+  const local = await getOfflineLikedTracks();
+  return result ? mergeLikedTracks(local, result.tracks, result) : local;
 };
 
 export function useCacheLikes(onFinish?: (progress: BulkCacheProgress) => void) {

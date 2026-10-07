@@ -616,6 +616,36 @@ fn read_cache_metadata(path: &Path) -> Option<TrackCacheMetadata> {
     serde_json::from_str(&raw).ok()
 }
 
+fn write_cache_metadata_sync(path: &Path, meta: &TrackCacheMetadata) {
+    let Ok(raw) = serde_json::to_vec(meta) else {
+        return;
+    };
+    let final_path = cache_metadata_path(path);
+    let temp_path = PathBuf::from(format!("{}.tmp", final_path.display()));
+    let written = std::fs::write(&temp_path, raw).is_ok();
+    if !written || std::fs::rename(&temp_path, &final_path).is_err() {
+        std::fs::remove_file(&temp_path).ok();
+    }
+}
+
+fn move_by_copy(from: &Path, to: &Path) -> bool {
+    let temp = PathBuf::from(format!("{}.tmp", to.display()));
+    let copied = std::fs::copy(from, &temp).is_ok()
+        && std::fs::File::open(&temp)
+            .and_then(|f| f.sync_all())
+            .is_ok()
+        && std::fs::rename(&temp, to).is_ok();
+    if !copied {
+        std::fs::remove_file(&temp).ok();
+        return false;
+    }
+    if std::fs::remove_file(from).is_err() {
+        std::fs::remove_file(to).ok();
+        return false;
+    }
+    true
+}
+
 async fn write_cache_metadata(path: &Path, meta: &TrackCacheMetadata) {
     let raw = match serde_json::to_vec(meta) {
         Ok(raw) => raw,
@@ -2027,6 +2057,37 @@ impl TrackCacheState {
         true
     }
 
+    pub fn demote_from_liked(&self, urn: &str) -> bool {
+        let staged = self.incoming_file_path(urn);
+        if let Some(mut meta) = read_cache_metadata(&staged).filter(|m| m.liked) {
+            meta.liked = false;
+            write_cache_metadata_sync(&staged, &meta);
+        }
+
+        let liked = self.liked_file_path(urn);
+        if !is_valid_file(&liked) {
+            return false;
+        }
+        let audio = self.file_path(urn);
+        let liked_meta = cache_metadata_path(&liked);
+        let meta = read_cache_metadata(&liked);
+
+        if is_valid_file(&audio) {
+            if std::fs::remove_file(&liked).is_err() {
+                return false;
+            }
+        } else if std::fs::rename(&liked, &audio).is_err() && !move_by_copy(&liked, &audio) {
+            return false;
+        }
+
+        if let Some(mut meta) = meta {
+            meta.liked = false;
+            write_cache_metadata_sync(&audio, &meta);
+        }
+        std::fs::remove_file(&liked_meta).ok();
+        true
+    }
+
     pub async fn save_offline(
         &self,
         req: CacheRequest<'_>,
@@ -2312,6 +2373,86 @@ mod tests {
 
         assert!(entry.pinned);
         assert!(state.is_pinned(urn));
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[tokio::test]
+    async fn demoted_like_returns_to_the_audio_cache() {
+        let (root, state) = test_state("demote");
+        let urn = "soundcloud:tracks:6";
+        cached_clean_file(&state, urn, 180_000).await;
+        assert!(state.promote_to_liked(urn).await);
+        let liked = state.liked_file_path(urn);
+        let mut meta = read_cache_metadata(&liked).unwrap();
+        meta.liked = true;
+        write_cache_metadata(&liked, &meta).await;
+        let row = |state: &TrackCacheState| {
+            state
+                .cache_inventory()
+                .into_iter()
+                .find(|e| e.urn == urn)
+                .unwrap()
+        };
+        assert!(row(&state).liked);
+
+        assert!(state.demote_from_liked(urn));
+
+        assert!(!liked.exists());
+        assert!(!cache_metadata_path(&liked).exists());
+        let audio = state.file_path(urn);
+        assert!(is_valid_file(&audio));
+        let meta = read_cache_metadata(&audio).unwrap();
+        assert!(!meta.liked);
+        assert_eq!(meta.duration_ms, Some(180_000));
+        assert!(!row(&state).liked);
+        assert_eq!(state.liked_cache_size(), 0);
+
+        assert!(state.promote_to_liked(urn).await);
+        assert!(row(&state).liked);
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn move_by_copy_replaces_the_source() {
+        let (root, state) = test_state("move-copy");
+        let from = state.liked_file_path("soundcloud:tracks:10");
+        let to = state.file_path("soundcloud:tracks:10");
+        std::fs::write(&from, b"audio").unwrap();
+
+        assert!(move_by_copy(&from, &to));
+
+        assert!(!from.exists());
+        assert_eq!(std::fs::read(&to).unwrap(), b"audio");
+        assert!(!PathBuf::from(format!("{}.tmp", to.display())).exists());
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[tokio::test]
+    async fn demoting_a_missing_file_is_a_no_op() {
+        let (root, state) = test_state("demote-missing");
+        let urn = "soundcloud:tracks:7";
+        let other = cached_clean_file(&state, "soundcloud:tracks:8", 180_000).await;
+
+        assert!(!state.demote_from_liked(urn));
+
+        assert!(!state.file_path(urn).exists());
+        assert!(!state.liked_file_path(urn).exists());
+        assert!(is_valid_file(&other));
+        assert_eq!(state.cache_inventory().len(), 1);
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[tokio::test]
+    async fn demote_clears_the_liked_flag_on_a_staged_file() {
+        let (root, state) = test_state("demote-staged");
+        let urn = "soundcloud:tracks:9";
+        let raw = state.incoming_file_path(urn);
+        std::fs::write(&raw, vec![0u8; MIN_AUDIO_SIZE as usize]).unwrap();
+        state.finalize_incoming(&raw, true, None).await;
+
+        assert!(!state.demote_from_liked(urn));
+
+        assert!(!read_cache_metadata(&raw).unwrap().liked);
         std::fs::remove_dir_all(&root).ok();
     }
 
