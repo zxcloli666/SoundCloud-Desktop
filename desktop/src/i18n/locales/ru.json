@@ -894,7 +894,9 @@
     "syncSlow": "Синхронизация с SoundCloud идёт дольше обычного",
     "stillLoading": "Ещё загружаем из SoundCloud, попробуйте чуть позже",
     "loadingFromSoundcloud": "Загружаем из SoundCloud, это может занять минуту",
-    "pageLoadFailed": "Не удалось загрузить страницу"
+    "pageLoadFailed": "Не удалось загрузить страницу",
+    "scrollPrev": "Листать влево",
+    "scrollNext": "Листать вправо"
   },
   "star": {
     "title": "Подписка Star",

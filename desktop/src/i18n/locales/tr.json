@@ -787,7 +787,9 @@
     "syncSlow": "SoundCloud ile esitleme normalden uzun suruyor",
     "stillLoading": "SoundCloud'dan hala yukleniyor, biraz sonra tekrar deneyin",
     "loadingFromSoundcloud": "SoundCloud'dan yukleniyor, bu bir dakika surebilir",
-    "pageLoadFailed": "Sayfa yuklenemedi"
+    "pageLoadFailed": "Sayfa yuklenemedi",
+    "scrollPrev": "Sola kaydır",
+    "scrollNext": "Sağa kaydır"
   },
   "star": {
     "title": "Star Abonelik",
