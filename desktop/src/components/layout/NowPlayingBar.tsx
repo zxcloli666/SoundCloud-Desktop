@@ -1007,7 +1007,7 @@ export const NowPlayingBar = React.memo(
     const loadProgress = useLoadProgress();
 
     return (
-      <div className="npb">
+      <div className="npb" data-ui="player">
         <BackgroundGlow />
         <div className="npb-underglow" />
 

@@ -445,7 +445,7 @@ export const AppShell = React.memo(() => {
   }, []);
 
   return (
-    <div className="flex flex-col h-screen relative overflow-hidden">
+    <div data-ui="app" className="flex flex-col h-screen relative overflow-hidden">
       <CustomBackground />
       <CoverTint />
       <AmbientGlow />
@@ -453,7 +453,7 @@ export const AppShell = React.memo(() => {
       <div className="flex flex-1 min-h-0 relative z-10" style={{ isolation: 'isolate' }}>
         <Sidebar />
           {/* pb clears the floating now-playing dock, which overlays (doesn't push) content */}
-          <main ref={mainRef} className="flex-1 overflow-y-auto overflow-x-hidden pb-[136px]">
+          <main ref={mainRef} data-ui="main" className="flex-1 overflow-y-auto overflow-x-hidden pb-[136px]">
           <StableOutlet />
         </main>
       </div>

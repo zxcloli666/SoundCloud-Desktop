@@ -144,6 +144,7 @@ export const Sidebar = React.memo(() => {
 
   return (
     <aside
+      data-ui="sidebar"
       className="shrink-0 flex flex-col h-full overflow-hidden border-r border-white/[0.05] pb-3 transition-[width] duration-300 ease-[var(--ease-apple)]"
       style={{
         width: collapsed ? 56 : 196,

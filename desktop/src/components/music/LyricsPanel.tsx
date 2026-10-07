@@ -46,7 +46,7 @@ export const LyricsPanel = React.memo(() => {
   const splitPercent = splitRatio * 100;
 
   return (
-    <div className="fixed inset-0 z-[60] flex flex-col overflow-hidden animate-fade-in-up bg-[#08080a]">
+    <div data-ui="lyrics" className="fixed inset-0 z-[60] flex flex-col overflow-hidden animate-fade-in-up bg-[#08080a]">
         <LyricsBackdrop artworkSrc={artwork500} color={colorRef.current}/>
         {visualizerEnabled && <LyricsVisualizer/>}
 

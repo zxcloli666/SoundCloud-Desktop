@@ -161,7 +161,7 @@ body,
 }
 
 #root {
-  background: rgb(8, 8, 10);
+  background: var(--bg-primary, rgb(8, 8, 10));
   overflow: hidden;
 }
 

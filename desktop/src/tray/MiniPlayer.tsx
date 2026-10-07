@@ -180,7 +180,7 @@ export function MiniPlayer() {
     const RepeatIcon = np.repeat === 'one' ? Repeat1 : Repeat;
 
     return (
-        <div className="tp" data-playing={playing ? 'true' : 'false'} data-tauri-drag-region="deep">
+        <div className="tp" data-ui="tray" data-playing={playing ? 'true' : 'false'} data-tauri-drag-region="deep">
             <div className="tp-dock" key={pulse}>
                 {bloom && np.artworkLarge && (
                     <div

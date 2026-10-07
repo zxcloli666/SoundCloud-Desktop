@@ -44,6 +44,7 @@ export const QueuePanel = React.memo(
 
         {/* Panel */}
         <div
+            data-ui="queue"
             className="fixed top-0 right-0 bottom-0 w-[360px] z-50 flex flex-col border-l border-white/[0.06]"
           style={{
             transform: open ? 'translateX(0)' : 'translateX(100%)',
