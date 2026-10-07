@@ -224,6 +224,8 @@ pub fn run() {
             import::ym_import_stop,
             track_cache::track_ensure_cached,
             track_cache::track_export,
+            track_cache::track_export_to_dir,
+            track_cache::track_export_mp3_supported,
             track_cache::track_save_offline,
             track_cache::track_is_cached,
             track_cache::track_transcode_status,

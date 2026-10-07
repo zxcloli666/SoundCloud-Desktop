@@ -26,8 +26,10 @@ use crate::track_cache::transcode;
 
 mod bulk;
 mod evict;
+mod export;
 
 pub use bulk::{BulkCacheEntry, BulkCacheStatus};
+pub use export::ExportOutcome;
 
 const MIN_AUDIO_SIZE: u64 = 8192;
 const AUDIO_SNIFF_LEN: usize = 16;
@@ -54,9 +56,6 @@ const MAX_PARALLEL_BULK: usize = 4;
 /// pool drains the queue fast in practice.
 const MAX_PARALLEL_TRANSCODES: usize = 2;
 const CACHE_METADATA_EXT: &str = ".meta.json";
-/// Cover art fetched for download-to-file export is capped to avoid pathological
-/// payloads sneaking into the muxer.
-const MAX_COVER_BYTES: u64 = 8 * 1024 * 1024;
 /// Duration drift allowed between a cached file and the API-reported length
 /// before the cache entry is treated as a truncated (interrupted) download.
 const DURATION_TOLERANCE_MS: u64 = 4000;
@@ -520,6 +519,7 @@ pub struct TrackCacheState {
     truncated_retries: Arc<StdMutex<HashMap<String, u8>>>,
     bulk_status: Arc<StdMutex<Option<BulkCacheStatus>>>,
     bulk_cancel: Arc<std::sync::atomic::AtomicBool>,
+    mp3_encoder: Arc<tokio::sync::OnceCell<bool>>,
     /// Per-host storage circuit breaker: host -> epoch secs of last failure.
     storage_cooldowns: Arc<StdMutex<HashMap<String, u64>>>,
     anon: Arc<AnonClient>,
@@ -589,6 +589,7 @@ pub fn init(audio_dir: PathBuf, liked_dir: PathBuf, incoming_dir: PathBuf) -> Tr
         truncated_retries: Arc::new(StdMutex::new(HashMap::new())),
         bulk_status: Arc::new(StdMutex::new(None)),
         bulk_cancel: Arc::new(std::sync::atomic::AtomicBool::new(false)),
+        mp3_encoder: Arc::new(tokio::sync::OnceCell::new()),
         storage_cooldowns: Arc::new(StdMutex::new(HashMap::new())),
         anon,
     }
@@ -1439,105 +1440,6 @@ impl TrackCacheState {
         for urn in urns {
             self.spawn_transcode(urn);
         }
-    }
-
-    /// Ensure a clean m4a exists for export, coalescing with any background
-    /// transcode via the shared dedup set. Returns the clean path, or `None` if
-    /// no clean file could be produced (caller falls back to the raw bytes).
-    async fn ensure_clean_for_export(&self, urn: &str, ffmpeg: &Path) -> Option<PathBuf> {
-        if let Some(path) = self.resolve_clean_path(urn) {
-            return Some(path);
-        }
-        let claimed = self
-            .transcoding
-            .lock()
-            .ok()
-            .map(|mut set| set.insert(urn.to_string()))
-            .unwrap_or(false);
-        if claimed {
-            let _ = self.run_transcode(ffmpeg, urn).await;
-            if let Ok(mut set) = self.transcoding.lock() {
-                set.remove(urn);
-            }
-        } else {
-            // A background transcode owns the slot — wait for the clean file.
-            for _ in 0..150 {
-                if self.resolve_clean_path(urn).is_some() {
-                    break;
-                }
-                tokio::time::sleep(Duration::from_millis(200)).await;
-            }
-        }
-        self.resolve_clean_path(urn)
-    }
-
-    async fn fetch_cover(&self, url: &str) -> Option<Vec<u8>> {
-        let resp = self.client.get(url).send().await.ok()?;
-        if !resp.status().is_success() {
-            return None;
-        }
-        if resp.content_length().map(|l| l > MAX_COVER_BYTES).unwrap_or(false) {
-            return None;
-        }
-        let bytes = resp.bytes().await.ok()?;
-        if bytes.is_empty() || bytes.len() as u64 > MAX_COVER_BYTES {
-            return None;
-        }
-        Some(bytes.to_vec())
-    }
-
-    /// Download-to-file: prefer the clean m4a cache, transcode raw bytes when
-    /// only those exist, else fetch from streaming — then write `dest_path`
-    /// (m4a) with the cover art embedded when ffmpeg is available.
-    pub async fn export_track(
-        &self,
-        req: CacheRequest<'_>,
-        dest_path: String,
-        cover_url: Option<String>,
-    ) -> Result<String, String> {
-        let urn = req.urn.to_string();
-        let dest = PathBuf::from(&dest_path);
-
-        // Make sure we at least have raw bytes (downloads + spawns bg transcode).
-        let entry = self.ensure_cached(req).await?;
-        let mut source_path = PathBuf::from(&entry.path);
-
-        if let Some(ffmpeg) = self.ffmpeg() {
-            if let Some(clean) = self.ensure_clean_for_export(&urn, &ffmpeg).await {
-                source_path = clean;
-            }
-            if self.is_clean_path(&source_path) {
-                let cover = match cover_url {
-                    Some(u) if !u.is_empty() => self.fetch_cover(&u).await,
-                    _ => None,
-                };
-                match transcode::export_with_cover(&ffmpeg, &source_path, cover.as_deref(), &dest)
-                    .await
-                {
-                    Ok(()) => return Ok(dest_path),
-                    Err(e) if cover.is_some() => {
-                        // A bad cover shouldn't sink the download — retry artless.
-                        eprintln!("[TrackCache] export with cover failed ({e}), retrying without");
-                        transcode::export_with_cover(&ffmpeg, &source_path, None, &dest).await?;
-                        return Ok(dest_path);
-                    }
-                    Err(e) => return Err(e),
-                }
-            }
-        }
-
-        // No clean m4a available (ffmpeg unavailable, or the transcode failed /
-        // timed out). Re-resolve in case a concurrent transcode finished and
-        // deleted the raw path we held, then only copy if the source is already a
-        // valid m4a — never write mismatched bytes into the user's .m4a file.
-        let fallback = self.resolve_path(&urn).unwrap_or(source_path);
-        if self.is_clean_path(&fallback) || transcode::is_m4a(&fallback).await {
-            tokio::fs::copy(&fallback, &dest)
-                .await
-                .map_err(|e| format!("Copy failed: {e}"))?;
-            return Ok(dest_path);
-        }
-        Err("Cannot export to m4a: audio transcoder is still preparing or unavailable".into())
     }
 
     /// Try each storage URL once (healthy hosts first), then API URLs with retries.

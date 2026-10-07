@@ -1,11 +1,14 @@
+use std::path::Path;
+
 use tauri::State;
 
 use crate::shared::blocking::run_blocking;
 use crate::shared::urn::canonical_track_urn;
 use crate::track_cache::state::{
-    BulkCacheEntry, BulkCacheStatus, CacheInventoryEntry, CacheRequest, TrackCacheEntry,
-    TrackCacheState, TranscodeStatus,
+    BulkCacheEntry, BulkCacheStatus, CacheInventoryEntry, CacheRequest, ExportOutcome,
+    TrackCacheEntry, TrackCacheState, TranscodeStatus,
 };
+use crate::track_cache::transcode::{ExportFormat, ExportTags};
 
 #[derive(serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -89,38 +92,90 @@ pub async fn track_ensure_cached(
         .await
 }
 
-/// Download-to-file. Pulls from the clean m4a cache, transcoding raw bytes or
-/// fetching from streaming as needed, and embeds `cover_url` when possible.
+struct ResolvedRequest {
+    urn: String,
+    urls: Vec<String>,
+    download_urls: Vec<String>,
+    storage_urls: Vec<String>,
+    request: EnsureCachedRequest,
+}
+
+impl ResolvedRequest {
+    fn new(request: EnsureCachedRequest) -> Result<Self, String> {
+        Ok(Self {
+            urn: require_track_urn(&request.urn)?,
+            urls: request
+                .fallback_urls()
+                .ok_or_else(|| "no stream URL provided".to_string())?,
+            download_urls: request.download_urls.clone().unwrap_or_default(),
+            storage_urls: request.storage_urls.clone().unwrap_or_default(),
+            request,
+        })
+    }
+
+    fn cache_request(&self) -> CacheRequest<'_> {
+        CacheRequest {
+            urn: &self.urn,
+            urls: &self.urls,
+            download_urls: &self.download_urls,
+            storage_urls: &self.storage_urls,
+            session_id: self.request.session_id.as_deref(),
+            hq: self.request.hq,
+            storage_quality: self.request.storage_quality.as_deref(),
+            liked: false,
+            expected_duration_ms: self.request.duration_ms,
+        }
+    }
+}
+
 #[tauri::command]
 pub async fn track_export(
     request: EnsureCachedRequest,
     dest_path: String,
     cover_url: Option<String>,
+    format: Option<ExportFormat>,
+    tags: Option<ExportTags>,
     state: State<'_, TrackCacheState>,
 ) -> Result<String, String> {
-    let urn = require_track_urn(&request.urn)?;
-    let fallback_urls = request
-        .fallback_urls()
-        .ok_or_else(|| "no stream URL provided".to_string())?;
-    let storage_urls = request.storage_urls.unwrap_or_default();
-    let download_urls = request.download_urls.unwrap_or_default();
+    let resolved = ResolvedRequest::new(request)?;
     state
         .export_track(
-            CacheRequest {
-                urn: &urn,
-                urls: &fallback_urls,
-                download_urls: &download_urls,
-                storage_urls: &storage_urls,
-                session_id: request.session_id.as_deref(),
-                hq: request.hq,
-                storage_quality: request.storage_quality.as_deref(),
-                liked: false,
-                expected_duration_ms: request.duration_ms,
-            },
-            dest_path,
+            resolved.cache_request(),
+            Path::new(&dest_path),
             cover_url,
+            format.unwrap_or(ExportFormat::M4a),
+            &tags.unwrap_or_default(),
+        )
+        .await?;
+    Ok(dest_path)
+}
+
+#[tauri::command]
+pub async fn track_export_to_dir(
+    request: EnsureCachedRequest,
+    dir: String,
+    file_name: String,
+    cover_url: Option<String>,
+    format: ExportFormat,
+    tags: ExportTags,
+    state: State<'_, TrackCacheState>,
+) -> Result<ExportOutcome, String> {
+    let resolved = ResolvedRequest::new(request)?;
+    state
+        .export_to_dir(
+            resolved.cache_request(),
+            Path::new(&dir),
+            &file_name,
+            cover_url,
+            format,
+            &tags,
         )
         .await
+}
+
+#[tauri::command]
+pub async fn track_export_mp3_supported(state: State<'_, TrackCacheState>) -> Result<bool, String> {
+    Ok(state.mp3_export_supported().await)
 }
 
 #[tauri::command]
