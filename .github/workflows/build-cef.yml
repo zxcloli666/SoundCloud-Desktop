@@ -35,6 +35,8 @@ jobs:
     runs-on: ${{ matrix.platform }}
     env:
       HAS_INTERNAL_PAT: ${{ secrets.INTERNAL_PAT != '' }}
+      LASTFM_API_KEY: ${{ secrets.LASTFM_API_KEY }}
+      LASTFM_API_SECRET: ${{ secrets.LASTFM_API_SECRET }}
     steps:
       - uses: actions/checkout@v4
 

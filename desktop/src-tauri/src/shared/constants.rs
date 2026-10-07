@@ -18,3 +18,6 @@ pub const DOMAIN_WHITELIST: &[&str] = &[
 pub fn is_domain_whitelisted(host: &str) -> bool {
     DOMAIN_WHITELIST.contains(&host)
 }
+
+pub const LASTFM_API_KEY: Option<&str> = option_env!("LASTFM_API_KEY");
+pub const LASTFM_API_SECRET: Option<&str> = option_env!("LASTFM_API_SECRET");

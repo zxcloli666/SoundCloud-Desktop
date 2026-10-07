@@ -25,6 +25,7 @@ discord-rich-presence = "1"
 tauri-plugin-http = "2.5.7"
 base64 = "0.22"
 sha2 = "0.10"
+md-5 = "0.10"
 hex = "0.4"
 sc-fingerprint = { git = "https://github.com/zxcloli666/SoundCloud-Backend", tag = "v8.5.8" }
 wreq = { version = "5", features = ["json", "stream", "gzip", "brotli", "socks"] }
