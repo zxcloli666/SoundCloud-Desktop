@@ -119,10 +119,11 @@ yay -S soundcloud-bin
 ```
 Есть и пакет от сообщества [`soundcloud-desktop-bin`](https://aur.archlinux.org/packages/soundcloud-desktop-bin), его ведёт не автор приложения. Ставь только один из двух.
 
-Flatpak:
+Flatpak ставится из нашего репозитория, тогда обновления приходят через `flatpak update` и центр приложений (GNOME Software, Discover):
 ```bash
-flatpak install --user soundcloud-desktop.flatpak
+flatpak install --user https://zxcloli666.github.io/SoundCloud-Desktop/flatpak/soundcloud-desktop.flatpakref
 ```
+Скачанный `soundcloud-desktop.flatpak` тоже подключает этот репозиторий при установке: `flatpak install --user soundcloud-desktop.flatpak`.
 
 Для AppImage:
 ```bash
@@ -195,7 +196,7 @@ chmod +x soundcloud-desktop-*.AppImage
 | Windows portable | Закрой приложение из трея (правый клик по иконке → «Выход») и замени exe скачанным |
 | `.deb` / `.rpm` | Установи новый пакет поверх старого |
 | AUR | `yay -Syu soundcloud-bin` |
-| Flatpak | Скачай новый `.flatpak` и выполни `flatpak install --user --reinstall soundcloud-desktop.flatpak`. Без `--reinstall` будет ошибка «Каталог не пуст», а центр приложений покажет только «Открыть» |
+| Flatpak | `flatpak update` или центр приложений. Если ставил старый `.flatpak` и обновлений не видно, один раз переустанови: `flatpak install --user --reinstall soundcloud-desktop.flatpak` с новым файлом (без `--reinstall` будет ошибка «Каталог не пуст») |
 | Сборка из исходников | `git pull` и пересборка |
 
 Если поставил новую версию, а открывается старая, значит старая ещё работает в трее: закрой её через «Выход» и запусти снова.
