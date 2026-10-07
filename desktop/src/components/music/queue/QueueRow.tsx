@@ -6,6 +6,7 @@ import {GripVertical, X} from '../../../lib/icons';
 import {useArtistDisplay, useArtistLinkItems, useDisplayTitle} from '../../../lib/track-display';
 import {type Track, usePlayerStore} from '../../../stores/player';
 import {ArtistNameLinks} from '../ArtistNameLinks';
+import {LikeButton} from '../LikeButton';
 import {TrackStatusBadges} from '../TrackStatusBadges';
 import {UploadKindDot} from '../UploadKindDot';
 import {PlayingOverlay} from './PlayingOverlay';
@@ -111,6 +112,8 @@ export const QueueRow = React.memo(function QueueRow({
       </div>
 
       <span className="text-[10px] text-white/20 tabular-nums shrink-0">{dur(track.duration)}</span>
+
+      <LikeButton track={track} />
 
       <button
         type="button"
