@@ -1,9 +1,10 @@
 import {useQuery, useQueryClient} from '@tanstack/react-query';
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {api} from '../../lib/api';
+import {playlistScope} from '../../lib/bulk-cache';
 import {fc} from '../../lib/formatters';
-import type {Playlist} from '../../lib/hooks';
+import {fetchAllPlaylistTracks, type Playlist} from '../../lib/hooks';
 import {
     Check,
     Heart,
@@ -14,6 +15,8 @@ import {
     Shuffle,
     Trash2,
 } from '../../lib/icons';
+import type {Track} from '../../stores/player';
+import {SaveCollectionMenu} from '../collection-save/SaveCollectionMenu';
 import {SharingToggle} from '../music/SharingToggle';
 
 const PlaylistLikeBtn = React.memo(function PlaylistLikeBtn({
@@ -115,6 +118,8 @@ export const PlaylistActions = React.memo(function PlaylistActions({
                                                                        isOwner,
                                                                        isPlaying,
                                                                        isPinned,
+                                                                       tracks,
+                                                                       trackCount,
                                                                        onPlayAll,
                                                                        onShuffle,
                                                                        onTogglePin,
@@ -124,12 +129,16 @@ export const PlaylistActions = React.memo(function PlaylistActions({
     isOwner: boolean;
     isPlaying: boolean;
     isPinned: boolean;
+    tracks: Track[];
+    trackCount: number;
     onPlayAll: () => void;
     onShuffle: () => void;
     onTogglePin: () => void;
     onDelete: () => void;
 }) {
     const {t} = useTranslation();
+    const playlistUrn = playlist.urn;
+    const collect = useCallback(() => fetchAllPlaylistTracks(playlistUrn), [playlistUrn]);
 
     return (
         <div className="flex items-center gap-3 flex-wrap justify-center lg:justify-start">
@@ -186,6 +195,14 @@ export const PlaylistActions = React.memo(function PlaylistActions({
                     <MapPin size={16}/>
                 </button>
                 <CopyIconAction url={playlist.permalink_url}/>
+                <SaveCollectionMenu
+                    scope={playlistScope(playlist.urn)}
+                    title={playlist.title}
+                    tracks={tracks}
+                    trackCount={trackCount}
+                    collect={collect}
+                    variant="rail"
+                />
                 {isOwner && (
                     <>
                         <span className="w-px h-5 bg-white/[0.08] mx-0.5" aria-hidden/>
