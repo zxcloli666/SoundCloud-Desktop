@@ -1,9 +1,11 @@
 import React, {useCallback, useRef} from 'react';
 import {useTranslation} from 'react-i18next';
-import {EQ_BAND_COUNT, EQ_LABELS, EQ_MAX_GAIN, EQ_MIN_GAIN, EQ_PRESETS,} from '../../lib/equalizer';
+import {EQ_BAND_COUNT, EQ_LABELS, EQ_MAX_GAIN, EQ_MIN_GAIN} from '../../lib/equalizer';
 import {AudioLines, Power, RotateCcw, X} from '../../lib/icons';
 import {useSettingsStore} from '../../stores/settings';
 import {Modal, ModalClose, ModalContent, ModalTrigger} from '../ui/Modal';
+import {EqPresets} from './EqPresets';
+import {TrackSoundToggle} from './TrackSoundToggle';
 
 /* ── Single Band Slider ─────────────────────────────────────── */
 
@@ -122,34 +124,6 @@ const BandSlider = React.memo(function BandSlider({
   );
 });
 
-/* ── Preset Button ──────────────────────────────────────────── */
-
-const PresetBtn = React.memo(function PresetBtn({
-  id,
-  label,
-  active,
-  onClick,
-}: {
-  id: string;
-  label: string;
-  active: boolean;
-  onClick: (id: string) => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={() => onClick(id)}
-      className={`px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all duration-200 cursor-pointer border ${
-        active
-          ? 'bg-white/[0.1] text-white/90 border-white/[0.12] shadow-sm'
-          : 'bg-white/[0.02] text-white/35 border-white/[0.04] hover:bg-white/[0.06] hover:text-white/60'
-      }`}
-    >
-      {label}
-    </button>
-  );
-});
-
 /* ── Main Panel ─────────────────────────────────────────────── */
 
 export const EqualizerPanel = React.memo(function EqualizerPanel({
@@ -157,33 +131,19 @@ export const EqualizerPanel = React.memo(function EqualizerPanel({
 }: {
   children: React.ReactNode;
 }) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const eqEnabled = useSettingsStore((s) => s.eqEnabled);
   const eqGains = useSettingsStore((s) => s.eqGains);
-  const eqPreset = useSettingsStore((s) => s.eqPreset);
   const setEqEnabled = useSettingsStore((s) => s.setEqEnabled);
   const setEqGains = useSettingsStore((s) => s.setEqGains);
   const setEqPreset = useSettingsStore((s) => s.setEqPreset);
   const setEqBand = useSettingsStore((s) => s.setEqBand);
-
-  const isRu = i18n.language === 'ru';
 
   const handleBandChange = useCallback(
     (index: number, gain: number) => {
       setEqBand(index, gain);
     },
     [setEqBand],
-  );
-
-  const handlePreset = useCallback(
-    (id: string) => {
-      const preset = EQ_PRESETS[id];
-      if (preset) {
-        setEqGains([...preset.gains]);
-        setEqPreset(id);
-      }
-    },
-    [setEqGains, setEqPreset],
   );
 
   const handleReset = useCallback(() => {
@@ -262,22 +222,10 @@ export const EqualizerPanel = React.memo(function EqualizerPanel({
               <div
                   className={`px-6 pb-5 transition-opacity duration-300 ${eqEnabled ? '' : 'opacity-30 pointer-events-none'}`}
               >
-                  <p className="text-[11px] text-white/30 font-medium mb-2.5">{t('eq.preset')}</p>
-                  <div className="flex flex-wrap gap-1.5">
-                      {Object.entries(EQ_PRESETS).map(([id, preset]) => (
-                          <PresetBtn
-                              key={id}
-                              id={id}
-                              label={isRu ? preset.labelRu : preset.label}
-                              active={eqPreset === id}
-                              onClick={handlePreset}
-                          />
-                      ))}
-                      {eqPreset === 'custom' && (
-                          <PresetBtn id="custom" label={t('eq.custom')} active onClick={() => {
-                          }}/>
-                      )}
-                  </div>
+                  <EqPresets/>
+              </div>
+              <div className="px-6 pb-6">
+                  <TrackSoundToggle/>
               </div>
           </ModalContent>
       </Modal>

@@ -12,6 +12,7 @@ import {toggleWindowFullscreen} from '../../lib/window';
 import {useLyricsStore} from '../../stores/lyrics';
 import {usePlayerStore} from '../../stores/player';
 import {useSettingsStore} from '../../stores/settings';
+import {TrackContextMenu} from '../music/track-menu/TrackContextMenu';
 import {DropImportOverlay} from '../offline/local/DropImportOverlay';
 import {NowPlayingBar} from './NowPlayingBar';
 import {Sidebar} from './Sidebar';
@@ -463,6 +464,7 @@ export const AppShell = React.memo(() => {
       )}
       <KeybindingsDialog open={kbOpen} onOpenChange={setKbOpen} />
       <DropImportOverlay />
+      <TrackContextMenu />
     </div>
   );
 });

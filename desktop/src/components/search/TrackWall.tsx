@@ -1,6 +1,7 @@
 import { memo, useCallback, useMemo, useRef } from 'react';
 import { armTrackWaveContinuation } from '../../lib/queue-continuation';
 import type { Track } from '../../stores/player';
+import { useSettingsStore } from '../../stores/settings';
 import { type TileKind, toWallItems } from './utils';
 import { Wall } from './Wall';
 
@@ -28,9 +29,10 @@ export const TrackWall = memo(function TrackWall({
   const items = useMemo(() => toWallItems(tracks, kind), [tracks, kind]);
   const itemsRef = useRef(items);
   itemsRef.current = items;
+  const similar = useSettingsStore((s) => !!wave && s.searchPlayback === 'similar');
   const getQueue = useCallback(
-    () => (wave ? [] : itemsRef.current.map((item) => item.track)),
-    [wave],
+    () => (similar ? [] : itemsRef.current.map((item) => item.track)),
+    [similar],
   );
   return (
     <Wall
@@ -41,7 +43,7 @@ export const TrackWall = memo(function TrackWall({
       isFetchingMore={isFetchingMore}
       onLoadMore={onLoadMore}
       onOpen={onOpen}
-      onPlay={wave ? armTrackWaveContinuation : undefined}
+      onPlay={similar ? armTrackWaveContinuation : undefined}
     />
   );
 });

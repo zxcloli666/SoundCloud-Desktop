@@ -5,6 +5,7 @@ import {api} from '../../lib/api';
 import {art} from '../../lib/formatters';
 import {type HistoryEntry, useHistory, useInfiniteScroll} from '../../lib/hooks';
 import {Loader2, Music, playWhite14} from '../../lib/icons';
+import {openTrackMenu} from '../../lib/useTrackContextMenu';
 import {usePlayerStore} from '../../stores/player';
 import {VirtualList} from '../ui/VirtualList';
 import {formatHistoryDate, historyEntryToTrack} from './history-utils';
@@ -79,6 +80,7 @@ export const HistoryTab = React.memo(function HistoryTab() {
                             </div>
                         ) : (
                             <div
+                                onContextMenu={(e) => openTrackMenu(e, historyEntryToTrack(row.entry))}
                                 className="group flex items-center gap-4 px-4 py-3 rounded-2xl hover:bg-white/[0.04] transition-all duration-300">
                                 <button
                                     type="button"

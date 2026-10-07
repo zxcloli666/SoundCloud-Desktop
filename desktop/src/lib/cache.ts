@@ -133,6 +133,15 @@ export async function saveTrackOffline(
   return invoke<TrackCacheInfo>('track_save_offline', { request, refetch });
 }
 
+export async function upgradeCachedTrack(
+  urn: string,
+  durationMs?: number,
+  storageQuality?: StorageQuality,
+): Promise<boolean> {
+  const request = await buildCacheRequest(urn, true, durationMs, storageQuality);
+  return invoke<boolean>('track_upgrade_cached', { request });
+}
+
 export function getCacheSize(): Promise<number> {
   return invoke<number>('track_cache_size');
 }

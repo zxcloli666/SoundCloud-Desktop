@@ -183,6 +183,12 @@ export function shuffleArray<T>(arr: T[]): void {
   }
 }
 
+interface PlayNextCursor {
+  queue: Track[];
+  index: number;
+  count: number;
+}
+
 interface PlayerState {
   currentTrack: Track | null;
   queue: Track[];
@@ -217,6 +223,8 @@ interface PlayerState {
   setQueue: (queue: Track[]) => void;
   addToQueue: (tracks: Track[]) => void;
   addToQueueNext: (tracks: Track[]) => void;
+  addToQueueEnd: (tracks: Track[]) => void;
+  playNextCursor: PlayNextCursor | null;
   removeFromQueue: (index: number) => void;
   moveInQueue: (from: number, to: number) => void;
   clearQueue: () => void;
@@ -250,6 +258,7 @@ export const usePlayerStore = create<PlayerState>()(
       playbackRate: PLAYBACK_RATE_DEFAULT,
       pitchSemitones: 0,
       pitchControlMode: 'auto',
+      playNextCursor: null,
 
       play: (track, queue) => {
           onPlaybackContextReset?.();
@@ -405,13 +414,26 @@ export const usePlayerStore = create<PlayerState>()(
       addToQueueNext: (tracks) =>
         set((s) => {
           const queue = [...s.queue];
-          const insertIndex = s.queueIndex >= 0 ? s.queueIndex + 1 : 0;
-          queue.splice(insertIndex, 0, ...tracks);
+          const cursor = s.playNextCursor;
+          const advanced = cursor ? s.queueIndex - cursor.index : -1;
+          const queued =
+            cursor && cursor.queue === s.queue && advanced >= 0
+              ? Math.max(0, cursor.count - advanced)
+              : 0;
+          const base = s.queueIndex >= 0 ? s.queueIndex + 1 : 0;
+          queue.splice(Math.min(base + queued, queue.length), 0, ...tracks);
           return {
             queue,
             originalQueue: s.originalQueue ? [...s.originalQueue, ...tracks] : null,
+            playNextCursor: { queue, index: s.queueIndex, count: queued + tracks.length },
           };
         }),
+
+      addToQueueEnd: (tracks) =>
+        set((s) => ({
+          queue: [...s.queue, ...tracks],
+          originalQueue: s.originalQueue ? [...s.originalQueue, ...tracks] : null,
+        })),
 
       removeFromQueue: (index) =>
         set((s) => {

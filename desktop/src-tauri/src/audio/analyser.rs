@@ -16,7 +16,7 @@
 //!    stability. Sleep-based pacing — no heavy timers.
 
 use std::collections::VecDeque;
-use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU32, AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
@@ -39,6 +39,7 @@ pub struct AnalyserBuffer {
     samples: Mutex<VecDeque<f32>>,
     pub sample_rate: AtomicU32,
     pub running: AtomicBool,
+    owner: AtomicU64,
 }
 
 impl AnalyserBuffer {
@@ -47,6 +48,7 @@ impl AnalyserBuffer {
             samples: Mutex::new(VecDeque::with_capacity(RING_CAPACITY)),
             sample_rate: AtomicU32::new(44_100),
             running: AtomicBool::new(true),
+            owner: AtomicU64::new(0),
         })
     }
 }
@@ -58,6 +60,7 @@ pub struct AnalyserSource<S: Source<Item = f32>> {
     sample_rate: SampleRate,
     cur_channel: u16,
     accum: f32,
+    id: u64,
 }
 
 impl<S: Source<Item = f32>> AnalyserSource<S> {
@@ -67,6 +70,7 @@ impl<S: Source<Item = f32>> AnalyserSource<S> {
         buffer
             .sample_rate
             .store(sample_rate.get(), Ordering::Relaxed);
+        let id = buffer.owner.fetch_add(1, Ordering::Relaxed) + 1;
         Self {
             source,
             buffer,
@@ -74,6 +78,7 @@ impl<S: Source<Item = f32>> AnalyserSource<S> {
             sample_rate,
             cur_channel: 0,
             accum: 0.0,
+            id,
         }
     }
 }
@@ -93,6 +98,9 @@ impl<S: Source<Item = f32>> Iterator for AnalyserSource<S> {
             self.accum = 0.0;
 
             // try_lock — if FFT thread is reading, just drop this frame.
+            if self.buffer.owner.load(Ordering::Relaxed) != self.id {
+                return Some(sample);
+            }
             if let Ok(mut q) = self.buffer.samples.try_lock() {
                 if q.len() >= RING_CAPACITY {
                     let drop_n = q.len() - RING_CAPACITY + 1;

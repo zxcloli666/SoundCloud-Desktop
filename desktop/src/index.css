@@ -1369,3 +1369,15 @@ select,
         animation: none;
     }
 }
+
+.track-menu {
+  opacity: 0;
+  transform: scale(0.96);
+  transition: opacity 0.16s cubic-bezier(0.16, 1, 0.3, 1),
+  transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.track-menu[data-state="open"] {
+  opacity: 1;
+  transform: scale(1);
+}

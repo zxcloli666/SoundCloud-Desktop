@@ -46,6 +46,8 @@ import {
   ListEnd as _ListEnd,
   ListMusic as _ListMusic,
   ListPlus as _ListPlus,
+  ListStart as _ListStart,
+  ListX as _ListX,
   Loader2 as _Loader2,
   Lock as _Lock,
   MapPin as _MapPin,
@@ -150,8 +152,10 @@ export const Instagram = memo(({ size, className }: { size?: number; className?:
 ));
 export const Library = memo(_Library);
 export const LinkIcon = memo(_Link);
-export const ListMusic = memo(_ListMusic);
 export const ListEnd = memo(_ListEnd);
+export const ListMusic = memo(_ListMusic);
+export const ListStart = memo(_ListStart);
+export const ListX = memo(_ListX);
 export const ListPlus = memo(_ListPlus);
 export const Loader2 = memo(_Loader2);
 export const Lock = memo(_Lock);

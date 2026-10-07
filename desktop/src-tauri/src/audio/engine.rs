@@ -5,10 +5,13 @@ use std::time::Duration;
 use tauri::State;
 use tokio::task;
 
+use crate::audio::crossfade;
 use crate::audio::decode::{create_player_from_bytes, resolve_normalization_gain};
+use crate::audio::silence;
 use crate::audio::state::AudioState;
 use crate::audio::types::{AudioLoadResult, MediaCmd, EQ_BANDS, STALL_SUPPRESS_MS, TICK_INTERVAL_MS};
 use crate::network::system_proxy::follow;
+use crate::rt::AppHandle;
 
 const ENDED_SUPPRESS_MS: u64 = 1200;
 
@@ -41,6 +44,7 @@ fn volume_to_rodio(v: f64) -> f32 {
 
 fn stop_current_player(state: &AudioState) {
     suppress_ended_temporarily(state);
+    crossfade::finish(state);
     let mut player = state.player.lock().unwrap();
     if let Some(old) = player.take() {
         old.stop();
@@ -76,23 +80,40 @@ fn set_pos_anchor(state: &AudioState, source: f64, output: f64) {
     *state.pos_anchor.lock().unwrap() = (source.max(0.0), output.max(0.0));
 }
 
+fn main_volume(state: &AudioState) -> f32 {
+    *state.volume.lock().unwrap() * crossfade::incoming_gain(state)
+}
+
 fn commit_loaded_track(
     state: &AudioState,
     bytes: Vec<u8>,
     new_player: rodio::Player,
     normalization_gain: f32,
-) {
+    silence_cache: Option<PathBuf>,
+    volume: f32,
+) -> Option<rodio::Player> {
     let mut player = state.player.lock().unwrap();
     apply_current_rate(state, &new_player);
-    new_player.set_volume(*state.volume.lock().unwrap());
-    *player = Some(new_player);
+    new_player.set_volume(volume);
+    let previous = player.replace(new_player);
     *state.source_bytes.lock().unwrap() = Some(bytes);
     *state.normalization_gain.lock().unwrap() = normalization_gain;
+    state.silence.lock().unwrap().start_track(silence_cache);
     // Fresh track starts at source 0 / output 0.
     set_pos_anchor(state, 0.0, 0.0);
     state.has_track.store(true, Ordering::Relaxed);
     state.ended_notified.store(false, Ordering::Relaxed);
     state.device_error.store(false, Ordering::Relaxed);
+    previous
+}
+
+fn is_audible(state: &AudioState) -> bool {
+    state
+        .player
+        .lock()
+        .unwrap()
+        .as_ref()
+        .is_some_and(|player| !player.is_paused() && !player.empty())
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -137,6 +158,7 @@ async fn build_player_from_bytes(
 pub fn reload_current_track(state: &AudioState) -> Result<(), String> {
     suppress_ended_temporarily(state);
     suppress_stall_temporarily(state);
+    crossfade::finish(state);
     let bytes = state.source_bytes.lock().unwrap().clone();
     let Some(bytes) = bytes else {
         return Ok(());
@@ -200,11 +222,14 @@ pub fn reload_current_track(state: &AudioState) -> Result<(), String> {
     Ok(())
 }
 
+#[allow(clippy::too_many_arguments)]
 pub async fn load_file(
     path: String,
     normalization_cache_dir: Option<PathBuf>,
     normalization_cache_key: Option<String>,
     start_paused: bool,
+    crossfade_length: Option<Duration>,
+    app: &AppHandle,
     state: State<'_, AudioState>,
 ) -> Result<AudioLoadResult, String> {
     let bytes = task::spawn_blocking({
@@ -214,10 +239,20 @@ pub async fn load_file(
     .await
     .map_err(|e| format!("audio file read task failed: {e}"))??;
 
-    stop_current_player(&state);
+    let crossfade_length = crossfade_length.filter(|_| is_audible(&state));
+    if crossfade_length.is_none() {
+        stop_current_player(&state);
+    }
 
+    let silence_cache = silence::cache_file(
+        normalization_cache_dir.as_deref(),
+        normalization_cache_key.as_deref(),
+    );
     let mixer = state.mixer.lock().unwrap().clone();
-    let vol = *state.volume.lock().unwrap();
+    let vol = match crossfade_length {
+        Some(_) => 0.0,
+        None => *state.volume.lock().unwrap(),
+    };
     let normalization_enabled = state.normalization_enabled.load(Ordering::Relaxed);
     let (bytes, new_player, duration_secs, normalization_gain) = build_player_from_bytes(
         bytes,
@@ -233,7 +268,13 @@ pub async fn load_file(
     )
     .await?;
 
-    commit_loaded_track(&state, bytes, new_player, normalization_gain);
+    let previous =
+        commit_loaded_track(&state, bytes, new_player, normalization_gain, silence_cache, vol);
+    match (previous, crossfade_length) {
+        (Some(previous), Some(length)) => crossfade::begin(app, &state, previous, length),
+        (Some(previous), None) => previous.stop(),
+        _ => {}
+    }
 
     Ok(AudioLoadResult { duration_secs })
 }
@@ -320,6 +361,10 @@ pub async fn load_url(
         return Ok(empty_result);
     }
 
+    let silence_cache = silence::cache_file(
+        normalization_cache_dir.as_deref(),
+        normalization_cache_key.as_deref(),
+    );
     let mixer = state.mixer.lock().unwrap().clone();
     let vol = *state.volume.lock().unwrap();
     let normalization_enabled = state.normalization_enabled.load(Ordering::Relaxed);
@@ -337,7 +382,7 @@ pub async fn load_url(
     )
     .await?;
 
-    commit_loaded_track(&state, bytes, new_player, normalization_gain);
+    commit_loaded_track(&state, bytes, new_player, normalization_gain, silence_cache, vol);
 
     Ok(AudioLoadResult { duration_secs })
 }
@@ -356,6 +401,7 @@ pub fn play(state: State<'_, AudioState>) {
         && let Some(ref player) = *player {
             player.play();
         }
+    crossfade::set_paused(&state, false);
 }
 
 pub fn pause(state: State<'_, AudioState>) {
@@ -363,11 +409,13 @@ pub fn pause(state: State<'_, AudioState>) {
         && let Some(ref player) = *player {
             player.pause();
         }
+    crossfade::set_paused(&state, true);
 }
 
 pub fn stop(state: State<'_, AudioState>) {
     state.has_track.store(false, Ordering::Relaxed);
     state.load_gen.fetch_add(1, Ordering::Relaxed);
+    crossfade::finish(&state);
     if let Ok(mut player) = state.player.try_lock()
         && let Some(old) = player.take() {
             old.stop();
@@ -379,6 +427,7 @@ pub fn stop(state: State<'_, AudioState>) {
 
 pub fn seek(position: f64, state: State<'_, AudioState>) -> Result<(), String> {
     suppress_ended_temporarily(&state);
+    crossfade::finish(&state);
     seek_to(&state, position)
 }
 
@@ -443,12 +492,13 @@ pub fn seek_to(state: &AudioState, position: f64) -> Result<(), String> {
             .map_err(|e| format!("Seek to {position:.1}s failed: {e}"))?;
     }
 
+    let volume = main_volume(state);
     let mut player = state.player.lock().unwrap();
     if let Some(old) = player.take() {
         old.stop();
     }
     new_player.set_speed(*state.playback_rate.lock().unwrap());
-    new_player.set_volume(*state.volume.lock().unwrap());
+    new_player.set_volume(volume);
     if !was_paused {
         new_player.play();
     }
@@ -460,8 +510,8 @@ pub fn seek_to(state: &AudioState, position: f64) -> Result<(), String> {
 }
 
 pub fn set_volume(volume: f64, state: State<'_, AudioState>) {
-    let vol = volume_to_rodio(volume);
-    *state.volume.lock().unwrap() = vol;
+    *state.volume.lock().unwrap() = volume_to_rodio(volume);
+    let vol = main_volume(&state);
     if let Some(ref player) = *state.player.lock().unwrap() {
         player.set_volume(vol);
     }

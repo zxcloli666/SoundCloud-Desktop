@@ -4,10 +4,12 @@ import {type Aura, auraRgb, auraRgba, isLight} from '../../lib/aura';
 import {art, dur} from '../../lib/formatters';
 import {ListPlus, Music, pauseBlack14, pauseWhite14, playBlack14, playWhite14,} from '../../lib/icons';
 import {usePerfMode} from '../../lib/perf';
+import {useTrackContextMenu} from '../../lib/useTrackContextMenu';
 import {useTrackPlay} from '../../lib/useTrackPlay';
 import type {Track} from '../../stores/player';
 import {AddToPlaylistDialog} from '../music/AddToPlaylistDialog';
 import {LikeButton} from '../music/LikeButton';
+import {PlayNextButton} from '../music/PlayNextButton';
 import {SaveOfflineRowButton} from '../music/SaveOfflineButton';
 import {sameScdMeta, TrackStatusBadges} from '../music/TrackStatusBadges';
 import {TrackTitleArtist} from '../music/TrackTitleArtist';
@@ -21,6 +23,7 @@ interface AlbumTrackRowProps {
 
 function AlbumTrackRowImpl({ track, position, queue, aura }: AlbumTrackRowProps) {
   const { isThis, isThisPlaying, togglePlay } = useTrackPlay(track, queue);
+  const onContextMenu = useTrackContextMenu(track);
   const cover = art(track.artwork_url, 't200x200');
   const lightAura = isLight(aura);
   const playIcon = lightAura ? playBlack14 : playWhite14;
@@ -29,6 +32,7 @@ function AlbumTrackRowImpl({ track, position, queue, aura }: AlbumTrackRowProps)
 
   return (
     <div
+      onContextMenu={onContextMenu}
       className="group flex items-center gap-4 px-4 py-2.5 rounded-2xl transition-all duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)] select-none"
       style={{
         background: isThis
@@ -115,6 +119,10 @@ function AlbumTrackRowImpl({ track, position, queue, aura }: AlbumTrackRowProps)
             <ListPlus size={14} />
           </button>
         </AddToPlaylistDialog>
+        <PlayNextButton
+          track={track}
+          className="cursor-pointer w-8 h-8 rounded-lg flex items-center justify-center text-white/30 hover:text-white/80 hover:bg-white/[0.06] opacity-0 group-hover:opacity-100 transition-all"
+        />
       </div>
 
       <span className="text-[12px] text-white/30 tabular-nums font-medium shrink-0 w-12 text-right">

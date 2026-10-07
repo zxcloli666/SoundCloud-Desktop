@@ -17,6 +17,7 @@ import {
 } from '../../lib/icons';
 import {usePerfMode} from '../../lib/perf';
 import {useArtistLinkItems, useTrackDisplay} from '../../lib/track-display';
+import {useTrackContextMenu} from '../../lib/useTrackContextMenu';
 import {usePlayerStore} from '../../stores/player';
 import {ArtistNameLinks} from '../music/ArtistNameLinks';
 import {TrackStatusBadges} from '../music/TrackStatusBadges';
@@ -81,6 +82,7 @@ export const OfflineTrackRow = React.memo(function OfflineTrackRow({
   const isCurrent = usePlayerStore((s) => s.currentTrack?.urn === entry.urn);
   const { track, inv } = entry;
   const display = useTrackDisplay(track);
+  const onContextMenu = useTrackContextMenu(track);
   const artistLinks = useArtistLinkItems(track);
   const cached = inv !== null;
   const downloading = downloadProgress !== undefined;
@@ -106,6 +108,7 @@ export const OfflineTrackRow = React.memo(function OfflineTrackRow({
 
   return (
     <div
+      onContextMenu={onContextMenu}
       className={`group relative grid h-full select-none grid-cols-[28px_minmax(0,1fr)_88px_64px] items-center gap-3 border-b border-white/[0.045] pl-2 pr-4 transition-colors md:grid-cols-[28px_minmax(0,1fr)_auto_88px_64px] ${
         forging ? '' : 'hover:bg-white/[0.03]'
       } ${!cached && likesSection ? 'opacity-60' : ''}`}

@@ -13,6 +13,7 @@ import {art} from '../../lib/formatters';
 import {usePerfMode} from '../../lib/perf';
 import {isPreviewOnly} from '../../lib/track-access';
 import {useArtistDisplay, useDisplayTitle} from '../../lib/track-display';
+import {useTrackContextMenu} from '../../lib/useTrackContextMenu';
 import {useTrackPlay} from '../../lib/useTrackPlay';
 import type {Track} from '../../stores/player';
 import {hashStr, type WallItem} from './utils';
@@ -48,6 +49,7 @@ export const CoverTile = memo(function CoverTile({
   const artistDisplay = useArtistDisplay(track);
   const { isThis, isThisPlaying, togglePlay } = useTrackPlay(track, getQueue, onPlay);
   const previewing = useIsPreviewActive(track.urn);
+  const onContextMenu = useTrackContextMenu(track);
 
   const cover = art(track.artwork_url, hero ? 't500x500' : 't300x300');
   const span = hero ? 'span 2' : 'span 1';
@@ -69,6 +71,10 @@ export const CoverTile = memo(function CoverTile({
   return (
     <div
       className={`tg-tile group relative${kind === 'vibe' ? ' tg-vibe' : ''}`}
+      onContextMenu={(e) => {
+        hardStopHoverPreview();
+        onContextMenu(e);
+      }}
       style={{
         gridColumn: span,
         gridRow: span,

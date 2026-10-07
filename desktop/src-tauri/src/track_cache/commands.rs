@@ -129,6 +129,30 @@ impl ResolvedRequest {
 }
 
 #[tauri::command]
+pub async fn track_upgrade_cached(
+    request: EnsureCachedRequest,
+    state: State<'_, TrackCacheState>,
+) -> Result<bool, String> {
+    let urn = require_track_urn(&request.urn)?;
+    let fallback_urls = request.fallback_urls().unwrap_or_default();
+    let storage_urls = request.storage_urls.unwrap_or_default();
+    let download_urls = request.download_urls.unwrap_or_default();
+    Ok(state
+        .upgrade_cached(CacheRequest {
+            urn: &urn,
+            urls: &fallback_urls,
+            download_urls: &download_urls,
+            storage_urls: &storage_urls,
+            session_id: request.session_id.as_deref(),
+            hq: true,
+            storage_quality: request.storage_quality.as_deref(),
+            liked: false,
+            expected_duration_ms: request.duration_ms,
+        })
+        .await)
+}
+
+#[tauri::command]
 pub async fn track_export(
     request: EnsureCachedRequest,
     dest_path: String,

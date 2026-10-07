@@ -1,12 +1,17 @@
 import {create} from 'zustand';
 import {createJSONStorage, persist} from 'zustand/middleware';
 import {normalizeAudioCacheLimit, normalizeImageCacheLimit} from '../lib/cache-limit';
+import {EQ_CUSTOM_PRESET_LIMIT, EQ_PRESET_NAME_MAX, type EqCustomPreset} from '../lib/equalizer';
 import type {PerfMode} from '../lib/perf';
 import {tauriStorage} from '../lib/tauri-storage';
 
 export type ThemePreset = 'soundcloud' | 'dark' | 'neon' | 'forest' | 'crimson' | 'custom';
 export type StartupPage = 'home' | 'search' | 'library' | 'settings';
 export type DiscordRpcMode = 'track' | 'artist' | 'activity';
+export type StreamQuality = 'auto' | 'sq' | 'hq';
+export type SkipStuckAfterSec = 0 | 10 | 20 | 30 | 60;
+export type SearchPlayback = 'similar' | 'results';
+export const CROSSFADE_MAX_SEC = 12;
 export interface SidebarPinnedPlaylist {
   urn: string;
   title: string;
@@ -73,8 +78,14 @@ export interface SettingsState {
   eqEnabled: boolean;
   eqGains: number[];
   eqPreset: string;
+  eqCustomPresets: EqCustomPreset[];
   normalizeVolume: boolean;
-  highQualityStreaming: boolean;
+  skipSilence: boolean;
+  streamQuality: StreamQuality;
+  skipStuckAfterSec: SkipStuckAfterSec;
+  crossfadeSec: number;
+  autoplay: boolean;
+  searchPlayback: SearchPlayback;
   bypassWhitelist: boolean;
   sidebarCollapsed: boolean;
   floatingComments: boolean;
@@ -107,8 +118,15 @@ export interface SettingsState {
   setEqGains: (gains: number[]) => void;
   setEqPreset: (preset: string) => void;
   setEqBand: (index: number, gain: number) => void;
+  saveEqCustomPreset: (name: string) => void;
+  deleteEqCustomPreset: (id: string) => void;
   setNormalizeVolume: (enabled: boolean) => void;
-  setHighQualityStreaming: (enabled: boolean) => void;
+  setSkipSilence: (enabled: boolean) => void;
+  setStreamQuality: (quality: StreamQuality) => void;
+  setSkipStuckAfterSec: (seconds: SkipStuckAfterSec) => void;
+  setCrossfadeSec: (seconds: number) => void;
+  setAutoplay: (enabled: boolean) => void;
+  setSearchPlayback: (mode: SearchPlayback) => void;
   setBypassWhitelist: (enabled: boolean) => void;
   toggleSidebar: () => void;
   setFloatingComments: (v: boolean) => void;
@@ -149,8 +167,14 @@ const DEFAULTS = {
   eqEnabled: false,
   eqGains: DEFAULT_EQ_GAINS,
   eqPreset: 'flat',
+  eqCustomPresets: [] as EqCustomPreset[],
   normalizeVolume: true,
-  highQualityStreaming: false,
+  skipSilence: false,
+  streamQuality: 'auto' as StreamQuality,
+  skipStuckAfterSec: 0 as SkipStuckAfterSec,
+  crossfadeSec: 0,
+  autoplay: true,
+  searchPlayback: 'similar' as SearchPlayback,
   bypassWhitelist: false,
   sidebarCollapsed: false,
   floatingComments: true,
@@ -201,8 +225,39 @@ export const useSettingsStore = create<SettingsState>()(
           eqGains[index] = gain;
           return { eqGains, eqPreset: 'custom' };
         }),
+      saveEqCustomPreset: (rawName) =>
+        set((s) => {
+          const name = rawName.trim().slice(0, EQ_PRESET_NAME_MAX);
+          if (!name) return {};
+          const gains = [...s.eqGains];
+          const existing = s.eqCustomPresets.find(
+            (p) => p.name.toLocaleLowerCase() === name.toLocaleLowerCase(),
+          );
+          if (existing) {
+            return {
+              eqCustomPresets: s.eqCustomPresets.map((p) =>
+                p.id === existing.id ? { ...p, name, gains } : p,
+              ),
+              eqPreset: existing.id,
+            };
+          }
+          if (s.eqCustomPresets.length >= EQ_CUSTOM_PRESET_LIMIT) return {};
+          const id = `user-${Date.now().toString(36)}`;
+          return { eqCustomPresets: [...s.eqCustomPresets, { id, name, gains }], eqPreset: id };
+        }),
+      deleteEqCustomPreset: (id) =>
+        set((s) => ({
+          eqCustomPresets: s.eqCustomPresets.filter((p) => p.id !== id),
+          eqPreset: s.eqPreset === id ? 'custom' : s.eqPreset,
+        })),
       setNormalizeVolume: (normalizeVolume) => set({ normalizeVolume }),
-      setHighQualityStreaming: (highQualityStreaming) => set({ highQualityStreaming }),
+      setSkipSilence: (skipSilence) => set({ skipSilence }),
+      setStreamQuality: (streamQuality) => set({ streamQuality }),
+      setSkipStuckAfterSec: (skipStuckAfterSec) => set({ skipStuckAfterSec }),
+      setCrossfadeSec: (seconds) =>
+        set({ crossfadeSec: Math.min(CROSSFADE_MAX_SEC, Math.max(0, Math.round(seconds))) }),
+      setAutoplay: (autoplay) => set({ autoplay }),
+      setSearchPlayback: (searchPlayback) => set({ searchPlayback }),
       setBypassWhitelist: (bypassWhitelist) => set({ bypassWhitelist }),
       toggleSidebar: () => set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
       setFloatingComments: (floatingComments) => set({ floatingComments }),
@@ -243,28 +298,32 @@ export const useSettingsStore = create<SettingsState>()(
     {
       name: 'sc-settings',
       storage: createJSONStorage(() => tauriStorage),
-      version: 20,
-      migrate: (persistedState) => {
+      version: 21,
+      migrate: (persistedState, version) => {
         const prev = (persistedState ?? {}) as Partial<SettingsState> & {
           soundwaveDiversity?: number;
+          highQualityStreaming?: boolean;
         };
+        const { highQualityStreaming, ...kept } = prev;
         // v13 → v14: diversity-slider (0..1) → toggle ('similar' | 'diverse').
         // > 0.5 трактуем как 'diverse', иначе 'similar'.
         const inferredMode: 'similar' | 'diverse' =
           typeof prev.soundwaveDiversity === 'number' && prev.soundwaveDiversity > 0.5
             ? 'diverse'
             : 'similar';
-        return {
+        const next = {
           ...DEFAULTS,
-          ...prev,
+          ...kept,
           soundwaveMode: prev.soundwaveMode ?? inferredMode,
-          audioCacheLimitMB: normalizeAudioCacheLimit(
-            prev.audioCacheLimitMB ?? DEFAULTS.audioCacheLimitMB,
-          ),
-          imageCacheLimitMB: normalizeImageCacheLimit(
-            prev.imageCacheLimitMB ?? DEFAULTS.imageCacheLimitMB,
-          ),
         } as SettingsState;
+        if (version < 20) {
+          next.audioCacheLimitMB = normalizeAudioCacheLimit(next.audioCacheLimitMB);
+          next.imageCacheLimitMB = normalizeImageCacheLimit(next.imageCacheLimitMB);
+        }
+        if (version < 21) {
+          next.streamQuality = prev.streamQuality ?? (highQualityStreaming ? 'hq' : 'auto');
+        }
+        return next;
       },
       partialize: (s) => ({
         accentColor: s.accentColor,
@@ -285,8 +344,14 @@ export const useSettingsStore = create<SettingsState>()(
         eqEnabled: s.eqEnabled,
         eqGains: s.eqGains,
         eqPreset: s.eqPreset,
+        eqCustomPresets: s.eqCustomPresets,
         normalizeVolume: s.normalizeVolume,
-        highQualityStreaming: s.highQualityStreaming,
+        skipSilence: s.skipSilence,
+        streamQuality: s.streamQuality,
+        skipStuckAfterSec: s.skipStuckAfterSec,
+        crossfadeSec: s.crossfadeSec,
+        autoplay: s.autoplay,
+        searchPlayback: s.searchPlayback,
         bypassWhitelist: s.bypassWhitelist,
         sidebarCollapsed: s.sidebarCollapsed,
         floatingComments: s.floatingComments,

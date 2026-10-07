@@ -25,7 +25,11 @@ export type ResolvedStreamingTrack = Partial<Track> & {
 };
 
 export function isHqStreaming(): boolean {
-  return useSettingsStore.getState().highQualityStreaming && getIsPremium();
+  return useSettingsStore.getState().streamQuality !== 'sq' && getIsPremium();
+}
+
+export function wantsHqUpgrade(): boolean {
+  return useSettingsStore.getState().streamQuality === 'hq' && getIsPremium();
 }
 
 // ─── Host resolution ────────────────────────────────────────

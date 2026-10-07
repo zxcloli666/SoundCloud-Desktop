@@ -52,6 +52,10 @@ export async function autopilotContinueFromTrack(lastTrack: Track): Promise<void
     // 0) Контекст (лайки/…) доигрывается до конца перед волной.
     if (await continueFromContextSource(stale)) return;
     if (stale()) return;
+    if (!useSettingsStore.getState().autoplay) {
+      usePlayerStore.getState().pause();
+      return;
+    }
 
     if (isLocalUrn(lastTrack.urn)) {
       usePlayerStore.getState().pause();

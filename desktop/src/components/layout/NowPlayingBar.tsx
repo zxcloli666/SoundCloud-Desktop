@@ -43,6 +43,7 @@ import {isLocalUrn} from '../../lib/local-library';
 import {rememberLikedUrn} from '../../lib/offline-index';
 import {usePerfMode} from '../../lib/perf';
 import {useArtistDisplay, useArtistLinkItems, useDisplayTitle} from '../../lib/track-display';
+import {useTrackContextMenu} from '../../lib/useTrackContextMenu';
 import {useLyricsStore} from '../../stores/lyrics';
 import {
     AB_MIN_GAP,
@@ -59,6 +60,7 @@ import {
 import {useSettingsStore} from '../../stores/settings';
 import {ArtistNameLinks} from '../music/ArtistNameLinks';
 import {EqualizerPanel} from '../music/EqualizerPanel';
+import {TrackSoundToggle} from '../music/TrackSoundToggle';
 import {UploadKindDot} from '../music/UploadKindDot';
 import {VolumeFlyout, VolumeLabel, VolumeSlider} from './VolumeControls';
 
@@ -833,6 +835,7 @@ const TuningBtn = React.memo(() => {
             <PitchModeToggle />
             <PlaybackRateSlider />
             <PitchSlider />
+            <TrackSoundToggle compact />
           </div>
         </Popover.Content>
       </Popover.Portal>
@@ -880,9 +883,10 @@ const PillTrackBody = React.memo(function PillTrackBody({
   const artworkSmall = art(track.artwork_url, 't200x200');
   const hasArtistLink = artistLinks.some((it) => it.target);
   const loadedPercent = loadProgress == null ? null : loadPercent(loadProgress);
+  const onContextMenu = useTrackContextMenu(track);
 
   return (
-    <div className="npb-meta">
+    <div className="npb-meta" onContextMenu={onContextMenu}>
       <div className="npb-art" onClick={() => openLyricsPanel({ rightPanelOpen: false })}>
         {artworkSmall ? <img src={artworkSmall} alt="" /> : <div className="npb-artfb" />}
         {/* spinning vinyl ring + live "playing" equaliser — animated only while playing */}
