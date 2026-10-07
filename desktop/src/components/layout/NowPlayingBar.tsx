@@ -20,6 +20,7 @@ import {art, formatTime} from '../../lib/formatters';
 import {invalidateAllLikesCache} from '../../lib/hooks';
 import {
     audioLines16,
+    HardDrive,
     Heart,
     Loader2,
     listMusic16,
@@ -37,6 +38,7 @@ import {
     X,
 } from '../../lib/icons';
 import {optimisticToggleLike} from '../../lib/likes';
+import {isLocalUrn} from '../../lib/local-library';
 import {usePerfMode} from '../../lib/perf';
 import {useArtistDisplay, useArtistLinkItems, useDisplayTitle} from '../../lib/track-display';
 import {useLyricsStore} from '../../stores/lyrics';
@@ -911,7 +913,11 @@ const PillTrackBody = React.memo(function PillTrackBody({
       <div className="npb-txt">
         <span
           className="npb-ttl"
-          onClick={() => navigate(`/track/${encodeURIComponent(track.urn)}`)}
+          onClick={() =>
+            isLocalUrn(track.urn)
+              ? navigate('/offline', { state: { section: 'local' } })
+              : navigate(`/track/${encodeURIComponent(track.urn)}`)
+          }
         >
           {displayTitle}
         </span>
@@ -931,7 +937,20 @@ const PillTrackBody = React.memo(function PillTrackBody({
 const ReactCluster = React.memo(() => {
   const urn = usePlayerStore((s) => s.currentTrack?.urn);
   if (!urn) return null;
+  if (isLocalUrn(urn)) return <LocalFileBadge />;
   return <ReactClusterBody urn={urn} />;
+});
+
+const LocalFileBadge = React.memo(() => {
+  const { t } = useTranslation();
+  return (
+    <div className="flex w-[10.75rem] items-center justify-center">
+      <span className="flex items-center gap-1.5 rounded-full border border-white/[0.1] bg-white/[0.04] px-2.5 py-1 text-[10.5px] font-semibold uppercase tracking-[0.12em] text-white/50">
+        <HardDrive size={11} />
+        {t('local.badge')}
+      </span>
+    </div>
+  );
 });
 
 // Single track-query + dislike observer shared by both reaction buttons.

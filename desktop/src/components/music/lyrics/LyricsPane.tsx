@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Loader2, MicVocal, Search } from '../../../lib/icons';
+import { isLocalUrn } from '../../../lib/local-library';
 import { getLyricsByTrack, searchLyricsManual } from '../../../lib/lyrics';
 import { getTrackDisplay } from '../../../lib/track-display';
 import type { Track } from '../../../stores/player';
@@ -141,7 +142,9 @@ export const LyricsPane = React.memo(({ track }: { track: Track }) => {
     queryFn: () =>
       manualQuery
         ? searchLyricsManual(manualQuery.artist, manualQuery.title, track.duration)
-        : getLyricsByTrack(track.urn),
+        : isLocalUrn(track.urn)
+          ? Promise.resolve(null)
+          : getLyricsByTrack(track.urn),
     staleTime: (query) => (query.state.data?.status === 'pending' ? 0 : Number.POSITIVE_INFINITY),
     refetchInterval: (query) =>
       query.state.data?.status === 'pending' && query.state.status !== 'error'
