@@ -11,6 +11,7 @@ import {
 import {useEffect, useMemo, useRef} from 'react';
 import {useAuthStore} from '../stores/auth';
 import type {Track} from '../stores/player';
+import {useSettingsStore} from '../stores/settings';
 import {api, isRefreshPending} from './api';
 import type {ApiRequestOptions} from './api-client';
 import {
@@ -21,7 +22,12 @@ import {
 } from './collection-sync';
 import {initLikedUrns} from './likes';
 import {rememberLikedTracks, rememberTracks} from './offline-index';
-import {editPlaylistTracks, toastPlaylistEditError} from './playlist-edits';
+import {
+  editPlaylistTracks,
+  type PlaylistDetails,
+  toastPlaylistEditError,
+  updatePlaylistDetails,
+} from './playlist-edits';
 import {fetchRelatedTracks} from './related';
 
 /* ── Types ─────────────────────────────────────────────────────── */
@@ -819,6 +825,23 @@ export function useSetPlaylistSharing(playlistUrn: string | undefined) {
       qc.invalidateQueries({ queryKey: ['playlist', playlistUrn] });
       qc.invalidateQueries({ queryKey: ['me', 'playlists'] });
       // Список своих плейлистов на профиле — ['user', urn, 'playlists'].
+      qc.invalidateQueries({ queryKey: ['user'] });
+    },
+  });
+}
+
+export function useUpdatePlaylistDetails(playlistUrn: string | undefined) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (details: PlaylistDetails) => updatePlaylistDetails(playlistUrn!, details),
+    onError: toastPlaylistEditError,
+    onSuccess: (_data, details) => {
+      qc.setQueryData<Playlist>(['playlist', playlistUrn], (old) =>
+        old ? { ...old, title: details.title, description: details.description || null } : old,
+      );
+      useSettingsStore.getState().renamePinnedPlaylist(playlistUrn!, details.title);
+      qc.invalidateQueries({ queryKey: ['playlist', playlistUrn], exact: true });
+      qc.invalidateQueries({ queryKey: ['me', 'playlists'] });
       qc.invalidateQueries({ queryKey: ['user'] });
     },
   });

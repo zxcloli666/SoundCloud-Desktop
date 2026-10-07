@@ -112,6 +112,7 @@ export interface SettingsState {
   setStartupPage: (page: StartupPage) => void;
   pinPlaylist: (playlist: SidebarPinnedPlaylist) => void;
   unpinPlaylist: (urn: string) => void;
+  renamePinnedPlaylist: (urn: string, title: string) => void;
   setDiscordRpcEnabled: (enabled: boolean) => void;
   setDiscordRpcMode: (mode: DiscordRpcMode) => void;
   setDiscordRpcShowButton: (show: boolean) => void;
@@ -212,6 +213,12 @@ export const useSettingsStore = create<SettingsState>()(
       unpinPlaylist: (urn) =>
         set((s) => ({
           pinnedPlaylists: s.pinnedPlaylists.filter((item) => item.urn !== urn),
+        })),
+      renamePinnedPlaylist: (urn, title) =>
+        set((s) => ({
+          pinnedPlaylists: s.pinnedPlaylists.map((item) =>
+            item.urn === urn ? { ...item, title } : item,
+          ),
         })),
       setDiscordRpcEnabled: (discordRpcEnabled) => set({ discordRpcEnabled }),
       setDiscordRpcMode: (discordRpcMode) => set({ discordRpcMode }),

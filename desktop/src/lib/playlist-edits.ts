@@ -37,6 +37,19 @@ export async function editPlaylistTracks(playlistUrn: string, edit: object): Pro
   }
 }
 
+export interface PlaylistDetails {
+  title: string;
+  description: string;
+}
+
+export function updatePlaylistDetails(playlistUrn: string, details: PlaylistDetails) {
+  return api(`/playlists/${encodeURIComponent(playlistUrn)}`, {
+    method: 'PUT',
+    body: JSON.stringify({ playlist: details }),
+    silentStatuses: ANSWERED_STATUSES,
+  });
+}
+
 export function toastPlaylistEditError(error: unknown) {
   if (isRefreshPending(error)) {
     toast.error(i18n.t('playlist.awaitingSync'));
