@@ -6,6 +6,7 @@ import {usePerfMode} from '../../lib/perf';
 import {CopyLinkButton} from '../ui/CopyLinkButton';
 import {GlassHeroPanel} from '../ui/GlassHeroPanel';
 import {PinArtistButton} from '../ui/PinArtistButton';
+import {UploadTrackButton} from '../upload/UploadTrackButton';
 import {AuraPicker} from './AuraPicker';
 import {AvatarArtifact} from './AvatarArtifact';
 import {FollowBtn} from './FollowBtn';
@@ -152,6 +153,7 @@ export function IdentityHub({
                 }}
               />
             )}
+            {isOwnProfile && <UploadTrackButton aura={aura} />}
             {user.permalink_url && <CopyLinkButton url={user.permalink_url} />}
             {hasStar && isOwnProfile && (
               <AuraPicker

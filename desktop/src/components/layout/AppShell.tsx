@@ -13,6 +13,7 @@ import {useLyricsStore} from '../../stores/lyrics';
 import {usePlayerStore} from '../../stores/player';
 import {useSettingsStore} from '../../stores/settings';
 import {AddToPlaylistHost} from '../music/AddToPlaylistHost';
+import {UploadTrackDialog} from '../upload/UploadTrackDialog';
 import {NowPlayingBar} from './NowPlayingBar';
 import {Sidebar} from './Sidebar';
 import {Titlebar} from './Titlebar';
@@ -458,6 +459,7 @@ export const AppShell = React.memo(() => {
       </div>
       <NowPlayingBar onQueueToggle={onQueueToggle} queueOpen={queueOpen} />
       <AddToPlaylistHost />
+      <UploadTrackDialog />
       {queueOpen && (
         <Suspense fallback={null}>
           <QueuePanel open={queueOpen} onClose={onQueueClose} />

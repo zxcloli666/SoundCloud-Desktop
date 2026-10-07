@@ -19,6 +19,7 @@ import {
   ChevronLeft as _ChevronLeft,
   ChevronRight as _ChevronRight,
   ChevronUp as _ChevronUp,
+  CircleCheck as _CircleCheck,
   ClipboardCopy as _ClipboardCopy,
   Clock as _Clock,
   Cloud as _Cloud,
@@ -38,6 +39,7 @@ import {
   Headphones as _Headphones,
   Heart as _Heart,
   Home as _Home,
+  Image as _Image,
   Library as _Library,
   Link as _Link,
   Link2 as _Link2,
@@ -65,6 +67,7 @@ import {
   Search as _Search,
   Send as _Send,
   Settings as _Settings,
+  Shield as _Shield,
   Shuffle as _Shuffle,
   SkipBack as _SkipBack,
   SkipForward as _SkipForward,
@@ -75,6 +78,7 @@ import {
   Star as _Star,
   ThumbsDown as _ThumbsDown,
   Trash2 as _Trash2,
+  Upload as _Upload,
   User as _User,
   Users as _Users,
   Volume1 as _Volume1,
@@ -122,6 +126,7 @@ export const ArrowRight = memo(_ArrowRight);
 export const ArrowUpDown = memo(_ArrowUpDown);
 export const ChevronRight = memo(_ChevronRight);
 export const ChevronUp = memo(_ChevronUp);
+export const CircleCheck = memo(_CircleCheck);
 export const Clock = memo(_Clock);
 export const Bookmark = memo(_Bookmark);
 export const Cloud = memo(_Cloud);
@@ -137,6 +142,7 @@ export const Hash = memo(_Hash);
 export const Headphones = memo(_Headphones);
 export const Heart = memo(_Heart);
 export const Home = memo(_Home);
+export const ImageIcon = memo(_Image);
 export const Instagram = memo(({ size, className }: { size?: number; className?: string }) => (
   <SimpleIcon icon={siInstagram} size={size} className={className} />
 ));
@@ -165,6 +171,7 @@ export const Repeat2 = memo(_Repeat2);
 export const Search = memo(_Search);
 export const Send = memo(_Send);
 export const Settings = memo(_Settings);
+export const Shield = memo(_Shield);
 export const Shuffle = memo(_Shuffle);
 export const Smartphone = memo(_Smartphone);
 export const SkipBack = memo(_SkipBack);
@@ -177,6 +184,7 @@ export const Trash2 = memo(_Trash2);
 export const Twitter = memo(({ size, className }: { size?: number; className?: string }) => (
   <SimpleIcon icon={siX} size={size} className={className} />
 ));
+export const Upload = memo(_Upload);
 export const User = memo(_User);
 export const Users = memo(_Users);
 export const Volume1 = memo(_Volume1);

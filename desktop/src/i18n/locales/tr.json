@@ -1042,5 +1042,46 @@
       "delayed": "SoundCloud uygulamadan gelen değişiklikleri geçici olarak kabul etmiyor. {{count}} değişiklik kaydedildi ve otomatik olarak gönderilecek, sonraki deneme {{time}} sonra.",
       "failed": "SoundCloud bazı değişiklikleri reddetti. Uygulamada kalırlar ve SoundCloud izin verdikçe yeniden denenirler."
     }
+  },
+  "upload": {
+    "button": "Parça yükle",
+    "buttonBusy": "Yükleniyor %{{percent}}",
+    "title": "Parça yükle",
+    "subtitle": "Kendi müziğini SoundCloud'da yayınla",
+    "chooseAudio": "Bir ses dosyası seç",
+    "formats": "WAV, FLAC, AIFF, MP3, AAC, OGG veya WMA, en fazla 300 MB",
+    "audioFiles": "Ses",
+    "images": "Görseller",
+    "change": "Değiştir",
+    "addArtwork": "Kapak ekle",
+    "removeArtwork": "Kapağı kaldır",
+    "rights": "Yalnızca kendi yaptığın veya hakkına sahip olduğun müziği yükle. SoundCloud telif hakkını ihlal eden parçaları kaldırabilir ve hesabı cezalandırabilir.",
+    "start": "Yükle",
+    "sending": "Dosya gönderiliyor...",
+    "handingOff": "SoundCloud'a aktarılıyor...",
+    "keepsRunning": "Bu pencereyi kapatabilirsin, yükleme devam eder",
+    "cancel": "Yüklemeyi iptal et",
+    "cancelled": "Yükleme iptal edildi",
+    "done": "\"{{title}}\" SoundCloud'da",
+    "doneToast": "\"{{title}}\" SoundCloud'a yüklendi",
+    "failedToast": "Parça yüklenemedi",
+    "processingHint": "SoundCloud sesi işliyor. Parça birkaç dakika içinde dinlenebilir olacak.",
+    "another": "Başka bir tane yükle",
+    "openTrack": "Parçayı aç",
+    "tryAgain": "Tekrar dene",
+    "errors": {
+      "failed": "Parça yüklenemedi, daha sonra tekrar dene",
+      "network": "Yükleme sırasında bağlantı koptu, tekrar dene",
+      "fileUnreadable": "Ses dosyası okunamadı",
+      "artwork": "Kapak JPEG veya PNG olmalı",
+      "artworkTooLarge": "Kapak 8 MB'tan büyük",
+      "tooLarge": "Dosya 300 MB'tan büyük",
+      "format": "SoundCloud bu ses biçimini kabul etmiyor",
+      "inProgress": "Hesabından başka bir yükleme hâlâ sürüyor",
+      "busy": "Şu anda çok fazla yükleme var, bir dakika sonra tekrar dene",
+      "invalid": "Başlığı ve diğer alanları kontrol et",
+      "session": "Oturumun sona erdi, tekrar giriş yap",
+      "rejected": "SoundCloud yüklemeyi reddetti. Hesabın yükleme sınırına ulaşmış olabilir."
+    }
   }
 }

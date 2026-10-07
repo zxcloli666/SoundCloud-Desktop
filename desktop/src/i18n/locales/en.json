@@ -1238,5 +1238,46 @@
       "delayed_other": "SoundCloud is temporarily refusing changes from the app. {{count}} changes are saved and will be sent automatically, next try in {{time}}.",
       "failed": "SoundCloud rejected some changes. They stay in the app and are retried while SoundCloud allows it."
     }
+  },
+  "upload": {
+    "button": "Upload track",
+    "buttonBusy": "Uploading {{percent}}%",
+    "title": "Upload a track",
+    "subtitle": "Publish your own music to SoundCloud",
+    "chooseAudio": "Choose an audio file",
+    "formats": "WAV, FLAC, AIFF, MP3, AAC, OGG or WMA, up to 300 MB",
+    "audioFiles": "Audio",
+    "images": "Images",
+    "change": "Change",
+    "addArtwork": "Add cover",
+    "removeArtwork": "Remove cover",
+    "rights": "Upload only music you made or have the rights to. SoundCloud may take down tracks that break copyright and penalize the account.",
+    "start": "Upload",
+    "sending": "Sending the file...",
+    "handingOff": "Handing it to SoundCloud...",
+    "keepsRunning": "You can close this window, the upload keeps going",
+    "cancel": "Cancel upload",
+    "cancelled": "Upload cancelled",
+    "done": "\"{{title}}\" is on SoundCloud",
+    "doneToast": "\"{{title}}\" uploaded to SoundCloud",
+    "failedToast": "Track upload failed",
+    "processingHint": "SoundCloud is processing the audio. The track becomes playable in a few minutes.",
+    "another": "Upload another",
+    "openTrack": "Open track",
+    "tryAgain": "Try again",
+    "errors": {
+      "failed": "Couldn't upload the track, try again later",
+      "network": "The connection dropped during the upload, try again",
+      "fileUnreadable": "Couldn't read the audio file",
+      "artwork": "The cover must be a JPEG or PNG image",
+      "artworkTooLarge": "The cover is larger than 8 MB",
+      "tooLarge": "The file is larger than 300 MB",
+      "format": "SoundCloud doesn't accept this audio format",
+      "inProgress": "Another upload from your account is still running",
+      "busy": "Too many uploads right now, try again in a minute",
+      "invalid": "Check the title and the other fields",
+      "session": "Your session expired, sign in again",
+      "rejected": "SoundCloud refused the upload. Your account may have reached its upload limit."
+    }
   }
 }
