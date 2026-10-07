@@ -1031,5 +1031,64 @@
     "scAccounts": "SoundCloud hesapları",
     "mainAccount": "Ana",
     "demoAccount": "Demo"
+  },
+  "stats": {
+    "title": "Dinleme istatistikleri",
+    "period": {
+      "week": "Hafta",
+      "month": "Ay",
+      "year": "Yıl",
+      "all": "Tüm zamanlar"
+    },
+    "versus": {
+      "week": "önceki 7 güne göre",
+      "month": "önceki 30 güne göre",
+      "year": "önceki yıla göre",
+      "all": ""
+    },
+    "listeningTime": "Dinleme süresi",
+    "unitHour": "sa",
+    "unitMinute": "dk",
+    "minutes_one": "{{count}} dk",
+    "minutes_other": "{{count}} dk",
+    "hours_one": "{{count}} sa",
+    "hours_other": "{{count}} sa",
+    "hoursMinutes": "{{hours}} sa {{minutes}} dk",
+    "plays": "Dinlenme",
+    "tracks": "Parçalar",
+    "artists": "Sanatçılar",
+    "peak": "En yoğun",
+    "playsCount_one": "{{formatted}} dinlenme",
+    "playsCount_other": "{{formatted}} dinlenme",
+    "tracksCount_one": "{{formatted}} parça",
+    "tracksCount_other": "{{formatted}} parça",
+    "playsUnit_one": "kez",
+    "playsUnit_other": "kez",
+    "topArtist": "En çok dinlediğin sanatçı",
+    "topArtists": "En iyi sanatçılar",
+    "topTracks": "En iyi parçalar",
+    "playAll": "Tümünü çal",
+    "rhythm": "Ne zaman dinliyorsun",
+    "kind": {
+      "night": "Gece kuşu",
+      "morning": "Erkenci",
+      "day": "Gündüz dinleyicisi",
+      "evening": "Akşam dinleyicisi"
+    },
+    "kindShare": {
+      "night": "Dinlemelerinin %{{percent}} kadarı gece yarısından sonra",
+      "morning": "Dinlemelerinin %{{percent}} kadarı sabah",
+      "day": "Dinlemelerinin %{{percent}} kadarı öğleden sonra",
+      "evening": "Dinlemelerinin %{{percent}} kadarı akşam"
+    },
+    "peakHour": "Yoğun saat",
+    "peakDay": "Favori gün",
+    "emptyTitle": "Bu dönemde henüz dinleme yok",
+    "emptyHint": "Biraz müzik çal, istatistiklerin burada oluşsun: süre, en iyi parçalar, sanatçılar ve dinleme ritmin.",
+    "loadFailed": "İstatistikler yüklenemedi",
+    "approxNote": "Dinleme süresi yaklaşıktır: her dinleme parçanın tam uzunluğu kadar sayılır.",
+    "teaserTitle": "Bu ay müzikte sen",
+    "teaserTopArtist": "en çok: {{name}}",
+    "open": "İstatistikler"
   }
 }

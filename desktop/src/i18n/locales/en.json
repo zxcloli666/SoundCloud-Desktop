@@ -1228,5 +1228,64 @@
     "noMatches": "Nothing matches “{{query}}”",
     "capAlbums": "That's the cream of the crop — narrow the genre or search to dig deeper.",
     "capArtists": "That's the cream of the crop — pick a tag or search to dig deeper."
+  },
+  "stats": {
+    "title": "Listening stats",
+    "period": {
+      "week": "Week",
+      "month": "Month",
+      "year": "Year",
+      "all": "All time"
+    },
+    "versus": {
+      "week": "vs the previous 7 days",
+      "month": "vs the previous 30 days",
+      "year": "vs the year before",
+      "all": ""
+    },
+    "listeningTime": "Listening time",
+    "unitHour": "h",
+    "unitMinute": "min",
+    "minutes_one": "{{count}} min",
+    "minutes_other": "{{count}} min",
+    "hours_one": "{{count}} h",
+    "hours_other": "{{count}} h",
+    "hoursMinutes": "{{hours}} h {{minutes}} min",
+    "plays": "Plays",
+    "tracks": "Tracks",
+    "artists": "Artists",
+    "peak": "Busiest",
+    "playsCount_one": "{{formatted}} play",
+    "playsCount_other": "{{formatted}} plays",
+    "tracksCount_one": "{{formatted}} track",
+    "tracksCount_other": "{{formatted}} tracks",
+    "playsUnit_one": "play",
+    "playsUnit_other": "plays",
+    "topArtist": "Your top artist",
+    "topArtists": "Top artists",
+    "topTracks": "Top tracks",
+    "playAll": "Play all",
+    "rhythm": "When you listen",
+    "kind": {
+      "night": "Night owl",
+      "morning": "Early bird",
+      "day": "Daytime listener",
+      "evening": "Evening listener"
+    },
+    "kindShare": {
+      "night": "{{percent}}% of your plays happen after midnight",
+      "morning": "{{percent}}% of your plays happen in the morning",
+      "day": "{{percent}}% of your plays happen in the afternoon",
+      "evening": "{{percent}}% of your plays happen in the evening"
+    },
+    "peakHour": "Peak hour",
+    "peakDay": "Favourite day",
+    "emptyTitle": "No plays in this period yet",
+    "emptyHint": "Play some music and your stats will build up here: time, top tracks, artists and your listening rhythm.",
+    "loadFailed": "Could not load your stats",
+    "approxNote": "Listening time is approximate: every play counts the full track length.",
+    "teaserTitle": "Your month in music",
+    "teaserTopArtist": "most played: {{name}}",
+    "open": "Stats"
   }
 }
