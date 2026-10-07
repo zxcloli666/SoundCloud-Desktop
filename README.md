@@ -182,6 +182,7 @@ chmod +x soundcloud-desktop-*.AppImage
 | Свой CSS | [Как писать темы](docs/CUSTOM_CSS.ru.md) |
 | Что-то не работает? | [Обсуждение #144](https://github.com/zxcloli666/SoundCloud-Desktop/discussions/144) |
 | Поставить звезду | [GitHub Stars](https://github.com/zxcloli666/SoundCloud-Desktop/stargazers) — помогает продвижению! |
+| Поддержать донатом | [Boosty](https://boosty.to/lolinamide) — разово на любую сумму, или STAR в самом приложении |
 
 Pull requests приветствуются. Для крупных изменений сначала откройте issue.
 
