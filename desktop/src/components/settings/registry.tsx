@@ -2,6 +2,7 @@ import type {ReactNode} from 'react';
 import {Cloud, Database, Globe, Headphones, Link, Sparkles, User} from '../../lib/icons';
 import {CallProxySection} from './CallProxySection';
 import {AccountCard} from './cards/AccountCard';
+import {AndroidCard} from './cards/AndroidCard';
 import {AudioDeviceCard} from './cards/AudioDeviceCard';
 import {CacheCard} from './cards/CacheCard';
 import {CoverColorsCard} from './cards/CoverColorsCard';
@@ -50,6 +51,7 @@ export const SETTINGS_CATEGORIES: SettingsCategory[] = [
                 <StartupCard/>
                 <NotificationsCard/>
                 <HelpCard/>
+                <AndroidCard/>
                 <SupportCard/>
             </>
         ),
