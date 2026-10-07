@@ -4,6 +4,7 @@ import {CallProxySection} from './CallProxySection';
 import {AccountCard} from './cards/AccountCard';
 import {AudioDeviceCard} from './cards/AudioDeviceCard';
 import {CacheCard} from './cards/CacheCard';
+import {DiagnosticsCard} from './cards/DiagnosticsCard';
 import {DiscordCard} from './cards/DiscordCard';
 import {ImportCard} from './cards/ImportCard';
 import {LanguageCard} from './cards/LanguageCard';
@@ -41,6 +42,7 @@ export const SETTINGS_CATEGORIES: SettingsCategory[] = [
             <>
                 <LanguageCard/>
                 <StartupCard/>
+                <DiagnosticsCard/>
             </>
         ),
     },

@@ -27,7 +27,9 @@ import {
   ExternalLink as _ExternalLink,
   Eye as _Eye,
   FileDown as _FileDown,
+  FileText as _FileText,
   Flame as _Flame,
+  FolderOpen as _FolderOpen,
   Fullscreen as _Fullscreen,
   Globe as _Globe,
   GripVertical as _GripVertical,
@@ -105,7 +107,9 @@ export const AlertCircle = memo(_AlertCircle);
 export const ArrowDownToLine = memo(_ArrowDownToLine);
 export const Calendar = memo(_Calendar);
 export const FileDown = memo(_FileDown);
+export const FileText = memo(_FileText);
 export const Flame = memo(_Flame);
+export const FolderOpen = memo(_FolderOpen);
 export const Wifi = memo(_Wifi);
 export const WifiOff = memo(_WifiOff);
 export const Check = memo(_Check);
