@@ -8,6 +8,7 @@ use super::state::{
     DownloadError, DownloadResult, DownloadSource, PlaybackQuality, file_len,
     write_response_to_cache,
 };
+use crate::app::diagnostics;
 use crate::network::audio_route;
 use crate::network::edge::{self, Hop};
 
@@ -77,11 +78,11 @@ async fn download_over(
             Err(DownloadError::Retryable(err)) => {
                 hop.note(false);
                 if !rest.is_empty() {
-                    eprintln!(
+                    diagnostics::warn(format!(
                         "[TrackCache] {} body via {} broke ({err}), next route",
                         job.urn,
                         hop.tier_label()
-                    );
+                    ));
                     continue;
                 }
             }

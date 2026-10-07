@@ -7,6 +7,7 @@ use warp::http::{Response, StatusCode};
 use warp::hyper::Body;
 use warp::Filter;
 
+use crate::app::diagnostics;
 use crate::network::server::cors;
 
 fn content_type_for(filename: &str) -> &'static str {
@@ -77,6 +78,6 @@ pub async fn start(wallpapers_dir: PathBuf) -> u16 {
     let (addr, server) = warp::serve(routes).bind_ephemeral(addr);
     tokio::spawn(server);
 
-    println!("[StaticServer] http://127.0.0.1:{}", addr.port());
+    diagnostics::log("INFO", format!("[StaticServer] http://127.0.0.1:{}", addr.port()));
     addr.port()
 }

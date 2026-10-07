@@ -1,5 +1,6 @@
 use tauri::State;
 
+use crate::app::diagnostics;
 use crate::shared::blocking::run_blocking;
 use crate::shared::urn::canonical_track_urn;
 use crate::track_cache::state::{
@@ -195,7 +196,7 @@ pub async fn track_preload(
                 })
                 .await
             {
-                eprintln!("[TrackCache] preload {urn}: {err}");
+                diagnostics::warn(format!("[TrackCache] preload {urn}: {err}"));
             }
         });
     }
@@ -272,7 +273,7 @@ pub async fn track_cache_likes(
     let state = state.inner().clone();
     tokio::spawn(async move {
         if let Err(err) = state.cache_likes(entries).await {
-            eprintln!("[TrackCache] cache_likes error: {err}");
+            diagnostics::warn(format!("[TrackCache] cache_likes error: {err}"));
         }
     });
     Ok(())

@@ -9,6 +9,7 @@
 use std::sync::Mutex;
 use std::time::{Duration, Instant};
 
+use crate::app::diagnostics;
 use crate::app::visibility;
 use crate::rt::{AppHandle, WebviewWindow};
 use tauri::{Manager, Monitor, PhysicalPosition, WebviewUrl, WebviewWindowBuilder};
@@ -82,7 +83,7 @@ fn get_or_create(app: &AppHandle) -> Option<WebviewWindow> {
     {
         Ok(w) => Some(w),
         Err(err) => {
-            eprintln!("[tray] failed to create popover: {err}");
+            diagnostics::warn(format!("[tray] failed to create popover: {err}"));
             None
         }
     }

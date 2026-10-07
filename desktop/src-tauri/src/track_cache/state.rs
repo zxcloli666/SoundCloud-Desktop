@@ -14,7 +14,7 @@ use tokio::fs::File;
 use tokio::io::{AsyncWriteExt, BufWriter};
 use tokio::sync::{Mutex, Notify, OwnedSemaphorePermit, Semaphore};
 
-use crate::app::diagnostics::log_native;
+use crate::app::diagnostics::{self, log_native};
 use crate::network::edge::{Hop, Tier};
 use crate::network::system_proxy::follow;
 use crate::shared::urn::{canonical_track_urn, track_urn_from_storage_name};
@@ -1529,7 +1529,7 @@ impl TrackCacheState {
                     Ok(()) => return Ok(dest_path),
                     Err(e) if cover.is_some() => {
                         // A bad cover shouldn't sink the download — retry artless.
-                        eprintln!("[TrackCache] export with cover failed ({e}), retrying without");
+                        diagnostics::warn(format!("[TrackCache] export with cover failed ({e}), retrying without"));
                         transcode::export_with_cover(&ffmpeg, &source_path, None, &dest).await?;
                         return Ok(dest_path);
                     }
@@ -1621,23 +1621,23 @@ impl TrackCacheState {
                             return Ok(result.path);
                         }
                         Err(DownloadError::Fatal(e)) => {
-                            eprintln!("[TrackCache] s3 write failed for {urn}: {e}");
+                            diagnostics::warn(format!("[TrackCache] s3 write failed for {urn}: {e}"));
                         }
                         Err(DownloadError::Retryable(e)) => {
                             crate::network::edge::note_url(&landed, Tier::Direct, false);
-                            eprintln!("[TrackCache] s3 download failed for {urn}: {e}");
+                            diagnostics::warn(format!("[TrackCache] s3 download failed for {urn}: {e}"));
                         }
                     }
                 }
                 Ok(resp) if resp.status().as_u16() == 404 || resp.status().as_u16() == 410 => {}
                 Ok(resp) => {
-                    eprintln!(
+                    diagnostics::warn(format!(
                         "[TrackCache] s3 redirect HTTP {} for {urn} ({host})",
                         resp.status()
-                    );
+                    ));
                 }
                 Err(err) => {
-                    eprintln!("[TrackCache] s3 redirect failed for {urn} ({host}): {err}");
+                    diagnostics::warn(format!("[TrackCache] s3 redirect failed for {urn} ({host}): {err}"));
                 }
             }
         }
@@ -1671,7 +1671,7 @@ impl TrackCacheState {
                     Ok(r) => r,
                     Err(err) => {
                         hop.note(false);
-                        eprintln!("[TrackCache] storage {} failed for {urn}: {err}", hop.tier_label());
+                        diagnostics::warn(format!("[TrackCache] storage {} failed for {urn}: {err}", hop.tier_label()));
                         continue;
                     }
                 };
@@ -1706,17 +1706,17 @@ impl TrackCacheState {
                             return Ok(result.path);
                         }
                         Err(DownloadError::Fatal(e)) => {
-                            eprintln!("[TrackCache] storage write failed for {urn}: {e}");
+                            diagnostics::warn(format!("[TrackCache] storage write failed for {urn}: {e}"));
                         }
                         Err(DownloadError::Retryable(e)) => {
                             hop.note(false);
-                            eprintln!("[TrackCache] storage download failed for {urn}: {e}");
+                            diagnostics::warn(format!("[TrackCache] storage download failed for {urn}: {e}"));
                         }
                     }
                 } else if matches!(status.as_u16(), 404 | 410) {
                     break; // объект отсутствует — другие тиры не помогут
                 } else {
-                    eprintln!("[TrackCache] storage HTTP {status} for {urn} ({host})");
+                    diagnostics::warn(format!("[TrackCache] storage HTTP {status} for {urn} ({host})"));
                 }
             }
 
@@ -1752,7 +1752,7 @@ impl TrackCacheState {
             return Ok(path);
         }
 
-        eprintln!("[TrackCache] gave up on {urn}: {last_err}");
+        diagnostics::error(format!("[TrackCache] gave up on {urn}: {last_err}"));
         Err(last_err)
     }
 
@@ -1983,7 +1983,7 @@ impl TrackCacheState {
                     return Ok(path);
                 }
                 Err(err) => {
-                    eprintln!("[TrackCache] {urn} URL #{} failed: {err}", idx + 1);
+                    diagnostics::warn(format!("[TrackCache] {urn} URL #{} failed: {err}", idx + 1));
                     last_err = err;
                     futures = remaining;
                 }
@@ -2063,7 +2063,7 @@ impl TrackCacheState {
 
         for attempt in 0..=RETRY_DELAYS_MS.len() {
             if attempt > 0 {
-                eprintln!("[TrackCache] retry #{attempt} for {urn}: {last_err}");
+                diagnostics::warn(format!("[TrackCache] retry #{attempt} for {urn}: {last_err}"));
                 tokio::time::sleep(Duration::from_millis(RETRY_DELAYS_MS[attempt - 1])).await;
             }
 
