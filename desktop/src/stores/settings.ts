@@ -1,5 +1,6 @@
 import {create} from 'zustand';
 import {createJSONStorage, persist} from 'zustand/middleware';
+import type {InterfaceFont} from '../lib/interface-font';
 import type {PerfMode} from '../lib/perf';
 import {tauriStorage} from '../lib/tauri-storage';
 
@@ -91,6 +92,8 @@ export interface SettingsState {
   artistWaveCollapsed: boolean;
   wallhavenApiKey: string;
   showErrorToasts: boolean;
+  interfaceFont: InterfaceFont;
+  customFontName: string;
   setAccentColor: (color: string) => void;
   setBgPrimary: (bg: string) => void;
   setThemePreset: (id: ThemePreset) => void;
@@ -127,6 +130,8 @@ export interface SettingsState {
   setArtistWaveCollapsed: (v: boolean) => void;
   setWallhavenApiKey: (key: string) => void;
   setShowErrorToasts: (v: boolean) => void;
+  setInterfaceFont: (font: InterfaceFont) => void;
+  setCustomFontName: (name: string) => void;
   resetTheme: () => void;
 }
 
@@ -169,6 +174,8 @@ const DEFAULTS = {
   artistWaveCollapsed: false,
   wallhavenApiKey: '',
   showErrorToasts: true,
+  interfaceFont: 'inter' as InterfaceFont,
+  customFontName: '',
 };
 
 export const useSettingsStore = create<SettingsState>()(
@@ -232,6 +239,8 @@ export const useSettingsStore = create<SettingsState>()(
       setArtistWaveCollapsed: (artistWaveCollapsed) => set({ artistWaveCollapsed }),
       setWallhavenApiKey: (wallhavenApiKey) => set({ wallhavenApiKey }),
       setShowErrorToasts: (showErrorToasts) => set({ showErrorToasts }),
+      setInterfaceFont: (interfaceFont) => set({ interfaceFont }),
+      setCustomFontName: (customFontName) => set({ customFontName }),
       resetTheme: () =>
         set({
           accentColor: DEFAULTS.accentColor,
@@ -242,6 +251,8 @@ export const useSettingsStore = create<SettingsState>()(
           backgroundDim: DEFAULTS.backgroundDim,
           backgroundBlur: DEFAULTS.backgroundBlur,
           glassBlur: DEFAULTS.glassBlur,
+          interfaceFont: DEFAULTS.interfaceFont,
+          customFontName: DEFAULTS.customFontName,
         }),
     }),
     {
@@ -301,6 +312,8 @@ export const useSettingsStore = create<SettingsState>()(
         artistWaveCollapsed: s.artistWaveCollapsed,
         wallhavenApiKey: s.wallhavenApiKey,
         showErrorToasts: s.showErrorToasts,
+        interfaceFont: s.interfaceFont,
+        customFontName: s.customFontName,
       }),
     },
   ),

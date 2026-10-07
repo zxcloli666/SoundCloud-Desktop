@@ -762,7 +762,15 @@
     "wpKeyNeeded": "Введи API-ключ Wallhaven, чтобы открыть контент 18+.",
     "bypassWhitelistSoonDesc": "Готовим обход — следите за обновлениями",
     "import": "Импорт",
-    "importYandex": "Импорт из Yandex Music"
+    "importYandex": "Импорт из Yandex Music",
+    "fontTitle": "Шрифт интерфейса",
+    "fontDesc": "Шрифт для меню, заголовков и списков",
+    "fontSystem": "Системный",
+    "fontCustom": "Свой шрифт",
+    "fontCustomPlaceholder": "Название шрифта, например Segoe UI",
+    "fontCustomHint": "Введите название шрифта, установленного на этом компьютере",
+    "fontFound": "Шрифт найден, интерфейс уже использует его",
+    "fontNotFound": "Такой шрифт не установлен, вместо него используется Inter"
   },
   "eq": {
     "title": "Эквалайзер",

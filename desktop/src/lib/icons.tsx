@@ -75,6 +75,7 @@ import {
   Star as _Star,
   ThumbsDown as _ThumbsDown,
   Trash2 as _Trash2,
+  Type as _Type,
   User as _User,
   Users as _Users,
   Volume1 as _Volume1,
@@ -174,6 +175,7 @@ export const Star = memo(_Star);
 export const Square = memo(_Square);
 export const ThumbsDown = memo(_ThumbsDown);
 export const Trash2 = memo(_Trash2);
+export const Type = memo(_Type);
 export const Twitter = memo(({ size, className }: { size?: number; className?: string }) => (
   <SimpleIcon icon={siX} size={size} className={className} />
 ));

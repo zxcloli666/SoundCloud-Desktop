@@ -751,7 +751,15 @@
     "wpKeyNeeded": "Enter your Wallhaven API key to unlock 18+ results.",
     "bypassWhitelistSoonDesc": "We're shipping bypass routing — stay tuned",
     "import": "Import",
-    "importYandex": "Import from Yandex Music"
+    "importYandex": "Import from Yandex Music",
+    "fontTitle": "Interface font",
+    "fontDesc": "Typeface for menus, titles and lists",
+    "fontSystem": "System",
+    "fontCustom": "Your font",
+    "fontCustomPlaceholder": "Font name, e.g. Segoe UI",
+    "fontCustomHint": "Type the name of a font installed on this computer",
+    "fontFound": "Font found, the interface uses it now",
+    "fontNotFound": "This font is not installed, Inter is used instead"
   },
   "eq": {
     "title": "Equalizer",

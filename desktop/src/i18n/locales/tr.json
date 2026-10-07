@@ -662,7 +662,15 @@
     "wpKeyNeeded": "18+ sonuclar icin Wallhaven API anahtarini girin.",
     "bypassWhitelistSoonDesc": "Atlatma rotalamasi gelistirme asamasinda",
     "import": "Ice aktar",
-    "importYandex": "Yandex Music'ten ice aktar"
+    "importYandex": "Yandex Music'ten ice aktar",
+    "fontTitle": "Arayüz yazı tipi",
+    "fontDesc": "Menüler, başlıklar ve listeler için yazı tipi",
+    "fontSystem": "Sistem",
+    "fontCustom": "Kendi yazı tipin",
+    "fontCustomPlaceholder": "Yazı tipi adı, ör. Segoe UI",
+    "fontCustomHint": "Bu bilgisayarda yüklü bir yazı tipinin adını yazın",
+    "fontFound": "Yazı tipi bulundu, arayüz artık onu kullanıyor",
+    "fontNotFound": "Bu yazı tipi yüklü değil, yerine Inter kullanılıyor"
   },
   "eq": {
     "title": "Ekolayzir",

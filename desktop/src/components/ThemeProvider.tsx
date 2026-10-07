@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import {applyAccentVars, applyBgVars, applyPerfMode} from '../lib/apply-theme';
+import {applyFontVars} from '../lib/interface-font';
 import {setupFocusGate, setupVisibilityGate} from '../lib/perf';
 import { useSettingsStore } from '../stores/settings';
 
@@ -7,6 +8,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const accentColor = useSettingsStore((s) => s.accentColor);
   const bgPrimary = useSettingsStore((s) => s.bgPrimary);
   const perfMode = useSettingsStore((s) => s.perfMode);
+  const interfaceFont = useSettingsStore((s) => s.interfaceFont);
+  const customFontName = useSettingsStore((s) => s.customFontName);
 
   // One global gate that pauses every CSS animation while the window is hidden
   // (the WebView does not throttle timers/rAF). Install once.
@@ -23,6 +26,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
       applyAccentVars(accentColor);
   }, [accentColor]);
+
+  useEffect(() => {
+      void applyFontVars(interfaceFont, customFontName);
+  }, [interfaceFont, customFontName]);
 
   useEffect(() => {
       applyBgVars(bgPrimary);
