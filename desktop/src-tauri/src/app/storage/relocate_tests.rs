@@ -2,6 +2,7 @@ use std::path::{Path, PathBuf};
 use std::time::{Duration, SystemTime};
 
 use super::*;
+use crate::app::storage::{StorageLocation, config};
 
 struct TempRoot(PathBuf);
 
@@ -119,4 +120,71 @@ fn cleanup_keeps_foreign_files() {
     assert!(!dirs.audio.exists());
     assert!(!dirs.incoming.exists());
     assert!(dirs.liked.join("keep.txt").is_file());
+}
+
+#[test]
+fn rescue_moves_only_missing_saved_tracks() {
+    let tmp = TempRoot::new();
+    let from = AudioDirs::under(&tmp.0.join("fallback"));
+    let to = AudioDirs::under(&tmp.0.join("drive"));
+    from.create().unwrap();
+    to.create().unwrap();
+    write(
+        &from.liked.join("soundcloud_tracks_1.audio"),
+        b"saved-offline",
+    );
+    write(&from.liked.join("soundcloud_tracks_2.audio"), b"older");
+    write(&to.liked.join("soundcloud_tracks_2.audio"), b"newer");
+    write(&from.audio.join("soundcloud_tracks_3.audio"), b"played");
+
+    rescue_saved(&from, &to);
+
+    assert_eq!(
+        std::fs::read(to.liked.join("soundcloud_tracks_1.audio")).unwrap(),
+        b"saved-offline"
+    );
+    assert_eq!(
+        std::fs::read(to.liked.join("soundcloud_tracks_2.audio")).unwrap(),
+        b"newer"
+    );
+    assert!(!to.audio.join("soundcloud_tracks_3.audio").exists());
+}
+
+#[test]
+fn fallback_root_is_cleaned_once_the_drive_returns() {
+    let tmp = TempRoot::new();
+    let default_root = tmp.0.join("default");
+    let data_dir = tmp.0.join("data");
+    let drive = tmp.0.join("drive");
+    let config_path = config::config_path(&data_dir);
+    config::save(
+        &config_path,
+        &config::LocationConfig {
+            audio_root: Some(drive.clone()),
+            stale_roots: Vec::new(),
+        },
+    )
+    .unwrap();
+
+    let offline = StorageLocation::init(&default_root, &data_dir);
+    assert!(offline.is_unavailable());
+    let fallback = offline.audio_dirs();
+    write(&fallback.audio.join("soundcloud_tracks_1.audio"), b"played");
+    write(&fallback.liked.join("soundcloud_tracks_2.audio"), b"saved");
+    offline.sweep_stale_roots();
+    assert!(fallback.audio.join("soundcloud_tracks_1.audio").is_file());
+
+    std::fs::create_dir_all(&drive).unwrap();
+    let back = StorageLocation::init(&default_root, &data_dir);
+    assert!(!back.is_unavailable());
+    back.sweep_stale_roots();
+
+    assert!(!fallback.audio.exists());
+    assert!(
+        back.audio_dirs()
+            .liked
+            .join("soundcloud_tracks_2.audio")
+            .is_file()
+    );
+    assert!(config::load(&config_path).stale_roots.is_empty());
 }

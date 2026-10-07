@@ -60,6 +60,12 @@ impl StorageLocation {
             .unwrap_or(cache_dir)
             .to_path_buf();
         AudioDirs::under(&active_root).create().ok();
+        if configured_root
+            .as_ref()
+            .is_some_and(|root| *root != active_root)
+        {
+            remember_fallback(&config_path, &active_root);
+        }
         Self {
             config_path,
             config_lock: Mutex::new(()),
@@ -88,13 +94,15 @@ impl StorageLocation {
         }
         let before = config.stale_roots.len();
         config.stale_roots.retain(|root| {
-            if *root == self.active_root || self.configured_root.as_ref() == Some(root) {
+            if self.configured_root.as_ref() == Some(root) {
                 return false;
             }
-            if !root.is_dir() {
+            if *root == self.active_root || !root.is_dir() {
                 return true;
             }
-            relocate::remove_cache_files(&AudioDirs::under(root));
+            let stale = AudioDirs::under(root);
+            relocate::rescue_saved(&stale, &self.audio_dirs());
+            relocate::remove_cache_files(&stale);
             if *root != self.default_root {
                 std::fs::remove_dir(root).ok();
             }
@@ -122,6 +130,15 @@ impl StorageLocation {
             },
         )
     }
+}
+
+fn remember_fallback(config_path: &Path, fallback_root: &Path) {
+    let mut config = config::load(config_path);
+    if config.stale_roots.iter().any(|root| root == fallback_root) {
+        return;
+    }
+    config.stale_roots.push(fallback_root.to_path_buf());
+    config::save(config_path, &config).ok();
 }
 
 fn is_usable_root(root: &Path) -> bool {

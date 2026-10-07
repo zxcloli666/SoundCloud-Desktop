@@ -212,6 +212,32 @@ fn copy_times(src: &Path, dst: &Path) {
         .and_then(|file| file.set_times(times));
 }
 
+pub fn rescue_saved(from: &AudioDirs, to: &AudioDirs) {
+    let Ok(entries) = std::fs::read_dir(&from.liked) else {
+        return;
+    };
+    std::fs::create_dir_all(&to.liked).ok();
+    for entry in entries.flatten() {
+        let name = entry.file_name();
+        if !is_cache_artifact(&name.to_string_lossy()) {
+            continue;
+        }
+        let dst = to.liked.join(&name);
+        if dst.exists() {
+            continue;
+        }
+        let Ok(meta) = entry.metadata() else {
+            continue;
+        };
+        let transfer = Transfer {
+            src: entry.path(),
+            dst,
+            len: meta.len(),
+        };
+        transfer_file(&transfer, &mut Vec::new()).ok();
+    }
+}
+
 pub fn remove_cache_files(dirs: &AudioDirs) {
     for dir in dirs.all() {
         let Ok(entries) = std::fs::read_dir(dir) else {
