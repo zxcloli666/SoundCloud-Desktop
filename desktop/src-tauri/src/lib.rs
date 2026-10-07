@@ -7,6 +7,7 @@ mod network;
 mod rt;
 mod shared;
 mod track_cache;
+mod upload;
 
 use std::sync::Arc;
 use std::time::Duration;
@@ -223,6 +224,8 @@ pub fn run() {
             audio::save_track_to_path,
             import::ym_import_start,
             import::ym_import_stop,
+            upload::track_upload_start,
+            upload::track_upload_cancel,
             track_cache::track_ensure_cached,
             track_cache::track_export,
             track_cache::track_is_cached,
