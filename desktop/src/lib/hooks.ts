@@ -685,34 +685,37 @@ export function useUserSubscription(userUrn: string | undefined) {
 
 /* ── My Library (cold) ─────────────────────────────────────────── */
 
-export function useMyFollowings(limit = 30) {
+export function useMyFollowings(limit = 30, enabled = true) {
   const query = usePagedQuery<SCUser>({
     queryKey: ['me', 'followings', limit],
     url: (page, l) => pagedUrl('/me/followings', page, l),
     limit,
     staleTime: COLD_CACHE_MS,
+    enabled,
   });
 
   return { users: query.items, ...query };
 }
 
-export function useMyLikedPlaylists(limit = 30) {
+export function useMyLikedPlaylists(limit = 30, enabled = true) {
   const query = usePagedQuery<Playlist>({
     queryKey: ['me', 'likes', 'playlists', limit],
     url: (page, l) => pagedUrl('/me/likes/playlists', page, l),
     limit,
     staleTime: COLD_CACHE_MS,
+    enabled,
   });
 
   return { playlists: query.items, ...query };
 }
 
-export function useMyPlaylists(limit = 30) {
+export function useMyPlaylists(limit = 30, enabled = true) {
   const query = usePagedQuery<Playlist>({
     queryKey: ['me', 'playlists', limit],
     url: (page, l) => pagedUrl('/me/playlists', page, l),
     limit,
     staleTime: COLD_CACHE_MS,
+    enabled,
   });
 
   return { playlists: query.items, ...query };
