@@ -2,9 +2,13 @@ import { useQuery } from '@tanstack/react-query';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Track } from '../stores/player';
 import { api } from './api';
+import { type PagedResponse, pagedUrl } from './hooks';
+import { trackUrn } from './ids';
 
-export interface RecommendResult {
+interface RecommendResult {
   id: string | number;
+  urn?: string;
+  track?: Track;
   score?: number;
   payload?: Record<string, unknown>;
 }
@@ -16,35 +20,31 @@ export interface IndexingStats {
 
 const SW_STALE_MS = 0;
 const SW_GC_MS = 1000 * 60 * 5;
+const MAX_TRACK_IDS = 100;
 
 function normLanguages(langs: string[] | undefined): string | undefined {
   if (!langs || langs.length === 0) return undefined;
   return [...langs].sort().join(',');
 }
 
-/**
- * Hydrate Qdrant numeric IDs → full SC track metadata, preserving recommendation order.
- *
- * Per-track `/tracks/:urn` returns full metadata with real duration (vs. the
- * preview-only public search endpoint). Backend caches these for 10m so a warm
- * cache is effectively free; a cold cache fans out the requests in parallel.
- */
-export async function hydrateByIds(recs: RecommendResult[]): Promise<Track[]> {
-  const urns = recs
-    .map((r) => {
-      const id = String(r.id);
-      return id ? `soundcloud:tracks:${id}` : null;
-    })
-    .filter((u): u is string => u !== null);
-  if (!urns.length) return [];
-
-  const results = await Promise.all(
-    urns.map((urn) =>
-      api<Track>(`/tracks/${encodeURIComponent(urn)}`).catch(() => null as Track | null),
-    ),
+export async function fetchTracksByUrns(urns: string[]): Promise<Track[]> {
+  const wanted = [...new Set(urns)].slice(0, MAX_TRACK_IDS);
+  if (wanted.length === 0) return [];
+  const ids = `ids=${wanted.map(encodeURIComponent).join(',')}`;
+  const page = await api<PagedResponse<Track>>(pagedUrl('/tracks', 0, wanted.length, ids)).catch(
+    () => null,
   );
+  return page?.collection ?? [];
+}
 
-  return results.filter((t): t is Track => t !== null);
+async function resultTracks(results: RecommendResult[]): Promise<Track[]> {
+  const legacy = results.filter((r) => r.urn === undefined).map((r) => trackUrn(r.id));
+  const fetched = await fetchTracksByUrns(legacy.filter((urn): urn is string => urn !== null));
+  const byUrn = new Map(fetched.map((t) => [t.urn, t]));
+  return results.flatMap((r) => {
+    const track = r.track ?? byUrn.get(r.urn ?? trackUrn(r.id) ?? '');
+    return track ? [track] : [];
+  });
 }
 
 export type SmartWaveSeedKind = 'user' | 'track' | 'artist';
@@ -101,13 +101,9 @@ export async function fetchSmartWave(opts: {
   );
 
   // Don't trust the API shape: a resolved-but-null/garbage body must not crash.
-  const ids = Array.isArray(payload?.tracks) ? payload.tracks : [];
+  const results = Array.isArray(payload?.tracks) ? payload.tracks : [];
   const cursor = payload?.cursor ?? '';
-  if (ids.length === 0) {
-    return { tracks: [], cursor };
-  }
-  const tracks = await hydrateByIds(ids);
-  return { tracks, cursor };
+  return { tracks: await resultTracks(results), cursor };
 }
 
 /**

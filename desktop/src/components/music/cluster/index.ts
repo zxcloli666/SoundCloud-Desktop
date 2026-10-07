@@ -9,6 +9,7 @@ export type {
   ClusterDto,
   ClusterHydrated,
   ClusterId,
+  ClusterNeighbor,
   ClusterNeighborDto,
   ClusterResponseDto,
 } from './types';

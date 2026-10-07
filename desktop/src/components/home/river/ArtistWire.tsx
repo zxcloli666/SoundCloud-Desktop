@@ -19,14 +19,10 @@ export const ArtistWire = React.memo(function ArtistWire({
   const ctx = useMemo(() => ({ clusterId: String(cluster.id) }), [cluster.id]);
 
   const pairs = useMemo(() => {
-    const byId = new Map<string, Track>();
-    for (const t of cluster.tracks) {
-      const id = t.urn.split(':').pop();
-      if (id) byId.set(id, t);
-    }
+    const byUrn = new Map(cluster.tracks.map((t) => [t.urn, t]));
     const out: Array<{ neighbor: ClusterNeighborDto; track: Track }> = [];
     for (const n of cluster.neighbors ?? []) {
-      const track = byId.get(String(n.track_id));
+      const track = byUrn.get(n.track_urn);
       if (track) out.push({ neighbor: n, track });
     }
     return out;

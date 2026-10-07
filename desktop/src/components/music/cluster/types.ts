@@ -24,9 +24,15 @@ export interface ClusterNeighborDto {
   track_id: string;
 }
 
+export interface ClusterNeighbor extends ClusterNeighborDto {
+  track_urn: string;
+}
+
 export interface ClusterDto {
   id: ClusterId | string;
   track_ids: string[];
+  track_urns?: string[];
+  tracks?: Track[];
   neighbors?: ClusterNeighborDto[];
 }
 
@@ -37,7 +43,7 @@ export interface ClusterResponseDto {
 export interface ClusterHydrated {
   id: ClusterId;
   tracks: Track[];
-  neighbors?: ClusterNeighborDto[];
+  neighbors?: ClusterNeighbor[];
 }
 
 export interface ClusterData {

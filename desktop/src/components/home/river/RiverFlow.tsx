@@ -105,16 +105,12 @@ export const RiverFlow = React.memo(function RiverFlow({ tint }: { tint?: string
     if (!hideLiked) return rawClusters;
     return rawClusters
       .map((c) => {
-        const trackById = new Map<string, Track>();
-        for (const tr of c.tracks) {
-          const id = tr.urn.split(':').pop();
-          if (id) trackById.set(id, tr);
-        }
+        const trackByUrn = new Map(c.tracks.map((tr) => [tr.urn, tr]));
         return {
           ...c,
           tracks: c.tracks.filter((tr) => !tr.user_favorite && !isUrnLiked(tr.urn)),
           neighbors: c.neighbors?.filter((n) => {
-            const matchTrack = trackById.get(String(n.track_id));
+            const matchTrack = trackByUrn.get(n.track_urn);
             if (!matchTrack) return true;
             return !matchTrack.user_favorite && !isUrnLiked(matchTrack.urn);
           }),
@@ -147,7 +143,7 @@ export const RiverFlow = React.memo(function RiverFlow({ tint }: { tint?: string
     const m = new Map<string, string>();
     for (const c of filteredClusters) {
       if (!c.neighbors) continue;
-      for (const n of c.neighbors) m.set(String(n.track_id), n.artist_id);
+      for (const n of c.neighbors) m.set(n.track_urn, n.artist_id);
     }
     return m;
   }, [filteredClusters]);
@@ -155,8 +151,7 @@ export const RiverFlow = React.memo(function RiverFlow({ tint }: { tint?: string
   neighborMapRef.current = neighborArtistByTrack;
 
   const resolveArtistQueue = useCallback(async (track: Track): Promise<Track[]> => {
-    const trackId = track.urn.split(':').pop();
-    const artistId = trackId ? neighborMapRef.current.get(trackId) : undefined;
+    const artistId = neighborMapRef.current.get(track.urn);
     if (!artistId) return [track];
     try {
       const res = await api<{ collection: Track[] }>(
