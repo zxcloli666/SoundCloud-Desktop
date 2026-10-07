@@ -1,6 +1,6 @@
-import i18n from '../i18n';
 import { useAppStatusStore } from '../stores/app-status';
 import { useAuthStore } from '../stores/auth';
+import { describeApiError } from './api-error-text';
 import { noteAuthGap, noteRateLimit, noteSuccess } from './auth-recovery';
 import { API_BASE, API_STAR_BASE } from './constants';
 import { logHttpError, logHttpFailure, logInfo, trackAsync } from './diagnostics';
@@ -130,31 +130,14 @@ function fetchWithTimeout(url: string, options: RequestInit, timeoutMs: number):
   return edgeFetch(url, options, timeoutMs);
 }
 
-const HTML_MESSAGE = /<!doctype|<html|cloudfront|request could not be satisfied/i;
-const MAX_TOAST_MESSAGE_LENGTH = 200;
-
-function clientErrorMessage(err: ApiError): string {
-  const fallback = `Error ${err.status}`;
-  try {
-    const parsed = JSON.parse(err.body);
-    if (parsed.code === 'soundcloud_blocked') return i18n.t('errors.upstreamBlocked');
-    const message = parsed.message || parsed.error;
-    if (typeof message !== 'string' || !message) return fallback;
-    if (HTML_MESSAGE.test(message)) return i18n.t('errors.upstreamBlocked');
-    return message.length > MAX_TOAST_MESSAGE_LENGTH ? fallback : message;
-  } catch {
-    return fallback;
-  }
-}
-
-function handleApiError(err: ApiError, method: string): void {
+function handleApiError(err: ApiError, method: string, path: string): void {
   if (err.status >= 500) {
     if (isIncidentActive()) return; // авария уже показана модалкой/баннером
-    // Фиксированный id: sonner заменяет тост, шторм не стекается.
-    notifyError(i18n.t('errors.serverError', { status: err.status }), { id: 'api-server-error' });
+    const { title, description } = describeApiError(err, path);
+    notifyError(title, { id: 'api-server-error', description });
   } else if (err.status >= 400 && err.status !== 401 && method !== 'GET' && method !== 'HEAD') {
-    const message = clientErrorMessage(err);
-    notifyError(message, { id: `api-client-error:${message}` });
+    const { title, description } = describeApiError(err, path);
+    notifyError(title, { id: `api-client-error:${title}`, description });
   }
 }
 
@@ -430,7 +413,7 @@ export async function apiRequest<T = unknown>(
           throw verdict;
         }
 
-        if (!starDeny && !quiet) handleApiError(err, method);
+        if (!starDeny && !quiet) handleApiError(err, method, path);
         console.error(`HTTP ERROR: url: ${path}, `, err);
         throw err;
       }

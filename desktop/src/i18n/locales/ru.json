@@ -407,7 +407,35 @@
     "home": "На главную",
     "details": "Подробности",
     "serverError": "Ошибка сервера ({{status}})",
-    "upstreamBlocked": "SoundCloud временно отклонил запрос. Попробуйте позже."
+    "http": {
+      "soundcloudDown": "SoundCloud временно недоступен ({{status}})",
+      "soundcloudTimeout": "SoundCloud не ответил вовремя ({{status}})",
+      "unavailable": "Сервер временно недоступен ({{status}})",
+      "timeout": "Сервер не ответил вовремя ({{status}})",
+      "blocked": "SoundCloud отклонил запрос ({{status}})",
+      "rateLimited": "Слишком много запросов ({{status}})",
+      "reauth": "Подключение к SoundCloud устарело ({{status}})",
+      "reauthHint": "Выйдите из аккаунта и войдите снова, чтобы вернуть доступ.",
+      "retryIn": "Повторите через {{seconds}} с.",
+      "retryLater": "Подождите минуту и повторите.",
+      "serverHint": "Что-то сломалось на нашей стороне. Повторите через минуту. Если не проходит, напишите в Discord и приложите лог.",
+      "notFound": {
+        "track": "Трек не найден ({{status}})",
+        "playlist": "Плейлист не найден ({{status}})",
+        "user": "Пользователь не найден ({{status}})",
+        "comment": "Комментарий не найден ({{status}})",
+        "lyrics": "Текст песни не найден ({{status}})",
+        "item": "Не найдено ({{status}})"
+      },
+      "notFoundHint": "Возможно, автор удалил или скрыл его на SoundCloud.",
+      "forbidden": "Доступ запрещён ({{status}})",
+      "forbiddenHint": "SoundCloud не разрешает это действие для вашего аккаунта, или автор ограничил доступ.",
+      "conflict": "Не удалось выполнить действие ({{status}})",
+      "conflictHint": "Данные успели измениться. Обновите страницу и повторите.",
+      "badRequest": "Запрос отклонён ({{status}})",
+      "failed": "Запрос не выполнен ({{status}})",
+      "reportHint": "Повторите попытку. Если не проходит, напишите в Discord и приложите лог."
+    }
   },
   "hostStatus": {
     "starOffer": {

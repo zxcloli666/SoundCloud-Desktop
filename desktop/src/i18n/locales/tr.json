@@ -320,7 +320,35 @@
     "home": "Ana sayfa",
     "details": "Ayrintilar",
     "serverError": "Sunucu hatasi ({{status}})",
-    "upstreamBlocked": "SoundCloud istegi gecici olarak reddetti. Daha sonra tekrar deneyin."
+    "http": {
+      "soundcloudDown": "SoundCloud geçici olarak kullanılamıyor ({{status}})",
+      "soundcloudTimeout": "SoundCloud zamanında yanıt vermedi ({{status}})",
+      "unavailable": "Sunucu geçici olarak kullanılamıyor ({{status}})",
+      "timeout": "Sunucu zamanında yanıt vermedi ({{status}})",
+      "blocked": "SoundCloud isteği reddetti ({{status}})",
+      "rateLimited": "Çok fazla istek ({{status}})",
+      "reauth": "SoundCloud bağlantısının süresi doldu ({{status}})",
+      "reauthHint": "Erişimi geri almak için çıkış yapıp tekrar giriş yapın.",
+      "retryIn": "{{seconds}} sn sonra tekrar deneyin.",
+      "retryLater": "Bir dakika bekleyip tekrar deneyin.",
+      "serverHint": "Bizim tarafımızda bir sorun oluştu. Bir dakika sonra tekrar deneyin. Devam ederse Discord'da bildirin ve günlüğü ekleyin.",
+      "notFound": {
+        "track": "Parça bulunamadı ({{status}})",
+        "playlist": "Çalma listesi bulunamadı ({{status}})",
+        "user": "Kullanıcı bulunamadı ({{status}})",
+        "comment": "Yorum bulunamadı ({{status}})",
+        "lyrics": "Şarkı sözleri bulunamadı ({{status}})",
+        "item": "Bulunamadı ({{status}})"
+      },
+      "notFoundHint": "Sanatçı onu SoundCloud'da silmiş veya gizlemiş olabilir.",
+      "forbidden": "Erişim reddedildi ({{status}})",
+      "forbiddenHint": "SoundCloud bu işleme hesabınız için izin vermiyor veya sanatçı erişimi kısıtladı.",
+      "conflict": "İşlem tamamlanamadı ({{status}})",
+      "conflictHint": "Veriler bu arada değişti. Sayfayı yenileyip tekrar deneyin.",
+      "badRequest": "İstek reddedildi ({{status}})",
+      "failed": "İstek başarısız oldu ({{status}})",
+      "reportHint": "Tekrar deneyin. Devam ederse Discord'da bildirin ve günlüğü ekleyin."
+    }
   },
   "hostStatus": {
     "starOffer": {

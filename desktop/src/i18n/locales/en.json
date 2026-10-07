@@ -402,7 +402,35 @@
     "home": "Home",
     "details": "Details",
     "serverError": "Server error ({{status}})",
-    "upstreamBlocked": "SoundCloud temporarily refused the request. Try again later."
+    "http": {
+      "soundcloudDown": "SoundCloud is temporarily unavailable ({{status}})",
+      "soundcloudTimeout": "SoundCloud did not answer in time ({{status}})",
+      "unavailable": "Server is temporarily unavailable ({{status}})",
+      "timeout": "Server did not answer in time ({{status}})",
+      "blocked": "SoundCloud refused the request ({{status}})",
+      "rateLimited": "Too many requests ({{status}})",
+      "reauth": "SoundCloud connection has expired ({{status}})",
+      "reauthHint": "Sign out and sign in again to restore access.",
+      "retryIn": "Try again in {{seconds}} s.",
+      "retryLater": "Wait a minute and try again.",
+      "serverHint": "Something broke on our side. Try again in a minute. If it keeps happening, report it on Discord and attach the log.",
+      "notFound": {
+        "track": "Track not found ({{status}})",
+        "playlist": "Playlist not found ({{status}})",
+        "user": "User not found ({{status}})",
+        "comment": "Comment not found ({{status}})",
+        "lyrics": "Lyrics not found ({{status}})",
+        "item": "Not found ({{status}})"
+      },
+      "notFoundHint": "It may have been deleted or hidden by the author on SoundCloud.",
+      "forbidden": "Access denied ({{status}})",
+      "forbiddenHint": "SoundCloud does not allow this action for your account, or the author restricted it.",
+      "conflict": "The action could not be completed ({{status}})",
+      "conflictHint": "The data has changed in the meantime. Refresh the page and try again.",
+      "badRequest": "The request was rejected ({{status}})",
+      "failed": "Request failed ({{status}})",
+      "reportHint": "Try again. If it keeps happening, report it on Discord and attach the log."
+    }
   },
   "hostStatus": {
     "starOffer": {
