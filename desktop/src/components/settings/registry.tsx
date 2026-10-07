@@ -11,6 +11,7 @@ import {FontCard} from './cards/FontCard';
 import {HelpCard} from './cards/HelpCard';
 import {ImportCard} from './cards/ImportCard';
 import {LanguageCard} from './cards/LanguageCard';
+import {LayoutCard} from './cards/LayoutCard';
 import {NetworkCard} from './cards/NetworkCard';
 import {NotificationsCard} from './cards/NotificationsCard';
 import {PerformanceCard} from './cards/PerformanceCard';
@@ -61,6 +62,7 @@ export const SETTINGS_CATEGORIES: SettingsCategory[] = [
                 <CoverColorsCard/>
                 <FontCard/>
                 <WallpaperCard/>
+                <LayoutCard/>
                 <PerformanceCard/>
                 <CustomCssCard/>
             </>

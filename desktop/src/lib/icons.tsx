@@ -29,6 +29,7 @@ import {
   Download as _Download,
   ExternalLink as _ExternalLink,
   Eye as _Eye,
+  EyeOff as _EyeOff,
   FileDown as _FileDown,
   Flame as _Flame,
   FolderOpen as _FolderOpen,
@@ -39,6 +40,7 @@ import {
   Headphones as _Headphones,
   Heart as _Heart,
   Home as _Home,
+  LayoutDashboard as _LayoutDashboard,
   Library as _Library,
   LifeBuoy as _LifeBuoy,
   Link as _Link,
@@ -135,6 +137,7 @@ export const Database = memo(_Database);
 export const Disc3 = memo(_Disc3);
 export const ExternalLink = memo(_ExternalLink);
 export const Eye = memo(_Eye);
+export const EyeOff = memo(_EyeOff);
 export const Fullscreen = memo(_Fullscreen);
 export const Globe = memo(_Globe);
 export const GripVertical = memo(_GripVertical);
@@ -146,6 +149,7 @@ export const LifeBuoy = memo(_LifeBuoy);
 export const Instagram = memo(({ size, className }: { size?: number; className?: string }) => (
   <SimpleIcon icon={siInstagram} size={size} className={className} />
 ));
+export const LayoutDashboard = memo(_LayoutDashboard);
 export const Library = memo(_Library);
 export const LinkIcon = memo(_Link);
 export const ListMusic = memo(_ListMusic);
