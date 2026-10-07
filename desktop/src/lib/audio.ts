@@ -18,6 +18,8 @@ import {
   ensureTrackCached,
   expectedDurationMs,
   getCacheInfo,
+  isAudioCacheDisabled,
+  isHoverPreloadEnabled,
   removeCachedTrack,
   type TrackCacheInfo,
 } from './cache';
@@ -441,8 +443,6 @@ async function loadTrack(track: Track, resumeAt = 0) {
       updateMetadata(track, loadResult.duration_secs);
       notify();
     }
-    void enforceAudioCacheLimit().catch(console.error);
-
     if (gen !== loadGen) return;
     await afterLoad(track, gen, resumeAt);
   } catch (e) {
@@ -476,6 +476,7 @@ async function afterLoad(track: Track, gen: number, resumeAt: number) {
     notify();
   }
   hasTrack = true;
+  void enforceAudioCacheLimit().catch(console.error);
 
   const historyTrack =
     usePlayerStore.getState().currentTrack?.urn === track.urn
@@ -779,7 +780,7 @@ let preloadTimer: ReturnType<typeof setTimeout> | null = null;
 export function preloadTrack(track: Track) {
   const urn = track.urn;
   cancelPreload();
-  if (!useSettingsStore.getState().hoverPreload) return;
+  if (!isHoverPreloadEnabled()) return;
   preloadTimer = setTimeout(() => {
     const sessionId = getSessionId();
     const hq = isHqStreaming();
@@ -806,6 +807,7 @@ export function cancelPreload() {
 }
 
 export function preloadQueue() {
+  if (isAudioCacheDisabled()) return;
   const { queue, queueIndex } = usePlayerStore.getState();
   const entries: Array<{
     urn: string;

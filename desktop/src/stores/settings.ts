@@ -1,5 +1,6 @@
 import {create} from 'zustand';
 import {createJSONStorage, persist} from 'zustand/middleware';
+import {normalizeAudioCacheLimit} from '../lib/cache-limit';
 import type {PerfMode} from '../lib/perf';
 import {tauriStorage} from '../lib/tauri-storage';
 
@@ -238,7 +239,7 @@ export const useSettingsStore = create<SettingsState>()(
     {
       name: 'sc-settings',
       storage: createJSONStorage(() => tauriStorage),
-      version: 19,
+      version: 20,
       migrate: (persistedState) => {
         const prev = (persistedState ?? {}) as Partial<SettingsState> & {
           soundwaveDiversity?: number;
@@ -253,6 +254,9 @@ export const useSettingsStore = create<SettingsState>()(
           ...DEFAULTS,
           ...prev,
           soundwaveMode: prev.soundwaveMode ?? inferredMode,
+          audioCacheLimitMB: normalizeAudioCacheLimit(
+            prev.audioCacheLimitMB ?? DEFAULTS.audioCacheLimitMB,
+          ),
         } as SettingsState;
       },
       partialize: (s) => ({

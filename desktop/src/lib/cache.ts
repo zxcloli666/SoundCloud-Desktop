@@ -1,8 +1,15 @@
 import {appCacheDir, join} from '@tauri-apps/api/path';
 import {mkdir, readDir, remove, writeFile} from '@tauri-apps/plugin-fs';
-import type {PlaybackQuality, PlaybackSource, Track, TrackScdMeta} from '../stores/player';
+import {
+  type PlaybackQuality,
+  type PlaybackSource,
+  type Track,
+  type TrackScdMeta,
+  usePlayerStore,
+} from '../stores/player';
 import {useSettingsStore} from '../stores/settings';
 import {toScproxyUrl} from './asset-url';
+import {isAudioCacheOff} from './cache-limit';
 import {getStaticPort} from './constants';
 import {trackedInvoke as invoke} from './diagnostics';
 import { isHqStreaming } from './streaming';
@@ -179,11 +186,28 @@ export function cancelCacheLikes(): Promise<void> {
   return invoke('track_cancel_cache_likes');
 }
 
-export function enforceAudioCacheLimit(
+export function isAudioCacheDisabled(): boolean {
+  return isAudioCacheOff(useSettingsStore.getState().audioCacheLimitMB);
+}
+
+export function isHoverPreloadEnabled(): boolean {
+  return useSettingsStore.getState().hoverPreload && !isAudioCacheDisabled();
+}
+
+function purgePlayedTracks(): Promise<number> {
+  const keepUrn = usePlayerStore.getState().currentTrack?.urn ?? null;
+  return invoke<number>('track_purge_played', { keepUrn });
+}
+
+export async function enforceAudioCacheLimit(
   limitMb = useSettingsStore.getState().audioCacheLimitMB,
 ): Promise<void> {
-  if (!limitMb || limitMb <= 0) return Promise.resolve();
-  return invoke('track_enforce_cache_limit', { limitMb });
+  if (isAudioCacheOff(limitMb)) {
+    await purgePlayedTracks();
+    return;
+  }
+  if (!limitMb) return;
+  await invoke('track_enforce_cache_limit', { limitMb });
 }
 
 /* ── Cache maintenance ───────────────────────────────────── */

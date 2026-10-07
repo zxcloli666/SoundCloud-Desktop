@@ -1,7 +1,6 @@
 import {useSyncExternalStore} from 'react';
 import {type Track, usePlayerStore} from '../stores/player';
-import {useSettingsStore} from '../stores/settings';
-import {ensureTrackCached, expectedDurationMs, getCacheInfo} from './cache';
+import {ensureTrackCached, expectedDurationMs, getCacheInfo, isHoverPreloadEnabled} from './cache';
 import {trackedInvoke as invoke} from './diagnostics';
 
 /* ── Hover-preview controller ─────────────────────────────────────
@@ -59,7 +58,7 @@ export function startHoverPreview(track: Track): void {
             // Reuse the cache at the user's normal quality — never force a low-quality
             // download that could become the canonical cached copy (coalesces with the
             // hq preloadTrack fired on the same hover).
-            const info = useSettingsStore.getState().hoverPreload
+            const info = isHoverPreloadEnabled()
                 ? await ensureTrackCached(
                       urn,
                       undefined,
