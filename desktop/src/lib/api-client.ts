@@ -130,17 +130,19 @@ function fetchWithTimeout(url: string, options: RequestInit, timeoutMs: number):
   return edgeFetch(url, options, timeoutMs);
 }
 
-function handleApiError(err: ApiError): void {
+function handleApiError(err: ApiError, method: string): void {
   if (err.status >= 500) {
     if (isIncidentActive()) return; // авария уже показана модалкой/баннером
     // Фиксированный id: sonner заменяет тост, шторм не стекается.
     toast.error(i18n.t('errors.serverError', { status: err.status }), { id: 'api-server-error' });
-  } else if (err.status >= 400 && err.status !== 401) {
+  } else if (err.status >= 400 && err.status !== 401 && method !== 'GET' && method !== 'HEAD') {
     try {
       const parsed = JSON.parse(err.body);
-      toast.error(parsed.message || parsed.error || `Error ${err.status}`);
+      toast.error(parsed.message || parsed.error || `Error ${err.status}`, {
+        id: 'api-client-error',
+      });
     } catch {
-      toast.error(`Error ${err.status}`);
+      toast.error(`Error ${err.status}`, { id: 'api-client-error' });
     }
   }
 }
@@ -224,6 +226,10 @@ function apiBasesFor(path: string): string[] {
   return isHealthy(API_STAR_BASE) || mainIsLastResort()
     ? [API_STAR_BASE, API_BASE]
     : [API_BASE, API_STAR_BASE];
+}
+
+export function preferredDataBase(): string {
+  return apiBasesFor('/tracks')[0] ?? API_BASE;
 }
 
 /** Бюджет запроса по его пути. */
@@ -314,8 +320,8 @@ export async function apiRequest<T = unknown>(
     const attemptStart = performance.now();
 
     // Хост с вердиктом down не держит попытку дольше 10 c.
-    const attemptTimeout =
-      getHostVerdict(base) === 'down'
+    const attemptTimeout: number =
+      getHostVerdict(base) === 'down' || authRejection
         ? Math.min(effectiveTimeout, DOWN_HOST_TIMEOUT_MS)
         : effectiveTimeout;
 
@@ -413,7 +419,7 @@ export async function apiRequest<T = unknown>(
           throw verdict;
         }
 
-        if (!starDeny && !quiet) handleApiError(err);
+        if (!starDeny && !quiet) handleApiError(err, method);
         console.error(`HTTP ERROR: url: ${path}, `, err);
         throw err;
       }
@@ -444,6 +450,11 @@ export async function apiRequest<T = unknown>(
         continue;
       }
       logHttpFailure(label, url, error, performance.now() - attemptStart);
+      if (authRejection) {
+        logInfo(`[Host] ${label}: no second opinion from ${hostLabel(base)}, keeping the 401`);
+        noteAuthGap();
+        throw authRejection;
+      }
       useAppStatusStore.getState().setBackendReachable(false);
       throw error;
     }

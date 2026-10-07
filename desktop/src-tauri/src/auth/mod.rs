@@ -42,9 +42,13 @@ impl SessionStore {
         rt: tokio::runtime::Handle,
     ) -> Arc<Self> {
         let path = app_data_dir.join(SESSION_FILE);
+        let legacy = app_data_dir.join(LEGACY_FILE);
         let state = load_state(&path)
-            .or_else(|| migrate_legacy(&app_data_dir.join(LEGACY_FILE), &path))
+            .or_else(|| migrate_legacy(&legacy, &path))
             .unwrap_or_default();
+        if path.exists() {
+            let _ = std::fs::remove_file(&legacy);
+        }
         Arc::new(Self {
             path,
             state: RwLock::new(state),
@@ -174,6 +178,7 @@ pub async fn auth_logout(
         if let Err(e) = write_state(&state.path, &AuthState::default()) {
             log_native(&app, "ERROR", format!("[auth] clear failed: {e}"));
         }
+        let _ = std::fs::remove_file(state.path.with_file_name(LEGACY_FILE));
         app.emit(EVENT, AuthState::default()).ok();
         old
     };

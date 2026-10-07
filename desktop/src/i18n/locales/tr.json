@@ -60,10 +60,15 @@
     "signOut": "Cikis Yap",
     "copyLink": "Baglantiyi kopyala",
     "copied": "Kopyalandi!",
+    "browserFailed": "Tarayici acilamadi. Baglantiyi kopyalayip elle acin.",
+    "callbackSlow": "SoundCloud sonrasi sayfa yuklenmiyor mu? Alan adi engellenmis olabilir. VPN acin ve baglantiyi tekrar acin.",
+    "reopenLink": "Baglantiyi tekrar ac",
     "tagline": "Muziginiz, sizin tarzinizda",
     "orSeparator": "veya",
     "continueOffline": "Giris yapmadan devam et",
-    "continueOfflineDesc": "Yerel kutuphanenizdeki indirilmis parcalari ve begenileri dinleyin"
+    "continueOfflineDesc": "Yerel kutuphanenizdeki indirilmis parcalari ve begenileri dinleyin",
+    "errorLimitedTitle": "Giris gecici olarak sinirli",
+    "errorLimitedDesc": "Sunucu su anda girisleri sinirliyor. {{seconds}} sn sonra tekrar deneyin."
   },
   "reauth": {
     "title": "Oturum Suresi Doldu",
@@ -515,6 +520,7 @@
     "bgBlur": "Arka plan bulanikligi",
     "resetDefaults": "Varsayilanlara don",
     "account": "Hesap",
+    "signIn": "Giris yap",
     "language": "Dil",
     "audioDevice": "Ses cikisi",
     "audioDeviceDefault": "Sistem varsayilani",
@@ -629,7 +635,20 @@
     "notFound": "Bulunamadi",
     "done": "Ice aktarma tamamlandi!",
     "savingPlaylist": "Calma listesi kaydediliyor...",
-    "backgroundHint": "Ice aktarma arka planda surer, bu pencereyi kapatabilirsiniz"
+    "backgroundHint": "Ice aktarma arka planda surer, bu pencereyi kapatabilirsiniz",
+    "error": "Ice aktarma basarisiz",
+    "pending": "Calma listesi sunucuda olusturuluyor, kisa sure sonra kitapliginizda gorunecek",
+    "partial": "Ice aktarmanin bir kismi kaydedildi, nedeni asagida",
+    "errors": "Hatalar",
+    "nothingFound": "Hicbir sey bulunamadi. Baglantinizi ve tokeninizi kontrol edip tekrar deneyin",
+    "limitHint": "SoundCloud calma listesine en fazla 500 sarki sigar, kalanlar \"Yandex Music 2\", \"Yandex Music 3\" listelerine gider",
+    "sessionExpired": "SoundCloud oturumunuzun suresi doldu. Tekrar giris yapin ve ice aktarmayi yeniden baslatin",
+    "playlistNotSynced": "Mevcut \"Yandex Music\" calma listesi hala SoundCloud ile esitleniyor. Birkac dakika sonra ice aktarmayi tekrar deneyin",
+    "saveFailed": "Bazi calma listeleri kaydedilemedi (hata {{status}})",
+    "tokenInvalid": "Yandex Music tokeni kabul etmedi. Yeni bir token alip tekrar deneyin",
+    "ymUnavailable": "Yandex Music begenileri yuklenemedi. Baglantinizi kontrol edip tekrar deneyin",
+    "searchUnavailable": "SoundCloud aramasi yanit vermiyor. Ice aktarmayi daha sonra tekrar deneyin",
+    "unknownError": "Ice aktarma sirasinda bir sorun olustu. Daha sonra tekrar deneyin"
   },
   "update": {
     "available": "Guncelleme mevcut",
