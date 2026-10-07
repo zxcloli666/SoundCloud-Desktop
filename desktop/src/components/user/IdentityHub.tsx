@@ -1,6 +1,6 @@
 import {useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
-import {type Aura, auraRgba} from '../../lib/aura';
+import {type Aura, auraRgb, auraRgba} from '../../lib/aura';
 import {Calendar, Globe, Sparkles} from '../../lib/icons';
 import {likedTracksCount} from '../../lib/likes';
 import {usePerfMode} from '../../lib/perf';
@@ -8,6 +8,7 @@ import {BlockArtistButton} from '../music/blocklist/BlockArtistButton';
 import {userTarget} from '../music/blocklist/targets';
 import {CopyLinkButton} from '../ui/CopyLinkButton';
 import {GlassHeroPanel} from '../ui/GlassHeroPanel';
+import {RichText} from '../ui/RichText';
 import {AuraPicker} from './AuraPicker';
 import {AvatarArtifact} from './AvatarArtifact';
 import {FollowBtn} from './FollowBtn';
@@ -116,7 +117,7 @@ export function IdentityHub({
 
           {user.description && (
               <p className="selectable text-[14px] md:text-[15px] text-white/65 leading-relaxed max-w-2xl line-clamp-3 hover:line-clamp-none transition-all duration-700 cursor-help">
-              {user.description}
+              <RichText text={user.description} accent={auraRgb(aura)}/>
             </p>
           )}
 

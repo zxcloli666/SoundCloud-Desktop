@@ -5,6 +5,7 @@ import {getCurrentTime, subscribe} from '../../lib/audio';
 import {ago, art, durLong} from '../../lib/formatters';
 import {type Comment, usePostComment} from '../../lib/hooks';
 import {Clock, Loader2, Play, Send} from '../../lib/icons';
+import {RichText} from '../ui/RichText';
 
 /** A single voice in the room. The MOMENT it was left at (a glowing, genre-toned,
  *  clickable timestamp) is the hero of the card — click it to jump there. */
@@ -13,12 +14,14 @@ export const VoiceCard = React.memo(function VoiceCard({
                                                            accent,
                                                            accentSoft,
                                                            accentGlow,
+                                                           maxSeconds,
                                                            onSeek,
                                                        }: {
     comment: Comment;
     accent: string;
     accentSoft: string;
     accentGlow: string;
+    maxSeconds: number;
     onSeek: (seconds: number) => void;
 }) {
     const navigate = useNavigate();
@@ -73,7 +76,13 @@ export const VoiceCard = React.memo(function VoiceCard({
                         )}
                     </div>
                     <p className="selectable text-[13.5px] text-white/70 mt-1.5 leading-relaxed break-words">
-                        {comment.body}
+                        <RichText
+                            text={comment.body}
+                            maxSeconds={maxSeconds}
+                            onSeek={onSeek}
+                            accent={accent}
+                            accentSoft={accentSoft}
+                        />
                     </p>
                 </div>
             </div>
