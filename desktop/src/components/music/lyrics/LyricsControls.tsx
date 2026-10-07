@@ -5,6 +5,7 @@ import {useNavigate} from 'react-router-dom';
 import {useShallow} from 'zustand/shallow';
 import {api} from '../../../lib/api';
 import {handlePrev} from '../../../lib/audio';
+import {forgetOfflineLike} from '../../../lib/cache';
 import {toggleDislike, useDislikeStatus} from '../../../lib/dislikes';
 import {invalidateAllLikesCache} from '../../../lib/hooks';
 import {
@@ -21,7 +22,7 @@ import {
     ThumbsDown,
 } from '../../../lib/icons';
 import {optimisticToggleLike, useLiked} from '../../../lib/likes';
-import {forgetLikedUrn, rememberLikedUrn} from '../../../lib/offline-index';
+import {rememberLikedUrn} from '../../../lib/offline-index';
 import {useLyricsStore} from '../../../stores/lyrics';
 import {type Track, usePlayerStore} from '../../../stores/player';
 import {AddToPlaylistDialog} from '../AddToPlaylistDialog';
@@ -38,7 +39,7 @@ const FullscreenLikeButton = React.memo(({track}: { track: Track }) => {
             await api(`/likes/tracks/${encodeURIComponent(track.urn)}`, {
                 method: next ? 'POST' : 'DELETE',
             });
-            void (next ? rememberLikedUrn(track.urn, track) : forgetLikedUrn(track.urn));
+            void (next ? rememberLikedUrn(track.urn, track) : forgetOfflineLike(track.urn));
         } catch {
             optimisticToggleLike(qc, track, !next);
         }
@@ -69,7 +70,7 @@ const FullscreenDislikeButton = React.memo(({track}: { track: Track }) => {
             optimisticToggleLike(qc, track, false);
             invalidateAllLikesCache();
             api(`/likes/tracks/${encodeURIComponent(track.urn)}`, {method: 'DELETE'})
-                .then(() => forgetLikedUrn(track.urn))
+                .then(() => forgetOfflineLike(track.urn))
                 .catch(() => {
                 });
         }

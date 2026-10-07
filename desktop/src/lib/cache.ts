@@ -5,6 +5,7 @@ import {useSettingsStore} from '../stores/settings';
 import {toScproxyUrl} from './asset-url';
 import {getStaticPort} from './constants';
 import {trackedInvoke as invoke} from './diagnostics';
+import {forgetLikedUrn} from './offline-index';
 import { isHqStreaming } from './streaming';
 import {isPreviewOnly} from './track-access';
 
@@ -118,6 +119,14 @@ export function clearLikedCache(): Promise<void> {
 
 export function removeCachedTrack(urn: string): Promise<boolean> {
   return invoke<boolean>('track_remove_cached', { urn });
+}
+
+export function demoteLikedTrack(urn: string): Promise<boolean> {
+  return invoke<boolean>('track_demote_liked', { urn });
+}
+
+export async function forgetOfflineLike(urn: string): Promise<void> {
+  await Promise.all([forgetLikedUrn(urn), demoteLikedTrack(urn).catch(() => false)]);
 }
 
 export function listCachedUrns(): Promise<string[]> {
