@@ -32,29 +32,34 @@ export function whenLocalLibraryReady(): Promise<void> {
   });
 }
 
-async function scan(paths: string[], explicitPaths: string[]): Promise<string[] | null> {
+interface ScanResult {
+  tracks: LocalTrackInfo[];
+  folders: string[];
+}
+
+async function scan(paths: string[], rememberFolders: boolean): Promise<string[] | null> {
   if (scanRunning || paths.length === 0) return null;
   await whenLocalLibraryReady();
   listenScanProgress();
   scanRunning = true;
   useLocalLibrary.getState().setScanning({ done: 0, total: 0 });
   try {
-    const found = await invoke<LocalTrackInfo[]>('local_library_scan', { paths });
-    return useLocalLibrary.getState().merge(found, explicitPaths);
+    const result = await invoke<ScanResult>('local_library_scan', { paths });
+    const folders = new Set(result.folders);
+    const store = useLocalLibrary.getState();
+    if (rememberFolders) store.addFolders(result.folders);
+    return store.merge(
+      result.tracks,
+      paths.filter((p) => !folders.has(p)),
+    );
   } finally {
     scanRunning = false;
     useLocalLibrary.getState().setScanning(null);
   }
 }
 
-export function importLocalFiles(paths: string[]): Promise<string[] | null> {
-  return scan(paths, paths);
-}
-
-export async function importLocalFolders(folders: string[]): Promise<string[] | null> {
-  await whenLocalLibraryReady();
-  useLocalLibrary.getState().addFolders(folders);
-  return scan(folders, []);
+export function importLocalPaths(paths: string[]): Promise<string[] | null> {
+  return scan(paths, true);
 }
 
 export async function pickLocalFiles(): Promise<string[] | null> {
@@ -63,13 +68,13 @@ export async function pickLocalFiles(): Promise<string[] | null> {
     multiple: true,
     filters: [{ name: i18n.t('local.audioFiles'), extensions: LOCAL_AUDIO_EXTENSIONS }],
   });
-  return picked && picked.length > 0 ? importLocalFiles(picked) : null;
+  return picked && picked.length > 0 ? importLocalPaths(picked) : null;
 }
 
 export async function pickLocalFolder(): Promise<string[] | null> {
   const { open } = await import('@tauri-apps/plugin-dialog');
   const picked = await open({ directory: true, multiple: true });
-  return picked && picked.length > 0 ? importLocalFolders(picked) : null;
+  return picked && picked.length > 0 ? importLocalPaths(picked) : null;
 }
 
 export async function refreshLocalMissing(): Promise<void> {
@@ -83,7 +88,7 @@ export async function refreshLocalMissing(): Promise<void> {
 
 export async function rescanLocalLibrary(): Promise<string[] | null> {
   await whenLocalLibraryReady();
-  const added = await scan(useLocalLibrary.getState().folders, []);
+  const added = await scan(useLocalLibrary.getState().folders, false);
   await refreshLocalMissing();
   return added;
 }

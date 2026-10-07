@@ -33,6 +33,12 @@ pub struct LocalTrackInfo {
     modified_at: u64,
 }
 
+#[derive(Debug, Serialize)]
+pub struct ScanResult {
+    tracks: Vec<LocalTrackInfo>,
+    folders: Vec<String>,
+}
+
 #[derive(Clone, Serialize)]
 struct ScanProgress {
     done: usize,
@@ -110,24 +116,26 @@ fn app_covers_dir(app: &AppHandle) -> Result<PathBuf, String> {
 }
 
 #[tauri::command]
-pub async fn local_library_scan(
-    paths: Vec<String>,
-    app: AppHandle,
-) -> Result<Vec<LocalTrackInfo>, String> {
+pub async fn local_library_scan(paths: Vec<String>, app: AppHandle) -> Result<ScanResult, String> {
     let covers = app_covers_dir(&app)?;
     run_blocking(move || {
         let roots: Vec<PathBuf> = paths.into_iter().map(PathBuf::from).collect();
+        let folders = roots
+            .iter()
+            .filter(|root| root.is_dir())
+            .map(|root| root.to_string_lossy().into_owned())
+            .collect();
         let files = scan::collect(&roots);
         let total = files.len();
-        let mut out = Vec::with_capacity(total);
+        let mut tracks = Vec::with_capacity(total);
         for (index, file) in files.iter().enumerate() {
-            out.push(describe(file, &covers));
+            tracks.push(describe(file, &covers));
             let done = index + 1;
             if done % PROGRESS_EVERY == 0 || done == total {
                 app.emit(PROGRESS_EVENT, ScanProgress { done, total }).ok();
             }
         }
-        out
+        ScanResult { tracks, folders }
     })
     .await
 }
