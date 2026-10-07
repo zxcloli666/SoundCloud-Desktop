@@ -46,7 +46,6 @@
     "clearQueue": "Kuyrugu Temizle",
     "queueEmpty": "Kuyruk bos",
     "queueEmptyHint": "Siradaki calacak parcalar burada gorunur",
-    "addToQueue": "Kuyruga Ekle",
     "shuffle": "Karistir",
     "repeat": "Tekrar",
     "abLoopSetA": "En iyi bolumu dongule: baslangic (A)",
@@ -987,5 +986,24 @@
     "hintOff": "Bu EQ, hız ve perde ayarlarını yalnızca bu parça için sakla",
     "hintOn": "Bu parça her çaldığında uygulanır",
     "noTrack": "Sesini hatırlamak için bir parça çal"
+  },
+  "trackMenu": {
+    "menuLabel": "Parça işlemleri",
+    "playNext": "Sıradaki olarak çal",
+    "playLast": "Kuyruğun sonuna ekle",
+    "removeFromQueue": "Kuyruktan kaldır",
+    "like": "Beğen",
+    "unlike": "Beğeniyi kaldır",
+    "addToPlaylist": "Çalma listesine ekle…",
+    "download": "İndir",
+    "goToTrack": "Parçaya git",
+    "goToArtist": "Sanatçıya git",
+    "copyLink": "Bağlantıyı kopyala",
+    "copyLabel": "Sanatçı ve adı kopyala",
+    "playNextDone": "Sıradaki: {{title}}",
+    "playLastDone": "Kuyruğun sonuna eklendi: {{title}}",
+    "linkCopied": "Bağlantı kopyalandı",
+    "labelCopied": "Sanatçı ve ad kopyalandı",
+    "copyFailed": "Panoya kopyalanamadı"
   }
 }

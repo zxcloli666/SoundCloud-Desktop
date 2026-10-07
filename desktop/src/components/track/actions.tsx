@@ -3,12 +3,12 @@ import React, {useEffect, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {toast} from 'sonner';
 import {api} from '../../lib/api';
-import {downloadTrack} from '../../lib/cache';
 import {fc} from '../../lib/formatters';
 import {invalidateAllLikesCache} from '../../lib/hooks';
 import {Check, Download, Heart, LinkIcon, Loader2, pauseCurrent16, playCurrent16,} from '../../lib/icons';
 import {optimisticToggleLike, setLikedUrn, useLiked} from '../../lib/likes';
-import {getTrackDisplay} from '../../lib/track-display';
+import {cleanPermalink} from '../../lib/permalink';
+import {saveTrackFile} from '../../lib/track-actions';
 import type {Track} from '../../stores/player';
 
 /** Accent like-chip: icon + count, glows accent when active. */
@@ -117,13 +117,7 @@ export const CopyIconAction = React.memo(function CopyIconAction({ url }: { url?
   if (!url) return null;
 
   const copy = () => {
-    try {
-      const u = new URL(url);
-      for (const p of ['utm_medium', 'utm_campaign', 'utm_source']) u.searchParams.delete(p);
-      navigator.clipboard.writeText(u.toString().replace(/\?$/, ''));
-    } catch {
-      navigator.clipboard.writeText(url);
-    }
+    navigator.clipboard.writeText(cleanPermalink(url));
     setCopied(true);
     setTimeout(() => setCopied(false), 1600);
   };
@@ -153,12 +147,7 @@ export const DownloadButton = React.memo(({ track }: { track: Track }) => {
     if (loading) return;
     setLoading(true);
     try {
-      const display = getTrackDisplay(track);
-      await downloadTrack(track.urn, display.artistLine || track.user.username, display.title, {
-        artworkUrl: track.artwork_url,
-        durationMs: track.duration,
-        storageQuality: track._scd_meta?.storage_quality,
-      });
+      await saveTrackFile(track);
       toast.success(t('track.downloaded'));
     } catch (e: unknown) {
       if (e instanceof Error && e.message === 'cancelled') return;

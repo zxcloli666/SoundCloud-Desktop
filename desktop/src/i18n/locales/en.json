@@ -41,7 +41,6 @@
     "clearQueue": "Clear Queue",
     "queueEmpty": "Queue is empty",
     "queueEmptyHint": "Tracks you play next will show up here",
-    "addToQueue": "Add to Queue",
     "shuffle": "Shuffle",
     "repeat": "Repeat",
     "qualityHQ": "HQ",
@@ -1184,5 +1183,24 @@
     "hintOff": "Keep this EQ, speed and pitch for this track only",
     "hintOn": "Applied every time this track plays",
     "noTrack": "Play a track to remember its sound"
+  },
+  "trackMenu": {
+    "menuLabel": "Track actions",
+    "playNext": "Play next",
+    "playLast": "Add to end of queue",
+    "removeFromQueue": "Remove from queue",
+    "like": "Like",
+    "unlike": "Remove like",
+    "addToPlaylist": "Add to playlist…",
+    "download": "Download",
+    "goToTrack": "Go to track",
+    "goToArtist": "Go to artist",
+    "copyLink": "Copy link",
+    "copyLabel": "Copy artist and title",
+    "playNextDone": "Plays next: {{title}}",
+    "playLastDone": "Added to the end of the queue: {{title}}",
+    "linkCopied": "Link copied",
+    "labelCopied": "Artist and title copied",
+    "copyFailed": "Could not copy to the clipboard"
   }
 }

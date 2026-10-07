@@ -1,9 +1,8 @@
 import { useQueryClient } from '@tanstack/react-query';
 import React, { useEffect } from 'react';
-import { api } from '../../lib/api';
-import { invalidateAllLikesCache } from '../../lib/hooks';
 import { Heart } from '../../lib/icons';
-import { optimisticToggleLike, setLikedUrn, useLiked } from '../../lib/likes';
+import { setTrackLiked } from '../../lib/like-toggle';
+import { setLikedUrn, useLiked } from '../../lib/likes';
 import type { Track } from '../../stores/player';
 
 export const LikeButton = React.memo(function LikeButton({
@@ -21,18 +20,9 @@ export const LikeButton = React.memo(function LikeButton({
   }, [track.urn, track.user_favorite]);
   const qc = useQueryClient();
 
-  const toggle = async (e: React.MouseEvent) => {
+  const toggle = (e: React.MouseEvent) => {
     e.stopPropagation();
-    const next = !liked;
-    optimisticToggleLike(qc, track, next);
-    invalidateAllLikesCache();
-    try {
-      await api(`/likes/tracks/${encodeURIComponent(track.urn)}`, {
-        method: next ? 'POST' : 'DELETE',
-      });
-    } catch {
-      optimisticToggleLike(qc, track, !next);
-    }
+    void setTrackLiked(qc, track, !liked);
   };
 
   if (variant === 'overlay') {
