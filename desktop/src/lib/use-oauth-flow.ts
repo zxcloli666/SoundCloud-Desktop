@@ -208,7 +208,7 @@ export function useOAuthFlow(
 
 function loginRequestError(e: unknown): OAuthFlowError {
   if (e instanceof ApiError && (e.status === 429 || e.status === 503)) {
-    return { kind: 'limited', message: e.body, retryAfterSec: e.retryAfterSec };
+    return { kind: 'limited', message: e.body, retryAfterSec: e.retryAfterSeconds ?? undefined };
   }
   if (!(e instanceof ApiError) || e.status >= 500) {
     return { kind: 'unreachable', message: e instanceof Error ? e.message : 'Backend unreachable' };

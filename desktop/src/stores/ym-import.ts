@@ -164,7 +164,7 @@ async function replacePlaylistTracks(playlistUrn: string, urns: string[]) {
       return;
     } catch (error) {
       if (!isPlaylistConflict(error) || retry >= PLAYLIST_CONFLICT_RETRIES) throw error;
-      await wait((error.retryAfterSec ?? PLAYLIST_CONFLICT_PAUSE_SEC) * 1000);
+      await wait((error.retryAfterSeconds ?? PLAYLIST_CONFLICT_PAUSE_SEC) * 1000);
     }
   }
 }
