@@ -288,6 +288,16 @@ pub async fn track_enforce_cache_limit(
 }
 
 #[tauri::command]
+pub async fn track_purge_played(
+    keep_urn: Option<String>,
+    state: State<'_, TrackCacheState>,
+) -> Result<u32, String> {
+    let keep = keep_urn.as_deref().and_then(canonical_track_urn);
+    let state = state.inner().clone();
+    run_blocking(move || state.purge_played(keep.as_deref())).await
+}
+
+#[tauri::command]
 pub async fn track_cache_likes(
     entries: Vec<LikeCacheEntry>,
     state: State<'_, TrackCacheState>,

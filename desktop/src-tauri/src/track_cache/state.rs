@@ -23,6 +23,8 @@ use crate::track_cache::direct_download::try_download;
 use crate::track_cache::sc_anon::AnonClient;
 use crate::track_cache::transcode;
 
+mod evict;
+
 const MIN_AUDIO_SIZE: u64 = 8192;
 const AUDIO_SNIFF_LEN: usize = 16;
 const PROGRESS_EMIT_STEP: f64 = 0.01;
@@ -2441,85 +2443,6 @@ impl TrackCacheState {
         }
         out
     }
-
-    pub fn enforce_limit(&self, limit_mb: u64) {
-        if limit_mb == 0 {
-            return;
-        }
-        let limit_bytes = limit_mb * 1024 * 1024;
-
-        let mut files: Vec<(PathBuf, u64, std::time::SystemTime)> = Vec::new();
-        let mut total = 0u64;
-
-        // URNs with a transcode in flight — their raw source must not be evicted
-        // out from under the А→Б promotion.
-        let in_flight = self
-            .transcoding
-            .lock()
-            .ok()
-            .map(|s| s.clone())
-            .unwrap_or_default();
-
-        // Account for both the clean cache ("Б") and any raw staging files ("А")
-        // so a build without ffmpeg (which keeps serving raw bytes) stays bounded.
-        for dir in [&self.audio_dir, &self.incoming_dir] {
-            let is_incoming = *dir == self.incoming_dir;
-            let Ok(entries) = std::fs::read_dir(dir) else {
-                continue;
-            };
-            for entry in entries.flatten() {
-                let path = entry.path();
-                if !is_audio_cache_file(&path) {
-                    continue;
-                }
-                // Protect staged files that are liked-bound or mid-promotion: a
-                // raw file evicted here would silently cancel the user's cache and,
-                // for liked tracks, defeat the dedicated protected quota.
-                if is_incoming {
-                    if let Some(urn) = filename_to_urn(&entry.file_name().to_string_lossy())
-                        && in_flight.contains(&urn) {
-                            continue;
-                        }
-                    if read_cache_metadata(&path).map(|m| m.liked).unwrap_or(false) {
-                        continue;
-                    }
-                }
-                if let Ok(meta) = entry.metadata()
-                    && meta.is_file() {
-                        let size = meta.len();
-                        let accessed = meta
-                            .accessed()
-                            .or_else(|_| meta.modified())
-                            .unwrap_or(std::time::UNIX_EPOCH);
-                        total += size;
-                        files.push((path, size, accessed));
-                    }
-            }
-        }
-
-        if total <= limit_bytes {
-            return;
-        }
-
-        let before = total;
-        files.sort_by_key(|x| x.2);
-
-        let mut removed = 0u32;
-        for (path, size, _) in files {
-            if total <= limit_bytes {
-                break;
-            }
-            if std::fs::remove_file(&path).is_ok() {
-                remove_cache_metadata(&path);
-                total -= size;
-                removed += 1;
-            }
-        }
-        println!(
-            "[TrackCache] evicted {removed} files, freed {} MB",
-            (before - total) / (1024 * 1024)
-        );
-    }
 }
 
 #[cfg(test)]
@@ -2582,7 +2505,7 @@ mod tests {
         path
     }
 
-    fn test_state(name: &str) -> (PathBuf, TrackCacheState) {
+    pub(super) fn test_state(name: &str) -> (PathBuf, TrackCacheState) {
         let root = std::env::temp_dir().join(format!("track-cache-{name}-{}", std::process::id()));
         std::fs::remove_dir_all(&root).ok();
         let [audio, liked, incoming] = ["audio", "liked", "incoming"].map(|dir| root.join(dir));

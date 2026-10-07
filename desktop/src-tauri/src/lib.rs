@@ -239,6 +239,7 @@ pub fn run() {
             track_cache::track_list_cached,
             track_cache::track_cache_inventory,
             track_cache::track_enforce_cache_limit,
+            track_cache::track_purge_played,
             track_cache::track_cache_likes,
             track_cache::track_cache_likes_running,
             track_cache::track_cancel_cache_likes,
