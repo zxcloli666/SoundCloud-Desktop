@@ -7,6 +7,7 @@ import {isUrnDisliked, toggleDislike} from './dislikes';
 import {art} from './formatters';
 import {invalidateAllLikesCache} from './hooks';
 import {isUrnLiked, optimisticToggleLike} from './likes';
+import {isLocalUrn} from './local-library';
 import {queryClient} from './query-client';
 import {getArtistDisplay, getDisplayTitle} from './track-display';
 
@@ -95,7 +96,7 @@ document.addEventListener('visibilitychange', () => {
 
 async function toggleLikeCurrent() {
     const tr = usePlayerStore.getState().currentTrack;
-    if (!tr) return;
+    if (!tr || isLocalUrn(tr.urn)) return;
     const next = !(isUrnLiked(tr.urn) || !!tr.user_favorite);
     optimisticToggleLike(queryClient, tr, next); // also updates isUrnLiked
     invalidateAllLikesCache();
@@ -113,7 +114,7 @@ async function toggleLikeCurrent() {
 
 async function toggleDislikeCurrent() {
     const tr = usePlayerStore.getState().currentTrack;
-    if (!tr) return;
+    if (!tr || isLocalUrn(tr.urn)) return;
     const next = !isUrnDisliked(tr.urn);
     if (next && (isUrnLiked(tr.urn) || tr.user_favorite)) {
         optimisticToggleLike(queryClient, tr, false);

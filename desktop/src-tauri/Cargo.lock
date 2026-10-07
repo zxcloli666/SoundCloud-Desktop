@@ -5204,7 +5204,7 @@ dependencies = [
 
 [[package]]
 name = "soundcloud-desktop"
-version = "8.4.12"
+version = "8.4.13"
 dependencies = [
  "audiopus",
  "base64 0.22.1",
@@ -5233,6 +5233,7 @@ dependencies = [
  "serde_json",
  "sha2",
  "souvlaki",
+ "symphonia",
  "tauri",
  "tauri-build",
  "tauri-plugin-dialog",

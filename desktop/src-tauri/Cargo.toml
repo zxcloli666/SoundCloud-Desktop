@@ -34,6 +34,7 @@ hyper-util = { version = "0.1", features = ["client-proxy", "client-proxy-system
 urlencoding = "2"
 tauri-plugin-single-instance = "2.4.0"
 rodio = { version = "0.22.2", features = ["mp3", "symphonia-aac", "symphonia-isomp4", "symphonia-ogg"] }
+symphonia = { version = "0.5.5", default-features = false, features = ["mp3", "aac", "isomp4", "flac", "ogg", "vorbis", "wav", "pcm"] }
 cpal = "0.17"
 biquad = "0.5"
 rustfft = { version = "6", default-features = false }

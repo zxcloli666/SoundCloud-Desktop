@@ -4,6 +4,7 @@ import React, { useEffect, useRef } from 'react';
 import { art } from '../../lib/formatters';
 import type { Comment } from '../../lib/hooks';
 import { useTrackComments } from '../../lib/hooks';
+import { isLocalUrn } from '../../lib/local-library';
 import {getPerfProfile} from '../../lib/perf';
 import { usePlayerStore } from '../../stores/player';
 import { useSettingsStore } from '../../stores/settings';
@@ -33,7 +34,7 @@ export const FloatingComments = React.memo(function FloatingComments() {
   const enabled = useSettingsStore((s) => s.floatingComments);
   const trackUrn = usePlayerStore((s) => s.currentTrack?.urn);
 
-  if (!enabled || !trackUrn) return null;
+  if (!enabled || !trackUrn || isLocalUrn(trackUrn)) return null;
   return <FloatingCommentsInner trackUrn={trackUrn} />;
 });
 

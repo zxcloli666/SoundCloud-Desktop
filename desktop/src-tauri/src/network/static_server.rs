@@ -25,14 +25,15 @@ fn content_type_for(filename: &str) -> &'static str {
     }
 }
 
-pub async fn start(wallpapers_dir: PathBuf) -> u16 {
-    let wallpapers = wallpapers_dir.clone();
-
-    let wallpaper_route = warp::path("wallpapers")
+fn dir_route(
+    prefix: &'static str,
+    dir: PathBuf,
+) -> impl Filter<Extract = (Response<Body>,), Error = warp::Rejection> + Clone {
+    warp::path(prefix)
         .and(warp::path::param::<String>())
         .and(warp::path::end())
         .and_then(move |filename: String| {
-            let dir = wallpapers.clone();
+            let dir = dir.clone();
             async move {
                 if filename.contains("..") || filename.contains('/') || filename.contains('\\') {
                     return Ok::<_, warp::Rejection>(
@@ -69,9 +70,14 @@ pub async fn start(wallpapers_dir: PathBuf) -> u16 {
                     .body(Body::from(buf))
                     .unwrap())
             }
-        });
+        })
+}
 
-    let routes = wallpaper_route.with(cors());
+pub async fn start(wallpapers_dir: PathBuf, local_covers_dir: PathBuf) -> u16 {
+    let routes = dir_route("wallpapers", wallpapers_dir)
+        .or(dir_route("local-covers", local_covers_dir))
+        .unify()
+        .with(cors());
 
     let addr: SocketAddr = ([127, 0, 0, 1], 0).into();
     let (addr, server) = warp::serve(routes).bind_ephemeral(addr);

@@ -64,6 +64,7 @@ function startDeferredRuntime() {
     void import('./lib/discord');
     void import('./lib/perf-probe').then((m) => m.probePerfMode());
     void import('./lib/host-status').then((m) => m.initHostStatus());
+    void import('./lib/storage-location').then((m) => m.warnIfStorageUnavailable());
   });
 }
 

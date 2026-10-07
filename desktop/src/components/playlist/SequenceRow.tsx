@@ -8,6 +8,7 @@ import {GripVertical, headphones9, heart9, musicIcon12, pauseWhite12, playWhite1
 import {useTrackPlay} from '../../lib/useTrackPlay';
 import type {Track} from '../../stores/player';
 import {LikeButton} from '../music/LikeButton';
+import {SaveOfflineRowButton} from '../music/SaveOfflineButton';
 import {sameScdMeta, TrackStatusBadges} from '../music/TrackStatusBadges';
 import {TrackTitleArtist} from '../music/TrackTitleArtist';
 import {genreColor} from '../search/utils';
@@ -102,6 +103,7 @@ function RowBody({
       </div>
 
       <LikeButton track={track} />
+      <SaveOfflineRowButton track={track} />
 
       <span className="text-[11px] text-white/25 tabular-nums font-medium shrink-0 w-10 text-right">
         {dur(track.duration)}

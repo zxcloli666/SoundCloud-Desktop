@@ -5,6 +5,7 @@ import { usePlayerStore } from '../stores/player';
 import { useSettingsStore } from '../stores/settings';
 import { getCurrentTime } from './audio';
 import { trackedInvoke as invoke } from './diagnostics';
+import { isLocalUrn } from './local-library';
 import { getArtistDisplay, getDisplayTitle } from './track-display';
 
 let connected = false;
@@ -73,7 +74,7 @@ async function pushPresence(): Promise<boolean> {
       track: {
         title: fitText(getDisplayTitle(track)),
         artist: fitText(display.primary || track.user?.username || ''),
-        artwork_url: artworkToLarge(track.artwork_url),
+        artwork_url: isLocalUrn(track.urn) ? undefined : artworkToLarge(track.artwork_url),
         track_url: track.permalink_url ? `${track.permalink_url}`.replace(/\?.*$/, '') : undefined,
         duration_secs: Math.round(track.duration / 1000),
         elapsed_secs: Math.round(getCurrentTime()),

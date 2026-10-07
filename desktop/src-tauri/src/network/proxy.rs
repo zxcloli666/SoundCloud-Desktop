@@ -140,6 +140,7 @@ pub async fn proxy_request(encoded: &str) -> ProxyResult {
         if !data.is_empty() {
             #[cfg(debug_assertions)]
             println!("[Proxy] cache HIT {}", target_url);
+            crate::network::image_cache::spawn_mark_used(cache_path);
             let content_type = sniff_content_type(&data).to_string();
             return ProxyResult {
                 status: 200,

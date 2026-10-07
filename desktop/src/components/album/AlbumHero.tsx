@@ -10,6 +10,7 @@ import { GlassHeroPanel } from '../ui/GlassHeroPanel';
 import { InfoChip } from '../user/UserChips';
 import { AlbumCoverArtifact } from './AlbumCoverArtifact';
 import { AlbumPlayButton } from './AlbumPlayButton';
+import { AlbumSaveButton } from './AlbumSaveButton';
 import type { AlbumArtist, AlbumDetail } from './types';
 
 interface AlbumHeroProps {
@@ -232,6 +233,7 @@ function AlbumHeroImpl({ album, hasStar, aura }: AlbumHeroProps) {
 
           <div className="flex flex-wrap items-center gap-3 pt-1 justify-center lg:justify-start">
             <AlbumPlayButton tracks={album.tracks} aura={aura} />
+            <AlbumSaveButton album={album} />
           </div>
         </div>
       </div>

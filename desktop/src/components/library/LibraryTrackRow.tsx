@@ -8,6 +8,7 @@ import type {Track} from '../../stores/player';
 import {usePlayerStore} from '../../stores/player';
 import {AddToPlaylistDialog} from '../music/AddToPlaylistDialog';
 import {LikeButton} from '../music/LikeButton';
+import {SaveOfflineRowButton} from '../music/SaveOfflineButton';
 import {sameScdMeta, TrackStatusBadges} from '../music/TrackStatusBadges';
 import {TrackTitleArtist} from '../music/TrackTitleArtist';
 
@@ -86,6 +87,7 @@ export const LibraryTrackRow = React.memo(
         </div>
 
         <LikeButton track={track} />
+        <SaveOfflineRowButton track={track} />
 
         <AddToPlaylistDialog trackUrns={[track.urn]}>
           <button

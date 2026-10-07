@@ -23,6 +23,14 @@ use crate::track_cache::direct_download::try_download;
 use crate::track_cache::sc_anon::AnonClient;
 use crate::track_cache::transcode;
 
+mod bulk;
+mod evict;
+mod export;
+mod pinned;
+
+pub use bulk::{BulkCacheEntry, BulkCacheStatus};
+pub use export::ExportOutcome;
+
 const MIN_AUDIO_SIZE: u64 = 8192;
 const AUDIO_SNIFF_LEN: usize = 16;
 const PROGRESS_EMIT_STEP: f64 = 0.01;
@@ -42,15 +50,12 @@ const DIRECT_CONNECT_TIMEOUT_MS: u64 = 5_000;
 const DIRECT_READ_TIMEOUT_SECS: u64 = 70;
 const RETRY_DELAYS_MS: [u64; 1] = [600];
 const MAX_PARALLEL_PRELOADS: usize = 20;
-const MAX_PARALLEL_LIKES: usize = 4;
+const MAX_PARALLEL_BULK: usize = 4;
 /// Transcoding is CPU-bound; keep it modest so it never starves playback on weak
 /// machines. Most cached tracks are already AAC (a near-free remux), so a small
 /// pool drains the queue fast in practice.
 const MAX_PARALLEL_TRANSCODES: usize = 2;
 const CACHE_METADATA_EXT: &str = ".meta.json";
-/// Cover art fetched for download-to-file export is capped to avoid pathological
-/// payloads sneaking into the muxer.
-const MAX_COVER_BYTES: u64 = 8 * 1024 * 1024;
 /// Duration drift allowed between a cached file and the API-reported length
 /// before the cache entry is treated as a truncated (interrupted) download.
 const DURATION_TOLERANCE_MS: u64 = 4000;
@@ -236,10 +241,11 @@ pub struct TrackCacheEntry {
     pub quality: Option<String>,
     pub source: Option<String>,
     pub accepted_short: bool,
+    pub pinned: bool,
 }
 
 impl TrackCacheEntry {
-    fn from_path_and_meta(path: &Path, meta: Option<TrackCacheMetadata>) -> Self {
+    fn from_path_and_meta(path: &Path, meta: Option<TrackCacheMetadata>, pinned: bool) -> Self {
         let accepted_short = meta
             .as_ref()
             .is_some_and(|m| m.duration_ms.is_some() && m.duration_ms == m.expected_duration_ms);
@@ -248,6 +254,7 @@ impl TrackCacheEntry {
             quality: meta.as_ref().map(|m| m.quality.label().to_string()),
             source: meta.and_then(|m| m.source.map(|s| s.label().to_string())),
             accepted_short,
+            pinned,
         }
     }
 }
@@ -296,25 +303,6 @@ pub(super) enum DownloadError {
 
 pub(super) struct DownloadResult {
     pub path: PathBuf,
-}
-
-#[derive(serde::Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct LikeCacheEntry {
-    pub urn: String,
-    pub urls: Vec<String>,
-    #[serde(default)]
-    pub download_urls: Vec<String>,
-    #[serde(default)]
-    pub storage_urls: Vec<String>,
-    #[serde(default)]
-    pub session_id: Option<String>,
-    #[serde(default)]
-    pub hq: bool,
-    #[serde(default)]
-    pub duration_ms: Option<u64>,
-    #[serde(default)]
-    pub storage_quality: Option<String>,
 }
 
 pub struct CacheRequest<'a> {
@@ -523,16 +511,18 @@ pub struct TrackCacheState {
     ffmpeg_probe_done: Arc<std::sync::atomic::AtomicBool>,
     active: Arc<Mutex<HashMap<String, ActiveDownload>>>,
     preload_limiter: Arc<Semaphore>,
-    likes_limiter: Arc<Semaphore>,
+    bulk_limiter: Arc<Semaphore>,
     transcode_limiter: Arc<Semaphore>,
     /// URNs with a transcode in flight, so live + recovery requests coalesce.
     transcoding: Arc<StdMutex<HashSet<String>>>,
     probing: Arc<StdMutex<HashSet<PathBuf>>>,
+    exporting: Arc<StdMutex<HashMap<String, u32>>>,
     /// Per-URN count of consecutive "transcoded too short" results, to cap
     /// re-downloads of preview-only tracks (best-effort, per session).
     truncated_retries: Arc<StdMutex<HashMap<String, u8>>>,
-    likes_running: Arc<std::sync::atomic::AtomicBool>,
-    likes_cancel: Arc<std::sync::atomic::AtomicBool>,
+    bulk_status: Arc<StdMutex<Option<BulkCacheStatus>>>,
+    bulk_cancel: Arc<std::sync::atomic::AtomicBool>,
+    mp3_encoder: Arc<tokio::sync::OnceCell<bool>>,
     /// Per-host storage circuit breaker: host -> epoch secs of last failure.
     storage_cooldowns: Arc<StdMutex<HashMap<String, u64>>>,
     anon: Arc<AnonClient>,
@@ -595,13 +585,15 @@ pub fn init(audio_dir: PathBuf, liked_dir: PathBuf, incoming_dir: PathBuf) -> Tr
         ffmpeg_probe_done: Arc::new(std::sync::atomic::AtomicBool::new(false)),
         active: Arc::new(Mutex::new(HashMap::new())),
         preload_limiter: Arc::new(Semaphore::new(MAX_PARALLEL_PRELOADS)),
-        likes_limiter: Arc::new(Semaphore::new(MAX_PARALLEL_LIKES)),
+        bulk_limiter: Arc::new(Semaphore::new(MAX_PARALLEL_BULK)),
         transcode_limiter: Arc::new(Semaphore::new(MAX_PARALLEL_TRANSCODES)),
         transcoding: Arc::new(StdMutex::new(HashSet::new())),
         probing: Arc::new(StdMutex::new(HashSet::new())),
+        exporting: Arc::new(StdMutex::new(HashMap::new())),
         truncated_retries: Arc::new(StdMutex::new(HashMap::new())),
-        likes_running: Arc::new(std::sync::atomic::AtomicBool::new(false)),
-        likes_cancel: Arc::new(std::sync::atomic::AtomicBool::new(false)),
+        bulk_status: Arc::new(StdMutex::new(None)),
+        bulk_cancel: Arc::new(std::sync::atomic::AtomicBool::new(false)),
+        mp3_encoder: Arc::new(tokio::sync::OnceCell::new()),
         storage_cooldowns: Arc::new(StdMutex::new(HashMap::new())),
         anon,
     }
@@ -1029,7 +1021,7 @@ impl TrackCacheState {
             self.remove_cached(urn);
             return None;
         }
-        Some(TrackCacheEntry::from_path_and_meta(&path, meta))
+        Some(self.entry_at(&path, meta))
     }
 
     /// Download track, save to cache. Coalesces concurrent requests for the same URN.
@@ -1140,10 +1132,7 @@ impl TrackCacheState {
                     // Re-resolve: the transcode may have already promoted А→Б and
                     // deleted the raw path stored in the slot.
                     let current = self.resolve_path(urn).unwrap_or(path);
-                    Ok(TrackCacheEntry::from_path_and_meta(
-                        &current,
-                        read_cache_metadata(&current),
-                    ))
+                    Ok(self.entry_at(&current, read_cache_metadata(&current)))
                 }
                 Some(Err(e)) => Err(e),
                 None => Err("download completed without result".into()),
@@ -1194,7 +1183,7 @@ impl TrackCacheState {
             // already done, else the raw А path) so the caller never receives a
             // path the background transcode is about to delete.
             let current = self.resolve_path(urn).unwrap_or(path);
-            TrackCacheEntry::from_path_and_meta(&current, read_cache_metadata(&current))
+            self.entry_at(&current, read_cache_metadata(&current))
         })
     }
 
@@ -1346,9 +1335,9 @@ impl TrackCacheState {
         let clean_path = transcode::transcode_to_m4a(ffmpeg, &incoming, &dest_dir, &final_name).await?;
 
         let probed = transcode::probe_duration_ms(ffmpeg, &clean_path).await;
-        let expected = read_cache_metadata(&incoming)
-            .or(meta)
-            .and_then(|m| m.expected_duration_ms);
+        let latest = read_cache_metadata(&incoming);
+        let liked = liked || latest.as_ref().is_some_and(|m| m.liked);
+        let expected = latest.or(meta).and_then(|m| m.expected_duration_ms);
 
         // The transcode faithfully reproduces the source, so a too-short result
         // means the *download* was cut off — discard so the next play retries.
@@ -1385,6 +1374,9 @@ impl TrackCacheState {
             duration_ms: probed,
         };
         write_cache_metadata(&clean_path, &clean_meta).await;
+        if liked && !clean_path.starts_with(&self.liked_dir) {
+            self.promote_to_liked(urn).await;
+        }
         // Defer dropping the raw А file: the path may have just been handed to the
         // player, which reads it a moment later in a separate command.
         self.schedule_remove_incoming(urn.to_string());
@@ -1451,105 +1443,6 @@ impl TrackCacheState {
         for urn in urns {
             self.spawn_transcode(urn);
         }
-    }
-
-    /// Ensure a clean m4a exists for export, coalescing with any background
-    /// transcode via the shared dedup set. Returns the clean path, or `None` if
-    /// no clean file could be produced (caller falls back to the raw bytes).
-    async fn ensure_clean_for_export(&self, urn: &str, ffmpeg: &Path) -> Option<PathBuf> {
-        if let Some(path) = self.resolve_clean_path(urn) {
-            return Some(path);
-        }
-        let claimed = self
-            .transcoding
-            .lock()
-            .ok()
-            .map(|mut set| set.insert(urn.to_string()))
-            .unwrap_or(false);
-        if claimed {
-            let _ = self.run_transcode(ffmpeg, urn).await;
-            if let Ok(mut set) = self.transcoding.lock() {
-                set.remove(urn);
-            }
-        } else {
-            // A background transcode owns the slot — wait for the clean file.
-            for _ in 0..150 {
-                if self.resolve_clean_path(urn).is_some() {
-                    break;
-                }
-                tokio::time::sleep(Duration::from_millis(200)).await;
-            }
-        }
-        self.resolve_clean_path(urn)
-    }
-
-    async fn fetch_cover(&self, url: &str) -> Option<Vec<u8>> {
-        let resp = self.client.get(url).send().await.ok()?;
-        if !resp.status().is_success() {
-            return None;
-        }
-        if resp.content_length().map(|l| l > MAX_COVER_BYTES).unwrap_or(false) {
-            return None;
-        }
-        let bytes = resp.bytes().await.ok()?;
-        if bytes.is_empty() || bytes.len() as u64 > MAX_COVER_BYTES {
-            return None;
-        }
-        Some(bytes.to_vec())
-    }
-
-    /// Download-to-file: prefer the clean m4a cache, transcode raw bytes when
-    /// only those exist, else fetch from streaming — then write `dest_path`
-    /// (m4a) with the cover art embedded when ffmpeg is available.
-    pub async fn export_track(
-        &self,
-        req: CacheRequest<'_>,
-        dest_path: String,
-        cover_url: Option<String>,
-    ) -> Result<String, String> {
-        let urn = req.urn.to_string();
-        let dest = PathBuf::from(&dest_path);
-
-        // Make sure we at least have raw bytes (downloads + spawns bg transcode).
-        let entry = self.ensure_cached(req).await?;
-        let mut source_path = PathBuf::from(&entry.path);
-
-        if let Some(ffmpeg) = self.ffmpeg() {
-            if let Some(clean) = self.ensure_clean_for_export(&urn, &ffmpeg).await {
-                source_path = clean;
-            }
-            if self.is_clean_path(&source_path) {
-                let cover = match cover_url {
-                    Some(u) if !u.is_empty() => self.fetch_cover(&u).await,
-                    _ => None,
-                };
-                match transcode::export_with_cover(&ffmpeg, &source_path, cover.as_deref(), &dest)
-                    .await
-                {
-                    Ok(()) => return Ok(dest_path),
-                    Err(e) if cover.is_some() => {
-                        // A bad cover shouldn't sink the download — retry artless.
-                        eprintln!("[TrackCache] export with cover failed ({e}), retrying without");
-                        transcode::export_with_cover(&ffmpeg, &source_path, None, &dest).await?;
-                        return Ok(dest_path);
-                    }
-                    Err(e) => return Err(e),
-                }
-            }
-        }
-
-        // No clean m4a available (ffmpeg unavailable, or the transcode failed /
-        // timed out). Re-resolve in case a concurrent transcode finished and
-        // deleted the raw path we held, then only copy if the source is already a
-        // valid m4a — never write mismatched bytes into the user's .m4a file.
-        let fallback = self.resolve_path(&urn).unwrap_or(source_path);
-        if self.is_clean_path(&fallback) || transcode::is_m4a(&fallback).await {
-            tokio::fs::copy(&fallback, &dest)
-                .await
-                .map_err(|e| format!("Copy failed: {e}"))?;
-            return Ok(dest_path);
-        }
-        Err("Cannot export to m4a: audio transcoder is still preparing or unavailable".into())
     }
 
     /// Try each storage URL once (healthy hosts first), then API URLs with retries.
@@ -2087,11 +1980,6 @@ impl TrackCacheState {
         dir_size(&self.liked_dir)
     }
 
-    pub fn cache_likes_running(&self) -> bool {
-        self.likes_running
-            .load(std::sync::atomic::Ordering::Relaxed)
-    }
-
     fn liked_has_file(&self, urn: &str) -> bool {
         let path = self.liked_file_path(urn);
         std::fs::metadata(&path)
@@ -2139,193 +2027,34 @@ impl TrackCacheState {
         true
     }
 
-    pub fn cancel_cache_likes(&self) {
-        self.likes_cancel
-            .store(true, std::sync::atomic::Ordering::Relaxed);
-    }
-
-    /// Bulk cache liked tracks to the protected `liked_dir`, respecting a
-    /// per-instance concurrency limit. Emits progress events and short-circuits
-    /// when `cancel_cache_likes` is called. The op is idempotent — already
-    /// cached URNs are skipped without emitting a slot.
-    pub async fn cache_likes(&self, entries: Vec<LikeCacheEntry>) -> Result<(), String> {
-        if self
-            .likes_running
-            .swap(true, std::sync::atomic::Ordering::Relaxed)
-        {
-            return Err("cache_likes already running".into());
-        }
-        self.likes_cancel
-            .store(false, std::sync::atomic::Ordering::Relaxed);
-
-        let total = entries.len() as u32;
-        let done = Arc::new(std::sync::atomic::AtomicU32::new(0));
-        let failed = Arc::new(std::sync::atomic::AtomicU32::new(0));
-        let skipped = Arc::new(std::sync::atomic::AtomicU32::new(0));
-        let start = std::time::Instant::now();
-
-        self.emit_likes_progress(
-            "start",
-            total,
-            done.load(std::sync::atomic::Ordering::Relaxed),
-            failed.load(std::sync::atomic::Ordering::Relaxed),
-            skipped.load(std::sync::atomic::Ordering::Relaxed),
-            None,
-        );
-
-        let mut handles = Vec::with_capacity(entries.len());
-
-        for entry in entries {
-            if self.likes_cancel.load(std::sync::atomic::Ordering::Relaxed) {
-                break;
-            }
-
-            if self.liked_has_file(&entry.urn) {
-                skipped.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-                done.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-                self.emit_likes_progress(
-                    "progress",
-                    total,
-                    done.load(std::sync::atomic::Ordering::Relaxed),
-                    failed.load(std::sync::atomic::Ordering::Relaxed),
-                    skipped.load(std::sync::atomic::Ordering::Relaxed),
-                    Some(&entry.urn),
-                );
-                continue;
-            }
-
-            if self.promote_to_liked(&entry.urn).await {
-                skipped.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-                done.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-                self.emit_likes_progress(
-                    "progress",
-                    total,
-                    done.load(std::sync::atomic::Ordering::Relaxed),
-                    failed.load(std::sync::atomic::Ordering::Relaxed),
-                    skipped.load(std::sync::atomic::Ordering::Relaxed),
-                    Some(&entry.urn),
-                );
-                continue;
-            }
-
-            let Ok(permit) = self.likes_limiter.clone().acquire_owned().await else {
-                break;
-            };
-
-            let state = self.clone();
-            let done = done.clone();
-            let failed = failed.clone();
-            let skipped = skipped.clone();
-
-            let handle = tokio::spawn(async move {
-                let _permit = permit;
-                if state
-                    .likes_cancel
-                    .load(std::sync::atomic::Ordering::Relaxed)
-                {
-                    return;
-                }
-                let LikeCacheEntry {
-                    urn,
-                    urls,
-                    download_urls,
-                    storage_urls,
-                    session_id,
-                    hq,
-                    duration_ms,
-                    storage_quality,
-                } = entry;
-                let result = state
-                    .ensure_cached(CacheRequest {
-                        urn: &urn,
-                        urls: &urls,
-                        download_urls: &download_urls,
-                        storage_urls: &storage_urls,
-                        session_id: session_id.as_deref(),
-                        hq,
-                        storage_quality: storage_quality.as_deref(),
-                        liked: true,
-                        expected_duration_ms: duration_ms,
-                    })
-                    .await;
-                if result.is_err() {
-                    failed.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-                } else {
-                    skipped.fetch_add(0, std::sync::atomic::Ordering::Relaxed);
-                }
-                done.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-                state.emit_likes_progress(
-                    "progress",
-                    total,
-                    done.load(std::sync::atomic::Ordering::Relaxed),
-                    failed.load(std::sync::atomic::Ordering::Relaxed),
-                    skipped.load(std::sync::atomic::Ordering::Relaxed),
-                    Some(&urn),
-                );
-            });
-
-            handles.push(handle);
-        }
-
-        for handle in handles {
-            let _ = handle.await;
-        }
-
-        let cancelled = self.likes_cancel.load(std::sync::atomic::Ordering::Relaxed);
-        self.likes_running
-            .store(false, std::sync::atomic::Ordering::Relaxed);
-        self.likes_cancel
-            .store(false, std::sync::atomic::Ordering::Relaxed);
-
-        let final_done = done.load(std::sync::atomic::Ordering::Relaxed);
-        let final_failed = failed.load(std::sync::atomic::Ordering::Relaxed);
-        let final_skipped = skipped.load(std::sync::atomic::Ordering::Relaxed);
-
-        self.emit_likes_progress(
-            if cancelled { "cancelled" } else { "done" },
-            total,
-            final_done,
-            final_failed,
-            final_skipped,
-            None,
-        );
-
-        println!(
-            "[TrackCache] cache_likes {} — done={}/{} failed={} skipped={} in {}ms",
-            if cancelled { "cancelled" } else { "finished" },
-            final_done,
-            total,
-            final_failed,
-            final_skipped,
-            start.elapsed().as_millis()
-        );
-
-        Ok(())
-    }
-
-    fn emit_likes_progress(
+    pub async fn save_offline(
         &self,
-        phase: &str,
-        total: u32,
-        done: u32,
-        failed: u32,
-        skipped: u32,
-        urn: Option<&str>,
-    ) {
-        let Some(app) = self.app_handle.as_ref() else {
-            return;
-        };
-        let _ = app.emit(
-            "track:cache-likes-progress",
-            serde_json::json!({
-                "phase": phase,
-                "total": total,
-                "done": done,
-                "failed": failed,
-                "skipped": skipped,
-                "urn": urn,
-            }),
-        );
+        req: CacheRequest<'_>,
+        refetch: bool,
+    ) -> Result<TrackCacheEntry, String> {
+        if refetch {
+            self.remove_cached(req.urn);
+            if self.is_cached(req.urn) {
+                return Err("cached file is in use".into());
+            }
+        } else {
+            self.pin_existing(req.urn).await;
+        }
+        let urn = req.urn;
+        let entry = self.ensure_cached(CacheRequest { liked: true, ..req }).await?;
+        self.pin_existing(urn).await;
+        Ok(self
+            .resolve_path(urn)
+            .map(|path| self.entry_at(&path, read_cache_metadata(&path)))
+            .unwrap_or(entry))
+    }
+
+    async fn pin_existing(&self, urn: &str) {
+        let incoming = self.incoming_file_path(urn);
+        if is_valid_file(&incoming) {
+            self.finalize_incoming(&incoming, true, None).await;
+        }
+        self.promote_to_liked(urn).await;
     }
 
     pub fn clear_cache(&self) {
@@ -2417,85 +2146,6 @@ impl TrackCacheState {
         }
         out
     }
-
-    pub fn enforce_limit(&self, limit_mb: u64) {
-        if limit_mb == 0 {
-            return;
-        }
-        let limit_bytes = limit_mb * 1024 * 1024;
-
-        let mut files: Vec<(PathBuf, u64, std::time::SystemTime)> = Vec::new();
-        let mut total = 0u64;
-
-        // URNs with a transcode in flight — their raw source must not be evicted
-        // out from under the А→Б promotion.
-        let in_flight = self
-            .transcoding
-            .lock()
-            .ok()
-            .map(|s| s.clone())
-            .unwrap_or_default();
-
-        // Account for both the clean cache ("Б") and any raw staging files ("А")
-        // so a build without ffmpeg (which keeps serving raw bytes) stays bounded.
-        for dir in [&self.audio_dir, &self.incoming_dir] {
-            let is_incoming = *dir == self.incoming_dir;
-            let Ok(entries) = std::fs::read_dir(dir) else {
-                continue;
-            };
-            for entry in entries.flatten() {
-                let path = entry.path();
-                if !is_audio_cache_file(&path) {
-                    continue;
-                }
-                // Protect staged files that are liked-bound or mid-promotion: a
-                // raw file evicted here would silently cancel the user's cache and,
-                // for liked tracks, defeat the dedicated protected quota.
-                if is_incoming {
-                    if let Some(urn) = filename_to_urn(&entry.file_name().to_string_lossy())
-                        && in_flight.contains(&urn) {
-                            continue;
-                        }
-                    if read_cache_metadata(&path).map(|m| m.liked).unwrap_or(false) {
-                        continue;
-                    }
-                }
-                if let Ok(meta) = entry.metadata()
-                    && meta.is_file() {
-                        let size = meta.len();
-                        let accessed = meta
-                            .accessed()
-                            .or_else(|_| meta.modified())
-                            .unwrap_or(std::time::UNIX_EPOCH);
-                        total += size;
-                        files.push((path, size, accessed));
-                    }
-            }
-        }
-
-        if total <= limit_bytes {
-            return;
-        }
-
-        let before = total;
-        files.sort_by_key(|x| x.2);
-
-        let mut removed = 0u32;
-        for (path, size, _) in files {
-            if total <= limit_bytes {
-                break;
-            }
-            if std::fs::remove_file(&path).is_ok() {
-                remove_cache_metadata(&path);
-                total -= size;
-                removed += 1;
-            }
-        }
-        println!(
-            "[TrackCache] evicted {removed} files, freed {} MB",
-            (before - total) / (1024 * 1024)
-        );
-    }
 }
 
 #[cfg(test)]
@@ -2558,7 +2208,7 @@ mod tests {
         path
     }
 
-    fn test_state(name: &str) -> (PathBuf, TrackCacheState) {
+    pub(super) fn test_state(name: &str) -> (PathBuf, TrackCacheState) {
         let root = std::env::temp_dir().join(format!("track-cache-{name}-{}", std::process::id()));
         std::fs::remove_dir_all(&root).ok();
         let [audio, liked, incoming] = ["audio", "liked", "incoming"].map(|dir| root.join(dir));
@@ -2597,6 +2247,71 @@ mod tests {
 
         let stamped = read_cache_metadata(&raw).unwrap().expected_duration_ms;
         assert_eq!(stamped, Some(181_000));
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[tokio::test]
+    async fn pinning_moves_cached_files_to_the_protected_dir() {
+        let (root, state) = test_state("pin");
+        let clean = "soundcloud:tracks:6";
+        cached_clean_file(&state, clean, 180_000).await;
+        let staged = "soundcloud:tracks:7";
+        let raw = state.incoming_file_path(staged);
+        std::fs::write(&raw, vec![0u8; MIN_AUDIO_SIZE as usize]).unwrap();
+        state.finalize_incoming(&raw, false, None).await;
+
+        state.pin_existing(clean).await;
+        state.pin_existing(staged).await;
+
+        assert!(state.liked_has_file(clean));
+        assert!(!state.file_path(clean).exists());
+        assert!(read_cache_metadata(&state.liked_file_path(clean)).is_some());
+        assert!(read_cache_metadata(&raw).unwrap().liked);
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[tokio::test]
+    async fn saving_during_an_unpinned_download_still_pins_it() {
+        let (root, state) = test_state("save-race");
+        let urn = "soundcloud:tracks:8";
+        let notify = Arc::new(Notify::new());
+        let result: Arc<Mutex<Option<Result<PathBuf, String>>>> = Arc::new(Mutex::new(None));
+        state.active.lock().await.insert(
+            urn.to_string(),
+            ActiveDownload {
+                notify: notify.clone(),
+                result: result.clone(),
+            },
+        );
+        let preload = {
+            let state = state.clone();
+            tokio::spawn(async move {
+                tokio::time::sleep(Duration::from_millis(50)).await;
+                let raw = state.incoming_file_path(urn);
+                std::fs::write(&raw, vec![0u8; MIN_AUDIO_SIZE as usize]).unwrap();
+                state.finalize_incoming(&raw, false, None).await;
+                *result.lock().await = Some(Ok(raw));
+                notify.notify_waiters();
+                state.active.lock().await.remove(urn);
+            })
+        };
+        let req = CacheRequest {
+            urn,
+            urls: &[],
+            download_urls: &[],
+            storage_urls: &[],
+            session_id: None,
+            hq: false,
+            storage_quality: None,
+            liked: false,
+            expected_duration_ms: None,
+        };
+
+        let entry = state.save_offline(req, false).await.unwrap();
+        preload.await.unwrap();
+
+        assert!(entry.pinned);
+        assert!(state.is_pinned(urn));
         std::fs::remove_dir_all(&root).ok();
     }
 

@@ -18,6 +18,9 @@ import {
   ensureTrackCached,
   expectedDurationMs,
   getCacheInfo,
+  isAudioCacheDisabled,
+  isHoverPreloadEnabled,
+  markTrackPlayed,
   removeCachedTrack,
   type TrackCacheInfo,
 } from './cache';
@@ -26,6 +29,8 @@ import {isUrnDisliked} from './dislikes';
 import {recordEvent} from './events';
 import {art} from './formatters';
 import {trackUrn} from './ids';
+import {localTrackPath, markLocalMissing, noteLocalDuration} from './local-import';
+import {isLocalUrn} from './local-library';
 import {rememberTracks} from './offline-index';
 import {getUrnCluster, recordClusterFeedback} from './recsFeedback';
 import {isPreviewOnly} from './track-access';
@@ -318,6 +323,26 @@ async function loadCachedFile(
   }
 }
 
+async function playLocalFile(track: Track, gen: number, resumeAt: number) {
+  const path = await localTrackPath(track.urn);
+  if (!path) throw new Error(i18n.t('local.fileMissing'));
+  if (gen !== loadGen) return;
+  const loadResult = await invoke<{ duration_secs: number | null }>('audio_load_file', {
+    path,
+    cacheKey: track.urn,
+    startPaused: resumeAt > 0 || !usePlayerStore.getState().isPlaying,
+  });
+  if (gen !== loadGen) return;
+  if (loadResult?.duration_secs) {
+    fallbackDuration = loadResult.duration_secs;
+    cachedDuration = loadResult.duration_secs;
+    noteLocalDuration(track.urn, loadResult.duration_secs);
+    updateMetadata(track, loadResult.duration_secs);
+    notify();
+  }
+  await afterLoad(track, gen, resumeAt);
+}
+
 async function loadTrack(track: Track, resumeAt = 0) {
   const gen = ++loadGen;
   const isNewTrack = currentUrn !== track.urn;
@@ -334,7 +359,8 @@ async function loadTrack(track: Track, resumeAt = 0) {
     usePlayerStore.getState().clearAbLoop();
   }
 
-  void hydrateTrackMetadata(track, gen);
+  const local = isLocalUrn(urn);
+  if (!local) void hydrateTrackMetadata(track, gen);
 
   fallbackDuration = track.duration / 1000;
   cachedDuration = fallbackDuration;
@@ -352,6 +378,11 @@ async function loadTrack(track: Track, resumeAt = 0) {
   syncPlaybackRateAndPitch();
 
   try {
+    if (local) {
+      await playLocalFile(track, gen, resumeAt);
+      return;
+    }
+
     const highQualityStreaming = isHqStreaming();
     const storageQuality = track._scd_meta?.storage_quality;
 
@@ -441,8 +472,6 @@ async function loadTrack(track: Track, resumeAt = 0) {
       updateMetadata(track, loadResult.duration_secs);
       notify();
     }
-    void enforceAudioCacheLimit().catch(console.error);
-
     if (gen !== loadGen) return;
     await afterLoad(track, gen, resumeAt);
   } catch (e) {
@@ -450,7 +479,9 @@ async function loadTrack(track: Track, resumeAt = 0) {
     if (gen !== loadGen) return;
     setDownloadProgress(null);
     usePlayerStore.getState().setPlaybackTransport(null, null);
-    const errorText = getLoadErrorText(e);
+    const localMissing = local && isFileMissing(e);
+    if (localMissing) markLocalMissing(urn);
+    const errorText = localMissing ? i18n.t('local.fileMissing') : getLoadErrorText(e);
     if (errorText?.includes('no stream available')) {
       toast.error(i18n.t('track.noStream'), {
         description: `${track.title}: ${i18n.t('track.noStreamHint')}`,
@@ -476,6 +507,9 @@ async function afterLoad(track: Track, gen: number, resumeAt: number) {
     notify();
   }
   hasTrack = true;
+  void markTrackPlayed(track.urn)
+    .catch(console.error)
+    .finally(() => enforceAudioCacheLimit().catch(console.error));
 
   const historyTrack =
     usePlayerStore.getState().currentTrack?.urn === track.urn
@@ -528,6 +562,7 @@ function maybeHealEarlyEnd(): boolean {
   const state = usePlayerStore.getState();
   const track = state.currentTrack;
   if (!track || track.urn !== currentUrn || state.abLoop || acceptedShortFile) return false;
+  if (isLocalUrn(track.urn)) return false;
   if (!endedEarly(track)) return false;
   const endedAt = cachedTime;
   if (healedUrns.has(track.urn)) {
@@ -779,7 +814,7 @@ let preloadTimer: ReturnType<typeof setTimeout> | null = null;
 export function preloadTrack(track: Track) {
   const urn = track.urn;
   cancelPreload();
-  if (!useSettingsStore.getState().hoverPreload) return;
+  if (!isHoverPreloadEnabled() || isLocalUrn(urn)) return;
   preloadTimer = setTimeout(() => {
     const sessionId = getSessionId();
     const hq = isHqStreaming();
@@ -806,6 +841,7 @@ export function cancelPreload() {
 }
 
 export function preloadQueue() {
+  if (isAudioCacheDisabled()) return;
   const { queue, queueIndex } = usePlayerStore.getState();
   const entries: Array<{
     urn: string;
@@ -822,7 +858,7 @@ export function preloadQueue() {
 
   for (let i = 1; i <= 3; i++) {
     const idx = queueIndex + i;
-    if (idx < queue.length) {
+    if (idx < queue.length && !isLocalUrn(queue[idx].urn)) {
       entries.push({
         urn: queue[idx].urn,
         urls: streamFallbackUrls(queue[idx].urn, hq),

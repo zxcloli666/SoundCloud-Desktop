@@ -21,6 +21,7 @@ import {
     ThumbsDown,
 } from '../../../lib/icons';
 import {optimisticToggleLike, useLiked} from '../../../lib/likes';
+import {isLocalUrn} from '../../../lib/local-library';
 import {useLyricsStore} from '../../../stores/lyrics';
 import {type Track, usePlayerStore} from '../../../stores/player';
 import {AddToPlaylistDialog} from '../AddToPlaylistDialog';
@@ -126,15 +127,20 @@ export const Controls = React.memo(({track}: { track: Track }) => {
         'w-10 h-10 rounded-full flex items-center justify-center transition-all duration-150 cursor-pointer hover:bg-white/[0.06] outline-none';
     const small =
         'w-9 h-9 rounded-full flex items-center justify-center transition-all duration-150 cursor-pointer hover:bg-white/[0.06] outline-none';
+    const remote = !isLocalUrn(track.urn);
 
     return (
         <div className="flex items-center justify-center gap-2">
-            <AddToPlaylistDialog trackUrns={[track.urn]}>
-                <button type="button" className={`${small} text-white/30 hover:text-white/60`}>
-                    <ListPlus size={20}/>
-                </button>
-            </AddToPlaylistDialog>
-            <FullscreenLikeButton track={track}/>
+            {remote && (
+                <>
+                    <AddToPlaylistDialog trackUrns={[track.urn]}>
+                        <button type="button" className={`${small} text-white/30 hover:text-white/60`}>
+                            <ListPlus size={20}/>
+                        </button>
+                    </AddToPlaylistDialog>
+                    <FullscreenLikeButton track={track}/>
+                </>
+            )}
             <button
                 type="button"
                 onClick={toggleShuffle}
@@ -166,8 +172,12 @@ export const Controls = React.memo(({track}: { track: Track }) => {
             >
                 {repeat === 'one' ? repeat1Icon16 : repeatIcon16}
             </button>
-            <FullscreenDislikeButton track={track}/>
-            <FullscreenOpenTrackButton track={track}/>
+            {remote && (
+                <>
+                    <FullscreenDislikeButton track={track}/>
+                    <FullscreenOpenTrackButton track={track}/>
+                </>
+            )}
         </div>
     );
 });
