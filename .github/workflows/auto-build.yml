@@ -234,6 +234,11 @@ jobs:
       options: --privileged
     env:
       HAS_INTERNAL_PAT: ${{ secrets.INTERNAL_PAT != '' }}
+      HAS_FLATPAK_KEY: ${{ secrets.FLATPAK_GPG_PRIVATE_KEY != '' }}
+      FLATPAK_APP_ID: io.github.zxcloli666.SoundcloudDesktop
+      FLATPAK_SITE_URL: ${{ vars.FLATPAK_SITE_URL || format('https://{0}.github.io/{1}/flatpak', github.repository_owner, github.event.repository.name) }}
+    outputs:
+      repo: ${{ steps.bundle.outputs.repo }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -281,17 +286,42 @@ jobs:
       - name: Fetch Flathub shared-modules
         run: git clone --depth=1 https://github.com/flathub/shared-modules.git .github/flatpak/shared-modules
 
+      - name: Import repository signing key
+        id: gpg
+        if: ${{ env.HAS_FLATPAK_KEY == 'true' }}
+        uses: crazy-max/ghaction-import-gpg@v6
+        with:
+          gpg_private_key: ${{ secrets.FLATPAK_GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.FLATPAK_GPG_PASSPHRASE }}
+
       - name: Build Flatpak
         uses: flatpak/flatpak-github-actions/flatpak-builder@v6
         with:
           manifest-path: .github/flatpak/io.github.zxcloli666.SoundcloudDesktop.yml
-          bundle: soundcloud-desktop.flatpak
+          repo-dir: repo
+          build-bundle: false
+          upload-artifact: false
+          gpg-sign: ${{ steps.gpg.outputs.fingerprint }}
+
+      - name: Bundle and update repository
+        id: bundle
+        env:
+          GPG_FPR: ${{ steps.gpg.outputs.fingerprint }}
+        run: bash .github/scripts/flatpak-repo.sh repo flatpak-site
 
       - name: Upload Flatpak
         uses: actions/upload-artifact@v4
         with:
           name: linux-flatpak
           path: soundcloud-desktop.flatpak
+
+      - name: Upload Flatpak repository
+        if: ${{ steps.bundle.outputs.repo == 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: flatpak-repo
+          path: flatpak-site
+          retention-days: 2
 
   release:
     needs: [version, build, flatpak]
@@ -376,3 +406,27 @@ jobs:
     with:
       tag: ${{ needs.release.outputs.tag }}
     secrets: inherit
+
+  publish-flatpak-repo:
+    needs: [flatpak, release]
+    if: ${{ needs.release.outputs.tag != '' && needs.flatpak.outputs.repo == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: flatpak-repo
+          path: site/flatpak
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - id: deploy
+        uses: actions/deploy-pages@v4
