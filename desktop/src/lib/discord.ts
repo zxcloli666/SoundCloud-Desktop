@@ -5,6 +5,7 @@ import { usePlayerStore } from '../stores/player';
 import { useSettingsStore } from '../stores/settings';
 import { getCurrentTime } from './audio';
 import { trackedInvoke as invoke } from './diagnostics';
+import { discordLyricLine, resetDiscordLyrics } from './discord-lyrics';
 import { getArtistDisplay, getDisplayTitle } from './track-display';
 
 let connected = false;
@@ -17,6 +18,11 @@ const CHANGE_DEBOUNCE_MS = 400;
 const SEEK_DEBOUNCE_MS = 180;
 const TEXT_MIN_LENGTH = 2;
 const TEXT_MAX_LENGTH = 128;
+const LYRIC_MIN_INTERVAL_MS = 5000;
+
+let lastPushAt = 0;
+let lastLyric: string | null = null;
+let lyricTimer: ReturnType<typeof setTimeout> | null = null;
 
 function setConnected(value: boolean) {
   connected = value;
@@ -56,6 +62,17 @@ function fitText(text: string): string {
   return fitted.padEnd(TEXT_MIN_LENGTH, '\u200b');
 }
 
+function lyricsWanted(): boolean {
+  const { discordRpcEnabled, discordRpcLyrics, discordRpcMode } = useSettingsStore.getState();
+  return discordRpcEnabled && discordRpcLyrics && discordRpcMode !== 'activity';
+}
+
+function currentLyric(): string | null {
+  const { currentTrack, isPlaying } = usePlayerStore.getState();
+  if (!currentTrack || !isPlaying || !lyricsWanted()) return null;
+  return discordLyricLine(currentTrack.urn, getCurrentTime());
+}
+
 async function pushPresence(): Promise<boolean> {
   if (!usePlayerStore.getState().currentTrack) {
     await clearPresence();
@@ -69,6 +86,9 @@ async function pushPresence(): Promise<boolean> {
   try {
     const { discordRpcMode, discordRpcStatus, discordRpcShowButton } = useSettingsStore.getState();
     const display = getArtistDisplay(track);
+    const lyric = currentLyric();
+    lastPushAt = Date.now();
+    lastLyric = lyric;
     await invoke('discord_set_activity', {
       track: {
         title: fitText(getDisplayTitle(track)),
@@ -81,6 +101,7 @@ async function pushPresence(): Promise<boolean> {
         mode: discordRpcMode,
         status: discordRpcStatus,
         show_button: discordRpcShowButton,
+        lyric_line: lyric ? fitText(lyric) : undefined,
       },
     });
     return true;
@@ -125,6 +146,20 @@ let lastPlaying = false;
 let lastElapsed = 0;
 let syncTimer: ReturnType<typeof setTimeout> | null = null;
 
+function cancelLyricSync() {
+  if (lyricTimer) clearTimeout(lyricTimer);
+  lyricTimer = null;
+}
+
+function scheduleLyricSync() {
+  if (lyricTimer || syncTimer) return;
+  const wait = Math.max(0, lastPushAt + LYRIC_MIN_INTERVAL_MS - Date.now());
+  lyricTimer = setTimeout(() => {
+    lyricTimer = null;
+    if (currentLyric() !== lastLyric) void updatePresence();
+  }, wait);
+}
+
 function schedulePresenceSync(delayMs: number) {
   if (syncTimer) clearTimeout(syncTimer);
   syncTimer = setTimeout(() => {
@@ -158,6 +193,7 @@ usePlayerStore.subscribe((state) => {
   const label = `${getDisplayTitle(currentTrack)}\n${getArtistDisplay(currentTrack).primary}`;
 
   if (trackChanged || playChanged || label !== lastLabel) {
+    cancelLyricSync();
     lastUrn = currentTrack.urn;
     lastLabel = label;
     lastPlaying = isPlaying;
@@ -171,9 +207,15 @@ useSettingsStore.subscribe((state, prev) => {
     state.discordRpcEnabled !== prev.discordRpcEnabled ||
     state.discordRpcMode !== prev.discordRpcMode ||
     state.discordRpcStatus !== prev.discordRpcStatus ||
-    state.discordRpcShowButton !== prev.discordRpcShowButton;
+    state.discordRpcShowButton !== prev.discordRpcShowButton ||
+    state.discordRpcLyrics !== prev.discordRpcLyrics;
 
   if (!rpcSettingsChanged) return;
+
+  if (!lyricsWanted()) {
+    cancelLyricSync();
+    resetDiscordLyrics();
+  }
 
   if (!state.discordRpcEnabled) {
     if (syncTimer) {
@@ -212,8 +254,11 @@ listen<number>('audio:tick', (event) => {
   } else {
     lastElapsed = elapsed;
   }
+
+  if (lyricsWanted() && currentLyric() !== lastLyric) scheduleLyricSync();
 });
 
 setInterval(() => {
+  if (Date.now() - lastPushAt < LYRIC_MIN_INTERVAL_MS) return;
   if (usePlayerStore.getState().currentTrack) void updatePresence();
 }, HEARTBEAT_MS);

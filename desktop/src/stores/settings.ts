@@ -83,6 +83,7 @@ export interface SettingsState {
   discordRpcMode: DiscordRpcMode;
   discordRpcStatus: DiscordRpcStatus;
   discordRpcShowButton: boolean;
+  discordRpcLyrics: boolean;
   soundwaveLanguages: string[];
   soundwaveMode: 'similar' | 'diverse';
   soundwaveHideLiked: boolean;
@@ -118,6 +119,7 @@ export interface SettingsState {
   setDiscordRpcMode: (mode: DiscordRpcMode) => void;
   setDiscordRpcStatus: (status: DiscordRpcStatus) => void;
   setDiscordRpcShowButton: (show: boolean) => void;
+  setDiscordRpcLyrics: (enabled: boolean) => void;
   setSoundwaveLanguages: (langs: string[]) => void;
   setSoundwaveMode: (mode: 'similar' | 'diverse') => void;
   setSoundwaveHideLiked: (v: boolean) => void;
@@ -159,6 +161,7 @@ const DEFAULTS = {
   discordRpcMode: 'track' as DiscordRpcMode,
   discordRpcStatus: 'track' as DiscordRpcStatus,
   discordRpcShowButton: true,
+  discordRpcLyrics: false,
   soundwaveLanguages: [] as string[],
   soundwaveMode: 'similar' as 'similar' | 'diverse',
   soundwaveHideLiked: false,
@@ -221,6 +224,7 @@ export const useSettingsStore = create<SettingsState>()(
       setDiscordRpcMode: (discordRpcMode) => set({ discordRpcMode }),
       setDiscordRpcStatus: (discordRpcStatus) => set({ discordRpcStatus }),
       setDiscordRpcShowButton: (discordRpcShowButton) => set({ discordRpcShowButton }),
+      setDiscordRpcLyrics: (discordRpcLyrics) => set({ discordRpcLyrics }),
       setSoundwaveLanguages: (soundwaveLanguages) => set({ soundwaveLanguages }),
       setSoundwaveMode: (soundwaveMode) => set({ soundwaveMode }),
       setSoundwaveHideLiked: (soundwaveHideLiked) => set({ soundwaveHideLiked }),
@@ -289,6 +293,7 @@ export const useSettingsStore = create<SettingsState>()(
         discordRpcMode: s.discordRpcMode,
         discordRpcStatus: s.discordRpcStatus,
         discordRpcShowButton: s.discordRpcShowButton,
+        discordRpcLyrics: s.discordRpcLyrics,
         soundwaveLanguages: s.soundwaveLanguages,
         soundwaveMode: s.soundwaveMode,
         soundwaveHideLiked: s.soundwaveHideLiked,
