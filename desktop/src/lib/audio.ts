@@ -356,9 +356,10 @@ async function loadTrack(track: Track, resumeAt = 0) {
   notify();
 
   // Sync EQ state to Rust
-  const { eqEnabled, eqGains, normalizeVolume } = useSettingsStore.getState();
+  const { eqEnabled, eqGains, normalizeVolume, skipSilence } = useSettingsStore.getState();
   invoke('audio_set_eq', { enabled: eqEnabled, gains: eqGains }).catch(console.error);
   invoke('audio_set_normalization', { enabled: normalizeVolume }).catch(console.error);
+  invoke('audio_set_skip_silence', { enabled: skipSilence }).catch(console.error);
 
   invoke('audio_set_volume', { volume: usePlayerStore.getState().volume }).catch(console.error);
   syncPlaybackRateAndPitch();
@@ -637,17 +638,23 @@ listen<{ urn: string; progress: number }>('track:download-progress', (event) => 
   }
 });
 
-listen('audio:ended', () => {
-  if (maybeHealEarlyEnd()) return;
+listen<boolean | null>('audio:ended', (event) => {
+  const silentTail = event.payload === true;
+  if (!silentTail && maybeHealEarlyEnd()) return;
   if (currentUrn) {
     // Засчитываем full_play только если трек реально игрался: либо ≥30s,
     // либо проиграно ≥50% длительности (для коротких треков). Иначе это
     // зависшая загрузка / зеро-длительность баг — не отправляем.
     const playedEnough =
+      silentTail ||
       cachedTime >= SKIP_THRESHOLD_SEC ||
       (cachedDuration > 0 && cachedTime >= cachedDuration * FULL_PLAY_RATIO);
     if (playedEnough) {
-      const positionPct = cachedDuration > 0 ? Math.min(1, cachedTime / cachedDuration) : undefined;
+      const positionPct = silentTail
+        ? 1
+        : cachedDuration > 0
+          ? Math.min(1, cachedTime / cachedDuration)
+          : undefined;
       recordEvent('full_play', currentUrn, positionPct);
       const cluster = getUrnCluster(currentUrn);
       if (cluster) recordClusterFeedback(cluster, 'complete');
@@ -771,6 +778,10 @@ useSettingsStore.subscribe((state, prev) => {
     if (usePlayerStore.getState().currentTrack) {
       void reloadCurrentTrack();
     }
+  }
+
+  if (state.skipSilence !== prev.skipSilence) {
+    invoke('audio_set_skip_silence', { enabled: state.skipSilence }).catch(console.error);
   }
 });
 

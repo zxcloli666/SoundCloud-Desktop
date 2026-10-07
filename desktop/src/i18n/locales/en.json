@@ -673,6 +673,8 @@
     "discordRpcUnavailable": "Discord not found. Start the Discord app.",
     "normalizeVolume": "Volume normalization",
     "normalizeVolumeDesc": "Balances quiet and loud tracks to a more even level",
+    "skipSilence": "Skip silence",
+    "skipSilenceDesc": "Jumps over silence at the start of a track and moves on when only silence is left. Pauses inside a track stay",
     "skipStuck": "Skip stuck tracks",
     "skipStuckDesc": "If a track fails to load or makes no progress for {{count}} s, play the next one. Pauses after 3 skips in a row",
     "skipStuckOffDesc": "A track that fails to load pauses playback until you pick another one",

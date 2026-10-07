@@ -582,6 +582,8 @@
     "discordRpcUnavailable": "Discord bulunamadi. Discord uygulamasini baslatin.",
     "normalizeVolume": "Ses duzeyi dengeleme",
     "normalizeVolumeDesc": "Sessiz ve yuksek parcarlari daha esit bir seviyeye getirir",
+    "skipSilence": "Sessizliği atla",
+    "skipSilenceDesc": "Parçanın başındaki sessizliği atlar ve sonunda yalnızca sessizlik kaldığında sıradakine geçer. Parça içindeki duraklamalar korunur",
     "skipStuck": "Takilan parcalari atla",
     "skipStuckDesc": "Bir parca yuklenemezse veya {{count}} sn boyunca ilerlemezse siradaki calar. Ust uste 3 atlamadan sonra duraklatilir",
     "skipStuckOffDesc": "Yuklenemeyen bir parca, baska bir parca secene kadar oynatmayi duraklatir",

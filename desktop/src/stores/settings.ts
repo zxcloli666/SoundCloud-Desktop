@@ -76,6 +76,7 @@ export interface SettingsState {
   eqPreset: string;
   eqCustomPresets: EqCustomPreset[];
   normalizeVolume: boolean;
+  skipSilence: boolean;
   streamQuality: StreamQuality;
   skipStuckAfterSec: SkipStuckAfterSec;
   bypassWhitelist: boolean;
@@ -112,6 +113,7 @@ export interface SettingsState {
   saveEqCustomPreset: (name: string) => void;
   deleteEqCustomPreset: (id: string) => void;
   setNormalizeVolume: (enabled: boolean) => void;
+  setSkipSilence: (enabled: boolean) => void;
   setStreamQuality: (quality: StreamQuality) => void;
   setSkipStuckAfterSec: (seconds: SkipStuckAfterSec) => void;
   setBypassWhitelist: (enabled: boolean) => void;
@@ -155,6 +157,7 @@ const DEFAULTS = {
   eqPreset: 'flat',
   eqCustomPresets: [] as EqCustomPreset[],
   normalizeVolume: true,
+  skipSilence: false,
   streamQuality: 'auto' as StreamQuality,
   skipStuckAfterSec: 0 as SkipStuckAfterSec,
   bypassWhitelist: false,
@@ -232,6 +235,7 @@ export const useSettingsStore = create<SettingsState>()(
           eqPreset: s.eqPreset === id ? 'custom' : s.eqPreset,
         })),
       setNormalizeVolume: (normalizeVolume) => set({ normalizeVolume }),
+      setSkipSilence: (skipSilence) => set({ skipSilence }),
       setStreamQuality: (streamQuality) => set({ streamQuality }),
       setSkipStuckAfterSec: (skipStuckAfterSec) => set({ skipStuckAfterSec }),
       setBypassWhitelist: (bypassWhitelist) => set({ bypassWhitelist }),
@@ -314,6 +318,7 @@ export const useSettingsStore = create<SettingsState>()(
         eqPreset: s.eqPreset,
         eqCustomPresets: s.eqCustomPresets,
         normalizeVolume: s.normalizeVolume,
+        skipSilence: s.skipSilence,
         streamQuality: s.streamQuality,
         skipStuckAfterSec: s.skipStuckAfterSec,
         bypassWhitelist: s.bypassWhitelist,

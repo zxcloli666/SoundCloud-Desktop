@@ -15,6 +15,8 @@ export function PlaybackCard() {
     const setLyricsVisualizer = useSettingsStore((s) => s.setLyricsVisualizer);
     const normalizeVolume = useSettingsStore((s) => s.normalizeVolume);
     const setNormalizeVolume = useSettingsStore((s) => s.setNormalizeVolume);
+    const skipSilence = useSettingsStore((s) => s.skipSilence);
+    const setSkipSilence = useSettingsStore((s) => s.setSkipSilence);
 
     const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
     const {data: isPremium} = useSubscription(isAuthenticated);
@@ -37,6 +39,9 @@ export function PlaybackCard() {
                 </Row>
                 <Row title={t('settings.normalizeVolume')} desc={t('settings.normalizeVolumeDesc')}>
                     <Toggle checked={normalizeVolume} onChange={() => setNormalizeVolume(!normalizeVolume)}/>
+                </Row>
+                <Row title={t('settings.skipSilence')} desc={t('settings.skipSilenceDesc')}>
+                    <Toggle checked={skipSilence} onChange={() => setSkipSilence(!skipSilence)}/>
                 </Row>
                 <SkipStuckPicker/>
             </div>
