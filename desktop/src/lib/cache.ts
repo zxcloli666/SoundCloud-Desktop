@@ -23,8 +23,10 @@ const WALLPAPERS_DIR = 'wallpapers';
 const CACHE_MAINTENANCE_INTERVAL_MS = 60 * 1000;
 const IMAGE_TRIM_STARTUP_DELAY_MS = 30 * 1000;
 const IDLE_TRIM_MS = 15 * 60 * 1000;
+const LIMIT_CHANGE_SETTLE_MS = 800;
 
 let cacheMaintenanceStarted = false;
+let limitChangeTimer: number | null = null;
 
 /* ── Track cache (Rust) ─────────────────────────────────── */
 
@@ -222,6 +224,7 @@ function purgePlayedTracks(): Promise<number> {
 export async function enforceAudioCacheLimit(
   limitMb = useSettingsStore.getState().audioCacheLimitMB,
 ): Promise<void> {
+  if (limitChangeTimer !== null) return;
   if (isAudioCacheOff(limitMb)) {
     await purgePlayedTracks();
     return;
@@ -239,9 +242,12 @@ export function setupCacheMaintenance() {
   void enforceAudioCacheLimit();
 
   useSettingsStore.subscribe((state, prev) => {
-    if (state.audioCacheLimitMB !== prev.audioCacheLimitMB) {
-      void enforceAudioCacheLimit(state.audioCacheLimitMB);
-    }
+    if (state.audioCacheLimitMB === prev.audioCacheLimitMB) return;
+    if (limitChangeTimer !== null) window.clearTimeout(limitChangeTimer);
+    limitChangeTimer = window.setTimeout(() => {
+      limitChangeTimer = null;
+      void enforceAudioCacheLimit();
+    }, LIMIT_CHANGE_SETTLE_MS);
   });
 
   window.setTimeout(() => void enforceImageCacheLimit(), IMAGE_TRIM_STARTUP_DELAY_MS);
