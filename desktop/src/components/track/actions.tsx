@@ -8,6 +8,7 @@ import {fc} from '../../lib/formatters';
 import {invalidateAllLikesCache} from '../../lib/hooks';
 import {Check, Download, Heart, LinkIcon, Loader2, pauseCurrent16, playCurrent16,} from '../../lib/icons';
 import {optimisticToggleLike, setLikedUrn, useLiked} from '../../lib/likes';
+import {forgetLikedUrn, rememberLikedUrn} from '../../lib/offline-index';
 import {getTrackDisplay} from '../../lib/track-display';
 import type {Track} from '../../stores/player';
 
@@ -62,6 +63,7 @@ export const LikeBtn = React.memo(({ trackUrn, count }: { trackUrn: string; coun
       await api(`/likes/tracks/${encodeURIComponent(trackUrn)}`, {
         method: next ? 'POST' : 'DELETE',
       });
+      void (next ? rememberLikedUrn(trackUrn, cached) : forgetLikedUrn(trackUrn));
       qc.invalidateQueries({ queryKey: ['track', trackUrn, 'favoriters'] });
     } catch {
       setLocalCount((c) => c + (next ? -1 : 1));

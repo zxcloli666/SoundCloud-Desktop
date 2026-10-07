@@ -7,6 +7,7 @@ import {isUrnDisliked, toggleDislike} from './dislikes';
 import {art} from './formatters';
 import {invalidateAllLikesCache} from './hooks';
 import {isUrnLiked, optimisticToggleLike} from './likes';
+import {forgetLikedUrn, rememberLikedUrn} from './offline-index';
 import {queryClient} from './query-client';
 import {getArtistDisplay, getDisplayTitle} from './track-display';
 
@@ -105,6 +106,7 @@ async function toggleLikeCurrent() {
         await api(`/likes/tracks/${encodeURIComponent(tr.urn)}`, {
             method: next ? 'POST' : 'DELETE',
         });
+        void (next ? rememberLikedUrn(tr.urn, tr) : forgetLikedUrn(tr.urn));
     } catch {
         optimisticToggleLike(queryClient, tr, !next);
         pushNp();
@@ -118,8 +120,10 @@ async function toggleDislikeCurrent() {
     if (next && (isUrnLiked(tr.urn) || tr.user_favorite)) {
         optimisticToggleLike(queryClient, tr, false);
         invalidateAllLikesCache();
-        api(`/likes/tracks/${encodeURIComponent(tr.urn)}`, {method: 'DELETE'}).catch(() => {
-        });
+        api(`/likes/tracks/${encodeURIComponent(tr.urn)}`, {method: 'DELETE'})
+            .then(() => forgetLikedUrn(tr.urn))
+            .catch(() => {
+            });
     }
     // Disliking the current track skips it, mirroring the now-bar dislike button.
     if (next) usePlayerStore.getState().next();

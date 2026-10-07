@@ -21,6 +21,7 @@ import {
     ThumbsDown,
 } from '../../../lib/icons';
 import {optimisticToggleLike, useLiked} from '../../../lib/likes';
+import {forgetLikedUrn, rememberLikedUrn} from '../../../lib/offline-index';
 import {useLyricsStore} from '../../../stores/lyrics';
 import {type Track, usePlayerStore} from '../../../stores/player';
 import {AddToPlaylistDialog} from '../AddToPlaylistDialog';
@@ -37,6 +38,7 @@ const FullscreenLikeButton = React.memo(({track}: { track: Track }) => {
             await api(`/likes/tracks/${encodeURIComponent(track.urn)}`, {
                 method: next ? 'POST' : 'DELETE',
             });
+            void (next ? rememberLikedUrn(track.urn, track) : forgetLikedUrn(track.urn));
         } catch {
             optimisticToggleLike(qc, track, !next);
         }
@@ -66,8 +68,10 @@ const FullscreenDislikeButton = React.memo(({track}: { track: Track }) => {
         if (nowDisliked && track.user_favorite) {
             optimisticToggleLike(qc, track, false);
             invalidateAllLikesCache();
-            api(`/likes/tracks/${encodeURIComponent(track.urn)}`, {method: 'DELETE'}).catch(() => {
-            });
+            api(`/likes/tracks/${encodeURIComponent(track.urn)}`, {method: 'DELETE'})
+                .then(() => forgetLikedUrn(track.urn))
+                .catch(() => {
+                });
         }
         if (nowDisliked && usePlayerStore.getState().currentTrack?.urn === track.urn) {
             next();

@@ -4,6 +4,7 @@ import { api } from '../../lib/api';
 import { invalidateAllLikesCache } from '../../lib/hooks';
 import { Heart } from '../../lib/icons';
 import { optimisticToggleLike, setLikedUrn, useLiked } from '../../lib/likes';
+import { forgetLikedUrn, rememberLikedUrn } from '../../lib/offline-index';
 import type { Track } from '../../stores/player';
 
 export const LikeButton = React.memo(function LikeButton({
@@ -30,6 +31,7 @@ export const LikeButton = React.memo(function LikeButton({
       await api(`/likes/tracks/${encodeURIComponent(track.urn)}`, {
         method: next ? 'POST' : 'DELETE',
       });
+      void (next ? rememberLikedUrn(track.urn, track) : forgetLikedUrn(track.urn));
     } catch {
       optimisticToggleLike(qc, track, !next);
     }
