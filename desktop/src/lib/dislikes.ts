@@ -99,14 +99,9 @@ export async function toggleDislike(
   if (nowDisliked) recordEvent('dislike', track.urn);
 
   try {
-    if (nowDisliked) {
-      await api(`/dislikes/${encodeURIComponent(track.urn)}`, {
-        method: 'POST',
-        body: JSON.stringify(track),
-      });
-    } else {
-      await api(`/dislikes/${encodeURIComponent(track.urn)}`, { method: 'DELETE' });
-    }
+    await api(`/dislikes/${encodeURIComponent(track.urn)}`, {
+      method: nowDisliked ? 'POST' : 'DELETE',
+    });
     qc.invalidateQueries({ queryKey: ['dislikes'] });
   } catch {
     setDislikedUrn(track.urn, !nowDisliked);
