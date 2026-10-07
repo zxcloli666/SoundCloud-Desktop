@@ -36,6 +36,7 @@ pub fn run() {
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_dialog::init())
+        .plugin(app::hotkeys::plugin())
         .register_asynchronous_uri_scheme_protocol("scproxy", |_ctx, request, responder| {
             let Some(state) = network::proxy::STATE.get() else {
                 responder.respond(
@@ -199,6 +200,8 @@ pub fn run() {
             app::render_mode::render_mode_get,
             app::render_mode::render_mode_set,
             app::render_mode::render_mode_restart,
+            app::hotkeys::hotkeys_apply,
+            app::hotkeys::hotkeys_backend,
             app::visibility::show_main_window,
             app::popover::tray_popover_hide,
             discord::discord_connect,

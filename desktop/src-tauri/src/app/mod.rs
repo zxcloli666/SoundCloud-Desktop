@@ -1,4 +1,5 @@
 pub mod diagnostics;
+pub mod hotkeys;
 pub mod log_sink;
 pub mod popover;
 pub mod render_mode;
