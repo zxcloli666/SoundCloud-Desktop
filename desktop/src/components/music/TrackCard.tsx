@@ -3,16 +3,17 @@ import {useTranslation} from 'react-i18next';
 import {useNavigate} from 'react-router-dom';
 import {cancelPreload, preloadTrack} from '../../lib/audio';
 import {art, dur, fc} from '../../lib/formatters';
-import {ListMusic, ListPlus, pauseBlack20, playBlack20, playIcon32} from '../../lib/icons';
+import {ListPlus, pauseBlack20, playBlack20, playIcon32} from '../../lib/icons';
 import {recordClusterFeedback, setUrnCluster, useClusterFeedback} from '../../lib/recsFeedback';
 import {useArtistDisplay, useArtistLinkItems, useDisplayTitle} from '../../lib/track-display';
 import {useAutoHide} from '../../lib/useAutoHide';
+import {useTrackContextMenu} from '../../lib/useTrackContextMenu';
 import {useTrackPlay} from '../../lib/useTrackPlay';
 import type {Track} from '../../stores/player';
-import {usePlayerStore} from '../../stores/player';
 import {AddToPlaylistDialog} from './AddToPlaylistDialog';
 import {ArtistNameLinks} from './ArtistNameLinks';
 import {LikeButton} from './LikeButton';
+import {PlayNextButton} from './PlayNextButton';
 import {TrackStatusBadges} from './TrackStatusBadges';
 import {UploadKindDot} from './UploadKindDot';
 
@@ -37,23 +38,19 @@ export const TrackCard = React.memo(
       }
       togglePlayRaw();
     }, [clusterId, track.urn, togglePlayRaw]);
-    const addToQueueNext = usePlayerStore((s) => s.addToQueueNext);
+    const onContextMenu = useTrackContextMenu(track);
     const artwork = art(track.artwork_url, 't300x300');
     const artistDisplay = useArtistDisplay(track);
     const displayTitle = useDisplayTitle(track);
     const artistLinks = useArtistLinkItems(track);
     const isWanted = artistDisplay.availability !== 'indexed';
 
-    const handleAddToQueue = (e: React.MouseEvent) => {
-      e.stopPropagation();
-      addToQueueNext([track]);
-    };
-
     return (
       <div
         className="group relative select-none"
         onMouseEnter={() => preloadTrack(track)}
         onMouseLeave={cancelPreload}
+        onContextMenu={onContextMenu}
         style={{ contain: 'layout paint style' }}
       >
         {/* Artwork */}
@@ -119,14 +116,10 @@ export const TrackCard = React.memo(
                 <ListPlus size={14} />
               </button>
             </AddToPlaylistDialog>
-            <button
-              type="button"
-              onClick={handleAddToQueue}
+            <PlayNextButton
+              track={track}
               className="cursor-pointer w-8 h-8 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center text-white/80 hover:text-white hover:bg-black/70 transition-all duration-200"
-              title={t('player.addToQueue')}
-            >
-              <ListMusic size={14} />
-            </button>
+            />
           </div>
         </div>
 

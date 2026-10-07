@@ -39,6 +39,7 @@ import {
 import {optimisticToggleLike} from '../../lib/likes';
 import {usePerfMode} from '../../lib/perf';
 import {useArtistDisplay, useArtistLinkItems, useDisplayTitle} from '../../lib/track-display';
+import {useTrackContextMenu} from '../../lib/useTrackContextMenu';
 import {useLyricsStore} from '../../stores/lyrics';
 import {
     AB_MIN_GAP,
@@ -875,9 +876,10 @@ const PillTrackBody = React.memo(function PillTrackBody({
   const artworkSmall = art(track.artwork_url, 't200x200');
   const hasArtistLink = artistLinks.some((it) => it.target);
   const loadedPercent = loadProgress == null ? null : loadPercent(loadProgress);
+  const onContextMenu = useTrackContextMenu(track);
 
   return (
-    <div className="npb-meta">
+    <div className="npb-meta" onContextMenu={onContextMenu}>
       <div className="npb-art" onClick={() => openLyricsPanel({ rightPanelOpen: false })}>
         {artworkSmall ? <img src={artworkSmall} alt="" /> : <div className="npb-artfb" />}
         {/* spinning vinyl ring + live "playing" equaliser — animated only while playing */}

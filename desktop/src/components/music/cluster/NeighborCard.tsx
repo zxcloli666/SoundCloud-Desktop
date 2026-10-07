@@ -7,6 +7,7 @@ import {usePerfMode} from '../../../lib/perf';
 import {recordClusterFeedback, setUrnCluster, useClusterFeedback,} from '../../../lib/recsFeedback';
 import {useArtistLinkItems, useDisplayTitle} from '../../../lib/track-display';
 import {useAutoHide} from '../../../lib/useAutoHide';
+import {useTrackContextMenu} from '../../../lib/useTrackContextMenu';
 import {type Track, usePlayerStore} from '../../../stores/player';
 import {ArtistNameLinks} from '../ArtistNameLinks';
 import {TrackStatusBadges} from '../TrackStatusBadges';
@@ -37,6 +38,7 @@ export const NeighborCard = React.memo(function NeighborCard({
     }),
   );
   const showPlayingOverlay = useAutoHide(isThisPlaying);
+  const onContextMenu = useTrackContextMenu(track);
   const clusterId = useClusterFeedback();
   const [resolving, setResolving] = useState(false);
 
@@ -81,6 +83,7 @@ export const NeighborCard = React.memo(function NeighborCard({
     <button
       type="button"
       onClick={togglePlay}
+      onContextMenu={onContextMenu}
       className="group relative w-full text-left rounded-2xl overflow-hidden cursor-pointer transition-all duration-500 ease-[var(--ease-apple)] hover:scale-[1.02] active:scale-[0.99]"
       style={{
         background: 'rgba(255,255,255,0.025)',
