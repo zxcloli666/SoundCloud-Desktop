@@ -2,6 +2,7 @@ import { toast } from 'sonner';
 import i18n from '../i18n';
 import { useAppStatusStore } from '../stores/app-status';
 import { useAuthStore } from '../stores/auth';
+import { emitApiWrite } from './api-writes';
 import { noteAuthGap, noteRateLimit, noteSuccess } from './auth-recovery';
 import { API_BASE, API_STAR_BASE } from './constants';
 import { logHttpError, logHttpFailure, logInfo, trackAsync } from './diagnostics';
@@ -439,6 +440,7 @@ export async function apiRequest<T = unknown>(
       // если всё ожило само. Только авторизованный: публичная 200 про сессию
       // не говорит ничего и не имеет права снимать вердикт.
       noteSuccess(authenticated);
+      if (!['GET', 'HEAD'].includes(method.toUpperCase())) emitApiWrite(path);
 
       const ct = res.headers.get('content-type');
       const reply = await (ct?.includes('application/json') ? res.json() : (res.text() as T));
