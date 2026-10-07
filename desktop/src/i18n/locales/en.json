@@ -747,7 +747,8 @@
     "sidebar": "Toggle sidebar",
     "fullscreen": "Toggle fullscreen",
     "close": "Close",
-    "showBindings": "Show shortcuts"
+    "showBindings": "Show shortcuts",
+    "groupGlobal": "Global (any app)"
   },
   "ym": {
     "instructions": "How to get your Yandex Music token:",
@@ -1151,5 +1152,47 @@
     "noMatches": "Nothing matches “{{query}}”",
     "capAlbums": "That's the cream of the crop — narrow the genre or search to dig deeper.",
     "capArtists": "That's the cream of the crop — pick a tag or search to dig deeper."
+  },
+  "hotkeys": {
+    "title": "Global hotkeys",
+    "desc": "Control music from games and other apps, even when the window is minimized or hidden in the tray.",
+    "toggle": "Enable global hotkeys",
+    "mediaKeys": "Media keys on your keyboard (play, next, previous) already work in every app through the system media controls.",
+    "actions": {
+      "playPause": "Play / Pause",
+      "next": "Next track",
+      "prev": "Previous track",
+      "volumeUp": "Volume up",
+      "volumeDown": "Volume down",
+      "mute": "Mute / Unmute",
+      "like": "Like / Unlike",
+      "seekForward": "Forward 10 s",
+      "seekBack": "Back 10 s"
+    },
+    "notSet": "Not set",
+    "recording": "Press keys",
+    "recordHint": "Esc to cancel, Backspace to clear",
+    "assign": "Assign a shortcut for {{action}}",
+    "clear": "Clear shortcut",
+    "reset": "Restore defaults",
+    "offHint": "Turn on the switch to use these shortcuts outside the app.",
+    "status": {
+      "active": "Works everywhere",
+      "taken": "Taken by the system or another app. Pick another combination.",
+      "invalid": "This combination can't be registered"
+    },
+    "problem": {
+      "needsModifier": "Add Ctrl, Alt or {{super}} so the key keeps working in other apps. F13-F24 work on their own.",
+      "mediaKey": "Media keys already work without setup",
+      "unsupported": "This key isn't supported",
+      "reserved": "This combination is used by the app itself",
+      "duplicate": "Already used for \"{{action}}\""
+    },
+    "wayland": {
+      "title": "Wayland session",
+      "desc": "Wayland doesn't let apps listen to keys globally, so these shortcuts only fire while an X11 window is focused. For reliable control, add these commands as custom shortcuts in your desktop settings:",
+      "copy": "Copy command",
+      "copied": "Command copied"
+    }
   }
 }

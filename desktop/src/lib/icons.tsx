@@ -26,6 +26,7 @@ import {
   Download as _Download,
   ExternalLink as _ExternalLink,
   Eye as _Eye,
+  FastForward as _FastForward,
   FileDown as _FileDown,
   FileText as _FileText,
   Flame as _Flame,
@@ -37,6 +38,7 @@ import {
   Headphones as _Headphones,
   Heart as _Heart,
   Home as _Home,
+  Keyboard as _Keyboard,
   Library as _Library,
   Link as _Link,
   Link2 as _Link2,
@@ -59,6 +61,7 @@ import {
   Repeat as _Repeat,
   Repeat1 as _Repeat1,
   Repeat2 as _Repeat2,
+  Rewind as _Rewind,
   RotateCcw as _RotateCcw,
   Search as _Search,
   Send as _Send,
@@ -128,6 +131,7 @@ export const Database = memo(_Database);
 export const Disc3 = memo(_Disc3);
 export const ExternalLink = memo(_ExternalLink);
 export const Eye = memo(_Eye);
+export const FastForward = memo(_FastForward);
 export const Fullscreen = memo(_Fullscreen);
 export const Globe = memo(_Globe);
 export const GripVertical = memo(_GripVertical);
@@ -135,6 +139,7 @@ export const Hash = memo(_Hash);
 export const Headphones = memo(_Headphones);
 export const Heart = memo(_Heart);
 export const Home = memo(_Home);
+export const Keyboard = memo(_Keyboard);
 export const Instagram = memo(({ size, className }: { size?: number; className?: string }) => (
   <SimpleIcon icon={siInstagram} size={size} className={className} />
 ));
@@ -157,6 +162,7 @@ export const Plus = memo(_Plus);
 export const Repeat = memo(_Repeat);
 export const Repeat1 = memo(_Repeat1);
 export const RefreshCw = memo(_RefreshCw);
+export const Rewind = memo(_Rewind);
 export const Repeat2 = memo(_Repeat2);
 export const Search = memo(_Search);
 export const Send = memo(_Send);
