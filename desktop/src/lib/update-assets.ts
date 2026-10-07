@@ -28,7 +28,7 @@ function assetPattern(info: UpdaterInfo): RegExp | null {
     case 'nsis':
       return /_x64-setup\.exe$/i;
     case 'macApp':
-      return arm ? /_aarch64\.dmg$/i : /_x64\.dmg$/i;
+      return arm ? /_(aarch64|arm64)\.dmg$/i : /_x64\.dmg$/i;
     case 'appImage':
       return arm ? /_aarch64\.AppImage$/i : /_amd64\.AppImage$/i;
     case 'deb':
@@ -41,7 +41,7 @@ function assetPattern(info: UpdaterInfo): RegExp | null {
       return null;
     case 'source':
       if (info.os === 'windows') return /_x64-setup\.exe$/i;
-      if (info.os === 'macos') return arm ? /_aarch64\.dmg$/i : /_x64\.dmg$/i;
+      if (info.os === 'macos') return arm ? /_(aarch64|arm64)\.dmg$/i : /_x64\.dmg$/i;
       return null;
   }
 }
