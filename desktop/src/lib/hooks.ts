@@ -99,10 +99,7 @@ export interface SCUser {
   followings_count?: number;
   track_count?: number;
   city?: string | null;
-  /// Backend now emits `country_code` (ISO-2). Legacy `country` оставляем
-  /// для совместимости со старыми payload'ами SC.
   country_code?: string | null;
-  country?: string | null;
 }
 
 export interface UserProfile extends SCUser {
@@ -113,7 +110,6 @@ export interface UserProfile extends SCUser {
   last_name: string;
   full_name: string;
   description: string | null;
-  country: string | null;
   public_favorites_count: number;
   reposts_count: number;
   plan: string;

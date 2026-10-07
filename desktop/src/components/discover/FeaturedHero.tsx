@@ -386,9 +386,9 @@ const FeaturedUserHero = React.memo(function FeaturedUserHero({ user }: { user: 
           <h2 className="text-xl font-bold text-white/95 truncate leading-tight group-hover:text-white transition-colors duration-200">
             {user.username}
           </h2>
-          {(user.city || user.country) && (
+          {(user.city || user.country_code) && (
             <p className="text-[13px] text-white/30 mt-1.5">
-              {[user.city, user.country].filter(Boolean).join(', ')}
+              {[user.city, user.country_code].filter(Boolean).join(', ')}
             </p>
           )}
           <div className="flex items-center gap-4 mt-4 text-[11px] text-white/25 tabular-nums">
