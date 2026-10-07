@@ -18,6 +18,7 @@ import {idOf} from '../lib/ids';
 import {useCacheLikes} from '../lib/likes-cache';
 import {usePerfMode} from '../lib/perf';
 import {useAppStatusStore} from '../stores/app-status';
+import {saveOffline} from '../stores/offline-saves';
 import {usePlayerStore} from '../stores/player';
 
 function shuffled<T>(items: T[]): T[] {
@@ -120,6 +121,13 @@ export const OfflinePage = React.memo(() => {
     [lib.refreshInventory],
   );
 
+  const handleRefetch = useCallback(
+    (entry: OfflineEntry) => {
+      void saveOffline(entry.track, true).then(() => lib.refreshInventory());
+    },
+    [lib.refreshInventory],
+  );
+
   useEffect(() => {
     if (!tryingOnline || probing) return;
     setTryingOnline(false);
@@ -217,6 +225,7 @@ export const OfflinePage = React.memo(() => {
               emptyText={emptyText}
               onPlay={handlePlay}
               onDownload={handleDownload}
+              onRefetch={handleRefetch}
               onRemove={lib.removeCached}
               onReorder={lib.reorderCached}
             />

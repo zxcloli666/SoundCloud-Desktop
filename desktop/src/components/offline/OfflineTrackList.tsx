@@ -15,6 +15,7 @@ interface OfflineTrackListProps {
   emptyText: string;
   onPlay: (entry: OfflineEntry) => void;
   onDownload: (entry: OfflineEntry) => void;
+  onRefetch: (entry: OfflineEntry) => void;
   onRemove: (urn: string) => void;
   onReorder: (urns: string[]) => void;
 }
@@ -42,6 +43,7 @@ export const OfflineTrackList = React.memo(function OfflineTrackList({
   emptyText,
   onPlay,
   onDownload,
+  onRefetch,
   onRemove,
   onReorder,
 }: OfflineTrackListProps) {
@@ -69,6 +71,7 @@ export const OfflineTrackList = React.memo(function OfflineTrackList({
       downloadProgress: downloads[entry.urn],
       onPlay,
       onDownload,
+      onRefetch,
       onRemove,
     };
     return sortable ? <SortableOfflineRow {...props} /> : <OfflineTrackRow {...props} />;

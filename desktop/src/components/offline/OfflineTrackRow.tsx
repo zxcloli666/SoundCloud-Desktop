@@ -5,7 +5,16 @@ import {useTranslation} from 'react-i18next';
 import {toast} from 'sonner';
 import {downloadTrack} from '../../lib/cache';
 import {art, dur, formatBytes} from '../../lib/formatters';
-import {ArrowDownToLine, FileDown, GripVertical, Loader2, Music, playWhite14, Trash2,} from '../../lib/icons';
+import {
+  ArrowDownToLine,
+  FileDown,
+  GripVertical,
+  Loader2,
+  Music,
+  playWhite14,
+  RefreshCw,
+  Trash2,
+} from '../../lib/icons';
 import {usePerfMode} from '../../lib/perf';
 import {useArtistLinkItems, useTrackDisplay} from '../../lib/track-display';
 import {usePlayerStore} from '../../stores/player';
@@ -48,6 +57,7 @@ export interface OfflineRowProps {
   downloadProgress?: number;
   onPlay: (entry: OfflineEntry) => void;
   onDownload: (entry: OfflineEntry) => void;
+  onRefetch: (entry: OfflineEntry) => void;
   onRemove: (urn: string) => void;
   dragHandleProps?: React.HTMLAttributes<HTMLElement>;
 }
@@ -61,6 +71,7 @@ export const OfflineTrackRow = React.memo(function OfflineTrackRow({
   downloadProgress,
   onPlay,
   onDownload,
+  onRefetch,
   onRemove,
   dragHandleProps,
 }: OfflineRowProps) {
@@ -260,6 +271,22 @@ export const OfflineTrackRow = React.memo(function OfflineTrackRow({
         >
           {saving ? <Loader2 size={13} className="animate-spin" /> : <FileDown size={13} />}
         </button>
+        {cached && (
+          <button
+            type="button"
+            onClick={() => onRefetch(entry)}
+            disabled={downloading}
+            title={t('offline.actRefetch')}
+            aria-label={t('offline.actRefetch')}
+            className="flex size-[29px] cursor-pointer items-center justify-center rounded-[9px] border border-white/[0.12] bg-white/[0.05] text-white/55 transition-colors hover:border-sky-400/40 hover:text-sky-200 disabled:opacity-40"
+          >
+            {downloading ? (
+              <Loader2 size={13} className="animate-spin" />
+            ) : (
+              <RefreshCw size={13} />
+            )}
+          </button>
+        )}
         {cached && (
           <button
             type="button"
