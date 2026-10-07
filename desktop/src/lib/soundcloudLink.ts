@@ -4,10 +4,10 @@ export type SoundCloudLink = { kind: 'urn'; urn: string } | { kind: 'url'; url: 
 
 const BARE_URN = /^soundcloud:(tracks|playlists|users):(\d+)$/i;
 const LINK =
-  /(?:^|[^\w.@-])((?:https?:\/\/)?(?:[a-z0-9-]+\.)?(?:soundcloud\.com|snd\.sc)\/[^\s<>"']+)/i;
-const TRAILING = /[).,!?»]+$/;
+  /(?:^|[^\w.@-])((?:https?:\/\/)?(?:[a-z0-9-]+\.)?(?:soundcloud\.com|snd\.sc)\/[^\s<>"']+)/gi;
+const TRAILING = /[).,!?»;:\]}…*]+$/;
 const API_HOSTS = new Set(['api.soundcloud.com', 'api-v2.soundcloud.com']);
-const TRACKING_PARAM = /^(si|ref|utm_.*)$/i;
+const KEPT_PARAMS = new Set(['secret_token']);
 const ROUTES: Record<EntityKind, string> = {
   tracks: 'track',
   playlists: 'playlist',
@@ -30,8 +30,11 @@ export function findSoundCloudLink(text: string): SoundCloudLink | null {
   const trimmed = text.trim();
   const bare = BARE_URN.exec(trimmed);
   if (bare) return urnLink(bare[1].toLowerCase(), bare[2]);
-  const match = LINK.exec(trimmed);
-  return match ? parseLink(match[1].replace(TRAILING, '')) : null;
+  for (const match of trimmed.matchAll(LINK)) {
+    const link = parseLink(match[1].split('](')[0].replace(TRAILING, ''));
+    if (link) return link;
+  }
+  return null;
 }
 
 function parseLink(raw: string): SoundCloudLink | null {
@@ -53,7 +56,7 @@ function parseLink(raw: string): SoundCloudLink | null {
   }
   if (segments.length === 0 || NON_ENTITY_PATHS.has(segments[0].toLowerCase())) return null;
   for (const key of [...url.searchParams.keys()]) {
-    if (TRACKING_PARAM.test(key)) url.searchParams.delete(key);
+    if (!KEPT_PARAMS.has(key)) url.searchParams.delete(key);
   }
   url.protocol = 'https:';
   url.hash = '';
