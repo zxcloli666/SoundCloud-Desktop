@@ -64,6 +64,18 @@ pub fn diagnostics_log(app: AppHandle, level: String, message: String) -> Result
     append_log_line(&app, &format_log_line(&level, &message))
 }
 
+#[tauri::command]
+pub async fn diagnostics_reveal_log(app: AppHandle) -> Result<(), String> {
+    let path = log_file_path(&app)?;
+    OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(&path)
+        .map_err(|e| format!("failed to open log file: {e}"))?;
+    tauri_plugin_opener::reveal_item_in_dir(&path)
+        .map_err(|e| format!("failed to reveal log file: {e}"))
+}
+
 #[cfg(target_os = "linux")]
 #[derive(Default)]
 struct FdSnapshot {

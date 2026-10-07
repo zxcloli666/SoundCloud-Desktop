@@ -188,6 +188,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             network::server::get_server_ports,
             app::diagnostics::diagnostics_log,
+            app::diagnostics::diagnostics_reveal_log,
             app::visibility::show_main_window,
             app::popover::tray_popover_hide,
             discord::discord_connect,
