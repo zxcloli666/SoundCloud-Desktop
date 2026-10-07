@@ -480,7 +480,6 @@
     "netNoInternet": "internet yok",
     "netServerDown": "sunucuya ulasilamiyor",
     "tryOnline": "Tekrar dene",
-    "pendingCount": "{{count}} bekliyor",
     "failedCount": "{{count}} basarisiz",
     "forgeTitle": "Demirhane",
     "forgeSub": "hat A → B",
@@ -1008,5 +1007,23 @@
     "duration": "Süre",
     "saveOrder": "Bu sırayı kaydet",
     "saveOrderHint": "Bu sırayı herkes için çalma listesinin sırası yap"
+  },
+  "sync": {
+    "title": "SoundCloud senkronizasyonu",
+    "retrySoon": "bir dakikadan az",
+    "retryMinutes": "~{{count}} dk",
+    "retryHours": "~{{count}} sa",
+    "chip": {
+      "synced": "Senkronize",
+      "syncing": "{{count}} sırada",
+      "delayed": "SoundCloud sınırlıyor · {{time}} sonra tekrar",
+      "failed": "{{count}} senkronize edilmedi"
+    },
+    "hint": {
+      "synced": "Beğeniler ve çalma listeleri soundcloud.com ile otomatik olarak senkronize edilir. Her şey güncel.",
+      "syncing": "Uygulamaya kaydedildi. Değişiklikleriniz soundcloud.com'a gönderiliyor.",
+      "delayed": "SoundCloud uygulamadan gelen değişiklikleri geçici olarak kabul etmiyor. {{count}} değişiklik kaydedildi ve otomatik olarak gönderilecek, sonraki deneme {{time}} sonra.",
+      "failed": "SoundCloud bazı değişiklikleri reddetti. Uygulamada kalırlar ve SoundCloud izin verdikçe yeniden denenirler."
+    }
   }
 }

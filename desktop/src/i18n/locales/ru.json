@@ -575,9 +575,6 @@
     "netNoInternet": "нет интернета",
     "netServerDown": "сервер недоступен",
     "tryOnline": "Попробовать онлайн",
-    "pendingCount_one": "{{count}} ожидает",
-    "pendingCount_few": "{{count}} ожидают",
-    "pendingCount_many": "{{count}} ожидают",
     "failedCount_one": "{{count}} ошибка",
     "failedCount_few": "{{count}} ошибки",
     "failedCount_many": "{{count}} ошибок",
@@ -1220,5 +1217,33 @@
     "duration": "Длительность",
     "saveOrder": "Сохранить этот порядок",
     "saveOrderHint": "Сделать этот порядок порядком плейлиста для всех"
+  },
+  "sync": {
+    "title": "Синхронизация с SoundCloud",
+    "retrySoon": "меньше минуты",
+    "retryMinutes_one": "~{{count}} мин",
+    "retryMinutes_few": "~{{count}} мин",
+    "retryMinutes_many": "~{{count}} мин",
+    "retryHours_one": "~{{count}} ч",
+    "retryHours_few": "~{{count}} ч",
+    "retryHours_many": "~{{count}} ч",
+    "chip": {
+      "synced": "Синхронизировано",
+      "syncing_one": "{{count}} в очереди",
+      "syncing_few": "{{count}} в очереди",
+      "syncing_many": "{{count}} в очереди",
+      "delayed": "SoundCloud ограничивает · повтор через {{time}}",
+      "failed_one": "{{count}} не синхронизирован",
+      "failed_few": "{{count}} не синхронизированы",
+      "failed_many": "{{count}} не синхронизированы"
+    },
+    "hint": {
+      "synced": "Лайки и плейлисты синхронизируются с soundcloud.com автоматически. Всё актуально.",
+      "syncing": "Сохранено в приложении. Изменения уже отправляются на soundcloud.com.",
+      "delayed_one": "SoundCloud временно не принимает изменения от приложения. {{count}} изменение сохранено и уйдёт автоматически, следующая попытка через {{time}}.",
+      "delayed_few": "SoundCloud временно не принимает изменения от приложения. {{count}} изменения сохранены и уйдут автоматически, следующая попытка через {{time}}.",
+      "delayed_many": "SoundCloud временно не принимает изменения от приложения. {{count}} изменений сохранены и уйдут автоматически, следующая попытка через {{time}}.",
+      "failed": "SoundCloud отклонил часть изменений. Они остаются в приложении и повторяются, пока SoundCloud это позволяет."
+    }
   }
 }

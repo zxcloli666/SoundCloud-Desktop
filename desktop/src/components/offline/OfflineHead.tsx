@@ -4,7 +4,7 @@ import {useHostStatusStore} from '../../lib/host-status';
 import {RotateCcw, Wifi, WifiOff} from '../../lib/icons';
 import {usePerfMode} from '../../lib/perf';
 import {useAppStatusStore} from '../../stores/app-status';
-import {SyncQueueChip} from '../library/SyncQueueChip';
+import {SyncStatusChip} from '../sync/SyncStatusChip';
 
 function useOfflineLabel(): string {
   const { t } = useTranslation();
@@ -41,7 +41,7 @@ export const OfflineHead = React.memo(function OfflineHead({
       </div>
 
       <div className="flex flex-wrap items-center gap-2.5">
-        <SyncQueueChip enabled={online} />
+        <SyncStatusChip enabled={online} />
         <span
           className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 font-mono text-[10.5px] font-medium uppercase tracking-[0.12em] ${
             online

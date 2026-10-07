@@ -5,6 +5,7 @@ import {art} from '../../lib/formatters';
 import {Loader2, Shuffle, User as UserIcon} from '../../lib/icons';
 import {usePerfMode} from '../../lib/perf';
 import type {Track} from '../../stores/player';
+import {SyncStatusChip} from '../sync/SyncStatusChip';
 import {ArtworkMosaic} from './ArtworkMosaic';
 import {SoundprintBars} from './SoundprintBars';
 import {useShuffleLikes} from './useShuffleLikes';
@@ -155,6 +156,7 @@ export const SoundPrintMasthead = memo(function SoundPrintMasthead({
                         >
                             {t(greetingKey(), {name: user.username})}
                         </h1>
+                        <SyncStatusChip className="mt-3"/>
                     </div>
                     <button
                         type="button"

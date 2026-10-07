@@ -569,7 +569,6 @@
     "netNoInternet": "no internet",
     "netServerDown": "server unreachable",
     "tryOnline": "Try online again",
-    "pendingCount": "{{count}} pending",
     "failedCount": "{{count}} failed",
     "forgeTitle": "Forge",
     "forgeSub": "conveyor A → B",
@@ -1199,5 +1198,28 @@
     "duration": "Duration",
     "saveOrder": "Save this order",
     "saveOrderHint": "Make this the playlist's own order for everyone"
+  },
+  "sync": {
+    "title": "SoundCloud sync",
+    "retrySoon": "under a minute",
+    "retryMinutes_one": "~{{count}} min",
+    "retryMinutes_other": "~{{count}} min",
+    "retryHours_one": "~{{count}} h",
+    "retryHours_other": "~{{count}} h",
+    "chip": {
+      "synced": "Synced",
+      "syncing_one": "{{count}} syncing",
+      "syncing_other": "{{count}} syncing",
+      "delayed": "SoundCloud is limiting · retry in {{time}}",
+      "failed_one": "{{count}} not synced",
+      "failed_other": "{{count}} not synced"
+    },
+    "hint": {
+      "synced": "Likes and playlists sync with soundcloud.com automatically. Everything is up to date.",
+      "syncing": "Saved in the app. Your changes are on their way to soundcloud.com.",
+      "delayed_one": "SoundCloud is temporarily refusing changes from the app. {{count}} change is saved and will be sent automatically, next try in {{time}}.",
+      "delayed_other": "SoundCloud is temporarily refusing changes from the app. {{count}} changes are saved and will be sent automatically, next try in {{time}}.",
+      "failed": "SoundCloud rejected some changes. They stay in the app and are retried while SoundCloud allows it."
+    }
   }
 }
