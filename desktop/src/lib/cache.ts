@@ -6,6 +6,7 @@ import {toScproxyUrl} from './asset-url';
 import {getStaticPort} from './constants';
 import {trackedInvoke as invoke} from './diagnostics';
 import { isHqStreaming } from './streaming';
+import {isPreviewOnly} from './track-access';
 
 type StorageQuality = TrackScdMeta['storage_quality'];
 
@@ -80,8 +81,8 @@ async function buildCacheRequest(
   };
 }
 
-export function expectedDurationMs(track: Pick<Track, 'duration' | 'access'>) {
-  return track.access === 'preview' ? undefined : track.duration;
+export function expectedDurationMs(track: Pick<Track, 'duration' | 'access' | 'policy'>) {
+  return isPreviewOnly(track) ? undefined : track.duration;
 }
 
 export async function ensureTrackCached(

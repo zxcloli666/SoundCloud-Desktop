@@ -28,6 +28,7 @@ import {art} from './formatters';
 import {trackUrn} from './ids';
 import {rememberTracks} from './offline-index';
 import {getUrnCluster, recordClusterFeedback} from './recsFeedback';
+import {isPreviewOnly} from './track-access';
 import {getArtistDisplay, getDisplayTitle} from './track-display';
 
 const SKIP_THRESHOLD_SEC = 30;
@@ -507,7 +508,7 @@ async function hydrateTrackMetadata(track: Track, gen: number) {
 }
 
 function endedEarly(track: Track): boolean {
-  if (track.access === 'preview') return false;
+  if (isPreviewOnly(track)) return false;
   if (Math.abs(cachedTime - API_PREVIEW_DURATION_MS / 1000) < 2) return false;
   const expected = Math.max(cachedDuration, track.duration / 1000);
   if (expected < EARLY_END_MIN_EXPECTED_SEC) return false;
