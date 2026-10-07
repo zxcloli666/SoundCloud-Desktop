@@ -630,6 +630,8 @@
     "perfMediumDesc": "Reduced blur, fewer particles.",
     "perfBeauty": "Beauty",
     "perfBeautyDesc": "Full liquid-glass design.",
+    "perfAutoLight": "Effects were slowing the app down, so Light mode is on. You can change it in Settings > Appearance.",
+    "perfAutoLightUndo": "Undo",
     "startup": "Startup",
     "startupPageDesc": "Choose which page opens when the app launches",
     "playback": "Playback",

@@ -1,5 +1,6 @@
 import type {ReactNode} from 'react';
 import {Star} from '../../lib/icons';
+import {usePerfMode} from '../../lib/perf';
 
 /** Shared settings primitives — one consistent visual language across every card. */
 
@@ -72,15 +73,18 @@ export function Card({
     action?: ReactNode;
     children: ReactNode;
 }) {
+    const blur = usePerfMode().blur(40);
     return (
         <section
             className="group relative rounded-3xl p-6 overflow-hidden transition-[box-shadow,border-color] duration-500 hover:border-white/[0.14]"
             style={{
                 border: '0.5px solid rgba(255,255,255,0.1)',
                 background:
-                    'linear-gradient(165deg, rgba(255,255,255,0.055), rgba(255,255,255,0.015) 58%, rgba(255,255,255,0.03))',
-                backdropFilter: 'blur(40px) saturate(1.4)',
-                WebkitBackdropFilter: 'blur(40px) saturate(1.4)',
+                    blur > 0
+                        ? 'linear-gradient(165deg, rgba(255,255,255,0.055), rgba(255,255,255,0.015) 58%, rgba(255,255,255,0.03))'
+                        : 'rgba(18,18,22,0.85)',
+                backdropFilter: blur > 0 ? `blur(${blur}px) saturate(1.4)` : undefined,
+                WebkitBackdropFilter: blur > 0 ? `blur(${blur}px) saturate(1.4)` : undefined,
                 boxShadow: '0 18px 50px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06)',
             }}
         >

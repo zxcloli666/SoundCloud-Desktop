@@ -82,6 +82,12 @@ pub fn start_media_controls(app: &AppHandle) {
                         };
                         event_handle.emit("media:seek-relative", offset).ok();
                     }
+                    MediaControlEvent::Raise => {
+                        crate::app::tray::run_action(&event_handle, "show");
+                    }
+                    MediaControlEvent::Quit => {
+                        crate::app::tray::run_action(&event_handle, "quit");
+                    }
                     _ => {}
                 })
                 .ok();

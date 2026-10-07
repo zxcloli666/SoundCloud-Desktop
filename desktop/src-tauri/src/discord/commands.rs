@@ -1,14 +1,32 @@
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
+use std::time::Duration;
 
 use discord_rich_presence::{
     activity::{Activity, ActivityType, Assets, Button, Timestamps},
+    error::Error as IpcError,
     DiscordIpc, DiscordIpcClient,
 };
 
+use crate::app::diagnostics::log_native;
+use crate::rt::AppHandle;
+use crate::shared::blocking::run_blocking;
 use crate::shared::constants::DISCORD_CLIENT_ID;
 
+const CONNECT_TIMEOUT: Duration = Duration::from_secs(3);
+
+#[derive(Default)]
 pub struct DiscordState {
-    pub client: Mutex<Option<DiscordIpcClient>>,
+    client: Mutex<Option<DiscordIpcClient>>,
+    connecting: AtomicBool,
+}
+
+struct ConnectingGuard(Arc<DiscordState>);
+
+impl Drop for ConnectingGuard {
+    fn drop(&mut self) {
+        self.0.connecting.store(false, Ordering::Release);
+    }
 }
 
 #[derive(serde::Deserialize)]
@@ -33,42 +51,64 @@ pub enum DiscordRpcMode {
 }
 
 #[tauri::command]
-pub fn discord_connect(state: tauri::State<'_, Arc<DiscordState>>) -> Result<bool, String> {
-    let mut guard = state.client.lock().map_err(|e| e.to_string())?;
-    if guard.is_some() {
+pub async fn discord_connect(
+    app: AppHandle,
+    state: tauri::State<'_, Arc<DiscordState>>,
+) -> Result<bool, String> {
+    if state.connecting.swap(true, Ordering::AcqRel) {
+        return Err("Connection in progress".into());
+    }
+    let guard = ConnectingGuard(state.inner().clone());
+    let handle = app.clone();
+    let connect = run_blocking(move || open_client(&handle, &guard.0));
+    match tokio::time::timeout(CONNECT_TIMEOUT, connect).await {
+        Ok(joined) => joined?,
+        Err(_) => {
+            log_native(&app, "WARN", "[Discord] IPC handshake timed out");
+            Err("Connection timed out".into())
+        }
+    }
+}
+
+fn open_client(app: &AppHandle, state: &DiscordState) -> Result<bool, String> {
+    if state.client.lock().map_err(|e| e.to_string())?.is_some() {
         return Ok(true);
     }
     let mut client = DiscordIpcClient::new(DISCORD_CLIENT_ID);
-    match client.connect() {
-        Ok(_) => {
-            println!("[Discord] Connected");
-            *guard = Some(client);
-            Ok(true)
+    if let Err(e) = client.connect() {
+        if !matches!(e, IpcError::IPCNotFound | IpcError::IPCConnectionFailed) {
+            log_native(app, "WARN", format!("[Discord] Connection failed: {e:?}"));
         }
-        Err(e) => {
-            println!("[Discord] Connection failed: {e}");
-            Err(format!("Connection failed: {e}"))
-        }
+        return Err(format!("Connection failed: {e}"));
     }
+    *state.client.lock().map_err(|e| e.to_string())? = Some(client);
+    log_native(app, "INFO", "[Discord] Connected");
+    Ok(true)
 }
 
 #[tauri::command]
-pub fn discord_disconnect(state: tauri::State<'_, Arc<DiscordState>>) {
-    let Ok(mut guard) = state.client.lock() else {
-        return;
-    };
-    if let Some(ref mut client) = *guard {
-        let _ = client.close();
-        println!("[Discord] Disconnected");
-    }
-    *guard = None;
+pub async fn discord_disconnect(state: tauri::State<'_, Arc<DiscordState>>) -> Result<(), String> {
+    let state = state.inner().clone();
+    run_blocking(move || {
+        if let Ok(mut guard) = state.client.lock()
+            && let Some(mut client) = guard.take()
+        {
+            let _ = client.close();
+        }
+    })
+    .await
 }
 
 #[tauri::command]
-pub fn discord_set_activity(
+pub async fn discord_set_activity(
     state: tauri::State<'_, Arc<DiscordState>>,
     track: DiscordTrackInfo,
 ) -> Result<(), String> {
+    let state = state.inner().clone();
+    run_blocking(move || set_activity(&state, track)).await?
+}
+
+fn set_activity(state: &DiscordState, track: DiscordTrackInfo) -> Result<(), String> {
     let mut guard = state.client.lock().map_err(|e| e.to_string())?;
     let client = guard.as_mut().ok_or("Discord not connected")?;
 
@@ -139,7 +179,14 @@ pub fn discord_set_activity(
 }
 
 #[tauri::command]
-pub fn discord_clear_activity(state: tauri::State<'_, Arc<DiscordState>>) -> Result<(), String> {
+pub async fn discord_clear_activity(
+    state: tauri::State<'_, Arc<DiscordState>>,
+) -> Result<(), String> {
+    let state = state.inner().clone();
+    run_blocking(move || clear_activity(&state)).await?
+}
+
+fn clear_activity(state: &DiscordState) -> Result<(), String> {
     let mut guard = state.client.lock().map_err(|e| e.to_string())?;
     if let Some(ref mut client) = *guard {
         client

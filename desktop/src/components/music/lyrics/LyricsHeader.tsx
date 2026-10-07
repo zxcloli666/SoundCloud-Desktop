@@ -46,12 +46,12 @@ export const LyricsHeader = React.memo(
         const {t} = useTranslation();
         return (
             <div
-                className="absolute top-0 inset-x-0 z-20 h-16 flex items-center justify-end px-5 pointer-events-none"
+                className="absolute top-0 inset-x-0 z-20 h-16 flex items-center justify-end px-5"
                 data-tauri-drag-region
             >
                 {/* centred tabs */}
                 <div
-                    className="absolute left-1/2 -translate-x-1/2 pointer-events-auto inline-flex items-center gap-1 rounded-full border border-white/[0.08] bg-black/35 backdrop-blur-xl p-1 shadow-[0_8px_30px_rgba(0,0,0,0.35)]">
+                    className="absolute left-1/2 -translate-x-1/2 inline-flex items-center gap-1 rounded-full border border-white/[0.08] bg-black/35 backdrop-blur-xl p-1 shadow-[0_8px_30px_rgba(0,0,0,0.35)]">
                     <TabButton
                         active={rightPanelOpen && tab === 'lyrics'}
                         onClick={() => onSelectTab('lyrics')}
@@ -67,7 +67,7 @@ export const LyricsHeader = React.memo(
                 </div>
 
                 {/* fixed right cluster — always top-right */}
-                <div className="pointer-events-auto flex items-center gap-2">
+                <div className="flex items-center gap-2">
                     <button
                         type="button"
                         onClick={onTogglePanel}

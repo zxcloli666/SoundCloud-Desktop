@@ -238,3 +238,27 @@ pub fn start_linux_fd_monitor(app: &AppHandle) {
 
 #[cfg(not(target_os = "linux"))]
 pub fn start_linux_fd_monitor(_app: &AppHandle) {}
+
+#[cfg(target_os = "linux")]
+const RENDER_ENV_KEYS: [&str; 7] = [
+    "XDG_SESSION_TYPE",
+    "WAYLAND_DISPLAY",
+    "GDK_BACKEND",
+    "WEBKIT_DMABUF_RENDERER_FORCE_SHM",
+    "WEBKIT_DISABLE_DMABUF_RENDERER",
+    "WEBKIT_DISABLE_COMPOSITING_MODE",
+    "__NV_DISABLE_EXPLICIT_SYNC",
+];
+
+#[cfg(target_os = "linux")]
+pub fn log_linux_render_env(app: &AppHandle) {
+    let env = RENDER_ENV_KEYS
+        .iter()
+        .map(|key| format!("{key}={}", std::env::var(key).unwrap_or_default()))
+        .collect::<Vec<_>>()
+        .join(" ");
+    log_native(app, "INFO", format!("[GPU] {env}"));
+}
+
+#[cfg(not(target_os = "linux"))]
+pub fn log_linux_render_env(_app: &AppHandle) {}

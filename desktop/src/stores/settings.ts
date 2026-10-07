@@ -58,6 +58,8 @@ export interface SettingsState {
   bgPrimary: string;
   themePreset: ThemePreset;
   perfMode: PerfMode;
+  perfModeUserSet: boolean;
+  perfProbed: boolean;
   backgroundImage: string;
   backgroundOpacity: number;
   backgroundDim: number;
@@ -128,6 +130,8 @@ const DEFAULTS = {
   bgPrimary: '#08080a',
   themePreset: 'soundcloud' as ThemePreset,
   perfMode: 'beauty' as PerfMode,
+  perfModeUserSet: false,
+  perfProbed: false,
   backgroundImage: '',
   backgroundOpacity: 0.15,
   backgroundDim: 0,
@@ -171,7 +175,7 @@ export const useSettingsStore = create<SettingsState>()(
           set({ themePreset: id, accentColor: preset.accent, bgPrimary: preset.bg });
         }
       },
-      setPerfMode: (perfMode) => set({ perfMode }),
+      setPerfMode: (perfMode) => set({ perfMode, perfModeUserSet: true }),
       setBackgroundImage: (backgroundImage) => set({ backgroundImage }),
       setBackgroundOpacity: (backgroundOpacity) => set({ backgroundOpacity }),
       setBackgroundDim: (backgroundDim) => set({ backgroundDim }),
@@ -252,6 +256,8 @@ export const useSettingsStore = create<SettingsState>()(
         bgPrimary: s.bgPrimary,
         themePreset: s.themePreset,
         perfMode: s.perfMode,
+        perfModeUserSet: s.perfModeUserSet,
+        perfProbed: s.perfProbed,
         backgroundImage: s.backgroundImage,
         backgroundOpacity: s.backgroundOpacity,
         backgroundDim: s.backgroundDim,

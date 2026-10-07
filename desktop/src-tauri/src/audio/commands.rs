@@ -6,6 +6,7 @@ use crate::audio::engine;
 use crate::audio::state::AudioState;
 use crate::audio::timing;
 use crate::audio::types::{AudioLoadResult, AudioSink};
+use crate::shared::blocking::run_blocking;
 
 #[tauri::command]
 pub async fn audio_load_file(
@@ -134,16 +135,16 @@ pub fn audio_set_media_position(position: f64, state: State<'_, AudioState>) {
 }
 
 #[tauri::command]
-pub fn audio_list_devices() -> Vec<AudioSink> {
-    device::list_devices()
+pub async fn audio_list_devices() -> Result<Vec<AudioSink>, String> {
+    run_blocking(device::list_devices).await
 }
 
 #[tauri::command]
-pub fn audio_switch_device(
+pub async fn audio_switch_device(
     device_name: Option<String>,
-    state: State<'_, AudioState>,
+    app: AppHandle,
 ) -> Result<(), String> {
-    device::switch_device(state, device_name)
+    run_blocking(move || device::switch_device(app.state(), device_name)).await?
 }
 
 #[tauri::command]

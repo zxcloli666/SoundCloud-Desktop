@@ -10,9 +10,9 @@
 //! операции Tauri обязаны идти с main-потока → действия гоним через
 //! `run_on_main_thread`.
 
-use tauri::{Emitter, Manager};
+use tauri::Emitter;
 
-use crate::app::popover;
+use crate::app::{popover, visibility};
 use crate::rt::AppHandle;
 
 pub fn setup_tray(app: &crate::rt::App) -> Result<(), Box<dyn std::error::Error>> {
@@ -27,18 +27,23 @@ pub fn setup_tray(app: &crate::rt::App) -> Result<(), Box<dyn std::error::Error>
     }
 }
 
+pub fn is_available() -> bool {
+    #[cfg(target_os = "linux")]
+    {
+        linux::is_online()
+    }
+    #[cfg(not(target_os = "linux"))]
+    {
+        true
+    }
+}
+
 /// Выполнить действие пункта меню на main-потоке.
-fn run_action(app: &AppHandle, id: &str) {
+pub fn run_action(app: &AppHandle, id: &str) {
     let h = app.clone();
     let id = id.to_string();
     let _ = app.run_on_main_thread(move || match id.as_str() {
-        "show" => {
-            if let Some(w) = h.get_webview_window("main") {
-                let _ = w.show();
-                let _ = w.unminimize();
-                let _ = w.set_focus();
-            }
-        }
+        "show" => visibility::show_main(&h),
         "mini" => popover::open_pinned(&h),
         "quit" => {
             // На CEF graceful `app.exit()` может зависнуть в teardown (кросс-процессный
@@ -67,9 +72,23 @@ fn toggle_popover(app: &AppHandle, cursor: Option<(f64, f64)>) {
 // ---------------------------------------------------------------------------
 #[cfg(target_os = "linux")]
 mod linux {
-    use ksni::{MenuItem, Tray, TrayMethods};
+    use std::path::Path;
+    use std::sync::atomic::{AtomicBool, Ordering};
 
+    use ksni::{MenuItem, OfflineReason, Tray, TrayMethods};
+
+    use crate::app::diagnostics::log_native;
     use crate::rt::AppHandle;
+
+    static ONLINE: AtomicBool = AtomicBool::new(true);
+
+    pub fn is_online() -> bool {
+        ONLINE.load(Ordering::Relaxed)
+    }
+
+    fn is_flatpak() -> bool {
+        Path::new("/.flatpak-info").exists()
+    }
 
     struct ScTray {
         app: AppHandle,
@@ -111,6 +130,19 @@ mod linux {
                 item("Quit", "quit"),
             ]
         }
+        fn watcher_online(&self) {
+            ONLINE.store(true, Ordering::Relaxed);
+            log_native(&self.app, "INFO", "[tray] status notifier watcher is back");
+        }
+        fn watcher_offline(&self, reason: OfflineReason) -> bool {
+            ONLINE.store(false, Ordering::Relaxed);
+            log_native(
+                &self.app,
+                "WARN",
+                format!("[tray] status notifier watcher is offline: {reason:?}"),
+            );
+            true
+        }
     }
 
     pub fn setup(app: &crate::rt::App) {
@@ -118,10 +150,21 @@ mod linux {
         let icon = icon_pixmap(app);
         // ksni поднимает D-Bus-сервис на нашем tokio-рантайме; держим задачу живой.
         tauri::async_runtime::spawn(async move {
-            let tray = ScTray { app: handle, icon };
-            match tray.spawn().await {
+            let tray = ScTray {
+                app: handle.clone(),
+                icon,
+            };
+            let spawned = tray
+                .assume_sni_available(true)
+                .disable_dbus_name(is_flatpak())
+                .spawn()
+                .await;
+            match spawned {
                 Ok(_handle) => std::future::pending::<()>().await,
-                Err(err) => eprintln!("[tray] ksni spawn failed: {err}"),
+                Err(err) => {
+                    ONLINE.store(false, Ordering::Relaxed);
+                    log_native(&handle, "ERROR", format!("[tray] ksni spawn failed: {err}"));
+                }
             }
         });
     }

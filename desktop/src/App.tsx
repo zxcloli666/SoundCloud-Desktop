@@ -12,6 +12,7 @@ import { SessionRecoveryModal } from './components/SessionRecoveryModal';
 import { ThemeProvider } from './components/ThemeProvider';
 import { ApiError } from './lib/api';
 import { CHECK_UPDATES } from './lib/constants';
+import { usePerfMode } from './lib/perf';
 import { checkForAppUpdate, type GithubRelease } from './lib/update-check';
 import { getAppMode, useAppMode, useAppStatusStore } from './stores/app-status';
 import { useAuthStore } from './stores/auth';
@@ -370,12 +371,20 @@ function RouteLoader({ children }: { children: ReactNode }) {
 
 function AppLoadingScreen({ fullscreen = false }: { fullscreen?: boolean }) {
   const { t } = useTranslation();
+  const blur = usePerfMode().blur(28);
 
   return (
     <div
       className={`flex items-center justify-center px-6 py-8 ${fullscreen ? 'h-screen' : 'min-h-[42vh]'}`}
     >
-      <div className="flex items-center gap-3 rounded-[24px] border border-white/8 bg-white/[0.035] px-4 py-3 shadow-[0_18px_44px_rgba(0,0,0,0.24)] backdrop-blur-[28px]">
+      <div
+        className="flex items-center gap-3 rounded-[24px] border border-white/8 bg-white/[0.035] px-4 py-3 shadow-[0_18px_44px_rgba(0,0,0,0.24)]"
+        style={
+          blur > 0
+            ? { backdropFilter: `blur(${blur}px)`, WebkitBackdropFilter: `blur(${blur}px)` }
+            : { background: 'rgba(18,18,22,0.85)' }
+        }
+      >
         <div className="flex size-10 items-center justify-center rounded-[16px] border border-accent/18 bg-accent/[0.10]">
           <div className="size-4 rounded-full border-2 border-accent border-t-transparent animate-spin" />
         </div>

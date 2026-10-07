@@ -1,7 +1,9 @@
+import { invoke as coreInvoke } from '@tauri-apps/api/core';
+import { listen } from '@tauri-apps/api/event';
 import type { Track } from '../stores/player';
 import { usePlayerStore } from '../stores/player';
 import { useSettingsStore } from '../stores/settings';
-import { getCurrentTime, subscribe as subscribeAudioTime } from './audio';
+import { getCurrentTime } from './audio';
 import { trackedInvoke as invoke } from './diagnostics';
 import { getArtistDisplay, getDisplayTitle } from './track-display';
 
@@ -20,7 +22,7 @@ async function ensureConnected(): Promise<boolean> {
   }
   lastConnectAttemptAt = now;
   try {
-    connected = await invoke<boolean>('discord_connect');
+    connected = await coreInvoke<boolean>('discord_connect');
     return connected;
   } catch {
     return false;
@@ -139,7 +141,7 @@ useSettingsStore.subscribe((state, prev) => {
   }
 });
 
-subscribeAudioTime(() => {
+listen<number>('audio:tick', (event) => {
   const { currentTrack, isPlaying } = usePlayerStore.getState();
   if (!currentTrack || !useSettingsStore.getState().discordRpcEnabled) return;
 
@@ -150,7 +152,7 @@ subscribeAudioTime(() => {
 
   if (!isPlaying) return;
 
-  const elapsed = Math.round(getCurrentTime());
+  const elapsed = Math.round(event.payload);
   const drift = Math.abs(elapsed - lastElapsed);
 
   // Re-sync Discord timestamps on manual seek / large jumps without spamming updates every second.

@@ -127,6 +127,13 @@ body,
     animation: npb-eq 900ms ease-in-out infinite;
 }
 
+@media (prefers-reduced-motion: reduce) {
+    .tp[data-playing="true"] .npb-ring,
+    .tp[data-playing="true"] .npb-eq i {
+        animation: none;
+    }
+}
+
 /* ── generic icon button ─────────────────────────────────────── */
 .tp-icon-btn {
     display: grid;

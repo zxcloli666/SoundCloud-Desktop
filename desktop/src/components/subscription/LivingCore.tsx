@@ -1,5 +1,5 @@
 import { memo, useEffect, useRef } from 'react';
-import { usePerfMode } from '../../lib/perf';
+import { isAppIdle, subscribeAppIdle, usePerfMode } from '../../lib/perf';
 import { useSettingsStore } from '../../stores/settings';
 
 /** Vertical position of the core within its region (the dark "well" centre). */
@@ -34,7 +34,7 @@ function hexToRgb(hex: string): [number, number, number] {
  * in a spectrum ring + glowing rim; the centre is a dark well kept readable for
  * overlaid content (price / identity / status). Warm core (user accent) against a
  * fixed cool-violet fringe for depth. Animation is perf-gated: light mode draws a
- * single static frame, and the rAF loop pauses while the window is hidden
+ * single static frame, and the rAF loop pauses while the window is hidden or unfocused
  * (WebView never throttles timers — see CLAUDE.md).
  */
 export const LivingCore = memo(function LivingCore({
@@ -95,7 +95,7 @@ export const LivingCore = memo(function LivingCore({
       canvas.width = Math.max(1, Math.round(W * DPR));
       canvas.height = Math.max(1, Math.round(H * DPR));
       ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-      if (!animate) draw(true);
+      if (!raf) draw(true);
     };
 
     function draw(staticFrame = false) {
@@ -245,11 +245,11 @@ export const LivingCore = memo(function LivingCore({
       raf = requestAnimationFrame(loop);
     };
 
-    const onVis = () => {
-      if (document.visibilityState === 'hidden') {
+    const onIdleChange = () => {
+      if (isAppIdle()) {
         if (raf) cancelAnimationFrame(raf);
         raf = 0;
-      } else if (animate && !raf) {
+      } else if (!raf) {
         raf = requestAnimationFrame(loop);
       }
     };
@@ -258,15 +258,16 @@ export const LivingCore = memo(function LivingCore({
     ro.observe(canvas);
     resize();
 
+    let unsubscribeIdle: (() => void) | undefined;
     if (animate) {
-      raf = requestAnimationFrame(loop);
-      document.addEventListener('visibilitychange', onVis);
+      onIdleChange();
+      unsubscribeIdle = subscribeAppIdle(onIdleChange);
     }
 
     return () => {
       ro.disconnect();
       if (raf) cancelAnimationFrame(raf);
-      document.removeEventListener('visibilitychange', onVis);
+      unsubscribeIdle?.();
     };
   }, [accent, animate, useGlow]);
 

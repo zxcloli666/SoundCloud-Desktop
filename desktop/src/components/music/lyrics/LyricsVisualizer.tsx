@@ -1,5 +1,6 @@
 import {listen} from '@tauri-apps/api/event';
 import React, {useEffect, useRef} from 'react';
+import {isAppIdle} from '../../../lib/perf';
 
 /* ── Fullscreen wave visualizer — driven by real FFT from Rust ────── */
 /* Rust `audio:fft` event delivers 64 log-spaced magnitude bins ~30Hz.
@@ -211,7 +212,7 @@ export const LyricsVisualizer = React.memo(() => {
 
         const unlistenPromise = listen<number[]>('audio:fft', (event) => {
             const bins = event.payload;
-            if (!bins || bins.length === 0) return;
+            if (!bins || bins.length === 0 || isAppIdle()) return;
             const target = targetRef.current;
             const n = Math.min(target.length, bins.length);
             for (let i = 0; i < n; i++) target[i] = bins[i];

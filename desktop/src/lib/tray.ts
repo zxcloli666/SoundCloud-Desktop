@@ -1,8 +1,8 @@
 import {emit, listen} from '@tauri-apps/api/event';
-import {getCurrentWindow} from '@tauri-apps/api/window';
 import { usePlayerStore } from '../stores/player';
 import {api} from './api';
 import {getDuration, handlePrev, seek} from './audio';
+import {trackedInvoke as invoke} from './diagnostics';
 import {isUrnDisliked, toggleDislike} from './dislikes';
 import {art} from './formatters';
 import {invalidateAllLikesCache} from './hooks';
@@ -76,14 +76,22 @@ function emitNp() {
 // Coalesce bursty change sources (volume drag, query-cache churn) to one emit per frame.
 let npScheduled = false;
 
+function flushNp() {
+    if (!npScheduled) return;
+    npScheduled = false;
+    emitNp();
+}
+
 function pushNp() {
     if (npScheduled) return;
     npScheduled = true;
-    requestAnimationFrame(() => {
-        npScheduled = false;
-        emitNp();
-    });
+    if (document.hidden) queueMicrotask(flushNp);
+    else requestAnimationFrame(flushNp);
 }
+
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden) flushNp();
+});
 
 async function toggleLikeCurrent() {
     const tr = usePlayerStore.getState().currentTrack;
@@ -118,13 +126,6 @@ async function toggleDislikeCurrent() {
     if (next) usePlayerStore.getState().next();
     await toggleDislike(queryClient, tr, next);
     pushNp();
-}
-
-async function showMainWindow() {
-    const w = getCurrentWindow();
-    await w.show();
-    await w.unminimize();
-    await w.setFocus();
 }
 
 /* ── Native tray menu (Rust-emitted) ─────────────────────────── */
@@ -178,7 +179,7 @@ listen<{ action: string; value?: number }>('tray:cmd', (event) => {
             void toggleDislikeCurrent();
             break;
         case 'show':
-            void showMainWindow();
+            void invoke('show_main_window');
             break;
     }
     pushNp();

@@ -5,7 +5,7 @@
 //! ядро → бегущий пунктир течения.
 
 import React, {useEffect, useRef, useState} from 'react';
-import {usePerfMode} from '../../../lib/perf';
+import {useAppIdle, usePerfMode} from '../../../lib/perf';
 
 export type AnchorKind = 'node' | 'branch' | 'delta';
 
@@ -106,12 +106,7 @@ export const RiverBraid = React.memo(function RiverBraid({
   const [geo, setGeo] = useState<Geometry | null>(null);
   const rafRef = useRef(0);
   // SMIL не паузится глобальным CSS-гейтом [data-app-hidden] — гасим руками.
-  const [docHidden, setDocHidden] = useState(false);
-  useEffect(() => {
-    const onVisibility = () => setDocHidden(document.visibilityState === 'hidden');
-    document.addEventListener('visibilitychange', onVisibility);
-    return () => document.removeEventListener('visibilitychange', onVisibility);
-  }, []);
+  const idle = useAppIdle();
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: layoutKey намеренно триггерит пересборку пути.
   useEffect(() => {
@@ -176,7 +171,7 @@ export const RiverBraid = React.memo(function RiverBraid({
         />
       )}
       <path d={geo.d} fill="none" stroke="url(#riv-fg)" strokeWidth={1.7} opacity={0.75} />
-      {perf.idleAnim && !docHidden && (
+      {perf.idleAnim && !idle && (
         <>
           <path
             d={geo.d}

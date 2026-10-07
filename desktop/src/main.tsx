@@ -3,11 +3,17 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { ErrorScreen } from './components/ui/ErrorScreen';
 import { changeAppLanguage } from './i18n';
 import { initAuthBridge } from './lib/auth-session';
 import { setupCacheMaintenance } from './lib/cache';
 import { setServerPorts } from './lib/constants';
-import { trackedInvoke as invoke, setupUiWatchdog } from './lib/diagnostics';
+import {
+  describeError,
+  trackedInvoke as invoke,
+  logError,
+  setupUiWatchdog,
+} from './lib/diagnostics';
 import { initEdge } from './lib/edge';
 import { installFpsCap } from './lib/fps-cap';
 import { queryClient } from './lib/query-client';
@@ -56,6 +62,7 @@ function startDeferredRuntime() {
     void import('./lib/audio');
     void import('./lib/queue-autopilot');
     void import('./lib/discord');
+    void import('./lib/perf-probe').then((m) => m.probePerfMode());
     void import('./lib/host-status').then((m) => m.initHostStatus());
   });
 }
@@ -109,4 +116,10 @@ async function bootstrap() {
   void startDeferredRuntime();
 }
 
-void bootstrap();
+bootstrap().catch((error) => {
+  const message = describeError(error);
+  logError(`[Boot] ${message}`);
+  ReactDOM.createRoot(document.getElementById('root')!).render(
+    <ErrorScreen error={new Error(message)} fullscreen />,
+  );
+});

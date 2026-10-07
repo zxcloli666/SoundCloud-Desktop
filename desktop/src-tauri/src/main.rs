@@ -1,46 +1,40 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-/// Apply WebKitGTK workarounds for NVIDIA + Wayland fractional scaling.
-///
-/// Without these, fractional display scaling (e.g. 125%) causes severe
-/// stuttering/freezes in the WebView due to DMABUF/explicit-sync issues
-/// between WebKitGTK and the NVIDIA driver.
-///
-/// Must run BEFORE any GTK/WebKit initialization (i.e. before tauri::Builder).
 #[cfg(target_os = "linux")]
 fn apply_linux_gpu_workarounds() {
+    if std::env::args_os().any(|arg| arg == "--safe-render") {
+        unsafe {
+            std::env::set_var("WEBKIT_DISABLE_DMABUF_RENDERER", "1");
+            std::env::set_var("WEBKIT_DISABLE_COMPOSITING_MODE", "1");
+        }
+        return;
+    }
+
     let is_wayland = std::env::var("WAYLAND_DISPLAY").is_ok()
         || std::env::var("XDG_SESSION_TYPE")
             .map(|v| v == "wayland")
             .unwrap_or(false);
 
-    if !is_wayland {
-        return;
-    }
-
-    // Check for NVIDIA GPU via /proc/driver/nvidia or lspci-style detection
     let has_nvidia = std::path::Path::new("/proc/driver/nvidia/version").exists()
         || std::fs::read_to_string("/proc/modules")
             .map(|m| m.contains("nvidia"))
             .unwrap_or(false);
 
-    if !has_nvidia {
-        return;
+    if is_wayland || has_nvidia {
+        set_env_if_unset("WEBKIT_DMABUF_RENDERER_FORCE_SHM", "1");
     }
 
-    println!("[GPU] NVIDIA + Wayland detected, applying WebKitGTK workarounds");
-
-    // Enable DMABUF renderer (WebKitGTK may disable it on NVIDIA by default)
-    if std::env::var("WEBKIT_DISABLE_DMABUF_RENDERER").is_err() {
-        // FIXME: Audit that the environment access only happens in single-threaded code.
-        unsafe { std::env::set_var("WEBKIT_DISABLE_DMABUF_RENDERER", "0") };
+    if is_wayland && has_nvidia {
+        set_env_if_unset("WEBKIT_DISABLE_DMABUF_RENDERER", "0");
+        set_env_if_unset("__NV_DISABLE_EXPLICIT_SYNC", "1");
     }
+}
 
-    // Disable NVIDIA explicit sync — known to cause stuttering with fractional scaling
-    if std::env::var("__NV_DISABLE_EXPLICIT_SYNC").is_err() {
-        // FIXME: Audit that the environment access only happens in single-threaded code.
-        unsafe { std::env::set_var("__NV_DISABLE_EXPLICIT_SYNC", "1") };
+#[cfg(target_os = "linux")]
+fn set_env_if_unset(key: &str, value: &str) {
+    if std::env::var_os(key).is_none() {
+        unsafe { std::env::set_var(key, value) };
     }
 }
 

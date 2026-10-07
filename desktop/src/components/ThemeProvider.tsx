@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import {applyAccentVars, applyBgVars, applyPerfMode} from '../lib/apply-theme';
-import {setupVisibilityGate} from '../lib/perf';
+import {setupFocusGate, setupVisibilityGate} from '../lib/perf';
 import { useSettingsStore } from '../stores/settings';
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
@@ -12,6 +12,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   // (the WebView does not throttle timers/rAF). Install once.
   useEffect(() => {
     setupVisibilityGate();
+    setupFocusGate();
   }, []);
 
   // Drives index.css `[data-perf="…"]` rules (glass blur radii, idle-animation gates).

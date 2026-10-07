@@ -8,7 +8,7 @@ mod rt;
 mod shared;
 mod track_cache;
 
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 use tauri::Manager;
 
 use discord::DiscordState;
@@ -17,15 +17,14 @@ use network::server::ServerState;
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 #[cfg_attr(feature = "cef", tauri::cef_entry_point)]
 pub fn run() {
+    #[cfg(all(windows, not(feature = "cef")))]
+    app::webview2::exit_if_runtime_missing();
+
     let builder = tauri::Builder::<rt::Rt>::new();
 
     builder
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
-            if let Some(w) = app.get_webview_window("main") {
-                let _ = w.show();
-                let _ = w.unminimize();
-                let _ = w.set_focus();
-            }
+            app::visibility::show_main(app);
         }))
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_fs::init())
@@ -46,6 +45,9 @@ pub fn run() {
             });
         })
         .setup(move |app| {
+            #[cfg(all(windows, not(feature = "cef")))]
+            app::webview2::exit_if_main_window_missing(app);
+
             let cache_dir = app
                 .path()
                 .app_cache_dir()
@@ -110,11 +112,10 @@ pub fn run() {
                 proxy_port,
             }));
             app::diagnostics::mark_session_started(app.handle());
+            app::diagnostics::log_linux_render_env(app.handle());
             app::diagnostics::start_linux_fd_monitor(app.handle());
             network::health::start(data_dir.clone(), app.handle().clone(), rt_handle.clone());
-            app.manage(Arc::new(DiscordState {
-                client: Mutex::new(None),
-            }));
+            app.manage(Arc::new(DiscordState::default()));
 
             let ffmpeg_dir = cache_dir.join("ffmpeg");
             std::fs::create_dir_all(&ffmpeg_dir).ok();
@@ -155,8 +156,13 @@ pub fn run() {
         })
         .on_window_event(|window, event| match event {
             tauri::WindowEvent::CloseRequested { api, .. } => {
-                api.prevent_close();
-                let _ = window.hide();
+                if window.label() == "main" && !app::tray::is_available() {
+                    app::tray::run_action(window.app_handle(), "quit");
+                } else {
+                    api.prevent_close();
+                    let _ = window.hide();
+                    app::visibility::set_window_page_visible(window, false);
+                }
             }
             // Transient popover (tray left-click) dismisses on blur; a pinned one
             // (opened from the "Mini player" menu) stays put — closed only by its ✕.
@@ -166,6 +172,7 @@ pub fn run() {
                     let st = window.app_handle().state::<app::popover::TrayState>();
                     if !st.is_pinned() {
                         let _ = window.hide();
+                        app::visibility::set_window_page_visible(window, false);
                         st.mark_hidden();
                     }
                 }
@@ -174,6 +181,8 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             network::server::get_server_ports,
             app::diagnostics::diagnostics_log,
+            app::visibility::show_main_window,
+            app::popover::tray_popover_hide,
             discord::discord_connect,
             discord::discord_disconnect,
             discord::discord_set_activity,

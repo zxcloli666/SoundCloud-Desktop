@@ -99,6 +99,8 @@ SoundCloud заблокирован Роскомнадзором — веб-ве
 
 Требования: Windows 10 (1809+) или Windows 11
 
+Нужен Microsoft Edge WebView2 Runtime. Установщики ставят его сами, для portable-версии и урезанных сборок Windows поставь [Evergreen Standalone Installer](https://developer.microsoft.com/microsoft-edge/webview2/) от имени администратора. Сам Edge не нужен.
+
 ### Linux
 
 | Формат | Архитектура | Описание |
@@ -115,6 +117,8 @@ SoundCloud заблокирован Роскомнадзором — веб-ве
 chmod +x soundcloud-desktop-*.AppImage
 ./soundcloud-desktop-*.AppImage
 ```
+
+Белое или пустое окно при запуске: запусти с флагом `--safe-render` (во Flatpak это пункт "Безопасный режим отрисовки" / "Safe render mode" в меню ярлыка). Лог: `~/.local/share/com.soundcloud.desktop/logs/desktop.log`, во Flatpak `~/.var/app/io.github.zxcloli666.SoundcloudDesktop/data/com.soundcloud.desktop/logs/desktop.log`.
 
 ### macOS
 

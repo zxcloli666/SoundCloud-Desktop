@@ -82,11 +82,34 @@
     display: none;
 }
 
+[data-perf="light"] *,
+[data-perf="light"] *::before,
+[data-perf="light"] *::after {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
 /* Global idle-animation gate — the WebView never throttles a hidden window, so
    pause every animation while minimized (all modes, zero visual change while shown). */
 [data-app-hidden="1"] *,
 [data-app-hidden="1"] *::before,
 [data-app-hidden="1"] *::after {
+    animation-play-state: paused !important;
+}
+
+[data-app-idle="1"] [style*="infinite"],
+[data-app-idle="1"] .skeleton-shimmer,
+[data-app-idle="1"] .soundwave-bar,
+[data-app-idle="1"] .vp-chev,
+[data-app-idle="1"] .vp-mote,
+[data-app-idle="1"] .qr-aurora,
+[data-app-idle="1"] .qr-rim,
+[data-app-idle="1"] .lyric-line[data-state="active"] .note-gradient-text,
+[data-app-idle="1"] .npb-dock[data-playing="true"] .npb-ring,
+[data-app-idle="1"] .npb-dock[data-playing="true"] .npb-eq i,
+[data-app-idle="1"] .npb-dock[data-playing="true"] .npb-play::after,
+[data-app-idle="1"] .tp[data-playing="true"] .npb-ring,
+[data-app-idle="1"] .tp[data-playing="true"] .npb-eq i {
     animation-play-state: paused !important;
 }
 
@@ -99,7 +122,10 @@
 [data-perf="light"] .vp-mote,
 [data-perf="light"] .lyric-line[data-state="active"] .note-gradient-text,
 [data-perf="light"] .npb-dock[data-playing="true"] .npb-ring,
-[data-perf="light"] .npb-dock[data-playing="true"] .npb-play::after {
+[data-perf="light"] .npb-dock[data-playing="true"] .npb-eq i,
+[data-perf="light"] .npb-dock[data-playing="true"] .npb-play::after,
+[data-perf="light"] .tp[data-playing="true"] .npb-ring,
+[data-perf="light"] .tp[data-playing="true"] .npb-eq i {
     animation: none !important;
 }
 

@@ -9,6 +9,7 @@
 use std::sync::Mutex;
 use std::time::{Duration, Instant};
 
+use crate::app::visibility;
 use crate::rt::{AppHandle, WebviewWindow};
 use tauri::{Manager, Monitor, PhysicalPosition, WebviewUrl, WebviewWindowBuilder};
 
@@ -149,6 +150,7 @@ fn show(app: &AppHandle, cursor: Option<(f64, f64)>, pinned: bool) {
     // re-open (honored on Win/Mac; on Wayland/Hyprland the compositor owns stacking,
     // so pair this with a `pin` windowrule).
     let _ = win.set_always_on_top(true);
+    visibility::set_page_visible(&win, true);
 
     #[cfg(not(feature = "cef"))]
     {
@@ -187,6 +189,7 @@ fn hide_if_visible(app: &AppHandle) -> bool {
     if let Some(win) = app.get_webview_window(LABEL)
         && win.is_visible().unwrap_or(false) {
             let _ = win.hide();
+            visibility::set_page_visible(&win, false);
             app.state::<TrayState>().mark_hidden();
             return true;
         }
@@ -214,4 +217,12 @@ pub fn open_pinned(app: &AppHandle) {
         return;
     }
     show(app, None, true);
+}
+
+#[tauri::command]
+pub async fn tray_popover_hide(app: AppHandle) {
+    let handle = app.clone();
+    let _ = app.run_on_main_thread(move || {
+        hide_if_visible(&handle);
+    });
 }
