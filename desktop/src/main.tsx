@@ -63,6 +63,7 @@ function startDeferredRuntime() {
     void import('./lib/queue-autopilot');
     void import('./lib/discord');
     void import('./lib/scrobble/tracker');
+    void import('./lib/obs/bridge');
     void import('./lib/perf-probe').then((m) => m.probePerfMode());
     void import('./lib/host-status').then((m) => m.initHostStatus());
   });
