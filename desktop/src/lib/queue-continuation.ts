@@ -14,6 +14,7 @@ import {shuffleArray, type Track, usePlayerStore} from '../stores/player';
 import {useSettingsStore} from '../stores/settings';
 import {api} from './api';
 import {fetchAllLikedTracks, fetchAllPlaylistTracks} from './hooks';
+import {trackUrn} from './ids';
 import {fetchSmartWave} from './soundwave';
 
 export interface QueueContinuationSource {
@@ -206,9 +207,9 @@ function createTrackWaveContinuationSource(seedId: string): QueueContinuationSou
 }
 
 export async function armTrackWaveContinuation(): Promise<void> {
-  const seedId = usePlayerStore.getState().currentTrack?.urn.split(':').pop();
-  if (!seedId) return;
-  const source = createTrackWaveContinuationSource(seedId);
+  const seedUrn = trackUrn(usePlayerStore.getState().currentTrack?.urn);
+  if (!seedUrn) return;
+  const source = createTrackWaveContinuationSource(seedUrn);
   setQueueContinuationSource(source);
   const first = await source.next();
   if (active !== source) return;
