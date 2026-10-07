@@ -1,5 +1,5 @@
 import {useQuery, useQueryClient} from '@tanstack/react-query';
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {api} from '../../lib/api';
 import {playlistScope} from '../../lib/bulk-cache';
@@ -15,6 +15,7 @@ import {
     Shuffle,
     Trash2,
 } from '../../lib/icons';
+import {rawPlaylistCover} from '../../lib/playlist-cover';
 import type {Track} from '../../stores/player';
 import {SaveCollectionMenu} from '../collection-save/SaveCollectionMenu';
 import {SharingToggle} from '../music/SharingToggle';
@@ -139,6 +140,16 @@ export const PlaylistActions = React.memo(function PlaylistActions({
     const {t} = useTranslation();
     const playlistUrn = playlist.urn;
     const collect = useCallback(() => fetchAllPlaylistTracks(playlistUrn), [playlistUrn]);
+    const coverSource = tracks.length > 0 ? tracks : playlist.tracks;
+    const meta = useMemo(
+        () => ({
+            kind: 'playlist' as const,
+            title: playlist.title,
+            author: playlist.user.username,
+            artworkUrl: rawPlaylistCover(playlist.artwork_url, coverSource),
+        }),
+        [playlist.title, playlist.user.username, playlist.artwork_url, coverSource],
+    );
 
     return (
         <div className="flex items-center gap-3 flex-wrap justify-center lg:justify-start">
@@ -197,7 +208,7 @@ export const PlaylistActions = React.memo(function PlaylistActions({
                 <CopyIconAction url={playlist.permalink_url}/>
                 <SaveCollectionMenu
                     scope={playlistScope(playlist.urn)}
-                    title={playlist.title}
+                    meta={meta}
                     tracks={tracks}
                     trackCount={trackCount}
                     collect={collect}

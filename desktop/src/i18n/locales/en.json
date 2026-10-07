@@ -602,7 +602,16 @@
     "bulkBusy": "Another download is already running. Wait for it or cancel it",
     "bulkBusy_likes": "Your likes are downloading right now. Wait for it or cancel it",
     "bulkBusy_playlist": "Another playlist is downloading right now. Wait for it or cancel it",
-    "bulkBusy_album": "An album is downloading right now. Wait for it or cancel it"
+    "bulkBusy_album": "An album is downloading right now. Wait for it or cancel it",
+    "playlistsTitle": "Playlists",
+    "playlistsEmpty": "Save a playlist or album with the Download button on its page and it shows up here",
+    "kind_playlist": "Playlist",
+    "kind_album": "Album",
+    "collectionSaved": "{{saved}} of {{total}} offline",
+    "collectionRemove": "Remove from offline",
+    "collectionRemoveConfirm": "Delete the files? Likes and other playlists stay",
+    "sortPlaylist": "Playlist order",
+    "openOfflineCopy": "Open the offline copy"
   },
   "settings": {
     "title": "Settings",

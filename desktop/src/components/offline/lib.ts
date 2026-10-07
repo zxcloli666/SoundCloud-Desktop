@@ -3,8 +3,9 @@
 
 import type {CacheInventoryEntry} from '../../lib/cache';
 import {idOf} from '../../lib/ids';
+import type {OfflineCollection} from '../../lib/offline-index';
 import type {Track} from '../../stores/player';
-import type {OfflineEntry, SortMode} from './types';
+import type {CollectionView, OfflineEntry, SortMode} from './types';
 
 const DURATION_TOLERANCE_MS = 4000;
 const DURATION_TOLERANCE_FRAC = 0.04;
@@ -98,4 +99,44 @@ export function sortEntries(
     size: (a, b) => (b.inv?.bytes ?? 0) - (a.inv?.bytes ?? 0),
   };
   return [...entries].sort(cmp[mode]);
+}
+
+export function buildCollectionViews(
+  collections: OfflineCollection[],
+  invByUrn: Map<string, CacheInventoryEntry>,
+): CollectionView[] {
+  return collections.map((collection) => {
+    let savedCount = 0;
+    let bytes = 0;
+    for (const urn of collection.trackUrns) {
+      const inv = invByUrn.get(urn);
+      if (!inv) continue;
+      savedCount += 1;
+      bytes += inv.bytes;
+    }
+    return { ...collection, total: collection.trackUrns.length, savedCount, bytes };
+  });
+}
+
+export function buildCollectionEntries(
+  collection: OfflineCollection,
+  trackByUrn: Map<string, Track>,
+  invByUrn: Map<string, CacheInventoryEntry>,
+): OfflineEntry[] {
+  const entries: OfflineEntry[] = [];
+  for (const urn of collection.trackUrns) {
+    const inv = invByUrn.get(urn) ?? null;
+    const track = trackByUrn.get(urn);
+    if (track) entries.push({ urn, track, inv });
+    else if (inv) entries.push({ urn, track: stubTrack(inv), inv, stub: true });
+  }
+  return entries;
+}
+
+export function filterCollections(views: CollectionView[], query: string): CollectionView[] {
+  const q = query.trim().toLowerCase();
+  if (!q) return views;
+  return views.filter(
+    (v) => v.title.toLowerCase().includes(q) || v.author.toLowerCase().includes(q),
+  );
 }

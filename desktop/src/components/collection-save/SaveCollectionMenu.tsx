@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { type BulkCacheProgress, bulkCacheErrorText, useBulkCache } from '../../lib/bulk-cache';
+import { type OfflineCollectionMeta, rememberCollection } from '../../lib/offline-index';
 import { usePerfMode } from '../../lib/perf';
 import type { Track } from '../../stores/player';
 import { CacheAction } from './CacheAction';
@@ -13,7 +14,7 @@ import { useCollectionExport } from './useCollectionExport';
 
 export interface SaveCollectionProps {
   scope: string;
-  title: string;
+  meta: OfflineCollectionMeta;
   tracks: Track[];
   trackCount: number;
   collect: () => Promise<Track[]>;
@@ -44,7 +45,7 @@ function useFinishToast(refresh: () => void) {
 
 export const SaveCollectionMenu = React.memo(function SaveCollectionMenu({
   scope,
-  title,
+  meta,
   tracks,
   trackCount,
   collect,
@@ -55,8 +56,13 @@ export const SaveCollectionMenu = React.memo(function SaveCollectionMenu({
   const [open, setOpen] = useState(false);
   const coverage = useSavedCoverage(tracks);
   const onFinish = useFinishToast(() => void coverage.refresh());
-  const bulk = useBulkCache(scope, collect, onFinish);
-  const exporter = useCollectionExport(scope, title, collect, open);
+  const collectForOffline = useCallback(async () => {
+    const collected = await collect();
+    await rememberCollection(scope, meta, collected);
+    return collected;
+  }, [collect, scope, meta]);
+  const bulk = useBulkCache(scope, collectForOffline, onFinish);
+  const exporter = useCollectionExport(scope, meta.title, collect, open);
   const total = Math.max(trackCount, tracks.length);
   const estimated = useMemo(() => estimateBytes(tracks, total), [tracks, total]);
 
@@ -111,7 +117,7 @@ export const SaveCollectionMenu = React.memo(function SaveCollectionMenu({
             <div className="text-[10px] font-bold uppercase tracking-[0.24em] text-white/35">
               {t('collectionSave.kicker')}
             </div>
-            <div className="mt-1 truncate text-[14px] font-bold text-white/90">{title}</div>
+            <div className="mt-1 truncate text-[14px] font-bold text-white/90">{meta.title}</div>
           </div>
           <div className="flex flex-col gap-1.5">
             <CacheAction

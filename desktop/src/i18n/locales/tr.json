@@ -513,7 +513,16 @@
     "bulkBusy": "Başka bir indirme zaten sürüyor. Bitmesini bekleyin ya da iptal edin",
     "bulkBusy_likes": "Beğenileriniz şu anda indiriliyor. Bekleyin ya da iptal edin",
     "bulkBusy_playlist": "Başka bir çalma listesi şu anda indiriliyor. Bekleyin ya da iptal edin",
-    "bulkBusy_album": "Bir albüm şu anda indiriliyor. Bekleyin ya da iptal edin"
+    "bulkBusy_album": "Bir albüm şu anda indiriliyor. Bekleyin ya da iptal edin",
+    "playlistsTitle": "Çalma listeleri",
+    "playlistsEmpty": "Bir çalma listesini ya da albümü sayfasındaki İndir düğmesiyle kaydedin, burada görünür",
+    "kind_playlist": "Çalma listesi",
+    "kind_album": "Albüm",
+    "collectionSaved": "{{saved}} / {{total}} çevrimdışı",
+    "collectionRemove": "Çevrimdışından kaldır",
+    "collectionRemoveConfirm": "Dosyalar silinsin mi? Beğeniler ve diğer listeler kalır",
+    "sortPlaylist": "Liste sırası",
+    "openOfflineCopy": "Çevrimdışı kopyayı aç"
   },
   "settings": {
     "title": "Ayarlar",

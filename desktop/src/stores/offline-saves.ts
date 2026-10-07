@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 import { create } from 'zustand';
 import i18n from '../i18n';
 import { expectedDurationMs, getCacheInfo, saveTrackOffline } from '../lib/cache';
-import { rememberTracks } from '../lib/offline-index';
+import { rememberPinned, rememberTracks } from '../lib/offline-index';
 import type { Track } from './player';
 
 interface OfflineSavesState {
@@ -68,6 +68,7 @@ export async function saveOffline(track: Track, refetch = false): Promise<boolea
       track._scd_meta?.storage_quality,
     );
     setCached(urn, true);
+    void rememberPinned(urn);
     toast.success(i18n.t(refetch ? 'track.offlineRefetched' : 'track.offlineSaved'));
     return true;
   } catch (error) {

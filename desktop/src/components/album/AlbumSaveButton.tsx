@@ -9,13 +9,22 @@ function AlbumSaveButtonImpl({ album }: { album: AlbumDetail }) {
     [album.tracks],
   );
   const collect = useCallback(async () => playable, [playable]);
+  const meta = useMemo(
+    () => ({
+      kind: 'album' as const,
+      title: album.title,
+      author: album.primary_artist?.name ?? '',
+      artworkUrl: album.cover_url ?? null,
+    }),
+    [album.title, album.primary_artist?.name, album.cover_url],
+  );
 
   if (playable.length === 0) return null;
 
   return (
     <SaveCollectionMenu
       scope={albumScope(album.id)}
-      title={album.title}
+      meta={meta}
       tracks={playable}
       trackCount={playable.length}
       collect={collect}

@@ -1,7 +1,8 @@
 import type {CacheInventoryEntry} from '../../lib/cache';
+import type {OfflineCollection} from '../../lib/offline-index';
 import type {Track} from '../../stores/player';
 
-export type OfflineSection = 'likes' | 'cached';
+export type OfflineSection = 'likes' | 'cached' | 'playlists';
 
 export type SortMode = 'custom' | 'recent' | 'title' | 'artist' | 'duration' | 'size';
 
@@ -12,4 +13,10 @@ export interface OfflineEntry {
   track: Track;
   inv: CacheInventoryEntry | null;
   stub?: boolean;
+}
+
+export interface CollectionView extends OfflineCollection {
+  total: number;
+  savedCount: number;
+  bytes: number;
 }

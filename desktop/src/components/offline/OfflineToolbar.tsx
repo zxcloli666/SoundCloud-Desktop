@@ -8,7 +8,10 @@ import type {OfflineSection, SortMode} from './types';
 const SORT_MODES: SortMode[] = ['custom', 'recent', 'title', 'artist', 'duration', 'size'];
 
 function sortLabelKey(mode: SortMode, section: OfflineSection): string {
-  if (mode === 'custom') return section === 'likes' ? 'offline.sortLiked' : 'offline.sortCustom';
+  if (mode === 'custom') {
+    if (section === 'likes') return 'offline.sortLiked';
+    return section === 'playlists' ? 'offline.sortPlaylist' : 'offline.sortCustom';
+  }
   return `offline.sort_${mode}`;
 }
 
@@ -81,6 +84,7 @@ export const OfflineToolbar = React.memo(function OfflineToolbar({
   onSection,
   likesCount,
   cachedCount,
+  playlistsCount,
   playableCount,
   onPlayAll,
   onShuffle,
@@ -93,6 +97,7 @@ export const OfflineToolbar = React.memo(function OfflineToolbar({
   onSection: (s: OfflineSection) => void;
   likesCount: number;
   cachedCount: number;
+  playlistsCount: number;
   playableCount: number;
   onPlayAll: () => void;
   onShuffle: () => void;
@@ -124,6 +129,7 @@ export const OfflineToolbar = React.memo(function OfflineToolbar({
     <div className="flex flex-wrap items-center gap-2.5">
       <div className="flex gap-0.5 rounded-[11px] border border-white/[0.08] bg-white/[0.02] p-[3px]">
         {tab('likes', t('offline.likesTitle'), likesCount)}
+        {tab('playlists', t('offline.playlistsTitle'), playlistsCount)}
         {tab('cached', t('offline.cachedTitle'), cachedCount)}
       </div>
 

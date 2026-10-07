@@ -4,20 +4,39 @@ import type {Track} from '../stores/player';
 const BASE_DIR = BaseDirectory.AppData;
 const INDEX_PATH = 'offline-index.json';
 
+export type OfflineCollectionKind = 'playlist' | 'album';
+
+export interface OfflineCollectionMeta {
+  kind: OfflineCollectionKind;
+  title: string;
+  author: string;
+  artworkUrl: string | null;
+}
+
+export interface OfflineCollection extends OfflineCollectionMeta {
+  scope: string;
+  trackUrns: string[];
+  savedAt: number;
+}
+
 interface OfflineIndex {
   likedUrns: string[];
   tracksByUrn: Record<string, Track>;
   updatedAt: number | null;
   /** User-arranged order of the cached list ("Свой порядок" sort mode). */
   cacheOrder: string[];
+  collections: Record<string, OfflineCollection>;
+  pinnedUrns: string[];
 }
 
-const EMPTY_INDEX: OfflineIndex = {
+const emptyIndex = (): OfflineIndex => ({
   likedUrns: [],
   tracksByUrn: {},
   updatedAt: null,
   cacheOrder: [],
-};
+  collections: {},
+  pinnedUrns: [],
+});
 
 let indexCache: OfflineIndex | null = null;
 let loadPromise: Promise<OfflineIndex> | null = null;
@@ -43,7 +62,7 @@ async function readIndexFile(): Promise<OfflineIndex> {
 
   try {
     if (!(await exists(INDEX_PATH, { baseDir: BASE_DIR }))) {
-      return EMPTY_INDEX;
+      return emptyIndex();
     }
 
     const raw = await readTextFile(INDEX_PATH, { baseDir: BASE_DIR });
@@ -53,9 +72,11 @@ async function readIndexFile(): Promise<OfflineIndex> {
       tracksByUrn: parsed.tracksByUrn ?? {},
       updatedAt: parsed.updatedAt ?? null,
       cacheOrder: Array.isArray(parsed.cacheOrder) ? parsed.cacheOrder : [],
+      collections: parsed.collections ?? {},
+      pinnedUrns: Array.isArray(parsed.pinnedUrns) ? parsed.pinnedUrns : [],
     };
   } catch {
-    return EMPTY_INDEX;
+    return emptyIndex();
   }
 }
 
@@ -150,4 +171,57 @@ export async function saveCacheOrder(urns: string[]) {
   const index = await loadIndex();
   index.cacheOrder = urns;
   schedulePersist();
+}
+
+export async function rememberPinned(urn: string) {
+  const index = await loadIndex();
+  if (index.pinnedUrns.includes(urn)) return;
+  index.pinnedUrns = [...index.pinnedUrns, urn];
+  schedulePersist();
+}
+
+export async function rememberCollection(
+  scope: string,
+  meta: OfflineCollectionMeta,
+  tracks: Track[],
+) {
+  const index = await loadIndex();
+  for (const track of tracks) {
+    if (track?.urn) index.tracksByUrn[track.urn] = cloneTrack(track);
+  }
+  index.collections = {
+    ...index.collections,
+    [scope]: {
+      ...meta,
+      scope,
+      trackUrns: tracks.filter((track) => track?.urn).map((track) => track.urn),
+      savedAt: Date.now(),
+    },
+  };
+  schedulePersist();
+}
+
+export async function getOfflineCollections(): Promise<OfflineCollection[]> {
+  const index = await loadIndex();
+  return Object.values(index.collections).sort((a, b) => b.savedAt - a.savedAt);
+}
+
+export async function getOfflineCollection(scope: string): Promise<OfflineCollection | null> {
+  const index = await loadIndex();
+  return index.collections[scope] ?? null;
+}
+
+export async function forgetCollection(scope: string): Promise<string[]> {
+  const index = await loadIndex();
+  const collection = index.collections[scope];
+  if (!collection) return [];
+  const { [scope]: _, ...rest } = index.collections;
+  index.collections = rest;
+  const kept = new Set([
+    ...index.likedUrns,
+    ...index.pinnedUrns,
+    ...Object.values(rest).flatMap((c) => c.trackUrns),
+  ]);
+  schedulePersist();
+  return collection.trackUrns.filter((urn) => !kept.has(urn));
 }

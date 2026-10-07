@@ -5,6 +5,7 @@ import {useTranslation} from 'react-i18next';
 import {useNavigate, useParams} from 'react-router-dom';
 import {toast} from 'sonner';
 import {useShallow} from 'zustand/shallow';
+import {OfflineCopyLink} from '../components/offline/OfflineCopyLink';
 import {CrateLedger} from '../components/playlist/CrateLedger';
 import {PLAYLIST_KEYFRAMES} from '../components/playlist/keyframes';
 import {MoreCrates} from '../components/playlist/MoreCrates';
@@ -15,6 +16,7 @@ import {usePlaylistAura} from '../components/playlist/usePlaylistAura';
 import {Atmosphere} from '../components/search/Atmosphere';
 import {LoadErrorState, RefreshPendingHint} from '../components/ui/LoadErrorState';
 import {SyncNotice, syncNoticeOf} from '../components/ui/SyncNotice';
+import {playlistScope} from '../lib/bulk-cache';
 import {
     useDeletePlaylist,
     useInfiniteScroll,
@@ -294,13 +296,14 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
 
   if (!playlist && playlistFailed) {
     return (
-      <div className="relative min-h-full w-full flex items-center justify-center">
+      <div className="relative min-h-full w-full flex flex-col items-center justify-center gap-5">
         {perf.atmosphere && <Atmosphere />}
         <LoadErrorState
           error={playlistError}
           retrying={playlistFetching}
           onRetry={() => void refetchPlaylist()}
         />
+        {urn && <OfflineCopyLink scope={playlistScope(urn)} />}
       </div>
     );
   }

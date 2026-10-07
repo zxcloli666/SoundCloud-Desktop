@@ -1,10 +1,17 @@
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import {useNavigate} from 'react-router-dom';
+import {useLocation, useNavigate} from 'react-router-dom';
 import {toast} from 'sonner';
+import {CollectionGrid} from '../components/offline/CollectionGrid';
+import {CollectionHeader} from '../components/offline/CollectionHeader';
 import {ForgeModule} from '../components/offline/ForgeModule';
 import {OFFLINE_KEYFRAMES} from '../components/offline/keyframes';
-import {filterEntries, sortEntries} from '../components/offline/lib';
+import {
+  buildCollectionEntries,
+  filterCollections,
+  filterEntries,
+  sortEntries,
+} from '../components/offline/lib';
 import {OfflineHead} from '../components/offline/OfflineHead';
 import {OfflineToolbar} from '../components/offline/OfflineToolbar';
 import {OfflineTrackList} from '../components/offline/OfflineTrackList';
@@ -34,6 +41,7 @@ function shuffled<T>(items: T[]): T[] {
 export const OfflinePage = React.memo(() => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const perf = usePerfMode();
   const lib = useOfflineLibrary();
   const forge = useForgeStatus();
@@ -44,9 +52,20 @@ export const OfflinePage = React.memo(() => {
   const backendReachable = useAppStatusStore((s) => s.navigatorOnline && s.backendReachable);
   const [tryingOnline, setTryingOnline] = useState(false);
 
-  const [section, setSection] = useState<OfflineSection>('likes');
+  const initialScope = (location.state as { collection?: string } | null)?.collection ?? null;
+  const [section, setSection] = useState<OfflineSection>(initialScope ? 'playlists' : 'likes');
+  const [openScope, setOpenScope] = useState<string | null>(initialScope);
+  const openView = useMemo(
+    () => lib.collectionViews.find((v) => v.scope === openScope) ?? null,
+    [lib.collectionViews, openScope],
+  );
   const [sort, setSort] = useState<SortMode>('custom');
   const [query, setQuery] = useState('');
+  const showGrid = section === 'playlists' && openView === null;
+  const gridViews = useMemo(
+    () => filterCollections(lib.collectionViews, query),
+    [lib.collectionViews, query],
+  );
 
   useEffect(() => {
     if (section === 'likes' && lib.likesEntries.length === 0 && lib.cachedEntries.length > 0) {
@@ -69,10 +88,38 @@ export const OfflinePage = React.memo(() => {
   }, [forgeCounts, lib.refreshInventory]);
 
   const entries = useMemo(() => {
-    const base = section === 'likes' ? lib.likesEntries : lib.cachedEntries;
+    const base =
+      section === 'likes'
+        ? lib.likesEntries
+        : section === 'cached'
+          ? lib.cachedEntries
+          : openView
+            ? buildCollectionEntries(openView, lib.trackByUrn, lib.invByUrn)
+            : [];
     const filtered = filterEntries(base, query);
     return sortEntries(filtered, sort, section === 'cached' ? lib.cacheOrder : null);
-  }, [section, sort, query, lib.likesEntries, lib.cachedEntries, lib.cacheOrder]);
+  }, [
+    section,
+    sort,
+    query,
+    openView,
+    lib.likesEntries,
+    lib.cachedEntries,
+    lib.cacheOrder,
+    lib.trackByUrn,
+    lib.invByUrn,
+  ]);
+
+  const handleSection = useCallback((next: OfflineSection) => {
+    setSection(next);
+    setOpenScope(null);
+  }, []);
+
+  const handleRemoveCollection = useCallback(() => {
+    if (!openScope) return;
+    setOpenScope(null);
+    void lib.removeCollection(openScope);
+  }, [openScope, lib.removeCollection]);
 
   const playableTracks = useMemo(
     () => entries.filter((e) => e.inv !== null).map((e) => e.track),
@@ -148,7 +195,9 @@ export const OfflinePage = React.memo(() => {
     ? t('offline.searchEmpty')
     : section === 'likes'
       ? t('offline.likesEmpty')
-      : t('offline.cachedEmpty');
+      : section === 'playlists'
+        ? t('offline.playlistsEmpty')
+        : t('offline.cachedEmpty');
 
   return (
     <div className="relative min-h-full px-5 py-6 md:px-8">
@@ -207,9 +256,10 @@ export const OfflinePage = React.memo(() => {
 
             <OfflineToolbar
               section={section}
-              onSection={setSection}
+              onSection={handleSection}
               likesCount={lib.likesEntries.length}
               cachedCount={lib.cachedEntries.length}
+              playlistsCount={lib.collectionViews.length}
               playableCount={playableTracks.length}
               onPlayAll={handlePlayAll}
               onShuffle={handleShuffle}
@@ -219,19 +269,31 @@ export const OfflinePage = React.memo(() => {
               onSort={setSort}
             />
 
-            <OfflineTrackList
-              entries={entries}
-              sortable={sortable}
-              likesSection={section === 'likes'}
-              forgingUrns={forgingUrns}
-              downloads={lib.downloads}
-              emptyText={emptyText}
-              onPlay={handlePlay}
-              onDownload={handleDownload}
-              onRefetch={handleRefetch}
-              onRemove={lib.removeCached}
-              onReorder={lib.reorderCached}
-            />
+            {openView && (
+              <CollectionHeader
+                view={openView}
+                onBack={() => setOpenScope(null)}
+                onRemove={handleRemoveCollection}
+              />
+            )}
+
+            {showGrid ? (
+              <CollectionGrid views={gridViews} emptyText={emptyText} onOpen={setOpenScope} />
+            ) : (
+              <OfflineTrackList
+                entries={entries}
+                sortable={sortable}
+                likesSection={section === 'likes'}
+                forgingUrns={forgingUrns}
+                downloads={lib.downloads}
+                emptyText={emptyText}
+                onPlay={handlePlay}
+                onDownload={handleDownload}
+                onRefetch={handleRefetch}
+                onRemove={lib.removeCached}
+                onReorder={lib.reorderCached}
+              />
+            )}
           </>
         )}
       </div>

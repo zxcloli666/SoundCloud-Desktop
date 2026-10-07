@@ -6,10 +6,18 @@ import {listen} from '@tauri-apps/api/event';
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {type CacheInventoryEntry, getCacheInventory, removeCachedTrack} from '../../lib/cache';
 import {fetchAllLikedTracks} from '../../lib/hooks';
-import {getCacheOrder, getOfflineLikedTracks, getOfflineTracksByUrns, saveCacheOrder,} from '../../lib/offline-index';
+import {
+  forgetCollection,
+  getCacheOrder,
+  getOfflineCollections,
+  getOfflineLikedTracks,
+  getOfflineTracksByUrns,
+  type OfflineCollection,
+  saveCacheOrder,
+} from '../../lib/offline-index';
 import {useAppMode} from '../../stores/app-status';
 import type {Track} from '../../stores/player';
-import {buildCachedEntries, buildLikesEntries} from './lib';
+import {buildCachedEntries, buildCollectionViews, buildLikesEntries} from './lib';
 
 const DOWNLOADS_FLUSH_MS = 250;
 const INVENTORY_REFRESH_DEBOUNCE_MS = 1500;
@@ -22,6 +30,8 @@ export function useOfflineLibrary() {
   const [resolvedTracks, setResolvedTracks] = useState<Track[]>([]);
   const [cacheOrder, setCacheOrder] = useState<string[]>([]);
   const [downloads, setDownloads] = useState<Record<string, number>>({});
+  const [collections, setCollections] = useState<OfflineCollection[]>([]);
+  const [collectionTracks, setCollectionTracks] = useState<Track[]>([]);
   const bgFetchDone = useRef(false);
   const disposed = useRef(false);
 
@@ -47,6 +57,18 @@ export function useOfflineLibrary() {
     }
   }, []);
 
+  const refreshCollections = useCallback(async () => {
+    try {
+      const list = await getOfflineCollections();
+      const tracks = await getOfflineTracksByUrns([...new Set(list.flatMap((c) => c.trackUrns))]);
+      if (disposed.current) return;
+      setCollections(list);
+      setCollectionTracks(tracks);
+    } catch (error) {
+      console.warn('[Offline] Failed to load offline playlists:', error);
+    }
+  }, []);
+
   useEffect(() => {
     disposed.current = false;
     const load = async () => {
@@ -55,7 +77,7 @@ export function useOfflineLibrary() {
         if (disposed.current) return;
         setLikedTracks(liked);
         setCacheOrder(order);
-        await refreshInventory();
+        await Promise.all([refreshInventory(), refreshCollections()]);
       } catch (error) {
         console.warn('[Offline] Failed to load local library:', error);
       } finally {
@@ -66,7 +88,7 @@ export function useOfflineLibrary() {
     return () => {
       disposed.current = true;
     };
-  }, [refreshInventory]);
+  }, [refreshInventory, refreshCollections]);
 
   // Онлайн: дотягиваем полный список лайков с бэка (он же синкает офлайн-индекс).
   useEffect(() => {
@@ -142,6 +164,15 @@ export function useOfflineLibrary() {
     setInventory((prev) => prev.filter((e) => e.urn !== urn));
   }, []);
 
+  const removeCollection = useCallback(
+    async (scope: string) => {
+      const orphans = await forgetCollection(scope);
+      await Promise.all(orphans.map((urn) => removeCachedTrack(urn).catch(() => false)));
+      await Promise.all([refreshInventory(), refreshCollections()]);
+    },
+    [refreshInventory, refreshCollections],
+  );
+
   const reorderCached = useCallback((urns: string[]) => {
     setCacheOrder(urns);
     void saveCacheOrder(urns);
@@ -149,10 +180,11 @@ export function useOfflineLibrary() {
 
   const invByUrn = useMemo(() => new Map(inventory.map((e) => [e.urn, e])), [inventory]);
   const trackByUrn = useMemo(() => {
-    const map = new Map(resolvedTracks.map((t) => [t.urn, t]));
+    const map = new Map(collectionTracks.map((t) => [t.urn, t]));
+    for (const track of resolvedTracks) map.set(track.urn, track);
     for (const track of likedTracks) map.set(track.urn, track);
     return map;
-  }, [resolvedTracks, likedTracks]);
+  }, [collectionTracks, resolvedTracks, likedTracks]);
 
   const likesEntries = useMemo(
     () => buildLikesEntries(likedTracks, invByUrn),
@@ -161,6 +193,11 @@ export function useOfflineLibrary() {
   const cachedEntries = useMemo(
     () => buildCachedEntries(inventory, trackByUrn),
     [inventory, trackByUrn],
+  );
+
+  const collectionViews = useMemo(
+    () => buildCollectionViews(collections, invByUrn),
+    [collections, invByUrn],
   );
 
   const stats = useMemo(() => {
@@ -190,8 +227,13 @@ export function useOfflineLibrary() {
     cacheOrder,
     downloads,
     stats,
+    collectionViews,
+    trackByUrn,
+    invByUrn,
     removeCached,
+    removeCollection,
     reorderCached,
     refreshInventory,
+    refreshCollections,
   };
 }
