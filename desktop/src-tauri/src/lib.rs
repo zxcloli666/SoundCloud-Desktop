@@ -22,6 +22,7 @@ const HTTP_READ_TIMEOUT_SECS: u64 = 30;
 #[cfg_attr(feature = "cef", tauri::cef_entry_point)]
 pub fn run() {
     app::diagnostics::install_panic_hook();
+    app::render_mode::apply_before_launch();
     #[cfg(all(windows, not(feature = "cef")))]
     app::webview2::exit_if_runtime_missing();
 
@@ -195,6 +196,9 @@ pub fn run() {
             app::diagnostics::diagnostics_log,
             app::diagnostics::diagnostics_log_dir,
             app::diagnostics::diagnostics_open_log_dir,
+            app::render_mode::render_mode_get,
+            app::render_mode::render_mode_set,
+            app::render_mode::render_mode_restart,
             app::visibility::show_main_window,
             app::popover::tray_popover_hide,
             discord::discord_connect,
