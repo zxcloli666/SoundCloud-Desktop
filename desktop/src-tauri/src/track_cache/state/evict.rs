@@ -22,6 +22,7 @@ impl TrackCacheState {
             .lock()
             .map(|s| s.clone())
             .unwrap_or_default();
+        let exporting = self.exporting_urns();
 
         let mut files = Vec::new();
         for dir in [&self.audio_dir, &self.incoming_dir] {
@@ -35,6 +36,9 @@ impl TrackCacheState {
                     continue;
                 }
                 let urn = filename_to_urn(&entry.file_name().to_string_lossy());
+                if urn.as_ref().is_some_and(|urn| exporting.contains(urn)) {
+                    continue;
+                }
                 if is_incoming {
                     if urn.as_ref().is_some_and(|urn| in_flight.contains(urn)) {
                         continue;
@@ -180,6 +184,19 @@ mod tests {
         assert!(!state.incoming_file_path(staged).exists());
         assert!(state.liked_file_path(liked).exists());
         assert!(state.incoming_file_path(transcoding).exists());
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn purge_spares_tracks_being_exported() {
+        let (root, state) = test_state("purge-export");
+        let exporting = "soundcloud:tracks:15";
+        write_file(&state.file_path(exporting));
+
+        let guard = state.hold_for_export(exporting);
+        assert_eq!(state.purge_played(None), 0);
+        drop(guard);
+        assert_eq!(state.purge_played(None), 1);
         std::fs::remove_dir_all(&root).ok();
     }
 

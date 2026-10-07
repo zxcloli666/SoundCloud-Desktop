@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 
@@ -28,7 +29,44 @@ pub(super) fn plain_file_name(name: &str) -> Option<&str> {
     Some(trimmed)
 }
 
+pub(super) struct ExportHold {
+    state: TrackCacheState,
+    urn: String,
+}
+
+impl Drop for ExportHold {
+    fn drop(&mut self) {
+        let Ok(mut exporting) = self.state.exporting.lock() else {
+            return;
+        };
+        let remaining = exporting.get_mut(&self.urn).map(|count| {
+            *count -= 1;
+            *count
+        });
+        if remaining == Some(0) {
+            exporting.remove(&self.urn);
+        }
+    }
+}
+
 impl TrackCacheState {
+    pub(super) fn hold_for_export(&self, urn: &str) -> ExportHold {
+        if let Ok(mut exporting) = self.exporting.lock() {
+            *exporting.entry(urn.to_string()).or_default() += 1;
+        }
+        ExportHold {
+            state: self.clone(),
+            urn: urn.to_string(),
+        }
+    }
+
+    pub(super) fn exporting_urns(&self) -> HashSet<String> {
+        self.exporting
+            .lock()
+            .map(|exporting| exporting.keys().cloned().collect())
+            .unwrap_or_default()
+    }
+
     async fn ensure_clean_for_export(&self, urn: &str, ffmpeg: &Path) -> Option<PathBuf> {
         if let Some(path) = self.resolve_clean_path(urn) {
             return Some(path);
@@ -89,6 +127,7 @@ impl TrackCacheState {
         tags: &ExportTags,
     ) -> Result<(), String> {
         let urn = req.urn.to_string();
+        let _hold = self.hold_for_export(&urn);
         let entry = self.ensure_cached(req).await?;
         let mut source_path = PathBuf::from(&entry.path);
 
