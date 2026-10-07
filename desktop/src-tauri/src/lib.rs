@@ -172,6 +172,9 @@ pub fn run() {
                     app::visibility::set_window_page_visible(window, false);
                 }
             }
+            tauri::WindowEvent::Resized(size) if window.label() == "main" => {
+                app::visibility::follow_minimize(window, size);
+            }
             // Transient popover (tray left-click) dismisses on blur; a pinned one
             // (opened from the "Mini player" menu) stays put — closed only by its ✕.
             tauri::WindowEvent::Focused(false)
