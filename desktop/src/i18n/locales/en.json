@@ -1166,5 +1166,9 @@
     "empty": "No hidden words yet. Add the ones you never want to see in your feeds.",
     "suggestions": "Quick add",
     "hint": "Whole words only, case and punctuation don't matter: \"sped up\" also hides \"Sped-Up\", but \"remix\" won't touch \"remixed\"."
+  },
+  "richText": {
+    "mentionNotFound": "Couldn't find {{name}} on SoundCloud",
+    "mentionNotFoundBody": "The profile may have been renamed or deleted."
   }
 }

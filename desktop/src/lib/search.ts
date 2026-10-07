@@ -7,6 +7,7 @@ import { ApiError, type ApiRequestOptions } from './api-client';
 import type { CatalogAlbum, CatalogArtist } from './discover';
 import { type PagedResponse, type Playlist, pagedUrl, type SCUser, usePagedQuery } from './hooks';
 import { isTimeoutError } from './host-status';
+import { queryClient } from './query-client';
 
 export interface LyricsHit {
   track: Track;
@@ -201,15 +202,22 @@ export function useVibe(q: string) {
   return { ...query, preparing: preparing && !slow, slow, restart };
 }
 
-export function useResolvedLink(url: string | null) {
-  return useQuery({
+function resolvedLinkQuery(url: string | null) {
+  return {
     queryKey: ['search', 'link', url],
     queryFn: () =>
       api<ResolvedEntity>(`/resolve?url=${encodeURIComponent(url ?? '')}`, QUIET, LINK_TIMEOUT_MS),
-    enabled: !!url,
     retry: false,
     staleTime: Number.POSITIVE_INFINITY,
-  });
+  };
+}
+
+export function useResolvedLink(url: string | null) {
+  return useQuery({ ...resolvedLinkQuery(url), enabled: !!url });
+}
+
+export function resolveLink(url: string) {
+  return queryClient.fetchQuery(resolvedLinkQuery(url));
 }
 
 export function useRememberQuery(q: string) {

@@ -180,7 +180,7 @@ export const TrackPage = React.memo(function TrackPage() {
                     onSeek={jumpTo}
                 />
 
-                <LinerNotes track={track} aura={aura}/>
+                <LinerNotes track={track} aura={aura} onSeek={jumpTo}/>
 
                 <SoundWaveSimilarBlock trackUrn={track.urn}/>
 

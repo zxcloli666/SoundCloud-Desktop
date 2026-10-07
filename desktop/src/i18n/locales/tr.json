@@ -209,7 +209,8 @@
     "dislike": "Onerme",
     "removeDislike": "Begenmemeyi kaldir",
     "play": "Calistir",
-    "pause": "Duraklat"
+    "pause": "Duraklat",
+    "seekTo": "{{time}} anına git"
   },
   "playlist": {
     "playAll": "Hepsini Cal",
@@ -969,5 +970,9 @@
     "empty": "Henuz gizli kelime yok. Akisinizda gormek istemediklerinizi ekleyin.",
     "suggestions": "Hizli ekle",
     "hint": "Yalnizca tam kelimeler, buyuk/kucuk harf ve noktalama onemsiz: \"sped up\" \"Sped-Up\" olani da gizler, \"remix\" ise \"remixed\" olana dokunmaz."
+  },
+  "richText": {
+    "mentionNotFound": "{{name}} SoundCloud'da bulunamadı",
+    "mentionNotFoundBody": "Profil yeniden adlandırılmış veya silinmiş olabilir."
   }
 }
