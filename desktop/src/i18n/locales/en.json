@@ -1206,6 +1206,22 @@
     "cacheCancelled": "Saving stopped",
     "largeHint": "Big list: this will take a while and some disk space",
     "busyHint": "Wait for the current download to finish first",
-    "empty": "No tracks to save here"
+    "empty": "No tracks to save here",
+    "exportTitle": "Download to a folder",
+    "exportSub": "{{format}} files with cover art and tags, easy to copy to a phone",
+    "format": "Format",
+    "formatHint_m4a": "M4A: original quality, no re-encoding",
+    "formatHint_mp3": "MP3: plays everywhere, re-encoded (VBR V0)",
+    "mp3Unavailable": "MP3 is unavailable: ffmpeg is still preparing or has no MP3 encoder",
+    "pickFolder": "Where to save the tracks",
+    "exportProgress": "Downloading to a folder",
+    "exportStopping": "Stopping…",
+    "exportDone": "Done: {{ok}} of {{total}} in the folder",
+    "exportDoneFailed": "Downloaded {{ok}} of {{total}}, {{failed}} failed",
+    "exportCancelled": "Folder download stopped",
+    "exportFailed": "Could not download to the folder",
+    "exportSkipped_one": "{{count}} file was already in the folder and was skipped",
+    "exportSkipped_other": "{{count}} files were already in the folder and were skipped",
+    "showInFolder": "Show in folder"
   }
 }

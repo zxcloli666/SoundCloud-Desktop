@@ -12,6 +12,7 @@ import {toScproxyUrl} from './asset-url';
 import {CACHE_UNLIMITED, isAudioCacheOff} from './cache-limit';
 import {getStaticPort} from './constants';
 import {trackedInvoke as invoke} from './diagnostics';
+import {sanitizeFilename} from './filename';
 import {onIdle} from './idle';
 import { isHqStreaming } from './streaming';
 import {isPreviewOnly} from './track-access';
@@ -373,13 +374,6 @@ export function getWallpaperUrl(name: string): string | null {
 
 /* ── Track Download ──────────────────────────────────────── */
 
-function sanitizeFilename(name: string): string {
-  return name
-    .replace(/[<>:"/\\|?*]/g, '_')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
 /** Raw (un-proxied) SoundCloud artwork URL at high res, for Rust to fetch and
  *  embed into the exported file. Returns null when the track has no artwork. */
 function coverSourceUrl(artworkUrl: string | null | undefined): string | null {
@@ -404,7 +398,7 @@ export async function downloadTrack(
 ): Promise<string> {
   const { save } = await import('@tauri-apps/plugin-dialog');
 
-  const filename = sanitizeFilename(`${artist} - ${title}.m4a`);
+  const filename = `${sanitizeFilename(`${artist} - ${title}`)}.m4a`;
 
   const dest = await save({
     defaultPath: filename,
@@ -418,5 +412,40 @@ export async function downloadTrack(
     request,
     destPath: dest,
     coverUrl: coverSourceUrl(options.artworkUrl),
+    tags: { title, artist },
+  });
+}
+
+export type ExportFormat = 'm4a' | 'mp3';
+
+export interface ExportToDirOutcome {
+  path: string;
+  skipped: boolean;
+}
+
+export function isMp3ExportSupported(): Promise<boolean> {
+  return invoke<boolean>('track_export_mp3_supported');
+}
+
+export async function exportTrackToDir(
+  track: Track,
+  tags: { title: string; artist: string },
+  dir: string,
+  fileName: string,
+  format: ExportFormat,
+): Promise<ExportToDirOutcome> {
+  const request = await buildCacheRequest(
+    track.urn,
+    isHqStreaming(),
+    expectedDurationMs(track),
+    track._scd_meta?.storage_quality,
+  );
+  return invoke<ExportToDirOutcome>('track_export_to_dir', {
+    request,
+    dir,
+    fileName,
+    coverUrl: coverSourceUrl(track.artwork_url),
+    format,
+    tags,
   });
 }

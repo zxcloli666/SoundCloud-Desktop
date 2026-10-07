@@ -3,12 +3,13 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { type BulkCacheProgress, bulkCacheErrorText, useBulkCache } from '../../lib/bulk-cache';
-import { ArrowDownToLine, Check } from '../../lib/icons';
 import { usePerfMode } from '../../lib/perf';
 import type { Track } from '../../stores/player';
 import { CacheAction } from './CacheAction';
 import { estimateBytes, useSavedCoverage } from './coverage';
-import { ProgressRing } from './ProgressRing';
+import { ExportAction } from './ExportAction';
+import { SaveTrigger } from './SaveTrigger';
+import { useCollectionExport } from './useCollectionExport';
 
 export interface SaveCollectionProps {
   scope: string;
@@ -55,6 +56,7 @@ export const SaveCollectionMenu = React.memo(function SaveCollectionMenu({
   const coverage = useSavedCoverage(tracks);
   const onFinish = useFinishToast(() => void coverage.refresh());
   const bulk = useBulkCache(scope, collect, onFinish);
+  const exporter = useCollectionExport(scope, title, collect, open);
   const total = Math.max(trackCount, tracks.length);
   const estimated = useMemo(() => estimateBytes(tracks, total), [tracks, total]);
 
@@ -71,53 +73,25 @@ export const SaveCollectionMenu = React.memo(function SaveCollectionMenu({
     );
   }, [bulk.start, t]);
 
-  const pct =
-    bulk.progress && bulk.progress.total > 0 ? bulk.progress.done / bulk.progress.total : 0;
+  const activity = bulk.caching
+    ? (bulk.progress ?? { done: 0, total: 0 })
+    : exporter.job
+      ? { done: exporter.job.done, total: exporter.job.total }
+      : null;
   const complete = coverage.saved !== null && total > 0 && coverage.saved >= total;
   const label = bulk.caching
     ? t('collectionSave.cacheProgress')
-    : complete
-      ? t('collectionSave.cacheAllSaved')
-      : t('collectionSave.menuLabel');
-  const icon = complete && !bulk.caching ? <Check size={16} /> : <ArrowDownToLine size={16} />;
+    : exporter.job
+      ? t('collectionSave.exportProgress')
+      : complete
+        ? t('collectionSave.cacheAllSaved')
+        : t('collectionSave.menuLabel');
   const blur = perf.blur(30);
 
   return (
     <Popover.Root open={open} onOpenChange={setOpen}>
       <Popover.Trigger asChild>
-        {variant === 'rail' ? (
-          <button
-            type="button"
-            title={label}
-            aria-label={label}
-            className={`relative inline-flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 ease-[var(--ease-apple)] cursor-pointer ${
-              bulk.caching || complete
-                ? 'text-accent bg-accent/12'
-                : 'text-white/60 hover:text-white/95 hover:bg-white/[0.07]'
-            }`}
-          >
-            {bulk.caching && <ProgressRing value={pct} size={34} />}
-            {icon}
-          </button>
-        ) : (
-          <button
-            type="button"
-            title={label}
-            className={`relative inline-flex items-center gap-2 h-11 pl-3 pr-4 rounded-full text-[12.5px] font-semibold border transition-all duration-300 ease-[var(--ease-apple)] cursor-pointer active:scale-[0.96] ${
-              bulk.caching || complete
-                ? 'bg-accent/12 text-accent border-accent/30'
-                : 'bg-white/[0.04] border-white/[0.08] text-white/70 hover:bg-white/[0.07] hover:text-white/95'
-            }`}
-          >
-            <span className="relative flex size-7 items-center justify-center">
-              {bulk.caching && <ProgressRing value={pct} size={28} />}
-              {icon}
-            </span>
-            {bulk.caching && bulk.progress
-              ? `${bulk.progress.done} / ${bulk.progress.total}`
-              : t('collectionSave.pillLabel')}
-          </button>
-        )}
+        <SaveTrigger variant={variant} label={label} activity={activity} complete={complete} />
       </Popover.Trigger>
       <Popover.Portal>
         <Popover.Content
@@ -149,6 +123,19 @@ export const SaveCollectionMenu = React.memo(function SaveCollectionMenu({
               estimatedBytes={estimated}
               onStart={startCache}
               onCancel={bulk.cancel}
+            />
+            <div className="mx-2 my-1 h-px bg-white/[0.06]" />
+            <ExportAction
+              job={exporter.job}
+              busy={exporter.busy}
+              format={exporter.format}
+              mp3Supported={exporter.mp3Supported}
+              onFormat={exporter.setFormat}
+              onStart={() => {
+                setOpen(false);
+                void exporter.start();
+              }}
+              onCancel={exporter.cancel}
             />
           </div>
         </Popover.Content>

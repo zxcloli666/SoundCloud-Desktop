@@ -1009,6 +1009,22 @@
     "cacheCancelled": "Kaydetme durduruldu",
     "largeHint": "Büyük liste: biraz zaman ve disk alanı gerektirecek",
     "busyHint": "Önce mevcut indirmenin bitmesini bekleyin",
-    "empty": "Burada kaydedilecek parça yok"
+    "empty": "Burada kaydedilecek parça yok",
+    "exportTitle": "Klasöre indir",
+    "exportSub": "Kapak ve etiketli {{format}} dosyaları, telefona atmak için ideal",
+    "format": "Biçim",
+    "formatHint_m4a": "M4A: orijinal kalite, yeniden kodlama yok",
+    "formatHint_mp3": "MP3: her yerde çalar, yeniden kodlanır (VBR V0)",
+    "mp3Unavailable": "MP3 kullanılamıyor: ffmpeg hâlâ hazırlanıyor ya da MP3 kodlayıcısı yok",
+    "pickFolder": "Parçalar nereye kaydedilsin",
+    "exportProgress": "Klasöre indiriliyor",
+    "exportStopping": "Durduruluyor…",
+    "exportDone": "Tamamlandı: klasörde {{ok}} / {{total}}",
+    "exportDoneFailed": "{{ok}} / {{total}} indirildi, {{failed}} başarısız",
+    "exportCancelled": "Klasöre indirme durduruldu",
+    "exportFailed": "Klasöre indirilemedi",
+    "exportSkipped_one": "{{count}} dosya zaten klasördeydi, atlandı",
+    "exportSkipped_other": "{{count}} dosya zaten klasördeydi, atlandı",
+    "showInFolder": "Klasörde göster"
   }
 }
