@@ -92,7 +92,7 @@ export const LibraryTrackRow = React.memo(
             className="opacity-0 group-hover:opacity-100 w-8 h-8 rounded-lg flex items-center justify-center text-white/30 hover:text-white/80 hover:bg-white/[0.08] transition-all duration-200 shrink-0"
             title={t('playlist.addToPlaylist')}
           >
-            <ListMusic size={16} />
+            <ListPlus size={16} />
           </button>
         </AddToPlaylistDialog>
 
@@ -102,7 +102,7 @@ export const LibraryTrackRow = React.memo(
           className="opacity-0 group-hover:opacity-100 w-8 h-8 rounded-lg flex items-center justify-center text-white/30 hover:text-white/80 hover:bg-white/[0.08] transition-all duration-200 shrink-0"
           title={t('player.addToQueue')}
         >
-          <ListPlus size={16} />
+          <ListMusic size={16} />
         </button>
 
         <div className="hidden sm:flex items-center gap-4 shrink-0 pr-4">

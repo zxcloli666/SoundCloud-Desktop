@@ -1102,12 +1102,26 @@ select,
     }
 }
 
+.npb-vol {
+    position: relative;
+}
+
+.npb-vol-pop {
+    display: none;
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    padding-bottom: 12px;
+    transform: translateX(-50%);
+}
+
 .npb-txt {
     display: flex;
     flex-direction: column;
     gap: 2px;
+    flex: 0 1 150px;
+    width: 150px;
     min-width: 0;
-    max-width: 150px;
 }
 
 .npb-ttl {
@@ -1298,8 +1312,13 @@ select,
         display: none;
     }
 
+    .npb-vol:hover .npb-vol-pop {
+        display: block;
+    }
+
     .npb-txt {
-        max-width: 112px;
+        flex-basis: 112px;
+        width: 112px;
     }
 }
 

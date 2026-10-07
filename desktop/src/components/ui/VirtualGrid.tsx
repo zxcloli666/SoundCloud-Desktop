@@ -1,5 +1,6 @@
 import { useVirtualizer } from '@tanstack/react-virtual';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useMainScroll } from './useMainScroll';
 
 interface VirtualGridProps<T> {
   items: T[];
@@ -25,12 +26,8 @@ export function VirtualGrid<T>({
   renderItem,
 }: VirtualGridProps<T>) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [scrollElement, setScrollElement] = useState<HTMLElement | null>(null);
+  const { scrollElement, scrollMargin } = useMainScroll(containerRef);
   const [width, setWidth] = useState(0);
-
-  useEffect(() => {
-    setScrollElement((containerRef.current?.closest('main') as HTMLElement | null) ?? null);
-  }, []);
 
   useEffect(() => {
     const node = containerRef.current;
@@ -63,6 +60,7 @@ export function VirtualGrid<T>({
     getScrollElement: () => scrollElement,
     estimateSize: () => rowHeight,
     overscan,
+    scrollMargin,
   });
 
   if (disabled) {
@@ -105,7 +103,7 @@ export function VirtualGrid<T>({
               left: 0,
               width: '100%',
               height: itemHeight,
-              transform: `translateY(${virtualRow.start}px)`,
+              transform: `translateY(${virtualRow.start - scrollMargin}px)`,
             }}
           >
             {rowItems.map((item, columnIndex) => {

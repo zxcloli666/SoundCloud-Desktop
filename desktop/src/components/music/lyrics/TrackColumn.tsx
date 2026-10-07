@@ -6,14 +6,8 @@ import {Eye, MicVocal, X} from '../../../lib/icons';
 import {isPreviewOnly} from '../../../lib/track-access';
 import {useArtistDisplay, useArtistLinkItems, useDisplayTitle} from '../../../lib/track-display';
 import type {Track} from '../../../stores/player';
-import {
-    ControlVolumeBtn,
-    PlaybackRateSlider,
-    ProgressSlider,
-    ProgressTime,
-    VolumeLabel,
-    VolumeSlider,
-} from '../../layout/NowPlayingBar';
+import {PlaybackRateSlider, ProgressSlider, ProgressTime} from '../../layout/NowPlayingBar';
+import {ControlVolumeBtn, VolumeLabel, VolumeSlider} from '../../layout/VolumeControls';
 import {ArtistNameLinks} from '../ArtistNameLinks';
 import {Controls} from './LyricsControls';
 

@@ -307,7 +307,8 @@
     "reload": "Yeniden yukle",
     "home": "Ana sayfa",
     "details": "Ayrintilar",
-    "serverError": "Sunucu hatasi ({{status}})"
+    "serverError": "Sunucu hatasi ({{status}})",
+    "upstreamBlocked": "SoundCloud istegi gecici olarak reddetti. Daha sonra tekrar deneyin."
   },
   "hostStatus": {
     "starOffer": {

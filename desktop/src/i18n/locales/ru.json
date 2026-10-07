@@ -396,7 +396,8 @@
     "reload": "Перезагрузить",
     "home": "На главную",
     "details": "Подробности",
-    "serverError": "Ошибка сервера ({{status}})"
+    "serverError": "Ошибка сервера ({{status}})",
+    "upstreamBlocked": "SoundCloud временно отклонил запрос. Попробуйте позже."
   },
   "hostStatus": {
     "starOffer": {
