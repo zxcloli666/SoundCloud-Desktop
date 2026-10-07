@@ -1140,5 +1140,19 @@
     "noMatches": "Nothing matches “{{query}}”",
     "capAlbums": "That's the cream of the crop — narrow the genre or search to dig deeper.",
     "capArtists": "That's the cream of the crop — pick a tag or search to dig deeper."
+  },
+  "contextMenu": {
+    "mute": "Mute",
+    "unmute": "Unmute",
+    "repeatOff": "Repeat: off",
+    "repeatAll": "Repeat: all",
+    "repeatOne": "Repeat: one track",
+    "showQueue": "Show queue",
+    "hideQueue": "Hide queue",
+    "showLyrics": "Show lyrics",
+    "hideLyrics": "Hide lyrics",
+    "collapseSidebar": "Collapse sidebar",
+    "expandSidebar": "Expand sidebar",
+    "fullscreen": "Full screen"
   }
 }

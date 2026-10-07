@@ -12,6 +12,8 @@ import {toggleWindowFullscreen} from '../../lib/window';
 import {useLyricsStore} from '../../stores/lyrics';
 import {usePlayerStore} from '../../stores/player';
 import {useSettingsStore} from '../../stores/settings';
+import {ContextMenuHost} from '../ui/ContextMenu';
+import {useAppContextMenu} from './AppContextMenu';
 import {NowPlayingBar} from './NowPlayingBar';
 import {Sidebar} from './Sidebar';
 import {Titlebar} from './Titlebar';
@@ -275,6 +277,8 @@ export const AppShell = React.memo(() => {
   });
   const onQueueToggle = useCallback(() => setQueueOpen((v) => !v), []);
   const onQueueClose = useCallback(() => setQueueOpen(false), []);
+  const onShowShortcuts = useCallback(() => setKbOpen(true), []);
+  useAppContextMenu({ queueOpen, toggleQueue: onQueueToggle, showShortcuts: onShowShortcuts });
     const mainRef = useRef<HTMLElement>(null);
 
     // Mirror panel state into refs so the global keydown listener binds once.
@@ -461,6 +465,7 @@ export const AppShell = React.memo(() => {
         </Suspense>
       )}
       <KeybindingsDialog open={kbOpen} onOpenChange={setKbOpen} />
+      <ContextMenuHost />
     </div>
   );
 });

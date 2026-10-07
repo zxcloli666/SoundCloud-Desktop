@@ -57,7 +57,9 @@
     "cancelLoad": "Yuklemeyi durdur",
     "volume": "Ses",
     "volumeReset": "Sesi %100'e sifirla",
-    "volumeResetHint": "%100'e sifirlamak icin cift tikla"
+    "volumeResetHint": "%100'e sifirlamak icin cift tikla",
+    "previous": "Onceki",
+    "next": "Sonraki"
   },
   "auth": {
     "signIn": "SoundCloud ile giris yap",
@@ -943,5 +945,19 @@
     "scAccounts": "SoundCloud hesapları",
     "mainAccount": "Ana",
     "demoAccount": "Demo"
+  },
+  "contextMenu": {
+    "mute": "Sesi kapat",
+    "unmute": "Sesi ac",
+    "repeatOff": "Tekrar: kapali",
+    "repeatAll": "Tekrar: tumu",
+    "repeatOne": "Tekrar: tek parca",
+    "showQueue": "Kuyrugu goster",
+    "hideQueue": "Kuyrugu gizle",
+    "showLyrics": "Sozleri goster",
+    "hideLyrics": "Sozleri gizle",
+    "collapseSidebar": "Kenar cubugunu daralt",
+    "expandSidebar": "Kenar cubugunu genislet",
+    "fullscreen": "Tam ekran"
   }
 }
