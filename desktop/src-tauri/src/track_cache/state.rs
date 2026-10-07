@@ -1335,9 +1335,9 @@ impl TrackCacheState {
         let clean_path = transcode::transcode_to_m4a(ffmpeg, &incoming, &dest_dir, &final_name).await?;
 
         let probed = transcode::probe_duration_ms(ffmpeg, &clean_path).await;
-        let expected = read_cache_metadata(&incoming)
-            .or(meta)
-            .and_then(|m| m.expected_duration_ms);
+        let latest = read_cache_metadata(&incoming);
+        let liked = liked || latest.as_ref().is_some_and(|m| m.liked);
+        let expected = latest.or(meta).and_then(|m| m.expected_duration_ms);
 
         // The transcode faithfully reproduces the source, so a too-short result
         // means the *download* was cut off — discard so the next play retries.
@@ -1374,6 +1374,9 @@ impl TrackCacheState {
             duration_ms: probed,
         };
         write_cache_metadata(&clean_path, &clean_meta).await;
+        if liked && !clean_path.starts_with(&self.liked_dir) {
+            self.promote_to_liked(urn).await;
+        }
         // Defer dropping the raw А file: the path may have just been handed to the
         // player, which reads it a moment later in a separate command.
         self.schedule_remove_incoming(urn.to_string());
@@ -2037,7 +2040,13 @@ impl TrackCacheState {
         } else {
             self.pin_existing(req.urn).await;
         }
-        self.ensure_cached(CacheRequest { liked: true, ..req }).await
+        let urn = req.urn;
+        let entry = self.ensure_cached(CacheRequest { liked: true, ..req }).await?;
+        self.pin_existing(urn).await;
+        Ok(self
+            .resolve_path(urn)
+            .map(|path| self.entry_at(&path, read_cache_metadata(&path)))
+            .unwrap_or(entry))
     }
 
     async fn pin_existing(&self, urn: &str) {
@@ -2258,6 +2267,51 @@ mod tests {
         assert!(!state.file_path(clean).exists());
         assert!(read_cache_metadata(&state.liked_file_path(clean)).is_some());
         assert!(read_cache_metadata(&raw).unwrap().liked);
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[tokio::test]
+    async fn saving_during_an_unpinned_download_still_pins_it() {
+        let (root, state) = test_state("save-race");
+        let urn = "soundcloud:tracks:8";
+        let notify = Arc::new(Notify::new());
+        let result: Arc<Mutex<Option<Result<PathBuf, String>>>> = Arc::new(Mutex::new(None));
+        state.active.lock().await.insert(
+            urn.to_string(),
+            ActiveDownload {
+                notify: notify.clone(),
+                result: result.clone(),
+            },
+        );
+        let preload = {
+            let state = state.clone();
+            tokio::spawn(async move {
+                tokio::time::sleep(Duration::from_millis(50)).await;
+                let raw = state.incoming_file_path(urn);
+                std::fs::write(&raw, vec![0u8; MIN_AUDIO_SIZE as usize]).unwrap();
+                state.finalize_incoming(&raw, false, None).await;
+                *result.lock().await = Some(Ok(raw));
+                notify.notify_waiters();
+                state.active.lock().await.remove(urn);
+            })
+        };
+        let req = CacheRequest {
+            urn,
+            urls: &[],
+            download_urls: &[],
+            storage_urls: &[],
+            session_id: None,
+            hq: false,
+            storage_quality: None,
+            liked: false,
+            expected_duration_ms: None,
+        };
+
+        let entry = state.save_offline(req, false).await.unwrap();
+        preload.await.unwrap();
+
+        assert!(entry.pinned);
+        assert!(state.is_pinned(urn));
         std::fs::remove_dir_all(&root).ok();
     }
 
