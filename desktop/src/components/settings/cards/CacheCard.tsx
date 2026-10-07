@@ -5,6 +5,7 @@ import {
     clearCache,
     clearImageCache,
     clearLikedCache,
+    enforceImageCacheLimit,
     getCacheSize,
     getImageCacheSize,
     getLikedCacheSize,
@@ -12,6 +13,10 @@ import {
 import {
   AUDIO_CACHE_STEPS,
   audioCacheStep,
+  CACHE_UNLIMITED,
+  formatCacheLimit,
+  IMAGE_CACHE_STEPS,
+  imageCacheStep,
   isAudioCacheOff,
   isAudioCacheUnlimited,
 } from '../../../lib/cache-limit';
@@ -20,7 +25,8 @@ import {Database, Download, Loader2, Trash2, X} from '../../../lib/icons';
 import {useCacheLikes} from '../../../lib/likes-cache';
 import {useSettingsStore} from '../../../stores/settings';
 import {Skeleton} from '../../ui/Skeleton';
-import {Card, Divider, RangeSlider, Row, Toggle} from '../primitives';
+import {Card, Divider, Row, Toggle} from '../primitives';
+import {CacheLimitSlider} from './CacheLimitSlider';
 
 function CacheRow({
   label,
@@ -64,6 +70,8 @@ export function CacheCard() {
   const { t } = useTranslation();
   const audioCacheLimitMB = useSettingsStore((s) => s.audioCacheLimitMB);
   const setAudioCacheLimitMB = useSettingsStore((s) => s.setAudioCacheLimitMB);
+  const imageCacheLimitMB = useSettingsStore((s) => s.imageCacheLimitMB);
+  const setImageCacheLimitMB = useSettingsStore((s) => s.setImageCacheLimitMB);
   const hoverPreload = useSettingsStore((s) => s.hoverPreload);
   const setHoverPreload = useSettingsStore((s) => s.setHoverPreload);
   const [audioSize, setAudioSize] = useState<number | null>(null);
@@ -115,6 +123,18 @@ export function CacheCard() {
     [t],
   );
 
+  const handleImageLimit = useCallback(
+    (step: number) => {
+      const limitMb = IMAGE_CACHE_STEPS[step];
+      setImageCacheLimitMB(limitMb);
+      void enforceImageCacheLimit(limitMb)
+        .then(getImageCacheSize)
+        .then(setImagesSize)
+        .catch(() => {});
+    },
+    [setImageCacheLimitMB],
+  );
+
   const handleCacheLikes = useCallback(async () => {
     try {
       const queued = await startLikes();
@@ -132,6 +152,10 @@ export function CacheCard() {
     : isAudioCacheUnlimited(audioCacheLimitMB)
       ? t('settings.unlimited')
       : `${audioCacheStep(audioCacheLimitMB)} GB`;
+  const imageLimitLabel =
+    imageCacheLimitMB === CACHE_UNLIMITED
+      ? t('settings.unlimited')
+      : formatCacheLimit(imageCacheLimitMB);
   const progressPct =
     progress && progress.total > 0
       ? Math.min(100, Math.round((progress.done / progress.total) * 100))
@@ -220,34 +244,29 @@ export function CacheCard() {
       </div>
 
       <Divider />
-      <div className="pt-3 space-y-3">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <p className="text-[13px] text-white/60 font-medium">{t('settings.audioCacheLimit')}</p>
-            <p className="text-[11px] text-white/30 mt-0.5">
-              {cacheOff ? t('settings.audioCacheOffDesc') : t('settings.audioCacheLimitDesc')}
-            </p>
-          </div>
-          <span
-            className={`shrink-0 text-[12px] tabular-nums transition-colors duration-200 ${
-              cacheOff ? 'text-red-400/80' : 'text-white/30'
-            }`}
-          >
-            {limitLabel}
-          </span>
-        </div>
-        <RangeSlider
-          value={audioCacheStep(audioCacheLimitMB)}
-          min={0}
-          max={AUDIO_CACHE_STEPS.length - 1}
-          step={1}
-          onChange={(step) => setAudioCacheLimitMB(AUDIO_CACHE_STEPS[step])}
-        />
-        <div className="flex justify-between text-[10px] text-white/25 tabular-nums select-none">
-          <span>{t('settings.audioCacheOff')}</span>
-          <span>{t('settings.unlimited')}</span>
-        </div>
-      </div>
+      <CacheLimitSlider
+        title={t('settings.audioCacheLimit')}
+        desc={cacheOff ? t('settings.audioCacheOffDesc') : t('settings.audioCacheLimitDesc')}
+        valueLabel={limitLabel}
+        danger={cacheOff}
+        step={audioCacheStep(audioCacheLimitMB)}
+        steps={AUDIO_CACHE_STEPS.length}
+        minLabel={t('settings.audioCacheOff')}
+        maxLabel={t('settings.unlimited')}
+        onChange={(step) => setAudioCacheLimitMB(AUDIO_CACHE_STEPS[step])}
+      />
+
+      <Divider />
+      <CacheLimitSlider
+        title={t('settings.imageCacheLimit')}
+        desc={t('settings.imageCacheLimitDesc')}
+        valueLabel={imageLimitLabel}
+        step={imageCacheStep(imageCacheLimitMB)}
+        steps={IMAGE_CACHE_STEPS.length}
+        minLabel={formatCacheLimit(IMAGE_CACHE_STEPS[0])}
+        maxLabel={t('settings.unlimited')}
+        onChange={handleImageLimit}
+      />
 
       <Divider />
       <div className="pt-3">

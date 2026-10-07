@@ -9,9 +9,10 @@ import {
 } from '../stores/player';
 import {useSettingsStore} from '../stores/settings';
 import {toScproxyUrl} from './asset-url';
-import {isAudioCacheOff} from './cache-limit';
+import {CACHE_UNLIMITED, isAudioCacheOff} from './cache-limit';
 import {getStaticPort} from './constants';
 import {trackedInvoke as invoke} from './diagnostics';
+import {onIdle} from './idle';
 import { isHqStreaming } from './streaming';
 import {isPreviewOnly} from './track-access';
 
@@ -19,6 +20,8 @@ type StorageQuality = TrackScdMeta['storage_quality'];
 
 const WALLPAPERS_DIR = 'wallpapers';
 const CACHE_MAINTENANCE_INTERVAL_MS = 60 * 1000;
+const IMAGE_TRIM_STARTUP_DELAY_MS = 30 * 1000;
+const IDLE_TRIM_MS = 15 * 60 * 1000;
 
 let cacheMaintenanceStarted = false;
 
@@ -224,6 +227,9 @@ export function setupCacheMaintenance() {
     }
   });
 
+  window.setTimeout(() => void enforceImageCacheLimit(), IMAGE_TRIM_STARTUP_DELAY_MS);
+  onIdle(IDLE_TRIM_MS, trimWhileIdle);
+
   // Pause maintenance while the window is hidden — the WebView does not throttle timers.
   let maintenanceTimer: number | null = null;
   const startTimer = () => {
@@ -258,6 +264,24 @@ export function getImageCacheSize(): Promise<number> {
 
 export function clearImageCache(): Promise<void> {
   return invoke('image_cache_clear');
+}
+
+let imageTrimQueue: Promise<unknown> = Promise.resolve();
+
+export function enforceImageCacheLimit(
+  limitMb = useSettingsStore.getState().imageCacheLimitMB,
+): Promise<unknown> {
+  if (limitMb === CACHE_UNLIMITED) return imageTrimQueue;
+  imageTrimQueue = imageTrimQueue
+    .catch(() => {})
+    .then(() => invoke<number>('image_cache_enforce_limit', { limitMb }));
+  return imageTrimQueue;
+}
+
+function trimWhileIdle() {
+  void import('./scproxy').then((m) => m.clearImageUrlMemo());
+  void enforceImageCacheLimit();
+  void enforceAudioCacheLimit();
 }
 
 /* ── Wallpapers ──────────────────────────────────────────── */

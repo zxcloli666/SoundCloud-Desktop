@@ -1,6 +1,6 @@
 import {create} from 'zustand';
 import {createJSONStorage, persist} from 'zustand/middleware';
-import {normalizeAudioCacheLimit} from '../lib/cache-limit';
+import {normalizeAudioCacheLimit, normalizeImageCacheLimit} from '../lib/cache-limit';
 import type {PerfMode} from '../lib/perf';
 import {tauriStorage} from '../lib/tauri-storage';
 
@@ -67,6 +67,7 @@ export interface SettingsState {
   backgroundBlur: number;
   glassBlur: number;
   audioCacheLimitMB: number;
+  imageCacheLimitMB: number;
   hoverPreload: boolean;
   language: string;
   eqEnabled: boolean;
@@ -99,6 +100,7 @@ export interface SettingsState {
   setBackgroundBlur: (blur: number) => void;
   setGlassBlur: (blur: number) => void;
   setAudioCacheLimitMB: (limit: number) => void;
+  setImageCacheLimitMB: (limit: number) => void;
   setHoverPreload: (enabled: boolean) => void;
   setLanguage: (lang: string) => void;
   setEqEnabled: (enabled: boolean) => void;
@@ -141,6 +143,7 @@ const DEFAULTS = {
   backgroundBlur: 0,
   glassBlur: 40,
   audioCacheLimitMB: 1024,
+  imageCacheLimitMB: 1024,
   hoverPreload: true,
   language: navigator.language?.split('-')[0] || 'en',
   eqEnabled: false,
@@ -186,6 +189,7 @@ export const useSettingsStore = create<SettingsState>()(
       setBackgroundBlur: (backgroundBlur) => set({ backgroundBlur }),
       setGlassBlur: (glassBlur) => set({ glassBlur }),
       setAudioCacheLimitMB: (audioCacheLimitMB) => set({ audioCacheLimitMB }),
+      setImageCacheLimitMB: (imageCacheLimitMB) => set({ imageCacheLimitMB }),
       setHoverPreload: (hoverPreload) => set({ hoverPreload }),
       setLanguage: (language) => set({ language }),
       setEqEnabled: (eqEnabled) => set({ eqEnabled }),
@@ -257,6 +261,9 @@ export const useSettingsStore = create<SettingsState>()(
           audioCacheLimitMB: normalizeAudioCacheLimit(
             prev.audioCacheLimitMB ?? DEFAULTS.audioCacheLimitMB,
           ),
+          imageCacheLimitMB: normalizeImageCacheLimit(
+            prev.imageCacheLimitMB ?? DEFAULTS.imageCacheLimitMB,
+          ),
         } as SettingsState;
       },
       partialize: (s) => ({
@@ -272,6 +279,7 @@ export const useSettingsStore = create<SettingsState>()(
         backgroundBlur: s.backgroundBlur,
         glassBlur: s.glassBlur,
         audioCacheLimitMB: s.audioCacheLimitMB,
+        imageCacheLimitMB: s.imageCacheLimitMB,
         hoverPreload: s.hoverPreload,
         language: s.language,
         eqEnabled: s.eqEnabled,
