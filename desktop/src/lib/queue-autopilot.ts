@@ -27,6 +27,7 @@ import {
 } from '../stores/player';
 import { useSettingsStore } from '../stores/settings';
 import { trackUrn } from './ids';
+import { isLocalUrn } from './local-library';
 import { getQueueContinuationSource, setQueueContinuationSource } from './queue-continuation';
 import { fetchRelatedTracks } from './related';
 import { fetchSmartWave } from './soundwave';
@@ -51,6 +52,11 @@ export async function autopilotContinueFromTrack(lastTrack: Track): Promise<void
     // 0) Контекст (лайки/…) доигрывается до конца перед волной.
     if (await continueFromContextSource(stale)) return;
     if (stale()) return;
+
+    if (isLocalUrn(lastTrack.urn)) {
+      usePlayerStore.getState().pause();
+      return;
+    }
 
     // 1–2) Источник иссяк или его нет → волна от последнего трека.
     console.debug('[autopilot] wave continuation from', lastTrack.urn, lastTrack.title);

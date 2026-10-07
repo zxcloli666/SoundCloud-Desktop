@@ -613,6 +613,12 @@
     "sortPlaylist": "Playlist order",
     "openOfflineCopy": "Open the offline copy"
   },
+  "local": {
+    "badge": "Local file",
+    "unknownArtist": "Unknown artist",
+    "audioFiles": "Audio files",
+    "fileMissing": "The file is no longer on the disk"
+  },
   "settings": {
     "title": "Settings",
     "cache": "Cache",

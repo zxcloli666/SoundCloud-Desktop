@@ -624,6 +624,12 @@
     "sortPlaylist": "Как в плейлисте",
     "openOfflineCopy": "Открыть офлайн-копию"
   },
+  "local": {
+    "badge": "Локальный файл",
+    "unknownArtist": "Неизвестный исполнитель",
+    "audioFiles": "Аудиофайлы",
+    "fileMissing": "Файла больше нет на диске"
+  },
   "settings": {
     "title": "Настройки",
     "cache": "Кэш",

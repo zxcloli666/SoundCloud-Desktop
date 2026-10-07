@@ -524,6 +524,12 @@
     "sortPlaylist": "Liste sırası",
     "openOfflineCopy": "Çevrimdışı kopyayı aç"
   },
+  "local": {
+    "badge": "Yerel dosya",
+    "unknownArtist": "Bilinmeyen sanatçı",
+    "audioFiles": "Ses dosyaları",
+    "fileMissing": "Dosya artık diskte değil"
+  },
   "settings": {
     "title": "Ayarlar",
     "cache": "Onbellek",
