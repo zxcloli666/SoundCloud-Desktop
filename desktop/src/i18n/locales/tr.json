@@ -340,7 +340,13 @@
   "dislikes": {
     "playingDisliked": "Bu parça Önerilmeyenler listesinde",
     "added": "Bu parça artık önerilmeyecek",
-    "undo": "Geri al"
+    "undo": "Geri al",
+    "title": "Önerilmeyenler",
+    "summary_one": "{{count}} parça kuyrukta ve önerilerde atlanıyor",
+    "summary_other": "{{count}} parça kuyrukta ve önerilerde atlanıyor",
+    "hint": "Bu parçalar kuyrukta atlanır ve önerilmez. Bir parçayı geri getirmek için beğenmemeyi kaldırın ya da yine de buradan çalın.",
+    "empty": "Burada bir şey yok",
+    "loadFailed": "Önerilmeyen parçalar yüklenemedi"
   },
   "errors": {
     "title": "Bir seyler ters gitti",

@@ -3,6 +3,7 @@ import {useTranslation} from 'react-i18next';
 import {ArtistMiniCard} from '../components/library/ArtistMiniCard';
 import {CollectionRail} from '../components/library/CollectionRail';
 import {ContinueRow} from '../components/library/ContinueRow';
+import {DislikesLink} from '../components/library/DislikesLink';
 import {FreshDrops} from '../components/library/FreshDrops';
 import {LibraryFrame} from '../components/library/LibraryFrame';
 import {SoundPrintMasthead} from '../components/library/SoundPrintMasthead';
@@ -159,6 +160,8 @@ export const Library = React.memo(() => {
             ))}
           </CollectionRail>
         )}
+
+        {!genre && <DislikesLink />}
       </div>
     </LibraryFrame>
   );

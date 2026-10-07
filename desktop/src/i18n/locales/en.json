@@ -424,7 +424,13 @@
   "dislikes": {
     "playingDisliked": "This track is in Not recommended",
     "added": "Won't recommend this track",
-    "undo": "Undo"
+    "undo": "Undo",
+    "title": "Not recommended",
+    "summary_one": "{{count}} track skipped in queues and recommendations",
+    "summary_other": "{{count}} tracks skipped in queues and recommendations",
+    "hint": "These tracks are skipped in queues and never recommended. Remove the dislike to bring a track back, or play it here anyway.",
+    "empty": "Nothing here",
+    "loadFailed": "Couldn't load your disliked tracks"
   },
   "errors": {
     "title": "Something went wrong",

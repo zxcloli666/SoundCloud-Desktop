@@ -1,6 +1,7 @@
 import React, {useDeferredValue, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Navigate, useParams} from 'react-router-dom';
+import {DislikesTab} from '../components/library/DislikesTab';
 import {FollowingTab} from '../components/library/FollowingTab';
 import {HistoryTab} from '../components/library/HistoryTab';
 import {LibraryFrame} from '../components/library/LibraryFrame';
@@ -9,19 +10,21 @@ import {LikesTab} from '../components/library/LikesTab';
 import {PlaylistsTab} from '../components/library/PlaylistsTab';
 import {useSoundprint} from '../components/library/useSoundprint';
 import {TrackSortMenu} from '../components/music/TrackSortMenu';
+import {useDislikedCount} from '../lib/dislikes';
 import {useLikedTracks} from '../lib/hooks';
 import {likedTracksCount} from '../lib/likes';
 import {useAuthStore} from '../stores/auth';
 import {useSettingsStore} from '../stores/settings';
 
-type Section = 'likes' | 'playlists' | 'following' | 'history';
-const SECTIONS: Section[] = ['likes', 'playlists', 'following', 'history'];
+type Section = 'likes' | 'playlists' | 'following' | 'history' | 'dislikes';
+const SECTIONS: Section[] = ['likes', 'playlists', 'following', 'history', 'dislikes'];
 
 const TITLE_KEY: Record<Section, string> = {
     likes: 'library.likedTracks',
     playlists: 'search.playlists',
     following: 'nav.following',
     history: 'library.history',
+    dislikes: 'dislikes.title',
 };
 
 /** A deep collection page (/library/:section) — the full, filterable, virtualized
@@ -34,6 +37,7 @@ export const LibraryCollection = React.memo(() => {
     const likesSort = useSettingsStore((s) => s.likesSort);
     const setLikesSort = useSettingsStore((s) => s.setLikesSort);
     const sound = useSoundprint(likedTracks);
+    const dislikedCount = useDislikedCount();
     const [filter, setFilter] = useState('');
     const deferredFilter = useDeferredValue(filter);
 
@@ -50,7 +54,9 @@ export const LibraryCollection = React.memo(() => {
                 ? user.playlist_count
                 : sec === 'following'
                     ? user.followings_count
-                    : undefined;
+                    : sec === 'dislikes'
+                        ? dislikedCount
+                        : undefined;
 
     return (
         <LibraryFrame sound={sound}>
@@ -76,6 +82,7 @@ export const LibraryCollection = React.memo(() => {
             {sec === 'playlists' && <PlaylistsTab filter={deferredFilter}/>}
             {sec === 'following' && <FollowingTab filter={deferredFilter}/>}
             {sec === 'history' && <HistoryTab/>}
+            {sec === 'dislikes' && <DislikesTab filter={deferredFilter}/>}
         </LibraryFrame>
     );
 });
