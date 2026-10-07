@@ -1,3 +1,5 @@
+import { type EntityKind, isEntityKind, kindOf, toUrn } from './ids';
+
 export type SoundCloudLink = { kind: 'urn'; urn: string } | { kind: 'url'; url: string };
 
 const BARE_URN = /^soundcloud:(tracks|playlists|users):(\d+)$/i;
@@ -5,8 +7,12 @@ const LINK =
   /(?:^|[^\w.@-])((?:https?:\/\/)?(?:[a-z0-9-]+\.)?(?:soundcloud\.com|snd\.sc)\/[^\s<>"']+)/i;
 const TRAILING = /[).,!?»]+$/;
 const API_HOSTS = new Set(['api.soundcloud.com', 'api-v2.soundcloud.com']);
-const ENTITY_KINDS = new Set(['tracks', 'playlists', 'users']);
 const TRACKING_PARAM = /^(si|ref|utm_.*)$/i;
+const ROUTES: Record<EntityKind, string> = {
+  tracks: 'track',
+  playlists: 'playlist',
+  users: 'user',
+};
 const NON_ENTITY_PATHS = new Set([
   'discover',
   'search',
@@ -22,8 +28,8 @@ const NON_ENTITY_PATHS = new Set([
 
 export function findSoundCloudLink(text: string): SoundCloudLink | null {
   const trimmed = text.trim();
-  const urn = BARE_URN.exec(trimmed);
-  if (urn) return { kind: 'urn', urn: `soundcloud:${urn[1].toLowerCase()}:${urn[2]}` };
+  const bare = BARE_URN.exec(trimmed);
+  if (bare) return urnLink(bare[1].toLowerCase(), bare[2]);
   const match = LINK.exec(trimmed);
   return match ? parseLink(match[1].replace(TRAILING, '')) : null;
 }
@@ -43,9 +49,7 @@ function parseLink(raw: string): SoundCloudLink | null {
   }
   if (API_HOSTS.has(host)) {
     const [kind, id] = segments;
-    return ENTITY_KINDS.has(kind) && /^\d+$/.test(id ?? '')
-      ? { kind: 'urn', urn: `soundcloud:${kind}:${id}` }
-      : null;
+    return urnLink(kind, id);
   }
   if (segments.length === 0 || NON_ENTITY_PATHS.has(segments[0].toLowerCase())) return null;
   for (const key of [...url.searchParams.keys()]) {
@@ -56,15 +60,12 @@ function parseLink(raw: string): SoundCloudLink | null {
   return { kind: 'url', url: url.toString() };
 }
 
+function urnLink(kind: string, id: string | undefined): SoundCloudLink | null {
+  const urn = isEntityKind(kind) ? toUrn(kind, id) : null;
+  return urn ? { kind: 'urn', urn } : null;
+}
+
 export function linkRoute(urn: string): string | null {
-  const [, kind] = urn.split(':');
-  const route =
-    kind === 'tracks'
-      ? 'track'
-      : kind === 'playlists'
-        ? 'playlist'
-        : kind === 'users'
-          ? 'user'
-          : null;
-  return route ? `/${route}/${encodeURIComponent(urn)}` : null;
+  const kind = kindOf(urn);
+  return kind ? `/${ROUTES[kind]}/${encodeURIComponent(urn)}` : null;
 }

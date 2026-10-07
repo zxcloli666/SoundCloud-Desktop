@@ -2,6 +2,7 @@
 //! зеркало односторонней duration-проверки Rust (короче заявленного = обрезок).
 
 import type {CacheInventoryEntry} from '../../lib/cache';
+import {idOf} from '../../lib/ids';
 import type {Track} from '../../stores/player';
 import type {OfflineEntry, SortMode} from './types';
 
@@ -25,7 +26,7 @@ export function stubTrack(inv: CacheInventoryEntry): Track {
   return {
     id: 0,
     urn: inv.urn,
-    title: inv.urn.split(':').pop() ?? inv.urn,
+    title: idOf(inv.urn) ?? inv.urn,
     duration: inv.durationMs ?? 0,
     artwork_url: null,
     user: { id: 0, urn: '', username: '', avatar_url: '' },
