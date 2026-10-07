@@ -156,7 +156,12 @@ function VolumeControl({volume}: { volume: number }) {
                 ref={trackRef}
                 className="tp-vol-track group"
                 data-tauri-drag-region="false"
+                title={t('player.volumeResetHint')}
                 onPointerDown={onPointerDown}
+                onDoubleClick={() => {
+                    patchNp({volume: 100});
+                    sendCmd('volume', 100);
+                }}
             >
                 <div className="tp-vol-fill" style={{width: `${pct}%`}}/>
             </div>

@@ -64,7 +64,10 @@
     "openApp": "Открыть SoundCloud",
     "notPlaying": "Ничего не играет",
     "noContinuation": "Похожих треков не нашлось, воспроизведение остановлено",
-    "cancelLoad": "Остановить загрузку"
+    "cancelLoad": "Остановить загрузку",
+    "volume": "Громкость",
+    "volumeReset": "Сбросить громкость до 100%",
+    "volumeResetHint": "Двойной клик сбрасывает до 100%"
   },
   "auth": {
     "signIn": "Войти через SoundCloud",

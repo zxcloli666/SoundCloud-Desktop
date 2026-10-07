@@ -1,8 +1,9 @@
 import * as Slider from '@radix-ui/react-slider';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { useShallow } from 'zustand/shallow';
 import { volume1Icon16, volume2Icon16, volumeXIcon16 } from '../../lib/icons';
-import { usePlayerStore } from '../../stores/player';
+import { usePlayerStore, VOLUME_DEFAULT } from '../../stores/player';
 
 export const VolumeSlider = React.memo(
   ({
@@ -12,15 +13,18 @@ export const VolumeSlider = React.memo(
     className?: string;
     orientation?: 'horizontal' | 'vertical';
   }) => {
-    const { volume, setVolume } = usePlayerStore(
-      useShallow((s) => ({ volume: s.volume, setVolume: s.setVolume })),
+    const { t } = useTranslation();
+    const { volume, setVolume, resetVolume } = usePlayerStore(
+      useShallow((s) => ({ volume: s.volume, setVolume: s.setVolume, resetVolume: s.resetVolume })),
     );
     const isOver100 = volume > 100;
     const vertical = orientation === 'vertical';
 
     return (
-      <div className={`relative ${className}`}>
+      <div className={`relative ${className}`} title={t('player.volumeResetHint')}>
         <Slider.Root
+          aria-label={t('player.volume')}
+          onDoubleClick={resetVolume}
           className={`relative flex items-center cursor-pointer group select-none touch-none ${
             vertical ? 'flex-col h-full w-5' : 'h-5 w-full'
           }`}
@@ -94,13 +98,24 @@ export const ControlVolumeBtn = React.memo(({ size = 'default' }: { size?: 'defa
 });
 
 export const VolumeLabel = React.memo(({ className = 'text-right' }: { className?: string }) => {
-  const volume = usePlayerStore((s) => s.volume);
+  const { t } = useTranslation();
+  const { volume, resetVolume } = usePlayerStore(
+    useShallow((s) => ({ volume: s.volume, resetVolume: s.resetVolume })),
+  );
+  const isDefault = volume === VOLUME_DEFAULT;
+  const tone =
+    volume > 100 ? 'text-amber-400/70 hover:text-amber-300' : 'text-white/30 hover:text-white/70';
   return (
-    <span
-      className={`text-[10px] tabular-nums w-[34px] shrink-0 ${className} ${volume > 100 ? 'text-amber-400/70' : 'text-white/30'}`}
+    <button
+      type="button"
+      title={isDefault ? t('player.volume') : t('player.volumeReset')}
+      onClick={() => {
+        if (!isDefault) resetVolume();
+      }}
+      className={`text-[10px] tabular-nums w-[34px] shrink-0 transition-colors ${isDefault ? 'cursor-default' : 'cursor-pointer'} ${className} ${tone}`}
     >
       {volume}%
-    </span>
+    </button>
   );
 });
 

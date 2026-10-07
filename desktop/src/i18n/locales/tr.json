@@ -54,7 +54,10 @@
     "abLoopClear": "A-B dongusunu temizle",
     "notPlaying": "Calmiyor",
     "noContinuation": "Benzer parça bulunamadı, çalma durduruldu",
-    "cancelLoad": "Yuklemeyi durdur"
+    "cancelLoad": "Yuklemeyi durdur",
+    "volume": "Ses",
+    "volumeReset": "Sesi %100'e sifirla",
+    "volumeResetHint": "%100'e sifirlamak icin cift tikla"
   },
   "auth": {
     "signIn": "SoundCloud ile giris yap",

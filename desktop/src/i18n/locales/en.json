@@ -64,7 +64,10 @@
     "openApp": "Open SoundCloud",
     "notPlaying": "Not playing",
     "noContinuation": "No similar tracks found, playback stopped",
-    "cancelLoad": "Stop loading"
+    "cancelLoad": "Stop loading",
+    "volume": "Volume",
+    "volumeReset": "Reset volume to 100%",
+    "volumeResetHint": "Double-click to reset to 100%"
   },
   "auth": {
     "signIn": "Sign in with SoundCloud",
