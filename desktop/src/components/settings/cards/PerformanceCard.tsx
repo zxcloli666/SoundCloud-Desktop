@@ -3,6 +3,7 @@ import {useTranslation} from 'react-i18next';
 import type {PerfMode} from '../../../lib/perf';
 import {useSettingsStore} from '../../../stores/settings';
 import {Card} from '../primitives';
+import {SoftwareRenderingRow} from './SoftwareRenderingRow';
 
 const PERF_CARDS: Array<{
     id: PerfMode;
@@ -108,6 +109,7 @@ export function PerformanceCard() {
                     );
                 })}
             </div>
+            <SoftwareRenderingRow/>
         </Card>
     );
 }
