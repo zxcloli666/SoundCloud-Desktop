@@ -208,6 +208,8 @@
     "fileDamaged": "ses dosyasi erken kesiliyor",
     "dislike": "Onerme",
     "removeDislike": "Begenmemeyi kaldir",
+    "like": "Beğen",
+    "unlike": "Beğenilerden kaldır",
     "play": "Calistir",
     "pause": "Duraklat"
   },

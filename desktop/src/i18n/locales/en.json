@@ -251,6 +251,8 @@
     "fileDamaged": "the audio file breaks off early",
     "dislike": "Don't recommend",
     "removeDislike": "Remove dislike",
+    "like": "Like",
+    "unlike": "Remove from likes",
     "play": "Play",
     "pause": "Pause",
     "openTrackPage": "Open track page",
