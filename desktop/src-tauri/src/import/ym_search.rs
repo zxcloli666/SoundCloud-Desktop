@@ -2,6 +2,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Duration;
 
 use crate::network::edge::{self, Hop, Tier};
+use crate::shared::urn::canonical_track_urn;
 
 const HOP_TIMEOUT: Duration = Duration::from_secs(15);
 const SEARCH_RETRIES: u32 = 2;
@@ -89,7 +90,7 @@ pub async fn find_track(
     )
     .await?;
     if let Some(first) = combined.into_iter().next() {
-        return Ok(first.urn);
+        return Ok(first.urn.as_deref().and_then(canonical_track_urn));
     }
     if artist.is_empty() || title.is_empty() || cancel.load(Ordering::Relaxed) {
         return Ok(None);
@@ -107,7 +108,7 @@ pub async fn find_track(
     Ok(by_title
         .into_iter()
         .find(|track| uploaded_by(track, artist))
-        .and_then(|track| track.urn))
+        .and_then(|track| track.urn.as_deref().and_then(canonical_track_urn)))
 }
 
 async fn search(
@@ -119,7 +120,7 @@ async fn search(
     cancel: &AtomicBool,
 ) -> Result<Vec<ScTrackResult>, SearchError> {
     let url = format!(
-        "{}/tracks?q={}&limit={}&linked_partitioning=true",
+        "{}/tracks?q={}&limit={}",
         backend_url,
         urlencoding::encode(query),
         limit
