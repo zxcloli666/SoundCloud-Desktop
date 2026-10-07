@@ -49,6 +49,7 @@ pub fn run() {
             });
         })
         .setup(move |app| {
+            app::diagnostics::install_panic_hook(app.handle());
             #[cfg(all(windows, not(feature = "cef")))]
             app::webview2::exit_if_main_window_missing(app);
 
@@ -139,7 +140,7 @@ pub fn run() {
                 recovery_state.recover_incoming().await;
             });
 
-            let audio_state = audio::init();
+            let audio_state = audio::init(app.handle());
             let analyser_buffer = audio_state.analyser_buffer.clone();
             app.manage(audio_state);
             audio::start_tick_emitter(app.handle());
@@ -201,6 +202,7 @@ pub fn run() {
             audio::audio_seek,
             audio::audio_set_volume,
             audio::audio_set_playback_rate,
+            audio::audio_set_pitch_ratio,
             audio::audio_set_ab_loop,
             audio::audio_get_position,
             audio::audio_set_eq,

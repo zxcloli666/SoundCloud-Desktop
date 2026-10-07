@@ -47,8 +47,8 @@ export const CoverTile = memo(function CoverTile({ item, getQueue, onOpen }: Cov
   const span = hero ? 'span 2' : 'span 1';
 
   const enter = () => {
-    preloadTrack(track.urn, track._scd_meta?.storage_quality);
-    startHoverPreview(track.urn, track._scd_meta?.storage_quality);
+    preloadTrack(track);
+    startHoverPreview(track);
   };
   const leave = () => stopHoverPreview();
   const activate = () => {

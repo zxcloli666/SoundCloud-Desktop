@@ -11,6 +11,18 @@ use crate::audio::timing;
 use crate::audio::types::{
     AudioThreadCmd, STALL_COOLDOWN_MS, STALL_THRESHOLD_MS, TICK_INTERVAL_MS,
 };
+#[cfg(target_os = "linux")]
+use crate::audio::types::MediaCmd;
+
+#[cfg(target_os = "linux")]
+const MEDIA_SYNC_INTERVAL: Duration = Duration::from_secs(2);
+
+#[cfg(target_os = "linux")]
+fn push_media_position(state: &AudioState, position: f64) {
+    if let Some(tx) = state.media_tx.lock().unwrap().as_ref() {
+        tx.send(MediaCmd::SetPosition(position)).ok();
+    }
+}
 
 /// Step the hover-preview volume one tick toward its target, dropping the player
 /// once a fade-out reaches zero. Independent of the main player.
@@ -42,6 +54,10 @@ pub fn start_tick_emitter(app: &AppHandle) {
             let mut last_pos_ms = 0u64;
             let mut last_progress_at = std::time::Instant::now();
             let mut stall_cooldown_until = std::time::Instant::now();
+            #[cfg(target_os = "linux")]
+            let mut last_media_sync = std::time::Instant::now();
+            #[cfg(target_os = "linux")]
+            let mut media_sync_load_gen = 0;
 
             loop {
                 std::thread::sleep(Duration::from_millis(TICK_INTERVAL_MS));
@@ -96,6 +112,11 @@ pub fn start_tick_emitter(app: &AppHandle) {
                             && pos >= b {
                                 drop(player_guard);
                                 engine::seek_to(&state, a).ok();
+                                #[cfg(target_os = "linux")]
+                                {
+                                    push_media_position(&state, a);
+                                    last_media_sync = std::time::Instant::now();
+                                }
                                 handle.emit("audio:tick", a).ok();
                                 last_pos_ms = ((a / rate).max(0.0) * 1000.0) as u64;
                                 last_progress_at = std::time::Instant::now();
@@ -109,6 +130,20 @@ pub fn start_tick_emitter(app: &AppHandle) {
                         let playing = !player.is_paused();
                         let pos_ms = (raw * 1000.0) as u64;
                         let now = std::time::Instant::now();
+
+                        #[cfg(target_os = "linux")]
+                        {
+                            let load_gen = state.load_gen.load(Ordering::Relaxed);
+                            if load_gen != media_sync_load_gen {
+                                media_sync_load_gen = load_gen;
+                                last_media_sync = now;
+                            } else if playing
+                                && now.duration_since(last_media_sync) >= MEDIA_SYNC_INTERVAL
+                            {
+                                push_media_position(&state, pos);
+                                last_media_sync = now;
+                            }
+                        }
 
                         if !playing {
                             last_pos_ms = pos_ms;

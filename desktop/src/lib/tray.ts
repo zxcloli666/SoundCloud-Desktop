@@ -172,6 +172,9 @@ listen<{ action: string; value?: number }>('tray:cmd', (event) => {
         case 'volume':
             if (typeof value === 'number') store.setVolume(value);
             break;
+        case 'mute_toggle':
+            store.setVolume(store.volume > 0 ? 0 : store.volumeBeforeMute);
+            break;
         case 'like':
             void toggleLikeCurrent();
             break;

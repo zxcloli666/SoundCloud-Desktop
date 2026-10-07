@@ -16,6 +16,7 @@ import {
 import {
   enforceAudioCacheLimit,
   ensureTrackCached,
+  expectedDurationMs,
   getCacheInfo,
   removeCachedTrack,
   type TrackCacheInfo,
@@ -33,9 +34,9 @@ const SKIP_THRESHOLD_SEC = 30;
 const SLOW_LOAD_HINT_MS = 60_000;
 /** Минимум, чтобы засчитать «прослушано полностью» для коротких треков (50% длительности). */
 const FULL_PLAY_RATIO = 0.5;
-/** Битый кеш: сыграло меньше этого на треке от EARLY_END_MIN_EXPECTED_SEC — лечим перекачкой. */
-const EARLY_END_PLAYED_SEC = 10;
 const EARLY_END_MIN_EXPECTED_SEC = 30;
+const EARLY_END_TOLERANCE_SEC = 4;
+const EARLY_END_TOLERANCE_RATIO = 0.04;
 /** Один лечебный перекач на урн за сессию — защита от лупа на 30s-превью и мёртвых источниках. */
 const healedUrns = new Set<string>();
 
@@ -46,6 +47,7 @@ let hasTrack = false;
 let fallbackDuration = 0;
 let cachedTime = 0;
 let cachedDuration = 0;
+let acceptedShortFile = false;
 let downloadProgress: number | null = null;
 let loadGen = 0;
 let lastEndedUrn: string | null = null;
@@ -309,11 +311,12 @@ async function loadCachedFile(
   }
 }
 
-async function loadTrack(track: Track) {
+async function loadTrack(track: Track, resumeAt = 0) {
   const gen = ++loadGen;
   const isNewTrack = currentUrn !== track.urn;
   stopTrack();
   currentUrn = track.urn;
+  acceptedShortFile = false;
   const urn = track.urn;
 
   // A-B loop is per-track: drop it only when loading a genuinely different track —
@@ -338,9 +341,8 @@ async function loadTrack(track: Track) {
   invoke('audio_set_eq', { enabled: eqEnabled, gains: eqGains }).catch(console.error);
   invoke('audio_set_normalization', { enabled: normalizeVolume }).catch(console.error);
 
-  // Sync volume + playback rate (pitch is folded into the speed value sent to Rust)
   invoke('audio_set_volume', { volume: usePlayerStore.getState().volume }).catch(console.error);
-  invoke('audio_set_playback_rate', { rate: getEffectivePlaybackRate() }).catch(console.error);
+  syncPlaybackRateAndPitch();
 
   try {
     const highQualityStreaming = isHqStreaming();
@@ -352,8 +354,14 @@ async function loadTrack(track: Track) {
       const info = await getCacheInfo(urn);
       if (info?.path) return info.path;
       try {
-        return (await ensureTrackCached(urn, highQualityStreaming, track.duration, storageQuality))
-          .path;
+        return (
+          await ensureTrackCached(
+            urn,
+            highQualityStreaming,
+            expectedDurationMs(track),
+            storageQuality,
+          )
+        ).path;
       } catch {
         return null;
       }
@@ -363,12 +371,13 @@ async function loadTrack(track: Track) {
     const cached = await getCacheInfo(urn);
     if (cached?.path) {
       if (gen !== loadGen) return;
+      acceptedShortFile = cached.acceptedShort;
       usePlayerStore.getState().setPlaybackTransport(cached.quality, cached.source);
       console.log('[Audio] Playing from cache:', urn);
       const loadResult = await loadCachedFile(
         urn,
         cached.path,
-        !usePlayerStore.getState().isPlaying,
+        resumeAt > 0 || !usePlayerStore.getState().isPlaying,
         reResolve,
       );
       if (gen !== loadGen) return;
@@ -378,7 +387,7 @@ async function loadTrack(track: Track) {
         updateMetadata(track, loadResult.duration_secs);
         notify();
       }
-      afterLoad(track, gen);
+      await afterLoad(track, gen, resumeAt);
       return;
     }
 
@@ -396,25 +405,26 @@ async function loadTrack(track: Track) {
       cachedInfo = await ensureTrackCached(
         urn,
         highQualityStreaming,
-        track.duration,
+        expectedDurationMs(track),
         storageQuality,
       );
     } catch (error) {
       const premiumRefused = getLoadErrorText(error)?.includes('HTTP 403 Forbidden: forbidden');
       if (!highQualityStreaming || !premiumRefused) throw error;
       console.warn('[Audio] HQ load failed, retrying without hq:', error);
-      cachedInfo = await ensureTrackCached(urn, false, track.duration, storageQuality);
+      cachedInfo = await ensureTrackCached(urn, false, expectedDurationMs(track), storageQuality);
     }
 
     if (gen !== loadGen) return;
     setDownloadProgress(null);
+    acceptedShortFile = cachedInfo.acceptedShort;
     usePlayerStore.getState().setPlaybackTransport(cachedInfo.quality, cachedInfo.source);
 
     console.log('[Audio] Playing downloaded track:', urn);
     const loadResult = await loadCachedFile(
       urn,
       cachedInfo.path,
-      !usePlayerStore.getState().isPlaying,
+      resumeAt > 0 || !usePlayerStore.getState().isPlaying,
       reResolve,
     );
     if (loadResult?.duration_secs) {
@@ -426,7 +436,7 @@ async function loadTrack(track: Track) {
     void enforceAudioCacheLimit().catch(console.error);
 
     if (gen !== loadGen) return;
-    afterLoad(track, gen);
+    await afterLoad(track, gen, resumeAt);
   } catch (e) {
     console.error('[Audio] Load failed:', e);
     setDownloadProgress(null);
@@ -446,10 +456,16 @@ async function loadTrack(track: Track) {
   }
 }
 
-function afterLoad(track: Track, gen: number) {
+async function afterLoad(track: Track, gen: number, resumeAt: number) {
   if (gen !== loadGen) {
     invoke('audio_stop').catch(console.error);
     return;
+  }
+  if (resumeAt > 0) {
+    await invoke('audio_seek', { position: resumeAt }).catch(console.error);
+    if (gen !== loadGen) return;
+    cachedTime = resumeAt;
+    notify();
   }
   hasTrack = true;
 
@@ -490,29 +506,39 @@ async function hydrateTrackMetadata(track: Track, gen: number) {
   commitTrackMetadata(nextTrack);
 }
 
-/** Трек «закончился» через пару секунд при заявленных минутах — в кеше битый
- *  файл (заголовок целый, данные обрезаны: легаси без .meta.json или яд из
- *  storage до серверного duration-гейта). Сносим файл и перекачиваем вместо
- *  тихого скипа на следующий. */
+function endedEarly(track: Track): boolean {
+  if (track.access === 'preview') return false;
+  if (Math.abs(cachedTime - API_PREVIEW_DURATION_MS / 1000) < 2) return false;
+  const expected = Math.max(cachedDuration, track.duration / 1000);
+  if (expected < EARLY_END_MIN_EXPECTED_SEC) return false;
+  const tolerance = Math.max(EARLY_END_TOLERANCE_SEC, expected * EARLY_END_TOLERANCE_RATIO);
+  return cachedTime < expected - tolerance;
+}
+
 function maybeHealEarlyEnd(): boolean {
   if (!currentUrn || navigator.onLine === false) return false;
   const state = usePlayerStore.getState();
   const track = state.currentTrack;
-  if (!track || track.urn !== currentUrn || state.abLoop) return false;
-  if (track.duration / 1000 < EARLY_END_MIN_EXPECTED_SEC) return false;
-  if (cachedTime >= EARLY_END_PLAYED_SEC) return false;
-  if (healedUrns.has(track.urn)) return false;
+  if (!track || track.urn !== currentUrn || state.abLoop || acceptedShortFile) return false;
+  if (!endedEarly(track)) return false;
+  const endedAt = cachedTime;
+  if (healedUrns.has(track.urn)) {
+    console.warn(`[Audio] ended early again at ${endedAt.toFixed(1)}s, skipping:`, track.urn);
+    toast.error(i18n.t('track.loadError'), {
+      description: `${track.title}: ${i18n.t('track.fileDamaged')}`,
+    });
+    return false;
+  }
   healedUrns.add(track.urn);
   console.warn(
-    `[Audio] ended after ${cachedTime.toFixed(1)}s of ${(track.duration / 1000).toFixed(0)}s — purging cache and refetching:`,
+    `[Audio] ended after ${endedAt.toFixed(1)}s of ${(track.duration / 1000).toFixed(0)}s — purging cache and refetching:`,
     track.urn,
   );
   void removeCachedTrack(track.urn)
     .catch(() => {})
     .then(() => {
-      if (usePlayerStore.getState().currentTrack?.urn === track.urn) {
-        return loadTrack(track);
-      }
+      if (usePlayerStore.getState().currentTrack?.urn !== track.urn) return;
+      return loadTrack(track, Math.max(0, endedAt - 1));
     });
   return true;
 }
@@ -664,7 +690,7 @@ usePlayerStore.subscribe((state, prev) => {
     state.pitchSemitones !== prev.pitchSemitones ||
     state.pitchControlMode !== prev.pitchControlMode
   ) {
-    invoke('audio_set_playback_rate', { rate: getEffectivePlaybackRate() }).catch(console.error);
+    syncPlaybackRateAndPitch();
   }
 
   // A-B loop: only push an active region (both bounds set); otherwise clear it.
@@ -678,16 +704,11 @@ usePlayerStore.subscribe((state, prev) => {
   }
 });
 
-/** Combine playback rate and (manual) pitch into a single Rust-side speed value.
- *  Rust uses rodio's `set_speed` which couples tempo+pitch — so manual pitch is
- *  applied as a multiplier on top of the user's rate.
- */
-function getEffectivePlaybackRate(): number {
+function syncPlaybackRateAndPitch() {
   const { playbackRate, pitchControlMode, pitchSemitones } = usePlayerStore.getState();
-  if (pitchControlMode === 'manual' && Math.abs(pitchSemitones) > 0.001) {
-    return playbackRate * 2 ** (pitchSemitones / 12);
-  }
-  return playbackRate;
+  const ratio = pitchControlMode === 'manual' ? 2 ** (pitchSemitones / 12) / playbackRate : 1;
+  invoke('audio_set_pitch_ratio', { ratio }).catch(console.error);
+  invoke('audio_set_playback_rate', { rate: playbackRate }).catch(console.error);
 }
 
 /* ── EQ settings subscriber ──────────────────────────────────── */
@@ -724,10 +745,7 @@ function updatePlaybackState(playing: boolean) {
 }
 
 function updateMediaPosition() {
-  const pos = getCurrentTime();
-  if (pos > 0) {
-    invoke('audio_set_media_position', { position: pos }).catch(console.error);
-  }
+  invoke('audio_set_media_position', { position: getCurrentTime() }).catch(console.error);
 }
 
 // Listen for media control events from souvlaki (MPRIS/SMTC)
@@ -750,7 +768,8 @@ listen<number>('media:seek-relative', (e) => {
 
 let preloadTimer: ReturnType<typeof setTimeout> | null = null;
 
-export function preloadTrack(urn: string, storageQuality?: TrackScdMeta['storage_quality']) {
+export function preloadTrack(track: Track) {
+  const urn = track.urn;
   if (preloadTimer) clearTimeout(preloadTimer);
   preloadTimer = setTimeout(() => {
     const sessionId = getSessionId();
@@ -764,7 +783,8 @@ export function preloadTrack(urn: string, storageQuality?: TrackScdMeta['storage
           storageUrls: buildStorageUrls(urn),
           sessionId,
           hq,
-          storageQuality,
+          durationMs: expectedDurationMs(track),
+          storageQuality: track._scd_meta?.storage_quality,
         },
       ],
     }).catch(console.error);
@@ -796,7 +816,7 @@ export function preloadQueue() {
         storageUrls: buildStorageUrls(queue[idx].urn),
         sessionId,
         hq,
-        durationMs: queue[idx].duration,
+        durationMs: expectedDurationMs(queue[idx]),
         storageQuality: queue[idx]._scd_meta?.storage_quality,
       });
     }

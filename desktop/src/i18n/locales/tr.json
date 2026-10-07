@@ -203,6 +203,7 @@
     "noStreamHint": "Calinabilir akis yok. Go+ ya da bolgede kisitli olabilir veya SoundCloud istekleri sinirliyor. Daha sonra deneyin.",
     "slowLoad": "Parca gec yukleniyor",
     "slowLoadHint": "Parca hazirlaniyor, yuklenince calmaya baslayacak.",
+    "fileDamaged": "ses dosyasi erken kesiliyor",
     "dislike": "Onerme",
     "removeDislike": "Begenmemeyi kaldir",
     "play": "Calistir",

@@ -246,6 +246,7 @@
     "noStreamHint": "No playable stream. It may be Go+ or region-locked, or SoundCloud is limiting requests. Try again later.",
     "slowLoad": "The track is taking long to load",
     "slowLoadHint": "The track is warming up, it will start once it loads.",
+    "fileDamaged": "the audio file breaks off early",
     "dislike": "Don't recommend",
     "removeDislike": "Remove dislike",
     "play": "Play",

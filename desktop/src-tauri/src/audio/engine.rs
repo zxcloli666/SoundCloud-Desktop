@@ -1,5 +1,5 @@
 use std::path::PathBuf;
-use std::sync::atomic::Ordering;
+use std::sync::atomic::{AtomicU32, Ordering};
 use std::time::Duration;
 
 use tauri::State;
@@ -82,8 +82,10 @@ fn commit_loaded_track(
     new_player: rodio::Player,
     normalization_gain: f32,
 ) {
+    let mut player = state.player.lock().unwrap();
     apply_current_rate(state, &new_player);
-    *state.player.lock().unwrap() = Some(new_player);
+    new_player.set_volume(*state.volume.lock().unwrap());
+    *player = Some(new_player);
     *state.source_bytes.lock().unwrap() = Some(bytes);
     *state.normalization_gain.lock().unwrap() = normalization_gain;
     // Fresh track starts at source 0 / output 0.
@@ -93,9 +95,6 @@ fn commit_loaded_track(
     state.device_error.store(false, Ordering::Relaxed);
 }
 
-// Все 9 параметров — это один build шаг плеера: mixer/volume/normalization-кеш
-// + eq + analyser идут в одну `spawn_blocking`-обертку. Заводить отдельную
-// структуру `BuildPlayerArgs` ради одной точки вызова — лишний слой.
 #[allow(clippy::too_many_arguments)]
 async fn build_player_from_bytes(
     bytes: Vec<u8>,
@@ -107,6 +106,7 @@ async fn build_player_from_bytes(
     start_paused: bool,
     eq_params: std::sync::Arc<std::sync::RwLock<crate::audio::types::EqParams>>,
     analyser_buffer: std::sync::Arc<crate::audio::analyser::AnalyserBuffer>,
+    pitch_ratio: std::sync::Arc<AtomicU32>,
 ) -> Result<(Vec<u8>, rodio::Player, Option<f64>, f32), String> {
     task::spawn_blocking(move || {
         let normalization_gain = if normalization_enabled {
@@ -126,6 +126,7 @@ async fn build_player_from_bytes(
             start_paused,
             eq_params,
             analyser_buffer,
+            pitch_ratio,
         )?;
         Ok((bytes, player, duration_secs, normalization_gain))
     })
@@ -141,13 +142,16 @@ pub fn reload_current_track(state: &AudioState) -> Result<(), String> {
         return Ok(());
     };
 
-    let rate = current_rate(state);
-    let (source_position, was_paused) = {
+    let (rate, source_position, was_paused) = {
         let player = state.player.lock().unwrap();
         let Some(player) = player.as_ref() else {
             return Ok(());
         };
-        (source_pos(state, player), player.is_paused())
+        (
+            current_rate(state),
+            source_pos(state, player),
+            player.is_paused(),
+        )
     };
 
     let mixer = state.mixer.lock().unwrap().clone();
@@ -163,14 +167,15 @@ pub fn reload_current_track(state: &AudioState) -> Result<(), String> {
         } else {
             1.0
         },
-        was_paused,
+        true,
         state.eq_params.clone(),
         state.analyser_buffer.clone(),
+        state.pitch_ratio.clone(),
     )?;
     // Apply speed BEFORE seeking so try_seek's argument is interpreted under the speed
     // factor: try_seek(source/rate) lands the decoder at the original source position.
     let output_target = source_position / rate;
-    apply_current_rate(state, &new_player);
+    new_player.set_speed(rate as f32);
     if source_position > 0.0 {
         new_player
             .try_seek(Duration::from_secs_f64(output_target))
@@ -180,6 +185,11 @@ pub fn reload_current_track(state: &AudioState) -> Result<(), String> {
     let mut player = state.player.lock().unwrap();
     if let Some(old) = player.take() {
         old.stop();
+    }
+    new_player.set_speed(*state.playback_rate.lock().unwrap());
+    new_player.set_volume(*state.volume.lock().unwrap());
+    if !was_paused {
+        new_player.play();
     }
     *player = Some(new_player);
     set_pos_anchor(state, source_position, output_target);
@@ -219,6 +229,7 @@ pub async fn load_file(
         start_paused,
         state.eq_params.clone(),
         state.analyser_buffer.clone(),
+        state.pitch_ratio.clone(),
     )
     .await?;
 
@@ -322,6 +333,7 @@ pub async fn load_url(
         start_paused,
         state.eq_params.clone(),
         state.analyser_buffer.clone(),
+        state.pitch_ratio.clone(),
     )
     .await?;
 
@@ -379,27 +391,27 @@ pub fn seek_to(state: &AudioState, position: f64) -> Result<(), String> {
     // `position` is in source seconds (the timeline the whole app uses). rodio's
     // try_seek operates in output time = source/rate on a speed-applied player, so
     // convert before handing it the target.
-    let rate = current_rate(state);
-    let output_target = (position / rate).max(0.0);
-    let target = Duration::from_secs_f64(output_target);
-    let was_paused = state
-        .player
-        .lock()
-        .unwrap()
-        .as_ref()
-        .map(|player| player.is_paused())
-        .unwrap_or(false);
-
-    // For position 0, always recreate the player to avoid decoder state issues
-    if position > 0.0 {
+    let (rate, output_target, was_paused) = {
         let player = state.player.lock().unwrap();
+        let rate = current_rate(state);
+        let output_target = (position / rate).max(0.0);
         if let Some(ref player) = *player
-            && player.try_seek(target).is_ok() {
-                state.ended_notified.store(false, Ordering::Relaxed);
-                set_pos_anchor(state, position, output_target);
-                return Ok(());
-            }
-    }
+            && !player.empty()
+            && player
+                .try_seek(Duration::from_secs_f64(output_target))
+                .is_ok()
+        {
+            state.ended_notified.store(false, Ordering::Relaxed);
+            set_pos_anchor(state, position, output_target);
+            return Ok(());
+        }
+        (
+            rate,
+            output_target,
+            player.as_ref().is_some_and(|player| player.is_paused()),
+        )
+    };
+    let target = Duration::from_secs_f64(output_target);
 
     let bytes = state.source_bytes.lock().unwrap().clone();
     let Some(bytes) = bytes else {
@@ -419,18 +431,26 @@ pub fn seek_to(state: &AudioState, position: f64) -> Result<(), String> {
         } else {
             1.0
         },
-        was_paused,
+        true,
         state.eq_params.clone(),
         state.analyser_buffer.clone(),
+        state.pitch_ratio.clone(),
     )?;
-    apply_current_rate(state, &new_player);
+    new_player.set_speed(rate as f32);
     if position > 0.0 {
-        new_player.try_seek(target).ok();
+        new_player
+            .try_seek(target)
+            .map_err(|e| format!("Seek to {position:.1}s failed: {e}"))?;
     }
 
     let mut player = state.player.lock().unwrap();
     if let Some(old) = player.take() {
         old.stop();
+    }
+    new_player.set_speed(*state.playback_rate.lock().unwrap());
+    new_player.set_volume(*state.volume.lock().unwrap());
+    if !was_paused {
+        new_player.play();
     }
     *player = Some(new_player);
     set_pos_anchor(state, position, output_target);
@@ -469,6 +489,11 @@ pub fn set_playback_rate(rate: f64, state: State<'_, AudioState>) {
     } else {
         *state.playback_rate.lock().unwrap() = value;
     }
+}
+
+pub fn set_pitch_ratio(ratio: f64, state: State<'_, AudioState>) {
+    let value = ratio.clamp(0.25, 4.0) as f32;
+    state.pitch_ratio.store(value.to_bits(), Ordering::Relaxed);
 }
 
 pub fn get_position(state: State<'_, AudioState>) -> f64 {
@@ -598,8 +623,18 @@ pub async fn preview_play(
     // audible the instant it loads (a zero-start + tick fade-in left it silent).
     let analyser = crate::audio::analyser::AnalyserBuffer::new();
     let player = task::spawn_blocking(move || {
-        create_player_from_bytes(&bytes, &mixer, target, 1.0, false, eq_params, analyser)
-            .map(|(player, _)| player)
+        let pitch_ratio = std::sync::Arc::new(AtomicU32::new(1.0f32.to_bits()));
+        create_player_from_bytes(
+            &bytes,
+            &mixer,
+            target,
+            1.0,
+            false,
+            eq_params,
+            analyser,
+            pitch_ratio,
+        )
+        .map(|(player, _)| player)
     })
         .await
         .map_err(|e| format!("preview decode task failed: {e}"))??;

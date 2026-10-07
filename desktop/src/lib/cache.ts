@@ -1,6 +1,6 @@
 import {appCacheDir, join} from '@tauri-apps/api/path';
 import {mkdir, readDir, remove, writeFile} from '@tauri-apps/plugin-fs';
-import type {PlaybackQuality, PlaybackSource, TrackScdMeta} from '../stores/player';
+import type {PlaybackQuality, PlaybackSource, Track, TrackScdMeta} from '../stores/player';
 import {useSettingsStore} from '../stores/settings';
 import {toScproxyUrl} from './asset-url';
 import {getStaticPort} from './constants';
@@ -20,6 +20,7 @@ export interface TrackCacheInfo {
   path: string;
   quality: PlaybackQuality | null;
   source: PlaybackSource | null;
+  acceptedShort: boolean;
 }
 
 export function isCached(urn: string): Promise<boolean> {
@@ -77,6 +78,10 @@ async function buildCacheRequest(
     durationMs,
     storageQuality,
   };
+}
+
+export function expectedDurationMs(track: Pick<Track, 'duration' | 'access'>) {
+  return track.access === 'preview' ? undefined : track.duration;
 }
 
 export async function ensureTrackCached(

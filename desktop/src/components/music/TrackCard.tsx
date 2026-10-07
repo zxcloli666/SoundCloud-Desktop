@@ -52,7 +52,7 @@ export const TrackCard = React.memo(
     return (
       <div
         className="group relative select-none"
-        onMouseEnter={() => preloadTrack(track.urn, track._scd_meta?.storage_quality)}
+        onMouseEnter={() => preloadTrack(track)}
         style={{ contain: 'layout paint style' }}
       >
         {/* Artwork */}

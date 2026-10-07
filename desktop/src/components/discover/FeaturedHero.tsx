@@ -120,7 +120,7 @@ const FeaturedCard = React.memo(
     return (
       <div
         className="relative rounded-3xl overflow-hidden group glass-featured select-none"
-        onMouseEnter={() => preloadTrack(track.urn, track._scd_meta?.storage_quality)}
+        onMouseEnter={() => preloadTrack(track)}
       >
         {cover && <HeroBlurBg cover={cover} />}
         <div className="relative flex items-center gap-6 p-6">
