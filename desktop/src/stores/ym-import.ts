@@ -14,6 +14,7 @@ import {
 } from '../lib/ym-owned-playlists';
 import { loadPendingCreates, rememberPendingCreate } from '../lib/ym-pending-playlists';
 import { useAuthStore } from './auth';
+import { useSettingsStore, type YmImportOrder } from './settings';
 
 const PLAYLIST_NAME = 'Yandex Music';
 const PLAYLIST_TRACK_LIMIT = 500;
@@ -126,9 +127,10 @@ function resetRuntimeState() {
   matches = [];
 }
 
-function orderedUrns(): string[] {
+function orderedUrns(order: YmImportOrder): string[] {
   const newestFirst = [...matches].sort((a, b) => a.position - b.position).map((m) => m.urn);
-  return [...new Set(newestFirst)];
+  const unique = [...new Set(newestFirst)];
+  return order === 'oldest' ? unique.reverse() : unique;
 }
 
 function wait(ms: number) {
@@ -220,7 +222,8 @@ async function savePlaylists(runId: number, deleteStale: boolean) {
   await rememberOwnedPlaylists(owner, pending.createdUrns);
   if (!currentRunIsActive(runId)) return;
 
-  const chunks = chunkArray(orderedUrns(), PLAYLIST_TRACK_LIMIT);
+  const order = useSettingsStore.getState().ymImportOrder;
+  const chunks = chunkArray(orderedUrns(order), PLAYLIST_TRACK_LIMIT);
   const saved: ScPlaylist[] = [];
   let queued = 0;
   let failure: unknown = null;

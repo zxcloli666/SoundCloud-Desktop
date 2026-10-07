@@ -6,6 +6,7 @@ import {tauriStorage} from '../lib/tauri-storage';
 export type ThemePreset = 'soundcloud' | 'dark' | 'neon' | 'forest' | 'crimson' | 'custom';
 export type StartupPage = 'home' | 'search' | 'library' | 'settings';
 export type DiscordRpcMode = 'track' | 'artist' | 'activity';
+export type YmImportOrder = 'newest' | 'oldest';
 export interface SidebarPinnedPlaylist {
   urn: string;
   title: string;
@@ -88,6 +89,7 @@ export interface SettingsState {
   lyricsVisualizer: boolean;
   artistWaveCollapsed: boolean;
   wallhavenApiKey: string;
+  ymImportOrder: YmImportOrder;
   setAccentColor: (color: string) => void;
   setBgPrimary: (bg: string) => void;
   setThemePreset: (id: ThemePreset) => void;
@@ -123,6 +125,7 @@ export interface SettingsState {
   setLyricsVisualizer: (v: boolean) => void;
   setArtistWaveCollapsed: (v: boolean) => void;
   setWallhavenApiKey: (key: string) => void;
+  setYmImportOrder: (order: YmImportOrder) => void;
   resetTheme: () => void;
 }
 
@@ -163,6 +166,7 @@ const DEFAULTS = {
   lyricsVisualizer: false,
   artistWaveCollapsed: false,
   wallhavenApiKey: '',
+  ymImportOrder: 'newest' as YmImportOrder,
 };
 
 export const useSettingsStore = create<SettingsState>()(
@@ -230,6 +234,7 @@ export const useSettingsStore = create<SettingsState>()(
       setLyricsVisualizer: (lyricsVisualizer) => set({ lyricsVisualizer }),
       setArtistWaveCollapsed: (artistWaveCollapsed) => set({ artistWaveCollapsed }),
       setWallhavenApiKey: (wallhavenApiKey) => set({ wallhavenApiKey }),
+      setYmImportOrder: (ymImportOrder) => set({ ymImportOrder }),
       resetTheme: () =>
         set({
           accentColor: DEFAULTS.accentColor,
@@ -297,6 +302,7 @@ export const useSettingsStore = create<SettingsState>()(
         lyricsVisualizer: s.lyricsVisualizer,
         artistWaveCollapsed: s.artistWaveCollapsed,
         wallhavenApiKey: s.wallhavenApiKey,
+        ymImportOrder: s.ymImportOrder,
       }),
     },
   ),

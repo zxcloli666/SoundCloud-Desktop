@@ -679,7 +679,11 @@
     "tokenInvalid": "Yandex Music tokeni kabul etmedi. Yeni bir token alip tekrar deneyin",
     "ymUnavailable": "Yandex Music begenileri yuklenemedi. Baglantinizi kontrol edip tekrar deneyin",
     "searchUnavailable": "SoundCloud aramasi yanit vermiyor. Ice aktarmayi daha sonra tekrar deneyin",
-    "unknownError": "Ice aktarma sirasinda bir sorun olustu. Daha sonra tekrar deneyin"
+    "unknownError": "Ice aktarma sirasinda bir sorun olustu. Daha sonra tekrar deneyin",
+    "orderLabel": "Çalma listesindeki sıra",
+    "orderNewest": "En yeniler üstte",
+    "orderOldest": "En eskiler üstte",
+    "orderHint": "Yeniden içe aktarma, \"Yandex Music\" listelerini bu sırayla yeniden yazar"
   },
   "update": {
     "available": "Guncelleme mevcut",

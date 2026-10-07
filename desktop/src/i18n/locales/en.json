@@ -770,7 +770,11 @@
     "tokenInvalid": "Yandex Music did not accept the token. Get a new one and try again",
     "ymUnavailable": "Could not load your likes from Yandex Music. Check your connection and try again",
     "searchUnavailable": "SoundCloud search is not responding. Try the import again later",
-    "unknownError": "Something went wrong during the import. Try again later"
+    "unknownError": "Something went wrong during the import. Try again later",
+    "orderLabel": "Order in the playlist",
+    "orderNewest": "Newest on top",
+    "orderOldest": "Oldest on top",
+    "orderHint": "Importing again rewrites the \"Yandex Music\" playlists in this order"
   },
   "update": {
     "available": "Update available",
