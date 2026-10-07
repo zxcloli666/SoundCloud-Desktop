@@ -18,6 +18,7 @@ import {PerformanceCard} from './cards/PerformanceCard';
 import {PlaybackCard} from './cards/PlaybackCard';
 import {SoundForgeCard} from './cards/SoundForgeCard';
 import {StartupCard} from './cards/StartupCard';
+import {SupportCard} from './cards/SupportCard';
 import {ThemeCard} from './cards/ThemeCard';
 import {WallpaperCard} from './cards/WallpaperCard';
 
@@ -49,6 +50,7 @@ export const SETTINGS_CATEGORIES: SettingsCategory[] = [
                 <StartupCard/>
                 <NotificationsCard/>
                 <HelpCard/>
+                <SupportCard/>
             </>
         ),
     },
