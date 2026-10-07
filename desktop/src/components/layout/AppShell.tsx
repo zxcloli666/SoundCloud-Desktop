@@ -9,6 +9,7 @@ import {customCssHotkeyLabel} from '../../lib/custom-css';
 import {art} from '../../lib/formatters';
 import {usePerfMode} from '../../lib/perf';
 import {isMac} from '../../lib/platform';
+import {useWallpaperRotation} from '../../lib/wallpaper-rotation';
 import {toggleWindowFullscreen} from '../../lib/window';
 import {useLyricsStore} from '../../stores/lyrics';
 import {usePlayerStore} from '../../stores/player';
@@ -239,6 +240,11 @@ const CustomBackground = React.memo(() => {
   );
 });
 
+const WallpaperRotator = React.memo(() => {
+    useWallpaperRotation();
+    return null;
+});
+
 const AmbientGlow = React.memo(() => {
     const perf = usePerfMode();
   const artwork = usePlayerStore((s) => art(s.currentTrack?.artwork_url, 't500x500'));
@@ -445,6 +451,7 @@ export const AppShell = React.memo(() => {
 
   return (
     <div data-ui="app" className="flex flex-col h-screen relative overflow-hidden">
+      <WallpaperRotator />
       <CustomBackground />
       <CoverTint />
       <AmbientGlow />

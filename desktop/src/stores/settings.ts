@@ -8,6 +8,7 @@ export type ThemePreset = 'soundcloud' | 'dark' | 'neon' | 'forest' | 'crimson' 
 export type StartupPage = 'home' | 'search' | 'library' | 'settings';
 export type DiscordRpcMode = 'track' | 'artist' | 'activity';
 export type LyricsHighlight = 'word' | 'line';
+export type WallpaperRotationOrder = 'sequence' | 'shuffle';
 export interface SidebarPinnedPlaylist {
   urn: string;
   title: string;
@@ -66,6 +67,10 @@ export interface SettingsState {
   backgroundOpacity: number;
   backgroundDim: number;
   backgroundBlur: number;
+  wallpaperRotation: boolean;
+  wallpaperRotationNames: string[];
+  wallpaperRotationMinutes: number;
+  wallpaperRotationOrder: WallpaperRotationOrder;
   glassBlur: number;
   audioCacheLimitMB: number;
   hoverPreload: boolean;
@@ -106,6 +111,10 @@ export interface SettingsState {
   setBackgroundOpacity: (opacity: number) => void;
   setBackgroundDim: (dim: number) => void;
   setBackgroundBlur: (blur: number) => void;
+  setWallpaperRotation: (v: boolean) => void;
+  setWallpaperRotationNames: (names: string[]) => void;
+  setWallpaperRotationMinutes: (minutes: number) => void;
+  setWallpaperRotationOrder: (order: WallpaperRotationOrder) => void;
   setGlassBlur: (blur: number) => void;
   setAudioCacheLimitMB: (limit: number) => void;
   setHoverPreload: (enabled: boolean) => void;
@@ -156,6 +165,10 @@ const DEFAULTS = {
   backgroundOpacity: 0.15,
   backgroundDim: 0,
   backgroundBlur: 0,
+  wallpaperRotation: false,
+  wallpaperRotationNames: [] as string[],
+  wallpaperRotationMinutes: 15,
+  wallpaperRotationOrder: 'sequence' as WallpaperRotationOrder,
   glassBlur: 40,
   audioCacheLimitMB: 1024,
   hoverPreload: true,
@@ -209,6 +222,10 @@ export const useSettingsStore = create<SettingsState>()(
       setBackgroundOpacity: (backgroundOpacity) => set({ backgroundOpacity }),
       setBackgroundDim: (backgroundDim) => set({ backgroundDim }),
       setBackgroundBlur: (backgroundBlur) => set({ backgroundBlur }),
+      setWallpaperRotation: (wallpaperRotation) => set({ wallpaperRotation }),
+      setWallpaperRotationNames: (wallpaperRotationNames) => set({ wallpaperRotationNames }),
+      setWallpaperRotationMinutes: (wallpaperRotationMinutes) => set({ wallpaperRotationMinutes }),
+      setWallpaperRotationOrder: (wallpaperRotationOrder) => set({ wallpaperRotationOrder }),
       setGlassBlur: (glassBlur) => set({ glassBlur }),
       setAudioCacheLimitMB: (audioCacheLimitMB) => set({ audioCacheLimitMB }),
       setHoverPreload: (hoverPreload) => set({ hoverPreload }),
@@ -266,6 +283,10 @@ export const useSettingsStore = create<SettingsState>()(
           backgroundOpacity: DEFAULTS.backgroundOpacity,
           backgroundDim: DEFAULTS.backgroundDim,
           backgroundBlur: DEFAULTS.backgroundBlur,
+          wallpaperRotation: DEFAULTS.wallpaperRotation,
+          wallpaperRotationNames: DEFAULTS.wallpaperRotationNames,
+          wallpaperRotationMinutes: DEFAULTS.wallpaperRotationMinutes,
+          wallpaperRotationOrder: DEFAULTS.wallpaperRotationOrder,
           glassBlur: DEFAULTS.glassBlur,
           interfaceFont: DEFAULTS.interfaceFont,
           customFontName: DEFAULTS.customFontName,
@@ -304,6 +325,10 @@ export const useSettingsStore = create<SettingsState>()(
         backgroundOpacity: s.backgroundOpacity,
         backgroundDim: s.backgroundDim,
         backgroundBlur: s.backgroundBlur,
+        wallpaperRotation: s.wallpaperRotation,
+        wallpaperRotationNames: s.wallpaperRotationNames,
+        wallpaperRotationMinutes: s.wallpaperRotationMinutes,
+        wallpaperRotationOrder: s.wallpaperRotationOrder,
         glassBlur: s.glassBlur,
         audioCacheLimitMB: s.audioCacheLimitMB,
         hoverPreload: s.hoverPreload,
