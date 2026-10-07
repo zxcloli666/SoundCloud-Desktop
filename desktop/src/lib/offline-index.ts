@@ -110,16 +110,52 @@ export async function rememberTracks(tracks: Track[]) {
   }
 }
 
-export async function rememberLikedTracks(tracks: Track[]) {
+export interface LikedSnapshot {
+  complete: boolean;
+  confirmedEmpty?: boolean;
+}
+
+export function mergeLikedUrns(
+  local: string[],
+  server: string[],
+  { complete, confirmedEmpty = false }: LikedSnapshot,
+): string[] {
+  if (complete && (server.length > 0 || confirmedEmpty)) return [...new Set(server)];
+  const merged = new Set(server);
+  for (const urn of local) merged.add(urn);
+  return [...merged];
+}
+
+export async function rememberLikedTracks(tracks: Track[], snapshot: LikedSnapshot) {
   const index = await loadIndex();
   for (const track of tracks) {
     if (!track?.urn) continue;
     index.tracksByUrn[track.urn] = cloneTrack(track);
   }
 
-  index.likedUrns = tracks.map((track) => track.urn);
-  index.updatedAt = Date.now();
+  const urns = tracks.filter((track) => track?.urn).map((track) => track.urn);
+  index.likedUrns = mergeLikedUrns(index.likedUrns, urns, snapshot);
+  if (snapshot.complete) index.updatedAt = Date.now();
   schedulePersist();
+}
+
+export async function rememberLikedUrn(urn: string, track?: Track) {
+  const index = await loadIndex();
+  if (track?.urn === urn) index.tracksByUrn[urn] = cloneTrack(track);
+  index.likedUrns = [urn, ...index.likedUrns.filter((u) => u !== urn)];
+  schedulePersist();
+}
+
+export async function forgetLikedUrn(urn: string) {
+  const index = await loadIndex();
+  if (!index.likedUrns.includes(urn)) return;
+  index.likedUrns = index.likedUrns.filter((u) => u !== urn);
+  schedulePersist();
+}
+
+export async function getOfflineLikedUrns() {
+  const index = await loadIndex();
+  return [...index.likedUrns];
 }
 
 export async function getOfflineLikedTracks() {
