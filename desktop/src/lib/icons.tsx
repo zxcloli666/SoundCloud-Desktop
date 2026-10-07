@@ -13,6 +13,7 @@ import {
   Bell as _Bell,
   Bookmark as _Bookmark,
   BookOpen as _BookOpen,
+  Braces as _Braces,
   Calendar as _Calendar,
   Check as _Check,
   ChevronDown as _ChevronDown,
@@ -127,6 +128,7 @@ export const Clock = memo(_Clock);
 export const Bell = memo(_Bell);
 export const BookOpen = memo(_BookOpen);
 export const Bookmark = memo(_Bookmark);
+export const Braces = memo(_Braces);
 export const Cloud = memo(_Cloud);
 export const Compass = memo(_Compass);
 export const Database = memo(_Database);

@@ -679,7 +679,22 @@
     "coverAccentDesc": "Parça çalarken düğmeler, kaydırıcılar ve vurgular kapağın rengini alır",
     "coverPreviewIdle": "Renklerini görmek için bir parça çalın",
     "customCssOffToast": "Özel CSS kapatıldı. Yeniden açmak için aynı tuşlara basın veya Ayarlar > Görünüm bölümünü açın",
-    "customCssOnToast": "Özel CSS açık"
+    "customCssOnToast": "Özel CSS açık",
+    "customCssTitle": "Özel CSS",
+    "customCssDesc": "Uygulamanın herhangi bir bölümünü kendi CSS kodunuzla değiştirin, değişiklikler yazarken uygulanır",
+    "customCssLive": "Etkin",
+    "customCssOff": "Kapalı",
+    "customCssExample": "Örnek",
+    "customCssClear": "Temizle",
+    "customCssPlaceholder": "[data-ui=\"sidebar\"] {\n  background: rgba(255, 85, 0, 0.06);\n}",
+    "customCssLines_one": "{{count}} satır",
+    "customCssLines_other": "{{count}} satır",
+    "customCssBlocked_one": "{{count}} uzak bağlantı engellendi: @import ve web url() yüklenmez",
+    "customCssBlocked_other": "{{count}} uzak bağlantı engellendi: @import ve web url() yüklenmez",
+    "customCssHooks": "Kancalar",
+    "customCssVariables": "Değişkenler",
+    "customCssRescue": "Düzen bozuldu mu? Stilleri şu tuşlarla kapatın",
+    "customCssGuide": "Kılavuz"
   },
   "eq": {
     "title": "Ekolayzir",

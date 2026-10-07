@@ -5,6 +5,7 @@ import {AccountCard} from './cards/AccountCard';
 import {AudioDeviceCard} from './cards/AudioDeviceCard';
 import {CacheCard} from './cards/CacheCard';
 import {CoverColorsCard} from './cards/CoverColorsCard';
+import {CustomCssCard} from './cards/CustomCssCard';
 import {DiscordCard} from './cards/DiscordCard';
 import {FontCard} from './cards/FontCard';
 import {HelpCard} from './cards/HelpCard';
@@ -61,6 +62,7 @@ export const SETTINGS_CATEGORIES: SettingsCategory[] = [
                 <FontCard/>
                 <WallpaperCard/>
                 <PerformanceCard/>
+                <CustomCssCard/>
             </>
         ),
     },

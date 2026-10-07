@@ -768,7 +768,22 @@
     "coverAccentDesc": "Buttons, sliders and highlights take the cover colour while a track plays",
     "coverPreviewIdle": "Play a track to see its colours",
     "customCssOffToast": "Custom CSS is off. Press the same keys or open Settings > Appearance to turn it back on",
-    "customCssOnToast": "Custom CSS is on"
+    "customCssOnToast": "Custom CSS is on",
+    "customCssTitle": "Custom CSS",
+    "customCssDesc": "Restyle any part of the app with your own CSS, changes apply as you type",
+    "customCssLive": "Live",
+    "customCssOff": "Off",
+    "customCssExample": "Example",
+    "customCssClear": "Clear",
+    "customCssPlaceholder": "[data-ui=\"sidebar\"] {\n  background: rgba(255, 85, 0, 0.06);\n}",
+    "customCssLines_one": "{{count}} line",
+    "customCssLines_other": "{{count}} lines",
+    "customCssBlocked_one": "{{count}} remote link blocked: @import and web url() are not loaded",
+    "customCssBlocked_other": "{{count}} remote links blocked: @import and web url() are not loaded",
+    "customCssHooks": "Hooks",
+    "customCssVariables": "Variables",
+    "customCssRescue": "Broke the layout? Turn the styles off with",
+    "customCssGuide": "Guide"
   },
   "eq": {
     "title": "Equalizer",
