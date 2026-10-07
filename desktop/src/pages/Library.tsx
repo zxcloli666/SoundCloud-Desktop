@@ -11,8 +11,9 @@ import {PlaylistCard} from '../components/music/PlaylistCard';
 import {TrackCard} from '../components/music/TrackCard';
 import {SyncNotice, syncNoticeOf} from '../components/ui/SyncNotice';
 import {useLikedTracks, useMyFollowings, useMyLikedPlaylists, useMyPlaylists} from '../lib/hooks';
-import {Bookmark, Heart, ListMusic, Users} from '../lib/icons';
+import {Bookmark, Disc3, Heart, ListMusic, Users} from '../lib/icons';
 import {likedTracksCount} from '../lib/likes';
+import {splitReleases} from '../lib/playlist-kind';
 import {armLikesContinuation} from '../lib/queue-continuation';
 import {useAuthStore} from '../stores/auth';
 
@@ -46,9 +47,10 @@ export const Library = React.memo(() => {
     const base = genre ? playlists.filter((p) => p.genre?.trim() === genre) : playlists;
     return base.slice(0, 12);
   }, [playlists, genre]);
-  const likedPlaylistPreview = useMemo(() => {
+  const likedPreview = useMemo(() => {
     const base = genre ? likedPlaylists.filter((p) => p.genre?.trim() === genre) : likedPlaylists;
-    return base.slice(0, 12);
+    const { sets, releases } = splitReleases(base);
+    return { sets: sets.slice(0, 12), releases: releases.slice(0, 12) };
   }, [likedPlaylists, genre]);
   const artistPreview = useMemo(() => followings.slice(0, 14), [followings]);
   const likesPreview = useMemo(() => {
@@ -98,13 +100,27 @@ export const Library = React.memo(() => {
           </CollectionRail>
         )}
 
-        {likedPlaylistPreview.length > 0 && (
+        {likedPreview.sets.length > 0 && (
           <CollectionRail
             icon={<Bookmark size={16} />}
             title={t('library.likedPlaylists')}
             to="/library/playlists"
           >
-            {likedPlaylistPreview.map((p) => (
+            {likedPreview.sets.map((p) => (
+              <div key={p.urn} className="w-[160px] shrink-0">
+                <PlaylistCard playlist={p} />
+              </div>
+            ))}
+          </CollectionRail>
+        )}
+
+        {likedPreview.releases.length > 0 && (
+          <CollectionRail
+            icon={<Disc3 size={16} />}
+            title={t('library.likedAlbums')}
+            to="/library/playlists"
+          >
+            {likedPreview.releases.map((p) => (
               <div key={p.urn} className="w-[160px] shrink-0">
                 <PlaylistCard playlist={p} />
               </div>

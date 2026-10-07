@@ -1,11 +1,39 @@
 import React, {useEffect, useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
-import {useInfiniteScroll, useMyLikedPlaylists, useMyPlaylists} from '../../lib/hooks';
+import {type Playlist, useInfiniteScroll, useMyLikedPlaylists, useMyPlaylists} from '../../lib/hooks';
 import {Loader2} from '../../lib/icons';
+import {splitReleases} from '../../lib/playlist-kind';
 import {matchesTerms, queryTerms} from '../../lib/text-match';
 import {PlaylistCard} from '../music/PlaylistCard';
 import {SyncNotice, syncNoticeOf} from '../ui/SyncNotice';
 import {VirtualGrid} from '../ui/VirtualGrid';
+
+function PlaylistSection({title, playlists}: { title: string; playlists: Playlist[] }) {
+    if (playlists.length === 0) return null;
+    return (
+        <section>
+            <h3 className="text-lg font-bold text-white/80 mb-5 px-1">{title}</h3>
+            <VirtualGrid
+                items={playlists}
+                itemHeight={320}
+                minColumnWidth={180}
+                gap={24}
+                overscan={3}
+                disabled={playlists.length < 30}
+                getItemKey={(playlist) => playlist.urn}
+                renderItem={(playlist) => <PlaylistCard playlist={playlist}/>}
+            />
+        </section>
+    );
+}
+
+function SectionLoader() {
+    return (
+        <div className="flex justify-center py-10">
+            <Loader2 size={24} className="animate-spin text-white/20"/>
+        </div>
+    );
+}
 
 export const PlaylistsTab = React.memo(function PlaylistsTab({filter}: { filter: string }) {
     const {t} = useTranslation();
@@ -27,6 +55,8 @@ export const PlaylistsTab = React.memo(function PlaylistsTab({filter}: { filter:
             ? likedPlaylists.filter((p) => matchesTerms(terms, p.title, p.user.username))
             : likedPlaylists;
     }, [likedPlaylists, filter]);
+
+    const liked = useMemo(() => splitReleases(filteredLiked), [filteredLiked]);
 
     const hasNextPage = likedPlaylistsQuery.hasNextPage || myPlaylistsQuery.hasNextPage;
     const isFetchingNextPage =
@@ -53,48 +83,19 @@ export const PlaylistsTab = React.memo(function PlaylistsTab({filter}: { filter:
         <div className="min-h-[400px]">
             <div className="space-y-10">
                 {myPlaylistsQuery.isLoading ? (
-                    <div className="flex justify-center py-10">
-                        <Loader2 size={24} className="animate-spin text-white/20"/>
-                    </div>
-                ) : filteredCreated.length > 0 ? (
-                    <section>
-                        <h3 className="text-lg font-bold text-white/80 mb-5 px-1">
-                            {t('library.yourPlaylists')}
-                        </h3>
-                        <VirtualGrid
-                            items={filteredCreated}
-                            itemHeight={320}
-                            minColumnWidth={180}
-                            gap={24}
-                            overscan={3}
-                            disabled={filteredCreated.length < 30}
-                            getItemKey={(playlist) => playlist.urn}
-                            renderItem={(playlist) => <PlaylistCard playlist={playlist}/>}
-                        />
-                    </section>
-                ) : null}
+                    <SectionLoader/>
+                ) : (
+                    <PlaylistSection title={t('library.yourPlaylists')} playlists={filteredCreated}/>
+                )}
 
                 {likedPlaylistsQuery.isLoading ? (
-                    <div className="flex justify-center py-10">
-                        <Loader2 size={24} className="animate-spin text-white/20"/>
-                    </div>
-                ) : filteredLiked.length > 0 ? (
-                    <section>
-                        <h3 className="text-lg font-bold text-white/80 mb-5 px-1">
-                            {t('library.likedPlaylists')}
-                        </h3>
-                        <VirtualGrid
-                            items={filteredLiked}
-                            itemHeight={320}
-                            minColumnWidth={180}
-                            gap={24}
-                            overscan={3}
-                            disabled={filteredLiked.length < 30}
-                            getItemKey={(playlist) => playlist.urn}
-                            renderItem={(playlist) => <PlaylistCard playlist={playlist}/>}
-                        />
-                    </section>
-                ) : null}
+                    <SectionLoader/>
+                ) : (
+                    <>
+                        <PlaylistSection title={t('library.likedPlaylists')} playlists={liked.sets}/>
+                        <PlaylistSection title={t('library.likedAlbums')} playlists={liked.releases}/>
+                    </>
+                )}
 
                 {!myPlaylistsQuery.isLoading &&
                     !likedPlaylistsQuery.isLoading &&
