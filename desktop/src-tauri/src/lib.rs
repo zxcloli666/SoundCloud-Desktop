@@ -21,6 +21,7 @@ const HTTP_READ_TIMEOUT_SECS: u64 = 30;
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 #[cfg_attr(feature = "cef", tauri::cef_entry_point)]
 pub fn run() {
+    app::diagnostics::install_panic_hook();
     #[cfg(all(windows, not(feature = "cef")))]
     app::webview2::exit_if_runtime_missing();
 
@@ -49,7 +50,7 @@ pub fn run() {
             });
         })
         .setup(move |app| {
-            app::diagnostics::install_panic_hook(app.handle());
+            app::diagnostics::init_log_file(app.handle());
             #[cfg(all(windows, not(feature = "cef")))]
             app::webview2::exit_if_main_window_missing(app);
 
@@ -188,6 +189,8 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             network::server::get_server_ports,
             app::diagnostics::diagnostics_log,
+            app::diagnostics::diagnostics_log_dir,
+            app::diagnostics::diagnostics_open_log_dir,
             app::visibility::show_main_window,
             app::popover::tray_popover_hide,
             discord::discord_connect,

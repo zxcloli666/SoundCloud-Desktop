@@ -1,4 +1,5 @@
 pub mod diagnostics;
+pub mod log_sink;
 pub mod popover;
 pub mod tray;
 pub mod visibility;
