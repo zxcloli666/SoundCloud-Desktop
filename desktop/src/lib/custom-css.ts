@@ -53,7 +53,8 @@ export function applyCustomCss(css: string, doc: Document = document) {
 }
 
 export function isCustomCssHotkey(e: KeyboardEvent): boolean {
-  return e.code === 'KeyC' && e.shiftKey && e.altKey && (isMac() ? e.metaKey : e.ctrlKey);
+  if (e.code !== 'KeyC' || !e.shiftKey || !e.altKey || e.getModifierState('AltGraph')) return false;
+  return isMac() ? e.metaKey : e.ctrlKey;
 }
 
 export function customCssHotkeyLabel(): string[] {
