@@ -10,7 +10,7 @@
 //! операции Tauri обязаны идти с main-потока → действия гоним через
 //! `run_on_main_thread`.
 
-use tauri::Emitter;
+use tauri::{Emitter, Manager};
 
 use crate::app::{popover, visibility};
 use crate::rt::AppHandle;
@@ -46,6 +46,7 @@ pub fn run_action(app: &AppHandle, id: &str) {
         "show" => visibility::show_main(&h),
         "mini" => popover::open_pinned(&h),
         "quit" => {
+            h.state::<popover::TrayState>().persist_position();
             // На CEF graceful `app.exit()` может зависнуть в teardown (кросс-процессный
             // OnBeforeClose окон/вебвью не завершается) → жёсткий выход; Chromium-хелперы
             // сами умирают по смерти родителя. На wry — обычный graceful exit.

@@ -156,7 +156,7 @@ pub fn run() {
             audio::start_default_output_monitor(app.handle());
             audio::start_fft_thread(app.handle().clone(), analyser_buffer);
 
-            app.manage(app::popover::TrayState::default());
+            app.manage(app::popover::TrayState::load(&data_dir));
             app::tray::setup_tray(app).expect("failed to setup tray");
 
             let auth_state =
@@ -178,6 +178,12 @@ pub fn run() {
                     let _ = window.hide();
                     app::visibility::set_window_page_visible(window, false);
                 }
+            }
+            tauri::WindowEvent::Moved(position) if window.label() == app::popover::LABEL => {
+                window
+                    .app_handle()
+                    .state::<app::popover::TrayState>()
+                    .record_move(position.x, position.y);
             }
             tauri::WindowEvent::Resized(size) if window.label() == "main" => {
                 app::visibility::follow_minimize(window, size);
