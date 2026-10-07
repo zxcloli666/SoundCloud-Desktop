@@ -1,5 +1,5 @@
 import {useTranslation} from 'react-i18next';
-import {MessageCircle} from '../../../lib/icons';
+import {MessageCircle, MicVocal} from '../../../lib/icons';
 import {getArtistDisplay, getDisplayTitle} from '../../../lib/track-display';
 import {useDiscordStatusStore} from '../../../stores/discord-status';
 import {usePlayerStore} from '../../../stores/player';
@@ -49,6 +49,19 @@ function StatusPreview({shown}: { shown: DiscordRpcStatus }) {
     );
 }
 
+function LyricsPreview() {
+    const {t} = useTranslation();
+    return (
+        <div
+            className="flex items-center gap-2.5 rounded-xl border border-white/[0.05] bg-white/[0.02] px-3 py-2.5">
+            <MicVocal size={14} className="shrink-0 text-white/30"/>
+            <p className="min-w-0 truncate text-[12.5px] italic text-white/70">
+                {t('settings.discordRpcLyricsSample')}
+            </p>
+        </div>
+    );
+}
+
 export function DiscordCard() {
     const {t} = useTranslation();
     const enabled = useSettingsStore((s) => s.discordRpcEnabled);
@@ -59,9 +72,12 @@ export function DiscordCard() {
     const setStatus = useSettingsStore((s) => s.setDiscordRpcStatus);
     const showButton = useSettingsStore((s) => s.discordRpcShowButton);
     const setShowButton = useSettingsStore((s) => s.setDiscordRpcShowButton);
+    const lyrics = useSettingsStore((s) => s.discordRpcLyrics);
+    const setLyrics = useSettingsStore((s) => s.setDiscordRpcLyrics);
     const connection = useDiscordStatusStore((s) => s.status);
     const shown = effectiveStatus(mode, status);
     const choices = statusOptions(mode);
+    const lyricsAvailable = mode !== 'activity';
 
     return (
         <Card
@@ -119,6 +135,23 @@ export function DiscordCard() {
                             />
                         )}
                         <StatusPreview shown={shown}/>
+                    </div>
+                    <div className="space-y-2">
+                        <Row
+                            title={t('settings.discordRpcLyrics')}
+                            desc={t(
+                                lyricsAvailable
+                                    ? 'settings.discordRpcLyricsDesc'
+                                    : 'settings.discordRpcLyricsActivityHint',
+                            )}
+                        >
+                            <Toggle
+                                checked={lyrics && lyricsAvailable}
+                                disabled={!lyricsAvailable}
+                                onChange={() => setLyrics(!lyrics)}
+                            />
+                        </Row>
+                        {lyrics && lyricsAvailable && <LyricsPreview/>}
                     </div>
                     <Row title={t('settings.discordRpcButton')} desc={t('settings.discordRpcButtonDesc')}>
                         <Toggle checked={showButton} onChange={() => setShowButton(!showButton)}/>
