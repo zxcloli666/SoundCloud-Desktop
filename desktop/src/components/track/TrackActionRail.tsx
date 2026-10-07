@@ -4,8 +4,8 @@ import {ListPlus, MicVocal} from '../../lib/icons';
 import {useLyricsStore} from '../../stores/lyrics';
 import type {Track} from '../../stores/player';
 import {AddToPlaylistDialog} from '../music/AddToPlaylistDialog';
-import {SharingToggle} from '../music/SharingToggle';
 import {CopyIconAction, DownloadButton, IconAction, LikeBtn, PlayPill} from './actions';
+import {OwnerTrackActions} from './OwnerTrackActions';
 
 /** Hero transport + engagement + utility rail. Lives OUTSIDE the genre-scoped
  *  wave wrapper, so play/like keep the user's own accent. */
@@ -52,7 +52,7 @@ export const TrackActionRail = React.memo(function TrackActionRail({
                 </AddToPlaylistDialog>
                 <CopyIconAction url={track.permalink_url}/>
                 <DownloadButton track={track}/>
-                {isOwner && <SharingToggle kind="track" urn={track.urn} sharing={track.sharing}/>}
+                {isOwner && <OwnerTrackActions track={track}/>}
             </div>
         </div>
     );

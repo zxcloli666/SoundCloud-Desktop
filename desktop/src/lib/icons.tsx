@@ -26,6 +26,7 @@ import {
   Database as _Database,
   Disc3 as _Disc3,
   Download as _Download,
+  Ellipsis as _Ellipsis,
   ExternalLink as _ExternalLink,
   Eye as _Eye,
   FileDown as _FileDown,
@@ -154,6 +155,7 @@ export const PanelLeftClose = memo(_PanelLeftClose);
 export const PanelLeftOpen = memo(_PanelLeftOpen);
 export const Pause = memo(_Pause);
 export const Pencil = memo(_Pencil);
+export const Ellipsis = memo(_Ellipsis);
 export const Play = memo(_Play);
 export const Plus = memo(_Plus);
 export const Repeat = memo(_Repeat);

@@ -16,11 +16,13 @@ import {
 } from '../../lib/icons';
 import {usePerfMode} from '../../lib/perf';
 import { useTrackPlay } from '../../lib/useTrackPlay';
+import { useAuthStore } from '../../stores/auth';
 import type { Track } from '../../stores/player';
 import { AddToPlaylistDialog } from '../music/AddToPlaylistDialog';
 import { LikeButton } from '../music/LikeButton';
 import {sameScdMeta, TrackStatusBadges} from '../music/TrackStatusBadges';
 import { TrackTitleArtist } from '../music/TrackTitleArtist';
+import { OwnerTrackMenu } from '../track/OwnerTrackMenu';
 
 interface ThemedTrackRowProps {
   track: Track;
@@ -37,6 +39,7 @@ function ThemedTrackRowImpl({ track, index, queue, aura }: ThemedTrackRowProps) 
   const playIcon = lightAura ? playBlack14 : playWhite14;
   const pauseIcon = lightAura ? pauseBlack14 : pauseWhite14;
     const pb = usePerfMode().blur(16);
+  const isOwner = useAuthStore((s) => !!s.user?.urn && s.user.urn === track.user?.urn);
 
   return (
     <div
@@ -150,6 +153,7 @@ function ThemedTrackRowImpl({ track, index, queue, aura }: ThemedTrackRowProps) 
             <ListPlus size={14} />
           </button>
         </AddToPlaylistDialog>
+        {isOwner && <OwnerTrackMenu track={track} />}
       </div>
 
       <span className="text-[12px] text-white/30 tabular-nums font-medium shrink-0 w-12 text-right">
@@ -168,6 +172,10 @@ const areEqual = (prev: ThemedTrackRowProps, next: ThemedTrackRowProps) =>
   prev.aura.accent[2] === next.aura.accent[2] &&
     prev.track.user_favorite === next.track.user_favorite &&
     prev.track.sharing === next.track.sharing &&
+    prev.track.title === next.track.title &&
+    prev.track.description === next.track.description &&
+    prev.track.genre === next.track.genre &&
+    prev.track.tag_list === next.track.tag_list &&
     sameScdMeta(prev.track._scd_meta, next.track._scd_meta);
 
 export const ThemedTrackRow = React.memo(ThemedTrackRowImpl, areEqual);
