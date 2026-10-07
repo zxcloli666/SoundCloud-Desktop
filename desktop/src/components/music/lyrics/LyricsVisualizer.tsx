@@ -1,6 +1,7 @@
+import {invoke} from '@tauri-apps/api/core';
 import {listen} from '@tauri-apps/api/event';
 import React, {useEffect, useRef} from 'react';
-import {isAppIdle} from '../../../lib/perf';
+import {isAppIdle, subscribeAppIdle} from '../../../lib/perf';
 
 /* ── Fullscreen wave visualizer — driven by real FFT from Rust ────── */
 /* Rust `audio:fft` event delivers 64 log-spaced magnitude bins ~30Hz.
@@ -8,6 +9,10 @@ import {isAppIdle} from '../../../lib/perf';
  * decay tail (~250ms) so play→pause fades smoothly. No rAF when idle. */
 
 const VIS_BINS = 64;
+
+function setSpectrumEnabled(enabled: boolean) {
+    void invoke('audio_set_fft_enabled', {enabled}).catch(() => {});
+}
 
 function readAccentRgb(): [number, number, number] {
     if (typeof window === 'undefined') return [255, 85, 0];
@@ -40,6 +45,16 @@ export const LyricsVisualizer = React.memo(() => {
     // so we can do a quick decay tail after the last event.
     const targetRef = useRef<Float32Array>(new Float32Array(VIS_BINS));
     const displayRef = useRef<Float32Array>(new Float32Array(VIS_BINS));
+
+    useEffect(() => {
+        const sync = () => setSpectrumEnabled(!isAppIdle());
+        sync();
+        const unsubscribe = subscribeAppIdle(sync);
+        return () => {
+            unsubscribe();
+            setSpectrumEnabled(false);
+        };
+    }, []);
 
     useEffect(() => {
         const canvas = canvasRef.current;
