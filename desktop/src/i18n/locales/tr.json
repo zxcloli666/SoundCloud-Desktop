@@ -51,6 +51,8 @@
     "repeat": "Tekrar",
     "abLoopSetA": "En iyi bolumu dongule: baslangic (A)",
     "abLoopSetB": "En iyi bolumu dongule: bitis (B)",
+    "volumeFine": "hassas",
+    "volumeHint": "Kaydirici 50, 100, 150 ve %200 degerlerine yapisir. Hassas %1 ayar icin Shift basili tutun",
     "abLoopClear": "A-B dongusunu temizle",
     "notPlaying": "Calmiyor",
     "noContinuation": "Benzer parça bulunamadı, çalma durduruldu",

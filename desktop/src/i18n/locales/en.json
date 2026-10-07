@@ -58,6 +58,8 @@
     "pitchModeManualShort": "Manual",
     "abLoopSetA": "Loop best part: set start (A)",
     "abLoopSetB": "Loop best part: set end (B)",
+    "volumeFine": "fine",
+    "volumeHint": "Drag snaps to 50, 100, 150 and 200%. Hold Shift for fine 1% control",
     "abLoopClear": "Clear A-B loop",
     "previous": "Previous",
     "next": "Next",
