@@ -71,7 +71,16 @@ const NAMED_CODES = new Set([
   'NumpadEnter',
 ]);
 
-const RESERVED = new Set(['Control+KeyK', 'Control+Slash', 'Super+KeyK', 'Super+Slash']);
+const ZOOM_CODES = ['Equal', 'Minus', 'Digit0', 'NumpadAdd', 'NumpadSubtract', 'Numpad0'];
+const ZOOM_MODIFIERS = ['Control', 'Control+Shift', 'Super', 'Shift+Super'];
+
+const RESERVED = new Set([
+  'Control+KeyK',
+  'Control+Slash',
+  'Super+KeyK',
+  'Super+Slash',
+  ...ZOOM_MODIFIERS.flatMap((modifiers) => ZOOM_CODES.map((code) => `${modifiers}+${code}`)),
+]);
 
 const KEY_LABELS: Record<string, string> = {
   Space: 'Space',

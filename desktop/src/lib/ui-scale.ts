@@ -1,6 +1,7 @@
 import { toast } from 'sonner';
 import i18n from '../i18n';
 import { useSettingsStore } from '../stores/settings';
+import { hotkeysSuspended } from './hotkeys/runtime';
 
 export const UI_SCALE_MIN = 80;
 export const UI_SCALE_MAX = 130;
@@ -76,6 +77,7 @@ function isZoomModifier(e: KeyboardEvent | WheelEvent) {
   return (e.ctrlKey || e.metaKey) && !e.altKey;
 }
 
+const ZOOM_MODIFIER_KEYS = new Set(['Control', 'Meta']);
 const ZOOM_IN_CODES = new Set(['Equal', 'NumpadAdd']);
 const ZOOM_OUT_CODES = new Set(['Minus', 'NumpadSubtract']);
 const ZOOM_RESET_CODES = new Set(['Digit0', 'Numpad0']);
@@ -88,7 +90,8 @@ function keyIntent(e: KeyboardEvent) {
 }
 
 function onKeyDown(e: KeyboardEvent) {
-  if (!isZoomModifier(e)) return;
+  if (ZOOM_MODIFIER_KEYS.has(e.key)) armWheel(true);
+  if (!isZoomModifier(e) || hotkeysSuspended()) return;
   const intent = keyIntent(e);
   if (!intent) return;
   e.preventDefault();
@@ -100,7 +103,7 @@ function createWheelHandler() {
   let accumulated = 0;
   let lastAt = 0;
   return (e: WheelEvent) => {
-    if (!isZoomModifier(e)) return;
+    if (!isZoomModifier(e) || hotkeysSuspended()) return;
     e.preventDefault();
     const now = performance.now();
     if (now - lastAt > WHEEL_IDLE_MS) accumulated = 0;
@@ -113,6 +116,20 @@ function createWheelHandler() {
   };
 }
 
+const onWheel = createWheelHandler();
+let wheelArmed = false;
+
+function armWheel(armed: boolean) {
+  if (wheelArmed === armed) return;
+  wheelArmed = armed;
+  if (armed) window.addEventListener('wheel', onWheel, { passive: false });
+  else window.removeEventListener('wheel', onWheel);
+}
+
+function onKeyUp(e: KeyboardEvent) {
+  if (!e.ctrlKey && !e.metaKey) armWheel(false);
+}
+
 export async function initUiScale() {
   baseZoom = await measureBaseZoom();
   await applyZoom(useSettingsStore.getState().uiScale);
@@ -120,5 +137,6 @@ export async function initUiScale() {
     if (state.uiScale !== prev.uiScale) void applyZoom(state.uiScale);
   });
   window.addEventListener('keydown', onKeyDown, { capture: true });
-  window.addEventListener('wheel', createWheelHandler(), { passive: false });
+  window.addEventListener('keyup', onKeyUp, { capture: true });
+  window.addEventListener('blur', () => armWheel(false));
 }
