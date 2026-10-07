@@ -563,7 +563,7 @@ async function loadTrack(track: Track, resumeAt = 0) {
 function skipUnloadable(track: Track, stuck: boolean): boolean {
   const player = usePlayerStore.getState();
   if (!player.isPlaying || player.currentTrack?.urn !== track.urn) return false;
-  if (!skipUnloadableEnabled()) return false;
+  if (!skipUnloadableEnabled() || !playbackAllowed('skip')) return false;
   if (!takeSkipAttempt()) {
     toast.warning(i18n.t('track.skipHalted'), { description: i18n.t('track.skipHaltedHint') });
     player.pause();
@@ -726,7 +726,7 @@ function upcomingTrack(): Track | null {
 
 function canCrossfade(): boolean {
   const state = usePlayerStore.getState();
-  return state.isPlaying && state.repeat !== 'one' && !state.abLoop;
+  return state.isPlaying && state.repeat !== 'one' && !state.abLoop && startGate == null;
 }
 
 function maybeStartCrossfade() {
