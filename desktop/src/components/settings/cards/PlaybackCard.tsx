@@ -4,6 +4,7 @@ import {useSubscription} from '../../../lib/subscription';
 import {useAuthStore} from '../../../stores/auth';
 import {useSettingsStore} from '../../../stores/settings';
 import {Card, Row, Toggle} from '../primitives';
+import {SkipStuckPicker} from './SkipStuckPicker';
 import {StreamQualityPicker} from './StreamQualityPicker';
 
 export function PlaybackCard() {
@@ -37,6 +38,7 @@ export function PlaybackCard() {
                 <Row title={t('settings.normalizeVolume')} desc={t('settings.normalizeVolumeDesc')}>
                     <Toggle checked={normalizeVolume} onChange={() => setNormalizeVolume(!normalizeVolume)}/>
                 </Row>
+                <SkipStuckPicker/>
             </div>
         </Card>
     );
