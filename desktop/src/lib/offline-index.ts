@@ -1,5 +1,6 @@
 import {BaseDirectory, exists, mkdir, readTextFile, writeTextFile} from '@tauri-apps/plugin-fs';
 import type {Track} from '../stores/player';
+import {type LikedSnapshot, mergeLikedUrns} from './liked-merge';
 
 const BASE_DIR = BaseDirectory.AppData;
 const INDEX_PATH = 'offline-index.json';
@@ -108,22 +109,6 @@ export async function rememberTracks(tracks: Track[]) {
   if (changed) {
     schedulePersist();
   }
-}
-
-export interface LikedSnapshot {
-  complete: boolean;
-  confirmedEmpty?: boolean;
-}
-
-export function mergeLikedUrns(
-  local: string[],
-  server: string[],
-  { complete, confirmedEmpty = false }: LikedSnapshot,
-): string[] {
-  if (complete && (server.length > 0 || confirmedEmpty)) return [...new Set(server)];
-  const merged = new Set(server);
-  for (const urn of local) merged.add(urn);
-  return [...merged];
 }
 
 export async function rememberLikedTracks(tracks: Track[], snapshot: LikedSnapshot) {

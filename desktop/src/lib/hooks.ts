@@ -19,8 +19,9 @@ import {
   isPartialSync,
   useCollectionSync,
 } from './collection-sync';
+import type {LikedSnapshot} from './liked-merge';
 import {initLikedUrns} from './likes';
-import {type LikedSnapshot, rememberLikedTracks, rememberTracks} from './offline-index';
+import {rememberLikedTracks, rememberTracks} from './offline-index';
 import {editPlaylistTracks, toastPlaylistEditError} from './playlist-edits';
 import {fetchRelatedTracks} from './related';
 
