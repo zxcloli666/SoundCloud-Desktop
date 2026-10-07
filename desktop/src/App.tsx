@@ -11,6 +11,7 @@ import YMImportFloatingStatus from './components/music/YMImportFloatingStatus';
 import { SessionRecoveryModal } from './components/SessionRecoveryModal';
 import { ThemeProvider } from './components/ThemeProvider';
 import { ApiError } from './lib/api';
+import { loadBlockedArtists } from './lib/blocked-artists';
 import { CHECK_UPDATES } from './lib/constants';
 import { requestProbe } from './lib/host-status';
 import { usePerfMode } from './lib/perf';
@@ -83,6 +84,7 @@ export default function App() {
       fetchUser: s.fetchUser,
     })),
   );
+  const userUrn = useAuthStore((s) => s.user?.urn ?? null);
   const [availableRelease, setAvailableRelease] = useState<GithubRelease | null>(null);
   const dismissedReleaseTagRef = useRef<string | null>(null);
   const handleUpdateDismiss = useCallback(() => {
@@ -101,6 +103,10 @@ export default function App() {
   useEffect(() => {
     useYmImportStore.getState().initBridge();
   }, []);
+
+  useEffect(() => {
+    if (userUrn && appMode === 'online') void loadBlockedArtists(userUrn);
+  }, [userUrn, appMode]);
 
   useEffect(() => {
     if (hasSession && offlineBypass) useAppStatusStore.getState().setOfflineBypass(false);

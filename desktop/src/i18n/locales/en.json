@@ -1137,5 +1137,23 @@
     "noMatches": "Nothing matches “{{query}}”",
     "capAlbums": "That's the cream of the crop — narrow the genre or search to dig deeper.",
     "capArtists": "That's the cream of the crop — pick a tag or search to dig deeper."
+  },
+  "blocklist": {
+    "block": "Block artist",
+    "blocked": "Blocked",
+    "unblock": "Unblock",
+    "undo": "Undo",
+    "playerTitle": "Never play again",
+    "playerHint": "Their tracks get skipped and stay out of the wave, mixes and fresh drops.",
+    "kindArtist": "Artist",
+    "kindUser": "SoundCloud account",
+    "toastBlocked": "{{name}} is blocked",
+    "toastUnblocked": "{{name}} is back",
+    "failed": "Couldn't update the blocklist, try again",
+    "cardTitle": "Blocked artists",
+    "cardDesc": "Their tracks are skipped in playback and kept out of the wave, mixes and fresh drops. Synced to your account.",
+    "empty": "Nobody here yet. Block an artist from their page or right from the player.",
+    "since": "Blocked {{date}}",
+    "skipped": "Skipped a track by a blocked artist"
   }
 }

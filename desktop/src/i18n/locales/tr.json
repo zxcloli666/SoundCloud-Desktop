@@ -940,5 +940,23 @@
     "scAccounts": "SoundCloud hesapları",
     "mainAccount": "Ana",
     "demoAccount": "Demo"
+  },
+  "blocklist": {
+    "block": "Sanatciyi engelle",
+    "blocked": "Engellendi",
+    "unblock": "Engeli kaldir",
+    "undo": "Geri al",
+    "playerTitle": "Bir daha calma",
+    "playerHint": "Parcalari atlanir; dalgada, karisimlarda ve yeni cikanlarda gorunmez.",
+    "kindArtist": "Sanatci",
+    "kindUser": "SoundCloud hesabi",
+    "toastBlocked": "{{name}} engellendi",
+    "toastUnblocked": "{{name}} geri dondu",
+    "failed": "Engel listesi guncellenemedi, tekrar deneyin",
+    "cardTitle": "Engellenen sanatcilar",
+    "cardDesc": "Bu sanatcilarin parcalari calarken atlanir; dalgada, karisimlarda ve yeni cikanlarda gorunmez. Hesabinla esitlenir.",
+    "empty": "Henuz kimse yok. Bir sanatciyi sayfasindan ya da dogrudan oynaticidan engelleyebilirsin.",
+    "since": "{{date}} tarihinden beri engelli",
+    "skipped": "Engellenen bir sanatcinin parcasi atlandi"
   }
 }
