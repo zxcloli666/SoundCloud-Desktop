@@ -561,6 +561,8 @@ export function useUserTracks(userUrn: string | undefined) {
   return { tracks: query.items, ...query };
 }
 
+const EMPTY_TRACKS: Track[] = [];
+
 export function useUserPopularTracks(userUrn: string | undefined) {
   const qc = useQueryClient();
   const queryKey = ['user', userUrn, 'tracks', 'popular'];
