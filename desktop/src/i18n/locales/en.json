@@ -277,7 +277,8 @@
     "feat": "feat.",
     "remix": "Remix",
     "prod": "prod.",
-    "whoVibes": "Who's vibing"
+    "whoVibes": "Who's vibing",
+    "openAlbum": "Open album: {{title}}"
   },
   "playlist": {
     "playAll": "Play All",

@@ -18,6 +18,7 @@ export { foldName } from './fold';
 export { useArtistDisplay, useArtistLinkItems, useDisplayTitle, useTrackDisplay } from './hooks';
 export {
   type ArtistLinkItem,
+  getAlbumTarget,
   getArtistLinkItems,
   getArtistTarget,
   getParticipants,

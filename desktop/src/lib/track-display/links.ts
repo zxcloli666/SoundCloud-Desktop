@@ -87,6 +87,11 @@ export function getArtistTarget(
   return null;
 }
 
+export function getAlbumTarget(track: Pick<Track, 'enrichment'>): string | null {
+  const id = track.enrichment?.album?.id;
+  return id ? `/album/${encodeURIComponent(id)}` : null;
+}
+
 export interface ParticipantsBreakdown {
   featured: EnrichmentArtist[];
   remixers: EnrichmentArtist[];

@@ -11,6 +11,7 @@ import {useTrackPlay} from '../../lib/useTrackPlay';
 import type {Track} from '../../stores/player';
 import {usePlayerStore} from '../../stores/player';
 import {AddToPlaylistDialog} from './AddToPlaylistDialog';
+import {AlbumLinkButton} from './AlbumLinkButton';
 import {ArtistNameLinks} from './ArtistNameLinks';
 import {LikeButton} from './LikeButton';
 import {TrackStatusBadges} from './TrackStatusBadges';
@@ -119,6 +120,11 @@ export const TrackCard = React.memo(
                 <ListPlus size={14} />
               </button>
             </AddToPlaylistDialog>
+            <AlbumLinkButton
+              track={track}
+              iconSize={14}
+              className="cursor-pointer w-8 h-8 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center text-white/80 hover:text-white hover:bg-black/70 transition-all duration-200"
+            />
             <button
               type="button"
               onClick={handleAddToQueue}

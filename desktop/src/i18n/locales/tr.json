@@ -211,7 +211,8 @@
     "like": "Beğen",
     "unlike": "Beğenilerden kaldır",
     "play": "Calistir",
-    "pause": "Duraklat"
+    "pause": "Duraklat",
+    "openAlbum": "\"{{title}}\" albümünü aç"
   },
   "playlist": {
     "playAll": "Hepsini Cal",

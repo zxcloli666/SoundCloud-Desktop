@@ -278,7 +278,8 @@
     "feat": "feat.",
     "remix": "ремикс",
     "prod": "prod.",
-    "whoVibes": "Кому зашло"
+    "whoVibes": "Кому зашло",
+    "openAlbum": "Открыть альбом «{{title}}»"
   },
   "playlist": {
     "playAll": "Воспроизвести",

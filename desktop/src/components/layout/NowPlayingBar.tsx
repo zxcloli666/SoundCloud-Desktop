@@ -55,6 +55,7 @@ import {
     usePlayerStore,
 } from '../../stores/player';
 import {useSettingsStore} from '../../stores/settings';
+import {AlbumLinkButton} from '../music/AlbumLinkButton';
 import {ArtistNameLinks} from '../music/ArtistNameLinks';
 import {EqualizerPanel} from '../music/EqualizerPanel';
 import {UploadKindDot} from '../music/UploadKindDot';
@@ -965,6 +966,12 @@ const ReactClusterBody = React.memo(({ urn }: { urn: string }) => {
       <LikeButton trackUrn={urn} trackData={trackData} disliked={disliked} />
       <NowBarDislikeButton trackUrn={urn} trackData={trackData} disliked={disliked} />
       <NowBarAddToPlaylistButton trackUrn={urn} />
+      {trackData && (
+        <AlbumLinkButton
+          track={trackData}
+          className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-all duration-200 cursor-pointer hover:bg-white/[0.04] text-white/30 hover:text-white/60"
+        />
+      )}
       <div className="npb-quality">
         <PlaybackQualityBadge />
       </div>
