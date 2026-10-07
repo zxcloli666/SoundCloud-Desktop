@@ -17,6 +17,7 @@ import {SoundForgeCard} from './cards/SoundForgeCard';
 import {StartupCard} from './cards/StartupCard';
 import {ThemeCard} from './cards/ThemeCard';
 import {UiScaleCard} from './cards/UiScaleCard';
+import {UpdatesCard} from './cards/UpdatesCard';
 import {WallpaperCard} from './cards/WallpaperCard';
 
 export type SettingsCategoryId =
@@ -47,6 +48,7 @@ export const SETTINGS_CATEGORIES: SettingsCategory[] = [
                 <StartupCard/>
                 <CloseButtonCard/>
                 <HotkeysCard/>
+                <UpdatesCard/>
                 <DiagnosticsCard/>
             </>
         ),
