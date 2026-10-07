@@ -29,6 +29,12 @@ import {
   updatePlaylistDetails,
 } from './playlist-edits';
 import {fetchRelatedTracks} from './related';
+import {
+  deleteTrack,
+  type TrackDetails,
+  toastTrackEditError,
+  updateTrackDetails,
+} from './track-edits';
 
 /* ── Types ─────────────────────────────────────────────────────── */
 
@@ -860,6 +866,31 @@ export function useSetTrackSharing(trackUrn: string | undefined) {
       qc.setQueryData<Track>(['track', trackUrn], (old) => (old ? { ...old, sharing } : old));
       qc.invalidateQueries({ queryKey: ['track', trackUrn], exact: true });
       // Списки своих треков на профиле — ['user', urn, 'tracks'] (нет ['me','tracks']).
+      qc.invalidateQueries({ queryKey: ['user'] });
+    },
+  });
+}
+
+export function useUpdateTrackDetails(trackUrn: string | undefined) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (details: TrackDetails) => updateTrackDetails(trackUrn!, details),
+    onError: toastTrackEditError,
+    onSuccess: (_data, details) => {
+      qc.setQueryData<Track>(['track', trackUrn], (old) => (old ? { ...old, ...details } : old));
+      qc.invalidateQueries({ queryKey: ['track', trackUrn], exact: true });
+      qc.invalidateQueries({ queryKey: ['user'] });
+    },
+  });
+}
+
+export function useDeleteTrack() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (trackUrn: string) => deleteTrack(trackUrn),
+    onError: toastTrackEditError,
+    onSuccess: (_data, trackUrn) => {
+      qc.removeQueries({ queryKey: ['track', trackUrn], exact: true });
       qc.invalidateQueries({ queryKey: ['user'] });
     },
   });
