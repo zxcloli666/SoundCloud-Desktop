@@ -9,6 +9,12 @@ import {
     getImageCacheSize,
     getLikedCacheSize,
 } from '../../../lib/cache';
+import {
+  AUDIO_CACHE_STEPS,
+  audioCacheStep,
+  isAudioCacheOff,
+  isAudioCacheUnlimited,
+} from '../../../lib/cache-limit';
 import {formatBytes} from '../../../lib/formatters';
 import {Database, Download, Loader2, Trash2, X} from '../../../lib/icons';
 import {useCacheLikes} from '../../../lib/likes-cache';
@@ -120,12 +126,12 @@ export function CacheCard() {
 
   const totalSize = (audioSize ?? 0) + (imagesSize ?? 0) + (likedSize ?? 0);
   const allLoaded = audioSize !== null && imagesSize !== null && likedSize !== null;
-  const limitLabel =
-    audioCacheLimitMB <= 0
+  const cacheOff = isAudioCacheOff(audioCacheLimitMB);
+  const limitLabel = cacheOff
+    ? t('settings.audioCacheOff')
+    : isAudioCacheUnlimited(audioCacheLimitMB)
       ? t('settings.unlimited')
-      : audioCacheLimitMB >= 1024
-        ? `${(audioCacheLimitMB / 1024).toFixed(audioCacheLimitMB % 1024 === 0 ? 0 : 1)} GB`
-        : `${audioCacheLimitMB} MB`;
+      : `${audioCacheStep(audioCacheLimitMB)} GB`;
   const progressPct =
     progress && progress.total > 0
       ? Math.min(100, Math.round((progress.done / progress.total) * 100))
@@ -215,26 +221,42 @@ export function CacheCard() {
 
       <Divider />
       <div className="pt-3 space-y-3">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-4">
           <div>
             <p className="text-[13px] text-white/60 font-medium">{t('settings.audioCacheLimit')}</p>
-            <p className="text-[11px] text-white/30 mt-0.5">{t('settings.audioCacheLimitDesc')}</p>
+            <p className="text-[11px] text-white/30 mt-0.5">
+              {cacheOff ? t('settings.audioCacheOffDesc') : t('settings.audioCacheLimitDesc')}
+            </p>
           </div>
-          <span className="text-[12px] text-white/30 tabular-nums">{limitLabel}</span>
+          <span
+            className={`shrink-0 text-[12px] tabular-nums transition-colors duration-200 ${
+              cacheOff ? 'text-red-400/80' : 'text-white/30'
+            }`}
+          >
+            {limitLabel}
+          </span>
         </div>
         <RangeSlider
-          value={audioCacheLimitMB}
+          value={audioCacheStep(audioCacheLimitMB)}
           min={0}
-          max={8192}
-          step={256}
-          onChange={setAudioCacheLimitMB}
+          max={AUDIO_CACHE_STEPS.length - 1}
+          step={1}
+          onChange={(step) => setAudioCacheLimitMB(AUDIO_CACHE_STEPS[step])}
         />
+        <div className="flex justify-between text-[10px] text-white/25 tabular-nums select-none">
+          <span>{t('settings.audioCacheOff')}</span>
+          <span>{t('settings.unlimited')}</span>
+        </div>
       </div>
 
       <Divider />
       <div className="pt-3">
         <Row title={t('settings.hoverPreload')} desc={t('settings.hoverPreloadDesc')}>
-          <Toggle checked={hoverPreload} onChange={() => setHoverPreload(!hoverPreload)} />
+          <Toggle
+            checked={hoverPreload && !cacheOff}
+            disabled={cacheOff}
+            onChange={() => setHoverPreload(!hoverPreload)}
+          />
         </Row>
       </div>
     </Card>

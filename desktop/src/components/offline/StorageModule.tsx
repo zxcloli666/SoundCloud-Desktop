@@ -1,5 +1,6 @@
 import React from 'react';
 import {useTranslation} from 'react-i18next';
+import {isAudioCacheOff} from '../../lib/cache-limit';
 import {formatBytes} from '../../lib/formatters';
 import {ArrowDownToLine, Check, Lock, X} from '../../lib/icons';
 import type {CacheLikesProgress} from '../../lib/likes-cache';
@@ -170,9 +171,11 @@ export const StorageModule = React.memo(function StorageModule({
           {formatBytes(totalBytes)}
         </span>
         <span className="font-mono text-[12px] text-white/40">
-          {limitBytes !== null
-            ? t('offline.storeOfLimit', { limit: formatBytes(limitBytes) })
-            : t('offline.storeNoLimit')}
+          {isAudioCacheOff(limitMb)
+            ? t('offline.storeCacheOff')
+            : limitBytes !== null
+              ? t('offline.storeOfLimit', { limit: formatBytes(limitBytes) })
+              : t('offline.storeNoLimit')}
         </span>
       </div>
 
