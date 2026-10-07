@@ -3,6 +3,7 @@ import {useTranslation} from 'react-i18next';
 import {useInfiniteScroll, useLikedTracks} from '../../lib/hooks';
 import {Loader2} from '../../lib/icons';
 import {armLikesContinuation} from '../../lib/queue-continuation';
+import {filterTracks} from '../../lib/text-match';
 import {sortTracks} from '../../lib/track-sort';
 import {useSettingsStore} from '../../stores/settings';
 import {SyncNotice, syncNoticeOf} from '../ui/SyncNotice';
@@ -40,13 +41,7 @@ export const LikesTab = React.memo(function LikesTab({filter}: { filter: string 
         [likedTracks, sort, i18n.language],
     );
 
-    const filtered = useMemo(() => {
-        if (!filter) return ordered;
-        const q = filter.toLowerCase();
-        return ordered.filter(
-            (tr) => tr.title.toLowerCase().includes(q) || tr.user.username.toLowerCase().includes(q),
-        );
-    }, [ordered, filter]);
+    const filtered = useMemo(() => filterTracks(ordered, filter), [ordered, filter]);
 
     const filteredRef = useRef(filtered);
     filteredRef.current = filtered;

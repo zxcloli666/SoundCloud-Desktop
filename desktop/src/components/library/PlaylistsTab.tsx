@@ -2,6 +2,7 @@ import React, {useEffect, useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
 import {useInfiniteScroll, useMyLikedPlaylists, useMyPlaylists} from '../../lib/hooks';
 import {Loader2} from '../../lib/icons';
+import {matchesTerms, queryTerms} from '../../lib/text-match';
 import {PlaylistCard} from '../music/PlaylistCard';
 import {SyncNotice, syncNoticeOf} from '../ui/SyncNotice';
 import {VirtualGrid} from '../ui/VirtualGrid';
@@ -14,15 +15,17 @@ export const PlaylistsTab = React.memo(function PlaylistsTab({filter}: { filter:
     const likedPlaylists = likedPlaylistsQuery.playlists;
 
     const filteredCreated = useMemo(() => {
-        if (!filter) return createdPlaylists;
-        const q = filter.toLowerCase();
-        return createdPlaylists.filter((p) => p.title.toLowerCase().includes(q));
+        const terms = queryTerms(filter);
+        return terms.length > 0
+            ? createdPlaylists.filter((p) => matchesTerms(terms, p.title, p.user.username))
+            : createdPlaylists;
     }, [createdPlaylists, filter]);
 
     const filteredLiked = useMemo(() => {
-        if (!filter) return likedPlaylists;
-        const q = filter.toLowerCase();
-        return likedPlaylists.filter((p) => p.title.toLowerCase().includes(q));
+        const terms = queryTerms(filter);
+        return terms.length > 0
+            ? likedPlaylists.filter((p) => matchesTerms(terms, p.title, p.user.username))
+            : likedPlaylists;
     }, [likedPlaylists, filter]);
 
     const hasNextPage = likedPlaylistsQuery.hasNextPage || myPlaylistsQuery.hasNextPage;
