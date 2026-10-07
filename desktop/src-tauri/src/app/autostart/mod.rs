@@ -25,6 +25,7 @@ use macos as platform;
 use windows as platform;
 
 pub const LOGIN_ARG: &str = "--autostart";
+const USER_RESTART_ENV: &str = "SOUNDCLOUD_DESKTOP_USER_RESTART";
 const FLAG_FILE: &str = "autostart.json";
 
 static HIDDEN_AT_LOGIN: AtomicBool = AtomicBool::new(false);
@@ -89,7 +90,14 @@ pub fn is_login_launch<S: AsRef<str>>(args: &[S]) -> bool {
 }
 
 fn starts_hidden() -> bool {
-    std::env::args_os().any(|arg| arg == LOGIN_ARG) && load_flag().start_minimized && tray::probe()
+    std::env::var_os(USER_RESTART_ENV).is_none()
+        && std::env::args_os().any(|arg| arg == LOGIN_ARG)
+        && load_flag().start_minimized
+        && tray::probe()
+}
+
+pub fn mark_user_restart() {
+    unsafe { std::env::set_var(USER_RESTART_ENV, "1") };
 }
 
 pub fn reveal_main_window(app: &App) {

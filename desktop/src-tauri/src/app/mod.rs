@@ -6,6 +6,7 @@ pub mod log_sink;
 pub mod popover;
 pub mod popover_position;
 pub mod render_mode;
+pub mod restart;
 pub mod tray;
 pub mod updater;
 pub mod visibility;

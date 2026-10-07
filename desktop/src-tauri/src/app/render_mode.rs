@@ -1,9 +1,10 @@
+use std::ffi::OsString;
 use std::path::PathBuf;
 use std::sync::OnceLock;
 
 use serde::{Deserialize, Serialize};
 
-use crate::app::APP_IDENTIFIER;
+use crate::app::{APP_IDENTIFIER, restart};
 use crate::rt::AppHandle;
 
 const FLAG_FILE: &str = "render_mode.json";
@@ -18,6 +19,9 @@ const WEBVIEW2_DEFAULT_ARGS: &str =
 const DISABLE_GPU_ARG: &str = "--disable-gpu";
 
 static LAUNCHED_SOFTWARE: OnceLock<bool> = OnceLock::new();
+static LAUNCH_ENV: OnceLock<SavedEnv> = OnceLock::new();
+
+type SavedEnv = Vec<(&'static str, Option<OsString>)>;
 
 #[derive(Default, Serialize, Deserialize)]
 #[serde(default, rename_all = "camelCase")]
@@ -76,19 +80,54 @@ fn disable_gpu() {
     } else {
         current.trim()
     };
-    unsafe { std::env::set_var(WEBVIEW2_ARGS_ENV, format!("{base} {DISABLE_GPU_ARG}")) };
+    remember(override_env(&[(
+        WEBVIEW2_ARGS_ENV,
+        format!("{base} {DISABLE_GPU_ARG}"),
+    )]));
 }
 
 #[cfg(all(target_os = "linux", not(feature = "cef")))]
 fn disable_gpu() {
-    unsafe {
-        std::env::set_var("WEBKIT_DISABLE_COMPOSITING_MODE", "1");
-        std::env::set_var("WEBKIT_DISABLE_DMABUF_RENDERER", "1");
-    }
+    remember(override_env(&[
+        ("WEBKIT_DISABLE_COMPOSITING_MODE", "1".into()),
+        ("WEBKIT_DISABLE_DMABUF_RENDERER", "1".into()),
+    ]));
 }
 
 #[cfg(not(all(any(windows, target_os = "linux"), not(feature = "cef"))))]
 fn disable_gpu() {}
+
+#[cfg(all(any(windows, target_os = "linux"), not(feature = "cef")))]
+fn override_env(vars: &[(&'static str, String)]) -> SavedEnv {
+    let saved = vars
+        .iter()
+        .map(|(key, _)| (*key, std::env::var_os(key)))
+        .collect();
+    for (key, value) in vars {
+        unsafe { std::env::set_var(key, value) };
+    }
+    saved
+}
+
+#[cfg(all(any(windows, target_os = "linux"), not(feature = "cef")))]
+fn remember(saved: SavedEnv) {
+    let _ = LAUNCH_ENV.set(saved);
+}
+
+fn restore_env(saved: &SavedEnv) {
+    for (key, original) in saved {
+        match original {
+            Some(value) => unsafe { std::env::set_var(key, value) },
+            None => unsafe { std::env::remove_var(key) },
+        }
+    }
+}
+
+pub fn restore_launch_env() {
+    if let Some(saved) = LAUNCH_ENV.get() {
+        restore_env(saved);
+    }
+}
 
 fn current_mode() -> RenderMode {
     let software_rendering = SUPPORTED && load_flag().software_rendering;
@@ -115,7 +154,7 @@ pub fn render_mode_set(software_rendering: bool) -> Result<RenderMode, String> {
 
 #[tauri::command]
 pub fn render_mode_restart(app: AppHandle) {
-    app.request_restart();
+    restart::restart(&app);
 }
 
 #[cfg(test)]
@@ -137,5 +176,23 @@ mod tests {
     fn broken_flag_falls_back_to_hardware() {
         let parsed: Flag = serde_json::from_slice(b"{}").unwrap();
         assert!(!parsed.software_rendering);
+    }
+
+    #[cfg(all(any(windows, target_os = "linux"), not(feature = "cef")))]
+    #[test]
+    fn restore_env_undoes_only_the_override() {
+        const PRESET: &str = "SCD_RENDER_MODE_TEST_PRESET";
+        const UNSET: &str = "SCD_RENDER_MODE_TEST_UNSET";
+        unsafe {
+            std::env::set_var(PRESET, "user");
+            std::env::remove_var(UNSET);
+        }
+        let saved = override_env(&[(PRESET, "1".into()), (UNSET, "1".into())]);
+        assert_eq!(std::env::var(PRESET).unwrap(), "1");
+        assert_eq!(std::env::var(UNSET).unwrap(), "1");
+        restore_env(&saved);
+        assert_eq!(std::env::var(PRESET).unwrap(), "user");
+        assert!(std::env::var_os(UNSET).is_none());
+        unsafe { std::env::remove_var(PRESET) };
     }
 }
