@@ -94,6 +94,14 @@ pub fn audio_set_volume(volume: f64, state: State<'_, AudioState>) {
 }
 
 #[tauri::command]
+pub fn audio_set_fft_enabled(enabled: bool, state: State<'_, AudioState>) {
+    state
+        .analyser_buffer
+        .enabled
+        .store(enabled, std::sync::atomic::Ordering::Relaxed);
+}
+
+#[tauri::command]
 pub fn audio_set_playback_rate(rate: f64, state: State<'_, AudioState>) {
     engine::set_playback_rate(rate, state);
 }

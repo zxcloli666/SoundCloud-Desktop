@@ -427,18 +427,29 @@
     },
     "blocked": {
       "title": "Can't reach the app's servers",
-      "body": "The internet works, but no request gets through to our servers, not even over the backup routes. This usually means a provider block or a local bypass tool such as zapret or a VPN. Your downloaded music is available in the offline library.",
+      "body": "The internet works, but no request gets through to our servers, not even over the backup routes. It may be an outage on our side or a block by your provider, zapret or a VPN. If the status page is all green, the problem is on your network. Your downloaded music is available in the offline library.",
       "rule": "If the app works with zapret turned off, add scnative.space to list-exclude. If your provider blocks it, add scnative.space to list-general: that also covers *.relay.scnative.space."
+    },
+    "reachable": {
+      "title": "Servers are up, your network can't reach them",
+      "body": "A check from around the world shows the app's servers are working, but no request from your network gets through to them, not even over the backup routes. This is usually your provider, DNS, a VPN or zapret. Your downloaded music is available in the offline library."
+    },
+    "remote": {
+      "up": "Outside check: servers are up",
+      "down": "Outside check: servers are down",
+      "unknown": "Outside check is unavailable"
     },
     "banner": {
       "viaStar": "Main host is down — running on the Star backup host.",
       "outage": "Hosts are unavailable",
-      "details": "Details"
+      "details": "Details",
+      "network": "Servers are up but unreachable from your network"
     },
     "actions": {
       "retry": "Check again",
       "offlineLibrary": "Offline library",
-      "buyStar": "Get STAR"
+      "buyStar": "Get STAR",
+      "statusPage": "Status page"
     }
   },
   "home": {
@@ -733,8 +744,37 @@
     "perfBeautyDesc": "Full liquid-glass design.",
     "perfAutoLight": "Effects were slowing the app down, so Light mode is on. You can change it in Settings > Appearance.",
     "perfAutoLightUndo": "Undo",
+    "softwareRendering": "Software rendering",
+    "softwareRenderingDesc": "Turns off GPU acceleration in the app window. Helps with a black screen, flicker or freezes caused by a broken graphics driver. Effects get heavier, so it is not a speed boost.",
+    "softwareRenderingRestart": "Restart the app to apply the new rendering mode.",
+    "softwareRenderingFailed": "Couldn't save the rendering mode",
+    "softwareRenderingLightHint": "Without the GPU, blur and animations load the processor. Light mode keeps the interface smooth.",
+    "restartNow": "Restart now",
+    "useLightMode": "Switch to Light",
     "startup": "Startup",
     "startupPageDesc": "Choose which page opens when the app launches",
+    "autostart": "Launch at login",
+    "autostartDesc": "Open SoundCloud Desktop automatically when you sign in to your computer",
+    "autostartMinimized": "Start minimized to tray",
+    "autostartMinimizedDesc": "The window stays out of the way at login, open it from the tray icon",
+    "autostartNoTray": "No tray icon is available on this system, so the window opens at login.",
+    "autostartFailed": "Could not change launch at login",
+    "autostartDenied": "The system did not allow launching at login",
+    "autostartPortalReason": "Start SoundCloud Desktop when you sign in",
+    "closeButton": "Close button",
+    "closeButtonDesc": "What happens when you close the main window",
+    "closeToTray": "Hide to tray",
+    "closeQuit": "Quit the app",
+    "closeToTrayHint": "Music keeps playing. Open the window or quit from the tray icon.",
+    "closeQuitHint": "Closing the window stops playback and exits the app.",
+    "closeNoTray": "No tray icon is available on this system, so closing the window quits the app.",
+    "diagnostics": "Diagnostics",
+    "diagnosticsDesc": "Logs help track down crashes and playback errors. Attach desktop.log when you report a bug.",
+    "logFolder": "Log folder",
+    "openLogFolder": "Open folder",
+    "copyLogPath": "Copy path",
+    "logPathCopied": "Log path copied",
+    "logFolderFailed": "Couldn't open the log folder",
     "playback": "Playback",
     "floatingComments": "Floating comments",
     "floatingCommentsDesc": "Show comments as floating pills during playback",
@@ -805,6 +845,26 @@
     "bypassWhitelistSoonDesc": "We're shipping bypass routing — stay tuned",
     "import": "Import",
     "importYandex": "Import from Yandex Music",
+    "uiScale": "Interface scale",
+    "uiScaleDesc": "Make text and buttons larger or smaller. The whole window scales, crisp on any display.",
+    "uiScaleReset": "Reset",
+    "uiScaleDefault": "Default",
+    "uiScaleWheel": "Wheel",
+    "uiScaleKeysStep": "zoom in / out",
+    "uiScaleKeysReset": "reset to 100%",
+    "uiScaleKeysWheel": "scroll to zoom",
+    "uiScaleToast": "Interface scale: {{value}}%",
+    "updates": "Updates",
+    "updatesDesc": "Your version and how updates reach it",
+    "checkUpdates": "Check for updates",
+    "checkingUpdates": "Checking for updates",
+    "upToDate": "You have the latest version",
+    "checkedAt": "Checked at {{time}}",
+    "updateReady": "Version {{version}} is available",
+    "openUpdate": "Update",
+    "updateCheckFailed": "Could not reach GitHub to check for updates",
+    "oneClickUpdates": "Updates install in one click",
+    "manualUpdates": "Updates are installed manually",
     "autoplay": "Autoplay",
     "autoplayDesc": "When the queue runs out, keep playing similar tracks from the wave of the last one",
     "searchPlayback": "Playing from search",
@@ -886,7 +946,11 @@
     "sidebar": "Toggle sidebar",
     "fullscreen": "Toggle fullscreen",
     "close": "Close",
-    "showBindings": "Show shortcuts"
+    "showBindings": "Show shortcuts",
+    "groupGlobal": "Global (any app)",
+    "zoomIn": "Zoom interface in",
+    "zoomOut": "Zoom interface out",
+    "zoomReset": "Reset interface scale"
   },
   "ym": {
     "instructions": "How to get your Yandex Music token:",
@@ -919,7 +983,39 @@
   "update": {
     "available": "Update available",
     "later": "Later",
-    "download": "Download"
+    "download": "Download",
+    "installRestart": "Install and restart",
+    "downloading": "Downloading update",
+    "installing": "Installing, the app will restart",
+    "progressMb": "{{done}} of {{total}} MB",
+    "progressMbUnknown": "{{done}} MB",
+    "installFailed": "Could not install the update automatically. Download it manually below.",
+    "openReleasePage": "Release page",
+    "allDownloads": "All downloads",
+    "copyCommand": "Copy command",
+    "autoHint": "The update downloads in the background, then the app restarts on its own. Your settings and cache stay.",
+    "autoHintWindows": "The update downloads in the background, the installer runs for a few seconds and the app restarts on its own. Your settings and cache stay.",
+    "hintInstaller": "Quit the app from the tray first (right-click the icon, then Quit), otherwise the old version keeps running. Then run the installer: it installs over the current version and keeps your settings.",
+    "hintMac": "Quit the app (Cmd+Q), open the downloaded dmg and drag the app into Applications, replacing the old one.",
+    "hintPortable": "This is the portable version. Quit the app from the tray (right-click the icon, then Quit) and replace the old exe with the downloaded one. Your settings stay. Want one-click updates? Install the setup.exe version instead.",
+    "hintAppImage": "Quit the app, replace the old AppImage with the downloaded one and make it executable:",
+    "hintDeb": "Download the new package, install it over the current one and restart the app:",
+    "hintRpm": "Download the new package, install it over the current one and restart the app:",
+    "hintAur": "Installed from the AUR. The soundcloud-bin package is updated within a minute of every release, so just update it with your AUR helper:",
+    "hintFlatpak": "Update it from your app center or with the first command. If it says there is nothing to update, this copy came from an older bundle without an update source: download the new bundle and reinstall it once with the second command. Plain install over it fails with \"Directory not empty\".",
+    "hintSource": "This build was compiled from source: run git pull and rebuild it.",
+    "kind": {
+      "nsis": "Installer",
+      "msi": "MSI installer",
+      "portable": "Portable",
+      "macApp": "macOS app",
+      "appImage": "AppImage",
+      "deb": "deb package",
+      "rpm": "rpm package",
+      "aur": "AUR package",
+      "flatpak": "Flatpak",
+      "source": "Built from source"
+    }
   },
   "common": {
     "loading": "Loading...",
@@ -1290,6 +1386,48 @@
     "noMatches": "Nothing matches “{{query}}”",
     "capAlbums": "That's the cream of the crop — narrow the genre or search to dig deeper.",
     "capArtists": "That's the cream of the crop — pick a tag or search to dig deeper."
+  },
+  "hotkeys": {
+    "title": "Global hotkeys",
+    "desc": "Control music from games and other apps, even when the window is minimized or hidden in the tray.",
+    "toggle": "Enable global hotkeys",
+    "mediaKeys": "Media keys on your keyboard (play, next, previous) already work in every app through the system media controls.",
+    "actions": {
+      "playPause": "Play / Pause",
+      "next": "Next track",
+      "prev": "Previous track",
+      "volumeUp": "Volume up",
+      "volumeDown": "Volume down",
+      "mute": "Mute / Unmute",
+      "like": "Like / Unlike",
+      "seekForward": "Forward 10 s",
+      "seekBack": "Back 10 s"
+    },
+    "notSet": "Not set",
+    "recording": "Press keys",
+    "recordHint": "Esc to cancel, Backspace to clear",
+    "assign": "Assign a shortcut for {{action}}",
+    "clear": "Clear shortcut",
+    "reset": "Restore defaults",
+    "offHint": "Turn on the switch to use these shortcuts outside the app.",
+    "status": {
+      "active": "Works everywhere",
+      "taken": "Taken by the system or another app. Pick another combination.",
+      "invalid": "This combination can't be registered"
+    },
+    "problem": {
+      "needsModifier": "Add Ctrl, Alt or {{super}} so the key keeps working in other apps. F13-F24 work on their own.",
+      "mediaKey": "Media keys already work without setup",
+      "unsupported": "This key isn't supported",
+      "reserved": "This combination is used by the app itself",
+      "duplicate": "Already used for \"{{action}}\""
+    },
+    "wayland": {
+      "title": "Wayland session",
+      "desc": "Wayland doesn't let apps listen to keys globally, so these shortcuts only fire while an X11 window is focused. For reliable control, add these commands as custom shortcuts in your desktop settings:",
+      "copy": "Copy command",
+      "copied": "Command copied"
+    }
   },
   "trackSound": {
     "remember": "Remember for this track",

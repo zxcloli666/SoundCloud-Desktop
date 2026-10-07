@@ -10,7 +10,7 @@
 //! операции Tauri обязаны идти с main-потока → действия гоним через
 //! `run_on_main_thread`.
 
-use tauri::Emitter;
+use tauri::{Emitter, Manager};
 
 use crate::app::{popover, visibility};
 use crate::rt::AppHandle;
@@ -38,6 +38,17 @@ pub fn is_available() -> bool {
     }
 }
 
+pub fn probe() -> bool {
+    #[cfg(target_os = "linux")]
+    {
+        linux::probe()
+    }
+    #[cfg(not(target_os = "linux"))]
+    {
+        true
+    }
+}
+
 /// Выполнить действие пункта меню на main-потоке.
 pub fn run_action(app: &AppHandle, id: &str) {
     let h = app.clone();
@@ -46,6 +57,7 @@ pub fn run_action(app: &AppHandle, id: &str) {
         "show" => visibility::show_main(&h),
         "mini" => popover::open_pinned(&h),
         "quit" => {
+            h.state::<popover::TrayState>().persist_position();
             // На CEF graceful `app.exit()` может зависнуть в teardown (кросс-процессный
             // OnBeforeClose окон/вебвью не завершается) → жёсткий выход; Chromium-хелперы
             // сами умирают по смерти родителя. На wry — обычный graceful exit.
@@ -74,16 +86,47 @@ fn toggle_popover(app: &AppHandle, cursor: Option<(f64, f64)>) {
 mod linux {
     use std::path::Path;
     use std::sync::atomic::{AtomicBool, Ordering};
+    use std::time::Duration;
 
     use ksni::{MenuItem, OfflineReason, Tray, TrayMethods};
+    use zbus::Connection;
+    use zbus::fdo::DBusProxy;
+    use zbus::names::BusName;
 
+    use crate::app::autostart;
     use crate::app::diagnostics::log_native;
     use crate::rt::AppHandle;
+
+    const WATCHER: &str = "org.kde.StatusNotifierWatcher";
+    const PROBE_TIMEOUT: Duration = Duration::from_millis(1500);
 
     static ONLINE: AtomicBool = AtomicBool::new(true);
 
     pub fn is_online() -> bool {
         ONLINE.load(Ordering::Relaxed)
+    }
+
+    async fn watcher_registered() -> Result<bool, String> {
+        let connection = Connection::session().await.map_err(|e| e.to_string())?;
+        let dbus = DBusProxy::new(&connection)
+            .await
+            .map_err(|e| e.to_string())?;
+        let name = BusName::try_from(WATCHER).map_err(|e| e.to_string())?;
+        dbus.name_has_owner(name).await.map_err(|e| e.to_string())
+    }
+
+    pub fn probe() -> bool {
+        let online = tauri::async_runtime::block_on(async {
+            tokio::time::timeout(PROBE_TIMEOUT, watcher_registered()).await
+        })
+        .is_ok_and(|registered| registered.unwrap_or(false));
+        ONLINE.store(online, Ordering::Relaxed);
+        online
+    }
+
+    fn go_offline(app: &AppHandle) {
+        ONLINE.store(false, Ordering::Relaxed);
+        autostart::reveal_if_hidden(app);
     }
 
     fn is_flatpak() -> bool {
@@ -135,7 +178,7 @@ mod linux {
             log_native(&self.app, "INFO", "[tray] status notifier watcher is back");
         }
         fn watcher_offline(&self, reason: OfflineReason) -> bool {
-            ONLINE.store(false, Ordering::Relaxed);
+            go_offline(&self.app);
             log_native(
                 &self.app,
                 "WARN",
@@ -162,7 +205,7 @@ mod linux {
             match spawned {
                 Ok(_handle) => std::future::pending::<()>().await,
                 Err(err) => {
-                    ONLINE.store(false, Ordering::Relaxed);
+                    go_offline(&handle);
                     log_native(&handle, "ERROR", format!("[tray] ksni spawn failed: {err}"));
                 }
             }
@@ -192,9 +235,9 @@ mod linux {
 // ---------------------------------------------------------------------------
 #[cfg(not(target_os = "linux"))]
 mod native {
+    use tauri::Manager;
     use tauri::menu::{MenuBuilder, MenuItemBuilder};
     use tauri::tray::TrayIconBuilder;
-    use tauri::Manager;
 
     pub fn setup(app: &crate::rt::App) -> Result<(), Box<dyn std::error::Error>> {
         let show = MenuItemBuilder::with_id("show", "Show").build(app)?;

@@ -7,6 +7,7 @@ use sha2::{Digest, Sha256};
 use tokio::fs::{self, File};
 use tokio::io::AsyncWriteExt;
 
+use crate::app::diagnostics;
 use crate::shared::constants::is_domain_whitelisted;
 use crate::shared::file_lru::{last_used, mark_used};
 
@@ -232,9 +233,7 @@ pub async fn handle(encoded: &str) -> ImageResult {
         let data_clone = data.clone();
         tokio::spawn(async move {
             if let Err(e) = write_atomic(&path_clone, &data_clone).await {
-                #[cfg(debug_assertions)]
-                eprintln!("[ImageCache] write failed: {}", e);
-                let _ = e;
+                diagnostics::warn(format!("[ImageCache] write failed: {e}"));
             }
         });
     }

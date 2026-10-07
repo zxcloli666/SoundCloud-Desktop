@@ -6,9 +6,12 @@
 //! Linux (appindicator) emits no left-click — the "Mini player" menu opens it in a
 //! screen corner instead.
 
+use std::path::Path;
 use std::sync::Mutex;
 use std::time::{Duration, Instant};
 
+use crate::app::diagnostics;
+use crate::app::popover_position::{self, Point, PositionMemory, Screen};
 use crate::app::visibility;
 use crate::rt::{AppHandle, WebviewWindow};
 use tauri::{Manager, Monitor, PhysicalPosition, WebviewUrl, WebviewWindowBuilder};
@@ -29,13 +32,30 @@ pub struct TrayState {
     /// ✕ does. Both the "Mini player" menu and the tray left-click open pinned — the
     /// tray-click focus dance on Win/Mac would otherwise blur-dismiss it instantly.
     pinned: Mutex<bool>,
+    position: PositionMemory,
 }
 
 impl TrayState {
+    pub fn load(data_dir: &Path) -> Self {
+        Self {
+            position: PositionMemory::load(data_dir),
+            ..Self::default()
+        }
+    }
+
+    pub fn record_move(&self, x: i32, y: i32) {
+        self.position.record_move(Point { x, y });
+    }
+
+    pub fn persist_position(&self) {
+        self.position.persist();
+    }
+
     pub fn mark_hidden(&self) {
         if let Ok(mut g) = self.last_hide.lock() {
             *g = Some(Instant::now());
         }
+        self.position.persist();
     }
 
     fn recently_hidden(&self) -> bool {
@@ -82,7 +102,7 @@ fn get_or_create(app: &AppHandle) -> Option<WebviewWindow> {
     {
         Ok(w) => Some(w),
         Err(err) => {
-            eprintln!("[tray] failed to create popover: {err}");
+            diagnostics::warn(format!("[tray] failed to create popover: {err}"));
             None
         }
     }
@@ -109,10 +129,8 @@ fn pick_monitor(win: &WebviewWindow, cursor: Option<(f64, f64)>) -> Option<Monit
         .or_else(|| monitors.into_iter().next())
 }
 
-fn place(win: &WebviewWindow, cursor: Option<(f64, f64)>) {
-    let Some(mon) = pick_monitor(win, cursor) else {
-        return;
-    };
+fn anchored(win: &WebviewWindow, cursor: Option<(f64, f64)>) -> Option<Point> {
+    let mon = pick_monitor(win, cursor)?;
     let scale = mon.scale_factor();
     let mp = mon.position();
     let ms = mon.size();
@@ -138,7 +156,40 @@ fn place(win: &WebviewWindow, cursor: Option<(f64, f64)>) {
         .min(mx + mw - pw - margin);
     let y = y.max(my + margin).min(my + mh - ph - margin);
 
-    let _ = win.set_position(PhysicalPosition::new(x as i32, y as i32));
+    Some(Point {
+        x: x as i32,
+        y: y as i32,
+    })
+}
+
+fn screens(win: &WebviewWindow) -> Vec<Screen> {
+    win.available_monitors()
+        .unwrap_or_default()
+        .iter()
+        .map(|m| Screen {
+            x: m.position().x as f64,
+            y: m.position().y as f64,
+            width: m.size().width as f64,
+            height: m.size().height as f64,
+            scale: m.scale_factor(),
+        })
+        .collect()
+}
+
+fn target(app: &AppHandle, win: &WebviewWindow, cursor: Option<(f64, f64)>) -> Option<Point> {
+    let memory = &app.state::<TrayState>().position;
+    let point = memory
+        .chosen()
+        .and_then(|p| popover_position::fit(p, (W, H), &screens(win)))
+        .or_else(|| anchored(win, cursor))?;
+    memory.mark_placed(point);
+    Some(point)
+}
+
+fn place(win: &WebviewWindow, point: Option<Point>) {
+    if let Some(p) = point {
+        let _ = win.set_position(PhysicalPosition::new(p.x, p.y));
+    }
 }
 
 fn show(app: &AppHandle, cursor: Option<(f64, f64)>, pinned: bool) {
@@ -151,10 +202,11 @@ fn show(app: &AppHandle, cursor: Option<(f64, f64)>, pinned: bool) {
     // so pair this with a `pin` windowrule).
     let _ = win.set_always_on_top(true);
     visibility::set_page_visible(&win, true);
+    let point = target(app, &win, cursor);
 
     #[cfg(not(feature = "cef"))]
     {
-        place(&win, cursor);
+        place(&win, point);
         let _ = win.show();
         let _ = win.set_focus();
     }
@@ -167,22 +219,22 @@ fn show(app: &AppHandle, cursor: Option<(f64, f64)>, pinned: bool) {
     {
         let _ = win.show();
         let _ = win.set_focus();
-        apply_geometry(&win, cursor);
+        apply_geometry(&win, point);
         let app = app.clone();
         let win = win.clone();
         tauri::async_runtime::spawn(async move {
             // display() появляется только после маппинга окна.
             tokio::time::sleep(std::time::Duration::from_millis(80)).await;
-            let _ = app.run_on_main_thread(move || apply_geometry(&win, cursor));
+            let _ = app.run_on_main_thread(move || apply_geometry(&win, point));
         });
     }
 }
 
 /// Принудительный логический размер + позиция (CEF игнорит inner_size окна).
 #[cfg(feature = "cef")]
-fn apply_geometry(win: &WebviewWindow, cursor: Option<(f64, f64)>) {
+fn apply_geometry(win: &WebviewWindow, point: Option<Point>) {
     let _ = win.set_size(tauri::LogicalSize::new(W, H));
-    place(win, cursor);
+    place(win, point);
 }
 
 fn hide_if_visible(app: &AppHandle) -> bool {

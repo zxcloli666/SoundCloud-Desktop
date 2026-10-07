@@ -21,6 +21,8 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use tokio::process::Command;
 
+use crate::app::diagnostics;
+
 /// AAC bitrate for re-encoded output. Matches the storage canonical (256k m4a);
 /// sources that are already AAC are stream-copied and keep their original rate.
 const AAC_BITRATE: &str = "256k";
@@ -93,17 +95,17 @@ async fn download_ffmpeg(install_dir: &Path) -> Option<PathBuf> {
             if bin.is_file() && ffmpeg_runs(&bin).await {
                 Some(bin)
             } else {
-                eprintln!("[Transcode] downloaded ffmpeg does not run — discarding");
+                diagnostics::warn("[Transcode] downloaded ffmpeg does not run — discarding");
                 tokio::fs::remove_file(&bin).await.ok();
                 None
             }
         }
         Ok(Err(e)) => {
-            eprintln!("[Transcode] ffmpeg download failed: {e}");
+            diagnostics::warn(format!("[Transcode] ffmpeg download failed: {e}"));
             None
         }
         Err(e) => {
-            eprintln!("[Transcode] ffmpeg download task panicked: {e}");
+            diagnostics::warn(format!("[Transcode] ffmpeg download task panicked: {e}"));
             None
         }
     }
@@ -209,7 +211,7 @@ pub async fn transcode_to_m4a(
             Err(e) => {
                 // Copy can fail on exotic AAC profiles — fall through to encode.
                 tokio::fs::remove_file(&tmp).await.ok();
-                eprintln!("[Transcode] copy failed, re-encoding: {e}");
+                diagnostics::warn(format!("[Transcode] copy failed, re-encoding: {e}"));
             }
         }
     }

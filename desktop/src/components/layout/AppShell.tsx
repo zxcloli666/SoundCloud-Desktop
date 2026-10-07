@@ -14,6 +14,8 @@ import {usePlayerStore} from '../../stores/player';
 import {useSettingsStore} from '../../stores/settings';
 import {TrackContextMenu} from '../music/track-menu/TrackContextMenu';
 import {DropImportOverlay} from '../offline/local/DropImportOverlay';
+import {KeyCaps} from '../ui/KeyCap';
+import {GlobalBindingsGroup} from './GlobalBindingsGroup';
 import {NowPlayingBar} from './NowPlayingBar';
 import {Sidebar} from './Sidebar';
 import {Titlebar} from './Titlebar';
@@ -36,6 +38,7 @@ interface Keybinding {
 
 const keybindings: Keybinding[] = [
   { key: ' ', label: 'kb.playPause', group: 'playback', display: 'Space' },
+  { key: 'k', label: 'kb.playPause', group: 'playback', display: 'K' },
   { key: 'ArrowLeft', label: 'kb.seekBack', group: 'playback', display: '←' },
   { key: 'ArrowRight', label: 'kb.seekForward', group: 'playback', display: '→' },
   { key: 'n', label: 'kb.nextTrack', group: 'playback', display: 'N' },
@@ -52,6 +55,9 @@ const keybindings: Keybinding[] = [
   { key: 'l', label: 'kb.lyrics', group: 'panels', display: 'L' },
   { key: '[', label: 'kb.sidebar', group: 'panels', display: '[' },
   { key: 'F11', label: 'kb.fullscreen', group: 'panels', display: 'F11' },
+  { key: 'Ctrl+=', label: 'kb.zoomIn', group: 'panels', display: isMac() ? '⌘ +' : 'Ctrl +' },
+  { key: 'Ctrl+-', label: 'kb.zoomOut', group: 'panels', display: isMac() ? '⌘ −' : 'Ctrl −' },
+  { key: 'Ctrl+0', label: 'kb.zoomReset', group: 'panels', display: isMac() ? '⌘ 0' : 'Ctrl 0' },
   { key: 'Escape', label: 'kb.close', group: 'panels', display: 'Esc' },
   { key: 'Ctrl+/', label: 'kb.showBindings', group: 'panels', display: isMac() ? '⌘ /' : 'Ctrl /' },
 ];
@@ -70,12 +76,6 @@ function getVolumeStep(repeatCount: number): number {
 }
 
 /* ── Keybindings dialog ───────────────────────────────────── */
-
-const KeyCap = ({ children }: { children: React.ReactNode }) => (
-  <kbd className="inline-flex items-center justify-center min-w-[28px] h-[28px] px-1.5 rounded-lg bg-white/[0.08] border border-white/[0.1] text-[12px] font-semibold text-white/70 font-mono shadow-[0_1px_2px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.06)]">
-    {children}
-  </kbd>
-);
 
 const KeybindingsDialog = React.memo(
   ({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) => {
@@ -116,16 +116,13 @@ const KeybindingsDialog = React.memo(
                         className="flex items-center justify-between py-2 px-3 rounded-xl hover:bg-white/[0.03] transition-colors"
                       >
                         <span className="text-[13px] text-white/60">{t(bind.label)}</span>
-                        <div className="flex items-center gap-1">
-                          {bind.display.split(' ').map((part, i) => (
-                            <KeyCap key={i}>{part}</KeyCap>
-                          ))}
-                        </div>
+                        <KeyCaps labels={bind.display.split(' ')} />
                       </div>
                     ))}
                   </div>
                 </div>
               ))}
+              <GlobalBindingsGroup />
             </div>
 
             {/* Footer */}
@@ -356,6 +353,7 @@ export const AppShell = React.memo(() => {
 
       switch (code) {
         case 'Space':
+        case 'KeyK':
           e.preventDefault();
           player.togglePlay();
           break;

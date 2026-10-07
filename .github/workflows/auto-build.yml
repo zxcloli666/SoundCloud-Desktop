@@ -79,6 +79,7 @@ jobs:
     needs: version
     env:
       HAS_INTERNAL_PAT: ${{ secrets.INTERNAL_PAT != '' }}
+      HAS_UPDATER_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY != '' && vars.TAURI_UPDATER_PUBKEY != '' }}
     strategy:
       fail-fast: false
       matrix:
@@ -181,6 +182,12 @@ jobs:
         working-directory: desktop
         run: pnpm install --frozen-lockfile
 
+      - name: Prepare updater config
+        if: ${{ env.HAS_UPDATER_KEY == 'true' }}
+        env:
+          TAURI_UPDATER_PUBKEY: ${{ vars.TAURI_UPDATER_PUBKEY }}
+        run: node .github/scripts/updater-manifest.mjs config desktop/src-tauri/tauri.updater.conf.json
+
       - name: Build Tauri
         uses: tauri-apps/tauri-action@v0
         env:
@@ -189,7 +196,7 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           projectPath: desktop
-          args: ${{ matrix.args }}
+          args: ${{ matrix.args }}${{ env.HAS_UPDATER_KEY == 'true' && format(' --config {0}/desktop/src-tauri/tauri.updater.conf.json', github.workspace) || '' }}
 
       - name: Create portable exe (windows only)
         if: matrix.platform == 'windows-latest'
@@ -213,6 +220,10 @@ jobs:
             desktop/src-tauri/target/**/release/bundle/portable/*.exe
             desktop/src-tauri/target/**/release/bundle/dmg/*.dmg
             desktop/src-tauri/target/**/release/bundle/macos/*.tar.gz
+            desktop/src-tauri/target/**/release/bundle/nsis/*.exe.sig
+            desktop/src-tauri/target/**/release/bundle/msi/*.msi.sig
+            desktop/src-tauri/target/**/release/bundle/appimage/*.AppImage.sig
+            desktop/src-tauri/target/**/release/bundle/macos/*.tar.gz.sig
           retention-days: 2
 
   flatpak:
@@ -221,6 +232,13 @@ jobs:
     container:
       image: ghcr.io/flathub-infra/flatpak-github-actions:gnome-49
       options: --privileged
+    env:
+      HAS_INTERNAL_PAT: ${{ secrets.INTERNAL_PAT != '' }}
+      HAS_FLATPAK_KEY: ${{ secrets.FLATPAK_GPG_PRIVATE_KEY != '' }}
+      FLATPAK_APP_ID: io.github.zxcloli666.SoundcloudDesktop
+      FLATPAK_SITE_URL: ${{ vars.FLATPAK_SITE_URL || format('https://{0}.github.io/{1}/flatpak', github.repository_owner, github.event.repository.name) }}
+    outputs:
+      repo: ${{ steps.bundle.outputs.repo }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -230,6 +248,24 @@ jobs:
         run: |
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
           git pull origin main
+
+      - name: Checkout internal repo (when PAT present)
+        if: ${{ env.HAS_INTERNAL_PAT == 'true' }}
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository_owner }}/SoundCloud-Internal
+          token: ${{ secrets.INTERNAL_PAT }}
+          path: _internal
+
+      - name: Replace mock crates with real
+        if: ${{ env.HAS_INTERNAL_PAT == 'true' }}
+        run: |
+          rm -rf utils/call utils/decrypt-client
+          cp -r _internal/call ./utils/call
+          cp -r _internal/decrypt-client ./utils/decrypt-client
+          rm -rf _internal
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal
+          "$HOME/.cargo/bin/cargo" metadata --format-version 1 --manifest-path desktop/src-tauri/Cargo.toml > /dev/null
 
       - uses: actions/setup-node@v4
         with:
@@ -250,17 +286,42 @@ jobs:
       - name: Fetch Flathub shared-modules
         run: git clone --depth=1 https://github.com/flathub/shared-modules.git .github/flatpak/shared-modules
 
+      - name: Import repository signing key
+        id: gpg
+        if: ${{ env.HAS_FLATPAK_KEY == 'true' }}
+        uses: crazy-max/ghaction-import-gpg@v6
+        with:
+          gpg_private_key: ${{ secrets.FLATPAK_GPG_PRIVATE_KEY }}
+          passphrase: ${{ secrets.FLATPAK_GPG_PASSPHRASE }}
+
       - name: Build Flatpak
         uses: flatpak/flatpak-github-actions/flatpak-builder@v6
         with:
           manifest-path: .github/flatpak/io.github.zxcloli666.SoundcloudDesktop.yml
-          bundle: soundcloud-desktop.flatpak
+          repo-dir: repo
+          build-bundle: false
+          upload-artifact: false
+          gpg-sign: ${{ steps.gpg.outputs.fingerprint }}
+
+      - name: Bundle and update repository
+        id: bundle
+        env:
+          GPG_FPR: ${{ steps.gpg.outputs.fingerprint }}
+        run: bash .github/scripts/flatpak-repo.sh repo flatpak-site
 
       - name: Upload Flatpak
         uses: actions/upload-artifact@v4
         with:
           name: linux-flatpak
           path: soundcloud-desktop.flatpak
+
+      - name: Upload Flatpak repository
+        if: ${{ steps.bundle.outputs.repo == 'true' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: flatpak-repo
+          path: flatpak-site
+          retention-days: 2
 
   release:
     needs: [version, build, flatpak]
@@ -288,10 +349,19 @@ jobs:
             case "$f" in
               *aarch64-apple-darwin*.app.tar.gz) name="${name%.app.tar.gz}_arm64.app.tar.gz" ;;
               *x86_64-apple-darwin*.app.tar.gz)  name="${name%.app.tar.gz}_x64.app.tar.gz" ;;
+              *aarch64-apple-darwin*.app.tar.gz.sig) name="${name%.app.tar.gz.sig}_arm64.app.tar.gz.sig" ;;
+              *x86_64-apple-darwin*.app.tar.gz.sig)  name="${name%.app.tar.gz.sig}_x64.app.tar.gz.sig" ;;
             esac
             cp "$f" "/tmp/release/$name"
           done
           ls -la /tmp/release/
+
+      - name: Build updater manifest
+        env:
+          V: ${{ needs.version.outputs.version }}
+        run: |
+          node .github/scripts/updater-manifest.mjs manifest /tmp/release "$V"
+          rm -f /tmp/release/*.sig
 
       - name: Publish release
         uses: zxcloli666/release-helper@main
@@ -336,3 +406,27 @@ jobs:
     with:
       tag: ${{ needs.release.outputs.tag }}
     secrets: inherit
+
+  publish-flatpak-repo:
+    needs: [flatpak, release]
+    if: ${{ needs.release.outputs.tag != '' && needs.flatpak.outputs.repo == 'true' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: flatpak-repo
+          path: site/flatpak
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - id: deploy
+        uses: actions/deploy-pages@v4

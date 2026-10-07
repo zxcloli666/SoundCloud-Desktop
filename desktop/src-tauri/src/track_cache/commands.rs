@@ -2,6 +2,7 @@ use std::path::Path;
 
 use tauri::State;
 
+use crate::app::diagnostics;
 use crate::shared::blocking::run_blocking;
 use crate::shared::urn::canonical_track_urn;
 use crate::track_cache::state::{
@@ -300,7 +301,7 @@ pub async fn track_preload(
                 })
                 .await
             {
-                eprintln!("[TrackCache] preload {urn}: {err}");
+                diagnostics::warn(format!("[TrackCache] preload {urn}: {err}"));
             }
         });
     }

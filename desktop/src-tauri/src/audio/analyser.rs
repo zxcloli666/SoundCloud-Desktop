@@ -40,6 +40,7 @@ pub struct AnalyserBuffer {
     pub sample_rate: AtomicU32,
     pub running: AtomicBool,
     owner: AtomicU64,
+    pub enabled: AtomicBool,
 }
 
 impl AnalyserBuffer {
@@ -49,6 +50,7 @@ impl AnalyserBuffer {
             sample_rate: AtomicU32::new(44_100),
             running: AtomicBool::new(true),
             owner: AtomicU64::new(0),
+            enabled: AtomicBool::new(false),
         })
     }
 }
@@ -101,7 +103,9 @@ impl<S: Source<Item = f32>> Iterator for AnalyserSource<S> {
             if self.buffer.owner.load(Ordering::Relaxed) != self.id {
                 return Some(sample);
             }
-            if let Ok(mut q) = self.buffer.samples.try_lock() {
+            if self.buffer.enabled.load(Ordering::Relaxed)
+                && let Ok(mut q) = self.buffer.samples.try_lock()
+            {
                 if q.len() >= RING_CAPACITY {
                     let drop_n = q.len() - RING_CAPACITY + 1;
                     q.drain(0..drop_n);
@@ -154,11 +158,22 @@ fn run_fft_loop(app: AppHandle, buffer: Arc<AnalyserBuffer>) {
     let mut bins_smooth = vec![0.0f32; NUM_BINS];
     let mut silence_skips: u32 = 0;
     let mut prev_emit_was_silent = true;
+    let mut was_enabled = false;
 
     loop {
         std::thread::sleep(Duration::from_millis(FFT_INTERVAL_MS));
         if !buffer.running.load(Ordering::Relaxed) {
             break;
+        }
+        let enabled = buffer.enabled.load(Ordering::Relaxed);
+        if enabled != was_enabled {
+            was_enabled = enabled;
+            buffer.samples.lock().unwrap().clear();
+            bins_smooth.fill(0.0);
+            prev_emit_was_silent = true;
+        }
+        if !enabled {
+            continue;
         }
 
         let snapshot: Option<Vec<f32>> = {

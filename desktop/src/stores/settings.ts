@@ -2,11 +2,17 @@ import {create} from 'zustand';
 import {createJSONStorage, persist} from 'zustand/middleware';
 import {normalizeAudioCacheLimit, normalizeImageCacheLimit} from '../lib/cache-limit';
 import {EQ_CUSTOM_PRESET_LIMIT, EQ_PRESET_NAME_MAX, type EqCustomPreset} from '../lib/equalizer';
+import {
+  DEFAULT_GLOBAL_HOTKEYS,
+  type GlobalHotkeyAction,
+  type GlobalHotkeyMap,
+} from '../lib/hotkeys/actions';
 import type {PerfMode} from '../lib/perf';
 import {tauriStorage} from '../lib/tauri-storage';
 
 export type ThemePreset = 'soundcloud' | 'dark' | 'neon' | 'forest' | 'crimson' | 'custom';
 export type StartupPage = 'home' | 'search' | 'library' | 'settings';
+export type CloseAction = 'tray' | 'quit';
 export type DiscordRpcMode = 'track' | 'artist' | 'activity';
 export type StreamQuality = 'auto' | 'sq' | 'hq';
 export type SkipStuckAfterSec = 0 | 10 | 20 | 30 | 60;
@@ -90,6 +96,8 @@ export interface SettingsState {
   sidebarCollapsed: boolean;
   floatingComments: boolean;
   startupPage: StartupPage;
+  closeAction: CloseAction;
+  uiScale: number;
   pinnedPlaylists: SidebarPinnedPlaylist[];
   discordRpcEnabled: boolean;
   discordRpcMode: DiscordRpcMode;
@@ -101,6 +109,8 @@ export interface SettingsState {
   lyricsVisualizer: boolean;
   artistWaveCollapsed: boolean;
   wallhavenApiKey: string;
+  globalHotkeysEnabled: boolean;
+  globalHotkeys: GlobalHotkeyMap;
   setAccentColor: (color: string) => void;
   setBgPrimary: (bg: string) => void;
   setThemePreset: (id: ThemePreset) => void;
@@ -131,6 +141,8 @@ export interface SettingsState {
   toggleSidebar: () => void;
   setFloatingComments: (v: boolean) => void;
   setStartupPage: (page: StartupPage) => void;
+  setCloseAction: (action: CloseAction) => void;
+  setUiScale: (scale: number) => void;
   pinPlaylist: (playlist: SidebarPinnedPlaylist) => void;
   unpinPlaylist: (urn: string) => void;
   setDiscordRpcEnabled: (enabled: boolean) => void;
@@ -143,6 +155,9 @@ export interface SettingsState {
   setLyricsVisualizer: (v: boolean) => void;
   setArtistWaveCollapsed: (v: boolean) => void;
   setWallhavenApiKey: (key: string) => void;
+  setGlobalHotkeysEnabled: (enabled: boolean) => void;
+  setGlobalHotkey: (action: GlobalHotkeyAction, accelerator: string) => void;
+  resetGlobalHotkeys: () => void;
   resetTheme: () => void;
 }
 
@@ -179,6 +194,8 @@ const DEFAULTS = {
   sidebarCollapsed: false,
   floatingComments: true,
   startupPage: 'home' as StartupPage,
+  closeAction: 'tray' as CloseAction,
+  uiScale: 100,
   pinnedPlaylists: [] as SidebarPinnedPlaylist[],
   discordRpcEnabled: true,
   discordRpcMode: 'track' as DiscordRpcMode,
@@ -190,6 +207,8 @@ const DEFAULTS = {
   lyricsVisualizer: false,
   artistWaveCollapsed: false,
   wallhavenApiKey: '',
+  globalHotkeysEnabled: false,
+  globalHotkeys: DEFAULT_GLOBAL_HOTKEYS,
 };
 
 export const useSettingsStore = create<SettingsState>()(
@@ -262,6 +281,8 @@ export const useSettingsStore = create<SettingsState>()(
       toggleSidebar: () => set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
       setFloatingComments: (floatingComments) => set({ floatingComments }),
       setStartupPage: (startupPage) => set({ startupPage }),
+      setCloseAction: (closeAction) => set({ closeAction }),
+      setUiScale: (uiScale) => set({ uiScale }),
       pinPlaylist: (playlist) =>
         set((s) => ({
           pinnedPlaylists: [
@@ -283,6 +304,10 @@ export const useSettingsStore = create<SettingsState>()(
       setLyricsVisualizer: (lyricsVisualizer) => set({ lyricsVisualizer }),
       setArtistWaveCollapsed: (artistWaveCollapsed) => set({ artistWaveCollapsed }),
       setWallhavenApiKey: (wallhavenApiKey) => set({ wallhavenApiKey }),
+      setGlobalHotkeysEnabled: (globalHotkeysEnabled) => set({ globalHotkeysEnabled }),
+      setGlobalHotkey: (action, accelerator) =>
+        set((s) => ({ globalHotkeys: { ...s.globalHotkeys, [action]: accelerator } })),
+      resetGlobalHotkeys: () => set({ globalHotkeys: DEFAULT_GLOBAL_HOTKEYS }),
       resetTheme: () =>
         set({
           accentColor: DEFAULTS.accentColor,
@@ -356,6 +381,8 @@ export const useSettingsStore = create<SettingsState>()(
         sidebarCollapsed: s.sidebarCollapsed,
         floatingComments: s.floatingComments,
         startupPage: s.startupPage,
+        closeAction: s.closeAction,
+        uiScale: s.uiScale,
         pinnedPlaylists: s.pinnedPlaylists,
         discordRpcEnabled: s.discordRpcEnabled,
         discordRpcMode: s.discordRpcMode,
@@ -367,6 +394,8 @@ export const useSettingsStore = create<SettingsState>()(
         lyricsVisualizer: s.lyricsVisualizer,
         artistWaveCollapsed: s.artistWaveCollapsed,
         wallhavenApiKey: s.wallhavenApiKey,
+        globalHotkeysEnabled: s.globalHotkeysEnabled,
+        globalHotkeys: s.globalHotkeys,
       }),
     },
   ),

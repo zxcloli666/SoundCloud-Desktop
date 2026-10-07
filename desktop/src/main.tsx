@@ -7,6 +7,7 @@ import { ErrorScreen } from './components/ui/ErrorScreen';
 import { changeAppLanguage } from './i18n';
 import { initAuthBridge } from './lib/auth-session';
 import { setupCacheMaintenance } from './lib/cache';
+import { initCloseAction } from './lib/close-action';
 import { setServerPorts } from './lib/constants';
 import {
   describeError,
@@ -18,6 +19,7 @@ import { initEdge } from './lib/edge';
 import { installFpsCap } from './lib/fps-cap';
 import { queryClient } from './lib/query-client';
 import { bootstrapPremium } from './lib/subscription';
+import { initUiScale } from './lib/ui-scale';
 import './fonts';
 import './index.css';
 import { useSettingsStore } from './stores/settings';
@@ -63,30 +65,20 @@ function startDeferredRuntime() {
     void import('./lib/track-sound').then((m) => m.initTrackSound());
     void import('./lib/queue-autopilot');
     void import('./lib/discord');
+    void import('./lib/hotkeys').then((m) => m.initGlobalHotkeys());
     void import('./lib/perf-probe').then((m) => m.probePerfMode());
     void import('./lib/host-status').then((m) => m.initHostStatus());
     void import('./lib/storage-location').then((m) => m.warnIfStorageUnavailable());
   });
 }
 
-async function fixWebviewScale() {
-  try {
-    const { getCurrentWindow } = await import('@tauri-apps/api/window');
-    const { getCurrentWebview } = await import('@tauri-apps/api/webview');
-    const monitorScale = await getCurrentWindow().scaleFactor();
-    const webviewDpr = window.devicePixelRatio;
-    if (monitorScale > 1 && webviewDpr < monitorScale * 0.8) {
-      await getCurrentWebview().setZoom(monitorScale / webviewDpr);
-    }
-  } catch {}
-}
-
 async function bootstrap() {
-  await fixWebviewScale();
   await useSettingsStore.persist.rehydrate();
+  await initUiScale();
 
   const settings = useSettingsStore.getState();
   await changeAppLanguage(settings.language);
+  initCloseAction();
 
   const [staticPort, proxyPort] = await invoke<[number, number]>('get_server_ports');
   setServerPorts(staticPort, proxyPort);

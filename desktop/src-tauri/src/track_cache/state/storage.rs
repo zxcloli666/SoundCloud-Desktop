@@ -1,6 +1,7 @@
 use std::path::{Path, PathBuf};
 use std::time::Instant;
 
+use crate::app::diagnostics;
 use crate::network::edge::Tier;
 
 use super::{
@@ -86,23 +87,23 @@ impl TrackCacheState {
                             return Some(result.path);
                         }
                         Err(DownloadError::Fatal(e)) => {
-                            eprintln!("[TrackCache] s3 write failed for {urn}: {e}");
+                            diagnostics::warn(format!("[TrackCache] s3 write failed for {urn}: {e}"));
                         }
                         Err(DownloadError::Retryable(e)) => {
                             crate::network::edge::note_url(&landed, Tier::Direct, false);
-                            eprintln!("[TrackCache] s3 download failed for {urn}: {e}");
+                            diagnostics::warn(format!("[TrackCache] s3 download failed for {urn}: {e}"));
                         }
                     }
                 }
                 Ok(resp) if resp.status().as_u16() == 404 || resp.status().as_u16() == 410 => {}
                 Ok(resp) => {
-                    eprintln!(
+                    diagnostics::warn(format!(
                         "[TrackCache] s3 redirect HTTP {} for {urn} ({host})",
                         resp.status()
-                    );
+                    ));
                 }
                 Err(err) => {
-                    eprintln!("[TrackCache] s3 redirect failed for {urn} ({host}): {err}");
+                    diagnostics::warn(format!("[TrackCache] s3 redirect failed for {urn} ({host}): {err}"));
                 }
             }
         }
@@ -125,7 +126,7 @@ impl TrackCacheState {
                     Ok(r) => r,
                     Err(err) => {
                         hop.note(false);
-                        eprintln!("[TrackCache] storage {} failed for {urn}: {err}", hop.tier_label());
+                        diagnostics::warn(format!("[TrackCache] storage {} failed for {urn}: {err}", hop.tier_label()));
                         continue;
                     }
                 };
@@ -160,17 +161,17 @@ impl TrackCacheState {
                             return Some(result.path);
                         }
                         Err(DownloadError::Fatal(e)) => {
-                            eprintln!("[TrackCache] storage write failed for {urn}: {e}");
+                            diagnostics::warn(format!("[TrackCache] storage write failed for {urn}: {e}"));
                         }
                         Err(DownloadError::Retryable(e)) => {
                             hop.note(false);
-                            eprintln!("[TrackCache] storage download failed for {urn}: {e}");
+                            diagnostics::warn(format!("[TrackCache] storage download failed for {urn}: {e}"));
                         }
                     }
                 } else if matches!(status.as_u16(), 404 | 410) {
                     break;
                 } else {
-                    eprintln!("[TrackCache] storage HTTP {status} for {urn} ({host})");
+                    diagnostics::warn(format!("[TrackCache] storage HTTP {status} for {urn} ({host})"));
                 }
             }
 

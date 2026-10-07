@@ -343,18 +343,29 @@
     },
     "blocked": {
       "title": "Uygulama sunucularina ulasilamiyor",
-      "body": "Internet calisiyor ama hicbir istek sunucularimiza ulasmiyor, yedek yollar dahil. Bu genelde saglayici engelinden ya da zapret veya VPN gibi yerel bir engel asma aracindan olur. Indirilen muzik cevrimdisi kitaplikta kullanilabilir.",
+      "body": "Internet calisiyor ama hicbir istek sunucularimiza ulasmiyor, yedek yollar dahil. Bu bizim tarafimizda bir ariza ya da saglayicinin, zapret'in veya bir VPN'in engeli olabilir. Durum sayfasinda her sey yesilse sorun sizin aginizda. Indirilen muzik cevrimdisi kitaplikta kullanilabilir.",
       "rule": "Uygulama zapret kapaliyken calisiyorsa scnative.space'i list-exclude'a ekleyin. Saglayiciniz engelliyorsa scnative.space'i list-general'a ekleyin: bu *.relay.scnative.space'i de kapsar."
+    },
+    "reachable": {
+      "title": "Sunucular calisiyor ama aginiz onlara ulasamiyor",
+      "body": "Dunyanin dort bir yanindan yapilan kontrol uygulama sunucularinin calistigini gosteriyor, ancak aginizdan hicbir istek onlara ulasmiyor, yedek yollar dahil. Bu genelde saglayicidan, DNS'ten, bir VPN'den ya da zapret'ten olur. Indirilen muzik cevrimdisi kitaplikta kullanilabilir."
+    },
+    "remote": {
+      "up": "Dis kontrol: sunucular calisiyor",
+      "down": "Dis kontrol: sunucular kapali",
+      "unknown": "Dis kontrol kullanilamiyor"
     },
     "banner": {
       "viaStar": "Ana sunucu kapali — yedek Star sunucusu uzerinden calisiyoruz.",
       "outage": "Sunucular kullanilamiyor",
-      "details": "Ayrintilar"
+      "details": "Ayrintilar",
+      "network": "Sunucular calisiyor ama aginizdan ulasilamiyor"
     },
     "actions": {
       "retry": "Tekrar dene",
       "offlineLibrary": "Cevrimdisi kitaplik",
-      "buyStar": "STAR al"
+      "buyStar": "STAR al",
+      "statusPage": "Durum sayfasi"
     }
   },
   "home": {
@@ -644,8 +655,37 @@
     "perfBeautyDesc": "Tam liquid-glass tasarim.",
     "perfAutoLight": "Efektler uygulamayi yavaslatiyordu, bu yuzden Hafif mod acildi. Ayarlar > Gorunum bolumunden degistirebilirsiniz.",
     "perfAutoLightUndo": "Geri al",
+    "softwareRendering": "Yazılımsal işleme",
+    "softwareRenderingDesc": "Uygulama penceresinde GPU hızlandırmasını kapatır. Bozuk ekran kartı sürücüsünden kaynaklanan siyah ekran, titreme veya donmalara karşı yardımcı olur. Efektler ağırlaşır, bu yüzden bir hızlandırma değildir.",
+    "softwareRenderingRestart": "Yeni işleme modunu uygulamak için uygulamayı yeniden başlatın.",
+    "softwareRenderingFailed": "İşleme modu kaydedilemedi",
+    "softwareRenderingLightHint": "GPU olmadan bulanıklık ve animasyonlar işlemciyi yorar. Hafif mod arayüzü akıcı tutar.",
+    "restartNow": "Yeniden başlat",
+    "useLightMode": "Hafif moda geç",
     "startup": "Baslangic",
     "startupPageDesc": "Uygulama acildiginda hangi sayfanin gosterilecegini secin",
+    "autostart": "Oturum açılınca başlat",
+    "autostartDesc": "Bilgisayarınızda oturum açtığınızda SoundCloud Desktop otomatik olarak açılır",
+    "autostartMinimized": "Tepsiye küçültülmüş başlat",
+    "autostartMinimizedDesc": "Oturum açılırken pencere açılmaz, tepsi simgesinden açabilirsiniz",
+    "autostartNoTray": "Bu sistemde tepsi simgesi yok, bu yüzden oturum açılınca pencere açılır.",
+    "autostartFailed": "Oturum açılınca başlatma ayarı değiştirilemedi",
+    "autostartDenied": "Sistem, oturum açılınca başlatmaya izin vermedi",
+    "autostartPortalReason": "Oturum açtığınızda SoundCloud Desktop'ı başlat",
+    "closeButton": "Kapat düğmesi",
+    "closeButtonDesc": "Ana pencereyi kapattığınızda ne olacağını seçin",
+    "closeToTray": "Tepsiye gizle",
+    "closeQuit": "Uygulamadan çık",
+    "closeToTrayHint": "Müzik çalmaya devam eder. Pencereyi açmak veya çıkmak için tepsi simgesini kullanın.",
+    "closeQuitHint": "Pencereyi kapatmak oynatmayı durdurur ve uygulamadan çıkar.",
+    "closeNoTray": "Bu sistemde tepsi simgesi yok, bu yüzden pencereyi kapatmak uygulamadan çıkar.",
+    "diagnostics": "Tanılama",
+    "diagnosticsDesc": "Kayıtlar çökmeleri ve oynatma hatalarını bulmaya yardımcı olur. Hata bildirirken desktop.log dosyasını ekleyin.",
+    "logFolder": "Kayıt klasörü",
+    "openLogFolder": "Klasörü aç",
+    "copyLogPath": "Yolu kopyala",
+    "logPathCopied": "Kayıt yolu kopyalandı",
+    "logFolderFailed": "Kayıt klasörü açılamadı",
     "playback": "Oynatma",
     "floatingComments": "Yuzen yorumlar",
     "floatingCommentsDesc": "Calarken yorumlari kayan baloncuklar olarak goster",
@@ -714,6 +754,26 @@
     "bypassWhitelistSoonDesc": "Atlatma rotalamasi gelistirme asamasinda",
     "import": "Ice aktar",
     "importYandex": "Yandex Music'ten ice aktar",
+    "uiScale": "Arayüz ölçeği",
+    "uiScaleDesc": "Metinleri ve düğmeleri büyütün ya da küçültün. Tüm pencere ölçeklenir, her ekranda net görünür.",
+    "uiScaleReset": "Sıfırla",
+    "uiScaleDefault": "Varsayılan",
+    "uiScaleWheel": "Tekerlek",
+    "uiScaleKeysStep": "yakınlaştır / uzaklaştır",
+    "uiScaleKeysReset": "%100'e döndür",
+    "uiScaleKeysWheel": "tekerlekle yakınlaştır",
+    "uiScaleToast": "Arayüz ölçeği: %{{value}}",
+    "updates": "Güncellemeler",
+    "updatesDesc": "Sürümünüz ve güncellemelerin nasıl geldiği",
+    "checkUpdates": "Güncellemeleri denetle",
+    "checkingUpdates": "Güncellemeler denetleniyor",
+    "upToDate": "En son sürümü kullanıyorsunuz",
+    "checkedAt": "{{time}} itibarıyla denetlendi",
+    "updateReady": "{{version}} sürümü mevcut",
+    "openUpdate": "Güncelle",
+    "updateCheckFailed": "Güncellemeleri denetlemek için GitHub'a ulaşılamadı",
+    "oneClickUpdates": "Güncellemeler tek tıkla kurulur",
+    "manualUpdates": "Güncellemeler elle kurulur",
     "autoplay": "Otomatik devam",
     "autoplayDesc": "Sıra bittiğinde son parçanın dalgasından benzer parçalar çalmaya devam eder",
     "searchPlayback": "Aramadan çalma",
@@ -795,7 +855,11 @@
     "sidebar": "Kenar cubugunu ac/kapat",
     "fullscreen": "Tam ekran modunu degistir",
     "close": "Kapat",
-    "showBindings": "Kisayollari goster"
+    "showBindings": "Kisayollari goster",
+    "groupGlobal": "Genel (her uygulamada)",
+    "zoomIn": "Arayüzü büyüt",
+    "zoomOut": "Arayüzü küçült",
+    "zoomReset": "Arayüz ölçeğini sıfırla"
   },
   "ym": {
     "instructions": "Yandex Music tokeninizi nasil alirsiniz:",
@@ -826,9 +890,41 @@
     "unknownError": "Ice aktarma sirasinda bir sorun olustu. Daha sonra tekrar deneyin"
   },
   "update": {
-    "available": "Guncelleme mevcut",
+    "available": "Güncelleme mevcut",
     "later": "Daha sonra",
-    "download": "Indir"
+    "download": "Indir",
+    "installRestart": "Yükle ve yeniden başlat",
+    "downloading": "Güncelleme indiriliyor",
+    "installing": "Yükleniyor, uygulama yeniden başlayacak",
+    "progressMb": "{{done}} / {{total}} MB",
+    "progressMbUnknown": "{{done}} MB",
+    "installFailed": "Güncelleme otomatik olarak yüklenemedi. Aşağıdan elle indirin.",
+    "openReleasePage": "Sürüm sayfası",
+    "allDownloads": "Tüm indirmeler",
+    "copyCommand": "Komutu kopyala",
+    "autoHint": "Güncelleme arka planda iner, ardından uygulama kendiliğinden yeniden başlar. Ayarlarınız ve önbellek korunur.",
+    "autoHintWindows": "Güncelleme arka planda iner, yükleyici birkaç saniye çalışır ve uygulama kendiliğinden yeniden başlar. Ayarlarınız ve önbellek korunur.",
+    "hintInstaller": "Önce uygulamayı tepsiden kapatın (simgeye sağ tıklayın, ardından Çıkış), aksi halde eski sürüm çalışmaya devam eder. Sonra yükleyiciyi çalıştırın: mevcut sürümün üzerine kurulur ve ayarlarınızı korur.",
+    "hintMac": "Uygulamadan çıkın (Cmd+Q), indirilen dmg dosyasını açın ve uygulamayı eskisinin yerine Uygulamalar klasörüne sürükleyin.",
+    "hintPortable": "Taşınabilir sürümü kullanıyorsunuz. Uygulamayı tepsiden kapatın (simgeye sağ tıklayın, ardından Çıkış) ve eski exe dosyasını indirilenle değiştirin. Ayarlarınız korunur. Tek tıkla güncelleme mi istiyorsunuz? setup.exe sürümünü kurun.",
+    "hintAppImage": "Uygulamayı kapatın, eski AppImage dosyasını indirilenle değiştirin ve çalıştırılabilir yapın:",
+    "hintDeb": "Yeni paketi indirin, mevcut olanın üzerine kurun ve uygulamayı yeniden başlatın:",
+    "hintRpm": "Yeni paketi indirin, mevcut olanın üzerine kurun ve uygulamayı yeniden başlatın:",
+    "hintAur": "AUR üzerinden kuruldu. soundcloud-bin paketi her sürümden bir dakika sonra güncellenir, AUR yardımcınızla güncellemeniz yeterli:",
+    "hintFlatpak": "Uygulama merkezinizden veya ilk komutla güncelleyin. Güncellenecek bir şey yok diyorsa, bu kopya güncelleme kaynağı olmayan eski bir paketten kurulmuştur: yeni paketi indirip ikinci komutla bir kez yeniden kurun. Üzerine normal kurulum \"Dizin boş değil\" hatasıyla başarısız olur.",
+    "hintSource": "Bu sürüm kaynak koddan derlendi: git pull yapıp yeniden derleyin.",
+    "kind": {
+      "nsis": "Yükleyici",
+      "msi": "MSI yükleyici",
+      "portable": "Taşınabilir",
+      "macApp": "macOS uygulaması",
+      "appImage": "AppImage",
+      "deb": "deb paketi",
+      "rpm": "rpm paketi",
+      "aur": "AUR paketi",
+      "flatpak": "Flatpak",
+      "source": "Kaynak koddan derleme"
+    }
   },
   "common": {
     "loading": "Yukleniyor...",
@@ -1094,6 +1190,48 @@
     "scAccounts": "SoundCloud hesapları",
     "mainAccount": "Ana",
     "demoAccount": "Demo"
+  },
+  "hotkeys": {
+    "title": "Genel kısayollar",
+    "desc": "Pencere küçültülmüş ya da tepsiye gizlenmiş olsa bile müziği oyunlardan ve diğer uygulamalardan kontrol edin.",
+    "toggle": "Genel kısayolları aç",
+    "mediaKeys": "Klavyenizdeki medya tuşları (oynat, sonraki, önceki) sistem medya kontrolleri sayesinde her uygulamada zaten çalışır.",
+    "actions": {
+      "playPause": "Çal / Duraklat",
+      "next": "Sonraki parça",
+      "prev": "Önceki parça",
+      "volumeUp": "Sesi aç",
+      "volumeDown": "Sesi kıs",
+      "mute": "Sesi kapat / aç",
+      "like": "Beğen / Beğeniyi kaldır",
+      "seekForward": "10 sn ileri",
+      "seekBack": "10 sn geri"
+    },
+    "notSet": "Atanmadı",
+    "recording": "Tuşlara basın",
+    "recordHint": "İptal için Esc, temizlemek için Backspace",
+    "assign": "{{action}} için kısayol ata",
+    "clear": "Kısayolu temizle",
+    "reset": "Varsayılanlara dön",
+    "offHint": "Bu kısayolları uygulama dışında kullanmak için anahtarı açın.",
+    "status": {
+      "active": "Her yerde çalışır",
+      "taken": "Sistem ya da başka bir uygulama tarafından kullanılıyor. Başka bir kombinasyon seçin.",
+      "invalid": "Bu kombinasyon kaydedilemiyor"
+    },
+    "problem": {
+      "needsModifier": "Tuşun diğer uygulamalarda çalışmaya devam etmesi için Ctrl, Alt ya da {{super}} ekleyin. F13-F24 tek başına çalışır.",
+      "mediaKey": "Medya tuşları zaten ayarsız çalışır",
+      "unsupported": "Bu tuş desteklenmiyor",
+      "reserved": "Bu kombinasyon uygulamanın kendisi tarafından kullanılıyor",
+      "duplicate": "Zaten \"{{action}}\" için kullanılıyor"
+    },
+    "wayland": {
+      "title": "Wayland oturumu",
+      "desc": "Wayland uygulamaların tuşları genel olarak dinlemesine izin vermez, bu yüzden bu kısayollar yalnızca bir X11 penceresi odaktayken çalışır. Güvenilir kontrol için bu komutları masaüstü ayarlarınızda özel kısayol olarak ekleyin:",
+      "copy": "Komutu kopyala",
+      "copied": "Komut kopyalandı"
+    }
   },
   "trackSound": {
     "remember": "Bu parça için hatırla",

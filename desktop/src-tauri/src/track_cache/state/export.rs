@@ -3,6 +3,7 @@ use std::path::{Path, PathBuf};
 use std::time::Duration;
 
 use super::{CacheRequest, TrackCacheState};
+use crate::app::diagnostics;
 use crate::track_cache::transcode::{self, ExportFormat, ExportTags};
 
 const MAX_COVER_BYTES: u64 = 8 * 1024 * 1024;
@@ -151,7 +152,7 @@ impl TrackCacheState {
                 .await;
                 return match result {
                     Err(e) if cover.is_some() => {
-                        eprintln!("[TrackCache] export with cover failed ({e}), retrying without");
+                        diagnostics::warn(format!("[TrackCache] export with cover failed ({e}), retrying without"));
                         transcode::export_with_cover(
                             &ffmpeg,
                             &source_path,

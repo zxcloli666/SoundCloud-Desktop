@@ -4,7 +4,10 @@ import {CallProxySection} from './CallProxySection';
 import {AccountCard} from './cards/AccountCard';
 import {AudioDeviceCard} from './cards/AudioDeviceCard';
 import {CacheCard} from './cards/CacheCard';
+import {CloseButtonCard} from './cards/CloseButtonCard';
+import {DiagnosticsCard} from './cards/DiagnosticsCard';
 import {DiscordCard} from './cards/DiscordCard';
+import {HotkeysCard} from './cards/HotkeysCard';
 import {ImportCard} from './cards/ImportCard';
 import {LanguageCard} from './cards/LanguageCard';
 import {NetworkCard} from './cards/NetworkCard';
@@ -14,6 +17,8 @@ import {SoundForgeCard} from './cards/SoundForgeCard';
 import {StartupCard} from './cards/StartupCard';
 import {StorageLocationCard} from './cards/StorageLocationCard';
 import {ThemeCard} from './cards/ThemeCard';
+import {UiScaleCard} from './cards/UiScaleCard';
+import {UpdatesCard} from './cards/UpdatesCard';
 import {WallpaperCard} from './cards/WallpaperCard';
 
 export type SettingsCategoryId =
@@ -42,6 +47,10 @@ export const SETTINGS_CATEGORIES: SettingsCategory[] = [
             <>
                 <LanguageCard/>
                 <StartupCard/>
+                <CloseButtonCard/>
+                <HotkeysCard/>
+                <UpdatesCard/>
+                <DiagnosticsCard/>
             </>
         ),
     },
@@ -52,6 +61,7 @@ export const SETTINGS_CATEGORIES: SettingsCategory[] = [
         Body: () => (
             <>
                 <ThemeCard/>
+                <UiScaleCard/>
                 <WallpaperCard/>
                 <PerformanceCard/>
             </>

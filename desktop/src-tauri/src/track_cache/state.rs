@@ -14,7 +14,7 @@ use tokio::fs::File;
 use tokio::io::{AsyncWriteExt, BufWriter};
 use tokio::sync::{Mutex, Notify, OwnedSemaphorePermit, Semaphore};
 
-use crate::app::diagnostics::log_native;
+use crate::app::diagnostics::{self, log_native};
 use crate::network::edge::{Hop, Tier};
 use crate::network::system_proxy::follow;
 use crate::shared::urn::{canonical_track_urn, track_urn_from_storage_name};
@@ -1543,7 +1543,7 @@ impl TrackCacheState {
             return Ok(path);
         }
 
-        eprintln!("[TrackCache] gave up on {urn}: {last_err}");
+        diagnostics::error(format!("[TrackCache] gave up on {urn}: {last_err}"));
         Err(last_err)
     }
 
@@ -1790,7 +1790,7 @@ impl TrackCacheState {
                     return Ok(path);
                 }
                 Err(err) => {
-                    eprintln!("[TrackCache] {urn} URL #{} failed: {err}", idx + 1);
+                    diagnostics::warn(format!("[TrackCache] {urn} URL #{} failed: {err}", idx + 1));
                     last_err = err;
                     futures = remaining;
                 }
@@ -1870,7 +1870,7 @@ impl TrackCacheState {
 
         for attempt in 0..=RETRY_DELAYS_MS.len() {
             if attempt > 0 {
-                eprintln!("[TrackCache] retry #{attempt} for {urn}: {last_err}");
+                diagnostics::warn(format!("[TrackCache] retry #{attempt} for {urn}: {last_err}"));
                 tokio::time::sleep(Duration::from_millis(RETRY_DELAYS_MS[attempt - 1])).await;
             }
 

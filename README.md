@@ -85,7 +85,7 @@ SoundCloud заблокирован Роскомнадзором — веб-ве
 - **Управление из системы** — медиа-кнопки на клавиатуре, системный центр уведомлений (Windows), MPRIS (Linux)
 - **Discord Rich Presence** — показывай друзьям, что слушаешь
 - **Трей** — приложение работает в фоне
-- **Автообновления** — новые версии устанавливаются в один клик
+- **Обновления из приложения** — для установщика Windows, macOS и AppImage кнопка «Установить и перезапустить», для остальных сборок прямая ссылка на нужный файл
 
 ---
 
@@ -108,9 +108,22 @@ SoundCloud заблокирован Роскомнадзором — веб-ве
 | `.deb` | amd64, arm64 | Ubuntu, Debian, Mint, Pop!_OS |
 | `.rpm` | amd64, arm64 | Fedora, openSUSE, CentOS |
 | `.AppImage` | amd64, arm64 | Универсальный, работает везде |
-| `.flatpak` | amd64 | Песочница, автообновления |
+| `.flatpak` | amd64 | Песочница |
+| AUR `soundcloud-bin` | amd64, arm64 | Arch, Manjaro, EndeavourOS |
 
-Скачай нужный формат со [страницы релизов](https://github.com/zxcloli666/SoundCloud-Desktop/releases/latest).
+Скачай нужный формат со [страницы релизов](https://github.com/zxcloli666/SoundCloud-Desktop/releases/latest) или с [сайта](https://soundcloud-desktop.fun/download), если GitHub не открывается.
+
+Arch и производные: официальный пакет [`soundcloud-bin`](https://aur.archlinux.org/packages/soundcloud-bin) публикуется в AUR автоматически через минуту после каждого релиза.
+```bash
+yay -S soundcloud-bin
+```
+Есть и пакет от сообщества [`soundcloud-desktop-bin`](https://aur.archlinux.org/packages/soundcloud-desktop-bin), его ведёт не автор приложения. Ставь только один из двух.
+
+Flatpak ставится из нашего репозитория, тогда обновления приходят через `flatpak update` и центр приложений (GNOME Software, Discover):
+```bash
+flatpak install --user https://zxcloli666.github.io/SoundCloud-Desktop/flatpak/soundcloud-desktop.flatpakref
+```
+Скачанный `soundcloud-desktop.flatpak` тоже подключает этот репозиторий при установке: `flatpak install --user soundcloud-desktop.flatpak`.
 
 Для AppImage:
 ```bash
@@ -170,6 +183,37 @@ chmod +x soundcloud-desktop-*.AppImage
 ![liked-tracks](https://github.com/user-attachments/assets/d590bfe7-487b-4578-90fd-2c21646e262a)
 
 </p>
+
+---
+
+## Обновление
+
+Приложение само проверяет новые версии при запуске и раз в шесть часов. Проверить вручную и посмотреть свою версию можно в **Настройки → Общее → Обновления**.
+
+| Сборка | Как обновляется |
+|---|---|
+| Windows `setup.exe` / `.msi`, macOS `.dmg`, `.AppImage` | Кнопка «Установить и перезапустить», настройки и кэш сохраняются |
+| Windows portable | Закрой приложение из трея (правый клик по иконке → «Выход») и замени exe скачанным |
+| `.deb` / `.rpm` | Установи новый пакет поверх старого |
+| AUR | `yay -Syu soundcloud-bin` |
+| Flatpak | `flatpak update` или центр приложений. Если ставил старый `.flatpak` и обновлений не видно, один раз переустанови: `flatpak install --user --reinstall soundcloud-desktop.flatpak` с новым файлом (без `--reinstall` будет ошибка «Каталог не пуст») |
+| Сборка из исходников | `git pull` и пересборка |
+
+Если поставил новую версию, а открывается старая, значит старая ещё работает в трее: закрой её через «Выход» и запусти снова.
+
+---
+
+## Логи
+
+Если приложение вылетает или что-то не играет, приложите к баг-репорту файл `desktop.log`. В него пишут и интерфейс, и нативная часть, включая паники с трассировкой. Токены и `session_id` в ссылках скрываются. Когда файл больше 5 МБ, при запуске он переименовывается в `desktop.old.log`.
+
+Папку открывает кнопка «Открыть папку» в **Настройки → Общее → Диагностика**. Пути:
+
+| ОС | Папка |
+|---|---|
+| Windows | `%LOCALAPPDATA%\com.soundcloud.desktop\logs` |
+| macOS | `~/Library/Logs/com.soundcloud.desktop` |
+| Linux | `~/.local/share/com.soundcloud.desktop/logs` |
 
 ---
 

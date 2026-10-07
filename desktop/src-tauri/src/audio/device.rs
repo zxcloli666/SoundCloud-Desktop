@@ -26,10 +26,11 @@ pub fn open_device_sink(
     let tx = reconnect_tx.clone();
     let err_flag = error_flag.clone();
     let error_cb = move |err: cpal::StreamError| {
-        eprintln!("[audio] stream error: {err}");
         if err == cpal::StreamError::BufferUnderrun {
+            eprintln!("[audio] stream error: {err}");
             return;
         }
+        diagnostics::error(format!("[audio] stream error: {err}"));
         err_flag.store(true, Ordering::Relaxed);
         if !sent_clone.swap(true, Ordering::Relaxed) {
             tx.send(AudioThreadCmd::Reconnect).ok();
@@ -244,7 +245,7 @@ fn start_pactl_subscribe_loop(handle: &AppHandle) {
 
         let Ok(mut child) = child else {
             // Fallback to polling if pactl subscribe fails
-            eprintln!("[Audio] pactl subscribe failed, falling back to polling");
+            diagnostics::warn("[Audio] pactl subscribe failed, falling back to polling");
             start_polling_loop(handle);
             return;
         };

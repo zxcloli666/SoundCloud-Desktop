@@ -1,12 +1,15 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { STATUS_PAGE_URL } from '../../lib/constants';
 import { requestProbe, useHostStatusStore } from '../../lib/host-status';
-import { Download, ExternalLink, RefreshCw, Star, WifiOff, X } from '../../lib/icons';
+import { Download, ExternalLink, Globe, RefreshCw, Star, WifiOff, X } from '../../lib/icons';
 import { useAppStatusStore } from '../../stores/app-status';
 import { useAuthStore } from '../../stores/auth';
 import { useAuthRecoveryStore } from '../../stores/auth-recovery';
 import { Modal, ModalClose, ModalContent, ModalTitle } from '../ui/Modal';
+import { outageCopy } from './outage-copy';
+import { RemoteCheck } from './RemoteCheck';
 import { useFailoverUi } from './useFailoverUi';
 
 const BOOSTY_URL = 'https://boosty.to/lolinamide';
@@ -53,6 +56,7 @@ export const HostStatusModal = React.memo(() => {
   const dismissModal = useHostStatusStore((s) => s.dismissModal);
   const probing = useHostStatusStore((s) => s.probing);
   const routeBlocked = useHostStatusStore((s) => s.routeBlocked);
+  const remote = useHostStatusStore((s) => s.remote);
   const recoveryPhase = useAuthRecoveryStore((s) => s.phase);
   const hasSession = useAuthStore((s) => s.hasSession);
   const navigate = useNavigate();
@@ -64,7 +68,7 @@ export const HostStatusModal = React.memo(() => {
     modalDismissedIncidentId !== incidentId;
 
   const allDown = ui === 'all-down';
-  const copy = allDown ? (routeBlocked ? 'blocked' : 'allDown') : 'starOffer';
+  const copy = allDown ? outageCopy(routeBlocked, remote) : 'starOffer';
 
   const goOfflineLibrary = () => {
     if (!hasSession) useAppStatusStore.getState().setOfflineBypass(true);
@@ -90,7 +94,9 @@ export const HostStatusModal = React.memo(() => {
 
           <div className="flex flex-col items-center text-center mb-6">
             <IconTile>
-              {allDown ? (
+              {copy === 'reachable' ? (
+                <Globe size={24} className="text-emerald-300/80" />
+              ) : allDown ? (
                 <WifiOff size={24} className="text-white/60" />
               ) : (
                 <span
@@ -107,7 +113,8 @@ export const HostStatusModal = React.memo(() => {
             <p className="text-[12.5px] text-white/35 mt-1.5 leading-relaxed max-w-[300px]">
               {t(`hostStatus.${copy}.body`)}
             </p>
-            {copy === 'blocked' && (
+            {allDown && <RemoteCheck verdict={remote} />}
+            {(copy === 'blocked' || copy === 'reachable') && (
               <p className="text-[11.5px] text-white/45 mt-3 leading-relaxed max-w-[300px]">
                 {t('hostStatus.blocked.rule')}
               </p>
@@ -117,6 +124,9 @@ export const HostStatusModal = React.memo(() => {
             )}
             <div className="flex items-center justify-center gap-2 mt-2.5">
               {!allDown && <LinkButton href={BOOSTY_URL} label={t('star.goBoosty')} />}
+              {allDown && (
+                <LinkButton href={STATUS_PAGE_URL} label={t('hostStatus.actions.statusPage')} />
+              )}
               <LinkButton href={DISCORD_URL} label={t('star.goDiscord')} />
             </div>
           </div>

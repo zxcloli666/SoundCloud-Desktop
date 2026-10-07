@@ -8,16 +8,19 @@ export function Toggle({
                            checked,
                            onChange,
                            disabled = false,
+                           label,
                        }: {
     checked: boolean;
     onChange: () => void;
     disabled?: boolean;
+    label?: string;
 }) {
     return (
         <button
             type="button"
             role="switch"
             aria-checked={checked}
+            aria-label={label}
             disabled={disabled}
             onClick={onChange}
             className={`relative w-11 h-6 rounded-full transition-all duration-200 shrink-0 ${

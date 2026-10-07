@@ -1,9 +1,10 @@
-import { fetch } from '@tauri-apps/plugin-http';
 import { useAppStatusStore } from '../../stores/app-status';
 import { API_BASE, API_STAR_BASE } from '../constants';
 import { EdgeTransportError, edgeFetch } from '../edge';
 import { requestPremiumRecheck } from '../premium-cache';
 import { queryClient } from '../query-client';
+import { fetchExternal } from './external';
+import { fetchRemoteVerdict } from './remote';
 import { type NetVerdict, useHostStatusStore } from './store';
 
 // ─── Health-карта (per-request data-plane роутинг) ──────────
@@ -40,7 +41,7 @@ export function noteMainAlive(): void {
   mainAliveGen++;
   const prev = useHostStatusStore.getState().main;
   if (prev === 'up') return;
-  useHostStatusStore.setState({ main: 'up', net: 'online' });
+  useHostStatusStore.setState({ main: 'up', net: 'online', remote: 'unknown' });
   useAppStatusStore.getState().confirmOnline();
   stopRecheckTimer();
   if (prev === 'down') void queryClient.invalidateQueries();
@@ -83,17 +84,6 @@ function sleep(ms: number): Promise<void> {
 /** Наши хосты — через тиры edge (иначе у забаненного юзера проба видит «всё лежит»). */
 async function fetchWithAbort(url: string): Promise<Response> {
   return edgeFetch(url, { cache: 'no-store' as RequestCache }, PROBE_TIMEOUT_MS);
-}
-
-/** Внешние маячки интернета — строго напрямую, тиры тут ни при чём. */
-async function fetchExternal(url: string): Promise<Response> {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), PROBE_TIMEOUT_MS);
-  try {
-    return await fetch(url, { cache: 'no-store', signal: controller.signal });
-  } finally {
-    clearTimeout(timer);
-  }
 }
 
 /** Статус <500 = хост жив (401/403/429 — тоже ответ); network/timeout = netFail. */
@@ -222,6 +212,7 @@ async function run(): Promise<void> {
     startRecheckTimer();
     return;
   }
+  const remote = star.alive ? 'unknown' : await fetchRemoteVerdict();
   // Реальный успех main за время star-пробы/internet-check — результат устарел, down не пишем.
   if (mainAliveGen !== genAfterMainProbes) return;
   const prev = useHostStatusStore.getState();
@@ -232,6 +223,7 @@ async function run(): Promise<void> {
     star: star.alive ? 'up' : 'down',
     net: 'online',
     routeBlocked: unreachable && internet === 'online',
+    remote,
     incidentId,
     // Флап-гвард: недавно закрытая модалка не возвращается на новом инциденте.
     ...(newIncident && Date.now() - prev.lastModalDismissAt < MODAL_RESHOW_SUPPRESS_MS

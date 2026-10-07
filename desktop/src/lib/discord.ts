@@ -190,8 +190,13 @@ useSettingsStore.subscribe((state, prev) => {
   void updatePresence();
 });
 
+let lastTickAt = 0;
+
 listen<number>('audio:tick', (event) => {
-  const { currentTrack, isPlaying } = usePlayerStore.getState();
+  const now = performance.now();
+  const sinceTick = (now - lastTickAt) / 1000;
+  lastTickAt = now;
+  const { currentTrack, isPlaying, playbackRate } = usePlayerStore.getState();
   if (!currentTrack || !useSettingsStore.getState().discordRpcEnabled) return;
 
   if (!connected) {
@@ -202,7 +207,7 @@ listen<number>('audio:tick', (event) => {
   if (!isPlaying) return;
 
   const elapsed = Math.round(event.payload);
-  const drift = Math.abs(elapsed - lastElapsed);
+  const drift = Math.abs(elapsed - (lastElapsed + sinceTick * playbackRate));
 
   // Re-sync Discord timestamps on manual seek / large jumps without spamming updates every second.
   if (drift >= 2) {

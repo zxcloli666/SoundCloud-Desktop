@@ -19,6 +19,7 @@ pub const NORMALIZATION_TARGET_PEAK: f64 = 0.95;
 pub const NORMALIZATION_MAX_BOOST_DB: f64 = 9.0;
 pub const NORMALIZATION_MAX_ATTENUATION_DB: f64 = -8.0;
 pub const TICK_INTERVAL_MS: u64 = 100;
+pub const HIDDEN_TICK_INTERVAL: Duration = Duration::from_millis(500);
 
 pub type ChannelCount = NonZero<u16>;
 pub type SampleRate = NonZero<u32>;

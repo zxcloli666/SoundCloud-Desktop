@@ -5,12 +5,14 @@ import { isMainDegraded } from './degraded';
 
 export type HostVerdict = 'up' | 'down' | 'unknown';
 export type NetVerdict = 'unknown' | 'online' | 'no-internet';
+export type RemoteVerdict = 'unknown' | 'up' | 'down';
 
 export interface HostStatusState {
   main: HostVerdict;
   star: HostVerdict;
   net: NetVerdict;
   routeBlocked: boolean;
+  remote: RemoteVerdict;
   /** Активная проба идёт (single-flight гейт + фидбек retry-кнопки). */
   probing: boolean;
   /** ++ на подтверждённом переходе main→down при net=online. */
@@ -29,6 +31,7 @@ export const useHostStatusStore = create<HostStatusState>()((set, get) => ({
   star: 'unknown',
   net: 'unknown',
   routeBlocked: false,
+  remote: 'unknown',
   probing: false,
   incidentId: 0,
   modalDismissedIncidentId: -1,

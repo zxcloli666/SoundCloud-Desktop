@@ -14,6 +14,8 @@ use bytes::Bytes;
 use futures_util::future::select_all;
 use wreq::Client;
 
+use crate::app::diagnostics;
+
 use super::sc_anon::hls::{download_hls_full, download_progressive};
 use super::state::PlaybackQuality;
 
@@ -157,7 +159,7 @@ async fn try_one_endpoint(
     let resp = match fetch_download(client, endpoint, session_id).await {
         Ok(r) => r,
         Err(e) => {
-            eprintln!("[direct] {endpoint} failed: {e}");
+            diagnostics::warn(format!("[direct] {endpoint} failed: {e}"));
             return None;
         }
     };
@@ -186,12 +188,12 @@ async fn try_one_endpoint(
                 return Some(DirectResult { data, quality: q });
             }
             Err(e) => {
-                eprintln!(
+                diagnostics::warn(format!(
                     "[direct] {} {} {} failed: {e}",
                     cand.kind_label(),
                     cand.quality(),
                     cand.preset()
-                );
+                ));
             }
         }
     }

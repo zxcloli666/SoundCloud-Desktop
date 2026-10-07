@@ -29,5 +29,12 @@ assignees: zxcloli666
 - ОС: [например, Windows 10]
 - Версия приложения [например, 2.0.0]
 
+**Логи**
+Приложите файл `desktop.log`. Папку с ним открывает кнопка «Открыть папку» в Настройки → Общее → Диагностика.
+
+- Windows: `%LOCALAPPDATA%\com.soundcloud.desktop\logs`
+- macOS: `~/Library/Logs/com.soundcloud.desktop`
+- Linux: `~/.local/share/com.soundcloud.desktop/logs`
+
 **Дополнительный контекст**
 Добавьте любую другую информацию о проблеме здесь.
