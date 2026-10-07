@@ -4,6 +4,7 @@ import {Link} from 'react-router-dom';
 import {type Aura, auraRgb} from '../../lib/aura';
 import {fc} from '../../lib/formatters';
 import {ChevronLeft, Search as SearchIcon, X} from '../../lib/icons';
+import {SyncQueueChip} from './SyncQueueChip';
 
 interface LibrarySubHeaderProps {
     title: string;
@@ -46,6 +47,7 @@ export const LibrarySubHeader = memo(function LibrarySubHeader({
               {fc(count)}
             </span>
                     )}
+                    <SyncQueueChip/>
                 </div>
 
                 {onFilter && (

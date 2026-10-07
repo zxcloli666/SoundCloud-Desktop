@@ -228,7 +228,12 @@
     "public": "Herkese acik",
     "partialTracks_one": "{{total}} parcadan {{shown}} tanesi kullanilabilir",
     "partialTracks_other": "{{total}} parcadan {{shown}} tanesi kullanilabilir",
-    "tracksUnavailable": "Calma listesinin parcalari SoundCloud'dan yuklenemedi"
+    "tracksUnavailable": "Calma listesinin parcalari SoundCloud'dan yuklenemedi",
+    "awaitingSync": "Calma listesi hala SoundCloud ile esitleniyor, bir dakika sonra tekrar deneyin",
+    "changedElsewhere": "Calma listesi baska bir yerde degisti, yenileyip tekrar deneyin",
+    "trackNotSynced": "Bu parca henuz esitlenmedi, bir dakika sonra tekrar deneyin",
+    "editFailed": "Calma listesi degistirilemedi",
+    "createQueued": "Calma listesi olusturuluyor, birazdan gorunecek"
   },
   "user": {
     "followers": "Takipciler",
@@ -643,6 +648,7 @@
     "syncing": "SoundCloud ile esitleniyor...",
     "syncSlow": "SoundCloud ile esitleme normalden uzun suruyor",
     "stillLoading": "SoundCloud'dan hala yukleniyor, biraz sonra tekrar deneyin",
+    "loadingFromSoundcloud": "SoundCloud'dan yukleniyor, bu bir dakika surebilir",
     "pageLoadFailed": "Sayfa yuklenemedi"
   },
   "star": {

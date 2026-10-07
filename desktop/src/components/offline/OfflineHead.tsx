@@ -1,23 +1,19 @@
 import React from 'react';
 import {useTranslation} from 'react-i18next';
-import type {AuthStatus} from '../../lib/auth-status';
-import {Clock, RotateCcw, Wifi, WifiOff} from '../../lib/icons';
+import {RotateCcw, Wifi, WifiOff} from '../../lib/icons';
 import {usePerfMode} from '../../lib/perf';
+import {SyncQueueChip} from '../library/SyncQueueChip';
 
 /** Шапка: кикер + заголовок слева, единый статус сети / очередь синка справа. */
 export const OfflineHead = React.memo(function OfflineHead({
   online,
-  authStatus,
   onTryOnline,
 }: {
   online: boolean;
-  authStatus: AuthStatus | undefined;
   onTryOnline: () => void;
 }) {
   const { t } = useTranslation();
   const perf = usePerfMode();
-  const pending = authStatus?.pendingSyncCount ?? 0;
-  const failed = authStatus?.failedSyncCount ?? 0;
 
   return (
     <header className="flex flex-wrap items-end justify-between gap-4">
@@ -31,17 +27,7 @@ export const OfflineHead = React.memo(function OfflineHead({
       </div>
 
       <div className="flex flex-wrap items-center gap-2.5">
-        {(pending > 0 || failed > 0) && (
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-accent/18 bg-accent/[0.08] px-3 py-1.5 font-mono text-[10.5px] font-medium text-white/70 tabular-nums">
-            <Clock size={11} />
-            {t('offline.pendingCount', { count: pending })}
-            {failed > 0 && (
-              <span className="text-rose-300/80">
-                · {t('offline.failedCount', { count: failed })}
-              </span>
-            )}
-          </span>
-        )}
+        <SyncQueueChip enabled={online} />
         <span
           className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 font-mono text-[10.5px] font-medium uppercase tracking-[0.12em] ${
             online

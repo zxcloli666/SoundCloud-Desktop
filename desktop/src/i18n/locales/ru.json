@@ -314,7 +314,12 @@
     "partialTracks_one": "Доступно {{shown}} из {{total}} трека",
     "partialTracks_few": "Доступно {{shown}} из {{total}} треков",
     "partialTracks_many": "Доступно {{shown}} из {{total}} треков",
-    "tracksUnavailable": "Не удалось загрузить треки плейлиста из SoundCloud"
+    "tracksUnavailable": "Не удалось загрузить треки плейлиста из SoundCloud",
+    "awaitingSync": "Плейлист ещё синхронизируется с SoundCloud, попробуйте через минуту",
+    "changedElsewhere": "Плейлист изменился в другом месте, обновите его и попробуйте снова",
+    "trackNotSynced": "Трек ещё не синхронизирован, попробуйте через минуту",
+    "editFailed": "Не удалось изменить плейлист",
+    "createQueued": "Плейлист создаётся, он скоро появится"
   },
   "user": {
     "followers": "Подписчики",
@@ -745,6 +750,7 @@
     "syncing": "Синхронизируем с SoundCloud...",
     "syncSlow": "Синхронизация с SoundCloud идёт дольше обычного",
     "stillLoading": "Ещё загружаем из SoundCloud, попробуйте чуть позже",
+    "loadingFromSoundcloud": "Загружаем из SoundCloud, это может занять минуту",
     "pageLoadFailed": "Не удалось загрузить страницу"
   },
   "star": {

@@ -9,8 +9,9 @@ import {
   useQueryClient,
 } from '@tanstack/react-query';
 import {useEffect, useMemo, useRef} from 'react';
+import {useAuthStore} from '../stores/auth';
 import type {Track} from '../stores/player';
-import {ApiError, api, isRefreshPending} from './api';
+import {api, isRefreshPending} from './api';
 import type {ApiRequestOptions} from './api-client';
 import {
   type CollectionSync,
@@ -20,6 +21,7 @@ import {
 } from './collection-sync';
 import {initLikedUrns} from './likes';
 import {rememberLikedTracks, rememberTracks} from './offline-index';
+import {editPlaylistTracks, toastPlaylistEditError} from './playlist-edits';
 import {fetchRelatedTracks} from './related';
 
 /* ── Types ─────────────────────────────────────────────────────── */
@@ -45,6 +47,11 @@ export interface PagedResponse<T> {
 }
 
 type TrackPage = PagedResponse<Track>;
+
+export interface PlaylistSync extends CollectionSync {
+  lastOperationSequence: number;
+  projectionTrackCount: number;
+}
 
 export interface Comment {
   id: number;
@@ -144,12 +151,13 @@ const COLD_CACHE_MS = Number.POSITIVE_INFINITY;
 const PARTIAL_REFETCH_MS = 30_000;
 const PARTIAL_REFETCH_LIMIT = 20;
 const REFRESH_PENDING_RETRIES = 8;
+const QUEUED_CREATE_REFRESH_MS = [3_000, 10_000, 30_000];
 
 export const retryWhileRefreshing = {
   retry: (failureCount: number, error: unknown) =>
     failureCount < (isRefreshPending(error) ? REFRESH_PENDING_RETRIES : 1),
   retryDelay: (failureCount: number, error: unknown) =>
-    error instanceof ApiError && isRefreshPending(error)
+    isRefreshPending(error)
       ? Math.min(Math.max(error.retryAfterSeconds ?? 5, 3), 30) * 1000
       : Math.min(1000 * 2 ** failureCount, 30_000),
 };
@@ -237,7 +245,7 @@ export function usePagedQuery<T>(opts: PagedQueryOptions<T>): PagedQueryResult<T
     // reconnect не должен перетягивать весь infinite-query: для SC cursor-лент
     // это перепроходит сдвинувшийся курсор и тасует выдачу. Focus-рефетч уже
     // выключен глобально в query-client.
-    refetchOnMount: false,
+    refetchOnMount: (query) => query.state.isInvalidated,
     refetchOnReconnect: false,
   });
 
@@ -345,10 +353,11 @@ export function useLikedTracks(limit = 30) {
     if (tracks.length > 0) initLikedUrns(tracks);
   }, [tracks]);
 
+  const complete = !query.hasNextPage && query.syncState === 'complete';
   useEffect(() => {
     if (!query.data) return;
-    void rememberLikedTracks(tracks);
-  }, [query.data, tracks]);
+    void (complete ? rememberLikedTracks(tracks) : rememberTracks(tracks));
+  }, [query.data, tracks, complete]);
 
   return { tracks, ...query };
 }
@@ -358,11 +367,14 @@ export function useLikedTracks(limit = 30) {
  * Optional onPage callback fires per page during the fetch.
  */
 let _allLikesPromise: Promise<Track[]> | null = null;
+let _allLikesOwner: string | undefined;
 
 export function fetchAllLikedTracks(
   pageSize = 200,
   onPage?: (tracks: Track[]) => void,
 ): Promise<Track[]> {
+  const owner = useAuthStore.getState().user?.urn;
+  if (_allLikesOwner !== owner) _allLikesPromise = null;
   if (_allLikesPromise && !onPage) return _allLikesPromise;
 
   let partial = false;
@@ -376,12 +388,13 @@ export function fetchAllLikedTracks(
       onPage?.(data.collection);
       if (!data.has_more) break;
     }
-    void rememberLikedTracks(all);
+    if (!partial) void rememberLikedTracks(all);
     return all;
   })();
 
   if (!onPage) {
     _allLikesPromise = promise;
+    _allLikesOwner = owner;
     promise.then(
       () => {
         if (partial && _allLikesPromise === promise) _allLikesPromise = null;
@@ -514,7 +527,8 @@ export function usePlaylistTracks(playlistUrn: string | undefined) {
     autoFetchAll: true,
   });
 
-  return { tracks: query.items, sync: query.data?.pages[0]?.sync, ...query };
+  const sync = query.data?.pages[0]?.sync as PlaylistSync | undefined;
+  return { tracks: query.items, sync, ...query };
 }
 
 /* ── User Profile (cold) ──────────────────────────────────────── */
@@ -526,6 +540,7 @@ export function useUser(userUrn: string | undefined) {
     enabled: !!userUrn,
     staleTime: COLD_CACHE_MS,
     gcTime: INFINITE_GC_MS,
+    ...retryWhileRefreshing,
   });
 }
 
@@ -547,8 +562,10 @@ export function useUserTracks(userUrn: string | undefined) {
 }
 
 export function useUserPopularTracks(userUrn: string | undefined) {
-  return useQuery({
-    queryKey: ['user', userUrn, 'tracks', 'popular'],
+  const qc = useQueryClient();
+  const queryKey = ['user', userUrn, 'tracks', 'popular'];
+  const query = useQuery({
+    queryKey,
     queryFn: async () => {
       const all: Track[] = [];
       let partial = false;
@@ -564,7 +581,6 @@ export function useUserPopularTracks(userUrn: string | undefined) {
       all.sort((a, b) => (b.playback_count ?? 0) - (a.playback_count ?? 0));
       return { tracks: all, partial };
     },
-    select: (data) => data.tracks,
     refetchInterval: (query) =>
       query.state.data?.partial && query.state.dataUpdateCount < PARTIAL_REFETCH_LIMIT
         ? PARTIAL_REFETCH_MS
@@ -573,6 +589,14 @@ export function useUserPopularTracks(userUrn: string | undefined) {
     staleTime: COLD_CACHE_MS,
     gcTime: INFINITE_GC_MS,
   });
+
+  const refetches = qc.getQueryState(queryKey)?.dataUpdateCount ?? 0;
+  const syncState: CollectionSyncState = !query.data?.partial
+    ? 'complete'
+    : refetches >= PARTIAL_REFETCH_LIMIT
+      ? 'stalled'
+      : 'syncing';
+  return { ...query, tracks: query.data?.tracks ?? EMPTY_TRACKS, syncState };
 }
 
 export function useUserPlaylists(userUrn: string | undefined) {
@@ -642,6 +666,7 @@ export function useUserWebProfiles(userUrn: string | undefined) {
     enabled: !!userUrn,
     staleTime: MEDIUM_CACHE_MS,
     gcTime: INFINITE_GC_MS,
+    ...retryWhileRefreshing,
   });
 }
 
@@ -693,19 +718,28 @@ export function useMyPlaylists(limit = 30) {
 
 /* ── Playlist Mutations ────────────────────────────────────────── */
 
-// Полная перестановка/удаление из свежей загруженной вью — шлём `{order}`-дельту
+// Перестановка из свежей загруженной вью — шлём `{order}`-дельту
 // (а не PUT всего списка): backend применяет к desired-state и пушит в SC фоном.
 export function useUpdatePlaylistTracks(playlistUrn: string | undefined) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (trackUrns: string[]) =>
-      api(`/playlists/${encodeURIComponent(playlistUrn!)}/tracks`, {
-        method: 'POST',
-        body: JSON.stringify({ order: trackUrns }),
-      }),
+    mutationFn: (trackUrns: string[]) => editPlaylistTracks(playlistUrn!, { order: trackUrns }),
+    onError: toastPlaylistEditError,
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['playlist', playlistUrn] });
       qc.invalidateQueries({ queryKey: ['playlist', playlistUrn, 'tracks'] });
+      qc.invalidateQueries({ queryKey: ['me', 'playlists'] });
+    },
+  });
+}
+
+export function useRemoveFromPlaylist(playlistUrn: string | undefined) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (trackUrn: string) => editPlaylistTracks(playlistUrn!, { remove: trackUrn }),
+    onError: toastPlaylistEditError,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['playlist', playlistUrn] });
       qc.invalidateQueries({ queryKey: ['me', 'playlists'] });
     },
   });
@@ -726,13 +760,11 @@ export function useAddToPlaylist() {
     }) => {
       let last: unknown;
       for (const urn of trackUrns) {
-        last = await api(`/playlists/${encodeURIComponent(playlistUrn)}/tracks`, {
-          method: 'POST',
-          body: JSON.stringify({ add: urn }),
-        });
+        last = await editPlaylistTracks(playlistUrn, { add: urn });
       }
       return last;
     },
+    onError: toastPlaylistEditError,
     onSuccess: (_data, vars) => {
       qc.invalidateQueries({ queryKey: ['playlist', vars.playlistUrn] });
       qc.invalidateQueries({ queryKey: ['playlist', vars.playlistUrn, 'tracks'] });
@@ -745,7 +777,7 @@ export function useCreatePlaylist() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (params: { title: string; sharing?: 'public' | 'private'; trackUrns?: string[] }) =>
-      api<Playlist>('/playlists', {
+      api<{ status?: string }>('/playlists', {
         method: 'POST',
         body: JSON.stringify({
           playlist: {
@@ -757,8 +789,11 @@ export function useCreatePlaylist() {
           },
         }),
       }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['me', 'playlists'] });
+    onSuccess: (result) => {
+      const refresh = () => qc.invalidateQueries({ queryKey: ['me', 'playlists'] });
+      void refresh();
+      if (result?.status !== 'queued') return;
+      for (const delay of QUEUED_CREATE_REFRESH_MS) setTimeout(refresh, delay);
     },
   });
 }

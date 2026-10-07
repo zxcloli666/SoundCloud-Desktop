@@ -36,6 +36,7 @@ const FullscreenLikeButton = React.memo(({track}: { track: Track }) => {
         try {
             await api(`/likes/tracks/${encodeURIComponent(track.urn)}`, {
                 method: next ? 'POST' : 'DELETE',
+                body: next ? JSON.stringify(track) : undefined,
             });
         } catch {
             optimisticToggleLike(qc, track, !next);

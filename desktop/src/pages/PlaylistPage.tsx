@@ -13,13 +13,14 @@ import {SequenceList} from '../components/playlist/SequenceList';
 import {SetRibbon} from '../components/playlist/SetRibbon';
 import {usePlaylistAura} from '../components/playlist/usePlaylistAura';
 import {Atmosphere} from '../components/search/Atmosphere';
-import {LoadErrorState} from '../components/ui/LoadErrorState';
+import {LoadErrorState, RefreshPendingHint} from '../components/ui/LoadErrorState';
 import {SyncNotice, syncNoticeOf} from '../components/ui/SyncNotice';
 import {
     useDeletePlaylist,
     useInfiniteScroll,
     usePlaylist,
     usePlaylistTracks,
+    useRemoveFromPlaylist,
     useUpdatePlaylistTracks,
 } from '../lib/hooks';
 import {AlertCircle, ChevronLeft, X} from '../lib/icons';
@@ -59,6 +60,7 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
     isError: playlistFailed,
     isFetching: playlistFetching,
     error: playlistError,
+    failureReason: playlistFailureReason,
     refetch: refetchPlaylist,
   } = usePlaylist(urn);
   const {
@@ -73,6 +75,7 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
     fetchNextPage,
   } = usePlaylistTracks(playlist ? urn : undefined);
   const updateTracks = useUpdatePlaylistTracks(urn);
+  const removeTrack = useRemoveFromPlaylist(urn);
   const deletePlaylist = useDeletePlaylist();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
@@ -96,8 +99,11 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
   // Local order for DnD; skip server sync while a debounced save is in flight.
   const [localTracks, setLocalTracks] = useState<Track[]>([]);
   const pendingMutationRef = useRef(false);
+  const pendingRemovalsRef = useRef(0);
   useEffect(() => {
-    if (!pendingMutationRef.current) setLocalTracks(serverTracks);
+    if (!pendingMutationRef.current && pendingRemovalsRef.current === 0) {
+      setLocalTracks(serverTracks);
+    }
   }, [serverTracks]);
 
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout>>(null!);
@@ -159,11 +165,33 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
 
   const handleRemoveTrack = useCallback(
     (trackUrn: string) => {
-      const next = localTracks.filter((tr) => tr.urn !== trackUrn);
-      setLocalTracks(next);
-      debouncedUpdate(next, t('playlist.trackRemoved'));
+      const index = localTracks.findIndex((tr) => tr.urn === trackUrn);
+      if (index === -1) return;
+      const removed = localTracks[index];
+      setLocalTracks((current) => current.filter((tr) => tr.urn !== trackUrn));
+      if (pendingMutationRef.current) {
+        debouncedUpdate(
+          localTracks.filter((tr) => tr.urn !== trackUrn),
+          t('playlist.reordered'),
+        );
+      }
+      pendingRemovalsRef.current += 1;
+      removeTrack
+        .mutateAsync(trackUrn)
+        .then(() => toast.success(t('playlist.trackRemoved')))
+        .catch(() =>
+          setLocalTracks((current) => {
+            if (current.some((tr) => tr.urn === trackUrn)) return current;
+            const next = [...current];
+            next.splice(Math.min(index, next.length), 0, removed);
+            return next;
+          }),
+        )
+        .finally(() => {
+          pendingRemovalsRef.current -= 1;
+        });
     },
-    [localTracks, debouncedUpdate, t],
+    [localTracks, removeTrack, debouncedUpdate, t],
   );
 
   // Доигрываем плейлист ДО КОНЦА (пагинированный срез в очереди → потом волна),
@@ -225,15 +253,18 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
     });
   }, [playlist, deletePlaylist, navigate, t]);
 
-  const declaredCount = playlist?.track_count ?? 0;
-  const missingTracks = !hasNextPage && tracks.length < declaredCount;
+  const editedInApp = (tracksSync?.lastOperationSequence ?? 0) > 0;
+  const declaredCount = editedInApp
+    ? (tracksSync?.projectionTrackCount ?? 0)
+    : (playlist?.track_count ?? 0);
+  const missingTracks = !hasNextPage && serverTracks.length < declaredCount;
   const tracksSyncStatus = tracksSync?.status ?? '';
   const tracksUnreadable =
     tracksSyncStatus === 'auth_required' || tracksSync?.conflictCode === 'remote_not_found';
   const listNotice = useMemo(() => {
     const retry = () => void refetchTracks();
     const notice = syncNoticeOf({
-      isError: tracksFailed && tracks.length === 0,
+      isError: tracksFailed && serverTracks.length === 0,
       syncState: missingTracks ? tracksSyncState : 'complete',
     });
     if (notice) return <SyncNotice kind={notice} onRetry={retry} />;
@@ -241,11 +272,10 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
     if (tracksUnreadable) {
       return <SyncNotice kind="failed" text={t('playlist.tracksUnavailable')} onRetry={retry} />;
     }
-    if (tracksSyncStatus !== 'clean' && tracksSyncStatus !== 'conflict') return null;
     return (
       <p className="text-center text-[13px] text-white/30">
         {t('playlist.partialTracks', {
-          shown: tracks.length,
+          shown: serverTracks.length,
           total: declaredCount,
           count: declaredCount,
         })}
@@ -254,10 +284,9 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
   }, [
     tracksFailed,
     tracksSyncState,
-    tracksSyncStatus,
     tracksUnreadable,
     missingTracks,
-    tracks.length,
+    serverTracks.length,
     declaredCount,
     refetchTracks,
     t,
@@ -286,12 +315,13 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
           style={{ isolation: 'isolate' }}
         >
           <HeroSkeleton />
+          <RefreshPendingHint reason={playlistFailureReason} />
         </div>
       </div>
     );
   }
 
-  const trackCount = playlist.track_count || tracks.length;
+  const trackCount = declaredCount || tracks.length;
 
   return (
     <div className="relative min-h-full w-full">

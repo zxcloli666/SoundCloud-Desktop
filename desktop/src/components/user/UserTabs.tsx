@@ -19,6 +19,7 @@ import { useCatalogPlaylists, useCatalogTracks } from '../../lib/search';
 import { PlaylistCard } from '../music/PlaylistCard';
 import { SearchState } from '../search/SearchState';
 import { Avatar } from '../ui/Avatar';
+import { type SyncedQuery, SyncNotice, syncNoticeOf } from '../ui/SyncNotice';
 import { VirtualGrid } from '../ui/VirtualGrid';
 import { VirtualList } from '../ui/VirtualList';
 import { ThemedTrackRow } from './ThemedTrackRow';
@@ -29,6 +30,7 @@ interface TabWrapperProps {
   emptyText?: string;
   isError?: boolean;
   onRetry?: () => void;
+  query?: SyncedQuery & { refetch: () => unknown };
   children: React.ReactNode;
 }
 
@@ -39,13 +41,19 @@ function TabWrapperImpl({
   emptyText,
   isError,
   onRetry,
+  query,
 }: TabWrapperProps) {
   const { t } = useTranslation();
+  const notice = query ? syncNoticeOf(query) : null;
   return (
     <div className="min-h-[420px]">
       {isLoading ? (
         <div className="py-24 flex justify-center">
           <Loader2 size={28} className="text-white/20 animate-spin" />
+        </div>
+      ) : isEmpty && notice && query ? (
+        <div className="py-24">
+          <SyncNotice kind={notice} onRetry={() => void query.refetch()} />
         </div>
       ) : isEmpty && isError && onRetry ? (
         <SearchState
@@ -87,7 +95,7 @@ export function UserTracksTab({ urn, aura }: { urn: string; aura: Aura }) {
     [aura, q.tracks],
   );
   return (
-    <TabWrapper isLoading={q.isLoading} isEmpty={q.tracks.length === 0}>
+    <TabWrapper isLoading={q.isLoading} isEmpty={q.tracks.length === 0} query={q}>
       <VirtualList
         items={q.tracks}
         rowHeight={72}
@@ -104,17 +112,18 @@ export function UserTracksTab({ urn, aura }: { urn: string; aura: Aura }) {
 }
 
 export function UserPopularTab({ urn, aura }: { urn: string; aura: Aura }) {
-  const { data = [], isLoading } = useUserPopularTracks(urn);
+  const popular = useUserPopularTracks(urn);
+  const { tracks, isLoading } = popular;
   const renderItem = useCallback(
-    (track: (typeof data)[number], i: number) => (
-      <ThemedTrackRow track={track} index={i} queue={data} aura={aura} />
+    (track: (typeof tracks)[number], i: number) => (
+      <ThemedTrackRow track={track} index={i} queue={tracks} aura={aura} />
     ),
-    [aura, data],
+    [aura, tracks],
   );
   return (
-    <TabWrapper isLoading={isLoading} isEmpty={data.length === 0}>
+    <TabWrapper isLoading={isLoading} isEmpty={tracks.length === 0} query={popular}>
       <VirtualList
-        items={data}
+        items={tracks}
         rowHeight={72}
         overscan={8}
         className="flex flex-col gap-1"
@@ -133,7 +142,7 @@ export function UserPlaylistsTab({ urn }: { urn: string }) {
     [],
   );
   return (
-    <TabWrapper isLoading={q.isLoading} isEmpty={q.playlists.length === 0}>
+    <TabWrapper isLoading={q.isLoading} isEmpty={q.playlists.length === 0} query={q}>
       <VirtualGrid
         items={q.playlists}
         itemHeight={320}
@@ -160,7 +169,7 @@ export function UserLikesTab({ urn, aura }: { urn: string; aura: Aura }) {
     [aura, q.tracks],
   );
   return (
-    <TabWrapper isLoading={q.isLoading} isEmpty={q.tracks.length === 0}>
+    <TabWrapper isLoading={q.isLoading} isEmpty={q.tracks.length === 0} query={q}>
       <VirtualList
         items={q.tracks}
         rowHeight={72}
@@ -315,7 +324,12 @@ export function UserConnectionsTab({
   const emptyText = mode === 'followers' ? t('user.noFollowers') : t('user.noFollowings');
 
   return (
-    <TabWrapper isLoading={q.isLoading} isEmpty={q.users.length === 0} emptyText={emptyText}>
+    <TabWrapper
+      isLoading={q.isLoading}
+      isEmpty={q.users.length === 0}
+      emptyText={emptyText}
+      query={q}
+    >
       <VirtualGrid
         items={q.users}
         itemHeight={220}

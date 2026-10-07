@@ -309,7 +309,12 @@
     "emptyCrate": "This crate is empty — start digging",
     "partialTracks_one": "{{shown}} of {{total}} track is available",
     "partialTracks_other": "{{shown}} of {{total}} tracks are available",
-    "tracksUnavailable": "Couldn't load this playlist's tracks from SoundCloud"
+    "tracksUnavailable": "Couldn't load this playlist's tracks from SoundCloud",
+    "awaitingSync": "This playlist is still syncing with SoundCloud, try again in a minute",
+    "changedElsewhere": "The playlist changed elsewhere, reload it and try again",
+    "trackNotSynced": "This track isn't synced yet, try again in a minute",
+    "editFailed": "Couldn't change the playlist",
+    "createQueued": "Playlist is being created, it will appear shortly"
   },
   "user": {
     "followers": "Followers",
@@ -734,6 +739,7 @@
     "syncing": "Syncing with SoundCloud...",
     "syncSlow": "Syncing with SoundCloud is taking longer than usual",
     "stillLoading": "Still loading from SoundCloud, try again in a moment",
+    "loadingFromSoundcloud": "Loading this from SoundCloud, it can take a minute",
     "pageLoadFailed": "Couldn't load this page"
   },
   "star": {

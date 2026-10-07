@@ -78,6 +78,10 @@ export class ApiError extends Error {
     this.name = 'ApiError';
     this.code = errorCode(body);
   }
+
+  get refreshPending(): boolean {
+    return this.status === 503 && !!this.code?.endsWith('_refresh_pending');
+  }
 }
 
 function errorCode(body: string): string | null {
@@ -94,6 +98,10 @@ function retryAfterSeconds(res: Response): number | null {
   return Number.isFinite(seconds) && seconds > 0 ? seconds : null;
 }
 
+export function isRefreshPending(error: unknown): error is ApiError {
+  return error instanceof ApiError && error.refreshPending;
+}
+
 const QUIET_ANSWERS: Record<string, number> = {
   search_timeout: 503,
   search_busy: 503,
@@ -107,12 +115,6 @@ const QUIET_ANSWERS: Record<string, number> = {
 export function isQuietAnswer(error: unknown): boolean {
   return (
     error instanceof ApiError && error.code != null && QUIET_ANSWERS[error.code] === error.status
-  );
-}
-
-export function isRefreshPending(error: unknown): boolean {
-  return (
-    error instanceof ApiError && error.status === 503 && !!error.code?.endsWith('_refresh_pending')
   );
 }
 
@@ -325,7 +327,7 @@ export async function apiRequest<T = unknown>(
 
       const body = res.ok ? '' : await res.text();
       const err = res.ok ? null : new ApiError(res.status, body, retryAfterSeconds(res));
-      const answered = res.status < 500 || isQuietAnswer(err) || isRefreshPending(err);
+      const answered = res.status < 500 || isQuietAnswer(err) || !!err?.refreshPending;
 
       // Жив = ответил <500 (как probeOnce; 401/403 — валидный ответ axum, star они
       // НЕ марают — иначе протухший токен выключал бы star при мёртвом main).
@@ -356,7 +358,7 @@ export async function apiRequest<T = unknown>(
 
         // Штатный по контракту статус (напр. 404 /related = соседей пока нет):
         // глушим тихо — без тоста, без recovery, без error-лога.
-        if (silentStatuses?.includes(res.status) || isQuietAnswer(err) || isRefreshPending(err)) {
+        if (silentStatuses?.includes(res.status) || isQuietAnswer(err) || err.refreshPending) {
           throw err;
         }
 

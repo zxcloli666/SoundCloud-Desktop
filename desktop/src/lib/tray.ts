@@ -94,7 +94,10 @@ async function toggleLikeCurrent() {
     if (next && isUrnDisliked(tr.urn)) void toggleDislike(queryClient, tr, false);
     pushNp();
     try {
-        await api(`/likes/tracks/${encodeURIComponent(tr.urn)}`, {method: next ? 'POST' : 'DELETE'});
+        await api(`/likes/tracks/${encodeURIComponent(tr.urn)}`, {
+            method: next ? 'POST' : 'DELETE',
+            body: next ? JSON.stringify(tr) : undefined,
+        });
     } catch {
         optimisticToggleLike(queryClient, tr, !next);
         pushNp();

@@ -12,7 +12,6 @@ import type {OfflineEntry, OfflineSection, SortMode} from '../components/offline
 import {useForgeStatus} from '../components/offline/useForgeStatus';
 import {useOfflineLibrary} from '../components/offline/useOfflineLibrary';
 import {Atmosphere} from '../components/search/Atmosphere';
-import {useAuthStatus} from '../lib/auth-status';
 import {ensureTrackCached} from '../lib/cache';
 import {idOf} from '../lib/ids';
 import {useCacheLikes} from '../lib/likes-cache';
@@ -37,7 +36,6 @@ export const OfflinePage = React.memo(() => {
   const forge = useForgeStatus();
   const cacheLikes = useCacheLikes(() => void lib.refreshInventory());
   const online = lib.appMode === 'online';
-  const authStatus = useAuthStatus({ enabled: online });
 
   const [section, setSection] = useState<OfflineSection>('likes');
   const [sort, setSort] = useState<SortMode>('custom');
@@ -134,7 +132,7 @@ export const OfflinePage = React.memo(() => {
         className="relative z-10 mx-auto flex w-full max-w-[1180px] flex-col gap-5"
         style={{ isolation: 'isolate' }}
       >
-        <OfflineHead online={online} authStatus={authStatus.data} onTryOnline={handleTryOnline} />
+        <OfflineHead online={online} onTryOnline={handleTryOnline} />
 
         {lib.loading ? (
           <>
