@@ -8,15 +8,6 @@ import { playlistChip, userChip } from './entityChips';
 import { SearchError, SearchState, SectionError, StripSkeleton } from './SearchState';
 import { TrackWall } from './TrackWall';
 
-type ScItem = { urn?: string | null; id?: number | string | null };
-
-function withUrns<T extends ScItem>(items: T[] | undefined, ns: string): T[] {
-  return (items ?? []).flatMap((item) => {
-    if (item?.urn) return [item];
-    return item?.id != null ? [{ ...item, urn: `soundcloud:${ns}:${item.id}` }] : [];
-  });
-}
-
 export const SoundCloudResults = memo(function SoundCloudResults({ q }: { q: string }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -35,8 +26,8 @@ export const SoundCloudResults = memo(function SoundCloudResults({ q }: { q: str
 
   const chips = useMemo(
     () => [
-      ...withUrns(playlists.data, 'playlists').map((p) => playlistChip(p, open)),
-      ...withUrns(users.data, 'users').map((u) => userChip(u, open)),
+      ...(playlists.data ?? []).map((p) => playlistChip(p, open)),
+      ...(users.data ?? []).map((u) => userChip(u, open)),
     ],
     [playlists.data, users.data, open],
   );
@@ -47,13 +38,12 @@ export const SoundCloudResults = memo(function SoundCloudResults({ q }: { q: str
   };
   const loadMore = useCallback(() => void tracks.fetchNextPage(), [tracks.fetchNextPage]);
 
-  const wallTracks = useMemo(() => withUrns(tracks.items, 'tracks'), [tracks.items]);
   const empty =
     !tracks.isLoading &&
     !tracks.isError &&
     !stripsLoading &&
     failedStrips.length === 0 &&
-    wallTracks.length === 0 &&
+    tracks.items.length === 0 &&
     chips.length === 0;
 
   return (
@@ -68,7 +58,7 @@ export const SoundCloudResults = memo(function SoundCloudResults({ q }: { q: str
           title={t('search.soundcloud.emptyTitle', { query: q })}
           body={t('search.soundcloud.emptyBody')}
         />
-      ) : tracks.isError && wallTracks.length === 0 ? (
+      ) : tracks.isError && tracks.items.length === 0 ? (
         <SearchError
           error={tracks.error}
           onRetry={() => {
@@ -78,7 +68,7 @@ export const SoundCloudResults = memo(function SoundCloudResults({ q }: { q: str
         />
       ) : (
         <TrackWall
-          tracks={wallTracks}
+          tracks={tracks.items}
           kind="lexical"
           isLoading={tracks.isLoading}
           hasMore={!!tracks.hasNextPage && !tracks.isFetchNextPageError}

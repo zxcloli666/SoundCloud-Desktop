@@ -4,21 +4,9 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { ApiError } from '../../lib/api-client';
 import { usePerfMode } from '../../lib/perf';
-import { type ResolvedEntity, useResolvedLink } from '../../lib/search';
+import { useResolvedLink } from '../../lib/search';
 import { linkRoute, type SoundCloudLink } from '../../lib/soundcloudLink';
 import { useSearchQueryStore } from '../../stores/searchQuery';
-
-const KIND_NAMESPACE: Record<string, string> = {
-  track: 'tracks',
-  playlist: 'playlists',
-  user: 'users',
-};
-
-function entityRoute(entity: ResolvedEntity): string | null {
-  if (entity.urn) return linkRoute(entity.urn);
-  const ns = KIND_NAMESPACE[entity.kind ?? ''];
-  return ns && entity.id != null ? linkRoute(`soundcloud:${ns}:${entity.id}`) : null;
-}
 
 type Failure = 'notFound' | 'unsupported' | 'unreachable';
 
@@ -36,7 +24,7 @@ export const LinkOpen = memo(function LinkOpen({ link }: { link: SoundCloudLink 
   const url = link.kind === 'url' ? link.url : null;
   const resolved = useResolvedLink(url);
   const target =
-    link.kind === 'urn' ? linkRoute(link.urn) : resolved.data ? entityRoute(resolved.data) : null;
+    link.kind === 'urn' ? linkRoute(link.urn) : resolved.data ? linkRoute(resolved.data.urn) : null;
 
   useEffect(() => {
     if (!target) return;
