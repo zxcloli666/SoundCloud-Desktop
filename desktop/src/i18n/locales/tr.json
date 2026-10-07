@@ -1090,5 +1090,57 @@
     "teaserTitle": "Bu ay müzikte sen",
     "teaserTopArtist": "en çok: {{name}}",
     "open": "İstatistikler"
+  },
+  "together": {
+    "title": "Birlikte dinle",
+    "pitch": "Bir oturum başlat, arkadaşların tam olarak senin duyduğunu aynı anda duysun.",
+    "start": "Oturum başlat",
+    "orJoin": "ya da bir arkadaşına katıl",
+    "join": "Katıl",
+    "codeLabel": "Oturum kodu",
+    "footnote": "Herkes kendi hesabından dinler. En fazla 10 kişi.",
+    "live": "Birlikte dinleniyor",
+    "code": "Oturum kodu",
+    "invite": "Davet et",
+    "copied": "Kopyalandı",
+    "shareText": "SoundCloud Desktop'ta benimle dinle: Birlikte dinle'yi aç ve {{code}} kodunu gir",
+    "friendsHear": "Arkadaşların dinliyor",
+    "hostPlays": "{{name}} çalıyor",
+    "nothingYet": "Henüz bir şey çalmıyor",
+    "listeners_one": "{{count}} dinleyici",
+    "listeners_other": "{{count}} dinleyici",
+    "end": "Oturumu bitir",
+    "leave": "Oturumdan ayrıl",
+    "member": {
+      "host": "Sunucu",
+      "you": "Sen",
+      "ready": "Hazır",
+      "loading": "Yükleniyor",
+      "away": "Uzakta"
+    },
+    "sync": {
+      "synced": "Senkronize",
+      "catchingUp": "Yetişiliyor",
+      "reconnecting": "Yeniden bağlanılıyor",
+      "hostAway": "Sunucu uzakta",
+      "alone": "Arkadaşlar bekleniyor",
+      "hosting_one": "{{count}} arkadaş dinliyor",
+      "hosting_other": "{{count}} arkadaş dinliyor",
+      "waiting_one": "{{count}} arkadaş bekleniyor",
+      "waiting_other": "{{count}} arkadaş bekleniyor"
+    },
+    "toast": {
+      "joined": "{{name}} oturuma katıldı",
+      "left": "{{name}} oturumdan ayrıldı",
+      "ended": "Sunucu oturumu bitirdi",
+      "hostLeads": "Kontrol {{name}} kişisinde",
+      "hostLeadsHint": "Başka bir şey çalmak için oturumdan ayrıl."
+    },
+    "errors": {
+      "notFound": "Bu koda sahip bir oturum yok. Kontrol edip tekrar dene.",
+      "full": "Bu oturum dolu.",
+      "signIn": "Birlikte dinlemek için giriş yap.",
+      "generic": "Bağlanılamadı. Birazdan tekrar dene."
+    }
   }
 }

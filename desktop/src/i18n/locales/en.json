@@ -1287,5 +1287,57 @@
     "teaserTitle": "Your month in music",
     "teaserTopArtist": "most played: {{name}}",
     "open": "Stats"
+  },
+  "together": {
+    "title": "Listen together",
+    "pitch": "Start a session and your friends hear exactly what you hear, at the same moment.",
+    "start": "Start a session",
+    "orJoin": "or join a friend",
+    "join": "Join",
+    "codeLabel": "Session code",
+    "footnote": "Everyone streams on their own account. Up to 10 people.",
+    "live": "Listening together",
+    "code": "Session code",
+    "invite": "Invite",
+    "copied": "Copied",
+    "shareText": "Listen with me in SoundCloud Desktop: open Listen together and enter the code {{code}}",
+    "friendsHear": "Your friends hear",
+    "hostPlays": "{{name}} is playing",
+    "nothingYet": "Nothing playing yet",
+    "listeners_one": "{{count}} listener",
+    "listeners_other": "{{count}} listeners",
+    "end": "End session",
+    "leave": "Leave session",
+    "member": {
+      "host": "Host",
+      "you": "You",
+      "ready": "Ready",
+      "loading": "Loading",
+      "away": "Away"
+    },
+    "sync": {
+      "synced": "In sync",
+      "catchingUp": "Catching up",
+      "reconnecting": "Reconnecting",
+      "hostAway": "Host is away",
+      "alone": "Waiting for friends",
+      "hosting_one": "{{count}} friend listening",
+      "hosting_other": "{{count}} friends listening",
+      "waiting_one": "Waiting for {{count}} friend",
+      "waiting_other": "Waiting for {{count}} friends"
+    },
+    "toast": {
+      "joined": "{{name}} joined the session",
+      "left": "{{name}} left the session",
+      "ended": "The host ended the session",
+      "hostLeads": "{{name}} is in control",
+      "hostLeadsHint": "Leave the session to play something else."
+    },
+    "errors": {
+      "notFound": "No session with this code. Check it and try again.",
+      "full": "This session is full.",
+      "signIn": "Sign in to listen together.",
+      "generic": "Could not connect. Try again in a moment."
+    }
   }
 }
