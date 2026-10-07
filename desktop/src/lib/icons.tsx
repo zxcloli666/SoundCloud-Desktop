@@ -50,6 +50,7 @@ import {
   PanelLeftClose as _PanelLeftClose,
   PanelLeftOpen as _PanelLeftOpen,
   Pause as _Pause,
+  Pencil as _Pencil,
   Play as _Play,
   Plus as _Plus,
   Power as _Power,
@@ -148,6 +149,7 @@ export const Music = memo(_Music);
 export const PanelLeftClose = memo(_PanelLeftClose);
 export const PanelLeftOpen = memo(_PanelLeftOpen);
 export const Pause = memo(_Pause);
+export const Pencil = memo(_Pencil);
 export const Play = memo(_Play);
 export const Plus = memo(_Plus);
 export const Repeat = memo(_Repeat);

@@ -9,6 +9,7 @@ import {
     Heart,
     LinkIcon,
     MapPin,
+    Pencil,
     pauseCurrent16,
     playCurrent16,
     Shuffle,
@@ -118,6 +119,7 @@ export const PlaylistActions = React.memo(function PlaylistActions({
                                                                        onPlayAll,
                                                                        onShuffle,
                                                                        onTogglePin,
+                                                                       onEdit,
                                                                        onDelete,
                                                                    }: {
     playlist: Playlist;
@@ -127,6 +129,7 @@ export const PlaylistActions = React.memo(function PlaylistActions({
     onPlayAll: () => void;
     onShuffle: () => void;
     onTogglePin: () => void;
+    onEdit: () => void;
     onDelete: () => void;
 }) {
     const {t} = useTranslation();
@@ -189,6 +192,15 @@ export const PlaylistActions = React.memo(function PlaylistActions({
                 {isOwner && (
                     <>
                         <span className="w-px h-5 bg-white/[0.08] mx-0.5" aria-hidden/>
+                        <button
+                            type="button"
+                            onClick={onEdit}
+                            title={t('playlist.edit')}
+                            aria-label={t('playlist.edit')}
+                            className="inline-flex items-center justify-center w-10 h-10 rounded-xl text-white/55 hover:text-white/95 hover:bg-white/[0.07] transition-all duration-200 ease-[var(--ease-apple)] cursor-pointer"
+                        >
+                            <Pencil size={15}/>
+                        </button>
                         <SharingToggle kind="playlist" urn={playlist.urn} sharing={playlist.sharing}/>
                         <button
                             type="button"

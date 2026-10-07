@@ -331,7 +331,14 @@
     "changedElsewhere": "The playlist changed elsewhere, reload it and try again",
     "trackNotSynced": "This track isn't synced yet, try again in a minute",
     "editFailed": "Couldn't change the playlist",
-    "createQueued": "Playlist is being created, it will appear shortly"
+    "createQueued": "Playlist is being created, it will appear shortly",
+    "edit": "Edit playlist",
+    "titleLabel": "Title",
+    "descriptionLabel": "Description",
+    "descriptionPlaceholder": "Tell listeners what this playlist is about",
+    "save": "Save",
+    "saving": "Saving...",
+    "detailsSaved": "Playlist updated"
   },
   "user": {
     "followers": "Followers",

@@ -6,6 +6,7 @@ import {useNavigate, useParams} from 'react-router-dom';
 import {toast} from 'sonner';
 import {useShallow} from 'zustand/shallow';
 import {CrateLedger} from '../components/playlist/CrateLedger';
+import {EditPlaylistDialog} from '../components/playlist/EditPlaylistDialog';
 import {PLAYLIST_KEYFRAMES} from '../components/playlist/keyframes';
 import {MoreCrates} from '../components/playlist/MoreCrates';
 import {PlaylistHero} from '../components/playlist/PlaylistHero';
@@ -78,6 +79,7 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
   const removeTrack = useRemoveFromPlaylist(urn);
   const deletePlaylist = useDeletePlaylist();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showEdit, setShowEdit] = useState(false);
 
   const { pinnedPlaylists, pinPlaylist, unpinPlaylist } = useSettingsStore(
     useShallow((s) => ({
@@ -357,6 +359,7 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
           onPlayAll={handlePlayAll}
           onShuffle={handleShuffle}
           onTogglePin={handleTogglePin}
+          onEdit={() => setShowEdit(true)}
           onDelete={() => setShowDeleteConfirm(true)}
         />
 
@@ -395,6 +398,10 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
           excludeUrn={playlist.urn}
         />
       </div>
+
+      {isOwner && (
+        <EditPlaylistDialog playlist={playlist} open={showEdit} onOpenChange={setShowEdit} />
+      )}
 
       <Dialog.Root open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
         <Dialog.Portal>

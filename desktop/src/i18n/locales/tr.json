@@ -247,7 +247,14 @@
     "changedElsewhere": "Calma listesi baska bir yerde degisti, yenileyip tekrar deneyin",
     "trackNotSynced": "Bu parca henuz esitlenmedi, bir dakika sonra tekrar deneyin",
     "editFailed": "Calma listesi degistirilemedi",
-    "createQueued": "Calma listesi olusturuluyor, birazdan gorunecek"
+    "createQueued": "Calma listesi olusturuluyor, birazdan gorunecek",
+    "edit": "Çalma listesini düzenle",
+    "titleLabel": "Başlık",
+    "descriptionLabel": "Açıklama",
+    "descriptionPlaceholder": "Dinleyicilere bu çalma listesinin ne hakkında olduğunu anlatın",
+    "save": "Kaydet",
+    "saving": "Kaydediliyor...",
+    "detailsSaved": "Çalma listesi güncellendi"
   },
   "user": {
     "followers": "Takipciler",
