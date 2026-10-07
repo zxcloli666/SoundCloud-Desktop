@@ -3,6 +3,7 @@ import {getWallpaperUrl} from '../../../lib/cache';
 import {coverSrc, extractPalette, type Rgb} from '../../../lib/cover-palette';
 import {usePerfMode} from '../../../lib/perf';
 import {useSettingsStore} from '../../../stores/settings';
+import {CrossfadeImage} from '../../ui/CrossfadeImage';
 
 const FALLBACK_COLOR: Rgb = [255, 85, 0];
 
@@ -42,17 +43,15 @@ export const LyricsBackdrop = React.memo(
                 style={{contain: 'strict', transform: 'translateZ(0)'}}
             >
                 {wallpaperUrl ? (
-                    <img
+                    <CrossfadeImage
                         src={wallpaperUrl}
-                        alt=""
-                        className="w-full h-full object-cover"
+                        fade={perf.mode !== 'light'}
+                        className="absolute inset-0 w-full h-full object-cover"
                         style={{
                             filter: blur > 0 ? `blur(${blur}px) saturate(1.12)` : undefined,
                             opacity: 0.78,
                             transform: 'scale(1.08) translateZ(0)',
                         }}
-                        loading="eager"
-                        decoding="async"
                     />
                 ) : artworkSrc && blur > 0 ? (
                     <img

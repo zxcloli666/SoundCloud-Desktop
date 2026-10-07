@@ -14,6 +14,7 @@ import {useLyricsStore} from '../../stores/lyrics';
 import {usePlayerStore} from '../../stores/player';
 import {useSettingsStore} from '../../stores/settings';
 import {ContextMenuHost} from '../ui/ContextMenu';
+import {CrossfadeImage} from '../ui/CrossfadeImage';
 import {useAppContextMenu} from './AppContextMenu';
 import {CoverTint} from './CoverTint';
 import {NowPlayingBar} from './NowPlayingBar';
@@ -184,11 +185,9 @@ const CustomBackground = React.memo(() => {
           className="absolute inset-0 pointer-events-none overflow-hidden"
           style={{contain: 'strict', transform: 'translateZ(0)'}}
       >
-          <img
+          <CrossfadeImage
               src={bgUrl}
-              alt=""
-              aria-hidden="true"
-              decoding="async"
+              fade={perf.mode !== 'light'}
               className="absolute inset-0 w-full h-full object-cover select-none"
               style={{
                   filter: effBlur > 0 ? `blur(${effBlur}px)` : undefined,
