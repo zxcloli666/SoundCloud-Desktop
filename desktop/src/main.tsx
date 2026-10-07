@@ -62,6 +62,7 @@ function startDeferredRuntime() {
     void import('./lib/audio');
     void import('./lib/queue-autopilot');
     void import('./lib/discord');
+    void import('./lib/hotkeys').then((m) => m.initGlobalHotkeys());
     void import('./lib/perf-probe').then((m) => m.probePerfMode());
     void import('./lib/host-status').then((m) => m.initHostStatus());
   });

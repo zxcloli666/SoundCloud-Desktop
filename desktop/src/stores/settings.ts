@@ -1,5 +1,10 @@
 import {create} from 'zustand';
 import {createJSONStorage, persist} from 'zustand/middleware';
+import {
+  DEFAULT_GLOBAL_HOTKEYS,
+  type GlobalHotkeyAction,
+  type GlobalHotkeyMap,
+} from '../lib/hotkeys/actions';
 import type {PerfMode} from '../lib/perf';
 import {tauriStorage} from '../lib/tauri-storage';
 
@@ -88,6 +93,8 @@ export interface SettingsState {
   lyricsVisualizer: boolean;
   artistWaveCollapsed: boolean;
   wallhavenApiKey: string;
+  globalHotkeysEnabled: boolean;
+  globalHotkeys: GlobalHotkeyMap;
   setAccentColor: (color: string) => void;
   setBgPrimary: (bg: string) => void;
   setThemePreset: (id: ThemePreset) => void;
@@ -122,6 +129,9 @@ export interface SettingsState {
   setLyricsVisualizer: (v: boolean) => void;
   setArtistWaveCollapsed: (v: boolean) => void;
   setWallhavenApiKey: (key: string) => void;
+  setGlobalHotkeysEnabled: (enabled: boolean) => void;
+  setGlobalHotkey: (action: GlobalHotkeyAction, accelerator: string) => void;
+  resetGlobalHotkeys: () => void;
   resetTheme: () => void;
 }
 
@@ -162,6 +172,8 @@ const DEFAULTS = {
   lyricsVisualizer: false,
   artistWaveCollapsed: false,
   wallhavenApiKey: '',
+  globalHotkeysEnabled: false,
+  globalHotkeys: DEFAULT_GLOBAL_HOTKEYS,
 };
 
 export const useSettingsStore = create<SettingsState>()(
@@ -223,6 +235,10 @@ export const useSettingsStore = create<SettingsState>()(
       setLyricsVisualizer: (lyricsVisualizer) => set({ lyricsVisualizer }),
       setArtistWaveCollapsed: (artistWaveCollapsed) => set({ artistWaveCollapsed }),
       setWallhavenApiKey: (wallhavenApiKey) => set({ wallhavenApiKey }),
+      setGlobalHotkeysEnabled: (globalHotkeysEnabled) => set({ globalHotkeysEnabled }),
+      setGlobalHotkey: (action, accelerator) =>
+        set((s) => ({ globalHotkeys: { ...s.globalHotkeys, [action]: accelerator } })),
+      resetGlobalHotkeys: () => set({ globalHotkeys: DEFAULT_GLOBAL_HOTKEYS }),
       resetTheme: () =>
         set({
           accentColor: DEFAULTS.accentColor,
@@ -290,6 +306,8 @@ export const useSettingsStore = create<SettingsState>()(
         lyricsVisualizer: s.lyricsVisualizer,
         artistWaveCollapsed: s.artistWaveCollapsed,
         wallhavenApiKey: s.wallhavenApiKey,
+        globalHotkeysEnabled: s.globalHotkeysEnabled,
+        globalHotkeys: s.globalHotkeys,
       }),
     },
   ),

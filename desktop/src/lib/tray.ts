@@ -93,7 +93,7 @@ document.addEventListener('visibilitychange', () => {
     if (document.hidden) flushNp();
 });
 
-async function toggleLikeCurrent() {
+export async function toggleLikeCurrent() {
     const tr = usePlayerStore.getState().currentTrack;
     if (!tr) return;
     const next = !(isUrnLiked(tr.urn) || !!tr.user_favorite);
