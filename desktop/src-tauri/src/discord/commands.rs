@@ -41,6 +41,7 @@ pub struct DiscordTrackInfo {
     mode: Option<DiscordRpcMode>,
     status: Option<DiscordRpcStatus>,
     show_button: Option<bool>,
+    lyric_line: Option<String>,
 }
 
 #[derive(Clone, Copy, serde::Deserialize)]
@@ -68,6 +69,14 @@ fn status_display(
         (DiscordRpcMode::Activity, _) | (_, DiscordRpcStatus::App) => StatusDisplayType::Name,
         (DiscordRpcMode::Track, DiscordRpcStatus::Artist) if is_playing => StatusDisplayType::State,
         _ => StatusDisplayType::Details,
+    }
+}
+
+fn lyric_to_show(mode: DiscordRpcMode, is_playing: bool, line: Option<&str>) -> Option<&str> {
+    match mode {
+        DiscordRpcMode::Activity => None,
+        _ if !is_playing => None,
+        _ => line.filter(|text| !text.trim().is_empty()),
     }
 }
 
@@ -146,8 +155,12 @@ fn set_activity(state: &DiscordState, track: DiscordTrackInfo) -> Result<(), Str
     let show_button = track.show_button.unwrap_or(true);
 
     let large_image = track.artwork_url.as_deref().unwrap_or("soundcloud_logo");
+    let lyric = lyric_to_show(mode, is_playing, track.lyric_line.as_deref());
 
-    let assets = Assets::new().large_image(large_image);
+    let mut assets = Assets::new().large_image(large_image);
+    if lyric.is_some() && matches!(mode, DiscordRpcMode::Track) {
+        assets = assets.large_text(&track.artist);
+    }
 
     let mut activity = Activity::new()
         .activity_type(ActivityType::Listening)
@@ -155,17 +168,17 @@ fn set_activity(state: &DiscordState, track: DiscordTrackInfo) -> Result<(), Str
         .assets(assets);
 
     activity = match mode {
-        DiscordRpcMode::Track => activity.details(&track.title).state(if is_playing {
-            track.artist.as_str()
-        } else {
-            "Paused"
+        DiscordRpcMode::Track => activity.details(&track.title).state(match lyric {
+            Some(line) => line,
+            None if is_playing => track.artist.as_str(),
+            None => "Paused",
         }),
         DiscordRpcMode::Artist => {
             let activity = activity.details(&track.artist);
-            if is_playing {
-                activity
-            } else {
-                activity.state("Paused")
+            match lyric {
+                Some(line) => activity.state(line),
+                None if is_playing => activity,
+                None => activity.state("Paused"),
             }
         }
         DiscordRpcMode::Activity => {
@@ -250,6 +263,28 @@ mod tests {
             shown(DiscordRpcMode::Track, DiscordRpcStatus::Artist, false),
             StatusDisplayType::Details as u8
         );
+    }
+
+    #[test]
+    fn lyric_line_only_while_playing_outside_activity_mode() {
+        assert_eq!(
+            lyric_to_show(DiscordRpcMode::Track, true, Some("line")),
+            Some("line")
+        );
+        assert_eq!(
+            lyric_to_show(DiscordRpcMode::Artist, true, Some("line")),
+            Some("line")
+        );
+        assert_eq!(
+            lyric_to_show(DiscordRpcMode::Track, false, Some("line")),
+            None
+        );
+        assert_eq!(
+            lyric_to_show(DiscordRpcMode::Activity, true, Some("line")),
+            None
+        );
+        assert_eq!(lyric_to_show(DiscordRpcMode::Track, true, Some("  ")), None);
+        assert_eq!(lyric_to_show(DiscordRpcMode::Track, true, None), None);
     }
 
     #[test]
