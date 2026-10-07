@@ -37,6 +37,7 @@ export interface YmImportProgress {
 
 interface YmImportMatch {
   urn: string;
+  position: number;
 }
 
 interface ScPlaylist {
@@ -87,7 +88,7 @@ const idleState = {
 let bridgeInitialized = false;
 let activeRunId = 0;
 let stopRequested = false;
-let matchedUrns: string[] = [];
+let matches: YmImportMatch[] = [];
 
 function chunkArray<T>(items: T[], size: number): T[][] {
   const chunks: T[][] = [];
@@ -122,7 +123,12 @@ function currentRunIsActive(runId: number) {
 
 function resetRuntimeState() {
   stopRequested = false;
-  matchedUrns = [];
+  matches = [];
+}
+
+function orderedUrns(): string[] {
+  const newestFirst = [...matches].sort((a, b) => a.position - b.position).map((m) => m.urn);
+  return [...new Set(newestFirst)];
 }
 
 function wait(ms: number) {
@@ -204,7 +210,7 @@ async function deleteStalePlaylists(owner: string, existing: ScPlaylist[], targe
 }
 
 async function savePlaylists(runId: number, deleteStale: boolean) {
-  if (matchedUrns.length === 0) return;
+  if (matches.length === 0) return;
 
   useYmImportStore.setState({ saving: true, error: null });
 
@@ -214,7 +220,7 @@ async function savePlaylists(runId: number, deleteStale: boolean) {
   await rememberOwnedPlaylists(owner, pending.createdUrns);
   if (!currentRunIsActive(runId)) return;
 
-  const chunks = chunkArray([...new Set(matchedUrns)].reverse(), PLAYLIST_TRACK_LIMIT);
+  const chunks = chunkArray(orderedUrns(), PLAYLIST_TRACK_LIMIT);
   const saved: ScPlaylist[] = [];
   let queued = 0;
   let failure: unknown = null;
@@ -348,7 +354,7 @@ function ensureBridge() {
   });
 
   void listen<YmImportMatch>('ym_import:match', (event) => {
-    matchedUrns.push(event.payload.urn);
+    matches.push(event.payload);
   });
 }
 
