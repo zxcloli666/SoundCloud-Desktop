@@ -2,8 +2,13 @@ import {useTranslation} from 'react-i18next';
 import {Headphones} from '../../../lib/icons';
 import {useSubscription} from '../../../lib/subscription';
 import {useAuthStore} from '../../../stores/auth';
-import {useSettingsStore} from '../../../stores/settings';
-import {Card, LockedToggle, PremiumBadge, Row, Toggle} from '../primitives';
+import {type LyricsHighlight, useSettingsStore} from '../../../stores/settings';
+import {Card, LockedToggle, PremiumBadge, Row, Segmented, Toggle} from '../primitives';
+
+const HIGHLIGHTS: ReadonlyArray<{ id: LyricsHighlight; labelKey: string }> = [
+    {id: 'word', labelKey: 'settings.lyricsHighlightWord'},
+    {id: 'line', labelKey: 'settings.lyricsHighlightLine'},
+];
 
 export function PlaybackCard() {
     const {t} = useTranslation();
@@ -11,6 +16,9 @@ export function PlaybackCard() {
     const setFloatingComments = useSettingsStore((s) => s.setFloatingComments);
     const lyricsVisualizer = useSettingsStore((s) => s.lyricsVisualizer);
     const setLyricsVisualizer = useSettingsStore((s) => s.setLyricsVisualizer);
+    const lyricsHighlight = useSettingsStore((s) => s.lyricsHighlight);
+    const setLyricsHighlight = useSettingsStore((s) => s.setLyricsHighlight);
+    const lightMode = useSettingsStore((s) => s.perfMode === 'light');
     const normalizeVolume = useSettingsStore((s) => s.normalizeVolume);
     const setNormalizeVolume = useSettingsStore((s) => s.setNormalizeVolume);
     const highQualityStreaming = useSettingsStore((s) => s.highQualityStreaming);
@@ -33,6 +41,18 @@ export function PlaybackCard() {
                         checked={lyricsVisualizer}
                         onChange={() => setLyricsVisualizer(!lyricsVisualizer)}
                     />
+                </Row>
+                <Row
+                    title={t('settings.lyricsHighlight')}
+                    desc={t(lightMode ? 'settings.lyricsHighlightLightDesc' : 'settings.lyricsHighlightDesc')}
+                >
+                    <div className="w-[260px]">
+                        <Segmented
+                            value={lyricsHighlight}
+                            onChange={setLyricsHighlight}
+                            options={HIGHLIGHTS.map((h) => ({id: h.id, label: t(h.labelKey)}))}
+                        />
+                    </div>
                 </Row>
                 <Row title={t('settings.normalizeVolume')} desc={t('settings.normalizeVolumeDesc')}>
                     <Toggle checked={normalizeVolume} onChange={() => setNormalizeVolume(!normalizeVolume)}/>
