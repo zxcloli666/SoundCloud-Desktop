@@ -11,7 +11,7 @@
  *   0) контекстный источник (лайки/плейлист/…), если активен — доигрываем его
  *      ДО КОНЦА, подкачивая страницы (см. lib/queue-continuation.ts);
  *   1) "волна от трека" (Qdrant + bandit);
- *   2) фоллбек на SC `/tracks/{urn}/related`.
+ *   2) фоллбек на похожие треки `/tracks/{urn}/related`.
  * Волна одинакова для всех источников (home, артист, лайки, поиск, плейлист).
  *
  * Не вызывать параллельно: повторный вызов пока летит первый — игнор.
@@ -24,6 +24,7 @@ import {
   usePlayerStore,
 } from '../stores/player';
 import { useSettingsStore } from '../stores/settings';
+import { trackUrn } from './ids';
 import { getQueueContinuationSource, setQueueContinuationSource } from './queue-continuation';
 import { fetchRelatedTracks } from './related';
 import { fetchSmartWave } from './soundwave';
@@ -45,7 +46,7 @@ export async function autopilotContinueFromTrack(lastTrack: Track): Promise<void
     console.debug('[autopilot] wave continuation from', lastTrack.urn, lastTrack.title);
     const fresh = await fetchContinuation(lastTrack);
     if (fresh.length === 0) {
-      console.warn('[autopilot] no continuation tracks (wave + SC related both empty)');
+      console.warn('[autopilot] no continuation tracks (wave + related both empty)');
       usePlayerStore.getState().pause();
       return;
     }
@@ -107,20 +108,20 @@ async function fetchContinuation(seed: Track): Promise<Track[]> {
     return waveFresh;
   }
 
-  console.debug('[autopilot] wave empty → falling back to SC related');
-  const fromSc = await fetchScRelated(seed);
-  const scFresh = fromSc.filter((t) => !existing.has(t.urn));
-  console.debug('[autopilot] SC related returned', scFresh.length, 'fresh tracks');
-  return scFresh;
+  console.debug('[autopilot] wave empty → falling back to related');
+  const fromRelated = await fetchRelated(seed);
+  const relatedFresh = fromRelated.filter((t) => !existing.has(t.urn));
+  console.debug('[autopilot] related returned', relatedFresh.length, 'fresh tracks');
+  return relatedFresh;
 }
 
 async function fetchWaveContinuation(seed: Track): Promise<Track[]> {
-  const trackId = seed.urn.split(':').pop();
-  if (!trackId) return [];
+  const seedUrn = trackUrn(seed.urn);
+  if (!seedUrn) return [];
   try {
     const batch = await fetchSmartWave({
       seedKind: 'track',
-      seedId: trackId,
+      seedId: seedUrn,
       limit: 20,
       hideListened: useSettingsStore.getState().soundwaveHideListened,
     });
@@ -131,12 +132,12 @@ async function fetchWaveContinuation(seed: Track): Promise<Track[]> {
   }
 }
 
-async function fetchScRelated(seed: Track): Promise<Track[]> {
+async function fetchRelated(seed: Track): Promise<Track[]> {
   try {
     const res = await fetchRelatedTracks(seed.urn, 20);
     return res.collection;
   } catch (e) {
-    console.debug('[autopilot] SC related fetch failed:', e);
+    console.debug('[autopilot] related fetch failed:', e);
     return [];
   }
 }
