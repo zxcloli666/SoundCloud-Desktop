@@ -8,6 +8,7 @@ export type ThemePreset = 'soundcloud' | 'dark' | 'neon' | 'forest' | 'crimson' 
 export type StartupPage = 'home' | 'search' | 'library' | 'settings';
 export type DiscordRpcMode = 'track' | 'artist' | 'activity';
 export type StreamQuality = 'auto' | 'sq' | 'hq';
+export type SkipStuckAfterSec = 0 | 10 | 20 | 30 | 60;
 export interface SidebarPinnedPlaylist {
   urn: string;
   title: string;
@@ -76,6 +77,7 @@ export interface SettingsState {
   eqCustomPresets: EqCustomPreset[];
   normalizeVolume: boolean;
   streamQuality: StreamQuality;
+  skipStuckAfterSec: SkipStuckAfterSec;
   bypassWhitelist: boolean;
   sidebarCollapsed: boolean;
   floatingComments: boolean;
@@ -111,6 +113,7 @@ export interface SettingsState {
   deleteEqCustomPreset: (id: string) => void;
   setNormalizeVolume: (enabled: boolean) => void;
   setStreamQuality: (quality: StreamQuality) => void;
+  setSkipStuckAfterSec: (seconds: SkipStuckAfterSec) => void;
   setBypassWhitelist: (enabled: boolean) => void;
   toggleSidebar: () => void;
   setFloatingComments: (v: boolean) => void;
@@ -153,6 +156,7 @@ const DEFAULTS = {
   eqCustomPresets: [] as EqCustomPreset[],
   normalizeVolume: true,
   streamQuality: 'auto' as StreamQuality,
+  skipStuckAfterSec: 0 as SkipStuckAfterSec,
   bypassWhitelist: false,
   sidebarCollapsed: false,
   floatingComments: true,
@@ -229,6 +233,7 @@ export const useSettingsStore = create<SettingsState>()(
         })),
       setNormalizeVolume: (normalizeVolume) => set({ normalizeVolume }),
       setStreamQuality: (streamQuality) => set({ streamQuality }),
+      setSkipStuckAfterSec: (skipStuckAfterSec) => set({ skipStuckAfterSec }),
       setBypassWhitelist: (bypassWhitelist) => set({ bypassWhitelist }),
       toggleSidebar: () => set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
       setFloatingComments: (floatingComments) => set({ floatingComments }),
@@ -310,6 +315,7 @@ export const useSettingsStore = create<SettingsState>()(
         eqCustomPresets: s.eqCustomPresets,
         normalizeVolume: s.normalizeVolume,
         streamQuality: s.streamQuality,
+        skipStuckAfterSec: s.skipStuckAfterSec,
         bypassWhitelist: s.bypassWhitelist,
         sidebarCollapsed: s.sidebarCollapsed,
         floatingComments: s.floatingComments,

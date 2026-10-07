@@ -28,6 +28,14 @@ import {isUrnDisliked} from './dislikes';
 import {recordEvent} from './events';
 import {art} from './formatters';
 import {trackUrn} from './ids';
+import {
+  bumpLoadWatch,
+  resetSkipStreak,
+  skipUnloadableEnabled,
+  stopLoadWatch,
+  takeSkipAttempt,
+  watchLoad,
+} from './load-watchdog';
 import {rememberTracks} from './offline-index';
 import {getUrnCluster, recordClusterFeedback} from './recsFeedback';
 import {isPreviewOnly} from './track-access';
@@ -100,6 +108,7 @@ function setDownloadProgress(value: number | null): void {
 
 export function cancelTrackLoad(): void {
   loadGen++;
+  stopLoadWatch();
   setDownloadProgress(null);
   usePlayerStore.getState().pause();
 }
@@ -323,6 +332,7 @@ async function loadCachedFile(
 async function loadTrack(track: Track, resumeAt = 0) {
   const gen = ++loadGen;
   const isNewTrack = currentUrn !== track.urn;
+  stopLoadWatch();
   stopTrack();
   currentUrn = track.urn;
   acceptedShortFile = false;
@@ -405,6 +415,9 @@ async function loadTrack(track: Track, resumeAt = 0) {
 
     // Strategy 2: Download full track to cache — Rust picks storage/API internally
     setDownloadProgress(0);
+    watchLoad(() => {
+      if (gen === loadGen) skipUnloadable(track, true);
+    });
     setTimeout(() => {
       if (gen !== loadGen || downloadProgress !== 0) return;
       toast.info(i18n.t('track.slowLoad'), {
@@ -425,10 +438,12 @@ async function loadTrack(track: Track, resumeAt = 0) {
       if (!highQualityStreaming || !premiumRefused || gen !== loadGen) throw error;
       console.warn('[Audio] HQ load failed, retrying without hq:', error);
       setDownloadProgress(0);
+      bumpLoadWatch();
       cachedInfo = await ensureTrackCached(urn, false, expectedDurationMs(track), storageQuality);
     }
 
     if (gen !== loadGen) return;
+    stopLoadWatch();
     setDownloadProgress(null);
     acceptedShortFile = cachedInfo.acceptedShort;
     usePlayerStore.getState().setPlaybackTransport(cachedInfo.quality, cachedInfo.source);
@@ -453,6 +468,7 @@ async function loadTrack(track: Track, resumeAt = 0) {
   } catch (e) {
     console.error('[Audio] Load failed:', e);
     if (gen !== loadGen) return;
+    stopLoadWatch();
     setDownloadProgress(null);
     usePlayerStore.getState().setPlaybackTransport(null, null);
     const errorText = getLoadErrorText(e);
@@ -465,8 +481,25 @@ async function loadTrack(track: Track, resumeAt = 0) {
         description: errorText ? `${track.title}: ${errorText}` : track.title,
       });
     }
-    usePlayerStore.getState().pause();
+    if (!skipUnloadable(track, false)) usePlayerStore.getState().pause();
   }
+}
+
+function skipUnloadable(track: Track, stuck: boolean): boolean {
+  const player = usePlayerStore.getState();
+  if (!player.isPlaying || player.currentTrack?.urn !== track.urn) return false;
+  if (!skipUnloadableEnabled()) return false;
+  if (!takeSkipAttempt()) {
+    toast.warning(i18n.t('track.skipHalted'), { description: i18n.t('track.skipHaltedHint') });
+    player.pause();
+    return true;
+  }
+  if (stuck) {
+    console.warn('[Audio] load stalled, skipping:', track.urn);
+    toast.warning(i18n.t('track.skippedStuck'), { description: track.title });
+  }
+  player.next();
+  return usePlayerStore.getState().currentTrack?.urn !== track.urn;
 }
 
 async function afterLoad(track: Track, gen: number, resumeAt: number) {
@@ -481,6 +514,7 @@ async function afterLoad(track: Track, gen: number, resumeAt: number) {
     notify();
   }
   hasTrack = true;
+  resetSkipStreak();
 
   const historyTrack =
     usePlayerStore.getState().currentTrack?.urn === track.urn
@@ -598,6 +632,7 @@ listen<number>('audio:tick', (event) => {
 listen<{ urn: string; progress: number }>('track:download-progress', (event) => {
   const { urn, progress } = event.payload;
   if (urn === currentUrn && downloadProgress !== null) {
+    if (progress > downloadProgress) bumpLoadWatch();
     setDownloadProgress(Math.max(downloadProgress, progress));
   }
 });
