@@ -17,8 +17,7 @@ interface BlockIndex {
 let indexSource: BlockedArtist[] | null = null;
 let index: BlockIndex = { users: new Set(), artists: new Set() };
 
-function currentIndex(): BlockIndex {
-  const entries = useBlockedArtistsStore.getState().entries;
+function indexFor(entries: BlockedArtist[]): BlockIndex {
   if (entries !== indexSource) {
     const users = new Set<string>();
     const artists = new Set<string>();
@@ -39,9 +38,7 @@ function bareUserId(value: string | number | null | undefined): string | null {
   return idOf(raw) ?? (/^\d+$/.test(raw) ? raw : null);
 }
 
-export function isTrackBlocked(track: Track | null | undefined): boolean {
-  if (!track) return false;
-  const { users, artists } = currentIndex();
+function blockedIn({ users, artists }: BlockIndex, track: Track): boolean {
   if (users.size === 0 && artists.size === 0) return false;
   const uploader = bareUserId(track.user?.urn) ?? bareUserId(track.user?.id);
   if (uploader && users.has(uploader)) return true;
@@ -56,10 +53,14 @@ export function isTrackBlocked(track: Track | null | undefined): boolean {
   return enrichment.participants?.some((p) => artists.has(p.artist.id)) ?? false;
 }
 
-export function withoutBlocked<T extends Track>(tracks: T[]): T[] {
-  const { users, artists } = currentIndex();
-  if (users.size === 0 && artists.size === 0) return tracks;
-  return tracks.filter((t) => !isTrackBlocked(t));
+export function blockedArtistMatcher(entries: BlockedArtist[]): (track: Track) => boolean {
+  const idx = indexFor(entries);
+  return (track) => blockedIn(idx, track);
+}
+
+export function isTrackBlocked(track: Track | null | undefined): boolean {
+  if (!track) return false;
+  return blockedIn(indexFor(useBlockedArtistsStore.getState().entries), track);
 }
 
 export function useIsBlocked(kind: BlockKind, id: string | null | undefined): boolean {

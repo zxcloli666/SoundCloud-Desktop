@@ -26,7 +26,7 @@ import {
   usePlayerStore,
 } from '../stores/player';
 import { useSettingsStore } from '../stores/settings';
-import { withoutBlocked } from './blocked-artists';
+import { withoutHidden } from './feed-filter';
 import { trackUrn } from './ids';
 import { getQueueContinuationSource, setQueueContinuationSource } from './queue-continuation';
 import { fetchRelatedTracks } from './related';
@@ -125,7 +125,7 @@ async function fetchContinuation(seed: Track): Promise<Track[]> {
 
   console.debug('[autopilot] wave empty → falling back to related');
   const fromRelated = await fetchRelated(seed);
-  const relatedFresh = withoutBlocked(fromRelated).filter((t) => !existing.has(t.urn));
+  const relatedFresh = withoutHidden(fromRelated).filter((t) => !existing.has(t.urn));
   console.debug('[autopilot] related returned', relatedFresh.length, 'fresh tracks');
   return relatedFresh;
 }

@@ -6,7 +6,6 @@
 import React, {useCallback, useMemo, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {api} from '../../../lib/api';
-import {isTrackBlocked, useBlocklistVersion} from '../../../lib/blocked-artists';
 import {Sparkles} from '../../../lib/icons';
 import {isUrnLiked, likedTracksCount, useLiked} from '../../../lib/likes';
 import {useAuthStore} from '../../../stores/auth';
@@ -93,20 +92,18 @@ export const RiverFlow = React.memo(function RiverFlow({ tint }: { tint?: string
   // Live-тик лайков: hide-liked фильтры пересчитываются, когда лайк текущего
   // трека переключился (основная цель лайка с этой поверхности).
   const likesVersion = useLiked(currentTrack?.urn ?? '');
-  const blocklist = useBlocklistVersion();
   const keepTrack = useCallback(
-    (tr: Track) =>
-      !isTrackBlocked(tr) && (!hideLiked || (!tr.user_favorite && !isUrnLiked(tr.urn))),
+    (tr: Track) => !hideLiked || (!tr.user_favorite && !isUrnLiked(tr.urn)),
     [hideLiked],
   );
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: likesVersion and blocklist tick the live filters.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: likesVersion ticks the live hide-liked filter.
   const filteredAllTracks = useMemo(
     () => rawAllTracks.filter(keepTrack),
-    [rawAllTracks, keepTrack, likesVersion, blocklist],
+    [rawAllTracks, keepTrack, likesVersion],
   );
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: likesVersion and blocklist tick the live filters.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: likesVersion ticks the live hide-liked filter.
   const filteredClusters = useMemo(() => {
     return rawClusters
       .map((c) => {
@@ -121,7 +118,7 @@ export const RiverFlow = React.memo(function RiverFlow({ tint }: { tint?: string
         };
       })
       .filter((c) => c.tracks.length > 0) as ClusterHydrated[];
-  }, [rawClusters, keepTrack, likesVersion, blocklist]);
+  }, [rawClusters, keepTrack, likesVersion]);
 
   const clusterById = useMemo(
     () => new Map(filteredClusters.map((c) => [c.id as ClusterId, c])),

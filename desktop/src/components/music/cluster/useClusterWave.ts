@@ -1,5 +1,7 @@
 import { type UseQueryResult, useQuery } from '@tanstack/react-query';
+import { useCallback } from 'react';
 import { api } from '../../../lib/api';
+import { type FeedFilter, useFeedFilter } from '../../../lib/feed-filter';
 import { trackUrn } from '../../../lib/ids';
 import { fetchTracksByUrns } from '../../../lib/soundwave';
 import type { Track } from '../../../stores/player';
@@ -42,14 +44,29 @@ export interface UseClusterWaveOptions {
 }
 
 export function useClusterWave(opts: UseClusterWaveOptions): UseQueryResult<ClusterData> {
-  return useQuery<ClusterData>({
+  const keep = useFeedFilter();
+  const select = useCallback((data: ClusterData) => keepVisible(data, keep), [keep]);
+  return useQuery<ClusterData, Error, ClusterData>({
     queryKey: opts.queryKey,
     enabled: opts.enabled !== false && !!opts.url,
     staleTime: opts.staleMs ?? STALE_MS,
     gcTime: opts.gcMs ?? GC_MS,
     retry: false,
     queryFn: () => fetchAndHydrate(opts.url!),
+    select,
   });
+}
+
+function keepVisible(data: ClusterData, keep: FeedFilter): ClusterData {
+  const hidden = new Set(data.allTracks.filter((t) => !keep(t)).map((t) => t.urn));
+  if (hidden.size === 0) return data;
+  const clusters = data.clusters.flatMap((c): ClusterHydrated[] => {
+    const tracks = c.tracks.filter((t) => !hidden.has(t.urn));
+    if (tracks.length === 0) return [];
+    const neighbors = c.neighbors?.filter((n) => !hidden.has(n.track_urn));
+    return [neighbors ? { ...c, tracks, neighbors } : { ...c, tracks }];
+  });
+  return { clusters, allTracks: data.allTracks.filter((t) => !hidden.has(t.urn)) };
 }
 
 export async function fetchAndHydrate(url: string): Promise<ClusterData> {

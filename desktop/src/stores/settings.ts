@@ -85,6 +85,7 @@ export interface SettingsState {
   soundwaveMode: 'similar' | 'diverse';
   soundwaveHideLiked: boolean;
   soundwaveHideListened: boolean;
+  blockedKeywords: string[];
   lyricsVisualizer: boolean;
   artistWaveCollapsed: boolean;
   wallhavenApiKey: string;
@@ -119,6 +120,7 @@ export interface SettingsState {
   setSoundwaveMode: (mode: 'similar' | 'diverse') => void;
   setSoundwaveHideLiked: (v: boolean) => void;
   setSoundwaveHideListened: (v: boolean) => void;
+  setBlockedKeywords: (keywords: string[]) => void;
   setLyricsVisualizer: (v: boolean) => void;
   setArtistWaveCollapsed: (v: boolean) => void;
   setWallhavenApiKey: (key: string) => void;
@@ -159,6 +161,7 @@ const DEFAULTS = {
   soundwaveMode: 'similar' as 'similar' | 'diverse',
   soundwaveHideLiked: false,
   soundwaveHideListened: true,
+  blockedKeywords: [] as string[],
   lyricsVisualizer: false,
   artistWaveCollapsed: false,
   wallhavenApiKey: '',
@@ -220,6 +223,7 @@ export const useSettingsStore = create<SettingsState>()(
       setSoundwaveMode: (soundwaveMode) => set({ soundwaveMode }),
       setSoundwaveHideLiked: (soundwaveHideLiked) => set({ soundwaveHideLiked }),
       setSoundwaveHideListened: (soundwaveHideListened) => set({ soundwaveHideListened }),
+      setBlockedKeywords: (blockedKeywords) => set({ blockedKeywords }),
       setLyricsVisualizer: (lyricsVisualizer) => set({ lyricsVisualizer }),
       setArtistWaveCollapsed: (artistWaveCollapsed) => set({ artistWaveCollapsed }),
       setWallhavenApiKey: (wallhavenApiKey) => set({ wallhavenApiKey }),
@@ -238,7 +242,7 @@ export const useSettingsStore = create<SettingsState>()(
     {
       name: 'sc-settings',
       storage: createJSONStorage(() => tauriStorage),
-      version: 19,
+      version: 20,
       migrate: (persistedState) => {
         const prev = (persistedState ?? {}) as Partial<SettingsState> & {
           soundwaveDiversity?: number;
@@ -287,6 +291,7 @@ export const useSettingsStore = create<SettingsState>()(
         soundwaveMode: s.soundwaveMode,
         soundwaveHideLiked: s.soundwaveHideLiked,
         soundwaveHideListened: s.soundwaveHideListened,
+        blockedKeywords: s.blockedKeywords,
         lyricsVisualizer: s.lyricsVisualizer,
         artistWaveCollapsed: s.artistWaveCollapsed,
         wallhavenApiKey: s.wallhavenApiKey,
