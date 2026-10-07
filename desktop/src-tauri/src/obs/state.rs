@@ -2,7 +2,7 @@ use std::path::PathBuf;
 use std::sync::{Arc, RwLock};
 
 use serde::{Deserialize, Serialize};
-use tokio::sync::{watch, Mutex};
+use tokio::sync::{Mutex, watch};
 
 use super::server;
 use super::snapshot::{NowPlaying, Snapshot};

@@ -37,7 +37,9 @@ fn playing() -> NowPlaying {
 }
 
 async fn get(port: u16, path: &str) -> String {
-    let mut stream = TcpStream::connect(("127.0.0.1", port)).await.expect("connect");
+    let mut stream = TcpStream::connect(("127.0.0.1", port))
+        .await
+        .expect("connect");
     let request = format!("GET {path} HTTP/1.0\r\nHost: 127.0.0.1:{port}\r\n\r\n");
     stream.write_all(request.as_bytes()).await.expect("write");
     let mut response = String::new();
@@ -92,16 +94,68 @@ async fn writes_text_file_on_change() {
     assert_eq!(status.txt_error, None);
 
     state.update(playing()).await;
-    assert_eq!(std::fs::read_to_string(&path).expect("read"), "M83 - Midnight City");
+    assert_eq!(
+        std::fs::read_to_string(&path).expect("read"),
+        "M83 - Midnight City"
+    );
 
     state.update(NowPlaying::default()).await;
     assert_eq!(std::fs::read_to_string(&path).expect("read"), "");
 
     let missing = dir.join("missing").join("np.txt");
     let failed = state
-        .configure(config(false, 0, Some(missing.to_string_lossy().into_owned())))
+        .configure(config(
+            false,
+            0,
+            Some(missing.to_string_lossy().into_owned()),
+        ))
         .await;
     assert!(failed.txt_error.is_some());
 
     std::fs::remove_dir_all(&dir).ok();
+}
+
+#[tokio::test]
+async fn streams_updates_over_sse() {
+    let state = ObsState::default();
+    let port = free_port();
+    state.configure(config(true, port, None)).await;
+    state.update(playing()).await;
+
+    let mut stream = TcpStream::connect(("127.0.0.1", port))
+        .await
+        .expect("connect");
+    let request = format!("GET /events HTTP/1.1\r\nHost: 127.0.0.1:{port}\r\n\r\n");
+    stream.write_all(request.as_bytes()).await.expect("write");
+
+    let mut received = String::new();
+    let mut buf = [0u8; 4096];
+    while !received.contains("Midnight City") {
+        let n = stream.read(&mut buf).await.expect("read");
+        assert!(n > 0, "stream closed early");
+        received.push_str(&String::from_utf8_lossy(&buf[..n]));
+    }
+    assert!(received.contains("text/event-stream"));
+
+    state
+        .update(NowPlaying {
+            title: "Wait".into(),
+            ..playing()
+        })
+        .await;
+    while !received.contains("\"title\":\"Wait\"") {
+        let n = stream.read(&mut buf).await.expect("read");
+        assert!(n > 0, "stream closed early");
+        received.push_str(&String::from_utf8_lossy(&buf[..n]));
+    }
+
+    state.configure(config(false, port, None)).await;
+    let closed = tokio::time::timeout(std::time::Duration::from_secs(3), async {
+        while stream.read(&mut buf).await.map(|n| n > 0).unwrap_or(false) {}
+    })
+    .await;
+    assert!(
+        closed.is_ok(),
+        "event stream must end when the server stops"
+    );
 }

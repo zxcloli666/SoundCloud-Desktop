@@ -42,7 +42,10 @@ fn plain(status: StatusCode, content_type: &str, body: impl Into<Body>) -> Respo
 async fn cover(shared: Arc<Shared>) -> Result<Response<Body>, Rejection> {
     let (key, source) = {
         let snapshot = shared.snapshot.borrow();
-        (snapshot.np.cover_key.clone(), snapshot.np.artwork_url.clone())
+        (
+            snapshot.np.cover_key.clone(),
+            snapshot.np.artwork_url.clone(),
+        )
     };
     if let Some(key) = key {
         let image = image_cache::handle(&key).await;
@@ -98,8 +101,8 @@ pub fn start(shared: Arc<Shared>, port: u16) -> io::Result<watch::Sender<()>> {
         .and(with(shared.clone()))
         .and(with(origin.clone()))
         .map(|shared: Arc<Shared>, origin: Arc<str>| {
-            let body = serde_json::to_string(&shared.snapshot.borrow().view(&origin))
-                .unwrap_or_default();
+            let body =
+                serde_json::to_string(&shared.snapshot.borrow().view(&origin)).unwrap_or_default();
             plain(StatusCode::OK, "application/json", body)
         });
 
@@ -127,9 +130,7 @@ pub fn start(shared: Arc<Shared>, port: u16) -> io::Result<watch::Sender<()>> {
     let mut stop = alive_rx;
     let addr: SocketAddr = ([127, 0, 0, 1], port).into();
     let (_, server) = warp::serve(routes)
-        .try_bind_with_graceful_shutdown(addr, async move {
-            while stop.changed().await.is_ok() {}
-        })
+        .try_bind_with_graceful_shutdown(addr, async move { while stop.changed().await.is_ok() {} })
         .map_err(io_error)?;
     tokio::spawn(server);
     Ok(alive)

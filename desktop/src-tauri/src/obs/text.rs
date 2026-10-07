@@ -32,8 +32,14 @@ mod tests {
 
     #[test]
     fn fills_artist_and_title() {
-        assert_eq!(render("{artist} - {title}", &track()), "M83 - Midnight City");
-        assert_eq!(render("♪ {title} ({artist})", &track()), "♪ Midnight City (M83)");
+        assert_eq!(
+            render("{artist} - {title}", &track()),
+            "M83 - Midnight City"
+        );
+        assert_eq!(
+            render("♪ {title} ({artist})", &track()),
+            "♪ Midnight City (M83)"
+        );
     }
 
     #[test]
