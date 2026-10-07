@@ -18,7 +18,7 @@ export function AccountCard() {
   const [transferOpen, setTransferOpen] = useState(false);
 
   const goToSignIn = () => {
-    useAppStatusStore.getState().resetConnectivity();
+    useAppStatusStore.getState().setOfflineBypass(false);
     navigate('/', { replace: true });
   };
 
