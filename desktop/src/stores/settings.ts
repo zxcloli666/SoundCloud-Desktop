@@ -6,6 +6,7 @@ import {tauriStorage} from '../lib/tauri-storage';
 export type ThemePreset = 'soundcloud' | 'dark' | 'neon' | 'forest' | 'crimson' | 'custom';
 export type StartupPage = 'home' | 'search' | 'library' | 'settings';
 export type DiscordRpcMode = 'track' | 'artist' | 'activity';
+export type DiscordRpcStatus = 'app' | 'track' | 'artist';
 export interface SidebarPinnedPlaylist {
   urn: string;
   title: string;
@@ -80,6 +81,7 @@ export interface SettingsState {
   pinnedPlaylists: SidebarPinnedPlaylist[];
   discordRpcEnabled: boolean;
   discordRpcMode: DiscordRpcMode;
+  discordRpcStatus: DiscordRpcStatus;
   discordRpcShowButton: boolean;
   soundwaveLanguages: string[];
   soundwaveMode: 'similar' | 'diverse';
@@ -114,6 +116,7 @@ export interface SettingsState {
   unpinPlaylist: (urn: string) => void;
   setDiscordRpcEnabled: (enabled: boolean) => void;
   setDiscordRpcMode: (mode: DiscordRpcMode) => void;
+  setDiscordRpcStatus: (status: DiscordRpcStatus) => void;
   setDiscordRpcShowButton: (show: boolean) => void;
   setSoundwaveLanguages: (langs: string[]) => void;
   setSoundwaveMode: (mode: 'similar' | 'diverse') => void;
@@ -154,6 +157,7 @@ const DEFAULTS = {
   pinnedPlaylists: [] as SidebarPinnedPlaylist[],
   discordRpcEnabled: true,
   discordRpcMode: 'track' as DiscordRpcMode,
+  discordRpcStatus: 'track' as DiscordRpcStatus,
   discordRpcShowButton: true,
   soundwaveLanguages: [] as string[],
   soundwaveMode: 'similar' as 'similar' | 'diverse',
@@ -215,6 +219,7 @@ export const useSettingsStore = create<SettingsState>()(
         })),
       setDiscordRpcEnabled: (discordRpcEnabled) => set({ discordRpcEnabled }),
       setDiscordRpcMode: (discordRpcMode) => set({ discordRpcMode }),
+      setDiscordRpcStatus: (discordRpcStatus) => set({ discordRpcStatus }),
       setDiscordRpcShowButton: (discordRpcShowButton) => set({ discordRpcShowButton }),
       setSoundwaveLanguages: (soundwaveLanguages) => set({ soundwaveLanguages }),
       setSoundwaveMode: (soundwaveMode) => set({ soundwaveMode }),
@@ -282,6 +287,7 @@ export const useSettingsStore = create<SettingsState>()(
         pinnedPlaylists: s.pinnedPlaylists,
         discordRpcEnabled: s.discordRpcEnabled,
         discordRpcMode: s.discordRpcMode,
+        discordRpcStatus: s.discordRpcStatus,
         discordRpcShowButton: s.discordRpcShowButton,
         soundwaveLanguages: s.soundwaveLanguages,
         soundwaveMode: s.soundwaveMode,

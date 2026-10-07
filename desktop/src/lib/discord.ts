@@ -67,7 +67,7 @@ async function pushPresence(): Promise<boolean> {
   if (!track) return true;
 
   try {
-    const { discordRpcMode, discordRpcShowButton } = useSettingsStore.getState();
+    const { discordRpcMode, discordRpcStatus, discordRpcShowButton } = useSettingsStore.getState();
     const display = getArtistDisplay(track);
     await invoke('discord_set_activity', {
       track: {
@@ -79,6 +79,7 @@ async function pushPresence(): Promise<boolean> {
         elapsed_secs: Math.round(getCurrentTime()),
         is_playing: isPlaying,
         mode: discordRpcMode,
+        status: discordRpcStatus,
         show_button: discordRpcShowButton,
       },
     });
@@ -169,6 +170,7 @@ useSettingsStore.subscribe((state, prev) => {
   const rpcSettingsChanged =
     state.discordRpcEnabled !== prev.discordRpcEnabled ||
     state.discordRpcMode !== prev.discordRpcMode ||
+    state.discordRpcStatus !== prev.discordRpcStatus ||
     state.discordRpcShowButton !== prev.discordRpcShowButton;
 
   if (!rpcSettingsChanged) return;
