@@ -11,18 +11,10 @@ export function formatHistoryDate(dateStr: string, t: (k: string) => string): st
     return t('library.earlier');
 }
 
-/** History entries carry a bare numeric `scTrackId`; the player/stream/cache
- *  layer needs the full SC track URN (it derives the canonical
- *  `soundcloud_tracks_<id>.m4a` storage name from it). Passing the bare id
- *  produces a non-canonical `<id>.m4a` upload. */
-export function historyTrackUrn(scTrackId: string): string {
-    return scTrackId.startsWith('soundcloud:tracks:') ? scTrackId : `soundcloud:tracks:${scTrackId}`;
-}
-
 export function historyEntryToTrack(entry: HistoryEntry): Track {
     return {
         id: 0,
-        urn: historyTrackUrn(entry.scTrackId),
+        urn: entry.trackUrn,
         title: entry.title,
         duration: entry.duration,
         artwork_url: entry.artworkUrl,

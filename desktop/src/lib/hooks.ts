@@ -256,7 +256,7 @@ export function pagedUrl(base: string, page: number, limit: number, extra?: stri
 
 export interface HistoryEntry {
   id: string;
-  scTrackId: string;
+  trackUrn: string;
   title: string;
   artistName: string;
   artistUrn: string | null;
@@ -265,11 +265,15 @@ export interface HistoryEntry {
   playedAt: string;
 }
 
+type HistoryRow = Omit<HistoryEntry, 'trackUrn'> & { trackUrn: string | null };
+
+const hasTrackUrn = (row: HistoryRow): row is HistoryEntry => !!row.trackUrn;
+
 export function useHistory(limit = 50) {
   const query = useInfiniteQuery({
     queryKey: ['history'],
     queryFn: async ({ pageParam = 0 }) => {
-      return api<{ collection: HistoryEntry[]; total: number }>(
+      return api<{ collection: HistoryRow[]; total: number }>(
         `/history?limit=${limit}&offset=${pageParam}`,
       );
     },
@@ -283,7 +287,10 @@ export function useHistory(limit = 50) {
     staleTime: 0,
   });
 
-  const entries = useMemo(() => flattenCollectionPages(query.data?.pages), [query.data]);
+  const entries = useMemo(
+    () => flattenCollectionPages(query.data?.pages).filter(hasTrackUrn),
+    [query.data],
+  );
 
   return { entries, ...query };
 }
