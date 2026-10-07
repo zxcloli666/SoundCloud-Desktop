@@ -1,3 +1,4 @@
+pub mod autostart;
 pub mod close_action;
 pub mod diagnostics;
 pub mod hotkeys;

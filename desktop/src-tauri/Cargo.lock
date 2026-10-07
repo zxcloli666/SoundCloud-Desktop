@@ -5277,6 +5277,7 @@ dependencies = [
  "warp",
  "windows-registry 0.6.1",
  "wreq",
+ "zbus",
 ]
 
 [[package]]

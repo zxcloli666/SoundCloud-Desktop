@@ -78,3 +78,4 @@ windows-registry = "0.6"
 
 [target.'cfg(target_os = "linux")'.dependencies]
 ksni = { version = "0.3.5", default-features = false, features = ["tokio"] }
+zbus = { version = "5", default-features = false, features = ["tokio"] }

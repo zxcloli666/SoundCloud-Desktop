@@ -29,8 +29,10 @@ pub fn run() {
     let builder = tauri::Builder::<rt::Rt>::new();
 
     builder
-        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
-            app::visibility::show_main(app);
+        .plugin(tauri_plugin_single_instance::init(|app, args, _cwd| {
+            if !app::autostart::is_login_launch(&args) {
+                app::visibility::show_main(app);
+            }
         }))
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_fs::init())
@@ -55,6 +57,8 @@ pub fn run() {
             app::diagnostics::init_log_file(app.handle());
             #[cfg(all(windows, not(feature = "cef")))]
             app::webview2::exit_if_main_window_missing(app);
+            app::autostart::reveal_main_window(app);
+            app::autostart::refresh_entry(app);
 
             let cache_dir = app
                 .path()
@@ -199,6 +203,9 @@ pub fn run() {
             app::diagnostics::diagnostics_open_log_dir,
             app::close_action::close_action_get,
             app::close_action::close_action_set,
+            app::autostart::autostart_get,
+            app::autostart::autostart_set_enabled,
+            app::autostart::autostart_set_minimized,
             app::render_mode::render_mode_get,
             app::render_mode::render_mode_set,
             app::render_mode::render_mode_restart,
