@@ -104,7 +104,6 @@ async function toggleLikeCurrent() {
     try {
         await api(`/likes/tracks/${encodeURIComponent(tr.urn)}`, {
             method: next ? 'POST' : 'DELETE',
-            body: next ? JSON.stringify(tr) : undefined,
         });
     } catch {
         optimisticToggleLike(queryClient, tr, !next);

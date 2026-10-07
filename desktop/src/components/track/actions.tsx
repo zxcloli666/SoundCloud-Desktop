@@ -61,7 +61,6 @@ export const LikeBtn = React.memo(({ trackUrn, count }: { trackUrn: string; coun
     try {
       await api(`/likes/tracks/${encodeURIComponent(trackUrn)}`, {
         method: next ? 'POST' : 'DELETE',
-        body: next && cached ? JSON.stringify(cached) : undefined,
       });
       qc.invalidateQueries({ queryKey: ['track', trackUrn, 'favoriters'] });
     } catch {
