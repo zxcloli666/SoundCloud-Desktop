@@ -55,6 +55,7 @@ import {
 import {useSettingsStore} from '../../stores/settings';
 import {ArtistNameLinks} from '../music/ArtistNameLinks';
 import {EqualizerPanel} from '../music/EqualizerPanel';
+import {TrackSoundToggle} from '../music/TrackSoundToggle';
 import {UploadKindDot} from '../music/UploadKindDot';
 import {VolumeFlyout, VolumeLabel, VolumeSlider} from './VolumeControls';
 
@@ -826,6 +827,7 @@ const TuningBtn = React.memo(() => {
             <PitchModeToggle />
             <PlaybackRateSlider />
             <PitchSlider />
+            <TrackSoundToggle compact />
           </div>
         </Popover.Content>
       </Popover.Portal>

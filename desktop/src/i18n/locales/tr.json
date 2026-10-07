@@ -954,5 +954,11 @@
     "scAccounts": "SoundCloud hesapları",
     "mainAccount": "Ana",
     "demoAccount": "Demo"
+  },
+  "trackSound": {
+    "remember": "Bu parça için hatırla",
+    "hintOff": "Bu EQ, hız ve perde ayarlarını yalnızca bu parça için sakla",
+    "hintOn": "Bu parça her çaldığında uygulanır",
+    "noTrack": "Sesini hatırlamak için bir parça çal"
   }
 }

@@ -1151,5 +1151,11 @@
     "noMatches": "Nothing matches “{{query}}”",
     "capAlbums": "That's the cream of the crop — narrow the genre or search to dig deeper.",
     "capArtists": "That's the cream of the crop — pick a tag or search to dig deeper."
+  },
+  "trackSound": {
+    "remember": "Remember for this track",
+    "hintOff": "Keep this EQ, speed and pitch for this track only",
+    "hintOn": "Applied every time this track plays",
+    "noTrack": "Play a track to remember its sound"
   }
 }

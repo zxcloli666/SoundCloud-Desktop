@@ -5,6 +5,7 @@ import {AudioLines, Power, RotateCcw, X} from '../../lib/icons';
 import {useSettingsStore} from '../../stores/settings';
 import {Modal, ModalClose, ModalContent, ModalTrigger} from '../ui/Modal';
 import {EqPresets} from './EqPresets';
+import {TrackSoundToggle} from './TrackSoundToggle';
 
 /* ── Single Band Slider ─────────────────────────────────────── */
 
@@ -222,6 +223,9 @@ export const EqualizerPanel = React.memo(function EqualizerPanel({
                   className={`px-6 pb-5 transition-opacity duration-300 ${eqEnabled ? '' : 'opacity-30 pointer-events-none'}`}
               >
                   <EqPresets/>
+              </div>
+              <div className="px-6 pb-6">
+                  <TrackSoundToggle/>
               </div>
           </ModalContent>
       </Modal>
