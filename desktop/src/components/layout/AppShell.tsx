@@ -53,6 +53,9 @@ const keybindings: Keybinding[] = [
   { key: 'l', label: 'kb.lyrics', group: 'panels', display: 'L' },
   { key: '[', label: 'kb.sidebar', group: 'panels', display: '[' },
   { key: 'F11', label: 'kb.fullscreen', group: 'panels', display: 'F11' },
+  { key: 'Ctrl+=', label: 'kb.zoomIn', group: 'panels', display: isMac() ? '⌘ +' : 'Ctrl +' },
+  { key: 'Ctrl+-', label: 'kb.zoomOut', group: 'panels', display: isMac() ? '⌘ −' : 'Ctrl −' },
+  { key: 'Ctrl+0', label: 'kb.zoomReset', group: 'panels', display: isMac() ? '⌘ 0' : 'Ctrl 0' },
   { key: 'Escape', label: 'kb.close', group: 'panels', display: 'Esc' },
   { key: 'Ctrl+/', label: 'kb.showBindings', group: 'panels', display: isMac() ? '⌘ /' : 'Ctrl /' },
 ];
