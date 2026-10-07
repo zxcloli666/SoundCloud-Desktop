@@ -4,6 +4,7 @@ import {ListPlus, MicVocal} from '../../lib/icons';
 import {useLyricsStore} from '../../stores/lyrics';
 import type {Track} from '../../stores/player';
 import {AddToPlaylistDialog} from '../music/AddToPlaylistDialog';
+import {SaveOfflineAction} from '../music/SaveOfflineButton';
 import {SharingToggle} from '../music/SharingToggle';
 import {CopyIconAction, DownloadButton, IconAction, LikeBtn, PlayPill} from './actions';
 
@@ -51,6 +52,7 @@ export const TrackActionRail = React.memo(function TrackActionRail({
                     </button>
                 </AddToPlaylistDialog>
                 <CopyIconAction url={track.permalink_url}/>
+                <SaveOfflineAction track={track}/>
                 <DownloadButton track={track}/>
                 {isOwner && <SharingToggle kind="track" urn={track.urn} sharing={track.sharing}/>}
             </div>

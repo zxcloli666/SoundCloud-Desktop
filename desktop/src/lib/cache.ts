@@ -100,6 +100,16 @@ export async function ensureTrackCached(
   return invoke<TrackCacheInfo>('track_ensure_cached', { request });
 }
 
+export async function saveTrackOffline(
+  urn: string,
+  refetch: boolean,
+  durationMs?: number,
+  storageQuality?: StorageQuality,
+): Promise<TrackCacheInfo> {
+  const request = await buildCacheRequest(urn, isHqStreaming(), durationMs, storageQuality);
+  return invoke<TrackCacheInfo>('track_save_offline', { request, refetch });
+}
+
 export function getCacheSize(): Promise<number> {
   return invoke<number>('track_cache_size');
 }
