@@ -80,6 +80,7 @@ export const CatalogResults = memo(function CatalogResults({ q }: { q: string })
           isFetchingMore={lyrics.isFetchingNextPage}
           onMore={moreLyrics}
           onOpen={remember}
+          wave
         />
       )}
       {lyrics.isFetchNextPageError && <SectionError onRetry={moreLyrics} />}
@@ -103,6 +104,7 @@ export const CatalogResults = memo(function CatalogResults({ q }: { q: string })
           isFetchingMore={tracks.isFetchingNextPage}
           onLoadMore={loadMore}
           onOpen={remember}
+          wave
         />
       )}
       {tracks.isFetchNextPageError && <SectionError onRetry={loadMore} />}

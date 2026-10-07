@@ -75,6 +75,7 @@ export const SoundCloudResults = memo(function SoundCloudResults({ q }: { q: str
           isFetchingMore={tracks.isFetchingNextPage}
           onLoadMore={loadMore}
           onOpen={remember}
+          wave
         />
       )}
       {tracks.isFetchNextPageError && <SectionError onRetry={loadMore} />}

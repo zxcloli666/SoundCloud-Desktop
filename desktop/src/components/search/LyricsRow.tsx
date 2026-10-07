@@ -1,6 +1,7 @@
 import { Loader2, Quote } from 'lucide-react';
 import { memo, useCallback, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { armTrackWaveContinuation } from '../../lib/queue-continuation';
 import type { LyricsHit } from '../../lib/search';
 import { CoverTile } from './CoverTile';
 import type { WallItem } from './utils';
@@ -11,6 +12,7 @@ interface LyricsRowProps {
   isFetchingMore: boolean;
   onMore: () => void;
   onOpen: () => void;
+  wave?: boolean;
 }
 
 const TILE_PX = 184;
@@ -21,6 +23,7 @@ export const LyricsRow = memo(function LyricsRow({
   isFetchingMore,
   onMore,
   onOpen,
+  wave,
 }: LyricsRowProps) {
   const { t } = useTranslation();
   const items = useMemo<WallItem[]>(
@@ -29,7 +32,10 @@ export const LyricsRow = memo(function LyricsRow({
   );
   const itemsRef = useRef(items);
   itemsRef.current = items;
-  const getQueue = useCallback(() => itemsRef.current.map((item) => item.track), []);
+  const getQueue = useCallback(
+    () => (wave ? [] : itemsRef.current.map((item) => item.track)),
+    [wave],
+  );
 
   if (items.length === 0) return null;
   return (
@@ -47,7 +53,13 @@ export const LyricsRow = memo(function LyricsRow({
         }}
       >
         {items.map((item) => (
-          <CoverTile key={item.track.urn} item={item} getQueue={getQueue} onOpen={onOpen} />
+          <CoverTile
+            key={item.track.urn}
+            item={item}
+            getQueue={getQueue}
+            onOpen={onOpen}
+            onPlay={wave ? armTrackWaveContinuation : undefined}
+          />
         ))}
         {hasMore && (
           <button
