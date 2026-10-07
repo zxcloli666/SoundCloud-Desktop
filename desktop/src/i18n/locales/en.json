@@ -120,7 +120,9 @@
     "signInRequired": "Sign in to your account to transfer the session.",
     "retry": "Generate new code",
     "scanQr": "Sign in with QR",
-    "transferSession": "Transfer session to another device"
+    "transferSession": "Transfer session to another device",
+    "noPhoneApp": "No app on your phone?",
+    "getAndroid": "Get the unofficial Android client"
   },
   "search": {
     "globalPlaceholder": "What do you want to hear?",

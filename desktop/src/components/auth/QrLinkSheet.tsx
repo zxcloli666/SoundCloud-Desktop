@@ -1,6 +1,8 @@
+import { openUrl } from '@tauri-apps/plugin-opener';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Check, RefreshCw, Smartphone, X } from '../../lib/icons';
+import { ANDROID_CLIENT_URL } from '../../lib/constants';
+import { Check, ExternalLink, RefreshCw, Smartphone, X } from '../../lib/icons';
 import { encodeQrPayload } from '../../lib/qr-link';
 import { Modal, ModalClose, ModalContent, ModalTitle } from '../ui/Modal';
 import { QrCode } from './QrCode';
@@ -131,6 +133,20 @@ export const QrLinkSheet = React.memo(
                   {t('qrLink.retry')}
                 </button>
               </div>
+            )}
+
+            {state.status !== 'claimed' && (
+              <button
+                type="button"
+                onClick={() => openUrl(ANDROID_CLIENT_URL)}
+                className="group/android mt-5 mx-auto flex items-center gap-1.5 text-[11.5px] text-white/35 hover:text-white/70 transition-colors cursor-pointer"
+              >
+                <span>{t('qrLink.noPhoneApp')}</span>
+                <span className="text-[var(--color-accent)] opacity-80 group-hover/android:opacity-100 transition-opacity">
+                  {t('qrLink.getAndroid')}
+                </span>
+                <ExternalLink size={11} className="opacity-60" />
+              </button>
             )}
           </div>
         </ModalContent>

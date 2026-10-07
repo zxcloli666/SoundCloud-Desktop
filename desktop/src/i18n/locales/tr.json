@@ -86,6 +86,23 @@
     "copied": "Kopyalandi!",
     "logout": "Cikis Yap"
   },
+  "qrLink": {
+    "pullTitle": "Başka bir cihazla giriş yap",
+    "pullSubtitle": "Telefonunda veya zaten giriş yapılmış başka bir cihazda SoundCloud Desktop'u aç ve bu kodu tara.",
+    "pushTitle": "Başka bir cihaz ekle",
+    "pushSubtitle": "Telefonunda (veya başka bir cihazda) SoundCloud Desktop'u aç ve orada giriş yapmak için bu kodu tara.",
+    "preparing": "Güvenli kod oluşturuluyor…",
+    "expiresIn": "{{seconds}} sn içinde sona erer",
+    "pullSuccess": "Giriş yaptın.",
+    "pushSuccess": "Diğer cihaz giriş yaptı.",
+    "failed": "QR bağlantısı başarısız oldu.",
+    "signInRequired": "Oturumu aktarmak için hesabına giriş yap.",
+    "retry": "Yeni kod oluştur",
+    "scanQr": "QR ile giriş yap",
+    "transferSession": "Oturumu başka bir cihaza aktar",
+    "noPhoneApp": "Telefonunda uygulama yok mu?",
+    "getAndroid": "Resmi olmayan Android istemcisini indir"
+  },
   "search": {
     "globalPlaceholder": "Ne dinlemek istersin?",
     "tracks": "Parcalar",
