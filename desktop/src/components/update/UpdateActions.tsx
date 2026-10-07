@@ -39,7 +39,7 @@ export function UpdateActions({
       return;
     }
     setTotal(progress.data.total);
-    if (progress.event === 'progress') setDownloaded(progress.data.downloaded);
+    setDownloaded(progress.event === 'progress' ? progress.data.downloaded : 0);
   };
 
   const install = () => {

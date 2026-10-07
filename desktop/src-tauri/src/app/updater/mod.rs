@@ -1,18 +1,24 @@
+mod flatpak;
 mod install_kind;
+mod mirror;
 
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::time::Duration;
 
 use serde::Serialize;
 use tauri::Manager;
 use tauri::ipc::Channel;
-use tauri_plugin_updater::UpdaterExt;
+use tauri_plugin_updater::{Update, UpdaterExt};
 
 use crate::app::diagnostics::log_native;
 use crate::app::popover::TrayState;
+use crate::app::restart;
 use crate::rt::{App, AppHandle};
+use flatpak::FlatpakScope;
 use install_kind::InstallKind;
 
 const PROGRESS_STEP_BYTES: u64 = 512 * 1024;
+const CHECK_TIMEOUT: Duration = Duration::from_secs(20);
 
 static SIGNED_UPDATES: AtomicBool = AtomicBool::new(false);
 
@@ -23,6 +29,7 @@ pub struct UpdaterInfo {
     arch: &'static str,
     kind: InstallKind,
     self_update: bool,
+    flatpak_scope: Option<FlatpakScope>,
 }
 
 #[derive(Clone, Serialize)]
@@ -65,6 +72,10 @@ pub fn updater_info() -> UpdaterInfo {
         arch: std::env::consts::ARCH,
         kind,
         self_update: self_update(kind),
+        flatpak_scope: match kind {
+            InstallKind::Flatpak => flatpak::detect_scope(),
+            _ => None,
+        },
     }
 }
 
@@ -87,13 +98,16 @@ async fn download_and_install(
     app: &AppHandle,
     on_progress: &Channel<InstallProgress>,
 ) -> Result<(), String> {
-    let update = app
-        .updater()
+    let mut update = app
+        .updater_builder()
+        .timeout(CHECK_TIMEOUT)
+        .build()
         .map_err(|e| e.to_string())?
         .check()
         .await
         .map_err(|e| e.to_string())?
         .ok_or_else(|| "no update available".to_string())?;
+    update.timeout = None;
     log_native(
         app,
         "INFO",
@@ -103,10 +117,40 @@ async fn download_and_install(
         ),
     );
 
+    let bytes = match download(&update, on_progress).await {
+        Ok(bytes) => bytes,
+        Err(error) => {
+            let Some(origin) = mirror::origin_of(&update.download_url) else {
+                return Err(error);
+            };
+            log_native(
+                app,
+                "WARN",
+                format!("[updater] mirror download failed, retrying from origin: {error}"),
+            );
+            update.download_url = origin;
+            download(&update, on_progress).await?
+        }
+    };
+
+    let _ = on_progress.send(InstallProgress::Installing);
+    app.state::<TrayState>().persist_position();
+    tauri::async_runtime::spawn_blocking(move || update.install(bytes))
+        .await
+        .map_err(|e| e.to_string())?
+        .map_err(|e| e.to_string())?;
+    restart::restart(app);
+    Ok(())
+}
+
+async fn download(
+    update: &Update,
+    on_progress: &Channel<InstallProgress>,
+) -> Result<Vec<u8>, String> {
     let mut downloaded = 0u64;
     let mut reported = 0u64;
     let mut started = false;
-    let bytes = update
+    update
         .download(
             |chunk, total| {
                 if !started {
@@ -123,14 +167,5 @@ async fn download_and_install(
             || {},
         )
         .await
-        .map_err(|e| e.to_string())?;
-
-    let _ = on_progress.send(InstallProgress::Installing);
-    app.state::<TrayState>().persist_position();
-    tauri::async_runtime::spawn_blocking(move || update.install(bytes))
-        .await
-        .map_err(|e| e.to_string())?
-        .map_err(|e| e.to_string())?;
-    app.request_restart();
-    Ok(())
+        .map_err(|e| e.to_string())
 }
