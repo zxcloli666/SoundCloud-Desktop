@@ -1,9 +1,9 @@
 import React from 'react';
 import {useTranslation} from 'react-i18next';
+import type {BulkCacheProgress} from '../../lib/bulk-cache';
 import {isAudioCacheOff} from '../../lib/cache-limit';
 import {formatBytes} from '../../lib/formatters';
 import {ArrowDownToLine, Check, Lock, X} from '../../lib/icons';
-import type {CacheLikesProgress} from '../../lib/likes-cache';
 import {usePerfMode} from '../../lib/perf';
 import {useSettingsStore} from '../../stores/settings';
 
@@ -19,7 +19,7 @@ function CacheLikesCta({
   onCancel,
 }: {
   caching: boolean;
-  progress: CacheLikesProgress | null;
+  progress: BulkCacheProgress | null;
   remaining: number;
   onStart: () => void;
   onCancel: () => void;
@@ -141,7 +141,7 @@ export const StorageModule = React.memo(function StorageModule({
   likedCount: number;
   likedCachedCount: number;
   caching: boolean;
-  progress: CacheLikesProgress | null;
+  progress: BulkCacheProgress | null;
   onStartLikes: () => void;
   onCancelLikes: () => void;
 }) {

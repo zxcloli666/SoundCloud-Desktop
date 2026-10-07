@@ -24,7 +24,10 @@ use crate::track_cache::direct_download::try_download;
 use crate::track_cache::sc_anon::AnonClient;
 use crate::track_cache::transcode;
 
+mod bulk;
 mod evict;
+
+pub use bulk::{BulkCacheEntry, BulkCacheStatus};
 
 const MIN_AUDIO_SIZE: u64 = 8192;
 const AUDIO_SNIFF_LEN: usize = 16;
@@ -45,7 +48,7 @@ const DIRECT_CONNECT_TIMEOUT_MS: u64 = 5_000;
 const DIRECT_READ_TIMEOUT_SECS: u64 = 70;
 const RETRY_DELAYS_MS: [u64; 1] = [600];
 const MAX_PARALLEL_PRELOADS: usize = 20;
-const MAX_PARALLEL_LIKES: usize = 4;
+const MAX_PARALLEL_BULK: usize = 4;
 /// Transcoding is CPU-bound; keep it modest so it never starves playback on weak
 /// machines. Most cached tracks are already AAC (a near-free remux), so a small
 /// pool drains the queue fast in practice.
@@ -301,25 +304,6 @@ pub(super) struct DownloadResult {
     pub path: PathBuf,
 }
 
-#[derive(serde::Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct LikeCacheEntry {
-    pub urn: String,
-    pub urls: Vec<String>,
-    #[serde(default)]
-    pub download_urls: Vec<String>,
-    #[serde(default)]
-    pub storage_urls: Vec<String>,
-    #[serde(default)]
-    pub session_id: Option<String>,
-    #[serde(default)]
-    pub hq: bool,
-    #[serde(default)]
-    pub duration_ms: Option<u64>,
-    #[serde(default)]
-    pub storage_quality: Option<String>,
-}
-
 pub struct CacheRequest<'a> {
     pub urn: &'a str,
     pub urls: &'a [String],
@@ -526,7 +510,7 @@ pub struct TrackCacheState {
     ffmpeg_probe_done: Arc<std::sync::atomic::AtomicBool>,
     active: Arc<Mutex<HashMap<String, ActiveDownload>>>,
     preload_limiter: Arc<Semaphore>,
-    likes_limiter: Arc<Semaphore>,
+    bulk_limiter: Arc<Semaphore>,
     transcode_limiter: Arc<Semaphore>,
     /// URNs with a transcode in flight, so live + recovery requests coalesce.
     transcoding: Arc<StdMutex<HashSet<String>>>,
@@ -534,8 +518,8 @@ pub struct TrackCacheState {
     /// Per-URN count of consecutive "transcoded too short" results, to cap
     /// re-downloads of preview-only tracks (best-effort, per session).
     truncated_retries: Arc<StdMutex<HashMap<String, u8>>>,
-    likes_running: Arc<std::sync::atomic::AtomicBool>,
-    likes_cancel: Arc<std::sync::atomic::AtomicBool>,
+    bulk_status: Arc<StdMutex<Option<BulkCacheStatus>>>,
+    bulk_cancel: Arc<std::sync::atomic::AtomicBool>,
     /// Per-host storage circuit breaker: host -> epoch secs of last failure.
     storage_cooldowns: Arc<StdMutex<HashMap<String, u64>>>,
     anon: Arc<AnonClient>,
@@ -598,13 +582,13 @@ pub fn init(audio_dir: PathBuf, liked_dir: PathBuf, incoming_dir: PathBuf) -> Tr
         ffmpeg_probe_done: Arc::new(std::sync::atomic::AtomicBool::new(false)),
         active: Arc::new(Mutex::new(HashMap::new())),
         preload_limiter: Arc::new(Semaphore::new(MAX_PARALLEL_PRELOADS)),
-        likes_limiter: Arc::new(Semaphore::new(MAX_PARALLEL_LIKES)),
+        bulk_limiter: Arc::new(Semaphore::new(MAX_PARALLEL_BULK)),
         transcode_limiter: Arc::new(Semaphore::new(MAX_PARALLEL_TRANSCODES)),
         transcoding: Arc::new(StdMutex::new(HashSet::new())),
         probing: Arc::new(StdMutex::new(HashSet::new())),
         truncated_retries: Arc::new(StdMutex::new(HashMap::new())),
-        likes_running: Arc::new(std::sync::atomic::AtomicBool::new(false)),
-        likes_cancel: Arc::new(std::sync::atomic::AtomicBool::new(false)),
+        bulk_status: Arc::new(StdMutex::new(None)),
+        bulk_cancel: Arc::new(std::sync::atomic::AtomicBool::new(false)),
         storage_cooldowns: Arc::new(StdMutex::new(HashMap::new())),
         anon,
     }
@@ -2091,11 +2075,6 @@ impl TrackCacheState {
         dir_size(&self.liked_dir)
     }
 
-    pub fn cache_likes_running(&self) -> bool {
-        self.likes_running
-            .load(std::sync::atomic::Ordering::Relaxed)
-    }
-
     fn liked_has_file(&self, urn: &str) -> bool {
         let path = self.liked_file_path(urn);
         std::fs::metadata(&path)
@@ -2165,195 +2144,6 @@ impl TrackCacheState {
             self.finalize_incoming(&incoming, true, None).await;
         }
         self.promote_to_liked(urn).await;
-    }
-
-    pub fn cancel_cache_likes(&self) {
-        self.likes_cancel
-            .store(true, std::sync::atomic::Ordering::Relaxed);
-    }
-
-    /// Bulk cache liked tracks to the protected `liked_dir`, respecting a
-    /// per-instance concurrency limit. Emits progress events and short-circuits
-    /// when `cancel_cache_likes` is called. The op is idempotent — already
-    /// cached URNs are skipped without emitting a slot.
-    pub async fn cache_likes(&self, entries: Vec<LikeCacheEntry>) -> Result<(), String> {
-        if self
-            .likes_running
-            .swap(true, std::sync::atomic::Ordering::Relaxed)
-        {
-            return Err("cache_likes already running".into());
-        }
-        self.likes_cancel
-            .store(false, std::sync::atomic::Ordering::Relaxed);
-
-        let total = entries.len() as u32;
-        let done = Arc::new(std::sync::atomic::AtomicU32::new(0));
-        let failed = Arc::new(std::sync::atomic::AtomicU32::new(0));
-        let skipped = Arc::new(std::sync::atomic::AtomicU32::new(0));
-        let start = std::time::Instant::now();
-
-        self.emit_likes_progress(
-            "start",
-            total,
-            done.load(std::sync::atomic::Ordering::Relaxed),
-            failed.load(std::sync::atomic::Ordering::Relaxed),
-            skipped.load(std::sync::atomic::Ordering::Relaxed),
-            None,
-        );
-
-        let mut handles = Vec::with_capacity(entries.len());
-
-        for entry in entries {
-            if self.likes_cancel.load(std::sync::atomic::Ordering::Relaxed) {
-                break;
-            }
-
-            if self.liked_has_file(&entry.urn) {
-                skipped.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-                done.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-                self.emit_likes_progress(
-                    "progress",
-                    total,
-                    done.load(std::sync::atomic::Ordering::Relaxed),
-                    failed.load(std::sync::atomic::Ordering::Relaxed),
-                    skipped.load(std::sync::atomic::Ordering::Relaxed),
-                    Some(&entry.urn),
-                );
-                continue;
-            }
-
-            if self.promote_to_liked(&entry.urn).await {
-                skipped.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-                done.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-                self.emit_likes_progress(
-                    "progress",
-                    total,
-                    done.load(std::sync::atomic::Ordering::Relaxed),
-                    failed.load(std::sync::atomic::Ordering::Relaxed),
-                    skipped.load(std::sync::atomic::Ordering::Relaxed),
-                    Some(&entry.urn),
-                );
-                continue;
-            }
-
-            let Ok(permit) = self.likes_limiter.clone().acquire_owned().await else {
-                break;
-            };
-
-            let state = self.clone();
-            let done = done.clone();
-            let failed = failed.clone();
-            let skipped = skipped.clone();
-
-            let handle = tokio::spawn(async move {
-                let _permit = permit;
-                if state
-                    .likes_cancel
-                    .load(std::sync::atomic::Ordering::Relaxed)
-                {
-                    return;
-                }
-                let LikeCacheEntry {
-                    urn,
-                    urls,
-                    download_urls,
-                    storage_urls,
-                    session_id,
-                    hq,
-                    duration_ms,
-                    storage_quality,
-                } = entry;
-                let result = state
-                    .ensure_cached(CacheRequest {
-                        urn: &urn,
-                        urls: &urls,
-                        download_urls: &download_urls,
-                        storage_urls: &storage_urls,
-                        session_id: session_id.as_deref(),
-                        hq,
-                        storage_quality: storage_quality.as_deref(),
-                        liked: true,
-                        expected_duration_ms: duration_ms,
-                    })
-                    .await;
-                if result.is_err() {
-                    failed.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-                } else {
-                    skipped.fetch_add(0, std::sync::atomic::Ordering::Relaxed);
-                }
-                done.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-                state.emit_likes_progress(
-                    "progress",
-                    total,
-                    done.load(std::sync::atomic::Ordering::Relaxed),
-                    failed.load(std::sync::atomic::Ordering::Relaxed),
-                    skipped.load(std::sync::atomic::Ordering::Relaxed),
-                    Some(&urn),
-                );
-            });
-
-            handles.push(handle);
-        }
-
-        for handle in handles {
-            let _ = handle.await;
-        }
-
-        let cancelled = self.likes_cancel.load(std::sync::atomic::Ordering::Relaxed);
-        self.likes_running
-            .store(false, std::sync::atomic::Ordering::Relaxed);
-        self.likes_cancel
-            .store(false, std::sync::atomic::Ordering::Relaxed);
-
-        let final_done = done.load(std::sync::atomic::Ordering::Relaxed);
-        let final_failed = failed.load(std::sync::atomic::Ordering::Relaxed);
-        let final_skipped = skipped.load(std::sync::atomic::Ordering::Relaxed);
-
-        self.emit_likes_progress(
-            if cancelled { "cancelled" } else { "done" },
-            total,
-            final_done,
-            final_failed,
-            final_skipped,
-            None,
-        );
-
-        println!(
-            "[TrackCache] cache_likes {} — done={}/{} failed={} skipped={} in {}ms",
-            if cancelled { "cancelled" } else { "finished" },
-            final_done,
-            total,
-            final_failed,
-            final_skipped,
-            start.elapsed().as_millis()
-        );
-
-        Ok(())
-    }
-
-    fn emit_likes_progress(
-        &self,
-        phase: &str,
-        total: u32,
-        done: u32,
-        failed: u32,
-        skipped: u32,
-        urn: Option<&str>,
-    ) {
-        let Some(app) = self.app_handle.as_ref() else {
-            return;
-        };
-        let _ = app.emit(
-            "track:cache-likes-progress",
-            serde_json::json!({
-                "phase": phase,
-                "total": total,
-                "done": done,
-                "failed": failed,
-                "skipped": skipped,
-                "urn": urn,
-            }),
-        );
     }
 
     pub fn clear_cache(&self) {

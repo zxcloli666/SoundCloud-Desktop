@@ -1,6 +1,7 @@
 import {useCallback, useEffect, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {toast} from 'sonner';
+import {bulkCacheErrorText, useCacheLikes} from '../../../lib/bulk-cache';
 import {
     clearCache,
     clearImageCache,
@@ -22,7 +23,6 @@ import {
 } from '../../../lib/cache-limit';
 import {formatBytes} from '../../../lib/formatters';
 import {Database, Download, Loader2, Trash2, X} from '../../../lib/icons';
-import {useCacheLikes} from '../../../lib/likes-cache';
 import {useSettingsStore} from '../../../stores/settings';
 import {Skeleton} from '../../ui/Skeleton';
 import {Card, Divider, Row, Toggle} from '../primitives';
@@ -140,7 +140,7 @@ export function CacheCard() {
       const queued = await startLikes();
       if (queued === 0) toast(t('settings.cacheLikesEmpty'));
     } catch (err) {
-      toast.error(String(err));
+      toast.error(bulkCacheErrorText(err));
     }
   }, [startLikes, t]);
 

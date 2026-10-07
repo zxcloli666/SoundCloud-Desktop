@@ -165,28 +165,35 @@ export function getCacheInventory(): Promise<CacheInventoryEntry[]> {
   return invoke<CacheInventoryEntry[]>('track_cache_inventory');
 }
 
-export interface LikeCacheEntry {
+export interface BulkCacheEntry {
   urn: string;
   urls: string[];
   downloadUrls: string[];
   storageUrls: string[];
   sessionId: string | null;
   hq: boolean;
-  /** API track length (ms) — enables truncated-download detection in Rust. */
   durationMs?: number;
   storageQuality?: StorageQuality;
 }
 
-export function cacheLikedTracks(entries: LikeCacheEntry[]): Promise<void> {
-  return invoke('track_cache_likes', { entries });
+export interface BulkCacheStatus {
+  scope: string;
+  total: number;
+  done: number;
+  failed: number;
+  skipped: number;
 }
 
-export function isCacheLikesRunning(): Promise<boolean> {
-  return invoke<boolean>('track_cache_likes_running');
+export function startBulkCache(scope: string, entries: BulkCacheEntry[]): Promise<void> {
+  return invoke('track_bulk_cache_start', { scope, entries });
 }
 
-export function cancelCacheLikes(): Promise<void> {
-  return invoke('track_cancel_cache_likes');
+export function getBulkCacheStatus(): Promise<BulkCacheStatus | null> {
+  return invoke<BulkCacheStatus | null>('track_bulk_cache_status');
+}
+
+export function cancelBulkCache(): Promise<void> {
+  return invoke('track_bulk_cache_cancel');
 }
 
 export function isAudioCacheDisabled(): boolean {

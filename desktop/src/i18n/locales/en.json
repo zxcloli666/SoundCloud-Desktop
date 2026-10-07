@@ -598,7 +598,11 @@
     "actDownload": "Download to device",
     "actSave": "Save to file",
     "actRefetch": "Re-download",
-    "removeCached": "Remove from cache"
+    "removeCached": "Remove from cache",
+    "bulkBusy": "Another download is already running. Wait for it or cancel it",
+    "bulkBusy_likes": "Your likes are downloading right now. Wait for it or cancel it",
+    "bulkBusy_playlist": "Another playlist is downloading right now. Wait for it or cancel it",
+    "bulkBusy_album": "An album is downloading right now. Wait for it or cancel it"
   },
   "settings": {
     "title": "Settings",
@@ -606,7 +610,7 @@
     "total": "Total",
     "audioCacheSize": "Audio",
     "assetsCacheSize": "Images & assets",
-    "likedCacheSize": "Likes and saved tracks (protected cache)",
+    "likedCacheSize": "Likes, offline playlists and saved tracks (protected cache)",
     "cacheLikes": "Cache liked tracks",
     "cacheLikesDesc": "Downloads all likes into a separate folder that bypasses the audio cache limit.",
     "cacheLikesStarting": "Preparing...",
@@ -1184,5 +1188,24 @@
     "noMatches": "Nothing matches “{{query}}”",
     "capAlbums": "That's the cream of the crop — narrow the genre or search to dig deeper.",
     "capArtists": "That's the cream of the crop — pick a tag or search to dig deeper."
+  },
+  "collectionSave": {
+    "kicker": "Offline",
+    "menuLabel": "Download",
+    "pillLabel": "Offline",
+    "cacheTitle": "Save for offline",
+    "cacheResume": "Download the rest",
+    "cacheSub": "{{tracks}} · ≈ {{size}}",
+    "cacheSavedSub": "{{tracks}} on this device",
+    "cacheProtected": "kept in the protected cache, the cache limit leaves them alone",
+    "cacheAllSaved": "Saved for offline",
+    "cacheProgress": "Saving for offline",
+    "cachePreparing": "Collecting tracks…",
+    "cacheDone": "Saved for offline: {{ok}} of {{total}}",
+    "cacheDoneFailed": "Saved {{ok}} of {{total}}, {{failed}} failed",
+    "cacheCancelled": "Saving stopped",
+    "largeHint": "Big list: this will take a while and some disk space",
+    "busyHint": "Wait for the current download to finish first",
+    "empty": "No tracks to save here"
   }
 }

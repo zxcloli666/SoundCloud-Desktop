@@ -1,6 +1,7 @@
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {useNavigate} from 'react-router-dom';
+import {toast} from 'sonner';
 import {ForgeModule} from '../components/offline/ForgeModule';
 import {OFFLINE_KEYFRAMES} from '../components/offline/keyframes';
 import {filterEntries, sortEntries} from '../components/offline/lib';
@@ -12,10 +13,10 @@ import type {OfflineEntry, OfflineSection, SortMode} from '../components/offline
 import {useForgeStatus} from '../components/offline/useForgeStatus';
 import {useOfflineLibrary} from '../components/offline/useOfflineLibrary';
 import {Atmosphere} from '../components/search/Atmosphere';
+import {bulkCacheErrorText, useCacheLikes} from '../lib/bulk-cache';
 import {ensureTrackCached} from '../lib/cache';
 import {requestProbe, useHostStatusStore} from '../lib/host-status';
 import {idOf} from '../lib/ids';
-import {useCacheLikes} from '../lib/likes-cache';
 import {usePerfMode} from '../lib/perf';
 import {useAppStatusStore} from '../stores/app-status';
 import {saveOffline} from '../stores/offline-saves';
@@ -197,7 +198,9 @@ export const OfflinePage = React.memo(() => {
                 likedCachedCount={lib.stats.likedCachedCount}
                 caching={cacheLikes.caching}
                 progress={cacheLikes.progress}
-                onStartLikes={() => void cacheLikes.start().catch(() => {})}
+                onStartLikes={() =>
+                  void cacheLikes.start().catch((err) => toast.error(bulkCacheErrorText(err)))
+                }
                 onCancelLikes={cacheLikes.cancel}
               />
             </section>

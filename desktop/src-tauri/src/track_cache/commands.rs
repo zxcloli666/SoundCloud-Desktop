@@ -3,8 +3,8 @@ use tauri::State;
 use crate::shared::blocking::run_blocking;
 use crate::shared::urn::canonical_track_urn;
 use crate::track_cache::state::{
-    CacheInventoryEntry, CacheRequest, LikeCacheEntry, TrackCacheEntry, TrackCacheState,
-    TranscodeStatus,
+    BulkCacheEntry, BulkCacheStatus, CacheInventoryEntry, CacheRequest, TrackCacheEntry,
+    TrackCacheState, TranscodeStatus,
 };
 
 #[derive(serde::Deserialize)]
@@ -298,32 +298,32 @@ pub async fn track_purge_played(
 }
 
 #[tauri::command]
-pub async fn track_cache_likes(
-    entries: Vec<LikeCacheEntry>,
+pub async fn track_bulk_cache_start(
+    scope: String,
+    entries: Vec<BulkCacheEntry>,
     state: State<'_, TrackCacheState>,
 ) -> Result<(), String> {
-    let entries: Vec<LikeCacheEntry> = entries
+    let entries: Vec<BulkCacheEntry> = entries
         .into_iter()
         .filter_map(|mut entry| {
             entry.urn = canonical_track_urn(&entry.urn)?;
             Some(entry)
         })
         .collect();
+    state.begin_bulk_cache(scope, entries.len() as u32)?;
     let state = state.inner().clone();
     tokio::spawn(async move {
-        if let Err(err) = state.cache_likes(entries).await {
-            eprintln!("[TrackCache] cache_likes error: {err}");
-        }
+        state.run_bulk_cache(entries).await;
     });
     Ok(())
 }
 
 #[tauri::command]
-pub fn track_cache_likes_running(state: State<'_, TrackCacheState>) -> bool {
-    state.cache_likes_running()
+pub fn track_bulk_cache_status(state: State<'_, TrackCacheState>) -> Option<BulkCacheStatus> {
+    state.bulk_cache_status()
 }
 
 #[tauri::command]
-pub fn track_cancel_cache_likes(state: State<'_, TrackCacheState>) {
-    state.cancel_cache_likes();
+pub fn track_bulk_cache_cancel(state: State<'_, TrackCacheState>) {
+    state.cancel_bulk_cache();
 }

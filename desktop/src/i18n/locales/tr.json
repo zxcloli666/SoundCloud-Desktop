@@ -509,7 +509,11 @@
     "actDownload": "Cihaza indir",
     "actSave": "Dosyaya kaydet",
     "actRefetch": "Yeniden indir",
-    "removeCached": "Onbellekten kaldir"
+    "removeCached": "Onbellekten kaldir",
+    "bulkBusy": "Başka bir indirme zaten sürüyor. Bitmesini bekleyin ya da iptal edin",
+    "bulkBusy_likes": "Beğenileriniz şu anda indiriliyor. Bekleyin ya da iptal edin",
+    "bulkBusy_playlist": "Başka bir çalma listesi şu anda indiriliyor. Bekleyin ya da iptal edin",
+    "bulkBusy_album": "Bir albüm şu anda indiriliyor. Bekleyin ya da iptal edin"
   },
   "settings": {
     "title": "Ayarlar",
@@ -517,7 +521,7 @@
     "total": "Toplam",
     "audioCacheSize": "Ses",
     "assetsCacheSize": "Gorseller ve varliklar",
-    "likedCacheSize": "Begeniler ve kaydedilenler (korumali onbellek)",
+    "likedCacheSize": "Beğeniler, çevrimdışı listeler ve kaydedilenler (korumalı önbellek)",
     "cacheLikes": "Begenileri onbellege al",
     "cacheLikesDesc": "Tum begenileri ses onbellek limitini atlayan ayri bir klasore indirir.",
     "cacheLikesStarting": "Hazirlaniyor...",
@@ -987,5 +991,24 @@
     "scAccounts": "SoundCloud hesapları",
     "mainAccount": "Ana",
     "demoAccount": "Demo"
+  },
+  "collectionSave": {
+    "kicker": "Çevrimdışı",
+    "menuLabel": "İndir",
+    "pillLabel": "Çevrimdışı",
+    "cacheTitle": "Çevrimdışı için kaydet",
+    "cacheResume": "Kalanları indir",
+    "cacheSub": "{{tracks}} · ≈ {{size}}",
+    "cacheSavedSub": "{{tracks}} bu cihazda",
+    "cacheProtected": "korumalı önbellekte tutulur, önbellek sınırı onlara dokunmaz",
+    "cacheAllSaved": "Çevrimdışı kaydedildi",
+    "cacheProgress": "Çevrimdışı için kaydediliyor",
+    "cachePreparing": "Parçalar toplanıyor…",
+    "cacheDone": "Çevrimdışı kaydedildi: {{ok}} / {{total}}",
+    "cacheDoneFailed": "{{ok}} / {{total}} kaydedildi, {{failed}} başarısız",
+    "cacheCancelled": "Kaydetme durduruldu",
+    "largeHint": "Büyük liste: biraz zaman ve disk alanı gerektirecek",
+    "busyHint": "Önce mevcut indirmenin bitmesini bekleyin",
+    "empty": "Burada kaydedilecek parça yok"
   }
 }
