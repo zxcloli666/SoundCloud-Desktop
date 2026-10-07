@@ -1,12 +1,38 @@
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::time::Duration;
 
 use tauri::{Manager, PhysicalSize};
 
 use crate::rt::{AppHandle, Rt, WebviewWindow};
 
+static PAGES_HIDDEN: AtomicBool = AtomicBool::new(false);
 static MAIN_MINIMIZED: AtomicBool = AtomicBool::new(false);
+const WATCH_INTERVAL: Duration = Duration::from_secs(1);
+
+pub fn pages_hidden() -> bool {
+    PAGES_HIDDEN.load(Ordering::Relaxed)
+}
+
+pub fn start_watch(app: &AppHandle) {
+    let app = app.clone();
+    std::thread::Builder::new()
+        .name("page-visibility".into())
+        .spawn(move || {
+            loop {
+                std::thread::sleep(WATCH_INTERVAL);
+                let shown = app.webview_windows().values().any(|window| {
+                    window.is_visible().unwrap_or(true) && !window.is_minimized().unwrap_or(false)
+                });
+                PAGES_HIDDEN.store(!shown, Ordering::Relaxed);
+            }
+        })
+        .expect("failed to spawn page-visibility thread");
+}
 
 pub fn set_page_visible(window: &WebviewWindow, visible: bool) {
+    if visible {
+        PAGES_HIDDEN.store(false, Ordering::Relaxed);
+    }
     if !cfg!(all(windows, not(feature = "cef"))) {
         return;
     }

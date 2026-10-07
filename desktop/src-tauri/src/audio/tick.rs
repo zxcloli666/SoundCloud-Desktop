@@ -4,12 +4,13 @@ use std::time::Duration;
 use crate::rt::AppHandle;
 use tauri::{Emitter, Manager};
 
-use crate::app::diagnostics;
+use crate::app::{diagnostics, visibility};
 use crate::audio::engine;
 use crate::audio::state::AudioState;
 use crate::audio::timing;
 use crate::audio::types::{
-    AudioThreadCmd, STALL_COOLDOWN_MS, STALL_THRESHOLD_MS, TICK_INTERVAL_MS,
+    AudioThreadCmd, HIDDEN_TICK_INTERVAL, STALL_COOLDOWN_MS, STALL_THRESHOLD_MS,
+    TICK_INTERVAL_MS,
 };
 #[cfg(target_os = "linux")]
 use crate::audio::types::MediaCmd;
@@ -54,6 +55,7 @@ pub fn start_tick_emitter(app: &AppHandle) {
             let mut last_pos_ms = 0u64;
             let mut last_progress_at = std::time::Instant::now();
             let mut stall_cooldown_until = std::time::Instant::now();
+            let mut last_tick_emit = std::time::Instant::now();
             #[cfg(target_os = "linux")]
             let mut last_media_sync = std::time::Instant::now();
             #[cfg(target_os = "linux")]
@@ -123,7 +125,12 @@ pub fn start_tick_emitter(app: &AppHandle) {
                                 continue;
                             }
 
-                        handle.emit("audio:tick", pos).ok();
+                        if !visibility::pages_hidden()
+                            || last_tick_emit.elapsed() >= HIDDEN_TICK_INTERVAL
+                        {
+                            handle.emit("audio:tick", pos).ok();
+                            last_tick_emit = std::time::Instant::now();
+                        }
                         timing::process_lyrics_timeline(&handle, &state, pos);
                         timing::process_comments_timeline(&handle, &state, pos);
 

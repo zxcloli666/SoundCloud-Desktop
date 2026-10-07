@@ -144,6 +144,7 @@ pub fn run() {
             let audio_state = audio::init(app.handle());
             let analyser_buffer = audio_state.analyser_buffer.clone();
             app.manage(audio_state);
+            app::visibility::start_watch(app.handle());
             audio::start_tick_emitter(app.handle());
             audio::start_media_controls(app.handle());
             audio::start_default_output_monitor(app.handle());
