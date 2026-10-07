@@ -86,13 +86,14 @@ export async function saveOffline(track: Track, refetch = false): Promise<boolea
   useOfflineSaves.setState((s) => ({ progress: { ...s.progress, [urn]: 0 } }));
   try {
     void rememberTracks([track]);
-    await saveTrackOffline(
+    const info = await saveTrackOffline(
       urn,
       refetch,
       expectedDurationMs(track),
       track._scd_meta?.storage_quality,
     );
-    setCached(urn, true);
+    setCached(urn, info.pinned);
+    if (!info.pinned) throw new Error('track was cached but not pinned');
     void rememberPinned(urn);
     toast.success(i18n.t(refetch ? 'track.offlineRefetched' : 'track.offlineSaved'));
     return true;
