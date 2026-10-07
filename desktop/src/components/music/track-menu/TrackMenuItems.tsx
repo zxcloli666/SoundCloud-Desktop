@@ -17,6 +17,7 @@ import {
 } from '../../../lib/icons';
 import { setTrackLiked } from '../../../lib/like-toggle';
 import { useLiked } from '../../../lib/likes';
+import { isLocalUrn } from '../../../lib/local-library';
 import {
   copyTrackLabel,
   copyTrackLink,
@@ -38,6 +39,7 @@ export function TrackMenuItems({ target }: { target: TrackMenuTarget }) {
   const liked = useLiked(track.urn);
   const online = useAppMode() === 'online';
   const playable = getArtistDisplay(track).availability === 'indexed';
+  const remote = !isLocalUrn(track.urn);
   const artistPath = getArtistTarget(track);
 
   const run = (action: () => void) => () => {
@@ -96,7 +98,7 @@ export function TrackMenuItems({ target }: { target: TrackMenuTarget }) {
     [
       'library',
       [
-        online && playable && (
+        online && remote && playable && (
           <MenuItem
             key="like"
             active={liked}
@@ -105,7 +107,7 @@ export function TrackMenuItems({ target }: { target: TrackMenuTarget }) {
             onSelect={run(() => void setTrackLiked(qc, track, !liked))}
           />
         ),
-        online && playable && (
+        online && remote && playable && (
           <MenuItem
             key="playlist"
             icon={<ListPlus size={15} />}
@@ -113,7 +115,7 @@ export function TrackMenuItems({ target }: { target: TrackMenuTarget }) {
             onSelect={() => useTrackMenuStore.getState().openPlaylistDialog(track.urn)}
           />
         ),
-        playable && (
+        remote && playable && (
           <MenuItem
             key="download"
             icon={<Download size={15} />}
@@ -126,7 +128,7 @@ export function TrackMenuItems({ target }: { target: TrackMenuTarget }) {
     [
       'navigate',
       [
-        online && playable && (
+        online && remote && playable && (
           <MenuItem
             key="track"
             icon={<Disc3 size={15} />}
@@ -134,7 +136,7 @@ export function TrackMenuItems({ target }: { target: TrackMenuTarget }) {
             onSelect={run(() => navigate(`/track/${encodeURIComponent(track.urn)}`))}
           />
         ),
-        online && artistPath && (
+        online && remote && artistPath && (
           <MenuItem
             key="artist"
             icon={<User size={15} />}
