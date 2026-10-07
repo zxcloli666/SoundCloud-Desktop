@@ -89,7 +89,7 @@ export async function loadAllDislikedIds(): Promise<void> {
 
 export async function toggleDislike(
   qc: QueryClient,
-  track: Track,
+  track: Pick<Track, 'urn'>,
   nowDisliked: boolean,
 ): Promise<void> {
   setDislikedUrn(track.urn, nowDisliked);

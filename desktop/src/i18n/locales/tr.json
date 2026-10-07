@@ -337,6 +337,9 @@
     "noPlaylists": "Calma listesi bulunamadi",
     "likedAlbums": "Beğenilen Albümler"
   },
+  "dislikes": {
+    "playingDisliked": "Bu parça Önerilmeyenler listesinde"
+  },
   "errors": {
     "title": "Bir seyler ters gitti",
     "subtitle": "Arayuz bir sorunla karsilasti. Tekrar deneyin veya uygulamayi yeniden yukleyin.",

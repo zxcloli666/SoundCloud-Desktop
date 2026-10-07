@@ -421,6 +421,9 @@
     "noPlaylists": "No playlists found",
     "likedAlbums": "Liked Albums"
   },
+  "dislikes": {
+    "playingDisliked": "This track is in Not recommended"
+  },
   "errors": {
     "title": "Something went wrong",
     "subtitle": "The interface hit a snag. Try again or reload the app.",

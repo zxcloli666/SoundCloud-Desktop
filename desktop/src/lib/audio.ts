@@ -22,6 +22,7 @@ import {
   type TrackCacheInfo,
 } from './cache';
 import {trackedInvoke as invoke} from './diagnostics';
+import {offerUndislike} from './dislike-actions';
 import {isUrnDisliked} from './dislikes';
 import {recordEvent} from './events';
 import {art} from './formatters';
@@ -652,7 +653,8 @@ usePlayerStore.subscribe((state, prev) => {
 
     if (state.currentTrack) {
       // Автоскип дизлайкнутых треков: пропускаем без загрузки/плэя.
-      if (isUrnDisliked(state.currentTrack.urn)) {
+      const disliked = isUrnDisliked(state.currentTrack.urn);
+      if (disliked && state.startedUrn !== state.currentTrack.urn) {
         currentUrn = null;
         fallbackDuration = 0;
         cachedDuration = 0;
@@ -663,6 +665,7 @@ usePlayerStore.subscribe((state, prev) => {
         usePlayerStore.getState().next();
         return;
       }
+      if (disliked) offerUndislike(state.currentTrack);
       updateMetadata(state.currentTrack);
       void loadTrack(state.currentTrack);
     } else {
