@@ -7,6 +7,7 @@ pub mod popover;
 pub mod popover_position;
 pub mod render_mode;
 pub mod tray;
+pub mod updater;
 pub mod visibility;
 #[cfg(all(windows, not(feature = "cef")))]
 pub mod webview2;

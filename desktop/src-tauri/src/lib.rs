@@ -59,6 +59,7 @@ pub fn run() {
             app::webview2::exit_if_main_window_missing(app);
             app::autostart::reveal_main_window(app);
             app::autostart::refresh_entry(app);
+            app::updater::register(app);
 
             let cache_dir = app
                 .path()
@@ -217,6 +218,8 @@ pub fn run() {
             app::render_mode::render_mode_restart,
             app::hotkeys::hotkeys_apply,
             app::hotkeys::hotkeys_backend,
+            app::updater::updater_info,
+            app::updater::updater_install,
             app::visibility::show_main_window,
             app::popover::tray_popover_hide,
             discord::discord_connect,
