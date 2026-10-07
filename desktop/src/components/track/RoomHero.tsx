@@ -3,8 +3,10 @@ import {Trans, useTranslation} from 'react-i18next';
 import {useNavigate} from 'react-router-dom';
 import {art} from '../../lib/formatters';
 import type {Comment} from '../../lib/hooks';
+import {Disc3} from '../../lib/icons';
 import {usePerfMode} from '../../lib/perf';
 import {
+  getAlbumTarget,
   getArtistDisplay,
   getArtistLinkItems,
   getArtistTarget,
@@ -71,7 +73,9 @@ export const RoomHero = React.memo(function RoomHero({
     : track.user.urn
       ? `/user/${encodeURIComponent(track.user.urn)}`
       : getArtistTarget(track);
-  const year = track.release_year ?? track.enrichment?.album?.year;
+  const album = track.enrichment?.album;
+  const albumTarget = getAlbumTarget(track);
+  const year = track.release_year ?? album?.year;
   const hb = perf.blur(90);
 
   const titleStyle = aura.hasGenre
@@ -132,6 +136,17 @@ export const RoomHero = React.memo(function RoomHero({
                 <span className="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-white/[0.05] text-white/40 border border-white/[0.06] tabular-nums">
                   {year}
                 </span>
+              )}
+              {albumTarget && album?.title && (
+                <button
+                  type="button"
+                  onClick={() => navigate(albumTarget)}
+                  title={t('track.openAlbum', { title: album.title })}
+                  className="inline-flex items-center gap-1.5 max-w-[16rem] text-[10px] font-semibold px-2.5 py-1 rounded-full bg-white/[0.05] text-white/55 border border-white/[0.06] cursor-pointer transition-colors duration-200 hover:bg-white/[0.1] hover:text-white/90"
+                >
+                  <Disc3 size={11} className="shrink-0" />
+                  <span className="truncate">{album.title}</span>
+                </button>
               )}
             </div>
 
