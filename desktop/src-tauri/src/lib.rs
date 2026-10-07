@@ -235,6 +235,7 @@ pub fn run() {
             track_cache::track_clear_cache,
             track_cache::track_clear_liked_cache,
             track_cache::track_remove_cached,
+            track_cache::track_demote_liked,
             track_cache::track_list_cached,
             track_cache::track_cache_inventory,
             track_cache::track_enforce_cache_limit,
