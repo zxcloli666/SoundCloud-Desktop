@@ -8,6 +8,7 @@ import {DiscordCard} from './cards/DiscordCard';
 import {ImportCard} from './cards/ImportCard';
 import {LanguageCard} from './cards/LanguageCard';
 import {NetworkCard} from './cards/NetworkCard';
+import {NotificationsCard} from './cards/NotificationsCard';
 import {PerformanceCard} from './cards/PerformanceCard';
 import {PlaybackCard} from './cards/PlaybackCard';
 import {SoundForgeCard} from './cards/SoundForgeCard';
@@ -41,6 +42,7 @@ export const SETTINGS_CATEGORIES: SettingsCategory[] = [
             <>
                 <LanguageCard/>
                 <StartupCard/>
+                <NotificationsCard/>
             </>
         ),
     },

@@ -10,6 +10,7 @@ import {
   ArrowDownToLine as _ArrowDownToLine,
   ArrowRight as _ArrowRight,
   AudioLines as _AudioLines,
+  Bell as _Bell,
   Bookmark as _Bookmark,
   Calendar as _Calendar,
   Check as _Check,
@@ -117,6 +118,7 @@ export const ArrowRight = memo(_ArrowRight);
 export const ChevronRight = memo(_ChevronRight);
 export const ChevronUp = memo(_ChevronUp);
 export const Clock = memo(_Clock);
+export const Bell = memo(_Bell);
 export const Bookmark = memo(_Bookmark);
 export const Cloud = memo(_Cloud);
 export const Compass = memo(_Compass);
