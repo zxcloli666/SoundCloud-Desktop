@@ -7,7 +7,7 @@ import React, {useCallback, useMemo, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {api} from '../../../lib/api';
 import {Sparkles} from '../../../lib/icons';
-import {isUrnLiked, useLiked} from '../../../lib/likes';
+import {isUrnLiked, likedTracksCount, useLiked} from '../../../lib/likes';
 import {useAuthStore} from '../../../stores/auth';
 import type {Track} from '../../../stores/player';
 import {usePlayerStore} from '../../../stores/player';
@@ -37,6 +37,7 @@ const ANCHOR_ORDER: Record<string, number> = {
   same_vibe: 4,
   adjacent: 5,
   deep_cuts: 6,
+  discover: 7,
   delta: 9,
 };
 
@@ -55,6 +56,7 @@ function DeltaNote() {
 export const RiverFlow = React.memo(function RiverFlow({ tint }: { tint?: string[] }) {
   const { t } = useTranslation();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const likesCount = useAuthStore((s) => likedTracksCount(s.user) ?? 0);
   const wrapRef = useRef<HTMLDivElement>(null);
   const anchorsRef = useRef<AnchorMap>(new Map());
   const selectedLanguages = useSettingsStore((s) => s.soundwaveLanguages);
@@ -78,7 +80,7 @@ export const RiverFlow = React.memo(function RiverFlow({ tint }: { tint?: string
     return `/recommendations${suffix}`;
   }, [isAuthenticated, stableLanguages, hideListened]);
 
-  const { data, isLoading, isFetching, refetch } = useClusterWave({
+  const { data, isLoading, isError, isFetching, refetch } = useClusterWave({
     queryKey: ['cluster-wave', 'home', langKey, hideListened],
     url,
     enabled: isAuthenticated,
@@ -191,18 +193,26 @@ export const RiverFlow = React.memo(function RiverFlow({ tint }: { tint?: string
   };
 
   const showCold = !isLoading && filteredClusters.length === 0;
+  const coldState = isError
+    ? 'error'
+    : rawClusters.length > 0
+      ? 'allLiked'
+      : likesCount > 0
+        ? 'building'
+        : 'cold';
   const topArtists = clusterById.get('top_artists');
   const adjacent = clusterById.get('adjacent');
   const freshDrops = clusterById.get('fresh_drops');
   const sameVibe = clusterById.get('same_vibe');
   const deepCuts = clusterById.get('deep_cuts');
+  const discover = clusterById.get('discover');
 
   const anchorRef = (id: string, kind: AnchorKind) => (el: HTMLElement | null) => {
     if (el) anchorsRef.current.set(id, { el, kind, order: ANCHOR_ORDER[id] ?? 8 });
     else anchorsRef.current.delete(id);
   };
   // Отпечаток состава секций: смена набора кластеров перестраивает путь реки.
-  const layoutKey = [waveCluster, topArtists, freshDrops, sameVibe, adjacent, deepCuts]
+  const layoutKey = [waveCluster, topArtists, freshDrops, sameVibe, adjacent, deepCuts, discover]
     .map((c) => (c ? '1' : '0'))
     .join('');
 
@@ -259,8 +269,10 @@ export const RiverFlow = React.memo(function RiverFlow({ tint }: { tint?: string
         <div className="pt-10">
           <ClusterEmptyState
             icon={<Sparkles size={20} style={{ color: 'var(--color-accent)' }} />}
-            title={t('soundwave.coldTitle')}
-            description={t('soundwave.coldDesc')}
+            title={t(`soundwave.${coldState}Title`)}
+            description={t(`soundwave.${coldState}Desc`)}
+            cta={isError ? t('common.retry') : undefined}
+            onAction={() => void refetch()}
           />
         </div>
       ) : (
@@ -360,6 +372,23 @@ export const RiverFlow = React.memo(function RiverFlow({ tint }: { tint?: string
                   tone="deep"
                 >
                   <DeepShelf tracks={deepCuts.tracks} />
+                </RiverSection>
+              </div>
+            )}
+
+            {discover && (
+              <div ref={anchorRef('discover', 'node')}>
+                <RiverSection title={sectionTitle('discover')} why={sectionWhy('discover')}>
+                  <ClusterRow
+                    hideHeader
+                    clusterId={discover.id}
+                    title=""
+                    description=""
+                    icon={null}
+                    index={0}
+                    tracks={discover.tracks}
+                    queue={discover.tracks}
+                  />
                 </RiverSection>
               </div>
             )}

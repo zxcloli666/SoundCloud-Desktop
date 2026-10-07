@@ -22,6 +22,7 @@ const KNOWN_IDS: ReadonlyArray<ClusterId> = [
   'same_artist',
   'featured_with',
   'fans_also',
+  'discover',
 ];
 
 export interface UseClusterWaveOptions {
@@ -38,14 +39,13 @@ export function useClusterWave(opts: UseClusterWaveOptions): UseQueryResult<Clus
     enabled: opts.enabled !== false && !!opts.url,
     staleTime: opts.staleMs ?? STALE_MS,
     gcTime: opts.gcMs ?? GC_MS,
+    retry: false,
     queryFn: () => fetchAndHydrate(opts.url!),
   });
 }
 
 export async function fetchAndHydrate(url: string): Promise<ClusterData> {
-  const dto = await api<ClusterResponseDto>(url).catch(
-    () => ({ clusters: [] }) as ClusterResponseDto,
-  );
+  const dto = await api<ClusterResponseDto>(url);
 
   const uniqueIds = collectUniqueIds(dto);
   if (uniqueIds.length === 0) {
@@ -54,6 +54,9 @@ export async function fetchAndHydrate(url: string): Promise<ClusterData> {
 
   const fakeRecs: RecommendResult[] = uniqueIds.map((id) => ({ id }));
   const hydrated = await hydrateByIds(fakeRecs);
+  if (hydrated.length === 0) {
+    throw new Error(`no tracks could be loaded for ${url}`);
+  }
 
   const byId = new Map<string, Track>();
   for (const t of hydrated) {

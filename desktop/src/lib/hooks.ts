@@ -136,6 +136,7 @@ export interface WebProfile {
 const SHORT_CACHE_MS = 1000 * 60 * 2;
 const MEDIUM_CACHE_MS = 1000 * 60 * 5;
 const SEARCH_CACHE_MS = 1000 * 60 * 2;
+const SEARCH_TIMEOUT_MS = 20_000;
 const INFINITE_GC_MS = 1000 * 60 * 3;
 
 /**
@@ -184,6 +185,7 @@ interface PagedQueryOptions<T> {
   gcTime?: number;
   enabled?: boolean;
   maxPages?: number;
+  timeoutMs?: number;
   /** Auto-fetch all pages until exhausted. Use sparingly. */
   autoFetchAll?: boolean;
   dedupe?: (item: T) => string;
@@ -208,7 +210,8 @@ function usePagedQuery<T>(opts: PagedQueryOptions<T>): PagedQueryResult<T> {
     number
   >({
     queryKey: opts.queryKey,
-    queryFn: ({ pageParam }) => api<PagedResponse<T>>(opts.url(pageParam, limit)),
+    queryFn: ({ pageParam }) =>
+      api<PagedResponse<T>>(opts.url(pageParam, limit), undefined, opts.timeoutMs),
     initialPageParam: 0,
     getNextPageParam: (last) => (last.has_more ? last.page + 1 : undefined),
     staleTime: opts.staleTime,
@@ -776,6 +779,7 @@ export function useSearchTracks(q: string) {
     url: (page, limit) => pagedUrl('/tracks', page, limit, `q=${encodeURIComponent(q)}`),
     limit: 20,
     staleTime: SEARCH_CACHE_MS,
+    timeoutMs: SEARCH_TIMEOUT_MS,
     maxPages: 5,
     enabled: !!q.trim(),
     dedupe: (t) => t.urn,
@@ -790,6 +794,7 @@ export function useSearchPlaylists(q: string) {
     url: (page, limit) => pagedUrl('/playlists', page, limit, `q=${encodeURIComponent(q)}`),
     limit: 20,
     staleTime: SEARCH_CACHE_MS,
+    timeoutMs: SEARCH_TIMEOUT_MS,
     maxPages: 5,
     enabled: !!q.trim(),
     dedupe: (p) => p.urn,
@@ -804,6 +809,7 @@ export function useSearchUsers(q: string) {
     url: (page, limit) => pagedUrl('/users', page, limit, `q=${encodeURIComponent(q)}`),
     limit: 20,
     staleTime: SEARCH_CACHE_MS,
+    timeoutMs: SEARCH_TIMEOUT_MS,
     maxPages: 5,
     enabled: !!q.trim(),
     dedupe: (u) => u.urn,
@@ -836,6 +842,7 @@ export function useSearchDbTracks(q: string, userUrn?: string) {
       ),
     limit: SEARCH_DB_LIMIT,
     staleTime: SEARCH_CACHE_MS,
+    timeoutMs: SEARCH_TIMEOUT_MS,
     maxPages: SEARCH_DB_MAX_PAGES,
     enabled: !!q.trim(),
     dedupe: (t) => t.urn,
@@ -855,6 +862,7 @@ export function useSearchDbPlaylists(q: string, userUrn?: string) {
       ),
     limit: SEARCH_DB_LIMIT,
     staleTime: SEARCH_CACHE_MS,
+    timeoutMs: SEARCH_TIMEOUT_MS,
     maxPages: SEARCH_DB_MAX_PAGES,
     enabled: !!q.trim(),
     dedupe: (p) => p.urn,
@@ -868,6 +876,7 @@ export function useSearchDbUsers(q: string) {
     url: (page, limit) => pagedUrl('/search/db/users', page, limit, `q=${encodeURIComponent(q)}`),
     limit: SEARCH_DB_LIMIT,
     staleTime: SEARCH_CACHE_MS,
+    timeoutMs: SEARCH_TIMEOUT_MS,
     maxPages: SEARCH_DB_MAX_PAGES,
     enabled: !!q.trim(),
     dedupe: (u) => u.urn,
@@ -881,6 +890,7 @@ export function useSearchDbArtists(q: string) {
     url: (page, limit) => pagedUrl('/search/db/artists', page, limit, `q=${encodeURIComponent(q)}`),
     limit: SEARCH_DB_LIMIT,
     staleTime: SEARCH_CACHE_MS,
+    timeoutMs: SEARCH_TIMEOUT_MS,
     maxPages: SEARCH_DB_MAX_PAGES,
     enabled: !!q.trim(),
     dedupe: (a) => a.id,
@@ -894,6 +904,7 @@ export function useSearchDbAlbums(q: string) {
     url: (page, limit) => pagedUrl('/search/db/albums', page, limit, `q=${encodeURIComponent(q)}`),
     limit: SEARCH_DB_LIMIT,
     staleTime: SEARCH_CACHE_MS,
+    timeoutMs: SEARCH_TIMEOUT_MS,
     maxPages: SEARCH_DB_MAX_PAGES,
     enabled: !!q.trim(),
     dedupe: (a) => a.id,
@@ -905,6 +916,7 @@ export function useSearchDbAlbums(q: string) {
 
 const EMPTY_TRACKS: Track[] = [];
 const EMPTY_ATMOSPHERE: SearchAtmosphere = { topGenres: [] };
+const VIBE_PREPARING_POLLS = 6;
 
 export interface SearchAtmosphere {
   /** Dominant genres of the result set — used to tint the page atmosphere. */
@@ -926,25 +938,32 @@ export interface VibeSearchResponse {
  * (dominant genres) the UI uses to recolour the page.
  */
 export function useVibeSearch(q: string, opts?: { limit?: number; languages?: string[] }) {
+  const queryClient = useQueryClient();
   const limit = opts?.limit ?? 48;
   const langs = (opts?.languages ?? []).slice().sort().join(',');
+  const queryKey = ['search', 'vibe', q, limit, langs];
   const query = useQuery({
-    queryKey: ['search', 'vibe', q, limit, langs],
+    queryKey,
     enabled: q.trim().length >= 2,
     staleTime: SEARCH_CACHE_MS,
-    // While the worker is still encoding the query (preparing), poll until the
-    // vector lands and the backend flips to ready.
-    refetchInterval: (q2) => (q2.state.data?.status === 'preparing' ? 2500 : false),
+    refetchInterval: (q2) =>
+      q2.state.data?.status === 'preparing' && q2.state.dataUpdateCount < VIBE_PREPARING_POLLS
+        ? 2500
+        : false,
     queryFn: () => {
       const usp = new URLSearchParams({ q: q.trim(), limit: String(limit) });
       if (langs) usp.set('languages', langs);
       return api<VibeSearchResponse>(`/search/vibe?${usp}`, undefined, 30_000);
     },
   });
+  const preparing = query.data?.status === 'preparing';
+  const polls = queryClient.getQueryState(queryKey)?.dataUpdateCount ?? 0;
+  const unavailable = preparing && polls >= VIBE_PREPARING_POLLS;
   return {
     tracks: query.data?.items ?? EMPTY_TRACKS,
     atmosphere: query.data?.atmosphere ?? EMPTY_ATMOSPHERE,
-    preparing: query.data?.status === 'preparing',
+    preparing: preparing && !unavailable,
+    unavailable,
     ...query,
   };
 }
@@ -969,6 +988,7 @@ export function useLyricSearch(q: string, mode: LyricMode = 'auto') {
       pagedUrl('/search/lyrics', page, limit, `q=${encodeURIComponent(q)}&mode=${mode}`),
     limit: SEARCH_DB_LIMIT,
     staleTime: SEARCH_CACHE_MS,
+    timeoutMs: SEARCH_TIMEOUT_MS,
     maxPages: SEARCH_DB_MAX_PAGES,
     enabled: q.trim().length >= 2,
     dedupe: (h) => h.track.urn,

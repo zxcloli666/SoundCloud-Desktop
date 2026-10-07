@@ -1,4 +1,5 @@
-import {useMemo} from 'react';
+import {useQueryClient} from '@tanstack/react-query';
+import {useCallback, useMemo} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {art} from '../../lib/formatters';
 import {
@@ -33,10 +34,13 @@ export interface SearchWallResult {
    *  is empty not because there are no matches, but because it isn't encoded
    *  yet. Drives the "preparing vibe" plaque; the query auto-refetches. */
   preparing: boolean;
+  vibeUnavailable: boolean;
+  isError: boolean;
   hasMore: boolean;
   isFetchingMore: boolean;
   entitiesLoading: boolean;
   loadMore: () => void;
+  retry: () => void;
 }
 
 const MIN_LEN = 2;
@@ -97,6 +101,7 @@ export function useSearchWall(
   dive: DiveSeed | null,
 ): SearchWallResult {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const trimmed = query.trim();
   const hasQuery = trimmed.length >= MIN_LEN;
   const db = source === 'db';
@@ -224,17 +229,30 @@ export function useSearchWall(
     return { tint: top.slice(0, 2).map(genreColor), energy: vibeEnergy(top) };
   }, [dive, landing, scMode, vibe.atmosphere?.topGenres]);
 
+  const retry = useCallback(
+    () =>
+      void queryClient.refetchQueries({
+        queryKey: ['search'],
+        type: 'active',
+        predicate: (q) => q.state.status === 'error',
+      }),
+    [queryClient],
+  );
+
   if (dive) {
     return {
       items,
       entities,
       atmosphere,
       preparing: false,
+      vibeUnavailable: false,
+      isError: false,
       isLoading: diveWave.isLoading,
       hasMore: false,
       isFetchingMore: false,
       entitiesLoading: false,
       loadMore: () => {},
+      retry,
     };
   }
   if (landing) {
@@ -243,11 +261,14 @@ export function useSearchWall(
       entities,
       atmosphere,
       preparing: false,
+      vibeUnavailable: false,
+      isError: false,
       isLoading: wave.isLoading,
       hasMore: wave.hasNextPage,
       isFetchingMore: wave.isFetchingNextPage,
       entitiesLoading: false,
       loadMore: () => void wave.fetchNextPage(),
+      retry,
     };
   }
   if (scMode) {
@@ -256,11 +277,14 @@ export function useSearchWall(
       entities,
       atmosphere,
       preparing: false,
+      vibeUnavailable: false,
+      isError: scTracks.isError && items.length === 0,
       isLoading: scTracks.isLoading && items.length === 0,
       hasMore: scTracks.hasNextPage,
       isFetchingMore: scTracks.isFetchingNextPage,
       entitiesLoading: (scPlaylists.isLoading || scUsers.isLoading) && entities.length === 0,
       loadMore: () => scTracks.fetchNextPage(),
+      retry,
     };
   }
   if (vibeMode) {
@@ -269,11 +293,14 @@ export function useSearchWall(
       entities,
       atmosphere,
       preparing: vibe.preparing,
+      vibeUnavailable: vibe.unavailable,
+      isError: vibe.isError && items.length === 0,
       isLoading: vibe.isLoading,
       hasMore: false,
       isFetchingMore: false,
       entitiesLoading: false,
       loadMore: () => {},
+      retry,
     };
   }
   // text mode
@@ -282,11 +309,14 @@ export function useSearchWall(
     entities,
     atmosphere,
     preparing: false,
+    vibeUnavailable: false,
+    isError: lex.isError && items.length === 0,
     isLoading: (lex.isLoading || lyric.isLoading) && items.length === 0,
     hasMore: lex.hasNextPage,
     isFetchingMore: lex.isFetchingNextPage,
     entitiesLoading:
       (artists.isLoading || playlists.isLoading || users.isLoading) && entities.length === 0,
     loadMore: () => lex.fetchNextPage(),
+    retry,
   };
 }
