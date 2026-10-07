@@ -12,6 +12,8 @@ import {
   filterEntries,
   sortEntries,
 } from '../components/offline/lib';
+import {LocalSection} from '../components/offline/local/LocalSection';
+import {useLocalView} from '../components/offline/local/useLocalView';
 import {OfflineHead} from '../components/offline/OfflineHead';
 import {OfflineToolbar} from '../components/offline/OfflineToolbar';
 import {OfflineTrackList} from '../components/offline/OfflineTrackList';
@@ -52,8 +54,11 @@ export const OfflinePage = React.memo(() => {
   const backendReachable = useAppStatusStore((s) => s.navigatorOnline && s.backendReachable);
   const [tryingOnline, setTryingOnline] = useState(false);
 
-  const initialScope = (location.state as { collection?: string } | null)?.collection ?? null;
-  const [section, setSection] = useState<OfflineSection>(initialScope ? 'playlists' : 'likes');
+  const navState = location.state as { collection?: string; section?: OfflineSection } | null;
+  const initialScope = navState?.collection ?? null;
+  const [section, setSection] = useState<OfflineSection>(
+    navState?.section ?? (initialScope ? 'playlists' : 'likes'),
+  );
   const [openScope, setOpenScope] = useState<string | null>(initialScope);
   const openView = useMemo(
     () => lib.collectionViews.find((v) => v.scope === openScope) ?? null,
@@ -61,6 +66,16 @@ export const OfflinePage = React.memo(() => {
   );
   const [sort, setSort] = useState<SortMode>('custom');
   const [query, setQuery] = useState('');
+  const local = useLocalView(query, sort, section === 'local');
+  const openLocalPlaylist = local.openPlaylist;
+
+  useEffect(() => {
+    const next = navState?.section;
+    if (!next) return;
+    setSection(next);
+    setOpenScope(null);
+    openLocalPlaylist(null);
+  }, [navState, openLocalPlaylist]);
   const showGrid = section === 'playlists' && openView === null;
   const gridViews = useMemo(
     () => filterCollections(lib.collectionViews, query),
@@ -110,10 +125,14 @@ export const OfflinePage = React.memo(() => {
     lib.invByUrn,
   ]);
 
-  const handleSection = useCallback((next: OfflineSection) => {
-    setSection(next);
-    setOpenScope(null);
-  }, []);
+  const handleSection = useCallback(
+    (next: OfflineSection) => {
+      setSection(next);
+      setOpenScope(null);
+      openLocalPlaylist(null);
+    },
+    [openLocalPlaylist],
+  );
 
   const handleRemoveCollection = useCallback(() => {
     if (!openScope) return;
@@ -122,8 +141,9 @@ export const OfflinePage = React.memo(() => {
   }, [openScope, lib.removeCollection]);
 
   const playableTracks = useMemo(
-    () => entries.filter((e) => e.inv !== null).map((e) => e.track),
-    [entries],
+    () =>
+      section === 'local' ? local.playable : entries.filter((e) => e.inv !== null).map((e) => e.track),
+    [section, local.playable, entries],
   );
 
   const forgingUrns = useMemo(
@@ -260,6 +280,7 @@ export const OfflinePage = React.memo(() => {
               likesCount={lib.likesEntries.length}
               cachedCount={lib.cachedEntries.length}
               playlistsCount={lib.collectionViews.length}
+              localCount={local.count}
               playableCount={playableTracks.length}
               onPlayAll={handlePlayAll}
               onShuffle={handleShuffle}
@@ -277,7 +298,9 @@ export const OfflinePage = React.memo(() => {
               />
             )}
 
-            {showGrid ? (
+            {section === 'local' ? (
+              <LocalSection view={local} query={query} sort={sort} />
+            ) : showGrid ? (
               <CollectionGrid views={gridViews} emptyText={emptyText} onOpen={setOpenScope} />
             ) : (
               <OfflineTrackList

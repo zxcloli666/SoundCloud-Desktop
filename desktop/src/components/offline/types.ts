@@ -2,7 +2,7 @@ import type {CacheInventoryEntry} from '../../lib/cache';
 import type {OfflineCollection} from '../../lib/offline-index';
 import type {Track} from '../../stores/player';
 
-export type OfflineSection = 'likes' | 'cached' | 'playlists';
+export type OfflineSection = 'likes' | 'cached' | 'playlists' | 'local';
 
 export type SortMode = 'custom' | 'recent' | 'title' | 'artist' | 'duration' | 'size';
 

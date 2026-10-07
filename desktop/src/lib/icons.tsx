@@ -27,9 +27,11 @@ import {
   ExternalLink as _ExternalLink,
   Eye as _Eye,
   FileDown as _FileDown,
+  FileMusic as _FileMusic,
   Flame as _Flame,
   FolderInput as _FolderInput,
   FolderOpen as _FolderOpen,
+  FolderPlus as _FolderPlus,
   Fullscreen as _Fullscreen,
   Globe as _Globe,
   GripVertical as _GripVertical,
@@ -41,6 +43,7 @@ import {
   Library as _Library,
   Link as _Link,
   Link2 as _Link2,
+  ListEnd as _ListEnd,
   ListMusic as _ListMusic,
   ListPlus as _ListPlus,
   Loader2 as _Loader2,
@@ -53,6 +56,7 @@ import {
   PanelLeftClose as _PanelLeftClose,
   PanelLeftOpen as _PanelLeftOpen,
   Pause as _Pause,
+  Pencil as _Pencil,
   Play as _Play,
   Plus as _Plus,
   Power as _Power,
@@ -109,9 +113,11 @@ export const AlertCircle = memo(_AlertCircle);
 export const ArrowDownToLine = memo(_ArrowDownToLine);
 export const Calendar = memo(_Calendar);
 export const FileDown = memo(_FileDown);
+export const FileMusic = memo(_FileMusic);
 export const Flame = memo(_Flame);
 export const FolderInput = memo(_FolderInput);
 export const FolderOpen = memo(_FolderOpen);
+export const FolderPlus = memo(_FolderPlus);
 export const HardDrive = memo(_HardDrive);
 export const TriangleAlert = memo(_TriangleAlert);
 export const Wifi = memo(_Wifi);
@@ -145,6 +151,7 @@ export const Instagram = memo(({ size, className }: { size?: number; className?:
 export const Library = memo(_Library);
 export const LinkIcon = memo(_Link);
 export const ListMusic = memo(_ListMusic);
+export const ListEnd = memo(_ListEnd);
 export const ListPlus = memo(_ListPlus);
 export const Loader2 = memo(_Loader2);
 export const Lock = memo(_Lock);
@@ -156,6 +163,7 @@ export const Music = memo(_Music);
 export const PanelLeftClose = memo(_PanelLeftClose);
 export const PanelLeftOpen = memo(_PanelLeftOpen);
 export const Pause = memo(_Pause);
+export const Pencil = memo(_Pencil);
 export const Play = memo(_Play);
 export const Plus = memo(_Plus);
 export const Repeat = memo(_Repeat);

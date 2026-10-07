@@ -85,6 +85,7 @@ export const OfflineToolbar = React.memo(function OfflineToolbar({
   likesCount,
   cachedCount,
   playlistsCount,
+  localCount,
   playableCount,
   onPlayAll,
   onShuffle,
@@ -98,6 +99,7 @@ export const OfflineToolbar = React.memo(function OfflineToolbar({
   likesCount: number;
   cachedCount: number;
   playlistsCount: number;
+  localCount: number;
   playableCount: number;
   onPlayAll: () => void;
   onShuffle: () => void;
@@ -131,6 +133,7 @@ export const OfflineToolbar = React.memo(function OfflineToolbar({
         {tab('likes', t('offline.likesTitle'), likesCount)}
         {tab('playlists', t('offline.playlistsTitle'), playlistsCount)}
         {tab('cached', t('offline.cachedTitle'), cachedCount)}
+        {tab('local', t('local.tab'), localCount)}
       </div>
 
       <button
