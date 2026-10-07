@@ -124,6 +124,36 @@ pub async fn track_export(
 }
 
 #[tauri::command]
+pub async fn track_save_offline(
+    request: EnsureCachedRequest,
+    refetch: bool,
+    state: State<'_, TrackCacheState>,
+) -> Result<TrackCacheEntry, String> {
+    let urn = require_track_urn(&request.urn)?;
+    let fallback_urls = request
+        .fallback_urls()
+        .ok_or_else(|| "no stream URL provided".to_string())?;
+    let storage_urls = request.storage_urls.unwrap_or_default();
+    let download_urls = request.download_urls.unwrap_or_default();
+    state
+        .save_offline(
+            CacheRequest {
+                urn: &urn,
+                urls: &fallback_urls,
+                download_urls: &download_urls,
+                storage_urls: &storage_urls,
+                session_id: request.session_id.as_deref(),
+                hq: request.hq,
+                storage_quality: request.storage_quality.as_deref(),
+                liked: true,
+                expected_duration_ms: request.duration_ms,
+            },
+            refetch,
+        )
+        .await
+}
+
+#[tauri::command]
 pub fn track_is_cached(urn: String, state: State<'_, TrackCacheState>) -> bool {
     canonical_track_urn(&urn).is_some_and(|urn| state.is_cached(&urn))
 }

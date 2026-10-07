@@ -2139,6 +2139,30 @@ impl TrackCacheState {
         true
     }
 
+    pub async fn save_offline(
+        &self,
+        req: CacheRequest<'_>,
+        refetch: bool,
+    ) -> Result<TrackCacheEntry, String> {
+        if refetch {
+            self.remove_cached(req.urn);
+            if self.is_cached(req.urn) {
+                return Err("cached file is in use".into());
+            }
+        } else {
+            self.pin_existing(req.urn).await;
+        }
+        self.ensure_cached(CacheRequest { liked: true, ..req }).await
+    }
+
+    async fn pin_existing(&self, urn: &str) {
+        let incoming = self.incoming_file_path(urn);
+        if is_valid_file(&incoming) {
+            self.finalize_incoming(&incoming, true, None).await;
+        }
+        self.promote_to_liked(urn).await;
+    }
+
     pub fn cancel_cache_likes(&self) {
         self.likes_cancel
             .store(true, std::sync::atomic::Ordering::Relaxed);
@@ -2597,6 +2621,26 @@ mod tests {
 
         let stamped = read_cache_metadata(&raw).unwrap().expected_duration_ms;
         assert_eq!(stamped, Some(181_000));
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[tokio::test]
+    async fn pinning_moves_cached_files_to_the_protected_dir() {
+        let (root, state) = test_state("pin");
+        let clean = "soundcloud:tracks:6";
+        cached_clean_file(&state, clean, 180_000).await;
+        let staged = "soundcloud:tracks:7";
+        let raw = state.incoming_file_path(staged);
+        std::fs::write(&raw, vec![0u8; MIN_AUDIO_SIZE as usize]).unwrap();
+        state.finalize_incoming(&raw, false, None).await;
+
+        state.pin_existing(clean).await;
+        state.pin_existing(staged).await;
+
+        assert!(state.liked_has_file(clean));
+        assert!(!state.file_path(clean).exists());
+        assert!(read_cache_metadata(&state.liked_file_path(clean)).is_some());
+        assert!(read_cache_metadata(&raw).unwrap().liked);
         std::fs::remove_dir_all(&root).ok();
     }
 
