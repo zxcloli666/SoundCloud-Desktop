@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use crate::rt::AppHandle;
 use tauri::{Manager, State};
 
@@ -14,6 +16,7 @@ pub async fn audio_load_file(
     path: String,
     cache_key: Option<String>,
     start_paused: bool,
+    crossfade_ms: Option<u64>,
     app: AppHandle,
     state: State<'_, AudioState>,
 ) -> Result<AudioLoadResult, String> {
@@ -27,6 +30,8 @@ pub async fn audio_load_file(
         normalization_cache_dir,
         cache_key,
         start_paused,
+        crossfade_ms.filter(|&ms| ms > 0).map(Duration::from_millis),
+        &app,
         state,
     )
     .await?;

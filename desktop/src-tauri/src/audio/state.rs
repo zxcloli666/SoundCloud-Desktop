@@ -5,6 +5,7 @@ use rodio::mixer::Mixer;
 use rodio::Player;
 
 use crate::audio::analyser::AnalyserBuffer;
+use crate::audio::crossfade::CrossfadeState;
 use crate::audio::output::{spawn_output_thread, OutputHandles};
 use crate::audio::silence::SilenceState;
 use crate::audio::types::{
@@ -78,6 +79,7 @@ pub struct AudioState {
     pub silence: Mutex<SilenceState>,
     pub analyser_buffer: Arc<AnalyserBuffer>,
     pub preview: Mutex<PreviewState>,
+    pub crossfade: Mutex<CrossfadeState>,
 }
 
 pub fn init(app: &AppHandle) -> AudioState {
@@ -135,5 +137,6 @@ pub fn init(app: &AppHandle) -> AudioState {
             stop_at_zero: false,
             r#gen: 0,
         }),
+        crossfade: Mutex::new(CrossfadeState::default()),
     }
 }
