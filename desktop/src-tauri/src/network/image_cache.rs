@@ -1,5 +1,6 @@
 use std::path::{Path, PathBuf};
 use std::sync::OnceLock;
+use std::time::{Duration, SystemTime};
 
 use base64::{engine::general_purpose::STANDARD as BASE64, Engine as _};
 use sha2::{Digest, Sha256};
@@ -7,7 +8,7 @@ use tokio::fs::{self, File};
 use tokio::io::AsyncWriteExt;
 
 use crate::shared::constants::is_domain_whitelisted;
-use crate::shared::file_lru::mark_used;
+use crate::shared::file_lru::{last_used, mark_used};
 
 pub mod maintenance;
 
@@ -80,8 +81,21 @@ async fn write_atomic(path: &Path, data: &[u8]) -> std::io::Result<()> {
     Ok(())
 }
 
+const MARK_USED_INTERVAL: Duration = Duration::from_secs(60 * 60);
+
+fn used_recently(path: &Path) -> bool {
+    std::fs::metadata(path)
+        .ok()
+        .and_then(|meta| SystemTime::now().duration_since(last_used(&meta)).ok())
+        .is_some_and(|age| age < MARK_USED_INTERVAL)
+}
+
 pub(crate) fn spawn_mark_used(path: PathBuf) {
-    tokio::task::spawn_blocking(move || mark_used(&path));
+    tokio::task::spawn_blocking(move || {
+        if !used_recently(&path) {
+            mark_used(&path);
+        }
+    });
 }
 
 fn decode_payload(encoded: &str) -> Result<Vec<String>, ImageResult> {
