@@ -658,7 +658,18 @@
     "uiScaleKeysStep": "yakınlaştır / uzaklaştır",
     "uiScaleKeysReset": "%100'e döndür",
     "uiScaleKeysWheel": "tekerlekle yakınlaştır",
-    "uiScaleToast": "Arayüz ölçeği: %{{value}}"
+    "uiScaleToast": "Arayüz ölçeği: %{{value}}",
+    "updates": "Güncellemeler",
+    "updatesDesc": "Sürümünüz ve güncellemelerin nasıl geldiği",
+    "checkUpdates": "Güncellemeleri denetle",
+    "checkingUpdates": "Güncellemeler denetleniyor",
+    "upToDate": "En son sürümü kullanıyorsunuz",
+    "checkedAt": "{{time}} itibarıyla denetlendi",
+    "updateReady": "{{version}} sürümü mevcut",
+    "openUpdate": "Güncelle",
+    "updateCheckFailed": "Güncellemeleri denetlemek için GitHub'a ulaşılamadı",
+    "oneClickUpdates": "Güncellemeler tek tıkla kurulur",
+    "manualUpdates": "Güncellemeler elle kurulur"
   },
   "eq": {
     "title": "Ekolayzir",
@@ -726,9 +737,39 @@
     "unknownError": "Ice aktarma sirasinda bir sorun olustu. Daha sonra tekrar deneyin"
   },
   "update": {
-    "available": "Guncelleme mevcut",
+    "available": "Güncelleme mevcut",
     "later": "Daha sonra",
-    "download": "Indir"
+    "download": "Indir",
+    "installRestart": "Yükle ve yeniden başlat",
+    "downloading": "Güncelleme indiriliyor",
+    "installing": "Yükleniyor, uygulama yeniden başlayacak",
+    "progressMb": "{{done}} / {{total}} MB",
+    "progressMbUnknown": "{{done}} MB",
+    "installFailed": "Güncelleme otomatik olarak yüklenemedi. Aşağıdan elle indirin.",
+    "openReleasePage": "Sürüm sayfası",
+    "autoHint": "Güncelleme arka planda iner, ardından uygulama kendiliğinden yeniden başlar. Ayarlarınız ve önbellek korunur.",
+    "autoHintWindows": "Güncelleme arka planda iner, yükleyici birkaç saniye çalışır ve uygulama kendiliğinden yeniden başlar. Ayarlarınız ve önbellek korunur.",
+    "hintInstaller": "Önce uygulamayı tepsiden kapatın (simgeye sağ tıklayın, ardından Çıkış), aksi halde eski sürüm çalışmaya devam eder. Sonra yükleyiciyi çalıştırın: mevcut sürümün üzerine kurulur ve ayarlarınızı korur.",
+    "hintMac": "Uygulamadan çıkın (Cmd+Q), indirilen dmg dosyasını açın ve uygulamayı eskisinin yerine Uygulamalar klasörüne sürükleyin.",
+    "hintPortable": "Taşınabilir sürümü kullanıyorsunuz. Uygulamayı tepsiden kapatın (simgeye sağ tıklayın, ardından Çıkış) ve eski exe dosyasını indirilenle değiştirin. Ayarlarınız korunur. Tek tıkla güncelleme mi istiyorsunuz? setup.exe sürümünü kurun.",
+    "hintAppImage": "Uygulamayı kapatın, eski AppImage dosyasını indirilenle değiştirin ve çalıştırılabilir yapın.",
+    "hintDeb": "İndirilen paketi kurun (örneğin sudo apt install ./file.deb) ve uygulamayı yeniden başlatın.",
+    "hintRpm": "İndirilen paketi kurun (örneğin sudo dnf install ./file.rpm) ve uygulamayı yeniden başlatın.",
+    "hintAur": "AUR üzerinden kuruldu: AUR yardımcınızla güncelleyin, örneğin yay -Syu soundcloud-bin.",
+    "hintFlatpak": "Yeni Flatpak paketini indirip mevcut olanın üzerine kurun: flatpak install --user soundcloud-desktop.flatpak",
+    "hintSource": "Bu sürüm kaynak koddan derlendi: git pull yapıp yeniden derleyin.",
+    "kind": {
+      "nsis": "Yükleyici",
+      "msi": "MSI yükleyici",
+      "portable": "Taşınabilir",
+      "macApp": "macOS uygulaması",
+      "appImage": "AppImage",
+      "deb": "deb paketi",
+      "rpm": "rpm paketi",
+      "aur": "AUR paketi",
+      "flatpak": "Flatpak",
+      "source": "Kaynak koddan derleme"
+    }
   },
   "common": {
     "loading": "Yukleniyor...",

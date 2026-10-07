@@ -749,7 +749,18 @@
     "uiScaleKeysStep": "zoom in / out",
     "uiScaleKeysReset": "reset to 100%",
     "uiScaleKeysWheel": "scroll to zoom",
-    "uiScaleToast": "Interface scale: {{value}}%"
+    "uiScaleToast": "Interface scale: {{value}}%",
+    "updates": "Updates",
+    "updatesDesc": "Your version and how updates reach it",
+    "checkUpdates": "Check for updates",
+    "checkingUpdates": "Checking for updates",
+    "upToDate": "You have the latest version",
+    "checkedAt": "Checked at {{time}}",
+    "updateReady": "Version {{version}} is available",
+    "openUpdate": "Update",
+    "updateCheckFailed": "Could not reach GitHub to check for updates",
+    "oneClickUpdates": "Updates install in one click",
+    "manualUpdates": "Updates are installed manually"
   },
   "eq": {
     "title": "Equalizer",
@@ -819,7 +830,37 @@
   "update": {
     "available": "Update available",
     "later": "Later",
-    "download": "Download"
+    "download": "Download",
+    "installRestart": "Install and restart",
+    "downloading": "Downloading update",
+    "installing": "Installing, the app will restart",
+    "progressMb": "{{done}} of {{total}} MB",
+    "progressMbUnknown": "{{done}} MB",
+    "installFailed": "Could not install the update automatically. Download it manually below.",
+    "openReleasePage": "Release page",
+    "autoHint": "The update downloads in the background, then the app restarts on its own. Your settings and cache stay.",
+    "autoHintWindows": "The update downloads in the background, the installer runs for a few seconds and the app restarts on its own. Your settings and cache stay.",
+    "hintInstaller": "Quit the app from the tray first (right-click the icon, then Quit), otherwise the old version keeps running. Then run the installer: it installs over the current version and keeps your settings.",
+    "hintMac": "Quit the app (Cmd+Q), open the downloaded dmg and drag the app into Applications, replacing the old one.",
+    "hintPortable": "This is the portable version. Quit the app from the tray (right-click the icon, then Quit) and replace the old exe with the downloaded one. Your settings stay. Want one-click updates? Install the setup.exe version instead.",
+    "hintAppImage": "Quit the app, replace the old AppImage with the downloaded one and make it executable.",
+    "hintDeb": "Install the downloaded package (for example sudo apt install ./file.deb) and restart the app.",
+    "hintRpm": "Install the downloaded package (for example sudo dnf install ./file.rpm) and restart the app.",
+    "hintAur": "Installed from the AUR: update it with your AUR helper, for example yay -Syu soundcloud-bin.",
+    "hintFlatpak": "Download the new Flatpak bundle and install it over the current one: flatpak install --user soundcloud-desktop.flatpak",
+    "hintSource": "This build was compiled from source: run git pull and rebuild it.",
+    "kind": {
+      "nsis": "Installer",
+      "msi": "MSI installer",
+      "portable": "Portable",
+      "macApp": "macOS app",
+      "appImage": "AppImage",
+      "deb": "deb package",
+      "rpm": "rpm package",
+      "aur": "AUR package",
+      "flatpak": "Flatpak",
+      "source": "Built from source"
+    }
   },
   "common": {
     "loading": "Loading...",

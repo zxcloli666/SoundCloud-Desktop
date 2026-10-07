@@ -3,8 +3,9 @@ import {useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
 import {proxiedAssetUrl} from '../lib/asset-url';
 import {APP_VERSION} from '../lib/constants';
-import {AlertCircle, ExternalLink, Sparkles, X} from '../lib/icons';
+import {AlertCircle, Sparkles, X} from '../lib/icons';
 import type {GithubRelease} from '../lib/update-check';
+import {UpdateActions} from './update/UpdateActions';
 
 function stripLeadingV(version: string) {
   return version.replace(/^v/, '');
@@ -203,24 +204,7 @@ export function UpdateChecker({
           </div>
         )}
 
-        {/* Actions */}
-        <div className="flex gap-2 px-5 pb-5">
-          <button
-            type="button"
-            onClick={onDismiss}
-            className="flex-1 py-2.5 rounded-xl bg-white/[0.05] hover:bg-white/[0.08] text-[13px] text-white/50 font-medium transition-colors cursor-pointer"
-          >
-            {t('update.later')}
-          </button>
-          <button
-            type="button"
-            onClick={() => openUrl(release.html_url)}
-            className="flex-1 py-2.5 rounded-xl bg-accent hover:bg-accent-hover text-[13px] text-accent-contrast font-semibold transition-colors cursor-pointer flex items-center justify-center gap-1.5 shadow-[0_0_20px_var(--color-accent-glow)]"
-          >
-            {t('update.download')}
-            <ExternalLink size={13} />
-          </button>
-        </div>
+        <UpdateActions release={release} onDismiss={onDismiss} />
       </div>
     </div>
   );
