@@ -1,3 +1,4 @@
+import { arrayMove } from '@dnd-kit/sortable';
 import type React from 'react';
 import { useTranslation } from 'react-i18next';
 import { NavLink } from 'react-router-dom';
@@ -7,6 +8,7 @@ import { ListMusic, X } from '../../lib/icons';
 import { useSettingsStore } from '../../stores/settings';
 import { Avatar } from '../ui/Avatar';
 import { ACTIVE, IconBox, Label, ROW } from './SidebarChrome';
+import { SortableSlot, SortableStack } from './SortableStack';
 
 function PinnedRow({
   to,
@@ -58,43 +60,51 @@ function PinnedRow({
 
 export function SidebarPins({ collapsed }: { collapsed: boolean }) {
   const { t } = useTranslation();
-  const { pinnedPlaylists, pinnedArtists, unpinPlaylist, unpinArtist } = useSettingsStore(
-    useShallow((s) => ({
-      pinnedPlaylists: s.pinnedPlaylists,
-      pinnedArtists: s.pinnedArtists,
-      unpinPlaylist: s.unpinPlaylist,
-      unpinArtist: s.unpinArtist,
-    })),
-  );
+  const { pinnedPlaylists, pinnedArtists, unpinPlaylist, unpinArtist, reorderPinned } =
+    useSettingsStore(
+      useShallow((s) => ({
+        pinnedPlaylists: s.pinnedPlaylists,
+        pinnedArtists: s.pinnedArtists,
+        unpinPlaylist: s.unpinPlaylist,
+        unpinArtist: s.unpinArtist,
+        reorderPinned: s.reorderPinnedPlaylists,
+      })),
+    );
+  const pinnedUrns = pinnedPlaylists.map((p) => p.urn);
+  const movePinned = (from: string, to: string) =>
+    reorderPinned(arrayMove(pinnedUrns, pinnedUrns.indexOf(from), pinnedUrns.indexOf(to)));
 
   return (
     <>
-      {pinnedPlaylists.map((playlist) => {
-        const artwork = art(playlist.artworkUrl, 'small');
-        return (
-          <PinnedRow
-            key={playlist.urn}
-            to={`/playlist/${encodeURIComponent(playlist.urn)}`}
-            title={playlist.title}
-            collapsed={collapsed}
-            unpinLabel={t('sidebar.unpinPlaylist')}
-            onUnpin={() => unpinPlaylist(playlist.urn)}
-            icon={
-              artwork ? (
-                <img
-                  src={artwork}
-                  alt=""
-                  className="w-[18px] h-[18px] rounded-[5px] object-cover ring-1 ring-white/[0.1]"
-                  decoding="async"
-                  loading="lazy"
-                />
-              ) : (
-                <ListMusic size={17} strokeWidth={1.9} />
-              )
-            }
-          />
-        );
-      })}
+      <SortableStack ids={pinnedUrns} onMove={movePinned}>
+        {pinnedPlaylists.map((playlist) => {
+          const artwork = art(playlist.artworkUrl, 'small');
+          return (
+            <SortableSlot key={playlist.urn} id={playlist.urn}>
+              <PinnedRow
+                to={`/playlist/${encodeURIComponent(playlist.urn)}`}
+                title={playlist.title}
+                collapsed={collapsed}
+                unpinLabel={t('sidebar.unpinPlaylist')}
+                onUnpin={() => unpinPlaylist(playlist.urn)}
+                icon={
+                  artwork ? (
+                    <img
+                      src={artwork}
+                      alt=""
+                      className="w-[18px] h-[18px] rounded-[5px] object-cover ring-1 ring-white/[0.1]"
+                      decoding="async"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <ListMusic size={17} strokeWidth={1.9} />
+                  )
+                }
+              />
+            </SortableSlot>
+          );
+        })}
+      </SortableStack>
 
       {pinnedPlaylists.length > 0 && pinnedArtists.length > 0 && (
         <div className="mx-3 my-1.5 h-px bg-white/[0.06]" />

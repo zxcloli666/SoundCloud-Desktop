@@ -1,56 +1,22 @@
 import React, {useEffect, useRef} from 'react';
 import {getWallpaperUrl} from '../../../lib/cache';
-import {art} from '../../../lib/formatters';
+import {coverSrc, extractPalette, type Rgb} from '../../../lib/cover-palette';
 import {usePerfMode} from '../../../lib/perf';
 import {useSettingsStore} from '../../../stores/settings';
+import {CrossfadeImage} from '../../ui/CrossfadeImage';
 
-/* ── Dominant-colour extraction from the artwork ───────────── */
-
-function extractColor(src: string): Promise<[number, number, number]> {
-    return new Promise((resolve) => {
-        const img = new Image();
-        img.crossOrigin = 'anonymous';
-        img.onload = () => {
-            try {
-                const c = document.createElement('canvas');
-                c.width = 10;
-                c.height = 10;
-                const ctx = c.getContext('2d');
-                if (!ctx) {
-                    resolve([255, 85, 0]);
-                    return;
-                }
-                ctx.drawImage(img, 0, 0, 10, 10);
-                const d = ctx.getImageData(0, 0, 10, 10).data;
-                let r = 0;
-                let g = 0;
-                let b = 0;
-                const n = d.length / 4;
-                for (let i = 0; i < d.length; i += 4) {
-                    r += d[i];
-                    g += d[i + 1];
-                    b += d[i + 2];
-                }
-                resolve([Math.round(r / n), Math.round(g / n), Math.round(b / n)]);
-            } catch {
-                resolve([255, 85, 0]);
-            }
-        };
-        img.onerror = () => resolve([255, 85, 0]);
-        img.src = src;
-    });
-}
+const FALLBACK_COLOR: Rgb = [255, 85, 0];
 
 export function useArtworkColor(artworkUrl: string | null) {
-    const colorRef = useRef<[number, number, number]>([255, 85, 0]);
+    const colorRef = useRef<Rgb>(FALLBACK_COLOR);
     const prevArtRef = useRef<string | null>(null);
 
     useEffect(() => {
-        const src = art(artworkUrl, 't200x200');
+        const src = coverSrc(artworkUrl);
         if (!src || src === prevArtRef.current) return;
         prevArtRef.current = src;
-        extractColor(src).then((c) => {
-            colorRef.current = c;
+        extractPalette(src).then((p) => {
+            colorRef.current = p?.average ?? FALLBACK_COLOR;
         });
     }, [artworkUrl]);
 
@@ -77,17 +43,15 @@ export const LyricsBackdrop = React.memo(
                 style={{contain: 'strict', transform: 'translateZ(0)'}}
             >
                 {wallpaperUrl ? (
-                    <img
+                    <CrossfadeImage
                         src={wallpaperUrl}
-                        alt=""
-                        className="w-full h-full object-cover"
+                        fade={perf.mode !== 'light'}
+                        className="absolute inset-0 w-full h-full object-cover"
                         style={{
                             filter: blur > 0 ? `blur(${blur}px) saturate(1.12)` : undefined,
                             opacity: 0.78,
                             transform: 'scale(1.08) translateZ(0)',
                         }}
-                        loading="eager"
-                        decoding="async"
                     />
                 ) : artworkSrc && blur > 0 ? (
                     <img

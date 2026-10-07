@@ -151,6 +151,8 @@ export function playbackAllowed(action: PlaybackAction): boolean {
 // Mirrors the Rust DownloadSource enum (serde rename_all = "lowercase").
 export type PlaybackSource = 'storage' | 'anon' | 'direct' | 'api';
 
+export const VOLUME_DEFAULT = 100;
+
 export const PLAYBACK_RATE_MIN = 0.5;
 export const PLAYBACK_RATE_MAX = 2.0;
 export const PLAYBACK_RATE_STEP = 0.05;
@@ -225,6 +227,7 @@ interface PlayerState {
   next: () => void;
   prev: () => void;
   setVolume: (v: number) => void;
+  resetVolume: () => void;
   playbackRate: number;
   setPlaybackRate: (rate: number) => void;
   resetPlaybackRate: () => void;
@@ -387,6 +390,7 @@ export const usePlayerStore = create<PlayerState>()(
           ...(clamped === 0 && prev > 0 ? { volumeBeforeMute: prev } : {}),
         });
       },
+      resetVolume: () => set({ volume: VOLUME_DEFAULT }),
 
       setPlaybackRate: (rate) => set({ playbackRate: clampPlaybackRate(rate) }),
       resetPlaybackRate: () => set({ playbackRate: PLAYBACK_RATE_DEFAULT }),

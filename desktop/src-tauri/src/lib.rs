@@ -235,6 +235,8 @@ pub fn run() {
             app::hotkeys::hotkeys_backend,
             app::updater::updater_info,
             app::updater::updater_install,
+            app::diagnostics::diagnostics_reveal_log,
+            app::launch_flags::custom_css_suppressed,
             app::visibility::show_main_window,
             app::popover::tray_popover_hide,
             app::storage::storage_location_info,

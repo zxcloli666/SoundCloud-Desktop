@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { BOOSTY_URL } from '../../../../lib/constants';
 import { ExternalLink, Sparkles, Star } from '../../../../lib/icons';
 import {usePerfMode} from '../../../../lib/perf';
 import { useSubscription } from '../../../../lib/subscription';
@@ -7,7 +8,7 @@ import { useAuthStore } from '../../../../stores/auth';
 import { Countdown, isExpired } from './countdown';
 
 const UNLOCK_AT = new Date('2025-05-25T12:00:00+03:00').getTime();
-const BOOSTY_URL = 'https://boosty.to/lolinamide/purchase/3886747';
+const BOOSTY_PURCHASE_URL = `${BOOSTY_URL}/purchase/3886747`;
 
 const PARTICLES = Array.from({ length: 22 }, (_, i) => ({
   i,
@@ -211,7 +212,7 @@ export const SoundWaveLockOverlay = React.memo(function SoundWaveLockOverlay() {
 
         {/* CTA */}
         <a
-          href={BOOSTY_URL}
+          href={BOOSTY_PURCHASE_URL}
           target="_blank"
           rel="noopener noreferrer"
           className="group inline-flex items-center gap-2 mt-6 pl-5 pr-4 py-2.5 rounded-full text-[13.5px] font-bold tracking-tight text-white transition-all duration-200 ease-[var(--ease-apple)] hover:scale-[1.04] active:scale-[0.97] cursor-pointer"

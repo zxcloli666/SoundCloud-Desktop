@@ -1,4 +1,4 @@
-import React, {useMemo, useState} from 'react';
+import React, {Fragment, type ReactNode, useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {ArtistMiniCard} from '../components/library/ArtistMiniCard';
 import {CollectionRail} from '../components/library/CollectionRail';
@@ -15,9 +15,11 @@ import {TrackCard} from '../components/music/TrackCard';
 import {SyncNotice, syncNoticeOf} from '../components/ui/SyncNotice';
 import {useLikedTracks, useMyFollowings, useMyLikedPlaylists, useMyPlaylists} from '../lib/hooks';
 import {Bookmark, Disc3, Heart, ListMusic, Users} from '../lib/icons';
+import type {LayoutId} from '../lib/layout';
 import {likedTracksCount} from '../lib/likes';
 import {splitReleases} from '../lib/playlist-kind';
 import {armLikesContinuation} from '../lib/queue-continuation';
+import {useVisibleBlocks} from '../lib/use-layout';
 import {useAuthStore} from '../stores/auth';
 
 /** Library "Hub" — a living home base. Your identity up top, then the reason to
@@ -32,14 +34,23 @@ export const Library = React.memo(() => {
   const [genre, setGenre] = useState<string | null>(null);
   const sound = useSoundprint(likedTracks, genre);
 
-  const playlistsQuery = useMyPlaylists();
-  const likedPlaylistsQuery = useMyLikedPlaylists();
-  const followingsQuery = useMyFollowings();
+  const blocks = useVisibleBlocks('library');
+  const showPlaylists = blocks.includes('playlists');
+  const showLikedPlaylists = blocks.includes('likedPlaylists') || blocks.includes('likedAlbums');
+  const showArtists = blocks.includes('artists');
+  const playlistsQuery = useMyPlaylists(30, showPlaylists);
+  const likedPlaylistsQuery = useMyLikedPlaylists(30, showLikedPlaylists);
+  const followingsQuery = useMyFollowings(30, showArtists);
   const { playlists } = playlistsQuery;
   const { playlists: likedPlaylists } = likedPlaylistsQuery;
   const { users: followings } = followingsQuery;
 
-  const collections = [likesQuery, playlistsQuery, likedPlaylistsQuery, followingsQuery];
+  const collections = [
+    likesQuery,
+    ...(showPlaylists ? [playlistsQuery] : []),
+    ...(showLikedPlaylists ? [likedPlaylistsQuery] : []),
+    ...(showArtists ? [followingsQuery] : []),
+  ];
   const libraryEmpty = collections.every((query) => !query.isLoading && query.items.length === 0);
   const notice = collections.map(syncNoticeOf).find((kind) => kind !== null);
   const retryAll = () => {
@@ -63,6 +74,84 @@ export const Library = React.memo(() => {
 
   if (!user) return null;
 
+  const sections: Record<LayoutId<'library'>, ReactNode> = {
+    fresh: <FreshDrops genre={genre} />,
+    continue: <ContinueRow genre={genre} />,
+    stats: <StatsTeaser aura={sound.aura} genre={genre} />,
+    playlists: playlistPreview.length > 0 && (
+      <CollectionRail
+        icon={<ListMusic size={16} />}
+        title={t('library.yourPlaylists')}
+        count={user.playlist_count}
+        to="/library/playlists"
+      >
+        {playlistPreview.map((p) => (
+          <div key={p.urn} className="w-[160px] shrink-0">
+            <PlaylistCard playlist={p} />
+          </div>
+        ))}
+      </CollectionRail>
+    ),
+    likedPlaylists: likedPreview.sets.length > 0 && (
+      <CollectionRail
+        icon={<Bookmark size={16} />}
+        title={t('library.likedPlaylists')}
+        to="/library/playlists"
+      >
+        {likedPreview.sets.map((p) => (
+          <div key={p.urn} className="w-[160px] shrink-0">
+            <PlaylistCard playlist={p} />
+          </div>
+        ))}
+      </CollectionRail>
+    ),
+    likedAlbums: likedPreview.releases.length > 0 && (
+      <CollectionRail
+        icon={<Disc3 size={16} />}
+        title={t('library.likedAlbums')}
+        to="/library/playlists"
+      >
+        {likedPreview.releases.map((p) => (
+          <div key={p.urn} className="w-[160px] shrink-0">
+            <PlaylistCard playlist={p} />
+          </div>
+        ))}
+      </CollectionRail>
+    ),
+    local: <LocalFilesRail />,
+    artists: artistPreview.length > 0 && (
+      <CollectionRail
+        icon={<Users size={16} />}
+        title={t('library.artists')}
+        count={user.followings_count}
+        to="/library/following"
+      >
+        {artistPreview.map((u) => (
+          <ArtistMiniCard key={u.urn} user={u} />
+        ))}
+      </CollectionRail>
+    ),
+    likes: likesPreview.length > 0 && (
+      <CollectionRail
+        icon={<Heart size={16} />}
+        title={t('library.likedTracks')}
+        count={likedTracksCount(user)}
+        to="/library/likes"
+      >
+        {likesPreview.map((tr) => (
+          <div key={tr.urn} className="w-[150px] shrink-0">
+            <TrackCard
+              track={tr}
+              queue={likesPreview}
+              onPlay={genre ? undefined : armLikesContinuation}
+            />
+          </div>
+        ))}
+      </CollectionRail>
+    ),
+    dislikes: !genre && <DislikesLink />,
+  };
+
   return (
     <LibraryFrame sound={sound}>
       <div className="space-y-9">
@@ -84,90 +173,9 @@ export const Library = React.memo(() => {
           </div>
         )}
 
-        <FreshDrops genre={genre} />
-
-        <ContinueRow genre={genre} />
-
-        <StatsTeaser aura={sound.aura} genre={genre} />
-
-        {playlistPreview.length > 0 && (
-          <CollectionRail
-            icon={<ListMusic size={16} />}
-            title={t('library.yourPlaylists')}
-            count={user.playlist_count}
-            to="/library/playlists"
-          >
-            {playlistPreview.map((p) => (
-              <div key={p.urn} className="w-[160px] shrink-0">
-                <PlaylistCard playlist={p} />
-              </div>
-            ))}
-          </CollectionRail>
-        )}
-
-        {likedPreview.sets.length > 0 && (
-          <CollectionRail
-            icon={<Bookmark size={16} />}
-            title={t('library.likedPlaylists')}
-            to="/library/playlists"
-          >
-            {likedPreview.sets.map((p) => (
-              <div key={p.urn} className="w-[160px] shrink-0">
-                <PlaylistCard playlist={p} />
-              </div>
-            ))}
-          </CollectionRail>
-        )}
-
-        {likedPreview.releases.length > 0 && (
-          <CollectionRail
-            icon={<Disc3 size={16} />}
-            title={t('library.likedAlbums')}
-            to="/library/playlists"
-          >
-            {likedPreview.releases.map((p) => (
-              <div key={p.urn} className="w-[160px] shrink-0">
-                <PlaylistCard playlist={p} />
-              </div>
-            ))}
-          </CollectionRail>
-        )}
-
-        <LocalFilesRail />
-
-        {artistPreview.length > 0 && (
-          <CollectionRail
-            icon={<Users size={16} />}
-            title={t('library.artists')}
-            count={user.followings_count}
-            to="/library/following"
-          >
-            {artistPreview.map((u) => (
-              <ArtistMiniCard key={u.urn} user={u} />
-            ))}
-          </CollectionRail>
-        )}
-
-        {likesPreview.length > 0 && (
-          <CollectionRail
-            icon={<Heart size={16} />}
-            title={t('library.likedTracks')}
-            count={likedTracksCount(user)}
-            to="/library/likes"
-          >
-            {likesPreview.map((tr) => (
-              <div key={tr.urn} className="w-[150px] shrink-0">
-                <TrackCard
-                  track={tr}
-                  queue={likesPreview}
-                  onPlay={genre ? undefined : armLikesContinuation}
-                />
-              </div>
-            ))}
-          </CollectionRail>
-        )}
-
-        {!genre && <DislikesLink />}
+        {blocks.map((id) => (
+          <Fragment key={id}>{sections[id]}</Fragment>
+        ))}
       </div>
     </LibraryFrame>
   );

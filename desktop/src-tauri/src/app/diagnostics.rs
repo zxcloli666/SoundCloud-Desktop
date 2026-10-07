@@ -94,6 +94,21 @@ pub fn diagnostics_open_log_dir(app: AppHandle) -> Result<(), String> {
     .map_err(|e| format!("failed to open log dir: {e}"))
 }
 
+#[tauri::command]
+pub async fn diagnostics_reveal_log() -> Result<(), String> {
+    let path = match log_sink::path() {
+        Some(path) => path.to_path_buf(),
+        None => log_sink::init(&log_dir()?)?,
+    };
+    fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(&path)
+        .map_err(|e| format!("failed to open log file: {e}"))?;
+    tauri_plugin_opener::reveal_item_in_dir(&path)
+        .map_err(|e| format!("failed to reveal log file: {e}"))
+}
+
 #[cfg(target_os = "linux")]
 #[derive(Default)]
 struct FdSnapshot {

@@ -7,6 +7,8 @@ import {
   type GlobalHotkeyAction,
   type GlobalHotkeyMap,
 } from '../lib/hotkeys/actions';
+import type {InterfaceFont} from '../lib/interface-font';
+import {EMPTY_LAYOUT, type LayoutEntry, type LayoutScope, type LayoutState, type RiverSectionId,} from '../lib/layout';
 import type {PerfMode} from '../lib/perf';
 import {tauriStorage} from '../lib/tauri-storage';
 import type {TrackSort} from '../lib/track-sort';
@@ -22,6 +24,8 @@ export const CROSSFADE_MAX_SEC = 12;
 export type DiscordRpcStatus = 'app' | 'track' | 'artist';
 export type ObsTheme = 'card' | 'minimal' | 'vinyl';
 export type YmImportOrder = 'newest' | 'oldest';
+export type LyricsHighlight = 'word' | 'line';
+export type WallpaperRotationOrder = 'sequence' | 'shuffle';
 export interface SidebarPinnedPlaylist {
   urn: string;
   title: string;
@@ -87,6 +91,10 @@ export interface SettingsState {
   backgroundOpacity: number;
   backgroundDim: number;
   backgroundBlur: number;
+  wallpaperRotation: boolean;
+  wallpaperRotationNames: string[];
+  wallpaperRotationMinutes: number;
+  wallpaperRotationOrder: WallpaperRotationOrder;
   glassBlur: number;
   audioCacheLimitMB: number;
   imageCacheLimitMB: number;
@@ -133,6 +141,7 @@ export interface SettingsState {
   soundwaveHideListened: boolean;
   blockedKeywords: string[];
   lyricsVisualizer: boolean;
+  lyricsHighlight: LyricsHighlight;
   artistWaveCollapsed: boolean;
   wallhavenApiKey: string;
   globalHotkeysEnabled: boolean;
@@ -140,6 +149,15 @@ export interface SettingsState {
   ymImportOrder: YmImportOrder;
   likesSort: TrackSort;
   playlistSorts: Record<string, TrackSort>;
+  showErrorToasts: boolean;
+  interfaceFont: InterfaceFont;
+  customFontName: string;
+  coverTint: boolean;
+  coverAccent: boolean;
+  customCss: string;
+  customCssEnabled: boolean;
+  layouts: LayoutState;
+  riverHidden: RiverSectionId[];
   setAccentColor: (color: string) => void;
   setBgPrimary: (bg: string) => void;
   setThemePreset: (id: ThemePreset) => void;
@@ -148,6 +166,10 @@ export interface SettingsState {
   setBackgroundOpacity: (opacity: number) => void;
   setBackgroundDim: (dim: number) => void;
   setBackgroundBlur: (blur: number) => void;
+  setWallpaperRotation: (v: boolean) => void;
+  setWallpaperRotationNames: (names: string[]) => void;
+  setWallpaperRotationMinutes: (minutes: number) => void;
+  setWallpaperRotationOrder: (order: WallpaperRotationOrder) => void;
   setGlassBlur: (blur: number) => void;
   setAudioCacheLimitMB: (limit: number) => void;
   setImageCacheLimitMB: (limit: number) => void;
@@ -178,6 +200,7 @@ export interface SettingsState {
   pinArtist: (artist: SidebarPinnedArtist) => void;
   unpinArtist: (id: string) => void;
   refreshPinnedArtist: (artist: SidebarPinnedArtist) => void;
+  reorderPinnedPlaylists: (urns: string[]) => void;
   setDiscordRpcEnabled: (enabled: boolean) => void;
   setDiscordRpcMode: (mode: DiscordRpcMode) => void;
   setDiscordRpcStatus: (status: DiscordRpcStatus) => void;
@@ -200,6 +223,7 @@ export interface SettingsState {
   setSoundwaveHideListened: (v: boolean) => void;
   setBlockedKeywords: (keywords: string[]) => void;
   setLyricsVisualizer: (v: boolean) => void;
+  setLyricsHighlight: (v: LyricsHighlight) => void;
   setArtistWaveCollapsed: (v: boolean) => void;
   setWallhavenApiKey: (key: string) => void;
   setGlobalHotkeysEnabled: (enabled: boolean) => void;
@@ -208,6 +232,16 @@ export interface SettingsState {
   setYmImportOrder: (order: YmImportOrder) => void;
   setLikesSort: (sort: TrackSort) => void;
   setPlaylistSort: (urn: string, sort: TrackSort) => void;
+  setShowErrorToasts: (v: boolean) => void;
+  setInterfaceFont: (font: InterfaceFont) => void;
+  setCustomFontName: (name: string) => void;
+  setCoverTint: (v: boolean) => void;
+  setCoverAccent: (v: boolean) => void;
+  setCustomCss: (css: string) => void;
+  setCustomCssEnabled: (v: boolean) => void;
+  setLayout: (scope: LayoutScope, entries: LayoutEntry[]) => void;
+  resetLayout: (scope: LayoutScope) => void;
+  setRiverHidden: (ids: RiverSectionId[]) => void;
   resetTheme: () => void;
 }
 
@@ -224,6 +258,10 @@ const DEFAULTS = {
   backgroundOpacity: 0.15,
   backgroundDim: 0,
   backgroundBlur: 0,
+  wallpaperRotation: false,
+  wallpaperRotationNames: [] as string[],
+  wallpaperRotationMinutes: 15,
+  wallpaperRotationOrder: 'sequence' as WallpaperRotationOrder,
   glassBlur: 40,
   audioCacheLimitMB: 1024,
   imageCacheLimitMB: 1024,
@@ -270,6 +308,7 @@ const DEFAULTS = {
   soundwaveHideListened: true,
   blockedKeywords: [] as string[],
   lyricsVisualizer: false,
+  lyricsHighlight: 'word' as LyricsHighlight,
   artistWaveCollapsed: false,
   wallhavenApiKey: '',
   globalHotkeysEnabled: false,
@@ -277,6 +316,15 @@ const DEFAULTS = {
   ymImportOrder: 'newest' as YmImportOrder,
   likesSort: 'default' as TrackSort,
   playlistSorts: {} as Record<string, TrackSort>,
+  showErrorToasts: true,
+  interfaceFont: 'inter' as InterfaceFont,
+  customFontName: '',
+  coverTint: false,
+  coverAccent: false,
+  customCss: '',
+  customCssEnabled: true,
+  layouts: EMPTY_LAYOUT,
+  riverHidden: [] as RiverSectionId[],
 };
 
 export const useSettingsStore = create<SettingsState>()(
@@ -298,6 +346,10 @@ export const useSettingsStore = create<SettingsState>()(
       setBackgroundOpacity: (backgroundOpacity) => set({ backgroundOpacity }),
       setBackgroundDim: (backgroundDim) => set({ backgroundDim }),
       setBackgroundBlur: (backgroundBlur) => set({ backgroundBlur }),
+      setWallpaperRotation: (wallpaperRotation) => set({ wallpaperRotation }),
+      setWallpaperRotationNames: (wallpaperRotationNames) => set({ wallpaperRotationNames }),
+      setWallpaperRotationMinutes: (wallpaperRotationMinutes) => set({ wallpaperRotationMinutes }),
+      setWallpaperRotationOrder: (wallpaperRotationOrder) => set({ wallpaperRotationOrder }),
       setGlassBlur: (glassBlur) => set({ glassBlur }),
       setAudioCacheLimitMB: (audioCacheLimitMB) => set({ audioCacheLimitMB }),
       setImageCacheLimitMB: (imageCacheLimitMB) => set({ imageCacheLimitMB }),
@@ -383,6 +435,13 @@ export const useSettingsStore = create<SettingsState>()(
         set((s) => ({
           pinnedArtists: s.pinnedArtists.map((item) => (item.id === artist.id ? artist : item)),
         })),
+      reorderPinnedPlaylists: (urns) =>
+        set((s) => {
+          const byUrn = new Map(s.pinnedPlaylists.map((p) => [p.urn, p]));
+          const ordered = urns.flatMap((urn) => byUrn.get(urn) ?? []);
+          const rest = s.pinnedPlaylists.filter((p) => !urns.includes(p.urn));
+          return { pinnedPlaylists: [...ordered, ...rest] };
+        }),
       setDiscordRpcEnabled: (discordRpcEnabled) => set({ discordRpcEnabled }),
       setDiscordRpcMode: (discordRpcMode) => set({ discordRpcMode }),
       setDiscordRpcStatus: (discordRpcStatus) => set({ discordRpcStatus }),
@@ -405,6 +464,7 @@ export const useSettingsStore = create<SettingsState>()(
       setSoundwaveHideListened: (soundwaveHideListened) => set({ soundwaveHideListened }),
       setBlockedKeywords: (blockedKeywords) => set({ blockedKeywords }),
       setLyricsVisualizer: (lyricsVisualizer) => set({ lyricsVisualizer }),
+      setLyricsHighlight: (lyricsHighlight) => set({ lyricsHighlight }),
       setArtistWaveCollapsed: (artistWaveCollapsed) => set({ artistWaveCollapsed }),
       setWallhavenApiKey: (wallhavenApiKey) => set({ wallhavenApiKey }),
       setGlobalHotkeysEnabled: (globalHotkeysEnabled) => set({ globalHotkeysEnabled }),
@@ -418,6 +478,21 @@ export const useSettingsStore = create<SettingsState>()(
           const { [urn]: _, ...rest } = s.playlistSorts;
           return { playlistSorts: sort === 'default' ? rest : { ...rest, [urn]: sort } };
         }),
+      setShowErrorToasts: (showErrorToasts) => set({ showErrorToasts }),
+      setInterfaceFont: (interfaceFont) => set({ interfaceFont }),
+      setCustomFontName: (customFontName) => set({ customFontName }),
+      setCoverTint: (coverTint) => set({ coverTint }),
+      setCoverAccent: (coverAccent) => set({ coverAccent }),
+      setCustomCss: (customCss) => set({ customCss }),
+      setCustomCssEnabled: (customCssEnabled) => set({ customCssEnabled }),
+      setLayout: (scope, entries) =>
+        set((s) => ({ layouts: { ...EMPTY_LAYOUT, ...s.layouts, [scope]: entries } })),
+      resetLayout: (scope) =>
+        set((s) => ({
+          layouts: { ...EMPTY_LAYOUT, ...s.layouts, [scope]: [] },
+          riverHidden: scope === 'home' ? [] : s.riverHidden,
+        })),
+      setRiverHidden: (riverHidden) => set({ riverHidden }),
       resetTheme: () =>
         set({
           accentColor: DEFAULTS.accentColor,
@@ -427,7 +502,15 @@ export const useSettingsStore = create<SettingsState>()(
           backgroundOpacity: DEFAULTS.backgroundOpacity,
           backgroundDim: DEFAULTS.backgroundDim,
           backgroundBlur: DEFAULTS.backgroundBlur,
+          wallpaperRotation: DEFAULTS.wallpaperRotation,
+          wallpaperRotationNames: DEFAULTS.wallpaperRotationNames,
+          wallpaperRotationMinutes: DEFAULTS.wallpaperRotationMinutes,
+          wallpaperRotationOrder: DEFAULTS.wallpaperRotationOrder,
           glassBlur: DEFAULTS.glassBlur,
+          interfaceFont: DEFAULTS.interfaceFont,
+          customFontName: DEFAULTS.customFontName,
+          coverTint: DEFAULTS.coverTint,
+          coverAccent: DEFAULTS.coverAccent,
         }),
     }),
     {
@@ -471,6 +554,10 @@ export const useSettingsStore = create<SettingsState>()(
         backgroundOpacity: s.backgroundOpacity,
         backgroundDim: s.backgroundDim,
         backgroundBlur: s.backgroundBlur,
+        wallpaperRotation: s.wallpaperRotation,
+        wallpaperRotationNames: s.wallpaperRotationNames,
+        wallpaperRotationMinutes: s.wallpaperRotationMinutes,
+        wallpaperRotationOrder: s.wallpaperRotationOrder,
         glassBlur: s.glassBlur,
         audioCacheLimitMB: s.audioCacheLimitMB,
         imageCacheLimitMB: s.imageCacheLimitMB,
@@ -517,6 +604,7 @@ export const useSettingsStore = create<SettingsState>()(
         soundwaveHideListened: s.soundwaveHideListened,
         blockedKeywords: s.blockedKeywords,
         lyricsVisualizer: s.lyricsVisualizer,
+        lyricsHighlight: s.lyricsHighlight,
         artistWaveCollapsed: s.artistWaveCollapsed,
         wallhavenApiKey: s.wallhavenApiKey,
         globalHotkeysEnabled: s.globalHotkeysEnabled,
@@ -524,6 +612,15 @@ export const useSettingsStore = create<SettingsState>()(
         ymImportOrder: s.ymImportOrder,
         likesSort: s.likesSort,
         playlistSorts: s.playlistSorts,
+        showErrorToasts: s.showErrorToasts,
+        interfaceFont: s.interfaceFont,
+        customFontName: s.customFontName,
+        coverTint: s.coverTint,
+        coverAccent: s.coverAccent,
+        customCss: s.customCss,
+        customCssEnabled: s.customCssEnabled,
+        layouts: s.layouts,
+        riverHidden: s.riverHidden,
       }),
     },
   ),

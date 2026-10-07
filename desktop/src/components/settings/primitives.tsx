@@ -79,6 +79,7 @@ export function Card({
     const blur = usePerfMode().blur(40);
     return (
         <section
+            data-ui="card"
             className="group relative rounded-3xl p-6 overflow-hidden transition-[box-shadow,border-color] duration-500 hover:border-white/[0.14]"
             style={{
                 border: '0.5px solid rgba(255,255,255,0.1)',

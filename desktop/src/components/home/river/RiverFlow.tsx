@@ -7,6 +7,7 @@ import React, {useCallback, useMemo, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {api} from '../../../lib/api';
 import {Sparkles} from '../../../lib/icons';
+import type {RiverSectionId} from '../../../lib/layout';
 import {isUrnLiked, likedTracksCount, useLiked} from '../../../lib/likes';
 import {useAuthStore} from '../../../stores/auth';
 import type {Track} from '../../../stores/player';
@@ -65,6 +66,7 @@ export const RiverFlow = React.memo(function RiverFlow({ tint }: { tint?: string
   const setHideLiked = useSettingsStore((s) => s.setSoundwaveHideLiked);
   const hideListened = useSettingsStore((s) => s.soundwaveHideListened);
   const setHideListened = useSettingsStore((s) => s.setSoundwaveHideListened);
+  const riverHidden = useSettingsStore((s) => s.riverHidden);
   const currentTrack = usePlayerStore((s) => s.currentTrack);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -196,19 +198,22 @@ export const RiverFlow = React.memo(function RiverFlow({ tint }: { tint?: string
       : likesCount > 0
         ? 'building'
         : 'cold';
-  const topArtists = clusterById.get('top_artists');
-  const adjacent = clusterById.get('adjacent');
-  const freshDrops = clusterById.get('fresh_drops');
-  const sameVibe = clusterById.get('same_vibe');
-  const deepCuts = clusterById.get('deep_cuts');
-  const discover = clusterById.get('discover');
+  const section = (id: RiverSectionId) =>
+    riverHidden.includes(id) ? undefined : clusterById.get(id);
+  const waveSection = section('wave');
+  const topArtists = section('top_artists');
+  const adjacent = section('adjacent');
+  const freshDrops = section('fresh_drops');
+  const sameVibe = section('same_vibe');
+  const deepCuts = section('deep_cuts');
+  const discover = section('discover');
 
   const anchorRef = (id: string, kind: AnchorKind) => (el: HTMLElement | null) => {
     if (el) anchorsRef.current.set(id, { el, kind, order: ANCHOR_ORDER[id] ?? 8 });
     else anchorsRef.current.delete(id);
   };
   // Отпечаток состава секций: смена набора кластеров перестраивает путь реки.
-  const layoutKey = [waveCluster, topArtists, freshDrops, sameVibe, adjacent, deepCuts, discover]
+  const layoutKey = [waveSection, topArtists, freshDrops, sameVibe, adjacent, deepCuts, discover]
     .map((c) => (c ? '1' : '0'))
     .join('');
 
@@ -275,10 +280,10 @@ export const RiverFlow = React.memo(function RiverFlow({ tint }: { tint?: string
         <div ref={wrapRef} className="relative mt-12">
           <RiverBraid rootRef={wrapRef} anchorsRef={anchorsRef} tint={tint} layoutKey={layoutKey} />
           <div className="relative z-10 flex flex-col gap-12">
-            {waveCluster && (
+            {waveSection && (
               <div ref={anchorRef('wave', 'node')}>
                 <RiverSection title={sectionTitle('wave')} why={sectionWhy('wave')}>
-                  <WaveSchedule tracks={waveCluster.tracks} />
+                  <WaveSchedule tracks={waveSection.tracks} />
                 </RiverSection>
               </div>
             )}

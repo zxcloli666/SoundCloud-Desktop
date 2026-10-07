@@ -44,6 +44,7 @@ import {
 } from './load-watchdog';
 import {localTrackPath, markLocalMissing, noteLocalDuration} from './local-import';
 import {isLocalUrn} from './local-library';
+import {notifyError} from './notify';
 import {rememberTracks} from './offline-index';
 import {getUrnCluster, recordClusterFeedback} from './recsFeedback';
 import {isPreviewOnly} from './track-access';
@@ -571,11 +572,13 @@ async function loadTrack(track: Track, resumeAt = 0) {
     if (localMissing) markLocalMissing(urn);
     const errorText = localMissing ? i18n.t('local.fileMissing') : getLoadErrorText(e);
     if (errorText?.includes('no stream available')) {
-      toast.error(i18n.t('track.noStream'), {
+      notifyError(i18n.t('track.noStream'), {
+        id: 'track-load-error',
         description: `${track.title}: ${i18n.t('track.noStreamHint')}`,
       });
     } else {
-      toast.error(i18n.t('track.loadError'), {
+      notifyError(i18n.t('track.loadError'), {
+        id: 'track-load-error',
         description: errorText ? `${track.title}: ${errorText}` : track.title,
       });
     }
@@ -684,7 +687,8 @@ function maybeHealEarlyEnd(): boolean {
   const endedAt = cachedTime;
   if (healedUrns.has(track.urn)) {
     console.warn(`[Audio] ended early again at ${endedAt.toFixed(1)}s, skipping:`, track.urn);
-    toast.error(i18n.t('track.loadError'), {
+    notifyError(i18n.t('track.loadError'), {
+      id: 'track-load-error',
       description: `${track.title}: ${i18n.t('track.fileDamaged')}`,
     });
     return false;

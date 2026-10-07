@@ -2,23 +2,31 @@ import type {ReactNode} from 'react';
 import {Cloud, Database, Globe, Headphones, Link, Sparkles, User} from '../../lib/icons';
 import {CallProxySection} from './CallProxySection';
 import {AccountCard} from './cards/AccountCard';
+import {AndroidCard} from './cards/AndroidCard';
 import {AudioDeviceCard} from './cards/AudioDeviceCard';
 import {BlockedArtistsCard} from './cards/BlockedArtistsCard';
 import {CacheCard} from './cards/CacheCard';
 import {CloseButtonCard} from './cards/CloseButtonCard';
+import {CoverColorsCard} from './cards/CoverColorsCard';
+import {CustomCssCard} from './cards/CustomCssCard';
 import {DiagnosticsCard} from './cards/DiagnosticsCard';
 import {DiscordCard} from './cards/DiscordCard';
+import {FontCard} from './cards/FontCard';
+import {HelpCard} from './cards/HelpCard';
 import {HiddenKeywordsCard} from './cards/HiddenKeywordsCard';
 import {HotkeysCard} from './cards/HotkeysCard';
 import {ImportCard} from './cards/ImportCard';
 import {LanguageCard} from './cards/LanguageCard';
+import {LayoutCard} from './cards/LayoutCard';
 import {NetworkCard} from './cards/NetworkCard';
+import {NotificationsCard} from './cards/NotificationsCard';
 import {ObsCard} from './cards/obs/ObsCard';
 import {PerformanceCard} from './cards/PerformanceCard';
 import {PlaybackCard} from './cards/PlaybackCard';
 import {SoundForgeCard} from './cards/SoundForgeCard';
 import {StartupCard} from './cards/StartupCard';
 import {StorageLocationCard} from './cards/StorageLocationCard';
+import {SupportCard} from './cards/SupportCard';
 import {ScrobbleCard} from './cards/scrobble/ScrobbleCard';
 import {ThemeCard} from './cards/ThemeCard';
 import {UiScaleCard} from './cards/UiScaleCard';
@@ -57,6 +65,10 @@ export const SETTINGS_CATEGORIES: SettingsCategory[] = [
                 <DiagnosticsCard/>
                 <BlockedArtistsCard/>
                 <HiddenKeywordsCard/>
+                <NotificationsCard/>
+                <HelpCard/>
+                <AndroidCard/>
+                <SupportCard/>
             </>
         ),
     },
@@ -68,8 +80,12 @@ export const SETTINGS_CATEGORIES: SettingsCategory[] = [
             <>
                 <ThemeCard/>
                 <UiScaleCard/>
+                <CoverColorsCard/>
+                <FontCard/>
                 <WallpaperCard/>
+                <LayoutCard/>
                 <PerformanceCard/>
+                <CustomCssCard/>
             </>
         ),
     },

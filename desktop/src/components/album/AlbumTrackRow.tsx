@@ -33,7 +33,7 @@ function AlbumTrackRowImpl({ track, position, queue, aura }: AlbumTrackRowProps)
   return (
     <div
       onContextMenu={onContextMenu}
-      className="group flex items-center gap-4 px-4 py-2.5 rounded-2xl transition-all duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)] select-none"
+      className="@container group flex items-center gap-4 px-4 py-2.5 rounded-2xl transition-all duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)] select-none"
       style={{
         background: isThis
           ? `linear-gradient(90deg, ${auraRgba(aura, 0.16)}, ${auraRgba(aura, 0.04)} 70%, transparent)`
@@ -104,7 +104,7 @@ function AlbumTrackRowImpl({ track, position, queue, aura }: AlbumTrackRowProps)
 
       <TrackTitleArtist track={track} highlight={isThis} size="md" className="flex-1 min-w-0" />
 
-      <div className="shrink-0">
+      <div className="hidden @md:flex shrink-0">
         <TrackStatusBadges meta={track._scd_meta} />
       </div>
 

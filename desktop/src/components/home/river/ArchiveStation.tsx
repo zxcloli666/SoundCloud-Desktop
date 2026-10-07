@@ -63,52 +63,84 @@ function SubShelf({
   );
 }
 
-/** «Архив эфира» — лайкнутое и рекомендованное вне эфирной сетки, одним блоком. */
-export const ArchiveStation = React.memo(function ArchiveStation({
-  likedTracks,
-  likedLoading,
-}: {
+export type ArchiveShelf = 'likes' | 'recommended';
+
+interface ArchiveProps {
+  shelves: ArchiveShelf[];
+  titled: boolean;
   likedTracks: Track[];
   likedLoading: boolean;
-}) {
-  const { t } = useTranslation();
-  const discover = useDiscoverFeed();
-  const recommended = discover.recommended;
+}
 
-  if (
-    !likedLoading &&
-    likedTracks.length === 0 &&
-    !discover.isLoading &&
-    recommended.length === 0
-  ) {
-    return null;
-  }
+function ArchiveView({
+  shelves,
+  titled,
+  likedTracks,
+  likedLoading,
+  recommended,
+  recommendedLoading,
+}: ArchiveProps & { recommended: Track[]; recommendedLoading: boolean }) {
+  const { t } = useTranslation();
+  const hasLikes = shelves.includes('likes') && (likedLoading || likedTracks.length > 0);
+  const hasRecommended =
+    shelves.includes('recommended') && (recommendedLoading || recommended.length > 0);
+  if (!hasLikes && !hasRecommended) return null;
 
   return (
     <section className="pt-14">
-      <div className="mb-5">
-        <h2 className="text-[22px] font-bold leading-tight tracking-[-0.015em] text-white/92">
-          {t('soundwave.river.archiveTitle')}
-        </h2>
-        <p className="mt-1 text-[13px] leading-snug text-white/50">
-          {t('soundwave.river.archiveWhy')}
-        </p>
-      </div>
+      {titled && (
+        <div className="mb-5">
+          <h2 className="text-[22px] font-bold leading-tight tracking-[-0.015em] text-white/92">
+            {t('soundwave.river.archiveTitle')}
+          </h2>
+          <p className="mt-1 text-[13px] leading-snug text-white/50">
+            {t('soundwave.river.archiveWhy')}
+          </p>
+        </div>
+      )}
       <div className="flex flex-col gap-8">
-        <SubShelf
-          index="01"
-          label={t('library.likedTracks')}
-          isLoading={likedLoading}
-          tracks={likedTracks}
-          onPlay={armLikesContinuation}
-        />
-        <SubShelf
-          index="02"
-          label={t('home.recommended')}
-          isLoading={discover.isLoading}
-          tracks={recommended}
-        />
+        {shelves.map((shelf, i) => {
+          const index = String(i + 1).padStart(2, '0');
+          return shelf === 'likes' ? (
+            <SubShelf
+              key={shelf}
+              index={index}
+              label={t('library.likedTracks')}
+              isLoading={likedLoading}
+              tracks={likedTracks}
+              onPlay={armLikesContinuation}
+            />
+          ) : (
+            <SubShelf
+              key={shelf}
+              index={index}
+              label={t('home.recommended')}
+              isLoading={recommendedLoading}
+              tracks={recommended}
+            />
+          );
+        })}
       </div>
     </section>
+  );
+}
+
+function RecommendedArchive(props: ArchiveProps) {
+  const discover = useDiscoverFeed();
+  return (
+    <ArchiveView
+      {...props}
+      recommended={discover.recommended}
+      recommendedLoading={discover.isLoading}
+    />
+  );
+}
+
+/** «Архив эфира» — лайкнутое и рекомендованное вне эфирной сетки, одним блоком. */
+export const ArchiveStation = React.memo(function ArchiveStation(props: ArchiveProps) {
+  return props.shelves.includes('recommended') ? (
+    <RecommendedArchive {...props} />
+  ) : (
+    <ArchiveView {...props} recommended={[]} recommendedLoading={false} />
   );
 });

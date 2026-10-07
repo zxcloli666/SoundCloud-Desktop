@@ -8,10 +8,11 @@ import {
     removeWallpaper,
     saveWallpaperFromBuffer,
 } from '../../../lib/cache';
-import {Link, Loader2, Search, X} from '../../../lib/icons';
+import {Check, Link, Loader2, Search, X} from '../../../lib/icons';
 import {useSettingsStore} from '../../../stores/settings';
 import {Card, RangeSlider} from '../primitives';
 import {WallpaperSearch} from './WallpaperSearch';
+import {WallpaperSlideshow} from './WallpaperSlideshow';
 
 export function WallpaperCard() {
     const {t} = useTranslation();
@@ -23,6 +24,11 @@ export function WallpaperCard() {
     const setBackgroundDim = useSettingsStore((s) => s.setBackgroundDim);
     const backgroundBlur = useSettingsStore((s) => s.backgroundBlur);
     const setBackgroundBlur = useSettingsStore((s) => s.setBackgroundBlur);
+    const rotation = useSettingsStore((s) => s.wallpaperRotation);
+    const setRotation = useSettingsStore((s) => s.setWallpaperRotation);
+    const rotationNames = useSettingsStore((s) => s.wallpaperRotationNames);
+    const setRotationNames = useSettingsStore((s) => s.setWallpaperRotationNames);
+    const rotationOrder = useSettingsStore((s) => s.wallpaperRotationOrder);
 
     const [wallpapers, setWallpapers] = useState<string[]>([]);
     const [loading, setLoading] = useState(true);
@@ -32,18 +38,45 @@ export function WallpaperCard() {
     const [showSearch, setShowSearch] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    const adopt = useCallback(
+        (name: string) => {
+            const s = useSettingsStore.getState();
+            if (s.wallpaperRotation && !s.wallpaperRotationNames.includes(name)) {
+                setRotationNames([...s.wallpaperRotationNames, name]);
+            }
+            setBackgroundImage(name);
+        },
+        [setBackgroundImage, setRotationNames],
+    );
+
+    const toggleInRotation = useCallback(
+        (name: string) => {
+            setRotationNames(
+                rotationNames.includes(name)
+                    ? rotationNames.filter((n) => n !== name)
+                    : [...rotationNames, name],
+            );
+        },
+        [rotationNames, setRotationNames],
+    );
+
+    const clearBackground = useCallback(() => {
+        setRotation(false);
+        setBackgroundImage('');
+    }, [setRotation, setBackgroundImage]);
+
     const handlePickOnline = useCallback(
         async (url: string) => {
             try {
                 const name = await downloadWallpaper(url);
                 setWallpapers((prev) => (prev.includes(name) ? prev : [...prev, name]));
-                setBackgroundImage(name);
+                adopt(name);
                 toast.success(t('settings.wallpaperAdded'));
             } catch {
                 toast.error(t('settings.bgLoadError'));
             }
         },
-        [setBackgroundImage, t],
+        [adopt, t],
     );
 
     useEffect(() => {
@@ -61,14 +94,14 @@ export function WallpaperCard() {
                 const buffer = await file.arrayBuffer();
                 const name = await saveWallpaperFromBuffer(buffer, file.name);
                 setWallpapers((prev) => [...prev, name]);
-                setBackgroundImage(name);
+                adopt(name);
                 toast.success(t('settings.wallpaperAdded'));
             } catch {
                 toast.error(t('common.error'));
             }
             e.target.value = '';
         },
-        [setBackgroundImage, t],
+        [adopt, t],
     );
 
     const handleDownloadUrl = useCallback(async () => {
@@ -78,7 +111,7 @@ export function WallpaperCard() {
         try {
             const name = await downloadWallpaper(url);
             setWallpapers((prev) => [...prev, name]);
-            setBackgroundImage(name);
+            adopt(name);
             setUrlInput('');
             setShowUrlInput(false);
             toast.success(t('settings.wallpaperAdded'));
@@ -87,15 +120,18 @@ export function WallpaperCard() {
         } finally {
             setDownloading(false);
         }
-    }, [urlInput, setBackgroundImage, t]);
+    }, [urlInput, adopt, t]);
 
     const handleRemove = useCallback(
         async (name: string) => {
             await removeWallpaper(name);
             setWallpapers((prev) => prev.filter((w) => w !== name));
-            if (backgroundImage === name) setBackgroundImage('');
+            const s = useSettingsStore.getState();
+            const kept = s.wallpaperRotationNames.filter((n) => n !== name);
+            if (kept.length !== s.wallpaperRotationNames.length) setRotationNames(kept);
+            if (s.backgroundImage === name) setBackgroundImage(kept[0] ?? '');
         },
-        [backgroundImage, setBackgroundImage],
+        [setBackgroundImage, setRotationNames],
     );
 
     return (
@@ -104,7 +140,7 @@ export function WallpaperCard() {
                 <div className="flex flex-wrap gap-3">
                     <button
                         type="button"
-                        onClick={() => setBackgroundImage('')}
+                        onClick={clearBackground}
                         className={`w-20 h-14 rounded-xl border-2 transition-all duration-200 cursor-pointer flex items-center justify-center ${
                             !backgroundImage
                                 ? 'border-white/40 bg-white/[0.08]'
@@ -116,16 +152,32 @@ export function WallpaperCard() {
 
                     {wallpapers.map((name) => {
                         const url = getWallpaperUrl(name);
+                        const slot = rotation ? rotationNames.indexOf(name) : -1;
                         return (
                             <button
                                 type="button"
                                 key={name}
-                                onClick={() => setBackgroundImage(backgroundImage === name ? '' : name)}
+                                aria-pressed={rotation ? slot >= 0 : backgroundImage === name}
+                                onClick={() =>
+                                    rotation
+                                        ? toggleInRotation(name)
+                                        : setBackgroundImage(backgroundImage === name ? '' : name)
+                                }
                                 className={`relative group w-20 h-14 rounded-xl overflow-hidden border-2 transition-all duration-200 cursor-pointer ${
-                                    backgroundImage === name
-                                        ? 'border-white/40 shadow-[0_0_12px_rgba(255,255,255,0.1)]'
-                                        : 'border-white/[0.06] hover:border-white/[0.15]'
-                                }`}
+                                    slot >= 0
+                                        ? ''
+                                        : backgroundImage === name
+                                          ? 'border-white/40 shadow-[0_0_12px_rgba(255,255,255,0.1)]'
+                                          : 'border-white/[0.06] hover:border-white/[0.15]'
+                                } ${rotation && slot < 0 ? 'opacity-60 hover:opacity-100' : ''}`}
+                                style={
+                                    slot >= 0
+                                        ? {
+                                            borderColor: 'var(--color-accent)',
+                                            boxShadow: '0 0 14px var(--color-accent-glow)',
+                                        }
+                                        : undefined
+                                }
                             >
                                 {url && <img src={url} alt="" className="w-full h-full object-cover"/>}
                                 <span
@@ -145,6 +197,12 @@ export function WallpaperCard() {
                                 >
                   <X size={8} className="text-white"/>
                 </span>
+                                {slot >= 0 && (
+                                    <span
+                                        className="absolute top-0.5 left-0.5 min-w-[16px] h-4 px-1 rounded-full bg-accent text-accent-contrast text-[9px] font-bold flex items-center justify-center shadow-md">
+                                        {rotationOrder === 'sequence' ? slot + 1 : <Check size={9}/>}
+                                    </span>
+                                )}
                                 {backgroundImage === name && (
                                     <div className="absolute inset-0 bg-white/10 flex items-center justify-center">
                                         <div className="w-4 h-4 rounded-full bg-white shadow-lg"/>
@@ -209,6 +267,8 @@ export function WallpaperCard() {
                 </div>
 
                 {showSearch && <WallpaperSearch onPick={handlePickOnline}/>}
+
+                {(rotation || wallpapers.length > 1) && <WallpaperSlideshow available={wallpapers}/>}
 
                 {showUrlInput && (
                     <div className="flex gap-2 animate-fade-in-up">

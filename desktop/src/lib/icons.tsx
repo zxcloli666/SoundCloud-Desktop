@@ -13,7 +13,10 @@ import {
   ArrowUpDown as _ArrowUpDown,
   AudioLines as _AudioLines,
   Ban as _Ban,
+  Bell as _Bell,
   Bookmark as _Bookmark,
+  BookOpen as _BookOpen,
+  Braces as _Braces,
   Calendar as _Calendar,
   ChartNoAxesColumn as _ChartNoAxesColumn,
   Check as _Check,
@@ -34,6 +37,7 @@ import {
   Ellipsis as _Ellipsis,
   ExternalLink as _ExternalLink,
   Eye as _Eye,
+  EyeOff as _EyeOff,
   FastForward as _FastForward,
   FileDown as _FileDown,
   FileMusic as _FileMusic,
@@ -53,7 +57,9 @@ import {
   Image as _Image,
   Info as _Info,
   Keyboard as _Keyboard,
+  LayoutDashboard as _LayoutDashboard,
   Library as _Library,
+  LifeBuoy as _LifeBuoy,
   Link as _Link,
   Link2 as _Link2,
   ListEnd as _ListEnd,
@@ -70,6 +76,7 @@ import {
   MonitorPlay as _MonitorPlay,
   Moon as _Moon,
   Music as _Music,
+  Palette as _Palette,
   PanelLeftClose as _PanelLeftClose,
   PanelLeftOpen as _PanelLeftOpen,
   Pause as _Pause,
@@ -105,6 +112,7 @@ import {
   TrendingUp as _TrendingUp,
   TriangleAlert as _TriangleAlert,
   Trophy as _Trophy,
+  Type as _Type,
   Upload as _Upload,
   User as _User,
   Users as _Users,
@@ -171,7 +179,10 @@ export const ChevronRight = memo(_ChevronRight);
 export const ChevronUp = memo(_ChevronUp);
 export const CircleCheck = memo(_CircleCheck);
 export const Clock = memo(_Clock);
+export const Bell = memo(_Bell);
+export const BookOpen = memo(_BookOpen);
 export const Bookmark = memo(_Bookmark);
+export const Braces = memo(_Braces);
 export const Cloud = memo(_Cloud);
 export const Compass = memo(_Compass);
 export const Copy = memo(_Copy);
@@ -179,6 +190,7 @@ export const Database = memo(_Database);
 export const Disc3 = memo(_Disc3);
 export const ExternalLink = memo(_ExternalLink);
 export const Eye = memo(_Eye);
+export const EyeOff = memo(_EyeOff);
 export const FastForward = memo(_FastForward);
 export const Fullscreen = memo(_Fullscreen);
 export const Globe = memo(_Globe);
@@ -190,9 +202,11 @@ export const Home = memo(_Home);
 export const ImageIcon = memo(_Image);
 export const Info = memo(_Info);
 export const Keyboard = memo(_Keyboard);
+export const LifeBuoy = memo(_LifeBuoy);
 export const Instagram = memo(({ size, className }: { size?: number; className?: string }) => (
   <SimpleIcon icon={siInstagram} size={size} className={className} />
 ));
+export const LayoutDashboard = memo(_LayoutDashboard);
 export const Library = memo(_Library);
 export const LinkIcon = memo(_Link);
 export const ListEnd = memo(_ListEnd);
@@ -208,6 +222,7 @@ export const MonitorPlay = memo(_MonitorPlay);
 export const MessageCircle = memo(_MessageCircle);
 export const Minus = memo(_Minus);
 export const Music = memo(_Music);
+export const Palette = memo(_Palette);
 export const PanelLeftClose = memo(_PanelLeftClose);
 export const PanelLeftOpen = memo(_PanelLeftOpen);
 export const Pause = memo(_Pause);
@@ -233,6 +248,7 @@ export const Star = memo(_Star);
 export const Square = memo(_Square);
 export const ThumbsDown = memo(_ThumbsDown);
 export const Trash2 = memo(_Trash2);
+export const Type = memo(_Type);
 export const Twitter = memo(({ size, className }: { size?: number; className?: string }) => (
   <SimpleIcon icon={siX} size={size} className={className} />
 ));

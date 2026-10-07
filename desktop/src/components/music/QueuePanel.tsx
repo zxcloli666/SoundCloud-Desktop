@@ -6,6 +6,7 @@ import {ListMusic, Trash2, X} from '../../lib/icons';
 import {usePerfMode} from '../../lib/perf';
 import { usePlayerStore } from '../../stores/player';
 import {useSettingsStore} from '../../stores/settings';
+import {CrossfadeImage} from '../ui/CrossfadeImage';
 import {AutoplayRow} from './queue/AutoplayRow';
 import {NowPlayingCard} from './queue/NowPlayingCard';
 import {QueueList} from './queue/QueueList';
@@ -45,6 +46,7 @@ export const QueuePanel = React.memo(
 
         {/* Panel */}
         <div
+            data-ui="queue"
             className="fixed top-0 right-0 bottom-0 w-[360px] z-50 flex flex-col border-l border-white/[0.06]"
           style={{
             transform: open ? 'translateX(0)' : 'translateX(100%)',
@@ -62,11 +64,9 @@ export const QueuePanel = React.memo(
             >
                 {wallpaperUrl ? (
                     <>
-                        <img
+                        <CrossfadeImage
                             src={wallpaperUrl}
-                            alt=""
-                            aria-hidden="true"
-                            decoding="async"
+                            fade={perf.mode !== 'light'}
                             className="absolute inset-0 w-full h-full object-cover"
                             style={{
                                 filter: panelBlur > 0 ? `blur(${panelBlur}px) saturate(1.15)` : undefined,

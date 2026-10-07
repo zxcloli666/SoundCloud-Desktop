@@ -5,9 +5,11 @@ import {Outlet} from 'react-router-dom';
 import {useShallow} from 'zustand/shallow';
 import {getCurrentTime, getDuration, handlePrev, seek} from '../../lib/audio';
 import {getWallpaperUrl} from '../../lib/cache';
+import {customCssHotkeyLabel} from '../../lib/custom-css';
 import {art} from '../../lib/formatters';
 import {usePerfMode} from '../../lib/perf';
 import {isMac} from '../../lib/platform';
+import {useWallpaperRotation} from '../../lib/wallpaper-rotation';
 import {toggleWindowFullscreen} from '../../lib/window';
 import {useLyricsStore} from '../../stores/lyrics';
 import {usePlayerStore} from '../../stores/player';
@@ -15,8 +17,12 @@ import {useSettingsStore} from '../../stores/settings';
 import {AddToPlaylistHost} from '../music/AddToPlaylistHost';
 import {TrackContextMenu} from '../music/track-menu/TrackContextMenu';
 import {DropImportOverlay} from '../offline/local/DropImportOverlay';
+import {ContextMenuHost} from '../ui/ContextMenu';
+import {CrossfadeImage} from '../ui/CrossfadeImage';
 import {KeyCaps} from '../ui/KeyCap';
 import {UploadTrackDialog} from '../upload/UploadTrackDialog';
+import {useAppContextMenu} from './AppContextMenu';
+import {CoverTint} from './CoverTint';
 import {GlobalBindingsGroup} from './GlobalBindingsGroup';
 import {NowPlayingBar} from './NowPlayingBar';
 import {Sidebar} from './Sidebar';
@@ -68,6 +74,7 @@ const keybindings: Keybinding[] = [
   { key: 'Ctrl+0', label: 'kb.zoomReset', group: 'panels', display: isMac() ? '⌘ 0' : 'Ctrl 0' },
   { key: 'Escape', label: 'kb.close', group: 'panels', display: 'Esc' },
   { key: 'Ctrl+/', label: 'kb.showBindings', group: 'panels', display: isMac() ? '⌘ /' : 'Ctrl /' },
+  { key: 'Ctrl+Alt+Shift+C', label: 'kb.customCss', group: 'panels', display: customCssHotkeyLabel().join(' ') },
 ];
 
 const groupLabels = {
@@ -186,11 +193,9 @@ const CustomBackground = React.memo(() => {
           className="absolute inset-0 pointer-events-none overflow-hidden"
           style={{contain: 'strict', transform: 'translateZ(0)'}}
       >
-          <img
+          <CrossfadeImage
               src={bgUrl}
-              alt=""
-              aria-hidden="true"
-              decoding="async"
+              fade={perf.mode !== 'light'}
               className="absolute inset-0 w-full h-full object-cover select-none"
               style={{
                   filter: effBlur > 0 ? `blur(${effBlur}px)` : undefined,
@@ -242,6 +247,11 @@ const CustomBackground = React.memo(() => {
   );
 });
 
+const WallpaperRotator = React.memo(() => {
+    useWallpaperRotation();
+    return null;
+});
+
 const AmbientGlow = React.memo(() => {
     const perf = usePerfMode();
   const artwork = usePlayerStore((s) => art(s.currentTrack?.artwork_url, 't500x500'));
@@ -282,6 +292,8 @@ export const AppShell = React.memo(() => {
   });
   const onQueueToggle = useCallback(() => setQueueOpen((v) => !v), []);
   const onQueueClose = useCallback(() => setQueueOpen(false), []);
+  const onShowShortcuts = useCallback(() => setKbOpen(true), []);
+  useAppContextMenu({ queueOpen, toggleQueue: onQueueToggle, showShortcuts: onShowShortcuts });
     const mainRef = useRef<HTMLElement>(null);
 
     // Mirror panel state into refs so the global keydown listener binds once.
@@ -446,14 +458,16 @@ export const AppShell = React.memo(() => {
   }, []);
 
   return (
-    <div className="flex flex-col h-screen relative overflow-hidden">
+    <div data-ui="app" className="flex flex-col h-screen relative overflow-hidden">
+      <WallpaperRotator />
       <CustomBackground />
+      <CoverTint />
       <AmbientGlow />
       <Titlebar />
       <div className="flex flex-1 min-h-0 relative z-10" style={{ isolation: 'isolate' }}>
         <Sidebar />
           {/* pb clears the floating now-playing dock, which overlays (doesn't push) content */}
-          <main ref={mainRef} className="flex-1 overflow-y-auto overflow-x-hidden pb-[136px]">
+          <main ref={mainRef} data-ui="main" className="flex-1 overflow-y-auto overflow-x-hidden pb-[136px]">
           <StableOutlet />
         </main>
       </div>
@@ -473,6 +487,7 @@ export const AppShell = React.memo(() => {
       <KeybindingsDialog open={kbOpen} onOpenChange={setKbOpen} />
       <DropImportOverlay />
       <TrackContextMenu />
+      <ContextMenuHost />
     </div>
   );
 });

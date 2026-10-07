@@ -3,44 +3,25 @@ import { useTranslation } from 'react-i18next';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useShallow } from 'zustand/shallow';
 import { changeAppLanguage } from '../../i18n';
-import {
-  Clock,
-  Compass,
-  Download,
-  Globe,
-  Home,
-  Library,
-  PanelLeftClose,
-  PanelLeftOpen,
-  Search,
-  Settings,
-  Star,
-} from '../../lib/icons';
+import { Clock, Globe, PanelLeftClose, PanelLeftOpen, Settings } from '../../lib/icons';
+import { moveEntry } from '../../lib/layout';
 import { usePerfMode } from '../../lib/perf';
+import { useLayout } from '../../lib/use-layout';
 import { useAppMode } from '../../stores/app-status';
 import { useAuthStore } from '../../stores/auth';
 import { useSettingsStore } from '../../stores/settings';
 import { Avatar } from '../ui/Avatar';
+import { type IconCmp, NAV_ITEMS } from './nav-items';
 import { ACTIVE, IconBox, Label, ROW } from './SidebarChrome';
 import { SidebarPins } from './SidebarPins';
+import { SortableSlot, SortableStack } from './SortableStack';
 import { StarBadge, StarCard, useStarSubscription } from './StarSubscription';
-
-type IconCmp = React.ComponentType<{ size?: number; strokeWidth?: number; className?: string }>;
 
 const languages = [
   { code: 'en', label: 'English' },
   { code: 'ru', label: 'Русский' },
   { code: 'tr', label: 'Turkce' },
 ] as const;
-
-const navItems: { to: string; icon: IconCmp; label: string }[] = [
-  { to: '/home', icon: Home, label: 'nav.home' },
-  { to: '/search', icon: Search, label: 'nav.search' },
-  { to: '/discover', icon: Compass, label: 'nav.discover' },
-  { to: '/library', icon: Library, label: 'nav.library' },
-  { to: '/star', icon: Star, label: 'nav.star' },
-  { to: '/offline', icon: Download, label: 'nav.offline' },
-];
 
 function NavItem({
   to,
@@ -86,12 +67,18 @@ export const Sidebar = React.memo(() => {
   const { t, i18n } = useTranslation();
   const user = useAuthStore((s) => s.user);
   const appMode = useAppMode();
-  const { collapsed, toggleSidebar } = useSettingsStore(
+  const { collapsed, toggleSidebar, setLayout } = useSettingsStore(
     useShallow((s) => ({
       collapsed: s.sidebarCollapsed,
       toggleSidebar: s.toggleSidebar,
+      setLayout: s.setLayout,
     })),
   );
+  const layout = useLayout('sidebar');
+  const navIds = layout
+    .filter((e) => !e.hidden || (e.id === 'offline' && appMode !== 'online'))
+    .map((e) => e.id);
+  const moveNav = (from: string, to: string) => setLayout('sidebar', moveEntry(layout, from, to));
   const { isPremium } = useStarSubscription();
   const navigate = useNavigate();
   const openStar = useCallback(() => navigate('/star'), [navigate]);
@@ -106,6 +93,7 @@ export const Sidebar = React.memo(() => {
 
   return (
     <aside
+      data-ui="sidebar"
       className="shrink-0 flex flex-col h-full overflow-hidden border-r border-white/[0.05] pb-3 transition-[width] duration-300 ease-[var(--ease-apple)]"
       style={{
         width: collapsed ? 56 : 196,
@@ -113,17 +101,23 @@ export const Sidebar = React.memo(() => {
       }}
     >
       <nav className="flex flex-col gap-0.5 px-2 pt-3">
-        {navItems.map((item) => (
-          <NavItem
-            key={item.to}
-            to={item.to}
-            icon={item.icon}
-            label={t(item.label)}
-            collapsed={collapsed}
-            title={collapsed ? t(item.label) : undefined}
-            alert={item.to === '/offline' && appMode !== 'online'}
-          />
-        ))}
+        <SortableStack ids={navIds} onMove={moveNav}>
+          {navIds.map((id) => {
+            const item = NAV_ITEMS[id];
+            return (
+              <SortableSlot key={id} id={id}>
+                <NavItem
+                  to={item.to}
+                  icon={item.icon}
+                  label={t(item.label)}
+                  collapsed={collapsed}
+                  title={collapsed ? t(item.label) : undefined}
+                  alert={id === 'offline' && appMode !== 'online'}
+                />
+              </SortableSlot>
+            );
+          })}
+        </SortableStack>
       </nav>
 
       <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide px-2 pt-4 pb-2 space-y-0.5">

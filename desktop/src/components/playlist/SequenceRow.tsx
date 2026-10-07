@@ -85,11 +85,11 @@ function RowBody({
 
       <TrackTitleArtist track={track} highlight={isThis} size="sm" />
 
-      <div className="hidden sm:flex shrink-0">
+      <div className="hidden @lg:flex shrink-0">
         <TrackStatusBadges meta={track._scd_meta} />
       </div>
 
-      <div className="hidden sm:flex items-center gap-3 shrink-0">
+      <div className="hidden @2xl:flex items-center gap-3 shrink-0">
         {track.playback_count != null && (
           <span className="text-[10px] text-white/20 tabular-nums flex items-center gap-0.5">
             {headphones9}
@@ -119,7 +119,7 @@ function RowBody({
 }
 
 const ROW_BASE =
-  'group relative flex items-center gap-3.5 pl-4 pr-4 py-3 rounded-xl transition-colors duration-200 ease-[var(--ease-apple)] select-none';
+  '@container group relative flex items-center gap-3.5 pl-4 pr-4 py-3 rounded-xl transition-colors duration-200 ease-[var(--ease-apple)] select-none';
 
 function activeCls(isThis: boolean) {
   return isThis ? 'bg-accent/[0.06] ring-1 ring-accent/20' : 'hover:bg-white/[0.03]';
