@@ -1,4 +1,3 @@
-import { toast } from 'sonner';
 import i18n from '../i18n';
 import { useAppStatusStore } from '../stores/app-status';
 import { useAuthStore } from '../stores/auth';
@@ -20,6 +19,7 @@ import {
   preferredControlBase,
   SLOW_RESPONSE_MS,
 } from './host-status';
+import { notifyError } from './notify';
 import { getIsPremium, requestPremiumRecheck } from './premium-cache';
 
 // ─── Session ────────────────────────────────────────────────
@@ -151,10 +151,10 @@ function handleApiError(err: ApiError, method: string): void {
   if (err.status >= 500) {
     if (isIncidentActive()) return; // авария уже показана модалкой/баннером
     // Фиксированный id: sonner заменяет тост, шторм не стекается.
-    toast.error(i18n.t('errors.serverError', { status: err.status }), { id: 'api-server-error' });
+    notifyError(i18n.t('errors.serverError', { status: err.status }), { id: 'api-server-error' });
   } else if (err.status >= 400 && err.status !== 401 && method !== 'GET' && method !== 'HEAD') {
     const message = clientErrorMessage(err);
-    toast.error(message, { id: `api-client-error:${message}` });
+    notifyError(message, { id: `api-client-error:${message}` });
   }
 }
 

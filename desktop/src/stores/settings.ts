@@ -88,6 +88,7 @@ export interface SettingsState {
   lyricsVisualizer: boolean;
   artistWaveCollapsed: boolean;
   wallhavenApiKey: string;
+  showErrorToasts: boolean;
   setAccentColor: (color: string) => void;
   setBgPrimary: (bg: string) => void;
   setThemePreset: (id: ThemePreset) => void;
@@ -122,6 +123,7 @@ export interface SettingsState {
   setLyricsVisualizer: (v: boolean) => void;
   setArtistWaveCollapsed: (v: boolean) => void;
   setWallhavenApiKey: (key: string) => void;
+  setShowErrorToasts: (v: boolean) => void;
   resetTheme: () => void;
 }
 
@@ -162,6 +164,7 @@ const DEFAULTS = {
   lyricsVisualizer: false,
   artistWaveCollapsed: false,
   wallhavenApiKey: '',
+  showErrorToasts: true,
 };
 
 export const useSettingsStore = create<SettingsState>()(
@@ -223,6 +226,7 @@ export const useSettingsStore = create<SettingsState>()(
       setLyricsVisualizer: (lyricsVisualizer) => set({ lyricsVisualizer }),
       setArtistWaveCollapsed: (artistWaveCollapsed) => set({ artistWaveCollapsed }),
       setWallhavenApiKey: (wallhavenApiKey) => set({ wallhavenApiKey }),
+      setShowErrorToasts: (showErrorToasts) => set({ showErrorToasts }),
       resetTheme: () =>
         set({
           accentColor: DEFAULTS.accentColor,
@@ -290,6 +294,7 @@ export const useSettingsStore = create<SettingsState>()(
         lyricsVisualizer: s.lyricsVisualizer,
         artistWaveCollapsed: s.artistWaveCollapsed,
         wallhavenApiKey: s.wallhavenApiKey,
+        showErrorToasts: s.showErrorToasts,
       }),
     },
   ),
