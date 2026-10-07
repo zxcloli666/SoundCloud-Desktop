@@ -10,6 +10,7 @@ import type {TrackAura} from './useTrackAura';
  *  is a clickable jump-cut into the song; the composer pins to the live moment. */
 export const RoomVoices = React.memo(function RoomVoices({
                                                              trackUrn,
+                                                             durationMs,
                                                              commentCount,
                                                              comments,
                                                              loading,
@@ -20,6 +21,7 @@ export const RoomVoices = React.memo(function RoomVoices({
                                                              onSeek,
                                                          }: {
     trackUrn: string;
+    durationMs: number;
     commentCount?: number;
     comments: Comment[];
     loading: boolean;
@@ -84,6 +86,7 @@ export const RoomVoices = React.memo(function RoomVoices({
                             accent={aura.accent}
                             accentSoft={aura.accentSoft}
                             accentGlow={aura.accentGlow}
+                            maxSeconds={durationMs / 1000}
                             onSeek={onSeek}
                         />
                     ))}

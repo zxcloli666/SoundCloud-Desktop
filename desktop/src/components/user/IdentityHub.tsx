@@ -1,11 +1,15 @@
+import {useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
-import {type Aura, auraRgba} from '../../lib/aura';
+import {type Aura, auraRgb, auraRgba} from '../../lib/aura';
 import {Calendar, Globe, Sparkles} from '../../lib/icons';
 import {likedTracksCount} from '../../lib/likes';
 import {usePerfMode} from '../../lib/perf';
+import {BlockArtistButton} from '../music/blocklist/BlockArtistButton';
+import {userTarget} from '../music/blocklist/targets';
 import {CopyLinkButton} from '../ui/CopyLinkButton';
 import {GlassHeroPanel} from '../ui/GlassHeroPanel';
 import {PinArtistButton} from '../ui/PinArtistButton';
+import {RichText} from '../ui/RichText';
 import {UploadTrackButton} from '../upload/UploadTrackButton';
 import {AuraPicker} from './AuraPicker';
 import {AvatarArtifact} from './AvatarArtifact';
@@ -64,6 +68,7 @@ export function IdentityHub({
     const perf = usePerfMode();
     const lb = perf.blur(16);
   const formattedDate = dateFormattedLong(user.created_at);
+  const blockTarget = useMemo(() => userTarget(user), [user]);
   const country = [user.city, user.country_code].filter(Boolean).join(', ');
 
   return (
@@ -114,7 +119,7 @@ export function IdentityHub({
 
           {user.description && (
               <p className="selectable text-[14px] md:text-[15px] text-white/65 leading-relaxed max-w-2xl line-clamp-3 hover:line-clamp-none transition-all duration-700 cursor-help">
-              {user.description}
+              <RichText text={user.description} accent={auraRgb(aura)}/>
             </p>
           )}
 
@@ -155,6 +160,7 @@ export function IdentityHub({
             )}
             {isOwnProfile && <UploadTrackButton aura={aura} />}
             {user.permalink_url && <CopyLinkButton url={user.permalink_url} />}
+            {!isOwnProfile && <BlockArtistButton target={blockTarget} />}
             {hasStar && isOwnProfile && (
               <AuraPicker
                 aura={aura}

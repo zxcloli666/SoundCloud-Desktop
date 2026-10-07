@@ -1,6 +1,7 @@
 import {listen} from '@tauri-apps/api/event';
 import {toast} from 'sonner';
 import i18n from '../i18n';
+import {useBlockedArtistsStore} from '../stores/blocked-artists';
 import type {Track, TrackScdMeta} from '../stores/player';
 import {playbackAllowed, usePlayerStore} from '../stores/player';
 import {useSettingsStore} from '../stores/settings';
@@ -26,6 +27,7 @@ import {
   type TrackCacheInfo,
   upgradeCachedTrack,
 } from './cache';
+import {isTrackBlocked} from './blocked-artists';
 import {trackedInvoke as invoke} from './diagnostics';
 import {offerUndislike} from './dislike-actions';
 import {isUrnDisliked} from './dislikes';
@@ -73,6 +75,7 @@ let pendingCrossfadeMs = 0;
 let crossfadeGen = -1;
 let crossfadeCheckedGen = -1;
 let startGate: ((urn: string) => Promise<number | null>) | null = null;
+let pendingStart: {urn: string; at: number} | null = null;
 const listeners = new Set<() => void>();
 const seekListeners = new Set<(seconds: number) => void>();
 const API_PREVIEW_DURATION_MS = 30_000;
@@ -155,6 +158,25 @@ export function alignTo(seconds: number) {
 export function replayCurrent(): void {
   const track = usePlayerStore.getState().currentTrack;
   if (track) void loadTrack(track);
+}
+
+export function playAt(track: Track, seconds: number) {
+  const st = usePlayerStore.getState();
+  const isCurrent = st.currentTrack?.urn === track.urn;
+  if (isCurrent && hasTrack) {
+    seek(seconds);
+    if (!st.isPlaying) st.resume();
+    return;
+  }
+  pendingStart = {urn: track.urn, at: seconds};
+  if (isCurrent) st.resume();
+  else st.play(track, [track]);
+}
+
+function takePendingStart(urn: string): number {
+  const at = pendingStart?.urn === urn ? pendingStart.at : 0;
+  pendingStart = null;
+  return at;
 }
 
 export function handlePrev() {
@@ -806,6 +828,16 @@ listen<string>('audio:default-device-changed', (event) => {
   console.log(`[Audio] Default output changed to '${event.payload}'`);
 });
 
+const BLOCKED_SKIP_TOAST_GAP_MS = 20_000;
+let lastBlockedSkipToast = 0;
+
+function announceBlockedSkip(track: Track) {
+  const now = Date.now();
+  if (now - lastBlockedSkipToast < BLOCKED_SKIP_TOAST_GAP_MS) return;
+  lastBlockedSkipToast = now;
+  toast(i18n.t('blocklist.skipped'), {description: track.title});
+}
+
 /* ── Store subscriber ────────────────────────────────────────── */
 
 usePlayerStore.subscribe((state, prev) => {
@@ -833,7 +865,10 @@ usePlayerStore.subscribe((state, prev) => {
     if (state.currentTrack) {
       // Автоскип дизлайкнутых треков: пропускаем без загрузки/плэя.
       const disliked = isUrnDisliked(state.currentTrack.urn);
-      if (disliked && state.startedUrn !== state.currentTrack.urn && playbackAllowed('advance')) {
+      const skipped =
+        (disliked && state.startedUrn !== state.currentTrack.urn) ||
+        isTrackBlocked(state.currentTrack);
+      if (skipped && playbackAllowed('advance')) {
         currentUrn = null;
         fallbackDuration = 0;
         cachedDuration = 0;
@@ -841,12 +876,13 @@ usePlayerStore.subscribe((state, prev) => {
         hasTrack = false;
         usePlayerStore.getState().setPlaybackTransport(null, null);
         notify();
+        if (isTrackBlocked(state.currentTrack)) announceBlockedSkip(state.currentTrack);
         usePlayerStore.getState().next();
         return;
       }
       if (disliked) offerUndislike(state.currentTrack);
       updateMetadata(state.currentTrack);
-      void loadTrack(state.currentTrack);
+      void loadTrack(state.currentTrack, takePendingStart(state.currentTrack.urn));
     } else {
       stopTrack();
       currentUrn = null;
@@ -861,7 +897,7 @@ usePlayerStore.subscribe((state, prev) => {
   if (playToggled && !trackChanged) {
     if (state.isPlaying) {
       if (!hasTrack && state.currentTrack) {
-        void loadTrack(state.currentTrack);
+        void loadTrack(state.currentTrack, takePendingStart(state.currentTrack.urn));
       } else {
         invoke('audio_play').catch(console.error);
       }
@@ -1007,20 +1043,19 @@ export function preloadQueue() {
   const sessionId = getSessionId();
   const hq = isHqStreaming();
 
-  for (let i = 1; i <= 3; i++) {
-    const idx = queueIndex + i;
-    if (idx < queue.length && !isLocalUrn(queue[idx].urn)) {
-      entries.push({
-        urn: queue[idx].urn,
-        urls: streamFallbackUrls(queue[idx].urn, hq),
-        downloadUrls: downloadFallbackUrls(queue[idx].urn, hq),
-        storageUrls: buildStorageUrls(queue[idx].urn),
-        sessionId,
-        hq,
-        durationMs: expectedDurationMs(queue[idx]),
-        storageQuality: queue[idx]._scd_meta?.storage_quality,
-      });
-    }
+  for (let idx = queueIndex + 1; idx < queue.length && entries.length < 3; idx++) {
+    const next = queue[idx];
+    if (isLocalUrn(next.urn) || isUrnDisliked(next.urn) || isTrackBlocked(next)) continue;
+    entries.push({
+      urn: next.urn,
+      urls: streamFallbackUrls(next.urn, hq),
+      downloadUrls: downloadFallbackUrls(next.urn, hq),
+      storageUrls: buildStorageUrls(next.urn),
+      sessionId,
+      hq,
+      durationMs: expectedDurationMs(next),
+      storageQuality: next._scd_meta?.storage_quality,
+    });
   }
 
   if (entries.length > 0) {
@@ -1033,4 +1068,13 @@ usePlayerStore.subscribe((state, prev) => {
   if (state.queueIndex !== prev.queueIndex || state.queue !== prev.queue) {
     preloadQueue();
   }
+});
+
+useBlockedArtistsStore.subscribe((state, prev) => {
+  if (state.entries === prev.entries) return;
+  const player = usePlayerStore.getState();
+  if (isTrackBlocked(player.currentTrack)) {
+    lastBlockedSkipToast = Date.now();
+    player.next();
+  } else if (hasTrack) preloadQueue();
 });

@@ -5,6 +5,7 @@ import {dateFormatted, durLong} from '../../lib/formatters';
 import {ChevronDown, ChevronUp, Hash} from '../../lib/icons';
 import {getAlbumTarget} from '../../lib/track-display';
 import type {Track} from '../../stores/player';
+import {RichText} from '../ui/RichText';
 import {StatOrb} from '../user/StatOrb';
 import type {TrackAura} from './useTrackAura';
 
@@ -50,9 +51,11 @@ function Credit({
 export const LinerNotes = React.memo(function LinerNotes({
                                                              track,
                                                              aura,
+                                                             onSeek,
                                                          }: {
     track: Track;
     aura: TrackAura;
+    onSeek: (seconds: number) => void;
 }) {
     const {t} = useTranslation();
     const navigate = useNavigate();
@@ -114,7 +117,13 @@ export const LinerNotes = React.memo(function LinerNotes({
                             !expanded && descLong ? 'line-clamp-4' : ''
                         }`}
                     >
-                        {desc}
+                        <RichText
+                            text={desc}
+                            maxSeconds={track.duration / 1000}
+                            onSeek={onSeek}
+                            accent={aura.accent}
+                            accentSoft={aura.accentSoft}
+                        />
                     </p>
                     {descLong && (
                         <button

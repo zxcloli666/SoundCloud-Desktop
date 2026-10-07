@@ -63,6 +63,7 @@ import {
 import {useSettingsStore} from '../../stores/settings';
 import {AlbumLinkButton} from '../music/AlbumLinkButton';
 import {ArtistNameLinks} from '../music/ArtistNameLinks';
+import {PlayerBlockButton} from '../music/blocklist/PlayerBlockButton';
 import {EqualizerPanel} from '../music/EqualizerPanel';
 import {TrackSoundToggle} from '../music/TrackSoundToggle';
 import {UploadKindDot} from '../music/UploadKindDot';
@@ -970,6 +971,7 @@ const LocalFileBadge = React.memo(() => {
 // Single track-query + dislike observer shared by both reaction buttons.
 const ReactClusterBody = React.memo(({ urn }: { urn: string }) => {
   const trackData = useTrackReactions(urn);
+  const currentTrack = usePlayerStore((s) => s.currentTrack);
   const disliked = useDislikeStatus(urn);
   return (
     <div className="flex items-center gap-0.5">
@@ -982,6 +984,7 @@ const ReactClusterBody = React.memo(({ urn }: { urn: string }) => {
           className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-all duration-200 cursor-pointer hover:bg-white/[0.04] text-white/30 hover:text-white/60"
         />
       )}
+      <PlayerBlockButton key={urn} track={trackData ?? currentTrack} />
       <div className="npb-quality">
         <PlaybackQualityBadge />
       </div>

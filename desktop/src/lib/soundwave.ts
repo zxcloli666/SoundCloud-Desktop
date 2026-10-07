@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Track } from '../stores/player';
 import { api } from './api';
+import { withoutHidden } from './feed-filter';
 import { type PagedResponse, pagedUrl } from './hooks';
 import { trackUrn } from './ids';
 
@@ -103,7 +104,7 @@ export async function fetchSmartWave(opts: {
   // Don't trust the API shape: a resolved-but-null/garbage body must not crash.
   const results = Array.isArray(payload?.tracks) ? payload.tracks : [];
   const cursor = payload?.cursor ?? '';
-  return { tracks: await resultTracks(results), cursor };
+  return { tracks: withoutHidden(await resultTracks(results)), cursor };
 }
 
 /**

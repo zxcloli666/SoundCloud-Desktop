@@ -8,7 +8,7 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
-import {useEffect, useMemo, useRef} from 'react';
+import {useCallback, useEffect, useMemo, useRef} from 'react';
 import {useAuthStore} from '../stores/auth';
 import type {Track} from '../stores/player';
 import {useSettingsStore} from '../stores/settings';
@@ -20,6 +20,7 @@ import {
   isPartialSync,
   useCollectionSync,
 } from './collection-sync';
+import {type FeedFilter, useFeedFilter} from './feed-filter';
 import type {LikedSnapshot} from './liked-merge';
 import {initLikedUrns} from './likes';
 import {rememberLikedTracks, rememberTracks} from './offline-index';
@@ -512,12 +513,18 @@ export function usePostComment(trackUrn: string | undefined) {
 /* ── Related Tracks ───────────────────────────────────────────── */
 
 export function useRelatedTracks(trackUrn: string | undefined, limit = 10) {
+  const keep = useFeedFilter();
+  const select = useCallback(
+    (page: TrackPage): TrackPage => ({ ...page, collection: page.collection.filter(keep) }),
+    [keep],
+  );
   return useQuery({
     queryKey: ['track', trackUrn, 'related', limit],
     queryFn: () => fetchRelatedTracks(trackUrn!, limit),
     enabled: !!trackUrn,
     staleTime: SHORT_CACHE_MS,
     gcTime: INFINITE_GC_MS,
+    select,
   });
 }
 
@@ -934,6 +941,10 @@ export function useDeletePlaylist() {
 
 type RelatedPool = Map<string, { count: number; track: Track }>;
 
+function visiblePool(pool: RelatedPool, keep: FeedFilter): RelatedPool {
+  return new Map([...pool].filter(([, entry]) => keep(entry.track)));
+}
+
 function sampleTrackUrns(tracks: Track[], limit: number): string[] {
   if (tracks.length <= limit) {
     return tracks.map((track) => track.urn);
@@ -963,6 +974,8 @@ export function useRelatedPool(likedTracks: Track[]) {
   const seedUrns = seedRef.current;
 
   const likedUrns = useMemo(() => new Set(likedTracks.map((t) => t.urn)), [likedTracks]);
+  const keep = useFeedFilter();
+  const select = useCallback((pool: RelatedPool) => visiblePool(pool, keep), [keep]);
 
   return useQuery({
     queryKey: ['discover', 'related-pool', seedUrns],
@@ -989,6 +1002,7 @@ export function useRelatedPool(likedTracks: Track[]) {
     enabled: seedUrns.length > 0,
     staleTime: 1000 * 60 * 10,
     gcTime: INFINITE_GC_MS,
+    select,
   });
 }
 

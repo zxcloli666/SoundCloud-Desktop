@@ -12,6 +12,7 @@ import {
   ArrowRight as _ArrowRight,
   ArrowUpDown as _ArrowUpDown,
   AudioLines as _AudioLines,
+  Ban as _Ban,
   Bookmark as _Bookmark,
   Calendar as _Calendar,
   ChartNoAxesColumn as _ChartNoAxesColumn,
@@ -245,6 +246,7 @@ export const X = memo(_X);
 export const Link = memo(_Link2);
 export const SlidersHorizontal = memo(_SlidersHorizontal);
 export const AudioLines = memo(_AudioLines);
+export const Ban = memo(_Ban);
 export const Power = memo(_Power);
 export const Radio = memo(_Radio);
 export const RotateCcw = memo(_RotateCcw);

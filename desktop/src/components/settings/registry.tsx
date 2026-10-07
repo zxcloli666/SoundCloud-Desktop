@@ -3,10 +3,12 @@ import {Cloud, Database, Globe, Headphones, Link, Sparkles, User} from '../../li
 import {CallProxySection} from './CallProxySection';
 import {AccountCard} from './cards/AccountCard';
 import {AudioDeviceCard} from './cards/AudioDeviceCard';
+import {BlockedArtistsCard} from './cards/BlockedArtistsCard';
 import {CacheCard} from './cards/CacheCard';
 import {CloseButtonCard} from './cards/CloseButtonCard';
 import {DiagnosticsCard} from './cards/DiagnosticsCard';
 import {DiscordCard} from './cards/DiscordCard';
+import {HiddenKeywordsCard} from './cards/HiddenKeywordsCard';
 import {HotkeysCard} from './cards/HotkeysCard';
 import {ImportCard} from './cards/ImportCard';
 import {LanguageCard} from './cards/LanguageCard';
@@ -53,6 +55,8 @@ export const SETTINGS_CATEGORIES: SettingsCategory[] = [
                 <HotkeysCard/>
                 <UpdatesCard/>
                 <DiagnosticsCard/>
+                <BlockedArtistsCard/>
+                <HiddenKeywordsCard/>
             </>
         ),
     },

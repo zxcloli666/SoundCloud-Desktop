@@ -232,6 +232,7 @@
     "unlike": "Beğenilerden kaldır",
     "play": "Calistir",
     "pause": "Duraklat",
+    "seekTo": "{{time}} anına git",
     "openAlbum": "\"{{title}}\" albümünü aç",
     "manage": "Parçayı yönet",
     "edit": "Parçayı düzenle",
@@ -745,7 +746,7 @@
     "logFolderFailed": "Kayıt klasörü açılamadı",
     "playback": "Oynatma",
     "floatingComments": "Yuzen yorumlar",
-    "floatingCommentsDesc": "Calarken yorumlari kayan baloncuklar olarak goster",
+    "floatingCommentsDesc": "Dinleyici yorumlarini parca dalga formunda goster ve calma noktasi geldiginde baloncuk olarak ac",
     "discordRpc": "Discord Rich Presence",
     "discordRpcDesc": "Mevcut SoundCloud oynatma durumunu Discord'da goster",
     "discordRpcMode": "Gosterim modu",
@@ -1349,6 +1350,39 @@
       "single": "Single",
       "compilation": "Derleme"
     }
+  },
+  "blocklist": {
+    "block": "Sanatciyi engelle",
+    "blocked": "Engellendi",
+    "unblock": "Engeli kaldir",
+    "undo": "Geri al",
+    "playerTitle": "Bir daha calma",
+    "playerHint": "Parcalari atlanir; dalgada, karisimlarda ve yeni cikanlarda gorunmez.",
+    "kindArtist": "Sanatci",
+    "kindUser": "SoundCloud hesabi",
+    "toastBlocked": "{{name}} engellendi",
+    "toastUnblocked": "{{name}} geri dondu",
+    "failed": "Engel listesi guncellenemedi, tekrar deneyin",
+    "cardTitle": "Engellenen sanatcilar",
+    "cardDesc": "Bu sanatcilarin parcalari calarken atlanir; dalgada, karisimlarda ve yeni cikanlarda gorunmez. Hesabinla esitlenir.",
+    "empty": "Henuz kimse yok. Bir sanatciyi sayfasindan ya da dogrudan oynaticidan engelleyebilirsin.",
+    "since": "{{date}} tarihinden beri engelli",
+    "skipped": "Engellenen bir sanatcinin parcasi atlandi"
+  },
+  "keywordFilter": {
+    "cardTitle": "Gizli kelimeler",
+    "cardDesc": "Basliginda, etiketlerinde, turunde veya sanatci adinda bu kelimeler gecen parcalar dalgada, onerilerde, kesifte ve yeni cikanlarda gosterilmez. Bu cihazda saklanir.",
+    "placeholder": "Bir kelime veya ifade ekleyin, orn. nightcore",
+    "add": "Ekle",
+    "remove": "{{keyword}} kaldir",
+    "duplicate": "Bu kelime zaten listede",
+    "empty": "Henuz gizli kelime yok. Akisinizda gormek istemediklerinizi ekleyin.",
+    "suggestions": "Hizli ekle",
+    "hint": "Yalnizca tam kelimeler, buyuk/kucuk harf ve noktalama onemsiz: \"sped up\" \"Sped-Up\" olani da gizler, \"remix\" ise \"remixed\" olana dokunmaz."
+  },
+  "richText": {
+    "mentionNotFound": "{{name}} SoundCloud'da bulunamadı",
+    "mentionNotFoundBody": "Profil yeniden adlandırılmış veya silinmiş olabilir."
   },
   "trackSort": {
     "label": "Sırala",

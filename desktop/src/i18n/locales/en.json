@@ -834,7 +834,7 @@
     "logFolderFailed": "Couldn't open the log folder",
     "playback": "Playback",
     "floatingComments": "Floating comments",
-    "floatingCommentsDesc": "Show comments as floating pills during playback",
+    "floatingCommentsDesc": "Show listener comments on the track waveform and pop them up as the playhead passes",
     "lyricsVisualizer": "Lyrics visualizer",
     "lyricsVisualizerDesc": "Real-time FFT wave behind the fullscreen lyrics. Off by default to save GPU.",
     "discordRpc": "Discord Rich Presence",
@@ -1539,6 +1539,39 @@
     "noMatches": "Nothing matches “{{query}}”",
     "capAlbums": "That's the cream of the crop — narrow the genre or search to dig deeper.",
     "capArtists": "That's the cream of the crop — pick a tag or search to dig deeper."
+  },
+  "blocklist": {
+    "block": "Block artist",
+    "blocked": "Blocked",
+    "unblock": "Unblock",
+    "undo": "Undo",
+    "playerTitle": "Never play again",
+    "playerHint": "Their tracks get skipped and stay out of the wave, mixes and fresh drops.",
+    "kindArtist": "Artist",
+    "kindUser": "SoundCloud account",
+    "toastBlocked": "{{name}} is blocked",
+    "toastUnblocked": "{{name}} is back",
+    "failed": "Couldn't update the blocklist, try again",
+    "cardTitle": "Blocked artists",
+    "cardDesc": "Their tracks are skipped in playback and kept out of the wave, mixes and fresh drops. Synced to your account.",
+    "empty": "Nobody here yet. Block an artist from their page or right from the player.",
+    "since": "Blocked {{date}}",
+    "skipped": "Skipped a track by a blocked artist"
+  },
+  "keywordFilter": {
+    "cardTitle": "Hidden keywords",
+    "cardDesc": "Tracks with these words in the title, tags, genre or artist name are kept out of the wave, recommendations, discover and fresh drops. Stored on this device.",
+    "placeholder": "Add a word or phrase, e.g. nightcore",
+    "add": "Add",
+    "remove": "Remove {{keyword}}",
+    "duplicate": "This word is already on the list",
+    "empty": "No hidden words yet. Add the ones you never want to see in your feeds.",
+    "suggestions": "Quick add",
+    "hint": "Whole words only, case and punctuation don't matter: \"sped up\" also hides \"Sped-Up\", but \"remix\" won't touch \"remixed\"."
+  },
+  "richText": {
+    "mentionNotFound": "Couldn't find {{name}} on SoundCloud",
+    "mentionNotFoundBody": "The profile may have been renamed or deleted."
   },
   "trackSort": {
     "label": "Sort",

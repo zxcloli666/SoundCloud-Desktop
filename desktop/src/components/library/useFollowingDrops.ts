@@ -1,6 +1,7 @@
 import {useQueries, useQueryClient} from '@tanstack/react-query';
 import {useCallback, useMemo} from 'react';
 import {api} from '../../lib/api';
+import {useFeedFilter} from '../../lib/feed-filter';
 import {scDateMs} from '../../lib/formatters';
 import {type PagedResponse, useMyFollowings} from '../../lib/hooks';
 import type {Track} from '../../stores/player';
@@ -29,6 +30,7 @@ export function useFollowingDrops(): FollowingDrops {
     const qc = useQueryClient();
     const {users, isLoading: followingsLoading} = useMyFollowings();
     const targets = useMemo(() => users.slice(0, MAX_ARTISTS), [users]);
+    const keep = useFeedFilter();
 
     const combined = useQueries({
         queries: targets.map((u) => ({
@@ -45,7 +47,7 @@ export function useFollowingDrops(): FollowingDrops {
             const merged: Track[] = [];
             for (const r of results) {
                 for (const t of r.data?.collection ?? []) {
-                    if (seen.has(t.urn)) continue;
+                    if (seen.has(t.urn) || !keep(t)) continue;
                     seen.add(t.urn);
                     merged.push(t);
                 }
