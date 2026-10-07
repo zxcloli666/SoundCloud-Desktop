@@ -252,18 +252,18 @@ fn decode_bytes(bytes: &[u8]) -> Result<Decoder<Cursor<Vec<u8>>>, DecoderError> 
         .or_else(|_| Decoder::new(Cursor::new(bytes.to_vec())))
 }
 
-fn normalization_cache_file(cache_dir: &Path, cache_key: &str) -> PathBuf {
+pub fn analysis_cache_file(cache_dir: &Path, cache_key: &str, extension: &str) -> PathBuf {
     let mut hasher = Sha256::new();
     hasher.update(cache_key.as_bytes());
     let hash = hex::encode(hasher.finalize());
-    cache_dir.join(format!("{hash}.gain"))
+    cache_dir.join(format!("{hash}.{extension}"))
 }
 
 fn read_cached_normalization_gain(
     cache_dir: Option<&Path>,
     cache_key: Option<&str>,
 ) -> Option<f32> {
-    let path = normalization_cache_file(cache_dir?, cache_key?);
+    let path = analysis_cache_file(cache_dir?, cache_key?, "gain");
     let raw = std::fs::read_to_string(path).ok()?;
     let (version, value) = raw.trim().split_once(':')?;
     if version != NORMALIZATION_CACHE_VERSION.to_string() {
@@ -284,7 +284,7 @@ fn write_cached_normalization_gain(cache_dir: Option<&Path>, cache_key: Option<&
         return;
     }
 
-    let path = normalization_cache_file(cache_dir, cache_key);
+    let path = analysis_cache_file(cache_dir, cache_key, "gain");
     let _ = std::fs::write(path, format!("{NORMALIZATION_CACHE_VERSION}:{gain:.6}"));
 }
 
@@ -409,6 +409,20 @@ pub fn resolve_normalization_gain(
     Ok(gain)
 }
 
+pub fn open_source(bytes: &[u8]) -> Result<Box<dyn Source + Send>, String> {
+    if is_ogg_opus(bytes) {
+        return Ok(Box::new(
+            OpusSource::new(bytes.to_vec()).map_err(|e| format!("Failed to decode: {}", e))?,
+        ));
+    }
+    if let Ok(decoder) = decode_bytes(bytes) {
+        return Ok(Box::new(decoder));
+    }
+    Ok(Box::new(
+        OpusSource::new(bytes.to_vec()).map_err(|e| format!("Failed to decode: {}", e))?,
+    ))
+}
+
 #[allow(clippy::too_many_arguments)]
 pub fn create_player_from_bytes(
     bytes: &[u8],
@@ -426,13 +440,7 @@ pub fn create_player_from_bytes(
         player.pause();
     }
 
-    let source: Box<dyn Source + Send> = if is_ogg_opus(bytes) {
-        Box::new(OpusSource::new(bytes.to_vec()).map_err(|e| format!("Failed to decode: {}", e))?)
-    } else if let Ok(decoder) = decode_bytes(bytes) {
-        Box::new(decoder)
-    } else {
-        Box::new(OpusSource::new(bytes.to_vec()).map_err(|e| format!("Failed to decode: {}", e))?)
-    };
+    let source = open_source(bytes)?;
     let duration = source.total_duration().map(|d| d.as_secs_f64());
     player.append(DeclickSource::new(AnalyserSource::new(
         EqSource::new(

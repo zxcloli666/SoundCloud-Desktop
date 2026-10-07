@@ -9,6 +9,7 @@ mod media_controls;
 mod mpeg;
 mod output;
 mod pitch;
+mod silence;
 mod state;
 mod tick;
 mod timing;

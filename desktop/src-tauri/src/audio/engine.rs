@@ -6,6 +6,7 @@ use tauri::State;
 use tokio::task;
 
 use crate::audio::decode::{create_player_from_bytes, resolve_normalization_gain};
+use crate::audio::silence;
 use crate::audio::state::AudioState;
 use crate::audio::types::{AudioLoadResult, MediaCmd, EQ_BANDS, STALL_SUPPRESS_MS, TICK_INTERVAL_MS};
 use crate::network::system_proxy::follow;
@@ -81,6 +82,7 @@ fn commit_loaded_track(
     bytes: Vec<u8>,
     new_player: rodio::Player,
     normalization_gain: f32,
+    silence_cache: Option<PathBuf>,
 ) {
     let mut player = state.player.lock().unwrap();
     apply_current_rate(state, &new_player);
@@ -88,6 +90,7 @@ fn commit_loaded_track(
     *player = Some(new_player);
     *state.source_bytes.lock().unwrap() = Some(bytes);
     *state.normalization_gain.lock().unwrap() = normalization_gain;
+    state.silence.lock().unwrap().start_track(silence_cache);
     // Fresh track starts at source 0 / output 0.
     set_pos_anchor(state, 0.0, 0.0);
     state.has_track.store(true, Ordering::Relaxed);
@@ -216,6 +219,10 @@ pub async fn load_file(
 
     stop_current_player(&state);
 
+    let silence_cache = silence::cache_file(
+        normalization_cache_dir.as_deref(),
+        normalization_cache_key.as_deref(),
+    );
     let mixer = state.mixer.lock().unwrap().clone();
     let vol = *state.volume.lock().unwrap();
     let normalization_enabled = state.normalization_enabled.load(Ordering::Relaxed);
@@ -233,7 +240,7 @@ pub async fn load_file(
     )
     .await?;
 
-    commit_loaded_track(&state, bytes, new_player, normalization_gain);
+    commit_loaded_track(&state, bytes, new_player, normalization_gain, silence_cache);
 
     Ok(AudioLoadResult { duration_secs })
 }
@@ -320,6 +327,10 @@ pub async fn load_url(
         return Ok(empty_result);
     }
 
+    let silence_cache = silence::cache_file(
+        normalization_cache_dir.as_deref(),
+        normalization_cache_key.as_deref(),
+    );
     let mixer = state.mixer.lock().unwrap().clone();
     let vol = *state.volume.lock().unwrap();
     let normalization_enabled = state.normalization_enabled.load(Ordering::Relaxed);
@@ -337,7 +348,7 @@ pub async fn load_url(
     )
     .await?;
 
-    commit_loaded_track(&state, bytes, new_player, normalization_gain);
+    commit_loaded_track(&state, bytes, new_player, normalization_gain, silence_cache);
 
     Ok(AudioLoadResult { duration_secs })
 }

@@ -3,6 +3,7 @@ use tauri::{Manager, State};
 
 use crate::audio::device;
 use crate::audio::engine;
+use crate::audio::silence;
 use crate::audio::state::AudioState;
 use crate::audio::timing;
 use crate::audio::types::{AudioLoadResult, AudioSink};
@@ -21,14 +22,16 @@ pub async fn audio_load_file(
         .app_cache_dir()
         .ok()
         .map(|dir| dir.join("audio-normalization"));
-    engine::load_file(
+    let result = engine::load_file(
         path,
         normalization_cache_dir,
         cache_key,
         start_paused,
         state,
     )
-    .await
+    .await?;
+    silence::scan(&app);
+    Ok(result)
 }
 
 #[tauri::command]
@@ -46,7 +49,7 @@ pub async fn audio_load_url(
         .app_cache_dir()
         .ok()
         .map(|dir| dir.join("audio-normalization"));
-    engine::load_url(
+    let result = engine::load_url(
         url,
         session_id,
         cache_path,
@@ -55,7 +58,9 @@ pub async fn audio_load_url(
         start_paused,
         state,
     )
-    .await
+    .await?;
+    silence::scan(&app);
+    Ok(result)
 }
 
 #[tauri::command]
@@ -96,6 +101,11 @@ pub fn audio_set_pitch_ratio(ratio: f64, state: State<'_, AudioState>) {
 #[tauri::command]
 pub fn audio_set_ab_loop(a: Option<f64>, b: Option<f64>, state: State<'_, AudioState>) {
     engine::set_ab_loop(a, b, state);
+}
+
+#[tauri::command]
+pub fn audio_set_skip_silence(enabled: bool, app: AppHandle) {
+    silence::set_enabled(&app, enabled);
 }
 
 #[tauri::command]

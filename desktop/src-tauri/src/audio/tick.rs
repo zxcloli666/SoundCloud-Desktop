@@ -6,6 +6,7 @@ use tauri::{Emitter, Manager};
 
 use crate::app::diagnostics;
 use crate::audio::engine;
+use crate::audio::silence::SilenceJump;
 use crate::audio::state::AudioState;
 use crate::audio::timing;
 use crate::audio::types::{
@@ -108,20 +109,33 @@ pub fn start_tick_emitter(app: &AppHandle) {
                         // can't seek in place a bare try_seek silently no-ops, leaving
                         // the segment playing straight through while the bar froze at A.
                         let ab = *state.ab_loop.lock().unwrap();
-                        if let Some((a, b)) = ab
-                            && pos >= b {
-                                drop(player_guard);
-                                engine::seek_to(&state, a).ok();
-                                #[cfg(target_os = "linux")]
-                                {
-                                    push_media_position(&state, a);
-                                    last_media_sync = std::time::Instant::now();
+                        let jump_target = match ab {
+                            Some((a, b)) => (pos >= b).then_some(a),
+                            None if player.is_paused() => None,
+                            None => match state.silence.lock().unwrap().jump(pos) {
+                                Some(SilenceJump::To(target)) => Some(target),
+                                Some(SilenceJump::End) => {
+                                    player.stop();
+                                    state.ended_notified.store(true, Ordering::Relaxed);
+                                    handle.emit("audio:ended", true).ok();
+                                    continue;
                                 }
-                                handle.emit("audio:tick", a).ok();
-                                last_pos_ms = ((a / rate).max(0.0) * 1000.0) as u64;
-                                last_progress_at = std::time::Instant::now();
-                                continue;
+                                None => None,
+                            },
+                        };
+                        if let Some(target) = jump_target {
+                            drop(player_guard);
+                            engine::seek_to(&state, target).ok();
+                            #[cfg(target_os = "linux")]
+                            {
+                                push_media_position(&state, target);
+                                last_media_sync = std::time::Instant::now();
                             }
+                            handle.emit("audio:tick", target).ok();
+                            last_pos_ms = ((target / rate).max(0.0) * 1000.0) as u64;
+                            last_progress_at = std::time::Instant::now();
+                            continue;
+                        }
 
                         handle.emit("audio:tick", pos).ok();
                         timing::process_lyrics_timeline(&handle, &state, pos);

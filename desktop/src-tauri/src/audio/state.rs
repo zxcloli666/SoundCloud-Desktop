@@ -6,6 +6,7 @@ use rodio::Player;
 
 use crate::audio::analyser::AnalyserBuffer;
 use crate::audio::output::{spawn_output_thread, OutputHandles};
+use crate::audio::silence::SilenceState;
 use crate::audio::types::{
     AudioThreadCmd, EqParams, FloatingCommentEvent, LyricsTimingLine, MediaCmd,
 };
@@ -74,6 +75,7 @@ pub struct AudioState {
     /// A-B loop region `(a, b)` in **source seconds** (a < b). When set, playback
     /// jumps back to `a` once it crosses `b` (see tick.rs). None = disabled.
     pub ab_loop: Mutex<Option<(f64, f64)>>,
+    pub silence: Mutex<SilenceState>,
     pub analyser_buffer: Arc<AnalyserBuffer>,
     pub preview: Mutex<PreviewState>,
 }
@@ -123,6 +125,7 @@ pub fn init(app: &AppHandle) -> AudioState {
         lyrics_timeline: Mutex::new(None),
         comments_timeline: Mutex::new(None),
         ab_loop: Mutex::new(None),
+        silence: Mutex::new(SilenceState::default()),
         analyser_buffer: AnalyserBuffer::new(),
         preview: Mutex::new(PreviewState {
             player: None,
