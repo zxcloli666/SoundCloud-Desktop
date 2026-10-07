@@ -48,6 +48,7 @@ const FULL_PLAY_RATIO = 0.5;
 const EARLY_END_MIN_EXPECTED_SEC = 30;
 const EARLY_END_TOLERANCE_SEC = 4;
 const EARLY_END_TOLERANCE_RATIO = 0.04;
+const CROSSFADE_LEAD_SEC = 0.5;
 /** Один лечебный перекач на урн за сессию — защита от лупа на 30s-превью и мёртвых источниках. */
 const healedUrns = new Set<string>();
 
@@ -62,6 +63,9 @@ let acceptedShortFile = false;
 let downloadProgress: number | null = null;
 let loadGen = 0;
 let lastEndedUrn: string | null = null;
+let pendingCrossfadeMs = 0;
+let crossfadeGen = -1;
+let crossfadeCheckedGen = -1;
 const listeners = new Set<() => void>();
 const API_PREVIEW_DURATION_MS = 30_000;
 
@@ -309,12 +313,14 @@ async function loadCachedFile(
   path: string,
   startPaused: boolean,
   reResolve: () => Promise<string | null>,
+  crossfadeMs = 0,
 ): Promise<{ duration_secs: number | null }> {
   try {
     return await invoke<{ duration_secs: number | null }>('audio_load_file', {
       path,
       cacheKey: urn,
       startPaused,
+      crossfadeMs: crossfadeMs > 0 ? crossfadeMs : null,
     });
   } catch (e) {
     if (!isFileMissing(e)) throw e;
@@ -332,8 +338,16 @@ async function loadCachedFile(
 async function loadTrack(track: Track, resumeAt = 0) {
   const gen = ++loadGen;
   const isNewTrack = currentUrn !== track.urn;
+  const crossfadeMs = pendingCrossfadeMs;
+  pendingCrossfadeMs = 0;
   stopLoadWatch();
-  stopTrack();
+  if (crossfadeMs > 0) {
+    crossfadeGen = gen;
+    hasTrack = false;
+    cachedTime = 0;
+  } else {
+    stopTrack();
+  }
   currentUrn = track.urn;
   acceptedShortFile = false;
   const urn = track.urn;
@@ -402,6 +416,7 @@ async function loadTrack(track: Track, resumeAt = 0) {
         cached.path,
         resumeAt > 0 || !usePlayerStore.getState().isPlaying,
         reResolve,
+        crossfadeMs,
       );
       if (gen !== loadGen) return;
       if (loadResult?.duration_secs) {
@@ -415,6 +430,7 @@ async function loadTrack(track: Track, resumeAt = 0) {
     }
 
     // Strategy 2: Download full track to cache — Rust picks storage/API internally
+    if (crossfadeMs > 0) invoke('audio_stop').catch(console.error);
     setDownloadProgress(0);
     watchLoad(() => {
       if (gen === loadGen) skipUnloadable(track, true);
@@ -469,6 +485,7 @@ async function loadTrack(track: Track, resumeAt = 0) {
   } catch (e) {
     console.error('[Audio] Load failed:', e);
     if (gen !== loadGen) return;
+    if (crossfadeMs > 0) invoke('audio_stop').catch(console.error);
     stopLoadWatch();
     setDownloadProgress(null);
     usePlayerStore.getState().setPlaybackTransport(null, null);
@@ -624,10 +641,48 @@ function handleTrackEnd() {
 
 /* ── Tauri event listeners ───────────────────────────────────── */
 
+function isCrossfadeLoading(): boolean {
+  return crossfadeGen === loadGen && !hasTrack;
+}
+
+function upcomingTrack(): Track | null {
+  const { queue, queueIndex, repeat } = usePlayerStore.getState();
+  if (queueIndex + 1 < queue.length) return queue[queueIndex + 1];
+  return repeat === 'all' && queue.length > 1 ? queue[0] : null;
+}
+
+function canCrossfade(): boolean {
+  const state = usePlayerStore.getState();
+  return state.isPlaying && state.repeat !== 'one' && !state.abLoop;
+}
+
+function maybeStartCrossfade() {
+  const lengthSec = useSettingsStore.getState().crossfadeSec;
+  if (lengthSec <= 0 || !hasTrack || !currentUrn || crossfadeCheckedGen === loadGen) return;
+  const duration = cachedDuration > 0 ? cachedDuration : fallbackDuration;
+  if (duration <= lengthSec * 2 || cachedTime < duration - lengthSec - CROSSFADE_LEAD_SEC) return;
+  crossfadeCheckedGen = loadGen;
+  const next = upcomingTrack();
+  if (!canCrossfade() || !next || isUrnDisliked(next.urn)) return;
+  const gen = loadGen;
+  void getCacheInfo(next.urn).then((info) => {
+    if (!info?.path || gen !== loadGen || !hasTrack || !currentUrn) return;
+    if (!canCrossfade() || upcomingTrack()?.urn !== next.urn) return;
+    recordFullPlay(currentUrn, true);
+    lastEndedUrn = currentUrn;
+    pendingCrossfadeMs = lengthSec * 1000;
+    currentUrn = null;
+    usePlayerStore.getState().next();
+    pendingCrossfadeMs = 0;
+  });
+}
+
 listen<number>('audio:tick', (event) => {
+  if (isCrossfadeLoading()) return;
   cachedTime = event.payload;
   if (cachedDuration <= 0) cachedDuration = fallbackDuration;
   notify();
+  maybeStartCrossfade();
 });
 
 listen<{ urn: string; progress: number }>('track:download-progress', (event) => {
@@ -638,27 +693,31 @@ listen<{ urn: string; progress: number }>('track:download-progress', (event) => 
   }
 });
 
+// Засчитываем full_play только если трек реально игрался: либо ≥30s,
+// либо проиграно ≥50% длительности (для коротких треков). Иначе это
+// зависшая загрузка / зеро-длительность баг — не отправляем.
+function recordFullPlay(urn: string, complete: boolean) {
+  const playedEnough =
+    complete ||
+    cachedTime >= SKIP_THRESHOLD_SEC ||
+    (cachedDuration > 0 && cachedTime >= cachedDuration * FULL_PLAY_RATIO);
+  if (!playedEnough) return;
+  const positionPct = complete
+    ? 1
+    : cachedDuration > 0
+      ? Math.min(1, cachedTime / cachedDuration)
+      : undefined;
+  recordEvent('full_play', urn, positionPct);
+  const cluster = getUrnCluster(urn);
+  if (cluster) recordClusterFeedback(cluster, 'complete');
+}
+
 listen<boolean | null>('audio:ended', (event) => {
+  if (isCrossfadeLoading()) return;
   const silentTail = event.payload === true;
   if (!silentTail && maybeHealEarlyEnd()) return;
   if (currentUrn) {
-    // Засчитываем full_play только если трек реально игрался: либо ≥30s,
-    // либо проиграно ≥50% длительности (для коротких треков). Иначе это
-    // зависшая загрузка / зеро-длительность баг — не отправляем.
-    const playedEnough =
-      silentTail ||
-      cachedTime >= SKIP_THRESHOLD_SEC ||
-      (cachedDuration > 0 && cachedTime >= cachedDuration * FULL_PLAY_RATIO);
-    if (playedEnough) {
-      const positionPct = silentTail
-        ? 1
-        : cachedDuration > 0
-          ? Math.min(1, cachedTime / cachedDuration)
-          : undefined;
-      recordEvent('full_play', currentUrn, positionPct);
-      const cluster = getUrnCluster(currentUrn);
-      if (cluster) recordClusterFeedback(cluster, 'complete');
-    }
+    recordFullPlay(currentUrn, silentTail);
     lastEndedUrn = currentUrn;
   }
   hasTrack = false;

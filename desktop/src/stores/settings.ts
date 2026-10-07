@@ -9,6 +9,7 @@ export type StartupPage = 'home' | 'search' | 'library' | 'settings';
 export type DiscordRpcMode = 'track' | 'artist' | 'activity';
 export type StreamQuality = 'auto' | 'sq' | 'hq';
 export type SkipStuckAfterSec = 0 | 10 | 20 | 30 | 60;
+export const CROSSFADE_MAX_SEC = 12;
 export interface SidebarPinnedPlaylist {
   urn: string;
   title: string;
@@ -79,6 +80,7 @@ export interface SettingsState {
   skipSilence: boolean;
   streamQuality: StreamQuality;
   skipStuckAfterSec: SkipStuckAfterSec;
+  crossfadeSec: number;
   bypassWhitelist: boolean;
   sidebarCollapsed: boolean;
   floatingComments: boolean;
@@ -116,6 +118,7 @@ export interface SettingsState {
   setSkipSilence: (enabled: boolean) => void;
   setStreamQuality: (quality: StreamQuality) => void;
   setSkipStuckAfterSec: (seconds: SkipStuckAfterSec) => void;
+  setCrossfadeSec: (seconds: number) => void;
   setBypassWhitelist: (enabled: boolean) => void;
   toggleSidebar: () => void;
   setFloatingComments: (v: boolean) => void;
@@ -160,6 +163,7 @@ const DEFAULTS = {
   skipSilence: false,
   streamQuality: 'auto' as StreamQuality,
   skipStuckAfterSec: 0 as SkipStuckAfterSec,
+  crossfadeSec: 0,
   bypassWhitelist: false,
   sidebarCollapsed: false,
   floatingComments: true,
@@ -238,6 +242,8 @@ export const useSettingsStore = create<SettingsState>()(
       setSkipSilence: (skipSilence) => set({ skipSilence }),
       setStreamQuality: (streamQuality) => set({ streamQuality }),
       setSkipStuckAfterSec: (skipStuckAfterSec) => set({ skipStuckAfterSec }),
+      setCrossfadeSec: (seconds) =>
+        set({ crossfadeSec: Math.min(CROSSFADE_MAX_SEC, Math.max(0, Math.round(seconds))) }),
       setBypassWhitelist: (bypassWhitelist) => set({ bypassWhitelist }),
       toggleSidebar: () => set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
       setFloatingComments: (floatingComments) => set({ floatingComments }),
@@ -321,6 +327,7 @@ export const useSettingsStore = create<SettingsState>()(
         skipSilence: s.skipSilence,
         streamQuality: s.streamQuality,
         skipStuckAfterSec: s.skipStuckAfterSec,
+        crossfadeSec: s.crossfadeSec,
         bypassWhitelist: s.bypassWhitelist,
         sidebarCollapsed: s.sidebarCollapsed,
         floatingComments: s.floatingComments,
