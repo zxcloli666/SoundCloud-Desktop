@@ -12,6 +12,7 @@ import {PerformanceCard} from './cards/PerformanceCard';
 import {PlaybackCard} from './cards/PlaybackCard';
 import {SoundForgeCard} from './cards/SoundForgeCard';
 import {StartupCard} from './cards/StartupCard';
+import {ScrobbleCard} from './cards/scrobble/ScrobbleCard';
 import {ThemeCard} from './cards/ThemeCard';
 import {WallpaperCard} from './cards/WallpaperCard';
 
@@ -85,6 +86,7 @@ export const SETTINGS_CATEGORIES: SettingsCategory[] = [
         Body: () => (
             <>
                 <DiscordCard/>
+                <ScrobbleCard/>
                 <ImportCard/>
             </>
         ),
