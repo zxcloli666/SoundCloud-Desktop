@@ -1155,5 +1155,16 @@
     "empty": "Nobody here yet. Block an artist from their page or right from the player.",
     "since": "Blocked {{date}}",
     "skipped": "Skipped a track by a blocked artist"
+  },
+  "keywordFilter": {
+    "cardTitle": "Hidden keywords",
+    "cardDesc": "Tracks with these words in the title, tags, genre or artist name are kept out of the wave, recommendations, discover and fresh drops. Stored on this device.",
+    "placeholder": "Add a word or phrase, e.g. nightcore",
+    "add": "Add",
+    "remove": "Remove {{keyword}}",
+    "duplicate": "This word is already on the list",
+    "empty": "No hidden words yet. Add the ones you never want to see in your feeds.",
+    "suggestions": "Quick add",
+    "hint": "Whole words only, case and punctuation don't matter: \"sped up\" also hides \"Sped-Up\", but \"remix\" won't touch \"remixed\"."
   }
 }

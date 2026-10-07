@@ -958,5 +958,16 @@
     "empty": "Henuz kimse yok. Bir sanatciyi sayfasindan ya da dogrudan oynaticidan engelleyebilirsin.",
     "since": "{{date}} tarihinden beri engelli",
     "skipped": "Engellenen bir sanatcinin parcasi atlandi"
+  },
+  "keywordFilter": {
+    "cardTitle": "Gizli kelimeler",
+    "cardDesc": "Basliginda, etiketlerinde, turunde veya sanatci adinda bu kelimeler gecen parcalar dalgada, onerilerde, kesifte ve yeni cikanlarda gosterilmez. Bu cihazda saklanir.",
+    "placeholder": "Bir kelime veya ifade ekleyin, orn. nightcore",
+    "add": "Ekle",
+    "remove": "{{keyword}} kaldir",
+    "duplicate": "Bu kelime zaten listede",
+    "empty": "Henuz gizli kelime yok. Akisinizda gormek istemediklerinizi ekleyin.",
+    "suggestions": "Hizli ekle",
+    "hint": "Yalnizca tam kelimeler, buyuk/kucuk harf ve noktalama onemsiz: \"sped up\" \"Sped-Up\" olani da gizler, \"remix\" ise \"remixed\" olana dokunmaz."
   }
 }

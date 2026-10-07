@@ -6,6 +6,7 @@ import {AudioDeviceCard} from './cards/AudioDeviceCard';
 import {BlockedArtistsCard} from './cards/BlockedArtistsCard';
 import {CacheCard} from './cards/CacheCard';
 import {DiscordCard} from './cards/DiscordCard';
+import {HiddenKeywordsCard} from './cards/HiddenKeywordsCard';
 import {ImportCard} from './cards/ImportCard';
 import {LanguageCard} from './cards/LanguageCard';
 import {NetworkCard} from './cards/NetworkCard';
@@ -43,6 +44,7 @@ export const SETTINGS_CATEGORIES: SettingsCategory[] = [
                 <LanguageCard/>
                 <StartupCard/>
                 <BlockedArtistsCard/>
+                <HiddenKeywordsCard/>
             </>
         ),
     },
