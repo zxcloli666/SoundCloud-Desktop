@@ -1,3 +1,4 @@
+pub mod close_action;
 pub mod diagnostics;
 pub mod hotkeys;
 pub mod log_sink;

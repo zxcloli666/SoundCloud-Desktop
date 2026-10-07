@@ -167,7 +167,7 @@ pub fn run() {
         })
         .on_window_event(|window, event| match event {
             tauri::WindowEvent::CloseRequested { api, .. } => {
-                if window.label() == "main" && !app::tray::is_available() {
+                if window.label() == "main" && app::close_action::quits_on_close() {
                     app::tray::run_action(window.app_handle(), "quit");
                 } else {
                     api.prevent_close();
@@ -197,6 +197,8 @@ pub fn run() {
             app::diagnostics::diagnostics_log,
             app::diagnostics::diagnostics_log_dir,
             app::diagnostics::diagnostics_open_log_dir,
+            app::close_action::close_action_get,
+            app::close_action::close_action_set,
             app::render_mode::render_mode_get,
             app::render_mode::render_mode_set,
             app::render_mode::render_mode_restart,
