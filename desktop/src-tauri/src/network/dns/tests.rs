@@ -10,7 +10,9 @@ use tokio::net::TcpListener;
 use wreq::dns::{Addrs, Name, Resolve, Resolving};
 
 use super::doh::DohAnswer;
-use super::{Config, DnsError, Fallback, Lookup, Scope, not_found, scope};
+use super::{
+    Config, DnsError, Fallback, Lookup, Scope, not_found, reads_as_not_found, resolver_texts, scope,
+};
 use crate::network::fail::{Fail, FailKind, of_wreq};
 
 const BUDGET: Duration = Duration::from_millis(300);
@@ -763,6 +765,32 @@ fn only_a_definitive_resolver_answer_counts_as_no_such_name() {
     ];
     for (error, expected) in table {
         assert_eq!(not_found(&error), expected, "{error}");
+    }
+}
+
+#[test]
+fn a_localized_resolver_message_still_counts_as_no_such_name() {
+    let russian = [
+        "Имя или служба не известны".to_string(),
+        "Нет адреса, связанного с именем".to_string(),
+    ];
+    let lookup = "failed to lookup address information: ";
+    for line in &russian {
+        assert!(reads_as_not_found(&format!("{lookup}{line}"), &russian));
+    }
+    let temporary = format!("{lookup}Временный сбой в разрешении имен");
+    assert!(!reads_as_not_found(&temporary, &russian));
+    assert!(!reads_as_not_found(&temporary, &[]));
+}
+
+#[cfg(unix)]
+#[test]
+fn the_resolver_own_words_for_no_such_name_are_known() {
+    let texts = resolver_texts();
+    assert_eq!(texts.len(), 2);
+    for text in texts {
+        let error = std::io::Error::other(format!("failed to lookup address information: {text}"));
+        assert!(not_found(&error), "{error}");
     }
 }
 
