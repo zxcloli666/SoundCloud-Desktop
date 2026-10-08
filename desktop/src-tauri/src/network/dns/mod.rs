@@ -89,6 +89,10 @@ pub async fn lookup(host: &str) -> Result<Vec<IpAddr>, DnsError> {
     shared().lookup(host).await
 }
 
+pub async fn ready(host: &str, budget: Duration) -> Result<(), Fail> {
+    shared().ready(host, budget).await
+}
+
 pub fn suspect(host: &str) {
     if let Some(fallback) = SHARED.get() {
         fallback.suspect(&normalize(host));

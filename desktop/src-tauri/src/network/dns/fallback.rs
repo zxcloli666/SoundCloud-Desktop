@@ -11,7 +11,7 @@ use wreq::dns::{Addrs, Name, Resolve, Resolving};
 use super::cache::Cache;
 use super::{Config, DnsError, Scope, normalize, runtime, scope, wire};
 use crate::app::diagnostics;
-use crate::network::fail::{Fail, FailKind};
+use crate::network::fail::{Fail, FailKind, Phase};
 
 const GARBAGE_DISTRUST: Duration = Duration::from_secs(600);
 const SYSTEM_PATIENCE: Duration = Duration::from_secs(8);
@@ -79,6 +79,20 @@ impl Fallback {
             return Ok(hit);
         }
         self.flight(host).await
+    }
+
+    pub async fn ready(&self, host: &str, budget: Duration) -> Result<(), Fail> {
+        match tokio::time::timeout(budget, self.lookup(host)).await {
+            Ok(Ok(_)) => Ok(()),
+            Ok(Err(error)) => Err(Fail {
+                detail: Some(error.reason),
+                ..Fail::of(error.kind)
+            }),
+            Err(_) => Err(Fail {
+                phase: Some(Phase::Dns),
+                ..Fail::timeout_after(millis(budget))
+            }),
+        }
     }
 
     fn flight(&self, host: String) -> Flight {

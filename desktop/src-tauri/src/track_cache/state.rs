@@ -15,9 +15,10 @@ use tokio::io::{AsyncWriteExt, BufWriter};
 use tokio::sync::{Mutex, Notify, OwnedSemaphorePermit, Semaphore};
 
 use crate::app::diagnostics::{self, log_native};
+use crate::network::dns;
 use crate::network::edge::{Hop, Tier};
 use crate::network::fail::Fail;
-use crate::network::system_proxy::follow;
+use crate::network::system_proxy::{self, follow};
 use crate::shared::urn::{canonical_track_urn, track_urn_from_storage_name};
 use crate::track_cache::api_download::{StreamJob, download_api};
 use crate::track_cache::direct_download::try_download;
@@ -42,6 +43,7 @@ const STREAM_WRITE_BUFFER_SIZE: usize = 256 * 1024;
 const STORAGE_CONNECT_TIMEOUT_MS: u64 = 3_000;
 const STORAGE_HEADERS_TIMEOUT_MS: u64 = 5_000;
 const STORAGE_RELAY_HEADERS_TIMEOUT_SECS: u64 = 15;
+const STORAGE_RESOLVE_TIMEOUT_SECS: u64 = 10;
 const STORAGE_COOLDOWN_SECS: u64 = 60;
 const STORAGE_COOLDOWN_AFTER: u8 = 2;
 const PRESIGN_HEADERS_SECS: u64 = 5;
@@ -1102,6 +1104,9 @@ impl TrackCacheState {
     }
 
     async fn storage_get(&self, hop: &Hop) -> Result<wreq::Response, Fail> {
+        if let Some(host) = host_of(&hop.url).filter(|_| !system_proxy::proxied(&hop.url)) {
+            dns::ready(&host, Duration::from_secs(STORAGE_RESOLVE_TIMEOUT_SECS)).await?;
+        }
         let (client, headers) = if hop.tier == Tier::Relay {
             (
                 &self.client,

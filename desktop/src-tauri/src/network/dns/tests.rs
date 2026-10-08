@@ -11,7 +11,7 @@ use wreq::dns::{Addrs, Name, Resolve, Resolving};
 
 use super::doh::DohAnswer;
 use super::{Config, DnsError, Fallback, Lookup, Scope, not_found, reads_as_not_found, scope};
-use crate::network::fail::{Fail, FailKind, of_wreq};
+use crate::network::fail::{Fail, FailKind, Phase, of_wreq};
 
 const BUDGET: Duration = Duration::from_millis(300);
 
@@ -1011,4 +1011,72 @@ async fn a_system_resolver_gets_eight_seconds_when_doh_is_down() {
     let waited = started.elapsed();
     assert!(waited >= Duration::from_secs(8), "{waited:?}");
     assert!(waited < Duration::from_secs(9), "{waited:?}");
+}
+
+fn late_doh(addrs: Vec<IpAddr>, delay: Duration) -> Lookup<DohAnswer> {
+    Arc::new(move |_| {
+        let addrs = addrs.clone();
+        async move {
+            tokio::time::sleep(delay).await;
+            Ok(DohAnswer {
+                addrs,
+                ttl: 60,
+                provider: "test",
+            })
+        }
+        .boxed()
+    })
+}
+
+fn sinkholed() -> Fallback {
+    fallback(
+        system(Ok(ips(&["2.26.93.81"])), 0, &Calls::default()),
+        late_doh(ips(&["188.165.221.195"]), Duration::from_millis(400)),
+    )
+}
+
+fn tight(resolver: &Fallback) -> wreq::Client {
+    wreq::Client::builder()
+        .no_proxy()
+        .dns_resolver(Arc::new(Here(resolver.clone())))
+        .connect_timeout(Duration::from_millis(200))
+        .build()
+        .unwrap()
+}
+
+#[tokio::test]
+async fn a_host_resolved_first_keeps_a_slow_doh_answer_out_of_the_connect_budget() {
+    let port = server().await;
+    let url = format!("http://api.scnative.space:{port}/health");
+
+    let cold = sinkholed();
+    let error = tight(&cold).get(&url).send().await.unwrap_err();
+    assert!(error.is_timeout() || error.is_connect(), "{error:?}");
+
+    let resolver = sinkholed();
+    resolver
+        .ready("api.scnative.space", Duration::from_secs(2))
+        .await
+        .unwrap();
+    let response = tight(&resolver).get(&url).send().await.unwrap();
+    assert_eq!(response.text().await.unwrap(), "ok");
+}
+
+#[tokio::test]
+async fn a_lookup_slower_than_its_budget_is_a_dns_timeout() {
+    let fail = sinkholed()
+        .ready("api.scnative.space", Duration::from_millis(100))
+        .await
+        .unwrap_err();
+    assert_eq!(fail.kind, FailKind::Timeout);
+    assert_eq!(fail.phase, Some(Phase::Dns));
+    let nowhere = fallback(
+        system(nxdomain(), 0, &Calls::default()),
+        doh(Ok(Vec::new()), 60, &Calls::default()),
+    );
+    let fail = nowhere
+        .ready("example.invalid", Duration::from_secs(1))
+        .await
+        .unwrap_err();
+    assert_eq!(fail.kind, FailKind::Dns);
 }
