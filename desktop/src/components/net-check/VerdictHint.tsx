@@ -16,6 +16,7 @@ interface HintProps {
   broken: boolean;
   env: EnvInfo | null;
   addrs: string[];
+  backups: boolean;
 }
 
 const ADVICE_TEXT: Record<DpiKind, string> = {
@@ -31,13 +32,14 @@ function adviceText(t: TFunction, advice: DpiAdvice): string {
 
 function hintText(
   t: TFunction,
-  { verdict, broken }: HintProps,
+  { verdict, broken, backups }: HintProps,
   fix: string | null,
   advice: DpiAdvice | null,
 ): string {
   if (broken) return t('netCheck.failedHint');
   if (fix) return t('netCheck.hint.zapretTimestamps');
   if (advice) return adviceText(t, advice);
+  if (verdict === 'cut' && !backups) return t('netCheck.verdict.cut.hintAlone');
   return t(`netCheck.verdict.${verdict}.hint`);
 }
 

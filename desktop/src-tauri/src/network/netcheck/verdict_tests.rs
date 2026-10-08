@@ -657,6 +657,7 @@ fn a_probe_that_passed_while_the_app_failed_warns_at_http() {
 
 fn volume(cut: bool) -> VolumeProbe {
     VolumeProbe {
+        host: "storage.scnative.space".to_string(),
         shape: if cut { "blackhole" } else { "clear" }.to_string(),
         bytes: if cut { 12_000 } else { 65_536 },
         ms: 6_200,

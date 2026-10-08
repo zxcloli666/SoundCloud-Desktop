@@ -101,6 +101,7 @@ export const VerdictHeader = React.memo(() => {
         broken={failed && !settled}
         env={settled ? report.env : null}
         addrs={settled ? report.addrs : NO_ADDRS}
+        backups={!settled || report.targets.some((target) => target.id === 'relay' && target.ok)}
       />
       {chips.length > 0 && (
         <div className="mt-3 flex flex-wrap justify-center gap-1.5">

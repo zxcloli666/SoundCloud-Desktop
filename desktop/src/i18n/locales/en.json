@@ -577,7 +577,8 @@
       },
       "cut": {
         "title": "Direct route cuts large downloads",
-        "hint": "The app switches to backup routes, maybe slower."
+        "hint": "The app switches to backup routes, maybe slower.",
+        "hintAlone": "Backup routes don't answer either, so large tracks may not load."
       },
       "dns": {
         "title": "Your DNS returns a wrong address",

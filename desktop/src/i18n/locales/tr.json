@@ -511,7 +511,8 @@
       },
       "cut": {
         "title": "Doğrudan yol büyük indirmeleri kesiyor",
-        "hint": "Uygulama yedek yollara geçiyor, biraz yavaş olabilir."
+        "hint": "Uygulama yedek yollara geçiyor, biraz yavaş olabilir.",
+        "hintAlone": "Yedek yollar da yanıt vermiyor, bu yüzden büyük parçalar yüklenmeyebilir."
       },
       "dns": {
         "title": "DNS'iniz yanlış adres veriyor",

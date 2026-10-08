@@ -175,6 +175,8 @@ pub struct AppProbe {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct VolumeProbe {
+    #[serde(default)]
+    pub host: String,
     pub shape: String,
     pub bytes: u64,
     pub ms: u32,
