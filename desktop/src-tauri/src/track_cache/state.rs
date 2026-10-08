@@ -16,6 +16,7 @@ use tokio::sync::{Mutex, Notify, OwnedSemaphorePermit, Semaphore};
 
 use crate::app::diagnostics::{self, log_native};
 use crate::network::edge::{Hop, Tier};
+use crate::network::fail::Fail;
 use crate::network::system_proxy::follow;
 use crate::shared::urn::{canonical_track_urn, track_urn_from_storage_name};
 use crate::track_cache::api_download::{StreamJob, download_api};
@@ -32,16 +33,17 @@ mod upgrade;
 
 pub use bulk::{BulkCacheEntry, BulkCacheStatus};
 pub use export::ExportOutcome;
-use storage::StorageJob;
+use storage::{StorageCooldown, StorageJob};
 
 const MIN_AUDIO_SIZE: u64 = 8192;
 const AUDIO_SNIFF_LEN: usize = 16;
 const PROGRESS_EMIT_STEP: f64 = 0.01;
 const STREAM_WRITE_BUFFER_SIZE: usize = 256 * 1024;
-const STORAGE_CONNECT_TIMEOUT_MS: u64 = 800;
-const STORAGE_HEADERS_TIMEOUT_MS: u64 = 1200;
+const STORAGE_CONNECT_TIMEOUT_MS: u64 = 3_000;
+const STORAGE_HEADERS_TIMEOUT_MS: u64 = 5_000;
 const STORAGE_RELAY_HEADERS_TIMEOUT_SECS: u64 = 15;
 const STORAGE_COOLDOWN_SECS: u64 = 60;
+const STORAGE_COOLDOWN_AFTER: u8 = 2;
 const PRESIGN_HEADERS_SECS: u64 = 5;
 const PRESIGN_ORIGIN: &str = "https://s3.scnative.space/";
 const DOWNLOAD_CONNECT_TIMEOUT_MS: u64 = 3_000;
@@ -526,8 +528,7 @@ pub struct TrackCacheState {
     bulk_status: Arc<StdMutex<Option<BulkCacheStatus>>>,
     bulk_cancel: Arc<std::sync::atomic::AtomicBool>,
     mp3_encoder: Arc<tokio::sync::OnceCell<bool>>,
-    /// Per-host storage circuit breaker: host -> epoch secs of last failure.
-    storage_cooldowns: Arc<StdMutex<HashMap<String, u64>>>,
+    storage_cooldowns: Arc<StdMutex<HashMap<String, StorageCooldown>>>,
     upgrade_attempts: Arc<StdMutex<HashSet<String>>>,
     anon: Arc<AnonClient>,
 }
@@ -1065,15 +1066,12 @@ impl TrackCacheState {
         let Ok(map) = self.storage_cooldowns.lock() else {
             return true;
         };
-        match map.get(host) {
-            None => true,
-            Some(failed_at) => now_secs().saturating_sub(*failed_at) >= STORAGE_COOLDOWN_SECS,
-        }
+        map.get(host).is_none_or(|cooldown| !cooldown.cooling(now_secs()))
     }
 
     fn mark_storage_host_failed(&self, host: &str) {
         if let Ok(mut map) = self.storage_cooldowns.lock() {
-            map.insert(host.to_string(), now_secs());
+            map.entry(host.to_string()).or_default().failed(now_secs());
         }
     }
 
@@ -1099,7 +1097,7 @@ impl TrackCacheState {
         }
     }
 
-    async fn storage_get(&self, hop: &Hop) -> Result<wreq::Response, String> {
+    async fn storage_get(&self, hop: &Hop) -> Result<wreq::Response, Fail> {
         let (client, headers) = if hop.tier == Tier::Relay {
             (
                 &self.client,
@@ -1112,8 +1110,8 @@ impl TrackCacheState {
             )
         };
         match tokio::time::timeout(headers, client.get(&hop.url).send()).await {
-            Ok(sent) => sent.map_err(|err| err.to_string()),
-            Err(_) => Err(format!("no headers in {}ms", headers.as_millis())),
+            Ok(sent) => sent.map_err(|err| Fail::of_wreq(&err)),
+            Err(_) => Err(Fail::timeout_after(headers.as_millis() as u32)),
         }
     }
 

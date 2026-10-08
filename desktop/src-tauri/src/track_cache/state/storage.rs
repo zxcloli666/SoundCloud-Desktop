@@ -5,9 +5,31 @@ use crate::app::diagnostics;
 use crate::network::edge::Tier;
 
 use super::{
-    DownloadError, DownloadSource, PRESIGN_ORIGIN, PlaybackQuality, TrackCacheState, file_len,
-    host_of, make_redirect_url, write_response_to_cache,
+    DownloadError, DownloadSource, PRESIGN_ORIGIN, PlaybackQuality, STORAGE_COOLDOWN_AFTER,
+    STORAGE_COOLDOWN_SECS, TrackCacheState, file_len, host_of, make_redirect_url,
+    write_response_to_cache,
 };
+
+#[derive(Default)]
+pub(super) struct StorageCooldown {
+    fails: u8,
+    last_at: u64,
+}
+
+impl StorageCooldown {
+    pub(super) fn failed(&mut self, now: u64) {
+        if now.saturating_sub(self.last_at) >= STORAGE_COOLDOWN_SECS {
+            self.fails = 0;
+        }
+        self.fails = self.fails.saturating_add(1);
+        self.last_at = now;
+    }
+
+    pub(super) fn cooling(&self, now: u64) -> bool {
+        self.fails >= STORAGE_COOLDOWN_AFTER
+            && now.saturating_sub(self.last_at) < STORAGE_COOLDOWN_SECS
+    }
+}
 
 pub(super) struct StorageJob<'a> {
     pub target_dir: &'a Path,
@@ -124,9 +146,9 @@ impl TrackCacheState {
             for hop in crate::network::edge::plan(storage_url) {
                 let resp = match self.storage_get(&hop).await {
                     Ok(r) => r,
-                    Err(err) => {
+                    Err(fail) => {
                         hop.note(false);
-                        diagnostics::warn(format!("[TrackCache] storage {} failed for {urn}: {err}", hop.tier_label()));
+                        diagnostics::warn(format!("[TrackCache] storage {} failed for {urn}: {fail}", hop.tier_label()));
                         continue;
                     }
                 };
@@ -180,5 +202,44 @@ impl TrackCacheState {
             }
         }
         None
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::StorageCooldown;
+
+    #[test]
+    fn one_failed_attempt_does_not_cool_the_host() {
+        let mut cooldown = StorageCooldown::default();
+        cooldown.failed(1_000);
+        assert!(!cooldown.cooling(1_000));
+    }
+
+    #[test]
+    fn two_failed_attempts_cool_it_for_a_minute() {
+        let mut cooldown = StorageCooldown::default();
+        cooldown.failed(1_000);
+        cooldown.failed(1_010);
+        assert!(cooldown.cooling(1_010));
+        assert!(cooldown.cooling(1_069));
+    }
+
+    #[test]
+    fn an_old_failure_does_not_count() {
+        let mut cooldown = StorageCooldown::default();
+        cooldown.failed(1_000);
+        cooldown.failed(1_060);
+        assert!(!cooldown.cooling(1_060));
+        cooldown.failed(1_061);
+        assert!(cooldown.cooling(1_061));
+    }
+
+    #[test]
+    fn cooling_ends_after_the_window() {
+        let mut cooldown = StorageCooldown::default();
+        cooldown.failed(1_000);
+        cooldown.failed(1_001);
+        assert!(!cooldown.cooling(1_061));
     }
 }
