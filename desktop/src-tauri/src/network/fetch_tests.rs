@@ -241,12 +241,27 @@ async fn a_body_that_breaks_off_is_a_body_failure() {
         Duration::ZERO,
     )
     .await;
-    let (head, body) = perform(&client(), request(url, "GET", Some(5_000))).await;
+    let mut ask = request(url, "GET", Some(5_000));
+    ask.route = Some(Route {
+        tier: Tier::Direct,
+        origin: "fetch-body-test.scnative.space".to_string(),
+        attempt: 0,
+    });
+    let (head, body) = perform(&client(), ask).await;
     let Head::Failed { error } = head else {
         panic!("a failure");
     };
     assert_eq!(error.kind, NetKind::Body);
     assert!(body.is_empty());
+    let events: Vec<_> = paths::recent(100)
+        .into_iter()
+        .filter(|event| event.origin == "fetch-body-test.scnative.space")
+        .collect();
+    assert_eq!(events.len(), 2);
+    assert!(!events[0].ok);
+    assert_eq!(events[0].fail, Some(FailKind::Body));
+    assert_eq!(events[0].role, Role::Primary);
+    assert_eq!(events[1].status, Some(200));
 }
 
 #[tokio::test]

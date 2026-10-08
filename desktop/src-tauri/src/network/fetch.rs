@@ -175,7 +175,10 @@ async fn perform(client: &wreq::Client, request: FetchRequest) -> (Head, Vec<u8>
     };
     match read_body(response, deadline).await {
         Ok(body) => (head, body),
-        Err(message) => (Head::failed(NetKind::Body, message), Vec::new()),
+        Err(message) => {
+            record(&request, Err(FailKind::Body), started);
+            (Head::failed(NetKind::Body, message), Vec::new())
+        }
     }
 }
 
@@ -212,6 +215,10 @@ fn settle(request: &FetchRequest, outcome: Result<u16, FailKind>, started: Insta
     {
         dns::suspect(&host);
     }
+    record(request, outcome, started);
+}
+
+fn record(request: &FetchRequest, outcome: Result<u16, FailKind>, started: Instant) {
     let Some(route) = &request.route else { return };
     let hop = Hop {
         url: request.url.clone(),
