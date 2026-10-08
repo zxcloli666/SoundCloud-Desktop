@@ -11,11 +11,11 @@ use tokio::time::Instant;
 use super::wire;
 use crate::network::fail::{Fail, FailKind};
 
-const CONNECT_TIMEOUT: Duration = Duration::from_millis(1500);
-const REQUEST_TIMEOUT: Duration = Duration::from_millis(2500);
+const CONNECT_TIMEOUT: Duration = Duration::from_secs(6);
+const REQUEST_TIMEOUT: Duration = Duration::from_secs(9);
 const HEDGE_AFTER: Duration = Duration::from_millis(700);
 const HEDGE_WIDTH: usize = 3;
-const TOTAL_BUDGET: Duration = Duration::from_secs(3);
+pub const TOTAL_BUDGET: Duration = Duration::from_secs(10);
 const MEDIA_TYPE: &str = "application/dns-message";
 
 pub struct Provider {
@@ -96,17 +96,22 @@ fn failure(kind: FailKind, detail: impl Into<String>) -> Fail {
 
 pub async fn query(host: &str) -> Result<DohAnswer, Fail> {
     let first = PREFERRED.load(Ordering::Relaxed);
+    let (index, answer) = race(first, |index| query_with(&PROVIDERS[index], host)).await?;
+    PREFERRED.store(index, Ordering::Relaxed);
+    Ok(answer)
+}
+
+async fn race<T, F, Fut>(first: usize, attempt: F) -> Result<(usize, T), Fail>
+where
+    F: Fn(usize) -> Fut,
+    Fut: Future<Output = Result<T, Fail>>,
+{
     let order: Vec<usize> = (0..HEDGE_WIDTH)
         .map(|step| (first + step) % PROVIDERS.len())
         .collect();
-    let race = hedged(&order, HEDGE_AFTER, |index| {
-        query_with(&PROVIDERS[index], host)
-    });
-    let (index, answer) = tokio::time::timeout(TOTAL_BUDGET, race)
+    tokio::time::timeout(TOTAL_BUDGET, hedged(&order, HEDGE_AFTER, attempt))
         .await
-        .unwrap_or_else(|_| Err(Fail::timeout_after(TOTAL_BUDGET.as_millis() as u32)))?;
-    PREFERRED.store(index, Ordering::Relaxed);
-    Ok(answer)
+        .unwrap_or_else(|_| Err(Fail::timeout_after(TOTAL_BUDGET.as_millis() as u32)))
 }
 
 pub async fn query_with(provider: &'static Provider, host: &str) -> Result<DohAnswer, Fail> {
@@ -182,11 +187,16 @@ mod tests {
 
     use tokio::time::Instant;
 
-    use super::{PROVIDERS, answer_of, client, hedged};
+    use super::{
+        CONNECT_TIMEOUT, HEDGE_AFTER, PROVIDERS, REQUEST_TIMEOUT, TOTAL_BUDGET, answer_of, client,
+        hedged, race,
+    };
     use crate::network::dns::wire;
     use crate::network::fail::{Fail, FailKind};
 
     const STEP: Duration = Duration::from_millis(700);
+    const SLOW_RTT: Duration = Duration::from_secs(2);
+    const COLD_ROUND_TRIPS: u32 = 3;
 
     fn plan(
         delays: &'static [(u64, bool)],
@@ -268,6 +278,54 @@ mod tests {
         .await;
         assert_eq!(won.unwrap_err().kind, FailKind::Reset);
         assert_eq!(*tried.lock().unwrap(), [2, 0, 1]);
+    }
+
+    #[test]
+    fn a_cold_query_fits_a_slow_link() {
+        let per_address = CONNECT_TIMEOUT / PROVIDERS[0].ips.len() as u32;
+        assert!(per_address >= SLOW_RTT);
+        assert!(CONNECT_TIMEOUT >= SLOW_RTT * 2);
+        assert!(REQUEST_TIMEOUT >= SLOW_RTT * COLD_ROUND_TRIPS);
+        let last_hedge = HEDGE_AFTER * 2;
+        assert!(TOTAL_BUDGET >= last_hedge + SLOW_RTT * COLD_ROUND_TRIPS);
+    }
+
+    #[tokio::test(start_paused = true)]
+    async fn a_slow_provider_answers_before_the_budget_runs_out() {
+        let started = Instant::now();
+        let cold = SLOW_RTT * COLD_ROUND_TRIPS + Duration::from_millis(200);
+        let won = race(0, |index| async move {
+            tokio::time::sleep(cold).await;
+            Ok::<usize, Fail>(index)
+        })
+        .await;
+        assert_eq!(won.unwrap().0, 0);
+        assert_eq!(started.elapsed(), cold);
+    }
+
+    #[tokio::test(start_paused = true)]
+    async fn the_last_hedged_provider_still_gets_a_slow_answer_in() {
+        let started = Instant::now();
+        let cold = SLOW_RTT * COLD_ROUND_TRIPS + Duration::from_millis(200);
+        let won = race(4, |index| async move {
+            if index == 1 {
+                tokio::time::sleep(cold).await;
+                Ok(index)
+            } else {
+                std::future::pending::<Result<usize, Fail>>().await
+            }
+        })
+        .await;
+        assert_eq!(won.unwrap().0, 1);
+        assert_eq!(started.elapsed(), HEDGE_AFTER * 2 + cold);
+    }
+
+    #[tokio::test(start_paused = true)]
+    async fn silence_everywhere_ends_at_the_total_budget() {
+        let started = Instant::now();
+        let won = race(0, |_| std::future::pending::<Result<usize, Fail>>()).await;
+        assert_eq!(won.unwrap_err().kind, FailKind::Timeout);
+        assert_eq!(started.elapsed(), TOTAL_BUDGET);
     }
 
     fn response(rcode: u8, addr: Option<[u8; 4]>) -> Vec<u8> {
