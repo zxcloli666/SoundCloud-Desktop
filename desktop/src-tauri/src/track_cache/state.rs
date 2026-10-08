@@ -1107,7 +1107,12 @@ impl TrackCacheState {
 
     async fn storage_get(&self, hop: &Hop) -> Result<wreq::Response, Fail> {
         if let Some(host) = host_of(&hop.url).filter(|_| !system_proxy::proxied(&hop.url)) {
-            dns::ready(&host, Duration::from_secs(STORAGE_RESOLVE_TIMEOUT_SECS)).await?;
+            let budget = if dns::trusted(&host) {
+                Duration::from_millis(STORAGE_CONNECT_TIMEOUT_MS)
+            } else {
+                Duration::from_secs(STORAGE_RESOLVE_TIMEOUT_SECS)
+            };
+            dns::ready(&host, budget).await?;
         }
         let (client, headers) = if hop.tier == Tier::Relay {
             (

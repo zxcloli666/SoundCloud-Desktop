@@ -97,6 +97,12 @@ pub async fn ready(host: &str, budget: Duration) -> Result<(), Fail> {
     shared().ready(host, budget).await
 }
 
+pub fn trusted(host: &str) -> bool {
+    SHARED
+        .get()
+        .is_some_and(|fallback| fallback.trusts(&normalize(host)))
+}
+
 pub fn suspect(host: &str) {
     if let Some(fallback) = SHARED.get() {
         fallback.suspect(&normalize(host));

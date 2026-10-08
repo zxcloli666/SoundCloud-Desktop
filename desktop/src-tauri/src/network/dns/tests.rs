@@ -1080,3 +1080,96 @@ async fn a_lookup_slower_than_its_budget_is_a_dns_timeout() {
         .unwrap_err();
     assert_eq!(fail.kind, FailKind::Dns);
 }
+
+fn changing_system(
+    answers: Arc<std::sync::Mutex<Result<Vec<IpAddr>, Fail>>>,
+    delay: Arc<AtomicUsize>,
+    calls: &Calls,
+) -> Lookup<Vec<IpAddr>> {
+    let calls = calls.clone();
+    Arc::new(move |_| {
+        let result = answers.lock().unwrap().clone();
+        let delay = Duration::from_millis(delay.load(Ordering::SeqCst) as u64);
+        let calls = calls.clone();
+        async move {
+            calls.0.fetch_add(1, Ordering::SeqCst);
+            tokio::time::sleep(delay).await;
+            result
+        }
+        .boxed()
+    })
+}
+
+#[tokio::test(start_paused = true)]
+async fn a_sane_system_answer_for_our_name_is_reused_for_half_a_minute() {
+    let (sys_calls, doh_calls) = (Calls::default(), Calls::default());
+    let resolver = fallback(
+        system(Ok(ips(&["10.0.0.5", "188.165.221.195"])), 0, &sys_calls),
+        doh(Ok(ips(&["1.2.3.4"])), 60, &doh_calls),
+    );
+    assert!(!resolver.trusts("storage.scnative.space"));
+    for _ in 0..3 {
+        assert_eq!(
+            resolver.lookup("storage.scnative.space").await.unwrap(),
+            ips(&["188.165.221.195"])
+        );
+    }
+    assert_eq!(sys_calls.count(), 1);
+    assert!(resolver.trusts("storage.scnative.space"));
+    tokio::time::advance(Duration::from_secs(31)).await;
+    resolver.lookup("storage.scnative.space").await.unwrap();
+    assert_eq!(sys_calls.count(), 2);
+    assert_eq!(doh_calls.count(), 0);
+
+    for _ in 0..2 {
+        resolver.lookup("soundcloud.com").await.unwrap();
+    }
+    assert_eq!(sys_calls.count(), 4, "foreign names always ask the system");
+}
+
+#[tokio::test(start_paused = true)]
+async fn a_distrusted_zone_skips_the_trusted_system_answer() {
+    let doh_calls = Calls::default();
+    let resolver = fallback(
+        system(Ok(ips(&["188.165.221.195"])), 0, &Calls::default()),
+        doh(Ok(ips(&["192.95.29.82"])), 60, &doh_calls),
+    );
+    resolver.lookup("api.scnative.space").await.unwrap();
+    assert!(resolver.trusts("api.scnative.space"));
+    resolver.distrust(Duration::from_secs(600));
+    assert!(!resolver.trusts("api.scnative.space"));
+    assert_eq!(
+        resolver.lookup("api.scnative.space").await.unwrap(),
+        ips(&["192.95.29.82"])
+    );
+    assert_eq!(doh_calls.count(), 1);
+}
+
+#[tokio::test(start_paused = true)]
+async fn only_a_wrong_system_answer_takes_the_trust_back() {
+    let answers = Arc::new(std::sync::Mutex::new(Ok(ips(&["188.165.221.195"]))));
+    let delay = Arc::new(AtomicUsize::new(0));
+    let resolver = fallback(
+        changing_system(answers.clone(), delay.clone(), &Calls::default()),
+        doh(Ok(ips(&["188.165.221.195"])), 60, &Calls::default()),
+    );
+    let host = "storage.scnative.space";
+    resolver.lookup(host).await.unwrap();
+    assert!(resolver.trusts(host));
+
+    delay.store(5_000, Ordering::SeqCst);
+    tokio::time::advance(Duration::from_secs(31)).await;
+    resolver.memory().cache = Default::default();
+    resolver.lookup(host).await.unwrap();
+    assert!(
+        resolver.trusts(host),
+        "a slow system answer keeps the trust"
+    );
+
+    delay.store(0, Ordering::SeqCst);
+    *answers.lock().unwrap() = Ok(ips(&["2.26.93.81"]));
+    tokio::time::advance(Duration::from_secs(31)).await;
+    resolver.memory().cache = Default::default();
+    resolver.lookup(host).await.unwrap();
+    assert!(!resolver.trusts(host), "a sinkhole answer takes it back");
+}
