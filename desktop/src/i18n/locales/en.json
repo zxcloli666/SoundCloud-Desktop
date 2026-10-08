@@ -618,6 +618,7 @@
       "lists": "If that helps, add these lines to its lists and turn it back on:",
       "exclude": "If that helps, add these lines to its exclusions:",
       "domains": "If that helps, add our domains to its exclusions:",
+      "blacklist": "If that helps, run it with a --blacklist that leaves out our domains, or pause it.",
       "apply": "Then turn it back on and run:",
       "zapretTimestamps": "zapret uses a ts strategy, but TCP timestamps are off. Turn them on:",
       "admin": "Run as administrator",

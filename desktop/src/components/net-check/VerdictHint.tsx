@@ -22,6 +22,7 @@ interface HintProps {
 const ADVICE_TEXT: Record<DpiKind, string> = {
   flowseal: 'netCheck.hint.lists',
   zapret: 'netCheck.hint.exclude',
+  goodbyedpi: 'netCheck.hint.blacklist',
   other: 'netCheck.hint.domains',
 };
 const CAPTION = 'mb-1 px-1 text-[10.5px] text-white/30';
@@ -102,7 +103,7 @@ export const VerdictHint = React.memo((props: HintProps) => {
           )}
         </div>
       )}
-      {advice && <Exclusions advice={advice} />}
+      {advice && (advice.lists.length > 0 || advice.apply) && <Exclusions advice={advice} />}
     </>
   );
 });

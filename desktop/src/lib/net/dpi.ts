@@ -1,7 +1,7 @@
 import type { EnvInfo } from './check';
 import type { Os } from './manual';
 
-export type DpiKind = 'flowseal' | 'zapret' | 'other';
+export type DpiKind = 'flowseal' | 'zapret' | 'goodbyedpi' | 'other';
 
 export interface ExcludeList {
   file: string | null;
@@ -25,12 +25,14 @@ const FLOWSEAL: ReadonlySet<string> = new Set([
   'discordfix_zapret',
 ]);
 const ZAPRET: ReadonlySet<string> = new Set(['nfqws', 'nfqws2', 'tpws', 'dvtws']);
+const GOODBYEDPI = 'goodbyedpi';
 const ZAPRET_DIR = /^(\/opt\/zapret2?)\/config$/;
 const SERVICE_DISABLED = 4;
 const DRIVER_PREFIX = 'WinDivert';
 const FALLBACK_NAME = 'zapret';
 
 function kindOf(name: string, os: Os): DpiKind {
+  if (name.toLowerCase() === GOODBYEDPI) return 'goodbyedpi';
   if (os === 'windows') return FLOWSEAL.has(name) ? 'flowseal' : 'other';
   return ZAPRET.has(name) ? 'zapret' : 'other';
 }
@@ -70,5 +72,6 @@ export function dpiAdvice(env: EnvInfo | null, addrs: string[], os: Os): DpiAdvi
       apply: `sudo ${dir}/ipset/get_exclude.sh`,
     };
   }
+  if (kind === 'goodbyedpi') return { name, kind, lists: [], apply: null };
   return { name, kind, lists: [{ file: null, lines: domains }], apply: null };
 }
