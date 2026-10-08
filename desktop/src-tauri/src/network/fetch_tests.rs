@@ -112,8 +112,16 @@ fn forbidden_headers_are_dropped_and_an_empty_post_says_zero() {
     assert_eq!(map.get("x-session-id").unwrap(), "abc");
     assert_eq!(map.get_all("content-length").iter().count(), 1);
     assert_eq!(map.get("content-length").unwrap(), "0");
-    assert!(outgoing(&Method::GET, &headers, false).get("content-length").is_none());
-    assert!(outgoing(&Method::POST, &headers, true).get("content-length").is_none());
+    assert!(
+        outgoing(&Method::GET, &headers, false)
+            .get("content-length")
+            .is_none()
+    );
+    assert!(
+        outgoing(&Method::POST, &headers, true)
+            .get("content-length")
+            .is_none()
+    );
 }
 
 #[test]

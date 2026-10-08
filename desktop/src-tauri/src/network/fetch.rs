@@ -150,7 +150,10 @@ async fn perform(client: &wreq::Client, request: FetchRequest) -> (Head, Vec<u8>
     let response = match within(deadline, builder.send()).await {
         None => {
             settle(&request, Err(FailKind::Timeout), started);
-            return (Head::failed(NetKind::Timeout, "no answer in time"), Vec::new());
+            return (
+                Head::failed(NetKind::Timeout, "no answer in time"),
+                Vec::new(),
+            );
         }
         Some(Err(error)) => {
             let kind = fail::of_wreq(&error);
@@ -209,7 +212,10 @@ fn host_of(url: &str) -> Option<String> {
 pub fn outgoing(method: &Method, headers: &[(String, String)], has_body: bool) -> HeaderMap {
     let mut map = HeaderMap::new();
     for (name, value) in headers {
-        if DROPPED.iter().any(|dropped| name.eq_ignore_ascii_case(dropped)) {
+        if DROPPED
+            .iter()
+            .any(|dropped| name.eq_ignore_ascii_case(dropped))
+        {
             continue;
         }
         if let (Ok(name), Ok(value)) = (
