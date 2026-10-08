@@ -6,7 +6,7 @@ use tokio::net::TcpListener;
 use tokio::sync::oneshot;
 use wreq::Method;
 
-use super::{FetchRequest, Head, NetKind, Route, frame, net_kind, outgoing, perform};
+use super::{FetchRequest, Head, NetKind, Route, configured, frame, net_kind, outgoing, perform};
 use crate::network::edge::Tier;
 use crate::network::fail::FailKind;
 use crate::network::netcheck::model::Role;
@@ -31,10 +31,20 @@ fn request(url: String, method: &str, timeout_ms: Option<u64>) -> FetchRequest {
 }
 
 fn client() -> wreq::Client {
-    wreq::Client::builder().no_proxy().build().unwrap()
+    configured(wreq::Client::builder().no_proxy())
+        .build()
+        .unwrap()
 }
 
 async fn server(reply: &'static [u8], stall: Duration) -> (String, oneshot::Receiver<String>) {
+    held(reply, stall, Duration::from_millis(50)).await
+}
+
+async fn held(
+    reply: &'static [u8],
+    stall: Duration,
+    hold: Duration,
+) -> (String, oneshot::Receiver<String>) {
     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
     let addr = listener.local_addr().unwrap();
     let (seen, heard) = oneshot::channel();
@@ -52,7 +62,7 @@ async fn server(reply: &'static [u8], stall: Duration) -> (String, oneshot::Rece
         let _ = seen.send(String::from_utf8_lossy(&raw).to_lowercase());
         tokio::time::sleep(stall).await;
         let _ = stream.write_all(reply).await;
-        tokio::time::sleep(Duration::from_millis(50)).await;
+        tokio::time::sleep(hold).await;
     });
     (format!("http://{addr}/health"), heard)
 }
@@ -188,6 +198,40 @@ async fn silence_before_the_headers_is_a_timeout() {
         panic!("a failure");
     };
     assert_eq!(error.kind, NetKind::Timeout);
+}
+
+#[tokio::test]
+async fn a_slow_server_answers_within_the_caller_budget() {
+    let (url, _heard) = server(
+        b"HTTP/1.1 200 OK\r\ncontent-length: 2\r\n\r\nok",
+        Duration::from_secs(12),
+    )
+    .await;
+    let (head, body) = perform(&client(), request(url, "GET", Some(30_000))).await;
+    let Head::Answer { status, .. } = head else {
+        panic!("an answer, got {head:?}");
+    };
+    assert_eq!(status, 200);
+    assert_eq!(body, b"ok");
+}
+
+#[tokio::test]
+async fn a_body_that_stalls_after_the_headers_is_a_body_failure() {
+    let (url, _heard) = held(
+        b"HTTP/1.1 200 OK\r\ncontent-length: 100\r\n\r\npartial",
+        Duration::ZERO,
+        Duration::from_secs(60),
+    )
+    .await;
+    let started = std::time::Instant::now();
+    let (head, body) = perform(&client(), request(url, "GET", Some(90_000))).await;
+    let Head::Failed { error } = head else {
+        panic!("a failure, got {head:?}");
+    };
+    assert_eq!(error.kind, NetKind::Body);
+    assert_eq!(error.message, "the body stalled");
+    assert!(body.is_empty());
+    assert!(started.elapsed() < Duration::from_secs(11));
 }
 
 #[tokio::test]

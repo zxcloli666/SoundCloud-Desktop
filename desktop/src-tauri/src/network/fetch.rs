@@ -13,7 +13,7 @@ use crate::network::netcheck::{model::Role, paths};
 use crate::network::{dns, system_proxy};
 
 const CONNECT_TIMEOUT: Duration = Duration::from_secs(10);
-const READ_TIMEOUT: Duration = Duration::from_secs(10);
+const BODY_STALL: Duration = Duration::from_secs(10);
 const IDLE_PER_HOST: usize = 8;
 const MAX_REDIRECTS: usize = 10;
 const MAX_MESSAGE: usize = 400;
@@ -96,15 +96,18 @@ pub fn client() -> Option<&'static wreq::Client> {
     static CLIENT: OnceLock<Option<wreq::Client>> = OnceLock::new();
     CLIENT
         .get_or_init(|| {
-            system_proxy::follow(sc_fingerprint::builder(None))
-                .redirect(Policy::limited(MAX_REDIRECTS))
-                .pool_max_idle_per_host(IDLE_PER_HOST)
-                .connect_timeout(CONNECT_TIMEOUT)
-                .read_timeout(READ_TIMEOUT)
+            configured(system_proxy::follow(sc_fingerprint::builder(None)))
                 .build()
                 .ok()
         })
         .as_ref()
+}
+
+pub fn configured(builder: wreq::ClientBuilder) -> wreq::ClientBuilder {
+    builder
+        .redirect(Policy::limited(MAX_REDIRECTS))
+        .pool_max_idle_per_host(IDLE_PER_HOST)
+        .connect_timeout(CONNECT_TIMEOUT)
 }
 
 fn inflight() -> MutexGuard<'static, HashMap<u32, AbortHandle>> {
@@ -170,13 +173,29 @@ async fn perform(client: &wreq::Client, request: FetchRequest) -> (Head, Vec<u8>
         headers: incoming(response.headers()),
         url: response.url().to_string(),
     };
-    match within(deadline, response.bytes()).await {
-        None => (
-            Head::failed(NetKind::Body, "timed out while reading the body"),
-            Vec::new(),
-        ),
-        Some(Err(error)) => (Head::failed(NetKind::Body, described(&error)), Vec::new()),
-        Some(Ok(bytes)) => (head, bytes.to_vec()),
+    match read_body(response, deadline).await {
+        Ok(body) => (head, body),
+        Err(message) => (Head::failed(NetKind::Body, message), Vec::new()),
+    }
+}
+
+async fn read_body(
+    mut response: wreq::Response,
+    deadline: Option<tokio::time::Instant>,
+) -> Result<Vec<u8>, String> {
+    let mut body = Vec::new();
+    loop {
+        let stall_at = tokio::time::Instant::now() + BODY_STALL;
+        let until = deadline.map_or(stall_at, |at| at.min(stall_at));
+        match tokio::time::timeout_at(until, response.chunk()).await {
+            Err(_) if until < stall_at => {
+                return Err("timed out while reading the body".to_string());
+            }
+            Err(_) => return Err("the body stalled".to_string()),
+            Ok(Err(error)) => return Err(described(&error)),
+            Ok(Ok(None)) => return Ok(body),
+            Ok(Ok(Some(chunk))) => body.extend_from_slice(&chunk),
+        }
     }
 }
 
