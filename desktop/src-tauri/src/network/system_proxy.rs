@@ -21,10 +21,11 @@ const ENV_PROXIES: &[&str] = &[
 
 struct Snapshot {
     matcher: Matcher,
+    settings: Option<(String, String)>,
     read_at: Instant,
 }
 
-type Lookup = Arc<dyn Fn(&Uri) -> Option<String> + Send + Sync>;
+type Lookup = Arc<dyn Fn(&Uri) -> Option<wreq::Proxy> + Send + Sync>;
 
 #[derive(Clone)]
 struct Route {
@@ -44,7 +45,7 @@ pub fn follow(builder: wreq::ClientBuilder) -> wreq::ClientBuilder {
     if env_proxy_set() {
         return builder;
     }
-    builder.no_proxy().layer(Route::new(current_proxy))
+    builder.no_proxy().layer(Route::new(current_route))
 }
 
 pub fn proxied(url: &str) -> bool {
@@ -69,6 +70,18 @@ fn env_proxy_set() -> bool {
 }
 
 fn current_proxy(dst: &Uri) -> Option<String> {
+    intercept(&snapshot().matcher, dst)
+}
+
+fn current_route(dst: &Uri) -> Option<wreq::Proxy> {
+    let snapshot = snapshot();
+    match &snapshot.settings {
+        Some((server, overrides)) => registry_proxy(server, overrides, dst),
+        None => first_hop(&snapshot.matcher, dst),
+    }
+}
+
+fn snapshot() -> std::sync::MutexGuard<'static, Snapshot> {
     let mut snapshot = SNAPSHOT
         .get_or_init(|| Mutex::new(read_system()))
         .lock()
@@ -76,11 +89,15 @@ fn current_proxy(dst: &Uri) -> Option<String> {
     if snapshot.read_at.elapsed() >= REREAD {
         *snapshot = read_system();
     }
-    intercept(&snapshot.matcher, dst)
+    snapshot
+}
+
+fn first_hop(matcher: &Matcher, dst: &Uri) -> Option<wreq::Proxy> {
+    intercept(matcher, dst).and_then(|url| wreq::Proxy::all(url).ok())
 }
 
 impl Route {
-    fn new(lookup: impl Fn(&Uri) -> Option<String> + Send + Sync + 'static) -> Self {
+    fn new(lookup: impl Fn(&Uri) -> Option<wreq::Proxy> + Send + Sync + 'static) -> Self {
         Self {
             lookup: Arc::new(lookup),
         }
@@ -112,7 +129,7 @@ where
     }
 
     fn call(&mut self, request: Request<Body>) -> Self::Future {
-        let proxy = (self.lookup)(request.uri()).and_then(|url| wreq::Proxy::all(url).ok());
+        let proxy = (self.lookup)(request.uri());
         let (Some(proxy), Some(carrier)) = (proxy, carrier()) else {
             return Either::Left(self.inner.call(request));
         };
@@ -133,26 +150,27 @@ fn carrier() -> Option<&'static wreq::Client> {
         .as_ref()
 }
 
+#[cfg(not(windows))]
 fn read_system() -> Snapshot {
     Snapshot {
-        matcher: system_matcher(),
+        matcher: Matcher::from_system(),
+        settings: None,
         read_at: Instant::now(),
     }
 }
 
-#[cfg(not(windows))]
-fn system_matcher() -> Matcher {
-    Matcher::from_system()
-}
-
 #[cfg(windows)]
-fn system_matcher() -> Matcher {
-    if env_proxy_set() {
-        return Matcher::from_env();
-    }
-    match internet_settings() {
-        Some((server, overrides)) => registry_matcher(&server, &overrides),
+fn read_system() -> Snapshot {
+    let settings = (!env_proxy_set()).then(internet_settings).flatten();
+    let matcher = match &settings {
+        Some((server, overrides)) => registry_matcher(server, overrides),
+        None if env_proxy_set() => Matcher::from_env(),
         None => Matcher::builder().build(),
+    };
+    Snapshot {
+        matcher,
+        settings,
+        read_at: Instant::now(),
     }
 }
 
@@ -171,24 +189,65 @@ fn internet_settings() -> Option<(String, String)> {
 
 #[cfg(any(windows, test))]
 fn registry_matcher(server: &str, overrides: &str) -> Matcher {
-    let bypass = overrides
+    let mut builder = Matcher::builder().no(bypass_list(overrides));
+    let (http, https) = registry_servers(server);
+    if let Some(http) = http {
+        builder = builder.http(http);
+    }
+    if let Some(https) = https {
+        builder = builder.https(https);
+    }
+    builder.build()
+}
+
+fn registry_proxy(server: &str, overrides: &str, dst: &Uri) -> Option<wreq::Proxy> {
+    let proxy = match registry_servers(server) {
+        (Some(http), Some(https)) if http == https => wreq::Proxy::all(with_scheme(http)),
+        (Some(http), Some(_)) if dst.scheme_str() == Some("http") => {
+            wreq::Proxy::http(with_scheme(http))
+        }
+        (_, Some(https)) => wreq::Proxy::https(with_scheme(https)),
+        (Some(http), None) => wreq::Proxy::http(with_scheme(http)),
+        (None, None) => return None,
+    };
+    let bypass = wreq::NoProxy::from_string(&bypass_list(overrides));
+    proxy.ok().map(|proxy| proxy.no_proxy(bypass))
+}
+
+fn registry_servers(server: &str) -> (Option<&str>, Option<&str>) {
+    let server = server.trim();
+    if server.is_empty() {
+        return (None, None);
+    }
+    if !server.contains('=') {
+        return (Some(server), Some(server));
+    }
+    let mut servers = (None, None);
+    for (scheme, address) in server.split(';').filter_map(|entry| entry.split_once('=')) {
+        match scheme.trim() {
+            "http" => servers.0 = Some(address.trim()),
+            "https" => servers.1 = Some(address.trim()),
+            _ => {}
+        }
+    }
+    servers
+}
+
+fn bypass_list(overrides: &str) -> String {
+    overrides
         .split(';')
         .map(str::trim)
         .collect::<Vec<_>>()
         .join(",")
-        .replace("*.", "");
-    let mut builder = Matcher::builder().no(bypass);
-    if !server.contains('=') {
-        return builder.http(server.trim()).https(server.trim()).build();
+        .replace("*.", "")
+}
+
+fn with_scheme(address: &str) -> String {
+    if address.contains("://") {
+        address.to_string()
+    } else {
+        format!("http://{address}")
     }
-    for (scheme, address) in server.split(';').filter_map(|entry| entry.split_once('=')) {
-        builder = match scheme.trim() {
-            "http" => builder.http(address.trim()),
-            "https" => builder.https(address.trim()),
-            _ => builder,
-        };
-    }
-    builder.build()
 }
 
 fn intercept(matcher: &Matcher, dst: &Uri) -> Option<String> {
@@ -203,7 +262,7 @@ mod tests {
     use hyper_util::client::proxy::matcher::Matcher;
     use warp::Filter;
 
-    use super::{Route, intercept, registry_matcher};
+    use super::{Route, first_hop, intercept, registry_matcher, registry_proxy};
 
     fn proxy_url(matcher: &Matcher, url: &str) -> Option<String> {
         intercept(matcher, &url.parse().unwrap())
@@ -214,6 +273,31 @@ mod tests {
         let (addr, server) = warp::serve(route).bind_ephemeral(([127, 0, 0, 1], 0));
         tokio::spawn(server);
         addr
+    }
+
+    fn serve_redirect(reply: &'static str, location: String) -> std::net::SocketAddr {
+        let start = warp::path("start").map(move || {
+            warp::reply::with_header(
+                warp::reply::with_status(reply, warp::http::StatusCode::FOUND),
+                "location",
+                location.clone(),
+            )
+        });
+        let health = warp::path("health").map(move || reply);
+        let (addr, server) = warp::serve(start.or(health)).bind_ephemeral(([127, 0, 0, 1], 0));
+        tokio::spawn(server);
+        addr
+    }
+
+    fn registry_client(server: String, overrides: &'static str) -> wreq::Client {
+        wreq::Client::builder()
+            .no_proxy()
+            .redirect(wreq::redirect::Policy::limited(5))
+            .layer(Route::new(move |dst| {
+                registry_proxy(&server, overrides, dst)
+            }))
+            .build()
+            .unwrap()
     }
 
     async fn body_of(client: &wreq::Client, url: &str) -> String {
@@ -287,7 +371,7 @@ mod tests {
         let matcher = Matcher::builder().http(format!("http://{addr}")).build();
         let client = wreq::Client::builder()
             .no_proxy()
-            .layer(Route::new(move |dst| intercept(&matcher, dst)))
+            .layer(Route::new(move |dst| first_hop(&matcher, dst)))
             .build()
             .unwrap();
 
@@ -305,7 +389,9 @@ mod tests {
         let client = wreq::Client::builder()
             .no_proxy()
             .layer(Route::new(move |_| {
-                switch.load(Ordering::SeqCst).then(|| proxy.clone())
+                switch
+                    .load(Ordering::SeqCst)
+                    .then(|| wreq::Proxy::all(proxy.as_str()).unwrap())
             }))
             .build()
             .unwrap();
@@ -315,5 +401,40 @@ mod tests {
         assert_eq!(body_of(&client, &target).await, "via proxy");
         on.store(false, Ordering::SeqCst);
         assert_eq!(body_of(&client, &target).await, "direct");
+    }
+
+    #[tokio::test]
+    async fn a_bypassed_host_redirecting_to_a_proxied_one_takes_the_proxy_on_that_hop() {
+        let proxy = serve("via proxy");
+        let first = serve_redirect("bypassed", "http://api.scnative.space/health".into());
+        let client = registry_client(proxy.to_string(), "localhost");
+
+        let body = body_of(&client, &format!("http://localhost:{}/start", first.port())).await;
+
+        assert_eq!(body, "via proxy");
+    }
+
+    #[tokio::test]
+    async fn a_proxied_host_redirecting_to_a_bypassed_one_goes_direct_on_that_hop() {
+        let direct = serve("direct");
+        let proxy = serve_redirect(
+            "via proxy",
+            format!("http://localhost:{}/health", direct.port()),
+        );
+        let client = registry_client(proxy.to_string(), "localhost");
+
+        let body = body_of(&client, "http://api.scnative.space/start").await;
+
+        assert_eq!(body, "direct");
+    }
+
+    #[tokio::test]
+    async fn a_per_protocol_setting_proxies_the_scheme_of_the_first_hop() {
+        let http = serve("via http proxy");
+        let client = registry_client(format!("http={http};https=127.0.0.1:9"), "");
+
+        let body = body_of(&client, "http://api.scnative.space/health").await;
+
+        assert_eq!(body, "via http proxy");
     }
 }
