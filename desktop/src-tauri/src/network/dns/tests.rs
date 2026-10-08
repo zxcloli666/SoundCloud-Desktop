@@ -750,3 +750,68 @@ async fn a_host_the_system_tunnels_keeps_its_fake_ip_while_the_zone_is_distruste
         "one lookup and one warm-up of images, never the tunnelled host"
     );
 }
+
+fn stepped_doh(addrs: Vec<IpAddr>, calls: &Calls) -> Lookup<DohAnswer> {
+    let calls = calls.clone();
+    Arc::new(move |_| {
+        let addrs = addrs.clone();
+        let calls = calls.clone();
+        async move {
+            calls.0.fetch_add(1, Ordering::SeqCst);
+            let steps = async {
+                tokio::time::sleep(Duration::from_millis(150)).await;
+                tokio::time::sleep(Duration::from_millis(150)).await;
+            };
+            tokio::time::timeout(Duration::from_secs(1), steps)
+                .await
+                .map_err(|_| Fail::timeout_after(1000))?;
+            Ok(DohAnswer {
+                addrs,
+                ttl: 60,
+                provider: "test",
+            })
+        }
+        .boxed()
+    })
+}
+
+#[tokio::test(start_paused = true)]
+async fn an_abandoned_lookup_still_finishes_for_the_next_caller() {
+    let doh_calls = Calls::default();
+    let resolver = fallback(
+        system(temporary(), 0, &Calls::default()),
+        stepped_doh(ips(&["188.165.221.195"]), &doh_calls),
+    );
+    let host = "api.scnative.space";
+    let abandoned = tokio::time::timeout(Duration::from_millis(100), resolver.lookup(host)).await;
+    assert!(abandoned.is_err());
+    tokio::time::sleep(Duration::from_millis(1_500)).await;
+    let expected = ips(&["188.165.221.195"]);
+    assert_eq!(resolver.lookup(host).await.unwrap(), expected);
+    assert_eq!(resolver.lookup(host).await.unwrap(), expected);
+    assert_eq!(doh_calls.count(), 1);
+}
+
+#[tokio::test(start_paused = true)]
+async fn a_slow_but_sane_system_answer_wins_when_doh_is_down() {
+    let resolver = fallback(
+        system(Ok(ips(&["188.165.221.195"])), 600, &Calls::default()),
+        doh(Err(Fail::timeout_after(3000)), 60, &Calls::default()),
+    );
+    let found = resolver.lookup("api.scnative.space").await.unwrap();
+    assert_eq!(found, ips(&["188.165.221.195"]));
+}
+
+#[tokio::test(start_paused = true)]
+async fn a_system_resolver_gets_eight_seconds_when_doh_is_down() {
+    let resolver = fallback(
+        system(Ok(ips(&["188.165.221.195"])), 10_000, &Calls::default()),
+        doh(Err(Fail::timeout_after(3000)), 60, &Calls::default()),
+    );
+    let started = tokio::time::Instant::now();
+    let error = resolver.lookup("api.scnative.space").await.unwrap_err();
+    assert_eq!(error.kind, FailKind::Dns);
+    let waited = started.elapsed();
+    assert!(waited >= Duration::from_secs(8), "{waited:?}");
+    assert!(waited < Duration::from_secs(9), "{waited:?}");
+}

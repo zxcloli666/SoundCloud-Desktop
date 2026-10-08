@@ -9,16 +9,18 @@ use tokio::time::Instant;
 use wreq::dns::{Addrs, Name, Resolve, Resolving};
 
 use super::cache::Cache;
-use super::{Config, DnsError, Scope, normalize, scope, wire};
+use super::{Config, DnsError, Scope, normalize, runtime, scope, wire};
 use crate::app::diagnostics;
 use crate::network::fail::{Fail, FailKind};
 
 const GARBAGE_DISTRUST: Duration = Duration::from_secs(600);
+const SYSTEM_PATIENCE: Duration = Duration::from_secs(8);
 const MAX_DOH_ADDRS: usize = 2;
 const SEEN_CAPACITY: usize = 64;
 
 pub(super) type Found = Result<Vec<IpAddr>, Fail>;
-type Flight = Shared<BoxFuture<'static, Result<Vec<IpAddr>, DnsError>>>;
+type Search = BoxFuture<'static, Result<Vec<IpAddr>, DnsError>>;
+type Flight = Shared<Search>;
 
 enum Judgement {
     Sane(Vec<IpAddr>),
@@ -83,15 +85,31 @@ impl Fallback {
         }
         let this = self.clone();
         let key = host.clone();
-        let flight = async move {
+        let search = async move {
             let found = this.find(&key).await;
             this.memory().flights.remove(&key);
             found
         }
-        .boxed()
-        .shared();
+        .boxed();
+        let flight = self.detached(&host, search).shared();
         memory.flights.insert(host, flight.clone());
         flight
+    }
+
+    fn detached(&self, host: &str, search: Search) -> Search {
+        let Some(runtime) = runtime() else {
+            return search;
+        };
+        let task = runtime.spawn(search);
+        let this = self.clone();
+        let host = host.to_string();
+        async move {
+            task.await.unwrap_or_else(|error| {
+                this.memory().flights.remove(&host);
+                Err(dns_error(&host, FailKind::Dns, error.to_string()))
+            })
+        }
+        .boxed()
     }
 
     async fn find(&self, host: &str) -> Result<Vec<IpAddr>, DnsError> {
@@ -100,7 +118,17 @@ impl Fallback {
         if known && !self.tunnels(host) && self.distrusted(Instant::now()) {
             return self.doh_first(host, scope).await;
         }
-        let system = self.system(host, scope).await;
+        let mut lookup = (self.0.config.system)(host.to_string());
+        let system = if scope == Scope::Ours {
+            let budget = self.0.config.system_budget;
+            match tokio::time::timeout(budget, &mut lookup).await {
+                Ok(found) => found,
+                Err(_) => return self.outwait(host, scope, known, lookup).await,
+            }
+        } else {
+            lookup.await
+        };
+        self.remember(host, &system);
         match judge(scope, known, &system) {
             Judgement::Sane(addrs) => Ok(addrs),
             Judgement::Truth => Err(dns_error(host, FailKind::Dns, described(&system))),
@@ -121,10 +149,67 @@ impl Fallback {
             Ok(addrs) => return Ok(addrs),
             Err(fail) => fail,
         };
-        let system = self.system(host, scope).await;
-        match judge(scope, false, &system) {
+        let lookup = (self.0.config.system)(host.to_string());
+        let system = self.patient(host, scope, lookup, Duration::ZERO).await;
+        self.settle(host, scope, false, &system, doh)
+    }
+
+    async fn outwait(
+        &self,
+        host: &str,
+        scope: Scope,
+        known: bool,
+        lookup: BoxFuture<'static, Found>,
+    ) -> Result<Vec<IpAddr>, DnsError> {
+        let budget = self.0.config.system_budget;
+        self.remember(host, &Err(Fail::timeout_after(millis(budget))));
+        let late = self.patient(host, scope, lookup, budget);
+        let doh = self.ask_doh(host);
+        tokio::pin!(late, doh);
+        tokio::select! {
+            answer = &mut doh => match answer {
+                Ok(addrs) => Ok(addrs),
+                Err(fail) => self.settle(host, scope, known, &late.await, fail),
+            },
+            system = &mut late => match judge(scope, known, &system) {
+                Judgement::Sane(addrs) => Ok(addrs),
+                Judgement::Garbage { .. } | Judgement::Truth => match doh.await {
+                    Ok(addrs) => Ok(addrs),
+                    Err(fail) => self.rescue(host, &system, fail),
+                },
+            },
+        }
+    }
+
+    async fn patient(
+        &self,
+        host: &str,
+        scope: Scope,
+        lookup: BoxFuture<'static, Found>,
+        waited: Duration,
+    ) -> Found {
+        let found = if scope == Scope::Ours {
+            tokio::time::timeout(SYSTEM_PATIENCE.saturating_sub(waited), lookup)
+                .await
+                .unwrap_or_else(|_| Err(Fail::timeout_after(millis(SYSTEM_PATIENCE))))
+        } else {
+            lookup.await
+        };
+        self.remember(host, &found);
+        found
+    }
+
+    fn settle(
+        &self,
+        host: &str,
+        scope: Scope,
+        known: bool,
+        system: &Found,
+        doh: Fail,
+    ) -> Result<Vec<IpAddr>, DnsError> {
+        match judge(scope, known, system) {
             Judgement::Sane(addrs) => Ok(addrs),
-            Judgement::Garbage { .. } | Judgement::Truth => self.rescue(host, &system, doh),
+            Judgement::Garbage { .. } | Judgement::Truth => self.rescue(host, system, doh),
         }
     }
 
@@ -146,20 +231,6 @@ impl Fallback {
             );
         }
         self.warm();
-    }
-
-    async fn system(&self, host: &str, scope: Scope) -> Found {
-        let lookup = (self.0.config.system)(host.to_string());
-        let found = if scope == Scope::Ours {
-            let budget = self.0.config.system_budget;
-            tokio::time::timeout(budget, lookup)
-                .await
-                .unwrap_or_else(|_| Err(Fail::timeout_after(budget.as_millis() as u32)))
-        } else {
-            lookup.await
-        };
-        self.remember(host, &found);
-        found
     }
 
     fn remember(&self, host: &str, found: &Found) {
@@ -276,6 +347,10 @@ fn described(system: &Found) -> String {
         Ok(addrs) => listed(addrs),
         Err(fail) => fail.to_string(),
     }
+}
+
+fn millis(span: Duration) -> u32 {
+    u32::try_from(span.as_millis()).unwrap_or(u32::MAX)
 }
 
 fn dns_error(host: &str, kind: FailKind, reason: String) -> DnsError {

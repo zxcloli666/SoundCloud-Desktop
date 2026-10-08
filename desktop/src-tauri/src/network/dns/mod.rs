@@ -135,10 +135,14 @@ fn not_found(error: &io::Error) -> bool {
     NOT_FOUND_TEXTS.iter().any(|needle| text.contains(needle))
 }
 
+fn runtime() -> Option<Handle> {
+    Handle::try_current()
+        .ok()
+        .or_else(|| RUNTIME.get().cloned())
+}
+
 fn spawn(task: impl Future<Output = ()> + Send + 'static) {
-    if let Ok(handle) = Handle::try_current() {
-        handle.spawn(task);
-    } else if let Some(handle) = RUNTIME.get() {
+    if let Some(handle) = runtime() {
         handle.spawn(task);
     }
 }
