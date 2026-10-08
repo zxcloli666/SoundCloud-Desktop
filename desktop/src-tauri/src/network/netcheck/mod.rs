@@ -316,7 +316,7 @@ mod tests {
         let minutes = |reports: &[NetReport]| auto_gap(reports).as_secs() / 60;
         assert_eq!(minutes(&[]), 10);
         let same = auto(Verdict::RelayOnly);
-        assert_eq!(minutes(&[same.clone()]), 10);
+        assert_eq!(minutes(std::slice::from_ref(&same)), 10);
         assert_eq!(minutes(&[same.clone(), same.clone()]), 20);
         assert_eq!(minutes(&[same.clone(), same.clone(), same.clone()]), 40);
         assert_eq!(minutes(&vec![same.clone(); 5]), 60);
