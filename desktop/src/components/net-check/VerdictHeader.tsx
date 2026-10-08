@@ -17,7 +17,7 @@ import { VerdictHint } from './VerdictHint';
 import { VerdictIcon, verdictTitle } from './VerdictIcon';
 
 const MAX_CHIPS = 3;
-const CALM: ReadonlySet<Verdict> = new Set(['ok', 'backupDown']);
+const NO_CHIPS: ReadonlySet<Verdict> = new Set(['ok', 'backupDown', 'down']);
 const NO_TARGETS: TargetCheck[] = [];
 
 type ChipTone = 'amber' | 'sky';
@@ -84,7 +84,7 @@ export const VerdictHeader = React.memo(() => {
   const verdict = useShownVerdict();
   const settled = report !== null && verdict !== 'checking' && report.verdict === verdict;
   const hint = settled ? report.hint : 'none';
-  const chips = settled && !CALM.has(verdict) ? envChips(t, report.env, report.targets, hint) : [];
+  const chips = settled && !NO_CHIPS.has(verdict) ? envChips(t, report.env, report.targets, hint) : [];
   const time = settled ? checkedTime(report.atMs, i18n.language) : null;
 
   return (
