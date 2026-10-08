@@ -233,8 +233,7 @@ async function run(): Promise<void> {
   }
   const unreachable = main.netFail && star.netFail;
   const internet = unreachable ? await checkInternet() : 'online';
-  // Бурст таймаутов = таймаутят все запросы → хост лёг, а не offline: модалку не глушим.
-  if (internet === 'no-internet' && !timeoutBurst()) {
+  if (internet === 'no-internet') {
     settleOfflineCheck(false);
     useHostStatusStore.setState({ main: 'unknown', star: 'unknown', net: 'no-internet' });
     startRecheckTimer();
