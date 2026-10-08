@@ -4,12 +4,13 @@ use futures_util::stream::{self, StreamExt};
 use wreq::Client;
 
 use super::link::{self, Shape};
-use super::model::{PROBE_PATH, Sample, Topology};
+use super::model::{PROBE_PATH, Route, Sample, Topology};
 use crate::network::edge::{self, Tier};
-use crate::network::system_proxy;
+use crate::network::{fail, system_proxy};
 
 const PROBE_TIMEOUT: Duration = Duration::from_secs(5);
 const MAX_PARALLEL: usize = 4;
+const MAX_ROUTES: usize = 6;
 const ORIGIN_ZONE: &str = "scnative.space";
 const DIRECT_EP: &str = "@direct";
 const CUT_SHAPES: [Shape; 4] = [Shape::Cut, Shape::Blackhole, Shape::Reset, Shape::Throttled];
@@ -146,32 +147,21 @@ pub async fn probe_services(
             let routes = endpoint.routes(&pool.relays);
             let judged = !system_proxy::proxied(&endpoint.url);
             async move {
-                let mut samples = Vec::with_capacity(routes.len());
-                let mut direct_ok = false;
-                let mut relay_ok = false;
-                for route in routes {
-                    let outcome = hit(&client, &route.url).await;
-                    if route.via == "direct" {
-                        direct_ok = outcome.ok;
-                        if judged {
-                            note_direct(&endpoint.url, outcome.ok, direct_bytes);
-                        }
-                    } else {
-                        relay_ok |= outcome.ok;
-                    }
-                    samples.push(Sample {
+                let outcomes = hit_all(&client, routes).await;
+                if judged {
+                    judge(&endpoint.url, &outcomes, direct_bytes);
+                }
+                outcomes
+                    .into_iter()
+                    .map(|(route, outcome)| Sample {
                         ep: endpoint.id.clone(),
                         via: route.via,
                         ok: outcome.ok,
                         ms: outcome.ms,
                         fail: outcome.fail.map(str::to_string),
                         link: None,
-                    });
-                }
-                if judged && !direct_ok && relay_ok {
-                    edge::note_url(&endpoint.url, Tier::Relay, true);
-                }
-                samples
+                    })
+                    .collect::<Vec<_>>()
             }
         })
         .buffer_unordered(MAX_PARALLEL)
@@ -179,6 +169,31 @@ pub async fn probe_services(
         .await;
 
     batches.into_iter().flatten().collect()
+}
+
+async fn hit_all(client: &Client, routes: Vec<Route>) -> Vec<(Route, Outcome)> {
+    stream::iter(routes)
+        .map(|route| async move {
+            let outcome = hit(client, &route.url).await;
+            (route, outcome)
+        })
+        .buffer_unordered(MAX_ROUTES)
+        .collect()
+        .await
+}
+
+fn judge(url: &str, outcomes: &[(Route, Outcome)], direct_bytes: u64) {
+    let direct = outcomes.iter().find(|(route, _)| route.via == "direct");
+    if let Some((_, outcome)) = direct {
+        note_direct(url, outcome.ok, direct_bytes);
+    }
+    let direct_ok = direct.is_some_and(|(_, outcome)| outcome.ok);
+    let relay_ok = outcomes
+        .iter()
+        .any(|(route, outcome)| route.via != "direct" && outcome.ok);
+    if !direct_ok && relay_ok {
+        edge::note_url(url, Tier::Relay, true);
+    }
 }
 
 fn note_direct(url: &str, ok: bool, direct_bytes: u64) {
@@ -210,27 +225,30 @@ async fn hit(client: &Client, url: &str) -> Outcome {
             ms: None,
             fail: Some("status"),
         },
-        Err(error) if error.is_timeout() => Outcome {
+        Err(error) => Outcome {
             ok: false,
             ms: None,
-            fail: Some("timeout"),
-        },
-        Err(error) if error.is_connect() => Outcome {
-            ok: false,
-            ms: None,
-            fail: Some("reset"),
-        },
-        Err(_) => Outcome {
-            ok: false,
-            ms: None,
-            fail: Some("reset"),
+            fail: Some(fail_label(&error)),
         },
     }
 }
 
+fn fail_label(error: &wreq::Error) -> &'static str {
+    fail::of_wreq(error).as_str()
+}
+
 #[cfg(test)]
 mod tests {
-    use super::{Sample, direct_bytes, direct_cut_while_others_pass, usable_first};
+    use std::time::{Duration, Instant};
+
+    use tokio::io::{AsyncReadExt, AsyncWriteExt};
+    use tokio::net::TcpListener;
+
+    use super::{
+        Outcome, Route, Sample, direct_bytes, direct_cut_while_others_pass, fail_label, hit_all,
+        judge, usable_first,
+    };
+    use crate::network::edge::{self, Tier};
     use crate::network::health::model::Link;
 
     fn sample(node: &str, ok: bool) -> Sample {
@@ -318,5 +336,94 @@ mod tests {
         cut.link = Some(link("cut", 13 * 1024));
         assert_eq!(direct_bytes(&[sample("r1", true), clean]), 64 * 1024);
         assert_eq!(direct_bytes(&[cut]), 0);
+    }
+
+    fn client() -> wreq::Client {
+        wreq::Client::builder().no_proxy().build().unwrap()
+    }
+
+    async fn server(delay: Duration) -> String {
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let addr = listener.local_addr().unwrap();
+        tokio::spawn(async move {
+            loop {
+                let Ok((mut stream, _)) = listener.accept().await else {
+                    return;
+                };
+                tokio::spawn(async move {
+                    let mut buf = [0u8; 1024];
+                    let _ = stream.read(&mut buf).await;
+                    tokio::time::sleep(delay).await;
+                    let _ = stream
+                        .write_all(b"HTTP/1.1 200 OK\r\ncontent-length: 0\r\n\r\n")
+                        .await;
+                });
+            }
+        });
+        format!("http://{addr}/health")
+    }
+
+    fn route(via: &str, url: &str) -> Route {
+        Route {
+            via: via.to_string(),
+            url: url.to_string(),
+        }
+    }
+
+    #[tokio::test]
+    async fn the_routes_of_one_endpoint_run_at_once() {
+        let url = server(Duration::from_millis(400)).await;
+        let started = Instant::now();
+        let outcomes = hit_all(
+            &client(),
+            vec![route("direct", &url), route("relay:r1", &url)],
+        )
+        .await;
+        assert!(started.elapsed() < Duration::from_millis(700));
+        assert_eq!(outcomes.len(), 2);
+        assert!(outcomes.iter().all(|(_, outcome)| outcome.ok));
+    }
+
+    #[tokio::test]
+    async fn a_failed_route_names_its_failure_class() {
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let closed = listener.local_addr().unwrap();
+        drop(listener);
+        let refused = client()
+            .get(format!("http://{closed}/"))
+            .send()
+            .await
+            .unwrap_err();
+        assert_eq!(fail_label(&refused), "refused");
+
+        let silent = server(Duration::from_secs(5)).await;
+        let timeout = client()
+            .get(silent)
+            .timeout(Duration::from_millis(200))
+            .send()
+            .await
+            .unwrap_err();
+        assert_eq!(fail_label(&timeout), "timeout");
+    }
+
+    fn outcome(ok: bool) -> Outcome {
+        Outcome {
+            ok,
+            ms: None,
+            fail: (!ok).then_some("reset"),
+        }
+    }
+
+    #[test]
+    fn one_round_with_a_cut_direct_route_does_not_pin_the_origin_alone() {
+        let url = "https://stream-star.scnative.space/health";
+        let round = [
+            (route("direct", url), outcome(false)),
+            (route("relay:r1", url), outcome(true)),
+        ];
+        judge(url, &round, 0);
+        assert_eq!(edge::current_tier(url), Tier::Direct);
+        judge(url, &round, 0);
+        assert_eq!(edge::current_tier(url), Tier::Relay);
     }
 }

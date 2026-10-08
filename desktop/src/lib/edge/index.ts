@@ -2,7 +2,7 @@
 // (прямой → relay) и запоминает, что сработало.
 
 import { fetch } from '@tauri-apps/plugin-http';
-import { type Hop, noteHop, planHops } from './config';
+import { type Hop, noteHop, planHops, type Tier } from './config';
 
 export type { Tier } from './config';
 export { initEdge, tierOf } from './config';
@@ -146,6 +146,38 @@ function hopBudgetMs(remaining: number, hopsLeft: number): number {
   if (hopsLeft <= 1) return remaining;
   const reserve = Math.min(FALLBACK_RESERVE_MS, Math.floor(remaining / 3));
   return remaining - reserve;
+}
+
+export type ProbeOutcome =
+  | { kind: 'answered'; status: number; tier: Tier }
+  | { kind: 'transport' }
+  | { kind: 'unreachable' };
+
+export function edgeProbe(url: string, hopTimeoutMs: number): Promise<ProbeOutcome> {
+  const planned = planHops(url);
+  const hops: Hop[] = planned.length > 0 ? planned : [{ url, tier: 'direct', origin: '' }];
+  const controllers = hops.map(() => new AbortController());
+  return new Promise((resolve) => {
+    let pending = hops.length;
+    let transport = false;
+    const settle = () => {
+      pending -= 1;
+      if (pending === 0) resolve({ kind: transport ? 'transport' : 'unreachable' });
+    };
+    const fetched = (hop: Hop, { res }: Fetched) => {
+      if (hopUsable(hop, res)) {
+        resolve({ kind: 'answered', status: res.status, tier: hop.tier });
+        for (const controller of controllers) controller.abort();
+      } else {
+        transport = true;
+      }
+      settle();
+    };
+    hops.forEach((hop, at) => {
+      const init: RequestInit = { cache: 'no-store', signal: controllers[at].signal };
+      fetchWhole(hop.url, init, hopTimeoutMs).then((done) => fetched(hop, done), settle);
+    });
+  });
 }
 
 export async function edgeFetch(
