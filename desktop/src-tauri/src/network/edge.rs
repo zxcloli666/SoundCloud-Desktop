@@ -499,13 +499,16 @@ fn record(origin: &str, step: impl FnOnce(&mut Inner, Instant) -> Change) {
         change
     };
     match change {
-        Change::Pinned => diagnostics::log(
-            "INFO",
-            format!(
-                "[Edge] {origin} -> relay for {} min",
-                REVALIDATE.as_secs() / 60
-            ),
-        ),
+        Change::Pinned => {
+            diagnostics::log(
+                "INFO",
+                format!(
+                    "[Edge] {origin} -> relay for {} min",
+                    REVALIDATE.as_secs() / 60
+                ),
+            );
+            crate::network::netcheck::auto("edge-pin");
+        }
         Change::Unpinned => diagnostics::log("INFO", format!("[Edge] {origin} -> direct")),
         Change::None => {}
     }

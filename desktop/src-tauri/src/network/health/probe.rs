@@ -103,15 +103,16 @@ async fn measure_bandwidth(client: &Client, url: &str) -> link::Measured {
     }
 }
 
-pub fn note_direct_cut(paths: &[Sample]) {
+pub fn note_direct_cut(paths: &[Sample]) -> bool {
     if !direct_cut_while_others_pass(paths) {
-        return;
+        return false;
     }
     for origin in edge::routed_origins() {
         if !system_proxy::proxied(&format!("https://{origin}/")) {
             edge::note(origin, Tier::Direct, false);
         }
     }
+    true
 }
 
 fn direct_cut_while_others_pass(paths: &[Sample]) -> bool {

@@ -1,5 +1,6 @@
 import { useAppStatusStore } from '../../stores/app-status';
 import { API_BASE, API_STAR_BASE } from '../constants';
+import { trackedInvoke as invoke } from '../diagnostics';
 import { edgeProbe } from '../edge';
 import { getIsPremium, requestPremiumRecheck } from '../premium-cache';
 import { queryClient } from '../query-client';
@@ -190,6 +191,7 @@ let offlineCheck = false;
 
 export function noteUnreachable(): void {
   offlineCheck = true;
+  void invoke('net_check_auto', { reason: 'unreachable' });
   requestProbe({ force: true });
 }
 
@@ -253,6 +255,7 @@ async function run(): Promise<void> {
       ? { modalDismissedIncidentId: incidentId }
       : {}),
   });
+  if (newIncident) void invoke('net_check_auto', { reason: 'main-down' });
   if (star.alive) markHealthy(API_STAR_BASE); // карта + вердикт; backendReachable не трогаем
   requestPremiumRecheck(); // протухший premium=true / потерянный premium у подписчика
   startRecheckTimer();
