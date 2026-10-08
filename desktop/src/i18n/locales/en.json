@@ -543,6 +543,116 @@
       "statusPage": "Status page"
     }
   },
+  "netCheck": {
+    "title": "Network check",
+    "open": "Network check",
+    "cardDesc": "Shows what blocks the connection to our servers",
+    "run": "Check",
+    "again": "Check again",
+    "checking": "Checking the connection…",
+    "never": "Not checked yet",
+    "checkedAt": "Checked at {{time}}",
+    "copy": "Copy report",
+    "copied": "Report copied",
+    "copiedLine": "Copied",
+    "send": "Send to support",
+    "sent": "Report copied. Paste it into your message",
+    "verdict": {
+      "ok": {
+        "title": "Everything works",
+        "hint": "All our servers answer."
+      },
+      "partial": {
+        "title": "Some servers don't answer",
+        "hint": "The app works, but some covers or tracks may not load."
+      },
+      "relayOnly": {
+        "title": "Direct route is blocked",
+        "hint": "The app works through backup routes, maybe slower."
+      },
+      "dns": {
+        "title": "Your DNS returns a wrong address",
+        "hint": "The app works around it. Secure DNS or 1.1.1.1 fixes it for good."
+      },
+      "reset": {
+        "title": "Connections are being reset",
+        "hint": "Probably zapret, a VPN or the provider's DPI."
+      },
+      "timeout": {
+        "title": "Our servers don't answer from your network",
+        "hint": "Usually the provider, a VPN or zapret."
+      },
+      "cert": {
+        "title": "Something swaps our certificate",
+        "hint": "Usually an antivirus web shield or a corporate proxy."
+      },
+      "down": {
+        "title": "Our servers are down",
+        "hint": "We're already fixing it."
+      },
+      "offline": {
+        "title": "No internet connection",
+        "hint": "Check your network and try again."
+      },
+      "unknown": {
+        "title": "Couldn't find the cause",
+        "hint": "Send us the report, it will help."
+      }
+    },
+    "hint": {
+      "zapret": "zapret is running. Turn it off to check; if that helps, add our addresses to its exclusions.",
+      "zapretTimestamps": "zapret uses a ts strategy, but TCP timestamps are off. Turn them on:",
+      "admin": "Run as administrator"
+    },
+    "env": {
+      "dpi": "{{name}} is running",
+      "timestampsOff": "TCP timestamps off",
+      "proxy": "System proxy",
+      "vpn": "VPN: {{name}}"
+    },
+    "host": {
+      "main": "Main server",
+      "star": "Star server",
+      "storage": "Music storage",
+      "images": "Covers",
+      "relay": "Backup route {{node}}"
+    },
+    "col": {
+      "dns": "DNS",
+      "tcp": "TCP",
+      "tls": "TLS",
+      "http": "HTTP"
+    },
+    "detail": {
+      "ms": "{{ms}} ms",
+      "skip": "not checked",
+      "proxy": "via proxy",
+      "dnsMismatch": "{{system}}, DoH: {{doh}}",
+      "dnsBogus": "fake address {{ip}}",
+      "dnsFail": "no answer",
+      "timeout": "no answer in {{s}} s",
+      "refused": "refused",
+      "unreachable": "unreachable",
+      "reset": "reset after {{ms}} ms",
+      "resetPlain": "connection reset",
+      "closed": "closed after {{ms}} ms",
+      "closedPlain": "connection closed",
+      "cert": "foreign certificate: {{issuer}}",
+      "certPlain": "foreign certificate",
+      "tls": "TLS error",
+      "status": "server error {{status}}",
+      "appFailed": "the app's request failed",
+      "other": "error"
+    },
+    "manual": {
+      "title": "Check by hand",
+      "windows": "Run in PowerShell and send us the output",
+      "unix": "Run in Terminal and send us the output",
+      "browser": "Open {{host}} in your browser",
+      "copy": "Copy",
+      "openBrowser": "Open"
+    }
+  },
   "home": {
     "yourWave": "Your wave",
     "freshReleases": "Fresh Releases",
@@ -856,6 +966,9 @@
     "helpErrors": "Error guide",
     "helpErrorsDesc": "What codes like 404, 500 or 503 mean and what to do about them",
     "helpErrorsOpen": "Open",
+    "helpNetCheck": "Network check",
+    "helpNetCheckDesc": "Shows what blocks the connection and builds a report",
+    "helpNetCheckOpen": "Open",
     "helpLog": "Log file",
     "helpLogDesc": "Attach desktop.log when you report a problem, it shows us what went wrong",
     "helpLogOpen": "Show file",

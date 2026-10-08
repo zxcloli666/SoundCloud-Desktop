@@ -207,7 +207,7 @@ function wire(): void {
   });
 }
 
-async function loadLast(): Promise<void> {
+export async function loadLastReport(): Promise<void> {
   const last = await invoke<NetReport | null>('net_check_last').catch(() => null);
   const current = useNetCheckStore.getState().report;
   if (last && (!current || last.atMs > current.atMs)) useNetCheckStore.setState({ report: last });
@@ -215,6 +215,12 @@ async function loadLast(): Promise<void> {
 
 export function isStale(report: NetReport | null, now = Date.now()): boolean {
   return report === null || now - report.atMs > STALE_MS;
+}
+
+export function shownVerdict(report: NetReport | null, running: boolean, failed: boolean): Verdict {
+  if (running) return 'checking';
+  if (report && report.verdict !== 'checking') return report.verdict;
+  return failed ? 'unknown' : 'checking';
 }
 
 export const useNetCheckStore = create<NetCheckState>()((set, get) => ({
@@ -225,7 +231,7 @@ export const useNetCheckStore = create<NetCheckState>()((set, get) => ({
   openCheck: () => {
     wire();
     set({ open: true });
-    void loadLast().then(() => {
+    void loadLastReport().then(() => {
       if (isStale(get().report)) void get().runCheck();
     });
   },
@@ -244,6 +250,10 @@ export const useNetCheckStore = create<NetCheckState>()((set, get) => ({
     }
   },
 }));
+
+export function useShownVerdict(): Verdict {
+  return useNetCheckStore((s) => shownVerdict(s.report, s.running, s.failed));
+}
 
 export function reportText(): Promise<string> {
   return invoke<string>('net_check_report_text');
