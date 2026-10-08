@@ -463,27 +463,27 @@ pub fn plan(url: &str) -> Vec<Hop> {
 }
 
 pub fn note(origin: &str, tier: Tier, ok: bool) {
-    record(origin, |inner, now| {
-        inner.apply(origin, Event::of(tier, ok), now)
-    });
-    if tier == Tier::Direct && !ok {
+    let event = Event::of(tier, ok);
+    let failed = matches!(event, Event::DirectFailed);
+    record(origin, failed, |inner, now| inner.apply(origin, event, now));
+    if failed {
         crate::network::dns::suspect(origin);
     }
 }
 
 pub fn note_delivered(origin: &str, tier: Tier, bytes: u64) {
     if tier == Tier::Direct {
-        record(origin, |inner, now| {
+        record(origin, false, |inner, now| {
             inner.apply(origin, Event::DirectDelivered(bytes), now)
         });
     }
 }
 
 fn settle(origin: &str, tier: Tier) {
-    record(origin, |inner, now| inner.conclude(origin, tier, now));
+    record(origin, true, |inner, now| inner.conclude(origin, tier, now));
 }
 
-fn record(origin: &str, step: impl FnOnce(&mut Inner, Instant) -> Change) {
+fn record(origin: &str, failed: bool, step: impl FnOnce(&mut Inner, Instant) -> Change) {
     if origin.is_empty() {
         return;
     }
@@ -507,7 +507,9 @@ fn record(origin: &str, step: impl FnOnce(&mut Inner, Instant) -> Change) {
                     REVALIDATE.as_secs() / 60
                 ),
             );
-            crate::network::netcheck::auto("edge-pin");
+            if failed {
+                crate::network::netcheck::auto("edge-pin");
+            }
         }
         Change::Unpinned => diagnostics::log("INFO", format!("[Edge] {origin} -> direct")),
         Change::None => {}

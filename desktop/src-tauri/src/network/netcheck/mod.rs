@@ -32,6 +32,7 @@ use crate::rt::AppHandle;
 
 const EVENT: &str = "netcheck:update";
 const AUTO_GAP: Duration = Duration::from_secs(600);
+const AUTO_GAP_MAX: Duration = Duration::from_secs(3600);
 const PARALLEL: usize = 6;
 const RECENT_EVENTS: usize = 40;
 const MAX_REASON: usize = 32;
@@ -99,9 +100,10 @@ pub fn auto(reason: &str) {
     let Some(checker) = CHECKER.get() else { return };
     {
         let memory = checker.memory();
+        let gap = auto_gap(&memory.reports).as_millis() as u64;
         let recent = memory
             .finished_ms
-            .is_some_and(|at| now_ms().saturating_sub(at) < AUTO_GAP.as_millis() as u64);
+            .is_some_and(|at| now_ms().saturating_sub(at) < gap);
         let running = memory
             .flight
             .as_ref()
@@ -111,6 +113,22 @@ pub fn auto(reason: &str) {
         }
     }
     let _ = start(Trigger::Auto, Some(reason.to_string()));
+}
+
+fn auto_gap(reports: &[NetReport]) -> Duration {
+    let Some(last) = reports.first() else {
+        return AUTO_GAP;
+    };
+    let streak = reports
+        .iter()
+        .take_while(|report| {
+            report.trigger == Trigger::Auto
+                && report.verdict == last.verdict
+                && report.hint == last.hint
+        })
+        .count();
+    let doublings = streak.saturating_sub(1).min(3) as u32;
+    AUTO_GAP.saturating_mul(1 << doublings).min(AUTO_GAP_MAX)
 }
 
 fn start(trigger: Trigger, reason: Option<String>) -> Option<Flight> {
@@ -271,7 +289,41 @@ pub fn net_check_report_text() -> Result<String, String> {
 
 #[cfg(test)]
 mod tests {
-    use super::reason_of;
+    use std::time::Duration;
+
+    use super::fixture::sample;
+    use super::model::{Hint, NetReport, Trigger, Verdict};
+    use super::{auto_gap, reason_of};
+
+    fn auto(verdict: Verdict) -> NetReport {
+        NetReport {
+            trigger: Trigger::Auto,
+            verdict,
+            hint: Hint::Zapret,
+            ..sample(0)
+        }
+    }
+
+    #[test]
+    fn auto_runs_back_off_while_the_verdict_stays_the_same() {
+        let minutes = |reports: &[NetReport]| auto_gap(reports).as_secs() / 60;
+        assert_eq!(minutes(&[]), 10);
+        let same = auto(Verdict::RelayOnly);
+        assert_eq!(minutes(&[same.clone()]), 10);
+        assert_eq!(minutes(&[same.clone(), same.clone()]), 20);
+        assert_eq!(minutes(&[same.clone(), same.clone(), same.clone()]), 40);
+        assert_eq!(minutes(&vec![same.clone(); 5]), 60);
+        let changed = [auto(Verdict::Reset), same.clone(), same.clone()];
+        assert_eq!(minutes(&changed), 10);
+        let manual = [same.clone(), sample(0), same.clone()];
+        assert_eq!(minutes(&manual), 10);
+        let rehinted = NetReport {
+            hint: Hint::None,
+            ..same.clone()
+        };
+        assert_eq!(minutes(&[same, rehinted]), 10);
+        assert!(auto_gap(&vec![auto(Verdict::Offline); 5]) <= Duration::from_secs(3600));
+    }
 
     #[test]
     fn a_reason_from_the_frontend_is_short_and_plain() {
