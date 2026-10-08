@@ -35,6 +35,8 @@ async fn first_served(client: &wreq::Client, urls: &[&str]) -> Option<VolumeProb
 async fn measure(client: &wreq::Client, url: &str) -> VolumeProbe {
     let measured = link::probe(client, url, link::PROBE_BYTES).await;
     let bytes = u64::try_from(measured.link.bytes).unwrap_or_default();
+    let cut = cut(measured.shape, bytes)
+        || (silent(measured.shape, bytes) && small_passes(client, url).await);
     VolumeProbe {
         host: url::Url::parse(url)
             .ok()
@@ -43,8 +45,19 @@ async fn measure(client: &wreq::Client, url: &str) -> VolumeProbe {
         shape: measured.shape.as_str().to_string(),
         bytes,
         ms: u32::try_from(measured.ms).unwrap_or_default(),
-        cut: cut(measured.shape, bytes),
+        cut,
     }
+}
+
+fn silent(shape: Shape, bytes: u64) -> bool {
+    shape == Shape::Blackhole && bytes < link::CUT_FLOOR
+}
+
+async fn small_passes(client: &wreq::Client, url: &str) -> bool {
+    link::probe(client, url, link::SMALL_BYTES)
+        .await
+        .shape
+        .usable()
 }
 
 fn cut(shape: Shape, bytes: u64) -> bool {
@@ -59,8 +72,8 @@ mod tests {
     use tokio::io::{AsyncReadExt, AsyncWriteExt};
     use tokio::net::TcpListener;
 
-    use super::{cut, first_served, measure};
-    use crate::network::health::link::{PROBE_BYTES, Shape};
+    use super::{cut, first_served, measure, silent};
+    use crate::network::health::link::{PROBE_BYTES, SMALL_BYTES, Shape};
 
     #[derive(Clone, Copy)]
     enum Ending {
@@ -101,6 +114,29 @@ mod tests {
         format!("http://{addr}/probe")
     }
 
+    async fn picky_server(small_too: bool) -> String {
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let addr = listener.local_addr().unwrap();
+        tokio::spawn(async move {
+            while let Ok((mut socket, _)) = listener.accept().await {
+                tokio::spawn(async move {
+                    let mut buf = [0u8; 2048];
+                    let read = socket.read(&mut buf).await.unwrap_or(0);
+                    let small = String::from_utf8_lossy(&buf[..read])
+                        .contains(&format!("bytes={SMALL_BYTES} "));
+                    let size = if small { SMALL_BYTES } else { PROBE_BYTES };
+                    let head = format!("HTTP/1.1 200 OK\r\ncontent-length: {size}\r\n\r\n");
+                    let _ = socket.write_all(head.as_bytes()).await;
+                    if small && !small_too {
+                        let _ = socket.write_all(&vec![b'x'; size as usize]).await;
+                    }
+                    tokio::time::sleep(Duration::from_secs(30)).await;
+                });
+            }
+        });
+        format!("http://{addr}/probe")
+    }
+
     fn client() -> wreq::Client {
         wreq::Client::builder().no_proxy().build().unwrap()
     }
@@ -126,6 +162,21 @@ mod tests {
         assert_eq!(volume.shape, "blackhole");
         assert_eq!(volume.bytes, SENT_BEFORE_CUT as u64);
         assert!(volume.cut, "{volume:?}");
+    }
+
+    #[tokio::test]
+    async fn a_big_answer_that_never_starts_while_a_small_one_passes_is_a_cut() {
+        let volume = measure(&client(), &picky_server(false).await).await;
+        assert_eq!(volume.shape, "blackhole");
+        assert_eq!(volume.bytes, 0);
+        assert!(volume.cut, "{volume:?}");
+    }
+
+    #[tokio::test]
+    async fn a_host_that_stalls_every_answer_is_not_a_cut() {
+        let volume = measure(&client(), &picky_server(true).await).await;
+        assert_eq!(volume.shape, "blackhole");
+        assert!(!volume.cut, "{volume:?}");
     }
 
     #[tokio::test]
@@ -159,6 +210,14 @@ mod tests {
         let volume = measure(&client(), &url).await;
         assert_eq!(volume.bytes, 0);
         assert!(!volume.cut);
+    }
+
+    #[test]
+    fn only_a_silent_blackhole_asks_for_the_small_probe() {
+        assert!(silent(Shape::Blackhole, 0));
+        assert!(!silent(Shape::Blackhole, 9 * 1024));
+        assert!(!silent(Shape::Reset, 0));
+        assert!(!silent(Shape::Dead, 0));
     }
 
     #[test]
