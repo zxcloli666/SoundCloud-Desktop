@@ -223,6 +223,8 @@ async function run(): Promise<void> {
     return;
   }
   const gen = mainAliveGen;
+  const internetCheck = first.netFail ? checkInternet() : undefined;
+  const remoteCheck = fetchRemoteVerdict();
   const [main, star] = await Promise.all([
     probeConfirmed(API_BASE, first),
     probeConfirmed(API_STAR_BASE),
@@ -232,20 +234,21 @@ async function run(): Promise<void> {
     return;
   }
   const unreachable = main.netFail && star.netFail;
-  const internet = unreachable ? await checkInternet() : 'online';
+  const internet = unreachable ? await (internetCheck ?? checkInternet()) : 'online';
   if (internet === 'no-internet') {
     settleOfflineCheck(false);
     useHostStatusStore.setState({ main: 'unknown', star: 'unknown', net: 'no-internet' });
     startRecheckTimer();
     return;
   }
-  const remote = star.alive ? 'unknown' : await fetchRemoteVerdict();
   // Реальный успех main за время star-пробы/internet-check — результат устарел, down не пишем.
   if (mainAliveGen !== gen) {
     settleOfflineCheck(true);
     return;
   }
   settleOfflineCheck(!(main.netFail && (!getIsPremium() || star.netFail)));
+  const remote = star.alive ? 'unknown' : await remoteCheck;
+  if (mainAliveGen !== gen) return;
   const prev = useHostStatusStore.getState();
   const newIncident = prev.main !== 'down';
   const incidentId = newIncident ? prev.incidentId + 1 : prev.incidentId;
