@@ -128,6 +128,49 @@ fn a_garbage_dns_answer_is_dns() {
 }
 
 #[test]
+fn a_wrong_answer_the_app_works_around_is_still_dns() {
+    let mut targets = vec![healthy(TargetId::Main), healthy(TargetId::Storage)];
+    targets[1].system = answer(&["2.26.93.81"]);
+    targets[1].dns = DnsState::Garbage;
+    assert_eq!(judge(&targets), Verdict::Dns);
+    targets[1].dns = DnsState::Spoofed;
+    assert_eq!(judge(&targets), Verdict::Dns);
+}
+
+#[test]
+fn a_missing_name_the_app_works_around_is_still_dns() {
+    let mut targets = vec![healthy(TargetId::Main)];
+    targets[0].system = DnsAnswer {
+        fail: Some(Fail::of(FailKind::Dns)),
+        ..DnsAnswer::default()
+    };
+    targets[0].dns = DnsState::Garbage;
+    assert_eq!(judge(&targets), Verdict::Dns);
+}
+
+#[test]
+fn a_slow_system_resolver_alone_is_not_a_wrong_answer() {
+    let mut targets = vec![healthy(TargetId::Main), healthy(TargetId::Relay)];
+    targets[0].system = DnsAnswer {
+        fail: Some(Fail::timeout_after(6_000)),
+        ..DnsAnswer::default()
+    };
+    targets[0].dns = DnsState::Garbage;
+    assert_eq!(judge(&targets), Verdict::Ok);
+}
+
+#[test]
+fn a_wrong_answer_beats_backup_routes_being_down() {
+    let mut targets = vec![
+        healthy(TargetId::Main),
+        broken(TargetId::Relay, FailKind::Refused, Phase::Tcp),
+    ];
+    targets[1].system = answer(&["0.0.0.0"]);
+    targets[1].dns = DnsState::Garbage;
+    assert_eq!(judge(&targets), Verdict::Dns);
+}
+
+#[test]
 fn a_spoofed_answer_is_dns() {
     let system = answer(&["5.45.67.89"]);
     let doh = answer(&["188.165.221.195"]);

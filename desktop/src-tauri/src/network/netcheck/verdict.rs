@@ -13,13 +13,16 @@ pub fn verdict(targets: &[TargetCheck], internet: Internet, remote: Remote) -> V
     if targets.is_empty() {
         return Verdict::Unknown;
     }
+    let working = targets
+        .iter()
+        .all(|target| target.ok || target.id == TargetId::Relay);
+    if working && targets.iter().any(answered_wrong) {
+        return Verdict::Dns;
+    }
     if targets.iter().all(|target| target.ok) {
         return Verdict::Ok;
     }
-    if targets
-        .iter()
-        .all(|target| target.ok || target.id == TargetId::Relay)
-    {
+    if working {
         return Verdict::BackupDown;
     }
     if internet == Internet::Offline {
@@ -68,6 +71,18 @@ fn tally(targets: &[TargetCheck]) -> Verdict {
         Verdict::DnsFailed
     } else {
         Verdict::Unknown
+    }
+}
+
+fn answered_wrong(target: &TargetCheck) -> bool {
+    match target.dns {
+        DnsState::Spoofed => true,
+        DnsState::Garbage => target
+            .system
+            .fail
+            .as_ref()
+            .is_none_or(|fail| fail.kind != FailKind::Timeout),
+        DnsState::Sane | DnsState::Failed | DnsState::Unchecked => false,
     }
 }
 
