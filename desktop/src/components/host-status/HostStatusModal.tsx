@@ -8,6 +8,7 @@ import { useAppStatusStore } from '../../stores/app-status';
 import { useAuthStore } from '../../stores/auth';
 import { useAuthRecoveryStore } from '../../stores/auth-recovery';
 import { Modal, ModalClose, ModalContent, ModalTitle } from '../ui/Modal';
+import { IconTile } from './IconTile';
 import { outageCopy } from './outage-copy';
 import { RemoteCheck } from './RemoteCheck';
 import { useFailoverUi } from './useFailoverUi';
@@ -27,21 +28,6 @@ function LinkButton({ href, label }: { href: string; label: string }) {
       {label}
       <ExternalLink size={10} />
     </a>
-  );
-}
-
-function IconTile({ children }: { children: React.ReactNode }) {
-  return (
-    <div
-      className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4"
-      style={{
-        background: 'linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))',
-        border: '0.5px solid rgba(255,255,255,0.08)',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
-      }}
-    >
-      {children}
-    </div>
   );
 }
 
