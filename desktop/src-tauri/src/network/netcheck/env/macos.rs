@@ -1,10 +1,11 @@
 use std::net::IpAddr;
 
-use super::{parse_resolv_conf, tool_for};
+use super::{parse_resolv_conf, tool_at, tool_for};
 use crate::network::netcheck::model::{DpiTool, EnvInfo};
 
 const RESOLV_CONF: &str = "/etc/resolv.conf";
 const NAME_BYTES: usize = 64;
+const PATH_BYTES: usize = libc::PROC_PIDPATHINFO_MAXSIZE as usize;
 
 pub async fn detect() -> EnvInfo {
     tokio::task::spawn_blocking(|| EnvInfo {
@@ -29,14 +30,9 @@ fn running() -> Vec<DpiTool> {
     }
     pids.truncate(filled as usize);
     let mut found: Vec<DpiTool> = Vec::new();
+    let mut path = vec![0u8; PATH_BYTES];
     for pid in pids {
-        let mut name = [0u8; NAME_BYTES];
-        let len = unsafe { libc::proc_name(pid, name.as_mut_ptr().cast(), NAME_BYTES as u32) };
-        if len <= 0 {
-            continue;
-        }
-        let name = String::from_utf8_lossy(&name[..len as usize]);
-        if let Some(tool) = tool_for(&name)
+        if let Some(tool) = tool_of(pid, &mut path)
             && !found.iter().any(|seen| seen.name == tool)
         {
             found.push(DpiTool {
@@ -46,6 +42,19 @@ fn running() -> Vec<DpiTool> {
         }
     }
     found
+}
+
+fn tool_of(pid: libc::pid_t, path: &mut [u8]) -> Option<&'static str> {
+    let len = unsafe { libc::proc_pidpath(pid, path.as_mut_ptr().cast(), path.len() as u32) };
+    if len > 0 {
+        return tool_at(&String::from_utf8_lossy(&path[..len as usize]));
+    }
+    let mut name = [0u8; NAME_BYTES];
+    let len = unsafe { libc::proc_name(pid, name.as_mut_ptr().cast(), NAME_BYTES as u32) };
+    if len <= 0 {
+        return None;
+    }
+    tool_for(&String::from_utf8_lossy(&name[..len as usize]))
 }
 
 fn dns_servers() -> Vec<IpAddr> {

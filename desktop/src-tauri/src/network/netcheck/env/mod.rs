@@ -127,6 +127,11 @@ pub fn tool_for(process_name: &str) -> Option<&'static str> {
     DPI_TOOLS.iter().copied().find(|tool| *tool == stem)
 }
 
+#[cfg(any(target_os = "macos", test))]
+pub fn tool_at(path: &str) -> Option<&'static str> {
+    tool_for(path.rsplit('/').next().unwrap_or(path))
+}
+
 pub fn vpn_like(name: &str) -> bool {
     let lower = name.to_ascii_lowercase();
     VPN_PREFIXES.iter().any(|prefix| lower.starts_with(prefix))
