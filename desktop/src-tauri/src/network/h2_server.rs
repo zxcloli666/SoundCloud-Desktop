@@ -1,3 +1,4 @@
+use std::collections::VecDeque;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::Duration;
@@ -74,6 +75,12 @@ pub enum Mode {
     Healthy,
     Freeze,
     Slow(Duration),
+    Lagging(Duration),
+}
+
+enum Due {
+    Answer(u32),
+    Pong(Vec<u8>),
 }
 
 async fn serve<S: AsyncRead + AsyncWrite + Unpin>(mut socket: S, mode: Mode) {
@@ -83,24 +90,32 @@ async fn serve<S: AsyncRead + AsyncWrite + Unpin>(mut socket: S, mode: Mode) {
     {
         return;
     }
-    let mut late: Option<(u32, tokio::time::Instant)> = None;
+    let mut late: VecDeque<(tokio::time::Instant, Due)> = VecDeque::new();
     loop {
-        let due = late.map(|(_, at)| at);
+        let due = late.front().map(|(at, _)| *at);
         let frame = tokio::select! {
             frame = read_frame(&mut socket) => frame,
             () = tokio::time::sleep_until(due.unwrap_or_else(tokio::time::Instant::now)), if due.is_some() => {
-                if let Some((stream, _)) = late.take()
-                    && answer(&mut socket, stream, b"ok", true).await.is_err()
-                {
+                let sent = match late.pop_front() {
+                    Some((_, Due::Answer(stream))) => answer(&mut socket, stream, b"ok", true).await,
+                    Some((_, Due::Pong(payload))) => write_frame(&mut socket, PING, ACK, 0, &payload).await,
+                    None => Ok(()),
+                };
+                if sent.is_err() {
                     return;
                 }
                 continue;
             }
         };
         let Some(frame) = frame else { return };
+        let later = |delay: Duration| tokio::time::Instant::now() + delay;
         let sent = match (frame.kind, mode) {
             (SETTINGS, _) if frame.flags & ACK == 0 => {
                 write_frame(&mut socket, SETTINGS, ACK, 0, &[]).await
+            }
+            (PING, Mode::Lagging(delay)) if frame.flags & ACK == 0 => {
+                late.push_back((later(delay), Due::Pong(frame.payload)));
+                Ok(())
             }
             (PING, _) if frame.flags & ACK == 0 => {
                 write_frame(&mut socket, PING, ACK, 0, &frame.payload).await
@@ -110,8 +125,8 @@ async fn serve<S: AsyncRead + AsyncWrite + Unpin>(mut socket: S, mode: Mode) {
                 tokio::time::sleep(Duration::from_secs(120)).await;
                 return;
             }
-            (HEADERS, Mode::Slow(delay)) => {
-                late = Some((frame.stream, tokio::time::Instant::now() + delay));
+            (HEADERS, Mode::Slow(delay) | Mode::Lagging(delay)) => {
+                late.push_back((later(delay), Due::Answer(frame.stream)));
                 Ok(())
             }
             (HEADERS, Mode::Healthy) => answer(&mut socket, frame.stream, b"ok", true).await,

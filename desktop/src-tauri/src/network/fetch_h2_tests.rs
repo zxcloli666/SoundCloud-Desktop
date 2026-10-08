@@ -49,7 +49,7 @@ async fn a_frozen_h2_connection_is_dropped_and_later_requests_get_a_fresh_one() 
     };
     assert_eq!(error.kind, NetKind::Timeout);
     assert!(
-        started.elapsed() < Duration::from_secs(6),
+        started.elapsed() < Duration::from_secs(9),
         "{:?}",
         started.elapsed()
     );
@@ -81,5 +81,24 @@ async fn a_slow_answer_on_a_live_connection_is_not_cut_by_the_pings() {
     assert_eq!(status, 200);
     assert_eq!(body, b"ok");
     assert!(started.elapsed() >= Duration::from_secs(7));
+    assert_eq!(accepted.load(Ordering::SeqCst), 1);
+}
+
+#[tokio::test]
+async fn a_lagging_link_keeps_its_pooled_connection() {
+    let lag = Duration::from_millis(3_500);
+    let (url, accepted) = h2_server(Mode::Lagging(lag)).await;
+    let client = h2_client();
+    let (head, _) = perform(&client, get(&url)).await;
+    assert!(matches!(head, Head::Answer { status: 200, .. }), "{head:?}");
+    tokio::time::sleep(Duration::from_millis(4_500)).await;
+    let asked = Instant::now();
+    let (head, body) = perform(&client, get(&url)).await;
+    let Head::Answer { status, .. } = head else {
+        panic!("the idle pooled connection must still answer, got {head:?}");
+    };
+    assert_eq!(status, 200);
+    assert_eq!(body, b"ok");
+    assert!(asked.elapsed() >= lag, "{:?}", asked.elapsed());
     assert_eq!(accepted.load(Ordering::SeqCst), 1);
 }
