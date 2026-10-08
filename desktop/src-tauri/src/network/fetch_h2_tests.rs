@@ -3,7 +3,8 @@ use std::time::{Duration, Instant};
 
 use wreq::http2::Http2Options;
 
-use super::{FetchRequest, Head, NetKind, configured, perform, ping};
+use super::{FetchRequest, Head, NetKind, Route, configured, perform, ping};
+use crate::network::edge::Tier;
 use crate::network::h2_server::{Mode, h2_server};
 
 fn h2_client() -> wreq::Client {
@@ -85,6 +86,35 @@ async fn a_get_queued_on_a_frozen_h2_connection_is_replayed_on_a_fresh_one() {
         fresh.elapsed()
     );
     assert_eq!(accepted.load(Ordering::SeqCst), 2);
+}
+
+#[tokio::test]
+async fn a_get_with_another_hop_left_is_not_replayed() {
+    let (url, accepted) = h2_server(Mode::Freeze).await;
+    let client = h2_client();
+    let mut first_hop = get(&url);
+    first_hop.route = Some(Route {
+        tier: Tier::Direct,
+        origin: "fetch-h2-test.scnative.space".to_string(),
+        attempt: 0,
+        last: false,
+    });
+    let started = Instant::now();
+    let ((stalled, _), (queued, _)) = tokio::join!(perform(&client, get(&url)), async {
+        tokio::time::sleep(Duration::from_millis(300)).await;
+        perform(&client, first_hop).await
+    });
+    assert!(matches!(stalled, Head::Failed { .. }), "{stalled:?}");
+    let Head::Failed { error } = queued else {
+        panic!("the next hop must take over instead of a replay, got {queued:?}");
+    };
+    assert_eq!(error.kind, NetKind::Timeout);
+    assert!(
+        started.elapsed() < Duration::from_secs(9),
+        "{:?}",
+        started.elapsed()
+    );
+    assert_eq!(accepted.load(Ordering::SeqCst), 1);
 }
 
 #[tokio::test]

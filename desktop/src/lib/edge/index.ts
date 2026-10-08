@@ -207,7 +207,7 @@ export async function edgeFetch(
     attempted += 1;
 
     try {
-      const route = { tier: hop.tier, origin: hop.origin, attempt: i };
+      const route = { tier: hop.tier, origin: hop.origin, attempt: i, last: isLast };
       const { res, bytes, stalled } = await fetchWhole(hop.url, init, hopBudget, route);
       answered = true;
       if (hopUsable(hop, res)) {

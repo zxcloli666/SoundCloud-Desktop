@@ -44,6 +44,8 @@ pub struct Route {
     tier: Tier,
     origin: String,
     attempt: u8,
+    #[serde(default)]
+    last: bool,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
@@ -166,7 +168,8 @@ async fn perform(client: &wreq::Client, request: FetchRequest) -> (Head, Vec<u8>
         return (Head::failed(NetKind::Other, "bad method"), Vec::new());
     };
     let headers = outgoing(&method, &request.headers, request.body.is_some());
-    let replayable = matches!(method, Method::GET | Method::HEAD);
+    let replayable = matches!(method, Method::GET | Method::HEAD)
+        && request.route.as_ref().is_none_or(|route| route.last);
     let mut stalled = false;
     let response = loop {
         let mut builder = client

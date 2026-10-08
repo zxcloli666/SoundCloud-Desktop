@@ -183,6 +183,7 @@ async fn an_answer_comes_back_whole_and_the_route_is_recorded() {
         tier: Tier::Relay,
         origin: "fetch-test.scnative.space".to_string(),
         attempt: 1,
+        last: true,
     });
     let (head, body) = perform(&client(), ask).await;
     let Head::Answer {
@@ -262,6 +263,7 @@ async fn a_body_that_breaks_off_is_a_body_failure() {
         tier: Tier::Direct,
         origin: "fetch-body-test.scnative.space".to_string(),
         attempt: 0,
+        last: false,
     });
     let (head, body) = perform(&client(), ask).await;
     let Head::Failed { error } = head else {

@@ -17,6 +17,7 @@ export interface NetRoute {
   tier: Tier;
   origin: string;
   attempt: number;
+  last: boolean;
 }
 
 export interface NetInit extends RequestInit {
