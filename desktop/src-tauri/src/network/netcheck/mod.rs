@@ -211,7 +211,7 @@ async fn run(trigger: Trigger, reason: Option<String>) -> NetReport {
     let ((), doh, env) = tokio::join!(collect, providers, environment);
     report.doh = doh;
     report.env = env.ok();
-    let any_ok = report.targets.iter().any(|target| target.ok);
+    let online = targets::internet_seen(&report.targets, &report.doh);
     let main_ok = report
         .targets
         .iter()
@@ -219,9 +219,9 @@ async fn run(trigger: Trigger, reason: Option<String>) -> NetReport {
     let (internet, remote) = tokio::join!(
         async {
             match client {
-                Some(client) if !any_ok => targets::internet(client).await,
-                _ if any_ok => Internet::Online,
-                _ => Internet::Unknown,
+                _ if online => Internet::Online,
+                Some(client) => targets::internet(client).await,
+                None => Internet::Unknown,
             }
         },
         async {

@@ -17,10 +17,10 @@ use crate::network::system_proxy;
 
 const HEALTH_PATH: &str = "/health";
 const HTTPS_PORT: u16 = 443;
-const SYSTEM_DNS_BUDGET: Duration = Duration::from_secs(3);
-const APP_TIMEOUT: Duration = Duration::from_secs(8);
-const TARGET_CAP: Duration = Duration::from_secs(20);
-const EXTERNAL_TIMEOUT: Duration = Duration::from_secs(3);
+const SYSTEM_DNS_BUDGET: Duration = Duration::from_secs(6);
+const APP_TIMEOUT: Duration = Duration::from_secs(15);
+const TARGET_CAP: Duration = Duration::from_secs(30);
+const EXTERNAL_TIMEOUT: Duration = Duration::from_secs(10);
 const RELAY_TARGETS: usize = 4;
 const DOH_SAMPLE_HOST: &str = "api.scnative.space";
 const STATUS_VERDICT_URL: &str = "https://status.soundcloud-desktop.fun/api/verdict";
@@ -281,6 +281,17 @@ pub async fn doh_providers() -> Vec<DohProbe> {
     .await
 }
 
+pub fn internet_seen(targets: &[TargetCheck], doh: &[DohProbe]) -> bool {
+    let answered = targets.iter().any(|target| {
+        target.ok
+            || target
+                .doh
+                .as_ref()
+                .is_some_and(|answer| !answer.addrs.is_empty())
+    });
+    answered || doh.iter().any(|probe| probe.ok)
+}
+
 pub async fn internet(client: &wreq::Client) -> Internet {
     let checks = [
         reachable(
@@ -351,10 +362,57 @@ pub fn remote_of(payload: Option<&serde_json::Value>) -> Remote {
 
 #[cfg(test)]
 mod tests {
+    use std::time::Duration;
+
     use serde_json::json;
 
-    use super::{Target, remote_of, targets, total, verdict};
-    use crate::network::netcheck::model::{AppProbe, PhaseProbe, Remote, TargetId, Tone};
+    use super::{
+        APP_TIMEOUT, EXTERNAL_TIMEOUT, SYSTEM_DNS_BUDGET, TARGET_CAP, Target, doh, internet_seen,
+        remote_of, targets, total, verdict,
+    };
+    use crate::network::netcheck::model::{
+        AppProbe, DnsAnswer, DohProbe, PhaseProbe, Remote, TargetId, Tone,
+    };
+    use crate::network::netcheck::phases::Budget;
+
+    const SLOW_RTT: Duration = Duration::from_secs(2);
+
+    fn main_target() -> Target {
+        Target {
+            id: TargetId::Main,
+            node: None,
+            host: "api.scnative.space".to_string(),
+        }
+    }
+
+    #[test]
+    fn a_doh_answer_proves_the_internet_works() {
+        let mut check = main_target().pending();
+        assert!(!internet_seen(std::slice::from_ref(&check), &[]));
+        check.doh = Some(DnsAnswer {
+            addrs: vec!["188.165.221.195".parse().unwrap()],
+            ..DnsAnswer::default()
+        });
+        assert!(internet_seen(std::slice::from_ref(&check), &[]));
+        let provider = DohProbe {
+            provider: "google".to_string(),
+            ok: true,
+            ms: Some(4_000),
+            fail: None,
+        };
+        assert!(internet_seen(&[main_target().pending()], &[provider]));
+    }
+
+    #[test]
+    fn a_slow_link_fits_every_budget() {
+        assert!(SYSTEM_DNS_BUDGET >= SLOW_RTT * 3);
+        assert!(EXTERNAL_TIMEOUT >= SLOW_RTT * 4);
+        assert!(APP_TIMEOUT >= SLOW_RTT * 5);
+        let budget = Budget::default();
+        let probe = budget.tcp + budget.tls + budget.first_byte;
+        let lookups = SYSTEM_DNS_BUDGET.max(doh::TOTAL_BUDGET);
+        assert!(TARGET_CAP >= lookups + probe.max(APP_TIMEOUT));
+    }
 
     #[test]
     fn the_core_hosts_come_first_and_relays_are_capped() {
