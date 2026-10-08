@@ -77,11 +77,14 @@ fn build_client() -> Option<wreq::Client> {
             .collect();
         builder = builder.resolve_to_addrs(provider.name, &addrs);
     }
+    configured(builder).build().ok()
+}
+
+fn configured(builder: wreq::ClientBuilder) -> wreq::ClientBuilder {
     builder
+        .http2_only()
         .connect_timeout(CONNECT_TIMEOUT)
         .timeout(REQUEST_TIMEOUT)
-        .build()
-        .ok()
 }
 
 fn client() -> Option<&'static wreq::Client> {
@@ -197,6 +200,7 @@ where
 
 #[cfg(test)]
 mod tests {
+    use std::sync::atomic::Ordering;
     use std::sync::{Arc, Mutex};
     use std::time::Duration;
 
@@ -204,10 +208,11 @@ mod tests {
 
     use super::{
         CONNECT_TIMEOUT, DohAnswer, HEDGE_AFTER, PROVIDERS, REQUEST_TIMEOUT, TOTAL_BUDGET,
-        answer_of, client, hedged, race, sane,
+        answer_of, client, configured, hedged, race, sane,
     };
     use crate::network::dns::wire;
     use crate::network::fail::{Fail, FailKind};
+    use crate::network::h2_server::h2_tls_server;
 
     const STEP: Duration = Duration::from_millis(700);
     const SLOW_RTT: Duration = Duration::from_secs(2);
@@ -440,5 +445,17 @@ mod tests {
                 .iter()
                 .all(|p| p.ips.iter().all(|ip| !wire::bogus(*ip)))
         );
+    }
+
+    #[tokio::test]
+    async fn queries_sent_together_share_one_connection() {
+        let (url, accepted) = h2_tls_server().await;
+        let builder = wreq::Client::builder().no_proxy().cert_verification(false);
+        let client = configured(builder).build().unwrap();
+        let sent = futures_util::future::join_all((0..4).map(|_| client.get(&url).send())).await;
+        for response in sent {
+            assert_eq!(response.unwrap().status(), 200);
+        }
+        assert_eq!(accepted.load(Ordering::SeqCst), 1);
     }
 }
