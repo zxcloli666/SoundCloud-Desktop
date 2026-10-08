@@ -417,6 +417,94 @@ async fn a_garbage_answer_for_a_known_host_moves_the_zone_to_doh() {
     );
 }
 
+async fn suspicion(resolver: &Fallback, host: &str) -> bool {
+    match resolver.suspicion_due(host) {
+        Some(system) => resolver.confirm(host, system).await,
+        None => false,
+    }
+}
+
+#[tokio::test]
+async fn a_disjoint_doh_answer_moves_the_zone_to_doh() {
+    let (sys_calls, doh_calls) = (Calls::default(), Calls::default());
+    let resolver = fallback(
+        system(Ok(ips(&["2.26.99.107"])), 0, &sys_calls),
+        doh(Ok(ips(&["188.165.221.195"])), 60, &doh_calls),
+    );
+    assert_eq!(
+        resolver.lookup("api.scnative.space").await.unwrap(),
+        ips(&["2.26.99.107"])
+    );
+    assert!(suspicion(&resolver, "api.scnative.space").await);
+    assert_eq!(
+        resolver.lookup("api.scnative.space").await.unwrap(),
+        ips(&["188.165.221.195"])
+    );
+    assert_eq!(
+        resolver
+            .lookup("status.soundcloud-desktop.fun")
+            .await
+            .unwrap(),
+        ips(&["188.165.221.195"])
+    );
+    assert_eq!(
+        sys_calls.count(),
+        1,
+        "the distrusted zone skips the system resolver"
+    );
+    assert!(!suspicion(&resolver, "api.scnative.space").await);
+}
+
+#[tokio::test]
+async fn a_distrusted_zone_still_uses_a_sane_system_answer_when_doh_is_down() {
+    let (sys_calls, doh_calls) = (Calls::default(), Calls::default());
+    let doh_up = Arc::new(AtomicBool::new(true));
+    let resolver = fallback(
+        system(Ok(ips(&["2.26.99.107"])), 0, &sys_calls),
+        switched(&doh_up, ips(&["188.165.221.195"]), 60, &doh_calls),
+    );
+    resolver.lookup("api.scnative.space").await.unwrap();
+    assert!(suspicion(&resolver, "api.scnative.space").await);
+    doh_up.store(false, Ordering::SeqCst);
+    let found = resolver.lookup("status.soundcloud-desktop.fun").await;
+    assert_eq!(found.unwrap(), ips(&["2.26.99.107"]));
+    assert_eq!(sys_calls.count(), 2);
+}
+
+#[tokio::test]
+async fn an_equal_doh_answer_changes_nothing() {
+    let (sys_calls, doh_calls) = (Calls::default(), Calls::default());
+    let resolver = fallback(
+        system(Ok(ips(&["188.165.221.195"])), 0, &sys_calls),
+        doh(Ok(ips(&["188.165.221.195"])), 60, &doh_calls),
+    );
+    resolver.lookup("api.scnative.space").await.unwrap();
+    assert!(!suspicion(&resolver, "api.scnative.space").await);
+    assert_eq!(doh_calls.count(), 1);
+    assert!(!suspicion(&resolver, "api.scnative.space").await);
+    assert_eq!(doh_calls.count(), 1, "one check per five minutes");
+    resolver.lookup("images.scnative.space").await.unwrap();
+    assert_eq!(sys_calls.count(), 2);
+}
+
+#[tokio::test]
+async fn a_fake_ip_tunnel_or_an_unknown_name_is_never_suspected() {
+    let doh_calls = Calls::default();
+    let resolver = fallback(
+        system(Ok(ips(&["198.18.0.42"])), 0, &Calls::default()),
+        doh(Ok(ips(&["188.165.221.195"])), 60, &doh_calls),
+    );
+    resolver.lookup("api.scnative.space").await.unwrap();
+    resolver
+        .lookup("api.r9.relay.scnative.space")
+        .await
+        .unwrap();
+    assert!(!suspicion(&resolver, "api.scnative.space").await);
+    assert!(!suspicion(&resolver, "api.r9.relay.scnative.space").await);
+    assert!(!suspicion(&resolver, "images.scnative.space").await);
+    assert_eq!(doh_calls.count(), 0);
+}
+
 #[tokio::test(start_paused = true)]
 async fn a_cached_answer_lives_a_clamped_ttl_and_then_serves_as_stale() {
     let (sys_calls, doh_calls) = (Calls::default(), Calls::default());

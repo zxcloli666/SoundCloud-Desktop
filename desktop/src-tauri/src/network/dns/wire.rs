@@ -131,12 +131,23 @@ pub fn garbage(ip: IpAddr) -> bool {
     bogus(ip) || SINKHOLES.contains(&ip)
 }
 
+pub fn tunnelled(ip: IpAddr) -> bool {
+    match ip {
+        IpAddr::V4(v4) => {
+            let [a, b, _, _] = v4.octets();
+            (a == 198 && (b == 18 || b == 19)) || (a == 100 && (64..128).contains(&b))
+        }
+        IpAddr::V6(_) => false,
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use std::net::IpAddr;
 
     use super::{
         Answer, RCODE_NXDOMAIN, TYPE_A, bogus, build_query, garbage, parse_response, query_url,
+        tunnelled,
     };
 
     const TYPE_CNAME: u16 = 5;
@@ -282,5 +293,15 @@ mod tests {
         assert!(!bogus(ip("2.26.93.81")));
         assert!(garbage(ip("2.26.93.81")));
         assert!(!garbage(ip("2.26.99.107")));
+    }
+
+    #[test]
+    fn fake_ip_tunnels_and_cgnat_are_recognised() {
+        for text in ["198.18.0.5", "198.19.255.1", "100.64.0.1", "100.127.3.4"] {
+            assert!(tunnelled(ip(text)), "{text}");
+        }
+        for text in ["198.20.0.1", "100.128.0.1", "188.165.221.195", "::1"] {
+            assert!(!tunnelled(ip(text)), "{text}");
+        }
     }
 }

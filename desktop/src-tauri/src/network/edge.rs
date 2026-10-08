@@ -466,6 +466,9 @@ pub fn note(origin: &str, tier: Tier, ok: bool) {
     record(origin, |inner, now| {
         inner.apply(origin, Event::of(tier, ok), now)
     });
+    if tier == Tier::Direct && !ok {
+        crate::network::dns::suspect(origin);
+    }
 }
 
 pub fn note_delivered(origin: &str, tier: Tier, bytes: u64) {

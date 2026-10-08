@@ -80,6 +80,18 @@ pub async fn lookup(host: &str) -> Result<Vec<IpAddr>, DnsError> {
     shared().lookup(host).await
 }
 
+pub fn suspect(host: &str) {
+    let Some(fallback) = SHARED.get() else { return };
+    let host = normalize(host);
+    let Some(system) = fallback.suspicion_due(&host) else {
+        return;
+    };
+    let fallback = fallback.clone();
+    spawn(async move {
+        fallback.confirm(&host, system).await;
+    });
+}
+
 fn shared() -> &'static Fallback {
     SHARED.get_or_init(|| {
         Fallback::new(Config {

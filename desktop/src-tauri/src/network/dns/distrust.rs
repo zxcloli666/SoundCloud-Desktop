@@ -1,11 +1,15 @@
+use std::net::IpAddr;
 use std::time::Duration;
 
 use futures_util::stream::{self, StreamExt};
 use tokio::time::Instant;
 
-use super::fallback::Fallback;
-use super::spawn;
+use super::fallback::{Fallback, capped, listed, trusted};
+use super::{spawn, wire};
+use crate::app::diagnostics;
 
+const MISMATCH_DISTRUST: Duration = Duration::from_secs(1800);
+const SUSPECT_EVERY: Duration = Duration::from_secs(300);
 const WARM_EVERY: Duration = Duration::from_secs(600);
 const WARM_PARALLEL: usize = 3;
 
@@ -51,5 +55,54 @@ impl Fallback {
                 })
                 .await;
         });
+    }
+
+    pub(super) fn suspicion_due(&self, host: &str) -> Option<Vec<IpAddr>> {
+        let now = Instant::now();
+        if !self.known(host) || self.distrusted(now) {
+            return None;
+        }
+        let mut memory = self.memory();
+        let system = memory
+            .seen
+            .get(host)
+            .map(|(addrs, _)| addrs.clone())
+            .filter(|addrs| !addrs.is_empty())?;
+        if system.iter().any(|ip| wire::tunnelled(*ip)) {
+            return None;
+        }
+        let recent = memory
+            .suspected
+            .get(host)
+            .is_some_and(|at| now.duration_since(*at) < SUSPECT_EVERY);
+        if recent {
+            return None;
+        }
+        memory.suspected.insert(host.to_string(), now);
+        Some(system)
+    }
+
+    pub(super) async fn confirm(&self, host: &str, system: Vec<IpAddr>) -> bool {
+        let Ok(answer) = (self.0.config.doh)(host.to_string()).await else {
+            return false;
+        };
+        let doh = trusted(answer.addrs);
+        if doh.is_empty() || doh.iter().any(|ip| system.contains(ip)) {
+            return false;
+        }
+        self.memory()
+            .cache
+            .put(host, capped(doh.clone()), answer.ttl, Instant::now());
+        self.distrust(MISMATCH_DISTRUST);
+        self.warm();
+        diagnostics::log(
+            "WARN",
+            format!(
+                "[DNS] {host}: system {} differs from DoH {}, using DoH for 30 min",
+                listed(&system),
+                listed(&doh)
+            ),
+        );
+        true
     }
 }

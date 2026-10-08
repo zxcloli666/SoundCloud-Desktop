@@ -15,6 +15,7 @@ use crate::network::fail::{Fail, FailKind};
 
 const GARBAGE_DISTRUST: Duration = Duration::from_secs(600);
 const MAX_DOH_ADDRS: usize = 2;
+const SEEN_CAPACITY: usize = 64;
 
 pub(super) type Found = Result<Vec<IpAddr>, Fail>;
 type Flight = Shared<BoxFuture<'static, Result<Vec<IpAddr>, DnsError>>>;
@@ -28,6 +29,8 @@ enum Judgement {
 #[derive(Default)]
 pub(super) struct Memory {
     pub(super) cache: Cache,
+    pub(super) seen: HashMap<String, (Vec<IpAddr>, Instant)>,
+    pub(super) suspected: HashMap<String, Instant>,
     pub(super) distrusted_until: Option<Instant>,
     pub(super) warmed_at: Option<Instant>,
     flights: HashMap<String, Flight>,
@@ -140,13 +143,33 @@ impl Fallback {
 
     async fn system(&self, host: &str, scope: Scope) -> Found {
         let lookup = (self.0.config.system)(host.to_string());
-        if scope != Scope::Ours {
-            return lookup.await;
+        let found = if scope == Scope::Ours {
+            let budget = self.0.config.system_budget;
+            tokio::time::timeout(budget, lookup)
+                .await
+                .unwrap_or_else(|_| Err(Fail::timeout_after(budget.as_millis() as u32)))
+        } else {
+            lookup.await
+        };
+        self.remember(host, &found);
+        found
+    }
+
+    fn remember(&self, host: &str, found: &Found) {
+        let now = Instant::now();
+        let addrs = found.as_ref().cloned().unwrap_or_default();
+        let mut memory = self.memory();
+        if !memory.seen.contains_key(host) && memory.seen.len() >= SEEN_CAPACITY {
+            let oldest = memory
+                .seen
+                .iter()
+                .min_by_key(|(_, (_, at))| *at)
+                .map(|(host, _)| host.clone());
+            if let Some(oldest) = oldest {
+                memory.seen.remove(&oldest);
+            }
         }
-        let budget = self.0.config.system_budget;
-        tokio::time::timeout(budget, lookup)
-            .await
-            .unwrap_or_else(|_| Err(Fail::timeout_after(budget.as_millis() as u32)))
+        memory.seen.insert(host.to_string(), (addrs, now));
     }
 
     pub(super) async fn ask_doh(&self, host: &str) -> Found {
