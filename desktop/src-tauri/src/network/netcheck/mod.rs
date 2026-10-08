@@ -98,21 +98,22 @@ pub fn init(app: AppHandle, runtime: Handle, data_dir: PathBuf) {
 
 pub fn auto(reason: &str) {
     let Some(checker) = CHECKER.get() else { return };
-    {
-        let memory = checker.memory();
-        let gap = auto_gap(&memory.reports).as_millis() as u64;
-        let recent = memory
-            .finished_ms
-            .is_some_and(|at| now_ms().saturating_sub(at) < gap);
-        let running = memory
-            .flight
-            .as_ref()
-            .is_some_and(|flight| flight.peek().is_none());
-        if running || recent {
-            return;
-        }
+    if !auto_due(&checker.memory(), now_ms()) {
+        return;
     }
     let _ = start(Trigger::Auto, Some(reason.to_string()));
+}
+
+fn auto_due(memory: &Memory, now: u64) -> bool {
+    let gap = auto_gap(&memory.reports).as_millis() as u64;
+    let recent = memory
+        .finished_ms
+        .is_some_and(|at| now.saturating_sub(at) < gap);
+    let running = memory
+        .flight
+        .as_ref()
+        .is_some_and(|flight| flight.peek().is_none());
+    !running && !recent
 }
 
 fn auto_gap(reports: &[NetReport]) -> Duration {
@@ -298,9 +299,13 @@ pub fn net_check_report_text() -> Result<String, String> {
 mod tests {
     use std::time::Duration;
 
+    use futures_util::future::{self, FutureExt};
+
     use super::fixture::sample;
     use super::model::{Hint, NetReport, Trigger, Verdict};
-    use super::{auto_gap, reason_of};
+    use super::{Memory, auto_due, auto_gap, reason_of};
+
+    const MINUTE_MS: u64 = 60_000;
 
     fn auto(verdict: Verdict) -> NetReport {
         NetReport {
@@ -330,6 +335,27 @@ mod tests {
         };
         assert_eq!(minutes(&[same, rehinted]), 10);
         assert!(auto_gap(&vec![auto(Verdict::Offline); 5]) <= Duration::from_secs(3600));
+    }
+
+    #[test]
+    fn an_automatic_check_waits_for_the_gap_and_never_overlaps() {
+        let now = 100 * MINUTE_MS;
+        assert!(auto_due(&Memory::default(), now));
+        let finished = |ago: u64, reports: Vec<NetReport>| Memory {
+            reports,
+            finished_ms: Some(now - ago * MINUTE_MS),
+            ..Memory::default()
+        };
+        assert!(!auto_due(&finished(5, Vec::new()), now));
+        assert!(auto_due(&finished(10, Vec::new()), now));
+        let streak = vec![auto(Verdict::Reset); 2];
+        assert!(!auto_due(&finished(15, streak.clone()), now));
+        assert!(auto_due(&finished(20, streak), now));
+        let running = Memory {
+            flight: Some(future::pending().boxed().shared()),
+            ..Memory::default()
+        };
+        assert!(!auto_due(&running, now));
     }
 
     #[test]
