@@ -31,6 +31,7 @@ pub fn sample(at_ms: u64) -> NetReport {
         edge: EdgeSnapshot::default(),
         recent: Vec::new(),
         addrs: Vec::new(),
+        volume: None,
     }
 }
 

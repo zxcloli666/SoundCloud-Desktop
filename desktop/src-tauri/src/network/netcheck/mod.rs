@@ -12,6 +12,7 @@ mod store;
 mod targets;
 mod tcpinfo;
 mod verdict;
+mod volume;
 
 use std::path::PathBuf;
 use std::sync::{Mutex, MutexGuard, OnceLock};
@@ -186,6 +187,7 @@ async fn run(trigger: Trigger, reason: Option<String>) -> NetReport {
         edge: edge_snapshot(),
         recent: paths::recent(RECENT_EVENTS),
         addrs: Vec::new(),
+        volume: None,
     };
     let checker = CHECKER.get();
     if let Some(checker) = checker {
@@ -213,8 +215,16 @@ async fn run(trigger: Trigger, reason: Option<String>) -> NetReport {
         }
     };
     let known = addrs::known(hosts);
-    let ((), doh, env, known) = tokio::join!(collect, providers, environment, known);
+    let cut = async {
+        if targets::direct_allowed(trigger) {
+            volume::probe().await
+        } else {
+            None
+        }
+    };
+    let ((), doh, env, known, cut) = tokio::join!(collect, providers, environment, known, cut);
     report.doh = doh;
+    report.volume = cut;
     report.env = env.ok();
     report.addrs = addrs::ours(&report.targets, known);
     let online = targets::internet_seen(&report.targets, &report.doh);
@@ -239,7 +249,10 @@ async fn run(trigger: Trigger, reason: Option<String>) -> NetReport {
     );
     report.internet = internet;
     report.remote = remote;
-    report.verdict = verdict::verdict(&report.targets, internet, remote);
+    report.verdict = verdict::with_volume(
+        verdict::verdict(&report.targets, internet, remote),
+        report.volume.as_ref(),
+    );
     report.hint = verdict::hint(report.verdict, report.env.as_ref(), &report.targets);
     report.recent = paths::recent(RECENT_EVENTS);
     report.edge = edge_snapshot();

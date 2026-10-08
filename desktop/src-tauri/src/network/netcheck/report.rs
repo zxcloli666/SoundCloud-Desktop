@@ -4,7 +4,7 @@ use chrono::{Local, TimeZone};
 
 use super::model::{
     AppProbe, DnsAnswer, DnsState, DohProbe, EdgeSnapshot, EnvInfo, NetReport, PathEvent,
-    PhaseProbe, TargetCheck,
+    PhaseProbe, TargetCheck, VolumeProbe,
 };
 use crate::network::edge::Tier;
 use crate::network::fail::{Fail, Phase};
@@ -31,6 +31,7 @@ pub fn text(report: &NetReport) -> String {
         head.push(dns_line(&env.dns_servers, &report.doh));
     }
     head.extend(report.targets.iter().map(target_line));
+    head.extend(report.volume.as_ref().map(volume_line));
     head.push(edge_line(&report.edge));
     let mut recent: Vec<String> = report.recent.iter().map(event_line).collect();
     let mut text = assemble(&head, &recent);
@@ -76,7 +77,23 @@ pub fn log_lines(report: &NetReport) -> Vec<String> {
             target_parts(target, "=").join(" ")
         )
     }));
+    lines.extend(
+        report
+            .volume
+            .as_ref()
+            .map(|volume| format!("[NetCheck] {}", volume_line(volume))),
+    );
     lines
+}
+
+fn volume_line(volume: &VolumeProbe) -> String {
+    let state = if volume.cut { "cut" } else { "ok" };
+    format!(
+        "volume: {state}{DOT}{} after {} KB{DOT}{} ms",
+        volume.shape,
+        volume.bytes / 1024,
+        volume.ms
+    )
 }
 
 fn assemble(head: &[String], recent: &[String]) -> String {
@@ -379,6 +396,7 @@ fn event_line(event: &PathEvent) -> String {
 mod tests {
     use super::{log_lines, text};
     use crate::network::netcheck::fixture::{sample, troubled};
+    use crate::network::netcheck::model::{Verdict, VolumeProbe};
 
     #[test]
     fn a_full_report_stays_short_and_names_the_failure() {
@@ -430,5 +448,23 @@ mod tests {
             "{}",
             quiet[0]
         );
+    }
+
+    #[test]
+    fn a_volume_cut_is_named_in_the_text_and_the_log() {
+        let mut report = sample(1);
+        report.verdict = Verdict::Cut;
+        report.volume = Some(VolumeProbe {
+            shape: "blackhole".to_string(),
+            bytes: 12_000,
+            ms: 6_200,
+            cut: true,
+        });
+        let line = "volume: cut · blackhole after 11 KB · 6200 ms";
+        let text = text(&report);
+        assert!(text.contains("verdict: cut"), "{text}");
+        assert!(text.contains(line), "{text}");
+        let lines = log_lines(&report);
+        assert_eq!(lines.last(), Some(&format!("[NetCheck] {line}")));
     }
 }

@@ -28,6 +28,8 @@ pub struct NetReport {
     pub recent: Vec<PathEvent>,
     #[serde(default)]
     pub addrs: Vec<IpAddr>,
+    #[serde(default)]
+    pub volume: Option<VolumeProbe>,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -54,6 +56,7 @@ pub enum Verdict {
     BackupDown,
     Partial,
     RelayOnly,
+    Cut,
     Dns,
     DnsFailed,
     Reset,
@@ -167,6 +170,15 @@ pub struct AppProbe {
     pub status: Option<u16>,
     pub ms: Option<u32>,
     pub fail: Option<Fail>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct VolumeProbe {
+    pub shape: String,
+    pub bytes: u64,
+    pub ms: u32,
+    pub cut: bool,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -291,6 +303,7 @@ impl Verdict {
             Self::BackupDown => "backup-down",
             Self::Partial => "partial",
             Self::RelayOnly => "relay-only",
+            Self::Cut => "cut",
             Self::Dns => "dns",
             Self::DnsFailed => "dns-failed",
             Self::Reset => "reset",

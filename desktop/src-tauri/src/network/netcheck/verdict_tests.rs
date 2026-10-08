@@ -1,11 +1,11 @@
 use std::collections::BTreeMap;
 use std::net::IpAddr;
 
-use super::{cells, dns_state, hint, verdict};
+use super::{cells, dns_state, hint, verdict, with_volume};
 use crate::network::fail::{Fail, FailKind, Phase};
 use crate::network::netcheck::model::{
     AppProbe, DnsAnswer, DnsState, DpiTool, EnvInfo, Hint, Internet, PhaseProbe, Remote,
-    ServiceInfo, TargetCheck, TargetId, Tone, Verdict, ZapretConfig,
+    ServiceInfo, TargetCheck, TargetId, Tone, Verdict, VolumeProbe, ZapretConfig,
 };
 
 fn ip(text: &str) -> IpAddr {
@@ -653,4 +653,32 @@ fn a_probe_that_passed_while_the_app_failed_warns_at_http() {
     let mut target = healthy(TargetId::Main);
     target.app = Some(AppProbe::default());
     assert_eq!(cells(&target)[3], Tone::Warn);
+}
+
+fn volume(cut: bool) -> VolumeProbe {
+    VolumeProbe {
+        shape: if cut { "blackhole" } else { "clear" }.to_string(),
+        bytes: if cut { 12_000 } else { 65_536 },
+        ms: 6_200,
+        cut,
+    }
+}
+
+#[test]
+fn a_volume_cut_turns_a_working_check_into_a_cut() {
+    let cut = volume(true);
+    assert_eq!(with_volume(Verdict::Ok, Some(&cut)), Verdict::Cut);
+    assert_eq!(with_volume(Verdict::BackupDown, Some(&cut)), Verdict::Cut);
+    assert_eq!(with_volume(Verdict::Ok, Some(&volume(false))), Verdict::Ok);
+    assert_eq!(with_volume(Verdict::Ok, None), Verdict::Ok);
+    for louder in [
+        Verdict::Dns,
+        Verdict::Partial,
+        Verdict::RelayOnly,
+        Verdict::Reset,
+        Verdict::Timeout,
+        Verdict::Offline,
+    ] {
+        assert_eq!(with_volume(louder, Some(&cut)), louder);
+    }
 }

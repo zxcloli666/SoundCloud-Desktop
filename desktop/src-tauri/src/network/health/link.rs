@@ -19,7 +19,7 @@ pub const SMALL_BYTES: u64 = 8 * 1024;
 const WARMUP_BYTES: u64 = 16 * 1024;
 /// Рез по объёму наблюдался и на 9, и на 13 КБ. Ниже этого обрыв на рез не
 /// похож: столько отдаёт даже соединение, которое просто не встало.
-const CUT_FLOOR: u64 = 5 * 1024;
+pub const CUT_FLOOR: u64 = 5 * 1024;
 const DEADLINE: Duration = Duration::from_secs(25);
 const DEADLINE_SLACK: Duration = Duration::from_secs(5);
 const STALL: Duration = Duration::from_secs(6);

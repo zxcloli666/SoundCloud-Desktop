@@ -1,6 +1,6 @@
 mod delivery;
 mod discovery;
-mod link;
+pub(crate) mod link;
 mod model;
 mod net_watch;
 mod probe;

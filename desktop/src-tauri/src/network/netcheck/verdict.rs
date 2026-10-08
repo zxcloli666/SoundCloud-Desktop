@@ -1,7 +1,7 @@
 use super::env::uses_ts_fooling;
 use super::model::{
     DnsAnswer, DnsState, EnvInfo, Hint, Internet, PhaseProbe, Remote, TargetCheck, TargetId, Tone,
-    Verdict,
+    Verdict, VolumeProbe,
 };
 use crate::network::dns;
 use crate::network::fail::{FailKind, Phase};
@@ -48,6 +48,14 @@ pub fn verdict(targets: &[TargetCheck], internet: Internet, remote: Remote) -> V
         return Verdict::RelayOnly;
     }
     tally(targets)
+}
+
+pub fn with_volume(verdict: Verdict, volume: Option<&VolumeProbe>) -> Verdict {
+    let cut = volume.is_some_and(|volume| volume.cut);
+    match verdict {
+        Verdict::Ok | Verdict::BackupDown if cut => Verdict::Cut,
+        other => other,
+    }
 }
 
 fn tally(targets: &[TargetCheck]) -> Verdict {

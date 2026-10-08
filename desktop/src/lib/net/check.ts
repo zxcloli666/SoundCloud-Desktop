@@ -9,6 +9,7 @@ export type Verdict =
   | 'backupDown'
   | 'partial'
   | 'relayOnly'
+  | 'cut'
   | 'dns'
   | 'dnsFailed'
   | 'reset'
@@ -90,6 +91,13 @@ export interface TargetCheck {
   totalMs: number | null;
 }
 
+export interface VolumeProbe {
+  shape: string;
+  bytes: number;
+  ms: number;
+  cut: boolean;
+}
+
 export interface DohProbe {
   provider: string;
   ok: boolean;
@@ -169,6 +177,7 @@ export interface NetReport {
   edge: EdgeSnapshot;
   recent: PathEvent[];
   addrs: string[];
+  volume: VolumeProbe | null;
 }
 
 interface NetCheckUpdate {

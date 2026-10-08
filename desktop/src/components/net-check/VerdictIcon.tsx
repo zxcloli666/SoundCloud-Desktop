@@ -20,6 +20,7 @@ const ICONS: Record<Verdict, { Icon: typeof Globe; tone: string }> = {
   backupDown: { Icon: CircleCheck, tone: 'text-emerald-300/80' },
   partial: { Icon: TriangleAlert, tone: 'text-amber-300/80' },
   relayOnly: { Icon: Radio, tone: 'text-emerald-300/80' },
+  cut: { Icon: Radio, tone: 'text-amber-300/80' },
   dns: { Icon: Globe, tone: 'text-amber-300/80' },
   dnsFailed: { Icon: Globe, tone: 'text-rose-300/80' },
   reset: { Icon: ShieldAlert, tone: 'text-rose-300/80' },

@@ -10,6 +10,7 @@ const COPIED_RESET_MS = 1800;
 const WORTH_SENDING: ReadonlySet<Verdict> = new Set([
   'partial',
   'relayOnly',
+  'cut',
   'dns',
   'dnsFailed',
   'reset',

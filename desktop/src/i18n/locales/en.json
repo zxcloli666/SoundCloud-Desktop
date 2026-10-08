@@ -575,6 +575,10 @@
         "title": "Direct route is blocked",
         "hint": "The app works through backup routes, maybe slower."
       },
+      "cut": {
+        "title": "Direct route cuts large downloads",
+        "hint": "The app switches to backup routes, maybe slower."
+      },
       "dns": {
         "title": "Your DNS returns a wrong address",
         "hint": "The app works around it. Secure DNS or 1.1.1.1 fixes it for good."
