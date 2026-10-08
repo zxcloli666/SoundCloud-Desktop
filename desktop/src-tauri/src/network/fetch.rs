@@ -22,6 +22,7 @@ const IDLE_PER_HOST: usize = 8;
 const MAX_REDIRECTS: usize = 10;
 const MAX_MESSAGE: usize = 400;
 const DROPPED: [&str; 3] = ["host", "content-length", "connection"];
+const PINGS_GAVE_UP: &str = "keep-alive timed out";
 
 static INFLIGHT: LazyLock<Mutex<HashMap<u32, AbortHandle>>> = LazyLock::new(Mutex::default);
 
@@ -74,6 +75,8 @@ pub enum Head {
         status_text: String,
         headers: Vec<(String, String)>,
         url: String,
+        #[serde(skip_serializing_if = "std::ops::Not::not")]
+        stalled: bool,
     },
     Failed {
         error: NetFailure,
@@ -163,24 +166,34 @@ async fn perform(client: &wreq::Client, request: FetchRequest) -> (Head, Vec<u8>
         return (Head::failed(NetKind::Other, "bad method"), Vec::new());
     };
     let headers = outgoing(&method, &request.headers, request.body.is_some());
-    let mut builder = client.request(method, &request.url).headers(headers);
-    if let Some(body) = request.body.clone() {
-        builder = builder.body(body);
-    }
-    let response = match within(deadline, builder.send()).await {
-        None => {
-            settle(&request, Err(FailKind::Timeout), started);
-            return (
-                Head::failed(NetKind::Timeout, "no answer in time"),
-                Vec::new(),
-            );
+    let replayable = matches!(method, Method::GET | Method::HEAD);
+    let mut stalled = false;
+    let response = loop {
+        let mut builder = client
+            .request(method.clone(), &request.url)
+            .headers(headers.clone());
+        if let Some(body) = request.body.clone() {
+            builder = builder.body(body);
         }
-        Some(Err(error)) => {
-            let kind = fail::of_wreq(&error);
-            settle(&request, Err(kind), started);
-            return (Head::failed(net_kind(kind), described(&error)), Vec::new());
+        match within(deadline, builder.send()).await {
+            None => {
+                settle(&request, Err(FailKind::Timeout), started);
+                return (
+                    Head::failed(NetKind::Timeout, "no answer in time"),
+                    Vec::new(),
+                );
+            }
+            Some(Err(error)) if replayable && !stalled && dropped_by_pings(&error) => {
+                record(&request, Err(FailKind::Timeout), started);
+                stalled = true;
+            }
+            Some(Err(error)) => {
+                let kind = fail::of_wreq(&error);
+                settle(&request, Err(kind), started);
+                return (Head::failed(net_kind(kind), described(&error)), Vec::new());
+            }
+            Some(Ok(response)) => break response,
         }
-        Some(Ok(response)) => response,
     };
     let status = response.status();
     settle(&request, Ok(status.as_u16()), started);
@@ -189,6 +202,7 @@ async fn perform(client: &wreq::Client, request: FetchRequest) -> (Head, Vec<u8>
         status_text: status.canonical_reason().unwrap_or_default().to_string(),
         headers: incoming(response.headers()),
         url: response.uri().to_string(),
+        stalled,
     };
     match read_body(response, deadline).await {
         Ok(body) => (head, body),
@@ -297,6 +311,17 @@ pub fn net_kind(kind: FailKind) -> NetKind {
         FailKind::Body => NetKind::Body,
         FailKind::Status | FailKind::Other => NetKind::Other,
     }
+}
+
+fn dropped_by_pings(error: &wreq::Error) -> bool {
+    let mut cause = std::error::Error::source(error);
+    while let Some(current) = cause {
+        if current.to_string().contains(PINGS_GAVE_UP) {
+            return true;
+        }
+        cause = current.source();
+    }
+    false
 }
 
 fn described(error: &wreq::Error) -> String {

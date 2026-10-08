@@ -29,6 +29,7 @@ interface Answer {
   statusText: string;
   headers: [string, string][];
   url: string;
+  stalled?: boolean;
 }
 
 interface Failure {
@@ -89,7 +90,7 @@ function cancellable<T>(pending: Promise<T>, id: number, signal?: AbortSignal | 
 export async function netRequest(
   url: string,
   init: NetInit = {},
-): Promise<{ res: Response; bytes: number }> {
+): Promise<{ res: Response; bytes: number; stalled: boolean }> {
   if (init.signal?.aborted) throw abortError();
   const id = takeId();
   const request = {
@@ -117,7 +118,7 @@ export async function netRequest(
     statusText: head.statusText,
     headers: head.headers,
   });
-  return { res, bytes: body.byteLength };
+  return { res, bytes: body.byteLength, stalled: head.stalled === true };
 }
 
 export async function netFetch(url: string, init?: NetInit): Promise<Response> {

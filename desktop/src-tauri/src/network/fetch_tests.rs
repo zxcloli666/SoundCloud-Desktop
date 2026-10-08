@@ -79,6 +79,7 @@ fn a_frame_is_a_length_a_json_head_and_the_body() {
         status_text: "OK".to_string(),
         headers: vec![("content-type".to_string(), "text/plain".to_string())],
         url: "https://api.scnative.space/health".to_string(),
+        stalled: false,
     };
     let bytes = frame(&head, b"fine");
     let (json, body) = split(&bytes);
@@ -92,6 +93,16 @@ fn a_frame_is_a_length_a_json_head_and_the_body() {
         })
     );
     assert_eq!(body, b"fine");
+
+    let replayed = Head::Answer {
+        status: 204,
+        status_text: String::new(),
+        headers: Vec::new(),
+        url: String::new(),
+        stalled: true,
+    };
+    let (json, _) = split(&frame(&replayed, &[]));
+    assert_eq!(json["stalled"], json!(true));
 
     let failed = frame(&Head::failed(NetKind::Timeout, "no answer in time"), &[]);
     let (json, body) = split(&failed);

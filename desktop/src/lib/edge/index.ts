@@ -10,6 +10,7 @@ export { initEdge, tierOf } from './config';
 interface Fetched {
   res: Response;
   bytes: number;
+  stalled: boolean;
 }
 
 function fetchWhole(
@@ -207,10 +208,10 @@ export async function edgeFetch(
 
     try {
       const route = { tier: hop.tier, origin: hop.origin, attempt: i };
-      const { res, bytes } = await fetchWhole(hop.url, init, hopBudget, route);
+      const { res, bytes, stalled } = await fetchWhole(hop.url, init, hopBudget, route);
       answered = true;
       if (hopUsable(hop, res)) {
-        noteHop(hop, true, bytes);
+        noteHop(hop, !(stalled && hop.tier === 'direct'), bytes);
         return res;
       }
       if (hop.tier === 'direct') noteHop(hop, false);
