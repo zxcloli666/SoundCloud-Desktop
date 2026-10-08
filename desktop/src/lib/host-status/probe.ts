@@ -187,11 +187,17 @@ export function requestProbe(opts?: { force?: boolean }): void {
   });
 }
 
+const AUTO_CHECK_GAP_MS = 60_000;
 let offlineCheck = false;
+let autoCheckAt = 0;
 
 export function noteUnreachable(): void {
   offlineCheck = true;
-  void invoke('net_check_auto', { reason: 'unreachable' });
+  const now = Date.now();
+  if (now - autoCheckAt >= AUTO_CHECK_GAP_MS) {
+    autoCheckAt = now;
+    void invoke('net_check_auto', { reason: 'unreachable' });
+  }
   requestProbe({ force: true });
 }
 
