@@ -14,6 +14,9 @@ use crate::network::system_proxy::follow;
 use crate::rt::AppHandle;
 
 const ENDED_SUPPRESS_MS: u64 = 1200;
+const LOAD_CONNECT_TIMEOUT: Duration = Duration::from_secs(5);
+const LOAD_READ_TIMEOUT: Duration = Duration::from_secs(20);
+const LOAD_TOTAL_TIMEOUT: Duration = Duration::from_secs(120);
 
 pub fn now_ms() -> u64 {
     std::time::SystemTime::now()
@@ -291,6 +294,9 @@ pub async fn load_url(
     let generation = state.load_gen.load(Ordering::Relaxed);
 
     let client = follow(wreq::Client::builder())
+        .connect_timeout(LOAD_CONNECT_TIMEOUT)
+        .read_timeout(LOAD_READ_TIMEOUT)
+        .timeout(LOAD_TOTAL_TIMEOUT)
         .build()
         .map_err(|e| format!("http client: {e}"))?;
     let retry_delays = [300u64, 800, 2000];
