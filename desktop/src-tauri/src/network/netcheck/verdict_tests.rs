@@ -421,6 +421,40 @@ fn timestamps_windows_only_allows_count_as_off() {
 }
 
 #[test]
+fn an_unknown_timestamps_value_is_decided_by_the_probes() {
+    let mut targets = all_broken(FailKind::Reset, Phase::Tls);
+    for value in ["aktiviert", "\u{fffd}\u{fffd}", "on"] {
+        let env = zapret_env(Some("--dpi-desync-fooling=ts"), Some(value));
+        assert_eq!(
+            hint(Verdict::Reset, Some(&env), &targets),
+            Hint::Zapret,
+            "{value}"
+        );
+    }
+    if let Some(probe) = targets[1].probe.as_mut() {
+        probe.tcp_timestamps = Some(false);
+    }
+    let env = zapret_env(Some("--dpi-desync-fooling=ts"), Some("aktiviert"));
+    assert_eq!(
+        hint(Verdict::Reset, Some(&env), &targets),
+        Hint::ZapretTimestamps
+    );
+}
+
+#[test]
+fn a_probe_that_negotiated_timestamps_beats_the_setting() {
+    let mut targets = all_broken(FailKind::Reset, Phase::Tls);
+    if let Some(probe) = targets[0].probe.as_mut() {
+        probe.tcp_timestamps = Some(true);
+    }
+    if let Some(probe) = targets[1].probe.as_mut() {
+        probe.tcp_timestamps = Some(false);
+    }
+    let env = zapret_env(Some("--dpi-desync-fooling=ts"), Some("disabled"));
+    assert_eq!(hint(Verdict::Reset, Some(&env), &targets), Hint::Zapret);
+}
+
+#[test]
 fn a_ts_strategy_with_timestamps_on_is_plain_zapret() {
     let targets = all_broken(FailKind::Timeout, Phase::Tls);
     let env = zapret_env(Some("--dpi-desync-fooling=ts"), Some("enabled"));

@@ -7,7 +7,7 @@ use crate::network::dns;
 use crate::network::fail::{FailKind, Phase};
 
 const TS_CONFIG_KEYS: [&str; 2] = ["NFQWS_OPT", "NFQWS2_OPT"];
-const TIMESTAMPS_ON: &str = "enabled";
+const TIMESTAMPS_OFF: [&str; 3] = ["disabled", "allowed", "default"];
 
 pub fn verdict(targets: &[TargetCheck], internet: Internet, remote: Remote) -> Verdict {
     if targets.is_empty() {
@@ -165,14 +165,19 @@ fn ts_strategy(env: &EnvInfo) -> bool {
 }
 
 fn timestamps_off(env: &EnvInfo, targets: &[TargetCheck]) -> bool {
-    env.tcp_timestamps
+    let seen: Vec<bool> = targets
+        .iter()
+        .flat_map(|target| [&target.probe, &target.doh_probe])
+        .filter_map(|probe| probe.as_ref()?.tcp_timestamps)
+        .collect();
+    if seen.contains(&true) {
+        return false;
+    }
+    let configured_off = env
+        .tcp_timestamps
         .as_deref()
-        .is_some_and(|value| value != TIMESTAMPS_ON)
-        || targets
-            .iter()
-            .flat_map(|target| [&target.probe, &target.doh_probe])
-            .filter_map(|probe| probe.as_ref())
-            .any(|probe| probe.tcp_timestamps == Some(false))
+        .is_some_and(|value| TIMESTAMPS_OFF.contains(&value));
+    configured_off || seen.contains(&false)
 }
 
 pub fn dns_state(
