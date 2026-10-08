@@ -509,6 +509,10 @@
         "title": "Doğrudan yol engelli",
         "hint": "Uygulama yedek yollarla çalışıyor, biraz yavaş olabilir."
       },
+      "cut": {
+        "title": "Doğrudan yol büyük indirmeleri kesiyor",
+        "hint": "Uygulama yedek yollara geçiyor, biraz yavaş olabilir."
+      },
       "dns": {
         "title": "DNS'iniz yanlış adres veriyor",
         "hint": "Uygulama bunu kendisi aşıyor. Kalıcı çözüm: güvenli DNS ya da 1.1.1.1."
@@ -543,7 +547,11 @@
       }
     },
     "hint": {
-      "zapret": "zapret çalışıyor. Kontrol için kapatın. İşe yararsa alan adlarımızı list-exclude-user.txt dosyasına ekleyin:",
+      "dpi": "{{name}} çalışıyor. Kontrol için kapatın.",
+      "lists": "İşe yararsa bu satırları listelerine ekleyip yeniden açın:",
+      "exclude": "İşe yararsa bu satırları istisnalarına ekleyin:",
+      "domains": "İşe yararsa alan adlarımızı istisnalarına ekleyin:",
+      "apply": "Sonra yeniden açıp şunu çalıştırın:",
       "zapretTimestamps": "zapret ts stratejisi kullanıyor ama TCP timestamps kapalı. Açın:",
       "admin": "Yönetici olarak çalıştırın",
       "guide": "zapret kurulum rehberi"

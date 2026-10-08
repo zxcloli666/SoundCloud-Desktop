@@ -89,6 +89,10 @@ pub async fn lookup(host: &str) -> Result<Vec<IpAddr>, DnsError> {
     shared().lookup(host).await
 }
 
+pub async fn ready(host: &str, budget: Duration) -> Result<(), Fail> {
+    shared().ready(host, budget).await
+}
+
 pub fn suspect(host: &str) {
     if let Some(fallback) = SHARED.get() {
         fallback.suspect(&normalize(host));
@@ -136,8 +140,30 @@ fn not_found(error: &io::Error) -> bool {
     {
         return true;
     }
-    let text = error.to_string().to_ascii_lowercase();
-    NOT_FOUND_TEXTS.iter().any(|needle| text.contains(needle))
+    reads_as_not_found(&error.to_string(), &resolver_texts())
+}
+
+fn reads_as_not_found(text: &str, localized: &[String]) -> bool {
+    let lower = text.to_ascii_lowercase();
+    NOT_FOUND_TEXTS.iter().any(|needle| lower.contains(needle))
+        || localized.iter().any(|line| text.contains(line.as_str()))
+}
+
+#[cfg(unix)]
+fn resolver_texts() -> Vec<String> {
+    [libc::EAI_NONAME, libc::EAI_NODATA]
+        .into_iter()
+        .map(|code| {
+            let text = unsafe { std::ffi::CStr::from_ptr(libc::gai_strerror(code)) };
+            text.to_string_lossy().into_owned()
+        })
+        .filter(|text| !text.is_empty())
+        .collect()
+}
+
+#[cfg(not(unix))]
+fn resolver_texts() -> Vec<String> {
+    Vec::new()
 }
 
 fn runtime() -> Option<Handle> {

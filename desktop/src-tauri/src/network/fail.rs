@@ -136,6 +136,10 @@ pub fn of_text(text: &str) -> Option<FailKind> {
         Some(FailKind::Tls)
     } else if has(&["dns error", "failed to lookup", "no such host"]) {
         Some(FailKind::Dns)
+    } else if has(&["connection closed before message completed"]) {
+        Some(FailKind::Closed)
+    } else if has(&["timed out"]) {
+        Some(FailKind::Timeout)
     } else {
         None
     }
@@ -174,7 +178,7 @@ mod tests {
     use std::sync::Arc;
     use std::time::Duration;
 
-    use tokio::io::AsyncReadExt;
+    use tokio::io::{AsyncReadExt, AsyncWriteExt};
     use tokio::net::TcpListener;
 
     use super::{DnsError, Fail, FailKind, Phase, of_io, of_text, of_wreq};
@@ -217,7 +221,16 @@ mod tests {
                 "No such host is known. (os error 11001)",
                 Some(FailKind::Dns),
             ),
-            ("connection closed before message completed", None),
+            (
+                "connection closed before message completed",
+                Some(FailKind::Closed),
+            ),
+            (
+                "http2 error: keep-alive timed out: operation timed out",
+                Some(FailKind::Timeout),
+            ),
+            ("TLS handshake timed out", Some(FailKind::Tls)),
+            ("connection error: unexpected end of file", None),
         ];
         for (text, expected) in table {
             assert_eq!(of_text(text), expected, "{text}");
@@ -279,6 +292,28 @@ mod tests {
         });
         let err = error_from(format!("http://{addr}/"), Duration::from_secs(5)).await;
         assert_eq!(of_wreq(&err), FailKind::Reset);
+    }
+
+    #[tokio::test]
+    async fn a_close_after_the_request_is_closed() {
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let addr = listener.local_addr().unwrap();
+        tokio::spawn(async move {
+            let (mut stream, _) = listener.accept().await.unwrap();
+            let mut raw = Vec::new();
+            let mut buf = [0u8; 1024];
+            while !raw.windows(4).any(|w| w == b"\r\n\r\n") {
+                let read = stream.read(&mut buf).await.unwrap_or(0);
+                if read == 0 {
+                    break;
+                }
+                raw.extend_from_slice(&buf[..read]);
+            }
+            let _ = stream.shutdown().await;
+            tokio::time::sleep(Duration::from_secs(2)).await;
+        });
+        let err = error_from(format!("http://{addr}/"), Duration::from_secs(5)).await;
+        assert_eq!(of_wreq(&err), FailKind::Closed, "{err:?}");
     }
 
     #[tokio::test]

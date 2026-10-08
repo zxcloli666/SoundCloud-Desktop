@@ -7917,8 +7917,6 @@ dependencies = [
 [[package]]
 name = "wreq"
 version = "5.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "137ed11c4c418fb3dc41db7323ebc49aa9b6fe6a24ce152e6b2de9d6fadd9c8f"
 dependencies = [
  "antidote",
  "arc-swap",

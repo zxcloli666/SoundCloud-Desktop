@@ -2,7 +2,7 @@ use std::net::IpAddr;
 
 use super::{
     cmdline, distinct, hidepid, netsh_timestamps, parse_resolv_conf, parse_zapret_config,
-    sysctl_timestamps, tool_for, uses_ts_fooling, vpn_like,
+    sysctl_timestamps, tool_at, tool_for, uses_ts_fooling, vpn_like,
 };
 use crate::network::netcheck::model::DpiTool;
 
@@ -44,6 +44,19 @@ fn dpi_tools_match_by_process_name_only() {
     assert_eq!(tool_for("tpws"), Some("tpws"));
     assert_eq!(tool_for("firefox"), None);
     assert_eq!(tool_for("winwsx.exe"), None);
+}
+
+#[test]
+fn a_dpi_tool_is_found_by_its_executable_path() {
+    assert_eq!(tool_at("/opt/homebrew/bin/spoofdpi"), Some("spoofdpi"));
+    assert_eq!(tool_at("/usr/local/bin/ciadpi"), Some("ciadpi"));
+    assert_eq!(tool_at("tpws"), Some("tpws"));
+    assert_eq!(
+        tool_at("/Applications/Safari.app/Contents/MacOS/Safari"),
+        None
+    );
+    assert_eq!(tool_at("/usr/local/bin/"), None);
+    assert_eq!(tool_at(""), None);
 }
 
 #[test]

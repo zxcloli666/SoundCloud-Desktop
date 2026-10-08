@@ -11,7 +11,7 @@ use wreq::dns::{Addrs, Name, Resolve, Resolving};
 use super::cache::Cache;
 use super::{Config, DnsError, Scope, normalize, runtime, scope, wire};
 use crate::app::diagnostics;
-use crate::network::fail::{Fail, FailKind};
+use crate::network::fail::{Fail, FailKind, Phase};
 
 const GARBAGE_DISTRUST: Duration = Duration::from_secs(600);
 const SYSTEM_PATIENCE: Duration = Duration::from_secs(8);
@@ -79,6 +79,20 @@ impl Fallback {
             return Ok(hit);
         }
         self.flight(host).await
+    }
+
+    pub async fn ready(&self, host: &str, budget: Duration) -> Result<(), Fail> {
+        match tokio::time::timeout(budget, self.lookup(host)).await {
+            Ok(Ok(_)) => Ok(()),
+            Ok(Err(error)) => Err(Fail {
+                detail: Some(error.reason),
+                ..Fail::of(error.kind)
+            }),
+            Err(_) => Err(Fail {
+                phase: Some(Phase::Dns),
+                ..Fail::timeout_after(millis(budget))
+            }),
+        }
     }
 
     fn flight(&self, host: String) -> Flight {
@@ -265,12 +279,24 @@ impl Fallback {
         let mut memory = self.memory();
         match answer {
             Ok(answer) => {
-                let addrs = capped(trusted(answer.addrs));
+                let addrs = capped(usable(scope(host), &answer.addrs));
                 if addrs.is_empty() {
                     memory.cache.fail(host, now);
+                    let (kind, detail) = if answer.addrs.is_empty() {
+                        (
+                            FailKind::Dns,
+                            format!("no such name at {}", answer.provider),
+                        )
+                    } else {
+                        let garbage = listed(&answer.addrs);
+                        (
+                            FailKind::DnsBogus,
+                            format!("{} answered {garbage}", answer.provider),
+                        )
+                    };
                     return Err(Fail {
-                        detail: Some(format!("no such name at {}", answer.provider)),
-                        ..Fail::of(FailKind::Dns)
+                        detail: Some(detail),
+                        ..Fail::of(kind)
                     });
                 }
                 memory.cache.put(host, addrs.clone(), answer.ttl, now);
@@ -314,19 +340,12 @@ fn judge(scope: Scope, known: bool, system: &Found) -> Judgement {
     }
 }
 
-fn usable(scope: Scope, addrs: &[IpAddr]) -> Vec<IpAddr> {
+pub(super) fn usable(scope: Scope, addrs: &[IpAddr]) -> Vec<IpAddr> {
     let garbage = |ip: IpAddr| match scope {
         Scope::Ours => wire::garbage(ip),
         Scope::Local | Scope::Foreign => ip.is_unspecified() || wire::SINKHOLES.contains(&ip),
     };
     addrs.iter().copied().filter(|ip| !garbage(*ip)).collect()
-}
-
-pub(super) fn trusted(addrs: Vec<IpAddr>) -> Vec<IpAddr> {
-    addrs
-        .into_iter()
-        .filter(|ip| !ip.is_unspecified())
-        .collect()
 }
 
 pub(super) fn capped(mut addrs: Vec<IpAddr>) -> Vec<IpAddr> {

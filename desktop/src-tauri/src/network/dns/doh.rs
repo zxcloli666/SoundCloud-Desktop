@@ -8,7 +8,8 @@ use futures_util::FutureExt;
 use futures_util::stream::{FuturesUnordered, StreamExt};
 use tokio::time::Instant;
 
-use super::wire;
+use super::fallback::{listed, usable};
+use super::{normalize, scope, wire};
 use crate::network::fail::{Fail, FailKind};
 
 const CONNECT_TIMEOUT: Duration = Duration::from_secs(6);
@@ -76,11 +77,14 @@ fn build_client() -> Option<wreq::Client> {
             .collect();
         builder = builder.resolve_to_addrs(provider.name, &addrs);
     }
+    configured(builder).build().ok()
+}
+
+fn configured(builder: wreq::ClientBuilder) -> wreq::ClientBuilder {
     builder
+        .http2_only()
         .connect_timeout(CONNECT_TIMEOUT)
         .timeout(REQUEST_TIMEOUT)
-        .build()
-        .ok()
 }
 
 fn client() -> Option<&'static wreq::Client> {
@@ -96,9 +100,23 @@ fn failure(kind: FailKind, detail: impl Into<String>) -> Fail {
 
 pub async fn query(host: &str) -> Result<DohAnswer, Fail> {
     let first = PREFERRED.load(Ordering::Relaxed);
-    let (index, answer) = race(first, |index| query_with(&PROVIDERS[index], host)).await?;
+    let (index, answer) = race(first, |index| async move {
+        query_with(&PROVIDERS[index], host)
+            .await
+            .and_then(|answer| sane(host, answer))
+    })
+    .await?;
     PREFERRED.store(index, Ordering::Relaxed);
     Ok(answer)
+}
+
+pub fn sane(host: &str, answer: DohAnswer) -> Result<DohAnswer, Fail> {
+    let addrs = usable(scope(&normalize(host)), &answer.addrs);
+    if addrs.is_empty() && !answer.addrs.is_empty() {
+        let detail = format!("{} answered {}", answer.provider, listed(&answer.addrs));
+        return Err(failure(FailKind::DnsBogus, detail));
+    }
+    Ok(DohAnswer { addrs, ..answer })
 }
 
 async fn race<T, F, Fut>(first: usize, attempt: F) -> Result<(usize, T), Fail>
@@ -182,17 +200,19 @@ where
 
 #[cfg(test)]
 mod tests {
+    use std::sync::atomic::Ordering;
     use std::sync::{Arc, Mutex};
     use std::time::Duration;
 
     use tokio::time::Instant;
 
     use super::{
-        CONNECT_TIMEOUT, HEDGE_AFTER, PROVIDERS, REQUEST_TIMEOUT, TOTAL_BUDGET, answer_of, client,
-        hedged, race,
+        CONNECT_TIMEOUT, DohAnswer, HEDGE_AFTER, PROVIDERS, REQUEST_TIMEOUT, TOTAL_BUDGET,
+        answer_of, client, configured, hedged, race, sane,
     };
     use crate::network::dns::wire;
     use crate::network::fail::{Fail, FailKind};
+    use crate::network::h2_server::h2_tls_server;
 
     const STEP: Duration = Duration::from_millis(700);
     const SLOW_RTT: Duration = Duration::from_secs(2);
@@ -367,6 +387,54 @@ mod tests {
         assert_eq!(junk.kind, FailKind::Other);
     }
 
+    fn answer(addrs: &[&str]) -> DohAnswer {
+        DohAnswer {
+            addrs: addrs.iter().map(|ip| ip.parse().unwrap()).collect(),
+            ttl: 60,
+            provider: "yandex",
+        }
+    }
+
+    #[test]
+    fn garbage_for_our_name_is_a_failure_and_a_foreign_name_keeps_private_addresses() {
+        let ours = "API.scnative.space";
+        let fail = sane(ours, answer(&["2.26.93.81", "10.0.0.1"])).unwrap_err();
+        assert_eq!(fail.kind, FailKind::DnsBogus);
+        assert_eq!(
+            fail.detail.as_deref(),
+            Some("yandex answered 2.26.93.81,10.0.0.1")
+        );
+        assert_eq!(
+            sane(ours, answer(&["127.0.0.1", "188.165.221.195"])).unwrap(),
+            answer(&["188.165.221.195"])
+        );
+        assert_eq!(sane(ours, answer(&[])).unwrap(), answer(&[]));
+        assert_eq!(
+            sane("example.com", answer(&["10.0.0.1"])).unwrap(),
+            answer(&["10.0.0.1"])
+        );
+        let zero = sane("example.com", answer(&["0.0.0.0"])).unwrap_err();
+        assert_eq!(zero.kind, FailKind::DnsBogus);
+    }
+
+    #[tokio::test(start_paused = true)]
+    async fn a_provider_with_garbage_for_our_name_hands_over_to_the_next() {
+        let started = Instant::now();
+        let won = hedged(&[0, 1, 2], STEP, |index| async move {
+            let (delay, addrs): (u64, &[&str]) = match index {
+                0 => (10, &["2.26.93.81"]),
+                1 => (30, &["188.165.221.195"]),
+                _ => (10, &["1.2.3.4"]),
+            };
+            tokio::time::sleep(Duration::from_millis(delay)).await;
+            sane("api.scnative.space", answer(addrs))
+        })
+        .await
+        .unwrap();
+        assert_eq!(won, (1, answer(&["188.165.221.195"])));
+        assert_eq!(started.elapsed(), Duration::from_millis(40));
+    }
+
     #[test]
     fn every_provider_is_pinned_to_its_own_addresses() {
         assert!(client().is_some());
@@ -377,5 +445,17 @@ mod tests {
                 .iter()
                 .all(|p| p.ips.iter().all(|ip| !wire::bogus(*ip)))
         );
+    }
+
+    #[tokio::test]
+    async fn queries_sent_together_share_one_connection() {
+        let (url, accepted) = h2_tls_server().await;
+        let builder = wreq::Client::builder().no_proxy().cert_verification(false);
+        let client = configured(builder).build().unwrap();
+        let sent = futures_util::future::join_all((0..4).map(|_| client.get(&url).send())).await;
+        for response in sent {
+            assert_eq!(response.unwrap().status(), 200);
+        }
+        assert_eq!(accepted.load(Ordering::SeqCst), 1);
     }
 }

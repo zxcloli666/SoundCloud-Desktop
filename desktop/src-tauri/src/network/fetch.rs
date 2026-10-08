@@ -14,6 +14,8 @@ use crate::network::{dns, system_proxy};
 
 const CONNECT_TIMEOUT: Duration = Duration::from_secs(10);
 const BODY_STALL: Duration = Duration::from_secs(10);
+const PING_AFTER_SILENCE: Duration = Duration::from_secs(2);
+const PING_TIMEOUT: Duration = Duration::from_secs(3);
 const IDLE_PER_HOST: usize = 8;
 const MAX_REDIRECTS: usize = 10;
 const MAX_MESSAGE: usize = 400;
@@ -108,6 +110,12 @@ pub fn configured(builder: wreq::ClientBuilder) -> wreq::ClientBuilder {
         .redirect(Policy::limited(MAX_REDIRECTS))
         .pool_max_idle_per_host(IDLE_PER_HOST)
         .connect_timeout(CONNECT_TIMEOUT)
+        .http2(|mut http2| {
+            http2
+                .keep_alive_interval(PING_AFTER_SILENCE)
+                .keep_alive_timeout(PING_TIMEOUT)
+                .keep_alive_while_idle(false);
+        })
 }
 
 fn inflight() -> MutexGuard<'static, HashMap<u32, AbortHandle>> {
@@ -175,7 +183,10 @@ async fn perform(client: &wreq::Client, request: FetchRequest) -> (Head, Vec<u8>
     };
     match read_body(response, deadline).await {
         Ok(body) => (head, body),
-        Err(message) => (Head::failed(NetKind::Body, message), Vec::new()),
+        Err(message) => {
+            record(&request, Err(FailKind::Body), started);
+            (Head::failed(NetKind::Body, message), Vec::new())
+        }
     }
 }
 
@@ -212,6 +223,10 @@ fn settle(request: &FetchRequest, outcome: Result<u16, FailKind>, started: Insta
     {
         dns::suspect(&host);
     }
+    record(request, outcome, started);
+}
+
+fn record(request: &FetchRequest, outcome: Result<u16, FailKind>, started: Instant) {
     let Some(route) = &request.route else { return };
     let hop = Hop {
         url: request.url.clone(),
@@ -303,3 +318,11 @@ pub fn frame(head: &Head, body: &[u8]) -> Vec<u8> {
 #[cfg(test)]
 #[path = "fetch_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "fetch_h2_tests.rs"]
+mod h2_tests;
+
+#[cfg(all(test, target_os = "linux"))]
+#[path = "nodelay_tests.rs"]
+mod nodelay_tests;

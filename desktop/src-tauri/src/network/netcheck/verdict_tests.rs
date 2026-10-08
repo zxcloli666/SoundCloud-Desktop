@@ -1,11 +1,11 @@
 use std::collections::BTreeMap;
 use std::net::IpAddr;
 
-use super::{cells, dns_state, hint, verdict};
+use super::{cells, dns_state, hint, verdict, with_volume};
 use crate::network::fail::{Fail, FailKind, Phase};
 use crate::network::netcheck::model::{
     AppProbe, DnsAnswer, DnsState, DpiTool, EnvInfo, Hint, Internet, PhaseProbe, Remote,
-    ServiceInfo, TargetCheck, TargetId, Tone, Verdict, ZapretConfig,
+    ServiceInfo, TargetCheck, TargetId, Tone, Verdict, VolumeProbe, ZapretConfig,
 };
 
 fn ip(text: &str) -> IpAddr {
@@ -421,6 +421,60 @@ fn timestamps_windows_only_allows_count_as_off() {
 }
 
 #[test]
+fn an_unknown_timestamps_value_is_decided_by_the_probes() {
+    let mut targets = all_broken(FailKind::Reset, Phase::Tls);
+    for value in ["aktiviert", "\u{fffd}\u{fffd}", "on"] {
+        let env = zapret_env(Some("--dpi-desync-fooling=ts"), Some(value));
+        assert_eq!(
+            hint(Verdict::Reset, Some(&env), &targets),
+            Hint::Zapret,
+            "{value}"
+        );
+    }
+    if let Some(probe) = targets[1].probe.as_mut() {
+        probe.tcp_timestamps = Some(false);
+    }
+    let env = zapret_env(Some("--dpi-desync-fooling=ts"), Some("aktiviert"));
+    assert_eq!(
+        hint(Verdict::Reset, Some(&env), &targets),
+        Hint::ZapretTimestamps
+    );
+}
+
+#[test]
+fn a_probe_that_negotiated_timestamps_beats_the_setting() {
+    let mut targets = all_broken(FailKind::Reset, Phase::Tls);
+    if let Some(probe) = targets[0].probe.as_mut() {
+        probe.tcp_timestamps = Some(true);
+    }
+    if let Some(probe) = targets[1].probe.as_mut() {
+        probe.tcp_timestamps = Some(false);
+    }
+    let env = zapret_env(Some("--dpi-desync-fooling=ts"), Some("disabled"));
+    assert_eq!(hint(Verdict::Reset, Some(&env), &targets), Hint::Zapret);
+}
+
+#[test]
+fn offline_with_a_dpi_tool_and_broken_connections_hints_zapret() {
+    let env = zapret_env(None, Some("enabled"));
+    for kind in [FailKind::Reset, FailKind::Timeout] {
+        let targets = all_broken(kind, Phase::Tls);
+        assert_eq!(
+            hint(Verdict::Offline, Some(&env), &targets),
+            Hint::Zapret,
+            "{kind:?}"
+        );
+    }
+    let no_names = all_broken(FailKind::Dns, Phase::Dns);
+    assert_eq!(hint(Verdict::Offline, Some(&env), &no_names), Hint::None);
+    let targets = all_broken(FailKind::Reset, Phase::Tls);
+    assert_eq!(
+        hint(Verdict::Offline, Some(&EnvInfo::default()), &targets),
+        Hint::None
+    );
+}
+
+#[test]
 fn a_ts_strategy_with_timestamps_on_is_plain_zapret() {
     let targets = all_broken(FailKind::Timeout, Phase::Tls);
     let env = zapret_env(Some("--dpi-desync-fooling=ts"), Some("enabled"));
@@ -526,6 +580,7 @@ fn other_verdicts_get_no_hint() {
         Verdict::Cert,
         Verdict::Down,
         Verdict::Partial,
+        Verdict::Offline,
     ] {
         assert_eq!(hint(verdict, Some(&env), &[]), Hint::None, "{verdict:?}");
     }
@@ -598,4 +653,32 @@ fn a_probe_that_passed_while_the_app_failed_warns_at_http() {
     let mut target = healthy(TargetId::Main);
     target.app = Some(AppProbe::default());
     assert_eq!(cells(&target)[3], Tone::Warn);
+}
+
+fn volume(cut: bool) -> VolumeProbe {
+    VolumeProbe {
+        shape: if cut { "blackhole" } else { "clear" }.to_string(),
+        bytes: if cut { 12_000 } else { 65_536 },
+        ms: 6_200,
+        cut,
+    }
+}
+
+#[test]
+fn a_volume_cut_turns_a_working_check_into_a_cut() {
+    let cut = volume(true);
+    assert_eq!(with_volume(Verdict::Ok, Some(&cut)), Verdict::Cut);
+    assert_eq!(with_volume(Verdict::BackupDown, Some(&cut)), Verdict::Cut);
+    assert_eq!(with_volume(Verdict::Ok, Some(&volume(false))), Verdict::Ok);
+    assert_eq!(with_volume(Verdict::Ok, None), Verdict::Ok);
+    for louder in [
+        Verdict::Dns,
+        Verdict::Partial,
+        Verdict::RelayOnly,
+        Verdict::Reset,
+        Verdict::Timeout,
+        Verdict::Offline,
+    ] {
+        assert_eq!(with_volume(louder, Some(&cut)), louder);
+    }
 }

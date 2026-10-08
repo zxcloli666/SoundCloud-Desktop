@@ -19,7 +19,9 @@ const HEALTH_PATH: &str = "/health";
 const HTTPS_PORT: u16 = 443;
 const SYSTEM_DNS_BUDGET: Duration = Duration::from_secs(6);
 const APP_TIMEOUT: Duration = Duration::from_secs(15);
+const APP_RETRY_FLOOR: Duration = Duration::from_secs(3);
 const TARGET_CAP: Duration = Duration::from_secs(30);
+const CAP_MARGIN: Duration = Duration::from_secs(1);
 const EXTERNAL_TIMEOUT: Duration = Duration::from_secs(10);
 const RELAY_TARGETS: usize = 4;
 const DOH_SAMPLE_HOST: &str = "api.scnative.space";
@@ -75,12 +77,13 @@ pub async fn check(target: &Target, app: Option<&wreq::Client>, trigger: Trigger
     }
 }
 
-async fn inspect(target: &Target, app: Option<&wreq::Client>, trigger: Trigger) -> TargetCheck {
+async fn inspect(target: &Target, client: Option<&wreq::Client>, trigger: Trigger) -> TargetCheck {
+    let started = Instant::now();
     let host = target.host.as_str();
     let url = format!("https://{host}{HEALTH_PATH}");
     let proxied = system_proxy::proxied(&url);
     if proxied && trigger == Trigger::Auto {
-        return through_proxy(target, app, &url).await;
+        return through_proxy(target, client, &url).await;
     }
     let (system, doh) = tokio::join!(system_answer(host), doh_answer(host));
     let system_ip = system.addrs.iter().copied().find(|ip| !dns::garbage(*ip));
@@ -95,7 +98,7 @@ async fn inspect(target: &Target, app: Option<&wreq::Client>, trigger: Trigger) 
     let (probe, doh_probe, app) = tokio::join!(
         manual(host, probe_ip),
         manual(host, second_ip),
-        app_path(app, &url)
+        app_path(client, &url)
     );
     let probe = probe.map(|mut probe| {
         probe.dns_ms = if system_ip.is_some() {
@@ -109,6 +112,8 @@ async fn inspect(target: &Target, app: Option<&wreq::Client>, trigger: Trigger) 
     if disjoint && probe_ok == Some(false) {
         dns::suspect(host);
     }
+    let left = TARGET_CAP.saturating_sub(started.elapsed() + CAP_MARGIN);
+    let app = retried(client, &url, app, probe_ok == Some(true), left).await;
     let dns = verdict::dns_state(
         &system,
         Some(&doh),
@@ -228,12 +233,31 @@ async fn doh_answer(host: &str) -> DnsAnswer {
 }
 
 async fn app_path(client: Option<&wreq::Client>, url: &str) -> Option<AppProbe> {
-    Some(app_probe(client?, url).await)
+    Some(app_probe(client?, url, APP_TIMEOUT).await)
 }
 
-async fn app_probe(client: &wreq::Client, url: &str) -> AppProbe {
+async fn retried(
+    client: Option<&wreq::Client>,
+    url: &str,
+    first: Option<AppProbe>,
+    probe_passed: bool,
+    left: Duration,
+) -> Option<AppProbe> {
+    let timed_out = first
+        .as_ref()
+        .and_then(|app| app.fail.as_ref())
+        .is_some_and(|fail| fail.kind == FailKind::Timeout);
+    match client {
+        Some(client) if timed_out && probe_passed && left >= APP_RETRY_FLOOR => {
+            Some(app_probe(client, url, left.min(APP_TIMEOUT)).await)
+        }
+        _ => first,
+    }
+}
+
+async fn app_probe(client: &wreq::Client, url: &str, timeout: Duration) -> AppProbe {
     let started = Instant::now();
-    match client.get(url).timeout(APP_TIMEOUT).send().await {
+    match client.get(url).timeout(timeout).send().await {
         Ok(response) => {
             let status = response.status().as_u16();
             AppProbe {
@@ -362,14 +386,19 @@ pub fn remote_of(payload: Option<&serde_json::Value>) -> Remote {
 
 #[cfg(test)]
 mod tests {
+    use std::sync::Arc;
+    use std::sync::atomic::{AtomicUsize, Ordering};
     use std::time::Duration;
 
     use serde_json::json;
+    use tokio::io::{AsyncReadExt, AsyncWriteExt};
+    use tokio::net::TcpListener;
 
     use super::{
-        APP_TIMEOUT, EXTERNAL_TIMEOUT, SYSTEM_DNS_BUDGET, TARGET_CAP, Target, doh, internet_seen,
-        remote_of, targets, total, verdict,
+        APP_RETRY_FLOOR, APP_TIMEOUT, EXTERNAL_TIMEOUT, SYSTEM_DNS_BUDGET, TARGET_CAP, Target,
+        app_probe, doh, internet_seen, remote_of, retried, targets, total, verdict,
     };
+    use crate::network::fail::FailKind;
     use crate::network::netcheck::model::{
         AppProbe, DnsAnswer, DohProbe, PhaseProbe, Remote, TargetId, Tone,
     };
@@ -488,5 +517,72 @@ mod tests {
         };
         assert_eq!(total(Some(&failed), Some(&app)), Some(90));
         assert_eq!(total(None, None), None);
+    }
+
+    async fn silent_first_time() -> (String, Arc<AtomicUsize>) {
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let addr = listener.local_addr().unwrap();
+        let accepted = Arc::new(AtomicUsize::new(0));
+        let counter = accepted.clone();
+        tokio::spawn(async move {
+            while let Ok((mut socket, _)) = listener.accept().await {
+                let first = counter.fetch_add(1, Ordering::SeqCst) == 0;
+                tokio::spawn(async move {
+                    let mut buf = [0u8; 2048];
+                    let _ = socket.read(&mut buf).await;
+                    if first {
+                        tokio::time::sleep(Duration::from_secs(30)).await;
+                        return;
+                    }
+                    let _ = socket
+                        .write_all(b"HTTP/1.1 200 OK\r\ncontent-length: 2\r\n\r\nok")
+                        .await;
+                    tokio::time::sleep(Duration::from_secs(1)).await;
+                });
+            }
+        });
+        (format!("http://{addr}/health"), accepted)
+    }
+
+    #[tokio::test]
+    async fn an_app_path_that_only_timed_out_is_tried_once_more_when_the_probe_passed() {
+        let (url, accepted) = silent_first_time().await;
+        let client = wreq::Client::builder().no_proxy().build().unwrap();
+        let first = app_probe(&client, &url, Duration::from_millis(300)).await;
+        assert!(!first.ok);
+        assert_eq!(
+            first.fail.as_ref().map(|fail| fail.kind),
+            Some(FailKind::Timeout)
+        );
+        let room = APP_RETRY_FLOOR * 2;
+
+        let probe_failed = retried(Some(&client), &url, Some(first.clone()), false, room).await;
+        assert_eq!(probe_failed.as_ref(), Some(&first));
+        let no_room = APP_RETRY_FLOOR / 2;
+        let late = retried(Some(&client), &url, Some(first.clone()), true, no_room).await;
+        assert_eq!(late.as_ref(), Some(&first));
+        assert_eq!(accepted.load(Ordering::SeqCst), 1);
+
+        let again = retried(Some(&client), &url, Some(first), true, room)
+            .await
+            .unwrap();
+        assert!(again.ok, "{again:?}");
+        assert_eq!(again.status, Some(200));
+        assert_eq!(accepted.load(Ordering::SeqCst), 2);
+    }
+
+    #[tokio::test]
+    async fn a_refused_app_path_is_not_tried_again() {
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let url = format!("http://{}/health", listener.local_addr().unwrap());
+        drop(listener);
+        let client = wreq::Client::builder().no_proxy().build().unwrap();
+        let first = app_probe(&client, &url, Duration::from_secs(2)).await;
+        assert_eq!(
+            first.fail.as_ref().map(|fail| fail.kind),
+            Some(FailKind::Refused)
+        );
+        let kept = retried(Some(&client), &url, Some(first.clone()), true, APP_TIMEOUT).await;
+        assert_eq!(kept, Some(first));
     }
 }

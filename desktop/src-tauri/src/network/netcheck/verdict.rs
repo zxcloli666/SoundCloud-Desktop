@@ -1,13 +1,13 @@
 use super::env::uses_ts_fooling;
 use super::model::{
     DnsAnswer, DnsState, EnvInfo, Hint, Internet, PhaseProbe, Remote, TargetCheck, TargetId, Tone,
-    Verdict,
+    Verdict, VolumeProbe,
 };
 use crate::network::dns;
 use crate::network::fail::{FailKind, Phase};
 
 const TS_CONFIG_KEYS: [&str; 2] = ["NFQWS_OPT", "NFQWS2_OPT"];
-const TIMESTAMPS_ON: &str = "enabled";
+const TIMESTAMPS_OFF: [&str; 3] = ["disabled", "allowed", "default"];
 
 pub fn verdict(targets: &[TargetCheck], internet: Internet, remote: Remote) -> Verdict {
     if targets.is_empty() {
@@ -48,6 +48,14 @@ pub fn verdict(targets: &[TargetCheck], internet: Internet, remote: Remote) -> V
         return Verdict::RelayOnly;
     }
     tally(targets)
+}
+
+pub fn with_volume(verdict: Verdict, volume: Option<&VolumeProbe>) -> Verdict {
+    let cut = volume.is_some_and(|volume| volume.cut);
+    match verdict {
+        Verdict::Ok | Verdict::BackupDown if cut => Verdict::Cut,
+        other => other,
+    }
 }
 
 fn tally(targets: &[TargetCheck]) -> Verdict {
@@ -133,10 +141,12 @@ fn certificate_swapped(target: &TargetCheck) -> bool {
 }
 
 pub fn hint(verdict: Verdict, env: Option<&EnvInfo>, targets: &[TargetCheck]) -> Hint {
-    if !matches!(
-        verdict,
-        Verdict::Reset | Verdict::Timeout | Verdict::RelayOnly
-    ) {
+    let blocked = match verdict {
+        Verdict::Reset | Verdict::Timeout | Verdict::RelayOnly => true,
+        Verdict::Offline => matches!(tally(targets), Verdict::Reset | Verdict::Timeout),
+        _ => false,
+    };
+    if !blocked {
         return Hint::None;
     }
     let Some(env) = env.filter(|env| !env.dpi.is_empty()) else {
@@ -165,14 +175,19 @@ fn ts_strategy(env: &EnvInfo) -> bool {
 }
 
 fn timestamps_off(env: &EnvInfo, targets: &[TargetCheck]) -> bool {
-    env.tcp_timestamps
+    let seen: Vec<bool> = targets
+        .iter()
+        .flat_map(|target| [&target.probe, &target.doh_probe])
+        .filter_map(|probe| probe.as_ref()?.tcp_timestamps)
+        .collect();
+    if seen.contains(&true) {
+        return false;
+    }
+    let configured_off = env
+        .tcp_timestamps
         .as_deref()
-        .is_some_and(|value| value != TIMESTAMPS_ON)
-        || targets
-            .iter()
-            .flat_map(|target| [&target.probe, &target.doh_probe])
-            .filter_map(|probe| probe.as_ref())
-            .any(|probe| probe.tcp_timestamps == Some(false))
+        .is_some_and(|value| TIMESTAMPS_OFF.contains(&value));
+    configured_off || seen.contains(&false)
 }
 
 pub fn dns_state(
