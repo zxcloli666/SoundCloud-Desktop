@@ -8,11 +8,11 @@ import {
   useShownVerdict,
   type Verdict,
 } from '../../lib/net/check';
-import { currentOs, fixCommand } from '../../lib/net/manual';
+import { checkedTime } from '../../lib/net/manual';
 import { usePerfMode } from '../../lib/perf';
 import { IconTile } from '../host-status/IconTile';
 import { ModalTitle } from '../ui/Modal';
-import { CopyLine } from './CopyLine';
+import { VerdictHint } from './VerdictHint';
 import { VerdictIcon, verdictTitle } from './VerdictIcon';
 
 const MAX_CHIPS = 3;
@@ -79,42 +79,6 @@ const EnvChip = React.memo(({ chip }: { chip: Chip }) => {
   );
 });
 
-interface HintProps {
-  verdict: Verdict;
-  hint: Hint;
-  broken: boolean;
-}
-
-function hintText(t: TFunction, { verdict, hint, broken }: HintProps, fix: string | null): string {
-  if (broken) return t('netCheck.failedHint');
-  if (fix) return t('netCheck.hint.zapretTimestamps');
-  if (hint === 'none') return t(`netCheck.verdict.${verdict}.hint`);
-  return t('netCheck.hint.zapret');
-}
-
-const HintBlock = React.memo((props: HintProps) => {
-  const { t } = useTranslation();
-  if (props.verdict === 'checking') return null;
-  const os = currentOs();
-  const fix = !props.broken && props.hint === 'zapretTimestamps' ? fixCommand(os) : null;
-  const text = hintText(t, props, fix);
-  return (
-    <>
-      <p className="text-[12.5px] text-white/35 mt-1.5 leading-relaxed max-w-[340px]">{text}</p>
-      {fix && (
-        <div className="w-full mt-3 text-left">
-          <CopyLine text={fix} />
-          {os === 'windows' && (
-            <p className="text-[10.5px] text-white/30 mt-1 text-center">
-              {t('netCheck.hint.admin')}
-            </p>
-          )}
-        </div>
-      )}
-    </>
-  );
-});
-
 export const VerdictHeader = React.memo(() => {
   const { t, i18n } = useTranslation();
   const report = useNetCheckStore((s) => s.report);
@@ -123,12 +87,7 @@ export const VerdictHeader = React.memo(() => {
   const settled = report !== null && verdict !== 'checking' && report.verdict === verdict;
   const hint = settled ? report.hint : 'none';
   const chips = settled && !CALM.has(verdict) ? envChips(t, report.env, hint) : [];
-  const time = settled
-    ? new Date(report.atMs).toLocaleTimeString(i18n.language, {
-        hour: '2-digit',
-        minute: '2-digit',
-      })
-    : null;
+  const time = settled ? checkedTime(report.atMs, i18n.language) : null;
 
   return (
     <div className="flex flex-col items-center text-center">
@@ -138,7 +97,7 @@ export const VerdictHeader = React.memo(() => {
       <ModalTitle className="text-lg font-bold text-white/90 tracking-tight">
         {verdictTitle(t, verdict)}
       </ModalTitle>
-      <HintBlock verdict={verdict} hint={hint} broken={failed && !settled} />
+      <VerdictHint verdict={verdict} hint={hint} broken={failed && !settled} />
       {chips.length > 0 && (
         <div className="mt-3 flex flex-wrap justify-center gap-1.5">
           {chips.map((chip) => (

@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Activity } from '../../../lib/icons';
 import { loadLastReport, useNetCheckStore, watchNetCheck } from '../../../lib/net/check';
+import { checkedTime } from '../../../lib/net/manual';
 import { VerdictIcon, verdictTitle } from '../../net-check/VerdictIcon';
 import { ActionButton } from '../ActionButton';
 import { Card } from '../primitives';
@@ -19,13 +20,7 @@ export function NetCheckCard() {
 
   const settled = report !== null && report.verdict !== 'checking' ? report : null;
   const verdict = running ? 'checking' : settled?.verdict;
-  const time =
-    !running && settled
-      ? new Date(settled.atMs).toLocaleTimeString(i18n.language, {
-          hour: '2-digit',
-          minute: '2-digit',
-        })
-      : null;
+  const time = !running && settled ? checkedTime(settled.atMs, i18n.language) : null;
 
   return (
     <Card title={t('netCheck.title')} desc={t('netCheck.cardDesc')} icon={<Activity size={17} />}>

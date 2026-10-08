@@ -600,8 +600,8 @@
         "hint": "We're already fixing it."
       },
       "offline": {
-        "title": "No internet connection",
-        "hint": "Check your network and try again."
+        "title": "The app can't reach the internet",
+        "hint": "If your browser works, run the check below."
       },
       "unknown": {
         "title": "Couldn't find the cause",
@@ -609,9 +609,10 @@
       }
     },
     "hint": {
-      "zapret": "zapret is running. Turn it off to check; if that helps, add our addresses to its exclusions.",
+      "zapret": "zapret is running. Turn it off to check. If that helps, add our domains to list-exclude-user.txt:",
       "zapretTimestamps": "zapret uses a ts strategy, but TCP timestamps are off. Turn them on:",
-      "admin": "Run as administrator"
+      "admin": "Run as administrator",
+      "guide": "zapret setup guide"
     },
     "env": {
       "dpi": "{{name}} is running",

@@ -241,12 +241,15 @@ export const useNetCheckStore = create<NetCheckState>()((set, get) => ({
   runCheck: async () => {
     if (get().running) return;
     watchNetCheck();
+    const before = get().report;
     set({ running: true, failed: false });
     try {
       const report = await invoke<NetReport>('net_check_run', undefined, RUN_WARN_MS);
       set({ report });
     } catch {
-      set({ failed: true });
+      const shown = get().report;
+      set({ failed: true, report: shown?.verdict === 'checking' ? before : shown });
+      void loadLastReport();
     } finally {
       set({ running: false });
     }

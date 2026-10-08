@@ -15,6 +15,7 @@ const WORTH_SENDING: ReadonlySet<Verdict> = new Set([
   'reset',
   'timeout',
   'cert',
+  'offline',
   'unknown',
 ]);
 const PRIMARY =
@@ -71,7 +72,7 @@ export const NetCheckActions = React.memo(() => {
   const primary = !running && WORTH_SENDING.has(verdict);
 
   return (
-    <div className="mt-6 space-y-2.5">
+    <div className="space-y-2.5">
       <button
         type="button"
         onClick={send}

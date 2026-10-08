@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { ArrowDownToLine, Globe, LinkIcon, Lock } from '../../lib/icons';
+import { ArrowDownToLine, Globe, LinkIcon, Lock, TriangleAlert, X } from '../../lib/icons';
 import { type TargetCheck, type Tone, useNetCheckStore } from '../../lib/net/check';
 import { COLUMNS, type Column, cellTitle } from '../../lib/net/manual';
 import { Skeleton } from '../ui/Skeleton';
@@ -12,6 +12,11 @@ const ICONS: Record<Column, typeof Globe> = {
   http: ArrowDownToLine,
 };
 
+const MARKS: Partial<Record<Tone, typeof Globe>> = {
+  warn: TriangleAlert,
+  fail: X,
+};
+
 const TONES: Record<Exclude<Tone, 'pending'>, string> = {
   ok: 'text-emerald-300/80',
   warn: 'text-amber-300/85',
@@ -20,9 +25,9 @@ const TONES: Record<Exclude<Tone, 'pending'>, string> = {
 };
 
 const Cell = React.memo(({ col, tone, title }: { col: Column; tone: Tone; title: string }) => {
-  const Icon = ICONS[col];
+  const Icon = MARKS[tone] ?? ICONS[col];
   return (
-    <span className="w-7 flex justify-center" title={title}>
+    <span className="w-7 flex justify-center" title={title} role="img" aria-label={title}>
       {tone === 'pending' ? (
         <Skeleton rounded="full" className="w-3 h-3" />
       ) : (

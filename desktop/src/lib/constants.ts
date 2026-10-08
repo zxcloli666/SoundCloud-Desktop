@@ -21,6 +21,7 @@ export const GITHUB_REPO = 'SoundCloud-Desktop';
 export const GITHUB_REPO_EN = 'SoundCloud-Desktop-EN';
 export const DOCS_URL = `https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}/blob/main/docs`;
 export const DISCORD_URL = 'https://discord.gg/xQcGBP8fGG';
+export const ZAPRET_GUIDE_URL = `https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}#zapret-vpn-и-списки-доменов`;
 export const BOOSTY_URL = 'https://boosty.to/lolinamide';
 export const ANDROID_CLIENT_URL = 'https://github.com/okeydw/SoundCloud-Android';
 export const ANDROID_CLIENT_RELEASES_URL = `${ANDROID_CLIENT_URL}/releases/latest`;

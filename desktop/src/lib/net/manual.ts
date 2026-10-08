@@ -12,6 +12,7 @@ export interface ManualStep {
 
 export const COLUMNS = ['dns', 'tcp', 'tls', 'http'] as const;
 export const HEALTH_HOST = 'api.scnative.space';
+export const EXCLUDED_DOMAINS = ['scnative.space', 'soundcloud-desktop.fun'] as const;
 
 const HEALTH_URL = `https://${HEALTH_HOST}/health`;
 const NSLOOKUP = `nslookup ${HEALTH_HOST}; nslookup ${HEALTH_HOST} 1.1.1.1`;
@@ -21,10 +22,13 @@ const MANUAL: ReadonlySet<Verdict> = new Set([
   'reset',
   'timeout',
   'cert',
+  'offline',
   'unknown',
 ]);
 const SHOWN_ADDRS = 2;
 const PHASE_BUDGET_MS = 5_000;
+const CLOCK: Intl.DateTimeFormatOptions = { hour: '2-digit', minute: '2-digit' };
+const DATED: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', ...CLOCK };
 
 export function currentOs(): Os {
   if (isWindows()) return 'windows';
@@ -43,6 +47,12 @@ export function manualSteps(os: Os): ManualStep[] {
     { text: NSLOOKUP, action: 'copy' },
     { text: HEALTH_URL, action: 'open' },
   ];
+}
+
+export function checkedTime(atMs: number, language: string, now = Date.now()): string {
+  const at = new Date(atMs);
+  const today = at.toDateString() === new Date(now).toDateString();
+  return at.toLocaleString(language, today ? CLOCK : DATED);
 }
 
 export function fixCommand(os: Os): string | null {
