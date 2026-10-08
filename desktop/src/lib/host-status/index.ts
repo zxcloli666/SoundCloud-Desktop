@@ -17,6 +17,7 @@ export {
   markUnhealthy,
   noteMainAlive,
   noteRequestTimeout,
+  noteUnreachable,
   requestProbe,
 } from './probe';
 export {

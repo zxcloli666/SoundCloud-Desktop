@@ -1,7 +1,7 @@
 import { useAppStatusStore } from '../../stores/app-status';
 import { API_BASE, API_STAR_BASE } from '../constants';
 import { edgeProbe } from '../edge';
-import { requestPremiumRecheck } from '../premium-cache';
+import { getIsPremium, requestPremiumRecheck } from '../premium-cache';
 import { queryClient } from '../query-client';
 import { fetchExternal } from './external';
 import { fetchRemoteVerdict } from './remote';
@@ -186,7 +186,21 @@ export function requestProbe(opts?: { force?: boolean }): void {
   });
 }
 
+let offlineCheck = false;
+
+export function noteUnreachable(): void {
+  offlineCheck = true;
+  requestProbe({ force: true });
+}
+
+function settleOfflineCheck(reachable: boolean): void {
+  if (!offlineCheck) return;
+  offlineCheck = false;
+  if (!reachable) useAppStatusStore.getState().setBackendReachable(false);
+}
+
 function markMainUp(): void {
+  settleOfflineCheck(true);
   useHostStatusStore.setState({ star: 'unknown', net: 'online' });
   markHealthy(API_BASE); // noteMainAlive: up + стоп recheck-таймера (no-op, если уже up)
   // Снимаем ложный offline и когда вердикт уже 'up' (noteMainAlive тогда no-op).
@@ -212,14 +226,18 @@ async function run(): Promise<void> {
   const internet = unreachable ? await checkInternet() : 'online';
   // Бурст таймаутов = таймаутят все запросы → хост лёг, а не offline: модалку не глушим.
   if (internet === 'no-internet' && !timeoutBurst()) {
-    // Не знаем, лежат ли хосты; backendReachable не трогаем — offline-флоу ведёт apiRequest.
+    settleOfflineCheck(false);
     useHostStatusStore.setState({ main: 'unknown', star: 'unknown', net: 'no-internet' });
     startRecheckTimer();
     return;
   }
   const remote = star.alive ? 'unknown' : await fetchRemoteVerdict();
   // Реальный успех main за время star-пробы/internet-check — результат устарел, down не пишем.
-  if (mainAliveGen !== gen) return;
+  if (mainAliveGen !== gen) {
+    settleOfflineCheck(true);
+    return;
+  }
+  settleOfflineCheck(!(main.netFail && (!getIsPremium() || star.netFail)));
   const prev = useHostStatusStore.getState();
   const newIncident = prev.main !== 'down';
   const incidentId = newIncident ? prev.incidentId + 1 : prev.incidentId;

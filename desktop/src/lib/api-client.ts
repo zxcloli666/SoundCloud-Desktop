@@ -5,7 +5,7 @@ import { emitApiWrite } from './api-writes';
 import { noteAuthGap, noteRateLimit, noteSuccess } from './auth-recovery';
 import { API_BASE, API_STAR_BASE } from './constants';
 import { logHttpError, logHttpFailure, logInfo, trackAsync } from './diagnostics';
-import { edgeFetch } from './edge';
+import { EdgeUnreachableError, edgeFetch } from './edge';
 import {
   getHostVerdict,
   isHealthy,
@@ -17,6 +17,7 @@ import {
   markUnhealthy,
   noteMainBadResponse,
   noteRequestTimeout,
+  noteUnreachable,
   preferredControlBase,
   SLOW_RESPONSE_MS,
 } from './host-status';
@@ -452,7 +453,7 @@ export async function apiRequest<T = unknown>(
         noteAuthGap();
         throw authRejection;
       }
-      useAppStatusStore.getState().setBackendReachable(false);
+      if (error instanceof EdgeUnreachableError) noteUnreachable();
       throw error;
     }
   }

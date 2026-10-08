@@ -133,6 +133,17 @@ export class EdgeTransportError extends Error {
   }
 }
 
+export class EdgeUnreachableError extends Error {
+  constructor(readonly cause: unknown) {
+    super(`edge: no route answered (${messageOf(cause)})`);
+    this.name = 'EdgeUnreachableError';
+  }
+}
+
+function messageOf(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
 /**
  * Резерв под запасные хопы. Делить бюджет поровну нельзя: отвечает обычно ПЕРВЫЙ
  * хоп, и его легитимно долгий ответ дороже, чем шанс попробовать резерв. При
@@ -180,13 +191,22 @@ export function edgeProbe(url: string, hopTimeoutMs: number): Promise<ProbeOutco
   });
 }
 
+async function fetchAlone(url: string, init: RequestInit, timeoutMs?: number): Promise<Response> {
+  try {
+    return (await fetchWhole(url, init, timeoutMs)).res;
+  } catch (error) {
+    if (init.signal?.aborted || error instanceof BodyCutError) throw error;
+    throw new EdgeUnreachableError(error);
+  }
+}
+
 export async function edgeFetch(
   url: string,
   init: RequestInit = {},
   timeoutMs?: number,
 ): Promise<Response> {
   const hops = planHops(url);
-  if (hops.length === 0) return (await fetchWhole(url, init, timeoutMs)).res;
+  if (hops.length === 0) return fetchAlone(url, init, timeoutMs);
 
   const weakBudget = timeoutMs !== undefined && timeoutMs < WEAK_BUDGET_MS;
   const replayable = ['GET', 'HEAD'].includes((init.method ?? 'GET').toUpperCase());
@@ -195,6 +215,8 @@ export async function edgeFetch(
   // 40 с на двух базах, и вызывающий получал «Request canceled» вместо ответа.
   const deadline = timeoutMs === undefined ? undefined : Date.now() + timeoutMs;
   let lastError: unknown = null;
+  let attempted = 0;
+  let answered = false;
 
   for (let i = 0; i < hops.length; i++) {
     const hop = hops[i];
@@ -202,9 +224,11 @@ export async function edgeFetch(
     const remaining = deadline === undefined ? undefined : deadline - Date.now();
     if (remaining !== undefined && remaining <= 0) break;
     const hopBudget = remaining === undefined ? undefined : hopBudgetMs(remaining, hops.length - i);
+    attempted += 1;
 
     try {
       const { res, bytes } = await fetchWhole(hop.url, init, hopBudget);
+      answered = true;
       if (hopUsable(hop, res)) {
         noteHop(hop, true, bytes);
         return res;
@@ -216,9 +240,12 @@ export async function edgeFetch(
       lastError = error;
       // Отмена вызывающим (не таймаут хопа) — перебор бессмысленен.
       if (init.signal?.aborted) throw error;
+      const cut = error instanceof BodyCutError;
+      if (cut) answered = true;
       if (!(weakBudget && isTimeout(error))) noteHop(hop, false);
-      if (isLast || (error instanceof BodyCutError && !replayable)) throw error;
+      if (cut && !replayable) throw error;
     }
   }
+  if (attempted === hops.length && !answered) throw new EdgeUnreachableError(lastError);
   throw lastError ?? new Error('edge: budget exhausted before any hop answered');
 }
