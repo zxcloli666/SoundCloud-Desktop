@@ -1,5 +1,5 @@
 use std::error::Error;
-use std::net::IpAddr;
+use std::net::{IpAddr, SocketAddr};
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::time::Duration;
@@ -7,6 +7,7 @@ use std::time::Duration;
 use futures_util::FutureExt;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpListener;
+use wreq::dns::{Addrs, Name, Resolve, Resolving};
 
 use super::doh::DohAnswer;
 use super::{Config, DnsError, Fallback, Lookup, Scope, not_found, scope};
@@ -156,10 +157,23 @@ async fn server() -> u16 {
     port
 }
 
+struct Here(Fallback);
+
+impl Resolve for Here {
+    fn resolve(&self, name: Name) -> Resolving {
+        let found = self.0.resolve(name);
+        Box::pin(async move {
+            let addrs: Vec<SocketAddr> = found.await?.map(|_| ([127, 0, 0, 1], 0).into()).collect();
+            let addrs: Addrs = Box::new(addrs.into_iter());
+            Ok(addrs)
+        })
+    }
+}
+
 async fn fetch(resolver: &Fallback, host: &str, port: u16) -> Result<String, wreq::Error> {
     let client = wreq::Client::builder()
         .no_proxy()
-        .dns_resolver(Arc::new(resolver.clone()))
+        .dns_resolver(Arc::new(Here(resolver.clone())))
         .connect_timeout(Duration::from_secs(2))
         .build()
         .unwrap();
@@ -207,13 +221,16 @@ async fn a_garbage_answer_falls_back_to_doh_and_is_cached() {
     let (sys_calls, doh_calls) = (Calls::default(), Calls::default());
     let resolver = fallback(
         system(Ok(ips(&["0.0.0.0"])), 0, &sys_calls),
-        doh(Ok(ips(&["127.0.0.1"])), 60, &doh_calls),
+        doh(Ok(ips(&["188.165.221.195"])), 60, &doh_calls),
     );
     let host = "status.soundcloud-desktop.fun";
     assert_eq!(fetch(&resolver, host, port).await.unwrap(), "ok");
     assert_eq!(fetch(&resolver, host, port).await.unwrap(), "ok");
     assert_eq!(sys_calls.count(), 1);
-    assert_eq!(resolver.lookup(host).await.unwrap(), ips(&["127.0.0.1"]));
+    assert_eq!(
+        resolver.lookup(host).await.unwrap(),
+        ips(&["188.165.221.195"])
+    );
     tokio::time::sleep(Duration::from_millis(50)).await;
     assert_eq!(
         doh_calls.count(),
@@ -228,7 +245,7 @@ async fn a_known_name_without_an_answer_asks_doh() {
     for answer in [nxdomain(), temporary()] {
         let resolver = fallback(
             system(answer, 0, &Calls::default()),
-            doh(Ok(ips(&["127.0.0.1"])), 60, &Calls::default()),
+            doh(Ok(ips(&["188.165.221.195"])), 60, &Calls::default()),
         );
         assert_eq!(
             fetch(&resolver, "api.scnative.space", port).await.unwrap(),
@@ -315,8 +332,8 @@ async fn a_local_name_never_asks_doh() {
 async fn a_hanging_system_resolver_gives_way_to_doh_within_a_second() {
     let port = server().await;
     let resolver = fallback(
-        system(Ok(ips(&["127.0.0.1"])), 5_000, &Calls::default()),
-        doh(Ok(ips(&["127.0.0.1"])), 60, &Calls::default()),
+        system(Ok(ips(&["188.165.221.195"])), 5_000, &Calls::default()),
+        doh(Ok(ips(&["188.165.221.195"])), 60, &Calls::default()),
     );
     let started = std::time::Instant::now();
     assert_eq!(
@@ -378,17 +395,99 @@ async fn when_both_fail_the_request_carries_a_dns_error() {
 }
 
 #[tokio::test]
-async fn a_doh_answer_drops_only_unspecified_addresses() {
+async fn a_doh_answer_for_our_names_drops_garbage() {
+    let answer = ips(&[
+        "0.0.0.0",
+        "10.0.0.7",
+        "127.0.0.1",
+        "2.26.93.81",
+        "188.165.221.195",
+        "1.2.3.4",
+    ]);
     let resolver = fallback(
         system(nxdomain(), 0, &Calls::default()),
-        doh(
-            Ok(ips(&["0.0.0.0", "10.0.0.7", "188.165.221.195", "1.2.3.4"])),
-            60,
-            &Calls::default(),
-        ),
+        doh(Ok(answer.clone()), 60, &Calls::default()),
     );
     let found = resolver.lookup("api.scnative.space").await.unwrap();
-    assert_eq!(found, ips(&["10.0.0.7", "188.165.221.195"]));
+    assert_eq!(found, ips(&["188.165.221.195", "1.2.3.4"]));
+
+    let resolver = fallback(
+        system(Ok(ips(&["0.0.0.0"])), 0, &Calls::default()),
+        doh(Ok(answer), 60, &Calls::default()),
+    );
+    let found = resolver.lookup("example.com").await.unwrap();
+    assert_eq!(found, ips(&["10.0.0.7", "127.0.0.1"]));
+}
+
+fn flipped(good: &Arc<AtomicBool>, calls: &Calls) -> Lookup<DohAnswer> {
+    let good = good.clone();
+    let calls = calls.clone();
+    Arc::new(move |_| {
+        calls.0.fetch_add(1, Ordering::SeqCst);
+        let addrs = if good.load(Ordering::SeqCst) {
+            ips(&["188.165.221.195"])
+        } else {
+            ips(&["2.26.93.81", "10.0.0.1"])
+        };
+        async move {
+            Ok(DohAnswer {
+                addrs,
+                ttl: 60,
+                provider: "test",
+            })
+        }
+        .boxed()
+    })
+}
+
+#[tokio::test(start_paused = true)]
+async fn a_garbage_doh_answer_for_our_name_is_a_failure_and_keeps_the_stale_entry() {
+    let good = Arc::new(AtomicBool::new(true));
+    let doh_calls = Calls::default();
+    let resolver = fallback(
+        system(Ok(ips(&["2.26.93.81"])), 0, &Calls::default()),
+        flipped(&good, &doh_calls),
+    );
+    let host = "api.scnative.space";
+    let expected = ips(&["188.165.221.195"]);
+    assert_eq!(resolver.lookup(host).await.unwrap(), expected);
+    good.store(false, Ordering::SeqCst);
+    tokio::time::advance(Duration::from_secs(61)).await;
+    assert_eq!(resolver.lookup(host).await.unwrap(), expected);
+    tokio::time::advance(Duration::from_secs(3700)).await;
+    let error = resolver.lookup(host).await.unwrap_err();
+    assert_eq!(error.kind, FailKind::DnsBogus);
+    assert!(
+        error.reason.contains("test answered 2.26.93.81"),
+        "{}",
+        error.reason
+    );
+
+    let fresh = fallback(
+        system(nxdomain(), 0, &Calls::default()),
+        flipped(&good, &Calls::default()),
+    );
+    let error = fresh.lookup(host).await.unwrap_err();
+    assert_eq!(error.kind, FailKind::Dns);
+}
+
+#[tokio::test]
+async fn a_check_that_gets_garbage_from_doh_keeps_trusting_the_zone() {
+    for answer in [
+        &["2.26.93.81"][..],
+        &["10.0.0.1"],
+        &["127.0.0.1", "0.0.0.0"],
+    ] {
+        let resolver = fallback(
+            system(Ok(ips(&["5.45.192.1"])), 0, &Calls::default()),
+            doh(Ok(ips(answer)), 60, &Calls::default()),
+        );
+        let host = "api.scnative.space";
+        resolver.lookup(host).await.unwrap();
+        assert!(!suspicion(&resolver, host).await, "{answer:?}");
+        assert!(!distrusted(&resolver), "{answer:?}");
+        assert_eq!(resolver.lookup(host).await.unwrap(), ips(&["5.45.192.1"]));
+    }
 }
 
 #[tokio::test]

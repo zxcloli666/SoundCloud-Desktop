@@ -5,8 +5,8 @@ use futures_util::FutureExt;
 use futures_util::stream::{self, StreamExt};
 use tokio::time::Instant;
 
-use super::fallback::{Fallback, capped, listed, trusted};
-use super::{spawn, wire};
+use super::fallback::{Fallback, capped, listed, usable};
+use super::{Scope, spawn, wire};
 use crate::app::diagnostics;
 
 const MISMATCH_DISTRUST: Duration = Duration::from_secs(1800);
@@ -120,7 +120,7 @@ impl Fallback {
         let Ok(answer) = (self.0.config.doh)(host.to_string()).await else {
             return false;
         };
-        let doh = trusted(answer.addrs);
+        let doh = usable(Scope::Ours, &answer.addrs);
         if doh.is_empty() || doh.iter().any(|ip| system.contains(ip)) {
             return false;
         }
