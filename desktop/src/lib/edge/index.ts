@@ -153,11 +153,17 @@ export function edgeProbe(url: string, hopTimeoutMs: number): Promise<ProbeOutco
         settle();
         if (at === 0) startBackups();
       };
-      fetchWhole(hop.url, init, hopTimeoutMs).then(({ res }) => {
-        if (hopUsable(hop, res)) finish({ kind: 'answered', status: res.status, tier: hop.tier });
-        else transport = true;
-        over();
-      }, over);
+      fetchWhole(hop.url, init, hopTimeoutMs).then(
+        ({ res }) => {
+          if (hopUsable(hop, res)) finish({ kind: 'answered', status: res.status, tier: hop.tier });
+          else transport = true;
+          over();
+        },
+        (error) => {
+          if (isBodyCut(error)) transport = true;
+          over();
+        },
+      );
     };
     start(0);
     if (hops.length > 1) backupTimer = setTimeout(startBackups, BACKUP_DELAY_MS);
