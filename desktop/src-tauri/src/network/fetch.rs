@@ -14,8 +14,8 @@ use crate::network::{dns, system_proxy};
 
 const CONNECT_TIMEOUT: Duration = Duration::from_secs(10);
 const BODY_STALL: Duration = Duration::from_secs(10);
-const PING_AFTER_SILENCE: Duration = Duration::from_secs(5);
-const PING_TIMEOUT: Duration = Duration::from_secs(5);
+const PING_AFTER_SILENCE: Duration = Duration::from_secs(2);
+const PING_TIMEOUT: Duration = Duration::from_secs(3);
 const IDLE_PER_HOST: usize = 8;
 const MAX_REDIRECTS: usize = 10;
 const MAX_MESSAGE: usize = 400;

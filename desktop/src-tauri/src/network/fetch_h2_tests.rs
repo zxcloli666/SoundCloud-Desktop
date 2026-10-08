@@ -66,27 +66,52 @@ async fn answer(
     write_frame(socket, DATA, flags, stream, body).await
 }
 
-async fn serve(mut socket: TcpStream, freeze: bool) {
+#[derive(Clone, Copy)]
+enum Mode {
+    Healthy,
+    Freeze,
+    Slow(Duration),
+}
+
+async fn serve(mut socket: TcpStream, mode: Mode) {
     let mut preface = [0u8; PREFACE];
     if socket.read_exact(&mut preface).await.is_err()
         || write_frame(&mut socket, SETTINGS, 0, 0, &[]).await.is_err()
     {
         return;
     }
-    while let Some(frame) = read_frame(&mut socket).await {
-        let sent = match frame.kind {
-            SETTINGS if frame.flags & ACK == 0 => {
+    let mut late: Option<(u32, tokio::time::Instant)> = None;
+    loop {
+        let due = late.map(|(_, at)| at);
+        let frame = tokio::select! {
+            frame = read_frame(&mut socket) => frame,
+            () = tokio::time::sleep_until(due.unwrap_or_else(tokio::time::Instant::now)), if due.is_some() => {
+                if let Some((stream, _)) = late.take()
+                    && answer(&mut socket, stream, b"ok", true).await.is_err()
+                {
+                    return;
+                }
+                continue;
+            }
+        };
+        let Some(frame) = frame else { return };
+        let sent = match (frame.kind, mode) {
+            (SETTINGS, _) if frame.flags & ACK == 0 => {
                 write_frame(&mut socket, SETTINGS, ACK, 0, &[]).await
             }
-            PING if frame.flags & ACK == 0 => {
+            (PING, _) if frame.flags & ACK == 0 => {
                 write_frame(&mut socket, PING, ACK, 0, &frame.payload).await
             }
-            HEADERS if freeze => {
+            (HEADERS, Mode::Freeze) => {
                 let _ = answer(&mut socket, frame.stream, b"partial", false).await;
                 tokio::time::sleep(Duration::from_secs(120)).await;
                 return;
             }
-            HEADERS => answer(&mut socket, frame.stream, b"ok", true).await,
+            (HEADERS, Mode::Slow(delay)) => {
+                late = Some((frame.stream, tokio::time::Instant::now() + delay));
+                Ok(())
+            }
+            (HEADERS, Mode::Healthy) => answer(&mut socket, frame.stream, b"ok", true).await,
             _ => Ok(()),
         };
         if sent.is_err() {
@@ -95,15 +120,19 @@ async fn serve(mut socket: TcpStream, freeze: bool) {
     }
 }
 
-async fn freezing_server() -> (String, Arc<AtomicUsize>) {
+async fn h2_server(first: Mode) -> (String, Arc<AtomicUsize>) {
     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
     let addr = listener.local_addr().unwrap();
     let accepted = Arc::new(AtomicUsize::new(0));
     let counter = accepted.clone();
     tokio::spawn(async move {
         while let Ok((socket, _)) = listener.accept().await {
-            let first = counter.fetch_add(1, Ordering::SeqCst) == 0;
-            tokio::spawn(serve(socket, first));
+            let mode = if counter.fetch_add(1, Ordering::SeqCst) == 0 {
+                first
+            } else {
+                Mode::Healthy
+            };
+            tokio::spawn(serve(socket, mode));
         }
     });
     (format!("http://{addr}/health"), accepted)
@@ -129,7 +158,7 @@ fn get(url: &str) -> FetchRequest {
 
 #[tokio::test]
 async fn a_frozen_h2_connection_is_dropped_and_later_requests_get_a_fresh_one() {
-    let (url, accepted) = freezing_server().await;
+    let (url, accepted) = h2_server(Mode::Freeze).await;
     let client = h2_client();
     let started = Instant::now();
     let ((stalled, _), (queued, _)) = tokio::join!(perform(&client, get(&url)), async {
@@ -145,7 +174,7 @@ async fn a_frozen_h2_connection_is_dropped_and_later_requests_get_a_fresh_one() 
     };
     assert_eq!(error.kind, NetKind::Timeout);
     assert!(
-        started.elapsed() < Duration::from_secs(15),
+        started.elapsed() < Duration::from_secs(6),
         "{:?}",
         started.elapsed()
     );
@@ -163,4 +192,19 @@ async fn a_frozen_h2_connection_is_dropped_and_later_requests_get_a_fresh_one() 
         fresh.elapsed()
     );
     assert_eq!(accepted.load(Ordering::SeqCst), 2);
+}
+
+#[tokio::test]
+async fn a_slow_answer_on_a_live_connection_is_not_cut_by_the_pings() {
+    let (url, accepted) = h2_server(Mode::Slow(Duration::from_secs(7))).await;
+    let client = h2_client();
+    let started = Instant::now();
+    let (head, body) = perform(&client, get(&url)).await;
+    let Head::Answer { status, .. } = head else {
+        panic!("a slow answer must arrive, got {head:?}");
+    };
+    assert_eq!(status, 200);
+    assert_eq!(body, b"ok");
+    assert!(started.elapsed() >= Duration::from_secs(7));
+    assert_eq!(accepted.load(Ordering::SeqCst), 1);
 }
