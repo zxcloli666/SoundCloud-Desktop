@@ -4838,12 +4838,15 @@ dependencies = [
 [[package]]
 name = "sc-fingerprint"
 version = "0.1.0"
-source = "git+https://github.com/zxcloli666/SoundCloud-Backend?rev=f01f48639b3a1d284bba45a523addc51e0942564#f01f48639b3a1d284bba45a523addc51e0942564"
+source = "git+https://github.com/zxcloli666/SoundCloud-Backend?rev=bcbfde2c09f5f56caa4fad6d217177d9ec73aa66#bcbfde2c09f5f56caa4fad6d217177d9ec73aa66"
 dependencies = [
  "dashmap",
+ "futures-util",
+ "http 1.5.0",
  "once_cell",
  "serde_json",
  "thiserror 2.0.18",
+ "tower",
  "tracing",
  "wreq",
  "wreq-util",

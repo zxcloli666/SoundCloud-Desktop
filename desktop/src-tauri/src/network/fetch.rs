@@ -104,7 +104,7 @@ pub fn client() -> Option<&'static wreq::Client> {
     CLIENT
         .get_or_init(|| {
             let (_, emulation) = sc_fingerprint::emulation(None);
-            let builder = wreq::Client::builder().emulation(pinging(emulation));
+            let builder = sc_fingerprint::from_emulation(pinging(emulation));
             configured(system_proxy::follow(builder)).build().ok()
         })
         .as_ref()

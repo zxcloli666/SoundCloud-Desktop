@@ -117,8 +117,7 @@ async fn nodelay_after_a_request(client: wreq::Client, tls: bool) -> Vec<bool> {
 async fn a_tls_connection_sends_without_waiting_for_acks() {
     let (_, emulation) = sc_fingerprint::emulation(None);
     let client = configured(
-        wreq::Client::builder()
-            .emulation(pinging(emulation))
+        sc_fingerprint::from_emulation(pinging(emulation))
             .no_proxy()
             .tls_cert_verification(false),
     )

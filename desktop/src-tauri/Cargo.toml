@@ -28,7 +28,7 @@ base64 = "0.22"
 sha2 = "0.10"
 md-5 = "0.10"
 hex = "0.4"
-sc-fingerprint = { git = "https://github.com/zxcloli666/SoundCloud-Backend", rev = "f01f48639b3a1d284bba45a523addc51e0942564" }
+sc-fingerprint = { git = "https://github.com/zxcloli666/SoundCloud-Backend", rev = "bcbfde2c09f5f56caa4fad6d217177d9ec73aa66" }
 wreq = { version = "0.16.1", features = ["json", "query", "stream", "gzip", "brotli", "deflate", "zstd", "charset", "socks", "multipart"] }
 futures-util = "0.3"
 http = "1"
