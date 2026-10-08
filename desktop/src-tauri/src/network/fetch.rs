@@ -322,3 +322,7 @@ mod tests;
 #[cfg(test)]
 #[path = "fetch_h2_tests.rs"]
 mod h2_tests;
+
+#[cfg(all(test, target_os = "linux"))]
+#[path = "nodelay_tests.rs"]
+mod nodelay_tests;
