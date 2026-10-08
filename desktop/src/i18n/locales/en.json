@@ -573,6 +573,10 @@
         "title": "Your DNS returns a wrong address",
         "hint": "The app works around it. Secure DNS or 1.1.1.1 fixes it for good."
       },
+      "dnsFailed": {
+        "title": "Our servers can't be found",
+        "hint": "Neither your DNS nor secure DNS answers for them."
+      },
       "reset": {
         "title": "Connections are being reset",
         "hint": "Probably zapret, a VPN or the provider's DPI."

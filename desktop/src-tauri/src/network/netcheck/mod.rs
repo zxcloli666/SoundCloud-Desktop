@@ -190,7 +190,7 @@ async fn run(trigger: Trigger, reason: Option<String>) -> NetReport {
     let client = fetch::client();
     let collect = async {
         let mut checks = stream::iter(list.into_iter().enumerate())
-            .map(|(at, target)| async move { (at, targets::check(&target, client).await) })
+            .map(|(at, target)| async move { (at, targets::check(&target, client, trigger).await) })
             .buffer_unordered(PARALLEL);
         while let Some((at, mut check)) = checks.next().await {
             scrub::target(&mut check);
@@ -201,7 +201,14 @@ async fn run(trigger: Trigger, reason: Option<String>) -> NetReport {
         }
     };
     let environment = tokio::time::timeout(ENV_BUDGET, env::detect());
-    let ((), doh, env) = tokio::join!(collect, targets::doh_providers(), environment);
+    let providers = async {
+        if targets::direct_allowed(trigger) {
+            targets::doh_providers().await
+        } else {
+            Vec::new()
+        }
+    };
+    let ((), doh, env) = tokio::join!(collect, providers, environment);
     report.doh = doh;
     report.env = env.ok();
     let any_ok = report.targets.iter().any(|target| target.ok);

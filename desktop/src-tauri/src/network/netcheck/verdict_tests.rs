@@ -59,6 +59,7 @@ fn failed_probe(kind: FailKind, phase: Phase) -> PhaseProbe {
 fn healthy(id: TargetId) -> TargetCheck {
     let mut check = TargetCheck::pending(id, None, format!("{}.scnative.space", id.as_str()));
     check.system = answer(&["188.165.221.195"]);
+    check.dns = DnsState::Sane;
     check.probe = Some(passed_probe());
     check.app = Some(AppProbe {
         ok: true,
@@ -187,6 +188,15 @@ fn a_bogus_or_missing_system_answer_is_garbage_only_when_doh_knows_better() {
         DnsState::Failed
     );
     assert_eq!(dns_state(&failed, None, None, None), DnsState::Failed);
+}
+
+#[test]
+fn names_neither_resolver_finds_are_a_failed_dns() {
+    let mut targets = all_broken(FailKind::Dns, Phase::Dns);
+    for target in &mut targets {
+        target.dns = DnsState::Failed;
+    }
+    assert_eq!(judge(&targets), Verdict::DnsFailed);
 }
 
 #[test]
@@ -354,7 +364,7 @@ fn a_probe_without_timestamps_counts_as_timestamps_off() {
             strategy: Some("general (ALT13)".to_string()),
             start: Some(2),
         }],
-        ..EnvInfo::default()
+        ..zapret_env(None, None)
     };
     assert_eq!(
         hint(Verdict::RelayOnly, Some(&env), &targets),
@@ -389,7 +399,7 @@ fn a_linux_config_with_tcp_ts_is_a_ts_strategy() {
 }
 
 #[test]
-fn no_dpi_tool_or_a_disabled_service_hints_nothing() {
+fn without_a_running_dpi_tool_there_is_no_hint() {
     let targets = all_broken(FailKind::Reset, Phase::Tls);
     assert_eq!(
         hint(Verdict::Reset, Some(&EnvInfo::default()), &targets),
@@ -405,6 +415,15 @@ fn no_dpi_tool_or_a_disabled_service_hints_nothing() {
         ..EnvInfo::default()
     };
     assert_eq!(hint(Verdict::Reset, Some(&disabled), &targets), Hint::None);
+    let stopped = EnvInfo {
+        services: vec![ServiceInfo {
+            name: "zapret".to_string(),
+            start: Some(2),
+            ..ServiceInfo::default()
+        }],
+        ..EnvInfo::default()
+    };
+    assert_eq!(hint(Verdict::Reset, Some(&stopped), &targets), Hint::None);
     let driver_only = EnvInfo {
         services: vec![ServiceInfo {
             name: "WinDivert".to_string(),
@@ -425,6 +444,7 @@ fn other_verdicts_get_no_hint() {
     for verdict in [
         Verdict::Ok,
         Verdict::Dns,
+        Verdict::DnsFailed,
         Verdict::Cert,
         Verdict::Down,
         Verdict::Partial,
@@ -480,6 +500,18 @@ fn a_garbage_answer_warns_in_the_dns_cell() {
     assert_eq!(
         cells(&target),
         [Tone::Fail, Tone::Skip, Tone::Skip, Tone::Fail]
+    );
+}
+
+#[test]
+fn an_unchecked_name_is_skipped_in_the_dns_cell() {
+    let mut target = healthy(TargetId::Main);
+    target.dns = DnsState::Unchecked;
+    target.proxied = true;
+    target.probe = None;
+    assert_eq!(
+        cells(&target),
+        [Tone::Skip, Tone::Skip, Tone::Skip, Tone::Ok]
     );
 }
 

@@ -1,4 +1,4 @@
-use super::env::{ZAPRET_SERVICES, uses_ts_fooling};
+use super::env::uses_ts_fooling;
 use super::model::{
     DnsAnswer, DnsState, EnvInfo, Hint, Internet, PhaseProbe, Remote, TargetCheck, TargetId, Tone,
     Verdict,
@@ -6,7 +6,6 @@ use super::model::{
 use crate::network::dns;
 use crate::network::fail::{FailKind, Phase};
 
-const DISABLED_START: u32 = 4;
 const TS_CONFIG_KEYS: [&str; 2] = ["NFQWS_OPT", "NFQWS2_OPT"];
 
 pub fn verdict(targets: &[TargetCheck], internet: Internet, remote: Remote) -> Verdict {
@@ -59,7 +58,7 @@ fn tally(targets: &[TargetCheck]) -> Verdict {
     } else if status > 0 {
         Verdict::Down
     } else if dns > 0 {
-        Verdict::Dns
+        Verdict::DnsFailed
     } else {
         Verdict::Unknown
     }
@@ -118,18 +117,9 @@ pub fn hint(verdict: Verdict, env: Option<&EnvInfo>, targets: &[TargetCheck]) ->
     ) {
         return Hint::None;
     }
-    let Some(env) = env else {
+    let Some(env) = env.filter(|env| !env.dpi.is_empty()) else {
         return Hint::None;
     };
-    let service = env.services.iter().any(|service| {
-        service.start != Some(DISABLED_START)
-            && ZAPRET_SERVICES
-                .iter()
-                .any(|name| name.eq_ignore_ascii_case(&service.name))
-    });
-    if env.dpi.is_empty() && !service {
-        return Hint::None;
-    }
     if ts_strategy(env) && timestamps_off(env, targets) {
         Hint::ZapretTimestamps
     } else {
@@ -205,6 +195,7 @@ pub fn cells(check: &TargetCheck) -> [Tone; 4] {
         DnsState::Sane => Tone::Ok,
         DnsState::Garbage | DnsState::Spoofed => Tone::Warn,
         DnsState::Failed => Tone::Fail,
+        DnsState::Unchecked => Tone::Skip,
     };
     let app_ok = check.app.as_ref().map(|app| app.ok);
     let app_tone = match app_ok {

@@ -18,7 +18,7 @@ use self::linux as os;
 use self::macos as os;
 #[cfg(windows)]
 use self::windows as os;
-use super::model::EnvInfo;
+use super::model::{DpiTool, EnvInfo};
 #[cfg(any(target_os = "linux", test))]
 use super::scrub::capped;
 use crate::network::system_proxy;
@@ -34,13 +34,6 @@ const DPI_TOOLS: [&str; 10] = [
     "ciadpi",
     "byedpi",
     "spoofdpi",
-];
-pub const ZAPRET_SERVICES: [&str; 5] = [
-    "zapret",
-    "winws1",
-    "winws2",
-    "GoodbyeDPI",
-    "discordfix_zapret",
 ];
 const VPN_PREFIXES: [&str; 8] = [
     "tun",
@@ -79,6 +72,7 @@ const ZAPRET_KEYS: [&str; 10] = [
     "DISABLE_IPV6",
 ];
 const PROXY_PROBE: &str = "https://api.scnative.space/";
+const MAX_DPI: usize = 4;
 
 #[cfg(not(any(target_os = "linux", target_os = "macos", windows)))]
 mod os {
@@ -89,6 +83,7 @@ mod os {
 
 pub async fn detect() -> EnvInfo {
     let mut info = os::detect().await;
+    info.dpi = distinct(info.dpi);
     info.proxy = system_proxy::proxied(PROXY_PROBE);
     info.env_proxy = system_proxy::env_proxy_names();
     info.vpn = vpn_interfaces();
@@ -114,6 +109,16 @@ fn routable(ip: IpAddr) -> bool {
         IpAddr::V4(v4) => !v4.is_loopback() && !v4.is_link_local(),
         IpAddr::V6(v6) => !v6.is_loopback() && (v6.segments()[0] & 0xFFC0) != 0xFE80,
     }
+}
+
+pub fn distinct(tools: Vec<DpiTool>) -> Vec<DpiTool> {
+    let mut kept: Vec<DpiTool> = Vec::new();
+    for tool in tools {
+        if kept.len() < MAX_DPI && !kept.contains(&tool) {
+            kept.push(tool);
+        }
+    }
+    kept
 }
 
 pub fn tool_for(process_name: &str) -> Option<&'static str> {

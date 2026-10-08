@@ -52,6 +52,7 @@ pub enum Verdict {
     Partial,
     RelayOnly,
     Dns,
+    DnsFailed,
     Reset,
     Timeout,
     Cert,
@@ -111,6 +112,7 @@ pub enum DnsState {
     Garbage,
     Spoofed,
     Failed,
+    Unchecked,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -286,6 +288,7 @@ impl Verdict {
             Self::Partial => "partial",
             Self::RelayOnly => "relay-only",
             Self::Dns => "dns",
+            Self::DnsFailed => "dns-failed",
             Self::Reset => "reset",
             Self::Timeout => "timeout",
             Self::Cert => "cert",
@@ -344,7 +347,7 @@ impl TargetCheck {
             proxied: false,
             system: DnsAnswer::default(),
             doh: None,
-            dns: DnsState::Sane,
+            dns: DnsState::Unchecked,
             probe: None,
             doh_probe: None,
             app: None,

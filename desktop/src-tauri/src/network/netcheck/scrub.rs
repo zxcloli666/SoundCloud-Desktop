@@ -1,9 +1,13 @@
+use std::net::{IpAddr, Ipv6Addr};
+
 use crate::app::log_sink;
 
 use super::model::{DnsAnswer, EnvInfo, NetReport, PhaseProbe, TargetCheck};
 use crate::network::fail::Fail;
 
 const MAX_VALUE: usize = 2048;
+const MAX_VPN: usize = 3;
+const MAX_VPN_NAME: usize = 32;
 const USER_DIRS: [&str; 3] = ["\\users\\", "/home/", "/users/"];
 
 pub fn capped(text: &str) -> String {
@@ -121,6 +125,35 @@ fn env(env: &mut EnvInfo) {
         }
     }
     env.notes = env.notes.iter().map(|note| value(note)).collect();
+    env.vpn = env
+        .vpn
+        .iter()
+        .take(MAX_VPN)
+        .map(|name| value(name).chars().take(MAX_VPN_NAME).collect())
+        .collect();
+    let mut servers: Vec<IpAddr> = Vec::new();
+    for ip in env.dns_servers.iter().map(|ip| resolver(*ip)) {
+        if !servers.contains(&ip) {
+            servers.push(ip);
+        }
+    }
+    env.dns_servers = servers;
+}
+
+pub fn resolver(ip: IpAddr) -> IpAddr {
+    let IpAddr::V6(v6) = ip else { return ip };
+    if let Some(v4) = v6.to_ipv4_mapped() {
+        return IpAddr::V4(v4);
+    }
+    let [first, second, ..] = v6.segments();
+    let kept = if first & 0xFFC0 == 0xFE80 {
+        [0xFE80, 0]
+    } else if first & 0xFE00 == 0xFC00 {
+        [first & 0xFF00, 0]
+    } else {
+        [first, second]
+    };
+    IpAddr::V6(Ipv6Addr::new(kept[0], kept[1], 0, 0, 0, 0, 0, 0))
 }
 
 pub fn target(target: &mut TargetCheck) {
@@ -150,7 +183,48 @@ pub fn report(report: &mut NetReport) {
 
 #[cfg(test)]
 mod tests {
-    use super::{capped, mask_users, scrub, value};
+    use std::net::IpAddr;
+
+    use super::{capped, env, mask_users, resolver, scrub, value};
+    use crate::network::netcheck::model::EnvInfo;
+
+    fn ip(text: &str) -> IpAddr {
+        text.parse().unwrap()
+    }
+
+    #[test]
+    fn v6_resolvers_keep_only_their_network() {
+        let table = [
+            ("192.168.1.1", "192.168.1.1"),
+            ("2a02:6b8:0:1::feed", "2a02:6b8::"),
+            ("2001:4860:4860::8888", "2001:4860::"),
+            ("fe80::1a2b:3cff:fe4d:5e6f", "fe80::"),
+            ("fd12:3456:789a::1", "fd00::"),
+            ("::ffff:10.0.0.1", "10.0.0.1"),
+        ];
+        for (raw, shown) in table {
+            assert_eq!(resolver(ip(raw)), ip(shown), "{raw}");
+        }
+    }
+
+    #[test]
+    fn vpn_names_are_scrubbed_short_and_few() {
+        let mut info = EnvInfo {
+            vpn: vec![
+                "WireGuard Tunnel: C:\\Users\\Ivan\\home.conf and a very long tail".to_string(),
+                "wg1".to_string(),
+                "tun0".to_string(),
+                "utun3".to_string(),
+            ],
+            dns_servers: vec![ip("2a02:6b8:0:1::1"), ip("1.1.1.1"), ip("2a02:6b8:0:2::1")],
+            ..EnvInfo::default()
+        };
+        env(&mut info);
+        assert_eq!(info.vpn.len(), 3);
+        assert!(info.vpn.iter().all(|name| name.chars().count() <= 32));
+        assert!(!info.vpn[0].contains("Ivan"), "{}", info.vpn[0]);
+        assert_eq!(info.dns_servers, vec![ip("2a02:6b8::"), ip("1.1.1.1")]);
+    }
 
     #[test]
     fn user_folders_lose_the_user_name() {

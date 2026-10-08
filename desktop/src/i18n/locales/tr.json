@@ -507,6 +507,10 @@
         "title": "DNS'iniz yanlış adres veriyor",
         "hint": "Uygulama bunu kendisi aşıyor. Kalıcı çözüm: güvenli DNS ya da 1.1.1.1."
       },
+      "dnsFailed": {
+        "title": "Sunucularımız bulunamıyor",
+        "hint": "Ne DNS'iniz ne de güvenli DNS onlar için yanıt veriyor."
+      },
       "reset": {
         "title": "Bağlantılar kesiliyor",
         "hint": "Büyük ihtimalle zapret, bir VPN ya da sağlayıcının DPI sistemi."

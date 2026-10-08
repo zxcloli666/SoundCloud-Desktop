@@ -4,9 +4,16 @@ use std::time::Duration;
 
 use windows_registry::LOCAL_MACHINE;
 
-use super::{ZAPRET_SERVICES, netsh_timestamps, tool_for};
+use super::{netsh_timestamps, tool_for};
 use crate::network::netcheck::model::{DpiTool, EnvInfo, ServiceInfo};
 
+const ZAPRET_SERVICES: [&str; 5] = [
+    "zapret",
+    "winws1",
+    "winws2",
+    "GoodbyeDPI",
+    "discordfix_zapret",
+];
 const DRIVER_SERVICES: [&str; 2] = ["WinDivert", "WinDivert14"];
 const STRATEGY_VALUES: [&str; 2] = ["zapret-discord-youtube", "Zapret2NextStrategy"];
 const NETSH_TIMEOUT: Duration = Duration::from_secs(3);

@@ -1,9 +1,10 @@
 use std::net::IpAddr;
 
 use super::{
-    cmdline, hidepid, netsh_timestamps, parse_resolv_conf, parse_zapret_config, sysctl_timestamps,
-    tool_for, uses_ts_fooling, vpn_like,
+    cmdline, distinct, hidepid, netsh_timestamps, parse_resolv_conf, parse_zapret_config,
+    sysctl_timestamps, tool_for, uses_ts_fooling, vpn_like,
 };
+use crate::network::netcheck::model::DpiTool;
 
 const ZAPRET_V1: &str = r#"
 # this file is included from init scripts
@@ -180,4 +181,25 @@ fn ts_fooling_is_found_in_both_syntaxes() {
     assert!(uses_ts_fooling("--lua-desync=fake:blob=x:tcp_ts=-1000"));
     assert!(!uses_ts_fooling("--dpi-desync=fake,multidisorder"));
     assert!(!uses_ts_fooling("--lua-desync=fake:blob=x:tcp_seq=-10000"));
+}
+
+#[test]
+fn repeated_dpi_processes_are_listed_once_and_few() {
+    let tool = |name: &str, args: &str| DpiTool {
+        name: name.to_string(),
+        args: Some(args.to_string()),
+    };
+    let tools = vec![
+        tool("nfqws", "--qnum=200"),
+        tool("nfqws", "--qnum=200"),
+        tool("nfqws", "--qnum=201"),
+        tool("tpws", "--port=988"),
+        tool("nfqws", "--qnum=202"),
+        tool("nfqws", "--qnum=203"),
+    ];
+    let kept = distinct(tools);
+    assert_eq!(kept.len(), 4);
+    assert_eq!(kept[0], tool("nfqws", "--qnum=200"));
+    assert_eq!(kept[1], tool("nfqws", "--qnum=201"));
+    assert_eq!(kept[2], tool("tpws", "--port=988"));
 }

@@ -5,6 +5,7 @@ use futures_util::future::join_all;
 
 use super::model::{
     AppProbe, DnsAnswer, DohProbe, Internet, PhaseProbe, Remote, TargetCheck, TargetId, Tone,
+    Trigger,
 };
 use super::paths::millis;
 use super::phases::{self, Budget, Tls};
@@ -59,8 +60,8 @@ pub fn targets() -> Vec<Target> {
     core.chain(relays).collect()
 }
 
-pub async fn check(target: &Target, app: Option<&wreq::Client>) -> TargetCheck {
-    match tokio::time::timeout(TARGET_CAP, inspect(target, app)).await {
+pub async fn check(target: &Target, app: Option<&wreq::Client>, trigger: Trigger) -> TargetCheck {
+    match tokio::time::timeout(TARGET_CAP, inspect(target, app, trigger)).await {
         Ok(check) => check,
         Err(_) => {
             let mut check = target.pending();
@@ -74,10 +75,13 @@ pub async fn check(target: &Target, app: Option<&wreq::Client>) -> TargetCheck {
     }
 }
 
-async fn inspect(target: &Target, app: Option<&wreq::Client>) -> TargetCheck {
+async fn inspect(target: &Target, app: Option<&wreq::Client>, trigger: Trigger) -> TargetCheck {
     let host = target.host.as_str();
     let url = format!("https://{host}{HEALTH_PATH}");
     let proxied = system_proxy::proxied(&url);
+    if proxied && trigger == Trigger::Auto {
+        return through_proxy(target, app, &url).await;
+    }
     let (system, doh) = tokio::join!(system_answer(host), doh_answer(host));
     let system_ip = system.addrs.iter().copied().find(|ip| !dns::garbage(*ip));
     let doh_ip = doh.addrs.first().copied();
@@ -132,6 +136,21 @@ async fn inspect(target: &Target, app: Option<&wreq::Client>) -> TargetCheck {
     };
     check.cells = verdict::cells(&check);
     check
+}
+
+async fn through_proxy(target: &Target, app: Option<&wreq::Client>, url: &str) -> TargetCheck {
+    let app = app_path(app, url).await;
+    let mut check = target.pending();
+    check.proxied = true;
+    check.ok = app.as_ref().is_some_and(|app| app.ok);
+    check.total_ms = total(None, app.as_ref());
+    check.app = app;
+    check.cells = verdict::cells(&check);
+    check
+}
+
+pub fn direct_allowed(trigger: Trigger) -> bool {
+    trigger == Trigger::Manual || !system_proxy::proxied(&format!("https://{DOH_SAMPLE_HOST}/"))
 }
 
 fn total(probe: Option<&PhaseProbe>, app: Option<&AppProbe>) -> Option<u32> {
@@ -334,7 +353,7 @@ pub fn remote_of(payload: Option<&serde_json::Value>) -> Remote {
 mod tests {
     use serde_json::json;
 
-    use super::{Target, remote_of, targets, total};
+    use super::{Target, remote_of, targets, total, verdict};
     use crate::network::netcheck::model::{AppProbe, PhaseProbe, Remote, TargetId, Tone};
 
     #[test]
@@ -367,6 +386,7 @@ mod tests {
             host: "api.scnative.space".to_string(),
         };
         assert_eq!(target.pending().cells, [Tone::Pending; 4]);
+        assert_eq!(verdict::cells(&target.pending())[0], Tone::Skip);
     }
 
     #[test]

@@ -9,6 +9,7 @@ export type Verdict =
   | 'partial'
   | 'relayOnly'
   | 'dns'
+  | 'dnsFailed'
   | 'reset'
   | 'timeout'
   | 'cert'
@@ -21,7 +22,7 @@ export type Internet = 'online' | 'offline' | 'unknown';
 export type Trigger = 'manual' | 'auto';
 export type TargetId = 'main' | 'star' | 'storage' | 'images' | 'relay';
 export type Tone = 'ok' | 'warn' | 'fail' | 'skip' | 'pending';
-export type DnsState = 'sane' | 'garbage' | 'spoofed' | 'failed';
+export type DnsState = 'sane' | 'garbage' | 'spoofed' | 'failed' | 'unchecked';
 export type Role = 'primary' | 'failover' | 'hedge';
 export type Phase = 'dns' | 'tcp' | 'tls' | 'firstByte';
 export type FailKind =

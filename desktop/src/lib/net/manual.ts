@@ -15,7 +15,14 @@ export const HEALTH_HOST = 'api.scnative.space';
 
 const HEALTH_URL = `https://${HEALTH_HOST}/health`;
 const NSLOOKUP = `nslookup ${HEALTH_HOST}; nslookup ${HEALTH_HOST} 1.1.1.1`;
-const MANUAL: ReadonlySet<Verdict> = new Set(['dns', 'reset', 'timeout', 'cert', 'unknown']);
+const MANUAL: ReadonlySet<Verdict> = new Set([
+  'dns',
+  'dnsFailed',
+  'reset',
+  'timeout',
+  'cert',
+  'unknown',
+]);
 const SHOWN_ADDRS = 2;
 const PHASE_BUDGET_MS = 5_000;
 
@@ -65,6 +72,8 @@ function dnsDetail(t: TFunction, target: TargetCheck): string {
         : t('netCheck.detail.dnsMismatch', { system: t('netCheck.detail.dnsFail'), doh });
     case 'failed':
       return t('netCheck.detail.dnsFail');
+    case 'unchecked':
+      return t(target.proxied ? 'netCheck.detail.proxy' : 'netCheck.detail.skip');
   }
 }
 

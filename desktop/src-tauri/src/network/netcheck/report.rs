@@ -292,6 +292,7 @@ fn dns_state(state: DnsState) -> &'static str {
         DnsState::Garbage => "garbage",
         DnsState::Spoofed => "spoofed",
         DnsState::Failed => "failed",
+        DnsState::Unchecked => "unchecked",
     }
 }
 
