@@ -1,11 +1,17 @@
 use std::path::PathBuf;
 use std::sync::OnceLock;
+use std::time::Instant;
 
 use base64::{engine::general_purpose::STANDARD as BASE64, Engine as _};
 use sha2::{Digest, Sha256};
 use tokio::fs;
 
+use crate::network::fail;
+use crate::network::netcheck::model::Role;
+use crate::network::netcheck::paths;
 use crate::shared::constants::is_domain_whitelisted;
+
+const SOURCE: &str = "proxy";
 
 pub struct State {
     pub assets_dir: PathBuf,
@@ -158,7 +164,11 @@ pub async fn proxy_request(encoded: &str) -> ProxyResult {
     let mut status = 502u16;
     let mut data: Vec<u8> = Vec::new();
 
-    for hop in crate::network::edge::expand_upstreams(upstreams) {
+    let hops = crate::network::edge::expand_upstreams(upstreams);
+    for (index, hop) in hops.into_iter().enumerate() {
+        let started = Instant::now();
+        let role = Role::of_index(index);
+        let record = |outcome| paths::record(&hop, role, outcome, started.elapsed(), SOURCE);
         // `direct` = fetch the target ourselves with a browser User-Agent
         // (hosts like wallhaven/konachan 403 a non-browser UA). Otherwise relay
         // the request to the proxy upstream via the X-Target header.
@@ -175,7 +185,8 @@ pub async fn proxy_request(encoded: &str) -> ProxyResult {
         };
         let resp = match builder.send().await {
             Ok(r) => r,
-            Err(_) => {
+            Err(error) => {
+                record(Err(fail::of_wreq(&error)));
                 hop.note(false);
                 continue;
             }
@@ -183,16 +194,19 @@ pub async fn proxy_request(encoded: &str) -> ProxyResult {
 
         status = resp.status().as_u16();
         if !crate::network::edge::hop_ok(&hop, &resp) {
+            record(Ok(status));
             continue;
         }
         match resp.bytes().await {
             Ok(b) => data = b.to_vec(),
-            Err(_) => {
+            Err(error) => {
+                record(Err(fail::of_wreq(&error)));
                 hop.note(false);
                 continue;
             }
         }
 
+        record(Ok(status));
         hop.note(status < 500);
         if status < 500 {
             hop.note_delivered(data.len() as u64);

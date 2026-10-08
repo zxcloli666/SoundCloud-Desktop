@@ -3,11 +3,22 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { BOOSTY_URL, DISCORD_URL, STATUS_PAGE_URL } from '../../lib/constants';
 import { requestProbe, useHostStatusStore } from '../../lib/host-status';
-import { Download, ExternalLink, Globe, RefreshCw, Star, WifiOff, X } from '../../lib/icons';
+import {
+  Activity,
+  Download,
+  ExternalLink,
+  Globe,
+  RefreshCw,
+  Star,
+  WifiOff,
+  X,
+} from '../../lib/icons';
+import { useNetCheckStore } from '../../lib/net/check';
 import { useAppStatusStore } from '../../stores/app-status';
 import { useAuthStore } from '../../stores/auth';
 import { useAuthRecoveryStore } from '../../stores/auth-recovery';
 import { Modal, ModalClose, ModalContent, ModalTitle } from '../ui/Modal';
+import { IconTile } from './IconTile';
 import { outageCopy } from './outage-copy';
 import { RemoteCheck } from './RemoteCheck';
 import { useFailoverUi } from './useFailoverUi';
@@ -27,21 +38,6 @@ function LinkButton({ href, label }: { href: string; label: string }) {
       {label}
       <ExternalLink size={10} />
     </a>
-  );
-}
-
-function IconTile({ children }: { children: React.ReactNode }) {
-  return (
-    <div
-      className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4"
-      style={{
-        background: 'linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))',
-        border: '0.5px solid rgba(255,255,255,0.08)',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
-      }}
-    >
-      {children}
-    </div>
   );
 }
 
@@ -81,6 +77,11 @@ export const HostStatusModal = React.memo(() => {
     navigate('/star');
   };
 
+  const openNetCheck = () => {
+    dismissModal();
+    useNetCheckStore.getState().openCheck();
+  };
+
   return (
     <Modal open={open} onOpenChange={(o) => !o && dismissModal()}>
       <ModalContent size="sm" zClass="z-[95]" showClose={false}>
@@ -111,11 +112,6 @@ export const HostStatusModal = React.memo(() => {
               {t(`hostStatus.${copy}.body`)}
             </p>
             {allDown && <RemoteCheck verdict={remote} />}
-            {(copy === 'blocked' || copy === 'reachable') && (
-              <p className="text-[11.5px] text-white/45 mt-3 leading-relaxed max-w-[300px]">
-                {t('hostStatus.blocked.rule')}
-              </p>
-            )}
             {!allDown && (
               <p className="text-[11.5px] text-white/45 mt-3">{t('hostStatus.starOffer.how')}</p>
             )}
@@ -150,6 +146,14 @@ export const HostStatusModal = React.memo(() => {
             >
               <Download size={14} />
               {t('hostStatus.actions.offlineLibrary')}
+            </button>
+            <button
+              type="button"
+              onClick={openNetCheck}
+              className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] text-[12.5px] text-white/55 hover:text-white/80 transition-all cursor-pointer"
+            >
+              <Activity size={13} />
+              {t('netCheck.open')}
             </button>
             <button
               type="button"

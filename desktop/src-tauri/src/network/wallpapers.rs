@@ -167,7 +167,7 @@ async fn search_wallhaven(a: &WallpaperQuery) -> Result<WallpaperSearchResult, S
     }
 
     let json = send_json(
-        wreq::Client::new()
+        crate::network::dns::client()
             .get("https://wallhaven.cc/api/v1/search")
             .query(&params),
     )
@@ -218,7 +218,7 @@ async fn search_konachan(a: &WallpaperQuery) -> Result<WallpaperSearchResult, St
         tags.push("order:score".to_string());
     }
 
-    let json = send_json(wreq::Client::new().get("https://konachan.com/post.json").query(&[
+    let json = send_json(crate::network::dns::client().get("https://konachan.com/post.json").query(&[
         ("limit", BOORU_LIMIT.to_string()),
         ("page", page.to_string()),
         ("tags", tags.join(" ")),
@@ -254,7 +254,7 @@ async fn search_safebooru(a: &WallpaperQuery) -> Result<WallpaperSearchResult, S
         tags.push("sort:score:desc".to_string());
     }
 
-    let json = send_json(wreq::Client::new().get("https://safebooru.org/index.php").query(&[
+    let json = send_json(crate::network::dns::client().get("https://safebooru.org/index.php").query(&[
         ("page", "dapi".to_string()),
         ("s", "post".to_string()),
         ("q", "index".to_string()),
@@ -303,7 +303,7 @@ async fn search_pinterest(a: &WallpaperQuery) -> Result<WallpaperSearchResult, S
     let source = format!("/search/pins/?q={query}");
 
     let json = send_json(
-        wreq::Client::new()
+        crate::network::dns::client()
             .get("https://www.pinterest.com/resource/BaseSearchResource/get/")
             .query(&[("source_url", source), ("data", data)])
             .header("x-pinterest-pws-handler", "www/search/[scope].js"),

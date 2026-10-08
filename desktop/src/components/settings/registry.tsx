@@ -18,6 +18,7 @@ import {HotkeysCard} from './cards/HotkeysCard';
 import {ImportCard} from './cards/ImportCard';
 import {LanguageCard} from './cards/LanguageCard';
 import {LayoutCard} from './cards/LayoutCard';
+import {NetCheckCard} from './cards/NetCheckCard';
 import {NetworkCard} from './cards/NetworkCard';
 import {NotificationsCard} from './cards/NotificationsCard';
 import {ObsCard} from './cards/obs/ObsCard';
@@ -106,6 +107,7 @@ export const SETTINGS_CATEGORIES: SettingsCategory[] = [
         icon: <Cloud size={17}/>,
         Body: () => (
             <>
+                <NetCheckCard/>
                 <NetworkCard/>
                 <CallProxySection/>
             </>

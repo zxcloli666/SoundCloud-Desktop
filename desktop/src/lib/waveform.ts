@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { fetch as tauriFetch } from '@tauri-apps/plugin-http';
 import type { Track } from '../stores/player';
+import { netFetch } from './net/fetch';
 
 export interface WaveformSamples {
   values: number[];
@@ -25,7 +25,7 @@ async function fetchWaveform(rawUrl: string): Promise<WaveformSamples> {
   const url = normalizeWaveformUrl(rawUrl);
   if (!url) throw new Error('Invalid waveform url');
 
-  const res = await tauriFetch(url, { method: 'GET' });
+  const res = await netFetch(url, { method: 'GET' });
   if (!res.ok) throw new Error(`waveform ${res.status}`);
   const json = (await res.json()) as ScWaveformJson;
 

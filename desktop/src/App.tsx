@@ -8,6 +8,7 @@ import { HostStatusBanner } from './components/host-status/HostStatusBanner';
 import { HostStatusModal } from './components/host-status/HostStatusModal';
 import { AppShell } from './components/layout/AppShell';
 import YMImportFloatingStatus from './components/music/YMImportFloatingStatus';
+import { NetCheckModal } from './components/net-check/NetCheckModal';
 import { SessionRecoveryModal } from './components/SessionRecoveryModal';
 import { ThemeProvider } from './components/ThemeProvider';
 import { ApiError } from './lib/api';
@@ -205,6 +206,7 @@ export default function App() {
         {/* Внутри Router ради navigate('/offline'); видны и над Login (он тоже в Router). */}
         <HostStatusModal />
         <HostStatusBanner />
+        <NetCheckModal />
         {showOfflineOnlyShell ? (
           <Routes>
             <Route element={<AppShell />}>

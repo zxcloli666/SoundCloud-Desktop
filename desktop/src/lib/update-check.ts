@@ -1,6 +1,6 @@
-import { fetch } from '@tauri-apps/plugin-http';
 import i18n from '../i18n';
 import { APP_VERSION, GITHUB_OWNER, GITHUB_REPO, GITHUB_REPO_EN } from './constants';
+import { netFetch } from './net/fetch';
 import { isNewerVersion } from './semver';
 
 export interface GithubAsset {
@@ -24,7 +24,7 @@ function stripLeadingV(version: string) {
 
 async function fetchRelease(repo: string): Promise<GithubRelease | null> {
   const url = `https://api.github.com/repos/${GITHUB_OWNER}/${repo}/releases/latest`;
-  const response = await fetch(url);
+  const response = await netFetch(url);
   return response.ok ? response.json() : null;
 }
 

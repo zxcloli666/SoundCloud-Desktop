@@ -6,6 +6,7 @@
  * 2) Pre-rendered JSX constants — referentially stable, zero cost on re-render.
  */
 import {
+  Activity as _Activity,
   AlertCircle as _AlertCircle,
   ArrowDownAZ as _ArrowDownAZ,
   ArrowDownToLine as _ArrowDownToLine,
@@ -95,6 +96,7 @@ import {
   Send as _Send,
   Settings as _Settings,
   Shield as _Shield,
+  ShieldAlert as _ShieldAlert,
   Shuffle as _Shuffle,
   SkipBack as _SkipBack,
   SkipForward as _SkipForward,
@@ -144,6 +146,7 @@ const SimpleIcon = memo(
 );
 
 // ── Memo-wrapped icon components ────────────────────────────
+export const Activity = memo(_Activity);
 export const AlertCircle = memo(_AlertCircle);
 export const ArrowDownAZ = memo(_ArrowDownAZ);
 export const ArrowDownToLine = memo(_ArrowDownToLine);
@@ -239,6 +242,7 @@ export const Search = memo(_Search);
 export const Send = memo(_Send);
 export const Settings = memo(_Settings);
 export const Shield = memo(_Shield);
+export const ShieldAlert = memo(_ShieldAlert);
 export const Shuffle = memo(_Shuffle);
 export const Smartphone = memo(_Smartphone);
 export const SkipBack = memo(_SkipBack);

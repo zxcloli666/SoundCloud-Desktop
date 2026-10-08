@@ -41,7 +41,7 @@ pub fn start(data_dir: PathBuf, app: crate::rt::AppHandle, runtime: Handle) {
     let app_version = env!("CARGO_PKG_VERSION").to_string();
     let client_id = load_or_create_identity(&data_dir);
     let build = |pooled: bool| {
-        let builder = wreq::Client::builder()
+        let builder = crate::network::dns::install(wreq::Client::builder())
             .no_proxy()
             .user_agent(format!("soundcloud-desktop-health/{app_version}"))
             .connect_timeout(Duration::from_secs(3));
@@ -103,7 +103,7 @@ impl Agent {
 
             let paths = probe::probe_paths(&self.probe_client, &pool, round).await;
             edge::set_pool(probe::usable_first(&pool.relays, &paths), Vec::new());
-            probe::note_direct_cut(&paths);
+            let cut = probe::note_direct_cut(&paths);
             let early = self
                 .delivery
                 .report(&topology, &self.client_id, &self.app_version, &paths)
@@ -124,6 +124,9 @@ impl Agent {
 
             let delivered = early || late;
             let ok = services.iter().filter(|sample| sample.ok).count();
+            if cut || (!services.is_empty() && ok == 0) {
+                crate::network::netcheck::auto("health");
+            }
             log_native(
                 &self.app,
                 if delivered { "INFO" } else { "WARN" },

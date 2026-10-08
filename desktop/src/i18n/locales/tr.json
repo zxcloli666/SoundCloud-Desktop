@@ -452,8 +452,7 @@
     },
     "blocked": {
       "title": "Uygulama sunucularina ulasilamiyor",
-      "body": "Internet calisiyor ama hicbir istek sunucularimiza ulasmiyor, yedek yollar dahil. Bu bizim tarafimizda bir ariza ya da saglayicinin, zapret'in veya bir VPN'in engeli olabilir. Durum sayfasinda her sey yesilse sorun sizin aginizda. Indirilen muzik cevrimdisi kitaplikta kullanilabilir.",
-      "rule": "Uygulama zapret kapaliyken calisiyorsa scnative.space'i list-exclude'a ekleyin. Saglayiciniz engelliyorsa scnative.space'i list-general'a ekleyin: bu *.relay.scnative.space'i de kapsar."
+      "body": "Internet calisiyor ama hicbir istek sunucularimiza ulasmiyor, yedek yollar dahil. Bu bizim tarafimizda bir ariza ya da saglayicinin, zapret'in veya bir VPN'in engeli olabilir. Durum sayfasinda her sey yesilse sorun sizin aginizda. Indirilen muzik cevrimdisi kitaplikta kullanilabilir."
     },
     "reachable": {
       "title": "Sunucular calisiyor ama aginiz onlara ulasamiyor",
@@ -475,6 +474,127 @@
       "offlineLibrary": "Cevrimdisi kitaplik",
       "buyStar": "STAR al",
       "statusPage": "Durum sayfasi"
+    }
+  },
+  "netCheck": {
+    "title": "Ağ kontrolü",
+    "open": "Ağ kontrolü",
+    "cardDesc": "Sunucularımıza bağlantıyı neyin engellediğini gösterir",
+    "run": "Kontrol et",
+    "again": "Tekrar kontrol et",
+    "checking": "Bağlantı kontrol ediliyor…",
+    "never": "Henüz kontrol edilmedi",
+    "checkedAt": "Kontrol: {{time}}",
+    "copy": "Raporu kopyala",
+    "copied": "Rapor kopyalandı",
+    "copiedLine": "Kopyalandı",
+    "send": "Desteğe gönder",
+    "sent": "Rapor kopyalandı. Mesajınıza yapıştırın",
+    "failedHint": "Kontrol tamamlanamadı. Tekrar deneyin ya da bize yazın.",
+    "failedAt": "Kontrol başarısız. {{time}} sonucu gösteriliyor",
+    "verdict": {
+      "ok": {
+        "title": "Her şey çalışıyor",
+        "hint": "Tüm sunucularımız yanıt veriyor."
+      },
+      "backupDown": {
+        "title": "Bazı yedek yollar yanıt vermiyor",
+        "hint": "Uygulama ana yoldan çalışıyor. Bir şey yapmanız gerekmiyor."
+      },
+      "partial": {
+        "title": "Bazı sunucular yanıt vermiyor",
+        "hint": "Uygulama çalışıyor ama bazı kapaklar ya da parçalar yüklenmeyebilir."
+      },
+      "relayOnly": {
+        "title": "Doğrudan yol engelli",
+        "hint": "Uygulama yedek yollarla çalışıyor, biraz yavaş olabilir."
+      },
+      "dns": {
+        "title": "DNS'iniz yanlış adres veriyor",
+        "hint": "Uygulama bunu kendisi aşıyor. Kalıcı çözüm: güvenli DNS ya da 1.1.1.1."
+      },
+      "dnsFailed": {
+        "title": "Sunucularımız bulunamıyor",
+        "hint": "Ne DNS'iniz ne de güvenli DNS onlar için yanıt veriyor."
+      },
+      "reset": {
+        "title": "Bağlantılar kesiliyor",
+        "hint": "Büyük ihtimalle zapret, bir VPN ya da sağlayıcının DPI sistemi."
+      },
+      "timeout": {
+        "title": "Sunucularımız ağınızdan yanıt vermiyor",
+        "hint": "Genelde sağlayıcı, bir VPN ya da zapret."
+      },
+      "cert": {
+        "title": "Bir şey sertifikamızı değiştiriyor",
+        "hint": "Genelde antivirüsün web koruması ya da kurumsal proxy."
+      },
+      "down": {
+        "title": "Sunucularımız kapalı",
+        "hint": "Zaten düzeltiyoruz."
+      },
+      "offline": {
+        "title": "Uygulama internete ulaşamıyor",
+        "hint": "Tarayıcınız çalışıyorsa aşağıdaki kontrolü yapın."
+      },
+      "unknown": {
+        "title": "Sebep bulunamadı",
+        "hint": "Bize raporu gönderin, yardımcı olur."
+      }
+    },
+    "hint": {
+      "zapret": "zapret çalışıyor. Kontrol için kapatın. İşe yararsa alan adlarımızı list-exclude-user.txt dosyasına ekleyin:",
+      "zapretTimestamps": "zapret ts stratejisi kullanıyor ama TCP timestamps kapalı. Açın:",
+      "admin": "Yönetici olarak çalıştırın",
+      "guide": "zapret kurulum rehberi"
+    },
+    "env": {
+      "dpi": "{{name}} çalışıyor",
+      "timestampsOff": "TCP timestamps kapalı",
+      "proxy": "Sistem proxy'si",
+      "vpn": "VPN: {{name}}"
+    },
+    "host": {
+      "main": "Ana sunucu",
+      "star": "Star sunucusu",
+      "storage": "Müzik deposu",
+      "images": "Kapaklar",
+      "relay": "Yedek yol {{node}}"
+    },
+    "col": {
+      "dns": "DNS",
+      "tcp": "TCP",
+      "tls": "TLS",
+      "http": "HTTP"
+    },
+    "detail": {
+      "ms": "{{ms}} ms",
+      "skip": "kontrol edilmedi",
+      "proxy": "proxy üzerinden",
+      "dnsMismatch": "{{system}}, DoH: {{doh}}",
+      "dnsBogus": "sahte adres {{ip}}",
+      "dnsFail": "yanıt yok",
+      "timeout": "{{s}} sn içinde yanıt yok",
+      "refused": "reddedildi",
+      "unreachable": "ulaşılamıyor",
+      "reset": "{{ms}} ms sonra kesildi",
+      "resetPlain": "bağlantı kesildi",
+      "closed": "{{ms}} ms sonra kapandı",
+      "closedPlain": "bağlantı kapandı",
+      "cert": "yabancı sertifika: {{issuer}}",
+      "certPlain": "yabancı sertifika",
+      "tls": "TLS hatası",
+      "status": "sunucu hatası {{status}}",
+      "appFailed": "uygulamanın isteği başarısız",
+      "other": "hata"
+    },
+    "manual": {
+      "title": "Elle kontrol edin",
+      "windows": "PowerShell'de çalıştırıp çıktıyı bize gönderin",
+      "unix": "Terminalde çalıştırıp çıktıyı bize gönderin",
+      "browser": "{{host}} adresini tarayıcıda açın",
+      "copy": "Kopyala",
+      "openBrowser": "Aç"
     }
   },
   "home": {
@@ -785,6 +905,9 @@
     "helpErrors": "Hata rehberi",
     "helpErrorsDesc": "404, 500 veya 503 gibi kodların anlamı ve ne yapılması gerektiği",
     "helpErrorsOpen": "Aç",
+    "helpNetCheck": "Ağ kontrolü",
+    "helpNetCheckDesc": "Bağlantıyı neyin engellediğini gösterir ve rapor hazırlar",
+    "helpNetCheckOpen": "Aç",
     "helpLog": "Günlük dosyası",
     "helpLogDesc": "Bir sorunu bildirirken desktop.log dosyasını ekleyin, neyin ters gittiğini gösterir",
     "helpLogOpen": "Dosyayı göster",

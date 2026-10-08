@@ -22,6 +22,7 @@ struct Snapshot {
 static SNAPSHOT: OnceLock<Mutex<Snapshot>> = OnceLock::new();
 
 pub fn follow(builder: wreq::ClientBuilder) -> wreq::ClientBuilder {
+    let builder = crate::network::dns::install(builder);
     if env_proxy_set() {
         return builder;
     }
@@ -30,6 +31,14 @@ pub fn follow(builder: wreq::ClientBuilder) -> wreq::ClientBuilder {
 
 pub fn proxied(url: &str) -> bool {
     current_proxy(url).is_some()
+}
+
+pub fn env_proxy_names() -> Vec<String> {
+    ENV_PROXIES
+        .iter()
+        .filter(|name| std::env::var_os(name).is_some())
+        .map(|name| name.to_string())
+        .collect()
 }
 
 fn env_proxy_set() -> bool {

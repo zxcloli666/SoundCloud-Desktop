@@ -64,6 +64,13 @@ fn self_update(kind: InstallKind) -> bool {
     SIGNED_UPDATES.load(Ordering::Relaxed) && kind.self_updatable()
 }
 
+pub fn install_label() -> String {
+    serde_json::to_value(install_kind::detect())
+        .ok()
+        .and_then(|value| value.as_str().map(str::to_string))
+        .unwrap_or_default()
+}
+
 #[tauri::command]
 pub fn updater_info() -> UpdaterInfo {
     let kind = install_kind::detect();

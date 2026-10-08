@@ -1,10 +1,12 @@
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::{Mutex, OnceLock};
-use std::time::{Duration, Instant};
+use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use serde::{Deserialize, Serialize};
 use tauri::Emitter;
+
+use crate::app::diagnostics;
 
 const STATE_FILE: &str = "edge_state.json";
 const CONFIG_EVENT: &str = "edge:config";
@@ -25,6 +27,8 @@ const RELAYS: &[(&str, &str)] = &[
     ("s3.scnative.space", "s3"),
     ("pay.scnative.space", "pay"),
 ];
+
+const SERVICE_HOSTS: [&str; 2] = ["health.scnative.space", "status.soundcloud-desktop.fun"];
 
 const INHERIT: &[(&str, &str)] = &[
     ("storage.scnative.space", "stream.scnative.space"),
@@ -64,14 +68,105 @@ impl Hop {
 
 struct OriginState {
     tier: Tier,
-    revalidate_at: Instant,
-
+    until: Instant,
     direct_fails: u8,
+    relay_wins: u8,
+    last_at: Instant,
+}
+
+impl OriginState {
+    fn new(now: Instant) -> Self {
+        Self {
+            tier: Tier::Direct,
+            until: now,
+            direct_fails: 0,
+            relay_wins: 0,
+            last_at: now,
+        }
+    }
+
+    fn pinned_until(until: Instant, now: Instant) -> Self {
+        Self {
+            tier: Tier::Relay,
+            until,
+            direct_fails: 0,
+            relay_wins: 0,
+            last_at: now,
+        }
+    }
+
+    fn pinned(&self, now: Instant) -> bool {
+        self.tier == Tier::Relay && now < self.until
+    }
+
+    fn refresh(&mut self, now: Instant) {
+        if self.tier == Tier::Relay && now >= self.until {
+            self.tier = Tier::Direct;
+            self.clear();
+        } else if now.saturating_duration_since(self.last_at) >= REVALIDATE {
+            self.clear();
+        }
+        self.last_at = now;
+    }
+
+    fn clear(&mut self) {
+        self.direct_fails = 0;
+        self.relay_wins = 0;
+    }
+
+    fn pin(&mut self, now: Instant) -> Change {
+        self.tier = Tier::Relay;
+        self.until = now + REVALIDATE;
+        self.clear();
+        Change::Pinned
+    }
+
+    fn unpin(&mut self) -> Change {
+        self.tier = Tier::Direct;
+        self.clear();
+        Change::Unpinned
+    }
+
+    fn due(&self) -> bool {
+        self.direct_fails >= DIRECT_FAIL_THRESHOLD || self.relay_wins >= RELAY_WIN_THRESHOLD
+    }
 }
 
 const DIRECT_FAIL_THRESHOLD: u8 = 2;
+const RELAY_WIN_THRESHOLD: u8 = 2;
 
 const PROVEN_BYTES: u64 = 64 * 1024;
+
+#[derive(Clone, Copy, Debug)]
+enum Event {
+    DirectFailed,
+    DirectAnswered,
+    DirectDelivered(u64),
+    RelayWon,
+    RelayFailed,
+}
+
+impl Event {
+    fn of(tier: Tier, ok: bool) -> Self {
+        match (tier, ok) {
+            (Tier::Direct, false) => Self::DirectFailed,
+            (Tier::Direct, true) => Self::DirectAnswered,
+            (Tier::Relay, true) => Self::RelayWon,
+            (Tier::Relay, false) => Self::RelayFailed,
+        }
+    }
+
+    fn counts(self) -> bool {
+        matches!(self, Self::DirectFailed | Self::RelayWon)
+    }
+}
+
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+enum Change {
+    None,
+    Pinned,
+    Unpinned,
+}
 
 #[derive(Default)]
 struct Pool {
@@ -87,53 +182,51 @@ struct Inner {
 }
 
 impl Inner {
-    fn note(&mut self, origin: &str, tier: Tier, ok: bool, now: Instant) -> bool {
-        match (tier, ok) {
-            (Tier::Relay, true) => self.adopt(origin, Tier::Relay, now),
-            (Tier::Direct, false) => self.count_direct_failure(origin, now),
-            (Tier::Direct, true) | (Tier::Relay, false) => false,
+    fn apply(&mut self, origin: &str, event: Event, now: Instant) -> Change {
+        if !event.counts() && !self.origins.contains_key(origin) {
+            return Change::None;
+        }
+        let state = self
+            .origins
+            .entry(origin.to_string())
+            .or_insert_with(|| OriginState::new(now));
+        state.refresh(now);
+        match event {
+            Event::DirectFailed => state.direct_fails = state.direct_fails.saturating_add(1),
+            Event::DirectAnswered => state.relay_wins = 0,
+            Event::DirectDelivered(bytes) => {
+                state.clear();
+                if bytes >= PROVEN_BYTES && state.tier == Tier::Relay {
+                    return state.unpin();
+                }
+            }
+            Event::RelayWon => state.relay_wins = state.relay_wins.saturating_add(1),
+            Event::RelayFailed => {}
+        }
+        if state.tier == Tier::Direct && state.due() {
+            return state.pin(now);
+        }
+        Change::None
+    }
+
+    fn conclude(&mut self, origin: &str, tier: Tier, now: Instant) -> Change {
+        if tier == Tier::Direct && !self.origins.contains_key(origin) {
+            return Change::None;
+        }
+        let state = self
+            .origins
+            .entry(origin.to_string())
+            .or_insert_with(|| OriginState::new(now));
+        state.refresh(now);
+        match (tier, state.tier) {
+            (Tier::Relay, Tier::Direct) => state.pin(now),
+            (Tier::Direct, Tier::Relay) => state.unpin(),
+            _ => Change::None,
         }
     }
 
-    fn delivered(&mut self, origin: &str, tier: Tier, bytes: u64, now: Instant) -> bool {
-        tier == Tier::Direct && bytes >= PROVEN_BYTES && self.adopt(origin, Tier::Direct, now)
-    }
-
-    fn adopt(&mut self, origin: &str, tier: Tier, now: Instant) -> bool {
-        let changed = self.origins.get(origin).map(|s| s.tier) != Some(tier);
-        if changed || tier == Tier::Direct {
-            self.origins.insert(
-                origin.to_string(),
-                OriginState {
-                    tier,
-                    revalidate_at: now + REVALIDATE,
-                    direct_fails: if tier == Tier::Direct {
-                        0
-                    } else {
-                        DIRECT_FAIL_THRESHOLD
-                    },
-                },
-            );
-        }
-        changed
-    }
-
-    fn count_direct_failure(&mut self, origin: &str, now: Instant) -> bool {
-        let entry = self.origins.entry(origin.to_string()).or_insert(OriginState {
-            tier: Tier::Direct,
-            revalidate_at: now,
-            direct_fails: 0,
-        });
-        if entry.tier == Tier::Direct && now >= entry.revalidate_at {
-            entry.direct_fails = 0;
-        }
-        entry.direct_fails = entry.direct_fails.saturating_add(1);
-        entry.revalidate_at = now + REVALIDATE;
-        if entry.tier == Tier::Direct && entry.direct_fails >= DIRECT_FAIL_THRESHOLD {
-            entry.tier = Tier::Relay;
-            return true;
-        }
-        false
+    fn pinned(&self, origin: &str, now: Instant) -> bool {
+        resolved_state(self, origin).is_some_and(|s| s.pinned(now))
     }
 }
 
@@ -143,9 +236,41 @@ fn state() -> &'static Mutex<Inner> {
     STATE.get_or_init(|| Mutex::new(Inner::default()))
 }
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default, Debug, PartialEq, Eq)]
 struct Persisted {
-    tiers: HashMap<String, Tier>,
+    #[serde(default)]
+    pins: HashMap<String, u64>,
+}
+
+fn now_ms() -> u64 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map_or(0, |elapsed| elapsed.as_millis() as u64)
+}
+
+fn snapshot(inner: &Inner, now: Instant, now_ms: u64) -> Persisted {
+    let pins = inner
+        .origins
+        .iter()
+        .filter(|(_, s)| s.pinned(now))
+        .map(|(host, s)| {
+            let left = s.until.saturating_duration_since(now).as_millis() as u64;
+            (host.clone(), now_ms.saturating_add(left))
+        })
+        .collect();
+    Persisted { pins }
+}
+
+fn restore(inner: &mut Inner, persisted: Persisted, now: Instant, now_ms: u64) {
+    for (host, until_ms) in persisted.pins {
+        if until_ms <= now_ms {
+            continue;
+        }
+        let left = Duration::from_millis(until_ms - now_ms).min(REVALIDATE);
+        inner
+            .origins
+            .insert(host, OriginState::pinned_until(now + left, now));
+    }
 }
 
 pub fn init(data_dir: PathBuf) {
@@ -160,31 +285,12 @@ pub fn init(data_dir: PathBuf) {
         Err(e) => e.into_inner(),
     };
     inner.dir = Some(data_dir);
-    let now = Instant::now();
-    for (host, tier) in loaded.tiers {
-        if tier == Tier::Direct {
-            continue;
-        }
-        inner.origins.insert(
-            host,
-            OriginState {
-                tier,
-                revalidate_at: now + REVALIDATE,
-                direct_fails: DIRECT_FAIL_THRESHOLD,
-            },
-        );
-    }
+    restore(&mut inner, loaded, Instant::now(), now_ms());
 }
 
 fn persist(inner: &Inner) {
     let Some(dir) = inner.dir.clone() else { return };
-    let tiers: HashMap<String, Tier> = inner
-        .origins
-        .iter()
-        .filter(|(_, s)| s.tier != Tier::Direct)
-        .map(|(h, s)| (h.clone(), s.tier))
-        .collect();
-    let Ok(bytes) = serde_json::to_vec(&Persisted { tiers }) else {
+    let Ok(bytes) = serde_json::to_vec(&snapshot(inner, Instant::now(), now_ms())) else {
         return;
     };
     std::thread::spawn(move || {
@@ -268,6 +374,30 @@ pub fn routed_origins() -> impl Iterator<Item = &'static str> {
     RELAYS.iter().map(|(origin, _)| *origin)
 }
 
+pub fn zone_hosts() -> Vec<String> {
+    routed_origins()
+        .chain(SERVICE_HOSTS)
+        .map(str::to_string)
+        .collect()
+}
+
+pub fn is_known_host(host: &str) -> bool {
+    if routed_origins()
+        .chain(SERVICE_HOSTS)
+        .any(|known| known == host)
+    {
+        return true;
+    }
+    let Some(rest) = host
+        .strip_suffix(RELAY_ZONE)
+        .and_then(|rest| rest.strip_suffix('.'))
+    else {
+        return false;
+    };
+    let node = rest.rsplit('.').next().unwrap_or(rest);
+    relay_pool().iter().any(|pooled| pooled == node)
+}
+
 pub fn service_label(origin: &str) -> Option<&'static str> {
     relay_label(origin)
 }
@@ -301,14 +431,10 @@ pub fn plan(url: &str) -> Vec<Hop> {
         Ok(g) => g,
         Err(e) => e.into_inner(),
     };
-    let now = Instant::now();
-    let entry = resolved_state(&inner, &origin);
-    let tier = entry.map(|s| s.tier).unwrap_or(Tier::Direct);
-
-    let from = if entry.map(|s| now >= s.revalidate_at).unwrap_or(true) {
-        Tier::Direct
+    let from = if inner.pinned(&origin, Instant::now()) {
+        Tier::Relay
     } else {
-        tier
+        Tier::Direct
     };
 
     let mut hops: Vec<Hop> = Vec::new();
@@ -337,41 +463,56 @@ pub fn plan(url: &str) -> Vec<Hop> {
 }
 
 pub fn note(origin: &str, tier: Tier, ok: bool) {
-    if origin.is_empty() {
-        return;
-    }
-    let mut inner = match state().lock() {
-        Ok(g) => g,
-        Err(e) => e.into_inner(),
-    };
-    if inner.note(origin, tier, ok, Instant::now()) {
-        persist(&inner);
+    let event = Event::of(tier, ok);
+    let failed = matches!(event, Event::DirectFailed);
+    record(origin, failed, |inner, now| inner.apply(origin, event, now));
+    if failed {
+        crate::network::dns::suspect(origin);
     }
 }
 
 pub fn note_delivered(origin: &str, tier: Tier, bytes: u64) {
-    if origin.is_empty() {
-        return;
-    }
-    let mut inner = match state().lock() {
-        Ok(g) => g,
-        Err(e) => e.into_inner(),
-    };
-    if inner.delivered(origin, tier, bytes, Instant::now()) {
-        persist(&inner);
+    if tier == Tier::Direct {
+        record(origin, false, |inner, now| {
+            inner.apply(origin, Event::DirectDelivered(bytes), now)
+        });
     }
 }
 
 fn settle(origin: &str, tier: Tier) {
+    record(origin, true, |inner, now| inner.conclude(origin, tier, now));
+}
+
+fn record(origin: &str, failed: bool, step: impl FnOnce(&mut Inner, Instant) -> Change) {
     if origin.is_empty() {
         return;
     }
-    let mut inner = match state().lock() {
-        Ok(g) => g,
-        Err(e) => e.into_inner(),
+    let change = {
+        let mut inner = match state().lock() {
+            Ok(g) => g,
+            Err(e) => e.into_inner(),
+        };
+        let change = step(&mut inner, Instant::now());
+        if change != Change::None {
+            persist(&inner);
+        }
+        change
     };
-    if inner.adopt(origin, tier, Instant::now()) {
-        persist(&inner);
+    match change {
+        Change::Pinned => {
+            diagnostics::log(
+                "INFO",
+                format!(
+                    "[Edge] {origin} -> relay for {} min",
+                    REVALIDATE.as_secs() / 60
+                ),
+            );
+            if failed {
+                crate::network::netcheck::auto("edge-pin");
+            }
+        }
+        Change::Unpinned => diagnostics::log("INFO", format!("[Edge] {origin} -> direct")),
+        Change::None => {}
     }
 }
 
@@ -442,10 +583,7 @@ pub fn audio_plan(url: &str) -> Vec<Hop> {
         Ok(g) => g,
         Err(e) => e.into_inner(),
     };
-    let now = Instant::now();
-    let state = resolved_state(&inner, &origin);
-    let revalidate = state.map(|s| now >= s.revalidate_at).unwrap_or(true);
-    let tiers = audio_tier_order(state.map(|s| s.tier), revalidate);
+    let tiers = audio_tier_order(inner.pinned(&origin, Instant::now()));
     let relay_urls: Vec<String> = relays
         .iter()
         .map(|relay| swap_host(url, relay).unwrap_or_else(|| url.to_string()))
@@ -470,11 +608,11 @@ pub fn audio_plan(url: &str) -> Vec<Hop> {
     hops
 }
 
-fn audio_tier_order(current: Option<Tier>, revalidate: bool) -> [Tier; 2] {
-    if revalidate || matches!(current, None | Some(Tier::Direct)) {
-        [Tier::Direct, Tier::Relay]
-    } else {
+fn audio_tier_order(pinned: bool) -> [Tier; 2] {
+    if pinned {
         [Tier::Relay, Tier::Direct]
+    } else {
+        [Tier::Direct, Tier::Relay]
     }
 }
 
@@ -496,6 +634,25 @@ pub fn note_url_delivered(url: &str, tier: Tier, bytes: u64) {
     }
 }
 
+pub fn pins() -> Vec<(String, u64)> {
+    let inner = match state().lock() {
+        Ok(g) => g,
+        Err(e) => e.into_inner(),
+    };
+    let now = Instant::now();
+    let mut pins: Vec<(String, u64)> = inner
+        .origins
+        .iter()
+        .filter(|(_, s)| s.pinned(now))
+        .map(|(host, s)| {
+            let left = s.until.saturating_duration_since(now).as_millis() as u64;
+            (host.clone(), left)
+        })
+        .collect();
+    pins.sort();
+    pins
+}
+
 pub fn current_tier(url: &str) -> Tier {
     let Some(origin) = host_of(url) else {
         return Tier::Direct;
@@ -504,9 +661,11 @@ pub fn current_tier(url: &str) -> Tier {
         Ok(g) => g,
         Err(e) => e.into_inner(),
     };
-    resolved_state(&inner, &origin)
-        .map(|s| s.tier)
-        .unwrap_or(Tier::Direct)
+    if inner.pinned(&origin, Instant::now()) {
+        Tier::Relay
+    } else {
+        Tier::Direct
+    }
 }
 
 pub fn is_direct(url: &str) -> bool {
@@ -542,13 +701,24 @@ pub fn edge_config() -> EdgeConfig {
         hints: inner
             .origins
             .iter()
-            .map(|(h, s)| (h.clone(), s.tier))
+            .map(|(h, s)| {
+                let tier = if s.pinned(now) {
+                    Tier::Relay
+                } else {
+                    Tier::Direct
+                };
+                (h.clone(), tier)
+            })
             .collect(),
         revalidate_in_ms: inner
             .origins
             .iter()
             .map(|(h, s)| {
-                let left = s.revalidate_at.saturating_duration_since(now);
+                let left = if s.pinned(now) {
+                    s.until.saturating_duration_since(now)
+                } else {
+                    Duration::ZERO
+                };
                 (h.clone(), left.as_millis() as u64)
             })
             .collect(),
@@ -574,14 +744,33 @@ mod tests {
     use std::time::{Duration, Instant};
 
     use super::{
-        INHERIT, Inner, PROVEN_BYTES, RELAYS, REVALIDATE, Tier, audio_tier_order, relay_hosts_over,
-        set_pool, transport_failure,
+        Change, Event, INHERIT, Inner, PROVEN_BYTES, Persisted, RELAYS, REVALIDATE, Tier,
+        audio_tier_order, is_known_host, relay_hosts_over, restore, set_pool, snapshot,
+        transport_failure, zone_hosts,
     };
 
     const ORIGIN: &str = "stream.scnative.space";
 
     fn tier(inner: &Inner) -> Option<Tier> {
         inner.origins.get(ORIGIN).map(|s| s.tier)
+    }
+
+    fn pinned(inner: &Inner, now: Instant) -> bool {
+        inner.pinned(ORIGIN, now)
+    }
+
+    fn apply(inner: &mut Inner, events: &[Event], now: Instant) -> Vec<Change> {
+        events
+            .iter()
+            .map(|event| inner.apply(ORIGIN, *event, now))
+            .collect()
+    }
+
+    fn pinned_inner(now: Instant) -> Inner {
+        let mut inner = Inner::default();
+        apply(&mut inner, &[Event::RelayWon, Event::RelayWon], now);
+        assert!(pinned(&inner, now));
+        inner
     }
 
     fn hosts(origin: &str) -> Vec<String> {
@@ -619,6 +808,31 @@ mod tests {
             ["api.r1.relay.scnative.space", "api.r7.relay.scnative.space"]
         );
         assert_eq!(super::call_pool(), [("call-1".to_string(), 1.0)]);
+    }
+
+    #[test]
+    fn our_hosts_and_pooled_relays_are_known_to_the_resolver() {
+        set_pool(vec!["r1".into(), "r7".into()], Vec::new());
+        for host in [
+            "api.scnative.space",
+            "s3.scnative.space",
+            "health.scnative.space",
+            "status.soundcloud-desktop.fun",
+            "api.r7.relay.scnative.space",
+            "r1.relay.scnative.space",
+        ] {
+            assert!(is_known_host(host), "{host}");
+        }
+        for host in [
+            "api.r9.relay.scnative.space",
+            "nx-1f2e.relay.scnative.space",
+            "relay.scnative.space",
+            "call-1.scnative.space",
+            "soundcloud.com",
+        ] {
+            assert!(!is_known_host(host), "{host}");
+        }
+        assert_eq!(zone_hosts().len(), RELAYS.len() + 2);
     }
 
     #[test]
@@ -682,54 +896,56 @@ mod tests {
     }
 
     #[test]
-    fn audio_prefers_direct_when_unknown_or_due_for_revalidation() {
-        assert_eq!(audio_tier_order(None, false), [Tier::Direct, Tier::Relay]);
-        assert_eq!(
-            audio_tier_order(Some(Tier::Relay), true),
-            [Tier::Direct, Tier::Relay]
-        );
+    fn audio_prefers_direct_unless_the_origin_is_pinned() {
+        assert_eq!(audio_tier_order(false), [Tier::Direct, Tier::Relay]);
     }
 
     #[test]
-    fn audio_uses_sticky_fallback_first_but_keeps_direct_as_backup() {
-        assert_eq!(
-            audio_tier_order(Some(Tier::Relay), false),
-            [Tier::Relay, Tier::Direct]
-        );
-        assert_eq!(
-            audio_tier_order(Some(Tier::Relay), false),
-            [Tier::Relay, Tier::Direct]
-        );
+    fn audio_uses_the_pinned_relay_first_but_keeps_direct_as_backup() {
+        assert_eq!(audio_tier_order(true), [Tier::Relay, Tier::Direct]);
     }
 
     #[test]
     fn answered_headers_do_not_hide_bodies_that_keep_breaking() {
         let mut inner = Inner::default();
         let now = Instant::now();
-        inner.note(ORIGIN, Tier::Direct, false, now);
-        inner.note(ORIGIN, Tier::Direct, true, now);
-        inner.note(ORIGIN, Tier::Direct, false, now);
+        apply(
+            &mut inner,
+            &[
+                Event::DirectFailed,
+                Event::DirectAnswered,
+                Event::DirectFailed,
+            ],
+            now,
+        );
         assert_eq!(tier(&inner), Some(Tier::Relay));
     }
 
     #[test]
     fn a_small_direct_answer_keeps_the_origin_on_the_relay() {
-        let mut inner = Inner::default();
         let now = Instant::now();
-        inner.note(ORIGIN, Tier::Relay, true, now);
-        inner.note(ORIGIN, Tier::Direct, true, now);
-        inner.delivered(ORIGIN, Tier::Direct, PROVEN_BYTES - 1, now);
+        let mut inner = pinned_inner(now);
+        apply(
+            &mut inner,
+            &[
+                Event::DirectAnswered,
+                Event::DirectDelivered(PROVEN_BYTES - 1),
+            ],
+            now,
+        );
         assert_eq!(tier(&inner), Some(Tier::Relay));
     }
 
     #[test]
     fn a_whole_direct_body_brings_the_origin_back() {
-        let mut inner = Inner::default();
         let now = Instant::now();
-        inner.note(ORIGIN, Tier::Relay, true, now);
-        assert!(inner.delivered(ORIGIN, Tier::Direct, PROVEN_BYTES, now));
+        let mut inner = pinned_inner(now);
+        assert_eq!(
+            inner.apply(ORIGIN, Event::DirectDelivered(PROVEN_BYTES), now),
+            Change::Unpinned
+        );
         assert_eq!(tier(&inner), Some(Tier::Direct));
-        inner.note(ORIGIN, Tier::Direct, false, now);
+        inner.apply(ORIGIN, Event::DirectFailed, now);
         assert_eq!(tier(&inner), Some(Tier::Direct));
     }
 
@@ -737,11 +953,10 @@ mod tests {
     fn failures_far_apart_do_not_add_up() {
         let mut inner = Inner::default();
         let now = Instant::now();
-        inner.note(ORIGIN, Tier::Direct, false, now);
-        inner.note(
+        inner.apply(ORIGIN, Event::DirectFailed, now);
+        inner.apply(
             ORIGIN,
-            Tier::Direct,
-            false,
+            Event::DirectFailed,
             now + REVALIDATE + Duration::from_secs(1),
         );
         assert_eq!(tier(&inner), Some(Tier::Direct));
@@ -750,12 +965,15 @@ mod tests {
     #[test]
     fn a_route_pinned_to_the_relay_is_not_tried_direct_before_revalidation() {
         super::note("s3.scnative.space", Tier::Relay, true);
+        assert!(super::direct_first("https://s3.scnative.space/a"));
+        super::note("s3.scnative.space", Tier::Relay, true);
         assert!(!super::direct_first("https://s3.scnative.space/a"));
         assert!(super::direct_first("https://example.org/a"));
     }
 
     #[test]
     fn the_webview_learns_how_long_a_relay_pin_still_holds() {
+        super::note("pay.scnative.space", Tier::Relay, true);
         super::note("pay.scnative.space", Tier::Relay, true);
         let config = super::edge_config();
         assert_eq!(config.hints.get("pay.scnative.space"), Some(&Tier::Relay));
@@ -764,11 +982,200 @@ mod tests {
     }
 
     #[test]
+    fn the_webview_hears_direct_for_an_origin_that_is_not_pinned() {
+        super::note("api-star.scnative.space", Tier::Relay, true);
+        let config = super::edge_config();
+        assert_eq!(
+            config.hints.get("api-star.scnative.space"),
+            Some(&Tier::Direct)
+        );
+        assert_eq!(config.revalidate_in_ms["api-star.scnative.space"], 0);
+        assert!(super::is_direct("https://api-star.scnative.space/x"));
+    }
+
+    #[test]
     fn a_relay_body_never_counts_as_proof_for_direct() {
+        super::note("images.scnative.space", Tier::Relay, true);
+        super::note("images.scnative.space", Tier::Relay, true);
+        super::note_delivered("images.scnative.space", Tier::Relay, PROVEN_BYTES * 4);
+        assert_eq!(
+            super::current_tier("https://images.scnative.space/a.jpg"),
+            Tier::Relay
+        );
+    }
+
+    #[test]
+    fn a_single_relay_win_does_not_pin() {
         let mut inner = Inner::default();
         let now = Instant::now();
-        inner.note(ORIGIN, Tier::Relay, true, now);
-        assert!(!inner.delivered(ORIGIN, Tier::Relay, PROVEN_BYTES * 4, now));
-        assert_eq!(tier(&inner), Some(Tier::Relay));
+        assert_eq!(apply(&mut inner, &[Event::RelayWon], now), [Change::None]);
+        assert!(!pinned(&inner, now));
+    }
+
+    #[test]
+    fn two_relay_wins_in_a_row_pin() {
+        let mut inner = Inner::default();
+        let now = Instant::now();
+        assert_eq!(
+            apply(&mut inner, &[Event::RelayWon, Event::RelayWon], now),
+            [Change::None, Change::Pinned]
+        );
+        assert!(pinned(&inner, now));
+        assert!(!pinned(&inner, now + REVALIDATE));
+    }
+
+    #[test]
+    fn a_direct_answer_between_relay_wins_breaks_the_streak() {
+        let mut inner = Inner::default();
+        let now = Instant::now();
+        apply(
+            &mut inner,
+            &[Event::RelayWon, Event::DirectAnswered, Event::RelayWon],
+            now,
+        );
+        assert!(!pinned(&inner, now));
+        apply(
+            &mut inner,
+            &[Event::DirectDelivered(10), Event::RelayWon],
+            now,
+        );
+        assert!(!pinned(&inner, now));
+    }
+
+    #[test]
+    fn a_complete_direct_answer_breaks_the_failure_streak() {
+        let mut inner = Inner::default();
+        let now = Instant::now();
+        apply(
+            &mut inner,
+            &[
+                Event::DirectFailed,
+                Event::DirectDelivered(10),
+                Event::DirectFailed,
+            ],
+            now,
+        );
+        assert_eq!(tier(&inner), Some(Tier::Direct));
+    }
+
+    #[test]
+    fn relay_failures_never_pin() {
+        let mut inner = Inner::default();
+        let now = Instant::now();
+        apply(&mut inner, &[Event::RelayFailed, Event::RelayFailed], now);
+        assert!(inner.origins.is_empty());
+        apply(
+            &mut inner,
+            &[Event::RelayWon, Event::RelayFailed, Event::RelayFailed],
+            now,
+        );
+        assert!(!pinned(&inner, now));
+    }
+
+    #[test]
+    fn an_expired_pin_needs_two_new_failures() {
+        let now = Instant::now();
+        let mut inner = pinned_inner(now);
+        let later = now + REVALIDATE + Duration::from_secs(1);
+        assert_eq!(
+            inner.apply(ORIGIN, Event::DirectFailed, later),
+            Change::None
+        );
+        assert!(!pinned(&inner, later));
+        assert_eq!(
+            inner.apply(ORIGIN, Event::DirectFailed, later),
+            Change::Pinned
+        );
+        assert!(pinned(&inner, later));
+    }
+
+    #[test]
+    fn repeated_wins_do_not_extend_a_pin() {
+        let now = Instant::now();
+        let mut inner = pinned_inner(now);
+        let until = inner.origins[ORIGIN].until;
+        let later = now + REVALIDATE / 2;
+        assert_eq!(
+            apply(
+                &mut inner,
+                &[
+                    Event::RelayWon,
+                    Event::RelayWon,
+                    Event::DirectFailed,
+                    Event::DirectFailed
+                ],
+                later,
+            ),
+            [Change::None; 4]
+        );
+        assert_eq!(inner.origins[ORIGIN].until, until);
+        assert!(!pinned(&inner, now + REVALIDATE));
+        assert_eq!(
+            inner.apply(ORIGIN, Event::DirectFailed, now + REVALIDATE),
+            Change::None
+        );
+    }
+
+    #[test]
+    fn a_webview_conclusion_pins_at_once() {
+        let mut inner = Inner::default();
+        let now = Instant::now();
+        assert_eq!(inner.conclude(ORIGIN, Tier::Relay, now), Change::Pinned);
+        assert!(pinned(&inner, now));
+        assert_eq!(inner.conclude(ORIGIN, Tier::Relay, now), Change::None);
+        assert_eq!(inner.conclude(ORIGIN, Tier::Direct, now), Change::Unpinned);
+        assert!(!pinned(&inner, now));
+        assert_eq!(inner.conclude(ORIGIN, Tier::Direct, now), Change::None);
+    }
+
+    #[test]
+    fn a_storage_origin_follows_the_pin_of_its_stream_origin() {
+        let mut inner = Inner::default();
+        let now = Instant::now();
+        inner.conclude("stream.scnative.space", Tier::Relay, now);
+        assert!(inner.pinned("storage.scnative.space", now));
+        assert!(!inner.pinned("storage-star.scnative.space", now));
+    }
+
+    #[test]
+    fn a_restart_keeps_only_the_remaining_pin_time() {
+        let start = Instant::now();
+        let now = start + REVALIDATE;
+        let now_ms = 1_000_000_000;
+        let mut inner = pinned_inner(now);
+        inner.conclude("api.scnative.space", Tier::Relay, start);
+        inner.conclude("pay.scnative.space", Tier::Relay, start + REVALIDATE / 2);
+        let saved = snapshot(&inner, now, now_ms);
+        assert_eq!(saved.pins.len(), 2);
+        assert_eq!(saved.pins[ORIGIN], now_ms + REVALIDATE.as_millis() as u64);
+        assert!(!saved.pins.contains_key("api.scnative.space"));
+
+        let mut pins = saved.pins;
+        pins.insert("s3.scnative.space".into(), now_ms - 1);
+        pins.insert(
+            "images.scnative.space".into(),
+            now_ms + 100 * REVALIDATE.as_millis() as u64,
+        );
+        let later = now + Duration::from_secs(60);
+        let mut restored = Inner::default();
+        restore(&mut restored, Persisted { pins }, later, now_ms + 60_000);
+        assert!(!restored.origins.contains_key("s3.scnative.space"));
+        assert!(restored.pinned(ORIGIN, later));
+        assert!(!restored.pinned(ORIGIN, now + REVALIDATE));
+        assert!(restored.pinned("pay.scnative.space", later));
+        assert!(!restored.pinned("pay.scnative.space", now + REVALIDATE / 2));
+        assert!(restored.pinned("images.scnative.space", later));
+        assert!(!restored.pinned("images.scnative.space", later + REVALIDATE));
+        assert_eq!(restored.origins[ORIGIN].direct_fails, 0);
+    }
+
+    #[test]
+    fn an_old_state_file_loads_as_no_pins() {
+        let old: Persisted =
+            serde_json::from_str(r#"{"tiers":{"api.scnative.space":"relay"}}"#).unwrap();
+        assert!(old.pins.is_empty());
+        let mut inner = Inner::default();
+        restore(&mut inner, old, Instant::now(), 1);
+        assert!(inner.origins.is_empty());
     }
 }

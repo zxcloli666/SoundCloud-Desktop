@@ -28,7 +28,7 @@ SoundCloud temporarily blocked a request from our server. Wait a few minutes and
 
 ## "Can't reach the app's servers"
 
-The internet works, but no request gets through to our servers. Most likely your provider blocks them, or zapret or a VPN gets in the way. See the [zapret and VPN section](../README.md#zapret-vpn-и-списки-доменов) and open Settings, Network.
+The internet works, but no request gets through to our servers. Most likely your provider blocks them, or zapret or a VPN gets in the way. Open Settings, Network, Network check: it shows what breaks, then copy the report and send it to us. See also the [zapret and VPN section](../README.md#zapret-vpn-и-списки-доменов).
 
 ## Where the log is
 

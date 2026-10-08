@@ -1,75 +1,28 @@
 // Единая точка сетевых запросов фронта к нашим доменам: перебирает тиры
 // (прямой → relay) и запоминает, что сработало.
 
-import { fetch } from '@tauri-apps/plugin-http';
-import { type Hop, noteHop, planHops } from './config';
+import { NetError, type NetRoute, netRequest } from '../net/fetch';
+import { type Hop, noteHop, planHops, type Tier } from './config';
 
 export type { Tier } from './config';
 export { initEdge, tierOf } from './config';
-
-const CONNECT_TIMEOUT_MS = 10_000;
-const BODY_STALL_MS = 10_000;
 
 interface Fetched {
   res: Response;
   bytes: number;
 }
 
-class BodyCutError extends Error {
-  constructor(reason: unknown) {
-    super(`edge: response body broke off (${String(reason)})`);
-    this.name = 'BodyCutError';
-  }
+function fetchWhole(
+  url: string,
+  init: RequestInit,
+  timeoutMs?: number,
+  route?: NetRoute,
+): Promise<Fetched> {
+  return netRequest(url, { ...init, timeoutMs, route });
 }
 
-async function fetchWhole(url: string, init: RequestInit, timeoutMs?: number): Promise<Fetched> {
-  const controller = new AbortController();
-  const abort = () => controller.abort();
-  if (init.signal?.aborted) abort();
-  init.signal?.addEventListener('abort', abort, { once: true });
-  const deadline = timeoutMs ? setTimeout(abort, timeoutMs) : undefined;
-  try {
-    const res = await fetch(url, {
-      ...init,
-      signal: controller.signal,
-      connectTimeout: CONNECT_TIMEOUT_MS,
-    });
-    const body = await readBody(res, abort).catch((reason: unknown) => {
-      throw new BodyCutError(reason);
-    });
-    return {
-      res: new Response(body.byteLength > 0 ? body : null, {
-        status: res.status,
-        statusText: res.statusText,
-        headers: res.headers,
-      }),
-      bytes: body.byteLength,
-    };
-  } finally {
-    clearTimeout(deadline);
-    init.signal?.removeEventListener('abort', abort);
-  }
-}
-
-async function readBody(res: Response, abort: () => void): Promise<Uint8Array<ArrayBuffer>> {
-  if (!res.body) return new Uint8Array();
-  const reader = res.body.getReader();
-  const chunks: Uint8Array[] = [];
-  let size = 0;
-  for (;;) {
-    const stall = setTimeout(abort, BODY_STALL_MS);
-    const { done, value } = await reader.read().finally(() => clearTimeout(stall));
-    if (done) break;
-    chunks.push(value);
-    size += value.byteLength;
-  }
-  const body = new Uint8Array(size);
-  let offset = 0;
-  for (const chunk of chunks) {
-    body.set(chunk, offset);
-    offset += chunk.byteLength;
-  }
-  return body;
+function isBodyCut(error: unknown): boolean {
+  return error instanceof NetError && error.kind === 'body';
 }
 
 /**
@@ -133,6 +86,17 @@ export class EdgeTransportError extends Error {
   }
 }
 
+export class EdgeUnreachableError extends Error {
+  constructor(readonly cause: unknown) {
+    super(`edge: no route answered (${messageOf(cause)})`);
+    this.name = 'EdgeUnreachableError';
+  }
+}
+
+function messageOf(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
 /**
  * Резерв под запасные хопы. Делить бюджет поровну нельзя: отвечает обычно ПЕРВЫЙ
  * хоп, и его легитимно долгий ответ дороже, чем шанс попробовать резерв. При
@@ -148,13 +112,74 @@ function hopBudgetMs(remaining: number, hopsLeft: number): number {
   return remaining - reserve;
 }
 
+const BACKUP_DELAY_MS = 300;
+
+export type ProbeOutcome =
+  | { kind: 'answered'; status: number; tier: Tier }
+  | { kind: 'transport' }
+  | { kind: 'unreachable' };
+
+export function edgeProbe(url: string, hopTimeoutMs: number): Promise<ProbeOutcome> {
+  const planned = planHops(url);
+  const hops: Hop[] = planned.length > 0 ? planned : [{ url, tier: 'direct', origin: '' }];
+  const controllers = hops.map(() => new AbortController());
+  return new Promise((resolve) => {
+    let pending = hops.length;
+    let transport = false;
+    let done = false;
+    let backupsStarted = false;
+    let backupTimer: ReturnType<typeof setTimeout> | undefined;
+    const finish = (outcome: ProbeOutcome) => {
+      if (done) return;
+      done = true;
+      clearTimeout(backupTimer);
+      for (const controller of controllers) controller.abort();
+      resolve(outcome);
+    };
+    const settle = () => {
+      pending -= 1;
+      if (pending === 0) finish({ kind: transport ? 'transport' : 'unreachable' });
+    };
+    const startBackups = () => {
+      if (backupsStarted || done) return;
+      backupsStarted = true;
+      clearTimeout(backupTimer);
+      for (let at = 1; at < hops.length; at++) start(at);
+    };
+    const start = (at: number) => {
+      const hop = hops[at];
+      const init: RequestInit = { cache: 'no-store', signal: controllers[at].signal };
+      const over = () => {
+        settle();
+        if (at === 0) startBackups();
+      };
+      fetchWhole(hop.url, init, hopTimeoutMs).then(({ res }) => {
+        if (hopUsable(hop, res)) finish({ kind: 'answered', status: res.status, tier: hop.tier });
+        else transport = true;
+        over();
+      }, over);
+    };
+    start(0);
+    if (hops.length > 1) backupTimer = setTimeout(startBackups, BACKUP_DELAY_MS);
+  });
+}
+
+async function fetchAlone(url: string, init: RequestInit, timeoutMs?: number): Promise<Response> {
+  try {
+    return (await fetchWhole(url, init, timeoutMs)).res;
+  } catch (error) {
+    if (init.signal?.aborted || isBodyCut(error)) throw error;
+    throw new EdgeUnreachableError(error);
+  }
+}
+
 export async function edgeFetch(
   url: string,
   init: RequestInit = {},
   timeoutMs?: number,
 ): Promise<Response> {
   const hops = planHops(url);
-  if (hops.length === 0) return (await fetchWhole(url, init, timeoutMs)).res;
+  if (hops.length === 0) return fetchAlone(url, init, timeoutMs);
 
   const weakBudget = timeoutMs !== undefined && timeoutMs < WEAK_BUDGET_MS;
   const replayable = ['GET', 'HEAD'].includes((init.method ?? 'GET').toUpperCase());
@@ -163,6 +188,8 @@ export async function edgeFetch(
   // 40 с на двух базах, и вызывающий получал «Request canceled» вместо ответа.
   const deadline = timeoutMs === undefined ? undefined : Date.now() + timeoutMs;
   let lastError: unknown = null;
+  let attempted = 0;
+  let answered = false;
 
   for (let i = 0; i < hops.length; i++) {
     const hop = hops[i];
@@ -170,9 +197,12 @@ export async function edgeFetch(
     const remaining = deadline === undefined ? undefined : deadline - Date.now();
     if (remaining !== undefined && remaining <= 0) break;
     const hopBudget = remaining === undefined ? undefined : hopBudgetMs(remaining, hops.length - i);
+    attempted += 1;
 
     try {
-      const { res, bytes } = await fetchWhole(hop.url, init, hopBudget);
+      const route = { tier: hop.tier, origin: hop.origin, attempt: i };
+      const { res, bytes } = await fetchWhole(hop.url, init, hopBudget, route);
+      answered = true;
       if (hopUsable(hop, res)) {
         noteHop(hop, true, bytes);
         return res;
@@ -184,9 +214,12 @@ export async function edgeFetch(
       lastError = error;
       // Отмена вызывающим (не таймаут хопа) — перебор бессмысленен.
       if (init.signal?.aborted) throw error;
+      const cut = isBodyCut(error);
+      if (cut) answered = true;
       if (!(weakBudget && isTimeout(error))) noteHop(hop, false);
-      if (isLast || (error instanceof BodyCutError && !replayable)) throw error;
+      if (cut && !replayable) throw error;
     }
   }
+  if (attempted === hops.length && !answered) throw new EdgeUnreachableError(lastError);
   throw lastError ?? new Error('edge: budget exhausted before any hop answered');
 }
