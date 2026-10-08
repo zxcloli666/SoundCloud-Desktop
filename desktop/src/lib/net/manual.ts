@@ -1,6 +1,6 @@
 import type { TFunction } from 'i18next';
 import { isMac, isWindows } from '../platform';
-import type { DnsAnswer, EnvInfo, Fail, PhaseProbe, TargetCheck, Tone, Verdict } from './check';
+import type { DnsAnswer, Fail, PhaseProbe, TargetCheck, Tone, Verdict } from './check';
 
 export type Os = 'windows' | 'mac' | 'linux';
 export type Column = (typeof COLUMNS)[number];
@@ -24,7 +24,6 @@ const MANUAL: ReadonlySet<Verdict> = new Set([
   'offline',
   'unknown',
 ]);
-const TIMESTAMPS_OFF: ReadonlySet<string> = new Set(['disabled', 'allowed', 'default']);
 const SHOWN_ADDRS = 2;
 const PHASE_BUDGET_MS = 5_000;
 const CLOCK: Intl.DateTimeFormatOptions = { hour: '2-digit', minute: '2-digit' };
@@ -59,15 +58,6 @@ export function fixCommand(os: Os): string | null {
   if (os === 'windows') return 'netsh interface tcp set global timestamps=enabled';
   if (os === 'linux') return 'sudo sysctl -w net.ipv4.tcp_timestamps=1';
   return null;
-}
-
-export function timestampsOff(env: EnvInfo, targets: TargetCheck[]): boolean {
-  const seen = targets
-    .flatMap((target) => [target.probe, target.dohProbe])
-    .map((probe) => probe?.tcpTimestamps ?? null);
-  if (seen.includes(true)) return false;
-  const configured = env.tcpTimestamps !== null && TIMESTAMPS_OFF.has(env.tcpTimestamps);
-  return configured || seen.includes(false);
 }
 
 function addrs(answer: DnsAnswer | null): string {
