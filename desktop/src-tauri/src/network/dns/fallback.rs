@@ -21,6 +21,7 @@ const SEEN_CAPACITY: usize = 64;
 pub(super) type Found = Result<Vec<IpAddr>, Fail>;
 type Search = BoxFuture<'static, Result<Vec<IpAddr>, DnsError>>;
 type Flight = Shared<Search>;
+pub(super) type Check = Shared<BoxFuture<'static, bool>>;
 
 enum Judgement {
     Sane(Vec<IpAddr>),
@@ -35,6 +36,8 @@ pub(super) struct Memory {
     pub(super) suspected: HashMap<String, Instant>,
     pub(super) distrusted_until: Option<Instant>,
     pub(super) warmed_at: Option<Instant>,
+    pub(super) checks: HashMap<String, Check>,
+    pub(super) epoch: u64,
     flights: HashMap<String, Flight>,
 }
 

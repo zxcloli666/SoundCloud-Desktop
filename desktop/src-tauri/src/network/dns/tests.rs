@@ -478,6 +478,78 @@ async fn a_disjoint_doh_answer_moves_the_zone_to_doh() {
     assert!(!suspicion(&resolver, "api.scnative.space").await);
 }
 
+fn slow_doh(addrs: Vec<IpAddr>, delay_ms: u64, calls: &Calls) -> Lookup<DohAnswer> {
+    let inner = doh(Ok(addrs), 60, calls);
+    Arc::new(move |host| {
+        let answer = inner(host);
+        async move {
+            tokio::time::sleep(Duration::from_millis(delay_ms)).await;
+            answer.await
+        }
+        .boxed()
+    })
+}
+
+#[tokio::test(start_paused = true)]
+async fn a_failed_connection_can_wait_for_the_running_check_and_retry() {
+    let doh_calls = Calls::default();
+    let resolver = fallback(
+        system(Ok(ips(&["5.45.192.1"])), 0, &Calls::default()),
+        slow_doh(ips(&["188.165.221.195"]), 400, &doh_calls),
+    );
+    let host = "api.scnative.space";
+    resolver.lookup(host).await.unwrap();
+    let epoch = resolver.epoch();
+    resolver.suspect(host);
+    resolver.suspect(host);
+    let started = tokio::time::Instant::now();
+    assert!(resolver.changed_since(host, epoch).await);
+    assert_eq!(started.elapsed(), Duration::from_millis(400));
+    assert_eq!(doh_calls.count(), 1);
+    assert_eq!(
+        resolver.lookup(host).await.unwrap(),
+        ips(&["188.165.221.195"])
+    );
+    assert!(resolver.memory().checks.is_empty());
+}
+
+#[tokio::test(start_paused = true)]
+async fn a_check_that_finds_the_same_answer_reports_no_change() {
+    let resolver = fallback(
+        system(Ok(ips(&["188.165.221.195"])), 0, &Calls::default()),
+        slow_doh(ips(&["188.165.221.195"]), 400, &Calls::default()),
+    );
+    let host = "api.scnative.space";
+    resolver.lookup(host).await.unwrap();
+    let epoch = resolver.epoch();
+    resolver.suspect(host);
+    assert!(!resolver.changed_since(host, epoch).await);
+    let started = tokio::time::Instant::now();
+    assert!(!resolver.changed_since(host, epoch).await);
+    assert_eq!(
+        started.elapsed(),
+        Duration::ZERO,
+        "nothing left to wait for"
+    );
+}
+
+#[tokio::test]
+async fn a_change_made_elsewhere_is_seen_without_waiting() {
+    let resolver = fallback(
+        system(Ok(ips(&["5.45.192.1"])), 0, &Calls::default()),
+        doh(Ok(ips(&["188.165.221.195"])), 60, &Calls::default()),
+    );
+    let epoch = resolver.epoch();
+    resolver.lookup("api.scnative.space").await.unwrap();
+    assert!(suspicion(&resolver, "api.scnative.space").await);
+    assert!(resolver.changed_since("images.scnative.space", epoch).await);
+    assert!(
+        !resolver
+            .changed_since("images.scnative.space", resolver.epoch())
+            .await
+    );
+}
+
 #[tokio::test]
 async fn a_distrusted_zone_still_uses_a_sane_system_answer_when_doh_is_down() {
     let (sys_calls, doh_calls) = (Calls::default(), Calls::default());

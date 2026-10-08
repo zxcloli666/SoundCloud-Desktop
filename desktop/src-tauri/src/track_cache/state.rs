@@ -1066,12 +1066,16 @@ impl TrackCacheState {
         let Ok(map) = self.storage_cooldowns.lock() else {
             return true;
         };
-        map.get(host).is_none_or(|cooldown| !cooldown.cooling(now_secs()))
+        let epoch = crate::network::dns::epoch();
+        map.get(host)
+            .is_none_or(|cooldown| !cooldown.cooling(now_secs(), epoch))
     }
 
-    fn mark_storage_host_failed(&self, host: &str) {
+    fn mark_storage_host_failed(&self, host: &str, dns_epoch: u64) {
         if let Ok(mut map) = self.storage_cooldowns.lock() {
-            map.entry(host.to_string()).or_default().failed(now_secs());
+            map.entry(host.to_string())
+                .or_default()
+                .failed(now_secs(), dns_epoch);
         }
     }
 

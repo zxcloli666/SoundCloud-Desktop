@@ -90,15 +90,20 @@ pub async fn lookup(host: &str) -> Result<Vec<IpAddr>, DnsError> {
 }
 
 pub fn suspect(host: &str) {
-    let Some(fallback) = SHARED.get() else { return };
-    let host = normalize(host);
-    let Some(system) = fallback.suspicion_due(&host) else {
-        return;
-    };
-    let fallback = fallback.clone();
-    spawn(async move {
-        fallback.confirm(&host, system).await;
-    });
+    if let Some(fallback) = SHARED.get() {
+        fallback.suspect(&normalize(host));
+    }
+}
+
+pub fn epoch() -> u64 {
+    SHARED.get().map_or(0, Fallback::epoch)
+}
+
+pub async fn changed_since(host: &str, epoch: u64) -> bool {
+    match SHARED.get() {
+        Some(fallback) => fallback.changed_since(&normalize(host), epoch).await,
+        None => false,
+    }
 }
 
 fn shared() -> &'static Fallback {

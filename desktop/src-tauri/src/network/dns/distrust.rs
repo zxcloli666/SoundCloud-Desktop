@@ -1,6 +1,7 @@
 use std::net::IpAddr;
 use std::time::Duration;
 
+use futures_util::FutureExt;
 use futures_util::stream::{self, StreamExt};
 use tokio::time::Instant;
 
@@ -26,7 +27,39 @@ impl Fallback {
         let mut memory = self.memory();
         let started = memory.distrusted_until.is_none_or(|at| at <= now);
         memory.distrusted_until = Some(memory.distrusted_until.map_or(until, |at| at.max(until)));
+        if started {
+            memory.epoch += 1;
+        }
         started
+    }
+
+    pub(super) fn epoch(&self) -> u64 {
+        self.memory().epoch
+    }
+
+    pub(super) fn suspect(&self, host: &str) {
+        let Some(system) = self.suspicion_due(host) else {
+            return;
+        };
+        let this = self.clone();
+        let key = host.to_string();
+        let check = async move {
+            let moved = this.confirm(&key, system).await;
+            this.memory().checks.remove(&key);
+            moved
+        }
+        .boxed()
+        .shared();
+        self.memory().checks.insert(host.to_string(), check.clone());
+        spawn(check.map(drop));
+    }
+
+    pub(super) async fn changed_since(&self, host: &str, epoch: u64) -> bool {
+        let check = self.memory().checks.get(host).cloned();
+        if let Some(check) = check {
+            check.await;
+        }
+        self.epoch() != epoch
     }
 
     pub(super) fn warm(&self) {
