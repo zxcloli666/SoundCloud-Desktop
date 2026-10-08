@@ -1,35 +1,15 @@
 import { openUrl } from '@tauri-apps/plugin-opener';
-import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { DISCORD_URL, DOCS_URL } from '../../../lib/constants';
 import { trackedInvoke } from '../../../lib/diagnostics';
-import { BookOpen, FolderOpen, LifeBuoy, MessageCircle } from '../../../lib/icons';
+import { Activity, BookOpen, FolderOpen, LifeBuoy, MessageCircle } from '../../../lib/icons';
+import { useNetCheckStore } from '../../../lib/net/check';
 import { notifyError } from '../../../lib/notify';
+import { ActionButton } from '../ActionButton';
 import { Card, Divider, Row } from '../primitives';
 
 function errorGuideUrl(language: string): string {
   return `${DOCS_URL}/${language.startsWith('ru') ? 'ERRORS.ru.md' : 'ERRORS.md'}`;
-}
-
-function ActionButton({
-  icon,
-  label,
-  onClick,
-}: {
-  icon: ReactNode;
-  label: string;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="flex items-center gap-2 px-4 py-2 rounded-xl text-[12px] font-semibold bg-white/[0.06] text-white/75 hover:bg-white/[0.1] hover:text-white border border-white/[0.06] hover:border-white/[0.12] transition-all duration-200 cursor-pointer"
-    >
-      {icon}
-      {label}
-    </button>
-  );
 }
 
 export function HelpCard() {
@@ -46,6 +26,14 @@ export function HelpCard() {
           icon={<BookOpen size={12} />}
           label={t('settings.helpErrorsOpen')}
           onClick={() => openUrl(errorGuideUrl(i18n.language))}
+        />
+      </Row>
+      <Divider />
+      <Row title={t('settings.helpNetCheck')} desc={t('settings.helpNetCheckDesc')}>
+        <ActionButton
+          icon={<Activity size={12} />}
+          label={t('settings.helpNetCheckOpen')}
+          onClick={() => useNetCheckStore.getState().openCheck()}
         />
       </Row>
       <Divider />

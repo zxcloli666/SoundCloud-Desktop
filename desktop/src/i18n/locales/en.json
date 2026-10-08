@@ -518,8 +518,7 @@
     },
     "blocked": {
       "title": "Can't reach the app's servers",
-      "body": "The internet works, but no request gets through to our servers, not even over the backup routes. It may be an outage on our side or a block by your provider, zapret or a VPN. If the status page is all green, the problem is on your network. Your downloaded music is available in the offline library.",
-      "rule": "If the app works with zapret turned off, add scnative.space to list-exclude. If your provider blocks it, add scnative.space to list-general: that also covers *.relay.scnative.space."
+      "body": "The internet works, but no request gets through to our servers, not even over the backup routes. It may be an outage on our side or a block by your provider, zapret or a VPN. If the status page is all green, the problem is on your network. Your downloaded music is available in the offline library."
     },
     "reachable": {
       "title": "Servers are up, your network can't reach them",

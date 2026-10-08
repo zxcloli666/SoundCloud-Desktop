@@ -1,7 +1,8 @@
 import React from 'react';
 import {useTranslation} from 'react-i18next';
 import {useHostStatusStore} from '../../lib/host-status';
-import {RotateCcw, Wifi, WifiOff} from '../../lib/icons';
+import {Activity, RotateCcw, Wifi, WifiOff} from '../../lib/icons';
+import {useNetCheckStore} from '../../lib/net/check';
 import {usePerfMode} from '../../lib/perf';
 import {useAppStatusStore} from '../../stores/app-status';
 import {SyncStatusChip} from '../sync/SyncStatusChip';
@@ -68,6 +69,16 @@ export const OfflineHead = React.memo(function OfflineHead({
           >
             <RotateCcw size={12} className={probing ? 'animate-spin' : undefined} />
             {t('offline.tryOnline')}
+          </button>
+        )}
+        {!online && (
+          <button
+            type="button"
+            onClick={() => useNetCheckStore.getState().openCheck()}
+            className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-3.5 py-1.5 text-[12px] font-semibold text-white/75 transition-colors hover:border-white/[0.16] hover:bg-white/[0.09] hover:text-white/95"
+          >
+            <Activity size={12} />
+            {t('netCheck.open')}
           </button>
         )}
       </div>
