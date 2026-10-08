@@ -10,7 +10,7 @@ use crate::network::{fail, system_proxy};
 
 const PROBE_TIMEOUT: Duration = Duration::from_secs(5);
 const MAX_PARALLEL: usize = 4;
-const MAX_ROUTES: usize = 6;
+const MAX_IN_FLIGHT: usize = 8;
 const ORIGIN_ZONE: &str = "scnative.space";
 const DIRECT_EP: &str = "@direct";
 const CUT_SHAPES: [Shape; 4] = [Shape::Cut, Shape::Blackhole, Shape::Reset, Shape::Throttled];
@@ -142,43 +142,46 @@ pub async fn probe_services(
     pool: &Pool,
     direct_bytes: u64,
 ) -> Vec<Sample> {
-    let batches = stream::iter(topology.endpoints.clone())
-        .map(|endpoint| {
-            let client = client.clone();
-            let routes = endpoint.routes(&pool.relays);
-            let judged = !system_proxy::proxied(&endpoint.url);
-            async move {
-                let outcomes = hit_all(&client, routes).await;
-                if judged {
-                    judge(&endpoint.url, &outcomes, direct_bytes);
-                }
-                outcomes
-                    .into_iter()
-                    .map(|(route, outcome)| Sample {
-                        ep: endpoint.id.clone(),
-                        via: route.via,
-                        ok: outcome.ok,
-                        ms: outcome.ms,
-                        fail: outcome.fail.map(str::to_string),
-                        link: None,
-                    })
-                    .collect::<Vec<_>>()
-            }
+    let routes: Vec<(usize, Route)> = topology
+        .endpoints
+        .iter()
+        .enumerate()
+        .flat_map(|(at, endpoint)| {
+            endpoint
+                .routes(&pool.relays)
+                .into_iter()
+                .map(move |route| (at, route))
         })
-        .buffer_unordered(MAX_PARALLEL)
-        .collect::<Vec<_>>()
-        .await;
-
-    batches.into_iter().flatten().collect()
+        .collect();
+    let mut grouped: Vec<Vec<(Route, Outcome)>> =
+        topology.endpoints.iter().map(|_| Vec::new()).collect();
+    for (at, route, outcome) in hit_all(client, routes).await {
+        grouped[at].push((route, outcome));
+    }
+    let mut samples = Vec::new();
+    for (endpoint, outcomes) in topology.endpoints.iter().zip(grouped) {
+        if !system_proxy::proxied(&endpoint.url) {
+            judge(&endpoint.url, &outcomes, direct_bytes);
+        }
+        samples.extend(outcomes.into_iter().map(|(route, outcome)| Sample {
+            ep: endpoint.id.clone(),
+            via: route.via,
+            ok: outcome.ok,
+            ms: outcome.ms,
+            fail: outcome.fail.map(str::to_string),
+            link: None,
+        }));
+    }
+    samples
 }
 
-async fn hit_all(client: &Client, routes: Vec<Route>) -> Vec<(Route, Outcome)> {
+async fn hit_all(client: &Client, routes: Vec<(usize, Route)>) -> Vec<(usize, Route, Outcome)> {
     stream::iter(routes)
-        .map(|route| async move {
+        .map(|(at, route)| async move {
             let outcome = hit(client, &route.url).await;
-            (route, outcome)
+            (at, route, outcome)
         })
-        .buffer_unordered(MAX_ROUTES)
+        .buffer_unordered(MAX_IN_FLIGHT)
         .collect()
         .await
 }
@@ -377,12 +380,24 @@ mod tests {
         let started = Instant::now();
         let outcomes = hit_all(
             &client(),
-            vec![route("direct", &url), route("relay:r1", &url)],
+            vec![(0, route("direct", &url)), (0, route("relay:r1", &url))],
         )
         .await;
         assert!(started.elapsed() < Duration::from_millis(700));
         assert_eq!(outcomes.len(), 2);
-        assert!(outcomes.iter().all(|(_, outcome)| outcome.ok));
+        assert!(outcomes.iter().all(|(_, _, outcome)| outcome.ok));
+    }
+
+    #[tokio::test]
+    async fn every_route_of_a_round_shares_one_in_flight_limit() {
+        let url = server(Duration::from_millis(300)).await;
+        let routes = (0..super::MAX_IN_FLIGHT + 1)
+            .map(|at| (at % 3, route("direct", &url)))
+            .collect();
+        let started = Instant::now();
+        let outcomes = hit_all(&client(), routes).await;
+        assert_eq!(outcomes.len(), super::MAX_IN_FLIGHT + 1);
+        assert!(started.elapsed() >= Duration::from_millis(600));
     }
 
     #[tokio::test]

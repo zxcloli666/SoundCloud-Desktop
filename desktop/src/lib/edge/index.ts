@@ -112,6 +112,8 @@ function hopBudgetMs(remaining: number, hopsLeft: number): number {
   return remaining - reserve;
 }
 
+const BACKUP_DELAY_MS = 300;
+
 export type ProbeOutcome =
   | { kind: 'answered'; status: number; tier: Tier }
   | { kind: 'transport' }
@@ -124,23 +126,41 @@ export function edgeProbe(url: string, hopTimeoutMs: number): Promise<ProbeOutco
   return new Promise((resolve) => {
     let pending = hops.length;
     let transport = false;
+    let done = false;
+    let backupsStarted = false;
+    let backupTimer: ReturnType<typeof setTimeout> | undefined;
+    const finish = (outcome: ProbeOutcome) => {
+      if (done) return;
+      done = true;
+      clearTimeout(backupTimer);
+      for (const controller of controllers) controller.abort();
+      resolve(outcome);
+    };
     const settle = () => {
       pending -= 1;
-      if (pending === 0) resolve({ kind: transport ? 'transport' : 'unreachable' });
+      if (pending === 0) finish({ kind: transport ? 'transport' : 'unreachable' });
     };
-    const fetched = (hop: Hop, { res }: Fetched) => {
-      if (hopUsable(hop, res)) {
-        resolve({ kind: 'answered', status: res.status, tier: hop.tier });
-        for (const controller of controllers) controller.abort();
-      } else {
-        transport = true;
-      }
-      settle();
+    const startBackups = () => {
+      if (backupsStarted || done) return;
+      backupsStarted = true;
+      clearTimeout(backupTimer);
+      for (let at = 1; at < hops.length; at++) start(at);
     };
-    hops.forEach((hop, at) => {
+    const start = (at: number) => {
+      const hop = hops[at];
       const init: RequestInit = { cache: 'no-store', signal: controllers[at].signal };
-      fetchWhole(hop.url, init, hopTimeoutMs).then((done) => fetched(hop, done), settle);
-    });
+      const over = () => {
+        settle();
+        if (at === 0) startBackups();
+      };
+      fetchWhole(hop.url, init, hopTimeoutMs).then(({ res }) => {
+        if (hopUsable(hop, res)) finish({ kind: 'answered', status: res.status, tier: hop.tier });
+        else transport = true;
+        over();
+      }, over);
+    };
+    start(0);
+    if (hops.length > 1) backupTimer = setTimeout(startBackups, BACKUP_DELAY_MS);
   });
 }
 
