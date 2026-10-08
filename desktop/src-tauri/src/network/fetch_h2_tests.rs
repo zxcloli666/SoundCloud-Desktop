@@ -1,13 +1,22 @@
 use std::sync::atomic::Ordering;
 use std::time::{Duration, Instant};
 
-use super::{FetchRequest, Head, NetKind, configured, perform};
+use wreq::http2::Http2Options;
+
+use super::{FetchRequest, Head, NetKind, configured, perform, ping};
 use crate::network::h2_server::{Mode, h2_server};
 
 fn h2_client() -> wreq::Client {
-    configured(wreq::Client::builder().no_proxy().http2_only())
-        .build()
-        .unwrap()
+    let mut http2 = Http2Options::default();
+    ping(&mut http2);
+    configured(
+        wreq::Client::builder()
+            .no_proxy()
+            .http2_only()
+            .http2_options(http2),
+    )
+    .build()
+    .unwrap()
 }
 
 fn get(url: &str) -> FetchRequest {

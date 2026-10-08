@@ -4,5 +4,5 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-wreq = { version = "5", features = ["json", "stream", "gzip", "brotli"] }
+wreq = { version = "0.16.1", features = ["json", "stream", "gzip", "brotli"] }
 thiserror = "2"

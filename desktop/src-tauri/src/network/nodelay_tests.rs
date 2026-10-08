@@ -8,7 +8,7 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpListener;
 use tokio_rustls::TlsAcceptor;
 
-use super::configured;
+use super::{configured, pinging};
 
 const CERT: &[u8] = include_bytes!("netcheck/fixtures/good.der");
 const KEY: &[u8] = include_bytes!("netcheck/fixtures/good.key.der");
@@ -115,10 +115,12 @@ async fn nodelay_after_a_request(client: wreq::Client, tls: bool) -> Vec<bool> {
 
 #[tokio::test]
 async fn a_tls_connection_sends_without_waiting_for_acks() {
+    let (_, emulation) = sc_fingerprint::emulation(None);
     let client = configured(
-        sc_fingerprint::builder(None)
+        wreq::Client::builder()
+            .emulation(pinging(emulation))
             .no_proxy()
-            .cert_verification(false),
+            .tls_cert_verification(false),
     )
     .build()
     .unwrap();

@@ -7,7 +7,7 @@ use std::sync::atomic::{AtomicU32, Ordering};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use futures_util::StreamExt;
-use wreq::Url;
+use url::Url;
 use wreq::Client;
 use tauri::Emitter;
 use tokio::fs::File;
@@ -1092,8 +1092,10 @@ impl TrackCacheState {
         match tokio::time::timeout(headers, self.client.get(redirect_url).send()).await {
             Ok(Ok(response)) => Ok(response),
             Ok(Err(err)) => {
-                let failed_at = err.url().map_or(PRESIGN_ORIGIN, |url| url.as_str());
-                crate::network::edge::note_url(failed_at, Tier::Direct, false);
+                let failed_at = err
+                    .uri()
+                    .map_or_else(|| PRESIGN_ORIGIN.to_string(), ToString::to_string);
+                crate::network::edge::note_url(&failed_at, Tier::Direct, false);
                 Err(err.to_string())
             }
             Err(_) => {

@@ -5,8 +5,11 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpListener;
 use tokio::sync::oneshot;
 use wreq::Method;
+use wreq::http2::Http2Options;
 
-use super::{FetchRequest, Head, NetKind, Route, configured, frame, net_kind, outgoing, perform};
+use super::{
+    FetchRequest, Head, NetKind, Route, configured, frame, net_kind, outgoing, perform, ping,
+};
 use crate::network::edge::Tier;
 use crate::network::fail::FailKind;
 use crate::network::netcheck::model::Role;
@@ -31,7 +34,9 @@ fn request(url: String, method: &str, timeout_ms: Option<u64>) -> FetchRequest {
 }
 
 fn client() -> wreq::Client {
-    configured(wreq::Client::builder().no_proxy())
+    let mut http2 = Http2Options::default();
+    ping(&mut http2);
+    configured(wreq::Client::builder().no_proxy().http2_options(http2))
         .build()
         .unwrap()
 }

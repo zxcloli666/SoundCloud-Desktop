@@ -28,10 +28,11 @@ base64 = "0.22"
 sha2 = "0.10"
 md-5 = "0.10"
 hex = "0.4"
-sc-fingerprint = { git = "https://github.com/zxcloli666/SoundCloud-Backend", tag = "v8.5.8" }
-wreq = { version = "5", features = ["json", "stream", "gzip", "brotli", "socks", "multipart"] }
+sc-fingerprint = { git = "https://github.com/zxcloli666/SoundCloud-Backend", rev = "f01f48639b3a1d284bba45a523addc51e0942564" }
+wreq = { version = "0.16.1", features = ["json", "query", "stream", "gzip", "brotli", "deflate", "zstd", "charset", "socks", "multipart"] }
 futures-util = "0.3"
 http = "1"
+tower = { version = "0.5", default-features = false }
 hyper-util = { version = "0.1", features = ["client-proxy", "client-proxy-system"] }
 urlencoding = "2"
 tauri-plugin-single-instance = "2.4.0"
@@ -81,7 +82,6 @@ lto = true
 [patch.crates-io]
 tauri = { git = "https://github.com/tauri-apps/tauri", branch = "feat/cef" }
 tauri-build = { git = "https://github.com/tauri-apps/tauri", branch = "feat/cef" }
-wreq = { path = "patches/wreq" }
 
 [target.'cfg(windows)'.dependencies]
 windows-registry = "0.6"

@@ -2,9 +2,11 @@ use std::collections::HashMap;
 use std::sync::{LazyLock, Mutex, MutexGuard, OnceLock};
 use std::time::{Duration, Instant};
 
+use futures_util::StreamExt;
 use serde::{Deserialize, Serialize};
 use tokio::task::AbortHandle;
 use wreq::header::{CONTENT_LENGTH, HeaderMap, HeaderName, HeaderValue};
+use wreq::http2::Http2Options;
 use wreq::{Method, redirect::Policy};
 
 use crate::network::edge::{Hop, Tier};
@@ -98,9 +100,9 @@ pub fn client() -> Option<&'static wreq::Client> {
     static CLIENT: OnceLock<Option<wreq::Client>> = OnceLock::new();
     CLIENT
         .get_or_init(|| {
-            configured(system_proxy::follow(sc_fingerprint::builder(None)))
-                .build()
-                .ok()
+            let (_, emulation) = sc_fingerprint::emulation(None);
+            let builder = wreq::Client::builder().emulation(pinging(emulation));
+            configured(system_proxy::follow(builder)).build().ok()
         })
         .as_ref()
 }
@@ -110,12 +112,19 @@ pub fn configured(builder: wreq::ClientBuilder) -> wreq::ClientBuilder {
         .redirect(Policy::limited(MAX_REDIRECTS))
         .pool_max_idle_per_host(IDLE_PER_HOST)
         .connect_timeout(CONNECT_TIMEOUT)
-        .http2(|mut http2| {
-            http2
-                .keep_alive_interval(PING_AFTER_SILENCE)
-                .keep_alive_timeout(PING_TIMEOUT)
-                .keep_alive_while_idle(false);
-        })
+}
+
+pub fn pinging(mut emulation: wreq::Emulation) -> wreq::Emulation {
+    if let Some(http2) = emulation.http2_options.as_mut() {
+        ping(http2);
+    }
+    emulation
+}
+
+fn ping(http2: &mut Http2Options) {
+    http2.keep_alive_interval = Some(PING_AFTER_SILENCE);
+    http2.keep_alive_timeout = PING_TIMEOUT;
+    http2.keep_alive_while_idle = false;
 }
 
 fn inflight() -> MutexGuard<'static, HashMap<u32, AbortHandle>> {
@@ -179,7 +188,7 @@ async fn perform(client: &wreq::Client, request: FetchRequest) -> (Head, Vec<u8>
         status: status.as_u16(),
         status_text: status.canonical_reason().unwrap_or_default().to_string(),
         headers: incoming(response.headers()),
-        url: response.url().to_string(),
+        url: response.uri().to_string(),
     };
     match read_body(response, deadline).await {
         Ok(body) => (head, body),
@@ -191,21 +200,22 @@ async fn perform(client: &wreq::Client, request: FetchRequest) -> (Head, Vec<u8>
 }
 
 async fn read_body(
-    mut response: wreq::Response,
+    response: wreq::Response,
     deadline: Option<tokio::time::Instant>,
 ) -> Result<Vec<u8>, String> {
     let mut body = Vec::new();
+    let mut chunks = std::pin::pin!(response.bytes_stream());
     loop {
         let stall_at = tokio::time::Instant::now() + BODY_STALL;
         let until = deadline.map_or(stall_at, |at| at.min(stall_at));
-        match tokio::time::timeout_at(until, response.chunk()).await {
+        match tokio::time::timeout_at(until, chunks.next()).await {
             Err(_) if until < stall_at => {
                 return Err("timed out while reading the body".to_string());
             }
             Err(_) => return Err("the body stalled".to_string()),
-            Ok(Err(error)) => return Err(described(&error)),
-            Ok(Ok(None)) => return Ok(body),
-            Ok(Ok(Some(chunk))) => body.extend_from_slice(&chunk),
+            Ok(Some(Err(error))) => return Err(described(&error)),
+            Ok(None) => return Ok(body),
+            Ok(Some(Ok(chunk))) => body.extend_from_slice(&chunk),
         }
     }
 }
@@ -291,8 +301,8 @@ pub fn net_kind(kind: FailKind) -> NetKind {
 
 fn described(error: &wreq::Error) -> String {
     let mut text = error.to_string();
-    if let Some(url) = error.url() {
-        text = text.replace(&format!(" for url ({})", url.as_str()), "");
+    if let Some(uri) = error.uri() {
+        text = text.replace(&format!(" for uri ({uri})"), "");
     }
     let mut cause = std::error::Error::source(error);
     while let Some(current) = cause {
