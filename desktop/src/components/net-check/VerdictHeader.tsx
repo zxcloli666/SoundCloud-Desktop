@@ -18,7 +18,7 @@ import { VerdictIcon, verdictTitle } from './VerdictIcon';
 
 const MAX_CHIPS = 3;
 const CALM: ReadonlySet<Verdict> = new Set(['ok', 'backupDown', 'down']);
-const NO_TARGETS: TargetCheck[] = [];
+const NO_ADDRS: string[] = [];
 
 type ChipTone = 'amber' | 'sky';
 
@@ -100,7 +100,7 @@ export const VerdictHeader = React.memo(() => {
         hint={hint}
         broken={failed && !settled}
         env={settled ? report.env : null}
-        targets={settled ? report.targets : NO_TARGETS}
+        addrs={settled ? report.addrs : NO_ADDRS}
       />
       {chips.length > 0 && (
         <div className="mt-3 flex flex-wrap justify-center gap-1.5">

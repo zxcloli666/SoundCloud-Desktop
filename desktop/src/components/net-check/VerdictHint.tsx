@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { ZAPRET_GUIDE_URL } from '../../lib/constants';
 import { ExternalLink } from '../../lib/icons';
-import type { EnvInfo, Hint, TargetCheck, Verdict } from '../../lib/net/check';
+import type { EnvInfo, Hint, Verdict } from '../../lib/net/check';
 import { type DpiAdvice, type DpiKind, dpiAdvice } from '../../lib/net/dpi';
 import { currentOs, fixCommand } from '../../lib/net/manual';
 import { CopyLine } from './CopyLine';
@@ -15,7 +15,7 @@ interface HintProps {
   hint: Hint;
   broken: boolean;
   env: EnvInfo | null;
-  targets: TargetCheck[];
+  addrs: string[];
 }
 
 const ADVICE_TEXT: Record<DpiKind, string> = {
@@ -84,7 +84,7 @@ export const VerdictHint = React.memo((props: HintProps) => {
   const os = currentOs();
   const fix = !props.broken && props.hint === 'zapretTimestamps' ? fixCommand(os) : null;
   const advice =
-    !props.broken && !fix && props.hint !== 'none' ? dpiAdvice(props.env, props.targets, os) : null;
+    !props.broken && !fix && props.hint !== 'none' ? dpiAdvice(props.env, props.addrs, os) : null;
   return (
     <>
       <p className="text-[12.5px] text-white/35 mt-1.5 leading-relaxed max-w-[340px]">

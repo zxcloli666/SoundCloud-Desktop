@@ -168,6 +168,7 @@ export interface NetReport {
   env: EnvInfo | null;
   edge: EdgeSnapshot;
   recent: PathEvent[];
+  addrs: string[];
 }
 
 interface NetCheckUpdate {

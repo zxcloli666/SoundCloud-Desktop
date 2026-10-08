@@ -26,6 +26,8 @@ pub struct NetReport {
     pub env: Option<EnvInfo>,
     pub edge: EdgeSnapshot,
     pub recent: Vec<PathEvent>,
+    #[serde(default)]
+    pub addrs: Vec<IpAddr>,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]

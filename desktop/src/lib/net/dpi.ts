@@ -1,4 +1,4 @@
-import type { EnvInfo, TargetCheck } from './check';
+import type { EnvInfo } from './check';
 import type { Os } from './manual';
 
 export type DpiKind = 'flowseal' | 'zapret' | 'other';
@@ -49,20 +49,11 @@ function zapretDir(env: EnvInfo | null, name: string): string {
   return configured ?? (name === 'nfqws2' ? '/opt/zapret2' : '/opt/zapret');
 }
 
-export function ourAddrs(targets: TargetCheck[]): string[] {
-  const addrs = targets.flatMap((target) => {
-    if (target.doh && target.doh.addrs.length > 0) return target.doh.addrs;
-    return target.dns === 'sane' ? target.system.addrs : [];
-  });
-  return [...new Set(addrs)];
-}
-
-export function dpiAdvice(env: EnvInfo | null, targets: TargetCheck[], os: Os): DpiAdvice {
+export function dpiAdvice(env: EnvInfo | null, addrs: string[], os: Os): DpiAdvice {
   const names = toolNames(env);
   const name = names.find((tool) => kindOf(tool, os) !== 'other') ?? names[0] ?? FALLBACK_NAME;
   const kind = kindOf(name, os);
   const domains = [...EXCLUDED_DOMAINS];
-  const addrs = ourAddrs(targets);
   if (kind === 'flowseal') {
     const lists: ExcludeList[] = [{ file: 'lists/list-exclude-user.txt', lines: domains }];
     if (addrs.length > 0) lists.push({ file: 'lists/ipset-exclude-user.txt', lines: addrs });

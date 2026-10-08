@@ -1,3 +1,4 @@
+mod addrs;
 mod der;
 mod env;
 #[cfg(test)]
@@ -167,6 +168,7 @@ fn edge_snapshot() -> EdgeSnapshot {
 async fn run(trigger: Trigger, reason: Option<String>) -> NetReport {
     let started = Instant::now();
     let list = targets::targets();
+    let hosts = list.iter().map(|target| target.host.clone()).collect();
     let mut report = NetReport {
         version: REPORT_VERSION,
         at_ms: now_ms(),
@@ -183,6 +185,7 @@ async fn run(trigger: Trigger, reason: Option<String>) -> NetReport {
         env: None,
         edge: edge_snapshot(),
         recent: paths::recent(RECENT_EVENTS),
+        addrs: Vec::new(),
     };
     let checker = CHECKER.get();
     if let Some(checker) = checker {
@@ -209,9 +212,11 @@ async fn run(trigger: Trigger, reason: Option<String>) -> NetReport {
             Vec::new()
         }
     };
-    let ((), doh, env) = tokio::join!(collect, providers, environment);
+    let known = addrs::known(hosts);
+    let ((), doh, env, known) = tokio::join!(collect, providers, environment, known);
     report.doh = doh;
     report.env = env.ok();
+    report.addrs = addrs::ours(&report.targets, known);
     let online = targets::internet_seen(&report.targets, &report.doh);
     let main_ok = report
         .targets
