@@ -121,6 +121,7 @@ pub fn run() {
                 local_covers_dir,
             ));
             let rt_handle = rt.handle().clone();
+            network::dns::init(rt_handle.clone());
 
             std::thread::spawn(move || {
                 rt.block_on(std::future::pending::<()>());

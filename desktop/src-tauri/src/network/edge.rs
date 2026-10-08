@@ -28,6 +28,8 @@ const RELAYS: &[(&str, &str)] = &[
     ("pay.scnative.space", "pay"),
 ];
 
+const SERVICE_HOSTS: [&str; 2] = ["health.scnative.space", "status.soundcloud-desktop.fun"];
+
 const INHERIT: &[(&str, &str)] = &[
     ("storage.scnative.space", "stream.scnative.space"),
     ("storage-star.scnative.space", "stream-star.scnative.space"),
@@ -372,6 +374,30 @@ pub fn routed_origins() -> impl Iterator<Item = &'static str> {
     RELAYS.iter().map(|(origin, _)| *origin)
 }
 
+pub fn zone_hosts() -> Vec<String> {
+    routed_origins()
+        .chain(SERVICE_HOSTS)
+        .map(str::to_string)
+        .collect()
+}
+
+pub fn is_known_host(host: &str) -> bool {
+    if routed_origins()
+        .chain(SERVICE_HOSTS)
+        .any(|known| known == host)
+    {
+        return true;
+    }
+    let Some(rest) = host
+        .strip_suffix(RELAY_ZONE)
+        .and_then(|rest| rest.strip_suffix('.'))
+    else {
+        return false;
+    };
+    let node = rest.rsplit('.').next().unwrap_or(rest);
+    relay_pool().iter().any(|pooled| pooled == node)
+}
+
 pub fn service_label(origin: &str) -> Option<&'static str> {
     relay_label(origin)
 }
@@ -692,7 +718,8 @@ mod tests {
 
     use super::{
         Change, Event, INHERIT, Inner, PROVEN_BYTES, Persisted, RELAYS, REVALIDATE, Tier,
-        audio_tier_order, relay_hosts_over, restore, set_pool, snapshot, transport_failure,
+        audio_tier_order, is_known_host, relay_hosts_over, restore, set_pool, snapshot,
+        transport_failure, zone_hosts,
     };
 
     const ORIGIN: &str = "stream.scnative.space";
@@ -754,6 +781,31 @@ mod tests {
             ["api.r1.relay.scnative.space", "api.r7.relay.scnative.space"]
         );
         assert_eq!(super::call_pool(), [("call-1".to_string(), 1.0)]);
+    }
+
+    #[test]
+    fn our_hosts_and_pooled_relays_are_known_to_the_resolver() {
+        set_pool(vec!["r1".into(), "r7".into()], Vec::new());
+        for host in [
+            "api.scnative.space",
+            "s3.scnative.space",
+            "health.scnative.space",
+            "status.soundcloud-desktop.fun",
+            "api.r7.relay.scnative.space",
+            "r1.relay.scnative.space",
+        ] {
+            assert!(is_known_host(host), "{host}");
+        }
+        for host in [
+            "api.r9.relay.scnative.space",
+            "nx-1f2e.relay.scnative.space",
+            "relay.scnative.space",
+            "call-1.scnative.space",
+            "soundcloud.com",
+        ] {
+            assert!(!is_known_host(host), "{host}");
+        }
+        assert_eq!(zone_hosts().len(), RELAYS.len() + 2);
     }
 
     #[test]

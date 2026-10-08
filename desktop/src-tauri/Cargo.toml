@@ -58,6 +58,9 @@ ffmpeg-sidecar = "2.5.2"
 if-addrs = "0.15"
 uuid = { version = "1", features = ["v4"] }
 
+[dev-dependencies]
+tokio = { version = "1", features = ["test-util"] }
+
 [features]
 # Opt-in: рендер через CEF (Chromium) вместо wry/webkitgtk. Требует [patch.crates-io] ниже.
 # Дефолтная сборка (без этой фичи) остаётся на wry.

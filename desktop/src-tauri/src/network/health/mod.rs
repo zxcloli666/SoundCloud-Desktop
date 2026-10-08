@@ -41,7 +41,7 @@ pub fn start(data_dir: PathBuf, app: crate::rt::AppHandle, runtime: Handle) {
     let app_version = env!("CARGO_PKG_VERSION").to_string();
     let client_id = load_or_create_identity(&data_dir);
     let build = |pooled: bool| {
-        let builder = wreq::Client::builder()
+        let builder = crate::network::dns::install(wreq::Client::builder())
             .no_proxy()
             .user_agent(format!("soundcloud-desktop-health/{app_version}"))
             .connect_timeout(Duration::from_secs(3));

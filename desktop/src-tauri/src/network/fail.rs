@@ -4,6 +4,8 @@ use std::io;
 
 use serde::{Deserialize, Serialize};
 
+use super::dns::DnsError;
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum FailKind {
@@ -143,6 +145,9 @@ pub fn of_wreq(err: &wreq::Error) -> FailKind {
     let mut text = String::new();
     let mut source = err.source();
     while let Some(cause) = source {
+        if let Some(dns) = cause.downcast_ref::<DnsError>() {
+            return dns.kind;
+        }
         if let Some(kind) = cause.downcast_ref::<io::Error>().and_then(of_io) {
             return kind;
         }
@@ -164,13 +169,15 @@ pub fn of_wreq(err: &wreq::Error) -> FailKind {
 
 #[cfg(test)]
 mod tests {
+    use std::error::Error as StdError;
     use std::io;
+    use std::sync::Arc;
     use std::time::Duration;
 
     use tokio::io::AsyncReadExt;
     use tokio::net::TcpListener;
 
-    use super::{Fail, FailKind, Phase, of_io, of_text, of_wreq};
+    use super::{DnsError, Fail, FailKind, Phase, of_io, of_text, of_wreq};
 
     #[test]
     fn io_kinds_map_to_failure_classes() {
@@ -285,5 +292,35 @@ mod tests {
         });
         let err = error_from(format!("http://{addr}/"), Duration::from_millis(300)).await;
         assert_eq!(of_wreq(&err), FailKind::Timeout);
+    }
+
+    struct Refusing(FailKind);
+
+    impl wreq::dns::Resolve for Refusing {
+        fn resolve(&self, name: wreq::dns::Name) -> wreq::dns::Resolving {
+            let error: Box<dyn StdError + Send + Sync> = Box::new(DnsError {
+                kind: self.0,
+                host: name.as_str().to_string(),
+                reason: "no answer".to_string(),
+            });
+            Box::pin(async move { Err(error) })
+        }
+    }
+
+    #[tokio::test]
+    async fn a_resolver_failure_keeps_its_own_kind() {
+        for kind in [FailKind::Dns, FailKind::DnsBogus] {
+            let client = wreq::Client::builder()
+                .no_proxy()
+                .dns_resolver(Arc::new(Refusing(kind)))
+                .build()
+                .unwrap();
+            let err = client
+                .get("http://api.scnative.space/health")
+                .send()
+                .await
+                .expect_err("the lookup must fail");
+            assert_eq!(of_wreq(&err), kind);
+        }
     }
 }

@@ -87,10 +87,9 @@ where
 }
 
 async fn resolves(host: String) -> bool {
-    tokio::net::lookup_host((host.as_str(), 443))
+    crate::network::dns::lookup(&host)
         .await
-        .map(|mut addrs| addrs.next().is_some())
-        .unwrap_or(false)
+        .is_ok_and(|addrs| !addrs.is_empty())
 }
 
 pub fn merge(from_topology: Vec<String>, discovered: Vec<String>) -> Vec<String> {
