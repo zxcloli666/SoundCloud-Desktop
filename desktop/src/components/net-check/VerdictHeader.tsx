@@ -16,6 +16,7 @@ import { CopyLine } from './CopyLine';
 import { VerdictIcon, verdictTitle } from './VerdictIcon';
 
 const MAX_CHIPS = 3;
+const CALM: ReadonlySet<Verdict> = new Set(['ok', 'backupDown']);
 
 type ChipTone = 'amber' | 'sky';
 
@@ -30,6 +31,10 @@ const CHIP_TONE: Record<ChipTone, { dot: string; glow: string; text: string }> =
   sky: { dot: 'bg-sky-400', glow: '0 0 8px rgba(56,189,248,0.7)', text: 'text-sky-300/90' },
 };
 
+function timestampsOff(value: string | null): boolean {
+  return value !== null && value !== 'enabled';
+}
+
 function envChips(t: TFunction, env: EnvInfo | null, hint: Hint): Chip[] {
   if (!env) return [];
   const names = [...new Set(env.dpi.map((tool) => tool.name))];
@@ -39,7 +44,7 @@ function envChips(t: TFunction, env: EnvInfo | null, hint: Hint): Chip[] {
     label: t('netCheck.env.dpi', { name }),
   }));
   const zapret = names.length > 0 || hint !== 'none';
-  if (zapret && env.tcpTimestamps === 'disabled') {
+  if (zapret && timestampsOff(env.tcpTimestamps)) {
     chips.push({ key: 'ts', tone: 'amber', label: t('netCheck.env.timestampsOff') });
   }
   if (env.proxy) chips.push({ key: 'proxy', tone: 'sky', label: t('netCheck.env.proxy') });
@@ -117,7 +122,7 @@ export const VerdictHeader = React.memo(() => {
   const verdict = useShownVerdict();
   const settled = report !== null && verdict !== 'checking' && report.verdict === verdict;
   const hint = settled ? report.hint : 'none';
-  const chips = settled && verdict !== 'ok' ? envChips(t, report.env, hint) : [];
+  const chips = settled && !CALM.has(verdict) ? envChips(t, report.env, hint) : [];
   const time = settled
     ? new Date(report.atMs).toLocaleTimeString(i18n.language, {
         hour: '2-digit',

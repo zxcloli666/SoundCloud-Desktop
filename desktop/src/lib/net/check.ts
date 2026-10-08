@@ -6,6 +6,7 @@ import type { Tier } from '../edge';
 export type Verdict =
   | 'checking'
   | 'ok'
+  | 'backupDown'
   | 'partial'
   | 'relayOnly'
   | 'dns'

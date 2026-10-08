@@ -17,6 +17,7 @@ import type { Verdict } from '../../lib/net/check';
 const ICONS: Record<Verdict, { Icon: typeof Globe; tone: string }> = {
   checking: { Icon: Loader2, tone: 'animate-spin text-white/50' },
   ok: { Icon: CircleCheck, tone: 'text-emerald-300/80' },
+  backupDown: { Icon: CircleCheck, tone: 'text-emerald-300/80' },
   partial: { Icon: TriangleAlert, tone: 'text-amber-300/80' },
   relayOnly: { Icon: Radio, tone: 'text-emerald-300/80' },
   dns: { Icon: Globe, tone: 'text-amber-300/80' },

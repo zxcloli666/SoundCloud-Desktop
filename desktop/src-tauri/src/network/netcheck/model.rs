@@ -49,6 +49,7 @@ pub struct AppInfo {
 pub enum Verdict {
     Checking,
     Ok,
+    BackupDown,
     Partial,
     RelayOnly,
     Dns,
@@ -285,6 +286,7 @@ impl Verdict {
         match self {
             Self::Checking => "checking",
             Self::Ok => "ok",
+            Self::BackupDown => "backup-down",
             Self::Partial => "partial",
             Self::RelayOnly => "relay-only",
             Self::Dns => "dns",

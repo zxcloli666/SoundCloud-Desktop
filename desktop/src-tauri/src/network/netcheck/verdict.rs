@@ -7,6 +7,7 @@ use crate::network::dns;
 use crate::network::fail::{FailKind, Phase};
 
 const TS_CONFIG_KEYS: [&str; 2] = ["NFQWS_OPT", "NFQWS2_OPT"];
+const TIMESTAMPS_ON: &str = "enabled";
 
 pub fn verdict(targets: &[TargetCheck], internet: Internet, remote: Remote) -> Verdict {
     if targets.is_empty() {
@@ -14,6 +15,12 @@ pub fn verdict(targets: &[TargetCheck], internet: Internet, remote: Remote) -> V
     }
     if targets.iter().all(|target| target.ok) {
         return Verdict::Ok;
+    }
+    if targets
+        .iter()
+        .all(|target| target.ok || target.id == TargetId::Relay)
+    {
+        return Verdict::BackupDown;
     }
     if internet == Internet::Offline {
         return Verdict::Offline;
@@ -143,7 +150,9 @@ fn ts_strategy(env: &EnvInfo) -> bool {
 }
 
 fn timestamps_off(env: &EnvInfo, targets: &[TargetCheck]) -> bool {
-    env.tcp_timestamps.as_deref() == Some("disabled")
+    env.tcp_timestamps
+        .as_deref()
+        .is_some_and(|value| value != TIMESTAMPS_ON)
         || targets
             .iter()
             .flat_map(|target| [&target.probe, &target.doh_probe])

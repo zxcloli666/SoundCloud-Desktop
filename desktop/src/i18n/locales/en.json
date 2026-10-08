@@ -563,6 +563,10 @@
         "title": "Everything works",
         "hint": "All our servers answer."
       },
+      "backupDown": {
+        "title": "Some backup routes don't answer",
+        "hint": "The app works through the main route. Nothing to do."
+      },
       "partial": {
         "title": "Some servers don't answer",
         "hint": "The app works, but some covers or tracks may not load."

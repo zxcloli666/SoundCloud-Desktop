@@ -225,6 +225,28 @@ fn main_up_with_covers_failing_is_partial() {
 }
 
 #[test]
+fn only_backup_routes_failing_is_backup_down() {
+    let targets = vec![
+        healthy(TargetId::Main),
+        healthy(TargetId::Storage),
+        healthy(TargetId::Images),
+        broken(TargetId::Relay, FailKind::Timeout, Phase::Tcp),
+        healthy(TargetId::Relay),
+    ];
+    assert_eq!(judge(&targets), Verdict::BackupDown);
+}
+
+#[test]
+fn a_failing_star_with_backups_down_is_still_partial() {
+    let targets = vec![
+        healthy(TargetId::Main),
+        broken(TargetId::Star, FailKind::Reset, Phase::Tls),
+        broken(TargetId::Relay, FailKind::Timeout, Phase::Tcp),
+    ];
+    assert_eq!(judge(&targets), Verdict::Partial);
+}
+
+#[test]
 fn main_down_with_a_relay_up_is_relay_only() {
     let targets = vec![
         broken(TargetId::Main, FailKind::Reset, Phase::Tls),
@@ -340,6 +362,19 @@ fn a_ts_strategy_without_timestamps_hints_turning_them_on() {
         hint(Verdict::Reset, Some(&env), &targets),
         Hint::ZapretTimestamps
     );
+}
+
+#[test]
+fn timestamps_windows_only_allows_count_as_off() {
+    let targets = all_broken(FailKind::Reset, Phase::Tls);
+    for value in ["allowed", "default"] {
+        let env = zapret_env(Some("--dpi-desync-fooling=ts"), Some(value));
+        assert_eq!(
+            hint(Verdict::Reset, Some(&env), &targets),
+            Hint::ZapretTimestamps,
+            "{value}"
+        );
+    }
 }
 
 #[test]

@@ -497,6 +497,10 @@
         "title": "Her şey çalışıyor",
         "hint": "Tüm sunucularımız yanıt veriyor."
       },
+      "backupDown": {
+        "title": "Bazı yedek yollar yanıt vermiyor",
+        "hint": "Uygulama ana yoldan çalışıyor. Bir şey yapmanız gerekmiyor."
+      },
       "partial": {
         "title": "Bazı sunucular yanıt vermiyor",
         "hint": "Uygulama çalışıyor ama bazı kapaklar ya da parçalar yüklenmeyebilir."
