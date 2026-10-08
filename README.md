@@ -154,9 +154,24 @@ chmod +x soundcloud-desktop-*.AppImage
 Приложение ходит на свои домены в зоне `scnative.space` и напрямую к SoundCloud за треками. Если провайдер режет прямой путь к `scnative.space`, приложение само переключается на резервные маршруты `*.relay.scnative.space`.
 
 Правила для zapret:
-- приложение работает с выключенным zapret — добавьте `scnative.space` в `list-exclude`;
-- без zapret не работает, потому что блокирует провайдер — добавьте `scnative.space` в `list-general`;
-- провайдер блокирует SoundCloud — добавьте `soundcloud.com` и `sndcdn.com` в `list-general`, иначе треки идут через сервер и грузятся дольше.
+- Если приложение не работает, откройте «Настройки → Сеть → Проверка сети»: там видно, что ломается, и есть кнопка «Скопировать отчёт».
+- Не добавляйте `scnative.space` в `list-general`: это включает обход именно для наших доменов и ломает соединения.
+- Добавьте `scnative.space` и `soundcloud-desktop.fun` в `lists/list-exclude-user.txt`.
+- Если IPSet в режиме `loaded` или `any`, добавьте адреса наших серверов в `lists/ipset-exclude-user.txt` (по одному на строку). Режим `none` наши адреса не трогает.
+  ```
+  188.165.221.195
+  192.95.29.82
+  192.99.8.79
+  144.31.216.153
+  2.27.22.81
+  31.77.143.194
+  150.241.82.7
+  177.3.213.61
+  ```
+- После правки перезапустите zapret.
+- Для стратегий с `fooling=ts` или `tcp_ts` включите TCP timestamps: `netsh interface tcp set global timestamps=enabled` от администратора.
+- Если системный DNS выдаёт неверный адрес, приложение само спрашивает DoH (1.1.1.1, 8.8.8.8 и другие).
+- Провайдер блокирует SoundCloud — добавьте `soundcloud.com` и `sndcdn.com` в `list-general`, иначе треки идут через сервер и грузятся дольше.
 
 Каждая запись покрывает все поддомены: `scnative.space` включает резервные маршруты, `soundcloud.com` включает `api-v2.soundcloud.com`.
 
