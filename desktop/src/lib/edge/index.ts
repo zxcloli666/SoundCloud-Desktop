@@ -1,75 +1,28 @@
 // Единая точка сетевых запросов фронта к нашим доменам: перебирает тиры
 // (прямой → relay) и запоминает, что сработало.
 
-import { fetch } from '@tauri-apps/plugin-http';
+import { NetError, type NetRoute, netRequest } from '../net/fetch';
 import { type Hop, noteHop, planHops, type Tier } from './config';
 
 export type { Tier } from './config';
 export { initEdge, tierOf } from './config';
-
-const CONNECT_TIMEOUT_MS = 10_000;
-const BODY_STALL_MS = 10_000;
 
 interface Fetched {
   res: Response;
   bytes: number;
 }
 
-class BodyCutError extends Error {
-  constructor(reason: unknown) {
-    super(`edge: response body broke off (${String(reason)})`);
-    this.name = 'BodyCutError';
-  }
+function fetchWhole(
+  url: string,
+  init: RequestInit,
+  timeoutMs?: number,
+  route?: NetRoute,
+): Promise<Fetched> {
+  return netRequest(url, { ...init, timeoutMs, route });
 }
 
-async function fetchWhole(url: string, init: RequestInit, timeoutMs?: number): Promise<Fetched> {
-  const controller = new AbortController();
-  const abort = () => controller.abort();
-  if (init.signal?.aborted) abort();
-  init.signal?.addEventListener('abort', abort, { once: true });
-  const deadline = timeoutMs ? setTimeout(abort, timeoutMs) : undefined;
-  try {
-    const res = await fetch(url, {
-      ...init,
-      signal: controller.signal,
-      connectTimeout: CONNECT_TIMEOUT_MS,
-    });
-    const body = await readBody(res, abort).catch((reason: unknown) => {
-      throw new BodyCutError(reason);
-    });
-    return {
-      res: new Response(body.byteLength > 0 ? body : null, {
-        status: res.status,
-        statusText: res.statusText,
-        headers: res.headers,
-      }),
-      bytes: body.byteLength,
-    };
-  } finally {
-    clearTimeout(deadline);
-    init.signal?.removeEventListener('abort', abort);
-  }
-}
-
-async function readBody(res: Response, abort: () => void): Promise<Uint8Array<ArrayBuffer>> {
-  if (!res.body) return new Uint8Array();
-  const reader = res.body.getReader();
-  const chunks: Uint8Array[] = [];
-  let size = 0;
-  for (;;) {
-    const stall = setTimeout(abort, BODY_STALL_MS);
-    const { done, value } = await reader.read().finally(() => clearTimeout(stall));
-    if (done) break;
-    chunks.push(value);
-    size += value.byteLength;
-  }
-  const body = new Uint8Array(size);
-  let offset = 0;
-  for (const chunk of chunks) {
-    body.set(chunk, offset);
-    offset += chunk.byteLength;
-  }
-  return body;
+function isBodyCut(error: unknown): boolean {
+  return error instanceof NetError && error.kind === 'body';
 }
 
 /**
@@ -195,7 +148,7 @@ async function fetchAlone(url: string, init: RequestInit, timeoutMs?: number): P
   try {
     return (await fetchWhole(url, init, timeoutMs)).res;
   } catch (error) {
-    if (init.signal?.aborted || error instanceof BodyCutError) throw error;
+    if (init.signal?.aborted || isBodyCut(error)) throw error;
     throw new EdgeUnreachableError(error);
   }
 }
@@ -227,7 +180,8 @@ export async function edgeFetch(
     attempted += 1;
 
     try {
-      const { res, bytes } = await fetchWhole(hop.url, init, hopBudget);
+      const route = { tier: hop.tier, origin: hop.origin, attempt: i };
+      const { res, bytes } = await fetchWhole(hop.url, init, hopBudget, route);
       answered = true;
       if (hopUsable(hop, res)) {
         noteHop(hop, true, bytes);
@@ -240,7 +194,7 @@ export async function edgeFetch(
       lastError = error;
       // Отмена вызывающим (не таймаут хопа) — перебор бессмысленен.
       if (init.signal?.aborted) throw error;
-      const cut = error instanceof BodyCutError;
+      const cut = isBodyCut(error);
       if (cut) answered = true;
       if (!(weakBudget && isTimeout(error))) noteHop(hop, false);
       if (cut && !replayable) throw error;

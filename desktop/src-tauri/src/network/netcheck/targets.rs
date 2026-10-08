@@ -1,5 +1,4 @@
 use std::net::IpAddr;
-use std::sync::OnceLock;
 use std::time::{Duration, Instant};
 
 use futures_util::future::join_all;
@@ -19,7 +18,6 @@ const HEALTH_PATH: &str = "/health";
 const HTTPS_PORT: u16 = 443;
 const SYSTEM_DNS_BUDGET: Duration = Duration::from_secs(3);
 const APP_TIMEOUT: Duration = Duration::from_secs(8);
-const APP_CONNECT_TIMEOUT: Duration = Duration::from_secs(5);
 const TARGET_CAP: Duration = Duration::from_secs(20);
 const EXTERNAL_TIMEOUT: Duration = Duration::from_secs(3);
 const RELAY_TARGETS: usize = 4;
@@ -59,19 +57,6 @@ pub fn targets() -> Vec<Target> {
             node: Some(node),
         });
     core.chain(relays).collect()
-}
-
-pub fn client() -> Option<&'static wreq::Client> {
-    static CLIENT: OnceLock<Option<wreq::Client>> = OnceLock::new();
-    CLIENT
-        .get_or_init(|| {
-            system_proxy::follow(sc_fingerprint::builder(None))
-                .connect_timeout(APP_CONNECT_TIMEOUT)
-                .pool_max_idle_per_host(0)
-                .build()
-                .ok()
-        })
-        .as_ref()
 }
 
 pub async fn check(target: &Target, app: Option<&wreq::Client>) -> TargetCheck {

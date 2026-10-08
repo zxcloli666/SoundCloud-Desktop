@@ -27,7 +27,7 @@ use self::model::{
 };
 use self::paths::{millis, now_ms};
 use crate::app::diagnostics;
-use crate::network::edge;
+use crate::network::{edge, fetch};
 use crate::rt::AppHandle;
 
 const EVENT: &str = "netcheck:update";
@@ -169,7 +169,7 @@ async fn run(trigger: Trigger, reason: Option<String>) -> NetReport {
     if let Some(checker) = checker {
         checker.emit(true, &report);
     }
-    let client = targets::client();
+    let client = fetch::client();
     let collect = async {
         let mut checks = stream::iter(list.into_iter().enumerate())
             .map(|(at, target)| async move { (at, targets::check(&target, client).await) })

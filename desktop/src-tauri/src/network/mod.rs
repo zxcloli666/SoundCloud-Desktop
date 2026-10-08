@@ -4,6 +4,7 @@ pub mod call_nodes;
 pub mod dns;
 pub mod edge;
 pub mod fail;
+pub mod fetch;
 pub mod health;
 pub mod image_cache;
 pub mod netcheck;

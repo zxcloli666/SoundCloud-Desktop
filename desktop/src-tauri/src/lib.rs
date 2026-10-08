@@ -335,6 +335,8 @@ pub fn run() {
             auth::auth_set_premium,
             network::edge::edge_config,
             network::edge::edge_note,
+            network::fetch::net_fetch,
+            network::fetch::net_fetch_cancel,
             network::netcheck::net_check_run,
             network::netcheck::net_check_auto,
             network::netcheck::net_check_last,
