@@ -150,10 +150,10 @@ function timeoutBurst(): boolean {
   return timeoutHits.length >= TIMEOUT_BURST_THRESHOLD;
 }
 
-/** Таймаут реального запроса. Форсим пробу лишь когда таймаутят все запросы (бурст), не 1-2 долгих. */
+/** Таймаут реального запроса. Пробу просим лишь когда таймаутят все запросы (бурст), не 1-2 долгих. */
 export function noteRequestTimeout(): void {
   timeoutHits.push(Date.now());
-  if (timeoutBurst()) requestProbe({ force: true });
+  if (timeoutBurst()) requestProbe();
 }
 
 function startRecheckTimer(): void {
@@ -183,6 +183,7 @@ export function requestProbe(opts?: { force?: boolean }): void {
   useHostStatusStore.setState({ probing: true });
   lastRunAt = Date.now();
   void run().finally(() => {
+    lastRunAt = Date.now();
     useHostStatusStore.setState({ probing: false });
   });
 }
@@ -198,7 +199,7 @@ export function noteUnreachable(): void {
     autoCheckAt = now;
     void invoke('net_check_auto', { reason: 'unreachable' });
   }
-  requestProbe({ force: true });
+  requestProbe();
 }
 
 function settleOfflineCheck(reachable: boolean): void {
