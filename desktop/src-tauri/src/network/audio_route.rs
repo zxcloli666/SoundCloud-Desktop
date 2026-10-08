@@ -1,13 +1,17 @@
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use futures_util::stream::{FuturesUnordered, StreamExt};
 use wreq::redirect::Policy;
 use wreq::{Client, RequestBuilder, Response};
 
 use super::edge::{self, Hop};
+use super::fail;
+use super::netcheck::model::Role;
+use super::netcheck::paths;
 
 const HEDGE_DELAY: Duration = Duration::from_millis(300);
 const ROUTE_SILENCE: Duration = Duration::from_secs(15);
+const SOURCE: &str = "audio";
 
 pub async fn get_without_redirects(
     client: &Client,
@@ -45,12 +49,20 @@ async fn get_from_hops(
     hedge_after: Duration,
     redirects: Option<Policy>,
 ) -> Result<(Response, usize), String> {
-    let send = |at: usize| {
+    let send = |at: usize, role: Role| {
         let mut request = request(client, &hops[at], session_id);
         if let Some(policy) = redirects.clone() {
             request = request.redirect(policy);
         }
-        async move { (at, request.send().await) }
+        async move {
+            let started = Instant::now();
+            let result = request.send().await;
+            let attempt = Attempt {
+                role,
+                elapsed: started.elapsed(),
+            };
+            (at, attempt, result)
+        }
     };
 
     let mut attempts = FuturesUnordered::new();
@@ -58,17 +70,17 @@ async fn get_from_hops(
     let mut next = 0;
     while next < hops.len() || !attempts.is_empty() {
         if attempts.is_empty() {
-            attempts.push(send(next));
+            attempts.push(send(next, Role::of_index(next)));
             next += 1;
         }
         tokio::select! {
-            Some((at, result)) = attempts.next() => {
-                if let Some(response) = settle(&hops[at], result, &mut errors) {
+            Some((at, attempt, result)) = attempts.next() => {
+                if let Some(response) = settle(&hops[at], attempt, result, &mut errors) {
                     return Ok((response, at));
                 }
             }
             () = tokio::time::sleep(hedge_after), if next < hops.len() => {
-                attempts.push(send(next));
+                attempts.push(send(next, Role::Hedge));
                 next += 1;
             }
         }
@@ -84,11 +96,22 @@ fn request(client: &Client, hop: &Hop, session_id: Option<&str>) -> RequestBuild
     }
 }
 
+struct Attempt {
+    role: Role,
+    elapsed: Duration,
+}
+
 fn settle(
     hop: &Hop,
+    attempt: Attempt,
     result: Result<Response, wreq::Error>,
     errors: &mut Vec<String>,
 ) -> Option<Response> {
+    let outcome = match &result {
+        Ok(response) => Ok(response.status().as_u16()),
+        Err(error) => Err(fail::of_wreq(error)),
+    };
+    paths::record(hop, attempt.role, outcome, attempt.elapsed, SOURCE);
     match result {
         Ok(response) if edge::hop_ok(hop, &response) => {
             hop.note(true);
@@ -127,6 +150,8 @@ mod tests {
 
     use super::{ROUTE_SILENCE, first_answer, get_from_hops};
     use crate::network::edge::{Hop, Tier};
+    use crate::network::netcheck::model::Role;
+    use crate::network::netcheck::paths;
 
     fn hop(url: String, tier: Tier) -> Hop {
         Hop {
@@ -270,5 +295,44 @@ mod tests {
         assert_eq!(response.text().await.unwrap(), "relay");
         assert!(started.elapsed() >= silence);
         assert!(started.elapsed() < silence * 4);
+    }
+
+    #[tokio::test]
+    async fn a_hedge_winner_is_recorded_as_hedge() {
+        let origin = "hedge-recorded.scnative.space";
+        let slow = warp::path::end().and_then(|| async {
+            tokio::time::sleep(Duration::from_secs(2)).await;
+            Ok::<_, Infallible>("slow")
+        });
+        let (slow_addr, slow_server) = warp::serve(slow).bind_ephemeral(([127, 0, 0, 1], 0));
+        tokio::spawn(slow_server);
+        let routed = |url: String, tier: Tier| Hop {
+            url,
+            tier,
+            origin: origin.to_string(),
+        };
+        let hops = vec![
+            routed(format!("http://{slow_addr}"), Tier::Direct),
+            routed(answering("fast"), Tier::Relay),
+        ];
+        get_from_hops(
+            &wreq::Client::new(),
+            &hops,
+            None,
+            Duration::from_millis(40),
+            None,
+        )
+        .await
+        .unwrap();
+
+        let events: Vec<_> = paths::recent(100)
+            .into_iter()
+            .filter(|event| event.origin == origin)
+            .collect();
+        assert_eq!(events.len(), 1, "{events:?}");
+        assert_eq!(events[0].role, Role::Hedge);
+        assert_eq!(events[0].tier, Tier::Relay);
+        assert!(events[0].ok);
+        assert_eq!(events[0].source, "audio");
     }
 }

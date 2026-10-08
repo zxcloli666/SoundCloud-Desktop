@@ -33,6 +33,14 @@ pub fn proxied(url: &str) -> bool {
     current_proxy(url).is_some()
 }
 
+pub fn env_proxy_names() -> Vec<String> {
+    ENV_PROXIES
+        .iter()
+        .filter(|name| std::env::var_os(name).is_some())
+        .map(|name| name.to_string())
+        .collect()
+}
+
 fn env_proxy_set() -> bool {
     ENV_PROXIES
         .iter()

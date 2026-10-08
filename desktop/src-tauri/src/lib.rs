@@ -122,6 +122,7 @@ pub fn run() {
             ));
             let rt_handle = rt.handle().clone();
             network::dns::init(rt_handle.clone());
+            network::netcheck::init(app.handle().clone(), rt_handle.clone(), data_dir.clone());
 
             std::thread::spawn(move || {
                 rt.block_on(std::future::pending::<()>());
@@ -334,6 +335,10 @@ pub fn run() {
             auth::auth_set_premium,
             network::edge::edge_config,
             network::edge::edge_note,
+            network::netcheck::net_check_run,
+            network::netcheck::net_check_auto,
+            network::netcheck::net_check_last,
+            network::netcheck::net_check_report_text,
             network::wallpapers::wallpaper_search,
         ])
         .run(tauri::generate_context!())

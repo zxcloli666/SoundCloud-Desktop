@@ -6,6 +6,7 @@ pub mod edge;
 pub mod fail;
 pub mod health;
 pub mod image_cache;
+pub mod netcheck;
 pub mod proxy;
 pub mod proxy_server;
 pub mod server;

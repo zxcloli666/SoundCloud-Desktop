@@ -19,6 +19,7 @@ use tokio::runtime::Handle;
 
 use self::doh::DohAnswer;
 use self::fallback::Fallback;
+pub use self::wire::{garbage, tunnelled};
 use crate::network::edge;
 use crate::network::fail::{Fail, FailKind};
 

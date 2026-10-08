@@ -629,6 +629,25 @@ pub fn note_url_delivered(url: &str, tier: Tier, bytes: u64) {
     }
 }
 
+pub fn pins() -> Vec<(String, u64)> {
+    let inner = match state().lock() {
+        Ok(g) => g,
+        Err(e) => e.into_inner(),
+    };
+    let now = Instant::now();
+    let mut pins: Vec<(String, u64)> = inner
+        .origins
+        .iter()
+        .filter(|(_, s)| s.pinned(now))
+        .map(|(host, s)| {
+            let left = s.until.saturating_duration_since(now).as_millis() as u64;
+            (host.clone(), left)
+        })
+        .collect();
+    pins.sort();
+    pins
+}
+
 pub fn current_tier(url: &str) -> Tier {
     let Some(origin) = host_of(url) else {
         return Tier::Direct;

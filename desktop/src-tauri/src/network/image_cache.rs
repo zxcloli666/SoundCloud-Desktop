@@ -1,6 +1,6 @@
 use std::path::{Path, PathBuf};
 use std::sync::OnceLock;
-use std::time::{Duration, SystemTime};
+use std::time::{Duration, Instant, SystemTime};
 
 use base64::{engine::general_purpose::STANDARD as BASE64, Engine as _};
 use sha2::{Digest, Sha256};
@@ -8,10 +8,15 @@ use tokio::fs::{self, File};
 use tokio::io::AsyncWriteExt;
 
 use crate::app::diagnostics;
+use crate::network::fail;
+use crate::network::netcheck::model::Role;
+use crate::network::netcheck::paths;
 use crate::shared::constants::is_domain_whitelisted;
 use crate::shared::file_lru::{last_used, mark_used};
 
 pub mod maintenance;
+
+const SOURCE: &str = "image";
 
 /// Permanent on-disk image cache.
 ///
@@ -188,7 +193,11 @@ pub async fn handle(encoded: &str) -> ImageResult {
     let mut status = 502u16;
     let mut data: Vec<u8> = Vec::new();
 
-    for hop in crate::network::edge::expand_upstreams(upstreams) {
+    let hops = crate::network::edge::expand_upstreams(upstreams);
+    for (index, hop) in hops.into_iter().enumerate() {
+        let started = Instant::now();
+        let role = Role::of_index(index);
+        let record = |outcome| paths::record(&hop, role, outcome, started.elapsed(), SOURCE);
         let resp = match state
             .http_client
             .get(&hop.url)
@@ -197,7 +206,8 @@ pub async fn handle(encoded: &str) -> ImageResult {
             .await
         {
             Ok(r) => r,
-            Err(_) => {
+            Err(error) => {
+                record(Err(fail::of_wreq(&error)));
                 hop.note(false);
                 continue;
             }
@@ -205,16 +215,19 @@ pub async fn handle(encoded: &str) -> ImageResult {
 
         status = resp.status().as_u16();
         if !crate::network::edge::hop_ok(&hop, &resp) {
+            record(Ok(status));
             continue;
         }
         match resp.bytes().await {
             Ok(b) => data = b.to_vec(),
-            Err(_) => {
+            Err(error) => {
+                record(Err(fail::of_wreq(&error)));
                 hop.note(false);
                 continue;
             }
         }
 
+        record(Ok(status));
         hop.note(status < 500);
         if status < 500 {
             hop.note_delivered(data.len() as u64);
