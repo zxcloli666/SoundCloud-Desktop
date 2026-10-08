@@ -9,7 +9,7 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpListener;
 
 use super::doh::DohAnswer;
-use super::{Config, DnsError, Fallback, Lookup, Scope, scope};
+use super::{Config, DnsError, Fallback, Lookup, Scope, not_found, scope};
 use crate::network::fail::{Fail, FailKind, of_wreq};
 
 const BUDGET: Duration = Duration::from_millis(300);
@@ -98,7 +98,30 @@ fn switched(
 }
 
 fn nxdomain() -> Result<Vec<IpAddr>, Fail> {
+    Ok(Vec::new())
+}
+
+fn temporary() -> Result<Vec<IpAddr>, Fail> {
     Err(Fail::of(FailKind::Dns))
+}
+
+fn system_by(
+    table: Vec<(&'static str, Result<Vec<IpAddr>, Fail>)>,
+    calls: &Calls,
+) -> Lookup<Vec<IpAddr>> {
+    let calls = calls.clone();
+    Arc::new(move |host| {
+        calls.0.fetch_add(1, Ordering::SeqCst);
+        let result = table
+            .iter()
+            .find(|(name, _)| *name == host)
+            .map_or_else(nxdomain, |(_, result)| result.clone());
+        async move { result }.boxed()
+    })
+}
+
+fn distrusted(resolver: &Fallback) -> bool {
+    resolver.distrusted(tokio::time::Instant::now())
 }
 
 fn fallback(system: Lookup<Vec<IpAddr>>, doh: Lookup<DohAnswer>) -> Fallback {
@@ -202,7 +225,7 @@ async fn a_garbage_answer_falls_back_to_doh_and_is_cached() {
 #[tokio::test]
 async fn a_known_name_without_an_answer_asks_doh() {
     let port = server().await;
-    for answer in [nxdomain(), Ok(Vec::new())] {
+    for answer in [nxdomain(), temporary()] {
         let resolver = fallback(
             system(answer, 0, &Calls::default()),
             doh(Ok(ips(&["127.0.0.1"])), 60, &Calls::default()),
@@ -535,4 +558,195 @@ async fn a_cached_answer_lives_a_clamped_ttl_and_then_serves_as_stale() {
     tokio::time::advance(Duration::from_secs(3600)).await;
     let error = resolver.lookup(host).await.unwrap_err();
     assert_eq!(error.kind, FailKind::DnsBogus);
+}
+
+#[test]
+fn only_a_definitive_resolver_answer_counts_as_no_such_name() {
+    let table = [
+        (std::io::Error::from_raw_os_error(11001), true),
+        (std::io::Error::from_raw_os_error(11004), true),
+        (std::io::Error::from_raw_os_error(11002), false),
+        (
+            std::io::Error::other(
+                "failed to lookup address information: Name or service not known",
+            ),
+            true,
+        ),
+        (
+            std::io::Error::other(
+                "failed to lookup address information: No address associated with hostname",
+            ),
+            true,
+        ),
+        (
+            std::io::Error::other("nodename nor servname provided, or not known"),
+            true,
+        ),
+        (
+            std::io::Error::other(
+                "failed to lookup address information: Temporary failure in name resolution",
+            ),
+            false,
+        ),
+        (std::io::Error::from(std::io::ErrorKind::TimedOut), false),
+    ];
+    for (error, expected) in table {
+        assert_eq!(not_found(&error), expected, "{error}");
+    }
+}
+
+#[tokio::test]
+async fn a_temporary_failure_uses_doh_once_and_keeps_trusting_the_zone() {
+    let (sys_calls, doh_calls) = (Calls::default(), Calls::default());
+    let resolver = fallback(
+        system(temporary(), 0, &sys_calls),
+        doh(Ok(ips(&["188.165.221.195"])), 60, &doh_calls),
+    );
+    let found = resolver.lookup("api.scnative.space").await.unwrap();
+    assert_eq!(found, ips(&["188.165.221.195"]));
+    assert!(!distrusted(&resolver));
+    tokio::time::sleep(Duration::from_millis(50)).await;
+    assert_eq!(doh_calls.count(), 1, "no warm-up of the zone");
+}
+
+#[tokio::test]
+async fn a_slow_resolver_uses_doh_once_and_keeps_trusting_the_zone() {
+    let resolver = fallback(
+        system(Ok(ips(&["188.165.221.195"])), 5_000, &Calls::default()),
+        doh(Ok(ips(&["188.165.221.195"])), 60, &Calls::default()),
+    );
+    resolver.lookup("api.scnative.space").await.unwrap();
+    assert!(!distrusted(&resolver));
+}
+
+#[tokio::test]
+async fn a_name_both_resolvers_deny_never_distrusts_the_zone() {
+    let resolver = fallback(
+        system(nxdomain(), 0, &Calls::default()),
+        doh(Ok(Vec::new()), 60, &Calls::default()),
+    );
+    let error = resolver.lookup("api.scnative.space").await.unwrap_err();
+    assert_eq!(error.kind, FailKind::Dns);
+    assert!(!distrusted(&resolver));
+}
+
+#[tokio::test]
+async fn a_name_the_system_denies_but_doh_knows_distrusts_the_zone() {
+    let resolver = fallback(
+        system(nxdomain(), 0, &Calls::default()),
+        doh(Ok(ips(&["188.165.221.195"])), 60, &Calls::default()),
+    );
+    resolver.lookup("api.scnative.space").await.unwrap();
+    assert!(distrusted(&resolver));
+}
+
+#[tokio::test]
+async fn a_foreign_name_keeps_a_private_or_local_answer_without_doh() {
+    let doh_calls = Calls::default();
+    for answer in [
+        "10.0.0.5",
+        "192.168.1.10",
+        "127.0.0.1",
+        "fc00::5",
+        "100.64.0.1",
+    ] {
+        let resolver = fallback(
+            system(Ok(ips(&[answer])), 0, &Calls::default()),
+            doh(Ok(ips(&["1.2.3.4"])), 60, &doh_calls),
+        );
+        let found = resolver.lookup("proxy.corp.example").await.unwrap();
+        assert_eq!(found, ips(&[answer]));
+    }
+    assert_eq!(doh_calls.count(), 0);
+}
+
+#[tokio::test]
+async fn a_foreign_name_pointing_at_a_sinkhole_asks_doh() {
+    let resolver = fallback(
+        system(Ok(ips(&["2.26.93.81"])), 0, &Calls::default()),
+        doh(Ok(ips(&["1.2.3.4"])), 60, &Calls::default()),
+    );
+    assert_eq!(
+        resolver.lookup("example.com").await.unwrap(),
+        ips(&["1.2.3.4"])
+    );
+}
+
+async fn proxy_server() -> u16 {
+    let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let port = listener.local_addr().unwrap().port();
+    tokio::spawn(async move {
+        let Ok((mut socket, _)) = listener.accept().await else {
+            return;
+        };
+        let mut buf = [0u8; 2048];
+        let read = socket.read(&mut buf).await.unwrap_or(0);
+        let line = String::from_utf8_lossy(&buf[..read]).to_string();
+        let body = if line.starts_with("GET http://target.example/health") {
+            "proxied"
+        } else {
+            "wrong"
+        };
+        let reply = format!(
+            "HTTP/1.1 200 OK\r\ncontent-length: {}\r\nconnection: close\r\n\r\n{body}",
+            body.len()
+        );
+        let _ = socket.write_all(reply.as_bytes()).await;
+    });
+    port
+}
+
+#[tokio::test]
+async fn a_proxy_on_a_private_name_still_carries_the_request() {
+    let port = proxy_server().await;
+    let doh_calls = Calls::default();
+    let resolver = fallback(
+        system_by(
+            vec![("proxy.corp.example", Ok(ips(&["127.0.0.1"])))],
+            &Calls::default(),
+        ),
+        doh(Ok(ips(&["1.2.3.4"])), 60, &doh_calls),
+    );
+    let client = wreq::Client::builder()
+        .dns_resolver(Arc::new(resolver))
+        .proxy(wreq::Proxy::all(format!("http://proxy.corp.example:{port}")).unwrap())
+        .build()
+        .unwrap();
+    let body = client
+        .get("http://target.example/health")
+        .send()
+        .await
+        .unwrap()
+        .text()
+        .await
+        .unwrap();
+    assert_eq!(body, "proxied");
+    assert_eq!(doh_calls.count(), 0);
+}
+
+#[tokio::test]
+async fn a_host_the_system_tunnels_keeps_its_fake_ip_while_the_zone_is_distrusted() {
+    let doh_calls = Calls::default();
+    let resolver = fallback(
+        system_by(
+            vec![
+                ("status.soundcloud-desktop.fun", Ok(ips(&["198.18.0.42"]))),
+                ("api.scnative.space", Ok(ips(&["2.26.93.81"]))),
+            ],
+            &Calls::default(),
+        ),
+        doh(Ok(ips(&["188.165.221.195"])), 60, &doh_calls),
+    );
+    let tunnel = ips(&["198.18.0.42"]);
+    let host = "status.soundcloud-desktop.fun";
+    assert_eq!(resolver.lookup(host).await.unwrap(), tunnel);
+    resolver.lookup("api.scnative.space").await.unwrap();
+    assert!(distrusted(&resolver));
+    assert_eq!(resolver.lookup(host).await.unwrap(), tunnel);
+    tokio::time::sleep(Duration::from_millis(50)).await;
+    assert_eq!(
+        doh_calls.count(),
+        2,
+        "one lookup and one warm-up of images, never the tunnelled host"
+    );
 }

@@ -22,7 +22,7 @@ type Flight = Shared<BoxFuture<'static, Result<Vec<IpAddr>, DnsError>>>;
 
 enum Judgement {
     Sane(Vec<IpAddr>),
-    Garbage,
+    Garbage { definitive: bool },
     Truth,
 }
 
@@ -97,22 +97,22 @@ impl Fallback {
     async fn find(&self, host: &str) -> Result<Vec<IpAddr>, DnsError> {
         let scope = scope(host);
         let known = self.known(host);
-        if known && self.distrusted(Instant::now()) {
+        if known && !self.tunnels(host) && self.distrusted(Instant::now()) {
             return self.doh_first(host, scope).await;
         }
         let system = self.system(host, scope).await;
         match judge(scope, known, &system) {
             Judgement::Sane(addrs) => Ok(addrs),
             Judgement::Truth => Err(dns_error(host, FailKind::Dns, described(&system))),
-            Judgement::Garbage => {
-                if known {
-                    self.distrust_garbage(host, &system);
+            Judgement::Garbage { definitive } => match self.ask_doh(host).await {
+                Ok(addrs) => {
+                    if known && definitive {
+                        self.distrust_garbage(host, &system);
+                    }
+                    Ok(addrs)
                 }
-                match self.ask_doh(host).await {
-                    Ok(addrs) => Ok(addrs),
-                    Err(doh) => self.rescue(host, &system, doh),
-                }
-            }
+                Err(doh) => self.rescue(host, &system, doh),
+            },
         }
     }
 
@@ -124,8 +124,15 @@ impl Fallback {
         let system = self.system(host, scope).await;
         match judge(scope, false, &system) {
             Judgement::Sane(addrs) => Ok(addrs),
-            Judgement::Garbage | Judgement::Truth => self.rescue(host, &system, doh),
+            Judgement::Garbage { .. } | Judgement::Truth => self.rescue(host, &system, doh),
         }
+    }
+
+    pub(super) fn tunnels(&self, host: &str) -> bool {
+        self.memory()
+            .seen
+            .get(host)
+            .is_some_and(|(addrs, _)| addrs.iter().any(|ip| wire::tunnelled(*ip)))
     }
 
     fn distrust_garbage(&self, host: &str, system: &Found) {
@@ -218,25 +225,27 @@ impl Fallback {
 fn judge(scope: Scope, known: bool, system: &Found) -> Judgement {
     match system {
         Ok(addrs) if !addrs.is_empty() => {
-            let sane = sane(addrs);
-            if sane.is_empty() {
-                Judgement::Garbage
+            let usable = usable(scope, addrs);
+            if usable.is_empty() {
+                Judgement::Garbage { definitive: true }
             } else {
-                Judgement::Sane(sane)
+                Judgement::Sane(usable)
             }
         }
-        Err(fail) if fail.kind == FailKind::Timeout && scope == Scope::Ours => Judgement::Garbage,
-        _ if known => Judgement::Garbage,
+        Ok(_) if known => Judgement::Garbage { definitive: true },
+        Err(fail) if known || (fail.kind == FailKind::Timeout && scope == Scope::Ours) => {
+            Judgement::Garbage { definitive: false }
+        }
         _ => Judgement::Truth,
     }
 }
 
-fn sane(addrs: &[IpAddr]) -> Vec<IpAddr> {
-    addrs
-        .iter()
-        .copied()
-        .filter(|ip| !wire::garbage(*ip))
-        .collect()
+fn usable(scope: Scope, addrs: &[IpAddr]) -> Vec<IpAddr> {
+    let garbage = |ip: IpAddr| match scope {
+        Scope::Ours => wire::garbage(ip),
+        Scope::Local | Scope::Foreign => ip.is_unspecified() || wire::SINKHOLES.contains(&ip),
+    };
+    addrs.iter().copied().filter(|ip| !garbage(*ip)).collect()
 }
 
 pub(super) fn trusted(addrs: Vec<IpAddr>) -> Vec<IpAddr> {

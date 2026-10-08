@@ -10,6 +10,7 @@ mod tests;
 use std::error::Error;
 use std::fmt;
 use std::future::Future;
+use std::io;
 use std::net::IpAddr;
 use std::sync::{Arc, OnceLock};
 use std::time::Duration;
@@ -26,6 +27,13 @@ use crate::network::fail::{Fail, FailKind};
 const SYSTEM_BUDGET: Duration = Duration::from_secs(2);
 const OUR_ZONES: [&str; 2] = ["scnative.space", "soundcloud-desktop.fun"];
 const LOCAL_SUFFIXES: [&str; 5] = [".localhost", ".local", ".lan", ".internal", ".home.arpa"];
+const NOT_FOUND_CODES: [i32; 2] = [11001, 11004];
+const NOT_FOUND_TEXTS: [&str; 4] = [
+    "not known",
+    "no address associated",
+    "does not resolve",
+    "no such host",
+];
 
 pub type Lookup<T> = Arc<dyn Fn(String) -> BoxFuture<'static, Result<T, Fail>> + Send + Sync>;
 
@@ -106,13 +114,25 @@ fn shared() -> &'static Fallback {
 }
 
 async fn system_lookup(host: String) -> Result<Vec<IpAddr>, Fail> {
-    tokio::net::lookup_host((host.as_str(), 0))
-        .await
-        .map(|addrs| addrs.map(|addr| addr.ip()).collect())
-        .map_err(|error| Fail {
+    match tokio::net::lookup_host((host.as_str(), 0)).await {
+        Ok(addrs) => Ok(addrs.map(|addr| addr.ip()).collect()),
+        Err(error) if not_found(&error) => Ok(Vec::new()),
+        Err(error) => Err(Fail {
             detail: Some(error.to_string()),
             ..Fail::of(FailKind::Dns)
-        })
+        }),
+    }
+}
+
+fn not_found(error: &io::Error) -> bool {
+    if error
+        .raw_os_error()
+        .is_some_and(|code| NOT_FOUND_CODES.contains(&code))
+    {
+        return true;
+    }
+    let text = error.to_string().to_ascii_lowercase();
+    NOT_FOUND_TEXTS.iter().any(|needle| text.contains(needle))
 }
 
 fn spawn(task: impl Future<Output = ()> + Send + 'static) {

@@ -48,7 +48,8 @@ impl Fallback {
                 .for_each_concurrent(WARM_PARALLEL, |host| {
                     let this = this.clone();
                     async move {
-                        if this.memory().cache.fresh(&host, Instant::now()).is_none() {
+                        let cached = this.memory().cache.fresh(&host, Instant::now()).is_some();
+                        if !cached && !this.tunnels(&host) {
                             let _ = this.ask_doh(&host).await;
                         }
                     }
