@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Activity } from '../../../lib/icons';
-import { loadLastReport, useNetCheckStore } from '../../../lib/net/check';
+import { loadLastReport, useNetCheckStore, watchNetCheck } from '../../../lib/net/check';
 import { VerdictIcon, verdictTitle } from '../../net-check/VerdictIcon';
 import { ActionButton } from '../ActionButton';
 import { Card } from '../primitives';
@@ -13,6 +13,7 @@ export function NetCheckCard() {
   const openCheck = useNetCheckStore((s) => s.openCheck);
 
   useEffect(() => {
+    watchNetCheck();
     void loadLastReport();
   }, []);
 

@@ -4,9 +4,19 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { DISCORD_URL } from '../../lib/constants';
 import { Check, ClipboardCopy, RefreshCw, Send } from '../../lib/icons';
-import { reportText, useNetCheckStore, useShownVerdict } from '../../lib/net/check';
+import { reportText, useNetCheckStore, useShownVerdict, type Verdict } from '../../lib/net/check';
 
 const COPIED_RESET_MS = 1800;
+const WORTH_SENDING: ReadonlySet<Verdict> = new Set([
+  'partial',
+  'relayOnly',
+  'dns',
+  'dnsFailed',
+  'reset',
+  'timeout',
+  'cert',
+  'unknown',
+]);
 const PRIMARY =
   'w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-accent text-accent-contrast font-semibold text-[13px] hover:bg-accent-hover active:scale-[0.97] transition-all duration-200 cursor-pointer shadow-[0_0_30px_var(--color-accent-glow),0_2px_8px_rgba(0,0,0,0.3)] disabled:opacity-50 disabled:cursor-default';
 const SECONDARY =
@@ -41,24 +51,32 @@ export const NetCheckActions = React.memo(() => {
     void copy().then((done) => done && toast.success(t('netCheck.copied')));
   };
 
+  const openSupport = () => {
+    openUrl(DISCORD_URL).catch(() => toast.error(t('common.error')));
+  };
+
   const send = () => {
+    if (!hasReport) {
+      openSupport();
+      return;
+    }
     void copy().then((done) => {
       if (!done) return;
       toast.success(t('netCheck.sent'));
-      openUrl(DISCORD_URL).catch(() => toast.error(t('common.error')));
+      openSupport();
     });
   };
 
   const idle = !running && hasReport;
-  const problem = verdict !== 'ok' && verdict !== 'checking';
+  const primary = !running && WORTH_SENDING.has(verdict);
 
   return (
     <div className="mt-6 space-y-2.5">
       <button
         type="button"
         onClick={send}
-        disabled={!idle}
-        className={problem ? PRIMARY : SECONDARY}
+        disabled={running}
+        className={primary ? PRIMARY : SECONDARY}
       >
         <Send size={13} />
         {t('netCheck.send')}

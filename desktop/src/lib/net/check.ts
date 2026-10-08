@@ -199,7 +199,7 @@ function settled(current: NetReport | null, update: NetCheckUpdate): boolean {
   );
 }
 
-function wire(): void {
+export function watchNetCheck(): void {
   if (wired) return;
   wired = true;
   void listen<NetCheckUpdate>(UPDATE_EVENT, ({ payload }) => {
@@ -230,7 +230,7 @@ export const useNetCheckStore = create<NetCheckState>()((set, get) => ({
   failed: false,
   report: null,
   openCheck: () => {
-    wire();
+    watchNetCheck();
     set({ open: true });
     void loadLastReport().then(() => {
       if (isStale(get().report)) void get().runCheck();
@@ -239,7 +239,7 @@ export const useNetCheckStore = create<NetCheckState>()((set, get) => ({
   closeCheck: () => set({ open: false }),
   runCheck: async () => {
     if (get().running) return;
-    wire();
+    watchNetCheck();
     set({ running: true, failed: false });
     try {
       const report = await invoke<NetReport>('net_check_run', undefined, RUN_WARN_MS);

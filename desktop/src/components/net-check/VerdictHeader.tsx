@@ -74,16 +74,25 @@ const EnvChip = React.memo(({ chip }: { chip: Chip }) => {
   );
 });
 
-const HintBlock = React.memo(({ verdict, hint }: { verdict: Verdict; hint: Hint }) => {
+interface HintProps {
+  verdict: Verdict;
+  hint: Hint;
+  broken: boolean;
+}
+
+function hintText(t: TFunction, { verdict, hint, broken }: HintProps, fix: string | null): string {
+  if (broken) return t('netCheck.failedHint');
+  if (fix) return t('netCheck.hint.zapretTimestamps');
+  if (hint === 'none') return t(`netCheck.verdict.${verdict}.hint`);
+  return t('netCheck.hint.zapret');
+}
+
+const HintBlock = React.memo((props: HintProps) => {
   const { t } = useTranslation();
-  if (verdict === 'checking') return null;
+  if (props.verdict === 'checking') return null;
   const os = currentOs();
-  const fix = hint === 'zapretTimestamps' ? fixCommand(os) : null;
-  const text = fix
-    ? t('netCheck.hint.zapretTimestamps')
-    : hint === 'none'
-      ? t(`netCheck.verdict.${verdict}.hint`)
-      : t('netCheck.hint.zapret');
+  const fix = !props.broken && props.hint === 'zapretTimestamps' ? fixCommand(os) : null;
+  const text = hintText(t, props, fix);
   return (
     <>
       <p className="text-[12.5px] text-white/35 mt-1.5 leading-relaxed max-w-[340px]">{text}</p>
@@ -104,6 +113,7 @@ const HintBlock = React.memo(({ verdict, hint }: { verdict: Verdict; hint: Hint 
 export const VerdictHeader = React.memo(() => {
   const { t, i18n } = useTranslation();
   const report = useNetCheckStore((s) => s.report);
+  const failed = useNetCheckStore((s) => s.failed);
   const verdict = useShownVerdict();
   const settled = report !== null && verdict !== 'checking' && report.verdict === verdict;
   const hint = settled ? report.hint : 'none';
@@ -123,7 +133,7 @@ export const VerdictHeader = React.memo(() => {
       <ModalTitle className="text-lg font-bold text-white/90 tracking-tight">
         {verdictTitle(t, verdict)}
       </ModalTitle>
-      <HintBlock verdict={verdict} hint={hint} />
+      <HintBlock verdict={verdict} hint={hint} broken={failed && !settled} />
       {chips.length > 0 && (
         <div className="mt-3 flex flex-wrap justify-center gap-1.5">
           {chips.map((chip) => (
@@ -133,7 +143,7 @@ export const VerdictHeader = React.memo(() => {
       )}
       {time && (
         <div className="mt-3 text-[10.5px] text-white/30 font-mono">
-          {t('netCheck.checkedAt', { time })}
+          {t(failed ? 'netCheck.failedAt' : 'netCheck.checkedAt', { time })}
         </div>
       )}
     </div>

@@ -490,6 +490,8 @@
     "copiedLine": "Kopyalandı",
     "send": "Desteğe gönder",
     "sent": "Rapor kopyalandı. Mesajınıza yapıştırın",
+    "failedHint": "Kontrol tamamlanamadı. Tekrar deneyin ya da bize yazın.",
+    "failedAt": "Kontrol başarısız. {{time}} sonucu gösteriliyor",
     "verdict": {
       "ok": {
         "title": "Her şey çalışıyor",

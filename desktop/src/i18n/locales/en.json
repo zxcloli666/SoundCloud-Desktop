@@ -556,6 +556,8 @@
     "copiedLine": "Copied",
     "send": "Send to support",
     "sent": "Report copied. Paste it into your message",
+    "failedHint": "The check didn't finish. Try again or write to us.",
+    "failedAt": "Check failed. Showing the result from {{time}}",
     "verdict": {
       "ok": {
         "title": "Everything works",
