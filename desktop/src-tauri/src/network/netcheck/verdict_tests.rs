@@ -455,6 +455,26 @@ fn a_probe_that_negotiated_timestamps_beats_the_setting() {
 }
 
 #[test]
+fn offline_with_a_dpi_tool_and_broken_connections_hints_zapret() {
+    let env = zapret_env(None, Some("enabled"));
+    for kind in [FailKind::Reset, FailKind::Timeout] {
+        let targets = all_broken(kind, Phase::Tls);
+        assert_eq!(
+            hint(Verdict::Offline, Some(&env), &targets),
+            Hint::Zapret,
+            "{kind:?}"
+        );
+    }
+    let no_names = all_broken(FailKind::Dns, Phase::Dns);
+    assert_eq!(hint(Verdict::Offline, Some(&env), &no_names), Hint::None);
+    let targets = all_broken(FailKind::Reset, Phase::Tls);
+    assert_eq!(
+        hint(Verdict::Offline, Some(&EnvInfo::default()), &targets),
+        Hint::None
+    );
+}
+
+#[test]
 fn a_ts_strategy_with_timestamps_on_is_plain_zapret() {
     let targets = all_broken(FailKind::Timeout, Phase::Tls);
     let env = zapret_env(Some("--dpi-desync-fooling=ts"), Some("enabled"));
@@ -560,6 +580,7 @@ fn other_verdicts_get_no_hint() {
         Verdict::Cert,
         Verdict::Down,
         Verdict::Partial,
+        Verdict::Offline,
     ] {
         assert_eq!(hint(verdict, Some(&env), &[]), Hint::None, "{verdict:?}");
     }

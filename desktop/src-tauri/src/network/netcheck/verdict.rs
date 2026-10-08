@@ -133,10 +133,12 @@ fn certificate_swapped(target: &TargetCheck) -> bool {
 }
 
 pub fn hint(verdict: Verdict, env: Option<&EnvInfo>, targets: &[TargetCheck]) -> Hint {
-    if !matches!(
-        verdict,
-        Verdict::Reset | Verdict::Timeout | Verdict::RelayOnly
-    ) {
+    let blocked = match verdict {
+        Verdict::Reset | Verdict::Timeout | Verdict::RelayOnly => true,
+        Verdict::Offline => matches!(tally(targets), Verdict::Reset | Verdict::Timeout),
+        _ => false,
+    };
+    if !blocked {
         return Hint::None;
     }
     let Some(env) = env.filter(|env| !env.dpi.is_empty()) else {
