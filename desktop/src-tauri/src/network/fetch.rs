@@ -14,6 +14,8 @@ use crate::network::{dns, system_proxy};
 
 const CONNECT_TIMEOUT: Duration = Duration::from_secs(10);
 const BODY_STALL: Duration = Duration::from_secs(10);
+const PING_AFTER_SILENCE: Duration = Duration::from_secs(5);
+const PING_TIMEOUT: Duration = Duration::from_secs(5);
 const IDLE_PER_HOST: usize = 8;
 const MAX_REDIRECTS: usize = 10;
 const MAX_MESSAGE: usize = 400;
@@ -108,6 +110,12 @@ pub fn configured(builder: wreq::ClientBuilder) -> wreq::ClientBuilder {
         .redirect(Policy::limited(MAX_REDIRECTS))
         .pool_max_idle_per_host(IDLE_PER_HOST)
         .connect_timeout(CONNECT_TIMEOUT)
+        .http2(|mut http2| {
+            http2
+                .keep_alive_interval(PING_AFTER_SILENCE)
+                .keep_alive_timeout(PING_TIMEOUT)
+                .keep_alive_while_idle(false);
+        })
 }
 
 fn inflight() -> MutexGuard<'static, HashMap<u32, AbortHandle>> {
@@ -310,3 +318,7 @@ pub fn frame(head: &Head, body: &[u8]) -> Vec<u8> {
 #[cfg(test)]
 #[path = "fetch_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "fetch_h2_tests.rs"]
+mod h2_tests;
