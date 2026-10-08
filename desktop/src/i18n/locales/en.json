@@ -609,7 +609,11 @@
       }
     },
     "hint": {
-      "zapret": "zapret is running. Turn it off to check. If that helps, add our domains to list-exclude-user.txt:",
+      "dpi": "{{name}} is running. Turn it off to check.",
+      "lists": "If that helps, add these lines to its lists and turn it back on:",
+      "exclude": "If that helps, add these lines to its exclusions:",
+      "domains": "If that helps, add our domains to its exclusions:",
+      "apply": "Then turn it back on and run:",
       "zapretTimestamps": "zapret uses a ts strategy, but TCP timestamps are off. Turn them on:",
       "admin": "Run as administrator",
       "guide": "zapret setup guide"

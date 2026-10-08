@@ -12,7 +12,6 @@ export interface ManualStep {
 
 export const COLUMNS = ['dns', 'tcp', 'tls', 'http'] as const;
 export const HEALTH_HOST = 'api.scnative.space';
-export const EXCLUDED_DOMAINS = ['scnative.space', 'soundcloud-desktop.fun'] as const;
 
 const HEALTH_URL = `https://${HEALTH_HOST}/health`;
 const NSLOOKUP = `nslookup ${HEALTH_HOST}; nslookup ${HEALTH_HOST} 1.1.1.1`;

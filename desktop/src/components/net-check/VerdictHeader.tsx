@@ -18,6 +18,7 @@ import { VerdictIcon, verdictTitle } from './VerdictIcon';
 
 const MAX_CHIPS = 3;
 const CALM: ReadonlySet<Verdict> = new Set(['ok', 'backupDown']);
+const NO_TARGETS: TargetCheck[] = [];
 
 type ChipTone = 'amber' | 'sky';
 
@@ -94,7 +95,13 @@ export const VerdictHeader = React.memo(() => {
       <ModalTitle className="text-lg font-bold text-white/90 tracking-tight">
         {verdictTitle(t, verdict)}
       </ModalTitle>
-      <VerdictHint verdict={verdict} hint={hint} broken={failed && !settled} />
+      <VerdictHint
+        verdict={verdict}
+        hint={hint}
+        broken={failed && !settled}
+        env={settled ? report.env : null}
+        targets={settled ? report.targets : NO_TARGETS}
+      />
       {chips.length > 0 && (
         <div className="mt-3 flex flex-wrap justify-center gap-1.5">
           {chips.map((chip) => (
