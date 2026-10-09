@@ -902,7 +902,6 @@ select,
     padding: 11px 16px 15px;
     /* overlay: empty areas around the pill let clicks fall through to the page */
     pointer-events: none;
-    container: npb / inline-size;
     transition: left 300ms var(--ease-apple);
     animation: npb-rise 0.7s var(--ease-apple) both;
 }
@@ -1367,7 +1366,7 @@ select,
     display: block;
 }
 
-@container npb (max-width: 1040px) {
+@media (max-width: 1040px) {
     .npb .npb-vol-slider {
         display: none;
     }
