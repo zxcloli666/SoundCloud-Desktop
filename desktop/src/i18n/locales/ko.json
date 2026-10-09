@@ -17,6 +17,7 @@
   },
   "nav": {
     "home": "홈",
+    "reload": "인터페이스 새로고침",
     "search": "검색",
     "discover": "둘러보기",
     "library": "라이브러리",
@@ -1156,6 +1157,9 @@
     "fontCustomHint": "이 컴퓨터에 설치된 글꼴 이름을 입력하세요",
     "fontFound": "글꼴을 찾았어요. 이제 인터페이스에 적용돼요",
     "fontNotFound": "설치되지 않은 글꼴이에요. 대신 Inter를 사용해요",
+    "fontUpload": "글꼴 파일 업로드",
+    "fontUploadFailed": "글꼴을 읽을 수 없습니다. TTF, OTF, WOFF 또는 WOFF2 파일을 사용하세요.",
+    "fontRemoveFile": "글꼴 삭제",
     "coverTitle": "커버 색상",
     "coverDesc": "재생 중인 트랙의 아트워크 색으로 앱을 물들여요",
     "coverTint": "커버 그라데이션",

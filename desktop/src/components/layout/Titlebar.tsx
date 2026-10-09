@@ -3,7 +3,16 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import appIcon from '../../assets/app-icon.png';
-import {ChevronLeft, ChevronRight, Fullscreen, Home, Minus, Square, X} from '../../lib/icons';
+import {
+  ChevronLeft,
+  ChevronRight,
+  Fullscreen,
+  Home,
+  Minus,
+  RefreshCw,
+  Square,
+  X,
+} from '../../lib/icons';
 import { toggleWindowFullscreen } from '../../lib/window';
 import {useSettingsStore} from '../../stores/settings';
 import {GlobalSearch} from './GlobalSearch';
@@ -12,6 +21,7 @@ const navCls =
     'w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200 cursor-pointer disabled:opacity-20 disabled:cursor-default text-white/45 hover:text-white hover:bg-white/[0.08] active:scale-90';
 
 const NavButtons = React.memo(() => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const canGoBack = location.key !== 'default';
@@ -55,6 +65,15 @@ const NavButtons = React.memo(() => {
         }
       >
           <Home size={16} strokeWidth={2.2}/>
+      </button>
+      <button
+        type="button"
+        onClick={() => window.location.reload()}
+        className={navCls}
+        aria-label={t('nav.reload')}
+        title={t('nav.reload')}
+      >
+          <RefreshCw size={15} strokeWidth={2.2}/>
       </button>
     </div>
   );

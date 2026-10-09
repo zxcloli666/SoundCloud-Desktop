@@ -17,6 +17,7 @@
   },
   "nav": {
     "home": "Home",
+    "reload": "Reload interface",
     "search": "Search",
     "discover": "Discover",
     "library": "Library",
@@ -1172,6 +1173,9 @@
     "fontCustomHint": "Type the name of a font installed on this computer",
     "fontFound": "Font found, the interface uses it now",
     "fontNotFound": "This font is not installed, Inter is used instead",
+    "fontUpload": "Upload font file",
+    "fontUploadFailed": "Could not read this font. Use a TTF, OTF, WOFF or WOFF2 file.",
+    "fontRemoveFile": "Remove font",
     "coverTitle": "Colours from the cover",
     "coverDesc": "Let the artwork of the playing track paint the app",
     "coverTint": "Cover gradient",

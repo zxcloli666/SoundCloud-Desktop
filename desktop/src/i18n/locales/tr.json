@@ -23,6 +23,7 @@
   },
   "nav": {
     "home": "Ana Sayfa",
+    "reload": "Arayüzü yeniden yükle",
     "search": "Ara",
     "library": "Kutuphane",
     "star": "STAR",
@@ -1099,6 +1100,9 @@
     "fontCustomHint": "Bu bilgisayarda yüklü bir yazı tipinin adını yazın",
     "fontFound": "Yazı tipi bulundu, arayüz artık onu kullanıyor",
     "fontNotFound": "Bu yazı tipi yüklü değil, yerine Inter kullanılıyor",
+    "fontUpload": "Yazı tipi dosyası yükle",
+    "fontUploadFailed": "Bu yazı tipi okunamadı. TTF, OTF, WOFF veya WOFF2 dosyası kullanın.",
+    "fontRemoveFile": "Yazı tipini kaldır",
     "coverTitle": "Kapak renkleri",
     "coverDesc": "Çalan parçanın kapağı uygulamayı renklendirsin",
     "coverTint": "Kapak gradyanı",
