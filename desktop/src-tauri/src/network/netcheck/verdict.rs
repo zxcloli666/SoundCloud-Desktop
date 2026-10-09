@@ -141,6 +141,9 @@ fn certificate_swapped(target: &TargetCheck) -> bool {
 }
 
 pub fn hint(verdict: Verdict, env: Option<&EnvInfo>, targets: &[TargetCheck]) -> Hint {
+    if verdict == Verdict::Cut && env.is_some_and(|env| !env.dpi.is_empty()) {
+        return Hint::ZapretCut;
+    }
     let blocked = match verdict {
         Verdict::Reset | Verdict::Timeout | Verdict::RelayOnly => true,
         Verdict::Offline => matches!(tally(targets), Verdict::Reset | Verdict::Timeout),

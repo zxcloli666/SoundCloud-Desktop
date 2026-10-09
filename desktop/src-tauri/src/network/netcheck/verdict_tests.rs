@@ -391,6 +391,13 @@ fn zapret_env(args: Option<&str>, timestamps: Option<&str>) -> EnvInfo {
 }
 
 #[test]
+fn a_volume_cut_beside_a_running_winws_gets_its_own_hint() {
+    let env = zapret_env(None, Some("enabled"));
+    assert_eq!(hint(Verdict::Cut, Some(&env), &[]), Hint::ZapretCut);
+    assert_eq!(hint(Verdict::Cut, None, &[]), Hint::None);
+}
+
+#[test]
 fn a_running_winws_hints_zapret() {
     let targets = all_broken(FailKind::Reset, Phase::Tls);
     let env = zapret_env(None, Some("enabled"));

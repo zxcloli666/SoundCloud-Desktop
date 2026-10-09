@@ -18,7 +18,7 @@ export type Verdict =
   | 'down'
   | 'offline'
   | 'unknown';
-export type Hint = 'none' | 'zapret' | 'zapretTimestamps';
+export type Hint = 'none' | 'zapret' | 'zapretTimestamps' | 'zapretCut';
 export type Remote = 'up' | 'down' | 'unknown';
 export type Internet = 'online' | 'offline' | 'unknown';
 export type Trigger = 'manual' | 'auto';
@@ -179,6 +179,7 @@ export interface NetReport {
   recent: PathEvent[];
   addrs: string[];
   volume: VolumeProbe | null;
+  relayVolume?: VolumeProbe[];
 }
 
 interface NetCheckUpdate {

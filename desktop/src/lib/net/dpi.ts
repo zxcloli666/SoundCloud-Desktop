@@ -75,3 +75,17 @@ export function dpiAdvice(env: EnvInfo | null, addrs: string[], os: Os): DpiAdvi
   if (kind === 'goodbyedpi') return { name, kind, lists: [], apply: null };
   return { name, kind, lists: [{ file: null, lines: domains }], apply: null };
 }
+
+export function excludeList(advice: DpiAdvice): string | null {
+  return advice.lists[0]?.file ?? null;
+}
+
+export function bypassList(advice: DpiAdvice, env: EnvInfo | null): string | null {
+  if (advice.kind === 'flowseal') return 'lists/list-general-user.txt';
+  if (advice.kind === 'zapret') return `${zapretDir(env, advice.name)}/ipset/zapret-hosts-user.txt`;
+  return null;
+}
+
+export function shownName(advice: DpiAdvice): string {
+  return advice.kind === 'flowseal' || advice.kind === 'zapret' ? FALLBACK_NAME : advice.name;
+}

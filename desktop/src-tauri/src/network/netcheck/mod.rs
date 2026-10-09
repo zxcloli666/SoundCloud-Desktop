@@ -188,6 +188,7 @@ async fn run(trigger: Trigger, reason: Option<String>) -> NetReport {
         recent: paths::recent(RECENT_EVENTS),
         addrs: Vec::new(),
         volume: None,
+        relay_volume: Vec::new(),
     };
     let checker = CHECKER.get();
     if let Some(checker) = checker {
@@ -222,9 +223,18 @@ async fn run(trigger: Trigger, reason: Option<String>) -> NetReport {
             None
         }
     };
-    let ((), doh, env, known, cut) = tokio::join!(collect, providers, environment, known, cut);
+    let relay_cut = async {
+        if targets::direct_allowed(trigger) {
+            volume::relays().await
+        } else {
+            Vec::new()
+        }
+    };
+    let ((), doh, env, known, cut, relay_cut) =
+        tokio::join!(collect, providers, environment, known, cut, relay_cut);
     report.doh = doh;
     report.volume = cut;
+    report.relay_volume = relay_cut;
     report.env = env.ok();
     report.addrs = addrs::ours(&report.targets, known);
     let online = targets::internet_seen(&report.targets, &report.doh);

@@ -30,6 +30,8 @@ pub struct NetReport {
     pub addrs: Vec<IpAddr>,
     #[serde(default)]
     pub volume: Option<VolumeProbe>,
+    #[serde(default)]
+    pub relay_volume: Vec<VolumeProbe>,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -73,6 +75,7 @@ pub enum Hint {
     None,
     Zapret,
     ZapretTimestamps,
+    ZapretCut,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -324,6 +327,7 @@ impl Hint {
             Self::None => "none",
             Self::Zapret => "zapret",
             Self::ZapretTimestamps => "zapret-timestamps",
+            Self::ZapretCut => "zapret-cut",
         }
     }
 }

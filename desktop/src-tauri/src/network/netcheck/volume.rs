@@ -2,6 +2,7 @@ use std::time::Duration;
 
 use super::model::VolumeProbe;
 use crate::network::dns;
+use crate::network::edge;
 use crate::network::health::link::{self, Shape};
 
 const PROBE_URLS: [&str; 2] = [
@@ -11,13 +12,28 @@ const PROBE_URLS: [&str; 2] = [
 const CONNECT_TIMEOUT: Duration = Duration::from_secs(10);
 
 pub async fn probe() -> Option<VolumeProbe> {
-    let client = dns::install(sc_fingerprint::builder(None))
+    first_served(&client()?, &PROBE_URLS).await
+}
+
+pub async fn relays() -> Vec<VolumeProbe> {
+    let Some(client) = client() else {
+        return Vec::new();
+    };
+    let mut measured = Vec::new();
+    for node in edge::relay_pool() {
+        let url = format!("https://{node}.{}/probe", edge::relay_zone());
+        measured.push(measure(&client, &url).await);
+    }
+    measured
+}
+
+fn client() -> Option<wreq::Client> {
+    dns::install(sc_fingerprint::builder(None))
         .no_proxy()
         .pool_max_idle_per_host(0)
         .connect_timeout(CONNECT_TIMEOUT)
         .build()
-        .ok()?;
-    first_served(&client, &PROBE_URLS).await
+        .ok()
 }
 
 async fn first_served(client: &wreq::Client, urls: &[&str]) -> Option<VolumeProbe> {

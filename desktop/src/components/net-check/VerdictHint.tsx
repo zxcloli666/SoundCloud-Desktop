@@ -9,6 +9,7 @@ import type { EnvInfo, Hint, Verdict } from '../../lib/net/check';
 import { type DpiAdvice, type DpiKind, dpiAdvice } from '../../lib/net/dpi';
 import { currentOs, fixCommand } from '../../lib/net/manual';
 import { CopyLine } from './CopyLine';
+import { CutSteps } from './CutSteps';
 
 interface HintProps {
   verdict: Verdict;
@@ -33,14 +34,13 @@ function adviceText(t: TFunction, advice: DpiAdvice): string {
 
 function hintText(
   t: TFunction,
-  { verdict, broken, backups }: HintProps,
+  { verdict, broken }: HintProps,
   fix: string | null,
   advice: DpiAdvice | null,
 ): string {
   if (broken) return t('netCheck.failedHint');
   if (fix) return t('netCheck.hint.zapretTimestamps');
   if (advice) return adviceText(t, advice);
-  if (verdict === 'cut' && !backups) return t('netCheck.verdict.cut.hintAlone');
   return t(`netCheck.verdict.${verdict}.hint`);
 }
 
@@ -84,6 +84,11 @@ const Exclusions = React.memo(({ advice }: { advice: DpiAdvice }) => {
 export const VerdictHint = React.memo((props: HintProps) => {
   const { t } = useTranslation();
   if (props.verdict === 'checking') return null;
+  if (!props.broken && props.verdict === 'cut') {
+    return (
+      <CutSteps env={props.env} running={props.hint === 'zapretCut'} backups={props.backups} />
+    );
+  }
   const os = currentOs();
   const fix = !props.broken && props.hint === 'zapretTimestamps' ? fixCommand(os) : null;
   const advice =

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import {
   type EnvInfo,
   type Hint,
+  type NetReport,
   useNetCheckStore,
   useShownVerdict,
   type Verdict,
@@ -31,6 +32,13 @@ const CHIP_TONE: Record<ChipTone, { dot: string; glow: string; text: string }> =
   amber: { dot: 'bg-amber-400', glow: '0 0 8px rgba(251,191,36,0.7)', text: 'text-amber-300/90' },
   sky: { dot: 'bg-sky-400', glow: '0 0 8px rgba(56,189,248,0.7)', text: 'text-sky-300/90' },
 };
+
+function backupsCarry(report: NetReport): boolean {
+  const answering = report.targets.some((target) => target.id === 'relay' && target.ok);
+  const measured = report.relayVolume ?? [];
+  const allCut = measured.length > 0 && measured.every((probe) => probe.cut);
+  return answering && !allCut;
+}
 
 function envChips(t: TFunction, env: EnvInfo | null, hint: Hint): Chip[] {
   if (!env) return [];
@@ -99,7 +107,7 @@ export const VerdictHeader = React.memo(() => {
         broken={failed && !settled}
         env={settled ? report.env : null}
         addrs={settled ? report.addrs : NO_ADDRS}
-        backups={!settled || report.targets.some((target) => target.id === 'relay' && target.ok)}
+        backups={!settled || backupsCarry(report)}
       />
       {chips.length > 0 && (
         <div className="mt-3 flex flex-wrap justify-center gap-1.5">

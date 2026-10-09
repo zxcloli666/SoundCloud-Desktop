@@ -91,6 +91,8 @@ SoundCloud заблокирован Роскомнадзором — веб-ве
 
 ## Скачать
 
+> Стоит zapret, а треки или обложки не грузятся? Добавьте `scnative.space` в его `lists/list-general-user.txt`. Подробно: [zapret, VPN и списки доменов](#zapret-vpn-и-списки-доменов).
+
 ### Windows
 
 Перейди на [страницу релизов](https://github.com/zxcloli666/SoundCloud-Desktop/releases/latest) и скачай:
@@ -153,11 +155,18 @@ chmod +x soundcloud-desktop-*.AppImage
 
 Приложение ходит на свои домены в зоне `scnative.space` и напрямую к SoundCloud за треками. Если провайдер режет прямой путь к `scnative.space`, приложение само переключается на резервные маршруты `*.relay.scnative.space`.
 
-Правила для zapret:
-- Если приложение не работает, откройте «Настройки → Сеть → Проверка сети»: там видно, что ломается, и есть кнопка «Скопировать отчёт».
-- Не добавляйте `scnative.space` в `list-general`: это включает обход именно для наших доменов и ломает соединения.
-- Windows (winws, сборка Flowseal): добавьте `scnative.space` и `soundcloud-desktop.fun` в `lists/list-exclude-user.txt`.
-- Если IPSet в режиме `loaded` или `any`, добавьте адреса наших серверов в `lists/ipset-exclude-user.txt` (по одному на строку). Режим `none` наши адреса не трогает.
+Треки или обложки не грузятся:
+1. Откройте «Настройки → Сеть → Проверка сети». Там видно, что сломано, и есть кнопка «Скопировать отчёт».
+2. zapret включён: выключите его и нажмите «Проверить снова».
+3. Заработало: мешал zapret. Добавьте `scnative.space` и `soundcloud-desktop.fun` в `lists/list-exclude-user.txt` и включите zapret обратно.
+4. Не заработало: режет провайдер. Добавьте `scnative.space` в `lists/list-general-user.txt`, включите zapret и проверьте снова. Стало хуже — уберите строку.
+5. Всё равно не работает или zapret нет: поможет только VPN.
+
+Пути выше для Windows (winws, сборка Flowseal). После правки списков перезапустите zapret.
+
+Подробности:
+- Linux и macOS (nfqws, tpws): исключения лежат в `/opt/zapret/ipset/zapret-hosts-user-exclude.txt` (после правки `sudo /opt/zapret/ipset/get_exclude.sh`), список обхода в `/opt/zapret/ipset/zapret-hosts-user.txt`. У zapret2 папка `/opt/zapret2`.
+- Шаг 3 при IPSet в режиме `loaded` или `any`: добавьте ещё адреса наших серверов в `lists/ipset-exclude-user.txt` (по одному на строку). Режим `none` наши адреса не трогает.
   ```
   188.165.221.195
   192.95.29.82
@@ -168,8 +177,6 @@ chmod +x soundcloud-desktop-*.AppImage
   150.241.82.7
   177.3.213.61
   ```
-- После правки перезапустите zapret.
-- Linux и macOS (nfqws, tpws): домены и адреса выше добавьте в `/opt/zapret/ipset/zapret-hosts-user-exclude.txt`, включите zapret и выполните `sudo /opt/zapret/ipset/get_exclude.sh`. У zapret2 папка `/opt/zapret2`.
 - Для стратегий с `fooling=ts` или `tcp_ts` включите TCP timestamps: `netsh interface tcp set global timestamps=enabled` от администратора.
 - Если системный DNS выдаёт неверный адрес, приложение само спрашивает DoH (1.1.1.1, 8.8.8.8 и другие).
 - Провайдер блокирует SoundCloud — добавьте `soundcloud.com` и `sndcdn.com` в `list-general`, иначе треки идут через сервер и грузятся дольше.

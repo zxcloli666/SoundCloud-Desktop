@@ -583,8 +583,7 @@
       },
       "cut": {
         "title": "Direct route cuts large downloads",
-        "hint": "The app switches to backup routes, maybe slower.",
-        "hintAlone": "Backup routes don't answer either, so large tracks may not load."
+        "hint": "The app switches to backup routes, maybe slower."
       },
       "dns": {
         "title": "Your DNS returns a wrong address",
@@ -618,6 +617,18 @@
         "title": "Couldn't find the cause",
         "hint": "Send us the report, it will help."
       }
+    },
+    "cut": {
+      "leadAlone": "Something cuts the downloads, so tracks and covers do not load. Go step by step:",
+      "leadBackups": "The app works over backup routes, but slower. To speed it up, go step by step:",
+      "off": "Turn {{name}} off and press Check again.",
+      "exclude": "Works now? Add the line below to {{file}} and turn {{name}} back on. Done.",
+      "bypass": "Still broken? Add the line below to {{file}}, turn {{name}} on and check again.",
+      "vpn": "Still broken? Only a VPN will help.",
+      "bypassIdle": "Have zapret? Add the line below to {{file}}, turn it on and press Check again.",
+      "vpnIdle": "No luck or no zapret? Only a VPN will help.",
+      "excludeAny": "its exclusions",
+      "bypassAny": "its bypass list"
     },
     "hint": {
       "dpi": "{{name}} is running. Turn it off to check.",
