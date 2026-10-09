@@ -961,7 +961,7 @@ const ReactCluster = React.memo(() => {
 const LocalFileBadge = React.memo(() => {
   const { t } = useTranslation();
   return (
-    <div className="flex w-[10.75rem] items-center justify-center">
+    <div className="npb-react is-local">
       <span className="flex items-center gap-1.5 rounded-full border border-white/[0.1] bg-white/[0.04] px-2.5 py-1 text-[10.5px] font-semibold uppercase tracking-[0.12em] text-white/50">
         <HardDrive size={11} />
         {t('local.badge')}
@@ -976,17 +976,21 @@ const ReactClusterBody = React.memo(({ urn }: { urn: string }) => {
   const currentTrack = usePlayerStore((s) => s.currentTrack);
   const disliked = useDislikeStatus(urn);
   return (
-    <div className="flex items-center gap-0.5">
+    <div className="npb-react">
       <LikeButton trackUrn={urn} trackData={trackData} />
       <NowBarDislikeButton trackUrn={urn} trackData={trackData} disliked={disliked} />
       <NowBarAddToPlaylistButton trackUrn={urn} />
-      {trackData && (
-        <AlbumLinkButton
-          track={trackData}
-          className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-all duration-200 cursor-pointer hover:bg-white/[0.04] text-white/30 hover:text-white/60"
-        />
-      )}
-      <PlayerBlockButton key={urn} track={trackData ?? currentTrack} />
+      <span className="npb-slot">
+        {trackData && (
+          <AlbumLinkButton
+            track={trackData}
+            className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-all duration-200 cursor-pointer hover:bg-white/[0.04] text-white/30 hover:text-white/60"
+          />
+        )}
+      </span>
+      <span className="npb-slot">
+        <PlayerBlockButton key={urn} track={trackData ?? currentTrack} />
+      </span>
       <div className="npb-quality">
         <PlaybackQualityBadge />
       </div>

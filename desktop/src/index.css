@@ -942,7 +942,7 @@ select,
     position: relative;
     z-index: 1;
     pointer-events: auto;
-    width: max-content;
+    width: 960px;
     max-width: calc(100% - 32px);
     border-radius: 28px;
     box-shadow: 0 30px 70px -22px rgba(0, 0, 0, 0.78),
@@ -1014,6 +1014,25 @@ select,
     width: 96px;
 }
 
+.npb-react {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex: 0 0 auto;
+}
+
+.npb-react.is-local {
+    justify-content: center;
+    width: calc(5 * 36px + 5 * 2px + 96px);
+}
+
+.npb-slot {
+    display: flex;
+    flex: 0 0 36px;
+    width: 36px;
+    height: 36px;
+}
+
 .npb-sep {
     width: 1px;
     height: 30px;
@@ -1024,6 +1043,7 @@ select,
 /* meta (art + title) */
 .npb-meta {
     display: flex;
+    flex: 1 1 auto;
     align-items: center;
     gap: 12px;
     min-width: 0;
@@ -1165,8 +1185,7 @@ select,
     display: flex;
     flex-direction: column;
     gap: 2px;
-    flex: 0 1 150px;
-    width: 150px;
+    flex: 1 1 150px;
     min-width: 0;
 }
 
@@ -1514,11 +1533,14 @@ select,
 
 .npb[data-compact] .npb-txt {
     flex-basis: 112px;
-    width: 112px;
 }
 
 .npb[data-compact] .npb-quality {
-    width: auto;
+    width: 72px;
+}
+
+.npb[data-compact] .npb-react.is-local {
+    width: calc(5 * 36px + 5 * 2px + 72px);
 }
 
 .npb[data-compact] .npb-cdn {
