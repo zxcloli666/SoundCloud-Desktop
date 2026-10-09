@@ -23,6 +23,8 @@ pub struct Topology {
     #[serde(default)]
     pub calls: Vec<CallNode>,
     #[serde(default)]
+    pub pros: Vec<String>,
+    #[serde(default)]
     pub endpoints: Vec<Endpoint>,
 }
 
@@ -138,6 +140,7 @@ impl Topology {
             ],
             relays: Vec::new(),
             calls: Vec::new(),
+            pros: Vec::new(),
             endpoints: ["api", "stream", "storage", "images", "pay"]
                 .into_iter()
                 .map(endpoint)
@@ -153,6 +156,8 @@ impl Topology {
         self.relays.truncate(MAX_NODES);
         self.calls.retain(|node| is_node(&node.id));
         self.calls.truncate(MAX_NODES);
+        self.pros.retain(|node| is_node(node));
+        self.pros.truncate(MAX_NODES);
         self.endpoints
             .retain(|endpoint| !endpoint.id.is_empty() && endpoint.url.starts_with("https://"));
         self.endpoints.truncate(MAX_ENDPOINTS);
@@ -248,6 +253,7 @@ mod tests {
                 id: "call-1".into(),
                 weight: 1.0,
             }],
+            pros: vec!["p1".into(), "P2".into()],
             endpoints: vec![Endpoint {
                 id: String::new(),
                 url: "https://x/health".into(),
@@ -258,6 +264,7 @@ mod tests {
         assert_eq!(topology.probe_interval_secs, 30);
         assert_eq!(topology.ingest, ["https://health.x"]);
         assert_eq!(topology.relays, ["r1"]);
+        assert_eq!(topology.pros, ["p1"]);
         assert!(topology.endpoints.is_empty());
     }
 }

@@ -19,7 +19,6 @@ import {ImportCard} from './cards/ImportCard';
 import {LanguageCard} from './cards/LanguageCard';
 import {LayoutCard} from './cards/LayoutCard';
 import {NetCheckCard} from './cards/NetCheckCard';
-import {NetworkCard} from './cards/NetworkCard';
 import {NotificationsCard} from './cards/NotificationsCard';
 import {ObsCard} from './cards/obs/ObsCard';
 import {PerformanceCard} from './cards/PerformanceCard';
@@ -108,7 +107,6 @@ export const SETTINGS_CATEGORIES: SettingsCategory[] = [
         Body: () => (
             <>
                 <NetCheckCard/>
-                <NetworkCard/>
                 <CallProxySection/>
             </>
         ),

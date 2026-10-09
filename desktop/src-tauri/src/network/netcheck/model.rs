@@ -239,6 +239,8 @@ pub struct ZapretConfig {
 pub struct EdgeSnapshot {
     pub pins: Vec<(String, u64)>,
     pub pool: Vec<String>,
+    #[serde(default)]
+    pub pro: Vec<String>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]

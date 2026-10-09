@@ -29,7 +29,7 @@ use self::model::{
 };
 use self::paths::{millis, now_ms};
 use crate::app::diagnostics;
-use crate::network::{edge, fetch};
+use crate::network::{edge, fetch, pro};
 use crate::rt::AppHandle;
 
 const EVENT: &str = "netcheck:update";
@@ -163,6 +163,7 @@ fn edge_snapshot() -> EdgeSnapshot {
     EdgeSnapshot {
         pins: edge::pins(),
         pool: edge::relay_pool(),
+        pro: edge::pro_pins(),
     }
 }
 
@@ -264,6 +265,9 @@ async fn run(trigger: Trigger, reason: Option<String>) -> NetReport {
         report.volume.as_ref(),
     );
     report.hint = verdict::hint(report.verdict, report.env.as_ref(), &report.targets);
+    if verdict::nothing_carries(report.verdict, &report.relay_volume) && pro::reachable().await {
+        edge::escalate_all();
+    }
     report.recent = paths::recent(RECENT_EVENTS);
     report.edge = edge_snapshot();
     report.duration_ms = millis(started.elapsed());

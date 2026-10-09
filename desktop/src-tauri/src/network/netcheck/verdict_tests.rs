@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 use std::net::IpAddr;
 
-use super::{cells, dns_state, hint, verdict, with_volume};
+use super::{cells, dns_state, hint, nothing_carries, verdict, with_volume};
 use crate::network::fail::{Fail, FailKind, Phase};
 use crate::network::netcheck::model::{
     AppProbe, DnsAnswer, DnsState, DpiTool, EnvInfo, Hint, Internet, PhaseProbe, Remote,
@@ -395,6 +395,24 @@ fn a_volume_cut_beside_a_running_winws_gets_its_own_hint() {
     let env = zapret_env(None, Some("enabled"));
     assert_eq!(hint(Verdict::Cut, Some(&env), &[]), Hint::ZapretCut);
     assert_eq!(hint(Verdict::Cut, None, &[]), Hint::None);
+}
+
+#[test]
+fn the_pro_relay_is_for_links_where_neither_direct_nor_relays_carry() {
+    let probe = |cut| VolumeProbe {
+        host: "r1.relay.scnative.space".to_string(),
+        shape: "blackhole".to_string(),
+        bytes: 13_000,
+        ms: 6_000,
+        cut,
+    };
+    assert!(nothing_carries(Verdict::Cut, &[probe(true), probe(true)]));
+    assert!(!nothing_carries(Verdict::Cut, &[probe(true), probe(false)]));
+    assert!(!nothing_carries(Verdict::Cut, &[]));
+    assert!(nothing_carries(Verdict::Reset, &[]));
+    assert!(nothing_carries(Verdict::Timeout, &[]));
+    assert!(!nothing_carries(Verdict::Ok, &[probe(true)]));
+    assert!(!nothing_carries(Verdict::RelayOnly, &[]));
 }
 
 #[test]

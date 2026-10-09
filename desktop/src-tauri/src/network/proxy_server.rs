@@ -43,11 +43,15 @@ pub async fn start() -> u16 {
                 )
             });
 
-    let routes = image_route.or(proxy_route).with(cors());
+    let routes = image_route
+        .or(proxy_route)
+        .or(crate::network::pro::route())
+        .with(cors());
 
     let addr: SocketAddr = ([127, 0, 0, 1], 0).into();
     let (addr, server) = warp::serve(routes).bind_ephemeral(addr);
     tokio::spawn(server);
+    crate::network::edge::set_gateway(addr.port());
 
     diagnostics::log("INFO", format!("[ProxyServer] http://127.0.0.1:{}", addr.port()));
     addr.port()

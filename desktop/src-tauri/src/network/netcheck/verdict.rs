@@ -58,6 +58,14 @@ pub fn with_volume(verdict: Verdict, volume: Option<&VolumeProbe>) -> Verdict {
     }
 }
 
+pub fn nothing_carries(verdict: Verdict, relay_volume: &[VolumeProbe]) -> bool {
+    match verdict {
+        Verdict::Cut => !relay_volume.is_empty() && relay_volume.iter().all(|volume| volume.cut),
+        Verdict::Reset | Verdict::Timeout => true,
+        _ => false,
+    }
+}
+
 fn tally(targets: &[TargetCheck]) -> Verdict {
     let (mut reset, mut timeout, mut status, mut dns) = (0, 0, 0, 0);
     for kind in targets.iter().filter_map(failure_kind) {

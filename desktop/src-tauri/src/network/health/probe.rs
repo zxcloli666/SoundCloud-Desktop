@@ -4,9 +4,9 @@ use futures_util::stream::{self, StreamExt};
 use wreq::Client;
 
 use super::link::{self, Shape};
-use super::model::{PROBE_PATH, Route, Sample, Topology};
+use super::model::{Link, PROBE_PATH, Route, Sample, Topology};
 use crate::network::edge::{self, Tier};
-use crate::network::{fail, system_proxy};
+use crate::network::{fail, pro, system_proxy};
 
 const PROBE_TIMEOUT: Duration = Duration::from_secs(5);
 const MAX_PARALLEL: usize = 4;
@@ -72,6 +72,37 @@ pub async fn probe_paths(client: &Client, pool: &Pool, round: usize) -> Vec<Samp
         .buffer_unordered(MAX_PARALLEL)
         .collect()
         .await
+}
+
+pub async fn probe_pros(pros: &[String], needed: bool) -> Vec<Sample> {
+    let probes = pros.iter().map(|node| async move {
+        let host = format!("{node}.{}", edge::pro_zone());
+        let probed = if needed {
+            pro::carries(&host).await
+        } else {
+            pro::answers(&host).await
+        };
+        let shape = if probed.ok { Shape::Clear } else { Shape::Dead };
+        Sample {
+            ep: format!("@{node}"),
+            via: "direct".to_string(),
+            ok: probed.ok,
+            ms: Some(probed.ms.min(i32::MAX as u32) as i32),
+            fail: (!probed.ok).then(|| shape.as_str().to_string()),
+            link: needed.then_some(Link {
+                shape: shape.as_str(),
+                kbps: 0,
+                bytes: probed.bytes as i64,
+            }),
+        }
+    });
+    futures_util::future::join_all(probes).await
+}
+
+pub fn direct_clear(paths: &[Sample]) -> bool {
+    paths
+        .iter()
+        .any(|sample| sample.ok && sample.ep == DIRECT_EP)
 }
 
 pub fn usable_first(relays: &[String], paths: &[Sample]) -> Vec<String> {

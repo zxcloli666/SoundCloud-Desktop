@@ -369,7 +369,14 @@ fn edge_line(edge: &EdgeSnapshot) -> String {
     let pins = joined(
         edge.pins
             .iter()
-            .map(|(origin, left_ms)| format!("{origin} relay {}m left", left_ms.div_ceil(60_000)))
+            .map(|(origin, left_ms)| {
+                let tier = if edge.pro.contains(origin) {
+                    "pro"
+                } else {
+                    "relay"
+                };
+                format!("{origin} {tier} {}m left", left_ms.div_ceil(60_000))
+            })
             .collect(),
         ", ",
     );
@@ -380,6 +387,7 @@ fn event_line(event: &PathEvent) -> String {
     let tier = match event.tier {
         Tier::Direct => "direct",
         Tier::Relay => "relay",
+        Tier::Pro => "pro",
     };
     let result = match (event.ok, event.fail, event.status) {
         (true, _, Some(status)) => format!("ok {status}"),

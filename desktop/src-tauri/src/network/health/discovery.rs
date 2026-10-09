@@ -31,6 +31,18 @@ pub async fn calls(known: &[String]) -> Vec<String> {
     merge(known.to_vec(), found)
 }
 
+pub async fn pros(known: &[String]) -> Vec<String> {
+    let zone = edge::pro_zone();
+    let found = scan(
+        known,
+        |index| format!("p{index}"),
+        move |node| format!("{node}.{zone}"),
+        resolves,
+    )
+    .await;
+    merge(known.to_vec(), found)
+}
+
 async fn scan<Name, Host, Lookup, Fut>(
     known: &[String],
     name: Name,

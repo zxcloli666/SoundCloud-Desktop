@@ -9,7 +9,7 @@
 import { listen } from '@tauri-apps/api/event';
 import { trackedInvoke as invoke } from '../diagnostics';
 
-export type Tier = 'direct' | 'relay';
+export type Tier = 'direct' | 'relay' | 'pro';
 
 export interface Hop {
   url: string;
@@ -19,6 +19,7 @@ export interface Hop {
 
 interface RustConfig {
   relays: [string, string[]][];
+  pro?: string[];
   hints: Record<string, Tier>;
   revalidate_in_ms: Record<string, number>;
   revalidate_ms: number;
@@ -34,12 +35,13 @@ interface OriginState {
 
 type Change = 'none' | 'pinned' | 'unpinned';
 
-const TIER_ORDER: Record<Tier, number> = { direct: 0, relay: 1 };
+const TIER_ORDER: Record<Tier, number> = { direct: 0, relay: 1, pro: 2 };
 const DIRECT_FAIL_THRESHOLD = 2;
 const RELAY_WIN_THRESHOLD = 2;
 const PROVEN_BYTES = 64 * 1024;
 
 let relays = new Map<string, string[]>();
+let gateways: string[] = [];
 let revalidateMs = 600_000;
 const origins = new Map<string, OriginState>();
 const reported = new Map<string, Tier>();
@@ -56,6 +58,7 @@ export async function initEdge(): Promise<void> {
 
 function applyConfig(cfg: RustConfig): void {
   relays = new Map(cfg.relays);
+  gateways = cfg.pro ?? [];
   revalidateMs = cfg.revalidate_ms || revalidateMs;
   const now = Date.now();
   for (const [host, tier] of Object.entries(cfg.hints ?? {})) {
@@ -63,7 +66,7 @@ function applyConfig(cfg: RustConfig): void {
     if (tier === 'direct' && prev?.tier === 'relay' && prev.until > now) continue;
     reported.set(host, tier);
     if (tier === 'direct') {
-      if (prev?.tier === 'relay') origins.delete(host);
+      if (prev && prev.tier !== 'direct') origins.delete(host);
       continue;
     }
     const until = now + (cfg.revalidate_in_ms[host] ?? revalidateMs);
@@ -79,7 +82,7 @@ function applyConfig(cfg: RustConfig): void {
 
 function refreshed(prev: OriginState | undefined, now: number): OriginState {
   if (!prev) return { tier: 'direct', until: now, directFails: 0, relayWins: 0, lastAt: now };
-  if (prev.tier === 'relay' && now >= prev.until) {
+  if (prev.tier !== 'direct' && now >= prev.until) {
     return { tier: 'direct', until: prev.until, directFails: 0, relayWins: 0, lastAt: now };
   }
   const stale = now - prev.lastAt >= revalidateMs;
@@ -87,8 +90,14 @@ function refreshed(prev: OriginState | undefined, now: number): OriginState {
   return { ...prev, lastAt: now };
 }
 
-function isPinned(state: OriginState | undefined, now: number): boolean {
-  return state?.tier === 'relay' && now < state.until;
+function levelOf(state: OriginState | undefined, now: number): Tier {
+  return state && now < state.until ? state.tier : 'direct';
+}
+
+function base64Url(text: string): string {
+  let binary = '';
+  for (const byte of new TextEncoder().encode(text)) binary += String.fromCharCode(byte);
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
 function hostOf(url: string): string | null {
@@ -118,7 +127,11 @@ export function planHops(url: string): Hop[] {
   const pool = relays.get(origin);
   if (!pool?.length) return [];
 
-  const from: Tier = isPinned(origins.get(origin), Date.now()) ? 'relay' : 'direct';
+  const level = levelOf(origins.get(origin), Date.now());
+  if (level === 'pro' && gateways.length > 0) {
+    return gateways.map((gateway) => ({ url: gateway + base64Url(url), tier: 'pro', origin }));
+  }
+  const from: Tier = level === 'direct' ? 'direct' : 'relay';
   const min = TIER_ORDER[from];
 
   const hops: Hop[] = [];
@@ -165,13 +178,19 @@ function step(state: OriginState, hop: Hop, ok: boolean, bytes: number, now: num
   return 'pinned';
 }
 
+function tellCore(hop: Hop, ok: boolean): void {
+  void invoke('edge_note', { origin: hop.origin, tier: hop.tier, ok }).catch(() => {});
+}
+
 export function noteHop(hop: Hop, ok: boolean, bytes = 0): void {
+  if (hop.tier === 'pro' || (hop.tier === 'relay' && !ok)) tellCore(hop, ok);
+  if (hop.tier === 'pro') return;
   const prev = origins.get(hop.origin);
   const counts = hop.tier === 'direct' ? !ok : ok;
   if (!prev && !counts) return;
   const now = Date.now();
   const state = refreshed(prev, now);
-  if (prev?.tier === 'relay' && state.tier === 'direct') reported.set(hop.origin, 'direct');
+  if (prev && prev.tier !== 'direct' && state.tier === 'direct') reported.set(hop.origin, 'direct');
   const change = step(state, hop, ok, bytes, now);
   origins.set(hop.origin, state);
   if (change === 'pinned') report(hop.origin, 'relay');
@@ -180,5 +199,5 @@ export function noteHop(hop: Hop, ok: boolean, bytes = 0): void {
 
 /** Текущий тир — для диагностики и баннера состояния. */
 export function tierOf(origin: string): Tier {
-  return isPinned(origins.get(origin), Date.now()) ? 'relay' : 'direct';
+  return levelOf(origins.get(origin), Date.now());
 }

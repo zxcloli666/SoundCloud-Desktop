@@ -37,7 +37,8 @@ function backupsCarry(report: NetReport): boolean {
   const answering = report.targets.some((target) => target.id === 'relay' && target.ok);
   const measured = report.relayVolume ?? [];
   const allCut = measured.length > 0 && measured.every((probe) => probe.cut);
-  return answering && !allCut;
+  const throughPro = (report.edge.pro?.length ?? 0) > 0;
+  return throughPro || (answering && !allCut);
 }
 
 function envChips(t: TFunction, env: EnvInfo | null, hint: Hint): Chip[] {

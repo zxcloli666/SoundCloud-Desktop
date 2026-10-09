@@ -1,5 +1,5 @@
 // Единая точка сетевых запросов фронта к нашим доменам: перебирает тиры
-// (прямой → relay) и запоминает, что сработало.
+// (прямой → relay → relay pro) и запоминает, что сработало.
 
 import { NetError, type NetRoute, netRequest } from '../net/fetch';
 import { type Hop, noteHop, planHops, type Tier } from './config';
@@ -32,7 +32,7 @@ function isBodyCut(error: unknown): boolean {
  * а ответ origin'а (401/404/500 приложения) — уже валидный результат.
  */
 function hopUsable(hop: Hop, res: Response): boolean {
-  if (hop.tier === 'relay') return !isRelayError(res);
+  if (hop.tier !== 'direct') return !isRelayError(res);
   return !isDirectInfrastructureError(res);
 }
 
@@ -214,7 +214,7 @@ export async function edgeFetch(
         noteHop(hop, !(stalled && hop.tier === 'direct'), bytes);
         return res;
       }
-      if (hop.tier === 'direct') noteHop(hop, false);
+      noteHop(hop, false);
       if (isLast) throw new EdgeTransportError(hop.tier, res.status);
     } catch (error) {
       if (error instanceof EdgeTransportError) throw error;

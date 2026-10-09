@@ -132,6 +132,7 @@ pub fn troubled() -> NetReport {
     report.edge = EdgeSnapshot {
         pins: vec![("api.scnative.space".to_string(), 480_000)],
         pool: vec!["r1".to_string(), "r2".to_string()],
+        pro: Vec::new(),
     };
     report.recent = (0..40)
         .map(|at| PathEvent {

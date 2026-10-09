@@ -140,6 +140,7 @@ export interface EnvInfo {
 export interface EdgeSnapshot {
   pins: [string, number][];
   pool: string[];
+  pro?: string[];
 }
 
 export interface PathEvent {

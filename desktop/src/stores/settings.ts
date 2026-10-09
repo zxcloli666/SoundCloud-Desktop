@@ -111,7 +111,6 @@ export interface SettingsState {
   crossfadeSec: number;
   autoplay: boolean;
   searchPlayback: SearchPlayback;
-  bypassWhitelist: boolean;
   sidebarCollapsed: boolean;
   floatingComments: boolean;
   startupPage: StartupPage;
@@ -189,7 +188,6 @@ export interface SettingsState {
   setCrossfadeSec: (seconds: number) => void;
   setAutoplay: (enabled: boolean) => void;
   setSearchPlayback: (mode: SearchPlayback) => void;
-  setBypassWhitelist: (enabled: boolean) => void;
   toggleSidebar: () => void;
   setFloatingComments: (v: boolean) => void;
   setStartupPage: (page: StartupPage) => void;
@@ -280,7 +278,6 @@ const DEFAULTS = {
   crossfadeSec: 0,
   autoplay: true,
   searchPlayback: 'similar' as SearchPlayback,
-  bypassWhitelist: false,
   sidebarCollapsed: false,
   floatingComments: true,
   startupPage: 'home' as StartupPage,
@@ -400,7 +397,6 @@ export const useSettingsStore = create<SettingsState>()(
         set({ crossfadeSec: Math.min(CROSSFADE_MAX_SEC, Math.max(0, Math.round(seconds))) }),
       setAutoplay: (autoplay) => set({ autoplay }),
       setSearchPlayback: (searchPlayback) => set({ searchPlayback }),
-      setBypassWhitelist: (bypassWhitelist) => set({ bypassWhitelist }),
       toggleSidebar: () => set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
       setFloatingComments: (floatingComments) => set({ floatingComments }),
       setStartupPage: (startupPage) => set({ startupPage }),
@@ -579,7 +575,6 @@ export const useSettingsStore = create<SettingsState>()(
         crossfadeSec: s.crossfadeSec,
         autoplay: s.autoplay,
         searchPlayback: s.searchPlayback,
-        bypassWhitelist: s.bypassWhitelist,
         sidebarCollapsed: s.sidebarCollapsed,
         floatingComments: s.floatingComments,
         startupPage: s.startupPage,

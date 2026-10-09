@@ -124,7 +124,7 @@ async fn upload(
         .build()
         .map_err(|_| UploadFailure::of("network"))?;
     let url = format!("{}/tracks/upload", request.backend_url.trim_end_matches('/'));
-    let mut hops = edge::plan(&url);
+    let mut hops = edge::upload_plan(&url);
     if hops.is_empty() {
         hops.push(Hop {
             url: url.clone(),

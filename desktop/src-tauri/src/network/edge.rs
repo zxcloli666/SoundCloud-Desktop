@@ -3,6 +3,7 @@ use std::path::PathBuf;
 use std::sync::{Mutex, OnceLock};
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
+use base64::{Engine as _, engine::general_purpose::URL_SAFE_NO_PAD as BASE64_URL};
 use serde::{Deserialize, Serialize};
 use tauri::Emitter;
 
@@ -13,8 +14,10 @@ const CONFIG_EVENT: &str = "edge:config";
 const REVALIDATE: Duration = Duration::from_secs(600);
 
 const RELAY_ZONE: &str = "relay.scnative.space";
+const PRO_ZONE: &str = "pro.scnative.space";
 
 const BOOTSTRAP_NODE: &str = "r1";
+const BOOTSTRAP_PRO_NODE: &str = "p1";
 
 const RELAYS: &[(&str, &str)] = &[
     ("api.scnative.space", "api"),
@@ -40,6 +43,7 @@ const INHERIT: &[(&str, &str)] = &[
 pub enum Tier {
     Direct,
     Relay,
+    Pro,
 }
 
 #[derive(Clone, Debug)]
@@ -62,6 +66,7 @@ impl Hop {
         match self.tier {
             Tier::Direct => "direct",
             Tier::Relay => "relay",
+            Tier::Pro => "pro",
         }
     }
 }
@@ -71,6 +76,9 @@ struct OriginState {
     until: Instant,
     direct_fails: u8,
     relay_wins: u8,
+    relay_fails: u8,
+    relay_failing_since: Option<Instant>,
+    pro_fails: u8,
     last_at: Instant,
 }
 
@@ -81,26 +89,35 @@ impl OriginState {
             until: now,
             direct_fails: 0,
             relay_wins: 0,
+            relay_fails: 0,
+            relay_failing_since: None,
+            pro_fails: 0,
             last_at: now,
         }
     }
 
-    fn pinned_until(until: Instant, now: Instant) -> Self {
+    fn pinned_until(tier: Tier, until: Instant, now: Instant) -> Self {
         Self {
-            tier: Tier::Relay,
+            tier,
             until,
-            direct_fails: 0,
-            relay_wins: 0,
-            last_at: now,
+            ..Self::new(now)
+        }
+    }
+
+    fn level(&self, now: Instant) -> Tier {
+        if now < self.until {
+            self.tier
+        } else {
+            Tier::Direct
         }
     }
 
     fn pinned(&self, now: Instant) -> bool {
-        self.tier == Tier::Relay && now < self.until
+        self.level(now) != Tier::Direct
     }
 
     fn refresh(&mut self, now: Instant) {
-        if self.tier == Tier::Relay && now >= self.until {
+        if self.tier != Tier::Direct && now >= self.until {
             self.tier = Tier::Direct;
             self.clear();
         } else if now.saturating_duration_since(self.last_at) >= REVALIDATE {
@@ -112,6 +129,9 @@ impl OriginState {
     fn clear(&mut self) {
         self.direct_fails = 0;
         self.relay_wins = 0;
+        self.relay_fails = 0;
+        self.relay_failing_since = None;
+        self.pro_fails = 0;
     }
 
     fn pin(&mut self, now: Instant) -> Change {
@@ -121,10 +141,29 @@ impl OriginState {
         Change::Pinned
     }
 
+    fn escalate(&mut self, now: Instant) -> Change {
+        self.tier = Tier::Pro;
+        self.until = now + REVALIDATE;
+        self.clear();
+        Change::Escalated
+    }
+
     fn unpin(&mut self) -> Change {
         self.tier = Tier::Direct;
         self.clear();
         Change::Unpinned
+    }
+
+    fn relay_failed(&mut self, now: Instant) {
+        self.relay_fails = self.relay_fails.saturating_add(1);
+        self.relay_failing_since.get_or_insert(now);
+    }
+
+    fn relay_is_dead(&self, now: Instant) -> bool {
+        let lasting = self
+            .relay_failing_since
+            .is_some_and(|since| now.saturating_duration_since(since) >= RELAY_DEAD_AFTER);
+        self.relay_fails >= RELAY_FAIL_THRESHOLD && lasting
     }
 
     fn due(&self) -> bool {
@@ -134,6 +173,9 @@ impl OriginState {
 
 const DIRECT_FAIL_THRESHOLD: u8 = 2;
 const RELAY_WIN_THRESHOLD: u8 = 2;
+const RELAY_FAIL_THRESHOLD: u8 = 3;
+const RELAY_DEAD_AFTER: Duration = Duration::from_secs(5);
+const PRO_FAIL_THRESHOLD: u8 = 3;
 
 const PROVEN_BYTES: u64 = 64 * 1024;
 
@@ -144,6 +186,8 @@ enum Event {
     DirectDelivered(u64),
     RelayWon,
     RelayFailed,
+    ProWon,
+    ProFailed,
 }
 
 impl Event {
@@ -153,6 +197,8 @@ impl Event {
             (Tier::Direct, true) => Self::DirectAnswered,
             (Tier::Relay, true) => Self::RelayWon,
             (Tier::Relay, false) => Self::RelayFailed,
+            (Tier::Pro, true) => Self::ProWon,
+            (Tier::Pro, false) => Self::ProFailed,
         }
     }
 
@@ -165,6 +211,7 @@ impl Event {
 enum Change {
     None,
     Pinned,
+    Escalated,
     Unpinned,
 }
 
@@ -172,6 +219,7 @@ enum Change {
 struct Pool {
     relays: Vec<String>,
     calls: Vec<(String, f64)>,
+    pros: Vec<String>,
 }
 
 #[derive(Default)]
@@ -179,6 +227,7 @@ struct Inner {
     origins: HashMap<String, OriginState>,
     pool: Pool,
     dir: Option<PathBuf>,
+    gateway_port: Option<u16>,
 }
 
 impl Inner {
@@ -196,12 +245,28 @@ impl Inner {
             Event::DirectAnswered => state.relay_wins = 0,
             Event::DirectDelivered(bytes) => {
                 state.clear();
-                if bytes >= PROVEN_BYTES && state.tier == Tier::Relay {
+                if bytes >= PROVEN_BYTES && state.tier != Tier::Direct {
                     return state.unpin();
                 }
             }
-            Event::RelayWon => state.relay_wins = state.relay_wins.saturating_add(1),
-            Event::RelayFailed => {}
+            Event::RelayWon => {
+                state.relay_wins = state.relay_wins.saturating_add(1);
+                state.relay_fails = 0;
+                state.relay_failing_since = None;
+            }
+            Event::RelayFailed => {
+                state.relay_failed(now);
+                if state.tier == Tier::Relay && state.relay_is_dead(now) {
+                    return state.escalate(now);
+                }
+            }
+            Event::ProWon => state.pro_fails = 0,
+            Event::ProFailed => {
+                state.pro_fails = state.pro_fails.saturating_add(1);
+                if state.tier == Tier::Pro && state.pro_fails >= PRO_FAIL_THRESHOLD {
+                    return state.unpin();
+                }
+            }
         }
         if state.tier == Tier::Direct && state.due() {
             return state.pin(now);
@@ -221,12 +286,18 @@ impl Inner {
         match (tier, state.tier) {
             (Tier::Relay, Tier::Direct) => state.pin(now),
             (Tier::Direct, Tier::Relay) => state.unpin(),
+            (Tier::Pro, Tier::Direct | Tier::Relay) => state.escalate(now),
             _ => Change::None,
         }
     }
 
+    #[cfg(test)]
     fn pinned(&self, origin: &str, now: Instant) -> bool {
-        resolved_state(self, origin).is_some_and(|s| s.pinned(now))
+        self.level(origin, now) != Tier::Direct
+    }
+
+    fn level(&self, origin: &str, now: Instant) -> Tier {
+        resolved_state(self, origin).map_or(Tier::Direct, |state| state.level(now))
     }
 }
 
@@ -240,6 +311,8 @@ fn state() -> &'static Mutex<Inner> {
 struct Persisted {
     #[serde(default)]
     pins: HashMap<String, u64>,
+    #[serde(default)]
+    pro: Vec<String>,
 }
 
 fn now_ms() -> u64 {
@@ -249,16 +322,19 @@ fn now_ms() -> u64 {
 }
 
 fn snapshot(inner: &Inner, now: Instant, now_ms: u64) -> Persisted {
-    let pins = inner
-        .origins
-        .iter()
-        .filter(|(_, s)| s.pinned(now))
+    let pinned = || inner.origins.iter().filter(|(_, s)| s.pinned(now));
+    let pins = pinned()
         .map(|(host, s)| {
             let left = s.until.saturating_duration_since(now).as_millis() as u64;
             (host.clone(), now_ms.saturating_add(left))
         })
         .collect();
-    Persisted { pins }
+    let mut pro: Vec<String> = pinned()
+        .filter(|(_, s)| s.tier == Tier::Pro)
+        .map(|(host, _)| host.clone())
+        .collect();
+    pro.sort();
+    Persisted { pins, pro }
 }
 
 fn restore(inner: &mut Inner, persisted: Persisted, now: Instant, now_ms: u64) {
@@ -267,9 +343,14 @@ fn restore(inner: &mut Inner, persisted: Persisted, now: Instant, now_ms: u64) {
             continue;
         }
         let left = Duration::from_millis(until_ms - now_ms).min(REVALIDATE);
+        let tier = if persisted.pro.contains(&host) {
+            Tier::Pro
+        } else {
+            Tier::Relay
+        };
         inner
             .origins
-            .insert(host, OriginState::pinned_until(now + left, now));
+            .insert(host, OriginState::pinned_until(tier, now + left, now));
     }
 }
 
@@ -349,6 +430,85 @@ pub fn relay_zone() -> &'static str {
     RELAY_ZONE
 }
 
+pub fn pro_zone() -> &'static str {
+    PRO_ZONE
+}
+
+pub fn set_pros(nodes: Vec<String>) {
+    let mut inner = match state().lock() {
+        Ok(guard) => guard,
+        Err(poison) => poison.into_inner(),
+    };
+    if !nodes.is_empty() {
+        inner.pool.pros = nodes;
+    }
+}
+
+pub fn pro_hosts() -> Vec<String> {
+    let inner = match state().lock() {
+        Ok(guard) => guard,
+        Err(poison) => poison.into_inner(),
+    };
+    pro_hosts_of(&inner)
+}
+
+fn pro_hosts_of(inner: &Inner) -> Vec<String> {
+    if inner.pool.pros.is_empty() {
+        return vec![format!("{BOOTSTRAP_PRO_NODE}.{PRO_ZONE}")];
+    }
+    let host = |node: &String| format!("{node}.{PRO_ZONE}");
+    inner.pool.pros.iter().map(host).collect()
+}
+
+pub fn set_gateway(port: u16) {
+    let mut inner = match state().lock() {
+        Ok(guard) => guard,
+        Err(poison) => poison.into_inner(),
+    };
+    inner.gateway_port = Some(port);
+}
+
+fn gateways(inner: &Inner) -> Vec<String> {
+    let Some(port) = inner.gateway_port else {
+        return vec![];
+    };
+    pro_hosts_of(inner)
+        .iter()
+        .map(|host| format!("http://127.0.0.1:{port}/pro/{host}/"))
+        .collect()
+}
+
+pub fn gateway_of(pro_host: &str) -> Option<String> {
+    let inner = match state().lock() {
+        Ok(guard) => guard,
+        Err(poison) => poison.into_inner(),
+    };
+    let port = inner.gateway_port?;
+    pro_hosts_of(&inner)
+        .iter()
+        .any(|host| host == pro_host)
+        .then(|| format!("http://127.0.0.1:{port}/pro/{pro_host}/"))
+}
+
+pub fn is_routed(url: &str) -> bool {
+    host_of(url).is_some_and(|host| relay_label(&host).is_some())
+}
+
+pub fn through_gateway(gateway: &str, url: &str) -> String {
+    format!("{gateway}{}", BASE64_URL.encode(url))
+}
+
+fn pro_hops(inner: &Inner, url: &str, origin: &str) -> Vec<Hop> {
+    gateways(inner)
+        .iter()
+        .map(|gateway| Hop {
+            url: through_gateway(gateway, url),
+            tier: Tier::Pro,
+            origin: origin.to_string(),
+        })
+        .collect()
+}
+
 pub fn primary_relay_host(service: &str) -> String {
     let node = relay_pool()
         .first()
@@ -385,6 +545,7 @@ pub fn is_known_host(host: &str) -> bool {
     if routed_origins()
         .chain(SERVICE_HOSTS)
         .any(|known| known == host)
+        || pro_hosts().iter().any(|known| known == host)
     {
         return true;
     }
@@ -419,6 +580,14 @@ fn swap_host(url: &str, host: &str) -> Option<String> {
 }
 
 pub fn plan(url: &str) -> Vec<Hop> {
+    planned(url, Tier::Pro)
+}
+
+pub fn upload_plan(url: &str) -> Vec<Hop> {
+    planned(url, Tier::Relay)
+}
+
+fn planned(url: &str, highest: Tier) -> Vec<Hop> {
     let Some(origin) = host_of(url) else {
         return vec![];
     };
@@ -431,11 +600,13 @@ pub fn plan(url: &str) -> Vec<Hop> {
         Ok(g) => g,
         Err(e) => e.into_inner(),
     };
-    let from = if inner.pinned(&origin, Instant::now()) {
-        Tier::Relay
-    } else {
-        Tier::Direct
-    };
+    let from = inner.level(&origin, Instant::now()).min(highest);
+    if from == Tier::Pro {
+        let hops = pro_hops(&inner, url, &origin);
+        if !hops.is_empty() {
+            return hops;
+        }
+    }
 
     let mut hops: Vec<Hop> = Vec::new();
     let mut push = |t: Tier, url: Option<String>| {
@@ -511,8 +682,38 @@ fn record(origin: &str, failed: bool, step: impl FnOnce(&mut Inner, Instant) -> 
                 crate::network::netcheck::auto("edge-pin");
             }
         }
+        Change::Escalated => diagnostics::log(
+            "INFO",
+            format!(
+                "[Edge] {origin} -> pro for {} min",
+                REVALIDATE.as_secs() / 60
+            ),
+        ),
         Change::Unpinned => diagnostics::log("INFO", format!("[Edge] {origin} -> direct")),
         Change::None => {}
+    }
+    if change != Change::None {
+        announce_change();
+    }
+}
+
+static APP: OnceLock<crate::rt::AppHandle> = OnceLock::new();
+
+pub fn attach(app: crate::rt::AppHandle) {
+    APP.set(app).ok();
+}
+
+fn announce_change() {
+    if let Some(app) = APP.get() {
+        announce(app);
+    }
+}
+
+pub fn escalate_all() {
+    for origin in routed_origins() {
+        record(origin, false, |inner, now| {
+            inner.conclude(origin, Tier::Pro, now)
+        });
     }
 }
 
@@ -534,7 +735,9 @@ fn transport_failure(tier: Tier, status: u16, content_type: &str) -> bool {
     let gateway_page = gateway && content_type.to_ascii_lowercase().contains("text/html");
     match tier {
         Tier::Direct => gateway_page,
-        Tier::Relay => status == 421 || gateway_page || (gateway && content_type.trim().is_empty()),
+        Tier::Relay | Tier::Pro => {
+            status == 421 || gateway_page || (gateway && content_type.trim().is_empty())
+        }
     }
 }
 
@@ -583,7 +786,14 @@ pub fn audio_plan(url: &str) -> Vec<Hop> {
         Ok(g) => g,
         Err(e) => e.into_inner(),
     };
-    let tiers = audio_tier_order(inner.pinned(&origin, Instant::now()));
+    let level = inner.level(&origin, Instant::now());
+    if level == Tier::Pro {
+        let hops = pro_hops(&inner, url, &origin);
+        if !hops.is_empty() {
+            return hops;
+        }
+    }
+    let tiers = audio_tier_order(level != Tier::Direct);
     let relay_urls: Vec<String> = relays
         .iter()
         .map(|relay| swap_host(url, relay).unwrap_or_else(|| url.to_string()))
@@ -603,6 +813,7 @@ pub fn audio_plan(url: &str) -> Vec<Hop> {
                 tier,
                 origin: origin.clone(),
             })),
+            Tier::Pro => {}
         }
     }
     hops
@@ -653,6 +864,22 @@ pub fn pins() -> Vec<(String, u64)> {
     pins
 }
 
+pub fn pro_pins() -> Vec<String> {
+    let inner = match state().lock() {
+        Ok(g) => g,
+        Err(e) => e.into_inner(),
+    };
+    let now = Instant::now();
+    let mut pro: Vec<String> = inner
+        .origins
+        .iter()
+        .filter(|(_, s)| s.level(now) == Tier::Pro)
+        .map(|(host, _)| host.clone())
+        .collect();
+    pro.sort();
+    pro
+}
+
 pub fn current_tier(url: &str) -> Tier {
     let Some(origin) = host_of(url) else {
         return Tier::Direct;
@@ -661,11 +888,7 @@ pub fn current_tier(url: &str) -> Tier {
         Ok(g) => g,
         Err(e) => e.into_inner(),
     };
-    if inner.pinned(&origin, Instant::now()) {
-        Tier::Relay
-    } else {
-        Tier::Direct
-    }
+    inner.level(&origin, Instant::now())
 }
 
 pub fn is_direct(url: &str) -> bool {
@@ -679,6 +902,7 @@ pub fn direct_first(url: &str) -> bool {
 #[derive(Clone, Serialize)]
 pub struct EdgeConfig {
     relays: Vec<(String, Vec<String>)>,
+    pro: Vec<String>,
 
     hints: HashMap<String, Tier>,
     revalidate_in_ms: HashMap<String, u64>,
@@ -698,17 +922,11 @@ pub fn edge_config() -> EdgeConfig {
             .iter()
             .map(|(o, _)| (o.to_string(), relay_hosts_over(o, &pool)))
             .collect(),
+        pro: gateways(&inner),
         hints: inner
             .origins
             .iter()
-            .map(|(h, s)| {
-                let tier = if s.pinned(now) {
-                    Tier::Relay
-                } else {
-                    Tier::Direct
-                };
-                (h.clone(), tier)
-            })
+            .map(|(h, s)| (h.clone(), s.level(now)))
             .collect(),
         revalidate_in_ms: inner
             .origins
@@ -732,10 +950,10 @@ pub fn announce(app: &crate::rt::AppHandle) {
 
 #[tauri::command]
 pub fn edge_note(origin: String, tier: Tier, ok: bool) {
-    if ok {
+    if ok && tier != Tier::Pro {
         settle(&origin, tier);
     } else {
-        note(&origin, tier, false);
+        note(&origin, tier, ok);
     }
 }
 
@@ -745,9 +963,10 @@ mod tests {
 
     use super::{
         Change, Event, INHERIT, Inner, PROVEN_BYTES, Persisted, RELAYS, REVALIDATE, Tier,
-        audio_tier_order, is_known_host, relay_hosts_over, restore, set_pool, snapshot,
+        audio_tier_order, is_known_host, pro_hops, relay_hosts_over, restore, set_pool, snapshot,
         transport_failure, zone_hosts,
     };
+    use base64::{Engine as _, engine::general_purpose::URL_SAFE_NO_PAD as BASE64_URL};
 
     const ORIGIN: &str = "stream.scnative.space";
 
@@ -1059,6 +1278,90 @@ mod tests {
     }
 
     #[test]
+    fn a_relay_that_keeps_failing_gives_way_to_the_pro_relay() {
+        let now = Instant::now();
+        let mut inner = pinned_inner(now);
+        let burst = [Event::RelayFailed; 5];
+        assert!(!apply(&mut inner, &burst, now).contains(&Change::Escalated));
+        assert_eq!(tier(&inner), Some(Tier::Relay));
+
+        let later = now + Duration::from_secs(6);
+        assert_eq!(
+            inner.apply(ORIGIN, Event::RelayFailed, later),
+            Change::Escalated
+        );
+        assert_eq!(inner.level(ORIGIN, later), Tier::Pro);
+    }
+
+    #[test]
+    fn a_relay_win_forgives_earlier_relay_failures() {
+        let now = Instant::now();
+        let mut inner = pinned_inner(now);
+        apply(&mut inner, &[Event::RelayFailed; 3], now);
+        let later = now + Duration::from_secs(6);
+        apply(&mut inner, &[Event::RelayWon, Event::RelayFailed], later);
+        assert_eq!(inner.level(ORIGIN, later), Tier::Relay);
+    }
+
+    #[test]
+    fn a_pro_relay_that_keeps_failing_hands_the_origin_back() {
+        let now = Instant::now();
+        let mut inner = Inner::default();
+        assert_eq!(inner.conclude(ORIGIN, Tier::Pro, now), Change::Escalated);
+        apply(
+            &mut inner,
+            &[Event::ProFailed, Event::ProFailed, Event::ProWon],
+            now,
+        );
+        assert_eq!(inner.level(ORIGIN, now), Tier::Pro);
+        let changes = apply(&mut inner, &[Event::ProFailed; 3], now);
+        assert_eq!(changes.last(), Some(&Change::Unpinned));
+        assert_eq!(inner.level(ORIGIN, now), Tier::Direct);
+    }
+
+    #[test]
+    fn a_proven_direct_route_ends_the_pro_pin() {
+        let now = Instant::now();
+        let mut inner = Inner::default();
+        inner.conclude(ORIGIN, Tier::Pro, now);
+        assert_eq!(
+            inner.apply(ORIGIN, Event::DirectDelivered(PROVEN_BYTES), now),
+            Change::Unpinned
+        );
+    }
+
+    #[test]
+    fn a_pro_pin_survives_a_restart_and_expires_like_any_other() {
+        let now = Instant::now();
+        let mut inner = Inner::default();
+        inner.conclude(ORIGIN, Tier::Pro, now);
+        let saved = snapshot(&inner, now, 1_000);
+        assert_eq!(saved.pro, vec![ORIGIN.to_string()]);
+
+        let mut restored = Inner::default();
+        restore(&mut restored, saved, now, 1_000);
+        assert_eq!(restored.level(ORIGIN, now), Tier::Pro);
+        let expired = now + REVALIDATE + Duration::from_secs(1);
+        assert_eq!(restored.level(ORIGIN, expired), Tier::Direct);
+    }
+
+    #[test]
+    fn a_pro_hop_goes_through_the_local_gateway() {
+        let url = "https://stream.scnative.space/track?id=1";
+        let mut inner = Inner::default();
+        assert!(pro_hops(&inner, url, ORIGIN).is_empty());
+        inner.gateway_port = Some(4321);
+        let hops = pro_hops(&inner, url, ORIGIN);
+        assert_eq!(hops.len(), 1);
+        assert_eq!(hops[0].tier, Tier::Pro);
+        let encoded = hops[0]
+            .url
+            .strip_prefix("http://127.0.0.1:4321/pro/p1.pro.scnative.space/")
+            .unwrap();
+        assert_eq!(BASE64_URL.decode(encoded).unwrap(), url.as_bytes());
+    }
+
+    #[test]
     fn relay_failures_never_pin() {
         let mut inner = Inner::default();
         let now = Instant::now();
@@ -1158,7 +1461,15 @@ mod tests {
         );
         let later = now + Duration::from_secs(60);
         let mut restored = Inner::default();
-        restore(&mut restored, Persisted { pins }, later, now_ms + 60_000);
+        restore(
+            &mut restored,
+            Persisted {
+                pins,
+                pro: Vec::new(),
+            },
+            later,
+            now_ms + 60_000,
+        );
         assert!(!restored.origins.contains_key("s3.scnative.space"));
         assert!(restored.pinned(ORIGIN, later));
         assert!(!restored.pinned(ORIGIN, now + REVALIDATE));

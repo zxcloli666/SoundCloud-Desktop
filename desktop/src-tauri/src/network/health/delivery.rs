@@ -4,6 +4,8 @@ use wreq::Client;
 use serde::Serialize;
 
 use super::model::{Sample, Topology};
+use crate::network::edge;
+use crate::network::pro::{self, Asked};
 
 const DELIVERY_TIMEOUT: Duration = Duration::from_secs(6);
 const MAX_SAMPLES: usize = 256;
@@ -38,7 +40,11 @@ impl Delivery {
                 return Some(fresh.sanitized());
             }
         }
-        None
+        let asked = asked(topology, "GET", "topology", None)?;
+        let fresh = through_pro(asked).await?;
+        serde_json::from_slice::<Topology>(&fresh)
+            .ok()
+            .map(Topology::sanitized)
     }
 
     pub async fn report(
@@ -76,6 +82,30 @@ impl Delivery {
                 return true;
             }
         }
-        false
+        match asked(topology, "POST", "report", Some(body)) {
+            Some(asked) => through_pro(asked).await.is_some(),
+            None => false,
+        }
     }
+}
+
+fn asked(topology: &Topology, method: &str, path: &str, body: Option<Vec<u8>>) -> Option<Asked> {
+    let origin = topology.ingest.first()?;
+    Some(Asked {
+        method: method.to_string(),
+        url: format!("{}/{path}", origin.trim_end_matches('/')),
+        headers: vec![("content-type".to_string(), "application/json".to_string())],
+        body,
+    })
+}
+
+async fn through_pro(asked: Asked) -> Option<Vec<u8>> {
+    for host in edge::pro_hosts() {
+        if let Ok((status, body)) = pro::whole(&host, asked.clone()).await
+            && (200..300).contains(&status)
+        {
+            return Some(body);
+        }
+    }
+    None
 }

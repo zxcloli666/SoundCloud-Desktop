@@ -93,6 +93,7 @@ pub fn run() {
             std::fs::create_dir_all(&images_dir).ok();
 
             network::edge::init(data_dir.clone());
+            network::edge::attach(app.handle().clone());
 
             let (_, emulation) = sc_fingerprint::emulation(None);
             let pinging = network::fetch::pinging(emulation, network::pace::Pace::Patient);
