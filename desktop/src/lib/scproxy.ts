@@ -4,6 +4,7 @@ type PatchedImage = HTMLImageElement & {
   __origSrc?: string;
   __proxyRetryStage?: number;
   __skipProxyOnce?: boolean;
+  __hiddenAfterError?: boolean;
 };
 
 // Per-source memo of the encoded cache URL — virtualized grids re-assign the same
@@ -35,6 +36,10 @@ const imgSrcDesc = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, '
 Object.defineProperty(HTMLImageElement.prototype, 'src', {
   set(url: string) {
     const img = this as PatchedImage;
+    if (img.__hiddenAfterError) {
+      img.__hiddenAfterError = false;
+      img.style.removeProperty('display');
+    }
     if (img.__skipProxyOnce) {
       img.__skipProxyOnce = false;
       imgSrcDesc.set!.call(this, url);
@@ -77,6 +82,7 @@ document.addEventListener(
         return;
       }
 
+      img.__hiddenAfterError = true;
       img.style.display = 'none';
     }
   },
