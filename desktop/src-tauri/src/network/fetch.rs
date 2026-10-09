@@ -12,11 +12,11 @@ use wreq::{Method, redirect::Policy};
 use crate::network::edge::{Hop, Tier};
 use crate::network::fail::{self, FailKind};
 use crate::network::netcheck::{model::Role, paths};
+use crate::network::pace::{self, Pace};
 use crate::network::{dns, system_proxy};
 
 const CONNECT_TIMEOUT: Duration = Duration::from_secs(10);
 const BODY_STALL: Duration = Duration::from_secs(10);
-const PING_AFTER_SILENCE: Duration = Duration::from_secs(2);
 const PING_TIMEOUT: Duration = Duration::from_secs(5);
 const IDLE_PER_HOST: usize = 8;
 const MAX_REDIRECTS: usize = 10;
@@ -102,18 +102,27 @@ impl Head {
 }
 
 pub fn client() -> Option<&'static wreq::Client> {
-    static CLIENT: OnceLock<Option<wreq::Client>> = OnceLock::new();
-    CLIENT.get_or_init(|| built(IDLE_PER_HOST)).as_ref()
+    pooled(pace::now())
+}
+
+fn pooled(pace: Pace) -> Option<&'static wreq::Client> {
+    static QUICK: OnceLock<Option<wreq::Client>> = OnceLock::new();
+    static PATIENT: OnceLock<Option<wreq::Client>> = OnceLock::new();
+    let cell = match pace {
+        Pace::Quick => &QUICK,
+        Pace::Patient => &PATIENT,
+    };
+    cell.get_or_init(|| built(pace, IDLE_PER_HOST)).as_ref()
 }
 
 fn one_shot() -> Option<&'static wreq::Client> {
     static ONE_SHOT: OnceLock<Option<wreq::Client>> = OnceLock::new();
-    ONE_SHOT.get_or_init(|| built(0)).as_ref()
+    ONE_SHOT.get_or_init(|| built(Pace::Patient, 0)).as_ref()
 }
 
-fn built(idle: usize) -> Option<wreq::Client> {
+fn built(pace: Pace, idle: usize) -> Option<wreq::Client> {
     let (_, emulation) = sc_fingerprint::emulation(None);
-    let builder = sc_fingerprint::from_emulation(pinging(emulation));
+    let builder = sc_fingerprint::from_emulation(pinging(emulation, pace));
     configured(system_proxy::follow(builder))
         .pool_max_idle_per_host(idle)
         .build()
@@ -127,15 +136,15 @@ pub fn configured(builder: wreq::ClientBuilder) -> wreq::ClientBuilder {
         .connect_timeout(CONNECT_TIMEOUT)
 }
 
-pub fn pinging(mut emulation: wreq::Emulation) -> wreq::Emulation {
+pub fn pinging(mut emulation: wreq::Emulation, pace: Pace) -> wreq::Emulation {
     if let Some(http2) = emulation.http2_options.as_mut() {
-        ping(http2);
+        ping(http2, pace);
     }
     emulation
 }
 
-fn ping(http2: &mut Http2Options) {
-    http2.keep_alive_interval = Some(PING_AFTER_SILENCE);
+fn ping(http2: &mut Http2Options, pace: Pace) {
+    http2.keep_alive_interval = Some(pace.silence());
     http2.keep_alive_timeout = PING_TIMEOUT;
     http2.keep_alive_while_idle = false;
 }
@@ -185,6 +194,7 @@ async fn perform(
     let mut stalled = false;
     let response = loop {
         let client = if stalled { fresh } else { pooled };
+        let asked = Instant::now();
         let mut builder = client
             .request(method.clone(), &request.url)
             .headers(headers.clone());
@@ -208,7 +218,12 @@ async fn perform(
                 settle(&request, Err(kind), started);
                 return (Head::failed(net_kind(kind), described(&error)), Vec::new());
             }
-            Some(Ok(response)) => break response,
+            Some(Ok(response)) => {
+                if !stalled {
+                    pace::note(asked.elapsed());
+                }
+                break response;
+            }
         }
     };
     let status = response.status();

@@ -14,6 +14,7 @@ use crate::network::edge::Tier;
 use crate::network::fail::FailKind;
 use crate::network::netcheck::model::Role;
 use crate::network::netcheck::paths;
+use crate::network::pace::Pace;
 
 fn split(frame: &[u8]) -> (Value, &[u8]) {
     let size = u32::from_be_bytes(frame[..4].try_into().unwrap()) as usize;
@@ -35,7 +36,7 @@ fn request(url: String, method: &str, timeout_ms: Option<u64>) -> FetchRequest {
 
 fn client() -> wreq::Client {
     let mut http2 = Http2Options::default();
-    ping(&mut http2);
+    ping(&mut http2, Pace::Quick);
     configured(wreq::Client::builder().no_proxy().http2_options(http2))
         .build()
         .unwrap()

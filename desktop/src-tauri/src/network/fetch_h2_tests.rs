@@ -6,10 +6,11 @@ use wreq::http2::Http2Options;
 use super::{FetchRequest, Head, NetKind, Route, configured, perform, ping};
 use crate::network::edge::Tier;
 use crate::network::h2_server::{Mode, h2_server, h2_server_then};
+use crate::network::pace::Pace;
 
-fn pooled(idle: usize) -> wreq::Client {
+fn paced(pace: Pace, idle: usize) -> wreq::Client {
     let mut http2 = Http2Options::default();
-    ping(&mut http2);
+    ping(&mut http2, pace);
     configured(
         wreq::Client::builder()
             .no_proxy()
@@ -22,11 +23,11 @@ fn pooled(idle: usize) -> wreq::Client {
 }
 
 fn h2_client() -> wreq::Client {
-    pooled(8)
+    paced(Pace::Quick, 8)
 }
 
 fn one_shot() -> wreq::Client {
-    pooled(0)
+    paced(Pace::Patient, 0)
 }
 
 async fn fetched(client: &wreq::Client, request: FetchRequest) -> (Head, Vec<u8>) {
@@ -130,6 +131,34 @@ async fn each_replay_gets_a_connection_of_its_own() {
         started.elapsed()
     );
     assert_eq!(accepted.load(Ordering::SeqCst), 3);
+}
+
+#[tokio::test]
+async fn a_slow_link_keeps_its_connection_with_the_patient_pings() {
+    let lag = Duration::from_millis(7_500);
+    let (quick_url, quick_accepted) = h2_server(Mode::Lagging(lag)).await;
+    let (patient_url, patient_accepted) = h2_server(Mode::Lagging(lag)).await;
+    let quick = h2_client();
+    let patient = paced(Pace::Patient, 8);
+    let ((dropped, _), (kept, body)) = tokio::join!(
+        fetched(&quick, get(&quick_url)),
+        fetched(&patient, get(&patient_url))
+    );
+    assert!(
+        matches!(dropped, Head::Answer { stalled: true, .. }),
+        "{dropped:?}"
+    );
+    assert_eq!(quick_accepted.load(Ordering::SeqCst), 2);
+    let Head::Answer {
+        status, stalled, ..
+    } = kept
+    else {
+        panic!("the patient pings must wait for the slow answer, got {kept:?}");
+    };
+    assert_eq!(status, 200);
+    assert!(!stalled);
+    assert_eq!(body, b"ok");
+    assert_eq!(patient_accepted.load(Ordering::SeqCst), 1);
 }
 
 #[tokio::test]

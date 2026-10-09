@@ -9,6 +9,7 @@ use tokio::net::TcpListener;
 use tokio_rustls::TlsAcceptor;
 
 use super::{configured, pinging};
+use crate::network::pace::Pace;
 
 const CERT: &[u8] = include_bytes!("netcheck/fixtures/good.der");
 const KEY: &[u8] = include_bytes!("netcheck/fixtures/good.key.der");
@@ -117,7 +118,7 @@ async fn nodelay_after_a_request(client: wreq::Client, tls: bool) -> Vec<bool> {
 async fn a_tls_connection_sends_without_waiting_for_acks() {
     let (_, emulation) = sc_fingerprint::emulation(None);
     let client = configured(
-        sc_fingerprint::from_emulation(pinging(emulation))
+        sc_fingerprint::from_emulation(pinging(emulation, Pace::Quick))
             .no_proxy()
             .tls_cert_verification(false),
     )
