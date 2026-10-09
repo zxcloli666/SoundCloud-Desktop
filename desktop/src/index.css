@@ -1328,6 +1328,21 @@ select,
     color: #fff;
 }
 
+.npb-namecard-chip-label {
+    display: grid;
+    justify-items: center;
+}
+
+.npb-namecard-chip-label > span {
+    grid-area: 1 / 1;
+    transition: opacity 0.15s var(--ease-apple);
+}
+
+.npb-namecard-chip:not(.is-done) .npb-namecard-chip-label > span:last-child,
+.npb-namecard-chip.is-done .npb-namecard-chip-label > span:first-child {
+    opacity: 0;
+}
+
 .npb-namecard-chip.is-done {
     color: #fff;
     border-color: var(--color-accent);

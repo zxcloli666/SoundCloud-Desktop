@@ -37,7 +37,10 @@ function CopyChip({
   return (
     <button type="button" onClick={onCopy} className={`npb-namecard-chip${done ? ' is-done' : ''}`}>
       {done ? <Check size={13} /> : icon}
-      {done ? t('player.copiedShort') : label}
+      <span className="npb-namecard-chip-label">
+        <span aria-hidden={done}>{label}</span>
+        <span aria-hidden={!done}>{t('player.copiedShort')}</span>
+      </span>
     </button>
   );
 }
