@@ -170,7 +170,7 @@ pub async fn h2_server_then(first: Mode, rest: Mode) -> (String, Arc<AtomicUsize
     (format!("http://{addr}/health"), accepted)
 }
 
-fn acceptor() -> TlsAcceptor {
+pub fn acceptor(alpn: &[&[u8]]) -> TlsAcceptor {
     let provider = Arc::new(rustls::crypto::ring::default_provider());
     let mut config = ServerConfig::builder_with_provider(provider)
         .with_safe_default_protocol_versions()
@@ -181,7 +181,7 @@ fn acceptor() -> TlsAcceptor {
             PrivateKeyDer::Pkcs8(PrivatePkcs8KeyDer::from(KEY.to_vec())),
         )
         .unwrap();
-    config.alpn_protocols = vec![b"h2".to_vec()];
+    config.alpn_protocols = alpn.iter().map(|protocol| protocol.to_vec()).collect();
     TlsAcceptor::from(Arc::new(config))
 }
 
@@ -190,7 +190,7 @@ pub async fn h2_tls_server() -> (String, Arc<AtomicUsize>) {
     let addr = listener.local_addr().unwrap();
     let accepted = Arc::new(AtomicUsize::new(0));
     let counter = accepted.clone();
-    let acceptor = acceptor();
+    let acceptor = acceptor(&[b"h2"]);
     tokio::spawn(async move {
         while let Ok((socket, _)) = listener.accept().await {
             counter.fetch_add(1, Ordering::SeqCst);

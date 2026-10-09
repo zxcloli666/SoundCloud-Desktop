@@ -36,7 +36,7 @@ async fn measure(client: &wreq::Client, url: &str) -> VolumeProbe {
     let measured = link::probe(client, url, link::PROBE_BYTES).await;
     let bytes = u64::try_from(measured.link.bytes).unwrap_or_default();
     let cut = cut(measured.shape, bytes)
-        || (silent(measured.shape, bytes) && small_passes(client, url).await);
+        || (measured.connected && silent(measured.shape, bytes) && small_passes(client, url).await);
     VolumeProbe {
         host: url::Url::parse(url)
             .ok()
@@ -73,6 +73,7 @@ mod tests {
     use tokio::net::TcpListener;
 
     use super::{cut, first_served, measure, silent};
+    use crate::network::h2_server::acceptor;
     use crate::network::health::link::{PROBE_BYTES, SMALL_BYTES, Shape};
 
     #[derive(Clone, Copy)]
@@ -137,6 +138,40 @@ mod tests {
         format!("http://{addr}/probe")
     }
 
+    async fn lossy_tls_server() -> String {
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let addr = listener.local_addr().unwrap();
+        let acceptor = acceptor(&[]);
+        tokio::spawn(async move {
+            let mut lost = true;
+            while let Ok((socket, _)) = listener.accept().await {
+                let first = std::mem::replace(&mut lost, false);
+                let acceptor = acceptor.clone();
+                tokio::spawn(async move {
+                    if first {
+                        let _held = socket;
+                        tokio::time::sleep(Duration::from_secs(30)).await;
+                        return;
+                    }
+                    let Ok(mut stream) = acceptor.accept(socket).await else {
+                        return;
+                    };
+                    let mut buf = [0u8; 2048];
+                    let read = stream.read(&mut buf).await.unwrap_or(0);
+                    let small = String::from_utf8_lossy(&buf[..read])
+                        .contains(&format!("bytes={SMALL_BYTES} "));
+                    let size = if small { SMALL_BYTES } else { PROBE_BYTES };
+                    let head = format!("HTTP/1.1 200 OK\r\ncontent-length: {size}\r\n\r\n");
+                    let _ = stream.write_all(head.as_bytes()).await;
+                    let _ = stream.write_all(&vec![b'x'; size as usize]).await;
+                    let _ = stream.flush().await;
+                    tokio::time::sleep(Duration::from_secs(1)).await;
+                });
+            }
+        });
+        format!("https://{addr}/probe")
+    }
+
     fn client() -> wreq::Client {
         wreq::Client::builder().no_proxy().build().unwrap()
     }
@@ -170,6 +205,21 @@ mod tests {
         assert_eq!(volume.shape, "blackhole");
         assert_eq!(volume.bytes, 0);
         assert!(volume.cut, "{volume:?}");
+    }
+
+    #[tokio::test]
+    async fn a_handshake_lost_to_packet_loss_is_not_a_cut() {
+        let client = wreq::Client::builder()
+            .no_proxy()
+            .tls_cert_verification(false)
+            .connect_timeout(Duration::from_millis(500))
+            .pool_max_idle_per_host(0)
+            .build()
+            .unwrap();
+        let volume = measure(&client, &lossy_tls_server().await).await;
+        assert_eq!(volume.shape, "blackhole");
+        assert_eq!(volume.bytes, 0);
+        assert!(!volume.cut, "{volume:?}");
     }
 
     #[tokio::test]
