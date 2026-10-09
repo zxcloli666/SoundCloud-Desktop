@@ -1043,6 +1043,18 @@ const BackgroundGlow = React.memo(() => {
 
 /* ── NowPlayingBar ───────────────────────────────────────────── */
 
+const COMPACT_DOCK_AREA = 1040;
+const MIN_DOCK_AREA = 800;
+
+function subscribeResize(onChange: () => void) {
+  window.addEventListener('resize', onChange);
+  return () => window.removeEventListener('resize', onChange);
+}
+
+function readWindowWidth() {
+  return window.innerWidth;
+}
+
 export const NowPlayingBar = React.memo(
   ({ onQueueToggle, queueOpen }: { onQueueToggle: () => void; queueOpen: boolean }) => {
     const isPlaying = usePlayerStore((s) => s.isPlaying);
@@ -1051,13 +1063,17 @@ export const NowPlayingBar = React.memo(
     const loadProgress = useLoadProgress();
     const sidebarCollapsed = useSettingsStore((s) => s.sidebarCollapsed);
     const perf = usePerfMode();
+    const windowWidth = useSyncExternalStore(subscribeResize, readWindowWidth);
+    const sidebar = sidebarWidth(sidebarCollapsed);
+    const left = windowWidth - sidebar < MIN_DOCK_AREA ? 0 : sidebar;
 
     return (
       <div
         className="npb"
         data-ui="player"
+        data-compact={windowWidth - left < COMPACT_DOCK_AREA ? '' : undefined}
         style={{
-          left: sidebarWidth(sidebarCollapsed),
+          left,
           transitionDuration: perf.mode === 'light' ? '0ms' : undefined,
         }}
       >
