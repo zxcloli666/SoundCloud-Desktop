@@ -7,6 +7,7 @@ const LANGUAGES = [
     {code: 'en', label: 'English'},
     {code: 'ru', label: 'Русский'},
     {code: 'tr', label: 'Turkce'},
+    {code: 'ko', label: '한국어'},
 ] as const;
 
 export function LanguageCard() {
