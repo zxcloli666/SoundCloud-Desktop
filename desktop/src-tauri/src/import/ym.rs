@@ -199,7 +199,7 @@ pub async fn ym_import_start(
 ) -> Result<(), String> {
     CANCEL_FLAG.store(false, Ordering::Relaxed);
 
-    let client = crate::network::dns::install(wreq::Client::builder())
+    let client = crate::network::system_proxy::follow(wreq::Client::builder())
         .connect_timeout(YM_CONNECT_TIMEOUT)
         .timeout(YM_REQUEST_TIMEOUT)
         .build()

@@ -5,12 +5,16 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpListener;
 use tokio::sync::oneshot;
 use wreq::Method;
+use wreq::http2::Http2Options;
 
-use super::{FetchRequest, Head, NetKind, Route, configured, frame, net_kind, outgoing, perform};
+use super::{
+    FetchRequest, Head, NetKind, Route, configured, frame, net_kind, outgoing, perform, ping,
+};
 use crate::network::edge::Tier;
 use crate::network::fail::FailKind;
 use crate::network::netcheck::model::Role;
 use crate::network::netcheck::paths;
+use crate::network::pace::Pace;
 
 fn split(frame: &[u8]) -> (Value, &[u8]) {
     let size = u32::from_be_bytes(frame[..4].try_into().unwrap()) as usize;
@@ -31,9 +35,16 @@ fn request(url: String, method: &str, timeout_ms: Option<u64>) -> FetchRequest {
 }
 
 fn client() -> wreq::Client {
-    configured(wreq::Client::builder().no_proxy())
+    let mut http2 = Http2Options::default();
+    ping(&mut http2, Pace::Quick);
+    configured(wreq::Client::builder().no_proxy().http2_options(http2))
         .build()
         .unwrap()
+}
+
+async fn fetched(request: FetchRequest) -> (Head, Vec<u8>) {
+    let client = client();
+    perform(&client, &client, request).await
 }
 
 async fn server(reply: &'static [u8], stall: Duration) -> (String, oneshot::Receiver<String>) {
@@ -74,6 +85,7 @@ fn a_frame_is_a_length_a_json_head_and_the_body() {
         status_text: "OK".to_string(),
         headers: vec![("content-type".to_string(), "text/plain".to_string())],
         url: "https://api.scnative.space/health".to_string(),
+        stalled: false,
     };
     let bytes = frame(&head, b"fine");
     let (json, body) = split(&bytes);
@@ -87,6 +99,16 @@ fn a_frame_is_a_length_a_json_head_and_the_body() {
         })
     );
     assert_eq!(body, b"fine");
+
+    let replayed = Head::Answer {
+        status: 204,
+        status_text: String::new(),
+        headers: Vec::new(),
+        url: String::new(),
+        stalled: true,
+    };
+    let (json, _) = split(&frame(&replayed, &[]));
+    assert_eq!(json["stalled"], json!(true));
 
     let failed = frame(&Head::failed(NetKind::Timeout, "no answer in time"), &[]);
     let (json, body) = split(&failed);
@@ -167,8 +189,9 @@ async fn an_answer_comes_back_whole_and_the_route_is_recorded() {
         tier: Tier::Relay,
         origin: "fetch-test.scnative.space".to_string(),
         attempt: 1,
+        last: true,
     });
-    let (head, body) = perform(&client(), ask).await;
+    let (head, body) = fetched(ask).await;
     let Head::Answer {
         status, headers, ..
     } = head
@@ -193,7 +216,7 @@ async fn an_answer_comes_back_whole_and_the_route_is_recorded() {
 #[tokio::test]
 async fn silence_before_the_headers_is_a_timeout() {
     let (url, _heard) = server(b"", Duration::from_secs(5)).await;
-    let (head, _) = perform(&client(), request(url, "GET", Some(300))).await;
+    let (head, _) = fetched(request(url, "GET", Some(300))).await;
     let Head::Failed { error } = head else {
         panic!("a failure");
     };
@@ -207,7 +230,7 @@ async fn a_slow_server_answers_within_the_caller_budget() {
         Duration::from_secs(12),
     )
     .await;
-    let (head, body) = perform(&client(), request(url, "GET", Some(30_000))).await;
+    let (head, body) = fetched(request(url, "GET", Some(30_000))).await;
     let Head::Answer { status, .. } = head else {
         panic!("an answer, got {head:?}");
     };
@@ -224,7 +247,7 @@ async fn a_body_that_stalls_after_the_headers_is_a_body_failure() {
     )
     .await;
     let started = std::time::Instant::now();
-    let (head, body) = perform(&client(), request(url, "GET", Some(90_000))).await;
+    let (head, body) = fetched(request(url, "GET", Some(90_000))).await;
     let Head::Failed { error } = head else {
         panic!("a failure, got {head:?}");
     };
@@ -246,8 +269,9 @@ async fn a_body_that_breaks_off_is_a_body_failure() {
         tier: Tier::Direct,
         origin: "fetch-body-test.scnative.space".to_string(),
         attempt: 0,
+        last: false,
     });
-    let (head, body) = perform(&client(), ask).await;
+    let (head, body) = fetched(ask).await;
     let Head::Failed { error } = head else {
         panic!("a failure");
     };
@@ -270,7 +294,7 @@ async fn a_closed_port_is_a_connect_failure_without_the_url() {
     let addr = listener.local_addr().unwrap();
     drop(listener);
     let url = format!("http://{addr}/health?token=secret");
-    let (head, _) = perform(&client(), request(url, "GET", None)).await;
+    let (head, _) = fetched(request(url, "GET", None)).await;
     let Head::Failed { error } = head else {
         panic!("a failure");
     };

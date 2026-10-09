@@ -2,7 +2,8 @@ use std::error::Error as _;
 use std::path::Path;
 use std::sync::atomic::{AtomicBool, Ordering};
 
-use wreq::{Client, Url};
+use url::Url;
+use wreq::Client;
 
 use super::state::{
     DownloadError, DownloadResult, DownloadSource, PlaybackQuality, file_len,
@@ -235,7 +236,7 @@ fn format_reqwest_error(err: wreq::Error) -> String {
         source = next.source();
     }
 
-    let mut message = err.without_url().to_string();
+    let mut message = err.without_uri().to_string();
     if !details.is_empty() {
         message.push_str(&format!(" [{}]", details.join(", ")));
     }

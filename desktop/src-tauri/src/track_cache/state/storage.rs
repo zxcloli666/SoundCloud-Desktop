@@ -103,7 +103,7 @@ impl TrackCacheState {
 
             match self.presigned_get(&redirect_url).await {
                 Ok(resp) if resp.status().is_success() => {
-                    let landed = resp.url().to_string();
+                    let landed = resp.uri().to_string();
                     println!("[TrackCache] {urn} → storage (redirect via {host})");
                     match write_response_to_cache(
                         job.target_dir,

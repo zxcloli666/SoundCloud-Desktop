@@ -511,7 +511,8 @@
       },
       "cut": {
         "title": "Doğrudan yol büyük indirmeleri kesiyor",
-        "hint": "Uygulama yedek yollara geçiyor, biraz yavaş olabilir."
+        "hint": "Uygulama yedek yollara geçiyor, biraz yavaş olabilir.",
+        "hintAlone": "Yedek yollar da yanıt vermiyor, bu yüzden büyük parçalar yüklenmeyebilir."
       },
       "dns": {
         "title": "DNS'iniz yanlış adres veriyor",
@@ -551,6 +552,7 @@
       "lists": "İşe yararsa bu satırları listelerine ekleyip yeniden açın:",
       "exclude": "İşe yararsa bu satırları istisnalarına ekleyin:",
       "domains": "İşe yararsa alan adlarımızı istisnalarına ekleyin:",
+      "blacklist": "İşe yararsa --blacklist ile alan adlarımızı listeye koymadan çalıştırın ya da duraklatın.",
       "apply": "Sonra yeniden açıp şunu çalıştırın:",
       "zapretTimestamps": "zapret ts stratejisi kullanıyor ama TCP timestamps kapalı. Açın:",
       "admin": "Yönetici olarak çalıştırın",

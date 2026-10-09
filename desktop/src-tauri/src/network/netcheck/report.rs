@@ -88,8 +88,13 @@ pub fn log_lines(report: &NetReport) -> Vec<String> {
 
 fn volume_line(volume: &VolumeProbe) -> String {
     let state = if volume.cut { "cut" } else { "ok" };
+    let host = if volume.host.is_empty() {
+        String::new()
+    } else {
+        format!(" at {}", volume.host)
+    };
     format!(
-        "volume: {state}{DOT}{} after {} KB{DOT}{} ms",
+        "volume: {state}{host}{DOT}{} after {} KB{DOT}{} ms",
         volume.shape,
         volume.bytes / 1024,
         volume.ms
@@ -455,12 +460,13 @@ mod tests {
         let mut report = sample(1);
         report.verdict = Verdict::Cut;
         report.volume = Some(VolumeProbe {
+            host: "storage.scnative.space".to_string(),
             shape: "blackhole".to_string(),
             bytes: 12_000,
             ms: 6_200,
             cut: true,
         });
-        let line = "volume: cut · blackhole after 11 KB · 6200 ms";
+        let line = "volume: cut at storage.scnative.space · blackhole after 11 KB · 6200 ms";
         let text = text(&report);
         assert!(text.contains("verdict: cut"), "{text}");
         assert!(text.contains(line), "{text}");

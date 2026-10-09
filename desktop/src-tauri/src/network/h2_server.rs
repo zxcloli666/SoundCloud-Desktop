@@ -1,3 +1,4 @@
+use std::collections::VecDeque;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::Duration;
@@ -73,7 +74,14 @@ async fn answer<S: AsyncWrite + Unpin>(
 pub enum Mode {
     Healthy,
     Freeze,
+    CutAfter(usize),
     Slow(Duration),
+    Lagging(Duration),
+}
+
+enum Due {
+    Answer(u32),
+    Pong(Vec<u8>),
 }
 
 async fn serve<S: AsyncRead + AsyncWrite + Unpin>(mut socket: S, mode: Mode) {
@@ -83,24 +91,33 @@ async fn serve<S: AsyncRead + AsyncWrite + Unpin>(mut socket: S, mode: Mode) {
     {
         return;
     }
-    let mut late: Option<(u32, tokio::time::Instant)> = None;
+    let mut late: VecDeque<(tokio::time::Instant, Due)> = VecDeque::new();
+    let mut answered = 0;
     loop {
-        let due = late.map(|(_, at)| at);
+        let due = late.front().map(|(at, _)| *at);
         let frame = tokio::select! {
             frame = read_frame(&mut socket) => frame,
             () = tokio::time::sleep_until(due.unwrap_or_else(tokio::time::Instant::now)), if due.is_some() => {
-                if let Some((stream, _)) = late.take()
-                    && answer(&mut socket, stream, b"ok", true).await.is_err()
-                {
+                let sent = match late.pop_front() {
+                    Some((_, Due::Answer(stream))) => answer(&mut socket, stream, b"ok", true).await,
+                    Some((_, Due::Pong(payload))) => write_frame(&mut socket, PING, ACK, 0, &payload).await,
+                    None => Ok(()),
+                };
+                if sent.is_err() {
                     return;
                 }
                 continue;
             }
         };
         let Some(frame) = frame else { return };
+        let later = |delay: Duration| tokio::time::Instant::now() + delay;
         let sent = match (frame.kind, mode) {
             (SETTINGS, _) if frame.flags & ACK == 0 => {
                 write_frame(&mut socket, SETTINGS, ACK, 0, &[]).await
+            }
+            (PING, Mode::Lagging(delay)) if frame.flags & ACK == 0 => {
+                late.push_back((later(delay), Due::Pong(frame.payload)));
+                Ok(())
             }
             (PING, _) if frame.flags & ACK == 0 => {
                 write_frame(&mut socket, PING, ACK, 0, &frame.payload).await
@@ -110,8 +127,16 @@ async fn serve<S: AsyncRead + AsyncWrite + Unpin>(mut socket: S, mode: Mode) {
                 tokio::time::sleep(Duration::from_secs(120)).await;
                 return;
             }
-            (HEADERS, Mode::Slow(delay)) => {
-                late = Some((frame.stream, tokio::time::Instant::now() + delay));
+            (HEADERS, Mode::CutAfter(answers)) if answered == answers => {
+                tokio::time::sleep(Duration::from_secs(120)).await;
+                return;
+            }
+            (HEADERS, Mode::CutAfter(_)) => {
+                answered += 1;
+                answer(&mut socket, frame.stream, b"ok", true).await
+            }
+            (HEADERS, Mode::Slow(delay) | Mode::Lagging(delay)) => {
+                late.push_back((later(delay), Due::Answer(frame.stream)));
                 Ok(())
             }
             (HEADERS, Mode::Healthy) => answer(&mut socket, frame.stream, b"ok", true).await,
@@ -124,6 +149,10 @@ async fn serve<S: AsyncRead + AsyncWrite + Unpin>(mut socket: S, mode: Mode) {
 }
 
 pub async fn h2_server(first: Mode) -> (String, Arc<AtomicUsize>) {
+    h2_server_then(first, Mode::Healthy).await
+}
+
+pub async fn h2_server_then(first: Mode, rest: Mode) -> (String, Arc<AtomicUsize>) {
     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
     let addr = listener.local_addr().unwrap();
     let accepted = Arc::new(AtomicUsize::new(0));
@@ -133,7 +162,7 @@ pub async fn h2_server(first: Mode) -> (String, Arc<AtomicUsize>) {
             let mode = if counter.fetch_add(1, Ordering::SeqCst) == 0 {
                 first
             } else {
-                Mode::Healthy
+                rest
             };
             tokio::spawn(serve(socket, mode));
         }
@@ -141,7 +170,7 @@ pub async fn h2_server(first: Mode) -> (String, Arc<AtomicUsize>) {
     (format!("http://{addr}/health"), accepted)
 }
 
-fn acceptor() -> TlsAcceptor {
+pub fn acceptor(alpn: &[&[u8]]) -> TlsAcceptor {
     let provider = Arc::new(rustls::crypto::ring::default_provider());
     let mut config = ServerConfig::builder_with_provider(provider)
         .with_safe_default_protocol_versions()
@@ -152,7 +181,7 @@ fn acceptor() -> TlsAcceptor {
             PrivateKeyDer::Pkcs8(PrivatePkcs8KeyDer::from(KEY.to_vec())),
         )
         .unwrap();
-    config.alpn_protocols = vec![b"h2".to_vec()];
+    config.alpn_protocols = alpn.iter().map(|protocol| protocol.to_vec()).collect();
     TlsAcceptor::from(Arc::new(config))
 }
 
@@ -161,7 +190,7 @@ pub async fn h2_tls_server() -> (String, Arc<AtomicUsize>) {
     let addr = listener.local_addr().unwrap();
     let accepted = Arc::new(AtomicUsize::new(0));
     let counter = accepted.clone();
-    let acceptor = acceptor();
+    let acceptor = acceptor(&[b"h2"]);
     tokio::spawn(async move {
         while let Ok((socket, _)) = listener.accept().await {
             counter.fetch_add(1, Ordering::SeqCst);

@@ -4,12 +4,11 @@ import { useTranslation } from 'react-i18next';
 import {
   type EnvInfo,
   type Hint,
-  type TargetCheck,
   useNetCheckStore,
   useShownVerdict,
   type Verdict,
 } from '../../lib/net/check';
-import { checkedTime, timestampsOff } from '../../lib/net/manual';
+import { checkedTime } from '../../lib/net/manual';
 import { usePerfMode } from '../../lib/perf';
 import { IconTile } from '../host-status/IconTile';
 import { ModalTitle } from '../ui/Modal';
@@ -33,7 +32,7 @@ const CHIP_TONE: Record<ChipTone, { dot: string; glow: string; text: string }> =
   sky: { dot: 'bg-sky-400', glow: '0 0 8px rgba(56,189,248,0.7)', text: 'text-sky-300/90' },
 };
 
-function envChips(t: TFunction, env: EnvInfo | null, targets: TargetCheck[], hint: Hint): Chip[] {
+function envChips(t: TFunction, env: EnvInfo | null, hint: Hint): Chip[] {
   if (!env) return [];
   const names = [...new Set(env.dpi.map((tool) => tool.name))];
   const chips: Chip[] = names.map((name) => ({
@@ -41,8 +40,7 @@ function envChips(t: TFunction, env: EnvInfo | null, targets: TargetCheck[], hin
     tone: 'amber',
     label: t('netCheck.env.dpi', { name }),
   }));
-  const zapret = names.length > 0 || hint !== 'none';
-  if (zapret && timestampsOff(env, targets)) {
+  if (hint === 'zapretTimestamps') {
     chips.push({ key: 'ts', tone: 'amber', label: t('netCheck.env.timestampsOff') });
   }
   if (env.proxy) chips.push({ key: 'proxy', tone: 'sky', label: t('netCheck.env.proxy') });
@@ -84,7 +82,7 @@ export const VerdictHeader = React.memo(() => {
   const verdict = useShownVerdict();
   const settled = report !== null && verdict !== 'checking' && report.verdict === verdict;
   const hint = settled ? report.hint : 'none';
-  const chips = settled && !CALM.has(verdict) ? envChips(t, report.env, report.targets, hint) : [];
+  const chips = settled && !CALM.has(verdict) ? envChips(t, report.env, hint) : [];
   const time = settled ? checkedTime(report.atMs, i18n.language) : null;
 
   return (
@@ -101,6 +99,7 @@ export const VerdictHeader = React.memo(() => {
         broken={failed && !settled}
         env={settled ? report.env : null}
         addrs={settled ? report.addrs : NO_ADDRS}
+        backups={!settled || report.targets.some((target) => target.id === 'relay' && target.ok)}
       />
       {chips.length > 0 && (
         <div className="mt-3 flex flex-wrap justify-center gap-1.5">

@@ -92,6 +92,7 @@ export interface TargetCheck {
 }
 
 export interface VolumeProbe {
+  host: string;
   shape: string;
   bytes: number;
   ms: number;

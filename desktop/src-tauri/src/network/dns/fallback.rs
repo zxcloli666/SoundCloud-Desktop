@@ -15,6 +15,7 @@ use crate::network::fail::{Fail, FailKind, Phase};
 
 const GARBAGE_DISTRUST: Duration = Duration::from_secs(600);
 const SYSTEM_PATIENCE: Duration = Duration::from_secs(8);
+const TRUSTED_FRESH: Duration = Duration::from_secs(30);
 const MAX_DOH_ADDRS: usize = 2;
 const SEEN_CAPACITY: usize = 64;
 
@@ -33,6 +34,7 @@ enum Judgement {
 pub(super) struct Memory {
     pub(super) cache: Cache,
     pub(super) seen: HashMap<String, (Vec<IpAddr>, Instant)>,
+    trusted: HashMap<String, (Vec<IpAddr>, Instant)>,
     pub(super) suspected: HashMap<String, Instant>,
     pub(super) distrusted_until: Option<Instant>,
     pub(super) warmed_at: Option<Instant>,
@@ -78,7 +80,54 @@ impl Fallback {
         if let Some(hit) = self.memory().cache.fresh(&host, Instant::now()) {
             return Ok(hit);
         }
+        if let Some(hit) = self.trusted_answer(&host) {
+            return Ok(hit);
+        }
         self.flight(host).await
+    }
+
+    pub fn trusts(&self, host: &str) -> bool {
+        !self.distrusted(Instant::now()) && self.memory().trusted.contains_key(host)
+    }
+
+    fn trusted_answer(&self, host: &str) -> Option<Vec<IpAddr>> {
+        let now = Instant::now();
+        if self.distrusted(now) {
+            return None;
+        }
+        self.memory()
+            .trusted
+            .get(host)
+            .filter(|(_, at)| now.duration_since(*at) < TRUSTED_FRESH)
+            .map(|(addrs, _)| addrs.clone())
+    }
+
+    fn judged(&self, host: &str, scope: Scope, judgement: &Judgement) {
+        if scope != Scope::Ours {
+            return;
+        }
+        let mut memory = self.memory();
+        match judgement {
+            Judgement::Sane(addrs) => {
+                if !memory.trusted.contains_key(host) && memory.trusted.len() >= SEEN_CAPACITY {
+                    let oldest = memory
+                        .trusted
+                        .iter()
+                        .min_by_key(|(_, (_, at))| *at)
+                        .map(|(host, _)| host.clone());
+                    if let Some(oldest) = oldest {
+                        memory.trusted.remove(&oldest);
+                    }
+                }
+                memory
+                    .trusted
+                    .insert(host.to_string(), (addrs.clone(), Instant::now()));
+            }
+            Judgement::Garbage { definitive: true } | Judgement::Truth => {
+                memory.trusted.remove(host);
+            }
+            Judgement::Garbage { definitive: false } => {}
+        }
     }
 
     pub async fn ready(&self, host: &str, budget: Duration) -> Result<(), Fail> {
@@ -146,7 +195,9 @@ impl Fallback {
             lookup.await
         };
         self.remember(host, &system);
-        match judge(scope, known, &system) {
+        let judgement = judge(scope, known, &system);
+        self.judged(host, scope, &judgement);
+        match judgement {
             Judgement::Sane(addrs) => Ok(addrs),
             Judgement::Truth => Err(dns_error(host, FailKind::Dns, described(&system))),
             Judgement::Garbage { definitive } => match self.ask_doh(host).await {
@@ -188,13 +239,17 @@ impl Fallback {
                 Ok(addrs) => Ok(addrs),
                 Err(fail) => self.settle(host, scope, known, &late.await, fail),
             },
-            system = &mut late => match judge(scope, known, &system) {
-                Judgement::Sane(addrs) => Ok(addrs),
-                Judgement::Garbage { .. } | Judgement::Truth => match doh.await {
-                    Ok(addrs) => Ok(addrs),
-                    Err(fail) => self.rescue(host, &system, fail),
-                },
-            },
+            system = &mut late => {
+                let judgement = judge(scope, known, &system);
+                self.judged(host, scope, &judgement);
+                match judgement {
+                    Judgement::Sane(addrs) => Ok(addrs),
+                    Judgement::Garbage { .. } | Judgement::Truth => match doh.await {
+                        Ok(addrs) => Ok(addrs),
+                        Err(fail) => self.rescue(host, &system, fail),
+                    },
+                }
+            }
         }
     }
 

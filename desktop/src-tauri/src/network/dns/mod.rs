@@ -81,7 +81,11 @@ pub fn install(builder: wreq::ClientBuilder) -> wreq::ClientBuilder {
 pub fn client() -> wreq::Client {
     static CLIENT: OnceLock<wreq::Client> = OnceLock::new();
     CLIENT
-        .get_or_init(|| install(wreq::Client::builder()).build().unwrap_or_default())
+        .get_or_init(|| {
+            crate::network::system_proxy::follow(wreq::Client::builder())
+                .build()
+                .unwrap_or_default()
+        })
         .clone()
 }
 
@@ -91,6 +95,12 @@ pub async fn lookup(host: &str) -> Result<Vec<IpAddr>, DnsError> {
 
 pub async fn ready(host: &str, budget: Duration) -> Result<(), Fail> {
     shared().ready(host, budget).await
+}
+
+pub fn trusted(host: &str) -> bool {
+    SHARED
+        .get()
+        .is_some_and(|fallback| fallback.trusts(&normalize(host)))
 }
 
 pub fn suspect(host: &str) {

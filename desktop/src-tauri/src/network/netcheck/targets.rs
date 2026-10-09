@@ -12,7 +12,7 @@ use super::phases::{self, Budget, Tls};
 use super::verdict;
 use crate::network::dns::{self, doh};
 use crate::network::edge;
-use crate::network::fail::{self, Fail, FailKind};
+use crate::network::fail::{self, Fail, FailKind, Phase};
 use crate::network::system_proxy;
 
 const HEALTH_PATH: &str = "/health";
@@ -113,7 +113,8 @@ async fn inspect(target: &Target, client: Option<&wreq::Client>, trigger: Trigge
         dns::suspect(host);
     }
     let left = TARGET_CAP.saturating_sub(started.elapsed() + CAP_MARGIN);
-    let app = retried(client, &url, app, probe_ok == Some(true), left).await;
+    let reached = probe.as_ref().is_some_and(reached);
+    let app = retried(client, &url, app, reached, left).await;
     let dns = verdict::dns_state(
         &system,
         Some(&doh),
@@ -236,11 +237,18 @@ async fn app_path(client: Option<&wreq::Client>, url: &str) -> Option<AppProbe> 
     Some(app_probe(client?, url, APP_TIMEOUT).await)
 }
 
+fn reached(probe: &PhaseProbe) -> bool {
+    probe.passed()
+        || probe.fail.as_ref().is_some_and(|fail| {
+            fail.kind == FailKind::Timeout && fail.phase == Some(Phase::FirstByte)
+        })
+}
+
 async fn retried(
     client: Option<&wreq::Client>,
     url: &str,
     first: Option<AppProbe>,
-    probe_passed: bool,
+    reached: bool,
     left: Duration,
 ) -> Option<AppProbe> {
     let timed_out = first
@@ -248,7 +256,7 @@ async fn retried(
         .and_then(|app| app.fail.as_ref())
         .is_some_and(|fail| fail.kind == FailKind::Timeout);
     match client {
-        Some(client) if timed_out && probe_passed && left >= APP_RETRY_FLOOR => {
+        Some(client) if timed_out && reached && left >= APP_RETRY_FLOOR => {
             Some(app_probe(client, url, left.min(APP_TIMEOUT)).await)
         }
         _ => first,
@@ -396,9 +404,9 @@ mod tests {
 
     use super::{
         APP_RETRY_FLOOR, APP_TIMEOUT, EXTERNAL_TIMEOUT, SYSTEM_DNS_BUDGET, TARGET_CAP, Target,
-        app_probe, doh, internet_seen, remote_of, retried, targets, total, verdict,
+        app_probe, doh, internet_seen, reached, remote_of, retried, targets, total, verdict,
     };
-    use crate::network::fail::FailKind;
+    use crate::network::fail::{Fail, FailKind, Phase};
     use crate::network::netcheck::model::{
         AppProbe, DnsAnswer, DohProbe, PhaseProbe, Remote, TargetId, Tone,
     };
@@ -569,6 +577,28 @@ mod tests {
         assert!(again.ok, "{again:?}");
         assert_eq!(again.status, Some(200));
         assert_eq!(accepted.load(Ordering::SeqCst), 2);
+    }
+
+    #[test]
+    fn a_probe_that_got_through_the_handshake_reached_the_server() {
+        let failed = |kind: FailKind, phase: Phase| PhaseProbe {
+            tcp_ms: Some(1_000),
+            fail: Some(Fail {
+                phase: Some(phase),
+                ..Fail::of(kind)
+            }),
+            ..PhaseProbe::default()
+        };
+        let passed = PhaseProbe {
+            status: Some(200),
+            ..PhaseProbe::default()
+        };
+        assert!(reached(&passed));
+        assert!(reached(&failed(FailKind::Timeout, Phase::FirstByte)));
+        assert!(!reached(&failed(FailKind::Timeout, Phase::Tcp)));
+        assert!(!reached(&failed(FailKind::Timeout, Phase::Tls)));
+        assert!(!reached(&failed(FailKind::Reset, Phase::FirstByte)));
+        assert!(!reached(&PhaseProbe::default()));
     }
 
     #[tokio::test]

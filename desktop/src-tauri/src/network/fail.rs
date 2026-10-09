@@ -132,7 +132,7 @@ pub fn of_text(text: &str) -> Option<FailKind> {
     let has = |needles: &[&str]| needles.iter().any(|needle| text.contains(needle));
     if has(&["certificate"]) {
         Some(FailKind::TlsCert)
-    } else if has(&["ssl", "tls", "handshake"]) {
+    } else if has(&["ssl", "tls", "handshake"]) || has_tls_reason(&text) {
         Some(FailKind::Tls)
     } else if has(&["dns error", "failed to lookup", "no such host"]) {
         Some(FailKind::Dns)
@@ -143,6 +143,17 @@ pub fn of_text(text: &str) -> Option<FailKind> {
     } else {
         None
     }
+}
+
+fn has_tls_reason(text: &str) -> bool {
+    text.split('[').skip(1).any(|rest| {
+        rest.split_once(']').is_some_and(|(reason, _)| {
+            reason.contains('_')
+                && reason
+                    .chars()
+                    .all(|c| c.is_ascii_alphanumeric() || c == '_')
+        })
+    })
 }
 
 pub fn of_wreq(err: &wreq::Error) -> FailKind {
@@ -230,6 +241,12 @@ mod tests {
                 Some(FailKind::Timeout),
             ),
             ("TLS handshake timed out", Some(FailKind::Tls)),
+            (
+                "client error (Connect)\n[WRONG_VERSION_NUMBER]\n",
+                Some(FailKind::Tls),
+            ),
+            ("[CERTIFICATE_VERIFY_FAILED]", Some(FailKind::TlsCert)),
+            ("connect to [::1]:443 failed", None),
             ("connection error: unexpected end of file", None),
         ];
         for (text, expected) in table {
@@ -314,6 +331,23 @@ mod tests {
         });
         let err = error_from(format!("http://{addr}/"), Duration::from_secs(5)).await;
         assert_eq!(of_wreq(&err), FailKind::Closed, "{err:?}");
+    }
+
+    #[tokio::test]
+    async fn tls_against_a_plain_http_server_is_a_tls_failure() {
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let addr = listener.local_addr().unwrap();
+        tokio::spawn(async move {
+            let (mut stream, _) = listener.accept().await.unwrap();
+            let mut buf = [0u8; 1024];
+            let _ = stream.read(&mut buf).await;
+            let _ = stream
+                .write_all(b"HTTP/1.1 400 Bad Request\r\ncontent-length: 0\r\n\r\n")
+                .await;
+            tokio::time::sleep(Duration::from_secs(2)).await;
+        });
+        let err = error_from(format!("https://{addr}/"), Duration::from_secs(5)).await;
+        assert_eq!(of_wreq(&err), FailKind::Tls, "{err:?}");
     }
 
     #[tokio::test]

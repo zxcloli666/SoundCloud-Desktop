@@ -199,7 +199,13 @@ export function noteUnreachable(): void {
     autoCheckAt = now;
     void invoke('net_check_auto', { reason: 'unreachable' });
   }
+  if (knownUnreachable()) settleOfflineCheck(false);
   requestProbe();
+}
+
+function knownUnreachable(): boolean {
+  const s = useHostStatusStore.getState();
+  return s.net === 'no-internet' || (s.main === 'down' && s.routeBlocked);
 }
 
 function settleOfflineCheck(reachable: boolean): void {
@@ -223,18 +229,21 @@ async function run(): Promise<void> {
     return;
   }
   const gen = mainAliveGen;
-  const internetCheck = first.netFail ? checkInternet() : undefined;
-  const remoteCheck = fetchRemoteVerdict();
+  const starFirst = probeOnce(API_STAR_BASE);
+  const internetCheck = starFirst.then((star) =>
+    first.netFail && star.netFail ? checkInternet() : undefined,
+  );
+  const remoteCheck = starFirst.then((star) => (star.alive ? 'unknown' : fetchRemoteVerdict()));
   const [main, star] = await Promise.all([
     probeConfirmed(API_BASE, first),
-    probeConfirmed(API_STAR_BASE),
+    starFirst.then((star) => probeConfirmed(API_STAR_BASE, star)),
   ]);
   if (main.alive) {
     markMainUp();
     return;
   }
   const unreachable = main.netFail && star.netFail;
-  const internet = unreachable ? await (internetCheck ?? checkInternet()) : 'online';
+  const internet = unreachable ? ((await internetCheck) ?? (await checkInternet())) : 'online';
   if (internet === 'no-internet') {
     settleOfflineCheck(false);
     useHostStatusStore.setState({ main: 'unknown', star: 'unknown', net: 'no-internet' });

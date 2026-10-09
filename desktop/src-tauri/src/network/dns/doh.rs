@@ -70,12 +70,8 @@ pub struct DohAnswer {
 fn build_client() -> Option<wreq::Client> {
     let mut builder = sc_fingerprint::builder(None).no_proxy();
     for provider in &PROVIDERS {
-        let addrs: Vec<SocketAddr> = provider
-            .ips
-            .iter()
-            .map(|ip| SocketAddr::new(*ip, 443))
-            .collect();
-        builder = builder.resolve_to_addrs(provider.name, &addrs);
+        let addrs = provider.ips.iter().map(|ip| SocketAddr::new(*ip, 443));
+        builder = builder.resolve_to_addrs(provider.name, addrs);
     }
     configured(builder).build().ok()
 }
@@ -450,7 +446,9 @@ mod tests {
     #[tokio::test]
     async fn queries_sent_together_share_one_connection() {
         let (url, accepted) = h2_tls_server().await;
-        let builder = wreq::Client::builder().no_proxy().cert_verification(false);
+        let builder = wreq::Client::builder()
+            .no_proxy()
+            .tls_cert_verification(false);
         let client = configured(builder).build().unwrap();
         let sent = futures_util::future::join_all((0..4).map(|_| client.get(&url).send())).await;
         for response in sent {

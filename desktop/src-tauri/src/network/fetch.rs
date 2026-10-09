@@ -2,24 +2,27 @@ use std::collections::HashMap;
 use std::sync::{LazyLock, Mutex, MutexGuard, OnceLock};
 use std::time::{Duration, Instant};
 
+use futures_util::StreamExt;
 use serde::{Deserialize, Serialize};
 use tokio::task::AbortHandle;
 use wreq::header::{CONTENT_LENGTH, HeaderMap, HeaderName, HeaderValue};
+use wreq::http2::Http2Options;
 use wreq::{Method, redirect::Policy};
 
 use crate::network::edge::{Hop, Tier};
 use crate::network::fail::{self, FailKind};
 use crate::network::netcheck::{model::Role, paths};
+use crate::network::pace::{self, Pace};
 use crate::network::{dns, system_proxy};
 
 const CONNECT_TIMEOUT: Duration = Duration::from_secs(10);
 const BODY_STALL: Duration = Duration::from_secs(10);
-const PING_AFTER_SILENCE: Duration = Duration::from_secs(2);
-const PING_TIMEOUT: Duration = Duration::from_secs(3);
+const PING_TIMEOUT: Duration = Duration::from_secs(5);
 const IDLE_PER_HOST: usize = 8;
 const MAX_REDIRECTS: usize = 10;
 const MAX_MESSAGE: usize = 400;
 const DROPPED: [&str; 3] = ["host", "content-length", "connection"];
+const PINGS_GAVE_UP: &str = "keep-alive timed out";
 
 static INFLIGHT: LazyLock<Mutex<HashMap<u32, AbortHandle>>> = LazyLock::new(Mutex::default);
 
@@ -41,6 +44,8 @@ pub struct Route {
     tier: Tier,
     origin: String,
     attempt: u8,
+    #[serde(default)]
+    last: bool,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
@@ -72,6 +77,8 @@ pub enum Head {
         status_text: String,
         headers: Vec<(String, String)>,
         url: String,
+        #[serde(skip_serializing_if = "std::ops::Not::not")]
+        stalled: bool,
     },
     Failed {
         error: NetFailure,
@@ -95,14 +102,31 @@ impl Head {
 }
 
 pub fn client() -> Option<&'static wreq::Client> {
-    static CLIENT: OnceLock<Option<wreq::Client>> = OnceLock::new();
-    CLIENT
-        .get_or_init(|| {
-            configured(system_proxy::follow(sc_fingerprint::builder(None)))
-                .build()
-                .ok()
-        })
-        .as_ref()
+    pooled(pace::now())
+}
+
+fn pooled(pace: Pace) -> Option<&'static wreq::Client> {
+    static QUICK: OnceLock<Option<wreq::Client>> = OnceLock::new();
+    static PATIENT: OnceLock<Option<wreq::Client>> = OnceLock::new();
+    let cell = match pace {
+        Pace::Quick => &QUICK,
+        Pace::Patient => &PATIENT,
+    };
+    cell.get_or_init(|| built(pace, IDLE_PER_HOST)).as_ref()
+}
+
+fn one_shot() -> Option<&'static wreq::Client> {
+    static ONE_SHOT: OnceLock<Option<wreq::Client>> = OnceLock::new();
+    ONE_SHOT.get_or_init(|| built(Pace::Patient, 0)).as_ref()
+}
+
+fn built(pace: Pace, idle: usize) -> Option<wreq::Client> {
+    let (_, emulation) = sc_fingerprint::emulation(None);
+    let builder = sc_fingerprint::from_emulation(pinging(emulation, pace));
+    configured(system_proxy::follow(builder))
+        .pool_max_idle_per_host(idle)
+        .build()
+        .ok()
 }
 
 pub fn configured(builder: wreq::ClientBuilder) -> wreq::ClientBuilder {
@@ -110,12 +134,19 @@ pub fn configured(builder: wreq::ClientBuilder) -> wreq::ClientBuilder {
         .redirect(Policy::limited(MAX_REDIRECTS))
         .pool_max_idle_per_host(IDLE_PER_HOST)
         .connect_timeout(CONNECT_TIMEOUT)
-        .http2(|mut http2| {
-            http2
-                .keep_alive_interval(PING_AFTER_SILENCE)
-                .keep_alive_timeout(PING_TIMEOUT)
-                .keep_alive_while_idle(false);
-        })
+}
+
+pub fn pinging(mut emulation: wreq::Emulation, pace: Pace) -> wreq::Emulation {
+    if let Some(http2) = emulation.http2_options.as_mut() {
+        ping(http2, pace);
+    }
+    emulation
+}
+
+fn ping(http2: &mut Http2Options, pace: Pace) {
+    http2.keep_alive_interval = Some(pace.silence());
+    http2.keep_alive_timeout = PING_TIMEOUT;
+    http2.keep_alive_while_idle = false;
 }
 
 fn inflight() -> MutexGuard<'static, HashMap<u32, AbortHandle>> {
@@ -124,12 +155,12 @@ fn inflight() -> MutexGuard<'static, HashMap<u32, AbortHandle>> {
 
 #[tauri::command]
 pub async fn net_fetch(request: FetchRequest) -> tauri::ipc::Response {
-    let Some(client) = client() else {
+    let (Some(pooled), Some(fresh)) = (client(), one_shot()) else {
         let head = Head::failed(NetKind::Other, "http client is unavailable");
         return tauri::ipc::Response::new(frame(&head, &[]));
     };
     let id = request.id;
-    let task = tokio::spawn(perform(client, request));
+    let task = tokio::spawn(perform(pooled, fresh, request));
     inflight().insert(id, task.abort_handle());
     let done = task.await;
     inflight().remove(&id);
@@ -145,7 +176,11 @@ pub fn net_fetch_cancel(id: u32) {
     }
 }
 
-async fn perform(client: &wreq::Client, request: FetchRequest) -> (Head, Vec<u8>) {
+async fn perform(
+    pooled: &wreq::Client,
+    fresh: &wreq::Client,
+    request: FetchRequest,
+) -> (Head, Vec<u8>) {
     let started = Instant::now();
     let deadline = request
         .timeout_ms
@@ -154,24 +189,42 @@ async fn perform(client: &wreq::Client, request: FetchRequest) -> (Head, Vec<u8>
         return (Head::failed(NetKind::Other, "bad method"), Vec::new());
     };
     let headers = outgoing(&method, &request.headers, request.body.is_some());
-    let mut builder = client.request(method, &request.url).headers(headers);
-    if let Some(body) = request.body.clone() {
-        builder = builder.body(body);
-    }
-    let response = match within(deadline, builder.send()).await {
-        None => {
-            settle(&request, Err(FailKind::Timeout), started);
-            return (
-                Head::failed(NetKind::Timeout, "no answer in time"),
-                Vec::new(),
-            );
+    let replayable = matches!(method, Method::GET | Method::HEAD)
+        && request.route.as_ref().is_none_or(|route| route.last);
+    let mut stalled = false;
+    let response = loop {
+        let client = if stalled { fresh } else { pooled };
+        let asked = Instant::now();
+        let mut builder = client
+            .request(method.clone(), &request.url)
+            .headers(headers.clone());
+        if let Some(body) = request.body.clone() {
+            builder = builder.body(body);
         }
-        Some(Err(error)) => {
-            let kind = fail::of_wreq(&error);
-            settle(&request, Err(kind), started);
-            return (Head::failed(net_kind(kind), described(&error)), Vec::new());
+        match within(deadline, builder.send()).await {
+            None => {
+                settle(&request, Err(FailKind::Timeout), started);
+                return (
+                    Head::failed(NetKind::Timeout, "no answer in time"),
+                    Vec::new(),
+                );
+            }
+            Some(Err(error)) if replayable && !stalled && dropped_by_pings(&error) => {
+                record(&request, Err(FailKind::Timeout), started);
+                stalled = true;
+            }
+            Some(Err(error)) => {
+                let kind = fail::of_wreq(&error);
+                settle(&request, Err(kind), started);
+                return (Head::failed(net_kind(kind), described(&error)), Vec::new());
+            }
+            Some(Ok(response)) => {
+                if !stalled {
+                    pace::note(asked.elapsed());
+                }
+                break response;
+            }
         }
-        Some(Ok(response)) => response,
     };
     let status = response.status();
     settle(&request, Ok(status.as_u16()), started);
@@ -179,7 +232,8 @@ async fn perform(client: &wreq::Client, request: FetchRequest) -> (Head, Vec<u8>
         status: status.as_u16(),
         status_text: status.canonical_reason().unwrap_or_default().to_string(),
         headers: incoming(response.headers()),
-        url: response.url().to_string(),
+        url: response.uri().to_string(),
+        stalled,
     };
     match read_body(response, deadline).await {
         Ok(body) => (head, body),
@@ -191,21 +245,22 @@ async fn perform(client: &wreq::Client, request: FetchRequest) -> (Head, Vec<u8>
 }
 
 async fn read_body(
-    mut response: wreq::Response,
+    response: wreq::Response,
     deadline: Option<tokio::time::Instant>,
 ) -> Result<Vec<u8>, String> {
     let mut body = Vec::new();
+    let mut chunks = std::pin::pin!(response.bytes_stream());
     loop {
         let stall_at = tokio::time::Instant::now() + BODY_STALL;
         let until = deadline.map_or(stall_at, |at| at.min(stall_at));
-        match tokio::time::timeout_at(until, response.chunk()).await {
+        match tokio::time::timeout_at(until, chunks.next()).await {
             Err(_) if until < stall_at => {
                 return Err("timed out while reading the body".to_string());
             }
             Err(_) => return Err("the body stalled".to_string()),
-            Ok(Err(error)) => return Err(described(&error)),
-            Ok(Ok(None)) => return Ok(body),
-            Ok(Ok(Some(chunk))) => body.extend_from_slice(&chunk),
+            Ok(Some(Err(error))) => return Err(described(&error)),
+            Ok(None) => return Ok(body),
+            Ok(Some(Ok(chunk))) => body.extend_from_slice(&chunk),
         }
     }
 }
@@ -289,10 +344,21 @@ pub fn net_kind(kind: FailKind) -> NetKind {
     }
 }
 
+fn dropped_by_pings(error: &wreq::Error) -> bool {
+    let mut cause = std::error::Error::source(error);
+    while let Some(current) = cause {
+        if current.to_string().contains(PINGS_GAVE_UP) {
+            return true;
+        }
+        cause = current.source();
+    }
+    false
+}
+
 fn described(error: &wreq::Error) -> String {
     let mut text = error.to_string();
-    if let Some(url) = error.url() {
-        text = text.replace(&format!(" for url ({})", url.as_str()), "");
+    if let Some(uri) = error.uri() {
+        text = text.replace(&format!(" for uri ({uri})"), "");
     }
     let mut cause = std::error::Error::source(error);
     while let Some(current) = cause {
