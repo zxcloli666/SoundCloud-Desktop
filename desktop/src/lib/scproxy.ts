@@ -3,7 +3,6 @@ import { isWhitelistedAssetUrl, toImageCacheUrl, toScproxyUrl } from './asset-ur
 type PatchedImage = HTMLImageElement & {
   __origSrc?: string;
   __proxyRetryStage?: number;
-  __skipProxyOnce?: boolean;
   __hiddenAfterError?: boolean;
 };
 
@@ -36,15 +35,6 @@ const imgSrcDesc = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, '
 Object.defineProperty(HTMLImageElement.prototype, 'src', {
   set(url: string) {
     const img = this as PatchedImage;
-    if (img.__hiddenAfterError) {
-      img.__hiddenAfterError = false;
-      img.style.removeProperty('display');
-    }
-    if (img.__skipProxyOnce) {
-      img.__skipProxyOnce = false;
-      imgSrcDesc.set!.call(this, url);
-      return;
-    }
 
     if (url?.startsWith('http') && !isWhitelistedAssetUrl(url)) {
       img.__origSrc = url;
@@ -76,7 +66,6 @@ document.addEventListener(
 
       if (originalUrl && retryStage === 1) {
         img.__proxyRetryStage = 2;
-        img.__skipProxyOnce = true;
         img.style.removeProperty('display');
         imgSrcDesc.set!.call(img, originalUrl);
         return;
@@ -84,6 +73,20 @@ document.addEventListener(
 
       img.__hiddenAfterError = true;
       img.style.display = 'none';
+    }
+  },
+  true,
+);
+
+document.addEventListener(
+  'load',
+  (e) => {
+    if (e.target instanceof HTMLImageElement) {
+      const img = e.target as PatchedImage;
+      if (img.__hiddenAfterError) {
+        img.__hiddenAfterError = false;
+        img.style.removeProperty('display');
+      }
     }
   },
   true,
