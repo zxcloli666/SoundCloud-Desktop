@@ -1,0 +1,57 @@
+name: Flatpak repository
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Published release tag whose auto-build run holds the flatpak-repo artifact (for example 8.5.0)"
+        required: true
+
+permissions:
+  contents: read
+  actions: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: flatpak-pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - name: Find the build run
+        id: run
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ inputs.tag }}
+        run: |
+          if [ "$(gh release view "$TAG" -R "$GITHUB_REPOSITORY" --json isDraft -q .isDraft)" != "false" ]; then
+            echo "::error::release $TAG is not published"
+            exit 1
+          fi
+          sha=$(gh api "repos/$GITHUB_REPOSITORY/commits/$TAG" --jq .sha)
+          id=$(gh run list -R "$GITHUB_REPOSITORY" --workflow auto-build.yml --commit "$sha" -L 1 --json databaseId --jq '.[0].databaseId')
+          if [ -z "$id" ]; then
+            echo "::error::no auto-build run for $TAG ($sha)"
+            exit 1
+          fi
+          echo "id=$id" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: flatpak-repo
+          path: site/flatpak
+          run-id: ${{ steps.run.outputs.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - id: deploy
+        uses: actions/deploy-pages@v4

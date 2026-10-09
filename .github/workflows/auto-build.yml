@@ -323,7 +323,7 @@ jobs:
         with:
           name: flatpak-repo
           path: flatpak-site
-          retention-days: 2
+          retention-days: 14
 
   release:
     needs: [version, build, flatpak]
