@@ -136,16 +136,20 @@ function ThemedTrackRowImpl({ track, index, queue, aura }: ThemedTrackRowProps) 
       </div>
 
       <div className="hidden @3xl:flex items-center gap-5 shrink-0 pr-2 text-[11px] text-white/35">
-        {track.playback_count != null && (
-          <span className="inline-flex items-center gap-1.5 tabular-nums w-16">
-            {headphones11} {fc(track.playback_count)}
-          </span>
-        )}
-        {(track.favoritings_count ?? track.likes_count) != null && (
-          <span className="inline-flex items-center gap-1.5 tabular-nums w-14">
-            {heart11} {fc(track.favoritings_count ?? track.likes_count)}
-          </span>
-        )}
+        <span className="inline-flex items-center gap-1.5 tabular-nums w-16">
+          {track.playback_count != null && (
+            <>
+              {headphones11} {fc(track.playback_count)}
+            </>
+          )}
+        </span>
+        <span className="inline-flex items-center gap-1.5 tabular-nums w-14">
+          {(track.favoritings_count ?? track.likes_count) != null && (
+            <>
+              {heart11} {fc(track.favoritings_count ?? track.likes_count)}
+            </>
+          )}
+        </span>
       </div>
 
       <div className="flex items-center gap-0.5 shrink-0">

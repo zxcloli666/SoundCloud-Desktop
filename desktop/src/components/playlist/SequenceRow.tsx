@@ -90,18 +90,22 @@ function RowBody({
       </div>
 
       <div className="hidden @2xl:flex items-center gap-3 shrink-0">
-        {track.playback_count != null && (
-          <span className="text-[10px] text-white/20 tabular-nums flex items-center gap-0.5">
-            {headphones9}
-            {fc(track.playback_count)}
-          </span>
-        )}
-        {(track.favoritings_count ?? track.likes_count) != null && (
-          <span className="text-[10px] text-white/20 tabular-nums flex items-center gap-0.5">
-            {heart9}
-            {fc(track.favoritings_count ?? track.likes_count)}
-          </span>
-        )}
+        <span className="text-[10px] text-white/20 tabular-nums flex items-center gap-0.5 w-12">
+          {track.playback_count != null && (
+            <>
+              {headphones9}
+              {fc(track.playback_count)}
+            </>
+          )}
+        </span>
+        <span className="text-[10px] text-white/20 tabular-nums flex items-center gap-0.5 w-10">
+          {(track.favoritings_count ?? track.likes_count) != null && (
+            <>
+              {heart9}
+              {fc(track.favoritings_count ?? track.likes_count)}
+            </>
+          )}
+        </span>
       </div>
 
       <LikeButton track={track} />

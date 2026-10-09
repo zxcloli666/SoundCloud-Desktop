@@ -80,10 +80,6 @@ export const LibraryTrackRow = React.memo(
           className="flex flex-col justify-center"
         />
 
-        <div className="hidden @lg:flex shrink-0">
-          <TrackStatusBadges meta={track._scd_meta} />
-        </div>
-
         <LikeButton track={track} />
         <SaveOfflineRowButton track={track} />
 
@@ -108,13 +104,19 @@ export const LibraryTrackRow = React.memo(
           className="opacity-0 group-hover:opacity-100 w-8 h-8 rounded-lg flex items-center justify-center text-white/30 hover:text-white/80 hover:bg-white/[0.08] transition-all duration-200 shrink-0"
         />
 
+        <div className="hidden @lg:flex shrink-0">
+          <TrackStatusBadges meta={track._scd_meta} />
+        </div>
+
         <div className="hidden @3xl:flex items-center gap-4 shrink-0 pr-4">
-          {track.playback_count != null && (
-            <span className="text-[11px] text-white/30 tabular-nums flex items-center gap-1.5 w-16">
-              {headphones11}
-              {fc(track.playback_count)}
-            </span>
-          )}
+          <span className="text-[11px] text-white/30 tabular-nums flex items-center gap-1.5 w-16">
+            {track.playback_count != null && (
+              <>
+                {headphones11}
+                {fc(track.playback_count)}
+              </>
+            )}
+          </span>
           <span className="text-[11px] text-white/30 tabular-nums flex items-center gap-1.5 w-14">
             {heart11}
             {fc(track.favoritings_count ?? track.likes_count)}
