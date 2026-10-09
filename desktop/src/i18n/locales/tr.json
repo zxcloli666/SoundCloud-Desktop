@@ -70,7 +70,12 @@
     "next": "Sonraki",
     "autoplay": "Otomatik devam",
     "autoplayOn": "Sıra bitince benzer parçalar çalmaya devam edecek",
-    "autoplayOff": "Sıra bitince çalma durur"
+    "autoplayOff": "Sıra bitince çalma durur",
+    "copyTitle": "Başlık",
+    "copyArtist": "Sanatçı",
+    "copyBoth": "Sanatçı ve başlık",
+    "copyLink": "Bağlantı",
+    "copiedShort": "Kopyalandı"
   },
   "auth": {
     "signIn": "SoundCloud ile giris yap",

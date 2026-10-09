@@ -68,6 +68,7 @@ import {EqualizerPanel} from '../music/EqualizerPanel';
 import {TrackSoundToggle} from '../music/TrackSoundToggle';
 import {UploadKindDot} from '../music/UploadKindDot';
 import {TogetherButton} from '../together/TogetherButton';
+import {NowPlayingNameCard} from './NowPlayingNameCard';
 import {sidebarWidth} from './SidebarChrome';
 import {VolumeFlyout, VolumeLabel, VolumeSlider} from './VolumeControls';
 
@@ -926,7 +927,7 @@ const PillTrackBody = React.memo(function PillTrackBody({
           </button>
         )}
       </div>
-      <div className="npb-txt">
+      <NowPlayingNameCard key={track.urn} track={track}>
         <span
           className="npb-ttl"
           onClick={() =>
@@ -943,7 +944,7 @@ const PillTrackBody = React.memo(function PillTrackBody({
             <ArtistNameLinks items={artistLinks} />
           </span>
         </span>
-      </div>
+      </NowPlayingNameCard>
     </div>
   );
 });

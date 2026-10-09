@@ -78,7 +78,12 @@
     "volumeResetHint": "더블클릭하면 100%로 초기화돼요",
     "autoplay": "자동 재생",
     "autoplayOn": "대기열이 끝나면 비슷한 트랙을 이어서 재생해요",
-    "autoplayOff": "대기열이 끝나면 재생을 멈춰요"
+    "autoplayOff": "대기열이 끝나면 재생을 멈춰요",
+    "copyTitle": "제목",
+    "copyArtist": "아티스트",
+    "copyBoth": "아티스트와 제목",
+    "copyLink": "링크",
+    "copiedShort": "복사됨"
   },
   "auth": {
     "signIn": "SoundCloud로 로그인",

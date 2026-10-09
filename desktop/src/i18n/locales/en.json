@@ -78,7 +78,12 @@
     "volumeResetHint": "Double-click to reset to 100%",
     "autoplay": "Autoplay",
     "autoplayOn": "Similar tracks will keep playing after the queue",
-    "autoplayOff": "Playback stops when the queue ends"
+    "autoplayOff": "Playback stops when the queue ends",
+    "copyTitle": "Title",
+    "copyArtist": "Artist",
+    "copyBoth": "Artist and title",
+    "copyLink": "Link",
+    "copiedShort": "Copied"
   },
   "auth": {
     "signIn": "Sign in with SoundCloud",
