@@ -50,8 +50,8 @@ jobs:
           echo "CFLAGS=-arch x86_64" >> $GITHUB_ENV
           echo "CXXFLAGS=-arch x86_64" >> $GITHUB_ENV
           echo "LDFLAGS=-arch x86_64" >> $GITHUB_ENV
-          echo "CC_x86_64_apple_darwin=clang -arch x86_64" >> $GITHUB_ENV
-          echo "CXX_x86_64_apple_darwin=clang++ -arch x86_64" >> $GITHUB_ENV
+          echo "CC_x86_64_apple_darwin=clang" >> $GITHUB_ENV
+          echo "CXX_x86_64_apple_darwin=clang++" >> $GITHUB_ENV
           echo "CARGO_TARGET_X86_64_APPLE_DARWIN_LINKER=clang" >> $GITHUB_ENV
           echo "MACOSX_DEPLOYMENT_TARGET=10.13" >> $GITHUB_ENV
 
