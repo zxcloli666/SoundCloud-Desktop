@@ -888,7 +888,7 @@ const PillTrackBody = React.memo(function PillTrackBody({
   const artistDisplay = useArtistDisplay(track);
   const displayTitle = useDisplayTitle(track);
   const artistLinks = useArtistLinkItems(track);
-  const artworkSmall = art(track.artwork_url, 't200x200');
+  const artworkSmall = art(track.artwork_url || track.user?.avatar_url, 't200x200');
   const hasArtistLink = artistLinks.some((it) => it.target);
   const loadedPercent = loadProgress == null ? null : loadPercent(loadProgress);
   const onContextMenu = useTrackContextMenu(track);
@@ -1028,7 +1028,9 @@ function useDocHidden(): boolean {
 
 const BackgroundGlow = React.memo(() => {
   const perf = usePerfMode();
-  const artworkUrl = usePlayerStore((s) => s.currentTrack?.artwork_url);
+  const artworkUrl = usePlayerStore(
+    (s) => s.currentTrack?.artwork_url || s.currentTrack?.user?.avatar_url,
+  );
   const artwork = art(artworkUrl, 't200x200');
 
   if (!perf.bloom || !artwork) return null;

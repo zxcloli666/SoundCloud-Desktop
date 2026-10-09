@@ -78,7 +78,7 @@ export function NowPlayingNameCard({
   const display = getTrackDisplay(track);
   const artist = display.artistLine || track.user?.username || '';
   const link = track.permalink_url ? cleanPermalink(track.permalink_url) : null;
-  const cover = art(track.artwork_url, 't200x200');
+  const cover = art(track.artwork_url || track.user?.avatar_url, 't200x200');
 
   const copy = (kind: CopyKind, text: string) => {
     void navigator.clipboard

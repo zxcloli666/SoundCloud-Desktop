@@ -36,7 +36,7 @@ export const NowPlayingCard = React.memo(() => {
   );
 
   if (!currentTrack) return null;
-  const artwork = art(currentTrack.artwork_url, 't200x200');
+  const artwork = art(currentTrack.artwork_url || currentTrack.user?.avatar_url, 't200x200');
 
   const handleClick = () => {
     const { pause, resume } = usePlayerStore.getState();
