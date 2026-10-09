@@ -41,6 +41,11 @@ fn client() -> wreq::Client {
         .unwrap()
 }
 
+async fn fetched(request: FetchRequest) -> (Head, Vec<u8>) {
+    let client = client();
+    perform(&client, &client, request).await
+}
+
 async fn server(reply: &'static [u8], stall: Duration) -> (String, oneshot::Receiver<String>) {
     held(reply, stall, Duration::from_millis(50)).await
 }
@@ -185,7 +190,7 @@ async fn an_answer_comes_back_whole_and_the_route_is_recorded() {
         attempt: 1,
         last: true,
     });
-    let (head, body) = perform(&client(), ask).await;
+    let (head, body) = fetched(ask).await;
     let Head::Answer {
         status, headers, ..
     } = head
@@ -210,7 +215,7 @@ async fn an_answer_comes_back_whole_and_the_route_is_recorded() {
 #[tokio::test]
 async fn silence_before_the_headers_is_a_timeout() {
     let (url, _heard) = server(b"", Duration::from_secs(5)).await;
-    let (head, _) = perform(&client(), request(url, "GET", Some(300))).await;
+    let (head, _) = fetched(request(url, "GET", Some(300))).await;
     let Head::Failed { error } = head else {
         panic!("a failure");
     };
@@ -224,7 +229,7 @@ async fn a_slow_server_answers_within_the_caller_budget() {
         Duration::from_secs(12),
     )
     .await;
-    let (head, body) = perform(&client(), request(url, "GET", Some(30_000))).await;
+    let (head, body) = fetched(request(url, "GET", Some(30_000))).await;
     let Head::Answer { status, .. } = head else {
         panic!("an answer, got {head:?}");
     };
@@ -241,7 +246,7 @@ async fn a_body_that_stalls_after_the_headers_is_a_body_failure() {
     )
     .await;
     let started = std::time::Instant::now();
-    let (head, body) = perform(&client(), request(url, "GET", Some(90_000))).await;
+    let (head, body) = fetched(request(url, "GET", Some(90_000))).await;
     let Head::Failed { error } = head else {
         panic!("a failure, got {head:?}");
     };
@@ -265,7 +270,7 @@ async fn a_body_that_breaks_off_is_a_body_failure() {
         attempt: 0,
         last: false,
     });
-    let (head, body) = perform(&client(), ask).await;
+    let (head, body) = fetched(ask).await;
     let Head::Failed { error } = head else {
         panic!("a failure");
     };
@@ -288,7 +293,7 @@ async fn a_closed_port_is_a_connect_failure_without_the_url() {
     let addr = listener.local_addr().unwrap();
     drop(listener);
     let url = format!("http://{addr}/health?token=secret");
-    let (head, _) = perform(&client(), request(url, "GET", None)).await;
+    let (head, _) = fetched(request(url, "GET", None)).await;
     let Head::Failed { error } = head else {
         panic!("a failure");
     };

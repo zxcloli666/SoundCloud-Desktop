@@ -103,13 +103,21 @@ impl Head {
 
 pub fn client() -> Option<&'static wreq::Client> {
     static CLIENT: OnceLock<Option<wreq::Client>> = OnceLock::new();
-    CLIENT
-        .get_or_init(|| {
-            let (_, emulation) = sc_fingerprint::emulation(None);
-            let builder = sc_fingerprint::from_emulation(pinging(emulation));
-            configured(system_proxy::follow(builder)).build().ok()
-        })
-        .as_ref()
+    CLIENT.get_or_init(|| built(IDLE_PER_HOST)).as_ref()
+}
+
+fn one_shot() -> Option<&'static wreq::Client> {
+    static ONE_SHOT: OnceLock<Option<wreq::Client>> = OnceLock::new();
+    ONE_SHOT.get_or_init(|| built(0)).as_ref()
+}
+
+fn built(idle: usize) -> Option<wreq::Client> {
+    let (_, emulation) = sc_fingerprint::emulation(None);
+    let builder = sc_fingerprint::from_emulation(pinging(emulation));
+    configured(system_proxy::follow(builder))
+        .pool_max_idle_per_host(idle)
+        .build()
+        .ok()
 }
 
 pub fn configured(builder: wreq::ClientBuilder) -> wreq::ClientBuilder {
@@ -138,12 +146,12 @@ fn inflight() -> MutexGuard<'static, HashMap<u32, AbortHandle>> {
 
 #[tauri::command]
 pub async fn net_fetch(request: FetchRequest) -> tauri::ipc::Response {
-    let Some(client) = client() else {
+    let (Some(pooled), Some(fresh)) = (client(), one_shot()) else {
         let head = Head::failed(NetKind::Other, "http client is unavailable");
         return tauri::ipc::Response::new(frame(&head, &[]));
     };
     let id = request.id;
-    let task = tokio::spawn(perform(client, request));
+    let task = tokio::spawn(perform(pooled, fresh, request));
     inflight().insert(id, task.abort_handle());
     let done = task.await;
     inflight().remove(&id);
@@ -159,7 +167,11 @@ pub fn net_fetch_cancel(id: u32) {
     }
 }
 
-async fn perform(client: &wreq::Client, request: FetchRequest) -> (Head, Vec<u8>) {
+async fn perform(
+    pooled: &wreq::Client,
+    fresh: &wreq::Client,
+    request: FetchRequest,
+) -> (Head, Vec<u8>) {
     let started = Instant::now();
     let deadline = request
         .timeout_ms
@@ -172,6 +184,7 @@ async fn perform(client: &wreq::Client, request: FetchRequest) -> (Head, Vec<u8>
         && request.route.as_ref().is_none_or(|route| route.last);
     let mut stalled = false;
     let response = loop {
+        let client = if stalled { fresh } else { pooled };
         let mut builder = client
             .request(method.clone(), &request.url)
             .headers(headers.clone());

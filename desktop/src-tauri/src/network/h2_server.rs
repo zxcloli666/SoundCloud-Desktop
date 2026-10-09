@@ -74,6 +74,7 @@ async fn answer<S: AsyncWrite + Unpin>(
 pub enum Mode {
     Healthy,
     Freeze,
+    CutAfter(usize),
     Slow(Duration),
     Lagging(Duration),
 }
@@ -91,6 +92,7 @@ async fn serve<S: AsyncRead + AsyncWrite + Unpin>(mut socket: S, mode: Mode) {
         return;
     }
     let mut late: VecDeque<(tokio::time::Instant, Due)> = VecDeque::new();
+    let mut answered = 0;
     loop {
         let due = late.front().map(|(at, _)| *at);
         let frame = tokio::select! {
@@ -125,6 +127,14 @@ async fn serve<S: AsyncRead + AsyncWrite + Unpin>(mut socket: S, mode: Mode) {
                 tokio::time::sleep(Duration::from_secs(120)).await;
                 return;
             }
+            (HEADERS, Mode::CutAfter(answers)) if answered == answers => {
+                tokio::time::sleep(Duration::from_secs(120)).await;
+                return;
+            }
+            (HEADERS, Mode::CutAfter(_)) => {
+                answered += 1;
+                answer(&mut socket, frame.stream, b"ok", true).await
+            }
             (HEADERS, Mode::Slow(delay) | Mode::Lagging(delay)) => {
                 late.push_back((later(delay), Due::Answer(frame.stream)));
                 Ok(())
@@ -139,6 +149,10 @@ async fn serve<S: AsyncRead + AsyncWrite + Unpin>(mut socket: S, mode: Mode) {
 }
 
 pub async fn h2_server(first: Mode) -> (String, Arc<AtomicUsize>) {
+    h2_server_then(first, Mode::Healthy).await
+}
+
+pub async fn h2_server_then(first: Mode, rest: Mode) -> (String, Arc<AtomicUsize>) {
     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
     let addr = listener.local_addr().unwrap();
     let accepted = Arc::new(AtomicUsize::new(0));
@@ -148,7 +162,7 @@ pub async fn h2_server(first: Mode) -> (String, Arc<AtomicUsize>) {
             let mode = if counter.fetch_add(1, Ordering::SeqCst) == 0 {
                 first
             } else {
-                Mode::Healthy
+                rest
             };
             tokio::spawn(serve(socket, mode));
         }
