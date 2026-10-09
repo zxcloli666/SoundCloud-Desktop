@@ -199,7 +199,13 @@ export function noteUnreachable(): void {
     autoCheckAt = now;
     void invoke('net_check_auto', { reason: 'unreachable' });
   }
+  if (knownUnreachable()) settleOfflineCheck(false);
   requestProbe();
+}
+
+function knownUnreachable(): boolean {
+  const s = useHostStatusStore.getState();
+  return s.net === 'no-internet' || (s.main === 'down' && s.routeBlocked);
 }
 
 function settleOfflineCheck(reachable: boolean): void {
