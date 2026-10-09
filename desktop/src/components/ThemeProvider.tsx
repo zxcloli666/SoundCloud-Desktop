@@ -12,6 +12,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const perfMode = useSettingsStore((s) => s.perfMode);
   const interfaceFont = useSettingsStore((s) => s.interfaceFont);
   const customFontName = useSettingsStore((s) => s.customFontName);
+  const customFontFile = useSettingsStore((s) => s.customFontFile);
   const coverAccent = useSettingsStore((s) => s.coverAccent);
   const palette = useCoverPalette(coverAccent);
   const effectiveAccent = (coverAccent && palette?.accent) || accentColor;
@@ -34,8 +35,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, [effectiveAccent]);
 
   useEffect(() => {
-      void applyFontVars(interfaceFont, customFontName);
-  }, [interfaceFont, customFontName]);
+      void applyFontVars(interfaceFont, customFontName, customFontFile);
+  }, [interfaceFont, customFontName, customFontFile]);
 
   useEffect(() => {
       applyBgVars(bgPrimary);

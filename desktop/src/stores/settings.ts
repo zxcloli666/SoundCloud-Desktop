@@ -152,6 +152,7 @@ export interface SettingsState {
   showErrorToasts: boolean;
   interfaceFont: InterfaceFont;
   customFontName: string;
+  customFontFile: string;
   coverTint: boolean;
   coverAccent: boolean;
   customCss: string;
@@ -235,6 +236,7 @@ export interface SettingsState {
   setShowErrorToasts: (v: boolean) => void;
   setInterfaceFont: (font: InterfaceFont) => void;
   setCustomFontName: (name: string) => void;
+  setCustomFontFile: (file: string) => void;
   setCoverTint: (v: boolean) => void;
   setCoverAccent: (v: boolean) => void;
   setCustomCss: (css: string) => void;
@@ -319,6 +321,7 @@ const DEFAULTS = {
   showErrorToasts: true,
   interfaceFont: 'inter' as InterfaceFont,
   customFontName: '',
+  customFontFile: '',
   coverTint: false,
   coverAccent: false,
   customCss: '',
@@ -481,6 +484,7 @@ export const useSettingsStore = create<SettingsState>()(
       setShowErrorToasts: (showErrorToasts) => set({ showErrorToasts }),
       setInterfaceFont: (interfaceFont) => set({ interfaceFont }),
       setCustomFontName: (customFontName) => set({ customFontName }),
+      setCustomFontFile: (customFontFile) => set({ customFontFile }),
       setCoverTint: (coverTint) => set({ coverTint }),
       setCoverAccent: (coverAccent) => set({ coverAccent }),
       setCustomCss: (customCss) => set({ customCss }),
@@ -509,6 +513,7 @@ export const useSettingsStore = create<SettingsState>()(
           glassBlur: DEFAULTS.glassBlur,
           interfaceFont: DEFAULTS.interfaceFont,
           customFontName: DEFAULTS.customFontName,
+          customFontFile: DEFAULTS.customFontFile,
           coverTint: DEFAULTS.coverTint,
           coverAccent: DEFAULTS.coverAccent,
         }),
@@ -615,6 +620,7 @@ export const useSettingsStore = create<SettingsState>()(
         showErrorToasts: s.showErrorToasts,
         interfaceFont: s.interfaceFont,
         customFontName: s.customFontName,
+        customFontFile: s.customFontFile,
         coverTint: s.coverTint,
         coverAccent: s.coverAccent,
         customCss: s.customCss,

@@ -1,12 +1,15 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Check, Type, X } from '../../../lib/icons';
+import { Check, Type, Upload, X } from '../../../lib/icons';
 import {
+  FONT_FILE_ACCEPT,
   FONT_OPTIONS,
   fontFamilyOf,
   type InterfaceFont,
+  importFontFile,
   isFontInstalled,
   loadBundledFont,
+  removeUploadedFont,
   sanitizeFontName,
 } from '../../../lib/interface-font';
 import { useSettingsStore } from '../../../stores/settings';
@@ -70,19 +73,100 @@ function FontTile({
   );
 }
 
+function UploadedFontRow({ family, fileName }: { family: string; fileName: string }) {
+  const { t } = useTranslation();
+  const setCustomFontName = useSettingsStore((s) => s.setCustomFontName);
+  const setCustomFontFile = useSettingsStore((s) => s.setCustomFontFile);
+
+  const removeFile = () => {
+    setCustomFontFile('');
+    setCustomFontName('');
+    void removeUploadedFont(fileName);
+  };
+
+  return (
+    <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.06] animate-fade-in-up">
+      <div className="min-w-0 flex-1">
+        <div
+          className="text-[14px] text-white/85 truncate"
+          style={{ fontFamily: `"${family}", var(--font-sans)` }}
+        >
+          {family}
+        </div>
+        <div className="text-[11px] text-white/35 truncate">{fileName}</div>
+      </div>
+      <button
+        type="button"
+        onClick={removeFile}
+        title={t('settings.fontRemoveFile')}
+        aria-label={t('settings.fontRemoveFile')}
+        className="w-8 h-8 rounded-lg flex items-center justify-center text-white/40 hover:text-white/80 hover:bg-white/[0.08] transition-all cursor-pointer"
+      >
+        <X size={15} />
+      </button>
+    </div>
+  );
+}
+
 function CustomFontInput() {
   const { t } = useTranslation();
   const customFontName = useSettingsStore((s) => s.customFontName);
+  const customFontFile = useSettingsStore((s) => s.customFontFile);
   const setCustomFontName = useSettingsStore((s) => s.setCustomFontName);
+  const setCustomFontFile = useSettingsStore((s) => s.setCustomFontFile);
   const [draft, setDraft] = useState(customFontName);
+  const [uploadFailed, setUploadFailed] = useState(false);
+  const fileInput = useRef<HTMLInputElement>(null);
   const clean = sanitizeFontName(draft);
   const installed = useMemo(() => (clean ? isFontInstalled(clean) : null), [clean]);
 
   useEffect(() => {
-    if (clean === customFontName) return;
+    if (customFontFile || clean === customFontName) return;
     const timer = window.setTimeout(() => setCustomFontName(clean), 400);
     return () => window.clearTimeout(timer);
-  }, [clean, customFontName, setCustomFontName]);
+  }, [clean, customFontName, customFontFile, setCustomFontName]);
+
+  const onFile = async (file: File | undefined) => {
+    if (!file) return;
+    const imported = await importFontFile(file).catch(() => null);
+    setUploadFailed(!imported);
+    if (!imported) return;
+    setDraft(imported.family);
+    setCustomFontName(imported.family);
+    setCustomFontFile(imported.fileName);
+  };
+
+  const uploadButton = (
+    <>
+      <input
+        ref={fileInput}
+        type="file"
+        accept={FONT_FILE_ACCEPT}
+        className="hidden"
+        onChange={(e) => {
+          void onFile(e.target.files?.[0]);
+          e.target.value = '';
+        }}
+      />
+      <button
+        type="button"
+        onClick={() => fileInput.current?.click()}
+        className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/[0.04] border border-white/[0.06] text-[12.5px] font-medium text-white/60 hover:text-white/85 hover:bg-white/[0.07] transition-all cursor-pointer"
+      >
+        <Upload size={14} />
+        {t('settings.fontUpload')}
+      </button>
+    </>
+  );
+
+  if (customFontFile) {
+    return (
+      <div className="space-y-2">
+        <UploadedFontRow family={customFontName} fileName={customFontFile} />
+        {uploadButton}
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-2 animate-fade-in-up">
@@ -117,6 +201,12 @@ function CustomFontInput() {
             ? t('settings.fontFound')
             : t('settings.fontCustomHint')}
       </p>
+      {uploadButton}
+      {uploadFailed && (
+        <p className="text-[11.5px] leading-snug text-amber-300/60">
+          {t('settings.fontUploadFailed')}
+        </p>
+      )}
     </div>
   );
 }

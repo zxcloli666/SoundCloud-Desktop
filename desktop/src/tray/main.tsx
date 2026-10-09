@@ -16,7 +16,7 @@ function applyTheme() {
     applyAccentVars(s.accentColor);
     applyBgVars(s.bgPrimary);
     applyPerfMode(s.perfMode);
-    void applyFontVars(s.interfaceFont, s.customFontName);
+    void applyFontVars(s.interfaceFont, s.customFontName, s.customFontFile);
     applyCustomCss(effectiveCustomCss(s));
 }
 

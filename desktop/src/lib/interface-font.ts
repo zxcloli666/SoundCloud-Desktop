@@ -1,3 +1,6 @@
+import { appDataDir, join } from '@tauri-apps/api/path';
+import { mkdir, readFile, remove, writeFile } from '@tauri-apps/plugin-fs';
+
 export type InterfaceFont =
   | 'inter'
   | 'manrope'
@@ -78,15 +81,74 @@ export function loadBundledFont(font: InterfaceFont): Promise<unknown> {
   return BUNDLED_FONTS[font]?.load?.().catch(() => undefined) ?? Promise.resolve();
 }
 
+const FONTS_DIR = 'fonts';
+export const FONT_FILE_ACCEPT = '.ttf,.otf,.woff,.woff2';
+const uploaded = new Map<string, Promise<boolean>>();
+
+async function fontsDir(): Promise<string> {
+  const dir = await join(await appDataDir(), FONTS_DIR);
+  await mkdir(dir, { recursive: true });
+  return dir;
+}
+
+async function registerFace(family: string, data: ArrayBuffer): Promise<boolean> {
+  try {
+    const face = new FontFace(family, data);
+    await face.load();
+    document.fonts.add(face);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export function loadUploadedFont(fileName: string, family: string): Promise<boolean> {
+  let pending = uploaded.get(fileName);
+  if (!pending) {
+    pending = fontsDir()
+      .then((dir) => join(dir, fileName))
+      .then((path) => readFile(path))
+      .then((data) => registerFace(family, data.slice().buffer))
+      .catch(() => false);
+    uploaded.set(fileName, pending);
+  }
+  return pending;
+}
+
+export async function importFontFile(
+  file: File,
+): Promise<{ family: string; fileName: string } | null> {
+  const dot = file.name.lastIndexOf('.');
+  const ext = dot > 0 ? file.name.slice(dot).toLowerCase() : '';
+  if (!FONT_FILE_ACCEPT.split(',').includes(ext)) return null;
+  const family = sanitizeFontName(file.name.slice(0, dot).replace(/[-_]+/g, ' '));
+  if (!family) return null;
+  const data = new Uint8Array(await file.arrayBuffer());
+  if (!(await registerFace(family, data.slice().buffer))) return null;
+  const fileName = `${family.replace(/\s+/g, '-')}${ext}`;
+  await writeFile(await join(await fontsDir(), fileName), data);
+  uploaded.set(fileName, Promise.resolve(true));
+  return { family, fileName };
+}
+
+export async function removeUploadedFont(fileName: string): Promise<void> {
+  uploaded.delete(fileName);
+  await remove(await join(await fontsDir(), fileName)).catch(() => undefined);
+}
+
 let applySeq = 0;
 
 export async function applyFontVars(
   font: InterfaceFont,
   customName: string,
+  customFile: string,
   root: HTMLElement = document.documentElement,
 ) {
   const seq = ++applySeq;
   await loadBundledFont(font);
+  if (font === 'custom' && customFile) {
+    await loadUploadedFont(customFile, sanitizeFontName(customName));
+  }
   if (seq !== applySeq) return;
   root.style.setProperty('--font-sans', fontStack(font, customName));
 }
