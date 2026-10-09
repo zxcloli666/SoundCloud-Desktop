@@ -29,6 +29,7 @@ const HTTP_READ_TIMEOUT_SECS: u64 = 30;
 pub fn run() {
     app::diagnostics::init_log_file();
     app::diagnostics::install_panic_hook();
+    let _ = rustls::crypto::ring::default_provider().install_default();
     app::render_mode::apply_before_launch();
     #[cfg(all(windows, not(feature = "cef")))]
     app::webview2::exit_if_runtime_missing();
