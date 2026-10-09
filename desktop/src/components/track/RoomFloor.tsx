@@ -3,7 +3,9 @@ import {useTranslation} from 'react-i18next';
 import {getCurrentTime, subscribe} from '../../lib/audio';
 import {durLong} from '../../lib/formatters';
 import type {Comment} from '../../lib/hooks';
+import {isPreviewOnly} from '../../lib/track-access';
 import type {Track} from '../../stores/player';
+import {useSettingsStore} from '../../stores/settings';
 import {LiveWaveform} from '../music/soundwave/waveform';
 import type {TrackAura} from './useTrackAura';
 import {WaveVoices} from './WaveVoices';
@@ -25,6 +27,7 @@ export const RoomFloor = React.memo(function RoomFloor({
 }) {
     const {t} = useTranslation();
     const elapsedRef = useRef<HTMLSpanElement>(null);
+    const floatingComments = useSettingsStore((s) => s.floatingComments);
 
     useEffect(() => {
         if (!isCurrent) {
@@ -41,7 +44,7 @@ export const RoomFloor = React.memo(function RoomFloor({
 
     const durationMs = track.full_duration ?? track.duration;
     const playableFrac = durationMs > 0 ? Math.min(1, track.duration / durationMs) : 1;
-    const previewTail = track.access === 'preview' && playableFrac < 0.995 ? 1 - playableFrac : 0;
+    const previewTail = isPreviewOnly(track) && playableFrac < 0.995 ? 1 - playableFrac : 0;
 
     return (
         <div
@@ -66,12 +69,14 @@ export const RoomFloor = React.memo(function RoomFloor({
                         title={t('track.previewOnly')}
                     />
                 )}
-                <WaveVoices
-                    comments={comments}
-                    durationMs={durationMs}
-                    isCurrent={isCurrent}
-                    onSeek={onSeek}
-                />
+                {floatingComments && (
+                    <WaveVoices
+                        comments={comments}
+                        durationMs={durationMs}
+                        isCurrent={isCurrent}
+                        onSeek={onSeek}
+                    />
+                )}
             </div>
             <div className="flex items-center justify-between mt-2.5 px-0.5 text-[11px] tabular-nums text-white/35">
                 <span ref={elapsedRef}>0:00</span>

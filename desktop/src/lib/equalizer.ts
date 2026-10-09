@@ -47,3 +47,12 @@ export const EQ_PRESETS: Record<string, { label: string; labelRu: string; gains:
     gains: [-3, -2, 0, 2, 3, 3, 2, 0, -2, -4],
   },
 };
+
+export const EQ_CUSTOM_PRESET_LIMIT = 20;
+export const EQ_PRESET_NAME_MAX = 24;
+
+export interface EqCustomPreset {
+  id: string;
+  name: string;
+  gains: number[];
+}

@@ -5,9 +5,19 @@ import {useTranslation} from 'react-i18next';
 import {toast} from 'sonner';
 import {downloadTrack} from '../../lib/cache';
 import {art, dur, formatBytes} from '../../lib/formatters';
-import {ArrowDownToLine, FileDown, GripVertical, Loader2, Music, playWhite14, Trash2,} from '../../lib/icons';
+import {
+  ArrowDownToLine,
+  FileDown,
+  GripVertical,
+  Loader2,
+  Music,
+  playWhite14,
+  RefreshCw,
+  Trash2,
+} from '../../lib/icons';
 import {usePerfMode} from '../../lib/perf';
 import {useArtistLinkItems, useTrackDisplay} from '../../lib/track-display';
+import {useTrackContextMenu} from '../../lib/useTrackContextMenu';
 import {usePlayerStore} from '../../stores/player';
 import {ArtistNameLinks} from '../music/ArtistNameLinks';
 import {TrackStatusBadges} from '../music/TrackStatusBadges';
@@ -48,6 +58,7 @@ export interface OfflineRowProps {
   downloadProgress?: number;
   onPlay: (entry: OfflineEntry) => void;
   onDownload: (entry: OfflineEntry) => void;
+  onRefetch: (entry: OfflineEntry) => void;
   onRemove: (urn: string) => void;
   dragHandleProps?: React.HTMLAttributes<HTMLElement>;
 }
@@ -61,6 +72,7 @@ export const OfflineTrackRow = React.memo(function OfflineTrackRow({
   downloadProgress,
   onPlay,
   onDownload,
+  onRefetch,
   onRemove,
   dragHandleProps,
 }: OfflineRowProps) {
@@ -70,6 +82,7 @@ export const OfflineTrackRow = React.memo(function OfflineTrackRow({
   const isCurrent = usePlayerStore((s) => s.currentTrack?.urn === entry.urn);
   const { track, inv } = entry;
   const display = useTrackDisplay(track);
+  const onContextMenu = useTrackContextMenu(track);
   const artistLinks = useArtistLinkItems(track);
   const cached = inv !== null;
   const downloading = downloadProgress !== undefined;
@@ -83,6 +96,7 @@ export const OfflineTrackRow = React.memo(function OfflineTrackRow({
       await downloadTrack(track.urn, display.artistLine || track.user.username, display.title, {
         artworkUrl: track.artwork_url,
         durationMs: track.duration,
+        storageQuality: track._scd_meta?.storage_quality,
       });
       toast.success(t('track.downloaded'));
     } catch (e: unknown) {
@@ -94,6 +108,7 @@ export const OfflineTrackRow = React.memo(function OfflineTrackRow({
 
   return (
     <div
+      onContextMenu={onContextMenu}
       className={`group relative grid h-full select-none grid-cols-[28px_minmax(0,1fr)_88px_64px] items-center gap-3 border-b border-white/[0.045] pl-2 pr-4 transition-colors md:grid-cols-[28px_minmax(0,1fr)_auto_88px_64px] ${
         forging ? '' : 'hover:bg-white/[0.03]'
       } ${!cached && likesSection ? 'opacity-60' : ''}`}
@@ -259,6 +274,22 @@ export const OfflineTrackRow = React.memo(function OfflineTrackRow({
         >
           {saving ? <Loader2 size={13} className="animate-spin" /> : <FileDown size={13} />}
         </button>
+        {cached && (
+          <button
+            type="button"
+            onClick={() => onRefetch(entry)}
+            disabled={downloading}
+            title={t('offline.actRefetch')}
+            aria-label={t('offline.actRefetch')}
+            className="flex size-[29px] cursor-pointer items-center justify-center rounded-[9px] border border-white/[0.12] bg-white/[0.05] text-white/55 transition-colors hover:border-sky-400/40 hover:text-sky-200 disabled:opacity-40"
+          >
+            {downloading ? (
+              <Loader2 size={13} className="animate-spin" />
+            ) : (
+              <RefreshCw size={13} />
+            )}
+          </button>
+        )}
         {cached && (
           <button
             type="button"

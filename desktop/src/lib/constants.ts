@@ -13,10 +13,18 @@ export const STORAGE_PREMIUM_BASE =
   import.meta.env.VITE_STORAGE_PREMIUM_BASE || 'https://storage-star.scnative.space';
 /** STAR payment backend (separate service; not host-routed like the catalog API). */
 export const PAY_BASE = import.meta.env.VITE_PAY_BASE || 'https://pay.scnative.space';
+export const STATUS_PAGE_URL =
+  import.meta.env.VITE_STATUS_PAGE_URL || 'https://status.soundcloud-desktop.fun';
 
 export const GITHUB_OWNER = 'zxcloli666';
 export const GITHUB_REPO = 'SoundCloud-Desktop';
 export const GITHUB_REPO_EN = 'SoundCloud-Desktop-EN';
+export const DOCS_URL = `https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}/blob/main/docs`;
+export const DISCORD_URL = 'https://discord.gg/xQcGBP8fGG';
+export const ZAPRET_GUIDE_URL = `https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}#zapret-vpn-и-списки-доменов`;
+export const BOOSTY_URL = 'https://boosty.to/lolinamide';
+export const ANDROID_CLIENT_URL = 'https://github.com/okeydw/SoundCloud-Android';
+export const ANDROID_CLIENT_RELEASES_URL = `${ANDROID_CLIENT_URL}/releases/latest`;
 export const APP_VERSION = __APP_VERSION__;
 
 export const SHOW_NEWS = true;

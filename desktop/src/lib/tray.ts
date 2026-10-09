@@ -1,12 +1,17 @@
 import {emit, listen} from '@tauri-apps/api/event';
-import {getCurrentWindow} from '@tauri-apps/api/window';
+import {useAddToPlaylistRequest} from '../stores/add-to-playlist';
 import { usePlayerStore } from '../stores/player';
 import {api} from './api';
 import {getDuration, handlePrev, seek} from './audio';
-import {isUrnDisliked, toggleDislike} from './dislikes';
+import {forgetOfflineLike} from './cache';
+import {trackedInvoke as invoke} from './diagnostics';
+import {clearDislike, dislikeTrack} from './dislike-actions';
+import {isUrnDisliked} from './dislikes';
 import {art} from './formatters';
 import {invalidateAllLikesCache} from './hooks';
 import {isUrnLiked, optimisticToggleLike} from './likes';
+import {isLocalUrn} from './local-library';
+import {rememberLikedUrn} from './offline-index';
 import {queryClient} from './query-client';
 import {getArtistDisplay, getDisplayTitle} from './track-display';
 
@@ -76,25 +81,36 @@ function emitNp() {
 // Coalesce bursty change sources (volume drag, query-cache churn) to one emit per frame.
 let npScheduled = false;
 
+function flushNp() {
+    if (!npScheduled) return;
+    npScheduled = false;
+    emitNp();
+}
+
 function pushNp() {
     if (npScheduled) return;
     npScheduled = true;
-    requestAnimationFrame(() => {
-        npScheduled = false;
-        emitNp();
-    });
+    if (document.hidden) queueMicrotask(flushNp);
+    else requestAnimationFrame(flushNp);
 }
 
-async function toggleLikeCurrent() {
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden) flushNp();
+});
+
+export async function toggleLikeCurrent() {
     const tr = usePlayerStore.getState().currentTrack;
-    if (!tr) return;
+    if (!tr || isLocalUrn(tr.urn)) return;
     const next = !(isUrnLiked(tr.urn) || !!tr.user_favorite);
     optimisticToggleLike(queryClient, tr, next); // also updates isUrnLiked
     invalidateAllLikesCache();
-    if (next && isUrnDisliked(tr.urn)) void toggleDislike(queryClient, tr, false);
+    if (next) clearDislike(tr.urn);
     pushNp();
     try {
-        await api(`/likes/tracks/${encodeURIComponent(tr.urn)}`, {method: next ? 'POST' : 'DELETE'});
+        await api(`/likes/tracks/${encodeURIComponent(tr.urn)}`, {
+            method: next ? 'POST' : 'DELETE',
+        });
+        void (next ? rememberLikedUrn(tr.urn, tr) : forgetOfflineLike(tr.urn));
     } catch {
         optimisticToggleLike(queryClient, tr, !next);
         pushNp();
@@ -103,25 +119,17 @@ async function toggleLikeCurrent() {
 
 async function toggleDislikeCurrent() {
     const tr = usePlayerStore.getState().currentTrack;
-    if (!tr) return;
-    const next = !isUrnDisliked(tr.urn);
-    if (next && (isUrnLiked(tr.urn) || tr.user_favorite)) {
-        optimisticToggleLike(queryClient, tr, false);
-        invalidateAllLikesCache();
-        api(`/likes/tracks/${encodeURIComponent(tr.urn)}`, {method: 'DELETE'}).catch(() => {
-        });
-    }
-    // Disliking the current track skips it, mirroring the now-bar dislike button.
-    if (next) usePlayerStore.getState().next();
-    await toggleDislike(queryClient, tr, next);
+    if (!tr || isLocalUrn(tr.urn)) return;
+    if (isUrnDisliked(tr.urn)) clearDislike(tr.urn);
+    else await dislikeTrack(tr, {undo: false});
     pushNp();
 }
 
-async function showMainWindow() {
-    const w = getCurrentWindow();
-    await w.show();
-    await w.unminimize();
-    await w.setFocus();
+function addCurrentToPlaylist() {
+    const tr = usePlayerStore.getState().currentTrack;
+    if (!tr || isLocalUrn(tr.urn)) return;
+    void invoke('show_main_window');
+    useAddToPlaylistRequest.getState().request([tr.urn]);
 }
 
 /* ── Native tray menu (Rust-emitted) ─────────────────────────── */
@@ -168,14 +176,20 @@ listen<{ action: string; value?: number }>('tray:cmd', (event) => {
         case 'volume':
             if (typeof value === 'number') store.setVolume(value);
             break;
+        case 'mute_toggle':
+            store.setVolume(store.volume > 0 ? 0 : store.volumeBeforeMute);
+            break;
         case 'like':
             void toggleLikeCurrent();
             break;
         case 'dislike':
             void toggleDislikeCurrent();
             break;
+        case 'add_to_playlist':
+            addCurrentToPlaylist();
+            break;
         case 'show':
-            void showMainWindow();
+            void invoke('show_main_window');
             break;
     }
     pushNp();

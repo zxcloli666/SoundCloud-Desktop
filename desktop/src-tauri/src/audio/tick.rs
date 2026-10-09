@@ -4,13 +4,27 @@ use std::time::Duration;
 use crate::rt::AppHandle;
 use tauri::{Emitter, Manager};
 
-use crate::app::diagnostics;
+use crate::app::{diagnostics, visibility};
 use crate::audio::engine;
+use crate::audio::silence::SilenceJump;
 use crate::audio::state::AudioState;
 use crate::audio::timing;
 use crate::audio::types::{
-    AudioThreadCmd, STALL_COOLDOWN_MS, STALL_THRESHOLD_MS, TICK_INTERVAL_MS,
+    AudioThreadCmd, HIDDEN_TICK_INTERVAL, STALL_COOLDOWN_MS, STALL_THRESHOLD_MS,
+    TICK_INTERVAL_MS,
 };
+#[cfg(target_os = "linux")]
+use crate::audio::types::MediaCmd;
+
+#[cfg(target_os = "linux")]
+const MEDIA_SYNC_INTERVAL: Duration = Duration::from_secs(2);
+
+#[cfg(target_os = "linux")]
+fn push_media_position(state: &AudioState, position: f64) {
+    if let Some(tx) = state.media_tx.lock().unwrap().as_ref() {
+        tx.send(MediaCmd::SetPosition(position)).ok();
+    }
+}
 
 /// Step the hover-preview volume one tick toward its target, dropping the player
 /// once a fade-out reaches zero. Independent of the main player.
@@ -42,6 +56,11 @@ pub fn start_tick_emitter(app: &AppHandle) {
             let mut last_pos_ms = 0u64;
             let mut last_progress_at = std::time::Instant::now();
             let mut stall_cooldown_until = std::time::Instant::now();
+            let mut last_tick_emit = std::time::Instant::now();
+            #[cfg(target_os = "linux")]
+            let mut last_media_sync = std::time::Instant::now();
+            #[cfg(target_os = "linux")]
+            let mut media_sync_load_gen = 0;
 
             loop {
                 std::thread::sleep(Duration::from_millis(TICK_INTERVAL_MS));
@@ -92,23 +111,60 @@ pub fn start_tick_emitter(app: &AppHandle) {
                         // can't seek in place a bare try_seek silently no-ops, leaving
                         // the segment playing straight through while the bar froze at A.
                         let ab = *state.ab_loop.lock().unwrap();
-                        if let Some((a, b)) = ab
-                            && pos >= b {
-                                drop(player_guard);
-                                engine::seek_to(&state, a).ok();
-                                handle.emit("audio:tick", a).ok();
-                                last_pos_ms = ((a / rate).max(0.0) * 1000.0) as u64;
-                                last_progress_at = std::time::Instant::now();
-                                continue;
+                        let jump_target = match ab {
+                            Some((a, b)) => (pos >= b).then_some(a),
+                            None if player.is_paused() => None,
+                            None => match state.silence.lock().unwrap().jump(pos) {
+                                Some(SilenceJump::To(target)) => Some(target),
+                                Some(SilenceJump::End) => {
+                                    player.stop();
+                                    state.ended_notified.store(true, Ordering::Relaxed);
+                                    handle.emit("audio:ended", true).ok();
+                                    continue;
+                                }
+                                None => None,
+                            },
+                        };
+                        if let Some(target) = jump_target {
+                            drop(player_guard);
+                            engine::seek_to(&state, target).ok();
+                            #[cfg(target_os = "linux")]
+                            {
+                                push_media_position(&state, target);
+                                last_media_sync = std::time::Instant::now();
                             }
+                            handle.emit("audio:tick", target).ok();
+                            last_pos_ms = ((target / rate).max(0.0) * 1000.0) as u64;
+                            last_progress_at = std::time::Instant::now();
+                            continue;
+                        }
 
-                        handle.emit("audio:tick", pos).ok();
+                        if !visibility::pages_hidden()
+                            || last_tick_emit.elapsed() >= HIDDEN_TICK_INTERVAL
+                        {
+                            handle.emit("audio:tick", pos).ok();
+                            last_tick_emit = std::time::Instant::now();
+                        }
                         timing::process_lyrics_timeline(&handle, &state, pos);
                         timing::process_comments_timeline(&handle, &state, pos);
 
                         let playing = !player.is_paused();
                         let pos_ms = (raw * 1000.0) as u64;
                         let now = std::time::Instant::now();
+
+                        #[cfg(target_os = "linux")]
+                        {
+                            let load_gen = state.load_gen.load(Ordering::Relaxed);
+                            if load_gen != media_sync_load_gen {
+                                media_sync_load_gen = load_gen;
+                                last_media_sync = now;
+                            } else if playing
+                                && now.duration_since(last_media_sync) >= MEDIA_SYNC_INTERVAL
+                            {
+                                push_media_position(&state, pos);
+                                last_media_sync = now;
+                            }
+                        }
 
                         if !playing {
                             last_pos_ms = pos_ms;

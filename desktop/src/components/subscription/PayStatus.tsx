@@ -59,11 +59,10 @@ export const PayStatus = memo(function PayStatus({
         </span>
       ) : (
         <span
-          className="size-[22px] shrink-0 rounded-full"
+          className={`size-[22px] shrink-0 rounded-full${spin ? ' animate-spin' : ''}`}
           style={{
             border: '2px solid color-mix(in srgb, var(--color-accent) 30%, transparent)',
             borderTopColor: 'var(--color-accent)',
-            animation: spin ? 'star-spin 0.9s linear infinite' : undefined,
           }}
         />
       )}

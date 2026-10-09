@@ -2,12 +2,15 @@ import {useSortable} from '@dnd-kit/sortable';
 import {CSS} from '@dnd-kit/utilities';
 import React from 'react';
 import {useTranslation} from 'react-i18next';
-import {preloadTrack} from '../../lib/audio';
+import {cancelPreload, preloadTrack} from '../../lib/audio';
 import {art, dur, fc} from '../../lib/formatters';
 import {GripVertical, headphones9, heart9, musicIcon12, pauseWhite12, playWhite12, Trash2,} from '../../lib/icons';
+import {useTrackContextMenu} from '../../lib/useTrackContextMenu';
 import {useTrackPlay} from '../../lib/useTrackPlay';
 import type {Track} from '../../stores/player';
 import {LikeButton} from '../music/LikeButton';
+import {PlayNextButton} from '../music/PlayNextButton';
+import {SaveOfflineRowButton} from '../music/SaveOfflineButton';
 import {sameScdMeta, TrackStatusBadges} from '../music/TrackStatusBadges';
 import {TrackTitleArtist} from '../music/TrackTitleArtist';
 import {genreColor} from '../search/utils';
@@ -45,7 +48,8 @@ function RowBody({
       <div
         className="w-8 h-8 flex items-center justify-center shrink-0 cursor-pointer"
         onClick={togglePlay}
-        onMouseEnter={() => preloadTrack(track.urn)}
+        onMouseEnter={() => preloadTrack(track)}
+        onMouseLeave={cancelPreload}
       >
         {isThisPlaying ? (
           <div className="w-7 h-7 rounded-full bg-accent text-accent-contrast flex items-center justify-center shadow-[0_0_12px_var(--color-accent-glow)]">
@@ -81,11 +85,11 @@ function RowBody({
 
       <TrackTitleArtist track={track} highlight={isThis} size="sm" />
 
-      <div className="hidden sm:flex shrink-0">
+      <div className="hidden @lg:flex shrink-0">
         <TrackStatusBadges meta={track._scd_meta} />
       </div>
 
-      <div className="hidden sm:flex items-center gap-3 shrink-0">
+      <div className="hidden @2xl:flex items-center gap-3 shrink-0">
         {track.playback_count != null && (
           <span className="text-[10px] text-white/20 tabular-nums flex items-center gap-0.5">
             {headphones9}
@@ -101,6 +105,11 @@ function RowBody({
       </div>
 
       <LikeButton track={track} />
+      <SaveOfflineRowButton track={track} />
+      <PlayNextButton
+        track={track}
+        className="cursor-pointer w-8 h-8 rounded-lg flex items-center justify-center text-white/20 hover:text-white/60 opacity-0 group-hover:opacity-100 transition-all duration-200 shrink-0"
+      />
 
       <span className="text-[11px] text-white/25 tabular-nums font-medium shrink-0 w-10 text-right">
         {dur(track.duration)}
@@ -110,10 +119,26 @@ function RowBody({
 }
 
 const ROW_BASE =
-  'group relative flex items-center gap-3.5 pl-4 pr-4 py-3 rounded-xl transition-colors duration-200 ease-[var(--ease-apple)] select-none';
+  '@container group relative flex items-center gap-3.5 pl-4 pr-4 py-3 rounded-xl transition-colors duration-200 ease-[var(--ease-apple)] select-none';
 
 function activeCls(isThis: boolean) {
   return isThis ? 'bg-accent/[0.06] ring-1 ring-accent/20' : 'hover:bg-white/[0.03]';
+}
+
+type RowQueue = Track[] | (() => Track[]);
+
+function RemoveButton({ urn, onRemove }: { urn: string; onRemove: (urn: string) => void }) {
+  const { t } = useTranslation();
+  return (
+    <button
+      type="button"
+      onClick={() => onRemove(urn)}
+      className="opacity-0 group-hover:opacity-100 w-7 h-7 rounded-lg flex items-center justify-center text-white/20 hover:text-red-400 hover:bg-red-400/10 transition-all duration-200 shrink-0"
+      title={t('playlist.removeTrack')}
+    >
+      <Trash2 size={13} />
+    </button>
+  );
 }
 
 /** Owner row — drag-to-reorder with a "pulled sleeve" tilt; remove on hover. */
@@ -127,12 +152,12 @@ export const SortableSequenceRow = React.memo(
   }: {
     track: Track;
     index: number;
-    queue: Track[];
+    queue: RowQueue;
     onRemove: (urn: string) => void;
     onPlay?: () => void;
   }) {
-    const { t } = useTranslation();
     const { isThis, isThisPlaying, togglePlay } = useTrackPlay(track, queue, onPlay);
+    const onContextMenu = useTrackContextMenu(track);
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
       id: track.urn,
     });
@@ -141,6 +166,7 @@ export const SortableSequenceRow = React.memo(
     return (
       <div
         ref={setNodeRef}
+        onContextMenu={onContextMenu}
         style={{
           transform: base,
           transition,
@@ -168,14 +194,7 @@ export const SortableSequenceRow = React.memo(
           togglePlay={togglePlay}
         />
 
-        <button
-          type="button"
-          onClick={() => onRemove(track.urn)}
-          className="opacity-0 group-hover:opacity-100 w-7 h-7 rounded-lg flex items-center justify-center text-white/20 hover:text-red-400 hover:bg-red-400/10 transition-all duration-200 shrink-0"
-          title={t('playlist.removeTrack')}
-        >
-          <Trash2 size={13} />
-        </button>
+        <RemoveButton urn={track.urn} onRemove={onRemove} />
       </div>
     );
   },
@@ -197,7 +216,7 @@ export function SequenceRowOverlay({
 }: {
   track: Track;
   index: number;
-  queue: Track[];
+  queue: RowQueue;
 }) {
   const { isThis, isThisPlaying, togglePlay } = useTrackPlay(track, queue);
   return (
@@ -222,22 +241,24 @@ export function SequenceRowOverlay({
   );
 }
 
-/** Read-only row (non-owner). */
 export const SequenceRow = React.memo(
   function SequenceRow({
     track,
     index,
     queue,
+    onRemove,
     onPlay,
   }: {
     track: Track;
     index: number;
-    queue: Track[];
+    queue: RowQueue;
+    onRemove?: (urn: string) => void;
     onPlay?: () => void;
   }) {
     const { isThis, isThisPlaying, togglePlay } = useTrackPlay(track, queue, onPlay);
+    const onContextMenu = useTrackContextMenu(track);
     return (
-      <div className={`${ROW_BASE} ${activeCls(isThis)}`}>
+      <div className={`${ROW_BASE} ${activeCls(isThis)}`} onContextMenu={onContextMenu}>
         <RowBody
           track={track}
           index={index}
@@ -245,6 +266,7 @@ export const SequenceRow = React.memo(
           isThisPlaying={isThisPlaying}
           togglePlay={togglePlay}
         />
+        {onRemove && <RemoveButton urn={track.urn} onRemove={onRemove} />}
       </div>
     );
   },

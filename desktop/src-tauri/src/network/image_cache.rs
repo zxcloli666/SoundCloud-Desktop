@@ -1,12 +1,22 @@
 use std::path::{Path, PathBuf};
 use std::sync::OnceLock;
+use std::time::{Duration, Instant, SystemTime};
 
 use base64::{engine::general_purpose::STANDARD as BASE64, Engine as _};
 use sha2::{Digest, Sha256};
 use tokio::fs::{self, File};
 use tokio::io::AsyncWriteExt;
 
+use crate::app::diagnostics;
+use crate::network::fail;
+use crate::network::netcheck::model::Role;
+use crate::network::netcheck::paths;
 use crate::shared::constants::is_domain_whitelisted;
+use crate::shared::file_lru::{last_used, mark_used};
+
+pub mod maintenance;
+
+const SOURCE: &str = "image";
 
 /// Permanent on-disk image cache.
 ///
@@ -75,6 +85,23 @@ async fn write_atomic(path: &Path, data: &[u8]) -> std::io::Result<()> {
         return Err(e);
     }
     Ok(())
+}
+
+const MARK_USED_INTERVAL: Duration = Duration::from_secs(60 * 60);
+
+fn used_recently(path: &Path) -> bool {
+    std::fs::metadata(path)
+        .ok()
+        .and_then(|meta| SystemTime::now().duration_since(last_used(&meta)).ok())
+        .is_some_and(|age| age < MARK_USED_INTERVAL)
+}
+
+pub(crate) fn spawn_mark_used(path: PathBuf) {
+    tokio::task::spawn_blocking(move || {
+        if !used_recently(&path) {
+            mark_used(&path);
+        }
+    });
 }
 
 fn decode_payload(encoded: &str) -> Result<Vec<String>, ImageResult> {
@@ -148,6 +175,7 @@ pub async fn handle(encoded: &str) -> ImageResult {
         if !data.is_empty() {
             #[cfg(debug_assertions)]
             println!("[ImageCache] HIT  {}", target_url);
+            spawn_mark_used(path);
             let ct = sniff_content_type(&data).to_string();
             return ImageResult {
                 status: 200,
@@ -165,7 +193,11 @@ pub async fn handle(encoded: &str) -> ImageResult {
     let mut status = 502u16;
     let mut data: Vec<u8> = Vec::new();
 
-    for hop in crate::network::edge::expand_upstreams(upstreams) {
+    let hops = crate::network::edge::expand_upstreams(upstreams);
+    for (index, hop) in hops.into_iter().enumerate() {
+        let started = Instant::now();
+        let role = Role::of_index(index);
+        let record = |outcome| paths::record(&hop, role, outcome, started.elapsed(), SOURCE);
         let resp = match state
             .http_client
             .get(&hop.url)
@@ -174,7 +206,8 @@ pub async fn handle(encoded: &str) -> ImageResult {
             .await
         {
             Ok(r) => r,
-            Err(_) => {
+            Err(error) => {
+                record(Err(fail::of_wreq(&error)));
                 hop.note(false);
                 continue;
             }
@@ -182,18 +215,22 @@ pub async fn handle(encoded: &str) -> ImageResult {
 
         status = resp.status().as_u16();
         if !crate::network::edge::hop_ok(&hop, &resp) {
+            record(Ok(status));
             continue;
         }
         match resp.bytes().await {
             Ok(b) => data = b.to_vec(),
-            Err(_) => {
+            Err(error) => {
+                record(Err(fail::of_wreq(&error)));
                 hop.note(false);
                 continue;
             }
         }
 
+        record(Ok(status));
         hop.note(status < 500);
         if status < 500 {
+            hop.note_delivered(data.len() as u64);
             break;
         }
     }
@@ -209,9 +246,7 @@ pub async fn handle(encoded: &str) -> ImageResult {
         let data_clone = data.clone();
         tokio::spawn(async move {
             if let Err(e) = write_atomic(&path_clone, &data_clone).await {
-                #[cfg(debug_assertions)]
-                eprintln!("[ImageCache] write failed: {}", e);
-                let _ = e;
+                diagnostics::warn(format!("[ImageCache] write failed: {e}"));
             }
         });
     }
@@ -221,49 +256,4 @@ pub async fn handle(encoded: &str) -> ImageResult {
         content_type,
         data,
     }
-}
-
-/* ── Maintenance commands (size / clear) ─────────────────── */
-
-async fn dir_size(path: &Path) -> u64 {
-    let mut total = 0u64;
-    let mut stack = vec![path.to_path_buf()];
-    while let Some(p) = stack.pop() {
-        let mut entries = match fs::read_dir(&p).await {
-            Ok(e) => e,
-            Err(_) => continue,
-        };
-        while let Ok(Some(entry)) = entries.next_entry().await {
-            let Ok(ft) = entry.file_type().await else {
-                continue;
-            };
-            if ft.is_dir() {
-                stack.push(entry.path());
-            } else if ft.is_file()
-                && let Ok(meta) = entry.metadata().await {
-                    total = total.saturating_add(meta.len());
-                }
-        }
-    }
-    total
-}
-
-#[tauri::command]
-pub async fn image_cache_size() -> u64 {
-    let Some(state) = STATE.get() else { return 0 };
-    dir_size(&state.dir).await
-}
-
-#[tauri::command]
-pub async fn image_cache_clear() -> Result<(), String> {
-    let Some(state) = STATE.get() else {
-        return Err("image cache not ready".into());
-    };
-    let dir = state.dir.clone();
-    if let Err(e) = fs::remove_dir_all(&dir).await
-        && e.kind() != std::io::ErrorKind::NotFound {
-            return Err(e.to_string());
-        }
-    fs::create_dir_all(&dir).await.map_err(|e| e.to_string())?;
-    Ok(())
 }

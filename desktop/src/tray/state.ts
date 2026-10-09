@@ -32,9 +32,11 @@ export type TrayCmd =
     | 'repeat'
     | 'like'
     | 'dislike'
+    | 'add_to_playlist'
     | 'show'
     | 'seek'
-    | 'volume';
+    | 'volume'
+    | 'mute_toggle';
 
 const EMPTY: TrayNp = {
     hasTrack: false,

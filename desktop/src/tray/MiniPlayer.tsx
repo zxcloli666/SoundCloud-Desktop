@@ -1,6 +1,6 @@
-import {getCurrentWindow} from '@tauri-apps/api/window';
 import {
     Heart,
+    ListPlus,
     Maximize2,
     Pause,
     Play,
@@ -17,13 +17,15 @@ import {
 } from 'lucide-react';
 import {useCallback, useEffect, useRef, useState, useSyncExternalStore} from 'react';
 import i18n from '../i18n';
+import {trackedInvoke as invoke} from '../lib/diagnostics';
 import {formatTime} from '../lib/formatters';
+import {snapVolume} from '../lib/volume';
 import {getNp, getPosition, patchNp, sendCmd, subscribeNp, subscribePosition} from './state';
 
 const t = (key: string) => i18n.t(key);
 
 /** Explicit close — the reliable dismiss on compositors where focus-based hide is flaky. */
-const hideSelf = () => void getCurrentWindow().hide();
+const hideSelf = () => void invoke('tray_popover_hide');
 
 const bloomEnabled = () => document.documentElement.dataset.perf !== 'light';
 
@@ -91,7 +93,12 @@ function Scrubber({duration}: { duration: number }) {
     };
 
     return (
-        <div ref={trackRef} className="tp-scrub group" onPointerDown={onPointerDown}>
+        <div
+            ref={trackRef}
+            className="tp-scrub group"
+            data-tauri-drag-region="false"
+            onPointerDown={onPointerDown}
+        >
             <div className="tp-scrub-track">
                 <div ref={fillRef} className="tp-scrub-fill"/>
             </div>
@@ -111,22 +118,25 @@ function TimeRow({duration}: { duration: number }) {
 
 /* ── Volume (custom drag) ───────────────────────────────────────── */
 
+const TRAY_SNAP_POINTS = [50, 100];
+
 function VolumeControl({volume}: { volume: number }) {
     const trackRef = useRef<HTMLDivElement>(null);
-    const set = useCallback((clientX: number) => {
+    const set = useCallback((clientX: number, precise: boolean) => {
         const el = trackRef.current;
         if (!el) return;
         const rect = el.getBoundingClientRect();
         if (rect.width <= 0) return;
         const pct = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
-        const v = Math.round(pct * 100);
+        const raw = Math.round(pct * 100);
+        const v = precise ? raw : snapVolume(raw, 100 / rect.width, TRAY_SNAP_POINTS);
         patchNp({volume: v});
         sendCmd('volume', v);
     }, []);
 
     const onPointerDown = (e: React.PointerEvent) => {
-        set(e.clientX);
-        const onMove = (ev: PointerEvent) => set(ev.clientX);
+        set(e.clientX, e.shiftKey);
+        const onMove = (ev: PointerEvent) => set(ev.clientX, ev.shiftKey);
         const onUp = () => {
             window.removeEventListener('pointermove', onMove);
             window.removeEventListener('pointerup', onUp);
@@ -143,15 +153,21 @@ function VolumeControl({volume}: { volume: number }) {
             <button
                 type="button"
                 className="tp-icon-btn"
-                onClick={() => {
-                    const v = volume > 0 ? 0 : 50;
-                    patchNp({volume: v});
-                    sendCmd('volume', v);
-                }}
+                onClick={() => sendCmd('mute_toggle')}
             >
                 <Icon size={15}/>
             </button>
-            <div ref={trackRef} className="tp-vol-track group" onPointerDown={onPointerDown}>
+            <div
+                ref={trackRef}
+                className="tp-vol-track group"
+                data-tauri-drag-region="false"
+                title={t('player.volumeResetHint')}
+                onPointerDown={onPointerDown}
+                onDoubleClick={() => {
+                    patchNp({volume: 100});
+                    sendCmd('volume', 100);
+                }}
+            >
                 <div className="tp-vol-fill" style={{width: `${pct}%`}}/>
             </div>
         </div>
@@ -169,7 +185,7 @@ export function MiniPlayer() {
     const RepeatIcon = np.repeat === 'one' ? Repeat1 : Repeat;
 
     return (
-        <div className="tp" data-playing={playing ? 'true' : 'false'}>
+        <div className="tp" data-ui="tray" data-playing={playing ? 'true' : 'false'} data-tauri-drag-region="deep">
             <div className="tp-dock" key={pulse}>
                 {bloom && np.artworkLarge && (
                     <div
@@ -293,6 +309,18 @@ export function MiniPlayer() {
                             onClick={() => sendCmd('dislike')}
                         >
                             <ThumbsDown size={16} fill={np.disliked ? 'currentColor' : 'none'}/>
+                        </button>
+                        <button
+                            type="button"
+                            className="tp-icon-btn"
+                            title={t('playlist.addToPlaylist')}
+                            aria-label={t('playlist.addToPlaylist')}
+                            onClick={() => {
+                                sendCmd('add_to_playlist');
+                                hideSelf();
+                            }}
+                        >
+                            <ListPlus size={16}/>
                         </button>
                         <VolumeControl volume={np.volume}/>
                     </div>

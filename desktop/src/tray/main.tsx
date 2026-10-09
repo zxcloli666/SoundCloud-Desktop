@@ -2,7 +2,9 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import {changeAppLanguage} from '../i18n';
 import {applyAccentVars, applyBgVars, applyPerfMode} from '../lib/apply-theme';
-import {setupVisibilityGate} from '../lib/perf';
+import {applyCustomCss, effectiveCustomCss} from '../lib/custom-css';
+import {applyFontVars} from '../lib/interface-font';
+import {setupFocusGate, setupVisibilityGate} from '../lib/perf';
 import {useSettingsStore} from '../stores/settings';
 import '../index.css';
 import './tray.css';
@@ -14,12 +16,14 @@ function applyTheme() {
     applyAccentVars(s.accentColor);
     applyBgVars(s.bgPrimary);
     applyPerfMode(s.perfMode);
+    void applyFontVars(s.interfaceFont, s.customFontName);
+    applyCustomCss(effectiveCustomCss(s));
 }
 
 /**
  * Поповер — окно фиксированного логического размера (384×248). Если webview-DPR
  * расходится со scale окна (под CEF бывает — главное окно лечит это в
- * `fixWebviewScale`), CSS-вьюпорт не совпадает с дизайном и флайаут «разъезжается».
+ * `lib/ui-scale`), CSS-вьюпорт не совпадает с дизайном и флайаут «разъезжается».
  * Корректируем зумом scaleFactor/devicePixelRatio в обе стороны; при совпадении
  * (wry, целочисленный scale) — no-op.
  */
@@ -49,6 +53,7 @@ async function bootstrap() {
     );
 
     setupVisibilityGate();
+    setupFocusGate();
 
     // Re-pick theme/language changes made in the main window each time the popover re-shows
     // (separate store instance — it only reads the shared on-disk state on demand).

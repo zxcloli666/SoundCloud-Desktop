@@ -10,13 +10,19 @@ import {RoomHero} from '../components/track/RoomHero';
 import {RoomSleeve} from '../components/track/RoomSleeve';
 import {RoomVoices} from '../components/track/RoomVoices';
 import {useTrackAura} from '../components/track/useTrackAura';
+import {LoadErrorState, RefreshPendingHint} from '../components/ui/LoadErrorState';
 import {api} from '../lib/api';
-import {seek} from '../lib/audio';
-import {useInfiniteScroll, useRelatedTracks, useTrackComments, useTrackFavoriters,} from '../lib/hooks';
-import {ChevronLeft, Loader2} from '../lib/icons';
+import {playAt} from '../lib/audio';
+import {
+  retryWhileRefreshing,
+  useInfiniteScroll,
+  useRelatedTracks,
+  useTrackComments,
+  useTrackFavoriters,
+} from '../lib/hooks';
+import {ChevronLeft} from '../lib/icons';
 import {setLikedUrn} from '../lib/likes';
 import {usePerfMode} from '../lib/perf';
-import {useScdMeta} from '../lib/scdMeta';
 import {useAuthStore} from '../stores/auth';
 import {type Track, usePlayerStore} from '../stores/player';
 
@@ -48,11 +54,16 @@ export const TrackPage = React.memo(function TrackPage() {
         data: track,
         isLoading,
         isError,
+        isFetching,
+        error,
+        failureReason,
+        refetch,
     } = useQuery({
     queryKey: ['track', urn],
     queryFn: () => api<Track>(`/tracks/${encodeURIComponent(urn!)}`),
     enabled: !!urn,
     staleTime: 30_000,
+    ...retryWhileRefreshing,
   });
 
   const {
@@ -67,8 +78,7 @@ export const TrackPage = React.memo(function TrackPage() {
   const { data: relatedData, isLoading: relatedLoading } = useRelatedTracks(urn, 10);
   const { data: favoritersData } = useTrackFavoriters(urn, 12);
 
-    const relatedRaw = useMemo(() => relatedData?.collection ?? [], [relatedData]);
-    const related = useScdMeta(relatedRaw);
+    const related = useMemo(() => relatedData?.collection ?? [], [relatedData]);
     const favoriters = useMemo(() => favoritersData?.collection ?? [], [favoritersData]);
 
   const trackUrn = track?.urn;
@@ -95,14 +105,9 @@ export const TrackPage = React.memo(function TrackPage() {
         }
     }, [track]);
 
-    // Jump into the song from a comment: seek when it's already loaded, else
-    // start it (and its voices begin to rise as the playhead sweeps).
     const jumpTo = useCallback(
         (seconds: number) => {
-            if (!track) return;
-            const st = usePlayerStore.getState();
-            if (st.currentTrack?.urn === track.urn) seek(seconds);
-            else st.play(track, [track]);
+            if (track) playAt(track, seconds);
         },
         [track],
     );
@@ -117,6 +122,7 @@ export const TrackPage = React.memo(function TrackPage() {
                 style={{isolation: 'isolate'}}
             >
                 <HeroSkeleton/>
+                <RefreshPendingHint reason={failureReason}/>
             </div>
         </div>
     );
@@ -126,22 +132,7 @@ export const TrackPage = React.memo(function TrackPage() {
         return (
             <div className="relative min-h-full w-full flex items-center justify-center">
                 <Atmosphere/>
-                <div className="relative z-10 flex flex-col items-center gap-4 text-center px-6">
-                    <Loader2 size={22} className="text-white/15"/>
-                    <p className="text-white/40 text-sm">{t('track.loadError')}</p>
-                    <button
-                        type="button"
-                        onClick={() => navigate(-1)}
-                        className="inline-flex items-center gap-1.5 h-9 pl-2.5 pr-4 rounded-full text-[12px] text-white/70 hover:text-white transition-colors cursor-pointer"
-                        style={{
-                            background: 'rgba(255,255,255,0.05)',
-                            border: '0.5px solid rgba(255,255,255,0.1)',
-                        }}
-                    >
-                        <ChevronLeft size={14}/>
-                        {t('search.back')}
-                    </button>
-        </div>
+                <LoadErrorState error={error} retrying={isFetching} onRetry={() => void refetch()}/>
             </div>
         );
     }
@@ -189,13 +180,14 @@ export const TrackPage = React.memo(function TrackPage() {
                     onSeek={jumpTo}
                 />
 
-                <LinerNotes track={track} aura={aura}/>
+                <LinerNotes track={track} aura={aura} onSeek={jumpTo}/>
 
                 <SoundWaveSimilarBlock trackUrn={track.urn}/>
 
                 <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6 lg:gap-8 items-start">
                     <RoomVoices
                         trackUrn={track.urn}
+                        durationMs={track.duration}
                         commentCount={track.comment_count}
                         comments={comments}
                         loading={commentsLoading}

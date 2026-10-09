@@ -1,15 +1,19 @@
 import React from 'react';
-import {preloadTrack} from '../../lib/audio';
+import {cancelPreload, preloadTrack} from '../../lib/audio';
 import {art, dur, fc} from '../../lib/formatters';
 import {Headphones, musicIcon14, pauseBlack11, playBlack11} from '../../lib/icons';
+import {useTrackContextMenu} from '../../lib/useTrackContextMenu';
 import {useTrackPlay} from '../../lib/useTrackPlay';
 import type {Track} from '../../stores/player';
+import {LikeButton} from '../music/LikeButton';
+import {PlayNextButton} from '../music/PlayNextButton';
 import {sameScdMeta, TrackStatusBadges} from '../music/TrackStatusBadges';
 import {TrackTitleArtist} from '../music/TrackTitleArtist';
 
 export const RelatedRow = React.memo(
   function RelatedRow({ track, queue }: { track: Track; queue: Track[] | (() => Track[]) }) {
     const { isThis, isThisPlaying, togglePlay } = useTrackPlay(track, queue);
+    const onContextMenu = useTrackContextMenu(track);
     const cover = art(track.artwork_url, 't200x200');
 
     return (
@@ -17,7 +21,9 @@ export const RelatedRow = React.memo(
         className={`group flex items-center gap-3 p-2.5 rounded-2xl transition-all duration-300 ease-[var(--ease-apple)] ${
           isThis ? 'bg-accent/[0.05] ring-1 ring-accent/20' : 'hover:bg-white/[0.04]'
         }`}
-        onMouseEnter={() => preloadTrack(track.urn)}
+        onMouseEnter={() => preloadTrack(track)}
+        onMouseLeave={cancelPreload}
+        onContextMenu={onContextMenu}
       >
         <button
           type="button"
@@ -49,6 +55,14 @@ export const RelatedRow = React.memo(
         <div className="shrink-0">
           <TrackStatusBadges meta={track._scd_meta} />
         </div>
+
+        <LikeButton track={track} />
+
+        <PlayNextButton
+          track={track}
+          size={13}
+          className="cursor-pointer w-7 h-7 rounded-lg flex items-center justify-center text-white/30 hover:text-white/80 hover:bg-white/[0.06] opacity-0 group-hover:opacity-100 transition-all duration-200 shrink-0"
+        />
 
         <div className="text-right shrink-0">
           <p className="text-[10px] text-white/30 tabular-nums">{dur(track.duration)}</p>

@@ -4,8 +4,10 @@ import React from 'react';
 import {art, dur} from '../../../lib/formatters';
 import {GripVertical, X} from '../../../lib/icons';
 import {useArtistDisplay, useArtistLinkItems, useDisplayTitle} from '../../../lib/track-display';
+import {useTrackContextMenu} from '../../../lib/useTrackContextMenu';
 import {type Track, usePlayerStore} from '../../../stores/player';
 import {ArtistNameLinks} from '../ArtistNameLinks';
+import {LikeButton} from '../LikeButton';
 import {TrackStatusBadges} from '../TrackStatusBadges';
 import {UploadKindDot} from '../UploadKindDot';
 import {PlayingOverlay} from './PlayingOverlay';
@@ -57,6 +59,7 @@ export const QueueRow = React.memo(function QueueRow({
   isPlaying: boolean;
 }) {
   const artwork = art(track.artwork_url, 't200x200');
+  const onContextMenu = useTrackContextMenu(track, absIdx);
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: String(absIdx),
@@ -74,6 +77,7 @@ export const QueueRow = React.memo(function QueueRow({
   return (
     <div
       ref={setNodeRef}
+      onContextMenu={onContextMenu}
       style={{ transform: CSS.Transform.toString(transform), transition }}
       className={`flex items-center gap-2.5 pl-2 pr-2.5 py-2 rounded-xl group transition-colors duration-150 select-none ${
         isDragging
@@ -111,6 +115,8 @@ export const QueueRow = React.memo(function QueueRow({
       </div>
 
       <span className="text-[10px] text-white/20 tabular-nums shrink-0">{dur(track.duration)}</span>
+
+      <LikeButton track={track} />
 
       <button
         type="button"

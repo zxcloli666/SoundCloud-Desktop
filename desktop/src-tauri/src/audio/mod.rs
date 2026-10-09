@@ -1,10 +1,16 @@
 pub mod analyser;
 pub mod commands;
+mod crossfade;
+mod declick;
 mod decode;
 mod device;
 mod engine;
 mod eq;
 mod media_controls;
+mod mpeg;
+mod output;
+mod pitch;
+mod silence;
 mod state;
 mod tick;
 mod timing;

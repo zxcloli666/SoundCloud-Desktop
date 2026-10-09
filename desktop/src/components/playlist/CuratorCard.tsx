@@ -1,10 +1,11 @@
 import React from 'react';
 import {useTranslation} from 'react-i18next';
 import {useNavigate} from 'react-router-dom';
-import {type Aura, auraRgba} from '../../lib/aura';
+import {type Aura, auraRgb, auraRgba} from '../../lib/aura';
 import type {Playlist} from '../../lib/hooks';
 import {useUser} from '../../lib/hooks';
 import {Avatar} from '../ui/Avatar';
+import {RichText} from '../ui/RichText';
 import {FollowBtn} from '../user/FollowBtn';
 import {StatOrb} from '../user/StatOrb';
 
@@ -82,7 +83,7 @@ export const CuratorCard = React.memo(function CuratorCard({
                         {t('playlist.linerNote')}
                     </p>
                     <p className="selectable text-[12.5px] text-white/55 leading-relaxed whitespace-pre-wrap break-words line-clamp-4 hover:line-clamp-none transition-all duration-500">
-                        {trimmed}
+                        <RichText text={trimmed} accent={auraRgb(aura)}/>
                     </p>
                 </div>
             )}

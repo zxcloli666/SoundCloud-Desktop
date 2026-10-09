@@ -25,7 +25,7 @@ function logWarn(message: string) {
   writeLog('WARN', message);
 }
 
-function logError(message: string) {
+export function logError(message: string) {
   console.error(message);
   writeLog('ERROR', message);
 }
@@ -46,6 +46,10 @@ export function setupUiWatchdog() {
       logWarn(`[Perf] UI event loop lag detected: ${roundMs(lag)}ms`);
     }
   }, EVENT_LOOP_TICK_MS);
+
+  document.addEventListener('visibilitychange', () => {
+    expectedAt = performance.now() + EVENT_LOOP_TICK_MS;
+  });
 
   window.addEventListener('error', (event) => {
     logError(`[UI] Unhandled error: ${event.message}`);

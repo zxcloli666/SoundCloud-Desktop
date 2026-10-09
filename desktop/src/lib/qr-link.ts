@@ -28,10 +28,15 @@ export interface ClaimLinkResponse {
 }
 
 export async function createLinkRequest(mode: 'pull' | 'push'): Promise<CreateLinkResponse> {
-  return fetchWithAuthFallback<CreateLinkResponse>('/auth/link/create', {
+  const created = await fetchWithAuthFallback<CreateLinkResponse>('/auth/link/create', {
     method: 'POST',
     body: JSON.stringify({ mode }),
   });
+  return { ...created, expiresAt: withUtcOffset(created.expiresAt) };
+}
+
+function withUtcOffset(timestamp: string): string {
+  return /(Z|[+-]\d\d:?\d\d)$/i.test(timestamp) ? timestamp : `${timestamp}Z`;
 }
 
 export async function claimLinkRequest(claimToken: string): Promise<ClaimLinkResponse> {

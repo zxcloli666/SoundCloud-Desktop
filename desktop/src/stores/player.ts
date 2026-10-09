@@ -78,6 +78,7 @@ export interface Track {
   reposts_count?: number;
   user_favorite?: boolean;
   access?: 'playable' | 'preview' | 'blocked';
+  policy?: string;
   publisher_metadata?: {
     isrc?: string;
   };
@@ -135,8 +136,22 @@ export function setPlaybackContextResetHandler(fn: () => void): void {
     onPlaybackContextReset = fn;
 }
 
+export type PlaybackAction = 'play' | 'skip' | 'advance' | 'seek';
+
+let playbackDirector: ((action: PlaybackAction) => boolean) | null = null;
+
+export function setPlaybackDirector(fn: ((action: PlaybackAction) => boolean) | null): void {
+  playbackDirector = fn;
+}
+
+export function playbackAllowed(action: PlaybackAction): boolean {
+  return playbackDirector?.(action) ?? true;
+}
+
 // Mirrors the Rust DownloadSource enum (serde rename_all = "lowercase").
 export type PlaybackSource = 'storage' | 'anon' | 'direct' | 'api';
+
+export const VOLUME_DEFAULT = 100;
 
 export const PLAYBACK_RATE_MIN = 0.5;
 export const PLAYBACK_RATE_MAX = 2.0;
@@ -182,8 +197,15 @@ export function shuffleArray<T>(arr: T[]): void {
   }
 }
 
+interface PlayNextCursor {
+  queue: Track[];
+  index: number;
+  count: number;
+}
+
 interface PlayerState {
   currentTrack: Track | null;
+  startedUrn: string | null;
   queue: Track[];
   originalQueue: Track[] | null;
   queueIndex: number;
@@ -205,6 +227,7 @@ interface PlayerState {
   next: () => void;
   prev: () => void;
   setVolume: (v: number) => void;
+  resetVolume: () => void;
   playbackRate: number;
   setPlaybackRate: (rate: number) => void;
   resetPlaybackRate: () => void;
@@ -216,6 +239,8 @@ interface PlayerState {
   setQueue: (queue: Track[]) => void;
   addToQueue: (tracks: Track[]) => void;
   addToQueueNext: (tracks: Track[]) => void;
+  addToQueueEnd: (tracks: Track[]) => void;
+  playNextCursor: PlayNextCursor | null;
   removeFromQueue: (index: number) => void;
   moveInQueue: (from: number, to: number) => void;
   clearQueue: () => void;
@@ -235,6 +260,7 @@ export const usePlayerStore = create<PlayerState>()(
   persist(
     (set, get) => ({
       currentTrack: null,
+      startedUrn: null,
       queue: [],
       originalQueue: null,
       queueIndex: -1,
@@ -249,8 +275,10 @@ export const usePlayerStore = create<PlayerState>()(
       playbackRate: PLAYBACK_RATE_DEFAULT,
       pitchSemitones: 0,
       pitchControlMode: 'auto',
+      playNextCursor: null,
 
       play: (track, queue) => {
+        if (!playbackAllowed('play')) return;
           onPlaybackContextReset?.();
         if (queue) {
           const { shuffle } = get();
@@ -263,6 +291,7 @@ export const usePlayerStore = create<PlayerState>()(
             shuffleArray(rest);
             set({
               currentTrack: track,
+              startedUrn: track.urn,
               queue: [track, ...rest],
               queueIndex: 0,
               isPlaying: true,
@@ -271,6 +300,7 @@ export const usePlayerStore = create<PlayerState>()(
           } else {
             set({
               currentTrack: track,
+              startedUrn: track.urn,
               queue,
               queueIndex: realIdx,
               isPlaying: true,
@@ -281,6 +311,7 @@ export const usePlayerStore = create<PlayerState>()(
           const { queue: currentQueue } = get();
           set({
             currentTrack: track,
+            startedUrn: track.urn,
             queue: [...currentQueue, track],
             queueIndex: currentQueue.length,
             isPlaying: true,
@@ -289,10 +320,12 @@ export const usePlayerStore = create<PlayerState>()(
       },
 
       playFromQueue: (index) => {
+        if (!playbackAllowed('play')) return;
         const { queue } = get();
         if (index < 0 || index >= queue.length) return;
         set({
           currentTrack: queue[index],
+          startedUrn: queue[index].urn,
           queueIndex: index,
           isPlaying: true,
         });
@@ -307,6 +340,7 @@ export const usePlayerStore = create<PlayerState>()(
       },
 
       next: () => {
+        if (!playbackAllowed('skip')) return;
         const { queue, queueIndex, repeat } = get();
         if (queue.length === 0) return;
 
@@ -330,16 +364,19 @@ export const usePlayerStore = create<PlayerState>()(
 
         set({
           currentTrack: queue[nextIdx],
+          startedUrn: null,
           queueIndex: nextIdx,
           isPlaying: true,
         });
       },
 
       prev: () => {
+        if (!playbackAllowed('skip')) return;
         const { queue, queueIndex } = get();
         const prevIdx = Math.max(0, queueIndex - 1);
         set({
           currentTrack: queue[prevIdx],
+          startedUrn: null,
           queueIndex: prevIdx,
           isPlaying: true,
         });
@@ -353,6 +390,7 @@ export const usePlayerStore = create<PlayerState>()(
           ...(clamped === 0 && prev > 0 ? { volumeBeforeMute: prev } : {}),
         });
       },
+      resetVolume: () => set({ volume: VOLUME_DEFAULT }),
 
       setPlaybackRate: (rate) => set({ playbackRate: clampPlaybackRate(rate) }),
       resetPlaybackRate: () => set({ playbackRate: PLAYBACK_RATE_DEFAULT }),
@@ -404,13 +442,26 @@ export const usePlayerStore = create<PlayerState>()(
       addToQueueNext: (tracks) =>
         set((s) => {
           const queue = [...s.queue];
-          const insertIndex = s.queueIndex >= 0 ? s.queueIndex + 1 : 0;
-          queue.splice(insertIndex, 0, ...tracks);
+          const cursor = s.playNextCursor;
+          const advanced = cursor ? s.queueIndex - cursor.index : -1;
+          const queued =
+            cursor && cursor.queue === s.queue && advanced >= 0
+              ? Math.max(0, cursor.count - advanced)
+              : 0;
+          const base = s.queueIndex >= 0 ? s.queueIndex + 1 : 0;
+          queue.splice(Math.min(base + queued, queue.length), 0, ...tracks);
           return {
             queue,
             originalQueue: s.originalQueue ? [...s.originalQueue, ...tracks] : null,
+            playNextCursor: { queue, index: s.queueIndex, count: queued + tracks.length },
           };
         }),
+
+      addToQueueEnd: (tracks) =>
+        set((s) => ({
+          queue: [...s.queue, ...tracks],
+          originalQueue: s.originalQueue ? [...s.originalQueue, ...tracks] : null,
+        })),
 
       removeFromQueue: (index) =>
         set((s) => {

@@ -7,7 +7,8 @@ import React, {useCallback, useMemo, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {api} from '../../../lib/api';
 import {Sparkles} from '../../../lib/icons';
-import {isUrnLiked, useLiked} from '../../../lib/likes';
+import type {RiverSectionId} from '../../../lib/layout';
+import {isUrnLiked, likedTracksCount, useLiked} from '../../../lib/likes';
 import {useAuthStore} from '../../../stores/auth';
 import type {Track} from '../../../stores/player';
 import {usePlayerStore} from '../../../stores/player';
@@ -37,6 +38,7 @@ const ANCHOR_ORDER: Record<string, number> = {
   same_vibe: 4,
   adjacent: 5,
   deep_cuts: 6,
+  discover: 7,
   delta: 9,
 };
 
@@ -55,6 +57,7 @@ function DeltaNote() {
 export const RiverFlow = React.memo(function RiverFlow({ tint }: { tint?: string[] }) {
   const { t } = useTranslation();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const likesCount = useAuthStore((s) => likedTracksCount(s.user) ?? 0);
   const wrapRef = useRef<HTMLDivElement>(null);
   const anchorsRef = useRef<AnchorMap>(new Map());
   const selectedLanguages = useSettingsStore((s) => s.soundwaveLanguages);
@@ -63,6 +66,7 @@ export const RiverFlow = React.memo(function RiverFlow({ tint }: { tint?: string
   const setHideLiked = useSettingsStore((s) => s.setSoundwaveHideLiked);
   const hideListened = useSettingsStore((s) => s.soundwaveHideListened);
   const setHideListened = useSettingsStore((s) => s.setSoundwaveHideListened);
+  const riverHidden = useSettingsStore((s) => s.riverHidden);
   const currentTrack = usePlayerStore((s) => s.currentTrack);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -78,7 +82,7 @@ export const RiverFlow = React.memo(function RiverFlow({ tint }: { tint?: string
     return `/recommendations${suffix}`;
   }, [isAuthenticated, stableLanguages, hideListened]);
 
-  const { data, isLoading, isFetching, refetch } = useClusterWave({
+  const { data, isLoading, isError, isFetching, refetch } = useClusterWave({
     queryKey: ['cluster-wave', 'home', langKey, hideListened],
     url,
     enabled: isAuthenticated,
@@ -90,36 +94,33 @@ export const RiverFlow = React.memo(function RiverFlow({ tint }: { tint?: string
   // Live-тик лайков: hide-liked фильтры пересчитываются, когда лайк текущего
   // трека переключился (основная цель лайка с этой поверхности).
   const likesVersion = useLiked(currentTrack?.urn ?? '');
-  const hideLikedFilter = useCallback((tr: Track) => !tr.user_favorite && !isUrnLiked(tr.urn), []);
+  const keepTrack = useCallback(
+    (tr: Track) => !hideLiked || (!tr.user_favorite && !isUrnLiked(tr.urn)),
+    [hideLiked],
+  );
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: likesVersion тикает живой isUrnLiked.
-  const filteredAllTracks = useMemo(() => {
-    if (!hideLiked) return rawAllTracks;
-    return rawAllTracks.filter((tr) => !tr.user_favorite && !isUrnLiked(tr.urn));
-  }, [rawAllTracks, hideLiked, likesVersion]);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: likesVersion ticks the live hide-liked filter.
+  const filteredAllTracks = useMemo(
+    () => rawAllTracks.filter(keepTrack),
+    [rawAllTracks, keepTrack, likesVersion],
+  );
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: likesVersion тикает живой isUrnLiked.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: likesVersion ticks the live hide-liked filter.
   const filteredClusters = useMemo(() => {
-    if (!hideLiked) return rawClusters;
     return rawClusters
       .map((c) => {
-        const trackById = new Map<string, Track>();
-        for (const tr of c.tracks) {
-          const id = tr.urn.split(':').pop();
-          if (id) trackById.set(id, tr);
-        }
+        const trackByUrn = new Map(c.tracks.map((tr) => [tr.urn, tr]));
         return {
           ...c,
-          tracks: c.tracks.filter((tr) => !tr.user_favorite && !isUrnLiked(tr.urn)),
+          tracks: c.tracks.filter(keepTrack),
           neighbors: c.neighbors?.filter((n) => {
-            const matchTrack = trackById.get(String(n.track_id));
-            if (!matchTrack) return true;
-            return !matchTrack.user_favorite && !isUrnLiked(matchTrack.urn);
+            const matchTrack = trackByUrn.get(n.track_urn);
+            return !matchTrack || keepTrack(matchTrack);
           }),
         };
       })
       .filter((c) => c.tracks.length > 0) as ClusterHydrated[];
-  }, [rawClusters, hideLiked, likesVersion]);
+  }, [rawClusters, keepTrack, likesVersion]);
 
   const clusterById = useMemo(
     () => new Map(filteredClusters.map((c) => [c.id as ClusterId, c])),
@@ -136,7 +137,7 @@ export const RiverFlow = React.memo(function RiverFlow({ tint }: { tint?: string
     initialTracks: waveCluster?.tracks ?? [],
     initialCursor: null,
     languages: stableLanguages,
-    filterTrack: hideLiked ? hideLikedFilter : undefined,
+    filterTrack: keepTrack,
     hideListened,
   });
 
@@ -145,7 +146,7 @@ export const RiverFlow = React.memo(function RiverFlow({ tint }: { tint?: string
     const m = new Map<string, string>();
     for (const c of filteredClusters) {
       if (!c.neighbors) continue;
-      for (const n of c.neighbors) m.set(String(n.track_id), n.artist_id);
+      for (const n of c.neighbors) m.set(n.track_urn, n.artist_id);
     }
     return m;
   }, [filteredClusters]);
@@ -153,8 +154,7 @@ export const RiverFlow = React.memo(function RiverFlow({ tint }: { tint?: string
   neighborMapRef.current = neighborArtistByTrack;
 
   const resolveArtistQueue = useCallback(async (track: Track): Promise<Track[]> => {
-    const trackId = track.urn.split(':').pop();
-    const artistId = trackId ? neighborMapRef.current.get(trackId) : undefined;
+    const artistId = neighborMapRef.current.get(track.urn);
     if (!artistId) return [track];
     try {
       const res = await api<{ collection: Track[] }>(
@@ -191,18 +191,29 @@ export const RiverFlow = React.memo(function RiverFlow({ tint }: { tint?: string
   };
 
   const showCold = !isLoading && filteredClusters.length === 0;
-  const topArtists = clusterById.get('top_artists');
-  const adjacent = clusterById.get('adjacent');
-  const freshDrops = clusterById.get('fresh_drops');
-  const sameVibe = clusterById.get('same_vibe');
-  const deepCuts = clusterById.get('deep_cuts');
+  const coldState = isError
+    ? 'error'
+    : rawClusters.length > 0
+      ? 'allLiked'
+      : likesCount > 0
+        ? 'building'
+        : 'cold';
+  const section = (id: RiverSectionId) =>
+    riverHidden.includes(id) ? undefined : clusterById.get(id);
+  const waveSection = section('wave');
+  const topArtists = section('top_artists');
+  const adjacent = section('adjacent');
+  const freshDrops = section('fresh_drops');
+  const sameVibe = section('same_vibe');
+  const deepCuts = section('deep_cuts');
+  const discover = section('discover');
 
   const anchorRef = (id: string, kind: AnchorKind) => (el: HTMLElement | null) => {
     if (el) anchorsRef.current.set(id, { el, kind, order: ANCHOR_ORDER[id] ?? 8 });
     else anchorsRef.current.delete(id);
   };
   // Отпечаток состава секций: смена набора кластеров перестраивает путь реки.
-  const layoutKey = [waveCluster, topArtists, freshDrops, sameVibe, adjacent, deepCuts]
+  const layoutKey = [waveSection, topArtists, freshDrops, sameVibe, adjacent, deepCuts, discover]
     .map((c) => (c ? '1' : '0'))
     .join('');
 
@@ -259,18 +270,20 @@ export const RiverFlow = React.memo(function RiverFlow({ tint }: { tint?: string
         <div className="pt-10">
           <ClusterEmptyState
             icon={<Sparkles size={20} style={{ color: 'var(--color-accent)' }} />}
-            title={t('soundwave.coldTitle')}
-            description={t('soundwave.coldDesc')}
+            title={t(`soundwave.${coldState}Title`)}
+            description={t(`soundwave.${coldState}Desc`)}
+            cta={isError ? t('common.retry') : undefined}
+            onAction={() => void refetch()}
           />
         </div>
       ) : (
         <div ref={wrapRef} className="relative mt-12">
           <RiverBraid rootRef={wrapRef} anchorsRef={anchorsRef} tint={tint} layoutKey={layoutKey} />
           <div className="relative z-10 flex flex-col gap-12">
-            {waveCluster && (
+            {waveSection && (
               <div ref={anchorRef('wave', 'node')}>
                 <RiverSection title={sectionTitle('wave')} why={sectionWhy('wave')}>
-                  <WaveSchedule tracks={waveCluster.tracks} />
+                  <WaveSchedule tracks={waveSection.tracks} />
                 </RiverSection>
               </div>
             )}
@@ -360,6 +373,23 @@ export const RiverFlow = React.memo(function RiverFlow({ tint }: { tint?: string
                   tone="deep"
                 >
                   <DeepShelf tracks={deepCuts.tracks} />
+                </RiverSection>
+              </div>
+            )}
+
+            {discover && (
+              <div ref={anchorRef('discover', 'node')}>
+                <RiverSection title={sectionTitle('discover')} why={sectionWhy('discover')}>
+                  <ClusterRow
+                    hideHeader
+                    clusterId={discover.id}
+                    title=""
+                    description=""
+                    icon={null}
+                    index={0}
+                    tracks={discover.tracks}
+                    queue={discover.tracks}
+                  />
                 </RiverSection>
               </div>
             )}

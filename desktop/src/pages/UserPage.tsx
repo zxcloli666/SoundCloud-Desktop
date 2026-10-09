@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
+import { LoadErrorState, RefreshPendingHint } from '../components/ui/LoadErrorState';
 import { AuraField } from '../components/user/AuraField';
 import { IdentityHub } from '../components/user/IdentityHub';
 import { USER_PAGE_KEYFRAMES } from '../components/user/keyframes';
@@ -20,6 +21,7 @@ import { useUser, useUserSubscription, useUserWebProfiles } from '../lib/hooks';
 import { Loader2 } from '../lib/icons';
 import { likedTracksCount } from '../lib/likes';
 import {usePerfMode} from '../lib/perf';
+import { MIN_SEARCH_QUERY } from '../lib/search';
 import { useSubscription } from '../lib/subscription';
 import { useAuthStore } from '../stores/auth';
 
@@ -63,7 +65,15 @@ export function UserPage() {
     setDebouncedSearch('');
   }, [activeTab]);
 
-  const { data: user, isLoading: userLoading } = useUser(urn);
+  const {
+    data: user,
+    isLoading: userLoading,
+    isError: userFailed,
+    isFetching: userFetching,
+    error: userError,
+    failureReason: userFailureReason,
+    refetch: refetchUser,
+  } = useUser(urn);
   const { data: webProfiles } = useUserWebProfiles(urn);
 
   const isOwnProfile = !!user && currentUser?.urn === user.urn;
@@ -90,10 +100,23 @@ export function UserPage() {
     ] as const;
   }, [user, t]);
 
-  if (userLoading || !user) {
+  if (!user && userFailed) {
     return (
       <div className="relative w-full min-h-screen flex items-center justify-center">
+        <LoadErrorState
+          error={userError}
+          retrying={userFetching}
+          onRetry={() => void refetchUser()}
+        />
+      </div>
+    );
+  }
+
+  if (userLoading || !user) {
+    return (
+      <div className="relative w-full min-h-screen flex flex-col items-center justify-center">
         <Loader2 size={28} className="text-white/30 animate-spin" />
+        <RefreshPendingHint reason={userFailureReason} />
       </div>
     );
   }
@@ -147,7 +170,8 @@ export function UserPage() {
             }}
           >
             {(() => {
-              const searching = !!debouncedSearch && isSearchableScope(activeTab);
+              const searching =
+                debouncedSearch.length >= MIN_SEARCH_QUERY && isSearchableScope(activeTab);
               if (searching && (activeTab === 'tracks' || activeTab === 'popular')) {
                 return <UserSearchTracksTab urn={urn!} aura={aura} query={debouncedSearch} />;
               }

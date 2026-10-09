@@ -1,9 +1,11 @@
-import { fetch } from '@tauri-apps/plugin-http';
 import { useAppStatusStore } from '../../stores/app-status';
 import { API_BASE, API_STAR_BASE } from '../constants';
-import { edgeFetch } from '../edge';
-import { requestPremiumRecheck } from '../premium-cache';
+import { trackedInvoke as invoke } from '../diagnostics';
+import { edgeProbe } from '../edge';
+import { getIsPremium, requestPremiumRecheck } from '../premium-cache';
 import { queryClient } from '../query-client';
+import { fetchExternal } from './external';
+import { fetchRemoteVerdict } from './remote';
 import { type NetVerdict, useHostStatusStore } from './store';
 
 // ─── Health-карта (per-request data-plane роутинг) ──────────
@@ -40,15 +42,15 @@ export function noteMainAlive(): void {
   mainAliveGen++;
   const prev = useHostStatusStore.getState().main;
   if (prev === 'up') return;
-  useHostStatusStore.setState({ main: 'up', net: 'online' });
-  useAppStatusStore.getState().setBackendReachable(true);
+  useHostStatusStore.setState({ main: 'up', net: 'online', remote: 'unknown' });
+  useAppStatusStore.getState().confirmOnline();
   stopRecheckTimer();
   if (prev === 'down') void queryClient.invalidateQueries();
 }
 
 // ─── Probe-движок ───────────────────────────────────────────
 
-const PROBE_TIMEOUT_MS = 3_000;
+const PROBE_HOP_TIMEOUT_MS = 5_000;
 const CONFIRM_DELAY_MS = 2_000;
 const PROBE_MIN_GAP_MS = 5_000;
 const RECHECK_MS = 15_000;
@@ -80,40 +82,23 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-/** Наши хосты — через тиры edge (иначе у забаненного юзера проба видит «всё лежит»). */
-async function fetchWithAbort(url: string): Promise<Response> {
-  return edgeFetch(url, { cache: 'no-store' as RequestCache }, PROBE_TIMEOUT_MS);
-}
-
-/** Внешние маячки интернета — строго напрямую, тиры тут ни при чём. */
-async function fetchExternal(url: string): Promise<Response> {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), PROBE_TIMEOUT_MS);
-  try {
-    return await fetch(url, { cache: 'no-store', signal: controller.signal });
-  } finally {
-    clearTimeout(timer);
-  }
-}
-
 /** Статус <500 = хост жив (401/403/429 — тоже ответ); network/timeout = netFail. */
 async function probeOnce(base: string): Promise<ProbeResult> {
-  try {
-    const res = await fetchWithAbort(`${base}/health`);
-    return { alive: res.status < 500, netFail: false };
-  } catch {
-    return { alive: false, netFail: true };
-  }
+  const outcome = await edgeProbe(`${base}/health`, PROBE_HOP_TIMEOUT_MS);
+  return {
+    alive: outcome.kind === 'answered' && outcome.status < 500,
+    netFail: outcome.kind === 'unreachable',
+  };
 }
 
 /** up — с одного успеха; down — только по двум фейлам с паузой (анти-флап). */
-async function probeConfirmed(base: string): Promise<ProbeResult> {
-  const first = await probeOnce(base);
-  if (first.alive) return first;
+async function probeConfirmed(base: string, first?: ProbeResult): Promise<ProbeResult> {
+  const initial = first ?? (await probeOnce(base));
+  if (initial.alive) return initial;
   await sleep(CONFIRM_DELAY_MS);
   const second = await probeOnce(base);
   if (second.alive) return second;
-  return { alive: false, netFail: first.netFail && second.netFail };
+  return { alive: false, netFail: initial.netFail && second.netFail };
 }
 
 async function validatedFetch(
@@ -165,10 +150,10 @@ function timeoutBurst(): boolean {
   return timeoutHits.length >= TIMEOUT_BURST_THRESHOLD;
 }
 
-/** Таймаут реального запроса. Форсим пробу лишь когда таймаутят все запросы (бурст), не 1-2 долгих. */
+/** Таймаут реального запроса. Пробу просим лишь когда таймаутят все запросы (бурст), не 1-2 долгих. */
 export function noteRequestTimeout(): void {
   timeoutHits.push(Date.now());
-  if (timeoutBurst()) requestProbe({ force: true });
+  if (timeoutBurst()) requestProbe();
 }
 
 function startRecheckTimer(): void {
@@ -184,7 +169,7 @@ function stopRecheckTimer(): void {
 
 /** Single-flight + min-gap с trailing-добивкой; force обходит min-gap, но не single-flight. */
 export function requestProbe(opts?: { force?: boolean }): void {
-  if (!navigator.onLine || useHostStatusStore.getState().probing) return;
+  if (useHostStatusStore.getState().probing) return;
   const sinceLast = Date.now() - lastRunAt;
   if (sinceLast < PROBE_MIN_GAP_MS && !opts?.force) {
     if (trailingTimer === null) {
@@ -198,35 +183,81 @@ export function requestProbe(opts?: { force?: boolean }): void {
   useHostStatusStore.setState({ probing: true });
   lastRunAt = Date.now();
   void run().finally(() => {
+    lastRunAt = Date.now();
     useHostStatusStore.setState({ probing: false });
   });
 }
 
+const AUTO_CHECK_GAP_MS = 60_000;
+let offlineCheck = false;
+let autoCheckAt = 0;
+
+export function noteUnreachable(): void {
+  offlineCheck = true;
+  const now = Date.now();
+  if (now - autoCheckAt >= AUTO_CHECK_GAP_MS) {
+    autoCheckAt = now;
+    void invoke('net_check_auto', { reason: 'unreachable' });
+  }
+  if (knownUnreachable()) settleOfflineCheck(false);
+  requestProbe();
+}
+
+function knownUnreachable(): boolean {
+  const s = useHostStatusStore.getState();
+  return s.net === 'no-internet' || (s.main === 'down' && s.routeBlocked);
+}
+
+function settleOfflineCheck(reachable: boolean): void {
+  if (!offlineCheck) return;
+  offlineCheck = false;
+  if (!reachable) useAppStatusStore.getState().setBackendReachable(false);
+}
+
+function markMainUp(): void {
+  settleOfflineCheck(true);
+  useHostStatusStore.setState({ star: 'unknown', net: 'online' });
+  markHealthy(API_BASE); // noteMainAlive: up + стоп recheck-таймера (no-op, если уже up)
+  // Снимаем ложный offline и когда вердикт уже 'up' (noteMainAlive тогда no-op).
+  useAppStatusStore.getState().confirmOnline();
+}
+
 async function run(): Promise<void> {
-  const main = await probeConfirmed(API_BASE);
-  if (main.alive) {
-    useHostStatusStore.setState({ star: 'unknown', net: 'online' });
-    markHealthy(API_BASE); // noteMainAlive: up + стоп recheck-таймера (no-op, если уже up)
-    // Снимаем ложный offline и когда вердикт уже 'up' (noteMainAlive тогда no-op).
-    useAppStatusStore.getState().setBackendReachable(true);
+  const first = await probeOnce(API_BASE);
+  if (first.alive) {
+    markMainUp();
     return;
   }
-  const genAfterMainProbes = mainAliveGen;
-  const star = await probeConfirmed(API_STAR_BASE);
-  // Бурст таймаутов = таймаутят все запросы → хост лёг, а не offline: модалку не глушим.
-  if (
-    main.netFail &&
-    star.netFail &&
-    !timeoutBurst() &&
-    (await checkInternet()) === 'no-internet'
-  ) {
-    // Не знаем, лежат ли хосты; backendReachable не трогаем — offline-флоу ведёт apiRequest.
+  const gen = mainAliveGen;
+  const starFirst = probeOnce(API_STAR_BASE);
+  const internetCheck = starFirst.then((star) =>
+    first.netFail && star.netFail ? checkInternet() : undefined,
+  );
+  const remoteCheck = starFirst.then((star) => (star.alive ? 'unknown' : fetchRemoteVerdict()));
+  const [main, star] = await Promise.all([
+    probeConfirmed(API_BASE, first),
+    starFirst.then((star) => probeConfirmed(API_STAR_BASE, star)),
+  ]);
+  if (main.alive) {
+    markMainUp();
+    return;
+  }
+  const unreachable = main.netFail && star.netFail;
+  const internet = unreachable ? ((await internetCheck) ?? (await checkInternet())) : 'online';
+  if (internet === 'no-internet') {
+    settleOfflineCheck(false);
     useHostStatusStore.setState({ main: 'unknown', star: 'unknown', net: 'no-internet' });
     startRecheckTimer();
     return;
   }
   // Реальный успех main за время star-пробы/internet-check — результат устарел, down не пишем.
-  if (mainAliveGen !== genAfterMainProbes) return;
+  if (mainAliveGen !== gen) {
+    settleOfflineCheck(true);
+    return;
+  }
+  settleOfflineCheck(!(main.netFail && (!getIsPremium() || star.netFail)));
+  const remote = star.alive ? 'unknown' : await remoteCheck;
+  if (mainAliveGen !== gen) return;
   const prev = useHostStatusStore.getState();
   const newIncident = prev.main !== 'down';
   const incidentId = newIncident ? prev.incidentId + 1 : prev.incidentId;
@@ -234,12 +265,15 @@ async function run(): Promise<void> {
     main: 'down',
     star: star.alive ? 'up' : 'down',
     net: 'online',
+    routeBlocked: unreachable && internet === 'online',
+    remote,
     incidentId,
     // Флап-гвард: недавно закрытая модалка не возвращается на новом инциденте.
     ...(newIncident && Date.now() - prev.lastModalDismissAt < MODAL_RESHOW_SUPPRESS_MS
       ? { modalDismissedIncidentId: incidentId }
       : {}),
   });
+  if (newIncident) void invoke('net_check_auto', { reason: 'main-down' });
   if (star.alive) markHealthy(API_STAR_BASE); // карта + вердикт; backendReachable не трогаем
   requestPremiumRecheck(); // протухший premium=true / потерянный premium у подписчика
   startRecheckTimer();

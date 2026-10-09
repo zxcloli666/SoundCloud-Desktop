@@ -2,7 +2,7 @@ import React, {useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {useNavigate} from 'react-router-dom';
 import {useShallow} from 'zustand/shallow';
-import {preloadTrack} from '../../lib/audio';
+import {cancelPreload, preloadTrack} from '../../lib/audio';
 import {ago, art, dur, fc} from '../../lib/formatters';
 import {type FeedItem, type Playlist, type SCUser, useFeatured} from '../../lib/hooks';
 import {
@@ -120,7 +120,8 @@ const FeaturedCard = React.memo(
     return (
       <div
         className="relative rounded-3xl overflow-hidden group glass-featured select-none"
-        onMouseEnter={() => preloadTrack(track.urn)}
+        onMouseEnter={() => preloadTrack(track)}
+        onMouseLeave={cancelPreload}
       >
         {cover && <HeroBlurBg cover={cover} />}
         <div className="relative flex items-center gap-6 p-6">
@@ -386,9 +387,9 @@ const FeaturedUserHero = React.memo(function FeaturedUserHero({ user }: { user: 
           <h2 className="text-xl font-bold text-white/95 truncate leading-tight group-hover:text-white transition-colors duration-200">
             {user.username}
           </h2>
-          {(user.city || user.country) && (
+          {(user.city || user.country_code) && (
             <p className="text-[13px] text-white/30 mt-1.5">
-              {[user.city, user.country].filter(Boolean).join(', ')}
+              {[user.city, user.country_code].filter(Boolean).join(', ')}
             </p>
           )}
           <div className="flex items-center gap-4 mt-4 text-[11px] text-white/25 tabular-nums">

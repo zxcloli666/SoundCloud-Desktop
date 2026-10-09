@@ -3,6 +3,7 @@ import {useTranslation} from 'react-i18next';
 import {useNavigate} from 'react-router-dom';
 import {type Aura, auraRgba} from '../../lib/aura';
 import {Check, Globe, MicVocal} from '../../lib/icons';
+import {userUrn} from '../../lib/ids';
 import {usePerfMode} from '../../lib/perf';
 import {SocialIcon, socialLabel} from './socials';
 import type {ArtistDetail} from './types';
@@ -79,9 +80,10 @@ function ArtistAboutTabImpl({ artist, aura }: ArtistAboutTabProps) {
                 <button
                   key={acc.sc_user_id}
                   type="button"
-                  onClick={() =>
-                    navigate(`/user/${encodeURIComponent(`soundcloud:users:${acc.sc_user_id}`)}`)
-                  }
+                  onClick={() => {
+                    const urn = userUrn(acc.sc_user_id);
+                    if (urn) navigate(`/user/${encodeURIComponent(urn)}`);
+                  }}
                   className="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-left cursor-pointer hover:scale-[1.02] transition-all"
                   style={{
                     background: 'rgba(255,85,0,0.08)',

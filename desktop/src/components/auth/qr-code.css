@@ -6,10 +6,6 @@
  *   3. .qr-frame       — основная glass-plate (backdrop-blur, multi-layer shadows).
  *   4. .qr-mesh        — subtle mesh-gradient внутри plate.
  *   5. .qr-specular    — зеркальный highlight на верхней кромке (Apple-style).
- *   6. .qr-canvas      — собственно SVG QR от qr-code-styling.
- *
- * Центральное лого рендерит сама библиотека (через image option) — это нужно,
- * чтобы под лого правильно гасились точки и QR оставался читаемым на iOS.
  */
 
 @property --qr-rim-angle {
@@ -138,10 +134,9 @@
   justify-content: center;
 }
 
-/* QR rendered as SVG by qr-code-styling — крутим и центрируем сами */
-.qr-canvas > div > svg {
+.qr-canvas canvas {
   display: block;
-  filter: drop-shadow(0 0 12px var(--qr-accent-glow));
+  border-radius: 16px;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -3,16 +3,11 @@ import {createPortal} from 'react-dom';
 import {useTranslation} from 'react-i18next';
 import {art} from '../../../lib/formatters';
 import {Eye, MicVocal, X} from '../../../lib/icons';
+import {isPreviewOnly} from '../../../lib/track-access';
 import {useArtistDisplay, useArtistLinkItems, useDisplayTitle} from '../../../lib/track-display';
 import type {Track} from '../../../stores/player';
-import {
-    ControlVolumeBtn,
-    PlaybackRateSlider,
-    ProgressSlider,
-    ProgressTime,
-    VolumeLabel,
-    VolumeSlider,
-} from '../../layout/NowPlayingBar';
+import {PlaybackRateSlider, ProgressSlider, ProgressTime} from '../../layout/NowPlayingBar';
+import {ControlVolumeBtn, VolumeLabel, VolumeSlider} from '../../layout/VolumeControls';
 import {ArtistNameLinks} from '../ArtistNameLinks';
 import {Controls} from './LyricsControls';
 
@@ -179,9 +174,9 @@ export const TrackColumn = React.memo(({ track, maxArt }: { track: Track; maxArt
       <div className={`${widthClass} text-center space-y-1`}>
         <div className="flex items-center justify-center gap-2 min-w-0">
           <p className="text-[18px] font-bold text-white/95 truncate">{displayTitle}</p>
-          {track.access === 'preview' && (
+          {isPreviewOnly(track) && (
             <span className="shrink-0 text-[9px] font-semibold uppercase tracking-wide bg-amber-500/20 text-amber-400/90 px-1.5 py-px rounded">
-              Preview
+              {t('track.previewOnly')}
             </span>
           )}
         </div>

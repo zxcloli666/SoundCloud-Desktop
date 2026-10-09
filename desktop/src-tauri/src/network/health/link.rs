@@ -19,7 +19,7 @@ pub const SMALL_BYTES: u64 = 8 * 1024;
 const WARMUP_BYTES: u64 = 16 * 1024;
 /// Рез по объёму наблюдался и на 9, и на 13 КБ. Ниже этого обрыв на рез не
 /// похож: столько отдаёт даже соединение, которое просто не встало.
-const CUT_FLOOR: u64 = 5 * 1024;
+pub const CUT_FLOOR: u64 = 5 * 1024;
 const DEADLINE: Duration = Duration::from_secs(25);
 const DEADLINE_SLACK: Duration = Duration::from_secs(5);
 const STALL: Duration = Duration::from_secs(6);
@@ -65,6 +65,7 @@ pub struct Measured {
     pub ms: i32,
     pub transfer: Duration,
     pub warmup_at: Duration,
+    pub connected: bool,
 }
 
 impl Measured {
@@ -88,8 +89,17 @@ pub async fn probe(client: &Client, url: &str, size: u64) -> Measured {
     {
         Ok(response) if response.status().is_success() => response,
         Ok(_) => return failed(Shape::Dead, 0, started),
-        Err(error) if error.is_timeout() => return failed(Shape::Blackhole, 0, started),
-        Err(_) => return failed(Shape::Reset, 0, started),
+        Err(error) => {
+            let shape = if error.is_timeout() {
+                Shape::Blackhole
+            } else {
+                Shape::Reset
+            };
+            return Measured {
+                connected: !error.is_connect(),
+                ..failed(shape, 0, started)
+            };
+        }
     };
 
     let expected = response
@@ -141,6 +151,7 @@ pub async fn probe(client: &Client, url: &str, size: u64) -> Measured {
         ms: started.elapsed().as_millis().min(i32::MAX as u128) as i32,
         transfer,
         warmup_at,
+        connected: true,
     };
 
     if torn || (bytes < size && !ran_out) {
@@ -200,6 +211,7 @@ fn failed(shape: Shape, bytes: u64, started: Instant) -> Measured {
         ms: started.elapsed().as_millis().min(i32::MAX as u128) as i32,
         transfer: Duration::ZERO,
         warmup_at: Duration::ZERO,
+        connected: true,
     }
 }
 
@@ -242,6 +254,7 @@ mod tests {
             ms: 0,
             transfer: secs(transfer),
             warmup_at: secs(warmup_at),
+            connected: true,
         }
     }
 

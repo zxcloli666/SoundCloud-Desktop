@@ -91,6 +91,7 @@ export const Titlebar = React.memo(() => {
 
   return (
     <div
+        data-ui="titlebar"
         className="relative z-50 h-14 flex items-center gap-3 px-3 select-none shrink-0"
       data-tauri-drag-region
         style={{

@@ -3,12 +3,13 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Duration;
 
+use super::system_proxy::follow;
+use crate::app::diagnostics;
 use crate::rt::AppHandle;
 use call_client::{AgentConfig, Identity, IdentityStore, ProvisionInput, run_agent_session};
 use serde::{Deserialize, Serialize};
 use tauri::{Manager, State};
 use tokio::sync::Mutex;
-use tracing::{info, warn};
 
 const FLAG_FILE: &str = "call_enabled.json";
 const DEVICE_FILE: &str = "call_device.json";
@@ -95,7 +96,7 @@ async fn supervise(app: AppHandle, state: Arc<CallState>) {
         let mut connected = false;
         let candidates = endpoint_candidates(&state.device_id).await;
         if candidates.is_empty() {
-            warn!(zone = ORIGIN_ZONE, "в зоне не нашлось ни одной call-ноды");
+            diagnostics::warn(format!("[Call] no call nodes found in zone {ORIGIN_ZONE}"));
         }
 
         for endpoint in candidates {
@@ -110,7 +111,7 @@ async fn supervise(app: AppHandle, state: Arc<CallState>) {
                     break;
                 }
                 Err(e) => {
-                    warn!(endpoint = %endpoint, error = %e, "call agent terminated");
+                    diagnostics::warn(format!("[Call] agent at {endpoint} terminated: {e}"));
                     *state.status.lock().await = CallStatus::Failed { error: e };
                 }
             }
@@ -148,7 +149,7 @@ async fn endpoint_candidates(device_id: &str) -> Vec<String> {
             .collect()
     };
 
-    let http = sc_fingerprint::builder(None)
+    let http = follow(sc_fingerprint::builder(None))
         .connect_timeout(Duration::from_secs(5))
         .build()
         .ok();
@@ -162,19 +163,20 @@ async fn endpoint_candidates(device_id: &str) -> Vec<String> {
         };
         let probe = super::call_nodes::inspect(http, &endpoint).await;
         if probe.usable() {
-            info!(
-                endpoint = %endpoint,
-                node_version = probe.version_or_unknown(),
-                "call node reachable"
+            diagnostics::log(
+                "INFO",
+                format!(
+                    "[Call] node {endpoint} reachable, version {}",
+                    probe.version_or_unknown()
+                ),
             );
             preferred.push(endpoint);
         } else {
-            warn!(
-                endpoint = %endpoint,
-                reach = probe.reach.as_str(),
-                node_version = probe.version_or_unknown(),
-                "call node path degraded, trying it last"
-            );
+            diagnostics::warn(format!(
+                "[Call] node {endpoint} path degraded ({}), version {}, trying it last",
+                probe.reach.as_str(),
+                probe.version_or_unknown()
+            ));
             fallback.push(endpoint);
         }
     }
@@ -257,7 +259,7 @@ async fn run_call_loop(
 
     *state.status.lock().await = CallStatus::Connecting;
 
-    let http = sc_fingerprint::builder(None)
+    let http = follow(sc_fingerprint::builder(None))
         .connect_timeout(Duration::from_secs(5))
         .build()
         .map_err(|e| fmt_chain(&e))?;
@@ -282,7 +284,7 @@ async fn run_call_loop(
             if ready.is_ok() {
                 became_active.store(true, Ordering::Relaxed);
                 *state.status.lock().await = CallStatus::Active;
-                info!("call agent active");
+                diagnostics::log("INFO", "[Call] agent active");
             }
             session.await
         },

@@ -115,7 +115,7 @@ desktop/
 - `app_data_dir/images/` — постоянный кеш картинок (чистится только вручную)
 - `app_data_dir/*.json` — zustand-сторы через `tauri-storage.ts`
 - `app_data_dir/call_enabled.json` — флаг call-режима
-- `app_log_dir/desktop.log` — лог из `diagnostics_log`
+- `app_log_dir/desktop.log` — лог из `diagnostics_log` и нативной части (`diagnostics::log/warn/error`, panic hook); ротация в `desktop.old.log` при старте, если больше 5 МБ
 
 ## i18n (ОБЯЗАТЕЛЬНО)
 

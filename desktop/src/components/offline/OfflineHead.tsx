@@ -1,23 +1,34 @@
 import React from 'react';
 import {useTranslation} from 'react-i18next';
-import type {AuthStatus} from '../../lib/auth-status';
-import {Clock, RotateCcw, Wifi, WifiOff} from '../../lib/icons';
+import {useHostStatusStore} from '../../lib/host-status';
+import {Activity, RotateCcw, Wifi, WifiOff} from '../../lib/icons';
+import {useNetCheckStore} from '../../lib/net/check';
 import {usePerfMode} from '../../lib/perf';
+import {useAppStatusStore} from '../../stores/app-status';
+import {SyncStatusChip} from '../sync/SyncStatusChip';
+
+function useOfflineLabel(): string {
+  const { t } = useTranslation();
+  const bypass = useAppStatusStore((s) => s.offlineBypass);
+  const navigatorOnline = useAppStatusStore((s) => s.navigatorOnline);
+  const net = useHostStatusStore((s) => s.net);
+  if (bypass) return t('offline.netChosen');
+  if (!navigatorOnline || net === 'no-internet') return t('offline.netNoInternet');
+  return t('offline.netServerDown');
+}
 
 /** Шапка: кикер + заголовок слева, единый статус сети / очередь синка справа. */
 export const OfflineHead = React.memo(function OfflineHead({
   online,
-  authStatus,
   onTryOnline,
 }: {
   online: boolean;
-  authStatus: AuthStatus | undefined;
   onTryOnline: () => void;
 }) {
   const { t } = useTranslation();
   const perf = usePerfMode();
-  const pending = authStatus?.pendingSyncCount ?? 0;
-  const failed = authStatus?.failedSyncCount ?? 0;
+  const offlineLabel = useOfflineLabel();
+  const probing = useHostStatusStore((s) => s.probing);
 
   return (
     <header className="flex flex-wrap items-end justify-between gap-4">
@@ -31,17 +42,7 @@ export const OfflineHead = React.memo(function OfflineHead({
       </div>
 
       <div className="flex flex-wrap items-center gap-2.5">
-        {(pending > 0 || failed > 0) && (
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-accent/18 bg-accent/[0.08] px-3 py-1.5 font-mono text-[10.5px] font-medium text-white/70 tabular-nums">
-            <Clock size={11} />
-            {t('offline.pendingCount', { count: pending })}
-            {failed > 0 && (
-              <span className="text-rose-300/80">
-                · {t('offline.failedCount', { count: failed })}
-              </span>
-            )}
-          </span>
-        )}
+        <SyncStatusChip enabled={online} />
         <span
           className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 font-mono text-[10.5px] font-medium uppercase tracking-[0.12em] ${
             online
@@ -57,16 +58,27 @@ export const OfflineHead = React.memo(function OfflineHead({
             }}
           />
           {online ? <Wifi size={11} /> : <WifiOff size={11} />}
-          {online ? t('offline.netOnline') : t('offline.netOffline')}
+          {online ? t('offline.netOnline') : offlineLabel}
         </span>
         {!online && (
           <button
             type="button"
             onClick={onTryOnline}
+            disabled={probing}
+            className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-3.5 py-1.5 text-[12px] font-semibold text-white/75 transition-colors hover:border-white/[0.16] hover:bg-white/[0.09] hover:text-white/95 disabled:cursor-default disabled:opacity-50"
+          >
+            <RotateCcw size={12} className={probing ? 'animate-spin' : undefined} />
+            {t('offline.tryOnline')}
+          </button>
+        )}
+        {!online && (
+          <button
+            type="button"
+            onClick={() => useNetCheckStore.getState().openCheck()}
             className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-3.5 py-1.5 text-[12px] font-semibold text-white/75 transition-colors hover:border-white/[0.16] hover:bg-white/[0.09] hover:text-white/95"
           >
-            <RotateCcw size={12} />
-            {t('offline.tryOnline')}
+            <Activity size={12} />
+            {t('netCheck.open')}
           </button>
         )}
       </div>

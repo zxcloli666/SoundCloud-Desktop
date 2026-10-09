@@ -5,7 +5,10 @@ import {useTranslation} from 'react-i18next';
 import {useNavigate, useParams} from 'react-router-dom';
 import {toast} from 'sonner';
 import {useShallow} from 'zustand/shallow';
+import {TrackSortMenu} from '../components/music/TrackSortMenu';
+import {OfflineCopyLink} from '../components/offline/OfflineCopyLink';
 import {CrateLedger} from '../components/playlist/CrateLedger';
+import {EditPlaylistDialog} from '../components/playlist/EditPlaylistDialog';
 import {PLAYLIST_KEYFRAMES} from '../components/playlist/keyframes';
 import {MoreCrates} from '../components/playlist/MoreCrates';
 import {PlaylistHero} from '../components/playlist/PlaylistHero';
@@ -13,17 +16,23 @@ import {SequenceList} from '../components/playlist/SequenceList';
 import {SetRibbon} from '../components/playlist/SetRibbon';
 import {usePlaylistAura} from '../components/playlist/usePlaylistAura';
 import {Atmosphere} from '../components/search/Atmosphere';
+import {LoadErrorState, RefreshPendingHint} from '../components/ui/LoadErrorState';
+import {SyncNotice, syncNoticeOf} from '../components/ui/SyncNotice';
+import {playlistScope} from '../lib/bulk-cache';
 import {
     useDeletePlaylist,
     useInfiniteScroll,
     usePlaylist,
     usePlaylistTracks,
+    useRemoveFromPlaylist,
     useUpdatePlaylistTracks,
 } from '../lib/hooks';
-import {AlertCircle, ChevronLeft, X} from '../lib/icons';
+import {AlertCircle, Check, ChevronLeft, X} from '../lib/icons';
 import {usePerfMode} from '../lib/perf';
 import {rawPlaylistCover} from '../lib/playlist-cover';
 import {armPlaylistContinuation} from '../lib/queue-continuation';
+import {type ArrangeMode, arrangeTracks} from '../lib/track-order';
+import {sortTracks, type TrackSort} from '../lib/track-sort';
 import {useAuthStore} from '../stores/auth';
 import {type Track, usePlayerStore} from '../stores/player';
 import {useSettingsStore} from '../stores/settings';
@@ -46,29 +55,60 @@ function HeroSkeleton() {
 
 export const PlaylistPage = React.memo(function PlaylistPage() {
   const { urn } = useParams<{ urn: string }>();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const perf = usePerfMode();
   const myUrn = useAuthStore((s) => s.user?.urn);
 
-  const { data: playlist, isLoading: playlistLoading } = usePlaylist(urn);
+  const {
+    data: playlist,
+    isLoading: playlistLoading,
+    isError: playlistFailed,
+    isFetching: playlistFetching,
+    error: playlistError,
+    failureReason: playlistFailureReason,
+    refetch: refetchPlaylist,
+  } = usePlaylist(urn);
   const {
     tracks: playlistTracks,
     isLoading: tracksLoading,
+    isError: tracksFailed,
+    refetch: refetchTracks,
+    syncState: tracksSyncState,
+    sync: tracksSync,
     hasNextPage,
     isFetchingNextPage,
     fetchNextPage,
-  } = usePlaylistTracks(urn);
+  } = usePlaylistTracks(playlist ? urn : undefined);
   const updateTracks = useUpdatePlaylistTracks(urn);
+  const removeTrack = useRemoveFromPlaylist(urn);
   const deletePlaylist = useDeletePlaylist();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showEdit, setShowEdit] = useState(false);
 
-  const { pinnedPlaylists, pinPlaylist, unpinPlaylist } = useSettingsStore(
+  const { pinnedPlaylists, pinPlaylist, unpinPlaylist, setPlaylistSort } = useSettingsStore(
     useShallow((s) => ({
       pinnedPlaylists: s.pinnedPlaylists,
       pinPlaylist: s.pinPlaylist,
       unpinPlaylist: s.unpinPlaylist,
+      setPlaylistSort: s.setPlaylistSort,
     })),
+  );
+  const sort = useSettingsStore((s): TrackSort => (urn && s.playlistSorts[urn]) || 'default');
+  const sorted = sort !== 'default';
+  const sortedRef = useRef(sorted);
+  sortedRef.current = sorted;
+  const [query, setQuery] = useState('');
+  const filtering = query.trim() !== '';
+
+  useEffect(() => {
+    if (urn) setQuery('');
+  }, [urn]);
+  const changeSort = useCallback(
+    (next: TrackSort) => {
+      if (urn) setPlaylistSort(urn, next);
+    },
+    [urn, setPlaylistSort],
   );
 
   const isLoading = playlistLoading || tracksLoading;
@@ -80,16 +120,18 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
     return playlistTracks.length > 0 ? playlistTracks : (playlist.tracks ?? []);
   }, [isLoading, playlist, playlistTracks]);
 
-  // Local order for DnD; skip server sync while a debounced save is in flight.
   const [localTracks, setLocalTracks] = useState<Track[]>([]);
   const pendingMutationRef = useRef(false);
+  const pendingRemovalsRef = useRef(0);
   useEffect(() => {
-    if (!pendingMutationRef.current) setLocalTracks(serverTracks);
+    if (!pendingMutationRef.current && pendingRemovalsRef.current === 0) {
+      setLocalTracks(serverTracks);
+    }
   }, [serverTracks]);
 
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout>>(null!);
   const debouncedUpdate = useCallback(
-    (next: Track[], successMsg?: string) => {
+    (next: Track[], onSaved?: () => void) => {
       pendingMutationRef.current = true;
       clearTimeout(debounceTimerRef.current);
       debounceTimerRef.current = setTimeout(() => {
@@ -98,7 +140,7 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
           {
             onSuccess: () => {
               pendingMutationRef.current = false;
-              if (successMsg) toast.success(successMsg);
+              onSaved?.();
             },
             onError: () => {
               pendingMutationRef.current = false;
@@ -113,9 +155,20 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
 
   useEffect(() => () => clearTimeout(debounceTimerRef.current), []);
 
-  const tracks = isOwner ? localTracks : serverTracks;
+  const toastReordered = useCallback(() => toast.success(t('playlist.reordered')), [t]);
 
-  const trackUrnSet = useMemo(() => new Set(tracks.map((tr) => tr.urn)), [tracks]);
+  const ownTracks = isOwner ? localTracks : serverTracks;
+  const tracks = useMemo(
+    () => sortTracks(ownTracks, sort, i18n.language),
+    [ownTracks, sort, i18n.language],
+  );
+
+  const loadAll = sorted || filtering;
+  useEffect(() => {
+    if (loadAll && hasNextPage && !isFetchingNextPage) void fetchNextPage();
+  }, [loadAll, hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  const trackUrnSet = useMemo(() => new Set(ownTracks.map((tr) => tr.urn)), [ownTracks]);
   const { isPausedFromThis, isPlayingFromThis } = usePlayerStore(
     useShallow((s) => ({
       isPlayingFromThis:
@@ -125,7 +178,7 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
     })),
   );
 
-  const aura = usePlaylistAura(tracks, playlist?.genre);
+  const aura = usePlaylistAura(ownTracks, playlist?.genre);
   const scrollRef = useInfiniteScroll(hasNextPage ?? false, isFetchingNextPage, fetchNextPage);
 
   const handleDragEnd = useCallback(
@@ -139,24 +192,69 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
       const [moved] = next.splice(oldIndex, 1);
       next.splice(newIndex, 0, moved);
       setLocalTracks(next);
-      debouncedUpdate(next, t('playlist.reordered'));
+      debouncedUpdate(next, toastReordered);
     },
-    [localTracks, debouncedUpdate, t],
+    [localTracks, debouncedUpdate, toastReordered],
+  );
+
+  const commitOrder = useCallback(
+    (next: Track[]) => {
+      const previous = localTracks;
+      changeSort('default');
+      setLocalTracks(next);
+      debouncedUpdate(next, () =>
+        toast.success(t('playlist.arranged'), {
+          action: {
+            label: t('playlist.undo'),
+            onClick: () => {
+              setLocalTracks(previous);
+              debouncedUpdate(previous, toastReordered);
+            },
+          },
+        }),
+      );
+    },
+    [localTracks, debouncedUpdate, toastReordered, changeSort, t],
+  );
+
+  const handleArrange = useCallback(
+    (mode: ArrangeMode) => commitOrder(arrangeTracks(localTracks, mode, i18n.language)),
+    [commitOrder, localTracks, i18n.language],
   );
 
   const handleRemoveTrack = useCallback(
     (trackUrn: string) => {
-      const next = localTracks.filter((tr) => tr.urn !== trackUrn);
-      setLocalTracks(next);
-      debouncedUpdate(next, t('playlist.trackRemoved'));
+      const index = localTracks.findIndex((tr) => tr.urn === trackUrn);
+      if (index === -1) return;
+      const removed = localTracks[index];
+      setLocalTracks((current) => current.filter((tr) => tr.urn !== trackUrn));
+      if (pendingMutationRef.current) {
+        debouncedUpdate(
+          localTracks.filter((tr) => tr.urn !== trackUrn),
+          toastReordered,
+        );
+      }
+      pendingRemovalsRef.current += 1;
+      removeTrack
+        .mutateAsync(trackUrn)
+        .then(() => toast.success(t('playlist.trackRemoved')))
+        .catch(() =>
+          setLocalTracks((current) => {
+            if (current.some((tr) => tr.urn === trackUrn)) return current;
+            const next = [...current];
+            next.splice(Math.min(index, next.length), 0, removed);
+            return next;
+          }),
+        )
+        .finally(() => {
+          pendingRemovalsRef.current -= 1;
+        });
     },
-    [localTracks, debouncedUpdate, t],
+    [localTracks, removeTrack, debouncedUpdate, toastReordered, t],
   );
 
-  // Доигрываем плейлист ДО КОНЦА (пагинированный срез в очереди → потом волна),
-  // как у лайков. Армить ПОСЛЕ play(): он сбрасывает прошлый источник.
   const armContinuation = useCallback(() => {
-    if (urn) armPlaylistContinuation(urn);
+    if (urn && !sortedRef.current) armPlaylistContinuation(urn);
   }, [urn]);
 
   const handlePlayAll = useCallback(() => {
@@ -197,10 +295,10 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
     pinPlaylist({
       urn: playlist.urn,
       title: playlist.title,
-      artworkUrl: rawPlaylistCover(playlist.artwork_url, tracks),
+      artworkUrl: rawPlaylistCover(playlist.artwork_url, ownTracks),
     });
     toast.success(t('sidebar.pinned'));
-  }, [playlist, isPinned, unpinPlaylist, pinPlaylist, tracks, t]);
+  }, [playlist, isPinned, unpinPlaylist, pinPlaylist, ownTracks, t]);
 
   const handleDelete = useCallback(() => {
     if (!playlist) return;
@@ -212,6 +310,59 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
     });
   }, [playlist, deletePlaylist, navigate, t]);
 
+  const editedInApp = (tracksSync?.lastOperationSequence ?? 0) > 0;
+  const declaredCount = editedInApp
+    ? (tracksSync?.projectionTrackCount ?? 0)
+    : (playlist?.track_count ?? 0);
+  const missingTracks = !hasNextPage && serverTracks.length < declaredCount;
+  const tracksSyncStatus = tracksSync?.status ?? '';
+  const tracksUnreadable =
+    tracksSyncStatus === 'auth_required' || tracksSync?.conflictCode === 'remote_not_found';
+  const listNotice = useMemo(() => {
+    const retry = () => void refetchTracks();
+    const notice = syncNoticeOf({
+      isError: tracksFailed && serverTracks.length === 0,
+      syncState: missingTracks ? tracksSyncState : 'complete',
+    });
+    if (notice) return <SyncNotice kind={notice} onRetry={retry} />;
+    if (!missingTracks) return null;
+    if (tracksUnreadable) {
+      return <SyncNotice kind="failed" text={t('playlist.tracksUnavailable')} onRetry={retry} />;
+    }
+    return (
+      <p className="text-center text-[13px] text-white/30">
+        {t('playlist.partialTracks', {
+          shown: serverTracks.length,
+          total: declaredCount,
+          count: declaredCount,
+        })}
+      </p>
+    );
+  }, [
+    tracksFailed,
+    tracksSyncState,
+    tracksUnreadable,
+    missingTracks,
+    serverTracks.length,
+    declaredCount,
+    refetchTracks,
+    t,
+  ]);
+
+  if (!playlist && playlistFailed) {
+    return (
+      <div className="relative min-h-full w-full flex flex-col items-center justify-center gap-5">
+        {perf.atmosphere && <Atmosphere />}
+        <LoadErrorState
+          error={playlistError}
+          retrying={playlistFetching}
+          onRetry={() => void refetchPlaylist()}
+        />
+        {urn && <OfflineCopyLink scope={playlistScope(urn)} />}
+      </div>
+    );
+  }
+
   if (isLoading || !playlist) {
     return (
       <div className="relative min-h-full w-full">
@@ -222,12 +373,36 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
           style={{ isolation: 'isolate' }}
         >
           <HeroSkeleton />
+          <RefreshPendingHint reason={playlistFailureReason} />
         </div>
       </div>
     );
   }
 
-  const trackCount = playlist.track_count || tracks.length;
+  const trackCount = declaredCount || tracks.length;
+  const canArrange = !hasNextPage && localTracks.length > 1;
+  const sortToolbar = (
+    <div className="flex items-center gap-2">
+      {isOwner && sorted && canArrange && (
+        <button
+          type="button"
+          onClick={() => commitOrder(tracks)}
+          title={t('trackSort.saveOrderHint')}
+          aria-label={t('trackSort.saveOrder')}
+          className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-[10px] border border-white/[0.07] bg-white/[0.03] px-3 text-[11.5px] font-semibold text-white/60 transition-all duration-200 ease-[var(--ease-apple)] hover:border-white/[0.14] hover:text-white/90 active:scale-[0.97]"
+        >
+          <Check size={12} />
+          <span className="hidden sm:inline">{t('trackSort.saveOrder')}</span>
+        </button>
+      )}
+      <TrackSortMenu
+        sort={sort}
+        context="playlist"
+        loading={sorted && !!hasNextPage}
+        onSort={changeSort}
+      />
+    </div>
+  );
 
   return (
     <div className="relative min-h-full w-full">
@@ -254,7 +429,7 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
 
         <PlaylistHero
           playlist={playlist}
-          tracks={tracks}
+          tracks={ownTracks}
           aura={aura}
           isOwner={isOwner}
           isPlaying={isPlayingFromThis}
@@ -263,10 +438,13 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
           onPlayAll={handlePlayAll}
           onShuffle={handleShuffle}
           onTogglePin={handleTogglePin}
+          onEdit={() => setShowEdit(true)}
           onDelete={() => setShowDeleteConfirm(true)}
+          canArrange={canArrange}
+          onArrange={handleArrange}
         />
 
-        <CrateLedger playlist={playlist} tracks={tracks} accentGlow={aura.accentGlow} />
+        <CrateLedger playlist={playlist} tracks={ownTracks} accentGlow={aura.accentGlow} />
 
         {tracks.length > 1 && (
           <div
@@ -285,10 +463,15 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
 
         <SequenceList
           tracks={tracks}
-          isOwner={isOwner}
+          notice={listNotice}
+          toolbar={tracks.length > 1 ? sortToolbar : undefined}
+          query={query}
+          searching={filtering && !!hasNextPage}
+          onQueryChange={setQuery}
+          reorderable={isOwner && !sorted}
           onDragEnd={handleDragEnd}
-          onRemove={handleRemoveTrack}
-          onPlay={armContinuation}
+          onRemove={isOwner ? handleRemoveTrack : undefined}
+          onPlay={filtering ? undefined : armContinuation}
           sentinelRef={scrollRef}
           hasNextPage={hasNextPage ?? false}
           isFetchingNextPage={isFetchingNextPage}
@@ -300,6 +483,10 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
           excludeUrn={playlist.urn}
         />
       </div>
+
+      {isOwner && (
+        <EditPlaylistDialog playlist={playlist} open={showEdit} onOpenChange={setShowEdit} />
+      )}
 
       <Dialog.Root open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
         <Dialog.Portal>

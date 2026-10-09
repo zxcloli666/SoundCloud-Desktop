@@ -12,6 +12,10 @@ type PatchedImage = HTMLImageElement & {
 const IMAGE_URL_MEMO_CAP = 4000;
 const imageCacheUrlMemo = new Map<string, string>();
 
+export function clearImageUrlMemo() {
+    imageCacheUrlMemo.clear();
+}
+
 function cachedImageUrl(url: string): string {
     let encoded = imageCacheUrlMemo.get(url);
     if (encoded === undefined) {

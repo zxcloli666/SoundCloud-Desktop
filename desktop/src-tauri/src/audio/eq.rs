@@ -186,6 +186,10 @@ impl<S: Source<Item = f32>> Source for EqSource<S> {
     }
 
     fn try_seek(&mut self, pos: Duration) -> Result<(), SeekError> {
-        self.source.try_seek(pos)
+        self.source.try_seek(pos)?;
+        for filter in self.filters_l.iter_mut().chain(self.filters_r.iter_mut()) {
+            filter.reset_state();
+        }
+        Ok(())
     }
 }

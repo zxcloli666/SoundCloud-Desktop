@@ -214,7 +214,7 @@ export function ModalContent({
                 className={`modal-content fixed ${zClass} left-1/2 top-1/2 w-full ${WIDTH[size]} max-w-[95vw] outline-none`}
             >
                 <div
-                    className={`relative overflow-hidden rounded-[1.75rem] ${className ?? ''}`}
+                    className={`relative flex max-h-[85vh] flex-col overflow-hidden rounded-[1.75rem] ${className ?? ''}`}
                     style={{
                         border: '0.5px solid rgba(255,255,255,0.12)',
                         background: 'linear-gradient(168deg, rgba(23,22,28,0.97), rgba(10,9,13,0.99))',
@@ -251,7 +251,7 @@ export function ModalContent({
                             <X size={16}/>
                         </button>
                     )}
-                    <div className="relative">{children}</div>
+                    <div className="relative flex min-h-0 flex-1 flex-col">{children}</div>
                 </div>
             </div>
         </>,

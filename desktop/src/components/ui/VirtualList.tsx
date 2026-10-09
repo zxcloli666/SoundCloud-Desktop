@@ -1,5 +1,6 @@
 import { useVirtualizer } from '@tanstack/react-virtual';
-import React, {useLayoutEffect, useRef, useState} from 'react';
+import React, { useRef } from 'react';
+import { useMainScroll } from './useMainScroll';
 
 interface VirtualListProps<T> {
   items: T[];
@@ -21,18 +22,14 @@ export function VirtualList<T>({
   renderItem,
 }: VirtualListProps<T>) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [scrollElement, setScrollElement] = useState<HTMLElement | null>(null);
-
-    // Resolve the scroll element before paint to avoid a visible 0-row first frame.
-    useLayoutEffect(() => {
-    setScrollElement((containerRef.current?.closest('main') as HTMLElement | null) ?? null);
-  }, []);
+  const { scrollElement, scrollMargin } = useMainScroll(containerRef);
 
   const virtualizer = useVirtualizer({
     count: items.length,
     getScrollElement: () => scrollElement,
     estimateSize: () => rowHeight,
     overscan,
+    scrollMargin,
   });
 
   if (disabled) {
@@ -66,7 +63,7 @@ export function VirtualList<T>({
               left: 0,
               width: '100%',
               height: virtualItem.size,
-              transform: `translateY(${virtualItem.start}px)`,
+              transform: `translateY(${virtualItem.start - scrollMargin}px)`,
             }}
           >
             {renderItem(item, virtualItem.index)}

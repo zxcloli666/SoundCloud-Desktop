@@ -17,6 +17,7 @@ export {
   markUnhealthy,
   noteMainAlive,
   noteRequestTimeout,
+  noteUnreachable,
   requestProbe,
 } from './probe';
 export {
@@ -27,6 +28,7 @@ export {
   isIncidentActive,
   type NetVerdict,
   preferredControlBase,
+  type RemoteVerdict,
   selectFailoverUi,
   useHostStatusStore,
 } from './store';

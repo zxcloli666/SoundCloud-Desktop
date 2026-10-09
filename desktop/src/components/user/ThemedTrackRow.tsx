@@ -1,7 +1,7 @@
 import {Lock} from 'lucide-react';
 import React from 'react';
 import {useTranslation} from 'react-i18next';
-import { preloadTrack } from '../../lib/audio';
+import { cancelPreload, preloadTrack } from '../../lib/audio';
 import {type Aura, auraRgb, auraRgba, isLight} from '../../lib/aura';
 import { art, dur, fc } from '../../lib/formatters';
 import {
@@ -15,12 +15,17 @@ import {
   playWhite14,
 } from '../../lib/icons';
 import {usePerfMode} from '../../lib/perf';
+import { useTrackContextMenu } from '../../lib/useTrackContextMenu';
 import { useTrackPlay } from '../../lib/useTrackPlay';
+import { useAuthStore } from '../../stores/auth';
 import type { Track } from '../../stores/player';
 import { AddToPlaylistDialog } from '../music/AddToPlaylistDialog';
 import { LikeButton } from '../music/LikeButton';
+import { PlayNextButton } from '../music/PlayNextButton';
+import {SaveOfflineRowButton} from '../music/SaveOfflineButton';
 import {sameScdMeta, TrackStatusBadges} from '../music/TrackStatusBadges';
 import { TrackTitleArtist } from '../music/TrackTitleArtist';
+import { OwnerTrackMenu } from '../track/OwnerTrackMenu';
 
 interface ThemedTrackRowProps {
   track: Track;
@@ -32,15 +37,18 @@ interface ThemedTrackRowProps {
 function ThemedTrackRowImpl({ track, index, queue, aura }: ThemedTrackRowProps) {
     const {t} = useTranslation();
   const { isThis, isThisPlaying, togglePlay } = useTrackPlay(track, queue);
+  const onContextMenu = useTrackContextMenu(track);
   const cover = art(track.artwork_url, 't200x200');
   const lightAura = isLight(aura);
   const playIcon = lightAura ? playBlack14 : playWhite14;
   const pauseIcon = lightAura ? pauseBlack14 : pauseWhite14;
     const pb = usePerfMode().blur(16);
+  const isOwner = useAuthStore((s) => !!s.user?.urn && s.user.urn === track.user?.urn);
 
   return (
     <div
-      className="group flex items-center gap-4 px-4 py-2.5 rounded-2xl transition-all duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)] select-none"
+      onContextMenu={onContextMenu}
+      className="@container group flex items-center gap-4 px-4 py-2.5 rounded-2xl transition-all duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)] select-none"
       style={{
         background: isThis
           ? `linear-gradient(90deg, ${auraRgba(aura, 0.16)}, ${auraRgba(aura, 0.04)} 70%, transparent)`
@@ -48,10 +56,11 @@ function ThemedTrackRowImpl({ track, index, queue, aura }: ThemedTrackRowProps) 
         boxShadow: isThis ? `inset 0 0 0 0.5px ${auraRgba(aura, 0.35)}` : undefined,
       }}
       onMouseEnter={(e) => {
-        preloadTrack(track.urn);
+        preloadTrack(track);
         if (!isThis) e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
       }}
       onMouseLeave={(e) => {
+        cancelPreload();
         if (!isThis) e.currentTarget.style.background = '';
       }}
     >
@@ -122,11 +131,11 @@ function ThemedTrackRowImpl({ track, index, queue, aura }: ThemedTrackRowProps) 
 
       <TrackTitleArtist track={track} highlight={isThis} size="md" className="flex-1 min-w-0" />
 
-      <div className="hidden md:flex shrink-0">
+      <div className="hidden @lg:flex shrink-0">
         <TrackStatusBadges meta={track._scd_meta} />
       </div>
 
-      <div className="hidden md:flex items-center gap-5 shrink-0 pr-2 text-[11px] text-white/35">
+      <div className="hidden @3xl:flex items-center gap-5 shrink-0 pr-2 text-[11px] text-white/35">
         {track.playback_count != null && (
           <span className="inline-flex items-center gap-1.5 tabular-nums w-16">
             {headphones11} {fc(track.playback_count)}
@@ -141,6 +150,7 @@ function ThemedTrackRowImpl({ track, index, queue, aura }: ThemedTrackRowProps) 
 
       <div className="flex items-center gap-0.5 shrink-0">
         <LikeButton track={track} />
+        <SaveOfflineRowButton track={track} />
         <AddToPlaylistDialog trackUrns={[track.urn]}>
           <button
             type="button"
@@ -149,6 +159,11 @@ function ThemedTrackRowImpl({ track, index, queue, aura }: ThemedTrackRowProps) 
             <ListPlus size={14} />
           </button>
         </AddToPlaylistDialog>
+        <PlayNextButton
+          track={track}
+          className="cursor-pointer w-8 h-8 rounded-lg flex items-center justify-center text-white/30 hover:text-white/80 hover:bg-white/[0.06] opacity-0 group-hover:opacity-100 transition-all"
+        />
+        {isOwner && <OwnerTrackMenu track={track} />}
       </div>
 
       <span className="text-[12px] text-white/30 tabular-nums font-medium shrink-0 w-12 text-right">
@@ -167,6 +182,10 @@ const areEqual = (prev: ThemedTrackRowProps, next: ThemedTrackRowProps) =>
   prev.aura.accent[2] === next.aura.accent[2] &&
     prev.track.user_favorite === next.track.user_favorite &&
     prev.track.sharing === next.track.sharing &&
+    prev.track.title === next.track.title &&
+    prev.track.description === next.track.description &&
+    prev.track.genre === next.track.genre &&
+    prev.track.tag_list === next.track.tag_list &&
     sameScdMeta(prev.track._scd_meta, next.track._scd_meta);
 
 export const ThemedTrackRow = React.memo(ThemedTrackRowImpl, areEqual);

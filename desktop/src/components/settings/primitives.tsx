@@ -1,5 +1,6 @@
 import type {ReactNode} from 'react';
 import {Star} from '../../lib/icons';
+import {usePerfMode} from '../../lib/perf';
 
 /** Shared settings primitives — one consistent visual language across every card. */
 
@@ -7,16 +8,19 @@ export function Toggle({
                            checked,
                            onChange,
                            disabled = false,
+                           label,
                        }: {
     checked: boolean;
     onChange: () => void;
     disabled?: boolean;
+    label?: string;
 }) {
     return (
         <button
             type="button"
             role="switch"
             aria-checked={checked}
+            aria-label={label}
             disabled={disabled}
             onClick={onChange}
             className={`relative w-11 h-6 rounded-full transition-all duration-200 shrink-0 ${
@@ -72,15 +76,19 @@ export function Card({
     action?: ReactNode;
     children: ReactNode;
 }) {
+    const blur = usePerfMode().blur(40);
     return (
         <section
+            data-ui="card"
             className="group relative rounded-3xl p-6 overflow-hidden transition-[box-shadow,border-color] duration-500 hover:border-white/[0.14]"
             style={{
                 border: '0.5px solid rgba(255,255,255,0.1)',
                 background:
-                    'linear-gradient(165deg, rgba(255,255,255,0.055), rgba(255,255,255,0.015) 58%, rgba(255,255,255,0.03))',
-                backdropFilter: 'blur(40px) saturate(1.4)',
-                WebkitBackdropFilter: 'blur(40px) saturate(1.4)',
+                    blur > 0
+                        ? 'linear-gradient(165deg, rgba(255,255,255,0.055), rgba(255,255,255,0.015) 58%, rgba(255,255,255,0.03))'
+                        : 'rgba(18,18,22,0.85)',
+                backdropFilter: blur > 0 ? `blur(${blur}px) saturate(1.4)` : undefined,
+                WebkitBackdropFilter: blur > 0 ? `blur(${blur}px) saturate(1.4)` : undefined,
                 boxShadow: '0 18px 50px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06)',
             }}
         >
@@ -127,7 +135,7 @@ export function Segmented<T extends string>({
                                                 columns,
                                             }: {
     value: T;
-    options: ReadonlyArray<{ id: T; label: string }>;
+    options: ReadonlyArray<{ id: T; label: string; disabled?: boolean; adornment?: ReactNode }>;
     onChange: (v: T) => void;
     columns?: number;
 }) {
@@ -142,14 +150,17 @@ export function Segmented<T extends string>({
                     <button
                         key={o.id}
                         type="button"
+                        disabled={o.disabled}
                         onClick={() => onChange(o.id)}
-                        className={`rounded-xl border px-3 py-2.5 text-[12.5px] font-semibold transition-all duration-200 cursor-pointer ${
-                            active
-                                ? 'text-white'
-                                : 'text-white/45 hover:text-white/70 hover:bg-white/[0.05] border-white/[0.05] bg-white/[0.02]'
+                        className={`inline-flex items-center justify-center gap-1.5 rounded-xl border px-3 py-2.5 text-[12.5px] font-semibold transition-all duration-200 ${
+                            o.disabled
+                                ? 'cursor-not-allowed text-white/30 border-white/[0.04] bg-white/[0.015]'
+                                : active
+                                    ? 'cursor-pointer text-white'
+                                    : 'cursor-pointer text-white/45 hover:text-white/70 hover:bg-white/[0.05] border-white/[0.05] bg-white/[0.02]'
                         }`}
                         style={
-                            active
+                            active && !o.disabled
                                 ? {
                                     background:
                                         'linear-gradient(180deg, var(--color-accent-glow), transparent), rgba(255,255,255,0.05)',
@@ -160,6 +171,7 @@ export function Segmented<T extends string>({
                         }
                     >
                         {o.label}
+                        {o.adornment}
                     </button>
                 );
             })}

@@ -1,11 +1,11 @@
-import { toast } from 'sonner';
-import i18n from '../i18n';
 import { useAppStatusStore } from '../stores/app-status';
 import { useAuthStore } from '../stores/auth';
+import { describeApiError } from './api-error-text';
+import { emitApiWrite } from './api-writes';
 import { noteAuthGap, noteRateLimit, noteSuccess } from './auth-recovery';
 import { API_BASE, API_STAR_BASE } from './constants';
 import { logHttpError, logHttpFailure, logInfo, trackAsync } from './diagnostics';
-import { edgeFetch } from './edge';
+import { EdgeUnreachableError, edgeFetch } from './edge';
 import {
   getHostVerdict,
   isHealthy,
@@ -17,9 +17,11 @@ import {
   markUnhealthy,
   noteMainBadResponse,
   noteRequestTimeout,
+  noteUnreachable,
   preferredControlBase,
   SLOW_RESPONSE_MS,
 } from './host-status';
+import { notifyError } from './notify';
 import { getIsPremium, requestPremiumRecheck } from './premium-cache';
 
 // ─── Session ────────────────────────────────────────────────
@@ -67,13 +69,55 @@ export function getSessionId() {
 // ─── Error ──────────────────────────────────────────────────
 
 export class ApiError extends Error {
+  readonly code: string | null;
+
   constructor(
     public status: number,
     public body: string,
+    public retryAfterSeconds: number | null = null,
   ) {
     super(`API ${status}: ${body}`);
     this.name = 'ApiError';
+    this.code = errorCode(body);
   }
+
+  get refreshPending(): boolean {
+    return this.status === 503 && !!this.code?.endsWith('_refresh_pending');
+  }
+}
+
+function errorCode(body: string): string | null {
+  try {
+    const code = JSON.parse(body)?.code;
+    return typeof code === 'string' ? code : null;
+  } catch {
+    return null;
+  }
+}
+
+function retryAfterSeconds(res: Response): number | null {
+  const seconds = Number(res.headers.get('retry-after'));
+  return Number.isFinite(seconds) && seconds > 0 ? seconds : null;
+}
+
+export function isRefreshPending(error: unknown): error is ApiError {
+  return error instanceof ApiError && error.refreshPending;
+}
+
+const QUIET_ANSWERS: Record<string, number> = {
+  search_timeout: 503,
+  search_busy: 503,
+  vibe_unavailable: 503,
+  soundcloud_search_unavailable: 503,
+  soundcloud_search_busy: 503,
+  resolve_busy: 503,
+  resolve_upstream_unavailable: 502,
+};
+
+export function isQuietAnswer(error: unknown): boolean {
+  return (
+    error instanceof ApiError && error.code != null && QUIET_ANSWERS[error.code] === error.status
+  );
 }
 
 function isRateLimitError(status: number, body: string): boolean {
@@ -88,18 +132,14 @@ function fetchWithTimeout(url: string, options: RequestInit, timeoutMs: number):
   return edgeFetch(url, options, timeoutMs);
 }
 
-function handleApiError(err: ApiError): void {
+function handleApiError(err: ApiError, method: string, path: string): void {
   if (err.status >= 500) {
     if (isIncidentActive()) return; // авария уже показана модалкой/баннером
-    // Фиксированный id: sonner заменяет тост, шторм не стекается.
-    toast.error(i18n.t('errors.serverError', { status: err.status }), { id: 'api-server-error' });
-  } else if (err.status >= 400 && err.status !== 401) {
-    try {
-      const parsed = JSON.parse(err.body);
-      toast.error(parsed.message || parsed.error || `Error ${err.status}`);
-    } catch {
-      toast.error(`Error ${err.status}`);
-    }
+    const { title, description } = describeApiError(err, path);
+    notifyError(title, { id: 'api-server-error', description });
+  } else if (err.status >= 400 && err.status !== 401 && method !== 'GET' && method !== 'HEAD') {
+    const { title, description } = describeApiError(err, path);
+    notifyError(title, { id: `api-client-error:${title}`, description });
   }
 }
 
@@ -112,6 +152,7 @@ export type ApiRequestOptions = RequestInit & {
    * мог свести его к дефолту (напр. 404 /related → пустой список похожих).
    */
   silentStatuses?: number[];
+  quiet?: boolean;
 };
 
 /**
@@ -172,6 +213,7 @@ function apiBasesFor(path: string): string[] {
     return [primary, primary === API_BASE ? API_STAR_BASE : API_BASE];
   }
   if (path.startsWith('/auth/')) return [preferredControlBase()];
+  if (path.startsWith('/rooms')) return [API_BASE];
   if (!getIsPremium() || !sessionId) return [API_BASE];
   // Cooldown star'а уводит премиум на main только пока main есть чем ответить.
   // Иначе star остаётся первым: его 30-секундная отсидка — это одна осечка, а
@@ -181,6 +223,10 @@ function apiBasesFor(path: string): string[] {
   return isHealthy(API_STAR_BASE) || mainIsLastResort()
     ? [API_STAR_BASE, API_BASE]
     : [API_BASE, API_STAR_BASE];
+}
+
+export function preferredDataBase(): string {
+  return apiBasesFor('/tracks')[0] ?? API_BASE;
 }
 
 /** Бюджет запроса по его пути. */
@@ -243,7 +289,7 @@ export async function apiRequest<T = unknown>(
   options: ApiRequestOptions = {},
   timeoutMs?: number,
 ): Promise<T> {
-  const { silentStatuses, ...init } = options;
+  const { silentStatuses, quiet, ...init } = options;
   // Мост мог ещё не дойти до зеркала — иначе запрос уйдёт без сессии в никуда.
   if (!sessionKnown) await awaitSessionKnown();
   const headers = new Headers(init.headers);
@@ -271,8 +317,8 @@ export async function apiRequest<T = unknown>(
     const attemptStart = performance.now();
 
     // Хост с вердиктом down не держит попытку дольше 10 c.
-    const attemptTimeout =
-      getHostVerdict(base) === 'down'
+    const attemptTimeout: number =
+      getHostVerdict(base) === 'down' || authRejection
         ? Math.min(effectiveTimeout, DOWN_HOST_TIMEOUT_MS)
         : effectiveTimeout;
 
@@ -282,20 +328,21 @@ export async function apiRequest<T = unknown>(
         fetchWithTimeout(url, { ...init, headers }, attemptTimeout),
       );
 
+      const body = res.ok ? '' : await res.text();
+      const err = res.ok ? null : new ApiError(res.status, body, retryAfterSeconds(res));
+      const answered = res.status < 500 || isQuietAnswer(err) || !!err?.refreshPending;
+
       // Жив = ответил <500 (как probeOnce; 401/403 — валидный ответ axum, star они
       // НЕ марают — иначе протухший токен выключал бы star при мёртвом main).
       // ≥500 — пассивный фейл: cooldown + проба main; вердикт down ставит только проба.
-      if (res.status < 500) markHealthy(base);
+      if (answered) markHealthy(base);
       else markUnhealthy(base);
-      if (
-        base === API_BASE &&
-        isMainBadSample(path, res.status < 500, performance.now() - attemptStart)
-      ) {
+      if (base === API_BASE && isMainBadSample(path, answered, performance.now() - attemptStart)) {
         noteMainBadResponse();
       }
       // Успех star для не-премиума — probe-сигнал, не «онлайн» (иначе флап offline↔online).
       if (base === API_BASE || getIsPremium()) {
-        useAppStatusStore.getState().setBackendReachable(true);
+        useAppStatusStore.getState().confirmOnline();
       }
 
       // Сосед отдал по ТОЙ ЖЕ сессии то, в чём main только что отказал. Сессия
@@ -306,10 +353,7 @@ export async function apiRequest<T = unknown>(
         logInfo(`[Host] main отказал в ${label}, star отдал по той же сессии → идём со star`);
       }
 
-      if (!res.ok) {
-        const body = await res.text();
-        const err = new ApiError(res.status, body);
-
+      if (err) {
         // Ожидаемый гейт-отказ star (не-премиум): не шум, а подозрение —
         // сверочный запрос сам себя не триггерит.
         const starDeny = base === API_STAR_BASE && res.status === 403;
@@ -317,7 +361,9 @@ export async function apiRequest<T = unknown>(
 
         // Штатный по контракту статус (напр. 404 /related = соседей пока нет):
         // глушим тихо — без тоста, без recovery, без error-лога.
-        if (silentStatuses?.includes(res.status)) throw err;
+        if (silentStatuses?.includes(res.status) || isQuietAnswer(err) || err.refreshPending) {
+          throw err;
+        }
 
         if (res.status === 401) authRejection ??= err;
 
@@ -370,7 +416,7 @@ export async function apiRequest<T = unknown>(
           throw verdict;
         }
 
-        if (!starDeny) handleApiError(err);
+        if (!starDeny && !quiet) handleApiError(err, method, path);
         console.error(`HTTP ERROR: url: ${path}, `, err);
         throw err;
       }
@@ -379,6 +425,7 @@ export async function apiRequest<T = unknown>(
       // если всё ожило само. Только авторизованный: публичная 200 про сессию
       // не говорит ничего и не имеет права снимать вердикт.
       noteSuccess(authenticated);
+      if (!['GET', 'HEAD'].includes(method.toUpperCase())) emitApiWrite(path);
 
       const ct = res.headers.get('content-type');
       const reply = await (ct?.includes('application/json') ? res.json() : (res.text() as T));
@@ -391,7 +438,7 @@ export async function apiRequest<T = unknown>(
 
       return reply;
     } catch (error) {
-      if (error instanceof ApiError) throw error;
+      if (error instanceof ApiError || error instanceof SyntaxError) throw error;
       markUnhealthy(base);
       if (base === API_BASE) noteMainBadResponse();
       if (isTimeoutError(error)) noteRequestTimeout();
@@ -401,7 +448,12 @@ export async function apiRequest<T = unknown>(
         continue;
       }
       logHttpFailure(label, url, error, performance.now() - attemptStart);
-      useAppStatusStore.getState().setBackendReachable(false);
+      if (authRejection) {
+        logInfo(`[Host] ${label}: no second opinion from ${hostLabel(base)}, keeping the 401`);
+        noteAuthGap();
+        throw authRejection;
+      }
+      if (error instanceof EdgeUnreachableError) noteUnreachable();
       throw error;
     }
   }

@@ -1,4 +1,4 @@
-import { lazy, type ReactNode, Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import { lazy, type ReactNode, Suspense, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { Toaster } from 'sonner';
@@ -8,12 +8,16 @@ import { HostStatusBanner } from './components/host-status/HostStatusBanner';
 import { HostStatusModal } from './components/host-status/HostStatusModal';
 import { AppShell } from './components/layout/AppShell';
 import YMImportFloatingStatus from './components/music/YMImportFloatingStatus';
+import { NetCheckModal } from './components/net-check/NetCheckModal';
 import { SessionRecoveryModal } from './components/SessionRecoveryModal';
 import { ThemeProvider } from './components/ThemeProvider';
 import { ApiError } from './lib/api';
+import { loadBlockedArtists } from './lib/blocked-artists';
 import { CHECK_UPDATES } from './lib/constants';
-import { checkForAppUpdate, type GithubRelease } from './lib/update-check';
+import { requestProbe } from './lib/host-status';
+import { usePerfMode } from './lib/perf';
 import { getAppMode, useAppMode, useAppStatusStore } from './stores/app-status';
+import { useAppUpdateStore } from './stores/app-update';
 import { useAuthStore } from './stores/auth';
 import { type StartupPage, useSettingsStore } from './stores/settings';
 import { useYmImportStore } from './stores/ym-import';
@@ -61,6 +65,8 @@ const NewsToast = lazy(() =>
   import('./components/NewsToast').then((module) => ({ default: module.NewsToast })),
 );
 
+const UPDATE_RECHECK_MS = 6 * 60 * 60 * 1000;
+
 const STARTUP_PAGE_ROUTES: Record<StartupPage, string> = {
   home: '/home',
   search: '/search',
@@ -81,14 +87,9 @@ export default function App() {
       fetchUser: s.fetchUser,
     })),
   );
-  const [availableRelease, setAvailableRelease] = useState<GithubRelease | null>(null);
-  const dismissedReleaseTagRef = useRef<string | null>(null);
-  const handleUpdateDismiss = useCallback(() => {
-    setAvailableRelease((prev) => {
-      if (prev) dismissedReleaseTagRef.current = prev.tag_name;
-      return null;
-    });
-  }, []);
+  const userUrn = useAuthStore((s) => s.user?.urn ?? null);
+  const updateRelease = useAppUpdateStore((s) => (s.modalOpen ? s.release : null));
+  const dismissUpdate = useAppUpdateStore((s) => s.dismiss);
   const appMode = useAppMode();
   const offlineBypass = useAppStatusStore((s) => s.offlineBypass);
   const canUseMainShell = isAuthenticated || hasSession;
@@ -101,16 +102,20 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    if (userUrn && appMode === 'online') void loadBlockedArtists(userUrn);
+  }, [userUrn, appMode]);
+
+  useEffect(() => {
+    if (hasSession && offlineBypass) useAppStatusStore.getState().setOfflineBypass(false);
+  }, [hasSession, offlineBypass]);
+
+  useEffect(() => {
+    useAppStatusStore.getState().setNavigatorOnline(navigator.onLine);
     const syncOnline = () => {
-      const online = navigator.onLine;
-      const appStatus = useAppStatusStore.getState();
-      appStatus.setNavigatorOnline(online);
-      if (online) {
-        appStatus.setBackendReachable(true);
-      }
+      useAppStatusStore.getState().setNavigatorOnline(navigator.onLine);
+      requestProbe({ force: true });
     };
 
-    syncOnline();
     window.addEventListener('online', syncOnline);
     window.addEventListener('offline', syncOnline);
     return () => {
@@ -154,33 +159,22 @@ export default function App() {
   }, [appMode, fetchUser, hasSession]);
 
   useEffect(() => {
-    if (!CHECK_UPDATES || !isAuthenticated || appMode !== 'online') {
-      setAvailableRelease(null);
-      return;
-    }
+    if (!CHECK_UPDATES || !isAuthenticated || appMode !== 'online') return;
 
-    let cancelled = false;
-    const checkUpdates = () => {
-      checkForAppUpdate()
-        .then((release) => {
-          if (cancelled) return;
-          if (release && release.tag_name === dismissedReleaseTagRef.current) return;
-          setAvailableRelease(release);
-        })
-        .catch(() => {});
-    };
+    const checkUpdates = () => void useAppUpdateStore.getState().check(false);
+    const interval = window.setInterval(checkUpdates, UPDATE_RECHECK_MS);
 
     if ('requestIdleCallback' in window) {
       const id = window.requestIdleCallback(checkUpdates, { timeout: 1200 });
       return () => {
-        cancelled = true;
+        window.clearInterval(interval);
         window.cancelIdleCallback(id);
       };
     }
 
     const id = setTimeout(checkUpdates, 1);
     return () => {
-      cancelled = true;
+      window.clearInterval(interval);
       clearTimeout(id);
     };
   }, [appMode, isAuthenticated]);
@@ -203,10 +197,16 @@ export default function App() {
       />
       <SessionRecoveryModal />
       <YMImportFloatingStatus />
+      {updateRelease && (
+        <Suspense fallback={null}>
+          <UpdateChecker release={updateRelease} onDismiss={dismissUpdate} />
+        </Suspense>
+      )}
       <BrowserRouter>
         {/* Внутри Router ради navigate('/offline'); видны и над Login (он тоже в Router). */}
         <HostStatusModal />
         <HostStatusBanner />
+        <NetCheckModal />
         {showOfflineOnlyShell ? (
           <Routes>
             <Route element={<AppShell />}>
@@ -236,11 +236,6 @@ export default function App() {
           </Suspense>
         ) : (
           <>
-            {availableRelease && (
-              <Suspense fallback={null}>
-                <UpdateChecker release={availableRelease} onDismiss={handleUpdateDismiss} />
-              </Suspense>
-            )}
             <Suspense fallback={null}>
               <NewsToast />
             </Suspense>
@@ -370,12 +365,20 @@ function RouteLoader({ children }: { children: ReactNode }) {
 
 function AppLoadingScreen({ fullscreen = false }: { fullscreen?: boolean }) {
   const { t } = useTranslation();
+  const blur = usePerfMode().blur(28);
 
   return (
     <div
       className={`flex items-center justify-center px-6 py-8 ${fullscreen ? 'h-screen' : 'min-h-[42vh]'}`}
     >
-      <div className="flex items-center gap-3 rounded-[24px] border border-white/8 bg-white/[0.035] px-4 py-3 shadow-[0_18px_44px_rgba(0,0,0,0.24)] backdrop-blur-[28px]">
+      <div
+        className="flex items-center gap-3 rounded-[24px] border border-white/8 bg-white/[0.035] px-4 py-3 shadow-[0_18px_44px_rgba(0,0,0,0.24)]"
+        style={
+          blur > 0
+            ? { backdropFilter: `blur(${blur}px)`, WebkitBackdropFilter: `blur(${blur}px)` }
+            : { background: 'rgba(18,18,22,0.85)' }
+        }
+      >
         <div className="flex size-10 items-center justify-center rounded-[16px] border border-accent/18 bg-accent/[0.10]">
           <div className="size-4 rounded-full border-2 border-accent border-t-transparent animate-spin" />
         </div>

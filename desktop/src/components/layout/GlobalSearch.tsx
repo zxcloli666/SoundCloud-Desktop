@@ -4,9 +4,9 @@ import {useLocation, useNavigate} from 'react-router-dom';
 import {Clock, Search as SearchIcon, X} from '../../lib/icons';
 import {usePerfMode} from '../../lib/perf';
 import {isMac} from '../../lib/platform';
+import {findSoundCloudLink} from '../../lib/soundcloudLink';
 import {useSearchHistoryStore} from '../../stores/searchHistory';
 import {useSearchQueryStore} from '../../stores/searchQuery';
-import {isSoundCloudUrl} from '../search/utils';
 
 /* The one global search field — lives in the titlebar, present on every page.
  * Writes the shared query store and routes to /search; the Search page reads
@@ -21,6 +21,7 @@ export const GlobalSearch = memo(function GlobalSearch() {
     const history = useSearchHistoryStore((s) => s.queries);
     const removeQuery = useSearchHistoryStore((s) => s.removeQuery);
     const clearHistory = useSearchHistoryStore((s) => s.clearHistory);
+    const addQuery = useSearchHistoryStore((s) => s.addQuery);
 
     const perf = usePerfMode();
     const fieldBlur = perf.blur(24);
@@ -28,7 +29,7 @@ export const GlobalSearch = memo(function GlobalSearch() {
 
     const [focused, setFocused] = useState(false);
     const blurTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-    const isUrl = isSoundCloudUrl(q);
+    const isUrl = findSoundCloudLink(q) !== null;
     const showHistory = focused && q.trim() === '' && history.length > 0;
 
     useEffect(
@@ -93,6 +94,7 @@ export const GlobalSearch = memo(function GlobalSearch() {
                     }}
                     onKeyDown={(e) => {
                         if (e.key === 'Enter') {
+                            if (!isUrl && q.trim().length >= 2) addQuery(q.trim());
                             goSearch();
                             (e.currentTarget as HTMLInputElement).blur();
                         } else if (e.key === 'Escape') {

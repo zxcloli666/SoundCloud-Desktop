@@ -38,13 +38,12 @@ export const SoundWaveSimilarBlock = React.memo(function SoundWaveSimilarBlock({
   trackUrn,
 }: Props) {
   const { t } = useTranslation();
-  const trackId = useMemo(() => trackUrn.split(':').pop() ?? '', [trackUrn]);
   const hideListened = useSettingsStore((s) => s.soundwaveHideListened);
 
   const { data, isLoading } = useClusterWave({
-    queryKey: ['cluster-wave', 'similar', trackId, hideListened],
-    url: trackId
-      ? `/recommendations/similar/${encodeURIComponent(trackId)}?hide_listened=${hideListened ? '1' : '0'}`
+    queryKey: ['cluster-wave', 'similar', trackUrn, hideListened],
+    url: trackUrn
+      ? `/recommendations/similar/${encodeURIComponent(trackUrn)}?hide_listened=${hideListened ? '1' : '0'}`
       : null,
   });
 
@@ -62,9 +61,9 @@ export const SoundWaveSimilarBlock = React.memo(function SoundWaveSimilarBlock({
   );
 
   useInfiniteWave({
-    enabled: !!trackId,
+    enabled: !!trackUrn,
     seedKind: 'track',
-    seedId: trackId,
+    seedId: trackUrn,
     initialTracks: waveCluster?.tracks ?? [],
     initialCursor: null,
     hideListened,

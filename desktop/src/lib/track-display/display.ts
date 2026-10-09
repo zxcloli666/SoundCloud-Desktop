@@ -1,5 +1,5 @@
 import type {Track, TrackAvailability} from '../../stores/player';
-import {stripInlineTags, stripTranslitParens} from './clean';
+import {stripNoiseTags, stripRoleTags, stripTranslitParens} from './clean';
 import {foldName} from './fold';
 import {type NamePart, splitNamesWithOffsets, TITLE_SEPARATORS} from './split';
 
@@ -153,13 +153,13 @@ function computeTrackDisplay(track: DisplayInput): TrackDisplay {
  * "МОКЕРИ, Psychosis", название "kill".
  */
 function splitTitleAuthors(track: DisplayInput): TrackDisplay {
-  const cleaned = stripTranslitParens(stripInlineTags(track.title));
+  const cleaned = stripTranslitParens(stripNoiseTags(track.title));
   const known = knownNames(track);
 
   for (const sep of TITLE_SEPARATORS) {
     const idx = cleaned.indexOf(sep);
     if (idx <= 0) continue;
-    const left = cleaned.slice(0, idx).trim();
+    const left = stripRoleTags(cleaned.slice(0, idx)).trim();
     const right = cleaned.slice(idx + sep.length).trim();
     if (!right) continue;
     const parts = splitNamesWithOffsets(left);
@@ -185,7 +185,7 @@ function splitTitleAuthors(track: DisplayInput): TrackDisplay {
     const idx = cleaned.indexOf(sep);
     if (idx <= 0) continue;
     const left = cleaned.slice(0, idx).trim();
-    const right = cleaned.slice(idx + sep.length).trim();
+    const right = stripRoleTags(cleaned.slice(idx + sep.length)).trim();
     if (!left || !right) continue;
     const parts = splitNamesWithOffsets(right);
     if (parts.length === 0 || parts.length > MAX_TITLE_ARTISTS) continue;

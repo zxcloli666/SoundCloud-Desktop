@@ -4,6 +4,7 @@ use souvlaki::{
     MediaControlEvent, MediaControls, MediaMetadata as SmtcMetadata, MediaPlayback, MediaPosition,
     PlatformConfig,
 };
+use crate::app::diagnostics;
 use crate::rt::AppHandle;
 use tauri::{Emitter, Manager};
 
@@ -49,7 +50,7 @@ pub fn start_media_controls(app: &AppHandle) {
             let mut controls = match MediaControls::new(config) {
                 Ok(controls) => controls,
                 Err(error) => {
-                    eprintln!("[MediaControls] Failed to create: {:?}", error);
+                    diagnostics::warn(format!("[MediaControls] Failed to create: {:?}", error));
                     return;
                 }
             };
@@ -81,6 +82,12 @@ pub fn start_media_controls(app: &AppHandle) {
                             souvlaki::SeekDirection::Backward => -10.0,
                         };
                         event_handle.emit("media:seek-relative", offset).ok();
+                    }
+                    MediaControlEvent::Raise => {
+                        crate::app::tray::run_action(&event_handle, "show");
+                    }
+                    MediaControlEvent::Quit => {
+                        crate::app::tray::run_action(&event_handle, "quit");
                     }
                     _ => {}
                 })

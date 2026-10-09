@@ -1,3 +1,4 @@
+import {useSyncExternalStore} from 'react';
 import {useSettingsStore} from '../stores/settings';
 
 /**
@@ -95,4 +96,40 @@ export function setupVisibilityGate(): void {
     };
     apply();
     document.addEventListener('visibilitychange', apply);
+}
+
+let focusGateInstalled = false;
+
+export function setupFocusGate(): void {
+    if (focusGateInstalled || typeof document === 'undefined') return;
+    focusGateInstalled = true;
+    const apply = () => {
+        if (document.hasFocus()) {
+            document.documentElement.removeAttribute('data-app-idle');
+        } else {
+            document.documentElement.setAttribute('data-app-idle', '1');
+        }
+    };
+    apply();
+    window.addEventListener('focus', apply);
+    window.addEventListener('blur', apply);
+}
+
+export function isAppIdle(): boolean {
+    return document.hidden || !document.hasFocus();
+}
+
+export function subscribeAppIdle(onChange: () => void): () => void {
+    document.addEventListener('visibilitychange', onChange);
+    window.addEventListener('focus', onChange);
+    window.addEventListener('blur', onChange);
+    return () => {
+        document.removeEventListener('visibilitychange', onChange);
+        window.removeEventListener('focus', onChange);
+        window.removeEventListener('blur', onChange);
+    };
+}
+
+export function useAppIdle(): boolean {
+    return useSyncExternalStore(subscribeAppIdle, isAppIdle);
 }

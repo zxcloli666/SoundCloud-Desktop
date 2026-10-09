@@ -82,11 +82,34 @@
     display: none;
 }
 
+[data-perf="light"] *,
+[data-perf="light"] *::before,
+[data-perf="light"] *::after {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
 /* Global idle-animation gate — the WebView never throttles a hidden window, so
    pause every animation while minimized (all modes, zero visual change while shown). */
 [data-app-hidden="1"] *,
 [data-app-hidden="1"] *::before,
 [data-app-hidden="1"] *::after {
+    animation-play-state: paused !important;
+}
+
+[data-app-idle="1"] [style*="infinite"],
+[data-app-idle="1"] .skeleton-shimmer,
+[data-app-idle="1"] .soundwave-bar,
+[data-app-idle="1"] .vp-chev,
+[data-app-idle="1"] .vp-mote,
+[data-app-idle="1"] .qr-aurora,
+[data-app-idle="1"] .qr-rim,
+[data-app-idle="1"] .lyric-line[data-state="active"] .note-gradient-text,
+[data-app-idle="1"] .npb-dock[data-playing="true"] .npb-ring,
+[data-app-idle="1"] .npb-dock[data-playing="true"] .npb-eq i,
+[data-app-idle="1"] .npb-dock[data-playing="true"] .npb-play::after,
+[data-app-idle="1"] .tp[data-playing="true"] .npb-ring,
+[data-app-idle="1"] .tp[data-playing="true"] .npb-eq i {
     animation-play-state: paused !important;
 }
 
@@ -99,7 +122,10 @@
 [data-perf="light"] .vp-mote,
 [data-perf="light"] .lyric-line[data-state="active"] .note-gradient-text,
 [data-perf="light"] .npb-dock[data-playing="true"] .npb-ring,
-[data-perf="light"] .npb-dock[data-playing="true"] .npb-play::after {
+[data-perf="light"] .npb-dock[data-playing="true"] .npb-eq i,
+[data-perf="light"] .npb-dock[data-playing="true"] .npb-play::after,
+[data-perf="light"] .tp[data-playing="true"] .npb-ring,
+[data-perf="light"] .tp[data-playing="true"] .npb-eq i {
     animation: none !important;
 }
 
@@ -135,7 +161,7 @@ body,
 }
 
 #root {
-  background: rgb(8, 8, 10);
+  background: var(--bg-primary, rgb(8, 8, 10));
   overflow: hidden;
 }
 
@@ -255,6 +281,22 @@ select,
 
 .animate-fade-in-up {
   animation: fadeInUp 0.5s var(--ease-apple) both;
+}
+
+@keyframes ctxMenuIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.ctx-menu {
+  transform-origin: var(--radix-popover-content-transform-origin);
+  animation: ctxMenuIn 0.14s var(--ease-apple) both;
 }
 
 .hero-greeting {
@@ -518,10 +560,8 @@ select,
   color: rgba(255, 255, 255, 0.32);
 }
 
-/* Light mode renders the active line as one .lyric-fill span (no per-char nodes),
-   so brighten its text directly — the per-char sweep that lights beauty is absent. */
-[data-perf="light"] .lyric-line[data-state="active"] .lyric-fill {
-    color: #fff;
+[data-highlight="line"] .lyric-fill {
+  color: inherit;
 }
 
 /* A "word" wrapper just keeps characters from breaking mid-word. */
@@ -968,6 +1008,11 @@ select,
     gap: 12px;
 }
 
+.npb-quality {
+    flex: 0 0 auto;
+    width: 96px;
+}
+
 .npb-sep {
     width: 1px;
     height: 30px;
@@ -1102,12 +1147,26 @@ select,
     }
 }
 
+.npb-vol {
+    position: relative;
+}
+
+.npb-vol-pop {
+    display: none;
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    padding-bottom: 12px;
+    transform: translateX(-50%);
+}
+
 .npb-txt {
     display: flex;
     flex-direction: column;
     gap: 2px;
+    flex: 0 1 150px;
+    width: 150px;
     min-width: 0;
-    max-width: 150px;
 }
 
 .npb-ttl {
@@ -1283,6 +1342,7 @@ select,
     z-index: 4;
     display: grid;
     place-items: center;
+    cursor: pointer;
     border-radius: inherit;
     background: linear-gradient(180deg, rgba(8, 8, 10, 0.34), rgba(8, 8, 10, 0.62));
     font-size: 11px;
@@ -1293,13 +1353,43 @@ select,
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
 }
 
+.npb-art-load-cancel {
+    display: none;
+}
+
+.npb-art-load:hover .npb-art-load-value {
+    display: none;
+}
+
+.npb-art-load:hover .npb-art-load-cancel {
+    display: block;
+}
+
 @media (max-width: 1040px) {
     .npb .npb-vol-slider {
         display: none;
     }
 
+    .npb-vol:hover .npb-vol-pop {
+        display: block;
+    }
+
     .npb-txt {
-        max-width: 112px;
+        flex-basis: 112px;
+        width: 112px;
+    }
+
+    .npb-quality {
+        width: auto;
+    }
+
+    .npb-cdn {
+        gap: 0;
+        padding-inline: 9px;
+    }
+
+    .npb-cdn-label {
+        display: none;
     }
 }
 
@@ -1310,4 +1400,43 @@ select,
     .npb-dock[data-playing="true"] .npb-play::after {
         animation: none;
     }
+}
+
+.track-menu {
+  opacity: 0;
+  transform: scale(0.96);
+  transition: opacity 0.16s cubic-bezier(0.16, 1, 0.3, 1),
+  transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.track-menu[data-state="open"] {
+  opacity: 1;
+  transform: scale(1);
+}
+
+@property --cover-a {
+    syntax: "<color>";
+    inherits: false;
+    initial-value: transparent;
+}
+
+@property --cover-b {
+    syntax: "<color>";
+    inherits: false;
+    initial-value: transparent;
+}
+
+.cover-tint {
+    background:
+        radial-gradient(75% 65% at 0% 0%, color-mix(in srgb, var(--cover-a) 26%, transparent) 0%, transparent 72%),
+        radial-gradient(60% 55% at 100% 6%, color-mix(in srgb, var(--cover-b) 18%, transparent) 0%, transparent 70%),
+        radial-gradient(90% 60% at 50% 108%, color-mix(in srgb, var(--cover-a) 16%, transparent) 0%, transparent 70%),
+        linear-gradient(180deg, color-mix(in srgb, var(--cover-a) 7%, transparent), color-mix(in srgb, var(--cover-b) 4%, transparent));
+}
+
+.cover-tint[data-animate] {
+    transition:
+        --cover-a 1.4s var(--ease-apple),
+        --cover-b 1.4s var(--ease-apple),
+        opacity 0.9s ease;
 }

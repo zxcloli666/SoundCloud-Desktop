@@ -1,17 +1,22 @@
+use std::time::Duration;
+
 use crate::rt::AppHandle;
 use tauri::{Manager, State};
 
 use crate::audio::device;
 use crate::audio::engine;
+use crate::audio::silence;
 use crate::audio::state::AudioState;
 use crate::audio::timing;
 use crate::audio::types::{AudioLoadResult, AudioSink};
+use crate::shared::blocking::run_blocking;
 
 #[tauri::command]
 pub async fn audio_load_file(
     path: String,
     cache_key: Option<String>,
     start_paused: bool,
+    crossfade_ms: Option<u64>,
     app: AppHandle,
     state: State<'_, AudioState>,
 ) -> Result<AudioLoadResult, String> {
@@ -20,14 +25,18 @@ pub async fn audio_load_file(
         .app_cache_dir()
         .ok()
         .map(|dir| dir.join("audio-normalization"));
-    engine::load_file(
+    let result = engine::load_file(
         path,
         normalization_cache_dir,
         cache_key,
         start_paused,
+        crossfade_ms.filter(|&ms| ms > 0).map(Duration::from_millis),
+        &app,
         state,
     )
-    .await
+    .await?;
+    silence::scan(&app);
+    Ok(result)
 }
 
 #[tauri::command]
@@ -45,7 +54,7 @@ pub async fn audio_load_url(
         .app_cache_dir()
         .ok()
         .map(|dir| dir.join("audio-normalization"));
-    engine::load_url(
+    let result = engine::load_url(
         url,
         session_id,
         cache_path,
@@ -54,7 +63,9 @@ pub async fn audio_load_url(
         start_paused,
         state,
     )
-    .await
+    .await?;
+    silence::scan(&app);
+    Ok(result)
 }
 
 #[tauri::command]
@@ -83,13 +94,31 @@ pub fn audio_set_volume(volume: f64, state: State<'_, AudioState>) {
 }
 
 #[tauri::command]
+pub fn audio_set_fft_enabled(enabled: bool, state: State<'_, AudioState>) {
+    state
+        .analyser_buffer
+        .enabled
+        .store(enabled, std::sync::atomic::Ordering::Relaxed);
+}
+
+#[tauri::command]
 pub fn audio_set_playback_rate(rate: f64, state: State<'_, AudioState>) {
     engine::set_playback_rate(rate, state);
 }
 
 #[tauri::command]
+pub fn audio_set_pitch_ratio(ratio: f64, state: State<'_, AudioState>) {
+    engine::set_pitch_ratio(ratio, state);
+}
+
+#[tauri::command]
 pub fn audio_set_ab_loop(a: Option<f64>, b: Option<f64>, state: State<'_, AudioState>) {
     engine::set_ab_loop(a, b, state);
+}
+
+#[tauri::command]
+pub fn audio_set_skip_silence(enabled: bool, app: AppHandle) {
+    silence::set_enabled(&app, enabled);
 }
 
 #[tauri::command]
@@ -134,16 +163,16 @@ pub fn audio_set_media_position(position: f64, state: State<'_, AudioState>) {
 }
 
 #[tauri::command]
-pub fn audio_list_devices() -> Vec<AudioSink> {
-    device::list_devices()
+pub async fn audio_list_devices(app: AppHandle) -> Result<Vec<AudioSink>, String> {
+    run_blocking(move || device::list_devices(&app.state::<AudioState>())).await
 }
 
 #[tauri::command]
-pub fn audio_switch_device(
+pub async fn audio_switch_device(
     device_name: Option<String>,
-    state: State<'_, AudioState>,
+    app: AppHandle,
 ) -> Result<(), String> {
-    device::switch_device(state, device_name)
+    run_blocking(move || device::switch_device(app.state(), device_name)).await?
 }
 
 #[tauri::command]

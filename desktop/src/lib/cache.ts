@@ -1,16 +1,33 @@
 import {appCacheDir, join} from '@tauri-apps/api/path';
 import {mkdir, readDir, remove, writeFile} from '@tauri-apps/plugin-fs';
-import {fetch as tauriFetch} from '@tauri-apps/plugin-http';
-import type {PlaybackQuality, PlaybackSource} from '../stores/player';
+import {
+  type PlaybackQuality,
+  type PlaybackSource,
+  type Track,
+  type TrackScdMeta,
+  usePlayerStore,
+} from '../stores/player';
 import {useSettingsStore} from '../stores/settings';
 import {toScproxyUrl} from './asset-url';
+import {CACHE_UNLIMITED, isAudioCacheOff} from './cache-limit';
 import {getStaticPort} from './constants';
 import {trackedInvoke as invoke} from './diagnostics';
+import {sanitizeFilename} from './filename';
+import {onIdle} from './idle';
+import {forgetAllPinned, forgetLikedUrn, forgetPinned, getOfflineKeptUrns} from './offline-index';
+import { isHqStreaming } from './streaming';
+import {isPreviewOnly} from './track-access';
+
+type StorageQuality = TrackScdMeta['storage_quality'];
 
 const WALLPAPERS_DIR = 'wallpapers';
 const CACHE_MAINTENANCE_INTERVAL_MS = 60 * 1000;
+const IMAGE_TRIM_STARTUP_DELAY_MS = 30 * 1000;
+const IDLE_TRIM_MS = 15 * 60 * 1000;
+const LIMIT_CHANGE_SETTLE_MS = 800;
 
 let cacheMaintenanceStarted = false;
+let limitChangeTimer: number | null = null;
 
 /* ── Track cache (Rust) ─────────────────────────────────── */
 
@@ -18,6 +35,8 @@ export interface TrackCacheInfo {
   path: string;
   quality: PlaybackQuality | null;
   source: PlaybackSource | null;
+  acceptedShort: boolean;
+  pinned: boolean;
 }
 
 export function isCached(urn: string): Promise<boolean> {
@@ -30,6 +49,14 @@ export function getCacheFilePath(urn: string): Promise<string | null> {
 
 export function getCacheInfo(urn: string): Promise<TrackCacheInfo | null> {
   return invoke<TrackCacheInfo | null>('track_get_cache_info', { urn });
+}
+
+export function getPinnedUrns(urns: string[]): Promise<string[]> {
+  return invoke<string[]>('track_pinned_urns', { urns });
+}
+
+export function markTrackPlayed(urn: string): Promise<void> {
+  return invoke('track_mark_played', { urn });
 }
 
 export type FfmpegState = 'ready' | 'preparing' | 'unavailable';
@@ -56,7 +83,12 @@ export function getTranscodeStatus(): Promise<TranscodeStatus> {
 /** Builds the Rust-side cache request (stream/download/storage fallbacks + the
  *  API duration used to detect truncated downloads). `durationMs` is the track's
  *  API-reported length in milliseconds. */
-async function buildCacheRequest(urn: string, hq: boolean, durationMs?: number) {
+async function buildCacheRequest(
+  urn: string,
+  hq: boolean,
+  durationMs?: number,
+  storageQuality?: StorageQuality,
+) {
   const { buildStorageUrls, downloadFallbackUrls, streamFallbackUrls, getSessionId } = await import(
     './api'
   );
@@ -68,21 +100,46 @@ async function buildCacheRequest(urn: string, hq: boolean, durationMs?: number) 
     sessionId: getSessionId(),
     hq,
     durationMs,
+    storageQuality,
   };
+}
+
+export function expectedDurationMs(track: Pick<Track, 'duration' | 'access' | 'policy'>) {
+  return isPreviewOnly(track) ? undefined : track.duration;
 }
 
 export async function ensureTrackCached(
   urn: string,
-  highQualityStreaming = useSettingsStore.getState().highQualityStreaming,
+  highQualityStreaming = isHqStreaming(),
   durationMs?: number,
+  storageQuality?: StorageQuality,
 ): Promise<TrackCacheInfo> {
   const cached = await getCacheInfo(urn);
   if (cached) {
     return cached;
   }
 
-  const request = await buildCacheRequest(urn, highQualityStreaming, durationMs);
+  const request = await buildCacheRequest(urn, highQualityStreaming, durationMs, storageQuality);
   return invoke<TrackCacheInfo>('track_ensure_cached', { request });
+}
+
+export async function saveTrackOffline(
+  urn: string,
+  refetch: boolean,
+  durationMs?: number,
+  storageQuality?: StorageQuality,
+): Promise<TrackCacheInfo> {
+  const request = await buildCacheRequest(urn, isHqStreaming(), durationMs, storageQuality);
+  return invoke<TrackCacheInfo>('track_save_offline', { request, refetch });
+}
+
+export async function upgradeCachedTrack(
+  urn: string,
+  durationMs?: number,
+  storageQuality?: StorageQuality,
+): Promise<boolean> {
+  const request = await buildCacheRequest(urn, true, durationMs, storageQuality);
+  return invoke<boolean>('track_upgrade_cached', { request });
 }
 
 export function getCacheSize(): Promise<number> {
@@ -97,12 +154,25 @@ export function clearCache(): Promise<void> {
   return invoke('track_clear_cache');
 }
 
-export function clearLikedCache(): Promise<void> {
-  return invoke('track_clear_liked_cache');
+export async function clearLikedCache(): Promise<void> {
+  await invoke('track_clear_liked_cache');
+  await forgetAllPinned();
 }
 
-export function removeCachedTrack(urn: string): Promise<boolean> {
-  return invoke<boolean>('track_remove_cached', { urn });
+export async function removeCachedTrack(urn: string): Promise<boolean> {
+  const removed = await invoke<boolean>('track_remove_cached', { urn });
+  await forgetPinned(urn);
+  return removed;
+}
+
+export function demoteLikedTrack(urn: string): Promise<boolean> {
+  return invoke<boolean>('track_demote_liked', { urn });
+}
+
+export async function forgetOfflineLike(urn: string): Promise<void> {
+  const [kept] = await Promise.all([getOfflineKeptUrns(), forgetLikedUrn(urn)]);
+  if (kept.includes(urn)) return;
+  await demoteLikedTrack(urn).catch(() => false);
 }
 
 export function listCachedUrns(): Promise<string[]> {
@@ -130,34 +200,60 @@ export function getCacheInventory(): Promise<CacheInventoryEntry[]> {
   return invoke<CacheInventoryEntry[]>('track_cache_inventory');
 }
 
-export interface LikeCacheEntry {
+export interface BulkCacheEntry {
   urn: string;
   urls: string[];
   downloadUrls: string[];
   storageUrls: string[];
   sessionId: string | null;
   hq: boolean;
-  /** API track length (ms) — enables truncated-download detection in Rust. */
   durationMs?: number;
+  storageQuality?: StorageQuality;
 }
 
-export function cacheLikedTracks(entries: LikeCacheEntry[]): Promise<void> {
-  return invoke('track_cache_likes', { entries });
+export interface BulkCacheStatus {
+  scope: string;
+  total: number;
+  done: number;
+  failed: number;
+  skipped: number;
 }
 
-export function isCacheLikesRunning(): Promise<boolean> {
-  return invoke<boolean>('track_cache_likes_running');
+export function startBulkCache(scope: string, entries: BulkCacheEntry[]): Promise<void> {
+  return invoke('track_bulk_cache_start', { scope, entries });
 }
 
-export function cancelCacheLikes(): Promise<void> {
-  return invoke('track_cancel_cache_likes');
+export function getBulkCacheStatus(): Promise<BulkCacheStatus | null> {
+  return invoke<BulkCacheStatus | null>('track_bulk_cache_status');
 }
 
-export function enforceAudioCacheLimit(
+export function cancelBulkCache(): Promise<void> {
+  return invoke('track_bulk_cache_cancel');
+}
+
+export function isAudioCacheDisabled(): boolean {
+  return isAudioCacheOff(useSettingsStore.getState().audioCacheLimitMB);
+}
+
+export function isHoverPreloadEnabled(): boolean {
+  return useSettingsStore.getState().hoverPreload && !isAudioCacheDisabled();
+}
+
+function purgePlayedTracks(): Promise<number> {
+  const keepUrn = usePlayerStore.getState().currentTrack?.urn ?? null;
+  return invoke<number>('track_purge_played', { keepUrn });
+}
+
+export async function enforceAudioCacheLimit(
   limitMb = useSettingsStore.getState().audioCacheLimitMB,
 ): Promise<void> {
-  if (!limitMb || limitMb <= 0) return Promise.resolve();
-  return invoke('track_enforce_cache_limit', { limitMb });
+  if (limitChangeTimer !== null) return;
+  if (isAudioCacheOff(limitMb)) {
+    await purgePlayedTracks();
+    return;
+  }
+  if (!limitMb) return;
+  await invoke('track_enforce_cache_limit', { limitMb });
 }
 
 /* ── Cache maintenance ───────────────────────────────────── */
@@ -169,10 +265,16 @@ export function setupCacheMaintenance() {
   void enforceAudioCacheLimit();
 
   useSettingsStore.subscribe((state, prev) => {
-    if (state.audioCacheLimitMB !== prev.audioCacheLimitMB) {
-      void enforceAudioCacheLimit(state.audioCacheLimitMB);
-    }
+    if (state.audioCacheLimitMB === prev.audioCacheLimitMB) return;
+    if (limitChangeTimer !== null) window.clearTimeout(limitChangeTimer);
+    limitChangeTimer = window.setTimeout(() => {
+      limitChangeTimer = null;
+      void enforceAudioCacheLimit();
+    }, LIMIT_CHANGE_SETTLE_MS);
   });
+
+  window.setTimeout(() => void enforceImageCacheLimit(), IMAGE_TRIM_STARTUP_DELAY_MS);
+  onIdle(IDLE_TRIM_MS, trimWhileIdle);
 
   // Pause maintenance while the window is hidden — the WebView does not throttle timers.
   let maintenanceTimer: number | null = null;
@@ -210,6 +312,24 @@ export function clearImageCache(): Promise<void> {
   return invoke('image_cache_clear');
 }
 
+let imageTrimQueue: Promise<unknown> = Promise.resolve();
+
+export function enforceImageCacheLimit(
+  limitMb = useSettingsStore.getState().imageCacheLimitMB,
+): Promise<unknown> {
+  if (limitMb === CACHE_UNLIMITED) return imageTrimQueue;
+  imageTrimQueue = imageTrimQueue
+    .catch(() => {})
+    .then(() => invoke<number>('image_cache_enforce_limit', { limitMb }));
+  return imageTrimQueue;
+}
+
+function trimWhileIdle() {
+  void import('./scproxy').then((m) => m.clearImageUrlMemo());
+  void enforceImageCacheLimit();
+  void enforceAudioCacheLimit();
+}
+
 /* ── Wallpapers ──────────────────────────────────────────── */
 
 let wallpapersBasePath: string | null = null;
@@ -234,7 +354,7 @@ function extensionFromType(mime: string): string {
  *  Идём через локальный прокси в режиме `direct` — он фетчит с браузерным UA
  *  (Wallhaven/Konachan 403-ят не-браузер), webview-fetch так не умеет. */
 export async function downloadWallpaper(url: string): Promise<string> {
-  const res = await tauriFetch(toScproxyUrl(url, { direct: true }));
+  const res = await fetch(toScproxyUrl(url, { direct: true }));
   if (!res.ok) throw new Error(`Download failed: ${res.status}`);
   const ct = res.headers.get('content-type') ?? 'image/jpeg';
   const ext = extensionFromType(ct);
@@ -292,13 +412,6 @@ export function getWallpaperUrl(name: string): string | null {
 
 /* ── Track Download ──────────────────────────────────────── */
 
-function sanitizeFilename(name: string): string {
-  return name
-    .replace(/[<>:"/\\|?*]/g, '_')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
 /** Raw (un-proxied) SoundCloud artwork URL at high res, for Rust to fetch and
  *  embed into the exported file. Returns null when the track has no artwork. */
 function coverSourceUrl(artworkUrl: string | null | undefined): string | null {
@@ -310,6 +423,7 @@ export interface DownloadTrackOptions {
   artworkUrl?: string | null;
   /** Track length in milliseconds (API `duration`). */
   durationMs?: number;
+  storageQuality?: StorageQuality;
 }
 
 /** Download-to-file: writes a clean m4a (transcoding/fetching as needed) with
@@ -322,7 +436,7 @@ export async function downloadTrack(
 ): Promise<string> {
   const { save } = await import('@tauri-apps/plugin-dialog');
 
-  const filename = sanitizeFilename(`${artist} - ${title}.m4a`);
+  const filename = `${sanitizeFilename(`${artist} - ${title}`)}.m4a`;
 
   const dest = await save({
     defaultPath: filename,
@@ -330,11 +444,46 @@ export async function downloadTrack(
   });
   if (!dest) throw new Error('cancelled');
 
-  const hq = useSettingsStore.getState().highQualityStreaming;
-  const request = await buildCacheRequest(urn, hq, options.durationMs);
+  const hq = isHqStreaming();
+  const request = await buildCacheRequest(urn, hq, options.durationMs, options.storageQuality);
   return invoke<string>('track_export', {
     request,
     destPath: dest,
     coverUrl: coverSourceUrl(options.artworkUrl),
+    tags: { title, artist },
+  });
+}
+
+export type ExportFormat = 'm4a' | 'mp3';
+
+export interface ExportToDirOutcome {
+  path: string;
+  skipped: boolean;
+}
+
+export function isMp3ExportSupported(): Promise<boolean> {
+  return invoke<boolean>('track_export_mp3_supported');
+}
+
+export async function exportTrackToDir(
+  track: Track,
+  tags: { title: string; artist: string },
+  dir: string,
+  fileName: string,
+  format: ExportFormat,
+): Promise<ExportToDirOutcome> {
+  const request = await buildCacheRequest(
+    track.urn,
+    isHqStreaming(),
+    expectedDurationMs(track),
+    track._scd_meta?.storage_quality,
+  );
+  return invoke<ExportToDirOutcome>('track_export_to_dir', {
+    request,
+    dir,
+    fileName,
+    coverUrl: coverSourceUrl(track.artwork_url),
+    format,
+    tags,
   });
 }

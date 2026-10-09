@@ -2,7 +2,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::time::Duration;
 
-use rodio::stream::{DeviceSinkBuilder, MixerDeviceSink};
+use rodio::stream::{DeviceSinkBuilder, DeviceSinkError, MixerDeviceSink};
 use crate::rt::AppHandle;
 use tauri::{Emitter, Manager, State};
 
@@ -10,6 +10,9 @@ use crate::app::diagnostics;
 use crate::audio::engine;
 use crate::audio::state::AudioState;
 use crate::audio::types::{AudioSink, AudioThreadCmd};
+
+#[cfg(target_os = "linux")]
+const LINUX_BUFFER_FRAMES: u32 = 4096;
 
 pub fn open_device_sink(
     device_id: Option<&str>,
@@ -23,7 +26,11 @@ pub fn open_device_sink(
     let tx = reconnect_tx.clone();
     let err_flag = error_flag.clone();
     let error_cb = move |err: cpal::StreamError| {
-        eprintln!("[audio] stream error: {err}");
+        if err == cpal::StreamError::BufferUnderrun {
+            eprintln!("[audio] stream error: {err}");
+            return;
+        }
+        diagnostics::error(format!("[audio] stream error: {err}"));
         err_flag.store(true, Ordering::Relaxed);
         if !sent_clone.swap(true, Ordering::Relaxed) {
             tx.send(AudioThreadCmd::Reconnect).ok();
@@ -35,10 +42,7 @@ pub fn open_device_sink(
         if let Ok(devices) = host.output_devices() {
             for dev in devices {
                 if dev.id().ok().map(|d| d.to_string()).as_deref() == Some(id) {
-                    let mut sink = DeviceSinkBuilder::from_device(dev)
-                        .map_err(|e| format!("Failed to open device '{}': {}", id, e))?
-                        .with_error_callback(error_cb)
-                        .open_stream()
+                    let mut sink = open_sink(dev, error_cb)
                         .map_err(|e| format!("Failed to open device '{}': {}", id, e))?;
                     sink.log_on_drop(false);
                     return Ok(sink);
@@ -48,23 +52,79 @@ pub fn open_device_sink(
         return Err(format!("Device '{}' not found", id));
     }
 
-    let mut sink = DeviceSinkBuilder::from_default_device()
-        .map_err(|e| format!("No audio output: {}", e))?
-        .with_error_callback(error_cb)
-        .open_stream()
-        .map_err(|e| format!("No audio output: {}", e))?;
+    let opened = cpal::default_host()
+        .default_output_device()
+        .ok_or(DeviceSinkError::NoDevice)
+        .and_then(|device| open_sink(device, error_cb.clone()));
+    #[cfg(target_os = "linux")]
+    let opened = opened.or_else(|error| open_sound_server_sink(error_cb).ok_or(error));
+    let mut sink = opened.map_err(|e| format!("No audio output: {}", e))?;
     sink.log_on_drop(false);
     Ok(sink)
 }
 
-pub fn list_devices() -> Vec<AudioSink> {
+#[cfg(target_os = "linux")]
+fn open_sound_server_sink<E>(error_cb: E) -> Option<MixerDeviceSink>
+where
+    E: FnMut(cpal::StreamError) + Send + Clone + 'static,
+{
+    use cpal::traits::{DeviceTrait, HostTrait};
+
+    cpal::default_host()
+        .output_devices()
+        .ok()?
+        .filter(|dev| {
+            dev.description()
+                .is_ok_and(|desc| matches!(desc.driver(), Some("pipewire" | "pulse")))
+        })
+        .find_map(|dev| open_sink(dev, error_cb.clone()).ok())
+}
+
+fn open_sink<E>(device: cpal::Device, error_cb: E) -> Result<MixerDeviceSink, DeviceSinkError>
+where
+    E: FnMut(cpal::StreamError) + Send + Clone + 'static,
+{
+    if let Some(builder) = tuned_builder(&device)
+        && let Ok(sink) = builder.with_error_callback(error_cb.clone()).open_stream()
+    {
+        return Ok(sink);
+    }
+    DeviceSinkBuilder::from_device(device)?
+        .with_error_callback(error_cb)
+        .open_stream()
+}
+
+#[cfg(target_os = "linux")]
+fn tuned_builder(device: &cpal::Device) -> Option<DeviceSinkBuilder> {
+    let builder = DeviceSinkBuilder::from_device(device.clone()).ok()?;
+    Some(builder.with_buffer_size(cpal::BufferSize::Fixed(LINUX_BUFFER_FRAMES)))
+}
+
+#[cfg(windows)]
+fn tuned_builder(device: &cpal::Device) -> Option<DeviceSinkBuilder> {
+    use cpal::traits::DeviceTrait;
+
+    if device.default_output_config().ok()?.channels() <= 2 {
+        return None;
+    }
+    let builder = DeviceSinkBuilder::from_device(device.clone()).ok()?;
+    Some(builder.with_channels(rodio::nz!(2)))
+}
+
+#[cfg(not(any(target_os = "linux", windows)))]
+fn tuned_builder(_device: &cpal::Device) -> Option<DeviceSinkBuilder> {
+    None
+}
+
+pub fn list_devices(state: &AudioState) -> Vec<AudioSink> {
     #[cfg(target_os = "linux")]
     {
-        audio_list_devices_pactl()
+        audio_list_devices_pactl(state.follow_default_output.load(Ordering::Relaxed))
     }
     #[cfg(not(target_os = "linux"))]
     {
-        audio_list_devices_cpal()
+        let active_output = state.active_output.lock().unwrap().clone();
+        audio_list_devices_cpal(active_output.as_deref())
     }
 }
 
@@ -185,7 +245,7 @@ fn start_pactl_subscribe_loop(handle: &AppHandle) {
 
         let Ok(mut child) = child else {
             // Fallback to polling if pactl subscribe fails
-            eprintln!("[Audio] pactl subscribe failed, falling back to polling");
+            diagnostics::warn("[Audio] pactl subscribe failed, falling back to polling");
             start_polling_loop(handle);
             return;
         };
@@ -219,10 +279,6 @@ fn start_polling_loop(handle: &AppHandle) {
 
 fn handle_default_output_change(handle: &AppHandle) {
     let state = handle.state::<AudioState>();
-    if !state.follow_default_output.load(Ordering::Relaxed) {
-        return;
-    }
-
     let Some(current_default) = current_default_output_name() else {
         return;
     };
@@ -233,6 +289,10 @@ fn handle_default_output_change(handle: &AppHandle) {
     }
     *known_default = Some(current_default.clone());
     drop(known_default);
+
+    if !state.follow_default_output.load(Ordering::Relaxed) {
+        return;
+    }
 
     diagnostics::log_native(
         handle,
@@ -255,7 +315,7 @@ fn handle_default_output_change(handle: &AppHandle) {
 }
 
 #[cfg(target_os = "linux")]
-fn audio_list_devices_pactl() -> Vec<AudioSink> {
+fn audio_list_devices_pactl(follows_default: bool) -> Vec<AudioSink> {
     let output = match std::process::Command::new("pactl")
         .args(["--format=json", "list", "sinks"])
         .output()
@@ -281,8 +341,10 @@ fn audio_list_devices_pactl() -> Vec<AudioSink> {
         .filter_map(|sink| {
             let name = sink.get("name")?.as_str()?.to_string();
             let description = sink.get("description")?.as_str()?.to_string();
+            let is_default = name == default_sink;
             Some(AudioSink {
-                is_default: name == default_sink,
+                is_default,
+                is_active: is_default && !follows_default,
                 name,
                 description,
             })
@@ -291,7 +353,7 @@ fn audio_list_devices_pactl() -> Vec<AudioSink> {
 }
 
 #[cfg(not(target_os = "linux"))]
-fn audio_list_devices_cpal() -> Vec<AudioSink> {
+fn audio_list_devices_cpal(active_output: Option<&str>) -> Vec<AudioSink> {
     use cpal::traits::{DeviceTrait, HostTrait};
 
     let host = cpal::default_host();
@@ -315,6 +377,7 @@ fn audio_list_devices_cpal() -> Vec<AudioSink> {
                 .unwrap_or_else(|| id.clone());
             Some(AudioSink {
                 is_default: default_id.as_deref() == Some(id.as_str()),
+                is_active: active_output == Some(id.as_str()),
                 name: id,
                 description,
             })

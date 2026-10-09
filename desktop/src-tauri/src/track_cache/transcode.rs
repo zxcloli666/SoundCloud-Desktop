@@ -21,6 +21,8 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use tokio::process::Command;
 
+use crate::app::diagnostics;
+
 /// AAC bitrate for re-encoded output. Matches the storage canonical (256k m4a);
 /// sources that are already AAC are stream-copied and keep their original rate.
 const AAC_BITRATE: &str = "256k";
@@ -93,17 +95,17 @@ async fn download_ffmpeg(install_dir: &Path) -> Option<PathBuf> {
             if bin.is_file() && ffmpeg_runs(&bin).await {
                 Some(bin)
             } else {
-                eprintln!("[Transcode] downloaded ffmpeg does not run — discarding");
+                diagnostics::warn("[Transcode] downloaded ffmpeg does not run — discarding");
                 tokio::fs::remove_file(&bin).await.ok();
                 None
             }
         }
         Ok(Err(e)) => {
-            eprintln!("[Transcode] ffmpeg download failed: {e}");
+            diagnostics::warn(format!("[Transcode] ffmpeg download failed: {e}"));
             None
         }
         Err(e) => {
-            eprintln!("[Transcode] ffmpeg download task panicked: {e}");
+            diagnostics::warn(format!("[Transcode] ffmpeg download task panicked: {e}"));
             None
         }
     }
@@ -117,8 +119,8 @@ fn nonce() -> u128 {
 }
 
 /// A sibling temp path in `dir` so the final `rename` stays on one filesystem.
-fn temp_sibling(dir: &Path, stem: &str) -> PathBuf {
-    dir.join(format!("{stem}.{}.part.m4a", nonce()))
+fn temp_sibling(dir: &Path, stem: &str, ext: &str) -> PathBuf {
+    dir.join(format!("{stem}.{}.part.{ext}", nonce()))
 }
 
 /// True when the payload is an ISO-BMFF (mp4/m4a) container — `....ftyp` at
@@ -188,7 +190,7 @@ pub async fn transcode_to_m4a(
     final_name: &str,
 ) -> Result<PathBuf, String> {
     let final_path = out_dir.join(final_name);
-    let tmp = temp_sibling(out_dir, final_name);
+    let tmp = temp_sibling(out_dir, final_name, "m4a");
 
     let head = sniff_head(input, 16).await;
     let can_copy = is_mp4_container(&head);
@@ -209,7 +211,7 @@ pub async fn transcode_to_m4a(
             Err(e) => {
                 // Copy can fail on exotic AAC profiles — fall through to encode.
                 tokio::fs::remove_file(&tmp).await.ok();
-                eprintln!("[Transcode] copy failed, re-encoding: {e}");
+                diagnostics::warn(format!("[Transcode] copy failed, re-encoding: {e}"));
             }
         }
     }
@@ -241,23 +243,106 @@ pub async fn transcode_to_m4a(
     }
 }
 
-/// Write `audio` (an m4a) to `dest`, optionally muxing in `cover` (JPEG/PNG
-/// bytes) as the file's attached picture. Audio is stream-copied — no quality
-/// loss. Atomic: renders to a temp beside `dest`, then renames.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum ExportFormat {
+    M4a,
+    Mp3,
+}
+
+impl ExportFormat {
+    pub fn extension(self) -> &'static str {
+        match self {
+            ExportFormat::M4a => "m4a",
+            ExportFormat::Mp3 => "mp3",
+        }
+    }
+}
+
+#[derive(Default, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ExportTags {
+    #[serde(default)]
+    pub title: Option<String>,
+    #[serde(default)]
+    pub artist: Option<String>,
+}
+
+const MP3_VBR_QUALITY: &str = "0";
+
+pub async fn has_mp3_encoder(ffmpeg: &Path) -> bool {
+    let mut cmd = Command::new(ffmpeg);
+    cmd.args(["-hide_banner", "-encoders"])
+        .stdin(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::null());
+    #[cfg(windows)]
+    {
+        use std::os::windows::process::CommandExt;
+        cmd.creation_flags(0x0800_0000);
+    }
+    match cmd.output().await {
+        Ok(out) => String::from_utf8_lossy(&out.stdout).contains("libmp3lame"),
+        Err(_) => false,
+    }
+}
+
+fn export_args(format: ExportFormat, with_cover: bool) -> Vec<&'static str> {
+    let mut args = vec!["-map", "0:a"];
+    if with_cover {
+        args.extend(["-map", "1:v", "-c:v", "copy"]);
+    }
+    match format {
+        ExportFormat::M4a => {
+            args.extend(["-c:a", "copy"]);
+            if with_cover {
+                args.extend(["-disposition:v:0", "attached_pic"]);
+            }
+            args.extend(["-movflags", "+faststart"]);
+        }
+        ExportFormat::Mp3 => {
+            args.extend([
+                "-c:a",
+                "libmp3lame",
+                "-q:a",
+                MP3_VBR_QUALITY,
+                "-id3v2_version",
+                "3",
+            ]);
+            if with_cover {
+                args.extend(["-metadata:s:v", "comment=Cover (front)"]);
+            }
+        }
+    }
+    args
+}
+
+fn tag_args(tags: &ExportTags) -> Vec<String> {
+    [("title", &tags.title), ("artist", &tags.artist)]
+        .into_iter()
+        .filter_map(|(key, value)| {
+            let value = value.as_deref()?.trim();
+            (!value.is_empty()).then(|| format!("{key}={value}"))
+        })
+        .flat_map(|pair| ["-metadata".to_string(), pair])
+        .collect()
+}
+
 pub async fn export_with_cover(
     ffmpeg: &Path,
     audio: &Path,
     cover: Option<&[u8]>,
     dest: &Path,
+    format: ExportFormat,
+    tags: &ExportTags,
 ) -> Result<(), String> {
     let dest_dir = dest.parent().ok_or("export: dest has no parent dir")?;
     let stem = dest
         .file_stem()
         .and_then(|s| s.to_str())
         .unwrap_or("export");
-    let tmp = temp_sibling(dest_dir, stem);
+    let tmp = temp_sibling(dest_dir, stem, format.extension());
 
-    // The cover is staged next to the temp so ffmpeg can read it as a 2nd input.
     let cover_tmp = match cover {
         Some(bytes) if !bytes.is_empty() => {
             let p = dest_dir.join(format!("{stem}.{}.cover", nonce()));
@@ -273,23 +358,10 @@ pub async fn export_with_cover(
     let mut cmd = base_command(ffmpeg);
     cmd.arg("-i").arg(audio);
     if let Some(ref cover_path) = cover_tmp {
-        cmd.arg("-i").arg(cover_path).args([
-            "-map",
-            "0:a",
-            "-map",
-            "1:v",
-            "-c:a",
-            "copy",
-            "-c:v",
-            "copy",
-            "-disposition:v:0",
-            "attached_pic",
-            "-movflags",
-            "+faststart",
-        ]);
-    } else {
-        cmd.args(["-map", "0:a", "-c:a", "copy", "-movflags", "+faststart"]);
+        cmd.arg("-i").arg(cover_path);
     }
+    cmd.args(export_args(format, cover_tmp.is_some()));
+    cmd.args(tag_args(tags));
     cmd.arg(&tmp);
 
     let result = run(cmd, "export").await;
@@ -303,19 +375,16 @@ pub async fn export_with_cover(
 
     match tokio::fs::rename(&tmp, dest).await {
         Ok(()) => Ok(()),
-        Err(rename_err) => {
-            // Cross-device dest (rare) — fall back to copy+remove.
-            match tokio::fs::copy(&tmp, dest).await {
-                Ok(_) => {
-                    tokio::fs::remove_file(&tmp).await.ok();
-                    Ok(())
-                }
-                Err(copy_err) => {
-                    tokio::fs::remove_file(&tmp).await.ok();
-                    Err(format!("commit export: {rename_err}; {copy_err}"))
-                }
+        Err(rename_err) => match tokio::fs::copy(&tmp, dest).await {
+            Ok(_) => {
+                tokio::fs::remove_file(&tmp).await.ok();
+                Ok(())
             }
-        }
+            Err(copy_err) => {
+                tokio::fs::remove_file(&tmp).await.ok();
+                Err(format!("commit export: {rename_err}; {copy_err}"))
+            }
+        },
     }
 }
 
@@ -360,7 +429,29 @@ fn parse_duration_ms(stderr: &str) -> Option<u64> {
 
 #[cfg(test)]
 mod tests {
-    use super::{is_mp4_container, parse_duration_ms};
+    use super::{
+        ExportFormat, ExportTags, export_args, is_mp4_container, parse_duration_ms, tag_args,
+    };
+
+    #[test]
+    fn mp3_export_reencodes_and_m4a_copies() {
+        let mp3 = export_args(ExportFormat::Mp3, true);
+        assert!(mp3.windows(2).any(|w| w == ["-c:a", "libmp3lame"]));
+        assert!(!mp3.contains(&"attached_pic"));
+        let m4a = export_args(ExportFormat::M4a, false);
+        assert!(m4a.windows(2).any(|w| w == ["-c:a", "copy"]));
+        assert!(!m4a.contains(&"1:v"));
+    }
+
+    #[test]
+    fn blank_tags_are_left_out() {
+        let tags = ExportTags {
+            title: Some("  Night Drive ".into()),
+            artist: Some("   ".into()),
+        };
+        assert_eq!(tag_args(&tags), vec!["-metadata", "title=Night Drive"]);
+        assert!(tag_args(&ExportTags::default()).is_empty());
+    }
 
     #[test]
     fn detects_mp4_container() {

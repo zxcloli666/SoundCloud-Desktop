@@ -22,8 +22,12 @@ import {
 
 interface AddToPlaylistDialogProps {
   trackUrns: string[];
-  children: React.ReactNode;
+  children?: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
+
+const MEMBERSHIP_TIMEOUT_MS = 15_000;
 
 const PlaylistOption = React.memo(function PlaylistOption({
   playlist,
@@ -98,8 +102,10 @@ const CreatePlaylistForm = React.memo(function CreatePlaylistForm({
     createPlaylist.mutate(
       { title, sharing: isPrivate ? 'private' : 'public', trackUrns },
       {
-        onSuccess: () => {
-          toast.success(t('playlist.created'));
+        onSuccess: (result) => {
+          toast.success(
+            result?.status === 'queued' ? t('playlist.createQueued') : t('playlist.created'),
+          );
           onCreated();
         },
       },
@@ -143,14 +149,14 @@ const CreatePlaylistForm = React.memo(function CreatePlaylistForm({
   );
 });
 
-/* ── Main Dialog ─────────────────────────────────────────────── */
-
-export const AddToPlaylistDialog = React.memo(function AddToPlaylistDialog({
+const AddToPlaylistPanel = React.memo(function AddToPlaylistPanel({
   trackUrns,
-  children,
-}: AddToPlaylistDialogProps) {
+  onDone,
+}: {
+  trackUrns: string[];
+  onDone: () => void;
+}) {
   const { t } = useTranslation();
-  const [open, setOpen] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
   const { playlists, isLoading } = useMyPlaylists();
   const addToPlaylist = useAddToPlaylist();
@@ -158,66 +164,69 @@ export const AddToPlaylistDialog = React.memo(function AddToPlaylistDialog({
   const [loadingPlaylistUrns, setLoadingPlaylistUrns] = useState<Record<string, boolean>>({});
   const normalizedTrackUrns = useMemo(() => [...new Set(trackUrns)], [trackUrns]);
   const requestedPlaylistUrnsRef = useRef<Set<string>>(new Set());
+  const aliveRef = useRef(true);
 
   useEffect(() => {
-    if (!open || playlists.length === 0) return;
-
-    let cancelled = false;
-
-    const loadMembership = async () => {
-      const pending: string[] = [];
-      const nextMap: Record<string, string[]> = {};
-
-      for (const playlist of playlists) {
-        const embeddedUrns = playlist.tracks?.map((t) => t.urn) ?? [];
-        if (embeddedUrns.length > 0 || playlist.track_count === 0) {
-          nextMap[playlist.urn] = embeddedUrns;
-          continue;
-        }
-        if (requestedPlaylistUrnsRef.current.has(playlist.urn)) continue;
-        requestedPlaylistUrnsRef.current.add(playlist.urn);
-        pending.push(playlist.urn);
-      }
-
-      if (Object.keys(nextMap).length > 0) {
-        setPlaylistTrackMap((prev) => ({ ...prev, ...nextMap }));
-      }
-
-      if (pending.length === 0) return;
-
-      setLoadingPlaylistUrns((prev) => {
-        const next = { ...prev };
-        for (const urn of pending) next[urn] = true;
-        return next;
-      });
-
-      await Promise.all(
-        pending.map(async (playlistUrn) => {
-          try {
-            const res = await api<{ collection: { urn: string }[] }>(
-              `/playlists/${encodeURIComponent(playlistUrn)}/tracks?limit=200`,
-            );
-            if (cancelled) return;
-            setPlaylistTrackMap((prev) => ({
-              ...prev,
-              [playlistUrn]: res.collection.map((t) => t.urn),
-            }));
-          } catch {
-            if (cancelled) return;
-            setPlaylistTrackMap((prev) => ({ ...prev, [playlistUrn]: [] }));
-          } finally {
-            if (!cancelled) setLoadingPlaylistUrns((prev) => ({...prev, [playlistUrn]: false}));
-          }
-        }),
-      );
-    };
-
-    void loadMembership();
-
+    aliveRef.current = true;
     return () => {
-      cancelled = true;
+      aliveRef.current = false;
     };
-  }, [open, playlists]);
+  }, []);
+
+  useEffect(() => {
+    if (playlists.length === 0) return;
+
+    const pending: string[] = [];
+    const nextMap: Record<string, string[]> = {};
+
+    for (const playlist of playlists) {
+      const embeddedUrns = playlist.tracks?.map((t) => t.urn) ?? [];
+      if (embeddedUrns.length > 0 || playlist.track_count === 0) {
+        nextMap[playlist.urn] = embeddedUrns;
+        continue;
+      }
+      if (requestedPlaylistUrnsRef.current.has(playlist.urn)) continue;
+      requestedPlaylistUrnsRef.current.add(playlist.urn);
+      pending.push(playlist.urn);
+    }
+
+    if (Object.keys(nextMap).length > 0) {
+      setPlaylistTrackMap((prev) => ({ ...prev, ...nextMap }));
+    }
+
+    if (pending.length === 0) return;
+
+    setLoadingPlaylistUrns((prev) => {
+      const next = { ...prev };
+      for (const urn of pending) next[urn] = true;
+      return next;
+    });
+
+    for (const playlistUrn of pending) {
+      const stopLoading = () => {
+        if (aliveRef.current) {
+          setLoadingPlaylistUrns((prev) => ({ ...prev, [playlistUrn]: false }));
+        }
+      };
+      const deadline = setTimeout(stopLoading, MEMBERSHIP_TIMEOUT_MS);
+
+      api<{ collection: { urn: string }[] }>(
+        `/playlists/${encodeURIComponent(playlistUrn)}/tracks?limit=200`,
+      )
+        .then((res) => {
+          if (!aliveRef.current) return;
+          setPlaylistTrackMap((prev) => ({
+            ...prev,
+            [playlistUrn]: res.collection.map((t) => t.urn),
+          }));
+        })
+        .catch(() => {})
+        .finally(() => {
+          clearTimeout(deadline);
+          stopLoading();
+        });
+    }
+  }, [playlists]);
 
   const playlistMembership = useMemo(() => {
     const entries = new Map<string, { containsAll: boolean; containsSome: boolean }>();
@@ -236,110 +245,120 @@ export const AddToPlaylistDialog = React.memo(function AddToPlaylistDialog({
     return entries;
   }, [playlists, playlistTrackMap, normalizedTrackUrns]);
 
-  const handleSelect = async (playlist: Playlist) => {
-    // existingUrns — только для UX-хинта «уже в плейлисте»; в мутацию идут
-    // `{add}`-дельты, backend дедупит, полный список не реконструируем.
+  const handleSelect = (playlist: Playlist) => {
     const existingUrns = playlistTrackMap[playlist.urn] ?? playlist.tracks?.map((t) => t.urn) ?? [];
     const existingSet = new Set(existingUrns);
     const newUrns = trackUrns.filter((u) => !existingSet.has(u));
 
     if (newUrns.length === 0) {
       toast.info(t('playlist.alreadyInPlaylist'));
-      setOpen(false);
+      onDone();
       return;
     }
 
     addToPlaylist.mutate(
-        {playlistUrn: playlist.urn, trackUrns: newUrns},
+      { playlistUrn: playlist.urn, trackUrns: newUrns },
       {
         onSuccess: () => {
           toast.success(t('playlist.addedToPlaylist'));
-          setOpen(false);
+          onDone();
         },
       },
     );
   };
 
-  const handleOpenChange = (v: boolean) => {
-    setOpen(v);
-    if (!v) setShowCreate(false);
-  };
+  return (
+    <>
+      <div className="flex items-center justify-between px-5 pt-5 pb-3">
+        <ModalTitle className="text-[15px] font-bold text-white/90 flex items-center gap-2">
+          <ListPlus size={18} />
+          {t('playlist.addToPlaylist')}
+        </ModalTitle>
+        <ModalDescription className="sr-only">
+          Choose a playlist for the selected track.
+        </ModalDescription>
+        <ModalClose className="w-7 h-7 rounded-lg flex items-center justify-center text-white/30 hover:text-white/70 hover:bg-white/[0.08] transition-all">
+          <X size={14} />
+        </ModalClose>
+      </div>
+
+      {showCreate ? (
+        <CreatePlaylistForm
+          trackUrns={trackUrns}
+          onCreated={() => {
+            setShowCreate(false);
+            onDone();
+          }}
+        />
+      ) : (
+        <div className="px-3 pb-2">
+          <button
+            type="button"
+            onClick={() => setShowCreate(true)}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/[0.06] transition-all duration-200 text-left"
+          >
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-accent/10 ring-1 ring-accent/20">
+              <Plus size={18} className="text-accent" />
+            </div>
+            <span className="text-[13px] font-medium text-accent">{t('playlist.newPlaylist')}</span>
+          </button>
+        </div>
+      )}
+
+      <div className="h-px bg-white/[0.04] mx-5" />
+
+      <div className="px-3 py-2 pb-4 overflow-y-auto flex-1 min-h-0">
+        {isLoading ? (
+          <div className="flex justify-center py-10">
+            <Loader2 size={20} className="animate-spin text-white/20" />
+          </div>
+        ) : playlists.length === 0 ? (
+          <div className="py-10 text-center text-[13px] text-white/25">
+            {t('playlist.noPlaylists')}
+          </div>
+        ) : (
+          <div className="space-y-0.5">
+            {playlists.map((p) => (
+              <PlaylistOption
+                key={p.urn}
+                playlist={p}
+                onSelect={handleSelect}
+                loading={addToPlaylist.isPending || !!loadingPlaylistUrns[p.urn]}
+                containsAll={playlistMembership.get(p.urn)?.containsAll ?? false}
+                containsSome={playlistMembership.get(p.urn)?.containsSome ?? false}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    </>
+  );
+});
+
+export const AddToPlaylistDialog = React.memo(function AddToPlaylistDialog({
+  trackUrns,
+  children,
+  open: openProp,
+  onOpenChange,
+}: AddToPlaylistDialogProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = openProp ?? internalOpen;
+
+  const setOpen = useCallback(
+    (next: boolean) => {
+      setInternalOpen(next);
+      onOpenChange?.(next);
+    },
+    [onOpenChange],
+  );
+  const close = useCallback(() => setOpen(false), [setOpen]);
 
   return (
-      <Modal open={open} onOpenChange={handleOpenChange}>
-        <ModalTrigger asChild>{children}</ModalTrigger>
-        <ModalContent size="sm" showClose={false} zClass="z-[90]">
-          {/* Header */}
-          <div className="flex items-center justify-between px-5 pt-5 pb-3">
-            <ModalTitle className="text-[15px] font-bold text-white/90 flex items-center gap-2">
-              <ListPlus size={18}/>
-              {t('playlist.addToPlaylist')}
-            </ModalTitle>
-            <ModalDescription className="sr-only">
-              Choose a playlist for the selected track.
-            </ModalDescription>
-            <ModalClose
-                className="w-7 h-7 rounded-lg flex items-center justify-center text-white/30 hover:text-white/70 hover:bg-white/[0.08] transition-all">
-              <X size={14}/>
-            </ModalClose>
-          </div>
-
-          {/* New playlist button / form */}
-          {showCreate ? (
-              <CreatePlaylistForm
-                  trackUrns={trackUrns}
-                  onCreated={() => {
-                    setShowCreate(false);
-                    setOpen(false);
-                  }}
-              />
-          ) : (
-              <div className="px-3 pb-2">
-                <button
-                    type="button"
-                    onClick={() => setShowCreate(true)}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/[0.06] transition-all duration-200 text-left"
-                >
-                  <div
-                      className="w-10 h-10 rounded-lg flex items-center justify-center bg-accent/10 ring-1 ring-accent/20">
-                    <Plus size={18} className="text-accent"/>
-                  </div>
-                  <span className="text-[13px] font-medium text-accent">
-                {t('playlist.newPlaylist')}
-              </span>
-                </button>
-              </div>
-          )}
-
-          {/* Divider */}
-          <div className="h-px bg-white/[0.04] mx-5"/>
-
-          {/* Playlist list */}
-          <div className="px-3 py-2 pb-4 overflow-y-auto flex-1 min-h-0">
-            {isLoading ? (
-                <div className="flex justify-center py-10">
-                  <Loader2 size={20} className="animate-spin text-white/20"/>
-                </div>
-            ) : playlists.length === 0 ? (
-                <div className="py-10 text-center text-[13px] text-white/25">
-                  {t('playlist.noPlaylists')}
-                </div>
-            ) : (
-                <div className="space-y-0.5">
-                  {playlists.map((p) => (
-                      <PlaylistOption
-                          key={p.urn}
-                          playlist={p}
-                          onSelect={handleSelect}
-                          loading={addToPlaylist.isPending || !!loadingPlaylistUrns[p.urn]}
-                          containsAll={playlistMembership.get(p.urn)?.containsAll ?? false}
-                          containsSome={playlistMembership.get(p.urn)?.containsSome ?? false}
-                      />
-                  ))}
-                </div>
-            )}
-          </div>
-        </ModalContent>
-      </Modal>
+    <Modal open={open} onOpenChange={setOpen}>
+      {children && <ModalTrigger asChild>{children}</ModalTrigger>}
+      <ModalContent size="sm" showClose={false} zClass="z-[90]">
+        <AddToPlaylistPanel trackUrns={trackUrns} onDone={close} />
+      </ModalContent>
+    </Modal>
   );
 });

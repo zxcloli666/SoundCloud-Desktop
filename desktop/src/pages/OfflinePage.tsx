@@ -1,9 +1,19 @@
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import {useNavigate} from 'react-router-dom';
+import {useLocation, useNavigate} from 'react-router-dom';
+import {toast} from 'sonner';
+import {CollectionGrid} from '../components/offline/CollectionGrid';
+import {CollectionHeader} from '../components/offline/CollectionHeader';
 import {ForgeModule} from '../components/offline/ForgeModule';
 import {OFFLINE_KEYFRAMES} from '../components/offline/keyframes';
-import {filterEntries, sortEntries} from '../components/offline/lib';
+import {
+  buildCollectionEntries,
+  filterCollections,
+  filterEntries,
+  sortEntries,
+} from '../components/offline/lib';
+import {LocalSection} from '../components/offline/local/LocalSection';
+import {useLocalView} from '../components/offline/local/useLocalView';
 import {OfflineHead} from '../components/offline/OfflineHead';
 import {OfflineToolbar} from '../components/offline/OfflineToolbar';
 import {OfflineTrackList} from '../components/offline/OfflineTrackList';
@@ -12,11 +22,13 @@ import type {OfflineEntry, OfflineSection, SortMode} from '../components/offline
 import {useForgeStatus} from '../components/offline/useForgeStatus';
 import {useOfflineLibrary} from '../components/offline/useOfflineLibrary';
 import {Atmosphere} from '../components/search/Atmosphere';
-import {useAuthStatus} from '../lib/auth-status';
+import {bulkCacheErrorText, useCacheLikes} from '../lib/bulk-cache';
 import {ensureTrackCached} from '../lib/cache';
-import {useCacheLikes} from '../lib/likes-cache';
+import {requestProbe, useHostStatusStore} from '../lib/host-status';
+import {idOf} from '../lib/ids';
 import {usePerfMode} from '../lib/perf';
 import {useAppStatusStore} from '../stores/app-status';
+import {saveOffline} from '../stores/offline-saves';
 import {usePlayerStore} from '../stores/player';
 
 function shuffled<T>(items: T[]): T[] {
@@ -31,16 +43,44 @@ function shuffled<T>(items: T[]): T[] {
 export const OfflinePage = React.memo(() => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const perf = usePerfMode();
   const lib = useOfflineLibrary();
   const forge = useForgeStatus();
   const cacheLikes = useCacheLikes(() => void lib.refreshInventory());
   const online = lib.appMode === 'online';
-  const authStatus = useAuthStatus({ enabled: online });
+  const probing = useHostStatusStore((s) => s.probing);
+  const mainUp = useHostStatusStore((s) => s.main === 'up');
+  const backendReachable = useAppStatusStore((s) => s.navigatorOnline && s.backendReachable);
+  const [tryingOnline, setTryingOnline] = useState(false);
 
-  const [section, setSection] = useState<OfflineSection>('likes');
+  const navState = location.state as { collection?: string; section?: OfflineSection } | null;
+  const initialScope = navState?.collection ?? null;
+  const [section, setSection] = useState<OfflineSection>(
+    navState?.section ?? (initialScope ? 'playlists' : 'likes'),
+  );
+  const [openScope, setOpenScope] = useState<string | null>(initialScope);
+  const openView = useMemo(
+    () => lib.collectionViews.find((v) => v.scope === openScope) ?? null,
+    [lib.collectionViews, openScope],
+  );
   const [sort, setSort] = useState<SortMode>('custom');
   const [query, setQuery] = useState('');
+  const local = useLocalView(query, sort, section === 'local');
+  const openLocalPlaylist = local.openPlaylist;
+
+  useEffect(() => {
+    const next = navState?.section;
+    if (!next) return;
+    setSection(next);
+    setOpenScope(null);
+    openLocalPlaylist(null);
+  }, [navState, openLocalPlaylist]);
+  const showGrid = section === 'playlists' && openView === null;
+  const gridViews = useMemo(
+    () => filterCollections(lib.collectionViews, query),
+    [lib.collectionViews, query],
+  );
 
   useEffect(() => {
     if (section === 'likes' && lib.likesEntries.length === 0 && lib.cachedEntries.length > 0) {
@@ -63,14 +103,47 @@ export const OfflinePage = React.memo(() => {
   }, [forgeCounts, lib.refreshInventory]);
 
   const entries = useMemo(() => {
-    const base = section === 'likes' ? lib.likesEntries : lib.cachedEntries;
+    const base =
+      section === 'likes'
+        ? lib.likesEntries
+        : section === 'cached'
+          ? lib.cachedEntries
+          : openView
+            ? buildCollectionEntries(openView, lib.trackByUrn, lib.invByUrn)
+            : [];
     const filtered = filterEntries(base, query);
     return sortEntries(filtered, sort, section === 'cached' ? lib.cacheOrder : null);
-  }, [section, sort, query, lib.likesEntries, lib.cachedEntries, lib.cacheOrder]);
+  }, [
+    section,
+    sort,
+    query,
+    openView,
+    lib.likesEntries,
+    lib.cachedEntries,
+    lib.cacheOrder,
+    lib.trackByUrn,
+    lib.invByUrn,
+  ]);
+
+  const handleSection = useCallback(
+    (next: OfflineSection) => {
+      setSection(next);
+      setOpenScope(null);
+      openLocalPlaylist(null);
+    },
+    [openLocalPlaylist],
+  );
+
+  const handleRemoveCollection = useCallback(() => {
+    if (!openScope) return;
+    setOpenScope(null);
+    void lib.removeCollection(openScope);
+  }, [openScope, lib.removeCollection]);
 
   const playableTracks = useMemo(
-    () => entries.filter((e) => e.inv !== null).map((e) => e.track),
-    [entries],
+    () =>
+      section === 'local' ? local.playable : entries.filter((e) => e.inv !== null).map((e) => e.track),
+    [section, local.playable, entries],
   );
 
   const forgingUrns = useMemo(
@@ -81,7 +154,7 @@ export const OfflinePage = React.memo(() => {
     const urn = forge?.transcodingUrns[0];
     if (!urn) return null;
     const entry = lib.cachedEntries.find((e) => e.urn === urn);
-    const title = entry?.track.title ?? urn.split(':').pop() ?? urn;
+    const title = entry?.track.title ?? idOf(urn) ?? urn;
     const extra = (forge?.transcodingUrns.length ?? 0) - 1;
     return extra > 0 ? `${title} +${extra}` : title;
   }, [forge?.transcodingUrns, lib.cachedEntries]);
@@ -104,17 +177,37 @@ export const OfflinePage = React.memo(() => {
 
   const handleDownload = useCallback(
     (entry: OfflineEntry) => {
-      void ensureTrackCached(entry.urn, undefined, entry.track.duration)
+      void ensureTrackCached(
+        entry.urn,
+        undefined,
+        entry.track.duration,
+        entry.track._scd_meta?.storage_quality,
+      )
         .then(() => lib.refreshInventory())
         .catch((error) => console.warn('[Offline] Failed to cache track:', error));
     },
     [lib.refreshInventory],
   );
 
-  const handleTryOnline = useCallback(() => {
-    useAppStatusStore.getState().resetConnectivity();
+  const handleRefetch = useCallback(
+    (entry: OfflineEntry) => {
+      void saveOffline(entry.track, true).then(() => lib.refreshInventory());
+    },
+    [lib.refreshInventory],
+  );
+
+  useEffect(() => {
+    if (!tryingOnline || probing) return;
+    setTryingOnline(false);
+    if (!online && !(backendReachable && mainUp)) return;
+    useAppStatusStore.getState().setOfflineBypass(false);
     navigate('/home');
-  }, [navigate]);
+  }, [tryingOnline, online, probing, backendReachable, mainUp, navigate]);
+
+  const handleTryOnline = useCallback(() => {
+    setTryingOnline(true);
+    requestProbe({ force: true });
+  }, []);
 
   const sortable = section === 'cached' && sort === 'custom' && query.trim() === '';
   const deckBlur = perf.blur(24);
@@ -122,7 +215,9 @@ export const OfflinePage = React.memo(() => {
     ? t('offline.searchEmpty')
     : section === 'likes'
       ? t('offline.likesEmpty')
-      : t('offline.cachedEmpty');
+      : section === 'playlists'
+        ? t('offline.playlistsEmpty')
+        : t('offline.cachedEmpty');
 
   return (
     <div className="relative min-h-full px-5 py-6 md:px-8">
@@ -133,7 +228,7 @@ export const OfflinePage = React.memo(() => {
         className="relative z-10 mx-auto flex w-full max-w-[1180px] flex-col gap-5"
         style={{ isolation: 'isolate' }}
       >
-        <OfflineHead online={online} authStatus={authStatus.data} onTryOnline={handleTryOnline} />
+        <OfflineHead online={online} onTryOnline={handleTryOnline} />
 
         {lib.loading ? (
           <>
@@ -172,16 +267,20 @@ export const OfflinePage = React.memo(() => {
                 likedCachedCount={lib.stats.likedCachedCount}
                 caching={cacheLikes.caching}
                 progress={cacheLikes.progress}
-                onStartLikes={() => void cacheLikes.start().catch(() => {})}
+                onStartLikes={() =>
+                  void cacheLikes.start().catch((err) => toast.error(bulkCacheErrorText(err)))
+                }
                 onCancelLikes={cacheLikes.cancel}
               />
             </section>
 
             <OfflineToolbar
               section={section}
-              onSection={setSection}
+              onSection={handleSection}
               likesCount={lib.likesEntries.length}
               cachedCount={lib.cachedEntries.length}
+              playlistsCount={lib.collectionViews.length}
+              localCount={local.count}
               playableCount={playableTracks.length}
               onPlayAll={handlePlayAll}
               onShuffle={handleShuffle}
@@ -191,18 +290,33 @@ export const OfflinePage = React.memo(() => {
               onSort={setSort}
             />
 
-            <OfflineTrackList
-              entries={entries}
-              sortable={sortable}
-              likesSection={section === 'likes'}
-              forgingUrns={forgingUrns}
-              downloads={lib.downloads}
-              emptyText={emptyText}
-              onPlay={handlePlay}
-              onDownload={handleDownload}
-              onRemove={lib.removeCached}
-              onReorder={lib.reorderCached}
-            />
+            {openView && (
+              <CollectionHeader
+                view={openView}
+                onBack={() => setOpenScope(null)}
+                onRemove={handleRemoveCollection}
+              />
+            )}
+
+            {section === 'local' ? (
+              <LocalSection view={local} query={query} sort={sort} />
+            ) : showGrid ? (
+              <CollectionGrid views={gridViews} emptyText={emptyText} onOpen={setOpenScope} />
+            ) : (
+              <OfflineTrackList
+                entries={entries}
+                sortable={sortable}
+                likesSection={section === 'likes'}
+                forgingUrns={forgingUrns}
+                downloads={lib.downloads}
+                emptyText={emptyText}
+                onPlay={handlePlay}
+                onDownload={handleDownload}
+                onRefetch={handleRefetch}
+                onRemove={lib.removeCached}
+                onReorder={lib.reorderCached}
+              />
+            )}
           </>
         )}
       </div>

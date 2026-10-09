@@ -6,61 +6,97 @@
  * 2) Pre-rendered JSX constants — referentially stable, zero cost on re-render.
  */
 import {
+  Activity as _Activity,
   AlertCircle as _AlertCircle,
+  ArrowDownAZ as _ArrowDownAZ,
   ArrowDownToLine as _ArrowDownToLine,
   ArrowRight as _ArrowRight,
+  ArrowUpDown as _ArrowUpDown,
   AudioLines as _AudioLines,
+  Ban as _Ban,
+  Bell as _Bell,
   Bookmark as _Bookmark,
+  BookOpen as _BookOpen,
+  Braces as _Braces,
   Calendar as _Calendar,
+  ChartNoAxesColumn as _ChartNoAxesColumn,
   Check as _Check,
   ChevronDown as _ChevronDown,
   ChevronLeft as _ChevronLeft,
   ChevronRight as _ChevronRight,
   ChevronUp as _ChevronUp,
+  CircleCheck as _CircleCheck,
   ClipboardCopy as _ClipboardCopy,
   Clock as _Clock,
   Cloud as _Cloud,
   Compass as _Compass,
+  Copy as _Copy,
+  Crown as _Crown,
   Database as _Database,
   Disc3 as _Disc3,
   Download as _Download,
+  Ellipsis as _Ellipsis,
   ExternalLink as _ExternalLink,
   Eye as _Eye,
+  EyeOff as _EyeOff,
+  FastForward as _FastForward,
   FileDown as _FileDown,
+  FileMusic as _FileMusic,
+  FileText as _FileText,
   Flame as _Flame,
+  FolderInput as _FolderInput,
+  FolderOpen as _FolderOpen,
+  FolderPlus as _FolderPlus,
   Fullscreen as _Fullscreen,
   Globe as _Globe,
   GripVertical as _GripVertical,
+  HardDrive as _HardDrive,
   Hash as _Hash,
   Headphones as _Headphones,
   Heart as _Heart,
   Home as _Home,
+  Image as _Image,
+  Info as _Info,
+  Keyboard as _Keyboard,
+  LayoutDashboard as _LayoutDashboard,
   Library as _Library,
+  LifeBuoy as _LifeBuoy,
   Link as _Link,
   Link2 as _Link2,
+  ListEnd as _ListEnd,
   ListMusic as _ListMusic,
   ListPlus as _ListPlus,
+  ListStart as _ListStart,
+  ListX as _ListX,
   Loader2 as _Loader2,
   Lock as _Lock,
   MapPin as _MapPin,
   MessageCircle as _MessageCircle,
   MicVocal as _MicVocal,
   Minus as _Minus,
+  MonitorPlay as _MonitorPlay,
+  Moon as _Moon,
   Music as _Music,
+  Palette as _Palette,
   PanelLeftClose as _PanelLeftClose,
   PanelLeftOpen as _PanelLeftOpen,
   Pause as _Pause,
+  Pencil as _Pencil,
   Play as _Play,
   Plus as _Plus,
   Power as _Power,
+  Radio as _Radio,
   RefreshCw as _RefreshCw,
   Repeat as _Repeat,
   Repeat1 as _Repeat1,
   Repeat2 as _Repeat2,
+  Rewind as _Rewind,
   RotateCcw as _RotateCcw,
   Search as _Search,
   Send as _Send,
   Settings as _Settings,
+  Shield as _Shield,
+  ShieldAlert as _ShieldAlert,
   Shuffle as _Shuffle,
   SkipBack as _SkipBack,
   SkipForward as _SkipForward,
@@ -69,8 +105,17 @@ import {
   Sparkles as _Sparkles,
   Square as _Square,
   Star as _Star,
+  Sun as _Sun,
+  Sunrise as _Sunrise,
+  Sunset as _Sunset,
   ThumbsDown as _ThumbsDown,
   Trash2 as _Trash2,
+  TrendingDown as _TrendingDown,
+  TrendingUp as _TrendingUp,
+  TriangleAlert as _TriangleAlert,
+  Trophy as _Trophy,
+  Type as _Type,
+  Upload as _Upload,
   User as _User,
   Users as _Users,
   Volume1 as _Volume1,
@@ -101,11 +146,29 @@ const SimpleIcon = memo(
 );
 
 // ── Memo-wrapped icon components ────────────────────────────
+export const Activity = memo(_Activity);
 export const AlertCircle = memo(_AlertCircle);
+export const ArrowDownAZ = memo(_ArrowDownAZ);
 export const ArrowDownToLine = memo(_ArrowDownToLine);
 export const Calendar = memo(_Calendar);
+export const ChartNoAxesColumn = memo(_ChartNoAxesColumn);
+export const Crown = memo(_Crown);
 export const FileDown = memo(_FileDown);
+export const FileMusic = memo(_FileMusic);
+export const FileText = memo(_FileText);
 export const Flame = memo(_Flame);
+export const FolderInput = memo(_FolderInput);
+export const FolderOpen = memo(_FolderOpen);
+export const FolderPlus = memo(_FolderPlus);
+export const HardDrive = memo(_HardDrive);
+export const Moon = memo(_Moon);
+export const Sun = memo(_Sun);
+export const Sunrise = memo(_Sunrise);
+export const Sunset = memo(_Sunset);
+export const TrendingDown = memo(_TrendingDown);
+export const TrendingUp = memo(_TrendingUp);
+export const TriangleAlert = memo(_TriangleAlert);
+export const Trophy = memo(_Trophy);
 export const Wifi = memo(_Wifi);
 export const WifiOff = memo(_WifiOff);
 export const Check = memo(_Check);
@@ -114,16 +177,24 @@ export const Download = memo(_Download);
 export const ChevronDown = memo(_ChevronDown);
 export const ChevronLeft = memo(_ChevronLeft);
 export const ArrowRight = memo(_ArrowRight);
+export const ArrowUpDown = memo(_ArrowUpDown);
 export const ChevronRight = memo(_ChevronRight);
 export const ChevronUp = memo(_ChevronUp);
+export const CircleCheck = memo(_CircleCheck);
 export const Clock = memo(_Clock);
+export const Bell = memo(_Bell);
+export const BookOpen = memo(_BookOpen);
 export const Bookmark = memo(_Bookmark);
+export const Braces = memo(_Braces);
 export const Cloud = memo(_Cloud);
 export const Compass = memo(_Compass);
+export const Copy = memo(_Copy);
 export const Database = memo(_Database);
 export const Disc3 = memo(_Disc3);
 export const ExternalLink = memo(_ExternalLink);
 export const Eye = memo(_Eye);
+export const EyeOff = memo(_EyeOff);
+export const FastForward = memo(_FastForward);
 export const Fullscreen = memo(_Fullscreen);
 export const Globe = memo(_Globe);
 export const GripVertical = memo(_GripVertical);
@@ -131,32 +202,47 @@ export const Hash = memo(_Hash);
 export const Headphones = memo(_Headphones);
 export const Heart = memo(_Heart);
 export const Home = memo(_Home);
+export const ImageIcon = memo(_Image);
+export const Info = memo(_Info);
+export const Keyboard = memo(_Keyboard);
+export const LifeBuoy = memo(_LifeBuoy);
 export const Instagram = memo(({ size, className }: { size?: number; className?: string }) => (
   <SimpleIcon icon={siInstagram} size={size} className={className} />
 ));
+export const LayoutDashboard = memo(_LayoutDashboard);
 export const Library = memo(_Library);
 export const LinkIcon = memo(_Link);
+export const ListEnd = memo(_ListEnd);
 export const ListMusic = memo(_ListMusic);
+export const ListStart = memo(_ListStart);
+export const ListX = memo(_ListX);
 export const ListPlus = memo(_ListPlus);
 export const Loader2 = memo(_Loader2);
 export const Lock = memo(_Lock);
 export const MapPin = memo(_MapPin);
 export const MicVocal = memo(_MicVocal);
+export const MonitorPlay = memo(_MonitorPlay);
 export const MessageCircle = memo(_MessageCircle);
 export const Minus = memo(_Minus);
 export const Music = memo(_Music);
+export const Palette = memo(_Palette);
 export const PanelLeftClose = memo(_PanelLeftClose);
 export const PanelLeftOpen = memo(_PanelLeftOpen);
 export const Pause = memo(_Pause);
+export const Pencil = memo(_Pencil);
+export const Ellipsis = memo(_Ellipsis);
 export const Play = memo(_Play);
 export const Plus = memo(_Plus);
 export const Repeat = memo(_Repeat);
 export const Repeat1 = memo(_Repeat1);
 export const RefreshCw = memo(_RefreshCw);
+export const Rewind = memo(_Rewind);
 export const Repeat2 = memo(_Repeat2);
 export const Search = memo(_Search);
 export const Send = memo(_Send);
 export const Settings = memo(_Settings);
+export const Shield = memo(_Shield);
+export const ShieldAlert = memo(_ShieldAlert);
 export const Shuffle = memo(_Shuffle);
 export const Smartphone = memo(_Smartphone);
 export const SkipBack = memo(_SkipBack);
@@ -166,9 +252,11 @@ export const Star = memo(_Star);
 export const Square = memo(_Square);
 export const ThumbsDown = memo(_ThumbsDown);
 export const Trash2 = memo(_Trash2);
+export const Type = memo(_Type);
 export const Twitter = memo(({ size, className }: { size?: number; className?: string }) => (
   <SimpleIcon icon={siX} size={size} className={className} />
 ));
+export const Upload = memo(_Upload);
 export const User = memo(_User);
 export const Users = memo(_Users);
 export const Volume1 = memo(_Volume1);
@@ -178,7 +266,9 @@ export const X = memo(_X);
 export const Link = memo(_Link2);
 export const SlidersHorizontal = memo(_SlidersHorizontal);
 export const AudioLines = memo(_AudioLines);
+export const Ban = memo(_Ban);
 export const Power = memo(_Power);
+export const Radio = memo(_Radio);
 export const RotateCcw = memo(_RotateCcw);
 export const Youtube = memo(({ size, className }: { size?: number; className?: string }) => (
   <SimpleIcon icon={siYoutube} size={size} className={className} />

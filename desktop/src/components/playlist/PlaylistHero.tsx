@@ -3,6 +3,8 @@ import {useTranslation} from 'react-i18next';
 import {dateFormatted, durLong} from '../../lib/formatters';
 import type {Playlist} from '../../lib/hooks';
 import {Calendar, Clock, Library} from '../../lib/icons';
+import {releaseKindOf} from '../../lib/playlist-kind';
+import type {ArrangeMode} from '../../lib/track-order';
 import type {Track} from '../../stores/player';
 import {GlassHeroPanel} from '../ui/GlassHeroPanel';
 import {CrateStack} from './CrateStack';
@@ -46,7 +48,10 @@ export const PlaylistHero = React.memo(function PlaylistHero({
                                                                  onPlayAll,
                                                                  onShuffle,
                                                                  onTogglePin,
+                                                                 onEdit,
                                                                  onDelete,
+                                                                 canArrange,
+                                                                 onArrange,
                                                              }: {
     playlist: Playlist;
     tracks: Track[];
@@ -58,10 +63,13 @@ export const PlaylistHero = React.memo(function PlaylistHero({
     onPlayAll: () => void;
     onShuffle: () => void;
     onTogglePin: () => void;
+    onEdit: () => void;
     onDelete: () => void;
+    canArrange: boolean;
+    onArrange: (mode: ArrangeMode) => void;
 }) {
     const {t} = useTranslation();
-    const kl = kindLabelKey(playlist.kind);
+    const kl = kindLabelKey(releaseKindOf(playlist) ?? playlist.kind);
     const hasGenres = aura.topGenres.length > 0;
 
     const titleStyle = hasGenres
@@ -148,10 +156,15 @@ export const PlaylistHero = React.memo(function PlaylistHero({
                             isOwner={isOwner}
                             isPlaying={isPlaying}
                             isPinned={isPinned}
+                            tracks={tracks}
+                            trackCount={trackCount}
                             onPlayAll={onPlayAll}
                             onShuffle={onShuffle}
                             onTogglePin={onTogglePin}
+                            onEdit={onEdit}
                             onDelete={onDelete}
+                            canArrange={canArrange}
+                            onArrange={onArrange}
                         />
                     </div>
 

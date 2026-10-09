@@ -2,6 +2,8 @@ import React, {useEffect, useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
 import {useInfiniteScroll, useMyFollowings} from '../../lib/hooks';
 import {Loader2} from '../../lib/icons';
+import {matchesTerms, queryTerms} from '../../lib/text-match';
+import {SyncNotice, syncNoticeOf} from '../ui/SyncNotice';
 import {VirtualGrid} from '../ui/VirtualGrid';
 import {UserCard} from './UserCard';
 
@@ -23,10 +25,13 @@ export const FollowingTab = React.memo(function FollowingTab({filter}: { filter:
     }, [filter, followingsQuery.hasNextPage, followingsQuery.isFetchingNextPage]);
 
     const filtered = useMemo(() => {
-        if (!filter) return followings;
-        const q = filter.toLowerCase();
-        return followings.filter((u) => u.username.toLowerCase().includes(q));
+        const terms = queryTerms(filter);
+        return terms.length > 0
+            ? followings.filter((u) => matchesTerms(terms, u.username))
+            : followings;
     }, [followings, filter]);
+
+    const notice = syncNoticeOf(followingsQuery);
 
     return (
         <div className="min-h-[400px]">
@@ -45,6 +50,10 @@ export const FollowingTab = React.memo(function FollowingTab({filter}: { filter:
                     getItemKey={(user) => user.urn}
                     renderItem={(user) => <UserCard user={user}/>}
                 />
+            ) : !filter && notice ? (
+                <div className="py-20">
+                    <SyncNotice kind={notice} onRetry={() => void followingsQuery.refetch()}/>
+                </div>
             ) : (
                 <div className="py-20 text-center text-white/20">
                     {filter ? t('library.noMatches') : t('library.notFollowing')}

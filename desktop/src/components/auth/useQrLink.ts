@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import i18n from '../../i18n';
+import { ApiError } from '../../lib/api';
 import { createLinkRequest, getLinkStatus } from '../../lib/qr-link';
 
 interface QrLinkState {
@@ -81,8 +83,12 @@ export function useQrLink(mode: 'pull' | 'push', onSuccess?: (sessionId: string)
 
       pollRef.current = setTimeout(poll, POLL_INTERVAL_MS);
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Failed to create QR link';
-      setState({ status: 'failed', error: msg });
+      const needsSession =
+        mode === 'push' && err instanceof ApiError && [400, 401, 409].includes(err.status);
+      setState({
+        status: 'failed',
+        error: needsSession ? i18n.t('qrLink.signInRequired') : undefined,
+      });
     }
   }, [mode, stop]);
 

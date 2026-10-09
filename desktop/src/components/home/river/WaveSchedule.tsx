@@ -4,9 +4,11 @@ import {art, dur} from '../../../lib/formatters';
 import {pauseWhite12, playWhite12} from '../../../lib/icons';
 import {usePerfMode} from '../../../lib/perf';
 import {ClusterFeedbackProvider} from '../../../lib/recsFeedback';
+import {useTrackContextMenu} from '../../../lib/useTrackContextMenu';
 import {useTrackPlay} from '../../../lib/useTrackPlay';
 import type {Track} from '../../../stores/player';
 import {LikeButton} from '../../music/LikeButton';
+import {PlayNextButton} from '../../music/PlayNextButton';
 
 const SCHEDULE_SIZE = 10;
 const FRESH_WINDOW_MS = 14 * 24 * 3600 * 1000;
@@ -52,10 +54,12 @@ export const ScheduleRow = React.memo(function ScheduleRow({
 }) {
   const { t } = useTranslation();
   const { isThisPlaying, togglePlay } = useTrackPlay(track, queue);
+  const onContextMenu = useTrackContextMenu(track);
   const cover = art(track.artwork_url, 't200x200');
 
   return (
     <div
+      onContextMenu={onContextMenu}
       className={`group relative flex items-center gap-3.5 rounded-xl border py-2 pl-2.5 pr-3 transition-colors ${
         isThisPlaying
           ? 'border-[var(--color-accent-glow)]'
@@ -113,6 +117,10 @@ export const ScheduleRow = React.memo(function ScheduleRow({
       </div>
       <div className="flex flex-none items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
         <LikeButton track={track} />
+        <PlayNextButton
+          track={track}
+          className="cursor-pointer w-8 h-8 rounded-lg flex items-center justify-center text-white/30 hover:text-white/80 hover:bg-white/[0.06] transition-all duration-200 shrink-0"
+        />
       </div>
       <span className="w-9 flex-none text-right font-mono text-[11.5px] text-white/30 tabular-nums">
         {dur(track.duration)}

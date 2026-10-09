@@ -85,7 +85,7 @@ SoundCloud заблокирован Роскомнадзором — веб-ве
 - **Управление из системы** — медиа-кнопки на клавиатуре, системный центр уведомлений (Windows), MPRIS (Linux)
 - **Discord Rich Presence** — показывай друзьям, что слушаешь
 - **Трей** — приложение работает в фоне
-- **Автообновления** — новые версии устанавливаются в один клик
+- **Обновления из приложения** — для установщика Windows, macOS и AppImage кнопка «Установить и перезапустить», для остальных сборок прямая ссылка на нужный файл
 
 ---
 
@@ -99,6 +99,8 @@ SoundCloud заблокирован Роскомнадзором — веб-ве
 
 Требования: Windows 10 (1809+) или Windows 11
 
+Нужен Microsoft Edge WebView2 Runtime. Установщики ставят его сами, для portable-версии и урезанных сборок Windows поставь [Evergreen Standalone Installer](https://developer.microsoft.com/microsoft-edge/webview2/) от имени администратора. Сам Edge не нужен.
+
 ### Linux
 
 | Формат | Архитектура | Описание |
@@ -106,15 +108,30 @@ SoundCloud заблокирован Роскомнадзором — веб-ве
 | `.deb` | amd64, arm64 | Ubuntu, Debian, Mint, Pop!_OS |
 | `.rpm` | amd64, arm64 | Fedora, openSUSE, CentOS |
 | `.AppImage` | amd64, arm64 | Универсальный, работает везде |
-| `.flatpak` | amd64 | Песочница, автообновления |
+| `.flatpak` | amd64 | Песочница |
+| AUR `soundcloud-bin` | amd64, arm64 | Arch, Manjaro, EndeavourOS |
 
-Скачай нужный формат со [страницы релизов](https://github.com/zxcloli666/SoundCloud-Desktop/releases/latest).
+Скачай нужный формат со [страницы релизов](https://github.com/zxcloli666/SoundCloud-Desktop/releases/latest) или с [сайта](https://soundcloud-desktop.fun/download), если GitHub не открывается.
+
+Arch и производные: официальный пакет [`soundcloud-bin`](https://aur.archlinux.org/packages/soundcloud-bin) публикуется в AUR автоматически через минуту после каждого релиза.
+```bash
+yay -S soundcloud-bin
+```
+Есть и пакет от сообщества [`soundcloud-desktop-bin`](https://aur.archlinux.org/packages/soundcloud-desktop-bin), его ведёт не автор приложения. Ставь только один из двух.
+
+Flatpak ставится из нашего репозитория, тогда обновления приходят через `flatpak update` и центр приложений (GNOME Software, Discover):
+```bash
+flatpak install --user https://zxcloli666.github.io/SoundCloud-Desktop/flatpak/soundcloud-desktop.flatpakref
+```
+Скачанный `soundcloud-desktop.flatpak` тоже подключает этот репозиторий при установке: `flatpak install --user soundcloud-desktop.flatpak`.
 
 Для AppImage:
 ```bash
 chmod +x soundcloud-desktop-*.AppImage
 ./soundcloud-desktop-*.AppImage
 ```
+
+Белое или пустое окно при запуске: запусти с флагом `--safe-render` (во Flatpak это пункт "Безопасный режим отрисовки" / "Safe render mode" в меню ярлыка). Лог: `~/.local/share/com.soundcloud.desktop/logs/desktop.log`, во Flatpak `~/.var/app/io.github.zxcloli666.SoundcloudDesktop/data/com.soundcloud.desktop/logs/desktop.log`.
 
 ### macOS
 
@@ -132,6 +149,47 @@ chmod +x soundcloud-desktop-*.AppImage
 
 ---
 
+## zapret, VPN и списки доменов
+
+Приложение ходит на свои домены в зоне `scnative.space` и напрямую к SoundCloud за треками. Если провайдер режет прямой путь к `scnative.space`, приложение само переключается на резервные маршруты `*.relay.scnative.space`.
+
+Правила для zapret:
+- Если приложение не работает, откройте «Настройки → Сеть → Проверка сети»: там видно, что ломается, и есть кнопка «Скопировать отчёт».
+- Не добавляйте `scnative.space` в `list-general`: это включает обход именно для наших доменов и ломает соединения.
+- Windows (winws, сборка Flowseal): добавьте `scnative.space` и `soundcloud-desktop.fun` в `lists/list-exclude-user.txt`.
+- Если IPSet в режиме `loaded` или `any`, добавьте адреса наших серверов в `lists/ipset-exclude-user.txt` (по одному на строку). Режим `none` наши адреса не трогает.
+  ```
+  188.165.221.195
+  192.95.29.82
+  192.99.8.79
+  144.31.216.153
+  2.27.22.81
+  31.77.143.194
+  150.241.82.7
+  177.3.213.61
+  ```
+- После правки перезапустите zapret.
+- Linux и macOS (nfqws, tpws): домены и адреса выше добавьте в `/opt/zapret/ipset/zapret-hosts-user-exclude.txt`, включите zapret и выполните `sudo /opt/zapret/ipset/get_exclude.sh`. У zapret2 папка `/opt/zapret2`.
+- Для стратегий с `fooling=ts` или `tcp_ts` включите TCP timestamps: `netsh interface tcp set global timestamps=enabled` от администратора.
+- Если системный DNS выдаёт неверный адрес, приложение само спрашивает DoH (1.1.1.1, 8.8.8.8 и другие).
+- Провайдер блокирует SoundCloud — добавьте `soundcloud.com` и `sndcdn.com` в `list-general`, иначе треки идут через сервер и грузятся дольше.
+
+Каждая запись покрывает все поддомены: `scnative.space` включает резервные маршруты, `soundcloud.com` включает `api-v2.soundcloud.com`.
+
+| Домен | Для чего |
+|---|---|
+| `api.scnative.space`, `api-star.scnative.space` | API |
+| `stream.scnative.space`, `stream-star.scnative.space` | аудио |
+| `storage.scnative.space`, `storage-star.scnative.space`, `s3.scnative.space` | хранилище треков |
+| `images.scnative.space` | обложки |
+| `pay.scnative.space` | оплата STAR |
+| `health.scnative.space` | проверка связи |
+| `call-*.scnative.space` | «Сеть пользователей» |
+| `*.relay.scnative.space` | резервные маршруты |
+| `soundcloud.com`, `api-v2.soundcloud.com`, `*.sndcdn.com` | прямая загрузка трека с SoundCloud |
+
+---
+
 ## Скриншоты
 
 <p align="center">
@@ -144,13 +202,47 @@ chmod +x soundcloud-desktop-*.AppImage
 
 ---
 
+## Обновление
+
+Приложение само проверяет новые версии при запуске и раз в шесть часов. Проверить вручную и посмотреть свою версию можно в **Настройки → Общее → Обновления**.
+
+| Сборка | Как обновляется |
+|---|---|
+| Windows `setup.exe` / `.msi`, macOS `.dmg`, `.AppImage` | Кнопка «Установить и перезапустить», настройки и кэш сохраняются |
+| Windows portable | Закрой приложение из трея (правый клик по иконке → «Выход») и замени exe скачанным |
+| `.deb` / `.rpm` | Установи новый пакет поверх старого |
+| AUR | `yay -Syu soundcloud-bin` |
+| Flatpak | `flatpak update` или центр приложений. Если ставил старый `.flatpak` и обновлений не видно, один раз переустанови: `flatpak install --user --reinstall soundcloud-desktop.flatpak` с новым файлом (без `--reinstall` будет ошибка «Каталог не пуст») |
+| Сборка из исходников | `git pull` и пересборка |
+
+Если поставил новую версию, а открывается старая, значит старая ещё работает в трее: закрой её через «Выход» и запусти снова.
+
+---
+
+## Логи
+
+Если приложение вылетает или что-то не играет, приложите к баг-репорту файл `desktop.log`. В него пишут и интерфейс, и нативная часть, включая паники с трассировкой. Токены и `session_id` в ссылках скрываются. Когда файл больше 5 МБ, при запуске он переименовывается в `desktop.old.log`.
+
+Папку открывает кнопка «Открыть папку» в **Настройки → Общее → Диагностика**. Пути:
+
+| ОС | Папка |
+|---|---|
+| Windows | `%LOCALAPPDATA%\com.soundcloud.desktop\logs` |
+| macOS | `~/Library/Logs/com.soundcloud.desktop` |
+| Linux | `~/.local/share/com.soundcloud.desktop/logs` |
+
+---
+
 ## Обратная связь
 
 | | |
 |---|---|
 | Предложить идею | [Обсуждение #121](https://github.com/zxcloli666/SoundCloud-Desktop/discussions/121) |
+| Что значит ошибка? | [Справка по ошибкам](docs/ERRORS.ru.md) |
+| Свой CSS | [Как писать темы](docs/CUSTOM_CSS.ru.md) |
 | Что-то не работает? | [Обсуждение #144](https://github.com/zxcloli666/SoundCloud-Desktop/discussions/144) |
 | Поставить звезду | [GitHub Stars](https://github.com/zxcloli666/SoundCloud-Desktop/stargazers) — помогает продвижению! |
+| Поддержать донатом | [Boosty](https://boosty.to/lolinamide) — разово на любую сумму, или STAR в самом приложении |
 
 Pull requests приветствуются. Для крупных изменений сначала откройте issue.
 

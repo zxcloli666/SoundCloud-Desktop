@@ -36,6 +36,13 @@ const ROLE_TAG_HEAD = new Set([
   'visualizer',
   'hq',
   'hd',
+  'sped',
+  'speed',
+  'slowed',
+  'reverb',
+  'nightcore',
+  'remaster',
+  'remastered',
 ]);
 const ROLE_TAG_TAIL = new Set([
   'remix',
@@ -49,6 +56,12 @@ const ROLE_TAG_TAIL = new Set([
   'mashup',
   'instrumental',
   'acoustic',
+  'sped',
+  'slowed',
+  'reverb',
+  'nightcore',
+  'remaster',
+  'remastered',
 ]);
 
 export function looksLikeRoleTag(inner: string): boolean {
@@ -61,7 +74,7 @@ export function looksLikeRoleTag(inner: string): boolean {
 /**
  * Хвостовая транскрипция в скобках: "МОКЕРИ (moxckery)" → срезаем. Триггер:
  * outer имеет non-Latin codepoint (>U+02AF), inner — чисто ASCII-латиница.
- * Role-теги ("трек (cover)") не трогаем — их обрабатывает stripInlineTags.
+ * Role-теги ("трек (cover)") не трогаем.
  * "Beyoncé (Sasha Fierce)" не срезается (обе стороны latin).
  */
 export function stripTranslitParens(s: string): string {
@@ -85,19 +98,26 @@ export function stripTranslitParens(s: string): string {
   return outerHasNonLatin && innerLatinOnly ? outer : s;
 }
 
-/**
- * Inline-теги в скобках, относящиеся к роли участника (prod./feat./remix/…)
- * и [Free DL]-шум — срезаем из отображаемого title'а. Роли уже лежат в
- * `enrichment.participants` и показываются отдельным блоком.
- */
-const TAG_PATTERN =
-  /\s*[([][^)\]]*(?:prod\.?|produced\s+by|prod\s+by|feat\.?|featuring|ft\.?|with|remix|rmx|edit|version|cover|instrumental|free\s+(?:dl|download)|out\s+now|original\s+mix|extended\s+mix|radio\s+edit|premiere|exclusive|hd|hq|official(?:\s+(?:audio|video))?|lyrics|lyric\s+video|visualizer)\b[^)\]]*[)\]]/gi;
+const NOISE_TAG = /\s*[([]([^)\]]*)[)\]]/g;
+const NOISE_PHRASE =
+  /^(?:free\s+(?:dl|download)|out\s+now|premiere|exclusive|official(?:\s+(?:audio|video|music\s+video|lyric\s+video|visualizer))?|lyrics?(?:\s+video)?|visualizer|hd|hq)$/i;
 
-export function stripInlineTags(title: string): string {
+export function stripNoiseTags(title: string): string {
+  const next = title
+    .replace(NOISE_TAG, (tag, inner: string) => (NOISE_PHRASE.test(inner.trim()) ? '' : tag))
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+  return next || title;
+}
+
+const ROLE_TAG_PATTERN =
+  /\s*[([][^)\]]*\b(?:prod\.?|produced\s+by|prod\s+by|feat\.?|featuring|ft\.?|remix|rmx|edit|version|cover|instrumental|original\s+mix|extended\s+mix|radio\s+edit)\b[^)\]]*[)\]]/gi;
+
+export function stripRoleTags(title: string): string {
   let prev = title;
   for (let i = 0; i < 4; i++) {
     const next = prev
-      .replace(TAG_PATTERN, '')
+      .replace(ROLE_TAG_PATTERN, '')
       .replace(/\s{2,}/g, ' ')
       .trim();
     if (next === prev) break;

@@ -1,6 +1,6 @@
 mod delivery;
 mod discovery;
-mod link;
+pub(crate) mod link;
 mod model;
 mod net_watch;
 mod probe;
@@ -41,7 +41,7 @@ pub fn start(data_dir: PathBuf, app: crate::rt::AppHandle, runtime: Handle) {
     let app_version = env!("CARGO_PKG_VERSION").to_string();
     let client_id = load_or_create_identity(&data_dir);
     let build = |pooled: bool| {
-        let builder = wreq::Client::builder()
+        let builder = crate::network::dns::install(wreq::Client::builder())
             .no_proxy()
             .user_agent(format!("soundcloud-desktop-health/{app_version}"))
             .connect_timeout(Duration::from_secs(3));
@@ -83,6 +83,7 @@ impl Agent {
 
         let mut topology = Topology::bootstrap();
         let mut round = 0usize;
+        let mut last_paths = Vec::new();
         loop {
             let started = Instant::now();
             round = round.wrapping_add(1);
@@ -94,15 +95,28 @@ impl Agent {
                 relays: discovery::relays(&topology.relays).await,
                 calls: discovery::calls(&topology.call_nodes()).await,
             };
-            edge::set_pool(pool.relays.clone(), topology.weighted_calls(&pool.calls));
+            edge::set_pool(
+                probe::usable_first(&pool.relays, &last_paths),
+                topology.weighted_calls(&pool.calls),
+            );
+            edge::announce(&self.app);
 
             let paths = probe::probe_paths(&self.probe_client, &pool, round).await;
+            edge::set_pool(probe::usable_first(&pool.relays, &paths), Vec::new());
+            let cut = probe::note_direct_cut(&paths);
             let early = self
                 .delivery
                 .report(&topology, &self.client_id, &self.app_version, &paths)
                 .await;
 
-            let services = probe::probe_services(&self.probe_client, &topology, &pool).await;
+            let services = probe::probe_services(
+                &self.probe_client,
+                &topology,
+                &pool,
+                probe::direct_bytes(&paths),
+            )
+            .await;
+            edge::announce(&self.app);
             let late = self
                 .delivery
                 .report(&topology, &self.client_id, &self.app_version, &services)
@@ -110,6 +124,9 @@ impl Agent {
 
             let delivered = early || late;
             let ok = services.iter().filter(|sample| sample.ok).count();
+            if cut || (!services.is_empty() && ok == 0) {
+                crate::network::netcheck::auto("health");
+            }
             log_native(
                 &self.app,
                 if delivered { "INFO" } else { "WARN" },
@@ -124,6 +141,7 @@ impl Agent {
                     started.elapsed().as_millis()
                 ),
             );
+            last_paths = paths;
 
             let interval = Duration::from_secs(topology.probe_interval_secs.max(30));
             tokio::select! {

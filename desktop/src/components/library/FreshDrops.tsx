@@ -1,6 +1,6 @@
 import {memo, useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
-import {preloadTrack} from '../../lib/audio';
+import {cancelPreload, preloadTrack} from '../../lib/audio';
 import {ago, art} from '../../lib/formatters';
 import {
     AudioLines,
@@ -12,6 +12,7 @@ import {
     Sparkles,
 } from '../../lib/icons';
 import {usePerfMode} from '../../lib/perf';
+import {useTrackContextMenu} from '../../lib/useTrackContextMenu';
 import {useTrackPlay} from '../../lib/useTrackPlay';
 import type {Track} from '../../stores/player';
 import {LikeButton} from '../music/LikeButton';
@@ -30,11 +31,13 @@ const FreshLead = memo(function FreshLead({track, queue}: { track: Track; queue:
     const perf = usePerfMode();
     const aura = useTrackAura(track.genre);
     const {isThis, isThisPlaying, togglePlay} = useTrackPlay(track, queue);
+    const onContextMenu = useTrackContextMenu(track);
     const cover = art(track.artwork_url, 't500x500');
     const when = whenLabel(track);
 
     return (
         <div
+            onContextMenu={onContextMenu}
             className="relative flex items-center gap-5 p-4 rounded-[1.75rem] overflow-hidden"
             style={{
                 border: `0.5px solid ${aura.accentSoft}`,
@@ -45,7 +48,8 @@ const FreshLead = memo(function FreshLead({track, queue}: { track: Track; queue:
             <button
                 type="button"
                 onClick={togglePlay}
-                onMouseEnter={() => preloadTrack(track.urn)}
+                onMouseEnter={() => preloadTrack(track)}
+                onMouseLeave={cancelPreload}
                 className="group relative shrink-0 w-[108px] h-[108px] md:w-[132px] md:h-[132px] rounded-2xl overflow-hidden ring-1 ring-white/10 cursor-pointer"
                 style={{boxShadow: `0 16px 42px ${aura.accentGlow}`}}
             >
@@ -96,11 +100,13 @@ const FreshDropRow = memo(function FreshDropRow({
     queue: Track[];
 }) {
     const {isThis, isThisPlaying, togglePlay} = useTrackPlay(track, queue);
+    const onContextMenu = useTrackContextMenu(track);
     const cover = art(track.artwork_url, 't200x200');
     const when = whenLabel(track);
 
     return (
         <div
+            onContextMenu={onContextMenu}
             className={`group flex items-center gap-3.5 px-3 py-2.5 rounded-2xl transition-colors duration-200 ${
                 isThis ? 'bg-white/[0.05]' : 'hover:bg-white/[0.035]'
             }`}
@@ -108,7 +114,8 @@ const FreshDropRow = memo(function FreshDropRow({
             <button
                 type="button"
                 onClick={togglePlay}
-                onMouseEnter={() => preloadTrack(track.urn)}
+                onMouseEnter={() => preloadTrack(track)}
+                onMouseLeave={cancelPreload}
                 className="relative w-12 h-12 rounded-xl overflow-hidden shrink-0 ring-1 ring-white/[0.08] cursor-pointer"
             >
                 {cover ? (

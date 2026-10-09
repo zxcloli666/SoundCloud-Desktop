@@ -6,3 +6,9 @@ Icon=io.github.zxcloli666.SoundcloudDesktop
 Type=Application
 Categories=Audio;Music;Player;
 Keywords=soundcloud;music;player;
+Actions=safe-render;
+
+[Desktop Action safe-render]
+Name=Safe render mode
+Name[ru]=Безопасный режим отрисовки
+Exec=soundcloud-desktop --safe-render

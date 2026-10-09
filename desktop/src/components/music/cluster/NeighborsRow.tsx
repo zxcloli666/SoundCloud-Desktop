@@ -31,24 +31,20 @@ export const NeighborsRow = React.memo(function NeighborsRow({
   resolveQueue,
   hideHeader = false,
 }: Props) {
-  const tracksById = useMemo(() => {
-    const map = new Map<string, Track>();
-    for (const t of cluster.tracks) {
-      const id = t.urn.split(':').pop();
-      if (id) map.set(id, t);
-    }
-    return map;
-  }, [cluster.tracks]);
+  const tracksByUrn = useMemo(
+    () => new Map(cluster.tracks.map((t) => [t.urn, t])),
+    [cluster.tracks],
+  );
 
   const pairs = useMemo<Array<{ neighbor: ClusterNeighborDto; track: Track }>>(() => {
     if (!cluster.neighbors) return [];
     const out: Array<{ neighbor: ClusterNeighborDto; track: Track }> = [];
     for (const n of cluster.neighbors) {
-      const t = tracksById.get(String(n.track_id));
+      const t = tracksByUrn.get(n.track_urn);
       if (t) out.push({ neighbor: n, track: t });
     }
     return out;
-  }, [cluster.neighbors, tracksById]);
+  }, [cluster.neighbors, tracksByUrn]);
 
   const ctx = useMemo(() => ({ clusterId: String(cluster.id) }), [cluster.id]);
 

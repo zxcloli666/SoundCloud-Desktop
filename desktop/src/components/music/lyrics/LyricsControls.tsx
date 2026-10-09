@@ -5,7 +5,9 @@ import {useNavigate} from 'react-router-dom';
 import {useShallow} from 'zustand/shallow';
 import {api} from '../../../lib/api';
 import {handlePrev} from '../../../lib/audio';
-import {toggleDislike, useDislikeStatus} from '../../../lib/dislikes';
+import {forgetOfflineLike} from '../../../lib/cache';
+import {clearDislike, dislikeTrack} from '../../../lib/dislike-actions';
+import {useDislikeStatus} from '../../../lib/dislikes';
 import {invalidateAllLikesCache} from '../../../lib/hooks';
 import {
     ExternalLink,
@@ -21,6 +23,8 @@ import {
     ThumbsDown,
 } from '../../../lib/icons';
 import {optimisticToggleLike, useLiked} from '../../../lib/likes';
+import {isLocalUrn} from '../../../lib/local-library';
+import {rememberLikedUrn} from '../../../lib/offline-index';
 import {useLyricsStore} from '../../../stores/lyrics';
 import {type Track, usePlayerStore} from '../../../stores/player';
 import {AddToPlaylistDialog} from '../AddToPlaylistDialog';
@@ -33,10 +37,12 @@ const FullscreenLikeButton = React.memo(({track}: { track: Track }) => {
         const next = !liked;
         optimisticToggleLike(qc, track, next);
         invalidateAllLikesCache();
+        if (next) clearDislike(track.urn);
         try {
             await api(`/likes/tracks/${encodeURIComponent(track.urn)}`, {
                 method: next ? 'POST' : 'DELETE',
             });
+            void (next ? rememberLikedUrn(track.urn, track) : forgetOfflineLike(track.urn));
         } catch {
             optimisticToggleLike(qc, track, !next);
         }
@@ -57,22 +63,11 @@ const FullscreenLikeButton = React.memo(({track}: { track: Track }) => {
 
 const FullscreenDislikeButton = React.memo(({track}: { track: Track }) => {
     const {t} = useTranslation();
-    const qc = useQueryClient();
     const disliked = useDislikeStatus(track.urn);
-    const next = usePlayerStore((s) => s.next);
 
-    const toggle = async () => {
-        const nowDisliked = !disliked;
-        if (nowDisliked && track.user_favorite) {
-            optimisticToggleLike(qc, track, false);
-            invalidateAllLikesCache();
-            api(`/likes/tracks/${encodeURIComponent(track.urn)}`, {method: 'DELETE'}).catch(() => {
-            });
-        }
-        if (nowDisliked && usePlayerStore.getState().currentTrack?.urn === track.urn) {
-            next();
-        }
-        await toggleDislike(qc, track, nowDisliked);
+    const toggle = () => {
+        if (disliked) clearDislike(track.urn);
+        else void dislikeTrack(track);
     };
 
     return (
@@ -126,15 +121,20 @@ export const Controls = React.memo(({track}: { track: Track }) => {
         'w-10 h-10 rounded-full flex items-center justify-center transition-all duration-150 cursor-pointer hover:bg-white/[0.06] outline-none';
     const small =
         'w-9 h-9 rounded-full flex items-center justify-center transition-all duration-150 cursor-pointer hover:bg-white/[0.06] outline-none';
+    const remote = !isLocalUrn(track.urn);
 
     return (
         <div className="flex items-center justify-center gap-2">
-            <AddToPlaylistDialog trackUrns={[track.urn]}>
-                <button type="button" className={`${small} text-white/30 hover:text-white/60`}>
-                    <ListPlus size={20}/>
-                </button>
-            </AddToPlaylistDialog>
-            <FullscreenLikeButton track={track}/>
+            {remote && (
+                <>
+                    <AddToPlaylistDialog trackUrns={[track.urn]}>
+                        <button type="button" className={`${small} text-white/30 hover:text-white/60`}>
+                            <ListPlus size={20}/>
+                        </button>
+                    </AddToPlaylistDialog>
+                    <FullscreenLikeButton track={track}/>
+                </>
+            )}
             <button
                 type="button"
                 onClick={toggleShuffle}
@@ -166,8 +166,12 @@ export const Controls = React.memo(({track}: { track: Track }) => {
             >
                 {repeat === 'one' ? repeat1Icon16 : repeatIcon16}
             </button>
-            <FullscreenDislikeButton track={track}/>
-            <FullscreenOpenTrackButton track={track}/>
+            {remote && (
+                <>
+                    <FullscreenDislikeButton track={track}/>
+                    <FullscreenOpenTrackButton track={track}/>
+                </>
+            )}
         </div>
     );
 });

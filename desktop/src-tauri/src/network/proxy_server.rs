@@ -5,6 +5,7 @@ use warp::Filter;
 
 use crate::network::image_cache;
 use crate::network::proxy::{cache_control_for, proxy_request};
+use crate::app::diagnostics;
 use crate::network::server::cors;
 
 pub async fn start() -> u16 {
@@ -48,6 +49,6 @@ pub async fn start() -> u16 {
     let (addr, server) = warp::serve(routes).bind_ephemeral(addr);
     tokio::spawn(server);
 
-    println!("[ProxyServer] http://127.0.0.1:{}", addr.port());
+    diagnostics::log("INFO", format!("[ProxyServer] http://127.0.0.1:{}", addr.port()));
     addr.port()
 }

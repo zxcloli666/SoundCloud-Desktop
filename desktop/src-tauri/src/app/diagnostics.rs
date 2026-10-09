@@ -1,58 +1,112 @@
-use std::fs::{self, OpenOptions};
-use std::io::Write;
+use std::backtrace::Backtrace;
+use std::fs;
+use std::path::PathBuf;
 
-use chrono::Local;
+use crate::app::{APP_IDENTIFIER, log_sink};
 use crate::rt::AppHandle;
-use tauri::Manager;
+use tauri_plugin_opener::OpenerExt;
 
-const LOG_FILE_NAME: &str = "desktop.log";
-
-fn log_file_path(app: &AppHandle) -> Result<std::path::PathBuf, String> {
-    let dir = app
-        .path()
-        .app_log_dir()
-        .map_err(|e| format!("failed to resolve app log dir: {e}"))?;
-    fs::create_dir_all(&dir).map_err(|e| format!("failed to create app log dir: {e}"))?;
-    Ok(dir.join(LOG_FILE_NAME))
+fn log_dir() -> Result<PathBuf, String> {
+    #[cfg(target_os = "macos")]
+    let dir = dirs::home_dir().map(|home| home.join("Library").join("Logs").join(APP_IDENTIFIER));
+    #[cfg(not(target_os = "macos"))]
+    let dir = dirs::data_local_dir().map(|data| data.join(APP_IDENTIFIER).join("logs"));
+    dir.ok_or_else(|| "failed to resolve app log dir".to_string())
 }
 
-fn append_log_line(app: &AppHandle, line: &str) -> Result<(), String> {
-    let path = log_file_path(app)?;
-    let mut file = OpenOptions::new()
-        .create(true)
-        .append(true)
-        .open(&path)
-        .map_err(|e| format!("failed to open log file: {e}"))?;
-
-    writeln!(file, "{line}").map_err(|e| format!("failed to write log file: {e}"))?;
-    Ok(())
+pub fn init_log_file() {
+    if let Err(err) = log_dir().and_then(|dir| log_sink::init(&dir)) {
+        eprintln!("[Diagnostics] {err}");
+    }
 }
 
-fn format_log_line(level: &str, message: &str) -> String {
-    let timestamp = Local::now().format("%Y-%m-%d %H:%M:%S");
-    format!("[{timestamp}] [{level}] {message}")
+pub fn log_native(_app: &AppHandle, level: &str, message: impl AsRef<str>) {
+    let _ = log_sink::append(level, message.as_ref());
 }
 
-pub fn log_native(app: &AppHandle, level: &str, message: impl AsRef<str>) {
-    let _ = append_log_line(app, &format_log_line(level, message.as_ref()));
+pub fn log(level: &str, message: impl AsRef<str>) {
+    let message = message.as_ref();
+    match level {
+        "ERROR" | "WARN" | "PANIC" => eprintln!("{message}"),
+        _ => println!("{message}"),
+    }
+    let _ = log_sink::append(level, message);
+}
+
+pub fn warn(message: impl AsRef<str>) {
+    log("WARN", message);
+}
+
+pub fn error(message: impl AsRef<str>) {
+    log("ERROR", message);
+}
+
+pub fn install_panic_hook() {
+    let default_hook = std::panic::take_hook();
+    std::panic::set_hook(Box::new(move |info| {
+        let thread = std::thread::current();
+        let thread = thread.name().unwrap_or("unnamed");
+        let backtrace = Backtrace::force_capture();
+        let _ = log_sink::append("PANIC", &format!("thread '{thread}' {info}\n{backtrace}"));
+        default_hook(info);
+    }));
 }
 
 pub fn mark_session_started(app: &AppHandle) {
-    let _ = append_log_line(
-        app,
-        &format_log_line("INFO", "------------ SESSION STARTED -----------------"),
+    let _ = log_sink::append("INFO", "------------ SESSION STARTED -----------------");
+    let _ = log_sink::append(
+        "INFO",
+        &format!(
+            "SoundCloud Desktop {} on {} {}",
+            app.package_info().version,
+            std::env::consts::OS,
+            std::env::consts::ARCH
+        ),
     );
-    if let Ok(path) = log_file_path(app) {
-        let _ = append_log_line(
-            app,
-            &format_log_line("INFO", &format!("Log file: {}", path.display())),
-        );
+    if let Some(path) = log_sink::path() {
+        let _ = log_sink::append("INFO", &format!("Log file: {}", path.display()));
     }
 }
 
 #[tauri::command]
-pub fn diagnostics_log(app: AppHandle, level: String, message: String) -> Result<(), String> {
-    append_log_line(&app, &format_log_line(&level, &message))
+pub fn diagnostics_log(level: String, message: String) -> Result<(), String> {
+    log_sink::append(&level, &message)
+}
+
+#[tauri::command]
+pub fn diagnostics_log_dir() -> Result<String, String> {
+    log_dir().map(|dir| dir.to_string_lossy().into_owned())
+}
+
+#[tauri::command]
+pub fn diagnostics_open_log_dir(app: AppHandle) -> Result<(), String> {
+    let dir = log_dir()?;
+    fs::create_dir_all(&dir).map_err(|e| format!("failed to create app log dir: {e}"))?;
+    let target = log_sink::path()
+        .filter(|path| path.exists())
+        .map(|path| path.to_path_buf());
+    match target {
+        Some(file) => app.opener().reveal_item_in_dir(file),
+        None => app
+            .opener()
+            .open_path(dir.to_string_lossy().into_owned(), None::<&str>),
+    }
+    .map_err(|e| format!("failed to open log dir: {e}"))
+}
+
+#[tauri::command]
+pub async fn diagnostics_reveal_log() -> Result<(), String> {
+    let path = match log_sink::path() {
+        Some(path) => path.to_path_buf(),
+        None => log_sink::init(&log_dir()?)?,
+    };
+    fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(&path)
+        .map_err(|e| format!("failed to open log file: {e}"))?;
+    tauri_plugin_opener::reveal_item_in_dir(&path)
+        .map_err(|e| format!("failed to reveal log file: {e}"))
 }
 
 #[cfg(target_os = "linux")]
@@ -238,3 +292,27 @@ pub fn start_linux_fd_monitor(app: &AppHandle) {
 
 #[cfg(not(target_os = "linux"))]
 pub fn start_linux_fd_monitor(_app: &AppHandle) {}
+
+#[cfg(target_os = "linux")]
+const RENDER_ENV_KEYS: [&str; 7] = [
+    "XDG_SESSION_TYPE",
+    "WAYLAND_DISPLAY",
+    "GDK_BACKEND",
+    "WEBKIT_DMABUF_RENDERER_FORCE_SHM",
+    "WEBKIT_DISABLE_DMABUF_RENDERER",
+    "WEBKIT_DISABLE_COMPOSITING_MODE",
+    "__NV_DISABLE_EXPLICIT_SYNC",
+];
+
+#[cfg(target_os = "linux")]
+pub fn log_linux_render_env(app: &AppHandle) {
+    let env = RENDER_ENV_KEYS
+        .iter()
+        .map(|key| format!("{key}={}", std::env::var(key).unwrap_or_default()))
+        .collect::<Vec<_>>()
+        .join(" ");
+    log_native(app, "INFO", format!("[GPU] {env}"));
+}
+
+#[cfg(not(target_os = "linux"))]
+pub fn log_linux_render_env(_app: &AppHandle) {}

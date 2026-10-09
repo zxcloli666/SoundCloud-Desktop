@@ -1,0 +1,271 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SoundCloud Desktop overlay</title>
+<style>
+:root {
+  --accent: #ff5500;
+  --accent-light: #ff8d55;
+  --accent-glow: rgba(255, 85, 0, .38);
+  --scale: 1;
+  --ease: cubic-bezier(.22, 1, .36, 1);
+  --font: "Inter", "SF Pro Display", -apple-system, "Segoe UI Variable", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: transparent; overflow: hidden; }
+body { font-family: var(--font); color: #fff; -webkit-font-smoothing: antialiased; }
+.stage { position: absolute; top: 0; left: 0; padding: calc(18px * var(--scale)); transform-origin: top left; }
+.align-right .stage { left: auto; right: 0; transform-origin: top right; }
+.np { position: relative; display: flex; align-items: center; opacity: 0; transform: translateY(14px) scale(.98); transition: opacity .6s var(--ease), transform .6s var(--ease); }
+.np.on { opacity: 1; transform: none; }
+.align-right .np { flex-direction: row-reverse; text-align: right; }
+.meta { position: relative; min-width: 0; flex: 1; transition: opacity .32s ease, transform .32s var(--ease), filter .32s ease; }
+.swap .meta { opacity: 0; transform: translateX(-10px); filter: blur(4px); }
+.align-right .swap .meta { transform: translateX(10px); }
+.eyebrow { display: flex; align-items: center; gap: .55em; font-size: calc(10.5px * var(--scale)); font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: var(--accent); }
+.align-right .eyebrow { flex-direction: row-reverse; }
+.eq { display: inline-flex; align-items: flex-end; gap: calc(2px * var(--scale)); height: calc(11px * var(--scale)); }
+.eq i { display: block; width: calc(3px * var(--scale)); height: 30%; border-radius: 2px; background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+.playing .eq i { animation: eq 1.1s ease-in-out infinite; }
+.eq i:nth-child(2) { animation-delay: -.45s !important; }
+.eq i:nth-child(3) { animation-delay: -.8s !important; }
+.eq i:nth-child(4) { animation-delay: -.25s !important; }
+@keyframes eq { 0%, 100% { height: 25%; } 30% { height: 100%; } 60% { height: 45%; } 80% { height: 80%; } }
+.title { overflow: hidden; white-space: nowrap; font-weight: 800; letter-spacing: -.02em; line-height: 1.18; -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 22px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 22px), transparent); }
+.title.fits { -webkit-mask-image: none; mask-image: none; }
+.title span { display: inline-block; padding-right: 22px; }
+.title.scroll span { animation: marquee var(--dur, 12s) ease-in-out infinite; }
+@keyframes marquee { 0%, 18% { transform: translateX(0); } 50%, 68% { transform: translateX(var(--shift)); } 100% { transform: translateX(0); } }
+.artist { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: rgba(255, 255, 255, .62); font-weight: 500; }
+.bar { position: relative; overflow: hidden; border-radius: 99px; background: rgba(255, 255, 255, .14); }
+.fill { position: absolute; inset: 0; transform-origin: left; transform: scaleX(0); border-radius: inherit; background: linear-gradient(90deg, var(--accent-light), var(--accent)); box-shadow: 0 0 14px var(--accent); }
+.times { display: flex; justify-content: space-between; font-size: calc(10.5px * var(--scale)); font-weight: 600; color: rgba(255, 255, 255, .45); font-variant-numeric: tabular-nums; }
+.no-progress .bar, .no-progress .times, .no-progress .ring { display: none; }
+.art { position: relative; flex-shrink: 0; overflow: hidden; background: rgba(255, 255, 255, .06); }
+.art img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: opacity .5s ease; }
+.art img:not([src]), .label img:not([src]), .swap .art img, .swap .label img { opacity: 0; }
+.label img { transition: opacity .5s ease; }
+.art .glyph { position: absolute; inset: 0; display: grid; place-items: center; color: rgba(255, 255, 255, .3); }
+.art .glyph svg { width: 38%; height: 38%; }
+.no-cover .art, .no-cover .backdrop, .no-cover .disc { display: none; }
+
+.theme-card .np { width: calc(500px * var(--scale)); gap: calc(18px * var(--scale)); padding: calc(16px * var(--scale)); border-radius: calc(26px * var(--scale)); overflow: hidden; background: rgba(14, 14, 18, .62); border: 1px solid rgba(255, 255, 255, .1); box-shadow: 0 24px 60px rgba(0, 0, 0, .45), inset 0 1px 0 rgba(255, 255, 255, .1); backdrop-filter: blur(30px) saturate(1.5); }
+.theme-card .np::after { content: ""; position: absolute; left: 10%; right: 10%; top: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .35), transparent); }
+.theme-card .backdrop { position: absolute; inset: -40px; background-size: cover; background-position: center; filter: blur(42px) saturate(1.6) brightness(.55); opacity: .85; transition: background-image .6s ease; }
+.theme-card .glow { position: absolute; width: 60%; height: 140%; left: -10%; top: -20%; background: radial-gradient(closest-side, var(--accent-glow), transparent); opacity: .55; pointer-events: none; }
+.align-right.theme-card .glow { left: auto; right: -10%; }
+.theme-card .art { width: calc(96px * var(--scale)); height: calc(96px * var(--scale)); border-radius: calc(18px * var(--scale)); box-shadow: 0 12px 30px rgba(0, 0, 0, .5), 0 0 0 1px rgba(255, 255, 255, .08); }
+.theme-card .title { margin-top: calc(7px * var(--scale)); font-size: calc(21px * var(--scale)); }
+.theme-card .artist { margin-top: calc(2px * var(--scale)); font-size: calc(14px * var(--scale)); }
+.theme-card .bar { margin-top: calc(12px * var(--scale)); height: calc(4px * var(--scale)); }
+.theme-card .times { margin-top: calc(6px * var(--scale)); }
+
+.theme-minimal .np { width: calc(460px * var(--scale)); gap: calc(14px * var(--scale)); }
+.theme-minimal .art { width: calc(58px * var(--scale)); height: calc(58px * var(--scale)); border-radius: calc(12px * var(--scale)); box-shadow: 0 8px 24px rgba(0, 0, 0, .55); }
+.theme-minimal .title { font-size: calc(19px * var(--scale)); text-shadow: 0 2px 12px rgba(0, 0, 0, .75), 0 1px 2px rgba(0, 0, 0, .9); }
+.theme-minimal .artist { font-size: calc(13.5px * var(--scale)); color: rgba(255, 255, 255, .8); text-shadow: 0 1px 8px rgba(0, 0, 0, .85), 0 1px 2px rgba(0, 0, 0, .9); }
+.theme-minimal .eyebrow { text-shadow: 0 1px 6px rgba(0, 0, 0, .8); }
+.theme-minimal .bar { margin-top: calc(8px * var(--scale)); height: calc(3px * var(--scale)); background: rgba(255, 255, 255, .22); box-shadow: 0 1px 6px rgba(0, 0, 0, .5); }
+.theme-minimal .times { display: none; }
+.theme-minimal .backdrop, .theme-minimal .glow { display: none; }
+
+.theme-vinyl .np { width: calc(520px * var(--scale)); gap: calc(20px * var(--scale)); }
+.theme-vinyl .backdrop, .theme-vinyl .glow, .theme-vinyl .bar, .theme-vinyl .times { display: none; }
+.theme-vinyl .art { display: none; }
+.disc { display: none; }
+.theme-vinyl .disc { display: block; position: relative; flex-shrink: 0; width: calc(132px * var(--scale)); height: calc(132px * var(--scale)); }
+.theme-vinyl .record { position: absolute; inset: calc(8px * var(--scale)); border-radius: 50%; background: radial-gradient(circle, transparent 30%, rgba(255, 255, 255, .06) 31%, transparent 32%), repeating-radial-gradient(circle, #111 0 2px, #1b1b1f 2px 3px), #0c0c0e; box-shadow: 0 16px 40px rgba(0, 0, 0, .6), inset 0 0 0 1px rgba(255, 255, 255, .06); animation: spin 5.5s linear infinite; animation-play-state: paused; }
+.theme-vinyl .record::before { content: ""; position: absolute; inset: 0; border-radius: 50%; background: conic-gradient(from 30deg, transparent 0 10%, rgba(255, 255, 255, .12) 14%, transparent 20% 60%, rgba(255, 255, 255, .08) 64%, transparent 70%); }
+.theme-vinyl .label { position: absolute; inset: 31%; border-radius: 50%; overflow: hidden; background: var(--accent); box-shadow: 0 0 0 2px rgba(0, 0, 0, .5); }
+.theme-vinyl .label img { width: 100%; height: 100%; object-fit: cover; }
+.theme-vinyl .label::after { content: ""; position: absolute; left: 50%; top: 50%; width: 12%; height: 12%; margin: -6% 0 0 -6%; border-radius: 50%; background: #0c0c0e; }
+.theme-vinyl.playing .record { animation-play-state: running; }
+.theme-vinyl .ring { position: absolute; inset: 0; transform: rotate(-90deg); }
+.theme-vinyl .ring circle { fill: none; stroke-width: 3; }
+.theme-vinyl .ring .track { stroke: rgba(255, 255, 255, .12); }
+.theme-vinyl .ring .arc { stroke: var(--accent); stroke-linecap: round; filter: drop-shadow(0 0 4px var(--accent)); }
+.theme-vinyl .title { margin-top: calc(8px * var(--scale)); font-size: calc(24px * var(--scale)); text-shadow: 0 2px 14px rgba(0, 0, 0, .7); }
+.theme-vinyl .artist { margin-top: calc(3px * var(--scale)); font-size: calc(15px * var(--scale)); color: rgba(255, 255, 255, .75); text-shadow: 0 1px 8px rgba(0, 0, 0, .8); }
+.theme-vinyl .eyebrow { text-shadow: 0 1px 6px rgba(0, 0, 0, .8); }
+.theme-vinyl .clock { margin-top: calc(8px * var(--scale)); font-size: calc(11.5px * var(--scale)); font-weight: 600; color: rgba(255, 255, 255, .55); font-variant-numeric: tabular-nums; text-shadow: 0 1px 6px rgba(0, 0, 0, .8); }
+.clock { display: none; }
+.theme-vinyl .clock { display: block; }
+.theme-vinyl.no-progress .clock { display: none; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .playing .eq i, .record, .title.scroll span { animation: none !important; } }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="np" id="np">
+    <div class="backdrop" id="backdrop"></div>
+    <div class="glow"></div>
+    <div class="art">
+      <div class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>
+      <img id="art" alt="">
+    </div>
+    <div class="disc">
+      <div class="record"><div class="label"><img id="label" alt=""></div></div>
+      <svg class="ring" viewBox="0 0 100 100"><circle class="track" cx="50" cy="50" r="47"/><circle class="arc" id="arc" cx="50" cy="50" r="47"/></svg>
+    </div>
+    <div class="meta">
+      <div class="eyebrow"><span class="eq"><i></i><i></i><i></i><i></i></span><span id="state"></span></div>
+      <div class="title" id="title"><span id="titleText"></span></div>
+      <div class="artist" id="artist"></div>
+      <div class="bar"><div class="fill" id="fill"></div></div>
+      <div class="times"><span id="cur">0:00</span><span id="dur">0:00</span></div>
+      <div class="clock" id="clock"></div>
+    </div>
+  </div>
+</div>
+<script>
+(() => {
+  const params = new URLSearchParams(location.search);
+  const words = {
+    en: { playing: "Now playing", paused: "Paused" },
+    ru: { playing: "Сейчас играет", paused: "Пауза" },
+    tr: { playing: "Şimdi çalıyor", paused: "Duraklatıldı" },
+  };
+  const lang = words[params.get("lang")] ? params.get("lang") : "en";
+  const theme = ["card", "minimal", "vinyl"].includes(params.get("theme")) ? params.get("theme") : "card";
+  const hideWhenPaused = params.get("hide") === "paused";
+  const fixedAccent = /^[0-9a-f]{3,8}$/i.test(params.get("accent") || "") ? `#${params.get("accent")}` : null;
+  const scale = Math.min(3, Math.max(0.4, Number(params.get("scale")) || 1));
+  const root = document.documentElement;
+  const body = document.body;
+  const $ = (id) => document.getElementById(id);
+  const el = { np: $("np"), art: $("art"), label: $("label"), backdrop: $("backdrop"), state: $("state"), title: $("title"), titleText: $("titleText"), artist: $("artist"), fill: $("fill"), cur: $("cur"), dur: $("dur"), clock: $("clock"), arc: $("arc") };
+  const circumference = 2 * Math.PI * 47;
+
+  body.classList.add(`theme-${theme}`);
+  if (params.get("align") === "right") body.classList.add("align-right");
+  if (params.get("progress") === "0") body.classList.add("no-progress");
+  if (params.get("cover") === "0") body.classList.add("no-cover");
+  root.style.setProperty("--scale", String(scale));
+  el.arc.style.strokeDasharray = String(circumference);
+
+  let current = null;
+  let anchor = { pos: 0, at: 0 };
+  let identity = "";
+  let swapTimer = 0;
+
+  const clock = (ms) => {
+    const total = Math.max(0, Math.floor(ms / 1000));
+    const h = Math.floor(total / 3600);
+    const m = Math.floor((total % 3600) / 60);
+    const s = String(total % 60).padStart(2, "0");
+    return h > 0 ? `${h}:${String(m).padStart(2, "0")}:${s}` : `${m}:${s}`;
+  };
+
+  const position = () => {
+    if (!current) return 0;
+    const elapsed = current.playing ? performance.now() - anchor.at : 0;
+    const pos = anchor.pos + elapsed;
+    return current.durationMs > 0 ? Math.min(pos, current.durationMs) : pos;
+  };
+
+  const fitTitle = () => {
+    const shift = el.titleText.scrollWidth - el.title.clientWidth;
+    el.title.classList.toggle("fits", shift <= 0);
+    el.title.classList.toggle("scroll", shift > 0);
+    el.title.style.setProperty("--shift", `${-Math.max(0, shift)}px`);
+    el.title.style.setProperty("--dur", `${Math.max(9, shift / 18)}s`);
+  };
+
+  const setCover = (url) => {
+    for (const img of [el.art, el.label]) {
+      if (url) img.src = url;
+      else img.removeAttribute("src");
+    }
+    el.backdrop.style.backgroundImage = url ? `url("${url}")` : "none";
+  };
+
+  const fillMeta = (data) => {
+    el.titleText.textContent = data.title;
+    el.artist.textContent = data.artist;
+    setCover(data.coverUrl);
+    requestAnimationFrame(fitTitle);
+  };
+
+  const swapTo = (data) => {
+    clearTimeout(swapTimer);
+    const reveal = () => {
+      fillMeta(data);
+      el.np.classList.remove("swap");
+    };
+    if (!el.np.classList.contains("on")) {
+      reveal();
+      return;
+    }
+    el.np.classList.add("swap");
+    const preload = data.coverUrl ? new Image() : null;
+    let ready = !preload;
+    let waited = false;
+    const done = () => { if (ready && waited) reveal(); };
+    if (preload) {
+      preload.onload = preload.onerror = () => { ready = true; done(); };
+      preload.src = data.coverUrl;
+      setTimeout(() => { ready = true; done(); }, 1500);
+    }
+    swapTimer = setTimeout(() => { waited = true; done(); }, 320);
+  };
+
+  const setAccent = (hex) => {
+    const raw = hex.replace("#", "");
+    const full = raw.length === 3 ? raw.split("").map((c) => c + c).join("") : raw.slice(0, 6);
+    const value = Number.parseInt(full, 16);
+    if (full.length !== 6 || Number.isNaN(value)) return;
+    const rgb = [value >> 16, (value >> 8) & 255, value & 255];
+    const light = rgb.map((c) => Math.round(c + (255 - c) * 0.35));
+    root.style.setProperty("--accent", `rgb(${rgb.join(",")})`);
+    root.style.setProperty("--accent-light", `rgb(${light.join(",")})`);
+    root.style.setProperty("--accent-glow", `rgba(${rgb.join(",")}, .38)`);
+  };
+
+  const apply = (data) => {
+    current = data;
+    anchor = { pos: data.positionMs, at: performance.now() };
+    setAccent(fixedAccent || data.accent || "#ff5500");
+    body.classList.toggle("playing", data.hasTrack && data.playing);
+    el.state.textContent = words[lang][data.playing ? "playing" : "paused"];
+    const next = data.hasTrack ? `${data.title}\n${data.artist}\n${data.coverUrl || ""}` : "";
+    if (next && next !== identity) swapTo(data);
+    identity = next;
+    const visible = data.hasTrack && (data.playing || !hideWhenPaused);
+    el.np.classList.toggle("on", visible);
+  };
+
+  const tick = () => {
+    if (current) {
+      const pos = position();
+      const ratio = current.durationMs > 0 ? pos / current.durationMs : 0;
+      el.fill.style.transform = `scaleX(${ratio})`;
+      el.arc.style.strokeDashoffset = String(circumference * (1 - ratio));
+      el.cur.textContent = clock(pos);
+      el.dur.textContent = clock(current.durationMs);
+      el.clock.textContent = `${clock(pos)} / ${clock(current.durationMs)}`;
+    }
+    requestAnimationFrame(tick);
+  };
+
+  const connect = () => {
+    const source = new EventSource("/events");
+    source.onmessage = (event) => {
+      try { apply(JSON.parse(event.data)); } catch {}
+    };
+    source.onerror = () => {
+      el.np.classList.remove("on");
+      identity = "";
+      if (source.readyState === EventSource.CLOSED) setTimeout(connect, 3000);
+    };
+  };
+
+  window.addEventListener("resize", fitTitle);
+  requestAnimationFrame(tick);
+  connect();
+})();
+</script>
+</body>
+</html>

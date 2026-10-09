@@ -1,3 +1,4 @@
+import { CloudOff, RefreshCw } from 'lucide-react';
 import React, { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -5,8 +6,6 @@ import type { Aura } from '../../lib/aura';
 import { fc } from '../../lib/formatters';
 import {
   useInfiniteScroll,
-  useSearchDbPlaylists,
-  useSearchDbTracks,
   useUserFollowers,
   useUserFollowings,
   useUserLikedTracks,
@@ -16,8 +15,11 @@ import {
 } from '../../lib/hooks';
 import { Loader2, Music } from '../../lib/icons';
 import {usePerfMode} from '../../lib/perf';
+import { useCatalogPlaylists, useCatalogTracks } from '../../lib/search';
 import { PlaylistCard } from '../music/PlaylistCard';
+import { SearchState } from '../search/SearchState';
 import { Avatar } from '../ui/Avatar';
+import { type SyncedQuery, SyncNotice, syncNoticeOf } from '../ui/SyncNotice';
 import { VirtualGrid } from '../ui/VirtualGrid';
 import { VirtualList } from '../ui/VirtualList';
 import { ThemedTrackRow } from './ThemedTrackRow';
@@ -26,17 +28,41 @@ interface TabWrapperProps {
   isLoading: boolean;
   isEmpty: boolean;
   emptyText?: string;
+  isError?: boolean;
+  onRetry?: () => void;
+  query?: SyncedQuery & { refetch: () => unknown };
   children: React.ReactNode;
 }
 
-function TabWrapperImpl({ children, isLoading, isEmpty, emptyText }: TabWrapperProps) {
+function TabWrapperImpl({
+  children,
+  isLoading,
+  isEmpty,
+  emptyText,
+  isError,
+  onRetry,
+  query,
+}: TabWrapperProps) {
   const { t } = useTranslation();
+  const notice = query ? syncNoticeOf(query) : null;
   return (
     <div className="min-h-[420px]">
       {isLoading ? (
         <div className="py-24 flex justify-center">
           <Loader2 size={28} className="text-white/20 animate-spin" />
         </div>
+      ) : isEmpty && notice && query ? (
+        <div className="py-24">
+          <SyncNotice kind={notice} onRetry={() => void query.refetch()} />
+        </div>
+      ) : isEmpty && isError && onRetry ? (
+        <SearchState
+          icon={<CloudOff size={26} />}
+          title={t('user.search.error')}
+          cta={t('search.error.retry')}
+          ctaIcon={<RefreshCw size={15} />}
+          onAction={onRetry}
+        />
       ) : isEmpty ? (
         <div className="py-24 flex flex-col items-center gap-4">
           <div
@@ -69,7 +95,7 @@ export function UserTracksTab({ urn, aura }: { urn: string; aura: Aura }) {
     [aura, q.tracks],
   );
   return (
-    <TabWrapper isLoading={q.isLoading} isEmpty={q.tracks.length === 0}>
+    <TabWrapper isLoading={q.isLoading} isEmpty={q.tracks.length === 0} query={q}>
       <VirtualList
         items={q.tracks}
         rowHeight={72}
@@ -86,17 +112,18 @@ export function UserTracksTab({ urn, aura }: { urn: string; aura: Aura }) {
 }
 
 export function UserPopularTab({ urn, aura }: { urn: string; aura: Aura }) {
-  const { data = [], isLoading } = useUserPopularTracks(urn);
+  const popular = useUserPopularTracks(urn);
+  const { tracks, isLoading } = popular;
   const renderItem = useCallback(
-    (track: (typeof data)[number], i: number) => (
-      <ThemedTrackRow track={track} index={i} queue={data} aura={aura} />
+    (track: (typeof tracks)[number], i: number) => (
+      <ThemedTrackRow track={track} index={i} queue={tracks} aura={aura} />
     ),
-    [aura, data],
+    [aura, tracks],
   );
   return (
-    <TabWrapper isLoading={isLoading} isEmpty={data.length === 0}>
+    <TabWrapper isLoading={isLoading} isEmpty={tracks.length === 0} query={popular}>
       <VirtualList
-        items={data}
+        items={tracks}
         rowHeight={72}
         overscan={8}
         className="flex flex-col gap-1"
@@ -115,7 +142,7 @@ export function UserPlaylistsTab({ urn }: { urn: string }) {
     [],
   );
   return (
-    <TabWrapper isLoading={q.isLoading} isEmpty={q.playlists.length === 0}>
+    <TabWrapper isLoading={q.isLoading} isEmpty={q.playlists.length === 0} query={q}>
       <VirtualGrid
         items={q.playlists}
         itemHeight={320}
@@ -142,7 +169,7 @@ export function UserLikesTab({ urn, aura }: { urn: string; aura: Aura }) {
     [aura, q.tracks],
   );
   return (
-    <TabWrapper isLoading={q.isLoading} isEmpty={q.tracks.length === 0}>
+    <TabWrapper isLoading={q.isLoading} isEmpty={q.tracks.length === 0} query={q}>
       <VirtualList
         items={q.tracks}
         rowHeight={72}
@@ -174,22 +201,28 @@ export function UserSearchTracksTab({
   query: string;
 }) {
   const { t } = useTranslation();
-  const q = useSearchDbTracks(query, urn);
-  const ref = useInfiniteScroll(!!q.hasNextPage, !!q.isFetchingNextPage, q.fetchNextPage);
+  const q = useCatalogTracks(query.trim(), urn);
+  const ref = useInfiniteScroll(
+    !!q.hasNextPage && !q.isFetchNextPageError,
+    !!q.isFetchingNextPage,
+    q.fetchNextPage,
+  );
   const renderItem = useCallback(
-    (track: (typeof q.tracks)[number], i: number) => (
-      <ThemedTrackRow track={track} index={i} queue={q.tracks} aura={aura} />
+    (track: (typeof q.items)[number], i: number) => (
+      <ThemedTrackRow track={track} index={i} queue={q.items} aura={aura} />
     ),
-    [aura, q.tracks],
+    [aura, q.items],
   );
   return (
     <TabWrapper
       isLoading={q.isLoading}
-      isEmpty={q.tracks.length === 0}
+      isEmpty={q.items.length === 0}
       emptyText={t('user.search.empty')}
+      isError={q.isError}
+      onRetry={() => void q.refetch()}
     >
       <VirtualList
-        items={q.tracks}
+        items={q.items}
         rowHeight={72}
         overscan={8}
         className="flex flex-col gap-1"
@@ -208,20 +241,26 @@ export function UserSearchTracksTab({
  */
 export function UserSearchPlaylistsTab({ urn, query }: { urn: string; query: string }) {
   const { t } = useTranslation();
-  const q = useSearchDbPlaylists(query, urn);
-  const ref = useInfiniteScroll(!!q.hasNextPage, !!q.isFetchingNextPage, q.fetchNextPage);
+  const q = useCatalogPlaylists(query.trim(), urn);
+  const ref = useInfiniteScroll(
+    !!q.hasNextPage && !q.isFetchNextPageError,
+    !!q.isFetchingNextPage,
+    q.fetchNextPage,
+  );
   const renderItem = useCallback(
-    (p: (typeof q.playlists)[number]) => <PlaylistCard playlist={p} showPlayback />,
+    (p: (typeof q.items)[number]) => <PlaylistCard playlist={p} showPlayback />,
     [],
   );
   return (
     <TabWrapper
       isLoading={q.isLoading}
-      isEmpty={q.playlists.length === 0}
+      isEmpty={q.items.length === 0}
       emptyText={t('user.search.empty')}
+      isError={q.isError}
+      onRetry={() => void q.refetch()}
     >
       <VirtualGrid
-        items={q.playlists}
+        items={q.items}
         itemHeight={320}
         minColumnWidth={200}
         gap={28}
@@ -285,7 +324,12 @@ export function UserConnectionsTab({
   const emptyText = mode === 'followers' ? t('user.noFollowers') : t('user.noFollowings');
 
   return (
-    <TabWrapper isLoading={q.isLoading} isEmpty={q.users.length === 0} emptyText={emptyText}>
+    <TabWrapper
+      isLoading={q.isLoading}
+      isEmpty={q.users.length === 0}
+      emptyText={emptyText}
+      query={q}
+    >
       <VirtualGrid
         items={q.users}
         itemHeight={220}

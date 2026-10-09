@@ -1,5 +1,5 @@
-import type { QueryClient } from '@tanstack/react-query';
-import { useEffect, useSyncExternalStore } from 'react';
+import { type QueryClient, useInfiniteQuery } from '@tanstack/react-query';
+import { useEffect, useMemo, useSyncExternalStore } from 'react';
 import type { Track } from '../stores/player';
 import { api } from './api';
 import { recordEvent } from './events';
@@ -32,6 +32,42 @@ export function useDisliked(urn: string): boolean {
     },
     () => _dislikedUrns.has(urn),
   );
+}
+
+export function useDislikedCount(): number {
+  return useSyncExternalStore(
+    (cb) => {
+      _listeners.add(cb);
+      return () => _listeners.delete(cb);
+    },
+    () => _dislikedUrns.size,
+  );
+}
+
+interface DislikesPage {
+  collection: Track[];
+  next_href: string | null;
+}
+
+export function useDislikedTracks() {
+  const query = useInfiniteQuery({
+    queryKey: ['me', 'dislikes'],
+    queryFn: async ({ pageParam }) => {
+      const page = await api<DislikesPage>(`/dislikes${pageParam}`);
+      for (const track of page.collection) _dislikedUrns.set(track.urn, true);
+      if (page.collection.length > 0) notify();
+      return page;
+    },
+    initialPageParam: '?limit=50',
+    getNextPageParam: (last) => last.next_href ?? undefined,
+    staleTime: 0,
+    refetchOnMount: 'always',
+  });
+  const tracks = useMemo(
+    () => query.data?.pages.flatMap((page) => page.collection) ?? [],
+    [query.data],
+  );
+  return { ...query, tracks };
 }
 
 const _inflightStatus = new Map<string, Promise<boolean>>();
@@ -78,11 +114,8 @@ let _bulkLoaded = false;
 export async function loadAllDislikedIds(): Promise<void> {
   if (_bulkLoaded) return;
   try {
-    const r = await api<{ ids: string[] }>('/dislikes/ids');
-    for (const id of r.ids) {
-      const urn = id.startsWith('soundcloud:tracks:') ? id : `soundcloud:tracks:${id}`;
-      _dislikedUrns.set(urn, true);
-    }
+    const r = await api<{ urns: string[] }>('/dislikes/ids');
+    for (const urn of r.urns) _dislikedUrns.set(urn, true);
     _bulkLoaded = true;
     notify();
   } catch {
@@ -92,21 +125,16 @@ export async function loadAllDislikedIds(): Promise<void> {
 
 export async function toggleDislike(
   qc: QueryClient,
-  track: Track,
+  track: Pick<Track, 'urn'>,
   nowDisliked: boolean,
 ): Promise<void> {
   setDislikedUrn(track.urn, nowDisliked);
   if (nowDisliked) recordEvent('dislike', track.urn);
 
   try {
-    if (nowDisliked) {
-      await api(`/dislikes/${encodeURIComponent(track.urn)}`, {
-        method: 'POST',
-        body: JSON.stringify(track),
-      });
-    } else {
-      await api(`/dislikes/${encodeURIComponent(track.urn)}`, { method: 'DELETE' });
-    }
+    await api(`/dislikes/${encodeURIComponent(track.urn)}`, {
+      method: nowDisliked ? 'POST' : 'DELETE',
+    });
     qc.invalidateQueries({ queryKey: ['dislikes'] });
   } catch {
     setDislikedUrn(track.urn, !nowDisliked);

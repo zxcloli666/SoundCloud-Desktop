@@ -24,6 +24,11 @@ finish-args:
   # Discord RPC
   - --filesystem=xdg-run/discord-ipc-0
   - --filesystem=xdg-run/app/com.discordapp.Discord
+  - --filesystem=/media
+  - --filesystem=/run/media
+  - --filesystem=/mnt
+  - --filesystem=xdg-music
+  - --filesystem=xdg-download
 
 build-options:
   append-path: /usr/lib/sdk/node22/bin:/usr/lib/sdk/rust-stable/bin:/usr/lib/sdk/llvm20/bin
@@ -35,6 +40,18 @@ build-options:
 
 modules:
   - shared-modules/libayatana-appindicator/libayatana-appindicator-gtk3.json
+  - name: protoc
+    buildsystem: simple
+    cleanup:
+      - "*"
+    build-commands:
+      - install -Dm755 bin/protoc /app/bin/protoc
+      - mkdir -p /app/include && cp -r include/. /app/include/
+    sources:
+      - type: archive
+        url: https://github.com/protocolbuffers/protobuf/releases/download/v29.3/protoc-29.3-linux-x86_64.zip
+        sha256: 3e866620c5be27664f3d2fa2d656b5f3e09b5152b42f1bedbf427b333e90021a
+        strip-components: 0
   - name: soundcloud-desktop
     buildsystem: simple
     build-options:

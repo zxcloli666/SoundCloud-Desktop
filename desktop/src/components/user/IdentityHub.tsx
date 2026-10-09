@@ -1,10 +1,16 @@
+import {useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
-import {type Aura, auraRgba} from '../../lib/aura';
+import {type Aura, auraRgb, auraRgba} from '../../lib/aura';
 import {Calendar, Globe, Sparkles} from '../../lib/icons';
 import {likedTracksCount} from '../../lib/likes';
 import {usePerfMode} from '../../lib/perf';
+import {BlockArtistButton} from '../music/blocklist/BlockArtistButton';
+import {userTarget} from '../music/blocklist/targets';
 import {CopyLinkButton} from '../ui/CopyLinkButton';
 import {GlassHeroPanel} from '../ui/GlassHeroPanel';
+import {PinArtistButton} from '../ui/PinArtistButton';
+import {RichText} from '../ui/RichText';
+import {UploadTrackButton} from '../upload/UploadTrackButton';
 import {AuraPicker} from './AuraPicker';
 import {AvatarArtifact} from './AvatarArtifact';
 import {FollowBtn} from './FollowBtn';
@@ -60,9 +66,9 @@ export function IdentityHub({
 }: IdentityHubProps) {
   const { t } = useTranslation();
     const perf = usePerfMode();
-    const cpB = perf.blur(20);
     const lb = perf.blur(16);
   const formattedDate = dateFormattedLong(user.created_at);
+  const blockTarget = useMemo(() => userTarget(user), [user]);
   const country = [user.city, user.country_code].filter(Boolean).join(', ');
 
   return (
@@ -113,7 +119,7 @@ export function IdentityHub({
 
           {user.description && (
               <p className="selectable text-[14px] md:text-[15px] text-white/65 leading-relaxed max-w-2xl line-clamp-3 hover:line-clamp-none transition-all duration-700 cursor-help">
-              {user.description}
+              <RichText text={user.description} accent={auraRgb(aura)}/>
             </p>
           )}
 
@@ -142,19 +148,19 @@ export function IdentityHub({
 
           <div className="flex flex-wrap items-center gap-3 pt-1 justify-center lg:justify-start">
             {!isOwnProfile && <FollowBtn userUrn={user.urn} aura={aura} />}
-            {user.permalink_url && (
-              <div
-                className="h-11 px-1 inline-flex items-center rounded-full"
-                style={{
-                    background: cpB > 0 ? 'rgba(255,255,255,0.04)' : 'rgba(28,28,32,0.85)',
-                  border: '0.5px solid rgba(255,255,255,0.08)',
-                    backdropFilter: cpB > 0 ? `blur(${cpB}px)` : undefined,
-                    WebkitBackdropFilter: cpB > 0 ? `blur(${cpB}px)` : undefined,
+            {!isOwnProfile && (
+              <PinArtistButton
+                artist={{
+                  id: user.urn,
+                  name: user.username,
+                  avatarUrl: user.avatar_url ?? null,
+                  path: `/user/${encodeURIComponent(user.urn)}`,
                 }}
-              >
-                <CopyLinkButton url={user.permalink_url} />
-              </div>
+              />
             )}
+            {isOwnProfile && <UploadTrackButton aura={aura} />}
+            {user.permalink_url && <CopyLinkButton url={user.permalink_url} />}
+            {!isOwnProfile && <BlockArtistButton target={blockTarget} />}
             {hasStar && isOwnProfile && (
               <AuraPicker
                 aura={aura}

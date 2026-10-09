@@ -1,9 +1,15 @@
+use std::path::Path;
+
 use tauri::State;
 
+use crate::app::diagnostics;
+use crate::shared::blocking::run_blocking;
+use crate::shared::urn::canonical_track_urn;
 use crate::track_cache::state::{
-    CacheInventoryEntry, CacheRequest, LikeCacheEntry, TrackCacheEntry, TrackCacheState,
-    TranscodeStatus,
+    BulkCacheEntry, BulkCacheStatus, CacheInventoryEntry, CacheRequest, ExportOutcome,
+    TrackCacheEntry, TrackCacheState, TranscodeStatus,
 };
+use crate::track_cache::transcode::{ExportFormat, ExportTags};
 
 #[derive(serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -24,6 +30,12 @@ pub struct EnsureCachedRequest {
     /// API-reported track length (ms) for truncated-download detection.
     #[serde(default)]
     pub duration_ms: Option<u64>,
+    #[serde(default)]
+    pub storage_quality: Option<String>,
+}
+
+fn require_track_urn(urn: &str) -> Result<String, String> {
+    canonical_track_urn(urn).ok_or_else(|| format!("invalid track urn: {urn}"))
 }
 
 impl EnsureCachedRequest {
@@ -51,6 +63,8 @@ pub struct PreloadEntry {
     pub hq: bool,
     #[serde(default)]
     pub duration_ms: Option<u64>,
+    #[serde(default)]
+    pub storage_quality: Option<String>,
 }
 
 #[tauri::command]
@@ -58,6 +72,7 @@ pub async fn track_ensure_cached(
     request: EnsureCachedRequest,
     state: State<'_, TrackCacheState>,
 ) -> Result<TrackCacheEntry, String> {
+    let urn = require_track_urn(&request.urn)?;
     let fallback_urls = request
         .fallback_urls()
         .ok_or_else(|| "no stream URL provided".to_string())?;
@@ -65,53 +80,158 @@ pub async fn track_ensure_cached(
     let download_urls = request.download_urls.unwrap_or_default();
     state
         .ensure_cached(CacheRequest {
-            urn: &request.urn,
+            urn: &urn,
             urls: &fallback_urls,
             download_urls: &download_urls,
             storage_urls: &storage_urls,
             session_id: request.session_id.as_deref(),
             hq: request.hq,
+            storage_quality: request.storage_quality.as_deref(),
             liked: false,
             expected_duration_ms: request.duration_ms,
         })
         .await
 }
 
-/// Download-to-file. Pulls from the clean m4a cache, transcoding raw bytes or
-/// fetching from streaming as needed, and embeds `cover_url` when possible.
+struct ResolvedRequest {
+    urn: String,
+    urls: Vec<String>,
+    download_urls: Vec<String>,
+    storage_urls: Vec<String>,
+    request: EnsureCachedRequest,
+}
+
+impl ResolvedRequest {
+    fn new(request: EnsureCachedRequest) -> Result<Self, String> {
+        Ok(Self {
+            urn: require_track_urn(&request.urn)?,
+            urls: request
+                .fallback_urls()
+                .ok_or_else(|| "no stream URL provided".to_string())?,
+            download_urls: request.download_urls.clone().unwrap_or_default(),
+            storage_urls: request.storage_urls.clone().unwrap_or_default(),
+            request,
+        })
+    }
+
+    fn cache_request(&self, liked: bool) -> CacheRequest<'_> {
+        CacheRequest {
+            urn: &self.urn,
+            urls: &self.urls,
+            download_urls: &self.download_urls,
+            storage_urls: &self.storage_urls,
+            session_id: self.request.session_id.as_deref(),
+            hq: self.request.hq,
+            storage_quality: self.request.storage_quality.as_deref(),
+            liked,
+            expected_duration_ms: self.request.duration_ms,
+        }
+    }
+}
+
+#[tauri::command]
+pub async fn track_upgrade_cached(
+    request: EnsureCachedRequest,
+    state: State<'_, TrackCacheState>,
+) -> Result<bool, String> {
+    let urn = require_track_urn(&request.urn)?;
+    let fallback_urls = request.fallback_urls().unwrap_or_default();
+    let storage_urls = request.storage_urls.unwrap_or_default();
+    let download_urls = request.download_urls.unwrap_or_default();
+    Ok(state
+        .upgrade_cached(CacheRequest {
+            urn: &urn,
+            urls: &fallback_urls,
+            download_urls: &download_urls,
+            storage_urls: &storage_urls,
+            session_id: request.session_id.as_deref(),
+            hq: true,
+            storage_quality: request.storage_quality.as_deref(),
+            liked: false,
+            expected_duration_ms: request.duration_ms,
+        })
+        .await)
+}
+
 #[tauri::command]
 pub async fn track_export(
     request: EnsureCachedRequest,
     dest_path: String,
     cover_url: Option<String>,
+    format: Option<ExportFormat>,
+    tags: Option<ExportTags>,
     state: State<'_, TrackCacheState>,
 ) -> Result<String, String> {
-    let fallback_urls = request
-        .fallback_urls()
-        .ok_or_else(|| "no stream URL provided".to_string())?;
-    let storage_urls = request.storage_urls.unwrap_or_default();
-    let download_urls = request.download_urls.unwrap_or_default();
+    let resolved = ResolvedRequest::new(request)?;
     state
         .export_track(
-            CacheRequest {
-                urn: &request.urn,
-                urls: &fallback_urls,
-                download_urls: &download_urls,
-                storage_urls: &storage_urls,
-                session_id: request.session_id.as_deref(),
-                hq: request.hq,
-                liked: false,
-                expected_duration_ms: request.duration_ms,
-            },
-            dest_path,
+            resolved.cache_request(false),
+            Path::new(&dest_path),
             cover_url,
+            format.unwrap_or(ExportFormat::M4a),
+            &tags.unwrap_or_default(),
+        )
+        .await?;
+    Ok(dest_path)
+}
+
+#[tauri::command]
+pub async fn track_export_to_dir(
+    request: EnsureCachedRequest,
+    dir: String,
+    file_name: String,
+    cover_url: Option<String>,
+    format: ExportFormat,
+    tags: ExportTags,
+    state: State<'_, TrackCacheState>,
+) -> Result<ExportOutcome, String> {
+    let resolved = ResolvedRequest::new(request)?;
+    state
+        .export_to_dir(
+            resolved.cache_request(false),
+            Path::new(&dir),
+            &file_name,
+            cover_url,
+            format,
+            &tags,
         )
         .await
 }
 
 #[tauri::command]
+pub async fn track_export_mp3_supported(state: State<'_, TrackCacheState>) -> Result<bool, String> {
+    Ok(state.mp3_export_supported().await)
+}
+
+#[tauri::command]
+pub async fn track_save_offline(
+    request: EnsureCachedRequest,
+    refetch: bool,
+    state: State<'_, TrackCacheState>,
+) -> Result<TrackCacheEntry, String> {
+    let resolved = ResolvedRequest::new(request)?;
+    state
+        .save_offline(resolved.cache_request(true), refetch)
+        .await
+}
+
+#[tauri::command]
+pub fn track_pinned_urns(urns: Vec<String>, state: State<'_, TrackCacheState>) -> Vec<String> {
+    urns.into_iter()
+        .filter(|urn| canonical_track_urn(urn).is_some_and(|urn| state.is_pinned(&urn)))
+        .collect()
+}
+
+#[tauri::command]
+pub fn track_mark_played(urn: String, state: State<'_, TrackCacheState>) {
+    if let Some(urn) = canonical_track_urn(&urn) {
+        state.mark_played(&urn);
+    }
+}
+
+#[tauri::command]
 pub fn track_is_cached(urn: String, state: State<'_, TrackCacheState>) -> bool {
-    state.is_cached(&urn)
+    canonical_track_urn(&urn).is_some_and(|urn| state.is_cached(&urn))
 }
 
 #[tauri::command]
@@ -121,7 +241,7 @@ pub fn track_transcode_status(state: State<'_, TrackCacheState>) -> TranscodeSta
 
 #[tauri::command]
 pub fn track_get_cache_path(urn: String, state: State<'_, TrackCacheState>) -> Option<String> {
-    state.get_cache_path(&urn)
+    canonical_track_urn(&urn).and_then(|urn| state.get_cache_path(&urn))
 }
 
 #[tauri::command]
@@ -129,7 +249,7 @@ pub fn track_get_cache_info(
     urn: String,
     state: State<'_, TrackCacheState>,
 ) -> Option<TrackCacheEntry> {
-    state.get_cache_entry(&urn)
+    canonical_track_urn(&urn).and_then(|urn| state.get_cache_entry(&urn))
 }
 
 #[tauri::command]
@@ -139,7 +259,10 @@ pub async fn track_preload(
 ) -> Result<(), String> {
     let mut queued = 0u32;
     for entry in entries {
-        if state.is_cached(&entry.urn) {
+        let Some(urn) = canonical_track_urn(&entry.urn) else {
+            continue;
+        };
+        if state.is_cached(&urn) {
             continue;
         }
 
@@ -149,7 +272,6 @@ pub async fn track_preload(
 
         queued += 1;
         let state = state.inner().clone();
-        let urn = entry.urn;
         let fallback_urls: Vec<String> = match (entry.urls, entry.url) {
             (Some(u), _) if !u.is_empty() => u,
             (_, Some(u)) => vec![u],
@@ -160,6 +282,7 @@ pub async fn track_preload(
         let session_id = entry.session_id;
         let hq = entry.hq;
         let duration_ms = entry.duration_ms;
+        let storage_quality = entry.storage_quality;
 
         tokio::spawn(async move {
             let _permit = permit;
@@ -172,12 +295,13 @@ pub async fn track_preload(
                     storage_urls: &storage_urls,
                     session_id: session_id.as_deref(),
                     hq,
+                    storage_quality: storage_quality.as_deref(),
                     liked: false,
                     expected_duration_ms: duration_ms,
                 })
                 .await
             {
-                eprintln!("[TrackCache] preload {urn}: {err}");
+                diagnostics::warn(format!("[TrackCache] preload {urn}: {err}"));
             }
         });
     }
@@ -188,65 +312,106 @@ pub async fn track_preload(
 }
 
 #[tauri::command]
-pub fn track_cache_size(state: State<'_, TrackCacheState>) -> u64 {
-    state.cache_size()
+pub async fn track_cache_size(state: State<'_, TrackCacheState>) -> Result<u64, String> {
+    let state = state.inner().clone();
+    run_blocking(move || state.cache_size()).await
 }
 
 #[tauri::command]
-pub fn track_liked_cache_size(state: State<'_, TrackCacheState>) -> u64 {
-    state.liked_cache_size()
+pub async fn track_liked_cache_size(state: State<'_, TrackCacheState>) -> Result<u64, String> {
+    let state = state.inner().clone();
+    run_blocking(move || state.liked_cache_size()).await
 }
 
 #[tauri::command]
-pub fn track_clear_cache(state: State<'_, TrackCacheState>) {
-    state.clear_cache();
+pub async fn track_clear_cache(state: State<'_, TrackCacheState>) -> Result<(), String> {
+    let state = state.inner().clone();
+    run_blocking(move || state.clear_cache()).await
 }
 
 #[tauri::command]
 pub fn track_remove_cached(urn: String, state: State<'_, TrackCacheState>) -> bool {
-    state.remove_cached(&urn)
+    canonical_track_urn(&urn).is_some_and(|urn| state.remove_cached(&urn))
 }
 
 #[tauri::command]
-pub fn track_clear_liked_cache(state: State<'_, TrackCacheState>) {
-    state.clear_liked_cache();
+pub async fn track_demote_liked(
+    urn: String,
+    state: State<'_, TrackCacheState>,
+) -> Result<bool, String> {
+    let Some(urn) = canonical_track_urn(&urn) else {
+        return Ok(false);
+    };
+    let state = state.inner().clone();
+    run_blocking(move || state.demote_from_liked(&urn)).await
 }
 
 #[tauri::command]
-pub fn track_list_cached(state: State<'_, TrackCacheState>) -> Vec<String> {
-    state.list_cached_urns()
+pub async fn track_clear_liked_cache(state: State<'_, TrackCacheState>) -> Result<(), String> {
+    let state = state.inner().clone();
+    run_blocking(move || state.clear_liked_cache()).await
 }
 
 #[tauri::command]
-pub fn track_cache_inventory(state: State<'_, TrackCacheState>) -> Vec<CacheInventoryEntry> {
-    state.cache_inventory()
+pub async fn track_list_cached(state: State<'_, TrackCacheState>) -> Result<Vec<String>, String> {
+    let state = state.inner().clone();
+    run_blocking(move || state.list_cached_urns()).await
 }
 
 #[tauri::command]
-pub fn track_enforce_cache_limit(limit_mb: u64, state: State<'_, TrackCacheState>) {
-    state.enforce_limit(limit_mb);
+pub async fn track_cache_inventory(
+    state: State<'_, TrackCacheState>,
+) -> Result<Vec<CacheInventoryEntry>, String> {
+    let state = state.inner().clone();
+    run_blocking(move || state.cache_inventory()).await
 }
 
 #[tauri::command]
-pub async fn track_cache_likes(
-    entries: Vec<LikeCacheEntry>,
+pub async fn track_enforce_cache_limit(
+    limit_mb: u64,
     state: State<'_, TrackCacheState>,
 ) -> Result<(), String> {
     let state = state.inner().clone();
+    run_blocking(move || state.enforce_limit(limit_mb)).await
+}
+
+#[tauri::command]
+pub async fn track_purge_played(
+    keep_urn: Option<String>,
+    state: State<'_, TrackCacheState>,
+) -> Result<u32, String> {
+    let keep = keep_urn.as_deref().and_then(canonical_track_urn);
+    let state = state.inner().clone();
+    run_blocking(move || state.purge_played(keep.as_deref())).await
+}
+
+#[tauri::command]
+pub async fn track_bulk_cache_start(
+    scope: String,
+    entries: Vec<BulkCacheEntry>,
+    state: State<'_, TrackCacheState>,
+) -> Result<(), String> {
+    let entries: Vec<BulkCacheEntry> = entries
+        .into_iter()
+        .filter_map(|mut entry| {
+            entry.urn = canonical_track_urn(&entry.urn)?;
+            Some(entry)
+        })
+        .collect();
+    state.begin_bulk_cache(scope, entries.len() as u32)?;
+    let state = state.inner().clone();
     tokio::spawn(async move {
-        if let Err(err) = state.cache_likes(entries).await {
-            eprintln!("[TrackCache] cache_likes error: {err}");
-        }
+        state.run_bulk_cache(entries).await;
     });
     Ok(())
 }
 
 #[tauri::command]
-pub fn track_cache_likes_running(state: State<'_, TrackCacheState>) -> bool {
-    state.cache_likes_running()
+pub fn track_bulk_cache_status(state: State<'_, TrackCacheState>) -> Option<BulkCacheStatus> {
+    state.bulk_cache_status()
 }
 
 #[tauri::command]
-pub fn track_cancel_cache_likes(state: State<'_, TrackCacheState>) {
-    state.cancel_cache_likes();
+pub fn track_bulk_cache_cancel(state: State<'_, TrackCacheState>) {
+    state.cancel_bulk_cache();
 }

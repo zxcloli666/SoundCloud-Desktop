@@ -5,8 +5,10 @@ import { AlbumHero } from '../components/album/AlbumHero';
 import { AlbumTrackList } from '../components/album/AlbumTrackList';
 import { useAlbumDetail } from '../components/album/useAlbumData';
 import { useArtistStar } from '../components/artist/useArtistData';
+import { OfflineCopyLink } from '../components/offline/OfflineCopyLink';
 import { AuraField } from '../components/user/AuraField';
 import { USER_PAGE_KEYFRAMES } from '../components/user/keyframes';
+import { albumScope } from '../lib/bulk-cache';
 import { Loader2 } from '../lib/icons';
 
 export function AlbumPage() {
@@ -27,8 +29,9 @@ export function AlbumPage() {
 
   if (album.error || !data) {
     return (
-      <div className="relative w-full min-h-screen flex items-center justify-center text-white/40 text-sm">
+      <div className="relative w-full min-h-screen flex flex-col items-center justify-center gap-5 text-white/40 text-sm">
         {t('common.error')}
+        {id && <OfflineCopyLink scope={albumScope(id)} />}
       </div>
     );
   }

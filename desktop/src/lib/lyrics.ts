@@ -1,6 +1,8 @@
-import {api} from './api';
+import { ApiError, api } from './api';
 
 export type LyricsSource = 'lrclib' | 'musixmatch' | 'genius' | 'netease' | 'self_gen' | 'none';
+
+export type LyricsStatus = 'found' | 'pending' | 'none';
 
 export interface LyricLine {
   time: number;
@@ -8,6 +10,7 @@ export interface LyricLine {
 }
 
 export interface LyricsResult {
+  status: LyricsStatus;
   plain: string | null;
   synced: LyricLine[] | null;
   source: LyricsSource;
@@ -21,27 +24,37 @@ interface BackendLyricsResponse {
   source: LyricsSource;
   language: string | null;
   languageConfidence: number | null;
+  status: LyricsStatus;
 }
 
-/** Parse LRC format: [mm:ss.xx] text */
+const LRC_TIME_TAG = /^\[(\d{1,3}):(\d{2})(?:[.:](\d{1,3}))?\]/;
+const LRC_OFFSET_TAG = /^\s*\[offset:\s*([+-]?\d+)\s*\]/im;
+
 export function parseLRC(lrc: string): LyricLine[] {
+  const offset = Number(lrc.match(LRC_OFFSET_TAG)?.[1] ?? 0) / 1000;
   const lines: LyricLine[] = [];
   for (const raw of lrc.split('\n')) {
-    const m = raw.match(/^\[(\d{2}):(\d{2})\.(\d{2,3})\]\s*(.*)/);
-    if (!m) continue;
-    const time = +m[1] * 60 + +m[2] + +m[3].padEnd(3, '0') / 1000;
-    const text = m[4].trim();
-    if (text) lines.push({ time, text });
+    let rest = raw.trim();
+    const times: number[] = [];
+    let m = rest.match(LRC_TIME_TAG);
+    while (m) {
+      times.push(+m[1] * 60 + +m[2] + +(m[3] ?? '0').padEnd(3, '0') / 1000);
+      rest = rest.slice(m[0].length).trimStart();
+      m = rest.match(LRC_TIME_TAG);
+    }
+    const text = rest.trim();
+    for (const time of times) lines.push({ time: Math.max(0, time - offset), text });
   }
-  return lines;
+  return lines.sort((a, b) => a.time - b.time);
 }
 
 function toResult(data: BackendLyricsResponse | null): LyricsResult | null {
   if (!data) return null;
-  const synced = data.syncedLrc ? parseLRC(data.syncedLrc) : null;
+  const synced = data.syncedLrc ? parseLRC(data.syncedLrc) : [];
   return {
+    status: data.status,
     plain: data.plainText,
-    synced: synced && synced.length > 0 ? synced : null,
+    synced: synced.some((line) => line.text) ? synced : null,
     source: data.source,
     language: data.language,
   };
@@ -49,11 +62,12 @@ function toResult(data: BackendLyricsResponse | null): LyricsResult | null {
 
 /** Load lyrics by track URN/id. Backend resolves artist/title itself and writes to cache. */
 export async function getLyricsByTrack(scTrackId: string): Promise<LyricsResult | null> {
-  const data = await api<BackendLyricsResponse>(
-    `/lyrics/${encodeURIComponent(scTrackId)}`,
-    undefined,
-    180_000,
-  ).catch(() => null);
+  const data = await api<BackendLyricsResponse>(`/lyrics/${encodeURIComponent(scTrackId)}`, {
+    silentStatuses: [404],
+  }).catch((error: unknown) => {
+    if (error instanceof ApiError && error.status === 404) return null;
+    throw error;
+  });
   return toResult(data);
 }
 

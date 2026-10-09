@@ -5,11 +5,21 @@
 import {listen} from '@tauri-apps/api/event';
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {type CacheInventoryEntry, getCacheInventory, removeCachedTrack} from '../../lib/cache';
-import {fetchAllLikedTracks} from '../../lib/hooks';
-import {getCacheOrder, getOfflineLikedTracks, getOfflineTracksByUrns, saveCacheOrder,} from '../../lib/offline-index';
+import {fetchLikedTracksSnapshot} from '../../lib/hooks';
+import {mergeLikedTracks} from '../../lib/liked-merge';
+import {
+  forgetCollection,
+  getCacheOrder,
+  getOfflineCollections,
+  getOfflineKeptUrns,
+  getOfflineLikedTracks,
+  getOfflineTracksByUrns,
+  type OfflineCollection,
+  saveCacheOrder,
+} from '../../lib/offline-index';
 import {useAppMode} from '../../stores/app-status';
 import type {Track} from '../../stores/player';
-import {buildCachedEntries, buildLikesEntries} from './lib';
+import {buildCachedEntries, buildCollectionViews, buildLikesEntries, likedCoverage} from './lib';
 
 const DOWNLOADS_FLUSH_MS = 250;
 const INVENTORY_REFRESH_DEBOUNCE_MS = 1500;
@@ -22,16 +32,23 @@ export function useOfflineLibrary() {
   const [resolvedTracks, setResolvedTracks] = useState<Track[]>([]);
   const [cacheOrder, setCacheOrder] = useState<string[]>([]);
   const [downloads, setDownloads] = useState<Record<string, number>>({});
+  const [collections, setCollections] = useState<OfflineCollection[]>([]);
+  const [collectionTracks, setCollectionTracks] = useState<Track[]>([]);
+  const [keptUrns, setKeptUrns] = useState<Set<string>>(() => new Set());
   const bgFetchDone = useRef(false);
   const disposed = useRef(false);
 
   const refreshInventory = useCallback(async () => {
     try {
       const inv = await getCacheInventory();
-      const tracks = await getOfflineTracksByUrns(inv.map((e) => e.urn));
+      const [tracks, kept] = await Promise.all([
+        getOfflineTracksByUrns(inv.map((e) => e.urn)),
+        getOfflineKeptUrns(),
+      ]);
       if (disposed.current) return;
       setInventory(inv);
       setResolvedTracks(tracks);
+      setKeptUrns(new Set(kept));
       // Файл в инвентаре = докачка завершена; чистим прогресс даже если
       // финальное событие не дошло до 1.0.
       const landed = new Set(inv.map((e) => e.urn));
@@ -47,6 +64,18 @@ export function useOfflineLibrary() {
     }
   }, []);
 
+  const refreshCollections = useCallback(async () => {
+    try {
+      const list = await getOfflineCollections();
+      const tracks = await getOfflineTracksByUrns([...new Set(list.flatMap((c) => c.trackUrns))]);
+      if (disposed.current) return;
+      setCollections(list);
+      setCollectionTracks(tracks);
+    } catch (error) {
+      console.warn('[Offline] Failed to load offline playlists:', error);
+    }
+  }, []);
+
   useEffect(() => {
     disposed.current = false;
     const load = async () => {
@@ -55,7 +84,7 @@ export function useOfflineLibrary() {
         if (disposed.current) return;
         setLikedTracks(liked);
         setCacheOrder(order);
-        await refreshInventory();
+        await Promise.all([refreshInventory(), refreshCollections()]);
       } catch (error) {
         console.warn('[Offline] Failed to load local library:', error);
       } finally {
@@ -66,16 +95,17 @@ export function useOfflineLibrary() {
     return () => {
       disposed.current = true;
     };
-  }, [refreshInventory]);
+  }, [refreshInventory, refreshCollections]);
 
   // Онлайн: дотягиваем полный список лайков с бэка (он же синкает офлайн-индекс).
   useEffect(() => {
     if (appMode !== 'online' || bgFetchDone.current) return;
     let cancelled = false;
-    void fetchAllLikedTracks()
-      .then((allLikes) => {
+    void fetchLikedTracksSnapshot()
+      .then(async (result) => {
         bgFetchDone.current = true;
-        if (!cancelled) setLikedTracks(allLikes);
+        const local = await getOfflineLikedTracks();
+        if (!cancelled) setLikedTracks(mergeLikedTracks(local, result.tracks, result));
       })
       .catch(() => {
         // Офлайн-режим продолжает жить на локальном индексе.
@@ -142,6 +172,15 @@ export function useOfflineLibrary() {
     setInventory((prev) => prev.filter((e) => e.urn !== urn));
   }, []);
 
+  const removeCollection = useCallback(
+    async (scope: string) => {
+      const orphans = await forgetCollection(scope);
+      await Promise.all(orphans.map((urn) => removeCachedTrack(urn).catch(() => false)));
+      await Promise.all([refreshInventory(), refreshCollections()]);
+    },
+    [refreshInventory, refreshCollections],
+  );
+
   const reorderCached = useCallback((urns: string[]) => {
     setCacheOrder(urns);
     void saveCacheOrder(urns);
@@ -149,18 +188,24 @@ export function useOfflineLibrary() {
 
   const invByUrn = useMemo(() => new Map(inventory.map((e) => [e.urn, e])), [inventory]);
   const trackByUrn = useMemo(() => {
-    const map = new Map(resolvedTracks.map((t) => [t.urn, t]));
+    const map = new Map(collectionTracks.map((t) => [t.urn, t]));
+    for (const track of resolvedTracks) map.set(track.urn, track);
     for (const track of likedTracks) map.set(track.urn, track);
     return map;
-  }, [resolvedTracks, likedTracks]);
+  }, [collectionTracks, resolvedTracks, likedTracks]);
 
   const likesEntries = useMemo(
-    () => buildLikesEntries(likedTracks, invByUrn),
-    [likedTracks, invByUrn],
+    () => buildLikesEntries(likedTracks, inventory, trackByUrn, keptUrns),
+    [likedTracks, inventory, trackByUrn, keptUrns],
   );
   const cachedEntries = useMemo(
     () => buildCachedEntries(inventory, trackByUrn),
     [inventory, trackByUrn],
+  );
+
+  const collectionViews = useMemo(
+    () => buildCollectionViews(collections, invByUrn),
+    [collections, invByUrn],
   );
 
   const stats = useMemo(() => {
@@ -173,14 +218,13 @@ export function useOfflineLibrary() {
       if (e.stage === 'raw') rawCount += 1;
     }
     return {
-      likedCount: likedTracks.length,
-      likedCachedCount: likedTracks.reduce((n, t) => n + (invByUrn.has(t.urn) ? 1 : 0), 0),
+      ...likedCoverage(likesEntries),
       cachedCount: inventory.length,
       totalBytes,
       likedBytes,
       rawCount,
     };
-  }, [inventory, invByUrn, likedTracks]);
+  }, [inventory, likesEntries]);
 
   return {
     loading,
@@ -190,8 +234,13 @@ export function useOfflineLibrary() {
     cacheOrder,
     downloads,
     stats,
+    collectionViews,
+    trackByUrn,
+    invByUrn,
     removeCached,
+    removeCollection,
     reorderCached,
     refreshInventory,
+    refreshCollections,
   };
 }

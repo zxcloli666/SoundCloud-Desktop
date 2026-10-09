@@ -1,38 +1,63 @@
 import {listen} from '@tauri-apps/api/event';
 import {toast} from 'sonner';
 import i18n from '../i18n';
-import type {Track} from '../stores/player';
-import {usePlayerStore} from '../stores/player';
+import {useBlockedArtistsStore} from '../stores/blocked-artists';
+import type {Track, TrackScdMeta} from '../stores/player';
+import {playbackAllowed, usePlayerStore} from '../stores/player';
 import {useSettingsStore} from '../stores/settings';
 import {
   api,
   buildStorageUrls,
   downloadFallbackUrls,
   getSessionId,
+  isHqStreaming,
   resolveTrackFromStreaming,
   streamFallbackUrls,
+  wantsHqUpgrade,
 } from './api';
 import {
   enforceAudioCacheLimit,
   ensureTrackCached,
+  expectedDurationMs,
   getCacheInfo,
+  isAudioCacheDisabled,
+  isHoverPreloadEnabled,
+  markTrackPlayed,
   removeCachedTrack,
   type TrackCacheInfo,
+  upgradeCachedTrack,
 } from './cache';
+import {isTrackBlocked} from './blocked-artists';
 import {trackedInvoke as invoke} from './diagnostics';
+import {offerUndislike} from './dislike-actions';
 import {isUrnDisliked} from './dislikes';
 import {recordEvent} from './events';
 import {art} from './formatters';
+import {trackUrn} from './ids';
+import {
+  bumpLoadWatch,
+  resetSkipStreak,
+  skipUnloadableEnabled,
+  stopLoadWatch,
+  takeSkipAttempt,
+  watchLoad,
+} from './load-watchdog';
+import {localTrackPath, markLocalMissing, noteLocalDuration} from './local-import';
+import {isLocalUrn} from './local-library';
+import {notifyError} from './notify';
 import {rememberTracks} from './offline-index';
 import {getUrnCluster, recordClusterFeedback} from './recsFeedback';
+import {isPreviewOnly} from './track-access';
 import {getArtistDisplay, getDisplayTitle} from './track-display';
 
 const SKIP_THRESHOLD_SEC = 30;
+const SLOW_LOAD_HINT_MS = 60_000;
 /** Минимум, чтобы засчитать «прослушано полностью» для коротких треков (50% длительности). */
 const FULL_PLAY_RATIO = 0.5;
-/** Битый кеш: сыграло меньше этого на треке от EARLY_END_MIN_EXPECTED_SEC — лечим перекачкой. */
-const EARLY_END_PLAYED_SEC = 10;
 const EARLY_END_MIN_EXPECTED_SEC = 30;
+const EARLY_END_TOLERANCE_SEC = 4;
+const EARLY_END_TOLERANCE_RATIO = 0.04;
+const CROSSFADE_LEAD_SEC = 0.5;
 /** Один лечебный перекач на урн за сессию — защита от лупа на 30s-превью и мёртвых источниках. */
 const healedUrns = new Set<string>();
 
@@ -43,15 +68,22 @@ let hasTrack = false;
 let fallbackDuration = 0;
 let cachedTime = 0;
 let cachedDuration = 0;
+let acceptedShortFile = false;
 let downloadProgress: number | null = null;
 let loadGen = 0;
 let lastEndedUrn: string | null = null;
+let pendingCrossfadeMs = 0;
+let crossfadeGen = -1;
+let crossfadeCheckedGen = -1;
+let startGate: ((urn: string) => Promise<number | null>) | null = null;
+let pendingStart: {urn: string; at: number} | null = null;
 const listeners = new Set<() => void>();
+const seekListeners = new Set<(seconds: number) => void>();
 const API_PREVIEW_DURATION_MS = 30_000;
 
 // The 10Hz tick fan-out drives every UI subscriber (progress, waveform clip-path,
 // time readouts). When the window is hidden it's pure waste — the WebView doesn't
-// throttle us, and MediaSession/Discord presence run off Rust events, not this.
+// throttle us, and MediaSession runs off Rust events, not this.
 // cachedTime/cachedDuration keep updating; we just skip the DOM-touching fan-out.
 function notify() {
   if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;
@@ -90,12 +122,62 @@ function setDownloadProgress(value: number | null): void {
   notify();
 }
 
+export function cancelTrackLoad(): void {
+  loadGen++;
+  stopLoadWatch();
+  setDownloadProgress(null);
+  usePlayerStore.getState().pause();
+}
+
+export function isTrackLoaded(): boolean {
+  return hasTrack;
+}
+
+export function setStartGate(gate: ((urn: string) => Promise<number | null>) | null): void {
+  startGate = gate;
+}
+
+export function subscribeSeek(listener: (seconds: number) => void): () => void {
+  seekListeners.add(listener);
+  return () => seekListeners.delete(listener);
+}
+
 export function seek(seconds: number) {
+  if (!playbackAllowed('seek')) return;
+  alignTo(seconds);
+}
+
+export function alignTo(seconds: number) {
   if (!hasTrack) return;
   invoke('audio_seek', { position: seconds }).catch(console.error);
   cachedTime = seconds;
   notify();
   setTimeout(() => updateMediaPosition(), 150);
+  for (const listener of seekListeners) listener(seconds);
+}
+
+export function replayCurrent(): void {
+  const track = usePlayerStore.getState().currentTrack;
+  if (track) void loadTrack(track);
+}
+
+export function playAt(track: Track, seconds: number) {
+  const st = usePlayerStore.getState();
+  const isCurrent = st.currentTrack?.urn === track.urn;
+  if (isCurrent && hasTrack) {
+    seek(seconds);
+    if (!st.isPlaying) st.resume();
+    return;
+  }
+  pendingStart = {urn: track.urn, at: seconds};
+  if (isCurrent) st.resume();
+  else st.play(track, [track]);
+}
+
+function takePendingStart(urn: string): number {
+  const at = pendingStart?.urn === urn ? pendingStart.at : 0;
+  pendingStart = null;
+  return at;
 }
 
 export function handlePrev() {
@@ -129,7 +211,7 @@ export async function reloadCurrentTrack() {
   const wasPlaying = usePlayerStore.getState().isPlaying;
   const pos = cachedTime;
   await loadTrack(track);
-  if (pos > 0) seek(pos);
+  if (pos > 0) alignTo(pos);
   if (!wasPlaying) invoke('audio_pause').catch(console.error);
 }
 
@@ -286,12 +368,14 @@ async function loadCachedFile(
   path: string,
   startPaused: boolean,
   reResolve: () => Promise<string | null>,
+  crossfadeMs = 0,
 ): Promise<{ duration_secs: number | null }> {
   try {
     return await invoke<{ duration_secs: number | null }>('audio_load_file', {
       path,
       cacheKey: urn,
       startPaused,
+      crossfadeMs: crossfadeMs > 0 ? crossfadeMs : null,
     });
   } catch (e) {
     if (!isFileMissing(e)) throw e;
@@ -306,11 +390,41 @@ async function loadCachedFile(
   }
 }
 
-async function loadTrack(track: Track) {
+async function playLocalFile(track: Track, gen: number, resumeAt: number) {
+  const path = await localTrackPath(track.urn);
+  if (!path) throw new Error(i18n.t('local.fileMissing'));
+  if (gen !== loadGen) return;
+  const loadResult = await invoke<{ duration_secs: number | null }>('audio_load_file', {
+    path,
+    cacheKey: track.urn,
+    startPaused: resumeAt > 0 || !usePlayerStore.getState().isPlaying,
+  });
+  if (gen !== loadGen) return;
+  if (loadResult?.duration_secs) {
+    fallbackDuration = loadResult.duration_secs;
+    cachedDuration = loadResult.duration_secs;
+    noteLocalDuration(track.urn, loadResult.duration_secs);
+    updateMetadata(track, loadResult.duration_secs);
+    notify();
+  }
+  await afterLoad(track, gen, resumeAt);
+}
+
+async function loadTrack(track: Track, resumeAt = 0) {
   const gen = ++loadGen;
   const isNewTrack = currentUrn !== track.urn;
-  stopTrack();
+  const crossfadeMs = pendingCrossfadeMs;
+  pendingCrossfadeMs = 0;
+  stopLoadWatch();
+  if (crossfadeMs > 0) {
+    crossfadeGen = gen;
+    hasTrack = false;
+    cachedTime = 0;
+  } else {
+    stopTrack();
+  }
   currentUrn = track.urn;
+  acceptedShortFile = false;
   const urn = track.urn;
 
   // A-B loop is per-track: drop it only when loading a genuinely different track —
@@ -321,7 +435,8 @@ async function loadTrack(track: Track) {
     usePlayerStore.getState().clearAbLoop();
   }
 
-  void hydrateTrackMetadata(track, gen);
+  const local = isLocalUrn(urn);
+  if (!local) void hydrateTrackMetadata(track, gen);
 
   fallbackDuration = track.duration / 1000;
   cachedDuration = fallbackDuration;
@@ -331,16 +446,22 @@ async function loadTrack(track: Track) {
   notify();
 
   // Sync EQ state to Rust
-  const { eqEnabled, eqGains, normalizeVolume } = useSettingsStore.getState();
+  const { eqEnabled, eqGains, normalizeVolume, skipSilence } = useSettingsStore.getState();
   invoke('audio_set_eq', { enabled: eqEnabled, gains: eqGains }).catch(console.error);
   invoke('audio_set_normalization', { enabled: normalizeVolume }).catch(console.error);
+  invoke('audio_set_skip_silence', { enabled: skipSilence }).catch(console.error);
 
-  // Sync volume + playback rate (pitch is folded into the speed value sent to Rust)
   invoke('audio_set_volume', { volume: usePlayerStore.getState().volume }).catch(console.error);
-  invoke('audio_set_playback_rate', { rate: getEffectivePlaybackRate() }).catch(console.error);
+  syncPlaybackRateAndPitch();
 
   try {
-    const highQualityStreaming = useSettingsStore.getState().highQualityStreaming;
+    if (local) {
+      await playLocalFile(track, gen, resumeAt);
+      return;
+    }
+
+    const highQualityStreaming = isHqStreaming();
+    const storageQuality = track._scd_meta?.storage_quality;
 
     // The cached file can be swapped (raw А → clean Б) or evicted between resolve
     // and read; re-resolve through the cache to recover the current path.
@@ -348,7 +469,14 @@ async function loadTrack(track: Track) {
       const info = await getCacheInfo(urn);
       if (info?.path) return info.path;
       try {
-        return (await ensureTrackCached(urn, highQualityStreaming, track.duration)).path;
+        return (
+          await ensureTrackCached(
+            urn,
+            highQualityStreaming,
+            expectedDurationMs(track),
+            storageQuality,
+          )
+        ).path;
       } catch {
         return null;
       }
@@ -358,13 +486,18 @@ async function loadTrack(track: Track) {
     const cached = await getCacheInfo(urn);
     if (cached?.path) {
       if (gen !== loadGen) return;
+      acceptedShortFile = cached.acceptedShort;
       usePlayerStore.getState().setPlaybackTransport(cached.quality, cached.source);
       console.log('[Audio] Playing from cache:', urn);
+      if (cached.quality !== 'hq' && !cached.acceptedShort && wantsHqUpgrade()) {
+        void upgradeCachedTrack(urn, expectedDurationMs(track), storageQuality).catch(console.error);
+      }
       const loadResult = await loadCachedFile(
         urn,
         cached.path,
-        !usePlayerStore.getState().isPlaying,
+        resumeAt > 0 || !usePlayerStore.getState().isPlaying || startGate != null,
         reResolve,
+        crossfadeMs,
       );
       if (gen !== loadGen) return;
       if (loadResult?.duration_secs) {
@@ -373,31 +506,51 @@ async function loadTrack(track: Track) {
         updateMetadata(track, loadResult.duration_secs);
         notify();
       }
-      afterLoad(track, gen);
+      await afterLoad(track, gen, resumeAt);
       return;
     }
 
     // Strategy 2: Download full track to cache — Rust picks storage/API internally
+    if (crossfadeMs > 0) invoke('audio_stop').catch(console.error);
     setDownloadProgress(0);
+    watchLoad(() => {
+      if (gen === loadGen) skipUnloadable(track, true);
+    });
+    setTimeout(() => {
+      if (gen !== loadGen || downloadProgress !== 0) return;
+      toast.info(i18n.t('track.slowLoad'), {
+        description: `${track.title}: ${i18n.t('track.slowLoadHint')}`,
+      });
+    }, SLOW_LOAD_HINT_MS);
 
     let cachedInfo: TrackCacheInfo;
     try {
-      cachedInfo = await ensureTrackCached(urn, highQualityStreaming, track.duration);
+      cachedInfo = await ensureTrackCached(
+        urn,
+        highQualityStreaming,
+        expectedDurationMs(track),
+        storageQuality,
+      );
     } catch (error) {
-      if (!highQualityStreaming) throw error;
+      const premiumRefused = getLoadErrorText(error)?.includes('HTTP 403 Forbidden: forbidden');
+      if (!highQualityStreaming || !premiumRefused || gen !== loadGen) throw error;
       console.warn('[Audio] HQ load failed, retrying without hq:', error);
-      cachedInfo = await ensureTrackCached(urn, false, track.duration);
+      setDownloadProgress(0);
+      bumpLoadWatch();
+      cachedInfo = await ensureTrackCached(urn, false, expectedDurationMs(track), storageQuality);
     }
 
     if (gen !== loadGen) return;
+    stopLoadWatch();
     setDownloadProgress(null);
+    acceptedShortFile = cachedInfo.acceptedShort;
     usePlayerStore.getState().setPlaybackTransport(cachedInfo.quality, cachedInfo.source);
 
     console.log('[Audio] Playing downloaded track:', urn);
     const loadResult = await loadCachedFile(
       urn,
       cachedInfo.path,
-      !usePlayerStore.getState().isPlaying,
+      resumeAt > 0 || !usePlayerStore.getState().isPlaying || startGate != null,
       reResolve,
     );
     if (loadResult?.duration_secs) {
@@ -406,29 +559,66 @@ async function loadTrack(track: Track) {
       updateMetadata(track, loadResult.duration_secs);
       notify();
     }
-    void enforceAudioCacheLimit().catch(console.error);
-
     if (gen !== loadGen) return;
-    afterLoad(track, gen);
+    await afterLoad(track, gen, resumeAt);
   } catch (e) {
     console.error('[Audio] Load failed:', e);
+    if (gen !== loadGen) return;
+    if (crossfadeMs > 0) invoke('audio_stop').catch(console.error);
+    stopLoadWatch();
     setDownloadProgress(null);
     usePlayerStore.getState().setPlaybackTransport(null, null);
-    if (gen !== loadGen) return;
-    const errorText = getLoadErrorText(e);
-    toast.error(i18n.t('track.loadError'), {
-      description: errorText ? `${track.title}: ${errorText}` : track.title,
-    });
-    usePlayerStore.getState().pause();
+    const localMissing = local && isFileMissing(e);
+    if (localMissing) markLocalMissing(urn);
+    const errorText = localMissing ? i18n.t('local.fileMissing') : getLoadErrorText(e);
+    if (errorText?.includes('no stream available')) {
+      notifyError(i18n.t('track.noStream'), {
+        id: 'track-load-error',
+        description: `${track.title}: ${i18n.t('track.noStreamHint')}`,
+      });
+    } else {
+      notifyError(i18n.t('track.loadError'), {
+        id: 'track-load-error',
+        description: errorText ? `${track.title}: ${errorText}` : track.title,
+      });
+    }
+    if (!skipUnloadable(track, false)) usePlayerStore.getState().pause();
   }
 }
 
-function afterLoad(track: Track, gen: number) {
+function skipUnloadable(track: Track, stuck: boolean): boolean {
+  const player = usePlayerStore.getState();
+  if (!player.isPlaying || player.currentTrack?.urn !== track.urn) return false;
+  if (!skipUnloadableEnabled() || !playbackAllowed('skip')) return false;
+  if (!takeSkipAttempt()) {
+    toast.warning(i18n.t('track.skipHalted'), { description: i18n.t('track.skipHaltedHint') });
+    player.pause();
+    return true;
+  }
+  if (stuck) {
+    console.warn('[Audio] load stalled, skipping:', track.urn);
+    toast.warning(i18n.t('track.skippedStuck'), { description: track.title });
+  }
+  player.next();
+  return usePlayerStore.getState().currentTrack?.urn !== track.urn;
+}
+
+async function afterLoad(track: Track, gen: number, resumeAt: number) {
   if (gen !== loadGen) {
     invoke('audio_stop').catch(console.error);
     return;
   }
+  if (resumeAt > 0) {
+    await invoke('audio_seek', { position: resumeAt }).catch(console.error);
+    if (gen !== loadGen) return;
+    cachedTime = resumeAt;
+    notify();
+  }
   hasTrack = true;
+  void markTrackPlayed(track.urn)
+    .catch(console.error)
+    .finally(() => enforceAudioCacheLimit().catch(console.error));
+  resetSkipStreak();
 
   const historyTrack =
     usePlayerStore.getState().currentTrack?.urn === track.urn
@@ -436,11 +626,12 @@ function afterLoad(track: Track, gen: number) {
       : track;
 
   // Record to listening history (fire-and-forget), skip on repeat-one (same track looping)
-  if (historyTrack?.urn && historyTrack.title && usePlayerStore.getState().repeat !== 'one') {
+  const historyUrn = trackUrn(historyTrack?.urn);
+  if (historyUrn && historyTrack?.title && usePlayerStore.getState().repeat !== 'one') {
     api('/history', {
       method: 'POST',
       body: JSON.stringify({
-        scTrackId: historyTrack.urn,
+        scTrackId: historyUrn,
         title: getDisplayTitle(historyTrack),
         artistName: getArtistDisplay(historyTrack).primary || historyTrack.user?.username || '',
         artistUrn: historyTrack.user?.urn || null,
@@ -448,6 +639,17 @@ function afterLoad(track: Track, gen: number) {
         duration: historyTrack.duration || 0,
       }),
     }).catch(() => {});
+  }
+
+  if (startGate) {
+    const startAt = await startGate(track.urn).catch(() => null);
+    if (gen !== loadGen) return;
+    if (startAt != null) {
+      await invoke('audio_seek', { position: startAt }).catch(console.error);
+      if (gen !== loadGen) return;
+      cachedTime = startAt;
+      notify();
+    }
   }
 
   const isPlaying = usePlayerStore.getState().isPlaying;
@@ -466,34 +668,47 @@ async function hydrateTrackMetadata(track: Track, gen: number) {
   commitTrackMetadata(nextTrack);
 }
 
-/** Трек «закончился» через пару секунд при заявленных минутах — в кеше битый
- *  файл (заголовок целый, данные обрезаны: легаси без .meta.json или яд из
- *  storage до серверного duration-гейта). Сносим файл и перекачиваем вместо
- *  тихого скипа на следующий. */
+function endedEarly(track: Track): boolean {
+  if (isPreviewOnly(track)) return false;
+  if (Math.abs(cachedTime - API_PREVIEW_DURATION_MS / 1000) < 2) return false;
+  const expected = Math.max(cachedDuration, track.duration / 1000);
+  if (expected < EARLY_END_MIN_EXPECTED_SEC) return false;
+  const tolerance = Math.max(EARLY_END_TOLERANCE_SEC, expected * EARLY_END_TOLERANCE_RATIO);
+  return cachedTime < expected - tolerance;
+}
+
 function maybeHealEarlyEnd(): boolean {
   if (!currentUrn || navigator.onLine === false) return false;
   const state = usePlayerStore.getState();
   const track = state.currentTrack;
-  if (!track || track.urn !== currentUrn || state.abLoop) return false;
-  if (track.duration / 1000 < EARLY_END_MIN_EXPECTED_SEC) return false;
-  if (cachedTime >= EARLY_END_PLAYED_SEC) return false;
-  if (healedUrns.has(track.urn)) return false;
+  if (!track || track.urn !== currentUrn || state.abLoop || acceptedShortFile) return false;
+  if (isLocalUrn(track.urn)) return false;
+  if (!endedEarly(track)) return false;
+  const endedAt = cachedTime;
+  if (healedUrns.has(track.urn)) {
+    console.warn(`[Audio] ended early again at ${endedAt.toFixed(1)}s, skipping:`, track.urn);
+    notifyError(i18n.t('track.loadError'), {
+      id: 'track-load-error',
+      description: `${track.title}: ${i18n.t('track.fileDamaged')}`,
+    });
+    return false;
+  }
   healedUrns.add(track.urn);
   console.warn(
-    `[Audio] ended after ${cachedTime.toFixed(1)}s of ${(track.duration / 1000).toFixed(0)}s — purging cache and refetching:`,
+    `[Audio] ended after ${endedAt.toFixed(1)}s of ${(track.duration / 1000).toFixed(0)}s — purging cache and refetching:`,
     track.urn,
   );
   void removeCachedTrack(track.urn)
     .catch(() => {})
     .then(() => {
-      if (usePlayerStore.getState().currentTrack?.urn === track.urn) {
-        return loadTrack(track);
-      }
+      if (usePlayerStore.getState().currentTrack?.urn !== track.urn) return;
+      return loadTrack(track, Math.max(0, endedAt - 1));
     });
   return true;
 }
 
 function handleTrackEnd() {
+  if (!playbackAllowed('advance')) return;
   const state = usePlayerStore.getState();
   // A-B loop whose end sits at (or within a tick of) the track end: the Rust-side
   // loop can't catch it before the sink drains, so restart the segment from A here.
@@ -526,34 +741,83 @@ function handleTrackEnd() {
 
 /* ── Tauri event listeners ───────────────────────────────────── */
 
+function isCrossfadeLoading(): boolean {
+  return crossfadeGen === loadGen && !hasTrack;
+}
+
+function upcomingTrack(): Track | null {
+  const { queue, queueIndex, repeat } = usePlayerStore.getState();
+  if (queueIndex + 1 < queue.length) return queue[queueIndex + 1];
+  return repeat === 'all' && queue.length > 1 ? queue[0] : null;
+}
+
+function canCrossfade(): boolean {
+  const state = usePlayerStore.getState();
+  return state.isPlaying && state.repeat !== 'one' && !state.abLoop && startGate == null;
+}
+
+function maybeStartCrossfade() {
+  const lengthSec = useSettingsStore.getState().crossfadeSec;
+  if (lengthSec <= 0 || !hasTrack || !currentUrn || crossfadeCheckedGen === loadGen) return;
+  const duration = cachedDuration > 0 ? cachedDuration : fallbackDuration;
+  if (duration <= lengthSec * 2 || cachedTime < duration - lengthSec - CROSSFADE_LEAD_SEC) return;
+  crossfadeCheckedGen = loadGen;
+  const next = upcomingTrack();
+  if (!canCrossfade() || !next || isUrnDisliked(next.urn) || isTrackBlocked(next)) return;
+  const gen = loadGen;
+  void getCacheInfo(next.urn).then((info) => {
+    if (!info?.path || gen !== loadGen || !hasTrack || !currentUrn) return;
+    if (!canCrossfade() || upcomingTrack()?.urn !== next.urn) return;
+    recordFullPlay(currentUrn, true);
+    lastEndedUrn = currentUrn;
+    pendingCrossfadeMs = lengthSec * 1000;
+    currentUrn = null;
+    usePlayerStore.getState().next();
+    pendingCrossfadeMs = 0;
+  });
+}
+
 listen<number>('audio:tick', (event) => {
+  if (isCrossfadeLoading()) return;
   cachedTime = event.payload;
   if (cachedDuration <= 0) cachedDuration = fallbackDuration;
   notify();
+  maybeStartCrossfade();
 });
 
 listen<{ urn: string; progress: number }>('track:download-progress', (event) => {
   const { urn, progress } = event.payload;
-  if (urn === currentUrn) {
-    setDownloadProgress(progress);
+  if (urn === currentUrn && downloadProgress !== null) {
+    if (progress > downloadProgress) bumpLoadWatch();
+    setDownloadProgress(Math.max(downloadProgress, progress));
   }
 });
 
-listen('audio:ended', () => {
-  if (maybeHealEarlyEnd()) return;
+// Засчитываем full_play только если трек реально игрался: либо ≥30s,
+// либо проиграно ≥50% длительности (для коротких треков). Иначе это
+// зависшая загрузка / зеро-длительность баг — не отправляем.
+function recordFullPlay(urn: string, complete: boolean) {
+  const playedEnough =
+    complete ||
+    cachedTime >= SKIP_THRESHOLD_SEC ||
+    (cachedDuration > 0 && cachedTime >= cachedDuration * FULL_PLAY_RATIO);
+  if (!playedEnough) return;
+  const positionPct = complete
+    ? 1
+    : cachedDuration > 0
+      ? Math.min(1, cachedTime / cachedDuration)
+      : undefined;
+  recordEvent('full_play', urn, positionPct);
+  const cluster = getUrnCluster(urn);
+  if (cluster) recordClusterFeedback(cluster, 'complete');
+}
+
+listen<boolean | null>('audio:ended', (event) => {
+  if (isCrossfadeLoading()) return;
+  const silentTail = event.payload === true;
+  if (!silentTail && maybeHealEarlyEnd()) return;
   if (currentUrn) {
-    // Засчитываем full_play только если трек реально игрался: либо ≥30s,
-    // либо проиграно ≥50% длительности (для коротких треков). Иначе это
-    // зависшая загрузка / зеро-длительность баг — не отправляем.
-    const playedEnough =
-      cachedTime >= SKIP_THRESHOLD_SEC ||
-      (cachedDuration > 0 && cachedTime >= cachedDuration * FULL_PLAY_RATIO);
-    if (playedEnough) {
-      const positionPct = cachedDuration > 0 ? Math.min(1, cachedTime / cachedDuration) : undefined;
-      recordEvent('full_play', currentUrn, positionPct);
-      const cluster = getUrnCluster(currentUrn);
-      if (cluster) recordClusterFeedback(cluster, 'complete');
-    }
+    recordFullPlay(currentUrn, silentTail);
     lastEndedUrn = currentUrn;
   }
   hasTrack = false;
@@ -567,6 +831,16 @@ listen('audio:device-reconnected', () => {
 listen<string>('audio:default-device-changed', (event) => {
   console.log(`[Audio] Default output changed to '${event.payload}'`);
 });
+
+const BLOCKED_SKIP_TOAST_GAP_MS = 20_000;
+let lastBlockedSkipToast = 0;
+
+function announceBlockedSkip(track: Track) {
+  const now = Date.now();
+  if (now - lastBlockedSkipToast < BLOCKED_SKIP_TOAST_GAP_MS) return;
+  lastBlockedSkipToast = now;
+  toast(i18n.t('blocklist.skipped'), {description: track.title});
+}
 
 /* ── Store subscriber ────────────────────────────────────────── */
 
@@ -594,7 +868,11 @@ usePlayerStore.subscribe((state, prev) => {
 
     if (state.currentTrack) {
       // Автоскип дизлайкнутых треков: пропускаем без загрузки/плэя.
-      if (isUrnDisliked(state.currentTrack.urn)) {
+      const disliked = isUrnDisliked(state.currentTrack.urn);
+      const skipped =
+        (disliked && state.startedUrn !== state.currentTrack.urn) ||
+        isTrackBlocked(state.currentTrack);
+      if (skipped && playbackAllowed('advance')) {
         currentUrn = null;
         fallbackDuration = 0;
         cachedDuration = 0;
@@ -602,11 +880,13 @@ usePlayerStore.subscribe((state, prev) => {
         hasTrack = false;
         usePlayerStore.getState().setPlaybackTransport(null, null);
         notify();
+        if (isTrackBlocked(state.currentTrack)) announceBlockedSkip(state.currentTrack);
         usePlayerStore.getState().next();
         return;
       }
+      if (disliked) offerUndislike(state.currentTrack);
       updateMetadata(state.currentTrack);
-      void loadTrack(state.currentTrack);
+      void loadTrack(state.currentTrack, takePendingStart(state.currentTrack.urn));
     } else {
       stopTrack();
       currentUrn = null;
@@ -621,7 +901,7 @@ usePlayerStore.subscribe((state, prev) => {
   if (playToggled && !trackChanged) {
     if (state.isPlaying) {
       if (!hasTrack && state.currentTrack) {
-        void loadTrack(state.currentTrack);
+        void loadTrack(state.currentTrack, takePendingStart(state.currentTrack.urn));
       } else {
         invoke('audio_play').catch(console.error);
       }
@@ -640,7 +920,7 @@ usePlayerStore.subscribe((state, prev) => {
     state.pitchSemitones !== prev.pitchSemitones ||
     state.pitchControlMode !== prev.pitchControlMode
   ) {
-    invoke('audio_set_playback_rate', { rate: getEffectivePlaybackRate() }).catch(console.error);
+    syncPlaybackRateAndPitch();
   }
 
   // A-B loop: only push an active region (both bounds set); otherwise clear it.
@@ -654,16 +934,11 @@ usePlayerStore.subscribe((state, prev) => {
   }
 });
 
-/** Combine playback rate and (manual) pitch into a single Rust-side speed value.
- *  Rust uses rodio's `set_speed` which couples tempo+pitch — so manual pitch is
- *  applied as a multiplier on top of the user's rate.
- */
-function getEffectivePlaybackRate(): number {
+function syncPlaybackRateAndPitch() {
   const { playbackRate, pitchControlMode, pitchSemitones } = usePlayerStore.getState();
-  if (pitchControlMode === 'manual' && Math.abs(pitchSemitones) > 0.001) {
-    return playbackRate * 2 ** (pitchSemitones / 12);
-  }
-  return playbackRate;
+  const ratio = pitchControlMode === 'manual' ? 2 ** (pitchSemitones / 12) / playbackRate : 1;
+  invoke('audio_set_pitch_ratio', { ratio }).catch(console.error);
+  invoke('audio_set_playback_rate', { rate: playbackRate }).catch(console.error);
 }
 
 /* ── EQ settings subscriber ──────────────────────────────────── */
@@ -678,6 +953,10 @@ useSettingsStore.subscribe((state, prev) => {
     if (usePlayerStore.getState().currentTrack) {
       void reloadCurrentTrack();
     }
+  }
+
+  if (state.skipSilence !== prev.skipSilence) {
+    invoke('audio_set_skip_silence', { enabled: state.skipSilence }).catch(console.error);
   }
 });
 
@@ -700,10 +979,7 @@ function updatePlaybackState(playing: boolean) {
 }
 
 function updateMediaPosition() {
-  const pos = getCurrentTime();
-  if (pos > 0) {
-    invoke('audio_set_media_position', { position: pos }).catch(console.error);
-  }
+  invoke('audio_set_media_position', { position: getCurrentTime() }).catch(console.error);
 }
 
 // Listen for media control events from souvlaki (MPRIS/SMTC)
@@ -726,11 +1002,13 @@ listen<number>('media:seek-relative', (e) => {
 
 let preloadTimer: ReturnType<typeof setTimeout> | null = null;
 
-export function preloadTrack(urn: string) {
-  if (preloadTimer) clearTimeout(preloadTimer);
+export function preloadTrack(track: Track) {
+  const urn = track.urn;
+  cancelPreload();
+  if (!isHoverPreloadEnabled() || isLocalUrn(urn)) return;
   preloadTimer = setTimeout(() => {
     const sessionId = getSessionId();
-    const hq = useSettingsStore.getState().highQualityStreaming;
+    const hq = isHqStreaming();
     invoke('track_preload', {
       entries: [
         {
@@ -740,13 +1018,21 @@ export function preloadTrack(urn: string) {
           storageUrls: buildStorageUrls(urn),
           sessionId,
           hq,
+          durationMs: expectedDurationMs(track),
+          storageQuality: track._scd_meta?.storage_quality,
         },
       ],
     }).catch(console.error);
-  }, 500);
+  }, 800);
+}
+
+export function cancelPreload() {
+  if (preloadTimer) clearTimeout(preloadTimer);
+  preloadTimer = null;
 }
 
 export function preloadQueue() {
+  if (isAudioCacheDisabled()) return;
   const { queue, queueIndex } = usePlayerStore.getState();
   const entries: Array<{
     urn: string;
@@ -756,23 +1042,24 @@ export function preloadQueue() {
     sessionId: string | null;
     hq: boolean;
     durationMs?: number;
+    storageQuality?: TrackScdMeta['storage_quality'];
   }> = [];
   const sessionId = getSessionId();
-  const hq = useSettingsStore.getState().highQualityStreaming;
+  const hq = isHqStreaming();
 
-  for (let i = 1; i <= 3; i++) {
-    const idx = queueIndex + i;
-    if (idx < queue.length) {
-      entries.push({
-        urn: queue[idx].urn,
-        urls: streamFallbackUrls(queue[idx].urn, hq),
-        downloadUrls: downloadFallbackUrls(queue[idx].urn, hq),
-        storageUrls: buildStorageUrls(queue[idx].urn),
-        sessionId,
-        hq,
-        durationMs: queue[idx].duration,
-      });
-    }
+  for (let idx = queueIndex + 1; idx < queue.length && entries.length < 3; idx++) {
+    const next = queue[idx];
+    if (isLocalUrn(next.urn) || isUrnDisliked(next.urn) || isTrackBlocked(next)) continue;
+    entries.push({
+      urn: next.urn,
+      urls: streamFallbackUrls(next.urn, hq),
+      downloadUrls: downloadFallbackUrls(next.urn, hq),
+      storageUrls: buildStorageUrls(next.urn),
+      sessionId,
+      hq,
+      durationMs: expectedDurationMs(next),
+      storageQuality: next._scd_meta?.storage_quality,
+    });
   }
 
   if (entries.length > 0) {
@@ -781,7 +1068,17 @@ export function preloadQueue() {
 }
 
 usePlayerStore.subscribe((state, prev) => {
+  if (!hasTrack) return;
   if (state.queueIndex !== prev.queueIndex || state.queue !== prev.queue) {
     preloadQueue();
   }
+});
+
+useBlockedArtistsStore.subscribe((state, prev) => {
+  if (state.entries === prev.entries) return;
+  const player = usePlayerStore.getState();
+  if (isTrackBlocked(player.currentTrack)) {
+    lastBlockedSkipToast = Date.now();
+    player.next();
+  } else if (hasTrack) preloadQueue();
 });

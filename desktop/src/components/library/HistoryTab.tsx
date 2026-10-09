@@ -1,18 +1,23 @@
+import {useQueryClient} from '@tanstack/react-query';
 import React, {useCallback, useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
-import {useNavigate} from 'react-router-dom';
+import {Link, useNavigate} from 'react-router-dom';
 import {api} from '../../lib/api';
 import {art} from '../../lib/formatters';
 import {type HistoryEntry, useHistory, useInfiniteScroll} from '../../lib/hooks';
-import {Loader2, Music, playWhite14} from '../../lib/icons';
+import {ChartNoAxesColumn, Loader2, Music, playWhite14} from '../../lib/icons';
+import {openTrackMenu} from '../../lib/useTrackContextMenu';
 import {usePlayerStore} from '../../stores/player';
+import {LikeButton} from '../music/LikeButton';
 import {VirtualList} from '../ui/VirtualList';
-import {formatHistoryDate, historyEntryToTrack, historyTrackUrn} from './history-utils';
+import {formatHistoryDate, historyEntryToTrack} from './history-utils';
+import {STATS_QUERY_KEY} from './stats/useListeningStats';
 
 export const HistoryTab = React.memo(function HistoryTab() {
     const {t} = useTranslation();
     const navigate = useNavigate();
     const play = usePlayerStore((s) => s.play);
+    const queryClient = useQueryClient();
     const historyQuery = useHistory();
     const {entries, isLoading} = historyQuery;
     const sentinelRef = useInfiniteScroll(
@@ -24,7 +29,8 @@ export const HistoryTab = React.memo(function HistoryTab() {
     const handleClearHistory = useCallback(async () => {
         await api('/history', {method: 'DELETE'});
         historyQuery.refetch();
-    }, [historyQuery]);
+        void queryClient.invalidateQueries({queryKey: [STATS_QUERY_KEY]});
+    }, [historyQuery, queryClient]);
 
     const rows = useMemo(() => {
         const flat: Array<
@@ -48,7 +54,14 @@ export const HistoryTab = React.memo(function HistoryTab() {
     return (
         <div className="min-h-[400px]">
             {entries.length > 0 && (
-                <div className="flex justify-end mb-4">
+                <div className="flex items-center justify-between mb-4">
+                    <Link
+                        to="/library/stats"
+                        className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-white/45 hover:text-white/90 transition-colors"
+                    >
+                        <ChartNoAxesColumn size={14}/>
+                        {t('stats.open')}
+                    </Link>
                     <button
                         onClick={handleClearHistory}
                         className="text-[12px] text-white/30 hover:text-red-400 transition-colors cursor-pointer"
@@ -79,6 +92,7 @@ export const HistoryTab = React.memo(function HistoryTab() {
                             </div>
                         ) : (
                             <div
+                                onContextMenu={(e) => openTrackMenu(e, historyEntryToTrack(row.entry))}
                                 className="group flex items-center gap-4 px-4 py-3 rounded-2xl hover:bg-white/[0.04] transition-all duration-300">
                                 <button
                                     type="button"
@@ -112,7 +126,7 @@ export const HistoryTab = React.memo(function HistoryTab() {
                                     <p
                                         className="text-[14px] font-medium truncate text-white/90 hover:text-white cursor-pointer transition-colors"
                                         onClick={() =>
-                                            navigate(`/track/${encodeURIComponent(historyTrackUrn(row.entry.scTrackId))}`)
+                                            navigate(`/track/${encodeURIComponent(row.entry.trackUrn)}`)
                                         }
                                     >
                                         {row.entry.title}
@@ -127,6 +141,8 @@ export const HistoryTab = React.memo(function HistoryTab() {
                                         {row.entry.artistName}
                                     </p>
                                 </div>
+
+                                <LikeButton track={historyEntryToTrack(row.entry)}/>
 
                                 <span className="text-[11px] text-white/20 tabular-nums shrink-0">
                   {new Date(row.entry.playedAt).toLocaleTimeString([], {

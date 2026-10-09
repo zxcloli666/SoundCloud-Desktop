@@ -1,16 +1,27 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { BOOSTY_URL, DISCORD_URL, STATUS_PAGE_URL } from '../../lib/constants';
 import { requestProbe, useHostStatusStore } from '../../lib/host-status';
-import { Download, ExternalLink, RefreshCw, Star, WifiOff, X } from '../../lib/icons';
+import {
+  Activity,
+  Download,
+  ExternalLink,
+  Globe,
+  RefreshCw,
+  Star,
+  WifiOff,
+  X,
+} from '../../lib/icons';
+import { useNetCheckStore } from '../../lib/net/check';
 import { useAppStatusStore } from '../../stores/app-status';
 import { useAuthStore } from '../../stores/auth';
 import { useAuthRecoveryStore } from '../../stores/auth-recovery';
 import { Modal, ModalClose, ModalContent, ModalTitle } from '../ui/Modal';
+import { IconTile } from './IconTile';
+import { outageCopy } from './outage-copy';
+import { RemoteCheck } from './RemoteCheck';
 import { useFailoverUi } from './useFailoverUi';
-
-const BOOSTY_URL = 'https://boosty.to/lolinamide';
-const DISCORD_URL = 'https://discord.gg/xQcGBP8fGG';
 
 function LinkButton({ href, label }: { href: string; label: string }) {
   return (
@@ -30,21 +41,6 @@ function LinkButton({ href, label }: { href: string; label: string }) {
   );
 }
 
-function IconTile({ children }: { children: React.ReactNode }) {
-  return (
-    <div
-      className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4"
-      style={{
-        background: 'linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))',
-        border: '0.5px solid rgba(255,255,255,0.08)',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
-      }}
-    >
-      {children}
-    </div>
-  );
-}
-
 export const HostStatusModal = React.memo(() => {
   const { t } = useTranslation();
   const ui = useFailoverUi();
@@ -52,6 +48,8 @@ export const HostStatusModal = React.memo(() => {
   const modalDismissedIncidentId = useHostStatusStore((s) => s.modalDismissedIncidentId);
   const dismissModal = useHostStatusStore((s) => s.dismissModal);
   const probing = useHostStatusStore((s) => s.probing);
+  const routeBlocked = useHostStatusStore((s) => s.routeBlocked);
+  const remote = useHostStatusStore((s) => s.remote);
   const recoveryPhase = useAuthRecoveryStore((s) => s.phase);
   const hasSession = useAuthStore((s) => s.hasSession);
   const navigate = useNavigate();
@@ -63,9 +61,10 @@ export const HostStatusModal = React.memo(() => {
     modalDismissedIncidentId !== incidentId;
 
   const allDown = ui === 'all-down';
+  const copy = allDown ? outageCopy(routeBlocked, remote) : 'starOffer';
 
   const goOfflineLibrary = () => {
-    useAppStatusStore.getState().setOfflineBypass(true);
+    if (!hasSession) useAppStatusStore.getState().setOfflineBypass(true);
     dismissModal();
     navigate('/offline', { replace: true });
   };
@@ -78,6 +77,11 @@ export const HostStatusModal = React.memo(() => {
     navigate('/star');
   };
 
+  const openNetCheck = () => {
+    dismissModal();
+    useNetCheckStore.getState().openCheck();
+  };
+
   return (
     <Modal open={open} onOpenChange={(o) => !o && dismissModal()}>
       <ModalContent size="sm" zClass="z-[95]" showClose={false}>
@@ -88,7 +92,9 @@ export const HostStatusModal = React.memo(() => {
 
           <div className="flex flex-col items-center text-center mb-6">
             <IconTile>
-              {allDown ? (
+              {copy === 'reachable' ? (
+                <Globe size={24} className="text-emerald-300/80" />
+              ) : allDown ? (
                 <WifiOff size={24} className="text-white/60" />
               ) : (
                 <span
@@ -100,16 +106,20 @@ export const HostStatusModal = React.memo(() => {
               )}
             </IconTile>
             <ModalTitle className="text-lg font-bold text-white/90 tracking-tight">
-              {t(allDown ? 'hostStatus.allDown.title' : 'hostStatus.starOffer.title')}
+              {t(`hostStatus.${copy}.title`)}
             </ModalTitle>
             <p className="text-[12.5px] text-white/35 mt-1.5 leading-relaxed max-w-[300px]">
-              {t(allDown ? 'hostStatus.allDown.body' : 'hostStatus.starOffer.body')}
+              {t(`hostStatus.${copy}.body`)}
             </p>
+            {allDown && <RemoteCheck verdict={remote} />}
             {!allDown && (
               <p className="text-[11.5px] text-white/45 mt-3">{t('hostStatus.starOffer.how')}</p>
             )}
             <div className="flex items-center justify-center gap-2 mt-2.5">
               {!allDown && <LinkButton href={BOOSTY_URL} label={t('star.goBoosty')} />}
+              {allDown && (
+                <LinkButton href={STATUS_PAGE_URL} label={t('hostStatus.actions.statusPage')} />
+              )}
               <LinkButton href={DISCORD_URL} label={t('star.goDiscord')} />
             </div>
           </div>
@@ -136,6 +146,14 @@ export const HostStatusModal = React.memo(() => {
             >
               <Download size={14} />
               {t('hostStatus.actions.offlineLibrary')}
+            </button>
+            <button
+              type="button"
+              onClick={openNetCheck}
+              className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] text-[12.5px] text-white/55 hover:text-white/80 transition-all cursor-pointer"
+            >
+              <Activity size={13} />
+              {t('netCheck.open')}
             </button>
             <button
               type="button"
