@@ -68,6 +68,7 @@ import {EqualizerPanel} from '../music/EqualizerPanel';
 import {TrackSoundToggle} from '../music/TrackSoundToggle';
 import {UploadKindDot} from '../music/UploadKindDot';
 import {TogetherButton} from '../together/TogetherButton';
+import {sidebarWidth} from './SidebarChrome';
 import {VolumeFlyout, VolumeLabel, VolumeSlider} from './VolumeControls';
 
 /* ── Track loading progress (SC → SCD download) ──────────────── */
@@ -1048,9 +1049,18 @@ export const NowPlayingBar = React.memo(
     const hidden = useDocHidden();
     const playingNow = isPlaying && !hidden;
     const loadProgress = useLoadProgress();
+    const sidebarCollapsed = useSettingsStore((s) => s.sidebarCollapsed);
+    const perf = usePerfMode();
 
     return (
-      <div className="npb" data-ui="player">
+      <div
+        className="npb"
+        data-ui="player"
+        style={{
+          left: sidebarWidth(sidebarCollapsed),
+          transitionDuration: perf.mode === 'light' ? '0ms' : undefined,
+        }}
+      >
         <BackgroundGlow />
         <div className="npb-underglow" />
 

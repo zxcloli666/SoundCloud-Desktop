@@ -12,7 +12,7 @@ import { useAuthStore } from '../../stores/auth';
 import { useSettingsStore } from '../../stores/settings';
 import { Avatar } from '../ui/Avatar';
 import { type IconCmp, NAV_ITEMS } from './nav-items';
-import { ACTIVE, IconBox, Label, ROW } from './SidebarChrome';
+import { ACTIVE, IconBox, Label, ROW, sidebarWidth } from './SidebarChrome';
 import { SidebarPins } from './SidebarPins';
 import { SortableSlot, SortableStack } from './SortableStack';
 import { StarBadge, StarCard, useStarSubscription } from './StarSubscription';
@@ -21,6 +21,7 @@ const languages = [
   { code: 'en', label: 'English' },
   { code: 'ru', label: 'Русский' },
   { code: 'tr', label: 'Turkce' },
+  { code: 'ko', label: '한국어' },
 ] as const;
 
 function NavItem({
@@ -96,7 +97,7 @@ export const Sidebar = React.memo(() => {
       data-ui="sidebar"
       className="shrink-0 flex flex-col h-full overflow-hidden border-r border-white/[0.05] pb-3 transition-[width] duration-300 ease-[var(--ease-apple)]"
       style={{
-        width: collapsed ? 56 : 196,
+        width: sidebarWidth(collapsed),
         transitionDuration: perf.mode === 'light' ? '0ms' : undefined,
       }}
     >
