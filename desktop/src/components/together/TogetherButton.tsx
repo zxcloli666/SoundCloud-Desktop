@@ -40,7 +40,8 @@ const Trigger = forwardRef<HTMLButtonElement, ComponentPropsWithoutRef<'button'>
       aria-label={t('together.title')}
       className="relative flex h-[30px] cursor-pointer items-center gap-1.5 rounded-full bg-accent/15 pr-2.5 pl-1 text-accent shadow-[0_0_14px_-4px_var(--color-accent-glow)] transition-all duration-200 ease-[var(--ease-apple)] hover:bg-accent/25 active:scale-95"
     >
-      <span className="flex -space-x-1.5">
+      <Users size={15} className="together-icon ml-1" />
+      <span className="together-stack flex -space-x-1.5">
         {stack.map((member) => (
           <Avatar
             key={member.userId}

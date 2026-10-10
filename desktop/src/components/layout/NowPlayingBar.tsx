@@ -564,9 +564,9 @@ const AbLoopBtn = React.memo(() => {
       title={title}
       aria-label={title}
       onClick={() => cycleAbPoint(getCurrentTime())}
-      className={`relative w-[30px] h-[30px] rounded-full flex items-center justify-center transition-all duration-200 ease-[var(--ease-apple)] cursor-pointer active:scale-90 ${
+      className={`npb-abloop relative w-[30px] h-[30px] rounded-full flex items-center justify-center transition-all duration-200 ease-[var(--ease-apple)] cursor-pointer active:scale-90 ${
         active
-          ? 'text-accent bg-accent/15 shadow-[0_0_14px_-4px_var(--color-accent-glow)]'
+          ? 'is-active text-accent bg-accent/15 shadow-[0_0_14px_-4px_var(--color-accent-glow)]'
           : 'text-white/55 hover:text-white hover:bg-white/[0.08] hover:-translate-y-px'
       }`}
     >
@@ -1050,7 +1050,9 @@ const BackgroundGlow = React.memo(() => {
 
 /* ── NowPlayingBar ───────────────────────────────────────────── */
 
-const COMPACT_DOCK_AREA = 1040;
+const COMPACT_DOCK_AREA = 1160;
+const TIGHT_DOCK_AREA = 1000;
+const MINI_DOCK_AREA = 900;
 const MIN_DOCK_AREA = 800;
 
 function subscribeResize(onChange: () => void) {
@@ -1073,12 +1075,15 @@ export const NowPlayingBar = React.memo(
     const windowWidth = useSyncExternalStore(subscribeResize, readWindowWidth);
     const sidebar = sidebarWidth(sidebarCollapsed);
     const left = windowWidth - sidebar < MIN_DOCK_AREA ? 0 : sidebar;
+    const area = windowWidth - left;
 
     return (
       <div
         className="npb"
         data-ui="player"
-        data-compact={windowWidth - left < COMPACT_DOCK_AREA ? '' : undefined}
+        data-compact={area < COMPACT_DOCK_AREA ? '' : undefined}
+        data-tight={area < TIGHT_DOCK_AREA ? '' : undefined}
+        data-mini={area < MINI_DOCK_AREA ? '' : undefined}
         style={{
           left,
           transitionDuration: perf.mode === 'light' ? '0ms' : undefined,

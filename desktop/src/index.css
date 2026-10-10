@@ -942,7 +942,7 @@ select,
     position: relative;
     z-index: 1;
     pointer-events: auto;
-    width: 960px;
+    width: 1128px;
     max-width: calc(100% - 32px);
     border-radius: 28px;
     box-shadow: 0 30px 70px -22px rgba(0, 0, 0, 0.78),
@@ -1549,6 +1549,35 @@ select,
 }
 
 .npb[data-compact] .npb-cdn-label {
+    display: none;
+}
+
+.together-icon {
+    display: none;
+}
+
+.npb[data-compact] .together-icon {
+    display: block;
+}
+
+.npb[data-compact] .together-stack {
+    display: none;
+}
+
+.npb[data-tight] .npb-quality {
+    display: none;
+}
+
+.npb[data-tight] .npb-react.is-local {
+    width: auto;
+}
+
+.npb[data-mini] .npb-row {
+    gap: 8px;
+}
+
+.npb[data-mini] .npb-slot,
+.npb[data-mini] .npb-abloop:not(.is-active) {
     display: none;
 }
 
