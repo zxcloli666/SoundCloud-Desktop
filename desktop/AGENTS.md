@@ -25,7 +25,7 @@
 
 - **tokio** — async рантайм, в `setup` запускается единый `Runtime` и держится живым отдельным `std::thread`
 - **warp** — все HTTP-серверы (proxy / static / static_server / wallpapers)
-- **reqwest** (rustls, socks, stream) — единственный HTTP-клиент
+- **wreq** 0.16 через `sc-fingerprint` (TLS и HTTP/2 отпечаток Chrome, socks, stream) — единственный HTTP-клиент
 - **rodio** + **symphonia** (mp3, aac/m4a/mp4, ogg) — аудио-движок и декодеры
 - **cpal** — устройства вывода
 - **biquad** — параметрический EQ
@@ -33,7 +33,7 @@
 - **souvlaki** — системные media controls (MPRIS / SMTC / NowPlaying)
 - **discord-rich-presence** — Discord RPC
 - **chrono / tracing / serde / sha2 / base64 / hex** — служебные
-- Внутренние крейты из `../utils/`: `call-client`, `decrypt-client`, `dpi-desync`
+- Внутренние крейты из `../utils/`: `call-client`, `decrypt-client`; `sc-fingerprint` берётся из SoundCloud-Backend по тегу
 
 ## Структура
 
@@ -80,7 +80,8 @@ desktop/
                      events, hooks, useAutoHide — общие утилиты
                      diagnostics — `trackedInvoke`, watchdog event-loop, slow-call логи
                      tauri-storage — `StateStorage` для zustand persist на ФС
-                     call, discord, dpi, tray, window, platform, update-check, semver
+                     call, discord, net/dpi (советы по zapret для проверки сети), tray, window, platform,
+                     update-check, semver
                      query-client, formatters, icons, constants
     i18n/locales/    en.json, ru.json
   src-tauri/
@@ -97,7 +98,10 @@ desktop/
                          static_server (warp: `/wallpapers/...`),
                          server (общий cors + регистрация портов),
                          image_cache (постоянный кеш картинок в app_data_dir/images),
-                         dpi (dpi-desync через SOCKS, подмешивается в reqwest builder),
+                         fetch (`net_fetch`: wreq + h2-пинги), edge (прямой → relay → pro),
+                         pro (relay-pro: ответ кусками под обрыв по объёму), audio_route,
+                         system_proxy (системный прокси на каждом клиенте),
+                         netcheck + health (проверка сети, поиск zapret/WinDivert, вердикт),
                          call (call-client agent, флаг enabled в `call_enabled.json`)
       track_cache/       commands, state, direct_download, sc_anon/{mod,hls}
       discord/           mod + commands
@@ -163,8 +167,9 @@ desktop/
 - **Не грузить фронт лишним.** Не прокидывать в JS лишние данные/события, если можно отдать уже подготовленный
   компактный результат.
 - **Warp** — единственный HTTP-сервер. НЕ переключаться на actix/axum: warp уже async на tokio.
-- **reqwest** — единственный HTTP-клиент. НЕ писать свой. Не забывать прогонять билдер через `network::dpi::apply(...)`,
-  если запрос должен уметь идти через SOCKS-десинк.
+- **wreq** — единственный HTTP-клиент. НЕ писать свой и не тащить reqwest. Клиент собирать через `sc_fingerprint`
+  и прогонять билдер через `network::system_proxy::follow(...)`; для долгих соединений добавлять пинги
+  `network::fetch::pinging(...)`. Обхода DPI в клиенте нет, есть только диагностика в `network/netcheck`.
 - **tokio** — рантайм. НЕ использовать `std::thread` для I/O. Блокирующие операции — `tokio::spawn_blocking`.
   Долгоживущие фоновые потоки (audio output, audio-tick, FFT) — это допустимый случай для именованных
   `std::thread::Builder`.
