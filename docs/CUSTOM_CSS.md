@@ -64,7 +64,7 @@ Elements that get their look from inline styles also need `!important`.
 
 ## Your own images
 
-An image works in custom CSS in one form only: as a `data:` string right in the stylesheet. Links to websites are stripped, and paths to files on disk (`C:\...`, `file://`, `asset:`) are not loaded.
+An image works in custom CSS in two ways: as a file added in Settings (`sc-assets/...`), or as a `data:` string right in the stylesheet. Links to websites are stripped, and paths to files on disk (`C:\...`, `file://`, `asset:`) are not loaded.
 
 ### Window background without CSS
 
@@ -75,9 +75,32 @@ A plain background needs no CSS:
 3. Click the thumbnail to turn the background on. **None** turns it off.
 4. Adjust **Background blur**, **Background darkening** and **Edge darkening**.
 
-### An image in custom CSS
+### An image file in custom CSS
 
-Use this when the image belongs to one part of the window: the sidebar, the player, the cards.
+Use this when the image belongs to one part of the window: the sidebar, the player, the cards. Works the same on Windows, macOS and Linux.
+
+1. Open Settings > Appearance > Custom CSS > **Your images**.
+2. Click **Add image** and pick a file: PNG, JPG, WebP, GIF, SVG or AVIF, up to 10 MB. The app copies it into its own folder, the original stays where it was.
+3. Click the copy button next to the file and paste the result into your CSS. It looks like `url("sc-assets/bg.webp")`.
+4. The trash button deletes the file. A rule that points to a deleted file just shows nothing.
+
+An image in the sidebar:
+
+```css
+[data-ui="sidebar"] {
+  background-image: url("sc-assets/bg.webp") !important;
+  background-size: cover;
+  background-position: center;
+}
+```
+
+Write the path exactly as it is, `sc-assets/name`: the app turns it into a working address by itself. The file name is lowercase letters, digits, `-` and `_`; other characters are replaced with `-`. Adding a file with a taken name gives it a number: `bg-2.webp`.
+
+The files live only on this computer. If you share your CSS, the other person has no such files: they need to add their own images under the same names.
+
+### An image in custom CSS as text (data:)
+
+The alternative: the image sits inside the CSS itself, so it travels with the text. Good for small images.
 
 1. Prepare the file. WebP or JPEG up to 300 KB works best: the whole image is stored as text in the settings, and a large file slows the editor down.
 2. Convert the file to base64 and copy the result:
@@ -109,10 +132,11 @@ A background for the whole window through CSS. Turn the built-in background off 
 If the image does not show up:
 
 - the editor says some rules were blocked: a website link or a file path got into `url()`;
+- for `sc-assets/`: the name does not match the one in the list, or the file was deleted;
 - the type in `data:` does not match the file format;
 - the base64 string was pasted with line breaks or got cut off;
 - the element has its own inline style: add `!important`.
 
 ## What is blocked
 
-`@import` rules and `url()` links to the internet are removed before the CSS is applied, so a theme copied from someone else cannot load files from other sites or leak what you type. `data:` URIs still work, see [Your own images](#your-own-images).
+`@import` rules and `url()` links to the internet are removed before the CSS is applied, so a theme copied from someone else cannot load files from other sites or leak what you type. `data:` URIs and `sc-assets/` files still work, see [Your own images](#your-own-images).
