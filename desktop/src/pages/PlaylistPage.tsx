@@ -81,7 +81,6 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
     isFetchingNextPage,
     fetchNextPage,
   } = usePlaylistTracks(playlist ? urn : undefined);
-  const delivery = usePlaylistDelivery(urn, tracksSync);
   const updateTracks = useUpdatePlaylistTracks(urn);
   const removeTrack = useRemoveFromPlaylist(urn);
   const deletePlaylist = useDeletePlaylist();
@@ -115,6 +114,7 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
 
   const isLoading = playlistLoading || tracksLoading;
   const isOwner = !!playlist && !!myUrn && playlist.user.urn === myUrn;
+  const delivery = usePlaylistDelivery(urn, isOwner ? tracksSync : undefined);
   const isPinned = pinnedPlaylists.some((item) => item.urn === playlist?.urn);
 
   const serverTracks: Track[] = useMemo(() => {
@@ -444,7 +444,7 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
           onDelete={() => setShowDeleteConfirm(true)}
           canArrange={canArrange}
           onArrange={handleArrange}
-          delivery={isOwner ? delivery : null}
+          delivery={delivery}
         />
 
         <CrateLedger playlist={playlist} tracks={ownTracks} accentGlow={aura.accentGlow} />
