@@ -32,6 +32,8 @@ pub struct NetReport {
     pub volume: Option<VolumeProbe>,
     #[serde(default)]
     pub relay_volume: Vec<VolumeProbe>,
+    #[serde(default)]
+    pub pro_volume: Vec<VolumeProbe>,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -102,6 +104,7 @@ pub enum TargetId {
     Storage,
     Images,
     Relay,
+    Pro,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -298,6 +301,7 @@ impl TargetId {
             Self::Storage => "storage",
             Self::Images => "images",
             Self::Relay => "relay",
+            Self::Pro => "pro",
         }
     }
 }

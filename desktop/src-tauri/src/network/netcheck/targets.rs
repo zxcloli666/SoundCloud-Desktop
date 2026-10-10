@@ -24,6 +24,7 @@ const TARGET_CAP: Duration = Duration::from_secs(30);
 const CAP_MARGIN: Duration = Duration::from_secs(1);
 const EXTERNAL_TIMEOUT: Duration = Duration::from_secs(10);
 const RELAY_TARGETS: usize = 4;
+const PRO_TARGETS: usize = 2;
 const DOH_SAMPLE_HOST: &str = "api.scnative.space";
 const STATUS_VERDICT_URL: &str = "https://status.soundcloud-desktop.fun/api/verdict";
 const CORE: [(TargetId, &str); 4] = [
@@ -59,7 +60,15 @@ pub fn targets() -> Vec<Target> {
             host: format!("api.{node}.{}", edge::relay_zone()),
             node: Some(node),
         });
-    core.chain(relays).collect()
+    let pros = edge::pro_hosts()
+        .into_iter()
+        .take(PRO_TARGETS)
+        .map(|host| Target {
+            id: TargetId::Pro,
+            node: host.split('.').next().map(str::to_string),
+            host,
+        });
+    core.chain(relays).chain(pros).collect()
 }
 
 pub async fn check(target: &Target, app: Option<&wreq::Client>, trigger: Trigger) -> TargetCheck {
@@ -464,7 +473,11 @@ mod tests {
                 TargetId::Images
             ]
         );
-        assert!(list.len() <= 8);
+        assert!(list.len() <= 4 + super::RELAY_TARGETS + super::PRO_TARGETS);
+        let pro = list.last().unwrap();
+        assert_eq!(pro.id, TargetId::Pro);
+        assert_eq!(pro.node.as_deref(), Some("p1"));
+        assert_eq!(pro.host, "p1.pro.scnative.space");
         let relay = list
             .iter()
             .find(|target| target.id == TargetId::Relay)

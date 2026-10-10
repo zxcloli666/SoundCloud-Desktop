@@ -29,7 +29,7 @@ use self::model::{
 };
 use self::paths::{millis, now_ms};
 use crate::app::diagnostics;
-use crate::network::{edge, fetch, pro};
+use crate::network::{edge, fetch};
 use crate::rt::AppHandle;
 
 const EVENT: &str = "netcheck:update";
@@ -190,6 +190,7 @@ async fn run(trigger: Trigger, reason: Option<String>) -> NetReport {
         addrs: Vec::new(),
         volume: None,
         relay_volume: Vec::new(),
+        pro_volume: Vec::new(),
     };
     let checker = CHECKER.get();
     if let Some(checker) = checker {
@@ -265,8 +266,11 @@ async fn run(trigger: Trigger, reason: Option<String>) -> NetReport {
         report.volume.as_ref(),
     );
     report.hint = verdict::hint(report.verdict, report.env.as_ref(), &report.targets);
-    if verdict::nothing_carries(report.verdict, &report.relay_volume) && pro::reachable().await {
-        edge::escalate_all();
+    if verdict::nothing_carries(report.verdict, &report.relay_volume) {
+        report.pro_volume = volume::pros().await;
+        if report.pro_volume.iter().any(|volume| !volume.cut) {
+            edge::escalate_all();
+        }
     }
     report.recent = paths::recent(RECENT_EVENTS);
     report.edge = edge_snapshot();

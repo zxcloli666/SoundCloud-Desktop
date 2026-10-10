@@ -33,6 +33,7 @@ pub fn sample(at_ms: u64) -> NetReport {
         addrs: Vec::new(),
         volume: None,
         relay_volume: Vec::new(),
+        pro_volume: Vec::new(),
     }
 }
 

@@ -22,7 +22,7 @@ export type Hint = 'none' | 'zapret' | 'zapretTimestamps' | 'zapretCut';
 export type Remote = 'up' | 'down' | 'unknown';
 export type Internet = 'online' | 'offline' | 'unknown';
 export type Trigger = 'manual' | 'auto';
-export type TargetId = 'main' | 'star' | 'storage' | 'images' | 'relay';
+export type TargetId = 'main' | 'star' | 'storage' | 'images' | 'relay' | 'pro';
 export type Tone = 'ok' | 'warn' | 'fail' | 'skip' | 'pending';
 export type DnsState = 'sane' | 'garbage' | 'spoofed' | 'failed' | 'unchecked';
 export type Role = 'primary' | 'failover' | 'hedge';
@@ -181,6 +181,7 @@ export interface NetReport {
   addrs: string[];
   volume: VolumeProbe | null;
   relayVolume?: VolumeProbe[];
+  proVolume?: VolumeProbe[];
 }
 
 interface NetCheckUpdate {

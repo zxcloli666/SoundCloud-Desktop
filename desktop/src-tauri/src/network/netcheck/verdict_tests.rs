@@ -268,6 +268,17 @@ fn main_up_with_covers_failing_is_partial() {
 }
 
 #[test]
+fn a_pro_relay_that_does_not_answer_is_a_backup_route_down() {
+    let targets = vec![
+        healthy(TargetId::Main),
+        healthy(TargetId::Storage),
+        healthy(TargetId::Relay),
+        broken(TargetId::Pro, FailKind::Timeout, Phase::Tcp),
+    ];
+    assert_eq!(judge(&targets), Verdict::BackupDown);
+}
+
+#[test]
 fn only_backup_routes_failing_is_backup_down() {
     let targets = vec![
         healthy(TargetId::Main),

@@ -4,6 +4,7 @@ use super::model::VolumeProbe;
 use crate::network::dns;
 use crate::network::edge;
 use crate::network::health::link::{self, Shape};
+use crate::network::pro;
 
 const PROBE_URLS: [&str; 2] = [
     "https://storage.scnative.space/probe",
@@ -23,6 +24,26 @@ pub async fn relays() -> Vec<VolumeProbe> {
     for node in edge::relay_pool() {
         let url = format!("https://{node}.{}/probe", edge::relay_zone());
         measured.push(measure(&client, &url).await);
+    }
+    measured
+}
+
+pub async fn pros() -> Vec<VolumeProbe> {
+    let mut measured = Vec::new();
+    for host in edge::pro_hosts() {
+        let carried = pro::carries(&host).await;
+        let shape = if carried.ok {
+            Shape::Clear
+        } else {
+            Shape::Dead
+        };
+        measured.push(VolumeProbe {
+            host,
+            shape: shape.as_str().to_string(),
+            bytes: carried.bytes as u64,
+            ms: carried.ms,
+            cut: !carried.ok,
+        });
     }
     measured
 }

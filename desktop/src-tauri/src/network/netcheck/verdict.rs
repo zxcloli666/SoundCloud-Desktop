@@ -15,7 +15,7 @@ pub fn verdict(targets: &[TargetCheck], internet: Internet, remote: Remote) -> V
     }
     let working = targets
         .iter()
-        .all(|target| target.ok || target.id == TargetId::Relay);
+        .all(|target| target.ok || matches!(target.id, TargetId::Relay | TargetId::Pro));
     if working && targets.iter().any(answered_wrong) {
         return Verdict::Dns;
     }

@@ -652,7 +652,8 @@
       "star": "Star server",
       "storage": "Music storage",
       "images": "Covers",
-      "relay": "Backup route {{node}}"
+      "relay": "Backup route {{node}}",
+      "pro": "Pro relay {{node}}"
     },
     "col": {
       "dns": "DNS",
