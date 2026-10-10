@@ -665,9 +665,13 @@
       "dns": "DNS",
       "tcp": "TCP",
       "tls": "TLS",
-      "http": "HTTP"
+      "http": "HTTP",
+      "vol": "64K"
     },
     "detail": {
+      "volWhole": "дошло целиком, {{ms}} мс",
+      "volPieces": "дошло кусками, {{ms}} мс",
+      "volCut": "оборвалось на {{kb}} КБ",
       "ms": "{{ms}} мс",
       "skip": "не проверялось",
       "proxy": "через прокси",

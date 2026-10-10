@@ -153,6 +153,28 @@ function detail(t: TFunction, col: Column, tone: Tone, target: TargetCheck): str
   return phaseDetail(t, col, target.probe);
 }
 
+export function volumeTone(target: TargetCheck): Tone {
+  if (target.cells[0] === 'pending') return 'pending';
+  const volume = target.volume;
+  if (!volume) return 'skip';
+  if (volume.cut) return 'fail';
+  return volume.shape === 'clear' || volume.shape === 'slow' ? 'ok' : 'skip';
+}
+
+function volumeDetail(t: TFunction, tone: Tone, target: TargetCheck): string {
+  const volume = target.volume;
+  if (!volume || tone === 'skip') return t('netCheck.detail.skip');
+  if (tone === 'fail') return t('netCheck.detail.volCut', { kb: Math.floor(volume.bytes / 1024) });
+  const key = target.id === 'pro' ? 'netCheck.detail.volPieces' : 'netCheck.detail.volWhole';
+  return t(key, { ms: volume.ms });
+}
+
+export function volumeTitle(t: TFunction, target: TargetCheck): string {
+  const label = t('netCheck.col.vol');
+  const tone = volumeTone(target);
+  return tone === 'pending' ? label : `${label}: ${volumeDetail(t, tone, target)}`;
+}
+
 export function cellTitle(t: TFunction, col: Column, target: TargetCheck): string {
   const label = t(`netCheck.col.${col}`);
   const tone = target.cells[COLUMNS.indexOf(col)];

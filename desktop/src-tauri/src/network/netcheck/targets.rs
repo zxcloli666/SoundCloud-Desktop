@@ -148,6 +148,7 @@ async fn inspect(target: &Target, client: Option<&wreq::Client>, trigger: Trigge
         ok,
         cells: [Tone::Pending; 4],
         total_ms,
+        volume: None,
     };
     check.cells = verdict::cells(&check);
     check

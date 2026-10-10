@@ -32,8 +32,6 @@ pub fn text(report: &NetReport) -> String {
     }
     head.extend(report.targets.iter().map(target_line));
     head.extend(report.volume.as_ref().map(volume_line));
-    head.extend(report.relay_volume.iter().map(volume_line));
-    head.extend(report.pro_volume.iter().map(volume_line));
     head.push(edge_line(&report.edge));
     let mut recent: Vec<String> = report.recent.iter().map(event_line).collect();
     let mut text = assemble(&head, &recent);
@@ -298,6 +296,14 @@ fn target_parts(target: &TargetCheck, sep: &str) -> Vec<String> {
     }
     if let Some(app) = &target.app {
         parts.push(format!("app{sep}{}", app_outcome(app)));
+    }
+    if let Some(volume) = &target.volume {
+        let state = if volume.cut {
+            "cut"
+        } else {
+            volume.shape.as_str()
+        };
+        parts.push(format!("vol{sep}{state} {}KB", volume.bytes / 1024));
     }
     parts
 }

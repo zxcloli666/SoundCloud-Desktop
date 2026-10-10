@@ -1,16 +1,28 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { ArrowDownToLine, Globe, LinkIcon, Lock, TriangleAlert, X } from '../../lib/icons';
+import {
+  ArrowDownToLine,
+  Download,
+  Globe,
+  LinkIcon,
+  Lock,
+  TriangleAlert,
+  X,
+} from '../../lib/icons';
 import { type TargetCheck, type Tone, useNetCheckStore } from '../../lib/net/check';
-import { COLUMNS, type Column, cellTitle } from '../../lib/net/manual';
+import { COLUMNS, type Column, cellTitle, volumeTitle, volumeTone } from '../../lib/net/manual';
 import { Skeleton } from '../ui/Skeleton';
 
-const ICONS: Record<Column, typeof Globe> = {
+type Shown = Column | 'vol';
+
+const ICONS: Record<Shown, typeof Globe> = {
   dns: Globe,
   tcp: LinkIcon,
   tls: Lock,
   http: ArrowDownToLine,
+  vol: Download,
 };
+const SHOWN: readonly Shown[] = [...COLUMNS, 'vol'];
 
 const MARKS: Partial<Record<Tone, typeof Globe>> = {
   warn: TriangleAlert,
@@ -24,7 +36,7 @@ const TONES: Record<Exclude<Tone, 'pending'>, string> = {
   skip: 'text-white/15',
 };
 
-const Cell = React.memo(({ col, tone, title }: { col: Column; tone: Tone; title: string }) => {
+const Cell = React.memo(({ col, tone, title }: { col: Shown; tone: Tone; title: string }) => {
   const Icon = MARKS[tone] ?? ICONS[col];
   return (
     <span className="w-7 flex justify-center" title={title} role="img" aria-label={title}>
@@ -52,6 +64,7 @@ const TargetRow = React.memo(({ target }: { target: TargetCheck }) => {
         {COLUMNS.map((col, index) => (
           <Cell key={col} col={col} tone={target.cells[index]} title={cellTitle(t, col, target)} />
         ))}
+        <Cell col="vol" tone={volumeTone(target)} title={volumeTitle(t, target)} />
       </div>
       <span className="w-14 shrink-0 text-right font-mono text-[11px] tabular-nums text-white/40">
         {ms === null ? '—' : t('netCheck.detail.ms', { ms })}
@@ -69,7 +82,7 @@ export const HostRows = React.memo(() => {
       <div className="flex items-center gap-3 px-3.5 py-2">
         <span className="flex-1" />
         <div className="flex shrink-0">
-          {COLUMNS.map((col) => (
+          {SHOWN.map((col) => (
             <span
               key={col}
               className="w-7 text-center font-mono text-[9.5px] uppercase tracking-[0.12em] text-white/30"

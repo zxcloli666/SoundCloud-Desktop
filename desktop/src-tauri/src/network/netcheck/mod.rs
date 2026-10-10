@@ -199,7 +199,19 @@ async fn run(trigger: Trigger, reason: Option<String>) -> NetReport {
     let client = fetch::client();
     let collect = async {
         let mut checks = stream::iter(list.into_iter().enumerate())
-            .map(|(at, target)| async move { (at, targets::check(&target, client, trigger).await) })
+            .map(|(at, target)| async move {
+                let volume = async {
+                    if targets::direct_allowed(trigger) {
+                        volume::of(&target).await
+                    } else {
+                        None
+                    }
+                };
+                let (mut check, volume) =
+                    tokio::join!(targets::check(&target, client, trigger), volume);
+                check.volume = volume;
+                (at, check)
+            })
             .buffer_unordered(PARALLEL);
         while let Some((at, mut check)) = checks.next().await {
             scrub::target(&mut check);
@@ -218,25 +230,13 @@ async fn run(trigger: Trigger, reason: Option<String>) -> NetReport {
         }
     };
     let known = addrs::known(hosts);
-    let cut = async {
-        if targets::direct_allowed(trigger) {
-            volume::probe().await
-        } else {
-            None
-        }
-    };
-    let relay_cut = async {
-        if targets::direct_allowed(trigger) {
-            volume::relays().await
-        } else {
-            Vec::new()
-        }
-    };
-    let ((), doh, env, known, cut, relay_cut) =
-        tokio::join!(collect, providers, environment, known, cut, relay_cut);
+    let ((), doh, env, known) = tokio::join!(collect, providers, environment, known);
     report.doh = doh;
-    report.volume = cut;
-    report.relay_volume = relay_cut;
+    if targets::direct_allowed(trigger) {
+        report.volume = volume::direct(&report.targets).await;
+    }
+    report.relay_volume = volume::of_kind(&report.targets, TargetId::Relay);
+    report.pro_volume = volume::of_kind(&report.targets, TargetId::Pro);
     report.env = env.ok();
     report.addrs = addrs::ours(&report.targets, known);
     let online = targets::internet_seen(&report.targets, &report.doh);
@@ -266,11 +266,9 @@ async fn run(trigger: Trigger, reason: Option<String>) -> NetReport {
         report.volume.as_ref(),
     );
     report.hint = verdict::hint(report.verdict, report.env.as_ref(), &report.targets);
-    if verdict::nothing_carries(report.verdict, &report.relay_volume) {
-        report.pro_volume = volume::pros().await;
-        if report.pro_volume.iter().any(|volume| !volume.cut) {
-            edge::escalate_all();
-        }
+    let pro_carries = report.pro_volume.iter().any(|volume| !volume.cut);
+    if verdict::nothing_carries(report.verdict, &report.relay_volume) && pro_carries {
+        edge::escalate_all();
     }
     report.recent = paths::recent(RECENT_EVENTS);
     report.edge = edge_snapshot();

@@ -82,6 +82,7 @@ fn reset_target(id: TargetId, node: Option<&str>, host: &str) -> TargetCheck {
         ok: false,
         cells: [Tone::Ok, Tone::Ok, Tone::Fail, Tone::Skip],
         total_ms: None,
+        volume: None,
     }
 }
 

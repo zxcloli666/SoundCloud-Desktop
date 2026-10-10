@@ -89,6 +89,7 @@ export interface TargetCheck {
   ok: boolean;
   cells: [Tone, Tone, Tone, Tone];
   totalMs: number | null;
+  volume?: VolumeProbe | null;
 }
 
 export interface VolumeProbe {

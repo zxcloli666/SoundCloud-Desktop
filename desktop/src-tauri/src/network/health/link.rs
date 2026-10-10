@@ -1,5 +1,6 @@
 use std::time::{Duration, Instant};
 
+use base64::{Engine as _, engine::general_purpose::STANDARD as BASE64};
 use futures_util::StreamExt;
 use wreq::Client;
 use sha2::{Digest, Sha256};
@@ -26,6 +27,7 @@ const STALL: Duration = Duration::from_secs(6);
 const FLOOR_BPS: u64 = 384_000;
 const ATTRIBUTION_RATIO: u32 = 4;
 const DIGEST_HEADER: &str = "x-probe-sha256";
+const CARRIED: &str = "X-Target";
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Shape {
@@ -80,13 +82,23 @@ impl Measured {
 }
 
 pub async fn probe(client: &Client, url: &str, size: u64) -> Measured {
+    probe_through(client, url, size, None).await
+}
+
+pub async fn probe_through(
+    client: &Client,
+    url: &str,
+    size: u64,
+    carrier: Option<&str>,
+) -> Measured {
     let started = Instant::now();
-    let response = match client
-        .get(probe_url(url, size))
-        .timeout(DEADLINE + DEADLINE_SLACK)
-        .send()
-        .await
-    {
+    let request = match carrier {
+        Some(carrier) => client
+            .get(carrier)
+            .header(CARRIED, BASE64.encode(probe_url(url, size))),
+        None => client.get(probe_url(url, size)),
+    };
+    let response = match request.timeout(DEADLINE + DEADLINE_SLACK).send().await {
         Ok(response) if response.status().is_success() => response,
         Ok(_) => return failed(Shape::Dead, 0, started),
         Err(error) => {

@@ -659,9 +659,13 @@
       "dns": "DNS",
       "tcp": "TCP",
       "tls": "TLS",
-      "http": "HTTP"
+      "http": "HTTP",
+      "vol": "64K"
     },
     "detail": {
+      "volWhole": "arrived whole, {{ms}} ms",
+      "volPieces": "arrived in pieces, {{ms}} ms",
+      "volCut": "cut off at {{kb}} KB",
       "ms": "{{ms}} ms",
       "skip": "not checked",
       "proxy": "via proxy",

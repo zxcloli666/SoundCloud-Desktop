@@ -1,51 +1,67 @@
 use std::time::Duration;
 
-use super::model::VolumeProbe;
+use super::model::{TargetCheck, TargetId, VolumeProbe};
+use super::targets::Target;
 use crate::network::dns;
-use crate::network::edge;
 use crate::network::health::link::{self, Shape};
 use crate::network::pro;
 
-const PROBE_URLS: [&str; 2] = [
-    "https://storage.scnative.space/probe",
-    "https://health.scnative.space/probe",
-];
+const STORAGE_PROBE: &str = "https://storage.scnative.space/probe";
+const HEALTH_PROBE: &str = "https://health.scnative.space/probe";
 const CONNECT_TIMEOUT: Duration = Duration::from_secs(10);
 
-pub async fn probe() -> Option<VolumeProbe> {
-    first_served(&client()?, &PROBE_URLS).await
-}
-
-pub async fn relays() -> Vec<VolumeProbe> {
-    let Some(client) = client() else {
-        return Vec::new();
+pub async fn of(target: &Target) -> Option<VolumeProbe> {
+    if target.id == TargetId::Pro {
+        return Some(in_pieces(&target.host).await);
+    }
+    let client = client()?;
+    let host = &target.host;
+    let volume = match target.id {
+        TargetId::Images => {
+            let carrier = format!("https://{host}/");
+            measure_through(&client, STORAGE_PROBE, Some(&carrier)).await
+        }
+        _ => measure(&client, &format!("https://{host}/probe")).await,
     };
-    let mut measured = Vec::new();
-    for node in edge::relay_pool() {
-        let url = format!("https://{node}.{}/probe", edge::relay_zone());
-        measured.push(measure(&client, &url).await);
-    }
-    measured
+    Some(volume)
 }
 
-pub async fn pros() -> Vec<VolumeProbe> {
-    let mut measured = Vec::new();
-    for host in edge::pro_hosts() {
-        let carried = pro::carries(&host).await;
-        let shape = if carried.ok {
-            Shape::Clear
-        } else {
-            Shape::Dead
-        };
-        measured.push(VolumeProbe {
-            host,
-            shape: shape.as_str().to_string(),
-            bytes: carried.bytes as u64,
-            ms: carried.ms,
-            cut: !carried.ok,
-        });
+pub async fn direct(targets: &[TargetCheck]) -> Option<VolumeProbe> {
+    let storage = targets
+        .iter()
+        .find(|target| target.id == TargetId::Storage)
+        .and_then(|target| target.volume.clone());
+    match storage {
+        Some(volume) if volume.shape != Shape::Dead.as_str() => Some(volume),
+        storage => match client() {
+            Some(client) => first_served(&client, &[HEALTH_PROBE]).await,
+            None => storage,
+        },
     }
-    measured
+}
+
+pub fn of_kind(targets: &[TargetCheck], id: TargetId) -> Vec<VolumeProbe> {
+    targets
+        .iter()
+        .filter(|target| target.id == id)
+        .filter_map(|target| target.volume.clone())
+        .collect()
+}
+
+async fn in_pieces(host: &str) -> VolumeProbe {
+    let carried = pro::carries(host).await;
+    let shape = if carried.ok {
+        Shape::Clear
+    } else {
+        Shape::Dead
+    };
+    VolumeProbe {
+        host: host.to_string(),
+        shape: shape.as_str().to_string(),
+        bytes: carried.bytes as u64,
+        ms: carried.ms,
+        cut: !carried.ok,
+    }
 }
 
 fn client() -> Option<wreq::Client> {
@@ -70,12 +86,18 @@ async fn first_served(client: &wreq::Client, urls: &[&str]) -> Option<VolumeProb
 }
 
 async fn measure(client: &wreq::Client, url: &str) -> VolumeProbe {
-    let measured = link::probe(client, url, link::PROBE_BYTES).await;
+    measure_through(client, url, None).await
+}
+
+async fn measure_through(client: &wreq::Client, url: &str, carrier: Option<&str>) -> VolumeProbe {
+    let measured = link::probe_through(client, url, link::PROBE_BYTES, carrier).await;
     let bytes = u64::try_from(measured.link.bytes).unwrap_or_default();
     let cut = cut(measured.shape, bytes)
-        || (measured.connected && silent(measured.shape, bytes) && small_passes(client, url).await);
+        || (measured.connected
+            && silent(measured.shape, bytes)
+            && small_passes(client, url, carrier).await);
     VolumeProbe {
-        host: url::Url::parse(url)
+        host: url::Url::parse(carrier.unwrap_or(url))
             .ok()
             .and_then(|url| url.host_str().map(str::to_string))
             .unwrap_or_default(),
@@ -90,8 +112,8 @@ fn silent(shape: Shape, bytes: u64) -> bool {
     shape == Shape::Blackhole && bytes < link::CUT_FLOOR
 }
 
-async fn small_passes(client: &wreq::Client, url: &str) -> bool {
-    link::probe(client, url, link::SMALL_BYTES)
+async fn small_passes(client: &wreq::Client, url: &str, carrier: Option<&str>) -> bool {
+    link::probe_through(client, url, link::SMALL_BYTES, carrier)
         .await
         .shape
         .usable()

@@ -143,6 +143,8 @@ pub struct TargetCheck {
     pub ok: bool,
     pub cells: [Tone; 4],
     pub total_ms: Option<u32>,
+    #[serde(default)]
+    pub volume: Option<VolumeProbe>,
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
@@ -383,6 +385,7 @@ impl TargetCheck {
             ok: false,
             cells: [Tone::Pending; 4],
             total_ms: None,
+            volume: None,
         }
     }
 }
