@@ -77,6 +77,8 @@ A plain background needs no CSS:
 
 ### An image file in custom CSS
 
+> Arrives in the next update after 8.5.0. In 8.5.0 and older only the `data:` way below works.
+
 Use this when the image belongs to one part of the window: the sidebar, the player, the cards. Works the same on Windows, macOS and Linux.
 
 1. Open Settings > Appearance > Custom CSS > **Your images**.
