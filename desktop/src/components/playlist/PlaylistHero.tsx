@@ -2,7 +2,8 @@ import React from 'react';
 import {useTranslation} from 'react-i18next';
 import {dateFormatted, durLong} from '../../lib/formatters';
 import type {Playlist} from '../../lib/hooks';
-import {Calendar, Clock, Library} from '../../lib/icons';
+import {Calendar, Clock, Library, Loader2, RefreshCw} from '../../lib/icons';
+import type {PlaylistDelivery} from '../../lib/playlist-delivery';
 import {releaseKindOf} from '../../lib/playlist-kind';
 import type {ArrangeMode} from '../../lib/track-order';
 import type {Track} from '../../stores/player';
@@ -51,6 +52,7 @@ export const PlaylistHero = React.memo(function PlaylistHero({
                                                                  onEdit,
                                                                  onDelete,
                                                                  canArrange,
+                                                                 delivery,
                                                                  onArrange,
                                                              }: {
     playlist: Playlist;
@@ -66,6 +68,7 @@ export const PlaylistHero = React.memo(function PlaylistHero({
     onEdit: () => void;
     onDelete: () => void;
     canArrange: boolean;
+    delivery: PlaylistDelivery | null;
     onArrange: (mode: ArrangeMode) => void;
 }) {
     const {t} = useTranslation();
@@ -148,6 +151,14 @@ export const PlaylistHero = React.memo(function PlaylistHero({
                             </Meta>
                         )}
                         {playlist.label_name && <Meta>{playlist.label_name}</Meta>}
+                        {delivery === 'sending' && (
+                            <Meta icon={<Loader2 size={11} className="animate-spin"/>}>
+                                {t('playlist.sendingToSoundCloud')}
+                            </Meta>
+                        )}
+                        {delivery === 'blocked' && (
+                            <Meta icon={<RefreshCw size={11}/>}>{t('playlist.notSentToSoundCloud')}</Meta>
+                        )}
                     </div>
 
                     <div className="pt-1">

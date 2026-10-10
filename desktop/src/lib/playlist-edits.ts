@@ -3,38 +3,18 @@ import i18n from '../i18n';
 import { ApiError, api, isRefreshPending } from './api';
 
 const ANSWERED_STATUSES = [404, 409];
-const BASELINE_RETRIES = 3;
-const MAX_BASELINE_WAIT_SECONDS = 10;
 
 const ERROR_TEXT: Record<string, string> = {
-  playlist_awaiting_baseline: 'playlist.awaitingSync',
-  playlist_legacy_reconciliation_pending: 'playlist.awaitingSync',
   playlist_revision_conflict: 'playlist.changedElsewhere',
   playlist_track_not_in_catalog: 'playlist.trackNotSynced',
 };
 
-function isAwaitingBaseline(error: unknown): error is ApiError {
-  return error instanceof ApiError && error.code === 'playlist_awaiting_baseline';
-}
-
-function sleep(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-export async function editPlaylistTracks(playlistUrn: string, edit: object): Promise<unknown> {
-  for (let attempt = 0; ; attempt++) {
-    try {
-      return await api(`/playlists/${encodeURIComponent(playlistUrn)}/tracks`, {
-        method: 'POST',
-        body: JSON.stringify(edit),
-        silentStatuses: ANSWERED_STATUSES,
-      });
-    } catch (error) {
-      if (!isAwaitingBaseline(error) || attempt === BASELINE_RETRIES) throw error;
-      const seconds = Math.min(error.retryAfterSeconds ?? 5, MAX_BASELINE_WAIT_SECONDS);
-      await sleep(seconds * 1000);
-    }
-  }
+export function editPlaylistTracks(playlistUrn: string, edit: object): Promise<unknown> {
+  return api(`/playlists/${encodeURIComponent(playlistUrn)}/tracks`, {
+    method: 'POST',
+    body: JSON.stringify(edit),
+    silentStatuses: ANSWERED_STATUSES,
+  });
 }
 
 export interface PlaylistDetails {

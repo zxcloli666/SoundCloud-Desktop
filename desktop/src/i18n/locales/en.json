@@ -377,6 +377,8 @@
     "partialTracks_other": "{{shown}} of {{total}} tracks are available",
     "tracksUnavailable": "Couldn't load this playlist's tracks from SoundCloud",
     "awaitingSync": "This playlist is still syncing with SoundCloud, try again in a minute",
+    "sendingToSoundCloud": "Sending to SoundCloud",
+    "notSentToSoundCloud": "Not sent to SoundCloud, sign in again",
     "changedElsewhere": "The playlist changed elsewhere, reload it and try again",
     "trackNotSynced": "This track isn't synced yet, try again in a minute",
     "editFailed": "Couldn't change the playlist",

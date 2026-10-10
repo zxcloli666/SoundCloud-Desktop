@@ -311,6 +311,8 @@
     "partialTracks_other": "{{total}} parcadan {{shown}} tanesi kullanilabilir",
     "tracksUnavailable": "Calma listesinin parcalari SoundCloud'dan yuklenemedi",
     "awaitingSync": "Calma listesi hala SoundCloud ile esitleniyor, bir dakika sonra tekrar deneyin",
+    "sendingToSoundCloud": "SoundCloud'a gonderiliyor",
+    "notSentToSoundCloud": "SoundCloud'a gonderilmedi, yeniden giris yapin",
     "changedElsewhere": "Calma listesi baska bir yerde degisti, yenileyip tekrar deneyin",
     "trackNotSynced": "Bu parca henuz esitlenmedi, bir dakika sonra tekrar deneyin",
     "editFailed": "Calma listesi degistirilemedi",

@@ -65,6 +65,7 @@ type TrackPage = PagedResponse<Track>;
 export interface PlaylistSync extends CollectionSync {
   lastOperationSequence: number;
   projectionTrackCount: number;
+  pendingOperations?: number;
 }
 
 export interface Comment {

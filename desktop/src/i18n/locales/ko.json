@@ -372,6 +372,8 @@
     "partialTracks_other": "{{total}}곡 중 {{shown}}곡 재생 가능",
     "tracksUnavailable": "SoundCloud에서 이 재생 목록의 트랙을 불러오지 못했어요",
     "awaitingSync": "이 재생 목록은 아직 SoundCloud와 동기화 중이에요. 잠시 후 다시 시도해 주세요",
+    "sendingToSoundCloud": "SoundCloud로 보내는 중",
+    "notSentToSoundCloud": "SoundCloud로 보내지 못했어요. 다시 로그인해 주세요",
     "changedElsewhere": "다른 곳에서 재생 목록이 변경됐어요. 새로고침한 뒤 다시 시도해 주세요",
     "trackNotSynced": "아직 동기화되지 않은 트랙이에요. 잠시 후 다시 시도해 주세요",
     "editFailed": "재생 목록을 변경하지 못했어요",

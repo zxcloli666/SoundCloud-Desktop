@@ -27,6 +27,7 @@ import {
     useRemoveFromPlaylist,
     useUpdatePlaylistTracks,
 } from '../lib/hooks';
+import {usePlaylistDelivery} from '../lib/playlist-delivery';
 import {AlertCircle, Check, ChevronLeft, X} from '../lib/icons';
 import {usePerfMode} from '../lib/perf';
 import {rawPlaylistCover} from '../lib/playlist-cover';
@@ -80,6 +81,7 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
     isFetchingNextPage,
     fetchNextPage,
   } = usePlaylistTracks(playlist ? urn : undefined);
+  const delivery = usePlaylistDelivery(urn, tracksSync);
   const updateTracks = useUpdatePlaylistTracks(urn);
   const removeTrack = useRemoveFromPlaylist(urn);
   const deletePlaylist = useDeletePlaylist();
@@ -442,6 +444,7 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
           onDelete={() => setShowDeleteConfirm(true)}
           canArrange={canArrange}
           onArrange={handleArrange}
+          delivery={isOwner ? delivery : null}
         />
 
         <CrateLedger playlist={playlist} tracks={ownTracks} accentGlow={aura.accentGlow} />

@@ -382,6 +382,8 @@
     "partialTracks_many": "Доступно {{shown}} из {{total}} треков",
     "tracksUnavailable": "Не удалось загрузить треки плейлиста из SoundCloud",
     "awaitingSync": "Плейлист ещё синхронизируется с SoundCloud, попробуйте через минуту",
+    "sendingToSoundCloud": "Отправляется в SoundCloud",
+    "notSentToSoundCloud": "В SoundCloud не отправлено, войдите заново",
     "changedElsewhere": "Плейлист изменился в другом месте, обновите его и попробуйте снова",
     "trackNotSynced": "Трек ещё не синхронизирован, попробуйте через минуту",
     "editFailed": "Не удалось изменить плейлист",
