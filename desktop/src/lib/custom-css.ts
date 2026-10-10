@@ -1,3 +1,4 @@
+import { resolveCssAssets } from './css-assets';
 import { isMac } from './platform';
 
 const STYLE_ID = 'sc-custom-css';
@@ -38,7 +39,7 @@ export function sanitizeCustomCss(source: string): SanitizedCss {
 }
 
 export function effectiveCustomCss(state: { customCss: string; customCssEnabled: boolean }) {
-  return state.customCssEnabled ? sanitizeCustomCss(state.customCss).css : '';
+  return state.customCssEnabled ? resolveCssAssets(sanitizeCustomCss(state.customCss).css) : '';
 }
 
 export function applyCustomCss(css: string, doc: Document = document) {

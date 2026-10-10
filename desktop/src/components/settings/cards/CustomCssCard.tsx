@@ -6,6 +6,7 @@ import { customCssHotkeyLabel, sanitizeCustomCss } from '../../../lib/custom-css
 import { BookOpen, Braces } from '../../../lib/icons';
 import { useSettingsStore } from '../../../stores/settings';
 import { Card, Toggle } from '../primitives';
+import { CustomCssAssets } from './CustomCssAssets';
 import { CustomCssEditor } from './CustomCssEditor';
 
 const HOOKS = ['app', 'titlebar', 'sidebar', 'main', 'player', 'queue', 'lyrics', 'card', 'tray'];
@@ -133,6 +134,7 @@ export function CustomCssCard() {
             ))}
           </ChipRow>
         </div>
+        <CustomCssAssets />
         <div className="flex items-center justify-between gap-4 pt-1">
           <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11.5px] text-white/35 leading-snug">
             <span>{t('settings.customCssRescue')}</span>

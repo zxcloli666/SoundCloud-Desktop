@@ -17,6 +17,8 @@ fn content_type_for(filename: &str) -> &'static str {
         "image/webp"
     } else if filename.ends_with(".gif") {
         "image/gif"
+    } else if filename.ends_with(".avif") {
+        "image/avif"
     } else if filename.ends_with(".svg") {
         "image/svg+xml"
     } else if filename.ends_with(".jpg") || filename.ends_with(".jpeg") {
@@ -74,9 +76,15 @@ fn dir_route(
         })
 }
 
-pub async fn start(wallpapers_dir: PathBuf, local_covers_dir: PathBuf) -> u16 {
+pub async fn start(
+    wallpapers_dir: PathBuf,
+    local_covers_dir: PathBuf,
+    css_assets_dir: PathBuf,
+) -> u16 {
     let routes = dir_route("wallpapers", wallpapers_dir)
         .or(dir_route("local-covers", local_covers_dir))
+        .unify()
+        .or(dir_route("css-assets", css_assets_dir))
         .unify()
         .with(cors());
 

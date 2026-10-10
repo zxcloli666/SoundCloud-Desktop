@@ -89,6 +89,9 @@ pub fn run() {
             let local_covers_dir = local_library::covers_dir(&data_dir);
             std::fs::create_dir_all(&local_covers_dir).ok();
 
+            let css_assets_dir = data_dir.join("css-assets");
+            std::fs::create_dir_all(&css_assets_dir).ok();
+
             let images_dir = data_dir.join("images");
             std::fs::create_dir_all(&images_dir).ok();
 
@@ -124,6 +127,7 @@ pub fn run() {
             let (static_port, proxy_port) = rt.block_on(network::server::start_all(
                 wallpapers_dir,
                 local_covers_dir,
+                css_assets_dir,
             ));
             let rt_handle = rt.handle().clone();
             network::dns::init(rt_handle.clone());
