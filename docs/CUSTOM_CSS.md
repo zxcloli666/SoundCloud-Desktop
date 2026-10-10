@@ -64,7 +64,7 @@ Elements that get their look from inline styles also need `!important`.
 
 ## Your own images
 
-An image works in custom CSS in one form only: as a `data:` string right in the stylesheet. Links to websites are stripped, and paths to files on disk (`C:\\...`, `file://`, `asset:`) are not loaded.
+An image works in custom CSS in one form only: as a `data:` string right in the stylesheet. Links to websites are stripped, and paths to files on disk (`C:\...`, `file://`, `asset:`) are not loaded.
 
 ### Window background without CSS
 
