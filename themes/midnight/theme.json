@@ -1,0 +1,17 @@
+{
+  "$schema": "../theme.schema.json",
+  "id": "midnight",
+  "name": "Midnight",
+  "description": {
+    "en": "Deep blue with soft glass",
+    "ru": "Глубокий синий и мягкое стекло",
+    "tr": "Derin mavi ve yumuşak cam",
+    "ko": "깊은 파랑과 부드러운 유리"
+  },
+  "version": "1.0.0",
+  "author": { "name": "SoundCloud Desktop", "github": "zxcloli666" },
+  "license": "MIT",
+  "accent": "#7aa2ff",
+  "background": "#070a12",
+  "font": "onest"
+}

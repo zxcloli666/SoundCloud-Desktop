@@ -1,0 +1,114 @@
+name: Themes
+on:
+  pull_request:
+    paths: ['themes/**', 'desktop/src/lib/themes/**', '.github/workflows/themes.yml']
+  push:
+    branches: [main]
+    paths: ['themes/**', 'desktop/src/lib/themes/**', '.github/workflows/themes.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - name: Fetch themes-dist
+        run: |
+          code=0
+          git ls-remote --exit-code --heads origin themes-dist > /dev/null || code=$?
+          if [ "$code" = 2 ]; then
+            echo "no themes-dist yet"
+            exit 0
+          fi
+          if [ "$code" != 0 ]; then exit 1; fi
+          git fetch origin refs/heads/themes-dist:refs/remotes/origin/themes-dist
+      - run: node --experimental-strip-types --test 'themes/tools/*.test.mjs'
+      - run: node --experimental-strip-types themes/tools/check.mjs --previous origin/themes-dist --pr-author "$PR_AUTHOR"
+        env:
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+  preview:
+    if: github.event_name != 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 10
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: desktop/pnpm-lock.yaml
+      - name: Render previews
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          since=()
+          if [ -n "$BASE" ]; then since=(--since "$BASE"); fi
+          if [ "$(node --experimental-strip-types themes/tools/preview/render.mjs --count "${since[@]}")" = 0 ]; then
+            echo "no theme changed"
+            exit 0
+          fi
+          if ! (cd desktop && pnpm install --frozen-lockfile && pnpm exec vite build --outDir "$RUNNER_TEMP/app" --emptyOutDir); then
+            echo "::warning::the app did not build, no previews"
+            exit 0
+          fi
+          node --experimental-strip-types themes/tools/preview/render.mjs --dist "$RUNNER_TEMP/app" --out "$RUNNER_TEMP/previews" "${since[@]}" ||
+            echo "::warning::some previews did not render, see the log"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: theme-previews
+          path: ${{ runner.temp }}/previews
+          if-no-files-found: ignore
+  publish:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency:
+      group: themes-publish
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - name: Fetch themes-dist
+        run: |
+          code=0
+          git ls-remote --exit-code --heads origin themes-dist > /dev/null || code=$?
+          if [ "$code" = 2 ]; then
+            echo "no themes-dist yet"
+            exit 0
+          fi
+          if [ "$code" != 0 ]; then exit 1; fi
+          git fetch origin refs/heads/themes-dist:refs/remotes/origin/themes-dist
+      - id: build
+        run: |
+          set +e
+          node --experimental-strip-types themes/tools/build.mjs --rev "$GITHUB_SHA" --previous origin/themes-dist --out "$RUNNER_TEMP/dist"
+          echo "code=$?" >> "$GITHUB_OUTPUT"
+      - if: steps.build.outputs.code == '0' || steps.build.outputs.code == '3'
+        working-directory: ${{ runner.temp }}/dist
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          git init -q -b themes-dist
+          git add -A
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -q -m "themes ${GITHUB_SHA::7}"
+          git push -f "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" themes-dist
+      - if: steps.build.outputs.code != '0'
+        run: exit 1

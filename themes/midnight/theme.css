@@ -1,0 +1,60 @@
+[data-ui="app"] {
+  background-image:
+    url("assets/stars.svg"),
+    radial-gradient(90% 60% at 85% -10%, rgba(122, 162, 255, 0.12), transparent 70%),
+    radial-gradient(70% 50% at 0% 110%, rgba(88, 112, 230, 0.1), transparent 70%);
+  background-size:
+    240px 240px,
+    100% 100%,
+    100% 100%;
+}
+
+html[data-perf="light"] [data-ui="app"] {
+  background-image: none;
+}
+
+[data-ui="titlebar"] {
+  background: linear-gradient(180deg, rgba(122, 162, 255, 0.07), rgba(122, 162, 255, 0.015)) !important;
+  border-bottom-color: rgba(122, 162, 255, 0.12) !important;
+}
+
+[data-ui="sidebar"] {
+  background: linear-gradient(
+    180deg,
+    rgba(122, 162, 255, 0.08),
+    rgba(122, 162, 255, 0.02) 55%,
+    transparent
+  );
+  border-right-color: rgba(122, 162, 255, 0.12);
+}
+
+[data-ui="card"] {
+  border-color: var(--color-accent-glow) !important;
+}
+
+[data-ui="card"]:hover {
+  box-shadow:
+    0 18px 50px rgba(0, 0, 0, 0.4),
+    0 0 0 1px var(--color-accent-glow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+}
+
+html:not([data-perf="light"]):not([data-perf="medium"]) [data-ui="player"] {
+  --glass-blur-soft: 48px;
+}
+
+[data-ui="queue"] {
+  border-left-color: rgba(122, 162, 255, 0.12);
+}
+
+[data-ui="lyrics"] {
+  background-color: #070a12;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(122, 162, 255, 0.14);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(122, 162, 255, 0.26);
+}

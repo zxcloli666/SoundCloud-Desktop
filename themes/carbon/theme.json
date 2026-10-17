@@ -1,0 +1,17 @@
+{
+  "$schema": "../theme.schema.json",
+  "id": "carbon",
+  "name": "Carbon",
+  "description": {
+    "en": "Graphite, white accent, light blur",
+    "ru": "Графит, белый акцент и лёгкий блюр",
+    "tr": "Grafit, beyaz vurgu ve hafif bulanıklık",
+    "ko": "흰색 포인트와 가벼운 블러의 그래파이트"
+  },
+  "version": "1.0.0",
+  "author": { "name": "SoundCloud Desktop", "github": "zxcloli666" },
+  "license": "MIT",
+  "accent": "#f2f2f2",
+  "background": "#0c0c0c",
+  "font": "inter"
+}

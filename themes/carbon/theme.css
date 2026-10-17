@@ -1,0 +1,42 @@
+html:not([data-perf="light"]) {
+  --glass-blur: 10px;
+  --glass-blur-strong: 12px;
+  --glass-blur-soft: 10px;
+}
+
+[data-ui="titlebar"] {
+  background: #0c0c0c !important;
+  border-bottom: 1px solid #1d1d1d !important;
+}
+
+[data-ui="sidebar"] {
+  position: relative;
+  z-index: 1;
+  background: #101010;
+  border-right-color: #1d1d1d;
+}
+
+[data-ui="card"] {
+  background: #121212 !important;
+  border: 1px solid #1f1f1f !important;
+  border-radius: 12px;
+  box-shadow: none !important;
+}
+
+[data-ui="card"]:hover {
+  border-color: #2e2e2e !important;
+}
+
+[data-ui="queue"] {
+  background: #101010;
+  border-left-color: #1d1d1d;
+}
+
+[data-ui="lyrics"] {
+  background-color: #0c0c0c;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2a2a2a;
+  border-radius: 2px;
+}

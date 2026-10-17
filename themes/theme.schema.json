@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/zxcloli666/SoundCloud-Desktop/main/themes/theme.schema.json",
+  "title": "SoundCloud Desktop theme",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "name", "description", "version", "author", "license"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]{1,30}[a-z0-9]$",
+      "not": { "enum": ["tools"] }
+    },
+    "name": { "$ref": "#/$defs/name" },
+    "description": {
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "maxProperties": 4,
+      "properties": {
+        "en": { "$ref": "#/$defs/description" },
+        "ru": { "$ref": "#/$defs/description" },
+        "tr": { "$ref": "#/$defs/description" },
+        "ko": { "$ref": "#/$defs/description" }
+      }
+    },
+    "version": { "$ref": "#/$defs/version" },
+    "author": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name"],
+      "properties": {
+        "name": { "$ref": "#/$defs/authorName" },
+        "github": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?$"
+        }
+      }
+    },
+    "license": { "enum": ["MIT", "Apache-2.0", "CC0-1.0", "CC-BY-4.0", "CC-BY-SA-4.0"] },
+    "minApp": { "$ref": "#/$defs/version" },
+    "accent": { "$ref": "#/$defs/color" },
+    "background": { "$ref": "#/$defs/color" },
+    "font": {
+      "enum": [
+        "inter",
+        "manrope",
+        "onest",
+        "golos",
+        "montserrat",
+        "rubik",
+        "nunito",
+        "raleway",
+        "comfortaa",
+        "system"
+      ]
+    }
+  },
+  "$defs": {
+    "name": { "type": "string", "minLength": 1, "maxLength": 32, "pattern": "^\\S(?:.*\\S)?$" },
+    "description": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 140,
+      "pattern": "^\\S(?:.*\\S)?$"
+    },
+    "authorName": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 40,
+      "pattern": "^\\S(?:.*\\S)?$"
+    },
+    "version": { "type": "string", "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)$" },
+    "color": { "type": "string", "pattern": "^#[0-9a-f]{6}$" }
+  }
+}

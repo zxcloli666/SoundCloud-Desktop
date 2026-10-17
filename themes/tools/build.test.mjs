@@ -1,0 +1,248 @@
+import assert from 'node:assert/strict';
+import { execFileSync, spawnSync } from 'node:child_process';
+import {
+  appendFileSync,
+  cpSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  writeFileSync,
+} from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { test } from 'node:test';
+import { GIT_REV, SHA256 } from '../../desktop/src/lib/themes/rules.ts';
+
+const tools = import.meta.dirname;
+const goodTheme = join(tools, 'fixtures', 'good-theme');
+const ENTRY_KEYS = [
+  'id',
+  'rev',
+  'name',
+  'description',
+  'version',
+  'author',
+  'license',
+  'accent',
+  'background',
+  'font',
+  'updated',
+  'hash',
+  'size',
+  'preview',
+  'css',
+  'assets',
+];
+const ISO_TIME = /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$/;
+
+function createRepo() {
+  const dir = mkdtempSync(join(tmpdir(), 'themes-repo-'));
+  const env = {
+    ...process.env,
+    GIT_AUTHOR_NAME: 'test',
+    GIT_AUTHOR_EMAIL: 'test@example.com',
+    GIT_COMMITTER_NAME: 'test',
+    GIT_COMMITTER_EMAIL: 'test@example.com',
+  };
+  const git = (args, input) =>
+    execFileSync('git', ['-c', 'commit.gpgsign=false', '-c', 'core.hooksPath=/dev/null', ...args], {
+      cwd: dir,
+      env,
+      input,
+      encoding: 'utf8',
+    }).trim();
+  git(['init', '-q', '-b', 'main']);
+  const commit = (message) => {
+    git(['add', '-A']);
+    git(['commit', '-q', '-m', message]);
+    return git(['rev-parse', 'HEAD']);
+  };
+  const addTheme = (id) => {
+    const target = join(dir, 'themes', id);
+    cpSync(goodTheme, target, { recursive: true });
+    const meta = JSON.parse(readFileSync(join(target, 'theme.json'), 'utf8'));
+    writeFileSync(join(target, 'theme.json'), JSON.stringify({ ...meta, id }, null, 2));
+  };
+  const publish = (out) => {
+    const blob = git(['hash-object', '-w', join(out, 'v1', 'index.json')]);
+    const v1 = git(['mktree'], `100644 blob ${blob}\tindex.json\n`);
+    const top = git(['mktree'], `040000 tree ${v1}\tv1\n`);
+    const dist = git(['commit-tree', top, '-m', 'dist']);
+    git(['update-ref', 'refs/heads/themes-dist', dist]);
+  };
+  const time = (rev) =>
+    new Date(Number(git(['log', '-1', '--format=%ct', rev])) * 1000)
+      .toISOString()
+      .replace('.000Z', 'Z');
+  return { dir, git, commit, addTheme, publish, time };
+}
+
+function build(repo, rev, previous) {
+  const out = mkdtempSync(join(tmpdir(), 'themes-out-'));
+  const args = ['--experimental-strip-types', join(tools, 'build.mjs'), '--rev', rev, '--out', out];
+  if (previous) args.push('--previous', previous);
+  const result = spawnSync(process.execPath, args, {
+    cwd: repo.dir,
+    encoding: 'utf8',
+    env: { ...process.env, GITHUB_STEP_SUMMARY: '' },
+  });
+  const file = join(out, 'v1', 'index.json');
+  const text = existsSync(file) ? readFileSync(file, 'utf8') : null;
+  return {
+    status: result.status,
+    out,
+    text,
+    index: text && JSON.parse(text),
+    log: result.stdout + result.stderr,
+  };
+}
+
+const byId = (index) => Object.fromEntries(index.themes.map((theme) => [theme.id, theme]));
+
+test('build publishes per theme revs, keeps previous entries of broken themes and applies revoked', () => {
+  const repo = createRepo();
+  repo.addTheme('alpha');
+  repo.addTheme('beta');
+  writeFileSync(join(repo.dir, 'themes', 'revoked.json'), '[]\n');
+  const first = repo.commit('add themes');
+  appendFileSync(
+    join(repo.dir, 'themes', 'beta', 'theme.css'),
+    '\n[data-ui="card"] { opacity: 0.9; }\n',
+  );
+  writeFileSync(
+    join(repo.dir, 'themes', 'beta', 'theme.json'),
+    readFileSync(join(repo.dir, 'themes', 'beta', 'theme.json'), 'utf8').replace('1.0.0', '1.1.0'),
+  );
+  const second = repo.commit('change beta');
+
+  const clean = build(repo, second);
+  assert.equal(clean.status, 0, clean.log);
+  assert.ok(!clean.text.includes('\n'));
+  assert.deepEqual(Object.keys(clean.index), ['schema', 'generated', 'rev', 'themes', 'revoked']);
+  assert.equal(clean.index.schema, 1);
+  assert.equal(clean.index.rev, second);
+  assert.equal(clean.index.generated, repo.time(second));
+  assert.deepEqual(clean.index.revoked, []);
+  assert.deepEqual(
+    clean.index.themes.map((theme) => theme.id),
+    ['alpha', 'beta'],
+  );
+  const { alpha, beta } = byId(clean.index);
+  assert.deepEqual(Object.keys(alpha), ENTRY_KEYS);
+  assert.equal(alpha.rev, first);
+  assert.equal(beta.rev, second);
+  assert.equal(alpha.updated, repo.time(first));
+  assert.match(alpha.updated, ISO_TIME);
+  assert.match(alpha.rev, GIT_REV);
+  assert.match(alpha.hash, SHA256);
+  assert.notEqual(alpha.hash, beta.hash);
+  assert.equal(beta.version, '1.1.0');
+  assert.deepEqual(Object.keys(alpha.preview), ['path', 'sha256', 'size', 'width', 'height']);
+  assert.deepEqual(Object.keys(alpha.css), ['path', 'sha256', 'size']);
+  assert.equal(
+    readFileSync(join(clean.out, 'README.md'), 'utf8'),
+    'Generated by .github/workflows/themes.yml from main, do not edit.\n',
+  );
+  repo.publish(clean.out);
+
+  writeFileSync(
+    join(repo.dir, 'themes', 'alpha', 'theme.css'),
+    '@import "https://x.test/a.css";\n',
+  );
+  const third = repo.commit('break alpha');
+  const broken = build(repo, third, 'themes-dist');
+  assert.equal(broken.status, 3, broken.log);
+  assert.deepEqual(byId(broken.index).alpha, alpha);
+  assert.deepEqual(byId(broken.index).beta, beta);
+  assert.equal(broken.index.rev, third);
+
+  const revoked = [{ id: 'beta', hash: beta.hash, reason: 'test' }];
+  writeFileSync(join(repo.dir, 'themes', 'revoked.json'), JSON.stringify(revoked));
+  const fourth = repo.commit('revoke beta');
+  const withRevoked = build(repo, fourth, 'themes-dist');
+  assert.equal(withRevoked.status, 3, withRevoked.log);
+  assert.deepEqual(
+    withRevoked.index.themes.map((theme) => theme.id),
+    ['alpha'],
+  );
+  assert.deepEqual(byId(withRevoked.index).alpha, alpha);
+  assert.deepEqual(withRevoked.index.revoked, [{ id: 'beta', hash: beta.hash }]);
+
+  revoked.push({ id: 'alpha', hash: alpha.hash, reason: 'test' });
+  writeFileSync(join(repo.dir, 'themes', 'revoked.json'), JSON.stringify(revoked));
+  const fifth = repo.commit('revoke alpha');
+  const allRevoked = build(repo, fifth, 'themes-dist');
+  assert.equal(allRevoked.status, 3, allRevoked.log);
+  assert.deepEqual(allRevoked.index.themes, []);
+  assert.equal(allRevoked.index.revoked.length, 2);
+});
+
+test('the entry rev follows the commit that touched the theme across a merge', () => {
+  const repo = createRepo();
+  repo.addTheme('alpha');
+  repo.addTheme('beta');
+  writeFileSync(join(repo.dir, 'themes', 'revoked.json'), '[]\n');
+  repo.commit('add themes');
+  repo.git(['checkout', '-q', '-b', 'side']);
+  appendFileSync(
+    join(repo.dir, 'themes', 'alpha', 'theme.css'),
+    '\n[data-ui="queue"] { opacity: 1; }\n',
+  );
+  const side = repo.commit('alpha on a branch');
+  repo.git(['checkout', '-q', 'main']);
+  appendFileSync(
+    join(repo.dir, 'themes', 'beta', 'theme.css'),
+    '\n[data-ui="tray"] { opacity: 1; }\n',
+  );
+  const onMain = repo.commit('beta on main');
+  repo.git(['merge', '-q', '--no-ff', '-m', 'merge side', 'side']);
+  const merge = repo.git(['rev-parse', 'HEAD']);
+
+  const result = build(repo, merge);
+  assert.equal(result.status, 0, result.log);
+  assert.equal(result.index.rev, merge);
+  assert.equal(byId(result.index).alpha.rev, side);
+  assert.equal(byId(result.index).beta.rev, onMain);
+});
+
+test('a bad revoked.json stops the build before anything is written', () => {
+  const repo = createRepo();
+  repo.addTheme('alpha');
+  writeFileSync(join(repo.dir, 'themes', 'revoked.json'), '[{"id":"alpha"}]');
+  const rev = repo.commit('bad revoked');
+  const result = build(repo, rev);
+  assert.equal(result.status, 1, result.log);
+  assert.equal(result.text, null);
+  assert.ok(!existsSync(join(result.out, 'README.md')));
+});
+
+test('a missing previous ref is fine, a broken previous index stops the build', () => {
+  const repo = createRepo();
+  repo.addTheme('alpha');
+  writeFileSync(join(repo.dir, 'themes', 'revoked.json'), '[]\n');
+  const rev = repo.commit('add alpha');
+  assert.equal(build(repo, rev, 'themes-dist').status, 0);
+
+  for (const body of ['{"schema":1,"themes":', '{"schema":1}']) {
+    const out = mkdtempSync(join(tmpdir(), 'themes-dist-'));
+    mkdirSync(join(out, 'v1'));
+    writeFileSync(join(out, 'v1', 'index.json'), body);
+    repo.publish(out);
+    const result = build(repo, rev, 'themes-dist');
+    assert.equal(result.status, 1, result.log);
+    assert.equal(result.text, null);
+    assert.match(result.log, /previous index/);
+  }
+
+  const blob = repo.git(['hash-object', '-w', '--stdin'], 'x\n');
+  const tree = repo.git(['mktree'], `100644 blob ${blob}\tREADME.md\n`);
+  repo.git([
+    'update-ref',
+    'refs/heads/themes-dist',
+    repo.git(['commit-tree', tree, '-m', 'empty']),
+  ]);
+  const result = build(repo, rev, 'themes-dist');
+  assert.equal(result.status, 1, result.log);
+  assert.match(result.log, /has no v1\/index\.json/);
+});

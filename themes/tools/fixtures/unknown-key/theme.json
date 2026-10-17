@@ -1,0 +1,19 @@
+{
+  "$schema": "../../../theme.schema.json",
+  "id": "unknown-key",
+  "name": "Good Theme",
+  "description": {
+    "en": "A test theme",
+    "ru": "Тестовая тема"
+  },
+  "version": "1.0.0",
+  "author": {
+    "name": "Tester",
+    "github": "tester"
+  },
+  "license": "MIT",
+  "accent": "#7aa2ff",
+  "background": "#070a12",
+  "font": "onest",
+  "homepage": "https://example.com"
+}
