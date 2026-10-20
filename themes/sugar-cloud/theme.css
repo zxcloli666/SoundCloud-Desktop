@@ -1,0 +1,247 @@
+:root {
+  --color-accent-contrast: #3a0b2c !important;
+}
+
+[data-ui="app"] {
+  background: #120c26 url("assets/sky.webp") right bottom / cover no-repeat;
+}
+
+[data-ui="app"]::before,
+[data-ui="app"]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-size: cover;
+  background-position: right bottom;
+  background-repeat: no-repeat;
+}
+
+[data-ui="app"]::before {
+  background-image: url("assets/twinkle-a.svg");
+}
+
+[data-ui="app"]::after {
+  background-image: url("assets/twinkle-b.svg");
+}
+
+html:not([data-perf="light"]):not([data-perf="medium"]) [data-ui="app"]::before,
+html:not([data-perf="light"]):not([data-perf="medium"]) [data-ui="app"]::after {
+  will-change: opacity;
+  animation: sc-twinkle 4.4s ease-in-out infinite alternate;
+}
+
+html:not([data-perf="light"]):not([data-perf="medium"]) [data-ui="app"]::after {
+  animation-delay: -2.2s;
+}
+
+@keyframes sc-twinkle {
+  from {
+    opacity: 0.5;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+[data-ui="main"] {
+  background:
+    url("assets/star-blue.svg") right -4px top 56px / 33px 33px no-repeat,
+    url("assets/heart-pink.svg") right -5px top 316px / 35px 35px no-repeat,
+    url("assets/glint.svg") left -6px top 170px / 34px 34px no-repeat,
+    url("assets/heart-milk.svg") left 1px bottom 144px / 29px 29px no-repeat,
+    linear-gradient(90deg, rgba(14, 8, 28, 0.72), rgba(14, 8, 28, 0.5) 150px, transparent 320px) left top / 320px 100% no-repeat,
+    linear-gradient(0deg, transparent 0, transparent 96px, rgba(10, 6, 20, 0.76) 156px, rgba(10, 6, 20, 0.66) 400px, transparent 600px);
+}
+
+[data-ui="titlebar"] {
+  background:
+    linear-gradient(
+        90deg,
+        rgba(255, 160, 210, 0.05),
+        rgba(255, 160, 210, 0.42) 22%,
+        rgba(196, 168, 255, 0.34) 52%,
+        rgba(150, 196, 255, 0.4) 80%,
+        rgba(150, 196, 255, 0.05)
+      )
+      left bottom / 100% 1px no-repeat,
+    linear-gradient(180deg, rgba(40, 18, 58, 0.8), rgba(26, 12, 40, 0.62)) !important;
+  border-bottom-color: transparent !important;
+}
+
+[data-ui="search"] {
+  border-radius: 999px;
+  box-shadow: 0 6px 24px -10px rgba(255, 126, 182, 0.55);
+}
+
+[data-ui="search"]::before {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  padding: 1px;
+  border-radius: 999px;
+  pointer-events: none;
+  background: linear-gradient(90deg, rgba(255, 170, 215, 0.6), rgba(205, 180, 255, 0.45) 50%, rgba(160, 205, 255, 0.6));
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+[data-ui="sidebar"] {
+  position: relative;
+  z-index: 1;
+  background:
+    linear-gradient(
+        180deg,
+        rgba(150, 196, 255, 0.3),
+        rgba(196, 168, 255, 0.2) 40%,
+        rgba(255, 160, 210, 0.36) 85%,
+        rgba(255, 160, 210, 0.1)
+      )
+      right top / 1px 100% no-repeat,
+    linear-gradient(180deg, rgba(42, 16, 58, 0.5), rgba(36, 14, 52, 0.5) 44%, rgba(30, 11, 44, 0.76) 66%, rgba(28, 10, 42, 0.8));
+  border-right-color: transparent;
+}
+
+[data-ui="nav-item"]:not([aria-current="page"]):not(:hover) {
+  color: rgba(255, 255, 255, 0.62);
+}
+
+[data-ui="nav-item"]:not([aria-current="page"]):hover {
+  background: linear-gradient(90deg, rgba(255, 150, 205, 0.12), rgba(255, 150, 205, 0.03));
+}
+
+[data-ui="nav-item"][aria-current="page"] {
+  background:
+    linear-gradient(90deg, rgba(255, 133, 194, 0.28), rgba(255, 133, 194, 0.08) 80%),
+    rgba(255, 255, 255, 0.04) !important;
+  box-shadow:
+    inset 0 0.5px 0 rgba(255, 255, 255, 0.2),
+    0 0 22px -6px rgba(255, 133, 194, 0.6) !important;
+}
+
+[data-ui="nav-item"][aria-current="page"]::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  width: clamp(0px, calc((100% - 120px) * 100), 14px);
+  height: 14px;
+  margin-top: -7px;
+  pointer-events: none;
+  background: url("assets/sparkle.svg") center / 14px 14px no-repeat;
+}
+
+[data-ui="card"] {
+  border-color: transparent !important;
+  background:
+    linear-gradient(165deg, rgba(62, 26, 82, 0.8), rgba(30, 13, 44, 0.84) 60%, rgba(40, 17, 58, 0.82)) padding-box,
+    linear-gradient(125deg, rgba(255, 160, 210, 0.42), rgba(196, 168, 255, 0.18) 45%, rgba(150, 196, 255, 0.34)) border-box !important;
+}
+
+[data-ui="card"]:hover {
+  box-shadow:
+    0 18px 50px rgba(10, 2, 20, 0.45),
+    0 0 26px -8px rgba(255, 133, 194, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07) !important;
+}
+
+:has(> [data-ui="modal"]) {
+  border-radius: 1.75rem;
+}
+
+[data-ui="modal"] {
+  border-color: transparent !important;
+  background: linear-gradient(168deg, rgba(46, 20, 62, 0.97), rgba(20, 9, 30, 0.99)) !important;
+}
+
+[data-ui="track-row"]:hover {
+  background: linear-gradient(90deg, rgba(255, 133, 194, 0.1), rgba(150, 190, 255, 0.05));
+}
+
+[data-ui="player"] {
+  background:
+    url("assets/star-pink.svg") right calc(max(32px, 50% - 564px) - 31px) bottom 35px / 27px 27px no-repeat,
+    url("assets/puffs-l.webp") left calc(max(32px, 50% - 564px) - 34px) bottom 0 / 160px 80px no-repeat,
+    url("assets/puffs-r.webp") right calc(max(32px, 50% - 564px) - 34px) bottom 0 / 160px 80px no-repeat;
+}
+
+[data-ui="player"]::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 15px;
+  width: min(1128px, calc(100% - 64px));
+  height: calc(100% - 26px);
+  transform: translateX(-50%);
+  border-radius: 28px;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(48, 19, 64, 0.78), rgba(34, 13, 50, 0.84));
+}
+
+[data-ui="player"]::after {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  top: -11px;
+  left: max(32px, 50% - 564px);
+  right: calc(max(32px, 50% - 564px) - 30px);
+  height: 49px;
+  pointer-events: none;
+  background:
+    url("assets/bow.svg") right top / 60px 49px no-repeat,
+    linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 170, 215, 0.62) 18%,
+        rgba(210, 185, 255, 0.5) 50%,
+        rgba(160, 205, 255, 0.6) 82%,
+        transparent
+      )
+      left 28px top 22px / calc(100% - 86px) 1px no-repeat;
+}
+
+html:not([data-perf="light"]):not([data-perf="medium"]) [data-ui="player"] {
+  --glass-blur-soft: 44px;
+}
+
+[data-ui="tray"]::before {
+  content: "";
+  position: absolute;
+  inset: 14px;
+  border-radius: 24px;
+  pointer-events: none;
+  opacity: var(--tp-card-fade, 1);
+  background: linear-gradient(160deg, rgba(62, 24, 80, 0.9), rgba(32, 12, 46, 0.94));
+  box-shadow: inset 0 1px 0 rgba(255, 190, 225, 0.22);
+}
+
+[data-ui="queue"] {
+  border-left-color: rgba(255, 170, 215, 0.12) !important;
+}
+
+[data-ui="lyrics"] {
+  background-color: #160c22;
+}
+
+::selection {
+  background: rgba(255, 133, 194, 0.32);
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(255, 170, 215, 0.24), rgba(170, 190, 255, 0.22));
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(255, 133, 194, 0.55), rgba(170, 190, 255, 0.45));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-ui="app"]::before,
+  [data-ui="app"]::after {
+    animation: none !important;
+  }
+}

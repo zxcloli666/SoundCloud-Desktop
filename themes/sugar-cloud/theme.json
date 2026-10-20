@@ -1,0 +1,17 @@
+{
+  "$schema": "../theme.schema.json",
+  "id": "sugar-cloud",
+  "name": "Sugar Cloud",
+  "description": {
+    "en": "Cotton candy clouds at dusk, twinkling stars, sticker hearts and a little bow under berry glass",
+    "ru": "Облака из сахарной ваты на закате, мерцающие звёзды, сердечки-стикеры и бантик под ягодным стеклом",
+    "tr": "Gün batımında pamuk şeker bulutlar, parıldayan yıldızlar, kalp çıkartmalar ve minik bir fiyonk",
+    "ko": "노을 속 솜사탕 구름, 반짝이는 별, 하트 스티커와 작은 리본, 베리빛 유리"
+  },
+  "version": "1.0.0",
+  "author": { "name": "SoundCloud Desktop", "github": "zxcloli666" },
+  "license": "MIT",
+  "accent": "#ff85c2",
+  "background": "#160c22",
+  "font": "nunito"
+}
