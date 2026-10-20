@@ -1,0 +1,141 @@
+[data-ui="app"] {
+  background-color: #07060b;
+  background-image:
+    url("assets/ridges.svg"),
+    url("assets/stars.svg"),
+    radial-gradient(55% 45% at 88% -12%, rgba(124, 77, 255, 0.12), transparent 70%),
+    radial-gradient(40% 35% at 8% 18%, rgba(124, 77, 255, 0.05), transparent 70%),
+    linear-gradient(180deg, #07060b 0%, #08070d 35%, #100b1e 62%);
+  background-size:
+    auto 58%,
+    420px 420px,
+    100% 100%,
+    100% 100%,
+    100% 100%;
+  background-position:
+    center bottom,
+    0 0,
+    0 0,
+    0 0,
+    0 0;
+  background-repeat:
+    repeat-x,
+    repeat,
+    no-repeat,
+    no-repeat,
+    no-repeat;
+}
+
+[data-ui="app"]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(32% 6% at 50% 63.75%, rgba(255, 106, 26, 0.24), transparent 70%),
+    radial-gradient(75% 30% at 50% 100%, rgba(124, 77, 255, 0.26), transparent 75%);
+}
+
+html:not([data-perf="light"]):not([data-perf="medium"]) [data-ui="app"]::before {
+  will-change: opacity;
+  animation: nf-horizon 9s ease-in-out infinite alternate;
+}
+
+@keyframes nf-horizon {
+  from {
+    opacity: 0.6;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+[data-ui="titlebar"] {
+  background: linear-gradient(180deg, rgba(22, 15, 40, 0.74), rgba(11, 9, 20, 0.5)) !important;
+  border-bottom-color: rgba(169, 139, 255, 0.12) !important;
+}
+
+[data-ui="sidebar"] {
+  position: relative;
+  z-index: 1;
+  background: linear-gradient(
+    180deg,
+    rgba(124, 77, 255, 0.07),
+    rgba(12, 10, 18, 0.25) 50%,
+    rgba(7, 6, 11, 0.5)
+  );
+  border-right-color: rgba(169, 139, 255, 0.09);
+}
+
+[data-ui="nav-item"][aria-current="page"] {
+  background:
+    linear-gradient(90deg, rgba(255, 85, 0, 0.2), rgba(124, 77, 255, 0.1) 75%, rgba(124, 77, 255, 0.04)),
+    rgba(255, 255, 255, 0.03) !important;
+  box-shadow:
+    inset 0 0.5px 0 rgba(255, 255, 255, 0.14),
+    0 0 22px -6px rgba(255, 85, 0, 0.45) !important;
+}
+
+[data-ui="card"],
+[data-ui="modal"] {
+  border-color: rgba(169, 139, 255, 0.13) !important;
+}
+
+[data-ui="card"] {
+  background: linear-gradient(165deg, rgba(40, 28, 72, 0.6), rgba(17, 13, 30, 0.68) 58%, rgba(22, 15, 38, 0.66)) !important;
+}
+
+[data-ui="card"]:hover {
+  box-shadow:
+    0 18px 50px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(255, 85, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+}
+
+[data-ui="modal"] {
+  background: linear-gradient(168deg, rgba(26, 20, 40, 0.97), rgba(10, 8, 15, 0.99)) !important;
+}
+
+[data-ui="track-row"]:hover {
+  background: linear-gradient(90deg, rgba(124, 77, 255, 0.1), rgba(255, 85, 0, 0.04));
+}
+
+[data-ui="player"]::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 6px;
+  width: min(86%, 980px);
+  height: 130px;
+  transform: translateX(-50%);
+  pointer-events: none;
+  background:
+    radial-gradient(50% 60% at 50% 55%, rgba(124, 77, 255, 0.3), transparent 72%),
+    radial-gradient(58% 50% at 50% 62%, rgba(9, 7, 16, 0.75), transparent 80%);
+}
+
+html:not([data-perf="light"]):not([data-perf="medium"]) [data-ui="player"] {
+  --glass-blur-soft: 44px;
+}
+
+[data-ui="queue"] {
+  border-left-color: rgba(169, 139, 255, 0.12) !important;
+}
+
+[data-ui="lyrics"] {
+  background-color: #07060b;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(169, 139, 255, 0.16);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 122, 26, 0.45);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-ui="app"]::before {
+    animation: none !important;
+  }
+}

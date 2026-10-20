@@ -1,0 +1,17 @@
+{
+  "$schema": "../theme.schema.json",
+  "id": "night-flight",
+  "name": "Night Flight",
+  "description": {
+    "en": "Violet night, an orange horizon and glowing sound ridges under soft glass",
+    "ru": "Фиолетовая ночь, оранжевый горизонт и светящиеся звуковые хребты под мягким стеклом",
+    "tr": "Mor gece, turuncu ufuk ve yumuşak camın altında parlayan ses sırtları",
+    "ko": "보랏빛 밤, 주황빛 지평선, 부드러운 유리 아래 빛나는 사운드 능선"
+  },
+  "version": "1.0.0",
+  "author": { "name": "SoundCloud Desktop", "github": "zxcloli666" },
+  "license": "MIT",
+  "accent": "#ff5500",
+  "background": "#07060b",
+  "font": "manrope"
+}
