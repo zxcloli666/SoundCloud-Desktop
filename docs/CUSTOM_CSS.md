@@ -37,7 +37,7 @@ Tailwind class names change from release to release. These attributes do not:
 | `[data-ui="playlist-card"]` | Playlist and album tile |
 | `[data-ui="modal"]` | Dialog window |
 | `[data-ui="tray"]` | Tray mini player |
-| `html[data-perf="light"]`, `"medium"` | Performance mode (no attribute means Beauty) |
+| `html[data-perf="beauty"]`, `"medium"`, `"light"` | Performance mode |
 
 ## Variables
 
