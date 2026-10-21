@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108 100" width="108" height="100">
+<defs>
+<filter id="d" x="-30%" y="-30%" width="160%" height="170%"><feDropShadow dx="0" dy="1.8" stdDeviation="2.5" flood-color="#c9558f" flood-opacity="0.32"/></filter>
+<clipPath id="c"><ellipse cx="36" cy="72" rx="15" ry="12" transform="rotate(-20 36 72)"/><ellipse cx="74" cy="64" rx="15" ry="12" transform="rotate(-20 74 64)"/><rect x="44" y="18" width="8" height="56" rx="4"/><rect x="82" y="12" width="8" height="54" rx="4"/><path d="M44 18 L 90 10 L 90 26 L 44 34 Z"/></clipPath>
+<linearGradient id="f" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff9ccb" stop-opacity="1"/><stop offset="1" stop-color="#e8458f" stop-opacity="1"/></linearGradient><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0.95"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></linearGradient>
+</defs>
+<g transform="rotate(-8 54 50)">
+<g filter="url(#d)" fill="#ffffff" stroke="#ffffff" stroke-width="12" stroke-linejoin="round" stroke-linecap="round"><ellipse cx="36" cy="72" rx="15" ry="12" transform="rotate(-20 36 72)"/><ellipse cx="74" cy="64" rx="15" ry="12" transform="rotate(-20 74 64)"/><rect x="44" y="18" width="8" height="56" rx="4"/><rect x="82" y="12" width="8" height="54" rx="4"/><path d="M44 18 L 90 10 L 90 26 L 44 34 Z"/></g>
+<g fill="#fff7fb" stroke="#ffe3f0" stroke-width="9.8" stroke-linejoin="round" stroke-linecap="round" opacity="0.9"><ellipse cx="36" cy="72" rx="15" ry="12" transform="rotate(-20 36 72)"/><ellipse cx="74" cy="64" rx="15" ry="12" transform="rotate(-20 74 64)"/><rect x="44" y="18" width="8" height="56" rx="4"/><rect x="82" y="12" width="8" height="54" rx="4"/><path d="M44 18 L 90 10 L 90 26 L 44 34 Z"/></g>
+<g fill="url(#f)"><ellipse cx="36" cy="72" rx="15" ry="12" transform="rotate(-20 36 72)"/><ellipse cx="74" cy="64" rx="15" ry="12" transform="rotate(-20 74 64)"/><rect x="44" y="18" width="8" height="56" rx="4"/><rect x="82" y="12" width="8" height="54" rx="4"/><path d="M44 18 L 90 10 L 90 26 L 44 34 Z"/></g>
+<g clip-path="url(#c)"><ellipse cx="31" cy="68" rx="6" ry="3.4" transform="rotate(-20 31 68)" fill="#ffffff" opacity="0.85"/><ellipse cx="69" cy="60" rx="6" ry="3.4" transform="rotate(-20 69 60)" fill="#ffffff" opacity="0.85"/><rect x="50" y="20" width="34" height="3" rx="1.5" transform="rotate(-10 50 20)" fill="#ffffff" opacity="0.7"/></g>
+
+</g>
+</svg>

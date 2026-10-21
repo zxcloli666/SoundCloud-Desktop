@@ -1,0 +1,20 @@
+{
+  "$schema": "../theme.schema.json",
+  "id": "bonbon",
+  "name": "Bonbon",
+  "description": {
+    "en": "Sweet white candy with pastel pink and baby blue, glossy die-cut stickers: hearts, bows, stars and a smiling cloud",
+    "ru": "Белая конфетка с пастельным розовым и голубым, глянцевые наклейки: сердечки, бантики, звёзды и улыбчивое облачко",
+    "tr": "Pastel pembe ve bebek mavisiyle beyaz şeker, parlak çıkartmalar: kalpler, fiyonklar, yıldızlar ve gülen bir bulut",
+    "ko": "파스텔 핑크와 베이비 블루의 하얀 캔디, 반짝이는 스티커: 하트, 리본, 별, 웃는 구름"
+  },
+  "version": "1.0.0",
+  "author": {
+    "name": "SoundCloud Desktop",
+    "github": "zxcloli666"
+  },
+  "license": "MIT",
+  "accent": "#c0256a",
+  "background": "#fff7fb",
+  "font": "nunito"
+}
