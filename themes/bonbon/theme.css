@@ -107,6 +107,11 @@ body {
     radial-gradient(circle at 8px 0, #fff8fb 6px, rgba(255, 170, 204, 0.95) 6.6px, rgba(255, 170, 204, 0.95) 7.4px, transparent 8px) 0 0 / 16px 8px repeat-x;
 }
 
+[data-ui="titlebar"] img[alt="SoundCloud"] {
+  content: url("assets/logo.svg");
+  box-shadow: 0 2px 10px rgba(255, 111, 174, 0.35) !important;
+}
+
 [data-ui="titlebar"] button:not(:hover) {
   color: rgba(58, 18, 51, 0.68);
 }

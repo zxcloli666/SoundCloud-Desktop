@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+<defs>
+<linearGradient id="t" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#ffe3f0"/></linearGradient>
+<radialGradient id="h" cx="38%" cy="32%" r="78%"><stop offset="0" stop-color="#ffc2de"/><stop offset="1" stop-color="#ff5fa4"/></radialGradient>
+<linearGradient id="s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0.95"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></linearGradient>
+</defs>
+<rect x="1" y="1" width="62" height="62" rx="18" fill="url(#t)" stroke="#ffc6df" stroke-width="2"/>
+<circle cx="13" cy="51" r="2" fill="#bfe0ff"/>
+<circle cx="52" cy="13" r="1.6" fill="#ffb3d6"/>
+<path d="M32 52C27 48 12.5 39.5 12.5 26.5c0-7 5-12 11-12 4 0 7 2 8.5 5.5 1.5-3.5 4.5-5.5 8.5-5.5 6 0 11 5 11 12C51.5 39.5 37 48 32 52Z" fill="#ffffff"/>
+<path d="M32 48.5C27.6 45 15.8 37.8 15.8 26.8c0-5.2 3.7-9 8.3-9 3.6 0 6.3 2.1 7.9 5.6 1.6-3.5 4.3-5.6 7.9-5.6 4.6 0 8.3 3.8 8.3 9C48.2 37.8 36.4 45 32 48.5Z" fill="url(#h)"/>
+<path d="M21 24.5c.9-2.6 2.7-3.9 5-3.9" stroke="url(#s)" stroke-width="3" stroke-linecap="round" fill="none"/>
+<circle cx="40.5" cy="23.5" r="1.6" fill="#ffffff" opacity="0.85"/>
+</svg>
