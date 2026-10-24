@@ -1,0 +1,20 @@
+/*
+ * Blood theme. Font: Dela Gothic One
+ * Copyright 2020 The Dela Gothic Project Authors
+ * Licensed under the SIL Open Font License 1.1
+ * assets/dela-gothic-one.woff2 is a subset of the original font (Latin and Cyrillic).
+ */
+
+@font-face {
+  font-family: "Dela Gothic One";
+  src: url("assets/dela-gothic-one.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+html,
+body {
+  font-family: "Dela Gothic One", system-ui, sans-serif !important;
+  color: #ffffff !important;
+}

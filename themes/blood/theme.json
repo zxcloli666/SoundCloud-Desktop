@@ -1,0 +1,12 @@
+{
+  "$schema": "../theme.schema.json",
+  "id": "blood",
+  "name": "Blood",
+  "description": { "ru": "Кровавый красный и белый", "en": "Blood red and white" },
+  "version": "1.0.0",
+  "author": { "name": "Ваше имя", "github": "ваш-логин" },
+  "license": "MIT",
+  "accent": "#8a0303",
+  "background": "#120404",
+  "font": "system"
+}
