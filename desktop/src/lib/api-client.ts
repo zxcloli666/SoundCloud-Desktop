@@ -303,8 +303,9 @@ export async function apiRequest<T = unknown>(
   try {
     return await requestAcrossHosts<T>(path, options, timeoutMs, trace);
   } catch (error) {
-    const serverSide = error instanceof ApiError ? error.status >= 500 : !(error instanceof SyntaxError);
-    if (serverSide && !path.startsWith('/diag/')) reportRequestFailure('api', path, error, trace);
+    const reportable =
+      error instanceof ApiError ? error.status >= 500 : !(error instanceof SyntaxError);
+    if (reportable && !path.startsWith('/diag/')) reportRequestFailure('api', path, error, trace);
     throw error;
   }
 }
