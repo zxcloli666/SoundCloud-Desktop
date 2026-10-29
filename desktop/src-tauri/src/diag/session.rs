@@ -1,7 +1,8 @@
+use std::collections::BTreeMap;
 use std::sync::{Mutex, OnceLock};
 use std::time::Instant;
 
-use serde::Serialize;
+use backend_contracts::diag::{Service, Session};
 
 use super::attempt::Attempt;
 use crate::network::edge::Tier;
@@ -26,21 +27,6 @@ impl State {
     };
 }
 
-#[derive(Serialize)]
-pub struct Route {
-    pub main: String,
-    pub star: String,
-}
-
-#[derive(Serialize)]
-pub struct SessionJson {
-    pub uptime_s: u64,
-    pub logged_in: bool,
-    pub premium: bool,
-    pub quality: String,
-    pub route: Route,
-}
-
 pub fn start() {
     STARTED.get_or_init(Instant::now);
 }
@@ -62,12 +48,12 @@ pub fn locale() -> String {
         .clone()
 }
 
-pub fn snapshot(route: Route) -> SessionJson {
+pub fn snapshot(route: BTreeMap<String, String>) -> Session {
     let state = CURRENT
         .lock()
         .unwrap_or_else(|poison| poison.into_inner())
         .clone();
-    SessionJson {
+    Session {
         uptime_s: STARTED
             .get()
             .map_or(0, |started| started.elapsed().as_secs()),
@@ -78,19 +64,19 @@ pub fn snapshot(route: Route) -> SessionJson {
     }
 }
 
-pub fn route_of(attempts: &[Attempt]) -> Route {
+pub fn route_of(attempts: &[Attempt]) -> BTreeMap<String, String> {
     let last = |star: bool| {
         attempts
             .iter()
             .rev()
-            .filter(|attempt| attempt.ok() && attempt.service == "api")
+            .filter(|attempt| attempt.ok() && attempt.service == Service::Api)
             .find(|attempt| attempt.origin.starts_with("api-star") == star)
             .map_or_else(|| "unknown".to_string(), named)
     };
-    Route {
-        main: last(false),
-        star: last(true),
-    }
+    BTreeMap::from([
+        ("main".to_string(), last(false)),
+        ("star".to_string(), last(true)),
+    ])
 }
 
 fn named(attempt: &Attempt) -> String {

@@ -168,12 +168,14 @@ pub fn settle_batch(delivery: Delivery) {
 mod tests {
     use std::collections::BTreeMap;
 
+    use backend_contracts::diag::ErrorKind;
+
     use super::*;
 
     fn entry(fingerprint: &str) -> ErrorEntry {
         ErrorEntry {
             at: "2026-10-29T10:00:00.000Z".into(),
-            kind: "render".into(),
+            kind: ErrorKind::Render,
             message: "m".into(),
             stack: None,
             component_stack: None,

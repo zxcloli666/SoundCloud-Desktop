@@ -1,49 +1,25 @@
 use std::path::PathBuf;
 
+use backend_contracts::diag::{
+    App, Attempt as WireAttempt, BUNDLE_KIND, BUNDLE_VERSION, Bundle, ErrorKind, MAX_BUNDLE_BYTES,
+    MAX_LOG_LINES, Session, Trigger, TriggerKind,
+};
 use chrono::{TimeZone, Utc};
-use serde::Serialize;
-use serde_json::{Value, json};
 
-use super::app_info::AppInfo;
-use super::attempt::{Attempt, AttemptJson};
+use super::attempt::Attempt;
 use super::caps;
 use super::errors::{ErrorEntry, now_iso};
-use super::session::SessionJson;
 use crate::app::log_sink::redact;
 
-pub const MAX_BYTES: usize = 256 * 1024;
-const LOG_LINES: usize = 150;
 const LOG_READ_BYTES: u64 = 1024 * 1024;
 const DROP_STEP: usize = 10;
 
 pub struct Inputs {
-    pub app: AppInfo,
-    pub session: SessionJson,
-    pub trigger: Trigger,
+    pub app: App,
+    pub session: Session,
+    pub trigger: TriggerKind,
     pub netcheck: Option<String>,
     pub log_path: Option<PathBuf>,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, serde::Deserialize)]
-#[serde(rename_all = "lowercase")]
-pub enum Trigger {
-    Manual,
-    Render,
-    Netcheck,
-}
-
-#[derive(Serialize)]
-struct Bundle {
-    kind: &'static str,
-    v: u8,
-    at: String,
-    app: AppInfo,
-    session: SessionJson,
-    trigger: Value,
-    attempts: Vec<AttemptJson>,
-    errors: Vec<ErrorEntry>,
-    netcheck: Option<String>,
-    log_tail: Vec<String>,
 }
 
 fn iso(at_ms: u64) -> String {
@@ -54,8 +30,8 @@ fn iso(at_ms: u64) -> String {
         })
 }
 
-fn attempt_json(attempt: Attempt) -> AttemptJson {
-    AttemptJson {
+fn attempt_json(attempt: Attempt) -> WireAttempt {
+    WireAttempt {
         at: iso(attempt.at_ms),
         trace: attempt.trace,
         span: attempt.span,
@@ -65,26 +41,12 @@ fn attempt_json(attempt: Attempt) -> AttemptJson {
         path: caps::cut(&redact(&attempt.path), caps::PATH),
         hop: attempt.hop,
         status: attempt.status,
-        ms: attempt.ms,
+        ms: attempt.ms.into(),
         error: attempt
             .error
             .map(|error| caps::cut(&redact(&error), caps::ERROR)),
         bytes: attempt.bytes,
     }
-}
-
-fn redacted(mut entry: ErrorEntry) -> ErrorEntry {
-    entry.message = caps::cut(&redact(&entry.message), caps::MESSAGE);
-    entry.stack = entry
-        .stack
-        .map(|stack| caps::cut(&redact(&stack), caps::STACK));
-    entry.component_stack = entry
-        .component_stack
-        .map(|stack| caps::cut(&redact(&stack), caps::COMPONENT_STACK));
-    for value in entry.context.values_mut() {
-        *value = caps::cut(&redact(value), caps::CONTEXT_VALUE);
-    }
-    entry
 }
 
 fn log_tail(path: &PathBuf) -> Vec<String> {
@@ -108,27 +70,30 @@ fn log_tail(path: &PathBuf) -> Vec<String> {
         })
         .map(|line| caps::cut(&redact(line), caps::LOG_LINE))
         .collect();
-    let extra = lines.len().saturating_sub(LOG_LINES);
+    let extra = lines.len().saturating_sub(MAX_LOG_LINES);
     lines.drain(..extra);
     lines
 }
 
-fn trigger_json(kind: Trigger, errors: &[ErrorEntry]) -> Value {
-    let error = (kind == Trigger::Render)
-        .then(|| errors.iter().rposition(|entry| entry.kind == "render"))
-        .flatten();
-    json!({ "kind": kind, "error": error })
-}
-
 pub fn build(inputs: Inputs, attempts: Vec<Attempt>, errors: Vec<ErrorEntry>) -> Vec<u8> {
-    let errors: Vec<ErrorEntry> = errors.into_iter().map(redacted).collect();
+    let error = (inputs.trigger == TriggerKind::Render)
+        .then(|| {
+            errors
+                .iter()
+                .rposition(|entry| entry.kind == ErrorKind::Render)
+        })
+        .flatten()
+        .map(|index| index as u32);
     let mut bundle = Bundle {
-        kind: "scd-diagnostics",
-        v: 1,
+        kind: BUNDLE_KIND.to_string(),
+        v: BUNDLE_VERSION,
         at: now_iso(),
         app: inputs.app,
         session: inputs.session,
-        trigger: trigger_json(inputs.trigger, &errors),
+        trigger: Trigger {
+            kind: inputs.trigger,
+            error,
+        },
         attempts: attempts.into_iter().map(attempt_json).collect(),
         errors,
         netcheck: inputs
@@ -138,7 +103,7 @@ pub fn build(inputs: Inputs, attempts: Vec<Attempt>, errors: Vec<ErrorEntry>) ->
     };
     loop {
         let bytes = serde_json::to_vec(&bundle).unwrap_or_default();
-        if bytes.len() <= MAX_BYTES {
+        if bytes.len() <= MAX_BUNDLE_BYTES {
             return bytes;
         }
         if !bundle.attempts.is_empty() {
@@ -157,14 +122,17 @@ pub fn build(inputs: Inputs, attempts: Vec<Attempt>, errors: Vec<ErrorEntry>) ->
 mod tests {
     use std::collections::BTreeMap;
 
+    use backend_contracts::diag::{EventsBody, Service};
+    use serde_json::Value;
+
     use super::*;
-    use crate::diag::session::Route;
+    use crate::diag::errors::{ErrorInput, entry_of};
     use crate::network::edge::Tier;
     use crate::network::netcheck::model::Role;
 
     fn inputs() -> Inputs {
         Inputs {
-            app: AppInfo {
+            app: App {
                 version: "8.6.1".into(),
                 os: "macos".into(),
                 os_version: "15.0".into(),
@@ -173,17 +141,17 @@ mod tests {
                 locale: "ru".into(),
                 id: "a1b2c3d4e5f6".into(),
             },
-            session: SessionJson {
+            session: Session {
                 uptime_s: 5,
                 logged_in: true,
                 premium: false,
                 quality: "hq".into(),
-                route: Route {
-                    main: "relay:r2".into(),
-                    star: "direct".into(),
-                },
+                route: BTreeMap::from([
+                    ("main".to_string(), "relay:r2".to_string()),
+                    ("star".to_string(), "direct".to_string()),
+                ]),
             },
-            trigger: Trigger::Render,
+            trigger: TriggerKind::Render,
             netcheck: Some("net text".into()),
             log_path: None,
         }
@@ -195,7 +163,7 @@ mod tests {
             trace: format!("{}{}", "1".repeat(16), "2".repeat(16)),
             span: "3".repeat(16),
             debug: true,
-            service: "stream",
+            service: Service::Stream,
             method: "GET".into(),
             path: "/stream/soundcloud:tracks:123?quality=hq&session_id=secret99".into(),
             hop: "r2".into(),
@@ -212,17 +180,14 @@ mod tests {
     }
 
     fn render_error() -> ErrorEntry {
-        ErrorEntry {
-            at: now_iso(),
-            kind: "render".into(),
+        entry_of(ErrorInput {
+            kind: ErrorKind::Render,
             message: "bad Bearer abcdefghijk".into(),
-            stack: None,
-            component_stack: None,
+            stack: Some("Error: boom\n    at a (http://x/assets/index-Ab12.js:1:2)".into()),
+            component_stack: Some("c".repeat(5000)),
             trace: None,
-            fingerprint: "0123456789abcdef".into(),
-            count: 1,
             context: BTreeMap::from([("route".to_string(), "/library".to_string())]),
-        }
+        })
     }
 
     #[test]
@@ -269,7 +234,7 @@ mod tests {
             })
             .collect();
         let bytes = build(inputs(), attempts, vec![render_error()]);
-        assert!(bytes.len() <= MAX_BYTES);
+        assert!(bytes.len() <= MAX_BUNDLE_BYTES);
         let json: Value = serde_json::from_slice(&bytes).unwrap();
         let kept = json["attempts"].as_array().unwrap();
         assert!(!kept.is_empty() && kept.len() < 300);
@@ -289,10 +254,66 @@ mod tests {
         }
         std::fs::write(&path, lines.join("\n")).unwrap();
         let tail = log_tail(&path);
-        assert_eq!(tail.len(), LOG_LINES);
+        assert_eq!(tail.len(), MAX_LOG_LINES);
         assert!(tail.iter().all(|line| line.contains("[WARN]")));
         assert!(tail.last().unwrap().contains("problem 199"));
         assert!(tail.iter().all(|line| !line.contains("abc123")));
         std::fs::remove_dir_all(&dir).unwrap();
+    }
+
+    fn parsed(bytes: &[u8]) -> Bundle {
+        serde_json::from_slice(bytes).unwrap()
+    }
+
+    #[test]
+    fn a_full_bundle_passes_the_contract_check() {
+        let dir = std::env::temp_dir().join(format!("scd-check-{}", uuid::Uuid::new_v4()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let path = dir.join("desktop.log");
+        let lines: Vec<String> = (0..400)
+            .map(|number| format!("[t] [WARN] {} {number}", "w".repeat(700)))
+            .collect();
+        std::fs::write(&path, lines.join("\n")).unwrap();
+        let mut full = inputs();
+        full.log_path = Some(path);
+        full.netcheck = Some("n".repeat(20_000));
+        let attempts: Vec<Attempt> = (0..300).map(|_| attempt(5000)).collect();
+        let errors: Vec<ErrorEntry> = (0..50)
+            .map(|number| {
+                let mut each = render_error();
+                each.message = "m".repeat(number + 1);
+                each.recompute_fingerprint();
+                each
+            })
+            .collect();
+        let bytes = build(full, attempts, errors);
+        std::fs::remove_dir_all(&dir).unwrap();
+        let bundle = parsed(&bytes);
+        assert_eq!(bundle.check(), Ok(()));
+        assert!(bytes.len() <= MAX_BUNDLE_BYTES);
+        assert_eq!(bundle.errors.len(), 50);
+        assert_eq!(
+            bundle.log_tail.len().min(MAX_LOG_LINES),
+            bundle.log_tail.len()
+        );
+        assert_eq!(bundle.trigger.error, Some(49));
+    }
+
+    #[test]
+    fn the_small_bundle_passes_the_contract_check() {
+        let bytes = build(inputs(), vec![attempt(10)], vec![render_error()]);
+        assert_eq!(parsed(&bytes).check(), Ok(()));
+    }
+
+    #[test]
+    fn events_pass_the_contract_check() {
+        let body = EventsBody {
+            app: inputs().app,
+            events: vec![render_error()],
+        };
+        assert_eq!(body.check(), Ok(()));
+        let sent: EventsBody =
+            serde_json::from_value(serde_json::to_value(&body).unwrap()).unwrap();
+        assert_eq!(sent.events[0].fingerprint, body.events[0].fingerprint);
     }
 }

@@ -1,6 +1,7 @@
 use std::path::{Path, PathBuf};
 use std::sync::OnceLock;
 
+use backend_contracts::diag::ErrorKind;
 use serde::{Deserialize, Serialize};
 
 use super::errors::{ErrorEntry, ErrorInput, entry_of};
@@ -36,7 +37,7 @@ pub fn take(dir: &Path) -> Option<ErrorEntry> {
     let _ = std::fs::remove_file(&path);
     let saved: Saved = serde_json::from_slice(&bytes).ok()?;
     Some(entry_of(ErrorInput {
-        kind: "panic".to_string(),
+        kind: ErrorKind::Panic,
         message: saved.message,
         stack: Some(saved.stack),
         component_stack: None,
@@ -59,7 +60,7 @@ mod tests {
         };
         std::fs::write(dir.join(FILE), serde_json::to_vec(&saved).unwrap()).unwrap();
         let entry = take(&dir).unwrap();
-        assert_eq!(entry.kind, "panic");
+        assert_eq!(entry.kind, ErrorKind::Panic);
         assert_eq!(entry.fingerprint.len(), 16);
         assert!(take(&dir).is_none());
         std::fs::remove_dir_all(&dir).unwrap();

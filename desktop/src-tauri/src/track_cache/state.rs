@@ -16,6 +16,7 @@ use wreq::{Client, Method};
 
 use crate::app::diagnostics::{self, log_native};
 use crate::diag::errors::ErrorInput;
+use backend_contracts::diag::ErrorKind;
 use crate::diag::{report, trace};
 use crate::network::dns;
 use crate::network::edge::{Hop, Tier};
@@ -1209,7 +1210,7 @@ impl TrackCacheState {
         let result = trace::within(id.clone(), self.cache_chain(req)).await;
         if let Err(message) = &result {
             report::error(ErrorInput {
-                kind: "request".to_string(),
+                kind: ErrorKind::Request,
                 message: message.clone(),
                 stack: None,
                 component_stack: None,

@@ -1,34 +1,26 @@
 use std::collections::{BTreeMap, VecDeque};
 use std::sync::Mutex;
 
-use serde::{Deserialize, Serialize};
+use backend_contracts::diag::{ErrorKind, MAX_CONTEXT_KEYS};
+use backend_contracts::diag_fingerprint::fingerprint;
+use serde::Deserialize;
 
 use super::caps;
-use super::{fingerprint, trace};
+use super::trace;
+use crate::app::log_sink::redact;
+
+pub use backend_contracts::diag::ErrorEntry;
 
 pub const CAPACITY: usize = 50;
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct ErrorInput {
-    pub kind: String,
+    pub kind: ErrorKind,
     pub message: String,
     pub stack: Option<String>,
     pub component_stack: Option<String>,
     pub trace: Option<String>,
     #[serde(default)]
-    pub context: BTreeMap<String, String>,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct ErrorEntry {
-    pub at: String,
-    pub kind: String,
-    pub message: String,
-    pub stack: Option<String>,
-    pub component_stack: Option<String>,
-    pub trace: Option<String>,
-    pub fingerprint: String,
-    pub count: u32,
     pub context: BTreeMap<String, String>,
 }
 
@@ -41,24 +33,32 @@ pub fn now_iso() -> String {
 }
 
 pub fn entry_of(input: ErrorInput) -> ErrorEntry {
-    let fingerprint = fingerprint::of(&input);
+    let clean = |text: &str, max| caps::cut(&redact(text), max);
+    let message = clean(&input.message, caps::MESSAGE);
+    let stack = input.stack.map(|text| clean(&text, caps::STACK));
+    let context: BTreeMap<String, String> = input
+        .context
+        .into_iter()
+        .take(MAX_CONTEXT_KEYS)
+        .map(|(key, value)| {
+            (
+                caps::cut(&key, caps::KEY),
+                clean(&value, caps::CONTEXT_VALUE),
+            )
+        })
+        .collect();
     ErrorEntry {
         at: now_iso(),
         kind: input.kind,
-        message: caps::cut(&input.message, caps::MESSAGE),
-        stack: input.stack.map(|text| caps::cut(&text, caps::STACK)),
+        fingerprint: fingerprint(input.kind, &message, stack.as_deref(), &context),
+        message,
+        stack,
         component_stack: input
             .component_stack
-            .map(|text| caps::cut(&text, caps::COMPONENT_STACK)),
+            .map(|text| clean(&text, caps::COMPONENT_STACK)),
         trace: input.trace.filter(|trace| trace::valid_trace(trace)),
-        fingerprint,
         count: 1,
-        context: input
-            .context
-            .into_iter()
-            .take(caps::CONTEXT_KEYS)
-            .map(|(key, value)| (key, caps::cut(&value, caps::CONTEXT_VALUE)))
-            .collect(),
+        context,
     }
 }
 
@@ -96,7 +96,7 @@ mod tests {
 
     fn input(message: &str) -> ErrorInput {
         ErrorInput {
-            kind: "render".to_string(),
+            kind: ErrorKind::Render,
             message: message.to_string(),
             stack: None,
             component_stack: None,
@@ -117,9 +117,7 @@ mod tests {
         assert_eq!(known.len(), 1);
         assert_eq!(known[0].count, 2);
         for number in 0..(CAPACITY + 10) {
-            let mut other = input("x");
-            other.kind = format!("kind{number}");
-            record(entry_of(other));
+            record(entry_of(input(&"m".repeat(number + 1))));
         }
         assert_eq!(all().len(), CAPACITY);
     }
@@ -140,7 +138,7 @@ mod tests {
             entry.component_stack.unwrap().chars().count(),
             caps::COMPONENT_STACK
         );
-        assert_eq!(entry.context.len(), caps::CONTEXT_KEYS);
+        assert_eq!(entry.context.len(), MAX_CONTEXT_KEYS);
         assert!(
             entry
                 .context

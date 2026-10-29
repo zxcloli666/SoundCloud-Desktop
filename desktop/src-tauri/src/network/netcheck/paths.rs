@@ -50,7 +50,7 @@ mod tests {
             trace: "t".repeat(32),
             span: "s".repeat(16),
             debug: false,
-            service: "api",
+            service: backend_contracts::diag::Service::Api,
             method: "GET".to_string(),
             path: "/".to_string(),
             hop: "direct".to_string(),

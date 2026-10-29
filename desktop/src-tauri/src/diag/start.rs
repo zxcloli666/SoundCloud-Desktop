@@ -1,11 +1,13 @@
 use std::path::Path;
 
-use super::app_info::{self, AppInfo};
+use backend_contracts::diag::App;
+
+use super::app_info::{self};
 use super::{errors, panic, queue, session};
 
 pub fn run(data_dir: &Path, version: &str, install: String) {
     session::start();
-    app_info::set(AppInfo {
+    app_info::set(App {
         version: version.to_string(),
         os: std::env::consts::OS.to_string(),
         os_version: app_info::os_version(),

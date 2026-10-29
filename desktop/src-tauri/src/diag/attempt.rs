@@ -1,7 +1,7 @@
 use std::collections::VecDeque;
 use std::sync::Mutex;
 
-use serde::Serialize;
+use backend_contracts::diag::Service;
 
 use crate::network::edge::Tier;
 use crate::network::fail::FailKind;
@@ -15,7 +15,7 @@ pub struct Attempt {
     pub trace: String,
     pub span: String,
     pub debug: bool,
-    pub service: &'static str,
+    pub service: Service,
     pub method: String,
     pub path: String,
     pub hop: String,
@@ -27,22 +27,6 @@ pub struct Attempt {
     pub ms: u32,
     pub error: Option<String>,
     pub fail: Option<FailKind>,
-    pub bytes: u64,
-}
-
-#[derive(Serialize)]
-pub struct AttemptJson {
-    pub at: String,
-    pub trace: String,
-    pub span: String,
-    pub debug: bool,
-    pub service: &'static str,
-    pub method: String,
-    pub path: String,
-    pub hop: String,
-    pub status: u16,
-    pub ms: u32,
-    pub error: Option<String>,
     pub bytes: u64,
 }
 
@@ -80,28 +64,41 @@ pub fn oldest_first() -> Vec<Attempt> {
         .collect()
 }
 
-pub fn service_of(host: &str) -> &'static str {
+pub fn service_of(host: &str) -> Service {
     let first = host.split('.').next().unwrap_or(host);
     if first.starts_with("api") {
-        "api"
+        Service::Api
     } else if first.starts_with("stream") {
-        "stream"
+        Service::Stream
     } else if first.starts_with("storage") || first.starts_with("s3") {
-        "storage"
+        Service::Storage
     } else if first.starts_with("pay") {
-        "pay"
+        Service::Pay
     } else if first.starts_with("images") {
-        "images"
+        Service::Images
     } else {
-        "other"
+        Service::Other
     }
 }
 
 pub fn hop_label(host: &str, tier: Tier) -> String {
     match tier {
         Tier::Direct => "direct".to_string(),
-        Tier::Relay => host.split('.').nth(1).unwrap_or("relay").to_string(),
-        Tier::Pro => host.split('.').next().unwrap_or("pro").to_string(),
+        Tier::Relay => numbered(host.split('.').nth(1), 'r'),
+        Tier::Pro => numbered(host.split('.').next(), 'p'),
+    }
+}
+
+fn numbered(label: Option<&str>, prefix: char) -> String {
+    match label {
+        Some(label)
+            if label.strip_prefix(prefix).is_some_and(|digits| {
+                !digits.is_empty() && digits.bytes().all(|byte| byte.is_ascii_digit())
+            }) =>
+        {
+            label.to_string()
+        }
+        _ => format!("{prefix}0"),
     }
 }
 
@@ -115,7 +112,7 @@ mod tests {
             trace: "t".repeat(32),
             span: "s".repeat(16),
             debug: false,
-            service: "api",
+            service: Service::Api,
             method: "GET".to_string(),
             path: "/me".to_string(),
             hop: "direct".to_string(),
@@ -149,13 +146,15 @@ mod tests {
 
     #[test]
     fn services_and_hops_are_named_from_hosts() {
-        assert_eq!(service_of("api-star.scnative.dev"), "api");
-        assert_eq!(service_of("stream.r2.relay.scnative.dev"), "stream");
-        assert_eq!(service_of("s3.scnative.dev"), "storage");
-        assert_eq!(service_of("example.com"), "other");
+        assert_eq!(service_of("api-star.scnative.dev"), Service::Api);
+        assert_eq!(service_of("stream.r2.relay.scnative.dev"), Service::Stream);
+        assert_eq!(service_of("s3.scnative.dev"), Service::Storage);
+        assert_eq!(service_of("example.com"), Service::Other);
         assert_eq!(hop_label("stream.r2.relay.scnative.dev", Tier::Relay), "r2");
         assert_eq!(hop_label("p1.pro.scnative.dev", Tier::Pro), "p1");
         assert_eq!(hop_label("api.scnative.dev", Tier::Direct), "direct");
+        assert_eq!(hop_label("stream.relay.scnative.dev", Tier::Relay), "r0");
+        assert_eq!(hop_label("pro.scnative.dev", Tier::Pro), "p0");
     }
 
     #[test]

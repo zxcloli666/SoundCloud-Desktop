@@ -3,31 +3,20 @@ use std::path::Path;
 use std::process::Command;
 use std::sync::OnceLock;
 
-use serde::Serialize;
+use backend_contracts::diag::App;
 
 use super::session;
 
 const FILE: &str = "diag_install.txt";
 
-static CURRENT: OnceLock<AppInfo> = OnceLock::new();
+static CURRENT: OnceLock<App> = OnceLock::new();
 
-#[derive(Clone, Serialize)]
-pub struct AppInfo {
-    pub version: String,
-    pub os: String,
-    pub os_version: String,
-    pub arch: String,
-    pub install: String,
-    pub locale: String,
-    pub id: String,
-}
-
-pub fn set(info: AppInfo) {
+pub fn set(info: App) {
     let _ = CURRENT.set(info);
 }
 
-pub fn current() -> AppInfo {
-    let mut info = CURRENT.get().cloned().unwrap_or_else(|| AppInfo {
+pub fn current() -> App {
+    let mut info = CURRENT.get().cloned().unwrap_or_else(|| App {
         version: String::new(),
         os: String::new(),
         os_version: String::new(),

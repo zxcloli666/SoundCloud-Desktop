@@ -81,7 +81,7 @@ async fn our_hosts_get_a_traceparent_and_the_attempt_is_recorded() {
         .find(|attempt| attempt.trace == id)
         .expect("recorded attempt");
     assert_eq!(recorded.span, parts[2]);
-    assert_eq!(recorded.service, "api");
+    assert_eq!(recorded.service, backend_contracts::diag::Service::Api);
     assert_eq!(recorded.status, 200);
     assert_eq!(recorded.method, "GET");
     assert_eq!(recorded.path, "/me?session_id=abc");

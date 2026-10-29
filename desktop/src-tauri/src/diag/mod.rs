@@ -4,7 +4,6 @@ pub mod bundle;
 pub mod caps;
 pub mod commands;
 pub mod errors;
-pub mod fingerprint;
 pub mod offline;
 pub mod panic;
 pub mod queue;

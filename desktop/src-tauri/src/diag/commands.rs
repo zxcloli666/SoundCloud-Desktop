@@ -1,22 +1,16 @@
 use std::time::Duration;
 
-use serde::Serialize;
+use backend_contracts::diag::{EventsBody, TriggerKind};
 
 use super::app_info;
-use super::bundle::{self, Inputs, Trigger};
-use super::errors::{self, ErrorEntry, ErrorInput};
+use super::bundle::{self, Inputs};
+use super::errors::{self, ErrorInput};
 use super::queue::{self, Delivery};
 use super::{attempt, offline, report, session, trace};
 use crate::app::log_sink;
 use crate::network::netcheck;
 
 const NETCHECK_AGE: Duration = Duration::from_secs(30 * 60);
-
-#[derive(Serialize)]
-pub struct EventBatch {
-    app: app_info::AppInfo,
-    events: Vec<ErrorEntry>,
-}
 
 #[tauri::command]
 pub fn diag_error(error: ErrorInput) -> usize {
@@ -34,7 +28,7 @@ pub fn diag_session(logged_in: bool, premium: bool, quality: String, locale: Str
 }
 
 #[tauri::command]
-pub fn diag_bundle(trigger: Trigger) -> String {
+pub fn diag_bundle(trigger: TriggerKind) -> String {
     trace::open_debug();
     let attempts = attempt::oldest_first();
     let inputs = Inputs {
@@ -56,9 +50,9 @@ pub fn diag_save_file(bundle: String) -> Result<String, String> {
 }
 
 #[tauri::command]
-pub fn diag_queue_batch() -> Option<EventBatch> {
+pub fn diag_queue_batch() -> Option<EventsBody> {
     let events = queue::batch();
-    (!events.is_empty()).then(|| EventBatch {
+    (!events.is_empty()).then(|| EventsBody {
         app: app_info::current(),
         events,
     })
