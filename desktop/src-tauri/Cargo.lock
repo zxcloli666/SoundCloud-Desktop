@@ -4426,7 +4426,7 @@ dependencies = [
 [[package]]
 name = "sc-fingerprint"
 version = "0.1.0"
-source = "git+https://github.com/zxcloli666/SoundCloud-Backend?tag=v9.1.0#0153accfa994d8f4631ec453e2f3cd7cf5908d01"
+source = "git+https://github.com/zxcloli666/SoundCloud-Backend?tag=v9.9.1#f645b396520fb525e64ad53ab9dab625e8f7081d"
 dependencies = [
  "dashmap",
  "futures-util",
