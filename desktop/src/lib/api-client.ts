@@ -4,7 +4,14 @@ import { describeApiError } from './api-error-text';
 import { emitApiWrite } from './api-writes';
 import { noteAuthGap, noteRateLimit, noteSuccess } from './auth-recovery';
 import { API_BASE, API_STAR_BASE } from './constants';
-import { logHttpError, logHttpFailure, logInfo, trackAsync } from './diagnostics';
+import {
+  logHttpError,
+  logHttpFailure,
+  logInfo,
+  newTraceId,
+  reportError,
+  trackAsync,
+} from './diagnostics';
 import { EdgeUnreachableError, edgeFetch } from './edge';
 import {
   getHostVerdict,
@@ -128,6 +135,14 @@ function isRateLimitError(status: number, body: string): boolean {
 }
 
 // ─── Helpers ────────────────────────────────────────────────
+
+function requestContext(path: string, error: unknown): Record<string, string> {
+  return {
+    service: 'api',
+    path: path.split('?')[0],
+    class: error instanceof Error ? error.name : 'unknown',
+  };
+}
 
 function fetchWithTimeout(url: string, options: NetInit, timeoutMs: number): Promise<Response> {
   return edgeFetch(url, options, timeoutMs);
@@ -307,6 +322,7 @@ export async function apiRequest<T = unknown>(
   const label = `${method.toUpperCase()} ${path}`;
   const bases = apiBasesFor(path);
   const effectiveTimeout = timeoutMs ?? planeTimeout(path);
+  const trace = newTraceId();
   let lastError: unknown = null;
   /** main отказал по этой сессии — ждём, что скажет сосед по ней же. */
   let mainRefused = false;
@@ -328,7 +344,7 @@ export async function apiRequest<T = unknown>(
     try {
       const res = await trackAsync(
         `http:${label}`,
-        fetchWithTimeout(url, { ...init, headers, longPoll }, attemptTimeout),
+        fetchWithTimeout(url, { ...init, headers, longPoll, trace }, attemptTimeout),
         longPoll ? attemptTimeout : undefined,
       );
 
@@ -397,6 +413,9 @@ export async function apiRequest<T = unknown>(
         const verdict = starDeny && authRejection ? authRejection : err;
 
         logHttpError(label, verdict.status, url, verdict.body);
+        if (verdict.status >= 500 && !path.startsWith('/diag/')) {
+          reportError('request', verdict, requestContext(path, verdict), trace);
+        }
 
         // Rate-limit — копим, одиночный не дёргает recovery.
         if (isRateLimitError(verdict.status, verdict.body)) {
@@ -453,6 +472,8 @@ export async function apiRequest<T = unknown>(
         continue;
       }
       logHttpFailure(label, url, error, performance.now() - attemptStart);
+      if (!path.startsWith('/diag/'))
+        reportError('request', error, requestContext(path, error), trace);
       if (authRejection) {
         logInfo(`[Host] ${label}: no second opinion from ${hostLabel(base)}, keeping the 401`);
         noteAuthGap();

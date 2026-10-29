@@ -127,6 +127,7 @@ export interface SettingsState {
   discordRpcLyrics: boolean;
   scrobbleEnabled: boolean;
   scrobbleNowPlaying: boolean;
+  sendErrorReports: boolean;
   obsEnabled: boolean;
   obsServer: boolean;
   obsPort: number;
@@ -213,6 +214,7 @@ export interface SettingsState {
   setDiscordRpcLyrics: (enabled: boolean) => void;
   setScrobbleEnabled: (enabled: boolean) => void;
   setScrobbleNowPlaying: (enabled: boolean) => void;
+  setSendErrorReports: (enabled: boolean) => void;
   setObsEnabled: (enabled: boolean) => void;
   setObsServer: (enabled: boolean) => void;
   setObsPort: (port: number) => void;
@@ -302,6 +304,7 @@ const DEFAULTS = {
   discordRpcLyrics: false,
   scrobbleEnabled: true,
   scrobbleNowPlaying: true,
+  sendErrorReports: true,
   obsEnabled: false,
   obsServer: true,
   obsPort: 48555,
@@ -467,6 +470,7 @@ export const useSettingsStore = create<SettingsState>()(
       setDiscordRpcLyrics: (discordRpcLyrics) => set({ discordRpcLyrics }),
       setScrobbleEnabled: (scrobbleEnabled) => set({ scrobbleEnabled }),
       setScrobbleNowPlaying: (scrobbleNowPlaying) => set({ scrobbleNowPlaying }),
+      setSendErrorReports: (sendErrorReports) => set({ sendErrorReports }),
       setObsEnabled: (obsEnabled) => set({ obsEnabled }),
       setObsServer: (obsServer) => set({ obsServer }),
       setObsPort: (obsPort) => set({ obsPort }),
@@ -535,7 +539,7 @@ export const useSettingsStore = create<SettingsState>()(
     {
       name: 'sc-settings',
       storage: createJSONStorage(() => tauriStorage),
-      version: 22,
+      version: 23,
       migrate: (persistedState, version) => {
         const prev = (persistedState ?? {}) as Partial<SettingsState> & {
           soundwaveDiversity?: number;
@@ -559,6 +563,9 @@ export const useSettingsStore = create<SettingsState>()(
         }
         if (version < 21) {
           next.streamQuality = prev.streamQuality ?? (highQualityStreaming ? 'hq' : 'auto');
+        }
+        if (version < 23) {
+          next.sendErrorReports = prev.sendErrorReports ?? true;
         }
         return next;
       },
@@ -611,6 +618,7 @@ export const useSettingsStore = create<SettingsState>()(
         discordRpcLyrics: s.discordRpcLyrics,
         scrobbleEnabled: s.scrobbleEnabled,
         scrobbleNowPlaying: s.scrobbleNowPlaying,
+        sendErrorReports: s.sendErrorReports,
         obsEnabled: s.obsEnabled,
         obsServer: s.obsServer,
         obsPort: s.obsPort,

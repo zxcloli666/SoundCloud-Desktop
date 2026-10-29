@@ -10,8 +10,11 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use wreq::multipart::{Form, Part};
 
+use crate::diag::trace;
 use crate::network::edge::{self, Hop, Tier};
+use crate::network::netcheck::model::Role;
 use crate::network::system_proxy::follow;
+use crate::network::traced;
 use crate::rt::AppHandle;
 use progress::Reporter;
 
@@ -103,6 +106,18 @@ async fn upload(
     app: AppHandle,
     cancel: Arc<AtomicBool>,
 ) -> Result<Value, UploadFailure> {
+    trace::within(
+        trace::new_trace(),
+        upload_through_hops(request, app, cancel),
+    )
+    .await
+}
+
+async fn upload_through_hops(
+    request: &TrackUploadRequest,
+    app: AppHandle,
+    cancel: Arc<AtomicBool>,
+) -> Result<Value, UploadFailure> {
     let path = Path::new(&request.file_path);
     let total = tokio::fs::metadata(path)
         .await
@@ -134,28 +149,42 @@ async fn upload(
     }
 
     let mut last = UploadFailure::of("network");
-    for hop in hops {
+    for (index, hop) in hops.into_iter().enumerate() {
         let file = tokio::fs::File::open(path)
             .await
             .map_err(|_| UploadFailure::file("audio_unreadable"))?;
         let body = wreq::Body::wrap_stream(progress::file_stream(file, reporter.clone()));
         let form = form(request, artwork.as_ref(), body, total, &file_name)?;
-        let sent = client
-            .post(&hop.url)
+        let (builder, flight) = traced::begin(
+            &client,
+            wreq::Method::POST,
+            &hop,
+            Role::of_index(index),
+            "upload",
+        );
+        let sent = builder
             .header("x-session-id", &request.session_id)
             .multipart(form)
             .send()
             .await;
         let response = match sent {
             Ok(response) => response,
-            Err(_) if cancel.load(Ordering::Relaxed) => return Err(UploadFailure::of("cancelled")),
+            Err(error) if cancel.load(Ordering::Relaxed) => {
+                flight.broke(&error);
+                return Err(UploadFailure::of("cancelled"));
+            }
             Err(error) if error.is_connect() => {
+                flight.broke(&error);
                 hop.note(false);
                 last = UploadFailure::of("network");
                 continue;
             }
-            Err(_) => return Err(UploadFailure::of("network")),
+            Err(error) => {
+                flight.broke(&error);
+                return Err(UploadFailure::of("network"));
+            }
         };
+        flight.answered(response.status().as_u16(), 0);
         hop.note(true);
         return answer(response).await;
     }

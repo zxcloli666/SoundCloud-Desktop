@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::{BTreeMap, HashMap, HashSet};
 use std::path::Path;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -7,18 +7,22 @@ use std::sync::atomic::{AtomicU32, Ordering};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use futures_util::StreamExt;
-use url::Url;
-use wreq::Client;
 use tauri::Emitter;
 use tokio::fs::File;
 use tokio::io::{AsyncWriteExt, BufWriter};
 use tokio::sync::{Mutex, Notify, OnceCell, OwnedSemaphorePermit, Semaphore};
+use url::Url;
+use wreq::{Client, Method};
 
 use crate::app::diagnostics::{self, log_native};
+use crate::diag::errors::ErrorInput;
+use crate::diag::{report, trace};
 use crate::network::dns;
 use crate::network::edge::{Hop, Tier};
-use crate::network::fail::Fail;
+use crate::network::fail::{self, Fail, FailKind};
+use crate::network::netcheck::model::Role;
 use crate::network::system_proxy::{self, follow};
+use crate::network::traced;
 use crate::shared::urn::{canonical_track_urn, track_urn_from_storage_name};
 use crate::track_cache::api_download::{
     StreamJob, download_api, refused_by_both, refused_for, tier_url,
@@ -1133,9 +1137,16 @@ impl TrackCacheState {
 
     async fn presigned_get(&self, redirect_url: &str) -> Result<wreq::Response, String> {
         let headers = Duration::from_secs(PRESIGN_HEADERS_SECS);
-        match tokio::time::timeout(headers, self.client.get(redirect_url).send()).await {
-            Ok(Ok(response)) => Ok(response),
+        let hop = Hop::unplanned(redirect_url);
+        let (request, flight) =
+            traced::begin(&self.client, Method::GET, &hop, Role::Primary, "storage");
+        match tokio::time::timeout(headers, request.send()).await {
+            Ok(Ok(response)) => {
+                flight.answered(response.status().as_u16(), 0);
+                Ok(response)
+            }
             Ok(Err(err)) => {
+                flight.failed(fail::of_wreq(&err), err.to_string());
                 let failed_at = err
                     .uri()
                     .map_or_else(|| redirect_url.to_string(), ToString::to_string);
@@ -1143,21 +1154,14 @@ impl TrackCacheState {
                 Err(err.to_string())
             }
             Err(_) => {
+                flight.failed(FailKind::Timeout, "no headers in time");
                 crate::network::edge::note_url(redirect_url, Tier::Direct, false);
                 Err(format!("no headers in {}s", headers.as_secs()))
             }
         }
     }
 
-    async fn storage_get(&self, hop: &Hop) -> Result<wreq::Response, Fail> {
-        if let Some(host) = host_of(&hop.url).filter(|_| !system_proxy::proxied(&hop.url)) {
-            let budget = if dns::trusted(&host) {
-                Duration::from_millis(STORAGE_CONNECT_TIMEOUT_MS)
-            } else {
-                Duration::from_secs(STORAGE_RESOLVE_TIMEOUT_SECS)
-            };
-            dns::ready(&host, budget).await?;
-        }
+    async fn storage_get(&self, hop: &Hop, role: Role) -> Result<wreq::Response, Fail> {
         let (client, headers) = if hop.tier == Tier::Relay {
             (
                 &self.client,
@@ -1169,13 +1173,58 @@ impl TrackCacheState {
                 Duration::from_millis(STORAGE_HEADERS_TIMEOUT_MS),
             )
         };
-        match tokio::time::timeout(headers, client.get(&hop.url).send()).await {
-            Ok(sent) => sent.map_err(|err| Fail::of_wreq(&err)),
-            Err(_) => Err(Fail::timeout_after(headers.as_millis() as u32)),
+        let (request, flight) = traced::begin(client, Method::GET, hop, role, "storage");
+        if let Some(host) = host_of(&hop.url).filter(|_| !system_proxy::proxied(&hop.url)) {
+            let budget = if dns::trusted(&host) {
+                Duration::from_millis(STORAGE_CONNECT_TIMEOUT_MS)
+            } else {
+                Duration::from_secs(STORAGE_RESOLVE_TIMEOUT_SECS)
+            };
+            if let Err(fail) = dns::ready(&host, budget).await {
+                flight.failed(fail.kind, fail.to_string());
+                return Err(fail);
+            }
+        }
+        match tokio::time::timeout(headers, request.send()).await {
+            Ok(Ok(response)) => {
+                flight.answered(response.status().as_u16(), 0);
+                Ok(response)
+            }
+            Ok(Err(err)) => {
+                let fail = Fail::of_wreq(&err);
+                flight.failed(fail.kind, err.to_string());
+                Err(fail)
+            }
+            Err(_) => {
+                let fail = Fail::timeout_after(headers.as_millis() as u32);
+                flight.failed(fail.kind, fail.to_string());
+                Err(fail)
+            }
         }
     }
 
     pub async fn ensure_cached(&self, req: CacheRequest<'_>) -> Result<TrackCacheEntry, String> {
+        let id = trace::new_trace();
+        let path = format!("/stream/{}", req.urn);
+        let result = trace::within(id.clone(), self.cache_chain(req)).await;
+        if let Err(message) = &result {
+            report::error(ErrorInput {
+                kind: "request".to_string(),
+                message: message.clone(),
+                stack: None,
+                component_stack: None,
+                trace: Some(id),
+                context: BTreeMap::from([
+                    ("service".to_string(), "stream".to_string()),
+                    ("path".to_string(), path),
+                    ("class".to_string(), "download_chain".to_string()),
+                ]),
+            });
+        }
+        result
+    }
+
+    async fn cache_chain(&self, req: CacheRequest<'_>) -> Result<TrackCacheEntry, String> {
         let CacheRequest {
             urn,
             urls,

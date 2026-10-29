@@ -38,7 +38,7 @@ import {
 } from './cache';
 import {isTrackBlocked} from './blocked-artists';
 import {STATUS_PAGE_URL} from './constants';
-import {trackedInvoke as invoke} from './diagnostics';
+import {trackedInvoke as invoke, reportError} from './diagnostics';
 import {isBelow} from './playback-quality';
 import {offerUndislike} from './dislike-actions';
 import {isUrnDisliked} from './dislikes';
@@ -382,6 +382,15 @@ async function resolveTrackMetadata(track: Track): Promise<Track> {
   }
 }
 
+function reportPlaybackFailure(error: unknown, track: Track) {
+  const reason = getLoadErrorText(error) ?? 'unknown';
+  reportError('playback', error, {
+    urn: track.urn,
+    quality: requestedQuality(),
+    reason: reason.slice(0, 80),
+  });
+}
+
 /** True when a file path no longer exists on disk. */
 function isFileMissing(e: unknown): boolean {
   const s = typeof e === 'string' ? e : e instanceof Error ? e.message : String(e);
@@ -617,6 +626,7 @@ async function loadTrack(track: Track, resumeAt = 0) {
   } catch (e) {
     console.error('[Audio] Load failed:', e);
     if (gen !== loadGen) return;
+    reportPlaybackFailure(e, track);
     if (crossfadeMs > 0) invoke('audio_stop').catch(console.error);
     stopLoadWatch();
     setDownloadProgress(null);

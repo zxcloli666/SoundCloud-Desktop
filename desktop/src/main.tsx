@@ -11,10 +11,12 @@ import { initCloseAction } from './lib/close-action';
 import { setServerPorts } from './lib/constants';
 import {
   describeError,
+  reportError,
   trackedInvoke as invoke,
   logError,
   setupUiWatchdog,
 } from './lib/diagnostics';
+import { startDiag } from './lib/diag';
 import { initEdge } from './lib/edge';
 import { installFpsCap } from './lib/fps-cap';
 import { queryClient } from './lib/query-client';
@@ -84,6 +86,7 @@ async function bootstrap() {
   await initUiScale();
 
   const settings = useSettingsStore.getState();
+  startDiag(settings.sendErrorReports);
   await changeAppLanguage(settings.language);
   initCloseAction();
 
@@ -121,6 +124,7 @@ async function bootstrap() {
 bootstrap().catch((error) => {
   const message = describeError(error);
   logError(`[Boot] ${message}`);
+  reportError('unhandled', error, { stage: 'bootstrap' });
   ReactDOM.createRoot(document.getElementById('root')!).render(
     <ErrorScreen error={new Error(message)} fullscreen />,
   );

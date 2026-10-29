@@ -6,6 +6,7 @@ import { helpUrl } from '../../../lib/help-url';
 import { Activity, BookOpen, FolderOpen, LifeBuoy, MessageCircle } from '../../../lib/icons';
 import { useNetCheckStore } from '../../../lib/net/check';
 import { notifyError } from '../../../lib/notify';
+import { ReportButton } from '../../ui/ReportButton';
 import { ActionButton } from '../ActionButton';
 import { Card, Divider, Row } from '../primitives';
 
@@ -31,6 +32,13 @@ export function HelpCard() {
           icon={<Activity size={12} />}
           label={t('settings.helpNetCheckOpen')}
           onClick={() => useNetCheckStore.getState().openCheck()}
+        />
+      </Row>
+      <Divider />
+      <Row title={t('diag.report')} desc={t('diag.reportDesc')}>
+        <ReportButton
+          trigger="manual"
+          className="flex items-center gap-1.5 rounded-xl border border-white/[0.08] bg-white/[0.05] px-3 py-1.5 text-[12px] font-semibold text-white/75 hover:bg-white/[0.09] cursor-pointer disabled:opacity-50"
         />
       </Row>
       <Divider />

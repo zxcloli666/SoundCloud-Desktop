@@ -13,6 +13,7 @@ export default defineConfig(async () => ({
   },
   plugins: [react(), tailwindcss()],
   build: {
+    sourcemap: 'hidden',
     rollupOptions: {
         // Two HTML entries: the main app + the lightweight tray-popover mini-player.
         input: {

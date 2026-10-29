@@ -1,4 +1,5 @@
 import {Component, type ErrorInfo, type ReactNode} from 'react';
+import {logError, reportError} from '../lib/diagnostics';
 import {ErrorScreen} from './ui/ErrorScreen';
 
 interface Props {
@@ -22,6 +23,8 @@ export class ErrorBoundary extends Component<Props, State> {
 
     componentDidCatch(error: Error, info: ErrorInfo) {
         console.error('[ErrorBoundary]', error, info.componentStack);
+        logError(`[ErrorBoundary] ${error.message}`);
+        reportError('render', error, {}, undefined, info.componentStack);
     }
 
     render() {

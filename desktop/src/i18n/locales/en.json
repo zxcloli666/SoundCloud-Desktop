@@ -2388,5 +2388,16 @@
     "prev": "Previous",
     "next": "Next",
     "quit": "Quit"
+  },
+  "diag": {
+    "report": "Report for support",
+    "reportDesc": "Sends recent requests and errors, no account data",
+    "send": "Send report",
+    "sending": "Sending",
+    "openDiscord": "Open Discord",
+    "reveal": "Show in folder",
+    "attach": "Attach this file in the chat",
+    "sendReports": "Send error reports",
+    "sendReportsDesc": "Sends app errors to the developers, no account data"
   }
 }

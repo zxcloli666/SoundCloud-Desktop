@@ -1,6 +1,7 @@
 // Единая точка сетевых запросов фронта к нашим доменам: перебирает тиры
 // (прямой → relay → relay pro) и запоминает, что сработало.
 
+import { newTraceId } from '../diagnostics';
 import { NetError, type NetInit, type NetRoute, netRequest } from '../net/fetch';
 import { type Hop, noteHop, planHops, type Tier } from './config';
 
@@ -123,6 +124,7 @@ export type ProbeOutcome =
 export function edgeProbe(url: string, hopTimeoutMs: number): Promise<ProbeOutcome> {
   const planned = planHops(url);
   const hops: Hop[] = planned.length > 0 ? planned : [{ url, tier: 'direct', origin: '' }];
+  const trace = newTraceId();
   const controllers = hops.map(() => new AbortController());
   return new Promise((resolve) => {
     let pending = hops.length;
@@ -149,7 +151,7 @@ export function edgeProbe(url: string, hopTimeoutMs: number): Promise<ProbeOutco
     };
     const start = (at: number) => {
       const hop = hops[at];
-      const init: RequestInit = { cache: 'no-store', signal: controllers[at].signal };
+      const init: NetInit = { cache: 'no-store', signal: controllers[at].signal, trace };
       const over = () => {
         settle();
         if (at === 0) startBackups();
@@ -182,9 +184,10 @@ async function fetchAlone(url: string, init: NetInit, timeoutMs?: number): Promi
 
 export async function edgeFetch(
   url: string,
-  init: NetInit = {},
+  options: NetInit = {},
   timeoutMs?: number,
 ): Promise<Response> {
+  const init = { ...options, trace: options.trace ?? newTraceId() };
   const hops = planHops(url);
   if (hops.length === 0) return fetchAlone(url, init, timeoutMs);
 

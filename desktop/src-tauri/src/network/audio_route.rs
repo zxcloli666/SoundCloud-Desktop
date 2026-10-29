@@ -1,13 +1,12 @@
-use std::time::{Duration, Instant};
+use std::time::Duration;
 
 use futures_util::stream::{FuturesUnordered, StreamExt};
 use wreq::redirect::Policy;
-use wreq::{Client, RequestBuilder, Response, StatusCode};
+use wreq::{Client, Method, Response, StatusCode};
 
 use super::edge::{self, Hop};
-use super::fail;
 use super::netcheck::model::Role;
-use super::netcheck::paths;
+use super::traced::{self, Flight};
 use crate::app::diagnostics;
 
 const HEDGE_DELAY: Duration = Duration::from_millis(300);
@@ -51,18 +50,16 @@ async fn get_from_hops(
     redirects: Option<Policy>,
 ) -> Result<(Response, usize), String> {
     let send = |at: usize, role: Role| {
-        let mut request = request(client, &hops[at], session_id);
+        let (mut request, flight) = traced::begin(client, Method::GET, &hops[at], role, SOURCE);
+        if let Some(session_id) = session_id {
+            request = request.header("x-session-id", session_id);
+        }
         if let Some(policy) = redirects.clone() {
             request = request.redirect(policy);
         }
         async move {
-            let started = Instant::now();
             let result = request.send().await;
-            let attempt = Attempt {
-                role,
-                elapsed: started.elapsed(),
-            };
-            (at, attempt, result)
+            (at, flight, result)
         }
     };
 
@@ -75,8 +72,8 @@ async fn get_from_hops(
             next += 1;
         }
         tokio::select! {
-            Some((at, attempt, result)) = attempts.next() => {
-                if let Some(response) = settle(&hops[at], attempt, result, session_id, &mut errors) {
+            Some((at, flight, result)) = attempts.next() => {
+                if let Some(response) = settle(&hops[at], flight, result, session_id, &mut errors) {
                     return Ok((response, at));
                 }
             }
@@ -89,31 +86,19 @@ async fn get_from_hops(
     Err(route_error(errors))
 }
 
-fn request(client: &Client, hop: &Hop, session_id: Option<&str>) -> RequestBuilder {
-    let request = client.get(&hop.url);
-    match session_id {
-        Some(session_id) => request.header("x-session-id", session_id),
-        None => request,
-    }
-}
-
-struct Attempt {
-    role: Role,
-    elapsed: Duration,
-}
-
 fn settle(
     hop: &Hop,
-    attempt: Attempt,
+    flight: Flight,
     result: Result<Response, wreq::Error>,
     session_id: Option<&str>,
     errors: &mut Vec<String>,
 ) -> Option<Response> {
-    let outcome = match &result {
-        Ok(response) => Ok(response.status().as_u16()),
-        Err(error) => Err(fail::of_wreq(error)),
-    };
-    paths::record(hop, attempt.role, outcome, attempt.elapsed, SOURCE);
+    match &result {
+        Ok(response) => flight.answered(response.status().as_u16(), 0),
+        Err(error) => {
+            flight.broke(error);
+        }
+    }
     match result {
         Ok(response) if edge::hop_ok(hop, &response) => {
             hop.note(true);

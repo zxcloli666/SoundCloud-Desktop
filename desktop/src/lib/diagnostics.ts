@@ -5,7 +5,15 @@ const EVENT_LOOP_WARN_MS = 500;
 const INVOKE_WARN_MS = 1500;
 const ASYNC_WARN_MS = 2500;
 
+const DUPLICATE_WINDOW_MS = 5000;
+const NOISE = /ResizeObserver loop/;
+const FLUSH_AT = 10;
+
 let watchdogStarted = false;
+const lastReported = new Map<string, number>();
+let flushNow: (() => void) | null = null;
+
+export type DiagKind = 'render' | 'unhandled' | 'rejection' | 'playback' | 'request';
 
 function roundMs(value: number) {
   return Math.round(value);
@@ -28,6 +36,43 @@ function logWarn(message: string) {
 export function logError(message: string) {
   console.error(message);
   writeLog('ERROR', message);
+}
+
+export function newTraceId(): string {
+  const bytes = crypto.getRandomValues(new Uint8Array(16));
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
+}
+
+export function onDiagQueueFull(flush: () => void) {
+  flushNow = flush;
+}
+
+export function reportError(
+  kind: DiagKind,
+  error: unknown,
+  context: Record<string, string> = {},
+  trace?: string,
+  componentStack?: string | null,
+) {
+  const failure = error instanceof Error ? error : new Error(String(error));
+  if (NOISE.test(failure.message)) return;
+  const key = `${kind}|${failure.message}`;
+  const now = Date.now();
+  if (now - (lastReported.get(key) ?? 0) < DUPLICATE_WINDOW_MS) return;
+  lastReported.set(key, now);
+  const report = {
+    kind,
+    message: failure.message,
+    stack: failure.stack ?? null,
+    component_stack: componentStack ?? null,
+    trace: trace ?? null,
+    context: { route: `${location.pathname}${location.search}`, ...context },
+  };
+  coreInvoke<number>('diag_error', { error: report })
+    .then((queued) => {
+      if (queued >= FLUSH_AT) flushNow?.();
+    })
+    .catch(() => undefined);
 }
 
 export function setupUiWatchdog() {
@@ -53,10 +98,12 @@ export function setupUiWatchdog() {
 
   window.addEventListener('error', (event) => {
     logError(`[UI] Unhandled error: ${event.message}`);
+    reportError('unhandled', event.error ?? event.message);
   });
 
   window.addEventListener('unhandledrejection', (event) => {
     logError(`[UI] Unhandled rejection: ${String(event.reason)}`);
+    reportError('rejection', event.reason);
   });
 }
 

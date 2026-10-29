@@ -54,6 +54,14 @@ pub struct Hop {
 }
 
 impl Hop {
+    pub fn unplanned(url: &str) -> Self {
+        Self {
+            url: url.to_string(),
+            tier: Tier::Direct,
+            origin: String::new(),
+        }
+    }
+
     pub fn note(&self, ok: bool) {
         note(&self.origin, self.tier, ok);
     }

@@ -9,10 +9,12 @@ use wreq::header::{CONTENT_LENGTH, HeaderMap, HeaderName, HeaderValue};
 use wreq::http2::Http2Options;
 use wreq::{Method, redirect::Policy};
 
+use crate::diag::trace;
 use crate::network::edge::{Hop, Tier};
 use crate::network::fail::{self, FailKind};
-use crate::network::netcheck::{model::Role, paths};
+use crate::network::netcheck::model::Role;
 use crate::network::pace::{self, Pace};
+use crate::network::traced;
 use crate::network::{dns, system_proxy};
 
 const CONNECT_TIMEOUT: Duration = Duration::from_secs(10);
@@ -38,6 +40,7 @@ pub struct FetchRequest {
     route: Option<Route>,
     #[serde(default)]
     long_poll: bool,
+    trace: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -183,7 +186,12 @@ async fn perform(
     fresh: &wreq::Client,
     request: FetchRequest,
 ) -> (Head, Vec<u8>) {
-    let (head, body, answered_in) = exchange(pooled, fresh, &request).await;
+    let id = request
+        .trace
+        .clone()
+        .filter(|id| trace::valid_trace(id))
+        .unwrap_or_else(trace::new_trace);
+    let (head, body, answered_in) = trace::within(id, exchange(pooled, fresh, &request)).await;
     if let Some(took) = answered_in {
         pace::note(took);
     }
@@ -195,7 +203,6 @@ async fn exchange(
     fresh: &wreq::Client,
     request: &FetchRequest,
 ) -> (Head, Vec<u8>, Option<Duration>) {
-    let started = Instant::now();
     let deadline = request
         .timeout_ms
         .map(|ms| tokio::time::Instant::now() + Duration::from_millis(ms));
@@ -205,19 +212,41 @@ async fn exchange(
     let headers = outgoing(&method, &request.headers, request.body.is_some());
     let replayable = matches!(method, Method::GET | Method::HEAD)
         && request.route.as_ref().is_none_or(|route| route.last);
+    let hop = Hop {
+        url: request.url.clone(),
+        tier: request
+            .route
+            .as_ref()
+            .map_or(Tier::Direct, |route| route.tier),
+        origin: request
+            .route
+            .as_ref()
+            .map_or_else(String::new, |route| route.origin.clone()),
+    };
+    let role = Role::of_index(
+        request
+            .route
+            .as_ref()
+            .map_or(0, |route| usize::from(route.attempt)),
+    );
     let mut stalled = false;
-    let (response, answered_in) = loop {
+    let (response, flight, answered_in) = loop {
         let client = if stalled { fresh } else { pooled };
         let asked = Instant::now();
-        let mut builder = client
-            .request(method.clone(), &request.url)
-            .headers(headers.clone());
+        let (builder, flight) = traced::begin(client, method.clone(), &hop, role, "api");
+        let flight = if request.long_poll {
+            flight.unrecorded()
+        } else {
+            flight
+        };
+        let mut builder = builder.headers(headers.clone());
         if let Some(body) = request.body.clone() {
             builder = builder.body(body);
         }
         match within(deadline, builder.send()).await {
             None => {
-                settle(request, Err(FailKind::Timeout), started);
+                suspect(request);
+                flight.failed(FailKind::Timeout, "no answer in time");
                 return (
                     Head::failed(NetKind::Timeout, "no answer in time"),
                     Vec::new(),
@@ -225,26 +254,23 @@ async fn exchange(
                 );
             }
             Some(Err(error)) if replayable && !stalled && dropped_by_pings(&error) => {
-                record(request, Err(FailKind::Timeout), started);
+                flight.failed(FailKind::Timeout, PINGS_GAVE_UP);
                 stalled = true;
             }
             Some(Err(error)) => {
+                suspect(request);
+                let text = described(&error);
                 let kind = fail::of_wreq(&error);
-                settle(request, Err(kind), started);
-                return (
-                    Head::failed(net_kind(kind), described(&error)),
-                    Vec::new(),
-                    None,
-                );
+                flight.failed(kind, text.clone());
+                return (Head::failed(net_kind(kind), text), Vec::new(), None);
             }
             Some(Ok(response)) => {
                 let measured = !stalled && !request.long_poll;
-                break (response, measured.then(|| asked.elapsed()));
+                break (response, flight, measured.then(|| asked.elapsed()));
             }
         }
     };
     let status = response.status();
-    settle(request, Ok(status.as_u16()), started);
     let head = Head::Answer {
         status: status.as_u16(),
         status_text: status.canonical_reason().unwrap_or_default().to_string(),
@@ -253,9 +279,12 @@ async fn exchange(
         stalled,
     };
     match read_body(response, deadline).await {
-        Ok(body) => (head, body, answered_in),
+        Ok(body) => {
+            flight.answered(status.as_u16(), body.len() as u64);
+            (head, body, answered_in)
+        }
         Err(message) => {
-            record(request, Err(FailKind::Body), started);
+            flight.cut(FailKind::Body, message.clone(), status.as_u16());
             (
                 Head::failed(NetKind::Body, message),
                 Vec::new(),
@@ -293,27 +322,10 @@ async fn within<F: Future>(deadline: Option<tokio::time::Instant>, work: F) -> O
     }
 }
 
-fn settle(request: &FetchRequest, outcome: Result<u16, FailKind>, started: Instant) {
-    if outcome.is_err()
-        && let Some(host) = host_of(&request.url)
-    {
+fn suspect(request: &FetchRequest) {
+    if let Some(host) = host_of(&request.url) {
         dns::suspect(&host);
     }
-    record(request, outcome, started);
-}
-
-fn record(request: &FetchRequest, outcome: Result<u16, FailKind>, started: Instant) {
-    if request.long_poll {
-        return;
-    }
-    let Some(route) = &request.route else { return };
-    let hop = Hop {
-        url: request.url.clone(),
-        tier: route.tier,
-        origin: route.origin.clone(),
-    };
-    let role = Role::of_index(usize::from(route.attempt));
-    paths::record(&hop, role, outcome, started.elapsed(), "api");
 }
 
 fn host_of(url: &str) -> Option<String> {

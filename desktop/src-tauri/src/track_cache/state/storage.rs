@@ -5,7 +5,6 @@ use crate::app::diagnostics;
 use crate::network::dns;
 use crate::network::edge::Tier;
 use crate::network::netcheck::model::Role;
-use crate::network::netcheck::paths;
 
 use super::{
     DownloadError, DownloadSource, PRESIGN_ORIGINS, PlaybackQuality, STORAGE_COOLDOWN_AFTER,
@@ -13,7 +12,6 @@ use super::{
     write_response_to_cache,
 };
 
-const SOURCE: &str = "storage";
 
 #[derive(Default)]
 pub(super) struct StorageCooldown {
@@ -177,14 +175,7 @@ impl TrackCacheState {
         let mut transport_ok = false;
         let hops = crate::network::edge::plan(storage_url);
         for (index, hop) in hops.into_iter().enumerate() {
-            let started = Instant::now();
-            let sent = self.storage_get(&hop).await;
-            let outcome = match &sent {
-                Ok(resp) => Ok(resp.status().as_u16()),
-                Err(fail) => Err(fail.kind),
-            };
-            let role = Role::of_index(index);
-            paths::record(&hop, role, outcome, started.elapsed(), SOURCE);
+            let sent = self.storage_get(&hop, Role::of_index(index)).await;
             let resp = match sent {
                 Ok(r) => r,
                 Err(fail) => {

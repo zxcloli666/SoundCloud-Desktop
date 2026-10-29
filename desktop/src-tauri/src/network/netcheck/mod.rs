@@ -309,6 +309,7 @@ fn reason_of(raw: &str) -> String {
 
 #[tauri::command]
 pub async fn net_check_run() -> Result<NetReport, String> {
+    crate::diag::trace::open_debug();
     let flight = start(Trigger::Manual, None).ok_or("network check is not ready")?;
     flight
         .await
@@ -323,6 +324,12 @@ pub fn net_check_auto(reason: String) {
 #[tauri::command]
 pub fn net_check_last() -> Option<NetReport> {
     CHECKER.get()?.memory().reports.first().cloned()
+}
+
+pub fn text_within(age: Duration) -> Option<String> {
+    let report = net_check_last()?;
+    let age_ms = now_ms().saturating_sub(report.at_ms + u64::from(report.duration_ms));
+    (age_ms <= age.as_millis() as u64).then(|| report::text(&report))
 }
 
 #[tauri::command]

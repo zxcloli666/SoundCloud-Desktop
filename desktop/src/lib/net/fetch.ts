@@ -24,6 +24,7 @@ export interface NetInit extends RequestInit {
   timeoutMs?: number;
   route?: NetRoute;
   longPoll?: boolean;
+  trace?: string;
 }
 
 interface Answer {
@@ -104,6 +105,7 @@ export async function netRequest(
     timeoutMs: init.timeoutMs ?? null,
     route: init.route ?? null,
     longPoll: init.longPoll ?? false,
+    trace: init.trace ?? null,
   };
   if (init.signal?.aborted) throw abortError();
   const warnMs = (init.timeoutMs ?? DEFAULT_TIMEOUT_MS) + WARN_SLACK_MS;

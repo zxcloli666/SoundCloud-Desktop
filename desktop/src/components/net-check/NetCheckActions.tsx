@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { DISCORD_URL } from '../../lib/constants';
 import { Check, ClipboardCopy, RefreshCw, Send } from '../../lib/icons';
+import { ReportButton } from '../ui/ReportButton';
 import { reportText, useNetCheckStore, useShownVerdict, type Verdict } from '../../lib/net/check';
 
 const COPIED_RESET_MS = 1800;
@@ -57,32 +58,19 @@ export const NetCheckActions = React.memo(() => {
     openUrl(DISCORD_URL).catch(() => toast.error(t('common.error')));
   };
 
-  const send = () => {
-    if (!hasReport) {
-      openSupport();
-      return;
-    }
-    void copy().then((done) => {
-      if (!done) return;
-      toast.success(t('netCheck.sent'));
-      openSupport();
-    });
-  };
-
   const idle = !running && hasReport;
   const primary = !running && WORTH_SENDING.has(verdict);
 
   return (
     <div className="space-y-2.5">
-      <button
-        type="button"
-        onClick={send}
-        disabled={running}
-        className={primary ? PRIMARY : SECONDARY}
-      >
-        <Send size={13} />
-        {t('netCheck.send')}
-      </button>
+      {hasReport ? (
+        <ReportButton trigger="netcheck" className={primary ? PRIMARY : SECONDARY} discordAfter />
+      ) : (
+        <button type="button" onClick={openSupport} disabled={running} className={SECONDARY}>
+          <Send size={13} />
+          {t('netCheck.send')}
+        </button>
+      )}
       <div className="grid grid-cols-2 gap-2.5">
         <button type="button" onClick={copyReport} disabled={!idle} className={SECONDARY}>
           {copied ? <Check size={13} /> : <ClipboardCopy size={13} />}

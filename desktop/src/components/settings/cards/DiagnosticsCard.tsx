@@ -3,8 +3,10 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { trackedInvoke as invoke } from '../../../lib/diagnostics';
 import { Check, ClipboardCopy, FileText, FolderOpen } from '../../../lib/icons';
+import { setReporting } from '../../../lib/diag';
+import { useSettingsStore } from '../../../stores/settings';
 import { Skeleton } from '../../ui/Skeleton';
-import { Card } from '../primitives';
+import { Card, Row, Toggle } from '../primitives';
 
 const COPIED_RESET_MS = 1800;
 
@@ -12,6 +14,13 @@ export function DiagnosticsCard() {
   const { t } = useTranslation();
   const [logDir, setLogDir] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const sendErrorReports = useSettingsStore((s) => s.sendErrorReports);
+  const setSendErrorReports = useSettingsStore((s) => s.setSendErrorReports);
+
+  const toggleReports = () => {
+    setSendErrorReports(!sendErrorReports);
+    setReporting(!sendErrorReports);
+  };
 
   useEffect(() => {
     invoke<string>('diagnostics_log_dir')
@@ -83,6 +92,9 @@ export function DiagnosticsCard() {
           {t('settings.openLogFolder')}
         </button>
       </div>
+      <Row title={t('diag.sendReports')} desc={t('diag.sendReportsDesc')}>
+        <Toggle checked={sendErrorReports} onChange={toggleReports} />
+      </Row>
     </Card>
   );
 }

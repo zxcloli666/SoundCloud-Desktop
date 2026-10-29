@@ -2334,5 +2334,16 @@
     "prev": "이전",
     "next": "다음",
     "quit": "종료"
+  },
+  "diag": {
+    "report": "지원 요청용 리포트",
+    "reportDesc": "최근 요청과 오류를 보냅니다. 계정 정보는 없습니다",
+    "send": "리포트 보내기",
+    "sending": "보내는 중",
+    "openDiscord": "Discord 열기",
+    "reveal": "폴더에서 보기",
+    "attach": "이 파일을 채팅에 첨부하세요",
+    "sendReports": "오류 리포트 보내기",
+    "sendReportsDesc": "앱 오류를 개발자에게 보냅니다. 계정 정보는 없습니다"
   }
 }

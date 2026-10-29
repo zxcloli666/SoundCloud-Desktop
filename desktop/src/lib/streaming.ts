@@ -9,7 +9,7 @@ import {
   STREAMING_BASE,
   STREAMING_PREMIUM_BASE,
 } from './constants';
-import { logHttpError, logHttpFailure, trackAsync } from './diagnostics';
+import { logHttpError, logHttpFailure, newTraceId, reportError, trackAsync } from './diagnostics';
 import { edgeFetch } from './edge';
 import { markHealthy, markUnhealthy } from './host-status';
 // Прямо из premium-cache, а не из subscription: тот тянет api-client и
@@ -58,11 +58,12 @@ async function streamingJson<T = unknown>(path: string): Promise<T> {
   let lastError: unknown = null;
 
   const label = `GET ${path}`;
+  const trace = newTraceId();
 
   for (const base of resolveStreamingBases()) {
     const url = `${base}${path}`;
     try {
-      const res = await trackAsync(`streaming:${label}`, edgeFetch(url));
+      const res = await trackAsync(`streaming:${label}`, edgeFetch(url, { trace }));
 
       if (!res.ok) {
         const body = await res.text();
@@ -91,7 +92,18 @@ async function streamingJson<T = unknown>(path: string): Promise<T> {
     }
   }
 
-  throw lastError ?? new Error('Streaming request failed');
+  const failure = lastError ?? new Error('Streaming request failed');
+  reportError(
+    'request',
+    failure,
+    {
+      service: 'stream',
+      path: path.split('?')[0],
+      class: failure instanceof Error ? failure.name : 'unknown',
+    },
+    trace,
+  );
+  throw failure;
 }
 
 // ─── Public API ─────────────────────────────────────────────

@@ -1,5 +1,6 @@
 import {useTranslation} from 'react-i18next';
 import {AlertCircle, Home, RefreshCw} from '../../lib/icons';
+import {ReportButton} from './ReportButton';
 
 /** Premium crash screen shown by the ErrorBoundary. Dark, accent-lit glass,
  *  with retry / reload / home actions and a foldaway technical detail. */
@@ -153,6 +154,7 @@ export function ErrorScreen({
                                 {t('errors.home', 'На главную')}
                             </button>
                         </div>
+                        <ReportButton trigger="render"/>
                     </div>
                 </div>
             </div>

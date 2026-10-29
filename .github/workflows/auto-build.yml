@@ -261,6 +261,18 @@ jobs:
           New-Item -ItemType Directory -Force -Path $dest
           Copy-Item $exe.FullName "$dest/soundcloud-desktop-portable.exe"
 
+      - name: Pack source maps
+        if: matrix.job_name == 'linux-amd64'
+        run: tar -czf web-sourcemaps.tar.gz -C desktop dist-maps
+
+      - name: Upload source maps
+        if: matrix.job_name == 'linux-amd64'
+        uses: actions/upload-artifact@v7
+        with:
+          name: web-sourcemaps
+          path: web-sourcemaps.tar.gz
+          retention-days: 2
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v7
         with:
@@ -397,7 +409,7 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           path: /tmp/artifacts
-          pattern: '{tauri-builds-*,linux-flatpak,soundcloud-desktop-*.flatpak}'
+          pattern: '{tauri-builds-*,linux-flatpak,soundcloud-desktop-*.flatpak,web-sourcemaps}'
           merge-multiple: true
 
       - name: Flatten and deduplicate artifacts

@@ -2211,5 +2211,16 @@
     "writesTitle": "Yeniden giriş yapın",
     "writesText": "SoundCloud mevcut girişiniz üzerinden değişiklikleri kabul etmiyor. Yeniden giriş yapın, bir dakika sürer.",
     "readsText": "SoundCloud bu listeyi mevcut girişiniz üzerinden vermiyor. Yeniden giriş yapın, bir dakika sürer."
+  },
+  "diag": {
+    "report": "Destek için rapor",
+    "reportDesc": "Son istekleri ve hataları gönderir, hesap verisi yok",
+    "send": "Raporu gönder",
+    "sending": "Gönderiliyor",
+    "openDiscord": "Discord'u aç",
+    "reveal": "Klasörde göster",
+    "attach": "Bu dosyayı sohbete ekleyin",
+    "sendReports": "Hata raporlarını gönder",
+    "sendReportsDesc": "Uygulama hatalarını geliştiricilere gönderir, hesap verisi yok"
   }
 }

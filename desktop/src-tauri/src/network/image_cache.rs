@@ -1,19 +1,20 @@
 use std::path::{Path, PathBuf};
 use std::sync::OnceLock;
-use std::time::{Duration, Instant, SystemTime};
+use std::time::{Duration, SystemTime};
 
 use base64::{engine::general_purpose::STANDARD as BASE64, Engine as _};
 use futures_util::stream::{FuturesUnordered, StreamExt};
 use sha2::{Digest, Sha256};
 use tokio::fs::{self, File};
 use tokio::io::AsyncWriteExt;
+use wreq::Method;
 use wreq::header::HeaderMap;
 
 use crate::app::diagnostics;
 use crate::network::edge::{self, Hop};
-use crate::network::fail;
+
 use crate::network::netcheck::model::Role;
-use crate::network::netcheck::paths;
+use crate::network::traced;
 use crate::shared::constants::is_domain_whitelisted;
 use crate::shared::file_lru::{last_used, mark_used};
 
@@ -277,25 +278,30 @@ async fn fetch(
     target: &str,
     headers: &HeaderMap,
 ) -> Result<(u16, Vec<u8>), u16> {
-    let started = Instant::now();
-    let record = |outcome| paths::record(hop, role, outcome, started.elapsed(), SOURCE);
-    let failed = |error: wreq::Error| {
-        record(Err(fail::of_wreq(&error)));
-        hop.note(false);
-        502u16
+    let (request, flight) = traced::begin(client, Method::GET, hop, role, SOURCE);
+    let request = request.headers(headers.clone()).header("X-Target", target);
+    let response = match request.send().await {
+        Ok(response) => response,
+        Err(error) => {
+            flight.broke(&error);
+            hop.note(false);
+            return Err(502);
+        }
     };
-    let request = client
-        .get(&hop.url)
-        .headers(headers.clone())
-        .header("X-Target", target);
-    let response = request.send().await.map_err(failed)?;
     let status = response.status().as_u16();
     if !edge::hop_ok(hop, &response) {
-        record(Ok(status));
+        flight.answered(status, 0);
         return Err(status);
     }
-    let data = response.bytes().await.map_err(failed)?;
-    record(Ok(status));
+    let data = match response.bytes().await {
+        Ok(data) => data,
+        Err(error) => {
+            flight.broke(&error);
+            hop.note(false);
+            return Err(502);
+        }
+    };
+    flight.answered(status, data.len() as u64);
     hop.note(status < 500);
     if status >= 500 {
         return Err(status);
