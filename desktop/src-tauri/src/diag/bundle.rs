@@ -2,7 +2,8 @@ use std::path::PathBuf;
 
 use backend_contracts::diag::{
     App, Attempt as WireAttempt, BUNDLE_KIND, BUNDLE_VERSION, Bundle, ErrorKind, MAX_BUNDLE_BYTES,
-    MAX_LOG_LINES, Session, Trigger, TriggerKind,
+    MAX_ERROR_CHARS, MAX_LOG_LINE_CHARS, MAX_LOG_LINES, MAX_NETCHECK_CHARS, MAX_PATH_CHARS,
+    Session, Trigger, TriggerKind,
 };
 use chrono::{TimeZone, Utc};
 
@@ -38,13 +39,13 @@ fn attempt_json(attempt: Attempt) -> WireAttempt {
         debug: attempt.debug,
         service: attempt.service,
         method: attempt.method,
-        path: caps::cut(&redact(&attempt.path), caps::PATH),
+        path: caps::cut(&redact(&attempt.path), MAX_PATH_CHARS),
         hop: attempt.hop,
         status: attempt.status,
         ms: attempt.ms.into(),
         error: attempt
             .error
-            .map(|error| caps::cut(&redact(&error), caps::ERROR)),
+            .map(|error| caps::cut(&redact(&error), MAX_ERROR_CHARS)),
         bytes: attempt.bytes,
     }
 }
@@ -68,7 +69,7 @@ fn log_tail(path: &PathBuf) -> Vec<String> {
                 || line.contains("SESSION STARTED")
                 || line.contains("SoundCloud Desktop ")
         })
-        .map(|line| caps::cut(&redact(line), caps::LOG_LINE))
+        .map(|line| caps::cut(&redact(line), MAX_LOG_LINE_CHARS))
         .collect();
     let extra = lines.len().saturating_sub(MAX_LOG_LINES);
     lines.drain(..extra);
@@ -98,7 +99,7 @@ pub fn build(inputs: Inputs, attempts: Vec<Attempt>, errors: Vec<ErrorEntry>) ->
         errors,
         netcheck: inputs
             .netcheck
-            .map(|text| caps::cut(&redact(&text), caps::NETCHECK)),
+            .map(|text| caps::cut(&redact(&text), MAX_NETCHECK_CHARS)),
         log_tail: inputs.log_path.as_ref().map(log_tail).unwrap_or_default(),
     };
     loop {
@@ -315,5 +316,23 @@ mod tests {
         let sent: EventsBody =
             serde_json::from_value(serde_json::to_value(&body).unwrap()).unwrap();
         assert_eq!(sent.events[0].fingerprint, body.events[0].fingerprint);
+    }
+
+    #[test]
+    fn every_hop_label_passes_the_contract_check() {
+        let hosts = [
+            ("api.scnative.dev", Tier::Direct),
+            ("stream.r2.relay.scnative.dev", Tier::Relay),
+            ("r2.relay.scnative.dev", Tier::Relay),
+            ("stream.relay.scnative.dev", Tier::Relay),
+            ("p1.pro.scnative.dev", Tier::Pro),
+            ("pro.scnative.dev", Tier::Pro),
+        ];
+        for (host, tier) in hosts {
+            let mut each = attempt(1);
+            each.hop = crate::diag::attempt::hop_label(host, tier);
+            let bytes = build(inputs(), vec![each], vec![]);
+            assert_eq!(parsed(&bytes).check(), Ok(()), "{host}");
+        }
     }
 }

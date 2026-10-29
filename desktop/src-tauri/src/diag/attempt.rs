@@ -84,22 +84,17 @@ pub fn service_of(host: &str) -> Service {
 pub fn hop_label(host: &str, tier: Tier) -> String {
     match tier {
         Tier::Direct => "direct".to_string(),
-        Tier::Relay => numbered(host.split('.').nth(1), 'r'),
-        Tier::Pro => numbered(host.split('.').next(), 'p'),
+        Tier::Relay => node_label(host, 'r').unwrap_or("relay").to_string(),
+        Tier::Pro => node_label(host, 'p').unwrap_or("pro").to_string(),
     }
 }
 
-fn numbered(label: Option<&str>, prefix: char) -> String {
-    match label {
-        Some(label)
-            if label.strip_prefix(prefix).is_some_and(|digits| {
-                !digits.is_empty() && digits.bytes().all(|byte| byte.is_ascii_digit())
-            }) =>
-        {
-            label.to_string()
-        }
-        _ => format!("{prefix}0"),
-    }
+fn node_label(host: &str, prefix: char) -> Option<&str> {
+    host.split('.').find(|label| {
+        label.strip_prefix(prefix).is_some_and(|digits| {
+            !digits.is_empty() && digits.bytes().all(|byte| byte.is_ascii_digit())
+        })
+    })
 }
 
 #[cfg(test)]
@@ -153,8 +148,9 @@ mod tests {
         assert_eq!(hop_label("stream.r2.relay.scnative.dev", Tier::Relay), "r2");
         assert_eq!(hop_label("p1.pro.scnative.dev", Tier::Pro), "p1");
         assert_eq!(hop_label("api.scnative.dev", Tier::Direct), "direct");
-        assert_eq!(hop_label("stream.relay.scnative.dev", Tier::Relay), "r0");
-        assert_eq!(hop_label("pro.scnative.dev", Tier::Pro), "p0");
+        assert_eq!(hop_label("r2.relay.scnative.dev", Tier::Relay), "r2");
+        assert_eq!(hop_label("stream.relay.scnative.dev", Tier::Relay), "relay");
+        assert_eq!(hop_label("pro.scnative.dev", Tier::Pro), "pro");
     }
 
     #[test]

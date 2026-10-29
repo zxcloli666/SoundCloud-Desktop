@@ -299,7 +299,7 @@ checksum = "c08606f8c3cbf4ce6ec8e28fb0014a2c086708fe954eaa885384a6165172e7e8"
 [[package]]
 name = "backend-contracts"
 version = "1.0.0"
-source = "git+https://github.com/zxcloli666/SoundCloud-Backend?tag=v9.9.0#2842e212daaee71939d5e3faec9f46eb4e76a2e1"
+source = "git+https://github.com/zxcloli666/SoundCloud-Backend?tag=v9.9.1#f645b396520fb525e64ad53ab9dab625e8f7081d"
 dependencies = [
  "chrono",
  "hex",

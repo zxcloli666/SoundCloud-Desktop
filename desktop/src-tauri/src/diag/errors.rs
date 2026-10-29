@@ -1,7 +1,10 @@
 use std::collections::{BTreeMap, VecDeque};
 use std::sync::Mutex;
 
-use backend_contracts::diag::{ErrorKind, MAX_CONTEXT_KEYS};
+use backend_contracts::diag::{
+    ErrorKind, MAX_COMPONENT_STACK_CHARS, MAX_CONTEXT_KEYS, MAX_CONTEXT_VALUE_CHARS,
+    MAX_MESSAGE_CHARS, MAX_SHORT_CHARS, MAX_STACK_CHARS,
+};
 use backend_contracts::diag_fingerprint::fingerprint;
 use serde::Deserialize;
 
@@ -34,16 +37,16 @@ pub fn now_iso() -> String {
 
 pub fn entry_of(input: ErrorInput) -> ErrorEntry {
     let clean = |text: &str, max| caps::cut(&redact(text), max);
-    let message = clean(&input.message, caps::MESSAGE);
-    let stack = input.stack.map(|text| clean(&text, caps::STACK));
+    let message = clean(&input.message, MAX_MESSAGE_CHARS);
+    let stack = input.stack.map(|text| clean(&text, MAX_STACK_CHARS));
     let context: BTreeMap<String, String> = input
         .context
         .into_iter()
         .take(MAX_CONTEXT_KEYS)
         .map(|(key, value)| {
             (
-                caps::cut(&key, caps::KEY),
-                clean(&value, caps::CONTEXT_VALUE),
+                caps::cut(&key, MAX_SHORT_CHARS),
+                clean(&value, MAX_CONTEXT_VALUE_CHARS),
             )
         })
         .collect();
@@ -55,7 +58,7 @@ pub fn entry_of(input: ErrorInput) -> ErrorEntry {
         stack,
         component_stack: input
             .component_stack
-            .map(|text| clean(&text, caps::COMPONENT_STACK)),
+            .map(|text| clean(&text, MAX_COMPONENT_STACK_CHARS)),
         trace: input.trace.filter(|trace| trace::valid_trace(trace)),
         count: 1,
         context,
@@ -132,18 +135,18 @@ mod tests {
                 .insert(format!("k{number:02}"), "v".repeat(500));
         }
         let entry = entry_of(long);
-        assert_eq!(entry.message.chars().count(), caps::MESSAGE);
-        assert_eq!(entry.stack.unwrap().chars().count(), caps::STACK);
+        assert_eq!(entry.message.chars().count(), MAX_MESSAGE_CHARS);
+        assert_eq!(entry.stack.unwrap().chars().count(), MAX_STACK_CHARS);
         assert_eq!(
             entry.component_stack.unwrap().chars().count(),
-            caps::COMPONENT_STACK
+            MAX_COMPONENT_STACK_CHARS
         );
         assert_eq!(entry.context.len(), MAX_CONTEXT_KEYS);
         assert!(
             entry
                 .context
                 .values()
-                .all(|v| v.chars().count() == caps::CONTEXT_VALUE)
+                .all(|v| v.chars().count() == MAX_CONTEXT_VALUE_CHARS)
         );
     }
 
