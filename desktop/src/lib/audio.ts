@@ -5,6 +5,7 @@ import i18n from '../i18n';
 import {useBlockedArtistsStore} from '../stores/blocked-artists';
 import type {Track} from '../stores/player';
 import {playbackAllowed, usePlayerStore} from '../stores/player';
+import {usePreviewEnd} from '../stores/preview-end';
 import {useSettingsStore} from '../stores/settings';
 import {
   dropAltUpload,
@@ -58,6 +59,7 @@ import {localTrackPath, markLocalMissing, noteLocalDuration} from './local-impor
 import {isLocalUrn} from './local-library';
 import {notifyError} from './notify';
 import {rememberTracks} from './offline-index';
+import {getIsPremium} from './premium-cache';
 import {getUrnCluster, recordClusterFeedback} from './recsFeedback';
 import {isPreviewOnly} from './track-access';
 import {getArtistDisplay, getDisplayTitle} from './track-display';
@@ -916,6 +918,8 @@ listen<boolean | null>('audio:ended', (event) => {
     recordFullPlay(currentUrn, silentTail);
     lastEndedUrn = currentUrn;
   }
+  const ended = usePlayerStore.getState().currentTrack;
+  if (ended && isPreviewOnly(ended) && !getIsPremium()) usePreviewEnd.getState().ended(ended);
   hasTrack = false;
   handleTrackEnd();
 });

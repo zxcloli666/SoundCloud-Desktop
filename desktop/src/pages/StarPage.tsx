@@ -1,7 +1,8 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { memo, useCallback, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import { CORE_CENTER_Y, LivingCore } from '../components/subscription/LivingCore';
 import { phaseOf } from '../components/subscription/PayStatus';
 import {
@@ -11,17 +12,26 @@ import {
 } from '../components/subscription/providers';
 import { StarAtmosphere } from '../components/subscription/StarAtmosphere';
 import { CenterReadout } from '../components/subscription/star/CenterReadout';
+import { GIFTS_KEY, GiftsPane } from '../components/subscription/star/GiftsPane';
+import { InvitePane, REFERRAL_KEY } from '../components/subscription/star/InvitePane';
 import { ManagePane } from '../components/subscription/star/ManagePane';
 import { MethodPane } from '../components/subscription/star/MethodPane';
-import { primaryEntitlement, type Step } from '../components/subscription/star/meta';
+import {
+  primaryEntitlement,
+  type Recipient,
+  type Step,
+} from '../components/subscription/star/meta';
 import { OverviewPane } from '../components/subscription/star/OverviewPane';
 import { PayPane } from '../components/subscription/star/PayPane';
 import { RedeemPane } from '../components/subscription/star/RedeemPane';
+import type { RefBonus } from '../components/subscription/star/RefField';
 import { Console } from '../components/subscription/star/StarConsole';
 import { SuccessPane } from '../components/subscription/star/SuccessPane';
 import { ChevronLeft } from '../lib/icons';
-import { type CheckoutResp, type Plan, payApi } from '../lib/pay-client';
+import { type CheckoutResp, type Plan, payApi, payErrorCode } from '../lib/pay-client';
 import { usePremium } from '../lib/premium-cache';
+import { queryClient } from '../lib/query-client';
+import { type StarIntent, usePaySubscription, useStartTrial } from '../lib/star-offer';
 import { useOrderPoll } from '../lib/useOrderPoll';
 import { useAuthStore } from '../stores/auth';
 
@@ -32,13 +42,28 @@ import { useAuthStore } from '../stores/auth';
  * in `components/subscription/star/*`.
  */
 export const StarPage = memo(function StarPage() {
+  const location = useLocation();
+  const intent = (location.state as { intent?: StarIntent } | null)?.intent ?? null;
+  return <StarFlow key={location.key} intent={intent} />;
+});
+
+function firstStep(intent: StarIntent | null, premium: boolean): Step {
+  if (intent === 'invite') return 'invite';
+  if (intent) return 'overview';
+  return premium ? 'manage' : 'overview';
+}
+
+const StarFlow = memo(function StarFlow({ intent }: { intent: StarIntent | null }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const premium = usePremium();
   const username = useAuthStore((s) => s.user?.username);
   const handle = username ? `@${username}` : t('starpass.guestHandle');
 
-  const [step, setStep] = useState<Step>(premium ? 'manage' : 'overview');
+  const [step, setStep] = useState<Step>(() => firstStep(intent, premium));
+  const [recipient, setRecipient] = useState<Recipient>(intent === 'gift' ? 'gift' : 'self');
+  const [refBonus, setRefBonus] = useState<RefBonus>(null);
+  const gift = recipient === 'gift';
   const [planId, setPlanId] = useState<string | null>(null);
   const [option, setOption] = useState<ActivationOption | null>(null);
   const [recurring, setRecurring] = useState(false);
@@ -72,16 +97,45 @@ export const StarPage = memo(function StarPage() {
   if (step === 'pay' && phase === 'granted') {
     setIgniteKey((k) => k + 1);
     setStep('success');
+    if (order.data?.gift) void queryClient.invalidateQueries({ queryKey: GIFTS_KEY });
   }
+  const giftResult =
+    order.data?.gift && order.data.gift_code
+      ? { code: order.data.gift_code, periodDays: selectedPlan?.period_days ?? 30 }
+      : null;
 
   // Active-membership end date (manage/success centre readout) — comes from the
   // subscription, not the in-flight order. Shared cache with ManagePane.
-  const subQuery = useQuery({
-    queryKey: ['pay', 'subscription'],
-    queryFn: payApi.subscription,
-    staleTime: 30_000,
-    enabled: premium || step === 'manage' || step === 'success',
+  const subQuery = usePaySubscription();
+  const trialAvailable = !premium && subQuery.data?.trial_available === true;
+  const referral = useQuery({
+    queryKey: REFERRAL_KEY,
+    queryFn: payApi.referral,
+    staleTime: 60_000,
+    enabled: step === 'invite',
   });
+  const inviteDays = referral.data?.bonus_days ?? null;
+
+  const { mutate: mutateTrial, isPending: trialPending } = useStartTrial();
+  const startTrial = useCallback(() => {
+    mutateTrial(undefined, {
+      onSuccess: () => {
+        setIgniteKey((k) => k + 1);
+        setStep('success');
+      },
+      onError: (e) => {
+        const code = payErrorCode(e);
+        const known = code === 'trial_used' || code === 'not_eligible';
+        toast.error(t(`starpass.trial.error.${known ? code : 'failed'}`));
+      },
+    });
+  }, [mutateTrial, t]);
+  const trialAsked = useRef(false);
+  useEffect(() => {
+    if (intent !== 'trial' || trialAsked.current || !trialAvailable) return;
+    trialAsked.current = true;
+    startTrial();
+  }, [intent, trialAvailable, startTrial]);
   const subEndsAt = subQuery.data
     ? (primaryEntitlement(subQuery.data.entitlements)?.ends_at ?? subQuery.data.premium_until ?? 0)
     : 0;
@@ -90,14 +144,22 @@ export const StarPage = memo(function StarPage() {
   const checkoutMut = useMutation({
     mutationFn: () => {
       if (!option || !planId) throw new Error('no selection');
-      const allowRecurring = option.recurring && selectedPlan?.months === 1 && recurring;
-      return payApi.checkout(toCheckout(option, planId, allowRecurring));
+      const allowRecurring = !gift && option.recurring && selectedPlan?.months === 1 && recurring;
+      return payApi.checkout({
+        ...toCheckout(option, planId, allowRecurring),
+        gift: gift || undefined,
+        ref: !gift && refBonus ? refBonus.code : undefined,
+      });
     },
     onSuccess: (resp) => {
       setCheckout(resp);
       setStep('pay');
     },
+    onError: () => {
+      if (step === 'pay') setStep('method');
+    },
   });
+  const refreshQr = useCallback(() => checkoutMut.mutate(), [checkoutMut.mutate]);
 
   const reset = useCallback(() => {
     setCheckout(null);
@@ -109,7 +171,7 @@ export const StarPage = memo(function StarPage() {
     setStep('method');
   }, [reset]);
 
-  const canRecur = !!option?.recurring && selectedPlan?.months === 1;
+  const canRecur = !gift && !!option?.recurring && selectedPlan?.months === 1;
   const lit = step === 'success' || step === 'manage';
   // Where the header "back" returns to, per step (null = no back button).
   const backTarget: Step | null =
@@ -117,7 +179,7 @@ export const StarPage = memo(function StarPage() {
       ? 'method'
       : step === 'method'
         ? 'overview'
-        : step === 'redeem'
+        : step === 'redeem' || step === 'invite' || step === 'gifts'
           ? premium
             ? 'manage'
             : 'overview'
@@ -203,6 +265,8 @@ export const StarPage = memo(function StarPage() {
                   plan={selectedPlan}
                   endsAt={centerEndsAt}
                   serialSeed={checkout?.order_id ?? handle}
+                  gift={gift}
+                  inviteDays={inviteDays}
                 />
               </div>
             </div>
@@ -222,6 +286,15 @@ export const StarPage = memo(function StarPage() {
                 onSelect={setPlanId}
                 onIgnite={goMethod}
                 onRedeem={() => setStep('redeem')}
+                recipient={recipient}
+                onRecipient={setRecipient}
+                trial={trialAvailable}
+                trialPending={trialPending}
+                onTrial={startTrial}
+                refCode={refBonus}
+                onRefCode={setRefBonus}
+                showRef={!premium}
+                onInvite={() => setStep('invite')}
               />
             )}
             {step === 'method' && (
@@ -244,15 +317,38 @@ export const StarPage = memo(function StarPage() {
                 option={option}
                 phase={phase}
                 onChangeMethod={goMethod}
+                onRefresh={refreshQr}
               />
             )}
             {step === 'success' && (
-              <SuccessPane onMusic={() => navigate('/home')} onManage={() => setStep('manage')} />
+              <SuccessPane
+                onMusic={() => navigate('/home')}
+                onManage={() => setStep('manage')}
+                gift={giftResult}
+                onGifts={() => setStep('gifts')}
+              />
             )}
             {step === 'manage' && (
-              <ManagePane onExtend={() => setStep('overview')} onRedeem={() => setStep('redeem')} />
+              <ManagePane
+                onExtend={() => {
+                  setRecipient('self');
+                  setStep('overview');
+                }}
+                onRedeem={() => setStep('redeem')}
+                onGift={() => setStep('gifts')}
+                onInvite={() => setStep('invite')}
+              />
             )}
             {step === 'redeem' && <RedeemPane onRedeemed={() => setStep('manage')} />}
+            {step === 'invite' && <InvitePane />}
+            {step === 'gifts' && (
+              <GiftsPane
+                onGiftMore={() => {
+                  setRecipient('gift');
+                  setStep('overview');
+                }}
+              />
+            )}
           </Console>
         </div>
       </div>

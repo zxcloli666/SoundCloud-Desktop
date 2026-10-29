@@ -354,6 +354,11 @@ pub fn call_is_enabled(state: State<'_, Arc<CallState>>) -> bool {
 }
 
 #[tauri::command]
+pub fn call_device_id(state: State<'_, Arc<CallState>>) -> String {
+    state.device_id.clone()
+}
+
+#[tauri::command]
 pub async fn call_status(state: State<'_, Arc<CallState>>) -> Result<CallStatus, String> {
     Ok(state.inner().status.lock().await.clone())
 }

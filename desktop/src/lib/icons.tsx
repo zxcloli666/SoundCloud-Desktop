@@ -51,6 +51,7 @@ import {
   FolderOpen as _FolderOpen,
   FolderPlus as _FolderPlus,
   Fullscreen as _Fullscreen,
+  Gift as _Gift,
   Globe as _Globe,
   GripVertical as _GripVertical,
   HardDrive as _HardDrive,
@@ -83,12 +84,12 @@ import {
   Moon as _Moon,
   Music as _Music,
   Palette as _Palette,
-  Pin as _Pin,
   PanelLeftClose as _PanelLeftClose,
   PanelLeftOpen as _PanelLeftOpen,
   Pause as _Pause,
   Pencil as _Pencil,
   PictureInPicture2 as _PictureInPicture2,
+  Pin as _Pin,
   Play as _Play,
   Plus as _Plus,
   Power as _Power,
@@ -165,6 +166,7 @@ export const FileDown = memo(_FileDown);
 export const FileMusic = memo(_FileMusic);
 export const FileText = memo(_FileText);
 export const Flame = memo(_Flame);
+export const Gift = memo(_Gift);
 export const FolderInput = memo(_FolderInput);
 export const FolderOpen = memo(_FolderOpen);
 export const FolderPlus = memo(_FolderPlus);

@@ -58,6 +58,9 @@ const Discover = lazy(() =>
 const StarPage = lazy(() =>
   import('./pages/StarPage').then((module) => ({ default: module.StarPage })),
 );
+const RecapPage = lazy(() =>
+  import('./pages/RecapPage').then((module) => ({ default: module.RecapPage })),
+);
 const UpdateChecker = lazy(() =>
   import('./components/UpdateChecker').then((module) => ({ default: module.UpdateChecker })),
 );
@@ -349,6 +352,14 @@ export default function App() {
                   element={
                     <RouteLoader>
                       <StarPage />
+                    </RouteLoader>
+                  }
+                />
+                <Route
+                  path="recap"
+                  element={
+                    <RouteLoader>
+                      <RecapPage />
                     </RouteLoader>
                   }
                 />

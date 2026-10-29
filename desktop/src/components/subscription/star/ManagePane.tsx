@@ -1,30 +1,31 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
+import { Gift, Users } from '../../../lib/icons';
 import { payApi } from '../../../lib/pay-client';
 import { requestPremiumRecheck } from '../../../lib/premium-cache';
 import { queryClient } from '../../../lib/query-client';
 import { passDate } from '../../../lib/star-format';
+import { PAY_SUB_KEY, usePaySubscription } from '../../../lib/star-offer';
 import { DiscordCard } from '../DiscordCard';
 import { primaryEntitlement } from './meta';
 import { GhostBtn } from './StarConsole';
 
-/** Manage — Discord link, auto-renew (cancel-only), source; extend / redeem. */
+/** Manage — Discord link, auto-renew (cancel-only), source; extend / redeem / gift / invite. */
 export const ManagePane = memo(function ManagePane({
   onExtend,
   onRedeem,
+  onGift,
+  onInvite,
 }: {
   onExtend: () => void;
   onRedeem: () => void;
+  onGift: () => void;
+  onInvite: () => void;
 }) {
   const { t } = useTranslation();
-  const SUB_KEY = ['pay', 'subscription'] as const;
-  const { data, isLoading } = useQuery({
-    queryKey: SUB_KEY,
-    queryFn: payApi.subscription,
-    staleTime: 30_000,
-  });
+  const { data, isLoading } = usePaySubscription();
   const ent = data ? primaryEntitlement(data.entitlements) : null;
   const source = ent?.source ?? '';
   const endsAt = ent?.ends_at ?? data?.premium_until ?? 0;
@@ -34,7 +35,7 @@ export const ManagePane = memo(function ManagePane({
     mutationFn: () => payApi.cancel(source),
     onSuccess: () => {
       toast.success(t('starpass.manage.canceled'));
-      void queryClient.invalidateQueries({ queryKey: SUB_KEY });
+      void queryClient.invalidateQueries({ queryKey: PAY_SUB_KEY });
       requestPremiumRecheck();
     },
     onError: () => toast.error(t('starpass.manage.cancelError')),
@@ -89,6 +90,14 @@ export const ManagePane = memo(function ManagePane({
       <div className="mt-1 flex flex-wrap gap-3">
         <GhostBtn onClick={onExtend}>{t('starpass.manage.extend')}</GhostBtn>
         <GhostBtn onClick={onRedeem}>{t('starpass.manage.redeem')}</GhostBtn>
+        <GhostBtn onClick={onGift}>
+          <Gift size={14} />
+          {t('starpass.gift.cta')}
+        </GhostBtn>
+        <GhostBtn onClick={onInvite}>
+          <Users size={14} />
+          {t('starpass.invite.cta')}
+        </GhostBtn>
       </div>
     </div>
   );

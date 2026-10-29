@@ -1668,6 +1668,10 @@
       "support": {
         "title": "프로젝트 후원",
         "tag": "서버 및 개발"
+      },
+      "sync": {
+        "title": "빠른 동기화",
+        "tag": "몇 분 만에"
       }
     },
     "method": {
@@ -1793,7 +1797,56 @@
       "miniapp": "Telegram 미니 앱"
     },
     "loadError": "요금제를 불러오지 못했어요",
-    "loading": "요금제 불러오는 중…"
+    "loading": "요금제 불러오는 중…",
+    "recipient": {
+      "self": "나에게",
+      "gift": "선물용"
+    },
+    "gift": {
+      "ignite": "선물하기",
+      "cta": "선물함",
+      "mine": "내 선물",
+      "none": "아직 선물이 없습니다.",
+      "another": "또 선물하기",
+      "copy": "복사",
+      "copied": "복사됨",
+      "redeemed": "사용됨",
+      "ready": "선물 준비됨",
+      "center": "친구를 위한 코드",
+      "howTo": "코드를 친구에게 보내세요. 친구가 STAR을 열고 \"코드가 있어요\"를 누르면 됩니다.",
+      "shareText": "SoundCloud Desktop용 STAR 패스, 제가 드려요 🎁\n코드: {{code}}\nSTAR 열기 → \"코드가 있어요\". 앱 받기: https://getsoundcloud.app"
+    },
+    "trial": {
+      "cta_other": "{{count}}일 무료",
+      "starting": "시작 중…",
+      "error": {
+        "trial_used": "이 계정이나 컴퓨터는 이미 STAR 체험판을 사용했습니다.",
+        "not_eligible": "체험판은 STAR을 사용한 적 없는 계정만 가능합니다.",
+        "failed": "체험판을 시작할 수 없습니다. 나중에 다시 시도해주세요."
+      }
+    },
+    "invite": {
+      "link": "친구 초대",
+      "cta": "초대하기",
+      "title": "친구가 STAR을 받으면, 둘 다 +{{days}}일 추가됩니다",
+      "copy": "초대 코드 복사",
+      "shareText": "저는 SoundCloud Desktop에서 SoundCloud를 듣습니다. 제 코드 {{code}}로 STAR을 받으면 우리 둘 다 +{{days}}일을 받습니다. https://getsoundcloud.app",
+      "friends_other": "{{count}} / {{cap}}명의 친구",
+      "earned_other": "+{{count}}일",
+      "daysUnit": "일",
+      "center": "당신과 친구를 위해"
+    },
+    "ref": {
+      "have": "친구 코드가 있으신가요?",
+      "placeholder": "친구 코드",
+      "apply": "적용",
+      "applied": "친구 덕분에 +{{days}}일 추가됨",
+      "unknown": "존재하지 않는 코드입니다.",
+      "own": "자신의 코드입니다.",
+      "notFirst": "친구 코드는 첫 구매에만 적용됩니다.",
+      "failed": "코드를 확인할 수 없습니다."
+    },
+    "qrRefreshing": "QR이 만료되어 새로 만듭니다…"
   },
   "soundwaveLock": {
     "wordmark": "사운드 웨이브",
@@ -2345,5 +2398,54 @@
     "attach": "이 파일을 채팅에 첨부하세요",
     "sendReports": "오류 리포트 보내기",
     "sendReportsDesc": "앱 오류를 개발자에게 보냅니다. 계정 정보는 없습니다"
+  },
+  "starMoments": {
+    "tryFree_other": "{{count}}일 무료",
+    "getStar": "STAR 받기",
+    "extend": "연장하기",
+    "gift": "STAR 선물하기",
+    "invite": "초대하기",
+    "later": "나중에",
+    "expiry": {
+      "trial": "STAR 체험판",
+      "left_other": "{{count}}일 남음"
+    },
+    "preview": {
+      "label": "Go+ 미리보기"
+    },
+    "winback": {
+      "title": "STAR이 만료됨",
+      "sound": {
+        "star": "UQ",
+        "free": "HQ"
+      },
+      "goPlus": {
+        "star": "전체",
+        "free": "30초"
+      },
+      "sync": {
+        "star": "분",
+        "free": "시간"
+      }
+    },
+    "sync": {
+      "free": "지금",
+      "freeTime": "시간",
+      "starTime": "약 2분"
+    }
+  },
+  "recap": {
+    "title": "{{year}} 연말 결산",
+    "teaser": "당신의 음악 연도",
+    "ready": "연말 결산이 준비되었습니다",
+    "open": "보기",
+    "intro": "소리로 본 1년",
+    "minutes": "분 음악 감상",
+    "days_other": "연속 {{count}}일 음악 감상",
+    "outro": "{{year}}년에 만나요",
+    "again": "처음부터",
+    "next": "다음",
+    "empty": "아직 결산할 만큼의 음악이 없습니다",
+    "emptyHint": "음악을 재생해보세요"
   }
 }

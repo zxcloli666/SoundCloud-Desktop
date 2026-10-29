@@ -1608,6 +1608,10 @@
       "support": {
         "title": "Projeyi destekle",
         "body": "Paso dogrudan sunuculari ve gelistirmeyi besler. Tesekkurler."
+      },
+      "sync": {
+        "title": "Hızlı senkronizasyon",
+        "tag": "Dakikalar içinde"
       }
     },
     "method": {
@@ -1732,7 +1736,59 @@
       "miniapp": "Telegram Mini App"
     },
     "loadError": "Tarifeler yuklenemedi",
-    "loading": "Tarifeler yukleniyor…"
+    "loading": "Tarifeler yukleniyor…",
+    "recipient": {
+      "self": "Kendim için",
+      "gift": "Hediye olarak"
+    },
+    "gift": {
+      "ignite": "Hediye et",
+      "cta": "Hediyeler",
+      "mine": "Hediyelerim",
+      "none": "Henüz hediye yok.",
+      "another": "Başka hediye et",
+      "copy": "Kopyala",
+      "copied": "Kopyalandı",
+      "redeemed": "Kullanıldı",
+      "ready": "Hediye hazır",
+      "center": "arkadaş için bir kod",
+      "howTo": "Kodu arkadaşınıza gönderin. STAR'ı açıp \"Kodum var\"a tıklasın.",
+      "shareText": "SoundCloud Desktop için STAR geçişi, benden 🎁\nKod: {{code}}\nSTAR'ı aç → \"Kodum var\". Uygulamayı indir: https://getsoundcloud.app"
+    },
+    "trial": {
+      "cta_one": "{{count}} gün ücretsiz",
+      "cta_other": "{{count}} gün ücretsiz",
+      "starting": "Başlatılıyor…",
+      "error": {
+        "trial_used": "Bu hesap veya bilgisayar zaten STAR denemesini kullandı.",
+        "not_eligible": "Deneme, STAR sahibi olmayan hesaplar içindir.",
+        "failed": "Deneme başlatılamadı. Daha sonra tekrar deneyin."
+      }
+    },
+    "invite": {
+      "link": "Arkadaş davet et",
+      "cta": "Davet et",
+      "title": "Arkadaş STAR alsın, ikiniz de +{{days}} gün kazansın",
+      "copy": "Davet kodunu kopyala",
+      "shareText": "SoundCloud Desktop'ta SoundCloud dinliyorum. Kodum {{code}} ile STAR alsanız ikimiz de +{{days}} gün kazanırız. https://getsoundcloud.app",
+      "friends_one": "{{count}} / {{cap}} arkadaş",
+      "friends_other": "{{count}} / {{cap}} arkadaş",
+      "earned_one": "+{{count}} gün",
+      "earned_other": "+{{count}} gün",
+      "daysUnit": "gün",
+      "center": "sen ve arkadaşın için"
+    },
+    "ref": {
+      "have": "Arkadaş kodunuz var mı?",
+      "placeholder": "Arkadaş kodu",
+      "apply": "Uygula",
+      "applied": "Arkadaş sayesinde +{{days}} gün",
+      "unknown": "Böyle bir kod yok.",
+      "own": "Bu senin kodun.",
+      "notFirst": "Arkadaş kodu sadece ilk satışta geçerlidir.",
+      "failed": "Kod doğrulanamadı."
+    },
+    "qrRefreshing": "QR süresi doldu, yenisi oluşturuluyor…"
   },
   "soundwaveLock": {
     "wordmark": "SES DALGASI",
@@ -2222,5 +2278,57 @@
     "attach": "Bu dosyayı sohbete ekleyin",
     "sendReports": "Hata raporlarını gönder",
     "sendReportsDesc": "Uygulama hatalarını geliştiricilere gönderir, hesap verisi yok"
+  },
+  "starMoments": {
+    "tryFree_one": "{{count}} gün ücretsiz",
+    "tryFree_other": "{{count}} gün ücretsiz",
+    "getStar": "STAR al",
+    "extend": "Uzat",
+    "gift": "STAR hediye et",
+    "invite": "Davet et",
+    "later": "Sonra",
+    "expiry": {
+      "trial": "STAR deneme",
+      "left_one": "{{count}} gün kaldı",
+      "left_other": "{{count}} gün kaldı"
+    },
+    "preview": {
+      "label": "Go+ önizleme"
+    },
+    "winback": {
+      "title": "STAR'ınız bitti",
+      "sound": {
+        "star": "UQ",
+        "free": "HQ"
+      },
+      "goPlus": {
+        "star": "tam",
+        "free": "30 sn"
+      },
+      "sync": {
+        "star": "dakika",
+        "free": "saat"
+      }
+    },
+    "sync": {
+      "free": "Şimdi",
+      "freeTime": "saat",
+      "starTime": "~2 dk"
+    }
+  },
+  "recap": {
+    "title": "{{year}} Yıl Özeti",
+    "teaser": "Müzikteki yılınız",
+    "ready": "Yıl özetiniz hazır",
+    "open": "İzle",
+    "intro": "Seslerle yılınız",
+    "minutes": "dakika müzik",
+    "days_one": "{{count}} gün kesintisiz müzik",
+    "days_other": "{{count}} gün kesintisiz müzik",
+    "outro": "{{year}} yılında görüşürüz",
+    "again": "Baştan",
+    "next": "Sonraki",
+    "empty": "Henüz özet için yeterli müzik yok",
+    "emptyHint": "Müzik çalın"
   }
 }

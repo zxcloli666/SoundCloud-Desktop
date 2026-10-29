@@ -19,6 +19,7 @@ import {AddToPlaylistHost} from '../music/AddToPlaylistHost';
 import {SuperlikeLimitHost} from '../music/superlike/SuperlikeLimitHost';
 import {TrackContextMenu} from '../music/track-menu/TrackContextMenu';
 import {DropImportOverlay} from '../offline/local/DropImportOverlay';
+import {StarMomentsHost} from '../star-moments/StarMomentsHost';
 import {ContextMenuHost} from '../ui/ContextMenu';
 import {CrossfadeImage} from '../ui/CrossfadeImage';
 import {KeyCaps} from '../ui/KeyCap';
@@ -480,6 +481,7 @@ export const AppShell = React.memo(() => {
       <NowPlayingBar onQueueToggle={onQueueToggle} queueOpen={queueOpen} />
       <AddToPlaylistHost />
       <SuperlikeLimitHost />
+      <StarMomentsHost />
       <UploadTrackDialog />
       {queueOpen && (
         <Suspense fallback={null}>

@@ -65,6 +65,8 @@ export const CenterReadout = memo(function CenterReadout({
   plan,
   endsAt,
   serialSeed,
+  gift,
+  inviteDays,
 }: {
   step: Step;
   phase: PayPhase;
@@ -72,8 +74,32 @@ export const CenterReadout = memo(function CenterReadout({
   plan: Plan | null;
   endsAt: number;
   serialSeed: string;
+  gift: boolean;
+  inviteDays: number | null;
 }) {
   const { t } = useTranslation();
+
+  if (step === 'invite') {
+    return (
+      <div style={SHADOW}>
+        <Eyebrow>✦ ✦</Eyebrow>
+        <Hero size={60} unit={t('starpass.invite.daysUnit')}>
+          {inviteDays != null ? `+${inviteDays}` : '—'}
+        </Hero>
+        <Caption>{t('starpass.invite.center')}</Caption>
+      </div>
+    );
+  }
+
+  if (step === 'gifts' || (step === 'success' && gift)) {
+    return (
+      <div style={SHADOW}>
+        <Eyebrow>✦</Eyebrow>
+        <Hero size={30}>{t(step === 'gifts' ? 'starpass.gift.mine' : 'starpass.gift.ready')}</Hero>
+        <Caption>{t('starpass.gift.center')}</Caption>
+      </div>
+    );
+  }
 
   if (step === 'success' || step === 'manage') {
     return (
@@ -150,6 +176,7 @@ export const CenterReadout = memo(function CenterReadout({
             {plan.savings_pct > 0 && (
               <span className="font-semibold text-accent"> · −{plan.savings_pct}%</span>
             )}
+            {gift && <span className="text-accent"> · {t('starpass.recipient.gift')}</span>}
           </>
         ) : (
           t('starpass.loading')

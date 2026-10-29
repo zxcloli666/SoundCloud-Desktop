@@ -1742,6 +1742,10 @@
       "support": {
         "title": "Поддержка проекта",
         "tag": "Серверы и разработка"
+      },
+      "sync": {
+        "title": "Быстрая синхронизация",
+        "tag": "За пару минут"
       }
     },
     "method": {
@@ -1867,7 +1871,62 @@
       "miniapp": "Telegram Mini App"
     },
     "loadError": "Не удалось загрузить тарифы",
-    "loading": "Загрузка тарифов…"
+    "loading": "Загрузка тарифов…",
+    "recipient": {
+      "self": "Себе",
+      "gift": "В подарок"
+    },
+    "gift": {
+      "ignite": "Подарить",
+      "cta": "Подарки",
+      "mine": "Мои подарки",
+      "none": "Подарков пока нет.",
+      "another": "Подарить ещё",
+      "copy": "Скопировать",
+      "copied": "Скопировано",
+      "redeemed": "Активирован",
+      "ready": "Подарок готов",
+      "center": "код для друга",
+      "howTo": "Отправь код другу. Он откроет STAR и нажмёт «У меня есть код».",
+      "shareText": "Дарю тебе STAR в SoundCloud Desktop 🎁\nКод: {{code}}\nОткрой STAR → «У меня есть код». Скачать: https://getsoundcloud.app"
+    },
+    "trial": {
+      "cta_one": "{{count}} день бесплатно",
+      "cta_few": "{{count}} дня бесплатно",
+      "cta_many": "{{count}} дней бесплатно",
+      "starting": "Включаем…",
+      "error": {
+        "trial_used": "Пробный STAR уже был на этом аккаунте или компьютере.",
+        "not_eligible": "Пробный STAR только для тех, у кого его ещё не было.",
+        "failed": "Не получилось включить пробный STAR. Попробуй позже."
+      }
+    },
+    "invite": {
+      "link": "Пригласить друга",
+      "cta": "Пригласить",
+      "title": "Друг берёт STAR — вам обоим +{{days}} дн.",
+      "copy": "Скопировать приглашение",
+      "shareText": "Слушаю SoundCloud в SoundCloud Desktop. Возьми STAR с моим кодом {{code}} — получишь +{{days}} дней, и я тоже. https://getsoundcloud.app",
+      "friends_one": "{{count}} друг из {{cap}}",
+      "friends_few": "{{count}} друга из {{cap}}",
+      "friends_many": "{{count}} друзей из {{cap}}",
+      "earned_one": "+{{count}} день",
+      "earned_few": "+{{count}} дня",
+      "earned_many": "+{{count}} дней",
+      "daysUnit": "дн.",
+      "center": "тебе и другу"
+    },
+    "ref": {
+      "have": "Есть код друга?",
+      "placeholder": "Код друга",
+      "apply": "Применить",
+      "applied": "+{{days}} дн. от друга",
+      "unknown": "Такого кода нет.",
+      "own": "Это твой собственный код.",
+      "notFirst": "Код друга работает только на первую покупку.",
+      "failed": "Не получилось проверить код."
+    },
+    "qrRefreshing": "QR устарел, делаем новый…"
   },
   "soundwaveLock": {
     "wordmark": "САУНД ВОЛНА",
@@ -2469,5 +2528,60 @@
     "attach": "Прикрепите этот файл в чат",
     "sendReports": "Отправлять отчёты об ошибках",
     "sendReportsDesc": "Отправляет ошибки приложения разработчикам, без данных аккаунта"
+  },
+  "starMoments": {
+    "tryFree_one": "{{count}} день бесплатно",
+    "tryFree_few": "{{count}} дня бесплатно",
+    "tryFree_many": "{{count}} дней бесплатно",
+    "getStar": "Взять STAR",
+    "extend": "Продлить",
+    "gift": "Подарить STAR",
+    "invite": "Пригласить",
+    "later": "Позже",
+    "expiry": {
+      "trial": "Пробный STAR",
+      "left_one": "Ещё {{count}} день",
+      "left_few": "Ещё {{count}} дня",
+      "left_many": "Ещё {{count}} дней"
+    },
+    "preview": {
+      "label": "Превью Go+"
+    },
+    "winback": {
+      "title": "STAR погас",
+      "sound": {
+        "star": "UQ",
+        "free": "HQ"
+      },
+      "goPlus": {
+        "star": "целиком",
+        "free": "30 сек"
+      },
+      "sync": {
+        "star": "минуты",
+        "free": "часы"
+      }
+    },
+    "sync": {
+      "free": "Сейчас",
+      "freeTime": "часы",
+      "starTime": "~2 мин"
+    }
+  },
+  "recap": {
+    "title": "Итоги {{year}}",
+    "teaser": "Твой год в музыке",
+    "ready": "Твой год в музыке готов",
+    "open": "Смотреть",
+    "intro": "Твой год в звуке",
+    "minutes": "минут музыки",
+    "days_one": "Это {{count}} день музыки без перерыва",
+    "days_few": "Это {{count}} дня музыки без перерыва",
+    "days_many": "Это {{count}} дней музыки без перерыва",
+    "outro": "Увидимся в {{year}}",
+    "again": "С начала",
+    "next": "Дальше",
+    "empty": "Для итогов пока мало музыки",
+    "emptyHint": "Включить музыку"
   }
 }

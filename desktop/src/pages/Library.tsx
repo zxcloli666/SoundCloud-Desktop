@@ -10,6 +10,7 @@ import {LocalFilesRail} from '../components/library/LocalFilesRail';
 import {ProfileGate} from '../components/library/ProfileGate';
 import {SoundPrintMasthead} from '../components/library/SoundPrintMasthead';
 import {StatsTeaser} from '../components/library/stats/StatsTeaser';
+import {RecapTeaser} from '../components/recap/RecapTeaser';
 import {SuperlikesRail} from '../components/library/superlikes/SuperlikesRail';
 import {useSoundprint} from '../components/library/useSoundprint';
 import {PlaylistCard} from '../components/music/PlaylistCard';
@@ -21,6 +22,7 @@ import type {LayoutId} from '../lib/layout';
 import {likedTracksCount} from '../lib/likes';
 import {splitReleases} from '../lib/playlist-kind';
 import {armLikesContinuation} from '../lib/queue-continuation';
+import {recapYear} from '../lib/recap-window';
 import {useVisibleBlocks} from '../lib/use-layout';
 import {useAuthStore} from '../stores/auth';
 
@@ -83,10 +85,16 @@ export const Library = React.memo(() => {
     );
   }
 
+  const recap = recapYear();
   const sections: Record<LayoutId<'library'>, ReactNode> = {
     fresh: <FreshDrops genre={genre} />,
     continue: <ContinueRow genre={genre} />,
-    stats: <StatsTeaser aura={sound.aura} genre={genre} />,
+    stats:
+      recap && !genre ? (
+        <RecapTeaser aura={sound.aura} year={recap} />
+      ) : (
+        <StatsTeaser aura={sound.aura} genre={genre} />
+      ),
     playlists: playlistPreview.length > 0 && (
       <CollectionRail
         icon={<ListMusic size={16} />}

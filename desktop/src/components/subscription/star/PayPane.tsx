@@ -9,17 +9,21 @@ import type { PayPhase } from '../PayStatus';
 import type { ActivationOption } from '../providers';
 import { GhostBtn, LinkBtn, PrimaryBtn, Ttl } from './StarConsole';
 
+const QR_REFRESHES = 3;
+
 /** Pay step — SBP QR with steps, or an external/crypto checkout opened in browser. */
 export const PayPane = memo(function PayPane({
   checkout,
   option,
   phase,
   onChangeMethod,
+  onRefresh,
 }: {
   checkout: CheckoutResp;
   option: ActivationOption;
   phase: PayPhase;
   onChangeMethod: () => void;
+  onRefresh: () => void;
 }) {
   const { t } = useTranslation();
   const serial = passSerial(checkout.order_id);
@@ -50,6 +54,28 @@ export const PayPane = memo(function PayPane({
   const secsLeft = Math.max(0, checkout.expires_at - nowSec);
   const expired = phase === 'waiting' && secsLeft === 0;
   const mmss = `${Math.floor(secsLeft / 60)}:${String(secsLeft % 60).padStart(2, '0')}`;
+
+  // A QR the bank never scanned dies after a few minutes; while the user is still
+  // here, quietly swap in a fresh one instead of failing the purchase.
+  const [refreshes, setRefreshes] = useState(0);
+  const deadQr = option.method === 'sbp' && (expired || phase === 'failed');
+  const willRefresh = deadQr && refreshes < QR_REFRESHES;
+  useEffect(() => {
+    if (!willRefresh) return;
+    setRefreshes((n) => n + 1);
+    onRefresh();
+  }, [willRefresh, onRefresh]);
+
+  if (willRefresh) {
+    return (
+      <div>
+        <Ttl>
+          {t(`starpass.method.${option.i18n}.title`)} · {serial}
+        </Ttl>
+        <p className="text-[12.5px] leading-relaxed text-white/60">{t('starpass.qrRefreshing')}</p>
+      </div>
+    );
+  }
 
   if (expired) {
     return (

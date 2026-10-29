@@ -1,11 +1,14 @@
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ArrowRight } from '../../../lib/icons';
+import { ArrowRight, Gift } from '../../../lib/icons';
 import type { Plan } from '../../../lib/pay-client';
-import { monthsKey, PERKS } from './meta';
+import { TRIAL_DAYS } from '../../../lib/star-offer';
+import { monthsKey, PERKS, type Recipient } from './meta';
+import { RecipientSwitch } from './RecipientSwitch';
+import { type RefBonus, RefField } from './RefField';
 import { GhostBtn, LinkBtn, PrimaryBtn } from './StarConsole';
 
-/** Overview: pick a plan duration, see the perks, ignite or redeem. */
+/** Overview: who it is for, a plan duration, the perks; ignite, try, redeem or invite. */
 export const OverviewPane = memo(function OverviewPane({
   plans,
   loading,
@@ -15,6 +18,15 @@ export const OverviewPane = memo(function OverviewPane({
   onSelect,
   onIgnite,
   onRedeem,
+  recipient,
+  onRecipient,
+  trial,
+  trialPending,
+  onTrial,
+  refCode,
+  onRefCode,
+  showRef,
+  onInvite,
 }: {
   plans: Plan[];
   loading: boolean;
@@ -24,8 +36,18 @@ export const OverviewPane = memo(function OverviewPane({
   onSelect: (id: string) => void;
   onIgnite: () => void;
   onRedeem: () => void;
+  recipient: Recipient;
+  onRecipient: (next: Recipient) => void;
+  trial: boolean;
+  trialPending: boolean;
+  onTrial: () => void;
+  refCode: RefBonus;
+  onRefCode: (next: RefBonus) => void;
+  showRef: boolean;
+  onInvite: () => void;
 }) {
   const { t } = useTranslation();
+  const gift = recipient === 'gift';
 
   if (error) {
     return (
@@ -40,6 +62,8 @@ export const OverviewPane = memo(function OverviewPane({
 
   return (
     <div>
+      <RecipientSwitch value={recipient} onChange={onRecipient} />
+
       {/* duration segmented */}
       <div className="flex gap-1.5 rounded-[14px] border border-white/[0.10] bg-white/[0.04] p-1.5">
         {(loading ? [] : plans).map((p) => {
@@ -105,10 +129,23 @@ export const OverviewPane = memo(function OverviewPane({
 
       <div className="mt-[18px] flex flex-wrap items-center gap-3">
         <PrimaryBtn onClick={onIgnite} disabled={!selectedId}>
-          {t('starpass.ignite')}
+          {gift ? <Gift size={16} /> : null}
+          {gift ? t('starpass.gift.ignite') : t('starpass.ignite')}
           <ArrowRight size={16} />
         </PrimaryBtn>
+        {trial && !gift && (
+          <GhostBtn onClick={onTrial}>
+            {trialPending
+              ? t('starpass.trial.starting')
+              : t('starpass.trial.cta', { count: TRIAL_DAYS })}
+          </GhostBtn>
+        )}
         <LinkBtn onClick={onRedeem}>{t('starpass.haveCode')}</LinkBtn>
+      </div>
+
+      <div className="mt-3.5 flex flex-wrap items-center justify-between gap-3">
+        {showRef && !gift ? <RefField value={refCode} onChange={onRefCode} /> : <span />}
+        <LinkBtn onClick={onInvite}>{t('starpass.invite.link')}</LinkBtn>
       </div>
     </div>
   );

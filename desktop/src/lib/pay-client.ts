@@ -68,6 +68,8 @@ export interface CheckoutReq {
   provider: ProviderId;
   method?: PlategaMethod;
   recurring?: boolean;
+  gift?: boolean;
+  ref?: string;
 }
 
 export type PayTargetKind = 'tg' | 'webapp' | 'miniapp';
@@ -105,6 +107,8 @@ export interface OrderStatus {
   granted_at?: number | null;
   expires_at?: number | null;
   premium_until: number;
+  gift?: boolean;
+  gift_code?: string | null;
 }
 
 export interface Entitlement {
@@ -132,6 +136,27 @@ export interface PaySubscription {
   entitlements: Entitlement[];
   /** Mirror of the user's linked Discord (bot-owned). Null if not linked. */
   discord: DiscordLink | null;
+  /** When the latest STAR of any source ended; null if never had one. */
+  last_ended_at?: number | null;
+  trial_available?: boolean;
+}
+
+export interface Gift {
+  order_id: string;
+  plan_id: string;
+  period_days: number;
+  code: string;
+  created_at: number;
+  redeemed: boolean;
+  redeemed_at: number | null;
+}
+
+export interface Referral {
+  code: string;
+  invited: number;
+  days_earned: number;
+  bonus_days: number;
+  cap: number;
 }
 
 export interface RedeemResp {
@@ -154,4 +179,26 @@ export const payApi = {
     }),
   redeem: (code: string) =>
     payRequest<RedeemResp>('/api/redeem', { method: 'POST', body: JSON.stringify({ code }) }),
+  trial: (deviceId: string | null) =>
+    payRequest<{ premium_until: number }>('/api/trial', {
+      method: 'POST',
+      body: JSON.stringify({ device_id: deviceId }),
+    }),
+  gifts: () => payRequest<{ gifts: Gift[] }>('/api/me/gifts'),
+  referral: () => payRequest<Referral>('/api/me/referral'),
+  checkRef: (code: string) =>
+    payRequest<{ bonus_days: number }>('/api/referral/check', {
+      method: 'POST',
+      body: JSON.stringify({ code }),
+    }),
 };
+
+/** The machine code pay puts in `message` of an error body, e.g. `trial_used`. */
+export function payErrorCode(e: unknown): string | null {
+  if (!(e instanceof PayError)) return null;
+  try {
+    return (JSON.parse(e.body) as { message?: string }).message ?? null;
+  } catch {
+    return null;
+  }
+}

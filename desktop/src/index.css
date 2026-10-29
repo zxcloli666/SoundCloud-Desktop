@@ -1633,3 +1633,21 @@ select,
         --cover-b 1.4s var(--ease-apple),
         opacity 0.9s ease;
 }
+
+@keyframes star-sync-crawl {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(500%);
+    }
+}
+
+@keyframes recap-fill {
+    from {
+        transform: scaleX(0);
+    }
+    to {
+        transform: scaleX(1);
+    }
+}

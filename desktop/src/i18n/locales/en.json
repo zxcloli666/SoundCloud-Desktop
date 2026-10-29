@@ -1703,6 +1703,10 @@
       "support": {
         "title": "Support the project",
         "tag": "Servers & dev"
+      },
+      "sync": {
+        "title": "Fast sync",
+        "tag": "In minutes"
       }
     },
     "method": {
@@ -1828,7 +1832,59 @@
       "miniapp": "Telegram Mini App"
     },
     "loadError": "Couldn't load plans",
-    "loading": "Loading plans…"
+    "loading": "Loading plans…",
+    "recipient": {
+      "self": "For me",
+      "gift": "As a gift"
+    },
+    "gift": {
+      "ignite": "Gift it",
+      "cta": "Gifts",
+      "mine": "My gifts",
+      "none": "No gifts yet.",
+      "another": "Gift another",
+      "copy": "Copy",
+      "copied": "Copied",
+      "redeemed": "Redeemed",
+      "ready": "Gift ready",
+      "center": "a code for a friend",
+      "howTo": "Send the code to a friend. They open STAR and tap \"I have a code\".",
+      "shareText": "A STAR pass for SoundCloud Desktop, from me 🎁\nCode: {{code}}\nOpen STAR → \"I have a code\". Get the app: https://getsoundcloud.app"
+    },
+    "trial": {
+      "cta_one": "{{count}} day free",
+      "cta_other": "{{count}} days free",
+      "starting": "Starting…",
+      "error": {
+        "trial_used": "This account or computer already had a STAR trial.",
+        "not_eligible": "The trial is for accounts that never had STAR.",
+        "failed": "Couldn't start the trial. Try again later."
+      }
+    },
+    "invite": {
+      "link": "Invite a friend",
+      "cta": "Invite",
+      "title": "A friend gets STAR, you both get +{{days}} days",
+      "copy": "Copy invite",
+      "shareText": "I listen to SoundCloud in SoundCloud Desktop. Get STAR with my code {{code}} and we both get +{{days}} days. https://getsoundcloud.app",
+      "friends_one": "{{count}} of {{cap}} friends",
+      "friends_other": "{{count}} of {{cap}} friends",
+      "earned_one": "+{{count}} day",
+      "earned_other": "+{{count}} days",
+      "daysUnit": "days",
+      "center": "for you and a friend"
+    },
+    "ref": {
+      "have": "Have a friend's code?",
+      "placeholder": "Friend code",
+      "apply": "Apply",
+      "applied": "+{{days}} days from a friend",
+      "unknown": "No such code.",
+      "own": "That's your own code.",
+      "notFirst": "A friend's code works on the first purchase only.",
+      "failed": "Couldn't check the code."
+    },
+    "qrRefreshing": "QR expired, making a new one…"
   },
   "soundwaveLock": {
     "wordmark": "SOUND WAVE",
@@ -2399,5 +2455,57 @@
     "attach": "Attach this file in the chat",
     "sendReports": "Send error reports",
     "sendReportsDesc": "Sends app errors to the developers, no account data"
+  },
+  "starMoments": {
+    "tryFree_one": "{{count}} day free",
+    "tryFree_other": "{{count}} days free",
+    "getStar": "Get STAR",
+    "extend": "Extend",
+    "gift": "Gift STAR",
+    "invite": "Invite",
+    "later": "Later",
+    "expiry": {
+      "trial": "STAR trial",
+      "left_one": "{{count}} day left",
+      "left_other": "{{count}} days left"
+    },
+    "preview": {
+      "label": "Go+ preview"
+    },
+    "winback": {
+      "title": "Your STAR went out",
+      "sound": {
+        "star": "UQ",
+        "free": "HQ"
+      },
+      "goPlus": {
+        "star": "full",
+        "free": "30 s"
+      },
+      "sync": {
+        "star": "minutes",
+        "free": "hours"
+      }
+    },
+    "sync": {
+      "free": "Now",
+      "freeTime": "hours",
+      "starTime": "~2 min"
+    }
+  },
+  "recap": {
+    "title": "{{year}} Recap",
+    "teaser": "Your year in music",
+    "ready": "Your year in music is ready",
+    "open": "Watch",
+    "intro": "Your year in sound",
+    "minutes": "minutes of music",
+    "days_one": "That's {{count}} day of non-stop music",
+    "days_other": "That's {{count}} days of non-stop music",
+    "outro": "See you in {{year}}",
+    "again": "From the start",
+    "next": "Next",
+    "empty": "Not enough music for a recap yet",
+    "emptyHint": "Play some music"
   }
 }

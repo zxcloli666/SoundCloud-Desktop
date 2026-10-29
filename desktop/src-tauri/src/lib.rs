@@ -359,6 +359,7 @@ pub fn run() {
             network::image_cache::maintenance::image_cache_enforce_limit,
             network::call::call_set_enabled,
             network::call::call_is_enabled,
+            network::call::call_device_id,
             network::call::call_status,
             auth::auth_status,
             auth::auth_set_session,
