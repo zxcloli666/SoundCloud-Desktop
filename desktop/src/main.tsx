@@ -124,7 +124,7 @@ async function bootstrap() {
 bootstrap().catch((error) => {
   const message = describeError(error);
   logError(`[Boot] ${message}`);
-  reportError('unhandled', error, { stage: 'bootstrap' });
+  reportError('unhandled', error, { context: { stage: 'bootstrap' } });
   ReactDOM.createRoot(document.getElementById('root')!).render(
     <ErrorScreen error={new Error(message)} fullscreen />,
   );

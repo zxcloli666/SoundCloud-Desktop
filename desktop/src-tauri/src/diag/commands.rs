@@ -3,7 +3,7 @@ use std::time::Duration;
 use serde::Serialize;
 
 use super::app_info;
-use super::bundle::{self, Inputs};
+use super::bundle::{self, Inputs, Trigger};
 use super::errors::{self, ErrorEntry, ErrorInput};
 use super::queue::{self, Delivery};
 use super::{attempt, offline, report, session, trace};
@@ -34,7 +34,7 @@ pub fn diag_session(logged_in: bool, premium: bool, quality: String, locale: Str
 }
 
 #[tauri::command]
-pub fn diag_bundle(trigger: String) -> String {
+pub fn diag_bundle(trigger: Trigger) -> String {
     trace::open_debug();
     let attempts = attempt::oldest_first();
     let inputs = Inputs {
@@ -65,6 +65,6 @@ pub fn diag_queue_batch() -> Option<EventBatch> {
 }
 
 #[tauri::command]
-pub fn diag_queue_settle(delivery: Delivery, sent: usize) {
-    queue::settle_batch(delivery, sent);
+pub fn diag_queue_settle(delivery: Delivery) {
+    queue::settle_batch(delivery);
 }

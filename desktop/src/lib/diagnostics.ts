@@ -50,9 +50,7 @@ export function onDiagQueueFull(flush: () => void) {
 export function reportError(
   kind: DiagKind,
   error: unknown,
-  context: Record<string, string> = {},
-  trace?: string,
-  componentStack?: string | null,
+  details: { context?: Record<string, string>; trace?: string; componentStack?: string | null } = {},
 ) {
   const failure = error instanceof Error ? error : new Error(String(error));
   if (NOISE.test(failure.message)) return;
@@ -64,15 +62,31 @@ export function reportError(
     kind,
     message: failure.message,
     stack: failure.stack ?? null,
-    component_stack: componentStack ?? null,
-    trace: trace ?? null,
-    context: { route: `${location.pathname}${location.search}`, ...context },
+    component_stack: details.componentStack ?? null,
+    trace: details.trace ?? null,
+    context: { route: `${location.pathname}${location.search}`, ...details.context },
   };
   coreInvoke<number>('diag_error', { error: report })
     .then((queued) => {
       if (queued >= FLUSH_AT) flushNow?.();
     })
     .catch(() => undefined);
+}
+
+export function reportRequestFailure(
+  service: 'api' | 'stream',
+  path: string,
+  error: unknown,
+  trace: string,
+) {
+  reportError('request', error, {
+    context: {
+      service,
+      path: path.split('?')[0],
+      class: error instanceof Error ? error.name : 'unknown',
+    },
+    trace,
+  });
 }
 
 export function setupUiWatchdog() {

@@ -385,9 +385,11 @@ async function resolveTrackMetadata(track: Track): Promise<Track> {
 function reportPlaybackFailure(error: unknown, track: Track) {
   const reason = getLoadErrorText(error) ?? 'unknown';
   reportError('playback', error, {
-    urn: track.urn,
-    quality: requestedQuality(),
-    reason: reason.slice(0, 80),
+    context: {
+      urn: track.urn,
+      quality: requestedQuality(),
+      reason: reason.slice(0, 80),
+    },
   });
 }
 

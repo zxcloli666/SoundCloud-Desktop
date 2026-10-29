@@ -19,9 +19,17 @@ const DROP_STEP: usize = 10;
 pub struct Inputs {
     pub app: AppInfo,
     pub session: SessionJson,
-    pub trigger: String,
+    pub trigger: Trigger,
     pub netcheck: Option<String>,
     pub log_path: Option<PathBuf>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, serde::Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum Trigger {
+    Manual,
+    Render,
+    Netcheck,
 }
 
 #[derive(Serialize)]
@@ -105,8 +113,8 @@ fn log_tail(path: &PathBuf) -> Vec<String> {
     lines
 }
 
-fn trigger_json(kind: &str, errors: &[ErrorEntry]) -> Value {
-    let error = (kind == "render")
+fn trigger_json(kind: Trigger, errors: &[ErrorEntry]) -> Value {
+    let error = (kind == Trigger::Render)
         .then(|| errors.iter().rposition(|entry| entry.kind == "render"))
         .flatten();
     json!({ "kind": kind, "error": error })
@@ -120,7 +128,7 @@ pub fn build(inputs: Inputs, attempts: Vec<Attempt>, errors: Vec<ErrorEntry>) ->
         at: now_iso(),
         app: inputs.app,
         session: inputs.session,
-        trigger: trigger_json(&inputs.trigger, &errors),
+        trigger: trigger_json(inputs.trigger, &errors),
         attempts: attempts.into_iter().map(attempt_json).collect(),
         errors,
         netcheck: inputs
@@ -175,7 +183,7 @@ mod tests {
                     star: "direct".into(),
                 },
             },
-            trigger: "render".into(),
+            trigger: Trigger::Render,
             netcheck: Some("net text".into()),
             log_path: None,
         }

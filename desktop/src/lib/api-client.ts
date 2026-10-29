@@ -9,7 +9,7 @@ import {
   logHttpFailure,
   logInfo,
   newTraceId,
-  reportError,
+  reportRequestFailure,
   trackAsync,
 } from './diagnostics';
 import { EdgeUnreachableError, edgeFetch } from './edge';
@@ -135,14 +135,6 @@ function isRateLimitError(status: number, body: string): boolean {
 }
 
 // ─── Helpers ────────────────────────────────────────────────
-
-function requestContext(path: string, error: unknown): Record<string, string> {
-  return {
-    service: 'api',
-    path: path.split('?')[0],
-    class: error instanceof Error ? error.name : 'unknown',
-  };
-}
 
 function fetchWithTimeout(url: string, options: NetInit, timeoutMs: number): Promise<Response> {
   return edgeFetch(url, options, timeoutMs);
@@ -307,6 +299,22 @@ export async function apiRequest<T = unknown>(
   options: ApiRequestOptions = {},
   timeoutMs?: number,
 ): Promise<T> {
+  const trace = newTraceId();
+  try {
+    return await requestAcrossHosts<T>(path, options, timeoutMs, trace);
+  } catch (error) {
+    const serverSide = error instanceof ApiError ? error.status >= 500 : !(error instanceof SyntaxError);
+    if (serverSide && !path.startsWith('/diag/')) reportRequestFailure('api', path, error, trace);
+    throw error;
+  }
+}
+
+async function requestAcrossHosts<T>(
+  path: string,
+  options: ApiRequestOptions,
+  timeoutMs: number | undefined,
+  trace: string,
+): Promise<T> {
   const { silentStatuses, quiet, longPoll = false, ...init } = options;
   // Мост мог ещё не дойти до зеркала — иначе запрос уйдёт без сессии в никуда.
   if (!sessionKnown) await awaitSessionKnown();
@@ -322,7 +330,6 @@ export async function apiRequest<T = unknown>(
   const label = `${method.toUpperCase()} ${path}`;
   const bases = apiBasesFor(path);
   const effectiveTimeout = timeoutMs ?? planeTimeout(path);
-  const trace = newTraceId();
   let lastError: unknown = null;
   /** main отказал по этой сессии — ждём, что скажет сосед по ней же. */
   let mainRefused = false;
@@ -413,9 +420,6 @@ export async function apiRequest<T = unknown>(
         const verdict = starDeny && authRejection ? authRejection : err;
 
         logHttpError(label, verdict.status, url, verdict.body);
-        if (verdict.status >= 500 && !path.startsWith('/diag/')) {
-          reportError('request', verdict, requestContext(path, verdict), trace);
-        }
 
         // Rate-limit — копим, одиночный не дёргает recovery.
         if (isRateLimitError(verdict.status, verdict.body)) {
@@ -472,8 +476,6 @@ export async function apiRequest<T = unknown>(
         continue;
       }
       logHttpFailure(label, url, error, performance.now() - attemptStart);
-      if (!path.startsWith('/diag/'))
-        reportError('request', error, requestContext(path, error), trace);
       if (authRejection) {
         logInfo(`[Host] ${label}: no second opinion from ${hostLabel(base)}, keeping the 401`);
         noteAuthGap();

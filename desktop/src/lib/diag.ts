@@ -47,17 +47,16 @@ async function flushEvents() {
     await pushSession();
     const batch = await invoke<EventBatch | null>('diag_queue_batch');
     if (!batch) return;
-    const sent = batch.events.length;
     try {
       await apiRequest(
         '/diag/events',
         { method: 'POST', body: JSON.stringify(batch), quiet: true },
         UPLOAD_TIMEOUT_MS,
       );
-      await invoke('diag_queue_settle', { delivery: 'sent', sent });
+      await invoke('diag_queue_settle', { delivery: 'sent' });
     } catch (error) {
       const refused = error instanceof ApiError && error.status >= 400 && error.status < 500;
-      if (refused) await invoke('diag_queue_settle', { delivery: 'rejected', sent });
+      await invoke('diag_queue_settle', { delivery: refused ? 'rejected' : 'failed' });
     }
   } finally {
     flushing = false;

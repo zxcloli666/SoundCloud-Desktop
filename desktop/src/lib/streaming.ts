@@ -9,7 +9,7 @@ import {
   STREAMING_BASE,
   STREAMING_PREMIUM_BASE,
 } from './constants';
-import { logHttpError, logHttpFailure, newTraceId, reportError, trackAsync } from './diagnostics';
+import { logHttpError, logHttpFailure, newTraceId, reportRequestFailure, trackAsync } from './diagnostics';
 import { edgeFetch } from './edge';
 import { markHealthy, markUnhealthy } from './host-status';
 // Прямо из premium-cache, а не из subscription: тот тянет api-client и
@@ -93,16 +93,7 @@ async function streamingJson<T = unknown>(path: string): Promise<T> {
   }
 
   const failure = lastError ?? new Error('Streaming request failed');
-  reportError(
-    'request',
-    failure,
-    {
-      service: 'stream',
-      path: path.split('?')[0],
-      class: failure instanceof Error ? failure.name : 'unknown',
-    },
-    trace,
-  );
+  reportRequestFailure('stream', path, failure, trace);
   throw failure;
 }
 
