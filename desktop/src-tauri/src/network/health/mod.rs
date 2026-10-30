@@ -16,7 +16,7 @@ use uuid::Uuid;
 
 use self::delivery::Delivery;
 use self::model::Topology;
-use self::probe::Pool;
+use self::probe::{EndToEnd, Pool};
 use crate::network::edge;
 use crate::app::diagnostics::log_native;
 
@@ -85,10 +85,12 @@ impl Agent {
         let mut round = 0usize;
         let mut last_paths = Vec::new();
         let mut last_lost = Vec::new();
+        let mut end_to_end = EndToEnd::new();
         loop {
             let started = Instant::now();
             round = round.wrapping_add(1);
             if let Some(fresh) = self.delivery.fetch_topology(&topology).await {
+                edge::set_relay_only(fresh.relay_only_labels());
                 topology = fresh;
             }
 
@@ -98,7 +100,7 @@ impl Agent {
             };
             edge::set_pool(
                 probe::reaching_main_first(
-                    probe::usable_first(&pool.relays, &last_paths),
+                    probe::usable_first(&pool.relays, &last_paths, &end_to_end),
                     &last_lost,
                 ),
                 topology.weighted_calls(&pool.calls),
@@ -107,18 +109,29 @@ impl Agent {
 
             let pros = discovery::pros(&topology.pros).await;
             edge::set_pros(pros.clone());
-            let (mut paths, lost) = tokio::join!(
-                probe::probe_paths(&self.probe_client, &pool, round),
-                probe::main_lost(&self.probe_client, &pool.relays)
+            let (mut paths, lost, probed) = tokio::join!(
+                probe::probe_paths(
+                    &self.probe_client,
+                    &pool,
+                    round,
+                    !edge::is_relay_only("api")
+                ),
+                probe::main_lost(&self.probe_client, &pool.relays),
+                probe::probe_end_to_end(&self.probe_client, &pool.relays, round)
             );
+            if let Some((node, usable)) = probed {
+                end_to_end.insert(node, usable);
+            }
             edge::set_pool(
-                probe::reaching_main_first(probe::usable_first(&pool.relays, &paths), &lost),
+                probe::reaching_main_first(
+                    probe::usable_first(&pool.relays, &paths, &end_to_end),
+                    &lost,
+                ),
                 Vec::new(),
             );
             let relays_lag = probe::relays_lag(&pool.relays, &paths);
-            let pro_paths =
-                probe::probe_pros(&pros, relays_lag || !probe::direct_clear(&paths)).await;
-            edge::set_pros(probe::usable_first(&pros, &pro_paths));
+            let pro_paths = probe::probe_pros(&pros, probe::pro_needed(&pool.relays, &paths)).await;
+            edge::set_pros(probe::usable_first(&pros, &pro_paths, &EndToEnd::new()));
             if relays_lag && pro_paths.iter().any(|sample| sample.ok) {
                 edge::escalate_relayed();
             }
@@ -151,12 +164,13 @@ impl Agent {
                 &self.app,
                 if delivered { "INFO" } else { "WARN" },
                 format!(
-                    "[Health] topology={} relays={} calls={} samples={} reachable={} delivered={} elapsed={}ms",
+                    "[Health] topology={} relays={} calls={} samples={} reachable={} e2e={} delivered={} elapsed={}ms",
                     topology.version,
                     pool.relays.len(),
                     pool.calls.len(),
                     paths.len() + services.len(),
                     ok,
+                    probe::end_to_end_line(&end_to_end),
                     delivered,
                     started.elapsed().as_millis()
                 ),

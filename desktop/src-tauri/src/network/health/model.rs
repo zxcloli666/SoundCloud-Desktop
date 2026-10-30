@@ -164,6 +164,19 @@ impl Topology {
         self
     }
 
+    pub fn relay_only_labels(&self) -> Vec<String> {
+        self.endpoints
+            .iter()
+            .filter(|endpoint| {
+                !endpoint.tiers.is_empty() && !endpoint.tiers.iter().any(|tier| tier == "direct")
+            })
+            .filter_map(|endpoint| {
+                let host = url::Url::parse(&endpoint.url).ok()?.host_str()?.to_string();
+                edge::service_label(&host).map(str::to_string)
+            })
+            .collect()
+    }
+
     pub fn call_nodes(&self) -> Vec<String> {
         self.calls.iter().map(|call| call.id.clone()).collect()
     }
@@ -203,6 +216,25 @@ mod tests {
         assert!(topology.calls.is_empty());
         assert_eq!(topology.ingest.len(), 2);
         assert!(topology.ingest.iter().all(|origin| !origin.ends_with('/')));
+    }
+
+    #[test]
+    fn endpoints_without_a_direct_tier_make_their_label_relay_only() {
+        let endpoint = |id: &str, host: &str, tiers: &[&str]| Endpoint {
+            id: id.into(),
+            url: format!("https://{host}/health"),
+            tiers: tiers.iter().map(|tier| tier.to_string()).collect(),
+        };
+        let mut topology = Topology::bootstrap();
+        assert!(topology.relay_only_labels().is_empty());
+        topology.endpoints = vec![
+            endpoint("api", "api.scnative.dev", &["relay"]),
+            endpoint("stream", "stream.scnative.dev", &["direct", "relay"]),
+            endpoint("storage", "storage.scnative.space", &["relay", "pro"]),
+            endpoint("images", "images.scnative.dev", &[]),
+            endpoint("status", "status.getsoundcloud.app", &["relay"]),
+        ];
+        assert_eq!(topology.relay_only_labels(), ["api", "storage"]);
     }
 
     #[test]

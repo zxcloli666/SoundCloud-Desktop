@@ -1,5 +1,4 @@
-import { STATUS_PAGE_URL } from '../constants';
-import { fetchExternal } from './external';
+import { trackedInvoke as invoke } from '../diagnostics';
 import type { RemoteVerdict } from './store';
 
 const REMOTE_CACHE_MS = 30_000;
@@ -16,9 +15,7 @@ function verdictOf(role: unknown): RemoteVerdict {
 
 async function load(): Promise<Roles | null> {
   try {
-    const res = await fetchExternal(`${STATUS_PAGE_URL}/api/verdict`);
-    if (!res.ok) return null;
-    const payload = (await res.json()) as { roles?: unknown } | null;
+    const payload = await invoke<{ roles?: unknown } | null>('net_status_verdict');
     const roles = payload?.roles;
     return typeof roles === 'object' && roles !== null ? (roles as Roles) : null;
   } catch {

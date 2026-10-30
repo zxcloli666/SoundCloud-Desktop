@@ -14,6 +14,7 @@ use super::verdict;
 use crate::network::dns::{self, doh};
 use crate::network::edge;
 use crate::network::fail::{self, Fail, FailKind, Phase};
+use crate::network::pro::{self, Asked};
 use crate::network::system_proxy;
 
 const HEALTH_PATH: &str = "/health";
@@ -26,7 +27,6 @@ const CAP_MARGIN: Duration = Duration::from_secs(1);
 const EXTERNAL_TIMEOUT: Duration = Duration::from_secs(10);
 const RELAY_TARGETS: usize = 4;
 const PRO_TARGETS: usize = 2;
-const DOH_SAMPLE_HOST: &str = "api.scnative.dev";
 const STATUS_VERDICT_URL: &str = "https://status.getsoundcloud.app/api/verdict";
 const CORE: [(TargetId, &str); 4] = [
     (TargetId::Main, "api.scnative.dev"),
@@ -51,7 +51,7 @@ pub fn targets() -> Vec<Target> {
     let core = CORE.iter().map(|(id, host)| Target {
         id: *id,
         node: None,
-        host: (*host).to_string(),
+        host: relay_named_host(host),
     });
     let relays = edge::relay_pool()
         .into_iter()
@@ -70,6 +70,19 @@ pub fn targets() -> Vec<Target> {
             host,
         });
     core.chain(relays).chain(pros).collect()
+}
+
+pub fn relay_named_host(host: &str) -> String {
+    let named = edge::relay_named(&format!("https://{host}/"));
+    url::Url::parse(&named)
+        .ok()
+        .and_then(|url| url.host_str().map(str::to_string))
+        .unwrap_or_else(|| host.to_string())
+}
+
+fn doh_sample_host() -> String {
+    let node = edge::relay_pool().into_iter().next().unwrap_or_default();
+    format!("{node}.{}", edge::relay_zone())
 }
 
 pub async fn check(target: &Target, app: Option<&wreq::Client>, trigger: Trigger) -> TargetCheck {
@@ -182,7 +195,7 @@ async fn through_proxy(target: &Target, app: Option<&wreq::Client>, url: &str) -
 }
 
 pub fn direct_allowed(trigger: Trigger) -> bool {
-    trigger == Trigger::Manual || !system_proxy::proxied(&format!("https://{DOH_SAMPLE_HOST}/"))
+    trigger == Trigger::Manual || !system_proxy::proxied(&format!("https://{}/", doh_sample_host()))
 }
 
 fn total(probe: Option<&PhaseProbe>, app: Option<&AppProbe>) -> Option<u32> {
@@ -317,9 +330,10 @@ pub(super) async fn app_probe(client: &wreq::Client, url: &str, timeout: Duratio
 }
 
 pub async fn doh_providers() -> Vec<DohProbe> {
+    let sample = &doh_sample_host();
     join_all(doh::PROVIDERS.iter().map(|provider| async move {
         let started = Instant::now();
-        let result = doh::query_with(provider, DOH_SAMPLE_HOST).await;
+        let result = doh::query_with(provider, sample).await;
         let ms = Some(millis(started.elapsed()));
         let fail = match result {
             Ok(answer) if !answer.addrs.is_empty() => None,
@@ -392,6 +406,19 @@ async fn reachable(client: &wreq::Client, url: &str, valid: fn(u16, &str) -> boo
 }
 
 pub async fn remote(client: &wreq::Client) -> Remote {
+    remote_of(verdict(Some(client)).await.as_ref())
+}
+
+pub async fn verdict(client: Option<&wreq::Client>) -> Option<serde_json::Value> {
+    if let Some(client) = client
+        && let Some(payload) = verdict_direct(client).await
+    {
+        return Some(payload);
+    }
+    verdict_through_pro().await
+}
+
+async fn verdict_direct(client: &wreq::Client) -> Option<serde_json::Value> {
     let attempt = async {
         let response = client.get(STATUS_VERDICT_URL).send().await.ok()?;
         if !response.status().is_success() {
@@ -399,11 +426,35 @@ pub async fn remote(client: &wreq::Client) -> Remote {
         }
         response.json::<serde_json::Value>().await.ok()
     };
-    let payload = tokio::time::timeout(EXTERNAL_TIMEOUT, attempt)
+    tokio::time::timeout(EXTERNAL_TIMEOUT, attempt)
         .await
         .ok()
-        .flatten();
-    remote_of(payload.as_ref())
+        .flatten()
+}
+
+async fn verdict_through_pro() -> Option<serde_json::Value> {
+    let asked = Asked {
+        method: "GET".to_string(),
+        url: STATUS_VERDICT_URL.to_string(),
+        headers: Vec::new(),
+        body: None,
+    };
+    for host in edge::pro_hosts() {
+        let answer = tokio::time::timeout(EXTERNAL_TIMEOUT, pro::whole(&host, asked.clone())).await;
+        if let Ok(Ok((status, body))) = answer
+            && let Some(payload) = verdict_of_answer(status, &body)
+        {
+            return Some(payload);
+        }
+    }
+    None
+}
+
+fn verdict_of_answer(status: u16, body: &[u8]) -> Option<serde_json::Value> {
+    if !(200..300).contains(&status) {
+        return None;
+    }
+    serde_json::from_slice(body).ok()
 }
 
 pub fn remote_of(payload: Option<&serde_json::Value>) -> Remote {
@@ -431,6 +482,7 @@ mod tests {
     use super::{
         APP_RETRY_FLOOR, APP_TIMEOUT, EXTERNAL_TIMEOUT, SYSTEM_DNS_BUDGET, TARGET_CAP, Target,
         app_probe, doh, internet_seen, reached, remote_of, retried, targets, total, verdict,
+        verdict_of_answer,
     };
     use crate::network::fail::{Fail, FailKind, Phase};
     use crate::network::netcheck::model::{
@@ -644,5 +696,15 @@ mod tests {
         );
         let kept = retried(Some(&client), &url, Some(first.clone()), true, APP_TIMEOUT).await;
         assert_eq!(kept, Some(first));
+    }
+
+    #[test]
+    fn a_verdict_through_pro_is_read_like_a_direct_one() {
+        let body = br#"{"roles":{"main":"down","playback":"operational"}}"#;
+        let payload = verdict_of_answer(200, body).unwrap();
+        assert_eq!(remote_of(Some(&payload)), Remote::Down);
+        assert!(verdict_of_answer(502, body).is_none());
+        assert!(verdict_of_answer(200, b"<html>blocked</html>").is_none());
+        assert!(verdict_of_answer(200, b"").is_none());
     }
 }

@@ -317,6 +317,11 @@ pub async fn net_check_run() -> Result<NetReport, String> {
 }
 
 #[tauri::command]
+pub async fn net_status_verdict() -> Option<serde_json::Value> {
+    targets::verdict(fetch::client()).await
+}
+
+#[tauri::command]
 pub fn net_check_auto(reason: String) {
     auto(&reason_of(&reason));
 }

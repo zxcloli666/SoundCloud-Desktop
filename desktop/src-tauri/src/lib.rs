@@ -377,6 +377,7 @@ pub fn run() {
             diag::commands::diag_session,
             diag::commands::diag_set_reporting,
             network::netcheck::net_check_run,
+            network::netcheck::net_status_verdict,
             network::netcheck::net_check_auto,
             network::netcheck::net_check_last,
             network::netcheck::net_check_report_text,

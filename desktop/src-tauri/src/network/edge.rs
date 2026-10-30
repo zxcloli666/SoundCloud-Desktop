@@ -236,9 +236,14 @@ struct Inner {
     pool: Pool,
     dir: Option<PathBuf>,
     gateway_port: Option<u16>,
+    relay_only: Vec<String>,
 }
 
 impl Inner {
+    fn is_relay_only(&self, origin: &str) -> bool {
+        relay_label(origin).is_some_and(|label| self.relay_only.iter().any(|only| only == label))
+    }
+
     fn apply(&mut self, origin: &str, event: Event, now: Instant) -> Change {
         if !event.counts() && !self.origins.contains_key(origin) {
             return Change::None;
@@ -329,6 +334,8 @@ struct Persisted {
     pins: HashMap<String, u64>,
     #[serde(default)]
     pro: Vec<String>,
+    #[serde(default)]
+    relay_only: Vec<String>,
 }
 
 fn now_ms() -> u64 {
@@ -350,10 +357,15 @@ fn snapshot(inner: &Inner, now: Instant, now_ms: u64) -> Persisted {
         .map(|(host, _)| host.clone())
         .collect();
     pro.sort();
-    Persisted { pins, pro }
+    Persisted {
+        pins,
+        pro,
+        relay_only: inner.relay_only.clone(),
+    }
 }
 
 fn restore(inner: &mut Inner, persisted: Persisted, now: Instant, now_ms: u64) {
+    inner.relay_only = known_labels(persisted.relay_only);
     for (host, until_ms) in persisted.pins {
         if until_ms <= now_ms {
             continue;
@@ -415,6 +427,59 @@ fn label_of(host: &str) -> Option<&str> {
 fn relay_label(origin: &str) -> Option<&'static str> {
     let label = label_of(origin)?;
     RELAYS.into_iter().find(|service| *service == label)
+}
+
+fn known_labels(mut labels: Vec<String>) -> Vec<String> {
+    labels.retain(|label| RELAYS.contains(&label.as_str()));
+    labels.sort();
+    labels.dedup();
+    labels
+}
+
+pub fn set_relay_only(labels: Vec<String>) {
+    let labels = known_labels(labels);
+    let changed = {
+        let mut inner = match state().lock() {
+            Ok(guard) => guard,
+            Err(poison) => poison.into_inner(),
+        };
+        let changed = inner.relay_only != labels;
+        if changed {
+            inner.relay_only = labels;
+            persist(&inner);
+        }
+        changed
+    };
+    if changed {
+        announce_change();
+    }
+}
+
+pub fn is_relay_only(label: &str) -> bool {
+    let inner = match state().lock() {
+        Ok(guard) => guard,
+        Err(poison) => poison.into_inner(),
+    };
+    inner.relay_only.iter().any(|only| only == label)
+}
+
+pub fn relay_named(url: &str) -> String {
+    let pool = relay_pool();
+    let inner = match state().lock() {
+        Ok(guard) => guard,
+        Err(poison) => poison.into_inner(),
+    };
+    relay_named_in(&inner, url, &pool)
+}
+
+fn relay_named_in(inner: &Inner, url: &str, pool: &[String]) -> String {
+    let Some(origin) = host_of(url).filter(|origin| inner.is_relay_only(origin)) else {
+        return url.to_string();
+    };
+    relay_hosts_over(&origin, pool)
+        .first()
+        .and_then(|relay| swap_host(url, relay))
+        .unwrap_or_else(|| url.to_string())
 }
 
 pub fn set_pool(relays: Vec<String>, calls: Vec<(String, f64)>) {
@@ -627,34 +692,39 @@ fn planned(url: &str, highest: Tier) -> Vec<Hop> {
         Ok(g) => g,
         Err(e) => e.into_inner(),
     };
-    let from = inner.level(&origin, Instant::now()).min(highest);
+    hops_in(&inner, url, &origin, &relays, highest)
+}
+
+fn hops_in(inner: &Inner, url: &str, origin: &str, relays: &[String], highest: Tier) -> Vec<Hop> {
+    let from = inner.level(origin, Instant::now()).min(highest);
     if from == Tier::Pro {
-        let hops = pro_hops(&inner, url, &origin);
+        let hops = pro_hops(inner, url, origin);
         if !hops.is_empty() {
             return hops;
         }
     }
 
+    let direct = relays.is_empty() || !inner.is_relay_only(origin);
     let mut hops: Vec<Hop> = Vec::new();
     let mut push = |t: Tier, url: Option<String>| {
         if let Some(u) = url {
             hops.push(Hop {
                 url: u,
                 tier: t,
-                origin: origin.clone(),
+                origin: origin.to_string(),
             });
         }
     };
 
-    if from <= Tier::Direct {
+    if from <= Tier::Direct && direct {
         push(Tier::Direct, Some(url.to_string()));
     }
     if from <= Tier::Relay {
-        for relay in &relays {
+        for relay in relays {
             push(Tier::Relay, swap_host(url, relay));
         }
     }
-    if from > Tier::Direct {
+    if from > Tier::Direct && direct {
         push(Tier::Direct, Some(url.to_string()));
     }
     hops
@@ -827,7 +897,11 @@ pub fn audio_plan(url: &str) -> Vec<Hop> {
             return hops;
         }
     }
-    let tiers = audio_tier_order(level != Tier::Direct);
+    let tiers = if inner.is_relay_only(&origin) {
+        vec![Tier::Relay]
+    } else {
+        audio_tier_order(level != Tier::Direct).to_vec()
+    };
     let relay_urls: Vec<String> = relays
         .iter()
         .map(|relay| swap_host(url, relay).unwrap_or_else(|| url.to_string()))
@@ -937,6 +1011,7 @@ pub fn direct_first(url: &str) -> bool {
 pub struct EdgeConfig {
     relays: Vec<(String, Vec<String>)>,
     pro: Vec<String>,
+    relay_only: Vec<String>,
 
     hints: HashMap<String, Tier>,
     revalidate_in_ms: HashMap<String, u64>,
@@ -959,6 +1034,9 @@ pub fn edge_config() -> EdgeConfig {
             })
             .collect(),
         pro: gateways(&inner),
+        relay_only: routed_origins()
+            .filter(|origin| inner.is_relay_only(origin))
+            .collect(),
         hints: inner
             .origins
             .iter()
@@ -999,8 +1077,8 @@ mod tests {
 
     use super::{
         Change, Event, INHERIT, Inner, PROVEN_BYTES, Persisted, RELAYS, REVALIDATE, Tier,
-        audio_tier_order, host_of, is_known_host, is_routed, pro_hops, relay_hosts_over, restore,
-        set_pool, snapshot, swap_host, transport_failure, zone_hosts,
+        audio_tier_order, hops_in, host_of, is_known_host, is_routed, pro_hops, relay_hosts_over,
+        relay_named_in, restore, set_pool, snapshot, swap_host, transport_failure, zone_hosts,
     };
     use base64::{Engine as _, engine::general_purpose::URL_SAFE_NO_PAD as BASE64_URL};
 
@@ -1547,6 +1625,7 @@ mod tests {
             Persisted {
                 pins,
                 pro: Vec::new(),
+                relay_only: Vec::new(),
             },
             later,
             now_ms + 60_000,
@@ -1569,5 +1648,102 @@ mod tests {
         let mut inner = Inner::default();
         restore(&mut inner, old, Instant::now(), 1);
         assert!(inner.origins.is_empty());
+    }
+
+    fn relay_only_inner(labels: &[&str]) -> Inner {
+        Inner {
+            relay_only: labels.iter().map(|label| label.to_string()).collect(),
+            ..Inner::default()
+        }
+    }
+
+    fn pool() -> Vec<String> {
+        vec!["r2".to_string(), "r3".to_string()]
+    }
+
+    fn tiers_of(hops: &[super::Hop]) -> Vec<Tier> {
+        hops.iter().map(|hop| hop.tier).collect()
+    }
+
+    #[test]
+    fn a_relay_only_origin_is_planned_without_a_direct_hop() {
+        let url = "https://api.scnative.dev/me?x=1";
+        let relays = hosts("api.scnative.dev");
+        let ordinary = Inner::default();
+        let hops = hops_in(&ordinary, url, "api.scnative.dev", &relays, Tier::Pro);
+        assert_eq!(tiers_of(&hops), [Tier::Direct, Tier::Relay, Tier::Relay]);
+
+        let only = relay_only_inner(&["api"]);
+        let hops = hops_in(&only, url, "api.scnative.dev", &relays, Tier::Pro);
+        assert_eq!(tiers_of(&hops), [Tier::Relay, Tier::Relay]);
+        assert_eq!(hops[0].url, "https://api.r1.relay.scnative.dev/me?x=1");
+
+        let mut pinned = relay_only_inner(&["api"]);
+        pinned.conclude("api.scnative.dev", Tier::Relay, Instant::now());
+        let hops = hops_in(&pinned, url, "api.scnative.dev", &relays, Tier::Pro);
+        assert_eq!(tiers_of(&hops), [Tier::Relay, Tier::Relay]);
+
+        let space = hops_in(
+            &only,
+            "https://api.scnative.space/",
+            "api.scnative.space",
+            &relays,
+            Tier::Pro,
+        );
+        assert_eq!(tiers_of(&space), [Tier::Relay, Tier::Relay]);
+        let other = hops_in(
+            &only,
+            "https://pay.scnative.dev/",
+            "pay.scnative.dev",
+            &relays,
+            Tier::Pro,
+        );
+        assert_eq!(tiers_of(&other)[0], Tier::Direct);
+    }
+
+    #[test]
+    fn without_relays_a_relay_only_origin_keeps_the_direct_hop() {
+        let only = relay_only_inner(&["api"]);
+        let hops = hops_in(
+            &only,
+            "https://api.scnative.dev/",
+            "api.scnative.dev",
+            &[],
+            Tier::Pro,
+        );
+        assert_eq!(tiers_of(&hops), [Tier::Direct]);
+    }
+
+    #[test]
+    fn relay_only_labels_survive_a_restart_and_old_files_still_load() {
+        let mut inner = relay_only_inner(&["api", "storage"]);
+        let saved = snapshot(&inner, Instant::now(), 1);
+        let text = serde_json::to_string(&saved).unwrap();
+        let loaded: Persisted = serde_json::from_str(&text).unwrap();
+        inner.relay_only.clear();
+        restore(&mut inner, loaded, Instant::now(), 1);
+        assert_eq!(inner.relay_only, ["api", "storage"]);
+
+        let old: Persisted = serde_json::from_str(r#"{"pins":{},"pro":[]}"#).unwrap();
+        assert!(old.relay_only.is_empty());
+        let junk: Persisted =
+            serde_json::from_str(r#"{"relay_only":["api","nope","api"]}"#).unwrap();
+        restore(&mut inner, junk, Instant::now(), 1);
+        assert_eq!(inner.relay_only, ["api"]);
+    }
+
+    #[test]
+    fn a_relay_only_url_is_renamed_to_the_first_pooled_relay() {
+        let only = relay_only_inner(&["api"]);
+        assert_eq!(
+            relay_named_in(&only, "https://api.scnative.dev/probe?bytes=8", &pool()),
+            "https://api.r2.relay.scnative.dev/probe?bytes=8"
+        );
+        let url = "https://storage.scnative.dev/probe";
+        assert_eq!(relay_named_in(&only, url, &pool()), url);
+        assert_eq!(
+            relay_named_in(&only, "https://health.scnative.dev/", &pool()),
+            "https://health.scnative.dev/"
+        );
     }
 }

@@ -2,9 +2,9 @@ use std::time::Duration;
 
 use super::model::{TargetCheck, TargetId, VolumeProbe};
 use super::targets::Target;
-use crate::network::dns;
 use crate::network::health::link::{self, Shape};
 use crate::network::pro;
+use crate::network::{dns, edge};
 
 const STORAGE_PROBE: &str = "https://storage.scnative.dev/probe";
 const HEALTH_PROBE: &str = "https://health.scnative.dev/probe";
@@ -19,7 +19,8 @@ pub async fn of(target: &Target) -> Option<VolumeProbe> {
     let volume = match target.id {
         TargetId::Images => {
             let carrier = format!("https://{host}/");
-            measure_through(&client, STORAGE_PROBE, Some(&carrier)).await
+            let storage = edge::relay_named(STORAGE_PROBE);
+            measure_through(&client, &storage, Some(&carrier)).await
         }
         _ => measure(&client, &format!("https://{host}/probe")).await,
     };

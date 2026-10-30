@@ -20,6 +20,7 @@ export interface Hop {
 interface RustConfig {
   relays: [string, string[]][];
   pro?: string[];
+  relay_only?: string[];
   hints: Record<string, Tier>;
   revalidate_in_ms: Record<string, number>;
   revalidate_ms: number;
@@ -42,6 +43,7 @@ const PROVEN_BYTES = 64 * 1024;
 
 let relays = new Map<string, string[]>();
 let gateways: string[] = [];
+let relayOnly = new Set<string>();
 let revalidateMs = 600_000;
 const origins = new Map<string, OriginState>();
 const reported = new Map<string, Tier>();
@@ -59,6 +61,7 @@ export async function initEdge(): Promise<void> {
 function applyConfig(cfg: RustConfig): void {
   relays = new Map(cfg.relays);
   gateways = cfg.pro ?? [];
+  relayOnly = new Set(cfg.relay_only ?? []);
   revalidateMs = cfg.revalidate_ms || revalidateMs;
   const now = Date.now();
   for (const [host, tier] of Object.entries(cfg.hints ?? {})) {
@@ -134,13 +137,14 @@ export function planHops(url: string): Hop[] {
   const from: Tier = level === 'direct' ? 'direct' : 'relay';
   const min = TIER_ORDER[from];
 
+  const withDirect = !relayOnly.has(origin);
   const hops: Hop[] = [];
-  if (min <= TIER_ORDER.direct) hops.push({ url, tier: 'direct', origin });
+  if (min <= TIER_ORDER.direct && withDirect) hops.push({ url, tier: 'direct', origin });
   if (min <= TIER_ORDER.relay) {
     for (const relay of pool) hops.push({ url: swapHost(url, relay), tier: 'relay', origin });
   }
 
-  if (min > TIER_ORDER.direct) {
+  if (min > TIER_ORDER.direct && withDirect) {
     // Прямой путь остаётся последним шансом даже когда вердикт увёл на relay:
     // relay-нода может лечь, а origin к этому моменту уже разбанят.
     hops.push({ url, tier: 'direct', origin });

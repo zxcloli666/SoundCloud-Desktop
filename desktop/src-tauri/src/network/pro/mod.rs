@@ -20,7 +20,7 @@ const OPEN_TIMEOUT: Duration = Duration::from_secs(40);
 const HEALTH_TIMEOUT: Duration = Duration::from_secs(5);
 const PROBE_TIMEOUT: Duration = Duration::from_secs(30);
 const PROBE_BYTES: usize = 64 * 1024;
-const PROBE_ORIGIN: &str = "https://health.scnative.dev/probe";
+const PROBE_ORIGIN: &str = "https://api.scnative.dev/probe";
 const SIZED: [u16; 2] = [200, 206];
 
 #[derive(Clone)]

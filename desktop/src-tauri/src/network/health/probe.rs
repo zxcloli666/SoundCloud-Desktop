@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::time::{Duration, Instant};
 
 use futures_util::stream::{self, StreamExt};
@@ -16,6 +17,8 @@ const ORIGIN_ZONE: &str = "scnative.dev";
 const DIRECT_EP: &str = "@direct";
 const CUT_SHAPES: [Shape; 4] = [Shape::Cut, Shape::Blackhole, Shape::Reset, Shape::Throttled];
 
+pub type EndToEnd = HashMap<String, bool>;
+
 pub struct Pool {
     pub relays: Vec<String>,
     pub calls: Vec<String>,
@@ -24,7 +27,12 @@ pub struct Pool {
 /// Каждый круг все пути щупаются пробой, которая заведомо переваливает за порог
 /// счётчика: только так видно «дошло N килобайт и тишина». Глубокий замер полосы
 /// дорогой, поэтому за круг его получает одна нода, по очереди.
-pub async fn probe_paths(client: &Client, pool: &Pool, round: usize) -> Vec<Sample> {
+pub async fn probe_paths(
+    client: &Client,
+    pool: &Pool,
+    round: usize,
+    with_direct: bool,
+) -> Vec<Sample> {
     let mut targets: Vec<(String, String)> = pool
         .relays
         .iter()
@@ -40,10 +48,12 @@ pub async fn probe_paths(client: &Client, pool: &Pool, round: usize) -> Vec<Samp
             .iter()
             .map(|node| (node.clone(), format!("https://{node}.{ORIGIN_ZONE}{PROBE_PATH}"))),
     );
-    targets.push((
-        "direct".to_string(),
-        format!("https://health.{ORIGIN_ZONE}{PROBE_PATH}"),
-    ));
+    if with_direct {
+        targets.push((
+            "direct".to_string(),
+            format!("https://health.{ORIGIN_ZONE}{PROBE_PATH}"),
+        ));
+    }
 
     let deep_at = if targets.is_empty() {
         0
@@ -100,15 +110,44 @@ pub async fn probe_pros(pros: &[String], needed: bool) -> Vec<Sample> {
     futures_util::future::join_all(probes).await
 }
 
+pub async fn probe_end_to_end(
+    client: &Client,
+    relays: &[String],
+    round: usize,
+) -> Option<(String, bool)> {
+    let node = relays.get(round.checked_rem(relays.len())?)?;
+    let url = format!("https://api.{node}.{}{PROBE_PATH}", edge::relay_zone());
+    let measured = link::probe(client, &url, link::PROBE_BYTES).await;
+    Some((node.clone(), measured.shape.usable()))
+}
+
+pub fn end_to_end_line(end_to_end: &EndToEnd) -> String {
+    let mut nodes: Vec<_> = end_to_end.iter().collect();
+    nodes.sort();
+    nodes
+        .into_iter()
+        .map(|(node, usable)| format!("{node}:{}", if *usable { "ok" } else { "fail" }))
+        .collect::<Vec<_>>()
+        .join(",")
+}
+
+pub fn pro_needed(relays: &[String], paths: &[Sample]) -> bool {
+    let direct_probed = paths.iter().any(|sample| sample.ep == DIRECT_EP);
+    relays_lag(relays, paths) || (direct_probed && !direct_clear(paths))
+}
+
 pub fn direct_clear(paths: &[Sample]) -> bool {
     paths
         .iter()
         .any(|sample| sample.ok && sample.ep == DIRECT_EP)
 }
 
-pub fn usable_first(relays: &[String], paths: &[Sample]) -> Vec<String> {
+pub fn usable_first(relays: &[String], paths: &[Sample], end_to_end: &EndToEnd) -> Vec<String> {
     let mut ordered = relays.to_vec();
-    ordered.sort_by_key(|node| rank(sample_of(node, paths)));
+    ordered.sort_by_key(|node| {
+        let broken = end_to_end.get(node) == Some(&false);
+        (broken, rank(sample_of(node, paths)))
+    });
     ordered
 }
 
@@ -321,8 +360,8 @@ mod tests {
     use tokio::net::TcpListener;
 
     use super::{
-        Outcome, Route, Sample, direct_bytes, direct_cut_while_others_pass, fail_label, hit_all,
-        judge, reaching_main_first, relays_lag, usable_first,
+        EndToEnd, Outcome, Route, Sample, direct_bytes, direct_cut_while_others_pass, fail_label,
+        hit_all, judge, pro_needed, reaching_main_first, relays_lag, usable_first,
     };
     use crate::network::edge::{self, Tier};
     use crate::network::health::model::Link;
@@ -346,14 +385,17 @@ mod tests {
     fn a_relay_that_failed_its_probe_goes_to_the_back_of_the_pool() {
         let paths = [sample("r1", false), sample("r2", true), sample("r3", true)];
         assert_eq!(
-            usable_first(&pool(&["r1", "r2", "r3"]), &paths),
+            usable_first(&pool(&["r1", "r2", "r3"]), &paths, &EndToEnd::new()),
             ["r2", "r3", "r1"]
         );
     }
 
     #[test]
     fn an_unprobed_pool_keeps_its_order() {
-        assert_eq!(usable_first(&pool(&["r1", "r2"]), &[]), ["r1", "r2"]);
+        assert_eq!(
+            usable_first(&pool(&["r1", "r2"]), &[], &EndToEnd::new()),
+            ["r1", "r2"]
+        );
     }
 
     fn shaped(node: &str, shape: &'static str) -> Sample {
@@ -375,9 +417,34 @@ mod tests {
             shaped("r3", "blackhole"),
         ];
         assert_eq!(
-            usable_first(&pool(&["r3", "r1", "r2"]), &paths),
+            usable_first(&pool(&["r3", "r1", "r2"]), &paths, &EndToEnd::new()),
             ["r2", "r1", "r3"]
         );
+    }
+
+    #[test]
+    fn a_relay_that_fails_end_to_end_goes_behind_even_with_a_clear_leg() {
+        let paths = [
+            shaped("r1", "clear"),
+            shaped("r2", "slow"),
+            shaped("r3", "blackhole"),
+        ];
+        let end_to_end = EndToEnd::from([("r1".to_string(), false), ("r2".to_string(), true)]);
+        assert_eq!(
+            usable_first(&pool(&["r1", "r2", "r3"]), &paths, &end_to_end),
+            ["r2", "r3", "r1"]
+        );
+    }
+
+    #[test]
+    fn pro_is_probed_for_a_lagging_direct_path_only_when_direct_was_probed() {
+        let relays = pool(&["r1"]);
+        let clear = [shaped("r1", "clear")];
+        assert!(!pro_needed(&relays, &clear));
+        let mut with_cut_direct = clear.to_vec();
+        with_cut_direct.push(failed("direct", "cut"));
+        assert!(pro_needed(&relays, &with_cut_direct));
+        assert!(pro_needed(&relays, &[shaped("r1", "blackhole")]));
     }
 
     #[test]
