@@ -25,7 +25,6 @@ const REFUSED_TEXT: Record<string, string> = {
 };
 
 const WAIT_TICK_MS = 60_000;
-const STAR_HINT_AFTER_SEC = 120;
 
 const ACTION =
   'inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-3.5 py-1.5 text-[12px] font-semibold text-white/75 transition-colors hover:border-white/[0.16] hover:bg-white/[0.09] hover:text-white/95';
@@ -80,7 +79,7 @@ export const SyncNotice = React.memo(function SyncNotice({
             ? t('common.syncWaiting', { time: syncTimeText(t, waitedSec) })
             : (text ?? t(DEFAULT_TEXT.syncing))}
         </div>
-        {ownedByMe && waiting && waitedSec > STAR_HINT_AFTER_SEC && <SyncStarHint />}
+        {ownedByMe && <SyncStarHint />}
       </div>
     );
   }
