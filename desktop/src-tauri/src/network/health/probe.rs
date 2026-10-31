@@ -13,9 +13,6 @@ use crate::network::{fail, pro, system_proxy};
 const PROBE_TIMEOUT: Duration = Duration::from_secs(5);
 const MAX_PARALLEL: usize = 4;
 const MAX_IN_FLIGHT: usize = 8;
-const ORIGIN_ZONE: &str = "scnative.dev";
-const DIRECT_EP: &str = "@direct";
-const CUT_SHAPES: [Shape; 4] = [Shape::Cut, Shape::Blackhole, Shape::Reset, Shape::Throttled];
 
 pub type EndToEnd = HashMap<String, bool>;
 
@@ -27,12 +24,7 @@ pub struct Pool {
 /// Каждый круг все пути щупаются пробой, которая заведомо переваливает за порог
 /// счётчика: только так видно «дошло N килобайт и тишина». Глубокий замер полосы
 /// дорогой, поэтому за круг его получает одна нода, по очереди.
-pub async fn probe_paths(
-    client: &Client,
-    pool: &Pool,
-    round: usize,
-    with_direct: bool,
-) -> Vec<Sample> {
+pub async fn probe_paths(client: &Client, pool: &Pool, round: usize) -> Vec<Sample> {
     let mut targets: Vec<(String, String)> = pool
         .relays
         .iter()
@@ -43,17 +35,10 @@ pub async fn probe_paths(
             )
         })
         .collect();
-    targets.extend(
-        pool.calls
-            .iter()
-            .map(|node| (node.clone(), format!("https://{node}.{ORIGIN_ZONE}{PROBE_PATH}"))),
-    );
-    if with_direct {
-        targets.push((
-            "direct".to_string(),
-            format!("https://health.{ORIGIN_ZONE}{PROBE_PATH}"),
-        ));
-    }
+    targets.extend(pool.calls.iter().map(|node| {
+        let url = format!("https://{}{PROBE_PATH}", edge::call_host(node));
+        (node.clone(), url)
+    }));
 
     let deep_at = if targets.is_empty() {
         0
@@ -116,7 +101,7 @@ pub async fn probe_end_to_end(
     round: usize,
 ) -> Option<(String, bool)> {
     let node = relays.get(round.checked_rem(relays.len())?)?;
-    let url = format!("https://api.{node}.{}{PROBE_PATH}", edge::relay_zone());
+    let url = format!("https://{}{PROBE_PATH}", edge::relay_host("api", node));
     let measured = link::probe(client, &url, link::PROBE_BYTES).await;
     Some((node.clone(), measured.shape.usable()))
 }
@@ -129,17 +114,6 @@ pub fn end_to_end_line(end_to_end: &EndToEnd) -> String {
         .map(|(node, usable)| format!("{node}:{}", if *usable { "ok" } else { "fail" }))
         .collect::<Vec<_>>()
         .join(",")
-}
-
-pub fn pro_needed(relays: &[String], paths: &[Sample]) -> bool {
-    let direct_probed = paths.iter().any(|sample| sample.ep == DIRECT_EP);
-    relays_lag(relays, paths) || (direct_probed && !direct_clear(paths))
-}
-
-pub fn direct_clear(paths: &[Sample]) -> bool {
-    paths
-        .iter()
-        .any(|sample| sample.ok && sample.ep == DIRECT_EP)
 }
 
 pub fn usable_first(relays: &[String], paths: &[Sample], end_to_end: &EndToEnd) -> Vec<String> {
@@ -220,45 +194,7 @@ async fn measure_bandwidth(client: &Client, url: &str) -> link::Measured {
     }
 }
 
-pub fn note_direct_cut(paths: &[Sample]) -> bool {
-    if !direct_cut_while_others_pass(paths) {
-        return false;
-    }
-    for origin in edge::routed_origins() {
-        if !system_proxy::proxied(&format!("https://{origin}/")) {
-            edge::note(&origin, Tier::Direct, false);
-        }
-    }
-    true
-}
-
-fn direct_cut_while_others_pass(paths: &[Sample]) -> bool {
-    let others_pass = paths
-        .iter()
-        .any(|sample| sample.ok && sample.ep != DIRECT_EP);
-    let direct_cut = paths.iter().any(|sample| {
-        sample.ep == DIRECT_EP
-            && CUT_SHAPES
-                .iter()
-                .any(|shape| sample.fail.as_deref() == Some(shape.as_str()))
-    });
-    others_pass && direct_cut
-}
-
-pub fn direct_bytes(paths: &[Sample]) -> u64 {
-    paths
-        .iter()
-        .find(|sample| sample.ok && sample.ep == DIRECT_EP)
-        .and_then(|sample| sample.link)
-        .map_or(0, |link| link.bytes.max(0) as u64)
-}
-
-pub async fn probe_services(
-    client: &Client,
-    topology: &Topology,
-    pool: &Pool,
-    direct_bytes: u64,
-) -> Vec<Sample> {
+pub async fn probe_services(client: &Client, topology: &Topology, pool: &Pool) -> Vec<Sample> {
     let routes: Vec<(usize, Route)> = topology
         .endpoints
         .iter()
@@ -278,7 +214,7 @@ pub async fn probe_services(
     let mut samples = Vec::new();
     for (endpoint, outcomes) in topology.endpoints.iter().zip(grouped) {
         if !system_proxy::proxied(&endpoint.url) {
-            judge(&endpoint.url, &outcomes, direct_bytes);
+            judge(&endpoint.url, &outcomes);
         }
         samples.extend(outcomes.into_iter().map(|(route, outcome)| Sample {
             ep: endpoint.id.clone(),
@@ -303,10 +239,10 @@ async fn hit_all(client: &Client, routes: Vec<(usize, Route)>) -> Vec<(usize, Ro
         .await
 }
 
-fn judge(url: &str, outcomes: &[(Route, Outcome)], direct_bytes: u64) {
+fn judge(url: &str, outcomes: &[(Route, Outcome)]) {
     let direct = outcomes.iter().find(|(route, _)| route.via == "direct");
     if let Some((_, outcome)) = direct {
-        note_direct(url, outcome.ok, direct_bytes);
+        note_direct(url, outcome.ok);
     }
     let direct_ok = direct.is_some_and(|(_, outcome)| outcome.ok);
     let relay_ok = outcomes
@@ -317,9 +253,9 @@ fn judge(url: &str, outcomes: &[(Route, Outcome)], direct_bytes: u64) {
     }
 }
 
-fn note_direct(url: &str, ok: bool, direct_bytes: u64) {
+fn note_direct(url: &str, ok: bool) {
     if ok {
-        edge::note_url_delivered(url, Tier::Direct, direct_bytes);
+        edge::note_url_delivered(url, Tier::Direct, 0);
     } else {
         edge::note_url(url, Tier::Direct, false);
     }
@@ -366,10 +302,10 @@ mod tests {
     use tokio::net::TcpListener;
 
     use super::{
-        EndToEnd, Outcome, Route, Sample, direct_bytes, direct_cut_while_others_pass, fail_label,
-        hit_all, judge, pro_needed, reaching_main_first, relays_down, relays_lag, usable_first,
+        EndToEnd, Outcome, Route, Sample, fail_label, hit_all, judge, reaching_main_first,
+        relays_down, relays_lag, usable_first,
     };
-    use crate::network::edge::{self, Tier};
+    use crate::network::edge;
     use crate::network::health::model::Link;
 
     fn sample(node: &str, ok: bool) -> Sample {
@@ -443,17 +379,6 @@ mod tests {
     }
 
     #[test]
-    fn pro_is_probed_for_a_lagging_direct_path_only_when_direct_was_probed() {
-        let relays = pool(&["r1"]);
-        let clear = [shaped("r1", "clear")];
-        assert!(!pro_needed(&relays, &clear));
-        let mut with_cut_direct = clear.to_vec();
-        with_cut_direct.push(failed("direct", "cut"));
-        assert!(pro_needed(&relays, &with_cut_direct));
-        assert!(pro_needed(&relays, &[shaped("r1", "blackhole")]));
-    }
-
-    #[test]
     fn a_relay_that_lost_main_goes_behind_the_rest() {
         assert_eq!(
             reaching_main_first(pool(&["r2", "r1", "r3"]), &pool(&["r2"])),
@@ -488,64 +413,6 @@ mod tests {
             &relays,
             &[sample("r1", false), shaped("r2", "slow")]
         ));
-    }
-
-    fn failed(node: &str, fail: &str) -> Sample {
-        Sample {
-            fail: Some(fail.to_string()),
-            ..sample(node, false)
-        }
-    }
-
-    #[test]
-    fn a_cut_direct_path_counts_against_direct_only_while_a_relay_passes() {
-        assert!(direct_cut_while_others_pass(&[
-            failed("direct", "cut"),
-            sample("r1", true)
-        ]));
-        assert!(direct_cut_while_others_pass(&[
-            failed("direct", "reset"),
-            sample("r2", true)
-        ]));
-        assert!(!direct_cut_while_others_pass(&[
-            failed("direct", "cut"),
-            failed("r1", "reset")
-        ]));
-        assert!(!direct_cut_while_others_pass(&[
-            failed("direct", "dead"),
-            sample("r1", true)
-        ]));
-        assert!(!direct_cut_while_others_pass(&[
-            sample("direct", true),
-            sample("r1", true)
-        ]));
-    }
-
-    #[test]
-    fn a_throttled_direct_path_counts_against_direct() {
-        assert!(direct_cut_while_others_pass(&[
-            failed("direct", "throttled"),
-            sample("r1", true)
-        ]));
-        assert!(!direct_cut_while_others_pass(&[
-            failed("direct", "slow"),
-            sample("r1", true)
-        ]));
-    }
-
-    #[test]
-    fn only_a_clean_direct_path_vouches_for_the_services() {
-        let link = |shape, bytes| Link {
-            shape,
-            kbps: 0,
-            bytes,
-        };
-        let mut clean = sample("direct", true);
-        clean.link = Some(link("clear", 64 * 1024));
-        let mut cut = sample("direct", false);
-        cut.link = Some(link("cut", 13 * 1024));
-        assert_eq!(direct_bytes(&[sample("r1", true), clean]), 64 * 1024);
-        assert_eq!(direct_bytes(&[cut]), 0);
     }
 
     fn client() -> wreq::Client {
@@ -636,16 +503,20 @@ mod tests {
         }
     }
 
+    fn images_pinned() -> bool {
+        edge::pins().iter().any(|(label, _)| label == "images")
+    }
+
     #[test]
-    fn one_round_with_a_cut_direct_route_does_not_pin_the_origin_alone() {
-        let url = "https://stream-star.scnative.dev/health";
+    fn one_round_with_a_cut_direct_route_does_not_pin_images_alone() {
+        let url = "https://images.scnative.dev/health";
         let round = [
             (route("direct", url), outcome(false)),
             (route("relay:r1", url), outcome(true)),
         ];
-        judge(url, &round, 0);
-        assert_eq!(edge::current_tier(url), Tier::Direct);
-        judge(url, &round, 0);
-        assert_eq!(edge::current_tier(url), Tier::Relay);
+        judge(url, &round);
+        assert!(!images_pinned());
+        judge(url, &round);
+        assert!(images_pinned());
     }
 }

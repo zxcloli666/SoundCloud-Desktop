@@ -11,7 +11,7 @@ use serde_json::Value;
 use wreq::multipart::{Form, Part};
 
 use crate::diag::trace;
-use crate::network::edge::{self, Hop, Tier};
+use crate::network::edge;
 use crate::network::netcheck::model::Role;
 use crate::network::system_proxy::follow;
 use crate::network::traced;
@@ -139,14 +139,7 @@ async fn upload_through_hops(
         .build()
         .map_err(|_| UploadFailure::of("network"))?;
     let url = format!("{}/tracks/upload", request.backend_url.trim_end_matches('/'));
-    let mut hops = edge::upload_plan(&url);
-    if hops.is_empty() {
-        hops.push(Hop {
-            url: url.clone(),
-            tier: Tier::Direct,
-            origin: String::new(),
-        });
-    }
+    let hops = edge::upload_plan(&url);
 
     let mut last = UploadFailure::of("network");
     for (index, hop) in hops.into_iter().enumerate() {

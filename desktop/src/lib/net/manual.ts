@@ -11,10 +11,7 @@ export interface ManualStep {
 }
 
 export const COLUMNS = ['dns', 'tcp', 'tls', 'http'] as const;
-export const HEALTH_HOST = 'api.scnative.dev';
 
-const HEALTH_URL = `https://${HEALTH_HOST}/health`;
-const NSLOOKUP = `nslookup ${HEALTH_HOST}; nslookup ${HEALTH_HOST} 1.1.1.1`;
 const MANUAL: ReadonlySet<Verdict> = new Set([
   'dns',
   'dnsFailed',
@@ -39,12 +36,13 @@ export function showManual(verdict: Verdict): boolean {
   return MANUAL.has(verdict);
 }
 
-export function manualSteps(os: Os): ManualStep[] {
+export function manualSteps(os: Os, host: string): ManualStep[] {
   const curl = os === 'windows' ? 'curl.exe' : 'curl';
+  const url = `https://${host}/health`;
   return [
-    { text: `${curl} -v -m 15 ${HEALTH_URL}`, action: 'copy' },
-    { text: NSLOOKUP, action: 'copy' },
-    { text: HEALTH_URL, action: 'open' },
+    { text: `${curl} -v -m 15 ${url}`, action: 'copy' },
+    { text: `nslookup ${host}; nslookup ${host} 1.1.1.1`, action: 'copy' },
+    { text: url, action: 'open' },
   ];
 }
 

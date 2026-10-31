@@ -1,14 +1,12 @@
 use serde::{Deserialize, Serialize};
 
-use crate::network::edge;
+use crate::network::edge::{self, Key};
 
-const ORIGIN_ZONE: &str = "scnative.dev";
 pub const PROBE_PATH: &str = "/probe";
 pub const HEALTH_PATH: &str = "/health";
 
 const MAX_ENDPOINTS: usize = 64;
 const MAX_NODES: usize = 16;
-const MAX_INGEST: usize = 8;
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct Topology {
@@ -16,8 +14,6 @@ pub struct Topology {
     pub version: u32,
     #[serde(default = "default_probe_interval")]
     pub probe_interval_secs: u64,
-    #[serde(default)]
-    pub ingest: Vec<String>,
     #[serde(default)]
     pub relays: Vec<String>,
     #[serde(default)]
@@ -80,45 +76,45 @@ pub struct Route {
 
 impl Endpoint {
     pub fn routes(&self, relays: &[String]) -> Vec<Route> {
+        match edge::key_of(&self.url) {
+            Key::Service(label) if !edge::has_direct(label) => relay_routes(&self.url, relays),
+            Key::Service(_) => self.tiered_routes(relays),
+            Key::Unknown(_) => Vec::new(),
+            Key::Foreign => vec![direct_route(self.url.clone())],
+        }
+    }
+
+    fn tiered_routes(&self, relays: &[String]) -> Vec<Route> {
+        let direct = edge::direct_url(&self.url).map(direct_route);
         let mut routes = Vec::new();
         for tier in &self.tiers {
             match tier.as_str() {
-                "direct" => routes.push(Route {
-                    via: "direct".to_string(),
-                    url: self.url.clone(),
-                }),
+                "direct" => routes.extend(direct.clone()),
                 "relay" => routes.extend(relay_routes(&self.url, relays)),
                 _ => {}
             }
         }
         if routes.is_empty() {
-            routes.push(Route {
-                via: "direct".to_string(),
-                url: self.url.clone(),
-            });
+            routes.extend(direct);
         }
         routes
     }
 }
 
+fn direct_route(url: String) -> Route {
+    Route {
+        via: "direct".to_string(),
+        url,
+    }
+}
+
 fn relay_routes(url: &str, relays: &[String]) -> Vec<Route> {
-    let Ok(parsed) = url::Url::parse(url) else {
-        return Vec::new();
-    };
-    let Some(label) = parsed.host_str().and_then(edge::service_label) else {
-        return Vec::new();
-    };
     relays
         .iter()
         .filter_map(|node| {
-            let mut hop = parsed.clone();
-            hop.set_scheme("https").ok()?;
-            hop.set_host(Some(&format!("{label}.{node}.{}", edge::relay_zone())))
-                .ok()?;
-            hop.set_port(None).ok()?;
             Some(Route {
                 via: format!("relay:{node}"),
-                url: hop.to_string(),
+                url: edge::relay_url(url, node)?,
             })
         })
         .collect()
@@ -128,16 +124,12 @@ impl Topology {
     pub fn bootstrap() -> Self {
         let endpoint = |id: &str| Endpoint {
             id: id.to_string(),
-            url: format!("https://{id}.{ORIGIN_ZONE}{HEALTH_PATH}"),
+            url: format!("https://{}{HEALTH_PATH}", edge::plain_host(id)),
             tiers: vec!["direct".to_string(), "relay".to_string()],
         };
         Self {
             version: 0,
             probe_interval_secs: default_probe_interval(),
-            ingest: vec![
-                format!("https://health.{ORIGIN_ZONE}"),
-                format!("https://{}", edge::primary_relay_host("health")),
-            ],
             relays: Vec::new(),
             calls: Vec::new(),
             pros: Vec::new(),
@@ -150,8 +142,6 @@ impl Topology {
 
     pub fn sanitized(mut self) -> Self {
         self.probe_interval_secs = self.probe_interval_secs.clamp(30, 86_400);
-        self.ingest.retain(|origin| origin.starts_with("https://"));
-        self.ingest.truncate(MAX_INGEST);
         self.relays.retain(|node| is_node(node));
         self.relays.truncate(MAX_NODES);
         self.calls.retain(|node| is_node(&node.id));
@@ -162,19 +152,6 @@ impl Topology {
             .retain(|endpoint| !endpoint.id.is_empty() && endpoint.url.starts_with("https://"));
         self.endpoints.truncate(MAX_ENDPOINTS);
         self
-    }
-
-    pub fn relay_only_labels(&self) -> Vec<String> {
-        self.endpoints
-            .iter()
-            .filter(|endpoint| {
-                !endpoint.tiers.is_empty() && !endpoint.tiers.iter().any(|tier| tier == "direct")
-            })
-            .filter_map(|endpoint| {
-                let host = url::Url::parse(&endpoint.url).ok()?.host_str()?.to_string();
-                edge::service_label(&host).map(str::to_string)
-            })
-            .collect()
     }
 
     pub fn call_nodes(&self) -> Vec<String> {
@@ -209,69 +186,107 @@ pub fn is_node(name: &str) -> bool {
 mod tests {
     use super::*;
 
+    fn endpoint(id: &str, url: &str, tiers: &[&str]) -> Endpoint {
+        Endpoint {
+            id: id.into(),
+            url: url.into(),
+            tiers: tiers.iter().map(|tier| tier.to_string()).collect(),
+        }
+    }
+
+    fn vias(routes: &[Route]) -> Vec<&str> {
+        routes.iter().map(|route| route.via.as_str()).collect()
+    }
+
+    fn nodes() -> Vec<String> {
+        vec!["r2".to_string(), "r1".to_string()]
+    }
+
     #[test]
     fn bootstrap_carries_no_node_list() {
         let topology = Topology::bootstrap();
         assert!(topology.relays.is_empty());
         assert!(topology.calls.is_empty());
-        assert_eq!(topology.ingest.len(), 2);
-        assert!(topology.ingest.iter().all(|origin| !origin.ends_with('/')));
-    }
-
-    #[test]
-    fn endpoints_without_a_direct_tier_make_their_label_relay_only() {
-        let endpoint = |id: &str, host: &str, tiers: &[&str]| Endpoint {
-            id: id.into(),
-            url: format!("https://{host}/health"),
-            tiers: tiers.iter().map(|tier| tier.to_string()).collect(),
-        };
-        let mut topology = Topology::bootstrap();
-        assert!(topology.relay_only_labels().is_empty());
-        topology.endpoints = vec![
-            endpoint("api", "api.scnative.dev", &["relay"]),
-            endpoint("stream", "stream.scnative.dev", &["direct", "relay"]),
-            endpoint("storage", "storage.scnative.space", &["relay", "pro"]),
-            endpoint("images", "images.scnative.dev", &[]),
-            endpoint("status", "status.getsoundcloud.app", &["relay"]),
-        ];
-        assert_eq!(topology.relay_only_labels(), ["api", "storage"]);
-    }
-
-    #[test]
-    fn a_node_the_server_publishes_becomes_a_route_of_its_own() {
-        let endpoint = Endpoint {
-            id: "api".into(),
-            url: "https://api.scnative.dev/health".into(),
-            tiers: vec!["direct".into(), "relay".into()],
-        };
-        let routes = endpoint.routes(&["r1".to_string(), "r7".to_string()]);
-        assert_eq!(
-            routes.iter().map(|r| r.via.as_str()).collect::<Vec<_>>(),
-            ["direct", "relay:r1", "relay:r7"]
+        assert!(
+            topology
+                .endpoints
+                .iter()
+                .all(|endpoint| !endpoint.routes(&nodes()).is_empty())
         );
-        assert_eq!(routes[2].url, "https://api.r7.relay.scnative.dev/health");
+    }
+
+    #[test]
+    fn a_relay_only_service_is_probed_over_relays_whatever_tiers_say() {
+        for tiers in [
+            &["relay"][..],
+            &["direct", "relay"],
+            &["direct"],
+            &[],
+            &["pro", "x"],
+        ] {
+            for url in [
+                "https://api.scnative.dev/health",
+                "https://api.scnative.space/health",
+                "https://api.r1.relay.scnative.space/health",
+            ] {
+                let routes = endpoint("api", url, tiers).routes(&nodes());
+                assert_eq!(vias(&routes), ["relay:r2", "relay:r1"], "{url} {tiers:?}");
+                assert_eq!(routes[0].url, "https://api.r2.relay.scnative.dev/health");
+            }
+        }
+    }
+
+    #[test]
+    fn images_keeps_the_tiers_the_server_publishes() {
+        let both = endpoint(
+            "images",
+            "https://images.scnative.space/health",
+            &["direct", "relay"],
+        );
+        let routes = both.routes(&nodes());
+        assert_eq!(vias(&routes), ["direct", "relay:r2", "relay:r1"]);
+        assert_eq!(routes[0].url, "https://images.scnative.dev/health");
+        assert_eq!(routes[2].url, "https://images.r1.relay.scnative.dev/health");
+        let untiered = endpoint("images", "https://images.scnative.dev/health", &[]);
+        assert_eq!(vias(&untiered.routes(&nodes())), ["direct"]);
     }
 
     #[test]
     fn an_endpoint_outside_our_zone_stays_direct_only() {
-        let endpoint = Endpoint {
-            id: "status".into(),
-            url: "https://status.getsoundcloud.app/api/health".into(),
-            tiers: vec!["direct".into(), "relay".into()],
-        };
-        let routes = endpoint.routes(&["r1".to_string()]);
-        assert_eq!(routes.len(), 1);
-        assert_eq!(routes[0].via, "direct");
+        let status = endpoint(
+            "status",
+            "https://status.getsoundcloud.app/api/health",
+            &["direct", "relay"],
+        );
+        let routes = status.routes(&nodes());
+        assert_eq!(vias(&routes), ["direct"]);
+        assert_eq!(routes[0].url, status.url);
     }
 
     #[test]
-    fn a_tier_this_build_does_not_know_is_ignored_not_fatal() {
-        let endpoint = Endpoint {
-            id: "call".into(),
-            url: "https://call-1.scnative.dev/health".into(),
-            tiers: vec!["direct".into(), "call".into()],
-        };
-        assert_eq!(endpoint.routes(&[]).len(), 1);
+    fn an_endpoint_with_an_unknown_label_is_not_probed() {
+        for url in [
+            "https://call-1.scnative.dev/health",
+            "https://nats-public.scnative.space/health",
+        ] {
+            assert!(
+                endpoint("x", url, &["direct", "relay"])
+                    .routes(&nodes())
+                    .is_empty()
+            );
+        }
+    }
+
+    #[test]
+    fn todays_topology_parses_and_drops_what_it_does_not_need() {
+        let topology: Topology = serde_json::from_str(
+            r#"{"version":32,"ingest":["https://health.r1.relay.scnative.space"],"relays":["r1","r2"],
+            "endpoints":[{"id":"api","host":"main","url":"https://api.scnative.dev/health",
+            "legacy_url":"https://api.scnative.space/health","tiers":["relay"],"group":"core"}]}"#,
+        )
+        .unwrap();
+        assert_eq!(topology.version, 32);
+        assert_eq!(topology.endpoints[0].routes(&topology.relays).len(), 2);
     }
 
     #[test]
@@ -279,7 +294,6 @@ mod tests {
         let topology = Topology {
             version: 1,
             probe_interval_secs: 1,
-            ingest: vec!["http://plain".into(), "https://health.x".into()],
             relays: vec!["r1".into(), "R2".into()],
             calls: vec![CallNode {
                 id: "call-1".into(),
@@ -294,7 +308,6 @@ mod tests {
         }
         .sanitized();
         assert_eq!(topology.probe_interval_secs, 30);
-        assert_eq!(topology.ingest, ["https://health.x"]);
         assert_eq!(topology.relays, ["r1"]);
         assert_eq!(topology.pros, ["p1"]);
         assert!(topology.endpoints.is_empty());

@@ -1,16 +1,18 @@
-export const API_BASE = import.meta.env.VITE_API_BASE || 'https://api.scnative.dev';
+const service = (label: string) => `https://${label}.scnative.dev`;
+
+export const API_BASE = import.meta.env.VITE_API_BASE || service('api');
 /** Резервный star-хост API для премиума (роутинг в `api-client.ts`). */
-export const API_STAR_BASE = import.meta.env.VITE_API_STAR_BASE || 'https://api-star.scnative.dev';
-export const STREAMING_BASE = import.meta.env.VITE_STREAMING_BASE || 'https://stream.scnative.dev';
+export const API_STAR_BASE = import.meta.env.VITE_API_STAR_BASE || service('api-star');
+export const STREAMING_BASE = import.meta.env.VITE_STREAMING_BASE || service('stream');
 export const STREAMING_PREMIUM_BASE =
-  import.meta.env.VITE_STREAMING_PREMIUM_BASE || 'https://stream-star.scnative.dev';
-export const IMAGES_BASE = import.meta.env.VITE_IMAGES_BASE || 'https://images.scnative.dev';
-export const STORAGE_BASE = import.meta.env.VITE_STORAGE_BASE || 'https://storage.scnative.dev';
+  import.meta.env.VITE_STREAMING_PREMIUM_BASE || service('stream-star');
+export const IMAGES_BASE = import.meta.env.VITE_IMAGES_BASE || service('images');
+export const STORAGE_BASE = import.meta.env.VITE_STORAGE_BASE || service('storage');
 /** Резервная точка отдачи медиа для премиума (S3 read-only на star-host). */
 export const STORAGE_PREMIUM_BASE =
-  import.meta.env.VITE_STORAGE_PREMIUM_BASE || 'https://storage-star.scnative.dev';
+  import.meta.env.VITE_STORAGE_PREMIUM_BASE || service('storage-star');
 /** STAR payment backend (separate service; not host-routed like the catalog API). */
-export const PAY_BASE = import.meta.env.VITE_PAY_BASE || 'https://pay.scnative.dev';
+export const PAY_BASE = import.meta.env.VITE_PAY_BASE || service('pay');
 export const STATUS_PAGE_URL =
   import.meta.env.VITE_STATUS_PAGE_URL || 'https://status.getsoundcloud.app';
 

@@ -15,7 +15,7 @@ export interface DpiAdvice {
   apply: string | null;
 }
 
-export const EXCLUDED_DOMAINS = ['scnative.dev', 'scnative.space', 'getsoundcloud.app'] as const;
+export const EXCLUDED_DOMAINS = ['scnative.dev', 'getsoundcloud.app'] as const;
 
 const FLOWSEAL: ReadonlySet<string> = new Set([
   'winws',

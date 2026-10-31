@@ -1,13 +1,14 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { useShownVerdict } from '../../lib/net/check';
-import { currentOs, HEALTH_HOST, manualSteps, showManual } from '../../lib/net/manual';
+import { useNetCheckStore, useShownVerdict } from '../../lib/net/check';
+import { currentOs, manualSteps, showManual } from '../../lib/net/manual';
 import { CopyLine } from './CopyLine';
 
 export const ManualSteps = React.memo(() => {
   const { t } = useTranslation();
   const verdict = useShownVerdict();
-  if (!showManual(verdict)) return null;
+  const host = useNetCheckStore((s) => s.report?.targets.find((t) => t.id === 'main')?.host);
+  if (!host || !showManual(verdict)) return null;
   const os = currentOs();
   return (
     <div className="mt-5">
@@ -18,17 +19,13 @@ export const ManualSteps = React.memo(() => {
         {t(os === 'windows' ? 'netCheck.manual.windows' : 'netCheck.manual.unix')}
       </p>
       <div className="space-y-1.5">
-        {manualSteps(os).map((step, index) => (
+        {manualSteps(os, host).map((step, index) => (
           <CopyLine
             key={step.text}
             step={index + 1}
             text={step.text}
             action={step.action}
-            label={
-              step.action === 'open'
-                ? t('netCheck.manual.browser', { host: HEALTH_HOST })
-                : undefined
-            }
+            label={step.action === 'open' ? t('netCheck.manual.browser', { host }) : undefined}
           />
         ))}
       </div>
