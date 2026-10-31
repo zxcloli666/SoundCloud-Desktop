@@ -40,15 +40,15 @@ export const CopyLine = React.memo(({ text, action = 'copy', label, step }: Copy
   const hint = t(action === 'open' ? 'netCheck.manual.openBrowser' : 'netCheck.manual.copy');
 
   return (
-    <div className="flex items-center gap-2 rounded-2xl bg-black/20 border border-white/[0.06] pl-3 pr-1.5 py-1.5">
+    <div className="flex items-center gap-2 rounded-2xl bg-shade-20 border border-ink/[0.06] pl-3 pr-1.5 py-1.5">
       {step !== undefined && (
-        <span className="w-4 shrink-0 font-mono text-[10.5px] text-white/30">{step}</span>
+        <span className="w-4 shrink-0 font-mono text-[10.5px] text-ink-30">{step}</span>
       )}
       {label ? (
-        <span className="flex-1 min-w-0 truncate text-[11.5px] text-white/70">{label}</span>
+        <span className="flex-1 min-w-0 truncate text-[11.5px] text-ink-70">{label}</span>
       ) : (
         <code
-          className="flex-1 min-w-0 truncate text-[11.5px] text-white/70 font-mono select-text"
+          className="flex-1 min-w-0 truncate text-[11.5px] text-ink-70 font-mono select-text"
           title={text}
         >
           {text}
@@ -59,7 +59,7 @@ export const CopyLine = React.memo(({ text, action = 'copy', label, step }: Copy
         onClick={run}
         aria-label={hint}
         title={hint}
-        className="shrink-0 w-8 h-8 rounded-xl flex items-center justify-center text-white/50 hover:text-white/85 hover:bg-white/[0.08] transition-all duration-200 cursor-pointer"
+        className="shrink-0 w-8 h-8 rounded-xl flex items-center justify-center text-ink-50 hover:text-ink-85 hover:bg-ink/[0.08] transition-all duration-200 cursor-pointer"
       >
         {action === 'open' ? (
           <ExternalLink size={14} />

@@ -46,8 +46,8 @@ const ANCHOR_ORDER: Record<string, number> = {
 function DeltaNote() {
   const { t } = useTranslation();
   return (
-    <div className="rounded-2xl border border-dashed border-white/[0.1] px-5 py-6 text-center">
-      <p className="font-mono text-[12px] tracking-[0.04em] text-white/40">
+    <div className="rounded-2xl border border-dashed border-ink/[0.1] px-5 py-6 text-center">
+      <p className="font-mono text-[12px] tracking-[0.04em] text-ink-40">
         ∞ · {t('soundwave.river.deltaNote')}
       </p>
     </div>

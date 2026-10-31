@@ -102,14 +102,14 @@ export function UpdateActions({
 
   return (
     <div className="px-5 pb-5">
-      <p className="mb-4 px-0.5 text-[11.5px] leading-relaxed text-white/40">
+      <p className="mb-4 px-0.5 text-[11.5px] leading-relaxed text-ink-40">
         {t(info.os === 'windows' ? 'update.autoHintWindows' : 'update.autoHint')}
       </p>
       <div className="flex gap-2">
         <button
           type="button"
           onClick={onDismiss}
-          className="flex-1 py-2.5 rounded-xl bg-white/[0.05] hover:bg-white/[0.08] text-[13px] text-white/50 font-medium transition-colors cursor-pointer"
+          className="flex-1 py-2.5 rounded-xl bg-ink/[0.05] hover:bg-ink/[0.08] text-[13px] text-ink-50 font-medium transition-colors cursor-pointer"
         >
           {t('update.later')}
         </button>

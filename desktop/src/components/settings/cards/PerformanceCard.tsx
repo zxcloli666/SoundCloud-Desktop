@@ -66,8 +66,8 @@ const PerfPreview = memo(function PerfPreview({
                 />
             ))}
             <div
-                className="absolute inset-x-3 bottom-3 h-3 rounded-md border border-white/[0.08]"
-                style={{background: orbBlur > 0 ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.025)'}}
+                className="absolute inset-x-3 bottom-3 h-3 rounded-md border border-ink/[0.08]"
+                style={{background: orbBlur > 0 ? 'rgb(var(--ink) / 0.05)' : 'rgb(var(--ink) / 0.025)'}}
             />
         </div>
     );
@@ -90,18 +90,18 @@ export function PerformanceCard() {
                             onClick={() => setPerfMode(card.id)}
                             className={`group relative overflow-hidden rounded-2xl border text-left transition-all duration-200 cursor-pointer hover:scale-[1.03] active:scale-[0.97] ${
                                 active
-                                    ? 'border-white/30 ring-1 ring-white/20'
-                                    : 'border-white/[0.06] hover:border-white/15'
+                                    ? 'border-ink/30 ring-1 ring-ink/20'
+                                    : 'border-ink/[0.06] hover:border-ink/15'
                             }`}
                         >
                             <PerfPreview orbBlur={card.orbBlur} motes={card.motes}/>
-                            <div className="bg-white/[0.03] px-3 py-2.5">
+                            <div className="bg-ink/[0.03] px-3 py-2.5">
                 <span
-                    className={`block text-[12px] font-semibold ${active ? 'text-white/90' : 'text-white/55'}`}
+                    className={`block text-[12px] font-semibold ${active ? 'text-ink-90' : 'text-ink-55'}`}
                 >
                   {t(card.labelKey)}
                 </span>
-                                <span className="mt-0.5 block text-[10px] leading-tight text-white/35">
+                                <span className="mt-0.5 block text-[10px] leading-tight text-ink-35">
                   {t(card.descKey)}
                 </span>
                             </div>

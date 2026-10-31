@@ -58,6 +58,7 @@ export const PlaylistCover = React.memo(function PlaylistCover({
     if (cover) {
         return (
             <img
+                data-ui="artwork"
                 src={cover}
                 alt={alt}
                 decoding="async"
@@ -67,8 +68,8 @@ export const PlaylistCover = React.memo(function PlaylistCover({
         );
     }
     return (
-        <div className={`w-full h-full flex items-center justify-center bg-white/[0.04] ${className}`}>
-            <ListMusic size={iconSize} className="text-white/15"/>
+        <div data-ui="artwork" className={`w-full h-full flex items-center justify-center bg-ink/[0.04] ${className}`}>
+            <ListMusic size={iconSize} className="text-ink-15"/>
         </div>
     );
 });

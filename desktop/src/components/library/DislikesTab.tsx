@@ -23,7 +23,7 @@ export const DislikesTab = React.memo(function DislikesTab({ filter }: { filter:
   if (isLoading) {
     return (
       <div className="flex justify-center py-20">
-        <Loader2 size={32} className="animate-spin text-white/20" />
+        <Loader2 size={32} className="animate-spin text-ink-20" />
       </div>
     );
   }
@@ -43,18 +43,18 @@ export const DislikesTab = React.memo(function DislikesTab({ filter }: { filter:
   if (tracks.length === 0) {
     return (
       <div className="flex flex-col items-center gap-3 py-20 text-center">
-        <div className="w-12 h-12 rounded-2xl bg-white/[0.04] ring-1 ring-white/[0.06] flex items-center justify-center text-white/25">
+        <div className="w-12 h-12 rounded-2xl bg-ink/[0.04] ring-1 ring-ink/[0.06] flex items-center justify-center text-ink-25">
           <ThumbsDown size={20} />
         </div>
-        <p className="text-[14px] font-semibold text-white/60">{t('dislikes.empty')}</p>
-        <p className="max-w-sm text-[12px] leading-relaxed text-white/30">{t('dislikes.hint')}</p>
+        <p className="text-[14px] font-semibold text-ink-60">{t('dislikes.empty')}</p>
+        <p className="max-w-sm text-[12px] leading-relaxed text-ink-30">{t('dislikes.hint')}</p>
       </div>
     );
   }
 
   return (
     <div className="min-h-[400px]">
-      <p className="mb-4 px-1 text-[12px] leading-relaxed text-white/35">{t('dislikes.hint')}</p>
+      <p className="mb-4 px-1 text-[12px] leading-relaxed text-ink-35">{t('dislikes.hint')}</p>
       {filtered.length > 0 ? (
         <VirtualList
           items={filtered}
@@ -66,12 +66,12 @@ export const DislikesTab = React.memo(function DislikesTab({ filter }: { filter:
           renderItem={(track) => <DislikedTrackRow track={track} />}
         />
       ) : (
-        <div className="py-20 text-center text-white/20">
+        <div className="py-20 text-center text-ink-20">
           {hasNextPage ? t('common.loading') : t('library.noMatches')}
         </div>
       )}
       <div ref={sentinelRef} className="h-12 flex items-center justify-center mt-4">
-        {isFetchingNextPage && <Loader2 size={20} className="text-white/15 animate-spin" />}
+        {isFetchingNextPage && <Loader2 size={20} className="text-ink-15 animate-spin" />}
       </div>
     </div>
   );

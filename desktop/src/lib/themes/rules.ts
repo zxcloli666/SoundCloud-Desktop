@@ -46,8 +46,10 @@ export const THEME_LICENSES = [
   'CC-BY-SA-4.0',
 ] as const;
 export const THEME_LANGS = ['en', 'ru', 'tr', 'ko'] as const;
+export const THEME_SCHEMES = ['dark', 'white'] as const;
 
 export type ThemeFont = (typeof THEME_FONTS)[number];
+export type ThemeScheme = (typeof THEME_SCHEMES)[number];
 export type AssetType = 'webp' | 'png' | 'jpeg' | 'avif' | 'gif' | 'svg' | 'woff2';
 
 const UNSAFE_TEXT = /[\p{Cc}\p{Cf}\p{Zl}\p{Zp}]/u;

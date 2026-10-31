@@ -17,12 +17,12 @@ function useArtistPicture(artist: TopArtist, size: string): string | null {
 
 const Avatar = memo(function Avatar({ url, className }: { url: string | null; className: string }) {
   return (
-    <div className={`rounded-full overflow-hidden shrink-0 bg-white/[0.05] ${className}`}>
+    <div className={`rounded-full overflow-hidden shrink-0 bg-ink/[0.05] ${className}`}>
       {url ? (
         <img src={url} alt="" decoding="async" className="w-full h-full object-cover" />
       ) : (
         <div className="w-full h-full flex items-center justify-center">
-          <UserIcon size={16} className="text-white/25" />
+          <UserIcon size={16} className="text-ink-25" />
         </div>
       )}
     </div>
@@ -44,7 +44,7 @@ const LeadArtist = memo(function LeadArtist({ artist, aura }: { artist: TopArtis
       className="group relative w-full flex items-center gap-5 p-4 rounded-[1.5rem] overflow-hidden text-left cursor-pointer disabled:cursor-default mb-3"
       style={{
         border: `0.5px solid ${auraRgba(aura, 0.3)}`,
-        background: `linear-gradient(120deg, ${auraRgba(aura, 0.16)}, rgba(255,255,255,0.015) 65%)`,
+        background: `linear-gradient(120deg, ${auraRgba(aura, 0.16)}, rgb(var(--ink) / 0.015) 65%)`,
       }}
     >
       {picture && perf.bloom && (
@@ -64,7 +64,7 @@ const LeadArtist = memo(function LeadArtist({ artist, aura }: { artist: TopArtis
         />
         <Avatar
           url={picture}
-          className="relative w-[84px] h-[84px] ring-1 ring-white/15 transition-transform duration-500 group-hover:scale-[1.04]"
+          className="relative w-[84px] h-[84px] ring-1 ring-ink/15 transition-transform duration-500 group-hover:scale-[1.04]"
         />
         <span
           className="absolute -top-1.5 -right-1.5 w-7 h-7 rounded-full flex items-center justify-center"
@@ -73,7 +73,7 @@ const LeadArtist = memo(function LeadArtist({ artist, aura }: { artist: TopArtis
             boxShadow: `0 4px 14px ${auraRgba(aura, 0.55)}`,
           }}
         >
-          <Crown size={13} className="text-white" />
+          <Crown size={13} className="text-ink" />
         </span>
       </div>
       <div className="relative min-w-0 flex-1">
@@ -94,7 +94,7 @@ const LeadArtist = memo(function LeadArtist({ artist, aura }: { artist: TopArtis
         >
           {artist.artistName}
         </p>
-        <p className="text-[12px] text-white/50 mt-1 tabular-nums truncate">
+        <p className="text-[12px] text-ink-50 mt-1 tabular-nums truncate">
           {t('stats.playsCount', { count: artist.plays, formatted: fmt.number(artist.plays) })}
           {' · '}
           {t('stats.tracksCount', { count: artist.tracks, formatted: fmt.number(artist.tracks) })}
@@ -126,17 +126,17 @@ const ArtistRow = memo(function ArtistRow({
       type="button"
       onClick={open}
       disabled={!artist.artistUrn}
-      className="group w-full flex items-center gap-3 px-2 py-2 rounded-2xl text-left hover:bg-white/[0.04] transition-colors cursor-pointer disabled:cursor-default"
+      className="group w-full flex items-center gap-3 px-2 py-2 rounded-2xl text-left hover:bg-ink/[0.04] transition-colors cursor-pointer disabled:cursor-default"
     >
-      <span className="w-5 text-right text-[12px] font-bold tabular-nums text-white/30">
+      <span className="w-5 text-right text-[12px] font-bold tabular-nums text-ink-30">
         {rank}
       </span>
-      <Avatar url={picture} className="w-9 h-9 ring-1 ring-white/[0.08]" />
+      <Avatar url={picture} className="w-9 h-9 ring-1 ring-ink/[0.08]" />
       <div className="min-w-0 flex-1">
-        <p className="text-[13.5px] font-semibold text-white/85 group-hover:text-white truncate transition-colors">
+        <p className="text-[13.5px] font-semibold text-ink-85 group-hover:text-ink truncate transition-colors">
           {artist.artistName}
         </p>
-        <div className="mt-1.5 h-[3px] rounded-full bg-white/[0.06] overflow-hidden">
+        <div className="mt-1.5 h-[3px] rounded-full bg-ink/[0.06] overflow-hidden">
           <div
             className="h-full rounded-full"
             style={{
@@ -146,7 +146,7 @@ const ArtistRow = memo(function ArtistRow({
           />
         </div>
       </div>
-      <span className="text-[12px] tabular-nums text-white/45 shrink-0 w-12 text-right">
+      <span className="text-[12px] tabular-nums text-ink-45 shrink-0 w-12 text-right">
         {fmt.number(artist.plays)}
       </span>
     </button>

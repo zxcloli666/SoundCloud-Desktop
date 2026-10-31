@@ -12,7 +12,7 @@ function PlaylistSection({title, playlists}: { title: string; playlists: Playlis
     if (playlists.length === 0) return null;
     return (
         <section>
-            <h3 className="text-lg font-bold text-white/80 mb-5 px-1">{title}</h3>
+            <h3 className="text-lg font-bold text-ink-80 mb-5 px-1">{title}</h3>
             <VirtualGrid
                 items={playlists}
                 itemHeight={320}
@@ -30,7 +30,7 @@ function PlaylistSection({title, playlists}: { title: string; playlists: Playlis
 function SectionLoader() {
     return (
         <div className="flex justify-center py-10">
-            <Loader2 size={24} className="animate-spin text-white/20"/>
+            <Loader2 size={24} className="animate-spin text-ink-20"/>
         </div>
     );
 }
@@ -107,14 +107,14 @@ export const PlaylistsTab = React.memo(function PlaylistsTab({filter}: { filter:
                             <SyncNotice kind={notice} info={noticeQuery.syncInfo} ownedByMe onRetry={retry}/>
                         </div>
                     ) : (
-                        <div className="py-20 text-center text-white/20">
+                        <div className="py-20 text-center text-ink-20">
                             {filter ? t('library.noMatches') : t('library.noPlaylists')}
                         </div>
                     ))}
             </div>
             {!filter && (
                 <div ref={sentinelRef} className="h-12 flex items-center justify-center mt-4">
-                    {isFetchingNextPage && <Loader2 size={20} className="text-white/15 animate-spin"/>}
+                    {isFetchingNextPage && <Loader2 size={20} className="text-ink-15 animate-spin"/>}
                 </div>
             )}
         </div>

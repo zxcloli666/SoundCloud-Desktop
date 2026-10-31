@@ -42,6 +42,7 @@
     "minApp": { "$ref": "#/$defs/version" },
     "accent": { "$ref": "#/$defs/color" },
     "background": { "$ref": "#/$defs/color" },
+    "scheme": { "enum": ["dark", "white"] },
     "font": {
       "enum": [
         "inter",

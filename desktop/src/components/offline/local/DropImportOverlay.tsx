@@ -47,7 +47,7 @@ export const DropImportOverlay = React.memo(function DropImportOverlay() {
     <div
       className="pointer-events-none fixed inset-0 z-[90] flex items-center justify-center p-5 animate-fade-in-up"
       style={{
-        background: blur > 0 ? 'rgba(8,8,10,0.55)' : 'rgba(8,8,10,0.85)',
+        background: blur > 0 ? 'rgb(var(--paper) / 0.55)' : 'rgb(var(--paper) / 0.85)',
         backdropFilter: blur > 0 ? `blur(${blur}px) saturate(1.3)` : undefined,
         WebkitBackdropFilter: blur > 0 ? `blur(${blur}px) saturate(1.3)` : undefined,
       }}
@@ -77,10 +77,10 @@ export const DropImportOverlay = React.memo(function DropImportOverlay() {
           )}
           <FileMusic size={40} strokeWidth={1.6} />
         </span>
-        <div className="mt-6 text-[22px] font-semibold tracking-[-0.02em] text-white/95">
+        <div className="mt-6 text-[22px] font-semibold tracking-[-0.02em] text-ink-95">
           {t('local.dropOverlayTitle')}
         </div>
-        <div className="mt-1.5 max-w-[360px] text-[13px] leading-snug text-white/55">
+        <div className="mt-1.5 max-w-[360px] text-[13px] leading-snug text-ink-55">
           {t('local.dropOverlayHint')}
         </div>
         <div

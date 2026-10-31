@@ -22,7 +22,7 @@ interface OfflineTrackListProps {
 
 function ListHead({ t }: { t: (k: string) => string }) {
   return (
-    <div className="grid h-8 grid-cols-[28px_minmax(0,1fr)_88px_64px] items-center gap-3 border-b border-white/[0.07] bg-white/[0.015] pl-2 pr-4 font-mono text-[9px] font-semibold uppercase tracking-[0.18em] text-white/30 md:grid-cols-[28px_minmax(0,1fr)_auto_88px_64px]">
+    <div className="grid h-8 grid-cols-[28px_minmax(0,1fr)_88px_64px] items-center gap-3 border-b border-ink/[0.07] bg-ink/[0.015] pl-2 pr-4 font-mono text-[9px] font-semibold uppercase tracking-[0.18em] text-ink-30 md:grid-cols-[28px_minmax(0,1fr)_auto_88px_64px]">
       <span className="text-center">№</span>
       <span>{t('offline.listTrack')}</span>
       <span className="hidden text-right md:block">{t('offline.listStamp')}</span>
@@ -55,7 +55,7 @@ export const OfflineTrackList = React.memo(function OfflineTrackList({
 
   if (entries.length === 0) {
     return (
-      <div className="rounded-[18px] border border-dashed border-white/[0.08] bg-white/[0.015] px-5 py-12 text-center text-[13px] text-white/30">
+      <div className="rounded-[18px] border border-dashed border-ink/[0.08] bg-ink/[0.015] px-5 py-12 text-center text-[13px] text-ink-30">
         {emptyText}
       </div>
     );
@@ -88,7 +88,7 @@ export const OfflineTrackList = React.memo(function OfflineTrackList({
   );
 
   return (
-    <section className="overflow-hidden rounded-[18px] border border-white/[0.07] bg-[rgba(255,255,255,0.015)]">
+    <section className="overflow-hidden rounded-[18px] border border-ink/[0.07] bg-[rgb(var(--ink)/0.015)]">
       <ListHead t={t} />
       {sortable ? (
         <DndContext

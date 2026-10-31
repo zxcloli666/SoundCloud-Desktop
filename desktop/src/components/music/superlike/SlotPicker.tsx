@@ -19,7 +19,7 @@ export const SlotPicker = memo(function SlotPicker({
 
   return (
     <div className="mt-5">
-      <p className="mb-2.5 text-[12px] font-medium text-white/45">
+      <p className="mb-2.5 text-[12px] font-medium text-ink-45">
         {moves ? t('superlike.freeSlot') : t('superlike.freeSlots', { count: toFree })}
       </p>
       <div className="grid max-h-[13.5rem] grid-cols-5 gap-2 overflow-y-auto p-0.5">
@@ -49,12 +49,12 @@ function SlotCover({
       title={label}
       aria-label={label}
       onClick={() => onPick(track)}
-      className="group relative aspect-square overflow-hidden rounded-xl ring-1 ring-white/[0.08] transition-all duration-200 hover:ring-superlike-via/70 hover:scale-[1.04] cursor-pointer"
+      className="group relative aspect-square overflow-hidden rounded-xl ring-1 ring-ink/[0.08] transition-all duration-200 hover:ring-superlike-via/70 hover:scale-[1.04] cursor-pointer"
     >
       {cover ? (
         <img src={cover} alt="" className="h-full w-full object-cover" decoding="async" />
       ) : (
-        <span className="flex h-full w-full items-center justify-center bg-white/[0.05] text-white/25">
+        <span className="flex h-full w-full items-center justify-center bg-ink/[0.05] text-ink-25">
           <Music size={16} />
         </span>
       )}

@@ -66,7 +66,7 @@ export function AccessChoice({ value, onChange, disabled }: AccessChoiceProps) {
             className={`group relative flex cursor-pointer flex-col items-start rounded-2xl border p-2.5 text-left outline-none transition-[transform,border-color,background-color] ${SMOOTH} focus-visible:ring-2 focus-visible:ring-accent/60 active:scale-[0.97] disabled:cursor-default disabled:opacity-60 ${
               selected
                 ? 'border-accent/45 bg-accent/[0.07]'
-                : 'border-white/[0.07] bg-white/[0.025] hover:border-white/[0.13] hover:bg-white/[0.05]'
+                : 'border-ink/[0.07] bg-ink/[0.025] hover:border-ink/[0.13] hover:bg-ink/[0.05]'
             }`}
           >
             <span
@@ -90,7 +90,7 @@ export function AccessChoice({ value, onChange, disabled }: AccessChoiceProps) {
                   className={`relative flex h-8 w-8 items-center justify-center rounded-[10px] transition-[color,background-color,transform] ${SMOOTH} ${
                     selected
                       ? 'scale-100 bg-accent text-accent-contrast'
-                      : 'scale-95 bg-white/[0.06] text-white/50 group-hover:text-white/75'
+                      : 'scale-95 bg-ink/[0.06] text-ink-50 group-hover:text-ink-75'
                   }`}
                 >
                   <Icon size={15} strokeWidth={2.2} />
@@ -106,12 +106,12 @@ export function AccessChoice({ value, onChange, disabled }: AccessChoiceProps) {
             </span>
             <span
               className={`relative text-[12.5px] font-semibold transition-colors ${SMOOTH} ${
-                selected ? 'text-white/95' : 'text-white/65'
+                selected ? 'text-ink-95' : 'text-ink-65'
               }`}
             >
               {t(option.title)}
             </span>
-            <span className="relative mt-0.5 text-[10.5px] leading-snug text-white/40">
+            <span className="relative mt-0.5 text-[10.5px] leading-snug text-ink-40">
               {t(option.hint)}
             </span>
           </button>

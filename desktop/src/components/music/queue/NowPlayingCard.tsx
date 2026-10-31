@@ -17,12 +17,12 @@ const NowPlayingBody = React.memo(({ track }: { track: Track }) => {
       <p className="text-[12.5px] text-accent font-semibold truncate leading-snug">
         {displayTitle}
       </p>
-      <p className="text-[10.5px] text-white/40 truncate mt-0.5 flex items-center gap-1">
+      <p className="text-[10.5px] text-ink-40 truncate mt-0.5 flex items-center gap-1">
         <UploadKindDot kind={artistDisplay.uploadKind} />
         <span className="truncate">
           <ArtistNameLinks
             items={artistLinks}
-            linkClassName="cursor-pointer transition-colors hover:text-white/70"
+            linkClassName="cursor-pointer transition-colors hover:text-ink-70"
           />
         </span>
       </p>
@@ -57,7 +57,7 @@ export const NowPlayingCard = React.memo(() => {
           background: 'linear-gradient(105deg, var(--color-accent-glow) 0%, transparent 55%)',
         }}
       />
-      <div className="relative w-11 h-11 rounded-xl overflow-hidden shrink-0 bg-white/[0.04] ring-1 ring-white/[0.1]">
+      <div className="relative w-11 h-11 rounded-xl overflow-hidden shrink-0 bg-ink/[0.04] ring-1 ring-ink/[0.1]">
         {artwork ? (
           <img src={artwork} alt="" className="w-full h-full object-cover" decoding="async" />
         ) : (
@@ -69,7 +69,7 @@ export const NowPlayingCard = React.memo(() => {
       <div className="relative shrink-0">
         <TrackStatusBadges meta={currentTrack._scd_meta} />
       </div>
-      <span className="relative text-[10px] text-white/35 tabular-nums shrink-0">
+      <span className="relative text-[10px] text-ink-35 tabular-nums shrink-0">
         {dur(currentTrack.duration)}
       </span>
     </button>

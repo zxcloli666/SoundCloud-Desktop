@@ -118,7 +118,7 @@ function ArtistTracksTabImpl({
   if (query.isLoading) {
     return (
       <div className="py-24 flex justify-center">
-        <Loader2 size={28} className="text-white/20 animate-spin" />
+        <Loader2 size={28} className="text-ink-20 animate-spin" />
       </div>
     );
   }
@@ -129,13 +129,13 @@ function ArtistTracksTabImpl({
         <div
           className="w-16 h-16 rounded-2xl flex items-center justify-center"
           style={{
-            background: 'rgba(255,255,255,0.03)',
+            background: 'rgb(var(--ink) / 0.03)',
             boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.06)',
           }}
         >
-          <Music size={24} className="text-white/15" />
+          <Music size={24} className="text-ink-15" />
         </div>
-        <p className="text-white/30 text-sm">
+        <p className="text-ink-30 text-sm">
           {role === 'primary' ? t('artist.noTracks') : t('artist.noAppearances')}
         </p>
       </div>
@@ -155,10 +155,10 @@ function ArtistTracksTabImpl({
             />
             <ViewToggle view={view} onChange={onViewChange} aura={aura} />
           </div>
-          <span className="text-[11px] text-white/30 font-bold uppercase tracking-[0.18em] tabular-nums">
+          <span className="text-[11px] text-ink-30 font-bold uppercase tracking-[0.18em] tabular-nums">
             {fc(tracks.length)} · {dur(totalDuration)}
             {view === 'years' && taggedYears > 0 && (
-              <span className="ml-2 text-white/20">· {taggedYears} y</span>
+              <span className="ml-2 text-ink-20">· {taggedYears} y</span>
             )}
           </span>
         </div>
@@ -197,14 +197,14 @@ function ArtistTracksTabImpl({
               className="text-[10px] font-bold uppercase tracking-[0.22em] px-3 py-1 rounded-full"
               style={{
                 background: auraRgba(aura, 0.16),
-                color: '#fff',
+                color: 'rgb(var(--ink))',
                 boxShadow: `inset 0 0 0 1px ${auraRgba(aura, 0.3)}`,
               }}
             >
               {t('artist.comingSoon')}
             </span>
-            <span className="text-[11px] text-white/30 tabular-nums">{fc(wanted.length)}</span>
-            <div className="flex-1 h-px bg-white/[0.05]" />
+            <span className="text-[11px] text-ink-30 tabular-nums">{fc(wanted.length)}</span>
+            <div className="flex-1 h-px bg-ink/[0.05]" />
           </div>
           <div className="flex flex-col gap-1">
             {wanted.slice(0, 100).map((track, i) => (
@@ -238,7 +238,7 @@ const YearBlock = memo(
             >
               {bucket.year ?? '∞'}
             </span>
-            <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/30 @4xl:text-right whitespace-nowrap">
+            <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-ink-30 @4xl:text-right whitespace-nowrap">
               {bucket.year != null ? t('artist.releaseYear') : t('artist.unknownYear')} ·{' '}
               {bucket.items.length} · {dur(total)}
             </span>
@@ -278,7 +278,7 @@ const SortToggle = memo(
       <div
         className={`inline-flex items-center gap-1 p-1 rounded-2xl transition-opacity ${disabled ? 'opacity-40 pointer-events-none' : ''}`}
         style={{
-          background: b > 0 ? 'rgba(255,255,255,0.03)' : 'rgba(22,22,26,0.85)',
+          background: b > 0 ? 'rgb(var(--ink) / 0.03)' : 'rgb(var(--surface-hi) / 0.85)',
           boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.06)',
           backdropFilter: b > 0 ? `blur(${b}px)` : undefined,
           WebkitBackdropFilter: b > 0 ? `blur(${b}px)` : undefined,
@@ -292,7 +292,7 @@ const SortToggle = memo(
               type="button"
               onClick={() => onChange(o.id)}
               className={`relative px-4 h-8 rounded-xl text-[12px] font-semibold cursor-pointer transition-all ${
-                active ? 'text-white' : 'text-white/40 hover:text-white/70'
+                active ? 'text-ink' : 'text-ink-40 hover:text-ink-70'
               }`}
               style={
                 active
@@ -340,7 +340,7 @@ const ViewToggle = memo(
       <div
         className="inline-flex items-center gap-1 p-1 rounded-2xl"
         style={{
-          background: b > 0 ? 'rgba(255,255,255,0.03)' : 'rgba(22,22,26,0.85)',
+          background: b > 0 ? 'rgb(var(--ink) / 0.03)' : 'rgb(var(--surface-hi) / 0.85)',
           boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.06)',
           backdropFilter: b > 0 ? `blur(${b}px)` : undefined,
           WebkitBackdropFilter: b > 0 ? `blur(${b}px)` : undefined,
@@ -354,7 +354,7 @@ const ViewToggle = memo(
               type="button"
               onClick={() => onChange(o.id)}
               className={`relative inline-flex items-center gap-1.5 px-3 h-8 rounded-xl text-[12px] font-semibold cursor-pointer transition-all ${
-                active ? 'text-white' : 'text-white/40 hover:text-white/70'
+                active ? 'text-ink' : 'text-ink-40 hover:text-ink-70'
               }`}
               style={
                 active
@@ -381,29 +381,29 @@ const WantedRow = memo(({ track, index }: { track: Track; index: number }) => {
   return (
     <div
       className="@container flex items-center gap-4 px-4 py-2.5 rounded-2xl opacity-50"
-      style={{ background: 'rgba(255,255,255,0.015)' }}
+      style={{ background: 'rgb(var(--ink) / 0.015)' }}
     >
       <div className="w-10 h-10 flex items-center justify-center shrink-0">
-        <span className="text-[12px] text-white/20 tabular-nums font-semibold">{index + 1}</span>
+        <span className="text-[12px] text-ink-20 tabular-nums font-semibold">{index + 1}</span>
       </div>
       <div
         className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
         style={{
-          background: 'rgba(255,255,255,0.03)',
+          background: 'rgb(var(--ink) / 0.03)',
           boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.06)',
         }}
       >
-        <Music size={16} className="text-white/20" />
+        <Music size={16} className="text-ink-20" />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-[13px] font-medium text-white/55 truncate">{displayTitle}</p>
-        <p className="text-[11px] text-white/25 truncate">{artistDisplay.primary}</p>
+        <p className="text-[13px] font-medium text-ink-55 truncate">{displayTitle}</p>
+        <p className="text-[11px] text-ink-25 truncate">{artistDisplay.primary}</p>
       </div>
       <div className="hidden @lg:flex shrink-0">
         <TrackStatusBadges meta={track._scd_meta} />
       </div>
       {track.enrichment?.release_year && (
-        <span className="text-[11px] text-white/25 tabular-nums shrink-0">
+        <span className="text-[11px] text-ink-25 tabular-nums shrink-0">
           {track.enrichment.release_year}
         </span>
       )}

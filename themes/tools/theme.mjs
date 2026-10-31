@@ -20,8 +20,11 @@ import {
   THEME_LIMITS,
   THEME_PREVIEW_PATHS,
   THEME_RESERVED_IDS,
+  THEME_SCHEMES,
 } from '../../desktop/src/lib/themes/rules.ts';
 import { commitTime, tryGit } from './git.mjs';
+
+const WHITE_SCHEME_APP = '8.8.0';
 
 const THEME_KEYS = [
   '$schema',
@@ -35,6 +38,7 @@ const THEME_KEYS = [
   'accent',
   'background',
   'font',
+  'scheme',
 ];
 const AUTHOR_KEYS = ['name', 'github'];
 const REVOKED_KEYS = ['id', 'hash', 'reason'];
@@ -184,6 +188,15 @@ export function loadTheme(dir, buildRev, previousEntry) {
     if (meta.font !== undefined && !THEME_FONTS.includes(meta.font)) {
       bad('font', `must be one of ${THEME_FONTS.join(', ')}`);
     }
+    if (meta.scheme !== undefined && !THEME_SCHEMES.includes(meta.scheme)) {
+      bad('scheme', `must be one of ${THEME_SCHEMES.join(', ')}`);
+    }
+    if (
+      meta.scheme === 'white' &&
+      !(isVersion(meta.minApp) && compareVersions(meta.minApp, WHITE_SCHEME_APP) >= 0)
+    ) {
+      bad('minApp', `must be ${WHITE_SCHEME_APP} or newer for a white theme`);
+    }
     if (meta.$schema !== undefined && typeof meta.$schema !== 'string') {
       bad('$schema', 'must be a string');
     }
@@ -274,6 +287,7 @@ export function loadTheme(dir, buildRev, previousEntry) {
 
   const files = assets.map((a) => [a.path, a.sha256]).sort((x, y) => (x[0] < y[0] ? -1 : 1));
   const key = [css.sha256, files, meta.accent ?? null, meta.background ?? null, meta.font ?? null];
+  if (meta.scheme) key.push(meta.scheme);
   const hash = sha256(Buffer.from(JSON.stringify(key), 'utf8'));
   if (previousEntry && previousEntry.hash !== hash && isVersion(previousEntry.version)) {
     if (compareVersions(meta.version, previousEntry.version) <= 0) {
@@ -311,6 +325,7 @@ export function loadTheme(dir, buildRev, previousEntry) {
     accent: meta.accent,
     background: meta.background,
     font: meta.font,
+    scheme: meta.scheme,
     updated: rev ? commitTime(root, rev) : undefined,
     hash,
     size: css.size + assets.reduce((sum, asset) => sum + asset.size, 0),

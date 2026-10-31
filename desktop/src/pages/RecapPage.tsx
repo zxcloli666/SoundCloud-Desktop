@@ -13,7 +13,7 @@ export const RecapPage = memo(function RecapPage() {
   const enough = !!data && data.totals.plays >= RECAP_MIN_PLAYS;
 
   return (
-    <div className="relative min-h-full w-full">
+    <div data-ui="page" data-page="recap" className="relative min-h-full w-full">
       <RecapAtmosphere />
       <div
         className="relative z-10 mx-auto flex h-[calc(100vh-190px)] min-h-[480px] w-full max-w-[920px] flex-col px-4 pt-4 md:px-8"
@@ -23,7 +23,7 @@ export const RecapPage = memo(function RecapPage() {
           <RecapStory year={year} stats={data} />
         ) : (
           <div className="flex flex-1 flex-col items-center justify-center text-center">
-            <div className="text-[22px] font-bold text-white/85">
+            <div className="text-[22px] font-bold text-ink-85">
               {isLoading ? t('common.loading') : t('recap.empty')}
             </div>
             {!isLoading && (

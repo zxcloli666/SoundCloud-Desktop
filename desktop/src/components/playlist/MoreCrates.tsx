@@ -22,7 +22,7 @@ export const MoreCrates = React.memo(function MoreCrates({
 
     return (
         <section className="space-y-3">
-            <h2 className="text-[14px] font-bold text-white/70 px-1">
+            <h2 className="text-[14px] font-bold text-ink-70 px-1">
                 {t('playlist.moreCrates', {name: curatorName})}
             </h2>
             <HorizontalScroll className="-mx-1 px-1">

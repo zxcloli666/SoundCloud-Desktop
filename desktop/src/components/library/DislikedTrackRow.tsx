@@ -25,25 +25,25 @@ export const DislikedTrackRow = React.memo(function DislikedTrackRow({ track }: 
         isThis
           ? 'bg-accent/[0.06] ring-1 ring-accent/20'
           : disliked
-            ? 'hover:bg-white/[0.03]'
-            : 'bg-white/[0.03] ring-1 ring-white/[0.06]'
+            ? 'hover:bg-ink/[0.03]'
+            : 'bg-ink/[0.03] ring-1 ring-ink/[0.06]'
       }`}
     >
       <button
         type="button"
         onClick={togglePlay}
         aria-label={isThisPlaying ? t('track.pause') : t('track.play')}
-        className={`relative w-11 h-11 rounded-xl overflow-hidden shrink-0 ring-1 ring-white/[0.08] shadow-md cursor-pointer transition-[filter,opacity] duration-300 ${
+        className={`relative w-11 h-11 rounded-xl overflow-hidden shrink-0 ring-1 ring-ink/[0.08] shadow-md cursor-pointer transition-[filter,opacity] duration-300 ${
           disliked && !isThis
             ? 'grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100'
             : ''
         }`}
       >
         {cover ? (
-          <img src={cover} alt="" className="w-full h-full object-cover" decoding="async" />
+          <img data-ui="artwork" src={cover} alt="" className="w-full h-full object-cover" decoding="async" />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-white/[0.05] to-transparent">
-            <Music size={14} className="text-white/20" />
+          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-ink/[0.05] to-transparent">
+            <Music size={14} className="text-ink-20" />
           </div>
         )}
         <div
@@ -68,7 +68,7 @@ export const DislikedTrackRow = React.memo(function DislikedTrackRow({ track }: 
         />
       </div>
 
-      <span className="hidden sm:block text-[12px] text-white/30 tabular-nums font-medium shrink-0 w-12 text-right">
+      <span className="hidden sm:block text-[12px] text-ink-30 tabular-nums font-medium shrink-0 w-12 text-right">
         {dur(track.duration)}
       </span>
 
@@ -79,7 +79,7 @@ export const DislikedTrackRow = React.memo(function DislikedTrackRow({ track }: 
         className={`inline-flex items-center gap-2 h-8 px-3.5 rounded-full text-[12px] font-semibold shrink-0 transition-all duration-200 cursor-pointer active:scale-[0.97] ${
           disliked
             ? 'bg-rose-400/[0.12] text-rose-300 ring-1 ring-rose-400/25 hover:bg-rose-400/20 hover:text-rose-200'
-            : 'text-white/40 ring-1 ring-white/[0.08] hover:text-white/80 hover:bg-white/[0.06]'
+            : 'text-ink-40 ring-1 ring-ink/[0.08] hover:text-ink-80 hover:bg-ink/[0.06]'
         }`}
       >
         <ThumbsDown size={13} fill={disliked ? 'currentColor' : 'none'} />

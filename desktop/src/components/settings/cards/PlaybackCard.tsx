@@ -37,7 +37,7 @@ export function PlaybackCard() {
 
     return (
         <Card title={t('settings.playback')} icon={<Headphones size={17}/>}>
-            <div className="divide-y divide-white/[0.05]">
+            <div className="divide-y divide-ink/[0.05]">
                 <StreamQualityPicker isPremium={!!isPremium}/>
                 <Row title={t('settings.floatingComments')} desc={t('settings.floatingCommentsDesc')}>
                     <Toggle

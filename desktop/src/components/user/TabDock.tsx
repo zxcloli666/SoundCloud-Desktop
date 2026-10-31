@@ -140,11 +140,11 @@ function TabDockImpl<T extends string>({ tabs, active, onChange, aura }: TabDock
           overflows ? 'cursor-grab' : 'cursor-default'
         }`}
         style={{
-            background: dockB > 0 ? 'rgba(15,15,18,0.55)' : 'rgba(15,15,18,0.92)',
+            background: dockB > 0 ? 'rgb(var(--surface) / 0.55)' : 'rgb(var(--surface) / 0.92)',
             backdropFilter: dockB > 0 ? `blur(${dockB}px) saturate(180%)` : undefined,
             WebkitBackdropFilter: dockB > 0 ? `blur(${dockB}px) saturate(180%)` : undefined,
           boxShadow:
-            '0 24px 60px rgba(0,0,0,0.45), inset 0 0 0 1px rgba(255,255,255,0.08), inset 0 1px 0 rgba(255,255,255,0.08)',
+            '0 24px 60px rgb(var(--shade) / calc(0.45 * var(--shade-alpha))), inset 0 0 0 1px rgba(255,255,255,0.08), inset 0 1px 0 rgba(255,255,255,0.08)',
         }}
       >
         {pill && (
@@ -166,18 +166,20 @@ function TabDockImpl<T extends string>({ tabs, active, onChange, aura }: TabDock
               key={tab.id}
               type="button"
               data-tab={tab.id}
+              data-ui="tab"
+              data-active={isActive}
               onClick={() => onChange(tab.id)}
               className={`relative z-10 shrink-0 inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3.5 md:px-4 h-8 sm:h-9 rounded-xl text-[12px] sm:text-[12.5px] font-semibold transition-colors duration-300 ${
                 overflows ? 'cursor-grab' : 'cursor-pointer'
-              } ${isActive ? 'text-white' : 'text-white/45 hover:text-white/85'}`}
+              } ${isActive ? 'text-ink' : 'text-ink-45 hover:text-ink-85'}`}
             >
               <span className="whitespace-nowrap">{tab.label}</span>
               {tab.count != null && (
                 <span
                   className="hidden sm:inline-flex text-[10px] tabular-nums font-bold px-1.5 py-0.5 rounded-md transition-colors"
                   style={{
-                    background: isActive ? 'rgba(255,255,255,0.16)' : 'rgba(255,255,255,0.05)',
-                    color: isActive ? '#fff' : 'rgba(255,255,255,0.35)',
+                    background: isActive ? 'rgb(var(--ink) / 0.16)' : 'rgb(var(--ink) / 0.05)',
+                    color: isActive ? 'rgb(var(--ink))' : 'rgb(var(--ink) / calc(0.35 * (1 + var(--ink-lift) * (1 - 0.35))))',
                   }}
                 >
                   {fc(tab.count)}

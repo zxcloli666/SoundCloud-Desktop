@@ -15,20 +15,20 @@ export const ArtistMiniCard = memo(function ArtistMiniCard({user}: { user: SCUse
             className="group flex flex-col items-center gap-2.5 w-[112px] shrink-0 cursor-pointer"
         >
             <div
-                className="relative w-[88px] h-[88px] rounded-full overflow-hidden ring-1 ring-white/[0.08] group-hover:ring-white/20 group-hover:scale-[1.04] transition-all duration-400 shadow-lg">
+                className="relative w-[88px] h-[88px] rounded-full overflow-hidden ring-1 ring-ink/[0.08] group-hover:ring-ink/20 group-hover:scale-[1.04] transition-all duration-400 shadow-lg">
                 {avatar ? (
                     <img src={avatar} alt="" decoding="async" className="w-full h-full object-cover"/>
                 ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-white/5">
-                        <User size={26} className="text-white/20"/>
+                    <div className="w-full h-full flex items-center justify-center bg-ink/5">
+                        <User size={26} className="text-ink-20"/>
                     </div>
                 )}
             </div>
             <div className="text-center w-full">
-                <p className="text-[13px] font-semibold text-white/85 truncate group-hover:text-white transition-colors">
+                <p className="text-[13px] font-semibold text-ink-85 truncate group-hover:text-ink transition-colors">
                     {user.username}
                 </p>
-                <span className="text-[10.5px] text-white/30 flex items-center justify-center gap-1">
+                <span className="text-[10.5px] text-ink-30 flex items-center justify-center gap-1">
           <Users size={9}/>
                     {fc(user.followers_count)}
         </span>

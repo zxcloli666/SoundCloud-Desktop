@@ -9,7 +9,7 @@ export function ServerBadge({ status, port }: { status: ObsStatus | null; port: 
 
   if (current === 'running') {
     return (
-      <div className="flex items-center gap-2 text-[12px] font-medium text-[#3ddc84]">
+      <div className="flex items-center gap-2 text-[12px] font-medium text-ok">
         <span className="relative flex size-2">
           <span className="absolute inline-flex size-full animate-ping rounded-full bg-[#23a55a] opacity-60" />
           <span className="relative inline-flex size-2 rounded-full bg-[#23a55a]" />
@@ -20,13 +20,13 @@ export function ServerBadge({ status, port }: { status: ObsStatus | null; port: 
   }
   if (current === 'busy' || current === 'failed') {
     return (
-      <div className="rounded-lg border border-[#ff453a]/20 bg-[#ff453a]/[0.08] px-2.5 py-1.5 text-[12px] text-[#ff8a80]">
+      <div className="rounded-lg border border-[#ff453a]/20 bg-[#ff453a]/[0.08] px-2.5 py-1.5 text-[12px] text-bad">
         {t(current === 'busy' ? 'settings.obsBusy' : 'settings.obsFailed', { port })}
       </div>
     );
   }
   return (
-    <div className="flex items-center gap-2 text-[12px] text-white/40">
+    <div className="flex items-center gap-2 text-[12px] text-ink-40">
       <Loader2 size={12} className="animate-spin" />
       {t('settings.obsStarting')}
     </div>

@@ -70,12 +70,13 @@ export const EstuaryDeck = React.memo(function EstuaryDeck({
 
   return (
     <section
-      className="relative overflow-hidden rounded-[20px] border border-white/[0.1] shadow-[0_24px_60px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.08)]"
+      data-ui="soundwave"
+      className="relative overflow-hidden rounded-[20px] border border-ink/[0.1] shadow-[0_24px_60px_rgb(var(--shade)/calc(0.45*var(--shade-alpha))),inset_0_1px_0_rgba(255,255,255,0.08)]"
       style={{
         background:
           b > 0
-            ? 'linear-gradient(160deg, rgba(255,255,255,0.07), rgba(255,255,255,0.025) 55%)'
-            : 'rgb(18,18,22)',
+            ? 'linear-gradient(160deg, rgb(var(--ink) / 0.07), rgb(var(--ink) / 0.025) 55%)'
+            : 'rgb(var(--surface))',
         backdropFilter: b > 0 ? `blur(${b}px) saturate(1.3)` : undefined,
         WebkitBackdropFilter: b > 0 ? `blur(${b}px) saturate(1.3)` : undefined,
       }}
@@ -102,15 +103,15 @@ export const EstuaryDeck = React.memo(function EstuaryDeck({
                   isPlaying && perf.idleAnim ? 'riv-pulse 1.6s ease-in-out infinite' : undefined,
               }}
             />
-            <b className="text-[11px] font-bold uppercase tracking-[0.22em] text-white/90">
+            <b className="text-[11px] font-bold uppercase tracking-[0.22em] text-ink-90">
               {t('soundwave.river.live')}
             </b>
-            <span className="flex items-center gap-2 text-[11.5px] text-white/45">
+            <span className="flex items-center gap-2 text-[11.5px] text-ink-45">
               <AdaptDots />
               {t('soundwave.river.adapts')}
             </span>
           </div>
-          <span className="font-mono text-[11px] text-white/35">
+          <span className="font-mono text-[11px] text-ink-35">
             {t('soundwave.river.queueInf')}
           </span>
         </div>
@@ -119,12 +120,12 @@ export const EstuaryDeck = React.memo(function EstuaryDeck({
           <WaveTrackHeader track={track} queue={queue} isCurrent={isCurrent} />
         ) : (
           <div className="flex items-center gap-3">
-            <div className="size-14 shrink-0 rounded-xl bg-white/[0.04] ring-1 ring-white/[0.06]" />
+            <div className="size-14 shrink-0 rounded-xl bg-ink/[0.04] ring-1 ring-ink/[0.06]" />
             <div className="min-w-0 flex-1">
-              <p className="text-[15px] font-semibold leading-tight text-white/90">
+              <p className="text-[15px] font-semibold leading-tight text-ink-90">
                 {t('soundwave.idleTitle')}
               </p>
-              <p className="mt-0.5 truncate text-[12px] text-white/45">{t('soundwave.idleSub')}</p>
+              <p className="mt-0.5 truncate text-[12px] text-ink-45">{t('soundwave.idleSub')}</p>
             </div>
           </div>
         )}
@@ -134,7 +135,7 @@ export const EstuaryDeck = React.memo(function EstuaryDeck({
             perf.mode === 'beauty'
               ? {
                   WebkitBoxReflect:
-                    'below 2px linear-gradient(transparent 62%, rgba(255,255,255,0.13))',
+                    'below 2px linear-gradient(transparent 62%, rgb(var(--ink) / 0.13))',
                 }
               : undefined
           }
@@ -142,7 +143,7 @@ export const EstuaryDeck = React.memo(function EstuaryDeck({
           <LiveWaveform track={track} isCurrent={isCurrent} />
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 border-t border-white/[0.06] pt-4">
+        <div className="flex flex-wrap items-center gap-3 border-t border-ink/[0.06] pt-4">
           <button
             type="button"
             onClick={onPlayWave}
@@ -152,7 +153,7 @@ export const EstuaryDeck = React.memo(function EstuaryDeck({
             {playWhite14}
             {t('soundwave.river.playWave')}
           </button>
-          <span className="h-6 w-px bg-white/[0.07]" />
+          <span className="h-6 w-px bg-ink/[0.07]" />
           <HideListenedToggle value={hideListened} onChange={onHideListened} />
           <HideLikedToggle value={hideLiked} onChange={onHideLiked} />
           <LanguageFilter selected={languages} onChange={onLanguages} />
@@ -161,7 +162,7 @@ export const EstuaryDeck = React.memo(function EstuaryDeck({
             onClick={onRefresh}
             disabled={spinning}
             title={t('soundwave.refresh')}
-            className="flex size-8 cursor-pointer items-center justify-center rounded-full border border-white/[0.08] bg-white/[0.06] text-white/70 transition-colors hover:border-white/[0.14] hover:bg-white/[0.1] hover:text-white/95 disabled:cursor-not-allowed disabled:opacity-40"
+            className="flex size-8 cursor-pointer items-center justify-center rounded-full border border-ink/[0.08] bg-ink/[0.06] text-ink-70 transition-colors hover:border-ink/[0.14] hover:bg-ink/[0.1] hover:text-ink-95 disabled:cursor-not-allowed disabled:opacity-40"
           >
             <RefreshCw size={13} className={spinning ? 'animate-spin' : ''} />
           </button>

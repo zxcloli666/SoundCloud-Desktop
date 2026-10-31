@@ -73,7 +73,7 @@ export function IdentityHub({
 
   return (
     <GlassHeroPanel hasStar={hasStar} aura={aura}>
-      <div className="relative p-6 md:p-10 flex flex-col lg:flex-row gap-8 lg:gap-10 items-center lg:items-stretch">
+      <div data-ui="user-hero" className="relative p-6 md:p-10 flex flex-col lg:flex-row gap-8 lg:gap-10 items-center lg:items-stretch">
         <AvatarArtifact
           username={user.username}
           avatarUrl={user.avatar_url}
@@ -104,21 +104,21 @@ export function IdentityHub({
                       WebkitTextFillColor: 'transparent',
                       backgroundClip: 'text',
                         animation: perf.idleAnim ? 'prismatic-shift 6s linear infinite' : undefined,
-                      filter: 'drop-shadow(0 8px 24px rgba(0,0,0,0.5))',
+                      filter: 'drop-shadow(0 8px 24px rgb(var(--shade) / calc(0.5 * var(--shade-alpha))))',
                     }
-                  : { color: '#fff', textShadow: '0 8px 24px rgba(0,0,0,0.5)' }
+                  : { color: 'rgb(var(--ink))', textShadow: '0 8px 24px rgb(var(--shade) / calc(0.5 * var(--shade-alpha)))' }
               }
             >
               {user.username}
             </h1>
 
             {user.full_name && user.full_name !== user.username && (
-              <p className="text-[13px] text-white/40 font-medium">{user.full_name}</p>
+              <p className="text-[13px] text-ink-40 font-medium">{user.full_name}</p>
             )}
           </div>
 
           {user.description && (
-              <p className="selectable text-[14px] md:text-[15px] text-white/65 leading-relaxed max-w-2xl line-clamp-3 hover:line-clamp-none transition-all duration-700 cursor-help">
+              <p className="selectable text-[14px] md:text-[15px] text-ink-65 leading-relaxed max-w-2xl line-clamp-3 hover:line-clamp-none transition-all duration-700 cursor-help">
               <RichText text={user.description} accent={auraRgb(aura)}/>
             </p>
           )}
@@ -131,15 +131,15 @@ export function IdentityHub({
                   href={link.url}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-semibold text-white/55 hover:text-white transition-all duration-300 hover:scale-105"
+                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-semibold text-ink-55 hover:text-ink transition-all duration-300 hover:scale-105"
                   style={{
-                      background: lb > 0 ? 'rgba(255,255,255,0.04)' : 'rgba(28,28,32,0.85)',
-                    border: '0.5px solid rgba(255,255,255,0.08)',
+                      background: lb > 0 ? 'rgb(var(--ink) / 0.04)' : 'rgb(var(--surface-hi) / 0.85)',
+                    border: '0.5px solid rgb(var(--ink) / 0.08)',
                       backdropFilter: lb > 0 ? `blur(${lb}px)` : undefined,
                       WebkitBackdropFilter: lb > 0 ? `blur(${lb}px)` : undefined,
                   }}
                 >
-                  <span className="text-white/45">{getWebIcon(link.service)}</span>
+                  <span className="text-ink-45">{getWebIcon(link.service)}</span>
                   <span className="truncate max-w-[160px]">{link.title}</span>
                 </a>
               ))}

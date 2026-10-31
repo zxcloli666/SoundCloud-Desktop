@@ -67,7 +67,7 @@ export const VibeShelf = React.memo(function VibeShelf({ tracks }: { tracks: Tra
                 </div>
               </div>
               {track.genre && (
-                <p className="mt-1 flex items-center gap-1.5 pl-2 text-[10.5px] text-white/35">
+                <p className="mt-1 flex items-center gap-1.5 pl-2 text-[10.5px] text-ink-35">
                   <span className="size-1.5 rounded-full" style={{ background: tone }} />
                   <span className="truncate">{track.genre}</span>
                 </p>

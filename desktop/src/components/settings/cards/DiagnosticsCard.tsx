@@ -55,13 +55,13 @@ export function DiagnosticsCard() {
       desc={t('settings.diagnosticsDesc')}
       icon={<FileText size={17} />}
     >
-      <p className="text-[13px] text-white/60 font-medium mb-2">{t('settings.logFolder')}</p>
-      <div className="flex items-center gap-2 rounded-2xl bg-black/20 border border-white/[0.06] px-3.5 py-2.5">
+      <p className="text-[13px] text-ink-60 font-medium mb-2">{t('settings.logFolder')}</p>
+      <div className="flex items-center gap-2 rounded-2xl bg-shade-20 border border-ink/[0.06] px-3.5 py-2.5">
         {logDir === null ? (
           <Skeleton className="h-[16px] flex-1" />
         ) : (
           <code
-            className="flex-1 min-w-0 truncate text-[12px] text-white/70 font-mono select-text"
+            className="flex-1 min-w-0 truncate text-[12px] text-ink-70 font-mono select-text"
             title={logDir}
           >
             {logDir || '—'}
@@ -73,7 +73,7 @@ export function DiagnosticsCard() {
           disabled={!logDir}
           aria-label={t('settings.copyLogPath')}
           title={t('settings.copyLogPath')}
-          className="shrink-0 w-8 h-8 rounded-xl flex items-center justify-center text-white/50 hover:text-white/85 hover:bg-white/[0.08] transition-all duration-200 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+          className="shrink-0 w-8 h-8 rounded-xl flex items-center justify-center text-ink-50 hover:text-ink-85 hover:bg-ink/[0.08] transition-all duration-200 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
         >
           {copied ? (
             <Check size={14} className="text-[var(--color-accent)]" />
@@ -86,7 +86,7 @@ export function DiagnosticsCard() {
         <button
           type="button"
           onClick={openFolder}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl text-[12px] font-semibold bg-white/[0.06] text-white/75 hover:bg-white/[0.1] border border-white/[0.06] hover:border-white/[0.12] transition-all duration-200 cursor-pointer"
+          className="flex items-center gap-2 px-4 py-2 rounded-xl text-[12px] font-semibold bg-ink/[0.06] text-ink-75 hover:bg-ink/[0.1] border border-ink/[0.06] hover:border-ink/[0.12] transition-all duration-200 cursor-pointer"
         >
           <FolderOpen size={12} />
           {t('settings.openLogFolder')}

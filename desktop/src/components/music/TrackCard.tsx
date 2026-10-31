@@ -57,7 +57,8 @@ export const TrackCard = React.memo(
       >
         {/* Artwork */}
         <div
-          className="relative aspect-square rounded-2xl overflow-hidden bg-white/[0.03] cursor-pointer ring-1 ring-white/[0.06] group-hover:ring-white/[0.12] transition-all duration-300 ease-[var(--ease-apple)]"
+          data-ui="artwork"
+          className="relative aspect-square rounded-2xl overflow-hidden bg-ink/[0.03] cursor-pointer ring-1 ring-ink/[0.06] group-hover:ring-ink/[0.12] transition-all duration-300 ease-[var(--ease-apple)]"
           onClick={togglePlay}
         >
           {artwork ? (
@@ -69,13 +70,14 @@ export const TrackCard = React.memo(
               loading="lazy"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-white/20">
+            <div className="w-full h-full flex items-center justify-center text-ink-20">
               {playIcon32}
             </div>
           )}
 
           {/* Hover overlay */}
           <div
+            data-scheme="dark"
             className={`absolute inset-0 flex items-center justify-center transition-all duration-300 group-hover:bg-black/30 group-hover:backdrop-blur-[2px] group-hover:opacity-100 ${
               showPlayingOverlay
                 ? 'bg-black/30 backdrop-blur-[2px] opacity-100'
@@ -84,7 +86,7 @@ export const TrackCard = React.memo(
           >
             <div
               className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ease-[var(--ease-apple)] shadow-xl group-hover:scale-100 ${
-                showPlayingOverlay ? 'bg-white scale-100' : 'bg-white/90 scale-75'
+                showPlayingOverlay ? 'bg-white scale-100' : 'bg-ink/90 scale-75'
               }`}
             >
               {isThisPlaying ? pauseBlack20 : playBlack20}
@@ -92,8 +94,8 @@ export const TrackCard = React.memo(
           </div>
 
           {/* Duration pill */}
-          <div className="absolute bottom-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-            <div className="text-[10px] font-medium bg-black/50 group-hover:backdrop-blur-md transition-[backdrop-filter] duration-200 text-white/80 px-2 py-0.5 rounded-full">
+          <div data-scheme="dark" className="absolute bottom-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+            <div className="text-[10px] font-medium bg-black/50 group-hover:backdrop-blur-md transition-[backdrop-filter] duration-200 text-ink-80 px-2 py-0.5 rounded-full">
               {dur(track.duration)}
             </div>
           </div>
@@ -107,12 +109,12 @@ export const TrackCard = React.memo(
           <LikeButton track={track} variant="overlay" />
 
           {/* Top right: add to playlist + add to queue */}
-          <div className="absolute top-2 right-2 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <div data-scheme="dark" className="absolute top-2 right-2 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
             <AddToPlaylistDialog trackUrns={[track.urn]}>
               <button
                 type="button"
                 onClick={(e) => e.stopPropagation()}
-                className="cursor-pointer w-8 h-8 rounded-full bg-black/50 group-hover:backdrop-blur-md flex items-center justify-center text-white/80 hover:text-white hover:bg-black/70 transition-all duration-200"
+                className="cursor-pointer w-8 h-8 rounded-full bg-black/50 group-hover:backdrop-blur-md flex items-center justify-center text-ink-80 hover:text-white hover:bg-black/70 transition-all duration-200"
                 title={t('playlist.addToPlaylist')}
               >
                 <ListPlus size={14} />
@@ -121,11 +123,11 @@ export const TrackCard = React.memo(
             <AlbumLinkButton
               track={track}
               iconSize={14}
-              className="cursor-pointer w-8 h-8 rounded-full bg-black/50 group-hover:backdrop-blur-md flex items-center justify-center text-white/80 hover:text-white hover:bg-black/70 transition-all duration-200"
+              className="cursor-pointer w-8 h-8 rounded-full bg-black/50 group-hover:backdrop-blur-md flex items-center justify-center text-ink-80 hover:text-white hover:bg-black/70 transition-all duration-200"
             />
             <PlayNextButton
               track={track}
-              className="cursor-pointer w-8 h-8 rounded-full bg-black/50 group-hover:backdrop-blur-md flex items-center justify-center text-white/80 hover:text-white hover:bg-black/70 transition-all duration-200"
+              className="cursor-pointer w-8 h-8 rounded-full bg-black/50 group-hover:backdrop-blur-md flex items-center justify-center text-ink-80 hover:text-white hover:bg-black/70 transition-all duration-200"
             />
           </div>
         </div>
@@ -133,7 +135,7 @@ export const TrackCard = React.memo(
         {/* Info */}
         <div className="mt-3 min-w-0">
           <p
-            className={`text-[13px] font-medium truncate leading-snug ${isWanted ? 'text-white/55' : 'text-white/90 cursor-pointer hover:text-white'} transition-colors duration-150`}
+            className={`text-[13px] font-medium truncate leading-snug ${isWanted ? 'text-ink-55' : 'text-ink-90 cursor-pointer hover:text-ink'} transition-colors duration-150`}
             onClick={
               isWanted ? undefined : () => navigate(`/track/${encodeURIComponent(track.urn)}`)
             }
@@ -142,7 +144,7 @@ export const TrackCard = React.memo(
           </p>
           <p
             className={`text-[11px] truncate mt-0.5 flex items-center gap-1 ${
-              isWanted ? 'text-white/30' : 'text-white/35'
+              isWanted ? 'text-ink-30' : 'text-ink-35'
             } transition-colors duration-150`}
           >
             <UploadKindDot kind={artistDisplay.uploadKind} />
@@ -152,18 +154,18 @@ export const TrackCard = React.memo(
               ) : (
                 <ArtistNameLinks
                   items={artistLinks}
-                  linkClassName="cursor-pointer transition-colors hover:text-white/60"
+                  linkClassName="cursor-pointer transition-colors hover:text-ink-60"
                 />
               )}
             </span>
           </p>
           {isWanted ? (
-            <p className="text-[10px] text-white/25 mt-1">
+            <p className="text-[10px] text-ink-25 mt-1">
               {t('track.notFoundOnSc', 'not found on SoundCloud')}
             </p>
           ) : (
             track.playback_count != null && (
-              <p className="text-[10px] text-white/20 mt-1 tabular-nums">
+              <p className="text-[10px] text-ink-20 mt-1 tabular-nums">
                 {fc(track.playback_count)} plays
               </p>
             )

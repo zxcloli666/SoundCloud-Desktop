@@ -39,21 +39,21 @@ function LayoutRow({ item }: { item: LayoutListItem }) {
       ref={setNodeRef}
       className={`relative flex items-center gap-3 h-12 pl-1.5 pr-2 rounded-2xl border transition-[background-color,border-color,opacity] duration-200 ${
         isDragging
-          ? 'z-10 border-[var(--color-accent)] bg-white/[0.08]'
-          : 'border-white/[0.05] bg-white/[0.025] hover:bg-white/[0.04]'
+          ? 'z-10 border-[var(--color-accent)] bg-ink/[0.08]'
+          : 'border-ink/[0.05] bg-ink/[0.025] hover:bg-ink/[0.04]'
       }`}
       style={{
         transform: CSS.Translate.toString(transform),
         transition,
         boxShadow: isDragging
-          ? '0 14px 36px rgba(0,0,0,0.5), 0 0 18px var(--color-accent-glow)'
+          ? '0 14px 36px rgb(var(--shade) / calc(0.5 * var(--shade-alpha))), 0 0 18px var(--color-accent-glow)'
           : undefined,
       }}
     >
       <button
         type="button"
         aria-label={t('settings.layoutDrag')}
-        className="w-7 h-9 shrink-0 flex items-center justify-center rounded-lg text-white/20 hover:text-white/55 cursor-grab active:cursor-grabbing transition-colors"
+        className="w-7 h-9 shrink-0 flex items-center justify-center rounded-lg text-ink-20 hover:text-ink-55 cursor-grab active:cursor-grabbing transition-colors"
         {...attributes}
         {...listeners}
       >
@@ -61,12 +61,12 @@ function LayoutRow({ item }: { item: LayoutListItem }) {
       </button>
       <span
         className={`w-8 h-8 shrink-0 rounded-xl flex items-center justify-center transition-opacity duration-200 ${
-          item.dimmed ? 'opacity-35 text-white/60' : 'text-[var(--color-accent)]'
+          item.dimmed ? 'opacity-35 text-ink-60' : 'text-[var(--color-accent)]'
         }`}
         style={{
           background: item.dimmed
-            ? 'rgba(255,255,255,0.04)'
-            : 'linear-gradient(135deg, var(--color-accent-glow), rgba(255,255,255,0.03))',
+            ? 'rgb(var(--ink) / 0.04)'
+            : 'linear-gradient(135deg, var(--color-accent-glow), rgb(var(--ink) / 0.03))',
         }}
       >
         {item.icon}
@@ -74,12 +74,12 @@ function LayoutRow({ item }: { item: LayoutListItem }) {
       <div className="min-w-0 flex-1">
         <div
           className={`truncate text-[13px] font-medium transition-colors duration-200 ${
-            item.dimmed ? 'text-white/30' : 'text-white/80'
+            item.dimmed ? 'text-ink-30' : 'text-ink-80'
           }`}
         >
           {item.label}
         </div>
-        {item.hint && <div className="truncate text-[11px] text-white/30">{item.hint}</div>}
+        {item.hint && <div className="truncate text-[11px] text-ink-30">{item.hint}</div>}
       </div>
       {item.trailing}
     </div>
@@ -140,8 +140,8 @@ export function RowIconButton({
       onClick={onClick}
       className={`w-8 h-8 shrink-0 rounded-xl flex items-center justify-center transition-all duration-200 cursor-pointer ${
         active
-          ? 'text-white/70 hover:text-white hover:bg-white/[0.07]'
-          : 'text-white/25 hover:text-white/60 hover:bg-white/[0.05]'
+          ? 'text-ink-70 hover:text-ink hover:bg-ink/[0.07]'
+          : 'text-ink-25 hover:text-ink-60 hover:bg-ink/[0.05]'
       }`}
     >
       {children}

@@ -8,7 +8,7 @@ function SyncRow({ status }: { status: SyncStatus }) {
   const { t } = useTranslation();
   const { hint, action } = useSyncCopy(status);
   return (
-    <div className="mb-4 border-b border-white/[0.05] pb-4">
+    <div className="mb-4 border-b border-ink/[0.05] pb-4">
       <Row title={t('sync.title')} desc={hint}>
         <SyncStatusBadge status={status} withAction={false} />
         {action && (
@@ -16,7 +16,7 @@ function SyncRow({ status }: { status: SyncStatus }) {
             type="button"
             onClick={action.run}
             disabled={action.disabled}
-            className="cursor-pointer rounded-full border border-white/10 bg-white/[0.05] px-3 py-1.5 text-[11.5px] font-semibold text-white/75 transition-colors hover:border-white/[0.16] hover:bg-white/[0.09] hover:text-white/95 disabled:cursor-default disabled:opacity-40"
+            className="cursor-pointer rounded-full border border-ink/10 bg-ink/[0.05] px-3 py-1.5 text-[11.5px] font-semibold text-ink-75 transition-colors hover:border-ink/[0.16] hover:bg-ink/[0.09] hover:text-ink-95 disabled:cursor-default disabled:opacity-40"
           >
             {action.label}
           </button>

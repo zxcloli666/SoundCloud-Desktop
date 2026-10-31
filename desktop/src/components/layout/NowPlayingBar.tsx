@@ -335,6 +335,7 @@ export const ProgressSlider = React.memo(() => {
   return (
     <Slider.Root
       ref={rootRef}
+      data-ui="progress"
       className="relative flex items-center w-full h-5 cursor-pointer group select-none touch-none"
       value={[displayValue]}
       max={duration || 1}
@@ -342,7 +343,7 @@ export const ProgressSlider = React.memo(() => {
       onValueChange={onValueChange}
       onValueCommit={onValueCommit}
     >
-      <Slider.Track className="relative h-[3px] grow rounded-full bg-white/[0.08] group-hover:h-[5px] transition-all duration-150">
+      <Slider.Track className="relative h-[3px] grow rounded-full bg-ink/[0.08] group-hover:h-[5px] transition-all duration-150">
         <Slider.Range
           ref={rangeRef}
           className="absolute h-full rounded-full bg-accent will-change-transform"
@@ -366,11 +367,11 @@ export const ProgressTime = React.memo(() => {
 
   return (
     <div className="flex items-center gap-1.5">
-      <span className="text-[11px] text-white/50 tabular-nums font-medium">
+      <span className="text-[11px] text-ink-50 tabular-nums font-medium">
         {formatTime(currentSecond)}
       </span>
-      <span className="text-[11px] text-white/20">/</span>
-      <span className="text-[11px] text-white/30 tabular-nums font-medium">
+      <span className="text-[11px] text-ink-20">/</span>
+      <span className="text-[11px] text-ink-30 tabular-nums font-medium">
         {formatTime(duration)}
       </span>
     </div>
@@ -395,8 +396,8 @@ const PlaybackQualityBadge = React.memo(() => {
       <span
         className={`inline-flex h-6 shrink-0 items-center rounded-md border px-2 text-[9px] font-semibold tracking-[0.14em] ${
           isHq
-            ? 'border-white/[0.14] bg-white/[0.08] text-white/92'
-            : 'border-white/[0.08] bg-white/[0.04] text-white/68'
+            ? 'border-ink/[0.14] bg-ink/[0.08] text-ink-92'
+            : 'border-ink/[0.08] bg-ink/[0.04] text-ink-68'
         }`}
       >
         {t(QUALITY_LABEL_KEYS[playbackQuality])}
@@ -404,9 +405,9 @@ const PlaybackQualityBadge = React.memo(() => {
       {playbackSource === 'storage' && (
         <span
           title={t('player.qualityCDN')}
-          className="npb-cdn inline-flex h-6 shrink-0 items-center gap-1.5 rounded-md border border-[#b7ffd8]/[0.16] bg-[#b7ffd8]/[0.07] px-2 text-[8px] font-medium tracking-[0.12em] text-[#dff7e9]/82"
+          className="npb-cdn inline-flex h-6 shrink-0 items-center gap-1.5 rounded-md border border-mint/[0.16] bg-mint/[0.07] px-2 text-[8px] font-medium tracking-[0.12em] text-mint-ink/82"
         >
-          <span className="h-1.5 w-1.5 rounded-full bg-[#b7ffd8] shadow-[0_0_8px_rgba(183,255,216,0.55)]" />
+          <span className="h-1.5 w-1.5 rounded-full bg-mint shadow-[0_0_8px_rgb(var(--mint)/0.55)]" />
           <span className="npb-cdn-label">{t('player.qualityCDN')}</span>
         </span>
       )}
@@ -482,8 +483,8 @@ function LikeButton({
       type="button"
       {...gesture.handlers}
       title={heartTitle(t, isLiked, superliked)}
-      className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-all duration-200 cursor-pointer hover:bg-white/[0.04] ${
-        isLiked ? 'text-accent' : 'text-white/30 hover:text-white/60'
+      className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-all duration-200 cursor-pointer hover:bg-ink/[0.04] ${
+        isLiked ? 'text-accent' : 'text-ink-30 hover:text-ink-60'
       }`}
     >
       <HoldHeart liked={isLiked} superliked={superliked} size={16} gesture={gesture} />
@@ -512,8 +513,8 @@ export function NowBarDislikeButton({
       type="button"
       onClick={toggle}
       title={disliked ? t('track.removeDislike') : t('track.dislike')}
-      className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-all duration-200 cursor-pointer hover:bg-white/[0.04] ${
-        disliked ? 'text-rose-400' : 'text-white/30 hover:text-white/60'
+      className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-all duration-200 cursor-pointer hover:bg-ink/[0.04] ${
+        disliked ? 'text-rose-400' : 'text-ink-30 hover:text-ink-60'
       }`}
     >
       <ThumbsDown size={16} fill={disliked ? 'currentColor' : 'none'} />
@@ -531,7 +532,7 @@ function NowBarAddToPlaylistButton({ trackUrn }: { trackUrn: string }) {
       onClick={() => request([trackUrn])}
       title={t('playlist.addToPlaylist')}
       aria-label={t('playlist.addToPlaylist')}
-      className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-all duration-200 cursor-pointer hover:bg-white/[0.04] text-white/30 hover:text-white/60"
+      className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-all duration-200 cursor-pointer hover:bg-ink/[0.04] text-ink-30 hover:text-ink-60"
     >
       <ListPlus size={16} />
     </button>
@@ -541,8 +542,8 @@ function NowBarAddToPlaylistButton({ trackUrn }: { trackUrn: string }) {
 /* ── Isolated control buttons ────────────────────────────────── */
 
 const btnClass = (active: boolean, size: 'default' | 'sm') =>
-  `${size === 'sm' ? 'w-[30px] h-[30px]' : 'w-9 h-9'} rounded-full flex items-center justify-center transition-all duration-200 ease-[var(--ease-apple)] cursor-pointer hover:bg-white/[0.08] hover:-translate-y-px active:scale-90 ${
-    active ? 'text-accent' : 'text-white/55 hover:text-white'
+  `${size === 'sm' ? 'w-[30px] h-[30px]' : 'w-9 h-9'} rounded-full flex items-center justify-center transition-all duration-200 ease-[var(--ease-apple)] cursor-pointer hover:bg-ink/[0.08] hover:-translate-y-px active:scale-90 ${
+    active ? 'text-accent' : 'text-ink-55 hover:text-ink'
   }`;
 
 const PlayPauseBtn = React.memo(() => {
@@ -554,6 +555,7 @@ const PlayPauseBtn = React.memo(() => {
       type="button"
       onClick={togglePlay}
       title={isPlaying ? t('track.pause') : t('track.play')}
+      data-ui="play-button"
       className="npb-play"
     >
       {isPlaying ? pauseBlack20 : playBlack20}
@@ -602,7 +604,7 @@ const AbLoopBtn = React.memo(() => {
       className={`npb-abloop relative w-[30px] h-[30px] rounded-full flex items-center justify-center transition-all duration-200 ease-[var(--ease-apple)] cursor-pointer active:scale-90 ${
         active
           ? 'is-active text-accent bg-accent/15 shadow-[0_0_14px_-4px_var(--color-accent-glow)]'
-          : 'text-white/55 hover:text-white hover:bg-white/[0.08] hover:-translate-y-px'
+          : 'text-ink-55 hover:text-ink hover:bg-ink/[0.08] hover:-translate-y-px'
       }`}
     >
       {repeatAbIcon16}
@@ -679,9 +681,9 @@ export const PlaybackRateSlider = React.memo(() => {
   const isDefault = Math.abs(playbackRate - 1) < 0.001;
 
   return (
-    <div className="rounded-[14px] border border-white/[0.06] bg-white/[0.02] px-3 py-2.5">
+    <div className="rounded-[14px] border border-ink/[0.06] bg-ink/[0.02] px-3 py-2.5">
       <div className="mb-2 flex items-center justify-between gap-3">
-        <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-white/45">
+        <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-ink-45">
           {t('player.playbackSpeed')}
         </span>
         <button
@@ -691,7 +693,7 @@ export const PlaybackRateSlider = React.memo(() => {
             if (!isDefault) resetPlaybackRate();
           }}
           className={`min-w-[42px] text-right text-[11px] font-semibold tabular-nums transition-colors cursor-pointer ${
-            isDefault ? 'text-white/45' : 'text-accent hover:text-accent/80'
+            isDefault ? 'text-ink-45' : 'text-accent hover:text-accent/80'
           }`}
         >
           {formatPlaybackRate(playbackRate)}
@@ -710,7 +712,7 @@ export const PlaybackRateSlider = React.memo(() => {
           setPlaybackRate(playbackRate + (e.deltaY < 0 ? PLAYBACK_RATE_STEP : -PLAYBACK_RATE_STEP));
         }}
       >
-        <Slider.Track className="relative h-[3px] grow rounded-full bg-white/[0.08] transition-all duration-150 group-hover/rate:h-[4px]">
+        <Slider.Track className="relative h-[3px] grow rounded-full bg-ink/[0.08] transition-all duration-150 group-hover/rate:h-[4px]">
           <Slider.Range className="absolute h-full rounded-full bg-accent" />
         </Slider.Track>
         <Slider.Thumb className="block h-2.5 w-2.5 rounded-full bg-accent shadow-[0_0_10px_var(--color-accent-glow)] outline-none transition-all duration-150 scale-0 opacity-0 group-hover/rate:scale-100 group-hover/rate:opacity-100" />
@@ -718,7 +720,7 @@ export const PlaybackRateSlider = React.memo(() => {
       {/* 1.00x tick mark */}
       <div className="relative mt-1 h-2 w-full pointer-events-none">
         <div
-          className="absolute top-0 h-1.5 w-px bg-white/15"
+          className="absolute top-0 h-1.5 w-px bg-ink/15"
           style={{
             left: `${((1 - PLAYBACK_RATE_MIN) / (PLAYBACK_RATE_MAX - PLAYBACK_RATE_MIN)) * 100}%`,
           }}
@@ -738,13 +740,13 @@ export const PitchModeToggle = React.memo(() => {
   const mode = usePlayerStore((s) => s.pitchControlMode);
   const setMode = usePlayerStore((s) => s.setPitchControlMode);
   return (
-    <div className="grid grid-cols-2 gap-1 rounded-[14px] border border-white/[0.07] bg-white/[0.03] p-[3px]">
+    <div className="grid grid-cols-2 gap-1 rounded-[14px] border border-ink/[0.07] bg-ink/[0.03] p-[3px]">
       <button
         type="button"
         title={t('player.pitchModeAuto')}
         onClick={() => setMode('auto')}
         className={`h-7 rounded-[10px] text-[10px] font-semibold uppercase tracking-[0.08em] transition-colors cursor-pointer ${
-          mode === 'auto' ? 'bg-white text-black' : 'text-white/45 hover:text-white/75'
+          mode === 'auto' ? 'bg-ink text-paper' : 'text-ink-45 hover:text-ink-75'
         }`}
       >
         {t('player.pitchModeAutoShort')}
@@ -754,7 +756,7 @@ export const PitchModeToggle = React.memo(() => {
         title={t('player.pitchModeManual')}
         onClick={() => setMode('manual')}
         className={`h-7 rounded-[10px] text-[10px] font-semibold uppercase tracking-[0.08em] transition-colors cursor-pointer ${
-          mode === 'manual' ? 'bg-white text-black' : 'text-white/45 hover:text-white/75'
+          mode === 'manual' ? 'bg-ink text-paper' : 'text-ink-45 hover:text-ink-75'
         }`}
       >
         {t('player.pitchModeManualShort')}
@@ -776,19 +778,19 @@ export const PitchSlider = React.memo(() => {
 
   return (
     <div
-      className={`rounded-[14px] border border-white/[0.06] bg-white/[0.02] px-3 py-2.5 ${
+      className={`rounded-[14px] border border-ink/[0.06] bg-ink/[0.02] px-3 py-2.5 ${
         isManual ? '' : 'opacity-65'
       }`}
     >
       <div className="mb-2 flex items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-1.5">
-          <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-white/45">
+          <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-ink-45">
             {t('player.pitch')}
           </span>
           <span
             className={`rounded-full border px-1.5 py-0.5 text-[8px] font-semibold uppercase tracking-[0.08em] ${
               isManual
-                ? 'border-white/[0.12] bg-white/[0.05] text-white/55'
+                ? 'border-ink/[0.12] bg-ink/[0.05] text-ink-55'
                 : 'border-accent/30 bg-accent/[0.12] text-accent'
             }`}
           >
@@ -802,7 +804,7 @@ export const PitchSlider = React.memo(() => {
             if (canReset) resetPitch();
           }}
           className={`min-w-[42px] text-right text-[11px] font-semibold tabular-nums transition-colors cursor-pointer ${
-            canReset ? 'text-accent hover:text-accent/80' : 'text-white/45'
+            canReset ? 'text-accent hover:text-accent/80' : 'text-ink-45'
           }`}
         >
           {formatPitchSemitones(effective)}
@@ -823,14 +825,14 @@ export const PitchSlider = React.memo(() => {
           setPitch(pitchSemitones + (e.deltaY < 0 ? PITCH_SEMITONES_STEP : -PITCH_SEMITONES_STEP));
         }}
       >
-        <Slider.Track className="relative h-[3px] grow rounded-full bg-white/[0.08] transition-all duration-150 group-hover/pitch:h-[4px]">
+        <Slider.Track className="relative h-[3px] grow rounded-full bg-ink/[0.08] transition-all duration-150 group-hover/pitch:h-[4px]">
           <Slider.Range className="absolute h-full rounded-full bg-accent" />
         </Slider.Track>
         <Slider.Thumb className="block h-2.5 w-2.5 rounded-full bg-accent shadow-[0_0_10px_var(--color-accent-glow)] outline-none transition-all duration-150 scale-0 opacity-0 group-hover/pitch:scale-100 group-hover/pitch:opacity-100 disabled:scale-0 disabled:opacity-0" />
       </Slider.Root>
       {/* 0 semi tick */}
       <div className="relative mt-1 h-2 w-full pointer-events-none">
-        <div className="absolute top-0 h-1.5 w-px bg-white/15" style={{ left: '50%' }} />
+        <div className="absolute top-0 h-1.5 w-px bg-ink/15" style={{ left: '50%' }} />
       </div>
     </div>
   );
@@ -858,18 +860,18 @@ const TuningBtn = React.memo(() => {
           align="end"
           sideOffset={10}
           collisionPadding={12}
-          className="z-[200] w-[300px] origin-bottom-right rounded-[18px] border border-white/[0.10] bg-[#101012]/96 p-3 shadow-[0_18px_60px_rgba(0,0,0,0.55)] backdrop-blur-xl outline-none data-[state=open]:animate-fade-in-up"
+          className="z-[200] w-[300px] origin-bottom-right rounded-[18px] border border-ink/[0.10] bg-surface/96 p-3 shadow-[0_18px_60px_rgb(var(--shade)/calc(0.55*var(--shade-alpha)))] backdrop-blur-xl outline-none data-[state=open]:animate-fade-in-up"
         >
-          <div className="absolute inset-x-0 top-0 h-12 rounded-t-[18px] bg-gradient-to-b from-white/[0.05] to-transparent pointer-events-none" />
+          <div className="absolute inset-x-0 top-0 h-12 rounded-t-[18px] bg-gradient-to-b from-ink/[0.05] to-transparent pointer-events-none" />
           <div className="relative flex items-center gap-2 px-1 pb-2.5">
-            <div className="flex h-7 w-7 items-center justify-center rounded-full border border-white/[0.08] bg-white/[0.04] text-white/55">
+            <div className="flex h-7 w-7 items-center justify-center rounded-full border border-ink/[0.08] bg-ink/[0.04] text-ink-55">
               {slidersHorizontal16}
             </div>
             <div className="min-w-0">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-white/65">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-65">
                 {t('player.soundTuning')}
               </p>
-              <p className="text-[10px] text-white/30">
+              <p className="text-[10px] text-ink-30">
                 {t('player.playbackSpeed')} · {t('player.pitch')}
               </p>
             </div>
@@ -930,7 +932,7 @@ const PillTrackBody = React.memo(function PillTrackBody({
 
   return (
     <div className="npb-meta" onContextMenu={onContextMenu}>
-      <div className="npb-art" onClick={() => openLyricsPanel({ rightPanelOpen: false })}>
+      <div className="npb-art" data-ui="player-art" onClick={() => openLyricsPanel({ rightPanelOpen: false })}>
         {artworkSmall ? <img src={artworkSmall} alt="" /> : <div className="npb-artfb" />}
         {/* spinning vinyl ring + live "playing" equaliser — animated only while playing */}
         <span className="npb-ring" />
@@ -965,6 +967,7 @@ const PillTrackBody = React.memo(function PillTrackBody({
       <NowPlayingNameCard key={track.urn} track={track}>
         <span
           className="npb-ttl"
+          data-ui="player-title"
           onClick={() =>
             isLocalUrn(track.urn)
               ? navigate('/offline', { state: { section: 'local' } })
@@ -998,7 +1001,7 @@ const LocalFileBadge = React.memo(() => {
   const { t } = useTranslation();
   return (
     <div className="npb-react is-local">
-      <span className="flex items-center gap-1.5 rounded-full border border-white/[0.1] bg-white/[0.04] px-2.5 py-1 text-[10.5px] font-semibold uppercase tracking-[0.12em] text-white/50">
+      <span className="flex items-center gap-1.5 rounded-full border border-ink/[0.1] bg-ink/[0.04] px-2.5 py-1 text-[10.5px] font-semibold uppercase tracking-[0.12em] text-ink-50">
         <HardDrive size={11} />
         {t('local.badge')}
       </span>
@@ -1020,7 +1023,7 @@ const ReactClusterBody = React.memo(({ urn }: { urn: string }) => {
         {trackData && (
           <AlbumLinkButton
             track={trackData}
-            className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-all duration-200 cursor-pointer hover:bg-white/[0.04] text-white/30 hover:text-white/60"
+            className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-all duration-200 cursor-pointer hover:bg-ink/[0.04] text-ink-30 hover:text-ink-60"
           />
         )}
       </span>

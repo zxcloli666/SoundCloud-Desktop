@@ -32,7 +32,7 @@ export const SharingToggle = React.memo(function SharingToggle({kind, urn, shari
             className={`inline-flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 ease-[var(--ease-apple)] cursor-pointer disabled:opacity-50 disabled:cursor-default ${
                 isPrivate
                     ? 'text-amber-300/90 hover:text-amber-200 hover:bg-amber-500/10'
-                    : 'text-white/55 hover:text-white/90 hover:bg-white/[0.07]'
+                    : 'text-ink-55 hover:text-ink-90 hover:bg-ink/[0.07]'
             }`}
         >
             {mut.isPending ? (

@@ -16,10 +16,11 @@ export function KeyCap({
 }) {
   return (
     <kbd
-      className={`inline-flex items-center justify-center font-semibold font-mono border shadow-[0_1px_2px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.06)] transition-colors duration-200 ${SIZES[size]} ${
+      data-ui="kbd"
+      className={`inline-flex items-center justify-center font-semibold font-mono border shadow-[0_1px_2px_rgb(var(--shade)/calc(0.3*var(--shade-alpha))),inset_0_1px_0_rgba(255,255,255,0.06)] transition-colors duration-200 ${SIZES[size]} ${
         active
-          ? 'bg-accent/[0.16] border-accent/40 text-white/90'
-          : 'bg-white/[0.08] border-white/[0.1] text-white/70'
+          ? 'bg-accent/[0.16] border-accent/40 text-ink-90'
+          : 'bg-ink/[0.08] border-ink/[0.1] text-ink-70'
       }`}
     >
       {children}

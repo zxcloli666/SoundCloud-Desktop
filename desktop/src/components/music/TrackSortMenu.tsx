@@ -69,8 +69,8 @@ export const TrackSortMenu = React.memo(function TrackSortMenu({
             active
               ? 'border-accent/25 bg-accent/10 text-accent'
               : open
-                ? 'border-white/[0.14] bg-white/[0.06] text-white/85'
-                : 'border-white/[0.07] bg-white/[0.03] text-white/50 hover:border-white/[0.14] hover:text-white/85'
+                ? 'border-ink/[0.14] bg-ink/[0.06] text-ink-85'
+                : 'border-ink/[0.07] bg-ink/[0.03] text-ink-50 hover:border-ink/[0.14] hover:text-ink-85'
           }`}
         >
           {loading ? <Loader2 size={12} className="animate-spin" /> : SORT_ICONS[sort]}
@@ -84,20 +84,20 @@ export const TrackSortMenu = React.memo(function TrackSortMenu({
           align="end"
           className="z-50 w-[230px] rounded-2xl p-1.5 outline-none animate-fade-in"
           style={{
-            background: b > 0 ? 'rgba(18,18,22,0.88)' : 'rgb(22,22,26)',
+            background: b > 0 ? 'rgb(var(--surface) / 0.88)' : 'rgb(var(--surface-hi))',
             backdropFilter: b > 0 ? `blur(${b}px) saturate(1.8)` : undefined,
             WebkitBackdropFilter: b > 0 ? `blur(${b}px) saturate(1.8)` : undefined,
-            border: '1px solid rgba(255,255,255,0.08)',
-            boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
+            border: '1px solid rgb(var(--ink) / 0.08)',
+            boxShadow: '0 20px 60px rgb(var(--shade) / calc(0.5 * var(--shade-alpha)))',
           }}
         >
-          <p className="px-3 pt-2 pb-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-white/35">
+          <p className="px-3 pt-2 pb-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-ink-35">
             {t('trackSort.label')}
           </p>
           {TRACK_SORTS.map((mode) => (
             <React.Fragment key={mode}>
               {DIVIDER_BEFORE.includes(mode) && (
-                <div className="mx-2 my-1 h-px bg-white/[0.06]" aria-hidden />
+                <div className="mx-2 my-1 h-px bg-ink/[0.06]" aria-hidden />
               )}
               <button
                 type="button"
@@ -107,13 +107,13 @@ export const TrackSortMenu = React.memo(function TrackSortMenu({
                 }}
                 className={`group flex w-full cursor-pointer items-center gap-2.5 rounded-[10px] px-3 py-2 text-left text-[12.5px] font-medium transition-colors ${
                   sort === mode
-                    ? 'bg-white/[0.07] text-white/92'
-                    : 'text-white/60 hover:bg-white/[0.05] hover:text-white/90'
+                    ? 'bg-ink/[0.07] text-ink-92'
+                    : 'text-ink-60 hover:bg-ink/[0.05] hover:text-ink-90'
                 }`}
               >
                 <span
                   className={`transition-colors ${
-                    sort === mode ? 'text-accent' : 'text-white/35 group-hover:text-accent'
+                    sort === mode ? 'text-accent' : 'text-ink-35 group-hover:text-accent'
                   }`}
                 >
                   {SORT_ICONS[mode]}
@@ -125,16 +125,16 @@ export const TrackSortMenu = React.memo(function TrackSortMenu({
           ))}
           {onReset && (
             <>
-              <div className="mx-2 my-1 h-px bg-white/[0.06]" aria-hidden />
+              <div className="mx-2 my-1 h-px bg-ink/[0.06]" aria-hidden />
               <button
                 type="button"
                 onClick={() => {
                   setOpen(false);
                   onReset();
                 }}
-                className="group flex w-full cursor-pointer items-center gap-2.5 rounded-[10px] px-3 py-2 text-left text-[12.5px] font-medium text-white/60 transition-colors hover:bg-white/[0.05] hover:text-white/90"
+                className="group flex w-full cursor-pointer items-center gap-2.5 rounded-[10px] px-3 py-2 text-left text-[12.5px] font-medium text-ink-60 transition-colors hover:bg-ink/[0.05] hover:text-ink-90"
               >
-                <span className="text-white/35 transition-colors group-hover:text-accent">
+                <span className="text-ink-35 transition-colors group-hover:text-accent">
                   <RotateCcw size={13} />
                 </span>
                 <span className="flex-1">{t('trackSort.resetOrder')}</span>

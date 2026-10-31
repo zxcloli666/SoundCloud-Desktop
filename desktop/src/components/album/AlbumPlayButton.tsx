@@ -68,8 +68,8 @@ function AlbumPlayButtonImpl({ tracks, aura }: AlbumPlayButtonProps) {
       <span
         className="w-7 h-7 rounded-full flex items-center justify-center"
         style={{
-          background: lightAura ? 'rgba(0,0,0,0.18)' : 'rgba(255,255,255,0.18)',
-          boxShadow: `inset 0 0 0 1px ${lightAura ? 'rgba(0,0,0,0.25)' : 'rgba(255,255,255,0.25)'}`,
+          background: lightAura ? 'rgba(0,0,0,0.18)' : 'rgb(var(--ink) / 0.18)',
+          boxShadow: `inset 0 0 0 1px ${lightAura ? 'rgb(var(--shade) / calc(0.25 * var(--shade-alpha)))' : 'rgba(255,255,255,0.25)'}`,
         }}
       >
         {icon}

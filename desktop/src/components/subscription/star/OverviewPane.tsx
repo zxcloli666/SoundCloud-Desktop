@@ -65,7 +65,7 @@ export const OverviewPane = memo(function OverviewPane({
       <RecipientSwitch value={recipient} onChange={onRecipient} />
 
       {/* duration segmented */}
-      <div className="flex gap-1.5 rounded-[14px] border border-white/[0.10] bg-white/[0.04] p-1.5">
+      <div className="flex gap-1.5 rounded-[14px] border border-ink/[0.10] bg-ink/[0.04] p-1.5">
         {(loading ? [] : plans).map((p) => {
           const on = p.id === selectedId;
           return (
@@ -75,9 +75,9 @@ export const OverviewPane = memo(function OverviewPane({
               onClick={() => onSelect(p.id)}
               className="flex-1 cursor-pointer rounded-[10px] px-2 py-2.5 text-center font-mono text-[12px] transition-all duration-200"
               style={{
-                color: on ? '#fff' : 'rgba(255,255,255,0.5)',
+                color: on ? 'rgb(var(--ink))' : 'rgb(var(--ink) / 0.5)',
                 background: on
-                  ? 'linear-gradient(180deg, color-mix(in srgb, var(--color-accent) 28%, transparent), transparent), rgba(255,255,255,0.06)'
+                  ? 'linear-gradient(180deg, color-mix(in srgb, var(--color-accent) 28%, transparent), transparent), rgb(var(--ink) / 0.06)'
                   : undefined,
                 boxShadow: on
                   ? '0 0 18px -4px var(--color-accent-glow), inset 0 0 0 1px color-mix(in srgb, var(--color-accent) 45%, transparent)'
@@ -88,7 +88,7 @@ export const OverviewPane = memo(function OverviewPane({
               {/* unified across tabs: every plan shows its price; the accent −%
                   rides alongside only where there's a saving (no mixed slots) */}
               <span className="mt-1 flex items-center justify-center gap-1.5 text-[9.5px]">
-                <span className="text-white/45">{p.price_rub} ₽</span>
+                <span className="text-ink-45">{p.price_rub} ₽</span>
                 {p.savings_pct > 0 && (
                   <span className="font-semibold text-accent">−{p.savings_pct}%</span>
                 )}
@@ -97,7 +97,7 @@ export const OverviewPane = memo(function OverviewPane({
           );
         })}
         {loading && (
-          <div className="flex-1 py-2.5 text-center font-mono text-[12px] text-white/40">
+          <div className="flex-1 py-2.5 text-center font-mono text-[12px] text-ink-40">
             {t('starpass.loading')}
           </div>
         )}
@@ -108,7 +108,7 @@ export const OverviewPane = memo(function OverviewPane({
         {PERKS.map(({ key, Icon }) => (
           <div
             key={key}
-            className="flex items-center gap-2.5 rounded-[11px] border border-white/[0.08] bg-white/[0.025] px-2.5 py-2"
+            className="flex items-center gap-2.5 rounded-[11px] border border-ink/[0.08] bg-ink/[0.025] px-2.5 py-2"
           >
             <span
               className="grid size-[28px] shrink-0 place-items-center rounded-[8px]"
@@ -120,7 +120,7 @@ export const OverviewPane = memo(function OverviewPane({
             >
               <Icon size={14} className="text-accent" />
             </span>
-            <span className="text-[12px] font-medium leading-tight text-white/85">
+            <span className="text-[12px] font-medium leading-tight text-ink-85">
               {t(`starpass.perk.${key}.title`)}
             </span>
           </div>

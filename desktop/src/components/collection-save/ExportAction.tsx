@@ -21,10 +21,10 @@ const FormatSwitch = React.memo(function FormatSwitch({
 
   return (
     <div className="flex items-center gap-2 px-1">
-      <span className="text-[10.5px] font-semibold uppercase tracking-[0.18em] text-white/30">
+      <span className="text-[10.5px] font-semibold uppercase tracking-[0.18em] text-ink-30">
         {t('collectionSave.format')}
       </span>
-      <div className="ml-auto flex gap-0.5 rounded-[10px] border border-white/[0.07] bg-white/[0.02] p-[3px]">
+      <div className="ml-auto flex gap-0.5 rounded-[10px] border border-ink/[0.07] bg-ink/[0.02] p-[3px]">
         {FORMATS.map((value) => {
           const disabled = value === 'mp3' && !mp3Supported;
           const active = format === value;
@@ -41,8 +41,8 @@ const FormatSwitch = React.memo(function FormatSwitch({
               }
               className={`cursor-pointer rounded-[7px] px-2.5 py-1 font-mono text-[11px] font-semibold uppercase tracking-wide transition-colors disabled:cursor-not-allowed disabled:opacity-35 ${
                 active
-                  ? 'bg-white/[0.09] text-white/92 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]'
-                  : 'text-white/45 hover:text-white/80'
+                  ? 'bg-ink/[0.09] text-ink-92 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]'
+                  : 'text-ink-45 hover:text-ink-80'
               }`}
             >
               {value}

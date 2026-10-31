@@ -44,12 +44,12 @@ function CacheRow({
   return (
     <div className="flex items-center justify-between py-3">
       <div>
-        <p className="text-[13px] text-white/60 font-medium">{label}</p>
+        <p className="text-[13px] text-ink-60 font-medium">{label}</p>
         <div className="h-[25px] flex items-center">
           {size === null ? (
             <Skeleton className="w-25 h-[20px]" />
           ) : (
-            <p className="text-[17px] font-bold text-white/90 tabular-nums">{formatBytes(size)}</p>
+            <p className="text-[17px] font-bold text-ink-90 tabular-nums">{formatBytes(size)}</p>
           )}
         </div>
       </div>
@@ -167,7 +167,7 @@ export function CacheCard() {
       icon={<Database size={17} />}
       action={
         allLoaded ? (
-          <span className="text-[12px] text-white/30 tabular-nums">
+          <span className="text-[12px] text-ink-30 tabular-nums">
             {t('settings.total')}: {formatBytes(totalSize)}
           </span>
         ) : (
@@ -175,7 +175,7 @@ export function CacheCard() {
         )
       }
     >
-      <div className="divide-y divide-white/[0.04]">
+      <div className="divide-y divide-ink/[0.04]">
         <CacheRow
           label={t('settings.audioCacheSize')}
           size={audioSize}
@@ -200,10 +200,10 @@ export function CacheCard() {
       </div>
 
       <div className="pt-3 space-y-2">
-        <p className="text-[11px] text-white/30">{t('settings.cacheLikesDesc')}</p>
+        <p className="text-[11px] text-ink-30">{t('settings.cacheLikesDesc')}</p>
         {cachingLikes ? (
           <div className="space-y-2">
-            <div className="flex items-center justify-between text-[12px] text-white/60">
+            <div className="flex items-center justify-between text-[12px] text-ink-60">
               <span className="flex items-center gap-2">
                 <Loader2 size={12} className="animate-spin" />
                 {progress
@@ -216,7 +216,7 @@ export function CacheCard() {
                 </span>
               )}
             </div>
-            <div className="h-1 bg-white/[0.06] rounded-full overflow-hidden">
+            <div className="h-1 bg-ink/[0.06] rounded-full overflow-hidden">
               <div
                 className="h-full bg-[var(--color-accent)] transition-[width] duration-300"
                 style={{ width: `${progressPct}%` }}
@@ -225,7 +225,7 @@ export function CacheCard() {
             <button
               type="button"
               onClick={cancelLikes}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl text-[12px] font-semibold bg-white/[0.04] text-white/60 hover:bg-white/[0.08] border border-white/[0.06] hover:border-white/[0.12] transition-all duration-200 cursor-pointer"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-[12px] font-semibold bg-ink/[0.04] text-ink-60 hover:bg-ink/[0.08] border border-ink/[0.06] hover:border-ink/[0.12] transition-all duration-200 cursor-pointer"
             >
               <X size={12} />
               {t('common.cancel')}
@@ -235,7 +235,7 @@ export function CacheCard() {
           <button
             type="button"
             onClick={handleCacheLikes}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-[12px] font-semibold bg-white/[0.06] text-white/75 hover:bg-white/[0.1] border border-white/[0.06] hover:border-white/[0.12] transition-all duration-200 cursor-pointer"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-[12px] font-semibold bg-ink/[0.06] text-ink-75 hover:bg-ink/[0.1] border border-ink/[0.06] hover:border-ink/[0.12] transition-all duration-200 cursor-pointer"
           >
             <Download size={12} />
             {t('settings.cacheLikes')}

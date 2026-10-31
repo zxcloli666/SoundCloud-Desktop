@@ -14,12 +14,12 @@ const VolumeTip = React.memo(
     const { t } = useTranslation();
     return (
       <span
-        className={`pointer-events-none absolute z-10 flex items-center gap-1 whitespace-nowrap rounded-lg border bg-[#101012]/96 px-1.5 py-0.5 text-[10px] font-medium tabular-nums shadow-[0_8px_24px_rgba(0,0,0,0.5)] ${
+        className={`pointer-events-none absolute z-10 flex items-center gap-1 whitespace-nowrap rounded-lg border bg-surface/96 px-1.5 py-0.5 text-[10px] font-medium tabular-nums shadow-[0_8px_24px_rgb(var(--shade)/calc(0.5*var(--shade-alpha)))] ${
           vertical
             ? 'left-full top-1/2 ml-2.5 -translate-y-1/2'
             : 'bottom-full left-1/2 mb-2.5 -translate-x-1/2'
-        } ${fine ? 'border-accent/40 text-accent' : 'border-white/[0.10]'} ${
-          volume > 100 ? 'text-amber-400' : fine ? '' : 'text-white/85'
+        } ${fine ? 'border-accent/40 text-accent' : 'border-ink/[0.10]'} ${
+          volume > 100 ? 'text-amber-400' : fine ? '' : 'text-ink-85'
         }`}
       >
         {volume}%
@@ -54,6 +54,7 @@ export const VolumeSlider = React.memo(
         <Slider.Root
           ref={rootRef}
           aria-label={t('player.volume')}
+          data-ui="volume"
           onDoubleClick={resetVolume}
           className={`relative flex items-center cursor-pointer group select-none touch-none ${
             vertical ? 'flex-col h-full w-5' : 'h-5 w-full'
@@ -82,13 +83,13 @@ export const VolumeSlider = React.memo(
           }}
         >
           <Slider.Track
-            className={`relative grow rounded-full bg-white/[0.08] transition-all duration-150 ${
+            className={`relative grow rounded-full bg-ink/[0.08] transition-all duration-150 ${
               vertical ? 'w-[3px] group-hover:w-[4px]' : 'h-[3px] group-hover:h-[4px]'
             }`}
           >
             <Slider.Range
               className={`absolute rounded-full ${vertical ? 'w-full' : 'h-full'} ${
-                isOver100 ? 'bg-amber-400/80' : 'bg-white/60'
+                isOver100 ? 'bg-amber-400/80' : 'bg-ink/60'
               }`}
             />
           </Slider.Track>
@@ -97,7 +98,7 @@ export const VolumeSlider = React.memo(
               dragging
                 ? 'scale-100 opacity-100'
                 : 'scale-0 opacity-0 group-hover:scale-100 group-hover:opacity-100'
-            } ${fine ? 'ring-2 ring-accent/50' : ''} ${isOver100 ? 'bg-amber-400' : 'bg-white'}`}
+            } ${fine ? 'ring-2 ring-accent/50' : ''} ${isOver100 ? 'bg-amber-400' : 'bg-ink'}`}
           >
             {dragging && <VolumeTip volume={volume} fine={fine} vertical={vertical} />}
           </Slider.Thumb>
@@ -108,7 +109,7 @@ export const VolumeSlider = React.memo(
             <div
               key={point}
               style={vertical ? { bottom: offset } : { left: offset }}
-              className={`absolute pointer-events-none ${point === 100 ? 'bg-white/20' : 'bg-white/10'} ${
+              className={`absolute pointer-events-none ${point === 100 ? 'bg-ink/20' : 'bg-ink/10'} ${
                 vertical
                   ? 'left-1/2 -translate-x-1/2 translate-y-1/2 h-px w-[3px]'
                   : 'top-1/2 -translate-y-1/2 -translate-x-1/2 h-[3px] w-px'
@@ -134,8 +135,8 @@ export const ControlVolumeBtn = React.memo(({ size = 'default' }: { size?: 'defa
     <button
       type="button"
       onClick={() => setVolume(volume > 0 ? 0 : volumeBeforeMute)}
-      className={`${s} rounded-full flex items-center justify-center transition-all duration-150 ease-[var(--ease-apple)] cursor-pointer hover:bg-white/[0.04] ${
-        volume === 0 ? 'text-accent' : 'text-white/40 hover:text-white/70'
+      className={`${s} rounded-full flex items-center justify-center transition-all duration-150 ease-[var(--ease-apple)] cursor-pointer hover:bg-ink/[0.04] ${
+        volume === 0 ? 'text-accent' : 'text-ink-40 hover:text-ink-70'
       }`}
     >
       {volume === 0 ? volumeXIcon16 : volume < 50 ? volume1Icon16 : volume2Icon16}
@@ -150,7 +151,7 @@ export const VolumeLabel = React.memo(({ className = 'text-right' }: { className
   );
   const isDefault = volume === VOLUME_DEFAULT;
   const tone =
-    volume > 100 ? 'text-amber-400/70 hover:text-amber-300' : 'text-white/30 hover:text-white/70';
+    volume > 100 ? 'text-amber-400/70 hover:text-amber-300' : 'text-ink-30 hover:text-ink-70';
   return (
     <button
       type="button"
@@ -169,7 +170,7 @@ export const VolumeFlyout = React.memo(() => (
   <div className="npb-vol">
     <ControlVolumeBtn size="sm" />
     <div className="npb-vol-pop">
-      <div className="flex flex-col items-center gap-2 rounded-2xl border border-white/[0.10] bg-[#101012]/96 px-2 py-3 shadow-[0_18px_60px_rgba(0,0,0,0.55)]">
+      <div className="flex flex-col items-center gap-2 rounded-2xl border border-ink/[0.10] bg-surface/96 px-2 py-3 shadow-[0_18px_60px_rgb(var(--shade)/calc(0.55*var(--shade-alpha)))]">
         <VolumeLabel className="text-center" />
         <VolumeSlider orientation="vertical" className="h-[110px]" />
       </div>

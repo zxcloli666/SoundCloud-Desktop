@@ -164,12 +164,12 @@ export const ArtistSoundWave = React.memo(function ArtistSoundWave({
           '--color-accent-hover': auraRgb(aura),
           '--color-accent-contrast': lightAura ? '#000' : '#fff',
           background: sectionBlur
-            ? `linear-gradient(135deg, ${auraRgba(aura, 0.16)} 0%, rgba(255,255,255,0.025) 45%, ${auraRgba(aura, 0.1)} 100%)`
-            : `linear-gradient(135deg, ${auraRgba(aura, 0.16)} 0%, rgba(255,255,255,0.025) 45%, ${auraRgba(aura, 0.1)} 100%), rgba(16,16,20,0.86)`,
+            ? `linear-gradient(135deg, ${auraRgba(aura, 0.16)} 0%, rgb(var(--ink) / 0.025) 45%, ${auraRgba(aura, 0.1)} 100%)`
+            : `linear-gradient(135deg, ${auraRgba(aura, 0.16)} 0%, rgb(var(--ink) / 0.025) 45%, ${auraRgba(aura, 0.1)} 100%), rgb(var(--surface) / 0.86)`,
           border: `0.5px solid ${auraRgba(aura, 0.26)}`,
           backdropFilter: sectionBlur ? `blur(${sectionBlur}px) saturate(160%)` : undefined,
           WebkitBackdropFilter: sectionBlur ? `blur(${sectionBlur}px) saturate(160%)` : undefined,
-          boxShadow: `0 30px 90px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.07), 0 0 80px ${auraRgba(aura, 0.22)}`,
+          boxShadow: `0 30px 90px rgb(var(--shade) / calc(0.4 * var(--shade-alpha))), inset 0 1px 0 rgba(255,255,255,0.07), 0 0 80px ${auraRgba(aura, 0.22)}`,
           transition: `box-shadow 0.6s ${EASE}`,
         } as React.CSSProperties
       }
@@ -212,7 +212,7 @@ export const ArtistSoundWave = React.memo(function ArtistSoundWave({
         <div className="flex items-center gap-3 md:gap-4 p-3 md:p-3.5">
           {/* aura badge */}
           <div
-            className="relative w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 text-white"
+            className="relative w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 text-ink"
             style={{
               background: `linear-gradient(135deg, ${auraRgba(aura, 0.85)}, ${auraRgba(aura, 0.18)})`,
               border: `0.5px solid ${auraRgba(aura, 0.5)}`,
@@ -223,7 +223,7 @@ export const ArtistSoundWave = React.memo(function ArtistSoundWave({
             <span
               className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center"
               style={{
-                background: 'rgba(0,0,0,0.78)',
+                background: 'rgb(var(--shade) / calc(0.78 * var(--shade-alpha)))',
                 border: `0.5px solid ${auraRgba(aura, 0.55)}`,
                 boxShadow: `0 0 10px ${auraRgba(aura, 0.5)}`,
               }}
@@ -236,15 +236,15 @@ export const ArtistSoundWave = React.memo(function ArtistSoundWave({
           <div className="flex-1 min-w-0 flex flex-col gap-[3px]">
             <div className="flex items-center gap-2 min-w-0">
               <span
-                className="text-[14px] font-black tracking-tight text-white truncate leading-none"
+                className="text-[14px] font-black tracking-tight text-ink truncate leading-none"
                 style={{ textShadow: `0 0 18px ${auraRgba(aura, 0.45)}` }}
               >
                 {t('artist.wave.title')}
               </span>
               <span
-                className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-[0.18em] px-1.5 py-[2px] rounded-full text-white/90 shrink-0"
+                className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-[0.18em] px-1.5 py-[2px] rounded-full text-ink-90 shrink-0"
                 style={{
-                  background: `linear-gradient(135deg, ${auraRgba(aura, 0.4)}, rgba(255,255,255,0.05))`,
+                  background: `linear-gradient(135deg, ${auraRgba(aura, 0.4)}, rgb(var(--ink) / 0.05))`,
                   border: `0.5px solid ${auraRgba(aura, 0.45)}`,
                 }}
               >
@@ -252,7 +252,7 @@ export const ArtistSoundWave = React.memo(function ArtistSoundWave({
                 AI
               </span>
             </div>
-            <p className="text-[11px] text-white/45 truncate" title={artistName}>
+            <p className="text-[11px] text-ink-45 truncate" title={artistName}>
               {t('artist.wave.desc', { name: artistName })}
             </p>
           </div>
@@ -274,7 +274,7 @@ export const ArtistSoundWave = React.memo(function ArtistSoundWave({
               className="artist-wave-sheen absolute inset-0 pointer-events-none"
               style={{
                 background:
-                  'linear-gradient(90deg, transparent, rgba(255,255,255,0.28), transparent)',
+                  'linear-gradient(90deg, transparent, rgb(var(--ink) / 0.28), transparent)',
                 // Beauty/medium keep the original always-on idle sheen; light
                 // drops it to playing-only (hover still triggers it via CSS).
                 animation:
@@ -286,8 +286,8 @@ export const ArtistSoundWave = React.memo(function ArtistSoundWave({
             <span
               className="relative w-7 h-7 rounded-full flex items-center justify-center shrink-0"
               style={{
-                background: lightAura ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.22)',
-                border: `0.5px solid ${lightAura ? 'rgba(0,0,0,0.25)' : 'rgba(255,255,255,0.3)'}`,
+                background: lightAura ? 'rgba(0,0,0,0.2)' : 'rgb(var(--ink) / 0.22)',
+                border: `0.5px solid ${lightAura ? 'rgba(0,0,0,0.25)' : 'rgb(var(--ink) / 0.3)'}`,
               }}
             >
               {playIcon}
@@ -303,9 +303,9 @@ export const ArtistSoundWave = React.memo(function ArtistSoundWave({
             onClick={() => setCollapsed(!collapsed)}
             aria-label={collapsed ? t('nav.expand') : t('nav.collapse')}
             title={collapsed ? t('nav.expand') : t('nav.collapse')}
-            className="relative w-9 h-9 rounded-full flex items-center justify-center cursor-pointer transition-transform duration-300 hover:scale-110 text-white/55 hover:text-white shrink-0"
+            className="relative w-9 h-9 rounded-full flex items-center justify-center cursor-pointer transition-transform duration-300 hover:scale-110 text-ink-55 hover:text-ink shrink-0"
             style={{
-              background: 'rgba(255,255,255,0.04)',
+              background: 'rgb(var(--ink) / 0.04)',
               border: `0.5px solid ${auraRgba(aura, 0.22)}`,
               boxShadow: `inset 0 1px 0 rgba(255,255,255,0.05)`,
             }}

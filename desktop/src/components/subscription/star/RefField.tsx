@@ -31,13 +31,13 @@ export const RefField = memo(function RefField({
 
   if (value) {
     return (
-      <span className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.12] bg-white/[0.05] px-3 py-1.5 font-mono text-[11px] text-white/80">
+      <span className="inline-flex items-center gap-1.5 rounded-full border border-ink/[0.12] bg-ink/[0.05] px-3 py-1.5 font-mono text-[11px] text-ink-80">
         <Check size={12} className="text-accent" />
         {t('starpass.ref.applied', { days: value.days })}
         <button
           type="button"
           onClick={() => onChange(null)}
-          className="ml-1 cursor-pointer text-white/35 hover:text-white/80"
+          className="ml-1 cursor-pointer text-ink-35 hover:text-ink-80"
         >
           ×
         </button>
@@ -63,13 +63,13 @@ export const RefField = memo(function RefField({
           onKeyDown={(e) => e.key === 'Enter' && code && check.mutate(code)}
           placeholder={t('starpass.ref.placeholder')}
           maxLength={16}
-          className="w-[150px] rounded-[10px] border border-white/[0.12] bg-white/[0.04] px-3 py-2 font-mono text-[12.5px] tracking-[0.14em] text-white outline-none placeholder:tracking-normal placeholder:text-white/30 focus:border-white/25"
+          className="w-[150px] rounded-[10px] border border-ink/[0.12] bg-ink/[0.04] px-3 py-2 font-mono text-[12.5px] tracking-[0.14em] text-ink outline-none placeholder:tracking-normal placeholder:text-ink-30 focus:border-ink/25"
         />
         <button
           type="button"
           disabled={!code || check.isPending}
           onClick={() => check.mutate(code)}
-          className="cursor-pointer rounded-[10px] border border-white/[0.12] bg-white/[0.06] px-3 py-2 text-[12px] font-semibold text-white/80 transition-colors hover:bg-white/[0.1] disabled:cursor-default disabled:opacity-40"
+          className="cursor-pointer rounded-[10px] border border-ink/[0.12] bg-ink/[0.06] px-3 py-2 text-[12px] font-semibold text-ink-80 transition-colors hover:bg-ink/[0.1] disabled:cursor-default disabled:opacity-40"
         >
           {t('starpass.ref.apply')}
         </button>

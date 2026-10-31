@@ -30,13 +30,13 @@ export const SearchLanding = memo(function SearchLanding() {
       {history.length > 0 ? (
         <section className="max-w-[760px] mx-auto px-4">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] uppercase tracking-wide text-white/35">
+            <span className="text-[11px] uppercase tracking-wide text-ink-35">
               {t('search.history')}
             </span>
             <button
               type="button"
               onClick={clearHistory}
-              className="text-[11px] text-white/35 hover:text-white/70 transition-colors cursor-pointer"
+              className="text-[11px] text-ink-35 hover:text-ink-70 transition-colors cursor-pointer"
             >
               {t('search.clearHistory')}
             </button>
@@ -45,13 +45,13 @@ export const SearchLanding = memo(function SearchLanding() {
             {history.slice(0, HISTORY_SHOWN).map((item) => (
               <span
                 key={item}
-                className="group inline-flex items-center gap-1.5 h-8 pl-3 pr-1 rounded-full text-[12.5px] text-white/70 bg-white/[0.04] border border-white/10 hover:bg-white/[0.07] transition-colors"
+                className="group inline-flex items-center gap-1.5 h-8 pl-3 pr-1 rounded-full text-[12.5px] text-ink-70 bg-ink/[0.04] border border-ink/10 hover:bg-ink/[0.07] transition-colors"
               >
-                <Clock size={12} className="text-white/30" />
+                <Clock size={12} className="text-ink-30" />
                 <button
                   type="button"
                   onClick={() => setQ(item)}
-                  className="max-w-[220px] truncate cursor-pointer hover:text-white"
+                  className="max-w-[220px] truncate cursor-pointer hover:text-ink"
                 >
                   {item}
                 </button>
@@ -59,7 +59,7 @@ export const SearchLanding = memo(function SearchLanding() {
                   type="button"
                   onClick={() => removeQuery(item)}
                   aria-label={t('search.clear')}
-                  className="w-6 h-6 flex items-center justify-center rounded-full text-white/25 hover:text-white/80 cursor-pointer"
+                  className="w-6 h-6 flex items-center justify-center rounded-full text-ink-25 hover:text-ink-80 cursor-pointer"
                 >
                   <X size={12} />
                 </button>

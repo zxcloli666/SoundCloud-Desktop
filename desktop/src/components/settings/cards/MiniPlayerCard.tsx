@@ -9,7 +9,7 @@ import {
 import { Card, RangeSlider } from '../primitives';
 
 const CHECKER =
-  'repeating-conic-gradient(rgba(255,255,255,0.16) 0 25%, rgba(255,255,255,0.04) 0 50%) 0 0 / 12px 12px';
+  'repeating-conic-gradient(rgb(var(--ink) / 0.16) 0 25%, rgb(var(--ink) / 0.04) 0 50%) 0 0 / 12px 12px';
 
 export function MiniPlayerCard() {
   const { t } = useTranslation();
@@ -30,28 +30,28 @@ export function MiniPlayerCard() {
     >
       <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
         <div
-          className="relative h-16 w-28 shrink-0 overflow-hidden rounded-xl border border-white/[0.06]"
+          className="relative h-16 w-28 shrink-0 overflow-hidden rounded-xl border border-ink/[0.06]"
           style={{ background: CHECKER }}
           aria-hidden="true"
         >
           <div
-            className="absolute inset-2.5 rounded-[10px] border border-white/15"
-            style={{ background: `rgba(15, 15, 19, ${alpha})` }}
+            className="absolute inset-2.5 rounded-[10px] border border-ink/15"
+            style={{ background: `rgb(var(--surface) / ${alpha})` }}
           />
           <div className="absolute inset-2.5 flex items-center gap-2 px-2">
             <span className="h-6 w-6 shrink-0 rounded-md bg-accent" />
             <span className="flex flex-col gap-1">
-              <span className="h-1.5 w-10 rounded-full bg-white/85" />
-              <span className="h-1.5 w-6 rounded-full bg-white/40" />
+              <span className="h-1.5 w-10 rounded-full bg-ink/85" />
+              <span className="h-1.5 w-6 rounded-full bg-ink/40" />
             </span>
           </div>
         </div>
         <div className="min-w-[180px] flex-1">
           <div className="mb-2 flex items-center justify-between gap-3">
-            <span className="text-[13.5px] font-medium text-white/80">
+            <span className="text-[13.5px] font-medium text-ink-80">
               {t('settings.miniPlayerOpacity')}
             </span>
-            <span className="text-[12px] font-semibold tabular-nums text-white/60">{percent}%</span>
+            <span className="text-[12px] font-semibold tabular-nums text-ink-60">{percent}%</span>
           </div>
           <RangeSlider
             value={percent}

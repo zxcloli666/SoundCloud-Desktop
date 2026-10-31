@@ -53,6 +53,7 @@ After the merge the theme shows up in the catalog within an hour. Installed copi
 | `author` | `name` up to 40 characters, `github` is your login |
 | `license` | `MIT`, `Apache-2.0`, `CC0-1.0`, `CC-BY-4.0` or `CC-BY-SA-4.0` |
 | `accent`, `background` | Optional. A `#rrggbb` color in lowercase |
+| `scheme` | Optional. `dark` (default) or `white`. A white theme needs `"minApp": "8.8.0"` |
 | `font` | Optional. `inter`, `manrope`, `onest`, `golos`, `montserrat`, `rubik`, `nunito`, `raleway`, `comfortaa` or `system` |
 | `minApp` | Only if the theme needs something older app versions do not have |
 
@@ -65,7 +66,8 @@ Any other field is an error.
 - Not allowed: links to websites, `@import`, `image()`, `src()`, `element()`, `paint()`, `var()` inside `image-set()`, `behavior`, `-webkit-app-region`.
 - At-rules: `@media`, `@supports`, `@keyframes`, `@font-face`, `@layer`, `@container`, `@property`, `@scope`, `@starting-style`.
 - Light mode (`html[data-perf="light"]`): drop animations and heavy blur.
-- The app sets the accent, background and font from `accent`, `background` and `font`. Overriding them in CSS needs `!important`.
+- The app sets the scheme, accent, background and font from `scheme`, `accent`, `background` and `font`. Overriding them in CSS needs `!important`.
+- On a white theme write colors through the scheme variables (`--ink`, `--paper`, `--surface`, `--shade`), see [White and dark](../docs/CUSTOM_CSS.md#white-and-dark).
 - Up to 256 KB.
 
 Long text in `content:` and `<text>` in SVG get a look in review.
@@ -87,7 +89,7 @@ Long text in `content:` and `<text>` in SVG get a look in review.
 
 1. **Settings -> Appearance -> Custom CSS**: paste `theme.css`.
 2. Add the images from `assets/` in **Your images** under the same names. Fonts (woff2) cannot be added there, check them on the CI preview.
-3. Set the accent, background and font by hand in **Appearance**.
+3. Set the scheme, accent, background and font by hand in **Appearance**.
 
 If the interface breaks: **Ctrl+Alt+Shift+C** (**Cmd+Option+Shift+C** on macOS).
 

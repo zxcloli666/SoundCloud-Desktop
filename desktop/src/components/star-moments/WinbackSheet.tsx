@@ -72,15 +72,15 @@ const WinbackBody = memo(function WinbackBody({
       <div className="relative" style={{ isolation: 'isolate' }}>
         <div className="flex flex-col items-center text-center">
           <span
-            className="text-[40px] leading-none text-white/25"
+            className="text-[40px] leading-none text-ink-25"
             style={{ filter: 'grayscale(1)' }}
           >
             ✦
           </span>
-          <ModalTitle className="mt-3 text-[22px] font-black tracking-tight text-white/95">
+          <ModalTitle className="mt-3 text-[22px] font-black tracking-tight text-ink-95">
             {t('starMoments.winback.title')}
           </ModalTitle>
-          <div className="mt-1 font-mono text-[11px] tracking-[0.12em] text-white/35">
+          <div className="mt-1 font-mono text-[11px] tracking-[0.12em] text-ink-35">
             {passDate(endedAt)}
           </div>
         </div>
@@ -88,8 +88,8 @@ const WinbackBody = memo(function WinbackBody({
         <div className="mt-6 flex flex-col gap-3.5">
           {ROWS.map(({ key, Icon, star, free }) => (
             <div key={key} className="grid grid-cols-[28px_1fr] items-center gap-x-3 gap-y-1">
-              <span className="row-span-2 grid size-7 place-items-center rounded-[8px] bg-white/[0.05]">
-                <Icon size={14} className="text-white/60" />
+              <span className="row-span-2 grid size-7 place-items-center rounded-[8px] bg-ink/[0.05]">
+                <Icon size={14} className="text-ink-60" />
               </span>
               <Lane share={star} label={t(`starMoments.winback.${key}.star`)} lit />
               <Lane share={free} label={t(`starMoments.winback.${key}.free`)} />
@@ -102,7 +102,7 @@ const WinbackBody = memo(function WinbackBody({
           <button
             type="button"
             onClick={onDone}
-            className="cursor-pointer rounded-full px-4 py-2 text-[12.5px] font-semibold text-white/45 transition-colors hover:text-white/85"
+            className="cursor-pointer rounded-full px-4 py-2 text-[12.5px] font-semibold text-ink-45 transition-colors hover:text-ink-85"
           >
             {t('starMoments.later')}
           </button>
@@ -123,18 +123,18 @@ const Lane = memo(function Lane({
 }) {
   return (
     <div className="flex items-center gap-2.5">
-      <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/[0.05]">
+      <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-ink/[0.05]">
         <span
           className="block h-full rounded-full"
           style={{
             width: `${share * 100}%`,
-            background: lit ? 'var(--color-accent)' : 'rgba(255,255,255,0.28)',
+            background: lit ? 'var(--color-accent)' : 'rgb(var(--ink) / 0.28)',
             boxShadow: lit ? '0 0 10px var(--color-accent-glow)' : undefined,
           }}
         />
       </div>
       <span
-        className={`w-[72px] shrink-0 text-right font-mono text-[10.5px] ${lit ? 'text-accent' : 'text-white/40'}`}
+        className={`w-[72px] shrink-0 text-right font-mono text-[10.5px] ${lit ? 'text-accent' : 'text-ink-40'}`}
       >
         {label}
       </span>

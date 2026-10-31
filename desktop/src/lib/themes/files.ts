@@ -4,7 +4,7 @@ import { trackedInvoke as invoke } from '../diagnostics';
 import { inspectSvg, inspectThemeCss } from './css-guard.ts';
 import { fetchBytes } from './fetch';
 import { type CatalogTheme, fileUrl, localName, type ThemeFile } from './index-parse.ts';
-import { sniffAssetType, THEME_LIMITS, type ThemeFont } from './rules.ts';
+import { sniffAssetType, THEME_LIMITS, type ThemeFont, type ThemeScheme } from './rules.ts';
 
 export interface InstalledVersion {
   version: string;
@@ -14,6 +14,7 @@ export interface InstalledVersion {
   accent?: string;
   background?: string;
   font?: ThemeFont;
+  scheme?: ThemeScheme;
   files: { css: string; assets: Record<string, string> };
 }
 
@@ -89,6 +90,7 @@ export async function downloadVersion(entry: CatalogTheme): Promise<InstalledVer
     accent: entry.accent,
     background: entry.background,
     font: entry.font,
+    scheme: entry.scheme,
     files: {
       css: localName(entry.css),
       assets: Object.fromEntries(

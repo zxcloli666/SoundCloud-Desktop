@@ -36,8 +36,8 @@ function ArtistGridCardImpl({ artist }: ArtistGridCardProps) {
       onClick={() => navigate(`/artist/${encodeURIComponent(artist.id)}`)}
       className="group relative h-full w-full flex flex-col items-center gap-3 p-5 rounded-3xl cursor-pointer transition-all duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)] hover:scale-[1.03] overflow-hidden"
       style={{
-          background: cardBlur > 0 ? 'rgba(255,255,255,0.03)' : 'rgba(22,22,27,0.92)',
-        border: '0.5px solid rgba(255,255,255,0.06)',
+          background: cardBlur > 0 ? 'rgb(var(--ink) / 0.03)' : 'rgb(var(--surface-hi) / 0.92)',
+        border: '0.5px solid rgb(var(--ink) / 0.06)',
           backdropFilter: cardBlur > 0 ? `blur(${cardBlur}px) saturate(140%)` : undefined,
           WebkitBackdropFilter: cardBlur > 0 ? `blur(${cardBlur}px) saturate(140%)` : undefined,
       }}
@@ -77,7 +77,7 @@ function ArtistGridCardImpl({ artist }: ArtistGridCardProps) {
           </div>
         )}
         <div
-          className="relative w-full h-full rounded-full overflow-hidden ring-1 ring-white/15 group-hover:ring-white/30 transition-all duration-500"
+          className="relative w-full h-full rounded-full overflow-hidden ring-1 ring-ink/15 group-hover:ring-ink/30 transition-all duration-500"
           style={{
             boxShadow: `0 12px 28px ${auraRgba(aura, 0.35)}`,
             background: `linear-gradient(135deg, ${g1} 0%, ${g2} 50%, ${g3} 100%)`,
@@ -95,7 +95,7 @@ function ArtistGridCardImpl({ artist }: ArtistGridCardProps) {
           ) : (
             <div className="absolute inset-0 flex items-center justify-center">
               <span
-                className="text-white/95 font-black tracking-tight select-none"
+                className="text-ink-95 font-black tracking-tight select-none"
                 style={{
                   fontSize: 'clamp(28px, 3vw, 36px)',
                   textShadow: '0 6px 18px rgba(0,0,0,0.5)',
@@ -113,7 +113,7 @@ function ArtistGridCardImpl({ artist }: ArtistGridCardProps) {
                 boxShadow: `0 0 12px ${auraRgba(aura, 0.6)}, inset 0 0 0 1px ${auraRgba(aura, 0.7)}`,
               }}
             >
-              <Star size={11} className="text-white" fill="currentColor" />
+              <Star size={11} className="text-ink" fill="currentColor" />
             </div>
           )}
         </div>
@@ -121,7 +121,7 @@ function ArtistGridCardImpl({ artist }: ArtistGridCardProps) {
 
       <div className="text-center min-w-0 w-full relative flex flex-col gap-1">
         <div className="flex items-center justify-center gap-1.5 min-w-0">
-          <p className="text-[14px] font-bold text-white/95 truncate group-hover:text-white">
+          <p className="text-[14px] font-bold text-ink-95 truncate group-hover:text-ink">
             {artist.name}
           </p>
           {verified && (
@@ -129,12 +129,12 @@ function ArtistGridCardImpl({ artist }: ArtistGridCardProps) {
               className="shrink-0 w-3.5 h-3.5 rounded-full bg-blue-500 flex items-center justify-center shadow-[0_0_8px_rgba(59,130,246,0.55)]"
               title={t('track.verifiedArtist', { confidence: artist.confidence.toFixed(2) })}
             >
-              <Check size={8} className="text-white" strokeWidth={3.5} />
+              <Check size={8} className="text-ink" strokeWidth={3.5} />
             </span>
           )}
         </div>
         {artist.country && (
-          <p className="inline-flex items-center justify-center gap-1 text-[10px] text-white/35">
+          <p className="inline-flex items-center justify-center gap-1 text-[10px] text-ink-35">
             <Globe size={9} /> {artist.country}
           </p>
         )}
@@ -145,10 +145,10 @@ function ArtistGridCardImpl({ artist }: ArtistGridCardProps) {
           {artist.tags.slice(0, 2).map((tag) => (
             <span
               key={tag}
-              className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-[0.18em] text-white/55"
+              className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-[0.18em] text-ink-55"
               style={{
-                background: 'rgba(255,255,255,0.04)',
-                border: '0.5px solid rgba(255,255,255,0.08)',
+                background: 'rgb(var(--ink) / 0.04)',
+                border: '0.5px solid rgb(var(--ink) / 0.08)',
               }}
             >
               {tag}
@@ -176,7 +176,7 @@ function ArtistGridCardImpl({ artist }: ArtistGridCardProps) {
       <div className="relative w-full">
         <div
           className="h-1 rounded-full overflow-hidden"
-          style={{ background: 'rgba(255,255,255,0.05)' }}
+          style={{ background: 'rgb(var(--ink) / 0.05)' }}
         >
           <div
             className="h-full rounded-full"
@@ -187,9 +187,9 @@ function ArtistGridCardImpl({ artist }: ArtistGridCardProps) {
             }}
           />
         </div>
-        <div className="mt-1.5 flex items-center justify-between text-[9px] font-bold uppercase tracking-[0.2em] text-white/35">
+        <div className="mt-1.5 flex items-center justify-between text-[9px] font-bold uppercase tracking-[0.2em] text-ink-35">
           <span className="inline-flex items-center gap-1">
-            <Headphones size={9} className="text-white/30" />
+            <Headphones size={9} className="text-ink-30" />
             {fc(artist.monthly_listeners)}
           </span>
           <span style={{ color: auraRgba(aura, 0.9) }}>
@@ -212,15 +212,15 @@ const Stat = memo(function Stat({
 }) {
   return (
     <span
-      className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] tabular-nums text-white/55"
+      className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] tabular-nums text-ink-55"
       style={{
-        background: 'rgba(255,255,255,0.03)',
-        border: '0.5px solid rgba(255,255,255,0.06)',
+        background: 'rgb(var(--ink) / 0.03)',
+        border: '0.5px solid rgb(var(--ink) / 0.06)',
       }}
       title={label}
     >
-      <span className="text-white/40">{icon}</span>
-      <span className="font-bold text-white/85">{value}</span>
+      <span className="text-ink-40">{icon}</span>
+      <span className="font-bold text-ink-85">{value}</span>
     </span>
   );
 });

@@ -73,7 +73,7 @@ const PlaylistLikeBtn = React.memo(function PlaylistLikeBtn({
             className={`inline-flex items-center gap-1.5 px-3.5 h-11 rounded-2xl text-[12.5px] font-semibold tabular-nums transition-all duration-300 ease-[var(--ease-apple)] cursor-pointer border active:scale-[0.96] ${
                 liked
                     ? 'bg-accent/15 text-accent border-accent/30 shadow-[0_0_18px_var(--color-accent-glow)]'
-                    : 'bg-white/[0.04] border-white/[0.07] text-white/65 hover:bg-white/[0.07] hover:text-white/90 hover:border-white/[0.12]'
+                    : 'bg-ink/[0.04] border-ink/[0.07] text-ink-65 hover:bg-ink/[0.07] hover:text-ink-90 hover:border-ink/[0.12]'
             }`}
         >
             <Heart size={15} fill={liked ? 'currentColor' : 'none'}/>
@@ -108,7 +108,7 @@ const CopyIconAction = React.memo(function CopyIconAction({url}: { url?: string 
             className={`inline-flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 ease-[var(--ease-apple)] cursor-pointer ${
                 copied
                     ? 'text-emerald-400 bg-emerald-500/12'
-                    : 'text-white/60 hover:text-white/95 hover:bg-white/[0.07]'
+                    : 'text-ink-60 hover:text-ink-95 hover:bg-ink/[0.07]'
             }`}
         >
             {copied ? <Check size={16}/> : <LinkIcon size={16}/>}
@@ -166,7 +166,7 @@ export const PlaylistActions = React.memo(function PlaylistActions({
                 type="button"
                 onClick={onPlayAll}
                 className={`group relative overflow-hidden inline-flex items-center gap-2.5 pl-4 pr-6 h-11 rounded-full text-[14px] font-semibold transition-all duration-500 ease-[var(--ease-apple)] cursor-pointer hover:scale-[1.03] active:scale-[0.97] ${
-                    isPlaying ? 'bg-white text-black' : 'bg-accent text-accent-contrast'
+                    isPlaying ? 'bg-ink text-paper' : 'bg-accent text-accent-contrast'
                 }`}
                 style={{
                     boxShadow: '0 12px 32px var(--color-accent-glow), inset 0 1px 0 rgba(255,255,255,0.3)',
@@ -175,7 +175,7 @@ export const PlaylistActions = React.memo(function PlaylistActions({
         <span
             className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-[var(--ease-apple)] pointer-events-none"
             style={{
-                background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.28), transparent)',
+                background: 'linear-gradient(90deg, transparent, rgb(var(--ink) / 0.28), transparent)',
             }}
         />
                 {isPlaying ? pauseCurrent16 : playCurrent16}
@@ -186,7 +186,7 @@ export const PlaylistActions = React.memo(function PlaylistActions({
                 type="button"
                 onClick={onShuffle}
                 title={t('playlist.shuffle')}
-                className="inline-flex items-center gap-1.5 px-3.5 h-11 rounded-2xl text-[12.5px] font-semibold border bg-white/[0.04] border-white/[0.07] text-white/65 hover:bg-white/[0.07] hover:text-white/90 hover:border-white/[0.12] transition-all duration-300 ease-[var(--ease-apple)] cursor-pointer active:scale-[0.96]"
+                className="inline-flex items-center gap-1.5 px-3.5 h-11 rounded-2xl text-[12.5px] font-semibold border bg-ink/[0.04] border-ink/[0.07] text-ink-65 hover:bg-ink/[0.07] hover:text-ink-90 hover:border-ink/[0.12] transition-all duration-300 ease-[var(--ease-apple)] cursor-pointer active:scale-[0.96]"
             >
                 <Shuffle size={14}/>
                 <span className="hidden sm:inline">{t('playlist.shuffle')}</span>
@@ -197,8 +197,8 @@ export const PlaylistActions = React.memo(function PlaylistActions({
             <div
                 className="flex items-center gap-0.5 h-11 px-1.5 rounded-2xl"
                 style={{
-                    background: 'rgba(255,255,255,0.04)',
-                    border: '0.5px solid rgba(255,255,255,0.07)',
+                    background: 'rgb(var(--ink) / 0.04)',
+                    border: '0.5px solid rgb(var(--ink) / 0.07)',
                 }}
             >
                 <button
@@ -209,7 +209,7 @@ export const PlaylistActions = React.memo(function PlaylistActions({
                     className={`inline-flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 ease-[var(--ease-apple)] cursor-pointer ${
                         isPinned
                             ? 'text-accent bg-accent/15'
-                            : 'text-white/60 hover:text-white/95 hover:bg-white/[0.07]'
+                            : 'text-ink-60 hover:text-ink-95 hover:bg-ink/[0.07]'
                     }`}
                 >
                     <MapPin size={16}/>
@@ -225,13 +225,13 @@ export const PlaylistActions = React.memo(function PlaylistActions({
                 />
                 {isOwner && (
                     <>
-                        <span className="w-px h-5 bg-white/[0.08] mx-0.5" aria-hidden/>
+                        <span className="w-px h-5 bg-ink/[0.08] mx-0.5" aria-hidden/>
                         <button
                             type="button"
                             onClick={onEdit}
                             title={t('playlist.edit')}
                             aria-label={t('playlist.edit')}
-                            className="inline-flex items-center justify-center w-10 h-10 rounded-xl text-white/55 hover:text-white/95 hover:bg-white/[0.07] transition-all duration-200 ease-[var(--ease-apple)] cursor-pointer"
+                            className="inline-flex items-center justify-center w-10 h-10 rounded-xl text-ink-55 hover:text-ink-95 hover:bg-ink/[0.07] transition-all duration-200 ease-[var(--ease-apple)] cursor-pointer"
                         >
                             <Pencil size={15}/>
                         </button>
@@ -242,7 +242,7 @@ export const PlaylistActions = React.memo(function PlaylistActions({
                             onClick={onDelete}
                             title={t('playlist.delete')}
                             aria-label={t('playlist.delete')}
-                            className="inline-flex items-center justify-center w-10 h-10 rounded-xl text-white/55 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 cursor-pointer"
+                            className="inline-flex items-center justify-center w-10 h-10 rounded-xl text-ink-55 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 cursor-pointer"
                         >
                             <Trash2 size={16}/>
                         </button>

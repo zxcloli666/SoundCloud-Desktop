@@ -18,8 +18,8 @@ const TabButton = React.memo(
             onClick={onClick}
             className={`px-4 py-1.5 rounded-full text-[12.5px] font-semibold transition-all duration-200 cursor-pointer ${
                 active
-                    ? 'bg-white/[0.14] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]'
-                    : 'text-white/40 hover:text-white/80 hover:bg-white/[0.05]'
+                    ? 'bg-ink/[0.14] text-ink shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]'
+                    : 'text-ink-40 hover:text-ink-80 hover:bg-ink/[0.05]'
             }`}
         >
             {children}
@@ -28,7 +28,7 @@ const TabButton = React.memo(
 );
 
 const glassBtn =
-    'w-9 h-9 rounded-full flex items-center justify-center border border-white/[0.08] bg-black/35 backdrop-blur-xl text-white/55 hover:text-white hover:bg-white/[0.14] transition-all duration-200 cursor-pointer outline-none';
+    'w-9 h-9 rounded-full flex items-center justify-center border border-ink/[0.08] bg-black/35 backdrop-blur-xl text-ink-55 hover:text-ink hover:bg-ink/[0.14] transition-all duration-200 cursor-pointer outline-none';
 
 interface LyricsHeaderProps {
     tab: LyricsPanelTab;
@@ -51,7 +51,7 @@ export const LyricsHeader = React.memo(
             >
                 {/* centred tabs */}
                 <div
-                    className="absolute left-1/2 -translate-x-1/2 inline-flex items-center gap-1 rounded-full border border-white/[0.08] bg-black/35 backdrop-blur-xl p-1 shadow-[0_8px_30px_rgba(0,0,0,0.35)]">
+                    className="absolute left-1/2 -translate-x-1/2 inline-flex items-center gap-1 rounded-full border border-ink/[0.08] bg-black/35 backdrop-blur-xl p-1 shadow-[0_8px_30px_rgb(var(--shade)/calc(0.35*var(--shade-alpha)))]">
                     <TabButton
                         active={rightPanelOpen && tab === 'lyrics'}
                         onClick={() => onSelectTab('lyrics')}

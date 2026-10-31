@@ -51,8 +51,8 @@ function NavItem({
           isActive
             ? ''
             : alert
-              ? 'text-white/85 bg-accent/[0.08] ring-1 ring-accent/20 hover:text-white'
-              : 'text-white/45 hover:text-white/80 hover:bg-white/[0.05]'
+              ? 'text-ink-85 bg-accent/[0.08] ring-1 ring-accent/20 hover:text-ink'
+              : 'text-ink-45 hover:text-ink-80 hover:bg-ink/[0.05]'
         }`
       }
       style={({ isActive }) => (isActive ? ACTIVE : undefined)}
@@ -94,12 +94,12 @@ export const Sidebar = React.memo(() => {
   };
   const currentLang = languages.find((l) => l.code === i18n.language) ?? languages[0];
 
-  const btnCls = `${ROW} text-white/45 hover:text-white/80 hover:bg-white/[0.05] cursor-pointer`;
+  const btnCls = `${ROW} text-ink-45 hover:text-ink-80 hover:bg-ink/[0.05] cursor-pointer`;
 
   return (
     <aside
       data-ui="sidebar"
-      className="shrink-0 flex flex-col h-full overflow-hidden border-r border-white/[0.05] pb-3 transition-[width] duration-300 ease-[var(--ease-apple)]"
+      className="shrink-0 flex flex-col h-full overflow-hidden border-r border-ink/[0.05] pb-3 transition-[width] duration-300 ease-[var(--ease-apple)]"
       style={{
         width: sidebarWidth(collapsed),
         transitionDuration: perf.mode === 'light' ? '0ms' : undefined,
@@ -130,13 +130,13 @@ export const Sidebar = React.memo(() => {
           <span
             className="absolute inset-x-0 top-1/2 h-px"
             style={{
-              background: 'rgba(255,255,255,0.07)',
+              background: 'rgb(var(--ink) / 0.07)',
               opacity: collapsed ? 1 : 0,
               transition: 'opacity 240ms ease',
             }}
           />
           <span
-            className="absolute inset-0 flex items-center gap-2 px-2 text-[10px] uppercase tracking-[0.18em] text-white/25 font-semibold whitespace-nowrap"
+            className="absolute inset-0 flex items-center gap-2 px-2 text-[10px] uppercase tracking-[0.18em] text-ink-25 font-semibold whitespace-nowrap"
             style={{ opacity: collapsed ? 0 : 1, transition: 'opacity 240ms ease' }}
           >
             {t('sidebar.quickAccess')}
@@ -215,15 +215,15 @@ export const Sidebar = React.memo(() => {
           <NavLink
             to={`/user/${encodeURIComponent(user.urn)}`}
             title={collapsed ? user.username : undefined}
-            data-ui="nav-item"
-            className={({ isActive }) => `${ROW} ${isActive ? '' : 'hover:bg-white/[0.05]'}`}
+            data-ui="profile"
+            className={({ isActive }) => `${ROW} ${isActive ? '' : 'hover:bg-ink/[0.05]'}`}
             style={({ isActive }) => (isActive ? ACTIVE : undefined)}
           >
             <span className="w-10 shrink-0 flex items-center justify-center">
               <Avatar src={user.avatar_url} alt={user.username} size={26} />
             </span>
             <Label collapsed={collapsed} className="flex items-center gap-1.5 pr-3">
-              <span className="text-[12.5px] text-white/55 truncate font-medium">
+              <span className="text-[12.5px] text-ink-55 truncate font-medium">
                 {user.username}
               </span>
               {isPremium && <StarBadge />}

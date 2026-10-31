@@ -35,18 +35,18 @@ export function ManualUpdate({
       {notice && (
         <div className="mb-3 flex items-start gap-2.5 rounded-xl border border-red-400/20 bg-red-400/[0.06] px-3.5 py-2.5">
           <AlertCircle size={14} className="mt-px shrink-0 text-red-300/90" />
-          <p className="min-w-0 text-[11.5px] leading-snug text-white/65">
+          <p className="min-w-0 text-[11.5px] leading-snug text-ink-65">
             {t(notice === 'failed' ? 'update.installFailed' : 'update.stalled')}
           </p>
         </div>
       )}
       {info && (
-        <div className="mb-4 flex items-start gap-2.5 rounded-xl border border-white/[0.08] bg-white/[0.03] px-3.5 py-3">
+        <div className="mb-4 flex items-start gap-2.5 rounded-xl border border-ink/[0.08] bg-ink/[0.03] px-3.5 py-3">
           <Info size={14} className="mt-px shrink-0 text-accent" />
           <div className="min-w-0 flex-1">
-            <p className="text-[11.5px] leading-relaxed text-white/60">{t(manualHintKey(info))}</p>
+            <p className="text-[11.5px] leading-relaxed text-ink-60">{t(manualHintKey(info))}</p>
             {asset && (
-              <p className="mt-2 truncate font-mono text-[11px] text-white/35" title={asset.name}>
+              <p className="mt-2 truncate font-mono text-[11px] text-ink-35" title={asset.name}>
                 {asset.name} · {(asset.size / MB).toFixed(0)} MB
               </p>
             )}
@@ -58,7 +58,7 @@ export function ManualUpdate({
         <button
           type="button"
           onClick={onDismiss}
-          className="flex-1 py-2.5 rounded-xl bg-white/[0.05] hover:bg-white/[0.08] text-[13px] text-white/50 font-medium transition-colors cursor-pointer"
+          className="flex-1 py-2.5 rounded-xl bg-ink/[0.05] hover:bg-ink/[0.08] text-[13px] text-ink-50 font-medium transition-colors cursor-pointer"
         >
           {t('update.later')}
         </button>
@@ -75,7 +75,7 @@ export function ManualUpdate({
         <button
           type="button"
           onClick={() => openUrl(mirroredUrl(release.html_url))}
-          className="flex items-center gap-1.5 text-[11.5px] text-white/35 hover:text-white/70 transition-colors cursor-pointer"
+          className="flex items-center gap-1.5 text-[11.5px] text-ink-35 hover:text-ink-70 transition-colors cursor-pointer"
         >
           {t('update.openReleasePage')}
           <ExternalLink size={11} />
@@ -84,7 +84,7 @@ export function ManualUpdate({
           <button
             type="button"
             onClick={() => openUrl(DOWNLOAD_PAGE_URL)}
-            className="flex items-center gap-1.5 text-[11.5px] text-white/35 hover:text-white/70 transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 text-[11.5px] text-ink-35 hover:text-ink-70 transition-colors cursor-pointer"
           >
             {t('update.allDownloads')}
             <ExternalLink size={11} />

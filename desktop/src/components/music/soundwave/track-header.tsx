@@ -30,11 +30,11 @@ const CurrentTimeDisplay = React.memo(function CurrentTimeDisplay() {
   }, []);
 
   return (
-    <span className="text-[11px] tabular-nums text-white/50 shrink-0 font-medium">
+    <span className="text-[11px] tabular-nums text-ink-50 shrink-0 font-medium">
       <span ref={tRef} style={{ color: 'var(--color-accent)' }}>
         0:00
       </span>
-      <span className="text-white/25 mx-1">/</span>
+      <span className="text-ink-25 mx-1">/</span>
       <span ref={dRef}>0:00</span>
     </span>
   );
@@ -58,7 +58,7 @@ export const WaveTrackHeader = React.memo(
         <button
           type="button"
           onClick={togglePlay}
-          className="relative w-14 h-14 rounded-xl overflow-hidden shrink-0 ring-1 ring-white/[0.12] cursor-pointer group shadow-lg"
+          className="relative w-14 h-14 rounded-xl overflow-hidden shrink-0 ring-1 ring-ink/[0.12] cursor-pointer group shadow-lg"
         >
           {cover ? (
             <img
@@ -68,7 +68,7 @@ export const WaveTrackHeader = React.memo(
               decoding="async"
             />
           ) : (
-            <div className="w-full h-full bg-white/[0.04]" />
+            <div className="w-full h-full bg-ink/[0.04]" />
           )}
           <span
             className={`absolute inset-0 flex items-center justify-center transition-all duration-200 group-hover:bg-black/35 ${
@@ -94,7 +94,7 @@ export const WaveTrackHeader = React.memo(
         {isCurrent ? (
           <CurrentTimeDisplay />
         ) : (
-          <span className="text-[11px] tabular-nums text-white/35 shrink-0">
+          <span className="text-[11px] tabular-nums text-ink-35 shrink-0">
             {dur(track.duration)}
           </span>
         )}

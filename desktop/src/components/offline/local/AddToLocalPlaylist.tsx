@@ -51,14 +51,14 @@ export const AddToLocalPlaylist = React.memo(function AddToLocalPlaylist({
           align="end"
           className="z-50 w-[230px] rounded-2xl p-1.5 outline-none"
           style={{
-            background: b > 0 ? 'rgba(18,18,22,0.88)' : 'rgb(22,22,26)',
+            background: b > 0 ? 'rgb(var(--surface) / 0.88)' : 'rgb(var(--surface-hi))',
             backdropFilter: b > 0 ? `blur(${b}px) saturate(1.8)` : undefined,
             WebkitBackdropFilter: b > 0 ? `blur(${b}px) saturate(1.8)` : undefined,
-            border: '1px solid rgba(255,255,255,0.08)',
-            boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
+            border: '1px solid rgb(var(--ink) / 0.08)',
+            boxShadow: '0 20px 60px rgb(var(--shade) / calc(0.5 * var(--shade-alpha)))',
           }}
         >
-          <div className="px-2.5 pb-1.5 pt-1 font-mono text-[9.5px] font-semibold uppercase tracking-[0.18em] text-white/35">
+          <div className="px-2.5 pb-1.5 pt-1 font-mono text-[9.5px] font-semibold uppercase tracking-[0.18em] text-ink-35">
             {t('local.addToPlaylist')}
           </div>
           <div className="max-h-[240px] overflow-y-auto">
@@ -69,7 +69,7 @@ export const AddToLocalPlaylist = React.memo(function AddToLocalPlaylist({
                   key={playlist.id}
                   type="button"
                   onClick={() => add(playlist.id, playlist.title)}
-                  className="flex w-full cursor-pointer items-center justify-between gap-2 rounded-[10px] px-2.5 py-2 text-left text-[12.5px] font-medium text-white/70 transition-colors hover:bg-white/[0.05] hover:text-white/92"
+                  className="flex w-full cursor-pointer items-center justify-between gap-2 rounded-[10px] px-2.5 py-2 text-left text-[12.5px] font-medium text-ink-70 transition-colors hover:bg-ink/[0.05] hover:text-ink-92"
                 >
                   <span className="truncate">{playlist.title}</span>
                   {inside && (
@@ -99,7 +99,7 @@ export const AddToLocalPlaylist = React.memo(function AddToLocalPlaylist({
             <button
               type="button"
               onClick={() => setCreating(true)}
-              className="mt-0.5 flex w-full cursor-pointer items-center gap-2 rounded-[10px] px-2.5 py-2 text-left text-[12.5px] font-semibold transition-colors hover:bg-white/[0.05]"
+              className="mt-0.5 flex w-full cursor-pointer items-center gap-2 rounded-[10px] px-2.5 py-2 text-left text-[12.5px] font-semibold transition-colors hover:bg-ink/[0.05]"
               style={{ color: 'var(--color-accent-hover)' }}
             >
               <Plus size={13} />

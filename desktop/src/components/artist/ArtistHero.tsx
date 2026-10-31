@@ -28,15 +28,15 @@ const SocialChip = memo(({kind, url, title}: { kind: string; url: string; title:
             href={url}
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-semibold text-white/55 hover:text-white transition-all duration-300 hover:scale-105"
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-semibold text-ink-55 hover:text-ink transition-all duration-300 hover:scale-105"
             style={{
-                background: b > 0 ? 'rgba(255,255,255,0.04)' : 'rgba(28,28,32,0.85)',
-                border: '0.5px solid rgba(255,255,255,0.08)',
+                background: b > 0 ? 'rgb(var(--ink) / 0.04)' : 'rgb(var(--surface-hi) / 0.85)',
+                border: '0.5px solid rgb(var(--ink) / 0.08)',
                 backdropFilter: b > 0 ? `blur(${b}px)` : undefined,
                 WebkitBackdropFilter: b > 0 ? `blur(${b}px)` : undefined,
             }}
         >
-      <span className="text-white/45 group-hover:text-white">
+      <span className="text-ink-45 group-hover:text-ink">
         <SocialIcon kind={kind} size={13}/>
       </span>
             <span className="truncate max-w-[140px]">{title}</span>
@@ -82,7 +82,7 @@ function ArtistHeroImpl({ artist, hasStar, aura }: ArtistHeroProps) {
 
   return (
     <GlassHeroPanel hasStar={hasStar} aura={aura}>
-      <div className="relative p-6 md:p-10 flex flex-col lg:flex-row gap-8 lg:gap-10 items-center lg:items-stretch">
+      <div data-ui="artist-hero" className="relative p-6 md:p-10 flex flex-col lg:flex-row gap-8 lg:gap-10 items-center lg:items-stretch">
         <AvatarArtifact
           username={artist.name}
           avatarUrl={artist.avatar_url}
@@ -114,9 +114,9 @@ function ArtistHeroImpl({ artist, hasStar, aura }: ArtistHeroProps) {
                     WebkitTextFillColor: 'transparent',
                     backgroundClip: 'text',
                       animation: perf.idleAnim ? 'prismatic-shift 6s linear infinite' : undefined,
-                    filter: 'drop-shadow(0 8px 24px rgba(0,0,0,0.5))',
+                    filter: 'drop-shadow(0 8px 24px rgb(var(--shade) / calc(0.5 * var(--shade-alpha))))',
                   }
-                : { color: '#fff', textShadow: '0 8px 24px rgba(0,0,0,0.5)' }
+                : { color: 'rgb(var(--ink))', textShadow: '0 8px 24px rgb(var(--shade) / calc(0.5 * var(--shade-alpha)))' }
             }
           >
             {artist.name}
@@ -130,13 +130,13 @@ function ArtistHeroImpl({ artist, hasStar, aura }: ArtistHeroProps) {
               className="group text-left cursor-pointer"
             >
               <p
-                  className={`selectable text-[14px] md:text-[15px] text-white/65 leading-relaxed max-w-2xl transition-all duration-700 ${
+                  className={`selectable text-[14px] md:text-[15px] text-ink-65 leading-relaxed max-w-2xl transition-all duration-700 ${
                   bioExpanded ? '' : 'line-clamp-2'
                 }`}
               >
                 {artist.bio}
               </p>
-              <span className="inline-flex items-center gap-1 mt-1 text-[11px] font-semibold text-white/30 uppercase tracking-[0.18em] group-hover:text-white/60 transition-colors">
+              <span className="inline-flex items-center gap-1 mt-1 text-[11px] font-semibold text-ink-30 uppercase tracking-[0.18em] group-hover:text-ink-60 transition-colors">
                 <ChevronDown
                   size={12}
                   className={`transition-transform duration-500 ${bioExpanded ? 'rotate-180' : ''}`}
@@ -234,15 +234,15 @@ const CompactStat = memo(
             <div
                 className="inline-flex items-baseline gap-2 px-3.5 py-2 rounded-xl"
                 style={{
-                    background: b > 0 ? 'rgba(255,255,255,0.04)' : 'rgba(28,28,32,0.85)',
-                    border: '0.5px solid rgba(255,255,255,0.08)',
+                    background: b > 0 ? 'rgb(var(--ink) / 0.04)' : 'rgb(var(--surface-hi) / 0.85)',
+                    border: '0.5px solid rgb(var(--ink) / 0.08)',
                     backdropFilter: b > 0 ? `blur(${b}px)` : undefined,
                     WebkitBackdropFilter: b > 0 ? `blur(${b}px)` : undefined,
                 }}
             >
-                <span className="text-white/40">{icon}</span>
-                <span className="text-[15px] font-black tabular-nums text-white">{value}</span>
-                <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/35">
+                <span className="text-ink-40">{icon}</span>
+                <span className="text-[15px] font-black tabular-nums text-ink">{value}</span>
+                <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-ink-35">
           {label}
         </span>
             </div>

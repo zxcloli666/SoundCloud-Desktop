@@ -37,7 +37,7 @@ export const FollowingTab = React.memo(function FollowingTab({filter}: { filter:
         <div className="min-h-[400px]">
             {isLoading ? (
                 <div className="flex justify-center py-20">
-                    <Loader2 size={32} className="animate-spin text-white/20"/>
+                    <Loader2 size={32} className="animate-spin text-ink-20"/>
                 </div>
             ) : filtered.length > 0 ? (
                 <VirtualGrid
@@ -60,14 +60,14 @@ export const FollowingTab = React.memo(function FollowingTab({filter}: { filter:
                     />
                 </div>
             ) : (
-                <div className="py-20 text-center text-white/20">
+                <div className="py-20 text-center text-ink-20">
                     {filter ? t('library.noMatches') : t('library.notFollowing')}
                 </div>
             )}
             {!filter && (
                 <div ref={sentinelRef} className="h-12 flex items-center justify-center mt-4">
                     {followingsQuery.isFetchingNextPage && (
-                        <Loader2 size={20} className="text-white/15 animate-spin"/>
+                        <Loader2 size={20} className="text-ink-15 animate-spin"/>
                     )}
                 </div>
             )}

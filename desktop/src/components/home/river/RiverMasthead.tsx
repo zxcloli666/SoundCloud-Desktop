@@ -43,11 +43,11 @@ export const RiverMasthead = memo(function RiverMasthead({
   return (
     <header className="pt-2">
       <div className="flex items-start justify-between gap-6">
-        <div className="min-w-0">
+        <div data-ui="greeting" className="min-w-0">
           <div className="mb-2.5 flex items-center gap-2.5">
             <span
-              className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.12] px-2.5 py-1 text-[9.5px] font-bold tracking-[0.16em] text-white/70"
-              style={{ background: 'rgba(255,255,255,0.03)' }}
+              className="inline-flex items-center gap-1.5 rounded-full border border-ink/[0.12] px-2.5 py-1 text-[9.5px] font-bold tracking-[0.16em] text-ink-70"
+              style={{ background: 'rgb(var(--ink) / 0.03)' }}
             >
               <span
                 className="riv-anim size-[6px] rounded-full"
@@ -60,7 +60,7 @@ export const RiverMasthead = memo(function RiverMasthead({
               />
               {t('soundwave.river.live')}
             </span>
-            <span className="text-[10.5px] font-semibold uppercase tracking-[0.22em] text-white/30">
+            <span className="text-[10.5px] font-semibold uppercase tracking-[0.22em] text-ink-30">
               {t('soundwave.river.personal')}
             </span>
           </div>
@@ -75,7 +75,7 @@ export const RiverMasthead = memo(function RiverMasthead({
           >
             {t(greetingKey(), { name: user.username })}
           </h1>
-          <p className="mt-2 text-[13.5px] text-white/50">{t('soundwave.tagline')}</p>
+          <p className="mt-2 text-[13.5px] text-ink-50">{t('soundwave.tagline')}</p>
         </div>
 
         <div
@@ -88,8 +88,8 @@ export const RiverMasthead = memo(function RiverMasthead({
           {avatar ? (
             <img src={avatar} alt="" className="size-full object-cover" decoding="async" />
           ) : (
-            <span className="flex size-full items-center justify-center bg-white/5">
-              <UserIcon size={22} className="text-white/25" />
+            <span className="flex size-full items-center justify-center bg-ink/5">
+              <UserIcon size={22} className="text-ink-25" />
             </span>
           )}
         </div>
@@ -97,7 +97,7 @@ export const RiverMasthead = memo(function RiverMasthead({
 
       <div className="mt-6 flex flex-col items-stretch gap-4 lg:flex-row">
         {sound.hasData && (
-          <div className="min-w-0 flex-1 rounded-2xl border border-white/[0.07] bg-white/[0.025] px-5 py-4">
+          <div className="min-w-0 flex-1 rounded-2xl border border-ink/[0.07] bg-ink/[0.025] px-5 py-4">
             <SoundprintBars spectrum={sound.spectrum} selected={selected} onSelect={onSelect} />
           </div>
         )}

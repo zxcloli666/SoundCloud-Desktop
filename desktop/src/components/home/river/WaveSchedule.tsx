@@ -63,7 +63,7 @@ export const ScheduleRow = React.memo(function ScheduleRow({
       className={`group relative flex items-center gap-3.5 rounded-xl border py-2 pl-2.5 pr-3 transition-colors ${
         isThisPlaying
           ? 'border-[var(--color-accent-glow)]'
-          : 'border-transparent hover:border-white/[0.06] hover:bg-white/[0.035]'
+          : 'border-transparent hover:border-ink/[0.06] hover:bg-ink/[0.035]'
       }`}
       style={isThisPlaying ? { background: 'var(--color-accent-glow)' } : undefined}
     >
@@ -75,7 +75,7 @@ export const ScheduleRow = React.memo(function ScheduleRow({
       )}
       <span
         className={`flex-none text-right font-mono text-[11px] tabular-nums ${leading ? 'w-12 truncate' : 'w-7'} ${
-          isThisPlaying ? 'text-[var(--color-accent-hover)]' : 'text-white/30'
+          isThisPlaying ? 'text-[var(--color-accent-hover)]' : 'text-ink-30'
         }`}
       >
         {leading ?? String(index + 1).padStart(2, '0')}
@@ -83,7 +83,7 @@ export const ScheduleRow = React.memo(function ScheduleRow({
       <button
         type="button"
         onClick={togglePlay}
-        className="relative size-11 flex-none cursor-pointer overflow-hidden rounded-lg ring-1 ring-white/[0.08]"
+        className="relative size-11 flex-none cursor-pointer overflow-hidden rounded-lg ring-1 ring-ink/[0.08]"
         aria-label={track.title}
       >
         {cover ? (
@@ -95,14 +95,14 @@ export const ScheduleRow = React.memo(function ScheduleRow({
             loading="lazy"
           />
         ) : (
-          <span className="block size-full bg-white/[0.04]" />
+          <span className="block size-full bg-ink/[0.04]" />
         )}
         <span className="absolute inset-0 flex items-center justify-center bg-black/45 text-white opacity-0 transition-opacity group-hover:opacity-100">
           {isThisPlaying ? pauseWhite12 : playWhite12}
         </span>
       </button>
       <div className="min-w-0 flex-1">
-        <p className="flex items-center gap-2 truncate text-[13.5px] font-medium leading-tight text-white/88">
+        <p className="flex items-center gap-2 truncate text-[13.5px] font-medium leading-tight text-ink-88">
           <span className="truncate">{track.title}</span>
           {isThisPlaying && <PlayingEq />}
           {!isThisPlaying && isFreshTrack(track) && (
@@ -111,7 +111,7 @@ export const ScheduleRow = React.memo(function ScheduleRow({
             </span>
           )}
         </p>
-        <p className="mt-px truncate text-[12px] leading-tight text-white/40">
+        <p className="mt-px truncate text-[12px] leading-tight text-ink-40">
           {track.user.username}
         </p>
       </div>
@@ -119,10 +119,10 @@ export const ScheduleRow = React.memo(function ScheduleRow({
         <LikeButton track={track} />
         <PlayNextButton
           track={track}
-          className="cursor-pointer w-8 h-8 rounded-lg flex items-center justify-center text-white/30 hover:text-white/80 hover:bg-white/[0.06] transition-all duration-200 shrink-0"
+          className="cursor-pointer w-8 h-8 rounded-lg flex items-center justify-center text-ink-30 hover:text-ink-80 hover:bg-ink/[0.06] transition-all duration-200 shrink-0"
         />
       </div>
-      <span className="w-9 flex-none text-right font-mono text-[11.5px] text-white/30 tabular-nums">
+      <span className="w-9 flex-none text-right font-mono text-[11.5px] text-ink-30 tabular-nums">
         {dur(track.duration)}
       </span>
     </div>

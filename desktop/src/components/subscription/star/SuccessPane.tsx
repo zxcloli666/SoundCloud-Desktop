@@ -21,7 +21,7 @@ export const SuccessPane = memo(function SuccessPane({
     return (
       <div>
         <GiftTicket code={gift.code} periodDays={gift.periodDays} />
-        <p className="mt-3 text-[12px] leading-relaxed text-white/45">{t('starpass.gift.howTo')}</p>
+        <p className="mt-3 text-[12px] leading-relaxed text-ink-45">{t('starpass.gift.howTo')}</p>
         <div className="mt-4 flex flex-wrap gap-3">
           <PrimaryBtn onClick={onMusic}>{t('starpass.backToMusic')}</PrimaryBtn>
           <GhostBtn onClick={onGifts}>{t('starpass.gift.mine')}</GhostBtn>
@@ -35,7 +35,7 @@ export const SuccessPane = memo(function SuccessPane({
         {PERKS.map(({ key }) => (
           <span
             key={key}
-            className="rounded-full border border-white/[0.08] bg-white/[0.03] px-3 py-1.5 font-mono text-[10.5px] tracking-[0.08em] text-white/65"
+            className="rounded-full border border-ink/[0.08] bg-ink/[0.03] px-3 py-1.5 font-mono text-[10.5px] tracking-[0.08em] text-ink-65"
           >
             {t(`starpass.perk.${key}.title`)}
           </span>

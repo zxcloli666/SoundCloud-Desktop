@@ -32,21 +32,21 @@ export const TrackSoundToggle = React.memo(function TrackSoundToggle({
       className={`flex items-center gap-3 border transition-colors duration-200 ${
         compact ? 'rounded-[14px] px-3 py-2.5' : 'rounded-2xl px-4 py-3'
       } ${
-        remembered ? 'border-accent/25 bg-accent/[0.06]' : 'border-white/[0.06] bg-white/[0.02]'
+        remembered ? 'border-accent/25 bg-accent/[0.06]' : 'border-ink/[0.06] bg-ink/[0.02]'
       }`}
     >
       <div
         className={`flex shrink-0 items-center justify-center rounded-xl transition-colors duration-200 ${
           compact ? 'h-7 w-7' : 'h-9 w-9'
-        } ${remembered ? 'bg-accent/15 text-accent' : 'bg-white/[0.04] text-white/35'}`}
+        } ${remembered ? 'bg-accent/15 text-accent' : 'bg-ink/[0.04] text-ink-35'}`}
       >
         <Bookmark size={compact ? 13 : 15} fill={remembered ? 'currentColor' : 'none'} />
       </div>
       <div className="min-w-0 flex-1">
-        <p className={`font-semibold text-white/85 ${compact ? 'text-[11px]' : 'text-[13px]'}`}>
+        <p className={`font-semibold text-ink-85 ${compact ? 'text-[11px]' : 'text-[13px]'}`}>
           {t('trackSound.remember')}
         </p>
-        <p className={`truncate text-white/35 ${compact ? 'text-[10px]' : 'text-[11px]'}`}>
+        <p className={`truncate text-ink-35 ${compact ? 'text-[10px]' : 'text-[11px]'}`}>
           {hint}
         </p>
       </div>

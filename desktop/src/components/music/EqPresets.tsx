@@ -8,8 +8,8 @@ import { EqExportForm, EqImportForm } from './EqTransfer';
 const chipClass = (active: boolean) =>
   `rounded-lg text-[11px] font-semibold transition-all duration-200 border ${
     active
-      ? 'bg-white/[0.1] text-white/90 border-white/[0.12] shadow-sm'
-      : 'bg-white/[0.02] text-white/35 border-white/[0.04] hover:bg-white/[0.06] hover:text-white/60'
+      ? 'bg-ink/[0.1] text-ink-90 border-ink/[0.12] shadow-sm'
+      : 'bg-ink/[0.02] text-ink-35 border-ink/[0.04] hover:bg-ink/[0.06] hover:text-ink-60'
   }`;
 
 const panelButtonClass =
@@ -17,8 +17,8 @@ const panelButtonClass =
 
 const panelButtonState = (open: boolean) =>
   open
-    ? 'bg-white/[0.08] text-white/80'
-    : 'text-white/40 hover:bg-white/[0.06] hover:text-white/75';
+    ? 'bg-ink/[0.08] text-ink-80'
+    : 'text-ink-40 hover:bg-ink/[0.06] hover:text-ink-75';
 
 const PresetBtn = React.memo(function PresetBtn({
   id,
@@ -70,7 +70,7 @@ const CustomPresetChip = React.memo(function CustomPresetChip({
         title={t('eq.deletePreset')}
         aria-label={t('eq.deletePreset')}
         onClick={() => onDelete(id)}
-        className="mr-1 flex h-4 w-4 items-center justify-center rounded-md text-white/25 opacity-60 transition-all cursor-pointer hover:bg-white/[0.08] hover:text-red-400 group-hover/chip:opacity-100"
+        className="mr-1 flex h-4 w-4 items-center justify-center rounded-md text-ink-25 opacity-60 transition-all cursor-pointer hover:bg-ink/[0.08] hover:text-red-400 group-hover/chip:opacity-100"
       >
         <X size={10} />
       </button>
@@ -103,7 +103,7 @@ const SavePresetForm = React.memo(function SavePresetForm({ onDone }: { onDone: 
         onChange={(e) => setName(e.target.value)}
         placeholder={t('eq.presetNamePlaceholder')}
         aria-label={t('eq.presetName')}
-        className="h-8 min-w-0 flex-1 rounded-lg border border-white/[0.08] bg-white/[0.03] px-3 text-[12px] text-white/85 placeholder:text-white/25 outline-none transition-colors focus:border-white/[0.18] focus:bg-white/[0.05]"
+        className="h-8 min-w-0 flex-1 rounded-lg border border-ink/[0.08] bg-ink/[0.03] px-3 text-[12px] text-ink-85 placeholder:text-ink-25 outline-none transition-colors focus:border-ink/[0.18] focus:bg-ink/[0.05]"
       />
       <button
         type="submit"
@@ -119,7 +119,7 @@ const SavePresetForm = React.memo(function SavePresetForm({ onDone }: { onDone: 
         onClick={onDone}
         title={t('common.cancel')}
         aria-label={t('common.cancel')}
-        className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/[0.06] bg-white/[0.04] text-white/30 transition-all cursor-pointer hover:text-white/60"
+        className="flex h-8 w-8 items-center justify-center rounded-lg border border-ink/[0.06] bg-ink/[0.04] text-ink-30 transition-all cursor-pointer hover:text-ink-60"
       >
         <X size={14} />
       </button>
@@ -159,7 +159,7 @@ export const EqPresets = React.memo(function EqPresets() {
   return (
     <>
       <div className="mb-2.5 flex items-center justify-between gap-3">
-        <p className="text-[11px] text-white/30 font-medium">{t('eq.preset')}</p>
+        <p className="text-[11px] text-ink-30 font-medium">{t('eq.preset')}</p>
         <div className="flex items-center gap-0.5">
           <button
             type="button"
@@ -213,7 +213,7 @@ export const EqPresets = React.memo(function EqPresets() {
       </div>
       {customPresets.length > 0 && (
         <>
-          <p className="mt-3.5 mb-2 text-[11px] text-white/30 font-medium">{t('eq.myPresets')}</p>
+          <p className="mt-3.5 mb-2 text-[11px] text-ink-30 font-medium">{t('eq.myPresets')}</p>
           <div className="flex flex-wrap gap-1.5">
             {customPresets.map((preset) => (
               <CustomPresetChip

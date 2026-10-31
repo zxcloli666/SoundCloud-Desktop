@@ -9,11 +9,11 @@ import { LayoutList, RowIconButton } from './LayoutList';
 function SubHeading({ title, desc }: { title: string; desc?: string }) {
   return (
     <div className="flex items-baseline gap-3 px-1">
-      <span className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-white/35 whitespace-nowrap">
+      <span className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-ink-35 whitespace-nowrap">
         {title}
       </span>
-      {desc && <span className="truncate text-[11px] text-white/25">{desc}</span>}
-      <span className="h-px flex-1 bg-white/[0.05]" />
+      {desc && <span className="truncate text-[11px] text-ink-25">{desc}</span>}
+      <span className="h-px flex-1 bg-ink/[0.05]" />
     </div>
   );
 }
@@ -37,7 +37,7 @@ export function PinnedEditor() {
     <div className="space-y-2.5">
       <SubHeading title={t('settings.layoutPinned')} />
       {pinned.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-white/[0.08] px-4 py-4 text-center text-[12px] text-white/30">
+        <div className="rounded-2xl border border-dashed border-ink/[0.08] px-4 py-4 text-center text-[12px] text-ink-30">
           {t('settings.layoutPinnedEmpty')}
         </div>
       ) : (
@@ -84,14 +84,14 @@ export function RiverSections() {
               onClick={() => toggle(id)}
               className={`flex items-center gap-1.5 h-8 px-3 rounded-full border text-[12px] font-medium transition-all duration-200 cursor-pointer ${
                 on
-                  ? 'text-white'
-                  : 'text-white/35 border-white/[0.06] bg-white/[0.02] hover:text-white/60 hover:bg-white/[0.05]'
+                  ? 'text-ink'
+                  : 'text-ink-35 border-ink/[0.06] bg-ink/[0.02] hover:text-ink-60 hover:bg-ink/[0.05]'
               }`}
               style={
                 on
                   ? {
                       background:
-                        'linear-gradient(180deg, var(--color-accent-glow), transparent), rgba(255,255,255,0.05)',
+                        'linear-gradient(180deg, var(--color-accent-glow), transparent), rgb(var(--ink) / 0.05)',
                       borderColor: 'var(--color-accent)',
                       boxShadow: '0 0 14px var(--color-accent-glow)',
                     }

@@ -53,7 +53,7 @@ function TrackRowOverlay({
   queue: RowQueue;
 }) {
   return (
-    <div className="rounded-2xl bg-white/[0.06] cursor-grabbing" style={LIFTED_ROW_STYLE}>
+    <div className="rounded-2xl bg-ink/[0.06] cursor-grabbing" style={LIFTED_ROW_STYLE}>
       <LibraryTrackRow track={track} index={index} queue={queue} grip={<DragGrip />} />
     </div>
   );

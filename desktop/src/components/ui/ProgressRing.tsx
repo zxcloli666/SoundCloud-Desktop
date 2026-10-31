@@ -25,7 +25,7 @@ export const ProgressRing = React.memo(function ProgressRing({
         cy={size / 2}
         r={radius}
         fill="none"
-        stroke="rgba(255,255,255,0.08)"
+        className="stroke-ink/[0.08]"
         strokeWidth={stroke}
       />
       <circle

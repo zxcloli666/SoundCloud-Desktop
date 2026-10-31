@@ -46,13 +46,13 @@ export const ExpiryNudge = memo(function ExpiryNudge({ moment }: { moment: Expir
       <div className="flex items-center gap-3.5 pr-6">
         <FadingStar left={moment.days / WARN_DAYS} />
         <div className="min-w-0">
-          <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-white/45">
+          <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-45">
             {moment.trial ? t('starMoments.expiry.trial') : 'STAR'}
           </div>
-          <div className="mt-0.5 text-[20px] font-bold leading-tight tracking-tight text-white">
+          <div className="mt-0.5 text-[20px] font-bold leading-tight tracking-tight text-ink">
             {t('starMoments.expiry.left', { count: moment.days })}
           </div>
-          <div className="mt-0.5 text-[11.5px] text-white/40">
+          <div className="mt-0.5 text-[11.5px] text-ink-40">
             {t('starpass.until')} {passDate(moment.endsAt)}
           </div>
         </div>
@@ -94,7 +94,7 @@ const DayCells = memo(function DayCells({ total, left }: { total: number; left: 
           key={i}
           className="h-1.5 flex-1 rounded-full"
           style={{
-            background: i < left ? 'var(--color-accent)' : 'rgba(255,255,255,0.08)',
+            background: i < left ? 'var(--color-accent)' : 'rgb(var(--ink) / 0.08)',
             boxShadow: i < left ? '0 0 10px var(--color-accent-glow)' : undefined,
           }}
         />

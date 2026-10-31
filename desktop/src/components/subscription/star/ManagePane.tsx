@@ -45,12 +45,12 @@ export const ManagePane = memo(function ManagePane({
     <div className="flex flex-col gap-2.5">
       <DiscordCard discord={data?.discord ?? null} />
 
-      <div className="flex items-center justify-between gap-3 rounded-[14px] border border-white/[0.08] bg-white/[0.03] px-4 py-3">
+      <div className="flex items-center justify-between gap-3 rounded-[14px] border border-ink/[0.08] bg-ink/[0.03] px-4 py-3">
         <div>
-          <div className="text-[13px] font-medium text-white/85">
+          <div className="text-[13px] font-medium text-ink-85">
             {t('starpass.manage.autoRenew')}
           </div>
-          <div className="mt-0.5 text-[11.5px] text-white/40">
+          <div className="mt-0.5 text-[11.5px] text-ink-40">
             {autoRenew
               ? t('starpass.manage.autoRenewOn', { date: passDate(endsAt) })
               : t('starpass.manage.autoRenewOff')}
@@ -62,29 +62,29 @@ export const ManagePane = memo(function ManagePane({
           aria-checked={autoRenew}
           disabled={!autoRenew || cancel.isPending || isLoading || !source}
           onClick={() => autoRenew && !cancel.isPending && cancel.mutate()}
-          className="relative h-6 w-11 shrink-0 cursor-pointer rounded-full border border-white/[0.12] transition-all duration-300 disabled:cursor-default"
+          className="relative h-6 w-11 shrink-0 cursor-pointer rounded-full border border-ink/[0.12] transition-all duration-300 disabled:cursor-default"
           style={{
             background: autoRenew
               ? 'color-mix(in srgb, var(--color-accent) 22%, transparent)'
-              : 'rgba(255,255,255,0.04)',
+              : 'rgb(var(--ink) / 0.04)',
           }}
         >
           <span
             className="absolute top-0.5 size-5 rounded-full transition-all duration-300"
             style={{
               left: autoRenew ? 22 : 2,
-              background: autoRenew ? 'var(--color-accent)' : 'rgba(255,255,255,0.4)',
+              background: autoRenew ? 'var(--color-accent)' : 'rgb(var(--ink) / 0.4)',
             }}
           />
         </button>
       </div>
 
-      <div className="flex items-center justify-between gap-3 rounded-[14px] border border-white/[0.08] bg-white/[0.03] px-4 py-3">
+      <div className="flex items-center justify-between gap-3 rounded-[14px] border border-ink/[0.08] bg-ink/[0.03] px-4 py-3">
         <div>
-          <div className="text-[13px] font-medium text-white/85">{t('starpass.manage.source')}</div>
-          <div className="mt-0.5 text-[11.5px] text-white/40">{t('starpass.manage.sourceSub')}</div>
+          <div className="text-[13px] font-medium text-ink-85">{t('starpass.manage.source')}</div>
+          <div className="mt-0.5 text-[11.5px] text-ink-40">{t('starpass.manage.sourceSub')}</div>
         </div>
-        <span className="font-mono text-[13px] text-white">{source || '—'}</span>
+        <span className="font-mono text-[13px] text-ink">{source || '—'}</span>
       </div>
 
       <div className="mt-1 flex flex-wrap gap-3">

@@ -23,7 +23,7 @@ function Connecting() {
   const { t } = useTranslation();
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex items-center gap-2.5 text-[12.5px] text-white/60">
+      <div className="flex items-center gap-2.5 text-[12.5px] text-ink-60">
         <Loader2 size={14} className="shrink-0 animate-spin text-[#ff3b30]" />
         {t('settings.scrobbleConnecting')}
       </div>
@@ -40,7 +40,7 @@ function ManualLink({ url }: { url: string }) {
   const { t } = useTranslation();
   return (
     <div className="flex flex-col gap-3">
-      <p className="text-[12px] leading-snug text-white/40">{t('settings.scrobbleOpenFailed')}</p>
+      <p className="text-[12px] leading-snug text-ink-40">{t('settings.scrobbleOpenFailed')}</p>
       <CopyField value={url} />
       <div>
         <TileButton onClick={() => void cancelLastfmAuth()}>
@@ -55,7 +55,7 @@ function Waiting() {
   const { t } = useTranslation();
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex items-center gap-2.5 text-[12.5px] text-white/60">
+      <div className="flex items-center gap-2.5 text-[12.5px] text-ink-60">
         <Loader2 size={14} className="shrink-0 animate-spin text-[#ff3b30]" />
         {t('settings.scrobbleWaiting')}
       </div>
@@ -79,14 +79,14 @@ export function LastfmTile({ status }: { status: ScrobbleServiceStatus }) {
   const body = () => {
     if (connected) return <AccountView service="lastfm" status={status} />;
     if (!status.available) {
-      return <p className="text-[12px] text-white/35">{t('settings.scrobbleUnavailable')}</p>;
+      return <p className="text-[12px] text-ink-35">{t('settings.scrobbleUnavailable')}</p>;
     }
     if (auth.phase === 'connecting') return <Connecting />;
     if (auth.phase === 'waiting') return <Waiting />;
     if (auth.phase === 'manual') return <ManualLink url={auth.url} />;
     return (
       <div className="flex flex-col gap-3">
-        <p className="text-[12px] leading-snug text-white/40">
+        <p className="text-[12px] leading-snug text-ink-40">
           {t(auth.phase === 'error' ? AUTH_ERRORS[auth.failure] : 'settings.scrobbleLastfmHint')}
         </p>
         <div>

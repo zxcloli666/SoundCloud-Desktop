@@ -44,10 +44,10 @@ export function CodeInput({ value, onChange, onSubmit, disabled, invalid }: Code
                 invalid
                   ? 'border-rose-400/50 bg-rose-400/[0.06] text-rose-200'
                   : active
-                    ? 'border-accent/70 bg-accent/[0.08] text-white shadow-[0_0_14px_-4px_var(--color-accent-glow)]'
+                    ? 'border-accent/70 bg-accent/[0.08] text-ink shadow-[0_0_14px_-4px_var(--color-accent-glow)]'
                     : char
-                      ? 'border-white/[0.14] bg-white/[0.06] text-white'
-                      : 'border-white/[0.07] bg-white/[0.025] text-white/25'
+                      ? 'border-ink/[0.14] bg-ink/[0.06] text-ink'
+                      : 'border-ink/[0.07] bg-ink/[0.025] text-ink-25'
               }`}
             >
               {char || (active ? <span className="h-4 w-px animate-pulse bg-accent" /> : '')}

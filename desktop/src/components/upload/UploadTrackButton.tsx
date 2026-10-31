@@ -17,7 +17,7 @@ export const UploadTrackButton = React.memo(function UploadTrackButton({ aura }:
     <button
       type="button"
       onClick={() => setOpen(true)}
-      className="relative inline-flex items-center gap-2 h-11 px-5 rounded-full text-[12.5px] font-semibold text-white/90 overflow-hidden transition-all duration-300 ease-[var(--ease-apple)] hover:scale-[1.03] cursor-pointer"
+      className="relative inline-flex items-center gap-2 h-11 px-5 rounded-full text-[12.5px] font-semibold text-ink-90 overflow-hidden transition-all duration-300 ease-[var(--ease-apple)] hover:scale-[1.03] cursor-pointer"
       style={{
         background: auraRgba(aura, 0.18),
         border: `0.5px solid ${auraRgba(aura, 0.4)}`,

@@ -26,8 +26,8 @@ export function LanguageCard() {
                             onClick={() => void changeAppLanguage(lang.code)}
                             className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-200 cursor-pointer border ${
                                 active
-                                    ? 'bg-white/[0.1] text-white/90 border-white/[0.15]'
-                                    : 'bg-white/[0.02] text-white/45 border-white/[0.05] hover:bg-white/[0.06] hover:text-white/60'
+                                    ? 'bg-ink/[0.1] text-ink-90 border-ink/[0.15]'
+                                    : 'bg-ink/[0.02] text-ink-45 border-ink/[0.05] hover:bg-ink/[0.06] hover:text-ink-60'
                             }`}
                         >
                             <Globe size={14} strokeWidth={1.8}/>
@@ -39,7 +39,7 @@ export function LanguageCard() {
             <button
                 type="button"
                 onClick={() => void openUrl(REQUEST_LANGUAGE_URL)}
-                className="mt-3.5 inline-flex items-center gap-1.5 text-[11.5px] text-white/35 hover:text-white/70 transition-colors cursor-pointer"
+                className="mt-3.5 inline-flex items-center gap-1.5 text-[11.5px] text-ink-35 hover:text-ink-70 transition-colors cursor-pointer"
             >
                 <ExternalLink size={12} strokeWidth={1.8}/>
                 {t('settings.languageRequest')}

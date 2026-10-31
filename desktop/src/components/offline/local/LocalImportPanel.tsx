@@ -22,7 +22,7 @@ const ScanBar = React.memo(function ScanBar() {
 
   return (
     <div className="mt-4">
-      <div className="mb-1.5 flex items-center justify-between font-mono text-[10.5px] tabular-nums text-white/45">
+      <div className="mb-1.5 flex items-center justify-between font-mono text-[10.5px] tabular-nums text-ink-45">
         <span>{t('local.scanning')}</span>
         {scanning.total > 0 && (
           <span>
@@ -30,7 +30,7 @@ const ScanBar = React.memo(function ScanBar() {
           </span>
         )}
       </div>
-      <div className="relative h-[3px] overflow-hidden rounded-full bg-white/[0.07]">
+      <div className="relative h-[3px] overflow-hidden rounded-full bg-ink/[0.07]">
         <span
           className="absolute inset-y-0 left-0 w-full origin-left"
           style={{
@@ -58,16 +58,16 @@ const FolderChip = React.memo(function FolderChip({ folder }: { folder: string }
   return (
     <span
       title={folder}
-      className="group/chip flex h-7 max-w-full items-center gap-1.5 rounded-full border border-white/[0.08] bg-white/[0.03] pl-2.5 pr-1 text-[11.5px] font-medium text-white/65"
+      className="group/chip flex h-7 max-w-full items-center gap-1.5 rounded-full border border-ink/[0.08] bg-ink/[0.03] pl-2.5 pr-1 text-[11.5px] font-medium text-ink-65"
     >
-      <FolderOpen size={12} className="flex-none text-white/40" />
+      <FolderOpen size={12} className="flex-none text-ink-40" />
       <span className="truncate">{folderLabel(folder)}</span>
       <button
         type="button"
         onClick={() => forgetLocalFolder(folder)}
         title={t('local.removeFolder')}
         aria-label={t('local.removeFolder')}
-        className="flex size-5 flex-none cursor-pointer items-center justify-center rounded-full text-white/35 transition-colors hover:bg-rose-400/15 hover:text-rose-200"
+        className="flex size-5 flex-none cursor-pointer items-center justify-center rounded-full text-ink-35 transition-colors hover:bg-rose-400/15 hover:text-rose-200"
       >
         <X size={10} strokeWidth={2.4} />
       </button>
@@ -90,12 +90,12 @@ export const LocalImportPanel = React.memo(function LocalImportPanel({
 
   return (
     <section
-      className="relative grid overflow-hidden rounded-[20px] border border-white/[0.09] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_24px_60px_-32px_rgba(0,0,0,0.8)] lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]"
+      className="relative grid overflow-hidden rounded-[20px] border border-ink/[0.09] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_24px_60px_-32px_rgb(var(--shade)/calc(0.8*var(--shade-alpha)))] lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]"
       style={{
         background:
           blur > 0
-            ? 'linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.018))'
-            : 'rgb(17,17,21)',
+            ? 'linear-gradient(180deg, rgb(var(--ink) / 0.045), rgb(var(--ink) / 0.018))'
+            : 'rgb(var(--surface))',
         backdropFilter: blur > 0 ? `blur(${blur}px) saturate(1.25)` : undefined,
         WebkitBackdropFilter: blur > 0 ? `blur(${blur}px) saturate(1.25)` : undefined,
       }}
@@ -128,10 +128,10 @@ export const LocalImportPanel = React.memo(function LocalImportPanel({
             <FileMusic size={22} />
           </span>
           <div className="min-w-0">
-            <div className="text-[14.5px] font-semibold tracking-[-0.01em] text-white/92">
+            <div className="text-[14.5px] font-semibold tracking-[-0.01em] text-ink-92">
               {t('local.dropTitle')}
             </div>
-            <div className="mt-0.5 text-[12px] leading-snug text-white/45">
+            <div className="mt-0.5 text-[12px] leading-snug text-ink-45">
               {t('local.dropHint')}
             </div>
           </div>
@@ -151,7 +151,7 @@ export const LocalImportPanel = React.memo(function LocalImportPanel({
             type="button"
             disabled={busy}
             onClick={() => void runLocalImport(pickLocalFolder)}
-            className="flex h-9 cursor-pointer items-center gap-2 rounded-[11px] border border-white/[0.08] bg-white/[0.03] px-4 text-[12.5px] font-semibold text-white/65 transition-colors hover:border-white/[0.14] hover:text-white/90 disabled:cursor-not-allowed disabled:opacity-40"
+            className="flex h-9 cursor-pointer items-center gap-2 rounded-[11px] border border-ink/[0.08] bg-ink/[0.03] px-4 text-[12.5px] font-semibold text-ink-65 transition-colors hover:border-ink/[0.14] hover:text-ink-90 disabled:cursor-not-allowed disabled:opacity-40"
           >
             <FolderPlus size={14} />
             {t('local.addFolder')}
@@ -159,19 +159,19 @@ export const LocalImportPanel = React.memo(function LocalImportPanel({
         </div>
       </div>
 
-      <div className="mx-5 h-px bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.12)_30%,rgba(255,255,255,0.12)_70%,transparent)] lg:hidden" />
+      <div className="mx-5 h-px bg-[linear-gradient(90deg,transparent,rgb(var(--ink)/0.12)_30%,rgb(var(--ink)/0.12)_70%,transparent)] lg:hidden" />
 
-      <div className="flex min-w-0 flex-col p-5 lg:border-l lg:border-white/[0.07]">
+      <div className="flex min-w-0 flex-col p-5 lg:border-l lg:border-ink/[0.07]">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <div className="font-mono text-[9.5px] font-semibold uppercase tracking-[0.2em] text-white/35">
+            <div className="font-mono text-[9.5px] font-semibold uppercase tracking-[0.2em] text-ink-35">
               {t('local.onDisk')}
             </div>
             <div className="mt-1 flex items-baseline gap-2">
-              <span className="text-[26px] font-semibold tracking-[-0.03em] text-white/92 tabular-nums">
+              <span className="text-[26px] font-semibold tracking-[-0.03em] text-ink-92 tabular-nums">
                 {count}
               </span>
-              <span className="text-[12px] text-white/45">
+              <span className="text-[12px] text-ink-45">
                 {t('local.filesCount', { count })} · {formatBytes(totalBytes)}
               </span>
             </div>
@@ -182,7 +182,7 @@ export const LocalImportPanel = React.memo(function LocalImportPanel({
               disabled={busy}
               onClick={() => void runLocalImport(rescanLocalLibrary)}
               title={t('local.rescanHint')}
-              className="flex h-8 cursor-pointer items-center gap-1.5 rounded-[10px] border border-white/[0.08] bg-white/[0.03] px-3 text-[12px] font-medium text-white/55 transition-colors hover:border-white/[0.14] hover:text-white/85 disabled:cursor-not-allowed disabled:opacity-40"
+              className="flex h-8 cursor-pointer items-center gap-1.5 rounded-[10px] border border-ink/[0.08] bg-ink/[0.03] px-3 text-[12px] font-medium text-ink-55 transition-colors hover:border-ink/[0.14] hover:text-ink-85 disabled:cursor-not-allowed disabled:opacity-40"
             >
               <RefreshCw size={12} className={busy ? 'animate-spin' : undefined} />
               {t('local.rescan')}
@@ -197,7 +197,7 @@ export const LocalImportPanel = React.memo(function LocalImportPanel({
             ))}
           </div>
         ) : (
-          <p className="mt-3 text-[12px] leading-snug text-white/35">{t('local.foldersHint')}</p>
+          <p className="mt-3 text-[12px] leading-snug text-ink-35">{t('local.foldersHint')}</p>
         )}
 
         <ScanBar />

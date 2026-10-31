@@ -86,7 +86,7 @@ export const HostStatusModal = React.memo(() => {
     <Modal open={open} onOpenChange={(o) => !o && dismissModal()}>
       <ModalContent size="sm" zClass="z-[95]" showClose={false}>
         <div className="relative p-7" style={{ isolation: 'isolate' }}>
-          <ModalClose className="absolute top-4 right-4 p-1.5 rounded-lg text-white/20 hover:text-white/60 hover:bg-white/[0.06] transition-colors cursor-pointer">
+          <ModalClose className="absolute top-4 right-4 p-1.5 rounded-lg text-ink-20 hover:text-ink-60 hover:bg-ink/[0.06] transition-colors cursor-pointer">
             <X size={14} />
           </ModalClose>
 
@@ -95,7 +95,7 @@ export const HostStatusModal = React.memo(() => {
               {copy === 'reachable' ? (
                 <Globe size={24} className="text-emerald-300/80" />
               ) : allDown ? (
-                <WifiOff size={24} className="text-white/60" />
+                <WifiOff size={24} className="text-ink-60" />
               ) : (
                 <span
                   className="text-amber-400"
@@ -105,15 +105,15 @@ export const HostStatusModal = React.memo(() => {
                 </span>
               )}
             </IconTile>
-            <ModalTitle className="text-lg font-bold text-white/90 tracking-tight">
+            <ModalTitle className="text-lg font-bold text-ink-90 tracking-tight">
               {t(`hostStatus.${copy}.title`)}
             </ModalTitle>
-            <p className="text-[12.5px] text-white/35 mt-1.5 leading-relaxed max-w-[300px]">
+            <p className="text-[12.5px] text-ink-35 mt-1.5 leading-relaxed max-w-[300px]">
               {t(`hostStatus.${copy}.body`)}
             </p>
             {allDown && <RemoteCheck verdict={remote} />}
             {!allDown && (
-              <p className="text-[11.5px] text-white/45 mt-3">{t('hostStatus.starOffer.how')}</p>
+              <p className="text-[11.5px] text-ink-45 mt-3">{t('hostStatus.starOffer.how')}</p>
             )}
             <div className="flex items-center justify-center gap-2 mt-2.5">
               {!allDown && <LinkButton href={BOOSTY_URL} label={t('star.goBoosty')} />}
@@ -129,7 +129,7 @@ export const HostStatusModal = React.memo(() => {
               <button
                 type="button"
                 onClick={goBuyStar}
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-accent text-accent-contrast font-semibold text-[13px] hover:bg-accent-hover active:scale-[0.97] transition-all duration-200 cursor-pointer shadow-[0_0_30px_var(--color-accent-glow),0_2px_8px_rgba(0,0,0,0.3)]"
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-accent text-accent-contrast font-semibold text-[13px] hover:bg-accent-hover active:scale-[0.97] transition-all duration-200 cursor-pointer shadow-[0_0_30px_var(--color-accent-glow),0_2px_8px_rgb(var(--shade)/calc(0.3*var(--shade-alpha)))]"
               >
                 <Star size={14} fill="currentColor" />
                 {t('hostStatus.actions.buyStar')}
@@ -140,8 +140,8 @@ export const HostStatusModal = React.memo(() => {
               onClick={goOfflineLibrary}
               className={
                 allDown
-                  ? 'w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-accent text-accent-contrast font-semibold text-[13px] hover:bg-accent-hover active:scale-[0.97] transition-all duration-200 cursor-pointer shadow-[0_0_30px_var(--color-accent-glow),0_2px_8px_rgba(0,0,0,0.3)]'
-                  : 'w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] text-[12.5px] text-white/55 hover:text-white/80 transition-all cursor-pointer'
+                  ? 'w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-accent text-accent-contrast font-semibold text-[13px] hover:bg-accent-hover active:scale-[0.97] transition-all duration-200 cursor-pointer shadow-[0_0_30px_var(--color-accent-glow),0_2px_8px_rgb(var(--shade)/calc(0.3*var(--shade-alpha)))]'
+                  : 'w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-ink/[0.04] hover:bg-ink/[0.08] border border-ink/[0.06] text-[12.5px] text-ink-55 hover:text-ink-80 transition-all cursor-pointer'
               }
             >
               <Download size={14} />
@@ -150,7 +150,7 @@ export const HostStatusModal = React.memo(() => {
             <button
               type="button"
               onClick={openNetCheck}
-              className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] text-[12.5px] text-white/55 hover:text-white/80 transition-all cursor-pointer"
+              className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-ink/[0.04] hover:bg-ink/[0.08] border border-ink/[0.06] text-[12.5px] text-ink-55 hover:text-ink-80 transition-all cursor-pointer"
             >
               <Activity size={13} />
               {t('netCheck.open')}
@@ -159,7 +159,7 @@ export const HostStatusModal = React.memo(() => {
               type="button"
               onClick={() => requestProbe({ force: true })}
               disabled={probing}
-              className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] text-[12.5px] text-white/55 hover:text-white/80 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-default"
+              className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-ink/[0.04] hover:bg-ink/[0.08] border border-ink/[0.06] text-[12.5px] text-ink-55 hover:text-ink-80 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-default"
             >
               <RefreshCw size={12} className={probing ? 'animate-spin' : undefined} />
               {t('hostStatus.actions.retry')}

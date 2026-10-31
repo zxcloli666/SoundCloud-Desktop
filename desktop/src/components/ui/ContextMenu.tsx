@@ -29,6 +29,7 @@ const MenuItem = React.memo(({ item, onDone }: { item: ContextMenuItem; onDone: 
   <button
     type="button"
     role={item.checked === undefined ? 'menuitem' : 'menuitemcheckbox'}
+    data-ui="menu-item"
     aria-checked={item.checked}
     disabled={item.disabled}
     onPointerMove={(e) => {
@@ -38,22 +39,22 @@ const MenuItem = React.memo(({ item, onDone }: { item: ContextMenuItem; onDone: 
       onDone();
       item.onSelect();
     }}
-    className="group/ctx flex w-full cursor-pointer items-center gap-2.5 rounded-[9px] px-2.5 py-[7px] text-left text-[12.5px] font-medium text-white/70 outline-none transition-colors duration-100 focus:bg-white/[0.07] focus:text-white/95 disabled:cursor-default disabled:text-white/25"
+    className="group/ctx flex w-full cursor-pointer items-center gap-2.5 rounded-[9px] px-2.5 py-[7px] text-left text-[12.5px] font-medium text-ink-70 outline-none transition-colors duration-100 focus:bg-ink/[0.07] focus:text-ink-95 disabled:cursor-default disabled:text-ink-25"
   >
-    <span className="flex h-4 w-4 shrink-0 items-center justify-center text-white/40 transition-colors group-focus/ctx:text-white/75 group-disabled/ctx:text-white/20">
+    <span className="flex h-4 w-4 shrink-0 items-center justify-center text-ink-40 transition-colors group-focus/ctx:text-ink-75 group-disabled/ctx:text-ink-20">
       {item.icon}
     </span>
     <span className="min-w-0 flex-1 truncate">{item.label}</span>
     {item.checked && <Check size={13} className="shrink-0 text-accent" />}
     {item.hint && (
-      <span className="ml-3 shrink-0 font-mono text-[10.5px] tracking-wide text-white/25">
+      <span className="ml-3 shrink-0 font-mono text-[10.5px] tracking-wide text-ink-25">
         {item.hint}
       </span>
     )}
   </button>
 ));
 
-const Separator = () => <div role="separator" className="mx-2 my-1 h-px bg-white/[0.06]" />;
+const Separator = () => <div role="separator" className="mx-2 my-1 h-px bg-ink/[0.06]" />;
 
 function MenuEntries({ entries, onDone }: { entries: ContextMenuEntry[]; onDone: () => void }) {
   return entries.map((entry, index) =>
@@ -88,6 +89,7 @@ export const ContextMenuHost = React.memo(() => {
             key={`${menu.x}:${menu.y}`}
             ref={contentRef}
             role="menu"
+            data-ui="context-menu"
             tabIndex={-1}
             side="bottom"
             align="start"
@@ -112,11 +114,11 @@ export const ContextMenuHost = React.memo(() => {
             }}
             className="ctx-menu z-[300] min-w-[232px] max-w-[300px] select-none rounded-[14px] p-1.5 outline-none"
             style={{
-              background: blur > 0 ? 'rgba(18,18,22,0.86)' : 'rgb(20,20,24)',
+              background: blur > 0 ? 'rgb(var(--surface) / 0.86)' : 'rgb(var(--surface))',
               backdropFilter: blur > 0 ? `blur(${blur}px) saturate(1.8)` : undefined,
               WebkitBackdropFilter: blur > 0 ? `blur(${blur}px) saturate(1.8)` : undefined,
-              border: '1px solid rgba(255,255,255,0.09)',
-              boxShadow: '0 18px 50px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.05)',
+              border: '1px solid rgb(var(--ink) / 0.09)',
+              boxShadow: '0 18px 50px rgb(var(--shade) / calc(0.55 * var(--shade-alpha))), inset 0 1px 0 rgba(255,255,255,0.05)',
             }}
           >
             {menu.header && (

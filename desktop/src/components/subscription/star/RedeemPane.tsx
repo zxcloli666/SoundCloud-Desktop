@@ -63,12 +63,12 @@ export const RedeemPane = memo(function RedeemPane({ onRedeemed }: { onRedeemed:
           className="absolute inset-0 z-10 size-full cursor-text opacity-0"
         />
         <div className="flex select-none items-stretch gap-2">
-          <span className="self-center font-mono text-[15px] tracking-[0.12em] text-white/45">
+          <span className="self-center font-mono text-[15px] tracking-[0.12em] text-ink-45">
             STAR
           </span>
           {GROUPS.map((g) => (
             <Fragment key={g}>
-              <span className="self-center font-mono text-white/25">–</span>
+              <span className="self-center font-mono text-ink-25">–</span>
               <div className="flex flex-1 gap-1.5">
                 {CELLS.map((c) => {
                   const idx = g * 4 + c;
@@ -82,10 +82,10 @@ export const RedeemPane = memo(function RedeemPane({ onRedeemed }: { onRedeemed:
                         borderColor: active
                           ? 'var(--color-accent)'
                           : ch
-                            ? 'rgba(255,255,255,0.22)'
-                            : 'rgba(255,255,255,0.10)',
-                        background: ch ? 'rgba(255,255,255,0.05)' : 'transparent',
-                        color: ch ? '#fff' : 'rgba(255,255,255,0.22)',
+                            ? 'rgb(var(--ink) / 0.22)'
+                            : 'rgb(var(--ink) / 0.10)',
+                        background: ch ? 'rgb(var(--ink) / 0.05)' : 'transparent',
+                        color: ch ? 'rgb(var(--ink))' : 'rgb(var(--ink) / 0.22)',
                         boxShadow: active ? '0 0 16px -4px var(--color-accent-glow)' : undefined,
                       }}
                     >

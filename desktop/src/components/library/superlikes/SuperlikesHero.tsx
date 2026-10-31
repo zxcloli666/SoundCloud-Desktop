@@ -23,7 +23,7 @@ export const SuperlikesHero = memo(function SuperlikesHero({
   const { t } = useTranslation();
   return (
     <section
-      className="relative mb-6 overflow-hidden rounded-[28px] border border-white/[0.07] px-6 py-6 md:px-8"
+      className="relative mb-6 overflow-hidden rounded-[28px] border border-ink/[0.07] px-6 py-6 md:px-8"
       style={{
         background:
           'linear-gradient(125deg, color-mix(in srgb, var(--color-superlike-from) 20%, transparent), color-mix(in srgb, var(--color-superlike-via) 14%, transparent) 45%, color-mix(in srgb, var(--color-superlike-to) 16%, transparent))',
@@ -33,10 +33,10 @@ export const SuperlikesHero = memo(function SuperlikesHero({
       <div className="relative flex flex-wrap items-center gap-5" style={{ isolation: 'isolate' }}>
         <SuperHeart size={60} />
         <div className="min-w-0 flex-1 basis-60">
-          <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/50">
+          <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-ink-50">
             {t('superlikes.kicker')}
           </p>
-          <p className="mt-1 text-[15px] font-semibold leading-snug text-white/90">
+          <p className="mt-1 text-[15px] font-semibold leading-snug text-ink-90">
             {t('superlikes.tagline')}
           </p>
           <QuotaLine quota={quota} />
@@ -58,7 +58,7 @@ export const SuperlikesHero = memo(function SuperlikesHero({
               disabled={loading}
               title={t('superlikes.shuffle')}
               aria-label={t('superlikes.shuffle')}
-              className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/[0.1] bg-white/[0.06] text-white/80 transition-all duration-200 hover:bg-white/[0.1] hover:text-white cursor-pointer disabled:opacity-60"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-ink/[0.1] bg-ink/[0.06] text-ink-80 transition-all duration-200 hover:bg-ink/[0.1] hover:text-ink cursor-pointer disabled:opacity-60"
             >
               <Shuffle size={16} />
             </button>
@@ -74,19 +74,19 @@ function QuotaLine({ quota }: { quota: SuperlikeQuota | undefined }) {
   if (!quota) return null;
   if (quota.limit == null) {
     return (
-      <p className="mt-3 text-[12.5px] font-semibold text-white/60 tabular-nums">
+      <p className="mt-3 text-[12.5px] font-semibold text-ink-60 tabular-nums">
         {t('superlikes.count', { count: quota.used })}
       </p>
     );
   }
   return (
     <div className="mt-3 flex flex-wrap items-center gap-2.5">
-      <span className="rounded-full bg-black/25 px-3 py-1 text-[12.5px] font-bold text-white/85 tabular-nums">
+      <span className="rounded-full bg-shade-25 px-3 py-1 text-[12.5px] font-bold text-ink-85 tabular-nums">
         {t('superlikes.usedOf', { used: quota.used, limit: quota.limit })}
       </span>
       <Link
         to="/star"
-        className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.1] bg-white/[0.05] py-0.5 pl-3 pr-1 text-[12px] font-semibold text-white/75 transition-colors hover:bg-white/[0.1] hover:text-white"
+        className="inline-flex items-center gap-1.5 rounded-full border border-ink/[0.1] bg-ink/[0.05] py-0.5 pl-3 pr-1 text-[12px] font-semibold text-ink-75 transition-colors hover:bg-ink/[0.1] hover:text-ink"
       >
         {t('superlikes.unlimitedWith')}
         <StarBadge />
