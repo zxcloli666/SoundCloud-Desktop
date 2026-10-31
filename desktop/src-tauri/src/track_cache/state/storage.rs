@@ -3,13 +3,11 @@ use std::time::Instant;
 
 use crate::app::diagnostics;
 use crate::network::dns;
-use crate::network::edge::Tier;
 use crate::network::netcheck::model::Role;
 
 use super::{
-    DownloadError, DownloadSource, PRESIGN_ORIGINS, PlaybackQuality, STORAGE_COOLDOWN_AFTER,
-    STORAGE_COOLDOWN_SECS, TrackCacheState, file_len, host_of, make_redirect_url,
-    write_response_to_cache,
+    DownloadError, DownloadSource, PlaybackQuality, STORAGE_COOLDOWN_AFTER, STORAGE_COOLDOWN_SECS,
+    TrackCacheState, file_len, host_of, write_response_to_cache,
 };
 
 
@@ -75,76 +73,6 @@ impl TrackCacheState {
             quality,
             start,
         }
-    }
-
-    pub(super) async fn try_storage(&self, job: &StorageJob<'_>) -> Option<PathBuf> {
-        match self.try_storage_redirect(job).await {
-            Some(path) => Some(path),
-            None => self.try_storage_stream(job).await,
-        }
-    }
-
-    pub(super) async fn try_storage_redirect(&self, job: &StorageJob<'_>) -> Option<PathBuf> {
-        let urn = job.urn;
-        for storage_url in &job.urls {
-            let Some(host) = host_of(storage_url) else {
-                continue;
-            };
-            if !crate::network::edge::is_direct(storage_url)
-                || !PRESIGN_ORIGINS
-                    .iter()
-                    .all(|origin| crate::network::edge::direct_first(origin))
-            {
-                continue;
-            }
-            let Some(redirect_url) = make_redirect_url(storage_url) else {
-                continue;
-            };
-
-            match self.presigned_get(&redirect_url).await {
-                Ok(resp) if resp.status().is_success() => {
-                    let landed = resp.uri().to_string();
-                    println!("[TrackCache] {urn} → storage (redirect via {host})");
-                    match write_response_to_cache(
-                        job.target_dir,
-                        urn,
-                        resp,
-                        job.quality,
-                        DownloadSource::Storage,
-                        self.app_handle.as_ref(),
-                    )
-                    .await
-                    {
-                        Ok(result) => {
-                            let bytes = file_len(&result.path);
-                            crate::network::edge::note_url_delivered(&landed, Tier::Direct, bytes);
-                            let kb = bytes / 1024;
-                            let ms = job.start.elapsed().as_millis();
-                            println!("[TrackCache] downloaded {urn} via s3 — {kb} KB in {ms}ms");
-                            return Some(result.path);
-                        }
-                        Err(DownloadError::Fatal(e)) => {
-                            diagnostics::warn(format!("[TrackCache] s3 write failed for {urn}: {e}"));
-                        }
-                        Err(DownloadError::Retryable(e)) => {
-                            crate::network::edge::note_url(&landed, Tier::Direct, false);
-                            diagnostics::warn(format!("[TrackCache] s3 download failed for {urn}: {e}"));
-                        }
-                    }
-                }
-                Ok(resp) if resp.status().as_u16() == 404 || resp.status().as_u16() == 410 => {}
-                Ok(resp) => {
-                    diagnostics::warn(format!(
-                        "[TrackCache] s3 redirect HTTP {} for {urn} ({host})",
-                        resp.status()
-                    ));
-                }
-                Err(err) => {
-                    diagnostics::warn(format!("[TrackCache] s3 redirect failed for {urn} ({host}): {err}"));
-                }
-            }
-        }
-        None
     }
 
     pub(super) async fn try_storage_stream(&self, job: &StorageJob<'_>) -> Option<PathBuf> {

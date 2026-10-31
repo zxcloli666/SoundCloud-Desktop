@@ -6,8 +6,7 @@ use crate::network::health::link::{self, Shape};
 use crate::network::pro;
 use crate::network::{dns, edge};
 
-const STORAGE_PROBE: &str = "https://storage.scnative.dev/probe";
-const HEALTH_PROBE: &str = "https://health.scnative.dev/probe";
+const PROBE_PATH: &str = "/probe";
 const CONNECT_TIMEOUT: Duration = Duration::from_secs(10);
 
 pub async fn of(target: &Target) -> Option<VolumeProbe> {
@@ -19,8 +18,9 @@ pub async fn of(target: &Target) -> Option<VolumeProbe> {
     let volume = match target.id {
         TargetId::Images => {
             let carrier = format!("https://{host}/");
-            let storage = edge::relay_named(STORAGE_PROBE);
-            measure_through(&client, &storage, Some(&carrier)).await
+            let storage = edge::primary_relay_host("storage");
+            let probe = format!("https://{storage}{PROBE_PATH}");
+            measure_through(&client, &probe, Some(&carrier)).await
         }
         _ => measure(&client, &format!("https://{host}/probe")).await,
     };
@@ -35,7 +35,10 @@ pub async fn direct(targets: &[TargetCheck]) -> Option<VolumeProbe> {
     match storage {
         Some(volume) if volume.shape != Shape::Dead.as_str() => Some(volume),
         storage => match client() {
-            Some(client) => first_served(&client, &[HEALTH_PROBE]).await,
+            Some(client) => {
+                let health = edge::primary_relay_host("health");
+                first_served(&client, &[&format!("https://{health}{PROBE_PATH}")]).await
+            }
             None => storage,
         },
     }

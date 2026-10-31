@@ -1,7 +1,7 @@
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Duration;
 
-use crate::network::edge::{self, Hop, Tier};
+use crate::network::edge;
 use crate::shared::urn::canonical_track_urn;
 
 const HOP_TIMEOUT: Duration = Duration::from_secs(15);
@@ -145,14 +145,7 @@ async fn search_once(
     session_id: &str,
     cancel: &AtomicBool,
 ) -> Result<Vec<ScTrackResult>, SearchError> {
-    let mut hops = edge::plan(url);
-    if hops.is_empty() {
-        hops.push(Hop {
-            url: url.to_string(),
-            tier: Tier::Direct,
-            origin: String::new(),
-        });
-    }
+    let hops = edge::plan(url);
 
     let mut last_error = SearchError::transport("no route");
     for hop in hops {

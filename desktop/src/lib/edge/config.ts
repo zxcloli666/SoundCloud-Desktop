@@ -1,13 +1,5 @@
-// Транспортные тиры до наших доменов: прямой хост → relay-пул
-// (`<сервис>.<нода>.relay.scnative.dev`). Тира CF-воркеров больше нет —
-// их лимиты не держали наш трафик, см. `network/edge.rs`.
-// Таблица и персист живут в Rust (`network/edge.rs`), здесь — зеркало вердикта для
-// запросов, которые фронт делает сам. Политика та же, чтобы оба мира сходились к
-// одному тиру; в ядро уходит только СМЕНА вердикта, не каждый запрос.
-// Состав relay-пула приезжает из ядра — новую ноду сюда дописывать не нужно.
-
 import { listen } from '@tauri-apps/api/event';
-import { trackedInvoke as invoke } from '../diagnostics';
+import { trackedInvoke as invoke, logError } from '../diagnostics';
 
 export type Tier = 'direct' | 'relay' | 'pro';
 
@@ -18,9 +10,12 @@ export interface Hop {
 }
 
 interface RustConfig {
-  relays: [string, string[]][];
+  keys: Record<string, string>;
+  relays: Record<string, string[]>;
+  origins: Record<string, string>;
+  direct: string[];
+  zones: string[];
   pro?: string[];
-  relay_only?: string[];
   hints: Record<string, Tier>;
   revalidate_in_ms: Record<string, number>;
   revalidate_ms: number;
@@ -36,44 +31,52 @@ interface OriginState {
 
 type Change = 'none' | 'pinned' | 'unpinned';
 
-const TIER_ORDER: Record<Tier, number> = { direct: 0, relay: 1, pro: 2 };
 const DIRECT_FAIL_THRESHOLD = 2;
 const RELAY_WIN_THRESHOLD = 2;
 const PROVEN_BYTES = 64 * 1024;
 
+let keys = new Map<string, string>();
 let relays = new Map<string, string[]>();
+let plainHosts = new Map<string, string>();
+let directLabels = new Set<string>();
+let zones: string[] = [];
 let gateways: string[] = [];
-let relayOnly = new Set<string>();
 let revalidateMs = 600_000;
 const origins = new Map<string, OriginState>();
 const reported = new Map<string, Tier>();
 
-/** Дёргать до первого сетевого запроса. Без конфига остаётся прямой путь. */
 export async function initEdge(): Promise<void> {
   await listen<RustConfig>('edge:config', (event) => applyConfig(event.payload)).catch(() => {});
   try {
     applyConfig(await invoke<RustConfig>('edge_config'));
-  } catch {
-    // Ядро не ответило — работаем как раньше.
+  } catch (error) {
+    logError(`[Edge] no config from the core: ${String(error)}`);
   }
 }
 
+function baseOf(label: string): Tier {
+  return directLabels.has(label) ? 'direct' : 'relay';
+}
+
 function applyConfig(cfg: RustConfig): void {
-  relays = new Map(cfg.relays);
+  keys = new Map(Object.entries(cfg.keys ?? {}));
+  relays = new Map(Object.entries(cfg.relays ?? {}));
+  plainHosts = new Map(Object.entries(cfg.origins ?? {}));
+  directLabels = new Set(cfg.direct ?? []);
+  zones = cfg.zones ?? [];
   gateways = cfg.pro ?? [];
-  relayOnly = new Set(cfg.relay_only ?? []);
   revalidateMs = cfg.revalidate_ms || revalidateMs;
   const now = Date.now();
-  for (const [host, tier] of Object.entries(cfg.hints ?? {})) {
-    const prev = origins.get(host);
+  for (const [label, tier] of Object.entries(cfg.hints ?? {})) {
+    const prev = origins.get(label);
     if (tier === 'direct' && prev?.tier === 'relay' && prev.until > now) continue;
-    reported.set(host, tier);
-    if (tier === 'direct') {
-      if (prev && prev.tier !== 'direct') origins.delete(host);
+    reported.set(label, tier);
+    if (tier === baseOf(label)) {
+      if (prev && prev.tier !== tier) origins.delete(label);
       continue;
     }
-    const until = now + (cfg.revalidate_in_ms[host] ?? revalidateMs);
-    origins.set(host, {
+    const until = now + (cfg.revalidate_in_ms[label] ?? revalidateMs);
+    origins.set(label, {
       tier,
       until: prev?.tier === tier ? Math.max(prev.until, until) : until,
       directFails: 0,
@@ -93,8 +96,9 @@ function refreshed(prev: OriginState | undefined, now: number): OriginState {
   return { ...prev, lastAt: now };
 }
 
-function levelOf(state: OriginState | undefined, now: number): Tier {
-  return state && now < state.until ? state.tier : 'direct';
+function levelOf(label: string, now: number): Tier {
+  const state = origins.get(label);
+  return state && now < state.until ? state.tier : baseOf(label);
 }
 
 function base64Url(text: string): string {
@@ -123,33 +127,42 @@ function swapHost(url: string, host: string): string {
   }
 }
 
-/** Пусто = домен не наш, идём как есть. */
-export function planHops(url: string): Hop[] {
-  const origin = hostOf(url);
-  if (!origin) return [];
-  const pool = relays.get(origin);
-  if (!pool?.length) return [];
+function inOurZones(host: string): boolean {
+  return zones.some((zone) => host === zone || host.endsWith(`.${zone}`));
+}
 
-  const level = levelOf(origins.get(origin), Date.now());
-  if (level === 'pro' && gateways.length > 0) {
-    return gateways.map((gateway) => ({ url: gateway + base64Url(url), tier: 'pro', origin }));
-  }
-  const from: Tier = level === 'direct' ? 'direct' : 'relay';
-  const min = TIER_ORDER[from];
-
-  const withDirect = !relayOnly.has(origin);
-  const hops: Hop[] = [];
-  if (min <= TIER_ORDER.direct && withDirect) hops.push({ url, tier: 'direct', origin });
-  if (min <= TIER_ORDER.relay) {
-    for (const relay of pool) hops.push({ url: swapHost(url, relay), tier: 'relay', origin });
+export function planHops(url: string): Hop[] | null {
+  const host = hostOf(url);
+  if (!host) return null;
+  const origin = keys.get(host);
+  if (!origin) {
+    if (!inOurZones(host)) return null;
+    logError(`[Edge] ${host}: unknown service, no route`);
+    return [];
   }
 
-  if (min > TIER_ORDER.direct && withDirect) {
-    // Прямой путь остаётся последним шансом даже когда вердикт увёл на relay:
-    // relay-нода может лечь, а origin к этому моменту уже разбанят.
-    hops.push({ url, tier: 'direct', origin });
+  const level = levelOf(origin, Date.now());
+  const plain = plainHosts.get(origin) ?? host;
+  const pros: Hop[] = gateways.map((gateway) => ({
+    url: gateway + base64Url(swapHost(url, plain)),
+    tier: 'pro',
+    origin,
+  }));
+  const relayed: Hop[] = (relays.get(origin) ?? []).map((relay) => ({
+    url: swapHost(url, relay),
+    tier: 'relay',
+    origin,
+  }));
+
+  if (!directLabels.has(origin)) {
+    return level === 'pro' ? [...pros, ...relayed] : [...relayed, ...pros];
   }
-  return hops;
+  if (level === 'pro' && pros.length > 0) return pros;
+  const direct: Hop = { url: swapHost(url, plain), tier: 'direct', origin };
+  if (level === 'direct') return [direct, ...relayed];
+  // Прямой путь остаётся последним шансом даже когда вердикт увёл на relay:
+  // relay-нода может лечь, а origin к этому моменту уже разбанят.
+  return [...relayed, direct];
 }
 
 /**
@@ -188,7 +201,7 @@ function tellCore(hop: Hop, ok: boolean): void {
 
 export function noteHop(hop: Hop, ok: boolean, bytes = 0): void {
   if (hop.tier === 'pro' || (hop.tier === 'relay' && !ok)) tellCore(hop, ok);
-  if (hop.tier === 'pro') return;
+  if (hop.tier === 'pro' || !directLabels.has(hop.origin)) return;
   const prev = origins.get(hop.origin);
   const counts = hop.tier === 'direct' ? !ok : ok;
   if (!prev && !counts) return;
@@ -203,5 +216,5 @@ export function noteHop(hop: Hop, ok: boolean, bytes = 0): void {
 
 /** Текущий тир — для диагностики и баннера состояния. */
 export function tierOf(origin: string): Tier {
-  return levelOf(origins.get(origin), Date.now());
+  return levelOf(origin, Date.now());
 }

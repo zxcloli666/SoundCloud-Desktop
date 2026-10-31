@@ -94,11 +94,6 @@ impl Agent {
         loop {
             let started = Instant::now();
             round = round.wrapping_add(1);
-            if let Some(fresh) = self.delivery.fetch_topology(&topology).await {
-                edge::set_relay_only(fresh.relay_only_labels());
-                topology = fresh;
-            }
-
             let pool = Pool {
                 relays: discovery::relays(&topology.relays).await,
                 calls: discovery::calls(&topology.call_nodes()).await,
@@ -111,16 +106,14 @@ impl Agent {
                 topology.weighted_calls(&pool.calls),
             );
             edge::announce(&self.app);
+            if let Some(fresh) = self.delivery.fetch_topology().await {
+                topology = fresh;
+            }
 
             let pros = discovery::pros(&topology.pros).await;
             edge::set_pros(pros.clone());
             let (mut paths, lost, probed) = tokio::join!(
-                probe::probe_paths(
-                    &self.probe_client,
-                    &pool,
-                    round,
-                    !edge::is_relay_only("api")
-                ),
+                probe::probe_paths(&self.probe_client, &pool, round),
                 probe::main_lost(&self.probe_client, &pool.relays),
                 probe::probe_end_to_end(&self.probe_client, &pool.relays, round)
             );
@@ -135,25 +128,18 @@ impl Agent {
                 Vec::new(),
             );
             let relays_lag = probe::relays_lag(&pool.relays, &paths);
-            let pro_paths = probe::probe_pros(&pros, probe::pro_needed(&pool.relays, &paths)).await;
+            let pro_paths = probe::probe_pros(&pros, relays_lag).await;
             edge::set_pros(probe::usable_first(&pros, &pro_paths, &EndToEnd::new()));
             if relays_lag && pro_paths.iter().any(|sample| sample.ok) {
                 edge::escalate_relayed();
             }
             paths.extend(pro_paths);
-            let cut = probe::note_direct_cut(&paths);
             let early = self
                 .delivery
                 .report(&topology, &self.client_id, &self.app_version, &paths)
                 .await;
 
-            let services = probe::probe_services(
-                &self.probe_client,
-                &topology,
-                &pool,
-                probe::direct_bytes(&paths),
-            )
-            .await;
+            let services = probe::probe_services(&self.probe_client, &topology, &pool).await;
             edge::announce(&self.app);
             let late = self
                 .delivery
@@ -162,7 +148,7 @@ impl Agent {
 
             let delivered = early || late;
             let ok = services.iter().filter(|sample| sample.ok).count();
-            if cut || (!services.is_empty() && ok == 0) {
+            if !services.is_empty() && ok == 0 {
                 crate::network::netcheck::auto("health");
             }
             log_native(

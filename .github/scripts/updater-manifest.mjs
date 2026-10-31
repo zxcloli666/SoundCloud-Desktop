@@ -3,7 +3,7 @@ import { join } from 'node:path';
 
 const repository = process.env.GITHUB_REPOSITORY || 'zxcloli666/SoundCloud-Desktop';
 const downloadBase = `https://github.com/${repository}/releases/latest/download`;
-const manifestMirror = process.env.UPDATER_MIRROR_BASE || 'https://images.scnative.space';
+const manifestMirror = process.env.UPDATER_MIRROR_BASE || 'https://images.scnative.dev';
 const appMirror = 'https://images.scnative.dev';
 
 function mirrored(base, url) {

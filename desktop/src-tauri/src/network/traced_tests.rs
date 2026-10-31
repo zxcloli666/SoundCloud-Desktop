@@ -49,12 +49,12 @@ fn header_of(request: &str) -> Option<String> {
 async fn our_hosts_get_a_traceparent_and_the_attempt_is_recorded() {
     let seen = Arc::new(Mutex::new(Vec::new()));
     let addr = serving(seen.clone()).await;
-    let host: &'static str = "api.traced-test.scnative.dev";
+    let host: &'static str = "api.r9.relay.scnative.dev";
     let client = client_for(host, addr);
     let hop = Hop {
         url: format!("http://{host}:{}/me?session_id=abc", addr.port()),
-        tier: Tier::Direct,
-        origin: host.to_string(),
+        tier: Tier::Relay,
+        origin: "api".to_string(),
     };
     let id = trace::new_trace();
     trace::open_debug();
@@ -85,7 +85,7 @@ async fn our_hosts_get_a_traceparent_and_the_attempt_is_recorded() {
     assert_eq!(recorded.status, 200);
     assert_eq!(recorded.method, "GET");
     assert_eq!(recorded.path, "/me?session_id=abc");
-    assert_eq!(recorded.hop, "direct");
+    assert_eq!(recorded.hop, "r9");
     assert!(recorded.debug);
 }
 

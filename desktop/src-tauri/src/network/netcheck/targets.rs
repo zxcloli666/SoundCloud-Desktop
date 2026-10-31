@@ -29,10 +29,10 @@ const RELAY_TARGETS: usize = 4;
 const PRO_TARGETS: usize = 2;
 const STATUS_VERDICT_URL: &str = "https://status.getsoundcloud.app/api/verdict";
 const CORE: [(TargetId, &str); 4] = [
-    (TargetId::Main, "api.scnative.dev"),
-    (TargetId::Star, "api-star.scnative.dev"),
-    (TargetId::Storage, "storage.scnative.dev"),
-    (TargetId::Images, "images.scnative.dev"),
+    (TargetId::Main, "api"),
+    (TargetId::Star, "api-star"),
+    (TargetId::Storage, "storage"),
+    (TargetId::Images, "images"),
 ];
 
 pub struct Target {
@@ -48,10 +48,10 @@ impl Target {
 }
 
 pub fn targets() -> Vec<Target> {
-    let core = CORE.iter().map(|(id, host)| Target {
+    let core = CORE.iter().map(|(id, label)| Target {
         id: *id,
         node: None,
-        host: relay_named_host(host),
+        host: core_host(label),
     });
     let relays = edge::relay_pool()
         .into_iter()
@@ -72,12 +72,12 @@ pub fn targets() -> Vec<Target> {
     core.chain(relays).chain(pros).collect()
 }
 
-pub fn relay_named_host(host: &str) -> String {
-    let named = edge::relay_named(&format!("https://{host}/"));
-    url::Url::parse(&named)
-        .ok()
-        .and_then(|url| url.host_str().map(str::to_string))
-        .unwrap_or_else(|| host.to_string())
+fn core_host(label: &str) -> String {
+    if edge::has_direct(label) {
+        edge::plain_host(label)
+    } else {
+        edge::primary_relay_host(label)
+    }
 }
 
 fn doh_sample_host() -> String {
@@ -496,7 +496,7 @@ mod tests {
         Target {
             id: TargetId::Main,
             node: None,
-            host: "api.scnative.dev".to_string(),
+            host: "api.r1.relay.scnative.dev".to_string(),
         }
     }
 
@@ -542,6 +542,21 @@ mod tests {
                 TargetId::Images
             ]
         );
+        let hosts: Vec<&str> = list
+            .iter()
+            .take(4)
+            .map(|target| target.host.as_str())
+            .collect();
+        let relayed = |label: &str, host: &str| {
+            host.strip_prefix(label)
+                .and_then(|rest| rest.strip_prefix('.'))
+                .and_then(|rest| rest.strip_suffix(".relay.scnative.dev"))
+                .is_some_and(|node| !node.is_empty() && !node.contains('.'))
+        };
+        assert!(relayed("api", hosts[0]), "{hosts:?}");
+        assert!(relayed("api-star", hosts[1]), "{hosts:?}");
+        assert!(relayed("storage", hosts[2]), "{hosts:?}");
+        assert_eq!(hosts[3], "images.scnative.dev");
         assert!(list.len() <= 4 + super::RELAY_TARGETS + super::PRO_TARGETS);
         let pro = list.last().unwrap();
         assert_eq!(pro.id, TargetId::Pro);
@@ -557,11 +572,7 @@ mod tests {
 
     #[test]
     fn a_pending_target_shows_pending_cells() {
-        let target = Target {
-            id: TargetId::Main,
-            node: None,
-            host: "api.scnative.dev".to_string(),
-        };
+        let target = main_target();
         assert_eq!(target.pending().cells, [Tone::Pending; 4]);
         assert_eq!(verdict::cells(&target.pending())[0], Tone::Skip);
     }

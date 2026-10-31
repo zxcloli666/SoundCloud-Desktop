@@ -1,5 +1,5 @@
 // Единая точка сетевых запросов фронта к нашим доменам: перебирает тиры
-// (прямой → relay → relay pro) и запоминает, что сработало.
+// (relay → relay pro, прямой только у картинок) и запоминает, что сработало.
 
 import { newTraceId } from '../diagnostics';
 import { NetError, type NetInit, type NetRoute, netRequest } from '../net/fetch';
@@ -122,8 +122,8 @@ export type ProbeOutcome =
   | { kind: 'unreachable' };
 
 export function edgeProbe(url: string, hopTimeoutMs: number): Promise<ProbeOutcome> {
-  const planned = planHops(url);
-  const hops: Hop[] = planned.length > 0 ? planned : [{ url, tier: 'direct', origin: '' }];
+  const hops: Hop[] = planHops(url) ?? [{ url, tier: 'direct', origin: '' }];
+  if (hops.length === 0) return Promise.resolve({ kind: 'unreachable' });
   const trace = newTraceId();
   const controllers = hops.map(() => new AbortController());
   return new Promise((resolve) => {
@@ -189,7 +189,8 @@ export async function edgeFetch(
 ): Promise<Response> {
   const init = { ...options, trace: options.trace ?? newTraceId() };
   const hops = planHops(url);
-  if (hops.length === 0) return fetchAlone(url, init, timeoutMs);
+  if (!hops) return fetchAlone(url, init, timeoutMs);
+  if (hops.length === 0) throw new EdgeUnreachableError(new Error(`no route to ${url}`));
 
   const weakBudget = timeoutMs !== undefined && timeoutMs < WEAK_BUDGET_MS;
   const replayable = ['GET', 'HEAD'].includes((init.method ?? 'GET').toUpperCase());

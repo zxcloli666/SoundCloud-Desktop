@@ -13,7 +13,7 @@ interface CutStepsProps {
   backups: boolean;
 }
 
-const DOMAINS = ['scnative.dev', 'scnative.space'];
+const DOMAINS = ['scnative.dev'];
 
 export const CutSteps = React.memo(({ env, addrs, running, backups }: CutStepsProps) => {
   const { t } = useTranslation();

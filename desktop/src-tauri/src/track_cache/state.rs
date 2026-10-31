@@ -20,7 +20,7 @@ use backend_contracts::diag::ErrorKind;
 use crate::diag::{report, trace};
 use crate::network::dns;
 use crate::network::edge::{Hop, Tier};
-use crate::network::fail::{self, Fail, FailKind};
+use crate::network::fail::Fail;
 use crate::network::netcheck::model::Role;
 use crate::network::system_proxy::{self, follow};
 use crate::network::traced;
@@ -61,8 +61,6 @@ const STORAGE_RELAY_HEADERS_TIMEOUT_SECS: u64 = 15;
 const STORAGE_RESOLVE_TIMEOUT_SECS: u64 = 10;
 const STORAGE_COOLDOWN_SECS: u64 = 60;
 const STORAGE_COOLDOWN_AFTER: u8 = 2;
-const PRESIGN_HEADERS_SECS: u64 = 5;
-const PRESIGN_ORIGINS: [&str; 2] = ["https://s3.scnative.dev/", "https://s3.scnative.space/"];
 const DOWNLOAD_CONNECT_TIMEOUT_MS: u64 = 3_000;
 const DOWNLOAD_READ_TIMEOUT_SECS: u64 = 130;
 const BODY_STALL_SECS: u64 = 15;
@@ -398,19 +396,6 @@ fn now_secs() -> u64 {
 
 fn host_of(url: &str) -> Option<String> {
     Url::parse(url).ok()?.host_str().map(str::to_string)
-}
-
-/// Convert a storage stream URL (`<base>/<file>.m4a`) into a redirect URL
-/// (`<base>/redirect/<file>.m4a`) that 307s to a backend-direct download
-/// (presigned S3 URL or public Drive link, depending on storage backend).
-fn make_redirect_url(storage_url: &str) -> Option<String> {
-    let mut parsed = Url::parse(storage_url).ok()?;
-    let path = parsed.path().trim_start_matches('/').to_string();
-    if path.is_empty() || path.starts_with("redirect/") {
-        return None;
-    }
-    parsed.set_path(&format!("redirect/{path}"));
-    Some(parsed.to_string())
 }
 
 /// Count and total bytes of cached audio files in a dir.
@@ -1133,32 +1118,6 @@ impl TrackCacheState {
     fn mark_storage_host_ok(&self, host: &str) {
         if let Ok(mut map) = self.storage_cooldowns.lock() {
             map.remove(host);
-        }
-    }
-
-    async fn presigned_get(&self, redirect_url: &str) -> Result<wreq::Response, String> {
-        let headers = Duration::from_secs(PRESIGN_HEADERS_SECS);
-        let hop = Hop::unplanned(redirect_url);
-        let (request, flight) =
-            traced::begin(&self.client, Method::GET, &hop, Role::Primary, "storage");
-        match tokio::time::timeout(headers, request.send()).await {
-            Ok(Ok(response)) => {
-                flight.answered(response.status().as_u16(), 0);
-                Ok(response)
-            }
-            Ok(Err(err)) => {
-                flight.failed(fail::of_wreq(&err), err.to_string());
-                let failed_at = err
-                    .uri()
-                    .map_or_else(|| redirect_url.to_string(), ToString::to_string);
-                crate::network::edge::note_url(&failed_at, Tier::Direct, false);
-                Err(err.to_string())
-            }
-            Err(_) => {
-                flight.failed(FailKind::Timeout, "no headers in time");
-                crate::network::edge::note_url(redirect_url, Tier::Direct, false);
-                Err(format!("no headers in {}s", headers.as_secs()))
-            }
         }
     }
 

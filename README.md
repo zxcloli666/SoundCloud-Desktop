@@ -90,7 +90,7 @@ SoundCloud заблокирован Роскомнадзором — веб-ве
 
 ## Скачать
 
-> Стоит zapret, а треки или обложки не грузятся? Добавьте `scnative.dev` и `scnative.space` в его `lists/list-general-user.txt`. Подробно: [zapret, VPN и списки доменов](#zapret-vpn-и-списки-доменов).
+> Стоит zapret, а треки или обложки не грузятся? Добавьте `scnative.dev` в его `lists/list-general-user.txt`. Подробно: [zapret, VPN и списки доменов](#zapret-vpn-и-списки-доменов).
 
 ### Windows
 
@@ -153,13 +153,13 @@ chmod +x soundcloud-desktop_*.AppImage
 
 ## zapret, VPN и списки доменов
 
-Приложение ходит на свои домены в зоне `scnative.dev` (часть файлов треков пока приходит со старой `scnative.space`) и напрямую к SoundCloud за треками. Если провайдер режет прямой путь к нашим доменам, приложение само переключается на резервные маршруты `*.relay.scnative.dev`.
+Приложение ходит к своим сервисам через маршруты `*.relay.scnative.dev`, обложки грузит с `images.scnative.dev`, а за треками ходит напрямую к SoundCloud. Если маршруты недоступны, оно переключается на запасные `*.pro.scnative.dev`.
 
 Треки или обложки не грузятся:
 1. Откройте «Настройки → Сеть → Проверка сети». Там видно, что сломано, и есть кнопка «Скопировать отчёт».
 2. zapret включён: выключите его и нажмите «Проверить снова».
-3. Заработало: мешал zapret. Добавьте `scnative.dev`, `scnative.space` и `getsoundcloud.app` в `lists/list-exclude-user.txt` и включите zapret обратно.
-4. Не заработало: режет провайдер. Добавьте `scnative.dev` и `scnative.space` в `lists/list-general-user.txt`, включите zapret и проверьте снова. Стало хуже — уберите строки.
+3. Заработало: мешал zapret. Добавьте `scnative.dev` и `getsoundcloud.app` в `lists/list-exclude-user.txt` и включите zapret обратно.
+4. Не заработало: режет провайдер. Добавьте `scnative.dev` в `lists/list-general-user.txt`, включите zapret и проверьте снова. Стало хуже — уберите строки.
 5. Всё равно не работает или zapret нет: поможет только VPN.
 
 Пути выше для Windows (winws, сборка Flowseal). После правки списков перезапустите zapret.
@@ -171,19 +171,15 @@ chmod +x soundcloud-desktop_*.AppImage
 - Если системный DNS выдаёт неверный адрес, приложение само спрашивает DoH (1.1.1.1, 8.8.8.8 и другие).
 - Провайдер блокирует SoundCloud — добавьте `soundcloud.com` и `sndcdn.com` в `list-general`, иначе треки идут через сервер и грузятся дольше.
 
-Каждая запись покрывает все поддомены: `scnative.dev` включает резервные маршруты, `soundcloud.com` включает `api-v2.soundcloud.com`.
+Каждая запись покрывает все поддомены: `scnative.dev` включает все маршруты, `soundcloud.com` включает `api-v2.soundcloud.com`.
 
 | Домен | Для чего |
 |---|---|
-| `api.scnative.dev`, `api-star.scnative.dev` | API |
-| `stream.scnative.dev`, `stream-star.scnative.dev` | аудио |
-| `storage.scnative.dev`, `storage-star.scnative.dev`, `s3.scnative.dev` | хранилище треков |
-| `images.scnative.dev` | обложки |
-| `pay.scnative.dev` | оплата STAR |
-| `health.scnative.dev`, `status.getsoundcloud.app` | проверка связи |
+| `*.relay.scnative.dev` | API, аудио, хранилище треков, оплата STAR, проверка связи |
+| `*.pro.scnative.dev` | запасные маршруты |
+| `images.scnative.dev` | обложки и обновления |
 | `call-*.scnative.dev` | «Сеть пользователей» |
-| `*.relay.scnative.dev` | резервные маршруты |
-| `*.scnative.space` | старая зона, с неё пока приходят файлы треков |
+| `status.getsoundcloud.app` | страница статуса |
 | `soundcloud.com`, `api-v2.soundcloud.com`, `*.sndcdn.com` | прямая загрузка трека с SoundCloud |
 
 ---

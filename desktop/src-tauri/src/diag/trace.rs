@@ -3,7 +3,8 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use base64::{Engine as _, engine::general_purpose::URL_SAFE_NO_PAD as BASE64_URL};
 
-const ZONES: [&str; 3] = ["scnative.dev", "scnative.space", "scdinternal.site"];
+use crate::network::edge;
+
 const DEBUG_WINDOW_MS: u64 = 10 * 60 * 1000;
 
 static DEBUG_UNTIL_MS: AtomicU64 = AtomicU64::new(0);
@@ -82,12 +83,7 @@ pub fn resolve(url: &str) -> Option<Resolved> {
 }
 
 pub fn allowed_host(host: &str) -> bool {
-    ZONES.iter().any(|zone| {
-        host == *zone
-            || host
-                .strip_suffix(zone)
-                .is_some_and(|rest| rest.ends_with('.'))
-    })
+    edge::is_our_host(host) || matches!(edge::key_of_host(host), edge::Key::Service(_))
 }
 
 pub fn traceparent(trace: &str, span: &str, debug: bool) -> String {
@@ -124,12 +120,15 @@ mod tests {
         for url in [
             "https://api.scnative.dev/me",
             "https://api.r2.relay.scnative.dev/x",
-            "https://p1.pro.scnative.space/x",
+            "https://p1.pro.scnative.dev/x",
+            "https://images.scnative.dev/a.jpg",
             "http://api.scdinternal.site:81/",
         ] {
             assert!(allowed(url), "{url}");
         }
         for url in [
+            "https://p1.pro.scnative.space/x",
+            "https://nats-public.scnative.dev/",
             "https://api-v2.soundcloud.com/tracks",
             "https://i1.sndcdn.com/a.jpg",
             "https://evilscnative.dev/",

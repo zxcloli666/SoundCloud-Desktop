@@ -25,7 +25,7 @@ use crate::network::edge;
 use crate::network::fail::{Fail, FailKind};
 
 const SYSTEM_BUDGET: Duration = Duration::from_secs(2);
-const OUR_ZONES: [&str; 3] = ["scnative.dev", "scnative.space", "getsoundcloud.app"];
+const OUR_ZONES: [&str; 2] = ["scnative.dev", "getsoundcloud.app"];
 const LOCAL_SUFFIXES: [&str; 5] = [".localhost", ".local", ".lan", ".internal", ".home.arpa"];
 const NOT_FOUND_CODES: [i32; 2] = [11001, 11004];
 const NOT_FOUND_TEXTS: [&str; 4] = [
