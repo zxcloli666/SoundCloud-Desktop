@@ -176,6 +176,12 @@ pub fn relays_lag(relays: &[String], paths: &[Sample]) -> bool {
     probed.peek().is_some() && probed.all(|sample| rank(Some(sample)) > 0)
 }
 
+pub fn relays_down(relays: &[String], paths: &[Sample]) -> bool {
+    !relays
+        .iter()
+        .any(|node| sample_of(node, paths).is_some_and(|sample| sample.ok))
+}
+
 fn sample_of<'a>(node: &str, paths: &'a [Sample]) -> Option<&'a Sample> {
     let ep = format!("@{node}");
     paths.iter().find(|sample| sample.ep == ep)
@@ -361,7 +367,7 @@ mod tests {
 
     use super::{
         EndToEnd, Outcome, Route, Sample, direct_bytes, direct_cut_while_others_pass, fail_label,
-        hit_all, judge, pro_needed, reaching_main_first, relays_lag, usable_first,
+        hit_all, judge, pro_needed, reaching_main_first, relays_down, relays_lag, usable_first,
     };
     use crate::network::edge::{self, Tier};
     use crate::network::health::model::Link;
@@ -467,6 +473,21 @@ mod tests {
             &[shaped("r1", "slow"), shaped("r2", "clear")]
         ));
         assert!(!relays_lag(&relays, &[shaped("p1", "dead")]));
+    }
+
+    #[test]
+    fn relays_are_down_only_while_none_of_them_passed() {
+        let relays = pool(&["r1", "r2"]);
+        assert!(relays_down(
+            &relays,
+            &[sample("r1", false), sample("direct", true)]
+        ));
+        assert!(relays_down(&relays, &[]));
+        assert!(relays_down(&[], &[sample("direct", true)]));
+        assert!(!relays_down(
+            &relays,
+            &[sample("r1", false), shaped("r2", "slow")]
+        ));
     }
 
     fn failed(node: &str, fail: &str) -> Sample {
