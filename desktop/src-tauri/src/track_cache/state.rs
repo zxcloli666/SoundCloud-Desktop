@@ -22,6 +22,7 @@ use crate::network::dns;
 use crate::network::edge::{Hop, Tier};
 use crate::network::fail::Fail;
 use crate::network::netcheck::model::Role;
+use crate::network::relay_speed::Meter;
 use crate::network::system_proxy::{self, follow};
 use crate::network::traced;
 use crate::shared::urn::{canonical_track_urn, track_urn_from_storage_name};
@@ -710,6 +711,7 @@ pub(super) async fn write_response_to_cache(
     target_dir: &Path,
     urn: &str,
     response: wreq::Response,
+    hop: &Hop,
     quality: PlaybackQuality,
     source: DownloadSource,
     app_handle: Option<&crate::rt::AppHandle>,
@@ -725,13 +727,19 @@ pub(super) async fn write_response_to_cache(
     let mut total_size = 0u64;
     let mut sniff = Vec::with_capacity(AUDIO_SNIFF_LEN);
     let mut emitted_progress = -1.0f64;
+    let mut meter = Meter::of(hop);
 
     loop {
-        let next = tokio::time::timeout(Duration::from_secs(BODY_STALL_SECS), stream.next()).await;
+        let next = tokio::time::timeout(
+            Duration::from_secs(BODY_STALL_SECS),
+            meter.watch(stream.next()),
+        )
+        .await;
         let chunk = match next {
             Ok(Some(Ok(chunk))) => chunk,
             Ok(None) => break,
             Ok(Some(Err(err))) => {
+                meter.broke();
                 cleanup_temp_file(&temp_path).await;
                 return Err(DownloadError::Retryable(format!("body read: {err}")));
             }
@@ -744,6 +752,7 @@ pub(super) async fn write_response_to_cache(
         };
 
         total_size += chunk.len() as u64;
+        meter.got(chunk.len());
         if sniff.len() < AUDIO_SNIFF_LEN {
             let copy_len = (AUDIO_SNIFF_LEN - sniff.len()).min(chunk.len());
             sniff.extend_from_slice(&chunk[..copy_len]);
@@ -772,6 +781,7 @@ pub(super) async fn write_response_to_cache(
                 }
             }
     }
+    meter.done();
 
     if let Some(app) = app_handle
         && content_length > 0

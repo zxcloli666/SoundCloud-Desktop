@@ -53,7 +53,7 @@ fn hops_in(inner: &Inner, url: &str, label: &'static str, pro: Pro, now: Instant
         Pro::WhenPinned if level != Tier::Pro => Vec::new(),
         Pro::WhenPinned | Pro::Last => pro_hops(inner, url, label),
     };
-    let relays = relay_hops(inner, url, label);
+    let relays = relay_hops(inner, url, label, now);
 
     if !name::has_direct(label) {
         return if level == Tier::Pro {
@@ -73,9 +73,9 @@ fn hops_in(inner: &Inner, url: &str, label: &'static str, pro: Pro, now: Instant
     }
 }
 
-fn relay_hops(inner: &Inner, url: &str, label: &str) -> Vec<Hop> {
+fn relay_hops(inner: &Inner, url: &str, label: &str, now: Instant) -> Vec<Hop> {
     inner
-        .relay_nodes()
+        .relay_nodes(now)
         .iter()
         .filter_map(|node| name::on_host(url, &name::relay_host(label, node)))
         .map(|url| Hop {

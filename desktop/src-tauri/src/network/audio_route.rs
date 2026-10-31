@@ -6,6 +6,7 @@ use wreq::{Client, Method, Response, StatusCode};
 
 use super::edge::{self, Hop};
 use super::netcheck::model::Role;
+use super::relay_speed;
 use super::traced::{self, Flight};
 use crate::app::diagnostics;
 
@@ -125,6 +126,7 @@ fn settle(
         }
         Err(error) => {
             hop.note(false);
+            relay_speed::failed(hop);
             errors.push(format!("{}: {error}", hop.tier_label()));
             None
         }

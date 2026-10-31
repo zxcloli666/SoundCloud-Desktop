@@ -178,6 +178,7 @@ pub struct Pool {
 pub struct Inner {
     pub origins: HashMap<String, OriginState>,
     pub pool: Pool,
+    pub slow_relays: HashMap<String, Instant>,
     pub dir: Option<PathBuf>,
     pub gateway_port: Option<u16>,
 }
@@ -271,11 +272,17 @@ impl Inner {
             .collect()
     }
 
-    pub fn relay_nodes(&self) -> Vec<String> {
+    pub fn relay_nodes(&self, now: Instant) -> Vec<String> {
         if self.pool.relays.is_empty() {
             return vec![BOOTSTRAP_NODE.to_string()];
         }
-        self.pool.relays.clone()
+        let mut nodes = self.pool.relays.clone();
+        nodes.sort_by_key(|node| self.slow_relays.get(node).is_some_and(|until| now < *until));
+        nodes
+    }
+
+    pub fn demote_relays(&mut self, nodes: &[String], until: Instant) {
+        self.slow_relays = nodes.iter().map(|node| (node.clone(), until)).collect();
     }
 
     pub fn pro_hosts(&self) -> Vec<String> {

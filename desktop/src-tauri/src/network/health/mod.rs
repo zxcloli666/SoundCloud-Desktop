@@ -56,6 +56,7 @@ pub fn start(data_dir: PathBuf, app: crate::rt::AppHandle, runtime: Handle) {
         }
     };
 
+    crate::network::relay_speed::attach(probe_client.clone());
     let agent = Agent {
         app,
         app_version,

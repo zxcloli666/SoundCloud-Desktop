@@ -13,7 +13,7 @@ mod state_tests;
 
 use std::path::PathBuf;
 use std::sync::{Mutex, MutexGuard, OnceLock};
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
 use base64::{Engine as _, engine::general_purpose::URL_SAFE_NO_PAD as BASE64_URL};
 use serde::{Deserialize, Serialize};
@@ -97,7 +97,12 @@ pub fn set_pool(relays: Vec<String>, calls: Vec<(String, f64)>) {
 }
 
 pub fn relay_pool() -> Vec<String> {
-    lock().relay_nodes()
+    lock().relay_nodes(Instant::now())
+}
+
+pub fn demote_relays(nodes: &[String], penalty: Duration) {
+    lock().demote_relays(nodes, Instant::now() + penalty);
+    announce_change();
 }
 
 pub fn call_pool() -> Vec<(String, f64)> {
@@ -171,7 +176,7 @@ pub fn through_gateway(gateway: &str, url: &str) -> String {
 
 pub fn zone_hosts() -> Vec<String> {
     let inner = lock();
-    let nodes = inner.relay_nodes();
+    let nodes = inner.relay_nodes(Instant::now());
     let mut hosts: Vec<String> = nodes
         .iter()
         .flat_map(|node| {

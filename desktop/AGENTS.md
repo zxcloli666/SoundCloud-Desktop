@@ -103,6 +103,7 @@ desktop/
                          image_cache (постоянный кеш картинок в app_data_dir/images),
                          fetch (`net_fetch`: wreq + h2-пинги), edge (relay → pro, прямой только у images),
                          pro (relay-pro: ответ кусками под обрыв по объёму), audio_route,
+                         relay_speed (скорость релеев по скачке треков, медленный уходит назад на 10 мин),
                          system_proxy (системный прокси на каждом клиенте),
                          netcheck + health (проверка сети, поиск zapret/WinDivert, вердикт),
                          call (call-client agent, флаг enabled в `call_enabled.json`)

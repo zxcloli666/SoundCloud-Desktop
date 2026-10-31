@@ -14,6 +14,7 @@ pub mod pace;
 pub mod pro;
 pub mod proxy;
 pub mod proxy_server;
+pub mod relay_speed;
 pub mod server;
 pub mod static_server;
 pub mod system_proxy;
