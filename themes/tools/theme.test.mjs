@@ -144,8 +144,8 @@ test('a white theme needs a new enough app', () => {
   const path = join(dir, 'theme.json');
   const meta = JSON.parse(readFileSync(path, 'utf8'));
   writeFileSync(path, JSON.stringify({ ...meta, scheme: 'white' }));
-  assert.match(loadTheme(dir, null).errors.join('\n'), /minApp must be 8\.8\.0 or newer/);
-  writeFileSync(path, JSON.stringify({ ...meta, scheme: 'white', minApp: '8.8.0' }));
+  assert.match(loadTheme(dir, null).errors.join('\n'), /minApp must be 8\.7\.0 or newer/);
+  writeFileSync(path, JSON.stringify({ ...meta, scheme: 'white', minApp: '8.7.0' }));
   const result = loadTheme(dir, null);
   assert.deepEqual(result.errors, []);
   assert.equal(result.entry.scheme, 'white');

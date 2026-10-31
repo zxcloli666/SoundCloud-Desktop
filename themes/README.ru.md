@@ -53,7 +53,7 @@
 | `author` | `name` до 40 символов, `github` - ваш логин |
 | `license` | `MIT`, `Apache-2.0`, `CC0-1.0`, `CC-BY-4.0` или `CC-BY-SA-4.0` |
 | `accent`, `background` | Необязательно. Цвет `#rrggbb` маленькими буквами |
-| `scheme` | Необязательно. `dark` (по умолчанию) или `white`. Белой теме нужен `"minApp": "8.8.0"` |
+| `scheme` | Необязательно. `dark` (по умолчанию) или `white`. Белой теме нужен `"minApp": "8.7.0"` |
 | `font` | Необязательно. `inter`, `manrope`, `onest`, `golos`, `montserrat`, `rubik`, `nunito`, `raleway`, `comfortaa` или `system` |
 | `minApp` | Только если теме нужно то, чего нет в старых версиях приложения |
 

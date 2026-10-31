@@ -53,7 +53,7 @@ After the merge the theme shows up in the catalog within an hour. Installed copi
 | `author` | `name` up to 40 characters, `github` is your login |
 | `license` | `MIT`, `Apache-2.0`, `CC0-1.0`, `CC-BY-4.0` or `CC-BY-SA-4.0` |
 | `accent`, `background` | Optional. A `#rrggbb` color in lowercase |
-| `scheme` | Optional. `dark` (default) or `white`. A white theme needs `"minApp": "8.8.0"` |
+| `scheme` | Optional. `dark` (default) or `white`. A white theme needs `"minApp": "8.7.0"` |
 | `font` | Optional. `inter`, `manrope`, `onest`, `golos`, `montserrat`, `rubik`, `nunito`, `raleway`, `comfortaa` or `system` |
 | `minApp` | Only if the theme needs something older app versions do not have |
 

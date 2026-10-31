@@ -24,7 +24,7 @@ import {
 } from '../../desktop/src/lib/themes/rules.ts';
 import { commitTime, tryGit } from './git.mjs';
 
-const WHITE_SCHEME_APP = '8.8.0';
+const WHITE_SCHEME_APP = '8.7.0';
 
 const THEME_KEYS = [
   '$schema',
