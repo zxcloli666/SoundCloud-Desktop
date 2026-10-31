@@ -24,7 +24,7 @@ pub struct EdgeConfig {
 }
 
 pub fn of(inner: &Inner, now: Instant) -> EdgeConfig {
-    let nodes = inner.relay_nodes();
+    let nodes = inner.relay_nodes(now);
     EdgeConfig {
         keys: SERVICES
             .into_iter()

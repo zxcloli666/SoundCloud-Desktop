@@ -81,6 +81,7 @@ async fn download_over(
             job.target_dir,
             job.urn,
             response,
+            hop,
             quality,
             DownloadSource::Api,
             job.app_handle,
@@ -320,6 +321,7 @@ fn format_reqwest_error(err: wreq::Error) -> String {
 
 #[cfg(test)]
 mod tests {
+    use std::net::SocketAddr;
     use std::sync::Arc;
     use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
     use std::time::Duration;
@@ -402,12 +404,15 @@ mod tests {
     }
 
     async fn fetch_over(hops: &[Hop]) -> Result<u64, DownloadError> {
+        fetch_through(&wreq::Client::new(), hops).await
+    }
+
+    async fn fetch_through(client: &wreq::Client, hops: &[Hop]) -> Result<u64, DownloadError> {
         let dir = std::env::temp_dir().join(format!("sc-cut-test-{}", uuid::Uuid::new_v4()));
         std::fs::create_dir_all(&dir).unwrap();
-        let client = wreq::Client::new();
         let receiving = AtomicBool::new(false);
         let job = StreamJob {
-            client: &client,
+            client,
             target_dir: &dir,
             urn: "soundcloud:tracks:1",
             session_id: None,
@@ -427,6 +432,54 @@ mod tests {
             hop(whole(), Tier::Relay),
         ];
         assert_eq!(fetch_over(&hops).await.ok(), Some(FULL as u64));
+    }
+
+    async fn stalling_once(before: usize, pause: Duration) -> (SocketAddr, Arc<AtomicUsize>) {
+        let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let addr = listener.local_addr().unwrap();
+        let accepted = Arc::new(AtomicUsize::new(0));
+        let counted = accepted.clone();
+        tokio::spawn(async move {
+            while let Ok((mut socket, _)) = listener.accept().await {
+                counted.fetch_add(1, Ordering::SeqCst);
+                let mut request = [0u8; 4096];
+                let _ = socket.read(&mut request).await;
+                let head = format!("HTTP/1.1 200 OK\r\nContent-Length: {FULL}\r\n\r\n");
+                let body = audio(FULL);
+                let _ = socket.write_all(head.as_bytes()).await;
+                let _ = socket.write_all(&body[..before]).await;
+                tokio::time::sleep(pause).await;
+                let _ = socket.write_all(&body[before..]).await;
+            }
+        });
+        (addr, accepted)
+    }
+
+    fn counted() -> (String, Arc<AtomicUsize>) {
+        let asked = Arc::new(AtomicUsize::new(0));
+        let counter = asked.clone();
+        let route = warp::path("stream").map(move || {
+            counter.fetch_add(1, Ordering::SeqCst);
+            audio(FULL)
+        });
+        let (addr, server) = warp::serve(route).bind_ephemeral(([127, 0, 0, 1], 0));
+        tokio::spawn(server);
+        (format!("http://{addr}/stream"), asked)
+    }
+
+    #[tokio::test]
+    async fn a_relay_that_stalls_mid_body_keeps_its_download_to_the_end() {
+        let host = "stream.r-held.relay.scnative.dev";
+        let (addr, accepted) = stalling_once(64 * 1024, Duration::from_millis(4300)).await;
+        let (next, asked) = counted();
+        let client = wreq::Client::builder().resolve(host, addr).build().unwrap();
+        let hops = [
+            hop(format!("http://{host}:{}/stream", addr.port()), Tier::Relay),
+            hop(next, Tier::Relay),
+        ];
+        assert_eq!(fetch_through(&client, &hops).await.ok(), Some(FULL as u64));
+        assert_eq!(accepted.load(Ordering::SeqCst), 1);
+        assert_eq!(asked.load(Ordering::SeqCst), 0);
     }
 
     #[tokio::test]

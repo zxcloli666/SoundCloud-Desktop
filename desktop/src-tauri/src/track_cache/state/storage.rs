@@ -108,6 +108,7 @@ impl TrackCacheState {
                 Ok(r) => r,
                 Err(fail) => {
                     hop.note(false);
+                    crate::network::relay_speed::failed(&hop);
                     diagnostics::warn(format!("[TrackCache] storage {} failed for {urn}: {fail}", hop.tier_label()));
                     continue;
                 }
@@ -126,6 +127,7 @@ impl TrackCacheState {
                     job.target_dir,
                     urn,
                     resp,
+                    &hop,
                     job.quality,
                     DownloadSource::Storage,
                     self.app_handle.as_ref(),

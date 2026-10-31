@@ -427,3 +427,35 @@ fn an_old_state_file_loads_as_no_pins() {
     restore(&mut inner, host_keyed, Instant::now(), 1);
     assert!(inner.origins.is_empty());
 }
+
+fn nodes(names: &[&str]) -> Vec<String> {
+    names.iter().map(|name| name.to_string()).collect()
+}
+
+#[test]
+fn a_demoted_relay_stays_at_the_back_through_a_new_pool_until_its_penalty_ends() {
+    let mut inner = Inner::default();
+    let now = Instant::now();
+    let penalty = Duration::from_secs(600);
+    inner.pool.relays = nodes(&["r1", "r2", "r3"]);
+    inner.demote_relays(&nodes(&["r1"]), now + penalty);
+    assert_eq!(inner.relay_nodes(now), ["r2", "r3", "r1"]);
+
+    inner.pool.relays = nodes(&["r1", "r2", "r3"]);
+    let almost = now + penalty - Duration::from_secs(1);
+    assert_eq!(inner.relay_nodes(almost), ["r2", "r3", "r1"]);
+    assert_eq!(inner.relay_nodes(now + penalty), ["r1", "r2", "r3"]);
+}
+
+#[test]
+fn the_latest_check_decides_which_relays_sit_at_the_back() {
+    let mut inner = Inner::default();
+    let now = Instant::now();
+    let until = now + Duration::from_secs(600);
+    inner.pool.relays = nodes(&["r1", "r2", "r3"]);
+    inner.demote_relays(&nodes(&["r1"]), until);
+    inner.demote_relays(&nodes(&["r2", "r3"]), until);
+    assert_eq!(inner.relay_nodes(now), ["r1", "r2", "r3"]);
+    inner.demote_relays(&nodes(&["r2"]), until);
+    assert_eq!(inner.relay_nodes(now), ["r1", "r3", "r2"]);
+}

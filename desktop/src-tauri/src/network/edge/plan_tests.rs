@@ -1,4 +1,4 @@
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
 use base64::{Engine as _, engine::general_purpose::URL_SAFE_NO_PAD as BASE64_URL};
 
@@ -225,6 +225,28 @@ fn the_frontend_mirror_gets_keys_relays_and_only_images_direct() {
     assert_eq!(config["hints"]["api"], "relay");
     assert_eq!(config["hints"]["images"], "direct");
     assert_eq!(config["pro"], serde_json::json!([GATEWAY]));
+}
+
+#[test]
+fn a_demoted_relay_is_planned_and_mirrored_last() {
+    let mut state = inner();
+    let now = Instant::now();
+    state.demote_relays(&["r2".to_string()], now + Duration::from_secs(600));
+    let hops = plan_in(&state, "https://stream.scnative.dev/x", Pro::Last, now);
+    let relayed: Vec<String> = hops
+        .iter()
+        .filter(|hop| hop.tier == Tier::Relay)
+        .map(host)
+        .collect();
+    assert_eq!(
+        relayed,
+        [
+            "stream.r3.relay.scnative.dev",
+            "stream.r2.relay.scnative.dev"
+        ]
+    );
+    let config = serde_json::to_value(config::of(&state, now)).unwrap();
+    assert_eq!(config["relays"]["stream"], serde_json::json!(relayed));
 }
 
 #[test]
