@@ -30,6 +30,7 @@ import {
 } from './host-status';
 import type { NetInit } from './net/fetch';
 import { notifyError } from './notify';
+import { retryAfterMs, shedSeconds } from './pacing';
 import { getIsPremium, requestPremiumRecheck } from './premium-cache';
 
 // ─── Session ────────────────────────────────────────────────
@@ -364,7 +365,10 @@ async function requestAcrossHosts<T>(
       // НЕ марают — иначе протухший токен выключал бы star при мёртвом main).
       // ≥500 — пассивный фейл: cooldown + проба main; вердикт down ставит только проба.
       if (answered) markHealthy(base);
-      else markUnhealthy(base);
+      else {
+        const shed = shedSeconds(err);
+        markUnhealthy(base, shed ? retryAfterMs(shed) : 0);
+      }
       const elapsedMs = performance.now() - attemptStart;
       if (base === API_BASE && isMainBadSample(path, answered, elapsedMs, longPoll)) {
         noteMainBadResponse();
