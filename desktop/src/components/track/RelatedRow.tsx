@@ -19,7 +19,7 @@ export const RelatedRow = React.memo(
     return (
       <div
         className={`group flex items-center gap-3 p-2.5 rounded-2xl transition-all duration-300 ease-[var(--ease-apple)] ${
-          isThis ? 'bg-accent/[0.05] ring-1 ring-accent/20' : 'hover:bg-white/[0.04]'
+          isThis ? 'bg-accent/[0.05] ring-1 ring-accent/20' : 'hover:bg-ink/[0.04]'
         }`}
         onMouseEnter={() => preloadTrack(track)}
         onMouseLeave={cancelPreload}
@@ -27,13 +27,13 @@ export const RelatedRow = React.memo(
       >
         <button
           type="button"
-          className="relative w-11 h-11 rounded-xl overflow-hidden shrink-0 ring-1 ring-white/[0.07] cursor-pointer"
+          className="relative w-11 h-11 rounded-xl overflow-hidden shrink-0 ring-1 ring-ink/[0.07] cursor-pointer"
           onClick={togglePlay}
         >
           {cover ? (
-            <img src={cover} alt="" loading="lazy" className="w-full h-full object-cover" />
+            <img data-ui="artwork" src={cover} alt="" loading="lazy" className="w-full h-full object-cover" />
           ) : (
-            <div className="w-full h-full flex items-center justify-center bg-white/[0.03]">
+            <div className="w-full h-full flex items-center justify-center bg-ink/[0.03]">
               {musicIcon14}
             </div>
           )}
@@ -61,13 +61,13 @@ export const RelatedRow = React.memo(
         <PlayNextButton
           track={track}
           size={13}
-          className="cursor-pointer w-7 h-7 rounded-lg flex items-center justify-center text-white/30 hover:text-white/80 hover:bg-white/[0.06] opacity-0 group-hover:opacity-100 transition-all duration-200 shrink-0"
+          className="cursor-pointer w-7 h-7 rounded-lg flex items-center justify-center text-ink-30 hover:text-ink-80 hover:bg-ink/[0.06] opacity-0 group-hover:opacity-100 transition-all duration-200 shrink-0"
         />
 
         <div className="text-right shrink-0">
-          <p className="text-[10px] text-white/30 tabular-nums">{dur(track.duration)}</p>
+          <p className="text-[10px] text-ink-30 tabular-nums">{dur(track.duration)}</p>
           {track.playback_count != null && (
-            <p className="text-[9px] text-white/15 mt-0.5 tabular-nums flex items-center gap-0.5 justify-end">
+            <p className="text-[9px] text-ink-15 mt-0.5 tabular-nums flex items-center gap-0.5 justify-end">
               <Headphones size={8} />
               {fc(track.playback_count)}
             </p>

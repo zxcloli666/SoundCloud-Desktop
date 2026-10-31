@@ -16,10 +16,10 @@ export const RiverSection = React.memo(function RiverSection({
 }) {
   const head = (
     <div className="mb-4">
-      <h2 className="text-[21px] font-bold leading-tight tracking-[-0.015em] text-white/92">
+      <h2 className="text-[21px] font-bold leading-tight tracking-[-0.015em] text-ink-92">
         {title}
       </h2>
-      <p className="mt-1 text-[13px] leading-snug text-white/50">{why}</p>
+      <p className="mt-1 text-[13px] leading-snug text-ink-50">{why}</p>
     </div>
   );
 
@@ -38,8 +38,8 @@ export const RiverSection = React.memo(function RiverSection({
       <div
         className={`rounded-2xl border p-4 ${
           tone === 'deep'
-            ? 'border-white/[0.05] bg-[rgba(5,5,8,0.55)]'
-            : 'border-white/[0.07] bg-white/[0.025]'
+            ? 'border-ink/[0.05] bg-[rgb(var(--paper)/0.55)]'
+            : 'border-ink/[0.07] bg-ink/[0.025]'
         }`}
       >
         {children}

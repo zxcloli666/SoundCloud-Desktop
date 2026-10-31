@@ -8,7 +8,7 @@ import { Check, FolderOpen, LifeBuoy, MessageCircle, RefreshCw } from '../../lib
 type Phase = { name: 'idle' } | { name: 'sending' } | { name: 'done'; result: ReportResult };
 
 const BUTTON =
-  'flex h-11 w-full items-center justify-center gap-2 rounded-2xl border border-white/[0.1] bg-white/[0.04] text-[13px] font-semibold text-white/70 transition-all hover:bg-white/[0.08] hover:text-white/90 active:scale-[0.97] cursor-pointer disabled:opacity-50 disabled:cursor-default';
+  'flex h-11 w-full items-center justify-center gap-2 rounded-2xl border border-ink/[0.1] bg-ink/[0.04] text-[13px] font-semibold text-ink-70 transition-all hover:bg-ink/[0.08] hover:text-ink-90 active:scale-[0.97] cursor-pointer disabled:opacity-50 disabled:cursor-default';
 
 export function ReportButton({
   trigger,
@@ -40,7 +40,7 @@ export function ReportButton({
 
   if (phase.name === 'done' && 'code' in phase.result) {
     return (
-      <div className="flex flex-col items-center gap-2.5 rounded-2xl border border-white/[0.08] bg-black/25 p-4">
+      <div className="flex flex-col items-center gap-2.5 rounded-2xl border border-ink/[0.08] bg-shade-25 p-4">
         <div className="flex items-center gap-2.5">
           <span
             className="select-text font-mono text-[26px] font-black tracking-[0.08em]"
@@ -61,8 +61,8 @@ export function ReportButton({
   if (phase.name === 'done') {
     const file = 'file' in phase.result ? phase.result.file : '';
     return (
-      <div className="flex flex-col gap-2.5 rounded-2xl border border-white/[0.08] bg-black/25 p-4">
-        <code className="select-text break-all font-mono text-[11.5px] text-white/70">{file}</code>
+      <div className="flex flex-col gap-2.5 rounded-2xl border border-ink/[0.08] bg-shade-25 p-4">
+        <code className="select-text break-all font-mono text-[11.5px] text-ink-70">{file}</code>
         <button
           type="button"
           onClick={() => void revealItemInDir(file).catch(() => undefined)}
@@ -71,7 +71,7 @@ export function ReportButton({
           <FolderOpen size={14} />
           {t('diag.reveal')}
         </button>
-        <p className="text-center text-[12px] text-white/45">{t('diag.attach')}</p>
+        <p className="text-center text-[12px] text-ink-45">{t('diag.attach')}</p>
       </div>
     );
   }

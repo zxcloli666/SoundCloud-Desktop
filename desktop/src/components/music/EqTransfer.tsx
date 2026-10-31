@@ -7,10 +7,10 @@ import { Check, Copy, FileDown, FolderOpen, TriangleAlert, X } from '../../lib/i
 import { useSettingsStore } from '../../stores/settings';
 
 const fieldClass =
-  'w-full resize-none rounded-lg border border-white/[0.08] bg-white/[0.03] px-3 py-2 font-mono text-[11px] leading-relaxed text-white/80 placeholder:text-white/25 outline-none transition-colors focus:border-white/[0.18] focus:bg-white/[0.05]';
+  'w-full resize-none rounded-lg border border-ink/[0.08] bg-ink/[0.03] px-3 py-2 font-mono text-[11px] leading-relaxed text-ink-80 placeholder:text-ink-25 outline-none transition-colors focus:border-ink/[0.18] focus:bg-ink/[0.05]';
 
 const iconButtonClass =
-  'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/[0.06] bg-white/[0.04] text-white/40 transition-all cursor-pointer hover:text-white/75 disabled:cursor-not-allowed disabled:opacity-40';
+  'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-ink/[0.06] bg-ink/[0.04] text-ink-40 transition-all cursor-pointer hover:text-ink-75 disabled:cursor-not-allowed disabled:opacity-40';
 
 const chipClass = 'inline-flex h-6 items-center gap-1 rounded-md px-2 text-[10px] font-semibold';
 
@@ -43,7 +43,7 @@ function ImportReport({ result }: { result: EqImport }) {
           className={`${chipClass} ${
             result.deviation >= 2
               ? 'bg-amber-500/10 text-amber-400'
-              : 'bg-white/[0.05] text-white/50'
+              : 'bg-ink/[0.05] text-ink-50'
           }`}
         >
           {t('eq.importDeviation', { value: result.deviation.toFixed(1) })}
@@ -117,7 +117,7 @@ export const EqImportForm = React.memo(function EqImportForm({ onDone }: { onDon
         <button
           type="button"
           onClick={() => void pickFile()}
-          className="flex h-8 items-center gap-1.5 rounded-lg border border-white/[0.06] bg-white/[0.04] px-2.5 text-[11px] font-semibold text-white/55 transition-all cursor-pointer hover:text-white/80"
+          className="flex h-8 items-center gap-1.5 rounded-lg border border-ink/[0.06] bg-ink/[0.04] px-2.5 text-[11px] font-semibold text-ink-55 transition-all cursor-pointer hover:text-ink-80"
         >
           <FolderOpen size={13} />
           {t('eq.fromFile')}
@@ -208,8 +208,8 @@ export const EqExportForm = React.memo(function EqExportForm({ onDone }: { onDon
             aria-pressed={format === value}
             className={`h-8 rounded-lg border px-2.5 text-[11px] font-semibold transition-all cursor-pointer ${
               format === value
-                ? 'bg-white/[0.1] text-white/90 border-white/[0.12]'
-                : 'bg-white/[0.02] text-white/35 border-white/[0.04] hover:bg-white/[0.06] hover:text-white/60'
+                ? 'bg-ink/[0.1] text-ink-90 border-ink/[0.12]'
+                : 'bg-ink/[0.02] text-ink-35 border-ink/[0.04] hover:bg-ink/[0.06] hover:text-ink-60'
             }`}
           >
             {t(value === 'apo' ? 'eq.formatApo' : 'eq.formatGraphic')}

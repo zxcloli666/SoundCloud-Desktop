@@ -21,7 +21,7 @@ const LocalTile = React.memo(function LocalTile({ row, queue }: { row: LocalRow;
       <button
         type="button"
         onClick={togglePlay}
-        className="relative block aspect-square w-full cursor-pointer overflow-hidden rounded-2xl ring-1 ring-white/[0.06] transition-all duration-300 ease-[var(--ease-apple)] group-hover:ring-white/[0.12]"
+        className="relative block aspect-square w-full cursor-pointer overflow-hidden rounded-2xl ring-1 ring-ink/[0.06] transition-all duration-300 ease-[var(--ease-apple)] group-hover:ring-ink/[0.12]"
       >
         {artwork ? (
           <img
@@ -33,10 +33,10 @@ const LocalTile = React.memo(function LocalTile({ row, queue }: { row: LocalRow;
           />
         ) : (
           <span
-            className="flex h-full w-full items-center justify-center text-white/35"
+            className="flex h-full w-full items-center justify-center text-ink-35"
             style={{
               background:
-                'linear-gradient(135deg, var(--color-accent-glow), rgba(255,255,255,0.03) 75%)',
+                'linear-gradient(135deg, var(--color-accent-glow), rgb(var(--ink) / 0.03) 75%)',
             }}
           >
             <Music size={30} strokeWidth={1.6} />
@@ -51,13 +51,13 @@ const LocalTile = React.memo(function LocalTile({ row, queue }: { row: LocalRow;
             {isThisPlaying ? pauseBlack20 : playBlack20}
           </span>
         </span>
-        <span className="absolute left-2 top-2 flex items-center gap-1 rounded-full bg-black/55 px-1.5 py-0.5 text-white/75 backdrop-blur-md">
+        <span data-scheme="dark" className="absolute left-2 top-2 flex items-center gap-1 rounded-full bg-black/55 px-1.5 py-0.5 text-ink-75 backdrop-blur-md">
           <HardDrive size={10} />
         </span>
       </button>
       <div className="mt-2 px-0.5">
-        <p className="truncate text-[13px] font-medium text-white/88">{row.info.title}</p>
-        <p className="truncate text-[11.5px] text-white/40">{localArtist(row.info)}</p>
+        <p className="truncate text-[13px] font-medium text-ink-88">{row.info.title}</p>
+        <p className="truncate text-[11.5px] text-ink-40">{localArtist(row.info)}</p>
       </div>
     </div>
   );

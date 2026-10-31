@@ -85,6 +85,9 @@ jobs:
       - name: Lint
         run: pnpm exec biome lint src/
 
+      - name: Colour scheme
+        run: node scripts/check-scheme.mjs
+
       - name: Types and bundle
         run: pnpm build
 

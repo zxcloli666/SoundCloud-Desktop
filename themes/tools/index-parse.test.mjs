@@ -48,7 +48,10 @@ function index(themes, overrides = {}) {
 const ids = (catalog) => catalog.themes.map((theme) => theme.id);
 
 test('parses a valid index', () => {
-  const catalog = parseIndex(index([entry(), entry({ id: 'carbon', font: undefined })]), '8.5.2');
+  const catalog = parseIndex(
+    index([entry(), entry({ id: 'carbon', font: undefined, scheme: 'white' })]),
+    '8.5.2',
+  );
   assert.deepEqual(ids(catalog), ['midnight', 'carbon']);
   assert.equal(catalog.rev, rev('f'));
   assert.deepEqual(catalog.revoked, [{ id: 'old-theme', hash: sha('9') }]);
@@ -56,6 +59,8 @@ test('parses a valid index', () => {
   assert.equal(midnight.compatible, true);
   assert.equal(midnight.font, 'onest');
   assert.equal(carbon.font, undefined);
+  assert.equal(midnight.scheme, undefined);
+  assert.equal(carbon.scheme, 'white');
   assert.equal(midnight.assets[0].path, 'assets/stars.svg');
 });
 
@@ -88,6 +93,7 @@ test('bad entries are skipped, the rest stay', () => {
     }),
     entry({ id: 'bad-color', accent: '#FFF' }),
     entry({ id: 'bad-font', font: 'comic-sans' }),
+    entry({ id: 'bad-scheme', scheme: 'light' }),
     entry({ id: 'bidi-name', name: 'Mid‮night' }),
     entry({ id: 'bad-size', size: 1 }),
   ];

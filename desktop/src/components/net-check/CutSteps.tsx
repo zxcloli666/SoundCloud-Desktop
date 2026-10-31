@@ -32,13 +32,13 @@ export const CutSteps = React.memo(({ env, addrs, running, backups }: CutStepsPr
     : [t('netCheck.cut.bypassIdle', { file: bypass }), t('netCheck.cut.vpnIdle')];
   return (
     <>
-      <p className="text-[12.5px] text-white/35 mt-1.5 leading-relaxed max-w-[340px]">
+      <p className="text-[12.5px] text-ink-35 mt-1.5 leading-relaxed max-w-[340px]">
         {t(backups ? 'netCheck.cut.leadBackups' : 'netCheck.cut.leadAlone')}
       </p>
-      <ol className="w-full mt-3 space-y-1.5 text-left text-[12px] text-white/60 leading-relaxed">
+      <ol className="w-full mt-3 space-y-1.5 text-left text-[12px] text-ink-60 leading-relaxed">
         {steps.map((step, at) => (
           <li key={step} className="flex gap-2">
-            <span className="w-4 shrink-0 font-mono text-[10.5px] text-white/30 pt-0.5">
+            <span className="w-4 shrink-0 font-mono text-[10.5px] text-ink-30 pt-0.5">
               {at + 1}
             </span>
             <span className="selectable">{step}</span>

@@ -17,7 +17,7 @@ export const RecipientSwitch = memo(function RecipientSwitch({
 }) {
   const { t } = useTranslation();
   return (
-    <div className="mb-3 inline-flex gap-1 rounded-full border border-white/[0.10] bg-white/[0.03] p-1">
+    <div className="mb-3 inline-flex gap-1 rounded-full border border-ink/[0.10] bg-ink/[0.03] p-1">
       {OPTIONS.map(({ id, Icon }) => {
         const on = id === value;
         return (
@@ -27,7 +27,7 @@ export const RecipientSwitch = memo(function RecipientSwitch({
             onClick={() => onChange(id)}
             className="inline-flex cursor-pointer items-center gap-1.5 rounded-full px-3.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.12em] transition-all duration-200"
             style={{
-              color: on ? '#fff' : 'rgba(255,255,255,0.45)',
+              color: on ? 'rgb(var(--ink))' : 'rgb(var(--ink) / 0.45)',
               background: on
                 ? 'color-mix(in srgb, var(--color-accent) 24%, transparent)'
                 : undefined,

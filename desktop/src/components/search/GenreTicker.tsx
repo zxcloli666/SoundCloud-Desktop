@@ -42,8 +42,9 @@ export const GenreTicker = memo(function GenreTicker({genres, onSelect}: GenreTi
                     <button
                         key={`${g.key}-${i}`}
                         type="button"
+                        data-ui="chip"
                         onClick={() => onSelect(g.key)}
-                        className="group/chip inline-flex items-center gap-1.5 text-[12px] text-white/45 hover:text-white/90 transition-colors duration-300 cursor-pointer"
+                        className="group/chip inline-flex items-center gap-1.5 text-[12px] text-ink-45 hover:text-ink-90 transition-colors duration-300 cursor-pointer"
                     >
             <span
                 className="w-1.5 h-1.5 rounded-full transition-transform duration-300 group-hover/chip:scale-150"

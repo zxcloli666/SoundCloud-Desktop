@@ -75,7 +75,7 @@ export const LibraryCollection = React.memo(() => {
                             : undefined;
 
     return (
-        <LibraryFrame sound={sound}>
+        <LibraryFrame sound={sound} page={sec === 'history' ? 'history' : 'library'}>
             <LibrarySubHeader
                 title={t(TITLE_KEY[sec])}
                 aura={sound.aura}

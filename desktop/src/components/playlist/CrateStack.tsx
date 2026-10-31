@@ -15,7 +15,7 @@ const FAN = [
 ] as const;
 
 const SLEEVE_SHADOW =
-    '0 24px 50px rgba(0,0,0,0.5), inset 0 0 0 0.5px rgba(255,255,255,0.1), inset 0 1px 0 rgba(255,255,255,0.14)';
+    '0 24px 50px rgb(var(--shade) / calc(0.5 * var(--shade-alpha))), inset 0 0 0 0.5px rgba(255,255,255,0.1), inset 0 1px 0 rgba(255,255,255,0.14)';
 
 /** The Crate: a fanned stack of the playlist's real track artworks — a
  *  collection made visible, never a single disc. Click = play the set. */
@@ -63,9 +63,9 @@ export const CrateStack = React.memo(function CrateStack({
             {covers.length === 0 && (
                 <div
                     className="absolute inset-0 rounded-[1.7rem] flex items-center justify-center"
-                    style={{background: 'rgba(255,255,255,0.04)', boxShadow: SLEEVE_SHADOW}}
+                    style={{background: 'rgb(var(--ink) / 0.04)', boxShadow: SLEEVE_SHADOW}}
                 >
-                    <ListMusic size={56} className="text-white/15"/>
+                    <ListMusic size={56} className="text-ink-15"/>
                 </div>
             )}
 
@@ -122,11 +122,11 @@ export const CrateStack = React.memo(function CrateStack({
             })}
 
             <span
-                className="absolute -bottom-2 -right-1 z-[60] inline-flex items-center gap-1 text-[10px] font-bold tabular-nums px-2.5 py-1 rounded-full text-white/85"
+                className="absolute -bottom-2 -right-1 z-[60] inline-flex items-center gap-1 text-[10px] font-bold tabular-nums px-2.5 py-1 rounded-full text-ink-85"
                 style={{
-                    background: 'rgba(10,10,12,0.75)',
-                    border: '0.5px solid rgba(255,255,255,0.14)',
-                    boxShadow: '0 8px 20px rgba(0,0,0,0.4)',
+                    background: 'rgb(var(--paper) / 0.75)',
+                    border: '0.5px solid rgb(var(--ink) / 0.14)',
+                    boxShadow: '0 8px 20px rgb(var(--shade) / calc(0.4 * var(--shade-alpha)))',
                 }}
             >
         <ListMusic size={10}/>

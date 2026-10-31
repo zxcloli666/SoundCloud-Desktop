@@ -132,26 +132,26 @@ function MenuPanel({ target }: { target: TrackMenuTarget }) {
         visibility: placement ? 'visible' : 'hidden',
         transformOrigin: placement?.origin,
         maxHeight: `calc(100vh - ${EDGE * 2}px)`,
-        border: '0.5px solid rgba(255,255,255,0.12)',
+        border: '0.5px solid rgb(var(--ink) / 0.12)',
         background:
           blur > 0
-            ? 'linear-gradient(168deg, rgba(30,29,36,0.82), rgba(12,11,15,0.9))'
-            : 'linear-gradient(168deg, rgba(28,27,34,0.98), rgba(12,11,15,0.99))',
+            ? 'linear-gradient(168deg, rgb(var(--surface-hi) / 0.82), rgb(var(--surface) / 0.9))'
+            : 'linear-gradient(168deg, rgb(var(--surface-hi) / 0.98), rgb(var(--surface) / 0.99))',
         backdropFilter: blur > 0 ? `blur(${blur}px) saturate(1.6)` : undefined,
         WebkitBackdropFilter: blur > 0 ? `blur(${blur}px) saturate(1.6)` : undefined,
         boxShadow:
-          '0 24px 64px rgba(0,0,0,0.55), 0 0 48px var(--color-accent-glow), inset 0 1px 0 rgba(255,255,255,0.08)',
+          '0 24px 64px rgb(var(--shade) / calc(0.55 * var(--shade-alpha))), 0 0 48px var(--color-accent-glow), inset 0 1px 0 rgba(255,255,255,0.08)',
       }}
     >
       <span
         aria-hidden
         className="pointer-events-none absolute inset-x-6 top-0 h-px"
         style={{
-          background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.28), transparent)',
+          background: 'linear-gradient(90deg, transparent, rgb(var(--ink) / 0.28), transparent)',
         }}
       />
       <TrackMenuHeader track={target.track} />
-      <div className="mx-2 mb-1 h-px bg-white/[0.06]" />
+      <div className="mx-2 mb-1 h-px bg-ink/[0.06]" />
       <TrackMenuItems target={target} />
     </div>,
     document.body,

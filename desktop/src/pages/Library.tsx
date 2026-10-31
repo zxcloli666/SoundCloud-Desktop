@@ -191,7 +191,7 @@ export const Library = React.memo(() => {
                 onRetry={retryAll}
               />
             ) : (
-              <p className="text-center text-[13px] text-white/30">{t('common.empty')}</p>
+              <p className="text-center text-[13px] text-ink-30">{t('common.empty')}</p>
             )}
           </div>
         )}

@@ -297,7 +297,7 @@ export const SyncedLyrics = React.memo(({lines}: { lines: LyricLine[] }) => {
                         return (
                             <div
                                 key={`p-${line.time}-${i}`}
-                                className="lyric-line lyric-pause"
+                                data-ui="lyrics-line" className="lyric-line lyric-pause"
                                 style={{['--pause-duration' as string]: `${line.duration ?? 2}s`}}
                             >
                                 <span className="note-gradient-text">{PAUSE_MARKER}</span>
@@ -311,7 +311,7 @@ export const SyncedLyrics = React.memo(({lines}: { lines: LyricLine[] }) => {
                         return (
                             <div
                                 key={`${line.time}-${i}`}
-                                className="lyric-line"
+                                data-ui="lyrics-line" className="lyric-line"
                                 onClick={() => {
                                     manualScrollRef.current = false;
                                     seek(line.time);
@@ -329,7 +329,7 @@ export const SyncedLyrics = React.memo(({lines}: { lines: LyricLine[] }) => {
                     return (
                         <div
                             key={`${line.time}-${i}`}
-                            className="lyric-line"
+                            data-ui="lyrics-line" className="lyric-line"
                             onClick={() => {
                                 manualScrollRef.current = false;
                                 seek(line.time);
@@ -370,7 +370,7 @@ export const PlainLyrics = React.memo(({text}: { text: string }) => (
         className="flex-1 overflow-y-auto scrollbar-hide px-12 py-16"
         style={{maskImage: 'linear-gradient(transparent 0%, black 10%, black 90%, transparent 100%)'}}
     >
-        <div className="text-[22px] text-white/70 font-semibold whitespace-pre-wrap leading-loose tracking-tight">
+        <div className="text-[22px] text-ink-70 font-semibold whitespace-pre-wrap leading-loose tracking-tight">
             {text}
         </div>
     </div>
@@ -384,7 +384,7 @@ export const LyricsSourceBadge = React.memo(
             <div className="flex items-center justify-between px-12 pt-3 pb-0">
                 {label ? (
                     <span
-                        className="text-[10px] font-semibold text-white/20 bg-white/[0.04] px-2 py-0.5 rounded-full border border-white/[0.06]">
+                        className="text-[10px] font-semibold text-ink-20 bg-ink/[0.04] px-2 py-0.5 rounded-full border border-ink/[0.06]">
             {label}
           </span>
                 ) : (
@@ -393,7 +393,7 @@ export const LyricsSourceBadge = React.memo(
                 <button
                     type="button"
                     onClick={onSearch}
-                    className="w-8 h-8 flex items-center justify-center rounded-full text-white/30 hover:text-white/70 hover:bg-white/10 transition-colors cursor-pointer"
+                    className="w-8 h-8 flex items-center justify-center rounded-full text-ink-30 hover:text-ink-70 hover:bg-ink/10 transition-colors cursor-pointer"
                     aria-label={t('track.manualSearch')}
                 >
                     <Search size={14}/>

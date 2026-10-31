@@ -34,7 +34,7 @@ function CrossfadeCurves({ seconds }: { seconds: number }) {
     <svg
       viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
       preserveAspectRatio="none"
-      className="w-full h-11 rounded-xl border border-white/[0.05] bg-white/[0.02]"
+      className="w-full h-11 rounded-xl border border-ink/[0.05] bg-ink/[0.02]"
       aria-hidden="true"
     >
       <defs>
@@ -57,7 +57,7 @@ function CrossfadeCurves({ seconds }: { seconds: number }) {
       <path
         d={outgoing}
         fill="none"
-        stroke="rgba(255,255,255,0.35)"
+        className="stroke-ink/35"
         strokeWidth={1.5}
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -86,8 +86,8 @@ export function CrossfadePicker() {
     <div className="space-y-3 py-3 first:pt-0 last:pb-0">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <div className="text-[13.5px] text-white/80 font-medium">{t('settings.crossfade')}</div>
-          <p className="text-[11.5px] text-white/35 mt-0.5 leading-snug">
+          <div className="text-[13.5px] text-ink-80 font-medium">{t('settings.crossfade')}</div>
+          <p className="text-[11.5px] text-ink-35 mt-0.5 leading-snug">
             {enabled
               ? t('settings.crossfadeDesc', { count: crossfadeSec })
               : t('settings.crossfadeOffDesc')}
@@ -95,7 +95,7 @@ export function CrossfadePicker() {
         </div>
         <span
           className={`shrink-0 rounded-lg px-2 py-1 text-[12px] font-semibold tabular-nums transition-colors duration-200 ${
-            enabled ? 'text-white' : 'text-white/35 bg-white/[0.03]'
+            enabled ? 'text-ink' : 'text-ink-35 bg-ink/[0.03]'
           }`}
           style={enabled ? { background: 'var(--color-accent-glow)' } : undefined}
         >

@@ -25,38 +25,38 @@ export default function YMImportFloatingStatus() {
   return (
     <div className="pointer-events-none fixed top-5 right-5 z-[70] animate-fade-in-up">
       <div
-        className="relative min-w-[220px] overflow-hidden rounded-[24px] border border-white/[0.14] bg-black/25 px-4 py-3 shadow-[0_16px_48px_rgba(0,0,0,0.3)]"
+        className="relative min-w-[220px] overflow-hidden rounded-[24px] border border-ink/[0.14] bg-shade-25 px-4 py-3 shadow-[0_16px_48px_rgb(var(--shade)/calc(0.3*var(--shade-alpha)))]"
         style={
           blur > 0
             ? { backdropFilter: `blur(${blur}px)`, WebkitBackdropFilter: `blur(${blur}px)` }
-            : { background: 'rgba(18,18,22,0.85)' }
+            : { background: 'rgb(var(--surface) / 0.85)' }
         }
       >
-        <div className="absolute inset-0 bg-[linear-gradient(145deg,rgba(255,255,255,0.18),rgba(255,255,255,0.05)_34%,rgba(255,255,255,0.02)_68%,rgba(255,255,255,0.08)_100%)]" />
-        <div className="absolute inset-x-6 top-0 h-px bg-white/25" />
-        <div className="absolute -left-8 top-0 h-full w-16 rotate-12 bg-white/[0.1] blur-2xl" />
+        <div className="absolute inset-0 bg-[linear-gradient(145deg,rgb(var(--ink)/0.18),rgb(var(--ink)/0.05)_34%,rgb(var(--ink)/0.02)_68%,rgb(var(--ink)/0.08)_100%)]" />
+        <div className="absolute inset-x-6 top-0 h-px bg-ink/25" />
+        <div className="absolute -left-8 top-0 h-full w-16 rotate-12 bg-ink/[0.1] blur-2xl" />
         <div className="absolute -right-8 bottom-0 h-10 w-20 rounded-full bg-accent/20 blur-2xl" />
         <div className="relative space-y-2">
           <div className="flex items-center justify-between gap-3">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/60">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-60">
               {t('settings.importYandex')}
             </p>
-            <p className="font-mono text-[11px] text-white/82">
+            <p className="font-mono text-[11px] text-ink-82">
               {progress.current}/{progress.total}
             </p>
           </div>
-          <div className="relative h-2.5 overflow-hidden rounded-full bg-white/[0.08] ring-1 ring-white/[0.06]">
-            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,255,255,0.1),rgba(255,255,255,0.02))]" />
+          <div className="relative h-2.5 overflow-hidden rounded-full bg-ink/[0.08] ring-1 ring-ink/[0.06]">
+            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgb(var(--ink)/0.1),rgb(var(--ink)/0.02))]" />
             <div
               className="absolute inset-y-0 left-0 rounded-full bg-[linear-gradient(90deg,rgba(255,120,64,0.72),rgba(255,85,0,1)_58%,rgba(255,185,120,0.92))] shadow-[0_0_12px_rgba(255,85,0,0.9),0_0_28px_rgba(255,85,0,0.45)] transition-[width] duration-500 ease-out"
               style={{ width: `${pct}%` }}
             />
             <div
-              className="absolute top-1/2 h-3.5 w-3.5 -translate-y-1/2 rounded-full border border-white/45 bg-white shadow-[0_0_10px_rgba(255,255,255,0.85),0_0_18px_rgba(255,85,0,0.7)] transition-[left] duration-500 ease-out"
+              className="absolute top-1/2 h-3.5 w-3.5 -translate-y-1/2 rounded-full border border-ink/45 bg-white shadow-[0_0_10px_rgba(255,255,255,0.85),0_0_18px_rgba(255,85,0,0.7)] transition-[left] duration-500 ease-out"
               style={{ left: glowLeft }}
             />
           </div>
-          <p className="text-[10px] text-white/42">{t('ym.backgroundHint')}</p>
+          <p className="text-[10px] text-ink-42">{t('ym.backgroundHint')}</p>
         </div>
       </div>
     </div>

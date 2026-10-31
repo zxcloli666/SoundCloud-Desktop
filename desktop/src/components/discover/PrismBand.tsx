@@ -90,15 +90,15 @@ export const PrismBand = memo(function PrismBand({
                                 transform: `scaleY(${isActive ? 1 : 0.7})`,
                                 opacity: isActive ? 1 : 0.4,
                                 boxShadow: isActive
-                                    ? `${perf.glow ? `0 0 26px ${rgb ? rgbaCss(rgb, 0.7) : s.color}, ` : ''}inset 0 1.5px 0 rgba(255,255,255,0.45)`
+                                    ? `${perf.glow ? `0 0 26px ${rgb ? rgbaCss(rgb, 0.7) : s.color}, ` : ''}inset 0 1.5px 0 rgb(var(--ink) / 0.45)`
                                     : undefined,
                             }}
                         />
                         <span
                             className={`relative z-10 mb-1 px-1 max-w-full truncate capitalize transition-colors duration-300 text-[10px] sm:text-[11px] ${
                                 isActive
-                                    ? 'font-bold text-white'
-                                    : 'font-medium text-white/60 group-hover/seg:text-white/90'
+                                    ? 'font-bold text-ink'
+                                    : 'font-medium text-ink-60 group-hover/seg:text-ink-90'
                             }`}
                             style={{textShadow: '0 1px 4px rgba(0,0,0,0.6)'}}
                         >
@@ -106,7 +106,7 @@ export const PrismBand = memo(function PrismBand({
             </span>
                         {isActive && (
                             <span
-                                className="relative z-10 mb-1.5 text-[9px] font-bold tabular-nums text-white/75"
+                                className="relative z-10 mb-1.5 text-[9px] font-bold tabular-nums text-ink-75"
                                 style={{textShadow: '0 1px 3px rgba(0,0,0,0.7)'}}
                             >
                 {pct}%

@@ -15,6 +15,7 @@ export function GlassCard({
 }: GlassCardProps) {
   return (
     <div
+      data-ui="glass-card"
       className={`glass rounded-2xl ${hover ? 'glass-hover transition-all duration-200 ease-[var(--ease-apple)]' : ''} ${padding ? 'p-4' : ''} ${className}`}
       {...props}
     >

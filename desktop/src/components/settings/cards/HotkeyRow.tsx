@@ -27,11 +27,11 @@ export function HotkeyRow({
 
   return (
     <div className="flex items-center gap-3 py-2.5 first:pt-0 last:pb-0">
-      <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 bg-white/[0.04] border border-white/[0.06] text-white/55">
+      <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 bg-ink/[0.04] border border-ink/[0.06] text-ink-55">
         {icon}
       </div>
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 text-[13px] text-white/80 font-medium">
+        <div className="flex items-center gap-2 text-[13px] text-ink-80 font-medium">
           {label}
           {value && status === 'active' && (
             <span
@@ -64,7 +64,7 @@ export function HotkeyRow({
         disabled={!value}
         aria-label={t('hotkeys.clear')}
         title={t('hotkeys.clear')}
-        className="shrink-0 w-8 h-8 rounded-xl flex items-center justify-center text-white/35 hover:text-white/80 hover:bg-white/[0.08] transition-all duration-200 cursor-pointer disabled:opacity-0 disabled:pointer-events-none"
+        className="shrink-0 w-8 h-8 rounded-xl flex items-center justify-center text-ink-35 hover:text-ink-80 hover:bg-ink/[0.08] transition-all duration-200 cursor-pointer disabled:opacity-0 disabled:pointer-events-none"
       >
         <X size={13} />
       </button>

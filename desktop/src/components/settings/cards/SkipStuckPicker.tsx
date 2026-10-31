@@ -12,8 +12,8 @@ export function SkipStuckPicker() {
   return (
     <div className="space-y-3 py-3 first:pt-0 last:pb-0">
       <div className="min-w-0">
-        <div className="text-[13.5px] text-white/80 font-medium">{t('settings.skipStuck')}</div>
-        <p className="text-[11.5px] text-white/35 mt-0.5 leading-snug">
+        <div className="text-[13.5px] text-ink-80 font-medium">{t('settings.skipStuck')}</div>
+        <p className="text-[11.5px] text-ink-35 mt-0.5 leading-snug">
           {skipStuckAfterSec > 0
             ? t('settings.skipStuckDesc', { count: skipStuckAfterSec })
             : t('settings.skipStuckOffDesc')}

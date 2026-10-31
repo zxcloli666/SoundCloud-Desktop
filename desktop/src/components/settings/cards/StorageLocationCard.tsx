@@ -23,7 +23,7 @@ import { Card } from '../primitives';
 import { type RelocateTarget, StorageRelocateDialog } from './StorageRelocateDialog';
 
 const SECONDARY_BUTTON =
-  'flex items-center gap-2 px-4 py-2 rounded-xl text-[12px] font-semibold bg-white/[0.06] text-white/75 hover:bg-white/[0.1] border border-white/[0.06] hover:border-white/[0.12] transition-all duration-200 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed';
+  'flex items-center gap-2 px-4 py-2 rounded-xl text-[12px] font-semibold bg-ink/[0.06] text-ink-75 hover:bg-ink/[0.1] border border-ink/[0.06] hover:border-ink/[0.12] transition-all duration-200 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed';
 
 function UnavailableNotice({ path, onForget }: { path: string; onForget: () => Promise<void> }) {
   const { t } = useTranslation();
@@ -47,10 +47,10 @@ function UnavailableNotice({ path, onForget }: { path: string; onForget: () => P
           <p className="text-[12.5px] font-semibold text-amber-100/90">
             {t('settings.storageUnavailable')}
           </p>
-          <p className="text-[11.5px] text-white/45 font-mono truncate mt-0.5" title={path}>
+          <p className="text-[11.5px] text-ink-45 font-mono truncate mt-0.5" title={path}>
             {path}
           </p>
-          <p className="text-[11.5px] text-white/40 mt-1 leading-snug">
+          <p className="text-[11.5px] text-ink-40 mt-1 leading-snug">
             {t('settings.storageUnavailableDesc')}
           </p>
         </div>
@@ -118,7 +118,7 @@ export function StorageLocationCard() {
           <span
             className={`text-[10.5px] uppercase tracking-[0.12em] font-semibold px-2.5 py-1 rounded-full border ${
               info.isDefault
-                ? 'text-white/40 border-white/[0.08] bg-white/[0.03]'
+                ? 'text-ink-40 border-ink/[0.08] bg-ink/[0.03]'
                 : 'text-[var(--color-accent)] border-[var(--color-accent-glow)]'
             }`}
           >
@@ -137,15 +137,15 @@ export function StorageLocationCard() {
           onClick={openFolder}
           disabled={!info}
           title={t('settings.storageOpenFolder')}
-          className="group/path w-full flex items-center gap-3 rounded-2xl px-4 py-3 bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.06] hover:border-white/[0.1] transition-all duration-200 cursor-pointer text-left"
+          className="group/path w-full flex items-center gap-3 rounded-2xl px-4 py-3 bg-ink/[0.03] border border-ink/[0.06] hover:bg-ink/[0.06] hover:border-ink/[0.1] transition-all duration-200 cursor-pointer text-left"
         >
           <FolderOpen
             size={16}
-            className="shrink-0 text-white/40 group-hover/path:text-[var(--color-accent)] transition-colors"
+            className="shrink-0 text-ink-40 group-hover/path:text-[var(--color-accent)] transition-colors"
           />
           {info ? (
             <span
-              className="min-w-0 flex-1 text-[12.5px] text-white/80 font-mono truncate"
+              className="min-w-0 flex-1 text-[12.5px] text-ink-80 font-mono truncate"
               dir="rtl"
             >
               <bdi>{info.path}</bdi>
@@ -177,7 +177,7 @@ export function StorageLocationCard() {
           )}
         </div>
 
-        <p className="text-[11px] text-white/30 leading-snug">{t('settings.storageApplyHint')}</p>
+        <p className="text-[11px] text-ink-30 leading-snug">{t('settings.storageApplyHint')}</p>
       </div>
 
       <StorageRelocateDialog

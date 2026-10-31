@@ -110,14 +110,14 @@ const KeybindingsDialog = React.memo(
     return (
       <Dialog.Root open={open} onOpenChange={onOpenChange}>
         <Dialog.Portal>
-          <Dialog.Overlay className="dialog-overlay fixed inset-0 z-[80] bg-black/60 backdrop-blur-sm" />
-          <Dialog.Content className="dialog-content fixed z-[80] top-1/2 left-1/2 w-full max-w-[520px] bg-[#1a1a1e]/95 backdrop-blur-2xl border border-white/[0.08] rounded-3xl shadow-2xl overflow-hidden">
+          <Dialog.Overlay className="dialog-overlay fixed inset-0 z-[80] bg-shade-60 backdrop-blur-sm" />
+          <Dialog.Content className="dialog-content fixed z-[80] top-1/2 left-1/2 w-full max-w-[520px] bg-surface-hi/95 backdrop-blur-2xl border border-ink/[0.08] rounded-3xl shadow-2xl overflow-hidden">
             {/* Header */}
-            <div className="px-7 pt-6 pb-4 border-b border-white/[0.06]">
-              <Dialog.Title className="text-[18px] font-bold text-white/90 tracking-tight">
+            <div className="px-7 pt-6 pb-4 border-b border-ink/[0.06]">
+              <Dialog.Title className="text-[18px] font-bold text-ink-90 tracking-tight">
                 {t('kb.title')}
               </Dialog.Title>
-              <Dialog.Description className="text-[12px] text-white/30 mt-1">
+              <Dialog.Description className="text-[12px] text-ink-30 mt-1">
                 {isMac() ? '⌘' : 'Ctrl'} + / {t('kb.toToggle')}
               </Dialog.Description>
             </div>
@@ -126,16 +126,16 @@ const KeybindingsDialog = React.memo(
             <div className="px-7 py-5 space-y-6 max-h-[60vh] overflow-y-auto">
               {groups.map((group) => (
                 <div key={group.id}>
-                  <h3 className="text-[11px] font-bold text-white/30 uppercase tracking-widest mb-3">
+                  <h3 className="text-[11px] font-bold text-ink-30 uppercase tracking-widest mb-3">
                     {t(group.label)}
                   </h3>
                   <div className="space-y-1">
                     {group.bindings.map((bind) => (
                       <div
                         key={bind.key}
-                        className="flex items-center justify-between py-2 px-3 rounded-xl hover:bg-white/[0.03] transition-colors"
+                        className="flex items-center justify-between py-2 px-3 rounded-xl hover:bg-ink/[0.03] transition-colors"
                       >
-                        <span className="text-[13px] text-white/60">{t(bind.label)}</span>
+                        <span className="text-[13px] text-ink-60">{t(bind.label)}</span>
                         <KeyCaps labels={bind.display.split(' ')} />
                       </div>
                     ))}
@@ -146,11 +146,11 @@ const KeybindingsDialog = React.memo(
             </div>
 
             {/* Footer */}
-            <div className="px-7 py-4 border-t border-white/[0.06] flex justify-end">
+            <div className="px-7 py-4 border-t border-ink/[0.06] flex justify-end">
               <Dialog.Close asChild>
                 <button
                   type="button"
-                  className="px-5 py-2 rounded-xl bg-white/[0.08] hover:bg-white/[0.12] text-[13px] font-semibold text-white/70 hover:text-white transition-all cursor-pointer"
+                  className="px-5 py-2 rounded-xl bg-ink/[0.08] hover:bg-ink/[0.12] text-[13px] font-semibold text-ink-70 hover:text-ink transition-all cursor-pointer"
                 >
                   {t('kb.close')}
                 </button>
@@ -238,7 +238,7 @@ const CustomBackground = React.memo(() => {
           not just the edges (separate from the vignette above) */}
           {bgDim > 0 && (
               <div
-                  className="absolute inset-0 bg-[rgb(6,6,9)] transition-opacity duration-300"
+                  className="absolute inset-0 bg-[rgb(var(--paper))] transition-opacity duration-300"
                   style={{opacity: bgDim}}
               />
           )}

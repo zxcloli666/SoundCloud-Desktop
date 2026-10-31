@@ -204,10 +204,10 @@ export default function App() {
         offset={48}
         toastOptions={{
           style: {
-            background: 'rgba(30, 30, 34, 0.9)',
+            background: 'rgb(var(--surface-hi) / 0.9)',
             backdropFilter: 'blur(20px)',
-            border: '1px solid rgba(255,255,255,0.08)',
-            color: 'rgba(255,255,255,0.85)',
+            border: '1px solid rgb(var(--ink) / 0.08)',
+            color: 'rgb(var(--ink) / calc(0.85 * (1 + var(--ink-lift) * (1 - 0.85))))',
             fontSize: '13px',
           },
         }}
@@ -397,21 +397,21 @@ function AppLoadingScreen({ fullscreen = false }: { fullscreen?: boolean }) {
       className={`flex items-center justify-center px-6 py-8 ${fullscreen ? 'h-screen' : 'min-h-[42vh]'}`}
     >
       <div
-        className="flex items-center gap-3 rounded-[24px] border border-white/8 bg-white/[0.035] px-4 py-3 shadow-[0_18px_44px_rgba(0,0,0,0.24)]"
+        className="flex items-center gap-3 rounded-[24px] border border-ink/8 bg-ink/[0.035] px-4 py-3 shadow-[0_18px_44px_rgb(var(--shade)/calc(0.24*var(--shade-alpha)))]"
         style={
           blur > 0
             ? { backdropFilter: `blur(${blur}px)`, WebkitBackdropFilter: `blur(${blur}px)` }
-            : { background: 'rgba(18,18,22,0.85)' }
+            : { background: 'rgb(var(--surface) / 0.85)' }
         }
       >
         <div className="flex size-10 items-center justify-center rounded-[16px] border border-accent/18 bg-accent/[0.10]">
           <div className="size-4 rounded-full border-2 border-accent border-t-transparent animate-spin" />
         </div>
         <div className="min-w-0">
-          <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/28">
+          <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-ink-28">
             SoundCloud
           </div>
-          <div className="mt-0.5 text-[13px] font-medium text-white/62">{t('common.loading')}</div>
+          <div className="mt-0.5 text-[13px] font-medium text-ink-62">{t('common.loading')}</div>
         </div>
       </div>
     </div>

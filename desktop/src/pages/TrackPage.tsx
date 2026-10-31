@@ -147,7 +147,7 @@ export const TrackPage = React.memo(function TrackPage() {
     const isOwner = !!myUrn && track.user?.urn === myUrn;
 
     return (
-        <div className="relative min-h-full w-full">
+        <div data-ui="page" data-page="track" className="relative min-h-full w-full">
             <style>{ROOM_KEYFRAMES}</style>
             {perf.atmosphere && (
                 <Atmosphere
@@ -164,13 +164,13 @@ export const TrackPage = React.memo(function TrackPage() {
                     <button
                         type="button"
                         onClick={() => navigate(-1)}
-                        className="inline-flex items-center justify-center w-9 h-9 rounded-full text-white/55 hover:text-white hover:bg-white/[0.06] transition-all duration-200 cursor-pointer"
+                        className="inline-flex items-center justify-center w-9 h-9 rounded-full text-ink-55 hover:text-ink hover:bg-ink/[0.06] transition-all duration-200 cursor-pointer"
                         aria-label={t('search.back')}
                     >
                         <ChevronLeft size={18}/>
                     </button>
                     {aura.hasGenre && (
-                        <span className="text-[10px] uppercase tracking-[0.24em] text-white/20">
+                        <span className="text-[10px] uppercase tracking-[0.24em] text-ink-20">
               {t('track.roomFor')}
             </span>
                     )}

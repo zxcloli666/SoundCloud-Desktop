@@ -34,7 +34,7 @@ const FONT_NAMES: Partial<Record<InterfaceFont, string>> = {
 
 const ACTIVE_STYLE = {
   background:
-    'linear-gradient(180deg, var(--color-accent-glow), transparent), rgba(255,255,255,0.05)',
+    'linear-gradient(180deg, var(--color-accent-glow), transparent), rgb(var(--ink) / 0.05)',
   borderColor: 'var(--color-accent)',
   boxShadow: '0 0 16px var(--color-accent-glow)',
 };
@@ -55,20 +55,20 @@ function FontTile({
       type="button"
       onClick={onSelect}
       className={`group rounded-2xl border overflow-hidden transition-all duration-200 cursor-pointer hover:scale-[1.03] active:scale-[0.97] ${
-        active ? '' : 'border-white/[0.06] bg-white/[0.02] hover:border-white/15'
+        active ? '' : 'border-ink/[0.06] bg-ink/[0.02] hover:border-ink/15'
       }`}
       style={active ? ACTIVE_STYLE : undefined}
     >
       <div
         className={`h-14 flex items-center justify-center text-[22px] font-semibold tracking-tight ${
-          active ? 'text-white' : 'text-white/70 group-hover:text-white/85'
+          active ? 'text-ink' : 'text-ink-70 group-hover:text-ink-85'
         }`}
         style={{ fontFamily: family }}
       >
         {SAMPLE}
       </div>
       <div
-        className={`px-2 pb-2 text-[11.5px] font-medium truncate ${active ? 'text-white/90' : 'text-white/45'}`}
+        className={`px-2 pb-2 text-[11.5px] font-medium truncate ${active ? 'text-ink-90' : 'text-ink-45'}`}
       >
         {label}
       </div>
@@ -88,22 +88,22 @@ function UploadedFontRow({ family, fileName }: { family: string; fileName: strin
   };
 
   return (
-    <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.06] animate-fade-in-up">
+    <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-ink/[0.04] border border-ink/[0.06] animate-fade-in-up">
       <div className="min-w-0 flex-1">
         <div
-          className="text-[14px] text-white/85 truncate"
+          className="text-[14px] text-ink-85 truncate"
           style={{ fontFamily: `"${family}", var(--font-sans)` }}
         >
           {family}
         </div>
-        <div className="text-[11px] text-white/35 truncate">{fileName}</div>
+        <div className="text-[11px] text-ink-35 truncate">{fileName}</div>
       </div>
       <button
         type="button"
         onClick={removeFile}
         title={t('settings.fontRemoveFile')}
         aria-label={t('settings.fontRemoveFile')}
-        className="w-8 h-8 rounded-lg flex items-center justify-center text-white/40 hover:text-white/80 hover:bg-white/[0.08] transition-all cursor-pointer"
+        className="w-8 h-8 rounded-lg flex items-center justify-center text-ink-40 hover:text-ink-80 hover:bg-ink/[0.08] transition-all cursor-pointer"
       >
         <X size={15} />
       </button>
@@ -154,7 +154,7 @@ function CustomFontInput() {
       <button
         type="button"
         onClick={() => fileInput.current?.click()}
-        className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/[0.04] border border-white/[0.06] text-[12.5px] font-medium text-white/60 hover:text-white/85 hover:bg-white/[0.07] transition-all cursor-pointer"
+        className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-ink/[0.04] border border-ink/[0.06] text-[12.5px] font-medium text-ink-60 hover:text-ink-85 hover:bg-ink/[0.07] transition-all cursor-pointer"
       >
         <Upload size={14} />
         {t('settings.fontUpload')}
@@ -182,7 +182,7 @@ function CustomFontInput() {
           onKeyDown={(e) => e.key === 'Enter' && setCustomFontName(clean)}
           placeholder={t('settings.fontCustomPlaceholder')}
           spellCheck={false}
-          className="w-full px-4 py-2.5 pr-10 rounded-xl bg-white/[0.04] border border-white/[0.06] text-[13px] text-white/80 placeholder:text-white/20 focus:border-white/[0.12] focus:bg-white/[0.06] transition-all duration-200 outline-none"
+          className="w-full px-4 py-2.5 pr-10 rounded-xl bg-ink/[0.04] border border-ink/[0.06] text-[13px] text-ink-80 placeholder:text-ink-20 focus:border-ink/[0.12] focus:bg-ink/[0.06] transition-all duration-200 outline-none"
           style={clean ? { fontFamily: `"${clean}", var(--font-sans)` } : undefined}
         />
         {installed !== null && (
@@ -196,7 +196,7 @@ function CustomFontInput() {
         )}
       </div>
       <p
-        className={`text-[11.5px] leading-snug ${installed === false ? 'text-amber-300/60' : 'text-white/35'}`}
+        className={`text-[11.5px] leading-snug ${installed === false ? 'text-amber-300/60' : 'text-ink-35'}`}
       >
         {installed === false
           ? t('settings.fontNotFound')

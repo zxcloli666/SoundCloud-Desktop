@@ -16,7 +16,7 @@ const rgb = ([r, g, b]: Rgb, alpha = 1) => `rgba(${r}, ${g}, ${b}, ${alpha})`;
 function Swatch({ color }: { color: string }) {
   return (
     <span
-      className="w-5 h-5 rounded-full border border-white/20 shadow-md"
+      className="w-5 h-5 rounded-full border border-ink/20 shadow-md"
       style={{ backgroundColor: color, boxShadow: `0 0 12px ${color}` }}
     />
   );
@@ -35,12 +35,12 @@ function CoverPreview({
 
   return (
     <div
-      className="relative h-24 rounded-2xl overflow-hidden border border-white/[0.06] transition-[background] duration-700"
+      className="relative h-24 rounded-2xl overflow-hidden border border-ink/[0.06] transition-[background] duration-700"
       style={{
         background:
           a && b
-            ? `radial-gradient(80% 120% at 0% 0%, ${rgb(a, 0.55)}, transparent 70%), radial-gradient(70% 110% at 100% 100%, ${rgb(b, 0.4)}, transparent 70%), rgba(255,255,255,0.02)`
-            : 'rgba(255,255,255,0.02)',
+            ? `radial-gradient(80% 120% at 0% 0%, ${rgb(a, 0.55)}, transparent 70%), radial-gradient(70% 110% at 100% 100%, ${rgb(b, 0.4)}, transparent 70%), rgb(var(--ink) / 0.02)`
+            : 'rgb(var(--ink) / 0.02)',
       }}
     >
       {artwork && palette ? (
@@ -48,7 +48,7 @@ function CoverPreview({
           <img
             src={artwork}
             alt=""
-            className="w-16 h-16 rounded-xl object-cover shadow-[0_8px_24px_rgba(0,0,0,0.45)]"
+            className="w-16 h-16 rounded-xl object-cover shadow-[0_8px_24px_rgb(var(--shade)/calc(0.45*var(--shade-alpha)))]"
           />
           <div className="flex items-center gap-2">
             {a && <Swatch color={rgb(a)} />}
@@ -57,7 +57,7 @@ function CoverPreview({
           </div>
         </div>
       ) : (
-        <div className="absolute inset-0 flex items-center justify-center text-[12px] text-white/35">
+        <div className="absolute inset-0 flex items-center justify-center text-[12px] text-ink-35">
           {t('settings.coverPreviewIdle')}
         </div>
       )}

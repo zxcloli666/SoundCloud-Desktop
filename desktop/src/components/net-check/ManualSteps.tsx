@@ -12,10 +12,10 @@ export const ManualSteps = React.memo(() => {
   const os = currentOs();
   return (
     <div className="mt-5">
-      <div className="text-[10.5px] font-semibold uppercase tracking-[0.12em] text-white/35">
+      <div className="text-[10.5px] font-semibold uppercase tracking-[0.12em] text-ink-35">
         {t('netCheck.manual.title')}
       </div>
-      <p className="text-[11.5px] text-white/35 mt-0.5 mb-2">
+      <p className="text-[11.5px] text-ink-35 mt-0.5 mb-2">
         {t(os === 'windows' ? 'netCheck.manual.windows' : 'netCheck.manual.unix')}
       </p>
       <div className="space-y-1.5">

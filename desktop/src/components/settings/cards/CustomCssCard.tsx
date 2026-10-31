@@ -16,17 +16,33 @@ const HOOKS = [
   'nav-item',
   'search',
   'main',
+  'page',
   'player',
+  'play-button',
   'queue',
   'lyrics',
   'card',
   'track-card',
   'track-row',
   'playlist-card',
+  'artwork',
   'modal',
+  'context-menu',
+  'button',
+  'tab',
+  'chip',
+  'hero',
   'tray',
 ];
-const VARIABLES = ['--color-accent', '--bg-primary', '--font-sans', '--glass-blur'];
+const VARIABLES = [
+  '--color-accent',
+  '--bg-primary',
+  '--ink',
+  '--paper',
+  '--surface',
+  '--font-sans',
+  '--glass-blur',
+];
 
 const EXAMPLE = `:root {
   --color-accent: #8b5cf6 !important;
@@ -51,7 +67,7 @@ function Chip({ label, onClick }: { label: string; onClick: () => void }) {
     <button
       type="button"
       onClick={onClick}
-      className="px-2 py-1 rounded-lg font-mono text-[11px] text-white/50 bg-white/[0.03] border border-white/[0.06] hover:text-white/90 hover:border-[var(--color-accent-glow)] hover:bg-white/[0.06] transition-all duration-200 cursor-pointer"
+      className="px-2 py-1 rounded-lg font-mono text-[11px] text-ink-50 bg-ink/[0.03] border border-ink/[0.06] hover:text-ink-90 hover:border-[var(--color-accent-glow)] hover:bg-ink/[0.06] transition-all duration-200 cursor-pointer"
     >
       {label}
     </button>
@@ -61,7 +77,7 @@ function Chip({ label, onClick }: { label: string; onClick: () => void }) {
 function ChipRow({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div className="flex items-start gap-3">
-      <span className="w-[86px] shrink-0 pt-1.5 text-[10.5px] font-bold uppercase tracking-[0.08em] text-white/30">
+      <span className="w-[86px] shrink-0 pt-1.5 text-[10.5px] font-bold uppercase tracking-[0.08em] text-ink-30">
         {title}
       </span>
       <div className="flex flex-wrap gap-1.5 min-w-0">{children}</div>
@@ -75,7 +91,7 @@ function Hotkey() {
       {customCssHotkeyLabel().map((key) => (
         <kbd
           key={key}
-          className="inline-flex items-center justify-center min-w-[22px] h-[22px] px-1.5 rounded-md bg-white/[0.07] border border-white/[0.1] font-mono text-[10.5px] font-semibold text-white/65"
+          className="inline-flex items-center justify-center min-w-[22px] h-[22px] px-1.5 rounded-md bg-ink/[0.07] border border-ink/[0.1] font-mono text-[10.5px] font-semibold text-ink-65"
         >
           {key}
         </kbd>
@@ -152,14 +168,14 @@ export function CustomCssCard() {
         </div>
         <CustomCssAssets />
         <div className="flex items-center justify-between gap-4 pt-1">
-          <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11.5px] text-white/35 leading-snug">
+          <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11.5px] text-ink-35 leading-snug">
             <span>{t('settings.customCssRescue')}</span>
             <Hotkey />
           </p>
           <button
             type="button"
             onClick={() => openUrl(guideUrl(i18n.language))}
-            className="shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl text-[12px] font-semibold bg-white/[0.06] text-white/75 hover:bg-white/[0.1] hover:text-white border border-white/[0.06] hover:border-white/[0.12] transition-all duration-200 cursor-pointer"
+            className="shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl text-[12px] font-semibold bg-ink/[0.06] text-ink-75 hover:bg-ink/[0.1] hover:text-ink border border-ink/[0.06] hover:border-ink/[0.12] transition-all duration-200 cursor-pointer"
           >
             <BookOpen size={12} />
             {t('settings.customCssGuide')}

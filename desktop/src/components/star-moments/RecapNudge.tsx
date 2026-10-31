@@ -23,7 +23,7 @@ export const RecapNudge = memo(function RecapNudge() {
     <MomentCard onClose={() => mark(key)}>
       <div className="flex items-center gap-4 pr-6">
         <span
-          className="text-[34px] font-black leading-none tracking-[-0.05em] text-white"
+          className="text-[34px] font-black leading-none tracking-[-0.05em] text-ink"
           style={{
             fontFamily: 'var(--font-display)',
             textShadow: '0 0 30px var(--color-accent-glow)',
@@ -35,7 +35,7 @@ export const RecapNudge = memo(function RecapNudge() {
           <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-accent">
             ✦ {t('recap.title', { year })}
           </div>
-          <div className="mt-0.5 text-[13.5px] font-semibold text-white/85">{t('recap.ready')}</div>
+          <div className="mt-0.5 text-[13.5px] font-semibold text-ink-85">{t('recap.ready')}</div>
         </div>
       </div>
       <div className="mt-3.5 flex justify-end">

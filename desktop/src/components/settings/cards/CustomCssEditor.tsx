@@ -15,7 +15,7 @@ function HeaderButton({
     <button
       type="button"
       onClick={onClick}
-      className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold text-white/45 hover:text-white/85 hover:bg-white/[0.06] transition-all duration-200 cursor-pointer"
+      className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold text-ink-45 hover:text-ink-85 hover:bg-ink/[0.06] transition-all duration-200 cursor-pointer"
     >
       {icon}
       {label}
@@ -28,12 +28,12 @@ function StatusPill({ live }: { live: boolean }) {
   return (
     <span
       className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-[0.08em] ${
-        live ? 'text-[var(--color-accent)]' : 'text-white/35 bg-white/[0.04]'
+        live ? 'text-[var(--color-accent)]' : 'text-ink-35 bg-ink/[0.04]'
       }`}
       style={live ? { background: 'var(--color-accent-glow)' } : undefined}
     >
       <span
-        className={`w-1.5 h-1.5 rounded-full ${live ? 'bg-[var(--color-accent)]' : 'bg-white/30'}`}
+        className={`w-1.5 h-1.5 rounded-full ${live ? 'bg-[var(--color-accent)]' : 'bg-ink/30'}`}
         style={live ? { boxShadow: '0 0 8px var(--color-accent)' } : undefined}
       />
       {live ? t('settings.customCssLive') : t('settings.customCssOff')}
@@ -62,10 +62,10 @@ export const CustomCssEditor = forwardRef<
   };
 
   return (
-    <div className="rounded-2xl border border-white/[0.07] bg-black/30 overflow-hidden focus-within:border-white/[0.14] transition-colors duration-200">
-      <div className="flex items-center justify-between gap-3 px-3 py-2 border-b border-white/[0.05] bg-white/[0.02]">
+    <div className="rounded-2xl border border-ink/[0.07] bg-shade-30 overflow-hidden focus-within:border-ink/[0.14] transition-colors duration-200">
+      <div className="flex items-center justify-between gap-3 px-3 py-2 border-b border-ink/[0.05] bg-ink/[0.02]">
         <div className="flex items-center gap-2.5 min-w-0 pl-1">
-          <span className="font-mono text-[11.5px] text-white/55 truncate">custom.css</span>
+          <span className="font-mono text-[11.5px] text-ink-55 truncate">custom.css</span>
           {value.trim() && <StatusPill live={live} />}
         </div>
         <div className="flex items-center gap-0.5 shrink-0">
@@ -95,11 +95,11 @@ export const CustomCssEditor = forwardRef<
         autoCapitalize="off"
         autoCorrect="off"
         autoComplete="off"
-        className="block w-full min-h-[240px] max-h-[520px] resize-y bg-transparent px-4 py-3 font-mono text-[12.5px] leading-[1.65] text-white/85 placeholder:text-white/20 outline-none"
+        className="block w-full min-h-[240px] max-h-[520px] resize-y bg-transparent px-4 py-3 font-mono text-[12.5px] leading-[1.65] text-ink-85 placeholder:text-ink-20 outline-none"
         style={{ tabSize: 2, caretColor: 'var(--color-accent)' }}
       />
-      <div className="flex items-center justify-between gap-3 px-4 py-2 border-t border-white/[0.05] text-[11px]">
-        <span className="text-white/30 tabular-nums">
+      <div className="flex items-center justify-between gap-3 px-4 py-2 border-t border-ink/[0.05] text-[11px]">
+        <span className="text-ink-30 tabular-nums">
           {t('settings.customCssLines', { count: lines })}
         </span>
         {blocked > 0 && (

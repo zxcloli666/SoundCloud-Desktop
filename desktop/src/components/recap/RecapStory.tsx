@@ -44,10 +44,10 @@ export const RecapStory = memo(function RecapStory({
     <div className="relative flex h-full flex-col">
       <div className="flex gap-1.5 px-1 pt-2">
         {kinds.map((kind, i) => (
-          <span key={kind} className="h-[3px] flex-1 overflow-hidden rounded-full bg-white/[0.12]">
+          <span key={kind} className="h-[3px] flex-1 overflow-hidden rounded-full bg-ink/[0.12]">
             <span
               key={i === index ? `run-${index}` : kind}
-              className="block h-full origin-left rounded-full bg-white/85"
+              className="block h-full origin-left rounded-full bg-ink/85"
               onAnimationEnd={i === index && !last ? next : undefined}
               style={{
                 transform: i < index || (i === index && last) ? 'scaleX(1)' : 'scaleX(0)',

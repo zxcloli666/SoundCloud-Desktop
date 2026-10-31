@@ -61,7 +61,7 @@ function Giant({
 }) {
   return (
     <div
-      className="font-black leading-[0.9] tracking-[-0.04em] text-white"
+      className="font-black leading-[0.9] tracking-[-0.04em] text-ink"
       style={{ ...DISPLAY, fontSize: size, textShadow: '0 0 60px var(--color-accent-glow)' }}
     >
       {children}
@@ -71,7 +71,7 @@ function Giant({
 
 function Sub({ children }: { children: ReactNode }) {
   return (
-    <div className="mt-5 max-w-[520px] text-[16px] leading-relaxed text-white/60">{children}</div>
+    <div className="mt-5 max-w-[520px] text-[16px] leading-relaxed text-ink-60">{children}</div>
   );
 }
 
@@ -93,7 +93,7 @@ const TimeSlide = memo(function TimeSlide({ stats }: { stats: ListeningStats }) 
   return (
     <Frame eyebrow={t('stats.listeningTime')}>
       <Giant>{fmt.number(minutes)}</Giant>
-      <div className="mt-2 font-mono text-[14px] uppercase tracking-[0.2em] text-white/50">
+      <div className="mt-2 font-mono text-[14px] uppercase tracking-[0.2em] text-ink-50">
         {t('recap.minutes')}
       </div>
       {days > 0 && <Sub>{t('recap.days', { count: days })}</Sub>}
@@ -109,7 +109,7 @@ const ArtistSlide = memo(function ArtistSlide({ stats }: { stats: ListeningStats
   return (
     <Frame eyebrow={t('stats.topArtist')}>
       <div
-        className="mb-7 size-[clamp(140px,22vw,220px)] overflow-hidden rounded-full bg-white/[0.06]"
+        className="mb-7 size-[clamp(140px,22vw,220px)] overflow-hidden rounded-full bg-ink/[0.06]"
         style={{
           boxShadow: '0 0 0 1px rgba(255,255,255,0.12), 0 30px 90px -20px var(--color-accent-glow)',
         }}
@@ -133,24 +133,24 @@ const TracksSlide = memo(function TracksSlide({ stats }: { stats: ListeningStats
           return (
             <li
               key={track.trackUrn}
-              className="flex items-center gap-4 rounded-[16px] border border-white/[0.08] bg-white/[0.03] px-3 py-2.5 animate-in fade-in slide-in-from-bottom-2 fill-mode-both duration-500"
+              className="flex items-center gap-4 rounded-[16px] border border-ink/[0.08] bg-ink/[0.03] px-3 py-2.5 animate-in fade-in slide-in-from-bottom-2 fill-mode-both duration-500"
               style={{ animationDelay: `${120 + i * 110}ms` }}
             >
               <span className="w-8 text-center text-[26px] font-black text-accent" style={DISPLAY}>
                 {i + 1}
               </span>
-              <div className="size-11 shrink-0 overflow-hidden rounded-[9px] bg-white/[0.06]">
+              <div className="size-11 shrink-0 overflow-hidden rounded-[9px] bg-ink/[0.06]">
                 {cover && (
                   <img src={cover} alt="" className="size-full object-cover" draggable={false} />
                 )}
               </div>
               <div className="min-w-0 flex-1">
-                <div className="truncate text-[14px] font-semibold text-white/90">
+                <div className="truncate text-[14px] font-semibold text-ink-90">
                   {track.title}
                 </div>
-                <div className="truncate text-[12px] text-white/40">{track.artistName}</div>
+                <div className="truncate text-[12px] text-ink-40">{track.artistName}</div>
               </div>
-              <span className="font-mono text-[11px] text-white/40">
+              <span className="font-mono text-[11px] text-ink-40">
                 {fmt.number(track.plays)}×
               </span>
             </li>
@@ -172,14 +172,14 @@ const RhythmSlide = memo(function RhythmSlide({ stats }: { stats: ListeningStats
       <Sub>
         {t(`stats.kindShare.${rhythm.kind}`, { percent: Math.round(rhythm.kindShare * 100) })}
       </Sub>
-      <div className="mt-8 flex gap-10 font-mono text-[11px] uppercase tracking-[0.18em] text-white/40">
+      <div className="mt-8 flex gap-10 font-mono text-[11px] uppercase tracking-[0.18em] text-ink-40">
         <div>
           {t('stats.peakDay')}
-          <div className="mt-1.5 text-[18px] normal-case tracking-normal text-white/85">{day}</div>
+          <div className="mt-1.5 text-[18px] normal-case tracking-normal text-ink-85">{day}</div>
         </div>
         <div>
           {t('stats.peakHour')}
-          <div className="mt-1.5 text-[18px] normal-case tracking-normal text-white/85">
+          <div className="mt-1.5 text-[18px] normal-case tracking-normal text-ink-85">
             {hourLabel(fmt.locale, rhythm.peakHour)}
           </div>
         </div>
@@ -207,7 +207,7 @@ const OutroSlide = memo(function OutroSlide({
         <button
           type="button"
           onClick={onRestart}
-          className="cursor-pointer rounded-full px-4 py-2 text-[12.5px] font-semibold text-white/45 transition-colors hover:text-white/85"
+          className="cursor-pointer rounded-full px-4 py-2 text-[12.5px] font-semibold text-ink-45 transition-colors hover:text-ink-85"
         >
           {t('recap.again')}
         </button>

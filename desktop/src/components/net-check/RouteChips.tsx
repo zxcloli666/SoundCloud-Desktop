@@ -10,7 +10,7 @@ const DOTS: Record<UpstreamState, string> = {
 };
 
 const NAMES: Record<UpstreamState, string> = {
-  ok: 'text-white/45',
+  ok: 'text-ink-45',
   backup: 'text-amber-200/75',
   down: 'text-rose-200/75',
 };
@@ -20,7 +20,7 @@ export const RouteChips = React.memo(({ route }: { route: RelayRoute }) => {
   if (route.upstreams.length === 0) return null;
   return (
     <div className="mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-1">
-      <CornerDownRight size={11} className="shrink-0 text-white/20" />
+      <CornerDownRight size={11} className="shrink-0 text-ink-20" />
       {route.upstreams.map(({ origin, state }) => {
         const name = t(`netCheck.route.origin.${origin}`, { defaultValue: origin });
         const title = t(`netCheck.route.${state}`, { name });

@@ -22,7 +22,7 @@ import { fileExtension, type LocalRow } from './lib';
 export const LOCAL_ROW_HEIGHT = 56;
 
 const ACTION =
-  'flex size-[29px] cursor-pointer items-center justify-center rounded-[9px] border border-white/[0.12] bg-white/[0.05] text-white/55 transition-colors';
+  'flex size-[29px] cursor-pointer items-center justify-center rounded-[9px] border border-ink/[0.12] bg-ink/[0.05] text-ink-55 transition-colors';
 
 export interface LocalRowProps {
   row: LocalRow;
@@ -61,12 +61,12 @@ export const LocalTrackRow = React.memo(function LocalTrackRow({
 
   return (
     <div
-      className={`group relative grid h-full select-none grid-cols-[28px_minmax(0,1fr)_88px_64px] items-center gap-3 border-b border-white/[0.045] pl-2 pr-4 transition-colors hover:bg-white/[0.03] md:grid-cols-[28px_minmax(0,1fr)_auto_88px_64px] ${
+      className={`group relative grid h-full select-none grid-cols-[28px_minmax(0,1fr)_88px_64px] items-center gap-3 border-b border-ink/[0.045] pl-2 pr-4 transition-colors hover:bg-ink/[0.03] md:grid-cols-[28px_minmax(0,1fr)_auto_88px_64px] ${
         missing ? 'opacity-55' : ''
       }`}
     >
       <div
-        className={`flex items-center justify-center font-mono text-[11px] text-white/25 tabular-nums ${
+        className={`flex items-center justify-center font-mono text-[11px] text-ink-25 tabular-nums ${
           sortable ? 'cursor-grab touch-none active:cursor-grabbing' : ''
         }`}
         {...(sortable ? dragHandleProps : undefined)}
@@ -74,7 +74,7 @@ export const LocalTrackRow = React.memo(function LocalTrackRow({
         {sortable ? (
           <>
             <span className="group-hover:hidden">{index + 1}</span>
-            <GripVertical size={13} className="hidden text-white/45 group-hover:block" />
+            <GripVertical size={13} className="hidden text-ink-45 group-hover:block" />
           </>
         ) : (
           <span>{index + 1}</span>
@@ -90,6 +90,7 @@ export const LocalTrackRow = React.memo(function LocalTrackRow({
         >
           {artwork ? (
             <img
+              data-ui="artwork"
               src={artwork}
               alt=""
               className="size-full object-cover"
@@ -98,10 +99,10 @@ export const LocalTrackRow = React.memo(function LocalTrackRow({
             />
           ) : (
             <span
-              className="flex size-full items-center justify-center text-white/35"
+              className="flex size-full items-center justify-center text-ink-35"
               style={{
                 background:
-                  'linear-gradient(135deg, var(--color-accent-glow), rgba(255,255,255,0.03) 75%)',
+                  'linear-gradient(135deg, var(--color-accent-glow), rgb(var(--ink) / 0.03) 75%)',
               }}
             >
               <Music size={15} />
@@ -114,12 +115,12 @@ export const LocalTrackRow = React.memo(function LocalTrackRow({
         <div className="min-w-0">
           <p
             className={`truncate text-[13px] font-medium leading-tight ${
-              isCurrent ? 'text-accent' : 'text-white/88'
+              isCurrent ? 'text-accent' : 'text-ink-88'
             }`}
           >
             {info.title}
           </p>
-          <p className="truncate text-[11.5px] leading-tight text-white/40">{subtitle}</p>
+          <p className="truncate text-[11.5px] leading-tight text-ink-40">{subtitle}</p>
         </div>
       </div>
 
@@ -129,20 +130,20 @@ export const LocalTrackRow = React.memo(function LocalTrackRow({
             {t('local.stampMissing')}
           </span>
         ) : (
-          <span className="whitespace-nowrap rounded-[5px] border border-white/[0.12] px-[7px] py-[4px] font-mono text-[9px] font-semibold tracking-[0.13em] text-white/45">
+          <span className="whitespace-nowrap rounded-[5px] border border-ink/[0.12] px-[7px] py-[4px] font-mono text-[9px] font-semibold tracking-[0.13em] text-ink-45">
             {fileExtension(info.path)}
           </span>
         )}
       </div>
 
-      <div className="text-right font-mono text-[12px] text-white/40 tabular-nums">
+      <div className="text-right font-mono text-[12px] text-ink-40 tabular-nums">
         {formatBytes(info.bytes)}
       </div>
-      <div className="text-right font-mono text-[12px] text-white/35 tabular-nums">
+      <div className="text-right font-mono text-[12px] text-ink-35 tabular-nums">
         {info.durationMs ? dur(info.durationMs) : '—'}
       </div>
 
-      <div className="pointer-events-none absolute bottom-0 right-0 top-0 z-[5] flex translate-x-2 items-center gap-1.5 bg-[linear-gradient(90deg,rgba(15,15,18,0),rgba(18,18,22,0.97)_40%)] pl-14 pr-4 opacity-0 transition-all duration-150 group-hover:pointer-events-auto group-hover:translate-x-0 group-hover:opacity-100">
+      <div className="pointer-events-none absolute bottom-0 right-0 top-0 z-[5] flex translate-x-2 items-center gap-1.5 bg-[linear-gradient(90deg,rgb(var(--surface)/0),rgb(var(--surface)/0.97)_40%)] pl-14 pr-4 opacity-0 transition-all duration-150 group-hover:pointer-events-auto group-hover:translate-x-0 group-hover:opacity-100">
         {!missing && (
           <>
             <button
@@ -159,20 +160,20 @@ export const LocalTrackRow = React.memo(function LocalTrackRow({
               onClick={playNext}
               title={t('local.playNext')}
               aria-label={t('local.playNext')}
-              className={`${ACTION} hover:border-white/[0.25] hover:text-white/90`}
+              className={`${ACTION} hover:border-ink/[0.25] hover:text-ink-90`}
             >
               <ListEnd size={13} />
             </button>
             <AddToLocalPlaylist
               trackId={row.id}
-              className={`${ACTION} hover:border-white/[0.25] hover:text-white/90`}
+              className={`${ACTION} hover:border-ink/[0.25] hover:text-ink-90`}
             />
             <button
               type="button"
               onClick={() => void revealItemInDir(info.path).catch(() => {})}
               title={t('local.showInFolder')}
               aria-label={t('local.showInFolder')}
-              className={`${ACTION} hover:border-white/[0.25] hover:text-white/90`}
+              className={`${ACTION} hover:border-ink/[0.25] hover:text-ink-90`}
             >
               <FolderOpen size={13} />
             </button>
@@ -210,16 +211,16 @@ export function SortableLocalRow(props: Omit<LocalRowProps, 'dragHandleProps'>) 
 export const LocalRowClone = React.memo(function LocalRowClone({ row }: { row: LocalRow }) {
   const artwork = art(row.track.artwork_url, 't200x200');
   return (
-    <div className="flex h-[56px] cursor-grabbing items-center gap-3 rounded-xl bg-[rgba(28,28,34,0.96)] px-3 shadow-[0_20px_50px_rgba(0,0,0,0.55)] ring-1 ring-white/15 backdrop-blur-xl">
-      <GripVertical size={13} className="flex-none text-white/45" />
-      <div className="size-[38px] flex-none overflow-hidden rounded-lg bg-white/[0.04]">
+    <div className="flex h-[56px] cursor-grabbing items-center gap-3 rounded-xl bg-[rgb(var(--surface-hi)/0.96)] px-3 shadow-[0_20px_50px_rgb(var(--shade)/calc(0.55*var(--shade-alpha)))] ring-1 ring-ink/15 backdrop-blur-xl">
+      <GripVertical size={13} className="flex-none text-ink-45" />
+      <div className="size-[38px] flex-none overflow-hidden rounded-lg bg-ink/[0.04]">
         {artwork && (
           <img src={artwork} alt="" className="size-full object-cover" decoding="async" />
         )}
       </div>
       <div className="min-w-0">
-        <p className="truncate text-[13px] font-medium text-white/88">{row.info.title}</p>
-        <p className="truncate text-[11.5px] text-white/40">{localArtist(row.info)}</p>
+        <p className="truncate text-[13px] font-medium text-ink-88">{row.info.title}</p>
+        <p className="truncate text-[11.5px] text-ink-40">{localArtist(row.info)}</p>
       </div>
     </div>
   );

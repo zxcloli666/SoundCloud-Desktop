@@ -38,29 +38,33 @@ export const LikeButton = React.memo(function LikeButton({
 
   if (variant === 'overlay') {
     return (
-      <button
-        type="button"
-        {...gesture.handlers}
-        aria-label={label}
-        aria-pressed={liked}
-        title={title}
-        className={`cursor-pointer absolute ${position} w-8 h-8 rounded-full flex items-center justify-center group-hover:opacity-100 group-hover:backdrop-blur-md focus-visible:opacity-100 focus-visible:backdrop-blur-md transition-all duration-200 ${
-          superliked || gesture.holding ? 'opacity-100 backdrop-blur-md' : 'opacity-0'
-        } ${
-          superliked
-            ? 'bg-black/60'
-            : liked
-              ? 'bg-accent/80 text-accent-contrast'
-              : 'bg-black/50 text-white/80 hover:text-white hover:bg-black/70'
-        }`}
-      >
-        {heart}
-      </button>
+      <span data-scheme="dark" className={`absolute ${position} flex`}>
+        <button
+          data-ui="like-button"
+          type="button"
+          {...gesture.handlers}
+          aria-label={label}
+          aria-pressed={liked}
+          title={title}
+          className={`cursor-pointer w-8 h-8 rounded-full flex items-center justify-center group-hover:opacity-100 group-hover:backdrop-blur-md focus-visible:opacity-100 focus-visible:backdrop-blur-md transition-all duration-200 ${
+            superliked || gesture.holding ? 'opacity-100 backdrop-blur-md' : 'opacity-0'
+          } ${
+            superliked
+              ? 'bg-black/60'
+              : liked
+                ? 'bg-accent/80 text-accent-contrast'
+                : 'bg-black/50 text-ink-80 hover:text-white hover:bg-black/70'
+          }`}
+        >
+          {heart}
+        </button>
+      </span>
     );
   }
 
   return (
     <button
+      data-ui="like-button"
       type="button"
       {...gesture.handlers}
       aria-label={label}
@@ -68,7 +72,7 @@ export const LikeButton = React.memo(function LikeButton({
       title={title}
       className={`cursor-pointer w-8 h-8 rounded-lg flex items-center justify-center group-hover:opacity-100 focus-visible:opacity-100 transition-all duration-200 shrink-0 ${
         superliked || gesture.holding ? 'opacity-100' : 'opacity-0'
-      } ${liked ? 'text-accent' : 'text-white/20 hover:text-white/50'}`}
+      } ${liked ? 'text-accent' : 'text-ink-20 hover:text-ink-50'}`}
     >
       {heart}
     </button>

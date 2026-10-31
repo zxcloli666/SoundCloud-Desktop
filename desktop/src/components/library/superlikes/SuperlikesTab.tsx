@@ -50,7 +50,7 @@ export const SuperlikesTab = React.memo(function SuperlikesTab({ filter }: { fil
   if (isLoading) {
     return (
       <div className="flex justify-center py-20">
-        <Loader2 size={32} className="animate-spin text-white/20" />
+        <Loader2 size={32} className="animate-spin text-ink-20" />
       </div>
     );
   }
@@ -105,12 +105,12 @@ export const SuperlikesTab = React.memo(function SuperlikesTab({ filter }: { fil
           )}
         />
       ) : (
-        <div className="py-20 text-center text-white/20">
+        <div className="py-20 text-center text-ink-20">
           {hasNextPage ? t('common.loading') : t('library.noMatches')}
         </div>
       )}
       <div ref={sentinelRef} className="mt-4 flex h-12 items-center justify-center">
-        {isFetchingNextPage && <Loader2 size={20} className="animate-spin text-white/15" />}
+        {isFetchingNextPage && <Loader2 size={20} className="animate-spin text-ink-15" />}
       </div>
     </div>
   );

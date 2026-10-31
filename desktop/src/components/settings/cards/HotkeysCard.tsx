@@ -93,7 +93,7 @@ export function HotkeysCard() {
     >
       {enabled && backend === 'wayland' && <WaylandHotkeysHint />}
       <div
-        className={`divide-y divide-white/[0.05] transition-opacity duration-300 ${
+        className={`divide-y divide-ink/[0.05] transition-opacity duration-300 ${
           enabled ? '' : 'opacity-55'
         }`}
       >
@@ -109,17 +109,17 @@ export function HotkeysCard() {
           />
         ))}
       </div>
-      {!enabled && <p className="mt-3 text-[11.5px] text-white/40">{t('hotkeys.offHint')}</p>}
-      <div className="mt-4 pt-4 border-t border-white/[0.05] flex items-center gap-3">
-        <AudioLines size={14} className="shrink-0 text-white/30" />
-        <p className="flex-1 min-w-0 text-[11.5px] leading-snug text-white/40">
+      {!enabled && <p className="mt-3 text-[11.5px] text-ink-40">{t('hotkeys.offHint')}</p>}
+      <div className="mt-4 pt-4 border-t border-ink/[0.05] flex items-center gap-3">
+        <AudioLines size={14} className="shrink-0 text-ink-30" />
+        <p className="flex-1 min-w-0 text-[11.5px] leading-snug text-ink-40">
           {t('hotkeys.mediaKeys')}
         </p>
         <button
           type="button"
           onClick={resetHotkeys}
           disabled={isDefault}
-          className="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-[12px] font-semibold bg-white/[0.06] text-white/75 hover:bg-white/[0.1] border border-white/[0.06] hover:border-white/[0.12] transition-all duration-200 cursor-pointer disabled:opacity-35 disabled:cursor-default disabled:hover:bg-white/[0.06]"
+          className="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-[12px] font-semibold bg-ink/[0.06] text-ink-75 hover:bg-ink/[0.1] border border-ink/[0.06] hover:border-ink/[0.12] transition-all duration-200 cursor-pointer disabled:opacity-35 disabled:cursor-default disabled:hover:bg-ink/[0.06]"
         >
           <RotateCcw size={12} />
           {t('hotkeys.reset')}

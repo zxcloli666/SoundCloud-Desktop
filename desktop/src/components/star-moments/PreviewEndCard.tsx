@@ -48,21 +48,21 @@ const PreviewBody = memo(function PreviewBody({
   return (
     <div>
       <div className="flex items-center gap-3 pr-6">
-        <div className="size-12 shrink-0 overflow-hidden rounded-[10px] bg-white/[0.06]">
+        <div className="size-12 shrink-0 overflow-hidden rounded-[10px] bg-ink/[0.06]">
           {cover && <img src={cover} alt="" className="size-full object-cover" draggable={false} />}
         </div>
         <div className="min-w-0">
-          <div className="truncate text-[13.5px] font-semibold text-white/90">
+          <div className="truncate text-[13.5px] font-semibold text-ink-90">
             {getDisplayTitle(track)}
           </div>
-          <div className="truncate text-[12px] text-white/40">
+          <div className="truncate text-[12px] text-ink-40">
             {getArtistDisplay(track).primary || track.user?.username}
           </div>
         </div>
       </div>
 
       <div className="mt-3.5">
-        <div className="relative flex h-2 overflow-hidden rounded-full bg-white/[0.06]">
+        <div className="relative flex h-2 overflow-hidden rounded-full bg-ink/[0.06]">
           <span
             className="h-full rounded-full"
             style={{
@@ -75,11 +75,11 @@ const PreviewBody = memo(function PreviewBody({
             className="h-full flex-1"
             style={{
               background:
-                'repeating-linear-gradient(135deg, rgba(255,255,255,0.10) 0 4px, transparent 4px 8px)',
+                'repeating-linear-gradient(135deg, rgb(var(--ink) / 0.10) 0 4px, transparent 4px 8px)',
             }}
           />
         </div>
-        <div className="mt-1.5 flex items-center justify-between font-mono text-[10.5px] text-white/40">
+        <div className="mt-1.5 flex items-center justify-between font-mono text-[10.5px] text-ink-40">
           <span className="text-accent">{formatTime(played / 1000)}</span>
           <span className="inline-flex items-center gap-1">
             <Lock size={10} />
@@ -89,7 +89,7 @@ const PreviewBody = memo(function PreviewBody({
       </div>
 
       <div className="mt-3 flex items-center justify-between gap-3">
-        <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/35">
+        <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-35">
           {t('starMoments.preview.label')}
         </span>
         <StarCta onOpen={onOpen} />

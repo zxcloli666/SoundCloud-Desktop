@@ -52,7 +52,7 @@ export function ScrobbleCard() {
             />
           </Row>
         )}
-        <p className="text-[11.5px] leading-snug text-white/30">{t('settings.scrobbleRules')}</p>
+        <p className="text-[11.5px] leading-snug text-ink-30">{t('settings.scrobbleRules')}</p>
       </div>
     </Card>
   );

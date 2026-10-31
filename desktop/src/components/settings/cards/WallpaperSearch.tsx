@@ -89,7 +89,7 @@ export function WallpaperSearch({onPick}: { onPick: (url: string) => Promise<voi
     );
 
     return (
-        <div className="mt-4 rounded-2xl border border-white/[0.06] bg-black/20 p-4 space-y-3.5">
+        <div className="mt-4 rounded-2xl border border-ink/[0.06] bg-shade-20 p-4 space-y-3.5">
             {/* source */}
             <Segmented
                 value={source}
@@ -103,14 +103,14 @@ export function WallpaperSearch({onPick}: { onPick: (url: string) => Promise<voi
                 <div className="relative flex-1">
                     <Search
                         size={15}
-                        className="absolute left-3 top-1/2 -translate-y-1/2 text-white/35 pointer-events-none"
+                        className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-35 pointer-events-none"
                     />
                     <input
                         type="text"
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
                         placeholder={caps.tagBased ? t('settings.wpTags') : t('settings.wpPlaceholder')}
-                        className="w-full h-10 pl-9 pr-3 rounded-xl bg-white/[0.05] border border-white/[0.08] text-[13px] text-white/85 placeholder:text-white/30 outline-none focus:border-[var(--color-accent)] transition-colors"
+                        className="w-full h-10 pl-9 pr-3 rounded-xl bg-ink/[0.05] border border-ink/[0.08] text-[13px] text-ink-85 placeholder:text-ink-30 outline-none focus:border-[var(--color-accent)] transition-colors"
                     />
                 </div>
                 {caps.category && (
@@ -132,14 +132,14 @@ export function WallpaperSearch({onPick}: { onPick: (url: string) => Promise<voi
             {/* colour palette */}
             {caps.color && (
                 <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="text-[11px] text-white/40 mr-1">{t('settings.wpColor')}</span>
+                    <span className="text-[11px] text-ink-40 mr-1">{t('settings.wpColor')}</span>
                     <button
                         type="button"
                         onClick={() => setColor(null)}
                         className={`h-6 px-2.5 rounded-full text-[10.5px] font-semibold border transition-all ${
                             color === null
-                                ? 'text-white border-white/30 bg-white/[0.08]'
-                                : 'text-white/45 border-white/[0.08] hover:text-white/70'
+                                ? 'text-ink border-ink/30 bg-ink/[0.08]'
+                                : 'text-ink-45 border-ink/[0.08] hover:text-ink-70'
                         }`}
                     >
                         {t('settings.wpAnyColor')}
@@ -155,7 +155,7 @@ export function WallpaperSearch({onPick}: { onPick: (url: string) => Promise<voi
                                 className="w-6 h-6 rounded-full cursor-pointer transition-transform hover:scale-110"
                                 style={{
                                     background: `#${c}`,
-                                    border: on ? '2px solid #fff' : '1px solid rgba(255,255,255,0.18)',
+                                    border: on ? '2px solid rgb(var(--ink))' : '1px solid rgb(var(--ink) / 0.18)',
                                     boxShadow: on ? `0 0 12px #${c}` : undefined,
                                 }}
                             />
@@ -174,12 +174,12 @@ export function WallpaperSearch({onPick}: { onPick: (url: string) => Promise<voi
                             className={`h-7 px-3 rounded-full text-[11px] font-bold border transition-all cursor-pointer ${
                                 adult
                                     ? 'text-[var(--color-accent-contrast)] bg-[var(--color-accent)] border-transparent'
-                                    : 'text-white/45 border-white/[0.1] hover:text-white/75 hover:border-white/25'
+                                    : 'text-ink-45 border-ink/[0.1] hover:text-ink-75 hover:border-ink/25'
                             }`}
                         >
                             18+
                         </button>
-                        <span className="text-[11px] text-white/35">
+                        <span className="text-[11px] text-ink-35">
               {adult ? t('settings.wpAdultOn') : t('settings.wpAdultOff')}
             </span>
                     </div>
@@ -189,7 +189,7 @@ export function WallpaperSearch({onPick}: { onPick: (url: string) => Promise<voi
                             <div className="relative">
                                 <Lock
                                     size={13}
-                                    className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30 pointer-events-none"
+                                    className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-30 pointer-events-none"
                                 />
                                 <input
                                     type="password"
@@ -198,14 +198,14 @@ export function WallpaperSearch({onPick}: { onPick: (url: string) => Promise<voi
                                     placeholder={t('settings.wpKeyPlaceholder')}
                                     spellCheck={false}
                                     autoComplete="off"
-                                    className={`w-full h-9 pl-8 pr-3 rounded-xl bg-white/[0.05] border text-[12px] text-white/85 placeholder:text-white/25 outline-none transition-colors font-mono tracking-tight ${
+                                    className={`w-full h-9 pl-8 pr-3 rounded-xl bg-ink/[0.05] border text-[12px] text-ink-85 placeholder:text-ink-25 outline-none transition-colors font-mono tracking-tight ${
                                         adultBlocked
                                             ? 'border-amber-400/40 focus:border-amber-400/70'
-                                            : 'border-white/[0.08] focus:border-[var(--color-accent)]'
+                                            : 'border-ink/[0.08] focus:border-[var(--color-accent)]'
                                     }`}
                                 />
                             </div>
-                            <p className="text-[10.5px] text-white/30 leading-snug">
+                            <p className="text-[10.5px] text-ink-30 leading-snug">
                                 {adultBlocked ? t('settings.wpKeyNeeded') : t('settings.wpKeyHint')}
                             </p>
                         </div>
@@ -219,7 +219,7 @@ export function WallpaperSearch({onPick}: { onPick: (url: string) => Promise<voi
                     {t('settings.wpError')}
                 </div>
             ) : items.length === 0 && !loading ? (
-                <div className="py-8 text-center text-[12.5px] text-white/35">{t('settings.wpEmpty')}</div>
+                <div className="py-8 text-center text-[12.5px] text-ink-35">{t('settings.wpEmpty')}</div>
             ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
                     {items.map((hit) => (
@@ -227,7 +227,7 @@ export function WallpaperSearch({onPick}: { onPick: (url: string) => Promise<voi
                             key={hit.id}
                             type="button"
                             onClick={() => handlePick(hit)}
-                            className="group relative aspect-video overflow-hidden rounded-xl border border-white/[0.06] bg-white/[0.03] cursor-pointer"
+                            className="group relative aspect-video overflow-hidden rounded-xl border border-ink/[0.06] bg-ink/[0.03] cursor-pointer"
                         >
                             <img
                                 src={toScproxyUrl(hit.thumb)}
@@ -239,7 +239,7 @@ export function WallpaperSearch({onPick}: { onPick: (url: string) => Promise<voi
                             <span
                                 className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
                 {picking === hit.id ? (
-                    <Loader2 size={20} className="text-white animate-spin"/>
+                    <Loader2 size={20} className="text-ink animate-spin"/>
                 ) : (
                     <span
                         className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold text-[var(--color-accent-contrast)] bg-[var(--color-accent)] shadow-[0_8px_22px_var(--color-accent-glow)]">
@@ -250,7 +250,8 @@ export function WallpaperSearch({onPick}: { onPick: (url: string) => Promise<voi
               </span>
                             {hit.resolution && (
                                 <span
-                                    className="absolute bottom-1 right-1 text-[9px] font-semibold text-white/85 bg-black/55 backdrop-blur-sm px-1.5 py-0.5 rounded tabular-nums opacity-0 group-hover:opacity-100 transition-opacity">
+                                    data-scheme="dark"
+                                    className="absolute bottom-1 right-1 text-[9px] font-semibold text-ink-85 bg-black/55 backdrop-blur-sm px-1.5 py-0.5 rounded tabular-nums opacity-0 group-hover:opacity-100 transition-opacity">
                   {hit.resolution}
                 </span>
                             )}
@@ -261,19 +262,19 @@ export function WallpaperSearch({onPick}: { onPick: (url: string) => Promise<voi
 
             {/* footer */}
             <div className="flex items-center justify-between pt-1">
-        <span className="text-[10.5px] text-white/25">
+        <span className="text-[10.5px] text-ink-25">
           {WALLPAPER_SOURCES.find((s) => s.id === source)?.label} ·{' '}
             {adult && !adultBlocked ? '18+' : 'SFW'}
         </span>
                 {loading ? (
-                    <Loader2 size={14} className="animate-spin text-white/40"/>
+                    <Loader2 size={14} className="animate-spin text-ink-40"/>
                 ) : (
                     cursor !== null &&
                     items.length > 0 && (
                         <button
                             type="button"
                             onClick={() => void run(cursor, true)}
-                            className="px-3.5 py-1.5 rounded-xl text-[12px] font-semibold bg-white/[0.06] text-white/70 hover:bg-white/[0.1] border border-white/[0.06] transition-all cursor-pointer"
+                            className="px-3.5 py-1.5 rounded-xl text-[12px] font-semibold bg-ink/[0.06] text-ink-70 hover:bg-ink/[0.1] border border-ink/[0.06] transition-all cursor-pointer"
                         >
                             {t('settings.wpMore')}
                         </button>

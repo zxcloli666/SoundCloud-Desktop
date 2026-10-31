@@ -61,7 +61,7 @@ export const BrandMark = memo(function BrandMark({subtitle}: { subtitle: string 
             >
                 SoundCloud
             </h1>
-            <p className="text-[13px] text-white/40 mt-2.5 min-h-[18px]">{subtitle}</p>
+            <p className="text-[13px] text-ink-40 mt-2.5 min-h-[18px]">{subtitle}</p>
         </div>
     );
 });

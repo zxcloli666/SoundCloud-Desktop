@@ -48,7 +48,7 @@ export const PlaylistNameInput = React.memo(function PlaylistNameInput({
         placeholder={t('local.playlistName')}
         aria-label={t('local.playlistName')}
         maxLength={80}
-        className="h-8 min-w-0 flex-1 rounded-[9px] border border-white/[0.12] bg-white/[0.05] px-2.5 text-[12.5px] font-medium text-white/90 placeholder:text-white/30 focus:border-[var(--color-accent-glow)] focus:outline-none"
+        className="h-8 min-w-0 flex-1 rounded-[9px] border border-ink/[0.12] bg-ink/[0.05] px-2.5 text-[12.5px] font-medium text-ink-90 placeholder:text-ink-30 focus:border-[var(--color-accent-glow)] focus:outline-none"
         ref={inputRef}
       />
       <button

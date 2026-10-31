@@ -20,13 +20,13 @@ function ArtistRelatedTabImpl({ related, aura }: ArtistRelatedTabProps) {
         <div
           className="w-16 h-16 rounded-2xl flex items-center justify-center"
           style={{
-            background: 'rgba(255,255,255,0.03)',
-            border: '0.5px solid rgba(255,255,255,0.06)',
+            background: 'rgb(var(--ink) / 0.03)',
+            border: '0.5px solid rgb(var(--ink) / 0.06)',
           }}
         >
-          <Users size={24} className="text-white/15" />
+          <Users size={24} className="text-ink-15" />
         </div>
-        <p className="text-white/30 text-sm">{t('artist.noRelated')}</p>
+        <p className="text-ink-30 text-sm">{t('artist.noRelated')}</p>
       </div>
     );
   }
@@ -55,8 +55,8 @@ const RelatedCard = memo(
         onClick={() => navigate(`/artist/${encodeURIComponent(item.id)}`)}
         className="group relative flex flex-col items-center gap-3 p-5 rounded-3xl cursor-pointer transition-all duration-500 overflow-hidden hover:scale-[1.03]"
         style={{
-            background: cb > 0 ? 'rgba(255,255,255,0.03)' : 'rgba(22,22,26,0.85)',
-          border: '0.5px solid rgba(255,255,255,0.06)',
+            background: cb > 0 ? 'rgb(var(--ink) / 0.03)' : 'rgb(var(--surface-hi) / 0.85)',
+          border: '0.5px solid rgb(var(--ink) / 0.06)',
             backdropFilter: cb > 0 ? `blur(${cb}px)` : undefined,
             WebkitBackdropFilter: cb > 0 ? `blur(${cb}px)` : undefined,
         }}
@@ -71,20 +71,20 @@ const RelatedCard = memo(
               />
           )}
         <div
-          className="relative w-20 h-20 rounded-full overflow-hidden ring-2 ring-white/10 group-hover:ring-white/30 transition-all duration-500"
+          className="relative w-20 h-20 rounded-full overflow-hidden ring-2 ring-ink/10 group-hover:ring-ink/30 transition-all duration-500"
           style={{ boxShadow: `0 12px 30px ${auraRgba(aura, 0.25)}` }}
         >
           <Avatar src={item.avatar_url} alt={item.name} size={80} />
         </div>
         <div className="text-center min-w-0 w-full relative">
-          <p className="text-[13px] font-semibold text-white/90 truncate">{item.name}</p>
+          <p className="text-[13px] font-semibold text-ink-90 truncate">{item.name}</p>
           {item.country && (
-            <p className="inline-flex items-center gap-1 text-[10px] text-white/35 mt-0.5">
+            <p className="inline-flex items-center gap-1 text-[10px] text-ink-35 mt-0.5">
               <Globe size={9} /> {item.country}
             </p>
           )}
         </div>
-        <div className="relative w-full h-1 rounded-full overflow-hidden bg-white/[0.04]">
+        <div className="relative w-full h-1 rounded-full overflow-hidden bg-ink/[0.04]">
           <div
             className="absolute inset-y-0 left-0 rounded-full"
             style={{
@@ -94,7 +94,7 @@ const RelatedCard = memo(
             }}
           />
         </div>
-        <span className="text-[9px] font-bold uppercase tracking-[0.22em] text-white/30">
+        <span className="text-[9px] font-bold uppercase tracking-[0.22em] text-ink-30">
           {t('artist.affinity')} {(pct * 100).toFixed(0)}%
         </span>
       </button>

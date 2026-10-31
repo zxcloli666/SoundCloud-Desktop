@@ -56,19 +56,20 @@ function RowBody({
           </div>
         ) : (
           <>
-            <span className="text-[12px] text-white/25 tabular-nums font-medium group-hover:hidden">
+            <span className="text-[12px] text-ink-25 tabular-nums font-medium group-hover:hidden">
               {index + 1}
             </span>
-            <div className="hidden group-hover:flex w-7 h-7 rounded-full bg-white/10 items-center justify-center">
+            <div className="hidden group-hover:flex w-7 h-7 rounded-full bg-ink/10 items-center justify-center">
               {playWhite12}
             </div>
           </>
         )}
       </div>
 
-      <div className="relative w-10 h-10 rounded-lg overflow-hidden shrink-0 ring-1 ring-white/[0.06]">
+      <div className="relative w-10 h-10 rounded-lg overflow-hidden shrink-0 ring-1 ring-ink/[0.06]">
         {cover ? (
           <img
+            data-ui="artwork"
             src={cover}
             alt=""
             className="w-full h-full object-cover"
@@ -76,7 +77,7 @@ function RowBody({
             loading="lazy"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-white/[0.03]">
+          <div className="w-full h-full flex items-center justify-center bg-ink/[0.03]">
             {musicIcon12}
           </div>
         )}
@@ -89,7 +90,7 @@ function RowBody({
       </div>
 
       <div className="hidden @2xl:flex items-center gap-3 shrink-0">
-        <span className="text-[10px] text-white/20 tabular-nums flex items-center gap-0.5 w-12">
+        <span className="text-[10px] text-ink-20 tabular-nums flex items-center gap-0.5 w-12">
           {track.playback_count != null && (
             <>
               {headphones9}
@@ -97,7 +98,7 @@ function RowBody({
             </>
           )}
         </span>
-        <span className="text-[10px] text-white/20 tabular-nums flex items-center gap-0.5 w-10">
+        <span className="text-[10px] text-ink-20 tabular-nums flex items-center gap-0.5 w-10">
           {(track.favoritings_count ?? track.likes_count) != null && (
             <>
               {heart9}
@@ -111,10 +112,10 @@ function RowBody({
       <SaveOfflineRowButton track={track} />
       <PlayNextButton
         track={track}
-        className="cursor-pointer w-8 h-8 rounded-lg flex items-center justify-center text-white/20 hover:text-white/60 opacity-0 group-hover:opacity-100 transition-all duration-200 shrink-0"
+        className="cursor-pointer w-8 h-8 rounded-lg flex items-center justify-center text-ink-20 hover:text-ink-60 opacity-0 group-hover:opacity-100 transition-all duration-200 shrink-0"
       />
 
-      <span className="text-[11px] text-white/25 tabular-nums font-medium shrink-0 w-10 text-right">
+      <span className="text-[11px] text-ink-25 tabular-nums font-medium shrink-0 w-10 text-right">
         {dur(track.duration)}
       </span>
     </>
@@ -125,7 +126,7 @@ const ROW_BASE =
   '@container group relative flex items-center gap-3.5 pl-4 pr-4 py-3 rounded-xl transition-colors duration-200 ease-[var(--ease-apple)] select-none';
 
 function activeCls(isThis: boolean) {
-  return isThis ? 'bg-accent/[0.06] ring-1 ring-accent/20' : 'hover:bg-white/[0.03]';
+  return isThis ? 'bg-accent/[0.06] ring-1 ring-accent/20' : 'hover:bg-ink/[0.03]';
 }
 
 type RowQueue = Track[] | (() => Track[]);
@@ -136,7 +137,7 @@ function RemoveButton({ urn, onRemove }: { urn: string; onRemove: (urn: string) 
     <button
       type="button"
       onClick={() => onRemove(urn)}
-      className="opacity-0 group-hover:opacity-100 w-7 h-7 rounded-lg flex items-center justify-center text-white/20 hover:text-red-400 hover:bg-red-400/10 transition-all duration-200 shrink-0"
+      className="opacity-0 group-hover:opacity-100 w-7 h-7 rounded-lg flex items-center justify-center text-ink-20 hover:text-red-400 hover:bg-red-400/10 transition-all duration-200 shrink-0"
       title={t('playlist.removeTrack')}
     >
       <Trash2 size={13} />
@@ -207,7 +208,7 @@ export function SequenceRowOverlay({
   const { isThis, isThisPlaying, togglePlay } = useTrackPlay(track, queue);
   return (
     <div
-      className={`${ROW_BASE} ${activeCls(isThis)} bg-white/[0.06] cursor-grabbing`}
+      className={`${ROW_BASE} ${activeCls(isThis)} bg-ink/[0.06] cursor-grabbing`}
       style={LIFTED_ROW_STYLE}
     >
       <DragGrip />

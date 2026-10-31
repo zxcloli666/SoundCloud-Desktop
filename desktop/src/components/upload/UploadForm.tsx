@@ -27,13 +27,13 @@ function AudioPicker({ onPick }: { onPick: (path: string) => void }) {
         const path = await pickFile(t('upload.audioFiles'), AUDIO_EXTENSIONS);
         if (path) onPick(path);
       }}
-      className="group w-full flex flex-col items-center justify-center gap-3 py-10 rounded-2xl border border-dashed border-white/[0.12] bg-white/[0.02] hover:bg-accent/[0.06] hover:border-accent/40 transition-all duration-300 cursor-pointer"
+      className="group w-full flex flex-col items-center justify-center gap-3 py-10 rounded-2xl border border-dashed border-ink/[0.12] bg-ink/[0.02] hover:bg-accent/[0.06] hover:border-accent/40 transition-all duration-300 cursor-pointer"
     >
       <span className="w-14 h-14 rounded-full bg-accent/15 flex items-center justify-center text-accent transition-transform duration-300 group-hover:scale-110 group-hover:-translate-y-0.5">
         <Upload size={22} />
       </span>
-      <span className="text-[14px] font-semibold text-white/85">{t('upload.chooseAudio')}</span>
-      <span className="text-[11.5px] text-white/35">{t('upload.formats')}</span>
+      <span className="text-[14px] font-semibold text-ink-85">{t('upload.chooseAudio')}</span>
+      <span className="text-[11.5px] text-ink-35">{t('upload.formats')}</span>
     </button>
   );
 }
@@ -41,15 +41,15 @@ function AudioPicker({ onPick }: { onPick: (path: string) => void }) {
 function FileCard({ path, onChange }: { path: string; onChange: () => void }) {
   const { t } = useTranslation();
   return (
-    <div className="flex items-center gap-3 px-3.5 py-3 rounded-xl bg-white/[0.04] border border-white/[0.07]">
+    <div className="flex items-center gap-3 px-3.5 py-3 rounded-xl bg-ink/[0.04] border border-ink/[0.07]">
       <span className="w-9 h-9 rounded-lg bg-accent/15 flex items-center justify-center text-accent shrink-0">
         <AudioLines size={16} />
       </span>
-      <span className="flex-1 min-w-0 truncate text-[13px] text-white/80">{fileNameOf(path)}</span>
+      <span className="flex-1 min-w-0 truncate text-[13px] text-ink-80">{fileNameOf(path)}</span>
       <button
         type="button"
         onClick={onChange}
-        className="px-3 py-1.5 rounded-lg text-[12px] font-medium text-white/50 hover:text-white/85 hover:bg-white/[0.06] transition-all cursor-pointer"
+        className="px-3 py-1.5 rounded-lg text-[12px] font-medium text-ink-50 hover:text-ink-85 hover:bg-ink/[0.06] transition-all cursor-pointer"
       >
         {t('upload.change')}
       </button>
@@ -80,7 +80,7 @@ function ArtworkTile({
         className={`w-[104px] h-[104px] rounded-2xl flex flex-col items-center justify-center gap-1.5 px-2 text-center transition-all duration-300 cursor-pointer ${
           path
             ? 'bg-accent/[0.12] border border-accent/30 text-accent'
-            : 'bg-white/[0.03] border border-dashed border-white/[0.12] text-white/35 hover:text-white/70 hover:border-white/25'
+            : 'bg-ink/[0.03] border border-dashed border-ink/[0.12] text-ink-35 hover:text-ink-70 hover:border-ink/25'
         }`}
       >
         <ImageIcon size={20} />
@@ -93,7 +93,8 @@ function ArtworkTile({
           type="button"
           onClick={onClear}
           aria-label={t('upload.removeArtwork')}
-          className="absolute -top-1.5 -right-1.5 w-6 h-6 rounded-full bg-black/70 border border-white/10 flex items-center justify-center text-white/60 hover:text-white cursor-pointer"
+          data-scheme="dark"
+          className="absolute -top-1.5 -right-1.5 w-6 h-6 rounded-full bg-black/70 border border-ink/10 flex items-center justify-center text-ink-60 hover:text-ink cursor-pointer"
         >
           <X size={11} />
         </button>
@@ -115,7 +116,7 @@ function PrivacySwitch({
     { id: 'private' as const, icon: <Lock size={13} />, label: t('sharing.private') },
   ];
   return (
-    <div className="inline-flex p-1 rounded-xl bg-white/[0.04] border border-white/[0.07]">
+    <div className="inline-flex p-1 rounded-xl bg-ink/[0.04] border border-ink/[0.07]">
       {options.map((option) => (
         <button
           key={option.id}
@@ -123,8 +124,8 @@ function PrivacySwitch({
           onClick={() => onChange(option.id)}
           className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-[12px] font-semibold transition-all cursor-pointer ${
             value === option.id
-              ? 'bg-white/[0.1] text-white/90 shadow-sm'
-              : 'text-white/40 hover:text-white/70'
+              ? 'bg-ink/[0.1] text-ink-90 shadow-sm'
+              : 'text-ink-40 hover:text-ink-70'
           }`}
         >
           {option.icon}
@@ -237,12 +238,12 @@ export const UploadForm = React.memo(function UploadForm() {
       </label>
       <div className="flex items-start gap-2.5 px-3.5 py-3 rounded-xl bg-amber-500/[0.06] border border-amber-500/15">
         <Shield size={14} className="text-amber-300/80 shrink-0 mt-0.5" />
-        <p className="text-[11.5px] leading-relaxed text-white/55">{t('upload.rights')}</p>
+        <p className="text-[11.5px] leading-relaxed text-ink-55">{t('upload.rights')}</p>
       </div>
       <div className="flex items-center justify-end gap-2.5 pt-1">
         <Dialog.Close
           type="button"
-          className="px-4 py-2 rounded-xl text-[13px] font-medium text-white/50 hover:text-white/80 hover:bg-white/[0.06] transition-all cursor-pointer"
+          className="px-4 py-2 rounded-xl text-[13px] font-medium text-ink-50 hover:text-ink-80 hover:bg-ink/[0.06] transition-all cursor-pointer"
         >
           {t('common.cancel')}
         </Dialog.Close>

@@ -22,7 +22,7 @@ export function Settings() {
 
   return (
       <SettingsFrame aura={aura}>
-          <div className="max-w-[1080px] mx-auto px-6 md:px-8 pt-8 pb-32 flex gap-8">
+          <div data-ui="page" data-page="settings" className="max-w-[1080px] mx-auto px-6 md:px-8 pt-8 pb-32 flex gap-8">
               <SettingsNav categories={SETTINGS_CATEGORIES} active={active} onChange={selectCategory}/>
               <div className="flex-1 min-w-0">
                   <header className="mb-7 flex items-center gap-4">
@@ -30,7 +30,7 @@ export function Settings() {
                           className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 text-[var(--color-accent)]"
                           style={{
                               background:
-                                  'linear-gradient(135deg, var(--color-accent-glow), rgba(255,255,255,0.05))',
+                                  'linear-gradient(135deg, var(--color-accent-glow), rgb(var(--ink) / 0.05))',
                               border: '0.5px solid var(--color-accent-glow)',
                               boxShadow:
                                   '0 0 26px var(--color-accent-glow), inset 0 1px 0 rgba(255,255,255,0.18)',
@@ -39,7 +39,7 @@ export function Settings() {
                           {category.icon}
                       </div>
                       <div className="min-w-0">
-                          <p className="text-[11px] uppercase tracking-[0.24em] text-white/35 font-bold mb-1">
+                          <p className="text-[11px] uppercase tracking-[0.24em] text-ink-35 font-bold mb-1">
                               {t('settings.title')}
                           </p>
                           <h1

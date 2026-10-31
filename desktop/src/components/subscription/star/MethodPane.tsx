@@ -45,20 +45,20 @@ export const MethodPane = memo(function MethodPane({
               style={{
                 borderColor: on
                   ? 'color-mix(in srgb, var(--color-accent) 60%, transparent)'
-                  : 'rgba(255,255,255,0.10)',
-                background: 'rgba(255,255,255,0.025)',
+                  : 'rgb(var(--ink) / 0.10)',
+                background: 'rgb(var(--ink) / 0.025)',
                 boxShadow: on
                   ? '0 0 24px -8px var(--color-accent-glow), inset 0 0 0 1px color-mix(in srgb, var(--color-accent) 35%, transparent)'
                   : undefined,
               }}
             >
-              <span className="mb-2.5 grid size-[30px] place-items-center rounded-[9px] border border-white/[0.08] bg-white/[0.04]">
+              <span className="mb-2.5 grid size-[30px] place-items-center rounded-[9px] border border-ink/[0.08] bg-ink/[0.04]">
                 <ProviderGlyph kind={opt.kind} />
               </span>
-              <div className="text-[12.5px] font-semibold text-white/90">
+              <div className="text-[12.5px] font-semibold text-ink-90">
                 {t(`starpass.method.${opt.i18n}.title`)}
               </div>
-              <div className="mt-0.5 font-mono text-[9px] tracking-[0.06em] text-white/40">
+              <div className="mt-0.5 font-mono text-[9px] tracking-[0.06em] text-ink-40">
                 {opt.tag}
               </div>
             </button>
@@ -73,12 +73,12 @@ export const MethodPane = memo(function MethodPane({
           role="checkbox"
           aria-checked={recurring}
           onClick={() => onRecurring(!recurring)}
-          className="mt-3.5 flex w-fit cursor-pointer items-center gap-3 rounded-[12px] border border-white/[0.10] bg-white/[0.03] px-3.5 py-2.5 text-left transition-colors hover:bg-white/[0.05]"
+          className="mt-3.5 flex w-fit cursor-pointer items-center gap-3 rounded-[12px] border border-ink/[0.10] bg-ink/[0.03] px-3.5 py-2.5 text-left transition-colors hover:bg-ink/[0.05]"
         >
           <span
             className="grid size-[19px] shrink-0 place-items-center rounded-[6px] border transition-all duration-200"
             style={{
-              borderColor: recurring ? 'var(--color-accent)' : 'rgba(255,255,255,0.22)',
+              borderColor: recurring ? 'var(--color-accent)' : 'rgb(var(--ink) / 0.22)',
               background: recurring ? 'var(--color-accent)' : 'transparent',
               boxShadow: recurring ? '0 0 14px -3px var(--color-accent-glow)' : undefined,
             }}
@@ -86,10 +86,10 @@ export const MethodPane = memo(function MethodPane({
             {recurring && <Check size={12} strokeWidth={3.2} className="text-accent-contrast" />}
           </span>
           <span>
-            <span className="block text-[12.5px] font-medium text-white/85">
+            <span className="block text-[12.5px] font-medium text-ink-85">
               {t('starpass.recurring')}
             </span>
-            <span className="block text-[11px] text-white/40">{t('starpass.recurringSub')}</span>
+            <span className="block text-[11px] text-ink-40">{t('starpass.recurringSub')}</span>
           </span>
         </button>
       )}

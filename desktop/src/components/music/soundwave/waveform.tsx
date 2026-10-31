@@ -98,6 +98,7 @@ export const LiveWaveform = React.memo(
 
     return (
       <div
+        data-ui="waveform"
         ref={rootRef}
         className={`sw-bars relative w-full h-[96px] ${isCurrent ? 'cursor-pointer' : 'cursor-default'}`}
         onClick={handleBarClick}
@@ -118,7 +119,7 @@ export const LiveWaveform = React.memo(
             aria-hidden
             style={{
               background:
-                'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.05) 50%, transparent 100%)',
+                'linear-gradient(90deg, transparent 0%, rgb(var(--ink) / 0.05) 50%, transparent 100%)',
               backgroundSize: '200% 100%',
               animation: 'shimmer 1.8s ease-in-out infinite',
             }}

@@ -189,7 +189,7 @@ const YearGroup = memo(function YearGroup({
           >
             {year}
           </span>
-          <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/30 md:text-right whitespace-nowrap">
+          <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-ink-30 md:text-right whitespace-nowrap">
             {t('artist.releaseYear')} · {items.length}
           </span>
         </div>
@@ -208,7 +208,7 @@ const RefineHint = memo(function RefineHint() {
   const { t } = useTranslation();
   return (
     <div className="pt-2 pb-4 flex justify-center">
-      <span className="text-[11px] font-medium text-white/35 text-center max-w-[420px] leading-relaxed">
+      <span className="text-[11px] font-medium text-ink-35 text-center max-w-[420px] leading-relaxed">
         {t('discover.capAlbums')}
       </span>
     </div>
@@ -249,13 +249,13 @@ const EmptyAlbums = memo(function EmptyAlbums({ query }: { query: string }) {
       <div
         className="w-16 h-16 rounded-2xl flex items-center justify-center"
         style={{
-          background: 'rgba(255,255,255,0.03)',
-          border: '0.5px solid rgba(255,255,255,0.06)',
+          background: 'rgb(var(--ink) / 0.03)',
+          border: '0.5px solid rgb(var(--ink) / 0.06)',
         }}
       >
-        <Disc3 size={24} className="text-white/15" />
+        <Disc3 size={24} className="text-ink-15" />
       </div>
-      <p className="text-white/30 text-sm">
+      <p className="text-ink-30 text-sm">
         {query ? t('discover.noMatches', { query }) : t('discover.noAlbums')}
       </p>
     </div>

@@ -28,7 +28,7 @@ function ScrollArrow({ side, visible, label, onClick }: ScrollArrowProps) {
       title={label}
       tabIndex={visible ? 0 : -1}
       onClick={onClick}
-      className={`absolute top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border-[0.5px] border-white/[0.12] bg-[rgba(18,18,22,0.55)] text-white/80 shadow-[0_10px_30px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.1)] transition-all duration-300 ease-[var(--ease-apple)] hover:border-white/20 hover:bg-[rgba(28,28,34,0.75)] hover:text-white active:scale-90 ${
+      className={`absolute top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border-[0.5px] border-ink/[0.12] bg-[rgb(var(--surface)/0.55)] text-ink-80 shadow-[0_10px_30px_rgb(var(--shade)/calc(0.45*var(--shade-alpha))),inset_0_1px_0_rgba(255,255,255,0.1)] transition-all duration-300 ease-[var(--ease-apple)] hover:border-ink/20 hover:bg-[rgb(var(--surface-hi)/0.75)] hover:text-ink active:scale-90 ${
         side === 'prev' ? 'left-2' : 'right-2'
       } ${
         visible
@@ -116,7 +116,7 @@ export function HorizontalScroll({ children, className = '' }: HorizontalScrollP
   };
 
   return (
-    <div className="group/hscroll relative min-w-0" onPointerEnter={update}>
+    <div data-ui="shelf" className="group/hscroll relative min-w-0" onPointerEnter={update}>
       <div
         ref={ref}
         onPointerDown={handlePointerDown}

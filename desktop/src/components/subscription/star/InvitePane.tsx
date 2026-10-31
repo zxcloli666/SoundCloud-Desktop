@@ -18,7 +18,7 @@ export const InvitePane = memo(function InvitePane() {
   const [copied, setCopied] = useState(false);
 
   if (isLoading) {
-    return <div className="font-mono text-[12px] text-white/40">{t('starpass.loading')}</div>;
+    return <div className="font-mono text-[12px] text-ink-40">{t('starpass.loading')}</div>;
   }
   if (isError || !data) {
     return <p className="text-[13px] text-red-200/90">{t('starpass.loadError')}</p>;
@@ -38,7 +38,7 @@ export const InvitePane = memo(function InvitePane() {
       <Ttl>{t('starpass.invite.title', { days: data.bonus_days })}</Ttl>
       <div className="flex flex-wrap items-center gap-3">
         <span
-          className="selectable rounded-[12px] border border-white/[0.12] bg-white/[0.04] px-4 py-2.5 font-mono text-[20px] tracking-[0.22em] text-white"
+          className="selectable rounded-[12px] border border-ink/[0.12] bg-ink/[0.04] px-4 py-2.5 font-mono text-[20px] tracking-[0.22em] text-ink"
           style={{ boxShadow: 'inset 0 0 24px -12px var(--color-accent-glow)' }}
         >
           {data.code}
@@ -64,13 +64,13 @@ export const InvitePane = memo(function InvitePane() {
             key={i}
             className="h-1.5 flex-1 rounded-full"
             style={{
-              background: i < data.invited ? 'var(--color-accent)' : 'rgba(255,255,255,0.07)',
+              background: i < data.invited ? 'var(--color-accent)' : 'rgb(var(--ink) / 0.07)',
               boxShadow: i < data.invited ? '0 0 8px var(--color-accent-glow)' : undefined,
             }}
           />
         ))}
       </div>
-      <div className="mt-2 flex justify-between font-mono text-[10.5px] text-white/40">
+      <div className="mt-2 flex justify-between font-mono text-[10.5px] text-ink-40">
         <span>{t('starpass.invite.friends', { count: data.invited, cap: data.cap })}</span>
         <span className="text-accent">
           {t('starpass.invite.earned', { count: data.days_earned })}

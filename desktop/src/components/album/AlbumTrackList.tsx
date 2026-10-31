@@ -40,30 +40,30 @@ const WantedRow = memo(function WantedRow({ track, position }: { track: Track; p
   return (
     <div
       className="flex items-center gap-4 px-4 py-2.5 rounded-2xl opacity-50"
-      style={{ background: 'rgba(255,255,255,0.015)' }}
+      style={{ background: 'rgb(var(--ink) / 0.015)' }}
     >
       <div className="w-10 h-10 flex items-center justify-center shrink-0">
-        <span className="text-[13px] text-white/25 tabular-nums font-semibold">{position}</span>
+        <span className="text-[13px] text-ink-25 tabular-nums font-semibold">{position}</span>
       </div>
       <div
         className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
         style={{
-          background: 'rgba(255,255,255,0.03)',
+          background: 'rgb(var(--ink) / 0.03)',
           boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.06)',
         }}
       >
-        <Music size={14} className="text-white/20" />
+        <Music size={14} className="text-ink-20" />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-[13px] font-medium text-white/55 truncate">{displayTitle}</p>
-        <p className="text-[11px] text-white/25 truncate">{artistDisplay.primary}</p>
+        <p className="text-[13px] font-medium text-ink-55 truncate">{displayTitle}</p>
+        <p className="text-[11px] text-ink-25 truncate">{artistDisplay.primary}</p>
       </div>
       {track.duration ? (
-        <span className="text-[11px] text-white/25 tabular-nums shrink-0 w-12 text-right">
+        <span className="text-[11px] text-ink-25 tabular-nums shrink-0 w-12 text-right">
           {dur(track.duration)}
         </span>
       ) : (
-        <span className="text-[11px] text-white/15 shrink-0 w-12 text-right">—</span>
+        <span className="text-[11px] text-ink-15 shrink-0 w-12 text-right">—</span>
       )}
     </div>
   );
@@ -80,13 +80,13 @@ function AlbumTrackListImpl({ tracks, aura }: AlbumTrackListProps) {
         <div
           className="w-16 h-16 rounded-2xl flex items-center justify-center"
           style={{
-            background: 'rgba(255,255,255,0.03)',
+            background: 'rgb(var(--ink) / 0.03)',
             boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.06)',
           }}
         >
-          <Music size={24} className="text-white/15" />
+          <Music size={24} className="text-ink-15" />
         </div>
-        <p className="text-white/30 text-sm">{t('album.noTracks')}</p>
+        <p className="text-ink-30 text-sm">{t('album.noTracks')}</p>
       </div>
     );
   }
@@ -98,20 +98,20 @@ function AlbumTrackListImpl({ tracks, aura }: AlbumTrackListProps) {
       style={{
         background:
           b > 0
-            ? 'linear-gradient(180deg, rgba(255,255,255,0.035) 0%, rgba(255,255,255,0.015) 100%)'
-            : 'rgba(18,18,22,0.85)',
+            ? 'linear-gradient(180deg, rgb(var(--ink) / 0.035) 0%, rgb(var(--ink) / 0.015) 100%)'
+            : 'rgb(var(--surface) / 0.85)',
         backdropFilter: b > 0 ? `blur(${b}px) saturate(160%)` : undefined,
         WebkitBackdropFilter: b > 0 ? `blur(${b}px) saturate(160%)` : undefined,
         boxShadow:
-          '0 30px 80px rgba(0,0,0,0.30), inset 0 0 0 1px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.05)',
+          '0 30px 80px rgb(var(--shade) / calc(0.30 * var(--shade-alpha))), inset 0 0 0 1px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.05)',
       }}
     >
       <div className="flex items-center justify-between px-3 pt-2 pb-4">
-        <span className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.22em] text-white/55">
+        <span className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.22em] text-ink-55">
           <ListMusic size={12} /> {t('album.tracks')}
-          <span className="text-white/25 ml-1">{available.length}</span>
+          <span className="text-ink-25 ml-1">{available.length}</span>
         </span>
-        <span className="text-[11px] text-white/30 font-bold uppercase tracking-[0.18em] tabular-nums">
+        <span className="text-[11px] text-ink-30 font-bold uppercase tracking-[0.18em] tabular-nums">
           {dur(totalDuration)}
         </span>
       </div>
@@ -137,14 +137,14 @@ function AlbumTrackListImpl({ tracks, aura }: AlbumTrackListProps) {
               className="text-[10px] font-bold uppercase tracking-[0.22em] px-3 py-1 rounded-full"
               style={{
                 background: auraRgba(aura, 0.16),
-                color: '#fff',
+                color: 'rgb(var(--ink))',
                 boxShadow: `inset 0 0 0 1px ${auraRgba(aura, 0.3)}`,
               }}
             >
               {t('album.comingSoon')}
             </span>
-            <span className="text-[11px] text-white/30 tabular-nums">{fc(wanted.length)}</span>
-            <div className="flex-1 h-px bg-white/[0.05]" />
+            <span className="text-[11px] text-ink-30 tabular-nums">{fc(wanted.length)}</span>
+            <div className="flex-1 h-px bg-ink/[0.05]" />
           </div>
           <div className="flex flex-col gap-1">
             {wanted.map((track, i) => (

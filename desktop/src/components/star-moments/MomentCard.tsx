@@ -24,14 +24,14 @@ export const MomentCard = memo(function MomentCard({
       onMouseLeave={() => onHover?.(false)}
     >
       <div
-        className="relative overflow-hidden rounded-[20px] border border-white/[0.10] p-4"
+        className="relative overflow-hidden rounded-[20px] border border-ink/[0.10] p-4"
         style={{
           background: blur
-            ? 'linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.01) 60%), rgba(14,13,18,0.78)'
-            : 'rgba(18,17,22,0.96)',
+            ? 'linear-gradient(180deg, rgb(var(--ink) / 0.06), rgb(var(--ink) / 0.01) 60%), rgb(var(--surface) / 0.78)'
+            : 'rgb(var(--surface) / 0.96)',
           backdropFilter: blur ? `blur(${blur}px) saturate(1.5)` : undefined,
           WebkitBackdropFilter: blur ? `blur(${blur}px) saturate(1.5)` : undefined,
-          boxShadow: '0 24px 70px -24px rgba(0,0,0,0.9), inset 0 1px 0 rgba(255,255,255,0.08)',
+          boxShadow: '0 24px 70px -24px rgb(var(--shade) / calc(0.9 * var(--shade-alpha))), inset 0 1px 0 rgba(255,255,255,0.08)',
         }}
       >
         <span
@@ -46,7 +46,7 @@ export const MomentCard = memo(function MomentCard({
           type="button"
           aria-label={t('common.close')}
           onClick={onClose}
-          className="absolute right-2.5 top-2.5 grid size-7 cursor-pointer place-items-center rounded-full text-white/35 transition-colors hover:bg-white/[0.06] hover:text-white/80"
+          className="absolute right-2.5 top-2.5 grid size-7 cursor-pointer place-items-center rounded-full text-ink-35 transition-colors hover:bg-ink/[0.06] hover:text-ink-80"
         >
           <X size={14} />
         </button>

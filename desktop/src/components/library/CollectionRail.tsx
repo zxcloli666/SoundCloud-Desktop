@@ -28,15 +28,15 @@ export const CollectionRail = memo(function CollectionRail({
     return (
         <section>
             <div className="flex items-center gap-2.5 mb-3 px-1">
-                <span className="text-white/55">{icon}</span>
-                <h2 className="text-[16px] font-bold tracking-tight text-white/90">{title}</h2>
+                <span className="text-ink-55">{icon}</span>
+                <h2 className="text-[16px] font-bold tracking-tight text-ink-90">{title}</h2>
                 {count != null && count > 0 && (
-                    <span className="text-[12px] text-white/30 tabular-nums">{fc(count)}</span>
+                    <span className="text-[12px] text-ink-30 tabular-nums">{fc(count)}</span>
                 )}
                 <Link
                     to={to}
                     state={state}
-                    className="ml-auto flex items-center gap-0.5 text-[12px] font-semibold text-white/45 hover:text-white/90 transition-colors"
+                    className="ml-auto flex items-center gap-0.5 text-[12px] font-semibold text-ink-45 hover:text-ink-90 transition-colors"
                 >
                     {t('library.seeAll')}
                     <ChevronRight size={14}/>

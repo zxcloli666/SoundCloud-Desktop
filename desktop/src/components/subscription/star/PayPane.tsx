@@ -72,7 +72,7 @@ export const PayPane = memo(function PayPane({
         <Ttl>
           {t(`starpass.method.${option.i18n}.title`)} · {serial}
         </Ttl>
-        <p className="text-[12.5px] leading-relaxed text-white/60">{t('starpass.qrRefreshing')}</p>
+        <p className="text-[12.5px] leading-relaxed text-ink-60">{t('starpass.qrRefreshing')}</p>
       </div>
     );
   }
@@ -83,7 +83,7 @@ export const PayPane = memo(function PayPane({
         <Ttl>
           {t(`starpass.method.${option.i18n}.title`)} · {serial}
         </Ttl>
-        <p className="text-[12.5px] leading-relaxed text-white/60">{t('starpass.qrExpired')}</p>
+        <p className="text-[12.5px] leading-relaxed text-ink-60">{t('starpass.qrExpired')}</p>
         <div className="mt-3.5">
           <PrimaryBtn onClick={onChangeMethod}>{t('starpass.retry')}</PrimaryBtn>
         </div>
@@ -107,7 +107,7 @@ export const PayPane = memo(function PayPane({
         {isSbp ? (
           <ol className="flex list-none flex-col gap-2 p-0">
             {[1, 2, 3].map((n) => (
-              <li key={n} className="flex gap-2.5 text-[12.5px] text-white/60">
+              <li key={n} className="flex gap-2.5 text-[12.5px] text-ink-60">
                 <span className="min-w-[16px] font-mono text-[11px] text-accent">
                   {String(n).padStart(2, '0')}
                 </span>
@@ -116,7 +116,7 @@ export const PayPane = memo(function PayPane({
             ))}
           </ol>
         ) : (
-          <p className="text-[12.5px] leading-relaxed text-white/60">
+          <p className="text-[12.5px] leading-relaxed text-ink-60">
             {t('starpass.externalHint')}
           </p>
         )}

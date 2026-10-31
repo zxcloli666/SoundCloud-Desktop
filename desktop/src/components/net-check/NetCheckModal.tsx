@@ -14,7 +14,7 @@ export const NetCheckModal = React.memo(() => {
   return (
     <Modal open={open} onOpenChange={(next) => !next && closeCheck()}>
       <ModalContent size="md" zClass="z-[95]" showClose={false}>
-        <ModalClose className="absolute top-4 right-4 z-10 p-1.5 rounded-lg text-white/20 hover:text-white/60 hover:bg-white/[0.06] transition-colors cursor-pointer">
+        <ModalClose className="absolute top-4 right-4 z-10 p-1.5 rounded-lg text-ink-20 hover:text-ink-60 hover:bg-ink/[0.06] transition-colors cursor-pointer">
           <X size={14} />
         </ModalClose>
         <div

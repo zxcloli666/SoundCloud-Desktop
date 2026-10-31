@@ -35,8 +35,8 @@ export const OwnerTrackMenu = React.memo(function OwnerTrackMenu({ track }: { tr
             aria-label={t('track.manage')}
             className={`cursor-pointer w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
               open
-                ? 'text-white/85 bg-white/[0.08] opacity-100'
-                : 'text-white/30 hover:text-white/80 hover:bg-white/[0.06] opacity-0 group-hover:opacity-100'
+                ? 'text-ink-85 bg-ink/[0.08] opacity-100'
+                : 'text-ink-30 hover:text-ink-80 hover:bg-ink/[0.06] opacity-0 group-hover:opacity-100'
             }`}
           >
             <Ellipsis size={15} />
@@ -48,19 +48,19 @@ export const OwnerTrackMenu = React.memo(function OwnerTrackMenu({ track }: { tr
             align="end"
             className="z-50 w-[210px] rounded-2xl p-1.5 outline-none animate-fade-in"
             style={{
-              background: b > 0 ? 'rgba(18,18,22,0.88)' : 'rgb(22,22,26)',
+              background: b > 0 ? 'rgb(var(--surface) / 0.88)' : 'rgb(var(--surface-hi))',
               backdropFilter: b > 0 ? `blur(${b}px) saturate(1.8)` : undefined,
               WebkitBackdropFilter: b > 0 ? `blur(${b}px) saturate(1.8)` : undefined,
-              border: '1px solid rgba(255,255,255,0.08)',
-              boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
+              border: '1px solid rgb(var(--ink) / 0.08)',
+              boxShadow: '0 20px 60px rgb(var(--shade) / calc(0.5 * var(--shade-alpha)))',
             }}
           >
             <button
               type="button"
               onClick={pick(() => setEditing(true))}
-              className={`${ITEM_CLASS} text-white/65 hover:bg-white/[0.06] hover:text-white/92`}
+              className={`${ITEM_CLASS} text-ink-65 hover:bg-ink/[0.06] hover:text-ink-92`}
             >
-              <span className="text-white/35 transition-colors group-hover:text-accent">
+              <span className="text-ink-35 transition-colors group-hover:text-accent">
                 <Pencil size={14} />
               </span>
               {t('track.edit')}
@@ -69,14 +69,14 @@ export const OwnerTrackMenu = React.memo(function OwnerTrackMenu({ track }: { tr
               type="button"
               disabled={sharing.isPending}
               onClick={pick(() => sharing.mutate(isPrivate ? 'public' : 'private'))}
-              className={`${ITEM_CLASS} text-white/65 hover:bg-white/[0.06] hover:text-white/92`}
+              className={`${ITEM_CLASS} text-ink-65 hover:bg-ink/[0.06] hover:text-ink-92`}
             >
-              <span className="text-white/35 transition-colors group-hover:text-accent">
+              <span className="text-ink-35 transition-colors group-hover:text-accent">
                 {isPrivate ? <Globe size={14} /> : <Lock size={14} />}
               </span>
               {isPrivate ? t('sharing.makePublic') : t('sharing.makePrivate')}
             </button>
-            <div className="h-px bg-white/[0.06] mx-2 my-1" />
+            <div className="h-px bg-ink/[0.06] mx-2 my-1" />
             <button
               type="button"
               onClick={pick(() => setDeleting(true))}

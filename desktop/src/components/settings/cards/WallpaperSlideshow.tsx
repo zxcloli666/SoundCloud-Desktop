@@ -50,13 +50,13 @@ export function WallpaperSlideshow({ available }: { available: string[] }) {
 
   return (
     <div
-      className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4 space-y-4"
+      className="rounded-2xl border border-ink/[0.06] bg-ink/[0.02] p-4 space-y-4"
       style={
         s.enabled
           ? {
               borderColor: 'var(--color-accent-glow)',
               background:
-                'linear-gradient(160deg, var(--color-accent-glow), transparent 55%), rgba(255,255,255,0.02)',
+                'linear-gradient(160deg, var(--color-accent-glow), transparent 55%), rgb(var(--ink) / 0.02)',
             }
           : undefined
       }
@@ -69,7 +69,7 @@ export function WallpaperSlideshow({ available }: { available: string[] }) {
         <div className="space-y-4 animate-fade-in-up">
           <div className="flex items-center justify-between gap-3">
             <p
-              className={`text-[12px] leading-snug ${ready ? 'text-white/45' : 'text-amber-300/80'}`}
+              className={`text-[12px] leading-snug ${ready ? 'text-ink-45' : 'text-amber-300/80'}`}
             >
               {ready
                 ? t('settings.wpSlideshowSelected', { count: s.names.length })
@@ -79,7 +79,7 @@ export function WallpaperSlideshow({ available }: { available: string[] }) {
               type="button"
               onClick={advanceWallpaper}
               disabled={!ready}
-              className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-semibold text-white/70 bg-white/[0.06] border border-white/[0.06] hover:bg-white/[0.1] hover:text-white transition-all cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+              className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-semibold text-ink-70 bg-ink/[0.06] border border-ink/[0.06] hover:bg-ink/[0.1] hover:text-ink transition-all cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
             >
               <SkipForward size={12} />
               {t('settings.wpSlideshowNext')}
@@ -87,7 +87,7 @@ export function WallpaperSlideshow({ available }: { available: string[] }) {
           </div>
 
           <div className="space-y-2">
-            <span className="text-[12px] text-white/40 font-medium">
+            <span className="text-[12px] text-ink-40 font-medium">
               {t('settings.wpSlideshowInterval')}
             </span>
             <Segmented
@@ -98,7 +98,7 @@ export function WallpaperSlideshow({ available }: { available: string[] }) {
           </div>
 
           <div className="space-y-2">
-            <span className="text-[12px] text-white/40 font-medium">
+            <span className="text-[12px] text-ink-40 font-medium">
               {t('settings.wpSlideshowOrder')}
             </span>
             <Segmented value={s.order} options={orderOptions} onChange={s.setOrder} />

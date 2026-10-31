@@ -1,15 +1,17 @@
 @import "tailwindcss";
 
+@import "./scheme.css";
+
 @theme {
-  --color-bg-primary: rgba(10, 10, 12, 0.95);
-  --color-bg-glass: rgba(255, 255, 255, 0.03);
-  --color-bg-glass-hover: rgba(255, 255, 255, 0.06);
-  --color-bg-glass-active: rgba(255, 255, 255, 0.09);
-  --color-border-glass: rgba(255, 255, 255, 0.06);
-  --color-border-glass-hi: rgba(255, 255, 255, 0.12);
-  --color-text-primary: rgba(255, 255, 255, 0.92);
-  --color-text-secondary: rgba(255, 255, 255, 0.55);
-  --color-text-tertiary: rgba(255, 255, 255, 0.25);
+  --color-bg-primary: rgb(var(--paper) / 0.95);
+  --color-bg-glass: rgb(var(--ink) / 0.03);
+  --color-bg-glass-hover: rgb(var(--ink) / 0.06);
+  --color-bg-glass-active: rgb(var(--ink) / 0.09);
+  --color-border-glass: rgb(var(--ink) / 0.06);
+  --color-border-glass-hi: rgb(var(--ink) / 0.12);
+  --color-text-primary: rgb(var(--ink) / 0.92);
+  --color-text-secondary: rgb(var(--ink) / 0.55);
+  --color-text-tertiary: rgb(var(--ink) / 0.25);
   --color-accent: #ff5500;
   --color-accent-hover: #ff6a1a;
   --color-accent-glow: rgba(255, 85, 0, 0.2);
@@ -61,13 +63,13 @@
 [data-perf="light"] .glass-flat {
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
-    background: rgba(22, 22, 26, 0.82);
+    background: rgb(var(--surface-hi) / 0.82);
 }
 
 [data-perf="light"] .glass-featured {
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
-    background: rgba(16, 16, 20, 0.86);
+    background: rgb(var(--surface) / 0.86);
 }
 
 [data-perf="light"] .npb-glass {
@@ -75,11 +77,11 @@
     -webkit-backdrop-filter: none;
     background: linear-gradient(
             180deg,
-            rgba(255, 255, 255, 0.06),
-            rgba(255, 255, 255, 0.015) 44%,
-            rgba(255, 255, 255, 0.008)
+            rgb(var(--ink) / 0.06),
+            rgb(var(--ink) / 0.015) 44%,
+            rgb(var(--ink) / 0.008)
     ),
-    rgba(15, 15, 19, 0.92);
+    rgb(var(--surface) / 0.92);
 }
 
 [data-perf="light"] .npb-glass::after {
@@ -165,7 +167,7 @@ body,
 }
 
 #root {
-  background: var(--bg-primary, rgb(8, 8, 10));
+  background: var(--bg-primary, rgb(var(--paper)));
   overflow: hidden;
 }
 
@@ -197,29 +199,29 @@ select,
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgb(var(--ink) / 0.08);
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgb(var(--ink) / 0.15);
 }
 
 /* ── Glass ──────────────────────────────────────────────────── */
 .glass {
-  background: rgba(255, 255, 255, 0.025);
+  background: rgb(var(--ink) / 0.025);
     backdrop-filter: blur(var(--glass-blur)) saturate(1.8);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid rgb(var(--ink) / 0.05);
 }
 
 .glass-hover:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.1);
+  background: rgb(var(--ink) / 0.05);
+  border-color: rgb(var(--ink) / 0.1);
 }
 
 .glass-flat {
-  background: rgba(255, 255, 255, 0.025);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgb(var(--ink) / 0.025);
+  border: 1px solid rgb(var(--ink) / 0.05);
 }
 
 /* ── Shimmer ───────────────────────────────────────────────── */
@@ -234,7 +236,7 @@ select,
 }
 
 .skeleton-shimmer {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgb(var(--ink) / 0.05);
   animation: skeleton-pulse 1.6s ease-in-out infinite;
 }
 
@@ -304,15 +306,15 @@ select,
 }
 
 .hero-greeting {
-  color: rgba(255, 255, 255, 0.96);
+  color: rgb(var(--ink) / 0.96);
 }
 
 @supports ((-webkit-background-clip: text) or (background-clip: text)) {
   .hero-greeting {
     background-image: linear-gradient(
       90deg,
-      rgba(255, 255, 255, 1),
-      rgba(255, 255, 255, 0.8),
+      rgb(var(--ink) / 1),
+      rgb(var(--ink) / 0.8),
       rgba(255, 85, 0, 0.8)
     );
     background-clip: text;
@@ -400,17 +402,17 @@ select,
 
 /* ── Featured card glass ──────────────────────────────────── */
 .glass-featured {
-  background: rgba(255, 255, 255, 0.02);
+  background: rgb(var(--ink) / 0.02);
     backdrop-filter: blur(var(--glass-blur-strong)) saturate(2);
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  border: 1px solid rgb(var(--ink) / 0.07);
   box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.03) inset,
-    0 8px 40px rgba(0, 0, 0, 0.3);
+    0 8px 40px rgb(var(--shade) / calc(0.3 * var(--shade-alpha)));
 }
 
 .glass-featured:hover {
-  background: rgba(255, 255, 255, 0.035);
-  border-color: rgba(255, 255, 255, 0.1);
+  background: rgb(var(--ink) / 0.035);
+  border-color: rgb(var(--ink) / 0.1);
 }
 
 /* ── Synced lyrics lines ─────────────────────────────────── */
@@ -421,7 +423,7 @@ select,
   font-size: 28px;
   font-weight: 700;
   letter-spacing: -0.02em;
-  color: rgba(255, 255, 255, 0.26);
+  color: rgb(var(--ink) / 0.26);
   opacity: 0.4;
   transform-origin: left center;
   transform: scale(0.972) translate3d(0, 0, 0);
@@ -438,32 +440,32 @@ select,
 }
 
 .lyric-line[data-state="active"] {
-  color: #fff;
+  color: rgb(var(--ink));
   opacity: 1;
   transform: scale(1.02) translate3d(0, 0, 0);
   filter: drop-shadow(0 0 18px rgba(255, 255, 255, 0.38));
 }
 
 .lyric-line[data-state="past-near"] {
-  color: rgba(255, 255, 255, 0.78);
+  color: rgb(var(--ink) / 0.78);
   opacity: 0.78;
   transform: scale(0.992) translate3d(-4px, 0, 0);
 }
 
 .lyric-line[data-state="past"] {
-  color: rgba(255, 255, 255, 0.42);
+  color: rgb(var(--ink) / 0.42);
   opacity: 0.48;
   transform: scale(0.98) translate3d(-8px, 0, 0);
 }
 
 .lyric-line[data-state="next-near"] {
-  color: rgba(255, 255, 255, 0.55);
+  color: rgb(var(--ink) / 0.55);
   opacity: 0.66;
   transform: scale(0.988) translate3d(6px, 0, 0);
 }
 
 .lyric-line[data-state="next"] {
-  color: rgba(255, 255, 255, 0.32);
+  color: rgb(var(--ink) / 0.32);
   opacity: 0.28;
   transform: scale(0.968) translate3d(12px, 0, 0);
 }
@@ -482,7 +484,7 @@ select,
   height: 3px;
   width: 96px;
   border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgb(var(--ink) / 0.08);
   overflow: hidden;
 }
 
@@ -490,7 +492,7 @@ select,
   height: 100%;
   width: 0%;
   border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.7);
+  background: rgb(var(--ink) / 0.7);
   transition: none;
 }
 
@@ -514,7 +516,7 @@ select,
 
 .note-gradient-text {
   display: inline-block;
-  color: rgba(255, 255, 255, 0.32);
+  color: rgb(var(--ink) / 0.32);
   background-image: none;
   background-size: 144px 100%;
   background-repeat: repeat-x;
@@ -534,15 +536,15 @@ select,
   background-clip: text;
   background-image: linear-gradient(
     90deg,
-    rgba(255, 255, 255, 0.06) 0px,
-    rgba(255, 255, 255, 0.06) 16px,
-    rgba(255, 255, 255, 0.18) 32px,
-    rgba(255, 255, 255, 0.45) 50px,
-    rgba(255, 255, 255, 0.95) 72px,
-    rgba(255, 255, 255, 0.45) 94px,
-    rgba(255, 255, 255, 0.18) 112px,
-    rgba(255, 255, 255, 0.06) 128px,
-    rgba(255, 255, 255, 0.06) 144px
+    rgb(var(--ink) / 0.06) 0px,
+    rgb(var(--ink) / 0.06) 16px,
+    rgb(var(--ink) / 0.18) 32px,
+    rgb(var(--ink) / 0.45) 50px,
+    rgb(var(--ink) / 0.95) 72px,
+    rgb(var(--ink) / 0.45) 94px,
+    rgb(var(--ink) / 0.18) 112px,
+    rgb(var(--ink) / 0.06) 128px,
+    rgb(var(--ink) / 0.06) 144px
   );
   filter: drop-shadow(0 0 18px rgba(255, 255, 255, 0.38));
   animation: noteGradientFlow 3.2s linear infinite both;
@@ -550,7 +552,7 @@ select,
 
 .lyric-line[data-state="past"] .note-gradient-text,
 .lyric-line[data-state="past-near"] .note-gradient-text {
-  color: rgba(255, 255, 255, 0.92);
+  color: rgb(var(--ink) / 0.92);
   filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.08));
 }
 
@@ -561,7 +563,7 @@ select,
   max-width: 100%;
   white-space: pre-wrap;
   vertical-align: top;
-  color: rgba(255, 255, 255, 0.32);
+  color: rgb(var(--ink) / 0.32);
 }
 
 [data-highlight="line"] .lyric-fill {
@@ -579,7 +581,7 @@ select,
 .lyric-char {
   display: inline-block;
   position: relative;
-  color: rgba(255, 255, 255, calc(0.26 + 0.74 * var(--char-progress, 0)));
+  color: rgb(var(--ink) / calc(0.26 + 0.74 * var(--char-progress, 0)));
   text-shadow:
     0 0 calc(10px * var(--char-progress, 0))
     rgba(255, 255, 255, calc(0.18 * var(--char-progress, 0))),
@@ -598,7 +600,7 @@ select,
 /* Past line — all chars fully lit */
 .lyric-line[data-state="past"] .lyric-char,
 .lyric-line[data-state="past-near"] .lyric-char {
-  color: rgba(255, 255, 255, 1);
+  color: rgb(var(--ink) / 1);
   text-shadow: 0 0 22px rgba(255, 255, 255, 0.18);
   transform: none;
 }
@@ -606,7 +608,7 @@ select,
 /* Next line — fully dim */
 .lyric-line[data-state="next"] .lyric-char,
 .lyric-line[data-state="next-near"] .lyric-char {
-  color: rgba(255, 255, 255, 0.3);
+  color: rgb(var(--ink) / 0.3);
   text-shadow: none;
   transform: none;
 }
@@ -857,7 +859,7 @@ select,
 }
 
 .sw-layer-muted .sw-bar {
-  background: rgba(255, 255, 255, 0.22);
+  background: rgb(var(--ink) / 0.22);
 }
 
 .sw-layer-accent {
@@ -877,8 +879,8 @@ select,
 .soundwave-title {
   background-image: linear-gradient(
     100deg,
-    rgba(255, 255, 255, 0.98) 0%,
-    rgba(255, 255, 255, 0.72) 40%,
+    rgb(var(--ink) / 0.98) 0%,
+    rgb(var(--ink) / 0.72) 40%,
     var(--color-accent) 100%
   );
   background-clip: text;
@@ -949,7 +951,7 @@ select,
     width: 1128px;
     max-width: calc(100% - 32px);
     border-radius: 28px;
-    box-shadow: 0 30px 70px -22px rgba(0, 0, 0, 0.78),
+    box-shadow: 0 30px 70px -22px rgb(var(--shade) / calc(0.78 * var(--shade-alpha))),
     0 0 64px -18px var(--color-accent-glow);
 }
 
@@ -963,14 +965,14 @@ select,
     z-index: 0;
     background: linear-gradient(
             180deg,
-            rgba(255, 255, 255, 0.09),
-            rgba(255, 255, 255, 0.022) 44%,
-            rgba(255, 255, 255, 0.01)
+            rgb(var(--ink) / 0.09),
+            rgb(var(--ink) / 0.022) 44%,
+            rgb(var(--ink) / 0.01)
     ),
-    rgba(15, 15, 19, 0.55);
-    border: 1px solid rgba(255, 255, 255, 0.11);
+    rgb(var(--surface) / 0.55);
+    border: 1px solid rgb(var(--ink) / 0.11);
     box-shadow: 0 1px 0 rgba(255, 255, 255, 0.2) inset,
-    0 -10px 26px -18px rgba(0, 0, 0, 0.7) inset;
+    0 -10px 26px -18px rgb(var(--shade) / calc(0.7 * var(--shade-alpha))) inset;
     backdrop-filter: blur(var(--glass-blur-soft)) saturate(1.6);
     -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(1.6);
     contain: strict;
@@ -1041,7 +1043,7 @@ select,
     width: 1px;
     height: 30px;
     flex: 0 0 auto;
-    background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.16), transparent);
+    background: linear-gradient(180deg, transparent, rgb(var(--ink) / 0.16), transparent);
 }
 
 /* meta (art + title) */
@@ -1061,7 +1063,7 @@ select,
     border-radius: 13px;
     overflow: hidden;
     cursor: pointer;
-    box-shadow: 0 8px 20px -8px rgba(0, 0, 0, 0.75),
+    box-shadow: 0 8px 20px -8px rgb(var(--shade) / calc(0.75 * var(--shade-alpha))),
     0 0 0 1px rgba(255, 255, 255, 0.1) inset;
     transition: transform 0.3s var(--ease-apple),
     box-shadow 0.3s var(--ease-apple);
@@ -1069,7 +1071,7 @@ select,
 
 .npb-art:hover {
     transform: scale(1.05) rotate(-1.5deg);
-    box-shadow: 0 10px 26px -8px rgba(0, 0, 0, 0.8),
+    box-shadow: 0 10px 26px -8px rgb(var(--shade) / calc(0.8 * var(--shade-alpha))),
     0 0 0 1px rgba(255, 255, 255, 0.2) inset,
     0 0 30px -8px var(--color-accent-glow);
 }
@@ -1095,7 +1097,7 @@ select,
     background: conic-gradient(
             from 0deg,
             transparent 0 74%,
-            rgba(255, 255, 255, 0.55) 84%,
+            rgb(var(--ink) / 0.55) 84%,
             transparent 92%
     );
     -webkit-mask: radial-gradient(circle, transparent 56%, #000 58%);
@@ -1197,7 +1199,7 @@ select,
     font-size: 13px;
     font-weight: 650;
     letter-spacing: -0.01em;
-    color: rgba(255, 255, 255, 0.95);
+    color: rgb(var(--ink) / 0.95);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1206,7 +1208,7 @@ select,
 }
 
 .npb-ttl:hover {
-    color: #fff;
+    color: rgb(var(--ink));
 }
 
 .npb-sub {
@@ -1215,7 +1217,7 @@ select,
     gap: 4px;
     font-size: 11px;
     font-weight: 500;
-    color: rgba(255, 255, 255, 0.5);
+    color: rgb(var(--ink) / 0.5);
     min-width: 0;
     transition: color 0.2s var(--ease-apple);
 }
@@ -1225,7 +1227,7 @@ select,
 }
 
 .npb-sub.is-link:hover {
-    color: rgba(255, 255, 255, 0.72);
+    color: rgb(var(--ink) / 0.72);
 }
 
 .npb-sub span {
@@ -1242,11 +1244,11 @@ select,
     max-width: min(420px, calc(100vw - 24px));
     border-radius: 20px;
     overflow: hidden;
-    border: 1px solid rgba(255, 255, 255, 0.09);
-    background: rgba(18, 18, 22, 0.82);
+    border: 1px solid rgb(var(--ink) / 0.09);
+    background: rgb(var(--surface) / 0.82);
     backdrop-filter: blur(28px) saturate(1.4);
     -webkit-backdrop-filter: blur(28px) saturate(1.4);
-    box-shadow: 0 24px 60px -18px rgba(0, 0, 0, 0.8),
+    box-shadow: 0 24px 60px -18px rgb(var(--shade) / calc(0.8 * var(--shade-alpha))),
     0 0 40px -14px var(--color-accent-glow);
     transform-origin: var(--radix-popover-content-transform-origin);
     animation: npb-namecard-in 0.22s var(--ease-apple);
@@ -1255,7 +1257,7 @@ select,
 [data-perf="light"] .npb-namecard {
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
-    background: rgba(18, 18, 22, 0.97);
+    background: rgb(var(--surface) / 0.97);
 }
 
 @keyframes npb-namecard-in {
@@ -1299,7 +1301,7 @@ select,
     flex: 0 0 auto;
     border-radius: 12px;
     object-fit: cover;
-    box-shadow: 0 8px 20px -8px rgba(0, 0, 0, 0.7);
+    box-shadow: 0 8px 20px -8px rgb(var(--shade) / calc(0.7 * var(--shade-alpha)));
 }
 
 .npb-namecard-title {
@@ -1307,7 +1309,7 @@ select,
     font-weight: 650;
     line-height: 1.3;
     letter-spacing: -0.01em;
-    color: #fff;
+    color: rgb(var(--ink));
     overflow-wrap: anywhere;
     cursor: text;
 }
@@ -1316,7 +1318,7 @@ select,
     margin-top: 3px;
     font-size: 12.5px;
     font-weight: 500;
-    color: rgba(255, 255, 255, 0.6);
+    color: rgb(var(--ink) / 0.6);
     overflow-wrap: anywhere;
     cursor: text;
 }
@@ -1334,11 +1336,11 @@ select,
     height: 28px;
     padding: 0 10px;
     border-radius: 9px;
-    border: 1px solid rgba(255, 255, 255, 0.07);
-    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgb(var(--ink) / 0.07);
+    background: rgb(var(--ink) / 0.06);
     font-size: 11.5px;
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.7);
+    color: rgb(var(--ink) / 0.7);
     cursor: pointer;
     transition: background 0.2s var(--ease-apple),
     color 0.2s var(--ease-apple),
@@ -1347,8 +1349,8 @@ select,
 }
 
 .npb-namecard-chip:hover {
-    background: rgba(255, 255, 255, 0.11);
-    color: #fff;
+    background: rgb(var(--ink) / 0.11);
+    color: rgb(var(--ink));
 }
 
 .npb-namecard-chip-label {
@@ -1367,7 +1369,7 @@ select,
 }
 
 .npb-namecard-chip.is-done {
-    color: #fff;
+    color: rgb(var(--ink));
     border-color: var(--color-accent);
     box-shadow: 0 0 14px var(--color-accent-glow);
 }
@@ -1447,12 +1449,12 @@ select,
     font-weight: 600;
     font-variant-numeric: tabular-nums;
     letter-spacing: 0.02em;
-    color: rgba(255, 255, 255, 0.42);
+    color: rgb(var(--ink) / 0.42);
     padding: 0 1px 1px;
 }
 
 .npb-times b {
-    color: rgba(255, 255, 255, 0.9);
+    color: rgb(var(--ink) / 0.9);
     font-weight: 700;
 }
 
@@ -1460,7 +1462,7 @@ select,
    the artwork shows a % veil, and the halo brightens. No idle motion — the ring
    just fills to the real download progress via a transition. */
 .npb-dock.is-loading {
-    box-shadow: 0 30px 70px -22px rgba(0, 0, 0, 0.78),
+    box-shadow: 0 30px 70px -22px rgb(var(--shade) / calc(0.78 * var(--shade-alpha))),
     0 0 90px -10px var(--color-accent-glow);
 }
 
@@ -1485,7 +1487,7 @@ select,
 }
 
 .npb-loadring-track {
-    stroke: rgba(255, 255, 255, 0.07);
+    stroke: rgb(var(--ink) / 0.07);
     stroke-width: 2;
 }
 
@@ -1506,12 +1508,12 @@ select,
     place-items: center;
     cursor: pointer;
     border-radius: inherit;
-    background: linear-gradient(180deg, rgba(8, 8, 10, 0.34), rgba(8, 8, 10, 0.62));
+    background: linear-gradient(180deg, rgb(var(--paper) / 0.34), rgb(var(--paper) / 0.62));
     font-size: 11px;
     font-weight: 750;
     font-variant-numeric: tabular-nums;
     letter-spacing: 0.02em;
-    color: #fff;
+    color: rgb(var(--ink));
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
 }
 

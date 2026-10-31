@@ -53,23 +53,23 @@ const ArtistChip = memo(function ArtistChip({
         background: isPrimary
           ? `linear-gradient(135deg, ${auraRgba(aura, 0.18)}, ${auraRgba(aura, 0.04)})`
             : b > 0
-                ? 'rgba(255,255,255,0.04)'
-                : 'rgba(28,28,32,0.85)',
+                ? 'rgb(var(--ink) / 0.04)'
+                : 'rgb(var(--surface-hi) / 0.85)',
         boxShadow: isPrimary
           ? `inset 0 0 0 1px ${auraRgba(aura, 0.35)}`
-          : 'inset 0 0 0 1px rgba(255,255,255,0.08)',
+          : 'inset 0 0 0 1px rgb(var(--ink) / 0.08)',
           backdropFilter: b > 0 ? `blur(${b}px)` : undefined,
           WebkitBackdropFilter: b > 0 ? `blur(${b}px)` : undefined,
       }}
     >
-      <span className="relative w-7 h-7 rounded-full overflow-hidden ring-1 ring-white/15">
+      <span className="relative w-7 h-7 rounded-full overflow-hidden ring-1 ring-ink/15">
         <Avatar src={avatarUrl} alt={name} size={28} />
       </span>
       <span className="flex flex-col items-start leading-tight">
-        <span className="text-[12px] font-semibold text-white/90 group-hover:text-white">
+        <span className="text-[12px] font-semibold text-ink-90 group-hover:text-ink">
           {name}
         </span>
-        <span className="text-[9px] font-bold uppercase tracking-[0.18em] text-white/35">
+        <span className="text-[9px] font-bold uppercase tracking-[0.18em] text-ink-35">
           {subLabel}
         </span>
       </span>
@@ -120,7 +120,7 @@ function AlbumHeroImpl({ album, hasStar, aura }: AlbumHeroProps) {
                 );
             })()}
 
-      <div className="relative p-6 md:p-10 flex flex-col lg:flex-row gap-8 lg:gap-12 items-center lg:items-start">
+      <div data-ui="album-hero" className="relative p-6 md:p-10 flex flex-col lg:flex-row gap-8 lg:gap-12 items-center lg:items-start">
         <AlbumCoverArtifact
           title={album.title}
           coverUrl={album.cover_url}
@@ -136,12 +136,12 @@ function AlbumHeroImpl({ album, hasStar, aura }: AlbumHeroProps) {
                 background: hasStar
                   ? `linear-gradient(135deg, ${auraRgba(aura, 0.25)}, ${auraRgba(aura, 0.08)})`
                     : perf.blur(12) > 0
-                        ? 'rgba(255,255,255,0.05)'
-                        : 'rgba(28,28,32,0.85)',
-                color: hasStar ? '#fff' : 'rgba(255,255,255,0.7)',
+                        ? 'rgb(var(--ink) / 0.05)'
+                        : 'rgb(var(--surface-hi) / 0.85)',
+                color: hasStar ? 'rgb(var(--ink))' : 'rgb(var(--ink) / 0.7)',
                 boxShadow: hasStar
                   ? `inset 0 0 0 1px ${auraRgba(aura, 0.4)}`
-                  : 'inset 0 0 0 1px rgba(255,255,255,0.08)',
+                  : 'inset 0 0 0 1px rgb(var(--ink) / 0.08)',
                   backdropFilter: perf.blur(12) > 0 ? `blur(${perf.blur(12)}px)` : undefined,
                   WebkitBackdropFilter: perf.blur(12) > 0 ? `blur(${perf.blur(12)}px)` : undefined,
               }}
@@ -172,9 +172,9 @@ function AlbumHeroImpl({ album, hasStar, aura }: AlbumHeroProps) {
                     WebkitTextFillColor: 'transparent',
                     backgroundClip: 'text',
                       animation: perf.idleAnim ? 'prismatic-shift 6s linear infinite' : undefined,
-                    filter: 'drop-shadow(0 8px 24px rgba(0,0,0,0.5))',
+                    filter: 'drop-shadow(0 8px 24px rgb(var(--shade) / calc(0.5 * var(--shade-alpha))))',
                   }
-                : { color: '#fff', textShadow: '0 8px 24px rgba(0,0,0,0.5)' }
+                : { color: 'rgb(var(--ink))', textShadow: '0 8px 24px rgb(var(--shade) / calc(0.5 * var(--shade-alpha)))' }
             }
           >
             {album.title}
@@ -219,7 +219,7 @@ function AlbumHeroImpl({ album, hasStar, aura }: AlbumHeroProps) {
                 className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-[0.16em]"
                 style={{
                   background: auraRgba(aura, 0.12),
-                  color: '#fff',
+                  color: 'rgb(var(--ink))',
                   boxShadow: `inset 0 0 0 1px ${auraRgba(aura, 0.3)}`,
                 }}
               >

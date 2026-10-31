@@ -42,7 +42,7 @@ function AlbumTrackRowImpl({ track, position, queue, aura }: AlbumTrackRowProps)
       }}
       onMouseEnter={(e) => {
         preloadTrack(track);
-        if (!isThis) e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
+        if (!isThis) e.currentTarget.style.background = 'rgb(var(--ink) / 0.04)';
       }}
       onMouseLeave={(e) => {
         cancelPreload();
@@ -65,7 +65,7 @@ function AlbumTrackRowImpl({ track, position, queue, aura }: AlbumTrackRowProps)
           </div>
         ) : (
           <>
-            <span className="text-[13px] text-white/30 tabular-nums font-semibold group-hover:opacity-0 transition-opacity">
+            <span className="text-[13px] text-ink-30 tabular-nums font-semibold group-hover:opacity-0 transition-opacity">
               {position}
             </span>
             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
@@ -75,7 +75,7 @@ function AlbumTrackRowImpl({ track, position, queue, aura }: AlbumTrackRowProps)
                   background: lightAura
                       ? auraRgba(aura, 0.85)
                       : hoverB > 0
-                          ? 'rgba(255,255,255,0.12)'
+                          ? 'rgb(var(--ink) / 0.12)'
                           : 'rgba(54,54,60,0.92)',
                   boxShadow: `inset 0 0 0 1px ${auraRgba(aura, 0.3)}`,
                   backdropFilter: hoverB > 0 ? `blur(${hoverB}px)` : undefined,
@@ -94,10 +94,10 @@ function AlbumTrackRowImpl({ track, position, queue, aura }: AlbumTrackRowProps)
         style={{ boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.08)' }}
       >
         {cover ? (
-          <img src={cover} alt="" className="w-full h-full object-cover" loading="lazy" />
+          <img data-ui="artwork" src={cover} alt="" className="w-full h-full object-cover" loading="lazy" />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-white/[0.04]">
-            <Music size={14} className="text-white/20" />
+          <div className="w-full h-full flex items-center justify-center bg-ink/[0.04]">
+            <Music size={14} className="text-ink-20" />
           </div>
         )}
       </div>
@@ -114,18 +114,18 @@ function AlbumTrackRowImpl({ track, position, queue, aura }: AlbumTrackRowProps)
         <AddToPlaylistDialog trackUrns={[track.urn]}>
           <button
             type="button"
-            className="cursor-pointer w-8 h-8 rounded-lg flex items-center justify-center text-white/30 hover:text-white/80 hover:bg-white/[0.06] opacity-0 group-hover:opacity-100 transition-all"
+            className="cursor-pointer w-8 h-8 rounded-lg flex items-center justify-center text-ink-30 hover:text-ink-80 hover:bg-ink/[0.06] opacity-0 group-hover:opacity-100 transition-all"
           >
             <ListPlus size={14} />
           </button>
         </AddToPlaylistDialog>
         <PlayNextButton
           track={track}
-          className="cursor-pointer w-8 h-8 rounded-lg flex items-center justify-center text-white/30 hover:text-white/80 hover:bg-white/[0.06] opacity-0 group-hover:opacity-100 transition-all"
+          className="cursor-pointer w-8 h-8 rounded-lg flex items-center justify-center text-ink-30 hover:text-ink-80 hover:bg-ink/[0.06] opacity-0 group-hover:opacity-100 transition-all"
         />
       </div>
 
-      <span className="text-[12px] text-white/30 tabular-nums font-medium shrink-0 w-12 text-right">
+      <span className="text-[12px] text-ink-30 tabular-nums font-medium shrink-0 w-12 text-right">
         {dur(track.duration)}
       </span>
     </div>

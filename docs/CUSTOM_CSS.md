@@ -18,26 +18,94 @@ If the app is already running, for example in the tray, the flag reaches that co
 
 ## Stable hooks
 
-Tailwind class names change from release to release. These attributes do not:
+Tailwind class names change from release to release. These attributes do not.
+
+### Window
 
 | Selector | Element |
 |---|---|
 | `[data-ui="app"]` | The whole window frame |
 | `[data-ui="titlebar"]` | Title bar with search and window buttons |
+| `[data-ui="brand"]` | Logo in the title bar |
+| `[data-ui="window-controls"]` | Minimize, maximize, close |
+| `[data-ui="search"]` | Search field in the title bar |
 | `[data-ui="sidebar"]` | Left navigation |
 | `[data-ui="nav-item"]` | A link in the left navigation |
-| `[data-ui="search"]` | Search field in the title bar |
+| `[data-ui="sidebar-pins"]` | Pinned artists in the left navigation |
+| `[data-ui="star-card"]` | STAR card in the left navigation |
+| `[data-ui="profile"]` | Your profile at the bottom of the left navigation |
 | `[data-ui="main"]` | Scrollable page area |
+| `[data-ui="page"]` | A page. `data-page` names it: `home`, `search`, `library`, `history`, `discover`, `star`, `track`, `playlist`, `user`, `artist`, `album`, `offline`, `recap`, `settings`, `login` |
+| `[data-ui="modal"]` | Dialog window |
+| `[data-ui="context-menu"]` | Right-click menu |
+| `[data-ui="menu-item"]` | An item in that menu |
+| `[data-ui="toast"]` | News popup |
+| `[data-ui="tray"]` | Tray mini player |
+
+### Player
+
+| Selector | Element |
+|---|---|
 | `[data-ui="player"]` | Floating player bar |
+| `[data-ui="player-art"]` | Cover in the player |
+| `[data-ui="player-title"]` | Track title in the player |
+| `[data-ui="play-button"]` | Play and pause |
+| `[data-ui="progress"]` | Progress bar |
+| `[data-ui="volume"]` | Volume |
+| `[data-ui="namecard"]` | Card that opens from the track title |
 | `[data-ui="queue"]` | Queue panel |
+| `[data-ui="queue-item"]` | A track in the queue |
 | `[data-ui="lyrics"]` | Full-screen lyrics |
-| `[data-ui="card"]` | Settings cards |
+| `[data-ui="lyrics-line"]` | A line of lyrics, with `data-state` |
+| `[data-ui="waveform"]` | Waveform |
+
+### Content
+
+| Selector | Element |
+|---|---|
 | `[data-ui="track-card"]` | Track tile in grids and shelves |
 | `[data-ui="track-row"]` | Track row in Likes and other reorderable lists |
 | `[data-ui="playlist-card"]` | Playlist and album tile |
-| `[data-ui="modal"]` | Dialog window |
-| `[data-ui="tray"]` | Tray mini player |
-| `html[data-perf="beauty"]`, `"medium"`, `"light"` | Performance mode |
+| `[data-ui="artwork"]` | Cover image in tiles and rows |
+| `[data-ui="track-title"]` | Track title |
+| `[data-ui="artist-name"]` | Artist name next to a track |
+| `[data-ui="like-button"]` | Like button |
+| `[data-ui="greeting"]` | Greeting at the top of Home and Library |
+| `[data-ui="soundwave"]` | "The current" block on Home |
+| `[data-ui="soundprint"]` | Your soundprint bars |
+| `[data-ui="artist-hero"]` | Top block of an artist page |
+| `[data-ui="album-hero"]` | Top block of an album page |
+| `[data-ui="playlist-hero"]` | Top block of a playlist page |
+| `[data-ui="user-hero"]` | Top block of a profile page |
+| `[data-ui="track-hero"]` | Top block of a track page |
+| `[data-ui="discover-hero"]` | Top block of Discover |
+| `[data-ui="comments"]` | Comments list |
+| `[data-ui="comment"]` | A comment |
+| `[data-ui="search-tabs"]` | Search mode tabs |
+| `[data-ui="tab"]` | A tab |
+| `[data-ui="chip"]` | Genre and filter chips |
+| `[data-ui="shelf"]` | Horizontal shelf |
+
+### Controls
+
+| Selector | Element |
+|---|---|
+| `[data-ui="button"]` | Glass button |
+| `[data-ui="glass-card"]` | Glass card |
+| `[data-ui="hero"]` | Large glass panel |
+| `[data-ui="avatar"]` | Avatar |
+| `[data-ui="skeleton"]` | Loading placeholder |
+| `[data-ui="error-state"]` | Error message with a retry button |
+| `[data-ui="kbd"]` | Key hint |
+| `[data-ui="card"]` | Settings cards |
+| `[data-ui="settings-nav"]` | Section list in Settings |
+| `[data-ui="settings-nav-item"]` | A section in that list |
+| `[data-ui="settings-row"]` | A setting row |
+| `[data-ui="switch"]` | On/off switch |
+| `[data-ui="segmented"]` | Group of options |
+| `[data-ui="segment"]` | One option in a group |
+
+States are in attributes too: `aria-current="page"` on the open link or section, `aria-checked` on switches, `aria-selected` or `data-active="true"` on tabs, chips and options. `html[data-perf="beauty"]`, `"medium"` or `"light"` is the performance mode.
 
 ## Variables
 
@@ -69,6 +137,33 @@ The app writes the accent, background and font variables from your theme setting
 ```
 
 Elements that get their look from inline styles also need `!important`.
+
+## White and dark
+
+`html[data-scheme]` is `dark` or `white`. People pick it in Settings > Appearance; a catalog theme picks its own with `"scheme"` in theme.json.
+
+Colours are `r g b` channels, so any alpha works: `rgb(var(--ink) / 0.4)`.
+
+| Variable | Meaning |
+|---|---|
+| `--ink` | Text, icons and lines |
+| `--paper` | Window base |
+| `--surface`, `--surface-hi` | Menus, popovers, solid panels |
+| `--shade` | Shadows and wells |
+| `--shade-alpha` | Shadow strength: 1 in dark, 0.32 in white |
+| `--ink-lift` | How much faint text is lifted: 0 in dark, 0.6 in white |
+
+Repaint the whole scheme at once instead of chasing elements:
+
+```css
+[data-scheme="white"] {
+  --ink: 58 18 51;
+  --paper: 255 250 253;
+  --shade: 192 37 106;
+}
+```
+
+Set them on `[data-scheme="white"]` or `[data-scheme="dark"]`, not on `:root`. Blocks on top of covers carry `data-scheme="dark"` in both schemes and keep their light text.
 
 ## Your own images
 

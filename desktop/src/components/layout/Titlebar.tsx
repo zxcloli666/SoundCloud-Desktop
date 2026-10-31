@@ -18,7 +18,7 @@ import {useSettingsStore} from '../../stores/settings';
 import {GlobalSearch} from './GlobalSearch';
 
 const navCls =
-    'w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200 cursor-pointer disabled:opacity-20 disabled:cursor-default text-white/45 hover:text-white hover:bg-white/[0.08] active:scale-90';
+    'w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200 cursor-pointer disabled:opacity-20 disabled:cursor-default text-ink-45 hover:text-ink hover:bg-ink/[0.08] active:scale-90';
 
 const NavButtons = React.memo(() => {
   const { t } = useTranslation();
@@ -55,9 +55,9 @@ const NavButtons = React.memo(() => {
         style={
             onHome
                 ? {
-                    color: '#fff',
+                    color: 'rgb(var(--ink))',
                     background:
-                        'linear-gradient(180deg, var(--color-accent-glow), transparent), rgba(255,255,255,0.05)',
+                        'linear-gradient(180deg, var(--color-accent-glow), transparent), rgb(var(--ink) / 0.05)',
                     boxShadow:
                         '0 0 16px var(--color-accent-glow), inset 0 0.5px 0 rgba(255,255,255,0.14)',
                 }
@@ -95,8 +95,8 @@ const WinButton = ({
         aria-label={label}
         title={label}
         onClick={onClick}
-        className={`w-10 h-9 rounded-lg flex items-center justify-center text-white/30 transition-all duration-150 cursor-pointer ${
-            danger ? 'hover:text-white hover:bg-red-500/80' : 'hover:text-white/80 hover:bg-white/[0.07]'
+        className={`w-10 h-9 rounded-lg flex items-center justify-center text-ink-30 transition-all duration-150 cursor-pointer ${
+            danger ? 'hover:text-ink hover:bg-red-500/80' : 'hover:text-ink-80 hover:bg-ink/[0.07]'
         }`}
     >
         {children}
@@ -115,15 +115,15 @@ export const Titlebar = React.memo(() => {
       data-tauri-drag-region
         style={{
             background:
-                'linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.014) 100%)',
-            borderBottom: '0.5px solid rgba(255,255,255,0.07)',
+                'linear-gradient(180deg, rgb(var(--ink) / 0.05) 0%, rgb(var(--ink) / 0.014) 100%)',
+            borderBottom: '0.5px solid rgb(var(--ink) / 0.07)',
         }}
     >
         {/* top specular sheen */}
         <div
             className="absolute inset-x-0 top-0 h-px pointer-events-none"
             style={{
-                background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.14), transparent)',
+                background: 'linear-gradient(90deg, transparent, rgb(var(--ink) / 0.14), transparent)',
             }}
         />
 
@@ -135,6 +135,7 @@ export const Titlebar = React.memo(() => {
                     alt="SoundCloud"
                     draggable={false}
                     data-tauri-drag-region
+                    data-ui="brand"
                     className="w-8 h-8 rounded-[10px] shrink-0"
                     style={{
                         boxShadow:
@@ -145,7 +146,7 @@ export const Titlebar = React.memo(() => {
               race when the sidebar toggles. max-width + padding fold the reclaimed space. */}
                 <span
                     data-tauri-drag-region
-                    className="overflow-hidden whitespace-nowrap text-[14px] font-bold tracking-tight text-white/85"
+                    className="overflow-hidden whitespace-nowrap text-[14px] font-bold tracking-tight text-ink-85"
                     style={{
                         maxWidth: collapsed ? 0 : '140px',
                         opacity: collapsed ? 0 : 1,
@@ -167,7 +168,7 @@ export const Titlebar = React.memo(() => {
         </div>
 
         {/* RIGHT: window controls */}
-        <div className="flex items-center gap-0.5 shrink-0">
+        <div data-ui="window-controls" className="flex items-center gap-0.5 shrink-0">
             <WinButton onClick={() => void toggleWindowFullscreen()} label={t('kb.fullscreen')}>
                 <Fullscreen size={13}/>
             </WinButton>

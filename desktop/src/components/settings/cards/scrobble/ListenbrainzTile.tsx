@@ -39,9 +39,9 @@ function TokenForm() {
         placeholder={t('settings.scrobbleTokenPlaceholder')}
         spellCheck={false}
         autoComplete="off"
-        className="w-full rounded-xl border border-white/[0.07] bg-black/20 px-3 py-2 text-[12.5px] text-white/85 outline-none transition-colors placeholder:text-white/25 focus:border-[#eb743b]/60"
+        className="w-full rounded-xl border border-ink/[0.07] bg-shade-20 px-3 py-2 text-[12.5px] text-ink-85 outline-none transition-colors placeholder:text-ink-25 focus:border-[#eb743b]/60"
       />
-      <p className={`text-[11.5px] leading-snug ${error ? 'text-[#ff6b5e]' : 'text-white/35'}`}>
+      <p className={`text-[11.5px] leading-snug ${error ? 'text-bad' : 'text-ink-35'}`}>
         {t(error ?? 'settings.scrobbleTokenHint')}
       </p>
       <div className="flex flex-wrap gap-2">

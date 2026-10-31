@@ -33,8 +33,8 @@ function FilterRowImpl<T extends string>({
     <div
       className="inline-flex items-center gap-1 p-1 rounded-2xl flex-wrap"
       style={{
-          background: b > 0 ? 'rgba(255,255,255,0.03)' : 'rgba(22,22,27,0.9)',
-        border: '0.5px solid rgba(255,255,255,0.06)',
+          background: b > 0 ? 'rgb(var(--ink) / 0.03)' : 'rgb(var(--surface-hi) / 0.9)',
+        border: '0.5px solid rgb(var(--ink) / 0.06)',
           backdropFilter: b > 0 ? `blur(${b}px)` : undefined,
           WebkitBackdropFilter: b > 0 ? `blur(${b}px)` : undefined,
       }}
@@ -45,9 +45,11 @@ function FilterRowImpl<T extends string>({
           <button
             key={opt.id}
             type="button"
+            data-ui="chip"
+            data-active={isActive}
             onClick={() => onChange(opt.id)}
             className={`inline-flex items-center gap-1.5 ${padX} ${padY} rounded-xl ${fontSize} font-semibold cursor-pointer transition-colors duration-300 ${
-              isActive ? 'text-white' : 'text-white/45 hover:text-white/80'
+              isActive ? 'text-ink' : 'text-ink-45 hover:text-ink-80'
             }`}
             style={
               isActive
@@ -63,8 +65,8 @@ function FilterRowImpl<T extends string>({
               <span
                 className="text-[9px] tabular-nums font-bold px-1.5 py-0.5 rounded-md"
                 style={{
-                  background: isActive ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.05)',
-                  color: isActive ? '#fff' : 'rgba(255,255,255,0.35)',
+                  background: isActive ? 'rgb(var(--ink) / 0.18)' : 'rgb(var(--ink) / 0.05)',
+                  color: isActive ? 'rgb(var(--ink))' : 'rgb(var(--ink) / calc(0.35 * (1 + var(--ink-lift) * (1 - 0.35))))',
                 }}
               >
                 {opt.count}

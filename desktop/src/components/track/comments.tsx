@@ -32,10 +32,11 @@ export const VoiceCard = React.memo(function VoiceCard({
 
     return (
         <div
+            data-ui="comment"
             className="group relative rounded-2xl p-4 pl-5 transition-all duration-300 ease-[var(--ease-apple)] hover:-translate-y-0.5"
             style={{
-                background: 'rgba(255,255,255,0.035)',
-                border: '0.5px solid rgba(255,255,255,0.06)',
+                background: 'rgb(var(--ink) / 0.035)',
+                border: '0.5px solid rgb(var(--ink) / 0.06)',
             }}
         >
             {ts != null && (
@@ -50,18 +51,18 @@ export const VoiceCard = React.memo(function VoiceCard({
                         src={avatar ?? ''}
                         alt=""
                         loading="lazy"
-                        className="w-9 h-9 rounded-full object-cover ring-1 ring-white/[0.08] hover:ring-white/[0.22] transition-all duration-200"
+                        className="w-9 h-9 rounded-full object-cover ring-1 ring-ink/[0.08] hover:ring-ink/[0.22] transition-all duration-200"
                     />
                 </button>
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
             <span
                 onClick={goUser}
-                className="text-[12.5px] font-semibold text-white/85 hover:text-white cursor-pointer transition-colors truncate"
+                className="text-[12.5px] font-semibold text-ink-85 hover:text-ink cursor-pointer transition-colors truncate"
             >
               {comment.user.username}
             </span>
-                        <span className="text-[10px] text-white/25 shrink-0">{ago(comment.created_at)}</span>
+                        <span className="text-[10px] text-ink-25 shrink-0">{ago(comment.created_at)}</span>
                         {ts != null && (
                             <button
                                 type="button"
@@ -75,7 +76,7 @@ export const VoiceCard = React.memo(function VoiceCard({
                             </button>
                         )}
                     </div>
-                    <p className="selectable text-[13.5px] text-white/70 mt-1.5 leading-relaxed break-words">
+                    <p className="selectable text-[13.5px] text-ink-70 mt-1.5 leading-relaxed break-words">
                         <RichText
                             text={comment.body}
                             maxSeconds={maxSeconds}
@@ -131,8 +132,8 @@ export const CommentForm = React.memo(function CommentForm({
         <div
             className="rounded-2xl px-4 py-3"
             style={{
-                background: 'rgba(255,255,255,0.045)',
-                border: '0.5px solid rgba(255,255,255,0.08)',
+                background: 'rgb(var(--ink) / 0.045)',
+                border: '0.5px solid rgb(var(--ink) / 0.08)',
             }}
         >
             {isCurrent && (
@@ -159,7 +160,7 @@ export const CommentForm = React.memo(function CommentForm({
             }}
             placeholder={t('track.addComment')}
             rows={2}
-            className="selectable flex-1 bg-transparent text-[13px] text-white/80 placeholder:text-white/20 outline-none resize-none leading-relaxed"
+            className="selectable flex-1 bg-transparent text-[13px] text-ink-80 placeholder:text-ink-20 outline-none resize-none leading-relaxed"
         />
                 <button
                     type="button"

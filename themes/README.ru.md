@@ -53,6 +53,7 @@
 | `author` | `name` до 40 символов, `github` - ваш логин |
 | `license` | `MIT`, `Apache-2.0`, `CC0-1.0`, `CC-BY-4.0` или `CC-BY-SA-4.0` |
 | `accent`, `background` | Необязательно. Цвет `#rrggbb` маленькими буквами |
+| `scheme` | Необязательно. `dark` (по умолчанию) или `white`. Белой теме нужен `"minApp": "8.8.0"` |
 | `font` | Необязательно. `inter`, `manrope`, `onest`, `golos`, `montserrat`, `rubik`, `nunito`, `raleway`, `comfortaa` или `system` |
 | `minApp` | Только если теме нужно то, чего нет в старых версиях приложения |
 
@@ -65,7 +66,8 @@
 - Нельзя: ссылки на сайты, `@import`, `image()`, `src()`, `element()`, `paint()`, `var()` внутри `image-set()`, `behavior`, `-webkit-app-region`.
 - @-правила: `@media`, `@supports`, `@keyframes`, `@font-face`, `@layer`, `@container`, `@property`, `@scope`, `@starting-style`.
 - Режим "Лайт" (`html[data-perf="light"]`): уберите анимации и тяжелый blur.
-- Цвета, фон и шрифт приложение ставит само из `accent`, `background` и `font`. Чтобы перебить их в CSS, нужен `!important`.
+- Схему, цвета, фон и шрифт приложение ставит само из `scheme`, `accent`, `background` и `font`. Чтобы перебить их в CSS, нужен `!important`.
+- В белой теме задавайте цвета через переменные схемы (`--ink`, `--paper`, `--surface`, `--shade`), см. [Белая и тёмная](../docs/CUSTOM_CSS.ru.md#белая-и-тёмная).
 - До 256 КБ.
 
 Длинный текст в `content:` и `<text>` в SVG смотрим на ревью.
@@ -87,7 +89,7 @@
 
 1. **Настройки -> Оформление -> Свой CSS**: вставьте `theme.css`.
 2. Картинки из `assets/` добавьте в **Свои картинки** под теми же именами. Шрифты (woff2) туда не добавить, их проверяйте по превью из CI.
-3. Цвет акцента, фон и шрифт выставьте руками в **Оформлении**.
+3. Схему, цвет акцента, фон и шрифт выставьте руками в **Оформлении**.
 
 Если интерфейс сломался: **Ctrl+Alt+Shift+C** (**Cmd+Option+Shift+C** на macOS).
 

@@ -209,11 +209,32 @@ desktop/
 
 - `--color-accent` — основной цвет (`#hex`)
 - `--color-accent-hover` — чуть светлее (+26 на каждый канал)
-- `--color-accent-glow` — `rgba(r,g,b, 0.2)` для теней/свечений
+- `--color-accent-glow` — акцент с альфой 0.2 (0.12 в белой схеме), считается в `scheme.css` из `--accent-rgb`
 - `--color-accent-selection` — `rgba(r,g,b, 0.3)` для `::selection`
 
 **Всегда** использовать эти переменные. НЕ хардкодить `#ff5500` или `rgba(255,85,0,...)`. Нужна другая прозрачность —
 добавить новую переменную в `ThemeProvider` и `:root` в `index.css`.
+
+## Цветовая схема
+
+Две схемы: `dark` и `white` (`html[data-scheme]`, настройка `scheme` в `stores/settings.ts`: dark / white / system;
+тема каталога со `"scheme"` в theme.json включает свою). Токены — каналы `r g b` в `src/scheme.css`: `--ink` (текст и
+линии), `--paper` (фон окна), `--surface` / `--surface-hi` (меню, поповеры, плотные панели), `--shade` + `--shade-alpha`
+(тени и колодцы), `--ink-lift` (поднимает бледный текст в белой).
+
+- Текст: `text-ink`, `text-ink-40` (не `text-ink/40`). Тинты и линии: `bg-ink/[0.06]`, `border-ink/10`, `ring-ink/20`.
+  Панели: `bg-surface`, `bg-paper`. Колодцы и скримы в UI: `bg-shade-30`. Текст на акценте: `text-accent-contrast`.
+  Статусы: `text-ok`, `text-bad`, `bg-ok/10` (не хекс вроде `#3ddc84`, он не читается на белом).
+- Инлайн: `rgb(var(--ink) / 0.06)`, `rgb(var(--surface) / 0.9)`, тени
+  `rgb(var(--shade) / calc(0.5 * var(--shade-alpha)))`.
+- Поверх обложек, видео, фото — `data-scheme="dark"` на сам бейдж/оверлей (не на всю карточку): внутри всё как в
+  тёмной. Обёртки ради атрибута не нужны, классы цвета на том же элементе работают.
+- **Не писать** `text-white/NN`, `bg-white/[...]`, `border-white/...`, `rgba(255, 255, 255, a)` вне теней: CI
+  (`node scripts/check-scheme.mjs`) падает. Белый и чёрный без альфы — только там, где цвет буквальный (на обложке,
+  на акценте).
+- Canvas: `useScheme()` из `lib/scheme.ts`, каналы читать из `getComputedStyle(document.documentElement)`.
+- Темы стилизуют через `data-ui` (список в `docs/CUSTOM_CSS.md`). Новый заметный блок — свой `data-ui`, документировать.
+- Тёмная схема должна оставаться пиксель в пиксель: проверять обе схемы.
 
 ## Режимы производительности (perf modes)
 

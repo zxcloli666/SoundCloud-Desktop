@@ -39,11 +39,11 @@ function StatusPreview({shown}: { shown: DiscordRpcStatus }) {
 
     return (
         <div
-            className="flex items-center gap-2.5 rounded-xl border border-white/[0.05] bg-white/[0.02] px-3 py-2.5">
+            className="flex items-center gap-2.5 rounded-xl border border-ink/[0.05] bg-ink/[0.02] px-3 py-2.5">
             <span className="size-2 shrink-0 rounded-full bg-[#23a55a] shadow-[0_0_8px_#23a55a]"/>
-            <p className="min-w-0 truncate text-[12.5px] text-white/50">
+            <p className="min-w-0 truncate text-[12.5px] text-ink-50">
                 {t('settings.discordRpcStatusListening')}{' '}
-                <span className="font-semibold text-white/85">{value}</span>
+                <span className="font-semibold text-ink-85">{value}</span>
             </p>
         </div>
     );
@@ -53,9 +53,9 @@ function LyricsPreview() {
     const {t} = useTranslation();
     return (
         <div
-            className="flex items-center gap-2.5 rounded-xl border border-white/[0.05] bg-white/[0.02] px-3 py-2.5">
-            <MicVocal size={14} className="shrink-0 text-white/30"/>
-            <p className="min-w-0 truncate text-[12.5px] italic text-white/70">
+            className="flex items-center gap-2.5 rounded-xl border border-ink/[0.05] bg-ink/[0.02] px-3 py-2.5">
+            <MicVocal size={14} className="shrink-0 text-ink-30"/>
+            <p className="min-w-0 truncate text-[12.5px] italic text-ink-70">
                 {t('settings.discordRpcLyricsSample')}
             </p>
         </div>
@@ -90,7 +90,7 @@ export function DiscordCard() {
                 <div className="space-y-4">
                     <div className="space-y-1">
                         {connection !== 'idle' && (
-                            <p className="text-[12.5px] text-white/60 font-medium">
+                            <p className="text-[12.5px] text-ink-60 font-medium">
                                 {t(
                                     connection === 'connected'
                                         ? 'settings.discordRpcConnected'
@@ -98,12 +98,12 @@ export function DiscordCard() {
                                 )}
                             </p>
                         )}
-                        <p className="text-[11.5px] text-white/35 leading-snug">
+                        <p className="text-[11.5px] text-ink-35 leading-snug">
                             {t('settings.discordRpcHint')}
                         </p>
                     </div>
                     <div className="space-y-2">
-                        <p className="text-[12.5px] text-white/50 font-medium">
+                        <p className="text-[12.5px] text-ink-50 font-medium">
                             {t('settings.discordRpcMode')}
                         </p>
                         <Segmented
@@ -115,10 +115,10 @@ export function DiscordCard() {
                     </div>
                     <div className="space-y-2">
                         <div className="space-y-0.5">
-                            <p className="text-[12.5px] text-white/50 font-medium">
+                            <p className="text-[12.5px] text-ink-50 font-medium">
                                 {t('settings.discordRpcStatus')}
                             </p>
-                            <p className="text-[11.5px] text-white/35 leading-snug">
+                            <p className="text-[11.5px] text-ink-35 leading-snug">
                                 {t(
                                     mode === 'activity'
                                         ? 'settings.discordRpcStatusActivityHint'

@@ -18,9 +18,9 @@ export const GiftsPane = memo(function GiftsPane({ onGiftMore }: { onGiftMore: (
     <div>
       <Ttl>{t('starpass.gift.mine')}</Ttl>
       {isLoading ? (
-        <div className="font-mono text-[12px] text-white/40">{t('starpass.loading')}</div>
+        <div className="font-mono text-[12px] text-ink-40">{t('starpass.loading')}</div>
       ) : gifts.length === 0 ? (
-        <p className="text-[12.5px] text-white/50">{t('starpass.gift.none')}</p>
+        <p className="text-[12.5px] text-ink-50">{t('starpass.gift.none')}</p>
       ) : (
         <div className="flex max-h-[260px] flex-col gap-2 overflow-y-auto">
           {gifts.map((g) => (

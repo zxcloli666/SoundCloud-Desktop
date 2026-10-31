@@ -96,6 +96,7 @@ test('theme.schema.json matches rules.ts', () => {
   assert.equal(properties.author.properties.github.pattern, rules.GITHUB_LOGIN.source);
   assert.deepEqual(properties.license.enum, [...rules.THEME_LICENSES]);
   assert.deepEqual(properties.font.enum, [...rules.THEME_FONTS]);
+  assert.deepEqual(properties.scheme.enum, [...rules.THEME_SCHEMES]);
   assert.deepEqual(Object.keys(properties.description.properties), [...rules.THEME_LANGS]);
   assert.equal(properties.description.maxProperties, rules.THEME_LANGS.length);
   assert.equal($defs.name.maxLength, rules.TEXT_LIMITS.name);
@@ -136,4 +137,16 @@ test('a huge image asset fails', () => {
   const result = loadTheme(dir, null);
   assert.equal(result.entry, null);
   assert.match(result.errors.join('\n'), /glow\.png: 5000x\d+ is over 4096 px/);
+});
+
+test('a white theme needs a new enough app', () => {
+  const dir = copyTheme('white-theme');
+  const path = join(dir, 'theme.json');
+  const meta = JSON.parse(readFileSync(path, 'utf8'));
+  writeFileSync(path, JSON.stringify({ ...meta, scheme: 'white' }));
+  assert.match(loadTheme(dir, null).errors.join('\n'), /minApp must be 8\.8\.0 or newer/);
+  writeFileSync(path, JSON.stringify({ ...meta, scheme: 'white', minApp: '8.8.0' }));
+  const result = loadTheme(dir, null);
+  assert.deepEqual(result.errors, []);
+  assert.equal(result.entry.scheme, 'white');
 });

@@ -9,14 +9,16 @@ import type {Soundprint} from './useSoundprint';
  *  the deep pages all wear the same room. */
 export const LibraryFrame = memo(function LibraryFrame({
                                                            sound,
+                                                           page = 'library',
                                                            children,
                                                        }: {
     sound: Soundprint;
+    page?: 'library' | 'history';
     children: ReactNode;
 }) {
     const perf = usePerfMode();
     return (
-        <div className="relative min-h-full w-full">
+        <div data-ui="page" data-page={page} className="relative min-h-full w-full">
             <style>{LIBRARY_KEYFRAMES}</style>
             {perf.atmosphere && <Atmosphere tint={sound.tint} energy={sound.energy}/>}
             <div

@@ -18,10 +18,11 @@ export function ErrorScreen({
 
     return (
         <div
+            data-ui="error-state"
             className={`relative flex items-center justify-center overflow-hidden p-6 ${
                 fullscreen ? 'h-screen' : 'min-h-full'
             }`}
-            style={{background: fullscreen ? 'var(--bg-primary, #08080a)' : undefined}}
+            style={{background: fullscreen ? 'var(--bg-primary, rgb(var(--paper)))' : undefined}}
         >
             {/* atmosphere — two soft accent orbs */}
             <div aria-hidden className="absolute inset-0 pointer-events-none overflow-hidden">
@@ -47,17 +48,17 @@ export function ErrorScreen({
                 <div
                     className="relative overflow-hidden rounded-[2rem] p-8 text-center"
                     style={{
-                        border: '0.5px solid rgba(255,255,255,0.1)',
-                        background: 'linear-gradient(168deg, rgba(23,22,28,0.9), rgba(11,10,14,0.95))',
+                        border: '0.5px solid rgb(var(--ink) / 0.1)',
+                        background: 'linear-gradient(168deg, rgb(var(--surface-hi) / 0.9), rgb(var(--surface) / 0.95))',
                         boxShadow:
-                            '0 40px 100px rgba(0,0,0,0.55), 0 0 80px var(--color-accent-glow), inset 0 1px 0 rgba(255,255,255,0.07)',
+                            '0 40px 100px rgb(var(--shade) / calc(0.55 * var(--shade-alpha))), 0 0 80px var(--color-accent-glow), inset 0 1px 0 rgba(255,255,255,0.07)',
                     }}
                 >
           <span
               aria-hidden
               className="pointer-events-none absolute inset-x-8 top-0 h-px"
               style={{
-                  background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)',
+                  background: 'linear-gradient(90deg, transparent, rgb(var(--ink) / 0.3), transparent)',
               }}
           />
 
@@ -73,7 +74,7 @@ export function ErrorScreen({
                             style={{
                                 color: 'var(--color-accent)',
                                 background:
-                                    'linear-gradient(150deg, var(--color-accent-glow), rgba(255,255,255,0.04))',
+                                    'linear-gradient(150deg, var(--color-accent-glow), rgb(var(--ink) / 0.04))',
                                 border: '0.5px solid var(--color-accent-glow)',
                                 boxShadow:
                                     '0 0 30px var(--color-accent-glow), inset 0 1px 0 rgba(255,255,255,0.18)',
@@ -87,7 +88,7 @@ export function ErrorScreen({
                         className="text-[26px] font-black tracking-tight leading-tight"
                         style={{
                             backgroundImage:
-                                'linear-gradient(100deg, #fff 0%, #fff 40%, var(--color-accent) 100%)',
+                                'linear-gradient(100deg, rgb(var(--ink)) 0%, rgb(var(--ink)) 40%, var(--color-accent) 100%)',
                             WebkitBackgroundClip: 'text',
                             backgroundClip: 'text',
                             color: 'transparent',
@@ -95,7 +96,7 @@ export function ErrorScreen({
                     >
                         {t('errors.title', 'Что-то пошло не так')}
                     </h1>
-                    <p className="mt-2.5 text-[13.5px] leading-relaxed text-white/45">
+                    <p className="mt-2.5 text-[13.5px] leading-relaxed text-ink-45">
                         {t(
                             'errors.subtitle',
                             'Произошёл сбой при отрисовке. Можно попробовать снова или перезагрузить.',
@@ -105,12 +106,12 @@ export function ErrorScreen({
                     {message && (
                         <details className="group mt-5 text-left">
                             <summary
-                                className="cursor-pointer list-none text-[11px] font-semibold uppercase tracking-[0.16em] text-white/30 transition-colors hover:text-white/55">
+                                className="cursor-pointer list-none text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-30 transition-colors hover:text-ink-55">
                                 <span className="text-[var(--color-accent)]">▸</span>{' '}
                                 {t('errors.details', 'Подробности')}
                             </summary>
                             <pre
-                                className="mt-2 max-h-40 overflow-auto rounded-xl border border-white/[0.06] bg-black/40 p-3 text-[11px] leading-relaxed text-red-300/80 whitespace-pre-wrap break-words">
+                                className="mt-2 max-h-40 overflow-auto rounded-xl border border-ink/[0.06] bg-shade-40 p-3 text-[11px] leading-relaxed text-red-300/80 whitespace-pre-wrap break-words">
                 {message}
               </pre>
                         </details>
@@ -138,7 +139,7 @@ export function ErrorScreen({
                             <button
                                 type="button"
                                 onClick={() => window.location.reload()}
-                                className="flex h-11 flex-1 items-center justify-center gap-2 rounded-2xl border border-white/[0.1] bg-white/[0.04] text-[13px] font-semibold text-white/70 transition-all hover:bg-white/[0.08] hover:text-white/90 active:scale-[0.97] cursor-pointer"
+                                className="flex h-11 flex-1 items-center justify-center gap-2 rounded-2xl border border-ink/[0.1] bg-ink/[0.04] text-[13px] font-semibold text-ink-70 transition-all hover:bg-ink/[0.08] hover:text-ink-90 active:scale-[0.97] cursor-pointer"
                             >
                                 <RefreshCw size={14}/>
                                 {t('errors.reload', 'Перезагрузить')}
@@ -148,7 +149,7 @@ export function ErrorScreen({
                                 onClick={() => {
                                     window.location.assign('/');
                                 }}
-                                className="flex h-11 flex-1 items-center justify-center gap-2 rounded-2xl border border-white/[0.1] bg-white/[0.04] text-[13px] font-semibold text-white/70 transition-all hover:bg-white/[0.08] hover:text-white/90 active:scale-[0.97] cursor-pointer"
+                                className="flex h-11 flex-1 items-center justify-center gap-2 rounded-2xl border border-ink/[0.1] bg-ink/[0.04] text-[13px] font-semibold text-ink-70 transition-all hover:bg-ink/[0.08] hover:text-ink-90 active:scale-[0.97] cursor-pointer"
                             >
                                 <Home size={14}/>
                                 {t('errors.home', 'На главную')}

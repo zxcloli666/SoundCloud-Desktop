@@ -106,18 +106,18 @@ export const SaveCollectionMenu = React.memo(function SaveCollectionMenu({
           collisionPadding={16}
           className="z-50 w-[320px] rounded-[20px] p-2 outline-none animate-fade-in-up"
           style={{
-            background: blur > 0 ? 'rgba(18,18,22,0.9)' : 'rgb(22,22,26)',
+            background: blur > 0 ? 'rgb(var(--surface) / 0.9)' : 'rgb(var(--surface-hi))',
             backdropFilter: blur > 0 ? `blur(${blur}px) saturate(1.8)` : undefined,
             WebkitBackdropFilter: blur > 0 ? `blur(${blur}px) saturate(1.8)` : undefined,
-            border: '1px solid rgba(255,255,255,0.08)',
-            boxShadow: '0 24px 70px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.05)',
+            border: '1px solid rgb(var(--ink) / 0.08)',
+            boxShadow: '0 24px 70px rgb(var(--shade) / calc(0.55 * var(--shade-alpha))), inset 0 1px 0 rgba(255,255,255,0.05)',
           }}
         >
           <div className="px-2.5 pt-2 pb-2.5">
-            <div className="text-[10px] font-bold uppercase tracking-[0.24em] text-white/35">
+            <div className="text-[10px] font-bold uppercase tracking-[0.24em] text-ink-35">
               {t('collectionSave.kicker')}
             </div>
-            <div className="mt-1 truncate text-[14px] font-bold text-white/90">{meta.title}</div>
+            <div className="mt-1 truncate text-[14px] font-bold text-ink-90">{meta.title}</div>
           </div>
           <div className="flex flex-col gap-1.5">
             <CacheAction
@@ -130,7 +130,7 @@ export const SaveCollectionMenu = React.memo(function SaveCollectionMenu({
               onStart={startCache}
               onCancel={bulk.cancel}
             />
-            <div className="mx-2 my-1 h-px bg-white/[0.06]" />
+            <div className="mx-2 my-1 h-px bg-ink/[0.06]" />
             <ExportAction
               job={exporter.job}
               busy={exporter.busy}

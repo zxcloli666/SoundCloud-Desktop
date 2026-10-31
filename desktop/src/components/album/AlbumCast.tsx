@@ -60,21 +60,21 @@ const CastCard = memo(function CastCard({
       onClick={() => navigate(`/artist/${encodeURIComponent(artist.id)}`)}
       className="group relative flex items-center gap-3 p-2.5 rounded-2xl cursor-pointer transition-all duration-500 hover:scale-[1.04]"
       style={{
-        background: 'rgba(255,255,255,0.03)',
+        background: 'rgb(var(--ink) / 0.03)',
         boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.06)',
       }}
     >
       <span
-        className="relative w-12 h-12 rounded-full overflow-hidden shrink-0 ring-2 ring-white/10 group-hover:ring-white/30 transition-all duration-500"
+        className="relative w-12 h-12 rounded-full overflow-hidden shrink-0 ring-2 ring-ink/10 group-hover:ring-ink/30 transition-all duration-500"
         style={{ boxShadow: `0 8px 18px ${auraRgba(aura, 0.18)}` }}
       >
         <Avatar src={artist.avatar_url} alt={artist.name} size={48} />
       </span>
       <span className="min-w-0 flex flex-col leading-tight">
-        <span className="text-[12px] font-semibold text-white/90 truncate group-hover:text-white">
+        <span className="text-[12px] font-semibold text-ink-90 truncate group-hover:text-ink">
           {artist.name}
         </span>
-        <span className="text-[9px] font-bold uppercase tracking-[0.18em] text-white/30">
+        <span className="text-[9px] font-bold uppercase tracking-[0.18em] text-ink-30">
           {roleLabel}
         </span>
       </span>
@@ -95,7 +95,7 @@ const CastRow = memo(function CastRow({
   const roleLabel = ROLE_LABEL_KEY[role] ? t(ROLE_LABEL_KEY[role]) : role;
   return (
     <div className="flex flex-col gap-3">
-      <span className="text-[9px] font-bold uppercase tracking-[0.28em] text-white/30">
+      <span className="text-[9px] font-bold uppercase tracking-[0.28em] text-ink-30">
         {roleLabel} · {items.length}
       </span>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
@@ -121,12 +121,12 @@ function AlbumCastImpl({ artists, aura }: AlbumCastProps) {
       style={{
         background:
             b > 0
-                ? 'linear-gradient(180deg, rgba(255,255,255,0.035) 0%, rgba(255,255,255,0.015) 100%)'
-                : 'rgba(18,18,22,0.85)',
+                ? 'linear-gradient(180deg, rgb(var(--ink) / 0.035) 0%, rgb(var(--ink) / 0.015) 100%)'
+                : 'rgb(var(--surface) / 0.85)',
         backdropFilter: b > 0 ? `blur(${b}px) saturate(160%)` : undefined,
         WebkitBackdropFilter: b > 0 ? `blur(${b}px) saturate(160%)` : undefined,
         boxShadow:
-          '0 30px 80px rgba(0,0,0,0.30), inset 0 0 0 1px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.05)',
+          '0 30px 80px rgb(var(--shade) / calc(0.30 * var(--shade-alpha))), inset 0 0 0 1px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.05)',
       }}
     >
       <div className="flex items-center gap-3 mb-5">
@@ -137,11 +137,11 @@ function AlbumCastImpl({ artists, aura }: AlbumCastProps) {
             boxShadow: `inset 0 0 0 1px ${auraRgba(aura, 0.25)}`,
           }}
         >
-          <Users size={14} className="text-white/70" />
+          <Users size={14} className="text-ink-70" />
         </span>
-        <h3 className="text-[11px] font-bold uppercase tracking-[0.22em] text-white/60">
+        <h3 className="text-[11px] font-bold uppercase tracking-[0.22em] text-ink-60">
           {t('album.cast')}
-          <span className="text-white/25 ml-2">{artists.length}</span>
+          <span className="text-ink-25 ml-2">{artists.length}</span>
         </h3>
       </div>
 

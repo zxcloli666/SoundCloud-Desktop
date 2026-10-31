@@ -220,7 +220,7 @@ export const OfflinePage = React.memo(() => {
         : t('offline.cachedEmpty');
 
   return (
-    <div className="relative min-h-full px-5 py-6 md:px-8">
+    <div data-ui="page" data-page="offline" className="relative min-h-full px-5 py-6 md:px-8">
       <style>{OFFLINE_KEYFRAMES}</style>
       <Atmosphere tint={['var(--color-accent)', '#6b7a92']} energy={0.4} />
 
@@ -232,19 +232,19 @@ export const OfflinePage = React.memo(() => {
 
         {lib.loading ? (
           <>
-            <div className="h-[224px] animate-pulse rounded-[20px] border border-white/[0.06] bg-white/[0.02]" />
-            <div className="h-9 w-2/3 animate-pulse rounded-[11px] border border-white/[0.06] bg-white/[0.02]" />
-            <div className="h-[480px] animate-pulse rounded-[18px] border border-white/[0.06] bg-white/[0.02]" />
+            <div className="h-[224px] animate-pulse rounded-[20px] border border-ink/[0.06] bg-ink/[0.02]" />
+            <div className="h-9 w-2/3 animate-pulse rounded-[11px] border border-ink/[0.06] bg-ink/[0.02]" />
+            <div className="h-[480px] animate-pulse rounded-[18px] border border-ink/[0.06] bg-ink/[0.02]" />
           </>
         ) : (
           <>
             <section
-              className="relative grid overflow-hidden rounded-[20px] border border-white/[0.09] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_24px_60px_-32px_rgba(0,0,0,0.8)] lg:grid-cols-[minmax(0,1.28fr)_1px_minmax(0,1fr)]"
+              className="relative grid overflow-hidden rounded-[20px] border border-ink/[0.09] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_24px_60px_-32px_rgb(var(--shade)/calc(0.8*var(--shade-alpha)))] lg:grid-cols-[minmax(0,1.28fr)_1px_minmax(0,1fr)]"
               style={{
                 background:
                   deckBlur > 0
-                    ? 'linear-gradient(180deg, rgba(255,255,255,0.045), rgba(255,255,255,0.018))'
-                    : 'rgb(17,17,21)',
+                    ? 'linear-gradient(180deg, rgb(var(--ink) / 0.045), rgb(var(--ink) / 0.018))'
+                    : 'rgb(var(--surface))',
                 backdropFilter: deckBlur > 0 ? `blur(${deckBlur}px) saturate(1.25)` : undefined,
                 WebkitBackdropFilter:
                   deckBlur > 0 ? `blur(${deckBlur}px) saturate(1.25)` : undefined,
@@ -258,7 +258,7 @@ export const OfflinePage = React.memo(() => {
                 }}
               />
               <ForgeModule status={forge} forgingTitle={forgingTitle} />
-              <div className="mx-5 h-px bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.12)_30%,rgba(255,255,255,0.12)_70%,transparent)] lg:mx-0 lg:h-auto lg:w-px lg:bg-[linear-gradient(180deg,transparent,rgba(255,255,255,0.12)_30%,rgba(255,255,255,0.12)_70%,transparent)]" />
+              <div className="mx-5 h-px bg-[linear-gradient(90deg,transparent,rgb(var(--ink)/0.12)_30%,rgb(var(--ink)/0.12)_70%,transparent)] lg:mx-0 lg:h-auto lg:w-px lg:bg-[linear-gradient(180deg,transparent,rgb(var(--ink)/0.12)_30%,rgb(var(--ink)/0.12)_70%,transparent)]" />
               <StorageModule
                 totalBytes={lib.stats.totalBytes}
                 likedBytes={lib.stats.likedBytes}

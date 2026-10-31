@@ -115,7 +115,7 @@ export function UserPage() {
   if (userLoading || !user) {
     return (
       <div className="relative w-full min-h-screen flex flex-col items-center justify-center">
-        <Loader2 size={28} className="text-white/30 animate-spin" />
+        <Loader2 size={28} className="text-ink-30 animate-spin" />
         <RefreshPendingHint reason={userFailureReason} />
       </div>
     );
@@ -124,7 +124,7 @@ export function UserPage() {
   return (
     <>
       <style>{USER_PAGE_KEYFRAMES}</style>
-      <div className="relative w-full min-h-screen">
+      <div data-ui="page" data-page="user" className="relative w-full min-h-screen">
         <AuraField aura={aura} isStar={hasStar} />
 
         <div
@@ -159,14 +159,14 @@ export function UserPage() {
             style={{
               background:
                   perf.blur(28) > 0
-                      ? 'linear-gradient(180deg, rgba(255,255,255,0.035) 0%, rgba(255,255,255,0.015) 100%)'
-                      : 'rgba(18,18,22,0.85)',
+                      ? 'linear-gradient(180deg, rgb(var(--ink) / 0.035) 0%, rgb(var(--ink) / 0.015) 100%)'
+                      : 'rgb(var(--surface) / 0.85)',
                 backdropFilter:
                     perf.blur(28) > 0 ? `blur(${perf.blur(28)}px) saturate(160%)` : undefined,
                 WebkitBackdropFilter:
                     perf.blur(28) > 0 ? `blur(${perf.blur(28)}px) saturate(160%)` : undefined,
               boxShadow:
-                '0 30px 80px rgba(0,0,0,0.30), inset 0 0 0 1px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.05)',
+                '0 30px 80px rgb(var(--shade) / calc(0.30 * var(--shade-alpha))), inset 0 0 0 1px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.05)',
             }}
           >
             {(() => {

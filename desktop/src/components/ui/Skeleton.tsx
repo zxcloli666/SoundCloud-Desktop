@@ -11,5 +11,5 @@ const roundedMap = {
 };
 
 export function Skeleton({ className = '', rounded = 'md' }: SkeletonProps) {
-  return <div className={`skeleton-shimmer ${roundedMap[rounded]} ${className}`} />;
+  return <div data-ui="skeleton" className={`skeleton-shimmer ${roundedMap[rounded]} ${className}`} />;
 }

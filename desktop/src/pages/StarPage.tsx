@@ -199,7 +199,7 @@ const StarFlow = memo(function StarFlow({ intent }: { intent: StarIntent | null 
       : 0.5;
 
   return (
-    <div className="relative min-h-full w-full">
+    <div data-ui="page" data-page="star" className="relative min-h-full w-full">
       <StarAtmosphere />
       <div
         className="relative z-10 mx-auto flex min-h-[calc(100vh-120px)] w-full max-w-[1060px] flex-col px-4 md:px-8"
@@ -215,14 +215,14 @@ const StarFlow = memo(function StarFlow({ intent }: { intent: StarIntent | null 
       >
         {/* frozen header — pinned so you can always go back / change the term */}
         <div className="sticky top-0 z-30 flex items-center justify-between py-4">
-          <div className="flex items-center gap-2.5 font-mono text-[12px] uppercase tracking-[0.34em] text-white/60">
+          <div className="flex items-center gap-2.5 font-mono text-[12px] uppercase tracking-[0.34em] text-ink-60">
             <span className="text-accent">✦</span> STAR
           </div>
           {backTarget && (
             <button
               type="button"
               onClick={() => backTarget && setStep(backTarget)}
-              className="flex cursor-pointer items-center gap-1.5 font-mono text-[11px] tracking-[0.14em] text-white/45 transition-colors hover:text-white/90"
+              className="flex cursor-pointer items-center gap-1.5 font-mono text-[11px] tracking-[0.14em] text-ink-45 transition-colors hover:text-ink-90"
             >
               <ChevronLeft size={14} /> {t('starpass.back')}
             </button>
@@ -254,7 +254,7 @@ const StarFlow = memo(function StarFlow({ intent }: { intent: StarIntent | null 
                 className="absolute -inset-x-8 -inset-y-5"
                 style={{
                   background:
-                    'radial-gradient(58% 54% at 50% 50%, rgba(3,3,5,0.95) 0%, rgba(3,3,5,0.86) 40%, rgba(3,3,5,0.42) 68%, transparent 86%)',
+                    'radial-gradient(58% 54% at 50% 50%, rgb(var(--paper) / 0.95) 0%, rgb(var(--paper) / 0.86) 40%, rgb(var(--paper) / 0.42) 68%, transparent 86%)',
                 }}
               />
               <div className="relative mx-auto max-w-[320px]">

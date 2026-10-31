@@ -76,29 +76,29 @@ export function Login() {
           : t('auth.stepWaiting');
 
   return (
-    <div className="h-screen flex items-center justify-center relative overflow-hidden">
+    <div data-ui="page" data-page="login" className="h-screen flex items-center justify-center relative overflow-hidden">
       <AuthBackdrop />
 
       <div className="relative z-10 w-full max-w-[400px] mx-4" style={{ isolation: 'isolate' }}>
         <div
           className="relative overflow-hidden rounded-[2.25rem] px-8 pt-9 pb-7"
           style={{
-            border: '0.5px solid rgba(255,255,255,0.1)',
+            border: '0.5px solid rgb(var(--ink) / 0.1)',
             background:
               cardBlur > 0
-                ? 'linear-gradient(165deg, rgba(255,255,255,0.06), rgba(255,255,255,0.018) 60%, rgba(255,255,255,0.035))'
-                : 'rgba(18,18,22,0.85)',
+                ? 'linear-gradient(165deg, rgb(var(--ink) / 0.06), rgb(var(--ink) / 0.018) 60%, rgb(var(--ink) / 0.035))'
+                : 'rgb(var(--surface) / 0.85)',
             backdropFilter: cardBlur > 0 ? `blur(${cardBlur}px) saturate(1.5)` : undefined,
             WebkitBackdropFilter: cardBlur > 0 ? `blur(${cardBlur}px) saturate(1.5)` : undefined,
             boxShadow:
-              '0 40px 100px rgba(0,0,0,0.55), 0 0 80px var(--color-accent-glow), inset 0 1px 0 rgba(255,255,255,0.08)',
+              '0 40px 100px rgb(var(--shade) / calc(0.55 * var(--shade-alpha))), 0 0 80px var(--color-accent-glow), inset 0 1px 0 rgba(255,255,255,0.08)',
           }}
         >
           <span
             aria-hidden
             className="absolute inset-x-8 top-0 h-px"
             style={{
-              background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)',
+              background: 'linear-gradient(90deg, transparent, rgb(var(--ink) / 0.3), transparent)',
             }}
           />
 
@@ -112,8 +112,8 @@ export function Login() {
                     <AlertCircle size={20} className="text-red-400" strokeWidth={1.8} />
                   </div>
                   <div>
-                    <p className="text-[14px] font-semibold text-white/90">{errorText.title}</p>
-                    <p className="mt-1 text-[12px] leading-snug text-white/45 break-words">
+                    <p className="text-[14px] font-semibold text-ink-90">{errorText.title}</p>
+                    <p className="mt-1 text-[12px] leading-snug text-ink-45 break-words">
                       {errorText.desc}
                     </p>
                   </div>
@@ -126,8 +126,8 @@ export function Login() {
               </div>
             ) : isPolling ? (
               <div className="flex flex-col items-center gap-4 py-2">
-                <div className="w-10 h-10 rounded-full border-2 border-white/[0.08] border-t-accent animate-spin" />
-                <p className="text-[12px] text-white/45">{stepLabel}</p>
+                <div className="w-10 h-10 rounded-full border-2 border-ink/[0.08] border-t-accent animate-spin" />
+                <p className="text-[12px] text-ink-45">{stepLabel}</p>
                 {browserFailed && (
                   <p className="max-w-[280px] text-center text-[11.5px] leading-snug text-amber-200/70">
                     {t('auth.browserFailed')}
@@ -141,7 +141,7 @@ export function Login() {
                     <button
                       type="button"
                       onClick={reopen}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] text-[11px] text-white/55 hover:text-white/75 transition-all cursor-pointer"
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-ink/[0.04] hover:bg-ink/[0.08] border border-ink/[0.06] text-[11px] text-ink-55 hover:text-ink-75 transition-all cursor-pointer"
                     >
                       <ExternalLink size={12} />
                       {t('auth.reopenLink')}
@@ -156,7 +156,7 @@ export function Login() {
                       setCopied(true);
                       setTimeout(() => setCopied(false), 2000);
                     }}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] text-[11px] text-white/40 hover:text-white/60 transition-all cursor-pointer"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-ink/[0.04] hover:bg-ink/[0.08] border border-ink/[0.06] text-[11px] text-ink-40 hover:text-ink-60 transition-all cursor-pointer"
                   >
                     {copied ? (
                       <>
@@ -174,7 +174,7 @@ export function Login() {
                 <button
                   type="button"
                   onClick={cancel}
-                  className="text-[11.5px] text-white/35 hover:text-white/65 transition-colors cursor-pointer"
+                  className="text-[11.5px] text-ink-35 hover:text-ink-65 transition-colors cursor-pointer"
                 >
                   {t('common.cancel')}
                 </button>
@@ -188,16 +188,16 @@ export function Login() {
                 <button
                   type="button"
                   onClick={() => setQrOpen(true)}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[12.5px] font-medium text-white/45 hover:text-white/80 hover:bg-white/[0.04] transition-all cursor-pointer"
+                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[12.5px] font-medium text-ink-45 hover:text-ink-80 hover:bg-ink/[0.04] transition-all cursor-pointer"
                 >
                   <Smartphone size={14} />
                   {t('qrLink.scanQr')}
                 </button>
 
-                <div className="my-1 flex items-center gap-3 text-[10px] uppercase tracking-[0.22em] text-white/25">
-                  <div className="h-px flex-1 bg-gradient-to-r from-transparent to-white/10" />
+                <div className="my-1 flex items-center gap-3 text-[10px] uppercase tracking-[0.22em] text-ink-25">
+                  <div className="h-px flex-1 bg-gradient-to-r from-transparent to-ink/10" />
                   {t('auth.orSeparator')}
-                  <div className="h-px flex-1 bg-gradient-to-l from-transparent to-white/10" />
+                  <div className="h-px flex-1 bg-gradient-to-l from-transparent to-ink/10" />
                 </div>
 
                 <OfflineEntryCard onClick={handleEnterOffline} />
@@ -239,7 +239,7 @@ function PrimaryButton({
           aria-hidden
           className="auth-anim absolute inset-y-0 left-0 w-1/3"
           style={{
-            background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent)',
+            background: 'linear-gradient(90deg, transparent, rgb(var(--ink) / 0.35), transparent)',
             animation: 'auth-shine 4.5s ease-in-out infinite',
           }}
         />

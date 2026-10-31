@@ -56,7 +56,7 @@ const NowPlayingHeader = React.memo(() => {
 
   return (
     <div className="flex items-center gap-2.5 px-2 pt-1 pb-1.5">
-      <div className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-[8px] bg-white/[0.05] text-white/30 ring-1 ring-white/[0.08]">
+      <div className="relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-[8px] bg-ink/[0.05] text-ink-30 ring-1 ring-ink/[0.08]">
         {cover ? (
           <img src={cover} alt="" className="h-full w-full object-cover" draggable={false} />
         ) : (
@@ -67,11 +67,11 @@ const NowPlayingHeader = React.memo(() => {
         )}
       </div>
       <div className="min-w-0 flex-1">
-        <p className="truncate text-[12.5px] font-semibold text-white/90">
+        <p className="truncate text-[12.5px] font-semibold text-ink-90">
           {track ? getDisplayTitle(track) : t('player.notPlaying')}
         </p>
         {track && (
-          <p className="truncate text-[11px] text-white/40">
+          <p className="truncate text-[11px] text-ink-40">
             {getArtistDisplay(track).primary || track.user?.username}
           </p>
         )}

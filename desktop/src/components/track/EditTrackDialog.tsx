@@ -105,7 +105,7 @@ function EditTrackForm({ track, onDone }: { track: Track; onDone: () => void }) 
       <div className="flex items-center justify-end gap-2.5 pt-1">
         <Dialog.Close
           type="button"
-          className="px-4 py-2 rounded-xl text-[13px] font-medium text-white/50 hover:text-white/80 hover:bg-white/[0.06] transition-all cursor-pointer"
+          className="px-4 py-2 rounded-xl text-[13px] font-medium text-ink-50 hover:text-ink-80 hover:bg-ink/[0.06] transition-all cursor-pointer"
         >
           {t('common.cancel')}
         </Dialog.Close>
@@ -135,20 +135,20 @@ export const EditTrackDialog = React.memo(function EditTrackDialog({
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 animate-fade-in" />
+        <Dialog.Overlay className="fixed inset-0 bg-shade-60 backdrop-blur-sm z-50 animate-fade-in" />
         <Dialog.Content
           aria-describedby={undefined}
-          className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[500px] max-w-[calc(100vw-32px)] rounded-2xl glass border border-white/[0.08] shadow-2xl animate-fade-in-up p-6 space-y-5"
+          className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[500px] max-w-[calc(100vw-32px)] rounded-2xl glass border border-ink/[0.08] shadow-2xl animate-fade-in-up p-6 space-y-5"
         >
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-accent/15 flex items-center justify-center shrink-0">
               <Pencil size={17} className="text-accent" />
             </div>
-            <Dialog.Title className="text-[15px] font-bold text-white/90">
+            <Dialog.Title className="text-[15px] font-bold text-ink-90">
               {t('track.edit')}
             </Dialog.Title>
             <Dialog.Close
-              className="ml-auto w-7 h-7 rounded-lg flex items-center justify-center text-white/30 hover:text-white/70 hover:bg-white/[0.08] transition-all cursor-pointer"
+              className="ml-auto w-7 h-7 rounded-lg flex items-center justify-center text-ink-30 hover:text-ink-70 hover:bg-ink/[0.08] transition-all cursor-pointer"
               aria-label={t('common.close')}
             >
               <X size={14} />
