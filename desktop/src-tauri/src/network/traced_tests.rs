@@ -38,15 +38,16 @@ fn client_for(host: &'static str, addr: SocketAddr) -> wreq::Client {
     wreq::Client::builder().resolve(host, addr).build().unwrap()
 }
 
-fn header_of(request: &str) -> Option<String> {
+fn header_of(request: &str, name: &str) -> Option<String> {
+    let prefix = format!("{name}:");
     request
         .lines()
-        .find(|line| line.to_ascii_lowercase().starts_with("traceparent:"))
+        .find(|line| line.to_ascii_lowercase().starts_with(&prefix))
         .map(|line| line.split_once(':').unwrap().1.trim().to_string())
 }
 
 #[tokio::test]
-async fn our_hosts_get_a_traceparent_and_the_attempt_is_recorded() {
+async fn our_hosts_get_a_traceparent_and_the_version_and_the_attempt_is_recorded() {
     let seen = Arc::new(Mutex::new(Vec::new()));
     let addr = serving(seen.clone()).await;
     let host: &'static str = "api.r9.relay.scnative.dev";
@@ -68,7 +69,12 @@ async fn our_hosts_get_a_traceparent_and_the_attempt_is_recorded() {
     .await;
     assert_eq!(status, 200);
 
-    let sent = header_of(&seen.lock().unwrap()[0]).expect("traceparent header");
+    let request = seen.lock().unwrap()[0].clone();
+    assert_eq!(
+        header_of(&request, "x-scd-version").as_deref(),
+        Some(env!("CARGO_PKG_VERSION"))
+    );
+    let sent = header_of(&request, "traceparent").expect("traceparent header");
     let parts: Vec<&str> = sent.split('-').collect();
     assert_eq!(parts.len(), 4);
     assert_eq!(parts[0], "00");
@@ -90,7 +96,7 @@ async fn our_hosts_get_a_traceparent_and_the_attempt_is_recorded() {
 }
 
 #[tokio::test]
-async fn foreign_hosts_get_no_traceparent_and_no_record() {
+async fn foreign_hosts_get_no_traceparent_no_version_and_no_record() {
     let seen = Arc::new(Mutex::new(Vec::new()));
     let addr = serving(seen.clone()).await;
     let host: &'static str = "api-v2.soundcloud.com";
@@ -103,7 +109,9 @@ async fn foreign_hosts_get_no_traceparent_and_no_record() {
         flight.answered(response.status().as_u16(), 0);
     })
     .await;
-    assert!(header_of(&seen.lock().unwrap()[0]).is_none());
+    let request = seen.lock().unwrap()[0].clone();
+    assert!(header_of(&request, "traceparent").is_none());
+    assert!(header_of(&request, "x-scd-version").is_none());
     assert!(
         attempt::oldest_first()
             .iter()
