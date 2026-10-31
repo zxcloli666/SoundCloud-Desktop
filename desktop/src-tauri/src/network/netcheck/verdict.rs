@@ -1,8 +1,9 @@
 use super::env::uses_ts_fooling;
 use super::model::{
-    DnsAnswer, DnsState, EnvInfo, Hint, Internet, PhaseProbe, Remote, TargetCheck, TargetId, Tone,
-    Verdict, VolumeProbe,
+    DnsAnswer, DnsState, EnvInfo, Hint, Internet, PhaseProbe, RelayRoute, Remote, TargetCheck,
+    TargetId, Tone, Verdict, VolumeProbe,
 };
+use super::route::{API, SERVICES};
 use crate::network::dns;
 use crate::network::fail::{FailKind, Phase};
 use crate::network::health::link::Shape;
@@ -11,16 +12,24 @@ const TS_CONFIG_KEYS: [&str; 2] = ["NFQWS_OPT", "NFQWS2_OPT"];
 const TIMESTAMPS_OFF: [&str; 3] = ["disabled", "allowed", "default"];
 
 pub fn verdict(targets: &[TargetCheck], internet: Internet, remote: Remote) -> Verdict {
-    if targets.is_empty() {
+    let ours = ours(targets);
+    if ours.is_empty() {
         return Verdict::Unknown;
     }
-    let working = targets
+    let through = |id: TargetId, service: &str| {
+        ours.iter()
+            .any(|target| target.id == id && target.carries(service))
+    };
+    let working = SERVICES
         .iter()
-        .all(|target| target.ok || matches!(target.id, TargetId::Relay | TargetId::Pro));
-    if working && targets.iter().any(answered_wrong) {
+        .all(|service| through(TargetId::Relay, service.label));
+    if working && ours.iter().any(answered_wrong) {
         return Verdict::Dns;
     }
-    if targets.iter().all(|target| target.ok) {
+    let whole = |target: &TargetCheck| {
+        target.ok && target.route.as_ref().is_none_or(RelayRoute::carries_all)
+    };
+    if ours.iter().all(whole) {
         return Verdict::Ok;
     }
     if working {
@@ -29,26 +38,38 @@ pub fn verdict(targets: &[TargetCheck], internet: Internet, remote: Remote) -> V
     if internet == Internet::Offline {
         return Verdict::Offline;
     }
-    if targets
+    if ours
         .iter()
         .any(|target| matches!(target.dns, DnsState::Garbage | DnsState::Spoofed))
     {
         return Verdict::Dns;
     }
-    if targets.iter().any(certificate_swapped) {
+    if ours.iter().any(certificate_swapped) {
         return Verdict::Cert;
     }
     if remote == Remote::Down {
         return Verdict::Down;
     }
-    let ok = |id: TargetId| targets.iter().any(|target| target.id == id && target.ok);
-    if ok(TargetId::Main) {
+    if through(TargetId::Relay, API) {
         return Verdict::Partial;
     }
-    if ok(TargetId::Relay) {
+    if through(TargetId::Pro, API) {
         return Verdict::RelayOnly;
     }
-    tally(targets)
+    tally(&ours)
+}
+
+fn ours(targets: &[TargetCheck]) -> Vec<TargetCheck> {
+    targets
+        .iter()
+        .filter(|target| {
+            matches!(
+                target.id,
+                TargetId::Relay | TargetId::Pro | TargetId::Images
+            )
+        })
+        .cloned()
+        .collect()
 }
 
 pub fn with_volume(verdict: Verdict, volume: Option<&VolumeProbe>) -> Verdict {
@@ -131,8 +152,22 @@ pub fn failure_kind(target: &TargetCheck) -> Option<FailKind> {
             .map(|fail| fail.kind)
             .or_else(|| server_error(probe.status).then_some(FailKind::Status))
     });
+    let behind = target
+        .route
+        .as_ref()
+        .and_then(|route| route.services.iter().find(|service| service.service == API))
+        .filter(|service| !service.probe.ok)
+        .and_then(|service| {
+            service
+                .probe
+                .fail
+                .as_ref()
+                .map(|fail| fail.kind)
+                .or_else(|| server_error(service.probe.status).then_some(FailKind::Status))
+        });
     match (app, probe) {
         (Some(FailKind::Other) | None, Some(probe)) => Some(probe),
+        (None, None) => behind,
         (app, _) => app,
     }
 }
@@ -162,7 +197,7 @@ pub fn hint(verdict: Verdict, env: Option<&EnvInfo>, targets: &[TargetCheck]) ->
     }
     let blocked = match verdict {
         Verdict::Reset | Verdict::Timeout | Verdict::RelayOnly => true,
-        Verdict::Offline => matches!(tally(targets), Verdict::Reset | Verdict::Timeout),
+        Verdict::Offline => matches!(tally(&ours(targets)), Verdict::Reset | Verdict::Timeout),
         _ => false,
     };
     if !blocked {

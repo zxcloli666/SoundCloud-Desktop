@@ -606,24 +606,23 @@
     "verdict": {
       "ok": {
         "title": "모두 정상이에요",
-        "hint": "모든 서버가 응답해요."
+        "hint": "모든 릴레이와 서버가 응답해요."
       },
       "backupDown": {
-        "title": "일부 백업 경로가 응답하지 않아요",
-        "hint": "앱은 기본 경로로 작동해요. 따로 하실 일은 없어요."
+        "title": "일부 경로가 응답하지 않아요",
+        "hint": "앱은 다른 경로로 작동해요. 따로 할 일은 없어요."
       },
       "partial": {
         "title": "일부 서버가 응답하지 않아요",
         "hint": "앱은 작동하지만 일부 커버나 트랙이 로딩되지 않을 수 있어요."
       },
       "relayOnly": {
-        "title": "직접 경로가 차단됐어요",
-        "hint": "앱은 백업 경로로 작동해요. 조금 느릴 수 있어요."
+        "title": "일반 릴레이가 차단됐어요",
+        "hint": "앱은 프로 릴레이로 작동해요. 조금 느릴 수 있어요."
       },
       "cut": {
-        "title": "직접 경로에서 큰 다운로드가 끊겨요",
-        "hint": "앱이 백업 경로로 전환해요. 조금 느릴 수 있어요.",
-        "hintAlone": "백업 경로도 응답하지 않아서 큰 트랙은 로딩되지 않을 수 있어요."
+        "title": "첫 번째 릴레이에서 큰 다운로드가 끊겨요",
+        "hint": "앱이 다른 경로로 전환해요. 조금 느릴 수 있어요."
       },
       "dns": {
         "title": "DNS가 잘못된 주소를 반환해요",
@@ -676,30 +675,35 @@
       "vpn": "VPN: {{name}}"
     },
     "host": {
-      "main": "메인 서버",
-      "star": "Star 서버",
-      "storage": "음악 저장소",
+      "relay": "릴레이 {{node}}",
+      "pro": "프로 릴레이 {{node}}",
       "images": "커버",
-      "relay": "백업 경로 {{node}}"
+      "call": "콜 노드 {{node}}",
+      "soundCloud": "SoundCloud 직접 연결"
     },
     "route": {
-      "origin": {
-        "main": "메인",
-        "star": "Star",
-        "s3": "S3",
-        "images": "커버"
+      "service": {
+        "api": "API",
+        "api-star": "Star",
+        "stream": "스트림",
+        "storage": "저장소",
+        "s3": "S3"
       },
-      "ok": "{{name}}: 릴레이가 직접 연결됨",
-      "backup": "{{name}}: 릴레이가 백업 경로로만 연결됨",
-      "down": "{{name}}: 릴레이가 연결하지 못함"
+      "ok": "{{name}}: 이 릴레이로 작동해요",
+      "backup": "{{name}}: 릴레이의 백업 경로로 작동해요",
+      "down": "{{name}}: 이 릴레이로는 응답이 없어요"
     },
     "col": {
       "dns": "DNS",
       "tcp": "TCP",
       "tls": "TLS",
-      "http": "HTTP"
+      "http": "HTTP",
+      "vol": "VOL"
     },
     "detail": {
+      "volWhole": "{{kb}} KB가 {{ms}} ms 만에 모두 도착",
+      "volPieces": "{{kb}} KB가 {{ms}} ms 만에 조각으로 도착",
+      "volCut": "{{kb}} KB에서 끊김",
       "ms": "{{ms}} ms",
       "skip": "점검 안 함",
       "proxy": "프록시 경유",
@@ -718,7 +722,9 @@
       "tls": "TLS 오류",
       "status": "서버 오류 {{status}}",
       "appFailed": "앱 요청 실패",
-      "other": "오류"
+      "other": "오류",
+      "kbps": "{{n}} KB/s",
+      "mbps": "{{n}} MB/s"
     },
     "manual": {
       "title": "직접 점검",
@@ -727,6 +733,18 @@
       "browser": "브라우저에서 {{host}}을(를) 열어 보세요",
       "copy": "복사",
       "openBrowser": "열기"
+    },
+    "cut": {
+      "leadAlone": "무언가 다운로드를 끊고 있어서 트랙과 커버가 로딩되지 않아요. 차례대로 해 보세요:",
+      "leadBackups": "앱은 백업 경로로 작동하지만 더 느려요. 빠르게 하려면 차례대로 해 보세요:",
+      "off": "{{name}}을(를) 끄고 「다시 점검」을 누르세요.",
+      "exclude": "이제 되나요? 아래 줄을 {{file}}에 추가하고 {{name}}을(를) 다시 켜세요. 끝이에요.",
+      "bypass": "여전히 안 되나요? 아래 줄을 {{file}}에 추가하고 {{name}}을(를) 켠 뒤 다시 점검하세요.",
+      "vpn": "그래도 안 되나요? VPN만 도움이 돼요.",
+      "bypassIdle": "zapret이 있나요? 아래 줄을 {{file}}에 추가하고 켠 뒤 「다시 점검」을 누르세요.",
+      "vpnIdle": "효과가 없거나 zapret이 없나요? VPN만 도움이 돼요.",
+      "excludeAny": "제외 목록",
+      "bypassAny": "우회 목록"
     }
   },
   "home": {

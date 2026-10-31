@@ -1,47 +1,48 @@
 use std::time::Duration;
 
-use super::model::{TargetCheck, TargetId, VolumeProbe};
+use super::model::{TargetCheck, TargetId, Trigger, VolumeProbe};
 use super::targets::Target;
-use crate::network::health::link::{self, Shape};
+use crate::network::health::link::{self, Measured, Shape};
 use crate::network::pro;
 use crate::network::{dns, edge};
 
 const PROBE_PATH: &str = "/probe";
+const CARRIER_SERVICE: &str = "storage";
 const CONNECT_TIMEOUT: Duration = Duration::from_secs(10);
 
-pub async fn of(target: &Target) -> Option<VolumeProbe> {
-    if target.id == TargetId::Pro {
-        return Some(in_pieces(&target.host).await);
+pub fn size(trigger: Trigger) -> u64 {
+    match trigger {
+        Trigger::Manual => link::DEEP_BYTES,
+        Trigger::Auto => link::PROBE_BYTES,
     }
-    let client = client()?;
-    let host = &target.host;
-    let volume = match target.id {
-        TargetId::Images => {
-            let carrier = format!("https://{host}/");
-            let storage = edge::primary_relay_host("storage");
-            let probe = format!("https://{storage}{PROBE_PATH}");
-            measure_through(&client, &probe, Some(&carrier)).await
-        }
-        _ => measure(&client, &format!("https://{host}/probe")).await,
-    };
-    Some(volume)
 }
 
-pub async fn direct(targets: &[TargetCheck]) -> Option<VolumeProbe> {
-    let storage = targets
-        .iter()
-        .find(|target| target.id == TargetId::Storage)
-        .and_then(|target| target.volume.clone());
-    match storage {
-        Some(volume) if volume.shape != Shape::Dead.as_str() => Some(volume),
-        storage => match client() {
-            Some(client) => {
-                let health = edge::primary_relay_host("health");
-                first_served(&client, &[&format!("https://{health}{PROBE_PATH}")]).await
-            }
-            None => storage,
-        },
+pub async fn of(target: &Target, size: u64) -> Option<VolumeProbe> {
+    match target.id {
+        TargetId::Pro => Some(in_pieces(&target.host, size).await),
+        TargetId::Relay => {
+            let node = target.node.as_deref()?;
+            let url = format!(
+                "https://{}{PROBE_PATH}",
+                edge::relay_host(CARRIER_SERVICE, node)
+            );
+            Some(measure(&client()?, &url, size).await)
+        }
+        TargetId::Images => {
+            let carrier = format!("https://{}/", target.host);
+            let storage = edge::primary_relay_host(CARRIER_SERVICE);
+            let probe = format!("https://{storage}{PROBE_PATH}");
+            Some(measure_through(&client()?, &probe, size, Some(&carrier)).await)
+        }
+        TargetId::Call | TargetId::SoundCloud => None,
     }
+}
+
+pub fn primary(targets: &[TargetCheck]) -> Option<VolumeProbe> {
+    targets
+        .iter()
+        .find(|target| target.id == TargetId::Relay)
+        .and_then(|target| target.volume.clone())
 }
 
 pub fn of_kind(targets: &[TargetCheck], id: TargetId) -> Vec<VolumeProbe> {
@@ -52,19 +53,21 @@ pub fn of_kind(targets: &[TargetCheck], id: TargetId) -> Vec<VolumeProbe> {
         .collect()
 }
 
-async fn in_pieces(host: &str) -> VolumeProbe {
-    let carried = pro::carries(host).await;
+async fn in_pieces(host: &str, size: u64) -> VolumeProbe {
+    let carried = pro::carries_sized(host, usize::try_from(size).unwrap_or(usize::MAX)).await;
     let shape = if carried.ok {
         Shape::Clear
     } else {
         Shape::Dead
     };
+    let bytes = carried.bytes as u64;
     VolumeProbe {
         host: host.to_string(),
         shape: shape.as_str().to_string(),
-        bytes: carried.bytes as u64,
+        bytes,
         ms: carried.ms,
         cut: !carried.ok,
+        speed: per_second(bytes, carried.ms),
     }
 }
 
@@ -77,26 +80,19 @@ fn client() -> Option<wreq::Client> {
         .ok()
 }
 
-async fn first_served(client: &wreq::Client, urls: &[&str]) -> Option<VolumeProbe> {
-    let mut last = None;
-    for url in urls {
-        let volume = measure(client, url).await;
-        if volume.shape != Shape::Dead.as_str() {
-            return Some(volume);
-        }
-        last = Some(volume);
-    }
-    last
+async fn measure(client: &wreq::Client, url: &str, size: u64) -> VolumeProbe {
+    measure_through(client, url, size, None).await
 }
 
-async fn measure(client: &wreq::Client, url: &str) -> VolumeProbe {
-    measure_through(client, url, None).await
-}
-
-async fn measure_through(client: &wreq::Client, url: &str, carrier: Option<&str>) -> VolumeProbe {
-    let measured = link::probe_through(client, url, link::PROBE_BYTES, carrier).await;
+async fn measure_through(
+    client: &wreq::Client,
+    url: &str,
+    size: u64,
+    carrier: Option<&str>,
+) -> VolumeProbe {
+    let measured = link::probe_through(client, url, size, carrier).await;
     let bytes = u64::try_from(measured.link.bytes).unwrap_or_default();
-    let cut = cut(measured.shape, bytes)
+    let cut = cut(measured.shape, bytes, size)
         || (measured.connected
             && silent(measured.shape, bytes)
             && small_passes(client, url, carrier).await);
@@ -109,6 +105,25 @@ async fn measure_through(client: &wreq::Client, url: &str, carrier: Option<&str>
         bytes,
         ms: u32::try_from(measured.ms).unwrap_or_default(),
         cut,
+        speed: speed(&measured),
+    }
+}
+
+fn speed(measured: &Measured) -> u64 {
+    if !measured.shape.usable() {
+        return 0;
+    }
+    match measured.sustained_bps() / 8 {
+        0 => u64::try_from(measured.link.kbps).unwrap_or_default() * 125,
+        sustained => sustained,
+    }
+}
+
+fn per_second(bytes: u64, ms: u32) -> u64 {
+    if ms == 0 {
+        0
+    } else {
+        bytes * 1000 / u64::from(ms)
     }
 }
 
@@ -123,9 +138,8 @@ async fn small_passes(client: &wreq::Client, url: &str, carrier: Option<&str>) -
         .usable()
 }
 
-fn cut(shape: Shape, bytes: u64) -> bool {
-    matches!(shape, Shape::Cut | Shape::Blackhole)
-        && (link::CUT_FLOOR..link::PROBE_BYTES).contains(&bytes)
+fn cut(shape: Shape, bytes: u64, size: u64) -> bool {
+    matches!(shape, Shape::Cut | Shape::Blackhole) && (link::CUT_FLOOR..size).contains(&bytes)
 }
 
 #[cfg(test)]
@@ -135,9 +149,9 @@ mod tests {
     use tokio::io::{AsyncReadExt, AsyncWriteExt};
     use tokio::net::TcpListener;
 
-    use super::{cut, first_served, measure, silent};
+    use super::{cut, measure, per_second, silent};
     use crate::network::h2_server::acceptor;
-    use crate::network::health::link::{PROBE_BYTES, SMALL_BYTES, Shape};
+    use crate::network::health::link::{DEEP_BYTES, PROBE_BYTES, SMALL_BYTES, Shape};
 
     #[derive(Clone, Copy)]
     enum Ending {
@@ -241,7 +255,7 @@ mod tests {
 
     #[tokio::test]
     async fn a_whole_body_is_not_a_cut() {
-        let volume = measure(&client(), &server(Ending::Whole).await).await;
+        let volume = measure(&client(), &server(Ending::Whole).await, PROBE_BYTES).await;
         assert_eq!(volume.shape, "clear");
         assert_eq!(volume.bytes, PROBE_BYTES);
         assert!(!volume.cut);
@@ -249,14 +263,14 @@ mod tests {
 
     #[tokio::test]
     async fn a_body_that_breaks_off_after_twelve_kilobytes_is_a_cut() {
-        let volume = measure(&client(), &server(Ending::Close).await).await;
+        let volume = measure(&client(), &server(Ending::Close).await, PROBE_BYTES).await;
         assert_eq!(volume.bytes, SENT_BEFORE_CUT as u64);
         assert!(volume.cut, "{volume:?}");
     }
 
     #[tokio::test]
     async fn a_body_that_freezes_after_twelve_kilobytes_is_a_cut() {
-        let volume = measure(&client(), &server(Ending::Freeze).await).await;
+        let volume = measure(&client(), &server(Ending::Freeze).await, PROBE_BYTES).await;
         assert_eq!(volume.shape, "blackhole");
         assert_eq!(volume.bytes, SENT_BEFORE_CUT as u64);
         assert!(volume.cut, "{volume:?}");
@@ -264,7 +278,7 @@ mod tests {
 
     #[tokio::test]
     async fn a_big_answer_that_never_starts_while_a_small_one_passes_is_a_cut() {
-        let volume = measure(&client(), &picky_server(false).await).await;
+        let volume = measure(&client(), &picky_server(false).await, PROBE_BYTES).await;
         assert_eq!(volume.shape, "blackhole");
         assert_eq!(volume.bytes, 0);
         assert!(volume.cut, "{volume:?}");
@@ -279,7 +293,7 @@ mod tests {
             .pool_max_idle_per_host(0)
             .build()
             .unwrap();
-        let volume = measure(&client, &lossy_tls_server().await).await;
+        let volume = measure(&client, &lossy_tls_server().await, PROBE_BYTES).await;
         assert_eq!(volume.shape, "blackhole");
         assert_eq!(volume.bytes, 0);
         assert!(!volume.cut, "{volume:?}");
@@ -287,32 +301,26 @@ mod tests {
 
     #[tokio::test]
     async fn a_host_that_stalls_every_answer_is_not_a_cut() {
-        let volume = measure(&client(), &picky_server(true).await).await;
+        let volume = measure(&client(), &picky_server(true).await, PROBE_BYTES).await;
         assert_eq!(volume.shape, "blackhole");
         assert!(!volume.cut, "{volume:?}");
     }
 
     #[tokio::test]
-    async fn the_storage_origin_is_measured_first_and_named() {
-        let storage = server(Ending::Close).await;
-        let health = server(Ending::Whole).await;
-        let volume = first_served(&client(), &[&storage, &health]).await.unwrap();
-        assert!(volume.cut, "{volume:?}");
+    async fn a_whole_body_gets_a_speed_and_a_missing_probe_is_dead() {
+        let volume = measure(&client(), &server(Ending::Whole).await, PROBE_BYTES).await;
+        assert!(volume.speed > 0, "{volume:?}");
         assert_eq!(volume.host, "127.0.0.1");
-        assert_eq!(volume.bytes, SENT_BEFORE_CUT as u64);
+        let missing = measure(&client(), &server(Ending::Missing).await, PROBE_BYTES).await;
+        assert_eq!(missing.shape, "dead");
+        assert_eq!(missing.speed, 0);
+        assert!(!missing.cut);
     }
 
-    #[tokio::test]
-    async fn an_origin_without_the_probe_gives_way_to_the_next() {
-        let storage = server(Ending::Missing).await;
-        let health = server(Ending::Whole).await;
-        let volume = first_served(&client(), &[&storage, &health]).await.unwrap();
-        assert_eq!(volume.shape, "clear");
-        assert_eq!(volume.bytes, PROBE_BYTES);
-        let missing = server(Ending::Missing).await;
-        let volume = first_served(&client(), &[&missing]).await.unwrap();
-        assert_eq!(volume.shape, "dead");
-        assert!(!volume.cut);
+    #[test]
+    fn pieces_get_a_speed_from_their_bytes_and_time() {
+        assert_eq!(per_second(64 * 1024, 500), 131_072);
+        assert_eq!(per_second(64 * 1024, 0), 0);
     }
 
     #[tokio::test]
@@ -320,7 +328,7 @@ mod tests {
         let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
         let url = format!("http://{}/probe", listener.local_addr().unwrap());
         drop(listener);
-        let volume = measure(&client(), &url).await;
+        let volume = measure(&client(), &url, PROBE_BYTES).await;
         assert_eq!(volume.bytes, 0);
         assert!(!volume.cut);
     }
@@ -335,11 +343,13 @@ mod tests {
 
     #[test]
     fn only_a_stop_inside_the_body_counts() {
-        assert!(cut(Shape::Cut, 9 * 1024));
-        assert!(cut(Shape::Blackhole, 16 * 1024));
-        assert!(!cut(Shape::Blackhole, 0));
-        assert!(!cut(Shape::Reset, 1024));
-        assert!(!cut(Shape::Clear, PROBE_BYTES));
-        assert!(!cut(Shape::Slow, 20 * 1024));
+        assert!(cut(Shape::Cut, 9 * 1024, PROBE_BYTES));
+        assert!(cut(Shape::Blackhole, 16 * 1024, PROBE_BYTES));
+        assert!(cut(Shape::Cut, 100 * 1024, DEEP_BYTES));
+        assert!(!cut(Shape::Cut, 100 * 1024, PROBE_BYTES));
+        assert!(!cut(Shape::Blackhole, 0, PROBE_BYTES));
+        assert!(!cut(Shape::Reset, 1024, PROBE_BYTES));
+        assert!(!cut(Shape::Clear, PROBE_BYTES, PROBE_BYTES));
+        assert!(!cut(Shape::Slow, 20 * 1024, PROBE_BYTES));
     }
 }

@@ -7,7 +7,7 @@ import { CopyLine } from './CopyLine';
 export const ManualSteps = React.memo(() => {
   const { t } = useTranslation();
   const verdict = useShownVerdict();
-  const host = useNetCheckStore((s) => s.report?.targets.find((t) => t.id === 'main')?.host);
+  const host = useNetCheckStore((s) => s.report?.targets.find((t) => t.id === 'relay')?.host);
   if (!host || !showManual(verdict)) return null;
   const os = currentOs();
   return (

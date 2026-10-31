@@ -116,10 +116,14 @@ pub struct Probed {
 }
 
 pub async fn carries(host: &str) -> Probed {
+    carries_sized(host, PROBE_BYTES).await
+}
+
+pub async fn carries_sized(host: &str, size: usize) -> Probed {
     let started = Instant::now();
     let asked = Asked {
         method: "GET".to_string(),
-        url: format!("{PROBE_ORIGIN}?bytes={PROBE_BYTES}"),
+        url: format!("{PROBE_ORIGIN}?bytes={size}"),
         headers: Vec::new(),
         body: None,
     };
@@ -128,7 +132,7 @@ pub async fn carries(host: &str) -> Probed {
         _ => 0,
     };
     Probed {
-        ok: bytes == PROBE_BYTES,
+        ok: bytes == size,
         bytes,
         ms: started.elapsed().as_millis().min(u32::MAX as u128) as u32,
     }

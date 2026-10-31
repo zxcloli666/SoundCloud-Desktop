@@ -34,6 +34,7 @@ pub fn sample(at_ms: u64) -> NetReport {
         volume: None,
         relay_volume: Vec::new(),
         pro_volume: Vec::new(),
+        call: None,
     }
 }
 
@@ -96,14 +97,13 @@ pub fn troubled() -> NetReport {
     report.remote = Remote::Up;
     report.internet = Internet::Online;
     report.targets = vec![
-        reset_target(TargetId::Main, None, "api.scnative.dev"),
-        reset_target(TargetId::Star, None, "api-star.scnative.dev"),
-        reset_target(TargetId::Storage, None, "storage.scnative.dev"),
-        reset_target(TargetId::Images, None, "images.scnative.dev"),
         reset_target(TargetId::Relay, Some("r1"), "r1.relay.scnative.dev"),
         reset_target(TargetId::Relay, Some("r2"), "r2.relay.scnative.dev"),
         reset_target(TargetId::Relay, Some("r3"), "r3.relay.scnative.dev"),
         reset_target(TargetId::Relay, Some("r4"), "r4.relay.scnative.dev"),
+        reset_target(TargetId::Pro, Some("p1"), "p1.pro.scnative.dev"),
+        reset_target(TargetId::Images, None, "images.scnative.dev"),
+        reset_target(TargetId::SoundCloud, None, "api-v2.soundcloud.com"),
     ];
     report.doh = ["cloudflare", "google", "quad9", "adguard", "yandex"]
         .into_iter()
@@ -133,15 +133,16 @@ pub fn troubled() -> NetReport {
         ..EnvInfo::default()
     });
     report.edge = EdgeSnapshot {
-        pins: vec![("api.scnative.dev".to_string(), 480_000)],
+        pins: vec![("images".to_string(), 480_000)],
         pool: vec!["r1".to_string(), "r2".to_string()],
         pro: Vec::new(),
     };
+    report.call = Some("active".to_string());
     report.recent = (0..40)
         .map(|at| PathEvent {
             at_ms: report.at_ms - at * 1000,
-            origin: "api.scnative.dev".to_string(),
-            tier: Tier::Direct,
+            origin: "api".to_string(),
+            tier: Tier::Relay,
             role: Role::Primary,
             ok: false,
             status: None,

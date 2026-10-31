@@ -223,12 +223,10 @@ pub fn target(target: &mut TargetCheck) {
     if let Some(app) = target.app.as_mut() {
         fail(&mut app.fail);
     }
-    if let Some(through) = target
-        .route
-        .as_mut()
-        .and_then(|route| route.through.as_mut())
-    {
-        fail(&mut through.fail);
+    if let Some(route) = target.route.as_mut() {
+        for service in &mut route.services {
+            fail(&mut service.probe.fail);
+        }
     }
 }
 

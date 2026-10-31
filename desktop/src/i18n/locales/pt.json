@@ -633,23 +633,23 @@
     "verdict": {
       "ok": {
         "title": "Tudo funcionando",
-        "hint": "Todos os nossos servidores respondem."
+        "hint": "Todos os relays e servidores respondem."
       },
       "backupDown": {
-        "title": "Algumas rotas de backup não respondem",
-        "hint": "O app funciona pela rota principal. Não precisa fazer nada."
+        "title": "Algumas rotas não respondem",
+        "hint": "O app funciona pelas outras. Não precisa fazer nada."
       },
       "partial": {
         "title": "Alguns servidores não respondem",
         "hint": "O app funciona, mas algumas capas ou faixas podem não carregar."
       },
       "relayOnly": {
-        "title": "A rota direta está bloqueada",
-        "hint": "O app funciona por rotas de backup, talvez mais devagar."
+        "title": "Os relays comuns estão bloqueados",
+        "hint": "O app funciona pelo relay Pro, talvez mais devagar."
       },
       "cut": {
-        "title": "A rota direta corta downloads grandes",
-        "hint": "O app muda para rotas de backup, talvez mais devagar."
+        "title": "O primeiro relay corta downloads grandes",
+        "hint": "O app passa para outras rotas, talvez mais devagar."
       },
       "dns": {
         "title": "Seu DNS retorna um endereço errado",
@@ -714,34 +714,34 @@
       "vpn": "VPN: {{name}}"
     },
     "host": {
-      "main": "Servidor principal",
-      "star": "Servidor Star",
-      "storage": "Armazenamento de músicas",
+      "relay": "Relay {{node}}",
+      "pro": "Relay Pro {{node}}",
       "images": "Capas",
-      "relay": "Rota de backup {{node}}",
-      "pro": "Relay Pro {{node}}"
+      "call": "Nó call {{node}}",
+      "soundCloud": "SoundCloud direto"
     },
     "route": {
-      "origin": {
-        "main": "Principal",
-        "star": "Star",
-        "s3": "S3",
-        "images": "Capas"
+      "service": {
+        "api": "API",
+        "api-star": "Star",
+        "stream": "Stream",
+        "storage": "Armazenamento",
+        "s3": "S3"
       },
-      "ok": "{{name}}: o relay chega direto",
-      "backup": "{{name}}: o relay chega só pelo caminho de backup",
-      "down": "{{name}}: o relay não chega"
+      "ok": "{{name}}: funciona por este relay",
+      "backup": "{{name}}: funciona pelo caminho reserva do relay",
+      "down": "{{name}}: não responde por este relay"
     },
     "col": {
       "dns": "DNS",
       "tcp": "TCP",
       "tls": "TLS",
       "http": "HTTP",
-      "vol": "64K"
+      "vol": "VOL"
     },
     "detail": {
-      "volWhole": "chegou inteiro, {{ms}} ms",
-      "volPieces": "chegou em partes, {{ms}} ms",
+      "volWhole": "{{kb}} KB chegaram inteiros em {{ms}} ms",
+      "volPieces": "{{kb}} KB chegaram em partes em {{ms}} ms",
       "volCut": "cortado em {{kb}} KB",
       "ms": "{{ms}} ms",
       "skip": "não verificado",
@@ -761,7 +761,9 @@
       "tls": "erro de TLS",
       "status": "erro do servidor {{status}}",
       "appFailed": "a requisição do app falhou",
-      "other": "erro"
+      "other": "erro",
+      "kbps": "{{n}} KB/s",
+      "mbps": "{{n}} MB/s"
     },
     "manual": {
       "title": "Verificar manualmente",

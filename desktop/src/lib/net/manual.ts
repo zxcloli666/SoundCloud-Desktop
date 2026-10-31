@@ -22,6 +22,8 @@ const MANUAL: ReadonlySet<Verdict> = new Set([
   'unknown',
 ]);
 const SHOWN_ADDRS = 2;
+const KB = 1024;
+const MB = KB * KB;
 const PHASE_BUDGET_MS = 5_000;
 const CLOCK: Intl.DateTimeFormatOptions = { hour: '2-digit', minute: '2-digit' };
 const DATED: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', ...CLOCK };
@@ -151,6 +153,11 @@ function detail(t: TFunction, col: Column, tone: Tone, target: TargetCheck): str
   return phaseDetail(t, col, target.probe);
 }
 
+export function speedText(t: TFunction, bytesPerSec: number): string {
+  if (bytesPerSec >= MB) return t('netCheck.detail.mbps', { n: (bytesPerSec / MB).toFixed(1) });
+  return t('netCheck.detail.kbps', { n: Math.round(bytesPerSec / KB) });
+}
+
 export function volumeTone(target: TargetCheck): Tone {
   if (target.cells[0] === 'pending') return 'pending';
   const volume = target.volume;
@@ -162,9 +169,10 @@ export function volumeTone(target: TargetCheck): Tone {
 function volumeDetail(t: TFunction, tone: Tone, target: TargetCheck): string {
   const volume = target.volume;
   if (!volume || tone === 'skip') return t('netCheck.detail.skip');
-  if (tone === 'fail') return t('netCheck.detail.volCut', { kb: Math.floor(volume.bytes / 1024) });
+  if (tone === 'fail') return t('netCheck.detail.volCut', { kb: Math.floor(volume.bytes / KB) });
   const key = target.id === 'pro' ? 'netCheck.detail.volPieces' : 'netCheck.detail.volWhole';
-  return t(key, { ms: volume.ms });
+  const whole = t(key, { ms: volume.ms, kb: Math.floor(volume.bytes / KB) });
+  return volume.speed > 0 ? `${whole}, ${speedText(t, volume.speed)}` : whole;
 }
 
 export function volumeTitle(t: TFunction, target: TargetCheck): string {

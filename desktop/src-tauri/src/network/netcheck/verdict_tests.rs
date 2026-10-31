@@ -4,9 +4,11 @@ use std::net::IpAddr;
 use super::{cells, dns_state, hint, nothing_carries, relays_lag, verdict, with_volume};
 use crate::network::fail::{Fail, FailKind, Phase};
 use crate::network::netcheck::model::{
-    AppProbe, DnsAnswer, DnsState, DpiTool, EnvInfo, Hint, Internet, PhaseProbe, Remote,
-    ServiceInfo, TargetCheck, TargetId, Tone, Verdict, VolumeProbe, ZapretConfig,
+    AppProbe, DnsAnswer, DnsState, DpiTool, EnvInfo, Hint, Internet, PhaseProbe, RelayRoute,
+    Remote, ServiceInfo, ServiceRoute, TargetCheck, TargetId, Tone, UpstreamState, Verdict,
+    VolumeProbe, ZapretConfig,
 };
+use crate::network::netcheck::route::SERVICES;
 
 fn ip(text: &str) -> IpAddr {
     text.parse().unwrap()
@@ -56,8 +58,40 @@ fn failed_probe(kind: FailKind, phase: Phase) -> PhaseProbe {
     probe
 }
 
+fn served(ok: bool) -> AppProbe {
+    AppProbe {
+        ok,
+        status: Some(if ok { 200 } else { 502 }),
+        ms: Some(90),
+        fail: None,
+    }
+}
+
+fn carrying(ok: bool) -> RelayRoute {
+    RelayRoute {
+        services: SERVICES
+            .iter()
+            .map(|service| ServiceRoute {
+                service: service.label.to_string(),
+                state: if ok {
+                    UpstreamState::Ok
+                } else {
+                    UpstreamState::Down
+                },
+                probe: served(ok),
+            })
+            .collect(),
+        upstreams: Vec::new(),
+    }
+}
+
 fn healthy(id: TargetId) -> TargetCheck {
-    let mut check = TargetCheck::pending(id, None, format!("{}.scnative.dev", id.as_str()));
+    let node = match id {
+        TargetId::Relay => Some("r1".to_string()),
+        TargetId::Pro => Some("p1".to_string()),
+        _ => None,
+    };
+    let mut check = TargetCheck::pending(id, node, format!("{}.scnative.dev", id.as_str()));
     check.system = answer(&["188.165.221.195"]);
     check.dns = DnsState::Sane;
     check.probe = Some(passed_probe());
@@ -67,6 +101,9 @@ fn healthy(id: TargetId) -> TargetCheck {
         ms: Some(80),
         fail: None,
     });
+    if matches!(id, TargetId::Relay | TargetId::Pro) {
+        check.route = Some(carrying(true));
+    }
     check.ok = true;
     check
 }
@@ -80,17 +117,17 @@ fn broken(id: TargetId, kind: FailKind, phase: Phase) -> TargetCheck {
         ms: None,
         fail: Some(Fail::of(kind)),
     });
+    check.route = None;
     check.ok = false;
     check
 }
 
 fn all_broken(kind: FailKind, phase: Phase) -> Vec<TargetCheck> {
     [
-        TargetId::Main,
-        TargetId::Star,
-        TargetId::Storage,
-        TargetId::Images,
         TargetId::Relay,
+        TargetId::Relay,
+        TargetId::Pro,
+        TargetId::Images,
     ]
     .into_iter()
     .map(|id| broken(id, kind, phase))
@@ -103,10 +140,26 @@ fn judge(targets: &[TargetCheck]) -> Verdict {
 
 #[test]
 fn every_target_answering_is_ok() {
-    let targets = vec![healthy(TargetId::Main), healthy(TargetId::Relay)];
+    let targets = vec![healthy(TargetId::Relay), healthy(TargetId::Images)];
     assert_eq!(
         verdict(&targets, Internet::Offline, Remote::Down),
         Verdict::Ok
+    );
+}
+
+#[test]
+fn soundcloud_and_call_nodes_do_not_change_the_verdict() {
+    let mut targets = vec![
+        healthy(TargetId::Relay),
+        broken(TargetId::SoundCloud, FailKind::Reset, Phase::Tls),
+        broken(TargetId::Call, FailKind::Timeout, Phase::Tcp),
+    ];
+    assert_eq!(judge(&targets), Verdict::Ok);
+    targets[1].dns = DnsState::Spoofed;
+    assert_eq!(judge(&targets), Verdict::Ok);
+    assert_eq!(
+        judge(&[broken(TargetId::SoundCloud, FailKind::Reset, Phase::Tls)]),
+        Verdict::Unknown
     );
 }
 
@@ -129,7 +182,7 @@ fn a_garbage_dns_answer_is_dns() {
 
 #[test]
 fn a_wrong_answer_the_app_works_around_is_still_dns() {
-    let mut targets = vec![healthy(TargetId::Main), healthy(TargetId::Storage)];
+    let mut targets = vec![healthy(TargetId::Relay), healthy(TargetId::Images)];
     targets[1].system = answer(&["2.26.93.81"]);
     targets[1].dns = DnsState::Garbage;
     assert_eq!(judge(&targets), Verdict::Dns);
@@ -139,7 +192,7 @@ fn a_wrong_answer_the_app_works_around_is_still_dns() {
 
 #[test]
 fn a_missing_name_the_app_works_around_is_still_dns() {
-    let mut targets = vec![healthy(TargetId::Main)];
+    let mut targets = vec![healthy(TargetId::Relay)];
     targets[0].system = DnsAnswer {
         fail: Some(Fail::of(FailKind::Dns)),
         ..DnsAnswer::default()
@@ -150,7 +203,7 @@ fn a_missing_name_the_app_works_around_is_still_dns() {
 
 #[test]
 fn a_slow_system_resolver_alone_is_not_a_wrong_answer() {
-    let mut targets = vec![healthy(TargetId::Main), healthy(TargetId::Relay)];
+    let mut targets = vec![healthy(TargetId::Relay), healthy(TargetId::Images)];
     targets[0].system = DnsAnswer {
         fail: Some(Fail::timeout_after(6_000)),
         ..DnsAnswer::default()
@@ -162,7 +215,7 @@ fn a_slow_system_resolver_alone_is_not_a_wrong_answer() {
 #[test]
 fn a_wrong_answer_beats_backup_routes_being_down() {
     let mut targets = vec![
-        healthy(TargetId::Main),
+        healthy(TargetId::Relay),
         broken(TargetId::Relay, FailKind::Refused, Phase::Tcp),
     ];
     targets[1].system = answer(&["0.0.0.0"]);
@@ -259,54 +312,71 @@ fn a_status_page_saying_down_is_down() {
 }
 
 #[test]
-fn main_up_with_covers_failing_is_partial() {
+fn covers_failing_while_the_relays_carry_everything_is_backup_down() {
     let targets = vec![
-        healthy(TargetId::Main),
+        healthy(TargetId::Relay),
         broken(TargetId::Images, FailKind::Timeout, Phase::Tcp),
     ];
-    assert_eq!(judge(&targets), Verdict::Partial);
+    assert_eq!(judge(&targets), Verdict::BackupDown);
 }
 
 #[test]
 fn a_pro_relay_that_does_not_answer_is_a_backup_route_down() {
     let targets = vec![
-        healthy(TargetId::Main),
-        healthy(TargetId::Storage),
         healthy(TargetId::Relay),
+        healthy(TargetId::Images),
         broken(TargetId::Pro, FailKind::Timeout, Phase::Tcp),
     ];
     assert_eq!(judge(&targets), Verdict::BackupDown);
 }
 
 #[test]
-fn only_backup_routes_failing_is_backup_down() {
+fn one_relay_failing_while_another_carries_is_backup_down() {
     let targets = vec![
-        healthy(TargetId::Main),
-        healthy(TargetId::Storage),
-        healthy(TargetId::Images),
         broken(TargetId::Relay, FailKind::Timeout, Phase::Tcp),
         healthy(TargetId::Relay),
+        healthy(TargetId::Images),
     ];
     assert_eq!(judge(&targets), Verdict::BackupDown);
 }
 
 #[test]
-fn a_failing_star_with_backups_down_is_still_partial() {
+fn a_service_one_relay_cannot_reach_but_another_can_is_backup_down() {
+    let mut first = healthy(TargetId::Relay);
+    first.route.as_mut().unwrap().services[4].probe = served(false);
+    let targets = vec![first, healthy(TargetId::Relay)];
+    assert_eq!(judge(&targets), Verdict::BackupDown);
+}
+
+#[test]
+fn a_service_no_route_reaches_while_the_api_answers_is_partial() {
+    let mut relay = healthy(TargetId::Relay);
+    relay.route.as_mut().unwrap().services[4].probe = served(false);
     let targets = vec![
-        healthy(TargetId::Main),
-        broken(TargetId::Star, FailKind::Reset, Phase::Tls),
+        relay,
         broken(TargetId::Relay, FailKind::Timeout, Phase::Tcp),
+        healthy(TargetId::Images),
     ];
     assert_eq!(judge(&targets), Verdict::Partial);
 }
 
 #[test]
-fn main_down_with_a_relay_up_is_relay_only() {
+fn only_the_pro_relay_carrying_the_api_is_relay_only() {
     let targets = vec![
-        broken(TargetId::Main, FailKind::Reset, Phase::Tls),
-        healthy(TargetId::Relay),
+        broken(TargetId::Relay, FailKind::Reset, Phase::Tls),
+        broken(TargetId::Relay, FailKind::Reset, Phase::Tls),
+        healthy(TargetId::Pro),
+        healthy(TargetId::Images),
     ];
     assert_eq!(judge(&targets), Verdict::RelayOnly);
+}
+
+#[test]
+fn a_relay_that_answers_but_does_not_carry_the_api_does_not_count() {
+    let mut relay = healthy(TargetId::Relay);
+    relay.route = Some(carrying(false));
+    relay.ok = false;
+    assert_eq!(judge(&[relay]), Verdict::Down);
 }
 
 #[test]
@@ -348,17 +418,18 @@ fn an_unreachable_network_counts_as_timeout() {
 #[test]
 fn a_tie_goes_to_reset() {
     let targets = vec![
-        broken(TargetId::Main, FailKind::Reset, Phase::Tls),
-        broken(TargetId::Star, FailKind::Timeout, Phase::Tcp),
+        broken(TargetId::Relay, FailKind::Reset, Phase::Tls),
+        broken(TargetId::Images, FailKind::Timeout, Phase::Tcp),
     ];
     assert_eq!(judge(&targets), Verdict::Reset);
 }
 
 #[test]
 fn server_errors_are_down() {
-    let mut targets = vec![healthy(TargetId::Main), healthy(TargetId::Star)];
+    let mut targets = vec![healthy(TargetId::Relay), healthy(TargetId::Images)];
     for target in &mut targets {
         target.ok = false;
+        target.route = None;
         target.app = Some(AppProbe {
             ok: false,
             status: Some(502),
@@ -371,7 +442,7 @@ fn server_errors_are_down() {
 
 #[test]
 fn an_unclassified_app_failure_uses_the_probe() {
-    let mut target = broken(TargetId::Main, FailKind::Reset, Phase::Tls);
+    let mut target = broken(TargetId::Relay, FailKind::Reset, Phase::Tls);
     target.app = Some(AppProbe {
         ok: false,
         status: None,
@@ -416,6 +487,7 @@ fn the_pro_relay_is_for_links_where_neither_direct_nor_relays_carry() {
         bytes: 13_000,
         ms: 6_000,
         cut,
+        speed: 0,
     };
     assert!(nothing_carries(Verdict::Cut, &[probe(true), probe(true)]));
     assert!(!nothing_carries(Verdict::Cut, &[probe(true), probe(false)]));
@@ -434,6 +506,7 @@ fn relays_lag_when_none_of_them_carries_clear() {
         bytes: 64 * 1024,
         ms: 7_540,
         cut: false,
+        speed: 8_700,
     };
     assert!(relays_lag(&[probe("slow"), probe("blackhole")]));
     assert!(!relays_lag(&[probe("slow"), probe("clear")]));
@@ -638,12 +711,12 @@ fn other_verdicts_get_no_hint() {
 
 #[test]
 fn a_healthy_row_is_green() {
-    assert_eq!(cells(&healthy(TargetId::Main)), [Tone::Ok; 4]);
+    assert_eq!(cells(&healthy(TargetId::Relay)), [Tone::Ok; 4]);
 }
 
 #[test]
 fn a_proxied_row_skips_the_socket_phases() {
-    let mut target = healthy(TargetId::Main);
+    let mut target = healthy(TargetId::Relay);
     target.proxied = true;
     target.probe = None;
     assert_eq!(cells(&target), [Tone::Ok, Tone::Skip, Tone::Skip, Tone::Ok]);
@@ -656,25 +729,25 @@ fn a_proxied_row_skips_the_socket_phases() {
 
 #[test]
 fn a_reset_in_tls_is_red_at_tls() {
-    let target = broken(TargetId::Main, FailKind::Reset, Phase::Tls);
+    let target = broken(TargetId::Relay, FailKind::Reset, Phase::Tls);
     assert_eq!(cells(&target), [Tone::Ok, Tone::Ok, Tone::Fail, Tone::Skip]);
 }
 
 #[test]
 fn a_foreign_certificate_is_red_at_tls() {
-    let target = broken(TargetId::Main, FailKind::TlsCert, Phase::Tls);
+    let target = broken(TargetId::Relay, FailKind::TlsCert, Phase::Tls);
     assert_eq!(cells(&target), [Tone::Ok, Tone::Ok, Tone::Fail, Tone::Skip]);
 }
 
 #[test]
 fn a_stall_after_tls_is_red_at_http() {
-    let target = broken(TargetId::Main, FailKind::Timeout, Phase::FirstByte);
+    let target = broken(TargetId::Relay, FailKind::Timeout, Phase::FirstByte);
     assert_eq!(cells(&target), [Tone::Ok, Tone::Ok, Tone::Ok, Tone::Fail]);
 }
 
 #[test]
 fn a_garbage_answer_warns_in_the_dns_cell() {
-    let mut target = healthy(TargetId::Main);
+    let mut target = healthy(TargetId::Relay);
     target.dns = DnsState::Garbage;
     assert_eq!(cells(&target)[0], Tone::Warn);
     target.dns = DnsState::Failed;
@@ -688,7 +761,7 @@ fn a_garbage_answer_warns_in_the_dns_cell() {
 
 #[test]
 fn an_unchecked_name_is_skipped_in_the_dns_cell() {
-    let mut target = healthy(TargetId::Main);
+    let mut target = healthy(TargetId::Relay);
     target.dns = DnsState::Unchecked;
     target.proxied = true;
     target.probe = None;
@@ -700,18 +773,19 @@ fn an_unchecked_name_is_skipped_in_the_dns_cell() {
 
 #[test]
 fn a_probe_that_passed_while_the_app_failed_warns_at_http() {
-    let mut target = healthy(TargetId::Main);
+    let mut target = healthy(TargetId::Relay);
     target.app = Some(AppProbe::default());
     assert_eq!(cells(&target)[3], Tone::Warn);
 }
 
 fn volume(cut: bool) -> VolumeProbe {
     VolumeProbe {
-        host: "storage.scnative.dev".to_string(),
+        host: "storage.r1.relay.scnative.dev".to_string(),
         shape: if cut { "blackhole" } else { "clear" }.to_string(),
         bytes: if cut { 12_000 } else { 65_536 },
         ms: 6_200,
         cut,
+        speed: 0,
     }
 }
 

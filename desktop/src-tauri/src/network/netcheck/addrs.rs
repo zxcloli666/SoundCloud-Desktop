@@ -90,7 +90,7 @@ mod tests {
             system: answer(system),
             doh: doh.map(answer),
             dns,
-            ..TargetCheck::pending(TargetId::Main, None, host.to_string())
+            ..TargetCheck::pending(TargetId::Relay, None, host.to_string())
         }
     }
 

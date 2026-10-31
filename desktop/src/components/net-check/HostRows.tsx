@@ -10,7 +10,14 @@ import {
   X,
 } from '../../lib/icons';
 import { type TargetCheck, type Tone, useNetCheckStore } from '../../lib/net/check';
-import { COLUMNS, type Column, cellTitle, volumeTitle, volumeTone } from '../../lib/net/manual';
+import {
+  COLUMNS,
+  type Column,
+  cellTitle,
+  speedText,
+  volumeTitle,
+  volumeTone,
+} from '../../lib/net/manual';
 import { Skeleton } from '../ui/Skeleton';
 import { RouteChips } from './RouteChips';
 
@@ -53,6 +60,7 @@ const Cell = React.memo(({ col, tone, title }: { col: Shown; tone: Tone; title: 
 const TargetRow = React.memo(({ target }: { target: TargetCheck }) => {
   const { t } = useTranslation();
   const ms = target.totalMs;
+  const speed = target.volume?.speed ? speedText(t, target.volume.speed) : null;
   return (
     <div className="px-3.5 py-2.5">
       <div className="flex items-center gap-3">
@@ -73,9 +81,10 @@ const TargetRow = React.memo(({ target }: { target: TargetCheck }) => {
           ))}
           <Cell col="vol" tone={volumeTone(target)} title={volumeTitle(t, target)} />
         </div>
-        <span className="w-14 shrink-0 text-right font-mono text-[11px] tabular-nums text-ink-40">
-          {ms === null ? '—' : t('netCheck.detail.ms', { ms })}
-        </span>
+        <div className="w-16 shrink-0 text-right font-mono text-[11px] tabular-nums text-ink-40 leading-tight">
+          <div>{ms === null ? '—' : t('netCheck.detail.ms', { ms })}</div>
+          {speed && <div className="text-[10px] text-ink-30">{speed}</div>}
+        </div>
       </div>
       {target.route && <RouteChips route={target.route} />}
     </div>
@@ -100,7 +109,7 @@ export const HostRows = React.memo(() => {
             </span>
           ))}
         </div>
-        <span className="w-14 shrink-0" />
+        <span className="w-16 shrink-0" />
       </div>
       {targets.map((target) => (
         <TargetRow key={target.host} target={target} />

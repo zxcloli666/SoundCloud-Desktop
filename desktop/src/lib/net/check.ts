@@ -22,7 +22,7 @@ export type Hint = 'none' | 'zapret' | 'zapretTimestamps' | 'zapretCut';
 export type Remote = 'up' | 'down' | 'unknown';
 export type Internet = 'online' | 'offline' | 'unknown';
 export type Trigger = 'manual' | 'auto';
-export type TargetId = 'main' | 'star' | 'storage' | 'images' | 'relay' | 'pro';
+export type TargetId = 'relay' | 'pro' | 'images' | 'call' | 'soundCloud';
 export type Tone = 'ok' | 'warn' | 'fail' | 'skip' | 'pending';
 export type DnsState = 'sane' | 'garbage' | 'spoofed' | 'failed' | 'unchecked';
 export type Role = 'primary' | 'failover' | 'hedge';
@@ -100,8 +100,14 @@ export interface Upstream {
   state: UpstreamState;
 }
 
+export interface ServiceRoute {
+  service: string;
+  state: UpstreamState;
+  probe: AppProbe;
+}
+
 export interface RelayRoute {
-  through: AppProbe | null;
+  services: ServiceRoute[];
   upstreams: Upstream[];
 }
 
@@ -111,6 +117,7 @@ export interface VolumeProbe {
   bytes: number;
   ms: number;
   cut: boolean;
+  speed: number;
 }
 
 export interface DohProbe {
@@ -196,6 +203,7 @@ export interface NetReport {
   volume: VolumeProbe | null;
   relayVolume?: VolumeProbe[];
   proVolume?: VolumeProbe[];
+  call: string | null;
 }
 
 interface NetCheckUpdate {

@@ -1,15 +1,41 @@
 use std::time::Duration;
 
+use futures_util::future::join_all;
 use serde::Deserialize;
 use serde_json::Value;
 
-use super::model::{AppProbe, RelayRoute, Upstream, UpstreamState};
+use super::model::{AppProbe, RelayRoute, ServiceRoute, Upstream, UpstreamState};
 use super::targets::app_probe;
 use crate::network::edge;
 
 const ROUTE_TIMEOUT: Duration = Duration::from_secs(10);
 const ORIGINS: [&str; 4] = ["main", "star", "s3", "images"];
 const MAIN: &str = "main";
+
+pub const API: &str = "api";
+pub const SERVICES: [Service; 5] = [
+    Service::new(API, MAIN, "/health"),
+    Service::new("api-star", "star", "/health"),
+    Service::new("stream", MAIN, "/health"),
+    Service::new("storage", MAIN, "/health"),
+    Service::new("s3", "s3", "/healthz"),
+];
+
+pub struct Service {
+    pub label: &'static str,
+    origin: &'static str,
+    path: &'static str,
+}
+
+impl Service {
+    const fn new(label: &'static str, origin: &'static str, path: &'static str) -> Self {
+        Self {
+            label,
+            origin,
+            path,
+        }
+    }
+}
 
 #[derive(Deserialize)]
 struct Seen {
@@ -20,12 +46,33 @@ struct Seen {
 
 pub async fn of(node: &str, client: Option<&wreq::Client>) -> Option<RelayRoute> {
     let client = client?;
-    let through = format!("https://api.{node}.{}/health", edge::relay_zone());
-    let (through, seen) = tokio::join!(
-        app_probe(client, &through, ROUTE_TIMEOUT),
-        seen(client, node)
-    );
-    Some(route(through, seen.as_ref()))
+    let urls = SERVICES.iter().map(|service| {
+        format!(
+            "https://{}{}",
+            edge::relay_host(service.label, node),
+            service.path
+        )
+    });
+    let (answers, seen) = tokio::join!(probe_all(client, urls), seen(client, node));
+    Some(route(answers, seen.as_ref()))
+}
+
+pub async fn through_pro(host: &str, client: Option<&wreq::Client>) -> Option<RelayRoute> {
+    let client = client?;
+    let gateway = edge::gateway_of(host)?;
+    let urls = SERVICES.iter().map(|service| {
+        let carried = format!(
+            "https://{}{}",
+            edge::plain_host(service.label),
+            service.path
+        );
+        edge::through_gateway(&gateway, &carried)
+    });
+    Some(route(probe_all(client, urls).await, None))
+}
+
+async fn probe_all(client: &wreq::Client, urls: impl Iterator<Item = String>) -> Vec<AppProbe> {
+    join_all(urls.map(|url| async move { app_probe(client, &url, ROUTE_TIMEOUT).await })).await
 }
 
 pub async fn seen(client: &wreq::Client, node: &str) -> Option<Value> {
@@ -43,8 +90,8 @@ pub async fn seen(client: &wreq::Client, node: &str) -> Option<Value> {
         .flatten()
 }
 
-pub fn route(through: AppProbe, seen: Option<&Value>) -> RelayRoute {
-    let mut upstreams: Vec<Upstream> = ORIGINS
+pub fn route(answers: Vec<AppProbe>, seen: Option<&Value>) -> RelayRoute {
+    let upstreams: Vec<Upstream> = ORIGINS
         .iter()
         .filter_map(|origin| {
             let seen: Seen = serde_json::from_value(seen?.get(*origin)?.clone()).ok()?;
@@ -54,20 +101,28 @@ pub fn route(through: AppProbe, seen: Option<&Value>) -> RelayRoute {
             })
         })
         .collect();
-    if upstreams.first().is_none_or(|first| first.origin != MAIN) {
-        upstreams.insert(
-            0,
-            Upstream {
-                origin: MAIN.to_string(),
-                state: UpstreamState::Ok,
-            },
-        );
-    }
-    if !through.ok {
-        upstreams[0].state = UpstreamState::Down;
-    }
+    let services = SERVICES
+        .iter()
+        .zip(answers)
+        .map(|(service, probe)| {
+            let reported = upstreams
+                .iter()
+                .find(|upstream| upstream.origin == service.origin)
+                .map(|upstream| upstream.state);
+            let state = match (probe.ok, reported) {
+                (false, _) => UpstreamState::Down,
+                (true, Some(UpstreamState::Backup)) => UpstreamState::Backup,
+                (true, _) => UpstreamState::Ok,
+            };
+            ServiceRoute {
+                service: service.label.to_string(),
+                state,
+                probe,
+            }
+        })
+        .collect();
     RelayRoute {
-        through: Some(through),
+        services,
         upstreams,
     }
 }
@@ -92,7 +147,7 @@ fn state_of(seen: &Seen) -> UpstreamState {
 mod tests {
     use serde_json::json;
 
-    use super::{lost_main, route};
+    use super::{SERVICES, lost_main, route};
     use crate::network::netcheck::model::{AppProbe, RelayRoute, UpstreamState};
 
     fn answered(ok: bool) -> AppProbe {
@@ -104,16 +159,20 @@ mod tests {
         }
     }
 
+    fn all(ok: bool) -> Vec<AppProbe> {
+        SERVICES.iter().map(|_| answered(ok)).collect()
+    }
+
     fn states(route: &RelayRoute) -> Vec<(&str, UpstreamState)> {
         route
-            .upstreams
+            .services
             .iter()
-            .map(|upstream| (upstream.origin.as_str(), upstream.state))
+            .map(|service| (service.service.as_str(), service.state))
             .collect()
     }
 
     #[test]
-    fn a_relay_on_its_backup_path_reads_as_backup_not_down() {
+    fn every_service_is_named_by_what_came_back_through_the_relay() {
         let seen = json!({
             "node": "r2",
             "main": {"direct": 0, "backup": 1},
@@ -121,24 +180,40 @@ mod tests {
             "s3": {"direct": 1},
             "images": {"direct": 0}
         });
+        let mut answers = all(true);
+        answers[4] = answered(false);
+        let route = route(answers, Some(&seen));
         assert_eq!(
-            states(&route(answered(true), Some(&seen))),
+            states(&route),
             [
-                ("main", UpstreamState::Backup),
-                ("star", UpstreamState::Ok),
-                ("s3", UpstreamState::Ok),
-                ("images", UpstreamState::Down),
+                ("api", UpstreamState::Backup),
+                ("api-star", UpstreamState::Ok),
+                ("stream", UpstreamState::Backup),
+                ("storage", UpstreamState::Backup),
+                ("s3", UpstreamState::Down),
             ]
         );
+        assert_eq!(route.upstreams.len(), 4);
+        assert_eq!(route.upstreams[3].state, UpstreamState::Down);
+        assert!(route.carries("api"));
+        assert!(!route.carries("s3"));
+        assert!(!route.carries_all());
     }
 
     #[test]
-    fn main_that_did_not_answer_through_the_relay_is_down_whatever_the_relay_says() {
+    fn a_service_that_did_not_answer_is_down_whatever_the_relay_says() {
         let seen = json!({"main": {"direct": 1}});
-        assert_eq!(
-            states(&route(answered(false), Some(&seen))),
-            [("main", UpstreamState::Down)]
-        );
+        let route = route(all(false), Some(&seen));
+        assert_eq!(route.services[0].state, UpstreamState::Down);
+        assert!(!route.carries("api"));
+    }
+
+    #[test]
+    fn a_route_without_upstreams_still_has_its_services() {
+        let route = route(all(true), None);
+        assert!(route.upstreams.is_empty());
+        assert!(route.carries_all());
+        assert_eq!(route.services.len(), SERVICES.len());
     }
 
     #[test]
@@ -147,13 +222,5 @@ mod tests {
         assert!(lost_main(&json!({"main": {"direct": 0}})));
         assert!(!lost_main(&json!({"main": {"direct": 0, "backup": 1}})));
         assert!(!lost_main(&json!({"star": {"direct": 0}})));
-    }
-
-    #[test]
-    fn a_relay_without_upstreams_still_tells_about_main() {
-        assert_eq!(
-            states(&route(answered(true), None)),
-            [("main", UpstreamState::Ok)]
-        );
     }
 }

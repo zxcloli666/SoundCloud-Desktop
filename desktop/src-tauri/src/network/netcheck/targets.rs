@@ -4,36 +4,29 @@ use std::time::{Duration, Instant};
 use futures_util::future::join_all;
 
 use super::model::{
-    AppProbe, DnsAnswer, DohProbe, Internet, PhaseProbe, Remote, TargetCheck, TargetId, Tone,
-    Trigger,
+    AppProbe, DnsAnswer, DohProbe, PhaseProbe, TargetCheck, TargetId, Tone, Trigger,
 };
 use super::paths::millis;
 use super::phases::{self, Budget, Tls};
-use super::route;
+use super::route::{self, API};
 use super::verdict;
 use crate::network::dns::{self, doh};
 use crate::network::edge;
-use crate::network::fail::{self, Fail, FailKind, Phase};
-use crate::network::pro::{self, Asked};
+use crate::network::fail::{Fail, FailKind, Phase};
 use crate::network::system_proxy;
 
 const HEALTH_PATH: &str = "/health";
+const ROOT_PATH: &str = "/";
 const HTTPS_PORT: u16 = 443;
 const SYSTEM_DNS_BUDGET: Duration = Duration::from_secs(6);
 const APP_TIMEOUT: Duration = Duration::from_secs(15);
 const APP_RETRY_FLOOR: Duration = Duration::from_secs(3);
 const TARGET_CAP: Duration = Duration::from_secs(30);
 const CAP_MARGIN: Duration = Duration::from_secs(1);
-const EXTERNAL_TIMEOUT: Duration = Duration::from_secs(10);
 const RELAY_TARGETS: usize = 4;
 const PRO_TARGETS: usize = 2;
-const STATUS_VERDICT_URL: &str = "https://status.getsoundcloud.app/api/verdict";
-const CORE: [(TargetId, &str); 4] = [
-    (TargetId::Main, "api"),
-    (TargetId::Star, "api-star"),
-    (TargetId::Storage, "storage"),
-    (TargetId::Images, "images"),
-];
+const CALL_TARGETS: usize = 3;
+const SOUNDCLOUD_HOST: &str = "api-v2.soundcloud.com";
 
 pub struct Target {
     pub id: TargetId,
@@ -45,39 +38,61 @@ impl Target {
     pub fn pending(&self) -> TargetCheck {
         TargetCheck::pending(self.id, self.node.clone(), self.host.clone())
     }
+
+    pub fn ours(&self) -> bool {
+        self.id != TargetId::SoundCloud
+    }
+
+    fn path(&self) -> &'static str {
+        if self.id == TargetId::SoundCloud {
+            ROOT_PATH
+        } else {
+            HEALTH_PATH
+        }
+    }
 }
 
-pub fn targets() -> Vec<Target> {
-    let core = CORE.iter().map(|(id, label)| Target {
-        id: *id,
-        node: None,
-        host: core_host(label),
+pub fn targets(call: bool) -> Vec<Target> {
+    let calls = if call { edge::call_pool() } else { Vec::new() };
+    listed(edge::relay_pool(), edge::pro_hosts(), calls)
+}
+
+fn listed(relays: Vec<String>, pros: Vec<String>, calls: Vec<(String, f64)>) -> Vec<Target> {
+    let relays = relays.into_iter().take(RELAY_TARGETS).map(|node| Target {
+        id: TargetId::Relay,
+        host: format!("{node}.{}", edge::relay_zone()),
+        node: Some(node),
     });
-    let relays = edge::relay_pool()
+    let pros = pros.into_iter().take(PRO_TARGETS).map(|host| Target {
+        id: TargetId::Pro,
+        node: host.split('.').next().map(str::to_string),
+        host,
+    });
+    let images = Target {
+        id: TargetId::Images,
+        node: None,
+        host: edge::plain_host(edge::IMAGES),
+    };
+    let calls = calls
         .into_iter()
-        .take(RELAY_TARGETS)
-        .map(|node| Target {
-            id: TargetId::Relay,
-            host: format!("{node}.{}", edge::relay_zone()),
+        .filter(|(_, weight)| *weight > 0.0)
+        .take(CALL_TARGETS)
+        .map(|(node, _)| Target {
+            id: TargetId::Call,
+            host: edge::call_host(&node),
             node: Some(node),
         });
-    let pros = edge::pro_hosts()
-        .into_iter()
-        .take(PRO_TARGETS)
-        .map(|host| Target {
-            id: TargetId::Pro,
-            node: host.split('.').next().map(str::to_string),
-            host,
-        });
-    core.chain(relays).chain(pros).collect()
-}
-
-fn core_host(label: &str) -> String {
-    if edge::has_direct(label) {
-        edge::plain_host(label)
-    } else {
-        edge::primary_relay_host(label)
-    }
+    let soundcloud = Target {
+        id: TargetId::SoundCloud,
+        node: None,
+        host: SOUNDCLOUD_HOST.to_string(),
+    };
+    relays
+        .chain(pros)
+        .chain([images])
+        .chain(calls)
+        .chain([soundcloud])
+        .collect()
 }
 
 fn doh_sample_host() -> String {
@@ -89,16 +104,14 @@ pub async fn check(target: &Target, app: Option<&wreq::Client>, trigger: Trigger
     let routed = async {
         match (target.id, &target.node) {
             (TargetId::Relay, Some(node)) => route::of(node, app).await,
+            (TargetId::Pro, _) => route::through_pro(&target.host, app).await,
             _ => None,
         }
     };
     let checked = async { tokio::join!(inspect(target, app, trigger), routed) };
     match tokio::time::timeout(TARGET_CAP, checked).await {
         Ok((mut check, route)) => {
-            check.ok &= route
-                .as_ref()
-                .and_then(|route| route.through.as_ref())
-                .is_none_or(|through| through.ok);
+            check.ok &= route.as_ref().is_none_or(|route| route.carries(API));
             check.route = route;
             check
         }
@@ -117,7 +130,8 @@ pub async fn check(target: &Target, app: Option<&wreq::Client>, trigger: Trigger
 async fn inspect(target: &Target, client: Option<&wreq::Client>, trigger: Trigger) -> TargetCheck {
     let started = Instant::now();
     let host = target.host.as_str();
-    let url = format!("https://{host}{HEALTH_PATH}");
+    let path = target.path();
+    let url = format!("https://{host}{path}");
     let proxied = system_proxy::proxied(&url);
     if proxied && trigger == Trigger::Auto {
         return through_proxy(target, client, &url).await;
@@ -133,8 +147,8 @@ async fn inspect(target: &Target, client: Option<&wreq::Client>, trigger: Trigge
         None
     };
     let (probe, doh_probe, app) = tokio::join!(
-        manual(host, probe_ip),
-        manual(host, second_ip),
+        manual(host, path, probe_ip),
+        manual(host, path, second_ip),
         app_path(client, &url)
     );
     let probe = probe.map(|mut probe| {
@@ -213,10 +227,10 @@ fn total(probe: Option<&PhaseProbe>, app: Option<&AppProbe>) -> Option<u32> {
     app.filter(|app| app.ok).and_then(|app| app.ms)
 }
 
-async fn manual(host: &str, ip: Option<IpAddr>) -> Option<PhaseProbe> {
+async fn manual(host: &str, path: &str, ip: Option<IpAddr>) -> Option<PhaseProbe> {
     let ip = ip?;
     let tls = Tls::public()?;
-    Some(phases::probe(host, ip, HTTPS_PORT, HEALTH_PATH, tls, Budget::default()).await)
+    Some(phases::probe(host, ip, HTTPS_PORT, path, tls, Budget::default()).await)
 }
 
 async fn system_answer(host: &str) -> DnsAnswer {
@@ -364,139 +378,33 @@ pub fn internet_seen(targets: &[TargetCheck], doh: &[DohProbe]) -> bool {
     answered || doh.iter().any(|probe| probe.ok)
 }
 
-pub async fn internet(client: &wreq::Client) -> Internet {
-    let checks = [
-        reachable(
-            client,
-            "https://www.gstatic.com/generate_204",
-            |status, _| status == 204,
-        ),
-        reachable(
-            client,
-            "https://detectportal.firefox.com/success.txt",
-            |status, body| status == 200 && body.starts_with("success"),
-        ),
-        reachable(
-            client,
-            "https://www.cloudflare.com/cdn-cgi/trace",
-            |status, _| status == 200,
-        ),
-    ];
-    if join_all(checks).await.into_iter().any(|ok| ok) {
-        Internet::Online
-    } else {
-        Internet::Offline
-    }
-}
-
-async fn reachable(client: &wreq::Client, url: &str, valid: fn(u16, &str) -> bool) -> bool {
-    let attempt = async {
-        match client.get(url).send().await {
-            Ok(response) => {
-                let status = response.status().as_u16();
-                let body = response.text().await.unwrap_or_default();
-                valid(status, &body)
-            }
-            Err(error) => fail::of_wreq(&error) == FailKind::TlsCert,
-        }
-    };
-    tokio::time::timeout(EXTERNAL_TIMEOUT, attempt)
-        .await
-        .unwrap_or(false)
-}
-
-pub async fn remote(client: &wreq::Client) -> Remote {
-    remote_of(verdict(Some(client)).await.as_ref())
-}
-
-pub async fn verdict(client: Option<&wreq::Client>) -> Option<serde_json::Value> {
-    if let Some(client) = client
-        && let Some(payload) = verdict_direct(client).await
-    {
-        return Some(payload);
-    }
-    verdict_through_pro().await
-}
-
-async fn verdict_direct(client: &wreq::Client) -> Option<serde_json::Value> {
-    let attempt = async {
-        let response = client.get(STATUS_VERDICT_URL).send().await.ok()?;
-        if !response.status().is_success() {
-            return None;
-        }
-        response.json::<serde_json::Value>().await.ok()
-    };
-    tokio::time::timeout(EXTERNAL_TIMEOUT, attempt)
-        .await
-        .ok()
-        .flatten()
-}
-
-async fn verdict_through_pro() -> Option<serde_json::Value> {
-    let asked = Asked {
-        method: "GET".to_string(),
-        url: STATUS_VERDICT_URL.to_string(),
-        headers: Vec::new(),
-        body: None,
-    };
-    for host in edge::pro_hosts() {
-        let answer = tokio::time::timeout(EXTERNAL_TIMEOUT, pro::whole(&host, asked.clone())).await;
-        if let Ok(Ok((status, body))) = answer
-            && let Some(payload) = verdict_of_answer(status, &body)
-        {
-            return Some(payload);
-        }
-    }
-    None
-}
-
-fn verdict_of_answer(status: u16, body: &[u8]) -> Option<serde_json::Value> {
-    if !(200..300).contains(&status) {
-        return None;
-    }
-    serde_json::from_slice(body).ok()
-}
-
-pub fn remote_of(payload: Option<&serde_json::Value>) -> Remote {
-    let main = payload
-        .and_then(|payload| payload.get("roles"))
-        .and_then(|roles| roles.get("main"))
-        .and_then(serde_json::Value::as_str);
-    match main {
-        Some("operational" | "degraded") => Remote::Up,
-        Some("down") => Remote::Down,
-        _ => Remote::Unknown,
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use std::sync::Arc;
     use std::sync::atomic::{AtomicUsize, Ordering};
     use std::time::Duration;
 
-    use serde_json::json;
     use tokio::io::{AsyncReadExt, AsyncWriteExt};
     use tokio::net::TcpListener;
 
     use super::{
-        APP_RETRY_FLOOR, APP_TIMEOUT, EXTERNAL_TIMEOUT, SYSTEM_DNS_BUDGET, TARGET_CAP, Target,
-        app_probe, doh, internet_seen, reached, remote_of, retried, targets, total, verdict,
-        verdict_of_answer,
+        APP_RETRY_FLOOR, APP_TIMEOUT, SYSTEM_DNS_BUDGET, TARGET_CAP, Target, app_probe, doh,
+        internet_seen, listed, reached, retried, targets, total, verdict,
     };
     use crate::network::fail::{Fail, FailKind, Phase};
     use crate::network::netcheck::model::{
-        AppProbe, DnsAnswer, DohProbe, PhaseProbe, Remote, TargetId, Tone,
+        AppProbe, DnsAnswer, DohProbe, PhaseProbe, TargetId, Tone,
     };
     use crate::network::netcheck::phases::Budget;
+    use crate::network::netcheck::status::EXTERNAL_TIMEOUT;
 
     const SLOW_RTT: Duration = Duration::from_secs(2);
 
     fn main_target() -> Target {
         Target {
-            id: TargetId::Main,
-            node: None,
-            host: "api.r1.relay.scnative.dev".to_string(),
+            id: TargetId::Relay,
+            node: Some("r1".to_string()),
+            host: "r1.relay.scnative.dev".to_string(),
         }
     }
 
@@ -530,44 +438,51 @@ mod tests {
     }
 
     #[test]
-    fn the_core_hosts_come_first_and_relays_are_capped() {
-        let list = targets();
-        let ids: Vec<TargetId> = list.iter().take(4).map(|target| target.id).collect();
-        assert_eq!(
-            ids,
-            [
-                TargetId::Main,
-                TargetId::Star,
-                TargetId::Storage,
-                TargetId::Images
-            ]
-        );
-        let hosts: Vec<&str> = list
-            .iter()
-            .take(4)
-            .map(|target| target.host.as_str())
-            .collect();
-        let relayed = |label: &str, host: &str| {
-            host.strip_prefix(label)
-                .and_then(|rest| rest.strip_prefix('.'))
-                .and_then(|rest| rest.strip_suffix(".relay.scnative.dev"))
-                .is_some_and(|node| !node.is_empty() && !node.contains('.'))
-        };
-        assert!(relayed("api", hosts[0]), "{hosts:?}");
-        assert!(relayed("api-star", hosts[1]), "{hosts:?}");
-        assert!(relayed("storage", hosts[2]), "{hosts:?}");
-        assert_eq!(hosts[3], "images.scnative.dev");
-        assert!(list.len() <= 4 + super::RELAY_TARGETS + super::PRO_TARGETS);
-        let pro = list.last().unwrap();
-        assert_eq!(pro.id, TargetId::Pro);
-        assert_eq!(pro.node.as_deref(), Some("p1"));
-        assert_eq!(pro.host, "p1.pro.scnative.dev");
-        let relay = list
-            .iter()
-            .find(|target| target.id == TargetId::Relay)
-            .unwrap();
+    fn the_check_lists_only_what_the_app_contacts() {
+        let list = targets(false);
+        let ids: Vec<TargetId> = list.iter().map(|target| target.id).collect();
+        assert_eq!(ids.first(), Some(&TargetId::Relay));
+        assert!(!ids.contains(&TargetId::Call));
+        let relay = &list[0];
         let node = relay.node.as_deref().unwrap();
         assert_eq!(relay.host, format!("{node}.relay.scnative.dev"));
+        let pro = list
+            .iter()
+            .find(|target| target.id == TargetId::Pro)
+            .unwrap();
+        assert_eq!(pro.node.as_deref(), Some("p1"));
+        assert_eq!(pro.host, "p1.pro.scnative.dev");
+        let images = list
+            .iter()
+            .find(|target| target.id == TargetId::Images)
+            .unwrap();
+        assert_eq!(images.host, "images.scnative.dev");
+        let last = list.last().unwrap();
+        assert_eq!(last.id, TargetId::SoundCloud);
+        assert_eq!(last.host, "api-v2.soundcloud.com");
+        assert!(!last.ours());
+        assert_eq!(last.path(), "/");
+        assert!(list.iter().filter(|target| target.ours()).all(|target| {
+            [
+                "relay.scnative.dev",
+                "pro.scnative.dev",
+                "images.scnative.dev",
+            ]
+            .iter()
+            .any(|zone| target.host.ends_with(zone))
+        }));
+        assert!(list.len() <= super::RELAY_TARGETS + super::PRO_TARGETS + 2);
+    }
+
+    #[test]
+    fn a_drained_call_node_is_not_checked() {
+        let pool = vec![("call-1".to_string(), 1.0), ("call-9".to_string(), 0.0)];
+        let calls: Vec<String> = listed(vec!["r1".to_string()], Vec::new(), pool)
+            .into_iter()
+            .filter(|target| target.id == TargetId::Call)
+            .map(|target| target.host)
+            .collect();
+        assert_eq!(calls, ["call-1.scnative.dev"]);
     }
 
     #[test]
@@ -575,24 +490,6 @@ mod tests {
         let target = main_target();
         assert_eq!(target.pending().cells, [Tone::Pending; 4]);
         assert_eq!(verdict::cells(&target.pending())[0], Tone::Skip);
-    }
-
-    #[test]
-    fn the_status_page_verdict_is_read_like_the_frontend_does() {
-        assert_eq!(
-            remote_of(Some(&json!({"roles": {"main": "operational"}}))),
-            Remote::Up
-        );
-        assert_eq!(
-            remote_of(Some(&json!({"roles": {"main": "degraded"}}))),
-            Remote::Up
-        );
-        assert_eq!(
-            remote_of(Some(&json!({"roles": {"main": "down"}}))),
-            Remote::Down
-        );
-        assert_eq!(remote_of(Some(&json!({"roles": {}}))), Remote::Unknown);
-        assert_eq!(remote_of(None), Remote::Unknown);
     }
 
     #[test]
@@ -707,15 +604,5 @@ mod tests {
         );
         let kept = retried(Some(&client), &url, Some(first.clone()), true, APP_TIMEOUT).await;
         assert_eq!(kept, Some(first));
-    }
-
-    #[test]
-    fn a_verdict_through_pro_is_read_like_a_direct_one() {
-        let body = br#"{"roles":{"main":"down","playback":"operational"}}"#;
-        let payload = verdict_of_answer(200, body).unwrap();
-        assert_eq!(remote_of(Some(&payload)), Remote::Down);
-        assert!(verdict_of_answer(502, body).is_none());
-        assert!(verdict_of_answer(200, b"<html>blocked</html>").is_none());
-        assert!(verdict_of_answer(200, b"").is_none());
     }
 }

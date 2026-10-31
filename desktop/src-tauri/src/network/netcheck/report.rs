@@ -4,8 +4,9 @@ use chrono::{Local, TimeZone};
 
 use super::model::{
     AppProbe, DnsAnswer, DnsState, DohProbe, EdgeSnapshot, EnvInfo, NetReport, PathEvent,
-    PhaseProbe, TargetCheck, Upstream, UpstreamState, VolumeProbe,
+    PhaseProbe, ServiceRoute, TargetCheck, Upstream, UpstreamState, VolumeProbe,
 };
+use super::summary;
 use crate::network::edge::Tier;
 use crate::network::fail::{Fail, Phase};
 
@@ -26,6 +27,7 @@ pub fn text(report: &NetReport) -> String {
             report.internet.as_str()
         ),
     ];
+    head.extend(summary::lines(report));
     if let Some(env) = &report.env {
         head.push(env_line(env));
         head.push(dns_line(&env.dns_servers, &report.doh));
@@ -45,7 +47,7 @@ pub fn text(report: &NetReport) -> String {
 pub fn log_lines(report: &NetReport) -> Vec<String> {
     let env = report.env.as_ref();
     let mut lines = vec![format!(
-        "[NetCheck] verdict={} hint={} trigger={} reason={} remote={} internet={} dpi={} ts={} proxy={} vpn={} took={}ms",
+        "[NetCheck] verdict={} hint={} trigger={} reason={} remote={} internet={} dpi={} ts={} proxy={} vpn={} call={} took={}ms",
         report.verdict.as_str(),
         report.hint.as_str(),
         report.trigger.as_str(),
@@ -60,6 +62,7 @@ pub fn log_lines(report: &NetReport) -> Vec<String> {
             .unwrap_or("-"),
         yes_no(env.is_some_and(|env| env.proxy)),
         listed(env.map(|env| env.vpn.clone()).unwrap_or_default()),
+        report.call.as_deref().unwrap_or("-"),
         report.duration_ms,
     )];
     if let Some(env) = env {
@@ -70,11 +73,16 @@ pub fn log_lines(report: &NetReport) -> Vec<String> {
         ));
     }
     lines.extend(report.targets.iter().map(|target| {
+        let mut parts = target_parts(target, "=");
+        if let Some(why) = summary::why(target) {
+            parts.push(format!("why=\"{why}\""));
+        }
         format!(
-            "[NetCheck] {} {} {}",
-            label(target),
+            "[NetCheck] {} {} {} {}",
+            summary::name(target),
             target.host,
-            target_parts(target, "=").join(" ")
+            if target.ok { "ok" } else { "FAIL" },
+            parts.join(" ")
         )
     }));
     lines.extend(
@@ -82,6 +90,11 @@ pub fn log_lines(report: &NetReport) -> Vec<String> {
             .volume
             .as_ref()
             .map(|volume| format!("[NetCheck] {}", volume_line(volume))),
+    );
+    lines.extend(
+        summary::lines(report)
+            .into_iter()
+            .map(|line| format!("[NetCheck] {line}")),
     );
     lines
 }
@@ -94,10 +107,11 @@ fn volume_line(volume: &VolumeProbe) -> String {
         format!(" at {}", volume.host)
     };
     format!(
-        "volume: {state}{host}{DOT}{} after {} KB{DOT}{} ms",
+        "first relay download: {state}{host}{DOT}{} after {} KB{DOT}{} ms{DOT}{}",
         volume.shape,
         volume.bytes / 1024,
-        volume.ms
+        volume.ms,
+        summary::speed(volume.speed)
     )
 }
 
@@ -242,19 +256,17 @@ fn dns_line(servers: &[IpAddr], doh: &[DohProbe]) -> String {
     format!("dns servers: {servers}{DOT}doh: {doh}")
 }
 
-fn label(target: &TargetCheck) -> String {
-    match &target.node {
-        Some(node) => format!("relay {node}"),
-        None => target.id.as_str().to_string(),
-    }
-}
-
 fn target_line(target: &TargetCheck) -> String {
+    let mut parts = target_parts(target, " ");
+    if let Some(why) = summary::why(target) {
+        parts.push(format!("why: {why}"));
+    }
     format!(
-        "{:<8} {:<34} {}",
-        label(target),
+        "{:<15} {:<30} {:<4} {}",
+        summary::name(target),
         target.host,
-        target_parts(target, " ").join(DOT)
+        if target.ok { "ok" } else { "FAIL" },
+        parts.join(DOT)
     )
 }
 
@@ -303,15 +315,39 @@ fn target_parts(target: &TargetCheck, sep: &str) -> Vec<String> {
         } else {
             volume.shape.as_str()
         };
-        parts.push(format!("vol{sep}{state} {}KB", volume.bytes / 1024));
+        let mut part = format!("vol{sep}{state} {}KB/{}ms", volume.bytes / 1024, volume.ms);
+        if volume.speed > 0 {
+            part.push_str(&format!(
+                " {}",
+                summary::speed(volume.speed).replace(' ', "")
+            ));
+        }
+        parts.push(part);
     }
     if let Some(route) = &target.route {
-        parts.push(format!("route{sep}{}", upstreams(&route.upstreams)));
-        if let Some(through) = &route.through {
-            parts.push(format!("through{sep}{}", app_outcome(through)));
+        if !route.services.is_empty() {
+            parts.push(format!("via{sep}{}", services(&route.services)));
+        }
+        if !route.upstreams.is_empty() {
+            parts.push(format!("sees{sep}{}", upstreams(&route.upstreams)));
         }
     }
     parts
+}
+
+fn services(services: &[ServiceRoute]) -> String {
+    services
+        .iter()
+        .map(|service| {
+            let outcome = if service.probe.ok && service.state == UpstreamState::Backup {
+                format!("{} backup", app_outcome(&service.probe))
+            } else {
+                app_outcome(&service.probe)
+            };
+            format!("{}:{}", service.service, outcome.replace(' ', "-"))
+        })
+        .collect::<Vec<_>>()
+        .join(",")
 }
 
 fn upstreams(upstreams: &[Upstream]) -> String {
@@ -322,9 +358,9 @@ fn upstreams(upstreams: &[Upstream]) -> String {
     };
     upstreams
         .iter()
-        .map(|upstream| format!("{}={}", upstream.origin, state(upstream.state)))
+        .map(|upstream| format!("{}:{}", upstream.origin, state(upstream.state)))
         .collect::<Vec<_>>()
-        .join(" ")
+        .join(",")
 }
 
 fn answer(answer: &DnsAnswer) -> String {
@@ -438,7 +474,7 @@ mod tests {
     use crate::network::fail::{Fail, FailKind};
     use crate::network::netcheck::fixture::{sample, troubled};
     use crate::network::netcheck::model::{
-        AppProbe, RelayRoute, Upstream, UpstreamState, Verdict, VolumeProbe,
+        AppProbe, RelayRoute, ServiceRoute, Upstream, UpstreamState, Verdict, VolumeProbe,
     };
 
     #[test]
@@ -456,37 +492,52 @@ mod tests {
     }
 
     #[test]
-    fn a_relay_line_says_what_the_relay_reaches_behind_it() {
+    fn a_relay_line_says_what_goes_through_it_and_what_it_sees() {
         let mut report = troubled();
         let relay = report
             .targets
             .iter_mut()
             .find(|target| target.node.as_deref() == Some("r2"))
             .unwrap();
-        relay.route = Some(RelayRoute {
-            through: Some(AppProbe {
-                ok: false,
-                status: None,
-                ms: Some(10_000),
-                fail: Some(Fail {
-                    after_ms: Some(10_000),
-                    ..Fail::of(FailKind::Timeout)
-                }),
+        let probe = |ok: bool| AppProbe {
+            ok,
+            status: ok.then_some(200),
+            ms: Some(if ok { 120 } else { 10_000 }),
+            fail: (!ok).then(|| Fail {
+                after_ms: Some(10_000),
+                ..Fail::of(FailKind::Timeout)
             }),
+        };
+        relay.route = Some(RelayRoute {
+            services: vec![
+                ServiceRoute {
+                    service: "api".to_string(),
+                    state: UpstreamState::Backup,
+                    probe: probe(true),
+                },
+                ServiceRoute {
+                    service: "s3".to_string(),
+                    state: UpstreamState::Down,
+                    probe: probe(false),
+                },
+            ],
             upstreams: vec![
                 Upstream {
                     origin: "main".to_string(),
-                    state: UpstreamState::Down,
+                    state: UpstreamState::Backup,
                 },
                 Upstream {
-                    origin: "star".to_string(),
-                    state: UpstreamState::Backup,
+                    origin: "s3".to_string(),
+                    state: UpstreamState::Down,
                 },
             ],
         });
         let text = text(&report);
-        assert!(text.contains("route main=down star=backup"), "{text}");
-        assert!(text.contains("through timeout@10000ms"), "{text}");
+        assert!(
+            text.contains("via api:200/120ms-backup,s3:timeout@10000ms"),
+            "{text}"
+        );
+        assert!(text.contains("sees main:backup,s3:down"), "{text}");
     }
 
     #[test]
@@ -500,13 +551,14 @@ mod tests {
     }
 
     #[test]
-    fn the_log_gets_one_header_and_one_line_per_target() {
+    fn the_log_gets_a_header_a_line_per_target_and_a_summary() {
         let report = troubled();
         let lines = log_lines(&report);
-        assert_eq!(lines.len(), report.targets.len() + 3);
+        assert_eq!(lines.len(), report.targets.len() + 3 + 4);
         assert!(lines[0].starts_with(
             "[NetCheck] verdict=reset hint=zapret-timestamps trigger=auto reason=edge-pin"
         ));
+        assert!(lines[0].contains(" call=active "), "{}", lines[0]);
         assert!(
             lines[1].starts_with("[NetCheck] env: winws"),
             "{}",
@@ -517,11 +569,38 @@ mod tests {
             "{}",
             lines[2]
         );
+        assert!(
+            lines[3].starts_with("[NetCheck] relay r1 r1.relay.scnative.dev FAIL "),
+            "{}",
+            lines[3]
+        );
         assert!(lines[3].contains("tls=reset@12ms"), "{}", lines[3]);
         assert!(lines[3].contains("ts=off"));
+        assert!(
+            lines[3].ends_with("why=\"tls reset after 12 ms, looks like DPI\""),
+            "{}",
+            lines[3]
+        );
+        let tail = &lines[lines.len() - 4..];
+        assert_eq!(tail[0], "[NetCheck] works: none");
+        assert!(
+            tail[1].starts_with("[NetCheck] fails: relay r1: tls reset"),
+            "{}",
+            tail[1]
+        );
+        assert!(
+            tail[2].starts_with("[NetCheck] reachable: api NONE"),
+            "{}",
+            tail[2]
+        );
+        assert!(
+            tail[3].starts_with("[NetCheck] app: relays r1,r2 (r1 first)"),
+            "{}",
+            tail[3]
+        );
         let quiet = log_lines(&sample(1));
         assert!(
-            quiet[0].contains("dpi=- ts=- proxy=no vpn=-"),
+            quiet[0].contains("dpi=- ts=- proxy=no vpn=- call=-"),
             "{}",
             quiet[0]
         );
@@ -532,17 +611,18 @@ mod tests {
         let mut report = sample(1);
         report.verdict = Verdict::Cut;
         report.volume = Some(VolumeProbe {
-            host: "storage.scnative.dev".to_string(),
+            host: "storage.r1.relay.scnative.dev".to_string(),
             shape: "blackhole".to_string(),
             bytes: 12_000,
             ms: 6_200,
             cut: true,
+            speed: 0,
         });
-        let line = "volume: cut at storage.scnative.dev · blackhole after 11 KB · 6200 ms";
+        let line = "first relay download: cut at storage.r1.relay.scnative.dev · blackhole after 11 KB · 6200 ms · 0 KB/s";
         let text = text(&report);
         assert!(text.contains("verdict: cut"), "{text}");
         assert!(text.contains(line), "{text}");
         let lines = log_lines(&report);
-        assert_eq!(lines.last(), Some(&format!("[NetCheck] {line}")));
+        assert!(lines.contains(&format!("[NetCheck] {line}")), "{lines:?}");
     }
 }

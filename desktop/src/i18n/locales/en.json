@@ -615,23 +615,23 @@
     "verdict": {
       "ok": {
         "title": "Everything works",
-        "hint": "All our servers answer."
+        "hint": "All relays and servers answer."
       },
       "backupDown": {
-        "title": "Some backup routes don't answer",
-        "hint": "The app works through the main route. Nothing to do."
+        "title": "Some routes don't answer",
+        "hint": "The app works through the others. Nothing to do."
       },
       "partial": {
         "title": "Some servers don't answer",
         "hint": "The app works, but some covers or tracks may not load."
       },
       "relayOnly": {
-        "title": "Direct route is blocked",
-        "hint": "The app works through backup routes, maybe slower."
+        "title": "Regular relays are blocked",
+        "hint": "The app works through the pro relay, maybe slower."
       },
       "cut": {
-        "title": "Direct route cuts large downloads",
-        "hint": "The app switches to backup routes, maybe slower."
+        "title": "The first relay cuts large downloads",
+        "hint": "The app switches to other routes, maybe slower."
       },
       "dns": {
         "title": "Your DNS returns a wrong address",
@@ -696,34 +696,34 @@
       "vpn": "VPN: {{name}}"
     },
     "host": {
-      "main": "Main server",
-      "star": "Star server",
-      "storage": "Music storage",
+      "relay": "Relay {{node}}",
+      "pro": "Pro relay {{node}}",
       "images": "Covers",
-      "relay": "Backup route {{node}}",
-      "pro": "Pro relay {{node}}"
+      "call": "Call node {{node}}",
+      "soundCloud": "SoundCloud direct"
     },
     "route": {
-      "origin": {
-        "main": "Main",
-        "star": "Star",
-        "s3": "S3",
-        "images": "Covers"
+      "service": {
+        "api": "API",
+        "api-star": "Star",
+        "stream": "Stream",
+        "storage": "Storage",
+        "s3": "S3"
       },
-      "ok": "{{name}}: the relay reaches it directly",
-      "backup": "{{name}}: the relay reaches it only through its backup path",
-      "down": "{{name}}: the relay does not reach it"
+      "ok": "{{name}}: works through this relay",
+      "backup": "{{name}}: works through the relay's backup path",
+      "down": "{{name}}: does not answer through this relay"
     },
     "col": {
       "dns": "DNS",
       "tcp": "TCP",
       "tls": "TLS",
       "http": "HTTP",
-      "vol": "64K"
+      "vol": "VOL"
     },
     "detail": {
-      "volWhole": "arrived whole, {{ms}} ms",
-      "volPieces": "arrived in pieces, {{ms}} ms",
+      "volWhole": "{{kb}} KB arrived whole in {{ms}} ms",
+      "volPieces": "{{kb}} KB arrived in pieces in {{ms}} ms",
       "volCut": "cut off at {{kb}} KB",
       "ms": "{{ms}} ms",
       "skip": "not checked",
@@ -743,7 +743,9 @@
       "tls": "TLS error",
       "status": "server error {{status}}",
       "appFailed": "the app's request failed",
-      "other": "error"
+      "other": "error",
+      "kbps": "{{n}} KB/s",
+      "mbps": "{{n}} MB/s"
     },
     "manual": {
       "title": "Check by hand",

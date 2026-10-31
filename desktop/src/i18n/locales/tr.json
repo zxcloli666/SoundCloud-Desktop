@@ -644,24 +644,23 @@
     "verdict": {
       "ok": {
         "title": "Her şey çalışıyor",
-        "hint": "Tüm sunucularımız yanıt veriyor."
+        "hint": "Tüm röleler ve sunucular yanıt veriyor."
       },
       "backupDown": {
-        "title": "Bazı yedek yollar yanıt vermiyor",
-        "hint": "Uygulama ana yoldan çalışıyor. Bir şey yapmanız gerekmiyor."
+        "title": "Bazı yollar yanıt vermiyor",
+        "hint": "Uygulama diğerleri üzerinden çalışıyor. Bir şey yapmanız gerekmiyor."
       },
       "partial": {
         "title": "Bazı sunucular yanıt vermiyor",
         "hint": "Uygulama çalışıyor ama bazı kapaklar ya da parçalar yüklenmeyebilir."
       },
       "relayOnly": {
-        "title": "Doğrudan yol engelli",
-        "hint": "Uygulama yedek yollarla çalışıyor, biraz yavaş olabilir."
+        "title": "Normal röleler engelli",
+        "hint": "Uygulama pro röle üzerinden çalışıyor, biraz yavaş olabilir."
       },
       "cut": {
-        "title": "Doğrudan yol büyük indirmeleri kesiyor",
-        "hint": "Uygulama yedek yollara geçiyor, biraz yavaş olabilir.",
-        "hintAlone": "Yedek yollar da yanıt vermiyor, bu yüzden büyük parçalar yüklenmeyebilir."
+        "title": "İlk röle büyük indirmeleri kesiyor",
+        "hint": "Uygulama diğer yollara geçiyor, biraz yavaş olabilir."
       },
       "dns": {
         "title": "DNS'iniz yanlış adres veriyor",
@@ -714,30 +713,35 @@
       "vpn": "VPN: {{name}}"
     },
     "host": {
-      "main": "Ana sunucu",
-      "star": "Star sunucusu",
-      "storage": "Müzik deposu",
+      "relay": "Röle {{node}}",
+      "pro": "Pro röle {{node}}",
       "images": "Kapaklar",
-      "relay": "Yedek yol {{node}}"
+      "call": "Call düğümü {{node}}",
+      "soundCloud": "SoundCloud doğrudan"
     },
     "route": {
-      "origin": {
-        "main": "Ana",
-        "star": "Star",
-        "s3": "S3",
-        "images": "Kapaklar"
+      "service": {
+        "api": "API",
+        "api-star": "Star",
+        "stream": "Akış",
+        "storage": "Depo",
+        "s3": "S3"
       },
-      "ok": "{{name}}: röle doğrudan ulaşıyor",
-      "backup": "{{name}}: röle yalnızca yedek yoldan ulaşıyor",
-      "down": "{{name}}: röle ulaşamıyor"
+      "ok": "{{name}}: bu röle üzerinden çalışıyor",
+      "backup": "{{name}}: rölenin yedek yolundan çalışıyor",
+      "down": "{{name}}: bu röle üzerinden yanıt vermiyor"
     },
     "col": {
       "dns": "DNS",
       "tcp": "TCP",
       "tls": "TLS",
-      "http": "HTTP"
+      "http": "HTTP",
+      "vol": "VOL"
     },
     "detail": {
+      "volWhole": "{{kb}} KB {{ms}} ms içinde eksiksiz geldi",
+      "volPieces": "{{kb}} KB {{ms}} ms içinde parça parça geldi",
+      "volCut": "{{kb}} KB'de kesildi",
       "ms": "{{ms}} ms",
       "skip": "kontrol edilmedi",
       "proxy": "proxy üzerinden",
@@ -756,7 +760,9 @@
       "tls": "TLS hatası",
       "status": "sunucu hatası {{status}}",
       "appFailed": "uygulamanın isteği başarısız",
-      "other": "hata"
+      "other": "hata",
+      "kbps": "{{n}} KB/sn",
+      "mbps": "{{n}} MB/sn"
     },
     "manual": {
       "title": "Elle kontrol edin",
@@ -765,6 +771,18 @@
       "browser": "{{host}} adresini tarayıcıda açın",
       "copy": "Kopyala",
       "openBrowser": "Aç"
+    },
+    "cut": {
+      "leadAlone": "Bir şey indirmeleri kesiyor, bu yüzden parçalar ve kapaklar yüklenmiyor. Adım adım ilerleyin:",
+      "leadBackups": "Uygulama yedek yollarla çalışıyor ama daha yavaş. Hızlandırmak için adım adım ilerleyin:",
+      "off": "{{name}} uygulamasını kapatın ve «Tekrar kontrol et» düğmesine basın.",
+      "exclude": "Çalıştı mı? Aşağıdaki satırları {{file}} içine ekleyin ve {{name}} uygulamasını tekrar açın. Bu kadar.",
+      "bypass": "Hâlâ çalışmıyor mu? Aşağıdaki satırları {{file}} içine ekleyin, {{name}} uygulamasını açın ve tekrar kontrol edin.",
+      "vpn": "Yine de çalışmıyor mu? Yalnızca VPN yardımcı olur.",
+      "bypassIdle": "zapret var mı? Aşağıdaki satırları {{file}} içine ekleyin, zapret'i açın ve «Tekrar kontrol et» düğmesine basın.",
+      "vpnIdle": "İşe yaramadı mı ya da zapret yok mu? Yalnızca VPN yardımcı olur.",
+      "excludeAny": "istisna listesi",
+      "bypassAny": "atlama listesi"
     }
   },
   "home": {
