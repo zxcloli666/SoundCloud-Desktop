@@ -37,7 +37,9 @@ pub fn begin(
     let debug = trace::debug_active();
     let mut request = client.request(method.clone(), &hop.url);
     if ours {
-        request = request.header("traceparent", trace::traceparent(&trace, &span, debug));
+        request = request
+            .header("traceparent", trace::traceparent(&trace, &span, debug))
+            .header("x-scd-version", env!("CARGO_PKG_VERSION"));
     }
     let flight = Flight {
         trace,
