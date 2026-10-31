@@ -8,8 +8,9 @@ import {Card} from '../primitives';
 const LANGUAGES = [
     {code: 'en', label: 'English'},
     {code: 'ru', label: 'Русский'},
-    {code: 'tr', label: 'Turkce'},
+    {code: 'tr', label: 'Türkçe'},
     {code: 'ko', label: '한국어'},
+    {code: 'pt', label: 'Português'},
 ] as const;
 
 export function LanguageCard() {

@@ -45,7 +45,7 @@ export const THEME_LICENSES = [
   'CC-BY-4.0',
   'CC-BY-SA-4.0',
 ] as const;
-export const THEME_LANGS = ['en', 'ru', 'tr', 'ko'] as const;
+export const THEME_LANGS = ['en', 'ru', 'tr', 'ko', 'pt'] as const;
 export const THEME_SCHEMES = ['dark', 'white'] as const;
 
 export type ThemeFont = (typeof THEME_FONTS)[number];

@@ -48,7 +48,7 @@ After the merge the theme shows up in the catalog within an hour. Installed copi
 |---|---|
 | `id` | 3-32 characters: `a-z`, `0-9`, `-`. Same as the folder name |
 | `name` | Up to 32 characters |
-| `description` | `en`, `ru`, `tr`, `ko`, at least one, up to 140 characters |
+| `description` | `en`, `ru`, `tr`, `ko`, `pt`, at least one, up to 140 characters |
 | `version` | `1.0.0`. Raise it every time the files change |
 | `author` | `name` up to 40 characters, `github` is your login |
 | `license` | `MIT`, `Apache-2.0`, `CC0-1.0`, `CC-BY-4.0` or `CC-BY-SA-4.0` |

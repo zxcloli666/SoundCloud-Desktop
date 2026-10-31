@@ -22,8 +22,9 @@ import { StarBadge, StarCard, useStarSubscription } from './StarSubscription';
 const languages = [
   { code: 'en', label: 'English' },
   { code: 'ru', label: 'Русский' },
-  { code: 'tr', label: 'Turkce' },
+  { code: 'tr', label: 'Türkçe' },
   { code: 'ko', label: '한국어' },
+  { code: 'pt', label: 'Português' },
 ] as const;
 
 function NavItem({

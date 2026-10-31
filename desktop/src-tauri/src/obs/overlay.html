@@ -127,6 +127,8 @@ body { font-family: var(--font); color: #fff; -webkit-font-smoothing: antialiase
     en: { playing: "Now playing", paused: "Paused" },
     ru: { playing: "Сейчас играет", paused: "Пауза" },
     tr: { playing: "Şimdi çalıyor", paused: "Duraklatıldı" },
+    ko: { playing: "지금 재생 중", paused: "일시정지" },
+    pt: { playing: "Tocando agora", paused: "Pausado" },
   };
   const lang = words[params.get("lang")] ? params.get("lang") : "en";
   const theme = ["card", "minimal", "vinyl"].includes(params.get("theme")) ? params.get("theme") : "card";
