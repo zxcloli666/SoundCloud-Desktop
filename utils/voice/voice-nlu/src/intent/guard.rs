@@ -1,4 +1,4 @@
-use crate::lexicon::{self, NEG_FOLLOW, NEG_STEMS, PLAY_STRONG, REMARK_START};
+use crate::lexicon::{self, IMPERATIVES, NEG_FOLLOW, NEG_STEMS, PLAY_STRONG, REMARK_START};
 use crate::normalize::Tok;
 use crate::types::Intent;
 
@@ -26,7 +26,7 @@ pub fn negation(toks: &[Tok]) -> Negation {
         if toks[i].w != "не" || !negated_verb(&toks[i + 1].w) {
             continue;
         }
-        let tail = (i + 2..toks.len()).find(|&j| PLAY_STRONG.contains(&toks[j].w.as_str()));
+        let tail = (i + 2..toks.len()).find(|&j| IMPERATIVES.contains(&toks[j].w.as_str()));
         return match tail {
             Some(j) => Negation::Tail(j),
             None => Negation::Cancel,

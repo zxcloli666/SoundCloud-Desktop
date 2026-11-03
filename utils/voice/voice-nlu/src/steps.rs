@@ -23,7 +23,7 @@ pub fn parse(text: &str) -> Vec<Parsed> {
     let spoken = correction(text);
     let toks = normalize(spoken.as_deref().unwrap_or(text)).toks;
     let from = usize::from(toks.len() > 2 && toks[0].w == "сначала");
-    match plan(&toks[from..], text) {
+    match plan(&toks[from..], text, false) {
         Some(steps) if steps.len() <= MAX_STEPS => collapse(steps),
         _ => vec![parse_toks(text, toks).0],
     }
@@ -67,7 +67,7 @@ fn side(toks: &[Tok], text: &str) -> Side {
     }
 }
 
-fn plan(toks: &[Tok], text: &str) -> Option<Vec<Parsed>> {
+fn plan(toks: &[Tok], text: &str, inherit: bool) -> Option<Vec<Parsed>> {
     for i in 1..toks.len().saturating_sub(1) {
         let Some(l) = link(toks, i) else { continue };
         let mut start = i + l.len;
@@ -80,10 +80,15 @@ fn plan(toks: &[Tok], text: &str) -> Option<Vec<Parsed>> {
         let left = match side(&toks[..i], text) {
             Side::Cmd(p) => Some(p),
             Side::Foreign => None,
+            Side::Other if inherit && l.soft => match shared_verb(&toks[..i], text, false) {
+                Some(p) => Some(p),
+                None => continue,
+            },
             Side::Other => continue,
         };
         let right = &toks[start..];
-        let mut rest = match plan(right, text) {
+        let plays = left.as_ref().is_some_and(|p| p.intent == Intent::Play);
+        let mut rest = match plan(right, text, l.soft && plays) {
             Some(steps) => steps,
             None => match side(right, text) {
                 Side::Cmd(p) => vec![p],

@@ -254,11 +254,13 @@ pub fn colloquial(words: Vec<String>) -> Vec<String> {
         match (w, next) {
             ("три", "четверти") => {
                 out.push("75".into());
+                out.push("доля".into());
                 i += 2;
                 continue;
             }
             ("две", "трети") => {
                 out.push("66".into());
+                out.push("доля".into());
                 i += 2;
                 continue;
             }
@@ -266,6 +268,9 @@ pub fn colloquial(words: Vec<String>) -> Vec<String> {
         }
         if let Some((_, v)) = SLANG_NUMBERS.iter().find(|(k, _)| *k == w) {
             out.push(v.to_string());
+            if matches!(w, "четверть" | "треть") {
+                out.push("доля".into());
+            }
         } else if let Some((_, v)) = ORDINALS.iter().find(|(k, _)| *k == w) {
             out.push(v.to_string());
             out.push("ордин".into());

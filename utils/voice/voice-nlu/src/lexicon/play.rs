@@ -184,6 +184,7 @@ pub const PRE: &[&str] = &[
 
 pub const GENERIC: &[&str] = &[
     "ордин",
+    "доля",
     "вдвое",
     "втрое",
     "раза",

@@ -1,0 +1,109 @@
+phrase	intent	kind	entity	number	category	alt
+выключи шафл и включи кино	shuffle_off+play	artist	Кино		two_part	
+сделай потише и дальше	volume_down+next				two_part	
+включи дрейка а потом эминема	play+play	artist+artist	Drake+Eminem		two_part	
+пауза и лайкни	pause+like				two_part	
+перемешай и следующий	shuffle_on+next				two_part	
+останови и включи сплин	play	artist	Сплин		two_part	
+громче и повтори трек	volume_up+repeat_one				two_part	
+включи кино затем звери	play+play	artist+artist	Кино+Звери		two_part	
+поставь на паузу я сейчас вернусь	pause				two_part	
+следующий пожалуйста мне не нравится эта	next				two_part	
+громче мне плохо слышно	volume_up				two_part	
+лайкни это любимая песня	like				two_part	
+не включай сплин	none				negative	
+не ставь дрейка	none				negative	
+не надо следующий	none				negative	
+не нужно громче	none				negative	
+не надо лайк	none				negative	
+не, давай следующую	next				negative	
+нет, назад	previous				negative	
+не включай сплин а включи кино	play	artist	Кино		negative	
+перемешай колоду	none				false_act	
+перемотай видео	none				false_act	
+повтори что ты сказала	none				false_act	
+повтори за мной слово	none				false_act	
+включи вентилятор	none				false_act	
+включи камин	none				false_act	
+поставь будильник на семь	none				false_act	
+поставь галочку	none				false_act	
+поставь печать	none				false_act	
+включи телевизор	none				false_act	
+перемешай краски	none				false_act	
+перемотай разговор	none				false_act	
+включи подогрев сидений	none				false_act	
+хочу хочу хочу пиццу	none				false_act	
+давай потом поговорим	none				false_act	
+давай завтра созвонимся	none				false_act	
+да да да нет нет	none				false_act	
+оу оу оу беби	none				false_act	
+я хочу домой	none				false_act	
+дальше по списку у нас	none				false_act	
+бля включи сплин	play	artist	Сплин		slang	
+блин сука включи кино	play	artist	Кино		slang	
+пиздец включи эминема	play	artist	Eminem		slang	
+ну чёрт включи уже дрейка	play	artist	Drake		slang	
+нахер включи кино	play	artist	Кино		slang	
+вруби звери	play	artist	Звери		slang	
+сбацай что-нибудь	play_wave				slang	
+крутани кино	play	artist	Кино		slang	
+врубани сплин	play	artist	Сплин		slang	
+задолбала эта песня	next				slang	
+надоело	next				slang	
+не то	undo				slang	
+нафиг это	next				slang	
+поставь что-нибудь бодрое	play_wave				slang	
+включи музычку	play_wave				slang	
+включи моё	play_likes				slang	
+добавь в избранное	like				slang	
+в избранное	like				slang	
+ещё такого же	play_similar				slang	
+включи тейлор	play	artist	Taylor Swift		translit	
+включи бибера	play	artist	Justin Bieber		morphology	
+включи линкин	play	artist	Linkin Park		morphology	
+включи гагарину	play	artist	Полина Гагарина		morphology	
+включи крида	play	artist	Егор Крид		morphology	
+включи пугачёву	play	artist	Алла Пугачёва		morphology	
+включи рианну	play	artist	Rihanna		morphology	
+включи эминема	play	artist	Eminem		morphology	
+включи шнура	play	artist	Ленинград		morphology	
+гагарину кукушку	play	track	Полина Гагарина - Кукушка		ambiguous	
+цоя кукушку	play	track	Кино - Кукушка		ambiguous	
+включи эда ширана	play	artist	Ed Sheeran		morphology	
+громкость на половину	volume_set			50	numbers	
+громкость на четверть	volume_set			25	numbers	
+звук на полную	volume_set			100	numbers	
+сделай тише до двадцати	volume_set			20	numbers	
+громкость минус пять	volume_down			5	numbers	
+громкость плюс пятнадцать	volume_up			15	numbers	
+убавь до десяти	volume_set			10	numbers	
+в два раза тише	volume_down				numbers	
+вперёд на полторы минуты	seek_forward			90	numbers	
+назад на минуту с половиной	seek_backward			90	numbers	
+перемотай на пару минут	seek_forward			120	numbers	
+вперёд секунд на сорок	seek_forward			40	numbers	
+назад на три четверти минуты	seek_backward			45	numbers	
+перемотай на двадцатую секунду	seek_to			20	numbers	
+поставь на две минуты десять	seek_to			130	numbers	
+включи группу плейлист	play	artist	Плейлист		command_name	
+включи исполнителя трек	play	artist	Трек		command_name	
+включи пятницу	play	artist	Пятница		command_name	
+включи канье	play	artist	Kanye West		translit	
+включи ёлку	none				false_act	
+включи логику	none				false_act	
+поставь пароль	none				false_act	
+включи зеркало заднего вида	none				false_act	
+поставь бокал на стол	none				false_act	
+включи утюг	none				false_act	
+включи сковородку	none				false_act	
+включи дрель	none				false_act	
+включи собаку	none				false_act	
+включи принтер	none				false_act	
+включи басту басту	play	artist	Баста		stretched	
+включи кино кино	play	artist	Кино		stretched	
+сплин сплин включи	play	artist	Сплин		stretched	
+так ну это короче слушай включи-ка мне звери	play	artist	Звери		filler	
+ой а можно пожалуйста эминема	play	artist	Eminem		filler	
+громкость плюс десять	volume_up			10	numbers	
+выключи повтор	repeat_off				plain	
+включи повтор и перемешай	repeat_one+shuffle_on				two_part	

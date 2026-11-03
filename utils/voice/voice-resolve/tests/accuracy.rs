@@ -54,6 +54,14 @@ fn sets() -> Vec<Set> {
             .collect(),
         },
         Set {
+            name: "fresh_r1",
+            rows: rows(include_str!("data/phrases_fresh_r1.tsv")),
+        },
+        Set {
+            name: "fresh_r1b",
+            rows: rows(include_str!("data/phrases_fresh_r1b.tsv")),
+        },
+        Set {
             name: "skeptic_r1",
             rows: rows(include_str!("data/phrases_skeptic_r1.tsv")),
         },

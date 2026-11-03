@@ -95,6 +95,10 @@ fn time(c: &Ctx) -> Time {
             t.ordinal = true;
             unit_at += 1;
         }
+        let share = c.at(unit_at) == "доля";
+        if share {
+            unit_at += 1;
+        }
         let halves = half_after(c, unit_at);
         if halves {
             unit_at += 2;
@@ -104,7 +108,11 @@ fn time(c: &Ctx) -> Time {
             i += 1;
             continue;
         };
-        t.secs += count * per;
+        t.secs += if share {
+            count * per / 100
+        } else {
+            count * per
+        };
         if halves {
             t.secs += per / 2;
         }

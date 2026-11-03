@@ -28,7 +28,10 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
                 return Some(Detected::new(Intent::Unmute, vec![n]));
             }
         }
-        let value = if let Some(v) = number {
+        let stepped = (c.has(UP_WORDS) || c.has(DOWN_WORDS)) && !c.has(&["до"]);
+        let value = if stepped {
+            None
+        } else if let Some(v) = number {
             Some(v.min(100))
         } else if half {
             Some(50)
