@@ -30,12 +30,12 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
             return Some(Detected::new(Intent::Next, vec![i]));
         }
     }
-    if let Some(i) = c.pos(PAUSE_WORDS) {
+    if let Some(i) = c.pos_stem(&["пауз", "запауз", "pause"]).or_else(|| c.pos(PAUSE_WORDS)) {
         if c.stray(&[i]) == 0 && !names_play(c, i) {
             return Some(Detected::new(Intent::Pause, vec![i]));
         }
     }
-    if let Some(i) = c.pos(STOP_WORDS) {
+    if let Some(i) = c.pos_stem(&["стоп", "stop"]).or_else(|| c.pos(STOP_WORDS)) {
         if c.stray(&[i]) == 0 && !names_play(c, i) {
             return Some(Detected::new(Intent::Stop, vec![i]));
         }

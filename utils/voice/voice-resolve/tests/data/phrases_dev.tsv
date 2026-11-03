@@ -1,1 +1,393 @@
 phrase	intent	kind	entity	number	category
+стоп	stop				plain
+хватит	stop				plain
+выключи	stop				plain
+пауза пожалуйста	pause				plain
+приостанови	pause				plain
+возобнови	resume				plain
+продолжай играть	resume				plain
+дальше	next				plain
+следующую	next				plain
+следующая песня	next				plain
+пропусти	next				plain
+пропусти трек	next				plain
+предыдущую	previous				plain
+верни предыдущую песню	previous				plain
+вернись назад	previous				plain
+назад	previous				plain
+переключи	next				plain
+смени трек	next				plain
+другую песню	next				plain
+потише пожалуйста	volume_down				plain
+сделай тише	volume_down				plain
+убавь громкость	volume_down				plain
+прибавь громкость	volume_up				plain
+увеличь звук	volume_up				plain
+добавь громкости	volume_up				plain
+звук погромче	volume_up				plain
+громкость сто процентов	volume_set			100	plain
+громкость десять	volume_set			10	plain
+установи громкость на 35	volume_set			35	plain
+поставь громкость тридцать пять	volume_set			35	plain
+громкость на минимум	volume_set			0	plain
+отключи звук	mute				plain
+без звука	mute				plain
+выруби звук	mute				plain
+верни звук	unmute				plain
+включи звук обратно	unmute				plain
+со звуком	unmute				plain
+перемотай на 10 секунд вперёд	seek_forward			10	plain
+промотай 45 секунд	seek_forward			45	plain
+назад на 5 секунд	seek_backward			5	plain
+отмотай на 30 секунд	seek_backward			30	plain
+перемотай вперёд	seek_forward			10	plain
+перемотай назад	seek_backward			10	plain
+перемотай на три минуты вперёд	seek_forward			180	plain
+перемотай на 2:45	seek_to			165	plain
+перейди на 1:05	seek_to			65	plain
+включи с начала	seek_to			0	plain
+заново	seek_to			0	plain
+сначала	seek_to			0	plain
+лайкни	like				plain
+мне нравится эта песня	like				plain
+поставь лайк этому треку	like				plain
+добавь в избранное	like				plain
+сними лайк	unlike				plain
+убери из избранного	unlike				plain
+мне не нравится эта песня	unlike				plain
+включи шафл	shuffle_on				plain
+перемешай треки	shuffle_on				plain
+включи перемешивание	shuffle_on				plain
+выключи шафл	shuffle_off				plain
+без перемешивания	shuffle_off				plain
+повторяй эту песню	repeat_one				plain
+поставь на повтор	repeat_one				plain
+зациклить трек	repeat_one				plain
+повторяй плейлист	repeat_all				plain
+повторить всё	repeat_all				plain
+отключи повтор	repeat_off				plain
+без повтора	repeat_off				plain
+что это играет	now_playing				plain
+что за песня сейчас играет	now_playing				plain
+как называется эта песня	now_playing				plain
+кто сейчас поёт	now_playing				plain
+кто исполнитель	now_playing				plain
+название трека	now_playing				plain
+включи мою волну	play_wave				plain
+мои любимые треки	play_likes				plain
+включи избранное	play_likes				plain
+лайкнутые песни	play_likes				plain
+включи рекомендации	play_wave				plain
+сыграй что-нибудь	play_wave				plain
+включи рандомную музыку	play_wave				plain
+включи что-нибудь похожее	play_similar				plain
+хочу что-то похожее	play_similar				plain
+поставь что-то в таком же духе	play_similar				plain
+верни как было	undo				plain
+отменить	undo				plain
+ой не то	undo				plain
+помощь	help				plain
+что ты можешь	help				plain
+как тобой пользоваться	help				plain
+stop	stop				english
+rewind 15 seconds	seek_backward			15	english
+fast forward 30 seconds	seek_forward			30	english
+skip ahead 10 seconds	seek_forward			10	english
+go to 1:30	seek_to			90	english
+jump to 2:00	seek_to			120	english
+volume 80	volume_set			80	english
+set the volume to fifty	volume_set			50	english
+make it louder	volume_up				english
+quieter	volume_down				english
+turn the volume down	volume_down				english
+volume up	volume_up				english
+mute the sound	mute				english
+unmute please	unmute				english
+like	like				english
+unlike this song	unlike				english
+shuffle off	shuffle_off				english
+turn off shuffle	shuffle_off				english
+repeat all	repeat_all				english
+repeat off	repeat_off				english
+repeat one	repeat_one				english
+loop this song	repeat_one				english
+what song is this	now_playing				english
+what is playing right now	now_playing				english
+help	help				english
+undo	undo				english
+play some music	play_wave				english
+more like this	play_similar				english
+play my liked songs	play_likes				english
+play nirvana	play	artist	Nirvana		english
+put on coldplay	play	artist	Coldplay		english
+i want to listen to eminem	play	artist	Eminem		english
+can you play drake	play	artist	Drake		english
+play some rihanna	play	artist	Rihanna		english
+listen to imagine dragons	play	artist	Imagine Dragons		english
+play the song believer by imagine dragons	play	track	Imagine Dragons - Believer		english
+play yellow by coldplay	play	track	Coldplay - Yellow		english
+play umbrella	play	track	Rihanna - Umbrella		english
+start lose yourself by eminem	play	track	Eminem - Lose Yourself		english
+play shape of you	play	track	Ed Sheeran - Shape of You		english
+add umbrella to the queue	queue_add	track	Rihanna - Umbrella		english
+play the album evolve	play	album	Imagine Dragons - Evolve		english
+включи скриптонит	play	artist	Скриптонит		plain
+сыграй мне что-нибудь от земфиры	play	artist	Земфира		plain
+хочу послушать кино	play	artist	Кино		plain
+поставь мне ленинград пожалуйста	play	artist	Ленинград		plain
+давай послушаем нирвану	play	artist	Nirvana		plain
+поставьте пожалуйста рамштайн	play	artist	Rammstein		plain
+запусти queen	play	artist	Queen		plain
+включи колдплей	play	artist	Coldplay		plain
+включи линкин парк	play	artist	Linkin Park		plain
+включи песню кукушка	play	track	Кино - Кукушка		plain
+поставь трек притон	play	track	Скриптонит - Притон		plain
+сыграй лесник	play	track	Король и Шут - Лесник		plain
+включи мотылёк	play	track	Макс Корж - Мотылёк		plain
+включи тепло макс корж	play	track	Макс Корж - Тепло		plain
+поставь каждый раз монеточка	play	track	Монеточка - Каждый раз		plain
+включи звезда по имени солнце	play	track	Кино - Звезда по имени Солнце		plain
+поставь пачку сигарет	play	track	Кино - Пачка сигарет		plain
+включи ели мясо мужики	play	track	Король и Шут - Ели мясо мужики		plain
+поставь прыгну со скалы	play	track	Король и Шут - Прыгну со скалы		plain
+включи выхода нет	play	track	Сплин - Выхода нет		plain
+включи небо поможет нам	play	track	Макс Корж - Небо поможет нам		plain
+включи малый повзрослел	play	track	Макс Корж - Малый повзрослел		plain
+включи нимфоманка	play	track	Монеточка - Нимфоманка		plain
+включи искала земфира	play	track	Земфира - Искала		plain
+включи кабриолет	play	track	Ленинград - Кабриолет		plain
+включи орбит без сахара	play	track	Сплин - Орбит без сахара		plain
+включи покинула чат	play	track	Клава Кока - Покинула чат		plain
+поставь розовое вино	play	track	Элджей - Розовое вино		plain
+включи где нас нет	play	track	Oxxxymiron - Где нас нет		plain
+включи альбом views	play	album	Drake - Views		plain
+поставь альбом happier than ever	play	album	Billie Eilish - Happier Than Ever		plain
+включи альбом evolve	play	album	Imagine Dragons - Evolve		plain
+включи альбом дом с нормальными явлениями	play	album	Скриптонит - Дом с нормальными явлениями		plain
+альбом 1989 тейлор свифт	play	album	Taylor Swift - 1989		plain
+включи плейлист русский рок	play	playlist	Русский рок		plain
+включи русский рэп	play	playlist	Русский рэп		plain
+включи утренний кофе	play	playlist	Утренний кофе		plain
+поставь ночную поездку	play	playlist	Ночная поездка		plain
+включи плейлист вечеринка	play	playlist	Вечеринка		plain
+поставь дорога домой	play	playlist	Дорога домой		plain
+включи для сна	play	playlist	Для сна		plain
+добавь в очередь притон	queue_add	track	Скриптонит - Притон		plain
+в очередь кукушка	queue_add	track	Кино - Кукушка		plain
+потом включи цепи	queue_add	track	Скриптонит - Цепи		plain
+поставь в очередь песню сансара	queue_add	track	Баста - Сансара		plain
+кинь в очередь песню лесник	queue_add	track	Король и Шут - Лесник		plain
+включи мумий тролль	play	artist	Мумий Тролль		morphology
+включи песни кино	play	artist	Кино		morphology
+поставь песни ддт	play	artist	ДДТ		morphology
+включи песни чайфа	play	artist	Чайф		morphology
+включи песни аквариума	play	artist	Аквариум		morphology
+включи касту	play	artist	Каста		morphology
+включи нервы	play	artist	Нервы		morphology
+включи песни нервов	play	artist	Нервы		morphology
+включи егора крида	play	artist	Егор Крид		morphology
+включи хаски	play	artist	Хаски		morphology
+включи лсп	play	artist	ЛСП		morphology
+поставь мота	play	artist	Мот		morphology
+включи песни зверей	play	artist	Звери		morphology
+включи песни басты	play	artist	Баста		morphology
+включи песни скриптонита	play	artist	Скриптонит		morphology
+включи песни земфиры	play	artist	Земфира		morphology
+включи песни монеточки	play	artist	Монеточка		morphology
+включи песни короля и шута	play	artist	Король и Шут		morphology
+поставь песни ленинграда	play	artist	Ленинград		morphology
+включи песни макса коржа	play	artist	Макс Корж		morphology
+включи песни моргенштерна	play	artist	Моргенштерн		morphology
+поставь песню кукушку	play	track	Кино - Кукушка		morphology
+включи песню притон скриптонита	play	track	Скриптонит - Притон		morphology
+включи песню лесник короля и шута	play	track	Король и Шут - Лесник		morphology
+поставь выхода нет сплина	play	track	Сплин - Выхода нет		morphology
+включи экспонат ленинграда	play	track	Ленинград - Экспонат		morphology
+включи сансару басты	play	track	Баста - Сансара		morphology
+включи плейлист русский рок	play	playlist	Русский рок		morphology
+включи дима билан	play	artist	Дима Билан		morphology
+включи полину гагарину	play	artist	Полина Гагарина		morphology
+включи песни ночных снайперов	play	artist	Ночные Снайперы		morphology
+включи песни руки вверх	play	artist	Руки Вверх		morphology
+включи дуа липа	play	artist	Dua Lipa		translit
+включи пост малон	play	artist	Post Malone		translit
+включи бруно марс	play	artist	Bruno Mars		translit
+включи ариана гранде	play	artist	Ariana Grande		translit
+включи кендрик ламар	play	artist	Kendrick Lamar		translit
+включи эминем	play	artist	Eminem		translit
+включи рианна	play	artist	Rihanna		translit
+включи лана дель рей	play	artist	Lana Del Rey		translit
+включи эд ширан	play	artist	Ed Sheeran		translit
+включи джастин бибер	play	artist	Justin Bieber		translit
+включи зе уикенд	play	artist	The Weeknd		translit
+включи тейлор свифт	play	artist	Taylor Swift		translit
+включи манескин	play	artist	Måneskin		translit
+включи литл биг	play	artist	Little Big		translit
+включи нойз мс	play	artist	Noize MC		translit
+блайндинг лайтс уикенд	play	track	The Weeknd - Blinding Lights		translit
+старбой уикенд	play	track	The Weeknd - Starboy		translit
+включи сейв ё тирз	play	track	The Weeknd - Save Your Tears		translit
+включи шейп оф ю	play	track	Ed Sheeran - Shape of You		translit
+поставь радиоактив имеджин драгонс	play	track	Imagine Dragons - Radioactive		translit
+включи ван дэнс дрейк	play	track	Drake - One Dance		translit
+включи хотлайн блинг	play	track	Drake - Hotline Bling		translit
+включи блэнк спейс	play	track	Taylor Swift - Blank Space		translit
+включи крюэл саммер	play	track	Taylor Swift - Cruel Summer		translit
+включи ол зе смол тингс	play	track	Blink-182 - All the Small Things		translit
+включи дон старт нау	play	track	Dua Lipa - Don't Start Now		translit
+включи вива ла вида	play	track	Coldplay - Viva la Vida		translit
+включи намб линкин парк	play	track	Linkin Park - Numb		translit
+включи зонне рамштайн	play	track	Rammstein - Sonne		translit
+включи капитан мияги	play	track	Miyagi & Эндшпиль - Captain		translit
+включи минор мияги	play	track	Miyagi & Эндшпиль - Minor		translit
+включи рэп год эминем	play	track	Eminem - Rap God		translit
+включи скриптанит	play	artist	Скриптонит		misspelling
+вкючи земфиру	play	artist	Земфира		misspelling
+включи макс корж	play	artist	Макс Корж		misspelling
+включи мотылек	play	track	Макс Корж - Мотылёк		misspelling
+включи пост малоун	play	artist	Post Malone		misspelling
+включи колдплэй	play	artist	Coldplay		misspelling
+включи нервi	play	artist	Нервы		misspelling
+вкл монеточку	play	artist	Монеточка		misspelling
+поставь агата кристи	play	artist	Агата Кристи		misspelling
+включи кендрик ламарр	play	artist	Kendrick Lamar		misspelling
+включи мумий трол	play	artist	Мумий Тролль		misspelling
+включи король и щут	play	artist	Король и Шут		misspelling
+включи ленинргад	play	artist	Ленинград		misspelling
+включи руки вверхх	play	artist	Руки Вверх		misspelling
+включи кукушко	play	track	Кино - Кукушка		misspelling
+включи старбои	play	track	The Weeknd - Starboy		misspelling
+вкличи белливер	play	track	Imagine Dragons - Believer		misspelling
+пауса	pause				misspelling
+следуюший	next				misspelling
+слудующий трек	next				misspelling
+предыдущий трэк	previous				misspelling
+промотай впёрёд на 20 секунд	seek_forward			20	misspelling
+лайкани	like				misspelling
+громкось 30	volume_set			30	misspelling
+потеше	volume_down				misspelling
+громчи	volume_up				misspelling
+остановите	stop				misspelling
+продолжите	resume				misspelling
+вруби кино	play	artist	Кино		slang
+накати нирвану	play	artist	Nirvana		slang
+кинь рамштайн	play	artist	Rammstein		slang
+фигани звери	play	artist	Звери		slang
+бахни ленинград	play	artist	Ленинград		slang
+жахни сплин	play	artist	Сплин		slang
+подкинь что нибудь	play_wave				slang
+запили лайки	play_likes				slang
+врубай мотылёк	play	track	Макс Корж - Мотылёк		slang
+ставь кукушку	play	track	Кино - Кукушка		slang
+давай следующий	next				slang
+го следующий	next				slang
+скипай	next				slang
+скипни этот трек	next				slang
+стопани	stop				slang
+запаузь	pause				slang
+шафл он	shuffle_on				slang
+рандом офф	shuffle_off				slang
+репит офф	repeat_off				slang
+лайкни трек	like				slang
+дизлайкни	unlike				slang
+чё за трек	now_playing				slang
+че за песня играет	now_playing				slang
+включиии кино	play	artist	Кино		stretched
+постаавь ленинград	play	artist	Ленинград		stretched
+тишеее	volume_down				stretched
+громчеее	volume_up				stretched
+дааальше	next				stretched
+пауууза	pause				stretched
+стооп	stop				stretched
+продолжай	resume				stretched
+нееекст	next				stretched
+перемоотай вперед	seek_forward			10	stretched
+включиии нирваааану	play	artist	Nirvana		stretched
+вруууби рамштайн	play	artist	Rammstein		stretched
+лаайк	like				stretched
+включи что нибууудь	play_wave				stretched
+ну давай включи уже кино	play	artist	Кино		filler
+алиса включи кино	play	artist	Кино		filler
+слушай включи ка пожалуйста ленинград	play	artist	Ленинград		filler
+эмм ну типа хочу послушать нирвану	play	artist	Nirvana		filler
+блин ну вруби уже рамштайн давай	play	artist	Rammstein		filler
+короче вот это самое стоп	stop				filler
+ну типа дальше	next				filler
+мм пауза	pause				filler
+ээ ну это потише	volume_down				filler
+так ну включи что нибудь	play_wave				filler
+ну это включи сплин	play	artist	Сплин		filler
+эээ ну поставь песню кукушка	play	track	Кино - Кукушка		filler
+брат включи звери	play	artist	Звери		filler
+слышь бро вруби ленинград	play	artist	Ленинград		filler
+ну в общем как бы поставь монеточку	play	artist	Монеточка		filler
+Алиса, включи Кино!	play	artist	Кино		alice
+Включи, пожалуйста, песню «Кукушка» группы Кино.	play	track	Кино - Кукушка		alice
+Поставь альбом «Группа крови».	play	album	Кино - Группа крови		alice
+Пауза.	pause				alice
+Громче!	volume_up				alice
+Что сейчас играет?	now_playing				alice
+Включи плейлист «Русский рок»	play	playlist	Русский рок		alice
+Перемотай на 1:30.	seek_to			90	alice
+Следующий трек!	next				alice
+Лайкни, пожалуйста.	like				alice
+Маруся, поставь Сплин	play	artist	Сплин		alice
+Салют, включи Ленинград.	play	artist	Ленинград		alice
+Включи Земфиру, пожалуйста!	play	artist	Земфира		alice
+Выключи звук.	mute				alice
+Поставь на паузу, пожалуйста.	pause				alice
+громкость шестьдесят	volume_set			60	numbers
+поставь громкость на девяносто пять процентов	volume_set			95	numbers
+громкость на сто процентов	volume_set			100	numbers
+перемотай на сорок пять секунд	seek_forward			45	numbers
+перемотай на две минуты	seek_forward			120	numbers
+прыгни на 3:20	seek_to			200	numbers
+включи два пак	play	artist	2Pac		numbers
+включи пятьдесят сент	play	artist	50 Cent		numbers
+включи блинк сто восемьдесят два	play	artist	Blink-182		numbers
+включи пять найза	play	artist	5'Nizza		numbers
+включи 25 17	play	artist	25/17		numbers
+включи би 2	play	artist	Би-2		numbers
+включи ариана гранде 7 rings	play	track	Ariana Grande - 7 rings		numbers
+включи 90 монеточка	play	track	Монеточка - 90		numbers
+включи тысяча девятьсот восемьдесят девять	play	album	Taylor Swift - 1989		numbers
+включи телевизор	none				negative
+выключи свет на кухне	none				negative
+поставь таймер на десять минут	none				negative
+поставь чайник	none				negative
+позвони папе	none				negative
+напомни мне купить молоко	none				negative
+сколько будет два плюс два	none				negative
+расскажи про скриптонита	none				negative
+кто такой скриптонит	none				negative
+мне нравится кино	none				negative
+я люблю земфиру	none				negative
+вчера слушал ленинград	none				negative
+завтра концерт сплина	none				negative
+какая песня самая популярная	none				negative
+дальше что	none				negative
+тише едешь дальше будешь	none				negative
+я хочу спать	none				negative
+давай спать	none				negative
+включи вентилятор	none				negative
+отключи будильник	none				negative
+где ближайшая аптека	none				negative
+how are you	none				negative
+what is the weather	none				negative
+good morning	none				negative
+turn on the tv	none				negative
+открой настройки	none				negative
+найди рецепт борща	none				negative
+я устал от этой работы	none				negative
+в какой группе ты учишься	none				negative
+этот трек мне не нравится у него плохой звук	none				negative
+мама сказала включить музыку потише	none				negative
+громко	none				negative
+музыка	none				negative
+песня	none				negative
+давай потом	none				negative
+стой тут	none				negative
+не надо	none				negative
+да	none				negative
+нет	none				negative
+хорошо	none				negative

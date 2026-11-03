@@ -67,7 +67,12 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
     let down = c.has(DOWN_WORDS)
         || english_dir("down")
         || (c.has(&["decrease", "lower", "reduce"]) && noun.is_some());
-    let used = c.all(UP_WORDS).into_iter().chain(c.all(DOWN_WORDS)).collect::<Vec<_>>();
+    let mut used = c.all(UP_WORDS).into_iter().chain(c.all(DOWN_WORDS)).collect::<Vec<_>>();
+    used.extend(noun);
+    used.extend(c.all(&["up", "down", "increase", "decrease", "raise", "lower", "reduce", "добавь", "добавить"]));
+    if (up || down) && c.stray(&used) > 1 {
+        return None;
+    }
     let found = |intent| {
         let d = Detected::new(intent, used.clone());
         match number {

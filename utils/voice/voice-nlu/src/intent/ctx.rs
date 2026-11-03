@@ -9,11 +9,12 @@ pub struct Detected {
     pub used: Vec<usize>,
     pub number: Option<u32>,
     pub blocked: bool,
+    pub weak: bool,
 }
 
 impl Detected {
     pub fn new(intent: Intent, used: Vec<usize>) -> Detected {
-        Detected { intent, used, number: None, blocked: false }
+        Detected { intent, used, number: None, blocked: false, weak: false }
     }
 
     pub fn none() -> Detected {

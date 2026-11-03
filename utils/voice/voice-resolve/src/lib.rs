@@ -53,7 +53,11 @@ pub fn interpret(text: &str, catalog: &dyn Catalog, boosts: &Boosts) -> Outcome 
             }
         }
     } else if matches!(intent, Intent::Play | Intent::QueueAdd | Intent::PlaySimilar) {
-        decision = Some(resolve(&parsed, catalog, boosts, score::ACT_MIN));
+        let d = resolve(&parsed, catalog, boosts, score::ACT_MIN);
+        if intent == Intent::Play && parsed.weak_verb && matches!(d, Decision::NotFound) {
+            intent = Intent::None;
+        }
+        decision = Some(d);
     }
     Outcome { intent, parsed, decision }
 }

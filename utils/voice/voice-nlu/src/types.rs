@@ -123,4 +123,5 @@ pub struct Parsed {
     pub heard: String,
     pub normalized: String,
     pub bare: bool,
+    pub weak_verb: bool,
 }

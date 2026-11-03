@@ -38,5 +38,6 @@ pub fn parse(text: &str) -> Parsed {
         heard: text.to_string(),
         normalized,
         bare,
+        weak_verb: det.weak,
     }
 }

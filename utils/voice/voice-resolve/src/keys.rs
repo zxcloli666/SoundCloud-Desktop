@@ -4,7 +4,21 @@ use voice_nlu::{fold, Kind, Variant};
 pub struct Keys {
     names: Vec<(String, f32)>,
     artist: Option<String>,
+    artist_parts: Vec<String>,
     own_artist_name: bool,
+}
+
+fn credits(name: &str) -> Vec<String> {
+    let mut parts = vec![name.to_string()];
+    for sep in [" & ", " feat. ", " feat ", " ft. ", " x ", ", ", " и ", " and "] {
+        if name.contains(sep) {
+            parts = parts.iter().flat_map(|p| p.split(sep).map(|s| s.trim().to_string()).collect::<Vec<_>>()).collect();
+        }
+    }
+    if parts.len() == 1 {
+        parts.clear();
+    }
+    parts
 }
 
 fn without_parens(name: &str) -> Option<String> {
@@ -22,10 +36,16 @@ impl Keys {
         for a in &e.aliases {
             names.push((fold(a), 0.97));
         }
+        if e.kind == Kind::Artist {
+            for part in credits(&e.name) {
+                names.push((fold(&part), 0.95));
+            }
+        }
         names.retain(|(k, _)| !k.is_empty());
         Keys {
             names,
             artist: e.artist.as_deref().map(fold),
+            artist_parts: e.artist.as_deref().map(|a| credits(a).iter().map(|p| fold(p)).collect()).unwrap_or_default(),
             own_artist_name: e.kind == Kind::Artist,
         }
     }
@@ -36,6 +56,9 @@ impl Keys {
             best = best.max(voice_nlu::similarity(&v.text, name) * w);
             if let Some(artist) = &self.artist {
                 best = best.max(combo(&v.text, artist, name) * w);
+                for part in &self.artist_parts {
+                    best = best.max(combo(&v.text, part, name) * w * 0.95);
+                }
             }
         }
         if let (Some(qa), Some(qt)) = (&v.artist, &v.title) {
@@ -44,7 +67,11 @@ impl Keys {
                 st = st.max(voice_nlu::similarity(qt, name) * w);
             }
             let sa = match &self.artist {
-                Some(artist) => voice_nlu::similarity(qa, artist),
+                Some(artist) => self
+                    .artist_parts
+                    .iter()
+                    .map(|p| voice_nlu::similarity(qa, p) * 0.95)
+                    .fold(voice_nlu::similarity(qa, artist), f32::max),
                 None => {
                     if self.own_artist_name {
                         0.0
@@ -56,7 +83,7 @@ impl Keys {
             best = best.max(st * (0.35 + 0.65 * sa));
         }
         if v.kept {
-            best *= 1.02;
+            best *= 1.06;
         }
         best
     }

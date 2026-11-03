@@ -41,6 +41,10 @@ pub fn lemma(w: &str, strategy: u8) -> String {
     if ends(w, "их") {
         return format!("{}ие", cut(w, 2));
     }
+    if ends(w, "ов") {
+        let stem = cut(w, 2);
+        return if alt { stem } else { format!("{stem}ы") };
+    }
     if ends(w, "ей") {
         return format!("{}и", cut(w, 2));
     }

@@ -68,7 +68,7 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
     let fwd = c.has(FORWARD);
     let back = c.has(BACKWARD);
     let seek_verb = c.has(SEEK_VERBS) || c.has_stem(&["перемот", "промот", "отмот"]);
-    let jump_verb = c.has(JUMP_VERBS);
+    let jump_verb = c.has(JUMP_VERBS) || (c.has(&["to"]) && c.has(&["go", "skip"]));
     let skip_verb = c.has(SKIP_VERBS);
     let back_verb = c.has(BACK_VERBS) || c.has_stem(&["отмот"]);
     let has_dir = (fwd && c.at(0) != "дальше") || back || (fwd && t.found);

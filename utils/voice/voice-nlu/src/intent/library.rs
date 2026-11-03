@@ -80,7 +80,8 @@ pub fn like(c: &Ctx) -> Option<Detected> {
         return None;
     }
     let unlike_word = c.has(UNLIKE_WORDS) || c.has_stem(&["разлайк", "дизлайк"]);
-    let like_word = c.has(LIKE_WORDS) || c.has_stem(&["лайкн"]);
+    let like_word = c.has(LIKE_WORDS)
+        || c.w.iter().any(|w| w.starts_with("лайк") && !matches!(*w, "лайки" | "лайков"));
     let enjoys = c.has(&["нравится"]) && {
         let used = c.all(&["нравится"]);
         c.stray(&used) == 0 || c.w.iter().all(|w| LIKE_OBJECT.contains(w) || PRE.contains(w) || GENERIC.contains(w))
@@ -88,7 +89,7 @@ pub fn like(c: &Ctx) -> Option<Detected> {
     let used: Vec<usize> = (0..c.len())
         .filter(|&i| {
             let w = c.w[i];
-            w.starts_with("лайк") || w == "нравится" || LIKE_WORDS.contains(&w) || UNLIKE_WORDS.contains(&w) || REMOVE_WORDS.contains(&w)
+            w.starts_with("лайк") || w.starts_with("избран") || w.starts_with("любим") || w == "из" || w == "нравится" || LIKE_WORDS.contains(&w) || UNLIKE_WORDS.contains(&w) || REMOVE_WORDS.contains(&w)
         })
         .collect();
     let lone = c.stray(&used) <= 1;

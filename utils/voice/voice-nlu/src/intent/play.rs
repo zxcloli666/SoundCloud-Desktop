@@ -93,7 +93,8 @@ pub fn content(c: &Ctx) -> Option<Detected> {
         && (plural.is_some()
             || c.has(KIND_TRACK_PLURAL)
             || c.has(&["треки", "песни", "музыку", "музыка", "tracks", "songs"]));
-    if likes_word.is_some() || mine_things || (plural.is_some() && has_verb && c.w[plural.unwrap()] != "лайк") {
+    let saving = c.has(&["добавь", "добавить", "сохрани", "save", "удали", "убери", "сними"]);
+    if !saving && (likes_word.is_some() || mine_things || (plural.is_some() && has_verb && c.w[plural.unwrap()] != "лайк")) {
         let mut u = used.clone();
         u.extend(likes_word);
         u.extend(plural);
@@ -171,5 +172,7 @@ pub fn detect(c: &Ctx, forced: bool) -> Detected {
     if !v.strong && strays > 6 {
         return Detected::none();
     }
-    Detected::new(Intent::Play, used)
+    let mut d = Detected::new(Intent::Play, used);
+    d.weak = !v.strong;
+    d
 }
