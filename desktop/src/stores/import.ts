@@ -28,6 +28,7 @@ import {
   loadSession,
   removeHistory,
   rerunnable,
+  type SyncSource,
   saveSession,
   type TrackMap,
 } from '../lib/import-session';
@@ -79,6 +80,7 @@ export interface ImportResult {
   pendingState: ImportPendingState | null;
   pendingCreates: ImportPendingCreate[];
   savedAt: number;
+  historyId: string;
 }
 
 interface ImportState {
@@ -286,6 +288,7 @@ async function writeDestination(runId: number): Promise<ImportResult | null> {
       pendingState: null,
       pendingCreates: [],
       savedAt: Date.now(),
+      historyId: '',
     };
   }
 
@@ -298,6 +301,7 @@ async function writeDestination(runId: number): Promise<ImportResult | null> {
       pendingState: null,
       pendingCreates: [],
       savedAt: Date.now(),
+      historyId: '',
     };
   }
 
@@ -320,7 +324,22 @@ async function writeDestination(runId: number): Promise<ImportResult | null> {
     pendingState: pendingStateOf(saved.waiting, saved.needsRelogin),
     pendingCreates: saved.waiting,
     savedAt: Date.now(),
+    historyId: '',
   };
+}
+
+async function syncSourceOf(
+  result: ImportResult,
+  destination: ImportDestination,
+): Promise<SyncSource | null> {
+  if (!lastRequest) return null;
+  const syncable = await invoke<boolean>('import_syncable', { request: lastRequest }).catch(
+    () => false,
+  );
+  if (!syncable) return null;
+  if (result.mode === 'likes') return { request: lastRequest, target: { mode: 'likes' } };
+  const urn = result.playlist?.urn ?? (result.mode === 'existing' ? destination.playlistUrn : null);
+  return urn ? { request: lastRequest, target: { mode: 'playlist', urn } } : null;
 }
 
 async function saveRun() {
@@ -332,8 +351,9 @@ async function saveRun() {
     const result = await writeDestination(runId);
     if (!result || runId !== activeRunId) return;
     const found = state.rows.filter((row) => row.urn).length;
+    const id = `${Date.now()}`;
     const history = await addHistory({
-      id: `${Date.now()}`,
+      id,
       at: Date.now(),
       kind: state.kind ?? 'text',
       title: state.destination.name || state.title,
@@ -341,9 +361,10 @@ async function saveRun() {
       found,
       request: lastRequest ? rerunnable(lastRequest) : null,
       playlistUrn: result.playlist?.urn ?? null,
+      sync: await syncSourceOf(result, state.destination),
     });
     void clearSession();
-    useImportStore.setState({ phase: 'done', result, history });
+    useImportStore.setState({ phase: 'done', result: { ...result, historyId: id }, history });
   } catch (error) {
     useImportStore.setState({ phase: 'review', failure: failureOf(error) });
   }

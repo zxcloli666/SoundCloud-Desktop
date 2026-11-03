@@ -6,7 +6,9 @@ import { toast } from 'sonner';
 import { trackedInvoke as invoke } from '../../lib/diagnostics';
 import { FileText } from '../../lib/icons';
 import { useImportStore } from '../../stores/import';
+import { startImportSync } from '../../stores/import-sync';
 import { ImportIsland } from './ImportIsland';
+import { ImportSyncIsland } from './ImportSyncIsland';
 
 const ImportDialog = lazy(() => import('./ImportDialog'));
 const LIST_FILE = /\.(txt|csv|tsv)$/i;
@@ -22,6 +24,8 @@ export function ImportHost() {
   const dialogOpen = useImportStore((s) => s.dialogOpen);
   const savedAt = useImportStore((s) => s.result?.savedAt ?? 0);
   const [dropping, setDropping] = useState(false);
+
+  useEffect(() => startImportSync(), []);
 
   useEffect(() => {
     const onPaste = (event: ClipboardEvent) => {
@@ -99,6 +103,7 @@ export function ImportHost() {
   return (
     <>
       <ImportIsland />
+      <ImportSyncIsland />
       {dialogOpen && (
         <Suspense fallback={null}>
           <ImportDialog />

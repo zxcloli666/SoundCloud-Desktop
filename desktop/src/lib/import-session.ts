@@ -38,6 +38,13 @@ export interface StoredSession {
   at: number;
 }
 
+export type SyncTarget = { mode: 'likes' } | { mode: 'playlist'; urn: string };
+
+export interface SyncSource {
+  request: ImportRequest;
+  target: SyncTarget;
+}
+
 export interface HistoryEntry {
   id: string;
   at: number;
@@ -47,6 +54,7 @@ export interface HistoryEntry {
   found: number;
   request: ImportRequest | null;
   playlistUrn: string | null;
+  sync?: SyncSource | null;
 }
 
 export type TrackMap = Record<string, Track>;

@@ -7,6 +7,8 @@ mod model;
 mod request;
 mod run;
 mod source;
+mod sync;
+mod sync_plan;
 mod spotify;
 mod text;
 mod ym;
@@ -16,5 +18,8 @@ mod youtube_title;
 
 #[cfg(test)]
 mod live_tests;
+#[cfg(test)]
+mod sync_live_tests;
 
 pub use commands::*;
+pub use sync::*;

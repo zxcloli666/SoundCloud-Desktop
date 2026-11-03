@@ -75,7 +75,7 @@ pub async fn run(
     Ok(())
 }
 
-async fn read(
+pub async fn read(
     client: &wreq::Client,
     request: Request,
     cancel: &Cancel,

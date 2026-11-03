@@ -1589,7 +1589,8 @@
       "reading": "Reading",
       "matching": "Matching",
       "saving": "Saving",
-      "review": "Review"
+      "review": "Review",
+      "syncing": "Syncing"
     },
     "found": "Found",
     "notFound": "Not found",
@@ -1645,7 +1646,9 @@
       "bad_file": "This file cannot be imported",
       "playlist_not_synced": "The playlist is still syncing with SoundCloud",
       "save_failed": "Could not save (error {{status}})",
-      "unknown": "Something went wrong"
+      "unknown": "Something went wrong",
+      "target_missing": "The target playlist is gone",
+      "playlist_full": "The playlist is full (500 tracks), new tracks are not added"
     },
     "hint": {
       "session_expired": "Sign in again, the matched tracks stay here",
@@ -1670,6 +1673,19 @@
       "reconnect": "Connect again",
       "signin": "Sign in",
       "change": "Change source"
+    },
+    "sync": {
+      "keep": "Keep in sync",
+      "title": "Playlist sync",
+      "empty": "Nothing synced yet. Turn on Keep in sync after an import.",
+      "paused": "Paused until STAR is active",
+      "needsReconnect": "Yandex Music needs a new token",
+      "last": "Synced {{when}}",
+      "new_one": "+{{count}} new",
+      "new_other": "+{{count}} new",
+      "now": "Sync now",
+      "toast_one": "+{{count}} track synced into {{title}}",
+      "toast_other": "+{{count}} tracks synced into {{title}}"
     }
   },
   "update": {

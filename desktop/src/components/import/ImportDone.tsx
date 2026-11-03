@@ -4,6 +4,7 @@ import { proxiedAssetUrl } from '../../lib/asset-url';
 import { Check } from '../../lib/icons';
 import { useImportStore } from '../../stores/import';
 import { ImportPending } from './ImportPending';
+import { ImportSyncSwitch } from './ImportSyncSwitch';
 
 export function ImportDone() {
   const { t } = useTranslation();
@@ -11,6 +12,9 @@ export function ImportDone() {
   const result = useImportStore((s) => s.result);
   const closeDialog = useImportStore((s) => s.closeDialog);
   const discard = useImportStore((s) => s.discard);
+  const history = useImportStore((s) =>
+    s.history.find((entry) => entry.id === s.result?.historyId),
+  );
 
   if (!result) return null;
   const playlist = result.playlist;
@@ -63,6 +67,11 @@ export function ImportDone() {
           </button>
         </div>
       </div>
+      {history?.sync && (
+        <div className="relative border-t border-ink/[0.06] px-5 py-3">
+          <ImportSyncSwitch history={history} />
+        </div>
+      )}
     </div>
   );
 }

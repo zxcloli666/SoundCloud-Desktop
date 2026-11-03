@@ -87,6 +87,28 @@ pub async fn match_list(
     Ok(())
 }
 
+pub async fn match_quiet(
+    client: &wreq::Client,
+    backend_url: &str,
+    session_id: &str,
+    tracks: &[&ExtTrack],
+    cancel: &Cancel,
+) -> Result<Vec<Option<String>>, Failure> {
+    let url = format!("{backend_url}/tracks/match");
+    let owned: Vec<ExtTrack> = tracks.iter().map(|track| (*track).clone()).collect();
+    let mut urns = Vec::with_capacity(owned.len());
+    for chunk in owned.chunks(CHUNK_SIZE) {
+        match match_chunk(client, &url, session_id, chunk, cancel).await {
+            Ok(found) => urns.extend(found),
+            Err(error) if error.is_unauthorized() => {
+                return Err(Failure::new(SESSION_EXPIRED, "match rejected the session"));
+            }
+            Err(error) => return Err(Failure::new(SEARCH_UNAVAILABLE, error.reason)),
+        }
+    }
+    Ok(urns)
+}
+
 fn unauthorized(app: &AppHandle, progress: &Progress) -> Failure {
     progress.emit(app);
     Failure::new(SESSION_EXPIRED, "match rejected the session (HTTP 401)")
