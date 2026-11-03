@@ -43,8 +43,8 @@ import { useAuthStore } from '../stores/auth';
  */
 export const StarPage = memo(function StarPage() {
   const location = useLocation();
-  const intent = (location.state as { intent?: StarIntent } | null)?.intent ?? null;
-  return <StarFlow key={location.key} intent={intent} />;
+  const state = location.state as { intent?: StarIntent; plan?: string } | null;
+  return <StarFlow key={location.key} intent={state?.intent ?? null} presetPlan={state?.plan ?? null} />;
 });
 
 function firstStep(intent: StarIntent | null, premium: boolean): Step {
@@ -53,7 +53,13 @@ function firstStep(intent: StarIntent | null, premium: boolean): Step {
   return premium ? 'manage' : 'overview';
 }
 
-const StarFlow = memo(function StarFlow({ intent }: { intent: StarIntent | null }) {
+const StarFlow = memo(function StarFlow({
+  intent,
+  presetPlan,
+}: {
+  intent: StarIntent | null;
+  presetPlan: string | null;
+}) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const premium = usePremium();
@@ -64,7 +70,7 @@ const StarFlow = memo(function StarFlow({ intent }: { intent: StarIntent | null 
   const [recipient, setRecipient] = useState<Recipient>(intent === 'gift' ? 'gift' : 'self');
   const [refBonus, setRefBonus] = useState<RefBonus>(null);
   const gift = recipient === 'gift';
-  const [planId, setPlanId] = useState<string | null>(null);
+  const [planId, setPlanId] = useState<string | null>(presetPlan);
   const [option, setOption] = useState<ActivationOption | null>(null);
   const [recurring, setRecurring] = useState(false);
   const [checkout, setCheckout] = useState<CheckoutResp | null>(null);

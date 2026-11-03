@@ -1607,6 +1607,10 @@
   "update": {
     "available": "Доступно обновление",
     "later": "Позже",
+    "year": {
+      "cta": "Год",
+      "saved": "выгода {{sum}} ₽"
+    },
     "download": "Скачать",
     "installRestart": "Установить и перезапустить",
     "downloading": "Скачиваем обновление",
@@ -2535,6 +2539,20 @@
     "sendReports": "Отправлять отчёты об ошибках",
     "sendReportsDesc": "Отправляет ошибки приложения разработчикам, без данных аккаунта"
   },
+  "starTenure": {
+    "title": "Серия STAR",
+    "months_one": "{{count}} месяц подряд",
+    "months_few": "{{count}} месяца подряд",
+    "months_many": "{{count}} месяцев подряд",
+    "next": "Ещё {{count}} мес. до уровня «{{tier}}»",
+    "reached": "Новый уровень серии",
+    "tier": {
+      "0": "Искра",
+      "1": "Сияние",
+      "2": "Пламя",
+      "3": "Созвездие"
+    }
+  },
   "starMoments": {
     "tryFree_one": "{{count}} день бесплатно",
     "tryFree_few": "{{count}} дня бесплатно",
@@ -2548,7 +2566,8 @@
       "trial": "Пробный STAR",
       "left_one": "Ещё {{count}} день",
       "left_few": "Ещё {{count}} дня",
-      "left_many": "Ещё {{count}} дней"
+      "left_many": "Ещё {{count}} дней",
+      "streakLost": "Серия сгорит"
     },
     "preview": {
       "label": "Превью Go+"

@@ -742,11 +742,14 @@ export function useUserWebProfiles(userUrn: string | undefined) {
 export function useUserSubscription(userUrn: string | undefined) {
   return useQuery({
     queryKey: ['user', userUrn, 'subscription'],
-    queryFn: () => api<{ premium: boolean }>(`/users/${encodeURIComponent(userUrn!)}/subscription`),
+    queryFn: () =>
+      api<{ premium: boolean; starSince?: number | null }>(
+        `/users/${encodeURIComponent(userUrn!)}/subscription`,
+      ),
     enabled: !!userUrn,
     staleTime: MEDIUM_CACHE_MS,
     gcTime: INFINITE_GC_MS,
-    select: (d) => d.premium,
+    select: (d) => ({ premium: d.premium, starSince: d.starSince ?? null }),
   });
 }
 

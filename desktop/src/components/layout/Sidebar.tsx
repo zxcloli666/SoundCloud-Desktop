@@ -17,6 +17,7 @@ import { type IconCmp, NAV_ITEMS } from './nav-items';
 import { ACTIVE, IconBox, Label, ROW, sidebarWidth } from './SidebarChrome';
 import { SidebarPins } from './SidebarPins';
 import { SortableSlot, SortableStack } from './SortableStack';
+import { useOwnTenure } from '../../lib/star-tenure';
 import { StarBadge, StarCard, useStarSubscription } from './StarSubscription';
 
 const languages = [
@@ -85,6 +86,7 @@ export const Sidebar = React.memo(() => {
     .map((e) => e.id);
   const moveNav = (from: string, to: string) => setLayout('sidebar', moveEntry(layout, from, to));
   const { isPremium } = useStarSubscription();
+  const ownTenure = useOwnTenure();
   const navigate = useNavigate();
   const openStar = useCallback(() => navigate('/star'), [navigate]);
   const perf = usePerfMode();
@@ -227,7 +229,7 @@ export const Sidebar = React.memo(() => {
               <span className="text-[12.5px] text-ink-55 truncate font-medium">
                 {user.username}
               </span>
-              {isPremium && <StarBadge />}
+              {isPremium && <StarBadge tier={ownTenure?.tier ?? 0} />}
             </Label>
           </NavLink>
         </div>

@@ -3,16 +3,18 @@ import {type Aura, auraRgba} from '../../lib/aura';
 import { art } from '../../lib/formatters';
 import { Users } from '../../lib/icons';
 import {usePerfMode} from '../../lib/perf';
+import type { StarTier } from '../../lib/star-tenure';
 import { StarBadge } from '../layout/StarSubscription';
 
 interface AvatarArtifactProps {
   username: string;
   avatarUrl: string | null | undefined;
   hasStar: boolean;
+  tier?: StarTier;
   aura: Aura;
 }
 
-function AvatarArtifactImpl({ username, avatarUrl, hasStar, aura }: AvatarArtifactProps) {
+function AvatarArtifactImpl({ username, avatarUrl, hasStar, tier = 0, aura }: AvatarArtifactProps) {
     const perf = usePerfMode();
   const url = art(avatarUrl, 't500x500');
   return (
@@ -65,7 +67,7 @@ function AvatarArtifactImpl({ username, avatarUrl, hasStar, aura }: AvatarArtifa
                 filter: perf.glow ? `drop-shadow(0 4px 12px ${auraRgba(aura, 0.6)})` : undefined,
             }}
           >
-            <StarBadge size="lg" />
+            <StarBadge size="lg" tier={tier} />
           </div>
         )}
       </div>

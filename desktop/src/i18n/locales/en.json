@@ -1569,6 +1569,10 @@
   "update": {
     "available": "Update available",
     "later": "Later",
+    "year": {
+      "cta": "Year",
+      "saved": "save {{sum}} ₽"
+    },
     "download": "Download",
     "installRestart": "Install and restart",
     "downloading": "Downloading update",
@@ -2462,6 +2466,19 @@
     "sendReports": "Send error reports",
     "sendReportsDesc": "Sends app errors to the developers, no account data"
   },
+  "starTenure": {
+    "title": "STAR streak",
+    "months_one": "{{count}} month in a row",
+    "months_other": "{{count}} months in a row",
+    "next": "{{count}} mo to {{tier}}",
+    "reached": "New streak level",
+    "tier": {
+      "0": "Spark",
+      "1": "Glow",
+      "2": "Flame",
+      "3": "Constellation"
+    }
+  },
   "starMoments": {
     "tryFree_one": "{{count}} day free",
     "tryFree_other": "{{count}} days free",
@@ -2473,7 +2490,8 @@
     "expiry": {
       "trial": "STAR trial",
       "left_one": "{{count}} day left",
-      "left_other": "{{count}} days left"
+      "left_other": "{{count}} days left",
+      "streakLost": "Streak will be lost"
     },
     "preview": {
       "label": "Go+ preview"

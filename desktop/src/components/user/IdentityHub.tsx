@@ -12,6 +12,7 @@ import {PinArtistButton} from '../ui/PinArtistButton';
 import {RichText} from '../ui/RichText';
 import {UploadTrackButton} from '../upload/UploadTrackButton';
 import {AuraPicker} from './AuraPicker';
+import type { StarTier } from '../../lib/star-tenure';
 import {AvatarArtifact} from './AvatarArtifact';
 import {FollowBtn} from './FollowBtn';
 import {StatOrb} from './StatOrb';
@@ -44,6 +45,7 @@ interface IdentityHubProps {
     likes_count?: number | null;
   };
   hasStar: boolean;
+  starTier: StarTier;
   webProfiles:
     | Array<{ id: number | string; url: string; service: string; title: string }>
     | undefined;
@@ -57,6 +59,7 @@ interface IdentityHubProps {
 export function IdentityHub({
   user,
   hasStar,
+  starTier,
   webProfiles,
   aura,
   isOwnProfile,
@@ -78,6 +81,7 @@ export function IdentityHub({
           username={user.username}
           avatarUrl={user.avatar_url}
           hasStar={hasStar}
+          tier={starTier}
           aura={aura}
         />
 

@@ -1653,3 +1653,83 @@ select,
         transform: scaleX(1);
     }
 }
+
+/* ── STAR tenure badge ─────────────────────────────────────── */
+@keyframes star-badge-sheen {
+  0%, 55% {
+    transform: translateX(-130%);
+  }
+  100% {
+    transform: translateX(130%);
+  }
+}
+
+@keyframes star-badge-aurora {
+  from {
+    background-position: 0% 50%;
+  }
+  to {
+    background-position: 300% 50%;
+  }
+}
+
+@keyframes star-badge-twinkle {
+  0%, 100% {
+    opacity: 0;
+    transform: scale(0.4) rotate(0deg);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1) rotate(45deg);
+  }
+}
+
+.star-badge-sheen {
+  position: relative;
+  overflow: hidden;
+}
+
+.star-badge-sheen::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 38%, rgba(255, 255, 255, 0.5) 50%, transparent 62%);
+  animation: star-badge-sheen 3.8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.star-badge-aurora {
+  background-size: 300% 100% !important;
+  animation: star-badge-aurora 7s linear infinite;
+}
+
+.star-badge-twinkle {
+  animation: star-badge-twinkle 2.4s ease-in-out infinite;
+}
+
+@keyframes tenure-burst {
+  from {
+    transform: scale(0.3);
+    opacity: 0.9;
+  }
+  to {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+
+.tenure-burst {
+  animation: tenure-burst 1.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .star-badge-sheen::after,
+  .star-badge-aurora,
+  .star-badge-twinkle,
+  .tenure-burst {
+    animation: none !important;
+  }
+  .star-badge-twinkle {
+    opacity: 0.9;
+  }
+}

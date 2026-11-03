@@ -4,6 +4,7 @@ import { usePreviewEnd } from '../../stores/preview-end';
 import { ExpiryNudge, useExpiryMoment } from './ExpiryNudge';
 import { PreviewEndCard } from './PreviewEndCard';
 import { RecapNudge } from './RecapNudge';
+import { TenureMoment, useTenureMoment } from './TenureMoment';
 import { WinbackSheet } from './WinbackSheet';
 
 /** One floating STAR moment at a time (preview end, then expiry, then recap) plus the win-back sheet. */
@@ -21,7 +22,9 @@ export const StarMomentsHost = memo(function StarMomentsHost() {
 const FloatingMoment = memo(function FloatingMoment() {
   const previewing = usePreviewEnd((s) => s.track !== null);
   const expiry = useExpiryMoment();
+  const tenure = useTenureMoment();
   if (previewing) return <PreviewEndCard />;
   if (expiry) return <ExpiryNudge moment={expiry} />;
+  if (tenure) return <TenureMoment moment={tenure} />;
   return <RecapNudge />;
 });

@@ -133,6 +133,7 @@ export interface DiscordLink {
 export interface PaySubscription {
   premium: boolean;
   premium_until: number;
+  star_since?: number | null;
   entitlements: Entitlement[];
   /** Mirror of the user's linked Discord (bot-owned). Null if not linked. */
   discord: DiscordLink | null;

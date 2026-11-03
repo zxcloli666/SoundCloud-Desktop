@@ -10,6 +10,7 @@ import { passDate } from '../../../lib/star-format';
 import { PAY_SUB_KEY, usePaySubscription } from '../../../lib/star-offer';
 import { DiscordCard } from '../DiscordCard';
 import { primaryEntitlement } from './meta';
+import { TenurePanel } from './TenurePanel';
 import { GhostBtn } from './StarConsole';
 
 /** Manage — Discord link, auto-renew (cancel-only), source; extend / redeem / gift / invite. */
@@ -43,6 +44,7 @@ export const ManagePane = memo(function ManagePane({
 
   return (
     <div className="flex flex-col gap-2.5">
+      <TenurePanel />
       <DiscordCard discord={data?.discord ?? null} />
 
       <div className="flex items-center justify-between gap-3 rounded-[14px] border border-ink/[0.08] bg-ink/[0.03] px-4 py-3">
