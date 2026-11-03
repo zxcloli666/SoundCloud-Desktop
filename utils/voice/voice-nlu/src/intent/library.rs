@@ -23,6 +23,7 @@ pub fn undo(c: &Ctx) -> Option<Detected> {
     }
     let by_word = c.has(UNDO_WORDS);
     let by_phrase = (c.has(&["верни"]) && c.has(&["как"]) && c.has(&["было"]))
+        || (c.has(&["верни"]) && c.has(&["обратно"]) && c.len() <= 2)
         || (c.has(&["не"]) && c.has(&["то"]) && c.len() <= 3);
     let used: Vec<usize> = (0..c.len())
         .filter(|&i| {
@@ -30,6 +31,7 @@ pub fn undo(c: &Ctx) -> Option<Detected> {
                 || matches!(
                     c.w[i],
                     "верни"
+                        | "обратно"
                         | "как"
                         | "было"
                         | "не"
@@ -123,6 +125,18 @@ pub fn queue(c: &Ctx) -> Option<Detected> {
         }
         return Some(Detected::new(Intent::QueueAdd, used));
     }
+    let upcoming = c.pos(&["следующим", "следующей", "следующее", "следующей"]);
+    if let (Some(k), true) = (upcoming, c.has(PLAY_STRONG)) {
+        let mut used = c.all(PLAY_STRONG);
+        used.push(k);
+        let rest = (0..c.len())
+            .filter(|i| !used.contains(i))
+            .filter(|&i| !PRE.contains(&c.w[i]) && !GENERIC.contains(&c.w[i]))
+            .count();
+        if rest > 0 {
+            return Some(Detected::new(Intent::QueueAdd, used));
+        }
+    }
     let after = c.pos(&["после"]);
     if let Some(a) = after {
         let obj = c.at(a + 1);
@@ -138,6 +152,14 @@ pub fn queue(c: &Ctx) -> Option<Detected> {
         return Some(Detected::new(Intent::QueueAdd, used));
     }
     None
+}
+
+pub fn into_likes(c: &Ctx) -> Option<Detected> {
+    let at = c.pos(&["в", "во"])?;
+    let target = c.at(at + 1);
+    let likes = stem(&["избранн", "любим"], target);
+    (likes && c.len() <= 3 && c.pos(PLAY_STRONG).is_none())
+        .then(|| Detected::new(Intent::Like, vec![]))
 }
 
 pub fn like(c: &Ctx) -> Option<Detected> {
@@ -194,7 +216,7 @@ pub fn like(c: &Ctx) -> Option<Detected> {
     if enjoys {
         return Some(Detected::new(Intent::Like, vec![]));
     }
-    if c.has_stem(&["избранн"])
+    if c.has_stem(&["избранн", "любим"])
         && c.has(&["добавь", "добавить", "в", "save", "сохрани"])
         && c.has(&["в"])
     {
@@ -213,6 +235,19 @@ pub fn shuffle(c: &Ctx) -> Option<Detected> {
     if !word && !ordered && !random_order {
         return None;
     }
+    let known = |w: &str| {
+        SHUFFLE_WORDS.contains(&w)
+            || NEGATE.contains(&w)
+            || PLAY_STRONG.contains(&w)
+            || PRE.contains(&w)
+            || GENERIC.contains(&w)
+            || TRANSPORT_VERBS.contains(&w)
+            || SHUFFLE_FILL.contains(&w)
+            || stem(&["перемеш", "перемиш", "шафл"], w)
+    };
+    if !c.w.iter().all(|w| known(w)) {
+        return None;
+    }
     let off = c.has(NEGATE) || c.has(&["off"]) || ordered;
     let on = c.has(&["on"]);
     if off && !on {
@@ -227,6 +262,19 @@ pub fn repeat(c: &Ctx) -> Option<Detected> {
     }
     let word = c.has(REPEAT_WORDS) || c.has_stem(&["повтор", "повтар", "зацикл"]);
     if !word {
+        return None;
+    }
+    let known = |w: &str| {
+        REPEAT_WORDS.contains(&w)
+            || REPEAT_ALL.contains(&w)
+            || PLAY_STRONG.contains(&w)
+            || PRE.contains(&w)
+            || GENERIC.contains(&w)
+            || TRANSPORT_VERBS.contains(&w)
+            || REPEAT_FILL.contains(&w)
+            || stem(&["повтор", "повтар", "зацикл", "плейлист", "очеред", "альбом"], w)
+    };
+    if !c.w.iter().all(|w| known(w)) {
         return None;
     }
     let mut off = c.has(&["не", "без", "off"]) || (c.has(&["stop"]) && c.has(&["repeat"]));

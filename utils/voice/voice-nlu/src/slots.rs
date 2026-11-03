@@ -108,6 +108,15 @@ pub fn extract(toks: &[Tok], det: &Detected) -> Slots {
         }
         kept.push(t.clone());
     }
+    let kept = if kept.is_empty() {
+        let kinds: Vec<&Tok> = rest.iter().filter(|t| kind_of(&t.w).is_some()).collect();
+        match kinds.last() {
+            Some(last) if kinds.len() >= 2 => vec![(*last).clone()],
+            _ => kept,
+        }
+    } else {
+        kept
+    };
     let kept = trim(kept);
     Slots {
         kind_hint: hint,

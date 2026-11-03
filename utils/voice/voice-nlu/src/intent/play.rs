@@ -161,6 +161,14 @@ pub fn content(c: &Ctx) -> Option<Detected> {
         }
     }
 
+    if has_verb && mine {
+        let mut u = used.clone();
+        u.extend(c.all(MINE));
+        if entity_tokens(c, &u) == 0 {
+            return Some(Detected::new(Intent::PlayLikes, u));
+        }
+    }
+
     if let Some(w) = c.pos(WAVE) {
         let mut u = used.clone();
         u.push(w);

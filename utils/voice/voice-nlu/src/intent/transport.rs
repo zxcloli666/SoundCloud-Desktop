@@ -38,9 +38,29 @@ fn base(c: &Ctx, i: usize) -> Vec<usize> {
     used
 }
 
+fn complaint(c: &Ctx) -> bool {
+    let marked = c.has(COMPLAINT) || (c.has(&["не"]) && c.has(&["то"]));
+    marked
+        && c.w.iter().all(|w| {
+            COMPLAINT.contains(w)
+                || COMPLAINT_REST.contains(w)
+                || PRE.contains(w)
+                || GENERIC.contains(w)
+        })
+}
+
 pub fn detect(c: &Ctx) -> Option<Detected> {
     if c.len() > 6 {
         return None;
+    }
+    if complaint(c) {
+        return Some(Detected::new(Intent::Next, vec![]));
+    }
+    if c.has(&["сними", "снимай", "убери"]) && c.has_stem(&["пауз"]) && c.len() <= 4 {
+        return Some(Detected::new(Intent::Resume, vec![]));
+    }
+    if c.has(STOP_WORDS) && c.w.iter().all(|w| STOP_WORDS.contains(w) || PRE.contains(w) || GENERIC.contains(w) || COMPLAINT_REST.contains(w)) && c.has(JUNK) {
+        return Some(Detected::new(Intent::Stop, vec![]));
     }
     if let Some(i) = c.pos_stem(PREV_STRONG).filter(|_| !c.has_stem(NEXT_STRONG)) {
         if c.stray(&base(c, i)) == 0 {
