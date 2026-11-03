@@ -69,6 +69,18 @@ fn sets() -> Vec<Set> {
             name: "skeptic_r1_pass",
             rows: rows(include_str!("data/phrases_skeptic_r1_pass.tsv")),
         },
+        Set {
+            name: "fresh_r2",
+            rows: rows(include_str!("data/phrases_fresh_r2.tsv")),
+        },
+        Set {
+            name: "skeptic_r2",
+            rows: rows(include_str!("data/phrases_skeptic_r2.tsv")),
+        },
+        Set {
+            name: "skeptic_r2_pass",
+            rows: rows(include_str!("data/phrases_skeptic_r2_pass.tsv")),
+        },
     ]
 }
 
@@ -115,9 +127,17 @@ fn alts<'a>(r: &'a Row, key: &str) -> Vec<&'a str> {
         .collect()
 }
 
+fn alt_intents(r: &Row) -> Vec<&str> {
+    r.alt
+        .split(';')
+        .map(|a| a.strip_prefix("intent=").unwrap_or(a))
+        .filter(|a| !a.is_empty() && !a.contains(':') && *a != "ask")
+        .collect()
+}
+
 fn intent_ok(r: &Row, os: &[Outcome]) -> bool {
     let got = joined(os);
-    if got != r.intent && !alts(r, "intent=").contains(&got.as_str()) {
+    if got != r.intent && !alt_intents(r).contains(&got.as_str()) {
         return false;
     }
     r.number.is_empty()
@@ -160,7 +180,11 @@ fn entity_ok(r: &Row, os: &[Outcome]) -> bool {
     })
 }
 
-fn run(name: &str, data: &[Row], catalog: &FixtureCatalog) -> (BTreeMap<String, Stat>, Vec<String>) {
+fn run(
+    name: &str,
+    data: &[Row],
+    catalog: &FixtureCatalog,
+) -> (BTreeMap<String, Stat>, Vec<String>) {
     let mut stats: BTreeMap<String, Stat> = BTreeMap::new();
     let mut failures = Vec::new();
     for r in data {
@@ -188,7 +212,7 @@ fn run(name: &str, data: &[Row], catalog: &FixtureCatalog) -> (BTreeMap<String, 
         let mut false_act = false;
         if r.intent == "none"
             && os.iter().any(|o| o.acts())
-            && !alts(r, "intent=").contains(&joined(&os).as_str())
+            && !alt_intents(r).contains(&joined(&os).as_str())
         {
             s.false_acts += 1;
             false_act = true;

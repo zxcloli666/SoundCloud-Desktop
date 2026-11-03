@@ -1,0 +1,1325 @@
+phrase	intent	kind	entity	number	category	alt
+вклчи скриптонита	play	artist	Скриптонит		asr	
+вкличи басту	play	artist	Баста		asr	
+ключи басту	play	artist	Баста		asr	
+в ключи басту	play	artist	Баста		asr	
+вкл басту	play	artist	Баста		asr	
+включ коржа	play	artist	Макс Корж		asr	
+поставьна паузу	pause				asr	
+постав на паузу	pause				asr	
+поставь на пауз	pause				asr	
+пауз	pause				asr	
+следущий трек	next				asr	
+следуйщий	next				asr	
+следующи	next				asr	
+следующие	next				asr	
+следующее	next				asr	
+преведущий трек	previous				asr	
+придыдущий	previous				asr	
+предыдуща	previous				asr	
+предыдущие	previous				asr	
+погромч	volume_up				asr	
+громкасть на тридцать	volume_set			30	asr	
+громкость на тридцать процентов	volume_set			30	asr	
+громкость 30 процентов	volume_set			30	asr	
+громкость тридцать пять	volume_set			35	asr	
+громкость на семьдесят пять	volume_set			75	asr	
+громкость на сорок пять процентов	volume_set			45	asr	
+громкость на пятьдесят пять процентов	volume_set			55	asr	
+перемотай на 1 минуту вперед	seek_forward			60	asr	
+отмотай назад на 15 сек	seek_backward			15	asr	
+в перед на десять секунд	seek_forward			10	asr	
+перемота вперёд	seek_forward				asr	
+вруби блайнинг лайтс	play	track	The Weeknd - Blinding Lights		asr	
+включи зе викенд	play	artist	The Weeknd		asr	
+включи уикенда	play	artist	The Weeknd		asr	
+включи виикенд	play	artist	The Weeknd		asr	
+включи билиайлиш	play	artist	Billie Eilish		asr	
+включи били айлиш	play	artist	Billie Eilish		asr	
+включи бет гай	play	track	Billie Eilish - bad guy		asr	
+включи имэджин драгон	play	artist	Imagine Dragons		asr	
+включи имеджин драконс	play	artist	Imagine Dragons		asr	
+включи лус юрсэлф	play	track	Eminem - Lose Yourself		asr	
+включи ду хаст	play	track	Rammstein - Du Hast		asr	
+включи рамштаин	play	artist	Rammstein		asr	
+включи коралишута	play	artist	Король и Шут		asr	
+включи король и шута	play	artist	Король и Шут		asr	
+включи орбит без сахару	play	track	Сплин - Орбит без сахара		asr	
+включи кадилак	play	track	Моргенштерн - Cadillac		asr	
+включи розовое вина	play	track	Элджей - Розовое вино		asr	
+включи мокрые кросы	play	track	Тима Белорусских - Мокрые кроссы		asr	
+включи монетачку	play	artist	Монеточка		asr	
+включи моне точку	play	artist	Монеточка		asr	
+включи пять низа	play	artist	5'Nizza		asr	
+включи пятницу солдат	play	track	5'Nizza - Солдат		asr	
+включи солдат пятница	play	track	5'Nizza - Солдат		asr	
+включи линкольн парк	play	artist	Linkin Park		asr	
+включи 7 рингс	play	track	Ariana Grande - 7 rings		asr	
+включи бегин	play	track	Måneskin - Beggin'		asr	
+включи оксимирон	play	artist	Oxxxymiron		asr	
+включи литтл биг	play	artist	Little Big		asr	
+включи мумий троль	play	artist	Мумий Тролль		asr	
+включи бе два	play	artist	Би-2		asr	
+включи чайфы	play	artist	Чайф		asr	
+включи живерт	play	artist	Zivert		asr	
+включи малой повзрослел	play	track	Макс Корж - Малый повзрослел		asr	
+включи максакоржа	play	artist	Макс Корж		asr	
+включи басто	play	artist	Баста		asr	
+включи земфир	play	artist	Земфира		asr	
+включи мияги энд шпиль	play	artist	Miyagi & Эндшпиль		asr	
+включи мияги эндшпиль	play	artist	Miyagi & Эндшпиль		asr	
+включи джа калиба	play	artist	Jah Khalib		asr	
+включи ноиз мс	play	artist	Noize MC		asr	
+включи трэк притон	play	track	Скриптонит - Притон		asr	
+включи старбоя	play	track	The Weeknd - Starboy		asr	
+включи кант фил май фэйс	play	track	The Weeknd - Can't Feel My Face		asr	
+включи зе хилс	play	track	The Weeknd - The Hills		asr	
+включи дай фо ю	play	track	The Weeknd - Die for You		asr	
+включи оушен айс	play	track	Billie Eilish - Ocean Eyes		asr	
+включи бердс оф э фезер	play	track	Billie Eilish - Birds of a Feather		asr	
+включи шейк ит офф	play	track	Taylor Swift - Shake It Off		asr	
+включи бланк спэйс	play	track	Taylor Swift - Blank Space		asr	
+включи антихиро	play	track	Taylor Swift - Anti-Hero		asr	
+включи крул саммер	play	track	Taylor Swift - Cruel Summer		asr	
+включи гадс план	play	track	Drake - God's Plan		asr	
+включи смелс лайк тин спирит	play	track	Nirvana - Smells Like Teen Spirit		asr	
+включи олл зе смол тингс	play	track	Blink-182 - All the Small Things		asr	
+включи серклс	play	track	Post Malone - Circles		asr	
+включи аптаун фанк	play	track	Bruno Mars - Uptown Funk		asr	
+включи донт старт нау	play	track	Dua Lipa - Don't Start Now		asr	
+включи саммер тайм сэднес	play	track	Lana Del Rey - Summertime Sadness		asr	
+включи вива ла вида	play	track	Coldplay - Viva la Vida		asr	
+включи ин зе энд	play	track	Linkin Park - In the End		asr	
+включи рэп гот	play	track	Eminem - Rap God		asr	
+включи калифорния лав	play	track	2Pac - California Love		asr	
+включи сэйв ер тирс	play	track	The Weeknd - Save Your Tears		asr	
+включи билив ер	play	track	Imagine Dragons - Believer		asr	
+включи радио актив	play	track	Imagine Dragons - Radioactive		asr	
+включи эминема луз ёрсэлф	play	track	Eminem - Lose Yourself		translit	
+включи рамштайна ду хаст	play	track	Rammstein - Du Hast		translit	
+включи нирвану смелз лайк тин спирит	play	track	Nirvana - Smells Like Teen Spirit		translit	
+включи имаджин дрэгонс билевер	play	track	Imagine Dragons - Believer		translit	
+включи билли эйлиш бэд гай	play	track	Billie Eilish - bad guy		translit	
+включи 50 цент ин да клаб	play	track	50 Cent - In Da Club		translit	
+включи ин да клаб	play	track	50 Cent - In Da Club		translit	
+включи тупака калифорния лав	play	track	2Pac - California Love		translit	
+включи рихану амбрелла	play	track	Rihanna - Umbrella		translit	
+включи эд шерана шейп оф ю	play	track	Ed Sheeran - Shape of You		translit	
+включи дуа липу левитейтинг	play	track	Dua Lipa - Levitating		translit	
+включи колд плей еллоу	play	track	Coldplay - Yellow		translit	
+включи линкин парк намб	play	track	Linkin Park - Numb		translit	
+включи пост малона серклс	play	track	Post Malone - Circles		translit	
+включи ариану гранде севен рингс	play	track	Ariana Grande - 7 rings		translit	
+включи бруно марса аптаун фанк	play	track	Bruno Mars - Uptown Funk		translit	
+включи манескин беггин	play	track	Måneskin - Beggin'		translit	
+включи фифти цента	play	artist	50 Cent		translit	
+включи рианну	play	artist	Rihanna		translit	
+включи эда ширана	play	artist	Ed Sheeran		translit	
+включи дуалипу	play	artist	Dua Lipa		translit	
+включи колдплэй	play	artist	Coldplay		translit	
+включи трэвиса скота	play	artist	Travis Scott		translit	
+включи доджа кет	play	artist	Doja Cat		translit	
+включи джастина бибера	play	artist	Justin Bieber		translit	
+включи лану дель рей	play	artist	Lana Del Rey		translit	
+включи квинов	play	artist	Queen		translit	
+включи блинк 182	play	artist	Blink-182		translit	
+включи кэптен мияги	play	track	Miyagi & Эндшпиль - Captain		translit	
+включи зонне раммштайн	play	track	Rammstein - Sonne		translit	
+включи лавли билли айлиш	play	track	Billie Eilish - Lovely		translit	
+включи демонс имеджин драгонс	play	track	Imagine Dragons - Demons		translit	
+включи ван дэнс дрейка	play	track	Drake - One Dance		translit	
+включи перфект эд ширана	play	track	Ed Sheeran - Perfect		translit	
+включи стар бой уикенд	play	track	The Weeknd - Starboy		translit	
+включи скриптонит	play	artist	Скриптонит		morphology	
+включи макс корж	play	artist	Макс Корж		morphology	
+включи тима белорусских	play	artist	Тима Белорусских		morphology	
+включи клава кока	play	artist	Клава Кока		morphology	
+включи клаву коку	play	artist	Клава Кока		morphology	
+включи егора крида	play	artist	Егор Крид		morphology	
+включи федука	play	artist	Feduk		morphology	
+включи фейса	play	artist	Face		morphology	
+включи хаски	play	artist	Хаски		morphology	
+включи нойз эмси	play	artist	Noize MC		morphology	
+включи лсп	play	artist	ЛСП		morphology	
+включи литл бига	play	artist	Little Big		morphology	
+включи ддт	play	artist	ДДТ		morphology	
+включи наутилус	play	artist	Наутилус Помпилиус		morphology	
+включи аквариум	play	artist	Аквариум		morphology	
+включи руки вверх	play	artist	Руки Вверх		morphology	
+включи билана	play	artist	Дима Билан		morphology	
+включи пугачеву	play	artist	Алла Пугачёва		morphology	
+включи ночных снайперов	play	artist	Ночные Снайперы		morphology	
+включи касту	play	artist	Каста		morphology	
+включи дору	play	artist	Дора		morphology	
+включи кровосток	play	artist	Кровосток		morphology	
+включи нервы	play	artist	Нервы		morphology	
+включи агату кристи	play	artist	Агата Кристи		morphology	
+включи кишей	play	artist	Король и Шут		morphology	
+включи моргена	play	artist	Моргенштерн		morphology	
+включи монету	play	artist	Монеточка		morphology	
+включи земфирку	play	artist	Земфира		morphology	
+включи скриптошу	play	artist	Скриптонит		morphology	
+включи вакуленко	play	artist	Баста		morphology	
+включи витю цоя	play	artist	Кино		morphology	
+включи аллу борисовну	play	artist	Алла Пугачёва		morphology	
+включи окси	play	artist	Oxxxymiron		morphology	
+включи гагарину кукушка	play	track	Полина Гагарина - Кукушка		morphology	
+включи зиверт лайф	play	track	Zivert - Life		morphology	
+включи мота громче	play	track	Мот - Громче		morphology	
+включи макса барских берегу	play	track	Макс Барских - Берегу		morphology	
+включи земфиру хочу	play	track	Земфира - Хочу		morphology	
+включи земфиру искала	play	track	Земфира - Искала		morphology	
+включи скриптонита это любовь	play	track	Скриптонит - Это любовь		morphology	
+включи макса коржа малой повзрослел	play	track	Макс Корж - Малый повзрослел		morphology	
+включи тепло коржа	play	track	Макс Корж - Тепло		morphology	
+включи бесконечность земфиры	play	track	Земфира - Бесконечность		morphology	
+включи новый мерен моргенштерна	play	track	Моргенштерн - Новый Мерин		morphology	
+включи басты сансара	play	track	Баста - Сансара		morphology	
+включи сансару басты	play	track	Баста - Сансара		morphology	
+включи монеточку каждый раз	play	track	Монеточка - Каждый раз		morphology	
+включи медлячок басты	play	track	Баста - Выпускной (Медлячок)		morphology	
+включи кабриолет ленинграда	play	track	Ленинград - Кабриолет		morphology	
+включи www ленинграда	play	track	Ленинград - WWW		morphology	
+включи романс сплина	play	track	Сплин - Романс		morphology	
+включи зверей для тебя	play	track	Звери - Для тебя		morphology	
+включи короля и шута лесник	play	track	Король и Шут - Лесник		morphology	
+включи сплин орбит без сахара	play	track	Сплин - Орбит без сахара		morphology	
+включи кино звезда по имени солнце	play	track	Кино - Звезда по имени Солнце		morphology	
+включи моргенштерна кадилак	play	track	Моргенштерн - Cadillac		morphology	
+включи мияги минор	play	track	Miyagi & Эндшпиль - Minor		morphology	
+включи элджея розовое вино	play	track	Элджей - Розовое вино		morphology	
+включи тиму белоруских мокрые кросы	play	track	Тима Белорусских - Мокрые кроссы		morphology	
+включи клаву коку покинула чат	play	track	Клава Кока - Покинула чат		morphology	
+включи джа халиба лейла	play	track	Jah Khalib - Лейла		morphology	
+включи оксимирона где нас нет	play	track	Oxxxymiron - Где нас нет		morphology	
+включи лейлу	play	track	Jah Khalib - Лейла		morphology	
+включи покинула чат	play	track	Клава Кока - Покинула чат		morphology	
+включи куклу колдуна	play	track	Король и Шут - Кукла колдуна		morphology	
+включи ели мясо мужики	play	track	Король и Шут - Ели мясо мужики		morphology	
+включи прыгну со скалы	play	track	Король и Шут - Прыгну со скалы		morphology	
+включи две сестры	play	track	Король и Шут - Две сестры		morphology	
+включи пачку сигарет	play	track	Кино - Пачка сигарет		morphology	
+включи районы кварталы	play	track	Звери - Районы-кварталы		morphology	
+включи мотылька	play	track	Макс Корж - Мотылёк		morphology	
+включи нимфоманку	play	track	Монеточка - Нимфоманка		morphology	
+включи новый мерин	play	track	Моргенштерн - Новый Мерин		morphology	
+включи небо поможет нам	play	track	Макс Корж - Небо поможет нам		morphology	
+включи экспонат	play	track	Ленинград - Экспонат		morphology	
+включи выхода нет	play	track	Сплин - Выхода нет		morphology	
+включи моя игра	play	track	Баста - Моя игра		morphology	
+включи минор	play	track	Miyagi & Эндшпиль - Minor		morphology	
+включи радиоактив	play	track	Imagine Dragons - Radioactive		morphology	
+включи тандер	play	track	Imagine Dragons - Thunder		morphology	
+поставь паузу	pause				ambiguous	
+включи группу пауза	play	artist	Пауза		ambiguous	
+включи песню пауза	play	track	Тима Белорусских - Пауза		ambiguous	
+включи плейлист пауза	play	playlist	Пауза		ambiguous	
+включи песню стоп	play	track	Стоп Игра - Стоп		ambiguous	
+включи группу стоп	play	artist	Стоп		ambiguous	
+включи песню дальше	play	track	Баста - Дальше		ambiguous	
+включи дальше басты	play	track	Баста - Дальше		ambiguous	
+включи альбом дальше	play	album	Мот - Дальше		ambiguous	
+включи альбом дальше мота	play	album	Мот - Дальше		ambiguous	
+включи плейлист дальше	play	playlist	Дальше		ambiguous	
+включи группу дальше	play	artist	Дальше		ambiguous	
+включи плейлист громче	play	playlist	Громче		ambiguous	
+включи трек громче мота	play	track	Мот - Громче		ambiguous	
+включи группу громче воды	play	artist	Громче Воды		ambiguous	
+включи песню тише	play	track	Тише - Тише		ambiguous	
+включи группу тише	play	artist	Тише		ambiguous	
+включи тише едешь	play	playlist	Тише едешь		ambiguous	
+включи плейлист тише едешь	play	playlist	Тише едешь		ambiguous	
+включи песню лайк	play	track	Лайк - Лайк		ambiguous	
+включи группу лайк	play	artist	Лайк		ambiguous	
+включи next level	play	artist	Next Level		ambiguous	
+включи группу плей	play	artist	Play		ambiguous	
+включи назад в будущее	play	artist	Назад в Будущее		ambiguous	
+включи песню назад	play	track	Назад в Будущее - Назад		ambiguous	
+включи двадцать пять восемь	play	artist	25/8		ambiguous	
+включи 25 17	play	artist	25/17		ambiguous	
+включи двадцать пять семнадцать	play	artist	25/17		ambiguous	
+включи группу брат	play	artist	Брат		ambiguous	
+включи братьев грим	play	artist	Братья Грим		ambiguous	
+включи группу кино	play	artist	Кино		ambiguous	
+включи хочу	play	track	Земфира - Хочу		ambiguous	
+включи хочу земфиры	play	track	Земфира - Хочу		ambiguous	
+хочу послушать басту	play	artist	Баста		ambiguous	
+хочу земфиру	play	artist	Земфира		ambiguous	
+хочу песню хочу	play	track	Земфира - Хочу		ambiguous	
+включи цепи мота	play	track	Мот - Цепи		ambiguous	
+включи цепи скриптонита	play	track	Скриптонит - Цепи		ambiguous	
+включи кукушку гагариной	play	track	Полина Гагарина - Кукушка		ambiguous	
+включи кукушку цоя	play	track	Кино - Кукушка		ambiguous	
+включи кукушку полины гагариной	play	track	Полина Гагарина - Кукушка		ambiguous	
+включи альбом группа крови	play	album	Кино - Группа крови		ambiguous	
+включи песню группа крови	play	track	Кино - Группа крови		ambiguous	
+включи жить в кайф альбом	play	album	Макс Корж - Жить в кайф		ambiguous	
+включи альбом жить в кайф	play	album	Макс Корж - Жить в кайф		ambiguous	
+включи жить в кайф	play	track	Макс Корж - Жить в кайф		ambiguous	
+включи 1989	play	album	Taylor Swift - 1989		ambiguous	
+включи тысяча девятьсот восемьдесят девять	play	album	Taylor Swift - 1989		ambiguous	
+включи альбом тейлор свифт 1989	play	album	Taylor Swift - 1989		ambiguous	
+включи 90	play	track	Монеточка - 90		ambiguous	
+включи девяносто монеточки	play	track	Монеточка - 90		ambiguous	
+включи монеточку девяносто	play	track	Монеточка - 90		ambiguous	
+включи семь колец	play	track	Ariana Grande - 7 rings		ambiguous	
+включи after hours	play	album	The Weeknd - After Hours		ambiguous	
+включи афтер аурс уикенда	play	album	The Weeknd - After Hours		ambiguous	
+включи вьюс дрейка	play	album	Drake - Views		ambiguous	
+включи эволв	play	album	Imagine Dragons - Evolve		ambiguous	
+включи акустический альбом короля и шута	play	album	Король и Шут - Акустический альбом		ambiguous	
+включи дом с нормальными явлениями	play	album	Скриптонит - Дом с нормальными явлениями		ambiguous	
+включи хэппиер зен эвер	play	album	Billie Eilish - Happier Than Ever		ambiguous	
+включи альбом прости меня моя любовь	play	album	Земфира - Прости меня моя любовь		ambiguous	
+включи песню прости меня моя любовь	play	track	Земфира - Прости меня моя любовь		ambiguous	
+включи билли айдола	play	artist	Билли Айдол		ambiguous	
+включи дрейк белла	play	artist	Drake Bell		ambiguous	
+включи дрейка	play	artist	Drake		ambiguous	
+включи землян	play	artist	Земляне		ambiguous	
+включи зверева	play	artist	Зверев		ambiguous	
+включи зверей	play	artist	Звери		ambiguous	
+включи монетку	play	artist	Монетка		ambiguous	
+включи сплинтер	play	artist	Сплинтер		ambiguous	
+включи кинолента	play	artist	Кинолента		ambiguous	
+включи короля ричарда	play	artist	Король Ричард		ambiguous	
+включи притон дорадуры	play	track	Дорадура - Притон		ambiguous	
+включи минор скриптонида	play	track	Скриптонид - Минор		ambiguous	
+включи пятьдесят сент	play	artist	50 Cent		ambiguous	
+включи скриптонит трибьют	play	artist	Scriptonite Tribute		ambiguous	
+включи притон	play	track	Скриптонит - Притон		ambiguous	
+включи лесника	play	track	Король и Шут - Лесник		ambiguous	
+включи кукушку	play	track	Кино - Кукушка		ambiguous	
+включи мотылёк макса коржа	play	track	Макс Корж - Мотылёк		ambiguous	
+включи кукушку звери леса	play	track	Звери Леса - Кукушка		ambiguous	
+включи кино	play	artist	Кино		ambiguous	
+включи брата	play	artist	Брат		ambiguous	
+давай дальше	next				command_name	
+дальше	next				command_name	
+ну дальше	next				command_name	
+дальше давай	next				command_name	
+включи громче	volume_up				command_name	
+включи погромче	volume_up				command_name	
+сделай тише	volume_down				command_name	
+поставь лайк	like				command_name	
+назад	previous				command_name	
+включи плей	resume				command_name	
+включи плейлист для сна	play	playlist	Для сна		plain	
+включи что-нибудь для сна	play	playlist	Для сна		plain	play_wave
+включи музыку для тренировки	play	playlist	Workout		plain	
+включи что-нибудь для спорта	play	playlist	Workout		plain	play_wave
+включи расслабон	play	playlist	Chill Vibes		plain	
+включи русский рок	play	playlist	Русский рок		plain	
+включи русский рэп	play	playlist	Русский рэп		plain	
+включи вечеринку	play	playlist	Вечеринка		plain	
+включи утренний кофе	play	playlist	Утренний кофе		plain	
+включи плейлист ночная поездка	play	playlist	Ночная поездка		plain	
+включи дорогу домой	play	playlist	Дорога домой		plain	
+включи скриптонит микс	play	playlist	Скриптонит Mix		plain	
+включи микс скриптонита	play	playlist	Скриптонит Mix		plain	
+включи воркаут хитс	play	playlist	Workout Hits		plain	
+включи плейлист для тренировки	play	playlist	Workout		plain	
+включи чил вайбс	play	playlist	Chill Vibes		plain	
+добавь в очередь цепи скриптонита	queue_add	track	Скриптонит - Цепи		plain	
+поставь следующим лесника	queue_add	track	Король и Шут - Лесник		plain	
+после этого включи кукушку цоя	queue_add	track	Кино - Кукушка		plain	
+потом включи басту	queue_add	artist	Баста		plain	play
+в очередь притон	queue_add	track	Скриптонит - Притон		plain	
+закинь в очередь блайндинг лайтс	queue_add	track	The Weeknd - Blinding Lights		plain	
+добавь сансару в очередь	queue_add	track	Баста - Сансара		plain	
+следующей поставь хочу земфиры	queue_add	track	Земфира - Хочу		plain	
+добавь в очередь земфиру	queue_add	artist	Земфира		plain	
+добавь в очередь абырвалг	none				plain	
+включи следующим мокрые кроссы	queue_add	track	Тима Белорусских - Мокрые кроссы		plain	
+после этой песни поставь районы кварталы	queue_add	track	Звери - Районы-кварталы		plain	
+включи притон после этого	queue_add	track	Скриптонит - Притон		plain	
+после этого трека включи притон	queue_add	track	Скриптонит - Притон		plain	
+добавь в очередь шамана	none				plain	
+включи шамана	none				false_act	
+включи инстасамку	none				false_act	
+включи бузову	none				false_act	
+включи киркорова	none				false_act	
+включи меладзе	none				false_act	
+включи лободу	none				false_act	
+включи сектор газа	none				false_act	
+включи арию	none				false_act	
+включи кипелова	none				false_act	
+включи любэ	none				false_act	
+включи григория лепса	none				false_act	
+включи стаса михайлова	none				false_act	
+включи ваенгу	none				false_act	
+включи тату	none				false_act	
+включи макса фадеева	none				false_act	
+включи баскова	none				false_act	
+включи адель	none				false_act	
+включи бейонсе	none				false_act	
+включи майкла джексона	none				false_act	
+включи битлз	none				false_act	
+включи эйси диси	none				false_act	
+включи мадонну	none				false_act	
+включи шакиру	none				false_act	
+включи бритни спирс	none				false_act	
+включи песню которой нет	none				false_act	
+включи деспасито	none				false_act	
+включи макарену	none				false_act	
+включи гимн россии	none				false_act	
+включи колыбельную	play_wave				false_act	none
+включи белый шум	none				false_act	play_wave
+включи дождь	none				false_act	
+включи сказку	none				false_act	
+включи аудиокнигу	none				false_act	
+включи подкаст	none				false_act	
+включи новости	none				false_act	
+включи мультфильм	none				false_act	
+включи фильм брат	none				false_act	
+включи сериал на нетфликсе	none				false_act	
+включи ютуб	none				false_act	
+включи голову	none				false_act	
+включи мозги наконец	none				false_act	
+включи свет в коридоре	none				false_act	
+включи чайник	none				false_act	
+включи телевизор	none				false_act	
+включи духовку на двести градусов	none				false_act	
+поставь чайник	none				false_act	
+поставь машину во двор	none				false_act	
+поставь тарелку на стол	none				false_act	
+поставь будильник на семь утра	none				false_act	
+поставь таймер на десять минут	none				false_act	
+выключи утюг	none				false_act	
+выключи свет	none				false_act	
+выключи плиту	none				false_act	
+сделай телевизор погромче	none				false_act	
+переключи канал	none				false_act	
+переключи на первый канал	none				false_act	
+следующая остановка библиотека имени ленина	none				false_act	
+осторожно двери закрываются следующая станция арбатская	none				false_act	
+следующий пожалуйста проходите	none				false_act	
+мы вернёмся после рекламы	none				false_act	
+оставайтесь с нами	none				false_act	
+не переключайтесь	none				false_act	
+подписывайтесь на канал и ставьте лайки	none				false_act	
+не забудьте поставить лайк и подписаться	none				false_act	
+ставьте лайк если понравилось видео	none				false_act	
+жмите на колокольчик	none				false_act	
+поставьте видео на паузу и попробуйте сами	none				false_act	
+поставьте на паузу и подумайте	none				false_act	
+перемотайте назад если не поняли	none				false_act	
+в следующем выпуске мы расскажем про	none				false_act	
+а теперь к новостям спорта	none				false_act	
+погода на завтра в москве	none				false_act	
+курс доллара вырос	none				false_act	
+скидки до пятидесяти процентов	none				false_act	
+звоните прямо сейчас	none				false_act	
+он поставил скриптонита на звонок	none				false_act	
+мы всю дорогу слушали коржа	none				false_act	
+ты слышала новый трек моргенштерна	none				false_act	
+она опять ничего не понимает	none				false_act	
+эта колонка вообще не слышит	none				false_act	
+смотри она умеет включать музыку	none				false_act	
+скажи ей включить басту	none				false_act	
+ага конечно сделай ещё громче соседи обрадуются	none				false_act	
+между нами пауза	none				false_act	
+дальше будет хуже	none				false_act	
+громче всех кричал петя	none				false_act	
+тише мыши кот на крыше	none				false_act	
+тише едешь дальше будешь	none				false_act	
+назад в ссср	none				false_act	
+назад дороги нет	none				false_act	
+вперёд и с песней	none				false_act	
+вперёд россия	none				false_act	
+повтори за мной	none				false_act	
+повторение мать учения	none				false_act	
+перемешай салат	none				false_act	
+перемешай тесто	none				false_act	
+перемешай карты	none				false_act	
+перетасуй колоду	none				false_act	
+сохрани документ	none				false_act	
+добавь соль по вкусу	none				false_act	
+добавь в корзину	none				false_act	
+добавь в друзья	none				false_act	
+запиши меня к врачу	none				false_act	
+лайкни мою фотку	none				false_act	
+поставь лайк под моим постом	none				false_act	
+поставь мне пятёрку	none				false_act	
+поставь телефон на зарядку	none				false_act	
+громкость в машине сломалась	none				false_act	
+я поставил чайник иди пить чай	none				false_act	
+мам сделай потише телевизор	none				false_act	
+папа включи мультики	none				false_act	
+включи мультик про машинки	none				false_act	
+включи вайфай	none				false_act	
+включи блютус	none				false_act	
+включи режим полета	none				false_act	
+включи фонарик	none				false_act	
+включи камеру	none				false_act	
+включи кондиционер	none				false_act	
+включи обогреватель	none				false_act	
+выключи компьютер	none				false_act	
+выключи телек	none				false_act	
+открой окно	none				false_act	
+закрой дверь	none				false_act	
+поставь фильм на паузу	none				false_act	
+перемотай фильм на начало	none				false_act	
+перемотай серию	none				false_act	
+следующая серия	none				false_act	
+следующий урок	none				false_act	
+следующий вопрос	none				false_act	
+следующий слайд	none				false_act	
+предыдущий слайд	none				false_act	
+верни мне мои деньги	none				false_act	
+лайкни этот пост	none				false_act	
+мне нравится твоя шапка	none				false_act	
+мне нравится этот ресторан	none				false_act	
+мне не нравится этот фильм	none				false_act	
+хочу пиццу	none				false_act	
+хочу спать	none				false_act	
+хочу в отпуск	none				false_act	
+хочу домой	none				false_act	
+хватит ныть	none				false_act	
+она умеет ставить на паузу	none				false_act	
+попробуй сказать ей следующий трек	none				false_act	
+а если сказать включи басту она включит	none				false_act	
+поставь лайк и подпишись	none				false_act	
+ммм	none				false_act	
+ага	none				false_act	
+угу	none				false_act	
+да	none				false_act	
+нет	none				false_act	
+ну	none				false_act	
+слушай	none				false_act	
+эй	none				false_act	
+алло	none				false_act	
+кхм кхм	none				false_act	
+а	none				false_act	
+кто там	none				false_act	
+мама	none				false_act	
+пока	none				false_act	
+спасибо	none				false_act	
+спокойной ночи	none				false_act	
+привет	none				false_act	
+как дела	none				false_act	
+сколько времени	none				false_act	
+расскажи анекдот	none				false_act	
+позвони маме	none				false_act	
+напомни купить хлеб	none				false_act	
+группа крови на рукаве	none				false_act	
+районы кварталы жилые массивы	none				false_act	
+кукушка кукушка сколько мне жить	none				false_act	
+и две тысячи лет война	none				false_act	
+а я иду такая вся	none				false_act	
+малиновая лада	none				false_act	
+ты неси меня река	none				false_act	
+владимирский централ ветер северный	none				false_act	
+белые розы белые розы	none				false_act	
+миллион алых роз	none				false_act	
+пусть бегут неуклюже	none				false_act	
+ой то не вечер то не вечер	none				false_act	
+я свободен словно птица	none				false_act	
+скованные одной цепью	none				false_act	
+прогулки по воде	none				false_act	
+shake it off shake it off	none				false_act	
+cause baby now we got bad blood	none				false_act	
+we will we will rock you	none				false_act	
+baby baby baby oh	none				false_act	
+hello from the other side	none				false_act	
+is this the real life	none				false_act	
+и снова седая ночь	none				false_act	
+мы выбираем нас выбирают	none				false_act	
+позови меня с собой	none				false_act	
+ты узнаешь её из тысячи	none				false_act	
+ла ла ла ла	none				false_act	
+на на на на на	none				false_act	
+ой ой ой ой	none				false_act	
+е е е е е	none				false_act	
+пам пам пам	none				false_act	
+туц туц туц	none				false_act	
+бум бум бум	none				false_act	
+я хочу быть с тобой	none				false_act	
+дальше дальше дальше	none				false_act	next
+хочу хочу хочу	none				false_act	
+мотылёк мотылёк лети на свет	none				false_act	
+цепи цепи на шее	none				false_act	
+лесник лесник ружьё	none				false_act	
+ты пахнешь как розовое вино	none				false_act	
+не надо включать скриптонита	none				negative	
+не включай пока ничего	none				negative	
+ничего не включай	none				negative	
+не ставь на паузу	none				negative	
+не надо паузу	none				negative	
+не выключай	none				negative	
+не выключай музыку	none				negative	
+не переключай	none				negative	
+не надо дальше	none				negative	
+не надо следующий	none				negative	
+не делай громче	none				negative	
+не надо громче	none				negative	
+не трогай громкость	none				negative	
+не надо лайк	none				negative	
+не перемешивай	none				negative	shuffle_off
+не повторяй	none				negative	repeat_off
+нет не надо	none				negative	
+не не не	none				negative	
+нет спасибо	none				negative	
+не сейчас	none				negative	
+не останавливай	none				negative	
+не останавливайся	none				negative	
+больше не включай басту	none				negative	
+никогда не включай моргенштерна	none				negative	
+не забудь поставить лайк	none				negative	
+не надо ничего	none				negative	
+не включай кино	none				negative	
+не перематывай	none				negative	
+не, дальше давай	next				negative	
+нет давай дальше	next				negative	
+нет не этот следующий	next				negative	
+нет другую	next				negative	
+нет нет другую песню	next				negative	
+не хочу слушать басту	none				negative	next
+отмени	undo				negative	
+отмена	undo				negative	
+отменить	undo				negative	
+верни как было	undo				negative	
+не тише а громче	volume_up				negative	
+не следующий а предыдущий	previous				negative	
+не басту а скриптонита	play	artist	Скриптонит		negative	
+включи басту ой то есть скриптонита	play	artist	Скриптонит		correction	
+перемотай на двадцать то есть на тридцать секунд вперёд	seek_forward			30	correction	
+перемотай вперёд ой назад на десять секунд	seek_backward			10	correction	
+пауза ой не надо	none				correction	
+включи басту хотя нет не надо	none				correction	
+лайкни ой нет не надо	none				correction	
+включи э ну этого как его скриптонита	play	artist	Скриптонит		correction	
+включи как его там макса коржа	play	artist	Макс Корж		correction	
+включи ну эту как её кукушку	play	track	Кино - Кукушка		correction	
+включи ммм ну эту песню цепи скриптонита	play	track	Скриптонит - Цепи		correction	
+вклю включи басту	play	artist	Баста		correction	
+включи скри скриптонита	play	artist	Скриптонит		correction	
+включи притон нет цепи	play	track	Скриптонит - Цепи		correction	
+громче ещё громче	volume_up				correction	
+тише тише ещё тише	volume_down				correction	
+включи басту то есть нет не включай	none				correction	
+поставь на паузу и выключи звук	pause+mute				two_part	
+следующий трек и погромче	next+volume_up				two_part	
+погромче и следующий	volume_up+next				two_part	
+переключи и сделай потише	next+volume_down				two_part	
+включи басту и перемешай	play+shuffle_on	artist	Баста		two_part	
+перемешай и включи мои лайки	shuffle_on+play_likes				two_part	
+лайкни и дальше	like+next				two_part	
+лайк и следующий	like+next				two_part	
+поставь лайк и переключи	like+next				two_part	
+поставь лайк и следующую	like+next				two_part	
+лайкни этот трек и включи следующий	like+next				two_part	
+отмотай назад и сделай погромче	seek_backward+volume_up				two_part	
+громче и на повтор	volume_up+repeat_one				two_part	
+включи на повтор и погромче	repeat_one+volume_up				two_part	
+выключи звук и поставь на паузу	mute+pause				two_part	
+включи лесника и поставь на повтор	play+repeat_one	track	Король и Шут - Лесник		two_part	
+включи цоя и перемешай	play+shuffle_on	artist	Кино		two_part	
+выключи перемешивание и включи следующий	shuffle_off+next				two_part	
+вперёд на тридцать секунд и погромче	seek_forward+volume_up			30	two_part	
+сделай тише и включи похожее	volume_down+play_similar				two_part	
+лайкни и добавь в очередь цепи скриптонита	like+queue_add	track	Скриптонит - Цепи		two_part	
+включи басту ээ и это погромче	play+volume_up	artist	Баста		two_part	
+пауза ну и это звук выключи	pause+mute				two_part	
+что сейчас играет и поставь лайк	now_playing+like				two_part	
+включи следующий и громкость на пятьдесят	next+volume_set			50	two_part	
+громкость на двадцать и включи мою волну	volume_set+play_wave			20	two_part	
+включи мою волну и сделай потише	play_wave+volume_down				two_part	
+поставь на повтор этот трек и лайкни	repeat_one+like				two_part	
+включи похожее и перемешай	play_similar+shuffle_on				two_part	
+верни предыдущий и сделай громче	previous+volume_up				two_part	
+назад и громче	previous+volume_up				two_part	
+стоп и выключи повтор	stop+repeat_off				two_part	pause+repeat_off
+перемотай в начало и поставь на повтор	seek_to+repeat_one			0	two_part	
+сначала сделай тише потом следующий	volume_down+next				two_part	
+сначала перемешай а потом включи басту	shuffle_on+play	artist	Баста		two_part	
+включи короля и шута	play	artist	Король и Шут		two_part	
+включи мияги и эндшпиля	play	artist	Miyagi & Эндшпиль		two_part	
+включи скриптонита и сто четыре	play+queue_add	artist	Скриптонит+104		two_part	play
+лайкни потом пауза	like+pause				two_part	
+громкость на сорок и перемешай	volume_set+shuffle_on			40	two_part	
+перемотай на минуту вперёд и поставь лайк	seek_forward+like			60	two_part	
+включи похожее на это и погромче	play_similar+volume_up				two_part	
+следующий следующий	next				two_part	next
+поставь на паузу мне надо ответить	pause				two_part	
+выключи музыку я сплю	stop				two_part	pause
+поставь на паузу я сейчас вернусь	pause				two_part	
+следующий и не надо больше такое	next				two_part	
+включи лайки и не перемешивай	play_likes				two_part	play_likes+shuffle_off
+дальше эта какая-то грустная	next				two_part	
+сделай потише я разговариваю	volume_down				two_part	
+мне не нравится этот трек	next				indirect	unlike
+надоела эта песня	next				indirect	
+эта песня бесит	next				indirect	
+запомни эту песню	like				indirect	
+сохрани этот трек	like				indirect	
+добавь в любимое	like				indirect	
+добавь в избранное	like				indirect	
+это мне нравится	like				indirect	
+убери из любимых	unlike				indirect	
+удали из лайков	unlike				indirect	
+что это за песня	now_playing				indirect	
+кто поёт	now_playing				indirect	
+как называется трек	now_playing				indirect	
+что за исполнитель	now_playing				indirect	
+можешь поставить погромче	volume_up				indirect	
+можешь выключить музыку	stop				indirect	pause
+а можно потише	volume_down				indirect	
+ты можешь включить скриптонита	play	artist	Скриптонит		indirect	
+может включишь что-нибудь	play_wave				indirect	
+а можешь перемотать назад	seek_backward				indirect	
+можно следующую	next				indirect	
+можно другую песню	next				indirect	
+можешь вернуть предыдущую	previous				indirect	
+что ты умеешь	help				indirect	
+какие команды ты знаешь	help				indirect	
+как тобой пользоваться	help				indirect	
+помоги	help				indirect	
+поставь заново	seek_to			0	indirect	previous
+хочу что-нибудь весёлое	play_wave				indirect	
+включи что-нибудь спокойное	play_wave				indirect	
+хочу послушать что-то похожее	play_similar				indirect	
+ещё такого же	play_similar				indirect	
+давай в таком же духе	play_similar				indirect	
+давай мои любимые	play_likes				indirect	
+включи мои песни	play_likes				indirect	
+удиви меня	play_wave				indirect	
+всё хватит	stop				indirect	pause
+хватит музыки	stop				indirect	pause
+выруби это	stop				indirect	pause
+а можно погромче сделать	volume_up				indirect	
+поставишь на паузу	pause				indirect	
+вруби басту	play	artist	Баста		slang	
+врубай коржа	play	artist	Макс Корж		slang	
+заряди скриптонита	play	artist	Скриптонит		slang	
+закинь моргенштерна	play	artist	Моргенштерн		slang	
+фигани погромче	volume_up				slang	
+убавь	volume_down				slang	
+убавь звук	volume_down				slang	
+прибавь звук	volume_up				slang	
+прибавь	volume_up				slang	
+скипни	next				slang	
+скипай	next				slang	
+скип	next				slang	
+скипни этот	next				slang	
+некстани	next				slang	
+некст плиз	next				slang	
+пропусти	next				slang	
+го дальше	next				slang	
+го некст	next				slang	
+лайкосни	like				slang	
+лайкни	like				slang	
+кинь лайк	like				slang	
+дизлайк	unlike				slang	next
+дизлайкни	unlike				slang	next
+сними лайк	unlike				slang	
+убери лайк	unlike				slang	
+шафл	shuffle_on				slang	
+шафлни	shuffle_on				slang	
+рандом	shuffle_on				slang	
+включи рандом	shuffle_on				slang	
+выруби	stop				slang	pause
+заглуши	mute				slang	
+заткнись	pause				slang	stop
+стопэ	pause				slang	stop
+стопани	pause				slang	stop
+паузани	pause				slang	
+запаузь	pause				slang	
+тормозни	pause				slang	
+на репит	repeat_one				slang	
+зацикли	repeat_one				slang	
+зацикли этот трек	repeat_one				slang	
+зацикли плейлист	repeat_all				slang	
+повторяй всё	repeat_all				slang	
+убери повтор	repeat_off				slang	
+хватит повторять	repeat_off				slang	
+анмьют	unmute				slang	
+верни звук	unmute				slang	
+звук верни	unmute				slang	
+бахни погромче	volume_up				slang	
+давай музон	play_wave				slang	
+врубай музло	play_wave				slang	
+прокрути вперёд	seek_forward				slang	
+прошлый трек	previous				slang	
+прошлую	previous				slang	
+предыдущую давай	previous				slang	
+шо играет	now_playing				slang	
+шо это за песня	now_playing				slang	
+паўза	pause				slang	
+сделай громчей	volume_up				slang	
+сделай потишей	volume_down				slang	
+а ну-ка погромче	volume_up				slang	
+ану включи басту	play	artist	Баста		slang	
+включи-ка коржа	play	artist	Макс Корж		slang	
+врубай-ка земфиру	play	artist	Земфира		slang	
+перемешай-ка	shuffle_on				slang	
+запусти басту	play	artist	Баста		slang	
+бля включи басту	play	artist	Баста		filler	
+сука следующий	next				filler	
+блин погромче	volume_up				filler	
+чёрт назад	previous				filler	
+блять заткнись	pause				filler	stop
+ну нахер этот трек	next				filler	
+бля ну следующий уже	next				filler	
+хрен с ним включи коржа	play	artist	Макс Корж		filler	
+епрст выключи	stop				filler	pause
+блять лайкни	like				filler	
+ну это самое включи короче скриптонита	play	artist	Скриптонит		filler	
+так ну это давай паузу	pause				filler	
+слушай ну короче сделай потише	volume_down				filler	
+значит так включи земфиру	play	artist	Земфира		filler	
+в общем это перемешай	shuffle_on				filler	
+короче давай дальше	next				filler	
+ну типа погромче	volume_up				filler	
+как бы лайкни	like				filler	
+типа следующий трек	next				filler	
+мм а включи кино	play	artist	Кино		filler	
+эм ну можно лесника	play	track	Король и Шут - Лесник		filler	
+ааа включи моргенштерна	play	artist	Моргенштерн		filler	
+нуу давай басту	play	artist	Баста		filler	
+ээ что играет	now_playing				filler	
+пожалуйста включи скриптонита	play	artist	Скриптонит		filler	
+слушай а можешь включить мне что-нибудь от коржа	play	artist	Макс Корж		filler	
+а включи-ка мне пожалуйста земфиру	play	artist	Земфира		filler	
+дорогая колонка включи мне музыку	play_wave				filler	resume
+я бы хотел послушать басту	play	artist	Баста		filler	
+не могла бы ты сделать погромче	volume_up				filler	
+включи пожалуйста песню кукушка группы кино	play	track	Кино - Кукушка		filler	
+а поставь-ка мне ту песню цоя группа крови	play	track	Кино - Группа крови		filler	
+спасибо а теперь погромче	volume_up				filler	
+окей а теперь сделай паузу	pause				filler	
+слушай я тут подумал включи-ка кино	play	artist	Кино		filler	
+включи пожалуйста мой плейлист для сна	play	playlist	Для сна		filler	
+а можешь пожалуйста добавить этот трек в любимые	like				filler	
+вклюююючи басту	play	artist	Баста		stretched	
+паааауза	pause				stretched	
+дальшеее	next				stretched	
+громчеее	volume_up				stretched	
+тиииише	volume_down				stretched	
+следуууующий	next				stretched	
+включиии скриптонитааа	play	artist	Скриптонит		stretched	
+стоооп	stop				stretched	pause
+лааайк	like				stretched	
+назаааад	previous				stretched	
+включи музычку	play_wave				indirect	
+сделай погромчее	volume_up				indirect	
+сделай потишее	volume_down				indirect	
+включи моргенштерна кадиллак	play	track	Моргенштерн - Cadillac		indirect	
+включи мне пугачёву аллу	play	artist	Алла Пугачёва		indirect	
+поставь-ка пластинку	play_wave				indirect	resume
+голубушка включи мне песни	play_wave				indirect	
+а кто это поёт	now_playing				indirect	
+нажми на паузу	pause				indirect	
+нажми паузу	pause				indirect	
+нажми дальше	next				indirect	
+включи короля и шута лесник пожалуйста	play	track	Король и Шут - Лесник		indirect	
+поставь мне тот трек про розовое вино	play	track	Элджей - Розовое вино		indirect	
+play the weeknd	play	artist	The Weeknd		english	
+play blinding lights	play	track	The Weeknd - Blinding Lights		english	
+next song	next				english	
+skip this	next				english	
+pause the music	pause				english	
+volume up	volume_up				english	
+turn it down	volume_down				english	
+louder please	volume_up				english	
+shuffle	shuffle_on				english	
+like this song	like				english	
+what's playing	now_playing				english	
+what song is this	now_playing				english	
+stop the music	stop				english	pause
+previous track	previous				english	
+go back	previous				english	
+repeat this song	repeat_one				english	
+play something	play_wave				english	
+mute	mute				english	
+unmute	unmute				english	
+set volume to 40	volume_set			40	english	
+skip forward 30 seconds	seek_forward			30	english	
+rewind 10 seconds	seek_backward			10	english	
+play billie eilish bad guy	play	track	Billie Eilish - bad guy		english	
+play imagine dragons	play	artist	Imagine Dragons		english	
+turn off the lights	none				english	
+hey what's up	none				english	
+play my liked songs	play_likes				english	
+resume	resume				english	
+continue	resume				english	
+play something like this	play_similar				english	
+Включи, пожалуйста, «Кукушку» Цоя.	play	track	Кино - Кукушка		alice	
+Поставь на паузу.	pause				alice	
+Громкость — 40%.	volume_set			40	alice	
+Следующий трек!	next				alice	
+Что сейчас играет?	now_playing				alice	
+Сделай погромче, пожалуйста.	volume_up				alice	
+Включи The Weeknd.	play	artist	The Weeknd		alice	
+Включи Blinding Lights.	play	track	The Weeknd - Blinding Lights		alice	
+Перемотай на 30 сек. вперёд	seek_forward			30	alice	
+Включи «Дом с нормальными явлениями».	play	album	Скриптонит - Дом с нормальными явлениями		alice	
+Включи AC/DC	none				alice	
+Включи 5'Nizza	play	artist	5'Nizza		alice	
+Включи Blink-182	play	artist	Blink-182		alice	
+Включи 25/17	play	artist	25/17		alice	
+Громкость 50%	volume_set			50	alice	
+Включи Måneskin	play	artist	Måneskin		alice	
+Включи Beggin'	play	track	Måneskin - Beggin'		alice	
+Включи «Выпускной (Медлячок)»	play	track	Баста - Выпускной (Медлячок)		alice	
+Включи Anti-Hero	play	track	Taylor Swift - Anti-Hero		alice	
+Не включай Басту!	none				alice	
+Поставь лайк и переключи.	like+next				alice	
+Перемотай на 1:30	seek_to			90	alice	
+громкость на полную	volume_set			100	numbers	
+громкость на максимум	volume_set			100	numbers	
+громкость на минимум	volume_set			0	numbers	mute
+громкость в ноль	volume_set			0	numbers	mute
+чуть-чуть потише	volume_down				numbers	
+совсем немного громче	volume_up				numbers	
+громкость на семьдесят	volume_set			70	numbers	
+громкость пятьдесят процентов	volume_set			50	numbers	
+громкость наполовину	volume_set			50	numbers	
+сделай громкость на половинку	volume_set			50	numbers	
+громкость на четверть	volume_set			25	numbers	
+громкость на сто	volume_set			100	numbers	
+громкость двадцать пять	volume_set			25	numbers	
+громкость на девяносто девять	volume_set			99	numbers	
+громкость на шестьдесят шесть	volume_set			66	numbers	
+громкость на 0	volume_set			0	numbers	mute
+громкость на сто пятьдесят	volume_set			100	numbers	
+громкость на двадцать два	volume_set			22	numbers	
+громкость 40	volume_set			40	numbers	
+звук на 60	volume_set			60	numbers	
+громкость 80%	volume_set			80	numbers	
+сделай громкость 30	volume_set			30	numbers	
+поставь громкость на двадцать	volume_set			20	numbers	
+уровень звука сорок	volume_set			40	numbers	
+громкость десять	volume_set			100	numbers	
+громкость на пять	volume_set			50	numbers	
+громкость 100	volume_set			100	numbers	
+громкость на сто процентов	volume_set			100	numbers	
+громкость на десять процентов	volume_set			10	numbers	
+погромче на десять	volume_up			10	numbers	
+тише на 20	volume_down			20	numbers	
+прибавь на пять	volume_up			5	numbers	
+громче на пятнадцать	volume_up			15	numbers	
+увеличь громкость на двадцать	volume_up			20	numbers	
+уменьши громкость на десять	volume_down			10	numbers	
+секунд на десять назад	seek_backward			10	numbers	
+назад секунд на двадцать	seek_backward			20	numbers	
+перемотай на минуту вперёд	seek_forward			60	numbers	
+вперёд на полминуты	seek_forward			30	numbers	
+перемотай на полторы минуты вперёд	seek_forward			90	numbers	
+назад на пару секунд	seek_backward				numbers	
+на пятнадцать секунд назад	seek_backward			15	numbers	
+отмотай на 5 сек	seek_backward			5	numbers	
+в начало	seek_to			0	numbers	
+с начала	seek_to			0	numbers	
+на начало трека	seek_to			0	numbers	
+в самое начало	seek_to			0	numbers	
+перейди на две минуты	seek_to			120	numbers	
+поставь на минуту двадцать	seek_to			80	numbers	
+перемотай на 2 минуты 15 секунд	seek_to			135	numbers	seek_forward
+вперёд на 10	seek_forward			10	numbers	
+назад 30	seek_backward			30	numbers	
+перемотай вперёд на сорок пять	seek_forward			45	numbers	
+назад на одну минуту	seek_backward			60	numbers	
+перемотай на три минуты вперёд	seek_forward			180	numbers	
+отмотай на минуту назад	seek_backward			60	numbers	
+перемотай на сорок секунд	seek_forward			40	numbers	seek_to
+перемотай на 90 секунд вперёд	seek_forward			90	numbers	
+пропусти тридцать секунд	seek_forward			30	numbers	
+на 20 секунд назад	seek_backward			20	numbers	
+вперёд секунд на пять	seek_forward			5	numbers	
+назад на четверть минуты	seek_backward			15	numbers	
+перейди на тридцатую секунду	seek_to			30	numbers	
+включи с тридцатой секунды	seek_to			30	numbers	
+с первой минуты	seek_to			60	numbers	
+громкость на 3	volume_set			30	numbers	
+промотай двадцать секунд	seek_forward			20	numbers	
+отмотай пять секунд	seek_backward			5	numbers	
+перемотай на две с половиной минуты вперёд	seek_forward			150	numbers	
+что играет	now_playing				plain	
+что за трек	now_playing				plain	
+скажи что играет	now_playing				plain	
+как называется эта песня	now_playing				plain	
+кто исполнитель	now_playing				plain	
+помощь	help				plain	
+справка	help				plain	
+отмени последнее	undo				plain	
+отмени это	undo				plain	
+ой не то	next				plain	
+продолжай	resume				plain	
+продолжи играть	resume				plain	
+играй дальше	resume				plain	next
+снимай с паузы	resume				plain	
+сними с паузы	resume				plain	
+убери паузу	resume				plain	
+запусти музыку	resume				plain	play_wave
+включи музыку	play_wave				plain	resume
+включи что-то	play_wave				plain	
+включи любую музыку	play_wave				plain	
+включи рекомендации	play_wave				plain	
+включи мою волну	play_wave				plain	
+включи волну	play_wave				plain	
+моя волна	play_wave				plain	
+включи похожие треки	play_similar				plain	
+что-нибудь похожее на это	play_similar				plain	
+включи похожих исполнителей	play_similar				plain	
+включи мои лайки	play_likes				plain	
+мои лайки	play_likes				plain	
+включи любимые песни	play_likes				plain	
+включи избранное	play_likes				plain	
+включи понравившиеся	play_likes				plain	
+перемешай	shuffle_on				plain	
+включи перемешивание	shuffle_on				plain	
+выключи перемешивание	shuffle_off				plain	
+играй по порядку	shuffle_off				plain	
+по порядку	shuffle_off				plain	
+без перемешивания	shuffle_off				plain	
+повторяй этот трек	repeat_one				plain	
+повторяй плейлист	repeat_all				plain	
+повтор всего	repeat_all				plain	
+выключи повтор	repeat_off				plain	
+без повтора	repeat_off				plain	
+отключи повтор	repeat_off				plain	
+выключи звук	mute				plain	
+без звука	mute				plain	
+включи звук	unmute				plain	
+лайк	like				plain	
+нравится	like				plain	
+стоп	stop				plain	pause
+стоп музыка	stop				plain	pause
+выключи музыку	stop				plain	pause
+выключи	stop				plain	pause
+выключи всё	stop				plain	pause
+включи бибера	play	artist	Justin Bieber		slang	
+включи кендрика	play	artist	Kendrick Lamar		slang	
+включи канье	play	artist	Kanye West		slang	
+включи нойза	play	artist	Noize MC		slang	
+включи крида	play	artist	Егор Крид		slang	
+включи тиму	play	artist	Тима Белорусских		slang	
+включи тейлор	play	artist	Taylor Swift		slang	
+включи богемскую рапсодию	play	track	Queen - Bohemian Rhapsody		translit	
+включи капитан мияги	play	track	Miyagi & Эндшпиль - Captain		translit	
+включи некст левел	play	artist	Next Level		translit	
+включи квинс оф зе стоун эйдж	play	artist	Queens of the Stone Age		translit	
+включи блайнд лайтс	play	track	The Weeknd - Blinding Lights		asr	
+включи мокрые кроссовки	play	track	Тима Белорусских - Мокрые кроссы		asr	
+включи бутырку	none				slang	
+включи алису	none				false_act	
+включи пикник	none				false_act	
+включи машину времени	none				false_act	
+включи лил наса	none				false_act	
+включи арктик манкис	none				false_act	
+включи мэрун файв	none				false_act	
+включи гуфа	none				false_act	
+включи тимати	none				false_act	
+включи мари краймбрери	none				false_act	
+включи ёлку	none				false_act	
+включи нюшу	none				false_act	
+включи иванушек	none				false_act	
+включи бтс	none				false_act	
+включи блэкпинк	none				false_act	
+включи дафт панк	none				false_act	
+включи грин дэй	none				false_act	
+включи мьюз	none				false_act	
+включи сабатон	none				false_act	
+включи пинк флойд	none				false_act	
+включи лед зеппелин	none				false_act	
+включи дип пёрпл	none				false_act	
+включи ред хот чили пепперс	none				false_act	
+включи харри стайлса	none				false_act	
+включи оливию родриго	none				false_act	
+включи леди гагу	none				false_act	
+включи пошлую молли	none				false_act	
+включи фараона	none				false_act	
+включи кизару	none				false_act	
+включи андрея губина	none				false_act	
+включи ласковый май	none				false_act	
+включи мираж	none				false_act	
+включи чижа	none				false_act	
+включи слот	none				false_act	
+включи браво	none				false_act	
+включи секрет	none				false_act	
+включи зоопарк	none				false_act	
+включи мельницу	none				false_act	
+включи ундервуд	none				false_act	
+включи кукрыниксы	none				false_act	
+включи ногу свело	none				false_act	
+включи серебро	none				false_act	
+включи винтаж	none				false_act	
+включи глюкозу	none				false_act	
+включи многоточие	none				false_act	
+включи лигалайза	none				false_act	
+включи смоки мо	none				false_act	
+включи центр	none				false_act	
+включи артика и асти	none				false_act	
+включи нилетто	none				false_act	
+включи хаммали и наваи	none				false_act	
+включи андипанду	none				false_act	
+включи шансон	none				false_act	play_wave
+включи джаз	none				false_act	play_wave
+включи классику	none				false_act	play_wave
+включи песню из тик тока	none				false_act	
+поставь следующим тимати	none				false_act	
+тренер взял паузу	none				false_act	
+технический перерыв	none				false_act	
+стоп снято	none				false_act	
+мотор камера	none				false_act	
+сидеть лежать к ноге	none				false_act	
+фу нельзя	none				false_act	
+следующий трек в нашем эфире	none				false_act	
+а сейчас прозвучит песня группы кино	none				false_act	
+в эфире радио рекорд	none				false_act	
+вы слушаете русское радио	none				false_act	
+а теперь включаем прогноз погоды	none				false_act	
+поставьте на паузу если нужно время подумать	none				false_act	
+ставь лайк если согласен	none				false_act	
+ставь лайк и подписывайся	none				false_act	
+лайк подписка колокольчик	none				false_act	
+поставь лайк этому видео	none				false_act	
+включи уведомления	none				false_act	
+включи субтитры	none				false_act	
+сделай погромче телик	none				false_act	
+нажми на паузу в игре	none				false_act	
+поставь игру на паузу	none				false_act	
+следующий уровень	none				false_act	
+на следующей неделе	none				false_act	
+до следующей встречи	none				false_act	
+предыдущий владелец	none				false_act	
+тише ты разбудишь всех	none				false_act	volume_down
+давай дальше рассказывай	none				false_act	
+дальше что было	none				false_act	
+продолжим после перерыва	none				false_act	
+играй честно	none				false_act	
+играй в приставку	none				false_act	
+иди играй	none				false_act	
+включи соображалку	none				false_act	
+включи заднюю	none				false_act	
+поставь себя на моё место	none				false_act	
+поставь на место	none				false_act	
+повтори ещё раз что ты сказал	none				false_act	
+повтори домашку	none				false_act	
+перемешай краски	none				false_act	
+перемешай всё в миске	none				false_act	
+добавь сахару	none				false_act	
+добавь меня в чат	none				false_act	
+добавь в заметки	none				false_act	
+лайкни сторис	none				false_act	
+сохрани контакт	none				false_act	
+сохрани фото	none				false_act	
+убери игрушки	none				false_act	
+выключи воду	none				false_act	
+выключи газ	none				false_act	
+выключи будильник	none				false_act	
+выключи тв	none				false_act	
+звук у телевизора убавь	none				false_act	
+отмени подписку	none				false_act	
+отмени заказ	none				false_act	
+верни сдачу	none				false_act	
+мне не нравится эта погода	none				false_act	
+мне нравится этот парень	none				false_act	
+это моя любимая песня была в детстве	none				false_act	like
+помнишь эту песню	none				false_act	
+под эту песню мы танцевали	none				false_act	
+кто поёт в этом фильме	none				false_act	
+какая песня была в рекламе	none				false_act	
+басту слушала вчера	none				false_act	
+скриптонит лучший	none				false_act	
+корж классный	none				false_act	
+земфира гениальна	none				false_act	
+цой жив	none				false_act	
+кино было скучное	none				false_act	
+пошли в кино	none				false_act	
+в кино сходим	none				false_act	
+у меня сплин	none				false_act	
+звери какие-то	none				false_act	
+брат за брата	none				false_act	
+мой брат	none				false_act	
+пятница развратница	none				false_act	
+наконец-то пятница	none				false_act	
+тише воды ниже травы	none				false_act	
+назад в будущее смотрел	none				false_act	
+кукушка опять кукует	none				false_act	
+на улице кукушка	none				false_act	
+мотылёк залетел	none				false_act	
+кадиллак купил сосед	none				false_act	
+цепи на колёса надо	none				false_act	
+лесник пришёл	none				false_act	
+притон какой-то	none				false_act	
+положение безвыходное	none				false_act	
+тепло сегодня	none				false_act	
+искала тебя везде	none				false_act	
+для тебя всё что угодно	none				false_act	
+романс старинный	none				false_act	
+экспонат музея	none				false_act	
+солдат ребёнка не обидит	none				false_act	
+мама купила хлеб а потом включила телевизор	none				false_act	
+ты включила утюг	none				false_act	
+кто выключил свет	none				false_act	
+он сделал погромче и ушёл	none				false_act	
+она поставила на паузу и заснула	none				false_act	
+они переключили канал	none				false_act	
+я лайкнула его фотку	none				false_act	
+сделай мне бутерброд	none				false_act	
+сделай уроки	none				false_act	
+сделай вид что не слышишь	none				false_act	
+не надо следующую	none				negative	
+не переключай пожалуйста	none				negative	
+не выключай звук	none				negative	
+звук не выключай	none				negative	
+паузу не ставь	none				negative	
+не, не включай	none				negative	
+не включай ничего пожалуйста	none				negative	
+только не басту	none				negative	
+лишь бы не скриптонит	none				negative	
+не ставь лайк	none				negative	
+лайк не ставь	none				negative	
+не добавляй в очередь	none				negative	
+не надо перемешивать	none				negative	
+не нужно громче	none				negative	
+громче не надо	none				negative	
+следующий не надо	none				negative	
+дальше не надо	none				negative	
+не трогай ничего	none				negative	
+ничего не делай	none				negative	
+ничего не надо	none				negative	
+забей	none				negative	
+проехали	none				negative	
+неважно	none				negative	
+нет, не этот, следующий давай	next				negative	
+не тот трек включила давай следующий	next				negative	
+тише нет громче	volume_up				correction	
+перемотай на десять ой на двадцать секунд назад	seek_backward			20	correction	
+включи притон и громкость на семьдесят	play+volume_set	track	Скриптонит - Притон	70	two_part	
+громкость на тридцать и включи басту	volume_set+play	artist	Баста	30	two_part	
+поставь лайк а потом пауза	like+pause				two_part	
+дальше и лайкни	next+like				two_part	
+лайкни и выключи	like+stop				two_part	like+pause
+следующий а потом громче	next+volume_up				two_part	
+включи моргенштерна потом сделай тише	play+volume_down	artist	Моргенштерн		two_part	
+перемешай и следующий	shuffle_on+next				two_part	
+назад и лайк	previous+like				two_part	
+включи басту ну и это сделай погромче пожалуйста	play+volume_up	artist	Баста		two_part	
+сделай потише и это следующий	volume_down+next				two_part	
+громче громче и следующий	volume_up+next				two_part	
+лайкни и добавь в очередь лесника	like+queue_add	track	Король и Шут - Лесник		two_part	
+включи мои лайки и перемешай их	play_likes+shuffle_on				two_part	
+пауза а потом продолжи	pause+resume				two_part	
+сделай тише и поставь на повтор	volume_down+repeat_one				two_part	
+следующий и перемотай на минуту вперёд	next+seek_forward			60	two_part	
+включи похожее и лайкни это	play_similar+like				two_part	like+play_similar
+погромче бы	volume_up				indirect	
+потише бы	volume_down				indirect	
+громче надо	volume_up				indirect	
+тише надо	volume_down				indirect	
+другую	next				indirect	
+смени песню	next				indirect	
+смени трек	next				indirect	
+давай следующую уже	next				indirect	
+хочу другую песню	next				indirect	
+эта не нравится	next				indirect	unlike
+лайкаю	like				indirect	
+в избранное	like				indirect	
+в любимые	like				indirect	
+что за группа	now_playing				indirect	
+что за музыка	now_playing				indirect	
+название трека	now_playing				indirect	
+подожди	pause				indirect	
+постой	pause				indirect	
+давай с начала	seek_to			0	indirect	
+заново	seek_to			0	indirect	previous
+сначала	seek_to			0	indirect	
+верни назад песню	previous				indirect	
+оставь эту песню на повтор	repeat_one				indirect	
+включи что-то бодрое	play_wave				indirect	
+хочу музыку	play_wave				indirect	
+давай музыку	play_wave				indirect	resume
+некстни	next				slang	
+скипани	next				slang	
+го следующий	next				slang	
+запауз	pause				slang	
+пауз плиз	pause				slang	
+лайкани	like				slang	
+шаффл	shuffle_on				slang	
+шафл офф	shuffle_off				slang	
+репит офф	repeat_off				slang	
+плей	resume				slang	
+стопни	stop				slang	pause
+кринж следующий	next				slang	
+поставь на репит	repeat_one				slang	
+на рандом	shuffle_on				slang	
+убери рандом	shuffle_off				slang	
+некст трек	next				slang	
+плей басту	play	artist	Баста		slang	
+pause пожалуйста	pause				slang	
+skip пожалуйста	next				slang	
+volume 50	volume_set			50	slang	
+сделай volume up	volume_up				slang	
+включи next трек	next				slang	
+включить басту	play	artist	Баста		asr	
+включите басту	play	artist	Баста		asr	
+поставьте на паузу	pause				asr	
+выключите	stop				asr	pause
+следующую	next				asr	
+следующий давай	next				asr	
+перемотай назад	seek_backward				asr	
+громкость пятьдесят	volume_set			50	asr	
+громкость на полтинник	volume_set			50	asr	
+громкость на сотку	volume_set			100	asr	
+громкость на двадцатку	volume_set			20	asr	
+в два раза громче	volume_up				asr	
+громкость на 45%	volume_set			45	asr	
+громкость 12	volume_set			12	asr	
+громче музыку сделай	volume_up				asr	
+перемотай на полминуты назад	seek_backward			30	numbers	
+назад на полминуты	seek_backward			30	numbers	
+вперёд на минутку	seek_forward			60	numbers	
+вперёд на 2 минуты	seek_forward			120	numbers	
+перемотай на 15 секунд	seek_forward			15	numbers	seek_to
+отмотай на начало	seek_to			0	numbers	
+на тридцать секунд вперед перемотай	seek_forward			30	numbers	
+секунд тридцать вперёд	seek_forward			30	numbers	
+перемотай вперёд секунд на сорок	seek_forward			40	numbers	
+назад на 10 секунд	seek_backward			10	numbers	
+отмотай десять	seek_backward			10	numbers	
+промотай вперед на 1 минуту 30 секунд	seek_forward			90	numbers	
+перемотай на полторы минуты назад	seek_backward			90	numbers	
+сделай звук на минимум	volume_set			0	numbers	mute
+включи песни скриптонита	play	artist	Скриптонит		ambiguous	
+включи треки басты	play	artist	Баста		ambiguous	
+включи что-нибудь от земфиры	play	artist	Земфира		ambiguous	
+включи что-нибудь из кино	play	artist	Кино		ambiguous	
+включи хиты короля и шута	play	artist	Король и Шут		ambiguous	
+включи лучшее от сплина	play	artist	Сплин		ambiguous	
+включи песню цоя	play	artist	Кино		ambiguous	
+включи что-нибудь цоя	play	artist	Кино		ambiguous	
+включи плейлист русский рэп	play	playlist	Русский рэп		ambiguous	
+включи плейлист вечеринка	play	playlist	Вечеринка		ambiguous	
+включи семь рингс	play	track	Ariana Grande - 7 rings		ambiguous	
+включи блинк сто восемьдесят два олл зе смол тингс	play	track	Blink-182 - All the Small Things		ambiguous	
+включи 50 сент	play	artist	50 Cent		ambiguous	
+включи пятьдесят центов	play	artist	50 Cent		ambiguous	
+включи 2пак	play	artist	2Pac		ambiguous	
+включи два пака	play	artist	2Pac		ambiguous	
+включи тупак шакура	play	artist	2Pac		ambiguous	
+включи 1989 тейлор свифт	play	album	Taylor Swift - 1989		ambiguous	
+включи сто четыре	play	artist	104		ambiguous	
+включи 104	play	artist	104		ambiguous	
+включи альбом views	play	album	Drake - Views		ambiguous	
+включи views	play	album	Drake - Views		ambiguous	
+включи альбом happier than ever	play	album	Billie Eilish - Happier Than Ever		ambiguous	
+включи альбом для тебя	play	album	Звери Леса - Для тебя		ambiguous	
+включи для тебя	play	track	Звери - Для тебя		ambiguous	
+сынок сделай погромче	volume_up				indirect	none
+включи басту ой скриптонита	play	artist	Скриптонит		correction	
+не надо лайкать	none				negative	
+лайкать не надо	none				negative	
+не убирай лайк	none				negative	
+не дизлайкай	none				negative	
+не включай перемешивание	none				negative	
+не выключай повтор	none				negative	
+не перематывай назад	none				negative	
+не включай повтор	none				negative	
+не надо на повтор	none				negative	
+не делай тише	none				negative	
+не убавляй	none				negative	
+не прибавляй	none				negative	
+не пропускай	none				negative	
+не возвращай	none				negative	
