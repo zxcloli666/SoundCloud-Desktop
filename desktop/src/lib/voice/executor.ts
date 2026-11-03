@@ -1,7 +1,7 @@
 import { execute, revert, type StepResult } from './execute';
 import { voiceIpc } from './ipc';
 import { playerPort } from './player-port';
-import { settleRemote } from './remote';
+import { answerLink, markActive, settleRemote } from './remote';
 import type { RemoteState } from './remote-types';
 import { reply } from './replies';
 import { type DoneItem, useVoiceRuntime } from './runtime';
@@ -93,11 +93,14 @@ function show(cmd: VoiceCommand, res: StepResult, run: GroupRun) {
   }
 }
 
+function displayOf(res: StepResult, run: GroupRun): string {
+  return run.items.length > 0 ? run.items.map((i) => i.display).join(', ') : res.outcome.display;
+}
+
 function record(cmd: VoiceCommand, res: StepResult, run: GroupRun) {
   if (res.kind === 'ignored' && cmd.source !== 'typed') return;
   const store = useVoiceStore.getState();
-  const label =
-    run.items.length > 0 ? run.items.map((i) => i.display).join(', ') : res.outcome.display;
+  const label = displayOf(res, run);
   const previous = store.history.find((r) => r.id === run.id);
   store.addRow({
     id: run.id,
@@ -113,6 +116,7 @@ function record(cmd: VoiceCommand, res: StepResult, run: GroupRun) {
 }
 
 async function handle(cmd: VoiceCommand) {
+  if (cmd.source !== 'remote') markActive();
   const run = groupOf(cmd);
   const res = await execute(cmd, playerPort, { lang: language(), now: Date.now(), stack });
   stack = res.stack;
@@ -130,7 +134,13 @@ async function handle(cmd: VoiceCommand) {
   notifyUndo();
   if (res.kind !== 'ask') await voiceIpc.done(cmd.id, res.outcome).catch(() => {});
   if (cmd.remote_id && (res.kind === 'ask' || isLastStep(cmd))) {
-    settleRemote(cmd.remote_id, run.ok, run.speech.join('. '), REMOTE_STATE[res.kind]);
+    void settleRemote(
+      cmd.remote_id,
+      run.ok,
+      run.speech.join('. '),
+      displayOf(res, run),
+      REMOTE_STATE[res.kind],
+    );
   }
 }
 
@@ -170,6 +180,7 @@ export function answerAsk(choice: string) {
 
 export function dismissHud() {
   const hud = useVoiceRuntime.getState().hud;
+  if (hud.kind === 'link_confirm') return answerLink(hud.id, false);
   if (hud.kind === 'asking' || hud.kind === 'listening' || hud.kind === 'thinking') {
     void voiceIpc.cancel().catch(() => {});
   }

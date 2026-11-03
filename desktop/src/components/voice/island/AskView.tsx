@@ -37,7 +37,7 @@ export function AskView({
 }: {
   heard: string;
   first: Scored;
-  second: Scored;
+  second: Scored | null;
   onPick: (choice: 'first' | 'second') => void;
   onClose: () => void;
 }) {
@@ -56,14 +56,14 @@ export function AskView({
           />
         </span>
         <span className="min-w-0 flex-1 truncate text-[12.5px] font-semibold text-ink-85">
-          {t('voice.hud.ask')}
+          {t(second ? 'voice.hud.ask' : 'voice.hud.askOne')}
           <span className="font-normal text-ink-40"> · {t('voice.quote', { text: heard })}</span>
         </span>
         <CloseX onClick={onClose} label={t('voice.hud.cancel')} />
       </span>
       <span className="flex gap-2">
         <Choice index={1} option={first} onPick={() => onPick('first')} />
-        <Choice index={2} option={second} onPick={() => onPick('second')} />
+        {second && <Choice index={2} option={second} onPick={() => onPick('second')} />}
       </span>
     </span>
   );

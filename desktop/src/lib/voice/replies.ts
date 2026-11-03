@@ -35,6 +35,7 @@ export type ReplyKey =
   | 'nothing_to_undo'
   | 'help'
   | 'ask'
+  | 'ask_one'
   | 'not_found'
   | 'failed';
 
@@ -120,6 +121,7 @@ const RU: Record<ReplyKey, Line> = {
     speech: `Кого включить: ${v.first} или ${v.second}?`,
     display: `${v.first} или ${v.second}?`,
   }),
+  ask_one: (v) => ({ speech: `Включить ${v.first}?`, display: `${v.first}?` }),
   not_found: (v) => ({ speech: `Не нашлось «${v.heard}»`, display: v.heard ?? '' }),
   failed: () => same('Не получилось'),
 };
@@ -172,6 +174,7 @@ const EN: Record<ReplyKey, Line> = {
     display: 'Play…, pause, next, volume 50, like',
   }),
   ask: (v) => ({ speech: `${v.first} or ${v.second}?`, display: `${v.first} or ${v.second}?` }),
+  ask_one: (v) => ({ speech: `Play ${v.first}?`, display: `${v.first}?` }),
   not_found: (v) => ({ speech: `I couldn't find "${v.heard}"`, display: v.heard ?? '' }),
   failed: () => same("Couldn't do that"),
 };

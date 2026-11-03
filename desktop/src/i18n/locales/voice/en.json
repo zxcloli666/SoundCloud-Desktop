@@ -47,7 +47,8 @@
       "find": "Search",
       "hush": "Hush",
       "downloading": "Voice: downloading models",
-      "openModels": "Open models"
+      "openModels": "Open models",
+      "askOne": "Is this it?"
     },
     "error": {
       "mic_denied": "No microphone access",
@@ -202,7 +203,14 @@
       "remote": {
         "live": "Online",
         "retrying": "Reconnecting"
-      }
+      },
+      "confirm": {
+        "alice": "Connect Alice?",
+        "salut": "Connect Salut?"
+      },
+      "confirmSub": "The code was entered on a speaker",
+      "yes": "Yes",
+      "no": "No"
     },
     "models": {
       "title": "Models",

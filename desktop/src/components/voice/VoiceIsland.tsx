@@ -57,7 +57,7 @@ export function VoiceIsland() {
         dismissHud();
         return;
       }
-      if (current.kind === 'asking' && (e.key === '1' || e.key === '2')) {
+      if (current.kind === 'asking' && (e.key === '1' || (e.key === '2' && current.second))) {
         e.preventDefault();
         e.stopPropagation();
         answerAsk(e.key === '1' ? 'first' : 'second');

@@ -17,7 +17,7 @@ export function LinkCodePanel({
   onExpired: () => void;
 }) {
   const { t } = useTranslation();
-  const expires = Date.parse(code.expires_at);
+  const expires = code.expiresAt;
   const leftRef = useRef<HTMLSpanElement>(null);
   const [copied, setCopied] = useState(false);
 

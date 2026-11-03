@@ -79,7 +79,7 @@ export interface Scored {
 
 export type Decision =
   | { decision: 'act'; pick: Scored }
-  | { decision: 'ask'; first: Scored; second: Scored }
+  | { decision: 'ask'; first: Scored; second: Scored | null }
   | { decision: 'not_found' };
 
 export type Intent =

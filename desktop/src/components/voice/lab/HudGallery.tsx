@@ -51,6 +51,17 @@ const CARDS: { label: string; hud: HudView }[] = [
       second: { entity: KHOCHU_M, score: 0.8 },
     },
   },
+  {
+    label: 'asking one',
+    hud: {
+      kind: 'asking',
+      id: 'lab-ask-one',
+      heard: 'включи скрипанита',
+      first: { entity: SCRIPTONITE, score: 0.7 },
+      second: null,
+    },
+  },
+  { label: 'link confirm', hud: { kind: 'link_confirm', id: 'lab-link', provider: 'alice' } },
   { label: 'not found', hud: { kind: 'not_found', heard: 'поставь абырвалг' } },
   { label: 'failed', hud: { kind: 'failed', display: 'Сейчас ничего не играет' } },
   { label: 'speaking', hud: { kind: 'speaking' } },

@@ -2,43 +2,23 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Check, Loader2, Trash2 } from '../../../lib/icons';
-import { remoteApi } from '../../../lib/voice/remote-api';
-import type { LinkCode, RemoteLink, SpeakerProvider } from '../../../lib/voice/remote-types';
+import { answerLink } from '../../../lib/voice/remote';
+import { REMOTE_LINKS_KEY, remoteApi } from '../../../lib/voice/remote-api';
+import type {
+  LinkAsk,
+  LinkCode,
+  RemoteLink,
+  SpeakerProvider,
+} from '../../../lib/voice/remote-types';
 import { useVoiceRuntime } from '../../../lib/voice/runtime';
 import { Card } from '../../settings/primitives';
 import { RadioTower } from '../icons';
 import { ago } from '../time';
 import { Pill, SmallButton } from './Block';
 import { LinkCodePanel } from './LinkCodePanel';
+import { ProviderGlyph } from './ProviderGlyph';
 
 const PROVIDERS: SpeakerProvider[] = ['alice', 'salut'];
-const LINKS_KEY = ['voice', 'remote-links'];
-const COLORS: Record<SpeakerProvider, [string, string]> = {
-  alice: ['#b28bff', '#5b2cf0'],
-  salut: ['#7ee0a1', '#0f8a4c'],
-};
-
-function ProviderGlyph({ provider, size }: { provider: SpeakerProvider; size: number }) {
-  const { t } = useTranslation();
-  const [from, to] = COLORS[provider];
-  return (
-    <span
-      data-scheme="dark"
-      className="flex shrink-0 items-center justify-center rounded-2xl font-black text-ink"
-      style={{
-        width: size,
-        height: size,
-        fontFamily: 'var(--font-display)',
-        fontSize: size * 0.42,
-        background: `radial-gradient(110% 110% at 28% 18%, ${from}, ${to})`,
-        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.35)',
-      }}
-    >
-      {t(`voice.speakers.${provider}`).slice(0, 1)}
-    </span>
-  );
-}
-
 function LinkRow({ link, now, lang }: { link: RemoteLink; now: number; lang: string }) {
   const { t } = useTranslation();
   const qc = useQueryClient();
@@ -48,13 +28,15 @@ function LinkRow({ link, now, lang }: { link: RemoteLink; now: number; lang: str
     setBusy(true);
     try {
       await remoteApi.revoke(link.id);
-      qc.setQueryData<RemoteLink[]>(LINKS_KEY, (list) => list?.filter((l) => l.id !== link.id));
+      qc.setQueryData<RemoteLink[]>(REMOTE_LINKS_KEY, (list) =>
+        list?.filter((l) => l.id !== link.id),
+      );
     } finally {
       setBusy(false);
       setConfirm(false);
     }
   };
-  const used = link.last_used_at ? ago(Date.parse(link.last_used_at), now, lang) : null;
+  const used = link.lastUsedAt ? ago(link.lastUsedAt, now, lang) : null;
   return (
     <div className="flex items-center gap-3 py-2.5 first:pt-0 last:pb-0">
       <ProviderGlyph provider={link.provider} size={32} />
@@ -89,6 +71,27 @@ function LinkRow({ link, now, lang }: { link: RemoteLink; now: number; lang: str
   );
 }
 
+function LinkConfirm({ ask }: { ask: LinkAsk }) {
+  const { t } = useTranslation();
+  return (
+    <div
+      data-ui="voice-link-confirm"
+      className="mt-3 flex items-center gap-2 rounded-2xl border border-accent/30 bg-accent/[0.06] p-3"
+    >
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-[13px] font-semibold text-ink-90">
+          {t(`voice.speakers.confirm.${ask.provider}`)}
+        </p>
+        <p className="truncate text-[11.5px] text-ink-45">{t('voice.speakers.confirmSub')}</p>
+      </div>
+      <SmallButton onClick={() => answerLink(ask.id, false)}>{t('voice.speakers.no')}</SmallButton>
+      <SmallButton primary onClick={() => answerLink(ask.id, true)}>
+        {t('voice.speakers.yes')}
+      </SmallButton>
+    </div>
+  );
+}
+
 function ProviderTile({
   provider,
   linked,
@@ -102,6 +105,7 @@ function ProviderTile({
   const [code, setCode] = useState<LinkCode | null>(null);
   const [state, setState] = useState<'idle' | 'loading' | 'failed' | 'linked'>('idle');
   const [baseline, setBaseline] = useState(linked);
+  const ask = useVoiceRuntime((s) => (s.linkAsk?.provider === provider ? s.linkAsk : null));
 
   useEffect(() => {
     if (code && linked > baseline) {
@@ -159,8 +163,12 @@ function ProviderTile({
       {state === 'failed' && (
         <p className="mt-2 text-[11.5px] text-bad">{t('voice.speakers.codeFailed')}</p>
       )}
-      {code && (
-        <LinkCodePanel provider={provider} code={code} onCancel={cancel} onExpired={cancel} />
+      {ask ? (
+        <LinkConfirm ask={ask} />
+      ) : (
+        code && (
+          <LinkCodePanel provider={provider} code={code} onCancel={cancel} onExpired={cancel} />
+        )
       )}
     </div>
   );
@@ -188,8 +196,8 @@ export function SpeakersCard() {
   const { t, i18n } = useTranslation();
   const [watching, setWatching] = useState(false);
   const links = useQuery({
-    queryKey: LINKS_KEY,
-    queryFn: () => remoteApi.links().then((r) => r.collection),
+    queryKey: REMOTE_LINKS_KEY,
+    queryFn: () => remoteApi.links().then((r) => r.links),
     staleTime: 30_000,
     refetchInterval: watching ? 4000 : false,
   });
