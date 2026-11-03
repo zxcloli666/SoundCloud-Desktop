@@ -188,8 +188,12 @@ fn check(stats: &BTreeMap<String, Stat>) -> Vec<String> {
     bad
 }
 
+fn blind() -> Vec<Row> {
+    rows(include_str!("data/phrases.tsv"))
+}
+
 fn load() -> Vec<Row> {
-    let mut all = rows(include_str!("data/phrases.tsv"));
+    let mut all = blind();
     all.extend(rows(include_str!("data/phrases_dev.tsv")));
     all.extend(rows(include_str!("data/phrases_dev2.tsv")));
     all.extend(rows(include_str!("data/phrases_dev3.tsv")));
@@ -199,16 +203,18 @@ fn load() -> Vec<Row> {
 #[test]
 fn targets_with_aliases() {
     let catalog = FixtureCatalog::from_tsv(include_str!("data/catalog.tsv"), true);
+    let (blind_stats, blind_failures) = run(&blind(), &catalog);
     let (stats, failures) = run(&load(), &catalog);
-    let table = report(&stats);
-    let bad = check(&stats);
-    println!("{table}");
-    for f in &failures {
+    println!("blind set\n{}", report(&blind_stats));
+    println!("blind set plus dev sets\n{}", report(&stats));
+    for f in blind_failures.iter().chain(&failures) {
         println!("{f}");
     }
+    let mut bad = check(&blind_stats);
+    bad.extend(check(&stats));
     assert!(
         bad.is_empty(),
-        "\n{table}\nunder target: {bad:?}\n{}",
+        "under target: {bad:?}\n{}",
         failures.join("\n")
     );
 }
@@ -216,8 +222,10 @@ fn targets_with_aliases() {
 #[test]
 fn names_without_aliases() {
     let catalog = FixtureCatalog::from_tsv(include_str!("data/catalog.tsv"), false);
+    let (blind_stats, _) = run(&blind(), &catalog);
     let (stats, failures) = run(&load(), &catalog);
-    println!("without aliases\n{}", report(&stats));
+    println!("without aliases, blind set\n{}", report(&blind_stats));
+    println!("without aliases, all sets\n{}", report(&stats));
     for f in &failures {
         println!("{f}");
     }
