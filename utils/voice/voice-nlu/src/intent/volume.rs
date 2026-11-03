@@ -7,12 +7,22 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
         return None;
     }
     let noun = c.pos_stem(&["громк", "звук", "volume", "vol", "sound"]);
-    let number = c.number();
+    let times = c.has(&["раза", "раз"]);
+    let number = c.number().filter(|_| !times);
+    let implicit = c.pos(&["выкрути", "выкручивай", "накрути", "выкрутить"]);
     let half = c.has(HALF);
     let max = c.has(MAX_WORDS);
     let min = c.has(MIN_WORDS);
 
     if let Some(n) = noun {
+        if (c.has(&["плюс"]) || c.has(&["минус"])) && number.is_some() {
+            let intent = if c.has(&["плюс"]) {
+                Intent::VolumeUp
+            } else {
+                Intent::VolumeDown
+            };
+            return Some(Detected::new(intent, vec![n]).number(number.unwrap_or(0).min(100)));
+        }
         if c.at(n).starts_with("звук") || c.at(n).starts_with("sound") {
             if c.has(UNMUTE_WORDS) || (c.has(&["со"]) && c.has(&["звуком"])) {
                 return Some(Detected::new(Intent::Unmute, vec![n]));
@@ -32,6 +42,10 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
         if let Some(v) = value {
             return Some(Detected::new(Intent::VolumeSet, vec![n]).number(v));
         }
+    }
+
+    if let (Some(n), true) = (implicit, max) {
+        return Some(Detected::new(Intent::VolumeSet, vec![n]).number(100));
     }
 
     if c.has(&["unmute"]) {
@@ -66,12 +80,18 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
     let down = c.has(DOWN_WORDS)
         || english_dir("down")
         || (c.has(&["decrease", "lower", "reduce"]) && noun.is_some());
+    if c.has(&["до"]) && (up || down || noun.is_some()) {
+        if let Some(v) = number.or(max.then_some(100)) {
+            return Some(Detected::new(Intent::VolumeSet, vec![]).number(v.min(100)));
+        }
+    }
     let mut used = c
         .all(UP_WORDS)
         .into_iter()
         .chain(c.all(DOWN_WORDS))
         .collect::<Vec<_>>();
     used.extend(noun);
+    used.extend((0..c.len()).filter(|&i| crate::numbers::is_number(c.w[i])));
     used.extend(c.all(PLAY_STRONG));
     used.extend(c.all(&[
         "up",

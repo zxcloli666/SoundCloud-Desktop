@@ -21,7 +21,7 @@ pub fn normalize(input: &str) -> Normalized {
         words.extend(fixed.split_whitespace().map(str::to_string));
     }
     let words = apply_phrases(words);
-    let words = numbers::merge(&words, false);
+    let words = numbers::merge(&numbers::colloquial(words), false);
     let words = drop_swears(dedupe(words));
     let toks: Vec<Tok> = words
         .into_iter()
