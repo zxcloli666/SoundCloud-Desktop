@@ -185,6 +185,7 @@ fn check(stats: &BTreeMap<String, Stat>) -> Vec<String> {
 fn load() -> Vec<Row> {
     let mut all = rows(include_str!("data/phrases.tsv"));
     all.extend(rows(include_str!("data/phrases_dev.tsv")));
+    all.extend(rows(include_str!("data/phrases_dev2.tsv")));
     all
 }
 

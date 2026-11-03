@@ -50,7 +50,7 @@ pub fn forced(c: &Ctx) -> bool {
     if after.iter().all(|w| crate::lexicon::stem(NEXT_STRONG, w) || crate::lexicon::stem(PREV_STRONG, w)) {
         return false;
     }
-    if after.first() == Some(&"на") && after.iter().any(|w| PAUSE_WORDS.contains(w)) {
+    if after.first() == Some(&"на") && after.iter().any(|w| crate::lexicon::stem(&["пауз", "повтор"], w)) {
         return false;
     }
     true

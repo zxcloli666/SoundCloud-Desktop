@@ -1,0 +1,183 @@
+phrase	intent	kind	entity	number	category
+а можно потише	volume_down				plain
+потише чуть-чуть	volume_down				plain
+сделай музыку потише	volume_down				plain
+музыку потише	volume_down				plain
+звук потише	volume_down				plain
+ну-ка погромче	volume_up				plain
+ещё громче	volume_up				plain
+поставь на паузу пожалуйста	pause				plain
+останови музыку пожалуйста	stop				plain
+выключи музыку	stop				plain
+хватит музыки	stop				plain
+следующий пожалуйста	next				plain
+следующий трек пожалуйста	next				plain
+давай следующую	next				plain
+включи следующую песню	next				plain
+включи следующий трек	next				plain
+поставь предыдущую песню	previous				plain
+вруби предыдущий	previous				plain
+верни прошлую	previous				plain
+верни прошлый трек	previous				plain
+громкость пополам	volume_set			50	plain
+громкость на 5	volume_set			5	plain
+громкость 0	volume_set			0	plain
+звук на 20	volume_set			20	plain
+поставь звук на пятьдесят	volume_set			50	plain
+громкость сорок процентов	volume_set			40	plain
+перемотай немного вперёд	seek_forward			10	plain
+перемотай чуть назад	seek_backward			10	plain
+перемотай на 20 секунд	seek_forward			20	plain
+отмотай на минуту назад	seek_backward			60	plain
+промотай на 1 минуту	seek_forward			60	plain
+лайкни этот трек	like				plain
+добавь эту песню в избранное	like				plain
+убери лайк с этого трека	unlike				plain
+удали из избранного	unlike				plain
+включи перемешивание плейлиста	shuffle_on				plain
+перемешай плейлист	shuffle_on				plain
+отключи перемешивание	shuffle_off				plain
+хочу слушать вперемешку	shuffle_on				plain
+включи в случайном порядке	shuffle_on				plain
+повтори эту песню	repeat_one				plain
+поставь эту песню на повтор	repeat_one				plain
+повторяй всё	repeat_all				plain
+включи повтор альбома	repeat_all				plain
+выключи повтор	repeat_off				plain
+хватит повторять	repeat_off				plain
+повтор трека	repeat_one				plain
+что сейчас играет	now_playing				plain
+что играет	now_playing				plain
+какая песня играет	now_playing				plain
+как называется трек	now_playing				plain
+кто это поёт	now_playing				plain
+что это за исполнитель	now_playing				plain
+what's this song called	now_playing				plain
+who sings this	now_playing				plain
+поставь мою любимую музыку	play_likes				plain
+включи моё избранное	play_likes				plain
+включи что-нибудь на мой вкус	play_wave				plain
+включи музыку	play_wave				plain
+включи мне музыку	play_wave				plain
+хочу музыку	play_wave				plain
+включи похожие треки	play_similar				plain
+хочу послушать что-то похожее на кино	play_similar				plain
+отмена действия	undo				plain
+что ты умеешь делать	help				plain
+какие у тебя есть команды	help				plain
+помоги мне	help				plain
+включи песни тимы белорусских	play	artist	Тима Белорусских		morphology
+включи песни клавы коки	play	artist	Клава Кока		morphology
+включи песни мумий тролля	play	artist	Мумий Тролль		morphology
+включи песни агаты кристи	play	artist	Агата Кристи		morphology
+включи песни наутилуса помпилиуса	play	artist	Наутилус Помпилиус		morphology
+включи группу би два	play	artist	Би-2		morphology
+включи би-2	play	artist	Би-2		morphology
+включи песни димы билана	play	artist	Дима Билан		morphology
+включи песни аллы пугачёвой	play	artist	Алла Пугачёва		morphology
+включи песни полины гагариной	play	artist	Полина Гагарина		morphology
+включи песни макса барских	play	artist	Макс Барских		morphology
+включи песни хаски	play	artist	Хаски		morphology
+включи песни элджея	play	artist	Элджей		morphology
+включи песни оксимирона	play	artist	Oxxxymiron		morphology
+включи песни федука	play	artist	Feduk		morphology
+включи песни дуа липы	play	artist	Dua Lipa		morphology
+включи песни эда ширана	play	artist	Ed Sheeran		morphology
+включи песни дрейка	play	artist	Drake		morphology
+включи песни рамштайна	play	artist	Rammstein		morphology
+включи песни нирваны	play	artist	Nirvana		morphology
+включи кукушку от кино	play	track	Кино - Кукушка		compound
+поставь лесник от короля и шута	play	track	Король и Шут - Лесник		compound
+поставь песню притон у скриптонита	play	track	Скриптонит - Притон		compound
+включи у кино кукушку	play	track	Кино - Кукушка		compound
+включи Скриптонит - Притон	play	track	Скриптонит - Притон		compound
+Скриптонит — Притон	play	track	Скриптонит - Притон		compound
+Кино - Кукушка	play	track	Кино - Кукушка		compound
+Кукушка - Кино	play	track	Кино - Кукушка		compound
+Eminem – Lose Yourself	play	track	Eminem - Lose Yourself		compound
+включи Imagine Dragons — Believer	play	track	Imagine Dragons - Believer		compound
+play Dua Lipa levitating	play	track	Dua Lipa - Levitating		compound
+включи the weeknd blinding lights	play	track	The Weeknd - Blinding Lights		compound
+включи blink 182 all the small things	play	track	Blink-182 - All the Small Things		compound
+включи песню кукушка группы кино	play	track	Кино - Кукушка		compound
+поставь монеточка нимфоманка	play	track	Монеточка - Нимфоманка		compound
+включи сплин романс	play	track	Сплин - Романс		compound
+поставь дуло моргенштерн	play	track	Моргенштерн - Дуло		compound
+включи ленинград www	play	track	Ленинград - WWW		compound
+включи для тебя звери	play	track	Звери - Для тебя		compound
+поставь альбом группа крови группы кино	play	album	Кино - Группа крови		compound
+включи группу громче воды	play	artist	Громче Воды		command_name
+включи группу тише	play	artist	Тише		command_name
+включи песню тише	play	track	Тише - Тише		command_name
+включи группу next level	play	artist	Next Level		command_name
+включи песню лайк	play	track	Лайк - Лайк		command_name
+поставь группу лайк	play	artist	Лайк		command_name
+включи группу play	play	artist	Play		command_name
+включи плейлист громче	play	playlist	Громче		command_name
+включи плейлист пауза	play	playlist	Пауза		command_name
+включи группу стоп игра	play	artist	Стоп Игра		command_name
+включи группу назад в будущее	play	artist	Назад в Будущее		command_name
+назад в будущее	play	artist	Назад в Будущее		command_name
+включи группу дальше больше	play	artist	Дальше Больше		command_name
+включи группу mute	play	artist	Mute		command_name
+включи песню дальше баста	play	track	Баста - Дальше		command_name
+включи дрэйк	play	artist	Drake		translit
+включи лана дэл рэй	play	artist	Lana Del Rey		translit
+включи рэмштайн	play	artist	Rammstein		translit
+включи эминэм	play	artist	Eminem		translit
+включи арианна гранде	play	artist	Ariana Grande		translit
+включи бруно марз	play	artist	Bruno Mars		translit
+включи джастин бибэр	play	artist	Justin Bieber		translit
+включи пост малоун	play	artist	Post Malone		translit
+включи уикэнд	play	artist	The Weeknd		translit
+включи манеске́н	play	artist	Måneskin		translit
+включи канье уэст	play	artist	Kanye West		translit
+включи тревис скот	play	artist	Travis Scott		translit
+включи доджа кэт	play	artist	Doja Cat		translit
+включи мияги энд эндшпиль	play	artist	Miyagi & Эндшпиль		translit
+включи пять ниццы	play	artist	5'Nizza		translit
+включи 5nizza	play	artist	5'Nizza		translit
+включи билли айлиш лавли	play	track	Billie Eilish - Lovely		translit
+включи оушен айз	play	track	Billie Eilish - Ocean Eyes		translit
+включи демонс имеджин драгонс	play	track	Imagine Dragons - Demons		translit
+включи тандер	play	track	Imagine Dragons - Thunder		translit
+включи сандер	play	track	Imagine Dragons - Thunder		translit
+включи бирдс оф э фезер	play	track	Billie Eilish - Birds of a Feather		translit
+включи кант фил май фейс	play	track	The Weeknd - Can't Feel My Face		translit
+включи дай фор ю	play	track	The Weeknd - Die for You		translit
+включи год с план	play	track	Drake - God's Plan		translit
+включи хиллз уикенд	play	track	The Weeknd - The Hills		translit
+включи энтихиро	play	track	Taylor Swift - Anti-Hero		translit
+включи донт старт нау дуа липа	play	track	Dua Lipa - Don't Start Now		translit
+включи калифорния лав	play	track	2Pac - California Love		translit
+включи луз юрселф	play	track	Eminem - Lose Yourself		translit
+включи мне свет в коридоре	none				negative
+включи фильм	none				negative
+поставь телефон на зарядку	none				negative
+поставь будильник на 8 утра	none				negative
+что играет в кинотеатре	none				negative
+дальше по улице направо	none				negative
+стоп кран	none				negative
+пауза в работе	none				negative
+громко смеюсь	none				negative
+мне нравится эта погода	none				negative
+я люблю эту песню	none				negative
+что за погода на завтра	none				negative
+как называется этот фильм	none				negative
+кто сейчас у власти	none				negative
+помоги мне найти работу	none				negative
+отмена рейса	none				negative
+мой друг любит кино	none				negative
+на этой неделе концерт	none				negative
+где купить билеты на концерт	none				negative
+alexa what time is it	none				negative
+play football	none				negative
+i like your music	none				negative
+thank you	none				negative
+включи кофеварку	none				negative
+поставь воду кипятиться	none				negative
+выключи компьютер	none				negative
+включи свет на кухне	none				negative
+громкий звук мне мешает	none				negative
+следующая остановка	none				negative
+предыдущий оратор	none				negative

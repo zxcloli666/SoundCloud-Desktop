@@ -377,6 +377,8 @@ fn indel_cost(c: char) -> f32 {
 pub fn distance(a: &str, b: &str) -> f32 {
     let a: Vec<char> = a.chars().collect();
     let b: Vec<char> = b.chars().collect();
+    let shortest = a.len().min(b.len()).min(5);
+    let vowel_scale = 1.0 + (5 - shortest) as f32 * 0.2;
     let mut prev: Vec<f32> = Vec::with_capacity(b.len() + 1);
     prev.push(0.0);
     for j in 0..b.len() {
@@ -386,7 +388,7 @@ pub fn distance(a: &str, b: &str) -> f32 {
         let mut cur = Vec::with_capacity(b.len() + 1);
         cur.push(prev[0] + indel_cost(a[i]));
         for j in 0..b.len() {
-            let sub = prev[j] + sub_cost(a[i], b[j]);
+            let sub = prev[j] + sub_cost(a[i], b[j]) * if is_vowel(a[i]) && is_vowel(b[j]) { vowel_scale } else { 1.0 };
             let del = prev[j + 1] + indel_cost(a[i]);
             let ins = cur[j] + indel_cost(b[j]);
             cur.push(sub.min(del).min(ins));
