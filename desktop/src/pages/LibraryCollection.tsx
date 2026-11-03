@@ -13,6 +13,7 @@ import {ProfileGate} from '../components/library/ProfileGate';
 import {StatsView} from '../components/library/stats/StatsView';
 import {SuperlikesOrderReset} from '../components/library/superlikes/SuperlikesOrderReset';
 import {SuperlikesTab} from '../components/library/superlikes/SuperlikesTab';
+import {ReleasesTab} from '../components/releases/ReleasesTab';
 import {useSoundprint} from '../components/library/useSoundprint';
 import {useDislikedCount} from '../lib/dislikes';
 import {useLikedTracks} from '../lib/hooks';
@@ -21,10 +22,11 @@ import {useSuperlikeCount} from '../lib/superlikes';
 import {useAuthStore} from '../stores/auth';
 import {useSettingsStore} from '../stores/settings';
 
-type Section = 'likes' | 'playlists' | 'following' | 'history' | 'stats' | 'dislikes' | 'superlikes';
-const SECTIONS: Section[] = ['likes', 'playlists', 'following', 'history', 'stats', 'dislikes', 'superlikes'];
+type Section = 'releases' | 'likes' | 'playlists' | 'following' | 'history' | 'stats' | 'dislikes' | 'superlikes';
+const SECTIONS: Section[] = ['releases', 'likes', 'playlists', 'following', 'history', 'stats', 'dislikes', 'superlikes'];
 
 const TITLE_KEY: Record<Section, string> = {
+    releases: 'releases.title',
     likes: 'library.likedTracks',
     playlists: 'search.playlists',
     following: 'nav.following',
@@ -91,6 +93,7 @@ export const LibraryCollection = React.memo(() => {
                 }
             />
 
+            {sec === 'releases' && <ReleasesTab filter={deferredFilter}/>}
             {sec === 'likes' && <LikesTab filter={deferredFilter}/>}
             {sec === 'playlists' && <PlaylistsTab filter={deferredFilter}/>}
             {sec === 'following' && <FollowingTab filter={deferredFilter}/>}

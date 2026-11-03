@@ -6,18 +6,23 @@ import {RiverMasthead} from '../components/home/river/RiverMasthead';
 import {WaveFrame} from '../components/home/WaveFrame';
 import {useSoundprint} from '../components/library/useSoundprint';
 import {SoundWaveLockOverlay} from '../components/music/soundwave';
+import {ReleasesShelf} from '../components/releases/ReleasesShelf';
 import {useLikedTracks} from '../lib/hooks';
 import type {LayoutId} from '../lib/layout';
 import {useVisibleBlocks} from '../lib/use-layout';
 import {useAuthStore} from '../stores/auth';
 
-type HomeGroup = { kind: 'river' } | { kind: 'archive'; shelves: ArchiveShelf[] };
+type HomeGroup =
+  | { kind: 'river' }
+  | { kind: 'releases' }
+  | { kind: 'archive'; shelves: ArchiveShelf[] };
 
 function groupBlocks(blocks: LayoutId<'home'>[]): HomeGroup[] {
   const groups: HomeGroup[] = [];
   for (const id of blocks) {
     const last = groups[groups.length - 1];
     if (id === 'river') groups.push({ kind: 'river' });
+    else if (id === 'releases') groups.push({ kind: 'releases' });
     else if (last?.kind === 'archive') last.shelves.push(id);
     else groups.push({ kind: 'archive', shelves: [id] });
   }
@@ -50,7 +55,11 @@ export function Home() {
       {user && <RiverMasthead user={user} sound={sound} selected={genre} onSelect={setGenre} />}
 
       {groups.map((group, i) =>
-        group.kind === 'river' ? (
+        group.kind === 'releases' ? (
+          <div key="releases" className={i > 0 ? 'mt-14' : ''}>
+            <ReleasesShelf />
+          </div>
+        ) : group.kind === 'river' ? (
           <div key="river" className={`relative ${i > 0 ? 'mt-14' : ''}`}>
             <RiverFlow tint={sound.tint} />
             <SoundWaveLockOverlay />

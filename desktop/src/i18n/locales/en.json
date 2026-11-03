@@ -1462,7 +1462,9 @@
       "no_space": "Not enough free space on that drive",
       "sandboxed": "This folder is only reachable through the sandbox portal. Pick a folder on a drive under /media, /run/media or /mnt, or inside Music or Downloads",
       "failed": "Could not move the cache"
-    }
+    },
+    "releaseNotifications": "New release notifications",
+    "releaseNotificationsDesc": "A system notification when artists you follow upload something new. Checked every 30 minutes while the app runs"
   },
   "eq": {
     "title": "Equalizer",
@@ -2513,5 +2515,22 @@
     "next": "Next",
     "empty": "Not enough music for a recap yet",
     "emptyHint": "Play some music"
+  },
+  "releases": {
+    "title": "New releases",
+    "new": "New",
+    "heard": "Heard",
+    "why_one": "Originals from artists you follow, last {{count}} day",
+    "why_other": "Originals from artists you follow, last {{count}} days",
+    "playAll": "Play all",
+    "addToQueue": "Add to queue",
+    "empty_one": "No new releases in {{count}} day. Follow more artists to fill this up",
+    "empty_other": "No new releases in {{count}} days. Follow more artists to fill this up",
+    "unheard_one": "{{count}} not heard yet",
+    "unheard_other": "{{count}} not heard yet",
+    "allHeard": "You have heard everything",
+    "lockedWhy": "Fresh uploads from your artists, a notification the moment they drop",
+    "notifyBody_one": "{{count}} new release: {{artists}}",
+    "notifyBody_other": "{{count}} new releases: {{artists}}"
   }
 }
