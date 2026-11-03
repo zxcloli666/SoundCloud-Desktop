@@ -1,0 +1,73 @@
+name: voice-s2
+
+on:
+  push:
+    branches: [voice/s2]
+  workflow_dispatch:
+
+jobs:
+  sonora:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: utils/voice
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.99.1
+      - name: Test files
+        run: |
+          mkdir -p .cache/music .cache/speech
+          curl -fsSL -o .cache/music/wildthing.wav "https://archive.org/download/AngrySamoansReturnTo/Angry%20Samoans%20-%2009%20-%20Wild%20Thing.wav"
+          for n in 120 connected fresh_snow ice_on_roads rain speed_warning thunderstorm; do
+            curl -fsSL -o .cache/speech/$n.wav "https://raw.githubusercontent.com/zxcloli666/CarUI/HEAD/audio/loli/$n.wav"
+          done
+      - name: Build
+        run: cargo build --release -p voice-audio --example aec_bench
+      - name: Bench 48 kHz
+        run: ./target/release/examples/aec_bench --engine sonora
+      - name: Bench 48 kHz steered
+        run: ./target/release/examples/aec_bench --engine sonora --steer
+      - name: Bench 16 kHz
+        run: ./target/release/examples/aec_bench --engine sonora --rate 16000
+
+  webrtc:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    continue-on-error: true
+    defaults:
+      run:
+        shell: bash
+        working-directory: utils/voice
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.99.1
+      - name: Build tools
+        run: |
+          if [ "$RUNNER_OS" = "Linux" ]; then sudo apt-get update && sudo apt-get install -y meson ninja-build clang pkg-config; fi
+          if [ "$RUNNER_OS" = "macOS" ]; then brew install meson ninja pkg-config; fi
+          if [ "$RUNNER_OS" = "Windows" ]; then pip install meson ninja; fi
+      - name: Test files
+        run: |
+          mkdir -p .cache/music .cache/speech
+          curl -fsSL -o .cache/music/wildthing.wav "https://archive.org/download/AngrySamoansReturnTo/Angry%20Samoans%20-%2009%20-%20Wild%20Thing.wav"
+          for n in 120 connected fresh_snow ice_on_roads rain speed_warning thunderstorm; do
+            curl -fsSL -o .cache/speech/$n.wav "https://raw.githubusercontent.com/zxcloli666/CarUI/HEAD/audio/loli/$n.wav"
+          done
+      - name: Build
+        run: cargo build --release -p voice-audio --example aec_bench --features webrtc
+      - name: Bench 48 kHz
+        run: ./target/release/examples/aec_bench --engine webrtc
+      - name: Bench 16 kHz
+        run: ./target/release/examples/aec_bench --engine webrtc --rate 16000
