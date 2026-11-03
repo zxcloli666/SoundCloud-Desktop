@@ -24,6 +24,9 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ilammy/msvc-dev-cmd@v1
         if: runner.os == 'Windows'
+      - name: hide git link.exe
+        if: runner.os == 'Windows'
+        run: mv /usr/bin/link.exe /usr/bin/link-git.exe
       - name: build
         run: |
           rustup show active-toolchain

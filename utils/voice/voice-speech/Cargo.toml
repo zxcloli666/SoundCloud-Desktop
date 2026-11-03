@@ -16,3 +16,6 @@ hound = "3"
 
 [[example]]
 name = "transcribe"
+
+[[example]]
+name = "offline"
