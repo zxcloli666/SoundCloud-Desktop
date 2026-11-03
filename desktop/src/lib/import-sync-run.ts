@@ -2,12 +2,14 @@ import { ApiError, api, getSessionId } from './api';
 import { preferredDataBase } from './api-client';
 import { trackedInvoke as invoke } from './diagnostics';
 import { fetchAllPlaylistTracks, fetchLikedTracksSnapshot, invalidateAllLikesCache } from './hooks';
-import { createChunkPlaylist, likeTracks, listMyPlaylists } from './import-save';
+import { loadPendingCreates } from './import-pending-playlists';
+import { createChunkPlaylist, likeTracks, listMyPlaylists, type ScPlaylist } from './import-save';
 import type { SyncEntry, SyncPulled } from './import-sync';
-import { type Chunk, planAppend } from './import-sync-plan';
+import { type Chunk, type ChunkDeps, openChunk, planAppend } from './import-sync-plan';
 import { editPlaylistTracks } from './playlist-edits';
 import { queryClient } from './query-client';
 import { fetchTracksByUrns } from './soundwave';
+import { fetchSyncStatus } from './sync-status';
 
 export interface Current {
   urns: string[];
@@ -56,19 +58,32 @@ async function addTo(playlist: string, urns: string[]) {
   for (const urn of urns) await editPlaylistTracks(playlist, { add: urn });
 }
 
-async function openChunk(owner: string, title: string, urns: string[]): Promise<string> {
-  const found = (await listMyPlaylists()).find((playlist) => playlist.title === title);
-  if (found) {
-    const have = new Set((await fetchAllPlaylistTracks(found.urn)).map((track) => track.urn));
-    await addTo(
-      found.urn,
-      urns.filter((urn) => !have.has(urn)),
-    );
-    return found.urn;
-  }
-  const made = await createChunkPlaylist(owner, title, urns);
-  if (!made) throw 'playlist_not_synced';
-  return made.urn;
+function chunkDeps(owner: string): ChunkDeps {
+  let existing: ScPlaylist[] = [];
+  return {
+    find: async (title) => {
+      existing = await listMyPlaylists();
+      return existing.find((playlist) => playlist.title === title)?.urn ?? null;
+    },
+    isPending: async (title) => {
+      const sync = await fetchSyncStatus().catch(() => null);
+      const pending = await loadPendingCreates(
+        owner,
+        existing,
+        sync?.playlistCreates ?? null,
+        sync?.playlistCreatesTruncated ?? false,
+      );
+      return pending.titles.has(title);
+    },
+    create: async (title, urns) => (await createChunkPlaylist(owner, title, urns))?.urn ?? null,
+    fill: async (playlistUrn, urns) => {
+      const have = new Set((await fetchAllPlaylistTracks(playlistUrn)).map((track) => track.urn));
+      await addTo(
+        playlistUrn,
+        urns.filter((urn) => !have.has(urn)),
+      );
+    },
+  };
 }
 
 export async function append(
@@ -90,7 +105,7 @@ export async function append(
   }
   for (const step of planAppend(entry.baseTitle, current.chunks, urns)) {
     if (step.urn) await addTo(step.urn, step.urns);
-    else onChunk(await openChunk(owner, step.title, step.urns));
+    else onChunk(await openChunk(chunkDeps(owner), step.title, step.urns));
   }
   for (const key of [['playlist'], ['me', 'playlists']]) {
     queryClient.invalidateQueries({ queryKey: key }).catch(() => undefined);

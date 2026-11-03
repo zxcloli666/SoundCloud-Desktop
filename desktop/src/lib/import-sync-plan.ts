@@ -69,3 +69,22 @@ export function cleanHistory(entries: HistoryEntry[]): HistoryEntry[] {
       : entry,
   );
 }
+
+export interface ChunkDeps {
+  find: (title: string) => Promise<string | null>;
+  isPending: (title: string) => Promise<boolean>;
+  create: (title: string, urns: string[]) => Promise<string | null>;
+  fill: (playlistUrn: string, urns: string[]) => Promise<void>;
+}
+
+export async function openChunk(deps: ChunkDeps, title: string, urns: string[]): Promise<string> {
+  const found = await deps.find(title);
+  if (found) {
+    await deps.fill(found, urns);
+    return found;
+  }
+  if (await deps.isPending(title)) throw 'playlist_not_synced';
+  const made = await deps.create(title, urns);
+  if (!made) throw 'playlist_not_synced';
+  return made;
+}

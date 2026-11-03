@@ -2,7 +2,9 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import type { HistoryEntry } from '../src/lib/import-session.ts';
 import {
+  type ChunkDeps,
   cleanHistory,
+  openChunk,
   PLAYLIST_LIMIT,
   planAppend,
   stripToken,
@@ -99,4 +101,48 @@ test('old history entries that still hold a token are cleaned on load', () => {
     },
   ] as HistoryEntry[];
   assert.ok(!JSON.stringify(cleanHistory(dirty)).includes(SECRET));
+});
+
+function fakeServer() {
+  const playlists = new Map<string, string>();
+  const queued = new Set<string>();
+  const log = { creates: 0 };
+  const deps: ChunkDeps = {
+    find: async (title) => playlists.get(title) ?? null,
+    isPending: async (title) => queued.has(title),
+    create: async (title) => {
+      log.creates += 1;
+      queued.add(title);
+      return null;
+    },
+    fill: async () => undefined,
+  };
+  return {
+    deps,
+    log,
+    appear(title: string) {
+      queued.delete(title);
+      playlists.set(title, `urn-${title}`);
+    },
+  };
+}
+
+test('a queued create is not repeated: retry waits, then adopts the chunk that appeared', async () => {
+  const server = fakeServer();
+  await assert.rejects(openChunk(server.deps, 'Mix 2', urns(1, 3)), /playlist_not_synced/);
+  assert.equal(server.log.creates, 1);
+
+  await assert.rejects(openChunk(server.deps, 'Mix 2', urns(1, 3)), /playlist_not_synced/);
+  assert.equal(server.log.creates, 1);
+
+  server.appear('Mix 2');
+  assert.equal(await openChunk(server.deps, 'Mix 2', urns(1, 3)), 'urn-Mix 2');
+  assert.equal(server.log.creates, 1);
+});
+
+test('a new chunk is created only when nothing is pending for its title', async () => {
+  const server = fakeServer();
+  await assert.rejects(openChunk(server.deps, 'Mix 2', urns(1, 3)));
+  await assert.rejects(openChunk(server.deps, 'Mix 3', urns(4, 3)));
+  assert.equal(server.log.creates, 2);
 });
