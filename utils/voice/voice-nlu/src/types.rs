@@ -72,7 +72,10 @@ impl Intent {
     }
 
     pub fn from_name(name: &str) -> Option<Intent> {
-        INTENT_NAMES.iter().find(|(_, n)| *n == name).map(|(i, _)| *i)
+        INTENT_NAMES
+            .iter()
+            .find(|(_, n)| *n == name)
+            .map(|(i, _)| *i)
     }
 
     pub fn needs_entity(self) -> bool {
@@ -112,6 +115,7 @@ pub struct Variant {
     pub artist: Option<String>,
     pub title: Option<String>,
     pub kept_fillers: bool,
+    pub lemmatized: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize)]

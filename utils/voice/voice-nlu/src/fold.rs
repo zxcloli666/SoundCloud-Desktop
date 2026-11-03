@@ -15,7 +15,7 @@ pub fn fold_words(text: &str) -> Vec<String> {
     let words = numbers::merge(&words, true);
     let count = words.len();
     let mut out = Vec::new();
-    for (i, w) in words.iter().enumerate() {
+    for w in words.iter() {
         if count > 1 && DROPPED.contains(&w.as_str()) {
             continue;
         }
@@ -29,7 +29,6 @@ pub fn fold_words(text: &str) -> Vec<String> {
         if !phon.is_empty() {
             out.push(dedupe(&phon));
         }
-        let _ = i;
     }
     out
 }
@@ -331,7 +330,9 @@ fn latin(word: &str) -> String {
                 step = 2;
             }
             'a' | 'e' | 'i' | 'o' | 'u' => out.push(cur),
-            'b' | 'd' | 'f' | 'h' | 'k' | 'l' | 'm' | 'n' | 'p' | 'r' | 's' | 't' | 'v' => out.push(cur),
+            'b' | 'd' | 'f' | 'h' | 'k' | 'l' | 'm' | 'n' | 'p' | 'r' | 's' | 't' | 'v' => {
+                out.push(cur)
+            }
             'A'..='Z' | '0'..='9' => out.push(cur),
             _ => {}
         }
@@ -386,8 +387,22 @@ fn sub_cost(a: char, b: char) -> f32 {
     match pair {
         ('J', 'g') | ('J', 'Z') => 0.35,
         ('J', 'S') | ('C', 'J') => 0.6,
-        ('b', 'p') | ('d', 't') | ('g', 'k') | ('f', 'v') | ('s', 'z') | ('S', 'Z') | ('C', 'S') | ('c', 's') | ('C', 'c') => 0.4,
-        ('h', 'k') | ('s', 't') | ('d', 'z') | ('m', 'n') | ('b', 'v') | ('S', 's') | ('C', 't') => 0.6,
+        ('b', 'p')
+        | ('d', 't')
+        | ('g', 'k')
+        | ('f', 'v')
+        | ('s', 'z')
+        | ('S', 'Z')
+        | ('C', 'S')
+        | ('c', 's')
+        | ('C', 'c') => 0.4,
+        ('h', 'k')
+        | ('s', 't')
+        | ('d', 'z')
+        | ('m', 'n')
+        | ('b', 'v')
+        | ('S', 's')
+        | ('C', 't') => 0.6,
         _ => 1.0,
     }
 }
@@ -416,7 +431,13 @@ pub fn distance(a: &str, b: &str) -> f32 {
         let mut cur = Vec::with_capacity(b.len() + 1);
         cur.push(prev[0] + indel_cost(a[i]));
         for j in 0..b.len() {
-            let sub = prev[j] + sub_cost(a[i], b[j]) * if is_vowel(a[i]) && is_vowel(b[j]) { vowel_scale } else { 1.0 };
+            let sub = prev[j]
+                + sub_cost(a[i], b[j])
+                    * if is_vowel(a[i]) && is_vowel(b[j]) {
+                        vowel_scale
+                    } else {
+                        1.0
+                    };
             let del = prev[j + 1] + indel_cost(a[i]);
             let ins = cur[j] + indel_cost(b[j]);
             cur.push(sub.min(del).min(ins));

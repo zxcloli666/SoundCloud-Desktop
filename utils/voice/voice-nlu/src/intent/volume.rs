@@ -57,9 +57,8 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
         }
     }
 
-    let english_dir = |dir: &str| {
-        c.has(&[dir]) && (c.has(&["turn", "volume", "sound", "it", "raise", "make"]))
-    };
+    let english_dir =
+        |dir: &str| c.has(&[dir]) && (c.has(&["turn", "volume", "sound", "it", "raise", "make"]));
     let up = c.has(UP_WORDS)
         || english_dir("up")
         || (c.has(&["increase", "raise"]) && noun.is_some())
@@ -67,10 +66,25 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
     let down = c.has(DOWN_WORDS)
         || english_dir("down")
         || (c.has(&["decrease", "lower", "reduce"]) && noun.is_some());
-    let mut used = c.all(UP_WORDS).into_iter().chain(c.all(DOWN_WORDS)).collect::<Vec<_>>();
+    let mut used = c
+        .all(UP_WORDS)
+        .into_iter()
+        .chain(c.all(DOWN_WORDS))
+        .collect::<Vec<_>>();
     used.extend(noun);
-    used.extend(c.all(&["up", "down", "increase", "decrease", "raise", "lower", "reduce", "добавь", "добавить"]));
-    if (up || down) && c.stray(&used) > 1 {
+    used.extend(c.all(PLAY_STRONG));
+    used.extend(c.all(&[
+        "up",
+        "down",
+        "increase",
+        "decrease",
+        "raise",
+        "lower",
+        "reduce",
+        "добавь",
+        "добавить",
+    ]));
+    if (up || down) && c.stray(&used) > 0 {
         return None;
     }
     let found = |intent| {

@@ -25,9 +25,16 @@ pub fn normalize(input: &str) -> Normalized {
     let toks: Vec<Tok> = words
         .into_iter()
         .filter(|w| !lexicon::has(lexicon::FILLERS, w))
-        .map(|w| Tok { amb: lexicon::has(lexicon::AMBIGUOUS, &w), w })
+        .map(|w| Tok {
+            amb: lexicon::has(lexicon::AMBIGUOUS, &w),
+            w,
+        })
         .collect();
-    let text = toks.iter().map(|t| t.w.as_str()).collect::<Vec<_>>().join(" ");
+    let text = toks
+        .iter()
+        .map(|t| t.w.as_str())
+        .collect::<Vec<_>>()
+        .join(" ");
     Normalized { toks, text }
 }
 
@@ -50,7 +57,8 @@ fn clean(input: &str) -> String {
         {
             out.push(':');
         } else if matches!(c, '-' | '–' | '—') {
-            let spaced = prev.is_none_or(char::is_whitespace) && next.is_none_or(char::is_whitespace);
+            let spaced =
+                prev.is_none_or(char::is_whitespace) && next.is_none_or(char::is_whitespace);
             out.push_str(if spaced { " - " } else { " " });
         } else if c == '&' {
             out.push_str(" и ");

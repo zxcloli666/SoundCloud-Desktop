@@ -118,7 +118,11 @@ fn same_names_score_high_and_different_low() {
     for (s, p) in same.iter().take(8) {
         println!("  {s:.3} {p}");
     }
-    println!("different: n={} mean={:.3} highest:", diff.len(), mean(&diff));
+    println!(
+        "different: n={} mean={:.3} highest:",
+        diff.len(),
+        mean(&diff)
+    );
     for (s, p) in diff.iter().take(8) {
         println!("  {s:.3} {p}");
     }
@@ -127,7 +131,11 @@ fn same_names_score_high_and_different_low() {
     }
     let above_80 = same.iter().filter(|x| x.0 >= 0.8).count();
     let below_70 = diff.iter().filter(|x| x.0 < 0.7).count();
-    println!("same >= 0.80: {above_80}/{}  different < 0.70: {below_70}/{}", same.len(), diff.len());
+    println!(
+        "same >= 0.80: {above_80}/{}  different < 0.70: {below_70}/{}",
+        same.len(),
+        diff.len()
+    );
     assert!(above_80 * 100 >= same.len() * 85);
     assert!(below_70 * 100 >= diff.len() * 90);
 }

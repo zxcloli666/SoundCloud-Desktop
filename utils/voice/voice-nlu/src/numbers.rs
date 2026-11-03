@@ -11,7 +11,9 @@ enum Word {
 fn word(w: &str) -> Option<Word> {
     let v = match w {
         "ноль" | "нуль" | "ноля" | "нуля" | "zero" => return Some(Word::Zero),
-        "один" | "одна" | "одно" | "одну" | "одного" | "одной" | "one" => Word::Unit(1),
+        "один" | "одна" | "одно" | "одну" | "одного" | "одной" | "one" => {
+            Word::Unit(1)
+        }
         "два" | "две" | "двух" | "two" => Word::Unit(2),
         "три" | "трех" | "three" => Word::Unit(3),
         "четыре" | "четырех" | "four" => Word::Unit(4),
@@ -47,7 +49,9 @@ fn word(w: &str) -> Option<Word> {
         "семьсот" | "семисот" => Word::Hundred(700),
         "восемьсот" | "восьмисот" => Word::Hundred(800),
         "девятьсот" | "девятисот" => Word::Hundred(900),
-        "тысяча" | "тысячу" | "тысячи" | "тысяч" | "thousand" => Word::Thousand,
+        "тысяча" | "тысячу" | "тысячи" | "тысяч" | "thousand" => {
+            Word::Thousand
+        }
         _ => return None,
     };
     Some(v)
@@ -85,7 +89,11 @@ struct Acc {
 
 impl Acc {
     fn new() -> Acc {
-        Acc { total: 0, cur: 0, open: false }
+        Acc {
+            total: 0,
+            cur: 0,
+            open: false,
+        }
     }
 
     fn accept(&mut self, w: Word) -> bool {
@@ -123,7 +131,15 @@ pub fn merge(tokens: &[String], spelled: bool) -> Vec<String> {
     for t in tokens {
         let w = word(t).or_else(|| {
             if spelled {
-                spelled_english(t).map(|n| if n >= 20 { Word::Ten(n) } else if n >= 10 { Word::Teen(n) } else { Word::Unit(n) })
+                spelled_english(t).map(|n| {
+                    if n >= 20 {
+                        Word::Ten(n)
+                    } else if n >= 10 {
+                        Word::Teen(n)
+                    } else {
+                        Word::Unit(n)
+                    }
+                })
             } else {
                 None
             }
@@ -156,11 +172,7 @@ pub fn is_number(w: &str) -> bool {
 }
 
 pub fn value(w: &str) -> Option<u32> {
-    if is_number(w) {
-        w.parse().ok()
-    } else {
-        None
-    }
+    if is_number(w) { w.parse().ok() } else { None }
 }
 
 pub fn clock(w: &str) -> Option<u32> {

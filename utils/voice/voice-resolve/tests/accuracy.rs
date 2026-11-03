@@ -1,5 +1,5 @@
 use std::collections::BTreeMap;
-use voice_resolve::{interpret, Boosts, Decision, FixtureCatalog, Outcome};
+use voice_resolve::{Boosts, Decision, FixtureCatalog, Outcome, interpret};
 
 struct Row {
     phrase: String,
@@ -164,10 +164,16 @@ fn check(stats: &BTreeMap<String, Stat>) -> Vec<String> {
         e_rows += s.entity_rows;
         e_ok += s.entity_ok;
         if pct(s.intent_ok, s.rows) < 95.0 {
-            bad.push(format!("{cat}: intent {:.1}% < 95", pct(s.intent_ok, s.rows)));
+            bad.push(format!(
+                "{cat}: intent {:.1}% < 95",
+                pct(s.intent_ok, s.rows)
+            ));
         }
         if s.entity_rows > 0 && pct(s.entity_ok, s.entity_rows) < 90.0 {
-            bad.push(format!("{cat}: entity {:.1}% < 90", pct(s.entity_ok, s.entity_rows)));
+            bad.push(format!(
+                "{cat}: entity {:.1}% < 90",
+                pct(s.entity_ok, s.entity_rows)
+            ));
         }
         if s.false_acts > 0 {
             bad.push(format!("{cat}: {} false acts", s.false_acts));
@@ -186,6 +192,7 @@ fn load() -> Vec<Row> {
     let mut all = rows(include_str!("data/phrases.tsv"));
     all.extend(rows(include_str!("data/phrases_dev.tsv")));
     all.extend(rows(include_str!("data/phrases_dev2.tsv")));
+    all.extend(rows(include_str!("data/phrases_dev3.tsv")));
     all
 }
 
@@ -199,7 +206,11 @@ fn targets_with_aliases() {
     for f in &failures {
         println!("{f}");
     }
-    assert!(bad.is_empty(), "\n{table}\nunder target: {bad:?}\n{}", failures.join("\n"));
+    assert!(
+        bad.is_empty(),
+        "\n{table}\nunder target: {bad:?}\n{}",
+        failures.join("\n")
+    );
 }
 
 #[test]

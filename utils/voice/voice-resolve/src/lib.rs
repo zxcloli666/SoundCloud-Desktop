@@ -7,10 +7,10 @@ mod score;
 pub use answer::answer_ask;
 pub use catalog::{Catalog, FixtureCatalog};
 pub use entity::{Decision, Entity, Scored};
-pub use score::{rank, Boosts};
+pub use score::{Boosts, rank};
 
 use serde::Serialize;
-use voice_nlu::{parse, Intent, Kind, Parsed};
+use voice_nlu::{Intent, Kind, Parsed, parse};
 
 #[derive(Debug, Clone, Serialize)]
 pub struct Outcome {
@@ -42,7 +42,11 @@ pub fn interpret(text: &str, catalog: &dyn Catalog, boosts: &Boosts) -> Outcome 
     let mut intent = parsed.intent;
     let mut decision = None;
     if parsed.queries.is_empty() {
-        return Outcome { intent, parsed, decision };
+        return Outcome {
+            intent,
+            parsed,
+            decision,
+        };
     }
     if intent == Intent::None {
         if parsed.bare {
@@ -52,12 +56,19 @@ pub fn interpret(text: &str, catalog: &dyn Catalog, boosts: &Boosts) -> Outcome 
                 decision = Some(d);
             }
         }
-    } else if matches!(intent, Intent::Play | Intent::QueueAdd | Intent::PlaySimilar) {
+    } else if matches!(
+        intent,
+        Intent::Play | Intent::QueueAdd | Intent::PlaySimilar
+    ) {
         let d = resolve(&parsed, catalog, boosts, score::ACT_MIN);
         if intent == Intent::Play && parsed.weak_verb && matches!(d, Decision::NotFound) {
             intent = Intent::None;
         }
         decision = Some(d);
     }
-    Outcome { intent, parsed, decision }
+    Outcome {
+        intent,
+        parsed,
+        decision,
+    }
 }

@@ -14,7 +14,13 @@ pub struct Detected {
 
 impl Detected {
     pub fn new(intent: Intent, used: Vec<usize>) -> Detected {
-        Detected { intent, used, number: None, blocked: false, weak: false }
+        Detected {
+            intent,
+            used,
+            number: None,
+            blocked: false,
+            weak: false,
+        }
     }
 
     pub fn none() -> Detected {
@@ -22,7 +28,10 @@ impl Detected {
     }
 
     pub fn blocked() -> Detected {
-        Detected { blocked: true, ..Detected::none() }
+        Detected {
+            blocked: true,
+            ..Detected::none()
+        }
     }
 
     pub fn number(mut self, n: u32) -> Detected {
@@ -37,7 +46,9 @@ pub struct Ctx<'a> {
 
 impl<'a> Ctx<'a> {
     pub fn new(toks: &'a [Tok]) -> Ctx<'a> {
-        Ctx { w: toks.iter().map(|t| t.w.as_str()).collect() }
+        Ctx {
+            w: toks.iter().map(|t| t.w.as_str()).collect(),
+        }
     }
 
     pub fn len(&self) -> usize {
@@ -53,7 +64,9 @@ impl<'a> Ctx<'a> {
     }
 
     pub fn all(&self, list: &[&str]) -> Vec<usize> {
-        (0..self.w.len()).filter(|&i| list.contains(&self.w[i])).collect()
+        (0..self.w.len())
+            .filter(|&i| list.contains(&self.w[i]))
+            .collect()
     }
 
     pub fn has_stem(&self, stems: &[&str]) -> bool {

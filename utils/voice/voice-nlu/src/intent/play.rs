@@ -15,10 +15,18 @@ pub fn find_verb(c: &Ctx) -> Option<Verb> {
                 continue;
             }
             if c.only_pre(0..i) {
-                return Some(Verb { idx: i, strong, front: true });
+                return Some(Verb {
+                    idx: i,
+                    strong,
+                    front: true,
+                });
             }
             if i > 0 && c.only_pre(i + 1..c.len()) {
-                return Some(Verb { idx: i, strong, front: false });
+                return Some(Verb {
+                    idx: i,
+                    strong,
+                    front: false,
+                });
             }
         }
     }
@@ -38,7 +46,9 @@ pub fn forced(c: &Ctx) -> bool {
     if !v.strong || !v.front {
         return false;
     }
-    let Some(k) = (v.idx + 1..c.len()).find(|&i| is_kind(c.w[i])) else { return false };
+    let Some(k) = (v.idx + 1..c.len()).find(|&i| is_kind(c.w[i])) else {
+        return false;
+    };
     let after: Vec<&str> = c.w[k + 1..]
         .iter()
         .copied()
@@ -47,16 +57,38 @@ pub fn forced(c: &Ctx) -> bool {
     if after.is_empty() {
         return false;
     }
-    if after.iter().all(|w| crate::lexicon::stem(NEXT_STRONG, w) || crate::lexicon::stem(PREV_STRONG, w)) {
+    if after
+        .iter()
+        .all(|w| crate::lexicon::stem(NEXT_STRONG, w) || crate::lexicon::stem(PREV_STRONG, w))
+    {
         return false;
     }
-    if after.first() == Some(&"на") && after.iter().any(|w| crate::lexicon::stem(&["пауз", "повтор"], w)) {
+    if after
+        .iter()
+        .any(|w| crate::lexicon::stem(&["избранн", "любим", "лайк"], w))
+    {
+        return false;
+    }
+    if after.first() == Some(&"на")
+        && after
+            .iter()
+            .any(|w| crate::lexicon::stem(&["пауз", "повтор"], w))
+    {
         return false;
     }
     true
 }
 
-const WEAK_ENTITY: &[&str] = &["хочу", "хотел", "хотела", "хочется", "го", "дай", "бы", "хотелось"];
+const WEAK_ENTITY: &[&str] = &[
+    "хочу",
+    "хотел",
+    "хотела",
+    "хочется",
+    "го",
+    "дай",
+    "бы",
+    "хотелось",
+];
 
 fn entity_tokens(c: &Ctx, used: &[usize]) -> usize {
     (0..c.len())
@@ -86,19 +118,31 @@ pub fn content(c: &Ctx) -> Option<Detected> {
     }
     let has_verb = verb.is_some();
 
-    let likes_word = c.pos(LIKES);
+    let likes_word = c.pos(LIKES).or_else(|| c.pos_stem(&["избранн", "любим"]));
     let plural = c.pos(LIKES_PLURAL);
     let mine = c.has(MINE);
     let mine_things = mine
         && (plural.is_some()
             || c.has(KIND_TRACK_PLURAL)
             || c.has(&["треки", "песни", "музыку", "музыка", "tracks", "songs"]));
-    let saving = c.has(&["добавь", "добавить", "сохрани", "save", "удали", "убери", "сними"]);
-    if !saving && (likes_word.is_some() || mine_things || (plural.is_some() && has_verb && c.w[plural.unwrap()] != "лайк")) {
+    let saving = c.has(&[
+        "добавь",
+        "добавить",
+        "сохрани",
+        "save",
+        "удали",
+        "убери",
+        "сними",
+    ]);
+    if !saving
+        && (likes_word.is_some()
+            || mine_things
+            || (plural.is_some() && has_verb && c.w[plural.unwrap()] != "лайк"))
+    {
         let mut u = used.clone();
         u.extend(likes_word);
         u.extend(plural);
-        if entity_tokens(c, &u) <= 1 && !c.has(&["из", "от"]) {
+        if entity_tokens(c, &u) == 0 {
             return Some(Detected::new(Intent::PlayLikes, u));
         }
     }
@@ -117,7 +161,22 @@ pub fn content(c: &Ctx) -> Option<Detected> {
         let mut u = used.clone();
         u.extend(similar_word);
         for (i, w) in c.w.iter().enumerate() {
-            if matches!(*w, "на" | "like" | "to" | "что" | "чтонибудь" | "чтото" | "same" | "этому" | "это" | "духе" | "в" | "таком" | "же" | "more") {
+            if matches!(
+                *w,
+                "на" | "like"
+                    | "to"
+                    | "что"
+                    | "чтонибудь"
+                    | "чтото"
+                    | "same"
+                    | "этому"
+                    | "это"
+                    | "духе"
+                    | "в"
+                    | "таком"
+                    | "же"
+                    | "more"
+            ) {
                 u.push(i);
             }
         }
@@ -137,14 +196,19 @@ pub fn content(c: &Ctx) -> Option<Detected> {
 }
 
 fn denied(c: &Ctx, used: &[usize]) -> bool {
-    let first = (0..c.len()).filter(|i| !used.contains(i)).map(|i| c.w[i]).find(|w| {
-        !PRE.contains(w) && !GENERIC.contains(w) && !TRANSPORT_VERBS.contains(w) && !is_kind(w)
-    });
+    let first = (0..c.len())
+        .filter(|i| !used.contains(i))
+        .map(|i| c.w[i])
+        .find(|w| {
+            !PRE.contains(w) && !GENERIC.contains(w) && !TRANSPORT_VERBS.contains(w) && !is_kind(w)
+        });
     first.is_some_and(|w| DENY.contains(&w))
 }
 
 pub fn detect(c: &Ctx, forced: bool) -> Detected {
-    let Some(v) = find_verb(c) else { return Detected::none() };
+    let Some(v) = find_verb(c) else {
+        return Detected::none();
+    };
     let mut used = vec![v.idx];
     if v.front {
         used.extend(0..v.idx);
@@ -160,7 +224,10 @@ pub fn detect(c: &Ctx, forced: bool) -> Detected {
         if !v.strong && c.len() == 1 {
             return Detected::new(Intent::Resume, used);
         }
-        let only_kinds = c.w.iter().enumerate().any(|(i, w)| !used.contains(&i) && is_kind(w));
+        let only_kinds =
+            c.w.iter()
+                .enumerate()
+                .any(|(i, w)| !used.contains(&i) && is_kind(w));
         if only_kinds {
             return Detected::new(Intent::PlayWave, used);
         }

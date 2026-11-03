@@ -3,8 +3,21 @@ use crate::lexicon::*;
 use crate::types::Intent;
 
 const NAME_PLAY_VERBS: &[&str] = &[
-    "включи", "включить", "включай", "вруби", "врубай", "запусти", "сыграй", "играй", "играть",
-    "послушать", "послушаем", "play", "заведи", "накати", "завести",
+    "включи",
+    "включить",
+    "включай",
+    "вруби",
+    "врубай",
+    "запусти",
+    "сыграй",
+    "играй",
+    "играть",
+    "послушать",
+    "послушаем",
+    "play",
+    "заведи",
+    "накати",
+    "завести",
 ];
 
 fn names_play(c: &Ctx, word_at: usize) -> bool {
@@ -19,7 +32,8 @@ fn names_play(c: &Ctx, word_at: usize) -> bool {
 fn base(c: &Ctx, i: usize) -> Vec<usize> {
     let mut used = vec![i];
     used.extend((0..c.len()).filter(|&j| {
-        PLAY_STRONG.contains(&c.w[j]) || matches!(c.w[j], "верни" | "вернуть" | "верну" | "переключи")
+        PLAY_STRONG.contains(&c.w[j])
+            || matches!(c.w[j], "верни" | "вернуть" | "верну" | "переключи")
     }));
     used
 }
@@ -38,7 +52,10 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
             return Some(Detected::new(Intent::Next, vec![i]));
         }
     }
-    if let Some(i) = c.pos_stem(&["пауз", "запауз", "pause"]).or_else(|| c.pos(PAUSE_WORDS)) {
+    if let Some(i) = c
+        .pos_stem(&["пауз", "запауз", "pause"])
+        .or_else(|| c.pos(PAUSE_WORDS))
+    {
         if c.stray(&base(c, i)) == 0 && !names_play(c, i) {
             return Some(Detected::new(Intent::Pause, vec![i]));
         }

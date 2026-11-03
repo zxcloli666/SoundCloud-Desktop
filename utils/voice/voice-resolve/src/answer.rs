@@ -1,13 +1,48 @@
 use crate::entity::Scored;
-use voice_nlu::{fold, normalize, similarity, Kind};
+use voice_nlu::{Kind, fold, normalize, similarity};
 
-const FIRST: &[&str] = &["первый", "первое", "первая", "первую", "первого", "1", "верхний", "first", "левый"];
-const SECOND: &[&str] = &["второй", "второе", "вторая", "вторую", "второго", "2", "нижний", "second", "правый"];
-const LAST: &[&str] = &["последний", "последнее", "последняя", "последнюю", "last", "latter"];
+const FIRST: &[&str] = &[
+    "первый",
+    "первое",
+    "первая",
+    "первую",
+    "первого",
+    "1",
+    "верхний",
+    "first",
+    "левый",
+];
+const SECOND: &[&str] = &[
+    "второй",
+    "второе",
+    "вторая",
+    "вторую",
+    "второго",
+    "2",
+    "нижний",
+    "second",
+    "правый",
+];
+const LAST: &[&str] = &[
+    "последний",
+    "последнее",
+    "последняя",
+    "последнюю",
+    "last",
+    "latter",
+];
 
 fn kind_word(w: &str) -> Option<Kind> {
     match w {
-        "артист" | "артиста" | "исполнитель" | "исполнителя" | "группа" | "группу" | "певец" | "artist" | "band" => Some(Kind::Artist),
+        "артист"
+        | "артиста"
+        | "исполнитель"
+        | "исполнителя"
+        | "группа"
+        | "группу"
+        | "певец"
+        | "artist"
+        | "band" => Some(Kind::Artist),
         "песня" | "песню" | "трек" | "track" | "song" => Some(Kind::Track),
         "альбом" | "album" => Some(Kind::Album),
         "плейлист" | "playlist" => Some(Kind::Playlist),

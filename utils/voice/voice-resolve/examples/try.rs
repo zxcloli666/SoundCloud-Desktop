@@ -1,5 +1,5 @@
 use std::io::BufRead;
-use voice_resolve::{interpret, Boosts, FixtureCatalog};
+use voice_resolve::{Boosts, FixtureCatalog, interpret};
 
 fn main() {
     let path = std::env::var("CATALOG").ok();
@@ -13,7 +13,11 @@ fn main() {
 
     let args: Vec<String> = std::env::args().skip(1).collect();
     let phrases: Vec<String> = if args.is_empty() {
-        std::io::stdin().lock().lines().map_while(Result::ok).collect()
+        std::io::stdin()
+            .lock()
+            .lines()
+            .map_while(Result::ok)
+            .collect()
     } else {
         args
     };

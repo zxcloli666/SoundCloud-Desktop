@@ -1,7 +1,7 @@
 use crate::entity::{Decision, Entity, Scored};
-use crate::keys::{best_sim, Keys, QueryKeys};
+use crate::keys::{Keys, QueryKeys, best_sim};
 use std::collections::HashSet;
-use voice_nlu::{fold, Kind, Parsed};
+use voice_nlu::{Kind, Parsed, fold};
 
 pub struct Boosts {
     liked: HashSet<String>,
@@ -9,11 +9,15 @@ pub struct Boosts {
 
 impl Boosts {
     pub fn none() -> Boosts {
-        Boosts { liked: HashSet::new() }
+        Boosts {
+            liked: HashSet::new(),
+        }
     }
 
     pub fn liked_artists(names: &[String]) -> Boosts {
-        Boosts { liked: names.iter().map(|n| fold(n)).collect() }
+        Boosts {
+            liked: names.iter().map(|n| fold(n)).collect(),
+        }
     }
 
     fn factor(&self, e: &Entity) -> f32 {
@@ -53,7 +57,7 @@ fn kind_factor(kind: Kind, hint: Option<Kind>) -> f32 {
 }
 
 pub fn rank(parsed: &Parsed, cands: Vec<Entity>, boosts: &Boosts) -> Vec<Scored> {
-    let queries: Vec<QueryKeys> = parsed.queries.iter().map(QueryKeys::new).collect();
+    let queries: Vec<QueryKeys> = QueryKeys::list(&parsed.queries);
     let mut out: Vec<Scored> = cands
         .into_iter()
         .map(|entity| {
@@ -70,13 +74,18 @@ pub fn rank(parsed: &Parsed, cands: Vec<Entity>, boosts: &Boosts) -> Vec<Scored>
 }
 
 pub fn decide(ranked: &[Scored], min_sim: f32) -> Decision {
-    let Some(top) = ranked.first() else { return Decision::NotFound };
+    let Some(top) = ranked.first() else {
+        return Decision::NotFound;
+    };
     if top.sim.min(1.0) < min_sim {
         return Decision::NotFound;
     }
     if let Some(second) = ranked.get(1) {
         if second.sim.min(1.0) >= min_sim && second.score >= top.score * ASK_RATIO {
-            return Decision::Ask { first: top.clone(), second: second.clone() };
+            return Decision::Ask {
+                first: top.clone(),
+                second: second.clone(),
+            };
         }
     }
     Decision::Act { pick: top.clone() }

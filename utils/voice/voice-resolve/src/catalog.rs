@@ -1,5 +1,5 @@
 use crate::entity::Entity;
-use crate::keys::{best_sim, Keys, QueryKeys};
+use crate::keys::{Keys, QueryKeys, best_sim};
 use voice_nlu::{Kind, Variant};
 
 pub trait Catalog {
@@ -18,15 +18,25 @@ impl FixtureCatalog {
             if cols.len() < 4 {
                 continue;
             }
-            let Some(kind) = Kind::from_name(cols[0].trim()) else { continue };
+            let Some(kind) = Kind::from_name(cols[0].trim()) else {
+                continue;
+            };
             let aliases = if with_aliases {
                 cols.get(4)
-                    .map(|a| a.split('|').map(str::trim).filter(|s| !s.is_empty()).map(String::from).collect())
+                    .map(|a| {
+                        a.split('|')
+                            .map(str::trim)
+                            .filter(|s| !s.is_empty())
+                            .map(String::from)
+                            .collect()
+                    })
                     .unwrap_or_default()
             } else {
                 Vec::new()
             };
-            let artist = Some(cols[2].trim()).filter(|a| !a.is_empty()).map(String::from);
+            let artist = Some(cols[2].trim())
+                .filter(|a| !a.is_empty())
+                .map(String::from);
             let entity = Entity {
                 kind,
                 name: cols[1].trim().to_string(),
@@ -48,7 +58,7 @@ impl FixtureCatalog {
 
 impl Catalog for FixtureCatalog {
     fn candidates(&self, variants: &[Variant], kinds: &[Kind]) -> Vec<Entity> {
-        let queries: Vec<QueryKeys> = variants.iter().map(QueryKeys::new).collect();
+        let queries: Vec<QueryKeys> = QueryKeys::list(variants);
         let mut hits: Vec<(f32, &Entity)> = self
             .rows
             .iter()

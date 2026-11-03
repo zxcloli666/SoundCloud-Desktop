@@ -9,7 +9,6 @@ pub struct Raw {
     pub full: Vec<Tok>,
     pub artist: Option<Vec<Tok>>,
     pub title: Option<Vec<Tok>>,
-    pub artist_first: bool,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -49,7 +48,10 @@ fn trim(mut v: Vec<Tok>) -> Vec<Tok> {
 }
 
 pub fn extract(toks: &[Tok], det: &Detected) -> Slots {
-    let wants_entity = matches!(det.intent, Intent::Play | Intent::QueueAdd | Intent::PlaySimilar);
+    let wants_entity = matches!(
+        det.intent,
+        Intent::Play | Intent::QueueAdd | Intent::PlaySimilar
+    );
     let bare = det.intent == Intent::None && !det.blocked;
     if !wants_entity && !bare {
         return Slots::default();
@@ -60,11 +62,10 @@ pub fn extract(toks: &[Tok], det: &Detected) -> Slots {
         .filter(|(i, _)| !det.used.contains(i))
         .map(|(_, t)| t.clone())
         .collect();
-    let verb_at = det.used.iter().copied().max().unwrap_or(0);
     let rest: Vec<Tok> = rest
         .into_iter()
         .map(|mut t| {
-            if PLAY_WEAK.contains(&t.w.as_str()) && wants_entity && verb_at < toks.len() {
+            if PLAY_WEAK.contains(&t.w.as_str()) && wants_entity {
                 t.amb = true;
             }
             t
@@ -104,7 +105,10 @@ pub fn extract(toks: &[Tok], det: &Detected) -> Slots {
         kept.push(t.clone());
     }
     let kept = trim(kept);
-    Slots { kind_hint: hint, raw: split(kept) }
+    Slots {
+        kind_hint: hint,
+        raw: split(kept),
+    }
 }
 
 fn split(kept: Vec<Tok>) -> Raw {
@@ -113,24 +117,48 @@ fn split(kept: Vec<Tok>) -> Raw {
         let right: Vec<Tok> = kept[d + 1..].to_vec();
         if !left.is_empty() && !right.is_empty() {
             let plain: Vec<Tok> = left.iter().chain(right.iter()).cloned().collect();
-            return Raw { full: plain.clone(), plain, artist: Some(left), title: Some(right), artist_first: true };
+            return Raw {
+                full: plain.clone(),
+                plain,
+                artist: Some(left),
+                title: Some(right),
+            };
         }
     }
     let kept: Vec<Tok> = kept.into_iter().filter(|t| t.w != "-").collect();
-    let marker = kept.iter().enumerate().position(|(i, t)| {
-        ARTIST_MARKERS.contains(&t.w.as_str()) && !(i == 0 && kept.len() == 1)
-    });
+    let marker = kept
+        .iter()
+        .enumerate()
+        .position(|(i, t)| ARTIST_MARKERS.contains(&t.w.as_str()) && !(i == 0 && kept.len() == 1));
     let Some(m) = marker else {
-        return Raw { full: kept.clone(), plain: kept, ..Raw::default() };
+        return Raw {
+            full: kept.clone(),
+            plain: kept,
+            ..Raw::default()
+        };
     };
     let before: Vec<Tok> = kept[..m].to_vec();
     let after: Vec<Tok> = kept[m + 1..].to_vec();
     if after.is_empty() {
-        return Raw { full: kept.clone(), plain: before, ..Raw::default() };
+        return Raw {
+            full: kept.clone(),
+            plain: before,
+            ..Raw::default()
+        };
     }
     if before.is_empty() {
-        return Raw { full: kept.clone(), plain: after.clone(), artist: Some(after), title: None, artist_first: true };
+        return Raw {
+            full: kept.clone(),
+            plain: after.clone(),
+            artist: Some(after),
+            title: None,
+        };
     }
     let plain: Vec<Tok> = before.iter().chain(after.iter()).cloned().collect();
-    Raw { full: kept.clone(), plain, artist: Some(after), title: Some(before), artist_first: false }
+    Raw {
+        full: kept.clone(),
+        plain,
+        artist: Some(after),
+        title: Some(before),
+    }
 }

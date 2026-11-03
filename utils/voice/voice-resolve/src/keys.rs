@@ -1,7 +1,38 @@
 use crate::entity::Entity;
-use voice_nlu::{fold, Kind, Variant};
+use voice_nlu::{Kind, Variant, fold, skeleton};
+
+type Grams = Vec<(char, char)>;
+
+fn grams(key: &str) -> Grams {
+    let sk: Vec<char> = skeleton(key).chars().collect();
+    let mut out: Grams = sk.windows(2).map(|w| (w[0], w[1])).collect();
+    out.sort();
+    out.dedup();
+    out
+}
+
+fn dice(a: &Grams, b: &Grams) -> f32 {
+    if a.is_empty() || b.is_empty() {
+        return 1.0;
+    }
+    let (mut i, mut j, mut shared) = (0, 0, 0);
+    while i < a.len() && j < b.len() {
+        match a[i].cmp(&b[j]) {
+            std::cmp::Ordering::Equal => {
+                shared += 1;
+                i += 1;
+                j += 1;
+            }
+            std::cmp::Ordering::Less => i += 1,
+            std::cmp::Ordering::Greater => j += 1,
+        }
+    }
+    2.0 * shared as f32 / (a.len() + b.len()) as f32
+}
 
 pub struct Keys {
+    grams: Vec<Grams>,
+    name_grams: Vec<Grams>,
     names: Vec<(String, f32)>,
     artist: Option<String>,
     artist_parts: Vec<String>,
@@ -10,9 +41,18 @@ pub struct Keys {
 
 fn credits(name: &str) -> Vec<String> {
     let mut parts = vec![name.to_string()];
-    for sep in [" & ", " feat. ", " feat ", " ft. ", " x ", ", ", " и ", " and "] {
+    for sep in [
+        " & ", " feat. ", " feat ", " ft. ", " x ", ", ", " и ", " and ",
+    ] {
         if name.contains(sep) {
-            parts = parts.iter().flat_map(|p| p.split(sep).map(|s| s.trim().to_string()).collect::<Vec<_>>()).collect();
+            parts = parts
+                .iter()
+                .flat_map(|p| {
+                    p.split(sep)
+                        .map(|s| s.trim().to_string())
+                        .collect::<Vec<_>>()
+                })
+                .collect();
         }
     }
     if parts.len() == 1 {
@@ -42,15 +82,45 @@ impl Keys {
             }
         }
         names.retain(|(k, _)| !k.is_empty());
+        let artist = e.artist.as_deref().map(fold);
+        let mut all = Vec::new();
+        let mut name_grams = Vec::new();
+        for (n, _) in &names {
+            name_grams.push(grams(n));
+            all.push(grams(n));
+            if let Some(a) = &artist {
+                all.push(grams(&format!("{a}{n}")));
+                all.push(grams(&format!("{n}{a}")));
+            }
+        }
         Keys {
+            grams: all,
+            name_grams,
             names,
             artist: e.artist.as_deref().map(fold),
-            artist_parts: e.artist.as_deref().map(|a| credits(a).iter().map(|p| fold(p)).collect()).unwrap_or_default(),
+            artist_parts: e
+                .artist
+                .as_deref()
+                .map(|a| credits(a).iter().map(|p| fold(p)).collect())
+                .unwrap_or_default(),
             own_artist_name: e.kind == Kind::Artist,
         }
     }
 
+    fn plausible(&self, v: &QueryKeys) -> bool {
+        if self.grams.iter().any(|g| dice(&v.grams, g) >= 0.2) {
+            return true;
+        }
+        match &v.title_grams {
+            Some(t) => self.name_grams.iter().any(|g| dice(t, g) >= 0.2),
+            None => false,
+        }
+    }
+
     pub fn sim(&self, v: &QueryKeys) -> f32 {
+        if !self.plausible(v) {
+            return 0.0;
+        }
         let mut best = 0.0f32;
         for (name, w) in &self.names {
             best = best.max(voice_nlu::similarity(&v.text, name) * w);
@@ -85,6 +155,9 @@ impl Keys {
         if v.kept {
             best *= 1.06;
         }
+        if v.lemmatized {
+            best *= 0.96;
+        }
         best
     }
 }
@@ -95,7 +168,8 @@ fn combo(q: &str, artist: &str, name: &str) -> f32 {
     if total < 3 {
         return 0.0;
     }
-    let near = voice_nlu::similarity(q, &format!("{artist}{name}")).max(voice_nlu::similarity(q, &format!("{name}{artist}")));
+    let near = voice_nlu::similarity(q, &format!("{artist}{name}"))
+        .max(voice_nlu::similarity(q, &format!("{name}{artist}")));
     if near < 0.5 {
         return 0.0;
     }
@@ -124,16 +198,42 @@ pub struct QueryKeys {
     pub artist: Option<String>,
     pub title: Option<String>,
     pub kept: bool,
+    pub lemmatized: bool,
+    grams: Grams,
+    title_grams: Option<Grams>,
 }
 
 impl QueryKeys {
     pub fn new(v: &Variant) -> QueryKeys {
+        let text = fold(&v.text);
+        let title = v.title.as_deref().map(fold);
         QueryKeys {
-            text: fold(&v.text),
+            grams: grams(&text),
+            title_grams: title.as_deref().map(grams),
+            text,
             artist: v.artist.as_deref().map(fold),
-            title: v.title.as_deref().map(fold),
+            title,
             kept: v.kept_fillers,
+            lemmatized: v.lemmatized,
         }
+    }
+
+    pub fn list(variants: &[Variant]) -> Vec<QueryKeys> {
+        let mut out: Vec<QueryKeys> = Vec::new();
+        for v in variants {
+            let q = QueryKeys::new(v);
+            match out
+                .iter_mut()
+                .find(|o| o.text == q.text && o.artist == q.artist && o.title == q.title)
+            {
+                Some(o) => {
+                    o.kept |= q.kept;
+                    o.lemmatized &= q.lemmatized;
+                }
+                None => out.push(q),
+            }
+        }
+        out
     }
 }
 

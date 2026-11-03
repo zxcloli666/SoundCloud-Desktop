@@ -11,7 +11,12 @@ struct Time {
 }
 
 fn time(c: &Ctx) -> Time {
-    let mut t = Time { secs: 0, found: false, clock: false, bare: None };
+    let mut t = Time {
+        secs: 0,
+        found: false,
+        clock: false,
+        bare: None,
+    };
     let n = c.len();
     let mut i = 0;
     while i < n {
@@ -43,7 +48,9 @@ fn time(c: &Ctx) -> Time {
             t.found = true;
             i = unit_at + 1;
             if let Some(extra) = c.w.get(i).and_then(|w| numbers::value(w)) {
-                let followed = c.w.get(i + 1).is_some_and(|u| SEC_UNITS.contains(u) || MIN_UNITS.contains(u));
+                let followed =
+                    c.w.get(i + 1)
+                        .is_some_and(|u| SEC_UNITS.contains(u) || MIN_UNITS.contains(u));
                 if !followed {
                     t.secs += extra;
                     t.clock = true;
@@ -79,8 +86,20 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
         seek_verb && c.len() <= 4
     };
 
+    let to_start = c.len() <= 6
+        && !t.found
+        && (c.has(&["сначала", "заново", "restart"]) || c.has_stem(&["начал"]))
+        && c.stray(&[]) <= 2;
+    if to_start && !fwd {
+        return Some(Detected::new(Intent::SeekTo, vec![]).number(0));
+    }
+
     if triggered {
-        let secs = if t.found { t.secs } else { t.bare.unwrap_or(10) };
+        let secs = if t.found {
+            t.secs
+        } else {
+            t.bare.unwrap_or(10)
+        };
         let intent = if t.clock || jump_verb {
             Intent::SeekTo
         } else if back || back_verb {
@@ -88,12 +107,18 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
         } else {
             Intent::SeekForward
         };
-        let secs = if !t.found && t.bare.is_none() && intent != Intent::SeekTo { 10 } else { secs };
+        let secs = if !t.found && t.bare.is_none() && intent != Intent::SeekTo {
+            10
+        } else {
+            secs
+        };
         return Some(Detected::new(intent, vec![]).number(secs));
     }
 
     if c.len() <= 5 && (c.has(RESTART) || c.has(&["начала"])) && !t.found {
-        if c.has(&["сначала", "заново", "restart"]) || (c.has(&["с", "в"]) && c.has(&["начала", "начало"])) {
+        if c.has(&["сначала", "заново", "restart"])
+            || (c.has(&["с", "в"]) && c.has(&["начала", "начало"]))
+        {
             return Some(Detected::new(Intent::SeekTo, vec![]).number(0));
         }
     }

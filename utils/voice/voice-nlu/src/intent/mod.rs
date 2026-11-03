@@ -60,7 +60,10 @@ pub fn fuzzy_fix(toks: &[Tok]) -> Option<Vec<Tok>> {
         .map(|t| match closest(&t.w) {
             Some(target) => {
                 changed = true;
-                Tok { w: target.to_string(), amb: t.amb }
+                Tok {
+                    w: target.to_string(),
+                    amb: t.amb,
+                }
             }
             None => t.clone(),
         })
