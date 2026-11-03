@@ -129,6 +129,7 @@
     "voice": {
       "title": "응답 목소리",
       "preview": "듣기: {{name}}",
+      "stopPreview": "정지",
       "sound": "소리",
       "speed": "속도",
       "pitch": "음높이",
@@ -208,6 +209,7 @@
       "resume": "이어 받기",
       "repair": "다시 받기",
       "optional": "선택",
+      "own": "자체",
       "none": "모델 목록 없음",
       "kind": {
         "vad": "음성 감지",

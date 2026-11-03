@@ -1,5 +1,5 @@
 import { memo, useEffect, useRef } from 'react';
-import { onLevel } from '../../lib/voice/levels';
+import { onLevel, SPEECH } from '../../lib/voice/levels';
 import { shapeLevel } from './useLevelDrive';
 
 const BAR = 3;
@@ -60,7 +60,7 @@ export const Waveform = memo(function Waveform({
 
     draw();
     const off = onLevel((from, rms) => {
-      if (input && from !== input) return;
+      if (input ? from !== input : from === SPEECH) return;
       const now = performance.now();
       if (now - last < 28) return;
       last = now;

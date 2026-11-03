@@ -1,5 +1,7 @@
 type LevelListener = (input: string, rms: number) => void;
 
+export const SPEECH = 'speech';
+
 const levels = new Map<string, number>();
 const listeners = new Set<LevelListener>();
 
@@ -21,7 +23,7 @@ export function levelOf(input: string): number {
 
 export function loudest(): number {
   let max = 0;
-  for (const value of levels.values()) max = Math.max(max, value);
+  for (const [input, value] of levels) if (input !== SPEECH) max = Math.max(max, value);
   return max;
 }
 

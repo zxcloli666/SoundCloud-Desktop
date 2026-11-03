@@ -10,7 +10,7 @@ export function SpeakingView({ onClose }: { onClose: () => void }) {
   const name = t(`voice.voices.${voice.id}.name`);
   return (
     <>
-      <VoiceAvatar voice={voice} name={name} size={40} speaking />
+      <VoiceAvatar voice={voice} size={40} speaking />
       <span className="min-w-0 flex-1">
         <span className="block truncate text-[13px] font-semibold text-ink-90">{name}</span>
         <span aria-hidden className="mt-1 flex h-3 items-end gap-[3px]">

@@ -16,6 +16,12 @@ function kindIcon(kind: string): ReactNode {
   return <Languages size={16} />;
 }
 
+const OWN_LICENSE = 'own';
+
+function licenseLabel(license: string, own: string): string {
+  return license.toLowerCase() === OWN_LICENSE ? own : license;
+}
+
 export const ModelRow = memo(function ModelRow({ model }: { model: Model }) {
   const { t } = useTranslation();
   const bytes = useFormatBytes();
@@ -67,7 +73,8 @@ export const ModelRow = memo(function ModelRow({ model }: { model: Model }) {
           </div>
         ) : (
           <p className="mt-0.5 text-[11.5px] text-ink-40">
-            {bytes(total)} · {model.license}
+            {bytes(total)}
+            {model.license && ` · ${licenseLabel(model.license, t('voice.models.own'))}`}
           </p>
         )}
       </div>

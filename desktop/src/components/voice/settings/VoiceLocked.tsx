@@ -4,6 +4,8 @@ import { usePerfMode } from '../../../lib/perf';
 import { useVoiceRuntime } from '../../../lib/voice/runtime';
 import { Card } from '../../settings/primitives';
 import { StarCta } from '../../star-moments/StarCta';
+import { sparkle } from '../avatars/mark';
+import { StopSquare } from '../icons';
 import { VoiceAvatar } from '../VoiceAvatar';
 import { VOICES } from '../voices';
 import { SmallButton } from './Block';
@@ -18,6 +20,13 @@ const SPARKS = Array.from({ length: 18 }, (_, i) => ({
   duration: 4 + (i % 4),
 }));
 
+const ORBIT = [
+  { left: -6, top: 8, size: 14, delay: 0, duration: 3.2 },
+  { left: 92, top: 2, size: 11, delay: 1.2, duration: 3.8 },
+  { left: 98, top: 66, size: 13, delay: 0.6, duration: 3.4 },
+  { left: -10, top: 72, size: 10, delay: 2, duration: 4.2 },
+];
+
 const EXAMPLES = ['play', 'volume', 'like'];
 
 export function VoiceLocked() {
@@ -27,6 +36,7 @@ export function VoiceLocked() {
   const speaking = useVoiceRuntime((s) => s.previewing === lolya.id);
   const blur = perf.blur(40);
   const sparks = SPARKS.slice(0, perf.particles(SPARKS.length));
+  const orbit = ORBIT.slice(0, perf.particles(ORBIT.length));
 
   return (
     <>
@@ -77,14 +87,50 @@ export function VoiceLocked() {
             aria-label={t('voice.locked.listen')}
             className="group relative shrink-0 cursor-pointer rounded-full transition-transform duration-500 ease-[var(--ease-apple)] hover:scale-[1.03] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400/60"
           >
-            <VoiceAvatar
-              voice={lolya}
-              name={t('voice.voices.lolya.name')}
-              size={128}
-              speaking={speaking}
-            />
+            {perf.bloom && (
+              <span
+                aria-hidden
+                className="pointer-events-none absolute -inset-10 rounded-full"
+                style={{
+                  background:
+                    'radial-gradient(circle, color-mix(in oklab, var(--color-rose-300) 55%, transparent) 0%, transparent 65%)',
+                  contain: 'strict',
+                  animation: perf.idleAnim ? 'vx-glow 4.8s ease-in-out infinite' : undefined,
+                }}
+              />
+            )}
+            <span
+              className="relative block"
+              style={{
+                animation: perf.idleAnim ? 'vx-float 5.2s ease-in-out infinite' : undefined,
+              }}
+            >
+              <VoiceAvatar voice={lolya} size={136} speaking={speaking} />
+            </span>
+            {orbit.map((s) => (
+              <span
+                key={s.left}
+                aria-hidden
+                className="pointer-events-none absolute text-rose-200"
+                style={{
+                  left: `${s.left}%`,
+                  top: `${s.top}%`,
+                  animation: perf.idleAnim
+                    ? `vx-twinkle ${s.duration}s ease-in-out ${s.delay}s infinite`
+                    : undefined,
+                }}
+              >
+                <svg viewBox="0 0 10 10" width={s.size} height={s.size} className="block">
+                  <path d={sparkle(5, 5, 5)} fill="currentColor" />
+                </svg>
+              </span>
+            ))}
             <span className="absolute -bottom-1 left-1/2 flex size-9 -translate-x-1/2 items-center justify-center rounded-full border border-ink/[0.12] bg-surface text-ink-85 shadow-lg transition-transform group-hover:scale-110">
-              <Play size={14} fill="currentColor" className="translate-x-[1px]" />
+              {speaking ? (
+                <StopSquare size={12} fill="currentColor" />
+              ) : (
+                <Play size={14} fill="currentColor" className="translate-x-[1px]" />
+              )}
             </span>
           </button>
           <div className="min-w-0 flex-1 text-center sm:text-left">

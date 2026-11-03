@@ -1,5 +1,5 @@
 import { type RefObject, useEffect } from 'react';
-import { onLevel } from '../../lib/voice/levels';
+import { onLevel, SPEECH } from '../../lib/voice/levels';
 
 const DECAY_MS = 140;
 
@@ -22,7 +22,7 @@ export function useLevelDrive(
       el.style.setProperty('--lvl', value.toFixed(3));
     };
     const off = onLevel((from, rms) => {
-      if (input && from !== input) return;
+      if (input ? from !== input : from === SPEECH) return;
       const target = shapeLevel(rms);
       write(target > level ? level + (target - level) * 0.65 : level * 0.55 + target * 0.45);
       if (decay) clearTimeout(decay);

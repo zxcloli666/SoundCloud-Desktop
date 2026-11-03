@@ -1,4 +1,5 @@
 import { emit } from '@tauri-apps/api/event';
+import { SPEECH } from '../../../lib/voice/levels';
 import { useVoiceRuntime } from '../../../lib/voice/runtime';
 import type { Model, VoiceCommand } from '../../../lib/voice/types';
 import { KHOCHU_M, KHOCHU_Z, labDevices } from './fixtures';
@@ -6,6 +7,7 @@ import { KHOCHU_M, KHOCHU_Z, labDevices } from './fixtures';
 const LEVEL_MS = 33;
 
 let meter: ReturnType<typeof setInterval> | null = null;
+let speech: ReturnType<typeof setInterval> | null = null;
 let talking: string | null = null;
 let phase = 0;
 let demo = 0;
@@ -76,6 +78,28 @@ export function stopDownloads() {
 
 function wait(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export function setSpeech(on: boolean) {
+  if (on && !speech) {
+    let t = 0;
+    speech = setInterval(() => {
+      t += LEVEL_MS / 1000;
+      void emit('voice:level', { input: SPEECH, rms: speechRms(t) * 1.6 });
+    }, LEVEL_MS);
+  }
+  if (!on && speech) {
+    clearInterval(speech);
+    speech = null;
+  }
+}
+
+async function speak(source: string, ms: number) {
+  void emit('voice:state', { state: 'speaking', source });
+  setSpeech(true);
+  await wait(ms);
+  setSpeech(false);
+  void emit('voice:state', { state: 'idle', source });
 }
 
 const DEMOS: { words: string[]; command: Omit<VoiceCommand, 'id' | 'source'>[] }[] = [
@@ -179,9 +203,7 @@ export async function runDemo(source: string) {
     return;
   }
   await wait(300);
-  void emit('voice:state', { state: 'speaking', source });
-  await wait(1800);
-  void emit('voice:state', { state: 'idle', source });
+  await speak(source, 1800);
 }
 
 export async function answerDemo(choice: string) {
@@ -198,16 +220,12 @@ export async function answerDemo(choice: string) {
     decision: { decision: 'act', pick: { entity, score: 0.9 } },
   });
   await wait(300);
-  void emit('voice:state', { state: 'speaking', source: 'button' });
-  await wait(1600);
-  void emit('voice:state', { state: 'idle', source: 'button' });
+  await speak('button', 1600);
 }
 
 export async function previewDemo() {
   await wait(200);
-  void emit('voice:state', { state: 'speaking', source: 'button' });
-  await wait(2600);
-  void emit('voice:state', { state: 'idle', source: 'button' });
+  await speak('button', 2600);
 }
 
 export async function teachDemo() {

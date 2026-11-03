@@ -4,6 +4,16 @@ import type { Devices, Entity, Model } from '../../../lib/voice/types';
 
 const MB = 1024 * 1024;
 
+const LICENSES: Record<string, string> = {
+  vad: 'MIT',
+  'asr-ru': 'Apache-2.0',
+  'asr-en': 'MIT',
+  'tts-ru': 'own',
+  'tts-en': 'Apache-2.0',
+  wake: 'own',
+  llm: 'Apache-2.0',
+};
+
 export function labDevices(): Devices {
   return {
     inputs: [
@@ -38,7 +48,7 @@ function model(
     state,
     done: state === 'ready' ? total : Math.round(done * total),
     total,
-    license: kind === 'llm' ? 'Apache-2.0' : kind === 'vad' ? 'MIT' : 'Apache-2.0',
+    license: LICENSES[id] ?? 'Apache-2.0',
     optional,
   };
 }

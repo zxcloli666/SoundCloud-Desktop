@@ -132,6 +132,7 @@
     "voice": {
       "title": "Yanıt sesi",
       "preview": "Dinle: {{name}}",
+      "stopPreview": "Durdur",
       "sound": "Ses",
       "speed": "Hız",
       "pitch": "Ton",
@@ -212,6 +213,7 @@
       "resume": "Devam et",
       "repair": "Yeniden indir",
       "optional": "isteğe bağlı",
+      "own": "bizim",
       "none": "Model listesi yok",
       "kind": {
         "vad": "Konuşma algılama",

@@ -3,7 +3,7 @@ import { enqueueCommand } from '../../../lib/voice/executor';
 import { useVoiceRuntime } from '../../../lib/voice/runtime';
 import { useVoiceStore } from '../../../lib/voice/store';
 import type { ErrorEvent, Model } from '../../../lib/voice/types';
-import { setOffline, startDownload, stopDownloads } from './engine';
+import { setOffline, setSpeech, startDownload, stopDownloads } from './engine';
 import {
   downloadingModels,
   firstRunModels,
@@ -27,6 +27,7 @@ export type Scene = (typeof SCENES)[number];
 function base(models: Model[], error: ErrorEvent | null = null) {
   stopDownloads();
   setOffline(false);
+  setSpeech(false);
   const devices = labDevices();
   useVoiceRuntime.setState({
     engine: 'idle',
@@ -124,4 +125,5 @@ export function applyScene(scene: Scene) {
   configure(true);
   useVoiceStore.setState({ history: labHistory(now), wakeLog: labWakeLog(now), wakeTaught: true });
   if (scene === 'ready' || scene === 'hud') playVolume();
+  if (scene === 'hud') setSpeech(true);
 }

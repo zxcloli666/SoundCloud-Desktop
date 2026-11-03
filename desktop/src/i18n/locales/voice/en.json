@@ -132,6 +132,7 @@
     "voice": {
       "title": "Reply voice",
       "preview": "Listen: {{name}}",
+      "stopPreview": "Stop",
       "sound": "Sound",
       "speed": "Speed",
       "pitch": "Pitch",
@@ -212,6 +213,7 @@
       "resume": "Resume",
       "repair": "Download again",
       "optional": "optional",
+      "own": "ours",
       "none": "Model list unavailable",
       "kind": {
         "vad": "Speech detector",

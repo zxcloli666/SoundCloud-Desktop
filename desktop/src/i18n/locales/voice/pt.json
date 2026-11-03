@@ -135,6 +135,7 @@
     "voice": {
       "title": "Voz da resposta",
       "preview": "Ouvir: {{name}}",
+      "stopPreview": "Parar",
       "sound": "Som",
       "speed": "Velocidade",
       "pitch": "Tom",
@@ -216,6 +217,7 @@
       "resume": "Retomar",
       "repair": "Baixar de novo",
       "optional": "opcional",
+      "own": "nossa",
       "none": "Lista de modelos indisponível",
       "kind": {
         "vad": "Detector de fala",

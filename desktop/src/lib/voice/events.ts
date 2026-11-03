@@ -26,7 +26,9 @@ function onState(e: StateEvent) {
     patch.hud = { kind: 'listening', source: e.source };
   }
   if (e.state === 'thinking' && runtime.hud.kind === 'listening') patch.hud = { kind: 'thinking' };
-  if (e.state === 'speaking' && runtime.hud.kind === 'hidden') patch.hud = { kind: 'speaking' };
+  if (e.state === 'speaking' && runtime.hud.kind === 'hidden' && !runtime.previewing) {
+    patch.hud = { kind: 'speaking' };
+  }
   if (e.state === 'idle') {
     patch.previewing = null;
     if (!KEEP_ON_IDLE.has(runtime.hud.kind)) patch.hud = { kind: 'hidden' };

@@ -9,4 +9,12 @@ export const VOICE_KEYFRAMES = `
 @keyframes vx-flash { 0% { transform: scale(0.6); opacity: 0; } 30% { transform: scale(1.12); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
 @keyframes vx-bars { 0%, 100% { transform: scaleY(0.35); } 50% { transform: scaleY(1); } }
 @keyframes vx-wait { 0%, 100% { opacity: 0.35; } 50% { opacity: 1; } }
+@keyframes vx-halo { 0%, 100% { opacity: 0.7; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-1px); } }
+@keyframes vx-twinkle { 0%, 100% { opacity: 0.3; transform: scale(0.55); } 50% { opacity: 1; transform: scale(1); } }
+@keyframes vx-flap-l { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-12deg); } }
+@keyframes vx-flap-r { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(12deg); } }
+@keyframes vx-blink { 0%, 91%, 100% { transform: scaleY(1); } 94% { transform: scaleY(0.1); } }
+@keyframes vx-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+@keyframes vx-glow { 0%, 100% { opacity: 0.55; transform: scale(0.96); } 50% { opacity: 0.9; transform: scale(1.04); } }
+@media (prefers-reduced-motion: reduce) { [style*="vx-"] { animation: none !important; } }
 `;
