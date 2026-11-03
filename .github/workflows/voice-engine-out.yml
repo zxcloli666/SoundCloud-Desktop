@@ -1,0 +1,78 @@
+name: voice-engine-out
+
+on:
+  push:
+    branches: [voice/engine-out]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: 0
+  CARGO_PROFILE_DEV_DEBUG: 0
+  CARGO_PROFILE_TEST_DEBUG: 0
+  HOMEBREW_NO_AUTO_UPDATE: 1
+  HOMEBREW_NO_INSTALL_CLEANUP: 1
+
+jobs:
+  rust:
+    name: Rust ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: linux
+            runner: ubuntu-22.04
+          - os: macos
+            runner: macos-latest
+          - os: windows
+            runner: windows-latest
+    runs-on: ${{ matrix.runner }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: desktop/src-tauri
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: System packages
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libasound2-dev cmake clang libclang-dev pkg-config
+
+      - name: System packages
+        if: runner.os == 'macOS'
+        run: brew install autoconf automake libtool
+
+      - name: Toolchain
+        working-directory: .
+        run: bash scripts/ci-toolchain.sh
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: desktop/src-tauri -> target
+          cache-directories: .ci
+          key: ci-${{ matrix.os }}
+          cache-workspace-crates: true
+          cache-on-failure: true
+          save-if: false
+
+      - name: Mtimes
+        working-directory: .
+        run: bash scripts/ci-mtime.sh restore
+
+      - name: Frontend placeholder
+        run: mkdir -p ../dist && echo '<!doctype html>' > ../dist/index.html
+
+      - name: Build tests
+        run: cargo test --no-run
+
+      - name: Tests
+        if: runner.os != 'Windows'
+        run: cargo test
+
+      - name: Output tests on Windows
+        if: runner.os == 'Windows'
+        continue-on-error: true
+        run: cargo test --lib -- audio::master audio::sink
