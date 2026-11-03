@@ -2,12 +2,14 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::time::Duration;
 
-use rodio::stream::{DeviceSinkBuilder, DeviceSinkError, MixerDeviceSink};
+use rodio::stream::DeviceSinkError;
 use crate::rt::AppHandle;
 use tauri::{Emitter, Manager, State};
 
 use crate::app::diagnostics;
 use crate::audio::engine;
+use crate::audio::master::Master;
+use crate::audio::sink::{self, DeviceSink, SinkConfig};
 use crate::audio::state::AudioState;
 use crate::audio::types::{AudioSink, AudioThreadCmd};
 
@@ -18,7 +20,8 @@ pub fn open_device_sink(
     device_id: Option<&str>,
     reconnect_tx: &std::sync::mpsc::Sender<AudioThreadCmd>,
     error_flag: &Arc<AtomicBool>,
-) -> Result<MixerDeviceSink, String> {
+    master: &Arc<Master>,
+) -> Result<DeviceSink, String> {
     use cpal::traits::{DeviceTrait, HostTrait};
 
     let sent = Arc::new(AtomicBool::new(false));
@@ -42,10 +45,8 @@ pub fn open_device_sink(
         if let Ok(devices) = host.output_devices() {
             for dev in devices {
                 if dev.id().ok().map(|d| d.to_string()).as_deref() == Some(id) {
-                    let mut sink = open_sink(dev, error_cb)
-                        .map_err(|e| format!("Failed to open device '{}': {}", id, e))?;
-                    sink.log_on_drop(false);
-                    return Ok(sink);
+                    return open_sink(dev, master, error_cb)
+                        .map_err(|e| format!("Failed to open device '{}': {}", id, e));
                 }
             }
         }
@@ -55,16 +56,14 @@ pub fn open_device_sink(
     let opened = cpal::default_host()
         .default_output_device()
         .ok_or(DeviceSinkError::NoDevice)
-        .and_then(|device| open_sink(device, error_cb.clone()));
+        .and_then(|device| open_sink(device, master, error_cb.clone()));
     #[cfg(target_os = "linux")]
-    let opened = opened.or_else(|error| open_sound_server_sink(error_cb).ok_or(error));
-    let mut sink = opened.map_err(|e| format!("No audio output: {}", e))?;
-    sink.log_on_drop(false);
-    Ok(sink)
+    let opened = opened.or_else(|error| open_sound_server_sink(master, error_cb).ok_or(error));
+    opened.map_err(|e| format!("No audio output: {}", e))
 }
 
 #[cfg(target_os = "linux")]
-fn open_sound_server_sink<E>(error_cb: E) -> Option<MixerDeviceSink>
+fn open_sound_server_sink<E>(master: &Arc<Master>, error_cb: E) -> Option<DeviceSink>
 where
     E: FnMut(cpal::StreamError) + Send + Clone + 'static,
 {
@@ -77,42 +76,44 @@ where
             dev.description()
                 .is_ok_and(|desc| matches!(desc.driver(), Some("pipewire" | "pulse")))
         })
-        .find_map(|dev| open_sink(dev, error_cb.clone()).ok())
+        .find_map(|dev| open_sink(dev, master, error_cb.clone()).ok())
 }
 
-fn open_sink<E>(device: cpal::Device, error_cb: E) -> Result<MixerDeviceSink, DeviceSinkError>
+fn open_sink<E>(
+    device: cpal::Device,
+    master: &Arc<Master>,
+    error_cb: E,
+) -> Result<DeviceSink, DeviceSinkError>
 where
     E: FnMut(cpal::StreamError) + Send + Clone + 'static,
 {
-    if let Some(builder) = tuned_builder(&device)
-        && let Ok(sink) = builder.with_error_callback(error_cb.clone()).open_stream()
+    let config = sink::device_config(&device)?;
+    if let Some(tuned) = tuned_config(config)
+        && let Ok(sink) = sink::open(&device, tuned, master, error_cb.clone())
     {
         return Ok(sink);
     }
-    DeviceSinkBuilder::from_device(device)?
-        .with_error_callback(error_cb)
-        .open_stream()
+    sink::open(&device, config, master, error_cb)
 }
 
 #[cfg(target_os = "linux")]
-fn tuned_builder(device: &cpal::Device) -> Option<DeviceSinkBuilder> {
-    let builder = DeviceSinkBuilder::from_device(device.clone()).ok()?;
-    Some(builder.with_buffer_size(cpal::BufferSize::Fixed(LINUX_BUFFER_FRAMES)))
+fn tuned_config(config: SinkConfig) -> Option<SinkConfig> {
+    Some(SinkConfig {
+        buffer_size: cpal::BufferSize::Fixed(LINUX_BUFFER_FRAMES),
+        ..config
+    })
 }
 
 #[cfg(windows)]
-fn tuned_builder(device: &cpal::Device) -> Option<DeviceSinkBuilder> {
-    use cpal::traits::DeviceTrait;
-
-    if device.default_output_config().ok()?.channels() <= 2 {
-        return None;
-    }
-    let builder = DeviceSinkBuilder::from_device(device.clone()).ok()?;
-    Some(builder.with_channels(rodio::nz!(2)))
+fn tuned_config(config: SinkConfig) -> Option<SinkConfig> {
+    (config.channels > 2).then_some(SinkConfig {
+        channels: 2,
+        ..config
+    })
 }
 
 #[cfg(not(any(target_os = "linux", windows)))]
-fn tuned_builder(_device: &cpal::Device) -> Option<DeviceSinkBuilder> {
+fn tuned_config(_config: SinkConfig) -> Option<SinkConfig> {
     None
 }
 
