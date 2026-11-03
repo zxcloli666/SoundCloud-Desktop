@@ -31,12 +31,7 @@ impl Outcome {
     }
 }
 
-pub fn resolve(
-    parsed: &Parsed,
-    catalog: &dyn Catalog,
-    boosts: &Boosts,
-    bare: bool,
-) -> Decision {
+pub fn resolve(parsed: &Parsed, catalog: &dyn Catalog, boosts: &Boosts, bare: bool) -> Decision {
     let cands = catalog.candidates(&parsed.queries, &Kind::ALL);
     let ranked = rank(parsed, cands, boosts);
     score::decide(&ranked, bare)
@@ -45,8 +40,63 @@ pub fn resolve(
 pub fn interpret(text: &str, catalog: &dyn Catalog, boosts: &Boosts) -> Vec<Outcome> {
     parse(text)
         .into_iter()
-        .map(|parsed| interpret_parsed(parsed, catalog, boosts))
+        .flat_map(|parsed| interpret_split(parsed, catalog, boosts))
         .collect()
+}
+
+const BARE_POP_MIN: u64 = 20_000;
+const WHOLE_NAME_MIN: f32 = 0.97;
+const SPLIT_PART_MIN: f32 = 0.95;
+
+fn sure(o: &Outcome, min: f32) -> bool {
+    if !o.parsed.intent.needs_entity() && o.parsed.intent != Intent::None {
+        return true;
+    }
+    match &o.decision {
+        Some(Decision::Act { pick }) => pick.sim >= min,
+        Some(Decision::Ask { first, .. }) => first.sim >= min,
+        _ => false,
+    }
+}
+
+fn interpret_split(mut parsed: Parsed, catalog: &dyn Catalog, boosts: &Boosts) -> Vec<Outcome> {
+    let splits = std::mem::take(&mut parsed.split);
+    let joined = interpret_parsed(parsed, catalog, boosts);
+    if splits.is_empty() || sure(&joined, WHOLE_NAME_MIN) {
+        return vec![joined];
+    }
+    for parts in splits {
+        let outs: Vec<Outcome> = parts
+            .into_iter()
+            .map(|p| interpret_parsed(p, catalog, boosts))
+            .collect();
+        if outs.iter().all(|o| sure(o, SPLIT_PART_MIN)) {
+            return outs;
+        }
+    }
+    vec![joined]
+}
+
+fn whole_name(parsed: &Parsed, catalog: &dyn Catalog, boosts: &Boosts) -> Option<Outcome> {
+    if parsed.alt.is_empty() {
+        return None;
+    }
+    let mut whole = parsed.clone();
+    whole.queries = parsed.alt.clone();
+    let d = resolve(&whole, catalog, boosts, true);
+    let sim = match &d {
+        Decision::Act { pick } => pick.sim,
+        Decision::Ask { first, .. } => first.sim,
+        Decision::NotFound => return None,
+    };
+    if sim < WHOLE_NAME_MIN {
+        return None;
+    }
+    Some(Outcome {
+        intent: Intent::Play,
+        parsed: whole,
+        decision: Some(d),
+    })
 }
 
 pub fn interpret_one(text: &str, catalog: &dyn Catalog, boosts: &Boosts) -> Outcome {
@@ -54,6 +104,9 @@ pub fn interpret_one(text: &str, catalog: &dyn Catalog, boosts: &Boosts) -> Outc
 }
 
 fn interpret_parsed(parsed: Parsed, catalog: &dyn Catalog, boosts: &Boosts) -> Outcome {
+    if let Some(whole) = whole_name(&parsed, catalog, boosts) {
+        return whole;
+    }
     let mut intent = parsed.intent;
     let mut decision = None;
     if parsed.queries.is_empty() {
@@ -66,7 +119,12 @@ fn interpret_parsed(parsed: Parsed, catalog: &dyn Catalog, boosts: &Boosts) -> O
     if intent == Intent::None {
         if parsed.bare {
             let d = resolve(&parsed, catalog, boosts, true);
-            if matches!(d, Decision::Act { .. } | Decision::Ask { .. }) {
+            let popular = match &d {
+                Decision::Act { pick } => pick.entity.popularity >= BARE_POP_MIN,
+                Decision::Ask { first, .. } => first.entity.popularity >= BARE_POP_MIN,
+                Decision::NotFound => false,
+            };
+            if popular {
                 intent = Intent::Play;
                 decision = Some(d);
             }
@@ -76,12 +134,23 @@ fn interpret_parsed(parsed: Parsed, catalog: &dyn Catalog, boosts: &Boosts) -> O
         Intent::Play | Intent::QueueAdd | Intent::PlaySimilar
     ) {
         let d = resolve(&parsed, catalog, boosts, false);
+        let d = match (&d, &parsed.kind_alt) {
+            (Decision::NotFound, Some(alt)) => {
+                let mut again = parsed.clone();
+                again.queries = alt.queries.clone();
+                again.kind_hint = alt.kind_hint;
+                resolve(&again, catalog, boosts, false)
+            }
+            _ => d,
+        };
         let sure = match &d {
             Decision::Act { pick } => pick.sim >= score::WEAK_VERB_MIN,
             Decision::Ask { first, .. } => first.sim >= score::WEAK_VERB_MIN,
             Decision::NotFound => false,
         };
-        if intent == Intent::Play && (matches!(d, Decision::NotFound) || (parsed.weak_verb && !sure)) {
+        if matches!(intent, Intent::Play | Intent::QueueAdd)
+            && (matches!(d, Decision::NotFound) || (parsed.weak_verb && !sure))
+        {
             intent = Intent::None;
         }
         decision = Some(d);

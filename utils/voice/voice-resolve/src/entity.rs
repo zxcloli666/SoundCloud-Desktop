@@ -27,12 +27,18 @@ pub struct Scored {
     pub sim: f32,
     pub qlen: usize,
     pub score: f32,
+    pub fallback: bool,
 }
 
 #[derive(Debug, Clone, Serialize)]
 #[serde(tag = "decision", rename_all = "snake_case")]
 pub enum Decision {
-    Act { pick: Scored },
-    Ask { first: Scored, second: Option<Scored> },
+    Act {
+        pick: Scored,
+    },
+    Ask {
+        first: Scored,
+        second: Option<Scored>,
+    },
     NotFound,
 }

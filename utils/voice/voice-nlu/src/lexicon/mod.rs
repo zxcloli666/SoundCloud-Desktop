@@ -1,25 +1,29 @@
 use std::collections::HashSet;
 use std::sync::OnceLock;
 
+mod content;
 mod filler;
 mod guard;
-mod play;
 mod kinds;
-mod content;
-mod volume;
-mod seek;
 mod library;
+mod noise;
+mod play;
+mod regional;
+mod seek;
 mod transport;
+mod volume;
 
+pub use content::*;
 pub use filler::*;
 pub use guard::*;
-pub use play::*;
 pub use kinds::*;
-pub use content::*;
-pub use volume::*;
-pub use seek::*;
 pub use library::*;
+pub use noise::*;
+pub use play::*;
+pub use regional::*;
+pub use seek::*;
 pub use transport::*;
+pub use volume::*;
 
 pub const ALL_LISTS: &[&[&str]] = &[
     FILLERS,
@@ -73,6 +77,18 @@ pub const ALL_LISTS: &[&[&str]] = &[
 ];
 
 pub const EXTRA_KNOWN: &[&str] = &[
+    "следующий",
+    "следующая",
+    "следующую",
+    "следующее",
+    "следующие",
+    "предыдущий",
+    "предыдущая",
+    "предыдущую",
+    "предыдущее",
+    "остановка",
+    "остановку",
+    "остановки",
     "класс",
     "классно",
     "хорошо",

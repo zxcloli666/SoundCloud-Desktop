@@ -37,10 +37,10 @@ phrase	intent	kind	entity	number	category	alt
 стоп и включи басту	play	artist	Баста		two_part	
 следующий трек и погромче	next+volume_up				two_part	
 лайкни и дальше	like+next				two_part	
-включи басту а потом скриптонита	play+play	artist+artist	Баста+Скриптонит		two_part	
+включи басту а потом скриптонита	play+queue_add	artist+artist	Баста+Скриптонит		two_part	
 включи притон а после него цепи	play+queue_add	track+track	Скриптонит - Притон+Скриптонит - Цепи		two_part	
 поставь на паузу я отойду	pause				two_part	
-сначала включи кино потом сплин	play+play	artist+artist	Кино+Сплин		two_part	
+сначала включи кино потом сплин	play+queue_add	artist+artist	Кино+Сплин		two_part	
 включи хочу мота	play	track	Мот - Хочу		command_name	
 громкость на четверть	volume_set			25	numbers	
 громкость на треть	volume_set			33	numbers	
@@ -168,7 +168,7 @@ turn it up a bit	volume_up				english
 следующую и лайкни	next+like				two_part	
 лайкни и следующую	like+next				two_part	
 выключи повтор и перемешай	repeat_off+shuffle_on				two_part	
-включи земфиру потом кино	play+play	artist+artist	Земфира+Кино		two_part	
+включи земфиру потом кино	play+queue_add	artist+artist	Земфира+Кино		two_part	
 сделай тише и включи похожее	volume_down+play_similar				two_part	
 громкость на три четверти	volume_set			75	numbers	
 громкость три четверти	volume_set			75	numbers	

@@ -1,0 +1,267 @@
+{
+  "voice": {
+    "category": "Голос",
+    "assistant": "Лоля",
+    "wakeWord": "Лоля",
+    "quote": "«{{text}}»",
+    "mic": {
+      "talk": "Сказать"
+    },
+    "hero": {
+      "state": {
+        "missing": "Нет движка",
+        "off": "Выключена",
+        "models": "Нужны модели",
+        "downloading": "Качаю модели",
+        "broken": "Модель повреждена",
+        "ready": "Готова",
+        "listening": "Слушаю",
+        "thinking": "Думаю",
+        "asking": "Уточняю",
+        "speaking": "Отвечаю",
+        "error": "Ошибка"
+      },
+      "toggle": "Голосовое управление",
+      "example": "включи Скриптонита",
+      "sayIt": "Говорите",
+      "typeLabel": "Команда текстом",
+      "send": "Отправить",
+      "orHold": "или зажмите",
+      "orPress": "или нажмите",
+      "turnOn": "Включить",
+      "turnOnSize": "Включить · {{size}}",
+      "modelsReady": "Модели готовы",
+      "download": "Скачать модели · {{size}}",
+      "repair": "Починить · {{size}}",
+      "engineMissing": "Движок не отвечает"
+    },
+    "hud": {
+      "listening": "Слушаю",
+      "thinking": "Думаю",
+      "stop": "Стоп",
+      "cancel": "Отмена",
+      "undo": "Отменить",
+      "ask": "Кого включить?",
+      "answerByVoice": "Можно ответить голосом",
+      "notFound": "Не нашлось",
+      "find": "Найти",
+      "hush": "Замолчать",
+      "downloading": "Голос: качаю модели",
+      "openModels": "Открыть модели"
+    },
+    "error": {
+      "mic_denied": "Нет доступа к микрофону",
+      "mic_busy": "Микрофон занят",
+      "mic_lost": "Микрофон отключился",
+      "no_models": "Нужно скачать модели",
+      "model_corrupt": "Модель повреждена",
+      "not_star": "Голос работает со STAR",
+      "network": "Нет связи с каталогом",
+      "asr_failed": "Не расслышала",
+      "tts_failed": "Не вышло ответить голосом",
+      "engine_missing": "Голосовой движок недоступен"
+    },
+    "fix": {
+      "privacy": "Разрешить",
+      "download": "Скачать",
+      "retry": "Повторить",
+      "pickMic": "Выбрать микрофон",
+      "pickVoice": "Выбрать голос",
+      "settings": "Настройки"
+    },
+    "activation": {
+      "title": "Как позвать",
+      "hotkey": "Клавиша",
+      "hold": "Удерживать",
+      "tap": "Нажать",
+      "headset": "Кнопка гарнитуры",
+      "gesture": {
+        "off": "Выкл",
+        "double": "2×",
+        "triple": "3×"
+      },
+      "headsetHow_one": "Нажмите кнопку {{count}} раз подряд",
+      "headsetHow_few": "Нажмите кнопку {{count}} раза подряд",
+      "headsetHow_many": "Нажмите кнопку {{count}} раз подряд",
+      "headsetHow_other": "Нажмите кнопку {{count}} раза подряд",
+      "test": "Проверить",
+      "pressNow_one": "Жмите {{count}} раз",
+      "pressNow_few": "Жмите {{count}} раза",
+      "pressNow_many": "Жмите {{count}} раз",
+      "pressNow_other": "Жмите {{count}} раза",
+      "stopTest": "Стоп",
+      "headsetWorks": "Работает",
+      "again": "Ещё раз",
+      "wake": "Слово «{{phrase}}»",
+      "needsEcho": "Без эхоподавления музыка будет будить Лолю",
+      "echoOn": "Включить",
+      "rarer": "Реже",
+      "oftener": "Чаще",
+      "falseCount_one": "{{count}} ложное",
+      "falseCount_few": "{{count}} ложных",
+      "falseCount_many": "{{count}} ложных",
+      "falseCount_other": "{{count}} ложных",
+      "lastDay": "за сутки"
+    },
+    "teach": {
+      "open": "Научить мой голос",
+      "retrain": "Переучить",
+      "taught": "Знает ваш голос",
+      "prompt": "Скажите «Лоля» пять раз",
+      "speak": "Говорите «Лоля»",
+      "saving": "Запоминаю",
+      "done": "Запомнила ваш голос",
+      "failed": "Не получилось",
+      "start": "Начать",
+      "next": "Дальше",
+      "progress": "{{count}} из {{total}}"
+    },
+    "mics": {
+      "title": "Микрофоны",
+      "mode": {
+        "chosen": "Выбранные",
+        "where_i_speak": "Где говорю",
+        "everywhere": "Везде"
+      },
+      "default": "По умолчанию",
+      "bluetooth": "Bluetooth",
+      "btWarning": "Наушники перейдут в режим звонка",
+      "none": "Микрофон не найден",
+      "refresh": "Обновить",
+      "echo": "Эхоподавление",
+      "echoMode": {
+        "auto": "Авто",
+        "on": "Вкл",
+        "off": "Выкл"
+      }
+    },
+    "voice": {
+      "title": "Голос ответа",
+      "preview": "Послушать: {{name}}",
+      "stopPreview": "Остановить",
+      "sound": "Звучание",
+      "speed": "Скорость",
+      "pitch": "Тон",
+      "speakOn": "Где говорить",
+      "speakMode": {
+        "with_music": "С музыкой",
+        "device": "Устройство",
+        "where_i_listen": "Где слушаю"
+      },
+      "duck": "Музыка под голосом",
+      "duckLabel": "Громкость музыки",
+      "replies": "Отвечать голосом"
+    },
+    "voices": {
+      "lolya": {
+        "name": "Лоля"
+      },
+      "calm": {
+        "name": "Спокойная"
+      },
+      "male": {
+        "name": "Мужской"
+      },
+      "robot": {
+        "name": "Робот"
+      },
+      "af_heart": {
+        "name": "Heart"
+      },
+      "am_michael": {
+        "name": "Michael"
+      }
+    },
+    "tags": {
+      "cute": "милая",
+      "bright": "звонкая",
+      "soft": "мягкая",
+      "calm": "ровная",
+      "deep": "низкий",
+      "synth": "синтез",
+      "fun": "забавный",
+      "warm": "тёплый",
+      "clear": "чёткий"
+    },
+    "speakers": {
+      "title": "Колонки",
+      "alice": "Алиса",
+      "salut": "Салют",
+      "connect": "Подключить",
+      "addMore": "Ещё одну",
+      "notLinked": "Не подключено",
+      "linked_one": "Подключено: {{count}}",
+      "linked_few": "Подключено: {{count}}",
+      "linked_many": "Подключено: {{count}}",
+      "linked_other": "Подключено: {{count}}",
+      "justLinked": "Подключено",
+      "how": {
+        "alice": "Скажите «Алиса, запусти навык Лоля» и введите код",
+        "salut": "Скажите «Салют, запусти Лолю» и назовите код"
+      },
+      "copy": "Копировать",
+      "copied": "Скопировано",
+      "cancel": "Отмена",
+      "codeFailed": "Код не пришёл, попробуйте ещё раз",
+      "lastUsed": "Команда {{when}}",
+      "neverUsed": "Команд ещё не было",
+      "revoke": "Отвязать",
+      "revokeYes": "Отвязать",
+      "remote": {
+        "live": "На связи",
+        "retrying": "Переподключаюсь"
+      }
+    },
+    "models": {
+      "title": "Модели",
+      "onDisk": "{{size}} на диске",
+      "getAll": "Скачать · {{size}}",
+      "get": "Скачать: {{name}}",
+      "delete": "Удалить: {{name}}",
+      "resume": "Докачать",
+      "repair": "Скачать заново",
+      "optional": "по желанию",
+      "own": "наша",
+      "none": "Список моделей недоступен",
+      "kind": {
+        "vad": "Детектор речи",
+        "asr": "Распознавание",
+        "tts": "Синтез голоса",
+        "wake": "Слово-триггер",
+        "g2p": "Произношение",
+        "llm": "Умный разбор"
+      }
+    },
+    "history": {
+      "title": "История",
+      "empty": "Здесь появятся ваши команды",
+      "try": "Попробовать",
+      "clear": "Очистить",
+      "wrong": "Понято неверно",
+      "markedWrong": "Неверно",
+      "more_one": "Ещё {{count}}",
+      "more_few": "Ещё {{count}}",
+      "more_many": "Ещё {{count}}",
+      "more_other": "Ещё {{count}}",
+      "less": "Свернуть"
+    },
+    "locked": {
+      "badge": "STAR",
+      "title": "Музыка слушается голоса",
+      "sub": "Лоля включит, переключит и лайкнет по одной фразе",
+      "example": {
+        "play": "Включи Скриптонита",
+        "volume": "Громкость 50",
+        "like": "Лайк"
+      },
+      "listen": "Послушать Лолю",
+      "voices": "Голоса"
+    },
+    "units": {
+      "b": "Б",
+      "kb": "КБ",
+      "mb": "МБ",
+      "gb": "ГБ"
+    }
+  }
+}

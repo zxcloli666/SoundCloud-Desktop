@@ -20,7 +20,7 @@ phrase	intent	kind	entity	number	category
 верни прошлую	previous				plain
 верни прошлый трек	previous				plain
 громкость пополам	volume_set			50	plain
-громкость на 5	volume_set			5	plain
+громкость на 5	volume_set			50	plain
 громкость 0	volume_set			0	plain
 звук на 20	volume_set			20	plain
 поставь звук на пятьдесят	volume_set			50	plain

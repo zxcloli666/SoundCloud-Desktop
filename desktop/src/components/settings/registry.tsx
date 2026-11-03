@@ -35,11 +35,14 @@ import {ThemesCard} from './cards/ThemesCard';
 import {UiScaleCard} from './cards/UiScaleCard';
 import {UpdatesCard} from './cards/UpdatesCard';
 import {WallpaperCard} from './cards/WallpaperCard';
+import {Mic} from '../voice/icons';
+import {VoiceSettings} from '../voice/VoiceSettings';
 
 export type SettingsCategoryId =
     | 'general'
     | 'appearance'
     | 'audio'
+    | 'voice'
     | 'network'
     | 'integrations'
     | 'storage'
@@ -104,6 +107,12 @@ export const SETTINGS_CATEGORIES: SettingsCategory[] = [
                 <AudioDeviceCard/>
             </>
         ),
+    },
+    {
+        id: 'voice',
+        labelKey: 'voice.category',
+        icon: <Mic size={17}/>,
+        Body: () => <VoiceSettings/>,
     },
     {
         id: 'network',

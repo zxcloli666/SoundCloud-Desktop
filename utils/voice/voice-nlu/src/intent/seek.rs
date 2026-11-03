@@ -173,7 +173,11 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
     let jump_verb = c.has(JUMP_VERBS) || (c.has(&["to"]) && c.has(&["go", "skip"]));
     let set_verb = c.has(SET_VERBS) && t.found;
     let skip_verb = c.has(SKIP_VERBS);
-    let back_verb = c.has(BACK_VERBS) || c.has_stem(&["отмот"]);
+    let plus = c.has(&["плюс"]);
+    let minus = c.has(&["минус"]);
+    let back_verb =
+        c.has(BACK_VERBS) || c.has_stem(&["отмот"]) || c.has(&["вернись", "вернуться"]) || minus;
+    let on_time = c.at(0) == "на" && t.found && !fwd && !back && !plus && !minus;
     let explicit_dir = back || (fwd && c.at(0) != "дальше");
     let has_dir = explicit_dir || (fwd && t.found);
 
@@ -183,10 +187,16 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
             || set_verb
             || (t.ordinal && t.found)
             || (explicit_dir && t.bare.is_some())
-            || ((skip_verb || has_dir) && t.found)
+            || ((skip_verb || has_dir || plus || minus) && t.found)
+            || (back_verb && t.found)
+            || on_time
     } else {
         seek_verb && c.len() <= 4
     };
+
+    if c.has_stem(&["середин"]) && (seek_verb || c.at(0) == "на") && c.len() <= 6 {
+        return Some(Detected::new(Intent::SeekTo, vec![]).fraction(0.5));
+    }
 
     let to_start = c.len() <= 6
         && !t.found
@@ -202,7 +212,7 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
         } else {
             t.bare.unwrap_or(10)
         };
-        let absolute = t.ordinal || jump_verb || set_verb;
+        let absolute = t.ordinal || jump_verb || set_verb || on_time;
         let intent = if absolute || (t.clock && !has_dir) {
             Intent::SeekTo
         } else if back || back_verb {

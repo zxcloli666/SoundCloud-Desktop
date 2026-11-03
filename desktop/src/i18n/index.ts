@@ -11,6 +11,14 @@ const localeLoaders = {
   pt: () => import('./locales/pt.json'),
 } as const;
 
+const voiceLoaders = {
+  en: () => import('./locales/voice/en.json'),
+  ru: () => import('./locales/voice/ru.json'),
+  tr: () => import('./locales/voice/tr.json'),
+  ko: () => import('./locales/voice/ko.json'),
+  pt: () => import('./locales/voice/pt.json'),
+} as const;
+
 type AppLanguage = keyof typeof localeLoaders;
 
 function normalizeLanguage(language: string | undefined | null): AppLanguage {
@@ -35,8 +43,12 @@ export async function ensureLocaleLoaded(language: string) {
     return normalized;
   }
 
-  const module = await localeLoaders[normalized]();
+  const [module, voice] = await Promise.all([
+    localeLoaders[normalized](),
+    voiceLoaders[normalized](),
+  ]);
   i18n.addResourceBundle(normalized, 'translation', module.default, true, true);
+  i18n.addResourceBundle(normalized, 'translation', voice.default, true, true);
   loadedLanguages.add(normalized);
   return normalized;
 }

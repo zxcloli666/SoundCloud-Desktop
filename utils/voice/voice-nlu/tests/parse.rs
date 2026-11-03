@@ -93,13 +93,87 @@ fn lemma_rules_cover_common_case_forms() {
 #[test]
 fn two_part_commands_run_in_order() {
     let names = |t: &str| -> Vec<&'static str> {
-        voice_nlu::parse(t).iter().map(|p| p.intent.name()).collect()
+        voice_nlu::parse(t)
+            .iter()
+            .map(|p| p.intent.name())
+            .collect()
     };
-    assert_eq!(names("выключи повтор и перемешай"), ["repeat_off", "shuffle_on"]);
+    assert_eq!(
+        names("выключи повтор и перемешай"),
+        ["repeat_off", "shuffle_on"]
+    );
     assert_eq!(names("сделай погромче и следующий"), ["volume_up", "next"]);
     assert_eq!(names("выключи и включи скриптонита"), ["play"]);
     assert_eq!(names("включи король и шут"), ["play"]);
     assert_eq!(names("поставь на паузу мне звонят"), ["pause"]);
     assert_eq!(names("не надо паузу"), ["none"]);
     assert_eq!(names("не, дальше"), ["next"]);
+}
+
+fn steps(t: &str) -> Vec<&'static str> {
+    voice_nlu::parse(t)
+        .iter()
+        .map(|p| p.intent.name())
+        .collect()
+}
+
+#[test]
+fn corrections_keep_the_last_version() {
+    assert_eq!(steps("громче нет тише"), ["volume_down"]);
+    assert_eq!(steps("следующий ой назад"), ["previous"]);
+    let p = &voice_nlu::parse("громкость на тридцать нет на сорок")[0];
+    assert_eq!((p.intent, p.number), (Intent::VolumeSet, Some(40)));
+    let p = &voice_nlu::parse("включи басту нет скриптонита")[0];
+    assert!(p.queries.iter().any(|q| q.text == "скриптонита"));
+    assert!(!p.queries.iter().any(|q| q.text.contains("баст")));
+}
+
+#[test]
+fn negation_covers_every_verb_form_and_each_step() {
+    assert_eq!(steps("не лайкай"), ["none"]);
+    assert_eq!(steps("не лайкни"), ["none"]);
+    assert_eq!(steps("не скипай"), ["none"]);
+    assert_eq!(steps("лайкни но не скипай"), ["like"]);
+    assert_eq!(
+        steps("выключи повтор и перемешивание"),
+        ["repeat_off", "shuffle_off"]
+    );
+}
+
+#[test]
+fn unknown_words_around_a_command_are_tolerated() {
+    assert_eq!(steps("сделай погромче а то не слышно"), ["volume_up"]);
+    assert_eq!(steps("ёпт пауза"), ["pause"]);
+    assert_eq!(steps("эээ ну следующий наверное"), ["next"]);
+    assert_eq!(steps("пауза в разговоре затянулась"), ["none"]);
+    assert_eq!(steps("следующая остановка"), ["none"]);
+    assert_eq!(steps("перемешай колоду"), ["none"]);
+}
+
+#[test]
+fn loan_slang_and_regional_forms_by_stem() {
+    for (text, want) in [
+        ("репитни", "repeat_one"),
+        ("мьютни", "mute"),
+        ("размуть", "unmute"),
+        ("перетасуй", "shuffle_on"),
+        ("плейни", "resume"),
+        ("далі", "next"),
+        ("гучніше", "volume_up"),
+        ("цішэй", "volume_down"),
+    ] {
+        assert_eq!(steps(text), [want], "{text}");
+    }
+}
+
+#[test]
+fn numbers_fractions_and_signed_seeks() {
+    let one = |t: &str| voice_nlu::parse(t).remove(0);
+    assert_eq!(one("громкость на семь из десяти").number, Some(70));
+    assert_eq!(one("громкость три").number, Some(30));
+    assert_eq!(one("на середину").fraction, Some(0.5));
+    let p = one("минус десять секунд");
+    assert_eq!((p.intent, p.number), (Intent::SeekBackward, Some(10)));
+    let p = one("плюс тридцать секунд");
+    assert_eq!((p.intent, p.number), (Intent::SeekForward, Some(30)));
 }

@@ -454,3 +454,11 @@ pub fn similarity(a: &str, b: &str) -> f32 {
     }
     (1.0 - distance(a, b) / longest as f32).max(0.0)
 }
+
+pub fn strict_similarity(a: &str, b: &str) -> f32 {
+    let longest = a.chars().count().max(b.chars().count());
+    if longest == 0 {
+        return 0.0;
+    }
+    1.0 - crate::intent::edit_distance(a, b) as f32 / longest as f32
+}

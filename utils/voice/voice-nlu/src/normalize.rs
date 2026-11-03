@@ -1,5 +1,6 @@
-use crate::lexicon::{self, DROP_PHRASES, MERGE_PHRASES, PLAY_STRONG, SWEARS_AMB};
+use crate::lexicon::{self, DROP_PHRASES, MERGE_PHRASES, PLAY_STRONG, STOP_WORDS, SWEARS_AMB};
 use crate::numbers;
+use crate::repair;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Tok {
@@ -16,12 +17,15 @@ pub struct Normalized {
 pub fn normalize(input: &str) -> Normalized {
     let cleaned = clean(input);
     let mut words: Vec<String> = Vec::new();
-    for raw in cleaned.split_whitespace() {
+    let spoken = repair::context(repair::glue(
+        cleaned.split_whitespace().map(str::to_string).collect(),
+    ));
+    for raw in spoken.iter().map(String::as_str) {
         let fixed = fix_word(raw);
         words.extend(fixed.split_whitespace().map(str::to_string));
     }
-    let words = apply_phrases(words);
-    let words = numbers::merge(&numbers::colloquial(words), false);
+    let words = apply_phrases(repair::stutter(repair::glue(words)));
+    let words = numbers::out_of_ten(numbers::merge(&numbers::colloquial(words), false));
     let words = drop_swears(dedupe(words));
     let toks: Vec<Tok> = words
         .into_iter()
@@ -37,6 +41,13 @@ pub fn normalize(input: &str) -> Normalized {
         .collect::<Vec<_>>()
         .join(" ");
     Normalized { toks, text }
+}
+
+pub fn words(input: &str) -> Vec<String> {
+    clean(input)
+        .split_whitespace()
+        .map(str::to_string)
+        .collect()
 }
 
 fn clean(input: &str) -> String {
@@ -75,6 +86,9 @@ fn fix_word(w: &str) -> String {
         return w.to_string();
     }
     let c = collapse(w);
+    if let Some(s) = lexicon::canon(&c) {
+        return s.to_string();
+    }
     match lexicon::slang(&c) {
         Some(s) => s.to_string(),
         None => c,
@@ -177,7 +191,10 @@ fn dedupe(words: Vec<String>) -> Vec<String> {
 }
 
 fn drop_swears(words: Vec<String>) -> Vec<String> {
-    if !words.iter().any(|w| PLAY_STRONG.contains(&w.as_str())) {
+    if !words
+        .iter()
+        .any(|w| PLAY_STRONG.contains(&w.as_str()) || STOP_WORDS.contains(&w.as_str()))
+    {
         return words;
     }
     words

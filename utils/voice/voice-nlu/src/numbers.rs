@@ -190,6 +190,9 @@ const SLANG_NUMBERS: &[(&str, u32)] = &[
     ("четверть", 25),
     ("треть", 33),
     ("полтос", 50),
+    ("полста", 50),
+    ("тридцатник", 30),
+    ("двадцатник", 20),
     ("полтинник", 50),
     ("полтинника", 50),
     ("сотка", 100),
@@ -278,6 +281,26 @@ pub fn colloquial(words: Vec<String>) -> Vec<String> {
             out.push(words[i].clone());
         }
         i += 1;
+    }
+    out
+}
+
+pub fn out_of_ten(words: Vec<String>) -> Vec<String> {
+    let mut out: Vec<String> = Vec::new();
+    let mut i = 0;
+    while i < words.len() {
+        let scale = words.get(i + 1).is_some_and(|w| w == "из")
+            && words.get(i + 2).is_some_and(|w| w == "10");
+        match (scale, value(&words[i])) {
+            (true, Some(n)) => {
+                out.push((n * 10).to_string());
+                i += 3;
+            }
+            _ => {
+                out.push(words[i].clone());
+                i += 1;
+            }
+        }
     }
     out
 }

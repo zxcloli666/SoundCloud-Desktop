@@ -1,16 +1,19 @@
+mod anchor;
+mod correct;
 mod fold;
 mod intent;
 mod lexicon;
 mod normalize;
 mod numbers;
+mod repair;
 mod slots;
 mod steps;
 mod types;
 mod variants;
 
-pub use fold::{distance, fold, fold_words, similarity, skeleton};
+pub use fold::{distance, fold, fold_words, similarity, skeleton, strict_similarity};
 pub use normalize::{Normalized, Tok, normalize};
-pub use types::{Intent, Kind, Parsed, Variant};
+pub use types::{Intent, Kind, Parsed, Reading, Variant};
 pub use variants::lemma;
 
 pub use steps::parse;
@@ -20,17 +23,26 @@ pub fn parse_one(text: &str) -> Parsed {
 }
 
 pub(crate) fn parse_toks(text: &str, mut toks: Vec<Tok>) -> (Parsed, bool) {
-    match intent::negation(&toks) {
-        intent::Negation::Cancel => return (cancelled(text, &toks), true),
-        intent::Negation::Tail(j) => toks.drain(..j).for_each(drop),
-        intent::Negation::Clear => {}
-    }
-    if let Some(k) = intent::remark(&toks) {
-        toks.truncate(k);
+    let original = toks.clone();
+    let mut cut = false;
+    if !intent::indirect_hit(&toks) {
+        match intent::negation(&toks) {
+            intent::Negation::Cancel => return (cancelled(text, &toks), true),
+            intent::Negation::Tail(j) => toks.drain(..j).for_each(drop),
+            intent::Negation::Clear => {}
+        }
+        if let Some(k) = intent::remark(&toks) {
+            toks.truncate(k);
+            cut = true;
+        }
     }
     let mut det = intent::detect(&toks);
     if det.intent == Intent::None && !det.blocked {
-        if let Some(fixed) = intent::fuzzy_fix(&toks) {
+        if let Some(found) = anchor::find(&toks) {
+            toks = found.window;
+            det = found.det;
+            cut = true;
+        } else if let Some(fixed) = intent::fuzzy_fix(&toks) {
             let again = intent::detect(&fixed);
             if again.intent != Intent::None {
                 toks = fixed;
@@ -39,7 +51,8 @@ pub(crate) fn parse_toks(text: &str, mut toks: Vec<Tok>) -> (Parsed, bool) {
         }
     }
     let s = slots::extract(&toks, &det);
-    let queries = variants::expand(&s.raw);
+    let entity_intent = matches!(det.intent, Intent::Play | Intent::QueueAdd);
+    let queries = variants::expand(&s.raw, entity_intent);
     let edge = |t: Option<&Tok>| {
         t.is_some_and(|t| {
             let w = t.w.as_str();
@@ -59,6 +72,15 @@ pub(crate) fn parse_toks(text: &str, mut toks: Vec<Tok>) -> (Parsed, bool) {
     } else {
         queries
     };
+    let alt = if cut {
+        whole_name(&original)
+    } else {
+        Vec::new()
+    };
+    let kind_alt = s.alt.map(|(kind_hint, raw)| Reading {
+        queries: variants::expand(&raw, false),
+        kind_hint,
+    });
     let normalized = toks
         .iter()
         .map(|t| t.w.as_str())
@@ -74,8 +96,26 @@ pub(crate) fn parse_toks(text: &str, mut toks: Vec<Tok>) -> (Parsed, bool) {
         normalized,
         bare,
         weak_verb: det.weak,
+        fraction: det.fraction,
+        alt,
+        kind_alt,
+        split: Vec::new(),
     };
     (parsed, blocked)
+}
+
+pub(crate) fn whole_name(toks: &[Tok]) -> Vec<Variant> {
+    let rest: Vec<Tok> = toks
+        .iter()
+        .filter(|t| !lexicon::PLAY_STRONG.contains(&t.w.as_str()))
+        .cloned()
+        .collect();
+    let loose = |t: Option<&Tok>| t.is_some_and(|t| lexicon::PRE.contains(&t.w.as_str()));
+    if loose(rest.first()) || loose(rest.last()) {
+        return Vec::new();
+    }
+    let s = slots::extract(&rest, &intent::Detected::none());
+    variants::expand(&s.raw, false)
 }
 
 fn cancelled(text: &str, toks: &[Tok]) -> Parsed {
@@ -85,8 +125,16 @@ fn cancelled(text: &str, toks: &[Tok]) -> Parsed {
         queries: Vec::new(),
         number: None,
         heard: text.to_string(),
-        normalized: toks.iter().map(|t| t.w.as_str()).collect::<Vec<_>>().join(" "),
+        normalized: toks
+            .iter()
+            .map(|t| t.w.as_str())
+            .collect::<Vec<_>>()
+            .join(" "),
         bare: false,
         weak_verb: false,
+        fraction: None,
+        alt: Vec::new(),
+        kind_alt: None,
+        split: Vec::new(),
     }
 }

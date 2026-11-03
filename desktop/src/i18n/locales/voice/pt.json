@@ -1,0 +1,262 @@
+{
+  "voice": {
+    "category": "Voz",
+    "assistant": "Lolya",
+    "wakeWord": "Lolya",
+    "quote": "“{{text}}”",
+    "mic": {
+      "talk": "Falar"
+    },
+    "hero": {
+      "state": {
+        "missing": "Sem motor",
+        "off": "Desligada",
+        "models": "Faltam modelos",
+        "downloading": "Baixando",
+        "broken": "Modelo danificado",
+        "ready": "Pronta",
+        "listening": "Ouvindo",
+        "thinking": "Pensando",
+        "asking": "Perguntando",
+        "speaking": "Falando",
+        "error": "Erro"
+      },
+      "toggle": "Controle por voz",
+      "example": "toque Billie Eilish",
+      "sayIt": "Fale agora",
+      "typeLabel": "Digite um comando",
+      "send": "Enviar",
+      "orHold": "ou segure",
+      "orPress": "ou pressione",
+      "turnOn": "Ligar",
+      "turnOnSize": "Ligar · {{size}}",
+      "modelsReady": "Modelos prontos",
+      "download": "Baixar modelos · {{size}}",
+      "repair": "Reparar · {{size}}",
+      "engineMissing": "Motor não responde"
+    },
+    "hud": {
+      "listening": "Ouvindo",
+      "thinking": "Pensando",
+      "stop": "Parar",
+      "cancel": "Cancelar",
+      "undo": "Desfazer",
+      "ask": "Qual deles?",
+      "answerByVoice": "Dá para responder por voz",
+      "notFound": "Não encontrado",
+      "find": "Buscar",
+      "hush": "Silenciar",
+      "downloading": "Voz: baixando modelos",
+      "openModels": "Abrir modelos"
+    },
+    "error": {
+      "mic_denied": "Sem acesso ao microfone",
+      "mic_busy": "Microfone ocupado",
+      "mic_lost": "Microfone desconectado",
+      "no_models": "É preciso baixar modelos",
+      "model_corrupt": "Um modelo está danificado",
+      "not_star": "Voz vem com STAR",
+      "network": "Catálogo inacessível",
+      "asr_failed": "Não entendi",
+      "tts_failed": "Não deu para responder por voz",
+      "engine_missing": "Motor de voz indisponível"
+    },
+    "fix": {
+      "privacy": "Permitir",
+      "download": "Baixar",
+      "retry": "Tentar de novo",
+      "pickMic": "Escolher microfone",
+      "pickVoice": "Escolher voz",
+      "settings": "Ajustes"
+    },
+    "activation": {
+      "title": "Como chamar",
+      "hotkey": "Tecla",
+      "hold": "Segurar",
+      "tap": "Tocar",
+      "headset": "Botão do fone",
+      "gesture": {
+        "off": "Desl.",
+        "double": "2×",
+        "triple": "3×"
+      },
+      "headsetHow_one": "Aperte o botão {{count}} vez",
+      "headsetHow_other": "Aperte o botão {{count}} vezes seguidas",
+      "test": "Testar",
+      "pressNow_one": "Aperte {{count}} vez",
+      "pressNow_other": "Aperte {{count}} vezes agora",
+      "stopTest": "Parar",
+      "headsetWorks": "Funciona",
+      "again": "De novo",
+      "wake": "Diga “{{phrase}}”",
+      "needsEcho": "Sem cancelamento de eco a música acorda a Lolya",
+      "echoOn": "Ligar",
+      "rarer": "Menos",
+      "oftener": "Mais fácil",
+      "falseCount_one": "{{count}} falso",
+      "falseCount_other": "{{count}} falsos",
+      "lastDay": "últimas 24 h",
+      "headsetHow_many": "Aperte o botão {{count}} vezes seguidas",
+      "pressNow_many": "Aperte {{count}} vezes agora",
+      "falseCount_many": "{{count}} falsos"
+    },
+    "teach": {
+      "open": "Ensinar minha voz",
+      "retrain": "Reensinar",
+      "taught": "Conhece sua voz",
+      "prompt": "Diga “Lolya” cinco vezes",
+      "speak": "Diga “Lolya”",
+      "saving": "Salvando",
+      "done": "Sua voz foi salva",
+      "failed": "Não deu certo",
+      "start": "Começar",
+      "next": "Próximo",
+      "progress": "{{count}} de {{total}}"
+    },
+    "mics": {
+      "title": "Microfones",
+      "mode": {
+        "chosen": "Escolhidos",
+        "where_i_speak": "Onde falo",
+        "everywhere": "Todos"
+      },
+      "default": "Padrão",
+      "bluetooth": "Bluetooth",
+      "btWarning": "O fone muda para qualidade de chamada",
+      "none": "Nenhum microfone",
+      "refresh": "Atualizar",
+      "echo": "Cancelamento de eco",
+      "echoMode": {
+        "auto": "Auto",
+        "on": "Lig.",
+        "off": "Desl."
+      }
+    },
+    "voice": {
+      "title": "Voz da resposta",
+      "preview": "Ouvir: {{name}}",
+      "stopPreview": "Parar",
+      "sound": "Som",
+      "speed": "Velocidade",
+      "pitch": "Tom",
+      "speakOn": "Onde falar",
+      "speakMode": {
+        "with_music": "Com a música",
+        "device": "Dispositivo",
+        "where_i_listen": "Onde ouço"
+      },
+      "duck": "Música sob a voz",
+      "duckLabel": "Volume da música",
+      "replies": "Responder por voz"
+    },
+    "voices": {
+      "lolya": {
+        "name": "Lolya"
+      },
+      "calm": {
+        "name": "Calma"
+      },
+      "male": {
+        "name": "Masculina"
+      },
+      "robot": {
+        "name": "Robô"
+      },
+      "af_heart": {
+        "name": "Heart"
+      },
+      "am_michael": {
+        "name": "Michael"
+      }
+    },
+    "tags": {
+      "cute": "fofa",
+      "bright": "viva",
+      "soft": "suave",
+      "calm": "serena",
+      "deep": "grave",
+      "synth": "sintética",
+      "fun": "divertida",
+      "warm": "quente",
+      "clear": "clara"
+    },
+    "speakers": {
+      "title": "Caixas de som",
+      "alice": "Alice",
+      "salut": "Salut",
+      "connect": "Conectar",
+      "addMore": "Mais uma",
+      "notLinked": "Não conectada",
+      "linked_one": "{{count}} conectada",
+      "linked_other": "{{count}} conectadas",
+      "justLinked": "Conectada",
+      "how": {
+        "alice": "Diga “Alice, abra a skill Lolya” e digite o código",
+        "salut": "Diga “Salut, abra a Lolya” e fale o código"
+      },
+      "copy": "Copiar",
+      "copied": "Copiado",
+      "cancel": "Cancelar",
+      "codeFailed": "O código não chegou, tente de novo",
+      "lastUsed": "Último comando {{when}}",
+      "neverUsed": "Nenhum comando ainda",
+      "revoke": "Desvincular",
+      "revokeYes": "Desvincular",
+      "remote": {
+        "live": "Online",
+        "retrying": "Reconectando"
+      },
+      "linked_many": "{{count}} conectadas"
+    },
+    "models": {
+      "title": "Modelos",
+      "onDisk": "{{size}} no disco",
+      "getAll": "Baixar · {{size}}",
+      "get": "Baixar {{name}}",
+      "delete": "Excluir {{name}}",
+      "resume": "Retomar",
+      "repair": "Baixar de novo",
+      "optional": "opcional",
+      "own": "nossa",
+      "none": "Lista de modelos indisponível",
+      "kind": {
+        "vad": "Detector de fala",
+        "asr": "Reconhecimento",
+        "tts": "Síntese de voz",
+        "wake": "Palavra de ativação",
+        "g2p": "Pronúncia",
+        "llm": "Análise inteligente"
+      }
+    },
+    "history": {
+      "title": "Histórico",
+      "empty": "Seus comandos aparecem aqui",
+      "try": "Experimentar",
+      "clear": "Limpar",
+      "wrong": "Entendido errado",
+      "markedWrong": "Errado",
+      "more_one": "Mais {{count}}",
+      "more_other": "Mais {{count}}",
+      "less": "Mostrar menos",
+      "more_many": "Mais {{count}}"
+    },
+    "locked": {
+      "badge": "STAR",
+      "title": "Música que escuta você",
+      "sub": "A Lolya toca, pula e curte com uma frase",
+      "example": {
+        "play": "Toque Billie Eilish",
+        "volume": "Volume 50",
+        "like": "Curtir"
+      },
+      "listen": "Ouvir a Lolya",
+      "voices": "Vozes"
+    },
+    "units": {
+      "b": "B",
+      "kb": "KB",
+      "mb": "MB",
+      "gb": "GB"
+    }
+  }
+}
