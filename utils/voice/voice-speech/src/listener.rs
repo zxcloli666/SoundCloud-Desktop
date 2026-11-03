@@ -1,19 +1,25 @@
 use std::collections::VecDeque;
 use std::path::PathBuf;
 
-use sherpa_onnx::{
-    OnlineRecognizer, OnlineRecognizerConfig, OnlineStream, SileroVadModelConfig, VadModelConfig,
-    VoiceActivityDetector,
-};
+use sherpa_onnx::{SileroVadModelConfig, VadModelConfig, VoiceActivityDetector};
 
 use crate::SAMPLE_RATE;
+use crate::batch::Batch;
+use crate::streaming::Streaming;
 
 const PREROLL: usize = SAMPLE_RATE as usize / 2;
 const TAIL: usize = SAMPLE_RATE as usize * 3 / 10;
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Model {
+    Zipformer,
+    Moonshine,
+}
+
 pub struct Options {
     pub vad_model: PathBuf,
     pub asr_dir: PathBuf,
+    pub model: Model,
     pub threads: i32,
     pub hotwords: Vec<String>,
     pub hotwords_score: f32,
@@ -25,11 +31,14 @@ pub enum Event {
     Final(String),
 }
 
+enum Asr {
+    Streaming(Streaming),
+    Batch(Batch),
+}
+
 pub struct Listener {
     vad: VoiceActivityDetector,
-    recognizer: OnlineRecognizer,
-    hotwords: String,
-    stream: Option<OnlineStream>,
+    asr: Asr,
     preroll: VecDeque<f32>,
     last_partial: String,
 }
@@ -52,32 +61,29 @@ impl Listener {
         };
         let vad =
             VoiceActivityDetector::create(&vad_config, 30.0).ok_or("vad model did not load")?;
-
         let dir = &options.asr_dir;
-        let file = |name: &str| Some(dir.join(name).display().to_string());
-        let mut config = OnlineRecognizerConfig::default();
-        config.model_config.transducer.encoder = file("encoder.int8.onnx");
-        config.model_config.transducer.decoder = file("decoder.onnx");
-        config.model_config.transducer.joiner = file("joiner.int8.onnx");
-        config.model_config.tokens = file("tokens.txt");
-        config.model_config.num_threads = options.threads;
-        config.decoding_method = Some("modified_beam_search".into());
-        config.max_active_paths = 4;
-        config.hotwords_score = options.hotwords_score;
-        if !options.hotwords.is_empty() {
-            config.model_config.modeling_unit = Some("bpe".into());
-            config.model_config.bpe_vocab = file("bpe.vocab");
-        }
-        let recognizer = OnlineRecognizer::create(&config).ok_or("asr model did not load")?;
-
+        let asr = match options.model {
+            Model::Zipformer => Asr::Streaming(Streaming::open(
+                dir,
+                options.threads,
+                &options.hotwords,
+                options.hotwords_score,
+            )?),
+            Model::Moonshine => Asr::Batch(Batch::open(dir, options.threads)?),
+        };
         Ok(Self {
             vad,
-            recognizer,
-            hotwords: options.hotwords.join("/"),
-            stream: None,
+            asr,
             preroll: VecDeque::new(),
             last_partial: String::new(),
         })
+    }
+
+    pub fn in_speech(&self) -> bool {
+        match &self.asr {
+            Asr::Streaming(s) => s.active(),
+            Asr::Batch(b) => b.active(),
+        }
     }
 
     pub fn push(&mut self, samples: &[f32]) -> Vec<Event> {
@@ -88,7 +94,7 @@ impl Listener {
         }
         let speaking = self.vad.detected();
 
-        if self.stream.is_none() {
+        if !self.in_speech() {
             self.preroll.extend(samples);
             while self.preroll.len() > PREROLL {
                 self.preroll.pop_front();
@@ -96,20 +102,20 @@ impl Listener {
             if !speaking {
                 return events;
             }
-            let stream = if self.hotwords.is_empty() {
-                self.recognizer.create_stream()
-            } else {
-                self.recognizer.create_stream_with_hotwords(&self.hotwords)
-            };
             let head: Vec<f32> = self.preroll.drain(..).collect();
-            stream.accept_waveform(SAMPLE_RATE, &head);
-            self.stream = Some(stream);
-        } else if let Some(stream) = &self.stream {
-            stream.accept_waveform(SAMPLE_RATE, samples);
+            match &mut self.asr {
+                Asr::Streaming(s) => s.begin(&head),
+                Asr::Batch(b) => b.begin(&head),
+            }
+        } else {
+            match &mut self.asr {
+                Asr::Streaming(s) => s.accept(samples),
+                Asr::Batch(b) => b.accept(samples),
+            }
         }
 
-        self.decode();
-        if let Some(text) = self.current_text()
+        if let Asr::Streaming(s) = &self.asr
+            && let Some(text) = s.text()
             && text != self.last_partial
             && !text.is_empty()
         {
@@ -123,17 +129,14 @@ impl Listener {
     }
 
     pub fn finish(&mut self) -> Option<Event> {
-        let stream = self.stream.take()?;
-        stream.accept_waveform(SAMPLE_RATE, &vec![0.0; TAIL]);
-        stream.input_finished();
-        while self.recognizer.is_ready(&stream) {
-            self.recognizer.decode(&stream);
+        if !self.in_speech() {
+            return None;
         }
-        let text = self
-            .recognizer
-            .get_result(&stream)
-            .map(|r| r.text.trim().to_string())
-            .unwrap_or_default();
+        let tail = vec![0.0; TAIL];
+        let text = match &mut self.asr {
+            Asr::Streaming(s) => s.end(&tail),
+            Asr::Batch(b) => b.end(&tail),
+        };
         self.last_partial.clear();
         self.vad.reset();
         if text.is_empty() {
@@ -143,17 +146,13 @@ impl Listener {
         }
     }
 
-    fn decode(&self) {
-        if let Some(stream) = &self.stream {
-            while self.recognizer.is_ready(stream) {
-                self.recognizer.decode(stream);
-            }
+    pub fn reset(&mut self) {
+        match &mut self.asr {
+            Asr::Streaming(s) => s.drop_stream(),
+            Asr::Batch(b) => b.drop_stream(),
         }
-    }
-
-    fn current_text(&self) -> Option<String> {
-        let stream = self.stream.as_ref()?;
-        let result = self.recognizer.get_result(stream)?;
-        Some(result.text.trim().to_string())
+        self.preroll.clear();
+        self.last_partial.clear();
+        self.vad.reset();
     }
 }

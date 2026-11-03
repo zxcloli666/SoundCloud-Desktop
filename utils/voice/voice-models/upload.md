@@ -4,6 +4,8 @@ Base: `s3://<bucket>/voice-models/<id>/<version>/<path>`, public at `https://sto
 
 Source: `/Users/loli/Developer/SoundCloud/.worktrees/voice-cache/models/` (upstream sherpa-onnx `asr-models` release files, unchanged). `bpe.vocab` (in the Vosk model) is ours, not upstream: generated from `bpe.model` with sentencepiece in podman (`id_to_piece(i)\tget_score(i)` per line); regenerating gives the same sha256.
 
+License field: third-party models keep their license name (MIT, Apache-2.0, ...); our own models (wake word, our Russian voices) carry `own`.
+
 Cache: objects are immutable per version path; long Cache-Control is fine. Range requests must work (206 with Content-Range).
 
 ## silero-vad (version 1, vad, any, MIT)
@@ -48,3 +50,13 @@ Total 141300566 bytes.
 | voice-models/sherpa-onnx-moonshine-base-en-quantized-2026-02-27/1/decoder_model_merged.ort | 109424400 | d9d7b333af34bc552580576ddcf248a1c6c839e0d3b43b09afb9376ed009899d |
 | voice-models/sherpa-onnx-moonshine-base-en-quantized-2026-02-27/1/tokens.txt | 549350 | 2870d843e14c1e187bf1913a521562a63b53933814bd7f2145120468f494a049 |
 
+
+## kokoro-int8-multi-lang-v1_0 (version 1, tts, en, Apache-2.0)
+
+Total 142404640 bytes. Source: `voice-cache/tts/kokoro8/kokoro-int8-multi-lang-v1_0/` (sherpa-onnx `tts-models` release `kokoro-int8-multi-lang-v1_0.tar.bz2`, unchanged). Only these three files: the engine passes our own phonemes, so the lexicons, `dict/`, the zh fst files and espeak data are not shipped. Speakers used: af_heart 3, am_michael 16 (read from the model's `speaker2id` metadata).
+
+| target path | size | sha256 |
+|---|---|---|
+| voice-models/kokoro-int8-multi-lang-v1_0/1/model.int8.onnx | 114202993 | 75635ea3b85a32d00094dcdd61a258aba87c160f7c264c304a7b3ae9d734195e |
+| voice-models/kokoro-int8-multi-lang-v1_0/1/voices.bin | 28200960 | 1c5a5b983d3d50d8586d437a51f3faa2da7919ce76a013c081e65671a3447c29 |
+| voice-models/kokoro-int8-multi-lang-v1_0/1/tokens.txt | 687 | 6ebb6bb288f20f3ae8d004d3c2ca27697da27c037d75e81a60e2a6a663f95425 |

@@ -2,7 +2,7 @@ use std::env;
 use std::path::PathBuf;
 use std::time::Instant;
 
-use voice_speech::{Event, Listener, Options, SAMPLE_RATE, read_mono, to_16k};
+use voice_speech::{Event, Listener, Model, Options, SAMPLE_RATE, read_mono, to_16k};
 
 const CHUNK: usize = SAMPLE_RATE as usize / 10;
 
@@ -29,6 +29,7 @@ fn main() {
     let options = Options {
         vad_model: models.join("silero_vad.onnx"),
         asr_dir: models.join("asr"),
+        model: Model::Zipformer,
         threads: 2,
         hotwords,
         hotwords_score: env::var("HOTWORDS_SCORE")
