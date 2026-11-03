@@ -154,6 +154,7 @@ export interface SettingsState {
   likesSort: TrackSort;
   playlistSorts: Record<string, TrackSort>;
   showErrorToasts: boolean;
+  releaseNotifications: boolean;
   interfaceFont: InterfaceFont;
   customFontName: string;
   customFontFile: string;
@@ -243,6 +244,7 @@ export interface SettingsState {
   setLikesSort: (sort: TrackSort) => void;
   setPlaylistSort: (urn: string, sort: TrackSort) => void;
   setShowErrorToasts: (v: boolean) => void;
+  setReleaseNotifications: (v: boolean) => void;
   setInterfaceFont: (font: InterfaceFont) => void;
   setCustomFontName: (name: string) => void;
   setCustomFontFile: (file: string) => void;
@@ -333,6 +335,7 @@ const DEFAULTS = {
   likesSort: 'default' as TrackSort,
   playlistSorts: {} as Record<string, TrackSort>,
   showErrorToasts: true,
+  releaseNotifications: true,
   interfaceFont: 'inter' as InterfaceFont,
   customFontName: '',
   customFontFile: '',
@@ -506,6 +509,7 @@ export const useSettingsStore = create<SettingsState>()(
           return { playlistSorts: sort === 'default' ? rest : { ...rest, [urn]: sort } };
         }),
       setShowErrorToasts: (showErrorToasts) => set({ showErrorToasts }),
+      setReleaseNotifications: (releaseNotifications) => set({ releaseNotifications }),
       setInterfaceFont: (interfaceFont) => set({ interfaceFont }),
       setCustomFontName: (customFontName) => set({ customFontName }),
       setCustomFontFile: (customFontFile) => set({ customFontFile }),
@@ -650,6 +654,7 @@ export const useSettingsStore = create<SettingsState>()(
         likesSort: s.likesSort,
         playlistSorts: s.playlistSorts,
         showErrorToasts: s.showErrorToasts,
+        releaseNotifications: s.releaseNotifications,
         interfaceFont: s.interfaceFont,
         customFontName: s.customFontName,
         customFontFile: s.customFontFile,

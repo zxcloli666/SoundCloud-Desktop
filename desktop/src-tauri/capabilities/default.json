@@ -33,7 +33,9 @@
     "fs:allow-appdata-read-recursive",
     "fs:allow-appdata-write-recursive",
     "dialog:default",
-    "notification:default",
+    "notification:allow-notify",
+    "notification:allow-is-permission-granted",
+    "notification:allow-request-permission",
     {
       "identifier": "http:default",
       "allow": [

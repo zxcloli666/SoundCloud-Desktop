@@ -52,6 +52,7 @@ const LIBRARY_ITEMS: Record<LayoutId<'library'>, ItemMeta> = {
 
 const HOME_ITEMS: Record<LayoutId<'home'>, ItemMeta> = {
   river: { icon: <AudioLines size={16} />, label: 'settings.layoutRiver' },
+  releases: { icon: <Sparkles size={16} />, label: 'releases.title' },
   superlikes: { icon: <SuperHeart size={16} />, label: 'superlikes.title' },
   likes: { icon: <Heart size={16} />, label: 'library.likedTracks' },
   recommended: { icon: <Sparkles size={16} />, label: 'home.recommended' },

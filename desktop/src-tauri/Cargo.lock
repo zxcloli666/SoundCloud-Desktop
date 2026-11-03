@@ -4904,7 +4904,7 @@ dependencies = [
 
 [[package]]
 name = "soundcloud-desktop"
-version = "8.6.1"
+version = "8.7.1"
 dependencies = [
  "audiopus",
  "backend-contracts",

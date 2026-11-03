@@ -33,6 +33,7 @@ import {ScrollReset} from './ScrollReset';
 import {Sidebar} from './Sidebar';
 import {ThemeTryBar} from './ThemeTryBar';
 import {Titlebar} from './Titlebar';
+import {ReleaseWatch} from '../releases/ReleaseWatch';
 
 const LyricsPanel = lazy(() =>
   import('../music/LyricsPanel').then((module) => ({ default: module.LyricsPanel })),
@@ -467,6 +468,7 @@ export const AppShell = React.memo(() => {
   return (
     <div data-ui="app" className="flex flex-col h-screen relative overflow-hidden">
       <WallpaperRotator />
+      <ReleaseWatch />
       <CustomBackground />
       <CoverTint />
       <AmbientGlow />
