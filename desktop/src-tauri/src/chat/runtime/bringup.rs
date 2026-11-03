@@ -3,7 +3,9 @@ use std::time::Duration;
 
 use sc_chat::api::Identity;
 use sc_chat::api::wire::{ConfigView, RegisterDevice};
-use sc_chat::{Access, ChatConfig, ChatError, ChatLimits, ChatPhase, ChatResult, KeyStore, UserId};
+use sc_chat::{
+    Access, ChatConfig, ChatError, ChatLimits, ChatPhase, ChatResult, KeyStore, MediaConfig, UserId,
+};
 
 use super::Runtime;
 use super::local::{self, Core};
@@ -218,6 +220,7 @@ pub fn config_of(view: ConfigView) -> ChatConfig {
             envelope_max: view.limits.envelope_max,
             disappearing_ttls: view.limits.disappearing_ttls,
         },
+        media: MediaConfig::from(&view.media),
     }
 }
 

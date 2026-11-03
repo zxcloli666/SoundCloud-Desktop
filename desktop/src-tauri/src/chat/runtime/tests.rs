@@ -1,7 +1,7 @@
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
-use sc_chat::api::wire::{ConfigView, LimitsView};
+use sc_chat::api::wire::{ConfigView, LimitsView, MediaConfigView, MediaLimitsView};
 use sc_chat::{Access, ChatPhase, ChatStatus, CoreEvent, Events, HistoryGate, Tier, TypingEvent};
 use uuid::Uuid;
 
@@ -239,9 +239,27 @@ fn server_config_maps_to_the_client_config() {
             disappearing_ttls: vec![3_600, 86_400, 604_800],
         },
         user_id: Some("100".into()),
+        media: MediaConfigView {
+            uploads: true,
+            star: true,
+            quota: 1_073_741_824,
+            used: 7_340_032,
+            limits: MediaLimitsView {
+                image_max_bytes: 614_400,
+                thumb_max_bytes: 32_768,
+                avatar_max_bytes: 65_536,
+                album_max: 10,
+                room_album_max: 4,
+                restore_window_s: 15,
+            },
+        },
     });
     assert_eq!(config.access, Access::All);
     assert_eq!(config.limits.group_members_max, 200);
+    assert!(config.media.uploads);
+    assert!(config.media.star);
+    assert_eq!(config.media.used, 7_340_032);
+    assert_eq!(config.media.limits.room_album_max, 4);
     let beta = config_of(ConfigView {
         enabled: false,
         access: "beta".into(),
@@ -259,8 +277,11 @@ fn server_config_maps_to_the_client_config() {
             disappearing_ttls: Vec::new(),
         },
         user_id: None,
+        media: MediaConfigView::default(),
     });
     assert_eq!(beta.access, Access::Beta);
+    assert!(!beta.media.uploads);
+    assert!(!beta.media.star);
     assert!(beta.send_paused);
     assert_eq!(beta.ock_current, 2);
 }
