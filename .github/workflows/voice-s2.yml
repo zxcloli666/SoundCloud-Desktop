@@ -69,6 +69,9 @@ jobs:
           toolchain: 1.99.1
       - uses: ilammy/msvc-dev-cmd@v1
         if: runner.os == 'Windows'
+      - name: Drop git link.exe
+        if: runner.os == 'Windows'
+        run: rm -f "/usr/bin/link.exe"
       - name: Build tools
         run: |
           if [ "$RUNNER_OS" = "Linux" ]; then sudo apt-get update && sudo apt-get install -y ninja-build clang pkg-config python3-pip && pip3 install meson; fi
