@@ -49,6 +49,7 @@ jobs:
           run $LONG
           run $LONG --steer
           run --delays 200 --rt60 0.6 --esr 0,10 --drift 0
+          run --delays 50 --rt60 0.3 --esr 0 --drift 0 --music-stops 30
 
   webrtc:
     strategy:
@@ -101,3 +102,4 @@ jobs:
           run $LONG
           run $LONG --steer
           run --delays 200 --rt60 0.6 --esr 0,10 --drift 0
+          run --delays 50 --rt60 0.3 --esr 0 --drift 0 --music-stops 30

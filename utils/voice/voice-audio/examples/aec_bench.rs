@@ -29,6 +29,8 @@ struct Args {
     seconds: usize,
     noise_suppression: bool,
     steer: bool,
+    silent_reference: bool,
+    music_stops: Option<usize>,
     music: PathBuf,
     speech_dir: PathBuf,
     delays: Vec<u32>,
@@ -49,6 +51,8 @@ fn parse_args() -> Args {
         seconds: 90,
         noise_suppression: false,
         steer: false,
+        silent_reference: false,
+        music_stops: None,
         music: ".cache/music/wildthing.wav".into(),
         speech_dir: ".cache/speech".into(),
         delays: vec![50, 120],
@@ -62,6 +66,7 @@ fn parse_args() -> Args {
         match flag.as_str() {
             "--ns" => args.noise_suppression = true,
             "--steer" => args.steer = true,
+            "--silent-reference" => args.silent_reference = true,
             other => {
                 let value = it.next().unwrap();
                 match other {
@@ -74,6 +79,7 @@ fn parse_args() -> Args {
                     "--rt60" => args.rt60 = list(&value),
                     "--esr" => args.esr = list(&value),
                     "--drift" => args.drift = list(&value),
+                    "--music-stops" => args.music_stops = Some(value.parse().unwrap()),
                     "--music-offset" => args.music_offset = value.parse().unwrap(),
                     _ => panic!("unknown flag {other}"),
                 }
@@ -147,6 +153,12 @@ fn main() {
     let offset = args.music_offset * rate as usize;
     let mut reference = music_full[offset..offset + total + pad].to_vec();
     scale_to_db(&mut reference, MUSIC_DBFS);
+    if let Some(stop) = args.music_stops {
+        reference[stop * rate as usize..].fill(0.0);
+    }
+    if args.silent_reference {
+        reference.fill(0.0);
+    }
     let speech = speech_track(&args.speech_dir, rate, &layout);
     let mut noise = echo_path::white_noise(total, 99);
     scale_to_db(&mut noise, NOISE_DBFS);
