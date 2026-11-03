@@ -1,2 +1,19 @@
 pub mod aec;
+pub mod capture;
+pub mod device;
+pub mod devices;
+pub mod error;
+pub mod frames;
+pub mod permission;
 pub mod ref_sync;
+pub mod routing;
+pub mod select;
+pub mod source;
+pub mod tap;
+mod worker;
+
+pub use capture::{Capture, Event, Request, Session};
+pub use device::{Device, DeviceList, Transport};
+pub use error::{CaptureError, ErrorCode};
+pub use routing::{EchoMode, ListenMode, OutputInfo, Purpose};
+pub use tap::RefTap;
