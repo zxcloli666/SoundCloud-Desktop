@@ -1,0 +1,257 @@
+{
+  "voice": {
+    "category": "Voice",
+    "assistant": "Lolya",
+    "wakeWord": "Lolya",
+    "quote": "“{{text}}”",
+    "mic": {
+      "talk": "Talk"
+    },
+    "hero": {
+      "state": {
+        "missing": "No engine",
+        "off": "Off",
+        "models": "Needs models",
+        "downloading": "Downloading",
+        "broken": "Model damaged",
+        "ready": "Ready",
+        "listening": "Listening",
+        "thinking": "Thinking",
+        "asking": "Asking",
+        "speaking": "Speaking",
+        "error": "Error"
+      },
+      "toggle": "Voice control",
+      "example": "play Billie Eilish",
+      "sayIt": "Speak now",
+      "typeLabel": "Type a command",
+      "send": "Send",
+      "orHold": "or hold",
+      "orPress": "or press",
+      "turnOn": "Turn on",
+      "turnOnSize": "Turn on · {{size}}",
+      "modelsReady": "Models ready",
+      "download": "Get models · {{size}}",
+      "repair": "Repair · {{size}}",
+      "engineMissing": "Engine not responding"
+    },
+    "hud": {
+      "listening": "Listening",
+      "thinking": "Thinking",
+      "stop": "Stop",
+      "cancel": "Cancel",
+      "undo": "Undo",
+      "ask": "Which one?",
+      "answerByVoice": "You can answer by voice",
+      "notFound": "Not found",
+      "find": "Search",
+      "hush": "Hush",
+      "downloading": "Voice: downloading models",
+      "openModels": "Open models"
+    },
+    "error": {
+      "mic_denied": "No microphone access",
+      "mic_busy": "Microphone is busy",
+      "mic_lost": "Microphone disconnected",
+      "no_models": "Models need downloading",
+      "model_corrupt": "A model is damaged",
+      "not_star": "Voice comes with STAR",
+      "network": "Catalog unreachable",
+      "asr_failed": "Didn't catch that",
+      "tts_failed": "Couldn't speak the reply",
+      "engine_missing": "Voice engine unavailable"
+    },
+    "fix": {
+      "privacy": "Allow",
+      "download": "Download",
+      "retry": "Retry",
+      "pickMic": "Pick a mic",
+      "pickVoice": "Pick a voice",
+      "settings": "Settings"
+    },
+    "activation": {
+      "title": "How to call",
+      "hotkey": "Key",
+      "hold": "Hold",
+      "tap": "Tap",
+      "headset": "Headset button",
+      "gesture": {
+        "off": "Off",
+        "double": "2×",
+        "triple": "3×"
+      },
+      "headsetHow_one": "Press the button {{count}} time",
+      "headsetHow_other": "Press the button {{count}} times in a row",
+      "test": "Test",
+      "pressNow_one": "Press {{count}} time",
+      "pressNow_other": "Press {{count}} times now",
+      "stopTest": "Stop",
+      "headsetWorks": "Works",
+      "again": "Again",
+      "wake": "Say “{{phrase}}”",
+      "needsEcho": "Without echo cancellation music will wake Lolya",
+      "echoOn": "Turn on",
+      "rarer": "Rarer",
+      "oftener": "Easier",
+      "falseCount_one": "{{count}} false wake",
+      "falseCount_other": "{{count}} false wakes",
+      "lastDay": "last 24 h"
+    },
+    "teach": {
+      "open": "Teach my voice",
+      "retrain": "Retrain",
+      "taught": "Knows your voice",
+      "prompt": "Say “Lolya” five times",
+      "speak": "Say “Lolya”",
+      "saving": "Saving",
+      "done": "Got your voice",
+      "failed": "Didn't work",
+      "start": "Start",
+      "next": "Next",
+      "progress": "{{count}} of {{total}}"
+    },
+    "mics": {
+      "title": "Microphones",
+      "mode": {
+        "chosen": "Chosen",
+        "where_i_speak": "Where I speak",
+        "everywhere": "All"
+      },
+      "default": "Default",
+      "bluetooth": "Bluetooth",
+      "btWarning": "Headphones switch to call quality",
+      "none": "No microphone found",
+      "refresh": "Refresh",
+      "echo": "Echo cancellation",
+      "echoMode": {
+        "auto": "Auto",
+        "on": "On",
+        "off": "Off"
+      }
+    },
+    "voice": {
+      "title": "Reply voice",
+      "preview": "Listen: {{name}}",
+      "stopPreview": "Stop",
+      "sound": "Sound",
+      "speed": "Speed",
+      "pitch": "Pitch",
+      "speakOn": "Speak on",
+      "speakMode": {
+        "with_music": "With music",
+        "device": "Device",
+        "where_i_listen": "Where I listen"
+      },
+      "duck": "Music under voice",
+      "duckLabel": "Music level",
+      "replies": "Reply by voice"
+    },
+    "voices": {
+      "lolya": {
+        "name": "Lolya"
+      },
+      "calm": {
+        "name": "Calm"
+      },
+      "male": {
+        "name": "Male"
+      },
+      "robot": {
+        "name": "Robot"
+      },
+      "af_heart": {
+        "name": "Heart"
+      },
+      "am_michael": {
+        "name": "Michael"
+      }
+    },
+    "tags": {
+      "cute": "cute",
+      "bright": "bright",
+      "soft": "soft",
+      "calm": "even",
+      "deep": "deep",
+      "synth": "synth",
+      "fun": "fun",
+      "warm": "warm",
+      "clear": "clear"
+    },
+    "speakers": {
+      "title": "Speakers",
+      "alice": "Alice",
+      "salut": "Salut",
+      "connect": "Connect",
+      "addMore": "Add another",
+      "notLinked": "Not connected",
+      "linked_one": "{{count}} connected",
+      "linked_other": "{{count}} connected",
+      "justLinked": "Connected",
+      "how": {
+        "alice": "Say “Alice, launch the Lolya skill” and enter the code",
+        "salut": "Say “Salut, launch Lolya” and read the code"
+      },
+      "copy": "Copy",
+      "copied": "Copied",
+      "cancel": "Cancel",
+      "codeFailed": "No code came back, try again",
+      "lastUsed": "Last command {{when}}",
+      "neverUsed": "No commands yet",
+      "revoke": "Unlink",
+      "revokeYes": "Unlink",
+      "remote": {
+        "live": "Online",
+        "retrying": "Reconnecting"
+      }
+    },
+    "models": {
+      "title": "Models",
+      "onDisk": "{{size}} on disk",
+      "getAll": "Download · {{size}}",
+      "get": "Download {{name}}",
+      "delete": "Delete {{name}}",
+      "resume": "Resume",
+      "repair": "Download again",
+      "optional": "optional",
+      "own": "ours",
+      "none": "Model list unavailable",
+      "kind": {
+        "vad": "Speech detector",
+        "asr": "Recognition",
+        "tts": "Speech synthesis",
+        "wake": "Wake word",
+        "g2p": "Pronunciation",
+        "llm": "Smart parsing"
+      }
+    },
+    "history": {
+      "title": "History",
+      "empty": "Your commands will show up here",
+      "try": "Try it",
+      "clear": "Clear",
+      "wrong": "Understood wrong",
+      "markedWrong": "Wrong",
+      "more_one": "{{count}} more",
+      "more_other": "{{count}} more",
+      "less": "Show less"
+    },
+    "locked": {
+      "badge": "STAR",
+      "title": "Music that listens",
+      "sub": "Lolya plays, skips and likes from one phrase",
+      "example": {
+        "play": "Play Billie Eilish",
+        "volume": "Volume 50",
+        "like": "Like it"
+      },
+      "listen": "Hear Lolya",
+      "voices": "Voices"
+    },
+    "units": {
+      "b": "B",
+      "kb": "KB",
+      "mb": "MB",
+      "gb": "GB"
+    }
+  }
+}

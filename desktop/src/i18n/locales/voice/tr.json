@@ -1,0 +1,257 @@
+{
+  "voice": {
+    "category": "Ses",
+    "assistant": "Lolya",
+    "wakeWord": "Lolya",
+    "quote": "“{{text}}”",
+    "mic": {
+      "talk": "Konuş"
+    },
+    "hero": {
+      "state": {
+        "missing": "Motor yok",
+        "off": "Kapalı",
+        "models": "Model gerekli",
+        "downloading": "İndiriliyor",
+        "broken": "Model bozuk",
+        "ready": "Hazır",
+        "listening": "Dinliyorum",
+        "thinking": "Düşünüyorum",
+        "asking": "Soruyorum",
+        "speaking": "Konuşuyorum",
+        "error": "Hata"
+      },
+      "toggle": "Sesli kontrol",
+      "example": "Billie Eilish çal",
+      "sayIt": "Konuşun",
+      "typeLabel": "Komut yazın",
+      "send": "Gönder",
+      "orHold": "veya basılı tutun",
+      "orPress": "veya basın",
+      "turnOn": "Aç",
+      "turnOnSize": "Aç · {{size}}",
+      "modelsReady": "Modeller hazır",
+      "download": "Modelleri indir · {{size}}",
+      "repair": "Onar · {{size}}",
+      "engineMissing": "Motor yanıt vermiyor"
+    },
+    "hud": {
+      "listening": "Dinliyorum",
+      "thinking": "Düşünüyorum",
+      "stop": "Dur",
+      "cancel": "İptal",
+      "undo": "Geri al",
+      "ask": "Hangisi?",
+      "answerByVoice": "Sesle cevaplayabilirsiniz",
+      "notFound": "Bulunamadı",
+      "find": "Ara",
+      "hush": "Sus",
+      "downloading": "Ses: modeller iniyor",
+      "openModels": "Modelleri aç"
+    },
+    "error": {
+      "mic_denied": "Mikrofon izni yok",
+      "mic_busy": "Mikrofon meşgul",
+      "mic_lost": "Mikrofon ayrıldı",
+      "no_models": "Modelleri indirmek gerekiyor",
+      "model_corrupt": "Bir model bozuk",
+      "not_star": "Ses STAR ile çalışır",
+      "network": "Kataloğa ulaşılamıyor",
+      "asr_failed": "Anlayamadım",
+      "tts_failed": "Sesli yanıt verilemedi",
+      "engine_missing": "Ses motoru kullanılamıyor"
+    },
+    "fix": {
+      "privacy": "İzin ver",
+      "download": "İndir",
+      "retry": "Tekrar dene",
+      "pickMic": "Mikrofon seç",
+      "pickVoice": "Ses seç",
+      "settings": "Ayarlar"
+    },
+    "activation": {
+      "title": "Nasıl çağrılır",
+      "hotkey": "Tuş",
+      "hold": "Basılı tut",
+      "tap": "Bas",
+      "headset": "Kulaklık düğmesi",
+      "gesture": {
+        "off": "Kapalı",
+        "double": "2×",
+        "triple": "3×"
+      },
+      "headsetHow_one": "Düğmeye {{count}} kez basın",
+      "headsetHow_other": "Düğmeye art arda {{count}} kez basın",
+      "test": "Dene",
+      "pressNow_one": "{{count}} kez basın",
+      "pressNow_other": "Şimdi {{count}} kez basın",
+      "stopTest": "Dur",
+      "headsetWorks": "Çalışıyor",
+      "again": "Tekrar",
+      "wake": "“{{phrase}}” deyin",
+      "needsEcho": "Yankı giderme olmadan müzik Lolya'yı uyandırır",
+      "echoOn": "Aç",
+      "rarer": "Daha az",
+      "oftener": "Daha kolay",
+      "falseCount_one": "{{count}} yanlış uyanma",
+      "falseCount_other": "{{count}} yanlış uyanma",
+      "lastDay": "son 24 saat"
+    },
+    "teach": {
+      "open": "Sesimi öğret",
+      "retrain": "Yeniden öğret",
+      "taught": "Sesinizi tanıyor",
+      "prompt": "Beş kez “Lolya” deyin",
+      "speak": "“Lolya” deyin",
+      "saving": "Kaydediliyor",
+      "done": "Sesiniz kaydedildi",
+      "failed": "Olmadı",
+      "start": "Başla",
+      "next": "İleri",
+      "progress": "{{count}} / {{total}}"
+    },
+    "mics": {
+      "title": "Mikrofonlar",
+      "mode": {
+        "chosen": "Seçilenler",
+        "where_i_speak": "Konuştuğum yer",
+        "everywhere": "Tümü"
+      },
+      "default": "Varsayılan",
+      "bluetooth": "Bluetooth",
+      "btWarning": "Kulaklık görüşme kalitesine geçer",
+      "none": "Mikrofon bulunamadı",
+      "refresh": "Yenile",
+      "echo": "Yankı giderme",
+      "echoMode": {
+        "auto": "Otomatik",
+        "on": "Açık",
+        "off": "Kapalı"
+      }
+    },
+    "voice": {
+      "title": "Yanıt sesi",
+      "preview": "Dinle: {{name}}",
+      "stopPreview": "Durdur",
+      "sound": "Ses",
+      "speed": "Hız",
+      "pitch": "Ton",
+      "speakOn": "Nerede konuşsun",
+      "speakMode": {
+        "with_music": "Müzikle",
+        "device": "Cihaz",
+        "where_i_listen": "Dinlediğim yer"
+      },
+      "duck": "Ses altında müzik",
+      "duckLabel": "Müzik seviyesi",
+      "replies": "Sesle yanıtla"
+    },
+    "voices": {
+      "lolya": {
+        "name": "Lolya"
+      },
+      "calm": {
+        "name": "Sakin"
+      },
+      "male": {
+        "name": "Erkek"
+      },
+      "robot": {
+        "name": "Robot"
+      },
+      "af_heart": {
+        "name": "Heart"
+      },
+      "am_michael": {
+        "name": "Michael"
+      }
+    },
+    "tags": {
+      "cute": "tatlı",
+      "bright": "parlak",
+      "soft": "yumuşak",
+      "calm": "düz",
+      "deep": "derin",
+      "synth": "sentez",
+      "fun": "eğlenceli",
+      "warm": "sıcak",
+      "clear": "net"
+    },
+    "speakers": {
+      "title": "Hoparlörler",
+      "alice": "Alice",
+      "salut": "Salut",
+      "connect": "Bağla",
+      "addMore": "Bir tane daha",
+      "notLinked": "Bağlı değil",
+      "linked_one": "{{count}} bağlı",
+      "linked_other": "{{count}} bağlı",
+      "justLinked": "Bağlandı",
+      "how": {
+        "alice": "“Alice, Lolya becerisini başlat” deyin ve kodu girin",
+        "salut": "“Salut, Lolya'yı başlat” deyin ve kodu söyleyin"
+      },
+      "copy": "Kopyala",
+      "copied": "Kopyalandı",
+      "cancel": "İptal",
+      "codeFailed": "Kod gelmedi, tekrar deneyin",
+      "lastUsed": "Son komut {{when}}",
+      "neverUsed": "Henüz komut yok",
+      "revoke": "Bağlantıyı kes",
+      "revokeYes": "Kes",
+      "remote": {
+        "live": "Çevrimiçi",
+        "retrying": "Yeniden bağlanıyor"
+      }
+    },
+    "models": {
+      "title": "Modeller",
+      "onDisk": "Diskte {{size}}",
+      "getAll": "İndir · {{size}}",
+      "get": "İndir: {{name}}",
+      "delete": "Sil: {{name}}",
+      "resume": "Devam et",
+      "repair": "Yeniden indir",
+      "optional": "isteğe bağlı",
+      "own": "bizim",
+      "none": "Model listesi yok",
+      "kind": {
+        "vad": "Konuşma algılama",
+        "asr": "Tanıma",
+        "tts": "Ses sentezi",
+        "wake": "Uyandırma sözcüğü",
+        "g2p": "Telaffuz",
+        "llm": "Akıllı ayrıştırma"
+      }
+    },
+    "history": {
+      "title": "Geçmiş",
+      "empty": "Komutlarınız burada görünecek",
+      "try": "Deneyin",
+      "clear": "Temizle",
+      "wrong": "Yanlış anlaşıldı",
+      "markedWrong": "Yanlış",
+      "more_one": "{{count}} daha",
+      "more_other": "{{count}} daha",
+      "less": "Daralt"
+    },
+    "locked": {
+      "badge": "STAR",
+      "title": "Sesi dinleyen müzik",
+      "sub": "Lolya tek cümleyle çalar, geçer ve beğenir",
+      "example": {
+        "play": "Billie Eilish çal",
+        "volume": "Ses 50",
+        "like": "Beğen"
+      },
+      "listen": "Lolya'yı dinle",
+      "voices": "Sesler"
+    },
+    "units": {
+      "b": "B",
+      "kb": "KB",
+      "mb": "MB",
+      "gb": "GB"
+    }
+  }
+}
