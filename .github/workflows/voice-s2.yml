@@ -32,12 +32,23 @@ jobs:
         run: cargo build --release -p voice-audio --example aec_bench
       - name: Test
         run: cargo test --release -p voice-audio
-      - name: Bench 48 kHz
-        run: ./target/release/examples/aec_bench --engine sonora
-      - name: Bench 48 kHz steered
-        run: ./target/release/examples/aec_bench --engine sonora --steer
-      - name: Bench 16 kHz
-        run: ./target/release/examples/aec_bench --engine sonora --rate 16000
+      - name: Bench
+        run: |
+          B=./target/release/examples/aec_bench
+          E=sonora
+          STRESS="--delays 120 --rt60 0.6 --esr 10 --drift -1000,-500,500,1000"
+          LONG="--delays 120 --rt60 0.6 --esr 10 --drift 0,-200,-1000 --seconds 180 --music-offset 0"
+          run() { echo "### $*"; $B --engine $E "$@"; }
+          run
+          run --steer
+          run --rate 16000
+          run --rate 16000 --steer
+          run --ns
+          run $STRESS
+          run $STRESS --steer
+          run $LONG
+          run $LONG --steer
+          run --delays 200 --rt60 0.6 --esr 0,10 --drift 0
 
   webrtc:
     strategy:
@@ -74,7 +85,19 @@ jobs:
           CC: ${{ runner.os == 'Windows' && 'cl' || '' }}
           CXX: ${{ runner.os == 'Windows' && 'cl' || '' }}
         run: cargo build --release -p voice-audio --example aec_bench --features webrtc
-      - name: Bench 48 kHz
-        run: ./target/release/examples/aec_bench --engine webrtc
-      - name: Bench 16 kHz
-        run: ./target/release/examples/aec_bench --engine webrtc --rate 16000
+      - name: Bench
+        run: |
+          B=./target/release/examples/aec_bench
+          E=webrtc
+          STRESS="--delays 120 --rt60 0.6 --esr 10 --drift -1000,-500,500,1000"
+          LONG="--delays 120 --rt60 0.6 --esr 10 --drift 0,-200,-1000 --seconds 180 --music-offset 0"
+          run() { echo "### $*"; $B --engine $E "$@"; }
+          run
+          run --steer
+          run --rate 16000
+          run --ns
+          run $STRESS
+          run $STRESS --steer
+          run $LONG
+          run $LONG --steer
+          run --delays 200 --rt60 0.6 --esr 0,10 --drift 0
