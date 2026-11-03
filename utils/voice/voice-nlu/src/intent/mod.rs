@@ -1,5 +1,6 @@
 mod ctx;
 mod guard;
+mod indirect;
 mod library;
 mod play;
 mod seek;
@@ -9,12 +10,29 @@ mod volume;
 use crate::lexicon;
 use crate::normalize::Tok;
 pub use ctx::{Ctx, Detected};
-pub use guard::{Negation, negation, remark};
+pub use guard::{Negation, lyric, negation, remark};
+
+pub fn indirect_hit(toks: &[Tok]) -> bool {
+    indirect::detect(&Ctx::new(toks)).is_some()
+}
 
 pub fn detect(toks: &[Tok]) -> Detected {
     let c = Ctx::new(toks);
     if c.len() == 0 {
         return Detected::none();
+    }
+    if c.has(lexicon::WATCH) || c.w.iter().any(|w| lexicon::stem(lexicon::DEVICES, w)) {
+        return Detected::blocked();
+    }
+    let next_time =
+        c.w.windows(2)
+            .any(|p| lexicon::stem(lexicon::NEXT_STRONG, p[0]) && p[1] == "раз");
+    let sarcasm = c.has(&["еще"]) && c.has(&["раз"]) && c.has(lexicon::JUNK);
+    if next_time || sarcasm {
+        return Detected::blocked();
+    }
+    if let Some(d) = indirect::detect(&c) {
+        return d;
     }
     if let Some(d) = library::undo(&c) {
         return d;
@@ -62,23 +80,27 @@ pub fn fuzzy_fix(toks: &[Tok]) -> Option<Vec<Tok>> {
     let mut changed = false;
     let fixed: Vec<Tok> = toks
         .iter()
-        .map(|t| match closest(&t.w) {
-            Some(target) => {
-                changed = true;
-                Tok {
-                    w: target.to_string(),
-                    amb: t.amb,
+        .enumerate()
+        .map(
+            |(i, t)| match closest(&t.w, toks.get(i + 1).is_some_and(|n| n.w == "бы")) {
+                Some(target) => {
+                    changed = true;
+                    Tok {
+                        w: target.to_string(),
+                        amb: t.amb,
+                    }
                 }
-            }
-            None => t.clone(),
-        })
+                None => t.clone(),
+            },
+        )
         .collect();
     changed.then_some(fixed)
 }
 
-fn closest(w: &str) -> Option<&'static str> {
+fn closest(w: &str, subjunctive: bool) -> Option<&'static str> {
     let len = w.chars().count();
-    if len < 5 || lexicon::is_known(w) || w.chars().any(|c| c.is_ascii_digit()) {
+    let past = !subjunctive && (w.ends_with('л') || w.ends_with("ла") || w.ends_with("ли"));
+    if past || len < 5 || lexicon::is_known(w) || w.chars().any(|c| c.is_ascii_digit()) {
         return None;
     }
     let limit = if len >= 8 { 2 } else { 1 };

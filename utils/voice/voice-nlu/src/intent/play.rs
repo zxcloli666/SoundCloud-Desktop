@@ -86,7 +86,7 @@ pub fn forced(c: &Ctx) -> bool {
     if after.first() == Some(&"на")
         && after
             .iter()
-            .any(|w| crate::lexicon::stem(&["пауз", "повтор"], w))
+            .any(|w| crate::lexicon::stem(&["пауз", "повтор", "repeat"], w))
     {
         return false;
     }

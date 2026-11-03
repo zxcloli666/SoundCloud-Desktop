@@ -37,6 +37,9 @@ impl Boosts {
 pub const BARE_MIN: f32 = 0.88;
 pub const WEAK_VERB_MIN: f32 = 0.88;
 pub const ASK_RATIO: f32 = 0.92;
+const EXACT_LEAD: f32 = 0.07;
+const FALLBACK_YIELD: f32 = 0.76;
+const POPULARITY_GAP: u64 = 50;
 
 fn popularity_factor(pop: u64) -> f32 {
     let norm = ((1.0 + pop as f32).ln() / (1.0f32 + 1e8).ln()).clamp(0.0, 1.0);
@@ -61,7 +64,7 @@ pub fn rank(parsed: &Parsed, cands: Vec<Entity>, boosts: &Boosts) -> Vec<Scored>
     let mut out: Vec<Scored> = cands
         .into_iter()
         .map(|entity| {
-            let (sim, qlen) = best_match(&Keys::new(&entity), &queries);
+            let (sim, qlen, fallback) = best_match(&Keys::new(&entity), &queries);
             let score = sim.powi(2)
                 * popularity_factor(entity.popularity)
                 * kind_factor(entity.kind, parsed.kind_hint)
@@ -71,10 +74,26 @@ pub fn rank(parsed: &Parsed, cands: Vec<Entity>, boosts: &Boosts) -> Vec<Scored>
                 sim,
                 score,
                 qlen,
+                fallback,
             }
         })
         .collect();
     out.sort_by(|a, b| b.score.total_cmp(&a.score));
+    if out.iter().any(|s| !s.fallback && s.sim >= FALLBACK_YIELD) {
+        out.retain(|s| !s.fallback);
+    }
+    if let Some(i) = out.iter().position(|s| s.sim >= 0.95) {
+        let rival = out
+            .iter()
+            .enumerate()
+            .filter(|(j, _)| *j != i)
+            .map(|(_, s)| s.sim)
+            .fold(0.0f32, f32::max);
+        if i > 0 && rival <= out[i].sim - EXACT_LEAD {
+            let exact = out.remove(i);
+            out.insert(0, exact);
+        }
+    }
     out
 }
 
@@ -95,10 +114,14 @@ pub fn decide(ranked: &[Scored], bare: bool) -> Decision {
     };
     let (act, ask) = limits(top.qlen, bare);
     let sim = top.sim.min(1.0);
-    if sim < ask {
+    if sim < ask || (top.fallback && sim < act) {
         return Decision::NotFound;
     }
-    let second = ranked.get(1).filter(|s| s.sim.min(1.0) >= ask);
+    let second = ranked
+        .iter()
+        .skip(1)
+        .find(|s| top.fallback || !s.fallback)
+        .filter(|s| s.sim.min(1.0) >= ask);
     if sim < act {
         return Decision::Ask {
             first: top.clone(),
@@ -106,7 +129,11 @@ pub fn decide(ranked: &[Scored], bare: bool) -> Decision {
         };
     }
     if let Some(second) = second {
-        if second.sim.min(1.0) >= act && second.score >= top.score * ASK_RATIO {
+        let clear_lead = top.sim >= 0.95 && second.sim <= top.sim - EXACT_LEAD;
+        let dominant = clear_lead
+            || top.entity.popularity > second.entity.popularity.saturating_mul(POPULARITY_GAP)
+                && (top.sim - second.sim).abs() < 0.03;
+        if !dominant && second.sim.min(1.0) >= act && second.score >= top.score * ASK_RATIO {
             return Decision::Ask {
                 first: top.clone(),
                 second: Some(second.clone()),

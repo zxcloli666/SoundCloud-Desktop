@@ -26,7 +26,7 @@ phrase	intent	kind	entity	number	category
 добавь громкости	volume_up				plain
 звук погромче	volume_up				plain
 громкость сто процентов	volume_set			100	plain
-громкость десять	volume_set			10	plain
+громкость десять	volume_set			100	plain
 установи громкость на 35	volume_set			35	plain
 поставь громкость тридцать пять	volume_set			35	plain
 громкость на минимум	volume_set			0	plain
@@ -54,7 +54,7 @@ phrase	intent	kind	entity	number	category
 добавь в избранное	like				plain
 сними лайк	unlike				plain
 убери из избранного	unlike				plain
-мне не нравится эта песня	unlike				plain
+мне не нравится эта песня	next				plain
 включи шафл	shuffle_on				plain
 перемешай треки	shuffle_on				plain
 включи перемешивание	shuffle_on				plain
@@ -85,7 +85,7 @@ phrase	intent	kind	entity	number	category
 поставь что-то в таком же духе	play_similar				plain
 верни как было	undo				plain
 отменить	undo				plain
-ой не то	undo				plain
+ой не то	next				plain
 помощь	help				plain
 что ты можешь	help				plain
 как тобой пользоваться	help				plain

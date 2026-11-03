@@ -15,6 +15,24 @@ pub struct Raw {
 pub struct Slots {
     pub kind_hint: Option<Kind>,
     pub raw: Raw,
+    pub alt: Option<(Option<Kind>, Raw)>,
+}
+
+fn kind_name_reading(rest: &[Tok]) -> Option<(Option<Kind>, Raw)> {
+    let first = (0..rest.len().saturating_sub(1))
+        .rev()
+        .find(|&i| kind_of(&rest[i].w).is_some() && kind_of(&rest[i + 1].w).is_none())?;
+    let mut hint = None;
+    let mut kept: Vec<Tok> = Vec::new();
+    for (i, t) in rest.iter().enumerate() {
+        match kind_of(&t.w) {
+            Some(k) if i != first => {
+                hint = hint.or(Some(k));
+            }
+            _ => kept.push(t.clone()),
+        }
+    }
+    Some((hint, split(trim(kept))))
 }
 
 fn kind_of(w: &str) -> Option<Kind> {
@@ -34,7 +52,21 @@ fn kind_of(w: &str) -> Option<Kind> {
 }
 
 fn edge_noise(t: &Tok) -> bool {
-    t.amb || (PRE.contains(&t.w.as_str()) || TRANSPORT_VERBS.contains(&t.w.as_str()))
+    t.amb
+        || PRE.contains(&t.w.as_str())
+        || matches!(
+            t.w.as_str(),
+            "эту"
+                | "этот"
+                | "это"
+                | "эта"
+                | "этого"
+                | "этой"
+                | "музыку"
+                | "музыка"
+                | "для"
+        )
+        || TRANSPORT_VERBS.contains(&t.w.as_str())
 }
 
 fn trim(mut v: Vec<Tok>) -> Vec<Tok> {
@@ -121,6 +153,7 @@ pub fn extract(toks: &[Tok], det: &Detected) -> Slots {
     Slots {
         kind_hint: hint,
         raw: split(kept),
+        alt: kind_name_reading(&rest),
     }
 }
 

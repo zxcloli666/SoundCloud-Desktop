@@ -7,11 +7,11 @@ artist	Монеточка		3100000	монета
 artist	The Weeknd		92000000	уикенд|викенд|викенд|зе уикенд|уикэнд
 artist	Billie Eilish		85000000	билли айлиш|билли эйлиш
 artist	Imagine Dragons		52000000	имеджин драгонс|имэджин драгонс|имаджин драгонс
-artist	Taylor Swift		88000000	тейлор свифт|тэйлор свифт
+artist	Taylor Swift		88000000	тейлор свифт|тэйлор свифт|тейлор
 artist	Drake		78000000	дрейк|дрэйк
 artist	Баста		3600000	басту|вакуленко
 artist	Король и Шут		3200000	кииш|корольишут
-artist	Ленинград		2600000	шнур|сергей шнуров
+artist	Ленинград		2600000	шнур|сергей шнуров|шнуров
 artist	Сплин		2100000	splin
 artist	Кино		5200000	цой|виктор цой|витя цой|группа кино
 artist	Звери		2300000	
@@ -19,13 +19,13 @@ artist	Брат		35000
 artist	Пауза		18000	
 artist	Стоп		9000	
 artist	Дальше		22000	
-artist	25/17		1100000	двадцать пять семнадцать|двадцать пять сем
+artist	25/17		1100000	двадцать пять семнадцать|двадцать пять сем|двадцать пять на семнадцать
 artist	5'Nizza		700000	пять найс|5 найс|пять ниццы|пять найза
 artist	104		450000	сто четыре
 artist	Blink-182		18000000	блинк 182|блинк сто восемьдесят два
 artist	50 Cent		20000000	фифти сент|50 сент
 artist	2Pac		15000000	тупак|тупак шакур|два пак
-artist	Eminem		60000000	эминем
+artist	Eminem		60000000	эминем|слим шейди
 artist	Rihanna		55000000	рианна|риана
 artist	Ed Sheeran		75000000	эд ширан|эд ширин
 artist	Dua Lipa		65000000	дуа липа
@@ -40,25 +40,25 @@ artist	Lana Del Rey		40000000	лана дель рей
 artist	Bruno Mars		60000000	бруно марс
 artist	Måneskin		20000000	манескин|маскин|монескин
 artist	Travis Scott		40000000	трэвис скотт|тревис скотт
-artist	Kendrick Lamar		40000000	кендрик ламар
-artist	Kanye West		35000000	канье вест|канье уэст
+artist	Kendrick Lamar		40000000	кендрик ламар|кендрик
+artist	Kanye West		35000000	канье вест|канье уэст|канье
 artist	Doja Cat		40000000	доджа кэт|джа кэт
-artist	Justin Bieber		70000000	джастин бибер
+artist	Justin Bieber		70000000	джастин бибер|бибер
 artist	Miyagi & Эндшпиль		6000000	мияги|мияги и эндшпиль
 artist	Элджей		3500000	эл джей
 artist	Feduk		3000000	федук
 artist	Oxxxymiron		3400000	оксимирон|окси
 artist	Мот		5000000	
 artist	Jah Khalib		3600000	джа халиб|джа калиб
-artist	Тима Белорусских		4200000	
-artist	Егор Крид		4000000	
+artist	Тима Белорусских		4200000	тима
+artist	Егор Крид		4000000	крид
 artist	Клава Кока		3500000	
 artist	Макс Барских		2000000	
 artist	Zivert		3000000	зиверт|живерт
 artist	Дора		2400000	
 artist	Face		1500000	фейс
 artist	Хаски		1600000	
-artist	Noize MC		1200000	нойз мс|нойз мц
+artist	Noize MC		1200000	нойз мс|нойз мц|нойз
 artist	Кровосток		800000	
 artist	ЛСП		2000000	эл эс пэ
 artist	Little Big		4000000	литл биг
@@ -66,9 +66,9 @@ artist	Мумий Тролль		1800000
 artist	Би-2		1900000	би два|би 2|бидва
 artist	Нервы		2000000	
 artist	Агата Кристи		1500000	
-artist	ДДТ		1800000	дэ дэ тэ
-artist	Наутилус Помпилиус		1700000	наутилус
-artist	Аквариум		700000	
+artist	ДДТ		1800000	дэ дэ тэ|шевчук|юрий шевчук
+artist	Наутилус Помпилиус		1700000	наутилус|бутусов|вячеслав бутусов
+artist	Аквариум		700000	гребенщиков|борис гребенщиков|бг
 artist	Чайф		1100000	
 artist	Руки Вверх		2800000	
 artist	Дима Билан		2500000	
@@ -116,7 +116,7 @@ artist	Стоп Игра		8000
 artist	Громче Воды		5000	
 artist	Тише		12000	
 artist	Назад в Будущее		30000	
-artist	Next Level		90000	
+artist	Next Level		90000	некст левел
 artist	Play		40000	
 artist	Лайк		25000	
 artist	Volume		18000	
@@ -134,7 +134,7 @@ artist	Дорадура		60000
 artist	Eminem Karaoke		9000	
 artist	Coldplay Tribute		12000	
 artist	Rammstein Cover Band		10000	
-artist	Queens of the Stone Age		9000000	
+artist	Queens of the Stone Age		9000000	квинс оф зе стоун эйдж
 artist	Nirvana Kids		4000	
 artist	Ed Sheeran Cover		8000	
 artist	Dua Lipa Karaoke		7000	
@@ -157,7 +157,7 @@ track	Дуло	Моргенштерн	3500000
 track	Каждый раз	Монеточка	3500000	
 track	Нимфоманка	Монеточка	2500000	
 track	90	Монеточка	2000000	девяносто|девяностые
-track	Blinding Lights	The Weeknd	90000000	блайндинг лайтс|бландинг лайтс
+track	Blinding Lights	The Weeknd	90000000	блайндинг лайтс|бландинг лайтс|блайнд лайтс
 track	Starboy	The Weeknd	70000000	старбой
 track	Save Your Tears	The Weeknd	60000000	сейв ё тирз
 track	Can't Feel My Face	The Weeknd	45000000	кант фил май фейс
@@ -203,7 +203,7 @@ track	In Da Club	50 Cent	25000000	ин да клаб
 track	California Love	2Pac	15000000	калифорния лав
 track	Lose Yourself	Eminem	45000000	луз юрселф
 track	Rap God	Eminem	30000000	рэп год
-track	Umbrella	Rihanna	35000000	амбрелла
+track	Umbrella	Rihanna	35000000	амбрелла|зонтик
 track	Shape of You	Ed Sheeran	70000000	шейп оф ю
 track	Perfect	Ed Sheeran	50000000	перфект
 track	Levitating	Dua Lipa	60000000	левитейтинг
@@ -215,7 +215,7 @@ track	Numb	Linkin Park	40000000	намб
 track	Du Hast	Rammstein	30000000	дю хаст
 track	Sonne	Rammstein	20000000	зонне
 track	Smells Like Teen Spirit	Nirvana	40000000	смелс лайк тин спирит
-track	Bohemian Rhapsody	Queen	55000000	богемиан рапсоди
+track	Bohemian Rhapsody	Queen	55000000	богемиан рапсоди|богемская рапсодия
 track	Circles	Post Malone	45000000	серклз
 track	7 rings	Ariana Grande	50000000	севен рингс|семь колец
 track	Summertime Sadness	Lana Del Rey	40000000	саммертайм сэднесс
@@ -223,10 +223,10 @@ track	Uptown Funk	Bruno Mars	50000000	аптаун фанк
 track	Beggin'	Måneskin	45000000	беггин
 track	All the Small Things	Blink-182	25000000	ол зе смол тингс
 track	Minor	Miyagi & Эндшпиль	9000000	минор
-track	Captain	Miyagi & Эндшпиль	7000000	кэптен
+track	Captain	Miyagi & Эндшпиль	7000000	кэптен|капитан
 track	Розовое вино	Элджей	6000000	
 track	Где нас нет	Oxxxymiron	3000000	
-track	Мокрые кроссы	Тима Белорусских	5000000	
+track	Мокрые кроссы	Тима Белорусских	5000000	мокрые кроссовки
 track	Незабудка	Тима Белорусских	4000000	
 track	Покинула чат	Клава Кока	4000000	
 track	Лейла	Jah Khalib	5000000	

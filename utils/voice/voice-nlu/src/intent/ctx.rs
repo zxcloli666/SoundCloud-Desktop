@@ -10,6 +10,7 @@ pub struct Detected {
     pub number: Option<u32>,
     pub blocked: bool,
     pub weak: bool,
+    pub fraction: Option<f32>,
 }
 
 impl Detected {
@@ -20,6 +21,7 @@ impl Detected {
             number: None,
             blocked: false,
             weak: false,
+            fraction: None,
         }
     }
 
@@ -36,6 +38,11 @@ impl Detected {
 
     pub fn number(mut self, n: u32) -> Detected {
         self.number = Some(n);
+        self
+    }
+
+    pub fn fraction(mut self, f: f32) -> Detected {
+        self.fraction = Some(f);
         self
     }
 }
@@ -85,14 +92,16 @@ impl<'a> Ctx<'a> {
         self.w.iter().find_map(|w| numbers::value(w))
     }
 
-    pub fn stray(&self, used: &[usize]) -> usize {
+    pub fn stray_words(&self, used: &[usize]) -> Vec<&'a str> {
         (0..self.w.len())
             .filter(|i| !used.contains(i))
-            .filter(|&i| {
-                let w = self.w[i];
-                !PRE.contains(&w) && !GENERIC.contains(&w) && !TRANSPORT_VERBS.contains(&w)
-            })
-            .count()
+            .map(|i| self.w[i])
+            .filter(|w| !PRE.contains(w) && !GENERIC.contains(w) && !TRANSPORT_VERBS.contains(w))
+            .collect()
+    }
+
+    pub fn stray(&self, used: &[usize]) -> usize {
+        self.stray_words(used).len()
     }
 
     pub fn only_pre(&self, range: std::ops::Range<usize>) -> bool {

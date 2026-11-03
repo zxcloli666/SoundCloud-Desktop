@@ -1,12 +1,12 @@
 phrase	intent	kind	entity	number	category	alt
 выключи шафл и включи кино	shuffle_off+play	artist	Кино		two_part	
 сделай потише и дальше	volume_down+next				two_part	
-включи дрейка а потом эминема	play+play	artist+artist	Drake+Eminem		two_part	
+включи дрейка а потом эминема	play+queue_add	artist+artist	Drake+Eminem		two_part	
 пауза и лайкни	pause+like				two_part	
 перемешай и следующий	shuffle_on+next				two_part	
 останови и включи сплин	play	artist	Сплин		two_part	
 громче и повтори трек	volume_up+repeat_one				two_part	
-включи кино затем звери	play+play	artist+artist	Кино+Звери		two_part	
+включи кино затем звери	play+queue_add	artist+artist	Кино+Звери		two_part	
 поставь на паузу я сейчас вернусь	pause				two_part	
 следующий пожалуйста мне не нравится эта	next				two_part	
 громче мне плохо слышно	volume_up				two_part	
@@ -50,7 +50,7 @@ phrase	intent	kind	entity	number	category	alt
 врубани сплин	play	artist	Сплин		slang	
 задолбала эта песня	next				slang	
 надоело	next				slang	
-не то	undo				slang	
+не то	next				slang	
 нафиг это	next				slang	
 поставь что-нибудь бодрое	play_wave				slang	
 включи музычку	play_wave				slang	

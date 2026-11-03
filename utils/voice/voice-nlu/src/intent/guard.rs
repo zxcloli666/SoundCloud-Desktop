@@ -12,14 +12,24 @@ fn negated_verb(w: &str) -> bool {
     NEG_FOLLOW.contains(&w) || PLAY_STRONG.contains(&w) || lexicon::stem(NEG_STEMS, w)
 }
 
-fn lyric(toks: &[Tok]) -> bool {
+pub fn lyric(toks: &[Tok]) -> bool {
+    let half = toks.len() / 2;
+    if toks.len() >= 4 && toks.len() % 2 == 0 && toks[..half] == toks[half..] {
+        return true;
+    }
     toks.windows(3).any(|w| {
-        w[0].w == w[1].w && w[1].w == w[2].w && w[0].w.chars().count() >= 4 && !PLAY_STRONG.contains(&w[0].w.as_str())
+        w[0].w == w[1].w
+            && w[1].w == w[2].w
+            && w[0].w.chars().count() >= 4
+            && !PLAY_STRONG.contains(&w[0].w.as_str())
     })
 }
 
 pub fn negation(toks: &[Tok]) -> Negation {
     if lyric(toks) {
+        return Negation::Cancel;
+    }
+    if toks.len() >= 2 && toks[0].w == "не" && toks[1].w == "не" {
         return Negation::Cancel;
     }
     for i in 0..toks.len().saturating_sub(1) {
@@ -35,23 +45,27 @@ pub fn negation(toks: &[Tok]) -> Negation {
     Negation::Clear
 }
 
-fn is_control(i: Intent) -> bool {
-    !matches!(
-        i,
+fn cuttable(toks: &[Tok], k: usize) -> bool {
+    match super::detect(&toks[..k]).intent {
         Intent::None
-            | Intent::Play
-            | Intent::QueueAdd
-            | Intent::PlaySimilar
-            | Intent::PlayWave
-            | Intent::PlayLikes
-            | Intent::Resume
-            | Intent::Help
-    )
+        | Intent::Help
+        | Intent::Undo
+        | Intent::PlaySimilar
+        | Intent::PlayWave
+        | Intent::PlayLikes => false,
+        Intent::Resume => false,
+        Intent::Play | Intent::QueueAdd => k >= 2,
+        _ => true,
+    }
 }
 
 pub fn remark(toks: &[Tok]) -> Option<usize> {
     (1..toks.len().saturating_sub(1))
         .filter(|&k| REMARK_START.contains(&toks[k].w.as_str()))
-        .filter(|&k| toks[..k].iter().all(|t| !REMARK_START.contains(&t.w.as_str())))
-        .find(|&k| is_control(super::detect(&toks[..k]).intent))
+        .filter(|&k| {
+            toks[..k]
+                .iter()
+                .all(|t| !REMARK_START.contains(&t.w.as_str()))
+        })
+        .find(|&k| cuttable(toks, k))
 }

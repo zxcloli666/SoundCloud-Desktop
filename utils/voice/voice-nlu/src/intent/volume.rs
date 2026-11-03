@@ -6,6 +6,9 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
     if c.len() > 8 {
         return None;
     }
+    if c.has(PLAY_STRONG) && c.has(&["музыку", "музыка"]) {
+        return None;
+    }
     let noun = c.pos_stem(&["громк", "звук", "volume", "vol", "sound"]);
     let times = c.has(&["раза", "раз"]);
     let number = c.number().filter(|_| !times);
@@ -32,7 +35,8 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
         let value = if stepped {
             None
         } else if let Some(v) = number {
-            Some(v.min(100))
+            let tenths = (1..=10).contains(&v) && !c.has_stem(&["процент"]);
+            Some(if tenths { v * 10 } else { v.min(100) })
         } else if half {
             Some(50)
         } else if max {
@@ -47,6 +51,12 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
         }
     }
 
+    if max && noun.is_none() && implicit.is_none() {
+        let at = c.pos(MAX_WORDS).unwrap_or(0);
+        if c.stray(&[at]) == 0 && c.len() <= 4 {
+            return Some(Detected::new(Intent::VolumeSet, vec![at]).number(100));
+        }
+    }
     if let (Some(n), true) = (implicit, max) {
         return Some(Detected::new(Intent::VolumeSet, vec![n]).number(100));
     }
@@ -68,7 +78,11 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
             if c.has(OFF_VERBS) && !c.has(UP_WORDS) && !c.has(DOWN_WORDS) {
                 return Some(Detected::new(Intent::Mute, vec![n]));
             }
-            if c.has(ON_VERBS) && !c.has(UP_WORDS) && !c.has(DOWN_WORDS) {
+            let on = c.all(ON_VERBS);
+            let mut used = on.clone();
+            used.push(n);
+            used.extend(c.all(&["обратно"]));
+            if !on.is_empty() && !c.has(UP_WORDS) && !c.has(DOWN_WORDS) && c.stray(&used) == 0 {
                 return Some(Detected::new(Intent::Unmute, vec![n]));
             }
         }

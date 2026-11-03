@@ -50,7 +50,7 @@ phrase	intent	kind	entity	number	category	alt
 включи моргена	play	artist	Моргенштерн		morphology	
 включи прости меня моя любовь земфиры	play	track	Земфира - Прости меня моя любовь		ambiguous	
 включи тепло макса коржа	play	track	Макс Корж - Тепло		morphology	
-поставь кино потом сплин потом звери	play+play+play	artist+artist+artist	Кино+Сплин+Звери		two_part	
+поставь кино потом сплин потом звери	play+queue_add+queue_add	artist+artist+artist	Кино+Сплин+Звери		two_part	
 сделай погромче и лайкни	volume_up+like				two_part	
 пауза а потом громче	pause+volume_up				two_part	
 стоп и перемешай	stop+shuffle_on				two_part	
