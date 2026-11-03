@@ -2524,13 +2524,9 @@
     "why_other": "Originals from artists you follow, last {{count}} days",
     "playAll": "Play all",
     "addToQueue": "Add to queue",
-    "empty_one": "No new releases in {{count}} day. Follow more artists to fill this up",
-    "empty_other": "No new releases in {{count}} days. Follow more artists to fill this up",
-    "unheard_one": "{{count}} not heard yet",
-    "unheard_other": "{{count}} not heard yet",
-    "allHeard": "You have heard everything",
     "lockedWhy": "Fresh uploads from your artists, a notification the moment they drop",
     "notifyBody_one": "{{count}} new release: {{artists}}",
-    "notifyBody_other": "{{count}} new releases: {{artists}}"
+    "notifyBody_other": "{{count}} new releases: {{artists}}",
+    "open": "Open"
   }
 }

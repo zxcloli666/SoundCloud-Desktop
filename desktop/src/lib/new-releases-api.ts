@@ -63,10 +63,10 @@ export function useHeardUrns(enabled: boolean): ReadonlySet<string> {
   return useMemo(() => new Set(data), [data]);
 }
 
-export function useReleaseFeed() {
+export function useReleaseFeed(starOnly = true) {
   const premium = usePremium();
   const signedIn = useAuthStore((s) => !!s.user);
-  const enabled = premium && signedIn;
+  const enabled = signedIn && (premium || !starOnly);
   const releases = useNewReleases(enabled);
   const heard = useHeardUrns(enabled);
   const tracks = releases.data ?? NO_TRACKS;

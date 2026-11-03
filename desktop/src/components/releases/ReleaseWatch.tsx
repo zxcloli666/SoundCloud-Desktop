@@ -15,7 +15,7 @@ export const ReleaseWatch = memo(function ReleaseWatch() {
 
   useEffect(() => {
     if (!active) return;
-    const stop = startReleaseWatch(() => navigate('/library/releases'));
+    const stop = startReleaseWatch(() => navigate('/library'));
     return () => {
       stop();
       useReleasesSeen.getState().forget();

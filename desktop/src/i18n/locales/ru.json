@@ -2602,19 +2602,11 @@
     "why_other": "Оригиналы от ваших артистов за {{count}} дня",
     "playAll": "Слушать все",
     "addToQueue": "В очередь",
-    "empty_one": "За {{count}} день новых релизов нет. Подпишитесь на больше артистов",
-    "empty_few": "За {{count}} дня новых релизов нет. Подпишитесь на больше артистов",
-    "empty_many": "За {{count}} дней новых релизов нет. Подпишитесь на больше артистов",
-    "empty_other": "За {{count}} дня новых релизов нет. Подпишитесь на больше артистов",
-    "unheard_one": "{{count}} ещё не слушали",
-    "unheard_few": "{{count}} ещё не слушали",
-    "unheard_many": "{{count}} ещё не слушали",
-    "unheard_other": "{{count}} ещё не слушали",
-    "allHeard": "Вы послушали всё",
     "lockedWhy": "Свежие треки ваших артистов и уведомление в момент выхода",
     "notifyBody_one": "{{count}} новый релиз: {{artists}}",
     "notifyBody_few": "{{count}} новых релиза: {{artists}}",
     "notifyBody_many": "{{count}} новых релизов: {{artists}}",
-    "notifyBody_other": "{{count}} новых релиза: {{artists}}"
+    "notifyBody_other": "{{count}} новых релиза: {{artists}}",
+    "open": "Открыть"
   }
 }

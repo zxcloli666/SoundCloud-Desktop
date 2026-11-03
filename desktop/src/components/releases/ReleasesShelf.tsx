@@ -61,7 +61,7 @@ export const ReleasesShelf = memo(function ReleasesShelf() {
         <span className="flex-1" />
         <ReleaseActions tracks={tracks} />
         <Link
-          to="/library/releases"
+          to="/library"
           className="flex items-center gap-0.5 text-[12px] font-semibold text-ink-45 transition-colors hover:text-ink-90"
         >
           {t('library.seeAll')}

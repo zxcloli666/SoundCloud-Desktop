@@ -15,6 +15,7 @@ import {usePerfMode} from '../../lib/perf';
 import {useTrackContextMenu} from '../../lib/useTrackContextMenu';
 import {useTrackPlay} from '../../lib/useTrackPlay';
 import type {Track} from '../../stores/player';
+import {ReleaseActions} from '../releases/ReleaseActions';
 import {LikeButton} from '../music/LikeButton';
 import {TrackTitleArtist} from '../music/TrackTitleArtist';
 import {useTrackAura} from '../track/useTrackAura';
@@ -26,7 +27,7 @@ function whenLabel(track: Track): string {
 
 /** The newest drop, given the spotlight: big cover glowing in its own genre,
  *  a NEW badge and how long ago it landed. */
-const FreshLead = memo(function FreshLead({track, queue}: { track: Track; queue: Track[] }) {
+const FreshLead = memo(function FreshLead({track, queue, heard}: { track: Track; queue: Track[]; heard: boolean }) {
     const {t} = useTranslation();
     const perf = usePerfMode();
     const aura = useTrackAura(track.genre);
@@ -83,7 +84,7 @@ const FreshLead = memo(function FreshLead({track, queue}: { track: Track; queue:
               className="text-[10px] font-black uppercase tracking-[0.2em] px-2 py-0.5 rounded-full"
               style={{color: aura.accent, background: aura.accentSoft}}
           >
-            {t('library.freshNew')}
+            {heard ? t('releases.heard') : t('library.freshNew')}
           </span>
                     {when && <span className="text-[11px] text-ink-40 tabular-nums">{when}</span>}
                 </div>
@@ -96,9 +97,11 @@ const FreshLead = memo(function FreshLead({track, queue}: { track: Track; queue:
 const FreshDropRow = memo(function FreshDropRow({
                                                     track,
                                                     queue,
+                                                    heard,
                                                 }: {
     track: Track;
     queue: Track[];
+    heard: boolean;
 }) {
     const {isThis, isThisPlaying, togglePlay} = useTrackPlay(track, queue);
     const onContextMenu = useTrackContextMenu(track);
@@ -110,7 +113,7 @@ const FreshDropRow = memo(function FreshDropRow({
             onContextMenu={onContextMenu}
             className={`group flex items-center gap-3.5 px-3 py-2.5 rounded-2xl transition-colors duration-200 ${
                 isThis ? 'bg-ink/[0.05]' : 'hover:bg-ink/[0.035]'
-            }`}
+            } ${heard && !isThis ? 'opacity-60 hover:opacity-100' : ''}`}
         >
             <button
                 type="button"
@@ -156,7 +159,7 @@ const FreshDropRow = memo(function FreshDropRow({
  *  artists you actually chose, newest first, the latest one in the spotlight. */
 export const FreshDrops = memo(function FreshDrops({genre}: { genre?: string | null }) {
     const {t} = useTranslation();
-    const {tracks: allTracks, isLoading, isFetching, hasFollowings, refetch} = useFollowingDrops();
+    const {tracks: allTracks, heard, unheard, isLoading, isFetching, hasFollowings, refetch} = useFollowingDrops();
     const tracks = useMemo(
         () => (genre ? allTracks.filter((tr) => tr.genre?.trim() === genre) : allTracks),
         [allTracks, genre],
@@ -173,6 +176,11 @@ export const FreshDrops = memo(function FreshDrops({genre}: { genre?: string | n
                 <h2 className="text-[16px] font-bold tracking-tight text-ink-90">
                     {t('library.freshFromFollowing')}
                 </h2>
+                {unheard > 0 && (
+                    <span className="rounded-full bg-accent px-2 py-0.5 text-[11px] font-black tabular-nums text-accent-contrast">
+                        {unheard}
+                    </span>
+                )}
                 <button
                     type="button"
                     onClick={refetch}
@@ -182,6 +190,8 @@ export const FreshDrops = memo(function FreshDrops({genre}: { genre?: string | n
                 >
                     <RefreshCw size={13} className={isFetching ? 'animate-spin' : ''}/>
                 </button>
+                <span className="flex-1"/>
+                <ReleaseActions tracks={tracks}/>
             </div>
 
             {isLoading ? (
@@ -199,11 +209,11 @@ export const FreshDrops = memo(function FreshDrops({genre}: { genre?: string | n
                 </div>
             ) : (
                 <div className="flex flex-col gap-4">
-                    {lead && <FreshLead track={lead} queue={tracks}/>}
+                    {lead && <FreshLead track={lead} queue={tracks} heard={heard.has(lead.urn)}/>}
                     {rest.length > 0 && (
                         <div className="flex flex-col gap-0.5">
-                            {rest.slice(0, 10).map((track) => (
-                                <FreshDropRow key={track.urn} track={track} queue={tracks}/>
+                            {rest.map((track) => (
+                                <FreshDropRow key={track.urn} track={track} queue={tracks} heard={heard.has(track.urn)}/>
                             ))}
                         </div>
                     )}

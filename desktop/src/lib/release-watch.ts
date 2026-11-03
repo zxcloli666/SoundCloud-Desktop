@@ -1,3 +1,4 @@
+import { toast } from 'sonner';
 import i18n from '../i18n';
 import { useAuthStore } from '../stores/auth';
 import { useReleasesSeen } from '../stores/releases-seen';
@@ -9,6 +10,7 @@ const FIRST_CHECK_MS = 60_000;
 const OPEN_WINDOW_MS = 5 * 60_000;
 
 let notifiedAt = 0;
+let notifiedBody = '';
 
 async function checkOnce(): Promise<void> {
   const owner = useAuthStore.getState().user?.urn;
@@ -26,11 +28,11 @@ async function checkOnce(): Promise<void> {
   if (document.hasFocus()) return;
   const { count, artists, more } = announcement(fresh);
   const names = artists.join(', ') + (more ? '...' : '');
-  const sent = await notifyOs(
-    i18n.t('releases.title'),
-    i18n.t('releases.notifyBody', { count, artists: names }),
-  );
-  if (sent) notifiedAt = Date.now();
+  const body = i18n.t('releases.notifyBody', { count, artists: names });
+  if (await notifyOs(i18n.t('releases.title'), body)) {
+    notifiedAt = Date.now();
+    notifiedBody = body;
+  }
 }
 
 function check() {
@@ -43,7 +45,7 @@ export function startReleaseWatch(open: () => void): () => void {
   const onFocus = () => {
     if (!notifiedAt || Date.now() - notifiedAt > OPEN_WINDOW_MS) return;
     notifiedAt = 0;
-    open();
+    toast(notifiedBody, { action: { label: i18n.t('releases.open'), onClick: open } });
   };
   window.addEventListener('focus', onFocus);
   return () => {
