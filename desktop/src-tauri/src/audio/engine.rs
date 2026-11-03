@@ -135,6 +135,7 @@ async fn build_player_from_bytes(
     eq_params: std::sync::Arc<std::sync::RwLock<crate::audio::types::EqParams>>,
     analyser_buffer: std::sync::Arc<crate::audio::analyser::AnalyserBuffer>,
     pitch_ratio: std::sync::Arc<AtomicU32>,
+    effects: std::sync::Arc<crate::audio::effects::EffectsParams>,
 ) -> Result<(Vec<u8>, rodio::Player, Option<f64>, f32), String> {
     task::spawn_blocking(move || {
         let normalization_gain = if normalization_enabled {
@@ -155,6 +156,7 @@ async fn build_player_from_bytes(
             eq_params,
             analyser_buffer,
             pitch_ratio,
+            effects,
         )?;
         Ok((bytes, player, duration_secs, normalization_gain))
     })
@@ -200,6 +202,7 @@ pub fn reload_current_track(state: &AudioState) -> Result<(), String> {
         state.eq_params.clone(),
         state.analyser_buffer.clone(),
         state.pitch_ratio.clone(),
+        state.effects.clone(),
     )?;
     // Apply speed BEFORE seeking so try_seek's argument is interpreted under the speed
     // factor: try_seek(source/rate) lands the decoder at the original source position.
@@ -272,6 +275,7 @@ pub async fn load_file(
         state.eq_params.clone(),
         state.analyser_buffer.clone(),
         state.pitch_ratio.clone(),
+        state.effects.clone(),
     )
     .await?;
 
@@ -424,6 +428,7 @@ async fn load_with_retries(
         state.eq_params.clone(),
         state.analyser_buffer.clone(),
         state.pitch_ratio.clone(),
+        state.effects.clone(),
     )
     .await?;
 
@@ -529,6 +534,7 @@ pub fn seek_to(state: &AudioState, position: f64) -> Result<(), String> {
         state.eq_params.clone(),
         state.analyser_buffer.clone(),
         state.pitch_ratio.clone(),
+        state.effects.clone(),
     )?;
     new_player.set_speed(rate as f32);
     if position > 0.0 {
@@ -729,6 +735,7 @@ pub async fn preview_play(
             eq_params,
             analyser,
             pitch_ratio,
+            std::sync::Arc::new(crate::audio::effects::EffectsParams::new()),
         )
         .map(|(player, _)| player)
     })

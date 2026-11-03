@@ -14,6 +14,7 @@ use sha2::{Digest, Sha256};
 
 use crate::audio::analyser::{AnalyserBuffer, AnalyserSource};
 use crate::audio::declick::DeclickSource;
+use crate::audio::effects::{EffectsParams, EffectsSource};
 use crate::audio::eq::{EqSource, GainSource};
 use crate::audio::mpeg::{self, is_mpeg_audio};
 use crate::audio::pitch::PitchSource;
@@ -433,6 +434,7 @@ pub fn create_player_from_bytes(
     eq_params: Arc<RwLock<EqParams>>,
     analyser_buffer: Arc<AnalyserBuffer>,
     pitch_ratio: Arc<AtomicU32>,
+    effects: Arc<EffectsParams>,
 ) -> Result<(Player, Option<f64>), String> {
     let player = Player::connect_new(mixer);
     player.set_volume(volume);
@@ -443,9 +445,12 @@ pub fn create_player_from_bytes(
     let source = open_source(bytes)?;
     let duration = source.total_duration().map(|d| d.as_secs_f64());
     player.append(DeclickSource::new(AnalyserSource::new(
-        EqSource::new(
-            PitchSource::new(GainSource::new(source, normalization_gain), pitch_ratio),
-            eq_params,
+        EffectsSource::new(
+            EqSource::new(
+                PitchSource::new(GainSource::new(source, normalization_gain), pitch_ratio),
+                eq_params,
+            ),
+            effects,
         ),
         analyser_buffer,
     )));

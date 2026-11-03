@@ -74,6 +74,7 @@ import {
   ListX as _ListX,
   Loader2 as _Loader2,
   Lock as _Lock,
+  Waves as _Waves,
   MapPin as _MapPin,
   MessageCircle as _MessageCircle,
   MicVocal as _MicVocal,
@@ -232,6 +233,7 @@ export const ListX = memo(_ListX);
 export const ListPlus = memo(_ListPlus);
 export const Loader2 = memo(_Loader2);
 export const Lock = memo(_Lock);
+export const Waves = memo(_Waves);
 export const MapPin = memo(_MapPin);
 export const MicVocal = memo(_MicVocal);
 export const Monitor = memo(_Monitor);

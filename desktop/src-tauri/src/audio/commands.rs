@@ -7,6 +7,7 @@ use crate::audio::device;
 use crate::audio::engine;
 use crate::audio::eq_curve;
 use crate::audio::eq_preset::{self, EqFormat, EqImport};
+use crate::audio::effects::Settings;
 use crate::audio::silence;
 use crate::audio::state::AudioState;
 use crate::audio::timing;
@@ -111,6 +112,11 @@ pub fn audio_set_playback_rate(rate: f64, state: State<'_, AudioState>) {
 #[tauri::command]
 pub fn audio_set_pitch_ratio(ratio: f64, state: State<'_, AudioState>) {
     engine::set_pitch_ratio(ratio, state);
+}
+
+#[tauri::command]
+pub fn audio_set_effects(settings: Settings, state: State<'_, AudioState>) {
+    state.effects.set(settings);
 }
 
 #[tauri::command]

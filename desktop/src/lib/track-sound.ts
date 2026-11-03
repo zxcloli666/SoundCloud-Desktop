@@ -1,3 +1,4 @@
+import { FX_DEFAULT, pickFx, useEffectsStore } from '../stores/effects';
 import { clampPitchSemitones, clampPlaybackRate, usePlayerStore } from '../stores/player';
 import { useSettingsStore } from '../stores/settings';
 import {
@@ -29,6 +30,7 @@ function readLive(): TrackSound {
     eqGains: [...eqGains],
     eqPreset,
     eqPreamp,
+    fx: pickFx(useEffectsStore.getState()),
   };
 }
 
@@ -40,6 +42,7 @@ function applyLive(sound: TrackSound) {
       pitchSemitones: clampPitchSemitones(sound.pitch),
       pitchControlMode: sound.pitchMode,
     });
+    useEffectsStore.setState(pickFx(sound.fx ?? FX_DEFAULT));
     useSettingsStore.setState({
       eqEnabled: sound.eqEnabled,
       eqGains: [...sound.eqGains],
@@ -126,6 +129,7 @@ export async function initTrackSound() {
     hydrated(usePlayerStore),
     hydrated(useSettingsStore),
     hydrated(useTrackSoundStore),
+    hydrated(useEffectsStore),
   ]);
 
   let urn = usePlayerStore.getState().currentTrack?.urn ?? null;
@@ -145,6 +149,10 @@ export async function initTrackSound() {
     ) {
       captureLiveChange();
     }
+  });
+
+  useEffectsStore.subscribe((state, prev) => {
+    if (state !== prev) captureLiveChange();
   });
 
   useSettingsStore.subscribe((state, prev) => {

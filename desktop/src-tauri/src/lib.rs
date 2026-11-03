@@ -201,6 +201,9 @@ pub fn run() {
 
             let auth_state =
                 auth::SessionStore::init(data_dir.clone(), auth_http_client, rt_handle.clone());
+            app.state::<audio::AudioState>()
+                .effects
+                .set_premium(auth_state.premium_at_start());
             app.manage(auth_state);
 
             let call_state = network::call::CallState::init(data_dir.clone(), rt_handle);
@@ -297,6 +300,7 @@ pub fn run() {
             audio::audio_set_playback_rate,
             audio::audio_set_fft_enabled,
             audio::audio_set_pitch_ratio,
+            audio::audio_set_effects,
             audio::audio_set_ab_loop,
             audio::audio_set_skip_silence,
             audio::audio_get_position,

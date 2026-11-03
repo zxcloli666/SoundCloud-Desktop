@@ -69,6 +69,7 @@ import {AltUploadMark} from '../music/AltUploadMark';
 import {ArtistNameLinks} from '../music/ArtistNameLinks';
 import {PlayerBlockButton} from '../music/blocklist/PlayerBlockButton';
 import {EqualizerPanel} from '../music/EqualizerPanel';
+import {EffectsBtn} from '../music/effects/EffectsBtn';
 import {HoldHeart} from '../music/superlike/HoldHeart';
 import {heartTitle} from '../music/superlike/heart-title';
 import {useSuperlikeGesture} from '../music/superlike/useSuperlikeGesture';
@@ -1164,6 +1165,7 @@ export const NowPlayingBar = React.memo(
                 <TogetherButton />
                 <TuningBtn />
                 <EqBtn />
+                <EffectsBtn className={(active) => btnClass(active, 'sm')} />
                 <LyricsBtn />
                 <QueueBtn onClick={onQueueToggle} active={queueOpen} />
                 <VolumeFlyout />

@@ -1464,6 +1464,30 @@
       "failed": "Could not move the cache"
     }
   },
+  "effects": {
+    "title": "Effects",
+    "toggle": "Effects on or off",
+    "locked": "Reverb, 8D and bass boost come with STAR",
+    "reverb": "Reverb",
+    "room": "Room size",
+    "eightDSpeed": "8D speed",
+    "bass": "Bass",
+    "preset": {
+      "off": "Off",
+      "slowedReverb": "Slowed + reverb",
+      "spedUp": "Sped up",
+      "eightD": "8D",
+      "bass": "Bass boost",
+      "custom": "Custom"
+    },
+    "short": {
+      "slowedReverb": "Slow",
+      "spedUp": "Fast",
+      "eightD": "8D",
+      "bass": "Bass",
+      "custom": "FX"
+    }
+  },
   "eq": {
     "title": "Equalizer",
     "enabled": "Enabled",
