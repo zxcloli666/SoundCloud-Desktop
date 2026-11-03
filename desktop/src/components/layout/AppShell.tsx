@@ -15,6 +15,7 @@ import {toggleWindowFullscreen} from '../../lib/window';
 import {useLyricsStore} from '../../stores/lyrics';
 import {usePlayerStore} from '../../stores/player';
 import {useSettingsStore} from '../../stores/settings';
+import {ImportHost} from '../import/ImportHost';
 import {AddToPlaylistHost} from '../music/AddToPlaylistHost';
 import {SuperlikeLimitHost} from '../music/superlike/SuperlikeLimitHost';
 import {TrackContextMenu} from '../music/track-menu/TrackContextMenu';
@@ -483,6 +484,7 @@ export const AppShell = React.memo(() => {
       <SuperlikeLimitHost />
       <StarMomentsHost />
       <UploadTrackDialog />
+      <ImportHost />
       {queueOpen && (
         <Suspense fallback={null}>
           <QueuePanel open={queueOpen} onClose={onQueueClose} />

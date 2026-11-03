@@ -36,7 +36,7 @@ export async function rememberOwnedPlaylists(owner: string, urns: string[]) {
   try {
     await tauriStorage.setItem(STORAGE_KEY, JSON.stringify([...entries, ...added]));
   } catch (error) {
-    console.warn('[YM Import] could not remember imported playlists:', error);
+    console.warn('[Import] could not remember imported playlists:', error);
   }
 }
 
@@ -48,6 +48,6 @@ export async function forgetOwnedPlaylists(owner: string, urns: string[]) {
   try {
     await tauriStorage.setItem(STORAGE_KEY, JSON.stringify(kept));
   } catch (error) {
-    console.warn('[YM Import] could not forget deleted playlists:', error);
+    console.warn('[Import] could not forget deleted playlists:', error);
   }
 }

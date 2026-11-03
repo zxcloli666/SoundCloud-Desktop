@@ -50,6 +50,7 @@ pub fn run() {
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_notification::init())
         .plugin(app::hotkeys::plugin())
         .register_asynchronous_uri_scheme_protocol("scproxy", |_ctx, request, responder| {
             let Some(state) = network::proxy::STATE.get() else {
@@ -321,8 +322,12 @@ pub fn run() {
             audio::audio_preview_play,
             audio::audio_preview_stop,
             audio::save_track_to_path,
-            import::ym_import_start,
-            import::ym_import_stop,
+            import::import_start,
+            import::import_stop,
+            import::import_detect,
+            import::import_ym_library,
+            import::import_read_list_file,
+            import::import_notify,
             local_library::local_library_scan,
             local_library::local_library_missing,
             local_library::local_library_forget,
