@@ -44,14 +44,14 @@ jobs:
             otool -L target/release/examples/transcribe
             cp target/release/examples/transcribe stripped && strip -x stripped && ls -l stripped
           else
-            dumpbin /dependents target/release/examples/transcribe.exe
+            dumpbin -dependents target/release/examples/transcribe.exe
           fi
       - name: windows crt
         if: runner.os == 'Windows'
         run: |
           for f in target/sherpa-onnx-prebuilt/*/lib/*.lib; do
             echo "== $f"
-            dumpbin /directives "$f" | grep -i "defaultlib" | sort | uniq -c
+            dumpbin -directives "$f" | grep -i "defaultlib" | sort | uniq -c
           done
           ls -l target/sherpa-onnx-prebuilt/*/lib target/release/examples | grep -i "dll"
       - name: models and audio
