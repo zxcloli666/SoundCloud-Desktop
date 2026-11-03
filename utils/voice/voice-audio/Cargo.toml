@@ -1,0 +1,19 @@
+[package]
+name = "voice-audio"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[features]
+default = []
+webrtc = ["dep:webrtc-audio-processing"]
+
+[dependencies]
+rubato = "0.16"
+sonora = "0.2.0"
+webrtc-audio-processing = { version = "2", optional = true, features = ["bundled"] }
+
+[dev-dependencies]
+hound = "3"
+rand = "0.9"
+rustfft = "6"
