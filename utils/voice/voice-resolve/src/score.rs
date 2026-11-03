@@ -83,7 +83,7 @@ fn limits(qlen: usize, bare: bool) -> (f32, f32) {
         return (BARE_MIN, BARE_MIN);
     }
     match qlen {
-        0..=5 => (0.9, 0.85),
+        0..=5 => (0.86, 0.82),
         6..=7 => (0.84, 0.8),
         _ => (0.76, 0.72),
     }

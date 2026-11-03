@@ -131,7 +131,7 @@ turn it up a bit	volume_up				english
 поставь мне укол	none				false_act	
 перемотай фильм на начало	none				false_act	
 поставь лайк на мою фотку	none				false_act	
-стоп игра	none				false_act	intent=stop;artist:Стоп Игра
+стоп игра	none				false_act	intent=stop;intent=play;artist:Стоп Игра
 включи голову наконец	none				false_act	
 включи логику	none				false_act	
 повтори за мной	none				false_act	

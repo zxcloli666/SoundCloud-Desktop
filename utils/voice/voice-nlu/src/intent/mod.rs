@@ -78,7 +78,7 @@ pub fn fuzzy_fix(toks: &[Tok]) -> Option<Vec<Tok>> {
 
 fn closest(w: &str) -> Option<&'static str> {
     let len = w.chars().count();
-    if len < 4 || lexicon::is_known(w) || w.chars().any(|c| c.is_ascii_digit()) {
+    if len < 5 || lexicon::is_known(w) || w.chars().any(|c| c.is_ascii_digit()) {
         return None;
     }
     let limit = if len >= 8 { 2 } else { 1 };

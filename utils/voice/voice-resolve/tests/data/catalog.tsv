@@ -63,7 +63,7 @@ artist	Кровосток		800000
 artist	ЛСП		2000000	эл эс пэ
 artist	Little Big		4000000	литл биг
 artist	Мумий Тролль		1800000	
-artist	Би-2		1900000	би два|би 2
+artist	Би-2		1900000	би два|би 2|бидва
 artist	Нервы		2000000	
 artist	Агата Кристи		1500000	
 artist	ДДТ		1800000	дэ дэ тэ
@@ -156,7 +156,7 @@ track	Новый Мерин	Моргенштерн	4500000	новый мерен
 track	Дуло	Моргенштерн	3500000	
 track	Каждый раз	Монеточка	3500000	
 track	Нимфоманка	Монеточка	2500000	
-track	90	Монеточка	2000000	девяносто
+track	90	Монеточка	2000000	девяносто|девяностые
 track	Blinding Lights	The Weeknd	90000000	блайндинг лайтс|бландинг лайтс
 track	Starboy	The Weeknd	70000000	старбой
 track	Save Your Tears	The Weeknd	60000000	сейв ё тирз
@@ -217,7 +217,7 @@ track	Sonne	Rammstein	20000000	зонне
 track	Smells Like Teen Spirit	Nirvana	40000000	смелс лайк тин спирит
 track	Bohemian Rhapsody	Queen	55000000	богемиан рапсоди
 track	Circles	Post Malone	45000000	серклз
-track	7 rings	Ariana Grande	50000000	севен рингс
+track	7 rings	Ariana Grande	50000000	севен рингс|семь колец
 track	Summertime Sadness	Lana Del Rey	40000000	саммертайм сэднесс
 track	Uptown Funk	Bruno Mars	50000000	аптаун фанк
 track	Beggin'	Måneskin	45000000	беггин
