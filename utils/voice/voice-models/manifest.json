@@ -1,0 +1,124 @@
+{
+  "models": [
+    {
+      "id": "silero-vad",
+      "version": "1",
+      "kind": "vad",
+      "language": "any",
+      "license": "MIT",
+      "unpacked_size": 643854,
+      "requires": [],
+      "files": [
+        {
+          "path": "silero_vad.onnx",
+          "size": 643854,
+          "sha256": "9e2449e1087496d8d4caba907f23e0bd3f78d91fa552479bb9c23ac09cbb1fd6"
+        }
+      ]
+    },
+    {
+      "id": "sherpa-onnx-streaming-zipformer-small-ru-vosk-int8-2025-08-16",
+      "version": "1",
+      "kind": "asr",
+      "language": "ru",
+      "license": "Apache-2.0",
+      "unpacked_size": 28833045,
+      "requires": [
+        "silero-vad"
+      ],
+      "files": [
+        {
+          "path": "encoder.int8.onnx",
+          "size": 26214060,
+          "sha256": "e0db705e94ec35d803b1df4f40cda23d064e1142977c80ab288430b109777a9d"
+        },
+        {
+          "path": "decoder.onnx",
+          "size": 2093080,
+          "sha256": "89b3088a9e20e1ef7f2e85ce1a3478afe6a9c4ac57369cabcc4beb8e95328ea0"
+        },
+        {
+          "path": "joiner.int8.onnx",
+          "size": 259417,
+          "sha256": "b55784b071ab7512eab4c7c44e4f5478284ef33c83562cc6a249b972515a31e5"
+        },
+        {
+          "path": "tokens.txt",
+          "size": 6388,
+          "sha256": "93bbbc0bae6b78c0bbb743d4aa9fded3bb5ff3aac5f0200e3a769a5a05e0fdf6"
+        },
+        {
+          "path": "bpe.model",
+          "size": 246184,
+          "sha256": "c7a756aeb3550417d6b2ed3efde9a7aa3eea54787d4eac011e9cce6090c9c64a"
+        },
+        {
+          "path": "bpe.vocab",
+          "size": 13916,
+          "sha256": "52649881bb41fafe4257c74d77a85320524494a9d8c48e93d4aaa216cc45113d"
+        }
+      ]
+    },
+    {
+      "id": "sherpa-onnx-nemo-transducer-giga-am-v3-russian-2025-12-16",
+      "version": "1",
+      "kind": "asr",
+      "language": "ru",
+      "license": "MIT",
+      "unpacked_size": 229343109,
+      "requires": [
+        "silero-vad"
+      ],
+      "files": [
+        {
+          "path": "encoder.int8.onnx",
+          "size": 224570814,
+          "sha256": "0ec54e5f130a91c0f228d21795ede10b31c992a1f73e45dcd827e843a71a9b50"
+        },
+        {
+          "path": "decoder.onnx",
+          "size": 3331651,
+          "sha256": "5d1cfef155d8e07f213bd2f3229b5f6c5c29355c7fa5c1b9eb62cb1925725254"
+        },
+        {
+          "path": "joiner.onnx",
+          "size": 1440448,
+          "sha256": "fd1d02f45c2ad3d6b67cc149811ad794ab4b020ed49a0a9e2790a8619d1cddd8"
+        },
+        {
+          "path": "tokens.txt",
+          "size": 196,
+          "sha256": "17cc514451bcceac9c280068c71502f8448f99e9fb1456b8d0761651fd0392f2"
+        }
+      ]
+    },
+    {
+      "id": "sherpa-onnx-moonshine-base-en-quantized-2026-02-27",
+      "version": "1",
+      "kind": "asr",
+      "language": "en",
+      "license": "MIT",
+      "unpacked_size": 141300566,
+      "requires": [
+        "silero-vad"
+      ],
+      "files": [
+        {
+          "path": "encoder_model.ort",
+          "size": 31326816,
+          "sha256": "7c66495948d0d08ec1af454cd4b5514862ae6511e94712a60e6d83eaec8dc8cf"
+        },
+        {
+          "path": "decoder_model_merged.ort",
+          "size": 109424400,
+          "sha256": "d9d7b333af34bc552580576ddcf248a1c6c839e0d3b43b09afb9376ed009899d"
+        },
+        {
+          "path": "tokens.txt",
+          "size": 549350,
+          "sha256": "2870d843e14c1e187bf1913a521562a63b53933814bd7f2145120468f494a049"
+        }
+      ]
+    }
+  ]
+}
