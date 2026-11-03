@@ -1,0 +1,18 @@
+[package]
+name = "voice-speech"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[features]
+default = ["static"]
+static = ["sherpa-onnx/static"]
+shared = ["sherpa-onnx/shared"]
+
+[dependencies]
+sherpa-onnx = { version = "=2.0.1", default-features = false }
+rubato = "5"
+hound = "3"
+
+[[example]]
+name = "transcribe"

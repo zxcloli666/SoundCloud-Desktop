@@ -1,0 +1,76 @@
+name: voice-s1
+on:
+  push:
+    branches: [voice/s1]
+  workflow_dispatch:
+
+jobs:
+  speech:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: linux-x64, os: ubuntu-22.04, features: static }
+          - { name: macos-arm64, os: macos-latest, features: static }
+          - { name: macos-x64, os: macos-15-intel, features: static }
+          - { name: windows-static, os: windows-latest, features: static }
+          - { name: windows-shared, os: windows-latest, features: shared }
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: utils/voice
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ilammy/msvc-dev-cmd@v1
+        if: runner.os == 'Windows'
+      - name: build
+        run: |
+          rustup show active-toolchain
+          start=$(date +%s)
+          cargo build --release -p voice-speech --example transcribe --no-default-features --features ${{ matrix.features }}
+          echo "build seconds: $(( $(date +%s) - start ))"
+      - name: sizes
+        run: |
+          ls -l target/release/examples/ | grep -v '\.d$' | grep -i "transcribe\|\.dll"
+          ls -l target/sherpa-onnx-prebuilt/*/lib
+          if [ "$RUNNER_OS" = "Linux" ]; then
+            ldd target/release/examples/transcribe
+            cp target/release/examples/transcribe stripped && strip stripped && ls -l stripped
+          elif [ "$RUNNER_OS" = "macOS" ]; then
+            otool -L target/release/examples/transcribe
+            cp target/release/examples/transcribe stripped && strip -x stripped && ls -l stripped
+          else
+            dumpbin /dependents target/release/examples/transcribe.exe
+          fi
+      - name: windows crt
+        if: runner.os == 'Windows'
+        run: |
+          for f in target/sherpa-onnx-prebuilt/*/lib/*.lib; do
+            echo "== $f"
+            dumpbin /directives "$f" | grep -i "defaultlib" | sort | uniq -c
+          done
+          ls -l target/sherpa-onnx-prebuilt/*/lib target/release/examples | grep -i "dll"
+      - name: models and audio
+        run: |
+          B=https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models
+          mkdir -p cache/models cache/audio
+          curl -sL -o cache/models/silero_vad.onnx $B/silero_vad.onnx
+          curl -sL -o cache/vosk.tar.bz2 $B/sherpa-onnx-streaming-zipformer-small-ru-vosk-int8-2025-08-16.tar.bz2
+          tar xjf cache/vosk.tar.bz2 -C cache
+          mv cache/sherpa-onnx-streaming-zipformer-small-ru-vosk-int8-2025-08-16 cache/models/asr
+          pip install -q sentencepiece
+          python -c "
+          import sentencepiece as s
+          sp=s.SentencePieceProcessor(model_file='cache/models/asr/bpe.model')
+          open('cache/models/asr/bpe.vocab','w').write(''.join(f'{sp.id_to_piece(i)}\t{sp.get_score(i)}\n' for i in range(sp.get_piece_size())))
+          "
+          for n in speed_warning 100 door_rear_left doors_closed connected 130; do
+            curl -sL -o cache/audio/$n.wav https://raw.githubusercontent.com/zxcloli666/CarUI/main/audio/loli/$n.wav
+          done
+          printf 'doors closed\nподключились\nскриптонит\n' > cache/hot.txt
+      - name: run
+        run: |
+          ls cache/audio/*.wav | tr '\n' '\0' | xargs -0 ./target/release/examples/transcribe cache/models -
+          echo "--- with hotwords"
+          ls cache/audio/*.wav | tr '\n' '\0' | xargs -0 ./target/release/examples/transcribe cache/models cache/hot.txt
