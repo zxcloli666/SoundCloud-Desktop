@@ -24,12 +24,31 @@ pub fn fold_words(text: &str) -> Vec<String> {
         } else if w.chars().any(|c| ('а'..='я').contains(&c) || c == 'ё') {
             cyrillic(w)
         } else {
-            latin(w)
+            latin(&squeeze(w))
         };
         if !phon.is_empty() {
             out.push(dedupe(&phon));
         }
         let _ = i;
+    }
+    out
+}
+
+fn squeeze(w: &str) -> String {
+    let chars: Vec<char> = w.chars().collect();
+    let mut out = String::new();
+    let mut i = 0;
+    while i < chars.len() {
+        let mut j = i;
+        while j < chars.len() && chars[j] == chars[i] {
+            j += 1;
+        }
+        let run = j - i;
+        let keep = if run >= 3 { 1 } else { run };
+        for _ in 0..keep {
+            out.push(chars[i]);
+        }
+        i = j;
     }
     out
 }
@@ -105,7 +124,14 @@ fn cyrillic(word: &str) -> String {
             'д' => "d",
             'е' | 'э' => "e",
             'ё' => "o",
-            'ж' => "Z",
+            'ж' => {
+                if prev == Some('д') {
+                    out.pop();
+                    "J"
+                } else {
+                    "Z"
+                }
+            }
             'з' => "z",
             'и' | 'ы' => "i",
             'й' => {
@@ -229,13 +255,13 @@ fn latin(word: &str) -> String {
                 }
                 step = 2;
             }
-            'g' if matches!(next, 'e' | 'i' | 'y') && prev != 'g' && !at(i, "gg") => out.push_str("dZ"),
+            'g' if matches!(next, 'e' | 'i' | 'y') && prev != 'g' && !at(i, "gg") => out.push('J'),
             'g' => out.push('g'),
             'd' if at(i, "dge") || at(i, "dgi") => {
-                out.push_str("dZ");
+                out.push('J');
                 step = 2;
             }
-            'j' => out.push_str("dZ"),
+            'j' => out.push('J'),
             'q' if at(i, "qu") => {
                 out.push_str("kv");
                 step = 2;
@@ -324,7 +350,7 @@ pub fn skeleton(key: &str) -> String {
             'k' => 'g',
             'f' => 'v',
             'z' | 'c' => 's',
-            'Z' | 'C' => 'S',
+            'Z' | 'C' | 'J' => 'S',
             other => other,
         };
         if out.chars().last() != Some(m) {
@@ -358,6 +384,8 @@ fn sub_cost(a: char, b: char) -> f32 {
     }
     let pair = if a < b { (a, b) } else { (b, a) };
     match pair {
+        ('J', 'g') | ('J', 'Z') => 0.35,
+        ('J', 'S') | ('C', 'J') => 0.6,
         ('b', 'p') | ('d', 't') | ('g', 'k') | ('f', 'v') | ('s', 'z') | ('S', 'Z') | ('C', 'S') | ('c', 's') | ('C', 'c') => 0.4,
         ('h', 'k') | ('s', 't') | ('d', 'z') | ('m', 'n') | ('b', 'v') | ('S', 's') | ('C', 't') => 0.6,
         _ => 1.0,
