@@ -5,6 +5,13 @@ pub mod numbers;
 pub use lexicon::Lexicon;
 use normalize::{pieces, Piece};
 
+const EXTRA: &[(&str, &str)] = &[
+    ("weeknd", "wˈikɛnd"),
+    ("spotify", "spˈɑɾəfI"),
+    ("soundcloud", "sˈWndklWd"),
+    ("playlist", "plˈAlɪst"),
+];
+
 pub struct English {
     lexicon: Lexicon,
 }
@@ -51,6 +58,9 @@ impl English {
     }
 
     fn word(&self, w: &str) -> Option<String> {
+        if let Some((_, p)) = EXTRA.iter().find(|(k, _)| *k == w.to_lowercase()) {
+            return Some(p.to_string());
+        }
         if let Some(p) = self.lexicon.get(w) {
             return Some(p.to_string());
         }

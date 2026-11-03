@@ -139,6 +139,16 @@ with open(keys_path, encoding="utf8") as f:
     for line in f:
         candidates.pop(line.rstrip("\n"), None)
 yo = {folded: word.index("ё") for folded, word in candidates.items()}
+forced = {}
+if not os.environ.get("NO_OVERRIDES"):
+    with open(os.path.join(here, "yo-force.txt"), encoding="utf8") as f:
+        for token in f.read().split():
+            word = token.lower()
+            if word.count("ё") == 1:
+                forced[word.replace("ё", "е")] = word.index("ё")
+yo.update(forced)
+for folded in forced:
+    stress.pop(folded, None)
 os.remove(keys_path)
 os.remove(pairs_path)
 os.remove(pairs_path + ".counted")
