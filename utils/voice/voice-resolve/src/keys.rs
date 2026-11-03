@@ -141,13 +141,28 @@ impl Keys {
         }
     }
 
+    fn fallback_sim(&self, v: &QueryKeys) -> f32 {
+        if !self.own_artist_name {
+            return 0.0;
+        }
+        let best = self
+            .names
+            .iter()
+            .map(|(name, w)| near(&v.text, name) * w)
+            .fold(0.0f32, f32::max);
+        best * FALLBACK_FACTOR
+    }
+
     pub fn sim(&self, v: &QueryKeys) -> f32 {
         if !self.plausible(v) {
             return 0.0;
         }
+        if v.fallback {
+            return self.fallback_sim(v);
+        }
         let mut best = 0.0f32;
         for (name, w) in &self.names {
-            best = best.max(voice_nlu::similarity(&v.text, name) * w);
+            best = best.max(near(&v.text, name) * w);
             if let Some(artist) = &self.artist {
                 best = best.max(combo(&v.text, artist, name) * w);
                 for part in &self.artist_parts {
@@ -158,14 +173,14 @@ impl Keys {
         if let (Some(qa), Some(qt)) = (&v.artist, &v.title) {
             let mut st = 0.0f32;
             for (name, w) in &self.names {
-                st = st.max(voice_nlu::similarity(qt, name) * w);
+                st = st.max(near(qt, name) * w);
             }
             let sa = match &self.artist {
                 Some(artist) => self
                     .artist_parts
                     .iter()
-                    .map(|p| voice_nlu::similarity(qa, p) * 0.95)
-                    .fold(voice_nlu::similarity(qa, artist), f32::max),
+                    .map(|p| near(qa, p) * 0.95)
+                    .fold(near(qa, artist), f32::max),
                 None => {
                     if self.own_artist_name {
                         0.0
@@ -186,15 +201,21 @@ impl Keys {
     }
 }
 
+const STRICT_SLACK: f32 = 0.2;
+const FALLBACK_FACTOR: f32 = 0.92;
+
+fn near(a: &str, b: &str) -> f32 {
+    voice_nlu::similarity(a, b).min(voice_nlu::strict_similarity(a, b) + STRICT_SLACK)
+}
+
 fn combo(q: &str, artist: &str, name: &str) -> f32 {
     let qc: Vec<char> = q.chars().collect();
     let total = qc.len();
     if total < 3 {
         return 0.0;
     }
-    let near = voice_nlu::similarity(q, &format!("{artist}{name}"))
-        .max(voice_nlu::similarity(q, &format!("{name}{artist}")));
-    if near < 0.5 {
+    let close = near(q, &format!("{artist}{name}")).max(near(q, &format!("{name}{artist}")));
+    if close < 0.5 {
         return 0.0;
     }
     let mut best = 0.0f32;
@@ -205,9 +226,9 @@ fn combo(q: &str, artist: &str, name: &str) -> f32 {
         for p in lo..=hi {
             let left: String = qc[..p].iter().collect();
             let right: String = qc[p..].iter().collect();
-            let s1 = voice_nlu::similarity(&left, first);
-            let s2 = voice_nlu::similarity(&right, second);
-            if s1 < 0.5 || s2 < 0.5 {
+            let s1 = near(&left, first);
+            let s2 = near(&right, second);
+            if s1 < 0.6 || s2 < 0.6 {
                 continue;
             }
             let (w1, w2) = (l1 as f32, second.chars().count() as f32);
@@ -223,6 +244,7 @@ pub struct QueryKeys {
     pub title: Option<String>,
     pub kept: bool,
     pub lemmatized: bool,
+    pub fallback: bool,
     grams: Grams,
     title_grams: Option<Grams>,
 }
@@ -239,6 +261,7 @@ impl QueryKeys {
             title,
             kept: v.kept_fillers,
             lemmatized: v.lemmatized,
+            fallback: v.fallback,
         }
     }
 
@@ -246,10 +269,12 @@ impl QueryKeys {
         let mut out: Vec<QueryKeys> = Vec::new();
         for v in variants {
             let q = QueryKeys::new(v);
-            match out
-                .iter_mut()
-                .find(|o| o.text == q.text && o.artist == q.artist && o.title == q.title)
-            {
+            match out.iter_mut().find(|o| {
+                o.text == q.text
+                    && o.artist == q.artist
+                    && o.title == q.title
+                    && o.fallback == q.fallback
+            }) {
                 Some(o) => {
                     o.kept |= q.kept;
                     o.lemmatized &= q.lemmatized;
@@ -265,12 +290,12 @@ pub fn best_sim(keys: &Keys, queries: &[QueryKeys]) -> f32 {
     best_match(keys, queries).0
 }
 
-pub fn best_match(keys: &Keys, queries: &[QueryKeys]) -> (f32, usize) {
-    let mut best = (0.0f32, 0usize);
+pub fn best_match(keys: &Keys, queries: &[QueryKeys]) -> (f32, usize, bool) {
+    let mut best = (0.0f32, 0usize, false);
     for q in queries {
         let sim = keys.sim(q);
         if sim > best.0 {
-            best = (sim, q.text.chars().count());
+            best = (sim, q.text.chars().count(), q.fallback);
         }
     }
     best

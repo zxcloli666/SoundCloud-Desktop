@@ -29,7 +29,12 @@ fn main() {
             for p in voice_nlu::parse(phrase) {
                 let cands = catalog.candidates(&p.queries, &voice_nlu::Kind::ALL);
                 for r in rank(&p, cands, &boosts).iter().take(3) {
-                    eprintln!("  {} sim={:.2} score={:.2}", r.entity.label(), r.sim, r.score);
+                    eprintln!(
+                        "  {} sim={:.2} score={:.2}",
+                        r.entity.label(),
+                        r.sim,
+                        r.score
+                    );
                 }
             }
         }
