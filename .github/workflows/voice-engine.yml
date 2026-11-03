@@ -1,0 +1,211 @@
+name: voice-engine
+
+on:
+  push:
+    branches: [voice/engine]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: voice-engine-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: 0
+  CARGO_PROFILE_DEV_DEBUG: 0
+  CARGO_PROFILE_TEST_DEBUG: 0
+  HOMEBREW_NO_AUTO_UPDATE: 1
+  HOMEBREW_NO_INSTALL_CLEANUP: 1
+
+jobs:
+  rust:
+    name: Rust ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: linux
+            runner: ubuntu-22.04
+          - os: macos
+            runner: macos-latest
+          - os: windows
+            runner: windows-latest
+    runs-on: ${{ matrix.runner }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: desktop/src-tauri
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: System packages
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libasound2-dev cmake clang libclang-dev pkg-config
+
+      - name: System packages
+        if: runner.os == 'macOS'
+        run: brew install autoconf automake libtool
+
+      - name: Toolchain
+        working-directory: .
+        run: bash scripts/ci-toolchain.sh
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: desktop/src-tauri -> target
+          key: ci-${{ matrix.os }}
+          cache-workspace-crates: true
+          save-if: false
+
+      - name: Frontend placeholder
+        run: mkdir -p ../dist && echo '<!doctype html>' > ../dist/index.html
+
+      - name: Build tests
+        run: cargo test --no-run
+
+      - name: Tests
+        if: runner.os != 'Windows'
+        run: cargo test
+
+  engine:
+    name: Engine crate ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: linux
+            runner: ubuntu-22.04
+          - os: macos
+            runner: macos-latest
+          - os: windows
+            runner: windows-latest
+    runs-on: ${{ matrix.runner }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: utils/voice
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: System packages
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libasound2-dev cmake clang libclang-dev pkg-config
+
+      - name: Toolchain
+        working-directory: .
+        run: bash scripts/ci-toolchain.sh
+
+      - name: Models and audio
+        env:
+          PYTHONUTF8: "1"
+        run: |
+          B=https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models
+          V=sherpa-onnx-streaming-zipformer-small-ru-vosk-int8-2025-08-16
+          mkdir -p .cache/store/silero-vad/1 .cache/store/$V/1 .cache/audio .cache/hot .cache/dl
+          curl -sSL -o .cache/store/silero-vad/1/silero_vad.onnx $B/silero_vad.onnx
+          curl -sSL -o .cache/dl/vosk.tar.bz2 $B/$V.tar.bz2
+          tar xjf .cache/dl/vosk.tar.bz2 -C .cache/dl
+          for f in encoder.int8.onnx decoder.onnx joiner.int8.onnx tokens.txt bpe.model; do cp .cache/dl/$V/$f .cache/store/$V/1/; done
+          pip install -q sentencepiece
+          python -c "
+          import sentencepiece as s
+          sp=s.SentencePieceProcessor(model_file='.cache/store/$V/1/bpe.model')
+          open('.cache/store/$V/1/bpe.vocab','w',newline='\n').write(''.join(f'{sp.id_to_piece(i)}\t{sp.get_score(i)}\n' for i in range(sp.get_piece_size())))
+          "
+          curl -sSL -o .cache/audio/100.wav https://raw.githubusercontent.com/zxcloli666/CarUI/main/audio/loli/100.wav
+          ls -l .cache/store/*/1
+
+      - name: Test
+        run: cargo test --release -p voice-engine -- --nocapture 2>&1 | grep -E "^test |skipped|test result|panicked|heard"
+
+  size:
+    name: Size ${{ matrix.os }} ${{ matrix.side }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [linux, macos, windows]
+        side: [main, branch]
+        include:
+          - os: linux
+            runner: ubuntu-22.04
+          - os: macos
+            runner: macos-latest
+          - os: windows
+            runner: windows-latest
+    runs-on: ${{ matrix.runner }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: desktop/src-tauri
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ matrix.side == 'main' && 'main' || github.sha }}
+
+      - name: System packages
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libasound2-dev cmake clang libclang-dev pkg-config
+
+      - name: System packages
+        if: runner.os == 'macOS'
+        run: brew install autoconf automake libtool
+
+      - name: Toolchain
+        working-directory: .
+        run: bash scripts/ci-toolchain.sh
+
+      - name: Frontend placeholder
+        run: mkdir -p ../dist && echo '<!doctype html>' > ../dist/index.html
+
+      - name: Release build
+        run: |
+          start=$(date +%s)
+          cargo build --release
+          echo "build seconds: $(( $(date +%s) - start ))"
+
+      - name: Measure
+        run: |
+          bin=target/release/soundcloud-desktop
+          [ -f "$bin.exe" ] && bin="$bin.exe"
+          raw=$(wc -c < "$bin" | tr -d ' ')
+          cp "$bin" stripped
+          case "$RUNNER_OS" in
+            Linux) strip stripped ;;
+            macOS) strip -x stripped ;;
+          esac
+          small=$(wc -c < stripped | tr -d ' ')
+          echo "${{ matrix.os }} ${{ matrix.side }} $raw $small" | tee "$GITHUB_WORKSPACE/size-${{ matrix.os }}-${{ matrix.side }}.txt"
+          if [ "$RUNNER_OS" = "Linux" ]; then ldd "$bin"; fi
+          if [ "$RUNNER_OS" = "macOS" ]; then otool -L "$bin"; fi
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: size-${{ matrix.os }}-${{ matrix.side }}
+          path: size-${{ matrix.os }}-${{ matrix.side }}.txt
+          retention-days: 2
+
+  report:
+    name: Size report
+    needs: size
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: size-*
+          merge-multiple: true
+
+      - name: Table
+        run: |
+          {
+            echo "| OS | main raw | branch raw | delta raw | main stripped | branch stripped | delta stripped |"
+            echo "|---|---|---|---|---|---|---|"
+            for os in linux macos windows; do
+              read -r _ _ mr ms < "size-$os-main.txt"
+              read -r _ _ br bs < "size-$os-branch.txt"
+              mb() { awk -v b="$1" 'BEGIN { printf "%.2f MB", b / 1048576 }'; }
+              echo "| $os | $(mb $mr) | $(mb $br) | $(mb $((br - mr))) | $(mb $ms) | $(mb $bs) | $(mb $((bs - ms))) |"
+            done
+          } | tee -a "$GITHUB_STEP_SUMMARY"
