@@ -22,7 +22,7 @@ export const LAYOUT_IDS = {
     'likes',
     'dislikes',
   ],
-  home: ['river', 'superlikes', 'likes', 'recommended'],
+  home: ['river', 'releases', 'superlikes', 'likes', 'recommended'],
 } as const satisfies Record<LayoutScope, readonly string[]>;
 
 export type LayoutId<S extends LayoutScope> = (typeof LAYOUT_IDS)[S][number];
