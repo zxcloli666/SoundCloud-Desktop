@@ -21,6 +21,7 @@ import { findBySeq } from '../../../stores/chat/thread-messages';
 import { startEdit } from '../bubbles/message-menu';
 import { ComposerEmbeds } from '../embeds/ComposerEmbeds';
 import { type PendingEmbed, useLinkEmbeds } from '../embeds/useLinkEmbeds';
+import { AttachButton } from '../media/AttachButton';
 import { useRoomLinkBlock, useRoomMembers } from '../room/useRoom';
 import { useThread } from '../thread/context';
 import { toastError } from '../thread/errors';
@@ -256,6 +257,7 @@ export const Composer = memo(function Composer({ conversationId }: { conversatio
             className="rounded-[22px]"
           />
           <div className="relative flex items-end gap-1 p-1" style={{ isolation: 'isolate' }}>
+            {!editing && <AttachButton conversationId={conversationId} />}
             {!editing && <NowPlayingButton onAttach={attachNowPlaying} />}
             <textarea
               ref={inputRef}

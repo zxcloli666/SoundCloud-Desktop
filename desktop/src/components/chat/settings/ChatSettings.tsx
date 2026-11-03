@@ -3,6 +3,7 @@ import { MessagesSquare } from '../../../lib/chat/icons';
 import { RefreshCw } from '../../../lib/icons';
 import { selectChatEnabled, useChatStore } from '../../../stores/chat';
 import { Card } from '../../settings/primitives';
+import { StorageEntry } from '../media/StorageEntry';
 import { ChatGate } from '../shell/ChatGate';
 import { BlockedCard } from './BlockedCard';
 import { ChatNotifyCard } from './ChatNotifyCard';
@@ -73,6 +74,7 @@ export function ChatSettings() {
       <DockHotkeyCard />
       {ready && <DevicesCard />}
       {ready && <BlockedSection />}
+      {ready && <StorageEntry />}
       <RulesCard />
     </>
   );

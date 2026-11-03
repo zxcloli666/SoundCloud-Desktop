@@ -1,10 +1,12 @@
 import { memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SlidersHorizontal } from '../../../lib/icons';
+import type { RoomView } from '../../../lib/together/types';
 import { CrossfadeChoice } from '../../together/CrossfadeChoice';
+import { RoomCapacity } from './RoomCapacity';
 import { RoomPopover } from './RoomPopover';
 
-export const RoomTuning = memo(function RoomTuning() {
+export const RoomTuning = memo(function RoomTuning({ room }: { room: RoomView }) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   return (
@@ -25,6 +27,7 @@ export const RoomTuning = memo(function RoomTuning() {
     >
       <div className="py-1.5">
         <CrossfadeChoice />
+        <RoomCapacity room={room} />
       </div>
     </RoomPopover>
   );

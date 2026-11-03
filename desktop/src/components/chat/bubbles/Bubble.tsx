@@ -4,6 +4,7 @@ import { senderColor, type Tick } from '../../../lib/chat/render';
 import type { Message } from '../../../lib/chat/types';
 import { Ban, Sparkles } from '../../../lib/icons';
 import { EmbedCard } from '../embeds/EmbedCard';
+import { MediaBubble } from '../media/MediaBubble';
 import { useThread } from '../thread/context';
 import { BubbleMeta } from './BubbleMeta';
 import { MessageText } from './MessageText';
@@ -119,6 +120,7 @@ export const Bubble = memo(function Bubble({
       )}
       {message.forwardedFrom && <Forwarded forwarded={message.forwardedFrom} />}
       {message.replyTo !== null && <ReplyQuote seq={message.replyTo} message={replied} />}
+      <MediaBubble message={message} />
       {hasText && (
         <div className="selectable flow-root whitespace-pre-wrap break-words [overflow-wrap:anywhere]">
           <MessageText rich={body} />

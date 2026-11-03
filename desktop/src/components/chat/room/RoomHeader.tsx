@@ -68,7 +68,7 @@ export const RoomHeader = memo(function RoomHeader({
           <div className="flex min-w-0 flex-1">
             <SyncBadge className="min-w-0 max-w-full" />
           </div>
-          {self.host ? moderation && <RoomRules room={room} /> : <RoomTuning />}
+          {self.host ? moderation && <RoomRules room={room} /> : <RoomTuning room={room} />}
           <RoomLeaveButton room={room} host={self.host} selfId={self.id} />
         </div>
       </div>

@@ -6,6 +6,7 @@ import { useChatListStore } from '../../../stores/chat/list';
 import { useChatThreadStore } from '../../../stores/chat/thread';
 import { ComposerGate } from '../composer/ComposerGate';
 import { InfoSheet } from '../info/InfoSheet';
+import { UploadTray } from '../media/UploadTray';
 import { useRoomMembers, useRoomModerator } from '../room/useRoom';
 import { ThreadContext, type ThreadContextValue } from './context';
 import { focusThread } from './focus';
@@ -130,6 +131,7 @@ export const ChatThread = memo(function ChatThread({
         ) : (
           <Timeline ref={timeline} conversationId={conversationId} />
         )}
+        <UploadTray conversationId={conversationId} />
         <ComposerGate conversationId={conversationId} />
         {info && <InfoSheet onClose={closeInfo} onJump={jumpFromInfo} />}
         <ThreadDialogs conversationId={conversationId} />

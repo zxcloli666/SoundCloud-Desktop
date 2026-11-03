@@ -4,9 +4,12 @@ import { useNavigate } from 'react-router-dom';
 import { conversationAvatar, conversationTitle } from '../../../lib/chat/render';
 import { surface } from '../../../lib/chat/tone';
 import type { Seq } from '../../../lib/chat/types';
-import { Bookmark, ListMusic, Users, X } from '../../../lib/icons';
+import { Bookmark, Images, ListMusic, Users, X } from '../../../lib/icons';
 import { linkRoute } from '../../../lib/soundcloudLink';
+import { useChatStore } from '../../../stores/chat';
+import { selectMediaOn } from '../../../stores/chat/media';
 import { Avatar } from '../../ui/Avatar';
+import { GalleryTab } from '../media/GalleryTab';
 import { useThread } from '../thread/context';
 import { GlassLayer } from '../thread/GlassLayer';
 import { canManageMembers, hasTimer, isActiveMember } from '../thread/permissions';
@@ -16,7 +19,7 @@ import { MuteRow } from './MuteRow';
 import { TimerPicker } from './TimerPicker';
 import { TracksTab } from './TracksTab';
 
-type Tab = 'tracks' | 'members';
+type Tab = 'tracks' | 'members' | 'gallery';
 
 function Identity() {
   const { t } = useTranslation();
@@ -99,6 +102,7 @@ export const InfoSheet = memo(function InfoSheet({
   const { conversation } = useThread();
   const scrollRef = useRef<HTMLDivElement>(null);
   const showMembers = conversation.kind !== 'self';
+  const showGallery = useChatStore(selectMediaOn);
   const [tab, setTab] = useState<Tab>('tracks');
 
   useEffect(() => {
@@ -166,9 +170,20 @@ export const InfoSheet = memo(function InfoSheet({
                   label={t('chat.thread.info.membersTab')}
                 />
               )}
+              {showGallery && (
+                <TabButton
+                  active={tab === 'gallery'}
+                  onClick={() => setTab('gallery')}
+                  icon={<Images size={14} />}
+                  label={t('chat.media.gallery.tab')}
+                />
+              )}
             </div>
             {tab === 'tracks' && <TracksTab scrollRef={scrollRef} onJump={onJump} />}
             {tab === 'members' && showMembers && <MembersTab />}
+            {tab === 'gallery' && showGallery && (
+              <GalleryTab scrollRef={scrollRef} onJump={onJump} />
+            )}
           </div>
         </div>
       </aside>

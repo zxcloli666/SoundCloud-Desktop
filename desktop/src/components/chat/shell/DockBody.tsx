@@ -2,6 +2,7 @@ import { memo } from 'react';
 import { DOCK_LIST, DOCK_ROOM, useChatPrefsStore } from '../../../stores/chat/prefs';
 import { useChatRoomStore } from '../../../stores/chat/room';
 import { ConversationList } from '../list/ConversationList';
+import { UploadTray } from '../media/UploadTray';
 import { ChatGate } from './ChatGate';
 import { RoomTab } from './RoomTab';
 import { ThreadSlot } from './ThreadSlot';
@@ -35,6 +36,7 @@ export const DockBody = memo(function DockBody() {
   return (
     <div className="min-h-0 flex-1">
       <ChatGate>{content}</ChatGate>
+      <UploadTray />
     </div>
   );
 });
