@@ -1,7 +1,7 @@
-import {invoke} from '@tauri-apps/api/core';
 import {listen} from '@tauri-apps/api/event';
 import React, {useEffect, useRef} from 'react';
 import {isAppIdle, subscribeAppIdle, usePerfMode} from '../../../lib/perf';
+import {createSpectrumClaim} from '../../../lib/spectrum';
 
 /* ── Fullscreen wave visualizer — driven by real FFT from Rust ────── */
 /* Rust `audio:fft` event delivers 64 log-spaced magnitude bins ~30Hz.
@@ -11,10 +11,6 @@ import {isAppIdle, subscribeAppIdle, usePerfMode} from '../../../lib/perf';
 const VIS_BINS = 64;
 const FFT_FRAME_MS = 33;
 const STALE_MS = 350;
-
-function setSpectrumEnabled(enabled: boolean) {
-    void invoke('audio_set_fft_enabled', {enabled}).catch(() => {});
-}
 
 function readAccentRgb(): [number, number, number] {
     if (typeof window === 'undefined') return [255, 85, 0];
@@ -212,6 +208,7 @@ export const LyricsVisualizer = React.memo(() => {
             rafId = any ? requestAnimationFrame(loop) : 0;
         };
 
+        const setSpectrumEnabled = createSpectrumClaim();
         const syncIdle = () => {
             const idle = isAppIdle();
             setSpectrumEnabled(!idle);

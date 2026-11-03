@@ -1260,7 +1260,6 @@
     "wpKeyHint": "Stored locally. Grab one in your Wallhaven account settings.",
     "wpKeyNeeded": "Enter your Wallhaven API key to unlock 18+ results.",
     "import": "Import",
-    "importYandex": "Import from Yandex Music",
     "fontTitle": "Interface font",
     "fontDesc": "Typeface for menus, titles and lists",
     "fontSystem": "System",
@@ -1462,6 +1461,32 @@
       "no_space": "Not enough free space on that drive",
       "sandboxed": "This folder is only reachable through the sandbox portal. Pick a folder on a drive under /media, /run/media or /mnt, or inside Music or Downloads",
       "failed": "Could not move the cache"
+    },
+    "releaseNotifications": "New release notifications",
+    "releaseNotificationsDesc": "A system notification when artists you follow upload something new. Checked every 30 minutes while the app runs"
+  },
+  "effects": {
+    "title": "Effects",
+    "toggle": "Effects on or off",
+    "locked": "Reverb, 8D and bass boost come with STAR",
+    "reverb": "Reverb",
+    "room": "Room size",
+    "eightDSpeed": "8D speed",
+    "bass": "Bass",
+    "preset": {
+      "off": "Off",
+      "slowedReverb": "Slowed + reverb",
+      "spedUp": "Sped up",
+      "eightD": "8D",
+      "bass": "Bass boost",
+      "custom": "Custom"
+    },
+    "short": {
+      "slowedReverb": "Slow",
+      "spedUp": "Fast",
+      "eightD": "8D",
+      "bass": "Bass",
+      "custom": "FX"
     }
   },
   "eq": {
@@ -1531,40 +1556,121 @@
     "zoomOut": "Zoom interface out",
     "zoomReset": "Reset interface scale"
   },
-  "ym": {
+  "importer": {
+    "title": "Import",
+    "openButton": "Import playlists and tracks",
+    "tab": {
+      "yandex": "Yandex Music",
+      "link": "Link",
+      "text": "List"
+    },
+    "source": {
+      "spotify": "Spotify",
+      "youtube": "YouTube",
+      "yandex": "Yandex Music"
+    },
     "instructions": "How to get your Yandex Music token:",
     "step1": "Install the browser extension: Chrome — \"Yandex Music Token\", Firefox — \"Yandex Music Token\"",
     "step2": "Open music.yandex.ru and click the extension icon",
     "step3": "Copy the OAuth token from the extension",
     "tokenPlaceholder": "Paste your Yandex Music token...",
+    "connect": "Connect",
+    "likes": "Likes",
+    "linkPlaceholder": "Paste a Spotify, YouTube or Yandex Music link...",
+    "unknownLink": "Link not recognized",
+    "textPlaceholder": "Artist - Title\nArtist - Title\n...",
+    "namePlaceholder": "Playlist name",
+    "defaultTitle": "Imported",
     "start": "Start import",
     "stop": "Stop",
     "hide": "Hide",
+    "again": "New import",
+    "step": {
+      "reading": "Reading",
+      "matching": "Matching",
+      "saving": "Saving",
+      "review": "Review"
+    },
     "found": "Found",
     "notFound": "Not found",
-    "done": "Import complete!",
-    "savingPlaylist": "Saving playlist...",
-    "backgroundHint": "Import continues in the background. You can close this window",
-    "error": "Import failed",
+    "copied": "Copied",
+    "partialSource": "Spotify gives only the first 100 tracks of a playlist without login",
     "pending": "The playlist is queued on the server and will appear in your library soon",
     "delayed": "SoundCloud is limiting, the playlist will be created later",
     "createFailed": "Could not create playlist \"{{title}}\"",
     "relogin": "Sign in again or the playlist will not be created",
-    "partial": "Part of the import was saved, see the reason below",
-    "errors": "Errors",
-    "nothingFound": "Nothing was found. Check your connection and token, then try again",
-    "limitHint": "SoundCloud allows 500 tracks per playlist, the rest goes to \"Yandex Music 2\", \"Yandex Music 3\" and so on",
-    "sessionExpired": "Your SoundCloud session has expired. Sign in again and restart the import",
-    "playlistNotSynced": "An existing \"Yandex Music\" playlist is still syncing with SoundCloud. Try the import again in a few minutes",
-    "saveFailed": "Could not save some playlists (error {{status}})",
-    "tokenInvalid": "Yandex Music did not accept the token. Get a new one and try again",
-    "ymUnavailable": "Could not load your likes from Yandex Music. Check your connection and try again",
-    "searchUnavailable": "SoundCloud search is not responding. Try the import again later",
-    "unknownError": "Something went wrong during the import. Try again later",
+    "limitHint": "SoundCloud allows 500 tracks per playlist, the rest goes to \"... 2\", \"... 3\" and so on",
     "orderLabel": "Order in the playlist",
     "orderNewest": "Newest on top",
     "orderOldest": "Oldest on top",
-    "orderHint": "Importing again rewrites the \"Yandex Music\" playlists in this order"
+    "orderHint": "Importing again rewrites the \"Yandex Music\" playlists in this order",
+    "find": "Find",
+    "findPlaceholder": "Search SoundCloud...",
+    "findEmpty": "Nothing found",
+    "removeMatch": "Remove match",
+    "filter": {
+      "all": "All",
+      "missed": "Missed"
+    },
+    "copyMissed": "Copy missed",
+    "noMissed": "Everything was matched",
+    "destination": "Where to save",
+    "mode": {
+      "create": "New playlist",
+      "likes": "Likes",
+      "existing": "Existing playlist"
+    },
+    "pickPlaylist": "Choose a playlist...",
+    "discard": "Discard",
+    "save": "Save {{count}} tracks",
+    "saved": "{{count}} tracks saved",
+    "savedCount": "{{count}} tracks",
+    "openPlaylist": "Open playlist",
+    "openView": "Open import",
+    "history": "History",
+    "rerun": "Run again",
+    "forget": "Remove from history",
+    "pasted": "{{source}} link in the clipboard",
+    "dropFile": "Drop a .txt or .csv list to import it",
+    "err": {
+      "session_expired": "Your SoundCloud session has expired",
+      "ym_token_invalid": "Yandex Music rejected the token",
+      "ym_unavailable": "Yandex Music is not responding",
+      "search_unavailable": "SoundCloud search is not responding",
+      "source_unavailable": "Could not read the source",
+      "source_not_found": "Nothing found at this link",
+      "source_unparsed": "The source page has an unexpected format",
+      "source_empty": "The source has no tracks",
+      "bad_link": "This link is not supported",
+      "bad_file": "This file cannot be imported",
+      "playlist_not_synced": "The playlist is still syncing with SoundCloud",
+      "save_failed": "Could not save (error {{status}})",
+      "unknown": "Something went wrong"
+    },
+    "hint": {
+      "session_expired": "Sign in again, the matched tracks stay here",
+      "ym_token_invalid": "Get a new token from the extension and connect again",
+      "ym_unavailable": "Check your connection and try again",
+      "search_unavailable": "Try again in a minute, the matched tracks stay here",
+      "source_unavailable": "Check your connection and try again",
+      "source_not_found.spotify": "The playlist may be private or deleted. Make it public in Spotify and try again",
+      "source_not_found.youtube": "The playlist may be private or deleted. Set it to unlisted or public and try again",
+      "source_not_found.yandex": "The playlist may be private. Connect your account on the Yandex Music tab",
+      "source_not_found": "The link may be private or deleted",
+      "source_unparsed": "Paste the tracks as a list instead",
+      "source_empty": "Try another link or paste the tracks as a list",
+      "bad_link": "Use a Spotify, YouTube or Yandex Music link",
+      "bad_file": "Use a .txt or .csv file up to 2 MB",
+      "playlist_not_synced": "Wait a few minutes and save again",
+      "save_failed": "Try saving again",
+      "unknown": "Try again later"
+    },
+    "action": {
+      "retry": "Try again",
+      "reconnect": "Connect again",
+      "signin": "Sign in",
+      "change": "Change source"
+    }
   },
   "update": {
     "available": "Update available",
@@ -2531,5 +2637,18 @@
     "next": "Next",
     "empty": "Not enough music for a recap yet",
     "emptyHint": "Play some music"
+  },
+  "releases": {
+    "title": "New releases",
+    "new": "New",
+    "heard": "Heard",
+    "why_one": "Originals from artists you follow, last {{count}} day",
+    "why_other": "Originals from artists you follow, last {{count}} days",
+    "playAll": "Play all",
+    "addToQueue": "Add to queue",
+    "lockedWhy": "Fresh uploads from your artists, a notification the moment they drop",
+    "notifyBody_one": "{{count}} new release: {{artists}}",
+    "notifyBody_other": "{{count}} new releases: {{artists}}",
+    "open": "Open"
   }
 }

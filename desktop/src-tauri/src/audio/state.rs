@@ -6,6 +6,7 @@ use rodio::Player;
 
 use crate::audio::analyser::AnalyserBuffer;
 use crate::audio::crossfade::CrossfadeState;
+use crate::audio::effects::EffectsParams;
 use crate::audio::output::{spawn_output_thread, OutputHandles};
 use crate::audio::silence::SilenceState;
 use crate::audio::types::{
@@ -46,6 +47,7 @@ pub struct AudioState {
     pub player: Mutex<Option<Player>>,
     pub mixer: Arc<Mutex<Mixer>>,
     pub eq_params: Arc<RwLock<EqParams>>,
+    pub effects: Arc<EffectsParams>,
     pub normalization_enabled: AtomicBool,
     pub normalization_gain: Mutex<f32>,
     pub volume: Mutex<f32>,
@@ -105,6 +107,7 @@ pub fn init(app: &AppHandle) -> AudioState {
         player: Mutex::new(None),
         mixer: shared_mixer,
         eq_params: Arc::new(RwLock::new(EqParams::default())),
+        effects: Arc::new(EffectsParams::new()),
         normalization_enabled: AtomicBool::new(true),
         normalization_gain: Mutex::new(1.0),
         volume: Mutex::new(0.25),

@@ -5,6 +5,7 @@ import { useShallow } from 'zustand/shallow';
 import { changeAppLanguage } from '../../i18n';
 import { Clock, Globe, PanelLeftClose, PanelLeftOpen, Settings } from '../../lib/icons';
 import { moveEntry } from '../../lib/layout';
+import { useReleaseFeed } from '../../lib/new-releases-api';
 import { usePerfMode } from '../../lib/perf';
 import { useSuperlikeCount } from '../../lib/superlikes';
 import { useLayout } from '../../lib/use-layout';
@@ -35,6 +36,7 @@ function NavItem({
   collapsed,
   title,
   alert,
+  badge = 0,
 }: {
   to: string;
   icon: IconCmp;
@@ -42,6 +44,7 @@ function NavItem({
   collapsed: boolean;
   title?: string;
   alert?: boolean;
+  badge?: number;
 }) {
   return (
     <NavLink
@@ -65,6 +68,14 @@ function NavItem({
       <Label collapsed={collapsed} className="text-[13px] font-medium pr-3">
         {label}
       </Label>
+      {badge > 0 &&
+        (collapsed ? (
+          <span className="absolute right-2 top-1.5 size-2 rounded-full bg-accent shadow-[0_0_8px_var(--color-accent-glow)]" />
+        ) : (
+          <span className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full bg-accent px-1.5 text-[10.5px] font-black leading-[16px] tabular-nums text-accent-contrast">
+            {badge > 99 ? '99+' : badge}
+          </span>
+        ))}
     </NavLink>
   );
 }
@@ -91,6 +102,7 @@ export const Sidebar = React.memo(() => {
   const openStar = useCallback(() => navigate('/star'), [navigate]);
   const perf = usePerfMode();
   const superlikeCount = useSuperlikeCount();
+  const { unheard } = useReleaseFeed();
 
   const toggleLanguage = () => {
     void changeAppLanguage(i18n.language === 'ru' ? 'en' : 'ru');
@@ -121,6 +133,7 @@ export const Sidebar = React.memo(() => {
                   collapsed={collapsed}
                   title={collapsed ? t(item.label) : undefined}
                   alert={id === 'offline' && appMode !== 'online'}
+                  badge={id === 'library' ? unheard : 0}
                 />
               </SortableSlot>
             );

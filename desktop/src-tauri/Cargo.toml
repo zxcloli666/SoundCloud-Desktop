@@ -45,6 +45,7 @@ rustfft = { version = "6", default-features = false }
 souvlaki = "0.8"
 raw-window-handle = "0.6"
 tauri-plugin-dialog = "2.8.3"
+tauri-plugin-notification = "2"
 tauri-plugin-global-shortcut = "2.4.1"
 tauri-plugin-updater = "2.14.0"
 ogg = "0.9.2"
