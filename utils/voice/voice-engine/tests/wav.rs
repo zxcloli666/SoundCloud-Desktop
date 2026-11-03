@@ -4,7 +4,7 @@ use std::path::PathBuf;
 use std::time::Duration;
 
 use common::{feeding, models_ready, models_root, rig_with, timing};
-use voice_engine::{ASR_EN, Command, Config, DecisionEvent, Event, Language, Source, State};
+use voice_engine::{ASR_EN, Command, Config, DecisionEvent, Echo, Event, Language, Source, State};
 use voice_resolve::FixtureCatalog;
 
 fn clip(path: &str) -> Option<(Vec<f32>, u32)> {
@@ -40,6 +40,7 @@ fn hear(path: &str, language: Language) -> Option<(Vec<String>, voice_engine::Co
     let config = Config {
         enabled: true,
         language,
+        echo: Echo::Off,
         ..Config::default()
     };
     rig.engine.send(Command::Apply(Box::new(config)));
@@ -122,6 +123,7 @@ fn a_reply_is_spoken_with_kokoro_and_drives_speech_levels() {
     );
     let mut config = Config {
         enabled: true,
+        echo: Echo::Off,
         ..Config::default()
     };
     config.speak.voice = "af_heart".into();
