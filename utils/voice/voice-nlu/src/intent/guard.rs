@@ -12,7 +12,16 @@ fn negated_verb(w: &str) -> bool {
     NEG_FOLLOW.contains(&w) || PLAY_STRONG.contains(&w) || lexicon::stem(NEG_STEMS, w)
 }
 
+fn lyric(toks: &[Tok]) -> bool {
+    toks.windows(3).any(|w| {
+        w[0].w == w[1].w && w[1].w == w[2].w && w[0].w.chars().count() >= 4 && !PLAY_STRONG.contains(&w[0].w.as_str())
+    })
+}
+
 pub fn negation(toks: &[Tok]) -> Negation {
+    if lyric(toks) {
+        return Negation::Cancel;
+    }
     for i in 0..toks.len().saturating_sub(1) {
         if toks[i].w != "не" || !negated_verb(&toks[i + 1].w) {
             continue;

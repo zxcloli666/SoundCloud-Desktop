@@ -8,10 +8,24 @@ pub struct Verb {
     pub front: bool,
 }
 
+fn rambling(c: &Ctx) -> Option<Verb> {
+    let limit = c.len().min(10);
+    (1..limit)
+        .find(|&i| IMPERATIVES.contains(&c.w[i]) && !c.w[..i].iter().any(|w| REPORT.contains(w)))
+        .map(|idx| Verb {
+            idx,
+            strong: true,
+            front: true,
+        })
+}
+
 pub fn find_verb(c: &Ctx) -> Option<Verb> {
     for (list, strong) in [(PLAY_STRONG, true), (PLAY_WEAK, false)] {
         for i in 0..c.len() {
             if !list.contains(&c.w[i]) {
+                continue;
+            }
+            if !strong && c.w[..i].iter().any(|w| SUBJECTS.contains(w)) {
                 continue;
             }
             if c.only_pre(0..i) {
@@ -30,7 +44,7 @@ pub fn find_verb(c: &Ctx) -> Option<Verb> {
             }
         }
     }
-    None
+    rambling(c)
 }
 
 fn is_kind(w: &str) -> bool {
