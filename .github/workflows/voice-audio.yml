@@ -1,0 +1,41 @@
+name: voice-audio
+
+on:
+  push:
+    branches: [voice/audio]
+  workflow_dispatch:
+
+jobs:
+  audio:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: utils/voice
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.99.1
+      - name: Linux packages
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libasound2-dev pulseaudio pulseaudio-utils
+      - name: Build
+        run: cargo build -p voice-audio --all-targets
+      - name: Test
+        run: cargo test -p voice-audio
+      - name: Devices
+        run: cargo run -p voice-audio --example devices
+      - name: Devices with a pulse server
+        if: runner.os == 'Linux'
+        run: |
+          pulseaudio --start --exit-idle-time=-1 || true
+          sleep 2
+          pactl load-module module-null-sink sink_name=fake
+          pactl load-module module-virtual-source source_name=fakemic master=fake.monitor
+          cargo run -p voice-audio --example devices
+          cargo run -p voice-audio --example capture_probe -- 2 pa:fakemic

@@ -30,6 +30,7 @@ struct Steer {
     frame_seconds: f32,
     sample_rate: f32,
     ppm: f32,
+    first: bool,
 }
 
 impl RefSync {
@@ -59,6 +60,7 @@ impl RefSync {
                 frame_seconds,
                 sample_rate: sample_rate as f32,
                 ppm: 0.0,
+                first: false,
             }
         });
         Self {
@@ -91,9 +93,15 @@ impl RefSync {
                 return;
             }
             self.primed = true;
+            let keep = self.target + self.frame_len;
+            if self.ring.len() > keep {
+                let stale = self.ring.len() - keep;
+                self.ring.drain(..stale);
+            }
             if let Some(steer) = self.steer.as_mut() {
                 steer.target = (self.ring.len() - self.frame_len) as f32;
                 steer.filtered_fill = steer.target;
+                steer.first = true;
             }
         }
         match self.steer.as_mut() {
@@ -148,4 +156,10 @@ fn pull_steered(ring: &mut VecDeque<f32>, steer: &mut Steer, underruns: &mut u32
         .unwrap();
     out[..produced].copy_from_slice(&steer.output[0][..produced]);
     out[produced..].fill(0.0);
+    if steer.first {
+        steer.first = false;
+        steer.target = ring.len() as f32;
+        steer.filtered_fill = steer.target;
+        steer.integral = 0.0;
+    }
 }
