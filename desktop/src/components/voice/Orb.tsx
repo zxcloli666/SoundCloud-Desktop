@@ -1,6 +1,6 @@
 import { memo, useRef } from 'react';
 import { usePerfMode } from '../../lib/perf';
-import { Mic, MicOff } from './icons';
+import { CircleAlert, Mic, MicOff } from './icons';
 import { useLevelDrive } from './useLevelDrive';
 
 export type OrbMode = 'off' | 'idle' | 'listening' | 'thinking' | 'speaking' | 'error';
@@ -137,7 +137,13 @@ export const Orb = memo(function Orb({
           />
         )}
         <span className={`relative ${lit ? 'text-accent-contrast' : 'text-ink-40'}`}>
-          {mode === 'off' ? <MicOff size={iconSize} /> : <Mic size={iconSize} strokeWidth={2.2} />}
+          {mode === 'off' ? (
+            <MicOff size={iconSize} />
+          ) : mode === 'error' ? (
+            <CircleAlert size={iconSize} strokeWidth={2.2} />
+          ) : (
+            <Mic size={iconSize} strokeWidth={2.2} />
+          )}
         </span>
       </button>
     </div>

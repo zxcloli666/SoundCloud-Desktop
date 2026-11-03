@@ -12,6 +12,8 @@
         "missing": "Sem motor",
         "off": "Desligada",
         "models": "Faltam modelos",
+        "downloading": "Baixando",
+        "broken": "Modelo danificado",
         "ready": "Pronta",
         "listening": "Ouvindo",
         "thinking": "Pensando",
@@ -27,8 +29,10 @@
       "orHold": "ou segure",
       "orPress": "ou pressione",
       "turnOn": "Ligar",
+      "turnOnSize": "Ligar · {{size}}",
       "modelsReady": "Modelos prontos",
       "download": "Baixar modelos · {{size}}",
+      "repair": "Reparar · {{size}}",
       "engineMissing": "Motor não responde"
     },
     "hud": {
@@ -58,7 +62,7 @@
       "engine_missing": "Motor de voz indisponível"
     },
     "fix": {
-      "privacy": "Abrir ajustes",
+      "privacy": "Permitir",
       "download": "Baixar",
       "retry": "Tentar de novo",
       "pickMic": "Escolher microfone",

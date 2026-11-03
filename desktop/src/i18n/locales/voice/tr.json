@@ -12,6 +12,8 @@
         "missing": "Motor yok",
         "off": "Kapalı",
         "models": "Model gerekli",
+        "downloading": "İndiriliyor",
+        "broken": "Model bozuk",
         "ready": "Hazır",
         "listening": "Dinliyorum",
         "thinking": "Düşünüyorum",
@@ -27,8 +29,10 @@
       "orHold": "veya basılı tutun",
       "orPress": "veya basın",
       "turnOn": "Aç",
+      "turnOnSize": "Aç · {{size}}",
       "modelsReady": "Modeller hazır",
       "download": "Modelleri indir · {{size}}",
+      "repair": "Onar · {{size}}",
       "engineMissing": "Motor yanıt vermiyor"
     },
     "hud": {
@@ -58,7 +62,7 @@
       "engine_missing": "Ses motoru kullanılamıyor"
     },
     "fix": {
-      "privacy": "Ayarları aç",
+      "privacy": "İzin ver",
       "download": "İndir",
       "retry": "Tekrar dene",
       "pickMic": "Mikrofon seç",

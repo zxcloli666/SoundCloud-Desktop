@@ -96,7 +96,10 @@ export function summarize(models: Model[]): ModelSummary {
   const total = active.reduce((n, m) => n + (m.total || m.size), 0);
   const missingBytes = required
     .filter((m) => m.state !== 'ready')
-    .reduce((n, m) => n + Math.max(0, (m.total || m.size) - m.done), 0);
+    .reduce(
+      (n, m) => n + Math.max(0, (m.total || m.size) - (m.state === 'corrupted' ? 0 : m.done)),
+      0,
+    );
   const broken = models.some((m) => m.state === 'corrupted');
   return { required: required.length, ready, downloading, done, total, missingBytes, broken };
 }

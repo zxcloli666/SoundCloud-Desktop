@@ -12,6 +12,8 @@
         "missing": "Нет движка",
         "off": "Выключена",
         "models": "Нужны модели",
+        "downloading": "Качаю модели",
+        "broken": "Модель повреждена",
         "ready": "Готова",
         "listening": "Слушаю",
         "thinking": "Думаю",
@@ -27,8 +29,10 @@
       "orHold": "или зажмите",
       "orPress": "или нажмите",
       "turnOn": "Включить",
+      "turnOnSize": "Включить · {{size}}",
       "modelsReady": "Модели готовы",
       "download": "Скачать модели · {{size}}",
+      "repair": "Починить · {{size}}",
       "engineMissing": "Движок не отвечает"
     },
     "hud": {
@@ -58,7 +62,7 @@
       "engine_missing": "Голосовой движок недоступен"
     },
     "fix": {
-      "privacy": "Открыть настройки",
+      "privacy": "Разрешить",
       "download": "Скачать",
       "retry": "Повторить",
       "pickMic": "Выбрать микрофон",
@@ -73,8 +77,8 @@
       "headset": "Кнопка гарнитуры",
       "gesture": {
         "off": "Выкл",
-        "double": "2 раза",
-        "triple": "3 раза"
+        "double": "2×",
+        "triple": "3×"
       },
       "headsetHow_one": "Нажмите кнопку {{count}} раз подряд",
       "headsetHow_few": "Нажмите кнопку {{count}} раза подряд",

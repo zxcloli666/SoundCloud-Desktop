@@ -13,7 +13,7 @@ export function downloadModel(id: string) {
     runtime.mergeProgress({
       id,
       state: 'downloading',
-      done: model.done,
+      done: model.state === 'corrupted' ? 0 : model.done,
       total: model.total || model.size,
     });
   voiceIpc.modelGet(id).catch(() => {

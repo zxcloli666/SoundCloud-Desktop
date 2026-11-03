@@ -32,20 +32,10 @@ function Stack({ items }: { items: DoneItem[] }) {
     );
   }
   return (
-    <span
-      className="relative flex h-10 shrink-0 items-center"
-      style={{ width: 28 + items.length * 12 }}
-    >
+    <span className="flex h-10 shrink-0 items-center gap-2 rounded-[14px] bg-accent/15 px-3 text-accent">
       {items.slice(0, 3).map((item, i) => (
-        <span
-          key={i}
-          className="absolute flex size-9 items-center justify-center rounded-[13px] border border-ink/[0.1] bg-surface text-accent"
-          style={{
-            left: i * 14,
-            zIndex: 3 - i,
-            boxShadow: '0 4px 12px rgb(var(--shade) / calc(0.25 * var(--shade-alpha)))',
-          }}
-        >
+        <span key={`${item.intent}:${item.display}`} className="flex items-center gap-2">
+          {i > 0 && <span aria-hidden className="h-4 w-px rounded-full bg-accent/30" />}
           {itemIcon(item, 15)}
         </span>
       ))}

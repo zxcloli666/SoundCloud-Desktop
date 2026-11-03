@@ -12,6 +12,8 @@
         "missing": "No engine",
         "off": "Off",
         "models": "Needs models",
+        "downloading": "Downloading",
+        "broken": "Model damaged",
         "ready": "Ready",
         "listening": "Listening",
         "thinking": "Thinking",
@@ -27,8 +29,10 @@
       "orHold": "or hold",
       "orPress": "or press",
       "turnOn": "Turn on",
+      "turnOnSize": "Turn on · {{size}}",
       "modelsReady": "Models ready",
       "download": "Get models · {{size}}",
+      "repair": "Repair · {{size}}",
       "engineMissing": "Engine not responding"
     },
     "hud": {
@@ -58,7 +62,7 @@
       "engine_missing": "Voice engine unavailable"
     },
     "fix": {
-      "privacy": "Open settings",
+      "privacy": "Allow",
       "download": "Download",
       "retry": "Retry",
       "pickMic": "Pick a mic",

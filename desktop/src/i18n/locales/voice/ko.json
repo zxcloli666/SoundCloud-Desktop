@@ -12,6 +12,8 @@
         "missing": "엔진 없음",
         "off": "꺼짐",
         "models": "모델 필요",
+        "downloading": "다운로드 중",
+        "broken": "모델 손상",
         "ready": "준비됨",
         "listening": "듣는 중",
         "thinking": "생각 중",
@@ -27,8 +29,10 @@
       "orHold": "또는 누르고 있기",
       "orPress": "또는 누르기",
       "turnOn": "켜기",
+      "turnOnSize": "켜기 · {{size}}",
       "modelsReady": "모델 준비됨",
       "download": "모델 받기 · {{size}}",
+      "repair": "복구 · {{size}}",
       "engineMissing": "엔진 응답 없음"
     },
     "hud": {
@@ -58,7 +62,7 @@
       "engine_missing": "음성 엔진 사용 불가"
     },
     "fix": {
-      "privacy": "설정 열기",
+      "privacy": "허용",
       "download": "받기",
       "retry": "다시 시도",
       "pickMic": "마이크 선택",

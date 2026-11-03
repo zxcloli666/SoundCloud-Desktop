@@ -98,10 +98,11 @@ export function IslandCard({
       data-state={hud.kind}
       role="status"
       aria-live="polite"
-      className={`pointer-events-auto relative flex ${wide ? 'w-[460px]' : 'w-[420px]'} max-w-[92vw] items-center gap-3 overflow-hidden rounded-[24px] border border-ink/[0.14] bg-shade-25 py-2.5 pr-2.5 pl-2.5 shadow-[0_16px_48px_rgb(var(--shade)/calc(0.32*var(--shade-alpha)))]`}
+      className={`pointer-events-auto relative flex ${wide ? 'w-[460px]' : 'w-[420px]'} max-w-[92vw] items-center gap-3 overflow-hidden rounded-[24px] border border-ink/[0.14] py-2.5 pr-2.5 pl-2.5 shadow-[0_16px_48px_rgb(var(--shade)/calc(0.32*var(--shade-alpha)))]`}
       style={
         blur > 0
           ? {
+              background: 'rgb(var(--surface) / 0.66)',
               backdropFilter: `blur(${blur}px) saturate(1.4)`,
               WebkitBackdropFilter: `blur(${blur}px) saturate(1.4)`,
             }

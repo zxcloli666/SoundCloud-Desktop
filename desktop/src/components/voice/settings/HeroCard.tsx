@@ -9,7 +9,7 @@ import { downloadMissing } from '../../../lib/voice/models';
 import { summarize, useVoiceRuntime } from '../../../lib/voice/runtime';
 import { useVoiceStore } from '../../../lib/voice/store';
 import { refreshEngine } from '../../../lib/voice/sync';
-import type { VoiceLanguage } from '../../../lib/voice/types';
+import type { Model, VoiceLanguage } from '../../../lib/voice/types';
 import { Segmented, Toggle } from '../../settings/primitives';
 import { KeyCaps } from '../../ui/KeyCap';
 import { percent, useFormatBytes } from '../format';
@@ -30,6 +30,25 @@ function useOrbMode(enabled: boolean, ready: boolean): OrbMode {
   return 'idle';
 }
 
+function modelsState(models: Model[]): string {
+  const s = summarize(models);
+  if (s.downloading) return 'downloading';
+  return s.broken ? 'broken' : 'models';
+}
+
+function heroState(
+  missing: boolean,
+  enabled: boolean,
+  ready: boolean,
+  phase: string,
+  engine: string,
+): string {
+  if (missing) return 'missing';
+  if (!enabled) return 'off';
+  if (!ready) return phase;
+  return engine === 'idle' || engine === 'error' ? 'ready' : engine;
+}
+
 function HotkeyHint({ hotkey, hold }: { hotkey: string | null; hold: boolean }) {
   const { t } = useTranslation();
   if (!hotkey) return null;
@@ -42,7 +61,7 @@ function HotkeyHint({ hotkey, hold }: { hotkey: string | null; hold: boolean }) 
   );
 }
 
-function ModelsLine() {
+function ModelsLine({ quiet }: { quiet: boolean }) {
   const { t } = useTranslation();
   const bytes = useFormatBytes();
   const s = useVoiceRuntime(useShallow((st) => summarize(st.models)));
@@ -75,10 +94,31 @@ function ModelsLine() {
       </Pill>
     );
   }
+  if (quiet) return null;
   return (
     <SmallButton primary onClick={downloadMissing}>
-      <Download size={13} />
-      {t('voice.hero.download', { size: bytes(s.missingBytes) })}
+      {s.broken ? <RefreshCw size={12} /> : <Download size={13} />}
+      {t(s.broken ? 'voice.hero.repair' : 'voice.hero.download', { size: bytes(s.missingBytes) })}
+    </SmallButton>
+  );
+}
+
+function TurnOnButton() {
+  const { t } = useTranslation();
+  const bytes = useFormatBytes();
+  const patch = useVoiceStore((s) => s.patch);
+  const s = useVoiceRuntime(useShallow((st) => summarize(st.models)));
+  const missing = s.required > 0 && !s.downloading && s.ready < s.required;
+  const turnOn = () => {
+    patch({ enabled: true });
+    if (missing) downloadMissing();
+  };
+  return (
+    <SmallButton primary onClick={turnOn}>
+      {missing && <Download size={13} />}
+      {missing
+        ? t('voice.hero.turnOnSize', { size: bytes(s.missingBytes) })
+        : t('voice.hero.turnOn')}
     </SmallButton>
   );
 }
@@ -99,15 +139,8 @@ export function HeroCard() {
   const listening = engine === 'listening';
   const missing = availability === 'missing';
   const canTalk = config.enabled && ready && !missing;
-  const state = missing
-    ? 'missing'
-    : !config.enabled
-      ? 'off'
-      : !ready
-        ? 'models'
-        : engine === 'idle' || engine === 'error'
-          ? 'ready'
-          : engine;
+  const phase = useVoiceRuntime((s) => modelsState(s.models));
+  const state = heroState(missing, config.enabled, ready, phase, engine);
 
   return (
     <section
@@ -189,9 +222,7 @@ export function HeroCard() {
                 </SmallButton>
               </>
             ) : !config.enabled ? (
-              <SmallButton primary onClick={() => patch({ enabled: true })}>
-                {t('voice.hero.turnOn')}
-              </SmallButton>
+              <TurnOnButton />
             ) : ready ? (
               <>
                 <SmallButton primary onClick={() => toggleListening('hud')}>
@@ -202,7 +233,7 @@ export function HeroCard() {
               </>
             ) : null}
             <span className="ml-auto flex min-w-0 items-center">
-              <ModelsLine />
+              <ModelsLine quiet={!config.enabled} />
             </span>
           </div>
         </div>

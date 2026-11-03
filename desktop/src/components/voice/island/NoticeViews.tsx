@@ -3,6 +3,7 @@ import { AlertCircle, Search } from '../../../lib/icons';
 import { toggleListening } from '../../../lib/voice/listen';
 import { downloadMissing } from '../../../lib/voice/models';
 import { micPrivacyUrl, openMicPrivacy } from '../../../lib/voice/privacy';
+import { refreshEngine } from '../../../lib/voice/sync';
 import type { VoiceErrorCode } from '../../../lib/voice/types';
 import { StarCta } from '../../star-moments/StarCta';
 import { CircleAlert, SearchX } from '../icons';
@@ -71,6 +72,19 @@ function FixAction({ code, onClose }: { code: VoiceErrorCode; onClose: () => voi
         }}
       >
         {t('voice.fix.download')}
+      </IslandAction>
+    );
+  }
+  if (code === 'engine_missing') {
+    return (
+      <IslandAction
+        primary
+        onClick={() => {
+          refreshEngine();
+          onClose();
+        }}
+      >
+        {t('voice.fix.retry')}
       </IslandAction>
     );
   }

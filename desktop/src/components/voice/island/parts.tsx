@@ -23,7 +23,9 @@ export function IconTile({ tone, children }: { tone: TileTone; children: ReactNo
 export function IslandText({ title, sub }: { title: ReactNode; sub?: ReactNode }) {
   return (
     <span className="min-w-0 flex-1">
-      <span className="block truncate text-[13px] font-semibold leading-tight text-ink-90">
+      <span
+        className={`block ${sub ? 'truncate' : 'line-clamp-2'} text-[13px] font-semibold leading-tight text-ink-90`}
+      >
         {title}
       </span>
       {sub && (
