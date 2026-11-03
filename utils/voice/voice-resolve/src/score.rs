@@ -1,5 +1,5 @@
 use crate::entity::{Decision, Entity, Scored};
-use crate::keys::{Keys, QueryKeys, best_sim};
+use crate::keys::{Keys, QueryKeys, best_match};
 use std::collections::HashSet;
 use voice_nlu::{Kind, Parsed, fold};
 
@@ -34,7 +34,6 @@ impl Boosts {
     }
 }
 
-pub const ACT_MIN: f32 = 0.72;
 pub const BARE_MIN: f32 = 0.88;
 pub const ASK_RATIO: f32 = 0.92;
 
@@ -61,30 +60,55 @@ pub fn rank(parsed: &Parsed, cands: Vec<Entity>, boosts: &Boosts) -> Vec<Scored>
     let mut out: Vec<Scored> = cands
         .into_iter()
         .map(|entity| {
-            let sim = best_sim(&Keys::new(&entity), &queries);
+            let (sim, qlen) = best_match(&Keys::new(&entity), &queries);
             let score = sim.powi(2)
                 * popularity_factor(entity.popularity)
                 * kind_factor(entity.kind, parsed.kind_hint)
                 * boosts.factor(&entity);
-            Scored { entity, sim, score }
+            Scored {
+                entity,
+                sim,
+                score,
+                qlen,
+            }
         })
         .collect();
     out.sort_by(|a, b| b.score.total_cmp(&a.score));
     out
 }
 
-pub fn decide(ranked: &[Scored], min_sim: f32) -> Decision {
+fn limits(qlen: usize, bare: bool) -> (f32, f32) {
+    if bare {
+        return (BARE_MIN, BARE_MIN);
+    }
+    match qlen {
+        0..=5 => (0.9, 0.85),
+        6..=7 => (0.84, 0.8),
+        _ => (0.76, 0.72),
+    }
+}
+
+pub fn decide(ranked: &[Scored], bare: bool) -> Decision {
     let Some(top) = ranked.first() else {
         return Decision::NotFound;
     };
-    if top.sim.min(1.0) < min_sim {
+    let (act, ask) = limits(top.qlen, bare);
+    let sim = top.sim.min(1.0);
+    if sim < ask {
         return Decision::NotFound;
     }
-    if let Some(second) = ranked.get(1) {
-        if second.sim.min(1.0) >= min_sim && second.score >= top.score * ASK_RATIO {
+    let second = ranked.get(1).filter(|s| s.sim.min(1.0) >= ask);
+    if sim < act {
+        return Decision::Ask {
+            first: top.clone(),
+            second: second.cloned(),
+        };
+    }
+    if let Some(second) = second {
+        if second.sim.min(1.0) >= act && second.score >= top.score * ASK_RATIO {
             return Decision::Ask {
                 first: top.clone(),
-                second: second.clone(),
+                second: Some(second.clone()),
             };
         }
     }

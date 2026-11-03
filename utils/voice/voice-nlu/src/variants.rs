@@ -102,6 +102,41 @@ pub fn lemma(w: &str, strategy: u8) -> String {
     w.to_string()
 }
 
+const DIMINUTIVES: &[(&str, &str)] = &[
+    ("очка", "а"),
+    ("ечка", "а"),
+    ("ушка", "а"),
+    ("юшка", "а"),
+    ("онька", "а"),
+    ("енька", "а"),
+    ("очку", "а"),
+    ("ик", ""),
+    ("чик", ""),
+    ("ок", ""),
+];
+
+pub fn shrink(w: &str) -> Option<String> {
+    if !cyrillic(w) {
+        return None;
+    }
+    DIMINUTIVES.iter().find_map(|(suffix, back)| {
+        let count = w.chars().count();
+        let keep = count.checked_sub(suffix.chars().count())?;
+        (w.ends_with(suffix) && keep >= 3).then(|| format!("{}{back}", cut(w, count - keep)))
+    })
+}
+
+fn join_small(toks: &[Tok], strategy: u8) -> String {
+    toks.iter()
+        .filter(|t| !t.amb)
+        .map(|t| {
+            let l = lemma(&t.w, strategy);
+            shrink(&l).unwrap_or(l)
+        })
+        .collect::<Vec<_>>()
+        .join(" ")
+}
+
 fn join(toks: &[Tok], strategy: u8, keep_amb: bool) -> String {
     toks.iter()
         .filter(|t| keep_amb || !t.amb)
@@ -146,6 +181,9 @@ pub fn expand(raw: &Raw) -> Vec<Variant> {
     let split = raw.artist.is_some();
     for s in 0..3u8 {
         push(&mut out, plain(join(&raw.plain, s, false), false, s > 0));
+    }
+    for s in 0..2u8 {
+        push(&mut out, plain(join_small(&raw.plain, s), false, true));
     }
     if split {
         let artist = raw.artist.as_deref().unwrap_or(&[]);

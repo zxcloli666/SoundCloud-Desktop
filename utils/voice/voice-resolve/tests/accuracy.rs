@@ -152,7 +152,7 @@ fn entity_ok(r: &Row, os: &[Outcome]) -> bool {
     })
 }
 
-fn run(data: &[Row], catalog: &FixtureCatalog) -> (BTreeMap<String, Stat>, Vec<String>) {
+fn run(name: &str, data: &[Row], catalog: &FixtureCatalog) -> (BTreeMap<String, Stat>, Vec<String>) {
     let mut stats: BTreeMap<String, Stat> = BTreeMap::new();
     let mut failures = Vec::new();
     for r in data {
@@ -198,7 +198,8 @@ fn run(data: &[Row], catalog: &FixtureCatalog) -> (BTreeMap<String, Stat>, Vec<S
                 })
                 .collect();
             failures.push(format!(
-                "[{}] {:?} want {}/{}/{}/{} got {} norm={:?}",
+                "{} [{}] {:?} want {}/{}/{}/{} got {} norm={:?}",
+                name,
                 r.category,
                 r.phrase,
                 r.intent,
@@ -296,7 +297,7 @@ fn targets_with_aliases() {
     let mut bad = Vec::new();
     let mut failures = Vec::new();
     for set in sets() {
-        let (stats, f) = run(&set.rows, &catalog);
+        let (stats, f) = run(set.name, &set.rows, &catalog);
         println!("set {}\n{}", set.name, report(&stats));
         bad.extend(check(set.name, &stats));
         merge(&mut union, &stats);
@@ -315,7 +316,7 @@ fn names_without_aliases() {
     let catalog = FixtureCatalog::from_tsv(include_str!("data/catalog.tsv"), false);
     let mut union = BTreeMap::new();
     for set in sets() {
-        let (stats, _) = run(&set.rows, &catalog);
+        let (stats, _) = run(set.name, &set.rows, &catalog);
         merge(&mut union, &stats);
     }
     println!("without aliases, all sets\n{}", report(&union));

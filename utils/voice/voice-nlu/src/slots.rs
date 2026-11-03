@@ -34,15 +34,19 @@ fn kind_of(w: &str) -> Option<Kind> {
 }
 
 fn edge_noise(t: &Tok) -> bool {
-    !t.amb && (PRE.contains(&t.w.as_str()) || TRANSPORT_VERBS.contains(&t.w.as_str()))
+    t.amb || (PRE.contains(&t.w.as_str()) || TRANSPORT_VERBS.contains(&t.w.as_str()))
 }
 
 fn trim(mut v: Vec<Tok>) -> Vec<Tok> {
-    while v.first().is_some_and(edge_noise) {
-        v.remove(0);
+    let mut start = 0;
+    while v.get(start).is_some_and(edge_noise) {
+        v[start].amb = true;
+        start += 1;
     }
-    while v.last().is_some_and(edge_noise) {
-        v.pop();
+    let mut end = v.len();
+    while end > start && v.get(end - 1).is_some_and(edge_noise) {
+        v[end - 1].amb = true;
+        end -= 1;
     }
     v
 }

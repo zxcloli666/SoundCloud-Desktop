@@ -1,5 +1,5 @@
 use std::io::BufRead;
-use voice_resolve::{Boosts, FixtureCatalog, interpret};
+use voice_resolve::{Boosts, Catalog, FixtureCatalog, interpret, rank};
 
 fn main() {
     let path = std::env::var("CATALOG").ok();
@@ -25,5 +25,13 @@ fn main() {
         let steps = interpret(phrase, &catalog, &boosts);
         let line = serde_json::json!({ "phrase": phrase, "steps": steps });
         println!("{line}");
+        if std::env::var("TOP").is_ok() {
+            for p in voice_nlu::parse(phrase) {
+                let cands = catalog.candidates(&p.queries, &voice_nlu::Kind::ALL);
+                for r in rank(&p, cands, &boosts).iter().take(3) {
+                    eprintln!("  {} sim={:.2} score={:.2}", r.entity.label(), r.sim, r.score);
+                }
+            }
+        }
     }
 }

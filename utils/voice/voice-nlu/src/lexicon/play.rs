@@ -83,6 +83,8 @@ pub const PLAY_WEAK: &[&str] = &[
 ];
 
 pub const PRE: &[&str] = &[
+    "ты",
+    "бы",
     "а",
     "и",
     "но",

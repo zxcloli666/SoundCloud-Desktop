@@ -31,10 +31,15 @@ impl Outcome {
     }
 }
 
-pub fn resolve(parsed: &Parsed, catalog: &dyn Catalog, boosts: &Boosts, min_sim: f32) -> Decision {
+pub fn resolve(
+    parsed: &Parsed,
+    catalog: &dyn Catalog,
+    boosts: &Boosts,
+    bare: bool,
+) -> Decision {
     let cands = catalog.candidates(&parsed.queries, &Kind::ALL);
     let ranked = rank(parsed, cands, boosts);
-    score::decide(&ranked, min_sim)
+    score::decide(&ranked, bare)
 }
 
 pub fn interpret(text: &str, catalog: &dyn Catalog, boosts: &Boosts) -> Vec<Outcome> {
@@ -60,7 +65,7 @@ fn interpret_parsed(parsed: Parsed, catalog: &dyn Catalog, boosts: &Boosts) -> O
     }
     if intent == Intent::None {
         if parsed.bare {
-            let d = resolve(&parsed, catalog, boosts, score::BARE_MIN);
+            let d = resolve(&parsed, catalog, boosts, true);
             if matches!(d, Decision::Act { .. } | Decision::Ask { .. }) {
                 intent = Intent::Play;
                 decision = Some(d);
@@ -70,8 +75,8 @@ fn interpret_parsed(parsed: Parsed, catalog: &dyn Catalog, boosts: &Boosts) -> O
         intent,
         Intent::Play | Intent::QueueAdd | Intent::PlaySimilar
     ) {
-        let d = resolve(&parsed, catalog, boosts, score::ACT_MIN);
-        if intent == Intent::Play && parsed.weak_verb && matches!(d, Decision::NotFound) {
+        let d = resolve(&parsed, catalog, boosts, false);
+        if intent == Intent::Play && matches!(d, Decision::NotFound) {
             intent = Intent::None;
         }
         decision = Some(d);

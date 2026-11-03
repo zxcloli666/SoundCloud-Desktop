@@ -40,7 +40,9 @@ pub(crate) fn parse_toks(text: &str, mut toks: Vec<Tok>) -> (Parsed, bool) {
     }
     let s = slots::extract(&toks, &det);
     let queries = variants::expand(&s.raw);
-    let bare = det.intent == Intent::None && !queries.is_empty() && toks.len() <= 8;
+    let bare = det.intent == Intent::None
+        && queries.iter().any(|q| !q.kept_fillers)
+        && toks.len() <= 8;
     let queries = if det.intent == Intent::None && !bare {
         Vec::new()
     } else {
