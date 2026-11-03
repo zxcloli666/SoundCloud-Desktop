@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use super::limiter::Limiter;
 use super::pan::HeadPan;
 use super::params::{EffectsParams, Targets};
 use super::reverb::Reverb;
@@ -8,10 +9,8 @@ use super::shelf::LowShelf;
 const CONTROL_FRAMES: u32 = 32;
 const GLIDE_SECS: f32 = 0.015;
 const SNAP: f32 = 1e-4;
-const HEADROOM_PER_DB: f32 = 0.6;
 const DRY_DUCK: f32 = 0.4;
 const WET_GAIN: f32 = 3.0;
-const KNEE: f32 = 0.8;
 
 const REVERB: u8 = 1;
 const PAN: u8 = 2;
@@ -29,11 +28,11 @@ pub struct Chain {
     pan_depth: f32,
     pan_hz: f32,
     bass_db: f32,
-    headroom: f32,
     phase: f32,
     shelf: [LowShelf; 2],
     head: HeadPan,
     reverb: Reverb,
+    limiter: Limiter,
 }
 
 fn approach(value: &mut f32, target: f32, glide: f32) {
@@ -41,16 +40,6 @@ fn approach(value: &mut f32, target: f32, glide: f32) {
     if (*value - target).abs() < SNAP {
         *value = target;
     }
-}
-
-fn limit(x: f32) -> f32 {
-    let magnitude = x.abs();
-    if magnitude <= KNEE {
-        return x;
-    }
-    let room = 1.0 - KNEE;
-    let shaped = KNEE + room * ((magnitude - KNEE) / room).tanh();
-    shaped.copysign(x)
 }
 
 impl Chain {
@@ -69,16 +58,12 @@ impl Chain {
             pan_depth: targets.pan,
             pan_hz: targets.pan_hz,
             bass_db: targets.bass_db,
-            headroom: Self::headroom_for(targets.bass_db),
             phase: 0.0,
             shelf: [LowShelf::new(rate as f64), LowShelf::new(rate as f64)],
             head: HeadPan::new(),
             reverb: Reverb::new(rate),
+            limiter: Limiter::new(rate),
         }
-    }
-
-    fn headroom_for(bass_db: f32) -> f32 {
-        10f32.powf(-HEADROOM_PER_DB * bass_db / 20.0)
     }
 
     pub fn frame(&mut self, left: f32, right: f32) -> (f32, f32) {
@@ -103,8 +88,8 @@ impl Chain {
 
     fn render(&mut self, mut left: f32, mut right: f32, active: u8) -> (f32, f32) {
         if active & BASS != 0 {
-            left = self.shelf[0].run(left * self.headroom);
-            right = self.shelf[1].run(right * self.headroom);
+            left = self.shelf[0].run(left);
+            right = self.shelf[1].run(right);
         }
         if active & PAN != 0 {
             self.phase += self.pan_hz / self.sample_rate;
@@ -120,7 +105,7 @@ impl Chain {
             left = left * dry + wet_left * wet;
             right = right * dry + wet_right * wet;
         }
-        (limit(left), limit(right))
+        self.limiter.process(left, right)
     }
 
     fn tune(&mut self) {
@@ -146,13 +131,12 @@ impl Chain {
         approach(&mut self.pan_depth, targets.pan, glide);
         approach(&mut self.pan_hz, targets.pan_hz, glide);
         approach(&mut self.bass_db, targets.bass_db, glide);
-        approach(&mut self.headroom, Self::headroom_for(self.bass_db), glide);
     }
 
     fn active_stages(&self) -> u8 {
         let reverb = (self.reverb_mix > 0.0) as u8 * REVERB;
         let pan = (self.pan_depth > 0.0) as u8 * PAN;
-        let bass = (self.bass_db > 0.0 || self.headroom != 1.0) as u8 * BASS;
+        let bass = (self.bass_db > 0.0) as u8 * BASS;
         reverb | pan | bass
     }
 
@@ -171,6 +155,7 @@ impl Chain {
     pub fn reset(&mut self) {
         self.reverb.clear();
         self.head.clear();
+        self.limiter.clear();
         self.shelf.iter_mut().for_each(LowShelf::clear);
     }
 }

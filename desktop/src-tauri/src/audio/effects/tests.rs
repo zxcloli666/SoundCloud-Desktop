@@ -155,7 +155,7 @@ fn eight_d_swaps_sides_over_one_period() {
 }
 
 fn bass_gain_db(hz: f32, bass_db: f32) -> f64 {
-    let input = sine(hz, 0.1, 2.0);
+    let input = sine(hz, 0.251, 2.0);
     let output = render(&input, params(settings(|s| s.bass_db = bass_db), true));
     rms_db(&output[secs(1.0)..]) - rms_db(&input[secs(1.0)..])
 }
@@ -168,8 +168,8 @@ fn bass_boost_lifts_lows_over_mids() {
         "bass +9 dB: 60 Hz {low:.2} dB, 1 kHz {mid:.2} dB, spread {:.2} dB",
         low - mid
     );
-    assert!(low - mid > 7.0 && low - mid < 10.0);
-    assert!(mid < -3.0);
+    assert!(low >= 7.0, "{low}");
+    assert!(mid.abs() <= 0.5, "{mid}");
 }
 
 #[test]
