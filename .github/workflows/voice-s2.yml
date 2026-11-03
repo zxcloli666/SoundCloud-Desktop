@@ -30,6 +30,8 @@ jobs:
           done
       - name: Build
         run: cargo build --release -p voice-audio --example aec_bench
+      - name: Test
+        run: cargo test --release -p voice-audio
       - name: Bench 48 kHz
         run: ./target/release/examples/aec_bench --engine sonora
       - name: Bench 48 kHz steered
@@ -53,9 +55,11 @@ jobs:
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: 1.99.1
+      - uses: ilammy/msvc-dev-cmd@v1
+        if: runner.os == 'Windows'
       - name: Build tools
         run: |
-          if [ "$RUNNER_OS" = "Linux" ]; then sudo apt-get update && sudo apt-get install -y meson ninja-build clang pkg-config; fi
+          if [ "$RUNNER_OS" = "Linux" ]; then sudo apt-get update && sudo apt-get install -y ninja-build clang pkg-config python3-pip && pip3 install meson; fi
           if [ "$RUNNER_OS" = "macOS" ]; then brew install meson ninja pkg-config; fi
           if [ "$RUNNER_OS" = "Windows" ]; then pip install meson ninja; fi
       - name: Test files
@@ -66,6 +70,9 @@ jobs:
             curl -fsSL -o .cache/speech/$n.wav "https://raw.githubusercontent.com/zxcloli666/CarUI/HEAD/audio/loli/$n.wav"
           done
       - name: Build
+        env:
+          CC: ${{ runner.os == 'Windows' && 'cl' || '' }}
+          CXX: ${{ runner.os == 'Windows' && 'cl' || '' }}
         run: cargo build --release -p voice-audio --example aec_bench --features webrtc
       - name: Bench 48 kHz
         run: ./target/release/examples/aec_bench --engine webrtc
