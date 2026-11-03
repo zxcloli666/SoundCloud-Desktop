@@ -1,3 +1,4 @@
+import './components/voice/lab/gate';
 import { QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
@@ -39,7 +40,10 @@ useSettingsStore.persist.onFinishHydration((state) => {
   }
 });
 
-if (import.meta.env.DEV) {
+const voiceLab =
+  import.meta.env.DEV && new URLSearchParams(window.location.search).has('voice-lab');
+
+if (import.meta.env.DEV && !voiceLab) {
   const script = document.createElement('script');
   script.src = 'https://unpkg.com/react-scan/dist/auto.global.js';
   script.crossOrigin = 'anonymous';
@@ -122,11 +126,19 @@ async function bootstrap() {
   void startDeferredRuntime();
 }
 
-bootstrap().catch((error) => {
-  const message = describeError(error);
-  logError(`[Boot] ${message}`);
-  reportError('unhandled', error, { context: { stage: 'bootstrap' } });
-  ReactDOM.createRoot(document.getElementById('root')!).render(
-    <ErrorScreen error={new Error(message)} fullscreen />,
-  );
-});
+function startApp() {
+  bootstrap().catch((error) => {
+    const message = describeError(error);
+    logError(`[Boot] ${message}`);
+    reportError('unhandled', error, { context: { stage: 'bootstrap' } });
+    ReactDOM.createRoot(document.getElementById('root')!).render(
+      <ErrorScreen error={new Error(message)} fullscreen />,
+    );
+  });
+}
+
+if (voiceLab) {
+  void import('./components/voice/lab/boot').then((m) => m.mountVoiceLab());
+} else {
+  startApp();
+}
