@@ -16,6 +16,8 @@ jobs:
           - { name: windows-static, os: windows-latest, features: static }
           - { name: windows-shared, os: windows-latest, features: shared }
     runs-on: ${{ matrix.os }}
+    env:
+      PYTHONUTF8: "1"
     defaults:
       run:
         shell: bash
