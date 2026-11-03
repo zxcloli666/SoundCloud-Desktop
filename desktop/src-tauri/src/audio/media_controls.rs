@@ -1,4 +1,6 @@
-use std::time::Duration;
+use std::sync::Mutex;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::time::{Duration, Instant};
 
 use souvlaki::{
     MediaControlEvent, MediaControls, MediaMetadata as SmtcMetadata, MediaPlayback, MediaPosition,
@@ -10,6 +12,51 @@ use tauri::{Emitter, Manager};
 
 use crate::audio::state::AudioState;
 use crate::audio::types::MediaCmd;
+use voice_engine::{Press, Presses};
+
+struct Headset {
+    presses: Mutex<Presses>,
+    was_playing: AtomicBool,
+}
+
+fn is_playing(handle: &AppHandle) -> bool {
+    let state = handle.state::<AudioState>();
+    state
+        .player
+        .lock()
+        .unwrap()
+        .as_ref()
+        .is_some_and(|player| !player.is_paused() && !player.empty())
+}
+
+fn play_pause(handle: &AppHandle, headset: &Headset, event: &str) {
+    let need = crate::voice::headset_presses(handle);
+    if need == 0 {
+        handle.emit(event, ()).ok();
+        return;
+    }
+    let press = headset.presses.lock().unwrap().press(need, Instant::now());
+    match press {
+        Press::First => {
+            headset
+                .was_playing
+                .store(is_playing(handle), Ordering::Relaxed);
+            handle.emit(event, ()).ok();
+        }
+        Press::More => {
+            handle.emit(event, ()).ok();
+        }
+        Press::Gesture => {
+            let restore = if headset.was_playing.load(Ordering::Relaxed) {
+                "media:play"
+            } else {
+                "media:pause"
+            };
+            handle.emit(restore, ()).ok();
+            crate::voice::headset_gesture(handle);
+        }
+    }
+}
 
 pub fn start_media_controls(app: &AppHandle) {
     let handle = app.clone();
@@ -56,16 +103,16 @@ pub fn start_media_controls(app: &AppHandle) {
             };
 
             let event_handle = handle.clone();
+            let headset = Headset {
+                presses: Mutex::new(Presses::default()),
+                was_playing: AtomicBool::new(false),
+            };
             controls
                 .attach(move |event: MediaControlEvent| match event {
-                    MediaControlEvent::Play => {
-                        event_handle.emit("media:play", ()).ok();
-                    }
-                    MediaControlEvent::Pause => {
-                        event_handle.emit("media:pause", ()).ok();
-                    }
+                    MediaControlEvent::Play => play_pause(&event_handle, &headset, "media:play"),
+                    MediaControlEvent::Pause => play_pause(&event_handle, &headset, "media:pause"),
                     MediaControlEvent::Toggle => {
-                        event_handle.emit("media:toggle", ()).ok();
+                        play_pause(&event_handle, &headset, "media:toggle")
                     }
                     MediaControlEvent::Next => {
                         event_handle.emit("media:next", ()).ok();
