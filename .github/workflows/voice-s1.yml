@@ -51,9 +51,9 @@ jobs:
         run: |
           for f in target/sherpa-onnx-prebuilt/*/lib/*.lib; do
             echo "== $f"
-            dumpbin -directives "$f" | grep -i "defaultlib" | sort | uniq -c
+            dumpbin -directives "$f" | grep -i "defaultlib" | sort | uniq -c || true
           done
-          ls -l target/sherpa-onnx-prebuilt/*/lib target/release/examples | grep -i "dll"
+          ls -l target/sherpa-onnx-prebuilt/*/lib target/release/examples | grep -i "dll" || true
       - name: models and audio
         run: |
           B=https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models
