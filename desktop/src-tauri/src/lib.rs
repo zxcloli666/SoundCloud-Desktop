@@ -68,6 +68,15 @@ pub fn run() {
                 responder.respond(network::proxy::handle_uri(request).await);
             });
         })
+        .register_asynchronous_uri_scheme_protocol(
+            chat::media_scheme::SCHEME,
+            |ctx, request, responder| {
+                let app = ctx.app_handle().clone();
+                tauri::async_runtime::spawn(async move {
+                    responder.respond(chat::media_scheme::handle(&app, request).await);
+                });
+            },
+        )
         .setup(move |app| {
             #[cfg(windows)]
             app::webview2::exit_if_main_window_missing(app);
@@ -441,6 +450,17 @@ pub fn run() {
             chat::commands::chat_logout,
             chat::commands::chat_notify_prefs,
             chat::commands::chat_embeds,
+            chat::commands::chat_media_usage,
+            chat::commands::chat_media_mine,
+            chat::commands::chat_media_delete,
+            chat::commands::chat_media_restore,
+            chat::commands::chat_media_urls,
+            chat::commands::chat_media_attach,
+            chat::commands::chat_media_uploads,
+            chat::commands::chat_media_upload_retry,
+            chat::commands::chat_media_upload_cancel,
+            chat::commands::chat_media_cache_size,
+            chat::commands::chat_media_cache_clear,
             chat::login::chat_link_create_push,
             chat::login::chat_link_claim_pull,
         ])

@@ -1,12 +1,18 @@
 pub mod badge;
 pub mod commands;
+pub mod download;
 pub mod events;
 pub mod keychain;
 pub mod login;
+pub mod media_cache;
+pub mod media_scheme;
 pub mod notify;
 pub mod runtime;
 pub mod state;
 pub mod transport;
+pub mod upload;
+#[cfg(test)]
+mod upload_tests;
 
 use std::path::Path;
 

@@ -2,24 +2,30 @@ mod compose;
 mod conversations;
 mod convert;
 mod devices;
+mod media;
 mod members;
 mod reads;
 mod rooms;
 mod safety;
 
+use sc_chat::api::wire::{
+    DeleteAnswer, MediaSelection, MediaUsage, MinePage, RestoreAnswer, UrlsAnswer,
+};
 use sc_chat::{
     ChatConfig, ChatError, ChatRequest, ChatSettings, ChatStatus, ConvId, ConversationPage,
     ConversationPatch, ConversationSummary, CreateConversation, DeleteScope, Device, DeviceId,
     Embed, EmbedPage, EmbedsQuery, HistoryPage, HistoryQuery, Invite, InviteOptions, LinkClaimed,
     LinkCreated, LinkPoll, ListQuery, LoginBegin, LoginPoll, LoginTarget, Member, MemberRole,
-    Message, MessageTarget, NotifyPrefs, ReportInput, RichText, RoomModeration, RoomPreview,
-    RoomSettingsPatch, SearchHit, SearchQuery, SendInput, Seq, SettingsPatch, ThreadSnapshot,
-    UserCard, UserId,
+    Message, MessageTarget, MineQuery, NotifyPrefs, ReportInput, RichText, RoomModeration,
+    RoomPreview, RoomSettingsPatch, SearchHit, SearchQuery, SendInput, Seq, SettingsPatch,
+    ThreadSnapshot, UserCard, UserId,
 };
 use tauri::State;
+use uuid::Uuid;
 
 use super::login;
 use super::state::ChatState;
+use super::upload::UploadView;
 
 #[tauri::command]
 pub async fn chat_status(state: State<'_, ChatState>) -> Result<ChatStatus, ChatError> {
@@ -432,6 +438,84 @@ pub async fn chat_notify_prefs(
     prefs: Option<NotifyPrefs>,
 ) -> Result<NotifyPrefs, ChatError> {
     Ok(state.notifier.prefs(prefs))
+}
+
+#[tauri::command]
+pub async fn chat_media_usage(state: State<'_, ChatState>) -> Result<MediaUsage, ChatError> {
+    media::usage(&state).await
+}
+
+#[tauri::command]
+pub async fn chat_media_mine(
+    state: State<'_, ChatState>,
+    query: MineQuery,
+) -> Result<MinePage, ChatError> {
+    media::mine(&state, query).await
+}
+
+#[tauri::command]
+pub async fn chat_media_delete(
+    state: State<'_, ChatState>,
+    selection: MediaSelection,
+) -> Result<DeleteAnswer, ChatError> {
+    media::delete(&state, selection).await
+}
+
+#[tauri::command]
+pub async fn chat_media_restore(
+    state: State<'_, ChatState>,
+    selection: MediaSelection,
+) -> Result<RestoreAnswer, ChatError> {
+    media::restore(&state, selection).await
+}
+
+#[tauri::command]
+pub async fn chat_media_urls(
+    state: State<'_, ChatState>,
+    conversation_id: Option<ConvId>,
+    ids: Vec<Uuid>,
+) -> Result<UrlsAnswer, ChatError> {
+    media::urls(&state, conversation_id, ids).await
+}
+
+#[tauri::command]
+pub async fn chat_media_attach(
+    state: State<'_, ChatState>,
+    conversation_id: ConvId,
+    paths: Vec<String>,
+) -> Result<Vec<UploadView>, ChatError> {
+    media::attach(&state, conversation_id, paths).await
+}
+
+#[tauri::command]
+pub async fn chat_media_uploads(state: State<'_, ChatState>) -> Result<Vec<UploadView>, ChatError> {
+    media::uploads(&state).await
+}
+
+#[tauri::command]
+pub async fn chat_media_upload_retry(
+    state: State<'_, ChatState>,
+    id: Uuid,
+) -> Result<(), ChatError> {
+    media::upload_retry(&state, id).await
+}
+
+#[tauri::command]
+pub async fn chat_media_upload_cancel(
+    state: State<'_, ChatState>,
+    id: Uuid,
+) -> Result<(), ChatError> {
+    media::upload_cancel(&state, id).await
+}
+
+#[tauri::command]
+pub async fn chat_media_cache_size(state: State<'_, ChatState>) -> Result<u64, ChatError> {
+    media::cache_size(&state).await
+}
+
+#[tauri::command]
+pub async fn chat_media_cache_clear(state: State<'_, ChatState>) -> Result<u64, ChatError> {
+    media::cache_clear(&state).await
 }
 
 #[cfg(test)]

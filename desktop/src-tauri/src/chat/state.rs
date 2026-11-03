@@ -7,6 +7,7 @@ use sc_chat::{ChatResult, ChatStatus, Clock, Events, KeyStore, Transport};
 
 use super::events::TauriEvents;
 use super::keychain::Keychain;
+use super::media_cache::MediaCache;
 use super::notify::Notifier;
 use super::runtime::{Core, Parts, Runtime, StatusCell, SystemClock, Tap};
 use super::transport::{EdgeTransport, Route};
@@ -23,6 +24,7 @@ pub struct ChatState {
     pub api: Arc<Api>,
     pub runtime: Arc<Runtime>,
     pub notifier: Arc<Notifier>,
+    pub media_cache: Arc<MediaCache>,
 }
 
 impl ChatState {
@@ -37,6 +39,7 @@ impl ChatState {
         let channel = Arc::new(Channel::new(clock.clone()));
         let api = Arc::new(Api::new(channel, transport.clone()));
         let notifier = Arc::new(Notifier::default());
+        let media_cache = Arc::new(MediaCache::open(&dir));
         let runtime = Arc::new(Runtime::new(Parts {
             app: app.clone(),
             rt: rt.clone(),
@@ -57,6 +60,7 @@ impl ChatState {
             api,
             runtime,
             notifier,
+            media_cache,
         }
     }
 
