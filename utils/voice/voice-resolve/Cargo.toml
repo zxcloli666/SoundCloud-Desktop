@@ -1,0 +1,12 @@
+[package]
+name = "voice-resolve"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[dependencies]
+voice-nlu = { path = "../voice-nlu" }
+serde = { version = "1", features = ["derive"] }
+
+[dev-dependencies]
+serde_json = "1"

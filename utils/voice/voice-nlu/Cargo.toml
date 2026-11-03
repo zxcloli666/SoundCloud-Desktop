@@ -1,0 +1,8 @@
+[package]
+name = "voice-nlu"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }

@@ -1,0 +1,371 @@
+phrase	intent	kind	entity	number	category
+пауза	pause				plain
+поставь на паузу	pause				plain
+продолжи	resume				plain
+играй	resume				plain
+включи	resume				plain
+следующий трек	next				plain
+предыдущий трек	previous				plain
+останови музыку	stop				plain
+громче	volume_up				plain
+тише	volume_down				plain
+сделай погромче	volume_up				plain
+выключи звук	mute				plain
+включи звук	unmute				plain
+поставь лайк	like				plain
+убери лайк	unlike				plain
+перемешай	shuffle_on				plain
+выключи перемешивание	shuffle_off				plain
+повтори трек	repeat_one				plain
+повторять все	repeat_all				plain
+не повторять	repeat_off				plain
+что сейчас играет	now_playing				plain
+включи мои лайки	play_likes				plain
+включи любимое	play_likes				plain
+моя волна	play_wave				plain
+поставь музыку	play_wave				plain
+включи что-нибудь	play_wave				plain
+рекомендации	play_wave				plain
+включи похожее	play_similar				plain
+отмени	undo				plain
+что ты умеешь	help				plain
+включи земфиру	play	artist	Земфира		plain
+громкость 50	volume_set			50	plain
+громкость на двадцать процентов	volume_set			20	plain
+перемотай на 30 секунд вперёд	seek_forward			30	plain
+перемотай на 20 секунд назад	seek_backward			20	plain
+перемотай на минуту тридцать	seek_to			90	plain
+добавь в очередь starboy	queue_add	track	The Weeknd - Starboy		plain
+включи альбом after hours	play	album	The Weeknd - After Hours		plain
+включи плейлист для тренировки	play	playlist	Workout		plain
+поставь blinding lights	play	track	The Weeknd - Blinding Lights		plain
+эээээ брат скриптонита хачу	play	artist	Скриптонит		filler
+ну короче это самое включи	resume				filler
+ну это включи земфиру пожалуйста	play	artist	Земфира		filler
+так сейчас тут типа поставь the weeknd	play	artist	The Weeknd		filler
+эмм ну давай что нибудь включи	play_wave				filler
+ааа блин как его баста включи	play	artist	Баста		filler
+короче слушай поставь пожалуйста макса коржа	play	artist	Макс Корж		filler
+э-э-э следующий	next				filler
+ну типа потише чуть	volume_down				filler
+хм ну давай ленинград	play	artist	Ленинград		filler
+так ну вот это самое пауза	pause				filler
+ну это как его лайк поставь	like				filler
+слушай а можешь включить монеточку	play	artist	Монеточка		filler
+эм мне бы дрейка	play	artist	Drake		filler
+ну типа продолжай	resume				filler
+в общем это эээ перемотай на тридцать секунд вперёд	seek_forward			30	filler
+ну давай уже громче	volume_up				filler
+короче включай ленинград	play	artist	Ленинград		filler
+эммм я хочу послушать билли айлиш бэд гай	play	track	Billie Eilish - bad guy		filler
+ну это ну как его believer включи	play	track	Imagine Dragons - Believer		filler
+ыыы дальше	next				filler
+слушай ну убери звук совсем	mute				filler
+ну это верни звук	unmute				filler
+блин ну что щас играет	now_playing				filler
+эээ ну ставь мои лайки	play_likes				filler
+давай ну это поставь волну мою	play_wave				filler
+короче ну это добавь в очередь сплин выхода нет	queue_add	track	Сплин - Выхода нет		filler
+мм ну ладно стоп	stop				filler
+э ну включи кукла колдуна	play	track	Король и Шут - Кукла колдуна		filler
+ну типа знаешь это самое сансара баста	play	track	Баста - Сансара		filler
+ээээ ну короче назад	previous				filler
+ну вот включи плиз имеджин драгонс	play	artist	Imagine Dragons		filler
+эээ ну погромче чуть чуть	volume_up				filler
+ну короче повтори этот трек	repeat_one				filler
+ну типа поставь похожее что-нибудь	play_similar				filler
+ну это отмена	undo				filler
+ну типа выключи перемешивание	shuffle_off				filler
+ну короче включи земфиру хочу	play	track	Земфира - Хочу		filler
+ааа ну давай тейлор свифт	play	artist	Taylor Swift		filler
+так ну это значит ставь громкость на сорок	volume_set			40	filler
+вруби скриптонита	play	artist	Скриптонит		slang
+вруби макса коржа	play	artist	Макс Корж		slang
+скипни	next				slang
+скипни трек	next				slang
+го некст	next				slang
+некст	next				slang
+го дальше	next				slang
+кинь трек притон скриптонит	play	track	Скриптонит - Притон		slang
+врубай моргенштерна	play	artist	Моргенштерн		slang
+кинь что нибудь	play_wave				slang
+закинь мои лайки	play_likes				slang
+вруби волну	play_wave				slang
+фигани что-нибудь	play_wave				slang
+вруби потише	volume_down				slang
+вруби погромче	volume_up				slang
+заглуши	mute				slang
+мьют	mute				slang
+анмьют	unmute				slang
+лайкни это	like				slang
+кинь лайк	like				slang
+дизлайк	unlike				slang
+шафл	shuffle_on				slang
+шафл офф	shuffle_off				slang
+репит	repeat_one				slang
+го назад	previous				slang
+прошлый трек	previous				slang
+накати уикенд	play	artist	The Weeknd		slang
+вруби дрейка	play	artist	Drake		slang
+кинь в очередь believer	queue_add	track	Imagine Dragons - Believer		slang
+чё играет	now_playing				slang
+врубай рамштайн	play	artist	Rammstein		slang
+ну ка вруби мотылёк	play	track	Макс Корж - Мотылёк		slang
+тормозни	pause				slang
+кинь на паузу	pause				slang
+жми плей	resume				slang
+стопни	stop				slang
+вруби обратно	resume				slang
+хааачу скриптонита	play	artist	Скриптонит		stretched
+дааальше	next				stretched
+включиии земфиру	play	artist	Земфира		stretched
+пооотише	volume_down				stretched
+гроомче	volume_up				stretched
+пауууза	pause				stretched
+стооооп	stop				stretched
+продолжааай	resume				stretched
+следууующий	next				stretched
+назаааад	previous				stretched
+давааай монеточку	play	artist	Монеточка		stretched
+мои лайкиии	play_likes				stretched
+лайкниии	like				stretched
+включиии the weeknd	play	artist	The Weeknd		stretched
+перемотааай на минуту вперёд	seek_forward			60	stretched
+громкооость пятьдесят	volume_set			50	stretched
+поставь беееливер	play	track	Imagine Dragons - Believer		stretched
+хоочу макса коржа	play	artist	Макс Корж		stretched
+вклююючи что-нибудь	play_wave				stretched
+выключиии звук	mute				stretched
+вкличи скриптонит	play	artist	Скриптонит		misspelling
+вкличи скрептонит	play	artist	Скриптонит		misspelling
+включи скриптонт	play	artist	Скриптонит		misspelling
+вклбчи земфиру	play	artist	Земфира		misspelling
+включи макс корш	play	artist	Макс Корж		misspelling
+включи макса карж	play	artist	Макс Корж		misspelling
+включи монетачку	play	artist	Монеточка		misspelling
+следуший	next				misspelling
+предыдущи трек	previous				misspelling
+громч	volume_up				misspelling
+тиши	volume_down				misspelling
+пазу	pause				misspelling
+остонови	stop				misspelling
+продалжи	resume				misspelling
+включи мои лайк	play_likes				misspelling
+включи дрэйка	play	artist	Drake		misspelling
+включи уикэнд	play	artist	The Weeknd		misspelling
+включи билли айлеш	play	artist	Billie Eilish		misspelling
+включи имаджин драгонс	play	artist	Imagine Dragons		misspelling
+включи тэйлор свифт	play	artist	Taylor Swift		misspelling
+поставь нирвано	play	artist	Nirvana		misspelling
+перемтай на 30 секунд вперед	seek_forward			30	misspelling
+громкасть 40	volume_set			40	misspelling
+добавь в очеред believer	queue_add	track	Imagine Dragons - Believer		misspelling
+выкл звук	mute				misspelling
+вклчи звук	unmute				misspelling
+что щас играет	now_playing				misspelling
+постав лайк	like				misspelling
+перемишай	shuffle_on				misspelling
+повтарить трек	repeat_one				misspelling
+включи королб и шут	play	artist	Король и Шут		misspelling
+включи песни скриптонита	play	artist	Скриптонит		morphology
+поставь макса коржа	play	artist	Макс Корж		morphology
+включи что-нибудь земфиры	play	artist	Земфира		morphology
+включи у моргенштерна новый мерин	play	track	Моргенштерн - Новый Мерин		morphology
+песню монеточки включи	play	artist	Монеточка		morphology
+включи песню монеточки каждый раз	play	track	Монеточка - Каждый раз		morphology
+хочу послушать басту	play	artist	Баста		morphology
+поставь группу ленинград	play	artist	Ленинград		morphology
+что-нибудь из короля и шута	play	artist	Король и Шут		morphology
+включи песни сплина	play	artist	Сплин		morphology
+дай послушать зверей	play	artist	Звери		morphology
+включи цоя	play	artist	Кино		morphology
+песни виктора цоя	play	artist	Кино		morphology
+включи дрейка	play	artist	Drake		morphology
+включи эминема	play	artist	Eminem		morphology
+включи рианну	play	artist	Rihanna		morphology
+включи элджея	play	artist	Элджей		morphology
+включи оксимирона	play	artist	Oxxxymiron		morphology
+включи мота	play	artist	Мот		morphology
+включи дору	play	artist	Дора		morphology
+включи хаски	play	artist	Хаски		morphology
+включи моргена	play	artist	Моргенштерн		morphology
+включи аллу пугачёву	play	artist	Алла Пугачёва		morphology
+песни димы билана	play	artist	Дима Билан		morphology
+включи полину гагарину	play	artist	Полина Гагарина		morphology
+поставь песни земфиры	play	artist	Земфира		morphology
+давай послушаем скриптонита	play	artist	Скриптонит		morphology
+поставь песню макса барских берегу	play	track	Макс Барских - Берегу		morphology
+включи клаву коку	play	artist	Клава Кока		morphology
+включи тиму белорусских	play	artist	Тима Белорусских		morphology
+включи егора крида	play	artist	Егор Крид		morphology
+включи нойза мс	play	artist	Noize MC		morphology
+включи песни кровостока	play	artist	Кровосток		morphology
+поставь агату кристи	play	artist	Агата Кристи		morphology
+включи ддт	play	artist	ДДТ		morphology
+включи чайф	play	artist	Чайф		morphology
+включи наутилус помпилиус	play	artist	Наутилус Помпилиус		morphology
+включи руки вверх	play	artist	Руки Вверх		morphology
+включи песни ночных снайперов	play	artist	Ночные Снайперы		morphology
+включи мумий троля	play	artist	Мумий Тролль		morphology
+включи уикенд	play	artist	The Weeknd		translit
+поставь зе уикенд	play	artist	The Weeknd		translit
+включи билли айлиш	play	artist	Billie Eilish		translit
+включи бэд гай билли айлиш	play	track	Billie Eilish - bad guy		translit
+включи имеджин драгонс	play	artist	Imagine Dragons		translit
+включи тейлор свифт	play	artist	Taylor Swift		translit
+шейк ит оф тейлор свифт	play	track	Taylor Swift - Shake It Off		translit
+включи дрейк	play	artist	Drake		translit
+вруби год с план дрейк	play	track	Drake - God's Plan		translit
+эд ширан шейп оф ю	play	track	Ed Sheeran - Shape of You		translit
+дуа липа левитейтинг	play	track	Dua Lipa - Levitating		translit
+колдплей йеллоу	play	track	Coldplay - Yellow		translit
+линкин парк ин зе энд	play	track	Linkin Park - In the End		translit
+рамштайн дю хаст	play	track	Rammstein - Du Hast		translit
+нирвана смелс лайк тин спирит	play	track	Nirvana - Smells Like Teen Spirit		translit
+куин богемиан рапсоди	play	track	Queen - Bohemian Rhapsody		translit
+эминем луз юрселф	play	track	Eminem - Lose Yourself		translit
+пост малон серклз	play	track	Post Malone - Circles		translit
+ариана гранде севен рингс	play	track	Ariana Grande - 7 rings		translit
+лана дель рей саммертайм сэднесс	play	track	Lana Del Rey - Summertime Sadness		translit
+бруно марс аптаун фанк	play	track	Bruno Mars - Uptown Funk		translit
+манескин беггин	play	track	Måneskin - Beggin'		translit
+включи джастин бибер	play	artist	Justin Bieber		translit
+включи канье вест	play	artist	Kanye West		translit
+включи трэвис скотт	play	artist	Travis Scott		translit
+включи кендрик ламар	play	artist	Kendrick Lamar		translit
+включи джа халиб лейла	play	track	Jah Khalib - Лейла		translit
+включи литл биг	play	artist	Little Big		translit
+включи нойз мс	play	artist	Noize MC		translit
+фифти сент ин да клаб	play	track	50 Cent - In Da Club		translit
+тупак калифорния лав	play	track	2Pac - California Love		translit
+рианна амбрелла	play	track	Rihanna - Umbrella		translit
+включи доджа кэт	play	artist	Doja Cat		translit
+включи мияги и эндшпиль	play	artist	Miyagi & Эндшпиль		translit
+включи зиверт	play	artist	Zivert		translit
+включи оксимирон	play	artist	Oxxxymiron		translit
+play the weeknd	play	artist	The Weeknd		english
+next song	next				english
+turn it up	volume_up				english
+turn it down	volume_down				english
+pause	pause				english
+resume	resume				english
+stop the music	stop				english
+previous song	previous				english
+skip	next				english
+play billie eilish	play	artist	Billie Eilish		english
+play bad guy by billie eilish	play	track	Billie Eilish - bad guy		english
+mute	mute				english
+unmute	unmute				english
+like this song	like				english
+shuffle on	shuffle_on				english
+what's playing	now_playing				english
+set volume to 40	volume_set			40	english
+go back 30 seconds	seek_backward			30	english
+skip forward 20 seconds	seek_forward			20	english
+play my likes	play_likes				english
+repeat this song	repeat_one				english
+add blinding lights to queue	queue_add	track	The Weeknd - Blinding Lights		english
+play something similar	play_similar				english
+play taylor swift anti-hero	play	track	Taylor Swift - Anti-Hero		english
+громкость 70	volume_set			70	numbers
+сделай громкость на сто	volume_set			100	numbers
+громкость ноль	volume_set			0	numbers
+громкость на половину	volume_set			50	numbers
+громкость на максимум	volume_set			100	numbers
+громкость на двадцать пять процентов	volume_set			25	numbers
+перемотай на 1:30	seek_to			90	numbers
+перемотай на 2:15	seek_to			135	numbers
+прыгни на 1 минуту 20 секунд	seek_to			80	numbers
+перемотай на 15 секунд назад	seek_backward			15	numbers
+промотай вперёд на 90 секунд	seek_forward			90	numbers
+включи 25/17	play	artist	25/17		numbers
+включи двадцать пять семнадцать	play	artist	25/17		numbers
+включи 5 найс	play	artist	5'Nizza		numbers
+поставь пять найс солдат	play	track	5'Nizza - Солдат		numbers
+включи сто четыре	play	artist	104		numbers
+включи 104	play	artist	104		numbers
+блинк 182 включи	play	artist	Blink-182		numbers
+включи 50 cent in da club	play	track	50 Cent - In Da Club		numbers
+включи песню девяносто монеточки	play	track	Монеточка - 90		numbers
+включи ariana grande 7 rings	play	track	Ariana Grande - 7 rings		numbers
+поставь песню притон от скриптонита	play	track	Скриптонит - Притон		compound
+трек кукла колдуна короля и шута	play	track	Король и Шут - Кукла колдуна		compound
+включи песню хочу у земфиры	play	track	Земфира - Хочу		compound
+поставь трек новый мерин моргенштерна	play	track	Моргенштерн - Новый Мерин		compound
+включи blinding lights the weeknd	play	track	The Weeknd - Blinding Lights		compound
+поставь песню каждый раз монеточки	play	track	Монеточка - Каждый раз		compound
+включи альбом after hours the weeknd	play	album	The Weeknd - After Hours		compound
+включи альбом жить в кайф макса коржа	play	album	Макс Корж - Жить в кайф		compound
+поставь альбом группа крови кино	play	album	Кино - Группа крови		compound
+включи песню звезда по имени солнце группы кино	play	track	Кино - Звезда по имени Солнце		compound
+добавь в очередь песню лесник короля и шута	queue_add	track	Король и Шут - Лесник		compound
+поставь трек бэд гай билли айлиш	play	track	Billie Eilish - bad guy		compound
+включи экспонат ленинград	play	track	Ленинград - Экспонат		compound
+поставь песню сансара басты	play	track	Баста - Сансара		compound
+включи песню believer от imagine dragons	play	track	Imagine Dragons - Believer		compound
+включи альбом дом с нормальными явлениями скриптонита	play	album	Скриптонит - Дом с нормальными явлениями		compound
+после этого включи мотылёк макса коржа	queue_add	track	Макс Корж - Мотылёк		compound
+поставь песню районы кварталы группы звери	play	track	Звери - Районы-кварталы		compound
+включи плейлист chill vibes	play	playlist	Chill Vibes		compound
+включи песню выхода нет группы сплин	play	track	Сплин - Выхода нет		compound
+включи группу пауза	play	artist	Пауза		command_name
+включи группу стоп	play	artist	Стоп		command_name
+включи песню громче	play	track	Мот - Громче		command_name
+поставь группу дальше	play	artist	Дальше		command_name
+включи группу кино	play	artist	Кино		command_name
+поставь песни кино	play	artist	Кино		command_name
+включи звери	play	artist	Звери		command_name
+включи группу звери	play	artist	Звери		command_name
+включи группу брат	play	artist	Брат		command_name
+поставь ленинград	play	artist	Ленинград		command_name
+включи сплин	play	artist	Сплин		command_name
+поставь группу сплин	play	artist	Сплин		command_name
+включи песню кукушка кино	play	track	Кино - Кукушка		command_name
+включи плейлист дальше	play	playlist	Дальше		command_name
+поставь песню пауза тимы белорусских	play	track	Тима Белорусских - Пауза		command_name
+включи believer	play	track	Imagine Dragons - Believer		ambiguous
+включи сансару	play	track	Баста - Сансара		ambiguous
+включи хочу	play	track	Земфира - Хочу		ambiguous
+поставь starboy	play	track	The Weeknd - Starboy		ambiguous
+включи притон	play	track	Скриптонит - Притон		ambiguous
+включи лесник	play	track	Король и Шут - Лесник		ambiguous
+включи yellow	play	track	Coldplay - Yellow		ambiguous
+включи цепи	play	track	Скриптонит - Цепи		ambiguous
+включи lovely	play	track	Billie Eilish - Lovely		ambiguous
+включи кукушку	play	track	Кино - Кукушка		ambiguous
+какая погода	none				negative
+алиса привет	none				negative
+я сегодня устал	none				negative
+скриптонит вообще крутой	none				negative
+который час	none				negative
+расскажи анекдот	none				negative
+открой ютуб	none				negative
+позвони маме	none				negative
+бла бла бла	none				negative
+аааааа	none				negative
+ммм	none				negative
+эээ	none				negative
+ну	none				negative
+включи свет	none				negative
+поставь будильник на семь	none				negative
+как дела	none				negative
+я не люблю рок	none				negative
+спасибо	none				negative
+включи кондиционер	none				negative
+сколько стоит доллар	none				negative
+мне нравится билли айлиш	none				negative
+кино вчера смотрели было круто	none				negative
+пауза в разговоре затянулась	none				negative
+what time is it	none				negative
+turn on the lights	none				negative
+дальше будет хуже	none				negative
+Включи, пожалуйста, Скриптонита.	play	artist	Скриптонит		alice
+Поставь Земфиру.	play	artist	Земфира		alice
+Алиса, включи Монеточку!	play	artist	Монеточка		alice
+Следующая песня, пожалуйста.	next				alice
+Сделай погромче!	volume_up				alice
+Поставь на паузу.	pause				alice
+Включи песню «Притон» Скриптонита.	play	track	Скриптонит - Притон		alice
+Включи альбом «After Hours» исполнителя The Weeknd.	play	album	The Weeknd - After Hours		alice
+Включи Макса Коржа, пожалуйста!	play	artist	Макс Корж		alice
+Перемотай на 30 секунд вперёд.	seek_forward			30	alice
