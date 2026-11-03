@@ -1,13 +1,13 @@
 import { ApiError } from './api';
+import { trackedInvoke as invoke } from './diagnostics';
 import type { ImportKind, ImportRequest, SyncTarget } from './import-session';
 import { tauriStorage } from './tauri-storage';
 
-const STORE_KEY = 'import-sync';
+const LEGACY_KEY = 'import-sync';
 
 export const SYNC_INTERVAL_MS = 6 * 60 * 60 * 1000;
 export const SYNC_TICK_MS = 60 * 1000;
 export const SYNC_FIRST_TICK_MS = 20 * 1000;
-export const PLAYLIST_LIMIT = 500;
 
 const BACKOFF_START_MS = 15 * 60 * 1000;
 const HALTING_CODES = ['ym_token_invalid', 'target_missing'];
@@ -18,6 +18,7 @@ export interface SyncEntry {
   kind: ImportKind;
   request: ImportRequest;
   target: SyncTarget;
+  baseTitle: string;
   enabled: boolean;
   seen: string[];
   added: string[];
@@ -41,19 +42,28 @@ export interface SyncPulled {
   unmatched: number;
 }
 
-export async function loadSyncEntries(): Promise<SyncEntry[]> {
+export interface SyncFile {
+  ymToken: string | null;
+  entries: SyncEntry[];
+}
+
+export async function loadSyncFile(): Promise<SyncFile> {
+  void tauriStorage.removeItem(LEGACY_KEY);
   try {
-    const raw = await tauriStorage.getItem(STORE_KEY);
-    const parsed = raw ? JSON.parse(raw) : [];
-    return Array.isArray(parsed) ? parsed : [];
+    const raw = await invoke<string | null>('import_sync_load');
+    const parsed = raw ? JSON.parse(raw) : null;
+    return {
+      ymToken: typeof parsed?.ymToken === 'string' ? parsed.ymToken : null,
+      entries: Array.isArray(parsed?.entries) ? parsed.entries : [],
+    };
   } catch {
-    return [];
+    return { ymToken: null, entries: [] };
   }
 }
 
-export async function saveSyncEntries(entries: SyncEntry[]) {
+export async function saveSyncFile(file: SyncFile) {
   try {
-    await tauriStorage.setItem(STORE_KEY, JSON.stringify(entries));
+    await invoke('import_sync_store', { json: JSON.stringify(file) });
   } catch (error) {
     console.warn('[Import] could not store sync state', error);
   }
@@ -80,12 +90,6 @@ export function nextDue(entries: SyncEntry[], now: number): SyncEntry | null {
   );
   due.sort((a, b) => a.nextAt - b.nextAt);
   return due[0] ?? null;
-}
-
-export function withToken(request: ImportRequest, token: string): ImportRequest {
-  if (request.kind === 'ym_likes' || request.kind === 'ym_playlist') return { ...request, token };
-  if (request.kind === 'link') return { ...request, token };
-  return request;
 }
 
 export function agoOf(at: number, language: string): string {

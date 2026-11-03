@@ -1,18 +1,16 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useImportSyncStore } from '../../stores/import-sync';
 
-export function ImportSyncReconnect({ id }: { id: string }) {
+export function ImportSyncReconnect({ onSubmit }: { onSubmit: (token: string) => void }) {
   const { t } = useTranslation();
   const [token, setToken] = useState('');
-  const reconnect = useImportSyncStore((s) => s.reconnect);
 
   return (
     <form
       className="flex items-center gap-2"
       onSubmit={(event) => {
         event.preventDefault();
-        if (token.trim()) void reconnect(id, token);
+        if (token.trim()) onSubmit(token);
       }}
     >
       <input

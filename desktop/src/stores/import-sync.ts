@@ -7,31 +7,33 @@ import {
   backoffMs,
   errorCodeOf,
   isHalting,
-  loadSyncEntries,
+  loadSyncFile,
   nextDue,
   SYNC_FIRST_TICK_MS,
   SYNC_INTERVAL_MS,
   SYNC_TICK_MS,
   type SyncEntry,
-  saveSyncEntries,
-  withToken,
+  saveSyncFile,
 } from '../lib/import-sync';
-import { append, currentUrns, pull, roomFor } from '../lib/import-sync-run';
+import { needsToken, withToken } from '../lib/import-sync-plan';
+import { append, currentOf, isGone, pull, titleOf } from '../lib/import-sync-run';
 import { getIsPremium } from '../lib/premium-cache';
 import { useAuthStore } from './auth';
-import { isImportBusy, useImportStore } from './import';
+import { isImportBusy, lastImportToken, useImportStore } from './import';
 
 const STAGGER_MS = 17 * 60 * 1000;
 
 interface SyncState {
   entries: SyncEntry[];
+  ymToken: string | null;
   running: string | null;
   enabling: string | null;
-  enable: (history: HistoryEntry) => Promise<string | null>;
+  enable: (history: HistoryEntry, token?: string) => Promise<string | null>;
   disable: (id: string) => void;
   resume: (id: string) => void;
   syncNow: (id: string) => Promise<void>;
   reconnect: (id: string, token: string) => Promise<void>;
+  disconnectYm: () => void;
   acknowledge: () => void;
   forget: (id: string) => void;
 }
@@ -41,17 +43,36 @@ let loading: Promise<void> | null = null;
 
 export const useImportSyncStore = create<SyncState>((set, get) => ({
   entries: [],
+  ymToken: null,
   running: null,
   enabling: null,
   enable: enableEntry,
-  disable: (id) => patch(id, { enabled: false }),
+  disable: (id) => {
+    patch(id, { enabled: false });
+    dropTokenIfUnused();
+  },
   resume: (id) => patch(id, { enabled: true, error: null, failures: 0 }),
   syncNow: (id) => runEntry(id),
   reconnect: async (id, token) => {
-    const entry = find(id);
-    if (!entry) return;
-    patch(id, { request: withToken(entry.request, token), error: null, failures: 0, nextAt: 0 });
+    useImportSyncStore.setState((state) => ({
+      ymToken: token.trim(),
+      entries: state.entries.map((entry) =>
+        entry.error === 'ym_token_invalid'
+          ? { ...entry, error: null, failures: 0, nextAt: 0 }
+          : entry,
+      ),
+    }));
+    persist();
     await runEntry(id);
+  },
+  disconnectYm: () => {
+    set((state) => ({
+      ymToken: null,
+      entries: state.entries.map((entry) =>
+        needsToken(entry.request) ? { ...entry, enabled: false } : entry,
+      ),
+    }));
+    persist();
   },
   acknowledge: () => {
     if (!get().entries.some((entry) => entry.fresh > 0)) return;
@@ -60,6 +81,7 @@ export const useImportSyncStore = create<SyncState>((set, get) => ({
   },
   forget: (id) => {
     set((state) => ({ entries: state.entries.filter((entry) => entry.id !== id) }));
+    dropTokenIfUnused();
     persist();
   },
 }));
@@ -69,7 +91,8 @@ function find(id: string): SyncEntry | undefined {
 }
 
 function persist() {
-  void saveSyncEntries(useImportSyncStore.getState().entries);
+  const { ymToken, entries } = useImportSyncStore.getState();
+  void saveSyncFile({ ymToken, entries });
 }
 
 function patch(id: string, change: Partial<SyncEntry>) {
@@ -79,11 +102,30 @@ function patch(id: string, change: Partial<SyncEntry>) {
   persist();
 }
 
+function dropTokenIfUnused() {
+  const { entries, ymToken } = useImportSyncStore.getState();
+  const used = entries.some((entry) => entry.enabled && usesYm(entry));
+  if (ymToken && !used) {
+    useImportSyncStore.setState({ ymToken: null });
+    persist();
+  }
+}
+
+function usesYm(entry: SyncEntry): boolean {
+  return needsToken(entry.request) || entry.kind === 'yandex';
+}
+
+function live(entry: SyncEntry): SyncEntry {
+  const token = useImportSyncStore.getState().ymToken;
+  return usesYm(entry) ? { ...entry, request: withToken(entry.request, token) } : entry;
+}
+
 function ensureLoaded(): Promise<void> {
-  loading ??= loadSyncEntries().then((entries) => {
+  loading ??= loadSyncFile().then((file) => {
     useImportSyncStore.setState((state) => ({
+      ymToken: state.ymToken ?? file.ymToken,
       entries: [
-        ...entries.filter((entry) => !state.entries.some((now) => now.id === entry.id)),
+        ...file.entries.filter((saved) => !state.entries.some((now) => now.id === saved.id)),
         ...state.entries,
       ],
     }));
@@ -91,11 +133,14 @@ function ensureLoaded(): Promise<void> {
   return loading;
 }
 
-async function enableEntry(history: HistoryEntry): Promise<string | null> {
+async function enableEntry(history: HistoryEntry, given?: string): Promise<string | null> {
   await ensureLoaded();
   const source = history.sync;
   if (!source) return null;
+  const token = given?.trim() || lastImportToken() || useImportSyncStore.getState().ymToken;
+  if (needsToken(source.request) && !token) return 'ym_token_invalid';
   if (find(history.id)) {
+    if (token && usesYm(find(history.id) as SyncEntry)) setToken(token);
     useImportSyncStore.getState().resume(history.id);
     return null;
   }
@@ -105,6 +150,7 @@ async function enableEntry(history: HistoryEntry): Promise<string | null> {
     kind: history.kind,
     request: source.request,
     target: source.target,
+    baseTitle: history.title,
     enabled: true,
     seen: [],
     added: [],
@@ -116,17 +162,21 @@ async function enableEntry(history: HistoryEntry): Promise<string | null> {
     error: null,
     failures: 0,
   };
+  if (token && usesYm(base)) setToken(token);
   useImportSyncStore.setState({ enabling: history.id });
   try {
-    const current = await currentUrns(base);
-    const out = await pull(base, current, true);
+    const current = await currentOf(base);
+    const baseTitle =
+      source.target.mode === 'playlist' ? await titleOf(source.target.urns[0]) : history.title;
+    const out = await pull(live(base), current.urns, true);
     const now = Date.now();
     const stagger =
       (useImportSyncStore.getState().entries.length * STAGGER_MS) % (SYNC_INTERVAL_MS / 2);
     const entry: SyncEntry = {
       ...base,
+      baseTitle,
       seen: out.seen,
-      added: source.target.mode === 'playlist' ? current : [],
+      added: source.target.mode === 'playlist' ? current.urns : [],
       lastAt: now,
       nextAt: now + SYNC_INTERVAL_MS + stagger,
     };
@@ -134,10 +184,22 @@ async function enableEntry(history: HistoryEntry): Promise<string | null> {
     persist();
     return null;
   } catch (error) {
+    dropTokenIfUnused();
     return errorCodeOf(error);
   } finally {
     useImportSyncStore.setState({ enabling: null });
   }
+}
+
+function setToken(token: string) {
+  useImportSyncStore.setState({ ymToken: token });
+  persist();
+}
+
+function addChunk(id: string, urn: string) {
+  const entry = find(id);
+  if (entry?.target.mode !== 'playlist') return;
+  patch(id, { target: { mode: 'playlist', urns: [...entry.target.urns, urn] } });
 }
 
 async function runEntry(id: string) {
@@ -146,29 +208,31 @@ async function runEntry(id: string) {
   if (!entry || useImportSyncStore.getState().running) return;
   useImportSyncStore.setState({ running: id });
   try {
-    const current = await currentUrns(entry);
-    const out = await pull(entry, current, false);
-    const fit = out.to_add.slice(0, roomFor(entry, current));
-    await append(entry, fit);
-    const dropped = new Set(out.to_add.slice(fit.length));
+    const current = await currentOf(entry);
+    const out = await pull(live(entry), current.urns, false);
+    const owner = useAuthStore.getState().user?.urn ?? '';
+    await append(entry, current, out.to_add, owner, (urn) => addChunk(id, urn));
     patch(id, {
       seen: out.seen,
-      added: out.added.filter((urn) => !dropped.has(urn)),
-      latest: fit,
+      added: out.added,
+      latest: out.to_add,
       removed: out.removed,
       lastAt: Date.now(),
       nextAt: Date.now() + SYNC_INTERVAL_MS,
-      fresh: entry.fresh + fit.length,
-      error: dropped.size > 0 ? 'playlist_full' : null,
+      fresh: entry.fresh + out.to_add.length,
+      error: null,
       failures: 0,
     });
-    if (fit.length > 0) {
-      toast.success(i18n.t('importer.sync.toast', { count: fit.length, title: entry.title }), {
-        id: `import-sync-${id}`,
-      });
+    if (out.to_add.length > 0) {
+      toast.success(
+        i18n.t('importer.sync.toast', { count: out.to_add.length, title: entry.title }),
+        {
+          id: `import-sync-${id}`,
+        },
+      );
     }
   } catch (error) {
-    const code = errorCodeOf(error);
+    const code = isGone(error) ? 'target_missing' : errorCodeOf(error);
     if (code === 'session_expired') noteAuthGap();
     const failures = entry.failures + 1;
     patch(id, {

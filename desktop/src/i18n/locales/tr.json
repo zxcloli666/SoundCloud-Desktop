@@ -2673,8 +2673,7 @@
       "playlist_not_synced": "Çalma listesi hâlâ SoundCloud ile eşitleniyor",
       "save_failed": "Kaydedilemedi (hata {{status}})",
       "unknown": "Bir şeyler ters gitti",
-      "target_missing": "Hedef çalma listesi artık yok",
-      "playlist_full": "Çalma listesi dolu (500 parça), yeni parçalar eklenmiyor"
+      "target_missing": "Hedef çalma listesi artık yok"
     },
     "hint": {
       "session_expired": "Yeniden giriş yapın, eşleşen parçalar burada kalır",
@@ -2711,7 +2710,9 @@
       "new_other": "+{{count}} yeni",
       "now": "Şimdi eşitle",
       "toast_one": "{{title}} listesine +{{count}} parça eşitlendi",
-      "toast_other": "{{title}} listesine +{{count}} parça eşitlendi"
+      "toast_other": "{{title}} listesine +{{count}} parça eşitlendi",
+      "ymConnected": "Yandex Music bağlı",
+      "disconnectYm": "Bağlantıyı kes"
     }
   }
 }

@@ -2592,8 +2592,7 @@
       "playlist_not_synced": "플레이리스트가 아직 SoundCloud와 동기화 중입니다",
       "save_failed": "저장할 수 없습니다 (오류 {{status}})",
       "unknown": "문제가 발생했습니다",
-      "target_missing": "대상 플레이리스트가 없어졌습니다",
-      "playlist_full": "플레이리스트가 가득 찼습니다 (500곡), 새 트랙은 추가되지 않습니다"
+      "target_missing": "대상 플레이리스트가 없어졌습니다"
     },
     "hint": {
       "session_expired": "다시 로그인하세요. 매칭된 트랙은 그대로 남습니다",
@@ -2628,7 +2627,9 @@
       "last": "동기화: {{when}}",
       "new_other": "새 곡 +{{count}}",
       "now": "지금 동기화",
-      "toast_other": "{{title}}에 {{count}}곡 동기화됨"
+      "toast_other": "{{title}}에 {{count}}곡 동기화됨",
+      "ymConnected": "Yandex Music 연결됨",
+      "disconnectYm": "연결 해제"
     }
   }
 }

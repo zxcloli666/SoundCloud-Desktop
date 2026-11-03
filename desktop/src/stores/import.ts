@@ -32,6 +32,7 @@ import {
   saveSession,
   type TrackMap,
 } from '../lib/import-session';
+import { syncSourceOf, tokenOf } from '../lib/import-sync-plan';
 import { queryClient } from '../lib/query-client';
 import { fetchTracksByUrns } from '../lib/soundwave';
 import { useAuthStore } from './auth';
@@ -75,6 +76,7 @@ export interface ImportPrefill {
 
 export interface ImportResult {
   playlist: ScPlaylist | null;
+  playlistUrns: string[];
   mode: ImportDestination['mode'];
   count: number;
   pendingState: ImportPendingState | null;
@@ -283,6 +285,7 @@ async function writeDestination(runId: number): Promise<ImportResult | null> {
     );
     return {
       playlist: null,
+      playlistUrns: [],
       mode: 'likes',
       count: urns.length,
       pendingState: null,
@@ -296,6 +299,7 @@ async function writeDestination(runId: number): Promise<ImportResult | null> {
     await addToPlaylist(destination.playlistUrn, urns, onStep, isActive);
     return {
       playlist: null,
+      playlistUrns: [destination.playlistUrn],
       mode: 'existing',
       count: urns.length,
       pendingState: null,
@@ -319,6 +323,7 @@ async function writeDestination(runId: number): Promise<ImportResult | null> {
   if (saved.failure) throw saved.failure;
   return {
     playlist: saved.saved[0] ?? null,
+    playlistUrns: saved.saved.map((playlist) => playlist.urn),
     mode: 'create',
     count: urns.length,
     pendingState: pendingStateOf(saved.waiting, saved.needsRelogin),
@@ -328,18 +333,19 @@ async function writeDestination(runId: number): Promise<ImportResult | null> {
   };
 }
 
-async function syncSourceOf(
-  result: ImportResult,
-  destination: ImportDestination,
-): Promise<SyncSource | null> {
+async function historySyncSource(result: ImportResult): Promise<SyncSource | null> {
   if (!lastRequest) return null;
   const syncable = await invoke<boolean>('import_syncable', { request: lastRequest }).catch(
     () => false,
   );
   if (!syncable) return null;
-  if (result.mode === 'likes') return { request: lastRequest, target: { mode: 'likes' } };
-  const urn = result.playlist?.urn ?? (result.mode === 'existing' ? destination.playlistUrn : null);
-  return urn ? { request: lastRequest, target: { mode: 'playlist', urn } } : null;
+  if (result.mode === 'likes') return syncSourceOf(lastRequest, { mode: 'likes' });
+  if (result.playlistUrns.length === 0) return null;
+  return syncSourceOf(lastRequest, { mode: 'playlist', urns: result.playlistUrns });
+}
+
+export function lastImportToken(): string | null {
+  return lastRequest ? tokenOf(lastRequest) : null;
 }
 
 async function saveRun() {
@@ -361,7 +367,7 @@ async function saveRun() {
       found,
       request: lastRequest ? rerunnable(lastRequest) : null,
       playlistUrn: result.playlist?.urn ?? null,
-      sync: await syncSourceOf(result, state.destination),
+      sync: await historySyncSource(result),
     });
     void clearSession();
     useImportStore.setState({ phase: 'done', result: { ...result, historyId: id }, history });

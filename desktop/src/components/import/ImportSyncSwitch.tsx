@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { Loader2 } from '../../lib/icons';
@@ -6,6 +7,7 @@ import { usePremium } from '../../lib/premium-cache';
 import { useImportSyncStore } from '../../stores/import-sync';
 import { LockedToggle, PremiumBadge, Toggle } from '../settings/primitives';
 import { StarCta } from '../star-moments/StarCta';
+import { ImportSyncReconnect } from './ImportSyncReconnect';
 import { ImportSyncStatus } from './ImportSyncStatus';
 
 export function ImportSyncSwitch({ history }: { history: HistoryEntry }) {
@@ -16,19 +18,23 @@ export function ImportSyncSwitch({ history }: { history: HistoryEntry }) {
   const enable = useImportSyncStore((s) => s.enable);
   const disable = useImportSyncStore((s) => s.disable);
   const on = entry?.enabled === true;
+  const [askToken, setAskToken] = useState(false);
 
   if (!history.sync) return null;
 
-  const toggle = async () => {
-    if (on) {
-      disable(history.id);
+  const turnOn = async (token?: string) => {
+    const code = await enable(history, token);
+    if (code === 'ym_token_invalid' && !token) {
+      setAskToken(true);
       return;
     }
-    const code = await enable(history);
+    setAskToken(false);
     if (code) {
       toast.error(t(`importer.err.${code}`, { defaultValue: t('importer.err.unknown') }));
     }
   };
+
+  const toggle = () => (on ? disable(history.id) : void turnOn());
 
   return (
     <div className="space-y-1.5">
@@ -43,7 +49,7 @@ export function ImportSyncSwitch({ history }: { history: HistoryEntry }) {
             checked={on}
             disabled={enabling}
             label={t('importer.sync.keep')}
-            onChange={() => void toggle()}
+            onChange={toggle}
           />
         ) : (
           <>
@@ -52,6 +58,7 @@ export function ImportSyncSwitch({ history }: { history: HistoryEntry }) {
           </>
         )}
       </div>
+      {askToken && <ImportSyncReconnect onSubmit={(token) => void turnOn(token)} />}
       {entry && on && <ImportSyncStatus entry={entry} />}
     </div>
   );

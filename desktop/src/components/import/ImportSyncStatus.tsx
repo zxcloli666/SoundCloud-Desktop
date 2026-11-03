@@ -15,6 +15,7 @@ export function ImportSyncStatus({ entry }: { entry: SyncEntry }) {
   const running = useImportSyncStore((s) => s.running === entry.id);
   const busy = useImportSyncStore((s) => s.running !== null);
   const syncNow = useImportSyncStore((s) => s.syncNow);
+  const reconnect = useImportSyncStore((s) => s.reconnect);
 
   if (!entry.enabled) return null;
 
@@ -31,12 +32,12 @@ export function ImportSyncStatus({ entry }: { entry: SyncEntry }) {
     return (
       <div className="space-y-1.5">
         <p className="text-[11.5px] text-bad">{t('importer.sync.needsReconnect')}</p>
-        <ImportSyncReconnect id={entry.id} />
+        <ImportSyncReconnect onSubmit={(token) => void reconnect(entry.id, token)} />
       </div>
     );
   }
 
-  const failed = entry.error && entry.error !== 'playlist_full';
+  const failed = entry.error;
 
   return (
     <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11.5px] text-ink-45">
@@ -51,9 +52,6 @@ export function ImportSyncStatus({ entry }: { entry: SyncEntry }) {
         </span>
       ) : (
         <span>{t('importer.sync.last', { when: agoOf(entry.lastAt, i18n.language) })}</span>
-      )}
-      {entry.error === 'playlist_full' && (
-        <span className="text-bad">{t('importer.err.playlist_full')}</span>
       )}
       {entry.fresh > 0 && (
         <span className="rounded-full bg-accent/15 px-2 py-0.5 font-semibold text-accent">

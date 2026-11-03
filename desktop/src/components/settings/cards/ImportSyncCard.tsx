@@ -13,6 +13,8 @@ export function ImportSyncCard() {
     const entries = useImportSyncStore((s) => s.entries);
     const resume = useImportSyncStore((s) => s.resume);
     const disable = useImportSyncStore((s) => s.disable);
+    const connected = useImportSyncStore((s) => s.ymToken !== null);
+    const disconnectYm = useImportSyncStore((s) => s.disconnectYm);
     const acknowledge = useImportSyncStore((s) => s.acknowledge);
 
     useEffect(() => acknowledge, [acknowledge]);
@@ -44,6 +46,17 @@ export function ImportSyncCard() {
                     )}
                 </Row>
             ))}
+            {connected && (
+                <Row title={t('importer.sync.ymConnected')}>
+                    <button
+                        type="button"
+                        onClick={disconnectYm}
+                        className="px-4 py-2 rounded-xl text-[12.5px] font-semibold bg-ink/[0.06] text-ink-70 hover:bg-ink/[0.1] border border-ink/[0.06] transition-all cursor-pointer"
+                    >
+                        {t('importer.sync.disconnectYm')}
+                    </button>
+                </Row>
+            )}
         </Card>
     );
 }

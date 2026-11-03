@@ -1647,8 +1647,7 @@
       "playlist_not_synced": "The playlist is still syncing with SoundCloud",
       "save_failed": "Could not save (error {{status}})",
       "unknown": "Something went wrong",
-      "target_missing": "The target playlist is gone",
-      "playlist_full": "The playlist is full (500 tracks), new tracks are not added"
+      "target_missing": "The target playlist is gone"
     },
     "hint": {
       "session_expired": "Sign in again, the matched tracks stay here",
@@ -1685,7 +1684,9 @@
       "new_other": "+{{count}} new",
       "now": "Sync now",
       "toast_one": "+{{count}} track synced into {{title}}",
-      "toast_other": "+{{count}} tracks synced into {{title}}"
+      "toast_other": "+{{count}} tracks synced into {{title}}",
+      "ymConnected": "Yandex Music is connected",
+      "disconnectYm": "Disconnect"
     }
   },
   "update": {

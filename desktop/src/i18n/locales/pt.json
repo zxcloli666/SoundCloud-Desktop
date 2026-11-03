@@ -2736,8 +2736,7 @@
       "playlist_not_synced": "A playlist ainda está sincronizando com o SoundCloud",
       "save_failed": "Não foi possível salvar (erro {{status}})",
       "unknown": "Algo deu errado",
-      "target_missing": "A playlist de destino não existe mais",
-      "playlist_full": "A playlist está cheia (500 faixas), as novas faixas não são adicionadas"
+      "target_missing": "A playlist de destino não existe mais"
     },
     "hint": {
       "session_expired": "Entre novamente, as faixas encontradas continuam aqui",
@@ -2776,7 +2775,9 @@
       "now": "Sincronizar agora",
       "toast_one": "+{{count}} faixa sincronizada em {{title}}",
       "toast_many": "+{{count}} faixas sincronizadas em {{title}}",
-      "toast_other": "+{{count}} faixas sincronizadas em {{title}}"
+      "toast_other": "+{{count}} faixas sincronizadas em {{title}}",
+      "ymConnected": "Yandex Music conectado",
+      "disconnectYm": "Desconectar"
     }
   }
 }

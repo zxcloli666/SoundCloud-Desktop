@@ -9,6 +9,7 @@ mod run;
 mod source;
 mod sync;
 mod sync_plan;
+mod sync_store;
 mod spotify;
 mod text;
 mod ym;
@@ -23,3 +24,4 @@ mod sync_live_tests;
 
 pub use commands::*;
 pub use sync::*;
+pub use sync_store::*;

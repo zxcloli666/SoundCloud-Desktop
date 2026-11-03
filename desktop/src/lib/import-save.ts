@@ -6,12 +6,12 @@ import {
   rememberOwnedPlaylists,
 } from './import-owned-playlists';
 import { loadPendingCreates, rememberPendingCreate } from './import-pending-playlists';
+import { chunkTitle, PLAYLIST_LIMIT } from './import-sync-plan';
 import { setTrackLiked } from './like-toggle';
 import { editPlaylistTracks } from './playlist-edits';
 import { queryClient } from './query-client';
 import { fetchSyncStatus, type PlaylistCreate } from './sync-status';
 
-const PLAYLIST_TRACK_LIMIT = 500;
 const PLAYLIST_CONFLICT_RETRIES = 3;
 const PLAYLIST_CONFLICT_PAUSE_SEC = 5;
 
@@ -66,10 +66,6 @@ function chunkArray<T>(items: T[], size: number): T[][] {
   return chunks;
 }
 
-function chunkTitle(base: string, index: number): string {
-  return index === 0 ? base : `${base} ${index + 1}`;
-}
-
 function chunkIndexOf(base: string, title: string): number | null {
   if (title === base) return 0;
   if (!title.startsWith(`${base} `)) return null;
@@ -94,11 +90,7 @@ function wait(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function findExistingPlaylists(
-  base: string,
-  likes: boolean,
-  owned: Set<string>,
-): Promise<ScPlaylist[]> {
+export async function listMyPlaylists(): Promise<ScPlaylist[]> {
   const all: ScPlaylist[] = [];
 
   for (let page = 0; ; page++) {
@@ -108,7 +100,15 @@ async function findExistingPlaylists(
     all.push(...(res.collection ?? []));
     if (!res.has_more) break;
   }
+  return all;
+}
 
+async function findExistingPlaylists(
+  base: string,
+  likes: boolean,
+  owned: Set<string>,
+): Promise<ScPlaylist[]> {
+  const all = await listMyPlaylists();
   return all.filter(
     (playlist) => chunkIndexOf(base, playlist.title) != null && (likes || owned.has(playlist.urn)),
   );
@@ -202,7 +202,7 @@ export async function saveChunks(plan: SavePlan): Promise<SaveResult | null> {
   await rememberOwnedPlaylists(plan.owner, pending.createdUrns);
   if (!plan.isActive()) return null;
 
-  const chunks = chunkArray(plan.urns, PLAYLIST_TRACK_LIMIT);
+  const chunks = chunkArray(plan.urns, PLAYLIST_LIMIT);
   const saved: ScPlaylist[] = [];
   const waiting: ImportPendingCreate[] = [];
   let failure: unknown = null;
@@ -246,6 +246,20 @@ export async function saveChunks(plan: SavePlan): Promise<SaveResult | null> {
   }
 
   return { saved, waiting, needsRelogin: sync?.needsRelogin ?? false, failure };
+}
+
+export async function createChunkPlaylist(
+  owner: string,
+  title: string,
+  urns: string[],
+): Promise<ScPlaylist | null> {
+  const result = await createPlaylist(title, urns);
+  if (!isScPlaylist(result)) {
+    await rememberPendingCreate(owner, title, result.targetUrn);
+    return null;
+  }
+  await rememberOwnedPlaylists(owner, [result.urn]);
+  return result;
 }
 
 export async function likeTracks(

@@ -1,4 +1,5 @@
 import type { Track } from '../stores/player';
+import { cleanHistory } from './import-sync-plan';
 import { tauriStorage } from './tauri-storage';
 
 const SESSION_KEY = 'import-session';
@@ -38,7 +39,7 @@ export interface StoredSession {
   at: number;
 }
 
-export type SyncTarget = { mode: 'likes' } | { mode: 'playlist'; urn: string };
+export type SyncTarget = { mode: 'likes' } | { mode: 'playlist'; urns: string[] };
 
 export interface SyncSource {
   request: ImportRequest;
@@ -84,7 +85,7 @@ export const clearSession = () => tauriStorage.removeItem(SESSION_KEY);
 
 export async function loadHistory(): Promise<HistoryEntry[]> {
   const entries = await readJson<HistoryEntry[]>(HISTORY_KEY);
-  return Array.isArray(entries) ? entries : [];
+  return Array.isArray(entries) ? cleanHistory(entries) : [];
 }
 
 export function rerunnable(request: ImportRequest): ImportRequest | null {

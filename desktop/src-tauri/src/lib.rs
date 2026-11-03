@@ -334,6 +334,8 @@ pub fn run() {
             import::import_notify,
             import::import_sync_pull,
             import::import_syncable,
+            import::import_sync_load,
+            import::import_sync_store,
             local_library::local_library_scan,
             local_library::local_library_missing,
             local_library::local_library_forget,

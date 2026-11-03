@@ -1685,8 +1685,7 @@
       "playlist_not_synced": "Плейлист ещё синхронизируется с SoundCloud",
       "save_failed": "Не удалось сохранить (ошибка {{status}})",
       "unknown": "Что-то пошло не так",
-      "target_missing": "Целевого плейлиста больше нет",
-      "playlist_full": "Плейлист заполнен (500 треков), новые треки не добавляются"
+      "target_missing": "Целевого плейлиста больше нет"
     },
     "hint": {
       "session_expired": "Войдите заново, найденные треки останутся здесь",
@@ -1727,7 +1726,9 @@
       "toast_one": "+{{count}} трек добавлен в «{{title}}»",
       "toast_few": "+{{count}} трека добавлено в «{{title}}»",
       "toast_many": "+{{count}} треков добавлено в «{{title}}»",
-      "toast_other": "+{{count}} треков добавлено в «{{title}}»"
+      "toast_other": "+{{count}} треков добавлено в «{{title}}»",
+      "ymConnected": "Яндекс Музыка подключена",
+      "disconnectYm": "Отключить"
     }
   },
   "update": {
