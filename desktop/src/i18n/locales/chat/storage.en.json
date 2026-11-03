@@ -1,0 +1,49 @@
+{
+  "title": "Storage",
+  "entry": "Image storage",
+  "entryDesc": "See and delete the images you sent",
+  "used": "{{used}} of {{quota}}",
+  "empty": "You have not sent any images",
+  "failed": "Could not load storage",
+  "retry": "Retry",
+  "locked": "Storage opens with STAR",
+  "order": {
+    "new": "Newest",
+    "old": "Oldest",
+    "big": "Biggest"
+  },
+  "filter": {
+    "all": "All chats",
+    "gone": "Chat is gone"
+  },
+  "select": {
+    "all": "Select all",
+    "clear": "Clear selection"
+  },
+  "delete": {
+    "one": "Delete",
+    "all": "Delete all my images",
+    "warn": "The image disappears for everyone in every chat.",
+    "warnAll": "All your images disappear for everyone in every chat.",
+    "word": "DELETE",
+    "type": "Type {{word}} to confirm",
+    "confirm": "Confirm",
+    "cancel": "Cancel"
+  },
+  "undo": {
+    "action": "Undo",
+    "restored": "Restored",
+    "missed": "Some images could not be restored"
+  },
+  "cache": {
+    "title": "Cache on this device",
+    "clear": "Clear cache",
+    "freed": "Freed {{size}}"
+  },
+  "files_one": "{{count}} image",
+  "files_other": "{{count}} images",
+  "picked_one": "{{count}} selected",
+  "picked_other": "{{count}} selected",
+  "deleted_one": "{{count}} image deleted",
+  "deleted_other": "{{count}} images deleted"
+}

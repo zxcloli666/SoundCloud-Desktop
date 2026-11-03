@@ -1,5 +1,16 @@
 import { trackedInvoke as invoke } from '../diagnostics';
 import type {
+  DeleteAnswer,
+  MediaId,
+  MediaSelection,
+  MediaUsage,
+  MinePage,
+  MineQuery,
+  RestoreAnswer,
+  UploadView,
+  UrlsAnswer,
+} from './media-types';
+import type {
   ChatConfig,
   ChatRequest,
   ChatSettings,
@@ -124,6 +135,22 @@ export const chatBridge = {
   roomSettings: (code: string, patch: RoomSettingsPatch) =>
     invoke<void>('chat_room_settings', { code, patch }),
   roomSuggest: (code: string, track: Embed) => invoke<void>('chat_room_suggest', { code, track }),
+
+  mediaUsage: () => invoke<MediaUsage>('chat_media_usage'),
+  mediaMine: (query: MineQuery) => invoke<MinePage>('chat_media_mine', { query }),
+  mediaDelete: (selection: MediaSelection) =>
+    invoke<DeleteAnswer>('chat_media_delete', { selection }),
+  mediaRestore: (selection: MediaSelection) =>
+    invoke<RestoreAnswer>('chat_media_restore', { selection }),
+  mediaUrls: (conversationId: ConvId | null, ids: MediaId[]) =>
+    invoke<UrlsAnswer>('chat_media_urls', { conversationId, ids }),
+  mediaAttach: (conversationId: ConvId, paths: string[]) =>
+    invoke<UploadView[]>('chat_media_attach', { conversationId, paths }),
+  mediaUploads: () => invoke<UploadView[]>('chat_media_uploads'),
+  mediaUploadRetry: (id: string) => invoke<void>('chat_media_upload_retry', { id }),
+  mediaUploadCancel: (id: string) => invoke<void>('chat_media_upload_cancel', { id }),
+  mediaCacheSize: () => invoke<number>('chat_media_cache_size'),
+  mediaCacheClear: () => invoke<number>('chat_media_cache_clear'),
 
   logout: () => invoke<void>('chat_logout'),
   notifyPrefs: (prefs: NotifyPrefs | null) => invoke<NotifyPrefs>('chat_notify_prefs', { prefs }),

@@ -60,6 +60,7 @@ import {
   Heart as _Heart,
   Home as _Home,
   Image as _Image,
+  Images as _Images,
   Info as _Info,
   Keyboard as _Keyboard,
   LayoutDashboard as _LayoutDashboard,
@@ -216,6 +217,7 @@ export const Headphones = memo(_Headphones);
 export const Heart = memo(_Heart);
 export const Home = memo(_Home);
 export const ImageIcon = memo(_Image);
+export const Images = memo(_Images);
 export const Info = memo(_Info);
 export const Keyboard = memo(_Keyboard);
 export const LifeBuoy = memo(_LifeBuoy);

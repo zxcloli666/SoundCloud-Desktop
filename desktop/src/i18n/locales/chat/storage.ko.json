@@ -1,0 +1,46 @@
+{
+  "title": "저장 공간",
+  "entry": "이미지 저장 공간",
+  "entryDesc": "보낸 이미지를 확인하고 삭제해요",
+  "used": "{{quota}} 중 {{used}}",
+  "empty": "보낸 이미지가 없어요",
+  "failed": "저장 공간을 불러오지 못했어요",
+  "retry": "다시 시도",
+  "locked": "저장 공간은 STAR로 열려요",
+  "order": {
+    "new": "최신순",
+    "old": "오래된순",
+    "big": "큰 순"
+  },
+  "filter": {
+    "all": "모든 채팅",
+    "gone": "사라진 채팅"
+  },
+  "select": {
+    "all": "모두 선택",
+    "clear": "선택 해제"
+  },
+  "delete": {
+    "one": "삭제",
+    "all": "내 이미지 모두 삭제",
+    "warn": "이미지는 모든 채팅에서 모두에게 사라져요.",
+    "warnAll": "내 모든 이미지가 모든 채팅에서 모두에게 사라져요.",
+    "word": "삭제",
+    "type": "확인하려면 {{word}}를 입력하세요",
+    "confirm": "확인",
+    "cancel": "취소"
+  },
+  "undo": {
+    "action": "되돌리기",
+    "restored": "복원됨",
+    "missed": "일부 이미지는 복원하지 못했어요"
+  },
+  "cache": {
+    "title": "이 기기의 캐시",
+    "clear": "캐시 지우기",
+    "freed": "{{size}} 확보"
+  },
+  "files_other": "이미지 {{count}}장",
+  "picked_other": "{{count}}개 선택",
+  "deleted_other": "이미지 {{count}}장 삭제됨"
+}

@@ -1,4 +1,5 @@
 import type { Track } from '../../stores/player';
+import type { RoomCover, RoomImagesPolicy } from '../chat/media-types';
 
 export const ROOM_CAPACITY = 10;
 
@@ -28,6 +29,12 @@ export interface RoomMute {
   untilMs: number;
 }
 
+export interface RoomPerks {
+  starHost: boolean;
+  capacity: number;
+  modsMax: number;
+}
+
 export interface RoomView {
   code: string;
   hostId: string;
@@ -46,6 +53,9 @@ export interface RoomView {
   slowModeS?: number;
   links?: boolean;
   banned?: string[];
+  perks?: RoomPerks;
+  cover?: RoomCover | null;
+  roomImages?: RoomImagesPolicy;
 }
 
 export interface OpenRoomTrack {
@@ -63,6 +73,8 @@ export interface OpenRoom {
   listeners: number;
   capacity: number;
   full: boolean;
+  starHost?: boolean;
+  cover?: RoomCover | null;
   createdAt: number;
 }
 

@@ -1,0 +1,49 @@
+{
+  "title": "Depolama",
+  "entry": "Görsel depolama",
+  "entryDesc": "Gönderdiğiniz görselleri görün ve silin",
+  "used": "{{quota}} içinde {{used}}",
+  "empty": "Henüz görsel göndermediniz",
+  "failed": "Depolama yüklenemedi",
+  "retry": "Tekrar dene",
+  "locked": "Depolama STAR ile açılır",
+  "order": {
+    "new": "En yeni",
+    "old": "En eski",
+    "big": "En büyük"
+  },
+  "filter": {
+    "all": "Tüm sohbetler",
+    "gone": "Sohbet yok"
+  },
+  "select": {
+    "all": "Tümünü seç",
+    "clear": "Seçimi kaldır"
+  },
+  "delete": {
+    "one": "Sil",
+    "all": "Tüm görsellerimi sil",
+    "warn": "Görsel tüm sohbetlerde herkes için kaybolur.",
+    "warnAll": "Tüm görselleriniz tüm sohbetlerde herkes için kaybolur.",
+    "word": "SİL",
+    "type": "Onaylamak için {{word}} yazın",
+    "confirm": "Onayla",
+    "cancel": "İptal"
+  },
+  "undo": {
+    "action": "Geri al",
+    "restored": "Geri yüklendi",
+    "missed": "Bazı görseller geri yüklenemedi"
+  },
+  "cache": {
+    "title": "Bu cihazdaki önbellek",
+    "clear": "Önbelleği temizle",
+    "freed": "{{size}} boşaldı"
+  },
+  "files_one": "{{count}} görsel",
+  "files_other": "{{count}} görsel",
+  "picked_one": "{{count}} seçili",
+  "picked_other": "{{count}} seçili",
+  "deleted_one": "{{count}} görsel silindi",
+  "deleted_other": "{{count}} görsel silindi"
+}

@@ -1,0 +1,80 @@
+{
+  "attach": {
+    "title": "이미지 추가",
+    "drop": "이미지를 놓아 보내기",
+    "dropLocked": "이미지는 STAR가 필요해요",
+    "locked": "이미지는 STAR 혜택이에요"
+  },
+  "star": {
+    "title": "STAR로 이미지 보내기",
+    "desc": "최대 10장 앨범과 1GB 개인 저장 공간. 보기는 누구나 가능해요.",
+    "cta": "STAR 시작"
+  },
+  "tray": {
+    "sending": "{{total}}개 중 {{done}}개 전송 중",
+    "waiting": "연결을 기다리는 중",
+    "resumed": "전송을 다시 시작했어요",
+    "sent": "전송됨",
+    "retry": "다시 시도",
+    "cancel": "취소",
+    "cancelAll": "모두 취소"
+  },
+  "bubble": {
+    "deleted": "삭제된 이미지",
+    "lost": "이미지를 불러올 수 없어요",
+    "loading": "불러오는 중",
+    "failed": "불러오지 못했어요",
+    "retry": "다시 시도",
+    "open": "열기"
+  },
+  "gallery": {
+    "tab": "이미지",
+    "empty": "아직 이미지가 없어요",
+    "emptyHint": "이 채팅의 이미지가 여기에 표시돼요",
+    "failed": "이미지를 불러오지 못했어요",
+    "retry": "다시 시도",
+    "locked": "이미지는 지금 꺼져 있어요"
+  },
+  "viewer": {
+    "close": "닫기",
+    "prev": "이전",
+    "next": "다음",
+    "zoomIn": "확대",
+    "zoomOut": "축소",
+    "save": "저장"
+  },
+  "errors": {
+    "generic": "이미지를 보내지 못했어요",
+    "quota_exceeded": "이미지 저장 공간이 가득 찼어요",
+    "media_star_required": "이미지 전송에는 STAR가 필요해요",
+    "room_star_required": "이 방의 이미지는 STAR 호스트가 필요해요",
+    "media_uploads_paused": "이미지 업로드가 잠시 중단됐어요",
+    "media_missing": "일부 이미지가 사라졌어요. 다시 보내주세요",
+    "send_limited": "이미지가 너무 많아요. 잠시 기다려주세요",
+    "not_member": "이 채팅에 참여하고 있지 않아요",
+    "unavailable": "여기서는 이미지를 보낼 수 없어요",
+    "invalid": "이 이미지는 보낼 수 없어요",
+    "offline": "서버에 연결할 수 없어요",
+    "busy": "서버가 바빠요. 잠시 후 다시 시도해주세요",
+    "too_big": "이미지가 너무 커요",
+    "unsupported": "지원하지 않는 형식이에요",
+    "heic": "HEIC는 지원하지 않아요. JPEG나 PNG를 사용하세요"
+  },
+  "room": {
+    "capacity": "{{count}}명",
+    "capacityStar": "STAR는 {{count}}명",
+    "cover": "방 커버",
+    "coverPick": "커버 선택",
+    "coverTrack": "트랙 아트워크",
+    "coverClear": "커버 제거",
+    "coverLocked": "커버는 STAR 호스트가 필요해요",
+    "images": "채팅 이미지",
+    "imagesMembers": "멤버",
+    "imagesMods": "관리자",
+    "imagesOff": "없음",
+    "imagesLocked": "이미지는 STAR 호스트가 필요해요"
+  },
+  "album": {
+    "count_other": "이미지 {{count}}장"
+  }
+}

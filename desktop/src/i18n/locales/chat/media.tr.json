@@ -1,0 +1,81 @@
+{
+  "attach": {
+    "title": "Görsel ekle",
+    "drop": "Göndermek için görselleri bırakın",
+    "dropLocked": "Görseller STAR gerektirir",
+    "locked": "Görseller STAR ayrıcalığı"
+  },
+  "star": {
+    "title": "STAR ile görsel gönderin",
+    "desc": "10 görsele kadar albümler ve 1 GB kişisel depolama. Herkes görüntüleyebilir.",
+    "cta": "STAR'a geç"
+  },
+  "tray": {
+    "sending": "{{total}} görselden {{done}} gönderiliyor",
+    "waiting": "Bağlantı bekleniyor",
+    "resumed": "Gönderim devam ediyor",
+    "sent": "Gönderildi",
+    "retry": "Tekrar dene",
+    "cancel": "İptal",
+    "cancelAll": "Tümünü iptal et"
+  },
+  "bubble": {
+    "deleted": "Görsel silindi",
+    "lost": "Görsel kullanılamıyor",
+    "loading": "Yükleniyor",
+    "failed": "Yüklenemedi",
+    "retry": "Tekrar dene",
+    "open": "Aç"
+  },
+  "gallery": {
+    "tab": "Görseller",
+    "empty": "Henüz görsel yok",
+    "emptyHint": "Bu sohbetteki görseller burada görünür",
+    "failed": "Görseller yüklenemedi",
+    "retry": "Tekrar dene",
+    "locked": "Görseller şimdilik kapalı"
+  },
+  "viewer": {
+    "close": "Kapat",
+    "prev": "Önceki",
+    "next": "Sonraki",
+    "zoomIn": "Yakınlaştır",
+    "zoomOut": "Uzaklaştır",
+    "save": "Kaydet"
+  },
+  "errors": {
+    "generic": "Görsel gönderilemedi",
+    "quota_exceeded": "Görsel depolamanız dolu",
+    "media_star_required": "Görsel göndermek için STAR gerekir",
+    "room_star_required": "Bu odadaki görseller için STAR sahibi gerekir",
+    "media_uploads_paused": "Görsel yüklemeleri şimdilik durduruldu",
+    "media_missing": "Bazı görseller kayboldu, tekrar gönderin",
+    "send_limited": "Çok fazla görsel, biraz bekleyin",
+    "not_member": "Bu sohbette değilsiniz",
+    "unavailable": "Burada görsel gönderilemez",
+    "invalid": "Bu görsel gönderilemez",
+    "offline": "Sunucuya bağlantı yok",
+    "busy": "Sunucu meşgul, birazdan tekrar deneyin",
+    "too_big": "Görsel çok büyük",
+    "unsupported": "Bu biçim desteklenmiyor",
+    "heic": "HEIC desteklenmiyor, JPEG veya PNG kullanın"
+  },
+  "room": {
+    "capacity": "{{count}} üye",
+    "capacityStar": "STAR ile {{count}}",
+    "cover": "Oda kapağı",
+    "coverPick": "Kapak seç",
+    "coverTrack": "Parça kapağı",
+    "coverClear": "Kapağı kaldır",
+    "coverLocked": "Kapaklar için STAR sahibi gerekir",
+    "images": "Sohbette görseller",
+    "imagesMembers": "Üyeler",
+    "imagesMods": "Moderatörler",
+    "imagesOff": "Kimse",
+    "imagesLocked": "Görseller için STAR sahibi gerekir"
+  },
+  "album": {
+    "count_one": "{{count}} görsel",
+    "count_other": "{{count}} görsel"
+  }
+}

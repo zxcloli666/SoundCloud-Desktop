@@ -1,0 +1,81 @@
+{
+  "attach": {
+    "title": "Add images",
+    "drop": "Drop images to send",
+    "dropLocked": "Images need STAR",
+    "locked": "Images are a STAR perk"
+  },
+  "star": {
+    "title": "Send images with STAR",
+    "desc": "Albums of up to 10 images and 1 GB of your own storage. Everyone can view.",
+    "cta": "Get STAR"
+  },
+  "tray": {
+    "sending": "Sending {{done}} of {{total}}",
+    "waiting": "Waiting for the connection",
+    "resumed": "Sending resumed",
+    "sent": "Sent",
+    "retry": "Retry",
+    "cancel": "Cancel",
+    "cancelAll": "Cancel all"
+  },
+  "bubble": {
+    "deleted": "Image deleted",
+    "lost": "Image unavailable",
+    "loading": "Loading",
+    "failed": "Could not load",
+    "retry": "Retry",
+    "open": "Open"
+  },
+  "gallery": {
+    "tab": "Images",
+    "empty": "No images yet",
+    "emptyHint": "Images sent in this chat show up here",
+    "failed": "Could not load images",
+    "retry": "Retry",
+    "locked": "Images are off for now"
+  },
+  "viewer": {
+    "close": "Close",
+    "prev": "Previous",
+    "next": "Next",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "save": "Save"
+  },
+  "errors": {
+    "generic": "Could not send the image",
+    "quota_exceeded": "Your image storage is full",
+    "media_star_required": "Sending images needs STAR",
+    "room_star_required": "Images in this room need a STAR host",
+    "media_uploads_paused": "Image uploads are paused for now",
+    "media_missing": "Some images were lost, send them again",
+    "send_limited": "Too many images, wait a bit",
+    "not_member": "You are not in this chat",
+    "unavailable": "Images are not allowed here",
+    "invalid": "This image can not be sent",
+    "offline": "No connection to the server",
+    "busy": "The server is busy, try again soon",
+    "too_big": "The image is too big",
+    "unsupported": "This image format is not supported",
+    "heic": "HEIC is not supported, use JPEG or PNG"
+  },
+  "room": {
+    "capacity": "{{count}} members",
+    "capacityStar": "{{count}} with STAR",
+    "cover": "Room cover",
+    "coverPick": "Pick a cover",
+    "coverTrack": "Track artwork",
+    "coverClear": "Remove cover",
+    "coverLocked": "Covers need a STAR host",
+    "images": "Images in chat",
+    "imagesMembers": "Members",
+    "imagesMods": "Moderators",
+    "imagesOff": "Nobody",
+    "imagesLocked": "Images need a STAR host"
+  },
+  "album": {
+    "count_one": "{{count}} image",
+    "count_other": "{{count}} images"
+  }
+}

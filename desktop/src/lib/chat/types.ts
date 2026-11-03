@@ -1,3 +1,5 @@
+import type { MediaConfig, RoomCover, RoomImagesPolicy } from './media-types';
+
 export type ConvId = string;
 export type DeviceId = string;
 export type ClientId = string;
@@ -58,6 +60,7 @@ export interface ChatConfig {
   incarnation: string;
   ockCurrent: number;
   limits: ChatLimits;
+  media?: MediaConfig;
 }
 
 export type ChatErrorCode =
@@ -78,6 +81,11 @@ export type ChatErrorCode =
   | 'too_young'
   | 'disabled'
   | 'send_paused'
+  | 'quota_exceeded'
+  | 'media_star_required'
+  | 'room_star_required'
+  | 'media_uploads_paused'
+  | 'media_missing'
   | 'invalid'
   | 'not_found'
   | 'unimplemented'
@@ -94,6 +102,9 @@ export interface ChatError {
   until?: Millis;
   retryMs?: number;
   serverNow?: Millis;
+  used?: number;
+  quota?: number;
+  ids?: string[];
 }
 
 export type EmbedKind = 'track' | 'playlist' | 'user' | 'room_invite';
@@ -480,6 +491,9 @@ export interface RoomPreview {
   host: UserRef;
   track: Embed | null;
   listeners: number;
+  capacity: number;
+  starHost: boolean;
+  cover: RoomCover | null;
   alive: boolean;
 }
 
@@ -494,6 +508,8 @@ export interface RoomSettingsPatch {
   slowModeS?: number | null;
   chatEnabled?: boolean | null;
   links?: boolean | null;
+  cover?: RoomCover | null;
+  roomImages?: RoomImagesPolicy;
 }
 
 export type LoginTarget = 'fresh' | 'current';
