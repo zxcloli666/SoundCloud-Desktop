@@ -12,6 +12,9 @@ const ADD_WORDS: &[&str] = &[
     "put",
     "поставь",
     "запиши",
+    "запихни",
+    "засунь",
+    "воткни",
     "вставь",
     "queue",
 ];
@@ -24,13 +27,16 @@ pub fn undo(c: &Ctx) -> Option<Detected> {
     let by_word = c.has(UNDO_WORDS);
     let by_phrase = (c.has(&["верни"]) && c.has(&["как"]) && c.has(&["было"]))
         || (c.has(&["верни"]) && c.has(&["обратно"]) && c.len() <= 2)
-        || (c.has(&["не"]) && c.has(&["то"]) && c.len() <= 3);
+        || (c.has(&["не"]) && c.has(&["то"]) && c.len() <= 3)
+        || (c.has(&["оставь"]) && c.has(&["как"]) && c.has(&["было"]))
+        || (c.len() == 1 && c.w[0] == "верни");
     let used: Vec<usize> = (0..c.len())
         .filter(|&i| {
             UNDO_WORDS.contains(&c.w[i])
                 || matches!(
                     c.w[i],
                     "верни"
+                        | "оставь"
                         | "обратно"
                         | "как"
                         | "было"
@@ -50,6 +56,9 @@ pub fn undo(c: &Ctx) -> Option<Detected> {
 }
 
 const HELP_SET: &[&str] = &[
+    "можно",
+    "сказать",
+    "спросить",
     "что",
     "чего",
     "ты",
@@ -92,7 +101,8 @@ pub fn help(c: &Ctx) -> Option<Detected> {
     }
     let ability = c.has(&["умеешь", "умеете", "можешь", "can"]) && c.has(&["что", "чего", "what"]);
     let how = c.has(&["как"]) && c.has_stem(&["пользов"]);
-    let commands = c.has(&["команды", "возможности"]);
+    let commands = c.has(&["команды", "возможности"])
+        || (c.has(&["что"]) && c.has(&["можно"]) && c.has(&["сказать", "спросить", "делать"]));
     let direct = c.has(&["помощь", "помоги", "помогите", "справка", "help"]);
     if ability || how || direct || commands {
         return Some(Detected::new(Intent::Help, vec![]));
@@ -178,10 +188,17 @@ pub fn like(c: &Ctx) -> Option<Detected> {
                 .iter()
                 .all(|w| LIKE_OBJECT.contains(w) || PRE.contains(w) || GENERIC.contains(w))
     };
+    let has_kind = c.has(KIND_TRACK)
+        || c.has(KIND_ALBUM)
+        || c.has(KIND_ARTIST)
+        || c.has(KIND_PLAYLIST)
+        || c.has(KIND_TRACK_PLURAL);
     let used: Vec<usize> = (0..c.len())
         .filter(|&i| {
             let w = c.w[i];
             w.starts_with("лайк")
+                || (PLAY_STRONG.contains(&w) && !has_kind)
+                || w.starts_with("понравивш")
                 || w.starts_with("избран")
                 || w.starts_with("любим")
                 || w == "из"
@@ -205,7 +222,7 @@ pub fn like(c: &Ctx) -> Option<Detected> {
     if enjoys && c.has(&["не"]) {
         return Some(Detected::new(Intent::Unlike, vec![]));
     }
-    if (c.has(&["из"]) && c.has_stem(&["избранн", "любим"]) && c.has(REMOVE_WORDS))
+    if (c.has(&["из"]) && c.has_stem(&["избранн", "любим", "понравивш"]) && c.has(REMOVE_WORDS))
         || (c.has(REMOVE_WORDS) && c.has(&["из"]) && c.has_stem(&["избран", "лайк"]))
     {
         return Some(Detected::new(Intent::Unlike, vec![]));
@@ -272,7 +289,10 @@ pub fn repeat(c: &Ctx) -> Option<Detected> {
             || GENERIC.contains(&w)
             || TRANSPORT_VERBS.contains(&w)
             || REPEAT_FILL.contains(&w)
-            || stem(&["повтор", "повтар", "зацикл", "плейлист", "очеред", "альбом"], w)
+            || stem(
+                &["повтор", "повтар", "зацикл", "плейлист", "очеред", "альбом"],
+                w,
+            )
     };
     if !c.w.iter().all(|w| known(w)) {
         return None;
@@ -338,6 +358,14 @@ const NOW_SET: &[&str] = &[
     "трек",
     "музыка",
     "композиция",
+    "вообще",
+    "там",
+    "такой",
+    "чей",
+    "чья",
+    "напомни",
+    "автор",
+    "зовут",
 ];
 
 pub fn now_playing(c: &Ctx) -> Option<Detected> {
@@ -373,9 +401,10 @@ pub fn now_playing(c: &Ctx) -> Option<Detected> {
         ]);
     let english = c.has(&["song", "track"]) && c.has(&["this", "is", "playing", "called"]) && what;
     let named = c.has(&["как"]) && c.has_stem(&["называ"]);
+    let which = c.has(&["какой", "какая"]) && c.has_stem(&["трек", "песн", "композиц", "мелод"]);
     let who = c.has(&["кто", "who", "whos"]) && c.has(WHO_WORDS);
     let title = c.has_stem(&["название"]);
-    if (what && playing) || song_q || english || named || who || title {
+    if (what && playing) || song_q || english || named || who || title || which {
         return Some(Detected::new(Intent::NowPlaying, vec![]));
     }
     None

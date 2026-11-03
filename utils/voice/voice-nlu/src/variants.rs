@@ -3,7 +3,7 @@ use crate::slots::Raw;
 use crate::types::Variant;
 
 const VOWELS: &str = "аеёиоуыэюя";
-const MAX_VARIANTS: usize = 40;
+const MAX_VARIANTS: usize = 56;
 
 fn ends(w: &str, suffix: &str) -> bool {
     w.ends_with(suffix) && w.chars().count() > suffix.chars().count() + 1
@@ -163,6 +163,7 @@ fn plain(text: String, kept: bool, lemmatized: bool) -> Variant {
         title: None,
         kept_fillers: kept,
         lemmatized,
+        fallback: false,
     }
 }
 
@@ -173,10 +174,36 @@ fn joint(title: String, artist: String, kept: bool, lemmatized: bool) -> Variant
         title: Some(title),
         kept_fillers: kept,
         lemmatized,
+        fallback: false,
     }
 }
 
-pub fn expand(raw: &Raw) -> Vec<Variant> {
+fn spans(out: &mut Vec<Variant>, toks: &[Tok]) {
+    let toks: Vec<Tok> = toks.iter().filter(|t| !t.amb).cloned().collect();
+    let n = toks.len();
+    if !(2..=5).contains(&n) {
+        return;
+    }
+    for len in 1..=2.min(n - 1) {
+        for part in [&toks[..len], &toks[n - len..]] {
+            let command = part.iter().any(|t| {
+                crate::lexicon::LIKES_PLURAL.contains(&t.w.as_str())
+                    || crate::intent::detect(std::slice::from_ref(t)).intent
+                        != crate::types::Intent::None
+            });
+            if command {
+                continue;
+            }
+            for s in 0..3u8 {
+                let mut v = plain(join(part, s, false), false, s > 0);
+                v.fallback = true;
+                push(out, v);
+            }
+        }
+    }
+}
+
+pub fn expand(raw: &Raw, with_spans: bool) -> Vec<Variant> {
     let mut out = Vec::new();
     let split = raw.artist.is_some();
     for s in 0..3u8 {
@@ -215,6 +242,9 @@ pub fn expand(raw: &Raw) -> Vec<Variant> {
         for s in 0..2u8 {
             push(&mut out, plain(join(&raw.full, s, true), true, s > 0));
         }
+    }
+    if with_spans {
+        spans(&mut out, &raw.plain);
     }
     out
 }

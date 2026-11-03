@@ -81,6 +81,19 @@ impl Intent {
     pub fn needs_entity(self) -> bool {
         matches!(self, Intent::Play | Intent::QueueAdd)
     }
+
+    pub fn is_control(self) -> bool {
+        !matches!(
+            self,
+            Intent::None
+                | Intent::Play
+                | Intent::QueueAdd
+                | Intent::PlaySimilar
+                | Intent::PlayWave
+                | Intent::PlayLikes
+                | Intent::Resume
+        )
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize)]
@@ -116,6 +129,14 @@ pub struct Variant {
     pub title: Option<String>,
     pub kept_fillers: bool,
     pub lemmatized: bool,
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub fallback: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize)]
+pub struct Reading {
+    pub queries: Vec<Variant>,
+    pub kind_hint: Option<Kind>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
@@ -128,4 +149,11 @@ pub struct Parsed {
     pub normalized: String,
     pub bare: bool,
     pub weak_verb: bool,
+    pub fraction: Option<f32>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub alt: Vec<Variant>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub kind_alt: Option<Reading>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub split: Vec<Vec<Parsed>>,
 }
