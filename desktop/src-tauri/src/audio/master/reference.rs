@@ -7,7 +7,6 @@ pub struct Reference {
     master: Arc<Master>,
 }
 
-#[allow(dead_code)]
 impl Reference {
     pub(super) fn new(master: Arc<Master>) -> Self {
         Self { master }

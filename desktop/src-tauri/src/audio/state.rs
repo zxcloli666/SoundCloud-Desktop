@@ -83,7 +83,6 @@ pub struct AudioState {
     pub analyser_buffer: Arc<AnalyserBuffer>,
     pub preview: Mutex<PreviewState>,
     pub crossfade: Mutex<CrossfadeState>,
-    #[allow(dead_code)]
     pub master: Arc<Master>,
 }
 

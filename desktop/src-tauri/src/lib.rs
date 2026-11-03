@@ -12,6 +12,7 @@ mod scrobble;
 mod shared;
 mod track_cache;
 mod upload;
+mod voice;
 
 use std::sync::Arc;
 use std::time::Duration;
@@ -202,10 +203,12 @@ pub fn run() {
 
             let auth_state =
                 auth::SessionStore::init(data_dir.clone(), auth_http_client, rt_handle.clone());
+            let premium = auth_state.premium_at_start();
             app.state::<audio::AudioState>()
                 .effects
-                .set_premium(auth_state.premium_at_start());
+                .set_premium(premium);
             app.manage(auth_state);
+            voice::init(app.handle(), &data_dir, rt_handle.clone(), premium);
 
             let call_state = network::call::CallState::init(data_dir.clone(), rt_handle);
             network::call::manage_state(app.handle(), call_state.clone());
@@ -260,6 +263,21 @@ pub fn run() {
             app::render_mode::render_mode_set,
             app::render_mode::render_mode_restart,
             app::hotkeys::hotkeys_apply,
+            voice::commands::voice_status,
+            voice::commands::voice_apply,
+            voice::commands::voice_start,
+            voice::commands::voice_stop,
+            voice::commands::voice_cancel,
+            voice::commands::voice_text,
+            voice::commands::voice_answer,
+            voice::commands::voice_done,
+            voice::commands::voice_devices,
+            voice::commands::voice_meter,
+            voice::commands::voice_models,
+            voice::commands::voice_model_get,
+            voice::commands::voice_model_delete,
+            voice::commands::voice_preview,
+            voice::commands::voice_wake_teach,
             app::hotkeys::hotkeys_backend,
             app::updater::updater_info,
             app::updater::updater_install,
