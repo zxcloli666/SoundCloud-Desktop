@@ -11,7 +11,8 @@ export type Step =
   | 'redeem'
   | 'manage'
   | 'invite'
-  | 'gifts';
+  | 'gifts'
+  | 'plan';
 
 /** Who the pass is for: the buyer, or a friend through a gift code. */
 export type Recipient = 'self' | 'gift';

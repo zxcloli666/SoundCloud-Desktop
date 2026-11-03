@@ -1832,7 +1832,74 @@
       "notFirst": "친구 코드는 첫 구매에만 적용됩니다.",
       "failed": "코드를 확인할 수 없습니다."
     },
-    "qrRefreshing": "QR이 만료되어 새로 만듭니다…"
+    "qrRefreshing": "QR이 만료되어 새로 만듭니다…",
+    "tier": {
+      "solo": "개인",
+      "duo": "Duo",
+      "family": "Family",
+      "people_other": "{{count}}명",
+      "each": "1인당 {{price}} ₽",
+      "save": "−{{pct}}%"
+    },
+    "shared": {
+      "carryTitle": "현재 STAR가 그대로 이어집니다",
+      "carryDays_other": "+{{count}}일",
+      "carryEnd": "새 종료일 {{date}}",
+      "memberBuy": "다른 사람의 플랜에 참여 중입니다. 직접 구매하려면 먼저 나가세요.",
+      "manageCta": "멤버",
+      "seatsOf": "{{seats}}석 중 {{used}}석",
+      "until": "{{date}}까지",
+      "invite": {
+        "title": "초대 코드",
+        "copy": "초대 복사",
+        "copied": "복사됨",
+        "regenerate": "새 코드",
+        "regenerated": "새 코드가 준비되었습니다. 이전 코드는 더 이상 쓸 수 없습니다",
+        "shareText": "SoundCloud Desktop에서 내 STAR {{tier}}에 참여하세요: STAR를 열고 \"코드가 있어요\"를 눌러 {{code}}를 입력하세요. https://getsoundcloud.app"
+      },
+      "seat": {
+        "free": "빈 자리",
+        "joined": "{{date}} 참여",
+        "remove": "내보내기",
+        "removeAsk": "플랜에서 내보낼까요?",
+        "removeYes": "내보내기",
+        "removeNo": "유지",
+        "removed": "플랜에서 내보냈습니다",
+        "locked": "{{date}}부터 다시 내보낼 수 있습니다"
+      },
+      "member": {
+        "from": "{{name}}님의 {{tier}} STAR",
+        "sub": "{{date}}까지",
+        "leave": "플랜 나가기",
+        "leaveAsk": "이 플랜에서 나갈까요? 본인의 STAR는 유지됩니다.",
+        "leaveYes": "나가기",
+        "leaveNo": "머무르기",
+        "left": "플랜에서 나갔습니다",
+        "joined": "플랜에 참여했습니다"
+      },
+      "empty": {
+        "title": "아직 공유 플랜이 없습니다",
+        "text": "Duo 또는 Family를 구매하고 코드로 사람들을 초대하세요.",
+        "cta": "플랜 선택"
+      },
+      "inviteMembers": "사람 초대",
+      "joinHint": "또는 Duo/Family 소유자의 초대 코드(JOIN-…).",
+      "error": {
+        "generic": "문제가 발생했습니다. 다시 시도해 주세요.",
+        "invite_invalid": "없거나 교체된 초대 코드입니다.",
+        "plan_full": "플랜에 빈 자리가 없습니다.",
+        "plan_expired": "이 플랜은 만료되었습니다.",
+        "own_plan": "본인의 플랜입니다.",
+        "owner_of_plan": "플랜을 소유하고 있어 다른 플랜에 참여할 수 없습니다.",
+        "already_member": "이미 이 플랜에 있습니다.",
+        "in_other_plan": "다른 플랜에 있습니다. 먼저 나가세요.",
+        "member_of_plan": "직접 구매하려면 현재 플랜에서 먼저 나가세요.",
+        "too_many_members": "먼저 멤버를 내보내세요. 작은 플랜은 자리가 적습니다.",
+        "removal_limit": "이 자리는 이번 달에 두 번 바뀌었습니다. 나중에 다시 시도하세요.",
+        "not_a_member": "이 사람은 플랜에 없습니다."
+      },
+      "centerSeats": "{{seats}}석 중 {{used}}석 사용"
+    }
   },
   "soundwaveLock": {
     "wordmark": "사운드 웨이브",

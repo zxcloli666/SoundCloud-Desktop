@@ -25,13 +25,30 @@ import { OverviewPane } from '../components/subscription/star/OverviewPane';
 import { PayPane } from '../components/subscription/star/PayPane';
 import { RedeemPane } from '../components/subscription/star/RedeemPane';
 import type { RefBonus } from '../components/subscription/star/RefField';
+import { SharedPane } from '../components/subscription/star/SharedPane';
 import { Console } from '../components/subscription/star/StarConsole';
 import { SuccessPane } from '../components/subscription/star/SuccessPane';
+import type { TierOption } from '../components/subscription/star/TierSwitch';
 import { ChevronLeft } from '../lib/icons';
-import { type CheckoutResp, type Plan, payApi, payErrorCode } from '../lib/pay-client';
+import {
+  type CheckoutResp,
+  type Plan,
+  payApi,
+  payErrorCode,
+  type SharedTierId,
+  type TierId,
+} from '../lib/pay-client';
 import { usePremium } from '../lib/premium-cache';
 import { queryClient } from '../lib/query-client';
 import { type StarIntent, usePaySubscription, useStartTrial } from '../lib/star-offer';
+import {
+  perPerson,
+  refreshShared,
+  sharedErrorKey,
+  tierPlans,
+  useSharedOverview,
+  useSharedPreview,
+} from '../lib/star-shared';
 import { useOrderPoll } from '../lib/useOrderPoll';
 import { useAuthStore } from '../stores/auth';
 
@@ -44,7 +61,9 @@ import { useAuthStore } from '../stores/auth';
 export const StarPage = memo(function StarPage() {
   const location = useLocation();
   const state = location.state as { intent?: StarIntent; plan?: string } | null;
-  return <StarFlow key={location.key} intent={state?.intent ?? null} presetPlan={state?.plan ?? null} />;
+  return (
+    <StarFlow key={location.key} intent={state?.intent ?? null} presetPlan={state?.plan ?? null} />
+  );
 });
 
 function firstStep(intent: StarIntent | null, premium: boolean): Step {
@@ -67,9 +86,10 @@ const StarFlow = memo(function StarFlow({
   const handle = username ? `@${username}` : t('starpass.guestHandle');
 
   const [step, setStep] = useState<Step>(() => firstStep(intent, premium));
+  const [tier, setTier] = useState<TierId>('solo');
   const [recipient, setRecipient] = useState<Recipient>(intent === 'gift' ? 'gift' : 'self');
   const [refBonus, setRefBonus] = useState<RefBonus>(null);
-  const gift = recipient === 'gift';
+  const gift = recipient === 'gift' && tier === 'solo';
   const [planId, setPlanId] = useState<string | null>(presetPlan);
   const [option, setOption] = useState<ActivationOption | null>(null);
   const [recurring, setRecurring] = useState(false);
@@ -81,12 +101,34 @@ const StarFlow = memo(function StarFlow({
     queryFn: payApi.plans,
     staleTime: 300_000,
   });
-  const plans = plansQuery.data?.plans ?? [];
+  const soloPlans = plansQuery.data?.plans ?? [];
+  const plans = tierPlans(tier, soloPlans, plansQuery.data?.shared);
   const options = useMemo(
     () => (plansQuery.data ? activationOptions(plansQuery.data) : []),
     [plansQuery.data],
   );
   const selectedPlan = plans.find((p) => p.id === planId) ?? null;
+  const sharedOverview = useSharedOverview().data;
+  const preview = useSharedPreview(tier, planId, premium);
+  const tierOptions = useMemo<TierOption[]>(() => {
+    const soloPlan = soloPlans.find((p) => p.id === planId);
+    const shared = plansQuery.data?.shared ?? [];
+    return [
+      { id: 'solo', people: 1, each: soloPlan?.price_rub ?? 0, savePct: 0 },
+      ...shared.map((s) => {
+        const pp = perPerson(
+          s.plans.find((p) => p.id === planId),
+          soloPlan,
+          s.seats,
+        );
+        return { id: s.tier, people: s.seats + 1, ...pp };
+      }),
+    ];
+  }, [plansQuery.data, soloPlans, planId]);
+  const changeTier = useCallback((next: TierId) => {
+    setTier(next);
+    if (next !== 'solo') setRecipient('self');
+  }, []);
 
   // auto-pick the best-value plan once plans arrive
   const bestId = plans.reduce<Plan | null>(
@@ -103,6 +145,7 @@ const StarFlow = memo(function StarFlow({
   if (step === 'pay' && phase === 'granted') {
     setIgniteKey((k) => k + 1);
     setStep('success');
+    if (tier !== 'solo') refreshShared();
     if (order.data?.gift) void queryClient.invalidateQueries({ queryKey: GIFTS_KEY });
   }
   const giftResult =
@@ -154,6 +197,7 @@ const StarFlow = memo(function StarFlow({
       return payApi.checkout({
         ...toCheckout(option, planId, allowRecurring),
         gift: gift || undefined,
+        tier: tier === 'solo' ? undefined : (tier as SharedTierId),
         ref: !gift && refBonus ? refBonus.code : undefined,
       });
     },
@@ -165,6 +209,13 @@ const StarFlow = memo(function StarFlow({
       if (step === 'pay') setStep('method');
     },
   });
+  const checkoutError = checkoutMut.isError
+    ? t(
+        payErrorCode(checkoutMut.error)
+          ? sharedErrorKey(checkoutMut.error)
+          : 'starpass.checkoutError',
+      )
+    : null;
   const refreshQr = useCallback(() => checkoutMut.mutate(), [checkoutMut.mutate]);
 
   const reset = useCallback(() => {
@@ -185,7 +236,7 @@ const StarFlow = memo(function StarFlow({
       ? 'method'
       : step === 'method'
         ? 'overview'
-        : step === 'redeem' || step === 'invite' || step === 'gifts'
+        : step === 'redeem' || step === 'invite' || step === 'gifts' || step === 'plan'
           ? premium
             ? 'manage'
             : 'overview'
@@ -273,6 +324,15 @@ const StarFlow = memo(function StarFlow({
                   serialSeed={checkout?.order_id ?? handle}
                   gift={gift}
                   inviteDays={inviteDays}
+                  seats={
+                    sharedOverview?.owner
+                      ? {
+                          tier: sharedOverview.owner.tier,
+                          used: sharedOverview.owner.members.length,
+                          total: sharedOverview.owner.seats,
+                        }
+                      : null
+                  }
                 />
               </div>
             </div>
@@ -301,6 +361,11 @@ const StarFlow = memo(function StarFlow({
                 onRefCode={setRefBonus}
                 showRef={!premium}
                 onInvite={() => setStep('invite')}
+                tier={tier}
+                tierOptions={tierOptions}
+                onTier={changeTier}
+                isMember={sharedOverview?.role === 'member'}
+                preview={preview.data}
               />
             )}
             {step === 'method' && (
@@ -313,7 +378,7 @@ const StarFlow = memo(function StarFlow({
                 onRecurring={setRecurring}
                 amount={selectedPlan ? `${selectedPlan.price_rub} ₽` : ''}
                 pending={checkoutMut.isPending}
-                error={checkoutMut.isError}
+                error={checkoutError}
                 onContinue={() => checkoutMut.mutate()}
               />
             )}
@@ -332,6 +397,7 @@ const StarFlow = memo(function StarFlow({
                 onManage={() => setStep('manage')}
                 gift={giftResult}
                 onGifts={() => setStep('gifts')}
+                onPlan={tier === 'solo' ? undefined : () => setStep('plan')}
               />
             )}
             {step === 'manage' && (
@@ -343,8 +409,10 @@ const StarFlow = memo(function StarFlow({
                 onRedeem={() => setStep('redeem')}
                 onGift={() => setStep('gifts')}
                 onInvite={() => setStep('invite')}
+                onPlan={() => setStep('plan')}
               />
             )}
+            {step === 'plan' && <SharedPane onChoose={() => setStep('overview')} />}
             {step === 'redeem' && <RedeemPane onRedeemed={() => setStep('manage')} />}
             {step === 'invite' && <InvitePane />}
             {step === 'gifts' && (

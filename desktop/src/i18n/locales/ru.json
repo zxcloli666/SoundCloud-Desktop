@@ -2062,7 +2062,80 @@
       "notFirst": "Код друга работает только на первую покупку.",
       "failed": "Не получилось проверить код."
     },
-    "qrRefreshing": "QR устарел, делаем новый…"
+    "qrRefreshing": "QR устарел, делаем новый…",
+    "tier": {
+      "solo": "Личный",
+      "duo": "Duo",
+      "family": "Family",
+      "people_one": "{{count}} человек",
+      "people_few": "{{count}} человека",
+      "people_many": "{{count}} человек",
+      "people_other": "{{count}} человека",
+      "each": "{{price}} ₽ с человека",
+      "save": "−{{pct}}%"
+    },
+    "shared": {
+      "carryTitle": "Ваш текущий STAR переходит",
+      "carryDays_one": "+{{count}} день",
+      "carryDays_few": "+{{count}} дня",
+      "carryDays_many": "+{{count}} дней",
+      "carryDays_other": "+{{count}} дня",
+      "carryEnd": "Новый срок до {{date}}",
+      "memberBuy": "Вы участник чужого тарифа. Выйдите из него, чтобы купить свой.",
+      "manageCta": "Участники",
+      "seatsOf": "{{used}} из {{seats}} мест",
+      "until": "До {{date}}",
+      "invite": {
+        "title": "Код приглашения",
+        "copy": "Скопировать приглашение",
+        "copied": "Скопировано",
+        "regenerate": "Новый код",
+        "regenerated": "Новый код готов, старый больше не работает",
+        "shareText": "Присоединяйся к моему STAR {{tier}} в SoundCloud Desktop: открой STAR, нажми «У меня есть код» и введи {{code}}. https://getsoundcloud.app"
+      },
+      "seat": {
+        "free": "Свободное место",
+        "joined": "Вступил {{date}}",
+        "remove": "Убрать",
+        "removeAsk": "Убрать из тарифа?",
+        "removeYes": "Убрать",
+        "removeNo": "Оставить",
+        "removed": "Участник убран",
+        "locked": "Снова можно убрать {{date}}"
+      },
+      "member": {
+        "from": "STAR от {{name}}, тариф {{tier}}",
+        "sub": "До {{date}}",
+        "leave": "Выйти из тарифа",
+        "leaveAsk": "Выйти из тарифа? Ваш собственный STAR останется.",
+        "leaveYes": "Выйти",
+        "leaveNo": "Остаться",
+        "left": "Вы вышли из тарифа",
+        "joined": "Вы в тарифе"
+      },
+      "empty": {
+        "title": "Общего тарифа пока нет",
+        "text": "Купите Duo или Family и зовите людей по коду.",
+        "cta": "Выбрать тариф"
+      },
+      "inviteMembers": "Пригласить людей",
+      "joinHint": "Или код приглашения от владельца Duo или Family (JOIN-…).",
+      "error": {
+        "generic": "Что-то пошло не так. Попробуйте ещё раз.",
+        "invite_invalid": "Такого кода нет или он заменён.",
+        "plan_full": "В тарифе нет свободных мест.",
+        "plan_expired": "Срок этого тарифа истёк.",
+        "own_plan": "Это ваш собственный тариф.",
+        "owner_of_plan": "У вас свой тариф, в чужой вступить нельзя.",
+        "already_member": "Вы уже в этом тарифе.",
+        "in_other_plan": "Вы в другом тарифе. Сначала выйдите из него.",
+        "member_of_plan": "Выйдите из текущего тарифа, прежде чем покупать свой.",
+        "too_many_members": "Сначала уберите участников: в меньшем тарифе меньше мест.",
+        "removal_limit": "Это место уже менялось дважды за месяц. Попробуйте позже.",
+        "not_a_member": "Этого человека нет в тарифе."
+      },
+      "centerSeats": "занято {{used}} из {{seats}} мест"
+    }
   },
   "soundwaveLock": {
     "wordmark": "САУНД ВОЛНА",

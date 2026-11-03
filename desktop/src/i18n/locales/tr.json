@@ -1913,7 +1913,76 @@
       "notFirst": "Arkadaş kodu sadece ilk satışta geçerlidir.",
       "failed": "Kod doğrulanamadı."
     },
-    "qrRefreshing": "QR süresi doldu, yenisi oluşturuluyor…"
+    "qrRefreshing": "QR süresi doldu, yenisi oluşturuluyor…",
+    "tier": {
+      "solo": "Kişisel",
+      "duo": "Duo",
+      "family": "Family",
+      "people_one": "{{count}} kişi",
+      "people_other": "{{count}} kişi",
+      "each": "kişi başı {{price}} ₽",
+      "save": "−{{pct}}%"
+    },
+    "shared": {
+      "carryTitle": "Mevcut STAR'ınız aktarılır",
+      "carryDays_one": "+{{count}} gün",
+      "carryDays_other": "+{{count}} gün",
+      "carryEnd": "Yeni bitiş {{date}}",
+      "memberBuy": "Başkasının planındasınız. Kendi planınızı almak için önce ayrılın.",
+      "manageCta": "Üyeler",
+      "seatsOf": "{{seats}} yerden {{used}}",
+      "until": "{{date}} tarihine kadar",
+      "invite": {
+        "title": "Davet kodu",
+        "copy": "Daveti kopyala",
+        "copied": "Kopyalandı",
+        "regenerate": "Yeni kod",
+        "regenerated": "Yeni kod hazır, eskisi artık çalışmaz",
+        "shareText": "SoundCloud Desktop'taki STAR {{tier}} planıma katıl: STAR'ı aç, \"Kodum var\"a dokun ve {{code}} gir. https://getsoundcloud.app"
+      },
+      "seat": {
+        "free": "Boş yer",
+        "joined": "{{date}} tarihinde katıldı",
+        "remove": "Çıkar",
+        "removeAsk": "Plandan çıkarılsın mı?",
+        "removeYes": "Çıkar",
+        "removeNo": "Kalsın",
+        "removed": "Plandan çıkarıldı",
+        "locked": "{{date}} tarihinde tekrar çıkarılabilir"
+      },
+      "member": {
+        "from": "{{name}} kişisinin {{tier}} planından STAR",
+        "sub": "{{date}} tarihine kadar",
+        "leave": "Plandan ayrıl",
+        "leaveAsk": "Bu plandan ayrılınsın mı? Kendi STAR'ınız kalır.",
+        "leaveYes": "Ayrıl",
+        "leaveNo": "Kal",
+        "left": "Plandan ayrıldınız",
+        "joined": "Plana katıldınız"
+      },
+      "empty": {
+        "title": "Henüz paylaşılan plan yok",
+        "text": "Duo veya Family alın ve insanları kodla davet edin.",
+        "cta": "Plan seç"
+      },
+      "inviteMembers": "İnsanları davet et",
+      "joinHint": "Ya da Duo veya Family sahibinden bir davet kodu (JOIN-…).",
+      "error": {
+        "generic": "Bir şeyler ters gitti. Tekrar deneyin.",
+        "invite_invalid": "Bu kod yok ya da değiştirilmiş.",
+        "plan_full": "Planda boş yer yok.",
+        "plan_expired": "Bu planın süresi doldu.",
+        "own_plan": "Bu sizin kendi planınız.",
+        "owner_of_plan": "Bir planınız var, başkasına katılamazsınız.",
+        "already_member": "Zaten bu plandasınız.",
+        "in_other_plan": "Başka bir plandasınız. Önce ondan ayrılın.",
+        "member_of_plan": "Kendi planınızı almadan önce mevcut plandan ayrılın.",
+        "too_many_members": "Önce üyeleri çıkarın: küçük planda daha az yer var.",
+        "removal_limit": "Bu yer bu ay iki kez değişti. Sonra deneyin.",
+        "not_a_member": "Bu kişi planda değil."
+      },
+      "centerSeats": "{{seats}} yerden {{used}} dolu"
+    }
   },
   "soundwaveLock": {
     "wordmark": "SES DALGASI",

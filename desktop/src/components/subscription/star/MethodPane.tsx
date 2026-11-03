@@ -26,7 +26,7 @@ export const MethodPane = memo(function MethodPane({
   onRecurring: (v: boolean) => void;
   amount: string;
   pending: boolean;
-  error: boolean;
+  error: string | null;
   onContinue: () => void;
 }) {
   const { t } = useTranslation();
@@ -98,9 +98,7 @@ export const MethodPane = memo(function MethodPane({
         <PrimaryBtn onClick={onContinue} disabled={!selected || pending}>
           {pending ? t('starpass.creating') : `${t('starpass.continue')} · ${amount}`}
         </PrimaryBtn>
-        {error && (
-          <span className="text-[12.5px] text-red-300/95">{t('starpass.checkoutError')}</span>
-        )}
+        {error && <span className="text-[12.5px] text-red-300/95">{error}</span>}
       </div>
     </div>
   );

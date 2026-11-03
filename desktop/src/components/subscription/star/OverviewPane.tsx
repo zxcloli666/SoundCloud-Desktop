@@ -1,12 +1,14 @@
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ArrowRight, Gift } from '../../../lib/icons';
-import type { Plan } from '../../../lib/pay-client';
+import { ArrowRight, Gift, RefreshCw } from '../../../lib/icons';
+import type { Plan, SharedPreview, TierId } from '../../../lib/pay-client';
+import { passDate } from '../../../lib/star-format';
 import { TRIAL_DAYS } from '../../../lib/star-offer';
 import { monthsKey, PERKS, type Recipient } from './meta';
 import { RecipientSwitch } from './RecipientSwitch';
 import { type RefBonus, RefField } from './RefField';
 import { GhostBtn, LinkBtn, PrimaryBtn } from './StarConsole';
+import { type TierOption, TierSwitch } from './TierSwitch';
 
 /** Overview: who it is for, a plan duration, the perks; ignite, try, redeem or invite. */
 export const OverviewPane = memo(function OverviewPane({
@@ -27,6 +29,11 @@ export const OverviewPane = memo(function OverviewPane({
   onRefCode,
   showRef,
   onInvite,
+  tier,
+  tierOptions,
+  onTier,
+  isMember,
+  preview,
 }: {
   plans: Plan[];
   loading: boolean;
@@ -45,9 +52,15 @@ export const OverviewPane = memo(function OverviewPane({
   onRefCode: (next: RefBonus) => void;
   showRef: boolean;
   onInvite: () => void;
+  tier: TierId;
+  tierOptions: TierOption[];
+  onTier: (next: TierId) => void;
+  isMember: boolean;
+  preview: SharedPreview | undefined;
 }) {
   const { t } = useTranslation();
   const gift = recipient === 'gift';
+  const shared = tier !== 'solo';
 
   if (error) {
     return (
@@ -62,7 +75,14 @@ export const OverviewPane = memo(function OverviewPane({
 
   return (
     <div>
-      <RecipientSwitch value={recipient} onChange={onRecipient} />
+      {isMember ? (
+        <p className="mb-3 rounded-[12px] border border-ink/[0.08] bg-ink/[0.03] px-3.5 py-2.5 text-[12px] text-ink-55">
+          {t('starpass.shared.memberBuy')}
+        </p>
+      ) : (
+        <TierSwitch value={tier} options={tierOptions} onChange={onTier} />
+      )}
+      {!shared && <RecipientSwitch value={recipient} onChange={onRecipient} />}
 
       {/* duration segmented */}
       <div className="flex gap-1.5 rounded-[14px] border border-ink/[0.10] bg-ink/[0.04] p-1.5">
@@ -103,6 +123,23 @@ export const OverviewPane = memo(function OverviewPane({
         )}
       </div>
 
+      {shared && preview && preview.carry_days > 0 && (
+        <div className="mt-3 flex items-center gap-3 rounded-[12px] border border-ink/[0.08] bg-ink/[0.03] px-3.5 py-2.5">
+          <RefreshCw size={15} className="shrink-0 text-accent" />
+          <div className="min-w-0 flex-1">
+            <div className="text-[12.5px] font-medium text-ink-85">
+              {t('starpass.shared.carryTitle')}
+            </div>
+            <div className="text-[11.5px] text-ink-40">
+              {t('starpass.shared.carryEnd', { date: passDate(preview.ends_at) })}
+            </div>
+          </div>
+          <span className="font-mono text-[15px] font-semibold text-accent">
+            {t('starpass.shared.carryDays', { count: preview.carry_days })}
+          </span>
+        </div>
+      )}
+
       {/* perks */}
       <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3">
         {PERKS.map(({ key, Icon }) => (
@@ -133,7 +170,7 @@ export const OverviewPane = memo(function OverviewPane({
           {gift ? t('starpass.gift.ignite') : t('starpass.ignite')}
           <ArrowRight size={16} />
         </PrimaryBtn>
-        {trial && !gift && (
+        {trial && !gift && !shared && (
           <GhostBtn onClick={onTrial}>
             {trialPending
               ? t('starpass.trial.starting')
@@ -144,7 +181,7 @@ export const OverviewPane = memo(function OverviewPane({
       </div>
 
       <div className="mt-3.5 flex flex-wrap items-center justify-between gap-3">
-        {showRef && !gift ? <RefField value={refCode} onChange={onRefCode} /> : <span />}
+        {showRef && !gift && !shared ? <RefField value={refCode} onChange={onRefCode} /> : <span />}
         <LinkBtn onClick={onInvite}>{t('starpass.invite.link')}</LinkBtn>
       </div>
     </div>

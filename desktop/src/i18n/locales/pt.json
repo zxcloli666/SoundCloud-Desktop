@@ -1908,7 +1908,76 @@
       "notFirst": "O código de um amigo só vale na primeira compra.",
       "failed": "Não foi possível verificar o código."
     },
-    "qrRefreshing": "O QR expirou, gerando um novo…"
+    "qrRefreshing": "O QR expirou, gerando um novo…",
+    "tier": {
+      "solo": "Pessoal",
+      "duo": "Duo",
+      "family": "Family",
+      "people_one": "{{count}} pessoa",
+      "people_other": "{{count}} pessoas",
+      "each": "{{price}} ₽ cada",
+      "save": "−{{pct}}%"
+    },
+    "shared": {
+      "carryTitle": "Seu STAR atual passa para o novo plano",
+      "carryDays_one": "+{{count}} dia",
+      "carryDays_other": "+{{count}} dias",
+      "carryEnd": "Novo fim em {{date}}",
+      "memberBuy": "Você está no plano de outra pessoa. Saia dele para comprar o seu.",
+      "manageCta": "Membros",
+      "seatsOf": "{{used}} de {{seats}} vagas",
+      "until": "Até {{date}}",
+      "invite": {
+        "title": "Código de convite",
+        "copy": "Copiar convite",
+        "copied": "Copiado",
+        "regenerate": "Novo código",
+        "regenerated": "Novo código pronto, o antigo deixou de funcionar",
+        "shareText": "Entre no meu STAR {{tier}} no SoundCloud Desktop: abra o STAR, toque em \"Tenho um código\" e digite {{code}}. https://getsoundcloud.app"
+      },
+      "seat": {
+        "free": "Vaga livre",
+        "joined": "Entrou em {{date}}",
+        "remove": "Remover",
+        "removeAsk": "Remover do plano?",
+        "removeYes": "Remover",
+        "removeNo": "Manter",
+        "removed": "Removido do plano",
+        "locked": "Pode ser removido de novo em {{date}}"
+      },
+      "member": {
+        "from": "STAR de {{name}}, plano {{tier}}",
+        "sub": "Até {{date}}",
+        "leave": "Sair do plano",
+        "leaveAsk": "Sair deste plano? Seu próprio STAR continua.",
+        "leaveYes": "Sair",
+        "leaveNo": "Ficar",
+        "left": "Você saiu do plano",
+        "joined": "Você entrou no plano"
+      },
+      "empty": {
+        "title": "Ainda sem plano compartilhado",
+        "text": "Compre Duo ou Family e convide pessoas com um código.",
+        "cta": "Escolher plano"
+      },
+      "inviteMembers": "Convidar pessoas",
+      "joinHint": "Ou um código de convite do dono de um Duo ou Family (JOIN-…).",
+      "error": {
+        "generic": "Algo deu errado. Tente de novo.",
+        "invite_invalid": "Este código não existe ou foi substituído.",
+        "plan_full": "O plano não tem vagas livres.",
+        "plan_expired": "Este plano expirou.",
+        "own_plan": "Este é o seu próprio plano.",
+        "owner_of_plan": "Você tem um plano e não pode entrar em outro.",
+        "already_member": "Você já está neste plano.",
+        "in_other_plan": "Você está em outro plano. Saia dele primeiro.",
+        "member_of_plan": "Saia do plano atual antes de comprar o seu.",
+        "too_many_members": "Remova membros primeiro: o plano menor tem menos vagas.",
+        "removal_limit": "Esta vaga já mudou duas vezes neste mês. Tente depois.",
+        "not_a_member": "Esta pessoa não está no plano."
+      },
+      "centerSeats": "{{used}} de {{seats}} vagas ocupadas"
+    }
   },
   "soundwaveLock": {
     "wordmark": "SOUND WAVE",

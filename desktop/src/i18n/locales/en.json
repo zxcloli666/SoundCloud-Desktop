@@ -2016,7 +2016,76 @@
       "notFirst": "A friend's code works on the first purchase only.",
       "failed": "Couldn't check the code."
     },
-    "qrRefreshing": "QR expired, making a new one…"
+    "qrRefreshing": "QR expired, making a new one…",
+    "tier": {
+      "solo": "Personal",
+      "duo": "Duo",
+      "family": "Family",
+      "people_one": "{{count}} person",
+      "people_other": "{{count}} people",
+      "each": "{{price}} ₽ each",
+      "save": "−{{pct}}%"
+    },
+    "shared": {
+      "carryTitle": "Your current STAR moves over",
+      "carryDays_one": "+{{count}} day",
+      "carryDays_other": "+{{count}} days",
+      "carryEnd": "New end {{date}}",
+      "memberBuy": "You are in someone else's plan. Leave it to buy your own.",
+      "manageCta": "Members",
+      "seatsOf": "{{used}} of {{seats}} seats",
+      "until": "Until {{date}}",
+      "invite": {
+        "title": "Invite code",
+        "copy": "Copy invite",
+        "copied": "Copied",
+        "regenerate": "New code",
+        "regenerated": "New code is ready, the old one no longer works",
+        "shareText": "Join my STAR {{tier}} in SoundCloud Desktop: open STAR, tap \"I have a code\" and enter {{code}}. https://getsoundcloud.app"
+      },
+      "seat": {
+        "free": "Free seat",
+        "joined": "Joined {{date}}",
+        "remove": "Remove",
+        "removeAsk": "Remove from the plan?",
+        "removeYes": "Remove",
+        "removeNo": "Keep",
+        "removed": "Removed from the plan",
+        "locked": "Can be removed again {{date}}"
+      },
+      "member": {
+        "from": "STAR from {{name}}'s {{tier}}",
+        "sub": "Until {{date}}",
+        "leave": "Leave plan",
+        "leaveAsk": "Leave this plan? Your own STAR stays.",
+        "leaveYes": "Leave",
+        "leaveNo": "Stay",
+        "left": "You left the plan",
+        "joined": "You joined the plan"
+      },
+      "empty": {
+        "title": "No shared plan yet",
+        "text": "Buy Duo or Family and invite people with a code.",
+        "cta": "Choose a plan"
+      },
+      "inviteMembers": "Invite people",
+      "joinHint": "Or an invite code from a Duo or Family owner (JOIN-…).",
+      "error": {
+        "generic": "Something went wrong. Try again.",
+        "invite_invalid": "This invite code does not exist or was replaced.",
+        "plan_full": "The plan has no free seats.",
+        "plan_expired": "This plan has expired.",
+        "own_plan": "This is your own plan.",
+        "owner_of_plan": "You own a plan, so you cannot join another.",
+        "already_member": "You are already in this plan.",
+        "in_other_plan": "You are in another plan. Leave it first.",
+        "member_of_plan": "Leave your current plan before buying your own.",
+        "too_many_members": "Remove members first: the smaller plan has fewer seats.",
+        "removal_limit": "This seat was changed twice this month. Try later.",
+        "not_a_member": "This person is not in the plan."
+      },
+      "centerSeats": "{{used}} of {{seats}} seats taken"
+    }
   },
   "soundwaveLock": {
     "wordmark": "SOUND WAVE",

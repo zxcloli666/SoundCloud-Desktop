@@ -2,16 +2,18 @@ import { useMutation } from '@tanstack/react-query';
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { Gift, Users } from '../../../lib/icons';
+import { Crown, Gift, Users } from '../../../lib/icons';
 import { payApi } from '../../../lib/pay-client';
 import { requestPremiumRecheck } from '../../../lib/premium-cache';
 import { queryClient } from '../../../lib/query-client';
 import { passDate } from '../../../lib/star-format';
 import { PAY_SUB_KEY, usePaySubscription } from '../../../lib/star-offer';
+import { useSharedOverview } from '../../../lib/star-shared';
 import { DiscordCard } from '../DiscordCard';
+import { MemberCard } from './MemberCard';
 import { primaryEntitlement } from './meta';
-import { TenurePanel } from './TenurePanel';
 import { GhostBtn } from './StarConsole';
+import { TenurePanel } from './TenurePanel';
 
 /** Manage — Discord link, auto-renew (cancel-only), source; extend / redeem / gift / invite. */
 export const ManagePane = memo(function ManagePane({
@@ -19,14 +21,18 @@ export const ManagePane = memo(function ManagePane({
   onRedeem,
   onGift,
   onInvite,
+  onPlan,
 }: {
   onExtend: () => void;
   onRedeem: () => void;
   onGift: () => void;
   onInvite: () => void;
+  onPlan: () => void;
 }) {
   const { t } = useTranslation();
   const { data, isLoading } = usePaySubscription();
+  const shared = useSharedOverview().data;
+  const owned = shared?.owner;
   const ent = data ? primaryEntitlement(data.entitlements) : null;
   const source = ent?.source ?? '';
   const endsAt = ent?.ends_at ?? data?.premium_until ?? 0;
@@ -44,6 +50,36 @@ export const ManagePane = memo(function ManagePane({
 
   return (
     <div className="flex flex-col gap-2.5">
+      {shared?.member_of && <MemberCard plan={shared.member_of} />}
+      {owned && (
+        <button
+          type="button"
+          onClick={onPlan}
+          className="flex cursor-pointer items-center justify-between gap-3 rounded-[14px] border border-ink/[0.08] bg-ink/[0.03] px-4 py-3 text-left transition-colors hover:bg-ink/[0.06]"
+        >
+          <span className="flex items-center gap-2.5">
+            <Crown size={16} className="text-accent" />
+            <span className="text-[13px] font-medium text-ink-85">
+              {t(`starpass.tier.${owned.tier}`)}
+            </span>
+          </span>
+          <span className="flex items-center gap-1.5">
+            {Array.from({ length: owned.seats }, (_, i) => (
+              <span
+                key={i}
+                className="size-2.5 rounded-full"
+                style={{
+                  background:
+                    i < owned.members.length ? 'var(--color-accent)' : 'rgb(var(--ink) / 0.14)',
+                }}
+              />
+            ))}
+            <span className="ml-1.5 font-mono text-[11px] text-ink-50">
+              {t('starpass.shared.manageCta')}
+            </span>
+          </span>
+        </button>
+      )}
       <TenurePanel />
       <DiscordCard discord={data?.discord ?? null} />
 
