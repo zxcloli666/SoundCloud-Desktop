@@ -26,11 +26,16 @@ struct Hit {
 
 pub fn request(variants: &[Variant], kinds: &[Kind]) -> Request {
     let mut texts: Vec<String> = Vec::new();
-    let extras = variants
-        .iter()
+    let main = variants.iter().filter(|v| !v.fallback);
+    let extras = main
+        .clone()
         .flat_map(|v| [v.artist.clone(), v.title.clone()])
         .flatten();
-    for text in variants.iter().map(|v| v.text.clone()).chain(extras) {
+    let fallbacks = variants
+        .iter()
+        .filter(|v| v.fallback)
+        .map(|v| v.text.clone());
+    for text in main.map(|v| v.text.clone()).chain(extras).chain(fallbacks) {
         let text = text.trim().to_string();
         if !text.is_empty() && !texts.contains(&text) {
             texts.push(text);
@@ -112,25 +117,27 @@ mod tests {
     }
 
     #[test]
-    fn the_request_lists_texts_then_artist_and_title_once() {
-        let variants = vec![
-            Variant {
-                text: "земфира хочу".into(),
-                artist: Some("земфира".into()),
-                title: Some("хочу".into()),
+    fn the_request_lists_texts_then_artist_and_title_then_fallbacks() {
+        let variant =
+            |text: &str, artist: Option<&str>, title: Option<&str>, fallback: bool| Variant {
+                text: text.into(),
+                artist: artist.map(Into::into),
+                title: title.map(Into::into),
                 kept_fillers: false,
                 lemmatized: false,
-            },
-            Variant {
-                text: "земфира хочу".into(),
-                artist: None,
-                title: None,
-                kept_fillers: true,
-                lemmatized: false,
-            },
+                fallback,
+            };
+        let variants = vec![
+            variant("песню", None, None, true),
+            variant("земфира хочу", Some("земфира"), Some("хочу"), false),
+            variant("земфира хочу", None, None, false),
+            variant("хочу", None, None, true),
         ];
         let request = request(&variants, &Kind::ALL);
-        assert_eq!(request.variants, vec!["земфира хочу", "земфира", "хочу"]);
+        assert_eq!(
+            request.variants,
+            vec!["земфира хочу", "земфира", "хочу", "песню"]
+        );
         assert_eq!(request.kinds, vec!["artist", "track", "album", "playlist"]);
     }
 }
