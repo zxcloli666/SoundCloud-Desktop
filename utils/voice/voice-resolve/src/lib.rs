@@ -10,7 +10,7 @@ pub use entity::{Decision, Entity, Scored};
 pub use score::{Boosts, rank};
 
 use serde::Serialize;
-use voice_nlu::{Intent, Kind, Parsed, parse};
+use voice_nlu::{Intent, Kind, Parsed, parse, parse_one};
 
 #[derive(Debug, Clone, Serialize)]
 pub struct Outcome {
@@ -37,8 +37,18 @@ pub fn resolve(parsed: &Parsed, catalog: &dyn Catalog, boosts: &Boosts, min_sim:
     score::decide(&ranked, min_sim)
 }
 
-pub fn interpret(text: &str, catalog: &dyn Catalog, boosts: &Boosts) -> Outcome {
-    let parsed = parse(text);
+pub fn interpret(text: &str, catalog: &dyn Catalog, boosts: &Boosts) -> Vec<Outcome> {
+    parse(text)
+        .into_iter()
+        .map(|parsed| interpret_parsed(parsed, catalog, boosts))
+        .collect()
+}
+
+pub fn interpret_one(text: &str, catalog: &dyn Catalog, boosts: &Boosts) -> Outcome {
+    interpret_parsed(parse_one(text), catalog, boosts)
+}
+
+fn interpret_parsed(parsed: Parsed, catalog: &dyn Catalog, boosts: &Boosts) -> Outcome {
     let mut intent = parsed.intent;
     let mut decision = None;
     if parsed.queries.is_empty() {

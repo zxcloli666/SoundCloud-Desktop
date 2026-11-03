@@ -1,4 +1,4 @@
-use voice_nlu::{Intent, Kind, normalize, parse};
+use voice_nlu::{Intent, Kind, normalize, parse_one as parse};
 
 fn words(text: &str) -> String {
     normalize(text).text

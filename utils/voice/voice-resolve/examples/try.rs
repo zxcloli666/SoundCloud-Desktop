@@ -22,8 +22,8 @@ fn main() {
         args
     };
     for phrase in phrases.iter().filter(|p| !p.trim().is_empty()) {
-        let outcome = interpret(phrase, &catalog, &boosts);
-        let line = serde_json::json!({ "phrase": phrase, "outcome": outcome });
+        let steps = interpret(phrase, &catalog, &boosts);
+        let line = serde_json::json!({ "phrase": phrase, "steps": steps });
         println!("{line}");
     }
 }
