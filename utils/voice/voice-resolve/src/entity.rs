@@ -9,6 +9,7 @@ pub struct Entity {
     pub popularity: u64,
     pub id: String,
     pub aliases: Vec<String>,
+    pub artist_aliases: Vec<String>,
 }
 
 impl Entity {

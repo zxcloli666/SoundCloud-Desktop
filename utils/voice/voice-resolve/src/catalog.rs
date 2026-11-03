@@ -44,9 +44,24 @@ impl FixtureCatalog {
                 popularity: cols[3].trim().parse().unwrap_or(0),
                 id: format!("{}:{n}", kind.name()),
                 aliases,
+                artist_aliases: Vec::new(),
             };
             let keys = Keys::new(&entity);
             rows.push((entity, keys));
+        }
+        let by_artist: Vec<(String, Vec<String>)> = rows
+            .iter()
+            .filter(|(e, _)| e.kind == Kind::Artist)
+            .map(|(e, _)| (e.name.clone(), e.aliases.clone()))
+            .collect();
+        for (e, k) in rows.iter_mut() {
+            let Some(artist) = e.artist.as_deref() else {
+                continue;
+            };
+            if let Some((_, aliases)) = by_artist.iter().find(|(n, _)| n == artist) {
+                e.artist_aliases = aliases.clone();
+                *k = Keys::new(e);
+            }
         }
         FixtureCatalog { rows }
     }

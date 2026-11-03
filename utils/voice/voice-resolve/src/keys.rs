@@ -62,7 +62,10 @@ fn credits(name: &str) -> Vec<String> {
 }
 
 fn name_words(name: &str) -> Vec<&str> {
-    let words: Vec<&str> = name.split_whitespace().collect();
+    let words: Vec<&str> = name
+        .split(|c: char| c.is_whitespace() || c == '-')
+        .filter(|w| !w.is_empty())
+        .collect();
     if words.len() < 2 {
         return Vec::new();
     }
@@ -120,6 +123,7 @@ impl Keys {
                         .iter()
                         .map(|p| fold(p))
                         .chain(name_words(a).into_iter().map(fold))
+                        .chain(e.artist_aliases.iter().map(|x| fold(x)))
                         .collect()
                 })
                 .unwrap_or_default(),

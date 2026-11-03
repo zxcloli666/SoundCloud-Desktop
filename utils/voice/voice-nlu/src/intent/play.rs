@@ -172,6 +172,7 @@ pub fn content(c: &Ctx) -> Option<Detected> {
     if let Some(w) = c.pos(WAVE) {
         let mut u = used.clone();
         u.push(w);
+        u.extend(c.all(&["меня"]));
         if entity_tokens(c, &u) == 0 {
             return Some(Detected::new(Intent::PlayWave, u));
         }

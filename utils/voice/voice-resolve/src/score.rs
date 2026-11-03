@@ -35,6 +35,7 @@ impl Boosts {
 }
 
 pub const BARE_MIN: f32 = 0.88;
+pub const WEAK_VERB_MIN: f32 = 0.88;
 pub const ASK_RATIO: f32 = 0.92;
 
 fn popularity_factor(pop: u64) -> f32 {

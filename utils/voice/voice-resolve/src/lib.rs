@@ -76,7 +76,8 @@ fn interpret_parsed(parsed: Parsed, catalog: &dyn Catalog, boosts: &Boosts) -> O
         Intent::Play | Intent::QueueAdd | Intent::PlaySimilar
     ) {
         let d = resolve(&parsed, catalog, boosts, false);
-        if intent == Intent::Play && matches!(d, Decision::NotFound) {
+        let sure = matches!(&d, Decision::Act { pick } if pick.sim >= score::WEAK_VERB_MIN);
+        if intent == Intent::Play && (matches!(d, Decision::NotFound) || (parsed.weak_verb && !sure)) {
             intent = Intent::None;
         }
         decision = Some(d);

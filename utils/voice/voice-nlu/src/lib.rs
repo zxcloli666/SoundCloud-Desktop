@@ -40,9 +40,20 @@ pub(crate) fn parse_toks(text: &str, mut toks: Vec<Tok>) -> (Parsed, bool) {
     }
     let s = slots::extract(&toks, &det);
     let queries = variants::expand(&s.raw);
+    let edge = |t: Option<&Tok>| {
+        t.is_some_and(|t| {
+            let w = t.w.as_str();
+            toks.len() > 1
+                && (lexicon::SUBJECTS.contains(&w)
+                    || lexicon::TRANSPORT_VERBS.contains(&w)
+                    || lexicon::PLAY_WEAK.contains(&w))
+        })
+    };
     let bare = det.intent == Intent::None
         && queries.iter().any(|q| !q.kept_fillers)
-        && toks.len() <= 8;
+        && toks.len() <= 8
+        && !edge(toks.first())
+        && !edge(toks.last());
     let queries = if det.intent == Intent::None && !bare {
         Vec::new()
     } else {
