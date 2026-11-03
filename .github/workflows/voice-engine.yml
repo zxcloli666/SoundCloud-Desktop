@@ -121,8 +121,47 @@ jobs:
       - name: Test
         run: cargo test --release -p voice-engine -- --nocapture 2>&1 | grep -E "^test |skipped|test result|panicked|heard"
 
+      - name: Diagnose 100.wav
+        if: always()
+        run: |
+          M=.cache/vm
+          mkdir -p $M
+          cp .cache/store/silero-vad/1/silero_vad.onnx $M/
+          cp -r .cache/store/sherpa-onnx-streaming-zipformer-small-ru-vosk-int8-2025-08-16/1 $M/asr
+          cargo run -q --release -p voice-speech --example transcribe -- $M - .cache/audio/100.wav
+          cat > voice-engine/tests/zz_diag.rs <<'RS'
+          mod common;
+          use std::time::Duration;
+          use common::{feeding, models_root, rig_with, timing};
+          use voice_engine::{Command, Config, Echo, Event, Language, Source};
+          use voice_resolve::FixtureCatalog;
+          #[test]
+          fn diag() {
+              let path = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../.cache/audio/100.wav");
+              for echo in [Echo::Off, Echo::On] {
+                  let (samples, rate) = voice_speech::read_mono(&path).unwrap();
+                  let mut slow = timing();
+                  slow.no_speech = Duration::from_secs(10);
+                  let rig = rig_with(feeding(samples, rate), Box::new(FixtureCatalog::from_tsv(common::CATALOG, true)), models_root(), slow);
+                  let config = Config { enabled: true, language: Language::Ru, echo, ..Config::default() };
+                  rig.engine.send(Command::Apply(Box::new(config)));
+                  rig.engine.send(Command::Start(Source::Button));
+                  let mut partials = Vec::new();
+                  loop {
+                      match rig.events.recv_timeout(Duration::from_secs(20)).expect("event") {
+                          Event::Partial(p) => partials.push(p.text),
+                          Event::Command(c) => { eprintln!("DIAG {echo:?} {partials:?} {:?}", c.heard); break; }
+                          _ => {}
+                      }
+                  }
+              }
+          }
+          RS
+          cargo test -q --release -p voice-engine --test zz_diag -- --nocapture 2>&1 | grep -E "DIAG|panicked|test result"
+
   size:
     name: Size ${{ matrix.os }} ${{ matrix.side }}
+    if: github.event_name == 'workflow_dispatch'
     strategy:
       fail-fast: false
       matrix:
