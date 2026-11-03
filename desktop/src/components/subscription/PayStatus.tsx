@@ -35,12 +35,12 @@ export const PayStatus = memo(function PayStatus({
           ? 'color-mix(in srgb, var(--color-accent) 55%, transparent)'
           : failed
             ? 'rgba(255,90,80,0.3)'
-            : 'rgba(255,255,255,0.06)',
+            : 'rgb(var(--ink) / 0.06)',
         background: ok
           ? 'color-mix(in srgb, var(--color-accent) 10%, transparent)'
           : failed
             ? 'rgba(255,80,70,0.05)'
-            : 'rgba(255,255,255,0.03)',
+            : 'rgb(var(--ink) / 0.03)',
       }}
     >
       {ok ? (
@@ -74,7 +74,7 @@ export const PayStatus = memo(function PayStatus({
               ? t('starpass.status.failed')
               : t('starpass.status.waiting')}
         </div>
-        <div className="font-mono text-[12px] text-white/55">
+        <div className="font-mono text-[12px] text-ink-55">
           {ok
             ? t('starpass.status.activated')
             : failed

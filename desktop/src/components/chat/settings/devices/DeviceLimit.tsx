@@ -15,12 +15,12 @@ export function DeviceLimit({ used, max }: { used: number; max: number }) {
           <span
             key={slot}
             className={`h-3 w-[5px] rounded-full transition-colors ${
-              index < used ? (full ? 'bg-rose-300/80' : 'bg-white/60') : 'bg-white/[0.09]'
+              index < used ? (full ? 'bg-rose-300/80' : 'bg-ink/60') : 'bg-ink/[0.09]'
             }`}
           />
         ))}
       </div>
-      <span className="text-[11.5px] font-semibold tabular-nums text-white/40">
+      <span className="text-[11.5px] font-semibold tabular-nums text-ink-40">
         {used}/{max}
       </span>
     </div>

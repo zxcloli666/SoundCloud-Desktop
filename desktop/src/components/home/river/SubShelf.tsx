@@ -49,15 +49,15 @@ export function SubShelf({
   return (
     <div>
       <div className="mb-3 flex items-center gap-2.5 pl-1">
-        <span className="font-mono text-[10.5px] text-white/25 tabular-nums">{index}</span>
-        <span className="text-[12px] font-semibold uppercase tracking-[0.14em] text-white/55">
+        <span className="font-mono text-[10.5px] text-ink-25 tabular-nums">{index}</span>
+        <span className="text-[12px] font-semibold uppercase tracking-[0.14em] text-ink-55">
           {label}
         </span>
-        <span className="h-px flex-1 bg-white/[0.05]" />
+        <span className="h-px flex-1 bg-ink/[0.05]" />
         {to && (
           <Link
             to={to}
-            className="flex items-center gap-0.5 text-[12px] font-semibold text-white/45 transition-colors hover:text-white/90"
+            className="flex items-center gap-0.5 text-[12px] font-semibold text-ink-45 transition-colors hover:text-ink-90"
           >
             {t('library.seeAll')}
             <ChevronRight size={14} />

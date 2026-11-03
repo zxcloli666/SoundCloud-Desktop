@@ -31,18 +31,18 @@ export const LocalPlaylistHeader = React.memo(function LocalPlaylistHeader({
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-4 rounded-[18px] border border-white/[0.07] bg-white/[0.02] p-3 pr-4">
+    <div className="flex flex-wrap items-center gap-4 rounded-[18px] border border-ink/[0.07] bg-ink/[0.02] p-3 pr-4">
       <button
         type="button"
         onClick={onBack}
         aria-label={t('search.back')}
-        className="flex size-9 flex-none cursor-pointer items-center justify-center rounded-full text-white/55 transition-colors hover:bg-white/[0.07] hover:text-white"
+        className="flex size-9 flex-none cursor-pointer items-center justify-center rounded-full text-ink-55 transition-colors hover:bg-ink/[0.07] hover:text-ink"
       >
         <ChevronLeft size={18} />
       </button>
       <LocalPlaylistCover playlist={playlist} className="size-16 flex-none rounded-[12px]" />
       <div className="min-w-0 flex-1">
-        <div className="font-mono text-[9.5px] font-semibold uppercase tracking-[0.2em] text-white/35">
+        <div className="font-mono text-[9.5px] font-semibold uppercase tracking-[0.2em] text-ink-35">
           {t('local.playlistKind')}
         </div>
         {renaming ? (
@@ -61,16 +61,16 @@ export const LocalPlaylistHeader = React.memo(function LocalPlaylistHeader({
             onClick={() => setRenaming(true)}
             className="group/title flex max-w-full cursor-pointer items-center gap-2 text-left"
           >
-            <span className="truncate text-[18px] font-semibold tracking-[-0.02em] text-white/92">
+            <span className="truncate text-[18px] font-semibold tracking-[-0.02em] text-ink-92">
               {playlist.title}
             </span>
             <Pencil
               size={13}
-              className="flex-none text-white/30 opacity-0 transition-opacity group-hover/title:opacity-100"
+              className="flex-none text-ink-30 opacity-0 transition-opacity group-hover/title:opacity-100"
             />
           </button>
         )}
-        <div className="truncate text-[12px] text-white/45">
+        <div className="truncate text-[12px] text-ink-45">
           {t('local.tracksCount', { count: playlist.trackIds.length })} · {t('local.onThisDevice')}
         </div>
       </div>
@@ -80,7 +80,7 @@ export const LocalPlaylistHeader = React.memo(function LocalPlaylistHeader({
         className={`flex h-9 cursor-pointer items-center gap-2 rounded-[11px] border px-3.5 text-[12.5px] font-semibold transition-colors ${
           confirming
             ? 'border-red-500/30 bg-red-500/15 text-red-300'
-            : 'border-white/[0.08] bg-white/[0.03] text-white/55 hover:border-red-500/25 hover:text-red-300'
+            : 'border-ink/[0.08] bg-ink/[0.03] text-ink-55 hover:border-red-500/25 hover:text-red-300'
         }`}
       >
         <Trash2 size={13} />

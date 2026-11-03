@@ -16,14 +16,14 @@ function Fact({
 }) {
     return (
         <div
-            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-2xl text-[12px] font-semibold text-white/70"
+            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-2xl text-[12px] font-semibold text-ink-70"
             style={{
-                background: 'rgba(255,255,255,0.035)',
-                border: '0.5px solid rgba(255,255,255,0.07)',
+                background: 'rgb(var(--ink) / 0.035)',
+                border: '0.5px solid rgb(var(--ink) / 0.07)',
                 boxShadow: `0 8px 22px ${accentGlow}`,
             }}
         >
-            <span className="text-white/40">{icon}</span>
+            <span className="text-ink-40">{icon}</span>
             <span className="tabular-nums">{text}</span>
         </div>
     );

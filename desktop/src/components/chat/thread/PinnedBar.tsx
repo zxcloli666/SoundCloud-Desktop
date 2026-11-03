@@ -44,7 +44,7 @@ export const PinnedBar = memo(function PinnedBar() {
   const active = Math.max(0, segments - 1 - (pins.length - 1 - at));
 
   return (
-    <div className="relative z-10 flex h-11 shrink-0 items-center gap-2.5 border-b border-white/[0.05] bg-white/[0.02] pr-1.5 pl-3">
+    <div className="relative z-10 flex h-11 shrink-0 items-center gap-2.5 border-b border-ink/[0.05] bg-ink/[0.02] pr-1.5 pl-3">
       {segments > 1 && (
         <span aria-hidden className="flex h-7 w-[3px] shrink-0 flex-col gap-[2px]">
           {Array.from({ length: segments }, (_, i) => (
@@ -68,7 +68,7 @@ export const PinnedBar = memo(function PinnedBar() {
             ? t('chat.thread.pinned.many', { index: at + 1, total: pins.length })
             : t('chat.thread.pinned.one')}
         </span>
-        <span className="block truncate text-[12.5px] text-white/65">
+        <span className="block truncate text-[12.5px] text-ink-65">
           {message ? messageSnippet(message, t) : t('chat.thread.pinned.unloaded')}
         </span>
       </button>
@@ -77,7 +77,7 @@ export const PinnedBar = memo(function PinnedBar() {
           type="button"
           aria-label={t('chat.thread.actions.unpin')}
           onClick={unpin}
-          className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full text-white/40 transition-colors duration-150 hover:bg-white/[0.08] hover:text-white"
+          className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full text-ink-40 transition-colors duration-150 hover:bg-ink/[0.08] hover:text-white"
         >
           <X size={14} />
         </button>

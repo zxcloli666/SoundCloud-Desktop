@@ -94,7 +94,7 @@ function BlocksEditor({ scope }: { scope: LayoutScope }) {
       trailing: locked ? (
         <span
           title={t('settings.layoutAlwaysVisible')}
-          className="w-8 h-8 flex items-center justify-center text-white/20"
+          className="w-8 h-8 flex items-center justify-center text-ink-20"
         >
           <Lock size={14} />
         </span>
@@ -137,7 +137,7 @@ export function LayoutCard() {
           type="button"
           disabled={pristine}
           onClick={() => resetLayout(scope)}
-          className="flex items-center gap-1.5 h-8 px-3 rounded-xl text-[12px] font-medium text-white/50 bg-white/[0.04] border border-white/[0.06] hover:text-white/85 hover:bg-white/[0.07] transition-all duration-200 cursor-pointer disabled:opacity-0 disabled:pointer-events-none"
+          className="flex items-center gap-1.5 h-8 px-3 rounded-xl text-[12px] font-medium text-ink-50 bg-ink/[0.04] border border-ink/[0.06] hover:text-ink-85 hover:bg-ink/[0.07] transition-all duration-200 cursor-pointer disabled:opacity-0 disabled:pointer-events-none"
         >
           <RotateCcw size={13} />
           {t('settings.layoutReset')}
@@ -153,7 +153,7 @@ export function LayoutCard() {
         <BlocksEditor key={scope} scope={scope} />
         {scope === 'sidebar' && <PinnedEditor />}
         {scope === 'home' && <RiverSections />}
-        <p className="text-[11.5px] leading-snug text-white/30">
+        <p className="text-[11.5px] leading-snug text-ink-30">
           {t(scope === 'sidebar' ? 'settings.layoutSidebarHint' : 'settings.layoutPageHint')}
         </p>
       </div>

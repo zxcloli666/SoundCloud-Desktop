@@ -125,13 +125,13 @@ export const DiscoverPrism = memo(function DiscoverPrism() {
                 transition: 'background 700ms ease',
             }}
         >
-          <Compass size={15} className="text-white/85"/>
+          <Compass size={15} className="text-ink-85"/>
         </span>
                 <div className="min-w-0 flex-1">
-                    <h2 className="text-[15px] font-bold text-white/95 tracking-tight leading-tight">
+                    <h2 className="text-[15px] font-bold text-ink-95 tracking-tight leading-tight">
                         {t('discover.prismTitle')}
                     </h2>
-                    <p className="text-[11px] text-white/35 truncate">{t('discover.prismSubtitle')}</p>
+                    <p className="text-[11px] text-ink-35 truncate">{t('discover.prismSubtitle')}</p>
                 </div>
                 <ReshuffleButton
                     onClick={() => setNonce((n) => n + 1)}
@@ -152,9 +152,9 @@ export const DiscoverPrism = memo(function DiscoverPrism() {
             <div
                 className="relative rounded-[2rem] overflow-hidden p-2 md:p-4"
                 style={{
-                    background: `radial-gradient(120% 100% at 50% 0%, ${tint(0.16)}, ${tint(0.04)} 55%, rgba(255,255,255,0.02))`,
+                    background: `radial-gradient(120% 100% at 50% 0%, ${tint(0.16)}, ${tint(0.04)} 55%, rgb(var(--ink) / 0.02))`,
                     border: `0.5px solid ${tint(0.18)}`,
-                    boxShadow: `0 24px 60px rgba(0,0,0,0.28), 0 0 60px ${tint(0.1)}, inset 0 1px 0 rgba(255,255,255,0.05)`,
+                    boxShadow: `0 24px 60px rgb(var(--shade) / calc(0.28 * var(--shade-alpha))), 0 0 60px ${tint(0.1)}, inset 0 1px 0 rgba(255,255,255,0.05)`,
                     transition: 'background 700ms ease, border-color 700ms ease, box-shadow 700ms ease',
                     isolation: 'isolate',
                 }}
@@ -205,7 +205,7 @@ const ReshuffleButton = memo(function ReshuffleButton({
             }}
             aria-label={label}
             title={label}
-            className="inline-flex items-center gap-1.5 h-8 pl-2.5 pr-3 rounded-full text-[11px] font-semibold text-white/70 hover:text-white transition-colors duration-300 cursor-pointer shrink-0"
+            className="inline-flex items-center gap-1.5 h-8 pl-2.5 pr-3 rounded-full text-[11px] font-semibold text-ink-70 hover:text-ink transition-colors duration-300 cursor-pointer shrink-0"
             style={{background: tint(0.1), border: `0.5px solid ${tint(0.22)}`}}
         >
             <Shuffle

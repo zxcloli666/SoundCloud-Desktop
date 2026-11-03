@@ -34,7 +34,7 @@ export const SaveTrigger = React.memo(
           className={`relative inline-flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 ease-[var(--ease-apple)] cursor-pointer ${
             lit
               ? 'text-accent bg-accent/12'
-              : 'text-white/60 hover:text-white/95 hover:bg-white/[0.07]'
+              : 'text-ink-60 hover:text-ink-95 hover:bg-ink/[0.07]'
           }`}
         >
           {activity && <ProgressRing value={pct} size={34} />}
@@ -52,7 +52,7 @@ export const SaveTrigger = React.memo(
         className={`relative inline-flex items-center gap-2 h-11 pl-3 pr-4 rounded-full text-[12.5px] font-semibold border transition-all duration-300 ease-[var(--ease-apple)] cursor-pointer active:scale-[0.96] ${
           lit
             ? 'bg-accent/12 text-accent border-accent/30'
-            : 'bg-white/[0.04] border-white/[0.08] text-white/70 hover:bg-white/[0.07] hover:text-white/95'
+            : 'bg-ink/[0.04] border-ink/[0.08] text-ink-70 hover:bg-ink/[0.07] hover:text-ink-95'
         }`}
       >
         <span className="relative flex size-7 items-center justify-center">

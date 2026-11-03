@@ -28,6 +28,7 @@ export function GlassButton({
 }: GlassButtonProps) {
   return (
     <button
+      data-ui="button"
       className={`${base} ${variants[variant]} ${active ? 'text-text-primary bg-bg-glass-hover' : ''} ${className}`}
       {...props}
     >

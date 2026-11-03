@@ -45,16 +45,16 @@ export const ActivityChart = memo(function ActivityChart({
   return (
     <div>
       <div className="flex items-baseline justify-between gap-3 mb-3 min-h-[20px]">
-        <span className="text-[10px] font-bold uppercase tracking-[0.24em] text-white/45">
+        <span className="text-[10px] font-bold uppercase tracking-[0.24em] text-ink-45">
           {hover == null ? t('stats.peak') : label(focused)}
         </span>
         {focused && focused.plays > 0 && (
-          <span className="text-[12px] text-white/60 tabular-nums truncate">
+          <span className="text-[12px] text-ink-60 tabular-nums truncate">
             {hover == null && (
-              <span className="text-white/85 font-semibold">{label(focused)} · </span>
+              <span className="text-ink-85 font-semibold">{label(focused)} · </span>
             )}
             {t('stats.playsCount', { count: focused.plays, formatted: fmt.number(focused.plays) })}
-            <span className="text-white/35"> · {fmt.duration(focused.listenedMs)}</span>
+            <span className="text-ink-35"> · {fmt.duration(focused.listenedMs)}</span>
           </span>
         )}
       </div>
@@ -78,15 +78,15 @@ export const ActivityChart = memo(function ActivityChart({
                     background: `linear-gradient(180deg, ${accent}, ${auraRgba(aura, 0.14)})`,
                     opacity: hover == null || active ? 1 : 0.55,
                     boxShadow: active
-                      ? `0 0 24px ${auraRgba(aura, 0.6)}, inset 0 1px 0 rgba(255,255,255,0.5)`
+                      ? `0 0 24px ${auraRgba(aura, 0.6)}, inset 0 1px 0 rgb(var(--ink) / 0.5)`
                       : perf.glow
-                        ? `0 0 14px ${auraRgba(aura, 0.22)}, inset 0 1px 0 rgba(255,255,255,0.35)`
-                        : 'inset 0 1px 0 rgba(255,255,255,0.35)',
+                        ? `0 0 14px ${auraRgba(aura, 0.22)}, inset 0 1px 0 rgb(var(--ink) / 0.35)`
+                        : 'inset 0 1px 0 rgb(var(--ink) / 0.35)',
                     filter: active ? 'brightness(1.15) saturate(1.15)' : undefined,
                   }}
                 />
               ) : (
-                <div className="w-full h-[3px] rounded-full bg-white/[0.07]" />
+                <div className="w-full h-[3px] rounded-full bg-ink/[0.07]" />
               )}
             </div>
           );
@@ -96,7 +96,7 @@ export const ActivityChart = memo(function ActivityChart({
         {bars.map((b, i) => (
           <span
             key={b.key}
-            className="flex-1 min-w-0 text-center text-[10px] text-white/30 tabular-nums whitespace-nowrap overflow-visible"
+            className="flex-1 min-w-0 text-center text-[10px] text-ink-30 tabular-nums whitespace-nowrap overflow-visible"
           >
             {axis.has(i) ? axisLabel(b) : ''}
           </span>

@@ -1,0 +1,92 @@
+name: ghcr-cache
+description: Restore or save the release target directory of one triple as a zstd tar in a public ghcr package
+
+inputs:
+  mode:
+    description: restore or save
+    required: true
+  triple:
+    description: Rust host triple of the build
+    required: true
+  target:
+    description: Cargo target directory
+    default: desktop/src-tauri/target
+  lock:
+    description: Cargo.lock that picks the exact tag
+    default: desktop/src-tauri/Cargo.lock
+  token:
+    description: Token that may push packages
+    default: ${{ github.token }}
+
+runs:
+  using: composite
+  steps:
+    - uses: oras-project/setup-oras@v2
+      with:
+        version: 1.3.4
+
+    - name: Restore
+      if: inputs.mode == 'restore'
+      shell: bash
+      env:
+        TRIPLE: ${{ inputs.triple }}
+        TARGET: ${{ inputs.target }}
+        LOCK: ${{ inputs.lock }}
+      run: |
+        cd "$GITHUB_WORKSPACE"
+        owner=$(printf '%s' "$GITHUB_REPOSITORY_OWNER" | tr '[:upper:]' '[:lower:]')
+        repo=ghcr.io/$owner/cache/desktop-target-$TRIPLE
+        toolchain=$(sed -n 's/^channel *= *"\(.*\)"/\1/p' rust-toolchain.toml)
+        exact=$TRIPLE-$toolchain-$(git rev-parse "HEAD:$LOCK" | cut -c1-12)
+        pack=$RUNNER_TEMP/ghcr-cache
+        mkdir -p "$pack"
+        for tag in "$exact" "$TRIPLE-latest"; do
+          if oras pull "$repo:$tag" --output "$pack"; then
+            if zstd -dc "$pack/target.tar.zst" | tar -xf -; then
+              echo "restored $repo:$tag"
+            else
+              rm -rf "$TARGET" .ci
+              echo "::warning::$repo:$tag did not unpack, building cold"
+            fi
+            rm -rf "$pack"
+            exit 0
+          fi
+        done
+        echo "no cache in $repo"
+
+    - name: Save
+      if: inputs.mode == 'save'
+      shell: bash
+      env:
+        TRIPLE: ${{ inputs.triple }}
+        TARGET: ${{ inputs.target }}
+        LOCK: ${{ inputs.lock }}
+        TOKEN: ${{ inputs.token }}
+      run: |
+        cd "$GITHUB_WORKSPACE"
+        owner=$(printf '%s' "$GITHUB_REPOSITORY_OWNER" | tr '[:upper:]' '[:lower:]')
+        repo=ghcr.io/$owner/cache/desktop-target-$TRIPLE
+        toolchain=$(sed -n 's/^channel *= *"\(.*\)"/\1/p' rust-toolchain.toml)
+        exact=$TRIPLE-$toolchain-$(git rev-parse "HEAD:$LOCK" | cut -c1-12)
+        paths=(.ci)
+        for dir in "$TARGET/release" "$TARGET/$TRIPLE/release"; do
+          [ -d "$dir" ] || continue
+          rm -rf "$dir/bundle" "$dir"/soundcloud-desktop* "$dir"/soundcloud_desktop* \
+            "$dir"/.fingerprint/soundcloud-desktop-* "$dir"/build/soundcloud-desktop-* \
+            "$dir"/deps/soundcloud_desktop* "$dir"/deps/libsoundcloud_desktop*
+          paths+=("$dir")
+        done
+        pack=$RUNNER_TEMP/ghcr-cache
+        mkdir -p "$pack"
+        tar -cf - "${paths[@]}" | zstd -T0 -6 -o "$pack/target.tar.zst"
+        bytes=$(wc -c < "$pack/target.tar.zst" | tr -d ' ')
+        echo "target.tar.zst is $((bytes / 1000000)) MB"
+        if [ "$bytes" -gt 1500000000 ]; then
+          echo "::warning::$TRIPLE cache is over 1.5 GB, not pushed"
+          exit 0
+        fi
+        printf '%s' "$TOKEN" | oras login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+        cd "$pack"
+        oras push "$repo:$exact,$TRIPLE-latest" target.tar.zst:application/zstd \
+          --annotation "org.opencontainers.image.source=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY"
+        rm -rf "$pack"

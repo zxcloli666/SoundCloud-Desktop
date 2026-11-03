@@ -25,7 +25,7 @@ const LOOKS: Record<RoomExit, ExitLook> = {
   },
   evicted: {
     icon: Clock,
-    ring: 'border-white/15 bg-white/[0.05] text-white/75',
+    ring: 'border-ink/15 bg-ink/[0.05] text-ink-75',
     title: 'chat.room.exit.evicted',
   },
 };
@@ -49,9 +49,9 @@ export const RoomExitCard = memo(function RoomExitCard({
         <Icon size={26} strokeWidth={1.8} />
       </span>
       <div className="space-y-1.5">
-        <p className="text-[15px] font-bold tracking-tight text-white/90">{t(look.title)}</p>
+        <p className="text-[15px] font-bold tracking-tight text-ink-90">{t(look.title)}</p>
         {code && (
-          <p className="font-mono text-[12px] tracking-[0.22em] text-white/30 line-through decoration-white/20">
+          <p className="font-mono text-[12px] tracking-[0.22em] text-ink-30 line-through decoration-white/20">
             {code}
           </p>
         )}
@@ -59,7 +59,7 @@ export const RoomExitCard = memo(function RoomExitCard({
       <button
         type="button"
         onClick={() => useChatRoomStore.getState().dismiss()}
-        className="h-9 cursor-pointer rounded-full bg-white/[0.08] px-5 text-[13px] font-semibold text-white/80 transition-colors hover:bg-white/[0.13] hover:text-white"
+        className="h-9 cursor-pointer rounded-full bg-ink/[0.08] px-5 text-[13px] font-semibold text-ink-80 transition-colors hover:bg-ink/[0.13] hover:text-white"
       >
         {t('chat.room.exit.close')}
       </button>

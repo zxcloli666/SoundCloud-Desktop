@@ -57,14 +57,14 @@ function AddMembersBody({ conversationId, present, onDone }: AddMembersProps) {
     <div className="flex min-h-0 flex-col">
       <div className="flex flex-col gap-3 px-6 pt-6 pb-3">
         <ModalTitle>{t('chat.thread.info.addMembers')}</ModalTitle>
-        <label className="flex h-10 items-center gap-2.5 rounded-2xl border border-white/[0.07] bg-black/20 px-3.5 focus-within:border-white/[0.16]">
-          <Search size={15} className="shrink-0 text-white/35" />
+        <label className="flex h-10 items-center gap-2.5 rounded-2xl border border-ink/[0.07] bg-black/20 px-3.5 focus-within:border-ink/[0.16]">
+          <Search size={15} className="shrink-0 text-ink-35" />
           <input
             autoFocus
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder={t('chat.list.new.search')}
-            className="min-w-0 flex-1 bg-transparent text-[13.5px] text-white/90 outline-none placeholder:text-white/30"
+            className="min-w-0 flex-1 bg-transparent text-[13.5px] text-ink-90 outline-none placeholder:text-ink-30"
           />
         </label>
         <PickedChips people={picked} onRemove={toggle} />
@@ -78,7 +78,7 @@ function AddMembersBody({ conversationId, present, onDone }: AddMembersProps) {
           onToggle={toggle}
         />
       </div>
-      <div className="flex flex-col gap-2 border-t border-white/[0.05] px-6 pt-3 pb-5">
+      <div className="flex flex-col gap-2 border-t border-ink/[0.05] px-6 pt-3 pb-5">
         {error && <p className="text-[12px] text-rose-300/90">{error}</p>}
         <button
           type="button"

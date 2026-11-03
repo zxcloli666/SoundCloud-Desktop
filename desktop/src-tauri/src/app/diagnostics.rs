@@ -47,7 +47,9 @@ pub fn install_panic_hook() {
         let thread = std::thread::current();
         let thread = thread.name().unwrap_or("unnamed");
         let backtrace = Backtrace::force_capture();
-        let _ = log_sink::append("PANIC", &format!("thread '{thread}' {info}\n{backtrace}"));
+        let message = format!("thread '{thread}' {info}");
+        let _ = log_sink::append("PANIC", &format!("{message}\n{backtrace}"));
+        crate::diag::panic::remember(&message, &backtrace.to_string());
         default_hook(info);
     }));
 }

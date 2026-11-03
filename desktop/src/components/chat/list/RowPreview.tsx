@@ -12,7 +12,7 @@ interface RowPreviewProps {
 
 function PreviewBody({ preview, mine }: { preview: MessagePreview; mine: boolean }) {
   const { t } = useTranslation();
-  const you = mine ? <span className="shrink-0 text-white/55">{t('chat.list.you')}:</span> : null;
+  const you = mine ? <span className="shrink-0 text-ink-55">{t('chat.list.you')}:</span> : null;
   switch (preview.kind) {
     case 'text':
       return (
@@ -30,20 +30,20 @@ function PreviewBody({ preview, mine }: { preview: MessagePreview; mine: boolean
         </>
       );
     case 'system':
-      return <span className="truncate italic text-white/40">{preview.text}</span>;
+      return <span className="truncate italic text-ink-40">{preview.text}</span>;
     case 'deleted':
       return (
-        <span className="truncate italic text-white/30">{t('chat.list.preview.deleted')}</span>
+        <span className="truncate italic text-ink-30">{t('chat.list.preview.deleted')}</span>
       );
     case 'locked':
       return (
         <>
-          <Lock size={11} className="shrink-0 text-white/35" />
-          <span className="truncate text-white/35">{t('chat.list.preview.locked')}</span>
+          <Lock size={11} className="shrink-0 text-ink-35" />
+          <span className="truncate text-ink-35">{t('chat.list.preview.locked')}</span>
         </>
       );
     default:
-      return <span className="truncate text-white/35">{t('chat.list.preview.unknown')}</span>;
+      return <span className="truncate text-ink-35">{t('chat.list.preview.unknown')}</span>;
   }
 }
 

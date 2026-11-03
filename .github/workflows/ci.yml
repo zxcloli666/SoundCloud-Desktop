@@ -3,10 +3,26 @@ name: CI
 on:
   push:
     branches: [main, chat/main]
-    paths-ignore: ['themes/**']
+    paths:
+      - 'desktop/**'
+      - 'utils/**'
+      - 'rust-toolchain.toml'
+      - '.cargo/**'
+      - 'scripts/ci-mtime.sh'
+      - 'scripts/ci-toolchain.sh'
+      - '.github/scripts/changes.sh'
+      - '.github/workflows/ci.yml'
   pull_request:
     branches: [main]
-    paths-ignore: ['themes/**']
+    paths:
+      - 'desktop/**'
+      - 'utils/**'
+      - 'rust-toolchain.toml'
+      - '.cargo/**'
+      - 'scripts/ci-mtime.sh'
+      - 'scripts/ci-toolchain.sh'
+      - '.github/scripts/changes.sh'
+      - '.github/workflows/ci.yml'
 
 permissions:
   contents: read
@@ -17,14 +33,35 @@ concurrency:
 
 env:
   CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: 0
   CARGO_PROFILE_DEV_DEBUG: 0
   CARGO_PROFILE_TEST_DEBUG: 0
   HOMEBREW_NO_AUTO_UPDATE: 1
   HOMEBREW_NO_INSTALL_CLEANUP: 1
 
 jobs:
+  changes:
+    name: Changes
+    runs-on: ubuntu-latest
+    outputs:
+      frontend: ${{ steps.changes.outputs.frontend }}
+      rust: ${{ steps.changes.outputs.rust }}
+      real: ${{ steps.changes.outputs.real }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 2
+
+      - id: changes
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BEFORE: ${{ github.event.before }}
+        run: .github/scripts/changes.sh
+
   frontend:
     name: Frontend
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -48,6 +85,9 @@ jobs:
       - name: Lint
         run: pnpm exec biome lint src/
 
+      - name: Colour scheme
+        run: node scripts/check-scheme.mjs
+
       - name: Room tests
         run: node --experimental-strip-types --test src/lib/together/*.test.mjs
 
@@ -56,6 +96,8 @@ jobs:
 
   rust:
     name: Rust ${{ matrix.os }}
+    needs: changes
+    if: needs.changes.outputs.rust == 'true'
     strategy:
       fail-fast: false
       matrix:
@@ -82,33 +124,71 @@ jobs:
         if: runner.os == 'macOS'
         run: brew install autoconf automake libtool
 
-      - uses: dtolnay/rust-toolchain@stable
+      - name: Toolchain
+        working-directory: .
+        run: bash scripts/ci-toolchain.sh
 
       - uses: swatinem/rust-cache@v2
         with:
           workspaces: desktop/src-tauri -> target
+          cache-directories: .ci
           key: ci-${{ matrix.os }}
+          cache-workspace-crates: true
+          cache-on-failure: true
+          save-if: ${{ github.ref == 'refs/heads/main' }}
+
+      - name: Mtimes
+        working-directory: .
+        run: bash scripts/ci-mtime.sh restore
 
       - name: Frontend placeholder
         run: mkdir -p ../dist && echo '<!doctype html>' > ../dist/index.html
+
+      - name: Build tests
+        id: build
+        run: cargo test --no-run
+
+      - name: Stamp
+        if: always()
+        working-directory: .
+        env:
+          BUILD: ${{ steps.build.outcome }}
+        run: bash scripts/ci-mtime.sh stamp "$BUILD"
 
       - name: Tests
         if: runner.os != 'Windows'
         run: cargo test
 
-      - name: Tests compile
-        if: runner.os == 'Windows'
-        run: cargo test --no-run
-
   real-crates:
     name: Real call and decrypt-client crates
-    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
+    needs: changes
+    if: needs.changes.outputs.real == 'true' && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-22.04
     defaults:
       run:
         working-directory: desktop/src-tauri
     steps:
       - uses: actions/checkout@v7
+
+      - name: System packages
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libasound2-dev protobuf-compiler cmake clang libclang-dev pkg-config
+
+      - name: Toolchain
+        working-directory: .
+        run: bash scripts/ci-toolchain.sh
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: desktop/src-tauri -> target
+          cache-directories: .ci
+          key: real-crates
+          cache-workspace-crates: true
+          cache-on-failure: true
+          save-if: ${{ github.ref == 'refs/heads/main' }}
+
+      - name: Mtimes
+        working-directory: .
+        run: bash scripts/ci-mtime.sh restore
 
       - uses: actions/checkout@v7
         with:
@@ -125,18 +205,16 @@ jobs:
           rm -rf utils/call utils/decrypt-client
           mv _internal/call _internal/decrypt-client utils/
 
-      - name: System packages
-        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libasound2-dev protobuf-compiler cmake clang libclang-dev pkg-config
-
-      - uses: dtolnay/rust-toolchain@stable
-
-      - uses: swatinem/rust-cache@v2
-        with:
-          workspaces: desktop/src-tauri -> target
-          key: real-crates
-
       - name: Frontend placeholder
         run: mkdir -p ../dist && echo '<!doctype html>' > ../dist/index.html
 
       - name: Check
+        id: build
         run: cargo check --all-targets
+
+      - name: Stamp
+        if: always()
+        working-directory: .
+        env:
+          BUILD: ${{ steps.build.outcome }}
+        run: bash scripts/ci-mtime.sh stamp "$BUILD"

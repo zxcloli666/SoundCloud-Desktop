@@ -8,8 +8,8 @@ import {usePerfMode} from '../../lib/perf';
 import {useSettingsStore} from '../../stores/settings';
 
 const TICKS =
-  'repeating-linear-gradient(90deg, transparent 0, transparent calc(12.5% - 1px), rgba(10,10,12,0.9) calc(12.5% - 1px), rgba(10,10,12,0.9) 12.5%)';
-const HATCH = 'repeating-linear-gradient(-45deg, rgba(10,10,12,0.5) 0 4px, transparent 4px 8px)';
+  'repeating-linear-gradient(90deg, transparent 0, transparent calc(12.5% - 1px), rgb(var(--paper) / 0.9) calc(12.5% - 1px), rgb(var(--paper) / 0.9) 12.5%)';
+const HATCH = 'repeating-linear-gradient(-45deg, rgb(var(--paper) / 0.5) 0 4px, transparent 4px 8px)';
 
 function CacheLikesCta({
   caching,
@@ -41,10 +41,10 @@ function CacheLikesCta({
         type="button"
         onClick={onStart}
         className="flex h-10 w-full cursor-pointer items-center gap-2.5 rounded-[11px] border px-3.5 transition-colors"
-        style={{ borderColor: 'var(--color-accent-glow)', background: 'rgba(255,255,255,0.02)' }}
+        style={{ borderColor: 'var(--color-accent-glow)', background: 'rgb(var(--ink) / 0.02)' }}
       >
         <ArrowDownToLine size={13} style={{ color: 'var(--color-accent-hover)' }} />
-        <span className="text-[12.5px] font-semibold text-white/85">
+        <span className="text-[12.5px] font-semibold text-ink-85">
           {t('offline.ctaCacheLikes')}
         </span>
         <span
@@ -78,12 +78,12 @@ function CacheLikesCta({
             className="off-anim absolute bottom-0 left-[-40%] top-0 w-[36%]"
             style={{
               background:
-                'linear-gradient(100deg, transparent, rgba(255,255,255,0.07), transparent)',
+                'linear-gradient(100deg, transparent, rgb(var(--ink) / 0.07), transparent)',
               animation: 'off-sheen 2.6s ease-in-out -0.9s infinite',
             }}
           />
         )}
-        <span className="relative flex items-center gap-2 text-[12.5px] font-semibold text-white/90">
+        <span className="relative flex items-center gap-2 text-[12.5px] font-semibold text-ink-90">
           <span
             className="off-anim size-1.5 rounded-full"
             style={{
@@ -105,13 +105,13 @@ function CacheLikesCta({
           type="button"
           onClick={onCancel}
           aria-label={t('common.cancel')}
-          className="relative flex size-6 flex-none cursor-pointer items-center justify-center rounded-full text-white/45 transition-colors hover:bg-white/[0.08] hover:text-white/85"
+          className="relative flex size-6 flex-none cursor-pointer items-center justify-center rounded-full text-ink-45 transition-colors hover:bg-ink/[0.08] hover:text-ink-85"
         >
           <X size={12} />
         </button>
       </div>
       {progress && progress.failed > 0 && (
-        <div className="mt-2 flex justify-between font-mono text-[10.5px] tracking-[0.03em] text-white/30">
+        <div className="mt-2 flex justify-between font-mono text-[10.5px] tracking-[0.03em] text-ink-30">
           <span>{t('offline.ctaPhase')}</span>
           <span className="text-rose-300/80">
             {t('offline.failedCount', { count: progress.failed })}
@@ -158,19 +158,19 @@ export const StorageModule = React.memo(function StorageModule({
   return (
     <div className="flex min-w-0 flex-col px-5 py-5 md:px-6">
       <div className="mb-4 flex items-center justify-between gap-3">
-        <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-white/35">
+        <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-35">
           {t('offline.storeTitle')}
         </span>
-        <span className="font-mono text-[11px] text-white/30 tabular-nums">
+        <span className="font-mono text-[11px] text-ink-30 tabular-nums">
           {t('offline.fileCount', { count: fileCount })}
         </span>
       </div>
 
       <div className="flex items-baseline gap-2.5">
-        <span className="font-mono text-[28px] font-semibold leading-none tracking-[-0.02em] text-white/92 tabular-nums">
+        <span className="font-mono text-[28px] font-semibold leading-none tracking-[-0.02em] text-ink-92 tabular-nums">
           {formatBytes(totalBytes)}
         </span>
-        <span className="font-mono text-[12px] text-white/40">
+        <span className="font-mono text-[12px] text-ink-40">
           {isAudioCacheOff(limitMb)
             ? t('offline.storeCacheOff')
             : limitBytes !== null
@@ -179,7 +179,7 @@ export const StorageModule = React.memo(function StorageModule({
         </span>
       </div>
 
-      <div className="relative mt-3 h-[10px] overflow-hidden rounded-[5px] bg-white/[0.05]">
+      <div className="relative mt-3 h-[10px] overflow-hidden rounded-[5px] bg-ink/[0.05]">
         <span
           className="absolute bottom-0 top-0"
           style={{
@@ -192,42 +192,42 @@ export const StorageModule = React.memo(function StorageModule({
           <span className="absolute inset-0" style={{ background: HATCH }} />
         </span>
         <span
-          className="absolute bottom-0 top-0 bg-white/[0.32]"
+          className="absolute bottom-0 top-0 bg-ink/[0.32]"
           style={{ left: `${likedPct}%`, width: `${cachePct}%` }}
         />
         <span className="absolute inset-0" style={{ background: TICKS }} />
       </div>
 
-      <div className="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1.5 font-mono text-[10.5px] leading-relaxed text-white/45">
+      <div className="mt-2.5 flex flex-wrap items-center gap-x-4 gap-y-1.5 font-mono text-[10.5px] leading-relaxed text-ink-45">
         <span className="flex items-center gap-1.5">
           <Lock size={9} className="opacity-70" />
           {t('offline.legendLikes', { size: formatBytes(likedBytes) })}
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="inline-block size-2 rounded-[2px] bg-white/[0.3]" />
+          <span className="inline-block size-2 rounded-[2px] bg-ink/[0.3]" />
           {t('offline.legendCache', { size: formatBytes(Math.max(0, totalBytes - likedBytes)) })}
         </span>
         {freeBytes !== null && (
-          <span className="ml-auto text-white/30">
+          <span className="ml-auto text-ink-30">
             {t('offline.legendFree', { size: formatBytes(freeBytes) })}
           </span>
         )}
       </div>
 
       {likedCount > 0 && (
-        <div className="mt-auto border-t border-white/[0.06] pt-3.5">
+        <div className="mt-auto border-t border-ink/[0.06] pt-3.5">
           <div className="mb-2 flex items-baseline justify-between">
-            <span className="text-[12.5px] font-medium text-white/55">
+            <span className="text-[12.5px] font-medium text-ink-55">
               {t('offline.likesCoverage')}
             </span>
-            <span className="font-mono text-[12px] font-semibold tabular-nums text-white/90">
+            <span className="font-mono text-[12px] font-semibold tabular-nums text-ink-90">
               {likedCachedCount}{' '}
-              <span className="font-normal text-white/35">
+              <span className="font-normal text-ink-35">
                 {t('offline.coverageOf', { total: likedCount })}
               </span>
             </span>
           </div>
-          <div className="mb-3 h-[3px] overflow-hidden rounded-[2px] bg-white/[0.07]">
+          <div className="mb-3 h-[3px] overflow-hidden rounded-[2px] bg-ink/[0.07]">
             <span
               className="block h-full origin-left"
               style={{

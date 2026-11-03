@@ -21,7 +21,7 @@ use self::windows as os;
 use super::model::{DpiTool, EnvInfo};
 #[cfg(any(target_os = "linux", test))]
 use super::scrub::capped;
-use crate::network::system_proxy;
+use crate::network::{edge, system_proxy};
 
 const DPI_TOOLS: [&str; 10] = [
     "winws",
@@ -71,7 +71,6 @@ const ZAPRET_KEYS: [&str; 10] = [
     "NFQWS2_PORTS_TCP",
     "DISABLE_IPV6",
 ];
-const PROXY_PROBE: &str = "https://api.scnative.dev/";
 const MAX_DPI: usize = 4;
 
 #[cfg(not(any(target_os = "linux", target_os = "macos", windows)))]
@@ -84,7 +83,7 @@ mod os {
 pub async fn detect() -> EnvInfo {
     let mut info = os::detect().await;
     info.dpi = distinct(info.dpi);
-    info.proxy = system_proxy::proxied(PROXY_PROBE);
+    info.proxy = system_proxy::proxied(&format!("https://{}/", edge::primary_relay_host("api")));
     info.env_proxy = system_proxy::env_proxy_names();
     info.vpn = vpn_interfaces();
     info

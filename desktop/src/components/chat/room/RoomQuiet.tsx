@@ -15,7 +15,7 @@ export const RoomQuiet = memo(function RoomQuiet({
   const { t } = useTranslation();
   if (link === 'idle' || link === 'opening') {
     return (
-      <div className="flex h-full items-center justify-center text-white/35">
+      <div className="flex h-full items-center justify-center text-ink-35">
         <Loader2 size={20} className="animate-spin" />
       </div>
     );
@@ -29,15 +29,15 @@ export const RoomQuiet = memo(function RoomQuiet({
 
   return (
     <div className="flex h-full flex-col items-center justify-center gap-3 px-8 text-center">
-      <span className="flex size-12 items-center justify-center rounded-full bg-white/[0.05] text-white/35">
+      <span className="flex size-12 items-center justify-center rounded-full bg-ink/[0.05] text-ink-35">
         <MessageCircle size={20} />
       </span>
-      <p className="text-[13px] font-semibold text-white/60">{t(text)}</p>
+      <p className="text-[13px] font-semibold text-ink-60">{t(text)}</p>
       {failed && (
         <button
           type="button"
           onClick={retryRoomChat}
-          className="flex h-8 cursor-pointer items-center gap-1.5 rounded-full bg-white/[0.08] px-4 text-[12.5px] font-semibold text-white/75 transition-colors hover:bg-white/[0.13] hover:text-white"
+          className="flex h-8 cursor-pointer items-center gap-1.5 rounded-full bg-ink/[0.08] px-4 text-[12.5px] font-semibold text-ink-75 transition-colors hover:bg-ink/[0.13] hover:text-white"
         >
           <RotateCcw size={13} />
           {t('chat.room.quiet.retry')}

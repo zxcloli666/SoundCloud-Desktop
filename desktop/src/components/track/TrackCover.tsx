@@ -25,6 +25,7 @@ export const TrackCover = React.memo(function TrackCover({
             type="button"
             onClick={onToggle}
             aria-label={title}
+            data-ui="artwork"
             className="relative shrink-0 self-center lg:self-start group/cover cursor-pointer"
         >
             <AlbumCoverArtifact

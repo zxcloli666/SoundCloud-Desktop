@@ -66,7 +66,7 @@ const MemberRow = memo(function MemberRow({ member }: { member: Member }) {
   return (
     <div
       onContextMenu={manage ? open : undefined}
-      className={`group flex items-center gap-2.5 rounded-xl px-2 py-1.5 transition-colors duration-150 hover:bg-white/[0.04] ${
+      className={`group flex items-center gap-2.5 rounded-xl px-2 py-1.5 transition-colors duration-150 hover:bg-ink/[0.04] ${
         member.state === 'invited' ? 'opacity-55' : ''
       }`}
     >
@@ -79,7 +79,7 @@ const MemberRow = memo(function MemberRow({ member }: { member: Member }) {
           {member.user.name}
         </span>
         {member.user.id === me && (
-          <span className="block text-[11px] text-white/35">{t('chat.thread.info.you')}</span>
+          <span className="block text-[11px] text-ink-35">{t('chat.thread.info.you')}</span>
         )}
       </span>
       {member.role === 'owner' && (
@@ -101,7 +101,7 @@ const MemberRow = memo(function MemberRow({ member }: { member: Member }) {
           type="button"
           aria-label={t('chat.thread.actions.more')}
           onClick={open}
-          className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full text-white/40 opacity-0 transition-opacity duration-150 hover:bg-white/[0.08] hover:text-white group-hover:opacity-100 focus-visible:opacity-100"
+          className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full text-ink-40 opacity-0 transition-opacity duration-150 hover:bg-ink/[0.08] hover:text-white group-hover:opacity-100 focus-visible:opacity-100"
         >
           <Ellipsis size={14} />
         </button>
@@ -129,7 +129,7 @@ function AddMembersRow({ members }: { members: Member[] }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="mb-1 flex items-center gap-2.5 rounded-xl px-2 py-1.5 text-left transition-colors duration-150 hover:bg-white/[0.04]"
+        className="mb-1 flex items-center gap-2.5 rounded-xl px-2 py-1.5 text-left transition-colors duration-150 hover:bg-ink/[0.04]"
       >
         <span
           className="flex size-[34px] shrink-0 items-center justify-center rounded-full"
@@ -137,7 +137,7 @@ function AddMembersRow({ members }: { members: Member[] }) {
         >
           <UserPlus size={15} />
         </span>
-        <span className="text-[13px] font-semibold text-white/85">
+        <span className="text-[13px] font-semibold text-ink-85">
           {t('chat.thread.info.addMembers')}
         </span>
       </button>

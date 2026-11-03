@@ -57,7 +57,7 @@ export const ReactionPicker = memo(function ReactionPicker({
             sideOffset={6}
             collisionPadding={10}
             onCloseAutoFocus={(event) => event.preventDefault()}
-            className="z-[300] flex items-center gap-0.5 rounded-full border border-white/[0.09] p-1 outline-none"
+            className="z-[300] flex items-center gap-0.5 rounded-full border border-ink/[0.09] p-1 outline-none"
             style={{
               background: blur > 0 ? surface(8, 88) : surface(9),
               backdropFilter: blur > 0 ? `blur(${blur}px) saturate(1.6)` : undefined,
@@ -74,8 +74,8 @@ export const ReactionPicker = memo(function ReactionPicker({
                   key={emoji}
                   type="button"
                   onClick={() => pick(emoji)}
-                  className={`flex size-8 cursor-pointer items-center justify-center rounded-full text-[18px] leading-none transition-transform duration-150 hover:scale-110 hover:bg-white/[0.08] ${
-                    mine ? 'bg-white/[0.1]' : ''
+                  className={`flex size-8 cursor-pointer items-center justify-center rounded-full text-[18px] leading-none transition-transform duration-150 hover:scale-110 hover:bg-ink/[0.08] ${
+                    mine ? 'bg-ink/[0.1]' : ''
                   }`}
                 >
                   {emoji}
@@ -91,7 +91,7 @@ export const ReactionPicker = memo(function ReactionPicker({
                 event.currentTarget.value = '';
                 if (emoji) pick(emoji);
               }}
-              className="size-8 rounded-full bg-white/[0.06] text-center text-[16px] text-white/70 outline-none placeholder:text-white/45 focus:bg-white/[0.1]"
+              className="size-8 rounded-full bg-ink/[0.06] text-center text-[16px] text-ink-70 outline-none placeholder:text-ink-45 focus:bg-ink/[0.1]"
             />
           </Popover.Content>
         )}

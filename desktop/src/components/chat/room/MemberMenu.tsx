@@ -35,14 +35,14 @@ function Item({
 }) {
   const tone = danger
     ? 'text-rose-200/90 hover:bg-rose-400/[0.12] hover:text-rose-100'
-    : 'text-white/75 hover:bg-white/[0.07] hover:text-white';
+    : 'text-ink-75 hover:bg-ink/[0.07] hover:text-white';
   return (
     <button
       type="button"
       role="menuitem"
       disabled={disabled}
       onClick={onSelect}
-      className={`flex h-9 w-full cursor-pointer items-center gap-2.5 rounded-[10px] px-2.5 text-left text-[12.5px] font-medium transition-colors disabled:cursor-default disabled:text-white/25 disabled:hover:bg-transparent ${tone}`}
+      className={`flex h-9 w-full cursor-pointer items-center gap-2.5 rounded-[10px] px-2.5 text-left text-[12.5px] font-medium transition-colors disabled:cursor-default disabled:text-ink-25 disabled:hover:bg-transparent ${tone}`}
     >
       <span className="flex w-4 shrink-0 justify-center opacity-80">{icon}</span>
       <span className="truncate">{label}</span>
@@ -54,7 +54,7 @@ function MuteRow({ onMute }: { onMute: (minutes: number) => void }) {
   const { t } = useTranslation();
   return (
     <div className="px-2.5 pt-2 pb-1.5">
-      <div className="flex items-center gap-2.5 text-[12.5px] font-medium text-white/75">
+      <div className="flex items-center gap-2.5 text-[12.5px] font-medium text-ink-75">
         <MicOff size={14} className="shrink-0 opacity-80" />
         <span className="min-w-0 truncate">{t('chat.room.menu.mute')}</span>
       </div>
@@ -65,7 +65,7 @@ function MuteRow({ onMute }: { onMute: (minutes: number) => void }) {
             type="button"
             role="menuitem"
             onClick={() => onMute(minutes)}
-            className="h-7 cursor-pointer rounded-full bg-white/[0.06] text-[11.5px] font-semibold tabular-nums text-white/75 transition-colors hover:bg-rose-400/20 hover:text-rose-100"
+            className="h-7 cursor-pointer rounded-full bg-ink/[0.06] text-[11.5px] font-semibold tabular-nums text-ink-75 transition-colors hover:bg-rose-400/20 hover:text-rose-100"
           >
             {t('chat.room.menu.minutes', { value: minutes })}
           </button>
@@ -87,11 +87,11 @@ export function MemberMenu({ member, actions, muted, onDone }: MemberMenuProps) 
     <div role="menu">
       <div className="flex items-center gap-2.5 px-2.5 pt-1.5 pb-2">
         <Avatar src={member.avatarUrl} alt="" size={28} />
-        <span className="min-w-0 truncate text-[13px] font-semibold text-white/90">
+        <span className="min-w-0 truncate text-[13px] font-semibold text-ink-90">
           {member.name}
         </span>
       </div>
-      <div className="mx-2 mb-1 h-px bg-white/[0.06]" />
+      <div className="mx-2 mb-1 h-px bg-ink/[0.06]" />
       {actions.mute &&
         (muted ? (
           <Item
@@ -116,7 +116,7 @@ export function MemberMenu({ member, actions, muted, onDone }: MemberMenuProps) 
           onSelect={() => act(() => setModerator(member.userId, actions.moderator === 'add'))}
         />
       )}
-      <div className="mx-2 my-1 h-px bg-white/[0.06]" />
+      <div className="mx-2 my-1 h-px bg-ink/[0.06]" />
       {actions.kick && (
         <Item
           icon={<UserX size={14} />}

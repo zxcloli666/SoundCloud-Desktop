@@ -82,8 +82,8 @@ export const SoundWaveSimilarBlock = React.memo(function SoundWaveSimilarBlock({
       className="relative rounded-3xl overflow-hidden glass-featured select-none"
       style={{
         boxShadow:
-          '0 0 0 1px rgba(255,255,255,0.04) inset, 0 10px 40px rgba(0,0,0,0.35), 0 0 40px var(--color-accent-glow)',
-        borderColor: 'rgba(255,255,255,0.08)',
+          '0 0 0 1px rgba(255,255,255,0.04) inset, 0 10px 40px rgb(var(--shade) / calc(0.35 * var(--shade-alpha))), 0 0 40px var(--color-accent-glow)',
+        borderColor: 'rgb(var(--ink) / 0.08)',
       }}
     >
       <AmbientLayer particleCount={8} blur={35} intensity={0.4} />
@@ -93,7 +93,7 @@ export const SoundWaveSimilarBlock = React.memo(function SoundWaveSimilarBlock({
         aria-hidden
         style={{
           background:
-            'linear-gradient(180deg, rgba(8,8,10,0.45) 0%, rgba(8,8,10,0.35) 45%, rgba(8,8,10,0.85) 100%)',
+            'linear-gradient(180deg, rgb(var(--paper) / 0.45) 0%, rgb(var(--paper) / 0.35) 45%, rgb(var(--paper) / 0.85) 100%)',
           contain: 'strict',
         }}
       />
@@ -103,7 +103,7 @@ export const SoundWaveSimilarBlock = React.memo(function SoundWaveSimilarBlock({
           <div
             className="relative w-10 h-10 rounded-2xl flex items-center justify-center shrink-0"
             style={{
-              background: 'linear-gradient(135deg, var(--color-accent), rgba(255,255,255,0.12))',
+              background: 'linear-gradient(135deg, var(--color-accent), rgb(var(--ink) / 0.12))',
               boxShadow: '0 0 24px var(--color-accent-glow), inset 0 1px 0 rgba(255,255,255,0.2)',
             }}
           >
@@ -115,10 +115,10 @@ export const SoundWaveSimilarBlock = React.memo(function SoundWaveSimilarBlock({
                 {t('soundwave.similar.title')}
               </h2>
               <span
-                className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-[0.16em] px-2 py-[3px] rounded-full text-white/90"
+                className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-[0.16em] px-2 py-[3px] rounded-full text-ink-90"
                 style={{
                   background:
-                    'linear-gradient(135deg, var(--color-accent-glow), rgba(255,255,255,0.06))',
+                    'linear-gradient(135deg, var(--color-accent-glow), rgb(var(--ink) / 0.06))',
                   border: '0.5px solid var(--color-accent-glow)',
                 }}
               >
@@ -126,7 +126,7 @@ export const SoundWaveSimilarBlock = React.memo(function SoundWaveSimilarBlock({
                 AI
               </span>
             </div>
-            <p className="text-[11.5px] text-white/45 mt-1 truncate">
+            <p className="text-[11.5px] text-ink-45 mt-1 truncate">
               {t('soundwave.similar.desc')}
             </p>
           </div>
@@ -145,7 +145,7 @@ export const SoundWaveSimilarBlock = React.memo(function SoundWaveSimilarBlock({
             >
               <span
                 className="w-5 h-5 rounded-full flex items-center justify-center"
-                style={{ background: 'rgba(255,255,255,0.9)' }}
+                style={{ background: 'rgb(var(--ink) / 0.9)' }}
               >
                 {playBlack14}
               </span>

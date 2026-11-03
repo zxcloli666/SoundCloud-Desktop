@@ -28,7 +28,7 @@ const HitRow = memo(function HitRow({
     <button
       type="button"
       onClick={() => onOpen(hit.conversationId)}
-      className="mx-2 flex w-[calc(100%-1rem)] cursor-pointer items-center gap-3 rounded-2xl px-2.5 py-2 text-left transition-colors duration-200 hover:bg-white/[0.05]"
+      className="mx-2 flex w-[calc(100%-1rem)] cursor-pointer items-center gap-3 rounded-2xl px-2.5 py-2 text-left transition-colors duration-200 hover:bg-ink/[0.05]"
     >
       <ConversationAvatar
         kind={conversation?.kind ?? 'direct'}
@@ -38,12 +38,12 @@ const HitRow = memo(function HitRow({
       />
       <span className="min-w-0 flex-1">
         <span className="flex items-center gap-2">
-          <span className="truncate text-[13px] font-semibold text-white/85">{title}</span>
-          <span className="ml-auto shrink-0 text-[11px] tabular-nums text-white/35">
+          <span className="truncate text-[13px] font-semibold text-ink-85">{title}</span>
+          <span className="ml-auto shrink-0 text-[11px] tabular-nums text-ink-35">
             {rowTime(hit.ts, Date.now(), i18n.language)}
           </span>
         </span>
-        <span className="mt-0.5 line-clamp-2 text-[12.5px] leading-snug text-white/50">
+        <span className="mt-0.5 line-clamp-2 text-[12.5px] leading-snug text-ink-50">
           {hit.snippet}
         </span>
       </span>

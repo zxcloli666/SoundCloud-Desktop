@@ -80,13 +80,13 @@ function PickerBody({ embed, onClose, onSent }: PickerBodyProps) {
       <div className="px-6 pb-3">
         <EmbedCard embed={embed} compact />
       </div>
-      <label className="mx-6 mb-2 flex h-9 items-center gap-2 rounded-xl bg-white/[0.05] px-3 text-white/40 focus-within:bg-white/[0.07] focus-within:text-white/70">
+      <label className="mx-6 mb-2 flex h-9 items-center gap-2 rounded-xl bg-ink/[0.05] px-3 text-ink-40 focus-within:bg-ink/[0.07] focus-within:text-ink-70">
         <Search size={14} />
         <input
           value={search}
           onChange={(event) => setSearch(event.target.value)}
           placeholder={t('chat.embeds.share.search')}
-          className="min-w-0 flex-1 bg-transparent text-[13px] text-white/90 outline-none placeholder:text-white/30"
+          className="min-w-0 flex-1 bg-transparent text-[13px] text-ink-90 outline-none placeholder:text-ink-30"
         />
       </label>
       <ShareGrid
@@ -96,7 +96,7 @@ function PickerBody({ embed, onClose, onSent }: PickerBodyProps) {
         onToggle={toggle}
         searching={search.trim().length > 0}
       />
-      <div className="flex items-center gap-2 border-t border-white/[0.06] px-6 py-4">
+      <div className="flex items-center gap-2 border-t border-ink/[0.06] px-6 py-4">
         <input
           value={comment}
           maxLength={textMax}
@@ -108,7 +108,7 @@ function PickerBody({ embed, onClose, onSent }: PickerBodyProps) {
             }
           }}
           placeholder={t('chat.embeds.share.comment')}
-          className="h-10 min-w-0 flex-1 rounded-xl bg-white/[0.05] px-3 text-[13px] text-white/90 outline-none placeholder:text-white/30 focus:bg-white/[0.07]"
+          className="h-10 min-w-0 flex-1 rounded-xl bg-ink/[0.05] px-3 text-[13px] text-ink-90 outline-none placeholder:text-ink-30 focus:bg-ink/[0.07]"
         />
         <button
           type="button"

@@ -1,0 +1,58 @@
+/**
+ * Opens a url with the system's default app, or the one specified with {@linkcode openWith}.
+ *
+ * @example
+ * ```typescript
+ * import { openUrl } from '@tauri-apps/plugin-opener';
+ *
+ * // opens the given URL on the default browser:
+ * await openUrl('https://github.com/tauri-apps/tauri');
+ * // opens the given URL using `firefox`:
+ * await openUrl('https://github.com/tauri-apps/tauri', 'firefox');
+ * ```
+ *
+ * @param url The URL to open.
+ * @param openWith The app to open the URL with. If not specified, defaults to the system default application for the specified url type.
+ * On mobile, `openWith` can be provided as `inAppBrowser` to open the URL in an in-app browser. Otherwise, it will open the URL in the system default browser.
+ *
+ * @since 2.0.0
+ */
+export declare function openUrl(url: string | URL, openWith?: 'inAppBrowser' | string): Promise<void>;
+/**
+ * Opens a path with the system's default app, or the one specified with {@linkcode openWith}.
+ *
+ * @example
+ * ```typescript
+ * import { openPath } from '@tauri-apps/plugin-opener';
+ *
+ * // opens a file using the default program:
+ * await openPath('/path/to/file');
+ * // opens a file using `vlc` command on Windows.
+ * await openPath('C:/path/to/file', 'vlc');
+ * ```
+ *
+ * @param path The path to open.
+ * @param openWith The app to open the path with. If not specified, defaults to the system default application for the specified path type.
+ *
+ * @since 2.0.0
+ */
+export declare function openPath(path: string, openWith?: string): Promise<void>;
+/**
+ * Reveal a path with the system's default explorer.
+ *
+ * #### Platform-specific:
+ *
+ * - **Android / iOS:** Unsupported.
+ *
+ * @example
+ * ```typescript
+ * import { revealItemInDir } from '@tauri-apps/plugin-opener';
+ * await revealItemInDir('/path/to/file');
+ * await revealItemInDir([ '/path/to/file', '/path/to/another/file' ]);
+ * ```
+ *
+ * @param path The path to reveal.
+ *
+ * @since 2.0.0
+ */
+export declare function revealItemInDir(path: string | string[]): Promise<void>;

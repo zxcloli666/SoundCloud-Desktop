@@ -40,7 +40,7 @@ export function DockHotkeyCard() {
           <button
             type="button"
             onClick={() => setHotkey(CHAT_HOTKEY_DEFAULT)}
-            className="flex cursor-pointer items-center gap-1.5 rounded-xl border border-white/[0.06] bg-white/[0.06] px-3 py-1.5 text-[12px] font-semibold text-white/75 transition-colors hover:bg-white/[0.1]"
+            className="flex cursor-pointer items-center gap-1.5 rounded-xl border border-ink/[0.06] bg-ink/[0.06] px-3 py-1.5 text-[12px] font-semibold text-ink-75 transition-colors hover:bg-ink/[0.1]"
           >
             <RotateCcw size={12} />
             {t('chat.settings.dock.reset')}

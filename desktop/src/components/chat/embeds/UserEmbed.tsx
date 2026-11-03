@@ -81,23 +81,23 @@ export const UserEmbed = memo(function UserEmbed({ embed, mine, compact }: UserE
         </button>
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
           <span className="flex min-w-0 items-center gap-1.5">
-            <User size={12} className="shrink-0 text-white/35" />
+            <User size={12} className="shrink-0 text-ink-35" />
             <button
               type="button"
               disabled={!route}
               onClick={() => route && navigate(route)}
-              className="min-w-0 truncate text-left text-[13.5px] font-semibold leading-tight text-white/92 cursor-pointer hover:text-white disabled:cursor-default"
+              className="min-w-0 truncate text-left text-[13.5px] font-semibold leading-tight text-ink-92 cursor-pointer hover:text-white disabled:cursor-default"
             >
               {profile?.username ?? embed.title}
             </button>
           </span>
           {followers != null ? (
-            <span className="truncate text-[12px] tabular-nums text-white/50">
+            <span className="truncate text-[12px] tabular-nums text-ink-50">
               {t('chat.embeds.user.followers', { count: followers, value: fc(followers) })}
             </span>
           ) : (
             embed.artist && (
-              <span className="truncate text-[12px] text-white/50">{embed.artist}</span>
+              <span className="truncate text-[12px] text-ink-50">{embed.artist}</span>
             )
           )}
         </div>
@@ -108,7 +108,7 @@ export const UserEmbed = memo(function UserEmbed({ embed, mine, compact }: UserE
             aria-pressed={following}
             className={`inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full px-3 text-[12px] font-semibold transition-all duration-300 cursor-pointer active:scale-[0.97] ${
               following
-                ? 'bg-white/[0.06] text-white/70 hover:text-white'
+                ? 'bg-ink/[0.06] text-ink-70 hover:text-white'
                 : 'bg-white text-black hover:scale-[1.03]'
             }`}
           >
@@ -125,7 +125,7 @@ export const UserEmbed = memo(function UserEmbed({ embed, mine, compact }: UserE
             type="button"
             disabled={starting}
             onClick={() => void playTop()}
-            className="inline-flex h-7 items-center gap-1.5 rounded-full px-2.5 text-[11.5px] font-semibold text-white/80 transition-colors duration-200 cursor-pointer hover:bg-white/[0.1] hover:text-white disabled:cursor-default"
+            className="inline-flex h-7 items-center gap-1.5 rounded-full px-2.5 text-[11.5px] font-semibold text-ink-80 transition-colors duration-200 cursor-pointer hover:bg-ink/[0.1] hover:text-white disabled:cursor-default"
             style={{ background: 'var(--color-bg-glass-hover)' }}
           >
             {starting ? (

@@ -51,8 +51,8 @@ export function StartView() {
             <Users size={20} strokeWidth={2.2} />
           </span>
         </div>
-        <p className="text-[15px] font-semibold text-white/95">{t('together.title')}</p>
-        <p className="mt-1 max-w-[260px] text-[12px] leading-snug text-white/45">
+        <p className="text-[15px] font-semibold text-ink-95">{t('together.title')}</p>
+        <p className="mt-1 max-w-[260px] text-[12px] leading-snug text-ink-45">
           {t('together.pitch')}
         </p>
       </div>
@@ -72,11 +72,11 @@ export function StartView() {
       </button>
 
       <div className="my-3.5 flex items-center gap-3">
-        <span className="h-px flex-1 bg-white/[0.07]" />
-        <span className="text-[10.5px] font-semibold uppercase tracking-[0.12em] text-white/30">
+        <span className="h-px flex-1 bg-ink/[0.07]" />
+        <span className="text-[10.5px] font-semibold uppercase tracking-[0.12em] text-ink-30">
           {t('together.orJoin')}
         </span>
-        <span className="h-px flex-1 bg-white/[0.07]" />
+        <span className="h-px flex-1 bg-ink/[0.07]" />
       </div>
 
       <div className="flex items-center gap-2">
@@ -96,7 +96,7 @@ export function StartView() {
           aria-label={t('together.join')}
           disabled={code.length !== CODE_LENGTH || busy != null}
           onClick={join}
-          className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-[10px] bg-white/[0.08] text-white/80 transition-all duration-200 hover:bg-white/[0.14] hover:text-white active:scale-95 disabled:cursor-default disabled:opacity-35"
+          className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-[10px] bg-ink/[0.08] text-ink-80 transition-all duration-200 hover:bg-ink/[0.14] hover:text-ink active:scale-95 disabled:cursor-default disabled:opacity-35"
         >
           {busy === 'join' ? (
             <Loader2 size={16} className="animate-spin" />
@@ -107,7 +107,7 @@ export function StartView() {
       </div>
 
       <p
-        className={`mt-2.5 min-h-[16px] text-center text-[11px] ${error ? 'text-rose-300/90' : 'text-white/30'}`}
+        className={`mt-2.5 min-h-[16px] text-center text-[11px] ${error ? 'text-rose-300/90' : 'text-ink-30'}`}
       >
         {error ? t(error) : t('together.footnote')}
       </p>
@@ -116,7 +116,7 @@ export function StartView() {
         <button
           type="button"
           onClick={() => setBrowsing(true)}
-          className="mt-3 flex w-full cursor-pointer items-center gap-2.5 rounded-xl border border-white/[0.07] bg-white/[0.03] px-3 py-2 text-[12.5px] font-semibold text-white/75 transition-all duration-200 hover:bg-white/[0.07] hover:text-white active:scale-[0.98]"
+          className="mt-3 flex w-full cursor-pointer items-center gap-2.5 rounded-xl border border-ink/[0.07] bg-ink/[0.03] px-3 py-2 text-[12.5px] font-semibold text-ink-75 transition-all duration-200 hover:bg-ink/[0.07] hover:text-ink active:scale-[0.98]"
         >
           <Globe size={15} className="shrink-0 text-accent" />
           <span className="flex-1 text-left">{t('together.open.title')}</span>
@@ -125,7 +125,7 @@ export function StartView() {
               {open.rooms.length}
             </span>
           )}
-          <ChevronRight size={14} className="shrink-0 text-white/35" />
+          <ChevronRight size={14} className="shrink-0 text-ink-35" />
         </button>
       )}
     </div>

@@ -37,18 +37,18 @@ const TimeBlock = React.memo(function TimeBlock({
     <div
       className="relative flex flex-col items-center justify-center min-w-[64px] px-3 py-2.5 rounded-xl"
       style={{
-        background: 'linear-gradient(160deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02))',
-        border: '0.5px solid rgba(255,255,255,0.12)',
+        background: 'linear-gradient(160deg, rgb(var(--ink) / 0.08), rgb(var(--ink) / 0.02))',
+        border: '0.5px solid rgb(var(--ink) / 0.12)',
         backdropFilter: 'blur(20px) saturate(180%)',
         WebkitBackdropFilter: 'blur(20px) saturate(180%)',
         boxShadow:
-          'inset 0 1px 0 rgba(255,255,255,0.12), inset 0 -1px 0 rgba(0,0,0,0.2), 0 4px 16px rgba(0,0,0,0.25)',
+          'inset 0 1px 0 rgba(255,255,255,0.12), inset 0 -1px 0 rgb(var(--shade) / calc(0.2 * var(--shade-alpha))), 0 4px 16px rgb(var(--shade) / calc(0.25 * var(--shade-alpha)))',
         contain: 'layout style paint',
       }}
     >
       <span
         ref={valueRef}
-        className="text-[24px] font-bold leading-none text-white/95"
+        className="text-[24px] font-bold leading-none text-ink-95"
         style={{
           fontVariantNumeric: 'tabular-nums',
           fontFeatureSettings: '"tnum" 1',
@@ -70,7 +70,7 @@ const TimeBlock = React.memo(function TimeBlock({
 });
 
 const Separator = React.memo(() => (
-  <span className="text-[20px] font-light text-white/25 leading-none -mt-3">:</span>
+  <span className="text-[20px] font-light text-ink-25 leading-none -mt-3">:</span>
 ));
 
 interface CountdownProps {

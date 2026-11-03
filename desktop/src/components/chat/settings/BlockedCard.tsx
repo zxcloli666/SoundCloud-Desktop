@@ -14,19 +14,19 @@ export function BlockedCard({ blocked, onUnblock }: BlockedCardProps) {
   return (
     <Card title={t('chat.settings.blocked.title')} icon={<Ban size={17} />}>
       {blocked.length === 0 ? (
-        <p className="text-[12.5px] text-white/35">{t('chat.settings.blocked.empty')}</p>
+        <p className="text-[12.5px] text-ink-35">{t('chat.settings.blocked.empty')}</p>
       ) : (
         <div className="flex max-h-[320px] flex-col gap-1 overflow-y-auto">
           {blocked.map((user) => (
             <div key={user.id} className="flex items-center gap-3 rounded-2xl px-1 py-1.5">
               <Avatar src={user.avatarUrl} alt={user.name} size={32} />
-              <span className="min-w-0 flex-1 truncate text-[13px] font-medium text-white/80">
+              <span className="min-w-0 flex-1 truncate text-[13px] font-medium text-ink-80">
                 {user.name}
               </span>
               <button
                 type="button"
                 onClick={() => onUnblock(user.id)}
-                className="cursor-pointer rounded-xl border border-white/[0.06] bg-white/[0.05] px-3 py-1.5 text-[12px] font-semibold text-white/70 transition-colors hover:bg-white/[0.1] hover:text-white"
+                className="cursor-pointer rounded-xl border border-ink/[0.06] bg-ink/[0.05] px-3 py-1.5 text-[12px] font-semibold text-ink-70 transition-colors hover:bg-ink/[0.1] hover:text-white"
               >
                 {t('chat.settings.blocked.unblock')}
               </button>

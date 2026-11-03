@@ -8,6 +8,7 @@ import {
   type GlobalHotkeyMap,
 } from '../lib/hotkeys/actions';
 import type {InterfaceFont} from '../lib/interface-font';
+import type {SchemeChoice} from '../lib/scheme';
 import {EMPTY_LAYOUT, type LayoutEntry, type LayoutScope, type LayoutState, type RiverSectionId,} from '../lib/layout';
 import type {PerfMode} from '../lib/perf';
 import {tauriStorage} from '../lib/tauri-storage';
@@ -79,6 +80,7 @@ export const THEME_PRESETS: Record<Exclude<ThemePreset, 'custom'>, ThemePresetDe
 };
 
 export interface SettingsState {
+  scheme: SchemeChoice;
   accentColor: string;
   bgPrimary: string;
   themePreset: ThemePreset;
@@ -127,6 +129,7 @@ export interface SettingsState {
   discordRpcLyrics: boolean;
   scrobbleEnabled: boolean;
   scrobbleNowPlaying: boolean;
+  sendErrorReports: boolean;
   obsEnabled: boolean;
   obsServer: boolean;
   obsPort: number;
@@ -163,6 +166,7 @@ export interface SettingsState {
   setAccentColor: (color: string) => void;
   setBgPrimary: (bg: string) => void;
   setThemePreset: (id: ThemePreset) => void;
+  setScheme: (scheme: SchemeChoice) => void;
   setPerfMode: (mode: PerfMode) => void;
   setBackgroundImage: (url: string) => void;
   setBackgroundOpacity: (opacity: number) => void;
@@ -213,6 +217,7 @@ export interface SettingsState {
   setDiscordRpcLyrics: (enabled: boolean) => void;
   setScrobbleEnabled: (enabled: boolean) => void;
   setScrobbleNowPlaying: (enabled: boolean) => void;
+  setSendErrorReports: (enabled: boolean) => void;
   setObsEnabled: (enabled: boolean) => void;
   setObsServer: (enabled: boolean) => void;
   setObsPort: (port: number) => void;
@@ -254,6 +259,7 @@ export interface SettingsState {
 const DEFAULT_EQ_GAINS = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
 const DEFAULTS = {
+  scheme: 'dark' as SchemeChoice,
   accentColor: '#ff5500',
   bgPrimary: '#08080a',
   themePreset: 'soundcloud' as ThemePreset,
@@ -302,6 +308,7 @@ const DEFAULTS = {
   discordRpcLyrics: false,
   scrobbleEnabled: true,
   scrobbleNowPlaying: true,
+  sendErrorReports: true,
   obsEnabled: false,
   obsServer: true,
   obsPort: 48555,
@@ -351,6 +358,7 @@ export const useSettingsStore = create<SettingsState>()(
           set({ themePreset: id, accentColor: preset.accent, bgPrimary: preset.bg });
         }
       },
+      setScheme: (scheme) => set({ scheme }),
       setPerfMode: (perfMode) => set({ perfMode, perfModeUserSet: true }),
       setBackgroundImage: (backgroundImage) => set({ backgroundImage }),
       setBackgroundOpacity: (backgroundOpacity) => set({ backgroundOpacity }),
@@ -467,6 +475,7 @@ export const useSettingsStore = create<SettingsState>()(
       setDiscordRpcLyrics: (discordRpcLyrics) => set({ discordRpcLyrics }),
       setScrobbleEnabled: (scrobbleEnabled) => set({ scrobbleEnabled }),
       setScrobbleNowPlaying: (scrobbleNowPlaying) => set({ scrobbleNowPlaying }),
+      setSendErrorReports: (sendErrorReports) => set({ sendErrorReports }),
       setObsEnabled: (obsEnabled) => set({ obsEnabled }),
       setObsServer: (obsServer) => set({ obsServer }),
       setObsPort: (obsPort) => set({ obsPort }),
@@ -514,6 +523,7 @@ export const useSettingsStore = create<SettingsState>()(
       setRiverHidden: (riverHidden) => set({ riverHidden }),
       resetTheme: () =>
         set({
+          scheme: DEFAULTS.scheme,
           accentColor: DEFAULTS.accentColor,
           bgPrimary: DEFAULTS.bgPrimary,
           themePreset: DEFAULTS.themePreset,
@@ -535,7 +545,7 @@ export const useSettingsStore = create<SettingsState>()(
     {
       name: 'sc-settings',
       storage: createJSONStorage(() => tauriStorage),
-      version: 22,
+      version: 23,
       migrate: (persistedState, version) => {
         const prev = (persistedState ?? {}) as Partial<SettingsState> & {
           soundwaveDiversity?: number;
@@ -560,9 +570,13 @@ export const useSettingsStore = create<SettingsState>()(
         if (version < 21) {
           next.streamQuality = prev.streamQuality ?? (highQualityStreaming ? 'hq' : 'auto');
         }
+        if (version < 23) {
+          next.sendErrorReports = prev.sendErrorReports ?? true;
+        }
         return next;
       },
       partialize: (s) => ({
+        scheme: s.scheme,
         accentColor: s.accentColor,
         bgPrimary: s.bgPrimary,
         themePreset: s.themePreset,
@@ -611,6 +625,7 @@ export const useSettingsStore = create<SettingsState>()(
         discordRpcLyrics: s.discordRpcLyrics,
         scrobbleEnabled: s.scrobbleEnabled,
         scrobbleNowPlaying: s.scrobbleNowPlaying,
+        sendErrorReports: s.sendErrorReports,
         obsEnabled: s.obsEnabled,
         obsServer: s.obsServer,
         obsPort: s.obsPort,

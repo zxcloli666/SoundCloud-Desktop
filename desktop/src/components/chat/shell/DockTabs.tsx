@@ -43,7 +43,7 @@ function Puck({
       aria-pressed={active}
       onClick={onClick}
       className={`relative flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full transition-transform duration-200 hover:scale-[1.06] active:scale-[0.95] ${
-        active ? 'bg-white/[0.1] text-white' : 'bg-white/[0.04] text-white/55 hover:text-white/85'
+        active ? 'bg-ink/[0.1] text-white' : 'bg-ink/[0.04] text-ink-55 hover:text-ink-85'
       }`}
       style={active ? ACTIVE_RING : undefined}
     >
@@ -80,7 +80,7 @@ const ChatTab = memo(function ChatTab({ id, active }: { id: ConvId; active: bool
             size={34}
           />
         ) : (
-          <span className="flex size-[34px] items-center justify-center rounded-full bg-white/[0.06] text-white/40">
+          <span className="flex size-[34px] items-center justify-center rounded-full bg-ink/[0.06] text-ink-40">
             <MessageCircle size={15} />
           </span>
         )}
@@ -90,7 +90,7 @@ const ChatTab = memo(function ChatTab({ id, active }: { id: ConvId; active: bool
         type="button"
         aria-label={t('chat.list.dock.closeTab')}
         onClick={() => closeTab(id)}
-        className="absolute -top-1 -left-1 hidden size-4 cursor-pointer items-center justify-center rounded-full bg-black/85 text-white/75 group-hover:flex hover:text-white"
+        className="absolute -top-1 -left-1 hidden size-4 cursor-pointer items-center justify-center rounded-full bg-black/85 text-ink-75 group-hover:flex hover:text-white"
       >
         <X size={9} strokeWidth={3} />
       </button>
@@ -141,7 +141,7 @@ export const DockTabs = memo(function DockTabs() {
           <Radio size={16} className="text-[var(--color-accent)]" />
         </Puck>
       )}
-      {tabs.length > 0 && <span className="h-5 w-px shrink-0 bg-white/[0.08]" />}
+      {tabs.length > 0 && <span className="h-5 w-px shrink-0 bg-ink/[0.08]" />}
       {tabs.map((id) => (
         <ChatTab key={id} id={id} active={active === id} />
       ))}
@@ -151,7 +151,7 @@ export const DockTabs = memo(function DockTabs() {
         title={t('chat.list.dock.close')}
         aria-label={t('chat.list.dock.close')}
         onClick={() => setDockOpen(false)}
-        className="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-white/45 transition-colors hover:bg-white/[0.08] hover:text-white/90"
+        className="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-ink-45 transition-colors hover:bg-ink/[0.08] hover:text-ink-90"
       >
         <X size={15} />
       </button>

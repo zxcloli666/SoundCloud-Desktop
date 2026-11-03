@@ -89,28 +89,43 @@ jobs:
           - platform: ubuntu-22.04
             args: ""
             target: ""
+            triple: x86_64-unknown-linux-gnu
             job_name: linux-amd64
           - platform: ubuntu-22.04-arm
             args: ""
             target: ""
+            triple: aarch64-unknown-linux-gnu
             job_name: linux-arm64
           - platform: macos-latest
             args: "--target aarch64-apple-darwin"
             target: aarch64-apple-darwin
+            triple: aarch64-apple-darwin
             job_name: macos-arm64
           - platform: macos-latest
             args: "--target x86_64-apple-darwin"
             target: x86_64-apple-darwin
+            triple: x86_64-apple-darwin
             job_name: macos-amd64
           - platform: windows-latest
             args: ""
             target: ""
+            triple: x86_64-pc-windows-msvc
             job_name: windows-amd64
     runs-on: ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@v7
         with:
           ref: ${{ needs.version.outputs.sha }}
+
+      - name: Restore target
+        uses: ./.github/actions/ghcr-cache
+        with:
+          mode: restore
+          triple: ${{ matrix.triple }}
+
+      - name: Mtimes
+        shell: bash
+        run: bash scripts/ci-mtime.sh restore
 
       - name: Install dependencies (ubuntu only)
         if: runner.os == 'Linux'
@@ -185,16 +200,21 @@ jobs:
           cache: pnpm
           cache-dependency-path: desktop/pnpm-lock.yaml
 
-      - name: Install Rust stable
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: ${{ matrix.target }}
+      - name: Install Rust
+        shell: bash
+        env:
+          TARGET: ${{ matrix.target }}
+        run: |
+          bash scripts/ci-toolchain.sh
+          if [ -n "$TARGET" ]; then rustup target add "$TARGET"; fi
 
       - name: Rust cache
         uses: swatinem/rust-cache@v2
         with:
           workspaces: desktop/src-tauri -> target
           key: ${{ matrix.job_name }}
+          cache-targets: false
+          save-if: ${{ github.ref == 'refs/heads/main' }}
 
       - name: Install frontend dependencies
         working-directory: desktop
@@ -207,6 +227,7 @@ jobs:
         run: node .github/scripts/updater-manifest.mjs config desktop/src-tauri/tauri.updater.conf.json
 
       - name: Build Tauri
+        id: build
         working-directory: desktop
         shell: bash
         env:
@@ -216,6 +237,13 @@ jobs:
           LASTFM_API_SECRET: ${{ secrets.LASTFM_API_SECRET }}
           UPDATER_CONFIG: ${{ env.HAS_UPDATER_KEY == 'true' && format('{0}/desktop/src-tauri/tauri.updater.conf.json', github.workspace) || '' }}
         run: pnpm tauri build ${{ matrix.args }} ${UPDATER_CONFIG:+--config "$UPDATER_CONFIG"}
+
+      - name: Stamp
+        if: always()
+        shell: bash
+        env:
+          BUILD: ${{ steps.build.outcome }}
+        run: bash scripts/ci-mtime.sh stamp "$BUILD"
 
       - name: Check CRT imports (windows only)
         if: matrix.platform == 'windows-latest'
@@ -232,6 +260,18 @@ jobs:
           $dest = "desktop/src-tauri/target/release/bundle/portable"
           New-Item -ItemType Directory -Force -Path $dest
           Copy-Item $exe.FullName "$dest/soundcloud-desktop-portable.exe"
+
+      - name: Pack source maps
+        if: matrix.job_name == 'linux-amd64'
+        run: tar -czf web-sourcemaps.tar.gz -C desktop dist-maps
+
+      - name: Upload source maps
+        if: matrix.job_name == 'linux-amd64'
+        uses: actions/upload-artifact@v7
+        with:
+          name: web-sourcemaps
+          path: web-sourcemaps.tar.gz
+          retention-days: 2
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v7
@@ -251,6 +291,13 @@ jobs:
             desktop/src-tauri/target/**/release/bundle/appimage/*.AppImage.sig
             desktop/src-tauri/target/**/release/bundle/macos/*.tar.gz.sig
           retention-days: 2
+
+      - name: Save target
+        if: success() && github.ref == 'refs/heads/main'
+        uses: ./.github/actions/ghcr-cache
+        with:
+          mode: save
+          triple: ${{ matrix.triple }}
 
   flatpak:
     needs: version
@@ -289,7 +336,7 @@ jobs:
           cp -r _internal/decrypt-client ./utils/decrypt-client
           rm -rf _internal
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal
-          "$HOME/.cargo/bin/cargo" metadata --format-version 1 --manifest-path desktop/src-tauri/Cargo.toml > /dev/null
+          RUSTUP_TOOLCHAIN=stable "$HOME/.cargo/bin/cargo" metadata --format-version 1 --manifest-path desktop/src-tauri/Cargo.toml > /dev/null
 
       - uses: actions/setup-node@v7
         with:
@@ -363,7 +410,7 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           path: /tmp/artifacts
-          pattern: '{tauri-builds-*,linux-flatpak,soundcloud-desktop-*.flatpak}'
+          pattern: '{tauri-builds-*,linux-flatpak,soundcloud-desktop-*.flatpak,web-sourcemaps}'
           merge-multiple: true
 
       - name: Flatten and deduplicate artifacts

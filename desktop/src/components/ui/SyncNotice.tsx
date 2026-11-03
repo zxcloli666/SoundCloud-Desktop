@@ -5,6 +5,7 @@ import { askRelogin } from '../../lib/auth-recovery';
 import type { CollectionSyncInfo } from '../../lib/collection-sync';
 import { helpUrl } from '../../lib/help-url';
 import { ExternalLink, Loader2, Lock, RotateCcw } from '../../lib/icons';
+import { SyncStarHint } from '../star-moments/SyncStarHint';
 import { syncTimeText } from '../sync/useSyncCopy';
 
 export type SyncNoticeKind = 'failed' | 'syncing' | 'stalled' | 'refused';
@@ -26,7 +27,7 @@ const REFUSED_TEXT: Record<string, string> = {
 const WAIT_TICK_MS = 60_000;
 
 const ACTION =
-  'inline-flex cursor-pointer items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-3.5 py-1.5 text-[12px] font-semibold text-white/75 transition-colors hover:border-white/[0.16] hover:bg-white/[0.09] hover:text-white/95';
+  'inline-flex cursor-pointer items-center gap-2 rounded-full border border-ink/10 bg-ink/[0.05] px-3.5 py-1.5 text-[12px] font-semibold text-ink-75 transition-colors hover:border-ink/[0.16] hover:bg-ink/[0.09] hover:text-ink-95';
 
 export interface SyncedQuery {
   isError: boolean;
@@ -69,20 +70,25 @@ export const SyncNotice = React.memo(function SyncNotice({
   }, [ticking]);
 
   if (kind === 'syncing') {
+    const waitedSec = (now - queuedAt) / 1000;
     return (
-      <div className="flex items-center justify-center gap-2 text-[13px] text-white/30">
-        <Loader2 size={14} className="animate-spin" />
-        {waiting
-          ? t('common.syncWaiting', { time: syncTimeText(t, (now - queuedAt) / 1000) })
-          : (text ?? t(DEFAULT_TEXT.syncing))}
+      <div className="flex flex-col items-center gap-3">
+        <div className="flex items-center justify-center gap-2 text-[13px] text-ink-30">
+          <Loader2 size={14} className="animate-spin" />
+          {waiting
+            ? t('common.syncWaiting', { time: syncTimeText(t, waitedSec) })
+            : (text ?? t(DEFAULT_TEXT.syncing))}
+        </div>
+        {ownedByMe && <SyncStarHint />}
       </div>
     );
   }
 
   if (kind === 'stalled') {
     return (
-      <div className="flex flex-col items-center gap-3 text-center text-[13px] text-white/30">
+      <div className="flex flex-col items-center gap-3 text-center text-[13px] text-ink-30">
         {text ?? t(DEFAULT_TEXT.stalled)}
+        {ownedByMe && <SyncStarHint />}
         <button
           type="button"
           onClick={() => void openUrl(helpUrl('fix/sync', i18n.language)).catch(() => undefined)}
@@ -102,7 +108,7 @@ export const SyncNotice = React.memo(function SyncNotice({
     const message = text ?? t(codeText ?? DEFAULT_TEXT.refused);
     const retryLeft = ((info?.retryAt ?? now) - now) / 1000;
     return (
-      <div className="flex flex-col items-center gap-3 text-center text-[13px] text-white/30">
+      <div className="flex flex-col items-center gap-3 text-center text-[13px] text-ink-30">
         {unavailable
           ? `${message} · ${t('sync.retryIn', { time: syncTimeText(t, retryLeft) })}`
           : message}
@@ -117,7 +123,7 @@ export const SyncNotice = React.memo(function SyncNotice({
   }
 
   return (
-    <div className="flex flex-col items-center gap-3 text-[13px] text-white/30">
+    <div className="flex flex-col items-center gap-3 text-[13px] text-ink-30">
       {text ?? t(DEFAULT_TEXT.failed)}
       <button type="button" onClick={onRetry} className={ACTION}>
         <RotateCcw size={12} />

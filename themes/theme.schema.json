@@ -17,12 +17,13 @@
       "type": "object",
       "additionalProperties": false,
       "minProperties": 1,
-      "maxProperties": 4,
+      "maxProperties": 5,
       "properties": {
         "en": { "$ref": "#/$defs/description" },
         "ru": { "$ref": "#/$defs/description" },
         "tr": { "$ref": "#/$defs/description" },
-        "ko": { "$ref": "#/$defs/description" }
+        "ko": { "$ref": "#/$defs/description" },
+        "pt": { "$ref": "#/$defs/description" }
       }
     },
     "version": { "$ref": "#/$defs/version" },
@@ -42,6 +43,7 @@
     "minApp": { "$ref": "#/$defs/version" },
     "accent": { "$ref": "#/$defs/color" },
     "background": { "$ref": "#/$defs/color" },
+    "scheme": { "enum": ["dark", "white"] },
     "font": {
       "enum": [
         "inter",

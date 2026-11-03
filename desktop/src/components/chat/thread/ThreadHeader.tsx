@@ -49,7 +49,7 @@ function Subtitle({ typing }: { typing: UserId[] }) {
 
 function GroupMark() {
   return (
-    <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white/[0.07] text-white/50">
+    <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-ink/[0.07] text-ink-50">
       <Users size={16} />
     </span>
   );
@@ -85,7 +85,7 @@ export const ThreadHeader = memo(function ThreadHeader({
   return (
     <header
       data-ui="chat-thread-header"
-      className="@container/header relative z-20 h-[58px] shrink-0 border-b border-white/[0.05]"
+      className="@container/header relative z-20 h-[58px] shrink-0 border-b border-ink/[0.05]"
     >
       <GlassLayer blur={30} tint={surface(6, 55)} solid={surface(7)} />
       <div
@@ -97,7 +97,7 @@ export const ThreadHeader = memo(function ThreadHeader({
             type="button"
             aria-label={t('chat.thread.back')}
             onClick={onBack}
-            className="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-white/55 transition-colors duration-150 hover:bg-white/[0.07] hover:text-white @min-[641px]:hidden"
+            className="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-ink-55 transition-colors duration-150 hover:bg-ink/[0.07] hover:text-white @min-[641px]:hidden"
           >
             <ChevronLeft size={18} />
           </button>
@@ -105,7 +105,7 @@ export const ThreadHeader = memo(function ThreadHeader({
         <button
           type="button"
           onClick={onInfo}
-          className="flex min-w-0 flex-1 cursor-pointer items-center gap-2.5 rounded-xl py-1 pr-2 pl-1 text-left transition-colors duration-150 hover:bg-white/[0.04]"
+          className="flex min-w-0 flex-1 cursor-pointer items-center gap-2.5 rounded-xl py-1 pr-2 pl-1 text-left transition-colors duration-150 hover:bg-ink/[0.04]"
         >
           {conversation.kind === 'self' ? (
             <SavedMark />
@@ -118,12 +118,12 @@ export const ThreadHeader = memo(function ThreadHeader({
           )}
           <span className="min-w-0 flex-1">
             <span className="flex items-center gap-1.5">
-              <span className="truncate text-[14px] font-semibold tracking-tight text-white/92">
+              <span className="truncate text-[14px] font-semibold tracking-tight text-ink-92">
                 {title}
               </span>
-              {muted && <BellOff size={12} className="shrink-0 text-white/30" />}
+              {muted && <BellOff size={12} className="shrink-0 text-ink-30" />}
             </span>
-            <span className="block truncate text-[11.5px] text-white/40">
+            <span className="block truncate text-[11.5px] text-ink-40">
               <Subtitle typing={typing} />
             </span>
           </span>
@@ -144,7 +144,7 @@ export const ThreadHeader = memo(function ThreadHeader({
           type="button"
           aria-label={t('chat.thread.menu.info')}
           onClick={onInfo}
-          className="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-white/50 transition-colors duration-150 hover:bg-white/[0.07] hover:text-white @max-[480px]/header:hidden"
+          className="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-ink-50 transition-colors duration-150 hover:bg-ink/[0.07] hover:text-white @max-[480px]/header:hidden"
         >
           <Info size={17} />
         </button>
@@ -152,7 +152,7 @@ export const ThreadHeader = memo(function ThreadHeader({
           type="button"
           aria-label={t('chat.thread.menu.more')}
           onClick={(event) => openThreadMenu(event, conversation, t, i18n.language, onInfo)}
-          className="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-white/50 transition-colors duration-150 hover:bg-white/[0.07] hover:text-white"
+          className="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-ink-50 transition-colors duration-150 hover:bg-ink/[0.07] hover:text-white"
         >
           <Ellipsis size={17} />
         </button>

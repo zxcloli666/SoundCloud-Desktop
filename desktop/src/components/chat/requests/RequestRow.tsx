@@ -24,15 +24,15 @@ export const RequestRow = memo(function RequestRow({ request, selected, onOpen }
       onKeyDown={(event) => event.key === 'Enter' && onOpen(conversation.id)}
       className={`group mx-2 my-1 flex cursor-pointer flex-col gap-2 rounded-2xl border px-3 py-2.5 transition-colors duration-200 ${
         selected
-          ? 'border-white/[0.12] bg-white/[0.07]'
-          : 'border-white/[0.05] bg-white/[0.025] hover:bg-white/[0.05]'
+          ? 'border-ink/[0.12] bg-ink/[0.07]'
+          : 'border-ink/[0.05] bg-ink/[0.025] hover:bg-ink/[0.05]'
       }`}
     >
       <div className="flex items-center gap-3">
         <Avatar src={from.avatarUrl} alt={from.name} size={40} />
         <div className="min-w-0 flex-1">
-          <p className="truncate text-[13.5px] font-semibold text-white/90">{from.name}</p>
-          <p className="truncate text-[11.5px] text-white/40">
+          <p className="truncate text-[13.5px] font-semibold text-ink-90">{from.name}</p>
+          <p className="truncate text-[11.5px] text-ink-40">
             {group
               ? t('chat.list.requests.groupInvite', { name: conversation.title ?? '' })
               : t('chat.list.requests.messages', { count: request.messages })}
@@ -40,7 +40,7 @@ export const RequestRow = memo(function RequestRow({ request, selected, onOpen }
         </div>
       </div>
       {preview && (
-        <p className="line-clamp-2 rounded-xl bg-black/15 px-3 py-2 text-[12.5px] leading-snug break-words text-white/60">
+        <p className="line-clamp-2 rounded-xl bg-black/15 px-3 py-2 text-[12.5px] leading-snug break-words text-ink-60">
           {preview}
         </p>
       )}

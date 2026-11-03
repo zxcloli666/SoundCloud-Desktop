@@ -86,7 +86,7 @@ export const SessionRecoveryModal = React.memo(() => {
           {/* Close */}
           <ModalClose
             disabled={locked}
-            className="absolute top-4 right-4 p-1.5 rounded-lg text-white/20 hover:text-white/60 hover:bg-white/[0.06] transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-default"
+            className="absolute top-4 right-4 p-1.5 rounded-lg text-ink-20 hover:text-ink-60 hover:bg-ink/[0.06] transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-default"
           >
             <X size={14} />
           </ModalClose>
@@ -97,17 +97,17 @@ export const SessionRecoveryModal = React.memo(() => {
               className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4"
               style={{
                 background:
-                  'linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))',
-                border: '0.5px solid rgba(255,255,255,0.08)',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+                  'linear-gradient(135deg, rgb(var(--ink) / 0.06), rgb(var(--ink) / 0.02))',
+                border: '0.5px solid rgb(var(--ink) / 0.08)',
+                boxShadow: '0 4px 20px rgb(var(--shade) / calc(0.3 * var(--shade-alpha)))',
               }}
             >
-              <Lock size={24} className="text-white/60" />
+              <Lock size={24} className="text-ink-60" />
             </div>
-            <ModalTitle className="text-lg font-bold text-white/90 tracking-tight">
+            <ModalTitle className="text-lg font-bold text-ink-90 tracking-tight">
               {t(asked ? 'recovery.writesTitle' : 'recovery.title')}
             </ModalTitle>
-            <p className="text-[12.5px] text-white/35 mt-1.5 leading-relaxed max-w-[280px]">
+            <p className="text-[12.5px] text-ink-35 mt-1.5 leading-relaxed max-w-[280px]">
               {t(DESCRIPTION[reason])}
             </p>
           </div>
@@ -116,8 +116,8 @@ export const SessionRecoveryModal = React.memo(() => {
           <div className="space-y-2.5">
             {bodyState === 'oauth' && (
               <div className="flex flex-col items-center gap-3 py-2">
-                <div className="w-8 h-8 rounded-full border-2 border-white/[0.06] border-t-accent animate-spin" />
-                <p className="text-[11.5px] text-white/45">{stepLabel}</p>
+                <div className="w-8 h-8 rounded-full border-2 border-ink/[0.06] border-t-accent animate-spin" />
+                <p className="text-[11.5px] text-ink-45">{stepLabel}</p>
                 {browserFailed && (
                   <p className="max-w-[260px] text-center text-[11px] leading-snug text-amber-200/70">
                     {t('auth.browserFailed')}
@@ -131,7 +131,7 @@ export const SessionRecoveryModal = React.memo(() => {
                     <button
                       type="button"
                       onClick={reopen}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] text-[11px] text-white/45 hover:text-white/65 transition-all cursor-pointer"
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-ink/[0.04] hover:bg-ink/[0.08] border border-ink/[0.06] text-[11px] text-ink-45 hover:text-ink-65 transition-all cursor-pointer"
                     >
                       <ExternalLink size={11} />
                       {t('auth.reopenLink')}
@@ -146,7 +146,7 @@ export const SessionRecoveryModal = React.memo(() => {
                       setCopied(true);
                       setTimeout(() => setCopied(false), 2000);
                     }}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] text-[11px] text-white/30 hover:text-white/50 transition-all cursor-pointer"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-ink/[0.04] hover:bg-ink/[0.08] border border-ink/[0.06] text-[11px] text-ink-30 hover:text-ink-50 transition-all cursor-pointer"
                   >
                     {copied ? (
                       <>
@@ -164,7 +164,7 @@ export const SessionRecoveryModal = React.memo(() => {
                 <button
                   type="button"
                   onClick={cancel}
-                  className="text-[11px] text-white/30 hover:text-white/55 transition-colors cursor-pointer"
+                  className="text-[11px] text-ink-30 hover:text-ink-55 transition-colors cursor-pointer"
                 >
                   {t('common.cancel')}
                 </button>
@@ -173,8 +173,8 @@ export const SessionRecoveryModal = React.memo(() => {
 
             {bodyState === 'renewing' && (
               <div className="flex flex-col items-center gap-3 py-2">
-                <div className="w-8 h-8 rounded-full border-2 border-white/[0.06] border-t-accent animate-spin" />
-                <p className="text-[11.5px] text-white/45">{t('recovery.renewing')}</p>
+                <div className="w-8 h-8 rounded-full border-2 border-ink/[0.06] border-t-accent animate-spin" />
+                <p className="text-[11.5px] text-ink-45">{t('recovery.renewing')}</p>
               </div>
             )}
 
@@ -183,7 +183,7 @@ export const SessionRecoveryModal = React.memo(() => {
                 {loginError ? (
                   <div className="pb-1 text-center">
                     <p className="text-[12px] font-semibold text-red-300/85">{loginError.title}</p>
-                    <p className="mt-0.5 text-[11px] leading-snug text-white/40 break-words">
+                    <p className="mt-0.5 text-[11px] leading-snug text-ink-40 break-words">
                       {loginError.desc}
                     </p>
                   </div>
@@ -197,7 +197,7 @@ export const SessionRecoveryModal = React.memo(() => {
                 <button
                   type="button"
                   onClick={retry}
-                  className="w-full py-3 rounded-xl bg-accent text-accent-contrast font-semibold text-[13px] hover:bg-accent-hover active:scale-[0.97] transition-all duration-200 cursor-pointer shadow-[0_0_30px_var(--color-accent-glow),0_2px_8px_rgba(0,0,0,0.3)]"
+                  className="w-full py-3 rounded-xl bg-accent text-accent-contrast font-semibold text-[13px] hover:bg-accent-hover active:scale-[0.97] transition-all duration-200 cursor-pointer shadow-[0_0_30px_var(--color-accent-glow),0_2px_8px_rgb(var(--shade)/calc(0.3*var(--shade-alpha)))]"
                 >
                   {t(asked ? 'sync.signIn' : 'recovery.signIn')}
                 </button>
@@ -205,7 +205,7 @@ export const SessionRecoveryModal = React.memo(() => {
                   <button
                     type="button"
                     onClick={reset}
-                    className="w-full py-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] text-[12.5px] text-white/55 hover:text-white/80 transition-all cursor-pointer"
+                    className="w-full py-2.5 rounded-xl bg-ink/[0.04] hover:bg-ink/[0.08] border border-ink/[0.06] text-[12.5px] text-ink-55 hover:text-ink-80 transition-all cursor-pointer"
                   >
                     {t('common.close')}
                   </button>
@@ -214,7 +214,7 @@ export const SessionRecoveryModal = React.memo(() => {
                     <button
                       type="button"
                       onClick={handleRenew}
-                      className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] text-[12.5px] text-white/55 hover:text-white/80 transition-all cursor-pointer"
+                      className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-ink/[0.04] hover:bg-ink/[0.08] border border-ink/[0.06] text-[12.5px] text-ink-55 hover:text-ink-80 transition-all cursor-pointer"
                     >
                       <RefreshCw size={13} />
                       {t('recovery.retry')}
@@ -222,7 +222,7 @@ export const SessionRecoveryModal = React.memo(() => {
                     <button
                       type="button"
                       onClick={handleLogout}
-                      className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[12px] text-white/25 hover:text-white/45 hover:bg-white/[0.03] transition-all cursor-pointer"
+                      className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[12px] text-ink-25 hover:text-ink-45 hover:bg-ink/[0.03] transition-all cursor-pointer"
                     >
                       <Power size={12} />
                       {t('recovery.logout')}

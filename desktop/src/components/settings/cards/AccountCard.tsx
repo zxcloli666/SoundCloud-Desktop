@@ -29,7 +29,7 @@ export function AccountCard() {
         <button
           type="button"
           onClick={goToSignIn}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-[13px] font-semibold bg-white/[0.04] text-white/75 hover:bg-white/[0.08] border border-white/[0.06] hover:border-white/[0.12] transition-all duration-300 cursor-pointer w-fit"
+          className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-[13px] font-semibold bg-ink/[0.04] text-ink-75 hover:bg-ink/[0.08] border border-ink/[0.06] hover:border-ink/[0.12] transition-all duration-300 cursor-pointer w-fit"
         >
           {t('settings.signIn')}
           <ChevronRight size={14} />
@@ -45,7 +45,7 @@ export function AccountCard() {
         <button
           type="button"
           onClick={() => setTransferOpen(true)}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-[13px] font-semibold bg-white/[0.04] text-white/75 hover:bg-white/[0.08] border border-white/[0.06] hover:border-white/[0.12] transition-all duration-300 cursor-pointer w-fit"
+          className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-[13px] font-semibold bg-ink/[0.04] text-ink-75 hover:bg-ink/[0.08] border border-ink/[0.06] hover:border-ink/[0.12] transition-all duration-300 cursor-pointer w-fit"
         >
           <Smartphone size={14} />
           {t('qrLink.transferSession')}

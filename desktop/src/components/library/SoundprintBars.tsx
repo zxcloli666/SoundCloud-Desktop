@@ -25,10 +25,10 @@ export const SoundprintBars = memo(function SoundprintBars({
     const hasSel = selected != null;
 
     return (
-        <div>
+        <div data-ui="soundprint">
             <div className="flex items-center gap-2 mb-3">
                 <AudioLines size={13} style={{color: spectrum[0].color}}/>
-                <span className="text-[10px] font-bold uppercase tracking-[0.24em] text-white/45">
+                <span className="text-[10px] font-bold uppercase tracking-[0.24em] text-ink-45">
           {t('library.soundprint')}
         </span>
             </div>
@@ -72,12 +72,12 @@ export const SoundprintBars = memo(function SoundprintBars({
                             </div>
                             <span
                                 className={`mt-2.5 text-[10.5px] capitalize truncate text-center transition-colors ${
-                                    isSel ? 'text-white' : 'text-white/55 group-hover/sp:text-white/95'
+                                    isSel ? 'text-ink' : 'text-ink-55 group-hover/sp:text-ink-95'
                                 }`}
                             >
                 {g.genre}
               </span>
-                            <span className="text-[9px] tabular-nums text-center text-white/30">
+                            <span className="text-[9px] tabular-nums text-center text-ink-30">
                 {Math.round(g.share * 100)}%
               </span>
                         </button>

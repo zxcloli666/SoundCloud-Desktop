@@ -120,20 +120,20 @@ export const SplitDivider = React.memo(
                 >
                     <div
                         className={`absolute left-1/2 top-0 bottom-0 w-px -translate-x-1/2 transition-colors duration-150 ${
-                            active ? 'bg-white/20' : 'bg-white/[0.04] group-hover/splitter:bg-white/10'
+                            active ? 'bg-ink/20' : 'bg-ink/[0.04] group-hover/splitter:bg-ink/10'
                         }`}
                     />
                     <div
                         className={`absolute left-1/2 top-1/2 flex h-14 w-3 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border transition-all duration-150 ${
                             active
-                                ? 'border-white/18 bg-white/[0.12] shadow-[0_0_20px_rgba(255,255,255,0.08)]'
-                                : 'border-white/[0.08] bg-white/[0.04] group-hover/splitter:border-white/14 group-hover/splitter:bg-white/[0.08]'
+                                ? 'border-ink/18 bg-ink/[0.12] shadow-[0_0_20px_rgba(255,255,255,0.08)]'
+                                : 'border-ink/[0.08] bg-ink/[0.04] group-hover/splitter:border-ink/14 group-hover/splitter:bg-ink/[0.08]'
                         }`}
                     >
                         <div className="flex flex-col gap-1.5">
-                            <span className="block h-1 w-[2px] rounded-full bg-white/35"/>
-                            <span className="block h-1 w-[2px] rounded-full bg-white/35"/>
-                            <span className="block h-1 w-[2px] rounded-full bg-white/35"/>
+                            <span className="block h-1 w-[2px] rounded-full bg-ink/35"/>
+                            <span className="block h-1 w-[2px] rounded-full bg-ink/35"/>
+                            <span className="block h-1 w-[2px] rounded-full bg-ink/35"/>
                         </div>
                     </div>
                 </div>

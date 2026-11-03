@@ -1,7 +1,8 @@
 import { useEffect } from 'react';
-import {applyAccentVars, applyBgVars, applyPerfMode} from '../lib/apply-theme';
+import {applyAccentVars, applyBgVars, applyPerfMode, applyScheme} from '../lib/apply-theme';
 import {useCoverPalette} from '../lib/cover-palette';
 import {applyFontVars} from '../lib/interface-font';
+import {useSystemScheme} from '../lib/scheme';
 import {setupFocusGate, setupVisibilityGate} from '../lib/perf';
 import {effectiveLook} from '../lib/themes/look';
 import {activeLook} from '../lib/themes/records';
@@ -11,6 +12,7 @@ import { useSettingsStore } from '../stores/settings';
 import {useThemesStore} from '../stores/themes';
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
+  const schemeChoice = useSettingsStore((s) => s.scheme);
   const accentColor = useSettingsStore((s) => s.accentColor);
   const bgPrimary = useSettingsStore((s) => s.bgPrimary);
   const perfMode = useSettingsStore((s) => s.perfMode);
@@ -20,10 +22,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const coverAccent = useSettingsStore((s) => s.coverAccent);
   const look = useThemesStore(activeLook);
   const palette = useCoverPalette(coverAccent);
-  const { accent, bg, font } = effectiveLook(
-    { accentColor, bgPrimary, coverAccent, interfaceFont, customFontName, customFontFile },
+  const system = useSystemScheme();
+  const { scheme, accent, bg, font } = effectiveLook(
+    { scheme: schemeChoice, accentColor, bgPrimary, coverAccent, interfaceFont, customFontName, customFontFile },
     look,
     palette,
+    system,
   );
   useCustomCss();
   useThemes();
@@ -39,6 +43,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
       applyPerfMode(perfMode);
   }, [perfMode]);
+
+  useEffect(() => {
+      applyScheme(scheme);
+  }, [scheme]);
 
   useEffect(() => {
       applyAccentVars(accent);

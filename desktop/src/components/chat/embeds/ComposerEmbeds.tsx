@@ -44,7 +44,7 @@ export const ComposerEmbeds = memo(function ComposerEmbeds({
             aria-label={t('chat.embeds.remove')}
             title={t('chat.embeds.remove')}
             onClick={() => onDismiss(item.key)}
-            className="absolute right-1.5 top-1.5 z-[2] flex h-6 w-6 items-center justify-center rounded-full bg-black/55 text-white/70 transition-colors duration-200 cursor-pointer hover:bg-black/75 hover:text-white"
+            className="absolute right-1.5 top-1.5 z-[2] flex h-6 w-6 items-center justify-center rounded-full bg-black/55 text-ink-70 transition-colors duration-200 cursor-pointer hover:bg-black/75 hover:text-white"
           >
             <X size={12} />
           </button>

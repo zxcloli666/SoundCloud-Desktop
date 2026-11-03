@@ -20,16 +20,16 @@ export function GlobalBindingsGroup() {
 
   return (
     <div>
-      <h3 className="text-[11px] font-bold text-white/30 uppercase tracking-widest mb-3">
+      <h3 className="text-[11px] font-bold text-ink-30 uppercase tracking-widest mb-3">
         {t('kb.groupGlobal')}
       </h3>
       <div className="space-y-1">
         {assigned.map((action) => (
           <div
             key={action}
-            className="flex items-center justify-between py-2 px-3 rounded-xl hover:bg-white/[0.03] transition-colors"
+            className="flex items-center justify-between py-2 px-3 rounded-xl hover:bg-ink/[0.03] transition-colors"
           >
-            <span className="text-[13px] text-white/60">{t(`hotkeys.actions.${action}`)}</span>
+            <span className="text-[13px] text-ink-60">{t(`hotkeys.actions.${action}`)}</span>
             <KeyCaps labels={chordLabels(parseAccelerator(hotkeys[action]), mac, windows)} />
           </div>
         ))}

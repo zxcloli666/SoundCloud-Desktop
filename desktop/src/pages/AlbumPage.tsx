@@ -22,14 +22,14 @@ export function AlbumPage() {
   if (album.isLoading || (!data && !album.error)) {
     return (
       <div className="relative w-full min-h-screen flex items-center justify-center">
-        <Loader2 size={28} className="text-white/30 animate-spin" />
+        <Loader2 size={28} className="text-ink-30 animate-spin" />
       </div>
     );
   }
 
   if (album.error || !data) {
     return (
-      <div className="relative w-full min-h-screen flex flex-col items-center justify-center gap-5 text-white/40 text-sm">
+      <div className="relative w-full min-h-screen flex flex-col items-center justify-center gap-5 text-ink-40 text-sm">
         {t('common.error')}
         {id && <OfflineCopyLink scope={albumScope(id)} />}
       </div>
@@ -39,7 +39,7 @@ export function AlbumPage() {
   return (
     <>
       <style>{USER_PAGE_KEYFRAMES}</style>
-      <div className="relative w-full min-h-screen">
+      <div data-ui="page" data-page="album" className="relative w-full min-h-screen">
         <AuraField aura={aura} isStar={hasStar} />
 
         <div

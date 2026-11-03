@@ -10,7 +10,7 @@ export function RulesCard() {
       <div className="flex flex-col gap-4">
         <ForbiddenGrid />
         <PolicyLadder />
-        <div className="h-px bg-white/[0.05]" />
+        <div className="h-px bg-ink/[0.05]" />
         <PrivacyNote />
       </div>
     </Card>

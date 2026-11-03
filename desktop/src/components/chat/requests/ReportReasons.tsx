@@ -28,10 +28,10 @@ export const ReportReasons = memo(function ReportReasons({ value, onChange }: Re
             } ${
               active
                 ? 'border-rose-400/45 bg-rose-500/15 text-white'
-                : 'border-white/[0.06] bg-white/[0.03] text-white/65 hover:bg-white/[0.06]'
+                : 'border-ink/[0.06] bg-ink/[0.03] text-ink-65 hover:bg-ink/[0.06]'
             }`}
           >
-            <Icon size={15} className={active ? 'text-rose-200' : 'text-white/40'} />
+            <Icon size={15} className={active ? 'text-rose-200' : 'text-ink-40'} />
             {t(`chat.list.report.reasons.${id}`)}
           </button>
         );

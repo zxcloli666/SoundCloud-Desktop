@@ -31,7 +31,7 @@ function BlockedRow({ first, onReveal }: { first: boolean; onReveal: () => void 
       <button
         type="button"
         onClick={onReveal}
-        className="flex cursor-pointer items-center gap-1.5 rounded-full border border-dashed border-white/[0.08] px-3 py-1 text-[11.5px] text-white/35 transition-colors duration-150 hover:text-white/60"
+        className="flex cursor-pointer items-center gap-1.5 rounded-full border border-dashed border-ink/[0.08] px-3 py-1 text-[11.5px] text-ink-35 transition-colors duration-150 hover:text-ink-60"
       >
         <EyeOff size={12} className="shrink-0" />
         {t('chat.thread.bubble.blocked')}

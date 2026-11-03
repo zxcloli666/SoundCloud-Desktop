@@ -131,7 +131,9 @@ for (const dir of dirs) {
       const type = MIME[name.slice(name.lastIndexOf('.') + 1)];
       return `data:${type};base64,${readFileSync(join(assetsDir, name)).toString('base64')}`;
     });
+    const scheme = meta.scheme ?? 'dark';
     const settings = {
+      scheme,
       accentColor: meta.accent ?? '#ff5500',
       bgPrimary: meta.background ?? '#08080a',
       interfaceFont: meta.font ?? 'inter',
@@ -142,8 +144,12 @@ for (const dir of dirs) {
       perfModeUserSet: true,
       perfProbed: true,
     };
+    const background =
+      scheme === 'white' && meta.background
+        ? `:root { --bg-primary: ${meta.background} !important; }\n`
+        : '';
     payloads.set(id, {
-      css,
+      css: background + css,
       api,
       appVersion,
       files: {

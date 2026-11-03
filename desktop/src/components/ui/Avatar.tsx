@@ -13,6 +13,7 @@ export function Avatar({ src, alt = '', size = 32, className = '' }: AvatarProps
   if (!src || src.includes('default_avatar')) {
     return (
       <div
+        data-ui="avatar"
         className={`rounded-full bg-bg-glass-active flex items-center justify-center text-text-tertiary ${className}`}
         style={sizeStyle}
       >
@@ -29,6 +30,7 @@ export function Avatar({ src, alt = '', size = 32, className = '' }: AvatarProps
       src={art(src, 't200x200') ?? undefined}
       alt={alt}
       loading="lazy"
+      data-ui="avatar"
       decoding="async"
       className={`rounded-full object-cover ${className}`}
       style={sizeStyle}

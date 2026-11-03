@@ -11,7 +11,11 @@ use crate::audio::eq_curve;
 use crate::audio::silence;
 use crate::audio::state::AudioState;
 use crate::audio::types::{AudioLoadResult, MediaCmd, STALL_SUPPRESS_MS, TICK_INTERVAL_MS};
+use crate::diag::trace;
+use crate::network::edge::Hop;
+use crate::network::netcheck::model::Role;
 use crate::network::system_proxy::follow;
+use crate::network::traced;
 use crate::rt::AppHandle;
 
 const ENDED_SUPPRESS_MS: u64 = 1200;
@@ -291,6 +295,27 @@ pub async fn load_url(
     start_paused: bool,
     state: State<'_, AudioState>,
 ) -> Result<AudioLoadResult, String> {
+    let load = load_with_retries(
+        url,
+        session_id,
+        cache_path,
+        normalization_cache_dir,
+        normalization_cache_key,
+        start_paused,
+        state,
+    );
+    trace::within(trace::new_trace(), load).await
+}
+
+async fn load_with_retries(
+    url: String,
+    session_id: Option<String>,
+    cache_path: Option<String>,
+    normalization_cache_dir: Option<PathBuf>,
+    normalization_cache_key: Option<String>,
+    start_paused: bool,
+    state: State<'_, AudioState>,
+) -> Result<AudioLoadResult, String> {
     let generation = state.load_gen.load(Ordering::Relaxed);
 
     let client = follow(wreq::Client::builder())
@@ -304,7 +329,13 @@ pub async fn load_url(
     let mut success = false;
 
     for attempt in 0..=retry_delays.len() {
-        let mut req = client.get(&url);
+        let (mut req, flight) = traced::begin(
+            &client,
+            wreq::Method::GET,
+            &Hop::unplanned(&url),
+            Role::Primary,
+            "audio",
+        );
         if let Some(sid) = &session_id {
             req = req.header("x-session-id", sid);
         }
@@ -315,21 +346,30 @@ pub async fn load_url(
                 if status.is_success() {
                     match resp.bytes().await {
                         Ok(b) => {
+                            flight.answered(status.as_u16(), b.len() as u64);
                             bytes = b.to_vec();
                             success = true;
                             break;
                         }
-                        Err(e) => last_err = e.to_string(),
+                        Err(e) => {
+                            flight.broke(&e);
+                            last_err = e.to_string();
+                        }
                     }
                 } else if status.as_u16() == 429
                     || (status.as_u16() >= 500 && status.as_u16() <= 599)
                 {
+                    flight.answered(status.as_u16(), 0);
                     last_err = format!("HTTP {}", status);
                 } else {
+                    flight.answered(status.as_u16(), 0);
                     return Err(format!("HTTP {}", status));
                 }
             }
-            Err(e) => last_err = e.to_string(),
+            Err(e) => {
+                flight.broke(&e);
+                last_err = e.to_string();
+            }
         }
 
         if attempt < retry_delays.len() {

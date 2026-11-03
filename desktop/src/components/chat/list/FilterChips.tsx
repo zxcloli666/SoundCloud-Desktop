@@ -41,7 +41,7 @@ function Chip({
       className={`flex h-7 shrink-0 cursor-pointer items-center gap-1.5 rounded-full border px-3 text-[12px] font-semibold whitespace-nowrap transition-colors duration-200 ${
         active
           ? ''
-          : 'border-white/[0.06] bg-white/[0.03] text-white/50 hover:bg-white/[0.07] hover:text-white/80'
+          : 'border-ink/[0.06] bg-ink/[0.03] text-ink-50 hover:bg-ink/[0.07] hover:text-ink-80'
       }`}
       style={active ? ACTIVE : undefined}
     >
@@ -55,7 +55,7 @@ function Count({ value, loud }: { value: number; loud: boolean }) {
   return (
     <span
       className={`rounded-full px-1.5 text-[10.5px] font-bold tabular-nums leading-[16px] ${
-        loud ? 'bg-[var(--color-accent)] text-[var(--color-accent-contrast)]' : 'bg-white/10'
+        loud ? 'bg-[var(--color-accent)] text-[var(--color-accent-contrast)]' : 'bg-ink/10'
       }`}
     >
       {unreadLabel(value)}

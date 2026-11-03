@@ -44,6 +44,7 @@ fn get(url: &str) -> FetchRequest {
         timeout_ms: Some(40_000),
         route: None,
         long_poll: false,
+        trace: None,
     }
 }
 

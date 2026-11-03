@@ -1,14 +1,26 @@
-import { AudioLines, Database, Globe, Heart, Music, Sparkles } from '../../../lib/icons';
+import { AudioLines, Database, Globe, Heart, Music, RefreshCw, Sparkles } from '../../../lib/icons';
 import type { Entitlement } from '../../../lib/pay-client';
 import { SuperHeart } from '../../music/superlike/SuperHeart';
 
 /** Flow steps for the STAR membership page. */
-export type Step = 'overview' | 'method' | 'pay' | 'success' | 'redeem' | 'manage';
+export type Step =
+  | 'overview'
+  | 'method'
+  | 'pay'
+  | 'success'
+  | 'redeem'
+  | 'manage'
+  | 'invite'
+  | 'gifts';
+
+/** Who the pass is for: the buyer, or a friend through a gift code. */
+export type Recipient = 'self' | 'gift';
 
 /** Perks shown on overview / success — icon + i18n title (`starpass.perk.<key>.title`). */
 export const PERKS = [
   { key: 'goPlus', Icon: Music },
   { key: 'server', Icon: Database },
+  { key: 'sync', Icon: RefreshCw },
   { key: 'uq', Icon: AudioLines },
   { key: 'whitelist', Icon: Globe },
   { key: 'soundwave', Icon: Sparkles },

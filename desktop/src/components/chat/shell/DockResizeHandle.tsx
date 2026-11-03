@@ -87,7 +87,7 @@ export const DockResizeHandle = memo(function DockResizeHandle() {
         onKeyDown={onKeyDown}
         className="group absolute inset-y-0 -left-1.5 z-30 w-3 cursor-col-resize outline-none"
       >
-        <span className="absolute inset-y-0 left-1.5 w-px transition-colors duration-200 group-hover:bg-white/25 group-focus-visible:bg-white/40" />
+        <span className="absolute inset-y-0 left-1.5 w-px transition-colors duration-200 group-hover:bg-ink/25 group-focus-visible:bg-ink/40" />
       </div>
       <div
         ref={guideRef}
@@ -101,7 +101,7 @@ export const DockResizeHandle = memo(function DockResizeHandle() {
       >
         <span
           ref={labelRef}
-          className="absolute top-3 left-2 rounded-md bg-black/75 px-1.5 py-0.5 font-mono text-[10px] text-white/85 tabular-nums"
+          className="absolute top-3 left-2 rounded-md bg-black/75 px-1.5 py-0.5 font-mono text-[10px] text-ink-85 tabular-nums"
         />
       </div>
     </>

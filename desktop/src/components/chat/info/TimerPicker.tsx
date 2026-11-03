@@ -19,7 +19,7 @@ export const TimerPicker = memo(function TimerPicker() {
   const current = conversation.ttlS ?? null;
 
   return (
-    <section className="rounded-2xl border border-white/[0.06] bg-white/[0.025] p-3">
+    <section className="rounded-2xl border border-ink/[0.06] bg-ink/[0.025] p-3">
       <div className="mb-2.5 flex items-center gap-2">
         <span
           className="flex size-7 items-center justify-center rounded-full"
@@ -31,10 +31,10 @@ export const TimerPicker = memo(function TimerPicker() {
         >
           <Timer size={14} />
         </span>
-        <span className="flex-1 text-[13px] font-semibold text-white/85">
+        <span className="flex-1 text-[13px] font-semibold text-ink-85">
           {t('chat.thread.timer.title')}
         </span>
-        {!editable && <Lock size={12} className="text-white/30" />}
+        {!editable && <Lock size={12} className="text-ink-30" />}
       </div>
       <div role="radiogroup" className="grid grid-cols-4 gap-1 rounded-xl bg-black/25 p-1">
         {CHOICES.map((ttlS) => {
@@ -54,7 +54,7 @@ export const TimerPicker = memo(function TimerPicker() {
               className={`h-8 cursor-pointer rounded-lg text-[12px] font-semibold tabular-nums transition-colors duration-150 disabled:cursor-default ${
                 active
                   ? 'text-white'
-                  : 'text-white/50 enabled:hover:bg-white/[0.05] enabled:hover:text-white/80'
+                  : 'text-ink-50 enabled:hover:bg-ink/[0.05] enabled:hover:text-ink-80'
               }`}
               style={
                 active

@@ -5,7 +5,7 @@ import { isRoomHost, useTogetherStore } from '../../stores/together';
 type Tone = 'good' | 'busy' | 'warn';
 
 const TONES: Record<Tone, string> = {
-  good: 'border-green-400/20 bg-green-400/[0.07] text-green-400/90',
+  good: 'border-ok/20 bg-ok/[0.07] text-ok/90',
   busy: 'border-accent/25 bg-accent/[0.08] text-accent',
   warn: 'border-amber-300/20 bg-amber-300/[0.07] text-amber-200/90',
 };

@@ -112,7 +112,7 @@ export function ModalClose({
 export function ModalTitle({children, className}: { children: ReactNode; className?: string }) {
     const {titleId} = useCtx();
     return (
-        <h2 id={titleId} className={className ?? 'text-[16px] font-bold text-white/92 tracking-tight'}>
+        <h2 id={titleId} className={className ?? 'text-[16px] font-bold text-ink-92 tracking-tight'}>
             {children}
         </h2>
     );
@@ -125,7 +125,7 @@ export function ModalDescription({
     children: ReactNode;
     className?: string;
 }) {
-    return <p className={className ?? 'text-[12.5px] leading-snug text-white/45'}>{children}</p>;
+    return <p className={className ?? 'text-[12.5px] leading-snug text-ink-45'}>{children}</p>;
 }
 
 /** Mount-with-exit: keep rendered through the close transition. */
@@ -200,7 +200,7 @@ export function ModalContent({
         <>
             {/* biome-ignore lint/a11y/useKeyWithClickEvents: esc handled globally above */}
             <div
-                className={`modal-overlay fixed inset-0 ${zClass} bg-black/60 backdrop-blur-sm`}
+                className={`modal-overlay fixed inset-0 ${zClass} bg-shade-60 backdrop-blur-sm`}
                 data-state={state}
                 onClick={() => setOpen(false)}
             />
@@ -217,10 +217,10 @@ export function ModalContent({
                     data-ui="modal"
                     className={`relative flex max-h-[85vh] flex-col overflow-hidden rounded-[1.75rem] ${className ?? ''}`}
                     style={{
-                        border: '0.5px solid rgba(255,255,255,0.12)',
-                        background: 'linear-gradient(168deg, rgba(23,22,28,0.97), rgba(10,9,13,0.99))',
+                        border: '0.5px solid rgb(var(--ink) / 0.12)',
+                        background: 'linear-gradient(168deg, rgb(var(--surface-hi) / 0.97), rgb(var(--surface) / 0.99))',
                         boxShadow:
-                            '0 40px 110px rgba(0,0,0,0.62), 0 0 80px var(--color-accent-glow), inset 0 1px 0 rgba(255,255,255,0.08)',
+                            '0 40px 110px rgb(var(--shade) / calc(0.62 * var(--shade-alpha))), 0 0 80px var(--color-accent-glow), inset 0 1px 0 rgba(255,255,255,0.08)',
                     }}
                 >
                     {/* soft accent wash from the top — the accent, kept subtle */}
@@ -239,7 +239,7 @@ export function ModalContent({
                         className="pointer-events-none absolute inset-x-8 top-0 h-px"
                         style={{
                             background:
-                                'linear-gradient(90deg, transparent, rgba(255,255,255,0.28), transparent)',
+                                'linear-gradient(90deg, transparent, rgb(var(--ink) / 0.28), transparent)',
                         }}
                     />
                     {showClose && (
@@ -247,7 +247,7 @@ export function ModalContent({
                             type="button"
                             aria-label="Close"
                             onClick={() => setOpen(false)}
-                            className="absolute right-4 top-4 z-10 flex h-8 w-8 items-center justify-center rounded-full text-white/40 hover:text-white/90 hover:bg-white/[0.08] transition-all duration-200 cursor-pointer"
+                            className="absolute right-4 top-4 z-10 flex h-8 w-8 items-center justify-center rounded-full text-ink-40 hover:text-ink-90 hover:bg-ink/[0.08] transition-all duration-200 cursor-pointer"
                         >
                             <X size={16}/>
                         </button>

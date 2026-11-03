@@ -14,7 +14,7 @@ export const DeviceFacts = memo(function DeviceFacts({ device, time, centered }:
   const { t } = useTranslation();
   return (
     <div
-      className={`flex flex-wrap items-center gap-x-3 gap-y-1 text-[11.5px] text-white/40 ${centered ? 'justify-center' : ''}`}
+      className={`flex flex-wrap items-center gap-x-3 gap-y-1 text-[11.5px] text-ink-40 ${centered ? 'justify-center' : ''}`}
     >
       <span className="inline-flex items-center gap-1.5">
         <RouteMark tier={device.tier} />

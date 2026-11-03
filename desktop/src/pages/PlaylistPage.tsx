@@ -338,7 +338,7 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
       return <SyncNotice kind="failed" text={t('playlist.tracksUnavailable')} onRetry={retry} />;
     }
     return (
-      <p className="text-center text-[13px] text-white/30">
+      <p className="text-center text-[13px] text-ink-30">
         {t('playlist.partialTracks', {
           shown: serverTracks.length,
           total: declaredCount,
@@ -398,7 +398,7 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
           onClick={() => commitOrder(tracks)}
           title={t('trackSort.saveOrderHint')}
           aria-label={t('trackSort.saveOrder')}
-          className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-[10px] border border-white/[0.07] bg-white/[0.03] px-3 text-[11.5px] font-semibold text-white/60 transition-all duration-200 ease-[var(--ease-apple)] hover:border-white/[0.14] hover:text-white/90 active:scale-[0.97]"
+          className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-[10px] border border-ink/[0.07] bg-ink/[0.03] px-3 text-[11.5px] font-semibold text-ink-60 transition-all duration-200 ease-[var(--ease-apple)] hover:border-ink/[0.14] hover:text-ink-90 active:scale-[0.97]"
         >
           <Check size={12} />
           <span className="hidden sm:inline">{t('trackSort.saveOrder')}</span>
@@ -414,7 +414,7 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
   );
 
   return (
-    <div className="relative min-h-full w-full">
+    <div data-ui="page" data-page="playlist" className="relative min-h-full w-full">
       <style>{PLAYLIST_KEYFRAMES}</style>
       {perf.atmosphere && (
         <Atmosphere
@@ -430,7 +430,7 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
         <button
           type="button"
           onClick={() => navigate(-1)}
-          className="inline-flex items-center justify-center w-9 h-9 rounded-full text-white/55 hover:text-white hover:bg-white/[0.06] transition-all duration-200 cursor-pointer"
+          className="inline-flex items-center justify-center w-9 h-9 rounded-full text-ink-55 hover:text-ink hover:bg-ink/[0.06] transition-all duration-200 cursor-pointer"
           aria-label={t('search.back')}
         >
           <ChevronLeft size={18} />
@@ -460,11 +460,11 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
           <div
             className="rounded-[2rem] p-5 md:p-6"
             style={{
-              background: 'rgba(255,255,255,0.025)',
-              border: '0.5px solid rgba(255,255,255,0.06)',
+              background: 'rgb(var(--ink) / 0.025)',
+              border: '0.5px solid rgb(var(--ink) / 0.06)',
             }}
           >
-            <div className="flex items-center gap-2 mb-4 text-[11px] font-bold uppercase tracking-[0.22em] text-white/45">
+            <div className="flex items-center gap-2 mb-4 text-[11px] font-bold uppercase tracking-[0.22em] text-ink-45">
               {t('playlist.theSet')}
             </div>
             <SetRibbon tracks={tracks} onJump={handleJump} />
@@ -500,24 +500,24 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
 
       <Dialog.Root open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
         <Dialog.Portal>
-          <Dialog.Overlay className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 animate-fade-in" />
-          <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[380px] rounded-2xl glass border border-white/[0.08] shadow-2xl animate-fade-in-up p-6 space-y-4">
+          <Dialog.Overlay className="fixed inset-0 bg-shade-60 backdrop-blur-sm z-50 animate-fade-in" />
+          <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[380px] rounded-2xl glass border border-ink/[0.08] shadow-2xl animate-fade-in-up p-6 space-y-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center shrink-0">
                 <AlertCircle size={20} className="text-red-400" />
               </div>
-              <Dialog.Title className="text-[15px] font-bold text-white/90">
+              <Dialog.Title className="text-[15px] font-bold text-ink-90">
                 {t('playlist.delete')}
               </Dialog.Title>
-              <Dialog.Close className="ml-auto w-7 h-7 rounded-lg flex items-center justify-center text-white/30 hover:text-white/70 hover:bg-white/[0.08] transition-all">
+              <Dialog.Close className="ml-auto w-7 h-7 rounded-lg flex items-center justify-center text-ink-30 hover:text-ink-70 hover:bg-ink/[0.08] transition-all">
                 <X size={14} />
               </Dialog.Close>
             </div>
-            <p className="text-[13px] text-white/50 leading-relaxed">
+            <p className="text-[13px] text-ink-50 leading-relaxed">
               {t('playlist.deleteConfirm', { title: playlist.title })}
             </p>
             <div className="flex items-center justify-end gap-2.5 pt-1">
-              <Dialog.Close className="px-4 py-2 rounded-xl text-[13px] font-medium text-white/50 hover:text-white/80 hover:bg-white/[0.06] transition-all cursor-pointer">
+              <Dialog.Close className="px-4 py-2 rounded-xl text-[13px] font-medium text-ink-50 hover:text-ink-80 hover:bg-ink/[0.06] transition-all cursor-pointer">
                 {t('common.cancel')}
               </Dialog.Close>
               <button

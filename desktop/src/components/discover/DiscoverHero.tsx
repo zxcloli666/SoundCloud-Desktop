@@ -31,7 +31,7 @@ function DiscoverHeroImpl({
 
   return (
     <GlassHeroPanel hasStar={false} aura={aura}>
-      <div className="relative p-6 md:p-12 flex flex-col lg:flex-row gap-8 lg:gap-12 items-center lg:items-stretch">
+      <div data-ui="discover-hero" className="relative p-6 md:p-12 flex flex-col lg:flex-row gap-8 lg:gap-12 items-center lg:items-stretch">
           <CompassArtifact aura={aura} idleAnim={perf.idleAnim}/>
 
         <div className="flex-1 min-w-0 flex flex-col justify-between gap-6 text-center lg:text-left">
@@ -44,15 +44,15 @@ function DiscoverHeroImpl({
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
                 animation: perf.idleAnim ? 'prismatic-shift 8s linear infinite' : undefined,
-              filter: 'drop-shadow(0 12px 36px rgba(0,0,0,0.55))',
+              filter: 'drop-shadow(0 12px 36px rgb(var(--shade) / calc(0.55 * var(--shade-alpha))))',
             }}
           >
             {t('discover.title')}
           </h1>
 
-          <div className="flex flex-wrap items-center gap-2.5 justify-center lg:justify-start text-[11px] font-bold uppercase tracking-[0.22em] text-white/55">
+          <div className="flex flex-wrap items-center gap-2.5 justify-center lg:justify-start text-[11px] font-bold uppercase tracking-[0.22em] text-ink-55">
             <MetaPill
-              icon={<MicVocal size={11} className="text-white/45" />}
+              icon={<MicVocal size={11} className="text-ink-45" />}
               text={
                 artistsCount == null
                   ? t('common.loading')
@@ -60,9 +60,9 @@ function DiscoverHeroImpl({
               }
               loading={isLoading && artistsCount == null}
             />
-            <span className="text-white/15">·</span>
+            <span className="text-ink-15">·</span>
             <MetaPill
-              icon={<Disc3 size={11} className="text-white/45" />}
+              icon={<Disc3 size={11} className="text-ink-45" />}
               text={
                 albumsCount == null
                   ? t('common.loading')
@@ -70,7 +70,7 @@ function DiscoverHeroImpl({
               }
               loading={isLoading && albumsCount == null}
             />
-            <span className="text-white/15">·</span>
+            <span className="text-ink-15">·</span>
             <MetaPill
               icon={<Sparkles size={11} style={{ color: auraRgba(aura, 0.85) }} />}
               text={
@@ -88,10 +88,10 @@ function DiscoverHeroImpl({
               type="button"
               onClick={onSurpriseMe}
               disabled={isSurprising}
-              className="group relative overflow-hidden inline-flex items-center justify-center gap-2 px-7 h-11 rounded-full text-[13px] font-semibold text-black cursor-pointer transition-all duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)] hover:scale-[1.04] active:scale-[0.97] disabled:opacity-60 disabled:cursor-default disabled:hover:scale-100"
+              className="group relative overflow-hidden inline-flex items-center justify-center gap-2 px-7 h-11 rounded-full text-[13px] font-semibold text-paper cursor-pointer transition-all duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)] hover:scale-[1.04] active:scale-[0.97] disabled:opacity-60 disabled:cursor-default disabled:hover:scale-100"
               style={{
-                background: 'linear-gradient(180deg, #ffffff, #e5e7eb)',
-                border: '0.5px solid rgba(255,255,255,0.4)',
+                background: 'linear-gradient(180deg, rgb(var(--ink)), rgb(var(--ink) / 0.9))',
+                border: '0.5px solid rgb(var(--ink) / 0.4)',
                 boxShadow: `0 12px 32px ${auraRgba(aura, 0.35)}, inset 0 1px 0 rgba(255,255,255,0.6)`,
               }}
             >
@@ -99,7 +99,7 @@ function DiscoverHeroImpl({
                 className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-[900ms]"
                 style={{
                   background:
-                    'linear-gradient(90deg, transparent, rgba(255,255,255,0.45), transparent)',
+                    'linear-gradient(90deg, transparent, rgb(var(--ink) / 0.45), transparent)',
                 }}
               />
               <Sparkles size={14} />
@@ -152,7 +152,7 @@ const MetaPill = memo(function MetaPill({
     return <Skeleton className="h-3 w-16 rounded-full" />;
   }
   return (
-    <span className={`inline-flex items-center gap-1.5 ${highlight ? 'text-white/70' : ''}`}>
+    <span className={`inline-flex items-center gap-1.5 ${highlight ? 'text-ink-70' : ''}`}>
       {icon}
       {text}
     </span>
@@ -181,25 +181,25 @@ const Stat = memo(function Stat({
       className="relative px-5 py-3 rounded-2xl flex items-baseline gap-2.5 transition-all duration-500 hover:scale-[1.04]"
       style={{
         background: highlight
-          ? `linear-gradient(135deg, ${auraRgba(aura, 0.16)}, rgba(255,255,255,0.02))`
+          ? `linear-gradient(135deg, ${auraRgba(aura, 0.16)}, rgb(var(--ink) / 0.02))`
             : b > 0
-                ? 'rgba(255,255,255,0.04)'
-                : 'rgba(24,24,28,0.9)',
-        border: '0.5px solid rgba(255,255,255,0.08)',
+                ? 'rgb(var(--ink) / 0.04)'
+                : 'rgb(var(--surface-hi) / 0.9)',
+        border: '0.5px solid rgb(var(--ink) / 0.08)',
           backdropFilter: b > 0 ? `blur(${b}px)` : undefined,
           WebkitBackdropFilter: b > 0 ? `blur(${b}px)` : undefined,
         boxShadow: `inset 0 0.5px 0 rgba(255,255,255,0.08), 0 8px 24px ${auraRgba(aura, highlight ? 0.28 : 0.14)}`,
       }}
     >
-      <span className="text-white/55">{icon}</span>
+      <span className="text-ink-55">{icon}</span>
       {loading || value == null ? (
         <Skeleton className="h-5 w-16 rounded-md" />
       ) : (
-        <span className="text-[22px] font-black tabular-nums tracking-tight text-white">
+        <span className="text-[22px] font-black tabular-nums tracking-tight text-ink">
           {fc(value)}
         </span>
       )}
-      <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/40">
+      <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-ink-40">
         {label}
       </span>
     </div>
@@ -236,7 +236,7 @@ const CompassArtifact = memo(function CompassArtifact({
       <div
         className="relative w-full h-full rounded-[2.2rem] overflow-hidden flex items-center justify-center"
         style={{
-          background: `radial-gradient(120% 90% at 30% 20%, ${auraRgba(aura, 0.38)} 0%, rgba(20,20,24,0.4) 60%, rgba(10,10,12,0.7) 100%)`,
+          background: `radial-gradient(120% 90% at 30% 20%, ${auraRgba(aura, 0.38)} 0%, rgb(var(--surface) / 0.4) 60%, rgb(var(--paper) / 0.7) 100%)`,
           boxShadow: `0 30px 70px ${auraRgba(aura, 0.35)}, inset 0 0 0 1px rgba(255,255,255,0.10), inset 0 1px 0 rgba(255,255,255,0.16)`,
         }}
       >
@@ -244,12 +244,12 @@ const CompassArtifact = memo(function CompassArtifact({
           className="absolute inset-0 pointer-events-none"
           style={{
             background:
-              'radial-gradient(80% 60% at 50% 0%, rgba(255,255,255,0.18) 0%, transparent 60%)',
+              'radial-gradient(80% 60% at 50% 0%, rgb(var(--ink) / 0.18) 0%, transparent 60%)',
             mixBlendMode: 'overlay',
           }}
         />
         <div
-          className="relative text-white"
+          className="relative text-ink"
           style={{
               animation: idleAnim ? 'ring-rotate 30s linear infinite' : undefined,
             filter: `drop-shadow(0 0 18px ${auraRgba(aura, 0.7)})`,

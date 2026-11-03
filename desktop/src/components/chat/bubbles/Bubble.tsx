@@ -45,7 +45,7 @@ function Tombstone({ message, radius }: { message: Message; radius: string }) {
       data-ui="chat-bubble"
       data-mine={message.mine ? '' : undefined}
       data-kind={kind}
-      className="flex items-center gap-1.5 border border-dashed border-white/[0.09] px-3 py-[7px] text-[12.5px] italic text-white/40"
+      className="flex items-center gap-1.5 border border-dashed border-ink/[0.09] px-3 py-[7px] text-[12.5px] italic text-ink-40"
       style={{ borderRadius: radius }}
     >
       <Icon size={12} className="shrink-0 not-italic" />
@@ -102,7 +102,7 @@ export const Bubble = memo(function Bubble({
       data-ui="chat-bubble"
       data-mine={message.mine ? '' : undefined}
       data-failed={tick === 'failed' ? '' : undefined}
-      className="chat-thread-motion relative min-w-0 max-w-full px-3 py-[7px] text-[13.5px] leading-[1.45] text-white/90"
+      className="chat-thread-motion relative min-w-0 max-w-full px-3 py-[7px] text-[13.5px] leading-[1.45] text-ink-90"
       style={{
         ...tone,
         borderRadius: radius,

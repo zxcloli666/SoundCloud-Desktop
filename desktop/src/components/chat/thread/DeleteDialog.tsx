@@ -65,7 +65,7 @@ export const DeleteDialog = memo(function DeleteDialog({
         <button
           type="button"
           onClick={onClose}
-          className={`${BUTTON} bg-white/[0.06] text-white/70 hover:bg-white/[0.1]`}
+          className={`${BUTTON} bg-ink/[0.06] text-ink-70 hover:bg-ink/[0.1]`}
         >
           {t('chat.thread.cancel')}
         </button>

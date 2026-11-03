@@ -68,7 +68,7 @@ export const PlaylistCard = React.memo(
         className="group relative flex flex-col gap-3 cursor-pointer select-none"
         onClick={() => navigate(`/playlist/${encodeURIComponent(playlist.urn)}`)}
       >
-        <div className="relative aspect-square rounded-2xl overflow-hidden bg-white/[0.02] ring-1 ring-white/[0.06] shadow-lg group-hover:shadow-2xl group-hover:ring-white/[0.15] transition-all duration-500 ease-[var(--ease-apple)]">
+        <div data-ui="artwork" className="relative aspect-square rounded-2xl overflow-hidden bg-ink/[0.02] ring-1 ring-ink/[0.06] shadow-lg group-hover:shadow-2xl group-hover:ring-ink/[0.15] transition-all duration-500 ease-[var(--ease-apple)]">
             <PlaylistCover
                 artworkUrl={playlist.artwork_url}
                 tracks={playlist.tracks}
@@ -81,6 +81,7 @@ export const PlaylistCard = React.memo(
           {/* Hover / playing overlay */}
           {showPlayback ? (
             <div
+              data-scheme="dark"
               className={`absolute inset-0 flex items-center justify-center transition-all duration-300 group-hover:bg-black/40 group-hover:backdrop-blur-sm group-hover:opacity-100 ${
                 showPlayingOverlay
                   ? 'bg-black/40 backdrop-blur-sm opacity-100'
@@ -90,7 +91,7 @@ export const PlaylistCard = React.memo(
               <div
                 onClick={handlePlay}
                 className={`w-14 h-14 rounded-full flex items-center justify-center transition-all duration-300 ease-[var(--ease-apple)] shadow-2xl hover:scale-110 active:scale-95 group-hover:scale-100 ${
-                  showPlayingOverlay ? 'bg-white scale-100' : 'bg-white/90 scale-75'
+                  showPlayingOverlay ? 'bg-white scale-100' : 'bg-ink/90 scale-75'
                 }`}
               >
                 {isPlayingFromThis ? (
@@ -115,7 +116,7 @@ export const PlaylistCard = React.memo(
             )}
 
             {releaseKind && !showPlayback && (
-                <div className="absolute top-2.5 right-2.5 flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider bg-black/60 backdrop-blur-md text-white/90 px-2 py-1 rounded-full shadow-lg">
+                <div data-scheme="dark" className="absolute top-2.5 right-2.5 flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider bg-black/60 backdrop-blur-md text-ink-90 px-2 py-1 rounded-full shadow-lg">
                     <Disc3 size={11}/>
                     {kindLabel}
                 </div>
@@ -123,7 +124,8 @@ export const PlaylistCard = React.memo(
 
           {playlist.track_count != null && (
             <div
-              className={`absolute bottom-2.5 right-2.5 flex items-center gap-1.5 text-[11px] font-medium bg-black/60 backdrop-blur-md text-white/90 px-2.5 py-1 rounded-full shadow-lg ${
+              data-scheme="dark"
+              className={`absolute bottom-2.5 right-2.5 flex items-center gap-1.5 text-[11px] font-medium bg-black/60 backdrop-blur-md text-ink-90 px-2.5 py-1 rounded-full shadow-lg ${
                 showPlayback
                   ? 'opacity-0 group-hover:opacity-100 transition-opacity duration-300'
                   : ''
@@ -136,23 +138,23 @@ export const PlaylistCard = React.memo(
         </div>
 
         <div className="min-w-0 px-1">
-          <p className="text-[14px] font-semibold text-white/90 truncate leading-snug group-hover:text-white transition-colors duration-200">
+          <p className="text-[14px] font-semibold text-ink-90 truncate leading-snug group-hover:text-ink transition-colors duration-200">
             {playlist.title}
           </p>
           {showPlayback ? (
             <div className="flex items-center gap-2 mt-1">
-              <span className="text-[10px] font-bold text-white/30 uppercase tracking-wider bg-white/[0.05] px-1.5 py-0.5 rounded-md">
+              <span className="text-[10px] font-bold text-ink-30 uppercase tracking-wider bg-ink/[0.05] px-1.5 py-0.5 rounded-md">
                 {kindLabel}
               </span>
               {(playlist.likes_count ?? 0) > 0 && (
-                <span className="text-[11px] text-white/30 tabular-nums flex items-center gap-1">
-                  <Heart size={10} className="text-white/20" />
+                <span className="text-[11px] text-ink-30 tabular-nums flex items-center gap-1">
+                  <Heart size={10} className="text-ink-20" />
                   {fc(playlist.likes_count ?? 0)}
                 </span>
               )}
             </div>
           ) : (
-            <p className="text-[12px] text-white/40 truncate mt-1">
+            <p className="text-[12px] text-ink-40 truncate mt-1">
               {playlist.user?.username || 'Unknown'}
             </p>
           )}

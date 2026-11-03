@@ -83,8 +83,8 @@ export const ConversationRow = memo(function ConversationRow({
       onClick={() => onOpen(conversation.id)}
       onKeyDown={onKeyDown}
       onContextMenu={(event) => onMenu(event, conversation)}
-      className={`group relative mx-2 my-0.5 flex h-[60px] cursor-pointer items-center gap-3 rounded-2xl px-2.5 outline-none transition-colors duration-200 focus-visible:ring-1 focus-visible:ring-white/20 ${
-        selected ? '' : 'hover:bg-white/[0.05]'
+      className={`group relative mx-2 my-0.5 flex h-[60px] cursor-pointer items-center gap-3 rounded-2xl px-2.5 outline-none transition-colors duration-200 focus-visible:ring-1 focus-visible:ring-ink/20 ${
+        selected ? '' : 'hover:bg-ink/[0.05]'
       }`}
       style={selected ? SELECTED : undefined}
     >
@@ -105,23 +105,23 @@ export const ConversationRow = memo(function ConversationRow({
         <div className="flex items-center gap-1.5">
           <span
             className={`truncate text-[13.5px] tracking-tight ${
-              fresh ? 'font-bold text-white' : 'font-semibold text-white/85'
+              fresh ? 'font-bold text-white' : 'font-semibold text-ink-85'
             }`}
           >
             {title}
           </span>
-          {conversation.historyLocked && <Lock size={11} className="shrink-0 text-white/30" />}
-          {conversation.ttlS !== null && <Timer size={11} className="shrink-0 text-white/35" />}
-          {muted && <BellOff size={11} className="shrink-0 text-white/30" />}
+          {conversation.historyLocked && <Lock size={11} className="shrink-0 text-ink-30" />}
+          {conversation.ttlS !== null && <Timer size={11} className="shrink-0 text-ink-35" />}
+          {muted && <BellOff size={11} className="shrink-0 text-ink-30" />}
           <span
             className={`ml-auto shrink-0 pl-2 text-[11px] tabular-nums transition-opacity duration-150 group-hover:opacity-0 ${
-              fresh ? 'text-[var(--color-accent)]' : 'text-white/35'
+              fresh ? 'text-[var(--color-accent)]' : 'text-ink-35'
             }`}
           >
             {conversation.lastAt > 0 ? rowTime(conversation.lastAt, now, i18n.language) : ''}
           </span>
         </div>
-        <div className="mt-0.5 flex items-center gap-2 text-[12.5px] text-white/45">
+        <div className="mt-0.5 flex items-center gap-2 text-[12.5px] text-ink-45">
           <RowPreview
             conversation={conversation}
             typing={typing}
@@ -140,7 +140,7 @@ export const ConversationRow = memo(function ConversationRow({
           event.stopPropagation();
           onMenu(event, conversation);
         }}
-        className="absolute top-2 right-2 flex size-6 cursor-pointer items-center justify-center rounded-full text-white/45 opacity-0 transition-opacity duration-150 hover:bg-white/[0.08] hover:text-white/85 group-hover:opacity-100"
+        className="absolute top-2 right-2 flex size-6 cursor-pointer items-center justify-center rounded-full text-ink-45 opacity-0 transition-opacity duration-150 hover:bg-ink/[0.08] hover:text-ink-85 group-hover:opacity-100"
       >
         <Ellipsis size={14} />
       </button>

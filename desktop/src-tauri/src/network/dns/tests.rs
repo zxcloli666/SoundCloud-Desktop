@@ -203,8 +203,6 @@ fn names_fall_into_local_ours_and_foreign() {
         "api.r1.relay.scnative.dev",
         "scnative.dev",
         "status.getsoundcloud.app",
-        "storage.scnative.space",
-        "s3.scnative.space",
     ] {
         assert_eq!(scope(host), Scope::Ours, "{host}");
     }
@@ -213,6 +211,7 @@ fn names_fall_into_local_ours_and_foreign() {
         "evilscnative.dev",
         "scnative.dev.example",
         "evilscnative.space",
+        "storage.scnative.space",
         "status.soundcloud-desktop.fun",
     ] {
         assert_eq!(scope(host), Scope::Foreign, "{host}");

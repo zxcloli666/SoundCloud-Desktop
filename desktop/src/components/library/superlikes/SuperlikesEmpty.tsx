@@ -10,7 +10,7 @@ export const SuperlikesEmpty = memo(function SuperlikesEmpty() {
   return (
     <div className="flex flex-col items-center gap-4 py-16 text-center">
       <span
-        className={`superlike-anchor text-white/70 ${perf.idleAnim ? 'superlike-ring-demo' : ''}`}
+        className={`superlike-anchor text-ink-70 ${perf.idleAnim ? 'superlike-ring-demo' : ''}`}
         style={{ width: 34, height: 34 }}
       >
         <Heart size={34} />
@@ -26,9 +26,9 @@ export const SuperlikesEmpty = memo(function SuperlikesEmpty() {
           />
         </svg>
       </span>
-      <p className="mt-4 text-[16px] font-bold text-white/85">{t('superlikes.emptyTitle')}</p>
-      <p className="max-w-md text-[13px] leading-relaxed text-white/45">{t('superlikes.emptyBody')}</p>
-      <p className="max-w-md text-[12px] leading-relaxed text-white/30">{t('superlikes.emptyWave')}</p>
+      <p className="mt-4 text-[16px] font-bold text-ink-85">{t('superlikes.emptyTitle')}</p>
+      <p className="max-w-md text-[13px] leading-relaxed text-ink-45">{t('superlikes.emptyBody')}</p>
+      <p className="max-w-md text-[12px] leading-relaxed text-ink-30">{t('superlikes.emptyWave')}</p>
     </div>
   );
 });

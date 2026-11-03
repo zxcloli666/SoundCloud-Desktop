@@ -63,14 +63,14 @@ function NewChatBody({ onDone }: { onDone: () => void }) {
     <div className="flex min-h-0 flex-col">
       <div className="flex flex-col gap-3 px-6 pt-6 pb-3">
         <ModalTitle>{t('chat.list.new.title')}</ModalTitle>
-        <label className="flex h-10 items-center gap-2.5 rounded-2xl border border-white/[0.07] bg-black/20 px-3.5 focus-within:border-white/[0.16]">
-          <Search size={15} className="shrink-0 text-white/35" />
+        <label className="flex h-10 items-center gap-2.5 rounded-2xl border border-ink/[0.07] bg-black/20 px-3.5 focus-within:border-ink/[0.16]">
+          <Search size={15} className="shrink-0 text-ink-35" />
           <input
             autoFocus
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder={t('chat.list.new.search')}
-            className="min-w-0 flex-1 bg-transparent text-[13.5px] text-white/90 outline-none placeholder:text-white/30"
+            className="min-w-0 flex-1 bg-transparent text-[13.5px] text-ink-90 outline-none placeholder:text-ink-30"
           />
         </label>
         <PickedChips people={picked} onRemove={toggle} />
@@ -80,7 +80,7 @@ function NewChatBody({ onDone }: { onDone: () => void }) {
             maxLength={TITLE_MAX}
             onChange={(event) => setTitle(event.target.value)}
             placeholder={t('chat.list.new.groupName')}
-            className="h-10 rounded-2xl border border-white/[0.07] bg-black/20 px-3.5 text-[13.5px] text-white/90 outline-none placeholder:text-white/30 focus:border-white/[0.16]"
+            className="h-10 rounded-2xl border border-ink/[0.07] bg-black/20 px-3.5 text-[13.5px] text-ink-90 outline-none placeholder:text-ink-30 focus:border-ink/[0.16]"
           />
         )}
       </div>
@@ -90,7 +90,7 @@ function NewChatBody({ onDone }: { onDone: () => void }) {
             type="button"
             disabled={busy}
             onClick={() => void run(createSavedChat)}
-            className="mb-2 flex w-full cursor-pointer items-center gap-3 rounded-2xl px-2.5 py-2 text-left transition-colors duration-200 hover:bg-white/[0.05]"
+            className="mb-2 flex w-full cursor-pointer items-center gap-3 rounded-2xl px-2.5 py-2 text-left transition-colors duration-200 hover:bg-ink/[0.05]"
           >
             <span
               className="flex size-[38px] shrink-0 items-center justify-center rounded-full"
@@ -102,7 +102,7 @@ function NewChatBody({ onDone }: { onDone: () => void }) {
             >
               <Bookmark size={16} strokeWidth={2.2} />
             </span>
-            <span className="text-[13.5px] font-semibold text-white/85">
+            <span className="text-[13.5px] font-semibold text-ink-85">
               {t('chat.list.saved')}
             </span>
           </button>
@@ -114,7 +114,7 @@ function NewChatBody({ onDone }: { onDone: () => void }) {
           onToggle={toggle}
         />
       </div>
-      <div className="flex flex-col gap-2 border-t border-white/[0.05] px-6 pt-3 pb-5">
+      <div className="flex flex-col gap-2 border-t border-ink/[0.05] px-6 pt-3 pb-5">
         {error && <p className="text-[12px] text-rose-300/90">{error}</p>}
         <button
           type="button"

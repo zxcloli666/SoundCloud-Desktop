@@ -35,7 +35,7 @@ export const RequestActions = memo(function RequestActions({
           title={t('chat.list.requests.report')}
           aria-label={t('chat.list.requests.report')}
           onClick={stop(() => actions.report(conversation, from))}
-          className={`${ROUND} size-8 text-white/40 hover:bg-white/[0.07] hover:text-white/80`}
+          className={`${ROUND} size-8 text-ink-40 hover:bg-ink/[0.07] hover:text-ink-80`}
         >
           <Flag size={14} />
         </button>
@@ -56,7 +56,7 @@ export const RequestActions = memo(function RequestActions({
         title={t('chat.list.requests.decline')}
         aria-label={t('chat.list.requests.decline')}
         onClick={stop(() => void actions.decline(conversation))}
-        className={`${ROUND} size-8 border border-white/[0.08] bg-white/[0.05] text-white/60 hover:bg-white/[0.1] hover:text-white`}
+        className={`${ROUND} size-8 border border-ink/[0.08] bg-ink/[0.05] text-ink-60 hover:bg-ink/[0.1] hover:text-white`}
       >
         <X size={14} />
       </button>

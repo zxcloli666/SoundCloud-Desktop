@@ -1,0 +1,21 @@
+{
+  "id": "golos-text",
+  "family": "Golos Text",
+  "subsets": ["cyrillic", "cyrillic-ext", "latin", "latin-ext"],
+  "weights": [400, 500, 600, 700, 800, 900],
+  "styles": ["normal"],
+  "defSubset": "latin",
+  "variable": {
+    "wght": {"default": "400", "min": "400", "max": "900", "step": "1"}
+  },
+  "lastModified": "2025-09-11",
+  "version": "v7",
+  "category": "sans-serif",
+  "license": {
+    "type": "OFL-1.1",
+    "url": "https://openfontlicense.org",
+    "attribution": "Copyright 2019 The Golos Text Project Authors (https://github.com/googlefonts/golos-text)"
+  },
+  "source": "https://github.com/google/fonts",
+  "type": "google"
+}

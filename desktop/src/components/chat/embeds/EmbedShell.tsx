@@ -54,7 +54,7 @@ export function EmbedShell({
         aria-hidden
         className="pointer-events-none absolute inset-x-5 top-0 h-px"
         style={{
-          background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.16), transparent)',
+          background: 'linear-gradient(90deg, transparent, rgb(var(--ink) / 0.16), transparent)',
         }}
       />
       {children}

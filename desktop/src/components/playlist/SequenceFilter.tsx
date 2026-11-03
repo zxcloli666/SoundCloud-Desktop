@@ -28,14 +28,14 @@ export const SequenceFilter = React.memo(function SequenceFilter({
 
   return (
     <div
-      className={`relative flex h-8 items-center rounded-[10px] border transition-all duration-300 ease-[var(--ease-apple)] focus-within:w-[240px] focus-within:border-white/[0.16] focus-within:bg-white/[0.06] ${
+      className={`relative flex h-8 items-center rounded-[10px] border transition-all duration-300 ease-[var(--ease-apple)] focus-within:w-[240px] focus-within:border-ink/[0.16] focus-within:bg-ink/[0.06] ${
         active
-          ? 'w-[240px] border-white/[0.14] bg-white/[0.05]'
-          : 'w-[168px] border-white/[0.07] bg-white/[0.03] hover:border-white/[0.12]'
+          ? 'w-[240px] border-ink/[0.14] bg-ink/[0.05]'
+          : 'w-[168px] border-ink/[0.07] bg-ink/[0.03] hover:border-ink/[0.12]'
       }`}
     >
       <span
-        className={`pointer-events-none absolute left-2.5 flex items-center ${active ? 'text-accent' : 'text-white/35'}`}
+        className={`pointer-events-none absolute left-2.5 flex items-center ${active ? 'text-accent' : 'text-ink-35'}`}
       >
         {loading ? <Loader2 size={13} className="animate-spin" /> : <Search size={13} />}
       </span>
@@ -53,7 +53,7 @@ export const SequenceFilter = React.memo(function SequenceFilter({
         }}
         placeholder={t('playlist.find')}
         aria-label={t('playlist.find')}
-        className="h-full w-full bg-transparent pl-8 pr-7 text-[12px] font-medium text-white/85 outline-none placeholder:text-white/30"
+        className="h-full w-full bg-transparent pl-8 pr-7 text-[12px] font-medium text-ink-85 outline-none placeholder:text-ink-30"
       />
       {active && (
         <button
@@ -64,7 +64,7 @@ export const SequenceFilter = React.memo(function SequenceFilter({
           }}
           aria-label={t('playlist.findClear')}
           title={t('playlist.findClear')}
-          className="absolute right-1.5 flex h-5 w-5 cursor-pointer items-center justify-center rounded-md text-white/35 transition-colors hover:bg-white/[0.08] hover:text-white/80"
+          className="absolute right-1.5 flex h-5 w-5 cursor-pointer items-center justify-center rounded-md text-ink-35 transition-colors hover:bg-ink/[0.08] hover:text-ink-80"
         >
           <X size={12} />
         </button>

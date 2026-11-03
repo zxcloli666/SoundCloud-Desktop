@@ -26,7 +26,7 @@ const FORGE_KEYFRAMES = `
 function stateColor(state: FfmpegState): { main: string; glow: string } {
     if (state === 'preparing') return {main: '#fbbf24', glow: 'rgba(251,191,36,0.30)'};
     if (state === 'unavailable')
-        return {main: 'rgba(255,255,255,0.42)', glow: 'rgba(255,255,255,0.10)'};
+        return {main: 'rgb(var(--ink) / 0.42)', glow: 'rgba(255,255,255,0.10)'};
     return {main: 'var(--color-accent)', glow: 'var(--color-accent-glow)'};
 }
 
@@ -40,7 +40,7 @@ function Conduit({active, color}: { active: boolean; color: string }) {
             <div
                 className="absolute inset-0 rounded-full"
                 style={{
-                    background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.10), transparent)',
+                    background: 'linear-gradient(90deg, transparent, rgb(var(--ink) / 0.10), transparent)',
                 }}
             />
             {/* travelling energy — a repeating tick pattern swept rightward (raw → clean) */}
@@ -79,14 +79,14 @@ function Glyph({
             }`}
             style={{
                 background: accent
-                    ? 'linear-gradient(150deg, var(--color-accent-glow), rgba(255,255,255,0.03))'
-                    : 'linear-gradient(150deg, rgba(255,255,255,0.07), rgba(255,255,255,0.02))',
-                border: `0.5px solid ${accent ? 'var(--color-accent-glow)' : 'rgba(255,255,255,0.10)'}`,
-                color: accent ? 'var(--color-accent)' : 'rgba(255,255,255,0.55)',
+                    ? 'linear-gradient(150deg, var(--color-accent-glow), rgb(var(--ink) / 0.03))'
+                    : 'linear-gradient(150deg, rgb(var(--ink) / 0.07), rgb(var(--ink) / 0.02))',
+                border: `0.5px solid ${accent ? 'var(--color-accent-glow)' : 'rgb(var(--ink) / 0.10)'}`,
+                color: accent ? 'var(--color-accent)' : 'rgb(var(--ink) / 0.55)',
                 boxShadow:
                     accent && perf.glow
-                        ? '0 0 22px var(--color-accent-glow), inset 0 1px 0 rgba(255,255,255,0.12)'
-                        : 'inset 0 1px 0 rgba(255,255,255,0.08)',
+                        ? '0 0 22px var(--color-accent-glow), inset 0 1px 0 rgb(var(--ink) / 0.12)'
+                        : 'inset 0 1px 0 rgb(var(--ink) / 0.08)',
                 animation: bob ? 'forge-bob 2.6s ease-in-out infinite' : undefined,
             }}
         >
@@ -111,12 +111,12 @@ function NodeMeta({
         <div className="text-center leading-none">
             <div
                 className="text-[10px] uppercase tracking-[0.16em] font-bold"
-                style={{color: accent ? 'var(--color-accent)' : 'rgba(255,255,255,0.35)'}}
+                style={{color: accent ? 'var(--color-accent)' : 'rgb(var(--ink) / 0.35)'}}
             >
                 {label}
             </div>
-            <div className="text-[20px] font-black text-white/90 tabular-nums mt-1.5">{value}</div>
-            <div className="text-[10.5px] text-white/35 tabular-nums mt-1">{sub}</div>
+            <div className="text-[20px] font-black text-ink-90 tabular-nums mt-1.5">{value}</div>
+            <div className="text-[10.5px] text-ink-35 tabular-nums mt-1">{sub}</div>
         </div>
     );
 }
@@ -198,7 +198,7 @@ function Core({state, transcoding}: { state: FfmpegState; transcoding: number })
                     inset: '20%',
                     borderRadius: '9999px',
                     border:
-                        state === 'unavailable' ? '1px dashed rgba(255,255,255,0.28)' : `1px solid ${main}`,
+                        state === 'unavailable' ? '1px dashed rgb(var(--ink) / 0.28)' : `1px solid ${main}`,
                     opacity: state === 'unavailable' ? 0.5 : 0.35,
                     animation: spin ? `forge-spin-rev ${active ? 5 : 14}s linear infinite` : undefined,
                 }}
@@ -209,7 +209,7 @@ function Core({state, transcoding}: { state: FfmpegState; transcoding: number })
                 style={{
                     color: main,
                     background:
-                        'radial-gradient(circle at 35% 30%, rgba(255,255,255,0.10), rgba(8,8,12,0.85))',
+                        'radial-gradient(circle at 35% 30%, rgb(var(--ink) / 0.10), rgb(var(--paper) / 0.85))',
                     border: `0.5px solid ${main}`,
                     boxShadow: perf.glow
                         ? `0 0 20px ${glow}, inset 0 0 12px ${glow}`
@@ -306,8 +306,8 @@ export function SoundForgeCard() {
                     className="inline-flex items-center gap-1.5 px-3 h-7 rounded-full text-[11px] font-bold tracking-wide"
                     style={{
                         color: main,
-                        background: engine === 'ready' ? 'var(--color-accent-glow)' : 'rgba(255,255,255,0.05)',
-                        border: `0.5px solid ${engine === 'ready' ? 'var(--color-accent-glow)' : 'rgba(255,255,255,0.10)'}`,
+                        background: engine === 'ready' ? 'var(--color-accent-glow)' : 'rgb(var(--ink) / 0.05)',
+                        border: `0.5px solid ${engine === 'ready' ? 'var(--color-accent-glow)' : 'rgb(var(--ink) / 0.10)'}`,
                     }}
                 >
           <span
@@ -360,8 +360,8 @@ export function SoundForgeCard() {
             <div
                 className="mt-5 flex items-start gap-2.5 rounded-2xl px-3.5 py-3"
                 style={{
-                    background: 'rgba(255,255,255,0.025)',
-                    border: '0.5px solid rgba(255,255,255,0.06)',
+                    background: 'rgb(var(--ink) / 0.025)',
+                    border: '0.5px solid rgb(var(--ink) / 0.06)',
                 }}
             >
         <span className="mt-px shrink-0" style={{color: main}}>
@@ -373,7 +373,7 @@ export function SoundForgeCard() {
               <Sparkles size={14}/>
           )}
         </span>
-                <p className="text-[12px] leading-relaxed text-white/55">{message}</p>
+                <p className="text-[12px] leading-relaxed text-ink-55">{message}</p>
             </div>
         </Card>
     );

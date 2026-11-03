@@ -34,16 +34,16 @@ export function ResetOrderDialog({
       <ModalContent size="sm" showClose={false}>
         <div className="flex flex-col gap-4 p-6">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-white/[0.06] flex items-center justify-center shrink-0">
-              <RotateCcw size={18} className="text-white/60" />
+            <div className="w-10 h-10 rounded-full bg-ink/[0.06] flex items-center justify-center shrink-0">
+              <RotateCcw size={18} className="text-ink-60" />
             </div>
             <ModalTitle>{t('likesOrder.resetTitle')}</ModalTitle>
           </div>
-          <ModalDescription className="text-[13px] text-white/50 leading-relaxed">
+          <ModalDescription className="text-[13px] text-ink-50 leading-relaxed">
             {t(text)}
           </ModalDescription>
           <div className="flex items-center justify-end gap-2.5 pt-1">
-            <ModalClose className="px-4 py-2 rounded-xl text-[13px] font-medium text-white/50 hover:text-white/80 hover:bg-white/[0.06] transition-all cursor-pointer">
+            <ModalClose className="px-4 py-2 rounded-xl text-[13px] font-medium text-ink-50 hover:text-ink-80 hover:bg-ink/[0.06] transition-all cursor-pointer">
               {t('common.cancel')}
             </ModalClose>
             <button

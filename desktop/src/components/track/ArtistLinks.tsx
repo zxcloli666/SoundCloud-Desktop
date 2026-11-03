@@ -16,7 +16,7 @@ export const ArtistLinks = React.memo(function ArtistLinks({
                     <span
                         className={
                             a.id
-                                ? 'text-white/55 hover:text-white/85 cursor-pointer transition-colors'
+                                ? 'text-ink-55 hover:text-ink-85 cursor-pointer transition-colors'
                                 : undefined
                         }
                         onClick={a.id ? () => navigate(`/artist/${encodeURIComponent(a.id)}`) : undefined}

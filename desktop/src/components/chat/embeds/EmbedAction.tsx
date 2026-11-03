@@ -29,7 +29,7 @@ export function EmbedAction({
         onClick(event);
       }}
       className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full transition-colors duration-200 cursor-pointer disabled:cursor-default disabled:opacity-30 ${
-        active ? 'text-accent' : 'text-white/45 hover:bg-white/[0.08] hover:text-white/90'
+        active ? 'text-accent' : 'text-ink-45 hover:bg-ink/[0.08] hover:text-ink-90'
       } ${className}`}
     >
       {icon}

@@ -57,14 +57,14 @@ export const HistoryTab = React.memo(function HistoryTab() {
                 <div className="flex items-center justify-between mb-4">
                     <Link
                         to="/library/stats"
-                        className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-white/45 hover:text-white/90 transition-colors"
+                        className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-ink-45 hover:text-ink-90 transition-colors"
                     >
                         <ChartNoAxesColumn size={14}/>
                         {t('stats.open')}
                     </Link>
                     <button
                         onClick={handleClearHistory}
-                        className="text-[12px] text-white/30 hover:text-red-400 transition-colors cursor-pointer"
+                        className="text-[12px] text-ink-30 hover:text-red-400 transition-colors cursor-pointer"
                     >
                         {t('library.clearHistory')}
                     </button>
@@ -73,7 +73,7 @@ export const HistoryTab = React.memo(function HistoryTab() {
 
             {isLoading ? (
                 <div className="flex justify-center py-20">
-                    <Loader2 size={32} className="animate-spin text-white/20"/>
+                    <Loader2 size={32} className="animate-spin text-ink-20"/>
                 </div>
             ) : rows.length > 0 ? (
                 <VirtualList
@@ -86,17 +86,17 @@ export const HistoryTab = React.memo(function HistoryTab() {
                     renderItem={(row) =>
                         row.type === 'header' ? (
                             <div className="py-3">
-                                <h3 className="text-[13px] font-bold text-white/30 uppercase tracking-wider px-1">
+                                <h3 className="text-[13px] font-bold text-ink-30 uppercase tracking-wider px-1">
                                     {row.label}
                                 </h3>
                             </div>
                         ) : (
                             <div
                                 onContextMenu={(e) => openTrackMenu(e, historyEntryToTrack(row.entry))}
-                                className="group flex items-center gap-4 px-4 py-3 rounded-2xl hover:bg-white/[0.04] transition-all duration-300">
+                                className="group flex items-center gap-4 px-4 py-3 rounded-2xl hover:bg-ink/[0.04] transition-all duration-300">
                                 <button
                                     type="button"
-                                    className="relative w-11 h-11 rounded-xl overflow-hidden shrink-0 ring-1 ring-white/[0.08] shadow-md cursor-pointer"
+                                    className="relative w-11 h-11 rounded-xl overflow-hidden shrink-0 ring-1 ring-ink/[0.08] shadow-md cursor-pointer"
                                     onClick={() => {
                                         const tracks = entries.map(historyEntryToTrack);
                                         const idx = entries.findIndex((e) => e.id === row.entry.id);
@@ -105,6 +105,7 @@ export const HistoryTab = React.memo(function HistoryTab() {
                                 >
                                     {row.entry.artworkUrl ? (
                                         <img
+                                            data-ui="artwork"
                                             src={art(row.entry.artworkUrl, 't200x200') ?? ''}
                                             alt=""
                                             className="w-full h-full object-cover"
@@ -112,8 +113,8 @@ export const HistoryTab = React.memo(function HistoryTab() {
                                         />
                                     ) : (
                                         <div
-                                            className="w-full h-full flex items-center justify-center bg-gradient-to-br from-white/[0.05] to-transparent">
-                                            <Music size={14} className="text-white/20"/>
+                                            className="w-full h-full flex items-center justify-center bg-gradient-to-br from-ink/[0.05] to-transparent">
+                                            <Music size={14} className="text-ink-20"/>
                                         </div>
                                     )}
                                     <div
@@ -124,7 +125,7 @@ export const HistoryTab = React.memo(function HistoryTab() {
 
                                 <div className="flex-1 min-w-0 flex flex-col justify-center">
                                     <p
-                                        className="text-[14px] font-medium truncate text-white/90 hover:text-white cursor-pointer transition-colors"
+                                        className="text-[14px] font-medium truncate text-ink-90 hover:text-ink cursor-pointer transition-colors"
                                         onClick={() =>
                                             navigate(`/track/${encodeURIComponent(row.entry.trackUrn)}`)
                                         }
@@ -132,7 +133,7 @@ export const HistoryTab = React.memo(function HistoryTab() {
                                         {row.entry.title}
                                     </p>
                                     <p
-                                        className={`text-[12px] text-white/40 truncate mt-0.5${row.entry.artistUrn ? ' hover:text-white/60 cursor-pointer transition-colors' : ''}`}
+                                        className={`text-[12px] text-ink-40 truncate mt-0.5${row.entry.artistUrn ? ' hover:text-ink-60 cursor-pointer transition-colors' : ''}`}
                                         onClick={() =>
                                             row.entry.artistUrn &&
                                             navigate(`/user/${encodeURIComponent(row.entry.artistUrn)}`)
@@ -144,7 +145,7 @@ export const HistoryTab = React.memo(function HistoryTab() {
 
                                 <LikeButton track={historyEntryToTrack(row.entry)}/>
 
-                                <span className="text-[11px] text-white/20 tabular-nums shrink-0">
+                                <span className="text-[11px] text-ink-20 tabular-nums shrink-0">
                   {new Date(row.entry.playedAt).toLocaleTimeString([], {
                       hour: '2-digit',
                       minute: '2-digit',
@@ -155,12 +156,12 @@ export const HistoryTab = React.memo(function HistoryTab() {
                     }
                 />
             ) : (
-                <div className="py-20 text-center text-white/20">{t('library.historyEmpty')}</div>
+                <div className="py-20 text-center text-ink-20">{t('library.historyEmpty')}</div>
             )}
 
             <div ref={sentinelRef} className="h-12 flex items-center justify-center mt-4">
                 {historyQuery.isFetchingNextPage && (
-                    <Loader2 size={20} className="text-white/15 animate-spin"/>
+                    <Loader2 size={20} className="text-ink-15 animate-spin"/>
                 )}
             </div>
         </div>

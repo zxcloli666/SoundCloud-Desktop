@@ -9,7 +9,6 @@ use wreq::redirect::Policy;
 use super::hops::Hop;
 use crate::network::fail::{self, FailKind};
 use crate::network::pace::Pace;
-use crate::network::pro::{self, Asked};
 use crate::network::{fetch, system_proxy};
 
 const CONNECT_TIMEOUT: Duration = Duration::from_secs(10);
@@ -18,10 +17,7 @@ const OCTET_STREAM: &str = "application/octet-stream";
 pub const ANSWER_MAX: usize = 2 * 1024 * 1024;
 
 pub async fn send(hop: &Hop, envelope: &[u8]) -> Result<TransportResponse, TransportError> {
-    match hop {
-        Hop::Http(url) => post(url, envelope).await,
-        Hop::Pro { node, url } => through_pro(node, url, envelope).await,
-    }
+    post(&hop.0, envelope).await
 }
 
 fn client() -> Option<&'static wreq::Client> {
@@ -63,36 +59,6 @@ async fn post(url: &str, envelope: &[u8]) -> Result<TransportResponse, Transport
     let body = gather(response.bytes_stream(), |error| failure(&error)).await?;
     Ok(TransportResponse {
         status,
-        body,
-        retry_after_ms,
-    })
-}
-
-async fn through_pro(
-    node: &str,
-    url: &str,
-    envelope: &[u8],
-) -> Result<TransportResponse, TransportError> {
-    let asked = Asked {
-        method: "POST".to_string(),
-        url: url.to_string(),
-        headers: vec![(CONTENT_TYPE.as_str().to_string(), OCTET_STREAM.to_string())],
-        body: Some(envelope.to_vec()),
-    };
-    let answer = pro::fetch(node, asked)
-        .await
-        .map_err(|_| TransportError::Unreachable)?;
-    let retry_after_ms = answer
-        .headers
-        .iter()
-        .find(|(name, _)| name.eq_ignore_ascii_case(RETRY_AFTER.as_str()))
-        .and_then(|(_, value)| seconds_to_ms(value));
-    if lost_on_the_way(answer.status, retry_after_ms) {
-        return Err(TransportError::Unreachable);
-    }
-    let body = gather(answer.body, |_| TransportError::Unreachable).await?;
-    Ok(TransportResponse {
-        status: answer.status,
         body,
         retry_after_ms,
     })

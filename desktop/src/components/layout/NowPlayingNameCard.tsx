@@ -109,6 +109,7 @@ export function NowPlayingNameCard({
           onOpenAutoFocus={(e) => e.preventDefault()}
           onMouseEnter={() => window.clearTimeout(timer.current)}
           onMouseLeave={leave}
+          data-ui="namecard"
           className="npb-namecard"
         >
           {cover && (

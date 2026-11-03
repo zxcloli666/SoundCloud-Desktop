@@ -17,9 +17,9 @@ export const HideLikedToggle = React.memo(function HideLikedToggle({ value, onCh
       title={t(value ? 'soundwave.hideLikedOn' : 'soundwave.hideLikedOff')}
       className="flex items-center gap-1.5 px-3 h-8 rounded-full border transition-colors duration-200 text-[11px] font-medium cursor-pointer"
       style={{
-        background: value ? 'var(--color-accent-glow)' : 'rgba(255,255,255,0.06)',
-        borderColor: value ? 'var(--color-accent-glow)' : 'rgba(255,255,255,0.08)',
-        color: value ? 'var(--color-accent)' : 'rgba(255,255,255,0.7)',
+        background: value ? 'var(--color-accent-glow)' : 'rgb(var(--ink) / 0.06)',
+        borderColor: value ? 'var(--color-accent-glow)' : 'rgb(var(--ink) / 0.08)',
+        color: value ? 'var(--color-accent)' : 'rgb(var(--ink) / 0.7)',
       }}
     >
       <Heart size={12} fill={value ? 'currentColor' : 'none'} />
@@ -27,7 +27,7 @@ export const HideLikedToggle = React.memo(function HideLikedToggle({ value, onCh
       <span
         className="ml-1 w-[22px] h-[12px] rounded-full relative transition-colors"
         style={{
-          background: value ? 'var(--color-accent)' : 'rgba(255,255,255,0.18)',
+          background: value ? 'var(--color-accent)' : 'rgb(var(--ink) / 0.18)',
         }}
       >
         <span

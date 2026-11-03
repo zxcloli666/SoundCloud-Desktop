@@ -5,10 +5,10 @@ import {usePerfMode} from '../../lib/perf';
 export const VerifiedBadge = React.memo(function VerifiedBadge({ title }: { title: string }) {
   return (
     <div
-      className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center ring-2 ring-white/20 shadow-[0_0_16px_rgba(59,130,246,0.55)]"
+      className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center ring-2 ring-ink/20 shadow-[0_0_16px_rgba(59,130,246,0.55)]"
       title={title}
     >
-      <Check size={13} className="text-white" strokeWidth={3.5} />
+      <Check size={13} className="text-ink" strokeWidth={3.5} />
     </div>
   );
 });
@@ -44,15 +44,15 @@ export const InfoChip = React.memo(function InfoChip({
     const b = usePerfMode().blur(12);
   return (
     <span
-      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-[0.16em] text-white/55"
+      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-55"
       style={{
-          background: b > 0 ? 'rgba(255,255,255,0.04)' : 'rgba(28,28,32,0.85)',
-        border: '0.5px solid rgba(255,255,255,0.07)',
+          background: b > 0 ? 'rgb(var(--ink) / 0.04)' : 'rgb(var(--surface-hi) / 0.85)',
+        border: '0.5px solid rgb(var(--ink) / 0.07)',
           backdropFilter: b > 0 ? `blur(${b}px)` : undefined,
           WebkitBackdropFilter: b > 0 ? `blur(${b}px)` : undefined,
       }}
     >
-      <span className="text-white/45">{icon}</span>
+      <span className="text-ink-45">{icon}</span>
       {children}
     </span>
   );

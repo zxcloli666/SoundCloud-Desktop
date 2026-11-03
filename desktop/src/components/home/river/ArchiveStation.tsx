@@ -79,10 +79,10 @@ function ArchiveView({
     <section className="pt-14">
       {titled && (
         <div className="mb-5">
-          <h2 className="text-[22px] font-bold leading-tight tracking-[-0.015em] text-white/92">
+          <h2 className="text-[22px] font-bold leading-tight tracking-[-0.015em] text-ink-92">
             {t('soundwave.river.archiveTitle')}
           </h2>
-          <p className="mt-1 text-[13px] leading-snug text-white/50">
+          <p className="mt-1 text-[13px] leading-snug text-ink-50">
             {t('soundwave.river.archiveWhy')}
           </p>
         </div>

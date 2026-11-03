@@ -35,7 +35,7 @@ const KeywordChip = memo(
         className={`group/chip inline-flex h-8 items-center gap-1 rounded-full border-[0.5px] pl-3 pr-1 text-[12.5px] font-medium transition-colors duration-200 ${
           armed
             ? 'border-rose-400/40 bg-rose-500/15 text-rose-200'
-            : 'border-white/[0.08] bg-white/[0.04] text-white/75 hover:border-white/[0.14] hover:bg-white/[0.07] hover:text-white'
+            : 'border-ink/[0.08] bg-ink/[0.04] text-ink-75 hover:border-ink/[0.14] hover:bg-ink/[0.07] hover:text-ink'
         }`}
       >
         <span className="max-w-[220px] truncate">{keyword}</span>
@@ -43,7 +43,7 @@ const KeywordChip = memo(
           type="button"
           onClick={() => onRemove(keyword)}
           aria-label={t('keywordFilter.remove', { keyword })}
-          className="flex h-6 w-6 items-center justify-center rounded-full text-white/35 transition-all duration-200 cursor-pointer hover:bg-rose-500/15 hover:text-rose-300 active:scale-90"
+          className="flex h-6 w-6 items-center justify-center rounded-full text-ink-35 transition-all duration-200 cursor-pointer hover:bg-rose-500/15 hover:text-rose-300 active:scale-90"
         >
           <X size={12} strokeWidth={2.5} />
         </button>
@@ -101,7 +101,7 @@ export function HiddenKeywordsCard() {
       icon={<Hash size={17} />}
       action={
         keywords.length > 0 ? (
-          <span className="inline-flex h-7 min-w-7 items-center justify-center rounded-full border-[0.5px] border-white/[0.12] bg-white/[0.06] px-2.5 text-[12px] font-bold tabular-nums text-white/70">
+          <span className="inline-flex h-7 min-w-7 items-center justify-center rounded-full border-[0.5px] border-ink/[0.12] bg-ink/[0.06] px-2.5 text-[12px] font-bold tabular-nums text-ink-70">
             {keywords.length}
           </span>
         ) : undefined
@@ -109,13 +109,13 @@ export function HiddenKeywordsCard() {
     >
       <div className="flex flex-col gap-4">
         <div
-          className={`flex h-11 items-center gap-2 rounded-2xl border-[0.5px] bg-white/[0.03] pl-3.5 pr-1.5 transition-colors duration-200 focus-within:bg-white/[0.05] ${
+          className={`flex h-11 items-center gap-2 rounded-2xl border-[0.5px] bg-ink/[0.03] pl-3.5 pr-1.5 transition-colors duration-200 focus-within:bg-ink/[0.05] ${
             duplicate
               ? 'border-amber-400/30'
-              : 'border-white/[0.08] focus-within:border-white/[0.18]'
+              : 'border-ink/[0.08] focus-within:border-ink/[0.18]'
           }`}
         >
-          <Hash size={14} className="shrink-0 text-white/25" />
+          <Hash size={14} className="shrink-0 text-ink-25" />
           <input
             value={draft}
             onChange={(e) => {
@@ -127,13 +127,13 @@ export function HiddenKeywordsCard() {
             maxLength={MAX_KEYWORD_LENGTH}
             placeholder={t('keywordFilter.placeholder')}
             spellCheck={false}
-            className="min-w-0 flex-1 bg-transparent text-[13px] text-white/85 outline-none placeholder:text-white/25"
+            className="min-w-0 flex-1 bg-transparent text-[13px] text-ink-85 outline-none placeholder:text-ink-25"
           />
           <button
             type="button"
             onClick={submit}
             disabled={!draftKey || duplicate}
-            className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-xl bg-accent px-3 text-[12px] font-semibold text-accent-contrast transition-all duration-200 cursor-pointer hover:brightness-110 active:scale-95 disabled:cursor-default disabled:bg-white/[0.06] disabled:text-white/30 disabled:active:scale-100"
+            className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-xl bg-accent px-3 text-[12px] font-semibold text-accent-contrast transition-all duration-200 cursor-pointer hover:brightness-110 active:scale-95 disabled:cursor-default disabled:bg-ink/[0.06] disabled:text-ink-30 disabled:active:scale-100"
           >
             <Plus size={13} strokeWidth={2.5} />
             {t('keywordFilter.add')}
@@ -145,11 +145,11 @@ export function HiddenKeywordsCard() {
         )}
 
         {keywords.length === 0 ? (
-          <div className="flex items-center gap-3 rounded-2xl border border-dashed border-white/[0.08] px-4 py-4">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/[0.04] text-white/25">
+          <div className="flex items-center gap-3 rounded-2xl border border-dashed border-ink/[0.08] px-4 py-4">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-ink/[0.04] text-ink-25">
               <Hash size={16} />
             </span>
-            <p className="text-[12px] leading-snug text-white/35">{t('keywordFilter.empty')}</p>
+            <p className="text-[12px] leading-snug text-ink-35">{t('keywordFilter.empty')}</p>
           </div>
         ) : (
           <ul className="flex max-h-[220px] flex-wrap gap-1.5 overflow-y-auto pr-1">
@@ -166,7 +166,7 @@ export function HiddenKeywordsCard() {
 
         {suggestions.length > 0 && (
           <div className="flex flex-wrap items-center gap-1.5">
-            <span className="mr-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-white/25">
+            <span className="mr-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-25">
               {t('keywordFilter.suggestions')}
             </span>
             {suggestions.map((s) => (
@@ -174,7 +174,7 @@ export function HiddenKeywordsCard() {
                 key={s}
                 type="button"
                 onClick={() => add(s)}
-                className="inline-flex h-7 items-center gap-1 rounded-full border-[0.5px] border-dashed border-white/[0.12] px-2.5 text-[11.5px] font-medium text-white/45 transition-all duration-200 cursor-pointer hover:border-white/[0.24] hover:bg-white/[0.04] hover:text-white/80 active:scale-95"
+                className="inline-flex h-7 items-center gap-1 rounded-full border-[0.5px] border-dashed border-ink/[0.12] px-2.5 text-[11.5px] font-medium text-ink-45 transition-all duration-200 cursor-pointer hover:border-ink/[0.24] hover:bg-ink/[0.04] hover:text-ink-80 active:scale-95"
               >
                 <Plus size={11} />
                 {s}
@@ -183,7 +183,7 @@ export function HiddenKeywordsCard() {
           </div>
         )}
 
-        <p className="text-[11.5px] leading-snug text-white/30">{t('keywordFilter.hint')}</p>
+        <p className="text-[11.5px] leading-snug text-ink-30">{t('keywordFilter.hint')}</p>
       </div>
     </Card>
   );

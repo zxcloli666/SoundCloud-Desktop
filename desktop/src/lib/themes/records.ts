@@ -66,8 +66,8 @@ export function activeLook(state: LookState): InstalledVersion | null {
 }
 
 export function versionOf(theme: InstalledVersion): InstalledVersion {
-  const { version, hash, rev, name, accent, background, font, files } = theme;
-  return { version, hash, rev, name, accent, background, font, files };
+  const { version, hash, rev, name, accent, background, font, scheme, files } = theme;
+  return { version, hash, rev, name, accent, background, font, scheme, files };
 }
 
 export function withVersion(

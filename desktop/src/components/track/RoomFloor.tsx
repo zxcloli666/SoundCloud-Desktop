@@ -67,7 +67,7 @@ export const RoomFloor = React.memo(function RoomFloor({
                         style={{
                             width: `${previewTail * 100}%`,
                             background:
-                                'linear-gradient(90deg, transparent, rgba(8,8,10,0.55) 40%, rgba(8,8,10,0.7))',
+                                'linear-gradient(90deg, transparent, rgb(var(--paper) / 0.55) 40%, rgb(var(--paper) / 0.7))',
                         }}
                         title={t('track.previewOnly')}
                     />
@@ -81,10 +81,10 @@ export const RoomFloor = React.memo(function RoomFloor({
                     />
                 )}
             </div>
-            <div className="flex items-center justify-between mt-2.5 px-0.5 text-[11px] tabular-nums text-white/35">
+            <div className="flex items-center justify-between mt-2.5 px-0.5 text-[11px] tabular-nums text-ink-35">
                 <span ref={elapsedRef}>0:00</span>
                 {previewTail > 0 && (
-                    <span className="text-white/25 uppercase tracking-[0.18em] text-[9px]">
+                    <span className="text-ink-25 uppercase tracking-[0.18em] text-[9px]">
             {t('track.previewOnly')}
           </span>
                 )}

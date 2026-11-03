@@ -16,7 +16,7 @@ export function VisibilityCard({ settings, onPatch }: VisibilityCardProps) {
       <Row
         title={
           <>
-            <Headphones size={14} className="text-white/40" />
+            <Headphones size={14} className="text-ink-40" />
             {t('chat.settings.visibility.presence')}
           </>
         }
@@ -32,7 +32,7 @@ export function VisibilityCard({ settings, onPatch }: VisibilityCardProps) {
       <Row
         title={
           <>
-            <CheckCheck size={14} className="text-white/40" />
+            <CheckCheck size={14} className="text-ink-40" />
             {t('chat.settings.visibility.receipts')}
           </>
         }
@@ -47,7 +47,7 @@ export function VisibilityCard({ settings, onPatch }: VisibilityCardProps) {
       <Row
         title={
           <>
-            <Keyboard size={14} className="text-white/40" />
+            <Keyboard size={14} className="text-ink-40" />
             {t('chat.settings.visibility.typing')}
           </>
         }

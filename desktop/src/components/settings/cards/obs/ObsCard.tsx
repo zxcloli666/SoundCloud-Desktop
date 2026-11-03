@@ -21,10 +21,10 @@ export function ObsCard() {
         <div className="space-y-3">
           <OverlayPanel />
           <TextFilePanel />
-          <p className="text-[11.5px] leading-snug text-white/30">{t('settings.obsPrivacy')}</p>
+          <p className="text-[11.5px] leading-snug text-ink-30">{t('settings.obsPrivacy')}</p>
         </div>
       ) : (
-        <p className="text-[11.5px] leading-snug text-white/35">{t('settings.obsIntro')}</p>
+        <p className="text-[11.5px] leading-snug text-ink-35">{t('settings.obsIntro')}</p>
       )}
     </Card>
   );

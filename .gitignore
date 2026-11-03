@@ -1,5 +1,6 @@
 node_modules/
 dist/
+dist-maps/
 .env
 .env.*
 !.env.example
@@ -31,3 +32,6 @@ worker/venv/
 
 # FireBase
 .firebase
+
+# CI cache stamp.
+/.ci

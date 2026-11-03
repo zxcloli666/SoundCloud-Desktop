@@ -10,9 +10,9 @@ import {SequenceFilter} from './SequenceFilter';
 import {SequenceRow, SequenceRowOverlay, SortableSequenceRow} from './SequenceRow';
 
 const PANEL = {
-  background: 'rgba(255,255,255,0.02)',
-  border: '0.5px solid rgba(255,255,255,0.06)',
-  boxShadow: '0 24px 60px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.04)',
+  background: 'rgb(var(--ink) / 0.02)',
+  border: '0.5px solid rgb(var(--ink) / 0.06)',
+  boxShadow: '0 24px 60px rgb(var(--shade) / calc(0.28 * var(--shade-alpha))), inset 0 1px 0 rgba(255,255,255,0.04)',
 } as const;
 
 function urnOf(track: Track) {
@@ -33,16 +33,16 @@ function Header({
   const { t } = useTranslation();
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 px-3 pt-1 pb-3">
-      <span className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.22em] text-white/55">
+      <span className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.22em] text-ink-55">
         <ListMusic size={12} /> {t('playlist.theSequence')}
-        <span className="text-white/25 ml-1 tabular-nums">
+        <span className="text-ink-25 ml-1 tabular-nums">
           {count === total ? total : t('playlist.findCount', { count, total })}
         </span>
       </span>
       <div className="flex items-center gap-3">
         {filter}
         {toolbar}
-        <Clock size={12} className="text-white/25" />
+        <Clock size={12} className="text-ink-25" />
       </div>
     </div>
   );
@@ -94,20 +94,20 @@ export const SequenceList = React.memo(function SequenceList({
         <div
           className="w-16 h-16 rounded-2xl flex items-center justify-center"
           style={{
-            background: 'rgba(255,255,255,0.03)',
-            border: '0.5px solid rgba(255,255,255,0.06)',
+            background: 'rgb(var(--ink) / 0.03)',
+            border: '0.5px solid rgb(var(--ink) / 0.06)',
           }}
         >
-          <ListMusic size={24} className="text-white/15" />
+          <ListMusic size={24} className="text-ink-15" />
         </div>
-        <p className="text-white/30 text-sm">{t('playlist.emptyCrate')}</p>
+        <p className="text-ink-30 text-sm">{t('playlist.emptyCrate')}</p>
       </div>
     );
   }
 
   const sentinel = hasNextPage ? (
     <div ref={sentinelRef} className="flex justify-center py-4">
-      {isFetchingNextPage && <Loader2 size={20} className="animate-spin text-white/30" />}
+      {isFetchingNextPage && <Loader2 size={20} className="animate-spin text-ink-30" />}
     </div>
   ) : null;
 
@@ -124,17 +124,17 @@ export const SequenceList = React.memo(function SequenceList({
           <div
             className="flex h-12 w-12 items-center justify-center rounded-2xl"
             style={{
-              background: 'rgba(255,255,255,0.03)',
-              border: '0.5px solid rgba(255,255,255,0.06)',
+              background: 'rgb(var(--ink) / 0.03)',
+              border: '0.5px solid rgb(var(--ink) / 0.06)',
             }}
           >
             {searching ? (
-              <Loader2 size={18} className="animate-spin text-white/30" />
+              <Loader2 size={18} className="animate-spin text-ink-30" />
             ) : (
-              <Search size={18} className="text-white/20" />
+              <Search size={18} className="text-ink-20" />
             )}
           </div>
-          <p className="max-w-[320px] text-[13px] text-white/35">
+          <p className="max-w-[320px] text-[13px] text-ink-35">
             {searching ? t('playlist.findLoading') : t('playlist.findNoMatches', { query })}
           </p>
         </div>

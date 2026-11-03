@@ -6,8 +6,9 @@ use warp::Filter;
 use warp::http::{Response, StatusCode};
 
 use super::client::{ANSWER_MAX, gather, lost_on_the_way, seconds_to_ms};
-use super::hops::{Hop, hops_over, order};
+use super::hops::Hop;
 use super::{EdgeTransport, Route};
+use crate::network::edge;
 
 const CHAT_URL: &str = "https://api.scnative.dev/chat/x";
 
@@ -58,48 +59,21 @@ fn fixed(addr: SocketAddr) -> EdgeTransport {
 }
 
 #[test]
-fn the_edge_level_goes_first_and_the_rest_keep_their_order() {
-    assert_eq!(order(Tier::Direct), [Tier::Direct, Tier::Relay, Tier::Pro]);
-    assert_eq!(order(Tier::Relay), [Tier::Relay, Tier::Direct, Tier::Pro]);
-    assert_eq!(order(Tier::Pro), [Tier::Pro, Tier::Direct, Tier::Relay]);
-}
-
-#[test]
-fn every_tier_points_at_the_sealed_channel() {
-    let relays = vec![
-        "api.r1.relay.scnative.dev".to_string(),
-        "api.r2.relay.scnative.dev".to_string(),
-    ];
-    let pros = vec!["p1.pro.scnative.dev".to_string()];
-    assert_eq!(
-        hops_over(CHAT_URL, Tier::Direct, &relays, &pros),
-        [Hop::Http(CHAT_URL.to_string())]
-    );
-    assert_eq!(
-        hops_over(CHAT_URL, Tier::Relay, &relays, &pros),
-        [
-            Hop::Http("https://api.r1.relay.scnative.dev/chat/x".to_string()),
-            Hop::Http("https://api.r2.relay.scnative.dev/chat/x".to_string()),
-        ]
-    );
-    assert_eq!(
-        hops_over(CHAT_URL, Tier::Pro, &relays, &pros),
-        [Hop::Pro {
-            node: "https://p1.pro.scnative.dev".to_string(),
-            url: CHAT_URL.to_string(),
-        }]
-    );
-}
-
-#[test]
-fn the_edge_route_offers_all_three_tiers_on_the_api_origin() {
+fn the_edge_route_has_no_direct_hop_and_follows_the_api_plan() {
+    edge::set_gateway(4321);
     let route = Route::edge();
-    let mut tiers = route.tiers();
-    tiers.sort_by_key(|tier| *tier as u8);
-    assert_eq!(tiers, [Tier::Direct, Tier::Relay, Tier::Pro]);
-    assert_eq!(route.hops(Tier::Direct), [Hop::Http(CHAT_URL.to_string())]);
-    assert!(!route.hops(Tier::Relay).is_empty());
-    assert!(!route.hops(Tier::Pro).is_empty());
+    assert_eq!(route.tiers(), [Tier::Relay, Tier::Pro]);
+    assert!(route.hops(Tier::Direct).is_empty());
+    let relays = route.hops(Tier::Relay);
+    assert!(!relays.is_empty());
+    assert!(relays.iter().all(|hop| hop.0.ends_with("/chat/x")));
+    assert!(relays.iter().all(|hop| hop.0.contains(".relay.scnative.")));
+    let pros = route.hops(Tier::Pro);
+    assert!(!pros.is_empty());
+    assert!(
+        pros.iter()
+            .all(|hop| hop.0.starts_with("http://127.0.0.1:4321/pro/"))
+    );
 }
 
 #[test]
@@ -108,7 +82,7 @@ fn a_fixed_dev_origin_is_direct_only() {
     assert_eq!(route.tiers(), [Tier::Direct]);
     assert_eq!(
         route.hops(Tier::Direct),
-        [Hop::Http("http://127.0.0.1:3000/chat/x".to_string())]
+        [Hop("http://127.0.0.1:3000/chat/x".to_string())]
     );
     assert!(route.hops(Tier::Relay).is_empty());
 }

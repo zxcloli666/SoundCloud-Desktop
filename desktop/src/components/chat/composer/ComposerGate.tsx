@@ -11,7 +11,7 @@ import { Composer } from './Composer';
 function GoneBar() {
   const { t } = useTranslation();
   return (
-    <div className="flex shrink-0 items-center justify-center gap-2 px-3 pt-2 pb-4 text-[12.5px] text-white/40">
+    <div className="flex shrink-0 items-center justify-center gap-2 px-3 pt-2 pb-4 text-[12.5px] text-ink-40">
       <Ban size={14} />
       {t('chat.thread.notMember')}
     </div>

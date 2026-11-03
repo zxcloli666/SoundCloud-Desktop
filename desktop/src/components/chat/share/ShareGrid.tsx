@@ -19,8 +19,8 @@ interface ShareGridProps {
 
 function Note({ icon, text }: { icon: ReactNode; text: string }) {
   return (
-    <div className="flex h-[180px] flex-col items-center justify-center gap-2.5 text-white/40">
-      <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/[0.04]">
+    <div className="flex h-[180px] flex-col items-center justify-center gap-2.5 text-ink-40">
+      <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-ink/[0.04]">
         {icon}
       </span>
       <span className="text-[12.5px]">{text}</span>

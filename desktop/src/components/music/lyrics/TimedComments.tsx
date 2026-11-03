@@ -25,35 +25,35 @@ const TimedCommentCard = React.memo(
                 onClick={() => onSeek(commentTime)}
                 className={`w-full text-left rounded-2xl border px-4 py-3 transition-all duration-300 cursor-pointer ${
                     state === 'active'
-                        ? 'bg-gradient-to-br from-white/[0.14] to-white/[0.08] border-white/14 ring-1 ring-accent/25 shadow-[0_16px_36px_rgba(0,0,0,0.26)]'
+                        ? 'bg-gradient-to-br from-ink/[0.14] to-ink/[0.08] border-ink/14 ring-1 ring-accent/25 shadow-[0_16px_36px_rgb(var(--shade)/calc(0.26*var(--shade-alpha)))]'
                         : state === 'past'
-                            ? 'bg-white/[0.025] border-white/[0.035] hover:bg-white/[0.04]'
-                            : 'bg-white/[0.045] border-white/[0.05] hover:bg-white/[0.06]'
+                            ? 'bg-ink/[0.025] border-ink/[0.035] hover:bg-ink/[0.04]'
+                            : 'bg-ink/[0.045] border-ink/[0.05] hover:bg-ink/[0.06]'
                 }`}
             >
                 <div className="flex items-start gap-3">
                     <img
                         src={avatar ?? ''}
                         alt=""
-                        className="w-9 h-9 rounded-full shrink-0 ring-1 ring-white/[0.08]"
+                        className="w-9 h-9 rounded-full shrink-0 ring-1 ring-ink/[0.08]"
                     />
                     <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
-              <span className="text-[12px] font-medium text-white/78 truncate">
+              <span className="text-[12px] font-medium text-ink-78 truncate">
                 {comment.user.username}
               </span>
                             <span
                                 className={`text-[10px] tabular-nums shrink-0 ${
-                                    state === 'active' ? 'text-accent' : 'text-white/30'
+                                    state === 'active' ? 'text-accent' : 'text-ink-30'
                                 }`}
                             >
                 {durLong(comment.timestamp ?? 0)}
               </span>
-                            <span className="text-[10px] text-white/18 ml-auto shrink-0">
+                            <span className="text-[10px] text-ink-18 ml-auto shrink-0">
                 {ago(comment.created_at)}
               </span>
                         </div>
-                        <p className="selectable mt-1 text-[13px] leading-relaxed text-white/58 break-words">
+                        <p className="selectable mt-1 text-[13px] leading-relaxed text-ink-58 break-words">
                             {comment.body}
                         </p>
                     </div>
@@ -145,8 +145,8 @@ export const TimedCommentsRail = React.memo(({trackUrn}: { trackUrn: string }) =
     if (isLoading && timedComments.length === 0) {
         return (
             <div className="flex-1 flex flex-col items-center justify-center gap-3">
-                <Loader2 size={24} className="animate-spin text-white/15"/>
-                <p className="text-[13px] text-white/25">{t('track.comments')}</p>
+                <Loader2 size={24} className="animate-spin text-ink-15"/>
+                <p className="text-[13px] text-ink-25">{t('track.comments')}</p>
             </div>
         );
     }
@@ -154,8 +154,8 @@ export const TimedCommentsRail = React.memo(({trackUrn}: { trackUrn: string }) =
     if (timedComments.length === 0) {
         return (
             <div className="flex-1 flex flex-col items-center justify-center gap-4 px-12 text-center">
-                <MessageCircle size={40} className="text-white/[0.06]"/>
-                <p className="text-[15px] text-white/30 font-medium">{t('track.noComments')}</p>
+                <MessageCircle size={40} className="text-ink-6"/>
+                <p className="text-[15px] text-ink-30 font-medium">{t('track.noComments')}</p>
             </div>
         );
     }

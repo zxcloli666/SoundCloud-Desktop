@@ -64,9 +64,9 @@ export function SortableSlot({ id, children }: { id: string; children: ReactNode
       style={{
         transform: CSS.Translate.toString(transform),
         transition,
-        background: isDragging ? 'rgba(255,255,255,0.06)' : undefined,
+        background: isDragging ? 'rgb(var(--ink) / 0.06)' : undefined,
         boxShadow: isDragging
-          ? '0 10px 28px rgba(0,0,0,0.45), inset 0 0.5px 0 rgba(255,255,255,0.12)'
+          ? '0 10px 28px rgb(var(--shade) / calc(0.45 * var(--shade-alpha))), inset 0 0.5px 0 rgb(var(--ink) / 0.12)'
           : undefined,
       }}
     >

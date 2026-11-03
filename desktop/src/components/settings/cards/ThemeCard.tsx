@@ -5,6 +5,7 @@ import {activeLook} from '../../../lib/themes/records';
 import {THEME_PRESETS, useSettingsStore} from '../../../stores/settings';
 import {useThemesStore} from '../../../stores/themes';
 import {Card} from '../primitives';
+import {SchemePicker} from './SchemePicker';
 import {ThemeOverrideRow} from './ThemeOverrideRow';
 
 const THEME_PRESET_KEYS = ['soundcloud', 'dark', 'neon', 'forest', 'crimson'] as const;
@@ -43,18 +44,19 @@ export function ThemeCard() {
                         resetTheme();
                         useThemesStore.getState().deactivate();
                     }}
-                    className="text-[12px] text-white/30 hover:text-white/60 transition-colors cursor-pointer"
+                    className="text-[12px] text-ink-30 hover:text-ink-60 transition-colors cursor-pointer"
                 >
                     {t('settings.resetDefaults')}
                 </button>
             }
         >
             <div className="space-y-6">
-                {(look?.accent || look?.background) && (
+                {look && (
                     <ThemeOverrideRow label={t('settings.themesColorsFromTheme', {name: look.name})}/>
                 )}
+                <SchemePicker/>
                 <div className="space-y-3">
-                    <label className="text-[13px] text-white/50 font-medium">
+                    <label className="text-[13px] text-ink-50 font-medium">
                         {t('settings.themePreset')}
                     </label>
                     <div className="grid grid-cols-3 gap-3">
@@ -68,8 +70,8 @@ export function ThemeCard() {
                                     onClick={() => setThemePreset(id)}
                                     className={`group relative rounded-2xl overflow-hidden border transition-all duration-200 cursor-pointer hover:scale-[1.03] active:scale-[0.97] ${
                                         isActive
-                                            ? 'border-white/30 ring-1 ring-white/20'
-                                            : 'border-white/[0.06] hover:border-white/15'
+                                            ? 'border-ink/30 ring-1 ring-ink/20'
+                                            : 'border-ink/[0.06] hover:border-ink/15'
                                     }`}
                                 >
                                     <div
@@ -85,9 +87,9 @@ export function ThemeCard() {
                                             style={{backgroundColor: def.preview[2]}}
                                         />
                                     </div>
-                                    <div className="px-3 py-2 bg-white/[0.03] text-center">
+                                    <div className="px-3 py-2 bg-ink/[0.03] text-center">
                     <span
-                        className={`text-[12px] font-medium ${isActive ? 'text-white/90' : 'text-white/50'}`}
+                        className={`text-[12px] font-medium ${isActive ? 'text-ink-90' : 'text-ink-50'}`}
                     >
                       {t(`settings.theme_${id}`)}
                     </span>
@@ -103,18 +105,18 @@ export function ThemeCard() {
                             }}
                             className={`group relative rounded-2xl overflow-hidden border border-dashed transition-all duration-200 cursor-pointer hover:scale-[1.03] active:scale-[0.97] ${
                                 themePreset === 'custom'
-                                    ? 'border-white/30 bg-white/[0.04]'
-                                    : 'border-white/[0.1] hover:border-white/20'
+                                    ? 'border-ink/30 bg-ink/[0.04]'
+                                    : 'border-ink/[0.1] hover:border-ink/20'
                             }`}
                         >
                             <div className="h-16 flex items-center justify-center">
-                <span className="text-[20px] text-white/30 group-hover:text-white/50 transition-colors">
+                <span className="text-[20px] text-ink-30 group-hover:text-ink-50 transition-colors">
                   +
                 </span>
                             </div>
-                            <div className="px-3 py-2 bg-white/[0.02] text-center">
+                            <div className="px-3 py-2 bg-ink/[0.02] text-center">
                 <span
-                    className={`text-[12px] font-medium ${themePreset === 'custom' ? 'text-white/90' : 'text-white/40'}`}
+                    className={`text-[12px] font-medium ${themePreset === 'custom' ? 'text-ink-90' : 'text-ink-40'}`}
                 >
                   {t('settings.themeCustom')}
                 </span>
@@ -125,7 +127,7 @@ export function ThemeCard() {
 
                 {themePreset === 'custom' && (
                     <div className="space-y-3">
-                        <label className="text-[13px] text-white/50 font-medium">
+                        <label className="text-[13px] text-ink-50 font-medium">
                             {t('settings.accentColor')}
                         </label>
                         <div className="flex items-center gap-2 flex-wrap">
@@ -145,7 +147,7 @@ export function ThemeCard() {
                             <button
                                 type="button"
                                 onClick={() => colorInputRef.current?.click()}
-                                className="w-8 h-8 rounded-full border-2 border-dashed border-white/20 hover:border-white/40 transition-all cursor-pointer flex items-center justify-center text-white/30 hover:text-white/60 hover:scale-110"
+                                className="w-8 h-8 rounded-full border-2 border-dashed border-ink/20 hover:border-ink/40 transition-all cursor-pointer flex items-center justify-center text-ink-30 hover:text-ink-60 hover:scale-110"
                             >
                                 <span className="text-[11px] font-bold">+</span>
                             </button>

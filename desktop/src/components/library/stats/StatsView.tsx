@@ -27,8 +27,8 @@ const EmptyStats = memo(function EmptyStats({ aura }: { aura: Aura }) {
       >
         <ChartNoAxesColumn size={28} />
       </span>
-      <p className="text-[17px] font-bold text-white/85">{t('stats.emptyTitle')}</p>
-      <p className="text-[13px] text-white/40 max-w-[340px]">{t('stats.emptyHint')}</p>
+      <p className="text-[17px] font-bold text-ink-85">{t('stats.emptyTitle')}</p>
+      <p className="text-[13px] text-ink-40 max-w-[340px]">{t('stats.emptyHint')}</p>
     </div>
   );
 });
@@ -57,12 +57,12 @@ export const StatsView = memo(function StatsView({
     <div className="flex flex-col gap-5 pb-4">
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <PeriodSwitch aura={aura} value={period} onChange={setPeriod} />
-        {range && <span className="text-[12px] text-white/40 tabular-nums">{range}</span>}
+        {range && <span className="text-[12px] text-ink-40 tabular-nums">{range}</span>}
       </div>
 
       {query.isLoading ? (
         <div className="flex justify-center py-24">
-          <Loader2 size={30} className="animate-spin text-white/20" />
+          <Loader2 size={30} className="animate-spin text-ink-20" />
         </div>
       ) : query.isError && !stats ? (
         <div className="py-16">
@@ -85,7 +85,7 @@ export const StatsView = memo(function StatsView({
             <TopTracks tracks={stats.topTracks} aura={aura} delay={0.14} />
           </div>
           <RhythmMap cells={stats.rhythm} aura={aura} delay={0.2} />
-          <p className="text-[11px] text-white/25 text-center">{t('stats.approxNote')}</p>
+          <p className="text-[11px] text-ink-25 text-center">{t('stats.approxNote')}</p>
         </div>
       )}
     </div>

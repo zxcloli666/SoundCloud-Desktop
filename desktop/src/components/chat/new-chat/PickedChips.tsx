@@ -20,11 +20,11 @@ export const PickedChips = memo(function PickedChips({ people, onRemove }: Picke
           type="button"
           onClick={() => onRemove(person)}
           title={t('chat.list.new.remove')}
-          className="group flex h-7 cursor-pointer items-center gap-1.5 rounded-full border border-white/[0.08] bg-white/[0.06] pr-2 pl-0.5 text-[12px] font-medium text-white/80 transition-colors hover:bg-white/[0.1]"
+          className="group flex h-7 cursor-pointer items-center gap-1.5 rounded-full border border-ink/[0.08] bg-ink/[0.06] pr-2 pl-0.5 text-[12px] font-medium text-ink-80 transition-colors hover:bg-ink/[0.1]"
         >
           <Avatar src={person.avatarUrl} alt={person.name} size={24} />
           <span className="max-w-[120px] truncate">{person.name}</span>
-          <X size={11} className="text-white/40 group-hover:text-white/80" />
+          <X size={11} className="text-ink-40 group-hover:text-ink-80" />
         </button>
       ))}
     </div>

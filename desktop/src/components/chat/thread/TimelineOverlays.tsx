@@ -17,7 +17,7 @@ export const JumpButton = memo(function JumpButton({
       type="button"
       aria-label={t('chat.thread.toBottom')}
       onClick={onClick}
-      className="chat-thread-motion absolute right-4 bottom-3 z-10 flex size-10 cursor-pointer items-center justify-center rounded-full border border-white/[0.09] text-white/75 shadow-[0_10px_28px_rgba(0,0,0,0.5)] transition-colors duration-150 hover:text-white"
+      className="chat-thread-motion absolute right-4 bottom-3 z-10 flex size-10 cursor-pointer items-center justify-center rounded-full border border-ink/[0.09] text-ink-75 shadow-[0_10px_28px_rgba(0,0,0,0.5)] transition-colors duration-150 hover:text-white"
       style={{ background: surface(12), animation: 'chat-thread-rise 180ms ease-out' }}
     >
       <ChevronDown size={18} />
@@ -38,7 +38,7 @@ export const FloatingDay = memo(function FloatingDay({ ts }: { ts: number }) {
   return (
     <div className="pointer-events-none absolute inset-x-0 top-2 z-10 flex justify-center">
       <span
-        className="rounded-full border border-white/[0.07] px-3 py-1 text-[11px] font-semibold text-white/70 shadow-[0_6px_18px_rgba(0,0,0,0.35)]"
+        className="rounded-full border border-ink/[0.07] px-3 py-1 text-[11px] font-semibold text-ink-70 shadow-[0_6px_18px_rgba(0,0,0,0.35)]"
         style={{ background: surface(10) }}
       >
         {dayText(ts, t, i18n.language)}
@@ -50,7 +50,7 @@ export const FloatingDay = memo(function FloatingDay({ ts }: { ts: number }) {
 export const TopSpinner = memo(function TopSpinner() {
   return (
     <div className="pointer-events-none absolute inset-x-0 top-2 z-10 flex justify-center">
-      <span className="flex size-7 items-center justify-center rounded-full bg-black/40 text-white/60">
+      <span className="flex size-7 items-center justify-center rounded-full bg-black/40 text-ink-60">
         <Loader2 size={14} className="animate-spin" />
       </span>
     </div>

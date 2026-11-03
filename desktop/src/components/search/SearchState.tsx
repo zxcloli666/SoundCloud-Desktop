@@ -29,28 +29,28 @@ export const SearchState = memo(function SearchState({
         style={{
           background:
             b > 0
-              ? 'linear-gradient(165deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))'
-              : 'rgba(18,18,22,0.85)',
-          border: '0.5px solid rgba(255,255,255,0.1)',
+              ? 'linear-gradient(165deg, rgb(var(--ink) / 0.06), rgb(var(--ink) / 0.02))'
+              : 'rgb(var(--surface) / 0.85)',
+          border: '0.5px solid rgb(var(--ink) / 0.1)',
           backdropFilter: b > 0 ? `blur(${b}px) saturate(160%)` : undefined,
           WebkitBackdropFilter: b > 0 ? `blur(${b}px) saturate(160%)` : undefined,
-          boxShadow: '0 30px 80px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06)',
+          boxShadow: '0 30px 80px rgb(var(--shade) / calc(0.4 * var(--shade-alpha))), inset 0 1px 0 rgba(255,255,255,0.06)',
           isolation: 'isolate',
         }}
       >
         <div
           className="w-16 h-16 flex items-center justify-center rounded-2xl text-accent"
           style={{
-            background: 'rgba(255,255,255,0.04)',
-            border: '0.5px solid rgba(255,255,255,0.08)',
+            background: 'rgb(var(--ink) / 0.04)',
+            border: '0.5px solid rgb(var(--ink) / 0.08)',
             boxShadow: '0 0 30px var(--color-accent-glow)',
           }}
         >
           {icon}
         </div>
         <div className="flex flex-col gap-1.5">
-          <p className="text-lg font-bold text-white/90">{title}</p>
-          {body && <p className="text-[13px] leading-relaxed text-white/45">{body}</p>}
+          <p className="text-lg font-bold text-ink-90">{title}</p>
+          {body && <p className="text-[13px] leading-relaxed text-ink-45">{body}</p>}
         </div>
         {cta && onAction && (
           <button
@@ -111,13 +111,13 @@ export const SearchError = memo(function SearchError({
 export const SectionError = memo(function SectionError({ onRetry }: { onRetry: () => void }) {
   const { t } = useTranslation();
   return (
-    <div className="flex items-center justify-center gap-2 px-4 py-3 text-[12px] text-white/40">
+    <div className="flex items-center justify-center gap-2 px-4 py-3 text-[12px] text-ink-40">
       <span>{t('search.catalog.sectionError')}</span>
       <span aria-hidden>·</span>
       <button
         type="button"
         onClick={onRetry}
-        className="inline-flex items-center gap-1 text-white/70 hover:text-white transition-colors cursor-pointer"
+        className="inline-flex items-center gap-1 text-ink-70 hover:text-ink transition-colors cursor-pointer"
       >
         <RefreshCw size={12} />
         {t('search.error.retry')}
@@ -133,7 +133,7 @@ export const StripSkeleton = memo(function StripSkeleton() {
         <div
           key={i}
           className="h-11 w-32 shrink-0 rounded-full skeleton-shimmer"
-          style={{ background: 'rgba(255,255,255,0.04)' }}
+          style={{ background: 'rgb(var(--ink) / 0.04)' }}
         />
       ))}
     </div>

@@ -21,7 +21,7 @@ export const BubbleMeta = memo(function BubbleMeta({
     <span
       title={fullTime(message.ts, language)}
       className={`pointer-events-auto inline-flex select-none items-center gap-1 text-[10.5px] leading-none tabular-nums ${
-        message.mine ? 'text-white/55' : 'text-white/38'
+        message.mine ? 'text-ink-55' : 'text-ink-38'
       } ${floating ? 'relative top-[6px] float-right ml-2.5' : ''}`}
     >
       {message.editedAt !== null && (

@@ -38,7 +38,7 @@ export const QueuePanel = React.memo(
       <>
         {/* Backdrop */}
         <div
-          className={`fixed inset-0 bg-black/40 backdrop-blur-sm z-40 transition-opacity duration-300 ${
+          className={`fixed inset-0 bg-shade-40 backdrop-blur-sm z-40 transition-opacity duration-300 ${
             open ? 'opacity-100' : 'opacity-0 pointer-events-none'
           }`}
           onClick={onClose}
@@ -47,7 +47,7 @@ export const QueuePanel = React.memo(
         {/* Panel */}
         <div
             data-ui="queue"
-            className="fixed top-0 right-0 bottom-0 w-[360px] z-50 flex flex-col border-l border-white/[0.06]"
+            className="fixed top-0 right-0 bottom-0 w-[360px] z-50 flex flex-col border-l border-ink/[0.06]"
           style={{
             transform: open ? 'translateX(0)' : 'translateX(100%)',
             visibility: open ? 'visible' : 'hidden',
@@ -84,7 +84,7 @@ export const QueuePanel = React.memo(
                     <div
                         className="absolute inset-0"
                         style={{
-                            background: panelBlur > 0 ? 'rgba(16, 16, 20, 0.82)' : 'rgba(16, 16, 20, 0.98)',
+                            background: panelBlur > 0 ? 'rgb(var(--surface) / 0.82)' : 'rgb(var(--surface) / 0.98)',
                             backdropFilter: panelBlur > 0 ? `blur(${panelBlur}px) saturate(1.6)` : undefined,
                             WebkitBackdropFilter:
                                 panelBlur > 0 ? `blur(${panelBlur}px) saturate(1.6)` : undefined,
@@ -110,12 +110,12 @@ export const QueuePanel = React.memo(
                     data-tauri-drag-region
                 >
                     <div className="flex items-center gap-2.5">
-                        <h2 className="text-[15px] font-semibold tracking-tight text-white/90">
+                        <h2 className="text-[15px] font-semibold tracking-tight text-ink-90">
                             {t('player.queue')}
                         </h2>
                         {queueLength > 0 && (
                             <span
-                                className="text-[11px] font-semibold text-white/40 bg-white/[0.06] rounded-full px-2 py-0.5 tabular-nums">
+                                className="text-[11px] font-semibold text-ink-40 bg-ink/[0.06] rounded-full px-2 py-0.5 tabular-nums">
                     {queueLength}
                   </span>
                         )}
@@ -125,7 +125,7 @@ export const QueuePanel = React.memo(
                     <button
                         type="button"
                         onClick={() => usePlayerStore.getState().clearQueue()}
-                        className="h-7 px-2.5 rounded-lg text-[11px] text-white/30 hover:text-white/60 hover:bg-white/[0.06] transition-all duration-150 cursor-pointer flex items-center gap-1.5"
+                        className="h-7 px-2.5 rounded-lg text-[11px] text-ink-30 hover:text-ink-60 hover:bg-ink/[0.06] transition-all duration-150 cursor-pointer flex items-center gap-1.5"
                     >
                         <Trash2 size={12}/>
                         {t('player.clearQueue')}
@@ -135,7 +135,7 @@ export const QueuePanel = React.memo(
                             type="button"
                             onClick={onClose}
                             title={t('common.close')}
-                            className="w-7 h-7 rounded-lg flex items-center justify-center text-white/30 hover:text-white/60 hover:bg-white/[0.06] transition-all duration-150 cursor-pointer"
+                            className="w-7 h-7 rounded-lg flex items-center justify-center text-ink-30 hover:text-ink-60 hover:bg-ink/[0.06] transition-all duration-150 cursor-pointer"
                         >
                             <X size={16}/>
                         </button>
@@ -145,7 +145,7 @@ export const QueuePanel = React.memo(
                 {/* Now Playing */}
                 {currentTrack && (
                     <div className="px-3.5 pb-2">
-                        <p className="text-[10px] text-white/25 uppercase tracking-wider font-medium mb-2 px-1.5">
+                        <p className="text-[10px] text-ink-25 uppercase tracking-wider font-medium mb-2 px-1.5">
                             {t('player.nowPlaying')}
                         </p>
                         <NowPlayingCard/>
@@ -156,7 +156,7 @@ export const QueuePanel = React.memo(
                 <div className="flex-1 overflow-y-auto scrollbar-hide px-3.5 pb-4">
                     {upNextCount > 0 && (
                         <>
-                            <p className="text-[10px] text-white/25 uppercase tracking-wider font-medium mb-2 mt-3 px-1.5">
+                            <p className="text-[10px] text-ink-25 uppercase tracking-wider font-medium mb-2 mt-3 px-1.5">
                                 {t('player.upNext')} · {upNextCount}
                             </p>
                             <QueueList
@@ -172,14 +172,14 @@ export const QueuePanel = React.memo(
               {queueLength === 0 && (
                   <div className="flex flex-col items-center justify-center h-full gap-3 text-center px-8">
                       <div
-                          className="w-14 h-14 rounded-2xl bg-white/[0.04] ring-1 ring-white/[0.06] flex items-center justify-center">
-                          <ListMusic size={24} className="text-white/15"/>
+                          className="w-14 h-14 rounded-2xl bg-ink/[0.04] ring-1 ring-ink/[0.06] flex items-center justify-center">
+                          <ListMusic size={24} className="text-ink-15"/>
                       </div>
                       <div>
-                          <p className="text-[14px] text-white/40 font-medium">
+                          <p className="text-[14px] text-ink-40 font-medium">
                               {t('player.queueEmpty')}
                           </p>
-                          <p className="text-[12px] text-white/20 mt-1 leading-relaxed max-w-[200px]">
+                          <p className="text-[12px] text-ink-20 mt-1 leading-relaxed max-w-[200px]">
                               {t('player.queueEmptyHint')}
                           </p>
                       </div>

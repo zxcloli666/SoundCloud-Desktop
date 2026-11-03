@@ -57,7 +57,7 @@ function ThemedTrackRowImpl({ track, index, queue, aura }: ThemedTrackRowProps) 
       }}
       onMouseEnter={(e) => {
         preloadTrack(track);
-        if (!isThis) e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
+        if (!isThis) e.currentTarget.style.background = 'rgb(var(--ink) / 0.04)';
       }}
       onMouseLeave={(e) => {
         cancelPreload();
@@ -80,7 +80,7 @@ function ThemedTrackRowImpl({ track, index, queue, aura }: ThemedTrackRowProps) 
           </div>
         ) : (
           <>
-            <span className="text-[12px] text-white/25 tabular-nums font-semibold group-hover:opacity-0 transition-opacity">
+            <span className="text-[12px] text-ink-25 tabular-nums font-semibold group-hover:opacity-0 transition-opacity">
               {index + 1}
             </span>
             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
@@ -91,7 +91,7 @@ function ThemedTrackRowImpl({ track, index, queue, aura }: ThemedTrackRowProps) 
                         pb > 0
                             ? lightAura
                                 ? auraRgba(aura, 0.8)
-                                : 'rgba(255,255,255,0.1)'
+                                : 'rgb(var(--ink) / 0.1)'
                             : lightAura
                                 ? auraRgb(aura)
                                 : 'rgba(48,48,54,0.92)',
@@ -109,13 +109,13 @@ function ThemedTrackRowImpl({ track, index, queue, aura }: ThemedTrackRowProps) 
 
       <div
         className="relative w-12 h-12 rounded-xl overflow-hidden shrink-0 transition-transform duration-500 group-hover:scale-105"
-        style={{ border: '0.5px solid rgba(255,255,255,0.08)' }}
+        style={{ border: '0.5px solid rgb(var(--ink) / 0.08)' }}
       >
         {cover ? (
-          <img src={cover} alt="" className="w-full h-full object-cover" loading="lazy" />
+          <img data-ui="artwork" src={cover} alt="" className="w-full h-full object-cover" loading="lazy" />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-white/[0.04]">
-            <Music size={16} className="text-white/20" />
+          <div className="w-full h-full flex items-center justify-center bg-ink/[0.04]">
+            <Music size={16} className="text-ink-20" />
           </div>
         )}
           {track.sharing === 'private' && (
@@ -135,7 +135,7 @@ function ThemedTrackRowImpl({ track, index, queue, aura }: ThemedTrackRowProps) 
         <TrackStatusBadges meta={track._scd_meta} />
       </div>
 
-      <div className="hidden @3xl:flex items-center gap-5 shrink-0 pr-2 text-[11px] text-white/35">
+      <div className="hidden @3xl:flex items-center gap-5 shrink-0 pr-2 text-[11px] text-ink-35">
         <span className="inline-flex items-center gap-1.5 tabular-nums w-16">
           {track.playback_count != null && (
             <>
@@ -158,19 +158,19 @@ function ThemedTrackRowImpl({ track, index, queue, aura }: ThemedTrackRowProps) 
         <AddToPlaylistDialog trackUrns={[track.urn]}>
           <button
             type="button"
-            className="cursor-pointer w-8 h-8 rounded-lg flex items-center justify-center text-white/30 hover:text-white/80 hover:bg-white/[0.06] opacity-0 group-hover:opacity-100 transition-all"
+            className="cursor-pointer w-8 h-8 rounded-lg flex items-center justify-center text-ink-30 hover:text-ink-80 hover:bg-ink/[0.06] opacity-0 group-hover:opacity-100 transition-all"
           >
             <ListPlus size={14} />
           </button>
         </AddToPlaylistDialog>
         <PlayNextButton
           track={track}
-          className="cursor-pointer w-8 h-8 rounded-lg flex items-center justify-center text-white/30 hover:text-white/80 hover:bg-white/[0.06] opacity-0 group-hover:opacity-100 transition-all"
+          className="cursor-pointer w-8 h-8 rounded-lg flex items-center justify-center text-ink-30 hover:text-ink-80 hover:bg-ink/[0.06] opacity-0 group-hover:opacity-100 transition-all"
         />
         {isOwner && <OwnerTrackMenu track={track} />}
       </div>
 
-      <span className="text-[12px] text-white/30 tabular-nums font-medium shrink-0 w-12 text-right">
+      <span className="text-[12px] text-ink-30 tabular-nums font-medium shrink-0 w-12 text-right">
         {dur(track.duration)}
       </span>
     </div>

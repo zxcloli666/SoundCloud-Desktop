@@ -30,8 +30,8 @@ function AlbumGridCardImpl({ album, aura }: AlbumGridCardProps) {
       onClick={() => navigate(`/album/${encodeURIComponent(album.id)}`)}
       className="group relative h-full w-full flex flex-col gap-3 text-left p-3 rounded-3xl cursor-pointer transition-all duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)] hover:scale-[1.03] overflow-hidden"
       style={{
-          background: cardBlur > 0 ? 'rgba(255,255,255,0.03)' : 'rgba(22,22,27,0.92)',
-        border: '0.5px solid rgba(255,255,255,0.06)',
+          background: cardBlur > 0 ? 'rgb(var(--ink) / 0.03)' : 'rgb(var(--surface-hi) / 0.92)',
+        border: '0.5px solid rgb(var(--ink) / 0.06)',
           backdropFilter: cardBlur > 0 ? `blur(${cardBlur}px) saturate(140%)` : undefined,
           WebkitBackdropFilter: cardBlur > 0 ? `blur(${cardBlur}px) saturate(140%)` : undefined,
       }}
@@ -51,7 +51,7 @@ function AlbumGridCardImpl({ album, aura }: AlbumGridCardProps) {
         className="relative aspect-square rounded-2xl overflow-hidden"
         style={{
           background: `linear-gradient(135deg, ${g1} 0%, ${g2} 55%, ${g3} 100%)`,
-          boxShadow: `0 20px 40px rgba(0,0,0,0.45), inset 0 0 0 1px rgba(255,255,255,0.08), inset 0 1px 0 rgba(255,255,255,0.18)`,
+          boxShadow: `0 20px 40px rgb(var(--shade) / calc(0.45 * var(--shade-alpha))), inset 0 0 0 1px rgba(255,255,255,0.08), inset 0 1px 0 rgba(255,255,255,0.18)`,
         }}
       >
         {album.cover_url ? (
@@ -69,13 +69,13 @@ function AlbumGridCardImpl({ album, aura }: AlbumGridCardProps) {
               className="absolute inset-0"
               style={{
                 background:
-                  'radial-gradient(120% 80% at 30% 10%, rgba(255,255,255,0.20) 0%, transparent 60%)',
+                  'radial-gradient(120% 80% at 30% 10%, rgb(var(--ink) / 0.20) 0%, transparent 60%)',
                 mixBlendMode: 'overlay',
               }}
             />
             <div className="absolute inset-0 flex items-center justify-center">
               <span
-                className="text-white/95 font-black tracking-tight select-none"
+                className="text-ink-95 font-black tracking-tight select-none"
                 style={{
                   fontSize: 'clamp(40px, 5vw, 64px)',
                   textShadow: '0 8px 24px rgba(0,0,0,0.55)',
@@ -90,10 +90,10 @@ function AlbumGridCardImpl({ album, aura }: AlbumGridCardProps) {
                   background: discBlur > 0 ? 'rgba(0,0,0,0.35)' : 'rgba(0,0,0,0.6)',
                   backdropFilter: discBlur > 0 ? `blur(${discBlur}px)` : undefined,
                   WebkitBackdropFilter: discBlur > 0 ? `blur(${discBlur}px)` : undefined,
-                border: '0.5px solid rgba(255,255,255,0.16)',
+                border: '0.5px solid rgb(var(--ink) / 0.16)',
               }}
             >
-              <Disc3 size={14} className="text-white/70" />
+              <Disc3 size={14} className="text-ink-70" />
             </div>
           </>
         )}
@@ -105,7 +105,7 @@ function AlbumGridCardImpl({ album, aura }: AlbumGridCardProps) {
             color: '#fff',
               backdropFilter: badgeBlur > 0 ? `blur(${badgeBlur}px)` : undefined,
               WebkitBackdropFilter: badgeBlur > 0 ? `blur(${badgeBlur}px)` : undefined,
-            border: '0.5px solid rgba(255,255,255,0.12)',
+            border: '0.5px solid rgb(var(--ink) / 0.12)',
           }}
         >
           {kindLabel}
@@ -118,32 +118,32 @@ function AlbumGridCardImpl({ album, aura }: AlbumGridCardProps) {
               boxShadow: `0 0 12px ${auraRgba(aura, 0.6)}, inset 0 0 0 1px ${auraRgba(aura, 0.7)}`,
             }}
           >
-            <Star size={11} className="text-white" fill="currentColor" />
+            <Star size={11} className="text-ink" fill="currentColor" />
           </div>
         )}
       </div>
 
       <div className="px-1 min-w-0 flex flex-col gap-1">
-        <p className="text-[13.5px] font-semibold text-white/90 truncate group-hover:text-white">
+        <p className="text-[13.5px] font-semibold text-ink-90 truncate group-hover:text-ink">
           {album.title}
         </p>
-        <p className="text-[11px] text-white/45 truncate">{album.primary_artist.name}</p>
+        <p className="text-[11px] text-ink-45 truncate">{album.primary_artist.name}</p>
         <div className="flex items-center gap-1.5 mt-0.5">
-          <span className="inline-flex items-center gap-1 text-[10px] tabular-nums text-white/30">
+          <span className="inline-flex items-center gap-1 text-[10px] tabular-nums text-ink-30">
             <ListMusic size={10} /> {album.track_count}
           </span>
           {album.total_duration_ms > 0 && (
             <>
-              <span className="text-white/15">·</span>
-              <span className="text-[10px] tabular-nums text-white/30">
+              <span className="text-ink-15">·</span>
+              <span className="text-[10px] tabular-nums text-ink-30">
                 {dur(album.total_duration_ms)}
               </span>
             </>
           )}
           {album.release_year != null && (
             <>
-              <span className="text-white/15">·</span>
-              <span className="text-[10px] tabular-nums text-white/30">{album.release_year}</span>
+              <span className="text-ink-15">·</span>
+              <span className="text-[10px] tabular-nums text-ink-30">{album.release_year}</span>
             </>
           )}
         </div>

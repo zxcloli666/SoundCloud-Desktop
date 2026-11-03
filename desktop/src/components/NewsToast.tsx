@@ -67,22 +67,23 @@ const SingleNewsToast = React.memo(function SingleNewsToast({
     <Modal open={modalOpen} onOpenChange={handleOpenChange}>
       {/* Toast */}
       <div
+        data-ui="toast"
         className={`group relative animate-in slide-in-from-left-4 fade-in duration-500 fill-mode-both`}
         style={{ animationDelay: `${index * 120}ms` }}
       >
         <ModalTrigger asChild>
           <button
             type="button"
-            className={`relative flex w-[340px] cursor-pointer items-start gap-3.5 rounded-2xl border bg-[#1a1a1e]/90 px-4 py-3.5 text-left backdrop-blur-xl transition-all duration-300 ease-[var(--ease-apple)] ${border} ${glow} hover:bg-[#1e1e24]/95 hover:scale-[1.01]`}
+            className={`relative flex w-[340px] cursor-pointer items-start gap-3.5 rounded-2xl border bg-surface-hi/90 px-4 py-3.5 text-left backdrop-blur-xl transition-all duration-300 ease-[var(--ease-apple)] ${border} ${glow} hover:bg-surface-hi/95 hover:scale-[1.01]`}
           >
             {/* Accent dot */}
             <div className={`mt-1.5 size-2 shrink-0 rounded-full ${dot} animate-pulse`} />
 
             <div className="min-w-0 flex-1">
-              <div className="text-[13px] font-semibold text-white/90 leading-tight">
+              <div className="text-[13px] font-semibold text-ink-90 leading-tight">
                 {t(item.titleKey)}
               </div>
-              <div className="mt-1 text-[12px] leading-relaxed text-white/45 line-clamp-2">
+              <div className="mt-1 text-[12px] leading-relaxed text-ink-45 line-clamp-2">
                 {t(item.descriptionKey)}
               </div>
             </div>
@@ -91,7 +92,7 @@ const SingleNewsToast = React.memo(function SingleNewsToast({
               <img
                 src={proxiedAssetUrl(item.image) ?? item.image}
                 alt=""
-                className="size-11 shrink-0 rounded-xl object-cover ring-1 ring-white/[0.06]"
+                className="size-11 shrink-0 rounded-xl object-cover ring-1 ring-ink/[0.06]"
                 decoding="async"
               />
             )}
@@ -102,7 +103,7 @@ const SingleNewsToast = React.memo(function SingleNewsToast({
         <button
           type="button"
           onClick={handleDismiss}
-          className="absolute right-2 top-2 z-10 flex size-6 items-center justify-center rounded-lg bg-white/0 text-white/0 transition-all group-hover:bg-white/[0.06] group-hover:text-white/40 hover:!bg-white/[0.1] hover:!text-white/60"
+          className="absolute right-2 top-2 z-10 flex size-6 items-center justify-center rounded-lg bg-ink/0 text-ink-0 transition-all group-hover:bg-ink/[0.06] group-hover:text-ink-40 hover:!bg-ink/[0.1] hover:!text-ink-60"
         >
           <X size={12} />
         </button>
@@ -114,11 +115,11 @@ const SingleNewsToast = React.memo(function SingleNewsToast({
         <div className="flex items-center justify-between px-5 pt-5 pb-3">
           <div className="flex items-center gap-2.5">
             <div className={`size-2.5 rounded-full ${dot}`} />
-            <ModalTitle className="text-[15px] font-semibold text-white/92">
+            <ModalTitle className="text-[15px] font-semibold text-ink-92">
               {t(item.titleKey)}
             </ModalTitle>
           </div>
-          <ModalClose className="flex size-7 cursor-pointer items-center justify-center rounded-lg bg-white/[0.05] text-white/40 transition-colors hover:bg-white/[0.1] hover:text-white/60">
+          <ModalClose className="flex size-7 cursor-pointer items-center justify-center rounded-lg bg-ink/[0.05] text-ink-40 transition-colors hover:bg-ink/[0.1] hover:text-ink-60">
             <X size={14} />
           </ModalClose>
         </div>
@@ -129,7 +130,7 @@ const SingleNewsToast = React.memo(function SingleNewsToast({
             <img
               src={proxiedAssetUrl(item.image) ?? item.image}
               alt=""
-              className="w-full rounded-xl object-cover ring-1 ring-white/[0.06]"
+              className="w-full rounded-xl object-cover ring-1 ring-ink/[0.06]"
               decoding="async"
             />
           </div>
@@ -137,14 +138,14 @@ const SingleNewsToast = React.memo(function SingleNewsToast({
 
         {/* Body */}
         <div className="px-5 pb-4">
-          <p className="selectable text-[13px] leading-relaxed text-white/60 whitespace-pre-line">
+          <p className="selectable text-[13px] leading-relaxed text-ink-60 whitespace-pre-line">
             {t(item.bodyKey)}
           </p>
         </div>
 
         {/* Actions */}
         <div className="px-5 pb-5">
-          <ModalClose className="w-full cursor-pointer rounded-xl bg-white/[0.08] py-2.5 text-[13px] font-medium text-white/70 transition-colors hover:bg-white/[0.12]">
+          <ModalClose className="w-full cursor-pointer rounded-xl bg-ink/[0.08] py-2.5 text-[13px] font-medium text-ink-70 transition-colors hover:bg-ink/[0.12]">
             {t('news.close')}
           </ModalClose>
         </div>

@@ -15,7 +15,9 @@ import {
   THEME_LIMITS,
   THEME_PREVIEW_PATHS,
   THEME_RESERVED_IDS,
+  THEME_SCHEMES,
   type ThemeFont,
+  type ThemeScheme,
 } from './rules.ts';
 
 export interface ThemeFile {
@@ -41,6 +43,7 @@ export interface CatalogTheme {
   accent?: string;
   background?: string;
   font?: ThemeFont;
+  scheme?: ThemeScheme;
   updated: string;
   hash: string;
   size: number;
@@ -145,7 +148,7 @@ function isThemeId(value: unknown): value is string {
 
 function parseEntry(raw: unknown, appVersion: string): CatalogTheme | null {
   if (!isObject(raw)) return null;
-  const { id, rev, name, version, license, minApp, accent, background, font } = raw;
+  const { id, rev, name, version, license, minApp, accent, background, font, scheme } = raw;
   if (!isThemeId(id) || !matches(rev, GIT_REV) || !matches(version, SEMVER)) return null;
   if (typeof name !== 'string' || !isCleanText(name, TEXT_LIMITS.name)) return null;
   if (!oneOf(THEME_LICENSES, license) || !matches(raw.hash, SHA256)) return null;
@@ -154,6 +157,7 @@ function parseEntry(raw: unknown, appVersion: string): CatalogTheme | null {
   if (!optional(accent, (value) => matches(value, HEX_COLOR))) return null;
   if (!optional(background, (value) => matches(value, HEX_COLOR))) return null;
   if (!optional(font, (value) => oneOf(THEME_FONTS, value))) return null;
+  if (!optional(scheme, (value) => oneOf(THEME_SCHEMES, value))) return null;
 
   const description = parseDescription(raw.description);
   const author = parseAuthor(raw.author);
@@ -177,6 +181,7 @@ function parseEntry(raw: unknown, appVersion: string): CatalogTheme | null {
     accent: accent as string | undefined,
     background: background as string | undefined,
     font: font as ThemeFont | undefined,
+    scheme: scheme as ThemeScheme | undefined,
     updated: raw.updated,
     hash: raw.hash,
     size,

@@ -54,7 +54,7 @@ export const RichText = memo(function RichText({
           key={i}
           type="button"
           onClick={() => void openMention(token.permalink)}
-          className={`inline font-semibold text-white/85 cursor-pointer underline decoration-white/20 underline-offset-[3px] transition-colors duration-200 hover:text-white hover:decoration-current ${
+          className={`inline font-semibold text-ink-85 cursor-pointer underline decoration-ink/20 underline-offset-[3px] transition-colors duration-200 hover:text-ink hover:decoration-current ${
             pending === token.text ? 'animate-pulse' : ''
           }`}
         >

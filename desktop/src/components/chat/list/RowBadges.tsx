@@ -42,7 +42,7 @@ export const RowBadges = memo(function RowBadges({ conversation, failed }: RowBa
   if (conversation.mentions > 0) return <Pill dim={false}>@</Pill>;
   if (conversation.unread > 0) return <Pill dim={dim}>{unreadLabel(conversation.unread)}</Pill>;
   if (conversation.pinnedAt !== null) {
-    return <Pin size={12} className="rotate-45 text-white/30" />;
+    return <Pin size={12} className="rotate-45 text-ink-30" />;
   }
   return null;
 });

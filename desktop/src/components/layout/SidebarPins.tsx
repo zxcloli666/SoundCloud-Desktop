@@ -31,7 +31,7 @@ function PinnedRow({
         to={to}
         title={collapsed ? title : undefined}
         className={({ isActive }) =>
-          `${ROW} ${isActive ? '' : 'text-white/45 hover:text-white/80 hover:bg-white/[0.05]'}`
+          `${ROW} ${isActive ? '' : 'text-ink-45 hover:text-ink-80 hover:bg-ink/[0.05]'}`
         }
         style={({ isActive }) => (isActive ? ACTIVE : undefined)}
       >
@@ -49,7 +49,7 @@ function PinnedRow({
           onClick={onUnpin}
           title={unpinLabel}
           aria-label={unpinLabel}
-          className="absolute right-1.5 top-1/2 -translate-y-1/2 w-6 h-6 rounded-lg flex items-center justify-center text-white/40 hover:text-white hover:bg-white/[0.1] opacity-0 group-hover/pin:opacity-100 focus-visible:opacity-100 transition-opacity duration-200 cursor-pointer"
+          className="absolute right-1.5 top-1/2 -translate-y-1/2 w-6 h-6 rounded-lg flex items-center justify-center text-ink-40 hover:text-ink hover:bg-ink/[0.1] opacity-0 group-hover/pin:opacity-100 focus-visible:opacity-100 transition-opacity duration-200 cursor-pointer"
         >
           <X size={13} strokeWidth={2.2} />
         </button>
@@ -75,7 +75,7 @@ export function SidebarPins({ collapsed }: { collapsed: boolean }) {
     reorderPinned(arrayMove(pinnedUrns, pinnedUrns.indexOf(from), pinnedUrns.indexOf(to)));
 
   return (
-    <>
+    <div data-ui="sidebar-pins" className="contents">
       <SortableStack ids={pinnedUrns} onMove={movePinned}>
         {pinnedPlaylists.map((playlist) => {
           const artwork = art(playlist.artworkUrl, 'small');
@@ -92,7 +92,7 @@ export function SidebarPins({ collapsed }: { collapsed: boolean }) {
                     <img
                       src={artwork}
                       alt=""
-                      className="w-[18px] h-[18px] rounded-[5px] object-cover ring-1 ring-white/[0.1]"
+                      className="w-[18px] h-[18px] rounded-[5px] object-cover ring-1 ring-ink/[0.1]"
                       decoding="async"
                       loading="lazy"
                     />
@@ -107,7 +107,7 @@ export function SidebarPins({ collapsed }: { collapsed: boolean }) {
       </SortableStack>
 
       {pinnedPlaylists.length > 0 && pinnedArtists.length > 0 && (
-        <div className="mx-3 my-1.5 h-px bg-white/[0.06]" />
+        <div className="mx-3 my-1.5 h-px bg-ink/[0.06]" />
       )}
 
       {pinnedArtists.map((artist) => (
@@ -119,10 +119,10 @@ export function SidebarPins({ collapsed }: { collapsed: boolean }) {
           unpinLabel={t('sidebar.unpinArtist')}
           onUnpin={() => unpinArtist(artist.id)}
           icon={
-            <Avatar src={artist.avatarUrl} alt="" size={20} className="ring-1 ring-white/[0.12]" />
+            <Avatar src={artist.avatarUrl} alt="" size={20} className="ring-1 ring-ink/[0.12]" />
           }
         />
       ))}
-    </>
+    </div>
   );
 }

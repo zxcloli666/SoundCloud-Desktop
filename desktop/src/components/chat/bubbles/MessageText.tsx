@@ -64,7 +64,7 @@ const MentionText = memo(function MentionText({
 function Spoiler({ text, children }: { text: string; children: ReactNode }) {
   const { t } = useThread();
   const [shown, setShown] = useState(false);
-  if (shown) return <span className="rounded-[4px] bg-white/[0.06]">{children}</span>;
+  if (shown) return <span className="rounded-[4px] bg-ink/[0.06]">{children}</span>;
   const reveal = (event: { stopPropagation: () => void }) => {
     event.stopPropagation();
     setShown(true);
@@ -78,7 +78,7 @@ function Spoiler({ text, children }: { text: string; children: ReactNode }) {
       onKeyDown={(event) => {
         if (event.key === 'Enter' || event.key === ' ') reveal(event);
       }}
-      className="cursor-pointer select-none rounded-[4px] bg-white/[0.16] text-transparent transition-colors duration-150 hover:bg-white/[0.22]"
+      className="cursor-pointer select-none rounded-[4px] bg-ink/[0.16] text-transparent transition-colors duration-150 hover:bg-ink/[0.22]"
     >
       {text}
     </span>
@@ -119,7 +119,7 @@ function SegmentView({ segment, links }: { segment: Segment; links: boolean }) {
   let node: ReactNode = plain ? segment.text : autoLinks(segment.text);
   if (segment.code) {
     node = (
-      <code className="rounded-[5px] bg-black/30 px-[3px] py-px font-mono text-[0.9em] text-white/90 ring-1 ring-white/[0.08] ring-inset">
+      <code className="rounded-[5px] bg-black/30 px-[3px] py-px font-mono text-[0.9em] text-ink-90 ring-1 ring-ink/[0.08] ring-inset">
         {node}
       </code>
     );

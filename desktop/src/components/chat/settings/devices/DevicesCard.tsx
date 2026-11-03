@@ -38,10 +38,10 @@ function Skeleton() {
     <div className="flex flex-col gap-1">
       {SKELETON.map((key) => (
         <div key={key} className="flex items-center gap-3 px-2 py-2.5">
-          <span className="h-11 w-11 rounded-full bg-white/[0.05]" />
+          <span className="h-11 w-11 rounded-full bg-ink/[0.05]" />
           <span className="flex flex-1 flex-col gap-2">
-            <span className="h-3 w-28 rounded-full bg-white/[0.06]" />
-            <span className="h-2.5 w-44 rounded-full bg-white/[0.04]" />
+            <span className="h-3 w-28 rounded-full bg-ink/[0.06]" />
+            <span className="h-2.5 w-44 rounded-full bg-ink/[0.04]" />
           </span>
         </div>
       ))}
@@ -79,7 +79,7 @@ export function DevicesCard() {
     >
       {query.isError && (
         <div className="flex items-center justify-between gap-3">
-          <p className="text-[12.5px] text-white/45">{t('chat.devices.list.loadFailed')}</p>
+          <p className="text-[12.5px] text-ink-45">{t('chat.devices.list.loadFailed')}</p>
           <DecisionButton
             tone="plain"
             size="sm"

@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::{BTreeMap, HashMap, HashSet};
 use std::path::Path;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -7,18 +7,24 @@ use std::sync::atomic::{AtomicU32, Ordering};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use futures_util::StreamExt;
-use url::Url;
-use wreq::Client;
 use tauri::Emitter;
 use tokio::fs::File;
 use tokio::io::{AsyncWriteExt, BufWriter};
 use tokio::sync::{Mutex, Notify, OnceCell, OwnedSemaphorePermit, Semaphore};
+use url::Url;
+use wreq::{Client, Method};
 
 use crate::app::diagnostics::{self, log_native};
+use crate::diag::errors::ErrorInput;
+use backend_contracts::diag::ErrorKind;
+use crate::diag::{report, trace};
 use crate::network::dns;
 use crate::network::edge::{Hop, Tier};
 use crate::network::fail::Fail;
+use crate::network::netcheck::model::Role;
+use crate::network::relay_speed::Meter;
 use crate::network::system_proxy::{self, follow};
+use crate::network::traced;
 use crate::shared::urn::{canonical_track_urn, track_urn_from_storage_name};
 use crate::track_cache::api_download::{
     StreamJob, download_api, refused_by_both, refused_for, tier_url,
@@ -56,8 +62,6 @@ const STORAGE_RELAY_HEADERS_TIMEOUT_SECS: u64 = 15;
 const STORAGE_RESOLVE_TIMEOUT_SECS: u64 = 10;
 const STORAGE_COOLDOWN_SECS: u64 = 60;
 const STORAGE_COOLDOWN_AFTER: u8 = 2;
-const PRESIGN_HEADERS_SECS: u64 = 5;
-const PRESIGN_ORIGINS: [&str; 2] = ["https://s3.scnative.dev/", "https://s3.scnative.space/"];
 const DOWNLOAD_CONNECT_TIMEOUT_MS: u64 = 3_000;
 const DOWNLOAD_READ_TIMEOUT_SECS: u64 = 130;
 const BODY_STALL_SECS: u64 = 15;
@@ -395,19 +399,6 @@ fn host_of(url: &str) -> Option<String> {
     Url::parse(url).ok()?.host_str().map(str::to_string)
 }
 
-/// Convert a storage stream URL (`<base>/<file>.m4a`) into a redirect URL
-/// (`<base>/redirect/<file>.m4a`) that 307s to a backend-direct download
-/// (presigned S3 URL or public Drive link, depending on storage backend).
-fn make_redirect_url(storage_url: &str) -> Option<String> {
-    let mut parsed = Url::parse(storage_url).ok()?;
-    let path = parsed.path().trim_start_matches('/').to_string();
-    if path.is_empty() || path.starts_with("redirect/") {
-        return None;
-    }
-    parsed.set_path(&format!("redirect/{path}"));
-    Some(parsed.to_string())
-}
-
 /// Count and total bytes of cached audio files in a dir.
 fn dir_stats(dir: &Path) -> (u32, u64) {
     let mut count = 0u32;
@@ -720,6 +711,7 @@ pub(super) async fn write_response_to_cache(
     target_dir: &Path,
     urn: &str,
     response: wreq::Response,
+    hop: &Hop,
     quality: PlaybackQuality,
     source: DownloadSource,
     app_handle: Option<&crate::rt::AppHandle>,
@@ -735,13 +727,19 @@ pub(super) async fn write_response_to_cache(
     let mut total_size = 0u64;
     let mut sniff = Vec::with_capacity(AUDIO_SNIFF_LEN);
     let mut emitted_progress = -1.0f64;
+    let mut meter = Meter::of(hop);
 
     loop {
-        let next = tokio::time::timeout(Duration::from_secs(BODY_STALL_SECS), stream.next()).await;
+        let next = tokio::time::timeout(
+            Duration::from_secs(BODY_STALL_SECS),
+            meter.watch(stream.next()),
+        )
+        .await;
         let chunk = match next {
             Ok(Some(Ok(chunk))) => chunk,
             Ok(None) => break,
             Ok(Some(Err(err))) => {
+                meter.broke();
                 cleanup_temp_file(&temp_path).await;
                 return Err(DownloadError::Retryable(format!("body read: {err}")));
             }
@@ -754,6 +752,7 @@ pub(super) async fn write_response_to_cache(
         };
 
         total_size += chunk.len() as u64;
+        meter.got(chunk.len());
         if sniff.len() < AUDIO_SNIFF_LEN {
             let copy_len = (AUDIO_SNIFF_LEN - sniff.len()).min(chunk.len());
             sniff.extend_from_slice(&chunk[..copy_len]);
@@ -782,6 +781,7 @@ pub(super) async fn write_response_to_cache(
                 }
             }
     }
+    meter.done();
 
     if let Some(app) = app_handle
         && content_length > 0
@@ -1131,33 +1131,7 @@ impl TrackCacheState {
         }
     }
 
-    async fn presigned_get(&self, redirect_url: &str) -> Result<wreq::Response, String> {
-        let headers = Duration::from_secs(PRESIGN_HEADERS_SECS);
-        match tokio::time::timeout(headers, self.client.get(redirect_url).send()).await {
-            Ok(Ok(response)) => Ok(response),
-            Ok(Err(err)) => {
-                let failed_at = err
-                    .uri()
-                    .map_or_else(|| redirect_url.to_string(), ToString::to_string);
-                crate::network::edge::note_url(&failed_at, Tier::Direct, false);
-                Err(err.to_string())
-            }
-            Err(_) => {
-                crate::network::edge::note_url(redirect_url, Tier::Direct, false);
-                Err(format!("no headers in {}s", headers.as_secs()))
-            }
-        }
-    }
-
-    async fn storage_get(&self, hop: &Hop) -> Result<wreq::Response, Fail> {
-        if let Some(host) = host_of(&hop.url).filter(|_| !system_proxy::proxied(&hop.url)) {
-            let budget = if dns::trusted(&host) {
-                Duration::from_millis(STORAGE_CONNECT_TIMEOUT_MS)
-            } else {
-                Duration::from_secs(STORAGE_RESOLVE_TIMEOUT_SECS)
-            };
-            dns::ready(&host, budget).await?;
-        }
+    async fn storage_get(&self, hop: &Hop, role: Role) -> Result<wreq::Response, Fail> {
         let (client, headers) = if hop.tier == Tier::Relay {
             (
                 &self.client,
@@ -1169,13 +1143,58 @@ impl TrackCacheState {
                 Duration::from_millis(STORAGE_HEADERS_TIMEOUT_MS),
             )
         };
-        match tokio::time::timeout(headers, client.get(&hop.url).send()).await {
-            Ok(sent) => sent.map_err(|err| Fail::of_wreq(&err)),
-            Err(_) => Err(Fail::timeout_after(headers.as_millis() as u32)),
+        let (request, flight) = traced::begin(client, Method::GET, hop, role, "storage");
+        if let Some(host) = host_of(&hop.url).filter(|_| !system_proxy::proxied(&hop.url)) {
+            let budget = if dns::trusted(&host) {
+                Duration::from_millis(STORAGE_CONNECT_TIMEOUT_MS)
+            } else {
+                Duration::from_secs(STORAGE_RESOLVE_TIMEOUT_SECS)
+            };
+            if let Err(fail) = dns::ready(&host, budget).await {
+                flight.failed(fail.kind, fail.to_string());
+                return Err(fail);
+            }
+        }
+        match tokio::time::timeout(headers, request.send()).await {
+            Ok(Ok(response)) => {
+                flight.answered(response.status().as_u16(), 0);
+                Ok(response)
+            }
+            Ok(Err(err)) => {
+                let fail = Fail::of_wreq(&err);
+                flight.failed(fail.kind, err.to_string());
+                Err(fail)
+            }
+            Err(_) => {
+                let fail = Fail::timeout_after(headers.as_millis() as u32);
+                flight.failed(fail.kind, fail.to_string());
+                Err(fail)
+            }
         }
     }
 
     pub async fn ensure_cached(&self, req: CacheRequest<'_>) -> Result<TrackCacheEntry, String> {
+        let id = trace::new_trace();
+        let path = format!("/stream/{}", req.urn);
+        let result = trace::within(id.clone(), self.cache_chain(req)).await;
+        if let Err(message) = &result {
+            report::error(ErrorInput {
+                kind: ErrorKind::Request,
+                message: message.clone(),
+                stack: None,
+                component_stack: None,
+                trace: Some(id),
+                context: BTreeMap::from([
+                    ("service".to_string(), "stream".to_string()),
+                    ("path".to_string(), path),
+                    ("class".to_string(), "download_chain".to_string()),
+                ]),
+            });
+        }
+        result
+    }
+
+    async fn cache_chain(&self, req: CacheRequest<'_>) -> Result<TrackCacheEntry, String> {
         let CacheRequest {
             urn,
             urls,

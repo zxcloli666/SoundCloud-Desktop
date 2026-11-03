@@ -68,10 +68,10 @@ export const ReportDialog = memo(function ReportDialog({
             className={`flex h-10 cursor-pointer items-center gap-3 rounded-xl border px-3 text-left text-[13px] font-medium transition-colors duration-150 ${
               reason === value
                 ? 'border-rose-400/45 bg-rose-500/12 text-white'
-                : 'border-white/[0.06] bg-white/[0.03] text-white/70 hover:bg-white/[0.06]'
+                : 'border-ink/[0.06] bg-ink/[0.03] text-ink-70 hover:bg-ink/[0.06]'
             }`}
           >
-            <Icon size={15} className={reason === value ? 'text-rose-300' : 'text-white/40'} />
+            <Icon size={15} className={reason === value ? 'text-rose-300' : 'text-ink-40'} />
             {t(`chat.thread.report.reasons.${value}`)}
           </button>
         ))}
@@ -82,9 +82,9 @@ export const ReportDialog = memo(function ReportDialog({
         onChange={(event) => setComment(event.target.value)}
         placeholder={t('chat.thread.report.comment')}
         rows={2}
-        className="resize-none rounded-xl border border-white/[0.06] bg-white/[0.03] px-3 py-2 text-[13px] text-white/85 outline-none placeholder:text-white/30 focus:border-white/[0.14]"
+        className="resize-none rounded-xl border border-ink/[0.06] bg-ink/[0.03] px-3 py-2 text-[13px] text-ink-85 outline-none placeholder:text-ink-30 focus:border-ink/[0.14]"
       />
-      <div className="flex flex-col gap-1.5 text-[11.5px] leading-snug text-white/40">
+      <div className="flex flex-col gap-1.5 text-[11.5px] leading-snug text-ink-40">
         <p>{t('chat.thread.report.policy')}</p>
         <p>{t('chat.thread.report.privacy')}</p>
       </div>
@@ -92,7 +92,7 @@ export const ReportDialog = memo(function ReportDialog({
         <button
           type="button"
           onClick={onClose}
-          className="h-10 flex-1 cursor-pointer rounded-xl bg-white/[0.06] text-[13px] font-semibold text-white/70 transition-colors duration-150 hover:bg-white/[0.1]"
+          className="h-10 flex-1 cursor-pointer rounded-xl bg-ink/[0.06] text-[13px] font-semibold text-ink-70 transition-colors duration-150 hover:bg-ink/[0.1]"
         >
           {t('chat.thread.cancel')}
         </button>

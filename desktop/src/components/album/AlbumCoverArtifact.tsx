@@ -44,12 +44,13 @@ function AlbumCoverArtifactImpl({
       )}
 
       <div
+        data-ui="artwork"
         className="relative w-full h-full rounded-[2.2rem] overflow-hidden"
         style={{
-          background: 'rgba(255,255,255,0.03)',
+          background: 'rgb(var(--ink) / 0.03)',
           boxShadow: hasStar
-            ? `0 35px 80px ${auraRgba(aura, 0.4)}, inset 0 0 0 1px rgba(255,255,255,0.12), inset 0 1px 0 rgba(255,255,255,0.15)`
-            : '0 25px 60px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(255,255,255,0.08), inset 0 1px 0 rgba(255,255,255,0.1)',
+            ? `0 35px 80px ${auraRgba(aura, 0.4)}, inset 0 0 0 1px rgb(var(--ink) / 0.12), inset 0 1px 0 rgb(var(--ink) / 0.15)`
+            : '0 25px 60px rgb(var(--shade) / calc(0.55 * var(--shade-alpha))), inset 0 0 0 1px rgb(var(--ink) / 0.08), inset 0 1px 0 rgb(var(--ink) / 0.1)',
         }}
       >
         {coverUrl ? (
@@ -65,10 +66,10 @@ function AlbumCoverArtifactImpl({
             style={{
               background: hasStar
                 ? `radial-gradient(circle at 30% 20%, ${auraRgba(aura, 0.35)}, transparent 70%)`
-                : 'rgba(255,255,255,0.03)',
+                : 'rgb(var(--ink) / 0.03)',
             }}
           >
-            <Disc3 size={72} className="text-white/15" />
+            <Disc3 size={72} className="text-ink-15" />
           </div>
         )}
 
@@ -76,7 +77,7 @@ function AlbumCoverArtifactImpl({
           className="absolute inset-x-0 top-0 h-1/2 pointer-events-none"
           style={{
             background:
-              'linear-gradient(180deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0) 100%)',
+              'linear-gradient(180deg, rgb(var(--ink) / 0.10) 0%, rgb(var(--ink) / 0) 100%)',
             mixBlendMode: 'overlay',
           }}
         />

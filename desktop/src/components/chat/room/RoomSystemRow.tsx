@@ -15,7 +15,7 @@ function ModeratorRow({ name, on }: { name: string; on: boolean }) {
   const { t } = useTranslation();
   return (
     <div className="flex justify-center px-6 pt-2.5 pb-0.5">
-      <span className="inline-flex max-w-full items-center gap-1.5 px-3 py-1 text-[11.5px] text-white/45">
+      <span className="inline-flex max-w-full items-center gap-1.5 px-3 py-1 text-[11.5px] text-ink-45">
         <Shield size={12} className="shrink-0 text-sky-300/80" />
         <span className="min-w-0 truncate">
           {t(on ? 'chat.room.moderatorRow' : 'chat.room.moderatorOffRow', { name })}

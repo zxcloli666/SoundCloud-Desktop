@@ -22,7 +22,7 @@ export const ComposerContext = memo(function ComposerContext({
 
   return (
     <div
-      className="chat-thread-motion mx-1 mb-1.5 flex items-center gap-2.5 rounded-2xl bg-white/[0.04] py-1.5 pr-1.5 pl-3"
+      className="chat-thread-motion mx-1 mb-1.5 flex items-center gap-2.5 rounded-2xl bg-ink/[0.04] py-1.5 pr-1.5 pl-3"
       style={{ animation: 'chat-thread-rise 140ms ease-out' }}
     >
       <Icon size={15} className="shrink-0" style={{ color }} />
@@ -35,7 +35,7 @@ export const ComposerContext = memo(function ComposerContext({
         <span className="block truncate text-[11.5px] font-semibold" style={{ color }}>
           {mode === 'edit' ? t('chat.thread.composer.editing') : nameOf(message.sender)}
         </span>
-        <span className="block truncate text-[12px] text-white/55">
+        <span className="block truncate text-[12px] text-ink-55">
           {messageSnippet(message, t)}
         </span>
       </button>
@@ -43,7 +43,7 @@ export const ComposerContext = memo(function ComposerContext({
         type="button"
         aria-label={t('chat.thread.composer.cancel')}
         onClick={onCancel}
-        className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full text-white/45 transition-colors duration-150 hover:bg-white/[0.08] hover:text-white"
+        className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full text-ink-45 transition-colors duration-150 hover:bg-ink/[0.08] hover:text-white"
       >
         <X size={15} />
       </button>

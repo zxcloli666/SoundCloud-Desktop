@@ -30,7 +30,7 @@ export const RequestBar = memo(function RequestBar({
       }}
     >
       <UserPlus size={16} className="shrink-0 text-[var(--color-accent)]" />
-      <p className="min-w-[8rem] flex-1 truncate text-[12.5px] font-medium text-white/80">{text}</p>
+      <p className="min-w-[8rem] flex-1 truncate text-[12.5px] font-medium text-ink-80">{text}</p>
       <RequestActions conversation={conversation} from={from} wide />
     </div>
   );

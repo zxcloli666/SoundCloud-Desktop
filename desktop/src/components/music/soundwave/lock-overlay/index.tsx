@@ -63,8 +63,8 @@ export const SoundWaveLockOverlay = React.memo(function SoundWaveLockOverlay() {
             WebkitBackdropFilter: glassBlur > 0 ? `blur(${glassBlur}px) saturate(180%)` : undefined,
           background:
               glassBlur > 0
-                  ? 'radial-gradient(ellipse 80% 70% at 50% 30%, rgba(139,92,246,0.28) 0%, transparent 65%), linear-gradient(165deg, rgba(20,12,38,0.72) 0%, rgba(12,8,22,0.78) 55%, rgba(8,6,16,0.82) 100%)'
-                  : 'radial-gradient(ellipse 80% 70% at 50% 30%, rgba(139,92,246,0.28) 0%, transparent 65%), linear-gradient(165deg, rgba(20,12,38,0.94) 0%, rgba(12,8,22,0.96) 55%, rgba(8,6,16,0.98) 100%)',
+                  ? 'radial-gradient(ellipse 80% 70% at 50% 30%, rgba(139,92,246,0.28) 0%, transparent 65%), linear-gradient(165deg, rgba(20,12,38,0.72) 0%, rgba(12,8,22,0.78) 55%, rgb(var(--surface) / 0.82) 100%)'
+                  : 'radial-gradient(ellipse 80% 70% at 50% 30%, rgba(139,92,246,0.28) 0%, transparent 65%), linear-gradient(165deg, rgba(20,12,38,0.94) 0%, rgba(12,8,22,0.96) 55%, rgb(var(--surface) / 0.98) 100%)',
           contain: 'strict',
           transform: 'translateZ(0)',
         }}
@@ -133,7 +133,7 @@ export const SoundWaveLockOverlay = React.memo(function SoundWaveLockOverlay() {
         className="absolute top-0 left-0 right-0 h-px pointer-events-none"
         style={{
           background:
-            'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.18) 50%, transparent 100%)',
+            'linear-gradient(90deg, transparent 0%, rgb(var(--ink) / 0.18) 50%, transparent 100%)',
         }}
       />
 
@@ -149,7 +149,7 @@ export const SoundWaveLockOverlay = React.memo(function SoundWaveLockOverlay() {
             fontSize: 'clamp(36px, 5.5vw, 64px)',
             letterSpacing: '0.08em',
             background:
-              'linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(232,213,255,0.95) 35%, rgba(192,132,252,0.9) 70%, rgba(139,92,246,0.55) 100%)',
+              'linear-gradient(180deg, rgb(var(--ink) / 0.98) 0%, rgba(232,213,255,0.95) 35%, rgba(192,132,252,0.9) 70%, rgba(139,92,246,0.55) 100%)',
             WebkitBackgroundClip: 'text',
             backgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
@@ -162,13 +162,13 @@ export const SoundWaveLockOverlay = React.memo(function SoundWaveLockOverlay() {
 
         {/* Badge */}
         <div
-          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-[0.18em] text-white/95 mb-4"
+          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-[0.18em] text-ink-95 mb-4"
           style={{
             background:
               'linear-gradient(135deg, rgba(168,85,247,0.45), rgba(139,92,246,0.32), rgba(192,132,252,0.25))',
             border: '0.5px solid rgba(168,85,247,0.45)',
             boxShadow:
-              'inset 0 0.5px 0 rgba(255,255,255,0.25), 0 0 24px rgba(168,85,247,0.45), 0 4px 14px rgba(0,0,0,0.35)',
+              'inset 0 0.5px 0 rgba(255,255,255,0.25), 0 0 24px rgba(168,85,247,0.45), 0 4px 14px rgb(var(--shade) / calc(0.35 * var(--shade-alpha)))',
             backdropFilter: 'blur(12px)',
             WebkitBackdropFilter: 'blur(12px)',
           }}
@@ -179,7 +179,7 @@ export const SoundWaveLockOverlay = React.memo(function SoundWaveLockOverlay() {
 
         {/* Title with star */}
         <h2
-          className="flex items-center justify-center gap-2.5 text-[26px] sm:text-[30px] font-bold tracking-tight text-white leading-tight"
+          className="flex items-center justify-center gap-2.5 text-[26px] sm:text-[30px] font-bold tracking-tight text-ink leading-tight"
           style={{
             background:
               'linear-gradient(180deg, #ffffff 0%, rgba(232,213,255,0.95) 50%, rgba(192,132,252,0.85) 100%)',
@@ -215,13 +215,13 @@ export const SoundWaveLockOverlay = React.memo(function SoundWaveLockOverlay() {
           href={BOOSTY_PURCHASE_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="group inline-flex items-center gap-2 mt-6 pl-5 pr-4 py-2.5 rounded-full text-[13.5px] font-bold tracking-tight text-white transition-all duration-200 ease-[var(--ease-apple)] hover:scale-[1.04] active:scale-[0.97] cursor-pointer"
+          className="group inline-flex items-center gap-2 mt-6 pl-5 pr-4 py-2.5 rounded-full text-[13.5px] font-bold tracking-tight text-ink transition-all duration-200 ease-[var(--ease-apple)] hover:scale-[1.04] active:scale-[0.97] cursor-pointer"
           style={{
             background:
               'linear-gradient(135deg, rgb(168,85,247) 0%, rgb(139,92,246) 50%, rgb(192,132,252) 100%)',
-            border: '0.5px solid rgba(255,255,255,0.25)',
+            border: '0.5px solid rgb(var(--ink) / 0.25)',
             boxShadow:
-              '0 8px 28px rgba(139,92,246,0.55), 0 0 24px rgba(168,85,247,0.45), inset 0 1px 0 rgba(255,255,255,0.3), inset 0 -1px 0 rgba(0,0,0,0.2)',
+              '0 8px 28px rgba(139,92,246,0.55), 0 0 24px rgba(168,85,247,0.45), inset 0 1px 0 rgba(255,255,255,0.3), inset 0 -1px 0 rgb(var(--shade) / calc(0.2 * var(--shade-alpha)))',
           }}
         >
           <Star
@@ -233,7 +233,7 @@ export const SoundWaveLockOverlay = React.memo(function SoundWaveLockOverlay() {
           {t('soundwaveLock.cta')}
           <ExternalLink
             size={12}
-            className="text-white/70 transition-transform duration-200 group-hover:translate-x-0.5"
+            className="text-ink-70 transition-transform duration-200 group-hover:translate-x-0.5"
           />
         </a>
       </div>

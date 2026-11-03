@@ -1,0 +1,22 @@
+{
+  "id": "raleway",
+  "family": "Raleway",
+  "subsets": ["cyrillic", "cyrillic-ext", "latin", "latin-ext", "vietnamese"],
+  "weights": [100, 200, 300, 400, 500, 600, 700, 800, 900],
+  "styles": ["italic", "normal"],
+  "defSubset": "latin",
+  "variable": {
+    "ital": {"default": "0", "min": "0", "max": "1", "step": "1"},
+    "wght": {"default": "400", "min": "100", "max": "900", "step": "1"}
+  },
+  "lastModified": "2025-09-10",
+  "version": "v37",
+  "category": "sans-serif",
+  "license": {
+    "type": "OFL-1.1",
+    "url": "https://openfontlicense.org",
+    "attribution": "Copyright 2010 The Raleway Project Authors (impallari@gmail.com), with Reserved Font Name \"Raleway\". Raleway-Italic[wght].ttf: Copyright 2010 The Raleway Project Authors (impallari@gmail.com), with Reserved Font Name \"Raleway\"."
+  },
+  "source": "https://github.com/google/fonts",
+  "type": "google"
+}

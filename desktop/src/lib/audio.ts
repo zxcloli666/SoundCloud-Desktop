@@ -5,6 +5,7 @@ import i18n from '../i18n';
 import {useBlockedArtistsStore} from '../stores/blocked-artists';
 import type {Track} from '../stores/player';
 import {playbackAllowed, usePlayerStore} from '../stores/player';
+import {usePreviewEnd} from '../stores/preview-end';
 import {useSettingsStore} from '../stores/settings';
 import {
   dropAltUpload,
@@ -38,7 +39,7 @@ import {
 } from './cache';
 import {isTrackBlocked} from './blocked-artists';
 import {STATUS_PAGE_URL} from './constants';
-import {trackedInvoke as invoke} from './diagnostics';
+import {trackedInvoke as invoke, reportError} from './diagnostics';
 import {isBelow} from './playback-quality';
 import {offerUndislike} from './dislike-actions';
 import {isUrnDisliked} from './dislikes';
@@ -58,6 +59,7 @@ import {localTrackPath, markLocalMissing, noteLocalDuration} from './local-impor
 import {isLocalUrn} from './local-library';
 import {notifyError} from './notify';
 import {rememberTracks} from './offline-index';
+import {getIsPremium} from './premium-cache';
 import {getUrnCluster, recordClusterFeedback} from './recsFeedback';
 import {isPreviewOnly} from './track-access';
 import {getArtistDisplay, getDisplayTitle} from './track-display';
@@ -382,6 +384,17 @@ async function resolveTrackMetadata(track: Track): Promise<Track> {
   }
 }
 
+function reportPlaybackFailure(error: unknown, track: Track) {
+  const reason = getLoadErrorText(error) ?? 'unknown';
+  reportError('playback', error, {
+    context: {
+      urn: track.urn,
+      quality: requestedQuality(),
+      reason: reason.slice(0, 80),
+    },
+  });
+}
+
 /** True when a file path no longer exists on disk. */
 function isFileMissing(e: unknown): boolean {
   const s = typeof e === 'string' ? e : e instanceof Error ? e.message : String(e);
@@ -617,6 +630,7 @@ async function loadTrack(track: Track, resumeAt = 0) {
   } catch (e) {
     console.error('[Audio] Load failed:', e);
     if (gen !== loadGen) return;
+    reportPlaybackFailure(e, track);
     if (crossfadeMs > 0) invoke('audio_stop').catch(console.error);
     stopLoadWatch();
     setDownloadProgress(null);
@@ -904,6 +918,8 @@ listen<boolean | null>('audio:ended', (event) => {
     recordFullPlay(currentUrn, silentTail);
     lastEndedUrn = currentUrn;
   }
+  const ended = usePlayerStore.getState().currentTrack;
+  if (ended && isPreviewOnly(ended) && !getIsPremium()) usePreviewEnd.getState().ended(ended);
   hasTrack = false;
   handleTrackEnd();
 });

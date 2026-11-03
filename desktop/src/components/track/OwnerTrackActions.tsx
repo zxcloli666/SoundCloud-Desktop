@@ -22,13 +22,13 @@ export const OwnerTrackActions = React.memo(function OwnerTrackActions({
 
   return (
     <>
-      <span className="w-px h-5 bg-white/[0.08] mx-0.5" aria-hidden />
+      <span className="w-px h-5 bg-ink/[0.08] mx-0.5" aria-hidden />
       <button
         type="button"
         onClick={() => setEditing(true)}
         title={t('track.edit')}
         aria-label={t('track.edit')}
-        className={`${ICON_BUTTON} text-white/55 hover:text-white/95 hover:bg-white/[0.07]`}
+        className={`${ICON_BUTTON} text-ink-55 hover:text-ink-95 hover:bg-ink/[0.07]`}
       >
         <Pencil size={15} />
       </button>
@@ -38,7 +38,7 @@ export const OwnerTrackActions = React.memo(function OwnerTrackActions({
         onClick={() => setDeleting(true)}
         title={t('track.delete')}
         aria-label={t('track.delete')}
-        className={`${ICON_BUTTON} text-white/45 hover:text-red-400 hover:bg-red-500/10`}
+        className={`${ICON_BUTTON} text-ink-45 hover:text-red-400 hover:bg-red-500/10`}
       >
         <Trash2 size={15} />
       </button>

@@ -17,7 +17,7 @@ function tileClass(device: Device, outcome: DeviceGlyphProps['outcome']): string
   if (outcome === 'closed' || device.status === 'revoked') return 'bg-rose-500/10 text-rose-300/80';
   if (outcome === 'open') return 'bg-emerald-500/12 text-emerald-300';
   if (device.current) return 'bg-[var(--color-accent-glow)] text-[var(--color-accent)]';
-  return 'bg-white/[0.06] text-white/65';
+  return 'bg-ink/[0.06] text-ink-65';
 }
 
 export const DeviceGlyph = memo(function DeviceGlyph({

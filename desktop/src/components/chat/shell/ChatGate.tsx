@@ -8,10 +8,10 @@ import { ReloginCard } from '../relogin/ReloginCard';
 function GateNote({ icon, text }: { icon: ReactNode; text: string }) {
   return (
     <div className="flex flex-col items-center gap-3 text-center">
-      <div className="flex size-14 items-center justify-center rounded-[1.25rem] border border-white/[0.07] bg-white/[0.04] text-white/45">
+      <div className="flex size-14 items-center justify-center rounded-[1.25rem] border border-ink/[0.07] bg-ink/[0.04] text-ink-45">
         {icon}
       </div>
-      <p className="max-w-[260px] text-[13px] font-medium text-white/60">{text}</p>
+      <p className="max-w-[260px] text-[13px] font-medium text-ink-60">{text}</p>
     </div>
   );
 }

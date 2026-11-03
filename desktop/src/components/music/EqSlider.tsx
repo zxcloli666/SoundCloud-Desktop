@@ -63,7 +63,7 @@ export const EqSlider = React.memo(function EqSlider({
     <div className="flex flex-col items-center gap-2 select-none">
       <span
         className={`text-[10px] tabular-nums font-semibold h-4 ${
-          isPositive ? 'text-emerald-400' : isNegative ? 'text-blue-400' : 'text-white/30'
+          isPositive ? 'text-emerald-400' : isNegative ? 'text-blue-400' : 'text-ink-30'
         }`}
       >
         {value > 0 ? '+' : ''}
@@ -77,9 +77,9 @@ export const EqSlider = React.memo(function EqSlider({
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
       >
-        <div className="absolute w-[3px] h-full rounded-full bg-white/[0.06]" />
+        <div className="absolute w-[3px] h-full rounded-full bg-ink/[0.06]" />
         <div
-          className="absolute w-2 h-px bg-white/10 left-1/2 -translate-x-1/2"
+          className="absolute w-2 h-px bg-ink/10 left-1/2 -translate-x-1/2"
           style={{ bottom: `${zero * 100}%` }}
         />
         <div
@@ -101,17 +101,17 @@ export const EqSlider = React.memo(function EqSlider({
             background: hollow
               ? 'transparent'
               : value === 0
-                ? 'rgba(255,255,255,0.5)'
+                ? 'rgb(var(--ink) / 0.5)'
                 : `rgb(${color})`,
             border: hollow
-              ? `2px solid ${value === 0 ? 'rgba(255,255,255,0.5)' : `rgb(${color})`}`
+              ? `2px solid ${value === 0 ? 'rgb(var(--ink) / 0.5)' : `rgb(${color})`}`
               : undefined,
             boxShadow: value !== 0 && !hollow ? `0 0 12px rgba(${color},0.4)` : 'none',
           }}
         />
       </div>
 
-      <span className="text-[9px] text-white/30 font-medium whitespace-nowrap">{label}</span>
+      <span className="text-[9px] text-ink-30 font-medium whitespace-nowrap">{label}</span>
     </div>
   );
 });

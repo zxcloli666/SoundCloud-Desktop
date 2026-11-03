@@ -8,7 +8,7 @@ import { muteForHours } from '../list/mute';
 import { patchMine } from '../list/row-actions';
 
 const ACTION =
-  'flex h-7 cursor-pointer items-center gap-1.5 rounded-lg px-2.5 text-[11.5px] font-semibold text-white/65 transition-colors hover:bg-white/[0.08] hover:text-white';
+  'flex h-7 cursor-pointer items-center gap-1.5 rounded-lg px-2.5 text-[11.5px] font-semibold text-ink-65 transition-colors hover:bg-ink/[0.08] hover:text-white';
 
 interface ToastActionsProps {
   conversationId: ConvId;

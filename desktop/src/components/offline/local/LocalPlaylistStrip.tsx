@@ -7,7 +7,7 @@ import { LocalPlaylistCover } from './LocalPlaylistCover';
 import { PlaylistNameInput } from './PlaylistNameInput';
 
 const TILE =
-  'group flex w-[148px] flex-none cursor-pointer flex-col gap-2.5 rounded-[16px] border border-white/[0.07] bg-white/[0.02] p-2.5 text-left transition-all duration-300 ease-[var(--ease-apple)] hover:-translate-y-0.5 hover:border-white/[0.13] hover:bg-white/[0.04]';
+  'group flex w-[148px] flex-none cursor-pointer flex-col gap-2.5 rounded-[16px] border border-ink/[0.07] bg-ink/[0.02] p-2.5 text-left transition-all duration-300 ease-[var(--ease-apple)] hover:-translate-y-0.5 hover:border-ink/[0.13] hover:bg-ink/[0.04]';
 
 const NewPlaylistTile = React.memo(function NewPlaylistTile({
   onCreated,
@@ -35,12 +35,12 @@ const NewPlaylistTile = React.memo(function NewPlaylistTile({
   return (
     <button type="button" onClick={() => setEditing(true)} className={TILE}>
       <div
-        className="flex aspect-square w-full items-center justify-center rounded-[11px] border border-dashed text-white/45 transition-colors group-hover:text-white/80"
+        className="flex aspect-square w-full items-center justify-center rounded-[11px] border border-dashed text-ink-45 transition-colors group-hover:text-ink-80"
         style={{ borderColor: 'var(--color-accent-glow)' }}
       >
         <Plus size={26} strokeWidth={1.8} />
       </div>
-      <div className="truncate px-0.5 text-[12.5px] font-semibold text-white/70 group-hover:text-white/90">
+      <div className="truncate px-0.5 text-[12.5px] font-semibold text-ink-70 group-hover:text-ink-90">
         {t('local.newPlaylist')}
       </div>
     </button>
@@ -59,10 +59,10 @@ const PlaylistTile = React.memo(function PlaylistTile({
     <button type="button" onClick={() => onOpen(playlist.id)} className={TILE}>
       <LocalPlaylistCover playlist={playlist} className="aspect-square w-full rounded-[11px]" />
       <div className="min-w-0 px-0.5">
-        <div className="truncate text-[12.5px] font-semibold text-white/88 group-hover:text-white">
+        <div className="truncate text-[12.5px] font-semibold text-ink-88 group-hover:text-ink">
           {playlist.title}
         </div>
-        <div className="font-mono text-[10.5px] tabular-nums text-white/35">
+        <div className="font-mono text-[10.5px] tabular-nums text-ink-35">
           {t('local.tracksCount', { count: playlist.trackIds.length })}
         </div>
       </div>
@@ -80,7 +80,7 @@ export const LocalPlaylistStrip = React.memo(function LocalPlaylistStrip({
   const { t } = useTranslation();
   return (
     <div>
-      <div className="mb-2 font-mono text-[9.5px] font-semibold uppercase tracking-[0.2em] text-white/35">
+      <div className="mb-2 font-mono text-[9.5px] font-semibold uppercase tracking-[0.2em] text-ink-35">
         {t('local.playlistsTitle')}
       </div>
       <div className="-mx-1 flex gap-3 overflow-x-auto px-1 pb-1">

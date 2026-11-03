@@ -63,8 +63,8 @@ export function MessageButton({ userUrn, name }: MessageButtonProps) {
       type="button"
       disabled={opening}
       onClick={() => void open()}
-      className={`inline-flex h-11 items-center gap-2 rounded-full border-[0.5px] border-white/[0.1] px-5 text-[13px] font-semibold text-white/85 transition-all duration-300 ease-[var(--ease-apple)] cursor-pointer hover:border-white/[0.18] hover:text-white active:scale-[0.97] disabled:cursor-default ${
-        blur > 0 ? 'bg-white/[0.06] hover:bg-white/[0.1]' : 'bg-white/[0.1] hover:bg-white/[0.15]'
+      className={`inline-flex h-11 items-center gap-2 rounded-full border-[0.5px] border-ink/[0.1] px-5 text-[13px] font-semibold text-ink-85 transition-all duration-300 ease-[var(--ease-apple)] cursor-pointer hover:border-ink/[0.18] hover:text-white active:scale-[0.97] disabled:cursor-default ${
+        blur > 0 ? 'bg-ink/[0.06] hover:bg-ink/[0.1]' : 'bg-ink/[0.1] hover:bg-ink/[0.15]'
       }`}
       style={{
         backdropFilter: blur > 0 ? `blur(${blur}px)` : undefined,

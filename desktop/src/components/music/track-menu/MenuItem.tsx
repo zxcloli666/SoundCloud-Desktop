@@ -15,13 +15,13 @@ export function MenuItem({
 }) {
   const toneCls =
     tone === 'danger'
-      ? 'text-white/75 hover:text-red-300 focus:text-red-300 hover:bg-red-400/10 focus:bg-red-400/10'
-      : 'text-white/75 hover:text-white focus:text-white hover:bg-white/[0.07] focus:bg-white/[0.07]';
+      ? 'text-ink-75 hover:text-red-300 focus:text-red-300 hover:bg-red-400/10 focus:bg-red-400/10'
+      : 'text-ink-75 hover:text-ink focus:text-ink hover:bg-ink/[0.07] focus:bg-ink/[0.07]';
   const iconCls = active
     ? 'text-accent'
     : tone === 'danger'
-      ? 'text-white/40 group-hover/item:text-red-300 group-focus/item:text-red-300'
-      : 'text-white/40 group-hover/item:text-white/85 group-focus/item:text-white/85';
+      ? 'text-ink-40 group-hover/item:text-red-300 group-focus/item:text-red-300'
+      : 'text-ink-40 group-hover/item:text-ink-85 group-focus/item:text-ink-85';
 
   return (
     <button
@@ -41,5 +41,5 @@ export function MenuItem({
 }
 
 export function MenuSeparator() {
-  return <div role="separator" className="mx-2 my-1 h-px bg-white/[0.06]" />;
+  return <div role="separator" className="mx-2 my-1 h-px bg-ink/[0.06]" />;
 }

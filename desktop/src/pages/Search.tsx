@@ -33,7 +33,7 @@ export function Search() {
   }, []);
 
   return (
-    <div className="relative min-h-full w-full" data-tg-hidden={hidden ? '1' : '0'}>
+    <div data-ui="page" data-page="search" className="relative min-h-full w-full" data-tg-hidden={hidden ? '1' : '0'}>
       <style>{WALL_KEYFRAMES}</style>
       {!(searching && mode === 'vibe') && <Atmosphere />}
       <div className="relative pt-5" style={{ isolation: 'isolate' }}>

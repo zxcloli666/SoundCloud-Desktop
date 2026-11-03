@@ -95,7 +95,7 @@ export const WaveVoices = React.memo(function WaveVoices({
     if (dots.length === 0) return null;
 
     return (
-        <div className="absolute inset-0 pointer-events-none z-10">
+        <div data-ui="comments" className="absolute inset-0 pointer-events-none z-10">
             {dots.map((d, i) => (
                 <button
                     key={d.comment.id}
@@ -114,9 +114,9 @@ export const WaveVoices = React.memo(function WaveVoices({
                     <span
                         className="wv-pill absolute bottom-[140%] left-0 z-20 flex items-center gap-2 max-w-[240px] w-max px-3 py-2 rounded-2xl"
                         style={{
-                            background: 'rgba(22,22,28,0.92)',
-                            border: '0.5px solid rgba(255,255,255,0.12)',
-                            boxShadow: '0 16px 40px rgba(0,0,0,0.5), inset 0 0.5px 0 rgba(255,255,255,0.1)',
+                            background: 'rgb(var(--surface-hi) / 0.92)',
+                            border: '0.5px solid rgb(var(--ink) / 0.12)',
+                            boxShadow: '0 16px 40px rgb(var(--shade) / calc(0.5 * var(--shade-alpha))), inset 0 0.5px 0 rgba(255,255,255,0.1)',
                         }}
                     >
             <img
@@ -126,7 +126,7 @@ export const WaveVoices = React.memo(function WaveVoices({
                 className="w-6 h-6 rounded-full shrink-0 object-cover"
             />
             <span className="min-w-0 text-left">
-              <span className="block text-[12px] text-white/85 leading-snug truncate">
+              <span className="block text-[12px] text-ink-85 leading-snug truncate">
                 {d.comment.body}
               </span>
                 {d.count > 1 && (

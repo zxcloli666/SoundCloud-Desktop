@@ -44,7 +44,7 @@ export const PeoplePicker = memo(function PeoplePicker({
 
   return (
     <div className="flex flex-col gap-1">
-      <p className="px-2.5 pb-1 text-[10.5px] font-bold tracking-[0.18em] text-white/30 uppercase">
+      <p className="px-2.5 pb-1 text-[10.5px] font-bold tracking-[0.18em] text-ink-30 uppercase">
         {t(searching ? 'chat.list.new.people' : 'chat.list.new.following')}
       </p>
       {loading &&
@@ -55,7 +55,7 @@ export const PeoplePicker = memo(function PeoplePicker({
           </div>
         ))}
       {!loading && people.length === 0 && (
-        <p className="px-2.5 py-6 text-center text-[12.5px] text-white/40">
+        <p className="px-2.5 py-6 text-center text-[12.5px] text-ink-40">
           {t('chat.list.new.nobody')}
         </p>
       )}

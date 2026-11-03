@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { DISCORD_URL } from '../../lib/constants';
 import { Check, ClipboardCopy, RefreshCw, Send } from '../../lib/icons';
+import { ReportButton } from '../ui/ReportButton';
 import { reportText, useNetCheckStore, useShownVerdict, type Verdict } from '../../lib/net/check';
 
 const COPIED_RESET_MS = 1800;
@@ -20,9 +21,9 @@ const WORTH_SENDING: ReadonlySet<Verdict> = new Set([
   'unknown',
 ]);
 const PRIMARY =
-  'w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-accent text-accent-contrast font-semibold text-[13px] hover:bg-accent-hover active:scale-[0.97] transition-all duration-200 cursor-pointer shadow-[0_0_30px_var(--color-accent-glow),0_2px_8px_rgba(0,0,0,0.3)] disabled:opacity-50 disabled:cursor-default';
+  'w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-accent text-accent-contrast font-semibold text-[13px] hover:bg-accent-hover active:scale-[0.97] transition-all duration-200 cursor-pointer shadow-[0_0_30px_var(--color-accent-glow),0_2px_8px_rgb(var(--shade)/calc(0.3*var(--shade-alpha)))] disabled:opacity-50 disabled:cursor-default';
 const SECONDARY =
-  'w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] text-[12.5px] text-white/55 hover:text-white/80 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-default';
+  'w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-ink/[0.04] hover:bg-ink/[0.08] border border-ink/[0.06] text-[12.5px] text-ink-55 hover:text-ink-80 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-default';
 
 export const NetCheckActions = React.memo(() => {
   const { t } = useTranslation();
@@ -57,32 +58,19 @@ export const NetCheckActions = React.memo(() => {
     openUrl(DISCORD_URL).catch(() => toast.error(t('common.error')));
   };
 
-  const send = () => {
-    if (!hasReport) {
-      openSupport();
-      return;
-    }
-    void copy().then((done) => {
-      if (!done) return;
-      toast.success(t('netCheck.sent'));
-      openSupport();
-    });
-  };
-
   const idle = !running && hasReport;
   const primary = !running && WORTH_SENDING.has(verdict);
 
   return (
     <div className="space-y-2.5">
-      <button
-        type="button"
-        onClick={send}
-        disabled={running}
-        className={primary ? PRIMARY : SECONDARY}
-      >
-        <Send size={13} />
-        {t('netCheck.send')}
-      </button>
+      {hasReport ? (
+        <ReportButton trigger="netcheck" className={primary ? PRIMARY : SECONDARY} discordAfter />
+      ) : (
+        <button type="button" onClick={openSupport} disabled={running} className={SECONDARY}>
+          <Send size={13} />
+          {t('netCheck.send')}
+        </button>
+      )}
       <div className="grid grid-cols-2 gap-2.5">
         <button type="button" onClick={copyReport} disabled={!idle} className={SECONDARY}>
           {copied ? <Check size={13} /> : <ClipboardCopy size={13} />}

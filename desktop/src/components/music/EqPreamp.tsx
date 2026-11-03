@@ -41,7 +41,7 @@ export const EqPreamp = React.memo(function EqPreamp() {
         className={`h-4 rounded-md px-1.5 text-[9px] font-semibold uppercase tracking-wide transition-colors cursor-pointer border ${
           auto
             ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/20'
-            : 'bg-white/[0.03] text-white/30 border-white/[0.06] hover:text-white/60'
+            : 'bg-ink/[0.03] text-ink-30 border-ink/[0.06] hover:text-ink-60'
         }`}
       >
         {t('eq.auto')}

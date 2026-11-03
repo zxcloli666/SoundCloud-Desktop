@@ -24,7 +24,7 @@ const Belt = React.memo(function Belt({ active, warm }: { active: boolean; warm:
             key={i}
             className="h-[7px] w-[7px] flex-none rotate-45 border-r-[1.5px] border-t-[1.5px]"
             style={{
-              borderColor: warm && active ? 'var(--color-accent-hover)' : 'rgba(255,255,255,0.30)',
+              borderColor: warm && active ? 'var(--color-accent-hover)' : 'rgb(var(--ink) / 0.30)',
               opacity: active ? 1 : 0.45,
             }}
           />
@@ -86,7 +86,7 @@ function Station({
         </div>
       )}
       <div className="relative">
-        <div className="mb-2.5 whitespace-nowrap font-mono text-[9.5px] font-semibold uppercase tracking-[0.16em] text-white/35">
+        <div className="mb-2.5 whitespace-nowrap font-mono text-[9.5px] font-semibold uppercase tracking-[0.16em] text-ink-35">
           {label}
         </div>
         <div
@@ -99,12 +99,12 @@ function Station({
                     ? '0 0 26px var(--color-accent-glow), 0 0 64px var(--color-accent-glow)'
                     : undefined,
                 }
-              : { color: 'rgba(255,255,255,0.92)' }
+              : { color: 'rgb(var(--ink) / calc(0.92 * (1 + var(--ink-lift) * (1 - 0.92))))' }
           }
         >
           {value}
         </div>
-        <div className="mt-2 whitespace-nowrap text-[11px] leading-tight text-white/45">{sub}</div>
+        <div className="mt-2 whitespace-nowrap text-[11px] leading-tight text-ink-45">{sub}</div>
       </div>
     </div>
   );
@@ -143,9 +143,9 @@ export const ForgeModule = React.memo(function ForgeModule({
   return (
     <div className="flex min-w-0 flex-col px-5 py-5 md:px-6">
       <div className="mb-4 flex items-center justify-between gap-3">
-        <span className="flex items-center gap-2 whitespace-nowrap font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-white/35">
+        <span className="flex items-center gap-2 whitespace-nowrap font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-35">
           {t('offline.forgeTitle')}
-          <b className="font-semibold normal-case tracking-[0.08em] text-white/55">
+          <b className="font-semibold normal-case tracking-[0.08em] text-ink-55">
             · {t('offline.forgeSub')}
           </b>
         </span>
@@ -176,7 +176,7 @@ export const ForgeModule = React.memo(function ForgeModule({
         <Station label={t('offline.stClean')} value={clean} sub={t('offline.stCleanSub')} />
       </div>
 
-      <div className="mt-4 flex items-center gap-2 overflow-hidden border-t border-white/[0.06] pt-3 font-mono text-[11px] text-white/45">
+      <div className="mt-4 flex items-center gap-2 overflow-hidden border-t border-ink/[0.06] pt-3 font-mono text-[11px] text-ink-45">
         <span style={{ color: 'var(--color-accent)' }}>›</span>
         <span className="truncate">{log}</span>
         {transcoding > 0 && (

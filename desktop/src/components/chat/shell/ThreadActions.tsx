@@ -22,7 +22,7 @@ function ActionButton({
       title={label}
       aria-label={label}
       onClick={onClick}
-      className="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-white/45 transition-colors hover:bg-white/[0.08] hover:text-white/90"
+      className="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-ink-45 transition-colors hover:bg-ink/[0.08] hover:text-ink-90"
     >
       {children}
     </button>

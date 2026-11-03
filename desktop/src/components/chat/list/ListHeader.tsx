@@ -36,8 +36,8 @@ export const ListHeader = memo(function ListHeader({ variant, query, onQuery }: 
   const page = variant === 'page';
 
   const search = (
-    <label className="flex h-9 min-w-0 flex-1 items-center gap-2 rounded-full border border-white/[0.06] bg-white/[0.04] px-3 transition-colors focus-within:border-white/[0.14] focus-within:bg-white/[0.06]">
-      <Search size={14} className="shrink-0 text-white/35" />
+    <label className="flex h-9 min-w-0 flex-1 items-center gap-2 rounded-full border border-ink/[0.06] bg-ink/[0.04] px-3 transition-colors focus-within:border-ink/[0.14] focus-within:bg-ink/[0.06]">
+      <Search size={14} className="shrink-0 text-ink-35" />
       <input
         value={query}
         onChange={(event) => onQuery(event.target.value)}
@@ -48,14 +48,14 @@ export const ListHeader = memo(function ListHeader({ variant, query, onQuery }: 
           }
         }}
         placeholder={t('chat.list.search')}
-        className="min-w-0 flex-1 bg-transparent text-[13px] text-white/90 outline-none placeholder:text-white/30"
+        className="min-w-0 flex-1 bg-transparent text-[13px] text-ink-90 outline-none placeholder:text-ink-30"
       />
       {query && (
         <button
           type="button"
           onClick={() => onQuery('')}
           aria-label={t('chat.list.clear')}
-          className="flex size-5 shrink-0 cursor-pointer items-center justify-center rounded-full text-white/40 hover:bg-white/[0.08] hover:text-white/80"
+          className="flex size-5 shrink-0 cursor-pointer items-center justify-center rounded-full text-ink-40 hover:bg-ink/[0.08] hover:text-ink-80"
         >
           <X size={11} />
         </button>
@@ -75,7 +75,7 @@ export const ListHeader = memo(function ListHeader({ variant, query, onQuery }: 
   return (
     <div className="flex flex-col gap-3 px-4 pt-4 pb-3">
       <div className="flex items-center justify-between gap-3">
-        <h1 className="text-[22px] font-black tracking-tight text-white/92">
+        <h1 className="text-[22px] font-black tracking-tight text-ink-92">
           {t('chat.list.title')}
         </h1>
         <NewChatButton big />

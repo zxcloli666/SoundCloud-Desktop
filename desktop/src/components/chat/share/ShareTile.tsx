@@ -37,13 +37,13 @@ export const ShareTile = memo(function ShareTile({
       aria-checked={selected}
       aria-label={title}
       onClick={() => onToggle(id)}
-      className="group/tile flex min-w-0 flex-col items-center gap-1.5 rounded-2xl px-1 py-2 transition-colors duration-200 cursor-pointer hover:bg-white/[0.04]"
+      className="group/tile flex min-w-0 flex-col items-center gap-1.5 rounded-2xl px-1 py-2 transition-colors duration-200 cursor-pointer hover:bg-ink/[0.04]"
     >
       <span className="relative">
         <span
           className={`flex h-[52px] w-[52px] items-center justify-center overflow-hidden ${shape} transition-transform duration-300 ease-[var(--ease-apple)] ${
             selected ? 'scale-[0.9]' : 'group-hover/tile:scale-[1.04]'
-          } ${kind === 'room' ? 'bg-accent/15 text-accent' : 'bg-white/[0.06] text-white/45'}`}
+          } ${kind === 'room' ? 'bg-accent/15 text-accent' : 'bg-ink/[0.06] text-ink-45'}`}
           style={{
             boxShadow: selected
               ? '0 0 0 2px var(--color-accent), 0 0 18px var(--color-accent-glow)'
@@ -74,7 +74,7 @@ export const ShareTile = memo(function ShareTile({
       </span>
       <span
         className={`line-clamp-2 w-full text-center text-[11.5px] leading-tight ${
-          selected ? 'text-white' : 'text-white/65'
+          selected ? 'text-white' : 'text-ink-65'
         }`}
       >
         {title}

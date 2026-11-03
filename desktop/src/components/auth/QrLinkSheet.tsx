@@ -59,7 +59,7 @@ export const QrLinkSheet = React.memo(
           />
 
           <div className="relative p-7" style={{ isolation: 'isolate' }}>
-            <ModalClose className="absolute top-4 right-4 p-1.5 rounded-lg text-white/20 hover:text-white/60 hover:bg-white/[0.06] transition-colors cursor-pointer">
+            <ModalClose className="absolute top-4 right-4 p-1.5 rounded-lg text-ink-20 hover:text-ink-60 hover:bg-ink/[0.06] transition-colors cursor-pointer">
               <X size={14} />
             </ModalClose>
 
@@ -68,31 +68,31 @@ export const QrLinkSheet = React.memo(
                 className="w-12 h-12 rounded-2xl flex items-center justify-center mb-3"
                 style={{
                   background:
-                    'linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))',
-                  border: '0.5px solid rgba(255,255,255,0.08)',
+                    'linear-gradient(135deg, rgb(var(--ink) / 0.06), rgb(var(--ink) / 0.02))',
+                  border: '0.5px solid rgb(var(--ink) / 0.08)',
                 }}
               >
-                <Smartphone size={20} className="text-white/60" />
+                <Smartphone size={20} className="text-ink-60" />
               </div>
-              <ModalTitle className="text-lg font-bold text-white/90 tracking-tight">
+              <ModalTitle className="text-lg font-bold text-ink-90 tracking-tight">
                 {t(titleKey)}
               </ModalTitle>
-              <p className="text-[12.5px] text-white/40 mt-1.5 leading-relaxed max-w-[320px]">
+              <p className="text-[12.5px] text-ink-40 mt-1.5 leading-relaxed max-w-[320px]">
                 {t(subtitleKey)}
               </p>
             </div>
 
             {(state.status === 'creating' || state.status === 'idle') && (
               <div className="flex flex-col items-center justify-center py-12 gap-3">
-                <div className="w-8 h-8 rounded-full border-2 border-white/[0.06] border-t-accent animate-spin" />
-                <p className="text-[11.5px] text-white/30">{t('qrLink.preparing')}</p>
+                <div className="w-8 h-8 rounded-full border-2 border-ink/[0.06] border-t-accent animate-spin" />
+                <p className="text-[11.5px] text-ink-30">{t('qrLink.preparing')}</p>
               </div>
             )}
 
             {state.status === 'pending' && state.claimToken && (
               <div className="flex flex-col items-center gap-4">
                 <QrCode payload={encodeQrPayload(state.claimToken, mode)} size={260} />
-                <div className="flex items-center gap-1.5 text-[11px] text-white/35">
+                <div className="flex items-center gap-1.5 text-[11px] text-ink-35">
                   <span>
                     {t('qrLink.expiresIn', {
                       seconds: remainingSec,
@@ -114,7 +114,7 @@ export const QrLinkSheet = React.memo(
                 >
                   <Check size={24} className="text-emerald-400" />
                 </div>
-                <p className="text-[13px] text-white/70">
+                <p className="text-[13px] text-ink-70">
                   {mode === 'pull' ? t('qrLink.pullSuccess') : t('qrLink.pushSuccess')}
                 </p>
               </div>
@@ -128,7 +128,7 @@ export const QrLinkSheet = React.memo(
                 <button
                   type="button"
                   onClick={() => start()}
-                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/[0.05] hover:bg-white/[0.08] border border-white/[0.06] text-[12px] text-white/60 hover:text-white/85 transition-all cursor-pointer"
+                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-ink/[0.05] hover:bg-ink/[0.08] border border-ink/[0.06] text-[12px] text-ink-60 hover:text-ink-85 transition-all cursor-pointer"
                 >
                   <RefreshCw size={12} />
                   {t('qrLink.retry')}
@@ -137,7 +137,7 @@ export const QrLinkSheet = React.memo(
             )}
 
             {state.status !== 'claimed' && (
-              <div className="mt-5 mx-auto flex items-center justify-center gap-1.5 text-[11.5px] text-white/35">
+              <div className="mt-5 mx-auto flex items-center justify-center gap-1.5 text-[11.5px] text-ink-35">
                 <span>{t('qrLink.noPhoneApp')}</span>
                 <button
                   type="button"
@@ -147,7 +147,7 @@ export const QrLinkSheet = React.memo(
                   {t('qrLink.getAndroid')}
                   <ExternalLink size={11} className="opacity-60" />
                 </button>
-                <span className="text-white/20">·</span>
+                <span className="text-ink-20">·</span>
                 <button
                   type="button"
                   onClick={() => openUrl(helpUrl('install/ios', i18n.language))}

@@ -64,7 +64,7 @@ const Exclusions = React.memo(({ advice }: { advice: DpiAdvice }) => {
         <button
           type="button"
           onClick={openGuide}
-          className="mx-auto flex items-center gap-1 text-[10.5px] text-white/30 hover:text-white/60 transition-colors cursor-pointer"
+          className="mx-auto flex items-center gap-1 text-[10.5px] text-ink-30 hover:text-ink-60 transition-colors cursor-pointer"
         >
           <ExternalLink size={10} />
           {t('netCheck.hint.guide')}
@@ -93,14 +93,14 @@ export const VerdictHint = React.memo((props: HintProps) => {
     !props.broken && !fix && props.hint !== 'none' ? dpiAdvice(props.env, props.addrs, os) : null;
   return (
     <>
-      <p className="text-[12.5px] text-white/35 mt-1.5 leading-relaxed max-w-[340px]">
+      <p className="text-[12.5px] text-ink-35 mt-1.5 leading-relaxed max-w-[340px]">
         {hintText(t, props, fix, advice)}
       </p>
       {fix && (
         <div className="w-full mt-3 text-left">
           <CopyLine text={fix} />
           {os === 'windows' && (
-            <p className="text-[10.5px] text-white/30 mt-1 text-center">
+            <p className="text-[10.5px] text-ink-30 mt-1 text-center">
               {t('netCheck.hint.admin')}
             </p>
           )}

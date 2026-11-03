@@ -29,7 +29,7 @@ export const MemberPuck = forwardRef<HTMLButtonElement, MemberPuckProps>(functio
       title={member.name}
       aria-label={member.name}
       disabled={!actionable}
-      className="group flex w-[54px] shrink-0 cursor-pointer flex-col items-center gap-1 rounded-xl py-1 transition-colors enabled:hover:bg-white/[0.05] disabled:cursor-default"
+      className="group flex w-[54px] shrink-0 cursor-pointer flex-col items-center gap-1 rounded-xl py-1 transition-colors enabled:hover:bg-ink/[0.05] disabled:cursor-default"
     >
       <span
         className="relative rounded-full transition-transform duration-200 group-enabled:group-hover:scale-[1.05]"
@@ -50,7 +50,7 @@ export const MemberPuck = forwardRef<HTMLButtonElement, MemberPuckProps>(functio
       </span>
       <span
         className={`w-full truncate px-0.5 text-center text-[10.5px] font-medium ${
-          state.online ? 'text-white/70' : 'text-white/30'
+          state.online ? 'text-ink-70' : 'text-ink-30'
         }`}
       >
         {member.name}

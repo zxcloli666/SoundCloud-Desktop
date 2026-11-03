@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use crate::network::edge::Tier;
 use crate::network::fail::{Fail, FailKind};
 
-pub const REPORT_VERSION: u8 = 1;
+pub const REPORT_VERSION: u8 = 2;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -34,6 +34,8 @@ pub struct NetReport {
     pub relay_volume: Vec<VolumeProbe>,
     #[serde(default)]
     pub pro_volume: Vec<VolumeProbe>,
+    #[serde(default)]
+    pub call: Option<String>,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -99,12 +101,11 @@ pub enum Internet {
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum TargetId {
-    Main,
-    Star,
-    Storage,
-    Images,
     Relay,
     Pro,
+    Images,
+    Call,
+    SoundCloud,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -145,6 +146,38 @@ pub struct TargetCheck {
     pub total_ms: Option<u32>,
     #[serde(default)]
     pub volume: Option<VolumeProbe>,
+    #[serde(default)]
+    pub route: Option<RelayRoute>,
+}
+
+#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RelayRoute {
+    pub services: Vec<ServiceRoute>,
+    pub upstreams: Vec<Upstream>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ServiceRoute {
+    pub service: String,
+    pub state: UpstreamState,
+    pub probe: AppProbe,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Upstream {
+    pub origin: String,
+    pub state: UpstreamState,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum UpstreamState {
+    Ok,
+    Backup,
+    Down,
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
@@ -189,6 +222,8 @@ pub struct VolumeProbe {
     pub bytes: u64,
     pub ms: u32,
     pub cut: bool,
+    #[serde(default)]
+    pub speed: u64,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -298,12 +333,11 @@ impl Role {
 impl TargetId {
     pub fn as_str(self) -> &'static str {
         match self {
-            Self::Main => "main",
-            Self::Star => "star",
-            Self::Storage => "storage",
-            Self::Images => "images",
             Self::Relay => "relay",
             Self::Pro => "pro",
+            Self::Images => "images",
+            Self::Call => "call",
+            Self::SoundCloud => "soundcloud",
         }
     }
 }
@@ -386,6 +420,7 @@ impl TargetCheck {
             cells: [Tone::Pending; 4],
             total_ms: None,
             volume: None,
+            route: None,
         }
     }
 }
@@ -393,5 +428,27 @@ impl TargetCheck {
 impl PhaseProbe {
     pub fn passed(&self) -> bool {
         self.fail.is_none() && self.status.is_some_and(|status| status < 500)
+    }
+}
+
+impl RelayRoute {
+    pub fn carries(&self, service: &str) -> bool {
+        self.services
+            .iter()
+            .any(|route| route.service == service && route.probe.ok)
+    }
+
+    pub fn carries_all(&self) -> bool {
+        !self.services.is_empty() && self.services.iter().all(|route| route.probe.ok)
+    }
+}
+
+impl TargetCheck {
+    pub fn carries(&self, service: &str) -> bool {
+        self.ok
+            && self
+                .route
+                .as_ref()
+                .is_some_and(|route| route.carries(service))
     }
 }

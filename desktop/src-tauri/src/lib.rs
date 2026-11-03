@@ -2,6 +2,7 @@ mod app;
 mod audio;
 mod auth;
 mod chat;
+mod diag;
 mod discord;
 mod import;
 mod local_library;
@@ -142,6 +143,11 @@ pub fn run() {
             let rt_handle = rt.handle().clone();
             network::dns::init(rt_handle.clone());
             network::netcheck::init(app.handle().clone(), rt_handle.clone(), data_dir.clone());
+            diag::start::run(
+                &data_dir,
+                env!("CARGO_PKG_VERSION"),
+                app::updater::install_label(),
+            );
 
             std::thread::spawn(move || {
                 rt.block_on(std::future::pending::<()>());
@@ -358,6 +364,7 @@ pub fn run() {
             network::image_cache::maintenance::image_cache_enforce_limit,
             network::call::call_set_enabled,
             network::call::call_is_enabled,
+            network::call::call_device_id,
             network::call::call_status,
             auth::auth_status,
             auth::auth_set_session,
@@ -367,7 +374,15 @@ pub fn run() {
             network::edge::edge_note,
             network::fetch::net_fetch,
             network::fetch::net_fetch_cancel,
+            diag::commands::diag_error,
+            diag::commands::diag_bundle,
+            diag::commands::diag_queue_batch,
+            diag::commands::diag_queue_settle,
+            diag::commands::diag_save_file,
+            diag::commands::diag_session,
+            diag::commands::diag_set_reporting,
             network::netcheck::net_check_run,
+            network::netcheck::net_status_verdict,
             network::netcheck::net_check_auto,
             network::netcheck::net_check_last,
             network::netcheck::net_check_report_text,

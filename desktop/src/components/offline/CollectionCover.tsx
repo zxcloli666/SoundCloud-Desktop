@@ -17,13 +17,13 @@ export const CollectionCover = React.memo(function CollectionCover({
     <div
       className={`relative overflow-hidden ${className}`}
       style={{
-        background: 'linear-gradient(135deg, var(--color-accent-glow), rgba(255,255,255,0.03) 70%)',
+        background: 'linear-gradient(135deg, var(--color-accent-glow), rgb(var(--ink) / 0.03) 70%)',
       }}
     >
       {src ? (
         <img src={src} alt="" loading="lazy" className="h-full w-full object-cover" />
       ) : (
-        <div className="flex h-full w-full items-center justify-center text-white/45">
+        <div className="flex h-full w-full items-center justify-center text-ink-45">
           <Icon size={28} />
         </div>
       )}

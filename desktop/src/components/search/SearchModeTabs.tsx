@@ -17,13 +17,15 @@ export const SearchModeTabs = memo(function SearchModeTabs() {
     <div className="flex justify-center px-4 mb-3">
       <div
         role="tablist"
-        className="flex items-center gap-0.5 p-0.5 rounded-full bg-white/[0.04] border border-white/10"
+        data-ui="search-tabs"
+        className="flex items-center gap-0.5 p-0.5 rounded-full bg-ink/[0.04] border border-ink/10"
       >
         {MODES.map(({ mode, icon }) => (
           <button
             key={mode}
             type="button"
             role="tab"
+            data-ui="tab"
             aria-selected={active === mode}
             onClick={() => setMode(mode)}
             title={t(`search.modes.${mode}Hint`)}
@@ -31,13 +33,13 @@ export const SearchModeTabs = memo(function SearchModeTabs() {
             style={
               active === mode
                 ? {
-                    color: '#fff',
+                    color: 'rgb(var(--ink))',
                     background:
-                      'linear-gradient(180deg, var(--color-accent-glow), transparent), rgba(255,255,255,0.04)',
+                      'linear-gradient(180deg, var(--color-accent-glow), transparent), rgb(var(--ink) / 0.04)',
                     boxShadow:
                       '0 0 16px var(--color-accent-glow), inset 0 0.5px 0 rgba(255,255,255,0.12)',
                   }
-                : { color: 'rgba(255,255,255,0.45)' }
+                : { color: 'rgb(var(--ink) / calc(0.45 * (1 + var(--ink-lift) * (1 - 0.45))))' }
             }
           >
             {icon}

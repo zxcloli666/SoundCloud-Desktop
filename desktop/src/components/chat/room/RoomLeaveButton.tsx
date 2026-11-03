@@ -43,7 +43,7 @@ export const RoomLeaveButton = memo(function RoomLeaveButton({
       className={`flex h-7 shrink-0 cursor-pointer items-center gap-1.5 rounded-full transition-colors duration-200 ${
         armed
           ? 'bg-rose-400/20 pr-3 pl-2.5 text-rose-200'
-          : 'w-7 justify-center text-white/45 hover:bg-rose-400/[0.12] hover:text-rose-200'
+          : 'w-7 justify-center text-ink-45 hover:bg-rose-400/[0.12] hover:text-rose-200'
       }`}
     >
       <Power size={13} />

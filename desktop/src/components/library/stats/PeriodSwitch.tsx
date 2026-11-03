@@ -18,7 +18,7 @@ export const PeriodSwitch = memo(function PeriodSwitch({
   return (
     <div
       role="tablist"
-      className="relative grid grid-cols-4 p-1 rounded-full bg-white/[0.04] border border-white/[0.06] w-full sm:w-[340px]"
+      className="relative grid grid-cols-4 p-1 rounded-full bg-ink/[0.04] border border-ink/[0.06] w-full sm:w-[340px]"
     >
       <span
         aria-hidden
@@ -40,7 +40,7 @@ export const PeriodSwitch = memo(function PeriodSwitch({
             aria-selected={active}
             onClick={() => onChange(period)}
             className={`relative z-10 py-2 text-[12.5px] font-bold rounded-full cursor-pointer transition-colors duration-300 ${
-              active ? '' : 'text-white/45 hover:text-white/85'
+              active ? '' : 'text-ink-45 hover:text-ink-85'
             }`}
             style={active ? { color: isLight(aura) ? '#0a0a0c' : '#fff' } : undefined}
           >

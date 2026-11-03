@@ -31,15 +31,15 @@ export const ContinueRow = memo(function ContinueRow({genre}: { genre?: string |
     return (
         <section>
             <div className="flex items-center gap-2.5 mb-3 px-1">
-        <span className="text-white/55">
+        <span className="text-ink-55">
           <Clock size={16}/>
         </span>
-                <h2 className="text-[16px] font-bold tracking-tight text-white/90">
+                <h2 className="text-[16px] font-bold tracking-tight text-ink-90">
                     {t('library.continue')}
                 </h2>
                 <Link
                     to="/library/history"
-                    className="ml-auto flex items-center gap-0.5 text-[12px] font-semibold text-white/45 hover:text-white/90 transition-colors"
+                    className="ml-auto flex items-center gap-0.5 text-[12px] font-semibold text-ink-45 hover:text-ink-90 transition-colors"
                 >
                     {t('library.seeAll')}
                     <ChevronRight size={14}/>

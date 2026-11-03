@@ -20,7 +20,7 @@ export const DaySeparator = memo(function DaySeparator({ ts }: { ts: number }) {
   const { t, i18n } = useTranslation();
   return (
     <div className="flex justify-center px-3 pt-4 pb-3">
-      <span className="rounded-full bg-white/[0.05] px-3 py-1 text-[11px] font-semibold text-white/50">
+      <span className="rounded-full bg-ink/[0.05] px-3 py-1 text-[11px] font-semibold text-ink-50">
         {dayText(ts, t, i18n.language)}
       </span>
     </div>
@@ -61,7 +61,7 @@ export const SystemRow = memo(function SystemRow({ message }: { message: Message
     >
       <span
         className={`inline-flex max-w-full items-center gap-1.5 rounded-full px-3 py-1 text-center text-[11.5px] ${
-          timer ? 'bg-white/[0.06] text-white/70' : 'text-white/45'
+          timer ? 'bg-ink/[0.06] text-ink-70' : 'text-ink-45'
         }`}
       >
         {timer && <Timer size={12} className="shrink-0" />}

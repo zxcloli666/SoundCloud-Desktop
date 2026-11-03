@@ -23,7 +23,7 @@ export const AURAS: ReadonlyArray<Aura> = [
     orbs: ['#7c3aed', '#06b6d4', '#ec4899'],
     accent: [168, 85, 247],
     nameGradient:
-      'linear-gradient(110deg, #fff 0%, #fff 28%, #c4b5fd 45%, #f0abfc 58%, #fff 75%, #fff 100%)',
+      'linear-gradient(110deg, rgb(var(--ink)) 0%, rgb(var(--ink)) 28%, color-mix(in srgb, #c4b5fd, rgb(var(--ink)) calc(var(--ink-lift) * 60%)) 45%, color-mix(in srgb, #f0abfc, rgb(var(--ink)) calc(var(--ink-lift) * 60%)) 58%, rgb(var(--ink)) 75%, rgb(var(--ink)) 100%)',
   },
   {
     id: 'magma',
@@ -31,7 +31,7 @@ export const AURAS: ReadonlyArray<Aura> = [
     orbs: ['#ff5500', '#ff0080', '#ff8a00'],
     accent: [255, 85, 0],
     nameGradient:
-      'linear-gradient(110deg, #fff 0%, #fff 28%, #ffb38a 45%, #ff5cb1 58%, #fff 75%, #fff 100%)',
+      'linear-gradient(110deg, rgb(var(--ink)) 0%, rgb(var(--ink)) 28%, color-mix(in srgb, #ffb38a, rgb(var(--ink)) calc(var(--ink-lift) * 60%)) 45%, color-mix(in srgb, #ff5cb1, rgb(var(--ink)) calc(var(--ink-lift) * 60%)) 58%, rgb(var(--ink)) 75%, rgb(var(--ink)) 100%)',
   },
   {
     id: 'cyber',
@@ -39,14 +39,14 @@ export const AURAS: ReadonlyArray<Aura> = [
     orbs: ['#06b6d4', '#3b82f6', '#10b981'],
     accent: [6, 182, 212],
     nameGradient:
-      'linear-gradient(110deg, #fff 0%, #fff 28%, #67e8f9 45%, #93c5fd 58%, #fff 75%, #fff 100%)',
+      'linear-gradient(110deg, rgb(var(--ink)) 0%, rgb(var(--ink)) 28%, color-mix(in srgb, #67e8f9, rgb(var(--ink)) calc(var(--ink-lift) * 60%)) 45%, color-mix(in srgb, #93c5fd, rgb(var(--ink)) calc(var(--ink-lift) * 60%)) 58%, rgb(var(--ink)) 75%, rgb(var(--ink)) 100%)',
   },
   {
     id: 'void',
     name: 'Void',
     orbs: ['#3f3f46', '#52525b', '#71717a'],
     accent: [212, 212, 220],
-    nameGradient: 'linear-gradient(110deg, #fff 0%, #fff 30%, #d4d4d8 50%, #fff 70%, #fff 100%)',
+    nameGradient: 'linear-gradient(110deg, rgb(var(--ink)) 0%, rgb(var(--ink)) 30%, color-mix(in srgb, #d4d4d8, rgb(var(--ink)) calc(var(--ink-lift) * 60%)) 50%, rgb(var(--ink)) 70%, rgb(var(--ink)) 100%)',
   },
   {
     id: 'sunset',
@@ -54,7 +54,7 @@ export const AURAS: ReadonlyArray<Aura> = [
     orbs: ['#f97316', '#fb7185', '#a855f7'],
     accent: [251, 113, 133],
     nameGradient:
-      'linear-gradient(110deg, #fff 0%, #fff 28%, #fed7aa 45%, #fda4af 58%, #fff 75%, #fff 100%)',
+      'linear-gradient(110deg, rgb(var(--ink)) 0%, rgb(var(--ink)) 28%, color-mix(in srgb, #fed7aa, rgb(var(--ink)) calc(var(--ink-lift) * 60%)) 45%, color-mix(in srgb, #fda4af, rgb(var(--ink)) calc(var(--ink-lift) * 60%)) 58%, rgb(var(--ink)) 75%, rgb(var(--ink)) 100%)',
   },
   {
     id: 'forest',
@@ -62,7 +62,7 @@ export const AURAS: ReadonlyArray<Aura> = [
     orbs: ['#10b981', '#84cc16', '#065f46'],
     accent: [16, 185, 129],
     nameGradient:
-      'linear-gradient(110deg, #fff 0%, #fff 28%, #bbf7d0 45%, #86efac 58%, #fff 75%, #fff 100%)',
+      'linear-gradient(110deg, rgb(var(--ink)) 0%, rgb(var(--ink)) 28%, color-mix(in srgb, #bbf7d0, rgb(var(--ink)) calc(var(--ink-lift) * 60%)) 45%, color-mix(in srgb, #86efac, rgb(var(--ink)) calc(var(--ink-lift) * 60%)) 58%, rgb(var(--ink)) 75%, rgb(var(--ink)) 100%)',
   },
   {
     id: 'ocean',
@@ -70,7 +70,7 @@ export const AURAS: ReadonlyArray<Aura> = [
     orbs: ['#0ea5e9', '#06b6d4', '#1e3a8a'],
     accent: [14, 165, 233],
     nameGradient:
-      'linear-gradient(110deg, #fff 0%, #fff 28%, #bae6fd 45%, #7dd3fc 58%, #fff 75%, #fff 100%)',
+      'linear-gradient(110deg, rgb(var(--ink)) 0%, rgb(var(--ink)) 28%, color-mix(in srgb, #bae6fd, rgb(var(--ink)) calc(var(--ink-lift) * 60%)) 45%, color-mix(in srgb, #7dd3fc, rgb(var(--ink)) calc(var(--ink-lift) * 60%)) 58%, rgb(var(--ink)) 75%, rgb(var(--ink)) 100%)',
   },
 ];
 
@@ -121,7 +121,7 @@ export const auraFromHex = (hex: string): Aura | null => {
     name: 'Custom',
     orbs: [c1, c2, c3],
     accent: rgb,
-    nameGradient: `linear-gradient(110deg, #fff 0%, #fff 28%, ${lighter} 45%, ${c2} 58%, #fff 75%, #fff 100%)`,
+    nameGradient: `linear-gradient(110deg, rgb(var(--ink)) 0%, rgb(var(--ink)) 28%, color-mix(in srgb, ${lighter}, rgb(var(--ink)) calc(var(--ink-lift) * 60%)) 45%, color-mix(in srgb, ${c2}, rgb(var(--ink)) calc(var(--ink-lift) * 60%)) 58%, rgb(var(--ink)) 75%, rgb(var(--ink)) 100%)`,
   };
 };
 

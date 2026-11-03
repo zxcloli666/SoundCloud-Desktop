@@ -36,13 +36,13 @@ const ManualSearchPanel = React.memo(
 
     return (
       <div className="flex-1 flex flex-col items-center justify-center gap-4 px-12 animate-fade-in-up">
-        <h3 className="text-white/80 font-bold mb-2">{t('track.manualSearch')}</h3>
+        <h3 className="text-ink-80 font-bold mb-2">{t('track.manualSearch')}</h3>
         <input
           value={artist}
           onChange={(e) => setArtist(e.target.value)}
           placeholder="Artist"
           autoFocus
-          className="w-full max-w-[280px] bg-white/10 px-4 py-2.5 rounded-xl text-white text-[14px] outline-none border border-transparent focus:border-white/20 placeholder:text-white/30"
+          className="w-full max-w-[280px] bg-ink/10 px-4 py-2.5 rounded-xl text-ink text-[14px] outline-none border border-transparent focus:border-ink/20 placeholder:text-ink-30"
         />
         <input
           value={title}
@@ -53,13 +53,13 @@ const ManualSearchPanel = React.memo(
               onSubmit(artist.trim(), title.trim());
             }
           }}
-          className="w-full max-w-[280px] bg-white/10 px-4 py-2.5 rounded-xl text-white text-[14px] outline-none border border-transparent focus:border-white/20 placeholder:text-white/30"
+          className="w-full max-w-[280px] bg-ink/10 px-4 py-2.5 rounded-xl text-ink text-[14px] outline-none border border-transparent focus:border-ink/20 placeholder:text-ink-30"
         />
         <div className="flex gap-3 mt-4">
           <button
             type="button"
             onClick={onCancel}
-            className="px-5 py-2 rounded-full text-[13px] font-medium text-white/50 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+            className="px-5 py-2 rounded-full text-[13px] font-medium text-ink-50 hover:text-ink hover:bg-ink/10 transition-colors cursor-pointer"
           >
             {t('common.back')}
           </button>
@@ -67,7 +67,7 @@ const ManualSearchPanel = React.memo(
             type="button"
             disabled={!artist.trim() || !title.trim()}
             onClick={() => onSubmit(artist.trim(), title.trim())}
-            className="px-6 py-2 rounded-full text-[13px] font-bold bg-white/20 hover:bg-white/30 text-white transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+            className="px-6 py-2 rounded-full text-[13px] font-bold bg-ink/20 hover:bg-ink/30 text-ink transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
           >
             {t('track.search')}
           </button>
@@ -96,18 +96,18 @@ const LyricsMessage = ({
         type="button"
         onClick={onSearch}
         aria-label={t('track.manualSearch')}
-        className="absolute right-3 top-3 w-8 h-8 flex items-center justify-center rounded-full text-white/30 hover:text-white/70 hover:bg-white/10 transition-colors cursor-pointer"
+        className="absolute right-3 top-3 w-8 h-8 flex items-center justify-center rounded-full text-ink-30 hover:text-ink-70 hover:bg-ink/10 transition-colors cursor-pointer"
       >
         <Search size={14} />
       </button>
-      <MicVocal size={40} className="text-white/[0.06]" />
-      <p className="text-[15px] text-white/30 font-medium">{title}</p>
-      <p className="text-[12px] text-white/15 leading-relaxed max-w-[300px]">{hint}</p>
+      <MicVocal size={40} className="text-ink-6" />
+      <p className="text-[15px] text-ink-30 font-medium">{title}</p>
+      <p className="text-[12px] text-ink-15 leading-relaxed max-w-[300px]">{hint}</p>
       {onRetry && (
         <button
           type="button"
           onClick={onRetry}
-          className="px-5 py-2 rounded-full text-[13px] font-medium text-white/50 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+          className="px-5 py-2 rounded-full text-[13px] font-medium text-ink-50 hover:text-ink hover:bg-ink/10 transition-colors cursor-pointer"
         >
           {t('common.retry')}
         </button>
@@ -210,8 +210,8 @@ export const LyricsPane = React.memo(({ track }: { track: Track }) => {
   if (isFetching || polling) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center gap-3">
-        <Loader2 size={24} className="animate-spin text-white/15" />
-        <p className="text-[13px] text-white/25">{t('track.lyricsLoading')}</p>
+        <Loader2 size={24} className="animate-spin text-ink-15" />
+        <p className="text-[13px] text-ink-25">{t('track.lyricsLoading')}</p>
       </div>
     );
   }

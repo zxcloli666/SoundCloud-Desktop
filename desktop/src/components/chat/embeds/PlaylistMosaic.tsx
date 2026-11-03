@@ -10,7 +10,7 @@ interface PlaylistMosaicProps {
 
 function Cover({ url }: { url: string }) {
   const src = art(url, 't200x200');
-  if (!src) return <span className="h-full w-full bg-white/[0.05]" />;
+  if (!src) return <span className="h-full w-full bg-ink/[0.05]" />;
   return (
     <img
       src={src}
@@ -33,7 +33,7 @@ function Layer({ size, offset, alpha }: { size: number; offset: number; alpha: n
         height: size,
         left: offset,
         top: -offset,
-        background: `rgba(255,255,255,${alpha})`,
+        background: `rgb(var(--ink) / ${alpha})`,
         border: '0.5px solid var(--color-border-glass)',
       }}
     />
@@ -62,7 +62,7 @@ export const PlaylistMosaic = memo(function PlaylistMosaic({
         {tiles.length > 0 ? (
           tiles.map((url, i) => <Cover key={`${url}-${i}`} url={url} />)
         ) : (
-          <span className="flex items-center justify-center bg-white/[0.05] text-white/30">
+          <span className="flex items-center justify-center bg-ink/[0.05] text-ink-30">
             <ListMusic size={Math.round(size * 0.34)} />
           </span>
         )}

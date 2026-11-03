@@ -27,8 +27,8 @@ export function CopyLinkButton({
   const iconSize = size === 'sm' ? 13 : 15;
   const idleBg =
     blur > 0
-      ? 'bg-white/[0.04] hover:bg-white/[0.08]'
-      : 'bg-[rgba(28,28,32,0.85)] hover:bg-[rgba(44,44,50,0.9)]';
+      ? 'bg-ink/[0.04] hover:bg-ink/[0.08]'
+      : 'bg-[rgb(var(--surface-hi)/0.85)] hover:bg-[rgb(var(--surface-hi)/0.9)]';
 
   return (
     <button
@@ -37,7 +37,7 @@ export function CopyLinkButton({
       className={`inline-flex items-center gap-1.5 font-medium transition-all duration-300 ease-[var(--ease-apple)] cursor-pointer rounded-full border-[0.5px] ${
         copied
           ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
-          : `${idleBg} border-white/[0.08] text-white/50 hover:text-white/80 hover:border-white/[0.14]`
+          : `${idleBg} border-ink/[0.08] text-ink-50 hover:text-ink-80 hover:border-ink/[0.14]`
       } ${size === 'sm' ? 'px-3 py-1.5 text-[11px]' : 'h-11 px-5 text-[12px]'}`}
       style={{
         backdropFilter: blur > 0 ? `blur(${blur}px)` : undefined,

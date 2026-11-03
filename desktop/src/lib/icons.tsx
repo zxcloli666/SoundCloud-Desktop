@@ -33,6 +33,7 @@ import {
   Cloud as _Cloud,
   Compass as _Compass,
   Copy as _Copy,
+  CornerDownRight as _CornerDownRight,
   Crown as _Crown,
   Database as _Database,
   Disc3 as _Disc3,
@@ -50,6 +51,7 @@ import {
   FolderOpen as _FolderOpen,
   FolderPlus as _FolderPlus,
   Fullscreen as _Fullscreen,
+  Gift as _Gift,
   Globe as _Globe,
   GripVertical as _GripVertical,
   HardDrive as _HardDrive,
@@ -82,12 +84,12 @@ import {
   Moon as _Moon,
   Music as _Music,
   Palette as _Palette,
-  Pin as _Pin,
   PanelLeftClose as _PanelLeftClose,
   PanelLeftOpen as _PanelLeftOpen,
   Pause as _Pause,
   Pencil as _Pencil,
   PictureInPicture2 as _PictureInPicture2,
+  Pin as _Pin,
   Play as _Play,
   Plus as _Plus,
   Power as _Power,
@@ -164,6 +166,7 @@ export const FileDown = memo(_FileDown);
 export const FileMusic = memo(_FileMusic);
 export const FileText = memo(_FileText);
 export const Flame = memo(_Flame);
+export const Gift = memo(_Gift);
 export const FolderInput = memo(_FolderInput);
 export const FolderOpen = memo(_FolderOpen);
 export const FolderPlus = memo(_FolderPlus);
@@ -188,6 +191,7 @@ export const ArrowUp = memo(_ArrowUp);
 export const ArrowUpDown = memo(_ArrowUpDown);
 export const ArrowUpToLine = memo(_ArrowUpToLine);
 export const ChevronRight = memo(_ChevronRight);
+export const CornerDownRight = memo(_CornerDownRight);
 export const ChevronUp = memo(_ChevronUp);
 export const CircleCheck = memo(_CircleCheck);
 export const Clock = memo(_Clock);
@@ -324,7 +328,7 @@ export const pauseCurrent16 = <_Pause size={16} fill="currentColor" strokeWidth=
 // Play / Pause (outline / misc)
 export const playIcon32 = <_Play size={32} />;
 export const playBlack20ml1 = <_Play size={20} fill="black" className="ml-1" />;
-export const pauseTextWhite12 = <_Pause size={12} className="text-white" />;
+export const pauseTextWhite12 = <_Pause size={12} className="text-ink" />;
 
 // Transport controls
 export const skipBack20 = <_SkipBack size={20} fill="currentColor" />;
@@ -359,15 +363,15 @@ export const volume2Icon16 = <_Volume2 size={16} />;
 
 // Info icons (small, for stats)
 export const headphones9 = <_Headphones size={9} />;
-export const headphones11 = <_Headphones size={11} className="text-white/20" />;
+export const headphones11 = <_Headphones size={11} className="text-ink-20" />;
 export const heart9 = <_Heart size={9} />;
-export const heart11 = <_Heart size={11} className="text-white/20" />;
+export const heart11 = <_Heart size={11} className="text-ink-20" />;
 export const listMusic8 = <_ListMusic size={8} />;
 export const listMusic9 = <_ListMusic size={9} />;
 export const listMusic16 = <_ListMusic size={16} />;
-export const musicIcon12 = <_Music size={12} className="text-white/15" />;
-export const musicIcon14 = <_Music size={14} className="text-white/15" />;
-export const musicIcon22 = <_Music size={22} className="text-white/15" />;
-export const musicIcon20 = <_Music size={16} className="text-white/20" />;
+export const musicIcon12 = <_Music size={12} className="text-ink-15" />;
+export const musicIcon14 = <_Music size={14} className="text-ink-15" />;
+export const musicIcon22 = <_Music size={22} className="text-ink-15" />;
+export const musicIcon20 = <_Music size={16} className="text-ink-20" />;
 export const audioLines16 = <_AudioLines size={16} />;
 export const slidersHorizontal16 = <_SlidersHorizontal size={16} />;

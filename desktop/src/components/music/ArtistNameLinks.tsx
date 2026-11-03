@@ -32,7 +32,7 @@ export const ArtistNameLinks = React.memo(function ArtistNameLinks({
               <span
                 role="link"
                 tabIndex={0}
-                className={linkClassName ?? 'cursor-pointer transition-colors hover:text-white/85'}
+                className={linkClassName ?? 'cursor-pointer transition-colors hover:text-ink-85'}
                 onClick={go}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') go(e);

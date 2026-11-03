@@ -22,13 +22,13 @@ export function CopyField({ value, label }: { value: string; label?: string }) {
   };
 
   return (
-    <div className="flex items-center gap-2 rounded-xl border border-white/[0.06] bg-black/20 py-1.5 pr-1.5 pl-3">
+    <div className="flex items-center gap-2 rounded-xl border border-ink/[0.06] bg-shade-20 py-1.5 pr-1.5 pl-3">
       {label && (
-        <span className="shrink-0 text-[10.5px] font-semibold uppercase tracking-[0.12em] text-white/30">
+        <span className="shrink-0 text-[10.5px] font-semibold uppercase tracking-[0.12em] text-ink-30">
           {label}
         </span>
       )}
-      <code className="min-w-0 flex-1 truncate font-mono text-[12px] text-white/70 select-all">
+      <code className="min-w-0 flex-1 truncate font-mono text-[12px] text-ink-70 select-all">
         {value}
       </code>
       <button
@@ -36,8 +36,8 @@ export function CopyField({ value, label }: { value: string; label?: string }) {
         onClick={copy}
         className={`inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] font-semibold transition-all duration-200 ${
           copied
-            ? 'bg-[#23a55a]/20 text-[#3ddc84]'
-            : 'bg-white/[0.06] text-white/65 hover:bg-white/[0.1] hover:text-white/85'
+            ? 'bg-[#23a55a]/20 text-ok'
+            : 'bg-ink/[0.06] text-ink-65 hover:bg-ink/[0.1] hover:text-ink-85'
         }`}
       >
         {copied ? <Check size={13} strokeWidth={3} /> : <Copy size={13} />}

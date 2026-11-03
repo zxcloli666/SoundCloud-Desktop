@@ -19,7 +19,7 @@ export const WaveFrame = memo(function WaveFrame({
 }) {
   const perf = usePerfMode();
   return (
-    <div className="relative min-h-full w-full">
+    <div data-ui="page" data-page="home" className="relative min-h-full w-full">
       <style>{LIBRARY_KEYFRAMES + USER_PAGE_KEYFRAMES}</style>
       {perf.atmosphere && <Atmosphere tint={sound.tint} energy={sound.energy} />}
       {/* star field — viewport-pinned (fixed) so it never cuts off at the

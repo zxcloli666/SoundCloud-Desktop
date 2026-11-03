@@ -66,7 +66,7 @@ export const ReloginCard = memo(function ReloginCard({ reason, onDone }: Relogin
         className="relative flex flex-col items-center gap-4 px-6 py-6 text-center"
         style={{ isolation: 'isolate' }}
       >
-        <div className="flex size-12 items-center justify-center rounded-2xl border border-white/[0.08] bg-white/[0.04]">
+        <div className="flex size-12 items-center justify-center rounded-2xl border border-ink/[0.08] bg-ink/[0.04]">
           {flow.done ? (
             <Check size={20} className="text-emerald-400" />
           ) : (
@@ -74,11 +74,11 @@ export const ReloginCard = memo(function ReloginCard({ reason, onDone }: Relogin
           )}
         </div>
         <div className="flex flex-col gap-1">
-          <p className="text-[14.5px] font-semibold leading-snug text-white/90">
+          <p className="text-[14.5px] font-semibold leading-snug text-ink-90">
             {flow.done ? t('chat.relogin.done') : t(look.title)}
           </p>
           {!flow.done && (
-            <p className="text-[12px] text-white/40">{t('chat.relogin.musicStays')}</p>
+            <p className="text-[12px] text-ink-40">{t('chat.relogin.musicStays')}</p>
           )}
         </div>
 
@@ -93,15 +93,15 @@ export const ReloginCard = memo(function ReloginCard({ reason, onDone }: Relogin
         ) : failure ? (
           <div className="flex w-full flex-col items-center gap-3">
             <div className="w-full rounded-xl border border-red-500/20 bg-red-500/[0.06] px-4 py-3">
-              <p className="text-[12.5px] font-semibold text-white/85">{failure.title}</p>
-              <p className="mt-0.5 text-[11.5px] leading-snug text-white/45 break-words">
+              <p className="text-[12.5px] font-semibold text-ink-85">{failure.title}</p>
+              <p className="mt-0.5 text-[11.5px] leading-snug text-ink-45 break-words">
                 {failure.desc}
               </p>
             </div>
             <button
               type="button"
               onClick={flow.retry}
-              className={`${PRIMARY} bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.08] text-white/80`}
+              className={`${PRIMARY} bg-ink/[0.06] hover:bg-ink/[0.1] border border-ink/[0.08] text-ink-80`}
             >
               <RefreshCw size={14} />
               {t('chat.relogin.retry')}

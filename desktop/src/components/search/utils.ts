@@ -216,7 +216,7 @@ export const WALL_KEYFRAMES = `
 .tg-tile:hover { z-index: 5; }
 /* Lift layer: hover raises the tile out of the wall (transform/shadow only). */
 .tg-lift {
-  box-shadow: 0 14px 32px rgba(0,0,0,0.45), inset 0 0 0 0.5px rgba(255,255,255,0.06);
+  box-shadow: 0 14px 32px rgba(0,0,0,0.45), inset 0 0 0 0.5px rgb(var(--ink) / 0.06);
   transition: transform 500ms cubic-bezier(0.2,0.8,0.2,1), box-shadow 500ms cubic-bezier(0.2,0.8,0.2,1);
 }
 /* Hover keys off the stable grid cell (.tg-tile), NOT the breathing-scaled
@@ -224,7 +224,7 @@ export const WALL_KEYFRAMES = `
  * WebView flip :hover on/off ("random card lights up / sticks"). */
 .tg-tile:hover .tg-lift {
   transform: translateY(-4px) scale(1.05);
-  box-shadow: 0 28px 70px rgba(0,0,0,0.55), inset 0 0 0 0.5px rgba(255,255,255,0.10);
+  box-shadow: 0 28px 70px rgba(0,0,0,0.55), inset 0 0 0 0.5px rgb(var(--ink) / 0.10);
 }
 /* AI-vibe tiles rest a hair forward ("surfaced by feeling"). */
 .tg-vibe .tg-lift { transform: scale(1.02); }

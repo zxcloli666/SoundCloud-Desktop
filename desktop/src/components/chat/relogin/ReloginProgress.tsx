@@ -11,7 +11,7 @@ const STEP_KEYS: Record<OAuthStep, string> = {
 };
 
 const LINK_BUTTON =
-  'flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] text-[11px] text-white/50 hover:text-white/75 transition-colors cursor-pointer';
+  'flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-ink/[0.04] hover:bg-ink/[0.08] border border-ink/[0.06] text-[11px] text-ink-50 hover:text-ink-75 transition-colors cursor-pointer';
 
 interface ReloginProgressProps {
   step: OAuthStep;
@@ -40,8 +40,8 @@ export const ReloginProgress = memo(function ReloginProgress({
 
   return (
     <div className="flex flex-col items-center gap-3">
-      <div className="w-8 h-8 rounded-full border-2 border-white/[0.08] border-t-accent animate-spin" />
-      <p className="text-[12px] text-white/45 text-center">{t(STEP_KEYS[step])}</p>
+      <div className="w-8 h-8 rounded-full border-2 border-ink/[0.08] border-t-accent animate-spin" />
+      <p className="text-[12px] text-ink-45 text-center">{t(STEP_KEYS[step])}</p>
       {hint && (
         <p className="max-w-[260px] text-center text-[11px] leading-snug text-amber-200/70">
           {hint}
@@ -62,7 +62,7 @@ export const ReloginProgress = memo(function ReloginProgress({
       <button
         type="button"
         onClick={onCancel}
-        className="text-[11.5px] text-white/35 hover:text-white/65 transition-colors cursor-pointer"
+        className="text-[11.5px] text-ink-35 hover:text-ink-65 transition-colors cursor-pointer"
       >
         {t('common.cancel')}
       </button>

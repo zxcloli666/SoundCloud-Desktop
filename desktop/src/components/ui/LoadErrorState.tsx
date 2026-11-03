@@ -5,7 +5,7 @@ import { isRefreshPending } from '../../lib/api';
 import { ChevronLeft, Loader2, RotateCcw } from '../../lib/icons';
 
 const BUTTON =
-  'inline-flex items-center gap-1.5 h-9 rounded-full text-[12px] text-white/70 hover:text-white bg-white/[0.05] border border-white/10 transition-colors cursor-pointer disabled:opacity-50';
+  'inline-flex items-center gap-1.5 h-9 rounded-full text-[12px] text-ink-70 hover:text-ink bg-ink/[0.05] border border-ink/10 transition-colors cursor-pointer disabled:opacity-50';
 
 export const LoadErrorState = React.memo(function LoadErrorState({
   error,
@@ -20,8 +20,8 @@ export const LoadErrorState = React.memo(function LoadErrorState({
   const navigate = useNavigate();
 
   return (
-    <div className="relative z-10 flex flex-col items-center gap-4 text-center px-6">
-      <p className="text-white/40 text-sm">
+    <div data-ui="error-state" className="relative z-10 flex flex-col items-center gap-4 text-center px-6">
+      <p className="text-ink-40 text-sm">
         {isRefreshPending(error) ? t('common.stillLoading') : t('common.pageLoadFailed')}
       </p>
       <div className="flex items-center gap-2">
@@ -42,7 +42,7 @@ export function RefreshPendingHint({ reason }: { reason: unknown }) {
   const { t } = useTranslation();
   if (!isRefreshPending(reason)) return null;
   return (
-    <p className="relative z-10 mt-6 text-center text-[13px] text-white/35">
+    <p className="relative z-10 mt-6 text-center text-[13px] text-ink-35">
       {t('common.loadingFromSoundcloud')}
     </p>
   );

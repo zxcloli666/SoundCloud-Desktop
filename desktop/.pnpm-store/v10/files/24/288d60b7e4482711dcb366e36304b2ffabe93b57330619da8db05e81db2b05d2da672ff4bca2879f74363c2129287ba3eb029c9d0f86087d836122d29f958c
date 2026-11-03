@@ -1,0 +1,29 @@
+{
+  "id": "geist-mono",
+  "family": "Geist Mono",
+  "subsets": [
+    "cyrillic",
+    "cyrillic-ext",
+    "latin",
+    "latin-ext",
+    "symbols2",
+    "vietnamese"
+  ],
+  "weights": [100, 200, 300, 400, 500, 600, 700, 800, 900],
+  "styles": ["italic", "normal"],
+  "defSubset": "latin",
+  "variable": {
+    "ital": {"default": "0", "min": "0", "max": "1", "step": "1"},
+    "wght": {"default": "400", "min": "100", "max": "900", "step": "1"}
+  },
+  "lastModified": "2026-05-13",
+  "version": "v5",
+  "category": "monospace",
+  "license": {
+    "type": "OFL-1.1",
+    "url": "https://openfontlicense.org",
+    "attribution": "Copyright 2024 The Geist Project Authors (https://github.com/vercel/geist-font.git) GeistMono-Italic[wght].ttf: Copyright 2024 The Geist Project Authors (https://github.com/vercel/geist-font.git)"
+  },
+  "source": "https://github.com/google/fonts",
+  "type": "google"
+}

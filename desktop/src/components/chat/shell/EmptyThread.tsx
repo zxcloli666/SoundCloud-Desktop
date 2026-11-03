@@ -20,7 +20,7 @@ export const EmptyThread = memo(function EmptyThread() {
         />
       )}
       <div className="relative flex items-end" style={{ isolation: 'isolate' }}>
-        <span className="flex size-20 items-center justify-center rounded-[1.75rem] border border-white/[0.08] bg-white/[0.05] text-white/55 shadow-[0_20px_50px_rgba(0,0,0,0.35)]">
+        <span className="flex size-20 items-center justify-center rounded-[1.75rem] border border-ink/[0.08] bg-ink/[0.05] text-ink-55 shadow-[0_20px_50px_rgba(0,0,0,0.35)]">
           <MessagesSquare size={30} strokeWidth={1.6} />
         </span>
         <span
@@ -34,7 +34,7 @@ export const EmptyThread = memo(function EmptyThread() {
           <MessageCircle size={20} strokeWidth={2.2} />
         </span>
       </div>
-      <p className="relative text-[14px] font-semibold text-white/60">{t('chat.list.pick')}</p>
+      <p className="relative text-[14px] font-semibold text-ink-60">{t('chat.list.pick')}</p>
       <button
         type="button"
         onClick={openNewChat}

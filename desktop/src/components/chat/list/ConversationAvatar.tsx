@@ -83,7 +83,7 @@ export const ConversationAvatar = memo(function ConversationAvatar({
   }
   return (
     <div
-      className="flex shrink-0 items-center justify-center rounded-[32%] font-bold tracking-tight text-white/80"
+      className="flex shrink-0 items-center justify-center rounded-[32%] font-bold tracking-tight text-ink-80"
       style={{
         width: size,
         height: size,

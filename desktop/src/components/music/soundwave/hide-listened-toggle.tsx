@@ -20,9 +20,9 @@ export const HideListenedToggle = React.memo(function HideListenedToggle({
       title={t(value ? 'soundwave.hideListenedOn' : 'soundwave.hideListenedOff')}
       className="flex items-center gap-1.5 px-3 h-8 rounded-full border transition-colors duration-200 text-[11px] font-medium cursor-pointer"
       style={{
-        background: value ? 'var(--color-accent-glow)' : 'rgba(255,255,255,0.06)',
-        borderColor: value ? 'var(--color-accent-glow)' : 'rgba(255,255,255,0.08)',
-        color: value ? 'var(--color-accent)' : 'rgba(255,255,255,0.7)',
+        background: value ? 'var(--color-accent-glow)' : 'rgb(var(--ink) / 0.06)',
+        borderColor: value ? 'var(--color-accent-glow)' : 'rgb(var(--ink) / 0.08)',
+        color: value ? 'var(--color-accent)' : 'rgb(var(--ink) / 0.7)',
       }}
     >
       <Clock size={12} />
@@ -30,7 +30,7 @@ export const HideListenedToggle = React.memo(function HideListenedToggle({
       <span
         className="ml-1 w-[22px] h-[12px] rounded-full relative transition-colors"
         style={{
-          background: value ? 'var(--color-accent)' : 'rgba(255,255,255,0.18)',
+          background: value ? 'var(--color-accent)' : 'rgb(var(--ink) / 0.18)',
         }}
       >
         <span

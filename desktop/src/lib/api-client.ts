@@ -4,7 +4,14 @@ import { describeApiError } from './api-error-text';
 import { emitApiWrite } from './api-writes';
 import { noteAuthGap, noteRateLimit, noteSuccess } from './auth-recovery';
 import { API_BASE, API_STAR_BASE } from './constants';
-import { logHttpError, logHttpFailure, logInfo, trackAsync } from './diagnostics';
+import {
+  logHttpError,
+  logHttpFailure,
+  logInfo,
+  newTraceId,
+  reportRequestFailure,
+  trackAsync,
+} from './diagnostics';
 import { EdgeUnreachableError, edgeFetch } from './edge';
 import {
   getHostVerdict,
@@ -23,6 +30,7 @@ import {
 } from './host-status';
 import type { NetInit } from './net/fetch';
 import { notifyError } from './notify';
+import { retryAfterMs, shedSeconds } from './pacing';
 import { getIsPremium, requestPremiumRecheck } from './premium-cache';
 
 // ─── Session ────────────────────────────────────────────────
@@ -292,6 +300,23 @@ export async function apiRequest<T = unknown>(
   options: ApiRequestOptions = {},
   timeoutMs?: number,
 ): Promise<T> {
+  const trace = newTraceId();
+  try {
+    return await requestAcrossHosts<T>(path, options, timeoutMs, trace);
+  } catch (error) {
+    const reportable =
+      error instanceof ApiError ? error.status >= 500 : !(error instanceof SyntaxError);
+    if (reportable && !path.startsWith('/diag/')) reportRequestFailure('api', path, error, trace);
+    throw error;
+  }
+}
+
+async function requestAcrossHosts<T>(
+  path: string,
+  options: ApiRequestOptions,
+  timeoutMs: number | undefined,
+  trace: string,
+): Promise<T> {
   const { silentStatuses, quiet, longPoll = false, ...init } = options;
   // Мост мог ещё не дойти до зеркала — иначе запрос уйдёт без сессии в никуда.
   if (!sessionKnown) await awaitSessionKnown();
@@ -328,7 +353,7 @@ export async function apiRequest<T = unknown>(
     try {
       const res = await trackAsync(
         `http:${label}`,
-        fetchWithTimeout(url, { ...init, headers, longPoll }, attemptTimeout),
+        fetchWithTimeout(url, { ...init, headers, longPoll, trace }, attemptTimeout),
         longPoll ? attemptTimeout : undefined,
       );
 
@@ -340,7 +365,10 @@ export async function apiRequest<T = unknown>(
       // НЕ марают — иначе протухший токен выключал бы star при мёртвом main).
       // ≥500 — пассивный фейл: cooldown + проба main; вердикт down ставит только проба.
       if (answered) markHealthy(base);
-      else markUnhealthy(base);
+      else {
+        const shed = shedSeconds(err);
+        markUnhealthy(base, shed ? retryAfterMs(shed) : 0);
+      }
       const elapsedMs = performance.now() - attemptStart;
       if (base === API_BASE && isMainBadSample(path, answered, elapsedMs, longPoll)) {
         noteMainBadResponse();

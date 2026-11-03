@@ -66,8 +66,8 @@ const EnvChip = React.memo(({ chip }: { chip: Chip }) => {
     <span
       className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full"
       style={{
-        background: 'linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.015))',
-        border: '0.5px solid rgba(255,255,255,0.08)',
+        background: 'linear-gradient(135deg, rgb(var(--ink) / 0.05), rgb(var(--ink) / 0.015))',
+        border: '0.5px solid rgb(var(--ink) / 0.08)',
       }}
     >
       <span className="relative flex w-1.5 h-1.5 shrink-0">
@@ -99,7 +99,7 @@ export const VerdictHeader = React.memo(() => {
       <IconTile>
         <VerdictIcon verdict={verdict} size={24} />
       </IconTile>
-      <ModalTitle className="text-lg font-bold text-white/90 tracking-tight">
+      <ModalTitle className="text-lg font-bold text-ink-90 tracking-tight">
         {verdictTitle(t, verdict)}
       </ModalTitle>
       <VerdictHint
@@ -118,7 +118,7 @@ export const VerdictHeader = React.memo(() => {
         </div>
       )}
       {time && (
-        <div className="mt-3 text-[10.5px] text-white/30 font-mono">
+        <div className="mt-3 text-[10.5px] text-ink-30 font-mono">
           {t(failed ? 'netCheck.failedAt' : 'netCheck.checkedAt', { time })}
         </div>
       )}

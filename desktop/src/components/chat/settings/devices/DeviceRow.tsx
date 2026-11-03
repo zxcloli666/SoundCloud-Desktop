@@ -20,7 +20,7 @@ function Tag({ tone, children }: { tone: 'accent' | 'rose' | 'wait'; children: s
   const look = {
     accent: 'bg-[var(--color-accent-glow)] text-[var(--color-accent)]',
     rose: 'bg-rose-500/12 text-rose-300/90',
-    wait: 'bg-white/[0.06] text-white/55',
+    wait: 'bg-ink/[0.06] text-ink-55',
   }[tone];
   return (
     <span
@@ -41,7 +41,7 @@ export function DeviceRow({ device, me, now, busy, locked, onRun }: DeviceRowPro
 
   return (
     <div
-      className={`flex flex-wrap items-center gap-x-3 gap-y-2 rounded-2xl px-2 py-2.5 transition-colors hover:bg-white/[0.025] ${revoked ? 'opacity-45' : ''}`}
+      className={`flex flex-wrap items-center gap-x-3 gap-y-2 rounded-2xl px-2 py-2.5 transition-colors hover:bg-ink/[0.025] ${revoked ? 'opacity-45' : ''}`}
     >
       <DeviceGlyph
         device={device}
@@ -53,7 +53,7 @@ export function DeviceRow({ device, me, now, busy, locked, onRun }: DeviceRowPro
         <div className="flex min-w-0 items-center gap-2">
           <span
             title={device.name}
-            className="min-w-0 truncate text-[13.5px] font-semibold text-white/85"
+            className="min-w-0 truncate text-[13.5px] font-semibold text-ink-85"
           >
             {device.name}
           </span>

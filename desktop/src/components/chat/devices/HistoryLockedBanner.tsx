@@ -30,7 +30,7 @@ function Confirmers({ devices }: { devices: Device[] }) {
           <span
             key={device.id}
             title={device.name}
-            className="flex h-6 w-6 items-center justify-center rounded-full border border-white/10 text-white/70"
+            className="flex h-6 w-6 items-center justify-center rounded-full border border-ink/10 text-ink-70"
             style={{ background: surface(11) }}
           >
             <Icon size={12} strokeWidth={1.8} />
@@ -54,7 +54,7 @@ function LockedBanner({ unlocksAt }: { unlocksAt: Millis }) {
   return (
     <div
       role="status"
-      className="flex items-center gap-3 rounded-2xl border border-white/[0.07] bg-white/[0.035] px-3.5 py-3"
+      className="flex items-center gap-3 rounded-2xl border border-ink/[0.07] bg-ink/[0.035] px-3.5 py-3"
     >
       <HistoryRing
         size={42}
@@ -63,18 +63,18 @@ function LockedBanner({ unlocksAt }: { unlocksAt: Millis }) {
         progress={1 - left / AGE_RULE_MS}
         title={exactText(i18n.language, unlocksAt)}
       >
-        <span className="text-[10.5px] font-semibold tabular-nums text-white/75">
+        <span className="text-[10.5px] font-semibold tabular-nums text-ink-75">
           {spanShort(t, left)}
         </span>
       </HistoryRing>
       <div className="min-w-0 flex-1">
-        <p className="text-[12.5px] leading-snug text-white/75">
+        <p className="text-[12.5px] leading-snug text-ink-75">
           {alone
             ? t('chat.devices.banner.alone', { span: spanText(t, left) })
             : t('chat.devices.banner.title')}
         </p>
         {!alone && (
-          <div className="mt-1.5 flex flex-wrap items-center gap-2 text-[11.5px] text-white/40">
+          <div className="mt-1.5 flex flex-wrap items-center gap-2 text-[11.5px] text-ink-40">
             {confirmers.length > 0 && <Confirmers devices={confirmers} />}
             <span>{t('chat.devices.banner.orIn', { span: spanText(t, left) })}</span>
           </div>

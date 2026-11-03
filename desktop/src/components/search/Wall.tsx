@@ -138,7 +138,7 @@ export const Wall = memo(function Wall({
                             style={{
                                 gridColumn: isHeroIndex(i) ? 'span 2' : 'span 1',
                                 gridRow: isHeroIndex(i) ? 'span 2' : 'span 1',
-                                background: 'rgba(255,255,255,0.04)',
+                                background: 'rgb(var(--ink) / 0.04)',
                             }}
                         />
                     ))

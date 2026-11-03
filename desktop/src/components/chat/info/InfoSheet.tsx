@@ -44,16 +44,16 @@ function Identity() {
         ) : avatar || conversation.kind === 'direct' ? (
           <Avatar src={avatar} size={72} />
         ) : (
-          <span className="flex size-[72px] items-center justify-center rounded-full bg-white/[0.07] text-white/45">
+          <span className="flex size-[72px] items-center justify-center rounded-full bg-ink/[0.07] text-ink-45">
             <Users size={28} />
           </span>
         )}
       </button>
-      <div className="max-w-full truncate text-[17px] font-bold tracking-tight text-white/92">
+      <div className="max-w-full truncate text-[17px] font-bold tracking-tight text-ink-92">
         {conversationTitle(conversation, t)}
       </div>
       {(conversation.kind === 'group' || conversation.kind === 'room') && (
-        <div className="text-[12px] text-white/40">
+        <div className="text-[12px] text-ink-40">
           {t('chat.thread.members', { count: conversation.memberCount })}
         </div>
       )}
@@ -79,7 +79,7 @@ function TabButton({
       aria-selected={active}
       onClick={onClick}
       className={`flex h-9 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-xl text-[12.5px] font-semibold transition-colors duration-150 ${
-        active ? 'bg-white/[0.09] text-white' : 'text-white/45 hover:text-white/75'
+        active ? 'bg-ink/[0.09] text-white' : 'text-ink-45 hover:text-ink-75'
       }`}
     >
       {icon}
@@ -121,7 +121,7 @@ export const InfoSheet = memo(function InfoSheet({
         data-ui="chat-info"
         role="dialog"
         aria-label={t('chat.thread.menu.info')}
-        className="chat-thread-motion relative flex h-full w-full max-w-[380px] flex-col border-l border-white/[0.06] shadow-[-24px_0_60px_rgba(0,0,0,0.45)]"
+        className="chat-thread-motion relative flex h-full w-full max-w-[380px] flex-col border-l border-ink/[0.06] shadow-[-24px_0_60px_rgba(0,0,0,0.45)]"
         style={{ animation: 'chat-thread-sheet 220ms cubic-bezier(0.16,1,0.3,1)' }}
       >
         <GlassLayer blur={36} tint={surface(7, 82)} solid={surface(7)} />
@@ -131,7 +131,7 @@ export const InfoSheet = memo(function InfoSheet({
               type="button"
               aria-label={t('chat.thread.info.close')}
               onClick={onClose}
-              className="flex size-8 cursor-pointer items-center justify-center rounded-full text-white/45 transition-colors duration-150 hover:bg-white/[0.08] hover:text-white"
+              className="flex size-8 cursor-pointer items-center justify-center rounded-full text-ink-45 transition-colors duration-150 hover:bg-ink/[0.08] hover:text-white"
             >
               <X size={16} />
             </button>

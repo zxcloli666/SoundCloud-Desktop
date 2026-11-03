@@ -44,7 +44,7 @@ export function BrandMark({ service, size = 36 }: { service: ScrobbleService; si
   const brand = BRANDS[service];
   return (
     <div
-      className="flex items-center justify-center shrink-0 rounded-xl text-white"
+      className="flex items-center justify-center shrink-0 rounded-xl text-ink"
       style={{
         width: size,
         height: size,

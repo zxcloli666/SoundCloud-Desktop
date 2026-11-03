@@ -32,7 +32,7 @@ function renderInlineMarkdown(text: string, keyPrefix: string) {
           alt={imageAlt || ''}
           loading="lazy"
           decoding="async"
-          className="mt-2 rounded-lg border border-white/[0.08] max-w-full"
+          className="mt-2 rounded-lg border border-ink/[0.08] max-w-full"
         />,
       );
     } else if (linkUrl) {
@@ -65,7 +65,7 @@ function calloutTone(kind: string) {
     case 'CAUTION':
       return 'border-amber-500/20 bg-amber-500/10 text-amber-100';
     case 'IMPORTANT':
-      return 'border-accent/25 bg-accent/10 text-white/85';
+      return 'border-accent/25 bg-accent/10 text-ink-85';
     case 'TIP':
       return 'border-emerald-500/20 bg-emerald-500/10 text-emerald-100';
     default:
@@ -86,7 +86,7 @@ function renderReleaseBody(body: string) {
     }
     if (trimmed.startsWith('### ')) {
       nodes.push(
-        <h4 key={index} className="text-[13px] font-semibold text-white/80 mt-3 first:mt-0">
+        <h4 key={index} className="text-[13px] font-semibold text-ink-80 mt-3 first:mt-0">
           {renderInlineMarkdown(trimmed.slice(4), `h4-${index}`)}
         </h4>,
       );
@@ -94,7 +94,7 @@ function renderReleaseBody(body: string) {
     }
     if (trimmed.startsWith('## ') || trimmed.startsWith('# ')) {
       nodes.push(
-        <h3 key={index} className="text-[14px] font-semibold text-white/85 mt-3 first:mt-0">
+        <h3 key={index} className="text-[14px] font-semibold text-ink-85 mt-3 first:mt-0">
           {renderInlineMarkdown(trimmed.replace(/^#+\s*/, ''), `h3-${index}`)}
         </h3>,
       );
@@ -102,7 +102,7 @@ function renderReleaseBody(body: string) {
     }
     if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
       nodes.push(
-        <p key={index} className="text-[12px] leading-relaxed text-white/60 pl-3">
+        <p key={index} className="text-[12px] leading-relaxed text-ink-60 pl-3">
           {'\u2022'} {renderInlineMarkdown(trimmed.slice(2), `li-${index}`)}
         </p>,
       );
@@ -143,7 +143,7 @@ function renderReleaseBody(body: string) {
     }
 
     nodes.push(
-      <p key={index} className="text-[12px] leading-relaxed text-white/60 whitespace-pre-wrap">
+      <p key={index} className="text-[12px] leading-relaxed text-ink-60 whitespace-pre-wrap">
         {renderInlineMarkdown(trimmed, `p-${index}`)}
       </p>,
     );
@@ -165,8 +165,8 @@ export function UpdateChecker({
   if (!release) return null;
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="relative w-full max-w-md mx-4 rounded-2xl bg-[#1a1a1e]/95 backdrop-blur-2xl border border-white/[0.12] shadow-[0_8px_64px_rgba(0,0,0,0.6)] overflow-hidden">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-shade-60 backdrop-blur-sm">
+      <div className="relative w-full max-w-md mx-4 rounded-2xl bg-surface-hi/95 backdrop-blur-2xl border border-ink/[0.12] shadow-[0_8px_64px_rgb(var(--shade)/calc(0.6*var(--shade-alpha)))] overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-5 pt-5 pb-3">
           <div className="flex items-center gap-2.5">
@@ -175,7 +175,7 @@ export function UpdateChecker({
             </div>
             <div>
               <h2 className="text-sm font-semibold">{t('update.available')}</h2>
-              <p className="text-[11px] text-white/30 mt-0.5">
+              <p className="text-[11px] text-ink-30 mt-0.5">
                 {stripLeadingV(APP_VERSION)} → {stripLeadingV(release.tag_name)}
               </p>
             </div>
@@ -183,23 +183,23 @@ export function UpdateChecker({
           <button
             type="button"
             onClick={onDismiss}
-            className="w-7 h-7 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] flex items-center justify-center transition-colors cursor-pointer"
+            className="w-7 h-7 rounded-lg bg-ink/[0.05] hover:bg-ink/[0.1] flex items-center justify-center transition-colors cursor-pointer"
           >
-            <X size={14} className="text-white/40" />
+            <X size={14} className="text-ink-40" />
           </button>
         </div>
 
         {/* Release title */}
         {release.name && (
           <div className="px-5 pb-2">
-            <p className="text-[13px] font-medium text-white/80">{release.name}</p>
+            <p className="text-[13px] font-medium text-ink-80">{release.name}</p>
           </div>
         )}
 
         {/* Release notes */}
         {release.body && (
             <div
-                className="selectable mx-5 mb-4 max-h-60 overflow-y-auto rounded-xl bg-black/30 border border-white/[0.08] p-4 space-y-1">
+                className="selectable mx-5 mb-4 max-h-60 overflow-y-auto rounded-xl bg-shade-30 border border-ink/[0.08] p-4 space-y-1">
             {renderedNotes}
           </div>
         )}

@@ -92,7 +92,7 @@ export function DeviceAlertModal({ device, open, queued, onHold, onClose }: Devi
         className="relative flex flex-col items-center px-7 pb-7 pt-9 text-center"
       >
         {queued > 1 && (
-          <span className="absolute left-5 top-5 rounded-full bg-white/[0.06] px-2.5 py-1 text-[11px] font-semibold tabular-nums text-white/45">
+          <span className="absolute left-5 top-5 rounded-full bg-ink/[0.06] px-2.5 py-1 text-[11px] font-semibold tabular-nums text-ink-45">
             {t('chat.devices.alert.queue', { count: queued - 1 })}
           </span>
         )}
@@ -100,7 +100,7 @@ export function DeviceAlertModal({ device, open, queued, onHold, onClose }: Devi
           {perf.idleAnim && outcome === null && (
             <span
               aria-hidden
-              className="chat-device-motion pointer-events-none absolute inset-0 rounded-full border border-white/25"
+              className="chat-device-motion pointer-events-none absolute inset-0 rounded-full border border-ink/25"
               style={{ animation: 'chat-device-arrive 1.6s var(--ease-apple) 2 both' }}
             />
           )}
@@ -112,10 +112,10 @@ export function DeviceAlertModal({ device, open, queued, onHold, onClose }: Devi
             outcome={ringOutcome(outcome)}
           />
         </div>
-        <ModalTitle className="mt-5 line-clamp-2 max-w-full text-[19px] font-bold tracking-tight text-white/92 wrap-anywhere">
+        <ModalTitle className="mt-5 line-clamp-2 max-w-full text-[19px] font-bold tracking-tight text-ink-92 wrap-anywhere">
           {device.name}
         </ModalTitle>
-        <ModalDescription className="mt-1 text-[12.5px] leading-snug text-white/45">
+        <ModalDescription className="mt-1 text-[12.5px] leading-snug text-ink-45">
           {t('chat.devices.alert.title')}
         </ModalDescription>
         <div className="mt-3">

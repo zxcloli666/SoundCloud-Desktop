@@ -76,16 +76,16 @@ export const ForwardDialog = memo(function ForwardDialog({
   return (
     <div className="flex min-h-0 flex-col">
       <div className="flex items-center gap-3 px-6 pt-6 pb-3">
-        <Reply size={17} className="shrink-0 -scale-x-100 text-white/60" />
+        <Reply size={17} className="shrink-0 -scale-x-100 text-ink-60" />
         <ModalTitle>{t('chat.thread.actions.forward')}</ModalTitle>
       </div>
-      <label className="mx-6 mb-2 flex h-9 items-center gap-2 rounded-xl bg-white/[0.05] px-3 text-white/40 focus-within:bg-white/[0.07] focus-within:text-white/70">
+      <label className="mx-6 mb-2 flex h-9 items-center gap-2 rounded-xl bg-ink/[0.05] px-3 text-ink-40 focus-within:bg-ink/[0.07] focus-within:text-ink-70">
         <Search size={14} />
         <input
           value={search}
           onChange={(event) => setSearch(event.target.value)}
           placeholder={t('chat.embeds.share.search')}
-          className="min-w-0 flex-1 bg-transparent text-[13px] text-white/90 outline-none placeholder:text-white/30"
+          className="min-w-0 flex-1 bg-transparent text-[13px] text-ink-90 outline-none placeholder:text-ink-30"
         />
       </label>
       <ShareGrid
@@ -95,11 +95,11 @@ export const ForwardDialog = memo(function ForwardDialog({
         onToggle={toggle}
         searching={search.trim().length > 0}
       />
-      <div className="flex gap-2 border-t border-white/[0.06] px-6 py-4">
+      <div className="flex gap-2 border-t border-ink/[0.06] px-6 py-4">
         <button
           type="button"
           onClick={onClose}
-          className="h-10 flex-1 cursor-pointer rounded-xl bg-white/[0.06] text-[13px] font-semibold text-white/70 transition-colors duration-150 hover:bg-white/[0.1]"
+          className="h-10 flex-1 cursor-pointer rounded-xl bg-ink/[0.06] text-[13px] font-semibold text-ink-70 transition-colors duration-150 hover:bg-ink/[0.1]"
         >
           {t('chat.thread.cancel')}
         </button>

@@ -112,7 +112,7 @@ impl TrackCacheState {
         for &tier in tiers {
             if !storage_tried && climb.ladder.stored.rank() >= tier.rank() {
                 storage_tried = true;
-                if let Some(path) = self.try_storage(climb.storage).await {
+                if let Some(path) = self.try_storage_stream(climb.storage).await {
                     return Ok(path);
                 }
             }
@@ -147,9 +147,6 @@ impl TrackCacheState {
         let Ladder {
             target_dir, urn, ..
         } = *climb.ladder;
-        if with_storage && let Some(path) = self.try_storage_redirect(climb.storage).await {
-            return Ok(path);
-        }
         let mut anon_err = None;
         match self.try_anon(target_dir, urn, climb.start).await {
             Ok(Some(path)) => return Ok(path),

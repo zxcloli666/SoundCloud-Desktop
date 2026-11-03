@@ -2,6 +2,7 @@ import { useAppStatusStore } from '../../stores/app-status';
 import { API_BASE, API_STAR_BASE } from '../constants';
 import { trackedInvoke as invoke } from '../diagnostics';
 import { edgeProbe } from '../edge';
+import { recoveryDelayMs } from '../pacing';
 import { getIsPremium, requestPremiumRecheck } from '../premium-cache';
 import { queryClient } from '../query-client';
 import { fetchExternal } from './external';
@@ -31,10 +32,10 @@ export function markHealthy(host: string): void {
   }
 }
 
-/** Пассивный фейл вердикт НЕ меняет — ставит cooldown и планирует пробу main. */
-export function markUnhealthy(host: string): void {
-  unhealthyUntil.set(host, Date.now() + UNHEALTHY_DURATION_MS);
-  if (host === API_BASE) requestProbe();
+/** Пассивный фейл вердикт НЕ меняет — ставит cooldown и планирует пробу main (503 с Retry-After — без пробы). */
+export function markUnhealthy(host: string, retryAfterMs = 0): void {
+  unhealthyUntil.set(host, Date.now() + Math.max(UNHEALTHY_DURATION_MS, retryAfterMs));
+  if (host === API_BASE && retryAfterMs === 0) requestProbe();
 }
 
 /** Любой успех main (реальный запрос или проба). Hot path: no-op, если уже up. */
@@ -45,7 +46,18 @@ export function noteMainAlive(): void {
   useHostStatusStore.setState({ main: 'up', net: 'online', remote: 'unknown' });
   useAppStatusStore.getState().confirmOnline();
   stopRecheckTimer();
-  if (prev === 'down') void queryClient.invalidateQueries();
+  if (prev === 'down') refetchAfterRecovery();
+}
+
+let recoveryTimer: ReturnType<typeof setTimeout> | null = null;
+
+function refetchAfterRecovery(): void {
+  if (recoveryTimer !== null) return;
+  const active = queryClient.getQueryCache().findAll({ type: 'active' }).length;
+  recoveryTimer = setTimeout(() => {
+    recoveryTimer = null;
+    void queryClient.invalidateQueries();
+  }, recoveryDelayMs(active));
 }
 
 // ─── Probe-движок ───────────────────────────────────────────

@@ -6,7 +6,7 @@ import { useSyncCopy } from './useSyncCopy';
 
 const TONE: Record<SyncState, string> = {
   synced: 'border-emerald-400/20 bg-emerald-400/[0.06] text-emerald-200/80',
-  syncing: 'border-accent/20 bg-accent/[0.08] text-white/75',
+  syncing: 'border-accent/20 bg-accent/[0.08] text-ink-75',
   delayed: 'border-amber-400/25 bg-amber-400/[0.08] text-amber-100/85',
   failed: 'border-rose-400/25 bg-rose-400/[0.08] text-rose-200/85',
   dead: 'border-rose-400/30 bg-rose-400/[0.1] text-rose-100/90',
@@ -48,11 +48,11 @@ export const SyncStatusBadge = React.memo(function SyncStatusBadge({
         title={hint}
         onClick={action.run}
         disabled={action.disabled}
-        className={`${BADGE} ${TONE[state]} cursor-pointer enabled:hover:border-white/30 disabled:cursor-default disabled:opacity-60 ${className}`}
+        className={`${BADGE} ${TONE[state]} cursor-pointer enabled:hover:border-ink/30 disabled:cursor-default disabled:opacity-60 ${className}`}
       >
         <StateIcon state={state} />
         {label}
-        <span className="border-l border-white/15 pl-1.5 font-semibold">{action.label}</span>
+        <span className="border-l border-ink/15 pl-1.5 font-semibold">{action.label}</span>
       </button>
     );
   }

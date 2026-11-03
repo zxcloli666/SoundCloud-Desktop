@@ -1,3 +1,5 @@
+import type {Scheme} from './scheme';
+
 /**
  * Shared theme/perf var application. Used by the main-window ThemeProvider and the
  * standalone tray-popover window (a separate webview context that can't read the
@@ -21,7 +23,7 @@ export function applyAccentVars(accentColor: string, root: HTMLElement = documen
     const b = Number.parseInt(accentColor.slice(5, 7), 16);
     const hover = `rgb(${Math.min(255, r + 26)}, ${Math.min(255, g + 26)}, ${Math.min(255, b + 26)})`;
     root.style.setProperty('--color-accent-hover', hover);
-    root.style.setProperty('--color-accent-glow', `rgba(${rgb}, 0.2)`);
+    root.style.setProperty('--accent-rgb', `${r} ${g} ${b}`);
     root.style.setProperty('--color-accent-selection', `rgba(${rgb}, 0.3)`);
     const lum = 0.299 * r + 0.587 * g + 0.114 * b;
     root.style.setProperty('--color-accent-contrast', lum > 160 ? '#000000' : '#ffffff');
@@ -31,6 +33,10 @@ export function applyAccentVars(accentColor: string, root: HTMLElement = documen
 export function applyBgVars(bgPrimary: string, root: HTMLElement = document.documentElement) {
     root.style.setProperty('--bg-primary', bgPrimary);
     root.style.setProperty('--bg-titlebar', `rgba(${hexToRgb(bgPrimary)}, 0.95)`);
+}
+
+export function applyScheme(scheme: Scheme, root: HTMLElement = document.documentElement) {
+    root.dataset.scheme = scheme;
 }
 
 /** Drives index.css `[data-perf="…"]` rules (glass blur radii, idle-animation gates). */

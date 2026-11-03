@@ -19,7 +19,7 @@ export function WhoCanWriteCard({ settings, onPatch }: WhoCanWriteCardProps) {
         options={POLICIES.map((id) => ({ id, label: t(`chat.settings.whoCanWrite.${id}`) }))}
         onChange={(dmPolicy) => onPatch({ dmPolicy })}
       />
-      <p className="mt-3 text-[11.5px] leading-snug text-white/40">
+      <p className="mt-3 text-[11.5px] leading-snug text-ink-40">
         {t(`chat.settings.whoCanWrite.hint.${settings.dmPolicy}`)}
       </p>
     </Card>

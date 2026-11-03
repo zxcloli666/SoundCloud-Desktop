@@ -116,15 +116,15 @@ export const RoomInviteEmbed = memo(function RoomInviteEmbed({
     <EmbedShell kind={embed.kind} ref={ref} mine={mine} dim={!live} compact={compact} label={title}>
       <div className="flex min-w-0 items-stretch">
         <div className="flex shrink-0 flex-col justify-between gap-2 py-0.5">
-          <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-white/55">
+          <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-ink-55">
             {live ? <LiveDot /> : <Lock size={11} />}
             {live && t('chat.embeds.room.live')}
           </span>
-          <span className="font-mono text-[15px] font-bold tracking-[0.18em] text-white/90">
+          <span className="font-mono text-[15px] font-bold tracking-[0.18em] text-ink-90">
             {room.code}
           </span>
           {!compact && preview && live && (
-            <span className="flex items-center gap-1 text-[11px] tabular-nums text-white/45">
+            <span className="flex items-center gap-1 text-[11px] tabular-nums text-ink-45">
               <Headphones size={11} />
               {preview.listeners}
             </span>
@@ -133,11 +133,11 @@ export const RoomInviteEmbed = memo(function RoomInviteEmbed({
         <Perforation edge={compact ? 13 : 17} />
         <div className="flex min-w-0 flex-1 flex-col gap-1.5">
           <div className="min-w-0">
-            <p className="truncate text-[13.5px] font-semibold leading-tight text-white/92">
+            <p className="truncate text-[13.5px] font-semibold leading-tight text-ink-92">
               {title}
             </p>
             {host && (
-              <p className="truncate text-[11.5px] text-white/45">
+              <p className="truncate text-[11.5px] text-ink-45">
                 {t('chat.embeds.room.host', { name: host })}
               </p>
             )}
@@ -154,9 +154,9 @@ export const RoomInviteEmbed = memo(function RoomInviteEmbed({
                   className="h-7 w-7 shrink-0 rounded-[7px] object-cover"
                 />
               )}
-              <span className="min-w-0 truncate text-[11.5px] text-white/65">
+              <span className="min-w-0 truncate text-[11.5px] text-ink-65">
                 {track.title}
-                {track.artist && <span className="text-white/35"> · {track.artist}</span>}
+                {track.artist && <span className="text-ink-35"> · {track.artist}</span>}
               </span>
             </div>
           )}
@@ -165,7 +165,7 @@ export const RoomInviteEmbed = memo(function RoomInviteEmbed({
               {live ? (
                 <JoinButton code={room.code} here={here} />
               ) : (
-                <span className="inline-flex h-8 items-center gap-1.5 rounded-full bg-white/[0.06] px-3 text-[12px] font-semibold text-white/60">
+                <span className="inline-flex h-8 items-center gap-1.5 rounded-full bg-ink/[0.06] px-3 text-[12px] font-semibold text-ink-60">
                   <Lock size={12} />
                   {t('chat.embeds.room.closed')}
                 </span>

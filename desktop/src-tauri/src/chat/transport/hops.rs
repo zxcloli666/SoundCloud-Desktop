@@ -5,13 +5,9 @@ use crate::network::edge;
 
 const API_ORIGIN: &str = "https://api.scnative.dev";
 const ORIGIN_ENV: &str = "SC_CHAT_ORIGIN";
-const NATURAL: [Tier; 3] = [Tier::Direct, Tier::Relay, Tier::Pro];
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum Hop {
-    Http(String),
-    Pro { node: String, url: String },
-}
+pub struct Hop(pub String);
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Route {
@@ -40,43 +36,29 @@ impl Route {
     pub fn tiers(&self) -> Vec<Tier> {
         match self {
             Self::Fixed(_) => vec![Tier::Direct],
-            Self::Edge(url) => order(chat_tier(edge::current_tier(url))),
+            Self::Edge(url) => {
+                let mut tiers = Vec::new();
+                for hop in edge::plan(url) {
+                    let tier = chat_tier(hop.tier);
+                    if !tiers.contains(&tier) {
+                        tiers.push(tier);
+                    }
+                }
+                tiers
+            }
         }
     }
 
     pub fn hops(&self, tier: Tier) -> Vec<Hop> {
         match self {
-            Self::Fixed(url) if tier == Tier::Direct => vec![Hop::Http(url.clone())],
+            Self::Fixed(url) if tier == Tier::Direct => vec![Hop(url.clone())],
             Self::Fixed(_) => Vec::new(),
-            Self::Edge(url) => {
-                let relays = edge::relay_hosts(&host_of(url));
-                hops_over(url, tier, &relays, &edge::pro_hosts())
-            }
+            Self::Edge(url) => edge::plan(url)
+                .into_iter()
+                .filter(|hop| chat_tier(hop.tier) == tier)
+                .map(|hop| Hop(hop.url))
+                .collect(),
         }
-    }
-}
-
-pub fn order(level: Tier) -> Vec<Tier> {
-    std::iter::once(level)
-        .chain(NATURAL.into_iter().filter(|tier| *tier != level))
-        .collect()
-}
-
-pub fn hops_over(url: &str, tier: Tier, relays: &[String], pros: &[String]) -> Vec<Hop> {
-    match tier {
-        Tier::Direct => vec![Hop::Http(url.to_string())],
-        Tier::Relay => relays
-            .iter()
-            .filter_map(|relay| swap_host(url, relay))
-            .map(Hop::Http)
-            .collect(),
-        Tier::Pro => pros
-            .iter()
-            .map(|node| Hop::Pro {
-                node: format!("https://{node}"),
-                url: url.to_string(),
-            })
-            .collect(),
     }
 }
 
@@ -90,17 +72,4 @@ fn chat_tier(tier: edge::Tier) -> Tier {
 
 fn channel_url(origin: &str) -> String {
     format!("{}{CHANNEL_PATH}", origin.trim_end_matches('/'))
-}
-
-fn host_of(url: &str) -> String {
-    url::Url::parse(url)
-        .ok()
-        .and_then(|url| url.host_str().map(str::to_ascii_lowercase))
-        .unwrap_or_default()
-}
-
-fn swap_host(url: &str, host: &str) -> Option<String> {
-    let mut url = url::Url::parse(url).ok()?;
-    url.set_host(Some(host)).ok()?;
-    Some(url.to_string())
 }

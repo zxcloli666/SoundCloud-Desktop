@@ -53,7 +53,7 @@ function TabWrapperImpl({
     <div className="min-h-[420px]">
       {isLoading ? (
         <div className="py-24 flex justify-center">
-          <Loader2 size={28} className="text-white/20 animate-spin" />
+          <Loader2 size={28} className="text-ink-20 animate-spin" />
         </div>
       ) : isEmpty && notice && query ? (
         <div className="py-24">
@@ -77,13 +77,13 @@ function TabWrapperImpl({
           <div
             className="w-16 h-16 rounded-2xl flex items-center justify-center"
             style={{
-              background: 'rgba(255,255,255,0.03)',
-              border: '0.5px solid rgba(255,255,255,0.06)',
+              background: 'rgb(var(--ink) / 0.03)',
+              border: '0.5px solid rgb(var(--ink) / 0.06)',
             }}
           >
-            <Music size={24} className="text-white/15" />
+            <Music size={24} className="text-ink-15" />
           </div>
-          <p className="text-white/30 text-sm">{emptyText ?? t('common.empty')}</p>
+          <p className="text-ink-30 text-sm">{emptyText ?? t('common.empty')}</p>
         </div>
       ) : (
         <div className="animate-in fade-in duration-500">{children}</div>
@@ -114,7 +114,7 @@ export function UserTracksTab({ urn, aura }: { urn: string; aura: Aura }) {
         renderItem={renderItem}
       />
       <div ref={ref} className="h-16 flex items-center justify-center">
-        {q.isFetchingNextPage && <Loader2 size={20} className="text-white/20 animate-spin" />}
+        {q.isFetchingNextPage && <Loader2 size={20} className="text-ink-20 animate-spin" />}
       </div>
     </TabWrapper>
   );
@@ -162,7 +162,7 @@ export function UserPlaylistsTab({ urn }: { urn: string }) {
         renderItem={renderItem}
       />
       <div ref={ref} className="h-16 flex items-center justify-center">
-        {q.isFetchingNextPage && <Loader2 size={20} className="text-white/20 animate-spin" />}
+        {q.isFetchingNextPage && <Loader2 size={20} className="text-ink-20 animate-spin" />}
       </div>
     </TabWrapper>
   );
@@ -188,7 +188,7 @@ export function UserLikesTab({ urn, aura }: { urn: string; aura: Aura }) {
         renderItem={renderItem}
       />
       <div ref={ref} className="h-16 flex items-center justify-center">
-        {q.isFetchingNextPage && <Loader2 size={20} className="text-white/20 animate-spin" />}
+        {q.isFetchingNextPage && <Loader2 size={20} className="text-ink-20 animate-spin" />}
       </div>
     </TabWrapper>
   );
@@ -239,7 +239,7 @@ export function UserSearchTracksTab({
         renderItem={renderItem}
       />
       <div ref={ref} className="h-16 flex items-center justify-center">
-        {q.isFetchingNextPage && <Loader2 size={20} className="text-white/20 animate-spin" />}
+        {q.isFetchingNextPage && <Loader2 size={20} className="text-ink-20 animate-spin" />}
       </div>
     </TabWrapper>
   );
@@ -278,7 +278,7 @@ export function UserSearchPlaylistsTab({ urn, query }: { urn: string; query: str
         renderItem={renderItem}
       />
       <div ref={ref} className="h-16 flex items-center justify-center">
-        {q.isFetchingNextPage && <Loader2 size={20} className="text-white/20 animate-spin" />}
+        {q.isFetchingNextPage && <Loader2 size={20} className="text-ink-20 animate-spin" />}
       </div>
     </TabWrapper>
   );
@@ -306,21 +306,21 @@ export function UserConnectionsTab({
         onClick={() => nav(`/user/${encodeURIComponent(user.urn)}`)}
         className="group relative h-full w-full flex flex-col items-center gap-3 p-6 rounded-3xl transition-transform duration-500 cursor-pointer overflow-hidden hover:scale-[1.02]"
         style={{
-            background: cardB > 0 ? 'rgba(255,255,255,0.03)' : 'rgba(24,24,28,0.85)',
-          border: '0.5px solid rgba(255,255,255,0.06)',
+            background: cardB > 0 ? 'rgb(var(--ink) / 0.03)' : 'rgb(var(--surface-hi) / 0.85)',
+          border: '0.5px solid rgb(var(--ink) / 0.06)',
             backdropFilter: cardB > 0 ? `blur(${cardB}px)` : undefined,
             WebkitBackdropFilter: cardB > 0 ? `blur(${cardB}px)` : undefined,
         }}
       >
-        <div className="w-20 h-20 rounded-full overflow-hidden ring-2 ring-white/10 group-hover:ring-white/30 transition-all duration-500">
+        <div className="w-20 h-20 rounded-full overflow-hidden ring-2 ring-ink/10 group-hover:ring-ink/30 transition-all duration-500">
           <Avatar src={user.avatar_url} alt={user.username} size={80} />
         </div>
         <div className="text-center min-w-0 w-full">
-          <p className="text-[13px] font-semibold text-white/90 truncate group-hover:text-white">
+          <p className="text-[13px] font-semibold text-ink-90 truncate group-hover:text-ink">
             {user.username}
           </p>
           {user.followers_count != null && (
-            <p className="text-[10px] text-white/30 mt-1 tabular-nums uppercase tracking-widest font-semibold">
+            <p className="text-[10px] text-ink-30 mt-1 tabular-nums uppercase tracking-widest font-semibold">
               {fc(user.followers_count)} {t('user.followers')}
             </p>
           )}
@@ -350,7 +350,7 @@ export function UserConnectionsTab({
         renderItem={renderItem}
       />
       <div ref={ref} className="h-16 flex items-center justify-center">
-        {q.isFetchingNextPage && <Loader2 size={20} className="text-white/20 animate-spin" />}
+        {q.isFetchingNextPage && <Loader2 size={20} className="text-ink-20 animate-spin" />}
       </div>
     </TabWrapper>
   );

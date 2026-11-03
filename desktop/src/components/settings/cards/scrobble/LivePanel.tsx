@@ -26,7 +26,7 @@ function Ring({ live, artwork }: { live: LiveScrobble; artwork: string | null })
           cy={RING}
           r={RING - STROKE}
           fill="none"
-          stroke="rgba(255,255,255,0.07)"
+          className="stroke-ink/[0.07]"
           strokeWidth={STROKE}
         />
         <circle
@@ -45,17 +45,17 @@ function Ring({ live, artwork }: { live: LiveScrobble; artwork: string | null })
           }}
         />
       </svg>
-      <div className="absolute inset-[7px] overflow-hidden rounded-full bg-white/[0.04]">
+      <div className="absolute inset-[7px] overflow-hidden rounded-full bg-ink/[0.04]">
         {artwork ? (
           <img src={artwork} alt="" className="size-full object-cover" />
         ) : (
-          <div className="flex size-full items-center justify-center text-white/25">
+          <div className="flex size-full items-center justify-center text-ink-25">
             <Music size={16} />
           </div>
         )}
       </div>
       {done && (
-        <div className="absolute -bottom-0.5 -right-0.5 flex size-5 items-center justify-center rounded-full bg-[#23a55a] text-white shadow-[0_0_10px_rgba(35,165,90,0.7)]">
+        <div className="absolute -bottom-0.5 -right-0.5 flex size-5 items-center justify-center rounded-full bg-[#23a55a] text-ink shadow-[0_0_10px_rgba(35,165,90,0.7)]">
           <Check size={12} strokeWidth={3} />
         </div>
       )}
@@ -92,13 +92,13 @@ export function LivePanel({ paused }: { paused: boolean }) {
   const artist = track ? getArtistDisplay(track).primary || track.user?.username || '' : '';
 
   return (
-    <div className="rounded-2xl border border-white/[0.05] bg-white/[0.02] p-4">
+    <div className="rounded-2xl border border-ink/[0.05] bg-ink/[0.02] p-4">
       <div className="mb-3 flex items-center justify-between gap-3">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/35">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-35">
           {t('settings.scrobbleLiveTitle')}
         </p>
         {sent > 0 && (
-          <p className="text-[11px] text-white/35 tabular-nums">
+          <p className="text-[11px] text-ink-35 tabular-nums">
             {t('settings.scrobbleLiveSession', { count: sent })}
           </p>
         )}
@@ -107,13 +107,13 @@ export function LivePanel({ paused }: { paused: boolean }) {
         <div className="flex items-center gap-3.5">
           <Ring live={shown ?? IDLE_LIVE} artwork={art(track.artwork_url, 't200x200')} />
           <div className="min-w-0 flex-1">
-            <p className="truncate text-[13.5px] font-semibold text-white/85">
+            <p className="truncate text-[13.5px] font-semibold text-ink-85">
               {getDisplayTitle(track)}
             </p>
-            <p className="truncate text-[12px] text-white/45">{artist}</p>
+            <p className="truncate text-[12px] text-ink-45">{artist}</p>
             <p
               className={`mt-1 truncate text-[11.5px] tabular-nums ${
-                shown?.phase === 'scrobbled' ? 'text-[#3ddc84]' : 'text-white/35'
+                shown?.phase === 'scrobbled' ? 'text-ok' : 'text-ink-35'
               }`}
             >
               {shown ? phaseText(shown, t) : t('settings.scrobbleLiveIdle')}
@@ -121,7 +121,7 @@ export function LivePanel({ paused }: { paused: boolean }) {
           </div>
         </div>
       ) : (
-        <p className="text-[12px] text-white/35">
+        <p className="text-[12px] text-ink-35">
           {t(paused ? 'settings.scrobblePaused' : 'settings.scrobbleLiveIdle')}
         </p>
       )}

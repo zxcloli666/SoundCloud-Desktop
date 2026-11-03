@@ -103,7 +103,7 @@ export function HotkeyRecorder({
       className={`relative min-w-[156px] h-9 px-2.5 rounded-xl border flex items-center justify-center gap-2 transition-all duration-200 cursor-pointer outline-none ${
         recording
           ? 'border-accent/60 bg-accent/[0.08]'
-          : 'border-white/[0.07] bg-black/20 hover:border-white/[0.14] hover:bg-white/[0.04] focus-visible:border-white/25'
+          : 'border-ink/[0.07] bg-shade-20 hover:border-ink/[0.14] hover:bg-ink/[0.04] focus-visible:border-ink/25'
       }`}
       style={recording ? { boxShadow: '0 0 0 3px var(--color-accent-glow)' } : undefined}
     >
@@ -111,7 +111,7 @@ export function HotkeyRecorder({
         heldLabels.length > 0 ? (
           <KeyCaps labels={heldLabels} size="sm" active />
         ) : (
-          <span className="flex items-center gap-2 text-[12px] font-semibold text-white/75">
+          <span className="flex items-center gap-2 text-[12px] font-semibold text-ink-75">
             <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
             {t('hotkeys.recording')}
           </span>
@@ -119,7 +119,7 @@ export function HotkeyRecorder({
       ) : labels.length > 0 ? (
         <KeyCaps labels={labels} size="sm" />
       ) : (
-        <span className="text-[12px] font-medium text-white/30">{t('hotkeys.notSet')}</span>
+        <span className="text-[12px] font-medium text-ink-30">{t('hotkeys.notSet')}</span>
       )}
     </button>
   );

@@ -21,7 +21,7 @@ function lighten(hex: string, amount: number): string {
 
 function hexToRgba(hex: string, alpha: number): string {
   const m = hex.replace('#', '').match(/.{2}/g);
-  if (!m) return `rgba(255,255,255,${alpha})`;
+  if (!m) return `rgb(var(--ink) / ${alpha})`;
   const [r, g, b] = m.map((h) => Number.parseInt(h, 16));
   return `rgba(${r},${g},${b},${alpha})`;
 }

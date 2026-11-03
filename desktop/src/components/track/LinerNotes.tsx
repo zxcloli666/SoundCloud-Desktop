@@ -29,14 +29,14 @@ function Credit({
 }) {
     return (
         <div className="flex flex-col gap-1 min-w-0">
-      <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/30">
+      <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-ink-30">
         {label}
       </span>
             <span
                 className={`text-[13px] truncate ${
                     onClick
-                        ? 'text-white/75 hover:text-white cursor-pointer transition-colors'
-                        : 'text-white/70 selectable'
+                        ? 'text-ink-75 hover:text-ink cursor-pointer transition-colors'
+                        : 'text-ink-70 selectable'
                 }`}
                 onClick={onClick}
             >
@@ -109,11 +109,11 @@ export const LinerNotes = React.memo(function LinerNotes({
 
             {desc && (
                 <div>
-                    <h3 className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/30 mb-2.5">
+                    <h3 className="text-[10px] font-bold uppercase tracking-[0.22em] text-ink-30 mb-2.5">
                         {t('track.description')}
                     </h3>
                     <p
-                        className={`selectable text-[13.5px] text-white/55 leading-relaxed whitespace-pre-wrap break-words ${
+                        className={`selectable text-[13.5px] text-ink-55 leading-relaxed whitespace-pre-wrap break-words ${
                             !expanded && descLong ? 'line-clamp-4' : ''
                         }`}
                     >
@@ -129,7 +129,7 @@ export const LinerNotes = React.memo(function LinerNotes({
                         <button
                             type="button"
                             onClick={() => setExpanded((v) => !v)}
-                            className="flex items-center gap-1 mt-2 text-[11px] text-white/35 hover:text-white/60 transition-colors cursor-pointer"
+                            className="flex items-center gap-1 mt-2 text-[11px] text-ink-35 hover:text-ink-60 transition-colors cursor-pointer"
                         >
                             {expanded ? <ChevronUp size={13}/> : <ChevronDown size={13}/>}
                             {expanded ? t('track.showLess') : t('track.showMore')}
@@ -148,11 +148,11 @@ export const LinerNotes = React.memo(function LinerNotes({
 
             {tags.length > 0 && (
                 <div className="flex items-center gap-1.5 flex-wrap pt-1">
-                    <Hash size={12} className="text-white/20"/>
+                    <Hash size={12} className="text-ink-20"/>
                     {tags.map((tag) => (
                         <span
                             key={tag}
-                            className="text-[10px] font-medium px-2.5 py-1 rounded-full bg-white/[0.04] text-white/40 border border-white/[0.05] hover:bg-white/[0.07] hover:text-white/60 transition-all duration-200 cursor-default"
+                            className="text-[10px] font-medium px-2.5 py-1 rounded-full bg-ink/[0.04] text-ink-40 border border-ink/[0.05] hover:bg-ink/[0.07] hover:text-ink-60 transition-all duration-200 cursor-default"
                         >
               {tag}
             </span>

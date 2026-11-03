@@ -40,9 +40,9 @@ export function AndroidCard() {
           onClick={() => openUrl(ANDROID_CLIENT_URL)}
         />
       </div>
-      <p className="mt-3.5 text-[11.5px] text-white/35 leading-snug">{t('settings.androidNote')}</p>
-      <div className="mt-4 mb-2.5 flex items-center gap-2 text-[12.5px] font-medium text-white/60">
-        <Smartphone size={15} className="text-white/35" />
+      <p className="mt-3.5 text-[11.5px] text-ink-35 leading-snug">{t('settings.androidNote')}</p>
+      <div className="mt-4 mb-2.5 flex items-center gap-2 text-[12.5px] font-medium text-ink-60">
+        <Smartphone size={15} className="text-ink-35" />
         {t('settings.ios')}
       </div>
       <div className="grid gap-2.5 sm:grid-cols-2">

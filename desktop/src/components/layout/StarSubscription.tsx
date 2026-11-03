@@ -140,7 +140,7 @@ export const StarBadge = React.memo(({ size = 'sm' }: StarBadgeProps) => {
   const isLg = size === 'lg';
   return (
     <span
-      className={`inline-flex items-center shrink-0 rounded-full uppercase text-white/95 ${
+      className={`inline-flex items-center shrink-0 rounded-full uppercase text-ink-95 ${
         isLg
           ? 'gap-1.5 px-3 py-1 text-[10px] font-extrabold tracking-widest'
           : 'gap-[3px] px-[6px] py-[1px] text-[9px] font-bold tracking-wider'
@@ -184,6 +184,7 @@ export const StarCard = React.memo(({ collapsed, isPremium, onOpen }: StarCardPr
     return (
       <button
         type="button"
+        data-ui="star-card"
         onClick={onOpen}
         title={t('star.title')}
         className="relative flex items-center justify-center w-full py-2.5 rounded-xl cursor-pointer transition-all duration-200 hover:scale-105 group"
@@ -206,6 +207,7 @@ export const StarCard = React.memo(({ collapsed, isPremium, onOpen }: StarCardPr
   return (
     <button
       type="button"
+      data-ui="star-card"
       onClick={onOpen}
       className="relative flex items-center gap-2.5 w-full px-3 py-2.5 rounded-xl cursor-pointer transition-all duration-200 hover:scale-[1.01] overflow-hidden group"
       style={{
@@ -226,7 +228,7 @@ export const StarCard = React.memo(({ collapsed, isPremium, onOpen }: StarCardPr
           <Star size={16} fill="currentColor" />
         </span>
         <div className="flex flex-col items-start min-w-0">
-          <span className="text-[11px] font-semibold text-white/90 tracking-wide">
+          <span className="text-[11px] font-semibold text-ink-90 tracking-wide">
             {t('star.title')}
           </span>
           <span className="text-[9px] text-purple-300/60 font-medium">

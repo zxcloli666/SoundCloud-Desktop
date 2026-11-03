@@ -25,7 +25,7 @@ import { VirtualList } from './VirtualList';
 
 export const LIFTED_ROW_STYLE: React.CSSProperties = {
   transform: 'rotate(1.5deg)',
-  boxShadow: '0 24px 60px rgba(0,0,0,0.55), inset 0 0 0 0.5px rgba(255,255,255,0.12)',
+  boxShadow: '0 24px 60px rgb(var(--shade) / calc(0.55 * var(--shade-alpha))), inset 0 0 0 0.5px rgba(255,255,255,0.12)',
 };
 
 function useReorderAccessibility(ids: string[]) {
@@ -119,8 +119,8 @@ export function useSortableRow(id: string) {
 export function DragGrip({ handle }: { handle?: ReturnType<typeof useSortableRow>['handle'] }) {
   const { t } = useTranslation();
   const tone = handle
-    ? 'cursor-grab active:cursor-grabbing text-white/15 hover:text-white/40 transition-colors'
-    : 'text-white/40';
+    ? 'cursor-grab active:cursor-grabbing text-ink-15 hover:text-ink-40 transition-colors'
+    : 'text-ink-40';
   return (
     <div
       className={`w-5 flex items-center justify-center shrink-0 -ml-1 ${tone}`}

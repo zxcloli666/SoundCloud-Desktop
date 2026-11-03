@@ -34,7 +34,7 @@ const TrackRow = memo(function TrackRow({
   const lead = rank === 1;
   return (
     <div
-      className="group relative flex items-center gap-3 px-2 py-2 rounded-2xl overflow-hidden transition-colors hover:bg-white/[0.04]"
+      className="group relative flex items-center gap-3 px-2 py-2 rounded-2xl overflow-hidden transition-colors hover:bg-ink/[0.04]"
       style={isThis ? { background: auraRgba(aura, 0.1) } : undefined}
     >
       <div
@@ -47,20 +47,20 @@ const TrackRow = memo(function TrackRow({
       />
       <span
         className="relative w-6 text-right text-[13px] font-black tabular-nums"
-        style={{ color: lead ? auraRgb(aura) : 'rgba(255,255,255,0.3)' }}
+        style={{ color: lead ? auraRgb(aura) : 'rgb(var(--ink) / 0.3)' }}
       >
         {rank}
       </span>
       <button
         type="button"
         onClick={togglePlay}
-        className="relative w-11 h-11 rounded-xl overflow-hidden shrink-0 ring-1 ring-white/[0.08] shadow-md cursor-pointer"
+        className="relative w-11 h-11 rounded-xl overflow-hidden shrink-0 ring-1 ring-ink/[0.08] shadow-md cursor-pointer"
       >
         {cover ? (
           <img src={cover} alt="" decoding="async" className="w-full h-full object-cover" />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-white/[0.04]">
-            <Music size={14} className="text-white/20" />
+          <div className="w-full h-full flex items-center justify-center bg-ink/[0.04]">
+            <Music size={14} className="text-ink-20" />
           </div>
         )}
         <span
@@ -75,7 +75,7 @@ const TrackRow = memo(function TrackRow({
         <button
           type="button"
           onClick={() => navigate(`/track/${encodeURIComponent(entry.trackUrn)}`)}
-          className="block max-w-full text-left text-[13.5px] font-semibold text-white/90 hover:text-white truncate cursor-pointer transition-colors"
+          className="block max-w-full text-left text-[13.5px] font-semibold text-ink-90 hover:text-ink truncate cursor-pointer transition-colors"
         >
           {entry.title}
         </button>
@@ -85,16 +85,16 @@ const TrackRow = memo(function TrackRow({
           onClick={() =>
             entry.artistUrn && navigate(`/user/${encodeURIComponent(entry.artistUrn)}`)
           }
-          className="block max-w-full text-left text-[12px] text-white/40 enabled:hover:text-white/70 truncate enabled:cursor-pointer transition-colors"
+          className="block max-w-full text-left text-[12px] text-ink-40 enabled:hover:text-ink-70 truncate enabled:cursor-pointer transition-colors"
         >
           {entry.artistName}
         </button>
       </div>
       <span className="relative shrink-0 text-right">
-        <span className="block text-[13px] font-bold tabular-nums text-white/80">
+        <span className="block text-[13px] font-bold tabular-nums text-ink-80">
           {fmt.number(entry.plays)}
         </span>
-        <span className="block text-[10px] text-white/30">
+        <span className="block text-[10px] text-ink-30">
           {t('stats.playsUnit', { count: entry.plays })}
         </span>
       </span>

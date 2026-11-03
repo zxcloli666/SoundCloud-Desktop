@@ -26,7 +26,7 @@ export function ChatNotifyCard() {
       <div
         className={`transition-opacity duration-300 ${prefs.enabled ? '' : 'pointer-events-none opacity-45'}`}
       >
-        <p className="mb-2 text-[12px] font-medium text-white/55">
+        <p className="mb-2 text-[12px] font-medium text-ink-55">
           {t('chat.settings.notify.preview')}
         </p>
         <Segmented

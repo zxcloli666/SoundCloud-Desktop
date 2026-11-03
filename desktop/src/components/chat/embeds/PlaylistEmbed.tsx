@@ -76,11 +76,11 @@ export const PlaylistEmbed = memo(function PlaylistEmbed({
             type="button"
             disabled={!route}
             onClick={() => route && navigate(route)}
-            className="min-w-0 truncate text-left text-[13.5px] font-semibold leading-tight text-white/92 cursor-pointer hover:text-white disabled:cursor-default"
+            className="min-w-0 truncate text-left text-[13.5px] font-semibold leading-tight text-ink-92 cursor-pointer hover:text-white disabled:cursor-default"
           >
             {embed.title}
           </button>
-          {meta && <span className="min-w-0 truncate text-[12px] text-white/50">{meta}</span>}
+          {meta && <span className="min-w-0 truncate text-[12px] text-ink-50">{meta}</span>}
         </div>
       </div>
       {!compact && tracks.length > 0 && (

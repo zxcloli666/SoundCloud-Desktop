@@ -21,7 +21,7 @@ export const DeltaChip = memo(function DeltaChip({
       style={
         up
           ? { color: auraRgb(aura), background: auraRgba(aura, 0.14) }
-          : { color: 'rgba(255,255,255,0.5)', background: 'rgba(255,255,255,0.06)' }
+          : { color: 'rgb(var(--ink) / calc(0.5 * (1 + var(--ink-lift) * (1 - 0.5))))', background: 'rgb(var(--ink) / 0.06)' }
       }
     >
       <Icon size={12} />

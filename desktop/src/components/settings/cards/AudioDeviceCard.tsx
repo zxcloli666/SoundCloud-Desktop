@@ -16,8 +16,8 @@ interface AudioSink {
 function optionClass(active: boolean) {
   return `flex items-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-200 cursor-pointer border ${
     active
-      ? 'bg-white/[0.1] text-white/90 border-white/[0.15]'
-      : 'bg-white/[0.02] text-white/40 border-white/[0.05] hover:bg-white/[0.06] hover:text-white/60'
+      ? 'bg-ink/[0.1] text-ink-90 border-ink/[0.15]'
+      : 'bg-ink/[0.02] text-ink-40 border-ink/[0.05] hover:bg-ink/[0.06] hover:text-ink-60'
   } disabled:opacity-50`;
 }
 

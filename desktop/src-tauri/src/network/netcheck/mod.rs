@@ -7,8 +7,11 @@ pub mod model;
 pub mod paths;
 mod phases;
 mod report;
+pub mod route;
 mod scrub;
+mod status;
 mod store;
+mod summary;
 mod targets;
 mod tcpinfo;
 mod verdict;
@@ -29,7 +32,7 @@ use self::model::{
 };
 use self::paths::{millis, now_ms};
 use crate::app::diagnostics;
-use crate::network::{edge, fetch};
+use crate::network::{call, edge, fetch};
 use crate::rt::AppHandle;
 
 const EVENT: &str = "netcheck:update";
@@ -169,8 +172,18 @@ fn edge_snapshot() -> EdgeSnapshot {
 
 async fn run(trigger: Trigger, reason: Option<String>) -> NetReport {
     let started = Instant::now();
-    let list = targets::targets();
-    let hosts = list.iter().map(|target| target.host.clone()).collect();
+    let checker = CHECKER.get();
+    let call = match checker {
+        Some(checker) => call::state_label(&checker.app).await,
+        None => None,
+    };
+    let list = targets::targets(call.is_some_and(|state| state != "off"));
+    let ours: Vec<bool> = list.iter().map(targets::Target::ours).collect();
+    let hosts = list
+        .iter()
+        .filter(|target| target.ours())
+        .map(|target| target.host.clone())
+        .collect();
     let mut report = NetReport {
         version: REPORT_VERSION,
         at_ms: now_ms(),
@@ -191,18 +204,19 @@ async fn run(trigger: Trigger, reason: Option<String>) -> NetReport {
         volume: None,
         relay_volume: Vec::new(),
         pro_volume: Vec::new(),
+        call: call.map(str::to_string),
     };
-    let checker = CHECKER.get();
     if let Some(checker) = checker {
         checker.emit(true, &report);
     }
     let client = fetch::client();
+    let size = volume::size(trigger);
     let collect = async {
         let mut checks = stream::iter(list.into_iter().enumerate())
             .map(|(at, target)| async move {
                 let volume = async {
                     if targets::direct_allowed(trigger) {
-                        volume::of(&target).await
+                        volume::of(&target, size).await
                     } else {
                         None
                     }
@@ -232,29 +246,34 @@ async fn run(trigger: Trigger, reason: Option<String>) -> NetReport {
     let known = addrs::known(hosts);
     let ((), doh, env, known) = tokio::join!(collect, providers, environment, known);
     report.doh = doh;
-    if targets::direct_allowed(trigger) {
-        report.volume = volume::direct(&report.targets).await;
-    }
+    report.volume = volume::primary(&report.targets);
     report.relay_volume = volume::of_kind(&report.targets, TargetId::Relay);
     report.pro_volume = volume::of_kind(&report.targets, TargetId::Pro);
     report.env = env.ok();
-    report.addrs = addrs::ours(&report.targets, known);
+    let checked: Vec<_> = report
+        .targets
+        .iter()
+        .zip(ours)
+        .filter(|(_, ours)| *ours)
+        .map(|(check, _)| check.clone())
+        .collect();
+    report.addrs = addrs::ours(&checked, known);
     let online = targets::internet_seen(&report.targets, &report.doh);
     let main_ok = report
         .targets
         .iter()
-        .any(|target| target.id == TargetId::Main && target.ok);
+        .any(|target| target.carries(route::API));
     let (internet, remote) = tokio::join!(
         async {
             match client {
                 _ if online => Internet::Online,
-                Some(client) => targets::internet(client).await,
+                Some(client) => status::internet(client).await,
                 None => Internet::Unknown,
             }
         },
         async {
             match client {
-                Some(client) if !main_ok => targets::remote(client).await,
+                Some(client) if !main_ok => status::remote(client).await,
                 _ => Remote::Unknown,
             }
         }
@@ -269,6 +288,8 @@ async fn run(trigger: Trigger, reason: Option<String>) -> NetReport {
     let pro_carries = report.pro_volume.iter().any(|volume| !volume.cut);
     if verdict::nothing_carries(report.verdict, &report.relay_volume) && pro_carries {
         edge::escalate_all();
+    } else if verdict::relays_lag(&report.relay_volume) && pro_carries {
+        edge::escalate_relayed();
     }
     report.recent = paths::recent(RECENT_EVENTS);
     report.edge = edge_snapshot();
@@ -306,10 +327,16 @@ fn reason_of(raw: &str) -> String {
 
 #[tauri::command]
 pub async fn net_check_run() -> Result<NetReport, String> {
+    crate::diag::trace::open_debug();
     let flight = start(Trigger::Manual, None).ok_or("network check is not ready")?;
     flight
         .await
         .ok_or_else(|| "network check failed".to_string())
+}
+
+#[tauri::command]
+pub async fn net_status_verdict() -> Option<serde_json::Value> {
+    status::verdict(fetch::client()).await
 }
 
 #[tauri::command]
@@ -320,6 +347,12 @@ pub fn net_check_auto(reason: String) {
 #[tauri::command]
 pub fn net_check_last() -> Option<NetReport> {
     CHECKER.get()?.memory().reports.first().cloned()
+}
+
+pub fn text_within(age: Duration) -> Option<String> {
+    let report = net_check_last()?;
+    let age_ms = now_ms().saturating_sub(report.at_ms + u64::from(report.duration_ms));
+    (age_ms <= age.as_millis() as u64).then(|| report::text(&report))
 }
 
 #[tauri::command]

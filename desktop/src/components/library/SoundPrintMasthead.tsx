@@ -74,8 +74,8 @@ const AvatarOrb = memo(function AvatarOrb({
                 {url ? (
                     <img src={url} alt="" className="w-full h-full object-cover" decoding="async"/>
                 ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-white/5">
-                        <UserIcon size={30} className="text-white/25"/>
+                    <div className="w-full h-full flex items-center justify-center bg-ink/5">
+                        <UserIcon size={30} className="text-ink-25"/>
                     </div>
                 )}
             </div>
@@ -110,8 +110,8 @@ export const SoundPrintMasthead = memo(function SoundPrintMasthead({
         <section
             className="relative overflow-hidden rounded-[2.25rem] p-6 md:p-8 transition-[box-shadow] duration-500"
             style={{
-                border: '0.5px solid rgba(255,255,255,0.1)',
-                boxShadow: `0 30px 80px rgba(0,0,0,0.42), 0 0 70px ${sound.accentGlow}`,
+                border: '0.5px solid rgb(var(--ink) / 0.1)',
+                boxShadow: `0 30px 80px rgb(var(--shade) / calc(0.42 * var(--shade-alpha))), 0 0 70px ${sound.accentGlow}`,
             }}
         >
             {/* frost — blurs the page atmosphere behind the slab */}
@@ -124,8 +124,8 @@ export const SoundPrintMasthead = memo(function SoundPrintMasthead({
                     WebkitBackdropFilter: b > 0 ? `blur(${b}px) saturate(150%)` : undefined,
                     background:
                         b > 0
-                            ? `linear-gradient(145deg, ${auraRgba(sound.aura, 0.1)}, rgba(12,11,16,0.55))`
-                            : 'rgba(14,13,18,0.92)',
+                            ? `linear-gradient(145deg, ${auraRgba(sound.aura, 0.1)}, rgb(var(--surface) / 0.55))`
+                            : 'rgb(var(--surface) / 0.92)',
                 }}
             />
             <ArtworkMosaic tracks={likedTracks}/>
@@ -140,8 +140,8 @@ export const SoundPrintMasthead = memo(function SoundPrintMasthead({
             <div className="relative z-10 flex flex-col gap-6" style={{isolation: 'isolate'}}>
                 <div className="flex items-center gap-5">
                     <AvatarOrb url={avatar} aura={sound.aura} glow={sound.accentGlow}/>
-                    <div className="min-w-0 flex-1">
-                        <p className="flex items-center gap-1.5 text-[11px] uppercase tracking-[0.28em] text-white/40 font-bold mb-1.5">
+                    <div data-ui="greeting" className="min-w-0 flex-1">
+                        <p className="flex items-center gap-1.5 text-[11px] uppercase tracking-[0.28em] text-ink-40 font-bold mb-1.5">
                             <EqBars color={auraRgb(sound.aura)}/>
                             {t('nav.library')}
                         </p>

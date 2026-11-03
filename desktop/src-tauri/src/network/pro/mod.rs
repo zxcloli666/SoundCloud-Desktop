@@ -23,7 +23,7 @@ const CONNECT_TIMEOUT: Duration = Duration::from_secs(10);
 const HEALTH_TIMEOUT: Duration = Duration::from_secs(5);
 const PROBE_TIMEOUT: Duration = Duration::from_secs(30);
 const PROBE_BYTES: usize = 64 * 1024;
-const PROBE_ORIGIN: &str = "https://health.scnative.dev/probe";
+const PROBE_ORIGIN: &str = "https://api.scnative.dev/probe";
 const SIZED: [u16; 2] = [200, 206];
 
 #[derive(Clone)]
@@ -88,10 +88,14 @@ pub struct Probed {
 }
 
 pub async fn carries(host: &str) -> Probed {
+    carries_sized(host, PROBE_BYTES).await
+}
+
+pub async fn carries_sized(host: &str, size: usize) -> Probed {
     let started = Instant::now();
     let asked = Asked {
         method: "GET".to_string(),
-        url: format!("{PROBE_ORIGIN}?bytes={PROBE_BYTES}"),
+        url: format!("{PROBE_ORIGIN}?bytes={size}"),
         headers: Vec::new(),
         body: None,
     };
@@ -100,7 +104,7 @@ pub async fn carries(host: &str) -> Probed {
         _ => 0,
     };
     Probed {
-        ok: bytes == PROBE_BYTES,
+        ok: bytes == size,
         bytes,
         ms: started.elapsed().as_millis().min(u32::MAX as u128) as u32,
     }

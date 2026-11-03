@@ -109,7 +109,7 @@ export const CoverTile = memo(function CoverTile({
         className="tg-breath relative w-full h-full"
         style={perf.idleAnim ? breathStyle(track.urn) : undefined}
       >
-        <div className="tg-lift relative w-full h-full rounded-2xl overflow-hidden bg-white/[0.03]">
+        <div className="tg-lift relative w-full h-full rounded-2xl overflow-hidden bg-ink/[0.03]">
           <div
             role="button"
             tabIndex={0}
@@ -138,7 +138,7 @@ export const CoverTile = memo(function CoverTile({
                 className="absolute inset-0"
                 style={{
                   background:
-                    'linear-gradient(140deg, rgba(255,255,255,0.06), rgba(255,255,255,0.01))',
+                    'linear-gradient(140deg, rgb(var(--ink) / 0.06), rgb(var(--ink) / 0.01))',
                 }}
               />
             )}
@@ -150,7 +150,7 @@ export const CoverTile = memo(function CoverTile({
                 style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.82), transparent)' }}
               >
                 <p
-                  className="font-serif italic text-white/95 leading-snug border-l-2 pl-2 line-clamp-3"
+                  className="font-serif italic text-ink-95 leading-snug border-l-2 pl-2 line-clamp-3"
                   style={{ borderColor: 'var(--color-accent)', fontSize: hero ? '17px' : '12px' }}
                 >
                   {matchedLine}
@@ -162,11 +162,11 @@ export const CoverTile = memo(function CoverTile({
                 style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.78), transparent)' }}
               >
                 <p
-                  className={`truncate font-semibold text-white ${hero ? 'text-sm' : 'text-[12px]'}`}
+                  className={`truncate font-semibold text-ink ${hero ? 'text-sm' : 'text-[12px]'}`}
                 >
                   {displayTitle}
                 </p>
-                <p className="truncate text-[11px] text-white/55">{artistDisplay.primary}</p>
+                <p className="truncate text-[11px] text-ink-55">{artistDisplay.primary}</p>
               </div>
             )}
 
@@ -180,7 +180,7 @@ export const CoverTile = memo(function CoverTile({
             {isPreviewOnly(track) && (
               <span
                 className={`absolute ${kind === 'vibe' ? 'top-7' : 'top-2'} left-2 h-4 px-1.5 rounded-full text-[9px] font-semibold uppercase tracking-wide leading-4 text-amber-300/90`}
-                style={{ background: 'rgba(0,0,0,0.62)', border: '0.5px solid rgba(255,255,255,0.18)' }}
+                style={{ background: 'rgba(0,0,0,0.62)', border: '0.5px solid rgb(var(--ink) / 0.18)' }}
               >
                 {t('track.previewOnly')}
               </span>
@@ -195,15 +195,15 @@ export const CoverTile = memo(function CoverTile({
                 width: hero ? 40 : 30,
                 height: hero ? 40 : 30,
                 background: 'rgba(0,0,0,0.62)',
-                border: '0.5px solid rgba(255,255,255,0.18)',
+                border: '0.5px solid rgb(var(--ink) / 0.18)',
               }}
             >
               {isThisPlaying ? (
-                <Pause size={hero ? 18 : 14} className="text-white" fill="currentColor" />
+                <Pause size={hero ? 18 : 14} className="text-ink" fill="currentColor" />
               ) : (
                 <Play
                   size={hero ? 18 : 14}
-                  className="text-white translate-x-[1px]"
+                  className="text-ink translate-x-[1px]"
                   fill="currentColor"
                 />
               )}

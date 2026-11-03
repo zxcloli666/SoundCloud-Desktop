@@ -49,22 +49,22 @@ export const SuggestCard = memo(function SuggestCard({ track, by }: { track: Emb
 
   return (
     <div className="flex justify-center px-4 pt-3 pb-1">
-      <div className="w-full max-w-[300px] rounded-2xl border border-white/[0.07] bg-white/[0.035] p-2.5">
+      <div className="w-full max-w-[300px] rounded-2xl border border-ink/[0.07] bg-ink/[0.035] p-2.5">
         <div className="flex items-center gap-2.5">
-          <span className="size-11 shrink-0 overflow-hidden rounded-lg bg-white/[0.06]">
+          <span className="size-11 shrink-0 overflow-hidden rounded-lg bg-ink/[0.06]">
             {cover && <img src={cover} alt="" className="size-full object-cover" />}
           </span>
           <span className="min-w-0 flex-1">
-            <span className="block truncate text-[13px] font-semibold text-white/90">
+            <span className="block truncate text-[13px] font-semibold text-ink-90">
               {track.title}
             </span>
             {track.artist && (
-              <span className="block truncate text-[11.5px] text-white/45">{track.artist}</span>
+              <span className="block truncate text-[11.5px] text-ink-45">{track.artist}</span>
             )}
           </span>
         </div>
         <div className="mt-2 flex items-center gap-2">
-          <span className="min-w-0 flex-1 truncate text-[11px] text-white/40">
+          <span className="min-w-0 flex-1 truncate text-[11px] text-ink-40">
             {t('chat.room.suggest.by', { name: by })}
           </span>
           {playing ? (

@@ -26,11 +26,11 @@ export function NetCheckCard() {
     <Card title={t('netCheck.title')} desc={t('netCheck.cardDesc')} icon={<Activity size={17} />}>
       <div className="flex items-center gap-3">
         {verdict && <VerdictIcon verdict={verdict} size={14} />}
-        <span className="min-w-0 truncate text-[12.5px] text-white/70">
+        <span className="min-w-0 truncate text-[12.5px] text-ink-70">
           {verdict ? verdictTitle(t, verdict) : t('netCheck.never')}
         </span>
         {time && (
-          <span className="shrink-0 text-[11px] text-white/30">
+          <span className="shrink-0 text-[11px] text-ink-30">
             {t('netCheck.checkedAt', { time })}
           </span>
         )}

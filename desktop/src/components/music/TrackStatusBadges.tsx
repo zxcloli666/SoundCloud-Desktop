@@ -39,13 +39,13 @@ const TIERS: Record<Tier, { letter: string; inline: string; overlay: string }> =
     },
     pending: {
         letter: '·',
-        inline: 'bg-white/[0.06] text-white/40 ring-white/10',
-        overlay: 'bg-white/75 text-black/60 ring-black/5',
+        inline: 'bg-ink/[0.06] text-ink-40 ring-ink/10',
+        overlay: 'bg-ink/75 text-black/60 ring-black/5',
     },
     tooLong: {
         letter: 'F',
-        inline: 'bg-black/60 text-white/70 ring-white/15',
-        overlay: 'bg-black/85 text-white/80 ring-white/15',
+        inline: 'bg-shade-60 text-ink-70 ring-ink/15',
+        overlay: 'bg-black/85 text-ink-80 ring-ink/15',
     },
     failed: {
         letter: '!',
@@ -76,6 +76,7 @@ function TrackStatusBadgesInner({ meta, variant = 'inline', showIndex = true }: 
 
   return (
       <span
+          data-scheme={variant === 'overlay' ? 'dark' : undefined}
           title={t(`track.status.${tier}${stored === 'uq' ? 'Uq' : hq ? 'Hq' : ''}`)}
           className={`relative inline-flex items-center justify-center w-[18px] h-[18px] rounded-[6px] text-[10px] font-bold leading-none ring-1 ring-inset select-none ${tone}`}
       >

@@ -42,7 +42,7 @@ export const LyricsRow = memo(function LyricsRow({
   if (items.length === 0) return null;
   return (
     <section className="mb-4">
-      <h3 className="flex items-center gap-1.5 px-4 mb-2 text-[11px] uppercase tracking-wide text-white/35">
+      <h3 className="flex items-center gap-1.5 px-4 mb-2 text-[11px] uppercase tracking-wide text-ink-35">
         <Quote size={12} />
         {t('search.catalog.inLyrics')}
       </h3>
@@ -68,7 +68,7 @@ export const LyricsRow = memo(function LyricsRow({
             type="button"
             onClick={onMore}
             disabled={isFetchingMore}
-            className="flex flex-col items-center justify-center gap-2 rounded-2xl text-[12px] text-white/55 hover:text-white transition-colors cursor-pointer bg-white/[0.03] border border-white/10"
+            className="flex flex-col items-center justify-center gap-2 rounded-2xl text-[12px] text-ink-55 hover:text-ink transition-colors cursor-pointer bg-ink/[0.03] border border-ink/10"
           >
             {isFetchingMore ? <Loader2 size={18} className="animate-spin" /> : null}
             {t('search.catalog.showMore')}

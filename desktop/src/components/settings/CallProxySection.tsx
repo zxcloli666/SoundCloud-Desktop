@@ -114,16 +114,16 @@ export const CallProxySection: React.FC = React.memo(() => {
     <section
       className="relative overflow-hidden rounded-3xl transition-[box-shadow,border-color] duration-500"
       style={{
-        border: '0.5px solid rgba(255,255,255,0.1)',
+        border: '0.5px solid rgb(var(--ink) / 0.1)',
         background:
           blur > 0
-            ? 'linear-gradient(165deg, rgba(255,255,255,0.05), rgba(255,255,255,0.015) 60%, rgba(255,255,255,0.03))'
-            : 'rgba(18,18,22,0.85)',
+            ? 'linear-gradient(165deg, rgb(var(--ink) / 0.05), rgb(var(--ink) / 0.015) 60%, rgb(var(--ink) / 0.03))'
+            : 'rgb(var(--surface) / 0.85)',
         backdropFilter: blur > 0 ? `blur(${blur}px) saturate(1.4)` : undefined,
         WebkitBackdropFilter: blur > 0 ? `blur(${blur}px) saturate(1.4)` : undefined,
         boxShadow: live
-          ? `0 18px 50px rgba(0,0,0,0.42), 0 0 56px ${net}33, inset 0 1px 0 rgba(255,255,255,0.06)`
-          : '0 18px 50px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06)',
+          ? `0 18px 50px rgb(var(--shade) / calc(0.42 * var(--shade-alpha))), 0 0 56px ${net}33, inset 0 1px 0 rgb(var(--ink) / 0.06)`
+          : '0 18px 50px rgb(var(--shade) / calc(0.4 * var(--shade-alpha))), inset 0 1px 0 rgb(var(--ink) / 0.06)',
       }}
     >
       <style>{CPS_KEYFRAMES}</style>
@@ -227,7 +227,7 @@ export const CallProxySection: React.FC = React.memo(() => {
         className="absolute inset-0 pointer-events-none"
         style={{
           background:
-            'linear-gradient(180deg, rgba(10,10,14,0) 34%, rgba(10,10,14,0.5) 72%, rgba(10,10,14,0.7) 100%)',
+            'linear-gradient(180deg, rgb(var(--surface) / 0) 34%, rgb(var(--surface) / 0.5) 72%, rgb(var(--surface) / 0.7) 100%)',
         }}
       />
       {/* top specular hairline */}
@@ -235,7 +235,7 @@ export const CallProxySection: React.FC = React.memo(() => {
         aria-hidden
         className="absolute inset-x-6 top-0 h-px"
         style={{
-          background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.22), transparent)',
+          background: 'linear-gradient(90deg, transparent, rgb(var(--ink) / 0.22), transparent)',
         }}
       />
 
@@ -245,19 +245,19 @@ export const CallProxySection: React.FC = React.memo(() => {
           className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 transition-colors duration-500"
           style={{
             color: net,
-            background: `linear-gradient(135deg, ${net}26, rgba(255,255,255,0.04))`,
+            background: `linear-gradient(135deg, ${net}26, rgb(var(--ink) / 0.04))`,
             border: `0.5px solid ${net}40`,
             boxShadow: live
-              ? `0 0 18px ${net}40, inset 0 1px 0 rgba(255,255,255,0.18)`
-              : 'inset 0 1px 0 rgba(255,255,255,0.12)',
+              ? `0 0 18px ${net}40, inset 0 1px 0 rgb(var(--ink) / 0.18)`
+              : 'inset 0 1px 0 rgb(var(--ink) / 0.12)',
           }}
         >
           <Users size={18} />
         </div>
 
         <div className="flex-1 min-w-0">
-          <h3 className="text-[15px] font-bold text-white/90 tracking-tight">{t('call.title')}</h3>
-          <p className="flex items-center gap-2 text-[12px] text-white/50 mt-0.5">
+          <h3 className="text-[15px] font-bold text-ink-90 tracking-tight">{t('call.title')}</h3>
+          <p className="flex items-center gap-2 text-[12px] text-ink-50 mt-0.5">
             <span
               className="inline-block w-1.5 h-1.5 rounded-full shrink-0"
               style={{
@@ -289,8 +289,8 @@ export const CallProxySection: React.FC = React.memo(() => {
             enabled
               ? {
                   color: '#fff',
-                  background: 'rgba(255,255,255,0.08)',
-                  border: '0.5px solid rgba(255,255,255,0.16)',
+                  background: 'rgb(var(--ink) / 0.08)',
+                  border: '0.5px solid rgb(var(--ink) / 0.16)',
                   boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.1)',
                 }
               : {
@@ -307,7 +307,7 @@ export const CallProxySection: React.FC = React.memo(() => {
             style={
               enabled
                 ? { background: `${net}2e`, color: net }
-                : { background: 'rgba(255,255,255,0.92)', color: '#0a0a0c' }
+                : { background: 'rgb(var(--ink) / 0.92)', color: '#0a0a0c' }
             }
           >
             {busy ? (

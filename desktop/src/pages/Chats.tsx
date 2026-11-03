@@ -13,7 +13,7 @@ import { DOCK_ROOM } from '../stores/chat/prefs';
 import { useChatRoomStore } from '../stores/chat/room';
 
 const PANEL =
-  'relative flex min-h-0 flex-col overflow-hidden rounded-[1.75rem] border border-white/[0.08]';
+  'relative flex min-h-0 flex-col overflow-hidden rounded-[1.75rem] border border-ink/[0.08]';
 
 function Panel({ className, children }: { className: string; children: ReactNode }) {
   const blur = usePerfMode().blur(40);

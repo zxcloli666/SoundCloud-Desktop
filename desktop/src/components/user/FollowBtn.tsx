@@ -62,21 +62,21 @@ export function FollowBtn({ userUrn, aura }: FollowBtnProps) {
       disabled={busy}
       className={`group relative overflow-hidden inline-flex items-center justify-center gap-2 px-7 h-11 rounded-full text-[13px] font-semibold tracking-wide transition-all duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)] cursor-pointer disabled:opacity-60 ${
         following
-          ? 'text-white/80 hover:text-white'
-          : 'text-black hover:scale-[1.03] active:scale-[0.97]'
+          ? 'text-ink-80 hover:text-ink'
+          : 'text-paper hover:scale-[1.03] active:scale-[0.97]'
       }`}
       style={{
         background: following
             ? b > 0
-                ? 'rgba(255,255,255,0.06)'
-                : 'rgba(40,40,46,0.85)'
-          : 'linear-gradient(180deg, #ffffff, #e5e7eb)',
+                ? 'rgb(var(--ink) / 0.06)'
+                : 'rgb(var(--surface-hi) / 0.85)'
+          : 'linear-gradient(180deg, rgb(var(--ink)), rgb(var(--ink) / 0.9))',
         border: following
-          ? '0.5px solid rgba(255,255,255,0.12)'
-          : '0.5px solid rgba(255,255,255,0.4)',
+          ? '0.5px solid rgb(var(--ink) / 0.12)'
+          : '0.5px solid rgb(var(--ink) / 0.4)',
         boxShadow: following
-          ? 'inset 0 0.5px 0 rgba(255,255,255,0.08)'
-          : `0 12px 32px ${auraRgba(aura, 0.28)}, inset 0 1px 0 rgba(255,255,255,0.6)`,
+          ? 'inset 0 0.5px 0 rgb(var(--ink) / 0.08)'
+          : `0 12px 32px ${auraRgba(aura, 0.28)}, inset 0 1px 0 rgb(var(--ink) / 0.6)`,
           backdropFilter: b > 0 ? `blur(${b}px)` : undefined,
           WebkitBackdropFilter: b > 0 ? `blur(${b}px)` : undefined,
       }}
@@ -84,7 +84,7 @@ export function FollowBtn({ userUrn, aura }: FollowBtnProps) {
       <span
         className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700"
         style={{
-          background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent)',
+          background: 'linear-gradient(90deg, transparent, rgb(var(--ink) / 0.25), transparent)',
         }}
       />
       {busy ? (

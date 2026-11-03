@@ -25,19 +25,19 @@ function TabState({ load, onRetry }: { load: Load; onRetry: () => void }) {
   const { t } = useTranslation();
   if (load === 'loading') {
     return (
-      <div className="flex justify-center py-10 text-white/40">
+      <div className="flex justify-center py-10 text-ink-40">
         <Loader2 size={18} className="animate-spin" />
       </div>
     );
   }
   if (load === 'failed') {
     return (
-      <div className="flex flex-col items-center gap-3 py-10 text-[12.5px] text-white/45">
+      <div className="flex flex-col items-center gap-3 py-10 text-[12.5px] text-ink-45">
         {t('chat.thread.info.tracksFailed')}
         <button
           type="button"
           onClick={onRetry}
-          className="flex h-8 cursor-pointer items-center gap-1.5 rounded-full bg-white/[0.06] px-3.5 text-[12px] font-semibold text-white/75 hover:bg-white/[0.1]"
+          className="flex h-8 cursor-pointer items-center gap-1.5 rounded-full bg-ink/[0.06] px-3.5 text-[12px] font-semibold text-ink-75 hover:bg-ink/[0.1]"
         >
           <RotateCcw size={13} />
           {t('chat.thread.retry')}
@@ -46,8 +46,8 @@ function TabState({ load, onRetry }: { load: Load; onRetry: () => void }) {
     );
   }
   return (
-    <div className="flex flex-col items-center gap-3 py-12 text-center text-[12.5px] text-white/40">
-      <span className="flex size-12 items-center justify-center rounded-2xl bg-white/[0.04] text-white/30">
+    <div className="flex flex-col items-center gap-3 py-12 text-center text-[12.5px] text-ink-40">
+      <span className="flex size-12 items-center justify-center rounded-2xl bg-ink/[0.04] text-ink-30">
         <Music size={20} />
       </span>
       {t('chat.thread.info.noTracks')}
@@ -135,7 +135,7 @@ export const TracksTab = memo(function TracksTab({
             <button
               type="button"
               onClick={() => onJump(hit.seq)}
-              className="mb-1 flex max-w-full cursor-pointer items-center gap-1.5 px-1 text-[11px] text-white/40 hover:text-white/70"
+              className="mb-1 flex max-w-full cursor-pointer items-center gap-1.5 px-1 text-[11px] text-ink-40 hover:text-ink-70"
             >
               <span className="truncate font-semibold" style={{ color: senderColor(hit.sender) }}>
                 {nameOf(hit.sender)}

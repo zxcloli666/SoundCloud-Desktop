@@ -72,7 +72,7 @@ export const Atmosphere = memo(function Atmosphere({tint, energy = 0.5}: Atmosph
                 <div
                     className="tg-orb absolute -bottom-[22%] left-[16%] w-[72vw] h-[72vw] rounded-full mix-blend-screen"
                     style={{
-                        background: `radial-gradient(circle, ${c1} 0%, rgba(255,255,255,0.4) 45%, transparent 60%)`,
+                        background: `radial-gradient(circle, ${c1} 0%, rgb(var(--ink) / 0.4) 45%, transparent 60%)`,
                         opacity: tint?.length ? 0.26 : 0.16,
                         filter: `blur(${perf.blur(160)}px)`,
                         animation: `${drift} ${d(36)} ease-in-out -18s infinite`,

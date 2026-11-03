@@ -51,33 +51,33 @@ const ExportToastCard = React.memo(function ExportToastCard({
 
   return (
     <div
-      className="w-[356px] overflow-hidden rounded-2xl border border-white/[0.08] text-white"
+      className="w-[356px] overflow-hidden rounded-2xl border border-ink/[0.08] text-ink"
       style={{
-        background: 'rgba(24,24,28,0.94)',
+        background: 'rgb(var(--surface-hi) / 0.94)',
         backdropFilter: 'blur(20px) saturate(1.6)',
         WebkitBackdropFilter: 'blur(20px) saturate(1.6)',
-        boxShadow: '0 20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)',
+        boxShadow: '0 20px 60px rgb(var(--shade) / calc(0.5 * var(--shade-alpha))), inset 0 1px 0 rgba(255,255,255,0.05)',
       }}
     >
       <div className="flex items-start gap-3 px-4 pt-3.5 pb-3">
         <span
           className={`mt-0.5 flex size-9 flex-none items-center justify-center rounded-[11px] ${
-            success ? 'bg-accent/15 text-accent' : 'bg-white/[0.06] text-white/75'
+            success ? 'bg-accent/15 text-accent' : 'bg-ink/[0.06] text-ink-75'
           }`}
           style={success ? { boxShadow: '0 0 18px var(--color-accent-glow)' } : undefined}
         >
           <StatusIcon job={job} />
         </span>
         <div className="min-w-0 flex-1">
-          <div className="text-[13px] font-semibold text-white/92">{headline(job, t)}</div>
-          <div className="mt-0.5 flex items-center gap-1.5 text-[11.5px] text-white/45">
+          <div className="text-[13px] font-semibold text-ink-92">{headline(job, t)}</div>
+          <div className="mt-0.5 flex items-center gap-1.5 text-[11.5px] text-ink-45">
             <span className="truncate">{job.title}</span>
-            <span className="flex-none rounded-[5px] bg-white/[0.06] px-1.5 py-px font-mono text-[10px] font-semibold uppercase text-white/55">
+            <span className="flex-none rounded-[5px] bg-ink/[0.06] px-1.5 py-px font-mono text-[10px] font-semibold uppercase text-ink-55">
               {job.format}
             </span>
           </div>
           {job.skipped > 0 && (
-            <div className="mt-1 text-[11px] text-white/35">
+            <div className="mt-1 text-[11px] text-ink-35">
               {t('collectionSave.exportSkipped', { count: job.skipped })}
             </div>
           )}
@@ -95,7 +95,7 @@ const ExportToastCard = React.memo(function ExportToastCard({
             type="button"
             onClick={() => toast.dismiss(toastId)}
             aria-label={t('common.close')}
-            className="flex size-6 flex-none cursor-pointer items-center justify-center rounded-full text-white/40 transition-colors hover:bg-white/[0.08] hover:text-white/85"
+            className="flex size-6 flex-none cursor-pointer items-center justify-center rounded-full text-ink-40 transition-colors hover:bg-ink/[0.08] hover:text-ink-85"
           >
             <X size={12} />
           </button>
@@ -103,7 +103,7 @@ const ExportToastCard = React.memo(function ExportToastCard({
       </div>
 
       {!finished && (
-        <div className="mx-4 mb-3 h-[3px] overflow-hidden rounded-full bg-white/[0.07]">
+        <div className="mx-4 mb-3 h-[3px] overflow-hidden rounded-full bg-ink/[0.07]">
           <span
             className="block h-full origin-left"
             style={{
@@ -115,12 +115,12 @@ const ExportToastCard = React.memo(function ExportToastCard({
         </div>
       )}
 
-      <div className="flex justify-end gap-1.5 border-t border-white/[0.06] px-3 py-2">
+      <div className="flex justify-end gap-1.5 border-t border-ink/[0.06] px-3 py-2">
         {!finished && !job.cancelling && (
           <button
             type="button"
             onClick={cancelExport}
-            className="cursor-pointer rounded-[9px] px-3 py-1.5 text-[12px] font-semibold text-white/55 transition-colors hover:bg-white/[0.06] hover:text-white/90"
+            className="cursor-pointer rounded-[9px] px-3 py-1.5 text-[12px] font-semibold text-ink-55 transition-colors hover:bg-ink/[0.06] hover:text-ink-90"
           >
             {t('common.cancel')}
           </button>
@@ -129,7 +129,7 @@ const ExportToastCard = React.memo(function ExportToastCard({
           <button
             type="button"
             onClick={() => void revealItemInDir(job.firstPath as string).catch(() => {})}
-            className="flex cursor-pointer items-center gap-1.5 rounded-[9px] px-3 py-1.5 text-[12px] font-semibold text-white/80 transition-colors hover:bg-white/[0.07] hover:text-white"
+            className="flex cursor-pointer items-center gap-1.5 rounded-[9px] px-3 py-1.5 text-[12px] font-semibold text-ink-80 transition-colors hover:bg-ink/[0.07] hover:text-ink"
           >
             <FolderOpen size={13} />
             {t('collectionSave.showInFolder')}

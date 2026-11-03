@@ -354,8 +354,32 @@ pub fn call_is_enabled(state: State<'_, Arc<CallState>>) -> bool {
 }
 
 #[tauri::command]
+pub fn call_device_id(state: State<'_, Arc<CallState>>) -> String {
+    state.device_id.clone()
+}
+
+#[tauri::command]
 pub async fn call_status(state: State<'_, Arc<CallState>>) -> Result<CallStatus, String> {
     Ok(state.inner().status.lock().await.clone())
+}
+
+pub async fn state_label(app: &AppHandle) -> Option<&'static str> {
+    let state = app.try_state::<Arc<CallState>>()?.inner().clone();
+    let reader = state.clone();
+    let enabled = tokio::task::spawn_blocking(move || reader.load_flag())
+        .await
+        .unwrap_or(false);
+    if !enabled {
+        return Some("off");
+    }
+    let label = match *state.status.lock().await {
+        CallStatus::Disabled => "starting",
+        CallStatus::Connecting => "connecting",
+        CallStatus::Provisioning => "provisioning",
+        CallStatus::Active => "active",
+        CallStatus::Failed { .. } => "failed",
+    };
+    Some(label)
 }
 
 pub fn manage_state(app: &AppHandle, state: Arc<CallState>) {

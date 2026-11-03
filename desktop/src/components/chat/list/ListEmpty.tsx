@@ -36,11 +36,11 @@ export function ListFailed({ onRetry }: { onRetry: () => void }) {
   const { t } = useTranslation();
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center">
-      <p className="text-[13px] text-white/50">{t('chat.list.failed')}</p>
+      <p className="text-[13px] text-ink-50">{t('chat.list.failed')}</p>
       <button
         type="button"
         onClick={onRetry}
-        className="flex cursor-pointer items-center gap-1.5 rounded-xl border border-white/[0.08] bg-white/[0.06] px-3.5 py-1.5 text-[12px] font-semibold text-white/75 transition-colors hover:bg-white/[0.1]"
+        className="flex cursor-pointer items-center gap-1.5 rounded-xl border border-ink/[0.08] bg-ink/[0.06] px-3.5 py-1.5 text-[12px] font-semibold text-ink-75 transition-colors hover:bg-ink/[0.1]"
       >
         <RefreshCw size={12} />
         {t('chat.list.retry')}
@@ -55,10 +55,10 @@ export const ListEmpty = memo(function ListEmpty({ kind }: { kind: ListFilter | 
   const offerNew = kind === 'all' || kind === 'direct' || kind === 'groups';
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 pb-10 text-center">
-      <div className="flex size-14 items-center justify-center rounded-[1.25rem] border border-white/[0.07] bg-white/[0.04] text-white/40">
+      <div className="flex size-14 items-center justify-center rounded-[1.25rem] border border-ink/[0.07] bg-ink/[0.04] text-ink-40">
         <Icon size={22} strokeWidth={1.7} />
       </div>
-      <p className="text-[13px] font-medium text-white/55">{t(`chat.list.empty.${kind}`)}</p>
+      <p className="text-[13px] font-medium text-ink-55">{t(`chat.list.empty.${kind}`)}</p>
       {offerNew && (
         <button
           type="button"

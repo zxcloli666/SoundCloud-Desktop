@@ -9,9 +9,9 @@ export function sidebarWidth(collapsed: boolean): number {
 }
 
 export const ACTIVE: React.CSSProperties = {
-  color: '#fff',
+  color: 'rgb(var(--ink))',
   background:
-    'linear-gradient(180deg, var(--color-accent-glow), transparent), rgba(255,255,255,0.05)',
+    'linear-gradient(180deg, var(--color-accent-glow), transparent), rgb(var(--ink) / 0.05)',
   boxShadow: '0 0 18px var(--color-accent-glow), inset 0 0.5px 0 rgba(255,255,255,0.14)',
 };
 

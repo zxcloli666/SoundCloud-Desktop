@@ -31,14 +31,14 @@ export const NowPlayingButton = memo(function NowPlayingButton({
     >
       {track && cover ? (
         <span
-          className="chat-thread-motion relative size-[30px] overflow-hidden rounded-full border border-white/15"
+          className="chat-thread-motion relative size-[30px] overflow-hidden rounded-full border border-ink/15"
           style={{ animation: spin ? 'chat-thread-spin 6s linear infinite' : undefined }}
         >
           <img src={cover} alt="" className="size-full object-cover" />
           <span aria-hidden className="chat-vinyl-label absolute inset-0 rounded-full" />
         </span>
       ) : (
-        <Disc3 size={19} className={track ? 'text-white/70' : 'text-white/25'} />
+        <Disc3 size={19} className={track ? 'text-ink-70' : 'text-ink-25'} />
       )}
       {playing && (
         <span

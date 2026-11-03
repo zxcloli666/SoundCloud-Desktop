@@ -16,6 +16,9 @@ use tauri::{Emitter, Manager, State};
 use tokio::sync::RwLock;
 
 use crate::app::diagnostics::log_native;
+use crate::network::edge;
+use crate::network::netcheck::model::Role;
+use crate::network::traced;
 
 const SESSION_FILE: &str = "auth_session.json";
 const LEGACY_FILE: &str = "sc-auth.json";
@@ -199,15 +202,28 @@ pub async fn auth_logout(
         let app = app.clone();
         state.rt.spawn(async move {
             let url = format!("{}/auth/logout", api_base.trim_end_matches('/'));
-            match http
-                .post(url)
-                .header("x-session-id", token)
-                .timeout(Duration::from_secs(10))
-                .send()
-                .await
-            {
-                Ok(r) => log_native(&app, "INFO", format!("[auth] server logout {}", r.status())),
-                Err(e) => log_native(&app, "WARN", format!("[auth] server logout failed: {e}")),
+            for (at, hop) in edge::plan(&url).iter().enumerate() {
+                let (request, flight) =
+                    traced::begin(&http, wreq::Method::POST, hop, Role::of_index(at), "auth");
+                match request
+                    .header("x-session-id", token.as_str())
+                    .timeout(Duration::from_secs(10))
+                    .send()
+                    .await
+                {
+                    Ok(r) => {
+                        flight.answered(r.status().as_u16(), 0);
+                        log_native(&app, "INFO", format!("[auth] server logout {}", r.status()));
+                        if edge::hop_ok(hop, &r) {
+                            return;
+                        }
+                    }
+                    Err(e) => {
+                        flight.broke(&e);
+                        hop.note(false);
+                        log_native(&app, "WARN", format!("[auth] server logout failed: {e}"));
+                    }
+                }
             }
         });
     }

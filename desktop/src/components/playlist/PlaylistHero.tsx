@@ -16,10 +16,10 @@ import type {PlaylistAura} from './usePlaylistAura';
 function Meta({icon, children}: { icon?: React.ReactNode; children: React.ReactNode }) {
     return (
         <span
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-[0.16em] text-white/55"
-            style={{background: 'rgba(255,255,255,0.05)', border: '0.5px solid rgba(255,255,255,0.07)'}}
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-55"
+            style={{background: 'rgb(var(--ink) / 0.05)', border: '0.5px solid rgb(var(--ink) / 0.07)'}}
         >
-      {icon && <span className="text-white/45">{icon}</span>}
+      {icon && <span className="text-ink-45">{icon}</span>}
             {children}
     </span>
     );
@@ -81,13 +81,13 @@ export const PlaylistHero = React.memo(function PlaylistHero({
             WebkitBackgroundClip: 'text',
             backgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
-            filter: 'drop-shadow(0 8px 24px rgba(0,0,0,0.5))',
+            filter: 'drop-shadow(0 8px 24px rgb(var(--shade) / calc(0.5 * var(--shade-alpha))))',
         }
-        : {color: '#fff', textShadow: '0 8px 24px rgba(0,0,0,0.5)'};
+        : {color: 'rgb(var(--ink))', textShadow: '0 8px 24px rgb(var(--shade) / calc(0.5 * var(--shade-alpha)))'};
 
     return (
         <GlassHeroPanel hasStar={false} aura={aura.aura} className="p-6 md:p-10">
-            <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 items-center lg:items-start">
+            <div data-ui="playlist-hero" className="flex flex-col lg:flex-row gap-8 lg:gap-12 items-center lg:items-start">
                 <CrateStack
                     playlist={playlist}
                     tracks={tracks}
@@ -99,9 +99,9 @@ export const PlaylistHero = React.memo(function PlaylistHero({
                 <div className="flex-1 min-w-0 w-full flex flex-col gap-5 text-center lg:text-left">
                     <div className="flex flex-wrap items-center gap-2 justify-center lg:justify-start">
             <span
-                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-[0.28em] text-white/70"
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-[0.28em] text-ink-70"
                 style={{
-                    background: 'rgba(255,255,255,0.05)',
+                    background: 'rgb(var(--ink) / 0.05)',
                     boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.08)',
                 }}
             >
@@ -109,7 +109,7 @@ export const PlaylistHero = React.memo(function PlaylistHero({
             </span>
                         {aura.topGenres.length > 1 && (
                             <span
-                                className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-[0.16em] text-white/55"
+                                className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-[0.16em] text-ink-55"
                                 style={{background: aura.accentGlow}}
                             >
                 {t('playlist.spansGenres', {count: aura.topGenres.length})}
@@ -129,7 +129,7 @@ export const PlaylistHero = React.memo(function PlaylistHero({
                             {aura.topGenres.map((g) => (
                                 <span
                                     key={g.genre}
-                                    className="inline-flex items-center gap-1.5 text-[11px] text-white/45"
+                                    className="inline-flex items-center gap-1.5 text-[11px] text-ink-45"
                                 >
                   <span
                       className="w-2 h-2 rounded-full"

@@ -31,12 +31,12 @@ export const MuteRow = memo(function MuteRow() {
       aria-pressed={!muted}
       disabled={busy}
       onClick={() => void toggle()}
-      className="flex w-full cursor-pointer items-center gap-2.5 rounded-2xl border border-white/[0.06] bg-white/[0.025] px-3 py-2.5 text-left transition-colors duration-150 hover:bg-white/[0.045] disabled:opacity-60"
+      className="flex w-full cursor-pointer items-center gap-2.5 rounded-2xl border border-ink/[0.06] bg-ink/[0.025] px-3 py-2.5 text-left transition-colors duration-150 hover:bg-ink/[0.045] disabled:opacity-60"
     >
-      <span className="flex size-7 items-center justify-center rounded-full bg-white/[0.06] text-white/60">
+      <span className="flex size-7 items-center justify-center rounded-full bg-ink/[0.06] text-ink-60">
         <Icon size={14} />
       </span>
-      <span className="flex-1 text-[13px] font-semibold text-white/85">
+      <span className="flex-1 text-[13px] font-semibold text-ink-85">
         {t('chat.thread.info.notifications')}
       </span>
       <span

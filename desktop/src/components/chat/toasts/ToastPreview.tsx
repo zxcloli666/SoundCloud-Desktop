@@ -22,7 +22,7 @@ export const ToastPreview = memo(function ToastPreview({
     );
   }
   if (mode !== 'full') {
-    return <p className="text-[12.5px] text-white/50">{t('chat.notify.newMessage')}</p>;
+    return <p className="text-[12.5px] text-ink-50">{t('chat.notify.newMessage')}</p>;
   }
 
   const embed = message.embeds[0];
@@ -30,7 +30,7 @@ export const ToastPreview = memo(function ToastPreview({
   return (
     <div className="flex min-w-0 items-center gap-2">
       {embed && (
-        <span className="relative size-9 shrink-0 overflow-hidden rounded-lg bg-white/[0.06]">
+        <span className="relative size-9 shrink-0 overflow-hidden rounded-lg bg-ink/[0.06]">
           {embed.artworkUrl ? (
             <img
               src={art(embed.artworkUrl, 't67x67') ?? undefined}
@@ -38,11 +38,11 @@ export const ToastPreview = memo(function ToastPreview({
               className="size-full object-cover"
             />
           ) : (
-            <Music size={14} className="absolute inset-0 m-auto text-white/40" />
+            <Music size={14} className="absolute inset-0 m-auto text-ink-40" />
           )}
         </span>
       )}
-      <p className="selectable line-clamp-2 min-w-0 text-[12.5px] leading-snug break-words text-white/70">
+      <p className="selectable line-clamp-2 min-w-0 text-[12.5px] leading-snug break-words text-ink-70">
         {text || embed?.title}
       </p>
     </div>

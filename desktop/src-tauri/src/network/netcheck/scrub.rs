@@ -223,6 +223,11 @@ pub fn target(target: &mut TargetCheck) {
     if let Some(app) = target.app.as_mut() {
         fail(&mut app.fail);
     }
+    if let Some(route) = target.route.as_mut() {
+        for service in &mut route.services {
+            fail(&mut service.probe.fail);
+        }
+    }
 }
 
 pub fn report(report: &mut NetReport) {

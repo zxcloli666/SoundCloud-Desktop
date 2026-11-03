@@ -72,7 +72,7 @@ export const LikesTab = React.memo(function LikesTab({filter}: { filter: string 
             <div className="flex flex-col gap-1">
                 {isLoading ? (
                     <div className="flex justify-center py-20">
-                        <Loader2 size={32} className="animate-spin text-white/20"/>
+                        <Loader2 size={32} className="animate-spin text-ink-20"/>
                     </div>
                 ) : filtered.length > 0 && orderable ? (
                     <OrderableTracks tracks={filtered} order={likesOrder} queue={getQueue} onPlay={onLikePlay}/>
@@ -95,7 +95,7 @@ export const LikesTab = React.memo(function LikesTab({filter}: { filter: string 
                         )}
                     />
                 ) : filter ? (
-                    <div className="py-20 text-center text-white/20">
+                    <div className="py-20 text-center text-ink-20">
                         {likesQuery.hasNextPage ? t('common.loading') : t('library.noMatches')}
                     </div>
                 ) : notice ? (
@@ -103,18 +103,18 @@ export const LikesTab = React.memo(function LikesTab({filter}: { filter: string 
                         <SyncNotice kind={notice} text={noticeText} info={syncInfo} ownedByMe onRetry={retry}/>
                     </div>
                 ) : (
-                    <div className="py-20 text-center text-white/20">{t('library.noLikedTracks')}</div>
+                    <div className="py-20 text-center text-ink-20">{t('library.noLikedTracks')}</div>
                 )}
             </div>
             {!loadAll ? (
                 <div ref={sentinelRef} className="h-12 flex items-center justify-center mt-4">
                     {likesQuery.isFetchingNextPage && (
-                        <Loader2 size={20} className="text-white/15 animate-spin"/>
+                        <Loader2 size={20} className="text-ink-15 animate-spin"/>
                     )}
                 </div>
             ) : likesQuery.isFetchingNextPage ? (
                 <div className="h-12 flex items-center justify-center mt-4">
-                    <Loader2 size={20} className="text-white/15 animate-spin"/>
+                    <Loader2 size={20} className="text-ink-15 animate-spin"/>
                 </div>
             ) : null}
             {!loadAll && notice && likedTracks.length > 0 && !likesQuery.hasNextPage && (

@@ -21,7 +21,7 @@ export const Reactions = memo(function Reactions({
           className={`flex h-[24px] cursor-pointer items-center gap-1 rounded-full border px-2 transition-colors duration-150 ${
             group.mine
               ? 'border-[var(--color-accent)] text-white'
-              : 'border-white/[0.07] bg-white/[0.05] text-white/70 hover:bg-white/[0.09]'
+              : 'border-ink/[0.07] bg-ink/[0.05] text-ink-70 hover:bg-ink/[0.09]'
           }`}
           style={group.mine ? { background: 'var(--color-chat-tint)' } : undefined}
         >

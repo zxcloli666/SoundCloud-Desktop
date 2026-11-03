@@ -29,7 +29,7 @@ export const ReplyQuote = memo(function ReplyQuote({
           {message ? nameOf(message.sender) : t('chat.thread.reply.missing')}
         </span>
         {message && (
-          <span className="block truncate text-[12px] leading-snug text-white/55">
+          <span className="block truncate text-[12px] leading-snug text-ink-55">
             {messageSnippet(message, t)}
           </span>
         )}

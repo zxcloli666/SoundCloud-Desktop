@@ -59,7 +59,7 @@ export const ChatToast = memo(function ChatToast({ item, prefs, onOpen }: ChatTo
       role="status"
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
-      className="chat-motion pointer-events-auto relative w-[340px] max-w-[calc(100vw-32px)] overflow-hidden rounded-[1.4rem] border border-white/[0.1]"
+      className="chat-motion pointer-events-auto relative w-[340px] max-w-[calc(100vw-32px)] overflow-hidden rounded-[1.4rem] border border-ink/[0.1]"
       style={{
         boxShadow: '0 24px 60px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.08)',
         animation: perf.mode === 'light' ? undefined : 'chat-pop 420ms var(--ease-apple) both',
@@ -93,7 +93,7 @@ export const ChatToast = memo(function ChatToast({ item, prefs, onOpen }: ChatTo
           >
             <span className="relative shrink-0">
               {anonymous ? (
-                <span className="flex size-10 items-center justify-center rounded-full bg-white/[0.08] text-white/60">
+                <span className="flex size-10 items-center justify-center rounded-full bg-ink/[0.08] text-ink-60">
                   <MessageCircle size={17} />
                 </span>
               ) : (
@@ -111,7 +111,7 @@ export const ChatToast = memo(function ChatToast({ item, prefs, onOpen }: ChatTo
               )}
             </span>
             <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-              <span className="truncate text-[13.5px] font-bold text-white/92">{title}</span>
+              <span className="truncate text-[13.5px] font-bold text-ink-92">{title}</span>
               {!anonymous && <ToastPreview message={item.message} mode={mode} />}
             </span>
           </button>
@@ -119,7 +119,7 @@ export const ChatToast = memo(function ChatToast({ item, prefs, onOpen }: ChatTo
             type="button"
             onClick={close}
             aria-label={t('chat.notify.close')}
-            className="flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-full text-white/35 hover:bg-white/[0.08] hover:text-white/80"
+            className="flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-full text-ink-35 hover:bg-ink/[0.08] hover:text-ink-80"
           >
             <X size={12} />
           </button>

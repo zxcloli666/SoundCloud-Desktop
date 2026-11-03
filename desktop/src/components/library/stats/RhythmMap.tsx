@@ -47,9 +47,9 @@ export const RhythmMap = memo(function RhythmMap({
       delay={delay}
       aside={
         hover && (
-          <span className="text-[11.5px] text-white/60 tabular-nums truncate">
+          <span className="text-[11.5px] text-ink-60 tabular-nums truncate">
             {longDays[hover.day]}, {hourLabel(fmt.locale, hover.hour)}
-            <span className="text-white/35">
+            <span className="text-ink-35">
               {' · '}
               {t('stats.playsCount', { count: hovered, formatted: fmt.number(hovered) })}
             </span>
@@ -71,10 +71,10 @@ export const RhythmMap = memo(function RhythmMap({
               <KindIcon size={22} />
             </span>
             <div className="min-w-0">
-              <p className="text-[17px] font-black tracking-tight text-white/95 leading-tight">
+              <p className="text-[17px] font-black tracking-tight text-ink-95 leading-tight">
                 {t(`stats.kind.${rhythm.kind}`)}
               </p>
-              <p className="text-[12px] text-white/45 mt-0.5">
+              <p className="text-[12px] text-ink-45 mt-0.5">
                 {t(`stats.kindShare.${rhythm.kind}`, {
                   percent: Math.round(rhythm.kindShare * 100),
                 })}
@@ -83,20 +83,20 @@ export const RhythmMap = memo(function RhythmMap({
           </div>
           <div className="flex gap-6">
             <div>
-              <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-white/40">
+              <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-ink-40">
                 <Clock size={11} />
                 {t('stats.peakHour')}
               </p>
-              <p className="text-[15px] font-bold text-white/85 mt-1 tabular-nums">
+              <p className="text-[15px] font-bold text-ink-85 mt-1 tabular-nums">
                 {hourLabel(fmt.locale, rhythm.peakHour)}
               </p>
             </div>
             <div>
-              <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-white/40">
+              <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-ink-40">
                 <Calendar size={11} />
                 {t('stats.peakDay')}
               </p>
-              <p className="text-[15px] font-bold text-white/85 mt-1 capitalize">
+              <p className="text-[15px] font-bold text-ink-85 mt-1 capitalize">
                 {longDays[rhythm.peakWeekday]}
               </p>
             </div>
@@ -109,7 +109,7 @@ export const RhythmMap = memo(function RhythmMap({
           >
             {rhythm.grid.map((row, day) => (
               <div key={shortDays[day]} className="contents">
-                <span className="pr-2 text-[10px] text-white/35 leading-none self-center capitalize">
+                <span className="pr-2 text-[10px] text-ink-35 leading-none self-center capitalize">
                   {shortDays[day]}
                 </span>
                 {row.map((plays, hour) => {
@@ -124,13 +124,13 @@ export const RhythmMap = memo(function RhythmMap({
                         background:
                           plays > 0
                             ? auraRgba(aura, 0.12 + 0.88 * level ** 0.75)
-                            : 'rgba(255,255,255,0.035)',
+                            : 'rgb(var(--ink) / 0.035)',
                         boxShadow:
                           isHover || (perf.glow && level > 0.7)
                             ? `0 0 12px ${auraRgba(aura, 0.55)}`
                             : undefined,
                         transform: isHover ? 'scale(1.25)' : undefined,
-                        outline: isHover ? '1px solid rgba(255,255,255,0.6)' : undefined,
+                        outline: isHover ? '1px solid rgb(var(--ink) / 0.6)' : undefined,
                       }}
                     />
                   );
@@ -141,7 +141,7 @@ export const RhythmMap = memo(function RhythmMap({
             {Array.from({ length: 24 }, (_, hour) => (
               <span
                 key={hour}
-                className="pt-1.5 text-[9.5px] text-white/30 tabular-nums leading-none"
+                className="pt-1.5 text-[9.5px] text-ink-30 tabular-nums leading-none"
               >
                 {AXIS_HOURS.includes(hour) ? String(hour).padStart(2, '0') : ''}
               </span>

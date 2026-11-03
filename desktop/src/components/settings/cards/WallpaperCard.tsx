@@ -178,11 +178,11 @@ export function WallpaperCard() {
                         onClick={clearBackground}
                         className={`w-20 h-14 rounded-xl border-2 transition-all duration-200 cursor-pointer flex items-center justify-center ${
                             !backgroundImage
-                                ? 'border-white/40 bg-white/[0.08]'
-                                : 'border-white/[0.06] bg-white/[0.02] hover:border-white/[0.12]'
+                                ? 'border-ink/40 bg-ink/[0.08]'
+                                : 'border-ink/[0.06] bg-ink/[0.02] hover:border-ink/[0.12]'
                         }`}
                     >
-                        <span className="text-[10px] text-white/40 font-semibold">{t('settings.none')}</span>
+                        <span className="text-[10px] text-ink-40 font-semibold">{t('settings.none')}</span>
                     </button>
 
                     <button
@@ -193,10 +193,10 @@ export function WallpaperCard() {
                         title={t(desktopMissing ? 'settings.wpDesktopMissing' : 'settings.wpDesktop')}
                         className={`relative w-20 h-14 rounded-xl overflow-hidden border-2 transition-all duration-200 flex flex-col items-center justify-center gap-0.5 ${
                             followingDesktop
-                                ? 'border-white/40 shadow-[0_0_12px_rgba(255,255,255,0.1)] cursor-pointer'
+                                ? 'border-ink/40 shadow-[0_0_12px_rgba(255,255,255,0.1)] cursor-pointer'
                                 : desktopMissing
-                                  ? 'border-dashed border-white/[0.06] cursor-not-allowed'
-                                  : 'border-white/[0.06] hover:border-white/[0.15] cursor-pointer'
+                                  ? 'border-dashed border-ink/[0.06] cursor-not-allowed'
+                                  : 'border-ink/[0.06] hover:border-ink/[0.15] cursor-pointer'
                         }`}
                     >
                         {desktopUrl ? (
@@ -208,7 +208,8 @@ export function WallpaperCard() {
                                     className="absolute inset-0 w-full h-full object-cover"
                                 />
                                 <span
-                                    className="absolute inset-x-0 bottom-0 py-0.5 bg-black/60 flex items-center justify-center gap-1 text-[9px] text-white/80 font-medium">
+                                    data-scheme="dark"
+                                    className="absolute inset-x-0 bottom-0 py-0.5 bg-black/60 flex items-center justify-center gap-1 text-[9px] text-ink-80 font-medium">
                                     <Monitor size={9}/>
                                     {t('settings.wpDesktop')}
                                 </span>
@@ -216,17 +217,17 @@ export function WallpaperCard() {
                         ) : (
                             <>
                                 {desktopMissing ? (
-                                    <MonitorOff size={12} className="text-white/25"/>
+                                    <MonitorOff size={12} className="text-ink-25"/>
                                 ) : desktopFound === undefined ? (
-                                    <Loader2 size={12} className="animate-spin text-white/20"/>
+                                    <Loader2 size={12} className="animate-spin text-ink-20"/>
                                 ) : (
-                                    <Monitor size={12} className="text-white/30"/>
+                                    <Monitor size={12} className="text-ink-30"/>
                                 )}
-                                <span className="text-[9px] text-white/25 font-medium">{t('settings.wpDesktop')}</span>
+                                <span className="text-[9px] text-ink-25 font-medium">{t('settings.wpDesktop')}</span>
                             </>
                         )}
                         {followingDesktop && (
-                            <div className="absolute inset-0 bg-white/10 flex items-center justify-center">
+                            <div className="absolute inset-0 bg-ink/10 flex items-center justify-center">
                                 <div className="w-4 h-4 rounded-full bg-white shadow-lg"/>
                             </div>
                         )}
@@ -249,8 +250,8 @@ export function WallpaperCard() {
                                     slot >= 0
                                         ? ''
                                         : backgroundImage === name
-                                          ? 'border-white/40 shadow-[0_0_12px_rgba(255,255,255,0.1)]'
-                                          : 'border-white/[0.06] hover:border-white/[0.15]'
+                                          ? 'border-ink/40 shadow-[0_0_12px_rgba(255,255,255,0.1)]'
+                                          : 'border-ink/[0.06] hover:border-ink/[0.15]'
                                 } ${rotation && slot < 0 ? 'opacity-60 hover:opacity-100' : ''}`}
                                 style={
                                     slot >= 0
@@ -277,7 +278,7 @@ export function WallpaperCard() {
                                     }}
                                     className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer hover:bg-red-500/80"
                                 >
-                  <X size={8} className="text-white"/>
+                  <X size={8} className="text-ink"/>
                 </span>
                                 {slot >= 0 && (
                                     <span
@@ -286,7 +287,7 @@ export function WallpaperCard() {
                                     </span>
                                 )}
                                 {backgroundImage === name && (
-                                    <div className="absolute inset-0 bg-white/10 flex items-center justify-center">
+                                    <div className="absolute inset-0 bg-ink/10 flex items-center justify-center">
                                         <div className="w-4 h-4 rounded-full bg-white shadow-lg"/>
                                     </div>
                                 )}
@@ -296,18 +297,18 @@ export function WallpaperCard() {
 
                     {loading && (
                         <div
-                            className="w-20 h-14 rounded-xl bg-white/[0.02] border border-white/[0.06] flex items-center justify-center">
-                            <Loader2 size={14} className="animate-spin text-white/20"/>
+                            className="w-20 h-14 rounded-xl bg-ink/[0.02] border border-ink/[0.06] flex items-center justify-center">
+                            <Loader2 size={14} className="animate-spin text-ink-20"/>
                         </div>
                     )}
 
                     <button
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
-                        className="w-20 h-14 rounded-xl border-2 border-dashed border-white/[0.1] hover:border-white/[0.2] transition-all cursor-pointer flex flex-col items-center justify-center gap-0.5 hover:bg-white/[0.02]"
+                        className="w-20 h-14 rounded-xl border-2 border-dashed border-ink/[0.1] hover:border-ink/[0.2] transition-all cursor-pointer flex flex-col items-center justify-center gap-0.5 hover:bg-ink/[0.02]"
                     >
-                        <span className="text-[14px] text-white/30 font-light leading-none">+</span>
-                        <span className="text-[9px] text-white/25 font-medium">{t('settings.addFile')}</span>
+                        <span className="text-[14px] text-ink-30 font-light leading-none">+</span>
+                        <span className="text-[9px] text-ink-25 font-medium">{t('settings.addFile')}</span>
                     </button>
                     <input
                         ref={fileInputRef}
@@ -322,12 +323,12 @@ export function WallpaperCard() {
                         onClick={() => setShowUrlInput(!showUrlInput)}
                         className={`w-20 h-14 rounded-xl border-2 border-dashed transition-all cursor-pointer flex flex-col items-center justify-center gap-0.5 ${
                             showUrlInput
-                                ? 'border-white/[0.2] bg-white/[0.04]'
-                                : 'border-white/[0.1] hover:border-white/[0.2] hover:bg-white/[0.02]'
+                                ? 'border-ink/[0.2] bg-ink/[0.04]'
+                                : 'border-ink/[0.1] hover:border-ink/[0.2] hover:bg-ink/[0.02]'
                         }`}
                     >
-                        <Link size={12} className="text-white/30"/>
-                        <span className="text-[9px] text-white/25 font-medium">URL</span>
+                        <Link size={12} className="text-ink-30"/>
+                        <span className="text-[9px] text-ink-25 font-medium">URL</span>
                     </button>
 
                     <button
@@ -336,15 +337,15 @@ export function WallpaperCard() {
                         className={`w-20 h-14 rounded-xl border-2 border-dashed transition-all cursor-pointer flex flex-col items-center justify-center gap-0.5 ${
                             showSearch
                                 ? 'bg-[var(--color-accent-glow)]'
-                                : 'border-white/[0.1] hover:border-white/[0.2] hover:bg-white/[0.02]'
+                                : 'border-ink/[0.1] hover:border-ink/[0.2] hover:bg-ink/[0.02]'
                         }`}
                         style={showSearch ? {borderColor: 'var(--color-accent)'} : undefined}
                     >
                         <Search
                             size={12}
-                            className={showSearch ? 'text-[var(--color-accent)]' : 'text-white/30'}
+                            className={showSearch ? 'text-[var(--color-accent)]' : 'text-ink-30'}
                         />
-                        <span className="text-[9px] text-white/25 font-medium">{t('settings.wpSearch')}</span>
+                        <span className="text-[9px] text-ink-25 font-medium">{t('settings.wpSearch')}</span>
                     </button>
                 </div>
 
@@ -360,13 +361,13 @@ export function WallpaperCard() {
                             onChange={(e) => setUrlInput(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && handleDownloadUrl()}
                             placeholder={t('settings.bgUrlPlaceholder')}
-                            className="flex-1 px-4 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.06] text-[13px] text-white/80 placeholder:text-white/20 focus:border-white/[0.12] focus:bg-white/[0.06] transition-all duration-200 outline-none"
+                            className="flex-1 px-4 py-2.5 rounded-xl bg-ink/[0.04] border border-ink/[0.06] text-[13px] text-ink-80 placeholder:text-ink-20 focus:border-ink/[0.12] focus:bg-ink/[0.06] transition-all duration-200 outline-none"
                         />
                         <button
                             type="button"
                             onClick={handleDownloadUrl}
                             disabled={downloading || !urlInput.trim()}
-                            className="px-4 py-2.5 rounded-xl text-[12px] font-semibold bg-white/[0.08] text-white/70 hover:bg-white/[0.12] border border-white/[0.06] transition-all disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
+                            className="px-4 py-2.5 rounded-xl text-[12px] font-semibold bg-ink/[0.08] text-ink-70 hover:bg-ink/[0.12] border border-ink/[0.06] transition-all disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
                         >
                             {downloading ? (
                                 <Loader2 size={14} className="animate-spin"/>
@@ -381,10 +382,10 @@ export function WallpaperCard() {
                     <div className="space-y-4 pt-1">
                         <div className="space-y-2">
                             <div className="flex items-center justify-between">
-                                <label className="text-[13px] text-white/50 font-medium">
+                                <label className="text-[13px] text-ink-50 font-medium">
                                     {t('settings.bgDim')}
                                 </label>
-                                <span className="text-[12px] text-white/30 tabular-nums">
+                                <span className="text-[12px] text-ink-30 tabular-nums">
                   {Math.round(backgroundDim * 100)}%
                 </span>
                             </div>
@@ -398,10 +399,10 @@ export function WallpaperCard() {
                         </div>
                         <div className="space-y-2">
                             <div className="flex items-center justify-between">
-                                <label className="text-[13px] text-white/50 font-medium">
+                                <label className="text-[13px] text-ink-50 font-medium">
                                     {t('settings.bgOpacity')}
                                 </label>
-                                <span className="text-[12px] text-white/30 tabular-nums">
+                                <span className="text-[12px] text-ink-30 tabular-nums">
                   {Math.round(backgroundOpacity * 100)}%
                 </span>
                             </div>
@@ -415,10 +416,10 @@ export function WallpaperCard() {
                         </div>
                         <div className="space-y-2">
                             <div className="flex items-center justify-between">
-                                <label className="text-[13px] text-white/50 font-medium">
+                                <label className="text-[13px] text-ink-50 font-medium">
                                     {t('settings.bgBlur')}
                                 </label>
-                                <span className="text-[12px] text-white/30 tabular-nums">{backgroundBlur}px</span>
+                                <span className="text-[12px] text-ink-30 tabular-nums">{backgroundBlur}px</span>
                             </div>
                             <RangeSlider
                                 value={backgroundBlur}

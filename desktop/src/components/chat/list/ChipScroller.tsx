@@ -23,7 +23,7 @@ function EdgeButton({
       aria-label={label}
       title={label}
       onClick={onClick}
-      className={`chat-chips-${side} absolute top-1/2 size-6 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full text-white/60 transition-colors duration-150 hover:bg-white/[0.08] hover:text-white ${
+      className={`chat-chips-${side} absolute top-1/2 size-6 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full text-ink-60 transition-colors duration-150 hover:bg-ink/[0.08] hover:text-white ${
         side === 'prev' ? 'left-0' : 'right-0'
       }`}
     >

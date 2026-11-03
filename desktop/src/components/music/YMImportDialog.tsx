@@ -22,11 +22,11 @@ function OrderPicker({ disabled }: { disabled: boolean }) {
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between gap-3">
-        <p className="text-[12px] font-medium text-white/60">{t('ym.orderLabel')}</p>
+        <p className="text-[12px] font-medium text-ink-60">{t('ym.orderLabel')}</p>
         <div
           role="radiogroup"
           aria-label={t('ym.orderLabel')}
-          className="flex gap-0.5 rounded-[11px] border border-white/[0.08] bg-white/[0.02] p-[3px]"
+          className="flex gap-0.5 rounded-[11px] border border-ink/[0.08] bg-ink/[0.02] p-[3px]"
         >
           {ORDERS.map(({ value, label }) => (
             <button
@@ -38,8 +38,8 @@ function OrderPicker({ disabled }: { disabled: boolean }) {
               onClick={() => setOrder(value)}
               className={`rounded-lg px-3 py-[6px] text-[12px] font-medium transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 ${
                 order === value
-                  ? 'bg-white/[0.08] text-white/92 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]'
-                  : 'text-white/50 hover:text-white/80'
+                  ? 'bg-ink/[0.08] text-ink-92 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]'
+                  : 'text-ink-50 hover:text-ink-80'
               }`}
             >
               {t(label)}
@@ -47,7 +47,7 @@ function OrderPicker({ disabled }: { disabled: boolean }) {
           ))}
         </div>
       </div>
-      <p className="text-[11px] text-white/30">{t('ym.orderHint')}</p>
+      <p className="text-[11px] text-ink-30">{t('ym.orderHint')}</p>
     </div>
   );
 }
@@ -127,12 +127,12 @@ function YMImportDialog({
     <Modal open={open} onOpenChange={onOpenChange}>
       <ModalContent size="md" showClose={false} zClass="z-[80]">
         {/* Header */}
-        <div className="px-7 pt-6 pb-4 border-b border-white/[0.06] flex items-center justify-between">
-          <ModalTitle className="text-[18px] font-bold text-white/90 tracking-tight">
+        <div className="px-7 pt-6 pb-4 border-b border-ink/[0.06] flex items-center justify-between">
+          <ModalTitle className="text-[18px] font-bold text-ink-90 tracking-tight">
             {t('settings.importYandex')}
           </ModalTitle>
           <ModalClose asChild>
-            <button className="w-8 h-8 rounded-lg flex items-center justify-center text-white/30 hover:text-white/60 hover:bg-white/[0.08] transition-all cursor-pointer">
+            <button className="w-8 h-8 rounded-lg flex items-center justify-center text-ink-30 hover:text-ink-60 hover:bg-ink/[0.08] transition-all cursor-pointer">
               <X size={16} />
             </button>
           </ModalClose>
@@ -142,11 +142,11 @@ function YMImportDialog({
         <div className="px-7 py-5 space-y-5">
           {/* Playlist result card */}
           {playlist ? (
-            <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl">
+            <div className="relative overflow-hidden rounded-2xl border border-ink/[0.08] bg-ink/[0.03] backdrop-blur-xl">
               <div className="absolute inset-0 bg-gradient-to-br from-accent/10 via-transparent to-transparent" />
               <div className="relative p-5 flex items-center gap-4">
                 {/* Playlist artwork */}
-                <div className="w-16 h-16 rounded-xl bg-white/[0.06] border border-white/[0.06] flex items-center justify-center shrink-0 overflow-hidden">
+                <div className="w-16 h-16 rounded-xl bg-ink/[0.06] border border-ink/[0.06] flex items-center justify-center shrink-0 overflow-hidden">
                   {playlist.artwork_url ? (
                     <img
                       src={proxiedAssetUrl(playlist.artwork_url) ?? ''}
@@ -160,8 +160,8 @@ function YMImportDialog({
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[15px] font-bold text-white/90 truncate">{playlist.title}</p>
-                  <p className="text-[12px] text-white/40 mt-0.5">
+                  <p className="text-[15px] font-bold text-ink-90 truncate">{playlist.title}</p>
+                  <p className="text-[12px] text-ink-40 mt-0.5">
                     {progress?.found || 0} {t('search.tracks').toLowerCase()}
                     {playlistCount > 1
                       ? ` • ${playlistCount} ${t('search.playlists').toLowerCase()}`
@@ -181,21 +181,21 @@ function YMImportDialog({
               </div>
             </div>
           ) : pendingState ? (
-            <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] px-5 py-4 space-y-1">
+            <div className="rounded-2xl border border-ink/[0.08] bg-ink/[0.03] px-5 py-4 space-y-1">
               <p className="text-[13px] font-semibold text-green-400/80">{playlistStatus}</p>
               <YMImportPending live={open} />
             </div>
           ) : (
             <>
               {/* Instructions */}
-              <div className="space-y-2 text-[13px] text-white/50">
-                <p className="font-medium text-white/70">{t('ym.instructions')}</p>
+              <div className="space-y-2 text-[13px] text-ink-50">
+                <p className="font-medium text-ink-70">{t('ym.instructions')}</p>
                 <ol className="list-decimal list-inside space-y-1 text-[12px]">
                   <li>{t('ym.step1')}</li>
                   <li>{t('ym.step2')}</li>
                   <li>{t('ym.step3')}</li>
                 </ol>
-                <p className="text-[12px] text-white/30">{t('ym.limitHint')}</p>
+                <p className="text-[12px] text-ink-30">{t('ym.limitHint')}</p>
               </div>
 
               {/* Token input */}
@@ -205,7 +205,7 @@ function YMImportDialog({
                 onChange={(e) => setToken(e.target.value)}
                 placeholder={t('ym.tokenPlaceholder')}
                 disabled={busy}
-                className="w-full px-4 py-3 rounded-xl bg-white/[0.04] border border-white/[0.06] text-[13px] text-white/80 placeholder:text-white/20 focus:border-white/[0.12] focus:bg-white/[0.06] transition-all duration-200 outline-none disabled:opacity-50"
+                className="w-full px-4 py-3 rounded-xl bg-ink/[0.04] border border-ink/[0.06] text-[13px] text-ink-80 placeholder:text-ink-20 focus:border-ink/[0.12] focus:bg-ink/[0.06] transition-all duration-200 outline-none disabled:opacity-50"
               />
 
               <OrderPicker disabled={busy} />
@@ -215,7 +215,7 @@ function YMImportDialog({
           {phase === 'error' && (
             <div className="rounded-2xl border border-red-500/20 bg-red-500/[0.07] px-4 py-3 space-y-1">
               <p className="text-[12px] font-medium text-red-300">{t('ym.error')}</p>
-              {error && <p className="text-[11px] text-white/50 break-words">{error}</p>}
+              {error && <p className="text-[11px] text-ink-50 break-words">{error}</p>}
             </div>
           )}
 
@@ -224,16 +224,16 @@ function YMImportDialog({
             <div className="space-y-3">
               {running && (
                 <div className="rounded-2xl border border-accent/15 bg-accent/[0.07] px-4 py-3 backdrop-blur-xl">
-                  <p className="text-[12px] font-medium text-white/78">{t('ym.backgroundHint')}</p>
+                  <p className="text-[12px] font-medium text-ink-78">{t('ym.backgroundHint')}</p>
                 </div>
               )}
-              <div className="w-full h-2 rounded-full bg-white/[0.06] overflow-hidden">
+              <div className="w-full h-2 rounded-full bg-ink/[0.06] overflow-hidden">
                 <div
                   className="h-full rounded-full bg-accent transition-all duration-300"
                   style={{ width: `${pct}%` }}
                 />
               </div>
-              <div className="flex items-center justify-between text-[12px] text-white/40">
+              <div className="flex items-center justify-between text-[12px] text-ink-40">
                 <span>
                   {progress.current} / {progress.total}
                 </span>
@@ -253,24 +253,24 @@ function YMImportDialog({
                 <p className="text-[12px] text-amber-300/80">{t('ym.nothingFound')}</p>
               )}
               {progress.current_track && (
-                <p className="text-[12px] text-white/30 truncate">{progress.current_track}</p>
+                <p className="text-[12px] text-ink-30 truncate">{progress.current_track}</p>
               )}
             </div>
           )}
 
           {saving && (
-            <p className="text-[13px] text-white/50 animate-pulse">{t('ym.savingPlaylist')}</p>
+            <p className="text-[13px] text-ink-50 animate-pulse">{t('ym.savingPlaylist')}</p>
           )}
         </div>
 
         {/* Footer */}
         {(running || (!playlist && !pendingState)) && (
-          <div className="px-7 py-4 border-t border-white/[0.06] flex justify-end gap-3">
+          <div className="px-7 py-4 border-t border-ink/[0.06] flex justify-end gap-3">
             {running ? (
               <>
                 <button
                   onClick={handleHide}
-                  className="px-5 py-2 rounded-xl bg-white/[0.05] hover:bg-white/[0.09] text-[13px] font-semibold text-white/72 border border-white/[0.08] transition-all cursor-pointer"
+                  className="px-5 py-2 rounded-xl bg-ink/[0.05] hover:bg-ink/[0.09] text-[13px] font-semibold text-ink-72 border border-ink/[0.08] transition-all cursor-pointer"
                 >
                   {t('ym.hide')}
                 </button>

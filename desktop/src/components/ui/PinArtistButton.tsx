@@ -39,8 +39,8 @@ export function PinArtistButton({ artist }: { artist: SidebarPinnedArtist }) {
   const label = pinned ? t('sidebar.unpinArtist') : t('sidebar.pinArtist');
   const idleBg =
     blur > 0
-      ? 'bg-white/[0.04] hover:bg-white/[0.08]'
-      : 'bg-[rgba(28,28,32,0.85)] hover:bg-[rgba(44,44,50,0.9)]';
+      ? 'bg-ink/[0.04] hover:bg-ink/[0.08]'
+      : 'bg-[rgb(var(--surface-hi)/0.85)] hover:bg-[rgb(var(--surface-hi)/0.9)]';
 
   return (
     <button
@@ -52,7 +52,7 @@ export function PinArtistButton({ artist }: { artist: SidebarPinnedArtist }) {
       className={`inline-flex items-center gap-1.5 h-11 px-5 rounded-full border-[0.5px] text-[12px] font-medium transition-all duration-300 ease-[var(--ease-apple)] cursor-pointer ${
         pinned
           ? 'bg-accent/15 border-accent/30 text-accent hover:bg-accent/20'
-          : `${idleBg} border-white/[0.08] text-white/50 hover:text-white/80 hover:border-white/[0.14]`
+          : `${idleBg} border-ink/[0.08] text-ink-50 hover:text-ink-80 hover:border-ink/[0.14]`
       }`}
       style={{
         backdropFilter: blur > 0 ? `blur(${blur}px)` : undefined,

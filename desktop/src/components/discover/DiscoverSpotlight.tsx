@@ -34,12 +34,12 @@ function DiscoverSpotlightImpl({ aura }: DiscoverSpotlightProps) {
             boxShadow: `inset 0 0 0 1px ${auraRgba(aura, 0.4)}`,
           }}
         >
-          <Sparkles size={14} className="text-white/85" />
+          <Sparkles size={14} className="text-ink-85" />
         </span>
-        <h2 className="text-[15px] font-bold text-white/95 tracking-tight">
+        <h2 className="text-[15px] font-bold text-ink-95 tracking-tight">
           {t('discover.spotlightTitle')}
           {items.length > 0 && (
-            <span className="ml-2 text-[11px] font-bold tabular-nums text-white/30">
+            <span className="ml-2 text-[11px] font-bold tabular-nums text-ink-30">
               {items.length}
             </span>
           )}
@@ -94,14 +94,14 @@ const AlbumSpotlightCard = memo(function AlbumSpotlightCard({
       style={{
         background: `linear-gradient(160deg, ${g1} 0%, ${g2} 60%, ${g3} 100%)`,
         boxShadow:
-          '0 30px 60px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(255,255,255,0.10), inset 0 1px 0 rgba(255,255,255,0.18)',
+          '0 30px 60px rgb(var(--shade) / calc(0.55 * var(--shade-alpha))), inset 0 0 0 1px rgba(255,255,255,0.10), inset 0 1px 0 rgba(255,255,255,0.18)',
       }}
     >
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
           background:
-            'radial-gradient(80% 50% at 50% 0%, rgba(255,255,255,0.22) 0%, transparent 60%)',
+            'radial-gradient(80% 50% at 50% 0%, rgb(var(--ink) / 0.22) 0%, transparent 60%)',
           mixBlendMode: 'overlay',
         }}
       />
@@ -128,7 +128,7 @@ const AlbumSpotlightCard = memo(function AlbumSpotlightCard({
       ) : (
         <div className="absolute inset-0 flex items-center justify-center">
           <span
-            className="text-white/95 font-black tracking-tight select-none"
+            className="text-ink-95 font-black tracking-tight select-none"
             style={{
               fontSize: 'clamp(96px, 9vw, 132px)',
               textShadow: '0 16px 36px rgba(0,0,0,0.5)',
@@ -141,12 +141,12 @@ const AlbumSpotlightCard = memo(function AlbumSpotlightCard({
 
       <div className="absolute top-3 left-3 flex flex-wrap items-center gap-1.5">
         <span
-          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[9px] font-bold uppercase tracking-[0.22em] text-white/95"
+          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[9px] font-bold uppercase tracking-[0.22em] text-ink-95"
           style={{
               background: badgeBlur > 0 ? 'rgba(0,0,0,0.45)' : 'rgba(0,0,0,0.66)',
               backdropFilter: badgeBlur > 0 ? `blur(${badgeBlur}px)` : undefined,
               WebkitBackdropFilter: badgeBlur > 0 ? `blur(${badgeBlur}px)` : undefined,
-            border: '0.5px solid rgba(255,255,255,0.12)',
+            border: '0.5px solid rgb(var(--ink) / 0.12)',
           }}
         >
           <Disc3 size={10} /> {kindLabel}
@@ -162,30 +162,30 @@ const AlbumSpotlightCard = memo(function AlbumSpotlightCard({
           }}
         />
         <p
-          className="relative text-[10px] font-bold uppercase tracking-[0.28em] text-white/85"
+          className="relative text-[10px] font-bold uppercase tracking-[0.28em] text-ink-85"
           style={{ textShadow: '0 4px 12px rgba(0,0,0,0.7)' }}
         >
           {album.primary_artist.name}
         </p>
         <p
-          className="relative text-[22px] font-black leading-[0.95] text-white tracking-tight"
+          className="relative text-[22px] font-black leading-[0.95] text-ink tracking-tight"
           style={{ textShadow: '0 6px 20px rgba(0,0,0,0.65)' }}
         >
           {album.title}
         </p>
-        <div className="relative flex items-center gap-2 text-[10px] text-white/75 tabular-nums">
+        <div className="relative flex items-center gap-2 text-[10px] text-ink-75 tabular-nums">
           <span className="inline-flex items-center gap-1">
             <ListMusic size={10} /> {album.track_count}
           </span>
           {album.total_duration_ms > 0 && (
             <>
-              <span className="text-white/35">·</span>
+              <span className="text-ink-35">·</span>
               <span>{dur(album.total_duration_ms)}</span>
             </>
           )}
           {album.release_year && (
             <>
-              <span className="text-white/35">·</span>
+              <span className="text-ink-35">·</span>
               <span>{album.release_year}</span>
             </>
           )}
@@ -227,9 +227,9 @@ const ArtistSpotlightCard = memo(function ArtistSpotlightCard({
       onClick={() => navigate(`/artist/${encodeURIComponent(artist.id)}`)}
       className="group relative shrink-0 w-[280px] h-[360px] rounded-[1.75rem] cursor-pointer overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)] hover:scale-[1.02]"
       style={{
-        background: `radial-gradient(140% 90% at 30% 10%, ${auraRgba(aura, 0.55)} 0%, rgba(14,14,18,0.92) 65%, rgba(8,8,10,0.95) 100%)`,
+        background: `radial-gradient(140% 90% at 30% 10%, ${auraRgba(aura, 0.55)} 0%, rgb(var(--surface) / 0.92) 65%, rgb(var(--paper) / 0.95) 100%)`,
         boxShadow:
-          '0 30px 60px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.10)',
+          '0 30px 60px rgb(var(--shade) / calc(0.55 * var(--shade-alpha))), inset 0 0 0 1px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.10)',
       }}
     >
         {perf.bloom && (
@@ -277,7 +277,7 @@ const ArtistSpotlightCard = memo(function ArtistSpotlightCard({
             </div>
           )}
           <div
-            className="relative w-full h-full rounded-full overflow-hidden ring-1 ring-white/15"
+            className="relative w-full h-full rounded-full overflow-hidden ring-1 ring-ink/15"
             style={{
               background: `linear-gradient(135deg, ${g1} 0%, ${g2} 50%, ${g3} 100%)`,
               boxShadow: `0 20px 40px ${auraRgba(aura, 0.5)}, inset 0 0 0 1px rgba(255,255,255,0.12)`,
@@ -295,7 +295,7 @@ const ArtistSpotlightCard = memo(function ArtistSpotlightCard({
             ) : (
               <div className="absolute inset-0 flex items-center justify-center">
                 <span
-                  className="text-white/95 font-black tracking-tight select-none"
+                  className="text-ink-95 font-black tracking-tight select-none"
                   style={{
                     fontSize: 'clamp(36px, 4vw, 44px)',
                     textShadow: '0 6px 18px rgba(0,0,0,0.5)',
@@ -314,19 +314,19 @@ const ArtistSpotlightCard = memo(function ArtistSpotlightCard({
                 boxShadow: `0 0 16px ${auraRgba(aura, 0.7)}, inset 0 0 0 1.5px ${auraRgba(aura, 0.85)}`,
               }}
             >
-              <Star size={13} className="text-white" fill="currentColor" />
+              <Star size={13} className="text-ink" fill="currentColor" />
             </div>
           )}
         </div>
 
         <p
-          className="mt-5 text-[20px] font-black leading-tight tracking-tight text-white text-center truncate w-full"
+          className="mt-5 text-[20px] font-black leading-tight tracking-tight text-ink text-center truncate w-full"
           style={{ textShadow: '0 6px 20px rgba(0,0,0,0.6)' }}
         >
           {artist.name}
         </p>
         {artist.country && (
-          <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.28em] text-white/45">
+          <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.28em] text-ink-45">
             {artist.country}
           </p>
         )}
@@ -336,10 +336,10 @@ const ArtistSpotlightCard = memo(function ArtistSpotlightCard({
             {artist.tags.slice(0, 2).map((tag) => (
               <span
                 key={tag}
-                className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-[0.2em] text-white/70"
+                className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-[0.2em] text-ink-70"
                 style={{
-                  background: 'rgba(255,255,255,0.06)',
-                  border: '0.5px solid rgba(255,255,255,0.10)',
+                  background: 'rgb(var(--ink) / 0.06)',
+                  border: '0.5px solid rgb(var(--ink) / 0.10)',
                 }}
               >
                 {tag}
@@ -350,15 +350,15 @@ const ArtistSpotlightCard = memo(function ArtistSpotlightCard({
       </div>
 
       <div className="absolute inset-x-5 bottom-5 flex items-center justify-between gap-3">
-        <span className="inline-flex items-center gap-1.5 text-[11px] font-bold tabular-nums text-white/65">
-          <Headphones size={11} className="text-white/55" />
+        <span className="inline-flex items-center gap-1.5 text-[11px] font-bold tabular-nums text-ink-65">
+          <Headphones size={11} className="text-ink-55" />
           {fc(artist.monthly_listeners)}
         </span>
         <span
           className="inline-flex items-center gap-1 text-[10px] font-bold tabular-nums px-2.5 py-1 rounded-full"
           style={{
             background: `linear-gradient(135deg, ${auraRgba(aura, 0.32)}, ${auraRgba(aura, 0.05)})`,
-            color: '#fff',
+            color: 'rgb(var(--ink))',
             boxShadow: `inset 0 0 0 1px ${auraRgba(aura, 0.4)}`,
           }}
         >

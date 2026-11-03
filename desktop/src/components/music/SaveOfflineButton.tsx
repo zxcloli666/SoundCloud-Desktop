@@ -39,13 +39,13 @@ export const SaveOfflineAction = React.memo(function SaveOfflineAction({
       className={`group/offline relative inline-flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 ease-[var(--ease-apple)] cursor-pointer disabled:cursor-default ${
         cached && !saving
           ? 'text-accent bg-accent/15 hover:bg-accent/20'
-          : 'text-white/60 hover:text-white/95 hover:bg-white/[0.07]'
+          : 'text-ink-60 hover:text-ink-95 hover:bg-ink/[0.07]'
       }`}
     >
       {saving ? (
         <>
           <ProgressRing value={progress ?? 0} size={26} />
-          <ArrowDownToLine size={11} className="absolute text-white/80 animate-pulse" />
+          <ArrowDownToLine size={11} className="absolute text-ink-80 animate-pulse" />
         </>
       ) : cached ? (
         <>
@@ -83,7 +83,7 @@ export const SaveOfflineRowButton = React.memo(function SaveOfflineRowButton({
       aria-label={label}
       className={`group/offline relative cursor-pointer disabled:cursor-default w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-all duration-200 ${
         saving ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
-      } ${cached ? 'text-accent' : 'text-white/30 hover:text-white/80 hover:bg-white/[0.06]'}`}
+      } ${cached ? 'text-accent' : 'text-ink-30 hover:text-ink-80 hover:bg-ink/[0.06]'}`}
     >
       {saving ? (
         <ProgressRing value={progress ?? 0} size={20} />

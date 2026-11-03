@@ -42,7 +42,7 @@ function ArtistAlbumsTabImpl({ artistId, aura }: ArtistAlbumsTabProps) {
   if (query.isLoading) {
     return (
       <div className="py-24 flex justify-center">
-        <Loader2 size={28} className="text-white/20 animate-spin" />
+        <Loader2 size={28} className="text-ink-20 animate-spin" />
       </div>
     );
   }
@@ -53,13 +53,13 @@ function ArtistAlbumsTabImpl({ artistId, aura }: ArtistAlbumsTabProps) {
         <div
           className="w-16 h-16 rounded-2xl flex items-center justify-center"
           style={{
-            background: 'rgba(255,255,255,0.03)',
-            border: '0.5px solid rgba(255,255,255,0.06)',
+            background: 'rgb(var(--ink) / 0.03)',
+            border: '0.5px solid rgb(var(--ink) / 0.06)',
           }}
         >
-          <Disc3 size={24} className="text-white/15" />
+          <Disc3 size={24} className="text-ink-15" />
         </div>
-        <p className="text-white/30 text-sm">{t('artist.noAlbums')}</p>
+        <p className="text-ink-30 text-sm">{t('artist.noAlbums')}</p>
       </div>
     );
   }
@@ -98,7 +98,7 @@ const YearGroup = memo(
             >
               {year ?? '∞'}
             </span>
-            <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/30 md:text-right whitespace-nowrap">
+            <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-ink-30 md:text-right whitespace-nowrap">
               {year != null ? t('artist.releaseYear') : t('artist.unknownYear')} · {items.length}
             </span>
           </div>
@@ -130,8 +130,8 @@ const AlbumCard = memo(({ album, aura }: { album: ArtistAlbum; aura: Aura }) => 
       onClick={() => navigate(`/album/${encodeURIComponent(album.id)}`)}
       className="group relative flex flex-col gap-2 text-left p-3 rounded-2xl cursor-pointer transition-all duration-500 hover:scale-[1.03]"
       style={{
-          background: cb > 0 ? 'rgba(255,255,255,0.03)' : 'rgba(22,22,26,0.85)',
-        border: '0.5px solid rgba(255,255,255,0.06)',
+          background: cb > 0 ? 'rgb(var(--ink) / 0.03)' : 'rgb(var(--surface-hi) / 0.85)',
+        border: '0.5px solid rgb(var(--ink) / 0.06)',
           backdropFilter: cb > 0 ? `blur(${cb}px)` : undefined,
           WebkitBackdropFilter: cb > 0 ? `blur(${cb}px)` : undefined,
       }}
@@ -139,8 +139,8 @@ const AlbumCard = memo(({ album, aura }: { album: ArtistAlbum; aura: Aura }) => 
       <div
         className="aspect-square rounded-xl overflow-hidden relative"
         style={{
-          background: `linear-gradient(135deg, ${auraRgba(aura, 0.22)}, rgba(255,255,255,0.04))`,
-          border: '0.5px solid rgba(255,255,255,0.08)',
+          background: `linear-gradient(135deg, ${auraRgba(aura, 0.22)}, rgb(var(--ink) / 0.04))`,
+          border: '0.5px solid rgb(var(--ink) / 0.08)',
         }}
       >
         {album.cover_url ? (
@@ -153,27 +153,27 @@ const AlbumCard = memo(({ album, aura }: { album: ArtistAlbum; aura: Aura }) => 
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <Disc3 size={40} className="text-white/15" />
+            <Disc3 size={40} className="text-ink-15" />
           </div>
         )}
         <div
           className="absolute top-2 left-2 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-[0.18em]"
           style={{
             background: 'rgba(0,0,0,0.55)',
-            color: '#fff',
+            color: 'rgb(var(--ink))',
               backdropFilter: badgeB > 0 ? `blur(${badgeB}px)` : undefined,
               WebkitBackdropFilter: badgeB > 0 ? `blur(${badgeB}px)` : undefined,
-            border: '0.5px solid rgba(255,255,255,0.12)',
+            border: '0.5px solid rgb(var(--ink) / 0.12)',
           }}
         >
           {kindLabel}
         </div>
       </div>
       <div className="px-1 min-w-0">
-        <p className="text-[13px] font-semibold text-white/90 truncate group-hover:text-white">
+        <p className="text-[13px] font-semibold text-ink-90 truncate group-hover:text-ink">
           {album.title}
         </p>
-        <p className="text-[11px] text-white/35 truncate">
+        <p className="text-[11px] text-ink-35 truncate">
           {album.role === 'primary' ? kindLabel : t('artist.featured')}
           {album.release_year != null && ` · ${album.release_year}`}
         </p>

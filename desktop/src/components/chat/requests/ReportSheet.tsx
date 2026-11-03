@@ -80,11 +80,11 @@ function ReportBody({ target, onClose }: { target: ReportTarget; onClose: () => 
           onChange={(event) => setComment(event.target.value)}
           placeholder={t('chat.list.report.comment')}
           rows={2}
-          className="w-full resize-none rounded-2xl border border-white/[0.07] bg-black/20 px-3.5 py-2.5 text-[13px] text-white/85 outline-none placeholder:text-white/30 focus:border-white/[0.16]"
+          className="w-full resize-none rounded-2xl border border-ink/[0.07] bg-black/20 px-3.5 py-2.5 text-[13px] text-ink-85 outline-none placeholder:text-ink-30 focus:border-ink/[0.16]"
         />
         {target.userId && (
-          <div className="flex items-center justify-between gap-3 rounded-2xl bg-white/[0.03] px-3.5 py-2.5">
-            <span className="text-[12.5px] font-medium text-white/75">
+          <div className="flex items-center justify-between gap-3 rounded-2xl bg-ink/[0.03] px-3.5 py-2.5">
+            <span className="text-[12.5px] font-medium text-ink-75">
               {t('chat.list.report.alsoBlock')}
             </span>
             <Toggle
@@ -94,9 +94,9 @@ function ReportBody({ target, onClose }: { target: ReportTarget; onClose: () => 
             />
           </div>
         )}
-        <div className="flex flex-col gap-3 rounded-2xl border border-white/[0.05] bg-white/[0.02] px-3.5 py-3">
+        <div className="flex flex-col gap-3 rounded-2xl border border-ink/[0.05] bg-ink/[0.02] px-3.5 py-3">
           <PolicyLadder />
-          <div className="h-px bg-white/[0.05]" />
+          <div className="h-px bg-ink/[0.05]" />
           <PrivacyNote />
         </div>
       </div>
@@ -105,7 +105,7 @@ function ReportBody({ target, onClose }: { target: ReportTarget; onClose: () => 
         <button
           type="button"
           onClick={onClose}
-          className="h-10 flex-1 cursor-pointer rounded-xl bg-white/[0.06] text-[13px] font-semibold text-white/70 transition-colors hover:bg-white/[0.1]"
+          className="h-10 flex-1 cursor-pointer rounded-xl bg-ink/[0.06] text-[13px] font-semibold text-ink-70 transition-colors hover:bg-ink/[0.1]"
         >
           {t('chat.list.cancel')}
         </button>

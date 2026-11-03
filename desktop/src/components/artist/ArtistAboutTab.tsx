@@ -25,23 +25,23 @@ function ArtistAboutTabImpl({ artist, aura }: ArtistAboutTabProps) {
         style={{
           background:
               b > 0
-                  ? 'linear-gradient(165deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)'
-                  : 'rgba(20,20,24,0.85)',
-          border: '0.5px solid rgba(255,255,255,0.07)',
+                  ? 'linear-gradient(165deg, rgb(var(--ink) / 0.05) 0%, rgb(var(--ink) / 0.02) 100%)'
+                  : 'rgb(var(--surface) / 0.85)',
+          border: '0.5px solid rgb(var(--ink) / 0.07)',
             backdropFilter: b > 0 ? `blur(${b}px) saturate(160%)` : undefined,
             WebkitBackdropFilter: b > 0 ? `blur(${b}px) saturate(160%)` : undefined,
-          boxShadow: '0 20px 60px rgba(0,0,0,0.3), inset 0 0.5px 0 rgba(255,255,255,0.06)',
+          boxShadow: '0 20px 60px rgb(var(--shade) / calc(0.3 * var(--shade-alpha))), inset 0 0.5px 0 rgba(255,255,255,0.06)',
         }}
       >
-        <h3 className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/40 mb-4 flex items-center gap-2">
+        <h3 className="text-[10px] font-bold uppercase tracking-[0.22em] text-ink-40 mb-4 flex items-center gap-2">
           <MicVocal size={11} /> {t('artist.aboutTitle')}
         </h3>
         {artist.bio ? (
-            <p className="text-[15px] text-white/75 leading-relaxed whitespace-pre-line selectable">
+            <p className="text-[15px] text-ink-75 leading-relaxed whitespace-pre-line selectable">
             {artist.bio}
           </p>
         ) : (
-          <p className="text-[13px] text-white/30 italic">{t('artist.noBio')}</p>
+          <p className="text-[13px] text-ink-30 italic">{t('artist.noBio')}</p>
         )}
         <div className="mt-6 flex flex-wrap gap-2">
           {artist.country && (
@@ -63,7 +63,7 @@ function ArtistAboutTabImpl({ artist, aura }: ArtistAboutTabProps) {
             style={{
               background:
                   b > 0
-                      ? 'linear-gradient(165deg, rgba(255,85,0,0.08) 0%, rgba(255,255,255,0.02) 100%)'
+                      ? 'linear-gradient(165deg, rgba(255,85,0,0.08) 0%, rgb(var(--ink) / 0.02) 100%)'
                       : 'rgba(34,22,18,0.85)',
               border: '0.5px solid rgba(255,85,0,0.18)',
                 backdropFilter: b > 0 ? `blur(${b}px)` : undefined,
@@ -90,18 +90,18 @@ function ArtistAboutTabImpl({ artist, aura }: ArtistAboutTabProps) {
                     border: '0.5px solid rgba(255,85,0,0.16)',
                   }}
                 >
-                  <span className="w-7 h-7 rounded-lg flex items-center justify-center bg-white/[0.04]">
+                  <span className="w-7 h-7 rounded-lg flex items-center justify-center bg-ink/[0.04]">
                     <SocialIcon kind="soundcloud" size={14} className="text-orange-300" />
                   </span>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[12px] font-semibold text-white/85 truncate">
+                    <p className="text-[12px] font-semibold text-ink-85 truncate">
                       {acc.role === 'main'
                         ? t('artist.mainAccount')
                         : acc.role === 'demo'
                           ? t('artist.demoAccount')
                           : acc.role}
                     </p>
-                    <p className="text-[10px] text-white/35 tabular-nums truncate">
+                    <p className="text-[10px] text-ink-35 tabular-nums truncate">
                       ID {acc.sc_user_id}
                     </p>
                   </div>
@@ -116,13 +116,13 @@ function ArtistAboutTabImpl({ artist, aura }: ArtistAboutTabProps) {
           <div
             className="p-5 rounded-3xl"
             style={{
-                background: b > 0 ? 'rgba(255,255,255,0.03)' : 'rgba(20,20,24,0.85)',
-              border: '0.5px solid rgba(255,255,255,0.06)',
+                background: b > 0 ? 'rgb(var(--ink) / 0.03)' : 'rgb(var(--surface) / 0.85)',
+              border: '0.5px solid rgb(var(--ink) / 0.06)',
                 backdropFilter: b > 0 ? `blur(${b}px)` : undefined,
                 WebkitBackdropFilter: b > 0 ? `blur(${b}px)` : undefined,
             }}
           >
-            <h3 className="text-[10px] font-bold uppercase tracking-[0.22em] text-white/40 mb-3">
+            <h3 className="text-[10px] font-bold uppercase tracking-[0.22em] text-ink-40 mb-3">
               {t('artist.links')}
             </h3>
             <div className="flex flex-col gap-1">
@@ -132,7 +132,7 @@ function ArtistAboutTabImpl({ artist, aura }: ArtistAboutTabProps) {
                   href={s.url}
                   target="_blank"
                   rel="noreferrer"
-                  className="group flex items-center gap-3 px-3 py-2 rounded-xl text-[12px] text-white/70 hover:text-white transition-colors hover:bg-white/[0.04]"
+                  className="group flex items-center gap-3 px-3 py-2 rounded-xl text-[12px] text-ink-70 hover:text-ink transition-colors hover:bg-ink/[0.04]"
                   style={{ border: '0.5px solid transparent' }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.borderColor = auraRgba(aura, 0.3);
@@ -141,11 +141,11 @@ function ArtistAboutTabImpl({ artist, aura }: ArtistAboutTabProps) {
                     e.currentTarget.style.borderColor = 'transparent';
                   }}
                 >
-                  <span className="w-6 h-6 rounded-md flex items-center justify-center text-white/45 group-hover:text-white">
+                  <span className="w-6 h-6 rounded-md flex items-center justify-center text-ink-45 group-hover:text-ink">
                     <SocialIcon kind={s.kind} size={13} />
                   </span>
                   <span className="flex-1 truncate font-medium">{socialLabel(s.kind)}</span>
-                  <span className="text-[9px] uppercase tracking-[0.18em] text-white/20 font-bold">
+                  <span className="text-[9px] uppercase tracking-[0.18em] text-ink-20 font-bold">
                     {s.source}
                   </span>
                 </a>
@@ -163,13 +163,13 @@ const Stat = memo(
     <span
       className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-semibold"
       style={{
-        background: 'rgba(255,255,255,0.04)',
-        border: '0.5px solid rgba(255,255,255,0.08)',
+        background: 'rgb(var(--ink) / 0.04)',
+        border: '0.5px solid rgb(var(--ink) / 0.08)',
       }}
     >
-      <span className="text-white/45">{icon}</span>
-      <span className="text-white/40 uppercase tracking-[0.18em] text-[10px]">{label}</span>
-      <span className="text-white/85">{value}</span>
+      <span className="text-ink-45">{icon}</span>
+      <span className="text-ink-40 uppercase tracking-[0.18em] text-[10px]">{label}</span>
+      <span className="text-ink-85">{value}</span>
     </span>
   ),
 );

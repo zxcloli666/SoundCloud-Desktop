@@ -110,12 +110,12 @@ export const TrackEmbed = memo(function TrackEmbed({ embed, mine, compact }: Tra
             type="button"
             disabled={!route}
             onClick={() => route && navigate(route)}
-            className="min-w-0 truncate text-left text-[13.5px] font-semibold leading-tight text-white/92 cursor-pointer hover:text-white disabled:cursor-default"
+            className="min-w-0 truncate text-left text-[13.5px] font-semibold leading-tight text-ink-92 cursor-pointer hover:text-white disabled:cursor-default"
           >
             {title}
           </button>
           <div className="flex min-w-0 items-center gap-1.5">
-            <span className="min-w-0 truncate text-[12px] text-white/50">{artist}</span>
+            <span className="min-w-0 truncate text-[12px] text-ink-50">{artist}</span>
             {badges}
           </div>
           {!compact && (
@@ -128,7 +128,7 @@ export const TrackEmbed = memo(function TrackEmbed({ embed, mine, compact }: Tra
                 label={t('chat.embeds.track.seek')}
               />
               {!!embed.durationMs && (
-                <span className="shrink-0 text-[10.5px] tabular-nums text-white/35">
+                <span className="shrink-0 text-[10.5px] tabular-nums text-ink-35">
                   {durLong(embed.durationMs)}
                 </span>
               )}

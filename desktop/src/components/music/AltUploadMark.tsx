@@ -27,7 +27,7 @@ export const AltUploadMark = React.memo(function AltUploadMark({
         useLyricsStore.getState().close();
         navigate(`/track/${encodeURIComponent(copy.urn)}`);
       }}
-      className="inline-flex shrink-0 cursor-pointer items-center justify-center rounded-full p-0.5 transition-colors duration-200 hover:bg-white/[0.08]"
+      className="inline-flex shrink-0 cursor-pointer items-center justify-center rounded-full p-0.5 transition-colors duration-200 hover:bg-ink/[0.08]"
       style={{ color: 'var(--color-accent)' }}
     >
       <Replace size={size} />

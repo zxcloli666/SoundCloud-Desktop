@@ -53,7 +53,7 @@ export const QuickReply = memo(function QuickReply({
 
   return (
     <div className="flex flex-col gap-1">
-      <div className="flex items-center gap-1.5 rounded-xl border border-white/[0.08] bg-black/25 pr-1 pl-3 focus-within:border-white/[0.18]">
+      <div className="flex items-center gap-1.5 rounded-xl border border-ink/[0.08] bg-black/25 pr-1 pl-3 focus-within:border-ink/[0.18]">
         <input
           autoFocus
           value={text}
@@ -69,7 +69,7 @@ export const QuickReply = memo(function QuickReply({
             if (event.key === 'Escape') onCancel();
           }}
           placeholder={t('chat.notify.replyPlaceholder')}
-          className="h-9 min-w-0 flex-1 bg-transparent text-[13px] text-white/90 outline-none placeholder:text-white/30"
+          className="h-9 min-w-0 flex-1 bg-transparent text-[13px] text-ink-90 outline-none placeholder:text-ink-30"
         />
         <button
           type="button"

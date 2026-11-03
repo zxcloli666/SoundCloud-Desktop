@@ -43,7 +43,7 @@ const HeroBlurBg = React.memo(function HeroBlurBg({ cover }: { cover: string }) 
           style={{ filter: `blur(${b}px) saturate(1.5)` }}
         />
       )}
-      <div className="absolute inset-0 bg-gradient-to-r from-[rgb(8,8,10)]/70 via-[rgb(8,8,10)]/50 to-[rgb(8,8,10)]/70" />
+      <div className="absolute inset-0 bg-gradient-to-r from-[rgb(var(--paper))]/70 via-[rgb(var(--paper))]/50 to-[rgb(var(--paper))]/70" />
     </div>
   );
 });
@@ -79,7 +79,7 @@ const FeaturedTitleArtist = React.memo(function FeaturedTitleArtist({
   return (
     <>
       <h2
-        className="text-xl font-bold text-white/95 truncate leading-tight cursor-pointer hover:text-white transition-colors duration-200"
+        className="text-xl font-bold text-ink-95 truncate leading-tight cursor-pointer hover:text-ink transition-colors duration-200"
         onClick={() => navigate(`/track/${encodeURIComponent(track.urn)}`)}
       >
         {displayTitle}
@@ -89,16 +89,16 @@ const FeaturedTitleArtist = React.memo(function FeaturedTitleArtist({
           <img
             src={avatar}
             alt=""
-            className="w-5 h-5 rounded-full ring-1 ring-white/[0.08] group-hover/artist:ring-white/[0.15] transition-all duration-150 cursor-pointer"
+            className="w-5 h-5 rounded-full ring-1 ring-ink/[0.08] group-hover/artist:ring-ink/[0.15] transition-all duration-150 cursor-pointer"
             decoding="async"
             onClick={artistTarget ? () => navigate(artistTarget) : undefined}
           />
         )}
         <UploadKindDot kind={artistDisplay.uploadKind} />
-        <p className="text-[13px] text-white/40 truncate transition-colors duration-150">
+        <p className="text-[13px] text-ink-40 truncate transition-colors duration-150">
           <ArtistNameLinks
             items={artistLinks}
-            linkClassName="cursor-pointer transition-colors hover:text-white/60"
+            linkClassName="cursor-pointer transition-colors hover:text-ink-60"
           />
         </p>
       </div>
@@ -126,7 +126,7 @@ const FeaturedCard = React.memo(
         {cover && <HeroBlurBg cover={cover} />}
         <div className="relative flex items-center gap-6 p-6">
           <div
-            className="relative w-[160px] h-[160px] rounded-2xl overflow-hidden shrink-0 shadow-2xl ring-1 ring-white/[0.1] cursor-pointer group/cover"
+            className="relative w-[160px] h-[160px] rounded-2xl overflow-hidden shrink-0 shadow-2xl ring-1 ring-ink/[0.1] cursor-pointer group/cover"
             onClick={togglePlay}
           >
             {cover ? (
@@ -137,18 +137,19 @@ const FeaturedCard = React.memo(
                 decoding="async"
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-white/[0.04] to-white/[0.01]">
-                <Music size={40} className="text-white/15" />
+              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-ink/[0.04] to-ink/[0.01]">
+                <Music size={40} className="text-ink-15" />
               </div>
             )}
             <div
+              data-scheme="dark"
               className={`absolute inset-0 flex items-center justify-center transition-all duration-300 group-hover/cover:bg-black/30 group-hover/cover:opacity-100 ${
                 showPlayingOverlay ? 'bg-black/30 opacity-100' : 'bg-black/0 opacity-0'
               }`}
             >
               <div
                 className={`w-12 h-12 rounded-full flex items-center justify-center shadow-xl transition-all duration-300 ease-[var(--ease-apple)] group-hover/cover:scale-100 ${
-                  showPlayingOverlay ? 'bg-white scale-100' : 'bg-white/90 scale-75'
+                  showPlayingOverlay ? 'bg-white scale-100' : 'bg-ink/90 scale-75'
                 }`}
               >
                 {isThisPlaying ? pauseBlack18 : playBlack18}
@@ -161,21 +162,21 @@ const FeaturedCard = React.memo(
 
           <div className="flex-1 min-w-0 py-1">
             {isRepost && (
-              <div className="flex items-center gap-1.5 mb-2.5 text-[11px] text-white/30 font-medium">
+              <div className="flex items-center gap-1.5 mb-2.5 text-[11px] text-ink-30 font-medium">
                 <Repeat2 size={11} />
                 <span>{t('home.reposted')}</span>
-                <span className="text-white/15">·</span>
+                <span className="text-ink-15">·</span>
                 <span>{ago(item.created_at)}</span>
               </div>
             )}
             <FeaturedTitleArtist track={track} avatar={avatar} navigate={navigate} />
             <div className="flex items-center gap-3 mt-4 flex-wrap">
               {track.genre && (
-                <span className="text-[10px] font-medium px-2.5 py-1 rounded-full bg-white/[0.06] text-white/45 border border-white/[0.06]">
+                <span className="text-[10px] font-medium px-2.5 py-1 rounded-full bg-ink/[0.06] text-ink-45 border border-ink/[0.06]">
                   {track.genre}
                 </span>
               )}
-              <div className="flex items-center gap-3 text-[11px] text-white/25 tabular-nums">
+              <div className="flex items-center gap-3 text-[11px] text-ink-25 tabular-nums">
                 <span className="flex items-center gap-1">
                   <Headphones size={11} />
                   {fc(track.playback_count)}
@@ -193,10 +194,11 @@ const FeaturedCard = React.memo(
           <button
             type="button"
             onClick={togglePlay}
+            data-scheme="dark"
             className={`w-14 h-14 rounded-full flex items-center justify-center shrink-0 transition-all duration-300 ease-[var(--ease-apple)] shadow-xl cursor-pointer ${
               isThisPlaying
                 ? 'bg-white scale-100'
-                : 'bg-white/90 hover:bg-white hover:scale-105 active:scale-95'
+                : 'bg-ink/90 hover:bg-white hover:scale-105 active:scale-95'
             }`}
           >
             {isThisPlaying ? pauseBlack22 : playBlack22}
@@ -257,7 +259,7 @@ const FeaturedPlaylistHero = React.memo(function FeaturedPlaylistHero({
       {cover && <HeroBlurBg cover={cover} />}
       <div className="relative flex items-center gap-6 p-6">
         <div
-          className="relative w-[160px] h-[160px] rounded-2xl overflow-hidden shrink-0 shadow-2xl ring-1 ring-white/[0.1] cursor-pointer group/cover"
+          className="relative w-[160px] h-[160px] rounded-2xl overflow-hidden shrink-0 shadow-2xl ring-1 ring-ink/[0.1] cursor-pointer group/cover"
           onClick={handlePlay}
         >
           {cover ? (
@@ -268,38 +270,41 @@ const FeaturedPlaylistHero = React.memo(function FeaturedPlaylistHero({
               decoding="async"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-white/[0.04] to-white/[0.01]">
-              <ListMusic size={40} className="text-white/15" />
+            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-ink/[0.04] to-ink/[0.01]">
+              <ListMusic size={40} className="text-ink-15" />
             </div>
           )}
           <div
+            data-scheme="dark"
             className={`absolute inset-0 flex items-center justify-center transition-all duration-300 ${isPlayingFromThis ? 'bg-black/30 opacity-100' : 'bg-black/0 opacity-0 group-hover/cover:bg-black/30 group-hover/cover:opacity-100'}`}
           >
             {loading ? (
-              <Loader2 size={24} className="text-white animate-spin" />
+              <Loader2 size={24} className="text-ink animate-spin" />
             ) : (
               <div
-                className={`w-12 h-12 rounded-full flex items-center justify-center shadow-xl transition-all duration-300 ease-[var(--ease-apple)] ${isPlayingFromThis ? 'bg-white scale-100' : 'bg-white/90 scale-75 group-hover/cover:scale-100'}`}
+                className={`w-12 h-12 rounded-full flex items-center justify-center shadow-xl transition-all duration-300 ease-[var(--ease-apple)] ${isPlayingFromThis ? 'bg-white scale-100' : 'bg-ink/90 scale-75 group-hover/cover:scale-100'}`}
               >
                 {isPlayingFromThis ? pauseBlack18 : playBlack18}
               </div>
             )}
           </div>
           {playlist.track_count != null && (
-            <div className="absolute bottom-2 right-2 flex items-center gap-0.5 text-[10px] font-medium bg-black/50 backdrop-blur-md text-white/70 px-2 py-0.5 rounded-full">
-              <ListMusic size={10} />
-              {playlist.track_count}
+            <div data-scheme="dark" className="absolute bottom-2 right-2 flex">
+              <div className="flex items-center gap-0.5 text-[10px] font-medium bg-black/50 backdrop-blur-md text-ink-70 px-2 py-0.5 rounded-full">
+                <ListMusic size={10} />
+                {playlist.track_count}
+              </div>
             </div>
           )}
         </div>
 
         <div className="flex-1 min-w-0 py-1">
-          <div className="flex items-center gap-1.5 mb-2.5 text-[11px] text-white/30 font-medium">
+          <div className="flex items-center gap-1.5 mb-2.5 text-[11px] text-ink-30 font-medium">
             <ListMusic size={11} />
             <span>{t('search.playlists')}</span>
           </div>
           <h2
-            className="text-xl font-bold text-white/95 truncate leading-tight cursor-pointer hover:text-white transition-colors duration-200"
+            className="text-xl font-bold text-ink-95 truncate leading-tight cursor-pointer hover:text-ink transition-colors duration-200"
             onClick={() => navigate(`/playlist/${encodeURIComponent(playlist.urn)}`)}
           >
             {playlist.title}
@@ -313,18 +318,18 @@ const FeaturedPlaylistHero = React.memo(function FeaturedPlaylistHero({
                 <img
                   src={art(playlist.user.avatar_url, 'small') ?? ''}
                   alt=""
-                  className="w-5 h-5 rounded-full ring-1 ring-white/[0.08] group-hover/artist:ring-white/[0.15] transition-all duration-150"
+                  className="w-5 h-5 rounded-full ring-1 ring-ink/[0.08] group-hover/artist:ring-ink/[0.15] transition-all duration-150"
                   decoding="async"
                 />
               )}
-              <p className="text-[13px] text-white/40 truncate group-hover/artist:text-white/60 transition-colors duration-150">
+              <p className="text-[13px] text-ink-40 truncate group-hover/artist:text-ink-60 transition-colors duration-150">
                 {playlist.user.username}
               </p>
             </div>
           )}
-          <div className="flex items-center gap-3 mt-4 text-[11px] text-white/25 tabular-nums">
+          <div className="flex items-center gap-3 mt-4 text-[11px] text-ink-25 tabular-nums">
             {playlist.genre && (
-              <span className="text-[10px] font-medium px-2.5 py-1 rounded-full bg-white/[0.06] text-white/45 border border-white/[0.06]">
+              <span className="text-[10px] font-medium px-2.5 py-1 rounded-full bg-ink/[0.06] text-ink-45 border border-ink/[0.06]">
                 {playlist.genre}
               </span>
             )}
@@ -342,7 +347,8 @@ const FeaturedPlaylistHero = React.memo(function FeaturedPlaylistHero({
         <button
           type="button"
           onClick={handlePlay}
-          className={`w-14 h-14 rounded-full flex items-center justify-center shrink-0 transition-all duration-300 ease-[var(--ease-apple)] shadow-xl cursor-pointer ${isPlayingFromThis ? 'bg-white scale-100' : 'bg-white/90 hover:bg-white hover:scale-105 active:scale-95'}`}
+          data-scheme="dark"
+          className={`w-14 h-14 rounded-full flex items-center justify-center shrink-0 transition-all duration-300 ease-[var(--ease-apple)] shadow-xl cursor-pointer ${isPlayingFromThis ? 'bg-white scale-100' : 'bg-ink/90 hover:bg-white hover:scale-105 active:scale-95'}`}
         >
           {loading ? (
             <Loader2 size={22} className="text-black animate-spin" />
@@ -369,7 +375,7 @@ const FeaturedUserHero = React.memo(function FeaturedUserHero({ user }: { user: 
     >
       {avatar && <HeroBlurBg cover={avatar} />}
       <div className="relative flex items-center gap-6 p-6">
-        <div className="w-[160px] h-[160px] rounded-full overflow-hidden shrink-0 shadow-2xl ring-1 ring-white/[0.1]">
+        <div className="w-[160px] h-[160px] rounded-full overflow-hidden shrink-0 shadow-2xl ring-1 ring-ink/[0.1]">
           {avatar ? (
             <img
               src={avatar}
@@ -378,21 +384,21 @@ const FeaturedUserHero = React.memo(function FeaturedUserHero({ user }: { user: 
               decoding="async"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-white/[0.04] to-white/[0.01]">
-              <Music size={40} className="text-white/15" />
+            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-ink/[0.04] to-ink/[0.01]">
+              <Music size={40} className="text-ink-15" />
             </div>
           )}
         </div>
         <div className="flex-1 min-w-0 py-1">
-          <h2 className="text-xl font-bold text-white/95 truncate leading-tight group-hover:text-white transition-colors duration-200">
+          <h2 className="text-xl font-bold text-ink-95 truncate leading-tight group-hover:text-ink transition-colors duration-200">
             {user.username}
           </h2>
           {(user.city || user.country_code) && (
-            <p className="text-[13px] text-white/30 mt-1.5">
+            <p className="text-[13px] text-ink-30 mt-1.5">
               {[user.city, user.country_code].filter(Boolean).join(', ')}
             </p>
           )}
-          <div className="flex items-center gap-4 mt-4 text-[11px] text-white/25 tabular-nums">
+          <div className="flex items-center gap-4 mt-4 text-[11px] text-ink-25 tabular-nums">
             {user.followers_count != null && (
               <span>
                 {fc(user.followers_count)} {t('user.followers')}
@@ -407,7 +413,7 @@ const FeaturedUserHero = React.memo(function FeaturedUserHero({ user }: { user: 
         </div>
         <ChevronRight
           size={28}
-          className="text-white/20 shrink-0 group-hover:text-white/40 transition-colors"
+          className="text-ink-20 shrink-0 group-hover:text-ink-40 transition-colors"
         />
       </div>
     </div>

@@ -12,8 +12,8 @@ export function BlockArtistButton({ target }: { target: BlockTarget | null }) {
 
   const idleBg =
     blur > 0
-      ? 'bg-white/[0.04] hover:bg-white/[0.08]'
-      : 'bg-[rgba(28,28,32,0.85)] hover:bg-[rgba(44,44,50,0.9)]';
+      ? 'bg-ink/[0.04] hover:bg-ink/[0.08]'
+      : 'bg-[rgb(var(--surface-hi)/0.85)] hover:bg-[rgb(var(--surface-hi)/0.9)]';
 
   return (
     <button
@@ -25,7 +25,7 @@ export function BlockArtistButton({ target }: { target: BlockTarget | null }) {
       className={`group inline-flex items-center gap-1.5 h-11 px-5 rounded-full border-[0.5px] text-[12px] font-medium transition-all duration-300 ease-[var(--ease-apple)] cursor-pointer disabled:opacity-60 ${
         blocked
           ? 'bg-rose-500/10 border-rose-400/25 text-rose-300 hover:bg-rose-500/15'
-          : `${idleBg} border-white/[0.08] text-white/50 hover:text-rose-300 hover:border-rose-400/25`
+          : `${idleBg} border-ink/[0.08] text-ink-50 hover:text-rose-300 hover:border-rose-400/25`
       }`}
       style={{
         backdropFilter: blur > 0 ? `blur(${blur}px)` : undefined,

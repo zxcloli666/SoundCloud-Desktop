@@ -84,12 +84,13 @@ export const RoomHero = React.memo(function RoomHero({
         WebkitBackgroundClip: 'text',
         backgroundClip: 'text',
         WebkitTextFillColor: 'transparent',
-        filter: 'drop-shadow(0 6px 22px rgba(0,0,0,0.5))',
+        filter: 'drop-shadow(0 6px 22px rgb(var(--shade) / calc(0.5 * var(--shade-alpha))))',
       }
-    : { color: 'rgba(255,255,255,0.96)', textShadow: '0 6px 22px rgba(0,0,0,0.5)' };
+    : { color: 'rgb(var(--ink) / calc(0.96 * (1 + var(--ink-lift) * (1 - 0.96))))', textShadow: '0 6px 22px rgb(var(--shade) / calc(0.5 * var(--shade-alpha)))' };
 
   return (
     <section
+      data-ui="track-hero"
       className="relative rounded-[2rem] overflow-hidden glass-featured"
       style={{ isolation: 'isolate' }}
     >
@@ -104,7 +105,7 @@ export const RoomHero = React.memo(function RoomHero({
           <div
             className="absolute inset-0"
             style={{
-              background: 'linear-gradient(180deg, rgba(10,10,12,0.40), rgba(10,10,12,0.66))',
+              background: 'linear-gradient(180deg, rgb(var(--paper) / 0.40), rgb(var(--paper) / 0.66))',
             }}
           />
         </div>
@@ -126,14 +127,14 @@ export const RoomHero = React.memo(function RoomHero({
               <TrackStatusBadges meta={track._scd_meta} />
               {track.genre && (
                 <span
-                  className="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-white/[0.06] text-white/55 border border-white/[0.06] uppercase tracking-[0.14em]"
+                  className="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-ink/[0.06] text-ink-55 border border-ink/[0.06] uppercase tracking-[0.14em]"
                   style={{ color: aura.hasGenre ? aura.accent : undefined }}
                 >
                   {track.genre}
                 </span>
               )}
               {year && (
-                <span className="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-white/[0.05] text-white/40 border border-white/[0.06] tabular-nums">
+                <span className="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-ink/[0.05] text-ink-40 border border-ink/[0.06] tabular-nums">
                   {year}
                 </span>
               )}
@@ -142,7 +143,7 @@ export const RoomHero = React.memo(function RoomHero({
                   type="button"
                   onClick={() => navigate(albumTarget)}
                   title={t('track.openAlbum', { title: album.title })}
-                  className="inline-flex items-center gap-1.5 max-w-[16rem] text-[10px] font-semibold px-2.5 py-1 rounded-full bg-white/[0.05] text-white/55 border border-white/[0.06] cursor-pointer transition-colors duration-200 hover:bg-white/[0.1] hover:text-white/90"
+                  className="inline-flex items-center gap-1.5 max-w-[16rem] text-[10px] font-semibold px-2.5 py-1 rounded-full bg-ink/[0.05] text-ink-55 border border-ink/[0.06] cursor-pointer transition-colors duration-200 hover:bg-ink/[0.1] hover:text-ink-90"
                 >
                   <Disc3 size={11} className="shrink-0" />
                   <span className="truncate">{album.title}</span>
@@ -163,16 +164,16 @@ export const RoomHero = React.memo(function RoomHero({
                   <img
                     src={art(heroAvatarSrc, 'small') ?? ''}
                     alt=""
-                    className={`w-7 h-7 rounded-full ring-1 ring-white/[0.1] transition-all duration-200 ${
-                      heroAvatarTarget ? 'cursor-pointer hover:ring-white/[0.22]' : ''
+                    className={`w-7 h-7 rounded-full ring-1 ring-ink/[0.1] transition-all duration-200 ${
+                      heroAvatarTarget ? 'cursor-pointer hover:ring-ink/[0.22]' : ''
                     }`}
                     onClick={heroAvatarTarget ? () => navigate(heroAvatarTarget) : undefined}
                   />
                 )}
-                <span className="text-[15px] font-medium text-white/75">
+                <span className="text-[15px] font-medium text-ink-75">
                   <ArtistNameLinks
                     items={mainLink}
-                    linkClassName="cursor-pointer transition-colors hover:text-white"
+                    linkClassName="cursor-pointer transition-colors hover:text-ink"
                   />
                 </span>
                 {ad.isEnriched && ad.verified && (
@@ -198,7 +199,7 @@ export const RoomHero = React.memo(function RoomHero({
                 {ad.uploadKind && (
                   <span
                     className={`px-1.5 py-0.5 rounded-md text-[9px] uppercase tracking-wider font-semibold ${
-                      KIND_TONE[ad.uploadKind] ?? 'bg-white/[0.06] text-white/50'
+                      KIND_TONE[ad.uploadKind] ?? 'bg-ink/[0.06] text-ink-50'
                     }`}
                     title={t(`track.uploadKind.${ad.uploadKind}`)}
                   >
@@ -208,13 +209,13 @@ export const RoomHero = React.memo(function RoomHero({
               </div>
 
               {(featLinks.length > 0 || participants || ad.uploader) && (
-                <div className="mt-1.5 text-[12px] text-white/40 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 justify-center lg:justify-start">
+                <div className="mt-1.5 text-[12px] text-ink-40 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 justify-center lg:justify-start">
                   {featLinks.length > 0 && (
                     <span>
                       {t('track.feat')}{' '}
                       <ArtistNameLinks
                         items={featLinks}
-                        linkClassName="cursor-pointer text-white/55 hover:text-white/85 transition-colors"
+                        linkClassName="cursor-pointer text-ink-55 hover:text-ink-85 transition-colors"
                       />
                     </span>
                   )}
@@ -238,7 +239,7 @@ export const RoomHero = React.memo(function RoomHero({
                       components={[
                         <span
                           key="u"
-                          className="text-white/55 hover:text-white/80 cursor-pointer transition-colors"
+                          className="text-ink-55 hover:text-ink-80 cursor-pointer transition-colors"
                           onClick={() => navigate(`/user/${encodeURIComponent(track.user.urn)}`)}
                         />,
                       ]}
@@ -259,7 +260,7 @@ export const RoomHero = React.memo(function RoomHero({
           </div>
         </div>
 
-        <div className="pt-6 border-t border-white/[0.07]">
+        <div className="pt-6 border-t border-ink/[0.07]">
           <RoomFloor
             track={track}
             isCurrent={isThis}

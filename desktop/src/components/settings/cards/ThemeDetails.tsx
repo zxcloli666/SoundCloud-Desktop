@@ -25,8 +25,8 @@ function ActionButton({
     <button
       type="button"
       onClick={onClick}
-      className={`inline-flex items-center gap-2 rounded-xl border border-white/[0.06] bg-white/[0.04] px-3.5 py-2 text-[12.5px] font-medium transition-all cursor-pointer hover:bg-white/[0.08] ${
-        danger ? 'text-red-300/80 hover:text-red-200' : 'text-white/65 hover:text-white/90'
+      className={`inline-flex items-center gap-2 rounded-xl border border-ink/[0.06] bg-ink/[0.04] px-3.5 py-2 text-[12.5px] font-medium transition-all cursor-pointer hover:bg-ink/[0.08] ${
+        danger ? 'text-red-300/80 hover:text-red-200' : 'text-ink-65 hover:text-ink-90'
       }`}
     >
       {icon}
@@ -38,7 +38,7 @@ function ActionButton({
 function Swatch({ color }: { color: string }) {
   return (
     <span
-      className="h-4 w-4 rounded-full border border-white/15"
+      className="h-4 w-4 rounded-full border border-ink/15"
       style={{ background: color }}
       title={color}
     />
@@ -70,7 +70,7 @@ export function ThemeDetails({ item, onClose }: { item: ThemeItem | null; onClos
   return (
     <Modal open={!!item} onOpenChange={(open) => !open && onClose()}>
       <ModalContent size="lg">
-        <div className="relative aspect-[16/10] w-full shrink-0 overflow-hidden bg-white/[0.03]">
+        <div className="relative aspect-[16/10] w-full shrink-0 overflow-hidden bg-ink/[0.03]">
           {preview ? (
             <img src={preview} alt="" className="absolute inset-0 h-full w-full object-cover" />
           ) : (
@@ -84,7 +84,7 @@ export function ThemeDetails({ item, onClose }: { item: ThemeItem | null; onClos
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0 space-y-1">
               <ModalTitle>{name}</ModalTitle>
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-white/40">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-ink-40">
                 <span>v{shown?.version}</span>
                 {entry && <span>{entry.author.name}</span>}
                 {entry && entry.hash === shown?.hash && <span>{formatBytes(entry.size)}</span>}
@@ -93,7 +93,7 @@ export function ThemeDetails({ item, onClose }: { item: ThemeItem | null; onClos
                 {shown?.font && (
                   <span
                     style={{ fontFamily: BUNDLED_FONTS[shown.font].family }}
-                    className="text-white/60"
+                    className="text-ink-60"
                   >
                     Aa
                   </span>
@@ -101,7 +101,7 @@ export function ThemeDetails({ item, onClose }: { item: ThemeItem | null; onClos
               </div>
             </div>
             {active ? (
-              <span className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-[var(--color-accent)] px-4 py-2 text-[12.5px] font-semibold text-white">
+              <span className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-[var(--color-accent)] px-4 py-2 text-[12.5px] font-semibold text-ink">
                 <Check size={14} strokeWidth={3} />
                 {t('settings.themesActive')}
               </span>
@@ -118,7 +118,7 @@ export function ThemeDetails({ item, onClose }: { item: ThemeItem | null; onClos
             )}
           </div>
           {entry && (
-            <ModalDescription className="selectable text-[13px] leading-relaxed text-white/60">
+            <ModalDescription className="selectable text-[13px] leading-relaxed text-ink-60">
               {pickDescription(entry.description, i18n.language)}
             </ModalDescription>
           )}
@@ -129,7 +129,7 @@ export function ThemeDetails({ item, onClose }: { item: ThemeItem | null; onClos
           )}
           {broken && <p className="text-[12px] text-red-300/80">{t('settings.themesBroken')}</p>}
           {installed && item && (
-            <div className="flex flex-wrap items-center gap-2 border-t border-white/[0.06] pt-4">
+            <div className="flex flex-wrap items-center gap-2 border-t border-ink/[0.06] pt-4">
               {canUpdate && (
                 <ActionButton
                   icon={<ArrowUp size={14} />}
@@ -153,7 +153,7 @@ export function ThemeDetails({ item, onClose }: { item: ThemeItem | null; onClos
                   remove(item.id);
                 }}
               />
-              <label className="ml-auto inline-flex items-center gap-2.5 text-[12.5px] text-white/60">
+              <label className="ml-auto inline-flex items-center gap-2.5 text-[12.5px] text-ink-60">
                 <Pin size={14} />
                 {t('settings.themesPin')}
                 <Toggle

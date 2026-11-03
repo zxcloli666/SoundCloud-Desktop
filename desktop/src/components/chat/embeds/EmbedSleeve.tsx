@@ -32,7 +32,7 @@ function Disc({ size, current, playing }: { size: number; current: boolean; play
       <span
         className="chat-vinyl-disc block h-full w-full rounded-full"
         style={{
-          border: '0.5px solid rgba(255,255,255,0.18)',
+          border: '0.5px solid rgb(var(--ink) / 0.18)',
           boxShadow: '0 6px 18px rgba(0,0,0,0.45), inset 0 0 0 3px rgba(0,0,0,0.35)',
           animation: playing && perf.idleAnim ? 'spin 3.6s linear infinite' : undefined,
         }}
@@ -80,7 +80,7 @@ export const EmbedSleeve = memo(function EmbedSleeve({
           />
         ) : (
           <span
-            className="flex h-full w-full items-center justify-center text-white/30"
+            className="flex h-full w-full items-center justify-center text-ink-30"
             style={{
               background: `linear-gradient(145deg, ${ink(8)}, ${ink(2)})`,
             }}

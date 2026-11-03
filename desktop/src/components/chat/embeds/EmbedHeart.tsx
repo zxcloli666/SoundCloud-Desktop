@@ -41,7 +41,7 @@ export const EmbedHeart = memo(function EmbedHeart({ urn, live }: EmbedHeartProp
       aria-pressed={liked}
       title={heartTitle(t, liked, superliked)}
       className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full transition-colors duration-200 cursor-pointer ${
-        liked ? 'text-accent' : 'text-white/45 hover:bg-white/[0.08] hover:text-white/90'
+        liked ? 'text-accent' : 'text-ink-45 hover:bg-ink/[0.08] hover:text-ink-90'
       }`}
     >
       <HoldHeart liked={liked} superliked={superliked} size={14} gesture={gesture} />

@@ -63,8 +63,8 @@ const FullscreenLikeButton = React.memo(({track}: { track: Track }) => {
             type="button"
             {...gesture.handlers}
             title={heartTitle(t, liked, superliked)}
-            className={`w-11 h-11 rounded-full flex items-center justify-center transition-all duration-200 cursor-pointer hover:bg-white/[0.06] outline-none ${
-                liked ? 'text-accent' : 'text-white/30 hover:text-white/60'
+            className={`w-11 h-11 rounded-full flex items-center justify-center transition-all duration-200 cursor-pointer hover:bg-ink/[0.06] outline-none ${
+                liked ? 'text-accent' : 'text-ink-30 hover:text-ink-60'
             }`}
         >
             <HoldHeart liked={liked} superliked={superliked} size={20} gesture={gesture}/>
@@ -86,8 +86,8 @@ const FullscreenDislikeButton = React.memo(({track}: { track: Track }) => {
             type="button"
             onClick={toggle}
             title={disliked ? t('track.removeDislike') : t('track.dislike')}
-            className={`w-11 h-11 rounded-full flex items-center justify-center transition-all duration-200 cursor-pointer hover:bg-white/[0.06] outline-none ${
-                disliked ? 'text-rose-400' : 'text-white/30 hover:text-white/60'
+            className={`w-11 h-11 rounded-full flex items-center justify-center transition-all duration-200 cursor-pointer hover:bg-ink/[0.06] outline-none ${
+                disliked ? 'text-rose-400' : 'text-ink-30 hover:text-ink-60'
             }`}
         >
             <ThumbsDown size={18} fill={disliked ? 'currentColor' : 'none'}/>
@@ -107,7 +107,7 @@ const FullscreenOpenTrackButton = React.memo(({track}: { track: Track }) => {
                 navigate(`/track/${encodeURIComponent(track.urn)}`);
             }}
             title={t('track.openTrackPage')}
-            className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-150 cursor-pointer hover:bg-white/[0.06] text-white/30 hover:text-white/60 outline-none"
+            className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-150 cursor-pointer hover:bg-ink/[0.06] text-ink-30 hover:text-ink-60 outline-none"
         >
             <ExternalLink size={18}/>
         </button>
@@ -129,9 +129,9 @@ export const Controls = React.memo(({track}: { track: Track }) => {
         );
 
     const ctrl =
-        'w-10 h-10 rounded-full flex items-center justify-center transition-all duration-150 cursor-pointer hover:bg-white/[0.06] outline-none';
+        'w-10 h-10 rounded-full flex items-center justify-center transition-all duration-150 cursor-pointer hover:bg-ink/[0.06] outline-none';
     const small =
-        'w-9 h-9 rounded-full flex items-center justify-center transition-all duration-150 cursor-pointer hover:bg-white/[0.06] outline-none';
+        'w-9 h-9 rounded-full flex items-center justify-center transition-all duration-150 cursor-pointer hover:bg-ink/[0.06] outline-none';
     const remote = !isLocalUrn(track.urn);
 
     return (
@@ -139,7 +139,7 @@ export const Controls = React.memo(({track}: { track: Track }) => {
             {remote && (
                 <>
                     <AddToPlaylistDialog trackUrns={[track.urn]}>
-                        <button type="button" className={`${small} text-white/30 hover:text-white/60`}>
+                        <button type="button" className={`${small} text-ink-30 hover:text-ink-60`}>
                             <ListPlus size={20}/>
                         </button>
                     </AddToPlaylistDialog>
@@ -149,14 +149,14 @@ export const Controls = React.memo(({track}: { track: Track }) => {
             <button
                 type="button"
                 onClick={toggleShuffle}
-                className={`${small} ${shuffle ? 'text-accent' : 'text-white/35 hover:text-white/60'}`}
+                className={`${small} ${shuffle ? 'text-accent' : 'text-ink-35 hover:text-ink-60'}`}
             >
                 {shuffleIcon16}
             </button>
             <button
                 type="button"
                 onClick={handlePrev}
-                className={`${ctrl} text-white/60 hover:text-white`}
+                className={`${ctrl} text-ink-60 hover:text-ink`}
             >
                 <SkipBack size={20} fill="currentColor"/>
             </button>
@@ -167,13 +167,13 @@ export const Controls = React.memo(({track}: { track: Track }) => {
             >
                 {isPlaying ? pauseBlack18 : playBlack18}
             </button>
-            <button type="button" onClick={next} className={`${ctrl} text-white/60 hover:text-white`}>
+            <button type="button" onClick={next} className={`${ctrl} text-ink-60 hover:text-ink`}>
                 <SkipForward size={20} fill="currentColor"/>
             </button>
             <button
                 type="button"
                 onClick={toggleRepeat}
-                className={`${small} ${repeat !== 'off' ? 'text-accent' : 'text-white/35 hover:text-white/60'}`}
+                className={`${small} ${repeat !== 'off' ? 'text-accent' : 'text-ink-35 hover:text-ink-60'}`}
             >
                 {repeat === 'one' ? repeat1Icon16 : repeatIcon16}
             </button>

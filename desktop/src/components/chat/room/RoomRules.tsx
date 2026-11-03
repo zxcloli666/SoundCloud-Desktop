@@ -48,14 +48,14 @@ function RuleSwitch({
       type="button"
       aria-pressed={on}
       onClick={() => onChange(!on)}
-      className="flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-2.5 py-2 text-left transition-colors hover:bg-white/[0.05]"
+      className="flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-2.5 py-2 text-left transition-colors hover:bg-ink/[0.05]"
     >
-      <Icon size={14} className={on ? 'shrink-0 text-accent' : 'shrink-0 text-white/35'} />
-      <span className="flex-1 truncate text-[12.5px] font-semibold text-white/85">{label}</span>
+      <Icon size={14} className={on ? 'shrink-0 text-accent' : 'shrink-0 text-ink-35'} />
+      <span className="flex-1 truncate text-[12.5px] font-semibold text-ink-85">{label}</span>
       <span
         aria-hidden
         className={`relative h-5 w-9 shrink-0 rounded-full transition-colors duration-200 ${
-          on ? 'bg-accent' : 'bg-white/10'
+          on ? 'bg-accent' : 'bg-ink/10'
         }`}
       >
         <span
@@ -75,13 +75,13 @@ function SlowMode({ seconds, onChange }: { seconds: number; onChange: (seconds: 
       <div className="flex items-center gap-2.5">
         <Timer
           size={14}
-          className={seconds > 0 ? 'shrink-0 text-accent' : 'shrink-0 text-white/35'}
+          className={seconds > 0 ? 'shrink-0 text-accent' : 'shrink-0 text-ink-35'}
         />
-        <span className="flex-1 truncate text-[12.5px] font-semibold text-white/85">
+        <span className="flex-1 truncate text-[12.5px] font-semibold text-ink-85">
           {t('chat.room.rules.slow')}
         </span>
       </div>
-      <div role="radiogroup" className="mt-2 flex rounded-lg bg-white/[0.05] p-0.5">
+      <div role="radiogroup" className="mt-2 flex rounded-lg bg-ink/[0.05] p-0.5">
         {SLOW_MODE_SECONDS.map((value) => (
           <button
             key={value}
@@ -90,7 +90,7 @@ function SlowMode({ seconds, onChange }: { seconds: number; onChange: (seconds: 
             aria-checked={seconds === value}
             onClick={() => onChange(value)}
             className={`h-7 flex-1 cursor-pointer rounded-md text-[11.5px] font-semibold tabular-nums transition-colors duration-200 ${
-              seconds === value ? 'bg-white/[0.14] text-white' : 'text-white/45 hover:text-white/75'
+              seconds === value ? 'bg-ink/[0.14] text-white' : 'text-ink-45 hover:text-ink-75'
             }`}
           >
             {value === 0 ? t('chat.room.rules.slowOff') : t('chat.room.rules.seconds', { value })}
@@ -146,7 +146,7 @@ export const RoomRules = memo(function RoomRules({ room }: { room: RoomView }) {
           type="button"
           title={t('chat.room.rules.title')}
           aria-label={t('chat.room.rules.title')}
-          className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full text-white/45 transition-colors hover:bg-white/[0.08] hover:text-white/90"
+          className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full text-ink-45 transition-colors hover:bg-ink/[0.08] hover:text-ink-90"
         >
           <Settings size={13} />
         </button>

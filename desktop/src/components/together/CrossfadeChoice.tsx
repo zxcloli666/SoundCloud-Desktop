@@ -9,17 +9,17 @@ export function CrossfadeChoice() {
   const setMode = useSettingsStore((s) => s.setRoomCrossfade);
   return (
     <div className="flex items-center justify-between gap-2 px-1">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-white/35">
+      <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-ink-35">
         {t('together.crossfade')}
       </p>
-      <div className="flex rounded-lg bg-white/[0.05] p-0.5">
+      <div className="flex rounded-lg bg-ink/[0.05] p-0.5">
         {CROSSFADE_MODES.map((value) => (
           <button
             key={value}
             type="button"
             onClick={() => setMode(value)}
             className={`cursor-pointer rounded-md px-2.5 py-1 text-[11.5px] font-semibold transition-all duration-200 ${
-              mode === value ? 'bg-white/[0.14] text-white' : 'text-white/45 hover:text-white/70'
+              mode === value ? 'bg-ink/[0.14] text-white' : 'text-ink-45 hover:text-ink-70'
             }`}
           >
             {t(value === 'mine' ? 'together.crossfadeMine' : 'together.crossfadeRoom')}

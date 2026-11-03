@@ -41,7 +41,7 @@ const FreshLead = memo(function FreshLead({track, queue}: { track: Track; queue:
             className="relative flex items-center gap-5 p-4 rounded-[1.75rem] overflow-hidden"
             style={{
                 border: `0.5px solid ${aura.accentSoft}`,
-                background: `linear-gradient(120deg, ${aura.accentSoft}, rgba(255,255,255,0.015) 60%)`,
+                background: `linear-gradient(120deg, ${aura.accentSoft}, rgb(var(--ink) / 0.015) 60%)`,
                 boxShadow: perf.glow ? `0 0 50px ${aura.accentGlow}` : undefined,
             }}
         >
@@ -50,19 +50,20 @@ const FreshLead = memo(function FreshLead({track, queue}: { track: Track; queue:
                 onClick={togglePlay}
                 onMouseEnter={() => preloadTrack(track)}
                 onMouseLeave={cancelPreload}
-                className="group relative shrink-0 w-[108px] h-[108px] md:w-[132px] md:h-[132px] rounded-2xl overflow-hidden ring-1 ring-white/10 cursor-pointer"
+                className="group relative shrink-0 w-[108px] h-[108px] md:w-[132px] md:h-[132px] rounded-2xl overflow-hidden ring-1 ring-ink/10 cursor-pointer"
                 style={{boxShadow: `0 16px 42px ${aura.accentGlow}`}}
             >
                 {cover ? (
                     <img
+                        data-ui="artwork"
                         src={cover}
                         alt=""
                         decoding="async"
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                 ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-white/[0.04]">
-                        <Music size={26} className="text-white/20"/>
+                    <div className="w-full h-full flex items-center justify-center bg-ink/[0.04]">
+                        <Music size={26} className="text-ink-20"/>
                     </div>
                 )}
                 <div
@@ -70,7 +71,7 @@ const FreshLead = memo(function FreshLead({track, queue}: { track: Track; queue:
                         isThisPlaying ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
                     }`}
                 >
-          <span className="w-12 h-12 rounded-full bg-white/15 backdrop-blur-md flex items-center justify-center">
+          <span className="w-12 h-12 rounded-full bg-ink/15 backdrop-blur-md flex items-center justify-center">
             {isThisPlaying ? pauseWhite14 : playWhite14}
           </span>
                 </div>
@@ -84,7 +85,7 @@ const FreshLead = memo(function FreshLead({track, queue}: { track: Track; queue:
           >
             {t('library.freshNew')}
           </span>
-                    {when && <span className="text-[11px] text-white/40 tabular-nums">{when}</span>}
+                    {when && <span className="text-[11px] text-ink-40 tabular-nums">{when}</span>}
                 </div>
                 <TrackTitleArtist track={track} highlight={isThis} size="lg"/>
             </div>
@@ -108,7 +109,7 @@ const FreshDropRow = memo(function FreshDropRow({
         <div
             onContextMenu={onContextMenu}
             className={`group flex items-center gap-3.5 px-3 py-2.5 rounded-2xl transition-colors duration-200 ${
-                isThis ? 'bg-white/[0.05]' : 'hover:bg-white/[0.035]'
+                isThis ? 'bg-ink/[0.05]' : 'hover:bg-ink/[0.035]'
             }`}
         >
             <button
@@ -116,13 +117,13 @@ const FreshDropRow = memo(function FreshDropRow({
                 onClick={togglePlay}
                 onMouseEnter={() => preloadTrack(track)}
                 onMouseLeave={cancelPreload}
-                className="relative w-12 h-12 rounded-xl overflow-hidden shrink-0 ring-1 ring-white/[0.08] cursor-pointer"
+                className="relative w-12 h-12 rounded-xl overflow-hidden shrink-0 ring-1 ring-ink/[0.08] cursor-pointer"
             >
                 {cover ? (
                     <img src={cover} alt="" decoding="async" className="w-full h-full object-cover"/>
                 ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-white/[0.04]">
-                        <Music size={14} className="text-white/20"/>
+                    <div className="w-full h-full flex items-center justify-center bg-ink/[0.04]">
+                        <Music size={14} className="text-ink-20"/>
                     </div>
                 )}
                 <div
@@ -142,7 +143,7 @@ const FreshDropRow = memo(function FreshDropRow({
             />
 
             {when && (
-                <span className="text-[11px] text-white/30 tabular-nums shrink-0 w-10 text-right">
+                <span className="text-[11px] text-ink-30 tabular-nums shrink-0 w-10 text-right">
           {when}
         </span>
             )}
@@ -166,10 +167,10 @@ export const FreshDrops = memo(function FreshDrops({genre}: { genre?: string | n
     return (
         <section>
             <div className="flex items-center gap-2.5 mb-4 px-1">
-        <span className="text-white/55">
+        <span className="text-ink-55">
           <Sparkles size={16}/>
         </span>
-                <h2 className="text-[16px] font-bold tracking-tight text-white/90">
+                <h2 className="text-[16px] font-bold tracking-tight text-ink-90">
                     {t('library.freshFromFollowing')}
                 </h2>
                 <button
@@ -177,7 +178,7 @@ export const FreshDrops = memo(function FreshDrops({genre}: { genre?: string | n
                     onClick={refetch}
                     disabled={isFetching}
                     title={t('soundwave.refresh')}
-                    className="ml-1 w-7 h-7 rounded-full flex items-center justify-center text-white/40 hover:text-white/80 hover:bg-white/[0.06] transition-colors cursor-pointer disabled:opacity-40"
+                    className="ml-1 w-7 h-7 rounded-full flex items-center justify-center text-ink-40 hover:text-ink-80 hover:bg-ink/[0.06] transition-colors cursor-pointer disabled:opacity-40"
                 >
                     <RefreshCw size={13} className={isFetching ? 'animate-spin' : ''}/>
                 </button>
@@ -185,14 +186,14 @@ export const FreshDrops = memo(function FreshDrops({genre}: { genre?: string | n
 
             {isLoading ? (
                 <div className="flex justify-center py-16">
-                    <Loader2 size={28} className="animate-spin text-white/15"/>
+                    <Loader2 size={28} className="animate-spin text-ink-15"/>
                 </div>
             ) : tracks.length === 0 ? (
                 <div className="flex flex-col items-center gap-3 text-center py-14 px-6">
-          <span className="w-14 h-14 rounded-2xl bg-white/[0.04] flex items-center justify-center text-white/25">
+          <span className="w-14 h-14 rounded-2xl bg-ink/[0.04] flex items-center justify-center text-ink-25">
             <AudioLines size={24}/>
           </span>
-                    <p className="text-white/40 text-sm max-w-[300px]">
+                    <p className="text-ink-40 text-sm max-w-[300px]">
                         {hasFollowings ? t('library.freshQuiet') : t('library.freshEmpty')}
                     </p>
                 </div>

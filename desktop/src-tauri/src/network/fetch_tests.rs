@@ -33,6 +33,7 @@ fn request(url: String, method: &str, timeout_ms: Option<u64>) -> FetchRequest {
         timeout_ms,
         route: None,
         long_poll: false,
+        trace: None,
     }
 }
 
@@ -45,6 +46,7 @@ fn routed(url: String, origin: &str, long_poll: bool) -> FetchRequest {
             last: true,
         }),
         long_poll,
+        trace: None,
         ..request(url, "GET", Some(5_000))
     }
 }
@@ -343,11 +345,11 @@ async fn a_body_that_breaks_off_is_a_body_failure() {
         .into_iter()
         .filter(|event| event.origin == "fetch-body-test.scnative.dev")
         .collect();
-    assert_eq!(events.len(), 2);
+    assert_eq!(events.len(), 1);
     assert!(!events[0].ok);
     assert_eq!(events[0].fail, Some(FailKind::Body));
     assert_eq!(events[0].role, Role::Primary);
-    assert_eq!(events[1].status, Some(200));
+    assert_eq!(events[0].status, Some(200));
 }
 
 #[tokio::test]

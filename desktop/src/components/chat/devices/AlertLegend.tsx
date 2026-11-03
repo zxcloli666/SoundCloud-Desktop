@@ -25,7 +25,7 @@ export function AlertLegend({ outcome, opensIn }: AlertLegendProps) {
         <p className="text-[12.5px] font-semibold text-rose-300">
           {t('chat.devices.alert.revoked')}
         </p>
-        <p className="max-w-[300px] text-[11.5px] leading-snug text-white/40">
+        <p className="max-w-[300px] text-[11.5px] leading-snug text-ink-40">
           {t('chat.devices.alert.revokedHint')}
         </p>
       </div>
@@ -35,7 +35,7 @@ export function AlertLegend({ outcome, opensIn }: AlertLegendProps) {
   if (opensIn <= 0) return null;
 
   return (
-    <p className="mt-4 inline-flex items-center gap-2 text-[12px] text-white/50">
+    <p className="mt-4 inline-flex items-center gap-2 text-[12px] text-ink-50">
       <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-[var(--color-accent)]" />
       {t('chat.devices.alert.opensIn', { span: spanText(t, opensIn) })}
     </p>

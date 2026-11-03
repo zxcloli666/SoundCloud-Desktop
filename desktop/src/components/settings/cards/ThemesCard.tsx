@@ -24,14 +24,14 @@ function NoThemeTile({ active, onSelect }: { active: boolean; onSelect: () => vo
       type="button"
       onClick={onSelect}
       className={`group flex flex-col overflow-hidden rounded-2xl border text-left transition-all duration-200 cursor-pointer hover:scale-[1.02] active:scale-[0.98] ${
-        active ? 'border-[var(--color-accent)]' : 'border-white/[0.06] hover:border-white/15'
+        active ? 'border-[var(--color-accent)]' : 'border-ink/[0.06] hover:border-ink/15'
       }`}
       style={active ? { boxShadow: '0 0 0 1px var(--color-accent)' } : undefined}
     >
       <div className="relative aspect-[16/10] w-full overflow-hidden">
         <ThemeSwatch accent={accent} background={bg} />
       </div>
-      <div className="px-3 py-2 bg-white/[0.03] text-[12.5px] font-semibold text-white/75 truncate">
+      <div className="px-3 py-2 bg-ink/[0.03] text-[12.5px] font-semibold text-ink-75 truncate">
         {t('settings.themesNone')}
       </div>
     </button>
@@ -41,12 +41,12 @@ function NoThemeTile({ active, onSelect }: { active: boolean; onSelect: () => vo
 function ErrorState({ onRetry }: { onRetry: () => void }) {
   const { t } = useTranslation();
   return (
-    <div className="flex items-center justify-between gap-3 rounded-xl border border-white/[0.06] bg-white/[0.03] px-4 py-3">
-      <span className="text-[12.5px] text-white/50">{t('settings.themesOffline')}</span>
+    <div className="flex items-center justify-between gap-3 rounded-xl border border-ink/[0.06] bg-ink/[0.03] px-4 py-3">
+      <span className="text-[12.5px] text-ink-50">{t('settings.themesOffline')}</span>
       <button
         type="button"
         onClick={onRetry}
-        className="rounded-lg bg-white/[0.06] px-3 py-1.5 text-[12px] font-semibold text-white/75 hover:bg-white/[0.1] transition-all cursor-pointer"
+        className="rounded-lg bg-ink/[0.06] px-3 py-1.5 text-[12px] font-semibold text-ink-75 hover:bg-ink/[0.1] transition-all cursor-pointer"
       >
         {t('settings.themesRetry')}
       </button>
@@ -118,7 +118,7 @@ export function ThemesCard() {
           <div className="relative">
             <Search
               size={14}
-              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/30"
+              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-30"
             />
             <input
               type="text"
@@ -126,7 +126,7 @@ export function ThemesCard() {
               onChange={(e) => setQuery(e.target.value)}
               placeholder={t('settings.themesSearch')}
               spellCheck={false}
-              className="w-full rounded-xl border border-white/[0.06] bg-white/[0.04] py-2.5 pl-10 pr-4 text-[13px] text-white/80 placeholder:text-white/25 outline-none transition-all focus:border-white/[0.12] focus:bg-white/[0.06]"
+              className="w-full rounded-xl border border-ink/[0.06] bg-ink/[0.04] py-2.5 pl-10 pr-4 text-[13px] text-ink-80 placeholder:text-ink-25 outline-none transition-all focus:border-ink/[0.12] focus:bg-ink/[0.06]"
             />
           </div>
         )}
@@ -148,12 +148,12 @@ export function ThemesCard() {
           ))}
         </div>
         {catalog && shown.length === 0 && (
-          <p className="text-center text-[12px] text-white/35">
+          <p className="text-center text-[12px] text-ink-35">
             {t(needle ? 'settings.themesNotFound' : 'settings.themesEmpty')}
           </p>
         )}
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-white/[0.05] pt-4">
-          <label className="inline-flex items-center gap-3 text-[12.5px] text-white/60">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-ink/[0.05] pt-4">
+          <label className="inline-flex items-center gap-3 text-[12.5px] text-ink-60">
             <Toggle
               checked={autoUpdate}
               onChange={() => setAutoUpdate(!autoUpdate)}
@@ -168,14 +168,14 @@ export function ThemesCard() {
               disabled={status === 'loading'}
               title={t('settings.themesRefresh')}
               aria-label={t('settings.themesRefresh')}
-              className="flex h-8 w-8 items-center justify-center rounded-lg text-white/45 hover:bg-white/[0.08] hover:text-white/85 transition-all cursor-pointer disabled:cursor-default"
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-ink-45 hover:bg-ink/[0.08] hover:text-ink-85 transition-all cursor-pointer disabled:cursor-default"
             >
               <RefreshCw size={14} className={status === 'loading' ? 'animate-spin' : ''} />
             </button>
             <button
               type="button"
               onClick={() => openUrl(guide)}
-              className="flex items-center gap-2 rounded-xl border border-white/[0.06] bg-white/[0.06] px-4 py-2 text-[12px] font-semibold text-white/75 hover:bg-white/[0.1] hover:text-white transition-all cursor-pointer"
+              className="flex items-center gap-2 rounded-xl border border-ink/[0.06] bg-ink/[0.06] px-4 py-2 text-[12px] font-semibold text-ink-75 hover:bg-ink/[0.1] hover:text-ink transition-all cursor-pointer"
             >
               <BookOpen size={12} />
               {t('settings.themesMake')}

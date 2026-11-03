@@ -21,15 +21,15 @@ function ArtistCoversTabImpl({ artistId, aura }: ArtistCoversTabProps) {
 
   if (query.isLoading) {
     return (
-      <div className="flex items-center justify-center py-12 text-white/40">
+      <div className="flex items-center justify-center py-12 text-ink-40">
         <Loader2 size={20} className="animate-spin" />
       </div>
     );
   }
   if (tracks.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 text-white/30 gap-3">
-        <Music size={28} className="text-white/15" />
+      <div className="flex flex-col items-center justify-center py-16 text-ink-30 gap-3">
+        <Music size={28} className="text-ink-15" />
         <p className="text-[13px]">{t('artist.noCovers', 'No covers yet')}</p>
       </div>
     );

@@ -1,0 +1,21 @@
+{
+  "id": "unbounded",
+  "family": "Unbounded",
+  "subsets": ["cyrillic", "cyrillic-ext", "latin", "latin-ext", "vietnamese"],
+  "weights": [200, 300, 400, 500, 600, 700, 800, 900],
+  "styles": ["normal"],
+  "defSubset": "latin",
+  "variable": {
+    "wght": {"default": "400", "min": "200", "max": "900", "step": "1"}
+  },
+  "lastModified": "2025-09-11",
+  "version": "v12",
+  "category": "sans-serif",
+  "license": {
+    "type": "OFL-1.1",
+    "url": "https://openfontlicense.org",
+    "attribution": "Copyright 2022 The Unbounded Project Authors (https://github.com/googlefonts/unbounded)"
+  },
+  "source": "https://github.com/google/fonts",
+  "type": "google"
+}

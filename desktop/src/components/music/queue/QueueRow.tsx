@@ -27,16 +27,16 @@ const QueueTrackRowBody = React.memo(function QueueTrackRowBody({
   return (
     <div className="flex-1 min-w-0 cursor-pointer" onClick={onClick}>
       <p
-        className={`text-[12px] truncate leading-snug ${isCurrent ? 'text-accent font-medium' : 'text-white/80'}`}
+        className={`text-[12px] truncate leading-snug ${isCurrent ? 'text-accent font-medium' : 'text-ink-80'}`}
       >
         {displayTitle}
       </p>
-      <p className="text-[10px] text-white/30 truncate mt-0.5 flex items-center gap-1">
+      <p className="text-[10px] text-ink-30 truncate mt-0.5 flex items-center gap-1">
         <UploadKindDot kind={artistDisplay.uploadKind} />
         <span className="truncate">
           <ArtistNameLinks
             items={artistLinks}
-            linkClassName="cursor-pointer transition-colors hover:text-white/60"
+            linkClassName="cursor-pointer transition-colors hover:text-ink-60"
           />
         </span>
       </p>
@@ -76,6 +76,7 @@ export const QueueRow = React.memo(function QueueRow({
 
   return (
     <div
+      data-ui="queue-item"
       ref={setNodeRef}
       onContextMenu={onContextMenu}
       style={{ transform: CSS.Transform.toString(transform), transition }}
@@ -83,25 +84,25 @@ export const QueueRow = React.memo(function QueueRow({
         isDragging
           ? 'opacity-30'
           : isCurrent
-            ? 'bg-white/[0.08] ring-1 ring-white/[0.08]'
-            : 'hover:bg-white/[0.05]'
+            ? 'bg-ink/[0.08] ring-1 ring-ink/[0.08]'
+            : 'hover:bg-ink/[0.05]'
       }`}
     >
       <div
-        className="w-5 shrink-0 flex items-center justify-center text-white/20 cursor-grab active:cursor-grabbing touch-none"
+        className="w-5 shrink-0 flex items-center justify-center text-ink-20 cursor-grab active:cursor-grabbing touch-none"
         {...attributes}
         {...listeners}
       >
         <span className="text-[11px] tabular-nums group-hover:hidden">{position}</span>
-        <GripVertical size={14} className="hidden group-hover:block group-hover:text-white/45" />
+        <GripVertical size={14} className="hidden group-hover:block group-hover:text-ink-45" />
       </div>
 
       <div
-        className="w-9 h-9 rounded-lg overflow-hidden shrink-0 relative bg-white/[0.04] cursor-pointer"
+        className="w-9 h-9 rounded-lg overflow-hidden shrink-0 relative bg-ink/[0.04] cursor-pointer"
         onClick={handleClick}
       >
         {artwork ? (
-          <img src={artwork} alt="" className="w-full h-full object-cover" decoding="async" />
+          <img data-ui="artwork" src={artwork} alt="" className="w-full h-full object-cover" decoding="async" />
         ) : (
           <div className="w-full h-full" />
         )}
@@ -114,7 +115,7 @@ export const QueueRow = React.memo(function QueueRow({
         <TrackStatusBadges meta={track._scd_meta} />
       </div>
 
-      <span className="text-[10px] text-white/20 tabular-nums shrink-0">{dur(track.duration)}</span>
+      <span className="text-[10px] text-ink-20 tabular-nums shrink-0">{dur(track.duration)}</span>
 
       <LikeButton track={track} />
 
@@ -124,7 +125,7 @@ export const QueueRow = React.memo(function QueueRow({
           e.stopPropagation();
           handleRemove();
         }}
-        className="w-6 h-6 rounded-md flex items-center justify-center text-white/0 group-hover:text-white/25 hover:!text-white/60 hover:!bg-white/[0.06] transition-all duration-150 cursor-pointer shrink-0"
+        className="w-6 h-6 rounded-md flex items-center justify-center text-ink-0 group-hover:text-ink-25 hover:!text-ink-60 hover:!bg-ink/[0.06] transition-all duration-150 cursor-pointer shrink-0"
       >
         <X size={12} />
       </button>
@@ -136,9 +137,9 @@ export const QueueRow = React.memo(function QueueRow({
 export const QueueRowClone = React.memo(function QueueRowClone({ track }: { track: Track }) {
   const artwork = art(track.artwork_url, 't200x200');
   return (
-    <div className="flex items-center gap-2.5 pl-2 pr-3 py-2 rounded-xl bg-[rgba(28,28,34,0.96)] ring-1 ring-white/15 shadow-[0_20px_50px_rgba(0,0,0,0.55)] backdrop-blur-xl cursor-grabbing">
-      <GripVertical size={14} className="text-white/45 shrink-0" />
-      <div className="w-9 h-9 rounded-lg overflow-hidden shrink-0 bg-white/[0.04]">
+    <div className="flex items-center gap-2.5 pl-2 pr-3 py-2 rounded-xl bg-[rgb(var(--surface-hi)/0.96)] ring-1 ring-ink/15 shadow-[0_20px_50px_rgb(var(--shade)/calc(0.55*var(--shade-alpha)))] backdrop-blur-xl cursor-grabbing">
+      <GripVertical size={14} className="text-ink-45 shrink-0" />
+      <div className="w-9 h-9 rounded-lg overflow-hidden shrink-0 bg-ink/[0.04]">
         {artwork && (
           <img src={artwork} alt="" className="w-full h-full object-cover" decoding="async" />
         )}

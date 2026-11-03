@@ -38,8 +38,8 @@ export const CuratorCard = React.memo(function CuratorCard({
         <div
             className="rounded-[1.4rem] p-4 md:p-5"
             style={{
-                background: 'rgba(255,255,255,0.035)',
-                border: '0.5px solid rgba(255,255,255,0.07)',
+                background: 'rgb(var(--ink) / 0.035)',
+                border: '0.5px solid rgb(var(--ink) / 0.07)',
             }}
         >
             <div className="flex items-center gap-3.5">
@@ -48,17 +48,17 @@ export const CuratorCard = React.memo(function CuratorCard({
                         src={avatarUrl}
                         alt={user.username}
                         size={48}
-                        className="ring-1 ring-white/[0.1]"
+                        className="ring-1 ring-ink/[0.1]"
                     />
                 </button>
                 <div className="min-w-0 flex-1">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/35">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-ink-35">
                         {t('playlist.curatedBy')}
                     </p>
                     <button
                         type="button"
                         onClick={goUser}
-                        className="block text-[16px] font-bold text-white/90 truncate hover:text-white transition-colors cursor-pointer text-left max-w-full"
+                        className="block text-[16px] font-bold text-ink-90 truncate hover:text-ink transition-colors cursor-pointer text-left max-w-full"
                     >
                         {user.username}
                     </button>
@@ -79,10 +79,10 @@ export const CuratorCard = React.memo(function CuratorCard({
 
             {trimmed && (
                 <div className="mt-4 pl-3.5" style={{borderLeft: `2px solid ${auraRgba(aura, 0.45)}`}}>
-                    <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/30 mb-1.5">
+                    <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-ink-30 mb-1.5">
                         {t('playlist.linerNote')}
                     </p>
-                    <p className="selectable text-[12.5px] text-white/55 leading-relaxed whitespace-pre-wrap break-words line-clamp-4 hover:line-clamp-none transition-all duration-500">
+                    <p className="selectable text-[12.5px] text-ink-55 leading-relaxed whitespace-pre-wrap break-words line-clamp-4 hover:line-clamp-none transition-all duration-500">
                         <RichText text={trimmed} accent={auraRgb(aura)}/>
                     </p>
                 </div>

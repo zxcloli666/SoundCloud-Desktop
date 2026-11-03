@@ -55,13 +55,13 @@ export function SuperlikeLimitHost() {
           )}
           <div className="relative flex flex-col items-center" style={{ isolation: 'isolate' }}>
             <SuperHeart size={52} />
-            <ModalTitle className="mt-5 text-[21px] font-black leading-snug tracking-tight text-white/95">
+            <ModalTitle className="mt-5 text-[21px] font-black leading-snug tracking-tight text-ink-95">
               <Trans
                 i18nKey="superlike.limitTitle"
                 components={{ star: <StarBadgeLink size="lg" onNavigate={close} /> }}
               />
             </ModalTitle>
-            <ModalDescription className="mt-2.5 max-w-sm text-[13px] leading-relaxed text-white/50">
+            <ModalDescription className="mt-2.5 max-w-sm text-[13px] leading-relaxed text-ink-50">
               {t('superlike.limitBody', { count: FREE_SUPERLIKES })}
             </ModalDescription>
             <button

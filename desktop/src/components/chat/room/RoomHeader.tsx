@@ -19,7 +19,7 @@ function Ephemeral() {
     <span
       title={t('chat.room.ephemeral')}
       aria-label={t('chat.room.ephemeral')}
-      className="flex size-7 shrink-0 items-center justify-center rounded-full border border-white/[0.09] bg-black/25 text-amber-200/80"
+      className="flex size-7 shrink-0 items-center justify-center rounded-full border border-ink/[0.09] bg-black/25 text-amber-200/80"
     >
       <Hourglass size={13} />
     </span>
@@ -33,7 +33,7 @@ function BackButton({ onBack }: { onBack: () => void }) {
       type="button"
       aria-label={t('chat.thread.back')}
       onClick={onBack}
-      className="-ml-1 flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full text-white/55 transition-colors hover:bg-white/[0.08] hover:text-white @min-[641px]:hidden"
+      className="-ml-1 flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full text-ink-55 transition-colors hover:bg-ink/[0.08] hover:text-white @min-[641px]:hidden"
     >
       <ChevronLeft size={17} />
     </button>
@@ -52,7 +52,7 @@ export const RoomHeader = memo(function RoomHeader({
   onBack?: () => void;
 }) {
   return (
-    <header className="relative shrink-0 border-b border-white/[0.05]">
+    <header className="relative shrink-0 border-b border-ink/[0.05]">
       <RoomSleeve room={room} />
       <div className="relative px-3 pt-3 pb-2.5" style={{ isolation: 'isolate' }}>
         <div className="flex items-center gap-2">

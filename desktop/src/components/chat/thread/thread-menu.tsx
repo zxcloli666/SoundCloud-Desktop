@@ -47,7 +47,7 @@ export function openTimerMenu(
   openContextMenu(
     event,
     entries,
-    <div className="px-2.5 pt-1.5 pb-1 text-[11.5px] font-semibold text-white/45">
+    <div className="px-2.5 pt-1.5 pb-1 text-[11.5px] font-semibold text-ink-45">
       {t('chat.thread.timer.title')}
     </div>,
   );

@@ -34,7 +34,7 @@ export function ThemeSwatch({
     <div className="absolute inset-0" style={{ background }}>
       <div
         className="absolute inset-x-[12%] bottom-[14%] h-[18%] rounded-lg"
-        style={{ background: 'rgba(255,255,255,0.06)' }}
+        style={{ background: 'rgb(var(--ink) / 0.06)' }}
       />
       <div
         className="absolute left-[12%] top-[16%] h-[22%] aspect-square rounded-full"
@@ -57,6 +57,7 @@ function Badge({
   return (
     <span
       title={title}
+      data-scheme="dark"
       className={`flex h-6 w-6 items-center justify-center rounded-full backdrop-blur-md ${className}`}
     >
       {children}
@@ -90,11 +91,11 @@ export const ThemeTile = memo(function ThemeTile({
       type="button"
       onClick={() => onOpen(item.id)}
       className={`group relative flex flex-col overflow-hidden rounded-2xl border text-left transition-all duration-200 cursor-pointer hover:scale-[1.02] active:scale-[0.98] ${
-        active ? '' : 'border-white/[0.06] hover:border-white/15'
+        active ? '' : 'border-ink/[0.06] hover:border-ink/15'
       } ${locked ? 'opacity-50' : ''}`}
       style={active ? ACTIVE_STYLE : undefined}
     >
-      <div className="relative aspect-[16/10] w-full overflow-hidden bg-white/[0.03]">
+      <div className="relative aspect-[16/10] w-full overflow-hidden bg-ink/[0.03]">
         {preview ? (
           <img
             src={preview}
@@ -128,13 +129,13 @@ export const ThemeTile = memo(function ThemeTile({
           {locked && (
             <Badge
               title={t('settings.themesNeedsApp', { version: entry?.minApp })}
-              className="bg-black/60 text-white/80"
+              className="bg-black/60 text-ink-80"
             >
               <Lock size={12} />
             </Badge>
           )}
           {installed && !active && !update && !broken && (
-            <Badge title={t('settings.themesInstalled')} className="bg-black/50 text-white/70">
+            <Badge title={t('settings.themesInstalled')} className="bg-black/50 text-ink-70">
               <ArrowDownToLine size={12} />
             </Badge>
           )}
@@ -149,17 +150,17 @@ export const ThemeTile = memo(function ThemeTile({
         </div>
         {busy && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/45">
-            <Loader2 size={20} className="animate-spin text-white/80" />
+            <Loader2 size={20} className="animate-spin text-ink-80" />
           </div>
         )}
       </div>
-      <div className="min-w-0 px-3 py-2 bg-white/[0.03]">
+      <div className="min-w-0 px-3 py-2 bg-ink/[0.03]">
         <div
-          className={`truncate text-[12.5px] font-semibold ${active ? 'text-white' : 'text-white/75'}`}
+          className={`truncate text-[12.5px] font-semibold ${active ? 'text-ink' : 'text-ink-75'}`}
         >
           {name}
         </div>
-        {author && <div className="truncate text-[11px] text-white/35">{author}</div>}
+        {author && <div className="truncate text-[11px] text-ink-35">{author}</div>}
       </div>
     </button>
   );

@@ -37,7 +37,7 @@ export const RoomRow = memo(function RoomRow({
       data-kind="room"
       aria-current={selected ? 'true' : undefined}
       onClick={onOpen}
-      className="group mx-2 mb-1 flex h-[52px] w-[calc(100%-1rem)] cursor-pointer items-center gap-3 rounded-2xl border px-2.5 text-left transition-colors duration-200 hover:bg-white/[0.05]"
+      className="group mx-2 mb-1 flex h-[52px] w-[calc(100%-1rem)] cursor-pointer items-center gap-3 rounded-2xl border px-2.5 text-left transition-colors duration-200 hover:bg-ink/[0.05]"
       style={{
         borderColor: selected ? 'var(--color-accent)' : 'var(--color-accent-glow)',
         background: 'linear-gradient(90deg, var(--color-accent-glow), transparent 70%)',
@@ -54,8 +54,8 @@ export const RoomRow = memo(function RoomRow({
         <Radio size={16} strokeWidth={2.2} />
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block truncate text-[13px] font-semibold text-white/90">{label}</span>
-        <span className="block truncate font-mono text-[11px] tracking-wider text-white/40">
+        <span className="block truncate text-[13px] font-semibold text-ink-90">{label}</span>
+        <span className="block truncate font-mono text-[11px] tracking-wider text-ink-40">
           {code}
         </span>
       </span>

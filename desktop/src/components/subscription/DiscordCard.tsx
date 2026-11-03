@@ -21,7 +21,7 @@ function initials(name: string): string {
 const Chip = memo(function Chip({ label }: { label: string }) {
   return (
     <span
-      className="inline-flex items-center rounded-full px-[10px] py-[3px] font-mono text-[10.5px] uppercase tracking-[0.12em] text-white/90"
+      className="inline-flex items-center rounded-full px-[10px] py-[3px] font-mono text-[10.5px] uppercase tracking-[0.12em] text-ink-90"
       style={{
         border: '1px solid color-mix(in srgb, var(--color-accent) 42%, transparent)',
         background: 'color-mix(in srgb, var(--color-accent) 14%, transparent)',
@@ -36,10 +36,10 @@ const Shell = memo(function Shell({ children }: { children: React.ReactNode }) {
   const { t } = useTranslation();
   return (
     <div
-      className="rounded-[14px] border border-white/[0.06] px-[18px] py-4"
-      style={{ background: 'rgba(255,255,255,0.03)' }}
+      className="rounded-[14px] border border-ink/[0.06] px-[18px] py-4"
+      style={{ background: 'rgb(var(--ink) / 0.03)' }}
     >
-      <div className="mb-3 flex items-center gap-[7px] text-white/45">
+      <div className="mb-3 flex items-center gap-[7px] text-ink-45">
         <DiscordMark size={15} />
         <span className="font-mono text-[10.5px] uppercase tracking-[0.18em]">
           {t('starpass.discord.label')}
@@ -58,13 +58,13 @@ export const DiscordCard = memo(function DiscordCard({ discord }: { discord: Dis
   if (!discord) {
     return (
       <Shell>
-        <div className="text-[13px] text-white/75">{t('starpass.discord.unlinked')}</div>
-        <div className="mt-[6px] flex items-center gap-2 text-[12px] text-white/40">
+        <div className="text-[13px] text-ink-75">{t('starpass.discord.unlinked')}</div>
+        <div className="mt-[6px] flex items-center gap-2 text-[12px] text-ink-40">
           <span>{t('starpass.discord.linkHint')}</span>
         </div>
         <code
-          className="selectable mt-3 inline-block rounded-md px-2 py-1 font-mono text-[12px] text-white/85"
-          style={{ background: 'rgba(255,255,255,0.06)' }}
+          className="selectable mt-3 inline-block rounded-md px-2 py-1 font-mono text-[12px] text-ink-85"
+          style={{ background: 'rgb(var(--ink) / 0.06)' }}
         >
           /sc-link
         </code>
@@ -78,9 +78,9 @@ export const DiscordCard = memo(function DiscordCard({ discord }: { discord: Dis
       <div className="flex items-center gap-[13px]">
         <div
           className="relative grid size-11 shrink-0 place-items-center overflow-hidden rounded-full"
-          style={{ background: 'rgba(255,255,255,0.07)' }}
+          style={{ background: 'rgb(var(--ink) / 0.07)' }}
         >
-          <span className="font-mono text-[14px] text-white/70">{initials(name)}</span>
+          <span className="font-mono text-[14px] text-ink-70">{initials(name)}</span>
           {discord.avatar_url && (
             // Discord CDN url — render direct, NOT via art() (that mangles non-SC urls).
             // If it fails to load, the initials behind it remain visible.
@@ -94,9 +94,9 @@ export const DiscordCard = memo(function DiscordCard({ discord }: { discord: Dis
           )}
         </div>
         <div className="min-w-0">
-          <div className="truncate text-[15px] font-medium text-white/95">{name}</div>
+          <div className="truncate text-[15px] font-medium text-ink-95">{name}</div>
           {discord.username && (
-            <div className="truncate font-mono text-[12px] text-white/40">@{discord.username}</div>
+            <div className="truncate font-mono text-[12px] text-ink-40">@{discord.username}</div>
           )}
         </div>
       </div>

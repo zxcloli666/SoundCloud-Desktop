@@ -34,13 +34,13 @@ function Hero({ children, unit, size }: { children: ReactNode; unit?: ReactNode;
   return (
     <div className="mt-1.5 flex items-center justify-center gap-2">
       <span
-        className="break-words font-bold leading-[0.95] tracking-[-0.03em] text-white"
+        className="break-words font-bold leading-[0.95] tracking-[-0.03em] text-ink"
         style={{ ...DISP, fontSize: size }}
       >
         {children}
       </span>
       {unit != null && (
-        <span className="text-white/50" style={{ ...MONO, fontSize: Math.round(size * 0.4) }}>
+        <span className="text-ink-50" style={{ ...MONO, fontSize: Math.round(size * 0.4) }}>
           {unit}
         </span>
       )}
@@ -51,7 +51,7 @@ function Hero({ children, unit, size }: { children: ReactNode; unit?: ReactNode;
 /** Secondary line under the hero — one style for price / validity / status. */
 function Caption({ children }: { children: ReactNode }) {
   return (
-    <div className="mt-3 text-[13px] font-medium tracking-[0.01em] text-white/75" style={SHADOW}>
+    <div className="mt-3 text-[13px] font-medium tracking-[0.01em] text-ink-75" style={SHADOW}>
       {children}
     </div>
   );
@@ -65,6 +65,8 @@ export const CenterReadout = memo(function CenterReadout({
   plan,
   endsAt,
   serialSeed,
+  gift,
+  inviteDays,
 }: {
   step: Step;
   phase: PayPhase;
@@ -72,8 +74,32 @@ export const CenterReadout = memo(function CenterReadout({
   plan: Plan | null;
   endsAt: number;
   serialSeed: string;
+  gift: boolean;
+  inviteDays: number | null;
 }) {
   const { t } = useTranslation();
+
+  if (step === 'invite') {
+    return (
+      <div style={SHADOW}>
+        <Eyebrow>✦ ✦</Eyebrow>
+        <Hero size={60} unit={t('starpass.invite.daysUnit')}>
+          {inviteDays != null ? `+${inviteDays}` : '—'}
+        </Hero>
+        <Caption>{t('starpass.invite.center')}</Caption>
+      </div>
+    );
+  }
+
+  if (step === 'gifts' || (step === 'success' && gift)) {
+    return (
+      <div style={SHADOW}>
+        <Eyebrow>✦</Eyebrow>
+        <Hero size={30}>{t(step === 'gifts' ? 'starpass.gift.mine' : 'starpass.gift.ready')}</Hero>
+        <Caption>{t('starpass.gift.center')}</Caption>
+      </div>
+    );
+  }
 
   if (step === 'success' || step === 'manage') {
     return (
@@ -150,6 +176,7 @@ export const CenterReadout = memo(function CenterReadout({
             {plan.savings_pct > 0 && (
               <span className="font-semibold text-accent"> · −{plan.savings_pct}%</span>
             )}
+            {gift && <span className="text-accent"> · {t('starpass.recipient.gift')}</span>}
           </>
         ) : (
           t('starpass.loading')

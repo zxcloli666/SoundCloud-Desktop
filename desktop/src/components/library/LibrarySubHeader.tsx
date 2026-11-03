@@ -30,7 +30,7 @@ export const LibrarySubHeader = memo(function LibrarySubHeader({
         <div className="mb-6">
             <Link
                 to="/library"
-                className="inline-flex items-center gap-1 text-[12px] font-semibold text-white/40 hover:text-white/85 transition-colors mb-3"
+                className="inline-flex items-center gap-1 text-[12px] font-semibold text-ink-40 hover:text-ink-85 transition-colors mb-3"
             >
                 <ChevronLeft size={15}/>
                 {t('nav.library')}
@@ -41,11 +41,11 @@ export const LibrarySubHeader = memo(function LibrarySubHeader({
               className="w-1 h-7 rounded-full shrink-0"
               style={{background: auraRgb(aura), boxShadow: `0 0 14px ${auraRgb(aura)}`}}
           />
-                    <h1 className="text-[26px] md:text-[30px] font-black tracking-tight text-white/95 truncate">
+                    <h1 className="text-[26px] md:text-[30px] font-black tracking-tight text-ink-95 truncate">
                         {title}
                     </h1>
                     {count != null && count > 0 && (
-                        <span className="text-[14px] text-white/30 tabular-nums font-semibold">
+                        <span className="text-[14px] text-ink-30 tabular-nums font-semibold">
               {fc(count)}
             </span>
                     )}
@@ -58,20 +58,20 @@ export const LibrarySubHeader = memo(function LibrarySubHeader({
                         {onFilter && (
                             <div className="relative min-w-[200px] max-w-[320px] flex-1">
                                 <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-                                    <SearchIcon size={15} className="text-white/30"/>
+                                    <SearchIcon size={15} className="text-ink-30"/>
                                 </div>
                                 <input
                                     type="text"
                                     value={filter ?? ''}
                                     onChange={(e) => onFilter(e.target.value)}
                                     placeholder={t('library.filter')}
-                                    className="w-full bg-white/[0.04] hover:bg-white/[0.06] focus:bg-white/[0.08] text-white/80 placeholder:text-white/25 text-[13px] py-2.5 pl-9 pr-8 rounded-xl outline-none border border-white/[0.05] focus:border-white/[0.12] transition-all duration-200"
+                                    className="w-full bg-ink/[0.04] hover:bg-ink/[0.06] focus:bg-ink/[0.08] text-ink-80 placeholder:text-ink-25 text-[13px] py-2.5 pl-9 pr-8 rounded-xl outline-none border border-ink/[0.05] focus:border-ink/[0.12] transition-all duration-200"
                                 />
                                 {filter && (
                                     <button
                                         type="button"
                                         onClick={() => onFilter('')}
-                                        className="absolute inset-y-0 right-2 flex items-center text-white/30 hover:text-white/60 cursor-pointer transition-colors"
+                                        className="absolute inset-y-0 right-2 flex items-center text-ink-30 hover:text-ink-60 cursor-pointer transition-colors"
                                     >
                                         <X size={14}/>
                                     </button>

@@ -29,6 +29,8 @@ function hexToRgb(hex: string): [number, number, number] {
   return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
 }
 
+const APERTURE_RIM_GLOW = 'rgba(255,255,255,0.10)';
+
 /**
  * The "living core" — a sound-reactive aperture rendered on canvas. Energy lives
  * in a spectrum ring + glowing rim; the centre is a dark well kept readable for
@@ -180,7 +182,7 @@ export const LivingCore = memo(function LivingCore({
         const ang = (i / 48) * 6.283;
         const r0 = innerR * 0.86;
         const r1 = innerR * 0.92;
-        ctx.strokeStyle = 'rgba(255,255,255,0.10)';
+        ctx.strokeStyle = APERTURE_RIM_GLOW;
         ctx.lineWidth = 1;
         ctx.beginPath();
         ctx.moveTo(cx + Math.cos(ang) * r0, cy + Math.sin(ang) * r0);

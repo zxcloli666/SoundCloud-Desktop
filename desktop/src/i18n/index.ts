@@ -8,6 +8,7 @@ const localeLoaders = {
   ru: () => import('./locales/ru.json'),
   tr: () => import('./locales/tr.json'),
   ko: () => import('./locales/ko.json'),
+  pt: () => import('./locales/pt.json'),
 } as const;
 
 type AppLanguage = keyof typeof localeLoaders;

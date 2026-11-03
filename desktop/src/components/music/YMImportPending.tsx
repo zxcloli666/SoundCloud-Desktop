@@ -6,7 +6,7 @@ import { SYNC_STATUS_CACHE_MS, useSyncRetry, useSyncStatus } from '../../lib/syn
 import { useYmImportStore, type YmPendingCreate, ymPendingStateOf } from '../../stores/ym-import';
 
 const ACTION =
-  'mt-2 inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-white/[0.08] bg-white/[0.05] px-3 py-1.5 text-[12px] font-semibold text-white/75 transition-colors hover:bg-white/[0.09] hover:text-white/95 disabled:cursor-default disabled:opacity-40';
+  'mt-2 inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-ink/[0.08] bg-ink/[0.05] px-3 py-1.5 text-[12px] font-semibold text-ink-75 transition-colors hover:bg-ink/[0.09] hover:text-ink-95 disabled:cursor-default disabled:opacity-40';
 
 export function YMImportPending({ live }: { live: boolean }) {
   const { t } = useTranslation();
@@ -69,7 +69,7 @@ export function YMImportPending({ live }: { live: boolean }) {
     return <p className="text-[12px] text-amber-200/80">{t('ym.delayed')}</p>;
   }
   if (state === 'queued') {
-    return <p className="text-[12px] text-white/50">{t('ym.pending')}</p>;
+    return <p className="text-[12px] text-ink-50">{t('ym.pending')}</p>;
   }
   return null;
 }

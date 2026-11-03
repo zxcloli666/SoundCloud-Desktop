@@ -43,7 +43,7 @@ export const AmbientLayer = React.memo(function AmbientLayer({
       <div
         className="absolute -bottom-1/2 right-[-12%] w-[50%] h-[160%] rounded-full"
         style={{
-          background: 'radial-gradient(closest-side, rgba(255,255,255,0.07), transparent 70%)',
+          background: 'radial-gradient(closest-side, rgb(var(--ink) / 0.07), transparent 70%)',
             filter: `blur(${orbBlur + 5}px)`,
           opacity: intensity * 0.9,
             animation: perf.idleAnim ? 'sw-aurora 44s linear reverse infinite' : undefined,

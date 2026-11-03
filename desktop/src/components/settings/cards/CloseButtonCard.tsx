@@ -27,13 +27,13 @@ export function CloseButtonCard() {
         options={OPTIONS.map((o) => ({ id: o.id, label: t(o.labelKey) }))}
       />
       {trayAvailable ? (
-        <p className="mt-3 px-1 text-[11.5px] leading-snug text-white/40">
+        <p className="mt-3 px-1 text-[11.5px] leading-snug text-ink-40">
           {t(closeAction === 'tray' ? 'settings.closeToTrayHint' : 'settings.closeQuitHint')}
         </p>
       ) : (
         <div className="mt-3 flex items-start gap-2.5 rounded-2xl border border-amber-400/15 bg-amber-400/[0.05] px-3.5 py-2.5">
           <AlertCircle size={14} className="shrink-0 mt-px text-amber-300/90" />
-          <p className="min-w-0 text-[11.5px] leading-snug text-white/60">
+          <p className="min-w-0 text-[11.5px] leading-snug text-ink-60">
             {t('settings.closeNoTray')}
           </p>
         </div>

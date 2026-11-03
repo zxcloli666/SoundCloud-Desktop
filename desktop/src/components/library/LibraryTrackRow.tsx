@@ -40,7 +40,7 @@ export const LibraryTrackRow = React.memo(
         className={`@container group flex items-center gap-4 px-4 py-3 rounded-2xl transition-all duration-300 ease-[var(--ease-apple)] ${
           isThis
             ? 'bg-accent/[0.06] ring-1 ring-accent/20 shadow-[inset_0_0_20px_rgba(255,85,0,0.05)]'
-            : 'hover:bg-white/[0.04]'
+            : 'hover:bg-ink/[0.04]'
         }`}
       >
         {grip}
@@ -56,22 +56,22 @@ export const LibraryTrackRow = React.memo(
             </div>
           ) : (
             <>
-              <span className="text-[13px] text-white/20 tabular-nums font-medium group-hover:hidden">
+              <span className="text-[13px] text-ink-20 tabular-nums font-medium group-hover:hidden">
                 {index + 1}
               </span>
-              <div className="hidden group-hover:flex w-8 h-8 rounded-full bg-white/10 items-center justify-center hover:bg-white/20 hover:scale-105 transition-all">
+              <div className="hidden group-hover:flex w-8 h-8 rounded-full bg-ink/10 items-center justify-center hover:bg-ink/20 hover:scale-105 transition-all">
                 {playWhite14}
               </div>
             </>
           )}
         </div>
 
-        <div className="relative w-11 h-11 rounded-xl overflow-hidden shrink-0 ring-1 ring-white/[0.08] shadow-md">
+        <div className="relative w-11 h-11 rounded-xl overflow-hidden shrink-0 ring-1 ring-ink/[0.08] shadow-md">
           {cover ? (
-            <img src={cover} alt="" className="w-full h-full object-cover" decoding="async" />
+            <img data-ui="artwork" src={cover} alt="" className="w-full h-full object-cover" decoding="async" />
           ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-white/[0.05] to-transparent">
-              <Music size={14} className="text-white/20" />
+            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-ink/[0.05] to-transparent">
+              <Music size={14} className="text-ink-20" />
             </div>
           )}
         </div>
@@ -89,7 +89,7 @@ export const LibraryTrackRow = React.memo(
         <AddToPlaylistDialog trackUrns={[track.urn]}>
           <button
             type="button"
-            className="opacity-0 group-hover:opacity-100 w-8 h-8 rounded-lg flex items-center justify-center text-white/30 hover:text-white/80 hover:bg-white/[0.08] transition-all duration-200 shrink-0"
+            className="opacity-0 group-hover:opacity-100 w-8 h-8 rounded-lg flex items-center justify-center text-ink-30 hover:text-ink-80 hover:bg-ink/[0.08] transition-all duration-200 shrink-0"
             title={t('playlist.addToPlaylist')}
           >
             <ListPlus size={16} />
@@ -98,13 +98,13 @@ export const LibraryTrackRow = React.memo(
 
         <AlbumLinkButton
           track={track}
-          className="opacity-0 group-hover:opacity-100 w-8 h-8 rounded-lg flex items-center justify-center text-white/30 hover:text-white/80 hover:bg-white/[0.08] transition-all duration-200 shrink-0"
+          className="opacity-0 group-hover:opacity-100 w-8 h-8 rounded-lg flex items-center justify-center text-ink-30 hover:text-ink-80 hover:bg-ink/[0.08] transition-all duration-200 shrink-0"
         />
 
         <PlayNextButton
           track={track}
           size={16}
-          className="opacity-0 group-hover:opacity-100 w-8 h-8 rounded-lg flex items-center justify-center text-white/30 hover:text-white/80 hover:bg-white/[0.08] transition-all duration-200 shrink-0"
+          className="opacity-0 group-hover:opacity-100 w-8 h-8 rounded-lg flex items-center justify-center text-ink-30 hover:text-ink-80 hover:bg-ink/[0.08] transition-all duration-200 shrink-0"
         />
 
         <div className="hidden @lg:flex shrink-0">
@@ -112,7 +112,7 @@ export const LibraryTrackRow = React.memo(
         </div>
 
         <div className="hidden @3xl:flex items-center gap-4 shrink-0 pr-4">
-          <span className="text-[11px] text-white/30 tabular-nums flex items-center gap-1.5 w-16">
+          <span className="text-[11px] text-ink-30 tabular-nums flex items-center gap-1.5 w-16">
             {track.playback_count != null && (
               <>
                 {headphones11}
@@ -120,13 +120,13 @@ export const LibraryTrackRow = React.memo(
               </>
             )}
           </span>
-          <span className="text-[11px] text-white/30 tabular-nums flex items-center gap-1.5 w-14">
+          <span className="text-[11px] text-ink-30 tabular-nums flex items-center gap-1.5 w-14">
             {heart11}
             {fc(track.favoritings_count ?? track.likes_count)}
           </span>
         </div>
 
-        <span className="text-[12px] text-white/30 tabular-nums font-medium shrink-0 w-12 text-right">
+        <span className="text-[12px] text-ink-30 tabular-nums font-medium shrink-0 w-12 text-right">
           {dur(track.duration)}
         </span>
       </div>

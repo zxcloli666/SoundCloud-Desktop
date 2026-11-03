@@ -58,10 +58,11 @@ export interface ListeningStats {
   rhythm: RhythmCell[];
 }
 
-export function useListeningStats(period: StatsPeriod) {
+export function useListeningStats(period: StatsPeriod, enabled = true) {
   const utcOffset = -new Date().getTimezoneOffset();
   return useQuery({
     queryKey: [STATS_QUERY_KEY, period, utcOffset],
+    enabled,
     queryFn: () => api<ListeningStats>(`/history/stats?period=${period}&utcOffset=${utcOffset}`),
     staleTime: 60_000,
     placeholderData: (previous) => previous,

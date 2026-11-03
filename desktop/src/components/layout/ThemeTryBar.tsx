@@ -29,7 +29,7 @@ function CountdownRing({ until }: { until: number }) {
         cy={RING_SIZE / 2}
         r={RING_RADIUS}
         fill="none"
-        stroke="rgba(255,255,255,0.1)"
+        className="stroke-ink/10"
         strokeWidth={RING_STROKE}
       />
       <circle
@@ -72,21 +72,21 @@ export function ThemeTryBar() {
       <div
         className="flex items-center gap-3 rounded-2xl py-2 pl-3 pr-2 animate-fade-in-up"
         style={{
-          border: '0.5px solid rgba(255,255,255,0.14)',
-          background: blur ? 'rgba(18,18,22,0.72)' : 'rgba(18,18,22,0.95)',
+          border: '0.5px solid rgb(var(--ink) / 0.14)',
+          background: blur ? 'rgb(var(--surface) / 0.72)' : 'rgb(var(--surface) / 0.95)',
           backdropFilter: blur ? `blur(${blur}px) saturate(1.4)` : undefined,
           WebkitBackdropFilter: blur ? `blur(${blur}px) saturate(1.4)` : undefined,
-          boxShadow: '0 18px 50px rgba(0,0,0,0.5), 0 0 30px var(--color-accent-glow)',
+          boxShadow: '0 18px 50px rgb(var(--shade) / calc(0.5 * var(--shade-alpha))), 0 0 30px var(--color-accent-glow)',
         }}
       >
         <CountdownRing key={trial.until} until={trial.until} />
-        <span className="max-w-[200px] truncate text-[13px] font-semibold text-white/85">
+        <span className="max-w-[200px] truncate text-[13px] font-semibold text-ink-85">
           {trial.version.name}
         </span>
         <button
           type="button"
           onClick={revertTrial}
-          className="rounded-xl px-3.5 py-1.5 text-[12.5px] font-semibold text-white/60 hover:bg-white/[0.08] hover:text-white/90 transition-all cursor-pointer"
+          className="rounded-xl px-3.5 py-1.5 text-[12.5px] font-semibold text-ink-60 hover:bg-ink/[0.08] hover:text-ink-90 transition-all cursor-pointer"
         >
           {t('settings.themesRevert')}
         </button>

@@ -1,10 +1,10 @@
 name: Themes
 on:
   pull_request:
-    paths: ['themes/**', 'desktop/src/lib/themes/**', '.github/workflows/themes.yml']
+    paths: ['themes/**', 'desktop/src/**', 'docs/CUSTOM_CSS*.md', '.github/workflows/themes.yml']
   push:
     branches: [main]
-    paths: ['themes/**', 'desktop/src/lib/themes/**', '.github/workflows/themes.yml']
+    paths: ['themes/**', 'desktop/src/**', 'docs/CUSTOM_CSS*.md', '.github/workflows/themes.yml']
   workflow_dispatch:
 permissions:
   contents: read

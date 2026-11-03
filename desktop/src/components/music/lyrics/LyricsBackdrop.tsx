@@ -90,8 +90,8 @@ export const LyricsBackdrop = React.memo(
                     className="absolute inset-0"
                     style={{
                         background: wallpaperUrl
-                            ? 'linear-gradient(180deg, rgba(8,8,10,0.42) 0%, rgba(8,8,10,0.5) 46%, rgba(8,8,10,0.72) 100%)'
-                            : 'linear-gradient(180deg, rgba(8,8,10,0.3) 0%, rgba(8,8,10,0.56) 48%, rgba(8,8,10,0.84) 100%)',
+                            ? 'linear-gradient(180deg, rgb(var(--paper) / 0.42) 0%, rgb(var(--paper) / 0.5) 46%, rgb(var(--paper) / 0.72) 100%)'
+                            : 'linear-gradient(180deg, rgb(var(--paper) / 0.3) 0%, rgb(var(--paper) / 0.56) 48%, rgb(var(--paper) / 0.84) 100%)',
                     }}
                 />
             </div>

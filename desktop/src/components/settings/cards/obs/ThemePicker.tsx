@@ -10,9 +10,9 @@ const THEMES: Array<{ id: ObsTheme; labelKey: string }> = [
 function Lines() {
   return (
     <div className="flex min-w-0 flex-1 flex-col gap-1">
-      <span className="h-1.5 w-4/5 rounded-full bg-white/70" />
-      <span className="h-1 w-1/2 rounded-full bg-white/35" />
-      <span className="mt-0.5 h-[3px] w-full overflow-hidden rounded-full bg-white/15">
+      <span className="h-1.5 w-4/5 rounded-full bg-ink/70" />
+      <span className="h-1 w-1/2 rounded-full bg-ink/35" />
+      <span className="mt-0.5 h-[3px] w-full overflow-hidden rounded-full bg-ink/15">
         <span className="block h-full w-2/5 rounded-full bg-accent" />
       </span>
     </div>
@@ -39,7 +39,7 @@ function Sketch({ theme }: { theme: ObsTheme }) {
   const card = theme === 'card';
   return (
     <div
-      className={`flex items-center gap-2 ${card ? 'rounded-lg border border-white/10 bg-white/[0.07] p-1.5' : ''}`}
+      className={`flex items-center gap-2 ${card ? 'rounded-lg border border-ink/10 bg-ink/[0.07] p-1.5' : ''}`}
     >
       <span
         className={`shrink-0 rounded-md ${card ? 'size-6' : 'size-5'}`}
@@ -69,21 +69,21 @@ export function ThemePicker({
             onClick={() => onChange(theme.id)}
             className={`flex cursor-pointer flex-col gap-2.5 rounded-xl border p-2.5 text-left transition-all duration-200 ${
               active
-                ? 'text-white'
-                : 'border-white/[0.05] bg-white/[0.02] text-white/45 hover:bg-white/[0.05] hover:text-white/70'
+                ? 'text-ink'
+                : 'border-ink/[0.05] bg-ink/[0.02] text-ink-45 hover:bg-ink/[0.05] hover:text-ink-70'
             }`}
             style={
               active
                 ? {
                     background:
-                      'linear-gradient(180deg, var(--color-accent-glow), transparent), rgba(255,255,255,0.05)',
+                      'linear-gradient(180deg, var(--color-accent-glow), transparent), rgb(var(--ink) / 0.05)',
                     borderColor: 'var(--color-accent)',
                     boxShadow: '0 0 16px var(--color-accent-glow)',
                   }
                 : undefined
             }
           >
-            <div className="flex h-10 items-center rounded-lg bg-black/30 px-2">
+            <div className="flex h-10 items-center rounded-lg bg-shade-30 px-2">
               <div className="w-full">
                 <Sketch theme={theme.id} />
               </div>

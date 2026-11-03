@@ -121,10 +121,10 @@ export const VibePortal = React.memo(function VibePortal({className}: Props) {
             className={`vp-portal group relative isolate w-full h-[76px] overflow-hidden rounded-2xl text-left outline-none ${className ?? ''}`}
             style={{
                 background:
-                    'linear-gradient(165deg, rgba(255,255,255,0.075), rgba(255,255,255,0.022) 58%, rgba(255,255,255,0.05))',
-                border: '0.5px solid rgba(255,255,255,0.14)',
+                    'linear-gradient(165deg, rgb(var(--ink) / 0.075), rgb(var(--ink) / 0.022) 58%, rgb(var(--ink) / 0.05))',
+                border: '0.5px solid rgb(var(--ink) / 0.14)',
                 boxShadow:
-                    '0 8px 26px rgba(0,0,0,0.34), inset 0 1px 0 rgba(255,255,255,0.09), inset 0 -18px 30px -22px var(--color-accent-glow)',
+                    '0 8px 26px rgb(var(--shade) / calc(0.34 * var(--shade-alpha))), inset 0 1px 0 rgba(255,255,255,0.09), inset 0 -18px 30px -22px var(--color-accent-glow)',
             }}
         >
             {/* Floor aurora — GPU-isolated, blooms up from the doorway sill. */}
@@ -156,7 +156,7 @@ export const VibePortal = React.memo(function VibePortal({className}: Props) {
                 className="vp-lens pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100"
                 style={{
                     background:
-                        'radial-gradient(140px 90px at var(--mx,50%) var(--my,0%), rgba(255,255,255,0.16), transparent 60%)',
+                        'radial-gradient(140px 90px at var(--mx,50%) var(--my,0%), rgb(var(--ink) / 0.16), transparent 60%)',
                     contain: 'strict',
                     transform: 'translateZ(0)',
                     transition: 'opacity 0.4s var(--ease-apple)',
@@ -173,7 +173,7 @@ export const VibePortal = React.memo(function VibePortal({className}: Props) {
                     aria-hidden
                     className="vp-sheen absolute inset-x-5 top-0 h-px"
                     style={{
-                        background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.45), transparent)',
+                        background: 'linear-gradient(90deg, transparent, rgb(var(--ink) / 0.45), transparent)',
                         transform: 'translateX(var(--px,0px))',
                         transition: 'transform 0.3s var(--ease-apple)',
                     }}
@@ -185,7 +185,7 @@ export const VibePortal = React.memo(function VibePortal({className}: Props) {
                 className="block h-full w-full"
                 style={{
                     background:
-                        'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)',
+                        'linear-gradient(90deg, transparent, rgb(var(--ink) / 0.2), transparent)',
                     transform: 'skewX(-18deg)',
                 }}
             />
@@ -198,9 +198,9 @@ export const VibePortal = React.memo(function VibePortal({className}: Props) {
                     style={{
                         background:
                             'radial-gradient(circle at 32% 28%, var(--color-accent-hover), var(--color-accent) 70%)',
-                        border: '0.5px solid rgba(255,255,255,0.28)',
+                        border: '0.5px solid rgb(var(--ink) / 0.28)',
                         boxShadow:
-                            '0 6px 18px var(--color-accent-glow), inset 0 1px 0 rgba(255,255,255,0.32), inset 0 -6px 10px -6px rgba(0,0,0,0.4)',
+                            '0 6px 18px var(--color-accent-glow), inset 0 1px 0 rgba(255,255,255,0.32), inset 0 -6px 10px -6px rgb(var(--shade) / calc(0.4 * var(--shade-alpha)))',
                     }}
                 >
           <AudioLines
@@ -218,7 +218,7 @@ export const VibePortal = React.memo(function VibePortal({className}: Props) {
                 {/* Title + evocative subtitle. */}
                 <span className="min-w-0 flex-1">
           <span className="flex items-center gap-2">
-            <span className="vp-title text-[15px] font-semibold leading-tight text-white/95">
+            <span className="vp-title text-[15px] font-semibold leading-tight text-ink-95">
               {t('soundwave.vibeCta.title')}
             </span>
             <span
@@ -233,7 +233,7 @@ export const VibePortal = React.memo(function VibePortal({className}: Props) {
                 {t('soundwave.vibeCta.badge')}
             </span>
           </span>
-          <span className="mt-0.5 block truncate text-[12px] text-white/50">
+          <span className="mt-0.5 block truncate text-[12px] text-ink-50">
             {t('soundwave.vibeCta.subtitle')}
           </span>
         </span>

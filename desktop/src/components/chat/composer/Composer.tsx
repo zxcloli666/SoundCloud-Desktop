@@ -248,7 +248,7 @@ export const Composer = memo(function Composer({ conversationId }: { conversatio
             <ComposerEmbeds items={pending} onDismiss={dismissEmbed} />
           </div>
         )}
-        <div className="relative rounded-[22px] border border-white/[0.07] transition-colors duration-150 focus-within:border-white/[0.16]">
+        <div className="relative rounded-[22px] border border-ink/[0.07] transition-colors duration-150 focus-within:border-ink/[0.16]">
           <GlassLayer
             blur={30}
             tint="var(--color-bg-glass)"
@@ -269,7 +269,7 @@ export const Composer = memo(function Composer({ conversationId }: { conversatio
               )}
               disabled={paused}
               style={{ outline: 'none' }}
-              className="max-h-[168px] min-h-[36px] flex-1 resize-none bg-transparent px-2 py-[8px] text-[13.5px] leading-[1.45] text-white/92 outline-none placeholder:text-white/30 disabled:cursor-not-allowed"
+              className="max-h-[168px] min-h-[36px] flex-1 resize-none bg-transparent px-2 py-[8px] text-[13.5px] leading-[1.45] text-ink-92 outline-none placeholder:text-ink-30 disabled:cursor-not-allowed"
             />
             <EmojiButton onFocusInput={() => inputRef.current?.focus()} />
             <SendButton
@@ -281,7 +281,7 @@ export const Composer = memo(function Composer({ conversationId }: { conversatio
         </div>
         {text.length > textMax - COUNTER_FROM && (
           <div
-            className={`mt-1 pr-3 text-right text-[11px] tabular-nums ${tooLong ? 'text-rose-300' : 'text-white/35'}`}
+            className={`mt-1 pr-3 text-right text-[11px] tabular-nums ${tooLong ? 'text-rose-300' : 'text-ink-35'}`}
           >
             {rich.text.length}/{textMax}
           </div>

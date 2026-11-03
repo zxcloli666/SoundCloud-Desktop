@@ -32,12 +32,12 @@ export const EntityStrip = memo(function EntityStrip({items}: EntityStripProps) 
                     key={it.key}
                     type="button"
                     onClick={it.onClick}
-                    className="group shrink-0 flex items-center gap-2.5 pl-1 pr-3.5 py-1 rounded-full transition-colors duration-300 cursor-pointer hover:bg-white/[0.06]"
-                    style={{border: '0.5px solid rgba(255,255,255,0.08)'}}
+                    className="group shrink-0 flex items-center gap-2.5 pl-1 pr-3.5 py-1 rounded-full transition-colors duration-300 cursor-pointer hover:bg-ink/[0.06]"
+                    style={{border: '0.5px solid rgb(var(--ink) / 0.08)'}}
                 >
           <span
               className={`relative w-9 h-9 shrink-0 overflow-hidden ${it.round ? 'rounded-full' : 'rounded-lg'}`}
-              style={{background: 'rgba(255,255,255,0.05)'}}
+              style={{background: 'rgb(var(--ink) / 0.05)'}}
           >
             {it.image ? (
                 <img
@@ -49,17 +49,17 @@ export const EntityStrip = memo(function EntityStrip({items}: EntityStripProps) 
                     className="absolute inset-0 w-full h-full object-cover"
                 />
             ) : (
-                <span className="absolute inset-0 flex items-center justify-center text-[13px] font-bold text-white/40">
+                <span className="absolute inset-0 flex items-center justify-center text-[13px] font-bold text-ink-40">
                 {it.label.slice(0, 1).toUpperCase()}
               </span>
             )}
           </span>
                     <span className="flex flex-col items-start leading-tight min-w-0">
             <span
-                className="max-w-[140px] truncate text-[12.5px] text-white/80 group-hover:text-white transition-colors">
+                className="max-w-[140px] truncate text-[12.5px] text-ink-80 group-hover:text-ink transition-colors">
               {it.label}
             </span>
-                        {it.sub && <span className="text-[10.5px] text-white/35">{it.sub}</span>}
+                        {it.sub && <span className="text-[10.5px] text-ink-35">{it.sub}</span>}
           </span>
                 </button>
             ))}

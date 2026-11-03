@@ -1,11 +1,11 @@
 {
   "name": "soundcloud-desktop",
   "private": true,
-  "version": "8.6.0",
+  "version": "8.7.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "tsc && vite build && node scripts/move-sourcemaps.mjs",
     "preview": "vite preview",
     "tauri": "tauri",
     "lint": "biome lint --write src/",

@@ -34,8 +34,8 @@ export const TrackActionRail = React.memo(function TrackActionRail({
             <div
                 className="flex items-center gap-0.5 h-11 px-1.5 rounded-2xl"
                 style={{
-                    background: 'rgba(255,255,255,0.04)',
-                    border: '0.5px solid rgba(255,255,255,0.07)',
+                    background: 'rgb(var(--ink) / 0.04)',
+                    border: '0.5px solid rgb(var(--ink) / 0.07)',
                 }}
             >
                 <IconAction
@@ -43,13 +43,13 @@ export const TrackActionRail = React.memo(function TrackActionRail({
                     label={t('track.lyrics')}
                     onClick={() => openLyrics('lyrics')}
                 />
-                <span className="w-px h-5 bg-white/[0.08] mx-0.5" aria-hidden/>
+                <span className="w-px h-5 bg-ink/[0.08] mx-0.5" aria-hidden/>
                 <AddToPlaylistDialog trackUrns={[track.urn]}>
                     <button
                         type="button"
                         title={t('playlist.addToPlaylist')}
                         aria-label={t('playlist.addToPlaylist')}
-                        className="inline-flex items-center justify-center w-10 h-10 rounded-xl text-white/60 hover:text-white/95 hover:bg-white/[0.07] transition-all duration-200 cursor-pointer"
+                        className="inline-flex items-center justify-center w-10 h-10 rounded-xl text-ink-60 hover:text-ink-95 hover:bg-ink/[0.07] transition-all duration-200 cursor-pointer"
                     >
                         <ListPlus size={16}/>
                     </button>
@@ -57,7 +57,7 @@ export const TrackActionRail = React.memo(function TrackActionRail({
                 <PlayNextButton
                     track={track}
                     size={16}
-                    className="inline-flex items-center justify-center w-10 h-10 rounded-xl text-white/60 hover:text-white/95 hover:bg-white/[0.07] transition-all duration-200 cursor-pointer"
+                    className="inline-flex items-center justify-center w-10 h-10 rounded-xl text-ink-60 hover:text-ink-95 hover:bg-ink/[0.07] transition-all duration-200 cursor-pointer"
                 />
                 <CopyIconAction url={track.permalink_url}/>
                 <SaveOfflineAction track={track}/>
