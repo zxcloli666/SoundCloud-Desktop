@@ -1,0 +1,12 @@
+[package]
+name = "voice-g2p"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[features]
+default = ["bundled"]
+bundled = []
+
+[dependencies]
+fst = "0.4"
