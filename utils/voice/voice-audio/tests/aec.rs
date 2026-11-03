@@ -39,7 +39,13 @@ fn cancels_delayed_noise_echo() {
         })
         .collect();
     let mic: Vec<f32> = (0..total)
-        .map(|i| if i >= delay { reference[i - delay] * 0.5 } else { 0.0 })
+        .map(|i| {
+            if i >= delay {
+                reference[i - delay] * 0.5
+            } else {
+                0.0
+            }
+        })
         .collect();
 
     let mut aec = SonoraAec::new(config(rate)).unwrap();

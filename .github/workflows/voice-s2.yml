@@ -58,6 +58,8 @@ jobs:
         os: [ubuntu-22.04, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     continue-on-error: true
+    env:
+      CARGO_TARGET_DIR: ${{ runner.os == 'Windows' && 'C:/t' || 'target' }}
     defaults:
       run:
         shell: bash
@@ -91,7 +93,7 @@ jobs:
         run: cargo build --release -p voice-audio --example aec_bench --features webrtc
       - name: Bench
         run: |
-          B=./target/release/examples/aec_bench
+          B="$CARGO_TARGET_DIR/release/examples/aec_bench"
           E=webrtc
           STRESS="--delays 120 --rt60 0.6 --esr 10 --drift -1000,-500,500,1000"
           LONG="--delays 120 --rt60 0.6 --esr 10 --drift 0,-200,-1000 --seconds 180 --music-offset 0"

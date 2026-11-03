@@ -6,6 +6,8 @@ pub use sonora_aec::SonoraAec;
 #[cfg(feature = "webrtc")]
 pub use webrtc_aec::WebrtcAec;
 
+pub type Aec = SonoraAec;
+
 #[derive(Debug, Clone, Copy)]
 pub struct AecConfig {
     pub sample_rate: u32,
