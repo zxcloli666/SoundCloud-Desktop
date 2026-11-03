@@ -1,0 +1,246 @@
+{
+  "voice": {
+    "category": "음성",
+    "assistant": "롤랴",
+    "wakeWord": "롤랴",
+    "quote": "“{{text}}”",
+    "mic": {
+      "talk": "말하기"
+    },
+    "hero": {
+      "state": {
+        "missing": "엔진 없음",
+        "off": "꺼짐",
+        "models": "모델 필요",
+        "ready": "준비됨",
+        "listening": "듣는 중",
+        "thinking": "생각 중",
+        "asking": "확인 중",
+        "speaking": "말하는 중",
+        "error": "오류"
+      },
+      "toggle": "음성 제어",
+      "example": "빌리 아일리시 틀어줘",
+      "sayIt": "말씀하세요",
+      "typeLabel": "명령 입력",
+      "send": "보내기",
+      "orHold": "또는 누르고 있기",
+      "orPress": "또는 누르기",
+      "turnOn": "켜기",
+      "modelsReady": "모델 준비됨",
+      "download": "모델 받기 · {{size}}",
+      "engineMissing": "엔진 응답 없음"
+    },
+    "hud": {
+      "listening": "듣는 중",
+      "thinking": "생각 중",
+      "stop": "중지",
+      "cancel": "취소",
+      "undo": "실행 취소",
+      "ask": "어느 것?",
+      "answerByVoice": "음성으로 답할 수 있어요",
+      "notFound": "찾지 못함",
+      "find": "검색",
+      "hush": "조용히",
+      "downloading": "음성: 모델 받는 중",
+      "openModels": "모델 열기"
+    },
+    "error": {
+      "mic_denied": "마이크 권한 없음",
+      "mic_busy": "마이크 사용 중",
+      "mic_lost": "마이크 연결 끊김",
+      "no_models": "모델을 받아야 해요",
+      "model_corrupt": "모델이 손상됨",
+      "not_star": "음성은 STAR 전용",
+      "network": "카탈로그 연결 불가",
+      "asr_failed": "못 알아들었어요",
+      "tts_failed": "음성 답변 실패",
+      "engine_missing": "음성 엔진 사용 불가"
+    },
+    "fix": {
+      "privacy": "설정 열기",
+      "download": "받기",
+      "retry": "다시 시도",
+      "pickMic": "마이크 선택",
+      "pickVoice": "목소리 선택",
+      "settings": "설정"
+    },
+    "activation": {
+      "title": "부르는 방법",
+      "hotkey": "키",
+      "hold": "누르고 있기",
+      "tap": "누르기",
+      "headset": "헤드셋 버튼",
+      "gesture": {
+        "off": "끔",
+        "double": "2회",
+        "triple": "3회"
+      },
+      "headsetHow_other": "버튼을 연속 {{count}}회 누르세요",
+      "test": "테스트",
+      "pressNow_other": "지금 {{count}}회 누르세요",
+      "stopTest": "중지",
+      "headsetWorks": "작동함",
+      "again": "다시",
+      "wake": "“{{phrase}}”라고 말하기",
+      "needsEcho": "에코 제거 없이는 음악이 롤랴를 깨웁니다",
+      "echoOn": "켜기",
+      "rarer": "덜 자주",
+      "oftener": "더 쉽게",
+      "falseCount_other": "오작동 {{count}}회",
+      "lastDay": "최근 24시간"
+    },
+    "teach": {
+      "open": "내 목소리 학습",
+      "retrain": "다시 학습",
+      "taught": "목소리를 알아요",
+      "prompt": "“롤랴”를 다섯 번 말하세요",
+      "speak": "“롤랴”라고 말하세요",
+      "saving": "저장 중",
+      "done": "목소리를 기억했어요",
+      "failed": "실패",
+      "start": "시작",
+      "next": "다음",
+      "progress": "{{count}} / {{total}}"
+    },
+    "mics": {
+      "title": "마이크",
+      "mode": {
+        "chosen": "선택한 것",
+        "where_i_speak": "말하는 곳",
+        "everywhere": "모두"
+      },
+      "default": "기본",
+      "bluetooth": "Bluetooth",
+      "btWarning": "헤드폰이 통화 품질로 전환돼요",
+      "none": "마이크를 찾지 못함",
+      "refresh": "새로 고침",
+      "echo": "에코 제거",
+      "echoMode": {
+        "auto": "자동",
+        "on": "켬",
+        "off": "끔"
+      }
+    },
+    "voice": {
+      "title": "응답 목소리",
+      "preview": "듣기: {{name}}",
+      "sound": "소리",
+      "speed": "속도",
+      "pitch": "음높이",
+      "speakOn": "출력 위치",
+      "speakMode": {
+        "with_music": "음악과 함께",
+        "device": "장치",
+        "where_i_listen": "듣는 곳"
+      },
+      "duck": "음성 중 음악",
+      "duckLabel": "음악 볼륨",
+      "replies": "음성으로 답하기"
+    },
+    "voices": {
+      "lolya": {
+        "name": "롤랴"
+      },
+      "calm": {
+        "name": "차분함"
+      },
+      "male": {
+        "name": "남성"
+      },
+      "robot": {
+        "name": "로봇"
+      },
+      "af_heart": {
+        "name": "Heart"
+      },
+      "am_michael": {
+        "name": "Michael"
+      }
+    },
+    "tags": {
+      "cute": "귀여움",
+      "bright": "밝음",
+      "soft": "부드러움",
+      "calm": "차분",
+      "deep": "낮음",
+      "synth": "합성",
+      "fun": "재미",
+      "warm": "따뜻함",
+      "clear": "또렷함"
+    },
+    "speakers": {
+      "title": "스피커",
+      "alice": "알리사",
+      "salut": "살류트",
+      "connect": "연결",
+      "addMore": "하나 더",
+      "notLinked": "연결 안 됨",
+      "linked_other": "{{count}}개 연결됨",
+      "justLinked": "연결됨",
+      "how": {
+        "alice": "“알리사, 롤랴 스킬 실행”이라고 말하고 코드를 입력하세요",
+        "salut": "“살류트, 롤랴 실행”이라고 말하고 코드를 말하세요"
+      },
+      "copy": "복사",
+      "copied": "복사됨",
+      "cancel": "취소",
+      "codeFailed": "코드를 받지 못했어요. 다시 시도하세요",
+      "lastUsed": "마지막 명령 {{when}}",
+      "neverUsed": "아직 명령 없음",
+      "revoke": "연결 해제",
+      "revokeYes": "해제",
+      "remote": {
+        "live": "연결됨",
+        "retrying": "재연결 중"
+      }
+    },
+    "models": {
+      "title": "모델",
+      "onDisk": "디스크 {{size}}",
+      "getAll": "받기 · {{size}}",
+      "get": "받기: {{name}}",
+      "delete": "삭제: {{name}}",
+      "resume": "이어 받기",
+      "repair": "다시 받기",
+      "optional": "선택",
+      "none": "모델 목록 없음",
+      "kind": {
+        "vad": "음성 감지",
+        "asr": "인식",
+        "tts": "음성 합성",
+        "wake": "호출어",
+        "g2p": "발음",
+        "llm": "스마트 분석"
+      }
+    },
+    "history": {
+      "title": "기록",
+      "empty": "명령이 여기에 표시돼요",
+      "try": "해 보기",
+      "clear": "지우기",
+      "wrong": "잘못 이해함",
+      "markedWrong": "틀림",
+      "more_other": "{{count}}개 더",
+      "less": "접기"
+    },
+    "locked": {
+      "badge": "STAR",
+      "title": "목소리를 듣는 음악",
+      "sub": "롤랴가 한마디로 재생, 넘기기, 좋아요까지",
+      "example": {
+        "play": "빌리 아일리시 틀어줘",
+        "volume": "볼륨 50",
+        "like": "좋아요"
+      },
+      "listen": "롤랴 듣기",
+      "voices": "목소리"
+    },
+    "units": {
+      "b": "B",
+      "kb": "KB",
+      "mb": "MB",
+      "gb": "GB"
+    }
+  }
+}

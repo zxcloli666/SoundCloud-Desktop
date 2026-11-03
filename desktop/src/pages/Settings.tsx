@@ -1,10 +1,16 @@
-import {useState} from 'react';
+import {useEffect, useState} from 'react';
 import {useTranslation} from 'react-i18next';
+import {useLocation} from 'react-router-dom';
 import {scrollMainToTop} from '../components/layout/ScrollReset';
 import {SETTINGS_CATEGORIES, type SettingsCategoryId} from '../components/settings/registry';
 import {SettingsFrame} from '../components/settings/SettingsFrame';
 import {SettingsNav} from '../components/settings/SettingsNav';
 import {useViewerAura} from '../lib/useViewerAura';
+
+function askedCategory(state: { category?: SettingsCategoryId } | null): SettingsCategoryId | undefined {
+    const id = state?.category;
+    return SETTINGS_CATEGORIES.some((c) => c.id === id) ? id : undefined;
+}
 
 /** Settings — a star-lit two-pane workspace: a frosted category rail on the
  *  left, the active category's cards on the right. Thin shell; each section is
@@ -12,7 +18,12 @@ import {useViewerAura} from '../lib/useViewerAura';
 export function Settings() {
   const { t } = useTranslation();
     const aura = useViewerAura();
-    const [active, setActive] = useState<SettingsCategoryId>('general');
+    const asked = useLocation().state as { category?: SettingsCategoryId } | null;
+    const [active, setActive] = useState<SettingsCategoryId>(() => askedCategory(asked) ?? 'general');
+    useEffect(() => {
+        const category = askedCategory(asked);
+        if (category) setActive(category);
+    }, [asked]);
     const selectCategory = (id: SettingsCategoryId) => {
         setActive(id);
         scrollMainToTop();
