@@ -20,7 +20,8 @@ struct Link {
 }
 
 pub fn parse(text: &str) -> Vec<Parsed> {
-    let toks = normalize(text).toks;
+    let spoken = correction(text);
+    let toks = normalize(spoken.as_deref().unwrap_or(text)).toks;
     let from = usize::from(toks.len() > 2 && toks[0].w == "сначала");
     match plan(&toks[from..], text) {
         Some(steps) if steps.len() <= MAX_STEPS => collapse(steps),
@@ -127,4 +128,18 @@ fn collapse(steps: Vec<Parsed>) -> Vec<Parsed> {
         out.push(p);
     }
     out
+}
+
+fn correction(text: &str) -> Option<String> {
+    let lower = text.to_lowercase();
+    let words: Vec<&str> = lower.split_whitespace().collect();
+    let first = words.first()?;
+    if matches!(*first, "не," | "нет," | "не.") && words.len() > 1 {
+        return Some(words[1..].join(" "));
+    }
+    if *first != "не" || words.len() < 3 {
+        return None;
+    }
+    let cut = words.iter().position(|w| matches!(*w, "а" | "а,"))?;
+    (cut + 1 < words.len()).then(|| words[cut + 1..].join(" "))
 }

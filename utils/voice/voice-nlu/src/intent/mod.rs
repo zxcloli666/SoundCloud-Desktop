@@ -1,4 +1,5 @@
 mod ctx;
+mod guard;
 mod library;
 mod play;
 mod seek;
@@ -8,6 +9,7 @@ mod volume;
 use crate::lexicon;
 use crate::normalize::Tok;
 pub use ctx::{Ctx, Detected};
+pub use guard::{Negation, negation, remark};
 
 pub fn detect(toks: &[Tok]) -> Detected {
     let c = Ctx::new(toks);
