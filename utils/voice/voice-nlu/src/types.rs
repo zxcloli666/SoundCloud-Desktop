@@ -131,6 +131,8 @@ pub struct Variant {
     pub lemmatized: bool,
     #[serde(skip_serializing_if = "std::ops::Not::not")]
     pub fallback: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub alias_kind: Option<Kind>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize)]

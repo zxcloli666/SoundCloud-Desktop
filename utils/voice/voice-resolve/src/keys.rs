@@ -37,6 +37,7 @@ pub struct Keys {
     artist: Option<String>,
     artist_parts: Vec<String>,
     own_artist_name: bool,
+    kind: Kind,
 }
 
 fn credits(name: &str) -> Vec<String> {
@@ -128,6 +129,7 @@ impl Keys {
                 })
                 .unwrap_or_default(),
             own_artist_name: e.kind == Kind::Artist,
+            kind: e.kind,
         }
     }
 
@@ -155,6 +157,11 @@ impl Keys {
 
     pub fn sim(&self, v: &QueryKeys) -> f32 {
         if !self.plausible(v) {
+            return 0.0;
+        }
+        if v.alias_kind
+            .is_some_and(|k| v.title.is_none() && k != self.kind)
+        {
             return 0.0;
         }
         if v.fallback {
@@ -191,6 +198,9 @@ impl Keys {
             };
             best = best.max(st * (0.35 + 0.65 * sa));
         }
+        if v.alias_kind.is_some() {
+            best *= ALIAS_FACTOR;
+        }
         if v.kept {
             best *= 1.06;
         }
@@ -203,6 +213,7 @@ impl Keys {
 
 const STRICT_SLACK: f32 = 0.2;
 const FALLBACK_FACTOR: f32 = 0.92;
+const ALIAS_FACTOR: f32 = 0.96;
 
 fn near(a: &str, b: &str) -> f32 {
     voice_nlu::similarity(a, b).min(voice_nlu::strict_similarity(a, b) + STRICT_SLACK)
@@ -245,6 +256,7 @@ pub struct QueryKeys {
     pub kept: bool,
     pub lemmatized: bool,
     pub fallback: bool,
+    pub alias_kind: Option<Kind>,
     grams: Grams,
     title_grams: Option<Grams>,
 }
@@ -262,6 +274,7 @@ impl QueryKeys {
             kept: v.kept_fillers,
             lemmatized: v.lemmatized,
             fallback: v.fallback,
+            alias_kind: v.alias_kind,
         }
     }
 
@@ -274,6 +287,7 @@ impl QueryKeys {
                     && o.artist == q.artist
                     && o.title == q.title
                     && o.fallback == q.fallback
+                    && o.alias_kind == q.alias_kind
             }) {
                 Some(o) => {
                     o.kept |= q.kept;
@@ -290,12 +304,17 @@ pub fn best_sim(keys: &Keys, queries: &[QueryKeys]) -> f32 {
     best_match(keys, queries).0
 }
 
-pub fn best_match(keys: &Keys, queries: &[QueryKeys]) -> (f32, usize, bool) {
-    let mut best = (0.0f32, 0usize, false);
+pub fn best_match(keys: &Keys, queries: &[QueryKeys]) -> (f32, usize, bool, bool) {
+    let mut best = (0.0f32, 0usize, false, false);
     for q in queries {
         let sim = keys.sim(q);
         if sim > best.0 {
-            best = (sim, q.text.chars().count(), q.fallback);
+            best = (
+                sim,
+                q.text.chars().count(),
+                q.fallback,
+                q.alias_kind.is_some(),
+            );
         }
     }
     best

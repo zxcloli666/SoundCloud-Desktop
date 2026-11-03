@@ -64,7 +64,7 @@ pub fn rank(parsed: &Parsed, cands: Vec<Entity>, boosts: &Boosts) -> Vec<Scored>
     let mut out: Vec<Scored> = cands
         .into_iter()
         .map(|entity| {
-            let (sim, qlen, fallback) = best_match(&Keys::new(&entity), &queries);
+            let (sim, qlen, fallback, alias) = best_match(&Keys::new(&entity), &queries);
             let score = sim.powi(2)
                 * popularity_factor(entity.popularity)
                 * kind_factor(entity.kind, parsed.kind_hint)
@@ -75,12 +75,23 @@ pub fn rank(parsed: &Parsed, cands: Vec<Entity>, boosts: &Boosts) -> Vec<Scored>
                 score,
                 qlen,
                 fallback,
+                alias,
             }
         })
         .collect();
     out.sort_by(|a, b| b.score.total_cmp(&a.score));
     if out.iter().any(|s| !s.fallback && s.sim >= FALLBACK_YIELD) {
         out.retain(|s| !s.fallback);
+    }
+    if let Some(top) = out.first().filter(|s| s.alias) {
+        let floor = top.entity.popularity / POPULARITY_GAP;
+        let heard = out
+            .iter()
+            .position(|s| !s.alias && !s.fallback && s.sim >= 0.99 && s.entity.popularity >= floor);
+        if let Some(i) = heard {
+            let exact = out.remove(i);
+            out.insert(0, exact);
+        }
     }
     if let Some(i) = out.iter().position(|s| s.sim >= 0.95) {
         let rival = out

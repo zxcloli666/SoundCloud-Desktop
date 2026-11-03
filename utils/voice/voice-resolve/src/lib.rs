@@ -1,3 +1,4 @@
+mod alias;
 mod answer;
 mod catalog;
 mod entity;
@@ -32,8 +33,10 @@ impl Outcome {
 }
 
 pub fn resolve(parsed: &Parsed, catalog: &dyn Catalog, boosts: &Boosts, bare: bool) -> Decision {
-    let cands = catalog.candidates(&parsed.queries, &Kind::ALL);
-    let ranked = rank(parsed, cands, boosts);
+    let mut expanded = parsed.clone();
+    expanded.queries = alias::expand(&parsed.queries);
+    let cands = catalog.candidates(&expanded.queries, &Kind::ALL);
+    let ranked = rank(&expanded, cands, boosts);
     score::decide(&ranked, bare)
 }
 

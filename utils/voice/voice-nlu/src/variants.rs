@@ -164,6 +164,7 @@ fn plain(text: String, kept: bool, lemmatized: bool) -> Variant {
         kept_fillers: kept,
         lemmatized,
         fallback: false,
+        alias_kind: None,
     }
 }
 
@@ -175,6 +176,7 @@ fn joint(title: String, artist: String, kept: bool, lemmatized: bool) -> Variant
         kept_fillers: kept,
         lemmatized,
         fallback: false,
+        alias_kind: None,
     }
 }
 

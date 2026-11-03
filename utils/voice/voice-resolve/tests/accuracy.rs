@@ -344,12 +344,23 @@ fn targets_with_aliases() {
 }
 
 #[test]
-fn names_without_aliases() {
+fn targets_without_catalog_aliases() {
     let catalog = FixtureCatalog::from_tsv(include_str!("data/catalog.tsv"), false);
     let mut union = BTreeMap::new();
+    let mut failures = Vec::new();
     for set in sets() {
-        let (stats, _) = run(set.name, &set.rows, &catalog);
+        let (stats, f) = run(set.name, &set.rows, &catalog);
         merge(&mut union, &stats);
+        failures.extend(f);
     }
-    println!("without aliases, all sets\n{}", report(&union));
+    println!("without catalog aliases, all sets\n{}", report(&union));
+    for f in &failures {
+        println!("{f}");
+    }
+    let mut total = Stat::default();
+    for s in union.values() {
+        total.add(s);
+    }
+    let entity = pct(total.entity_ok, total.entity_rows);
+    assert!(entity >= 97.0, "entity {entity:.1}% < 97");
 }

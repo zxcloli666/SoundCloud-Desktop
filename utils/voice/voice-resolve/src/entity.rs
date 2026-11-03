@@ -28,6 +28,7 @@ pub struct Scored {
     pub qlen: usize,
     pub score: f32,
     pub fallback: bool,
+    pub alias: bool,
 }
 
 #[derive(Debug, Clone, Serialize)]
