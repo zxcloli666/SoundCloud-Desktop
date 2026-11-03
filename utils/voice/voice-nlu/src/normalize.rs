@@ -1,4 +1,4 @@
-use crate::lexicon::{self, DROP_PHRASES, MERGE_PHRASES};
+use crate::lexicon::{self, DROP_PHRASES, MERGE_PHRASES, PLAY_STRONG, SWEARS_AMB};
 use crate::numbers;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -21,7 +21,8 @@ pub fn normalize(input: &str) -> Normalized {
         words.extend(fixed.split_whitespace().map(str::to_string));
     }
     let words = apply_phrases(words);
-    let words = numbers::merge(&words, false);
+    let words = numbers::merge(&numbers::colloquial(words), false);
+    let words = drop_swears(dedupe(words));
     let toks: Vec<Tok> = words
         .into_iter()
         .filter(|w| !lexicon::has(lexicon::FILLERS, w))
@@ -157,4 +158,30 @@ fn apply_phrases(words: Vec<String>) -> Vec<String> {
 
 fn matches_at(words: &[String], i: usize, phrase: &[&str]) -> bool {
     i + phrase.len() <= words.len() && phrase.iter().zip(&words[i..]).all(|(p, w)| p == w)
+}
+
+fn dedupe(words: Vec<String>) -> Vec<String> {
+    let mut out: Vec<String> = Vec::new();
+    let mut i = 0;
+    while i < words.len() {
+        let mut j = i;
+        while j < words.len() && words[j] == words[i] {
+            j += 1;
+        }
+        let alpha = words[i].chars().all(char::is_alphabetic) && words[i].chars().count() >= 4;
+        let keep = if j - i == 2 && alpha { 1 } else { j - i };
+        out.extend(std::iter::repeat_n(words[i].clone(), keep));
+        i = j;
+    }
+    out
+}
+
+fn drop_swears(words: Vec<String>) -> Vec<String> {
+    if !words.iter().any(|w| PLAY_STRONG.contains(&w.as_str())) {
+        return words;
+    }
+    words
+        .into_iter()
+        .filter(|w| !SWEARS_AMB.contains(&w.as_str()))
+        .collect()
 }

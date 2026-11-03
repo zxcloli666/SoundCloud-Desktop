@@ -61,6 +61,20 @@ fn credits(name: &str) -> Vec<String> {
     parts
 }
 
+fn name_words(name: &str) -> Vec<&str> {
+    let words: Vec<&str> = name
+        .split(|c: char| c.is_whitespace() || c == '-')
+        .filter(|w| !w.is_empty())
+        .collect();
+    if words.len() < 2 {
+        return Vec::new();
+    }
+    words
+        .into_iter()
+        .filter(|w| w.chars().count() >= 4 && w.chars().all(char::is_alphabetic))
+        .collect()
+}
+
 fn without_parens(name: &str) -> Option<String> {
     let open = name.find('(')?;
     let head = name[..open].trim();
@@ -79,6 +93,9 @@ impl Keys {
         if e.kind == Kind::Artist {
             for part in credits(&e.name) {
                 names.push((fold(&part), 0.95));
+            }
+            for word in name_words(&e.name) {
+                names.push((fold(word), 0.9));
             }
         }
         names.retain(|(k, _)| !k.is_empty());
@@ -101,7 +118,14 @@ impl Keys {
             artist_parts: e
                 .artist
                 .as_deref()
-                .map(|a| credits(a).iter().map(|p| fold(p)).collect())
+                .map(|a| {
+                    credits(a)
+                        .iter()
+                        .map(|p| fold(p))
+                        .chain(name_words(a).into_iter().map(fold))
+                        .chain(e.artist_aliases.iter().map(|x| fold(x)))
+                        .collect()
+                })
                 .unwrap_or_default(),
             own_artist_name: e.kind == Kind::Artist,
         }
@@ -238,5 +262,16 @@ impl QueryKeys {
 }
 
 pub fn best_sim(keys: &Keys, queries: &[QueryKeys]) -> f32 {
-    queries.iter().map(|q| keys.sim(q)).fold(0.0, f32::max)
+    best_match(keys, queries).0
+}
+
+pub fn best_match(keys: &Keys, queries: &[QueryKeys]) -> (f32, usize) {
+    let mut best = (0.0f32, 0usize);
+    for q in queries {
+        let sim = keys.sim(q);
+        if sim > best.0 {
+            best = (sim, q.text.chars().count());
+        }
+    }
+    best
 }

@@ -1,4 +1,4 @@
-use voice_nlu::{Intent, Kind, normalize, parse};
+use voice_nlu::{Intent, Kind, normalize, parse_one as parse};
 
 fn words(text: &str) -> String {
     normalize(text).text
@@ -88,4 +88,18 @@ fn lemma_rules_cover_common_case_forms() {
     for (form, base) in pairs {
         assert_eq!(lemma(form, 1), base, "{form}");
     }
+}
+
+#[test]
+fn two_part_commands_run_in_order() {
+    let names = |t: &str| -> Vec<&'static str> {
+        voice_nlu::parse(t).iter().map(|p| p.intent.name()).collect()
+    };
+    assert_eq!(names("выключи повтор и перемешай"), ["repeat_off", "shuffle_on"]);
+    assert_eq!(names("сделай погромче и следующий"), ["volume_up", "next"]);
+    assert_eq!(names("выключи и включи скриптонита"), ["play"]);
+    assert_eq!(names("включи король и шут"), ["play"]);
+    assert_eq!(names("поставь на паузу мне звонят"), ["pause"]);
+    assert_eq!(names("не надо паузу"), ["none"]);
+    assert_eq!(names("не, дальше"), ["next"]);
 }

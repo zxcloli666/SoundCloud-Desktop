@@ -1,4 +1,5 @@
 mod ctx;
+mod guard;
 mod library;
 mod play;
 mod seek;
@@ -8,6 +9,7 @@ mod volume;
 use crate::lexicon;
 use crate::normalize::Tok;
 pub use ctx::{Ctx, Detected};
+pub use guard::{Negation, negation, remark};
 
 pub fn detect(toks: &[Tok]) -> Detected {
     let c = Ctx::new(toks);
@@ -30,6 +32,9 @@ pub fn detect(toks: &[Tok]) -> Detected {
         return d;
     }
     if let Some(d) = seek::detect(&c) {
+        return d;
+    }
+    if let Some(d) = library::into_likes(&c) {
         return d;
     }
     if let Some(d) = play::content(&c) {
@@ -73,7 +78,7 @@ pub fn fuzzy_fix(toks: &[Tok]) -> Option<Vec<Tok>> {
 
 fn closest(w: &str) -> Option<&'static str> {
     let len = w.chars().count();
-    if len < 4 || lexicon::is_known(w) || w.chars().any(|c| c.is_ascii_digit()) {
+    if len < 5 || lexicon::is_known(w) || w.chars().any(|c| c.is_ascii_digit()) {
         return None;
     }
     let limit = if len >= 8 { 2 } else { 1 };

@@ -4,6 +4,7 @@ mod lexicon;
 mod normalize;
 mod numbers;
 mod slots;
+mod steps;
 mod types;
 mod variants;
 
@@ -12,9 +13,21 @@ pub use normalize::{Normalized, Tok, normalize};
 pub use types::{Intent, Kind, Parsed, Variant};
 pub use variants::lemma;
 
-pub fn parse(text: &str) -> Parsed {
-    let n = normalize(text);
-    let mut toks = n.toks;
+pub use steps::parse;
+
+pub fn parse_one(text: &str) -> Parsed {
+    parse_toks(text, normalize(text).toks).0
+}
+
+pub(crate) fn parse_toks(text: &str, mut toks: Vec<Tok>) -> (Parsed, bool) {
+    match intent::negation(&toks) {
+        intent::Negation::Cancel => return (cancelled(text, &toks), true),
+        intent::Negation::Tail(j) => toks.drain(..j).for_each(drop),
+        intent::Negation::Clear => {}
+    }
+    if let Some(k) = intent::remark(&toks) {
+        toks.truncate(k);
+    }
     let mut det = intent::detect(&toks);
     if det.intent == Intent::None && !det.blocked {
         if let Some(fixed) = intent::fuzzy_fix(&toks) {
@@ -27,7 +40,20 @@ pub fn parse(text: &str) -> Parsed {
     }
     let s = slots::extract(&toks, &det);
     let queries = variants::expand(&s.raw);
-    let bare = det.intent == Intent::None && !queries.is_empty() && toks.len() <= 8;
+    let edge = |t: Option<&Tok>| {
+        t.is_some_and(|t| {
+            let w = t.w.as_str();
+            toks.len() > 1
+                && (lexicon::SUBJECTS.contains(&w)
+                    || lexicon::TRANSPORT_VERBS.contains(&w)
+                    || lexicon::PLAY_WEAK.contains(&w))
+        })
+    };
+    let bare = det.intent == Intent::None
+        && queries.iter().any(|q| !q.kept_fillers)
+        && toks.len() <= 8
+        && !edge(toks.first())
+        && !edge(toks.last());
     let queries = if det.intent == Intent::None && !bare {
         Vec::new()
     } else {
@@ -38,7 +64,8 @@ pub fn parse(text: &str) -> Parsed {
         .map(|t| t.w.as_str())
         .collect::<Vec<_>>()
         .join(" ");
-    Parsed {
+    let blocked = det.blocked;
+    let parsed = Parsed {
         intent: det.intent,
         kind_hint: s.kind_hint,
         queries,
@@ -47,5 +74,19 @@ pub fn parse(text: &str) -> Parsed {
         normalized,
         bare,
         weak_verb: det.weak,
+    };
+    (parsed, blocked)
+}
+
+fn cancelled(text: &str, toks: &[Tok]) -> Parsed {
+    Parsed {
+        intent: Intent::None,
+        kind_hint: None,
+        queries: Vec::new(),
+        number: None,
+        heard: text.to_string(),
+        normalized: toks.iter().map(|t| t.w.as_str()).collect::<Vec<_>>().join(" "),
+        bare: false,
+        weak_verb: false,
     }
 }

@@ -9,6 +9,7 @@ pub struct Entity {
     pub popularity: u64,
     pub id: String,
     pub aliases: Vec<String>,
+    pub artist_aliases: Vec<String>,
 }
 
 impl Entity {
@@ -24,6 +25,7 @@ impl Entity {
 pub struct Scored {
     pub entity: Entity,
     pub sim: f32,
+    pub qlen: usize,
     pub score: f32,
 }
 
@@ -31,6 +33,6 @@ pub struct Scored {
 #[serde(tag = "decision", rename_all = "snake_case")]
 pub enum Decision {
     Act { pick: Scored },
-    Ask { first: Scored, second: Scored },
+    Ask { first: Scored, second: Option<Scored> },
     NotFound,
 }

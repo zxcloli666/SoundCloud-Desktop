@@ -1,0 +1,63 @@
+phrase	intent	kind	entity	number	category	alt
+запили эминема	play	artist	Eminem		slang	
+вмажь кино	play	artist	Кино		slang	
+накинь сплин	play	artist	Сплин		slang	
+шарахни басту	play	artist	Баста		slang	
+вруби-ка сплин	play	artist	Сплин		slang	
+запускай звери	play	artist	Звери		slang	
+хэй включи дрейка	play	artist	Drake		filler	
+пжлст поставь басту	play	artist	Баста		filler	
+ну давай включи кино	play	artist	Кино		filler	
+ёмаё включи скриптонита	play	artist	Скриптонит		slang	
+капец как надоела эта песня	next				slang	
+эта песня достала	next				slang	
+пропусти это	next				plain	
+перемотай на начало песни	seek_to			0	numbers	
+вперёд на пятнадцать секунд	seek_forward			15	numbers	
+назад на полминуты	seek_backward			30	numbers	
+перемотай на третью минуту	seek_to			180	numbers	
+сделай звук потише на двадцать	volume_down			20	numbers	
+громкость на семьдесят пять	volume_set			75	numbers	
+убавь звук до нуля	volume_set			0	numbers	
+сделай громкость на максимум	volume_set			100	numbers	
+выкрути звук до упора	volume_set			100	numbers	
+включи фильм ужасов	none				false_act	
+поставь компот на стол	none				false_act	
+включи рекламу	none				false_act	
+перемешай суп	none				false_act	
+повтори номер телефона	none				false_act	
+перемотай ленту	none				false_act	
+включи лампу	none				false_act	
+включи вайфай	none				false_act	
+поставь таймер на пять минут	none				false_act	
+давай не будем ссориться	none				false_act	
+пусть играет музыка	none				false_act	
+дальше будет только лучше	none				false_act	
+мне нравится эта погода	none				false_act	
+скриптонит вчера выступал	none				false_act	
+не хочу слушать басту	none				negative	
+не надо ничего включать	none				negative	
+не выключай музыку	none				negative	
+не останавливай	none				negative	
+не пропускай эту песню	none				negative	
+включи цоя	play	artist	Кино		morphology	
+включи свифт	play	artist	Taylor Swift		translit	
+включи ширана	play	artist	Ed Sheeran		morphology	
+включи оксимирона	play	artist	Oxxxymiron		morphology	
+включи нойз	play	artist	Noize MC		morphology	
+включи мумий	play	artist	Мумий Тролль		morphology	
+включи пугачеву	play	artist	Алла Пугачёва		morphology	
+включи моргена	play	artist	Моргенштерн		morphology	
+включи прости меня моя любовь земфиры	play	track	Земфира - Прости меня моя любовь		ambiguous	
+включи тепло макса коржа	play	track	Макс Корж - Тепло		morphology	
+поставь кино потом сплин потом звери	play+play+play	artist+artist+artist	Кино+Сплин+Звери		two_part	
+сделай погромче и лайкни	volume_up+like				two_part	
+пауза а потом громче	pause+volume_up				two_part	
+стоп и перемешай	stop+shuffle_on				two_part	
+включи моё и перемешай	play_likes+shuffle_on				two_part	
+выключи и включи кино	play	artist	Кино		two_part	
+следующий и ещё громче	next+volume_up				two_part	
+лайкни эту а потом дальше	like+next				two_part	
+басту не надо	none				negative	
+не надо ставить на паузу	none				negative	
+погромче пожалуйста я не слышу	volume_up				two_part	

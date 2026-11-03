@@ -10,7 +10,7 @@ pub use entity::{Decision, Entity, Scored};
 pub use score::{Boosts, rank};
 
 use serde::Serialize;
-use voice_nlu::{Intent, Kind, Parsed, parse};
+use voice_nlu::{Intent, Kind, Parsed, parse, parse_one};
 
 #[derive(Debug, Clone, Serialize)]
 pub struct Outcome {
@@ -31,14 +31,29 @@ impl Outcome {
     }
 }
 
-pub fn resolve(parsed: &Parsed, catalog: &dyn Catalog, boosts: &Boosts, min_sim: f32) -> Decision {
+pub fn resolve(
+    parsed: &Parsed,
+    catalog: &dyn Catalog,
+    boosts: &Boosts,
+    bare: bool,
+) -> Decision {
     let cands = catalog.candidates(&parsed.queries, &Kind::ALL);
     let ranked = rank(parsed, cands, boosts);
-    score::decide(&ranked, min_sim)
+    score::decide(&ranked, bare)
 }
 
-pub fn interpret(text: &str, catalog: &dyn Catalog, boosts: &Boosts) -> Outcome {
-    let parsed = parse(text);
+pub fn interpret(text: &str, catalog: &dyn Catalog, boosts: &Boosts) -> Vec<Outcome> {
+    parse(text)
+        .into_iter()
+        .map(|parsed| interpret_parsed(parsed, catalog, boosts))
+        .collect()
+}
+
+pub fn interpret_one(text: &str, catalog: &dyn Catalog, boosts: &Boosts) -> Outcome {
+    interpret_parsed(parse_one(text), catalog, boosts)
+}
+
+fn interpret_parsed(parsed: Parsed, catalog: &dyn Catalog, boosts: &Boosts) -> Outcome {
     let mut intent = parsed.intent;
     let mut decision = None;
     if parsed.queries.is_empty() {
@@ -50,7 +65,7 @@ pub fn interpret(text: &str, catalog: &dyn Catalog, boosts: &Boosts) -> Outcome 
     }
     if intent == Intent::None {
         if parsed.bare {
-            let d = resolve(&parsed, catalog, boosts, score::BARE_MIN);
+            let d = resolve(&parsed, catalog, boosts, true);
             if matches!(d, Decision::Act { .. } | Decision::Ask { .. }) {
                 intent = Intent::Play;
                 decision = Some(d);
@@ -60,8 +75,13 @@ pub fn interpret(text: &str, catalog: &dyn Catalog, boosts: &Boosts) -> Outcome 
         intent,
         Intent::Play | Intent::QueueAdd | Intent::PlaySimilar
     ) {
-        let d = resolve(&parsed, catalog, boosts, score::ACT_MIN);
-        if intent == Intent::Play && parsed.weak_verb && matches!(d, Decision::NotFound) {
+        let d = resolve(&parsed, catalog, boosts, false);
+        let sure = match &d {
+            Decision::Act { pick } => pick.sim >= score::WEAK_VERB_MIN,
+            Decision::Ask { first, .. } => first.sim >= score::WEAK_VERB_MIN,
+            Decision::NotFound => false,
+        };
+        if intent == Intent::Play && (matches!(d, Decision::NotFound) || (parsed.weak_verb && !sure)) {
             intent = Intent::None;
         }
         decision = Some(d);
