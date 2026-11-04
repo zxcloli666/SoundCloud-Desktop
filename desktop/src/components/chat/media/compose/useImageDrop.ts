@@ -1,7 +1,6 @@
 import { getCurrentWebview } from '@tauri-apps/api/webview';
 import { type RefObject, useEffect, useRef, useState } from 'react';
-
-const mounted = new Set<symbol>();
+import { claimImageDrop } from '../../../../lib/chat/image-files';
 
 export const LAB_DRAG = 'chat-lab-drag';
 
@@ -12,7 +11,6 @@ export interface DropHover {
 
 function inside(area: HTMLElement | null, x: number, y: number): boolean {
   if (!area) return false;
-  if (mounted.size === 1) return true;
   const rect = area.getBoundingClientRect();
   const ratio = window.devicePixelRatio || 1;
   const left = x / ratio;
@@ -31,8 +29,6 @@ export function useImageDrop(
   dropped.current = onDrop;
 
   useEffect(() => {
-    const id = Symbol('thread-drop');
-    mounted.add(id);
     let disposed = false;
     let unlisten: (() => void) | null = null;
     const show = (x: number, y: number) => {
@@ -61,7 +57,9 @@ export function useImageDrop(
           const hit = inside(area.current, payload.position.x, payload.position.y);
           paths.current = [];
           setHover(null);
-          if (hit && payload.paths.length > 0) dropped.current(payload.paths);
+          if (!hit || payload.paths.length === 0) return;
+          if (payload.paths.some(isImage)) claimImageDrop();
+          dropped.current(payload.paths);
         }
       })
       .then((stop) => {
@@ -81,7 +79,6 @@ export function useImageDrop(
     if (import.meta.env.DEV) window.addEventListener(LAB_DRAG, rehearse);
     return () => {
       disposed = true;
-      mounted.delete(id);
       unlisten?.();
       if (import.meta.env.DEV) window.removeEventListener(LAB_DRAG, rehearse);
     };

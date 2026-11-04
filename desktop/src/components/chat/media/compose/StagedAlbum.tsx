@@ -1,11 +1,12 @@
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { chatBridge } from '../../../../lib/chat/bridge';
 import type { UploadView } from '../../../../lib/chat/media-types';
 import { Plus, X } from '../../../../lib/icons';
 import { useChatMediaStore } from '../../../../stores/chat/media';
+import { removeAlbum } from './album-cancel';
 import { FailureAction } from './FailureAction';
 import { failureOf } from './failure';
+import { RISE } from './motion';
 import { isDone } from './progress';
 import { PreparingTile, StagedTile, TILE } from './StagedTile';
 import type { StagedAlbum as Album } from './useStagedAlbum';
@@ -37,24 +38,21 @@ export const StagedAlbum = memo(function StagedAlbum({
   const busy = album.preparing > 0;
   const remove = (upload: UploadView) => {
     if (busy) return;
-    const job =
-      count === 1
-        ? chatBridge.mediaAlbumCancel(upload.album)
-        : useChatMediaStore.getState().cancelUpload(upload.id);
-    void job.then(() => useChatMediaStore.getState().refreshUploads()).catch(onFail);
+    if (count === 1) {
+      removeAlbum(upload.album, t, onFail);
+      return;
+    }
+    void useChatMediaStore.getState().cancelUpload(upload.id).catch(onFail);
   };
   const removeAll = () => {
     if (!album.id || busy) return;
-    void chatBridge
-      .mediaAlbumCancel(album.id)
-      .then(() => useChatMediaStore.getState().refreshUploads())
-      .catch(onFail);
+    removeAlbum(album.id, t, onFail);
   };
 
   return (
     <div
       data-ui="chat-staged-album"
-      className="mx-1 mb-1.5 rounded-[18px] border border-ink/[0.07] bg-ink/[0.03] px-2.5 pt-2 pb-2 animate-in fade-in slide-in-from-bottom-1 duration-300 motion-reduce:animate-none"
+      className={`mx-1 mb-1.5 rounded-[18px] border border-ink/[0.07] bg-ink/[0.03] px-2.5 pt-2 pb-2 ${RISE}`}
     >
       <div className="mb-2 flex items-center gap-2 px-0.5">
         <span

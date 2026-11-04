@@ -113,7 +113,11 @@ export const ThreadHeader = memo(function ThreadHeader({
           {conversation.kind === 'self' ? (
             <SavedMark />
           ) : photo ? (
-            <GroupPhoto src={photo} size={36} fallback={<GroupMark />} />
+            <GroupPhoto
+              src={photo}
+              size={36}
+              fallback={avatar ? <Avatar src={avatar} size={36} /> : <GroupMark />}
+            />
           ) : avatar ? (
             <Avatar src={avatar} size={36} />
           ) : conversation.kind === 'direct' ? (

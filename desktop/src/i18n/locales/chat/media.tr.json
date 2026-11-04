@@ -56,16 +56,16 @@
     "invalid": "Bu görsel gönderilemez",
     "offline": "Sunucuya bağlantı yok",
     "busy": "Sunucu meşgul, birazdan tekrar deneyin",
-    "too_big": "Görsel çok büyük",
-    "unsupported": "Bu biçim desteklenmiyor",
-    "heic": "HEIC desteklenmiyor, JPEG veya PNG kullanın",
     "not_ready": "Uygulama hâlâ başlıyor, tekrar deneyin",
     "crypto": "Görsel şifrelenemedi",
     "store": "Görsel kaydedilemedi",
-    "too_many": "En fazla {{count}} görsel",
     "request_limit": "Çok fazla istek, biraz bekleyin",
     "read_limited": "Çok fazla istek, biraz bekleyin",
-    "disabled": "Görseller sunucuda kapalı"
+    "disabled": "Görseller sunucuda kapalı",
+    "backdrop_cooldown": "Arka planı biraz sonra değiştirebilirsiniz",
+    "send_paused": "Gönderim duraklatıldı",
+    "muted": "Şimdilik burada yazamazsınız",
+    "slow_mode": "Yavaş mod, biraz bekleyin"
   },
   "room": {
     "capacity": "{{count}} üye",
@@ -98,7 +98,9 @@
     "full": "Albüm dolu",
     "count": "{{count}}/{{max}}",
     "sendAlbum": "Albümü gönder",
-    "waiting": "Bekleniyor"
+    "waiting": "Bekleniyor",
+    "albumRemoved": "Albüm kaldırıldı",
+    "undo": "Geri al"
   },
   "skipped": {
     "title_one": "{{count}} dosya atlandı",
@@ -139,7 +141,9 @@
     "lockedHint": "Görmek için bırakın",
     "closed": "Burada görsel gönderilemez",
     "notImages": "Yalnızca görseller",
-    "notImagesHint": "PNG, JPEG, WebP veya GIF"
+    "notImagesHint": "PNG, JPEG, WebP veya GIF",
+    "elsewhere": "Görselleri açık bir sohbete bırakın",
+    "notAudio": "Görseller Dosyalarım'a eklenmez"
   },
   "rows": {
     "title": "Gönderiliyor",

@@ -56,16 +56,16 @@
     "invalid": "이 이미지는 보낼 수 없어요",
     "offline": "서버에 연결할 수 없어요",
     "busy": "서버가 바빠요. 잠시 후 다시 시도해주세요",
-    "too_big": "이미지가 너무 커요",
-    "unsupported": "지원하지 않는 형식이에요",
-    "heic": "HEIC는 지원하지 않아요. JPEG나 PNG를 사용하세요",
     "not_ready": "앱이 아직 준비 중입니다. 다시 시도하세요",
     "crypto": "이미지를 암호화할 수 없습니다",
     "store": "이미지를 저장할 수 없습니다",
-    "too_many": "이미지는 최대 {{count}}장",
     "request_limit": "요청이 너무 많습니다. 잠시 기다리세요",
     "read_limited": "요청이 너무 많습니다. 잠시 기다리세요",
-    "disabled": "서버에서 이미지가 꺼져 있습니다"
+    "disabled": "서버에서 이미지가 꺼져 있습니다",
+    "backdrop_cooldown": "배경은 잠시 후에 바꿀 수 있습니다",
+    "send_paused": "전송이 일시 중지됨",
+    "muted": "지금은 여기에 쓸 수 없습니다",
+    "slow_mode": "슬로 모드입니다. 잠시 기다리세요"
   },
   "room": {
     "capacity": "{{count}}명",
@@ -97,7 +97,9 @@
     "full": "앨범 가득 참",
     "count": "{{count}}/{{max}}",
     "sendAlbum": "앨범 보내기",
-    "waiting": "대기 중"
+    "waiting": "대기 중",
+    "albumRemoved": "앨범 삭제됨",
+    "undo": "되돌리기"
   },
   "skipped": {
     "title_other": "{{count}}개 파일 건너뜀",
@@ -137,7 +139,9 @@
     "lockedHint": "놓으면 미리 볼 수 있습니다",
     "closed": "여기서는 이미지를 보낼 수 없습니다",
     "notImages": "이미지만 가능",
-    "notImagesHint": "PNG, JPEG, WebP 또는 GIF"
+    "notImagesHint": "PNG, JPEG, WebP 또는 GIF",
+    "elsewhere": "열린 채팅에 이미지를 놓으세요",
+    "notAudio": "이미지는 내 파일에 추가되지 않습니다"
   },
   "rows": {
     "title": "전송",

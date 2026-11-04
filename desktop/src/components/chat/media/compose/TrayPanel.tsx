@@ -1,8 +1,10 @@
 import { memo, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import type { ConvId } from '../../../../lib/chat/types';
 import { ChevronDown, ChevronUp, TriangleAlert } from '../../../../lib/icons';
 import { usePerfMode } from '../../../../lib/perf';
 import { toastError } from '../../thread/errors';
+import { LIFT, RISE } from './motion';
 import { ProgressRing } from './ProgressRing';
 import { albumFraction } from './progress';
 import { TrayRow } from './TrayRow';
@@ -10,11 +12,11 @@ import type { TrayWork } from './tray-scope';
 
 export const TrayPanel = memo(function TrayPanel({
   work,
-  showChat,
+  current,
   place,
 }: {
   work: TrayWork;
-  showChat: boolean;
+  current: ConvId | null;
   place: 'thread' | 'dock';
 }) {
   const { t, i18n } = useTranslation();
@@ -57,7 +59,7 @@ export const TrayPanel = memo(function TrayPanel({
       <div className="absolute inset-x-0 bottom-1.5 flex flex-col items-center gap-1.5 px-3">
         {open && (
           <div
-            className="pointer-events-auto w-full max-w-[420px] overflow-hidden rounded-[18px] border border-ink/[0.08] p-1.5 animate-in fade-in slide-in-from-bottom-2 duration-200 motion-reduce:animate-none"
+            className={`pointer-events-auto w-full max-w-[420px] overflow-hidden rounded-[18px] border border-ink/[0.08] p-1.5 ${RISE}`}
             style={glass}
           >
             <div className="flex items-center justify-between px-2 pt-1 pb-1.5">
@@ -70,7 +72,12 @@ export const TrayPanel = memo(function TrayPanel({
             </div>
             <ul className="max-h-[260px] overflow-y-auto">
               {work.rows.map((upload) => (
-                <TrayRow key={upload.id} upload={upload} showChat={showChat} onFail={fail} />
+                <TrayRow
+                  key={upload.id}
+                  upload={upload}
+                  showChat={upload.conversationId !== current}
+                  onFail={fail}
+                />
               ))}
             </ul>
           </div>
@@ -79,7 +86,7 @@ export const TrayPanel = memo(function TrayPanel({
           type="button"
           aria-expanded={open}
           onClick={() => setOpen((value) => !value)}
-          className="pointer-events-auto flex cursor-pointer items-center gap-2 rounded-full border py-1 pr-2.5 pl-1.5 text-[11.5px] font-medium text-ink-80 transition-transform duration-200 animate-in fade-in slide-in-from-bottom-1 hover:-translate-y-px motion-reduce:animate-none"
+          className={`pointer-events-auto flex cursor-pointer items-center gap-2 rounded-full border py-1 pr-2.5 pl-1.5 text-[11.5px] font-medium text-ink-80 hover:-translate-y-px ${RISE} ${LIFT}`}
           style={{
             ...glass,
             borderColor: failed ? 'rgb(var(--bad) / 0.45)' : 'rgb(var(--ink) / 0.09)',

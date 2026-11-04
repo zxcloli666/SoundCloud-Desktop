@@ -56,16 +56,16 @@
     "invalid": "This image can not be sent",
     "offline": "No connection to the server",
     "busy": "The server is busy, try again soon",
-    "too_big": "The image is too big",
-    "unsupported": "This image format is not supported",
-    "heic": "HEIC is not supported, use JPEG or PNG",
     "not_ready": "The app is still starting, try again",
     "crypto": "Could not encrypt the image",
     "store": "Could not save the image",
-    "too_many": "No more than {{count}} images",
     "request_limit": "Too many requests, wait a bit",
     "read_limited": "Too many requests, wait a bit",
-    "disabled": "Images are turned off on the server"
+    "disabled": "Images are turned off on the server",
+    "backdrop_cooldown": "You can change the backdrop a bit later",
+    "send_paused": "Sending is paused",
+    "muted": "You cannot post here for now",
+    "slow_mode": "Slow mode, wait a bit"
   },
   "room": {
     "capacity": "{{count}} members",
@@ -98,7 +98,9 @@
     "full": "Album full",
     "count": "{{count}}/{{max}}",
     "sendAlbum": "Send album",
-    "waiting": "Waiting"
+    "waiting": "Waiting",
+    "albumRemoved": "Album removed",
+    "undo": "Undo"
   },
   "skipped": {
     "title_one": "{{count}} file skipped",
@@ -139,7 +141,9 @@
     "lockedHint": "Release to see what you get",
     "closed": "Images are off here",
     "notImages": "Images only",
-    "notImagesHint": "PNG, JPEG, WebP or GIF"
+    "notImagesHint": "PNG, JPEG, WebP or GIF",
+    "elsewhere": "Drop images onto an open chat",
+    "notAudio": "Images are not added to My files"
   },
   "rows": {
     "title": "Sending",
