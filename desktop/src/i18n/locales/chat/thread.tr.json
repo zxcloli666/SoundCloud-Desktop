@@ -184,6 +184,7 @@
     "offline": "Sunucuya bağlantı yok",
     "unavailable": "Bu kişiye ulaşılamıyor",
     "disabled": "Sohbetler kapalı",
+    "keychain_denied": "Sohbet anahtarlarına erişim yok. Sohbetleri açıp Tekrar dene düğmesine basın",
     "too_young": "Bu cihaz bunun için henüz çok yeni",
     "not_found": "Mesaj bulunamadı",
     "invalid": "Mesaj kontrolden geçmedi"

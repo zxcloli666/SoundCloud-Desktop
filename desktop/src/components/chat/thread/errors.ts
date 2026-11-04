@@ -14,6 +14,7 @@ const KNOWN: ReadonlySet<string> = new Set([
   'offline',
   'unavailable',
   'disabled',
+  'keychain_denied',
   'too_young',
   'not_found',
   'invalid',

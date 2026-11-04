@@ -184,6 +184,7 @@
     "offline": "No connection to the server",
     "unavailable": "This person is unavailable",
     "disabled": "Chats are turned off",
+    "keychain_denied": "No access to the chat keys. Open chats and press Try again",
     "too_young": "This device is too new for that",
     "not_found": "Message not found",
     "invalid": "The message did not pass the check"
