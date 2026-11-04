@@ -1,3 +1,5 @@
+import { decodeThumbhash, encodeThumbhash } from './thumbhash';
+
 export type MediaMark = 'deleted' | 'lost' | 'failed';
 
 const BROKEN = 'data:image/png;base64,bad';
@@ -5,7 +7,6 @@ const RATIOS = [4 / 3, 3 / 4, 16 / 9, 1, 3 / 2, 9 / 16];
 const LONG_SIDE: Record<string, number> = {
   thumb: 320,
   'upload-thumb': 320,
-  placeholder: 24,
   avatar: 96,
   image: 1200,
   'upload-image': 1200,
@@ -14,6 +15,7 @@ const LONG_SIDE: Record<string, number> = {
 const sizes = new Map<string, [number, number]>();
 const marks = new Map<string, MediaMark>();
 const cache = new Map<string, string>();
+const hashes = new Map<string, number[]>();
 
 function hash(text: string): number {
   let h = 2166136261;
@@ -79,7 +81,19 @@ function paint(ctx: CanvasRenderingContext2D, w: number, h: number, rand: () => 
   ctx.fillRect(0, h * 0.62, w, h * 0.38);
 }
 
+function drawPlaceholder(id: string): string {
+  const decoded = decodeThumbhash(thumbhashOf(id));
+  const canvas = document.createElement('canvas');
+  const ctx = decoded && canvas.getContext('2d');
+  if (!decoded || !ctx) return BROKEN;
+  canvas.width = decoded.w;
+  canvas.height = decoded.h;
+  ctx.putImageData(new ImageData(decoded.rgba, decoded.w, decoded.h), 0, 0);
+  return canvas.toDataURL('image/png');
+}
+
 function draw(id: string, variant: string): string {
+  if (variant === 'placeholder') return drawPlaceholder(id);
   const [rw, rh] = pictureSize(id);
   const long = LONG_SIDE[variant] ?? LONG_SIDE.image;
   const scale = long / Math.max(rw, rh);
@@ -91,7 +105,7 @@ function draw(id: string, variant: string): string {
   const ctx = canvas.getContext('2d');
   if (!ctx) return BROKEN;
   paint(ctx, w, h, random(hash(id)));
-  return canvas.toDataURL(variant === 'placeholder' ? 'image/png' : 'image/jpeg', 0.82);
+  return canvas.toDataURL('image/jpeg', 0.82);
 }
 
 export function labPicture(
@@ -117,7 +131,16 @@ export function installLabPictures() {
   (window as { __chatLabMedia?: typeof labPicture }).__chatLabMedia = labPicture;
 }
 
-export function labPixels(mediaId: string, longSide = 32): ImageData | null {
+export function thumbhashOf(mediaId: string): number[] {
+  const known = hashes.get(mediaId);
+  if (known) return known;
+  const image = labPixels(mediaId);
+  const hash = image ? encodeThumbhash(image.width, image.height, image.data) : [];
+  if (hash.length > 0) hashes.set(mediaId, hash);
+  return hash;
+}
+
+function labPixels(mediaId: string, longSide = 32): ImageData | null {
   const [rw, rh] = pictureSize(mediaId);
   const scale = longSide / Math.max(rw, rh);
   const w = Math.max(1, Math.round(rw * scale));

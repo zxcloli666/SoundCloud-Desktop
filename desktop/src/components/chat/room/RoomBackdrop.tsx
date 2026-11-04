@@ -19,8 +19,8 @@ function useFailed(src: string | null) {
 
 export const RoomBackdrop = memo(function RoomBackdrop({ room }: { room: RoomView }) {
   const { shown } = useRoomBackdrop(room);
-  const src =
-    shown?.kind === 'image' ? chatMediaUrl(shown.conversationId, shown.mediaId, 'image') : null;
+  const image = shown?.kind === 'image' ? shown : null;
+  const src = image ? chatMediaUrl(image.conversationId, image.mediaId, 'image') : null;
   const [failed, fail] = useFailed(src);
   const held = useBackdropStore((state) => state.dialog !== null);
 
@@ -41,5 +41,15 @@ export const RoomBackdrop = memo(function RoomBackdrop({ room }: { room: RoomVie
     );
   }
   if (!src || failed) return null;
-  return <BackdropStage key={src} src={src} motion={null} onFail={fail} />;
+  return (
+    <BackdropStage
+      key={src}
+      src={src}
+      placeholder={
+        image ? chatMediaUrl(image.conversationId, image.mediaId, 'placeholder') : undefined
+      }
+      motion={null}
+      onFail={fail}
+    />
+  );
 });

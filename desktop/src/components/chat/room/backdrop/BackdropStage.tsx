@@ -1,4 +1,5 @@
 import { memo, useEffect, useMemo, useRef, useState } from 'react';
+import { hideOnError } from '../../../../lib/chat/media-url';
 import type { Luminance } from '../presets/types';
 import { useMotion } from './gate';
 import { measureImage } from './luminance';
@@ -10,6 +11,7 @@ const CANVAS_SCALE = 0.5;
 
 export interface StageProps {
   src: string;
+  placeholder?: string;
   light?: Luminance;
   motion: Tone | null;
   held?: boolean;
@@ -69,6 +71,7 @@ function Motion({ image, tone, held }: { image: HTMLImageElement; tone: Tone; he
 
 export const BackdropStage = memo(function BackdropStage({
   src,
+  placeholder,
   light,
   motion,
   held = false,
@@ -90,6 +93,15 @@ export const BackdropStage = memo(function BackdropStage({
       className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
       style={{ contain: 'strict' }}
     >
+      {placeholder && (
+        <img
+          src={placeholder}
+          alt=""
+          draggable={false}
+          onError={hideOnError}
+          className="absolute inset-0 h-full w-full scale-110 object-cover"
+        />
+      )}
       <img
         ref={setImage}
         src={src}

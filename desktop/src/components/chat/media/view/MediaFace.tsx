@@ -1,6 +1,7 @@
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { MediaId } from '../../../../lib/chat/media-types';
+import { hideOnError } from '../../../../lib/chat/media-url';
 import type { ConvId } from '../../../../lib/chat/types';
 import { CloudOff, ImageOff, RotateCcw } from './icons';
 import { type LoadAttempt, useLoadAttempt } from './load-attempt';
@@ -21,10 +22,6 @@ export function useThumb(mediaId: MediaId): ThumbState {
 export function thumbLabelKey(thumb: ThumbState): string | null {
   if (thumb.gone) return `chat.gallery.tile.${thumb.gone}`;
   return thumb.phase === 'failed' ? 'chat.gallery.tile.failed' : null;
-}
-
-function hidePlaceholder(event: { currentTarget: HTMLImageElement }) {
-  event.currentTarget.style.visibility = 'hidden';
 }
 
 export const Shimmer = memo(function Shimmer() {
@@ -111,7 +108,7 @@ export const MediaFace = memo(function MediaFace({
         alt=""
         aria-hidden
         draggable={false}
-        onError={hidePlaceholder}
+        onError={hideOnError}
         className="absolute inset-0 size-full scale-110 object-cover"
       />
       {thumb.phase === 'loading' && !calm && <Shimmer />}

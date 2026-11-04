@@ -4,6 +4,10 @@ import type { ConvId } from './types';
 
 type LabMedia = (conversationId: ConvId, mediaId: MediaId, variant: string) => string | null;
 
+export function hideOnError(event: { currentTarget: HTMLImageElement }) {
+  event.currentTarget.style.visibility = 'hidden';
+}
+
 export function chatMediaUrl(conversationId: ConvId, mediaId: MediaId, variant: MediaVariant) {
   if (import.meta.env.DEV) {
     const lab = (window as { __chatLabMedia?: LabMedia }).__chatLabMedia;

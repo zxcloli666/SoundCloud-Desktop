@@ -2,8 +2,7 @@ import type { MessageAttachment } from '../../../lib/chat/media-types';
 import type { Embed, Message } from '../../../lib/chat/types';
 import { CONV, NOW } from './convs';
 import { ME_ID } from './people';
-import { setPictureSize } from './pictures';
-import { thumbhashOf } from './thumbhash';
+import { setPictureSize, thumbhashOf } from './pictures';
 
 const MIN = 60_000;
 

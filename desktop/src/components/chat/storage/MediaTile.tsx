@@ -1,10 +1,11 @@
 import { type MouseEvent, memo, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { MyMedia } from '../../../lib/chat/media-types';
+import { hideOnError } from '../../../lib/chat/media-url';
 import { Check, Clock } from '../../../lib/icons';
 import { useFormatSize } from './bytes';
 import { ImageOff } from './icons';
-import { thumbUrl } from './thumb-url';
+import { placeholderUrl, thumbUrl } from './thumb-url';
 
 const RETRY_MS = 4000;
 const RETRIES = 2;
@@ -102,7 +103,17 @@ export const MediaTile = memo(function MediaTile({
           transition: reduced ? undefined : 'transform 260ms var(--ease-apple)',
         }}
       >
-        {item.status === 'lost' ? null : (
+        {lost ? null : (
+          <img
+            src={placeholderUrl(item)}
+            alt=""
+            aria-hidden
+            draggable={false}
+            onError={hideOnError}
+            className="absolute inset-0 size-full scale-110 object-cover"
+          />
+        )}
+        {lost ? null : (
           <img
             key={attempt}
             src={thumbUrl(item)}

@@ -2,8 +2,7 @@ import type { UploadView } from '../../../lib/chat/media-types';
 import type { ConversationSummary, Message, SendInput } from '../../../lib/chat/types';
 import type { RoomView } from '../../../lib/together/types';
 import { emitChat } from './bus';
-import { pictureSize } from './pictures';
-import { thumbhashOf } from './thumbhash';
+import { pictureSize, thumbhashOf } from './pictures';
 import { cancel, commit, enqueue, onUploadDone, retry, setUploads } from './uploads-sim';
 import { world } from './world';
 

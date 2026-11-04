@@ -1,5 +1,6 @@
 import { memo, type ReactNode, useEffect, useMemo } from 'react';
 import type { MessageAttachment } from '../../../../lib/chat/media-types';
+import { hideOnError } from '../../../../lib/chat/media-url';
 import type { ConvId } from '../../../../lib/chat/types';
 import { useChatMediaStore } from '../../../../stores/chat/media';
 import { AlbumFrame } from './AlbumFrame';
@@ -8,10 +9,6 @@ import { Shimmer } from './MediaFace';
 import { useCalmMotion } from './motion';
 import { ProgressRing } from './ProgressRing';
 import { viewUrl } from './urls';
-
-function hide(event: { currentTarget: HTMLImageElement }) {
-  event.currentTarget.style.visibility = 'hidden';
-}
 
 export const LocalAlbum = memo(function LocalAlbum({
   conversationId,
@@ -51,7 +48,7 @@ export const LocalAlbum = memo(function LocalAlbum({
               src={viewUrl(conversationId, attachments[index].mediaId, 'upload-thumb')}
               alt=""
               draggable={false}
-              onError={hide}
+              onError={hideOnError}
               className="absolute inset-0 size-full object-cover"
             />
           )}

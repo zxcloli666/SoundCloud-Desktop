@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import type { MyMedia } from '../../../lib/chat/media-types';
 import { ImageOff } from './icons';
-import { thumbUrl } from './thumb-url';
+import { placeholderUrl, thumbUrl } from './thumb-url';
 
 const TILTS = [-9, 5, -3, 8, -6];
 
@@ -20,7 +20,17 @@ export const ThumbFan = memo(function ThumbFan({ items }: { items: MyMedia[] }) 
               <ImageOff size={16} />
             </span>
           ) : (
-            <img src={thumbUrl(item)} alt="" className="size-full object-cover" draggable={false} />
+            <span
+              className="block size-full bg-cover bg-center"
+              style={{ backgroundImage: `url("${placeholderUrl(item)}")` }}
+            >
+              <img
+                src={thumbUrl(item)}
+                alt=""
+                className="size-full object-cover"
+                draggable={false}
+              />
+            </span>
           )}
         </span>
       ))}
