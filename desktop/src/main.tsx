@@ -1,3 +1,5 @@
+import './components/chat/lab/gate';
+import { chatLabWanted } from './components/chat/lab/flag';
 import { QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
@@ -40,7 +42,7 @@ useSettingsStore.persist.onFinishHydration((state) => {
   }
 });
 
-if (import.meta.env.DEV) {
+if (import.meta.env.DEV && !chatLabWanted) {
   const script = document.createElement('script');
   script.src = 'https://unpkg.com/react-scan/dist/auto.global.js';
   script.crossOrigin = 'anonymous';
@@ -84,6 +86,7 @@ function startDeferredRuntime() {
 
 async function bootstrap() {
   await useSettingsStore.persist.rehydrate();
+  if (import.meta.env.DEV && chatLabWanted) await import('./components/chat/lab/boot').then((m) => m.bootChatLab());
   await initUiScale();
 
   const settings = useSettingsStore.getState();
