@@ -35,7 +35,9 @@ export const DeleteConfirm = memo(function DeleteConfirm({
   const confirmRef = useRef<HTMLButtonElement>(null);
   useFocusLater(confirmRef, items !== null);
 
-  const list = items ?? [];
+  const last = useRef<MyMedia[]>([]);
+  if (items) last.current = items;
+  const list = items ?? last.current;
   const bytes = list.reduce((sum, item) => sum + item.bytes, 0);
   const origins = new Set(list.map((item) => item.conversation_id)).size;
   const reach = list.reduce((most, item) => Math.max(most, item.chats), origins);

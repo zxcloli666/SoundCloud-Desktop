@@ -77,14 +77,18 @@ function FullView({ lapsed }: { lapsed: boolean }) {
   const files = useStorageStore((state) => state.usage?.files ?? 0);
   const [confirm, setConfirm] = useState<MyMedia[] | null>(null);
   return (
-    <div className="grid items-start gap-5 @min-[900px]:grid-cols-[320px_minmax(0,1fr)]">
-      <aside className="flex min-w-0 flex-col gap-4">
+    <div className="grid items-start gap-x-5 gap-y-4 [grid-template-areas:'side'_'main'_'tools'] @min-[900px]:grid-cols-[320px_minmax(0,1fr)] @min-[900px]:grid-rows-[auto_1fr] @min-[900px]:[grid-template-areas:'side_main'_'tools_main']">
+      <aside className="flex min-w-0 flex-col gap-4 [grid-area:side]">
         <StorageHero lapsed={lapsed} />
         <ChatUsageList />
+      </aside>
+      <div className="min-w-0 [grid-area:main]">
+        <ItemsArea onDelete={setConfirm} />
+      </div>
+      <div className="flex min-w-0 flex-col gap-4 [grid-area:tools]">
         <CacheCard />
         <DeleteAllCard disabled={files === 0} />
-      </aside>
-      <ItemsArea onDelete={setConfirm} />
+      </div>
       <DeleteConfirm items={confirm} onClose={() => setConfirm(null)} />
     </div>
   );

@@ -116,7 +116,8 @@ export const useDeleteStore = create<DeleteState>()((set, get) => ({
         deadline: startedAt + windowMs(),
       });
       set({ undo, outcome: null });
-      const left = ids.filter((id) => !done.includes(id));
+      const gone = new Set(done);
+      const left = ids.filter((id) => !gone.has(id));
       if (left.length === 0) useSelectionStore.getState().clear();
       else useSelectionStore.getState().keepOnly(left);
       void useStorageStore.getState().loadUsage();

@@ -8,7 +8,7 @@ import { Panel } from './Panel';
 import { QuotaRing } from './QuotaRing';
 
 const GIB = 1073741824;
-const DEMO_STEPS = [0.08, 0.27, 0.46, 0.27];
+const DEMO_STEPS = [0.12, 0.38, 0.64, 0.86, 0.38];
 
 const SAMPLES = [
   { tilt: -8, x: -64, y: 8, hue: 'linear-gradient(150deg, #ffb38a, #ff6a3d 55%, #8a2be2)' },

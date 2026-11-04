@@ -20,8 +20,13 @@ export const DeleteAllDialog = memo(function DeleteAllDialog({
 }) {
   const { t, i18n } = useTranslation();
   const format = useFormatSize();
-  const usage = useStorageStore((state) => state.usage);
   const busy = useDeleteStore((state) => state.busy);
+  const live = useStorageStore((state) => state.usage);
+  const shown = useRef(live);
+  const wasOpen = useRef(false);
+  if (open && !wasOpen.current) shown.current = live;
+  wasOpen.current = open;
+  const usage = shown.current;
   const error = useDeleteStore((state) => state.error);
   const [typed, setTyped] = useState('');
   const input = useRef<HTMLInputElement>(null);
