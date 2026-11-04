@@ -8,20 +8,20 @@ const COVERS = [
 
 export function PreviewCovers() {
   return (
-    <div className="flex -space-x-3">
+    <div className="flex -space-x-2.5">
       {COVERS.map((paint, index) => (
         <span
           key={paint}
-          className="relative flex size-[46px] items-end justify-start rounded-[12px] border-2 p-1"
+          className="relative flex size-[30px] items-end justify-start rounded-[9px] border-2 p-0.5"
           style={{
             background: paint,
             borderColor: 'rgb(var(--surface))',
-            transform: `rotate(${(index - 1) * 6}deg)`,
+            transform: `rotate(${(index - 1) * 7}deg)`,
             zIndex: index,
           }}
         >
           <span data-scheme="dark" className="text-ink">
-            <Radio size={12} />
+            <Radio size={10} />
           </span>
         </span>
       ))}

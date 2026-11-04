@@ -14,7 +14,7 @@ import { PREVIEW_KEYFRAMES } from './preview-keyframes';
 function Perk({ art, title, hint }: { art: ReactNode; title: string; hint: string }) {
   return (
     <div className="flex items-center gap-3">
-      <span className="flex w-[58px] shrink-0 justify-center text-ink-85">{art}</span>
+      <span className="flex w-[72px] shrink-0 justify-center text-ink-85">{art}</span>
       <span className="min-w-0">
         <span className="block text-[12.5px] font-semibold text-ink-90">{title}</span>
         <span className="block text-[11.5px] leading-snug text-ink-45">{hint}</span>

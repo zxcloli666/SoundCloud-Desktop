@@ -12,15 +12,17 @@ const CYCLE_S = 4.6;
 export function PreviewAlbum({ caption }: { caption: string }) {
   return (
     <div className="relative flex h-[132px] items-end justify-end overflow-hidden rounded-[16px] bg-ink/[0.035] px-3 pb-3">
-      <div
-        data-preview-anim
-        className="relative w-[148px] rounded-[16px] rounded-br-[6px] p-1.5"
-        style={{
-          background: 'var(--color-accent)',
-          animation: `chat-preview-bubble ${CYCLE_S}s var(--ease-apple, ease-out) infinite`,
-        }}
-      >
-        <div className="grid grid-cols-2 gap-1">
+      <div className="relative w-[148px] p-1.5">
+        <span
+          data-preview-anim
+          aria-hidden
+          className="absolute inset-0 rounded-[16px] rounded-br-[6px]"
+          style={{
+            background: 'var(--color-accent)',
+            animation: `chat-preview-bubble ${CYCLE_S}s var(--ease-apple, ease-out) infinite both`,
+          }}
+        />
+        <div className="relative grid grid-cols-2 gap-1">
           {TILES.map((tile, index) => (
             <span
               key={tile.paint}
@@ -37,7 +39,13 @@ export function PreviewAlbum({ caption }: { caption: string }) {
             />
           ))}
         </div>
-        <span className="block px-1 pt-1 text-[11px] font-medium text-accent-contrast">
+        <span
+          data-preview-anim
+          className="relative block px-1 pt-1 text-[11px] font-medium text-accent-contrast"
+          style={{
+            animation: `chat-preview-bubble ${CYCLE_S}s var(--ease-apple, ease-out) infinite both`,
+          }}
+        >
           {caption}
         </span>
       </div>
