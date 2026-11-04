@@ -1664,15 +1664,6 @@ select,
   }
 }
 
-@keyframes star-badge-aurora {
-  from {
-    background-position: 0% 50%;
-  }
-  to {
-    background-position: 300% 50%;
-  }
-}
-
 @keyframes star-badge-twinkle {
   0%, 100% {
     opacity: 0;
@@ -1696,11 +1687,6 @@ select,
   background: linear-gradient(105deg, transparent 38%, rgba(255, 255, 255, 0.5) 50%, transparent 62%);
   animation: star-badge-sheen 3.8s ease-in-out infinite;
   pointer-events: none;
-}
-
-.star-badge-aurora {
-  background-size: 300% 100% !important;
-  animation: star-badge-aurora 7s linear infinite;
 }
 
 .star-badge-twinkle {
@@ -1737,7 +1723,6 @@ select,
 
 @media (prefers-reduced-motion: reduce) {
   .star-badge-sheen::after,
-  .star-badge-aurora,
   .star-badge-twinkle,
   .tenure-burst,
   .import-bar-sweep {
