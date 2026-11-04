@@ -1,4 +1,10 @@
 import type { Track } from '../../stores/player';
+import type {
+  PublicBackdrop,
+  RoomBackdrop,
+  RoomCover,
+  RoomImagesPolicy,
+} from '../chat/media-types';
 
 export const ROOM_CAPACITY = 10;
 
@@ -23,6 +29,17 @@ export interface RoomPlayback {
   crossfadeSec?: number;
 }
 
+export interface RoomMute {
+  userId: string;
+  untilMs: number;
+}
+
+export interface RoomPerks {
+  starHost: boolean;
+  capacity: number;
+  modsMax: number;
+}
+
 export interface RoomView {
   code: string;
   hostId: string;
@@ -33,6 +50,19 @@ export interface RoomView {
   online: string[];
   serverNow: number;
   public?: boolean;
+  title?: string | null;
+  chatId?: string | null;
+  chatEnabled?: boolean;
+  moderators?: string[];
+  muted?: RoomMute[];
+  slowModeS?: number;
+  links?: boolean;
+  banned?: string[];
+  perks?: RoomPerks;
+  cover?: RoomCover | null;
+  roomImages?: RoomImagesPolicy;
+  backdrop?: RoomBackdrop | null;
+  backdropCooldownUntil?: number | null;
 }
 
 export interface OpenRoomTrack {
@@ -50,6 +80,9 @@ export interface OpenRoom {
   listeners: number;
   capacity: number;
   full: boolean;
+  starHost?: boolean;
+  cover?: RoomCover | null;
+  backdrop?: PublicBackdrop | null;
   createdAt: number;
 }
 

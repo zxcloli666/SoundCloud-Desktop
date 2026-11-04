@@ -1,0 +1,194 @@
+{
+  "saved": "Saved messages",
+  "untitled": "Untitled chat",
+  "someone": "Member",
+  "back": "Back",
+  "cancel": "Cancel",
+  "retry": "Retry",
+  "loadFailed": "Could not open the chat",
+  "toBottom": "Jump to latest",
+  "notMember": "You are no longer in this chat",
+  "members_one": "{{count}} member",
+  "members_other": "{{count}} members",
+  "unread_one": "{{count}} new message",
+  "unread_other": "{{count}} new messages",
+  "day": {
+    "today": "Today",
+    "yesterday": "Yesterday"
+  },
+  "empty": {
+    "chat": "Say hi with the first message",
+    "saved": "Keep notes and tracks here"
+  },
+  "typing": {
+    "one": "typing",
+    "named": "{{name}} is typing",
+    "many_one": "{{count}} are typing",
+    "many_other": "{{count}} are typing"
+  },
+  "menu": {
+    "info": "Info",
+    "more": "More",
+    "mute": "Mute",
+    "unmute": "Unmute"
+  },
+  "timer": {
+    "title": "Disappearing messages"
+  },
+  "ttl": {
+    "off": "Off",
+    "3600": "1 hour",
+    "86400": "1 day",
+    "604800": "1 week",
+    "custom": "{{hours}} h",
+    "short": {
+      "3600": "1h",
+      "86400": "1d",
+      "604800": "1w"
+    }
+  },
+  "system": {
+    "ttlOn": "Disappearing messages: {{ttl}}",
+    "ttlOff": "Disappearing messages are off",
+    "created": "Chat created",
+    "joined": "{{name}} joined",
+    "left": "{{name}} left",
+    "added": "{{name}} was added",
+    "removed": "{{name}} was removed",
+    "kicked": "{{name}} was kicked",
+    "banned": "{{name}} was banned",
+    "muted": "{{name}} was muted",
+    "mutedUntil": "{{name}} was muted until {{time}}",
+    "renamed": "New name: {{name}}",
+    "handoff": "{{name}} is hosting now",
+    "track": "Now playing: {{name}}",
+    "roleOwner": "{{name}} is the owner now",
+    "roleAdmin": "{{name}} is an admin now",
+    "roleMember": "{{name}} is no longer an admin",
+    "other": "Chat updated"
+  },
+  "bubble": {
+    "deleted": "Message deleted",
+    "locked": "Opens after you confirm this device",
+    "unknown": "Update the app to see this message",
+    "system": "Event",
+    "edited": "Edited",
+    "forwarded": "Forwarded from {{name}}",
+    "blocked": "Message from a blocked user",
+    "spoiler": "Show hidden text",
+    "expiresIn": "Disappears in {{time}}"
+  },
+  "tick": {
+    "pending": "Sending",
+    "sent": "Sent",
+    "delivered": "Delivered",
+    "read": "Read",
+    "failed": "Not sent"
+  },
+  "actions": {
+    "reply": "Reply",
+    "forward": "Forward",
+    "copy": "Copy",
+    "edit": "Edit",
+    "pin": "Pin",
+    "unpin": "Unpin",
+    "delete": "Delete",
+    "discard": "Cancel sending",
+    "report": "Report",
+    "retry": "Send again",
+    "more": "More",
+    "react": "React",
+    "quickReact": "Love",
+    "otherEmoji": "Other emoji"
+  },
+  "reply": {
+    "missing": "Message",
+    "gone": "Message not found"
+  },
+  "pinned": {
+    "one": "Pinned",
+    "many": "Pinned {{index}} of {{total}}",
+    "unloaded": "Pinned message"
+  },
+  "history": {
+    "locked": "Older messages appear after you confirm this device on another one"
+  },
+  "composer": {
+    "placeholder": "Message",
+    "paused": "Sending is paused for now",
+    "send": "Send",
+    "save": "Save",
+    "editing": "Editing",
+    "cancel": "Cancel",
+    "emoji": "Emoji",
+    "emojiHint": "Emoji: {{keys}}",
+    "nowPlaying": "Now playing: {{title}}",
+    "nothingPlaying": "Nothing is playing",
+    "removeAttachment": "Remove"
+  },
+  "delete": {
+    "title": "Delete message?",
+    "everyone": "For everyone",
+    "me": "Only for me"
+  },
+  "report": {
+    "title": "Report",
+    "reasons": {
+      "spam": "Spam or ads",
+      "harassment": "Threats or harassment",
+      "doxxing": "Someone's private data",
+      "illegal": "Illegal content",
+      "other": "Something else"
+    },
+    "comment": "Comment, if you want",
+    "policy": "A broken rule deletes the message. A repeat within 30 days closes chats for 7 days, illegal content closes them for good. Music and your account stay.",
+    "privacy": "Messages are encrypted and nobody reads them. A report sends only these messages and a little context to automatic moderation.",
+    "send": "Send report",
+    "sent": "Report sent"
+  },
+  "link": {
+    "title": "Open this link?",
+    "open": "Open"
+  },
+  "info": {
+    "close": "Close",
+    "notifications": "Notifications",
+    "tracks": "Tracks",
+    "membersTab": "Members",
+    "noTracks": "Tracks shared in this chat show up here",
+    "tracksFailed": "Could not load tracks",
+    "owner": "Owner",
+    "admin": "Admin",
+    "you": "You",
+    "makeAdmin": "Make admin",
+    "removeAdmin": "Remove admin",
+    "removeMember": "Remove from chat",
+    "addMembers": "Add members",
+    "addPicked": "Add ({{n}})",
+    "inviteLink": "Invite link",
+    "inviteCopy": "Copy link",
+    "inviteRevoke": "Revoke link",
+    "add": "Add"
+  },
+  "errors": {
+    "generic": "Something went wrong, try again",
+    "muted": "You can't write here for now",
+    "mutedUntil": "You can write again at {{time}}",
+    "slowMode_one": "Slow mode: wait {{count}} second",
+    "slowMode_other": "Slow mode: wait {{count}} seconds",
+    "not_member": "You are not in this chat",
+    "send_paused": "Sending is paused for now",
+    "send_limited": "Too many messages, wait a bit",
+    "request_limit": "Too many new chats today",
+    "busy": "The server is busy, try again soon",
+    "offline": "No connection to the server",
+    "unavailable": "This person is unavailable",
+    "disabled": "Chats are turned off",
+    "too_young": "This device is too new for that",
+    "not_found": "Message not found",
+    "invalid": "The message did not pass the check"
+  },
+  "invite": {
+    "join": "Join group"
+  }
+}

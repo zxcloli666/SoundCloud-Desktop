@@ -5,6 +5,7 @@ import {SETTINGS_CATEGORIES, type SettingsCategoryId} from '../components/settin
 import {SettingsFrame} from '../components/settings/SettingsFrame';
 import {SettingsNav} from '../components/settings/SettingsNav';
 import {useViewerAura} from '../lib/useViewerAura';
+import {selectChatEnabled, useChatStore} from '../stores/chat';
 
 /** Settings — a star-lit two-pane workspace: a frosted category rail on the
  *  left, the active category's cards on the right. Thin shell; each section is
@@ -12,18 +13,22 @@ import {useViewerAura} from '../lib/useViewerAura';
 export function Settings() {
   const { t } = useTranslation();
     const aura = useViewerAura();
+    const chatEnabled = useChatStore(selectChatEnabled);
+    const categories = chatEnabled
+        ? SETTINGS_CATEGORIES
+        : SETTINGS_CATEGORIES.filter((c) => c.id !== 'chats');
     const [active, setActive] = useState<SettingsCategoryId>('general');
     const selectCategory = (id: SettingsCategoryId) => {
         setActive(id);
         scrollMainToTop();
     };
-    const category = SETTINGS_CATEGORIES.find((c) => c.id === active) ?? SETTINGS_CATEGORIES[0];
+    const category = categories.find((c) => c.id === active) ?? categories[0];
     const Body = category.Body;
 
   return (
       <SettingsFrame aura={aura}>
           <div data-ui="page" data-page="settings" className="max-w-[1080px] mx-auto px-6 md:px-8 pt-8 pb-32 flex gap-8">
-              <SettingsNav categories={SETTINGS_CATEGORIES} active={active} onChange={selectCategory}/>
+              <SettingsNav categories={categories} active={category.id} onChange={selectCategory}/>
               <div className="flex-1 min-w-0">
                   <header className="mb-7 flex items-center gap-4">
                       <div
@@ -55,7 +60,7 @@ export function Settings() {
                           </h1>
             </div>
                   </header>
-                  <div key={active} className="space-y-5 animate-fade-in-up">
+                  <div key={category.id} className="space-y-5 animate-fade-in-up">
                       <Body/>
           </div>
               </div>

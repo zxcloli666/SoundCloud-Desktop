@@ -6,10 +6,9 @@ use warp::http::{Method, Response, StatusCode};
 use warp::hyper::Body;
 use warp::hyper::body::Bytes;
 
-use super::{Answer, Asked, fetch};
+use super::{Answer, Asked, MOST_BODY, fetch};
 use crate::network::edge;
 
-const MAX_BODY: usize = 1024 * 1024;
 const NOT_CARRIED: [&str; 5] = [
     "host",
     "connection",
@@ -42,7 +41,7 @@ async fn carry(
     let (Some(target), Some(gateway)) = (target, edge::gateway_of(&pro_host)) else {
         return refused(StatusCode::FORBIDDEN);
     };
-    if body.len() > MAX_BODY {
+    if body.len() > MOST_BODY {
         return refused(StatusCode::BAD_GATEWAY);
     }
     let asked = Asked {

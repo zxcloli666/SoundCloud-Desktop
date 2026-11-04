@@ -1,0 +1,22 @@
+{
+  "unboundTitle": "Sohbetleri açmak için girişi onaylayın",
+  "boundOtherTitle": "Girişi yeniden onaylamanız gerekiyor",
+  "musicStays": "Müzik oturumu açık kalır",
+  "confirm": "Girişi onayla",
+  "done": "Sohbetler açık",
+  "retry": "Tekrar dene",
+  "steps": {
+    "waiting": "SoundCloud onayı bekleniyor",
+    "token": "Yetki kodu alınıyor",
+    "extract": "Profil yükleniyor",
+    "finalizing": "Oturum tamamlanıyor"
+  },
+  "errors": {
+    "unreachable": "Sunucuya ulaşılamıyor",
+    "unreachableDesc": "Sunucu yanıt vermiyor. Bağlantınızı kontrol edin veya biraz sonra tekrar deneyin.",
+    "limited": "Giriş geçici olarak sınırlı",
+    "limitedDesc": "Sunucu şu anda girişleri sınırlıyor. {{seconds}} sn sonra tekrar deneyin.",
+    "expired": "Girişin süresi doldu",
+    "failed": "Giriş yapılamadı"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "unboundTitle": "채팅을 켜려면 로그인을 확인하세요",
+  "boundOtherTitle": "로그인을 다시 확인해야 합니다",
+  "musicStays": "음악 로그인은 그대로 유지됩니다",
+  "confirm": "로그인 확인",
+  "done": "채팅이 켜졌습니다",
+  "retry": "다시 시도",
+  "steps": {
+    "waiting": "SoundCloud 인증 대기 중",
+    "token": "인증 코드 교환 중",
+    "extract": "프로필 불러오는 중",
+    "finalizing": "세션 마무리 중"
+  },
+  "errors": {
+    "unreachable": "서버에 연결할 수 없어요",
+    "unreachableDesc": "서버가 응답하지 않아요. 연결을 확인하거나 잠시 후 다시 시도해 주세요.",
+    "limited": "로그인이 일시적으로 제한됐어요",
+    "limitedDesc": "지금은 서버에서 로그인을 제한하고 있어요. {{seconds}}초 후에 다시 시도해 주세요.",
+    "expired": "로그인이 만료됐어요",
+    "failed": "로그인에 실패했어요"
+  }
+}
