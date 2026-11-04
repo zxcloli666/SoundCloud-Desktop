@@ -61,7 +61,7 @@ function ItemsArea({ onDelete }: { onDelete: (items: MyMedia[]) => void }) {
   }, [items]);
 
   let body = <MediaGrid items={items} />;
-  if (itemsLoad === 'failed')
+  if (itemsLoad === 'failed' && items.length === 0)
     body = <StorageError error={itemsError} onRetry={() => void loadItems()} />;
   else if (itemsLoad !== 'ready' && items.length === 0) body = <GridSkeleton />;
   else if (items.length === 0) body = <GridEmpty filtered={origin !== null} />;
