@@ -39,7 +39,7 @@
     "title": "Delete all my images",
     "hint": "Gone for everyone in every chat",
     "action": "Delete all",
-    "warn": "All your images and group avatars disappear for everyone in every chat. You can undo for 15 seconds.",
+    "warn": "All your images and group avatars disappear for everyone in every chat. You can undo for {{seconds}} s.",
     "word": "DELETE",
     "type": "Type {{word}}",
     "confirm": "Delete all"
@@ -65,7 +65,8 @@
     "unsent": "Not sent",
     "label": "Image, {{size}}, {{date}}",
     "chats_one": "in {{count}} chat",
-    "chats_other": "in {{count}} chats"
+    "chats_other": "in {{count}} chats",
+    "failed": "Did not load"
   },
   "order": {
     "label": "Order",

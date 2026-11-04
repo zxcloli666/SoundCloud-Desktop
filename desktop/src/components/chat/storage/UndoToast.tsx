@@ -84,23 +84,34 @@ function Shell({ children }: { children: ReactNode }) {
   const blur = usePerfMode().blur(24);
   return createPortal(
     <div
-      role="status"
-      aria-live="polite"
       data-ui="chat-storage-undo"
       className="fixed bottom-[132px] left-1/2 z-[80] w-[min(460px,calc(100vw-32px))] -translate-x-1/2"
     >
       <div
-        className="flex items-center gap-3 rounded-[1.25rem] border border-ink/[0.1] px-3.5 py-3 storage-motion"
+        className="relative overflow-hidden rounded-[1.25rem] border border-ink/[0.1] storage-motion"
         style={{
           animation: 'storage-rise 320ms var(--ease-apple) both',
-          background: blur > 0 ? 'rgb(var(--surface) / 0.82)' : 'rgb(var(--surface) / 0.98)',
-          backdropFilter: blur > 0 ? `blur(${blur}px) saturate(1.5)` : undefined,
-          WebkitBackdropFilter: blur > 0 ? `blur(${blur}px) saturate(1.5)` : undefined,
           boxShadow:
             '0 24px 70px -24px rgb(var(--shade) / calc(0.9 * var(--shade-alpha))), inset 0 1px 0 rgba(255,255,255,0.08)',
         }}
       >
-        {children}
+        <div
+          aria-hidden
+          className="absolute inset-0"
+          style={{
+            contain: 'strict',
+            transform: 'translateZ(0)',
+            background: blur > 0 ? 'rgb(var(--surface) / 0.82)' : 'rgb(var(--surface) / 0.98)',
+            backdropFilter: blur > 0 ? `blur(${blur}px) saturate(1.5)` : undefined,
+            WebkitBackdropFilter: blur > 0 ? `blur(${blur}px) saturate(1.5)` : undefined,
+          }}
+        />
+        <div
+          className="relative flex items-center gap-3 px-3.5 py-3"
+          style={{ isolation: 'isolate' }}
+        >
+          {children}
+        </div>
       </div>
     </div>,
     document.body,
@@ -117,7 +128,7 @@ function UndoLine({ entry, outcome }: { entry: UndoEntry; outcome: UndoOutcome |
   return (
     <Shell>
       <Countdown entry={entry} />
-      <span className="flex min-w-0 flex-1 flex-col">
+      <span role="status" aria-live="polite" className="flex min-w-0 flex-1 flex-col">
         <span className="truncate text-[13px] font-semibold text-ink-90">
           {t('chat.storage.undo.deleted', { count: entry.count })}
         </span>
@@ -176,7 +187,11 @@ function OutcomeLine({ outcome }: { outcome: UndoOutcome }) {
       <span className={`shrink-0 ${good ? 'text-ok' : 'text-bad'}`}>
         {good ? <CircleCheck size={18} /> : <TriangleAlert size={18} />}
       </span>
-      <span className="min-w-0 flex-1 text-[13px] font-medium leading-snug text-ink-85">
+      <span
+        role="status"
+        aria-live="polite"
+        className="min-w-0 flex-1 text-[13px] font-medium leading-snug text-ink-85"
+      >
         {text}
       </span>
       <button

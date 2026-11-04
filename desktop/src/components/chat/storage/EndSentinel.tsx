@@ -18,7 +18,7 @@ export const EndSentinel = memo(function EndSentinel({
       (entries) => {
         if (entries.some((entry) => entry.isIntersecting)) reach.current();
       },
-      { rootMargin: '700px 0px' },
+      { root: node.closest('main'), rootMargin: '700px 0px' },
     );
     observer.observe(node);
     return () => observer.disconnect();

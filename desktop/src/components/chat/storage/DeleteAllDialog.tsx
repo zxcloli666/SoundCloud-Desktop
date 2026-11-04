@@ -3,9 +3,10 @@ import { useTranslation } from 'react-i18next';
 import { Loader2, TriangleAlert } from '../../../lib/icons';
 import { Modal, ModalContent, ModalTitle } from '../../ui/Modal';
 import { useFormatSize } from './bytes';
-import { useDeleteStore } from './delete-store';
+import { useCooldown } from './cooldown';
+import { restoreWindowS, useDeleteStore } from './delete-store';
 import { errorText } from './error-text';
-import { useFocusLater } from './focus-later';
+import { useFocusLater, useStableClose } from './focus-later';
 import { useStorageStore } from './storage-store';
 
 const BUTTON =
@@ -37,14 +38,16 @@ export const DeleteAllDialog = memo(function DeleteAllDialog({
   const matches = typed.trim().toLocaleUpperCase(lang) === word.toLocaleUpperCase(lang);
 
   const close = () => {
-    if (busy) return;
+    if (useDeleteStore.getState().busy) return;
     setTyped('');
     useDeleteStore.getState().clearError();
     onClose();
   };
+  const onOpenChange = useStableClose(close);
+  const wait = useCooldown(error);
 
   const confirm = async () => {
-    if (!matches || busy) return;
+    if (!matches || busy || wait > 0) return;
     if (await useDeleteStore.getState().removeAll()) {
       setTyped('');
       onClose();
@@ -52,7 +55,7 @@ export const DeleteAllDialog = memo(function DeleteAllDialog({
   };
 
   return (
-    <Modal open={open} onOpenChange={(next) => !next && close()}>
+    <Modal open={open} onOpenChange={onOpenChange}>
       <ModalContent size="sm" showClose={false}>
         <form
           data-ui="chat-storage-delete-all"
@@ -74,7 +77,7 @@ export const DeleteAllDialog = memo(function DeleteAllDialog({
             </div>
           )}
           <p className="text-[12.5px] leading-snug text-ink-55">
-            {t('chat.storage.deleteAll.warn')}
+            {t('chat.storage.deleteAll.warn', { seconds: restoreWindowS() })}
           </p>
           <label className="flex w-full flex-col gap-1.5 text-left">
             <span className="text-[11.5px] font-medium text-ink-50">
@@ -101,11 +104,13 @@ export const DeleteAllDialog = memo(function DeleteAllDialog({
           <div className="flex w-full flex-col gap-2">
             <button
               type="submit"
-              disabled={!matches || busy}
+              disabled={!matches || busy || wait > 0}
               className={`${BUTTON} flex items-center justify-center gap-2 bg-bad text-paper hover:brightness-110`}
             >
               {busy && <Loader2 size={14} className="animate-spin" />}
-              {t('chat.storage.deleteAll.confirm')}
+              {wait > 0
+                ? t('chat.storage.retryIn', { count: wait })
+                : t('chat.storage.deleteAll.confirm')}
             </button>
             <button
               type="button"

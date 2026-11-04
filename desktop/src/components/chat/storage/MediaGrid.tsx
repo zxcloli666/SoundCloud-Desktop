@@ -60,16 +60,21 @@ export const MediaGrid = memo(function MediaGrid({ items }: { items: MyMedia[] }
   const onPick = useCallback((id: string, index: number, range: boolean) => {
     const selection = useSelectionStore.getState();
     if (range) selection.range(idsRef.current, index);
-    else selection.toggle(id, index);
+    else selection.toggle(id);
   }, []);
 
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     const target = event.target as HTMLElement;
     const node = box.current;
     if (!node || target.dataset.tile === undefined) return;
+    if (event.code === 'Space') {
+      event.stopPropagation();
+      return;
+    }
     const step = stepFor(event.key, columnsIn(node, tile));
     if (step === null) return;
     event.preventDefault();
+    event.stopPropagation();
     const at = Number(target.dataset.tile);
     const next = Math.min(ids.length - 1, Math.max(0, at + step));
     const nextTile = node.querySelector<HTMLElement>(`[data-tile="${next}"]`);
@@ -82,6 +87,7 @@ export const MediaGrid = memo(function MediaGrid({ items }: { items: MyMedia[] }
   return (
     <div ref={box} data-ui="chat-storage-grid" onKeyDown={onKeyDown}>
       <VirtualGrid
+        key={tile}
         items={items}
         itemHeight={tile}
         minColumnWidth={TILE_MIN}

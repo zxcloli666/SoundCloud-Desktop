@@ -4,9 +4,10 @@ import type { MyMedia } from '../../../lib/chat/media-types';
 import { Loader2, TriangleAlert } from '../../../lib/icons';
 import { Modal, ModalContent, ModalTitle } from '../../ui/Modal';
 import { useFormatSize } from './bytes';
+import { useCooldown } from './cooldown';
 import { useDeleteStore } from './delete-store';
 import { errorText } from './error-text';
-import { useFocusLater } from './focus-later';
+import { focusGridSoon, useFocusLater, useStableClose } from './focus-later';
 import { ThumbFan } from './ThumbFan';
 
 const BUTTON =
@@ -24,14 +25,17 @@ function Stat({ value, label }: { value: string; label: string }) {
 export const DeleteConfirm = memo(function DeleteConfirm({
   items,
   onClose,
+  onLeft,
 }: {
   items: MyMedia[] | null;
   onClose: () => void;
+  onLeft: (left: MyMedia[]) => void;
 }) {
   const { t } = useTranslation();
   const format = useFormatSize();
   const busy = useDeleteStore((state) => state.busy);
   const error = useDeleteStore((state) => state.error);
+  const wait = useCooldown(error);
   const confirmRef = useRef<HTMLButtonElement>(null);
   useFocusLater(confirmRef, items !== null);
 
@@ -44,17 +48,24 @@ export const DeleteConfirm = memo(function DeleteConfirm({
   const forwarded = reach > origins;
 
   const close = () => {
-    if (busy) return;
+    if (useDeleteStore.getState().busy) return;
     useDeleteStore.getState().clearError();
     onClose();
   };
+  const onOpenChange = useStableClose(close);
 
   const confirm = async () => {
-    if (await useDeleteStore.getState().remove(list.map((item) => item.id))) onClose();
+    const left = new Set(await useDeleteStore.getState().remove(list));
+    if (left.size === 0) {
+      onClose();
+      focusGridSoon();
+    } else {
+      onLeft(list.filter((item) => left.has(item.id)));
+    }
   };
 
   return (
-    <Modal open={items !== null} onOpenChange={(next) => !next && close()}>
+    <Modal open={items !== null} onOpenChange={onOpenChange}>
       <ModalContent size="sm" showClose={false}>
         <div
           data-ui="chat-storage-confirm"
@@ -88,12 +99,17 @@ export const DeleteConfirm = memo(function DeleteConfirm({
             <button
               ref={confirmRef}
               type="button"
-              disabled={busy || list.length === 0}
+              data-ui="chat-storage-confirm-delete"
+              disabled={busy || wait > 0 || list.length === 0}
               onClick={() => void confirm()}
               className={`${BUTTON} flex items-center justify-center gap-2 bg-bad text-paper hover:brightness-110`}
             >
               {busy && <Loader2 size={14} className="animate-spin" />}
-              {error ? t('chat.storage.retry') : t('chat.storage.delete.confirm')}
+              {wait > 0
+                ? t('chat.storage.retryIn', { count: wait })
+                : error
+                  ? t('chat.storage.retry')
+                  : t('chat.storage.delete.confirm')}
             </button>
             <button
               type="button"

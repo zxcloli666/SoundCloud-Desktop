@@ -1,9 +1,10 @@
-import { memo, type ReactNode, useEffect, useState } from 'react';
+import { memo, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Hourglass } from '../../../lib/chat/icons';
 import type { ChatError } from '../../../lib/chat/types';
 import { Images, RefreshCw, WifiOff } from '../../../lib/icons';
 import { Skeleton } from '../../ui/Skeleton';
+import { useCooldown } from './cooldown';
 import { errorText, isRateLimit } from './error-text';
 import { Panel } from './Panel';
 
@@ -56,21 +57,6 @@ export function StorageSkeleton() {
       </div>
     </div>
   );
-}
-
-function useCooldown(error: ChatError | null): number {
-  const retryMs = isRateLimit(error) ? (error?.retryMs ?? 0) : 0;
-  const [until, setUntil] = useState(0);
-  const [now, setNow] = useState(Date.now);
-  useEffect(() => {
-    setUntil(retryMs > 0 ? Date.now() + retryMs : 0);
-  }, [retryMs]);
-  useEffect(() => {
-    if (until <= Date.now()) return;
-    const timer = window.setInterval(() => setNow(Date.now()), 500);
-    return () => window.clearInterval(timer);
-  }, [until]);
-  return Math.max(0, Math.ceil((until - now) / 1000));
 }
 
 export const StorageNote = memo(function StorageNote({

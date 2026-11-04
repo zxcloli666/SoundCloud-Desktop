@@ -130,6 +130,11 @@ States are in attributes too: `aria-current="page"` on the open link or section,
 | `[data-ui="chat-share"]` | "Send" window |
 | `[data-ui="chat-device-alert"]` | New device alert |
 | `[data-ui="chat-relogin"]` | Chat sign-in card |
+| `[data-ui="chat-storage"]` | Image storage page (`/chats/storage`) |
+| `[data-ui="chat-quota-ring"]` | Quota ring: used of quota, on the storage page and in chat settings |
+| `[data-ui="chat-storage-grid"]` | Grid of your images; a tile is `[data-ui="chat-storage-tile"]`, a selected one has `[aria-pressed="true"]` |
+| `[data-ui="chat-storage-undo"]` | Undo bar after deleting images |
+| `[data-ui="chat-storage-entry"]` | Storage card in chat settings |
 
 Other chat windows (new chat, report, delete) are `[data-ui="modal"]`. Chat colors come from `--color-white` (text and lines), `--color-black` (surfaces), `--color-bg-glass*` and `--color-border-glass*`, so a light theme that redefines them restyles chats too. Your messages, the open chat and the chosen filter are tinted with `--color-chat-tint`.
 

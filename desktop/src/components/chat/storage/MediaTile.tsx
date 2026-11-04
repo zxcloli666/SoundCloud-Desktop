@@ -6,16 +6,33 @@ import { useFormatSize } from './bytes';
 import { ImageOff } from './icons';
 import { thumbUrl } from './thumb-url';
 
-function Unavailable() {
-  const { t } = useTranslation();
+const RETRY_MS = 4000;
+const RETRIES = 2;
+
+function Unavailable({ text }: { text: string }) {
   return (
     <span className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 bg-ink/[0.04] px-3 text-center">
       <ImageOff size={20} className="text-ink-35" />
-      <span className="text-[11px] font-medium leading-tight text-ink-45">
-        {t('chat.storage.tile.unavailable')}
-      </span>
+      <span className="text-[11px] font-medium leading-tight text-ink-45">{text}</span>
     </span>
   );
+}
+
+function useThumbLoad() {
+  const [state, setState] = useState<'loading' | 'ready' | 'failed'>('loading');
+  const [attempt, setAttempt] = useState(0);
+  useEffect(() => {
+    if (state !== 'failed' || attempt >= RETRIES) return;
+    const timer = window.setTimeout(
+      () => {
+        setAttempt(attempt + 1);
+        setState('loading');
+      },
+      RETRY_MS * (attempt + 1),
+    );
+    return () => window.clearTimeout(timer);
+  }, [state, attempt]);
+  return { state, attempt, setState };
 }
 
 function Badges({ item }: { item: MyMedia }) {
@@ -51,8 +68,9 @@ export const MediaTile = memo(function MediaTile({
 }) {
   const { t, i18n } = useTranslation();
   const format = useFormatSize();
-  const [state, setState] = useState<'loading' | 'ready' | 'failed'>('loading');
-  const lost = item.status === 'lost' || state === 'failed';
+  const { state, attempt, setState } = useThumbLoad();
+  const lost = item.status === 'lost';
+  const broken = lost || state === 'failed';
   const date = new Date(item.created_at).toLocaleDateString(i18n.resolvedLanguage, {
     day: 'numeric',
     month: 'short',
@@ -86,6 +104,7 @@ export const MediaTile = memo(function MediaTile({
       >
         {item.status === 'lost' ? null : (
           <img
+            key={attempt}
             src={thumbUrl(item)}
             alt=""
             loading="lazy"
@@ -101,7 +120,11 @@ export const MediaTile = memo(function MediaTile({
           />
         )}
         {state === 'loading' && !lost && <span className="absolute inset-0 skeleton-shimmer" />}
-        {lost && <Unavailable />}
+        {broken && (
+          <Unavailable
+            text={lost ? t('chat.storage.tile.unavailable') : t('chat.storage.tile.failed')}
+          />
+        )}
         <span
           data-scheme="dark"
           className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-1 px-2 pt-6 pb-1.5 text-[10.5px] font-semibold tabular-nums text-ink-90"

@@ -39,7 +39,7 @@
     "title": "Tüm görsellerimi sil",
     "hint": "Her sohbette herkes için silinir",
     "action": "Tümünü sil",
-    "warn": "Tüm görsellerin ve grup avatarların her sohbette herkes için silinir. 15 saniye içinde geri alabilirsin.",
+    "warn": "Tüm görsellerin ve grup avatarların her sohbette herkes için silinir. {{seconds}} sn içinde geri alabilirsin.",
     "word": "SİL",
     "type": "{{word}} yaz",
     "confirm": "Tümünü sil"
@@ -65,7 +65,8 @@
     "unsent": "Gönderilmedi",
     "label": "Görsel, {{size}}, {{date}}",
     "chats_one": "{{count}} sohbette",
-    "chats_other": "{{count}} sohbette"
+    "chats_other": "{{count}} sohbette",
+    "failed": "Yüklenemedi"
   },
   "order": {
     "label": "Sıralama",

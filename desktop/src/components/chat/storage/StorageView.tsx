@@ -9,6 +9,7 @@ import { CacheCard } from './CacheCard';
 import { ChatUsageList } from './ChatUsageList';
 import { DeleteAllCard } from './DeleteAllCard';
 import { DeleteConfirm } from './DeleteConfirm';
+import { useDeleteStore } from './delete-store';
 import { GridToolbar } from './GridToolbar';
 import { STORAGE_KEYFRAMES } from './keyframes';
 import { MediaGrid } from './MediaGrid';
@@ -74,10 +75,14 @@ function ItemsArea({ onDelete }: { onDelete: (items: MyMedia[]) => void }) {
 }
 
 function FullView({ lapsed }: { lapsed: boolean }) {
-  const files = useStorageStore((state) => state.usage?.files ?? 0);
+  const anything = useStorageStore(
+    (state) =>
+      (state.usage?.files ?? 0) > 0 || (state.usage?.reserved ?? 0) > 0 || state.items.length > 0,
+  );
   const [confirm, setConfirm] = useState<MyMedia[] | null>(null);
+  const closeConfirm = useCallback(() => setConfirm(null), []);
   return (
-    <div className="grid items-start gap-x-5 gap-y-4 [grid-template-areas:'side'_'main'_'tools'] @min-[900px]:grid-cols-[320px_minmax(0,1fr)] @min-[900px]:grid-rows-[auto_1fr] @min-[900px]:[grid-template-areas:'side_main'_'tools_main']">
+    <div className="grid items-start gap-x-5 gap-y-4 [grid-template-areas:'side'_'tools'_'main'] @min-[900px]:grid-cols-[320px_minmax(0,1fr)] @min-[900px]:grid-rows-[auto_1fr] @min-[900px]:[grid-template-areas:'side_main'_'tools_main']">
       <aside className="flex min-w-0 flex-col gap-4 [grid-area:side]">
         <StorageHero lapsed={lapsed} />
         <ChatUsageList />
@@ -87,9 +92,9 @@ function FullView({ lapsed }: { lapsed: boolean }) {
       </div>
       <div className="flex min-w-0 flex-col gap-4 [grid-area:tools]">
         <CacheCard />
-        <DeleteAllCard disabled={files === 0} />
+        <DeleteAllCard disabled={!anything} />
       </div>
-      <DeleteConfirm items={confirm} onClose={() => setConfirm(null)} />
+      <DeleteConfirm items={confirm} onClose={closeConfirm} onLeft={setConfirm} />
     </div>
   );
 }
@@ -115,24 +120,22 @@ export const StorageView = memo(function StorageView() {
 
   useEffect(() => {
     void useStorageStore.getState().reload();
-    return () => useSelectionStore.getState().clear();
+    return () => {
+      useSelectionStore.getState().clear();
+      useDeleteStore.getState().leavePage();
+    };
   }, []);
 
+  const itemsSettled = itemsLoad === 'ready' || itemsLoad === 'failed';
+  const nothing = usage !== null && usage.files === 0 && usage.reserved === 0 && empty;
   let body = <StorageSkeleton />;
   if (!usage && usageLoad === 'failed') {
     body = (
       <StorageError error={usageError} onRetry={() => void useStorageStore.getState().reload()} />
     );
-  } else if (
-    usage &&
-    !star &&
-    usage.files === 0 &&
-    usage.reserved === 0 &&
-    empty &&
-    itemsLoad !== 'loading'
-  ) {
+  } else if (usage && !star && nothing && itemsSettled) {
     body = <LockedView />;
-  } else if (usage) {
+  } else if (usage && (star || !nothing || itemsSettled)) {
     body = <FullView lapsed={!star} />;
   }
 

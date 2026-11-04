@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { chatBridge } from '../../../lib/chat/bridge';
 import { chatError } from '../../../lib/chat/errors';
-import type { MediaId, MediaSelection } from '../../../lib/chat/media-types';
+import type { MediaId, MyMedia, RestoreAnswer } from '../../../lib/chat/media-types';
 import type { ChatError } from '../../../lib/chat/types';
 import { useChatStore } from '../../../stores/chat';
 import { useSelectionStore } from './selection-store';
@@ -12,7 +12,7 @@ const DEFAULT_WINDOW_S = 15;
 
 export interface UndoEntry {
   key: number;
-  ids: MediaId[] | null;
+  items: MyMedia[] | null;
   count: number;
   freed: number;
   startedAt: number;
@@ -30,12 +30,13 @@ export interface DeleteState {
   undo: UndoEntry | null;
   restoring: boolean;
   outcome: UndoOutcome | null;
-  remove: (ids: MediaId[]) => Promise<boolean>;
+  remove: (items: MyMedia[]) => Promise<MediaId[]>;
   removeAll: () => Promise<boolean>;
   restore: () => Promise<void>;
   expire: (key: number) => void;
   dismissOutcome: () => void;
   clearError: () => void;
+  leavePage: () => void;
 }
 
 let keys = 0;
@@ -44,9 +45,9 @@ function errorOf(error: unknown): ChatError {
   return chatError(error) ?? { code: 'internal' };
 }
 
-function windowMs(): number {
+export function restoreWindowS(): number {
   const seconds = useChatStore.getState().config?.media?.limits.restoreWindowS;
-  return (seconds && seconds > 0 ? seconds : DEFAULT_WINDOW_S) * 1000;
+  return seconds && seconds > 0 ? seconds : DEFAULT_WINDOW_S;
 }
 
 function chunks<T>(list: T[]): T[][] {
@@ -55,12 +56,16 @@ function chunks<T>(list: T[]): T[][] {
   return out;
 }
 
+function uniqueItems(items: MyMedia[]): MyMedia[] {
+  return [...new Map(items.map((item) => [item.id, item])).values()];
+}
+
 function merged(previous: UndoEntry | null, next: Omit<UndoEntry, 'key'>): UndoEntry {
   const live = previous && previous.deadline > Date.now() ? previous : null;
   if (!live) return { ...next, key: ++keys };
   return {
     key: ++keys,
-    ids: live.ids && next.ids ? [...live.ids, ...next.ids] : null,
+    items: live.items && next.items ? uniqueItems([...live.items, ...next.items]) : null,
     count: live.count + next.count,
     freed: live.freed + next.freed,
     startedAt: next.startedAt,
@@ -68,17 +73,26 @@ function merged(previous: UndoEntry | null, next: Omit<UndoEntry, 'key'>): UndoE
   };
 }
 
-async function restoreSelection(selection: MediaSelection) {
-  if (!selection.ids) return chatBridge.mediaRestore({ all: true });
+async function restoreItems(items: MyMedia[] | null): Promise<RestoreAnswer> {
+  if (!items) return chatBridge.mediaRestore({ all: true });
   let restored = 0;
   let missed = 0;
-  let last = null as Awaited<ReturnType<typeof chatBridge.mediaRestore>> | null;
-  for (const ids of chunks(selection.ids)) {
-    last = await chatBridge.mediaRestore({ ids });
-    restored += last.restored;
-    missed += last.missed;
+  let used = 0;
+  let quota = 0;
+  for (const batch of chunks(items.map((item) => item.id))) {
+    const answer = await chatBridge.mediaRestore({ ids: batch });
+    restored += answer.restored;
+    missed += answer.missed;
+    used = answer.used;
+    quota = answer.quota;
   }
-  return { restored, missed, used: last?.used ?? 0, quota: last?.quota ?? 0 };
+  return { restored, missed, used, quota };
+}
+
+function offerUndo(entry: Omit<UndoEntry, 'key'>) {
+  const state = useDeleteStore.getState();
+  const previous = state.restoring ? null : state.undo;
+  useDeleteStore.setState({ undo: merged(previous, entry), outcome: null });
 }
 
 export const useDeleteStore = create<DeleteState>()((set, get) => ({
@@ -88,17 +102,18 @@ export const useDeleteStore = create<DeleteState>()((set, get) => ({
   restoring: false,
   outcome: null,
 
-  remove: async (ids) => {
-    if (ids.length === 0 || get().busy) return false;
+  remove: async (items) => {
+    const ids = items.map((item) => item.id);
+    if (ids.length === 0 || get().busy) return ids;
     const startedAt = Date.now();
     set({ busy: true, error: null });
-    const done: MediaId[] = [];
+    const done = new Set<MediaId>();
     let deleted = 0;
     let freed = 0;
     try {
       for (const batch of chunks(ids)) {
         const answer = await chatBridge.mediaDelete({ ids: batch });
-        done.push(...batch);
+        for (const id of batch) done.add(id);
         deleted += answer.deleted;
         freed += answer.freed;
         useStorageStore.getState().setMeter({ used: answer.used, quota: answer.quota });
@@ -107,23 +122,23 @@ export const useDeleteStore = create<DeleteState>()((set, get) => ({
     } catch (error) {
       set({ error: errorOf(error) });
     }
-    if (done.length > 0) {
-      const undo = merged(get().undo, {
-        ids: done,
-        count: deleted,
-        freed,
-        startedAt,
-        deadline: startedAt + windowMs(),
-      });
-      set({ undo, outcome: null });
-      const gone = new Set(done);
-      const left = ids.filter((id) => !gone.has(id));
+    const left = ids.filter((id) => !done.has(id));
+    if (done.size > 0) {
+      if (deleted > 0) {
+        offerUndo({
+          items: items.filter((item) => done.has(item.id)),
+          count: deleted,
+          freed,
+          startedAt,
+          deadline: startedAt + restoreWindowS() * 1000,
+        });
+      }
       if (left.length === 0) useSelectionStore.getState().clear();
       else useSelectionStore.getState().keepOnly(left);
       void useStorageStore.getState().loadUsage();
     }
     set({ busy: false });
-    return done.length === ids.length;
+    return left;
   },
 
   removeAll: async () => {
@@ -135,14 +150,16 @@ export const useDeleteStore = create<DeleteState>()((set, get) => ({
       useStorageStore.getState().setMeter({ used: answer.used, quota: answer.quota });
       useStorageStore.getState().dropAll();
       useSelectionStore.getState().clear();
-      const undo = merged(get().undo, {
-        ids: null,
-        count: answer.deleted,
-        freed: answer.freed,
-        startedAt,
-        deadline: startedAt + windowMs(),
-      });
-      set({ undo: { ...undo, ids: null }, outcome: null, busy: false });
+      if (answer.deleted > 0) {
+        offerUndo({
+          items: null,
+          count: answer.deleted,
+          freed: answer.freed,
+          startedAt,
+          deadline: startedAt + restoreWindowS() * 1000,
+        });
+      }
+      set({ busy: false });
       void useStorageStore.getState().loadUsage();
       return true;
     } catch (error) {
@@ -156,14 +173,17 @@ export const useDeleteStore = create<DeleteState>()((set, get) => ({
     if (!undo || get().restoring) return;
     set({ restoring: true, outcome: null });
     try {
-      const answer = await restoreSelection(undo.ids ? { ids: undo.ids } : { all: true });
-      useStorageStore.getState().setMeter({ used: answer.used, quota: answer.quota });
+      const answer = await restoreItems(undo.items);
+      const storage = useStorageStore.getState();
+      storage.setMeter({ used: answer.used, quota: answer.quota });
+      if (undo.items && answer.missed === 0) storage.putBack(undo.items);
+      else void storage.loadItems();
+      void storage.loadUsage();
       set({
-        undo: null,
+        undo: get().undo?.key === undo.key ? null : get().undo,
         restoring: false,
         outcome: { kind: 'restored', restored: answer.restored, missed: answer.missed },
       });
-      void useStorageStore.getState().reload();
     } catch (error) {
       const failure = errorOf(error);
       const outcome: UndoOutcome =
@@ -171,7 +191,7 @@ export const useDeleteStore = create<DeleteState>()((set, get) => ({
           ? { kind: 'quota', used: failure.used ?? 0, quota: failure.quota ?? 0 }
           : { kind: 'failed', error: failure };
       set({ restoring: false, outcome });
-      void useStorageStore.getState().reload();
+      if (outcome.kind === 'failed') void useStorageStore.getState().reload();
     }
   },
 
@@ -180,4 +200,12 @@ export const useDeleteStore = create<DeleteState>()((set, get) => ({
   },
   dismissOutcome: () => set({ outcome: null }),
   clearError: () => set({ error: null }),
+  leavePage: () => {
+    const undo = get().undo;
+    set({
+      outcome: null,
+      error: null,
+      undo: undo && undo.deadline > Date.now() ? undo : null,
+    });
+  },
 }));

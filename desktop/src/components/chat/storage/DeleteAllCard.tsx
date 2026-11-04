@@ -21,6 +21,7 @@ export const DeleteAllCard = memo(function DeleteAllCard({ disabled }: { disable
         <button
           type="button"
           disabled={disabled}
+          data-ui="chat-storage-delete-all-open"
           onClick={() => setOpen(true)}
           className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded-xl border border-bad/30 bg-bad/10 px-3 py-2 text-[12px] font-semibold text-bad outline-none transition-colors hover:bg-bad/[0.16] focus-visible:ring-2 focus-visible:ring-bad/50 disabled:cursor-default disabled:opacity-40"
         >

@@ -40,10 +40,20 @@ export interface StorageState {
   setMeter: (meter: Meter) => void;
   dropItems: (ids: MediaId[]) => void;
   dropAll: () => void;
+  putBack: (items: MyMedia[]) => void;
   reload: () => Promise<void>;
 }
 
 let ticket = 0;
+let changes = 0;
+
+function sorted(items: MyMedia[], order: MineOrder): MyMedia[] {
+  const next = [...items];
+  if (order === 'big') next.sort((a, b) => b.bytes - a.bytes || b.created_at - a.created_at);
+  else if (order === 'old') next.sort((a, b) => a.created_at - b.created_at);
+  else next.sort((a, b) => b.created_at - a.created_at);
+  return next;
+}
 
 function errorOf(error: unknown): ChatError {
   return chatError(error) ?? { code: 'internal' };
@@ -99,14 +109,16 @@ export const useStorageStore = create<StorageState>()((set, get) => {
     moreLoad: 'idle',
 
     loadUsage: async () => {
+      const seen = ++changes;
       set({ usageLoad: get().usage ? 'ready' : 'loading', usageError: null });
       try {
         const usage = await chatBridge.mediaUsage();
+        if (seen !== changes) return;
         const meter = { used: usage.bytes + usage.reserved, quota: usage.quota };
         set({ usage, meter, usageLoad: 'ready' });
         syncUsed(meter.used, meter.quota, usage);
       } catch (error) {
-        set({ usageLoad: 'failed', usageError: errorOf(error) });
+        if (seen === changes) set({ usageLoad: 'failed', usageError: errorOf(error) });
       }
     },
 
@@ -152,6 +164,7 @@ export const useStorageStore = create<StorageState>()((set, get) => {
     },
 
     setMeter: (meter) => {
+      changes += 1;
       set({ meter });
       syncUsed(meter.used, meter.quota, get().usage);
     },
@@ -164,6 +177,15 @@ export const useStorageStore = create<StorageState>()((set, get) => {
         items: items.filter((item) => !gone.has(item.id)),
         usage: usage ? withoutItems(usage, dropped) : usage,
       });
+    },
+
+    putBack: (back) => {
+      const { items, origin, order } = get();
+      const known = new Set(items.map((item) => item.id));
+      const fresh = back.filter(
+        (item) => !known.has(item.id) && (origin === null || item.conversation_id === origin),
+      );
+      if (fresh.length > 0) set({ items: sorted([...items, ...fresh], order) });
     },
 
     dropAll: () => {

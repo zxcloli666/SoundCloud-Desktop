@@ -96,6 +96,7 @@ function SelectionBar({ items, onDelete }: { items: MyMedia[]; onDelete: () => v
       <button
         type="button"
         disabled={picked.size === 0}
+        data-ui="chat-storage-delete"
         onClick={onDelete}
         className={`${CHIP} bg-bad/[0.12] text-bad hover:bg-bad/[0.18] disabled:cursor-default disabled:bg-ink/[0.04] disabled:text-ink-35`}
       >
@@ -122,18 +123,29 @@ export const GridToolbar = memo(function GridToolbar({
   return (
     <div
       data-ui="chat-storage-toolbar"
-      className="@container sticky top-2 z-20 mb-3 flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-ink/[0.06] px-2 py-1.5"
-      style={{
-        background: blur > 0 ? 'rgb(var(--paper) / 0.72)' : 'rgb(var(--surface) / 0.97)',
-        backdropFilter: blur > 0 ? `blur(${blur}px) saturate(1.4)` : undefined,
-        WebkitBackdropFilter: blur > 0 ? `blur(${blur}px) saturate(1.4)` : undefined,
-      }}
+      className="@container sticky top-2 z-20 mb-3 rounded-2xl border border-ink/[0.06]"
     >
-      <div className="flex min-w-0 flex-wrap items-center gap-2">
-        <OrderSwitch />
-        <OriginChip />
+      <div
+        aria-hidden
+        className="absolute inset-0 rounded-2xl"
+        style={{
+          contain: 'strict',
+          transform: 'translateZ(0)',
+          background: blur > 0 ? 'rgb(var(--paper) / 0.72)' : 'rgb(var(--surface) / 0.97)',
+          backdropFilter: blur > 0 ? `blur(${blur}px) saturate(1.4)` : undefined,
+          WebkitBackdropFilter: blur > 0 ? `blur(${blur}px) saturate(1.4)` : undefined,
+        }}
+      />
+      <div
+        className="relative flex flex-wrap items-center justify-between gap-2 px-2 py-1.5"
+        style={{ isolation: 'isolate' }}
+      >
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
+          <OrderSwitch />
+          <OriginChip />
+        </div>
+        <SelectionBar items={items} onDelete={onDelete} />
       </div>
-      <SelectionBar items={items} onDelete={onDelete} />
     </div>
   );
 });

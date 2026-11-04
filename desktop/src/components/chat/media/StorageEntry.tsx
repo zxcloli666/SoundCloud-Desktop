@@ -16,9 +16,10 @@ export const StorageEntry = memo(function StorageEntry() {
   const media = useChatStore((state) => state.config?.media ?? null);
   const usage = useChatMediaStore((state) => state.usage);
 
+  const hasMedia = media !== null;
   useEffect(() => {
-    if (media) void useChatMediaStore.getState().refreshUsage();
-  }, [media]);
+    if (hasMedia) void useChatMediaStore.getState().refreshUsage();
+  }, [hasMedia]);
 
   if (!media) return null;
   const used = usage ? usage.bytes + usage.reserved : media.used;
