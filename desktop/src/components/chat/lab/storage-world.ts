@@ -25,7 +25,7 @@ function labImages(count: number): MyMedia[] {
       kind: i % 41 === 7 ? 'avatar' : 'image',
       conversation_id: ORIGINS[i % ORIGINS.length],
       thumb_id: `${id}-t`,
-      bytes: (180 + ((i * 97) % 420)) * 1024,
+      bytes: (45 + ((i * 23) % 105)) * 4096,
       status: i % 23 === 11 ? 'lost' : i % 31 === 3 ? 'uploaded' : 'attached',
       chats: i % 31 === 3 ? 0 : 1 + (i % 7 === 0 ? 3 : 0),
       created_at: NOW - i * 0.21 * DAY,

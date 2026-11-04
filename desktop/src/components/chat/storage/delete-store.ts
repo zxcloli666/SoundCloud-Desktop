@@ -4,6 +4,7 @@ import { chatError } from '../../../lib/chat/errors';
 import type { MediaId, MyMedia, RestoreAnswer } from '../../../lib/chat/media-types';
 import type { ChatError } from '../../../lib/chat/types';
 import { useChatStore } from '../../../stores/chat';
+import { useChatMediaStore } from '../../../stores/chat/media';
 import { useSelectionStore } from './selection-store';
 import { useStorageStore } from './storage-store';
 
@@ -87,6 +88,11 @@ async function restoreItems(items: MyMedia[] | null): Promise<RestoreAnswer> {
     quota = answer.quota;
   }
   return { restored, missed, used, quota };
+}
+
+function forgetGone(items: MyMedia[] | null) {
+  const media = useChatMediaStore.getState();
+  media.forgetShown(items ? items.map((item) => item.id) : Object.keys(media.shown));
 }
 
 function offerUndo(entry: Omit<UndoEntry, 'key'>) {
@@ -174,6 +180,7 @@ export const useDeleteStore = create<DeleteState>()((set, get) => ({
     set({ restoring: true, outcome: null });
     try {
       const answer = await restoreItems(undo.items);
+      forgetGone(undo.items);
       const storage = useStorageStore.getState();
       storage.setMeter({ used: answer.used, quota: answer.quota });
       if (undo.items && answer.missed === 0) storage.putBack(undo.items);
