@@ -10,6 +10,7 @@ mod host;
 mod prepare;
 mod progress;
 mod put;
+mod schedule;
 mod single;
 mod step;
 
@@ -81,7 +82,7 @@ pub async fn cancel(state: &ChatState, id: Uuid) -> ChatResult<()> {
     state.uploads.cancel(id).await
 }
 
-pub async fn is_album(state: &ChatState, id: Uuid) -> bool {
+pub async fn is_album(state: &ChatState, id: Uuid) -> ChatResult<bool> {
     state.uploads.has_album(id).await
 }
 

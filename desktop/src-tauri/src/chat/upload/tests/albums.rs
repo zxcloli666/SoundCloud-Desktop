@@ -116,20 +116,51 @@ async fn an_album_over_pro_stages_every_object_in_parts_and_reaches_the_store() 
 }
 
 #[tokio::test(flavor = "multi_thread")]
-async fn an_album_committed_before_send_goes_out_at_once() {
+async fn a_staged_album_stops_before_commit_and_commits_on_send() {
     let mut rig = Rig::new(ConversationKind::Group);
     rig.relays();
     let album = album(&rig, 2).await;
     rig.run();
-    rig.until("both commits", |rig| {
+    rig.until("both uploads", |rig| {
         rig.uploads()
             .iter()
-            .all(|upload| upload.state == UploadState::Committed)
+            .all(|upload| upload.state == UploadState::Uploaded)
     })
     .await;
+    rig.uploads.wake_all();
+    tokio::time::sleep(std::time::Duration::from_millis(200)).await;
+    assert!(rig.world.with(|state| state.commits.is_empty()));
     assert!(rig.outbox().is_empty());
     let sent = rig.uploads.send_album(rig.post(""), album).await.unwrap();
     assert_eq!(sent.attachments.len(), 2);
+    released(&rig, album, 2).await;
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn a_parked_album_commits_only_once_every_image_has_landed() {
+    let mut rig = Rig::new(ConversationKind::Group);
+    rig.relays();
+    rig.world.pass();
+    rig.world.refuse(
+        503,
+        serde_json::json!({"error": "chat_media_uploads_paused"}),
+    );
+    let album = album(&rig, 2).await;
+    rig.uploads
+        .send_album(rig.post("both or none"), album)
+        .await
+        .unwrap();
+    rig.run();
+    rig.until("the pause on the second image", |rig| {
+        !rig.host.errors.lock().unwrap().is_empty()
+    })
+    .await;
+    rig.until("the first image to land", |rig| {
+        rig.uploads()[0].state == UploadState::Uploaded
+    })
+    .await;
+    assert!(rig.world.with(|state| state.commits.is_empty()));
+    rig.uploads.wake_all();
     released(&rig, album, 2).await;
 }
 

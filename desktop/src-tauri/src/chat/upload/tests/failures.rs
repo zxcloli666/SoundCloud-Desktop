@@ -15,17 +15,49 @@ async fn a_commit_that_misses_the_thumb_puts_only_the_thumb_again() {
         .attach(rig.conversation, None, sources(vec![rig.image(51)]))
         .await
         .unwrap();
+    let album = views[0].album;
+    rig.uploads
+        .send_album(rig.post("redo"), album)
+        .await
+        .unwrap();
     rig.run();
-    rig.until("the commit after a redo", |rig| {
-        rig.uploads()
-            .first()
-            .is_some_and(|upload| upload.state == UploadState::Committed)
+    rig.until("the release after a redo", |rig| {
+        rig.due().iter().any(|item| item.client_id == album)
     })
     .await;
     let reserved = rig.world.reservation(views[0].id).unwrap();
     assert_eq!(rig.world.puts_of(reserved.image), 1);
     assert_eq!(rig.world.puts_of(reserved.thumb.unwrap()), 2);
     assert_eq!(rig.world.with(|state| state.commits.len()), 2);
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn a_commit_that_never_finds_its_object_fails_after_a_few_rounds() {
+    let mut rig = Rig::new(ConversationKind::Group);
+    rig.relays();
+    rig.world.with(|state| state.lose_thumbs = usize::MAX);
+    let views = rig
+        .uploads
+        .attach(rig.conversation, None, sources(vec![rig.image(52)]))
+        .await
+        .unwrap();
+    let id = views[0].id;
+    rig.uploads
+        .send_album(rig.post("lost"), views[0].album)
+        .await
+        .unwrap();
+    rig.run();
+    rig.until("the missing object to fail", |rig| {
+        rig.uploads()[0].state == UploadState::Failed
+    })
+    .await;
+    assert_eq!(
+        *rig.host.errors.lock().unwrap(),
+        [(id, ChatError::MediaMissing { ids: Vec::new() })]
+    );
+    let commits = rig.world.with(|state| state.commits.len());
+    assert_eq!(commits, 7);
+    assert!(rig.due().is_empty());
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -50,8 +82,8 @@ async fn a_star_refusal_fails_the_upload_reports_why_and_a_retry_sends_it() {
         [(id, ChatError::MediaStarRequired)]
     );
     rig.uploads.retry(id).await.unwrap();
-    rig.until("the commit after a retry", |rig| {
-        rig.uploads()[0].state == UploadState::Committed
+    rig.until("the upload after a retry", |rig| {
+        rig.uploads()[0].state == UploadState::Uploaded
     })
     .await;
 }
@@ -77,7 +109,7 @@ async fn a_full_quota_is_terminal_and_paused_uploads_wait_without_failing() {
     })
     .await;
     assert_eq!(rig.uploads()[0].state, UploadState::Queued);
-    rig.uploads.kick();
+    rig.uploads.wake_all();
     rig.until("the quota refusal", |rig| {
         rig.uploads()[0].state == UploadState::Failed
     })
@@ -92,90 +124,6 @@ async fn a_full_quota_is_terminal_and_paused_uploads_wait_without_failing() {
         ]
     );
     assert_eq!(rig.uploads()[0].attempts, 2);
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn cancelling_an_album_drops_rows_files_the_parked_post_and_frees_the_server_rows() {
-    let mut rig = Rig::new(ConversationKind::Group);
-    rig.relays();
-    let views = rig
-        .uploads
-        .attach(
-            rig.conversation,
-            None,
-            sources(vec![rig.image(71), rig.image(72)]),
-        )
-        .await
-        .unwrap();
-    let album = views[0].album;
-    rig.uploads
-        .send_album(rig.post("never"), album)
-        .await
-        .unwrap();
-    rig.world.pass();
-    rig.world
-        .refuse(503, json!({"error": "chat_media_uploads_paused"}));
-    rig.run();
-    rig.until("the first commit", |rig| {
-        rig.uploads()
-            .iter()
-            .any(|upload| upload.state == UploadState::Committed)
-    })
-    .await;
-    rig.uploads.cancel_album(album).await.unwrap();
-    assert!(rig.uploads().is_empty());
-    assert!(rig.outbox().is_empty());
-    assert!(rig.upload_files().is_empty());
-    let committed = rig.world.with(|state| {
-        state
-            .reservations
-            .iter()
-            .filter(|reservation| reservation.committed)
-            .map(|reservation| reservation.image)
-            .collect::<Vec<_>>()
-    });
-    let deleted = rig.world.with(|state| state.deleted.clone());
-    assert!(!committed.is_empty());
-    assert!(committed.iter().all(|image| deleted.contains(image)));
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn cancelling_the_only_image_of_a_parked_post_with_text_sends_the_text() {
-    let rig = Rig::new(ConversationKind::Group);
-    rig.relays();
-    let views = rig
-        .uploads
-        .attach(rig.conversation, None, sources(vec![rig.image(81)]))
-        .await
-        .unwrap();
-    let album = views[0].album;
-    rig.uploads
-        .send_album(rig.post("words stay"), album)
-        .await
-        .unwrap();
-    rig.uploads.cancel(views[0].id).await.unwrap();
-    let due = rig.due();
-    assert_eq!(due.len(), 1);
-    let sent = envelope(&due[0]);
-    assert!(sent.attachments.is_empty());
-    assert!(matches!(sent.body, Some(Body::Text(ref text)) if text.text == "words stay"));
-    assert!(rig.uploads().is_empty());
-}
-
-#[tokio::test(flavor = "multi_thread")]
-async fn cancelling_the_only_image_of_a_parked_post_without_text_drops_the_post() {
-    let rig = Rig::new(ConversationKind::Group);
-    rig.relays();
-    let views = rig
-        .uploads
-        .attach(rig.conversation, None, sources(vec![rig.image(82)]))
-        .await
-        .unwrap();
-    let album = views[0].album;
-    rig.uploads.send_album(rig.post(" "), album).await.unwrap();
-    rig.uploads.cancel(views[0].id).await.unwrap();
-    assert!(rig.outbox().is_empty());
-    assert!(rig.upload_files().is_empty());
 }
 
 #[tokio::test(flavor = "multi_thread")]

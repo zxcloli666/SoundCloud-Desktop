@@ -16,7 +16,7 @@ const EMOJI_MAX_BYTES: usize = 32;
 
 pub async fn send(state: &ChatState, input: SendInput) -> ChatResult<Message> {
     if let Some(album) = input.client_id
-        && upload::is_album(state, album).await
+        && upload::is_album(state, album).await?
     {
         return upload::send_album(state, input, album).await;
     }
@@ -94,7 +94,7 @@ pub async fn delete(
     scope: DeleteScope,
 ) -> ChatResult<()> {
     match (target, scope) {
-        (MessageTarget::Pending(client_id), _) if upload::is_album(state, client_id).await => {
+        (MessageTarget::Pending(client_id), _) if upload::is_album(state, client_id).await? => {
             upload::cancel_album(state, client_id).await
         }
         (MessageTarget::Pending(client_id), _) => {

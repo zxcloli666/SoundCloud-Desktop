@@ -4,58 +4,58 @@ use std::time::Duration;
 
 use futures_util::FutureExt;
 use sc_chat::store::MediaUpload;
-use sc_chat::{ChatError, MediaKind, UploadState};
+use sc_chat::{ChatError, ChatResult, UploadState};
 use uuid::Uuid;
 
 use super::engine::Uploads;
 use super::errors::{Outcome, Snag, backoff, outcome};
+use super::schedule::{Rows, queued};
 
 const IDLE_RECHECK: Duration = Duration::from_secs(30);
 const QUICK_RETRIES: u32 = 3;
+const REFUSALS_MAX: u32 = 6;
 const ORPHAN_AGE: Duration = Duration::from_secs(3600);
 
 impl Uploads {
     pub async fn run(self: Arc<Self>) {
         let mut seen_store = None;
+        let mut rows = Rows::default();
         let mut failures = 0u32;
-        let mut quick = 0u32;
         loop {
             let Some(store) = self.host.store() else {
-                self.rest(IDLE_RECHECK).await;
+                self.rest(IDLE_RECHECK, &mut rows).await;
                 continue;
             };
             let key = Arc::as_ptr(&store) as usize;
             if seen_store != Some(key) {
                 seen_store = Some(key);
+                rows = Rows::default();
                 self.recover().await;
             }
-            let upload = match self.blocking(|store| store.next_upload()).await {
-                Ok(Some(upload)) => upload,
-                Ok(None) => {
-                    failures = 0;
-                    self.apply_committed().await;
-                    self.rest(IDLE_RECHECK).await;
-                    continue;
-                }
-                Err(_) => {
-                    failures += 1;
-                    self.rest(backoff(failures)).await;
-                    continue;
-                }
+            let Ok(queue) = self.blocking(queued).await else {
+                failures += 1;
+                self.rest(backoff(failures), &mut rows).await;
+                continue;
             };
-            let id = upload.id;
+            let Some(upload) = rows.pick(&queue) else {
+                self.settle_committed(queue.uploads).await;
+                let wait = rows
+                    .next_wake()
+                    .map_or(IDLE_RECHECK, |at| at.min(IDLE_RECHECK));
+                self.rest(wait, &mut rows).await;
+                continue;
+            };
             let _ = self.wake.notified().now_or_never();
+            let id = upload.id;
             match self.guarded(upload).await {
                 Ok(()) => {
                     failures = 0;
-                    quick = 0;
+                    rows.ok(id);
                 }
-                Err(Snag::Expired | Snag::Missing) if quick < QUICK_RETRIES => quick += 1,
                 Err(snag) => {
-                    quick = 0;
-                    failures += 1;
-                    if let Some(wait) = self.settle(id, snag).await {
-                        self.rest(wait.max(backoff(failures))).await;
+                    if let Some(wait) = self.snagged(id, snag, &mut rows).await {
+                        failures += 1;
+                        self.rest(wait.max(backoff(failures)), &mut rows).await;
                     }
                 }
             }
@@ -63,12 +63,15 @@ impl Uploads {
     }
 
     async fn guarded(&self, upload: MediaUpload) -> Result<(), Snag> {
+        let stop = self.stop.notified();
+        tokio::pin!(stop);
+        stop.as_mut().enable();
         if let Ok(mut current) = self.current.lock() {
             *current = Some(upload.id);
         }
         let stepped = tokio::select! {
             stepped = self.step(upload) => stepped,
-            _ = self.stop.notified() => Ok(()),
+            _ = stop => Ok(()),
         };
         if let Ok(mut current) = self.current.lock() {
             *current = None;
@@ -76,38 +79,65 @@ impl Uploads {
         stepped
     }
 
-    async fn settle(&self, id: Uuid, snag: Snag) -> Option<Duration> {
+    async fn snagged(&self, id: Uuid, snag: Snag, rows: &mut Rows) -> Option<Duration> {
         let error = match snag {
             Snag::Failed(error) => error,
-            Snag::Expired | Snag::Missing => ChatError::Offline,
+            Snag::Expired | Snag::Missing => {
+                let refusals = rows.refused(id);
+                if refusals > REFUSALS_MAX {
+                    return self.fatal(id, refused(&snag), rows).await;
+                }
+                if refusals > QUICK_RETRIES {
+                    let _ = self.mark(id, true).await;
+                    rows.failed(id, Duration::ZERO);
+                }
+                return None;
+            }
         };
-        let now = self.now();
-        let mark =
-            |retryable: bool| self.blocking(move |store| store.upload_failed(id, retryable, now));
         match outcome(&error) {
             Outcome::Retry => {
-                let _ = mark(true).await;
-                Some(Duration::ZERO)
-            }
-            Outcome::Later(wait) => {
-                let _ = mark(true).await;
-                self.host.failed(id, &error);
-                Some(wait)
-            }
-            Outcome::Fatal => {
-                let _ = mark(false).await;
-                self.forget_targets(id);
-                self.host.failed(id, &error);
+                if matches!(error, ChatError::Protocol) && rows.refused(id) > REFUSALS_MAX {
+                    return self.fatal(id, error, rows).await;
+                }
+                let _ = self.mark(id, true).await;
+                rows.failed(id, Duration::ZERO);
                 None
             }
+            Outcome::Later(wait) => {
+                let _ = self.mark(id, true).await;
+                self.host.failed(id, &error);
+                rows.failed(id, wait);
+                Some(wait)
+            }
+            Outcome::Fatal => self.fatal(id, error, rows).await,
             Outcome::Wait => Some(Duration::ZERO),
         }
     }
 
-    async fn rest(&self, wait: Duration) {
+    async fn fatal(&self, id: Uuid, error: ChatError, rows: &mut Rows) -> Option<Duration> {
+        if self.mark(id, false).await.is_err() {
+            rows.failed(id, Duration::ZERO);
+            return Some(Duration::ZERO);
+        }
+        rows.forget(id);
+        self.forget_targets(id);
+        self.host.failed(id, &error);
+        None
+    }
+
+    async fn mark(&self, id: Uuid, retryable: bool) -> ChatResult<()> {
+        let now = self.now();
+        self.blocking(move |store| store.upload_failed(id, retryable, now))
+            .await
+    }
+
+    async fn rest(&self, wait: Duration, rows: &mut Rows) {
         tokio::select! {
             _ = tokio::time::sleep(wait) => {}
             _ = self.wake.notified() => {}
+        }
+        if self.woken() {
+            rows.wake();
         }
     }
 
@@ -116,6 +146,11 @@ impl Uploads {
             return;
         };
         let keep: HashSet<String> = uploads.iter().flat_map(file_names).collect();
+        self.settle_committed(uploads).await;
+        self.files.sweep(keep, ORPHAN_AGE).await;
+    }
+
+    async fn settle_committed(&self, uploads: Vec<MediaUpload>) {
         for album in albums(uploads).into_values() {
             if album
                 .iter()
@@ -124,19 +159,6 @@ impl Uploads {
                 self.committed(&album[0]).await;
             }
         }
-        self.files.sweep(keep, ORPHAN_AGE).await;
-    }
-
-    async fn apply_committed(&self) {
-        let Ok(uploads) = self.blocking(|store| store.uploads()).await else {
-            return;
-        };
-        let single = |upload: &&MediaUpload| {
-            upload.kind != MediaKind::Image && upload.state == UploadState::Committed
-        };
-        for upload in uploads.iter().filter(single) {
-            self.committed(upload).await;
-        }
     }
 }
 
@@ -144,6 +166,13 @@ pub fn file_names(upload: &MediaUpload) -> Vec<String> {
     let mut names = vec![upload.image_ref.clone()];
     names.extend(upload.thumb_ref.clone());
     names
+}
+
+fn refused(snag: &Snag) -> ChatError {
+    match snag {
+        Snag::Missing => ChatError::MediaMissing { ids: Vec::new() },
+        _ => ChatError::Protocol,
+    }
 }
 
 fn albums(uploads: Vec<MediaUpload>) -> HashMap<Uuid, Vec<MediaUpload>> {

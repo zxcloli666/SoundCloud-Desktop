@@ -44,9 +44,9 @@ pub fn outcome(error: &ChatError) -> Outcome {
         | ChatError::NotMember
         | ChatError::Invalid
         | ChatError::Disabled
-        | ChatError::Store
         | ChatError::Crypto => Outcome::Fatal,
         ChatError::NotReady
+        | ChatError::Store
         | ChatError::DeviceRevoked
         | ChatError::ReloginRequired
         | ChatError::SessionBoundOther

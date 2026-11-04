@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::path::Path;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 
 use sc_chat::api::Api;
@@ -23,6 +24,7 @@ pub struct Uploads {
     pub(super) routes: Routes,
     pub(super) prepare: Prepare,
     pub(super) wake: Notify,
+    pub(super) rested: AtomicBool,
     pub(super) stop: Notify,
     pub(super) current: Mutex<Option<Uuid>>,
     pub(super) targets: Mutex<HashMap<Uuid, PutTargets>>,
@@ -42,6 +44,7 @@ impl Uploads {
             routes,
             prepare: Prepare::default(),
             wake: Notify::new(),
+            rested: AtomicBool::new(false),
             stop: Notify::new(),
             current: Mutex::new(None),
             targets: Mutex::new(HashMap::new()),
@@ -53,10 +56,20 @@ impl Uploads {
         self.wake.notify_one();
     }
 
-    pub async fn has_album(&self, album: Uuid) -> bool {
-        self.blocking(move |store| store.album_uploads(album))
-            .await
-            .is_ok_and(|uploads| !uploads.is_empty())
+    pub fn wake_all(&self) {
+        self.rested.store(true, Ordering::SeqCst);
+        self.kick();
+    }
+
+    pub(super) fn woken(&self) -> bool {
+        self.rested.swap(false, Ordering::SeqCst)
+    }
+
+    pub async fn has_album(&self, album: Uuid) -> ChatResult<bool> {
+        let uploads = self
+            .blocking(move |store| store.album_uploads(album))
+            .await?;
+        Ok(!uploads.is_empty())
     }
 
     pub(super) fn store(&self) -> ChatResult<Arc<Store>> {

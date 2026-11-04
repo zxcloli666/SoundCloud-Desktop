@@ -100,7 +100,7 @@ pub fn watch(app: &AppHandle, uploads: &Arc<Uploads>) {
         });
         let came_up = !was_up.swap(up, Ordering::Relaxed) && up;
         if came_up && let Some(uploads) = uploads.upgrade() {
-            uploads.kick();
+            uploads.wake_all();
         }
     });
 }

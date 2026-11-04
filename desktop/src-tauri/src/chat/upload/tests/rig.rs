@@ -10,15 +10,12 @@ use sc_chat::outbox::{Outbox, OutboxItem};
 use sc_chat::sc_chat_wire::prost::Message as _;
 use sc_chat::sc_chat_wire::proto::Envelope;
 use sc_chat::store::{MediaUpload, Store};
-use sc_chat::{
-    ChatError, ConvId, ConversationKind, ConversationSummary, MemberRole, MemberState, Millis,
-    NotifyLevel, RichText, SendInput,
-};
+use sc_chat::{ChatError, ConvId, ConversationKind, Millis, RichText, SendInput};
 use tokio::task::JoinHandle;
 use uuid::Uuid;
 
-use super::png;
 use super::world::{self, World};
+use super::{fixtures, png};
 use crate::chat::runtime::SystemClock;
 use crate::chat::upload::engine::{Routes, Uploads};
 use crate::chat::upload::host::Host;
@@ -31,7 +28,6 @@ const WAIT: Duration = Duration::from_secs(60);
 pub struct TestHost {
     pub store: Mutex<Option<Arc<Store>>>,
     pub now: AtomicI64,
-    pub skip_on_route: AtomicI64,
     pub sent: AtomicUsize,
     pub errors: Mutex<Vec<(Uuid, ChatError)>>,
 }
@@ -84,7 +80,7 @@ impl Rig {
         let store = rig.store();
         store.set_me("100").unwrap();
         store
-            .put_conversations(&[summary(conversation, kind)])
+            .put_conversations(&[fixtures::summary(conversation, kind)])
             .unwrap();
         rig
     }
@@ -99,7 +95,6 @@ impl Rig {
         let host = Arc::new(TestHost {
             store: Mutex::new(Some(store)),
             now: AtomicI64::new(START),
-            skip_on_route: AtomicI64::new(0),
             sent: AtomicUsize::new(0),
             errors: Mutex::new(Vec::new()),
         });
@@ -118,7 +113,7 @@ impl Rig {
             Arc::new(api),
             host.clone(),
             &dir,
-            routes(world.s3.clone(), paths.clone(), host.clone()),
+            routes(world.s3.clone(), paths.clone()),
         ));
         Self {
             world,
@@ -237,10 +232,8 @@ pub fn envelope(item: &OutboxItem) -> Envelope {
     Envelope::decode(item.envelope.as_slice()).unwrap()
 }
 
-fn routes(s3: String, paths: Arc<Mutex<Vec<Path>>>, host: Arc<TestHost>) -> Routes {
+fn routes(s3: String, paths: Arc<Mutex<Vec<Path>>>) -> Routes {
     Arc::new(move |url: &str| {
-        let skip = host.skip_on_route.swap(0, Ordering::SeqCst);
-        host.now.fetch_add(skip, Ordering::SeqCst);
         paths
             .lock()
             .unwrap()
@@ -259,33 +252,4 @@ fn routes(s3: String, paths: Arc<Mutex<Vec<Path>>>, host: Arc<TestHost>) -> Rout
             })
             .collect()
     })
-}
-
-fn summary(id: ConvId, kind: ConversationKind) -> ConversationSummary {
-    ConversationSummary {
-        id,
-        kind,
-        title: Some("Group".into()),
-        avatar_url: None,
-        avatar_media_id: None,
-        peer: None,
-        role: MemberRole::Admin,
-        state: MemberState::Active,
-        accepted: true,
-        member_count: 3,
-        last_seq: 0,
-        last_at: 0,
-        last_read_seq: 0,
-        unread: 0,
-        mentions: 0,
-        preview: None,
-        muted_until: None,
-        notify: NotifyLevel::All,
-        pinned_at: None,
-        archived: false,
-        ttl_s: None,
-        room_code: None,
-        history_locked: false,
-        has_draft: false,
-    }
 }

@@ -13,7 +13,7 @@ impl Uploads {
         self.blocking(move |store| store.upload_restart(id, now))
             .await?;
         self.forget_targets(id);
-        self.kick();
+        self.wake_all();
         Ok(())
     }
 

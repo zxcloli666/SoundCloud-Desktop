@@ -1,13 +1,16 @@
 use std::path::PathBuf;
 
 use sc_chat::media::{self, PreparedImage};
+use sc_chat::sc_chat_wire::proto::Attachment;
 use sc_chat::store::NewUpload;
 use sc_chat::{ChatError, ChatResult, ConvId, ConversationKind, MediaKind, MediaUploadView};
 use uuid::Uuid;
 
+use super::album::repark_in;
 use super::engine::Uploads;
 use super::files::{IMAGE, THUMB};
 use super::prepare::{checked_source, read_source};
+use crate::app::diagnostics;
 
 pub enum Source {
     Path(PathBuf),
@@ -20,6 +23,12 @@ struct Slot {
     left: usize,
 }
 
+struct Sealed {
+    image_ref: String,
+    thumb_ref: String,
+    attachment: Attachment,
+}
+
 impl Uploads {
     pub async fn attach(
         &self,
@@ -30,16 +39,59 @@ impl Uploads {
         if sources.is_empty() {
             return Err(ChatError::Invalid);
         }
+        let album = album.unwrap_or_else(Uuid::new_v4);
+        let left = self.slot(conversation_id, album).await?.left;
+        let mut refused = (sources.len() > left).then_some(ChatError::Invalid);
+        let mut sealed = Vec::new();
+        for source in sources.into_iter().take(left) {
+            match self.seal(source).await {
+                Ok(image) => sealed.push(image),
+                Err(error) => {
+                    refused.get_or_insert(error);
+                }
+            }
+        }
+        let accepted = self
+            .place(conversation_id, album, sealed, &mut refused)
+            .await;
+        if accepted.is_empty() {
+            return Err(refused.unwrap_or(ChatError::Invalid));
+        }
+        self.kick();
+        Ok(accepted)
+    }
+
+    async fn place(
+        &self,
+        conversation_id: ConvId,
+        album: Uuid,
+        sealed: Vec<Sealed>,
+        refused: &mut Option<ChatError>,
+    ) -> Vec<MediaUploadView> {
         let _albums = self.albums.lock().await;
-        let mut slot = self.slot(conversation_id, album).await?;
+        let mut slot = match self.slot(conversation_id, album).await {
+            Ok(slot) => slot,
+            Err(error) => {
+                refused.get_or_insert(error);
+                Slot {
+                    album,
+                    position: 0,
+                    left: 0,
+                }
+            }
+        };
         let mut accepted = Vec::new();
-        let mut refused = None;
-        for source in sources {
+        for image in sealed {
+            let files = vec![image.image_ref.clone(), image.thumb_ref.clone()];
             if accepted.len() >= slot.left {
                 refused.get_or_insert(ChatError::Invalid);
-                break;
+                self.files.remove(files).await;
+                continue;
             }
-            match self.add_image(conversation_id, &slot, source).await {
+            match self
+                .enqueued(new_upload(conversation_id, &slot, image), files)
+                .await
+            {
                 Ok(view) => {
                     accepted.push(view);
                     slot.position += 1;
@@ -49,15 +101,19 @@ impl Uploads {
                 }
             }
         }
-        if accepted.is_empty() {
-            return Err(refused.unwrap_or(ChatError::Invalid));
+        if !accepted.is_empty() {
+            let now = self.now();
+            let reparked = self
+                .blocking(move |store| repark_in(store, album, conversation_id, now))
+                .await;
+            if let Err(error) = reparked {
+                diagnostics::warn(format!("[ChatUpload] repark after attach: {error}"));
+            }
         }
-        self.kick();
-        Ok(accepted)
+        accepted
     }
 
-    async fn slot(&self, conversation_id: ConvId, album: Option<Uuid>) -> ChatResult<Slot> {
-        let album = album.unwrap_or_else(Uuid::new_v4);
+    async fn slot(&self, conversation_id: ConvId, album: Uuid) -> ChatResult<Slot> {
         let (room, taken, position) = self
             .blocking(move |store| {
                 let summary = store
@@ -85,12 +141,7 @@ impl Uploads {
         })
     }
 
-    async fn add_image(
-        &self,
-        conversation_id: ConvId,
-        slot: &Slot,
-        source: Source,
-    ) -> ChatResult<MediaUploadView> {
+    async fn seal(&self, source: Source) -> ChatResult<Sealed> {
         let bytes = match source {
             Source::Path(path) => read_source(&path).await?,
             Source::Data(data) => checked_source(data)?,
@@ -107,16 +158,11 @@ impl Uploads {
                 return Err(error);
             }
         };
-        let upload = NewUpload {
-            album: slot.album,
-            position: slot.position,
-            conversation_id,
-            kind: MediaKind::Image,
-            image_ref: image_ref.clone(),
-            thumb_ref: Some(thumb_ref.clone()),
+        Ok(Sealed {
+            image_ref,
+            thumb_ref,
             attachment: prepared.attachment,
-        };
-        self.enqueued(upload, vec![image_ref, thumb_ref]).await
+        })
     }
 
     pub(super) async fn enqueued(
@@ -138,5 +184,17 @@ impl Uploads {
                 Err(error)
             }
         }
+    }
+}
+
+fn new_upload(conversation_id: ConvId, slot: &Slot, image: Sealed) -> NewUpload {
+    NewUpload {
+        album: slot.album,
+        position: slot.position,
+        conversation_id,
+        kind: MediaKind::Image,
+        image_ref: image.image_ref,
+        thumb_ref: Some(image.thumb_ref),
+        attachment: image.attachment,
     }
 }

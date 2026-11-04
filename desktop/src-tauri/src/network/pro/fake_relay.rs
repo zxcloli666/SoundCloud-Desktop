@@ -93,6 +93,7 @@ struct Relay {
     opens: usize,
     parts: usize,
     forgot: bool,
+    on_part: Option<Box<dyn FnOnce() + Send>>,
 }
 
 impl Relay {
@@ -137,6 +138,10 @@ impl FakeRelay {
 
     pub fn parts(&self) -> usize {
         self.read(|relay| relay.parts)
+    }
+
+    pub fn on_first_part(&self, hook: impl FnOnce() + Send + 'static) {
+        self.relay.lock().unwrap().on_part = Some(Box::new(hook));
     }
 }
 
@@ -229,7 +234,14 @@ where
     if kind == Kind::Vanishes {
         relay.lock().unwrap().stages.clear();
     }
-    relay.lock().unwrap().parts += 1;
+    let hook = {
+        let mut relay = relay.lock().unwrap();
+        relay.parts += 1;
+        relay.on_part.take()
+    };
+    if let Some(hook) = hook {
+        hook();
+    }
     let mut at: usize = query.get("at").and_then(|at| at.parse().ok()).unwrap_or(0);
     let mut body = std::pin::pin!(body);
     while let Some(chunk) = body.next().await {

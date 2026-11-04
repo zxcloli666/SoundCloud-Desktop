@@ -1,3 +1,6 @@
+use std::sync::atomic::Ordering;
+use std::time::Duration;
+
 use sc_chat::media::post_media;
 use sc_chat::{ConversationKind, UploadObject, UploadState};
 use serde_json::{Value, json};
@@ -157,10 +160,10 @@ async fn a_put_refused_as_expired_reserves_again_and_goes_through() {
         .unwrap();
     let id = views[0].id;
     rig.run();
-    rig.until("the commit", |rig| {
+    rig.until("the upload", |rig| {
         rig.uploads()
             .first()
-            .is_some_and(|upload| upload.state == UploadState::Committed)
+            .is_some_and(|upload| upload.state == UploadState::Uploaded)
     })
     .await;
     assert_eq!(rig.world.with(|state| state.reserves.clone()), [id, id]);
@@ -168,28 +171,82 @@ async fn a_put_refused_as_expired_reserves_again_and_goes_through() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-async fn a_presign_that_lapses_before_a_pro_stage_is_signed_again_before_it_opens() {
+async fn a_presign_that_lapses_while_a_pro_stage_fills_is_signed_again_before_it_opens() {
     let mut rig = Rig::new(ConversationKind::Group);
     let relay = fake_relay::serve(Kind::Forwards);
     rig.route(vec![Path::Pro(relay.url.clone())]);
+    let host = rig.host.clone();
+    relay.on_first_part(move || {
+        host.now.fetch_add(600_000, Ordering::SeqCst);
+    });
     let views = rig
         .uploads
         .attach(rig.conversation, None, sources(vec![rig.image(42)]))
         .await
         .unwrap();
     let id = views[0].id;
-    rig.host
-        .skip_on_route
-        .store(600_000, std::sync::atomic::Ordering::SeqCst);
     rig.run();
-    rig.until("the commit", |rig| {
+    rig.until("the upload", |rig| {
         rig.uploads()
             .first()
-            .is_some_and(|upload| upload.state == UploadState::Committed)
+            .is_some_and(|upload| upload.state == UploadState::Uploaded)
+    })
+    .await;
+    let reserved = rig.world.reservation(id).unwrap();
+    let calls = rig.world.with(|state| state.calls.clone());
+    let reserve = "POST /chat/media/reserve".to_string();
+    let image = format!("PUT {}", reserved.image);
+    let thumb = format!("PUT {}", reserved.thumb.unwrap());
+    assert_eq!(calls, [reserve.clone(), reserve, image, thumb]);
+    assert_eq!(rig.world.with(|state| state.forbidden), 0);
+    assert_eq!(relay.stages_opened(), 2);
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn a_presign_that_lapses_on_a_dead_relay_goes_signed_again_to_the_next_one() {
+    let mut rig = Rig::new(ConversationKind::Group);
+    let (dead, hits) = rig.answering(502, 600_000, Duration::ZERO);
+    rig.route(vec![Path::Relay(dead), Path::Relay(rig.world.s3.clone())]);
+    let views = rig
+        .uploads
+        .attach(rig.conversation, None, sources(vec![rig.image(43)]))
+        .await
+        .unwrap();
+    let id = views[0].id;
+    rig.run();
+    rig.until("the upload", |rig| {
+        rig.uploads()
+            .first()
+            .is_some_and(|upload| upload.state == UploadState::Uploaded)
     })
     .await;
     assert_eq!(rig.world.with(|state| state.reserves.clone()), [id, id]);
-    let reserved = rig.world.reservation(id).unwrap();
-    assert_eq!(rig.world.puts_of(reserved.image), 1);
-    assert_eq!(relay.stages_opened(), 2);
+    assert_eq!(rig.world.with(|state| state.forbidden), 0);
+    assert_eq!(hits.load(Ordering::SeqCst), 2);
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn a_relay_that_answers_403_is_skipped_without_signing_again() {
+    let mut rig = Rig::new(ConversationKind::Group);
+    let (refusing, hits) = rig.answering(403, 0, Duration::ZERO);
+    rig.route(vec![
+        Path::Relay(refusing),
+        Path::Relay(rig.world.s3.clone()),
+    ]);
+    let views = rig
+        .uploads
+        .attach(rig.conversation, None, sources(vec![rig.image(44)]))
+        .await
+        .unwrap();
+    let id = views[0].id;
+    rig.run();
+    rig.until("the upload", |rig| {
+        rig.uploads()
+            .first()
+            .is_some_and(|upload| upload.state == UploadState::Uploaded)
+    })
+    .await;
+    assert_eq!(rig.world.with(|state| state.reserves.clone()), [id]);
+    assert_eq!(hits.load(Ordering::SeqCst), 2);
+    assert!(rig.host.errors.lock().unwrap().is_empty());
 }

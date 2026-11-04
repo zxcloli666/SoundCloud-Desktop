@@ -17,7 +17,7 @@ use crate::network::system_proxy;
 pub const UNIT: u64 = 32 * 1024;
 const CONNECT_TIMEOUT: Duration = Duration::from_secs(10);
 const PUT_TIMEOUT: Duration = Duration::from_secs(120);
-const EXPIRED: u16 = 403;
+const REFUSED: u16 = 403;
 
 pub struct Object<'a> {
     pub upload: &'a MediaUpload,
@@ -39,14 +39,18 @@ impl Uploads {
         let mut resume = stage_of(object.upload, object.object);
         let mut hops = self.planned(&object, resume.as_ref());
         if hops.is_empty() {
-            return Err(Snag::Failed(ChatError::Protocol));
+            return Err(Snag::Failed(ChatError::Offline));
         }
         let mut at = 0;
-        while let Some(hop) = hops.get(at).cloned() {
-            at += 1;
+        let mut refused = false;
+        loop {
             if self.fresh(&mut object).await? {
                 hops = self.planned(&object, resume.as_ref());
             }
+            let Some(hop) = hops.get(at).cloned() else {
+                break;
+            };
+            at += 1;
             let tried = match hop.tier {
                 Tier::Pro => {
                     let staged = resume
@@ -62,8 +66,8 @@ impl Uploads {
                     hop.note(true);
                     return Ok(());
                 }
-                Tried::Answered(EXPIRED) => return Err(Snag::Expired),
                 Tried::Answered(status) => {
+                    refused |= status == REFUSED;
                     diagnostics::warn(format!(
                         "[ChatUpload] {} answered {status}",
                         hop.tier_label()
@@ -77,7 +81,10 @@ impl Uploads {
                 Tried::Stuck(snag) => return Err(snag),
             }
         }
-        Err(Snag::Failed(ChatError::Offline))
+        match refused {
+            true => Err(Snag::Expired),
+            false => Err(Snag::Failed(ChatError::Offline)),
+        }
     }
 
     fn planned(&self, object: &Object<'_>, resume: Option<&(String, String)>) -> Vec<Hop> {
@@ -192,7 +199,7 @@ pub(super) async fn plain(
         .body(wreq::Body::wrap_stream(stream))
         .send()
         .await
-        .map_err(|error| error.to_string())?;
+        .map_err(|error| error.without_uri().to_string())?;
     Ok(response.status().as_u16())
 }
 

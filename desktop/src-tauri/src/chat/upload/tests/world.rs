@@ -37,6 +37,7 @@ pub struct State {
     pub lose_thumbs: usize,
     pub expires_in_s: u32,
     pub calls: Vec<String>,
+    pub forbidden: usize,
 }
 
 pub struct World {
@@ -241,10 +242,12 @@ fn stored(
     }
     let token = query.get("X-Amz-Signature").cloned().unwrap_or_default();
     let Some((signed, len)) = state.tokens.get(&token).copied() else {
+        state.forbidden += 1;
         return StatusCode::FORBIDDEN;
     };
     if state.expire_puts > 0 {
         state.expire_puts -= 1;
+        state.forbidden += 1;
         return StatusCode::FORBIDDEN;
     }
     if signed != object || length != Some(len) || body.len() as u64 != len {
@@ -252,6 +255,7 @@ fn stored(
     }
     state.objects.insert(object, body.to_vec());
     state.puts.push(object);
+    state.calls.push(format!("PUT {object}"));
     StatusCode::OK
 }
 
