@@ -1,4 +1,5 @@
 import { type ComponentPropsWithoutRef, forwardRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { RoomMember } from '../../../lib/together/types';
 import { Avatar } from '../../ui/Avatar';
 import { MuteBadge, RoleBadge } from './MemberBadges';
@@ -23,13 +24,15 @@ export const MemberPuck = forwardRef<HTMLButtonElement, MemberPuckProps>(functio
   { member, state, actionable, ...props },
   ref,
 ) {
+  const { t } = useTranslation();
+  const label = state.star ? `${member.name}, ${t('chat.room.perks.starHost')}` : member.name;
   return (
     <button
       {...props}
       ref={ref}
       type="button"
-      title={member.name}
-      aria-label={member.name}
+      title={label}
+      aria-label={label}
       disabled={!actionable}
       className="group flex w-[54px] shrink-0 cursor-pointer flex-col items-center gap-1 rounded-xl py-1 transition-colors enabled:hover:bg-ink/[0.05] disabled:cursor-default"
     >

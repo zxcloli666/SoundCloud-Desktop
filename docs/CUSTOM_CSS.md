@@ -127,6 +127,13 @@ States are in attributes too: `aria-current="page"` on the open link or section,
 | `[data-ui="chat-requests"]` | Message requests: the list and the bar in a chat |
 | `[data-ui="chat-room"]` | Listening room tab |
 | `[data-ui="chat-room-stage"]` | Room area under the header that holds the room backdrop. Set `--room-accent` on it to tint the backdrop |
+| `[data-ui="room-tuning"]` | Room settings button in the room header |
+| `[data-ui="room-capacity"]` | Seats row in room settings: members of capacity, the seat strip, paused joins |
+| `[data-ui="room-rules"]` | Room rules button in the room header (host) |
+| `[data-ui="room-images-policy"]` | Who may post images in the room (host) |
+| `[data-ui="room-cover"]` | Room cover row in the room rules (host) |
+| `[data-ui="room-cover-picker"]` | Cover picker: artwork grid, accent colors, apply and reset |
+| `[data-ui="open-room"]` | A room in the open rooms list |
 | `[data-ui="chat-toast"]` | New message popup |
 | `[data-ui="chat-share"]` | "Send" window |
 | `[data-ui="chat-album"]` | Images in a message. A tile is `[data-ui="chat-album-tile"]`, `[data-state]` is `loading`, `ready`, `failed`, `deleted` or `lost` |

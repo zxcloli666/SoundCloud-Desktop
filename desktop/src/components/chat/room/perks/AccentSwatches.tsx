@@ -7,9 +7,11 @@ const STEP: Record<string, number> = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -
 
 export const AccentSwatches = memo(function AccentSwatches({
   value,
+  disabled,
   onChange,
 }: {
   value: number;
+  disabled: boolean;
   onChange: (accent: number) => void;
 }) {
   const { t } = useTranslation();
@@ -17,7 +19,7 @@ export const AccentSwatches = memo(function AccentSwatches({
 
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     const step = STEP[event.key];
-    if (step === undefined) return;
+    if (step === undefined || disabled) return;
     event.preventDefault();
     const to = (value + step + COVER_ACCENTS.length) % COVER_ACCENTS.length;
     onChange(to);
@@ -28,8 +30,11 @@ export const AccentSwatches = memo(function AccentSwatches({
     <div
       role="radiogroup"
       aria-label={t('chat.room.perks.cover.accent')}
+      aria-disabled={disabled}
       onKeyDown={onKeyDown}
-      className="flex items-center justify-between px-1.5"
+      className={`perk-motion flex items-center justify-between px-1.5 transition-opacity duration-200 ${
+        disabled ? 'opacity-35' : ''
+      }`}
     >
       {COVER_ACCENTS.map((color, index) => {
         const on = index === value;
@@ -43,9 +48,10 @@ export const AccentSwatches = memo(function AccentSwatches({
             role="radio"
             aria-checked={on}
             aria-label={t('chat.room.perks.cover.accentN', { value: index + 1 })}
-            tabIndex={on ? 0 : -1}
+            tabIndex={on && !disabled ? 0 : -1}
+            disabled={disabled}
             onClick={() => onChange(index)}
-            className="perk-motion flex size-6 cursor-pointer items-center justify-center rounded-full outline-none transition-transform duration-200 hover:scale-110 focus-visible:ring-2 focus-visible:ring-ink/60 focus-visible:ring-offset-2 focus-visible:ring-offset-surface"
+            className="perk-motion flex size-6 cursor-pointer items-center justify-center rounded-full outline-none transition-transform duration-200 enabled:hover:scale-110 disabled:cursor-default focus-visible:outline-2 focus-visible:outline-offset-[5px] focus-visible:outline-ink"
             style={{
               background: color,
               color: accentInk(index),

@@ -1,8 +1,7 @@
 import { type ReactNode, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Ban, Star } from '../../../lib/icons';
-import { usePremium } from '../../../lib/premium-cache';
-import { useOpenStar } from '../../../lib/star-offer';
+import { useOpenStar, useStarOffer } from '../../../lib/star-offer';
 import {
   banMember,
   kickMember,
@@ -16,6 +15,7 @@ import { useTogetherStore } from '../../../stores/together';
 import { Avatar } from '../../ui/Avatar';
 import { MicOff, ShieldMinus, ShieldPlus, UserX } from './icons';
 import { STAR_MODERATORS } from './perks/perks';
+import { useStarState } from './perks/StarAction';
 
 interface MemberMenuProps {
   member: RoomMember;
@@ -82,10 +82,13 @@ function MuteRow({ onMute }: { onMute: (minutes: number) => void }) {
 export function MemberMenu({ member, actions, muted, onDone }: MemberMenuProps) {
   const { t } = useTranslation();
   const [banArmed, setBanArmed] = useState(false);
-  const starHost = useTogetherStore((s) => s.room?.perks?.starHost ?? false);
-  const premium = usePremium();
+  const perks = useTogetherStore((s) => s.room?.perks);
+  const star = useStarState(perks);
+  const { trial } = useStarOffer();
   const openStar = useOpenStar();
-  const moreMods = !!actions.moderator && actions.moderatorsFull && !starHost && !premium;
+  const locked = !!perks && !!actions.moderator && actions.moderatorsFull && star !== 'star';
+  const moreMods = locked && star === 'free';
+  const soon = locked && star === 'soon';
   const act = (task: () => Promise<boolean>) => {
     onDone();
     void task();
@@ -116,11 +119,19 @@ export function MemberMenu({ member, actions, muted, onDone }: MemberMenuProps) 
           label={t('chat.room.perks.moreMods', { value: STAR_MODERATORS })}
           onSelect={() => {
             onDone();
-            openStar();
+            openStar(trial ? 'trial' : 'buy');
           }}
         />
       )}
-      {actions.moderator && !moreMods && (
+      {soon && (
+        <Item
+          icon={<Star size={14} fill="currentColor" className="text-accent" />}
+          label={t('chat.room.perks.starSoon')}
+          disabled
+          onSelect={onDone}
+        />
+      )}
+      {actions.moderator && !locked && (
         <Item
           icon={actions.moderator === 'add' ? <ShieldPlus size={14} /> : <ShieldMinus size={14} />}
           label={t(

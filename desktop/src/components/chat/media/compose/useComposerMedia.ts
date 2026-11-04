@@ -1,9 +1,9 @@
 import { type ClipboardEvent, useCallback, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { chatBridge } from '../../../../lib/chat/bridge';
 import type { ConversationSummary } from '../../../../lib/chat/types';
 import { type MediaNote, useChatMediaStore } from '../../../../stores/chat/media';
 import { toastError } from '../../thread/errors';
+import { removeAlbum } from './album-cancel';
 import { clipboardImages, pasteImages, pickImages } from './pick';
 import { type AttachAccess, useAttachAccess } from './useAttachGate';
 import { type StagedAlbum, useStagedAlbum } from './useStagedAlbum';
@@ -73,11 +73,8 @@ export function useComposerMedia(
   const preparing = album.preparing > 0;
   const cancel = useCallback(() => {
     if (!albumId || preparing) return;
-    chatBridge
-      .mediaAlbumCancel(albumId)
-      .then(() => useChatMediaStore.getState().refreshUploads())
-      .catch(fail);
-  }, [albumId, preparing, fail]);
+    removeAlbum(albumId, t, fail);
+  }, [albumId, preparing, t, fail]);
 
   useEffect(
     () => () => {

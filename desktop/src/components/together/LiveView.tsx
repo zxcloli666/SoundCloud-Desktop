@@ -56,7 +56,10 @@ function NowShared({ room, host }: { room: RoomView; host: boolean }) {
       <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-ink/[0.06]">
         {cover && <img src={cover} alt="" className="h-full w-full object-cover" />}
         {room.playback.status === 'playing' && (
-          <div data-scheme="dark" className="absolute inset-0 flex items-end justify-center gap-[2px] bg-black/35 pb-1.5">
+          <div
+            data-scheme="dark"
+            className="absolute inset-0 flex items-end justify-center gap-[2px] bg-black/35 pb-1.5"
+          >
             {[0, 1, 2].map((i) => (
               <span
                 key={i}

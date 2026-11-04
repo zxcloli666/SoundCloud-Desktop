@@ -136,6 +136,8 @@
       "off": "Никто",
       "withStar": "Картинки со STAR"
     },
-    "moreMods": "{{value}} модераторов со STAR"
+    "moreMods": "{{value}} модераторов со STAR",
+    "starSoon": "STAR включится через пару минут",
+    "needsStar": "Нужен STAR"
   }
 }

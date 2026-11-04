@@ -5,6 +5,7 @@ import { Check, RotateCcw, TriangleAlert, X } from '../../../../lib/icons';
 import { usePerfMode } from '../../../../lib/perf';
 import { useChatMediaStore } from '../../../../stores/chat/media';
 import { failureOf } from './failure';
+import { FADE, LIFT, POP } from './motion';
 import { ProgressRing } from './ProgressRing';
 import { isDone, uploadFraction } from './progress';
 import { UploadThumb } from './UploadThumb';
@@ -36,7 +37,7 @@ export const StagedTile = memo(function StagedTile({
       data-ui="chat-staged-tile"
       data-state={upload.state}
       title={reason}
-      className="group/tile relative shrink-0 animate-in fade-in zoom-in-90 duration-300 motion-reduce:animate-none"
+      className={`group/tile relative shrink-0 ${POP}`}
       style={{ width: TILE, height: TILE }}
     >
       <UploadThumb upload={upload} size={TILE} radius={14} />
@@ -60,7 +61,7 @@ export const StagedTile = memo(function StagedTile({
               type="button"
               aria-label={t('chat.media.compose.retry')}
               onClick={() => void useChatMediaStore.getState().retryUpload(upload.id).catch(onFail)}
-              className="flex size-8 cursor-pointer items-center justify-center rounded-full bg-ink/[0.16] text-ink transition-transform duration-150 hover:scale-110 focus-visible:ring-2 focus-visible:ring-ink/60"
+              className={`flex size-8 cursor-pointer items-center justify-center rounded-full bg-ink/[0.16] text-ink hover:scale-110 motion-reduce:hover:scale-100 ${LIFT} focus-visible:ring-2 focus-visible:ring-ink/60`}
             >
               <RotateCcw size={15} />
             </button>
@@ -78,7 +79,7 @@ export const StagedTile = memo(function StagedTile({
       {done && (
         <span
           aria-hidden
-          className="absolute bottom-1 left-1 flex size-[18px] items-center justify-center rounded-full animate-in fade-in zoom-in-50 duration-300 motion-reduce:animate-none"
+          className={`absolute bottom-1 left-1 flex size-[18px] items-center justify-center rounded-full ${POP}`}
           style={{ background: 'var(--color-accent)', color: 'var(--color-accent-contrast)' }}
         >
           <Check size={11} strokeWidth={3} />
@@ -104,7 +105,7 @@ export const PreparingTile = memo(function PreparingTile() {
   return (
     <span
       aria-hidden
-      className="relative shrink-0 overflow-hidden rounded-[14px] bg-ink/[0.07] animate-in fade-in duration-200 motion-reduce:animate-none"
+      className={`relative shrink-0 overflow-hidden rounded-[14px] bg-ink/[0.07] ${FADE}`}
       style={{ width: TILE, height: TILE }}
     >
       {perf.idleAnim && (

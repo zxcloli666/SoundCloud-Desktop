@@ -5,8 +5,8 @@ import { ChevronRight, Eye, EyeOff, ImageIcon, Star } from '../../../lib/icons';
 import { openRoomDock } from '../../../lib/together/room-chat';
 import type { RoomView } from '../../../lib/together/types';
 import { useBackdropStore } from '../../../stores/chat/backdrop';
-import { BackdropThumb } from './BackdropThumb';
 import { useRoomBackdrop } from './backdrop/shown';
+import { presetOf } from './presets';
 import { useRoomSelf } from './useRoom';
 
 type IconType = ComponentType<{ size?: number; className?: string }>;
@@ -37,9 +37,17 @@ function Row({
 
 function Swatch({ room }: { room: RoomView }) {
   const backdrop = room.backdrop ?? null;
+  const preset = presetOf(backdrop?.kind === 'preset' ? backdrop.id : null);
   return (
     <span className="relative h-5 w-8 shrink-0 overflow-hidden rounded-md bg-ink/[0.06] ring-1 ring-ink/10">
-      {backdrop?.kind === 'preset' && <BackdropThumb backdrop={backdrop} />}
+      {preset && (
+        <img
+          src={preset.tile}
+          alt=""
+          draggable={false}
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      )}
       {backdrop?.kind === 'image' && (
         <span className="absolute inset-0 flex items-center justify-center text-ink-55">
           <ImageIcon size={11} />

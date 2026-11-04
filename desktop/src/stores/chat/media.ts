@@ -37,6 +37,8 @@ export interface ChatMediaState {
   skipped: Record<ConvId, Skipped[]>;
   sending: Record<string, true>;
   parked: Record<string, true>;
+  parkedReady: boolean;
+  dismissed: Record<string, true>;
   note: { conversationId: ConvId; gate: MediaNote } | null;
   setNote: (note: { conversationId: ConvId; gate: MediaNote } | null) => void;
   setUploads: (uploads: UploadView[]) => void;
@@ -45,6 +47,7 @@ export interface ChatMediaState {
   setPreparing: (conversationId: ConvId, count: number) => void;
   setSkipped: (conversationId: ConvId, skipped: Skipped[]) => void;
   setSending: (album: string, sending: boolean) => void;
+  setDismissed: (album: string, dismissed: boolean) => void;
   refreshUploads: () => Promise<void>;
   refreshParked: () => Promise<void>;
   refreshUsage: () => Promise<void>;
@@ -71,6 +74,13 @@ function keptErrors(
   return kept;
 }
 
+function flagged(flags: Record<string, true>, key: string, on: boolean): Record<string, true> {
+  const next = { ...flags };
+  if (on) next[key] = true;
+  else delete next[key];
+  return next;
+}
+
 export function uploadsIn(uploads: UploadView[], conversationId: ConvId | null): UploadView[] {
   return conversationId === null
     ? uploads
@@ -87,34 +97,32 @@ export const useChatMediaStore = create<ChatMediaState>()((set, get) => ({
   skipped: {},
   sending: {},
   parked: {},
+  parkedReady: false,
+  dismissed: {},
   note: null,
   setNote: (note) => set({ note }),
   setUploads: (uploads) => set((state) => ({ uploads, errors: keptErrors(state.errors, uploads) })),
-  applyUploads: ({ uploads, removed }) =>
-    set((state) => {
-      const changed = new Map(uploads.map((upload) => [upload.id, upload]));
-      const gone = new Set(removed);
-      const kept = state.uploads
-        .filter((upload) => !gone.has(upload.id))
-        .map((upload) => changed.get(upload.id) ?? upload);
-      const known = new Set(kept.map((upload) => upload.id));
-      const added = uploads.filter((upload) => !known.has(upload.id) && !gone.has(upload.id));
-      const next = [...kept, ...added];
-      if (added.length > 0 || gone.size > 0) queueMicrotask(() => void get().refreshParked());
-      return { uploads: next, errors: keptErrors(state.errors, next) };
-    }),
+  applyUploads: ({ uploads, removed }) => {
+    const gone = new Set(removed);
+    const changed = new Map(uploads.map((upload) => [upload.id, upload]));
+    const kept = get()
+      .uploads.filter((upload) => !gone.has(upload.id))
+      .map((upload) => changed.get(upload.id) ?? upload);
+    const known = new Set(kept.map((upload) => upload.id));
+    const added = uploads.filter((upload) => !known.has(upload.id) && !gone.has(upload.id));
+    const next = [...kept, ...added];
+    set((state) => ({ uploads: next, errors: keptErrors(state.errors, next) }));
+    if (added.length > 0 || gone.size > 0) void get().refreshParked();
+  },
   applyError: ({ id, error }) => set((state) => ({ errors: { ...state.errors, [id]: error } })),
   setPreparing: (conversationId, count) =>
     set((state) => ({ preparing: { ...state.preparing, [conversationId]: count } })),
   setSkipped: (conversationId, skipped) =>
     set((state) => ({ skipped: { ...state.skipped, [conversationId]: skipped } })),
   setSending: (album, sending) =>
-    set((state) => {
-      const next = { ...state.sending };
-      if (sending) next[album] = true;
-      else delete next[album];
-      return { sending: next };
-    }),
+    set((state) => ({ sending: flagged(state.sending, album, sending) })),
+  setDismissed: (album, dismissed) =>
+    set((state) => ({ dismissed: flagged(state.dismissed, album, dismissed) })),
   refreshUploads: async () => {
     get().setUploads(await chatBridge.mediaUploads());
     await get().refreshParked();
@@ -122,7 +130,10 @@ export const useChatMediaStore = create<ChatMediaState>()((set, get) => ({
   refreshParked: async () => {
     try {
       const albums = await chatBridge.mediaParked();
-      set({ parked: Object.fromEntries(albums.map((album) => [album, true as const])) });
+      set({
+        parked: Object.fromEntries(albums.map((album) => [album, true as const])),
+        parkedReady: true,
+      });
     } catch {
       return;
     }

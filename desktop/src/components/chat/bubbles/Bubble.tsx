@@ -1,4 +1,5 @@
-import { type CSSProperties, memo } from 'react';
+import { type CSSProperties, memo, useMemo } from 'react';
+import { receivedEmbed } from '../../../lib/chat/embed-snapshot';
 import { Lock, Reply } from '../../../lib/chat/icons';
 import { senderColor, type Tick } from '../../../lib/chat/render';
 import type { Message } from '../../../lib/chat/types';
@@ -37,9 +38,18 @@ const FAILED: CSSProperties = {
 
 const TOMBSTONE_ICONS = { deleted: Ban, locked: Lock, unknown: Sparkles } as const;
 
-function Tombstone({ message, radius }: { message: Message; radius: string }) {
+type TombstoneKind = keyof typeof TOMBSTONE_ICONS;
+
+function Tombstone({
+  message,
+  radius,
+  kind = message.body.type as TombstoneKind,
+}: {
+  message: Message;
+  radius: string;
+  kind?: TombstoneKind;
+}) {
   const { t } = useThread();
-  const kind = message.body.type as keyof typeof TOMBSTONE_ICONS;
   const Icon = TOMBSTONE_ICONS[kind];
   return (
     <div
@@ -91,12 +101,19 @@ export const Bubble = memo(function Bubble({
   const { nameOf, conversation } = useThread();
   const media = useHasMedia(message);
   const radius = corners(message.mine, first, last);
+  const embeds = useMemo(
+    () => message.embeds.filter((embed) => receivedEmbed(embed) !== null),
+    [message.embeds],
+  );
   const { body } = message;
   if (body.type !== 'text') return <Tombstone message={message} radius={radius} />;
 
   const hasText = body.text.length > 0;
-  const metaInText = hasText && message.embeds.length === 0;
-  const solo = media && !hasText && message.embeds.length === 0;
+  if (!hasText && !media && embeds.length === 0) {
+    return <Tombstone message={message} radius={radius} kind="unknown" />;
+  }
+  const metaInText = hasText && embeds.length === 0;
+  const solo = media && !hasText && embeds.length === 0;
   const tone = tick === 'failed' ? FAILED : message.mine ? MINE : THEIRS;
   const showName = first && !message.mine && conversation.kind !== 'direct';
 
@@ -129,9 +146,9 @@ export const Bubble = memo(function Bubble({
           {metaInText && <BubbleMeta message={message} tick={tick} floating />}
         </div>
       )}
-      {message.embeds.length > 0 && (
+      {embeds.length > 0 && (
         <div className={`flex w-[360px] max-w-full flex-col gap-1.5 ${hasText ? 'mt-1.5' : ''}`}>
-          {message.embeds.map((embed, index) => (
+          {embeds.map((embed, index) => (
             <EmbedCard key={`${embed.urn}:${index}`} embed={embed} mine={message.mine} />
           ))}
         </div>

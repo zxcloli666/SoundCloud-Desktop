@@ -89,7 +89,7 @@ export const Chats = memo(function Chats() {
                 onOpen={open}
                 onOpenRoom={() => open(DOCK_ROOM)}
               />
-              <UploadTray except={room ? roomChat : selected} />
+              {!selected && <UploadTray />}
             </Panel>
             <Panel className={`min-w-0 flex-1 ${selected ? '' : '@max-[640px]:hidden'}`}>
               {thread}
