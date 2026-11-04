@@ -37,7 +37,7 @@ export const RoomQuiet = memo(function RoomQuiet({
         <button
           type="button"
           onClick={retryRoomChat}
-          className="flex h-8 cursor-pointer items-center gap-1.5 rounded-full bg-ink/[0.08] px-4 text-[12.5px] font-semibold text-ink-75 transition-colors hover:bg-ink/[0.13] hover:text-white"
+          className="flex h-8 cursor-pointer items-center gap-1.5 rounded-full bg-ink/[0.08] px-4 text-[12.5px] font-semibold text-ink-75 transition-colors hover:bg-ink/[0.13] hover:text-ink"
         >
           <RotateCcw size={13} />
           {t('chat.room.quiet.retry')}

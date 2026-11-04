@@ -52,7 +52,7 @@ const MentionText = memo(function MentionText({
         openUser(userId);
       }}
       className={`inline cursor-pointer rounded-[5px] font-semibold transition-colors duration-150 ${
-        self ? 'px-0.5 text-white' : 'text-[var(--color-accent-hover)] hover:underline'
+        self ? 'px-0.5 text-ink' : 'text-[var(--color-accent-hover)] hover:underline'
       }`}
       style={self ? { background: 'var(--color-accent-glow)' } : undefined}
     >
@@ -124,7 +124,7 @@ function SegmentView({ segment, links }: { segment: Segment; links: boolean }) {
       </code>
     );
   }
-  if (segment.bold) node = <strong className="font-semibold text-white">{node}</strong>;
+  if (segment.bold) node = <strong className="font-semibold text-ink">{node}</strong>;
   if (segment.italic) node = <em>{node}</em>;
   if (segment.link && links) node = <LinkText url={segment.link}>{node}</LinkText>;
   else if (segment.mention) node = <MentionText userId={segment.mention}>{node}</MentionText>;

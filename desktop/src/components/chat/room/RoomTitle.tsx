@@ -43,7 +43,7 @@ function TitleEditor({
       onKeyDown={keys}
       onBlur={() => close(true)}
       onFocus={(event) => event.target.select()}
-      className={`${TITLE_CLASS} -mx-1.5 w-full min-w-0 rounded-lg bg-ink/[0.08] px-1.5 py-0.5 text-white outline-none ring-1 ring-[var(--color-accent)] placeholder:text-ink-30`}
+      className={`${TITLE_CLASS} -mx-1.5 w-full min-w-0 rounded-lg bg-ink/[0.08] px-1.5 py-0.5 text-ink outline-none ring-1 ring-[var(--color-accent)] placeholder:text-ink-30`}
     />
   );
 }
@@ -91,9 +91,7 @@ export const RoomTitle = memo(function RoomTitle({
       onClick={() => setEditing(true)}
       className="group -mx-1.5 flex min-w-0 max-w-full cursor-text items-center gap-1.5 rounded-lg px-1.5 py-0.5 text-left transition-colors hover:bg-ink/[0.06]"
     >
-      <span className={`${TITLE_CLASS} ${current ? 'text-ink-92' : 'text-ink-55'}`}>
-        {shown}
-      </span>
+      <span className={`${TITLE_CLASS} ${current ? 'text-ink-92' : 'text-ink-55'}`}>{shown}</span>
       <Pencil
         size={12}
         className="shrink-0 text-ink-30 transition-colors group-hover:text-ink-70"

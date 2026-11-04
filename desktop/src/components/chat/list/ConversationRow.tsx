@@ -105,7 +105,7 @@ export const ConversationRow = memo(function ConversationRow({
         <div className="flex items-center gap-1.5">
           <span
             className={`truncate text-[13.5px] tracking-tight ${
-              fresh ? 'font-bold text-white' : 'font-semibold text-ink-85'
+              fresh ? 'font-bold text-ink' : 'font-semibold text-ink-85'
             }`}
           >
             {title}

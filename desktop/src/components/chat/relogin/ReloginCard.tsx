@@ -77,9 +77,7 @@ export const ReloginCard = memo(function ReloginCard({ reason, onDone }: Relogin
           <p className="text-[14.5px] font-semibold leading-snug text-ink-90">
             {flow.done ? t('chat.relogin.done') : t(look.title)}
           </p>
-          {!flow.done && (
-            <p className="text-[12px] text-ink-40">{t('chat.relogin.musicStays')}</p>
-          )}
+          {!flow.done && <p className="text-[12px] text-ink-40">{t('chat.relogin.musicStays')}</p>}
         </div>
 
         {flow.done ? null : flow.isPolling ? (

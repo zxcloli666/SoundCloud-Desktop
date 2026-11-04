@@ -33,7 +33,7 @@ function BackButton({ onBack }: { onBack: () => void }) {
       type="button"
       aria-label={t('chat.thread.back')}
       onClick={onBack}
-      className="-ml-1 flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full text-ink-55 transition-colors hover:bg-ink/[0.08] hover:text-white @min-[641px]:hidden"
+      className="-ml-1 flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full text-ink-55 transition-colors hover:bg-ink/[0.08] hover:text-ink @min-[641px]:hidden"
     >
       <ChevronLeft size={17} />
     </button>

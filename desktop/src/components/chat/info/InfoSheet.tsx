@@ -87,7 +87,7 @@ function TabButton({
       aria-selected={active}
       onClick={onClick}
       className={`flex h-9 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-xl text-[12.5px] font-semibold transition-colors duration-150 ${
-        active ? 'bg-ink/[0.09] text-white' : 'text-ink-45 hover:text-ink-75'
+        active ? 'bg-ink/[0.09] text-ink' : 'text-ink-45 hover:text-ink-75'
       }`}
     >
       {icon}
@@ -140,7 +140,7 @@ export const InfoSheet = memo(function InfoSheet({
               type="button"
               aria-label={t('chat.thread.info.close')}
               onClick={onClose}
-              className="flex size-8 cursor-pointer items-center justify-center rounded-full text-ink-45 transition-colors duration-150 hover:bg-ink/[0.08] hover:text-white"
+              className="flex size-8 cursor-pointer items-center justify-center rounded-full text-ink-45 transition-colors duration-150 hover:bg-ink/[0.08] hover:text-ink"
             >
               <X size={16} />
             </button>

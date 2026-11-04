@@ -102,9 +102,7 @@ function NewChatBody({ onDone }: { onDone: () => void }) {
             >
               <Bookmark size={16} strokeWidth={2.2} />
             </span>
-            <span className="text-[13.5px] font-semibold text-ink-85">
-              {t('chat.list.saved')}
-            </span>
+            <span className="text-[13.5px] font-semibold text-ink-85">{t('chat.list.saved')}</span>
           </button>
         )}
         <PeoplePicker

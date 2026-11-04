@@ -37,7 +37,7 @@ export const SuggestButton = memo(function SuggestButton({ disabled }: { disable
           title={label}
           aria-label={label}
           disabled={disabled || wait > 0}
-          className="flex w-[54px] shrink-0 cursor-pointer flex-col items-center gap-1 rounded-xl py-1 text-ink-55 transition-colors enabled:hover:bg-ink/[0.05] enabled:hover:text-white disabled:cursor-default disabled:opacity-60"
+          className="flex w-[54px] shrink-0 cursor-pointer flex-col items-center gap-1 rounded-xl py-1 text-ink-55 transition-colors enabled:hover:bg-ink/[0.05] enabled:hover:text-ink disabled:cursor-default disabled:opacity-60"
         >
           <span className="flex size-9 items-center justify-center rounded-full border border-dashed border-ink/20 tabular-nums">
             {wait > 0 ? (

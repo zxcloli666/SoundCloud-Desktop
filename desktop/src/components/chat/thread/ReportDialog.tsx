@@ -67,7 +67,7 @@ export const ReportDialog = memo(function ReportDialog({
             onClick={() => setReason(value)}
             className={`flex h-10 cursor-pointer items-center gap-3 rounded-xl border px-3 text-left text-[13px] font-medium transition-colors duration-150 ${
               reason === value
-                ? 'border-rose-400/45 bg-rose-500/12 text-white'
+                ? 'border-rose-400/45 bg-rose-500/12 text-ink'
                 : 'border-ink/[0.06] bg-ink/[0.03] text-ink-70 hover:bg-ink/[0.06]'
             }`}
           >

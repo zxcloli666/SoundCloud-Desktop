@@ -53,7 +53,7 @@ export const TimerPicker = memo(function TimerPicker() {
               }
               className={`h-8 cursor-pointer rounded-lg text-[12px] font-semibold tabular-nums transition-colors duration-150 disabled:cursor-default ${
                 active
-                  ? 'text-white'
+                  ? 'text-ink'
                   : 'text-ink-50 enabled:hover:bg-ink/[0.05] enabled:hover:text-ink-80'
               }`}
               style={
