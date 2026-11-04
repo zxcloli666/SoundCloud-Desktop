@@ -28,7 +28,7 @@ pub async fn create(
         let meta = ConversationMeta {
             title,
             description: String::new(),
-            avatar_media_id: None,
+            avatar: None,
         };
         queue(state, view.id, None, Content::Meta(meta)).await?;
     }
@@ -40,16 +40,12 @@ pub async fn update(
     conversation_id: ConvId,
     patch: ConversationPatch,
 ) -> ChatResult<ConversationSummary> {
-    if let Some(meta) = patch.meta {
-        let current = blocking(state, move |core| core.store.conversation(conversation_id)).await?;
-        let meta = ConversationMeta {
-            title: meta
-                .title
-                .or_else(|| current.and_then(|summary| summary.title))
-                .unwrap_or_default(),
-            description: meta.description.unwrap_or_default(),
-            avatar_media_id: None,
-        };
+    if patch.meta.is_some() || patch.avatar.is_some() {
+        let next = patch.clone();
+        let meta = blocking(state, move |core| {
+            core.store.next_meta(conversation_id, &next)
+        })
+        .await?;
         queue(state, conversation_id, None, Content::Meta(meta)).await?;
     }
     match patch.me {

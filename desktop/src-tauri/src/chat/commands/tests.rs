@@ -1,7 +1,8 @@
 use sc_chat::api::wire::{MemberView, RequestList};
+use sc_chat::store::Store;
 use sc_chat::{
-    ChatError, HistoryPage, HistoryQuery, MemberRole, MemberState, ReportInput, ReportReason,
-    RichText, Span, SpanKind, TEXT_MAX,
+    ChatError, ConversationMeta, ConversationPatch, HistoryPage, HistoryQuery, MemberRole,
+    MemberState, MetaPatch, ReportInput, ReportReason, RichText, Span, SpanKind, TEXT_MAX,
 };
 use serde_json::json;
 use uuid::Uuid;
@@ -109,4 +110,26 @@ fn older_history_is_asked_from_the_server_only_past_the_local_end() {
     assert!(reaches_back(&query(None, None, 50), &empty));
     assert!(!reaches_back(&query(None, Some(10), 50), &empty));
     assert!(!reaches_back(&query(Some(100), None, 0), &empty));
+}
+
+#[test]
+fn a_rename_keeps_the_description() {
+    let store = Store::open_in_memory(&[7; 32]).unwrap();
+    let id = Uuid::from_u128(9);
+    let meta = ConversationMeta {
+        title: "Old".into(),
+        description: "About us".into(),
+        avatar: None,
+    };
+    store.put_group_meta(id, &meta).unwrap();
+    let patch = ConversationPatch {
+        meta: Some(MetaPatch {
+            title: Some("New".into()),
+            description: None,
+        }),
+        ..Default::default()
+    };
+    let next = store.next_meta(id, &patch).unwrap();
+    assert_eq!(next.title, "New");
+    assert_eq!(next.description, "About us");
 }
