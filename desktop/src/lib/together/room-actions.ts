@@ -5,7 +5,8 @@ import { useTogetherStore } from '../../stores/together';
 import { api } from '../api';
 import { chatBridge } from '../chat/bridge';
 import { trackEmbed } from '../chat/embed-snapshot';
-import { chatErrorKey } from '../chat/errors';
+import { chatError, chatErrorKey } from '../chat/errors';
+import type { RoomCover, RoomImagesPolicy } from '../chat/media-types';
 import type { RoomModeration, RoomSettingsPatch } from '../chat/types';
 import { cleanTitle } from './room-rules';
 
@@ -19,7 +20,11 @@ const ROOM_ERRORS: ReadonlySet<string> = new Set([
   'offline',
   'disabled',
   'invalid',
+  'room_star_required',
+  'request_limit',
 ]);
+
+export type SettingsOutcome = { ok: true } | { ok: false; code: string; retryMs: number | null };
 
 async function inRoom(task: (code: string) => Promise<void>): Promise<boolean> {
   const code = useTogetherStore.getState().room?.code;
@@ -39,6 +44,18 @@ function moderate(action: RoomModeration): Promise<boolean> {
 
 function configure(patch: RoomSettingsPatch): Promise<boolean> {
   return inRoom((code) => chatBridge.roomSettings(code, patch));
+}
+
+async function settle(patch: RoomSettingsPatch): Promise<SettingsOutcome> {
+  const code = useTogetherStore.getState().room?.code;
+  if (!code) return { ok: false, code: 'not_member', retryMs: null };
+  try {
+    await chatBridge.roomSettings(code, patch);
+    return { ok: true };
+  } catch (error) {
+    const known = chatError(error);
+    return { ok: false, code: known?.code ?? 'generic', retryMs: known?.retryMs ?? null };
+  }
 }
 
 export function kickMember(userId: string): Promise<boolean> {
@@ -75,6 +92,14 @@ export function setRoomLinks(on: boolean): Promise<boolean> {
 
 export function setSlowMode(seconds: number): Promise<boolean> {
   return configure({ slowModeS: seconds });
+}
+
+export function setRoomCover(cover: RoomCover | null): Promise<SettingsOutcome> {
+  return settle({ cover });
+}
+
+export function setRoomImages(policy: RoomImagesPolicy): Promise<boolean> {
+  return configure({ roomImages: policy });
 }
 
 export async function suggestTrack(track: Track): Promise<boolean> {

@@ -31,7 +31,8 @@
     "join": "입장",
     "here": "참여 중",
     "untitled": "함께 듣는 중",
-    "host": "{{name}} 님이 진행"
+    "host": "{{name}} 님이 진행",
+    "full": "자리 없음"
   },
   "share": {
     "action": "보내기",
