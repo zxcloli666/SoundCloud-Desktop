@@ -5,6 +5,7 @@ import { LinkIcon, Settings } from '../../../lib/icons';
 import { setRoomChat, setRoomLinks, setSlowMode } from '../../../lib/together/room-actions';
 import { SLOW_MODE_SECONDS } from '../../../lib/together/room-rules';
 import type { RoomView } from '../../../lib/together/types';
+import { BackdropEntry } from './BackdropEntry';
 import { RoomCover } from './RoomCover';
 import { RoomImagesPolicy } from './RoomImagesPolicy';
 import { RoomPopover } from './RoomPopover';
@@ -133,6 +134,7 @@ export const RoomRulesPanel = memo(function RoomRulesPanel({ room }: { room: Roo
       )}
       <RoomImagesPolicy room={room} />
       <RoomCover room={room} />
+      <BackdropEntry room={room} />
     </div>
   );
 });
