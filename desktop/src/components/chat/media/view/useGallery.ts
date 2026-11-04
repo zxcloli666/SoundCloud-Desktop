@@ -18,7 +18,7 @@ export interface Gallery {
 const NO_MESSAGES: Message[] = [];
 
 function newestFirst(images: ViewImage[]): ViewImage[] {
-  return images.slice().reverse();
+  return images.slice().sort((a, b) => (b.seq ?? 0) - (a.seq ?? 0) || a.position - b.position);
 }
 
 export function useGallery(conversationId: ConvId): Gallery {

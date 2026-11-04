@@ -125,7 +125,7 @@ export const LightboxView = memo(function LightboxView({ session }: { session: L
       tabIndex={-1}
       data-ui="chat-lightbox"
       data-scheme="dark"
-      className="chat-media-motion fixed inset-0 z-[300] flex flex-col text-ink outline-none"
+      className="chat-media-motion fixed inset-0 z-[1000] flex flex-col text-ink outline-none"
       style={{ animation: calm ? undefined : 'chat-media-fade 180ms ease-out' }}
     >
       <div

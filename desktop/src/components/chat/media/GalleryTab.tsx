@@ -3,11 +3,16 @@ import type { Seq } from '../../../lib/chat/types';
 import { useThread } from '../thread/context';
 import { GalleryGrid } from './view/GalleryGrid';
 import { GalleryEmpty, GalleryFailed, GallerySkeleton, GalleryTail } from './view/GalleryStates';
+import type { ViewImage } from './view/images';
 import { showLightbox } from './view/lightbox-root';
 import { useMediaView } from './view/media-state';
 import { useGallery } from './view/useGallery';
 
 const AUTO_SCANS = 5;
+
+function chronological(items: ViewImage[]): ViewImage[] {
+  return items.slice().sort((a, b) => (a.seq ?? 0) - (b.seq ?? 0) || a.position - b.position);
+}
 
 export const GalleryTab = memo(function GalleryTab({
   scrollRef,
@@ -26,7 +31,7 @@ export const GalleryTab = memo(function GalleryTab({
       const start = items[index];
       if (!start) return;
       showLightbox({
-        items: items.slice().reverse(),
+        items: chronological(items),
         start,
         more,
         nameOf,

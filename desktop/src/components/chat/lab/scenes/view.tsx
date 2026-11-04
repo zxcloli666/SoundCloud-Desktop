@@ -21,7 +21,7 @@ const SIZES: [number, number][] = [
   [1000, 1250],
   [1500, 1000],
 ];
-const PENDING_URL = 'http://10.255.255.1/chat-lab-pending.webp';
+const PENDING_URL = 'http://127.0.0.1:5393/chat-lab-pending.webp';
 
 type LabMedia = (conversationId: ConvId, mediaId: string, variant: string) => string | null;
 type Emit = (event: string, payload: unknown) => void;
@@ -106,6 +106,12 @@ function openInfoGallery(kit: LabKit) {
   });
   kit.waitFor('[data-ui="chat-info"] [role="tab"]');
   kit.click('[data-ui="chat-info"] [role="tablist"] > [role="tab"]:last-child');
+  kit.wait(300);
+  kit.after(() => {
+    const tabs = document.querySelector<HTMLElement>('[data-ui="chat-info"] [role="tablist"]');
+    const scroller = tabs?.parentElement;
+    if (tabs && scroller) scroller.scrollTop = tabs.offsetTop - 8;
+  });
 }
 
 function press(key: string) {
@@ -174,13 +180,24 @@ export const scenes: LabScene[] = [
     },
   },
   {
+    id: 'view-failed',
+    title: 'Album failed to load',
+    route: ROUTE_DM,
+    setup: (kit) => {
+      seedThread(kit, CONV.dm, [
+        { from: 'u-mira', ago: 30, text: 'Лови', attachments: album('m-fail', 3, 1) },
+      ]);
+      kit.mark(['m-fail-1', 'm-fail-2', 'm-fail-3'], 'failed');
+    },
+  },
+  {
     id: 'view-gone',
     title: 'Deleted, lost and failed tiles',
     route: ROUTE_DM,
     setup: (kit) => {
       seedThread(kit, CONV.dm, [
-        { from: 'u-mira', ago: 40, text: 'Старый альбом', attachments: album('m-gone', 4) },
-        { from: 'u-mira', ago: 20, attachments: album('m-gone1', 1, 2) },
+        { from: 'u-mira', ago: 40, attachments: album('m-gone1', 1, 2) },
+        { from: 'u-mira', ago: 20, text: 'Старый альбом', attachments: album('m-gone', 4) },
       ]);
       kit.mark(['m-gone-3', 'm-gone1-1'], 'failed');
       markState(kit, ['m-gone-1'], 'deleted', CONV.dm);
