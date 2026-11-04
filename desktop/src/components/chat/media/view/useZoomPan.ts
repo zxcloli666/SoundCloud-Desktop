@@ -41,6 +41,7 @@ export function useZoomPan(
   fit: Size,
   stage: Size,
   calm: boolean,
+  enabled: boolean,
 ): ZoomPan {
   const view = useRef<View>({ s: 1, x: 0, y: 0 });
   const drag = useRef<Drag | null>(null);
@@ -104,8 +105,14 @@ export function useZoomPan(
   }, [bound, apply]);
 
   useEffect(() => {
+    if (enabled) return;
+    view.current = { s: 1, x: 0, y: 0 };
+    setScale(1);
+  }, [enabled]);
+
+  useEffect(() => {
     const node = stageRef.current;
-    if (!node) return;
+    if (!node || !enabled) return;
     const local = (event: MouseEvent): Point => {
       const rect = node.getBoundingClientRect();
       return {
@@ -164,7 +171,7 @@ export function useZoomPan(
       node.removeEventListener('pointerup', onPointerUp);
       node.removeEventListener('pointercancel', onPointerUp);
     };
-  }, [stageRef, zoomTo, reset, apply, bound]);
+  }, [stageRef, zoomTo, reset, apply, bound, enabled]);
 
   return useMemo(() => ({ scale, zoomIn, zoomOut, reset }), [scale, zoomIn, zoomOut, reset]);
 }

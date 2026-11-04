@@ -49,8 +49,11 @@ export const LightboxBar = memo(function LightboxBar({
   const scale = zoom?.scale ?? 1;
   const canJump = session.onJump !== null && image.seq !== null;
   return (
-    <header className="relative z-10 flex h-14 shrink-0 items-center gap-3 px-4">
-      <div className="flex min-w-0 flex-1 flex-col">
+    <header
+      data-tauri-drag-region
+      className="relative z-10 flex h-14 shrink-0 items-center gap-3 px-4"
+    >
+      <div data-tauri-drag-region className="flex min-w-0 flex-1 flex-col">
         <span
           className="truncate text-[13px] font-semibold"
           style={{ color: senderColor(image.sender) }}

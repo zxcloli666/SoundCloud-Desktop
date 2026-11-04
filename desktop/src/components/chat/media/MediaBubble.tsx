@@ -24,7 +24,7 @@ function MetaPill({ message, tick }: { message: Message; tick: Tick | null }) {
   return (
     <span
       data-scheme="dark"
-      className="pointer-events-none absolute right-1.5 bottom-1.5 z-10 rounded-full bg-paper/55 px-1.5 py-[3px]"
+      className="pointer-events-none absolute right-1.5 bottom-1.5 z-10 rounded-full bg-paper/70 px-1.5 py-[3px] [&>span]:pointer-events-none! [&>span]:text-ink-85!"
     >
       <BubbleMeta message={message} tick={tick} floating={false} />
     </span>

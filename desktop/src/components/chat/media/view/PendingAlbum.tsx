@@ -1,5 +1,6 @@
 import { memo, type ReactNode, type SyntheticEvent, useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
 import { chatBridge } from '../../../../lib/chat/bridge';
 import type { UploadView } from '../../../../lib/chat/media-types';
 import { useChatMediaStore } from '../../../../stores/chat/media';
@@ -23,8 +24,10 @@ const KNOWN_ERRORS = new Set([
   'send_limited',
 ]);
 
+const NO_UPLOADS: UploadView[] = [];
+
 export function useAlbumUploads(album: string, pending: boolean): UploadView[] {
-  const uploads = useChatMediaStore((state) => state.uploads);
+  const uploads = useChatMediaStore((state) => (pending ? state.uploads : NO_UPLOADS));
   return useMemo(
     () =>
       pending
@@ -74,6 +77,8 @@ const UploadTile = memo(function UploadTile({
   const reason = t(
     `chat.gallery.upload.errors.${error && KNOWN_ERRORS.has(error) ? error : 'generic'}`,
   );
+  const act = (call: Promise<void>) =>
+    void call.catch(() => toast.error(t('chat.gallery.upload.errors.generic')));
   const onLoad = (event: SyntheticEvent<HTMLImageElement>) => {
     const image = event.currentTarget;
     if (image.naturalWidth > 0)
@@ -110,13 +115,13 @@ const UploadTile = memo(function UploadTile({
           <span className="flex items-center gap-2">
             <RoundAction
               label={t('chat.gallery.upload.retry')}
-              onClick={() => void chatBridge.mediaUploadRetry(upload.id)}
+              onClick={() => act(chatBridge.mediaUploadRetry(upload.id))}
             >
               <RotateCcw size={15} />
             </RoundAction>
             <RoundAction
               label={t('chat.gallery.upload.cancel')}
-              onClick={() => void chatBridge.mediaUploadCancel(upload.id)}
+              onClick={() => act(chatBridge.mediaUploadCancel(upload.id))}
             >
               <X size={15} />
             </RoundAction>

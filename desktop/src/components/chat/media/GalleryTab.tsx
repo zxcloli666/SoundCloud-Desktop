@@ -41,10 +41,6 @@ export const GalleryTab = memo(function GalleryTab({
     [items, more, nameOf, onJump],
   );
 
-  const nearEnd = useCallback(() => {
-    if (tail === 'idle') loadMore();
-  }, [tail, loadMore]);
-
   const [scans, setScans] = useState(0);
   const scanning = items.length === 0 && more && tail === 'idle' && scans < AUTO_SCANS;
 
@@ -70,9 +66,9 @@ export const GalleryTab = memo(function GalleryTab({
         scrollRef={scrollRef}
         nameOf={nameOf}
         onOpen={open}
-        onNearEnd={nearEnd}
+        onNearEnd={loadMore}
       />
-      <GalleryTail state={tail} onRetry={loadMore} />
+      <GalleryTail state={tail} older={gallery.stalled && more} onRetry={loadMore} />
     </div>
   );
 });

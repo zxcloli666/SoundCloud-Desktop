@@ -18,6 +18,7 @@ import { MediaFace, useThumb } from './MediaFace';
 const GAP = 3;
 const MIN_TILE = 104;
 const LOAD_AHEAD_ROWS = 3;
+const TAB_BAR = 60;
 
 function columnsFor(width: number): number {
   return Math.min(6, Math.max(3, Math.floor((width + GAP) / (MIN_TILE + GAP))));
@@ -107,6 +108,7 @@ export const GalleryGrid = memo(function GalleryGrid({
     estimateSize: () => tile + GAP,
     overscan: 4,
     scrollMargin: offset,
+    scrollPaddingStart: TAB_BAR,
   });
 
   useEffect(() => {
@@ -116,8 +118,11 @@ export const GalleryGrid = memo(function GalleryGrid({
   const virtualRows = virtualizer.getVirtualItems();
   const lastRow = virtualRows[virtualRows.length - 1]?.index ?? -1;
 
+  const askedAt = useRef(-1);
   useEffect(() => {
-    if (rows > 0 && lastRow >= rows - LOAD_AHEAD_ROWS) onNearEnd();
+    if (rows === 0 || lastRow < rows - LOAD_AHEAD_ROWS || askedAt.current === rows) return;
+    askedAt.current = rows;
+    onNearEnd();
   }, [lastRow, rows, onNearEnd]);
 
   useEffect(() => {
@@ -161,7 +166,12 @@ export const GalleryGrid = memo(function GalleryGrid({
     else if (event.key === 'End') move(items.length - 1);
     else return;
     event.preventDefault();
+    event.stopPropagation();
   };
+
+  const firstShown = (virtualRows[0]?.index ?? 0) * columns;
+  const lastShown = ((virtualRows[virtualRows.length - 1]?.index ?? -1) + 1) * columns - 1;
+  const focusable = active >= firstShown && active <= lastShown ? active : firstShown;
 
   const label = (image: ViewImage) =>
     t('chat.gallery.grid.item', {
@@ -204,7 +214,7 @@ export const GalleryGrid = memo(function GalleryGrid({
                 <GalleryTile
                   image={image}
                   index={start + column}
-                  active={start + column === active}
+                  active={start + column === focusable}
                   label={label(image)}
                   onOpen={onOpen}
                   onFocus={setActive}

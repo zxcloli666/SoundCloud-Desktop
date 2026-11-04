@@ -12,9 +12,9 @@ export function uploadFraction(upload: UploadView): number {
   if (total <= 0) return 0;
   const sent = upload.partsSent * PART_BYTES;
   const bytes =
-    upload.object === 'thumb'
-      ? Math.min(sent, upload.thumbBytes)
-      : upload.thumbBytes + Math.min(sent, upload.imageBytes);
+    upload.object === 'image'
+      ? Math.min(sent, upload.imageBytes)
+      : upload.imageBytes + Math.min(sent, upload.thumbBytes);
   return Math.min(0.99, bytes / total);
 }
 

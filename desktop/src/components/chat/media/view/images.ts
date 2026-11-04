@@ -18,6 +18,7 @@ export interface ViewImage {
 export interface ImagePage {
   images: ViewImage[];
   oldest: Seq | null;
+  newest: Seq | null;
   more: boolean;
 }
 
@@ -57,6 +58,7 @@ function bySeq(a: Message, b: Message): number {
 export async function imagesBefore(conversationId: ConvId, before: Seq | null): Promise<ImagePage> {
   const found: Message[] = [];
   let cursor = before;
+  let newest: Seq | null = null;
   let more = true;
   let images = 0;
   for (let page = 0; page < PAGES_PER_STEP && more && images < WANT_PER_STEP; page++) {
@@ -69,6 +71,7 @@ export async function imagesBefore(conversationId: ConvId, before: Seq | null): 
     if (sent.length === 0) break;
     sent.sort(bySeq);
     cursor = sent[0].seq;
+    newest = Math.max(newest ?? 0, sent[sent.length - 1].seq ?? 0);
     for (const message of sent) {
       if (message.attachments.length > 0 && message.body.type === 'text') {
         found.push(message);
@@ -80,6 +83,7 @@ export async function imagesBefore(conversationId: ConvId, before: Seq | null): 
   return {
     images: found.flatMap(imagesOf),
     oldest: cursor,
+    newest,
     more,
   };
 }

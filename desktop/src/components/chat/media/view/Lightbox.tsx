@@ -1,6 +1,7 @@
 import { memo, type ReactNode, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { usePerfMode } from '../../../../lib/perf';
+import { useChatThreadStore } from '../../../../stores/chat/thread';
 import { ChevronLeft, ChevronRight, LoaderCircle } from './icons';
 import { LightboxBar } from './LightboxBar';
 import { LightboxStage } from './LightboxStage';
@@ -80,9 +81,22 @@ export const LightboxView = memo(function LightboxView({ session }: { session: L
   const hasNext = index < items.length - 1;
   const blur = perf.blur(18);
 
+  const openId = useChatThreadStore((state) => state.openId);
+  const opener = session.opener;
+
   useEffect(() => {
+    const app = document.getElementById('root');
+    if (app) app.inert = true;
     dialogRef.current?.focus({ preventScroll: true });
-  }, []);
+    return () => {
+      if (app) app.inert = false;
+      if (opener?.isConnected) opener.focus({ preventScroll: true });
+    };
+  }, [opener]);
+
+  useEffect(() => {
+    if (openId !== session.thread) closeLightbox();
+  }, [openId, session.thread]);
 
   useEffect(() => {
     for (const near of [items[index - 1], items[index + 1]]) {
@@ -94,21 +108,23 @@ export const LightboxView = memo(function LightboxView({ session }: { session: L
     const onKey = (event: KeyboardEvent) => {
       const dialog = dialogRef.current;
       if (!dialog) return;
+      event.stopPropagation();
       const zoomNow = zoomRef.current;
+      const plain = !event.ctrlKey && !event.metaKey && !event.altKey;
       let handled = true;
       if (event.key === 'Escape') {
         if (zoomNow && zoomNow.scale > 1) zoomNow.reset();
         else closeLightbox();
-      } else if (event.key === 'ArrowLeft') void stepLightbox(-1);
-      else if (event.key === 'ArrowRight') void stepLightbox(1);
-      else if (event.key === '+' || event.key === '=') zoomNow?.zoomIn();
-      else if (event.key === '-' || event.key === '_') zoomNow?.zoomOut();
-      else if (event.key === '0') zoomNow?.reset();
-      else if (event.key === 'Tab') trapTab(dialog, event);
-      else handled = false;
-      if (!handled) return;
-      if (event.key !== 'Tab') event.preventDefault();
-      event.stopPropagation();
+      } else if (event.key === 'ArrowLeft') stepLightbox(-1);
+      else if (event.key === 'ArrowRight') stepLightbox(1);
+      else if (plain && (event.key === '+' || event.key === '=')) zoomNow?.zoomIn();
+      else if (plain && (event.key === '-' || event.key === '_')) zoomNow?.zoomOut();
+      else if (plain && event.key === '0') zoomNow?.reset();
+      else if (event.key === 'Tab') {
+        trapTab(dialog, event);
+        handled = false;
+      } else handled = false;
+      if (handled) event.preventDefault();
     };
     window.addEventListener('keydown', onKey, true);
     return () => window.removeEventListener('keydown', onKey, true);
@@ -127,6 +143,10 @@ export const LightboxView = memo(function LightboxView({ session }: { session: L
       data-scheme="dark"
       className="chat-media-motion fixed inset-0 z-[1000] flex flex-col text-ink outline-none"
       style={{ animation: calm ? undefined : 'chat-media-fade 180ms ease-out' }}
+      onContextMenu={(event) => {
+        event.preventDefault();
+        event.stopPropagation();
+      }}
     >
       <div
         aria-hidden
@@ -157,7 +177,7 @@ export const LightboxView = memo(function LightboxView({ session }: { session: L
           <SideButton
             side="left"
             label={t('chat.gallery.viewer.prev')}
-            onClick={() => void stepLightbox(-1)}
+            onClick={() => stepLightbox(-1)}
           >
             {session.loadingOlder ? (
               <LoaderCircle
@@ -174,7 +194,7 @@ export const LightboxView = memo(function LightboxView({ session }: { session: L
           <SideButton
             side="right"
             label={t('chat.gallery.viewer.next')}
-            onClick={() => void stepLightbox(1)}
+            onClick={() => stepLightbox(1)}
           >
             <ChevronRight size={22} />
           </SideButton>

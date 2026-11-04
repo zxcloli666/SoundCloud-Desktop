@@ -1,9 +1,12 @@
 import { create } from 'zustand';
 import type { NameOf } from '../../../../lib/chat/render';
-import type { Seq } from '../../../../lib/chat/types';
+import type { ConvId, Seq } from '../../../../lib/chat/types';
+import { useChatThreadStore } from '../../../../stores/chat/thread';
 import { imagesBefore, sameImage, type ViewImage } from './images';
 
 export interface LightboxSession {
+  token: number;
+  thread: ConvId | null;
   items: ViewImage[];
   index: number;
   oldest: Seq | null;
@@ -26,7 +29,11 @@ interface LightboxState {
   session: LightboxSession | null;
 }
 
+const OLDER_ROUNDS = 3;
+
 export const useLightboxStore = create<LightboxState>()(() => ({ session: null }));
+
+let tokens = 0;
 
 function oldestSeq(items: ViewImage[]): Seq | null {
   for (const item of items) if (item.seq !== null) return item.seq;
@@ -34,16 +41,19 @@ function oldestSeq(items: ViewImage[]): Seq | null {
 }
 
 export function openLightbox({ items, start, more, nameOf, onJump }: OpenInput) {
+  const list = items.length > 0 ? items : [start];
   const index = Math.max(
     0,
-    items.findIndex((item) => sameImage(item, start)),
+    list.findIndex((item) => sameImage(item, start)),
   );
   const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
   useLightboxStore.setState({
     session: {
-      items: items.length > 0 ? items : [start],
+      token: ++tokens,
+      thread: useChatThreadStore.getState().openId,
+      items: list,
       index,
-      oldest: oldestSeq(items),
+      oldest: oldestSeq(list),
       more,
       loadingOlder: false,
       nameOf,
@@ -54,56 +64,70 @@ export function openLightbox({ items, start, more, nameOf, onJump }: OpenInput) 
 }
 
 export function closeLightbox() {
-  const opener = useLightboxStore.getState().session?.opener ?? null;
   useLightboxStore.setState({ session: null });
-  if (opener?.isConnected) opener.focus({ preventScroll: true });
 }
 
-function patch(next: Partial<LightboxSession>) {
+function patch(token: number, next: Partial<LightboxSession>) {
   useLightboxStore.setState((state) =>
-    state.session ? { session: { ...state.session, ...next } } : state,
+    state.session?.token === token ? { session: { ...state.session, ...next } } : state,
   );
 }
 
-async function loadOlder(): Promise<boolean> {
+function live(token: number): LightboxSession | null {
   const session = useLightboxStore.getState().session;
-  if (!session?.more || session.loadingOlder) return false;
+  return session?.token === token ? session : null;
+}
+
+async function loadOlder(session: LightboxSession) {
+  const { token } = session;
   const conversationId = session.items[0]?.conversationId;
-  if (!conversationId) return false;
-  patch({ loadingOlder: true });
+  if (!conversationId || !session.more || session.loadingOlder) return;
+  patch(token, { loadingOlder: true });
+  let oldest = session.oldest;
+  let more: boolean = session.more;
   try {
-    const page = await imagesBefore(conversationId, session.oldest);
-    const current = useLightboxStore.getState().session;
-    if (!current || current.items[0]?.conversationId !== conversationId) return false;
-    const fresh = page.images.filter(
-      (image) => !current.items.some((item) => sameImage(item, image)),
-    );
-    patch({
-      items: [...fresh, ...current.items],
-      index: current.index + fresh.length,
-      oldest: page.oldest ?? current.oldest,
-      more: page.more,
-      loadingOlder: false,
-    });
-    return fresh.length > 0;
+    for (let round = 0; round < OLDER_ROUNDS && more; round++) {
+      const page = await imagesBefore(conversationId, oldest);
+      const current = live(token);
+      if (!current) return;
+      oldest = page.oldest ?? oldest;
+      more = page.more;
+      const fresh = page.images.filter(
+        (image) => !current.items.some((item) => sameImage(item, image)),
+      );
+      if (fresh.length === 0) {
+        patch(token, { oldest, more });
+        continue;
+      }
+      patch(token, {
+        items: [...fresh, ...current.items],
+        index: current.index === 0 ? fresh.length - 1 : current.index + fresh.length,
+        oldest,
+        more,
+      });
+      return;
+    }
   } catch {
-    patch({ loadingOlder: false });
-    return false;
+    return;
+  } finally {
+    patch(token, { loadingOlder: false });
   }
 }
 
-export async function stepLightbox(delta: number) {
+export function stepLightbox(delta: number) {
   const session = useLightboxStore.getState().session;
   if (!session) return;
   const target = session.index + delta;
   if (target >= 0 && target < session.items.length) {
-    patch({ index: target });
+    patch(session.token, { index: target });
     return;
   }
-  if (target < 0 && (await loadOlder())) {
-    const next = useLightboxStore.getState().session;
-    if (next) patch({ index: Math.max(0, next.index - 1) });
-  }
+  if (target < 0) void loadOlder(session);
+}
+
+export function pickLightbox(index: number) {
+  const session = useLightboxStore.getState().session;
+  if (session && index >= 0 && index < session.items.length) patch(session.token, { index });
 }
 
 export function jumpFromLightbox() {
@@ -112,11 +136,6 @@ export function jumpFromLightbox() {
   if (!session || !item || item.seq === null || !session.onJump) return;
   const { onJump } = session;
   const seq = item.seq;
-  useLightboxStore.setState({ session: null });
+  closeLightbox();
   onJump(seq);
-}
-
-export function pickLightbox(index: number) {
-  const session = useLightboxStore.getState().session;
-  if (session && index >= 0 && index < session.items.length) patch({ index });
 }

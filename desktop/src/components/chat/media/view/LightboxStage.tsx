@@ -1,4 +1,12 @@
-import { memo, type RefObject, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import {
+  memo,
+  type RefObject,
+  type SyntheticEvent,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
 import { useTranslation } from 'react-i18next';
 import { fitInside, type Size } from './album-layout';
 import { CloudOff, ImageOff, LoaderCircle, RotateCcw } from './icons';
@@ -12,6 +20,7 @@ type FullPhase = 'loading' | 'ready' | 'failed';
 
 const PAD_X = 72;
 const PAD_Y = 24;
+const FULL_DWELL_MS = 160;
 
 function useStageSize(ref: RefObject<HTMLElement | null>): Size {
   const [size, setSize] = useState<Size>({ w: 0, h: 0 });
@@ -99,15 +108,34 @@ export const LightboxStage = memo(function LightboxStage({
   const stageRef = useRef<HTMLDivElement>(null);
   const targetRef = useRef<HTMLDivElement>(null);
   const stage = useStageSize(stageRef);
-  const fit = fitInside(image, Math.max(1, stage.w - PAD_X * 2), Math.max(1, stage.h - PAD_Y * 2));
-  const zoom = useZoomPan(stageRef, targetRef, fit, stage, calm);
+  const [natural, setNatural] = useState<Size | null>(null);
+  const known = image.w > 0 && image.h > 0 ? image : natural;
+  const fit = fitInside(
+    known ?? { w: 0, h: 0 },
+    Math.max(1, stage.w - PAD_X * 2),
+    Math.max(1, stage.h - PAD_Y * 2),
+  );
+  const zoom = useZoomPan(stageRef, targetRef, fit, stage, calm, gone === null);
   const [full, setFull] = useState<{ phase: FullPhase; attempt: number }>({
     phase: 'loading',
     attempt: 0,
   });
   const [thumbShown, setThumbShown] = useState(false);
+  const [wanted, setWanted] = useState(false);
 
   useEffect(() => onZoom(zoom), [onZoom, zoom]);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setWanted(true), FULL_DWELL_MS);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  const learn = (event: SyntheticEvent<HTMLImageElement>) => {
+    const { naturalWidth, naturalHeight } = event.currentTarget;
+    if (naturalWidth > 0 && naturalHeight > 0 && !natural) {
+      setNatural({ w: naturalWidth, h: naturalHeight });
+    }
+  };
 
   const { conversationId, mediaId } = image;
   const ready = full.phase === 'ready';
@@ -136,7 +164,7 @@ export const LightboxStage = memo(function LightboxStage({
             <div
               ref={targetRef}
               className="absolute inset-0 overflow-hidden rounded-[6px] shadow-[0_24px_80px_rgb(var(--shade)/calc(0.6*var(--shade-alpha)))]"
-              style={{ transformOrigin: '50% 50%', willChange: 'transform' }}
+              style={{ transformOrigin: '50% 50%' }}
             >
               <img
                 src={viewUrl(conversationId, mediaId, 'placeholder')}
@@ -151,24 +179,32 @@ export const LightboxStage = memo(function LightboxStage({
                 alt=""
                 aria-hidden
                 draggable={false}
-                onLoad={() => setThumbShown(true)}
-                className="absolute inset-0 size-full object-cover"
+                onLoad={(event) => {
+                  learn(event);
+                  setThumbShown(true);
+                }}
+                className="absolute inset-0 size-full object-contain"
                 style={{ visibility: ready ? 'hidden' : undefined }}
               />
-              <img
-                key={full.attempt}
-                src={viewUrl(conversationId, mediaId, 'image', full.attempt)}
-                alt=""
-                draggable={false}
-                decoding="async"
-                onLoad={() => setFull((current) => ({ ...current, phase: 'ready' }))}
-                onError={() => setFull((current) => ({ ...current, phase: 'failed' }))}
-                className="chat-media-motion absolute inset-0 size-full object-cover"
-                style={{
-                  opacity: ready ? 1 : 0,
-                  transition: calm ? undefined : 'opacity 240ms ease-out',
-                }}
-              />
+              {wanted && (
+                <img
+                  key={full.attempt}
+                  src={viewUrl(conversationId, mediaId, 'image', full.attempt)}
+                  alt=""
+                  draggable={false}
+                  decoding="async"
+                  onLoad={(event) => {
+                    learn(event);
+                    setFull((current) => ({ ...current, phase: 'ready' }));
+                  }}
+                  onError={() => setFull((current) => ({ ...current, phase: 'failed' }))}
+                  className="chat-media-motion absolute inset-0 size-full object-contain"
+                  style={{
+                    opacity: ready ? 1 : 0,
+                    transition: calm ? undefined : 'opacity 240ms ease-out',
+                  }}
+                />
+              )}
             </div>
           </div>
           <FullStatus

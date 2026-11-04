@@ -87,14 +87,30 @@ export const GalleryFailed = memo(function GalleryFailed({ onRetry }: { onRetry:
 
 export const GalleryTail = memo(function GalleryTail({
   state,
+  older,
   onRetry,
 }: {
   state: 'idle' | 'loading' | 'failed';
+  older: boolean;
   onRetry: () => void;
 }) {
   const { t } = useTranslation();
   const calm = useCalmMotion();
-  if (state === 'idle') return null;
+  if (state === 'idle') {
+    if (!older) return null;
+    return (
+      <div className="flex justify-center py-4">
+        <button
+          type="button"
+          onClick={onRetry}
+          className="flex h-8 cursor-pointer items-center gap-1.5 rounded-full bg-ink/[0.06] px-3.5 text-[12px] font-semibold text-ink-75 transition-colors duration-150 hover:bg-ink/[0.1] focus-visible:outline-2 focus-visible:outline-[var(--color-accent)]"
+        >
+          <History size={13} />
+          {t('chat.gallery.grid.older')}
+        </button>
+      </div>
+    );
+  }
   if (state === 'failed') {
     return (
       <div className="flex items-center justify-center gap-3 py-4 text-[12px] text-ink-45">

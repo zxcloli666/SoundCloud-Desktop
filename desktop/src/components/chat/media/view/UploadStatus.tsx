@@ -1,5 +1,6 @@
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
 import { chatBridge } from '../../../../lib/chat/bridge';
 import type { UploadView } from '../../../../lib/chat/media-types';
 import { useChatStore } from '../../../../stores/chat';
@@ -7,11 +8,9 @@ import { CircleAlert, RotateCcw } from './icons';
 import { ProgressRing } from './ProgressRing';
 import { albumProgress } from './upload-progress';
 
-function retryFailed(uploads: UploadView[]) {
-  for (const upload of uploads) {
-    if (upload.state === 'failed')
-      void chatBridge.mediaUploadRetry(upload.id).catch(() => undefined);
-  }
+function retryFailed(uploads: UploadView[], onError: () => void) {
+  const failed = uploads.filter((upload) => upload.state === 'failed');
+  void Promise.all(failed.map((upload) => chatBridge.mediaUploadRetry(upload.id))).catch(onError);
 }
 
 export function uploadStatusShown(uploads: UploadView[]): boolean {
@@ -37,7 +36,9 @@ export const UploadStatus = memo(function UploadStatus({ uploads }: { uploads: U
         </span>
         <button
           type="button"
-          onClick={() => retryFailed(uploads)}
+          onClick={() =>
+            retryFailed(uploads, () => toast.error(t('chat.gallery.upload.errors.generic')))
+          }
           className="ml-auto flex h-6 shrink-0 cursor-pointer items-center gap-1 rounded-full bg-ink/[0.07] px-2 text-[11px] font-semibold text-ink-80 transition-colors duration-150 hover:bg-ink/[0.12]"
         >
           <RotateCcw size={11} />
@@ -62,7 +63,9 @@ export const UploadStatus = memo(function UploadStatus({ uploads }: { uploads: U
           : t('chat.gallery.upload.waiting')}
       </span>
       {online && (
-        <span className="ml-auto shrink-0 text-ink-40">{Math.round(progress.fraction * 100)}%</span>
+        <span aria-hidden className="ml-auto shrink-0 text-ink-40">
+          {Math.round(progress.fraction * 100)}%
+        </span>
       )}
     </div>
   );
