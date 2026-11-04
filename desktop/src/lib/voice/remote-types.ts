@@ -1,6 +1,6 @@
 export type SpeakerProvider = 'alice' | 'salut';
 export type RemoteState = 'done' | 'ask' | 'not_found' | 'failed';
-export type RemoteKind = 'say' | 'link_confirm';
+export type RemoteKind = 'utterance' | 'link_confirm';
 
 export interface RemoteCommand {
   id: string;
