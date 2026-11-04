@@ -41,6 +41,7 @@ function Countdown({ entry }: { entry: UndoEntry }) {
 
   return (
     <span
+      aria-hidden
       className="relative flex shrink-0 items-center justify-center"
       style={{ width: RING, height: RING }}
     >
