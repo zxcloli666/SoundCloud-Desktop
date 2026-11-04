@@ -3,25 +3,20 @@ import { useScheme } from '../../../../lib/scheme';
 import type { Luminance } from '../presets/types';
 import { useMotion } from './gate';
 import { fitCanvas, type MotionTarget, paintStill, runMotion, type Tone } from './motion';
-import { readChannels, scrimAlpha } from './scrim';
+import { scrimAlpha } from './scrim';
 
 const CANVAS_SCALE = 0.5;
 
 export interface StageProps {
   src: string;
-  tone: Tone;
   light: Luminance;
-  animated: boolean;
+  motion: Tone | null;
   onFail?: () => void;
-  className?: string;
 }
 
 function useScrimAlpha(light: Luminance) {
   const scheme = useScheme();
-  return useMemo(
-    () => (scheme ? scrimAlpha(light, readChannels('--ink'), readChannels('--paper')) : 0),
-    [light, scheme],
-  );
+  return useMemo(() => scrimAlpha(light, scheme), [light, scheme]);
 }
 
 function Scrim({ light }: { light: Luminance }) {
@@ -74,11 +69,9 @@ function Motion({ image, tone }: { image: HTMLImageElement; tone: Tone }) {
 
 export const BackdropStage = memo(function BackdropStage({
   src,
-  tone,
   light,
-  animated,
+  motion,
   onFail,
-  className,
 }: StageProps) {
   const [image, setImage] = useState<HTMLImageElement | null>(null);
   const [ready, setReady] = useState(false);
@@ -86,7 +79,7 @@ export const BackdropStage = memo(function BackdropStage({
   return (
     <div
       aria-hidden
-      className={className ?? 'pointer-events-none absolute inset-0 -z-10 overflow-hidden'}
+      className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
       style={{ contain: 'strict' }}
     >
       <img
@@ -100,11 +93,11 @@ export const BackdropStage = memo(function BackdropStage({
         className="absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ease-[var(--ease-apple)] motion-reduce:transition-none"
         style={{
           opacity: ready ? 1 : 0,
-          transform: animated ? 'scale(1.07)' : undefined,
-          willChange: animated ? 'transform' : undefined,
+          transform: motion ? 'scale(1.07)' : undefined,
+          willChange: motion ? 'transform' : undefined,
         }}
       />
-      {animated && ready && image && <Motion image={image} tone={tone} />}
+      {motion && ready && image && <Motion image={image} tone={motion} />}
       <Scrim light={light} />
     </div>
   );

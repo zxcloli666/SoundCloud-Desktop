@@ -36,25 +36,11 @@ function Ground({ focus, cover }: { focus: Focus; cover: string | null }) {
   if (focus.kind === 'preset') {
     const { preset } = focus;
     return (
-      <BackdropStage
-        key={preset.id}
-        src={preset.image}
-        tone={preset.tone}
-        light={preset.light}
-        animated
-      />
+      <BackdropStage key={preset.id} src={preset.image} light={preset.light} motion={preset.tone} />
     );
   }
   if (focus.kind === 'photo' && focus.src) {
-    return (
-      <BackdropStage
-        key={focus.src}
-        src={focus.src}
-        tone="dark"
-        light={UNKNOWN_LIGHT}
-        animated={false}
-      />
-    );
+    return <BackdropStage key={focus.src} src={focus.src} light={UNKNOWN_LIGHT} motion={null} />;
   }
   if (focus.kind === 'photo') {
     return (

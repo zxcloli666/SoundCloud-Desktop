@@ -23,15 +23,7 @@ function ImageBackdrop({ src, onFail }: { src: string; onFail: () => void }) {
     };
   }, [src]);
 
-  return (
-    <BackdropStage
-      src={src}
-      tone={light.mean > 0.4 ? 'light' : 'dark'}
-      light={light}
-      animated={false}
-      onFail={onFail}
-    />
-  );
+  return <BackdropStage src={src} light={light} motion={null} onFail={onFail} />;
 }
 
 function useFailed(src: string | null) {
@@ -57,13 +49,7 @@ export const RoomBackdrop = memo(function RoomBackdrop({ room }: { room: RoomVie
   if (shown?.kind === 'preset') {
     const { preset } = shown;
     return (
-      <BackdropStage
-        key={preset.id}
-        src={preset.image}
-        tone={preset.tone}
-        light={preset.light}
-        animated
-      />
+      <BackdropStage key={preset.id} src={preset.image} light={preset.light} motion={preset.tone} />
     );
   }
   if (!src || failed) return null;

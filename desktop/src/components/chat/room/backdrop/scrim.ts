@@ -1,3 +1,4 @@
+import type { Scheme } from '../../../../lib/scheme';
 import type { Luminance } from '../presets/types';
 
 const TARGET = 4.5;
@@ -7,6 +8,11 @@ const CEILING = 0.92;
 const STEP = 0.01;
 
 export const UNKNOWN_LIGHT: Luminance = { mean: 0.5, low: 0, high: 1 };
+
+const FALLBACK: Record<Scheme, { ink: number[]; paper: number[] }> = {
+  dark: { ink: [255, 255, 255], paper: [8, 8, 10] },
+  white: { ink: [22, 20, 28], paper: [245, 245, 247] },
+};
 
 function decode(value: number) {
   return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
@@ -28,13 +34,15 @@ function mix(top: number, bottom: number, alpha: number) {
   return alpha * top + (1 - alpha) * bottom;
 }
 
-export function readChannels(name: string): number[] {
+function readChannels(name: string, fallback: number[]): number[] {
   const raw = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
   const parts = raw.split(/\s+/).map(Number);
-  return parts.length === 3 && parts.every(Number.isFinite) ? parts : [0, 0, 0];
+  return parts.length === 3 && parts.every(Number.isFinite) ? parts : fallback;
 }
 
-export function scrimAlpha(light: Luminance, ink: number[], paper: number[]): number {
+export function scrimAlpha(light: Luminance, scheme: Scheme): number {
+  const ink = readChannels('--ink', FALLBACK[scheme].ink);
+  const paper = readChannels('--paper', FALLBACK[scheme].paper);
   const inkLight = channelLight(ink);
   const paperLight = channelLight(paper);
   const worst = inkLight > paperLight ? light.high : light.low;
