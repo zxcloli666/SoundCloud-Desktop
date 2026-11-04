@@ -38,6 +38,8 @@ pub struct Strings {
     pub track: String,
     pub playlist: String,
     pub profile: String,
+    pub photo: String,
+    pub photos: String,
     pub room_invite: String,
     pub device_title: String,
     pub device_body: String,

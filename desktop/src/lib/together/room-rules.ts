@@ -43,6 +43,10 @@ export function mutedUntil(view: RoomView, userId: string | null, now: number): 
   return mute?.untilMs ?? null;
 }
 
+export function moderatorsMax(view: RoomView): number {
+  return view.perks?.modsMax ?? MAX_MODERATORS;
+}
+
 export function memberActions(
   view: RoomView,
   actor: string | null,
@@ -59,7 +63,7 @@ export function memberActions(
     mute: true,
     ban: host,
     moderator: host ? (targetIsModerator ? 'remove' : 'add') : null,
-    moderatorsFull: !targetIsModerator && (view.moderators?.length ?? 0) >= MAX_MODERATORS,
+    moderatorsFull: !targetIsModerator && (view.moderators?.length ?? 0) >= moderatorsMax(view),
   };
 }
 

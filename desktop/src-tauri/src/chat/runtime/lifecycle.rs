@@ -1,8 +1,13 @@
+use std::path::Path;
 use std::sync::Arc;
 use std::time::Duration;
 
 use sc_chat::api::Api;
 use sc_chat::{ChatError, ChatPhase, ChatResult, HistoryGate};
+use tauri::Manager;
+
+use crate::chat::state::ChatState;
+use crate::chat::upload::UPLOADS_DIR;
 
 use super::bringup::Halt;
 use super::local::Core;
@@ -68,12 +73,21 @@ impl Runtime {
         self.api.set_identity(None);
         self.restart();
         let keychain = self.keychain.clone();
+        let local_media = self
+            .app
+            .try_state::<ChatState>()
+            .map(|state| state.media_cache.clone());
+        let uploads = self.dir.join(UPLOADS_DIR);
         let wiped = self
             .rt
             .spawn_blocking(move || {
                 if let Some(core) = core {
                     core.store.wipe()?;
                 }
+                if let Some(cache) = local_media {
+                    cache.clear()?;
+                }
+                remove_dir(&uploads)?;
                 if forget_device {
                     keychain.wipe()?;
                 }
@@ -183,5 +197,13 @@ pub fn auth_move(
         AuthMove::Restart
     } else {
         AuthMove::Stay
+    }
+}
+
+fn remove_dir(dir: &Path) -> ChatResult<()> {
+    match std::fs::remove_dir_all(dir) {
+        Ok(()) => Ok(()),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(()),
+        Err(_) => Err(ChatError::Store),
     }
 }

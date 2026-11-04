@@ -158,6 +158,7 @@ export const chatBridge = {
   mediaAvatar: (conversationId: ConvId, path: string) =>
     invoke<UploadView>('chat_media_avatar', { conversationId, path }),
   mediaUploads: () => invoke<UploadView[]>('chat_media_uploads'),
+  mediaParked: () => invoke<string[]>('chat_media_parked'),
   mediaUploadRetry: (id: string) => invoke<void>('chat_media_upload_retry', { id }),
   mediaUploadCancel: (id: string) => invoke<void>('chat_media_upload_cancel', { id }),
   mediaCacheSize: () => invoke<number>('chat_media_cache_size'),

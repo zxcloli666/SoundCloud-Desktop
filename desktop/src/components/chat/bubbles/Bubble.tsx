@@ -4,7 +4,7 @@ import { senderColor, type Tick } from '../../../lib/chat/render';
 import type { Message } from '../../../lib/chat/types';
 import { Ban, Sparkles } from '../../../lib/icons';
 import { EmbedCard } from '../embeds/EmbedCard';
-import { MediaBubble } from '../media/MediaBubble';
+import { MediaBubble, useHasMedia } from '../media/MediaBubble';
 import { useThread } from '../thread/context';
 import { BubbleMeta } from './BubbleMeta';
 import { MessageText } from './MessageText';
@@ -89,12 +89,14 @@ export const Bubble = memo(function Bubble({
   flash,
 }: BubbleProps) {
   const { nameOf, conversation } = useThread();
+  const media = useHasMedia(message);
   const radius = corners(message.mine, first, last);
   const { body } = message;
   if (body.type !== 'text') return <Tombstone message={message} radius={radius} />;
 
   const hasText = body.text.length > 0;
   const metaInText = hasText && message.embeds.length === 0;
+  const solo = media && !hasText && message.embeds.length === 0;
   const tone = tick === 'failed' ? FAILED : message.mine ? MINE : THEIRS;
   const showName = first && !message.mine && conversation.kind !== 'direct';
 
@@ -103,7 +105,7 @@ export const Bubble = memo(function Bubble({
       data-ui="chat-bubble"
       data-mine={message.mine ? '' : undefined}
       data-failed={tick === 'failed' ? '' : undefined}
-      className="chat-thread-motion relative min-w-0 max-w-full px-3 py-[7px] text-[13.5px] leading-[1.45] text-ink-90"
+      className={`chat-thread-motion relative min-w-0 max-w-full px-3 py-[7px] text-[13.5px] leading-[1.45] text-ink-90 ${media ? 'w-min' : ''}`}
       style={{
         ...tone,
         borderRadius: radius,
@@ -120,7 +122,7 @@ export const Bubble = memo(function Bubble({
       )}
       {message.forwardedFrom && <Forwarded forwarded={message.forwardedFrom} />}
       {message.replyTo !== null && <ReplyQuote seq={message.replyTo} message={replied} />}
-      <MediaBubble message={message} />
+      {media && <MediaBubble message={message} tick={tick} solo={solo} />}
       {hasText && (
         <div className="selectable flow-root whitespace-pre-wrap break-words [overflow-wrap:anywhere]">
           <MessageText rich={body} />
@@ -134,7 +136,7 @@ export const Bubble = memo(function Bubble({
           ))}
         </div>
       )}
-      {!metaInText && (
+      {!metaInText && !solo && (
         <div className="mt-1 flex justify-end">
           <BubbleMeta message={message} tick={tick} floating={false} />
         </div>

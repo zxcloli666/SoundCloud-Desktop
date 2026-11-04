@@ -1,1 +1,59 @@
-{}
+{
+  "title": "Oda arka planı",
+  "none": "Arka plan yok",
+  "photo": "Kendi fotoğrafım",
+  "photoIn": "Fotoğraf {{time}} sonra",
+  "percent": "%{{percent}}",
+  "retry": "Tekrar dene",
+  "pickAgain": "Başka fotoğraf",
+  "storage": "Depolama",
+  "images": "Görseller",
+  "linking": "Oda sohbeti bağlanıyor",
+  "done": "Tamam",
+  "cancel": "İptal",
+  "hide": "Arka planı gizle",
+  "show": "Arka planı göster",
+  "chip": "Arka plan %{{percent}}",
+  "chipFailed": "Arka plan yüklenemedi",
+  "star": {
+    "title": "STAR ile oda arka planları",
+    "body": "Tüm oda için canlı arka planlar ve kendi fotoğrafın"
+  },
+  "report": {
+    "entry": "Arka planı şikayet et",
+    "title": "Arka plan şikayeti",
+    "comment": "Yorum, isteğe bağlı",
+    "send": "Gönder",
+    "sent": "Şikayet gönderildi",
+    "changed": "Arka plan zaten değişti",
+    "failed": "Gönderilemedi"
+  },
+  "errors": {
+    "room_star_required": "Arka planlar STAR ile gelir",
+    "media_star_required": "Fotoğraflar STAR ile gelir",
+    "invalid": "Bu arka plan kullanılamıyor",
+    "media_missing": "Fotoğraf yok, tekrar yükle",
+    "backdrop_cooldown": "Kendi fotoğrafın {{time}} sonra",
+    "request_limit": "Çok sık, biraz bekle",
+    "quota_exceeded": "Depolama dolu",
+    "media_uploads_paused": "Yüklemeler duraklatıldı",
+    "offline": "Bağlantı yok",
+    "generic": "Bir şeyler ters gitti"
+  },
+  "presets": {
+    "aurora": "Kutup ışığı",
+    "vinyl": "Plak",
+    "sunset-clouds": "Gün batımı",
+    "ocean-rays": "Derin deniz",
+    "dunes": "Kumullar",
+    "misty-forest": "Sisli orman",
+    "snow-lamp": "Kar",
+    "satin": "Saten",
+    "paper": "Kağıt",
+    "peach-clouds": "Şeftali",
+    "pastel-lake": "Göl",
+    "watercolor": "Suluboya",
+    "candy-sky": "Şeker"
+  },
+  "dismiss": "Kaldır"
+}

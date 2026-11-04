@@ -1,5 +1,5 @@
 import { listen, type UnlistenFn } from '@tauri-apps/api/event';
-import type { MediaUploadsEvent } from './media-types';
+import type { MediaUploadErrorEvent, MediaUploadsEvent } from './media-types';
 import type {
   ChatStatus,
   DeviceAddedEvent,
@@ -19,6 +19,7 @@ export const CHAT_EVENTS = {
   deviceAdded: 'chat:device-added',
   notifyOpen: 'chat:notify-open',
   mediaUploads: 'chat:media-uploads',
+  mediaUploadError: 'chat:media-upload-error',
 } as const;
 
 export interface ChatEventMap {
@@ -30,6 +31,7 @@ export interface ChatEventMap {
   'chat:device-added': DeviceAddedEvent;
   'chat:notify-open': NotifyOpenEvent;
   'chat:media-uploads': MediaUploadsEvent;
+  'chat:media-upload-error': MediaUploadErrorEvent;
 }
 
 export type ChatEventName = keyof ChatEventMap;

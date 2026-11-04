@@ -27,16 +27,19 @@ export const DockBody = memo(function DockBody() {
   const roomChat = useChatRoomStore((state) => state.conversationId);
 
   let content = <DockList />;
+  let thread = false;
   if (active === DOCK_ROOM && roomCode) {
     content = <RoomTab conversationId={roomChat} />;
+    thread = true;
   } else if (active !== DOCK_LIST && active !== DOCK_ROOM && tabs.includes(active)) {
     content = <ThreadSlot key={active} conversationId={active} variant="dock" />;
+    thread = true;
   }
 
   return (
-    <div className="min-h-0 flex-1">
+    <div className="relative min-h-0 flex-1">
       <ChatGate>{content}</ChatGate>
-      <UploadTray />
+      {!thread && <UploadTray />}
     </div>
   );
 });

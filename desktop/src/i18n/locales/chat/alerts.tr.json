@@ -11,6 +11,8 @@
   "track": "Parça: {{title}}",
   "playlist": "Çalma listesi: {{title}}",
   "profile": "Profil: {{title}}",
+  "photo": "Fotoğraf",
+  "photos": "{{count}} fotoğraf",
   "roomInvite": "Oda daveti",
   "deviceTitle": "Sohbetlerde yeni cihaz",
   "deviceBody": "{{device}}. Siz miydiniz?"

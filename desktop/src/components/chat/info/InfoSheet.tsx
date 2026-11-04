@@ -9,6 +9,7 @@ import { linkRoute } from '../../../lib/soundcloudLink';
 import { useChatStore } from '../../../stores/chat';
 import { selectMediaOn } from '../../../stores/chat/media';
 import { Avatar } from '../../ui/Avatar';
+import { GroupAvatarEdit } from '../media/compose/GroupAvatarEdit';
 import { GalleryTab } from '../media/GalleryTab';
 import { useThread } from '../thread/context';
 import { GlassLayer } from '../thread/GlassLayer';
@@ -31,27 +32,31 @@ function Identity() {
 
   return (
     <div className="flex flex-col items-center gap-2 px-4 pt-2 pb-4 text-center">
-      <button
-        type="button"
-        disabled={!route}
-        onClick={() => route && navigate(route)}
-        className="cursor-pointer rounded-full transition-transform duration-200 enabled:hover:scale-[1.03] disabled:cursor-default"
-      >
-        {conversation.kind === 'self' ? (
-          <span
-            className="flex size-[72px] items-center justify-center rounded-full"
-            style={{ background: 'var(--color-accent-glow)', color: 'var(--color-accent-hover)' }}
-          >
-            <Bookmark size={28} />
-          </span>
-        ) : avatar || conversation.kind === 'direct' ? (
-          <Avatar src={avatar} size={72} />
-        ) : (
-          <span className="flex size-[72px] items-center justify-center rounded-full bg-ink/[0.07] text-ink-45">
-            <Users size={28} />
-          </span>
-        )}
-      </button>
+      {conversation.kind === 'group' ? (
+        <GroupAvatarEdit conversation={conversation} />
+      ) : (
+        <button
+          type="button"
+          disabled={!route}
+          onClick={() => route && navigate(route)}
+          className="cursor-pointer rounded-full transition-transform duration-200 enabled:hover:scale-[1.03] disabled:cursor-default"
+        >
+          {conversation.kind === 'self' ? (
+            <span
+              className="flex size-[72px] items-center justify-center rounded-full"
+              style={{ background: 'var(--color-accent-glow)', color: 'var(--color-accent-hover)' }}
+            >
+              <Bookmark size={28} />
+            </span>
+          ) : avatar || conversation.kind === 'direct' ? (
+            <Avatar src={avatar} size={72} />
+          ) : (
+            <span className="flex size-[72px] items-center justify-center rounded-full bg-ink/[0.07] text-ink-45">
+              <Users size={28} />
+            </span>
+          )}
+        </button>
+      )}
       <div className="max-w-full truncate text-[17px] font-bold tracking-tight text-ink-92">
         {conversationTitle(conversation, t)}
       </div>

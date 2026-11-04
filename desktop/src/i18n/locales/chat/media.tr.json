@@ -58,7 +58,14 @@
     "busy": "Sunucu meşgul, birazdan tekrar deneyin",
     "too_big": "Görsel çok büyük",
     "unsupported": "Bu biçim desteklenmiyor",
-    "heic": "HEIC desteklenmiyor, JPEG veya PNG kullanın"
+    "heic": "HEIC desteklenmiyor, JPEG veya PNG kullanın",
+    "not_ready": "Uygulama hâlâ başlıyor, tekrar deneyin",
+    "crypto": "Görsel şifrelenemedi",
+    "store": "Görsel kaydedilemedi",
+    "too_many": "En fazla {{count}} görsel",
+    "request_limit": "Çok fazla istek, biraz bekleyin",
+    "read_limited": "Çok fazla istek, biraz bekleyin",
+    "disabled": "Görseller sunucuda kapalı"
   },
   "room": {
     "capacity": "{{count}} üye",
@@ -77,5 +84,83 @@
   "album": {
     "count_one": "{{count}} görsel",
     "count_other": "{{count}} görsel"
+  },
+  "compose": {
+    "attach": "Görseller",
+    "preparing": "Hazırlanıyor",
+    "uploading": "Yükleniyor",
+    "ready": "Hazır",
+    "failed": "Hata",
+    "remove": "Kaldır",
+    "removeAll": "Albümü kaldır",
+    "retry": "Tekrar dene",
+    "add": "Daha",
+    "full": "Albüm dolu",
+    "count": "{{count}}/{{max}}",
+    "sendAlbum": "Albümü gönder",
+    "waiting": "Bekleniyor"
+  },
+  "skipped": {
+    "title_one": "{{count}} dosya atlandı",
+    "title_other": "{{count}} dosya atlandı",
+    "type": "görsel değil",
+    "invalid": "çok büyük veya bozuk",
+    "full": "albüme sığmadı",
+    "dismiss": "Gizle"
+  },
+  "gate": {
+    "pausedTitle": "Görseller duraklatıldı",
+    "pausedDesc": "Yükleme yakında döner. Metin her zamanki gibi gider.",
+    "roomHostTitle": "Sunucuda STAR gerekli",
+    "roomHostDesc": "Sunucu STAR olunca bu odada görseller açılır.",
+    "roomHostSelf": "Odanızda görseller STAR ile açılır.",
+    "roomModsTitle": "Yalnızca sunucu ve moderatörler",
+    "roomModsDesc": "Bu odada görselleri sunucu ve moderatörler gönderir.",
+    "roomOffTitle": "Görseller kapalı",
+    "roomOffDesc": "Sunucu bu odada görselleri kapattı.",
+    "roomOffSelf": "Görselleri oda ayarlarından açın."
+  },
+  "preview": {
+    "title": "Sohbetlerde görseller",
+    "album": "10 görsele kadar albüm",
+    "albumHint": "Sürükleyin, yapıştırın veya {{key}}",
+    "quota": "Görselleriniz için 1 GB",
+    "quotaHint": "Herkes görebilir",
+    "covers": "Oda kapakları",
+    "coversHint": "Odanıza özel kapak",
+    "caption": "Bizim gece"
+  },
+  "drop": {
+    "title": "Eklemek için bırakın",
+    "hint": "Görseller giriş alanının üstündeki albüme gider",
+    "full": "Albüm dolu",
+    "fullHint": "Gönderin veya bazılarını kaldırın",
+    "locked": "Görseller STAR ile gelir",
+    "lockedHint": "Görmek için bırakın",
+    "closed": "Burada görsel gönderilemez",
+    "notImages": "Yalnızca görseller",
+    "notImagesHint": "PNG, JPEG, WebP veya GIF"
+  },
+  "rows": {
+    "title": "Gönderiliyor",
+    "image": "Görsel",
+    "avatar": "Grup fotoğrafı",
+    "queued": "Sırada",
+    "done": "Tamam",
+    "collapse": "Daralt",
+    "expand": "Ayrıntılar",
+    "storage": "Depolama",
+    "star": "STAR al",
+    "allDone": "Hepsi gönderildi",
+    "failedCount_one": "{{count}} hata",
+    "failedCount_other": "{{count}} hata"
+  },
+  "avatar": {
+    "set": "Fotoğraf koy",
+    "change": "Fotoğrafı değiştir",
+    "clear": "Fotoğrafı kaldır",
+    "uploading": "Fotoğraf yükleniyor",
+    "failed": "Fotoğraf yüklenemedi",
+    "title": "Grup fotoğrafı"
   }
 }

@@ -1,6 +1,8 @@
 import { type ReactNode, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Ban } from '../../../lib/icons';
+import { Ban, Star } from '../../../lib/icons';
+import { usePremium } from '../../../lib/premium-cache';
+import { useOpenStar } from '../../../lib/star-offer';
 import {
   banMember,
   kickMember,
@@ -10,8 +12,10 @@ import {
 } from '../../../lib/together/room-actions';
 import { type MemberActions, MUTE_MINUTES } from '../../../lib/together/room-rules';
 import type { RoomMember } from '../../../lib/together/types';
+import { useTogetherStore } from '../../../stores/together';
 import { Avatar } from '../../ui/Avatar';
 import { MicOff, ShieldMinus, ShieldPlus, UserX } from './icons';
+import { STAR_MODERATORS } from './perks/perks';
 
 interface MemberMenuProps {
   member: RoomMember;
@@ -78,6 +82,10 @@ function MuteRow({ onMute }: { onMute: (minutes: number) => void }) {
 export function MemberMenu({ member, actions, muted, onDone }: MemberMenuProps) {
   const { t } = useTranslation();
   const [banArmed, setBanArmed] = useState(false);
+  const starHost = useTogetherStore((s) => s.room?.perks?.starHost ?? false);
+  const premium = usePremium();
+  const openStar = useOpenStar();
+  const moreMods = !!actions.moderator && actions.moderatorsFull && !starHost && !premium;
   const act = (task: () => Promise<boolean>) => {
     onDone();
     void task();
@@ -102,7 +110,17 @@ export function MemberMenu({ member, actions, muted, onDone }: MemberMenuProps) 
         ) : (
           <MuteRow onMute={(minutes) => act(() => muteMember(member.userId, minutes))} />
         ))}
-      {actions.moderator && (
+      {moreMods && (
+        <Item
+          icon={<Star size={14} fill="currentColor" className="text-accent" />}
+          label={t('chat.room.perks.moreMods', { value: STAR_MODERATORS })}
+          onSelect={() => {
+            onDone();
+            openStar();
+          }}
+        />
+      )}
+      {actions.moderator && !moreMods && (
         <Item
           icon={actions.moderator === 'add' ? <ShieldPlus size={14} /> : <ShieldMinus size={14} />}
           label={t(

@@ -1,7 +1,7 @@
-import type { ConvId, Millis } from './types';
+import type { ChatError, ConvId, Millis } from './types';
 
 export type MediaId = string;
-export type MediaVariant = 'thumb' | 'image';
+export type MediaVariant = 'thumb' | 'image' | 'placeholder' | 'upload-thumb' | 'upload-image';
 export type MediaKind = 'image' | 'avatar' | 'backdrop';
 
 export interface MediaLimits {
@@ -112,6 +112,11 @@ export interface UploadView {
 export interface MediaUploadsEvent {
   uploads: UploadView[];
   removed: string[];
+}
+
+export interface MediaUploadErrorEvent {
+  id: string;
+  error: ChatError;
 }
 
 export interface MessageAttachment {

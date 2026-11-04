@@ -17,7 +17,6 @@ finish-args:
   - --socket=pulseaudio
   - --device=dri
   - --talk-name=org.freedesktop.Notifications
-  - --talk-name=org.freedesktop.secrets
   - --talk-name=org.kde.StatusNotifierWatcher
   # MPRIS media controls
   - --own-name=org.mpris.MediaPlayer2.soundcloud_desktop

@@ -1,4 +1,4 @@
-import { memo, type ReactNode } from 'react';
+import { memo, type ReactNode, useState } from 'react';
 import { ink } from '../../../lib/chat/tone';
 import type { ConversationKind } from '../../../lib/chat/types';
 import { Bookmark, Radio } from '../../../lib/icons';
@@ -54,6 +54,7 @@ export const ConversationAvatar = memo(function ConversationAvatar({
   size,
 }: ConversationAvatarProps) {
   const glyph = Math.round(size * 0.44);
+  const [broken, setBroken] = useState<string | null>(null);
   if (kind === 'self') {
     return (
       <GlyphTile size={size} accent>
@@ -69,13 +70,14 @@ export const ConversationAvatar = memo(function ConversationAvatar({
     );
   }
   if (kind === 'direct') return <Avatar src={src} alt={name} size={size} />;
-  if (src) {
+  if (src && broken !== src) {
     return (
       <img
         src={src}
         alt={name}
         loading="lazy"
         decoding="async"
+        onError={() => setBroken(src)}
         className="shrink-0 rounded-[32%] object-cover"
         style={{ width: size, height: size }}
       />

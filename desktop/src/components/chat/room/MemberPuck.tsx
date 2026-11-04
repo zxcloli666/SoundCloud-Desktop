@@ -2,6 +2,7 @@ import { type ComponentPropsWithoutRef, forwardRef } from 'react';
 import type { RoomMember } from '../../../lib/together/types';
 import { Avatar } from '../../ui/Avatar';
 import { MuteBadge, RoleBadge } from './MemberBadges';
+import { StarMark } from './perks/StarMark';
 
 export interface PuckState {
   online: boolean;
@@ -9,6 +10,7 @@ export interface PuckState {
   moderator: boolean;
   muted: boolean;
   self: boolean;
+  star?: boolean;
 }
 
 interface MemberPuckProps extends ComponentPropsWithoutRef<'button'> {
@@ -47,6 +49,9 @@ export const MemberPuck = forwardRef<HTMLButtonElement, MemberPuckProps>(functio
         />
         <RoleBadge host={state.host} moderator={state.moderator} />
         {state.muted && <MuteBadge />}
+        {state.star && (
+          <StarMark size={15} className="absolute -top-1 -left-1 border-2 border-chat-cutout" />
+        )}
       </span>
       <span
         className={`w-full truncate px-0.5 text-center text-[10.5px] font-medium ${

@@ -6,6 +6,7 @@ import { useChatListStore } from '../../../stores/chat/list';
 import { useChatThreadStore } from '../../../stores/chat/thread';
 import { ComposerGate } from '../composer/ComposerGate';
 import { InfoSheet } from '../info/InfoSheet';
+import { ThreadDrop } from '../media/compose/ThreadDrop';
 import { UploadTray } from '../media/UploadTray';
 import { useRoomMembers, useRoomModerator } from '../room/useRoom';
 import { ThreadContext, type ThreadContextValue } from './context';
@@ -135,6 +136,7 @@ export const ChatThread = memo(function ChatThread({
         <ComposerGate conversationId={conversationId} />
         {info && <InfoSheet onClose={closeInfo} onJump={jumpFromInfo} />}
         <ThreadDialogs conversationId={conversationId} />
+        <ThreadDrop conversation={context.conversation} />
       </section>
     </ThreadContext.Provider>
   );

@@ -20,7 +20,7 @@ callers=$(git grep -l -E 'call_client|decrypt_client' -- desktop/src-tauri/src |
 
 while IFS= read -r file; do
   case $file in
-    .github/workflows/ci.yml | .github/scripts/changes.sh | scripts/ci-mtime.sh | scripts/ci-toolchain.sh | rust-toolchain.toml | .cargo/* | desktop/src-tauri/.cargo/*)
+    .github/workflows/ci.yml | .github/scripts/changes.sh | .github/actions/target-cache/* | scripts/ci-mtime.sh | scripts/ci-toolchain.sh | rust-toolchain.toml | .cargo/* | desktop/src-tauri/.cargo/*)
       all=true ;;
     desktop/src-tauri/Cargo.* | utils/*)
       rust=true

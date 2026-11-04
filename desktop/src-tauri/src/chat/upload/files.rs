@@ -6,7 +6,7 @@ use sc_chat::{ChatError, ChatResult};
 use tokio::io::AsyncWriteExt;
 use uuid::Uuid;
 
-const DIR: &str = "uploads";
+pub const DIR: &str = "uploads";
 const PART: &str = ".part";
 pub const IMAGE: &str = "img";
 pub const THUMB: &str = "thumb";

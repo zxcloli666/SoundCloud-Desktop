@@ -58,7 +58,14 @@
     "busy": "The server is busy, try again soon",
     "too_big": "The image is too big",
     "unsupported": "This image format is not supported",
-    "heic": "HEIC is not supported, use JPEG or PNG"
+    "heic": "HEIC is not supported, use JPEG or PNG",
+    "not_ready": "The app is still starting, try again",
+    "crypto": "Could not encrypt the image",
+    "store": "Could not save the image",
+    "too_many": "No more than {{count}} images",
+    "request_limit": "Too many requests, wait a bit",
+    "read_limited": "Too many requests, wait a bit",
+    "disabled": "Images are turned off on the server"
   },
   "room": {
     "capacity": "{{count}} members",
@@ -77,5 +84,83 @@
   "album": {
     "count_one": "{{count}} image",
     "count_other": "{{count}} images"
+  },
+  "compose": {
+    "attach": "Images",
+    "preparing": "Preparing",
+    "uploading": "Uploading",
+    "ready": "Ready",
+    "failed": "Failed",
+    "remove": "Remove",
+    "removeAll": "Remove album",
+    "retry": "Retry",
+    "add": "More",
+    "full": "Album full",
+    "count": "{{count}}/{{max}}",
+    "sendAlbum": "Send album",
+    "waiting": "Waiting"
+  },
+  "skipped": {
+    "title_one": "{{count}} file skipped",
+    "title_other": "{{count}} files skipped",
+    "type": "not an image",
+    "invalid": "too big or broken",
+    "full": "did not fit the album",
+    "dismiss": "Hide"
+  },
+  "gate": {
+    "pausedTitle": "Images paused",
+    "pausedDesc": "Uploads will be back soon. Text still sends.",
+    "roomHostTitle": "Host needs STAR",
+    "roomHostDesc": "Images in this room open when the host has STAR.",
+    "roomHostSelf": "Images in your room open with STAR.",
+    "roomModsTitle": "Host and mods only",
+    "roomModsDesc": "In this room the host and mods send images.",
+    "roomOffTitle": "Images off",
+    "roomOffDesc": "The host turned images off in this room.",
+    "roomOffSelf": "Turn images on in room settings."
+  },
+  "preview": {
+    "title": "Images in chats",
+    "album": "Albums up to 10",
+    "albumHint": "Drag, paste or {{key}}",
+    "quota": "1 GB of your images",
+    "quotaHint": "Everyone can view them",
+    "covers": "Room covers",
+    "coversHint": "Your room gets its own cover",
+    "caption": "Our night"
+  },
+  "drop": {
+    "title": "Drop to add",
+    "hint": "Images go to the album above the input",
+    "full": "Album is full",
+    "fullHint": "Send it or remove some",
+    "locked": "Images come with STAR",
+    "lockedHint": "Release to see what you get",
+    "closed": "Images are off here",
+    "notImages": "Images only",
+    "notImagesHint": "PNG, JPEG, WebP or GIF"
+  },
+  "rows": {
+    "title": "Sending",
+    "image": "Image",
+    "avatar": "Group photo",
+    "queued": "Queued",
+    "done": "Done",
+    "collapse": "Collapse",
+    "expand": "Details",
+    "storage": "Storage",
+    "star": "Get STAR",
+    "allDone": "All sent",
+    "failedCount_one": "{{count}} failed",
+    "failedCount_other": "{{count}} failed"
+  },
+  "avatar": {
+    "set": "Set photo",
+    "change": "Change photo",
+    "clear": "Remove photo",
+    "uploading": "Uploading photo",
+    "failed": "Photo upload failed",
+    "title": "Group photo"
   }
 }

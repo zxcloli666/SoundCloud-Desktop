@@ -7,6 +7,7 @@ import {
 } from '../../../lib/together/room-rules';
 import type { RoomView } from '../../../lib/together/types';
 import { MemberSlot } from './MemberSlot';
+import { roomPerks } from './perks/perks';
 import { useServerNow } from './useRoom';
 
 const MUTE_TICK_MS = 15_000;
@@ -25,6 +26,7 @@ export const MemberStrip = memo(function MemberStrip({
   trailing,
 }: MemberStripProps) {
   const now = useServerNow(MUTE_TICK_MS, (room.muted?.length ?? 0) > 0);
+  const starHost = roomPerks(room).starHost;
 
   return (
     <div className="flex shrink-0 items-start gap-0.5 overflow-x-auto border-b border-ink/[0.05] px-2 py-2 [scrollbar-width:none]">
@@ -39,6 +41,7 @@ export const MemberStrip = memo(function MemberStrip({
             moderator: isModerator(room, member.userId),
             muted: mutedUntil(room, member.userId, now) !== null,
             self: member.userId === selfId,
+            star: starHost && member.userId === room.hostId,
           }}
         />
       ))}

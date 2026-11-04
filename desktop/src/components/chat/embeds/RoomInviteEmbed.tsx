@@ -5,11 +5,14 @@ import { receivedEmbed } from '../../../lib/chat/embed-snapshot';
 import { ink } from '../../../lib/chat/tone';
 import type { Embed, RoomInvite } from '../../../lib/chat/types';
 import { art } from '../../../lib/formatters';
-import { ArrowRight, Headphones, Loader2, Lock } from '../../../lib/icons';
+import { ArrowRight, Headphones, Loader2, Lock, Users } from '../../../lib/icons';
 import { usePerfMode } from '../../../lib/perf';
 import { sessionErrorKey } from '../../../lib/together/errors';
 import { joinSession } from '../../../lib/together/session';
 import { useTogetherStore } from '../../../stores/together';
+import { BackdropThumb } from '../room/BackdropThumb';
+import { accentRgb, roomArt } from '../room/perks/perks';
+import { StarMark } from '../room/perks/StarMark';
 import { EmbedShell } from './EmbedShell';
 import { useInView } from './useInView';
 import { useRoomPreview } from './useRoomPreview';
@@ -54,9 +57,17 @@ function Perforation({ edge }: { edge: number }) {
   );
 }
 
-function JoinButton({ code, here }: { code: string; here: boolean }) {
+function JoinButton({ code, here, full }: { code: string; here: boolean; full: boolean }) {
   const { t } = useTranslation();
   const [joining, setJoining] = useState(false);
+  if (full && !here) {
+    return (
+      <span className="inline-flex h-8 items-center gap-1.5 rounded-full bg-amber-300/[0.12] px-3 text-[12px] font-semibold text-amber-200">
+        <Users size={12} />
+        {t('chat.embeds.room.full')}
+      </span>
+    );
+  }
   if (here) {
     return (
       <span className="inline-flex h-8 items-center gap-1.5 rounded-full bg-accent/15 px-3 text-[12px] font-semibold text-accent">
@@ -111,10 +122,29 @@ export const RoomInviteEmbed = memo(function RoomInviteEmbed({
   const host = preview?.host.name || room.host;
   const track = preview?.track ? receivedEmbed(preview.track) : null;
   const cover = art(track?.artworkUrl, 't200x200');
+  const roomCover = roomArt(preview?.starHost ? preview.cover : null, null);
+  const capacity = preview?.capacity ?? 0;
+  const full = !!preview && capacity > 0 && preview.listeners >= capacity;
 
   return (
-    <EmbedShell kind={embed.kind} ref={ref} mine={mine} dim={!live} compact={compact} label={title}>
-      <div className="flex min-w-0 items-stretch">
+    <EmbedShell
+      kind={embed.kind}
+      ref={ref}
+      mine={mine}
+      dim={!live}
+      compact={compact}
+      label={title}
+      tint={roomCover.accent ? accentRgb(roomCover.accent) : null}
+    >
+      {live && (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit]"
+        >
+          <BackdropThumb backdrop={preview?.backdrop ?? null} />
+        </div>
+      )}
+      <div className="relative flex min-w-0 items-stretch" style={{ isolation: 'isolate' }}>
         <div className="flex shrink-0 flex-col justify-between gap-2 py-0.5">
           <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-ink-55">
             {live ? <LiveDot /> : <Lock size={11} />}
@@ -124,23 +154,43 @@ export const RoomInviteEmbed = memo(function RoomInviteEmbed({
             {room.code}
           </span>
           {!compact && preview && live && (
-            <span className="flex items-center gap-1 text-[11px] tabular-nums text-ink-45">
+            <span
+              className={`flex items-center gap-1 text-[11px] font-semibold tabular-nums ${
+                full ? 'text-amber-200' : 'text-ink-45'
+              }`}
+            >
               <Headphones size={11} />
-              {preview.listeners}
+              {capacity > 0 ? `${preview.listeners}/${capacity}` : preview.listeners}
             </span>
           )}
         </div>
         <Perforation edge={compact ? 13 : 17} />
         <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-          <div className="min-w-0">
-            <p className="truncate text-[13.5px] font-semibold leading-tight text-ink-92">
-              {title}
-            </p>
-            {host && (
-              <p className="truncate text-[11.5px] text-ink-45">
-                {t('chat.embeds.room.host', { name: host })}
-              </p>
+          <div className="flex min-w-0 items-center gap-2">
+            {roomCover.src && live && (
+              <img
+                src={roomCover.src}
+                alt=""
+                loading="lazy"
+                decoding="async"
+                draggable={false}
+                className="size-9 shrink-0 rounded-[9px] object-cover"
+                style={{
+                  boxShadow: `0 0 0 1.5px ${roomCover.accent}, 0 6px 16px -8px ${roomCover.accent}`,
+                }}
+              />
             )}
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-[13.5px] font-semibold leading-tight text-ink-92">
+                {title}
+              </p>
+              {host && (
+                <p className="flex min-w-0 items-center gap-1 text-[11.5px] text-ink-45">
+                  <span className="truncate">{t('chat.embeds.room.host', { name: host })}</span>
+                  {preview?.starHost && <StarMark size={13} />}
+                </p>
+              )}
+            </div>
           </div>
           {!compact && track && live && (
             <div className="flex min-w-0 items-center gap-2">
@@ -163,7 +213,7 @@ export const RoomInviteEmbed = memo(function RoomInviteEmbed({
           {!compact && (
             <div className="flex justify-end">
               {live ? (
-                <JoinButton code={room.code} here={here} />
+                <JoinButton code={room.code} here={here} full={full} />
               ) : (
                 <span className="inline-flex h-8 items-center gap-1.5 rounded-full bg-ink/[0.06] px-3 text-[12px] font-semibold text-ink-60">
                   <Lock size={12} />

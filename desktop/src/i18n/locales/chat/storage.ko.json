@@ -1,46 +1,116 @@
 {
   "title": "저장 공간",
-  "entry": "이미지 저장 공간",
-  "entryDesc": "보낸 이미지를 확인하고 삭제해요",
-  "used": "{{quota}} 중 {{used}}",
-  "empty": "보낸 이미지가 없어요",
-  "failed": "저장 공간을 불러오지 못했어요",
+  "back": "뒤로",
   "retry": "다시 시도",
-  "locked": "저장 공간은 STAR로 열려요",
+  "retryIn_other": "{{count}}초 후 다시 시도",
+  "cancel": "취소",
+  "close": "닫기",
+  "ring": {
+    "of": "/ {{quota}}",
+    "value": "{{quota}} 중 {{used}}"
+  },
+  "full": "저장 공간이 가득 찼어요",
+  "freeLeft": "{{size}} 남음",
+  "facts": {
+    "files": "이미지",
+    "uploading": "업로드 중"
+  },
+  "lapsed": "새 이미지는 STAR가 필요해요. 기존 이미지는 보고 삭제할 수 있어요.",
+  "chats": {
+    "title": "채팅별",
+    "goneChat": "삭제된 채팅",
+    "someChat": "채팅",
+    "gone": "채팅 없음",
+    "more_other": "{{count}}개 더",
+    "less": "접기"
+  },
+  "files_other": "이미지 {{count}}개",
+  "cache": {
+    "title": "이 기기의 캐시",
+    "desc": "이미 다운로드한 이미지",
+    "clear": "캐시 지우기",
+    "freed": "{{size}} 확보",
+    "failed": "크기를 알 수 없어요"
+  },
+  "deleteAll": {
+    "title": "내 이미지 모두 삭제",
+    "hint": "모든 채팅에서 모두에게 사라져요",
+    "action": "모두 삭제",
+    "warn": "내 이미지와 그룹 아바타가 모든 채팅에서 모두에게 사라져요. {{seconds}}초 동안 되돌릴 수 있어요.",
+    "word": "삭제",
+    "type": "{{word}} 입력",
+    "confirm": "모두 삭제"
+  },
+  "errors": {
+    "read_limited": "요청이 너무 많아요. 잠시 기다려 주세요.",
+    "request_limit": "요청이 너무 많아요. 잠시 기다려 주세요.",
+    "offline": "서버에 연결할 수 없어요.",
+    "invalid": "서버가 요청을 거부했어요.",
+    "quota_exceeded": "공간이 부족해요.",
+    "generic": "문제가 발생했어요.",
+    "more": "더 불러오지 못했어요",
+    "title": "저장 공간을 불러오지 못했어요",
+    "limitedTitle": "너무 자주 시도했어요"
+  },
+  "tile": {
+    "unavailable": "이미지를 사용할 수 없어요",
+    "kind": {
+      "avatar": "아바타",
+      "backdrop": "배경",
+      "image": "이미지"
+    },
+    "unsent": "보내지 않음",
+    "label": "이미지, {{size}}, {{date}}",
+    "chats_other": "채팅 {{count}}개",
+    "failed": "불러오지 못했어요"
+  },
   "order": {
-    "new": "최신순",
-    "old": "오래된순",
+    "label": "정렬",
+    "new": "최신",
+    "old": "오래된",
     "big": "큰 순"
   },
   "filter": {
-    "all": "모든 채팅",
-    "gone": "사라진 채팅"
+    "clear": "{{name}} 필터 해제"
   },
+  "picked_other": "{{count}}개 선택",
   "select": {
     "all": "모두 선택",
     "clear": "선택 해제"
   },
   "delete": {
-    "one": "삭제",
-    "all": "내 이미지 모두 삭제",
-    "warn": "이미지는 모든 채팅에서 모두에게 사라져요.",
-    "warnAll": "내 모든 이미지가 모든 채팅에서 모두에게 사라져요.",
-    "word": "삭제",
-    "type": "확인하려면 {{word}}를 입력하세요",
-    "confirm": "확인",
-    "cancel": "취소"
+    "action": "삭제",
+    "some_other": "{{count}}개 삭제",
+    "title_other": "이미지 {{count}}개를 삭제할까요?",
+    "count_other": "이미지",
+    "size": "확보",
+    "chats_other": "채팅",
+    "warn_other": "이미지가 있는 모든 채팅에서 모두에게 사라져요.",
+    "confirm": "모두에게서 삭제"
   },
   "undo": {
+    "deleted_other": "이미지 {{count}}개 삭제됨",
+    "freed": "{{size}} 확보",
+    "quota": "되돌릴 수 없어요: {{quota}} 중 {{used}} 사용 중. 공간을 확보하세요.",
     "action": "되돌리기",
-    "restored": "복원됨",
-    "missed": "일부 이미지는 복원하지 못했어요"
+    "missed_other": "{{restored}}개 복원, {{count}}개는 되돌릴 수 없어요",
+    "restored_other": "이미지 {{count}}개 복원됨"
   },
-  "cache": {
-    "title": "이 기기의 캐시",
-    "clear": "캐시 지우기",
-    "freed": "{{size}} 확보"
+  "empty": {
+    "title": "이미지 없음",
+    "line": "채팅에 보낸 이미지가 여기에 표시돼요.",
+    "chatTitle": "이 채팅에 내 이미지가 없어요"
   },
-  "files_other": "이미지 {{count}}장",
-  "picked_other": "{{count}}개 선택",
-  "deleted_other": "이미지 {{count}}장 삭제됨"
+  "star": {
+    "title": "STAR로 채팅에 이미지 보내기",
+    "albums": "최대 10장 앨범",
+    "quota": "내 이미지용 1 GB",
+    "rooms": "방 커버와 배경"
+  },
+  "entry": {
+    "title": "이미지 저장 공간",
+    "used": "{{quota}} 중 {{used}}",
+    "line": "모든 채팅의 내 이미지",
+    "open": "열기"
+  }
 }

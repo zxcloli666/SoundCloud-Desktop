@@ -63,7 +63,9 @@ uuid = { version = "1", features = ["v4"] }
 rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12"] }
 tokio-rustls = { version = "0.26", default-features = false, features = ["ring", "tls12"] }
 webpki-roots = "1"
-sc-chat = { git = "https://github.com/zxcloli666/SoundCloud-Core", rev = "43998600bdf4128780ecfb3234c5b05f3f280563" }
+sc-chat = { git = "https://github.com/zxcloli666/SoundCloud-Core", rev = "1d8713e0042cb8e322d618aca2ac73bca67464df" }
+thumbhash = { version = "0.1.0", default-features = false }
+image = { version = "0.25", default-features = false, features = ["png"] }
 keyring = { version = "3", features = ["apple-native", "windows-native", "async-secret-service", "async-io", "crypto-rust"] }
 
 [dev-dependencies]
