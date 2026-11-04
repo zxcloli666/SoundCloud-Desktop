@@ -1,4 +1,4 @@
-import { type MouseEvent, memo, useState } from 'react';
+import { type MouseEvent, memo, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { MyMedia } from '../../../lib/chat/media-types';
 import { Check, Clock } from '../../../lib/icons';
