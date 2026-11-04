@@ -1,8 +1,9 @@
-import { memo, useEffect, useRef } from 'react';
+import { memo, useEffect, useId, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Lock, Pause, Users } from '../../../../lib/icons';
 import { usePerfMode } from '../../../../lib/perf';
 import { StarCta } from '../../../star-moments/StarCta';
+import { RISE } from './motion';
 import type { NoteGate as AnyNote } from './useComposerMedia';
 
 type NoteGate = Exclude<AnyNote, 'locked'>;
@@ -27,8 +28,19 @@ export const GateNote = memo(function GateNote({
   const perf = usePerfMode();
   const blur = perf.blur(24);
   const box = useRef<HTMLDivElement>(null);
+  const titleId = useId();
+  const descId = useId();
   const text = TEXT[gate];
   const Glyph = gate === 'paused' ? Pause : gate === 'room-mods' ? Users : Lock;
+
+  useEffect(() => {
+    const before = document.activeElement as HTMLElement | null;
+    const target = box.current?.querySelector<HTMLElement>('button') ?? box.current;
+    target?.focus({ preventScroll: true });
+    return () => {
+      if (before?.isConnected) before.focus({ preventScroll: true });
+    };
+  }, []);
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -52,10 +64,13 @@ export const GateNote = memo(function GateNote({
   return (
     <div
       ref={box}
-      role="status"
+      role="dialog"
+      aria-labelledby={titleId}
+      aria-describedby={descId}
+      tabIndex={-1}
       data-ui="chat-attach-gate"
       data-gate={gate}
-      className="absolute bottom-[calc(100%+8px)] left-0 z-40 w-[280px] rounded-[16px] border border-ink/[0.09] p-3 animate-in fade-in slide-in-from-bottom-1 duration-200 motion-reduce:animate-none"
+      className={`absolute bottom-[calc(100%+8px)] left-0 z-40 w-[280px] rounded-[16px] border border-ink/[0.09] p-3 outline-none ${RISE}`}
       style={{
         background: blur ? 'rgb(var(--surface) / 0.86)' : 'rgb(var(--surface) / 0.98)',
         backdropFilter: blur ? `blur(${blur}px) saturate(1.4)` : undefined,
@@ -74,10 +89,10 @@ export const GateNote = memo(function GateNote({
           <Glyph size={14} />
         </span>
         <span className="min-w-0">
-          <span className="block text-[12.5px] font-semibold text-ink-90">
+          <span id={titleId} className="block text-[12.5px] font-semibold text-ink-90">
             {t(`chat.media.gate.${text.title}`)}
           </span>
-          <span className="mt-0.5 block text-[11.5px] leading-snug text-ink-50">
+          <span id={descId} className="mt-0.5 block text-[11.5px] leading-snug text-ink-50">
             {t(`chat.media.gate.${host && text.self ? text.self : text.desc}`)}
           </span>
         </span>

@@ -135,6 +135,8 @@
       "off": "Kimse",
       "withStar": "STAR ile görseller"
     },
-    "moreMods": "STAR ile {{value}} moderatör"
+    "moreMods": "STAR ile {{value}} moderatör",
+    "starSoon": "STAR birkaç dakika içinde açılır",
+    "needsStar": "STAR gerekli"
   }
 }

@@ -1,14 +1,13 @@
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pause, Shield, Star, Users } from '../../../lib/icons';
-import { usePremium } from '../../../lib/premium-cache';
 import { hasModeration } from '../../../lib/together/room-rules';
-import type { RoomView } from '../../../lib/together/types';
+import type { RoomPerks, RoomView } from '../../../lib/together/types';
 import { isRoomHost, useTogetherStore } from '../../../stores/together';
-import { StarCta } from '../../star-moments/StarCta';
-import { PERK_KEYFRAMES } from './perks/keyframes';
-import { roomPerks, STAR_CAPACITY, STAR_MODERATORS, seatsState } from './perks/perks';
+import './perks/keyframes';
+import { STAR_CAPACITY, STAR_MODERATORS, seatsState } from './perks/perks';
 import { SeatStrip } from './perks/SeatStrip';
+import { StarAction, useStarState } from './perks/StarAction';
 import { StarMark } from './perks/StarMark';
 
 function Count({ value, max, warn }: { value: number; max: number; warn: boolean }) {
@@ -36,9 +35,8 @@ function Paused({ over }: { over: boolean }) {
   );
 }
 
-function Moderators({ room }: { room: RoomView }) {
+function Moderators({ room, perks }: { room: RoomView; perks: RoomPerks }) {
   const { t } = useTranslation();
-  const perks = roomPerks(room);
   const count = room.moderators?.length ?? 0;
   const over = count > perks.modsMax;
   return (
@@ -61,8 +59,10 @@ function Moderators({ room }: { room: RoomView }) {
 export const RoomCapacity = memo(function RoomCapacity({ room }: { room: RoomView }) {
   const { t } = useTranslation();
   const host = useTogetherStore(isRoomHost);
-  const premium = usePremium();
-  const perks = roomPerks(room);
+  const star = useStarState(room.perks);
+  const perks = room.perks;
+  if (!perks) return null;
+
   const members = room.members.length;
   const state = seatsState(members, perks.capacity);
   const preview = host && !perks.starHost ? STAR_CAPACITY : null;
@@ -72,7 +72,6 @@ export const RoomCapacity = memo(function RoomCapacity({ room }: { room: RoomVie
       data-ui="room-capacity"
       className="mt-1.5 border-t border-ink/[0.06] px-1 pt-2.5 pb-1 first:mt-0 first:border-t-0 first:pt-1"
     >
-      <style>{PERK_KEYFRAMES}</style>
       <div className="flex items-center gap-2">
         {perks.starHost ? (
           <StarMark size={15} />
@@ -88,16 +87,18 @@ export const RoomCapacity = memo(function RoomCapacity({ room }: { room: RoomVie
         <SeatStrip members={members} capacity={perks.capacity} preview={preview} />
       </div>
       {preview && (
-        <div className="mt-2 flex items-center gap-2">
-          <span className="flex min-w-0 flex-1 items-center gap-1 truncate text-[11.5px] font-semibold text-accent">
-            <Star size={10} fill="currentColor" />
-            {t('chat.room.perks.withStar', { count: preview })}
-          </span>
-          {!premium && <StarCta size="sm" />}
+        <div className="mt-2 flex min-h-7 items-center gap-2">
+          {star === 'free' && (
+            <span className="flex min-w-0 flex-1 items-center gap-1 truncate text-[11.5px] font-semibold text-accent">
+              <Star size={10} fill="currentColor" />
+              {t('chat.room.perks.withStar', { count: preview })}
+            </span>
+          )}
+          <StarAction state={star} />
         </div>
       )}
-      {host && state !== 'open' && <Paused over={state === 'over'} />}
-      {host && hasModeration(room) && <Moderators room={room} />}
+      {((host && state !== 'open') || state === 'over') && <Paused over={state === 'over'} />}
+      {host && hasModeration(room) && <Moderators room={room} perks={perks} />}
     </div>
   );
 });

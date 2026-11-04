@@ -8,6 +8,7 @@ import { useChatMediaStore } from '../../../../stores/chat/media';
 import { useRoomSendLock } from '../../room/useRoom';
 import { isActiveMember, isRequest } from '../../thread/permissions';
 import { attachPaths } from './attach';
+import { FADE, LIFT } from './motion';
 import { useAttachAccess } from './useAttachGate';
 import { useImageDrop } from './useImageDrop';
 import { useStagedAlbum } from './useStagedAlbum';
@@ -76,7 +77,7 @@ export const ThreadDrop = memo(function ThreadDrop({
         <div
           data-ui="chat-drop"
           data-look={look}
-          className="absolute inset-0 flex items-center justify-center p-4 animate-in fade-in duration-150 motion-reduce:animate-none"
+          className={`absolute inset-0 flex items-center justify-center p-4 ${FADE}`}
           style={{
             background: blur ? 'rgb(var(--paper) / 0.6)' : 'rgb(var(--paper) / 0.9)',
             backdropFilter: blur ? `blur(${blur}px) saturate(1.3)` : undefined,
@@ -136,7 +137,7 @@ function DropStack({
       {cards.map((index) => (
         <span
           key={index}
-          className="absolute flex size-[64px] items-center justify-center rounded-[18px] border transition-transform duration-300"
+          className={`absolute flex size-[64px] items-center justify-center rounded-[18px] border ${LIFT}`}
           style={{
             transform: `rotate(${(index - (cards.length - 1) / 2) * 9}deg) translateY(${index * -3}px)`,
             background: accent ? 'var(--color-accent-glow)' : 'rgb(var(--ink) / 0.07)',

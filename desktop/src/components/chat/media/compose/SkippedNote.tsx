@@ -4,6 +4,7 @@ import type { ConvId } from '../../../../lib/chat/types';
 import { TriangleAlert, X } from '../../../../lib/icons';
 import { type Skipped, useChatMediaStore } from '../../../../stores/chat/media';
 import { failureOf } from './failure';
+import { RISE } from './motion';
 
 const NONE: Skipped[] = [];
 const SHOWN = 4;
@@ -26,7 +27,7 @@ export const SkippedNote = memo(function SkippedNote({
     <div
       role="status"
       data-ui="chat-skipped"
-      className="mx-1 mb-1.5 flex items-start gap-2 rounded-[14px] border px-3 py-2 animate-in fade-in slide-in-from-bottom-1 duration-200 motion-reduce:animate-none"
+      className={`mx-1 mb-1.5 flex items-start gap-2 rounded-[14px] border px-3 py-2 ${RISE}`}
       style={{ borderColor: 'rgb(var(--bad) / 0.28)', background: 'rgb(var(--bad) / 0.06)' }}
     >
       <TriangleAlert size={14} className="mt-px shrink-0 text-bad" />
