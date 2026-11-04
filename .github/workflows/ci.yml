@@ -120,6 +120,15 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      - name: SeaweedFS
+        if: runner.os == 'Linux'
+        working-directory: .
+        run: |
+          printf '%s' '{"identities":[{"name":"test","credentials":[{"accessKey":"UPTESTAK","secretKey":"UPTESTSECRET"}],"actions":["Admin","Read","Write","List","Tagging"]}]}' > "$RUNNER_TEMP/s3.json"
+          docker run -d --name seaweed -p 8333:8333 -v "$RUNNER_TEMP/s3.json:/etc/seaweedfs/s3.json:ro" \
+            mirror.gcr.io/chrislusf/seaweedfs:4.48@sha256:4e61d15fd35994cb1e43e1e553dff106794841fd9a99ade2fc8c8bfce4d7872d \
+            server -s3 -s3.config=/etc/seaweedfs/s3.json -dir=/data -master.volumeSizeLimitMB=64 > /dev/null
+
       - name: System packages
         if: runner.os == 'Linux'
         uses: ./.github/actions/apt-packages
@@ -158,6 +167,15 @@ jobs:
       - name: Tests
         if: runner.os != 'Windows'
         run: cargo test
+
+      - name: SeaweedFS tests
+        if: runner.os == 'Linux'
+        env:
+          CHAT_SEAWEED: 127.0.0.1:8333
+        run: |
+          timeout 120 sh -c 'until curl -s -o /dev/null http://127.0.0.1:8333/; do sleep 1; done'
+          echo 's3.bucket.create -name scd-chat' | docker exec -i seaweed weed shell > /dev/null
+          cargo test --lib -- --ignored chat::upload::tests::seaweed
 
       - name: Save targets
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
