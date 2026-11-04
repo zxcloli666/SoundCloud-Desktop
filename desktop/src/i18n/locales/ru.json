@@ -1661,7 +1661,10 @@
     },
     "pickPlaylist": "Выберите плейлист...",
     "discard": "Сбросить",
-    "save": "Сохранить {{count}} треков",
+    "save_one": "Сохранить {{count}} трек",
+    "save_few": "Сохранить {{count}} трека",
+    "save_many": "Сохранить {{count}} треков",
+    "save_other": "Сохранить {{count}} трека",
     "saved": "Сохранено треков: {{count}}",
     "savedCount": "Треков: {{count}}",
     "openPlaylist": "Открыть плейлист",
@@ -2073,6 +2076,7 @@
       "people_many": "{{count}} человек",
       "people_other": "{{count}} человека",
       "each": "{{price}} ₽ с человека",
+      "price": "{{price}} ₽",
       "save": "−{{pct}}%"
     },
     "shared": {

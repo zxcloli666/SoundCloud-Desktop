@@ -9,6 +9,7 @@ import type { ImportRow } from '../../stores/import';
 import type { Track } from '../../stores/player';
 import { useDebouncedValue } from '../discover/useDebouncedValue';
 import { Skeleton } from '../ui/Skeleton';
+import { finderQuery } from './importFormat';
 
 const RESULT_LIMIT = 8;
 const SEARCH_DEBOUNCE_MS = 350;
@@ -24,7 +25,7 @@ interface Props {
 export function ImportFinder({ row, current, onPick, onRemove, onClose }: Props) {
   const { t } = useTranslation();
   const input = useRef<HTMLInputElement>(null);
-  const [query, setQuery] = useState(`${row.artist} ${row.title}`.trim());
+  const [query, setQuery] = useState(finderQuery(row.artist, row.title));
   const debounced = useDebouncedValue(query.trim(), SEARCH_DEBOUNCE_MS);
 
   useEffect(() => input.current?.select(), []);
@@ -48,8 +49,12 @@ export function ImportFinder({ row, current, onPick, onRemove, onClose }: Props)
         e.stopPropagation();
         onClose();
       }}
-      className="rounded-2xl border border-ink/[0.1] bg-surface/95 p-3 shadow-[0_18px_60px_rgb(var(--shade)/calc(0.4*var(--shade-alpha)))] backdrop-blur-xl animate-fade-in-up"
+      className="absolute inset-0 flex flex-col rounded-2xl border border-ink/[0.1] bg-surface p-3 shadow-[0_18px_60px_rgb(var(--shade)/calc(0.4*var(--shade-alpha)))] animate-fade-in-up motion-reduce:animate-none"
     >
+      <div className="mb-2 truncate px-1 text-[12px] text-ink-45">
+        <span className="font-medium text-ink-80">{row.title}</span>
+        {row.artist && ` · ${row.artist}`}
+      </div>
       <div className="flex items-center gap-2">
         <div className="flex min-w-0 flex-1 items-center gap-2 rounded-xl border border-ink/[0.08] bg-ink/[0.04] px-3 py-2 focus-within:border-ink/[0.16]">
           <Search size={14} className="shrink-0 text-ink-40" />
@@ -81,7 +86,7 @@ export function ImportFinder({ row, current, onPick, onRemove, onClose }: Props)
           <X size={14} />
         </button>
       </div>
-      <ul className="mt-2 max-h-[220px] space-y-1 overflow-y-auto">
+      <ul className="mt-2 min-h-0 flex-1 space-y-1 overflow-y-auto">
         {found.isFetching &&
           Array.from({ length: 4 }, (_, i) => (
             <li key={i} className="flex items-center gap-3 p-1.5">

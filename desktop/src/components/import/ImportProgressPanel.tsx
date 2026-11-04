@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { useShallow } from 'zustand/shallow';
 import { Check, Loader2 } from '../../lib/icons';
 import { type ImportStage, importStageOf, useImportStore } from '../../stores/import';
+import { ImportBar } from './ImportBar';
 import { etaOf, formatEta } from './importFormat';
 
 const STEPS = ['reading', 'matching', 'review', 'saving'] as const;
@@ -80,16 +81,10 @@ export function ImportProgressPanel() {
   return (
     <div className="space-y-3">
       <Steps active={active} />
-      <div className="h-2 w-full overflow-hidden rounded-full bg-ink/[0.06]">
-        <div
-          className={`h-full rounded-full bg-accent transition-[width] duration-500 ease-out ${indeterminate ? 'animate-pulse' : ''}`}
-          style={{ width: indeterminate ? '35%' : `${pct}%` }}
-        />
-      </div>
-      <div className="flex items-center justify-between text-[12px] text-ink-40">
+      <ImportBar pct={pct} indeterminate={indeterminate} className="h-2 w-full" />
+      <div className="flex min-h-[18px] items-center justify-between text-[12px] text-ink-40">
         <span className="font-mono tabular-nums">
-          {current}
-          {total > 0 && ` / ${total}`}
+          {total > 0 && `${current} / ${total}`}
           {eta !== null && <span className="ml-2 text-ink-30">~{formatEta(eta)}</span>}
         </span>
         {progress && stage !== 'reading' && (

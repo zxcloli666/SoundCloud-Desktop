@@ -28,11 +28,11 @@ export const TenureMoment = memo(function TenureMoment({
   return (
     <MomentCard onClose={() => mark(moment.key)}>
       <div className="flex items-center gap-4 pr-6">
-        <div className="relative grid size-16 shrink-0 place-items-center">
+        <div className="relative grid h-16 min-w-16 shrink-0 place-items-center">
           {perf.idleAnim && (
             <span
               aria-hidden
-              className="tenure-burst absolute inset-0 rounded-full"
+              className="tenure-burst absolute inset-y-0 left-1/2 aspect-square -translate-x-1/2 rounded-full"
               style={{
                 border: '1.5px solid rgba(252,211,77,0.7)',
                 boxShadow: '0 0 24px rgba(252,211,77,0.45)',

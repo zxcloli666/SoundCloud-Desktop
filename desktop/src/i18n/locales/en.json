@@ -1623,9 +1623,12 @@
     },
     "pickPlaylist": "Choose a playlist...",
     "discard": "Discard",
-    "save": "Save {{count}} tracks",
-    "saved": "{{count}} tracks saved",
-    "savedCount": "{{count}} tracks",
+    "save_one": "Save {{count}} track",
+    "save_other": "Save {{count}} tracks",
+    "saved_one": "{{count}} track saved",
+    "saved_other": "{{count}} tracks saved",
+    "savedCount_one": "{{count}} track",
+    "savedCount_other": "{{count}} tracks",
     "openPlaylist": "Open playlist",
     "openView": "Open import",
     "history": "History",
@@ -2025,6 +2028,7 @@
       "people_one": "{{count}} person",
       "people_other": "{{count}} people",
       "each": "{{price}} ₽ each",
+      "price": "{{price}} ₽",
       "save": "−{{pct}}%"
     },
     "shared": {

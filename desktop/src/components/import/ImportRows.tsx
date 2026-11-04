@@ -92,64 +92,66 @@ export function ImportRows({ editable }: { editable: boolean }) {
         )}
       </div>
 
-      <div
-        ref={scroller}
-        onScroll={(e) => {
-          const el = e.currentTarget;
-          following.current = el.scrollHeight - el.scrollTop - el.clientHeight < ROW_HEIGHT * 2;
-        }}
-        className="h-[300px] overflow-y-auto rounded-2xl border border-ink/[0.06] bg-ink/[0.02]"
-      >
-        <div style={{ height: virtual.getTotalSize(), position: 'relative' }}>
-          {virtual.getVirtualItems().map((item) => {
-            const data = shown[item.index];
-            return (
-              <div
-                key={data ? data.position : `wait-${item.index}`}
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: ROW_HEIGHT,
-                  transform: `translateY(${item.start}px)`,
-                }}
-              >
-                {data ? (
-                  <Row
-                    editable={editable}
-                    row={data}
-                    track={data.urn ? tracks[data.urn] : undefined}
-                    onOpen={() => setEditing(data.position)}
-                  />
-                ) : (
-                  <WaitingRow />
-                )}
-              </div>
-            );
-          })}
+      <div className="relative">
+        <div
+          ref={scroller}
+          onScroll={(e) => {
+            const el = e.currentTarget;
+            following.current = el.scrollHeight - el.scrollTop - el.clientHeight < ROW_HEIGHT * 2;
+          }}
+          className="h-[300px] overflow-y-auto rounded-2xl border border-ink/[0.06] bg-ink/[0.02]"
+        >
+          <div style={{ height: virtual.getTotalSize(), position: 'relative' }}>
+            {virtual.getVirtualItems().map((item) => {
+              const data = shown[item.index];
+              return (
+                <div
+                  key={data ? data.position : `wait-${item.index}`}
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: ROW_HEIGHT,
+                    transform: `translateY(${item.start}px)`,
+                  }}
+                >
+                  {data ? (
+                    <Row
+                      editable={editable}
+                      row={data}
+                      track={data.urn ? tracks[data.urn] : undefined}
+                      onOpen={() => setEditing(data.position)}
+                    />
+                  ) : (
+                    <WaitingRow />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          {count === 0 && filter === 'missed' && (
+            <p className="p-6 text-center text-[12px] text-ink-40">{t('importer.noMissed')}</p>
+          )}
         </div>
-        {count === 0 && filter === 'missed' && (
-          <p className="p-6 text-center text-[12px] text-ink-40">{t('importer.noMissed')}</p>
+
+        {row && (
+          <ImportFinder
+            key={row.position}
+            row={row}
+            current={row.urn ? tracks[row.urn] : undefined}
+            onPick={(track) => {
+              setMatch(row.position, track);
+              setEditing(null);
+            }}
+            onRemove={() => {
+              setMatch(row.position, null);
+              setEditing(null);
+            }}
+            onClose={() => setEditing(null)}
+          />
         )}
       </div>
-
-      {row && (
-        <ImportFinder
-          key={row.position}
-          row={row}
-          current={row.urn ? tracks[row.urn] : undefined}
-          onPick={(track) => {
-            setMatch(row.position, track);
-            setEditing(null);
-          }}
-          onRemove={() => {
-            setMatch(row.position, null);
-            setEditing(null);
-          }}
-          onClose={() => setEditing(null)}
-        />
-      )}
     </div>
   );
 }

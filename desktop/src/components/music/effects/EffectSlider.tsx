@@ -31,7 +31,7 @@ export const EffectSlider = memo(function EffectSlider({
         disabled ? 'pointer-events-none opacity-45' : ''
       }`}
     >
-      <div className="mb-1.5 flex items-center justify-between gap-3">
+      <div className="mb-1.5 flex h-6 items-center justify-between gap-3">
         <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-ink-45">
           {label}
         </span>

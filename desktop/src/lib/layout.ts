@@ -60,9 +60,19 @@ export function resolveLayout<T extends string>(
     seen.add(entry.id);
     out.push({ id: entry.id as T, hidden: !!entry.hidden });
   }
-  for (const id of ids) {
-    if (!seen.has(id)) out.push({ id, hidden: false });
-  }
+  ids.forEach((id, index) => {
+    if (seen.has(id)) return;
+    let at = 0;
+    for (let prev = index - 1; prev >= 0; prev--) {
+      const found = out.findIndex((entry) => entry.id === ids[prev]);
+      if (found >= 0) {
+        at = found + 1;
+        break;
+      }
+    }
+    out.splice(at, 0, { id, hidden: false });
+    seen.add(id);
+  });
   return out;
 }
 

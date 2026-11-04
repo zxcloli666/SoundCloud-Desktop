@@ -1722,11 +1722,25 @@ select,
   animation: tenure-burst 1.4s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+@keyframes import-bar-sweep {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(250%);
+  }
+}
+
+.import-bar-sweep {
+  animation: import-bar-sweep 1.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .star-badge-sheen::after,
   .star-badge-aurora,
   .star-badge-twinkle,
-  .tenure-burst {
+  .tenure-burst,
+  .import-bar-sweep {
     animation: none !important;
   }
   .star-badge-twinkle {

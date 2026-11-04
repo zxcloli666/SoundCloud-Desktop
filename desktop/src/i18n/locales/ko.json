@@ -1445,6 +1445,32 @@
       "no_space": "해당 드라이브의 여유 공간이 부족해요",
       "sandboxed": "이 폴더는 샌드박스 포털을 통해서만 접근할 수 있어요. /media, /run/media, /mnt 아래 드라이브의 폴더나 음악 또는 다운로드 폴더 안의 폴더를 선택하세요",
       "failed": "캐시를 이동하지 못했어요"
+    },
+    "releaseNotifications": "새 릴리스 알림",
+    "releaseNotificationsDesc": "팔로우한 아티스트가 새 곡을 올리면 시스템 알림을 보냅니다. 앱이 실행 중일 때 30분마다 확인합니다"
+  },
+  "effects": {
+    "title": "효과",
+    "toggle": "효과 켜기 또는 끄기",
+    "locked": "리버브, 8D, 베이스 부스트는 STAR에 포함됩니다",
+    "reverb": "리버브",
+    "room": "공간 크기",
+    "eightDSpeed": "8D 속도",
+    "bass": "베이스",
+    "preset": {
+      "off": "끄기",
+      "slowedReverb": "슬로우 + 리버브",
+      "spedUp": "스피드 업",
+      "eightD": "8D",
+      "bass": "베이스 부스트",
+      "custom": "사용자 지정"
+    },
+    "short": {
+      "slowedReverb": "슬로우",
+      "spedUp": "빠름",
+      "eightD": "8D",
+      "bass": "베이스",
+      "custom": "FX"
     }
   },
   "eq": {
@@ -1515,6 +1541,10 @@
   "update": {
     "available": "업데이트 가능",
     "later": "나중에",
+    "year": {
+      "cta": "1년",
+      "saved": "{{sum}} ₽ 절약"
+    },
     "download": "다운로드",
     "installRestart": "설치 후 다시 시작",
     "downloading": "업데이트 다운로드 중",
@@ -1839,6 +1869,7 @@
       "family": "Family",
       "people_other": "{{count}}명",
       "each": "1인당 {{price}} ₽",
+      "price": "{{price}} ₽",
       "save": "−{{pct}}%"
     },
     "shared": {
@@ -2452,6 +2483,18 @@
     "sendReports": "오류 리포트 보내기",
     "sendReportsDesc": "앱 오류를 개발자에게 보냅니다. 계정 정보는 없습니다"
   },
+  "starTenure": {
+    "title": "STAR 연속 구독",
+    "months_other": "{{count}}개월 연속",
+    "next": "{{tier}}까지 {{count}}개월",
+    "reached": "새 연속 레벨",
+    "tier": {
+      "0": "불씨",
+      "1": "빛",
+      "2": "불꽃",
+      "3": "별자리"
+    }
+  },
   "starMoments": {
     "tryFree_other": "{{count}}일 무료",
     "getStar": "STAR 받기",
@@ -2461,7 +2504,8 @@
     "later": "나중에",
     "expiry": {
       "trial": "STAR 체험판",
-      "left_other": "{{count}}일 남음"
+      "left_other": "{{count}}일 남음",
+      "streakLost": "연속 기록이 사라집니다"
     },
     "preview": {
       "label": "Go+ 미리보기"
@@ -2500,6 +2544,17 @@
     "next": "다음",
     "empty": "아직 결산할 만큼의 음악이 없습니다",
     "emptyHint": "음악을 재생해보세요"
+  },
+  "releases": {
+    "title": "새 릴리스",
+    "new": "신규",
+    "heard": "들음",
+    "why_other": "팔로우한 아티스트의 원곡, 최근 {{count}}일",
+    "playAll": "모두 재생",
+    "addToQueue": "대기열에 추가",
+    "lockedWhy": "내 아티스트의 신곡과 공개되는 순간 받는 알림",
+    "notifyBody_other": "새 릴리스 {{count}}개: {{artists}}",
+    "open": "열기"
   },
   "importer": {
     "title": "가져오기",

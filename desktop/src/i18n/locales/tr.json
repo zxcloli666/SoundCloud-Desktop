@@ -1513,6 +1513,32 @@
       "no_space": "Bu sürücüde yeterli boş alan yok",
       "sandboxed": "Bu klasöre yalnızca korumalı alan portalı üzerinden erişilebiliyor. /media, /run/media veya /mnt altındaki bir sürücüde ya da Müzik veya İndirilenler içinde bir klasör seçin",
       "failed": "Önbellek taşınamadı"
+    },
+    "releaseNotifications": "Yeni çıkış bildirimleri",
+    "releaseNotificationsDesc": "Takip ettiğiniz sanatçılar yeni bir şey yüklediğinde sistem bildirimi. Uygulama açıkken 30 dakikada bir kontrol edilir"
+  },
+  "effects": {
+    "title": "Efektler",
+    "toggle": "Efektleri aç veya kapat",
+    "locked": "Reverb, 8D ve bas güçlendirme STAR'a dahildir",
+    "reverb": "Reverb",
+    "room": "Oda boyutu",
+    "eightDSpeed": "8D hızı",
+    "bass": "Bas",
+    "preset": {
+      "off": "Kapalı",
+      "slowedReverb": "Yavaş + reverb",
+      "spedUp": "Hızlandırılmış",
+      "eightD": "8D",
+      "bass": "Bas güçlendirme",
+      "custom": "Özel"
+    },
+    "short": {
+      "slowedReverb": "Yavaş",
+      "spedUp": "Hızlı",
+      "eightD": "8D",
+      "bass": "Bas",
+      "custom": "FX"
     }
   },
   "eq": {
@@ -1585,6 +1611,10 @@
   "update": {
     "available": "Güncelleme mevcut",
     "later": "Daha sonra",
+    "year": {
+      "cta": "Yıl",
+      "saved": "{{sum}} ₽ tasarruf"
+    },
     "download": "İndir",
     "installRestart": "Yükle ve yeniden başlat",
     "downloading": "Güncelleme indiriliyor",
@@ -1921,6 +1951,7 @@
       "people_one": "{{count}} kişi",
       "people_other": "{{count}} kişi",
       "each": "kişi başı {{price}} ₽",
+      "price": "{{price}} ₽",
       "save": "−{{pct}}%"
     },
     "shared": {
@@ -2530,6 +2561,19 @@
     "sendReports": "Hata raporlarını gönder",
     "sendReportsDesc": "Uygulama hatalarını geliştiricilere gönderir, hesap verisi yok"
   },
+  "starTenure": {
+    "title": "STAR serisi",
+    "months_other": "{{count}} ay üst üste",
+    "next": "{{tier}} seviyesine {{count}} ay",
+    "reached": "Yeni seri seviyesi",
+    "tier": {
+      "0": "Kıvılcım",
+      "1": "Işıltı",
+      "2": "Alev",
+      "3": "Takımyıldız"
+    },
+    "months_one": "{{count}} ay üst üste"
+  },
   "starMoments": {
     "tryFree_one": "{{count}} gün ücretsiz",
     "tryFree_other": "{{count}} gün ücretsiz",
@@ -2541,7 +2585,8 @@
     "expiry": {
       "trial": "STAR deneme",
       "left_one": "{{count}} gün kaldı",
-      "left_other": "{{count}} gün kaldı"
+      "left_other": "{{count}} gün kaldı",
+      "streakLost": "Seri sona erecek"
     },
     "preview": {
       "label": "Go+ önizleme"
@@ -2581,6 +2626,19 @@
     "next": "Sonraki",
     "empty": "Henüz özet için yeterli müzik yok",
     "emptyHint": "Müzik çalın"
+  },
+  "releases": {
+    "title": "Yeni çıkışlar",
+    "new": "Yeni",
+    "heard": "Dinlendi",
+    "why_other": "Takip ettiğiniz sanatçılardan orijinaller, son {{count}} gün",
+    "playAll": "Tümünü çal",
+    "addToQueue": "Sıraya ekle",
+    "lockedWhy": "Sanatçılarınızın yeni parçaları ve çıktıkları anda bildirim",
+    "notifyBody_other": "{{count}} yeni çıkış: {{artists}}",
+    "open": "Aç",
+    "notifyBody_one": "{{count}} yeni çıkış: {{artists}}",
+    "why_one": "Takip ettiğiniz sanatçılardan orijinaller, son {{count}} gün"
   },
   "importer": {
     "title": "İçe aktar",
