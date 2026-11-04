@@ -100,7 +100,7 @@ pub async fn load(state: &ChatState, key: &MediaKey) -> ChatResult<Fetched> {
         Variant::UploadImage => local::upload(state, downloads, key, Part::Image).await,
         Variant::Placeholder => match attachment(state, &key).await? {
             Some(attachment) => Ok(open::placeholder(attachment.thumbhash).await),
-            None => Ok(Fetched::Lost),
+            None => Ok(unknown(downloads, &key)),
         },
         Variant::Thumb => remote(state, downloads, key, Part::Thumb).await,
         Variant::Image => remote(state, downloads, key, Part::Image).await,
@@ -114,9 +114,17 @@ async fn remote(
     part: Part,
 ) -> ChatResult<Fetched> {
     match attachment(state, &key).await? {
-        Some(attachment) => downloads.fetch(key.conversation_id, attachment, part).await,
-        None => Ok(Fetched::Lost),
+        Some(attachment) => {
+            downloads
+                .fetch(key.conversation_id, key.media_id, attachment, part)
+                .await
+        }
+        None => Ok(unknown(downloads, &key)),
     }
+}
+
+fn unknown(downloads: &Downloads, key: &MediaKey) -> Fetched {
+    downloads.tell(key.conversation_id, key.media_id, Fetched::Lost)
 }
 
 async fn attachment(state: &ChatState, key: &MediaKey) -> ChatResult<Option<Attachment>> {

@@ -115,8 +115,12 @@ async fn misses_in_two_conversations_are_asked_apart() {
 
     let (a, b) = tokio::join!(
         rig.load(&first, Part::Image),
-        rig.downloads
-            .fetch(other, second.attachment.clone(), Part::Image)
+        rig.downloads.fetch(
+            other,
+            second.image_id,
+            second.attachment.clone(),
+            Part::Image
+        )
     );
 
     assert!(a.is_ok() && b.is_ok());

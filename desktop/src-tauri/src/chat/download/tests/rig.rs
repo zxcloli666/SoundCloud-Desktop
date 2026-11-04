@@ -13,7 +13,7 @@ use sc_chat::{ChatResult, ConvId};
 use uuid::Uuid;
 
 use super::super::engine::Routes;
-use super::super::{Downloads, Fetched, MediaState, Part};
+use super::super::{Downloads, Fetched, Gone, MediaState, Part};
 use super::world::{self, World};
 use crate::chat::media_cache::MediaCache;
 use crate::chat::runtime::SystemClock;
@@ -112,12 +112,25 @@ impl Rig {
 
     pub async fn load(&self, media: &Media, part: Part) -> ChatResult<Fetched> {
         self.downloads
-            .fetch(self.conversation, media.attachment.clone(), part)
+            .fetch(
+                self.conversation,
+                media.image_id,
+                media.attachment.clone(),
+                part,
+            )
             .await
     }
 
     pub fn notices(&self) -> Vec<MediaState> {
         self.notices.lock().unwrap().clone()
+    }
+
+    pub fn told(&self, media: &Media, state: Gone) -> MediaState {
+        MediaState {
+            conversation_id: self.conversation,
+            media_id: media.image_id,
+            state,
+        }
     }
 }
 
