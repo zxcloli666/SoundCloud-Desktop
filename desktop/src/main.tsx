@@ -86,7 +86,7 @@ function startDeferredRuntime() {
 
 async function bootstrap() {
   await useSettingsStore.persist.rehydrate();
-  if (chatLabWanted) await import('./components/chat/lab/boot').then((m) => m.bootChatLab());
+  if (import.meta.env.DEV && chatLabWanted) await import('./components/chat/lab/boot').then((m) => m.bootChatLab());
   await initUiScale();
 
   const settings = useSettingsStore.getState();

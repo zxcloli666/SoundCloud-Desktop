@@ -1,4 +1,4 @@
 import { chatLabWanted } from './flag';
 import { installChatLabIpc } from './ipc';
 
-if (chatLabWanted) installChatLabIpc();
+if (import.meta.env.DEV && chatLabWanted) installChatLabIpc();
