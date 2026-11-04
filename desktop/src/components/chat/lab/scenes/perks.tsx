@@ -84,6 +84,13 @@ async function pressText(text: string) {
   await sleep(250);
 }
 
+async function pressLabel(label: string) {
+  const find = () => document.querySelector<HTMLButtonElement>(`button[aria-label="${label}"]`);
+  await waitUntil(() => find() !== null);
+  find()?.click();
+  await sleep(250);
+}
+
 function openRules(kit: LabKit) {
   kit.click('[data-ui="room-rules"]');
   kit.waitFor('[data-ui="room-images-policy"]');
@@ -293,7 +300,7 @@ export const scenes: LabScene[] = [
     setup: (kit) => {
       useTogetherStore.setState({ phase: 'idle', room: null });
       roomsApi.open = async () => LISTING;
-      kit.click(`button[aria-label="${i18n.t('together.title')}"]`);
+      kit.after(() => pressLabel(i18n.t('together.title')));
       kit.after(() => pressText(i18n.t('together.open.title')));
       kit.waitFor('[data-ui="open-room"]');
     },
