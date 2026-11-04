@@ -156,7 +156,7 @@ export const LightboxView = memo(function LightboxView({ session }: { session: L
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0"
-        style={{ contain: 'strict', background: 'rgb(var(--paper) / 0.96)' }}
+        style={{ contain: 'strict', background: 'rgb(var(--paper) / 0.985)' }}
       />
       <LightboxBar
         session={session}

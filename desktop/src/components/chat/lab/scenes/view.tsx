@@ -9,6 +9,7 @@ import { ME_ID } from '../people';
 import type { LabKit, LabScene } from '../types';
 
 const MIN = 60_000;
+const AUTO_RETRIES_MS = 23_000;
 const SIZES: [number, number][] = [
   [1600, 1000],
   [900, 1200],
@@ -188,6 +189,7 @@ export const scenes: LabScene[] = [
         { from: 'u-mira', ago: 30, text: 'Лови', attachments: album('m-fail', 3, 1) },
       ]);
       kit.mark(['m-fail-1', 'm-fail-2', 'm-fail-3'], 'failed');
+      kit.wait(AUTO_RETRIES_MS);
     },
   },
   {
@@ -202,6 +204,7 @@ export const scenes: LabScene[] = [
       kit.mark(['m-gone-3', 'm-gone1-1'], 'failed');
       markState(kit, ['m-gone-1'], 'deleted', CONV.dm);
       markState(kit, ['m-gone-2'], 'lost', CONV.dm);
+      kit.wait(AUTO_RETRIES_MS);
     },
   },
   {
@@ -226,6 +229,19 @@ export const scenes: LabScene[] = [
       kit.after(() =>
         emit('chat:media-upload-error', { id: 'up-b2', error: { code: 'quota_exceeded' } }),
       );
+    },
+  },
+  {
+    id: 'view-parked',
+    title: 'Parked album before the upload queue loads',
+    route: ROUTE_DM,
+    setup: (kit) => {
+      seedThread(kit, CONV.dm, [
+        { from: 'u-mira', ago: 30, text: 'Жду фотки!' },
+        { ago: 1, text: 'Ещё три', pending: 'album-p', attachments: album('up-p', 3, 1) },
+      ]);
+      kit.handle('chat_media_parked', () => ['album-p']);
+      kit.waitFor('[data-ui="chat-upload-tile"]');
     },
   },
   {
