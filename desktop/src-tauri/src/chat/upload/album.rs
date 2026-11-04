@@ -8,6 +8,7 @@ use sc_chat::{
 };
 use uuid::Uuid;
 
+use super::deletes;
 use super::driver::file_names;
 use super::engine::Uploads;
 use super::post::{Posted, Released, posted, push, ready, release_in};
@@ -18,7 +19,7 @@ impl Uploads {
     pub async fn send_album(&self, input: SendInput, album: Uuid) -> ChatResult<Message> {
         let albums = self.albums.lock().await;
         let now = self.now();
-        let (message, ready) = self
+        let (message, ready, restarted) = self
             .blocking(move |store| park(store, input, album, now))
             .await?;
         drop(albums);
@@ -26,6 +27,7 @@ impl Uploads {
             self.host.sent();
         }
         self.kick();
+        self.delete_on_server(restarted).await;
         Ok(message)
     }
 
@@ -47,6 +49,7 @@ impl Uploads {
             Released::Waiting => {}
             Released::Pushed => self.host.sent(),
             Released::Freed(rows) => {
+                self.seed_cache(&rows).await;
                 self.files
                     .remove(rows.iter().flat_map(file_names).collect())
                     .await;
@@ -103,16 +106,6 @@ impl Uploads {
             .collect();
         self.delete_on_server(media).await;
     }
-
-    async fn delete_on_server(&self, media: Vec<Uuid>) {
-        if media.is_empty() {
-            return;
-        }
-        let selection = sc_chat::api::wire::MediaSelection::ids(media);
-        if let Err(error) = self.api.delete_media(&selection).await {
-            diagnostics::warn(format!("[ChatUpload] server delete: {error}"));
-        }
-    }
 }
 
 fn park(
@@ -120,7 +113,7 @@ fn park(
     input: SendInput,
     album: Uuid,
     now: Millis,
-) -> ChatResult<(Message, bool)> {
+) -> ChatResult<(Message, bool, Vec<Uuid>)> {
     let conversation_id = input.conversation_id;
     let uploads = store.album_uploads(album)?;
     let foreign = |upload: &MediaUpload| {
@@ -129,11 +122,12 @@ fn park(
     if uploads.is_empty() || uploads.iter().any(foreign) || input.forward.is_some() {
         return Err(ChatError::Invalid);
     }
+    let mut restarted = Vec::new();
     for upload in uploads
         .iter()
         .filter(|upload| upload.state == UploadState::Failed)
     {
-        store.upload_restart(upload.id, now)?;
+        restarted.extend(deletes::restarted(store, upload.id, now)?);
     }
     let post = Post {
         mentions: mentions(&input.text),
@@ -148,5 +142,5 @@ fn park(
     };
     check_text(&post.text)?;
     let message = push(store, conversation_id, album, post, &uploads, now)?;
-    Ok((message, ready(&uploads)))
+    Ok((message, ready(&uploads), restarted))
 }

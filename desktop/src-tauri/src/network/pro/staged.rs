@@ -2,7 +2,7 @@ use std::ops::Range;
 
 use super::Asked;
 use super::open::{self, Opened, Unopened};
-use super::stage::{self, Stage};
+use super::stage::{self, Failed, Stage};
 
 const ATTEMPTS: usize = 5;
 const INCOMPLETE: u16 = 409;
@@ -38,7 +38,9 @@ async fn carried(
         stage.fill(body, missing).await?;
         match open::staged(client, node, asked, &stage.id).await {
             Ok(opened) => return Ok(opened),
-            Err(Unopened::Refused(INCOMPLETE)) => missing = stage.missing().await?,
+            Err(Unopened::Refused(INCOMPLETE)) => {
+                missing = stage.missing().await.map_err(Failed::why)?
+            }
             Err(Unopened::Link(why)) => {
                 last = why;
                 missing = Vec::new();

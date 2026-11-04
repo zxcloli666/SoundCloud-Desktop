@@ -113,9 +113,7 @@ async fn a_crash_in_the_middle_of_a_renewal_ends_with_one_row_per_image() {
         thumb_ref: old.thumb_ref.clone(),
         attachment: old.attachment.clone(),
     };
-    rig.store()
-        .enqueue_upload(&again, rig.host.now_ms())
-        .unwrap();
+    rig.store().enqueue_upload(&again, rig.now()).unwrap();
     let mut rig = rig.restart();
     rig.run();
     rig.until("one row per image and the post out again", |rig| {

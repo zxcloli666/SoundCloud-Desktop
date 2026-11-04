@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use sc_chat::media;
 use sc_chat::sc_chat_wire::proto::envelope::Body;
 use sc_chat::{
@@ -104,6 +106,35 @@ async fn a_preset_drops_a_pending_upload_and_clears_the_image_only_when_there_wa
         [Value::Null, json!({"kind": "preset", "id": "dusk"})]
     );
     assert_eq!(snapshot(&rig), (String::new(), 0));
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn a_preset_picked_while_the_image_is_being_applied_lands_last_without_an_error() {
+    let mut rig = Rig::new(ConversationKind::Room);
+    rig.relays();
+    let room = rig.conversation;
+    let setting = format!("PUT /chat/rooms/{ROOM_CODE}/settings");
+    rig.world.hold(&setting, Duration::from_millis(400));
+    rig.uploads
+        .backdrop(ROOM_CODE, room, rig.image(99).into())
+        .await
+        .unwrap();
+    rig.run();
+    rig.until("the image commit", |rig| {
+        rig.world.with(|state| !state.commits.is_empty())
+    })
+    .await;
+    tokio::time::sleep(Duration::from_millis(100)).await;
+    rig.uploads
+        .set_backdrop(ROOM_CODE, room, Some("dusk".into()))
+        .await
+        .unwrap();
+    let applied = settings(&rig);
+    assert_eq!(applied.len(), 2);
+    assert_eq!(applied[0]["kind"], "image");
+    assert_eq!(applied[1], json!({"kind": "preset", "id": "dusk"}));
+    assert!(rig.host.errors.lock().unwrap().is_empty());
+    assert!(rig.uploads().is_empty());
 }
 
 #[tokio::test(flavor = "multi_thread")]

@@ -6,9 +6,7 @@ use super::post::{Posted, Released, posted, repark_in};
 
 impl Uploads {
     pub async fn retry(&self, id: Uuid) -> ChatResult<()> {
-        let now = self.now();
-        self.blocking(move |store| store.upload_restart(id, now))
-            .await?;
+        self.restart_rows(vec![id]).await?;
         self.forget_targets(id);
         self.wake_all();
         Ok(())

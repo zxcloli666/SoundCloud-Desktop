@@ -4,6 +4,7 @@ use std::time::Duration;
 
 use sc_chat::media::{DECODE_THREADS, DECODE_TIMEOUT, MediaError, SOURCE_MAX_BYTES};
 use sc_chat::{ChatError, ChatResult};
+use tokio::io::AsyncReadExt;
 use tokio::sync::Semaphore;
 
 pub struct Prepare {
@@ -43,13 +44,16 @@ impl Prepare {
 }
 
 pub async fn read_source(path: &Path) -> ChatResult<Vec<u8>> {
-    let meta = tokio::fs::metadata(path)
+    let file = tokio::fs::File::open(path)
         .await
         .map_err(|_| ChatError::NotFound)?;
+    let meta = file.metadata().await.map_err(|_| ChatError::NotFound)?;
     if !meta.is_file() || meta.len() == 0 || meta.len() > SOURCE_MAX_BYTES as u64 {
         return Err(ChatError::Invalid);
     }
-    let bytes = tokio::fs::read(path)
+    let mut bytes = Vec::with_capacity(meta.len() as usize);
+    file.take(SOURCE_MAX_BYTES as u64 + 1)
+        .read_to_end(&mut bytes)
         .await
         .map_err(|_| ChatError::NotFound)?;
     checked_source(bytes)

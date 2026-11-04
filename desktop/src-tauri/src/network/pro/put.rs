@@ -1,18 +1,24 @@
 use std::ops::Range;
+use std::time::Duration;
 
-use futures_util::StreamExt;
+use http::Version;
 use tokio::sync::watch;
 
 use super::open::{self, Opened, Unopened};
-use super::stage::{self, Failed, Stage};
-use super::{Asked, client, pieces};
+use super::stage::{self, Failed, Stage, bytes_in};
+use super::{Asked, STAGED_OVER, client};
 
 const FIRST_PART: u64 = 32 * 1024;
 const LAST_PART: u64 = 4 * 1024;
+const GROW_AFTER: u32 = 4;
 const STALLS: usize = 6;
+const SENT_BUDGET: u64 = 4;
 const OPENS: usize = 3;
+const OPEN_PAUSE: Duration = Duration::from_secs(1);
+const CLOSE_TIMEOUT: Duration = Duration::from_secs(5);
 const INCOMPLETE: u16 = 409;
-const GONE: u16 = 404;
+const BUSY: [u16; 2] = [429, 503];
+const TAKEN: [u16; 3] = [404, 502, 504];
 
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct Staging {
@@ -38,21 +44,14 @@ pub async fn fill_stage(
     resume: Option<&str>,
     progress: &watch::Sender<Staging>,
 ) -> Result<Filled, StagedFailure> {
+    if body.len() <= STAGED_OVER {
+        return Ok(Filled::Inline);
+    }
     let client = client().ok_or_else(|| link("pro: http client is unavailable"))?;
-    let size = body.len() as u64;
-    let reopened = match resume {
-        Some(id) => stage::reopen(client, node, id, size).await.map_err(link)?,
-        None => None,
-    };
-    let (stage, missing) = match reopened {
-        Some(found) => found,
-        None => match stage::create(client, node, size).await.map_err(link)? {
-            Some(created) => created,
-            None => return Ok(Filled::Inline),
-        },
-    };
-    fill(&stage, body, missing, progress).await?;
-    Ok(Filled::Stage(stage.id))
+    match resume {
+        Some(id) => restored(client, node, id, body, progress).await,
+        None => staged_anew(client, node, body, progress).await,
+    }
 }
 
 pub async fn open_filled(
@@ -63,39 +62,70 @@ pub async fn open_filled(
     progress: &watch::Sender<Staging>,
 ) -> Result<u16, StagedFailure> {
     let client = client().ok_or_else(|| link("pro: http client is unavailable"))?;
-    let Filled::Stage(id) = filled else {
-        return plain(client, node, asked, body).await;
-    };
+    let mut filled = filled.clone();
     let mut last = String::new();
-    for _ in 0..OPENS {
-        match open::staged(client, node, asked, id).await {
-            Ok(opened) => return Ok(answered(client, node, opened).await),
-            Err(Unopened::Refused(INCOMPLETE)) => refill(client, node, id, body, progress).await?,
-            Err(Unopened::Refused(GONE)) => return Err(gone()),
-            Err(unopened) => last = unopened.explained(),
+    for attempt in 0..OPENS {
+        let Filled::Stage(id) = filled.clone() else {
+            return inline(client, node, asked, body).await;
+        };
+        let refused = match open::staged(client, node, asked, &id).await {
+            Ok(opened) => return Ok(answered(client, node, opened)),
+            Err(Unopened::Refused(status)) => status,
+            Err(unopened) => {
+                last = unopened.explained();
+                filled = restored(client, node, &id, body, progress).await?;
+                continue;
+            }
+        };
+        last = format!("pro: open answered {refused}");
+        if refused == INCOMPLETE {
+            last = "pro: the stage stayed incomplete".to_string();
+            filled = restored(client, node, &id, body, progress).await?;
+        } else if TAKEN.contains(&refused) {
+            filled = restored(client, node, &id, body, progress).await?;
+        } else if BUSY.contains(&refused) {
+            if attempt + 1 < OPENS {
+                tokio::time::sleep(OPEN_PAUSE * (attempt as u32 + 1)).await;
+            }
+        } else {
+            return Err(link(last));
         }
     }
     Err(link(last))
 }
 
-async fn refill(
+async fn restored(
     client: &'static wreq::Client,
     node: &str,
     id: &str,
     body: &[u8],
     progress: &watch::Sender<Staging>,
-) -> Result<(), StagedFailure> {
-    match stage::reopen(client, node, id, body.len() as u64)
-        .await
-        .map_err(link)?
-    {
-        Some((stage, missing)) => fill(&stage, body, missing, progress).await,
-        None => Err(gone()),
+) -> Result<Filled, StagedFailure> {
+    let refilled = match stage::reopen(client, node, id, body.len() as u64).await {
+        Ok((stage, missing)) => fill(&stage, body, missing, progress).await,
+        Err(failed) => Err(staged_failure(failed)),
+    };
+    match refilled {
+        Ok(()) => Ok(Filled::Stage(id.to_string())),
+        Err(StagedFailure::Gone(_)) => staged_anew(client, node, body, progress).await,
+        Err(failure) => Err(failure),
     }
 }
 
-fn gone() -> StagedFailure {
-    StagedFailure::Gone("pro: the stage is gone".into())
+async fn staged_anew(
+    client: &'static wreq::Client,
+    node: &str,
+    body: &[u8],
+    progress: &watch::Sender<Staging>,
+) -> Result<Filled, StagedFailure> {
+    let created = stage::create(client, node, body.len() as u64)
+        .await
+        .map_err(link)?;
+    let Some((stage, missing)) = created else {
+        return Ok(Filled::Inline);
+    };
+    fill(&stage, body, missing, progress).await?;
+    Ok(Filled::Stage(stage.id))
 }
 
 async fn fill(
@@ -105,28 +135,40 @@ async fn fill(
     progress: &watch::Sender<Staging>,
 ) -> Result<(), StagedFailure> {
     let size = body.len() as u64;
+    let budget = size.max(FIRST_PART) * SENT_BUDGET;
     let mut part = FIRST_PART;
-    let mut stalls = 0;
+    let (mut sent, mut streak, mut stalls) = (0, 0, 0);
+    let mut checked = bytes_in(&missing);
     report(progress, stage, size, &missing);
     while let Some(hole) = missing.first().cloned() {
+        if sent >= budget {
+            return Err(link("pro: the stage keeps losing parts"));
+        }
         let next = hole.start..(hole.start + part).min(hole.end);
+        sent += next.end - next.start;
         match stage.put(body, next.clone()).await {
             Ok(()) => {
-                stalls = 0;
                 taken(&mut missing, next.end);
-                report(progress, stage, size, &missing);
+                streak += 1;
+                if streak >= GROW_AFTER {
+                    part = (part * 2).min(FIRST_PART);
+                    streak = 0;
+                }
             }
             Err(Failed::Gone(why)) => return Err(StagedFailure::Gone(why)),
             Err(Failed::Link(why)) => {
-                stalls += 1;
-                if stalls >= STALLS {
-                    return Err(StagedFailure::Link(why));
-                }
                 part = (part / 2).max(LAST_PART);
-                missing = stage.missing().await.map_err(StagedFailure::Gone)?;
-                report(progress, stage, size, &missing);
+                streak = 0;
+                missing = stage.missing().await.map_err(staged_failure)?;
+                let left = bytes_in(&missing);
+                stalls = if left < checked { 0 } else { stalls + 1 };
+                checked = left;
+                if stalls >= STALLS {
+                    return Err(link(why));
+                }
             }
         }
+        report(progress, stage, size, &missing);
     }
     Ok(())
 }
@@ -141,14 +183,15 @@ fn taken(missing: &mut Vec<Range<u64>>, end: u64) {
 }
 
 fn report(progress: &watch::Sender<Staging>, stage: &Stage, size: u64, missing: &[Range<u64>]) {
-    let left: u64 = missing.iter().map(|hole| hole.end - hole.start).sum();
-    progress.send_replace(Staging {
-        stage: Some(stage.id.clone()),
-        sent: size - left.min(size),
+    let sent = size - bytes_in(missing).min(size);
+    progress.send_modify(|staging| {
+        let same = staging.stage.as_deref() == Some(stage.id.as_str());
+        staging.sent = if same { staging.sent.max(sent) } else { sent };
+        staging.stage = Some(stage.id.clone());
     });
 }
 
-async fn plain(
+async fn inline(
     client: &'static wreq::Client,
     node: &str,
     asked: &Asked,
@@ -160,18 +203,29 @@ async fn plain(
     };
     let opened = open::plain(client, node, &carried)
         .await
-        .map_err(|unopened| link(&unopened.explained()))?;
-    Ok(answered(client, node, opened).await)
+        .map_err(|unopened| link(unopened.explained()))?;
+    Ok(answered(client, node, opened))
 }
 
-async fn answered(client: &'static wreq::Client, node: &str, opened: Opened) -> u16 {
-    let mut body = pieces::stream(client, format!("{node}/take/{}", opened.id), None);
-    while let Some(piece) = body.next().await {
-        if piece.is_err() {
-            break;
-        }
-    }
+fn answered(client: &'static wreq::Client, node: &str, opened: Opened) -> u16 {
+    let answer = format!("{node}/take/{}", opened.id);
+    tokio::spawn(async move {
+        client
+            .delete(answer)
+            .version(Version::HTTP_11)
+            .timeout(CLOSE_TIMEOUT)
+            .send()
+            .await
+            .ok();
+    });
     opened.status
+}
+
+fn staged_failure(failed: Failed) -> StagedFailure {
+    match failed {
+        Failed::Link(why) => StagedFailure::Link(why),
+        Failed::Gone(why) => StagedFailure::Gone(why),
+    }
 }
 
 fn link(why: impl Into<String>) -> StagedFailure {

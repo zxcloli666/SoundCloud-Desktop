@@ -7,7 +7,7 @@ use super::rig::Rig;
 impl Rig {
     pub fn ack(&self, album: Uuid) {
         let outbox = Outbox::new(self.store());
-        outbox.sent(album, 1, self.host.now_ms(), None).unwrap();
+        outbox.sent(album, 1, self.now(), None).unwrap();
         self.uploads.kick();
     }
 

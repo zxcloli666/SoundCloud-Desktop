@@ -34,19 +34,36 @@ pub fn posted(
     album: Uuid,
     uploads: &[MediaUpload],
 ) -> ChatResult<Posted> {
-    let Some(message) = pending_post(store, conversation_id, album)? else {
-        return Ok(Posted::None);
+    Ok(posted_from(
+        pending_post(store, conversation_id, album)?,
+        uploads,
+    ))
+}
+
+pub fn posted_from(message: Option<Message>, uploads: &[MediaUpload]) -> Posted {
+    let Some(message) = message else {
+        return Posted::None;
     };
     let shown = |id: Uuid| message.attachments.iter().any(|seen| seen.media_id == id);
     if uploads.iter().any(|upload| shown(upload.id)) {
-        return Ok(Posted::Parked(message));
+        return Posted::Parked(message);
     }
     let current = uploads
         .iter()
         .all(|upload| upload.media_id.is_some_and(shown));
     match current && message.attachments.len() == uploads.len() {
-        true => Ok(Posted::Sending(message)),
-        false => Ok(Posted::Stale(message)),
+        true => Posted::Sending(message),
+        false => Posted::Stale(message),
+    }
+}
+
+pub fn settles(posted: &Posted, uploads: &[MediaUpload], now: Millis) -> bool {
+    match posted {
+        Posted::Sending(message) => {
+            message.state == DeliveryState::Failed
+                && uploads.iter().any(|upload| lapsed(upload, now))
+        }
+        _ => true,
     }
 }
 
@@ -59,7 +76,11 @@ pub fn release_in(store: &Arc<Store>, album: Uuid, now: Millis) -> ChatResult<Re
         return Ok(Released::Waiting);
     }
     let conversation_id = first.conversation_id;
-    match posted(store, conversation_id, album, &uploads)? {
+    let post = posted(store, conversation_id, album, &uploads)?;
+    if !settles(&post, &uploads, now) {
+        return Ok(Released::Waiting);
+    }
+    match post {
         Posted::None => Ok(Released::Freed(store.remove_album_uploads(album)?)),
         Posted::Parked(message) | Posted::Stale(message) => {
             push(
@@ -72,13 +93,7 @@ pub fn release_in(store: &Arc<Store>, album: Uuid, now: Millis) -> ChatResult<Re
             )?;
             Ok(Released::Pushed)
         }
-        Posted::Sending(message)
-            if message.state == DeliveryState::Failed
-                && uploads.iter().any(|upload| lapsed(upload, now)) =>
-        {
-            renew_in(store, album, conversation_id, message, &uploads, now)
-        }
-        Posted::Sending(_) => Ok(Released::Waiting),
+        Posted::Sending(message) => renew_in(store, album, conversation_id, message, &uploads, now),
     }
 }
 

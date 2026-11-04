@@ -1,10 +1,10 @@
 use base64::{Engine as _, engine::general_purpose::URL_SAFE_NO_PAD as BASE64_URL};
-use futures_util::StreamExt;
+use bytes::Buf;
+use futures_util::{Stream, StreamExt};
 use warp::Filter;
 use warp::http::header::{HeaderMap, HeaderName, HeaderValue, LOCATION};
 use warp::http::{Method, Response, StatusCode};
 use warp::hyper::Body;
-use warp::hyper::body::Bytes;
 
 use super::{Answer, Asked, MOST_BODY, fetch};
 use crate::network::edge;
@@ -22,17 +22,21 @@ pub fn route() -> impl Filter<Extract = (Response<Body>,), Error = warp::Rejecti
     warp::path!("pro" / String / String)
         .and(warp::method())
         .and(warp::header::headers_cloned())
-        .and(warp::body::bytes())
+        .and(warp::body::stream())
         .then(carry)
 }
 
-async fn carry(
+async fn carry<S, B>(
     pro_host: String,
     encoded: String,
     method: Method,
     headers: HeaderMap,
-    body: Bytes,
-) -> Response<Body> {
+    body: S,
+) -> Response<Body>
+where
+    S: Stream<Item = Result<B, warp::Error>>,
+    B: Buf,
+{
     let target = BASE64_URL
         .decode(encoded.as_bytes())
         .ok()
@@ -41,19 +45,41 @@ async fn carry(
     let (Some(target), Some(gateway)) = (target, edge::gateway_of(&pro_host)) else {
         return refused(StatusCode::FORBIDDEN);
     };
-    if body.len() > MOST_BODY {
+    let Some(body) = bounded(body).await else {
         return refused(StatusCode::BAD_GATEWAY);
-    }
+    };
     let asked = Asked {
         method: method.as_str().to_string(),
         url: target.clone(),
         headers: carried(&headers),
-        body: (!body.is_empty()).then(|| body.to_vec()),
+        body: (!body.is_empty()).then_some(body),
     };
     match fetch(&format!("https://{pro_host}"), asked).await {
         Ok(answer) => answered(answer, &target, &gateway),
         Err(_) => refused(StatusCode::BAD_GATEWAY),
     }
+}
+
+async fn bounded<S, B>(body: S) -> Option<Vec<u8>>
+where
+    S: Stream<Item = Result<B, warp::Error>>,
+    B: Buf,
+{
+    let mut body = std::pin::pin!(body);
+    let mut read = Vec::new();
+    while let Some(chunk) = body.next().await {
+        let mut chunk = chunk.ok()?;
+        if read.len() + chunk.remaining() > MOST_BODY {
+            return None;
+        }
+        while chunk.has_remaining() {
+            let piece = chunk.chunk();
+            read.extend_from_slice(piece);
+            let taken = piece.len();
+            chunk.advance(taken);
+        }
+    }
+    Some(read)
 }
 
 fn carried(headers: &HeaderMap) -> Vec<(String, String)> {

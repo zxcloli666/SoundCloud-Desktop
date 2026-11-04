@@ -1,17 +1,18 @@
 use std::path::PathBuf;
+use std::sync::Arc;
 
 use sc_chat::api::wire::FileBackdropReport;
 use sc_chat::media::{self, PreparedBackdrop};
-use sc_chat::store::MediaUpload;
+use sc_chat::store::{MediaUpload, Store};
 use sc_chat::{
     BackdropChange, BackdropReport, ChatError, ChatResult, ConvId, ConversationKind, MediaKind,
-    MediaUploadView, ReportReason, RoomBackdrop, RoomSettingsPatch,
+    MediaUploadView, Millis, ReportReason, RoomBackdrop, RoomSettingsPatch,
 };
 use uuid::Uuid;
 
 use super::engine::Uploads;
 use super::prepare::read_source;
-use super::single::{Single, queue_meta};
+use super::single::{Single, queue_meta, remove_pending};
 
 impl Uploads {
     pub async fn backdrop(
@@ -42,24 +43,26 @@ impl Uploads {
         preset: Option<String>,
     ) -> ChatResult<()> {
         self.room_of(code, room).await?;
-        self.drop_pending(room, MediaKind::Backdrop).await?;
+        let albums = self.albums.lock().await;
+        let removed = self
+            .blocking(move |store| remove_pending(store, room, MediaKind::Backdrop))
+            .await?;
         let patch = RoomSettingsPatch {
             backdrop: Some(preset.map(|id| RoomBackdrop::Preset { id })),
             ..RoomSettingsPatch::default()
         };
-        self.api.room_settings(code, &patch).await?;
+        let set = self.api.room_settings(code, &patch).await;
         let now = self.now();
-        let cleared = self
-            .blocking(move |store| {
-                if store.room_backdrop(room)?.is_none() {
-                    return Ok(false);
-                }
-                let meta = store.backdrop_meta(room, &BackdropChange::Clear)?;
-                queue_meta(store, room, Uuid::new_v4(), meta, now)?;
-                Ok(true)
-            })
-            .await?;
-        if cleared {
+        let cleared = match set {
+            Ok(_) => {
+                self.blocking(move |store| clear_backdrop(store, room, now))
+                    .await
+            }
+            Err(error) => Err(error),
+        };
+        drop(albums);
+        self.dropped(removed).await;
+        if cleared? {
             self.host.sent();
         }
         Ok(())
@@ -93,13 +96,20 @@ impl Uploads {
         let (id, album, room) = (upload.id, upload.album, upload.conversation_id);
         let media_id = upload.media_id.ok_or(ChatError::Invalid)?;
         let code = self.room_code(room).await?;
+        let _albums = self.albums.lock().await;
+        if self
+            .blocking(move |store| store.upload(id))
+            .await?
+            .is_none()
+        {
+            return Ok(Vec::new());
+        }
         let patch = RoomSettingsPatch {
             backdrop: Some(Some(RoomBackdrop::Image { media_id })),
             ..RoomSettingsPatch::default()
         };
         self.api.room_settings(&code, &patch).await?;
         let now = self.now();
-        let _albums = self.albums.lock().await;
         self.blocking(move |store| {
             let meta = store.backdrop_meta(room, &BackdropChange::Set { upload_id: id })?;
             queue_meta(store, room, album, meta, now)?;
@@ -125,4 +135,13 @@ impl Uploads {
         })
         .await
     }
+}
+
+fn clear_backdrop(store: &Arc<Store>, room: ConvId, now: Millis) -> ChatResult<bool> {
+    if store.room_backdrop(room)?.is_none() {
+        return Ok(false);
+    }
+    let meta = store.backdrop_meta(room, &BackdropChange::Clear)?;
+    queue_meta(store, room, Uuid::new_v4(), meta, now)?;
+    Ok(true)
 }

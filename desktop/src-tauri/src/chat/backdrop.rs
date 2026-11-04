@@ -1,9 +1,8 @@
-use std::path::PathBuf;
-
 use sc_chat::{ChatResult, ConvId, MediaUploadView, ReportReason};
 use uuid::Uuid;
 
 use super::state::ChatState;
+use super::upload::chosen;
 
 pub async fn set_preset(
     state: &ChatState,
@@ -23,10 +22,8 @@ pub async fn upload(
     conversation_id: ConvId,
     path: String,
 ) -> ChatResult<MediaUploadView> {
-    state
-        .uploads
-        .backdrop(&code, conversation_id, PathBuf::from(path))
-        .await
+    let path = chosen(state, path).await?;
+    state.uploads.backdrop(&code, conversation_id, path).await
 }
 
 pub async fn report(

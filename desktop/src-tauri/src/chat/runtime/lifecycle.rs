@@ -69,29 +69,31 @@ impl Runtime {
     pub async fn wipe(&self, forget_device: bool) -> ChatResult<()> {
         let _lifecycle = self.lifecycle.lock().await;
         self.forget_user();
+        let chat = self.app.try_state::<ChatState>();
+        let local_media = chat.as_ref().map(|state| state.media_cache.clone());
+        if let Some(uploads) = chat.map(|state| state.uploads.clone()) {
+            uploads.halt().await;
+        }
         let core = self.core.write().ok().and_then(|mut core| core.take());
         self.api.set_identity(None);
         self.restart();
         let keychain = self.keychain.clone();
-        let local_media = self
-            .app
-            .try_state::<ChatState>()
-            .map(|state| state.media_cache.clone());
         let uploads = self.dir.join(UPLOADS_DIR);
         let wiped = self
             .rt
             .spawn_blocking(move || {
-                if let Some(core) = core {
-                    core.store.wipe()?;
-                }
-                if let Some(cache) = local_media {
-                    cache.clear()?;
-                }
-                remove_dir(&uploads)?;
-                if forget_device {
-                    keychain.wipe()?;
-                }
-                Ok(())
+                let keys = if forget_device {
+                    keychain.wipe()
+                } else {
+                    Ok(())
+                };
+                let steps = [
+                    keys,
+                    core.map_or(Ok(()), |core| core.store.wipe()),
+                    local_media.map_or(Ok(()), |cache| cache.clear().map(drop)),
+                    remove_dir(&uploads),
+                ];
+                steps.into_iter().collect::<ChatResult<Vec<()>>>().map(drop)
             })
             .await
             .unwrap_or(Err(ChatError::Internal));

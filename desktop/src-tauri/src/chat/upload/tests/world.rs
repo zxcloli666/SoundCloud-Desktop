@@ -1,5 +1,6 @@
 use std::collections::{HashMap, VecDeque};
 use std::sync::{Arc, Mutex};
+use std::time::Duration;
 
 use sc_chat::api::{CallOptions, Exchange, Signer};
 use sc_chat::channel::{InnerAnswer, InnerCall};
@@ -41,6 +42,8 @@ pub struct State {
     pub settings: Vec<(String, Value)>,
     pub settings_refusal: Option<(u16, Value)>,
     pub reports: Vec<Value>,
+    pub holds: Vec<(String, Duration)>,
+    pub offline_deletes: usize,
 }
 
 pub struct World {
@@ -68,6 +71,29 @@ impl World {
 
     pub fn pass(&self) {
         self.with(|state| state.refusals.push_back(None));
+    }
+
+    pub fn hold(&self, route: &str, wait: Duration) {
+        self.with(|state| state.holds.push((route.to_string(), wait)));
+    }
+
+    fn offline_delete(&self) -> bool {
+        self.with(|state| {
+            let offline = state.offline_deletes > 0;
+            state.offline_deletes = state.offline_deletes.saturating_sub(1);
+            offline
+        })
+    }
+
+    fn held(&self, call: &InnerCall) -> Option<Duration> {
+        let route = format!("{} {}", call.method, call.path);
+        self.with(|state| {
+            let at = state
+                .holds
+                .iter()
+                .position(|(held, _)| route.contains(held.as_str()))?;
+            Some(state.holds.remove(at).1)
+        })
     }
 
     pub fn reservation(&self, upload_id: Uuid) -> Option<Reservation> {
@@ -300,6 +326,12 @@ impl Exchange for Api {
         _tier: Tier,
         _options: &CallOptions,
     ) -> ChatResult<InnerAnswer> {
+        if let Some(wait) = self.0.held(call) {
+            tokio::time::sleep(wait).await;
+        }
+        if call.path == "/chat/media/delete" && self.0.offline_delete() {
+            return Err(sc_chat::ChatError::Offline);
+        }
         let (status, body) = self.0.answer(call);
         Ok(InnerAnswer {
             status,

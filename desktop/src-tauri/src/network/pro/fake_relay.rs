@@ -1,15 +1,20 @@
-use std::collections::HashMap;
-use std::ops::Range;
-use std::sync::{Arc, Mutex};
+mod answers;
+mod stage;
 
-use base64::{Engine as _, engine::general_purpose::STANDARD as BASE64};
+use std::collections::HashMap;
+use std::sync::{Arc, Mutex};
+use std::time::{Duration, Instant};
+
 use bytes::Buf;
 use futures_util::{Stream, StreamExt};
 use serde::Deserialize;
-use serde_json::{Value, json};
+use serde_json::Value;
 use warp::Filter;
 use warp::http::Response;
 use warp::hyper::Body;
+
+use answers::{Opening, opened, piece};
+use stage::Stage;
 
 const FORGOTTEN: usize = 1024;
 
@@ -30,60 +35,6 @@ struct Size {
     size: usize,
 }
 
-#[derive(Deserialize)]
-struct Opening {
-    #[serde(default)]
-    method: String,
-    #[serde(default)]
-    url: String,
-    #[serde(default)]
-    headers: Vec<(String, String)>,
-    body: Option<String>,
-    body_stage: Option<String>,
-}
-
-struct Stage {
-    bytes: Vec<u8>,
-    covered: Vec<Range<usize>>,
-}
-
-impl Stage {
-    fn write(&mut self, at: usize, chunk: &[u8]) {
-        self.bytes[at..at + chunk.len()].copy_from_slice(chunk);
-        let mut covered = std::mem::take(&mut self.covered);
-        covered.push(at..at + chunk.len());
-        self.covered = merged(covered);
-    }
-
-    fn forget(&mut self, len: usize) {
-        self.covered = self
-            .covered
-            .iter()
-            .map(|range| range.start.max(len)..range.end)
-            .filter(|range| range.start < range.end)
-            .collect();
-    }
-
-    fn missing(&self) -> Vec<[usize; 2]> {
-        let mut gaps = Vec::new();
-        let mut at = 0;
-        for range in &self.covered {
-            if range.start > at {
-                gaps.push([at, range.start]);
-            }
-            at = at.max(range.end);
-        }
-        if at < self.bytes.len() {
-            gaps.push([at, self.bytes.len()]);
-        }
-        gaps
-    }
-
-    fn answer(&self, id: &str) -> Value {
-        json!({ "id": id, "size": self.bytes.len(), "missing": self.missing() })
-    }
-}
-
 #[derive(Default)]
 struct Relay {
     stages: HashMap<String, Stage>,
@@ -94,15 +45,34 @@ struct Relay {
     parts: usize,
     forgot: bool,
     on_part: Option<Box<dyn FnOnce() + Send>>,
+    idle: Option<Duration>,
+    failing_opens: usize,
+    stage_refusal: Option<u16>,
 }
 
 impl Relay {
+    fn sweep(&mut self) {
+        if let Some(idle) = self.idle {
+            self.stages
+                .retain(|_, stage| stage.touched.elapsed() < idle);
+        }
+    }
+
+    fn stage(&mut self, id: &str) -> Option<&mut Stage> {
+        self.sweep();
+        let stage = self.stages.get_mut(id)?;
+        stage.touched = Instant::now();
+        Some(stage)
+    }
+
     fn take(&mut self, id: &str, kind: Kind) -> Result<Vec<u8>, u16> {
-        let stage = self.stages.get_mut(id).ok_or(404u16)?;
-        if kind == Kind::ForgetsOnce && !self.forgot {
-            self.forgot = true;
+        let forget = kind == Kind::ForgetsOnce && !self.forgot;
+        let stage = self.stage(id).ok_or(404u16)?;
+        if forget {
             stage.forget(FORGOTTEN);
         }
+        self.forgot |= forget;
+        let stage = self.stages.get(id).ok_or(404u16)?;
         if !stage.missing().is_empty() {
             return Err(409);
         }
@@ -142,6 +112,18 @@ impl FakeRelay {
 
     pub fn on_first_part(&self, hook: impl FnOnce() + Send + 'static) {
         self.relay.lock().unwrap().on_part = Some(Box::new(hook));
+    }
+
+    pub fn idle(&self, idle: Duration) {
+        self.relay.lock().unwrap().idle = Some(idle);
+    }
+
+    pub fn fail_opens(&self, count: usize) {
+        self.relay.lock().unwrap().failing_opens = count;
+    }
+
+    pub fn refuse_stages(&self, status: u16) {
+        self.relay.lock().unwrap().stage_refusal = Some(status);
     }
 }
 
@@ -206,12 +188,13 @@ fn create(relay: &Shared, kind: Kind, size: usize) -> Response<Body> {
         return empty(404);
     }
     let mut relay = relay.lock().unwrap();
+    if let Some(status) = relay.stage_refusal {
+        return empty(status);
+    }
+    relay.sweep();
     relay.stages_opened += 1;
     let id = format!("stage-{}", relay.stages_opened);
-    let stage = Stage {
-        bytes: vec![0; size],
-        covered: Vec::new(),
-    };
+    let stage = Stage::new(size);
     let answer = stage.answer(&id);
     relay.stages.insert(id, stage);
     json(answer)
@@ -250,7 +233,7 @@ where
         };
         let bytes = chunk.copy_to_bytes(chunk.remaining());
         let mut relay = relay.lock().unwrap();
-        let Some(stage) = relay.stages.get_mut(&id) else {
+        let Some(stage) = relay.stage(&id) else {
             return empty(404);
         };
         if at + bytes.len() > stage.bytes.len() {
@@ -263,101 +246,10 @@ where
 }
 
 fn status(relay: &Shared, id: &str) -> Response<Body> {
-    match relay.lock().unwrap().stages.get(id) {
+    match relay.lock().unwrap().stage(id) {
         Some(stage) => json(stage.answer(id)),
         None => empty(404),
     }
-}
-
-async fn opened(relay: Shared, kind: Kind, asked: Opening) -> Response<Body> {
-    if kind != Kind::Forwards {
-        return open(&relay, kind, asked);
-    }
-    let request = forwarded(&asked);
-    let body = {
-        let mut relay = relay.lock().unwrap();
-        relay.opens += 1;
-        match carried(&mut relay, kind, asked) {
-            Ok(body) => body,
-            Err(status) => return empty(status),
-        }
-    };
-    let sent = request.body(body.clone()).send().await;
-    let status = sent.map_or(502, |answer| answer.status().as_u16());
-    let mut relay = relay.lock().unwrap();
-    relay.delivered.push(body);
-    answered(&mut relay, status, Vec::new())
-}
-
-fn forwarded(asked: &Opening) -> wreq::RequestBuilder {
-    let method = wreq::Method::from_bytes(asked.method.as_bytes()).unwrap();
-    let mut request = wreq::Client::new().request(method, &asked.url);
-    for (name, value) in &asked.headers {
-        request = request.header(name, value);
-    }
-    request
-}
-
-fn open(relay: &Shared, kind: Kind, asked: Opening) -> Response<Body> {
-    let mut relay = relay.lock().unwrap();
-    relay.opens += 1;
-    if kind == Kind::RefusesOpen && asked.body_stage.is_some() {
-        return empty(429);
-    }
-    let body = match carried(&mut relay, kind, asked) {
-        Ok(body) => body,
-        Err(status) => return empty(status),
-    };
-    relay.delivered.push(body.clone());
-    answered(&mut relay, 200, body)
-}
-
-fn carried(relay: &mut Relay, kind: Kind, asked: Opening) -> Result<Vec<u8>, u16> {
-    let stage = asked.body_stage.filter(|_| kind != Kind::Old);
-    match (asked.body, stage) {
-        (Some(_), Some(_)) => Err(400),
-        (Some(body), None) => BASE64.decode(body).map_err(|_| 400),
-        (None, Some(id)) => relay.take(&id, kind),
-        (None, None) => Ok(Vec::new()),
-    }
-}
-
-fn answered(relay: &mut Relay, status: u16, body: Vec<u8>) -> Response<Body> {
-    let id = format!("answer-{}", relay.opens);
-    let headers = json!([["content-length", body.len().to_string()]]);
-    relay.answers.insert(id.clone(), body);
-    json(json!({ "id": id, "status": status, "headers": headers }))
-}
-
-fn piece(relay: &Shared, id: &str, asked: &HashMap<String, String>) -> Response<Body> {
-    let relay = relay.lock().unwrap();
-    let Some(whole) = relay.answers.get(id) else {
-        return empty(502);
-    };
-    let at = |name: &str| {
-        asked
-            .get(name)
-            .and_then(|value| value.parse::<usize>().ok())
-    };
-    let from = at("from").unwrap_or(0).min(whole.len());
-    let end = (from + at("max").unwrap_or(0)).min(whole.len());
-    Response::builder()
-        .header("x-pro-end", if end == whole.len() { "1" } else { "0" })
-        .header("x-pro-total", whole.len())
-        .body(Body::from(whole[from..end].to_vec()))
-        .unwrap()
-}
-
-fn merged(mut ranges: Vec<Range<usize>>) -> Vec<Range<usize>> {
-    ranges.sort_by_key(|range| range.start);
-    let mut merged: Vec<Range<usize>> = Vec::with_capacity(ranges.len());
-    for range in ranges {
-        match merged.last_mut() {
-            Some(last) if range.start <= last.end => last.end = last.end.max(range.end),
-            _ => merged.push(range),
-        }
-    }
-    merged
 }
 
 fn json(value: Value) -> Response<Body> {
