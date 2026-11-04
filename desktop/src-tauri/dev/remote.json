@@ -30,6 +30,9 @@
     "opener:default",
     "dialog:default",
     "fs:allow-exists",
+    "notification:allow-notify",
+    "notification:allow-is-permission-granted",
+    "notification:allow-request-permission",
     {
       "identifier": "fs:allow-mkdir",
       "allow": [
