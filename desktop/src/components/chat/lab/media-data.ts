@@ -9,47 +9,48 @@ import type {
 import { CONV, NOW } from './convs';
 import { setPictureSize } from './pictures';
 
-const MB = 1024 * 1024;
-const GB = 1024 * MB;
+const GIB = 1073741824;
+const BLOCK = 4096;
 const DAY = 86_400_000;
+const RESERVED = 4 * BLOCK * 16;
 
-export function labMediaConfig(star: boolean, used = star ? 3.4 * GB : 61 * MB): MediaConfig {
+export function labMediaConfig(star: boolean, used = 0): MediaConfig {
   return {
     uploads: true,
     star,
-    quota: star ? 10 * GB : 100 * MB,
+    quota: GIB,
     used,
     limits: {
-      imageMaxBytes: star ? 25 * MB : 8 * MB,
-      thumbMaxBytes: 200 * 1024,
-      avatarMaxBytes: 2 * MB,
+      imageMaxBytes: 614400,
+      thumbMaxBytes: 32768,
+      avatarMaxBytes: 65536,
       albumMax: 10,
       roomAlbumMax: 4,
-      restoreWindowS: 7 * 86_400,
+      restoreWindowS: 15,
     },
   };
 }
 
-const USAGE_ROWS: [string, number, number][] = [
-  [CONV.dm, 18 * MB, 14],
-  [CONV.group, 31 * MB, 22],
-  [CONV.self, 4 * MB, 3],
-  ['c-gone', 8 * MB, 5],
-];
-
-export function labUsage(config: MediaConfig): MediaUsage {
-  const conversations: ConversationUsage[] = USAGE_ROWS.map(([id, bytes, files]) => ({
-    conversation_id: id,
-    bytes: config.star ? bytes * 50 : bytes,
-    files,
-    gone: id === 'c-gone',
-  }));
+export function labUsage(mine: MyMedia[], reserved = RESERVED): MediaUsage {
+  const live = mine.filter((item) => item.status !== 'lost');
+  const rows = new Map<string, ConversationUsage>();
+  for (const item of live) {
+    const row = rows.get(item.conversation_id) ?? {
+      conversation_id: item.conversation_id,
+      bytes: 0,
+      files: 0,
+      gone: item.conversation_id === 'c-gone',
+    };
+    row.bytes += item.bytes;
+    row.files += 1;
+    rows.set(item.conversation_id, row);
+  }
   return {
-    bytes: config.used,
-    reserved: Math.round(config.used * 0.02),
-    quota: config.quota,
-    files: conversations.reduce((sum, row) => sum + row.files, 0),
-    conversations,
+    bytes: live.reduce((sum, item) => sum + item.bytes, 0),
+    reserved,
+    quota: GIB,
+    files: live.length,
+    conversations: [...rows.values()].sort((a, b) => b.bytes - a.bytes),
   };
 }
 
@@ -57,13 +58,15 @@ export function labMine(): MyMedia[] {
   const out: MyMedia[] = [];
   for (let i = 0; i < 36; i++) {
     const id = `m-mine-${i}`;
-    setPictureSize(id, 1000 + (i % 3) * 300, 900 + (i % 4) * 200);
+    const avatar = i % 17 === 5;
+    setPictureSize(id, avatar ? 512 : 1000 + (i % 3) * 300, avatar ? 512 : 900 + (i % 4) * 200);
+    const blocks = avatar ? 4 + (i % 12) : 12 + ((i * 37) % 139);
     out.push({
       id,
-      kind: i % 17 === 5 ? 'avatar' : 'image',
+      kind: avatar ? 'avatar' : 'image',
       conversation_id: [CONV.dm, CONV.group, CONV.self, 'c-gone'][i % 4],
-      thumb_id: `${id}-t`,
-      bytes: (120 + ((i * 53) % 900)) * 1024,
+      thumb_id: avatar ? null : `${id}-t`,
+      bytes: blocks * BLOCK,
       status: i % 9 === 4 ? 'lost' : i % 5 === 0 ? 'uploaded' : 'attached',
       chats: i % 5 === 0 ? 0 : 1 + (i % 2),
       created_at: NOW - i * 0.6 * DAY,

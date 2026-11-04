@@ -3,6 +3,7 @@ import type { Embed, Message } from '../../../lib/chat/types';
 import { CONV, NOW } from './convs';
 import { ME_ID } from './people';
 import { setPictureSize } from './pictures';
+import { thumbhashOf } from './thumbhash';
 
 const MIN = 60_000;
 
@@ -25,7 +26,7 @@ export function labEmbed(title: string, artist: string, index: number): Embed {
 
 export function attachment(id: string, w: number, h: number, size = 240_000): MessageAttachment {
   setPictureSize(id, w, h);
-  return { mediaId: id, kind: 'image', size, w, h, thumbhash: [] };
+  return { mediaId: id, kind: 'image', size, w, h, thumbhash: thumbhashOf(id) };
 }
 
 interface Draft {

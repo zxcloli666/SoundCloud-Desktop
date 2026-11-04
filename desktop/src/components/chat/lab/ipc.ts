@@ -5,6 +5,7 @@ import { runChatCommand } from './handlers';
 import { routeIpcFetch } from './hybrid';
 import { installLabPictures } from './pictures';
 import { plainCommand } from './plain';
+import { initWorld } from './world';
 
 type Args = Record<string, unknown>;
 type Invoke = (cmd: string, args?: InvokeArgs, options?: unknown) => Promise<unknown>;
@@ -51,6 +52,7 @@ async function labCommand(cmd: string, args: unknown, options: unknown) {
 }
 
 export function installChatLabIpc() {
+  initWorld();
   installLabPictures();
   hybrid = '__TAURI_INTERNALS__' in window;
   if (hybrid) {

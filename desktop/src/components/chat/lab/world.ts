@@ -69,7 +69,9 @@ function labConfig(media: MediaConfig): ChatConfig {
 
 export function createWorld(star = false): LabWorld {
   const threads = labThreads();
-  const media = labMediaConfig(star);
+  const mine = labMine();
+  const usage = labUsage(mine);
+  const media = labMediaConfig(star, usage.bytes + usage.reserved);
   return {
     status: labStatus(),
     config: labConfig(media),
@@ -87,8 +89,8 @@ export function createWorld(star = false): LabWorld {
       'c-dm': [me(), other('u-mira')],
     },
     uploads: [],
-    usage: labUsage(media),
-    mine: labMine(),
+    usage,
+    mine,
     handlers: {},
     latencyMs: 20,
   };
@@ -109,12 +111,15 @@ function other(id: string): Member {
   };
 }
 
-export const world: LabWorld = createWorld();
+export const world = {} as LabWorld;
+
+export function initWorld() {
+  Object.assign(world, createWorld());
+}
 
 export function setStar(star: boolean) {
-  const media = labMediaConfig(star);
-  world.config = { ...world.config, media };
-  world.usage = labUsage(media);
+  const media = world.config.media ?? labMediaConfig(star);
+  world.config = { ...world.config, media: { ...media, star } };
 }
 
 export function conversation(id: ConvId): ConversationSummary | undefined {

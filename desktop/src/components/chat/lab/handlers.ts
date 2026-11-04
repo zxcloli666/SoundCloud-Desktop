@@ -1,10 +1,4 @@
-import type {
-  DeleteAnswer,
-  MediaUrl,
-  MinePage,
-  MineQuery,
-  RestoreAnswer,
-} from '../../../lib/chat/media-types';
+import type { MediaUrl, MinePage, MineQuery } from '../../../lib/chat/media-types';
 import { chatMediaUrl } from '../../../lib/chat/media-url';
 import type {
   ConversationPatch,
@@ -13,6 +7,7 @@ import type {
   SendInput,
   ThreadSnapshot,
 } from '../../../lib/chat/types';
+import { deleteSelection, restoreSelection, type Selection } from './media-trash';
 import { writeHandlers } from './media-writes';
 import { ME_ID } from './people';
 import { mediaMark } from './pictures';
@@ -94,7 +89,7 @@ function mediaUrls(args: Args): { expires_in_s: number; items: MediaUrl[] } {
     if (mark === 'lost') return { state: 'lost', id };
     return { state: 'ok', id, url: chatMediaUrl(conversationId, id, 'image') };
   });
-  return { expires_in_s: 3600, items };
+  return { expires_in_s: 900, items };
 }
 
 function minePage(query: MineQuery): MinePage {
@@ -107,20 +102,6 @@ function minePage(query: MineQuery): MinePage {
   const limit = query.limit ?? 30;
   const end = start + limit;
   return { items: items.slice(start, end), next_cursor: end < items.length ? String(end) : null };
-}
-
-function deleteMedia(args: Args): DeleteAnswer {
-  const selection = args.selection as { ids?: string[]; all?: boolean };
-  const gone = world.mine.filter((m) => selection.all || selection.ids?.includes(m.id));
-  const freed = gone.reduce((sum, m) => sum + m.bytes, 0);
-  world.mine = world.mine.filter((m) => !gone.includes(m));
-  const used = Math.max(0, world.usage.bytes - freed);
-  world.usage = { ...world.usage, bytes: used };
-  return { deleted: gone.length, freed, used, quota: world.usage.quota };
-}
-
-function restoreMedia(): RestoreAnswer {
-  return { restored: 0, missed: 0, used: world.usage.bytes, quota: world.usage.quota };
 }
 
 export const defaultHandlers: Record<string, (args: Args) => unknown> = {
@@ -141,8 +122,8 @@ export const defaultHandlers: Record<string, (args: Args) => unknown> = {
   chat_notify_prefs: () => ({ enabled: true, preview: 'full', sound: true, streamMode: false }),
   chat_media_usage: () => world.usage,
   chat_media_mine: (a) => minePage(a.query as MineQuery),
-  chat_media_delete: deleteMedia,
-  chat_media_restore: restoreMedia,
+  chat_media_delete: (a) => deleteSelection(a.selection as Selection),
+  chat_media_restore: (a) => restoreSelection(a.selection as Selection),
   chat_media_urls: mediaUrls,
   chat_media_uploads: () => world.uploads,
   chat_media_parked: parkedAlbums,
