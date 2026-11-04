@@ -128,7 +128,7 @@ const LISTING: OpenRoom[] = [
     full: true,
     starHost: true,
     cover: { url: ART(12), accent: 3 },
-    backdrop: null,
+    backdrop: { kind: 'preset', id: 'candy-sky' },
     createdAt: Date.now() - 1_800_000,
   },
   {
@@ -161,17 +161,20 @@ const LISTING: OpenRoom[] = [
   },
 ];
 
+const PACKED = 'PACK25';
+
 function preview(code: string, star: boolean): RoomPreview {
+  const packed = code === PACKED;
   return {
     code,
-    title: star ? 'Ночной эфир' : null,
-    host: person(star ? 'u-kai' : 'u-lena'),
+    title: packed ? 'Пятничный сет' : star ? 'Ночной эфир' : null,
+    host: person(packed ? 'u-mira' : star ? 'u-kai' : 'u-lena'),
     track: null,
-    listeners: star ? 18 : 10,
+    listeners: packed ? 25 : star ? 18 : 10,
     capacity: star ? 25 : 10,
     starHost: star,
-    cover: star ? { url: ART(11), accent: 6 } : null,
-    backdrop: star ? { kind: 'preset', id: 'aurora' } : null,
+    cover: star ? { url: ART(packed ? 12 : 11), accent: packed ? 3 : 6 } : null,
+    backdrop: star ? { kind: 'preset', id: packed ? 'candy-sky' : 'aurora' } : null,
     alive: true,
   };
 }
@@ -236,6 +239,19 @@ export const scenes: LabScene[] = [
       setIsPremium(false);
       kit.room({ star: true, host: false });
       patchRoom({ perks: STAR, members: crowd(9), cover: { url: ART(11), accent: 6 } });
+      kit.click('[data-ui="room-tuning"]');
+      kit.waitFor('[data-ui="room-capacity"]');
+    },
+  },
+  {
+    id: 'perks-star-soon',
+    title: 'Perks: STAR bought, room not upgraded yet',
+    route: '/chats/room',
+    setup: (kit) => {
+      seedArtwork();
+      hostRoom(kit, FREE, { members: crowd(6) });
+      kit.star(true);
+      setIsPremium(true);
       kit.click('[data-ui="room-tuning"]');
       kit.waitFor('[data-ui="room-capacity"]');
     },
@@ -330,8 +346,10 @@ export const scenes: LabScene[] = [
     route: `/chats/${CONV.dm}`,
     setup: (kit) => {
       const star = 'STAR25';
-      const full = 'FULL10';
-      kit.handle('chat_room_preview', (args) => preview(String(args.code), args.code === star));
+      const full = 'FULL99';
+      kit.handle('chat_room_preview', (args) =>
+        preview(String(args.code), args.code === star || args.code === PACKED),
+      );
       const thread = kit.world.threads[CONV.dm] ?? [];
       const last = thread[thread.length - 1];
       if (last) {
@@ -355,8 +373,19 @@ export const scenes: LabScene[] = [
             body: { type: 'text', text: '', spans: [] },
             embeds: [inviteEmbed(full)],
           },
+          {
+            ...last,
+            seq: (last.seq ?? 0) + 3,
+            clientId: `perks-invite-${PACKED}`,
+            sender: 'u-mira',
+            mine: false,
+            body: { type: 'text', text: '', spans: [] },
+            embeds: [inviteEmbed(PACKED)],
+          },
         ];
       }
+      kit.after(() => pressLabel(i18n.t('chat.thread.toBottom')));
+      kit.after(() => sleep(900));
     },
   },
 ];

@@ -30,9 +30,16 @@ export async function pasteImages(conversationId: ConvId, files: File[], max: nu
   await attachData(conversationId, read, max);
 }
 
+function richText(data: DataTransfer): boolean {
+  const html = data.getData('text/html');
+  if (html) return !/<img[\s>]/i.test(html);
+  return /[\t\r\n]/.test(data.getData('text/plain'));
+}
+
 export function clipboardImages(data: DataTransfer | null): File[] {
-  if (!data || data.getData('text/plain').trim() !== '') return [];
-  return Array.from(data.items)
+  if (!data) return [];
+  const images = Array.from(data.items)
     .filter((item) => item.kind === 'file' && item.type.startsWith('image/'))
     .flatMap((item) => item.getAsFile() ?? []);
+  return images.length > 0 && !richText(data) ? images : [];
 }

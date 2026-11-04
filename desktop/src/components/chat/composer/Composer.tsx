@@ -152,7 +152,7 @@ export const Composer = memo(function Composer({ conversationId }: { conversatio
     if (album) useChatMediaStore.getState().setSending(album, true);
     try {
       await store.send(conversationId, rich, outgoing, album ?? undefined);
-      if (album) void useChatMediaStore.getState().refreshParked();
+      if (album) await useChatMediaStore.getState().refreshParked();
     } catch (error) {
       fail(error);
       draft.restore(before);

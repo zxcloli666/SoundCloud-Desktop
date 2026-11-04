@@ -1,4 +1,5 @@
 import { memo } from 'react';
+import { RING } from './motion';
 
 export const ProgressRing = memo(function ProgressRing({
   value,
@@ -46,7 +47,7 @@ export const ProgressRing = memo(function ProgressRing({
         strokeDasharray={length}
         strokeDashoffset={length * (1 - shown)}
         transform={`rotate(-90 ${size / 2} ${size / 2})`}
-        style={{ transition: 'stroke-dashoffset 320ms var(--ease-apple, ease-out)' }}
+        className={RING}
       />
     </svg>
   );

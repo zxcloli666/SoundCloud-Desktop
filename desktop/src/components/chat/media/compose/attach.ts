@@ -15,10 +15,14 @@ export function fileName(path: string): string {
 function queued<T>(conversationId: ConvId, job: () => Promise<T>): Promise<T> {
   const before = queues.get(conversationId) ?? Promise.resolve();
   const run = before.then(job, job);
-  queues.set(
-    conversationId,
-    run.catch(() => undefined),
+  const settled = run.then(
+    () => undefined,
+    () => undefined,
   );
+  queues.set(conversationId, settled);
+  void settled.then(() => {
+    if (queues.get(conversationId) === settled) queues.delete(conversationId);
+  });
   return run;
 }
 

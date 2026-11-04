@@ -127,6 +127,13 @@ States are in attributes too: `aria-current="page"` on the open link or section,
 | `[data-ui="chat-requests"]` | Message requests: the list and the bar in a chat |
 | `[data-ui="chat-room"]` | Listening room tab |
 | `[data-ui="chat-room-stage"]` | Room area under the header that holds the room backdrop. Set `--room-accent` on it to tint the backdrop |
+| `[data-ui="room-tuning"]` | Room settings button in the room header |
+| `[data-ui="room-capacity"]` | Seats row in room settings: members of capacity, the seat strip, paused joins |
+| `[data-ui="room-rules"]` | Room rules button in the room header (host) |
+| `[data-ui="room-images-policy"]` | Who may post images in the room (host) |
+| `[data-ui="room-cover"]` | Room cover row in the room rules (host) |
+| `[data-ui="room-cover-picker"]` | Cover picker: artwork grid, accent colors, apply and reset |
+| `[data-ui="open-room"]` | A room in the open rooms list |
 | `[data-ui="chat-toast"]` | New message popup |
 | `[data-ui="chat-share"]` | "Send" window |
 | `[data-ui="chat-device-alert"]` | New device alert |
@@ -137,7 +144,7 @@ States are in attributes too: `aria-current="page"` on the open link or section,
 | `[data-ui="chat-storage-undo"]` | Undo bar after deleting images |
 | `[data-ui="chat-storage-entry"]` | Storage card in chat settings |
 
-Other chat windows (new chat, report, delete) are `[data-ui="modal"]`. Chat colors come from `--color-white` (text and lines), `--color-black` (surfaces), `--color-bg-glass*` and `--color-border-glass*`, so a light theme that redefines them restyles chats too. Your messages, the open chat and the chosen filter are tinted with `--color-chat-tint`.
+Other chat windows (new chat, report, delete) are `[data-ui="modal"]`. Chat colors come from the scheme tokens (see "White and dark"): `--ink` for text and lines, `--paper` and `--surface` for surfaces, `--shade` for wells and scrims. A theme that sets them restyles chats too. Your messages, the open chat and the chosen filter are tinted with `--color-chat-tint`.
 
 ## Variables
 

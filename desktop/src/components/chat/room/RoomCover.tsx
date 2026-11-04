@@ -1,49 +1,28 @@
-import { memo, useEffect, useState } from 'react';
+import { memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { RoomCover as Cover } from '../../../lib/chat/media-types';
 import { ChevronRight, ImageIcon } from '../../../lib/icons';
 import type { RoomView } from '../../../lib/together/types';
 import { isRoomHost, useTogetherStore } from '../../../stores/together';
+import { ArtImage } from './perks/ArtImage';
 import { CoverPicker } from './perks/CoverPicker';
-import { roomArt, roomPerks } from './perks/perks';
+import { roomArt } from './perks/perks';
 import { StarMark } from './perks/StarMark';
 import { RoomPopover } from './RoomPopover';
+import { usePending } from './usePending';
 
-const PENDING_MS = 5_000;
-
-function coverKey(cover: Cover | null | undefined): string {
-  return cover ? `${cover.url}|${cover.accent}` : '';
-}
-
-function usePendingCover(actual: Cover | null | undefined) {
-  const [pending, setPending] = useState<{ cover: Cover | null } | null>(null);
-  const actualKey = coverKey(actual);
-  const pendingKey = pending ? coverKey(pending.cover) : null;
-
-  useEffect(() => {
-    if (pendingKey === null) return;
-    if (pendingKey === actualKey) {
-      setPending(null);
-      return;
-    }
-    const timer = setTimeout(() => setPending(null), PENDING_MS);
-    return () => clearTimeout(timer);
-  }, [actualKey, pendingKey]);
-
-  return [
-    pending ? pending.cover : (actual ?? null),
-    (cover: Cover | null) => setPending({ cover }),
-  ] as const;
+function sameCover(a: Cover | null, b: Cover | null): boolean {
+  return (a?.url ?? null) === (b?.url ?? null) && (a?.accent ?? null) === (b?.accent ?? null);
 }
 
 export const RoomCover = memo(function RoomCover({ room }: { room: RoomView }) {
   const { t } = useTranslation();
   const host = useTogetherStore(isRoomHost);
   const [open, setOpen] = useState(false);
-  const [shown, setShown] = usePendingCover(room.cover);
-  if (!host) return null;
+  const [shown, show] = usePending(room.cover ?? null, sameCover);
+  if (!host || !room.perks) return null;
 
-  const star = roomPerks(room).starHost;
+  const star = room.perks.starHost;
   const track = room.playback.track;
   const art = roomArt(
     star ? shown : null,
@@ -68,7 +47,7 @@ export const RoomCover = memo(function RoomCover({ room }: { room: RoomView }) {
             style={art.accent ? { boxShadow: `0 0 0 1.5px ${art.accent}` } : undefined}
           >
             {art.src ? (
-              <img src={art.src} alt="" className="h-full w-full object-cover" />
+              <ArtImage src={art.src} seed={art.src} className="h-full w-full object-cover" />
             ) : (
               <ImageIcon size={11} />
             )}
@@ -76,7 +55,7 @@ export const RoomCover = memo(function RoomCover({ room }: { room: RoomView }) {
           <span className="flex-1 truncate text-[12.5px] font-semibold text-ink-85">
             {t('chat.room.perks.cover.title')}
           </span>
-          {!star && <StarMark size={14} />}
+          {!star && <StarMark size={14} lock />}
           <ChevronRight size={13} className="shrink-0 text-ink-35" />
         </button>
       }
@@ -84,7 +63,7 @@ export const RoomCover = memo(function RoomCover({ room }: { room: RoomView }) {
       <CoverPicker
         room={room}
         onSaved={(cover) => {
-          setShown(cover);
+          show(cover, async () => true);
           setOpen(false);
         }}
       />

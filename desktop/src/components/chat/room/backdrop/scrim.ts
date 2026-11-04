@@ -2,16 +2,18 @@ import type { Scheme } from '../../../../lib/scheme';
 import type { Luminance } from '../presets/types';
 
 const TARGET = 4.5;
-const TEXT_ALPHA = 0.75;
+const PLAIN_SHARE = 0.97;
 const FLOOR = 0.22;
 const CEILING = 0.92;
 const STEP = 0.01;
 
 export const UNKNOWN_LIGHT: Luminance = { mean: 0.5, low: 0, high: 1 };
 
-const FALLBACK: Record<Scheme, { ink: number[]; paper: number[] }> = {
-  dark: { ink: [255, 255, 255], paper: [8, 8, 10] },
-  white: { ink: [22, 20, 28], paper: [245, 245, 247] },
+export const ROOM_TEXT_TONE = 0.75;
+
+const FALLBACK: Record<Scheme, { ink: number[]; paper: number[]; lift: number }> = {
+  dark: { ink: [255, 255, 255], paper: [8, 8, 10], lift: 0 },
+  white: { ink: [22, 20, 28], paper: [245, 245, 247], lift: 0.6 },
 };
 
 function decode(value: number) {
@@ -34,25 +36,37 @@ function mix(top: number, bottom: number, alpha: number) {
   return alpha * top + (1 - alpha) * bottom;
 }
 
+function readToken(name: string): string {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+
 function readChannels(name: string, fallback: number[]): number[] {
-  const raw = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-  const parts = raw.split(/\s+/).map(Number);
+  const parts = readToken(name).split(/\s+/).map(Number);
   return parts.length === 3 && parts.every(Number.isFinite) ? parts : fallback;
 }
 
-export function scrimAlpha(light: Luminance, scheme: Scheme): number {
-  const ink = readChannels('--ink', FALLBACK[scheme].ink);
-  const paper = readChannels('--paper', FALLBACK[scheme].paper);
-  const inkLight = channelLight(ink);
-  const paperLight = channelLight(paper);
+function readLift(fallback: number): number {
+  const value = Number.parseFloat(readToken('--ink-lift'));
+  return Number.isFinite(value) ? value : fallback;
+}
+
+function textContrast(inkCode: number, groundCode: number, alpha: number) {
+  return contrast(decode(mix(inkCode, groundCode, alpha)), decode(groundCode));
+}
+
+export function scrimAlpha(light: Luminance, scheme: Scheme, tone = ROOM_TEXT_TONE): number {
+  const fallback = FALLBACK[scheme];
+  const inkLight = channelLight(readChannels('--ink', fallback.ink));
+  const paperLight = channelLight(readChannels('--paper', fallback.paper));
+  const textAlpha = tone * (1 + readLift(fallback.lift) * (1 - tone));
   const worst = inkLight > paperLight ? light.high : light.low;
   const inkCode = encode(inkLight);
   const paperCode = encode(paperLight);
   const imageCode = encode(worst);
+  const target = Math.min(TARGET, textContrast(inkCode, paperCode, textAlpha) * PLAIN_SHARE);
   for (let alpha = FLOOR; alpha < CEILING; alpha += STEP) {
     const ground = mix(paperCode, imageCode, alpha);
-    const text = mix(inkCode, ground, TEXT_ALPHA);
-    if (contrast(decode(text), decode(ground)) >= TARGET) return Math.round(alpha * 100) / 100;
+    if (textContrast(inkCode, ground, textAlpha) >= target) return Math.round(alpha * 100) / 100;
   }
   return CEILING;
 }

@@ -134,6 +134,8 @@
       "off": "없음",
       "withStar": "STAR로 이미지"
     },
-    "moreMods": "STAR로 모더레이터 {{value}}명"
+    "moreMods": "STAR로 모더레이터 {{value}}명",
+    "starSoon": "몇 분 안에 STAR가 켜져요",
+    "needsStar": "STAR 필요"
   }
 }

@@ -10,7 +10,8 @@ import { usePerfMode } from '../../../lib/perf';
 import { sessionErrorKey } from '../../../lib/together/errors';
 import { joinSession } from '../../../lib/together/session';
 import { useTogetherStore } from '../../../stores/together';
-import { BackdropThumb } from '../room/BackdropThumb';
+import { BackdropThumb, hasBackdropThumb } from '../room/BackdropThumb';
+import { ArtImage } from '../room/perks/ArtImage';
 import { accentRgb, roomArt } from '../room/perks/perks';
 import { StarMark } from '../room/perks/StarMark';
 import { EmbedShell } from './EmbedShell';
@@ -57,12 +58,32 @@ function Perforation({ edge }: { edge: number }) {
   );
 }
 
-function JoinButton({ code, here, full }: { code: string; here: boolean; full: boolean }) {
+const SOLID_FULL = {
+  background: 'color-mix(in srgb, var(--color-amber-300) 12%, rgb(var(--paper)))',
+};
+const SOLID_HERE = { background: 'color-mix(in srgb, var(--color-accent) 15%, rgb(var(--paper)))' };
+
+function JoinButton({
+  code,
+  here,
+  full,
+  overArt,
+}: {
+  code: string;
+  here: boolean;
+  full: boolean;
+  overArt: boolean;
+}) {
   const { t } = useTranslation();
   const [joining, setJoining] = useState(false);
   if (full && !here) {
     return (
-      <span className="inline-flex h-8 items-center gap-1.5 rounded-full bg-amber-300/[0.12] px-3 text-[12px] font-semibold text-amber-200">
+      <span
+        className={`inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-[12px] font-semibold text-amber-200 ${
+          overArt ? '' : 'bg-amber-300/[0.12]'
+        }`}
+        style={overArt ? SOLID_FULL : undefined}
+      >
         <Users size={12} />
         {t('chat.embeds.room.full')}
       </span>
@@ -70,8 +91,13 @@ function JoinButton({ code, here, full }: { code: string; here: boolean; full: b
   }
   if (here) {
     return (
-      <span className="inline-flex h-8 items-center gap-1.5 rounded-full bg-accent/15 px-3 text-[12px] font-semibold text-accent">
-        <Headphones size={13} />
+      <span
+        className={`inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-[12px] font-semibold ${
+          overArt ? 'text-ink-90' : 'bg-accent/15 text-accent'
+        }`}
+        style={overArt ? SOLID_HERE : undefined}
+      >
+        <Headphones size={13} className={overArt ? 'text-accent' : undefined} />
         {t('chat.embeds.room.here')}
       </span>
     );
@@ -125,6 +151,8 @@ export const RoomInviteEmbed = memo(function RoomInviteEmbed({
   const roomCover = roomArt(preview?.starHost ? preview.cover : null, null);
   const capacity = preview?.capacity ?? 0;
   const full = !!preview && capacity > 0 && preview.listeners >= capacity;
+  const overArt = live && hasBackdropThumb(preview?.backdrop);
+  const soft = overArt ? 'text-ink-70' : 'text-ink-45';
 
   return (
     <EmbedShell
@@ -146,7 +174,11 @@ export const RoomInviteEmbed = memo(function RoomInviteEmbed({
       )}
       <div className="relative flex min-w-0 items-stretch" style={{ isolation: 'isolate' }}>
         <div className="flex shrink-0 flex-col justify-between gap-2 py-0.5">
-          <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.14em] text-ink-55">
+          <span
+            className={`flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.14em] ${
+              overArt ? 'text-ink-70' : 'text-ink-55'
+            }`}
+          >
             {live ? <LiveDot /> : <Lock size={11} />}
             {live && t('chat.embeds.room.live')}
           </span>
@@ -156,7 +188,7 @@ export const RoomInviteEmbed = memo(function RoomInviteEmbed({
           {!compact && preview && live && (
             <span
               className={`flex items-center gap-1 text-[11px] font-semibold tabular-nums ${
-                full ? 'text-amber-200' : 'text-ink-45'
+                full && !overArt ? 'text-amber-200' : soft
               }`}
             >
               <Headphones size={11} />
@@ -168,12 +200,9 @@ export const RoomInviteEmbed = memo(function RoomInviteEmbed({
         <div className="flex min-w-0 flex-1 flex-col gap-1.5">
           <div className="flex min-w-0 items-center gap-2">
             {roomCover.src && live && (
-              <img
+              <ArtImage
                 src={roomCover.src}
-                alt=""
-                loading="lazy"
-                decoding="async"
-                draggable={false}
+                seed={roomCover.src}
                 className="size-9 shrink-0 rounded-[9px] object-cover"
                 style={{
                   boxShadow: `0 0 0 1.5px ${roomCover.accent}, 0 6px 16px -8px ${roomCover.accent}`,
@@ -185,7 +214,7 @@ export const RoomInviteEmbed = memo(function RoomInviteEmbed({
                 {title}
               </p>
               {host && (
-                <p className="flex min-w-0 items-center gap-1 text-[11.5px] text-ink-45">
+                <p className={`flex min-w-0 items-center gap-1 text-[11.5px] ${soft}`}>
                   <span className="truncate">{t('chat.embeds.room.host', { name: host })}</span>
                   {preview?.starHost && <StarMark size={13} />}
                 </p>
@@ -204,16 +233,20 @@ export const RoomInviteEmbed = memo(function RoomInviteEmbed({
                   className="h-7 w-7 shrink-0 rounded-[7px] object-cover"
                 />
               )}
-              <span className="min-w-0 truncate text-[11.5px] text-ink-65">
+              <span
+                className={`min-w-0 truncate text-[11.5px] ${overArt ? 'text-ink-85' : 'text-ink-65'}`}
+              >
                 {track.title}
-                {track.artist && <span className="text-ink-35"> · {track.artist}</span>}
+                {track.artist && (
+                  <span className={overArt ? 'text-ink-70' : 'text-ink-35'}> · {track.artist}</span>
+                )}
               </span>
             </div>
           )}
           {!compact && (
             <div className="flex justify-end">
               {live ? (
-                <JoinButton code={room.code} here={here} full={full} />
+                <JoinButton code={room.code} here={here} full={full} overArt={overArt} />
               ) : (
                 <span className="inline-flex h-8 items-center gap-1.5 rounded-full bg-ink/[0.06] px-3 text-[12px] font-semibold text-ink-60">
                   <Lock size={12} />

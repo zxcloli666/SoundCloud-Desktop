@@ -27,7 +27,9 @@ const base = String(args.url ?? 'http://127.0.0.1:1420');
 const out = resolve(String(args.out ?? 'chat-shots'));
 const port = Number(args.port ?? 9333);
 const timeout = Number(args.timeout ?? 30000);
-const [width, height] = String(args.size ?? '1280x800').split('x').map(Number);
+const [width, height] = String(args.size ?? '1280x800')
+  .split('x')
+  .map(Number);
 const list = (value, fallback) => (value ? String(value).split(',') : fallback);
 const schemes = list(args.scheme, ['dark', 'white']);
 const perfs = list(args.perf, ['beauty']);
@@ -47,8 +49,9 @@ async function waitForBrowser() {
 }
 
 class Page {
-  constructor(socket) {
+  constructor(socket, id) {
     this.socket = socket;
+    this.id = id;
     this.next = 1;
     this.pending = new Map();
     this.errors = [];
@@ -71,7 +74,27 @@ class Page {
   send(method, params = {}) {
     const id = this.next++;
     this.socket.send(JSON.stringify({ id, method, params }));
-    return new Promise((done, reject) => this.pending.set(id, { resolve: done, reject }));
+    return new Promise((done, reject) => {
+      const timer = setTimeout(() => {
+        this.pending.delete(id);
+        reject(new Error(`${method} got no answer in ${timeout} ms, the page is stuck`));
+      }, timeout);
+      this.pending.set(id, {
+        resolve: (value) => {
+          clearTimeout(timer);
+          done(value);
+        },
+        reject: (error) => {
+          clearTimeout(timer);
+          reject(error);
+        },
+      });
+    });
+  }
+
+  async close() {
+    this.socket.close();
+    await fetch(`http://127.0.0.1:${port}/json/close/${this.id}`).catch(() => null);
   }
 
   async value(expression) {
@@ -88,7 +111,7 @@ async function openPage() {
     socket.addEventListener('open', done, { once: true });
     socket.addEventListener('error', reject, { once: true });
   });
-  const page = new Page(socket);
+  const page = new Page(socket, target.id);
   await page.send('Page.enable');
   await page.send('Runtime.enable');
   return page;
@@ -132,7 +155,9 @@ async function until(page, expression) {
 async function sceneIds(page) {
   await load(page, sceneUrl(null, 'dark', 'beauty'), 'dark');
   if (!(await until(page, 'Array.isArray(window.__chatLabScenes)'))) {
-    const state = await page.value('location.href + " " + document.readyState + " " + document.body.innerText.slice(0, 120)');
+    const state = await page.value(
+      'location.href + " " + document.readyState + " " + document.body.innerText.slice(0, 120)',
+    );
     throw new Error(`lab did not start (${state}) ${page.errors.join(' | ')}`);
   }
   const scenes = await page.value('window.__chatLabScenes.map((s) => s.id)');
@@ -149,8 +174,21 @@ async function shoot(page, scene, scheme, perf) {
   const notes = [];
   if (!ready) notes.push('NOT READY');
   if (failure) notes.push(`lab: ${failure}`);
-  if (page.errors.length) notes.push(`${page.errors.length} page errors: ${page.errors[0].split('\n')[0]}`);
+  if (page.errors.length)
+    notes.push(`${page.errors.length} page errors: ${page.errors[0].split('\n')[0]}`);
   console.log(`${file}${notes.length ? `  [${notes.join('; ')}]` : ''}`);
+}
+
+async function shootOrSkip(state, scene, scheme, perf) {
+  try {
+    await shoot(state.page, scene, scheme, perf);
+    return true;
+  } catch (error) {
+    console.error(`${scene}_${scheme}_${perf}  [FAILED: ${String(error)}]`);
+    await state.page.close();
+    state.page = await openPage();
+    return false;
+  }
 }
 
 mkdirSync(out, { recursive: true });
@@ -174,12 +212,16 @@ const brave = spawn(
 let code = 0;
 try {
   await waitForBrowser();
-  const page = await openPage();
-  const scenes = await sceneIds(page);
+  const state = { page: await openPage() };
+  const scenes = await sceneIds(state.page);
   if (args.list) console.log(scenes.join('\n'));
   else {
     for (const scene of scenes) {
-      for (const perf of perfs) for (const scheme of schemes) await shoot(page, scene, scheme, perf);
+      for (const perf of perfs) {
+        for (const scheme of schemes) {
+          if (!(await shootOrSkip(state, scene, scheme, perf))) code = 1;
+        }
+      }
     }
   }
 } catch (error) {

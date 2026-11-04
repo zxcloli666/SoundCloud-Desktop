@@ -128,6 +128,7 @@ export const scenes: LabScene[] = [
         }),
       ];
       kit.uploads(views);
+      kit.handle('chat_media_parked', () => [SENT]);
       kit.dock(DOCK_LIST);
       kit.after(() =>
         kit.emit('chat:media-upload-error', { id: views[3].id, error: { code: 'offline' } }),
