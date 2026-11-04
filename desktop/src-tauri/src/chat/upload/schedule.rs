@@ -7,8 +7,8 @@ use sc_chat::{ChatResult, MediaKind, UploadState};
 use tokio::time::Instant;
 use uuid::Uuid;
 
-use super::album::parked;
 use super::errors::backoff;
+use super::post::pending_post;
 
 pub struct Queue {
     pub uploads: Vec<MediaUpload>,
@@ -36,7 +36,7 @@ pub fn queued(store: &Arc<Store>) -> ChatResult<Queue> {
         .collect();
     let mut sending = HashSet::new();
     for (conversation_id, album) in waiting {
-        if parked(store, conversation_id, album)?.is_some() {
+        if pending_post(store, conversation_id, album)?.is_some() {
             sending.insert(album);
         }
     }

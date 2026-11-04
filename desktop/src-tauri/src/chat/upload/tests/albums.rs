@@ -3,7 +3,7 @@ use sc_chat::{ConversationKind, DeliveryState, UploadState};
 use uuid::Uuid;
 
 use super::rig::{Path, Rig, envelope};
-use crate::chat::upload::album::PARKED_AT;
+use crate::chat::upload::post::PARKED_AT;
 use crate::network::pro::fake_relay::{self, Kind};
 
 async fn album(rig: &Rig, count: u64) -> Uuid {
@@ -60,6 +60,9 @@ async fn released(rig: &Rig, album: Uuid, count: usize) {
         );
         assert_eq!(rig.world.puts_of(*image), 1);
     }
+    assert_eq!(rig.uploads().len(), count);
+    assert_eq!(rig.upload_files().len(), 2 * count);
+    rig.ack(album);
     rig.until("the album rows and files to go", |rig| {
         rig.uploads().is_empty() && rig.upload_files().is_empty()
     })

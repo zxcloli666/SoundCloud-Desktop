@@ -238,8 +238,69 @@ async fn removing_an_image_mid_put_aborts_it_and_the_album_goes_out_without_it()
     let second = rig.world.reservation(views[1].id).unwrap();
     assert_eq!(images, [second.image]);
     assert_eq!(hits.load(Ordering::SeqCst), 1);
+    rig.ack(album);
     rig.until("the rows and files to go", |rig| {
         rig.uploads().is_empty() && rig.upload_files().is_empty()
     })
     .await;
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn removing_the_middle_first_and_last_image_of_a_draft_keeps_the_rest_in_place() {
+    let rig = Rig::new(ConversationKind::Group);
+    let paths = (111..115).map(|seed| rig.image(seed)).collect();
+    let views = rig
+        .uploads
+        .attach(rig.conversation, None, sources(paths))
+        .await
+        .unwrap();
+    let album = views[0].album;
+    let ids: Vec<Uuid> = views.iter().map(|view| view.id).collect();
+    for (removed, kept) in [(1, vec![0, 2, 3]), (0, vec![2, 3]), (3, vec![2])] {
+        rig.uploads.cancel(ids[removed]).await.unwrap();
+        let expected: Vec<(Uuid, u32)> = kept.iter().map(|at| (ids[*at], *at as u32)).collect();
+        assert_eq!(left(&rig), expected);
+        assert_eq!(rig.upload_files().len(), 2 * kept.len());
+        assert!(rig.outbox().is_empty());
+    }
+    let more = rig
+        .uploads
+        .attach(rig.conversation, Some(album), sources(vec![rig.image(115)]))
+        .await
+        .unwrap();
+    assert_eq!(more[0].position, 3);
+    let sent = rig
+        .uploads
+        .send_album(rig.post("two left"), album)
+        .await
+        .unwrap();
+    let shown: Vec<Uuid> = sent.attachments.iter().map(|a| a.media_id).collect();
+    assert_eq!(shown, [ids[2], more[0].id]);
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn an_image_of_a_post_already_on_its_way_cannot_be_removed() {
+    let mut rig = Rig::new(ConversationKind::Group);
+    rig.relays();
+    let views = rig
+        .uploads
+        .attach(rig.conversation, None, sources(vec![rig.image(116)]))
+        .await
+        .unwrap();
+    let album = views[0].album;
+    rig.uploads
+        .send_album(rig.post("on its way"), album)
+        .await
+        .unwrap();
+    rig.run();
+    rig.until("the release", |rig| {
+        rig.due().iter().any(|item| item.client_id == album)
+    })
+    .await;
+    let refused = rig.uploads.cancel(views[0].id).await;
+    assert_eq!(refused.err(), Some(sc_chat::ChatError::Invalid));
+    assert_eq!(rig.uploads().len(), 1);
+    rig.uploads.cancel_album(album).await.unwrap();
+    assert!(rig.uploads().is_empty() && rig.upload_files().is_empty());
+    assert!(rig.world.with(|state| state.deleted.is_empty()));
 }

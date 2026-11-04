@@ -1,8 +1,8 @@
-use sc_chat::ChatResult;
+use sc_chat::{ChatError, ChatResult};
 use uuid::Uuid;
 
-use super::album::repark_in;
 use super::engine::Uploads;
+use super::post::{Posted, Released, posted, repark_in};
 
 impl Uploads {
     pub async fn retry(&self, id: Uuid) -> ChatResult<()> {
@@ -19,16 +19,27 @@ impl Uploads {
         let now = self.now();
         let (removed, released) = self
             .blocking(move |store| {
-                let Some(upload) = store.remove_upload(id)? else {
-                    return Ok((Vec::new(), Vec::new()));
+                let Some(upload) = store.upload(id)? else {
+                    return Ok((Vec::new(), Released::Waiting));
                 };
-                let released = repark_in(store, upload.album, upload.conversation_id, now)?;
-                Ok((vec![upload], released))
+                let (album, conversation_id) = (upload.album, upload.conversation_id);
+                let uploads = store.album_uploads(album)?;
+                let parked = match posted(store, conversation_id, album, &uploads)? {
+                    Posted::None => None,
+                    Posted::Parked(message) => Some(message),
+                    Posted::Stale(_) | Posted::Sending(_) => return Err(ChatError::Invalid),
+                };
+                let removed: Vec<_> = store.remove_upload(id)?.into_iter().collect();
+                let released = match parked {
+                    Some(message) => repark_in(store, album, conversation_id, message, now)?,
+                    None => Released::Waiting,
+                };
+                Ok((removed, released))
             })
             .await?;
         drop(albums);
         self.dropped(removed).await;
-        self.finish(released).await;
+        self.released(released).await;
         self.kick();
         Ok(())
     }
