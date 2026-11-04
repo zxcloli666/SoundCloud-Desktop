@@ -29,6 +29,14 @@
   "bundle": {
     "active": true,
     "targets": "all",
+    "linux": {
+      "deb": {
+        "depends": ["libasound2 | libasound2t64"]
+      },
+      "rpm": {
+        "depends": ["alsa-lib"]
+      }
+    },
     "macOS": {
       "entitlements": "./entitlements.plist"
     },
