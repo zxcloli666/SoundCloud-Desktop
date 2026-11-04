@@ -11,6 +11,8 @@
   "track": "Трек: {{title}}",
   "playlist": "Плейлист: {{title}}",
   "profile": "Профиль: {{title}}",
+  "photo": "Фото",
+  "photos": "{{count}} фото",
   "roomInvite": "Приглашение в комнату",
   "deviceTitle": "Новое устройство в чатах",
   "deviceBody": "{{device}}. Это вы?"

@@ -11,6 +11,8 @@
   "track": "트랙: {{title}}",
   "playlist": "재생 목록: {{title}}",
   "profile": "프로필: {{title}}",
+  "photo": "사진",
+  "photos": "사진 {{count}}장",
   "roomInvite": "방 초대",
   "deviceTitle": "채팅에 새 기기",
   "deviceBody": "{{device}}. 본인이 맞나요?"

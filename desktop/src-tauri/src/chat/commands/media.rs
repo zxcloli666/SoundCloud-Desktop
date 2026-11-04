@@ -2,7 +2,9 @@ use sc_chat::api::wire::{
     DeleteAnswer, MediaSelection, MediaUsage, MinePage, RestoreAnswer, UrlsAnswer,
 };
 use sc_chat::media::queue;
-use sc_chat::{ChatResult, ConvId, MediaUploadView, Message, MineQuery, ReportReason, SendInput};
+use sc_chat::{
+    ChatError, ChatResult, ConvId, MediaUploadView, Message, MineQuery, ReportReason, SendInput,
+};
 use uuid::Uuid;
 
 use super::reads::blocking;
@@ -116,9 +118,19 @@ pub async fn upload_cancel(state: &ChatState, id: Uuid) -> ChatResult<()> {
 }
 
 pub async fn cache_size(state: &ChatState) -> ChatResult<u64> {
-    state.media_cache.size()
+    let cache = state.media_cache.clone();
+    state
+        .rt
+        .spawn_blocking(move || cache.size())
+        .await
+        .map_err(|_| ChatError::Internal)?
 }
 
 pub async fn cache_clear(state: &ChatState) -> ChatResult<u64> {
-    state.media_cache.clear()
+    let cache = state.media_cache.clone();
+    state
+        .rt
+        .spawn_blocking(move || cache.clear())
+        .await
+        .map_err(|_| ChatError::Internal)?
 }
