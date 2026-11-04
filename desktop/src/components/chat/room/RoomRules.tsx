@@ -71,7 +71,7 @@ function SlowMode({ seconds, onChange }: { seconds: number; onChange: (seconds: 
             aria-checked={seconds === value}
             onClick={() => onChange(value)}
             className={`h-7 flex-1 cursor-pointer rounded-md text-[11.5px] font-semibold tabular-nums transition-colors duration-200 ${
-              seconds === value ? 'bg-ink/[0.14] text-white' : 'text-ink-45 hover:text-ink-75'
+              seconds === value ? 'bg-ink/[0.14] text-ink-90' : 'text-ink-45 hover:text-ink-75'
             }`}
           >
             {value === 0 ? t('chat.room.rules.slowOff') : t('chat.room.rules.seconds', { value })}

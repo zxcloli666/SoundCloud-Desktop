@@ -1,7 +1,8 @@
-import { type KeyboardEvent, memo, useRef, useState } from 'react';
+import { type KeyboardEvent, memo, type Ref, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Check } from '../../../../lib/icons';
 import { usePerfMode } from '../../../../lib/perf';
+import { ArtImage } from './ArtImage';
 import { coverSrc } from './perks';
 import type { ArtworkChoice } from './useArtworkChoices';
 
@@ -13,38 +14,6 @@ const STEP: Record<string, number> = {
   ArrowDown: COLUMNS,
   ArrowUp: -COLUMNS,
 };
-
-function hue(url: string): number {
-  let h = 0;
-  for (let i = 0; i < url.length; i++) h = (h * 31 + url.charCodeAt(i)) % 360;
-  return h;
-}
-
-function TileArt({ url }: { url: string }) {
-  const [broken, setBroken] = useState(false);
-  if (broken) {
-    const h = hue(url);
-    return (
-      <span
-        className="block h-full w-full"
-        style={{
-          background: `linear-gradient(135deg, hsl(${h} 62% 58%), hsl(${(h + 48) % 360} 58% 38%))`,
-        }}
-      />
-    );
-  }
-  return (
-    <img
-      src={coverSrc(url) ?? undefined}
-      alt=""
-      loading="lazy"
-      decoding="async"
-      draggable={false}
-      onError={() => setBroken(true)}
-      className="h-full w-full object-cover"
-    />
-  );
-}
 
 function nextIndex(key: string, from: number, count: number): number | null {
   if (key === 'Home') return 0;
@@ -61,12 +30,14 @@ export const CoverGrid = memo(function CoverGrid({
   accent,
   ink,
   onSelect,
+  gridRef,
 }: {
   choices: ArtworkChoice[];
   selected: string | null;
   accent: string;
   ink: string;
   onSelect: (url: string) => void;
+  gridRef?: Ref<HTMLDivElement>;
 }) {
   const { t } = useTranslation();
   const perf = usePerfMode();
@@ -85,6 +56,7 @@ export const CoverGrid = memo(function CoverGrid({
 
   return (
     <div
+      ref={gridRef}
       role="radiogroup"
       aria-label={t('chat.room.perks.cover.title')}
       onKeyDown={onKeyDown}
@@ -106,7 +78,7 @@ export const CoverGrid = memo(function CoverGrid({
             tabIndex={index === active ? 0 : -1}
             onFocus={() => setFocus(index)}
             onClick={() => onSelect(choice.url)}
-            className={`perk-motion relative aspect-square cursor-pointer overflow-hidden bg-ink/[0.06] outline-none transition-transform duration-200 hover:scale-[1.04] focus-visible:ring-2 focus-visible:ring-ink/60 ${
+            className={`perk-motion relative aspect-square cursor-pointer overflow-hidden bg-ink/[0.06] outline-none transition-transform duration-200 hover:scale-[1.04] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink ${
               choice.kind === 'avatar' ? 'rounded-full' : 'rounded-[10px]'
             }`}
             style={{
@@ -117,7 +89,11 @@ export const CoverGrid = memo(function CoverGrid({
               boxShadow: on ? `0 0 0 2px rgb(var(--surface)), 0 0 0 4px ${accent}` : undefined,
             }}
           >
-            <TileArt url={choice.url} />
+            <ArtImage
+              src={coverSrc(choice.url)}
+              seed={choice.url}
+              className="h-full w-full object-cover"
+            />
             {on && (
               <span
                 data-scheme="dark"

@@ -5,16 +5,19 @@ import { Star } from '../../../../lib/icons';
 export const StarMark = memo(function StarMark({
   size = 16,
   className = '',
+  lock = false,
 }: {
   size?: number;
   className?: string;
+  lock?: boolean;
 }) {
   const { t } = useTranslation();
+  const label = t(lock ? 'chat.room.perks.needsStar' : 'chat.room.perks.starHost');
   return (
     <span
       role="img"
-      title={t('chat.room.perks.starHost')}
-      aria-label={t('chat.room.perks.starHost')}
+      title={label}
+      aria-label={label}
       className={`inline-flex shrink-0 items-center justify-center rounded-full ${className}`}
       style={{
         width: size,

@@ -135,6 +135,8 @@
       "off": "Nobody",
       "withStar": "Images with STAR"
     },
-    "moreMods": "{{value}} moderators with STAR"
+    "moreMods": "{{value}} moderators with STAR",
+    "starSoon": "STAR turns on in a few minutes",
+    "needsStar": "Needs STAR"
   }
 }

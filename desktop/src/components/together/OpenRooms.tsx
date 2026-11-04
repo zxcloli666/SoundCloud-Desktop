@@ -6,6 +6,7 @@ import { joinOpenSession } from '../../lib/together/session';
 import type { OpenRoom } from '../../lib/together/types';
 import { useTogetherStore } from '../../stores/together';
 import { BackdropThumb } from '../chat/room/BackdropThumb';
+import { ArtImage } from '../chat/room/perks/ArtImage';
 import { roomArt } from '../chat/room/perks/perks';
 import { RoomSeats } from '../chat/room/perks/RoomSeats';
 import { StarMark } from '../chat/room/perks/StarMark';
@@ -57,9 +58,7 @@ function RoomRow({ room, joining, disabled, onJoin }: RowProps) {
               accent ? { boxShadow: `0 0 0 1.5px ${accent}, 0 6px 16px -8px ${accent}` } : undefined
             }
           >
-            {cover && (
-              <img src={cover} alt="" loading="lazy" className="h-full w-full object-cover" />
-            )}
+            {cover && <ArtImage src={cover} seed={cover} className="h-full w-full object-cover" />}
           </div>
           <Avatar
             src={room.hostAvatarUrl}

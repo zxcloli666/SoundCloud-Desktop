@@ -11,6 +11,7 @@ import { sessionErrorKey } from '../../../lib/together/errors';
 import { joinSession } from '../../../lib/together/session';
 import { useTogetherStore } from '../../../stores/together';
 import { BackdropThumb } from '../room/BackdropThumb';
+import { ArtImage } from '../room/perks/ArtImage';
 import { accentRgb, roomArt } from '../room/perks/perks';
 import { StarMark } from '../room/perks/StarMark';
 import { EmbedShell } from './EmbedShell';
@@ -168,12 +169,9 @@ export const RoomInviteEmbed = memo(function RoomInviteEmbed({
         <div className="flex min-w-0 flex-1 flex-col gap-1.5">
           <div className="flex min-w-0 items-center gap-2">
             {roomCover.src && live && (
-              <img
+              <ArtImage
                 src={roomCover.src}
-                alt=""
-                loading="lazy"
-                decoding="async"
-                draggable={false}
+                seed={roomCover.src}
                 className="size-9 shrink-0 rounded-[9px] object-cover"
                 style={{
                   boxShadow: `0 0 0 1.5px ${roomCover.accent}, 0 6px 16px -8px ${roomCover.accent}`,
