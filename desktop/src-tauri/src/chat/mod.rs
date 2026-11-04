@@ -21,9 +21,19 @@ use crate::rt::AppHandle;
 
 pub const DIR: &str = "chat";
 
+#[cfg(all(feature = "chat-lab", not(debug_assertions)))]
+compile_error!("the chat-lab feature is for dev builds only");
+
+#[cfg(not(feature = "chat-lab"))]
 pub fn start(app: &AppHandle, rt: tokio::runtime::Handle, data_dir: &Path) {
     let state = state::ChatState::new(app.clone(), rt, data_dir.join(DIR));
     runtime::start(&state);
     upload::start(&state);
     app.manage(state);
+}
+
+#[cfg(feature = "chat-lab")]
+pub fn start(app: &AppHandle, rt: tokio::runtime::Handle, _data_dir: &Path) {
+    let dir = std::env::temp_dir().join("soundcloud-chat-lab");
+    app.manage(state::ChatState::new(app.clone(), rt, dir));
 }

@@ -2,6 +2,7 @@ import type { InvokeArgs } from '@tauri-apps/api/core';
 import { mockIPC, mockWindows } from '@tauri-apps/api/mocks';
 import { addListener, isChatEvent, removeListener } from './bus';
 import { runChatCommand } from './handlers';
+import { routeIpcFetch } from './hybrid';
 import { installLabPictures } from './pictures';
 import { plainCommand } from './plain';
 
@@ -42,20 +43,27 @@ function chatArgs(args: InvokeArgs | undefined, options: unknown): Args {
   };
 }
 
+async function labCommand(cmd: string, args: unknown, options: unknown) {
+  const event = eventCommand(cmd, (args ?? {}) as Args);
+  if (event) return event;
+  if (!cmd.startsWith('chat_')) return null;
+  return { answer: await runChatCommand(cmd, chatArgs(args as InvokeArgs | undefined, options)) };
+}
+
 export function installChatLabIpc() {
   installLabPictures();
   hybrid = '__TAURI_INTERNALS__' in window;
-  if (!hybrid) {
-    mockWindows('main');
-    mockIPC((cmd, args) => plainCommand(cmd, args as Args | undefined), {
-      shouldMockEvents: true,
-    });
+  if (hybrid) {
+    routeIpcFetch(labCommand);
+    return;
   }
+  mockWindows('main');
+  mockIPC((cmd, args) => plainCommand(cmd, args as Args | undefined), {
+    shouldMockEvents: true,
+  });
   const inner = internals().invoke;
-  internals().invoke = (cmd, args, options) => {
-    const event = eventCommand(cmd, (args ?? {}) as Args);
-    if (event) return Promise.resolve(event.answer);
-    if (cmd.startsWith('chat_')) return runChatCommand(cmd, chatArgs(args, options));
-    return inner(cmd, args, options);
+  internals().invoke = async (cmd, args, options) => {
+    const handled = await labCommand(cmd, args, options);
+    return handled ? handled.answer : inner(cmd, args, options);
   };
 }

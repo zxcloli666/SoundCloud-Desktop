@@ -1,4 +1,7 @@
 mod file;
+#[cfg(feature = "chat-lab")]
+mod memory;
+#[cfg(not(feature = "chat-lab"))]
 mod os;
 
 use std::path::{Path, PathBuf};
@@ -11,6 +14,7 @@ use super::runtime::database_path;
 use crate::app::diagnostics;
 
 use file::FileVault;
+#[cfg(not(feature = "chat-lab"))]
 use os::OsVault;
 
 const FALL_BACK_AFTER: u32 = 5;
@@ -32,7 +36,7 @@ pub struct Keychain {
 
 impl Keychain {
     pub fn new(service: &str, dir: &Path) -> Self {
-        Self::with_os(Box::new(OsVault::new(service)), dir)
+        Self::with_os(device_vault(service), dir)
     }
 
     fn with_os(os: Box<dyn Vault>, dir: &Path) -> Self {
@@ -110,6 +114,16 @@ impl KeyStore for Keychain {
     fn delete(&self, name: KeyName) -> ChatResult<()> {
         self.run(|vault| vault.delete(name))
     }
+}
+
+#[cfg(not(feature = "chat-lab"))]
+fn device_vault(service: &str) -> Box<dyn Vault> {
+    Box::new(OsVault::new(service))
+}
+
+#[cfg(feature = "chat-lab")]
+fn device_vault(_service: &str) -> Box<dyn Vault> {
+    Box::new(memory::MemoryVault::default())
 }
 
 pub fn should_fall_back(storage: KeyStorage, has_local_state: bool, failures: u32) -> bool {
