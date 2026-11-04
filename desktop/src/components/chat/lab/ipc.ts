@@ -32,6 +32,16 @@ function eventCommand(cmd: string, args: Args): { answer: unknown } | null {
   return null;
 }
 
+function chatArgs(args: InvokeArgs | undefined, options: unknown): Args {
+  if (!(args instanceof Uint8Array) && !(args instanceof ArrayBuffer)) return (args ?? {}) as Args;
+  const headers = (options as { headers?: Record<string, string> } | undefined)?.headers ?? {};
+  return {
+    data: args,
+    conversationId: headers['x-chat-conversation'],
+    album: headers['x-chat-album'] || null,
+  };
+}
+
 export function installChatLabIpc() {
   installLabPictures();
   hybrid = '__TAURI_INTERNALS__' in window;
@@ -45,7 +55,7 @@ export function installChatLabIpc() {
   internals().invoke = (cmd, args, options) => {
     const event = eventCommand(cmd, (args ?? {}) as Args);
     if (event) return Promise.resolve(event.answer);
-    if (cmd.startsWith('chat_')) return runChatCommand(cmd, (args ?? {}) as Args);
+    if (cmd.startsWith('chat_')) return runChatCommand(cmd, chatArgs(args, options));
     return inner(cmd, args, options);
   };
 }
