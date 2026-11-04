@@ -11,13 +11,17 @@ usage:
   chat-window-shot.sh id                          print the window id of the running app
   chat-window-shot.sh shot <out.png>              capture the app window
   chat-window-shot.sh scene <id> [scheme] [perf] [lang] [motion]
-                                                  switch the lab in the running window
+                                                  switch the lab in the running window, print the seq
+  chat-window-shot.sh ready <seq>                 wait until the page of that seq is ready
   chat-window-shot.sh take <scene> <scheme> <out.png> [perf]
                                                   switch scene, wait, capture
   chat-window-shot.sh clean                       remove the remote file
 
 the app must run as: VITE_CHAT_LAB=1 pnpm tauri dev --features chat-lab
-env: CHAT_SHOT_OWNER (default soundcloud-desktop), CHAT_SHOT_WAIT (seconds after a switch, default 5)
+env: CHAT_SHOT_OWNER (default soundcloud-desktop)
+     CHAT_SHOT_VITE_LOG (the vite output; the page reports "[chat-lab] ready <seq>" there)
+     CHAT_SHOT_TIMEOUT (seconds to wait for ready, default 40)
+     CHAT_SHOT_WAIT (seconds after a switch when there is no vite log, default 5)
 USAGE
 }
 
@@ -50,9 +54,29 @@ SWIFT
 switch_scene() {
   mkdir -p "$ROOT/public"
   local seq
-  seq=$(date +%s)
+  seq=$(perl -MTime::HiRes=time -e 'printf "%d", time() * 1000')
   printf '{"seq":%s,"scene":"%s","scheme":"%s","perf":"%s","lang":"%s","motion":%s}\n' \
     "$seq" "$1" "${2:-dark}" "${3:-beauty}" "${4:-ru}" "$([ -n "${5:-}" ] && echo '"reduce"' || echo null)" >"$REMOTE"
+  echo "$seq"
+}
+
+wait_ready() {
+  if [ -z "${CHAT_SHOT_VITE_LOG:-}" ]; then
+    sleep "${CHAT_SHOT_WAIT:-5}"
+    return 0
+  fi
+  local deadline=$((SECONDS + ${CHAT_SHOT_TIMEOUT:-40})) line
+  while ((SECONDS < deadline)); do
+    line=$(grep -a -o "\[chat-lab\] [a-z]* $1.*" "$CHAT_SHOT_VITE_LOG" | tail -1 || true)
+    if [ -n "$line" ]; then
+      echo "$line"
+      [[ "$line" == "[chat-lab] ready $1" ]]
+      return
+    fi
+    sleep 0.3
+  done
+  echo "[chat-lab] timeout $1"
+  return 1
 }
 
 capture() {
@@ -66,9 +90,10 @@ case "${1:-}" in
   id) window_id ;;
   shot) capture "${2:?out file}" ;;
   scene) switch_scene "${2:?scene id}" "${3:-}" "${4:-}" "${5:-}" "${6:-}" ;;
+  ready) wait_ready "${2:?seq}" ;;
   take)
-    switch_scene "${2:?scene}" "${3:?scheme}" "${5:-beauty}"
-    sleep "${CHAT_SHOT_WAIT:-5}"
+    seq=$(switch_scene "${2:?scene}" "${3:?scheme}" "${5:-beauty}")
+    wait_ready "$seq" >&2 || true
     capture "${4:?out file}"
     ;;
   clean) rm -f "$REMOTE" ;;

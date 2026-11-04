@@ -7,6 +7,7 @@ export interface LabParams {
   perf: LabPerf | null;
   motion: 'reduce' | null;
   lang: string | null;
+  seq: string | null;
   chrome: boolean;
 }
 
@@ -20,6 +21,7 @@ export function readParams(search = window.location.search): LabParams {
     perf: perf === 'beauty' || perf === 'medium' || perf === 'light' ? perf : null,
     motion: q.get('motion') === 'reduce' ? 'reduce' : null,
     lang: q.get('lang'),
+    seq: q.get('seq'),
     chrome: q.get('chrome') !== '0',
   };
 }
@@ -27,7 +29,7 @@ export function readParams(search = window.location.search): LabParams {
 export function paramsUrl(params: Partial<LabParams>): string {
   const q = new URLSearchParams(window.location.search);
   q.set('chat-lab', '');
-  for (const key of ['scene', 'scheme', 'perf', 'motion', 'lang'] as const) {
+  for (const key of ['scene', 'scheme', 'perf', 'motion', 'lang', 'seq'] as const) {
     if (!(key in params)) continue;
     const value = params[key];
     if (value) q.set(key, value);

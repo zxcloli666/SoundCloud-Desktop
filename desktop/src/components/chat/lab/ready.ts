@@ -1,5 +1,7 @@
 import { selectChatEnabled, useChatStore } from '../../../stores/chat';
+import { inAppWindow } from './ipc';
 import { runSteps } from './kit';
+import { readParams } from './params';
 import type { Step } from './steps';
 import { sleep, waitUntil } from './steps';
 
@@ -30,4 +32,12 @@ export async function runScene(steps: Step[]) {
   }
   document.documentElement.dataset.chatLabReady = lab.__chatLabError ? 'error' : '1';
   lab.__chatLabReady = true;
+  if (inAppWindow()) {
+    const seq = readParams().seq ?? '-';
+    console.warn(
+      lab.__chatLabError
+        ? `[chat-lab] error ${seq} ${lab.__chatLabError}`
+        : `[chat-lab] ready ${seq}`,
+    );
+  }
 }

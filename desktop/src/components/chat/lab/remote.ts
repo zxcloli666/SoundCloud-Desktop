@@ -1,9 +1,9 @@
-import { type LabParams, paramsUrl } from './params';
+import { type LabParams, paramsUrl, readParams } from './params';
 
 const FILE = '/chat-lab-remote.json';
 const POLL_MS = 700;
 
-type Remote = { seq: number } & Partial<Record<keyof LabParams, string | null>>;
+type Remote = { seq: number } & Partial<Record<Exclude<keyof LabParams, 'seq'>, string | null>>;
 
 async function read(): Promise<Remote | null> {
   try {
@@ -16,13 +16,13 @@ async function read(): Promise<Remote | null> {
 }
 
 export function watchRemote() {
-  let seen: number | null = null;
+  let seen: number | null = Number(readParams().seq) || null;
   const tick = async () => {
     const remote = await read();
     if (remote) {
       if (seen !== null && remote.seq !== seen) {
-        const { seq: _seq, ...rest } = remote;
-        window.location.replace(paramsUrl(rest as Partial<LabParams>));
+        const { seq, ...rest } = remote;
+        window.location.replace(paramsUrl({ ...rest, seq: String(seq) } as Partial<LabParams>));
         return;
       }
       seen = remote.seq;
