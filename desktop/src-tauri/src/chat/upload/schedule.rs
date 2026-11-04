@@ -2,16 +2,18 @@ use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 use std::time::Duration;
 
+use sc_chat::outbox::Outbox;
 use sc_chat::store::{MediaUpload, Store};
-use sc_chat::{ChatResult, MediaKind, UploadState};
+use sc_chat::{ChatResult, ConvId, MediaKind, Message, Millis, UploadState};
 use tokio::time::Instant;
 use uuid::Uuid;
 
-use super::album::parked;
 use super::errors::backoff;
+use super::post::{Posted, posted_from, ready, settles};
 
 pub struct Queue {
     pub uploads: Vec<MediaUpload>,
+    pub settle: Vec<MediaUpload>,
     sending: HashSet<Uuid>,
 }
 
@@ -27,20 +29,69 @@ struct Row {
     until: Option<Instant>,
 }
 
-pub fn queued(store: &Arc<Store>) -> ChatResult<Queue> {
+pub fn queued(store: &Arc<Store>, now: Millis) -> ChatResult<Queue> {
     let uploads = store.uploads()?;
-    let waiting: HashSet<_> = uploads
-        .iter()
-        .filter(|upload| upload.kind == MediaKind::Image && upload.state == UploadState::Uploaded)
-        .map(|upload| (upload.conversation_id, upload.album))
-        .collect();
+    let mut posts = HashMap::new();
     let mut sending = HashSet::new();
-    for (conversation_id, album) in waiting {
-        if parked(store, conversation_id, album)?.is_some() {
-            sending.insert(album);
+    let mut settle = Vec::new();
+    for album in grouped(uploads.clone()) {
+        let first = album[0].clone();
+        let done = ready(&album);
+        if first.kind != MediaKind::Image {
+            if done {
+                settle.push(first);
+            }
+            continue;
+        }
+        let waiting = album
+            .iter()
+            .any(|upload| upload.state == UploadState::Uploaded);
+        if !waiting && !done {
+            continue;
+        }
+        let post = posted_from(pending_in(store, &mut posts, &first)?, &album);
+        if waiting && !matches!(post, Posted::None) {
+            sending.insert(first.album);
+        }
+        if done && settles(&post, &album, now) {
+            settle.push(first);
         }
     }
-    Ok(Queue { uploads, sending })
+    Ok(Queue {
+        uploads,
+        settle,
+        sending,
+    })
+}
+
+pub fn grouped(uploads: Vec<MediaUpload>) -> Vec<Vec<MediaUpload>> {
+    let mut albums: Vec<Vec<MediaUpload>> = Vec::new();
+    for upload in uploads {
+        match albums
+            .iter_mut()
+            .find(|album| album[0].album == upload.album)
+        {
+            Some(album) => album.push(upload),
+            None => albums.push(vec![upload]),
+        }
+    }
+    albums
+}
+
+fn pending_in(
+    store: &Arc<Store>,
+    posts: &mut HashMap<ConvId, Vec<Message>>,
+    first: &MediaUpload,
+) -> ChatResult<Option<Message>> {
+    let conversation_id = first.conversation_id;
+    if !posts.contains_key(&conversation_id) {
+        let pending = Outbox::new(store.clone()).pending(conversation_id)?;
+        posts.insert(conversation_id, pending);
+    }
+    Ok(posts
+        .get(&conversation_id)
+        .and_then(|pending| pending.iter().find(|post| post.client_id == first.album))
+        .cloned())
 }
 
 impl Rows {
@@ -51,7 +102,7 @@ impl Rows {
         queue
             .uploads
             .iter()
-            .find(|upload| self.due(upload.id, now) && ready(upload, queue))
+            .find(|upload| self.due(upload.id, now) && pickable(upload, queue))
             .cloned()
     }
 
@@ -90,6 +141,12 @@ impl Rows {
         row.refusals
     }
 
+    pub fn hold(&mut self, id: Uuid, most: Duration) {
+        if let Some(row) = self.rows.get_mut(&id) {
+            row.until = row.until.map(|until| until.min(Instant::now() + most));
+        }
+    }
+
     pub fn forget(&mut self, id: Uuid) {
         self.rows.remove(&id);
     }
@@ -102,7 +159,7 @@ impl Rows {
     }
 }
 
-fn ready(upload: &MediaUpload, queue: &Queue) -> bool {
+fn pickable(upload: &MediaUpload, queue: &Queue) -> bool {
     match upload.state {
         UploadState::Committed | UploadState::Failed => false,
         UploadState::Uploaded if upload.kind == MediaKind::Image => {

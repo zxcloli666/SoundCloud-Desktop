@@ -16,6 +16,7 @@ use uuid::Uuid;
 
 use super::world::{self, World};
 use super::{fixtures, png};
+use crate::chat::media_cache::MediaCache;
 use crate::chat::runtime::SystemClock;
 use crate::chat::upload::engine::{Routes, Uploads};
 use crate::chat::upload::host::Host;
@@ -65,6 +66,7 @@ pub struct Rig {
     pub dir: PathBuf,
     pub host: Arc<TestHost>,
     pub uploads: Arc<Uploads>,
+    pub cache: Arc<MediaCache>,
     pub conversation: ConvId,
     paths: Arc<Mutex<Vec<Path>>>,
     driver: Option<JoinHandle<()>>,
@@ -109,10 +111,11 @@ impl Rig {
             device_id: Uuid::new_v4(),
             keys: Arc::new(DeviceKeys::generate().unwrap()),
         }));
+        let cache = Arc::new(MediaCache::open(&dir));
         let uploads = Arc::new(Uploads::routed(
             Arc::new(api),
             host.clone(),
-            &dir,
+            cache.clone(),
             routes(world.s3.clone(), paths.clone()),
         ));
         Self {
@@ -120,6 +123,7 @@ impl Rig {
             dir,
             host,
             uploads,
+            cache,
             conversation,
             paths,
             driver: None,
@@ -153,6 +157,10 @@ impl Rig {
         if let Some(driver) = self.driver.take() {
             driver.abort();
         }
+    }
+
+    pub fn now(&self) -> Millis {
+        self.host.now.load(Ordering::SeqCst)
     }
 
     pub fn advance(&self, ms: Millis) {

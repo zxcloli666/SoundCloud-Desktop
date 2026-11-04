@@ -58,15 +58,7 @@ impl Uploads {
     ) -> ChatResult<()> {
         let albums = self.albums.lock().await;
         let removed = self
-            .blocking(move |store| {
-                let mut removed = Vec::new();
-                for upload in store.uploads()? {
-                    if upload.kind == kind && upload.conversation_id == conversation_id {
-                        removed.extend(store.remove_album_uploads(upload.album)?);
-                    }
-                }
-                Ok(removed)
-            })
+            .blocking(move |store| remove_pending(store, conversation_id, kind))
             .await?;
         drop(albums);
         self.dropped(removed).await;
@@ -80,6 +72,7 @@ impl Uploads {
     ) {
         match outcome {
             Ok(removed) => {
+                self.seed_cache(&removed).await;
                 self.files
                     .remove(removed.iter().flat_map(file_names).collect())
                     .await;
@@ -98,6 +91,20 @@ impl Uploads {
             }
         }
     }
+}
+
+pub fn remove_pending(
+    store: &Arc<Store>,
+    conversation_id: ConvId,
+    kind: MediaKind,
+) -> ChatResult<Vec<MediaUpload>> {
+    let mut removed = Vec::new();
+    for upload in store.uploads()? {
+        if upload.kind == kind && upload.conversation_id == conversation_id {
+            removed.extend(store.remove_album_uploads(upload.album)?);
+        }
+    }
+    Ok(removed)
 }
 
 pub fn queue_meta(
@@ -122,7 +129,7 @@ pub fn queue_meta(
     Ok(())
 }
 
-fn later(error: &ChatError) -> bool {
+pub fn later(error: &ChatError) -> bool {
     matches!(
         error,
         ChatError::Store

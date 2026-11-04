@@ -18,7 +18,7 @@ async fn a_link_that_drops_every_16_kb_still_carries_the_album_through_pro_parts
     let mut rig = Rig::new(ConversationKind::Group);
     let relay = fake_relay::serve(Kind::Forwards);
     let cut_relay = faulty_link::link(&rig.world.s3, Fault::Cut(CUT)).await;
-    let cut_pro = faulty_link::link(&relay.url, Fault::Cut(CUT)).await;
+    let (cut_pro, cuts) = faulty_link::counted(&relay.url, Fault::Cut(CUT)).await;
     rig.route(vec![Path::Relay(cut_relay), Path::Pro(cut_pro)]);
     let paths = vec![rig.image(11), rig.image(12)];
     let views = rig
@@ -45,6 +45,7 @@ async fn a_link_that_drops_every_16_kb_still_carries_the_album_through_pro_parts
         assert_eq!(rig.world.puts_of(image), 1);
     }
     assert!(relay.parts() > 2 * (STAGED_BEFORE_CRASH / CUT));
+    assert!(cuts.load(Ordering::SeqCst) > 0);
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -91,7 +92,7 @@ async fn a_restart_mid_album_resumes_the_stage_from_the_stored_part() {
         rig.due().iter().any(|item| item.client_id == album)
     })
     .await;
-    assert_eq!(relay.stages_opened(), opened_before + 1);
+    assert_eq!(relay.stages_opened(), opened_before);
     let rest = (image.len() - STAGED_BEFORE_CRASH).div_ceil(32 * 1024);
     assert!(relay.parts() - parts_before <= rest + 1);
     let reserved = rig.world.reservation(second).unwrap();
@@ -199,7 +200,7 @@ async fn a_presign_that_lapses_while_a_pro_stage_fills_is_signed_again_before_it
     let thumb = format!("PUT {}", reserved.thumb.unwrap());
     assert_eq!(calls, [reserve.clone(), reserve, image, thumb]);
     assert_eq!(rig.world.with(|state| state.forbidden), 0);
-    assert_eq!(relay.stages_opened(), 2);
+    assert_eq!(relay.stages_opened(), 1);
 }
 
 #[tokio::test(flavor = "multi_thread")]

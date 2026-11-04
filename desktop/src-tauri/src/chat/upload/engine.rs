@@ -1,7 +1,6 @@
 use std::collections::HashMap;
-use std::path::Path;
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, Weak};
 
 use sc_chat::api::Api;
 use sc_chat::media::queue::PutTargets;
@@ -12,7 +11,9 @@ use uuid::Uuid;
 
 use super::files::Files;
 use super::host::Host;
+use super::picked::Picked;
 use super::prepare::Prepare;
+use crate::chat::media_cache::MediaCache;
 use crate::network::edge::{self, Hop};
 
 pub type Routes = Arc<dyn Fn(&str) -> Vec<Hop> + Send + Sync>;
@@ -21,6 +22,7 @@ pub struct Uploads {
     pub(super) api: Arc<Api>,
     pub(super) host: Arc<dyn Host>,
     pub(super) files: Files,
+    pub(super) cache: Arc<MediaCache>,
     pub(super) routes: Routes,
     pub(super) prepare: Prepare,
     pub(super) wake: Notify,
@@ -29,18 +31,27 @@ pub struct Uploads {
     pub(super) current: Mutex<Option<Uuid>>,
     pub(super) targets: Mutex<HashMap<Uuid, PutTargets>>,
     pub(super) albums: tokio::sync::Mutex<()>,
+    pub(super) deletes: tokio::sync::Mutex<()>,
+    pub(super) halted: Mutex<Weak<Store>>,
+    pub(super) picked: Picked,
 }
 
 impl Uploads {
-    pub fn new(api: Arc<Api>, host: Arc<dyn Host>, chat_dir: &Path) -> Self {
-        Self::routed(api, host, chat_dir, Arc::new(edge::media_plan))
+    pub fn new(api: Arc<Api>, host: Arc<dyn Host>, cache: Arc<MediaCache>) -> Self {
+        Self::routed(api, host, cache, Arc::new(edge::media_plan))
     }
 
-    pub fn routed(api: Arc<Api>, host: Arc<dyn Host>, chat_dir: &Path, routes: Routes) -> Self {
+    pub fn routed(
+        api: Arc<Api>,
+        host: Arc<dyn Host>,
+        cache: Arc<MediaCache>,
+        routes: Routes,
+    ) -> Self {
         Self {
             api,
             host,
-            files: Files::new(chat_dir),
+            files: Files::new(cache.chat_dir()),
+            cache,
             routes,
             prepare: Prepare::default(),
             wake: Notify::new(),
@@ -49,6 +60,9 @@ impl Uploads {
             current: Mutex::new(None),
             targets: Mutex::new(HashMap::new()),
             albums: tokio::sync::Mutex::new(()),
+            deletes: tokio::sync::Mutex::new(()),
+            halted: Mutex::new(Weak::new()),
+            picked: Picked::default(),
         }
     }
 
@@ -74,6 +88,16 @@ impl Uploads {
 
     pub(super) fn store(&self) -> ChatResult<Arc<Store>> {
         self.host.store().ok_or(ChatError::NotReady)
+    }
+
+    pub(super) fn live_store(&self) -> Option<Arc<Store>> {
+        self.host.store().filter(|store| !self.halted_on(store))
+    }
+
+    pub(super) fn halted_on(&self, store: &Arc<Store>) -> bool {
+        self.halted
+            .lock()
+            .is_ok_and(|halted| Weak::ptr_eq(&halted, &Arc::downgrade(store)))
     }
 
     pub(super) fn now(&self) -> Millis {

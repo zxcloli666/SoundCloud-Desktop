@@ -3,34 +3,64 @@ mod attach;
 mod avatar;
 mod backdrop;
 mod cancel;
+mod deletes;
 mod driver;
 mod engine;
 mod errors;
 mod files;
+mod halt;
 mod host;
+mod picked;
+mod plain;
+mod post;
 mod prepare;
 mod progress;
 mod put;
+mod round;
 mod schedule;
+mod seed;
 mod single;
 mod step;
 
 use std::path::PathBuf;
 
-use sc_chat::{ChatResult, ConvId, MediaUploadView, Message, SendInput};
+use sc_chat::{ChatError, ChatResult, ConvId, MediaUploadView, Message, SendInput};
+use tauri::Manager;
+use tauri_plugin_fs::FsExt;
 use uuid::Uuid;
 
 use super::state::ChatState;
+use crate::app::diagnostics;
+use crate::rt::AppHandle;
 use attach::Source;
 
-pub use album::parked;
 pub use engine::Uploads;
 pub use files::DIR as UPLOADS_DIR;
 pub use host::RuntimeHost;
+pub use post::pending_post as parked;
 
 pub fn start(state: &ChatState) {
     host::watch(&state.app, &state.uploads);
     state.rt.spawn(state.uploads.clone().run());
+}
+
+pub fn dropped(app: &AppHandle, paths: &[PathBuf]) {
+    if let Some(state) = app.try_state::<ChatState>() {
+        state.uploads.picked.drop_in(paths);
+    }
+}
+
+pub async fn chosen(state: &ChatState, path: String) -> ChatResult<PathBuf> {
+    let path = PathBuf::from(path);
+    let picked = state
+        .app
+        .try_fs_scope()
+        .is_some_and(|scope| scope.is_allowed(&path));
+    if picked || state.uploads.picked.holds(&path).await {
+        return Ok(path);
+    }
+    diagnostics::warn("[ChatUpload] refused a path the user did not pick");
+    Err(ChatError::Invalid)
 }
 
 pub async fn enqueue(
@@ -39,10 +69,10 @@ pub async fn enqueue(
     album: Option<Uuid>,
     paths: Vec<String>,
 ) -> ChatResult<Vec<MediaUploadView>> {
-    let sources = paths
-        .into_iter()
-        .map(|path| Source::Path(PathBuf::from(path)))
-        .collect();
+    let mut sources = Vec::with_capacity(paths.len());
+    for path in paths {
+        sources.push(Source::Path(chosen(state, path).await?));
+    }
     state.uploads.attach(conversation_id, album, sources).await
 }
 
@@ -71,10 +101,8 @@ pub async fn avatar(
     conversation_id: ConvId,
     path: String,
 ) -> ChatResult<MediaUploadView> {
-    state
-        .uploads
-        .avatar(conversation_id, PathBuf::from(path))
-        .await
+    let path = chosen(state, path).await?;
+    state.uploads.avatar(conversation_id, path).await
 }
 
 pub async fn retry(state: &ChatState, id: Uuid) -> ChatResult<()> {

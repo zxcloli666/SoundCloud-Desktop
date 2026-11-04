@@ -24,7 +24,12 @@ impl Files {
 
     pub async fn write(&self, kind: &str, bytes: &[u8]) -> ChatResult<String> {
         let name = format!("{}.{kind}", Uuid::new_v4().simple());
-        let path = self.path(&name)?;
+        self.write_named(&name, bytes).await?;
+        Ok(name)
+    }
+
+    pub async fn write_named(&self, name: &str, bytes: &[u8]) -> ChatResult<()> {
+        let path = self.path(name)?;
         let part = self.dir.join(format!("{name}{PART}"));
         tokio::fs::create_dir_all(&self.dir)
             .await
@@ -39,7 +44,11 @@ impl Files {
             let _ = tokio::fs::remove_file(&part).await;
             return Err(ChatError::Store);
         }
-        Ok(name)
+        Ok(())
+    }
+
+    pub async fn read_named(&self, name: &str) -> Option<Vec<u8>> {
+        tokio::fs::read(self.path(name).ok()?).await.ok()
     }
 
     pub async fn read(&self, name: &str, size: u64) -> ChatResult<Vec<u8>> {

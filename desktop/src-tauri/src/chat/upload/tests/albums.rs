@@ -3,7 +3,7 @@ use sc_chat::{ConversationKind, DeliveryState, UploadState};
 use uuid::Uuid;
 
 use super::rig::{Path, Rig, envelope};
-use crate::chat::upload::album::PARKED_AT;
+use crate::chat::upload::post::PARKED_AT;
 use crate::network::pro::fake_relay::{self, Kind};
 
 async fn album(rig: &Rig, count: u64) -> Uuid {
@@ -60,6 +60,9 @@ async fn released(rig: &Rig, album: Uuid, count: usize) {
         );
         assert_eq!(rig.world.puts_of(*image), 1);
     }
+    assert_eq!(rig.uploads().len(), count);
+    assert_eq!(rig.upload_files().len(), 2 * count);
+    rig.ack(album);
     rig.until("the album rows and files to go", |rig| {
         rig.uploads().is_empty() && rig.upload_files().is_empty()
     })
@@ -99,7 +102,7 @@ async fn an_album_over_relays_parks_its_post_and_sends_it_once_every_image_is_co
 }
 
 #[tokio::test(flavor = "multi_thread")]
-async fn an_album_over_pro_stages_every_object_in_parts_and_reaches_the_store() {
+async fn an_album_over_pro_stages_each_image_in_parts_sends_thumbs_inline_and_reaches_the_store() {
     let mut rig = Rig::new(ConversationKind::Group);
     let relay = fake_relay::serve(Kind::Forwards);
     rig.route(vec![Path::Pro(relay.url.clone())]);
@@ -110,7 +113,8 @@ async fn an_album_over_pro_stages_every_object_in_parts_and_reaches_the_store() 
         .unwrap();
     rig.run();
     released(&rig, album, 2).await;
-    assert_eq!(relay.stages_opened(), 4);
+    assert_eq!(relay.stages_opened(), 2);
+    assert_eq!(relay.opens(), 4);
     assert_eq!(relay.stages_left(), 0);
     assert!(relay.parts() > 4);
 }

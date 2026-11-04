@@ -15,7 +15,10 @@ const ROUNDS: usize = 16;
 const ASK_TIMEOUT: Duration = Duration::from_secs(10);
 const PART_TIMEOUT: Duration = Duration::from_secs(6);
 const CLOSE_TIMEOUT: Duration = Duration::from_secs(5);
+const PAUSE: Duration = Duration::from_millis(500);
+const MOST_HOLES: usize = 257;
 const LOST: [StatusCode; 2] = [StatusCode::NOT_FOUND, StatusCode::PAYLOAD_TOO_LARGE];
+const UNSTAGED: [StatusCode; 2] = [StatusCode::NOT_FOUND, StatusCode::METHOD_NOT_ALLOWED];
 
 static PART: AtomicUsize = AtomicUsize::new(START_PART);
 
@@ -36,6 +39,14 @@ pub enum Failed {
     Gone(String),
 }
 
+impl Failed {
+    pub fn why(self) -> String {
+        match self {
+            Self::Link(why) | Self::Gone(why) => why,
+        }
+    }
+}
+
 pub struct Stage {
     client: &'static wreq::Client,
     url: String,
@@ -49,7 +60,8 @@ pub async fn create(
     size: u64,
 ) -> Result<Option<(Stage, Vec<Range<u64>>)>, String> {
     let mut last = String::new();
-    for _ in 0..ATTEMPTS {
+    for attempt in 0..ATTEMPTS {
+        paused(attempt).await;
         let asked = client
             .post(format!("{node}/stage"))
             .version(Version::HTTP_11)
@@ -64,8 +76,12 @@ pub async fn create(
                 continue;
             }
         };
-        if !response.status().is_success() {
+        let status = response.status();
+        if UNSTAGED.contains(&status) {
             return Ok(None);
+        }
+        if !status.is_success() {
+            return Err(format!("pro: the stage answered {status}"));
         }
         match response.json::<Staged>().await {
             Ok(staged) => {
@@ -89,32 +105,15 @@ pub async fn reopen(
     node: &str,
     id: &str,
     size: u64,
-) -> Result<Option<(Stage, Vec<Range<u64>>)>, String> {
-    let url = format!("{node}/stage/{id}");
-    let mut last = String::new();
-    for _ in 0..ATTEMPTS {
-        let asked = client
-            .get(&url)
-            .version(Version::HTTP_11)
-            .timeout(ASK_TIMEOUT);
-        match staged(asked).await {
-            Ok(found) => {
-                let Ok(missing) = holes(&found.missing, found.size, size) else {
-                    return Ok(None);
-                };
-                let stage = Stage {
-                    client,
-                    url,
-                    id: id.to_string(),
-                    size,
-                };
-                return Ok(Some((stage, missing)));
-            }
-            Err(Failed::Gone(_)) => return Ok(None),
-            Err(Failed::Link(why)) => last = why,
-        }
-    }
-    Err(format!("pro: the stage did not answer: {last}"))
+) -> Result<(Stage, Vec<Range<u64>>), Failed> {
+    let stage = Stage {
+        client,
+        url: format!("{node}/stage/{id}"),
+        id: id.to_string(),
+        size,
+    };
+    let missing = stage.missing().await?;
+    Ok((stage, missing))
 }
 
 impl Stage {
@@ -140,7 +139,7 @@ impl Stage {
                 return Ok(());
             }
             shrink(size);
-            missing = self.missing().await?;
+            missing = self.missing().await.map_err(Failed::why)?;
             stalls = if bytes_in(&missing) < left {
                 0
             } else {
@@ -153,21 +152,26 @@ impl Stage {
         Err("pro: the stage did not fill".to_string())
     }
 
-    pub async fn missing(&self) -> Result<Vec<Range<u64>>, String> {
+    pub async fn missing(&self) -> Result<Vec<Range<u64>>, Failed> {
         let mut last = String::new();
-        for _ in 0..ATTEMPTS {
+        for attempt in 0..ATTEMPTS {
+            paused(attempt).await;
             let asked = self
                 .client
                 .get(&self.url)
                 .version(Version::HTTP_11)
                 .timeout(ASK_TIMEOUT);
             match staged(asked).await {
-                Ok(staged) => return holes(&staged.missing, staged.size, self.size),
-                Err(Failed::Gone(why)) => return Err(why),
+                Ok(staged) => {
+                    return holes(&staged.missing, staged.size, self.size).map_err(Failed::Gone);
+                }
+                Err(Failed::Gone(why)) => return Err(Failed::Gone(why)),
                 Err(Failed::Link(why)) => last = why,
             }
         }
-        Err(format!("pro: the stage did not answer: {last}"))
+        Err(Failed::Link(format!(
+            "pro: the stage did not answer: {last}"
+        )))
     }
 
     pub fn close(self) {
@@ -220,11 +224,21 @@ async fn staged(asked: wreq::RequestBuilder) -> Result<Staged, Failed> {
 }
 
 pub fn holes(missing: &[[u64; 2]], reported: u64, size: u64) -> Result<Vec<Range<u64>>, String> {
-    let sane = missing.iter().all(|[from, to]| from < to && *to <= size);
+    let sane =
+        missing.len() <= MOST_HOLES && missing.iter().all(|[from, to]| from < to && *to <= size);
     if reported != size || !sane {
         return Err("pro: the stage answer does not fit the body".to_string());
     }
-    Ok(missing.iter().map(|[from, to]| *from..*to).collect())
+    let mut sorted: Vec<Range<u64>> = missing.iter().map(|[from, to]| *from..*to).collect();
+    sorted.sort_by_key(|hole| hole.start);
+    let mut merged: Vec<Range<u64>> = Vec::with_capacity(sorted.len());
+    for hole in sorted {
+        match merged.last_mut() {
+            Some(last) if hole.start <= last.end => last.end = last.end.max(hole.end),
+            _ => merged.push(hole),
+        }
+    }
+    Ok(merged)
 }
 
 pub fn parts(missing: &[Range<u64>], size: usize) -> Vec<Range<u64>> {
@@ -238,7 +252,13 @@ pub fn parts(missing: &[Range<u64>], size: usize) -> Vec<Range<u64>> {
         .collect()
 }
 
-fn bytes_in(missing: &[Range<u64>]) -> u64 {
+async fn paused(attempt: usize) {
+    if attempt > 0 {
+        tokio::time::sleep(PAUSE * attempt as u32).await;
+    }
+}
+
+pub fn bytes_in(missing: &[Range<u64>]) -> u64 {
     missing.iter().map(|hole| hole.end - hole.start).sum()
 }
 

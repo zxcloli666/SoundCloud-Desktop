@@ -42,7 +42,6 @@ impl ChatState {
         let api = Arc::new(Api::new(channel, transport.clone()));
         let notifier = Arc::new(Notifier::default());
         let media_cache = Arc::new(MediaCache::open(&dir));
-        let chat_dir = dir.clone();
         let runtime = Arc::new(Runtime::new(Parts {
             app: app.clone(),
             rt: rt.clone(),
@@ -55,7 +54,7 @@ impl ChatState {
             notifier: notifier.clone(),
         }));
         let host = Arc::new(RuntimeHost::new(app.clone(), &runtime));
-        let uploads = Arc::new(Uploads::new(api.clone(), host, &chat_dir));
+        let uploads = Arc::new(Uploads::new(api.clone(), host, media_cache.clone()));
         Self {
             app,
             rt,

@@ -3,12 +3,14 @@ use std::path::PathBuf;
 use sc_chat::media::{self, PreparedImage};
 use sc_chat::sc_chat_wire::proto::Attachment;
 use sc_chat::store::NewUpload;
-use sc_chat::{ChatError, ChatResult, ConvId, ConversationKind, MediaKind, MediaUploadView};
+use sc_chat::{
+    ChatError, ChatResult, ConvId, ConversationKind, MediaKind, MediaUploadView, Message,
+};
 use uuid::Uuid;
 
-use super::album::repark_in;
 use super::engine::Uploads;
 use super::files::{IMAGE, THUMB};
+use super::post::{Posted, posted, repark_in};
 use super::prepare::{checked_source, read_source};
 use crate::app::diagnostics;
 
@@ -21,6 +23,7 @@ struct Slot {
     album: Uuid,
     position: u32,
     left: usize,
+    parked: Option<Message>,
 }
 
 struct Sealed {
@@ -77,6 +80,7 @@ impl Uploads {
                     album,
                     position: 0,
                     left: 0,
+                    parked: None,
                 }
             }
         };
@@ -101,20 +105,23 @@ impl Uploads {
                 }
             }
         }
-        if !accepted.is_empty() {
+        if let Some(parked) = slot.parked.filter(|_| !accepted.is_empty()) {
             let now = self.now();
             let reparked = self
-                .blocking(move |store| repark_in(store, album, conversation_id, now))
+                .blocking(move |store| repark_in(store, album, conversation_id, parked, now))
                 .await;
-            if let Err(error) = reparked {
-                diagnostics::warn(format!("[ChatUpload] repark after attach: {error}"));
+            match reparked {
+                Ok(released) => self.released(released).await,
+                Err(error) => {
+                    diagnostics::warn(format!("[ChatUpload] repark after attach: {error}"))
+                }
             }
         }
         accepted
     }
 
     async fn slot(&self, conversation_id: ConvId, album: Uuid) -> ChatResult<Slot> {
-        let (room, taken, position) = self
+        let (room, taken, position, parked) = self
             .blocking(move |store| {
                 let summary = store
                     .conversation(conversation_id)?
@@ -126,11 +133,17 @@ impl Uploads {
                 if foreign {
                     return Err(ChatError::Invalid);
                 }
+                let parked = match posted(store, conversation_id, album, &uploads)? {
+                    Posted::None => None,
+                    Posted::Parked(message) => Some(message),
+                    Posted::Stale(_) | Posted::Sending(_) => return Err(ChatError::Invalid),
+                };
                 let position = uploads.iter().map(|upload| upload.position + 1).max();
                 Ok((
                     summary.kind == ConversationKind::Room,
                     uploads.len(),
                     position.unwrap_or(0),
+                    parked,
                 ))
             })
             .await?;
@@ -138,6 +151,7 @@ impl Uploads {
             album,
             position,
             left: self.host.album_max(room).saturating_sub(taken),
+            parked,
         })
     }
 

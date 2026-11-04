@@ -6,8 +6,9 @@ use sha2::{Digest, Sha256};
 use tokio::sync::watch;
 use uuid::Uuid;
 
-use crate::chat::upload::put::plain;
-use crate::network::pro::Staging;
+use crate::chat::upload::plain::plain;
+use crate::network::pro::fake_relay::{self, Kind};
+use crate::network::pro::{Asked, Staging, fill_stage, open_filled};
 
 const TYPE: &str = "application/octet-stream";
 const ACCESS: &str = "UPTESTAK";
@@ -32,12 +33,41 @@ async fn a_streamed_put_lands_on_a_real_seaweedfs_presign_and_a_wrong_length_is_
     let (progress, seen) = watch::channel(Staging::default());
     let stored = plain(&target.url, &target, Bytes::from(body.clone()), progress).await;
     assert_eq!(stored, Ok(200));
-    assert!(seen.borrow().sent >= (LEN - 32 * 1024) as u64);
+    assert_eq!(seen.borrow().sent, LEN as u64);
+    assert_eq!(read_back(&host, &path).await, body);
+}
 
-    let read = presign(&host, "GET", &path, &[]);
+#[tokio::test(flavor = "multi_thread")]
+#[ignore = "needs a SeaweedFS S3 at CHAT_SEAWEED=host:port with UPTESTAK/UPTESTSECRET and bucket scd-chat"]
+async fn a_staged_put_a_node_replays_lands_on_a_real_seaweedfs_presign() {
+    let host = std::env::var("CHAT_SEAWEED").unwrap();
+    let path = format!("/scd-chat/m/{}", Uuid::new_v4().simple());
+    let body: Vec<u8> = (0..LEN).map(|at| (at * 17 % 241) as u8).collect();
+    let target = put_target(&host, &path, LEN);
+    let node = fake_relay::serve(Kind::Forwards);
+    let asked = Asked {
+        method: "PUT".into(),
+        url: target.url.clone(),
+        headers: target
+            .headers
+            .iter()
+            .map(|(name, value)| (name.clone(), value.clone()))
+            .collect(),
+        body: None,
+    };
+    let (progress, _) = watch::channel(Staging::default());
+    let filled = fill_stage(&node.url, &body, None, &progress).await.unwrap();
+    let stored = open_filled(&node.url, &asked, &body, &filled, &progress).await;
+    assert_eq!(stored, Ok(200));
+    assert_eq!(node.stages_opened(), 1);
+    assert_eq!(read_back(&host, &path).await, body);
+}
+
+async fn read_back(host: &str, path: &str) -> Vec<u8> {
+    let read = presign(host, "GET", path, &[]);
     let back = wreq::Client::new().get(&read).send().await.unwrap();
     assert_eq!(back.status().as_u16(), 200);
-    assert_eq!(back.bytes().await.unwrap().to_vec(), body);
+    back.bytes().await.unwrap().to_vec()
 }
 
 fn put_target(host: &str, path: &str, len: usize) -> PresignedPut {

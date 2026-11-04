@@ -14,6 +14,11 @@ pub enum Fault {
 }
 
 pub async fn link(target: &str, fault: Fault) -> String {
+    counted(target, fault).await.0
+}
+
+pub async fn counted(target: &str, fault: Fault) -> (String, Arc<AtomicUsize>) {
+    let cuts = Arc::new(AtomicUsize::new(0));
     let target = target.trim_start_matches("http://").to_string();
     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
     let addr = listener.local_addr().unwrap();
@@ -21,20 +26,32 @@ pub async fn link(target: &str, fault: Fault) -> String {
         Fault::LoseOpenAnswers(count) => count,
         _ => 0,
     }));
+    let counter = cuts.clone();
     tokio::spawn(async move {
         while let Ok((client, _)) = listener.accept().await {
             let Ok(upstream) = TcpStream::connect(&target).await else {
                 continue;
             };
-            tokio::spawn(pass(client, upstream, fault, losses.clone()));
+            let (losses, counter) = (losses.clone(), counter.clone());
+            tokio::spawn(async move {
+                if pass(client, upstream, fault, losses).await {
+                    counter.fetch_add(1, Ordering::SeqCst);
+                }
+            });
         }
     });
-    format!("http://{addr}")
+    (format!("http://{addr}"), cuts)
 }
 
-async fn pass(client: TcpStream, upstream: TcpStream, fault: Fault, losses: Arc<AtomicUsize>) {
+async fn pass(
+    client: TcpStream,
+    upstream: TcpStream,
+    fault: Fault,
+    losses: Arc<AtomicUsize>,
+) -> bool {
     if opens(&client).await && taken(&losses) {
-        return lose_answer(client, upstream).await;
+        lose_answer(client, upstream).await;
+        return false;
     }
     let budget = match fault {
         Fault::Cut(budget) | Fault::Stall(budget) => budget,
@@ -51,6 +68,7 @@ async fn pass(client: TcpStream, upstream: TcpStream, fault: Fault, losses: Arc<
         let mut sink = [0; 4096];
         while client_read.read(&mut sink).await.is_ok_and(|read| read > 0) {}
     }
+    spent
 }
 
 async fn opens(client: &TcpStream) -> bool {

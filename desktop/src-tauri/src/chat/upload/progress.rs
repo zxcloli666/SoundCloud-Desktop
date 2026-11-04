@@ -5,20 +5,24 @@ use tokio::sync::watch;
 use uuid::Uuid;
 
 use super::engine::Uploads;
-use super::put::{UNIT, stage_label};
+use super::put::UNIT;
 use crate::network::pro::Staging;
 
 type Mark = (Option<String>, u32);
 
 impl Uploads {
-    pub(super) async fn recorded<F: Future>(
+    pub(super) async fn recorded<F, L>(
         &self,
         id: Uuid,
         object: UploadObject,
-        node: Option<&str>,
+        label: L,
         attempt: F,
         mut seen: watch::Receiver<Staging>,
-    ) -> F::Output {
+    ) -> F::Output
+    where
+        F: Future,
+        L: Fn(&Staging) -> Option<String>,
+    {
         tokio::pin!(attempt);
         let mut last: Option<Mark> = None;
         loop {
@@ -30,9 +34,8 @@ impl Uploads {
                         return attempt.await;
                     }
                     let staging = seen.borrow_and_update().clone();
-                    let stage = node.zip(staging.stage.as_deref()).map(|(node, id)| stage_label(node, id));
-                    let mark = (stage, units(staging.sent));
-                    if last.as_ref() != Some(&mark) {
+                    let mark = (label(&staging), units(staging.sent));
+                    if ahead(last.as_ref(), &mark) {
                         self.note(id, object, &mark).await;
                         last = Some(mark);
                     }
@@ -47,6 +50,13 @@ impl Uploads {
         let _ = self
             .blocking(move |store| store.upload_progress(id, object, parts, stage.as_deref(), now))
             .await;
+    }
+}
+
+fn ahead(last: Option<&Mark>, mark: &Mark) -> bool {
+    match last {
+        Some((stage, parts)) => *stage != mark.0 || *parts < mark.1,
+        None => true,
     }
 }
 

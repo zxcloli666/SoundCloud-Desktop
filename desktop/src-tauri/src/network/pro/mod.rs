@@ -12,11 +12,13 @@ use bytes::Bytes;
 use futures_util::StreamExt;
 use futures_util::stream::BoxStream;
 use http::Version;
+use wreq::redirect::Policy;
 
 pub use gateway::route;
 pub use put::{StagedFailure, Staging, fill_stage, open_filled};
 
-use crate::network::{edge, system_proxy};
+use crate::network::pace::Pace;
+use crate::network::{edge, fetch, system_proxy};
 use open::Unopened;
 
 pub const MOST_BODY: usize = 1024 * 1024;
@@ -46,7 +48,10 @@ fn client() -> Option<&'static wreq::Client> {
     static CLIENT: OnceLock<Option<wreq::Client>> = OnceLock::new();
     CLIENT
         .get_or_init(|| {
-            system_proxy::follow(wreq::Client::builder())
+            let (_, emulation) = sc_fingerprint::emulation(None);
+            let builder = sc_fingerprint::from_emulation(fetch::pinging(emulation, Pace::Patient));
+            system_proxy::follow(builder)
+                .redirect(Policy::none())
                 .pool_max_idle_per_host(0)
                 .connect_timeout(CONNECT_TIMEOUT)
                 .build()
@@ -151,6 +156,8 @@ fn content_length(headers: &[(String, String)]) -> Option<u64> {
 pub(crate) mod fake_relay;
 #[cfg(test)]
 pub(crate) mod faulty_link;
+#[cfg(test)]
+mod put_tests;
 #[cfg(test)]
 mod stage_tests;
 #[cfg(test)]
