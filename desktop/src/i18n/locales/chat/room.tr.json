@@ -28,7 +28,7 @@
     "banConfirm": "Kesin yasaklansın mı?",
     "makeModerator": "Moderatör yap",
     "dropModerator": "Moderatörlüğü al",
-    "moderatorsFull": "Zaten 3 moderatör var"
+    "moderatorsFull": "Moderatör yeri kalmadı"
   },
   "muted": {
     "title": "Susturuldun"
@@ -78,6 +78,8 @@
     "offline": "Bağlantı yok",
     "disabled": "Sohbetler şu an kapalı",
     "invalid": "Olmadı",
+    "room_star_required": "STAR gerekli",
+    "request_limit": "Çok sık, biraz bekle",
     "generic": "Bir şeyler ters gitti, tekrar dene"
   },
   "links": {
@@ -91,5 +93,46 @@
     "slow": "Yavaş mod",
     "slowOff": "Kapalı",
     "seconds": "{{value}} sn"
+  },
+  "perks": {
+    "tuning": "Oda",
+    "starHost": "STAR sunucu",
+    "seats_one": "{{count}} katılımcı",
+    "seats_other": "{{count}} katılımcı",
+    "seatsOf": "{{max}} kişiden {{value}}",
+    "withStar": "STAR ile {{count}}",
+    "paused": "Yeni katılımlar durdu",
+    "nobodyKicked": "Kimse çıkarılmadı",
+    "moderators": "Moderatörler",
+    "cover": {
+      "title": "Kapak",
+      "track": "Parça kapağı",
+      "custom": "Özel kapak",
+      "kind": {
+        "avatar": "Avatar",
+        "playlist": "Çalma listesi",
+        "track": "Parça"
+      },
+      "accent": "Renk",
+      "accentN": "Renk {{value}}",
+      "apply": "Tamam",
+      "reset": "Parça kapağı",
+      "empty": "Henüz kendi kapağın yok",
+      "loadFailed": "Kapaklar yüklenmedi",
+      "retry": "Tekrar dene",
+      "needStar": "Kapak STAR ile",
+      "invalid": "Bu kapak uymadı",
+      "pickOther": "Başka",
+      "limited": "Çok sık",
+      "wait": "{{value}} sn sonra",
+      "failed": "Kaydedilmedi"
+    },
+    "images": {
+      "title": "Görseller",
+      "members": "Herkes",
+      "mods": "Modlar",
+      "off": "Kimse",
+      "withStar": "STAR ile görseller"
+    }
   }
 }

@@ -32,7 +32,8 @@
     "join": "Katıl",
     "here": "Buradasın",
     "untitled": "Birlikte dinliyoruz",
-    "host": "Sunucu: {{name}}"
+    "host": "Sunucu: {{name}}",
+    "full": "Dolu"
   },
   "share": {
     "action": "Gönder",

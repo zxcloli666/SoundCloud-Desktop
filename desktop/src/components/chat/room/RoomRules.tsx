@@ -1,4 +1,4 @@
-import { type ComponentType, memo, useEffect, useState } from 'react';
+import { type ComponentType, memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MessageCircle, Timer } from '../../../lib/chat/icons';
 import { LinkIcon, Settings } from '../../../lib/icons';
@@ -8,31 +8,9 @@ import type { RoomView } from '../../../lib/together/types';
 import { RoomCover } from './RoomCover';
 import { RoomImagesPolicy } from './RoomImagesPolicy';
 import { RoomPopover } from './RoomPopover';
-
-const PENDING_MS = 5_000;
+import { usePending } from './usePending';
 
 type IconType = ComponentType<{ size?: number; className?: string }>;
-
-function usePending<T>(actual: T): [T, (next: T, run: () => Promise<boolean>) => void] {
-  const [pending, setPending] = useState<{ value: T } | null>(null);
-
-  useEffect(() => {
-    if (pending && Object.is(pending.value, actual)) setPending(null);
-  }, [actual, pending]);
-
-  useEffect(() => {
-    if (!pending) return;
-    const timer = setTimeout(() => setPending(null), PENDING_MS);
-    return () => clearTimeout(timer);
-  }, [pending]);
-
-  const change = (next: T, run: () => Promise<boolean>) => {
-    setPending({ value: next });
-    void run().then((ok) => ok || setPending(null));
-  };
-
-  return [pending ? pending.value : actual, change];
-}
 
 function RuleSwitch({
   icon: Icon,
@@ -148,6 +126,7 @@ export const RoomRules = memo(function RoomRules({ room }: { room: RoomView }) {
       trigger={
         <button
           type="button"
+          data-ui="room-rules"
           title={t('chat.room.rules.title')}
           aria-label={t('chat.room.rules.title')}
           className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full text-ink-45 transition-colors hover:bg-ink/[0.08] hover:text-ink-90"

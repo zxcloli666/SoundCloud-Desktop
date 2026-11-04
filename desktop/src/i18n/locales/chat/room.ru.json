@@ -28,7 +28,7 @@
     "banConfirm": "Точно забанить?",
     "makeModerator": "Сделать модератором",
     "dropModerator": "Снять модератора",
-    "moderatorsFull": "Уже 3 модератора"
+    "moderatorsFull": "Мест для модераторов нет"
   },
   "muted": {
     "title": "Вы заглушены"
@@ -78,6 +78,8 @@
     "offline": "Нет связи",
     "disabled": "Чаты сейчас выключены",
     "invalid": "Не получилось",
+    "room_star_required": "Нужен STAR",
+    "request_limit": "Слишком часто, подождите",
     "generic": "Не получилось, попробуйте ещё раз"
   },
   "links": {
@@ -91,5 +93,47 @@
     "slow": "Медленный режим",
     "slowOff": "Выкл",
     "seconds": "{{value}} с"
+  },
+  "perks": {
+    "tuning": "Комната",
+    "starHost": "STAR-ведущий",
+    "seats_one": "{{count}} участник",
+    "seats_few": "{{count}} участника",
+    "seats_many": "{{count}} участников",
+    "seatsOf": "{{value}} из {{max}}",
+    "withStar": "{{count}} со STAR",
+    "paused": "Новые входы на паузе",
+    "nobodyKicked": "Никого не выгнали",
+    "moderators": "Модераторы",
+    "cover": {
+      "title": "Обложка",
+      "track": "Обложка трека",
+      "custom": "Своя обложка",
+      "kind": {
+        "avatar": "Аватар",
+        "playlist": "Плейлист",
+        "track": "Трек"
+      },
+      "accent": "Цвет",
+      "accentN": "Цвет {{value}}",
+      "apply": "Готово",
+      "reset": "Как у трека",
+      "empty": "Своих обложек пока нет",
+      "loadFailed": "Обложки не загрузились",
+      "retry": "Повторить",
+      "needStar": "Обложка со STAR",
+      "invalid": "Эта обложка не подошла",
+      "pickOther": "Другая",
+      "limited": "Слишком часто",
+      "wait": "Через {{value}} с",
+      "failed": "Не сохранилось"
+    },
+    "images": {
+      "title": "Картинки",
+      "members": "Все",
+      "mods": "Модеры",
+      "off": "Никто",
+      "withStar": "Картинки со STAR"
+    }
   }
 }

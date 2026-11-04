@@ -28,7 +28,7 @@
     "banConfirm": "정말 차단할까요?",
     "makeModerator": "모더레이터 지정",
     "dropModerator": "모더레이터 해제",
-    "moderatorsFull": "모더레이터는 최대 3명"
+    "moderatorsFull": "모더레이터 자리가 없어요"
   },
   "muted": {
     "title": "음소거되었어요"
@@ -78,6 +78,8 @@
     "offline": "연결이 없어요",
     "disabled": "지금은 채팅이 꺼져 있어요",
     "invalid": "실패했어요",
+    "room_star_required": "STAR가 필요해요",
+    "request_limit": "너무 자주 요청했어요, 잠시 후에",
     "generic": "문제가 생겼어요, 다시 시도해 주세요"
   },
   "links": {
@@ -91,5 +93,45 @@
     "slow": "슬로우 모드",
     "slowOff": "끔",
     "seconds": "{{value}}초"
+  },
+  "perks": {
+    "tuning": "방",
+    "starHost": "STAR 호스트",
+    "seats_other": "{{count}}명",
+    "seatsOf": "{{max}}명 중 {{value}}명",
+    "withStar": "STAR로 {{count}}명",
+    "paused": "새 입장 일시 중지",
+    "nobodyKicked": "내보낸 사람 없음",
+    "moderators": "모더레이터",
+    "cover": {
+      "title": "커버",
+      "track": "트랙 아트워크",
+      "custom": "내 커버",
+      "kind": {
+        "avatar": "아바타",
+        "playlist": "플레이리스트",
+        "track": "트랙"
+      },
+      "accent": "색상",
+      "accentN": "색상 {{value}}",
+      "apply": "완료",
+      "reset": "트랙 아트워크로",
+      "empty": "아직 내 아트워크가 없어요",
+      "loadFailed": "아트워크를 불러오지 못했어요",
+      "retry": "다시 시도",
+      "needStar": "커버는 STAR 전용",
+      "invalid": "이 커버는 사용할 수 없어요",
+      "pickOther": "다른 것",
+      "limited": "너무 자주 바꿨어요",
+      "wait": "{{value}}초 후",
+      "failed": "저장되지 않았어요"
+    },
+    "images": {
+      "title": "이미지",
+      "members": "모두",
+      "mods": "모더",
+      "off": "없음",
+      "withStar": "STAR로 이미지"
+    }
   }
 }

@@ -82,7 +82,7 @@ function listeningParty() {
   return {
     id: `together-${room.hostId}-${room.createdAt}`,
     size: Math.max(1, room.online.length),
-    max: ROOM_CAPACITY,
+    max: room.perks?.capacity ?? ROOM_CAPACITY,
   };
 }
 

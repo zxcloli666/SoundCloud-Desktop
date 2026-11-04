@@ -32,7 +32,8 @@
     "join": "Join",
     "here": "You're here",
     "untitled": "Listening together",
-    "host": "Hosted by {{name}}"
+    "host": "Hosted by {{name}}",
+    "full": "Full"
   },
   "share": {
     "action": "Send",
