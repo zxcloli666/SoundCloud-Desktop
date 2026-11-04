@@ -2,6 +2,8 @@ use sc_chat::{
     ConvId, ConversationKind, ConversationSummary, MemberRole, MemberState, NotifyLevel,
 };
 
+pub const ROOM_CODE: &str = "dusk-room";
+
 pub fn summary(id: ConvId, kind: ConversationKind) -> ConversationSummary {
     ConversationSummary {
         id,
@@ -25,7 +27,7 @@ pub fn summary(id: ConvId, kind: ConversationKind) -> ConversationSummary {
         pinned_at: None,
         archived: false,
         ttl_s: None,
-        room_code: None,
+        room_code: (kind == ConversationKind::Room).then(|| ROOM_CODE.into()),
         history_locked: false,
         has_draft: false,
     }

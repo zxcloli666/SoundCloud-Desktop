@@ -1,6 +1,7 @@
 mod album;
 mod attach;
 mod avatar;
+mod backdrop;
 mod cancel;
 mod driver;
 mod engine;

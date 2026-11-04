@@ -38,6 +38,9 @@ pub struct State {
     pub expires_in_s: u32,
     pub calls: Vec<String>,
     pub forbidden: usize,
+    pub settings: Vec<(String, Value)>,
+    pub settings_refusal: Option<(u16, Value)>,
+    pub reports: Vec<Value>,
 }
 
 pub struct World {
@@ -94,6 +97,19 @@ impl World {
         }
         if route == "POST /chat/media/delete" {
             return self.delete(&body);
+        }
+        if route == "POST /chat/reports" {
+            self.with(|state| state.reports.push(body));
+            return (200, json!({"id": Uuid::new_v4(), "state": "open"}));
+        }
+        if let Some(code) = route
+            .strip_prefix("PUT /chat/rooms/")
+            .and_then(|rest| rest.strip_suffix("/settings"))
+        {
+            return self.with(|state| {
+                state.settings.push((code.to_string(), body));
+                state.settings_refusal.take().unwrap_or((200, json!({})))
+            });
         }
         if let Some(id) = route
             .strip_prefix("POST /chat/media/")

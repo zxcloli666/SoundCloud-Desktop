@@ -32,6 +32,9 @@ impl Uploads {
                 rows = Rows::default();
                 self.recover().await;
             }
+            if self.woken() {
+                rows.wake();
+            }
             let Ok(queue) = self.blocking(queued).await else {
                 failures += 1;
                 self.rest(backoff(failures), &mut rows).await;

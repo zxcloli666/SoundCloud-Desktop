@@ -107,6 +107,7 @@ impl Uploads {
         match upload.kind {
             MediaKind::Image => self.release(upload.album).await,
             MediaKind::Avatar => self.avatar_committed(upload).await,
+            MediaKind::Backdrop => self.backdrop_committed(upload).await,
         }
     }
 }
