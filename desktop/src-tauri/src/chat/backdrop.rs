@@ -1,32 +1,43 @@
-use sc_chat::{ChatError, ChatResult, ConvId, MediaUploadView, ReportReason};
+use std::path::PathBuf;
+
+use sc_chat::{ChatResult, ConvId, MediaUploadView, ReportReason};
 use uuid::Uuid;
 
 use super::state::ChatState;
 
 pub async fn set_preset(
-    _state: &ChatState,
-    _code: String,
-    _conversation_id: ConvId,
-    _preset: Option<String>,
+    state: &ChatState,
+    code: String,
+    conversation_id: ConvId,
+    preset: Option<String>,
 ) -> ChatResult<()> {
-    Err(ChatError::Unimplemented)
+    state
+        .uploads
+        .set_backdrop(&code, conversation_id, preset)
+        .await
 }
 
 pub async fn upload(
-    _state: &ChatState,
-    _code: String,
-    _conversation_id: ConvId,
-    _path: String,
+    state: &ChatState,
+    code: String,
+    conversation_id: ConvId,
+    path: String,
 ) -> ChatResult<MediaUploadView> {
-    Err(ChatError::Unimplemented)
+    state
+        .uploads
+        .backdrop(&code, conversation_id, PathBuf::from(path))
+        .await
 }
 
 pub async fn report(
-    _state: &ChatState,
-    _conversation_id: ConvId,
-    _media_id: Uuid,
-    _reason: ReportReason,
-    _comment: Option<String>,
+    state: &ChatState,
+    conversation_id: ConvId,
+    media_id: Uuid,
+    reason: ReportReason,
+    comment: Option<String>,
 ) -> ChatResult<()> {
-    Err(ChatError::Unimplemented)
+    state
+        .uploads
+        .report_backdrop(conversation_id, media_id, reason, comment)
+        .await
 }

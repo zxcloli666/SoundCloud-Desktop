@@ -24,5 +24,6 @@ pub const DIR: &str = "chat";
 pub fn start(app: &AppHandle, rt: tokio::runtime::Handle, data_dir: &Path) {
     let state = state::ChatState::new(app.clone(), rt, data_dir.join(DIR));
     runtime::start(&state);
+    upload::start(&state);
     app.manage(state);
 }

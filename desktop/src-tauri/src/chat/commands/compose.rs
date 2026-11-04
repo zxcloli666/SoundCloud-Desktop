@@ -10,10 +10,16 @@ use sc_chat::{
 use super::reads::blocking;
 use crate::chat::runtime::Core;
 use crate::chat::state::ChatState;
+use crate::chat::upload;
 
 const EMOJI_MAX_BYTES: usize = 32;
 
 pub async fn send(state: &ChatState, input: SendInput) -> ChatResult<Message> {
+    if let Some(album) = input.client_id
+        && upload::is_album(state, album).await?
+    {
+        return upload::send_album(state, input, album).await;
+    }
     let post = match input.forward {
         Some(source) => forwarded(state, source).await?,
         None => Post {
@@ -88,6 +94,9 @@ pub async fn delete(
     scope: DeleteScope,
 ) -> ChatResult<()> {
     match (target, scope) {
+        (MessageTarget::Pending(client_id), _) if upload::is_album(state, client_id).await? => {
+            upload::cancel_album(state, client_id).await
+        }
         (MessageTarget::Pending(client_id), _) => {
             blocking(state, move |core| core.outbox.discard(client_id)).await
         }
