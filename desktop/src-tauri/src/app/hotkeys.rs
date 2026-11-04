@@ -1,3 +1,6 @@
+use std::sync::Mutex;
+use std::sync::atomic::{AtomicBool, Ordering};
+
 use serde::{Deserialize, Serialize};
 use tauri::Emitter;
 use tauri::plugin::TauriPlugin;
@@ -8,6 +11,10 @@ use crate::rt::{AppHandle, Rt};
 
 const PRESSED_EVENT: &str = "hotkey:pressed";
 const MAIN_WINDOW: &str = "main";
+
+static VOICE_KEY: Mutex<Option<String>> = Mutex::new(None);
+static SUSPENDED: AtomicBool = AtomicBool::new(false);
+static VOICE_REGISTERED: AtomicBool = AtomicBool::new(false);
 
 #[derive(Deserialize)]
 pub struct HotkeyBinding {
@@ -41,17 +48,66 @@ pub fn plugin() -> TauriPlugin<Rt> {
 }
 
 #[tauri::command]
-pub async fn hotkeys_apply(app: AppHandle, bindings: Vec<HotkeyBinding>) -> Vec<HotkeyOutcome> {
+pub async fn hotkeys_apply(
+    app: AppHandle,
+    bindings: Vec<HotkeyBinding>,
+    suspended: Option<bool>,
+) -> Vec<HotkeyOutcome> {
+    SUSPENDED.store(suspended.unwrap_or(false), Ordering::Relaxed);
+    VOICE_REGISTERED.store(false, Ordering::Relaxed);
     if let Err(e) = app.global_shortcut().unregister_all() {
         diagnostics::warn(format!("[Hotkeys] unregister failed: {e}"));
     }
-    bindings
+    let outcomes = bindings
         .into_iter()
         .map(|binding| HotkeyOutcome {
             status: register(&app, &binding),
             action: binding.action,
         })
-        .collect()
+        .collect();
+    let voice = VOICE_KEY.lock().unwrap().clone();
+    if let Some(accelerator) = voice {
+        register_voice(&app, &accelerator);
+    }
+    outcomes
+}
+
+pub fn set_voice_key(app: &AppHandle, accelerator: Option<String>) {
+    let mut current = VOICE_KEY.lock().unwrap();
+    if *current == accelerator {
+        return;
+    }
+    if let Some(old) = current.take()
+        && VOICE_REGISTERED.swap(false, Ordering::Relaxed)
+        && let Ok(shortcut) = old.parse::<Shortcut>()
+    {
+        app.global_shortcut().unregister(shortcut).ok();
+    }
+    if let Some(accelerator) = &accelerator {
+        register_voice(app, accelerator);
+    }
+    *current = accelerator;
+}
+
+fn register_voice(app: &AppHandle, accelerator: &str) {
+    if SUSPENDED.load(Ordering::Relaxed) {
+        return;
+    }
+    let Ok(shortcut) = accelerator.parse::<Shortcut>() else {
+        diagnostics::warn(format!("[Hotkeys] voice key {accelerator} is invalid"));
+        return;
+    };
+    let result = app
+        .global_shortcut()
+        .on_shortcut(shortcut, move |app, _, event| {
+            crate::voice::hotkey(app, event.state == ShortcutState::Pressed);
+        });
+    match result {
+        Ok(()) => VOICE_REGISTERED.store(true, Ordering::Relaxed),
+        Err(e) => diagnostics::warn(format!(
+            "[Hotkeys] voice key {accelerator} was not registered: {e}"
+        )),
+    }
 }
 
 #[tauri::command]
@@ -121,6 +177,8 @@ mod tests {
             "Alt+Space",
             "F13",
             "Control+Digit1",
+            "Shift+Super+Space",
+            "Control+Shift+Space",
         ] {
             assert!(accelerator.parse::<Shortcut>().is_ok(), "{accelerator}");
         }

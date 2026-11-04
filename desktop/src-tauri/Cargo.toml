@@ -57,6 +57,11 @@ regex = { version = "1", default-features = false, features = ["std"] }
 bytes = "1"
 call-client = { path = "../../utils/call/client" }
 decrypt-client = { path = "../../utils/decrypt-client" }
+voice-audio = { path = "../../utils/voice/voice-audio" }
+voice-engine = { path = "../../utils/voice/voice-engine" }
+voice-models = { path = "../../utils/voice/voice-models" }
+voice-nlu = { path = "../../utils/voice/voice-nlu" }
+voice-resolve = { path = "../../utils/voice/voice-resolve" }
 ffmpeg-sidecar = "2.5.2"
 if-addrs = "0.15"
 uuid = { version = "1", features = ["v4"] }
@@ -72,6 +77,24 @@ lto = true
 
 [profile.dev.package.signalsmith-stretch]
 opt-level = 3
+
+[profile.dev.package.sonora]
+opt-level = 2
+
+[profile.dev.package.voice-audio]
+opt-level = 2
+
+[profile.dev.package.voice-nlu]
+opt-level = 2
+
+[profile.dev.package.voice-resolve]
+opt-level = 2
+
+[profile.dev.package.voice-g2p]
+opt-level = 2
+
+[profile.dev.package.rubato]
+opt-level = 2
 
 [target.'cfg(windows)'.dependencies]
 windows-registry = "0.6"

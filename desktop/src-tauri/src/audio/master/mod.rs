@@ -59,7 +59,6 @@ impl Master {
     }
 }
 
-#[allow(dead_code)]
 impl Master {
     pub fn set_duck(&self, level: f32) {
         self.duck

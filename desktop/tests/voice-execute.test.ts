@@ -41,6 +41,19 @@ test('ask decisions do not touch the player', async () => {
   assert.match(res.outcome.speech, /Скриптонит.*Мот/);
 });
 
+test('an ask with one option asks about that one', async () => {
+  const port = fakePort();
+  const decision = {
+    decision: 'ask' as const,
+    first: { entity: ARTIST, score: 0.7 },
+    second: null,
+  };
+  const res = await execute(command('play', { decision }), port, ctx());
+  assert.equal(res.kind, 'ask');
+  assert.deepEqual(port.calls, []);
+  assert.equal(res.outcome.speech, 'Включить Скриптонит?');
+});
+
 test('play without a match is not found and keeps what was heard', async () => {
   const port = fakePort();
   const res = await execute(command('play', { heard: 'включи кого-то' }), port, ctx());

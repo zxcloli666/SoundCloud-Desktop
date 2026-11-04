@@ -37,7 +37,6 @@ pub fn start<S: Source>(source: S, master: Arc<Master>) -> (Speech, OneShot<S>) 
     (speech, shot)
 }
 
-#[allow(dead_code)]
 impl Speech {
     pub fn stop(&self) {
         self.stop.store(true, Ordering::Relaxed);

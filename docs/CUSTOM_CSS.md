@@ -59,6 +59,24 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="lyrics-line"]` | A line of lyrics, with `data-state` |
 | `[data-ui="waveform"]` | Waveform |
 
+### Voice
+
+| Selector | Element |
+|---|---|
+| `[data-ui="voice-mic"]` | Voice button in the player |
+| `[data-ui="voice-island"]` | Voice popup above the player, `data-state` names its view |
+| `[data-ui="voice-orb"]` | Listening orb, with `data-mode` |
+| `[data-ui="voice-avatar"]` | Assistant avatar |
+| `[data-ui="voice-hero"]` | Top block of Settings > Voice |
+| `[data-ui="voice-locked"]` | Voice block without STAR |
+| `[data-ui="voice-device"]` | A microphone tile, with `data-on` |
+| `[data-ui="voice-teach"]` | Wake word training panel |
+| `[data-ui="voice-speaker"]` | Alice or Salut tile |
+| `[data-ui="voice-link-code"]` | Link code panel |
+| `[data-ui="voice-link-confirm"]` | "Connect Alice?" question in the speaker tile |
+| `[data-ui="voice-model"]` | A model row, with `data-state` |
+| `[data-ui="voice-history-row"]` | A row in the voice history |
+
 ### Content
 
 | Selector | Element |

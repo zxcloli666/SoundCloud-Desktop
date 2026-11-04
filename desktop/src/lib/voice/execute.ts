@@ -206,10 +206,10 @@ export async function execute(
   const decision = cmd.decision;
 
   if (decision?.decision === 'ask') {
-    const r = reply(lang, 'ask', {
-      first: entityTitle(decision.first.entity),
-      second: entityTitle(decision.second.entity),
-    });
+    const first = entityTitle(decision.first.entity);
+    const r = decision.second
+      ? reply(lang, 'ask', { first, second: entityTitle(decision.second.entity) })
+      : reply(lang, 'ask_one', { first });
     return result('ask', r, cmd, stack);
   }
   if (cmd.intent === 'none')

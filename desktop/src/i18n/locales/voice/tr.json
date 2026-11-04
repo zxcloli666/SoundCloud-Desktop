@@ -47,7 +47,8 @@
       "find": "Ara",
       "hush": "Sus",
       "downloading": "Ses: modeller iniyor",
-      "openModels": "Modelleri aç"
+      "openModels": "Modelleri aç",
+      "askOne": "Bu mu?"
     },
     "error": {
       "mic_denied": "Mikrofon izni yok",
@@ -202,7 +203,14 @@
       "remote": {
         "live": "Çevrimiçi",
         "retrying": "Yeniden bağlanıyor"
-      }
+      },
+      "confirm": {
+        "alice": "Alice bağlansın mı?",
+        "salut": "Salut bağlansın mı?"
+      },
+      "confirmSub": "Kod bir hoparlörde girildi",
+      "yes": "Evet",
+      "no": "Hayır"
     },
     "models": {
       "title": "Modeller",

@@ -119,6 +119,32 @@
           "sha256": "2870d843e14c1e187bf1913a521562a63b53933814bd7f2145120468f494a049"
         }
       ]
+    },
+    {
+      "id": "kokoro-int8-multi-lang-v1_0",
+      "version": "1",
+      "kind": "tts",
+      "language": "en",
+      "license": "Apache-2.0",
+      "unpacked_size": 142404640,
+      "requires": [],
+      "files": [
+        {
+          "path": "model.int8.onnx",
+          "size": 114202993,
+          "sha256": "75635ea3b85a32d00094dcdd61a258aba87c160f7c264c304a7b3ae9d734195e"
+        },
+        {
+          "path": "voices.bin",
+          "size": 28200960,
+          "sha256": "1c5a5b983d3d50d8586d437a51f3faa2da7919ce76a013c081e65671a3447c29"
+        },
+        {
+          "path": "tokens.txt",
+          "size": 687,
+          "sha256": "6ebb6bb288f20f3ae8d004d3c2ca27697da27c037d75e81a60e2a6a663f95425"
+        }
+      ]
     }
   ]
 }

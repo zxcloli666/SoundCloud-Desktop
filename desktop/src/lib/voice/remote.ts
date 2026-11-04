@@ -1,50 +1,110 @@
+import { usePlayerStore } from '../../stores/player';
+import { trackedInvoke as invoke } from '../diagnostics';
+import { ACTIVITY_EVENTS } from '../idle';
+import { queryClient } from '../query-client';
 import { voiceIpc } from './ipc';
-import { remoteApi } from './remote-api';
-import type { RemoteCommand, RemoteState } from './remote-types';
+import { REMOTE_LINKS_KEY, remoteApi } from './remote-api';
+import type { RemoteCommand, RemoteState, SpeakerProvider } from './remote-types';
 import { reply } from './replies';
 import { useVoiceRuntime } from './runtime';
 import { useVoiceStore } from './store';
 
 const FALLBACK_MS = 2_400;
 const MAX_BACKOFF_MS = 30_000;
+const PROVIDERS: SpeakerProvider[] = ['alice', 'salut'];
 
 let generation = 0;
 let running = false;
+let device: Promise<string> | null = null;
+let activeAt = Date.now();
 const pending = new Map<string, ReturnType<typeof setTimeout>>();
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function failText(): string {
-  return reply(useVoiceStore.getState().config.language, 'failed').speech;
+function deviceId(): Promise<string> {
+  device ??= invoke<string>('call_device_id').catch(() => {
+    device = null;
+    return '';
+  });
+  return device;
 }
 
-export function settleRemote(id: string, ok: boolean, text: string, state: RemoteState) {
+export function markActive() {
+  activeAt = Date.now();
+}
+
+function active(): number {
+  return usePlayerStore.getState().isPlaying ? Date.now() : activeAt;
+}
+
+function watchActivity(on: boolean) {
+  for (const event of ACTIVITY_EVENTS) {
+    if (on) window.addEventListener(event, markActive, { passive: true });
+    else window.removeEventListener(event, markActive);
+  }
+}
+
+export function settleRemote(
+  id: string,
+  ok: boolean,
+  speech: string,
+  display: string,
+  state: RemoteState,
+): Promise<void> {
   const timer = pending.get(id);
-  if (timer === undefined) return;
+  if (timer === undefined) return Promise.resolve();
   clearTimeout(timer);
   pending.delete(id);
-  void remoteApi.reply({ id, ok, text, state }).catch(() => {});
+  return remoteApi.reply({ id, ok, speech, display, state }).catch(() => {});
+}
+
+function fail(id: string) {
+  const failed = reply(useVoiceStore.getState().config.language, 'failed');
+  void settleRemote(id, false, failed.speech, failed.display, 'failed');
+}
+
+export function answerLink(id: string, ok: boolean) {
+  const runtime = useVoiceRuntime.getState();
+  if (runtime.linkAsk?.id === id) useVoiceRuntime.setState({ linkAsk: null });
+  if (runtime.hud.kind === 'link_confirm' && runtime.hud.id === id) runtime.hideHud();
+  void settleRemote(id, ok, '', '', ok ? 'done' : 'failed').then(() => {
+    if (ok) void queryClient.invalidateQueries({ queryKey: REMOTE_LINKS_KEY });
+  });
+}
+
+function askLink(cmd: RemoteCommand) {
+  const provider = cmd.provider ?? PROVIDERS.find((p) => p === cmd.source);
+  const left = cmd.expiresAt - Date.now();
+  if (!provider || left <= 0) return;
+  const previous = useVoiceRuntime.getState().linkAsk;
+  if (previous) answerLink(previous.id, false);
+  pending.set(
+    cmd.id,
+    setTimeout(() => answerLink(cmd.id, false), left),
+  );
+  const ask = { id: cmd.id, provider, expiresAt: cmd.expiresAt };
+  useVoiceRuntime.setState({ linkAsk: ask });
+  useVoiceRuntime.getState().setHud({ kind: 'link_confirm', id: cmd.id, provider });
 }
 
 function feed(cmd: RemoteCommand) {
   if (pending.has(cmd.id)) return;
+  if (cmd.kind === 'link_confirm') return askLink(cmd);
   pending.set(
     cmd.id,
-    setTimeout(() => settleRemote(cmd.id, false, failText(), 'failed'), FALLBACK_MS),
+    setTimeout(() => fail(cmd.id), FALLBACK_MS),
   );
-  voiceIpc
-    .text(cmd.text, 'remote', cmd.id)
-    .catch(() => settleRemote(cmd.id, false, failText(), 'failed'));
+  voiceIpc.text(cmd.text, 'remote', cmd.id).catch(() => fail(cmd.id));
 }
 
 async function loop(gen: number) {
-  let cursor = '';
+  let cursor: number | null = null;
   let failures = 0;
   while (gen === generation) {
     try {
-      const wait = await remoteApi.wait(cursor);
+      const wait = await remoteApi.wait(cursor, await deviceId(), active());
       if (gen !== generation) return;
       cursor = wait.cursor;
       failures = 0;
@@ -63,6 +123,9 @@ export function syncRemote(on: boolean) {
   if (on === running) return;
   running = on;
   generation++;
+  watchActivity(on);
+  const asked = useVoiceRuntime.getState().linkAsk;
+  if (!on && asked) answerLink(asked.id, false);
   useVoiceRuntime.setState({ remote: on ? 'live' : 'off' });
   if (on) void loop(generation);
 }

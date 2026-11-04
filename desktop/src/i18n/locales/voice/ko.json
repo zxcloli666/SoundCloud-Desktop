@@ -47,7 +47,8 @@
       "find": "검색",
       "hush": "조용히",
       "downloading": "음성: 모델 받는 중",
-      "openModels": "모델 열기"
+      "openModels": "모델 열기",
+      "askOne": "이거 맞나요?"
     },
     "error": {
       "mic_denied": "마이크 권한 없음",
@@ -198,7 +199,14 @@
       "remote": {
         "live": "연결됨",
         "retrying": "재연결 중"
-      }
+      },
+      "confirm": {
+        "alice": "알리사를 연결할까요?",
+        "salut": "살류트를 연결할까요?"
+      },
+      "confirmSub": "스피커에서 코드를 입력했어요",
+      "yes": "예",
+      "no": "아니요"
     },
     "models": {
       "title": "모델",

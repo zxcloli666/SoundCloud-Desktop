@@ -47,7 +47,8 @@
       "find": "Buscar",
       "hush": "Silenciar",
       "downloading": "Voz: baixando modelos",
-      "openModels": "Abrir modelos"
+      "openModels": "Abrir modelos",
+      "askOne": "É este?"
     },
     "error": {
       "mic_denied": "Sem acesso ao microfone",
@@ -206,7 +207,14 @@
         "live": "Online",
         "retrying": "Reconectando"
       },
-      "linked_many": "{{count}} conectadas"
+      "linked_many": "{{count}} conectadas",
+      "confirm": {
+        "alice": "Conectar a Alice?",
+        "salut": "Conectar o Salut?"
+      },
+      "confirmSub": "O código foi digitado numa caixa de som",
+      "yes": "Sim",
+      "no": "Não"
     },
     "models": {
       "title": "Modelos",

@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import type { LinkAsk, SpeakerProvider } from './remote-types';
 import type {
   Devices,
   EngineState,
@@ -23,7 +24,8 @@ export type HudView =
   | { kind: 'listening'; source: VoiceSource }
   | { kind: 'thinking' }
   | { kind: 'done'; id: string; heard: string; items: DoneItem[]; undo: boolean; at: number }
-  | { kind: 'asking'; id: string; heard: string; first: Scored; second: Scored }
+  | { kind: 'asking'; id: string; heard: string; first: Scored; second: Scored | null }
+  | { kind: 'link_confirm'; id: string; provider: SpeakerProvider }
   | { kind: 'not_found'; heard: string }
   | { kind: 'failed'; display: string }
   | { kind: 'error'; code: VoiceErrorCode }
@@ -44,6 +46,7 @@ interface VoiceRuntime {
   headsetAt: number;
   previewing: string | null;
   remote: RemoteLoop;
+  linkAsk: LinkAsk | null;
   settingsOpen: boolean;
   setHud: (hud: HudView) => void;
   hideHud: () => void;
@@ -65,6 +68,7 @@ export const useVoiceRuntime = create<VoiceRuntime>((set) => ({
   headsetAt: 0,
   previewing: null,
   remote: 'off',
+  linkAsk: null,
   settingsOpen: false,
   setHud: (hud) => set({ hud }),
   hideHud: () => set({ hud: { kind: 'hidden' } }),

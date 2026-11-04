@@ -4,6 +4,7 @@ import type { HudView, ModelSummary } from '../../../lib/voice/runtime';
 import { AskView } from './AskView';
 import { DoneView } from './DoneView';
 import { DownloadView } from './DownloadView';
+import { LinkConfirmView } from './LinkConfirmView';
 import { ListeningView } from './ListeningView';
 import { ErrorView, FailedView, NotFoundView } from './NoticeViews';
 import { SpeakingView } from './SpeakingView';
@@ -63,6 +64,8 @@ function Body({
           onClose={onClose}
         />
       );
+    case 'link_confirm':
+      return <LinkConfirmView id={hud.id} provider={hud.provider} />;
     case 'not_found':
       return <NotFoundView heard={hud.heard} onClose={onClose} />;
     case 'failed':

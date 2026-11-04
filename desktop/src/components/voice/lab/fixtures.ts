@@ -215,8 +215,8 @@ export function labLinks(now: number): RemoteLink[] {
     {
       id: 'link-1',
       provider: 'alice',
-      created_at: new Date(now - 6 * 86_400_000).toISOString(),
-      last_used_at: new Date(now - 5 * 60_000).toISOString(),
+      createdAt: now - 6 * 86_400_000,
+      lastUsedAt: now - 5 * 60_000,
     },
   ];
 }

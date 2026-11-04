@@ -1,33 +1,46 @@
 export type SpeakerProvider = 'alice' | 'salut';
 export type RemoteState = 'done' | 'ask' | 'not_found' | 'failed';
+export type RemoteKind = 'utterance' | 'link_confirm';
 
 export interface RemoteCommand {
   id: string;
+  seq: number;
+  source: string;
   text: string;
-  provider: SpeakerProvider;
-  at: string;
+  createdAt: number;
+  expiresAt: number;
+  kind?: RemoteKind;
+  provider?: SpeakerProvider;
 }
 
 export interface RemoteWait {
   commands: RemoteCommand[];
-  cursor: string;
+  cursor: number;
+  activeDevice: string | null;
 }
 
 export interface RemoteReply {
   id: string;
   ok: boolean;
-  text: string;
+  speech: string;
+  display: string;
   state: RemoteState;
 }
 
 export interface LinkCode {
   code: string;
-  expires_at: string;
+  expiresAt: number;
 }
 
 export interface RemoteLink {
   id: string;
   provider: SpeakerProvider;
-  created_at: string;
-  last_used_at: string | null;
+  createdAt: number;
+  lastUsedAt: number | null;
+}
+
+export interface LinkAsk {
+  id: string;
+  provider: SpeakerProvider;
+  expiresAt: number;
 }
