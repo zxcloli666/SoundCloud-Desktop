@@ -77,6 +77,7 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="album-hero"]` | Top block of an album page |
 | `[data-ui="playlist-hero"]` | Top block of a playlist page |
 | `[data-ui="user-hero"]` | Top block of a profile page |
+| `[data-ui="user-banner"]` | Profile banner above that block |
 | `[data-ui="track-hero"]` | Top block of a track page |
 | `[data-ui="discover-hero"]` | Top block of Discover |
 | `[data-ui="comments"]` | Comments list |
