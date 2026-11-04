@@ -39,7 +39,7 @@ function Item({
 }) {
   const tone = danger
     ? 'text-rose-200/90 hover:bg-rose-400/[0.12] hover:text-rose-100'
-    : 'text-ink-75 hover:bg-ink/[0.07] hover:text-white';
+    : 'text-ink-75 hover:bg-ink/[0.07] hover:text-ink';
   return (
     <button
       type="button"

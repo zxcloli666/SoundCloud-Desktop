@@ -49,7 +49,7 @@ export function senderHue(userId: UserId): number {
 }
 
 export function senderColor(userId: UserId): string {
-  return `color-mix(in oklab, hsl(${senderHue(userId)} 75% 52%), var(--color-white) 45%)`;
+  return `color-mix(in oklab, hsl(${senderHue(userId)} 75% 52%), var(--tone-hi) 45%)`;
 }
 
 function oneLine(text: string): string {

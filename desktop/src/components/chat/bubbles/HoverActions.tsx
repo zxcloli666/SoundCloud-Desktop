@@ -24,7 +24,7 @@ function ActionButton({
         event.stopPropagation();
         onClick(event);
       }}
-      className="flex size-[26px] cursor-pointer items-center justify-center rounded-full text-ink-55 transition-colors duration-100 hover:bg-ink/[0.09] hover:text-white"
+      className="flex size-[26px] cursor-pointer items-center justify-center rounded-full text-ink-55 transition-colors duration-100 hover:bg-ink/[0.09] hover:text-ink"
     >
       {children}
     </button>

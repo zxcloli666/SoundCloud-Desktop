@@ -101,6 +101,7 @@ export const DockResizeHandle = memo(function DockResizeHandle() {
       >
         <span
           ref={labelRef}
+          data-scheme="dark"
           className="absolute top-3 left-2 rounded-md bg-black/75 px-1.5 py-0.5 font-mono text-[10px] text-ink-85 tabular-nums"
         />
       </div>

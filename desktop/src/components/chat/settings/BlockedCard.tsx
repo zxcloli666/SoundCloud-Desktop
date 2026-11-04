@@ -26,7 +26,7 @@ export function BlockedCard({ blocked, onUnblock }: BlockedCardProps) {
               <button
                 type="button"
                 onClick={() => onUnblock(user.id)}
-                className="cursor-pointer rounded-xl border border-ink/[0.06] bg-ink/[0.05] px-3 py-1.5 text-[12px] font-semibold text-ink-70 transition-colors hover:bg-ink/[0.1] hover:text-white"
+                className="cursor-pointer rounded-xl border border-ink/[0.06] bg-ink/[0.05] px-3 py-1.5 text-[12px] font-semibold text-ink-70 transition-colors hover:bg-ink/[0.1] hover:text-ink"
               >
                 {t('chat.settings.blocked.unblock')}
               </button>

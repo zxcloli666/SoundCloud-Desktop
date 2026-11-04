@@ -101,7 +101,7 @@ const MemberRow = memo(function MemberRow({ member }: { member: Member }) {
           type="button"
           aria-label={t('chat.thread.actions.more')}
           onClick={open}
-          className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full text-ink-40 opacity-0 transition-opacity duration-150 hover:bg-ink/[0.08] hover:text-white group-hover:opacity-100 focus-visible:opacity-100"
+          className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full text-ink-40 opacity-0 transition-opacity duration-150 hover:bg-ink/[0.08] hover:text-ink group-hover:opacity-100 focus-visible:opacity-100"
         >
           <Ellipsis size={14} />
         </button>

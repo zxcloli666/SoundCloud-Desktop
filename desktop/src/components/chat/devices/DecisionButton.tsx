@@ -6,7 +6,7 @@ export type DecisionTone = 'yes' | 'no' | 'plain';
 const TONE: Record<DecisionTone, string> = {
   yes: 'border-emerald-300/30 bg-emerald-400/90 text-emerald-950 hover:bg-emerald-300',
   no: 'border-rose-400/30 bg-rose-500/12 text-rose-200 hover:bg-rose-500/22',
-  plain: 'border-ink/[0.07] bg-ink/[0.05] text-ink-70 hover:bg-ink/[0.1] hover:text-white',
+  plain: 'border-ink/[0.07] bg-ink/[0.05] text-ink-70 hover:bg-ink/[0.1] hover:text-ink',
 };
 
 const SIZE = {

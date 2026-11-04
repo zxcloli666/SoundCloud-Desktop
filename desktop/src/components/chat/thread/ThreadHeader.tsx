@@ -100,7 +100,7 @@ export const ThreadHeader = memo(function ThreadHeader({
             type="button"
             aria-label={t('chat.thread.back')}
             onClick={onBack}
-            className="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-ink-55 transition-colors duration-150 hover:bg-ink/[0.07] hover:text-white @min-[641px]:hidden"
+            className="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-ink-55 transition-colors duration-150 hover:bg-ink/[0.07] hover:text-ink @min-[641px]:hidden"
           >
             <ChevronLeft size={18} />
           </button>
@@ -149,7 +149,7 @@ export const ThreadHeader = memo(function ThreadHeader({
           type="button"
           aria-label={t('chat.thread.menu.info')}
           onClick={onInfo}
-          className="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-ink-50 transition-colors duration-150 hover:bg-ink/[0.07] hover:text-white @max-[480px]/header:hidden"
+          className="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-ink-50 transition-colors duration-150 hover:bg-ink/[0.07] hover:text-ink @max-[480px]/header:hidden"
         >
           <Info size={17} />
         </button>
@@ -157,7 +157,7 @@ export const ThreadHeader = memo(function ThreadHeader({
           type="button"
           aria-label={t('chat.thread.menu.more')}
           onClick={(event) => openThreadMenu(event, conversation, t, i18n.language, onInfo)}
-          className="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-ink-50 transition-colors duration-150 hover:bg-ink/[0.07] hover:text-white"
+          className="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-ink-50 transition-colors duration-150 hover:bg-ink/[0.07] hover:text-ink"
         >
           <Ellipsis size={17} />
         </button>

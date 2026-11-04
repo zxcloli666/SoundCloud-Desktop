@@ -13,7 +13,7 @@ const KINDS: ListFilter[] = ['all', 'direct', 'groups', 'unread'];
 const ACTIVE = {
   background: `linear-gradient(180deg, var(--color-chat-tint), transparent), ${ink(6)}`,
   borderColor: 'var(--color-chat-tint)',
-  color: 'var(--color-white)',
+  color: 'rgb(var(--ink))',
 };
 
 function Chip({

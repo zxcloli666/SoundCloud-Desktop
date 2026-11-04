@@ -27,7 +27,7 @@ export const DockPanel = memo(function DockPanel({ mode }: { mode: 'docked' | 'o
         <div
           aria-hidden
           onClick={() => setDockOpen(false)}
-          className="absolute inset-0 z-40 bg-black/45"
+          className="absolute inset-0 z-40 bg-shade-45"
         />
       )}
       <aside

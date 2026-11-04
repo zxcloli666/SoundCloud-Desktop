@@ -43,7 +43,7 @@ function Puck({
       aria-pressed={active}
       onClick={onClick}
       className={`relative flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-full transition-transform duration-200 hover:scale-[1.06] active:scale-[0.95] ${
-        active ? 'bg-ink/[0.1] text-white' : 'bg-ink/[0.04] text-ink-55 hover:text-ink-85'
+        active ? 'bg-ink/[0.1] text-ink' : 'bg-ink/[0.04] text-ink-55 hover:text-ink-85'
       }`}
       style={active ? ACTIVE_RING : undefined}
     >
@@ -90,7 +90,7 @@ const ChatTab = memo(function ChatTab({ id, active }: { id: ConvId; active: bool
         type="button"
         aria-label={t('chat.list.dock.closeTab')}
         onClick={() => closeTab(id)}
-        className="absolute -top-1 -left-1 hidden size-4 cursor-pointer items-center justify-center rounded-full bg-black/85 text-ink-75 group-hover:flex hover:text-white"
+        className="absolute -top-1 -left-1 hidden size-4 cursor-pointer items-center justify-center rounded-full bg-paper text-ink-75 ring-1 ring-ink/[0.12] group-hover:flex hover:text-ink"
       >
         <X size={9} strokeWidth={3} />
       </button>

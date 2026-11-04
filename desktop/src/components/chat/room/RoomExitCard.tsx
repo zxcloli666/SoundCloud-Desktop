@@ -59,7 +59,7 @@ export const RoomExitCard = memo(function RoomExitCard({
       <button
         type="button"
         onClick={() => useChatRoomStore.getState().dismiss()}
-        className="h-9 cursor-pointer rounded-full bg-ink/[0.08] px-5 text-[13px] font-semibold text-ink-80 transition-colors hover:bg-ink/[0.13] hover:text-white"
+        className="h-9 cursor-pointer rounded-full bg-ink/[0.08] px-5 text-[13px] font-semibold text-ink-80 transition-colors hover:bg-ink/[0.13] hover:text-ink"
       >
         {t('chat.room.exit.close')}
       </button>
