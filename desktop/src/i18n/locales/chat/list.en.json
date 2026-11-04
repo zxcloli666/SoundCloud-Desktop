@@ -27,6 +27,7 @@
   },
   "preview": {
     "embed": "Music",
+    "image": "Photo",
     "deleted": "Message deleted",
     "locked": "Opens after you confirm this device",
     "unknown": "Update the app to see this"

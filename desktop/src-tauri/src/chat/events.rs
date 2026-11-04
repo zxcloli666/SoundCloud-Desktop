@@ -11,6 +11,7 @@ pub const MESSAGES: &str = "chat:messages";
 pub const TYPING: &str = "chat:typing";
 pub const GONE: &str = "chat:gone";
 pub const DEVICE_ADDED: &str = "chat:device-added";
+pub const MEDIA_UPLOADS: &str = "chat:media-uploads";
 pub const NOTIFY_OPEN: &str = "chat:notify-open";
 
 #[derive(Debug, Clone, Serialize)]
@@ -35,7 +36,10 @@ impl Events for TauriEvents {
             CoreEvent::Status(status) => badge::apply(&self.app, status),
             CoreEvent::Messages(messages) => notify::on_messages(&self.app, messages),
             CoreEvent::DeviceAdded(added) => notify::on_device_added(&self.app, added),
-            CoreEvent::Sync(_) | CoreEvent::Typing(_) | CoreEvent::Gone(_) => {}
+            CoreEvent::Sync(_)
+            | CoreEvent::Typing(_)
+            | CoreEvent::Gone(_)
+            | CoreEvent::MediaUploads(_) => {}
         }
         emit(&self.app, &event);
     }
@@ -49,6 +53,7 @@ pub fn emit(app: &AppHandle, event: &CoreEvent) {
         CoreEvent::Typing(payload) => app.emit(TYPING, payload),
         CoreEvent::Gone(payload) => app.emit(GONE, payload),
         CoreEvent::DeviceAdded(payload) => app.emit(DEVICE_ADDED, payload),
+        CoreEvent::MediaUploads(payload) => app.emit(MEDIA_UPLOADS, payload),
     };
 }
 

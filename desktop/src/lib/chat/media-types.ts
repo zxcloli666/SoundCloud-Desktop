@@ -92,20 +92,38 @@ export interface RestoreAnswer {
   quota: number;
 }
 
-export type UploadStage = 'queued' | 'reserved' | 'uploading' | 'uploaded' | 'committed' | 'failed';
+export type UploadState = 'queued' | 'reserved' | 'uploading' | 'uploaded' | 'committed' | 'failed';
 
 export interface UploadView {
   id: string;
   album: string;
   position: number;
   conversationId: ConvId;
-  stage: UploadStage;
-  part: 'image' | 'thumb';
-  bytes: number;
+  kind: MediaKind;
+  state: UploadState;
+  object: 'image' | 'thumb';
   partsSent: number;
+  imageBytes: number;
+  thumbBytes: number;
   attempts: number;
-  createdAt: Millis;
+  updatedAt: Millis;
 }
+
+export interface MediaUploadsEvent {
+  uploads: UploadView[];
+  removed: string[];
+}
+
+export interface MessageAttachment {
+  mediaId: MediaId;
+  kind: 'image';
+  size: number;
+  w: number;
+  h: number;
+  thumbhash: number[];
+}
+
+export type AvatarChange = { kind: 'set'; uploadId: string } | { kind: 'clear' };
 
 export type RoomImagesPolicy = 'members' | 'mods' | 'off';
 

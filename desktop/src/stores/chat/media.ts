@@ -1,6 +1,11 @@
 import { create } from 'zustand';
 import { chatBridge } from '../../lib/chat/bridge';
-import type { MediaId, MediaUsage, UploadView } from '../../lib/chat/media-types';
+import type {
+  MediaId,
+  MediaUploadsEvent,
+  MediaUsage,
+  UploadView,
+} from '../../lib/chat/media-types';
 import type { ConvId } from '../../lib/chat/types';
 import type { ChatState } from './index';
 
@@ -16,6 +21,7 @@ export interface ChatMediaState {
   usageLoad: MediaLoad;
   shown: Record<MediaId, ShownMedia>;
   setUploads: (uploads: UploadView[]) => void;
+  applyUploads: (event: MediaUploadsEvent) => void;
   refreshUploads: () => Promise<void>;
   refreshUsage: () => Promise<void>;
   setShown: (id: MediaId, shown: ShownMedia) => void;
@@ -36,6 +42,17 @@ export const useChatMediaStore = create<ChatMediaState>()((set, get) => ({
   usageLoad: 'idle',
   shown: {},
   setUploads: (uploads) => set({ uploads }),
+  applyUploads: ({ uploads, removed }) =>
+    set((state) => {
+      const changed = new Map(uploads.map((upload) => [upload.id, upload]));
+      const gone = new Set(removed);
+      const kept = state.uploads
+        .filter((upload) => !gone.has(upload.id))
+        .map((upload) => changed.get(upload.id) ?? upload);
+      const known = new Set(kept.map((upload) => upload.id));
+      const added = uploads.filter((upload) => !known.has(upload.id) && !gone.has(upload.id));
+      return { uploads: [...kept, ...added] };
+    }),
   refreshUploads: async () => {
     set({ uploads: await chatBridge.mediaUploads() });
   },

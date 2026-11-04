@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ConversationSummary, MessagePreview } from '../../../lib/chat/types';
-import { Lock, Music } from '../../../lib/icons';
+import { ImageIcon, Lock, Music } from '../../../lib/icons';
 import { TypingDots } from './TypingDots';
 
 interface RowPreviewProps {
@@ -29,12 +29,18 @@ function PreviewBody({ preview, mine }: { preview: MessagePreview; mine: boolean
           <span className="truncate">{preview.text || t('chat.list.preview.embed')}</span>
         </>
       );
+    case 'image':
+      return (
+        <>
+          {you}
+          <ImageIcon size={12} className="shrink-0 text-ink-45" />
+          <span className="truncate">{t('chat.list.preview.image')}</span>
+        </>
+      );
     case 'system':
       return <span className="truncate italic text-ink-40">{preview.text}</span>;
     case 'deleted':
-      return (
-        <span className="truncate italic text-ink-30">{t('chat.list.preview.deleted')}</span>
-      );
+      return <span className="truncate italic text-ink-30">{t('chat.list.preview.deleted')}</span>;
     case 'locked':
       return (
         <>

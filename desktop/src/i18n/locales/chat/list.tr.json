@@ -27,6 +27,7 @@
   },
   "preview": {
     "embed": "Müzik",
+    "image": "Fotoğraf",
     "deleted": "Mesaj silindi",
     "locked": "Bu cihazı onayladıktan sonra açılır",
     "unknown": "Görmek için uygulamayı güncelle"

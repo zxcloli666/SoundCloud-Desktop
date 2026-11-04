@@ -1,4 +1,10 @@
-import type { MediaConfig, RoomCover, RoomImagesPolicy } from './media-types';
+import type {
+  AvatarChange,
+  MediaConfig,
+  MessageAttachment,
+  RoomCover,
+  RoomImagesPolicy,
+} from './media-types';
 
 export type ConvId = string;
 export type DeviceId = string;
@@ -239,6 +245,7 @@ export interface Message {
   mentions: UserId[];
   mentionsMe: boolean;
   embeds: Embed[];
+  attachments: MessageAttachment[];
   forwardedFrom: Forwarded | null;
   reactions: ReactionGroup[];
   pinned: boolean;
@@ -301,7 +308,7 @@ export type ConversationKind = 'direct' | 'group' | 'room' | 'self';
 export type MemberRole = 'owner' | 'admin' | 'member';
 export type MemberState = 'active' | 'invited' | 'left' | 'kicked' | 'banned';
 export type NotifyLevel = 'all' | 'mentions' | 'none';
-export type PreviewKind = 'text' | 'embed' | 'system' | 'deleted' | 'locked' | 'unknown';
+export type PreviewKind = 'text' | 'embed' | 'image' | 'system' | 'deleted' | 'locked' | 'unknown';
 
 export interface UserRef {
   id: UserId;
@@ -324,6 +331,7 @@ export interface ConversationSummary {
   kind: ConversationKind;
   title: string | null;
   avatarUrl: string | null;
+  avatarMediaId: string | null;
   peer: UserRef | null;
   role: MemberRole;
   state: MemberState;
@@ -381,6 +389,7 @@ export interface MyPatch {
 export interface ConversationPatch {
   meta?: MetaPatch | null;
   me?: MyPatch | null;
+  avatar?: AvatarChange | null;
 }
 
 export type DeleteScope = 'me' | 'everyone';

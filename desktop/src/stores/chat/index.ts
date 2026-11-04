@@ -4,6 +4,7 @@ import { onChatEvent } from '../../lib/chat/events';
 import type { ChatConfig, ChatStatus } from '../../lib/chat/types';
 import { useChatDevicesStore } from './devices';
 import { useChatListStore } from './list';
+import { useChatMediaStore } from './media';
 import { useChatThreadStore } from './thread';
 
 export interface ChatState {
@@ -36,6 +37,7 @@ export async function initChatBridge(): Promise<() => void> {
       useChatListStore.getState().applyGone(event);
       useChatThreadStore.getState().applyGone(event);
     }),
+    onChatEvent('chat:media-uploads', (event) => useChatMediaStore.getState().applyUploads(event)),
     onChatEvent('chat:device-added', ({ device }) =>
       useChatDevicesStore.getState().pushAlert(device),
     ),

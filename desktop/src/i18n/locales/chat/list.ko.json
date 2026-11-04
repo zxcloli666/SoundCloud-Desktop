@@ -27,6 +27,7 @@
   },
   "preview": {
     "embed": "음악",
+    "image": "사진",
     "deleted": "삭제된 메시지",
     "locked": "이 기기를 확인하면 열려요",
     "unknown": "앱을 업데이트하면 볼 수 있어요"
