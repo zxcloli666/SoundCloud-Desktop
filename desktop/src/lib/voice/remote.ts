@@ -13,6 +13,7 @@ import { useVoiceStore } from './store';
 const FALLBACK_MS = 2_400;
 const MAX_BACKOFF_MS = 30_000;
 const MAX_RETRY_AFTER_MS = 60_000;
+const SEEN_MS = 10 * 60_000;
 const PROVIDERS: SpeakerProvider[] = ['alice', 'salut'];
 
 let generation = 0;
@@ -20,6 +21,7 @@ let running = false;
 let device: Promise<string> | null = null;
 let activeAt = Date.now();
 const pending = new Map<string, ReturnType<typeof setTimeout>>();
+const seen = new Map<string, number>();
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -96,8 +98,19 @@ function askLink(cmd: RemoteCommand) {
   useVoiceRuntime.getState().setHud({ kind: 'link_confirm', id: cmd.id, provider, hint: cmd.hint });
 }
 
+function firstSight(id: string): boolean {
+  const now = Date.now();
+  for (const [key, at] of seen) {
+    if (now - at <= SEEN_MS) break;
+    seen.delete(key);
+  }
+  if (seen.has(id)) return false;
+  seen.set(id, now);
+  return true;
+}
+
 function feed(cmd: RemoteCommand) {
-  if (pending.has(cmd.id)) return;
+  if (!firstSight(cmd.id)) return;
   if (cmd.kind === 'link_confirm') return askLink(cmd);
   pending.set(
     cmd.id,
