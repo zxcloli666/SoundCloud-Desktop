@@ -1,7 +1,6 @@
 use sc_chat::ChatError;
 
-use super::super::{Fetched, Gone, MediaState, Part};
-use super::rig::Media;
+use super::super::{Fetched, Part};
 use super::rig::{Rig, shown};
 
 #[tokio::test]

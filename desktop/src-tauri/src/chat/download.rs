@@ -15,7 +15,7 @@ use serde::Serialize;
 use tauri::Emitter;
 use uuid::Uuid;
 
-pub use self::engine::{Downloads, Notice, Routes};
+pub use self::engine::{Downloads, Notice};
 use super::state::ChatState;
 
 pub const MEDIA_STATE: &str = "chat:media-state";

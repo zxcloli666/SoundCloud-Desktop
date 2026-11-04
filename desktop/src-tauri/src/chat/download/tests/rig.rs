@@ -12,7 +12,8 @@ use sc_chat::sc_chat_wire::proto::Attachment;
 use sc_chat::{ChatResult, ConvId};
 use uuid::Uuid;
 
-use super::super::{Downloads, Fetched, MediaState, Part, Routes};
+use super::super::engine::Routes;
+use super::super::{Downloads, Fetched, MediaState, Part};
 use super::world::{self, World};
 use crate::chat::media_cache::MediaCache;
 use crate::chat::runtime::SystemClock;
@@ -99,21 +100,6 @@ impl Rig {
             thumb_id,
             image: prepared.image,
             thumb: prepared.thumb,
-        }
-    }
-
-    pub fn unknown(&self) -> Media {
-        let image_id = Uuid::new_v4();
-        Media {
-            attachment: Attachment {
-                media_id: image_id.to_string(),
-                size: 4096,
-                ..Attachment::default()
-            },
-            image_id,
-            thumb_id: image_id,
-            image: Vec::new(),
-            thumb: Vec::new(),
         }
     }
 

@@ -1,8 +1,7 @@
 use sc_chat::ChatError;
 
 use super::super::{Fetched, Gone, MediaState, Part};
-use super::rig::Media;
-use super::rig::{Rig, shown};
+use super::rig::{Media, Rig, shown};
 
 #[tokio::test]
 async fn a_404_asks_urls_once_more_then_answers_lost() {
