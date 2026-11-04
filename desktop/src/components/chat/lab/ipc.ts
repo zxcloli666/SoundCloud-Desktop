@@ -4,6 +4,7 @@ import { addListener, isChatEvent, removeListener } from './bus';
 import { runChatCommand } from './handlers';
 import { installLabPictures } from './pictures';
 import { plainCommand } from './plain';
+import { initWorld } from './world';
 
 type Args = Record<string, unknown>;
 type Invoke = (cmd: string, args?: InvokeArgs, options?: unknown) => Promise<unknown>;
@@ -43,6 +44,7 @@ function chatArgs(args: InvokeArgs | undefined, options: unknown): Args {
 }
 
 export function installChatLabIpc() {
+  initWorld();
   installLabPictures();
   hybrid = '__TAURI_INTERNALS__' in window;
   if (!hybrid) {

@@ -116,3 +116,17 @@ export function labAvatar(name: string): string {
 export function installLabPictures() {
   (window as { __chatLabMedia?: typeof labPicture }).__chatLabMedia = labPicture;
 }
+
+export function labPixels(mediaId: string, longSide = 32): ImageData | null {
+  const [rw, rh] = pictureSize(mediaId);
+  const scale = longSide / Math.max(rw, rh);
+  const w = Math.max(1, Math.round(rw * scale));
+  const h = Math.max(1, Math.round(rh * scale));
+  const canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return null;
+  paint(ctx, w, h, random(hash(mediaId)));
+  return ctx.getImageData(0, 0, w, h);
+}

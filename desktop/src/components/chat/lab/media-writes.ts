@@ -3,6 +3,7 @@ import type { ConversationSummary, Message, SendInput } from '../../../lib/chat/
 import type { RoomView } from '../../../lib/together/types';
 import { emitChat } from './bus';
 import { pictureSize } from './pictures';
+import { thumbhashOf } from './thumbhash';
 import { cancel, commit, enqueue, onUploadDone, retry, setUploads } from './uploads-sim';
 import { world } from './world';
 
@@ -67,7 +68,7 @@ function attachments(album: string) {
         size: u.imageBytes,
         w,
         h,
-        thumbhash: [] as number[],
+        thumbhash: thumbhashOf(u.id),
       };
     });
 }
