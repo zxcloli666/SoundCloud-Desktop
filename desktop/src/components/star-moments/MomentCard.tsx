@@ -46,7 +46,7 @@ export const MomentCard = memo(function MomentCard({
           type="button"
           aria-label={t('common.close')}
           onClick={onClose}
-          className="absolute right-2.5 top-2.5 grid size-7 cursor-pointer place-items-center rounded-full text-ink-35 transition-colors hover:bg-ink/[0.06] hover:text-ink-80"
+          className="absolute right-2.5 top-2.5 z-10 grid size-7 cursor-pointer place-items-center rounded-full text-ink-35 transition-colors hover:bg-ink/[0.06] hover:text-ink-80"
         >
           <X size={14} />
         </button>
