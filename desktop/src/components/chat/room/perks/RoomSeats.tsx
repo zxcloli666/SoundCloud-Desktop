@@ -6,10 +6,12 @@ export const RoomSeats = memo(function RoomSeats({
   listeners,
   capacity,
   full,
+  overArt = false,
 }: {
   listeners: number;
   capacity: number;
   full: boolean;
+  overArt?: boolean;
 }) {
   const { t } = useTranslation();
   const ratio = capacity > 0 ? Math.min(1, listeners / capacity) : 1;
@@ -20,7 +22,7 @@ export const RoomSeats = memo(function RoomSeats({
     >
       <span
         className={`flex items-center gap-1 text-[11px] font-semibold tabular-nums ${
-          full ? 'text-amber-200' : 'text-ink-45'
+          overArt ? 'text-ink-70' : full ? 'text-amber-200' : 'text-ink-45'
         }`}
       >
         <Users size={11} />

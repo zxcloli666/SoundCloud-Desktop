@@ -6,6 +6,10 @@ import { presetOf } from './presets';
 
 const CARD_TEXT_TONE = 0.55;
 
+export function hasBackdropThumb(backdrop: PublicBackdrop | null | undefined): boolean {
+  return presetOf(backdrop?.kind === 'preset' ? backdrop.id : null) !== null;
+}
+
 export const BackdropThumb = memo(function BackdropThumb({
   backdrop,
 }: {

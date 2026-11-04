@@ -5,7 +5,7 @@ import { openRoomErrorKey } from '../../lib/together/errors';
 import { joinOpenSession } from '../../lib/together/session';
 import type { OpenRoom } from '../../lib/together/types';
 import { useTogetherStore } from '../../stores/together';
-import { BackdropThumb } from '../chat/room/BackdropThumb';
+import { BackdropThumb, hasBackdropThumb } from '../chat/room/BackdropThumb';
 import { roomArt } from '../chat/room/perks/perks';
 import { RoomSeats } from '../chat/room/perks/RoomSeats';
 import { StarMark } from '../chat/room/perks/StarMark';
@@ -24,6 +24,7 @@ interface RowProps {
 function RoomRow({ room, joining, disabled, onJoin }: RowProps) {
   const { t } = useTranslation();
   const { src: cover, accent } = roomArt(room.starHost ? room.cover : null, room.track?.artworkUrl);
+  const thumb = hasBackdropThumb(room.backdrop);
   const track = room.track
     ? [room.track.title, room.track.artist].filter(Boolean).join(' · ')
     : t('together.nothingYet');
@@ -37,7 +38,7 @@ function RoomRow({ room, joining, disabled, onJoin }: RowProps) {
         className="pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit]"
       >
         <BackdropThumb backdrop={room.backdrop ?? null} />
-        {accent && (
+        {accent && !thumb && (
           <span
             className="absolute inset-0"
             style={{
@@ -73,9 +74,14 @@ function RoomRow({ room, joining, disabled, onJoin }: RowProps) {
             <span className="truncate">{room.hostName}</span>
             {room.starHost && <StarMark size={13} />}
           </p>
-          <p className="truncate text-[11px] text-ink-45">{track}</p>
+          <p className={`truncate text-[11px] ${thumb ? 'text-ink-70' : 'text-ink-45'}`}>{track}</p>
         </div>
-        <RoomSeats listeners={room.listeners} capacity={room.capacity} full={room.full} />
+        <RoomSeats
+          listeners={room.listeners}
+          capacity={room.capacity}
+          full={room.full}
+          overArt={thumb}
+        />
         <button
           type="button"
           disabled={room.full || disabled}
