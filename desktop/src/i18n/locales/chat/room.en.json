@@ -125,7 +125,8 @@
       "pickOther": "Another",
       "limited": "Too often",
       "wait": "In {{value}} s",
-      "failed": "Not saved"
+      "failed": "Not saved",
+      "loadMore": "Load the rest"
     },
     "images": {
       "title": "Images",

@@ -124,7 +124,8 @@
       "pickOther": "다른 것",
       "limited": "너무 자주 바꿨어요",
       "wait": "{{value}}초 후",
-      "failed": "저장되지 않았어요"
+      "failed": "저장되지 않았어요",
+      "loadMore": "나머지 불러오기"
     },
     "images": {
       "title": "이미지",

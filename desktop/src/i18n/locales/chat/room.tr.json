@@ -125,7 +125,8 @@
       "pickOther": "Başka",
       "limited": "Çok sık",
       "wait": "{{value}} sn sonra",
-      "failed": "Kaydedilmedi"
+      "failed": "Kaydedilmedi",
+      "loadMore": "Kalanları yükle"
     },
     "images": {
       "title": "Görseller",

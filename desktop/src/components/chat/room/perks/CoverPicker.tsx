@@ -68,13 +68,25 @@ function GridState({
     );
   }
   return (
-    <CoverGrid
-      choices={artwork.choices}
-      selected={draft.url}
-      accent={accentColor(draft.accent)}
-      ink={accentInk(draft.accent)}
-      onSelect={onSelect}
-    />
+    <>
+      <CoverGrid
+        choices={artwork.choices}
+        selected={draft.url}
+        accent={accentColor(draft.accent)}
+        ink={accentInk(draft.accent)}
+        onSelect={onSelect}
+      />
+      {artwork.partial && (
+        <button
+          type="button"
+          onClick={artwork.retry}
+          className="-mt-1 inline-flex h-6 cursor-pointer items-center gap-1.5 self-center rounded-full px-2.5 text-[11px] font-semibold text-ink-50 transition-colors hover:bg-ink/[0.06] hover:text-ink-80"
+        >
+          <RefreshCw size={10} />
+          {t('chat.room.perks.cover.loadMore')}
+        </button>
+      )}
+    </>
   );
 }
 

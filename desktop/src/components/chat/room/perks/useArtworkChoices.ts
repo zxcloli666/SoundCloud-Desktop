@@ -15,6 +15,7 @@ export interface ArtworkChoices {
   choices: ArtworkChoice[];
   loading: boolean;
   failed: boolean;
+  partial: boolean;
   retry: () => void;
 }
 
@@ -66,7 +67,8 @@ export function useArtworkChoices(enabled: boolean): ArtworkChoices {
   return {
     choices,
     loading: pending && choices.length <= 1,
-    failed: !pending && tracks.isError && playlists.isError && choices.length <= 1,
+    failed: !pending && tracks.isError && playlists.isError && choices.length === 0,
+    partial: !pending && (tracks.isError || playlists.isError),
     retry: () => {
       void tracks.refetch();
       void playlists.refetch();
