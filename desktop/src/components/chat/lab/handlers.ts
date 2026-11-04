@@ -4,7 +4,6 @@ import type {
   MinePage,
   MineQuery,
   RestoreAnswer,
-  UploadView,
 } from '../../../lib/chat/media-types';
 import { chatMediaUrl } from '../../../lib/chat/media-url';
 import type {
@@ -14,7 +13,7 @@ import type {
   SendInput,
   ThreadSnapshot,
 } from '../../../lib/chat/types';
-import { emitChat } from './bus';
+import { writeHandlers } from './media-writes';
 import { ME_ID } from './people';
 import { mediaMark } from './pictures';
 import { conversation, world } from './world';
@@ -124,27 +123,6 @@ function restoreMedia(): RestoreAnswer {
   return { restored: 0, missed: 0, used: world.usage.bytes, quota: world.usage.quota };
 }
 
-function setUploads(uploads: UploadView[], removed: string[] = []) {
-  world.uploads = world.uploads.filter((u) => !removed.includes(u.id));
-  for (const upload of uploads) {
-    const index = world.uploads.findIndex((u) => u.id === upload.id);
-    if (index >= 0) world.uploads[index] = upload;
-    else world.uploads.push(upload);
-  }
-  emitChat('chat:media-uploads', { uploads, removed });
-}
-
-function retryUpload(args: Args) {
-  const found = world.uploads.find((u) => u.id === args.id);
-  if (found) setUploads([{ ...found, state: 'queued', attempts: found.attempts + 1 }]);
-  return null;
-}
-
-function cancelUpload(args: Args) {
-  setUploads([], [String(args.id)]);
-  return null;
-}
-
 export const defaultHandlers: Record<string, (args: Args) => unknown> = {
   chat_status: () => world.status,
   chat_config: () => world.config,
@@ -168,8 +146,7 @@ export const defaultHandlers: Record<string, (args: Args) => unknown> = {
   chat_media_urls: mediaUrls,
   chat_media_uploads: () => world.uploads,
   chat_media_parked: parkedAlbums,
-  chat_media_upload_retry: retryUpload,
-  chat_media_upload_cancel: cancelUpload,
+  ...writeHandlers,
   chat_media_cache_size: () => 48 * 1024 * 1024,
   chat_media_cache_clear: () => 48 * 1024 * 1024,
 };
@@ -192,5 +169,3 @@ export async function runChatCommand(cmd: string, args: Args): Promise<unknown> 
   }
   return handler(args);
 }
-
-export { setUploads };
