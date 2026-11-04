@@ -1,6 +1,7 @@
 import { memo, type ReactNode, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ConversationList } from '../components/chat/list/ConversationList';
+import { UploadTray } from '../components/chat/media/UploadTray';
 import { ChatGate } from '../components/chat/shell/ChatGate';
 import { ChatsGlow } from '../components/chat/shell/ChatsGlow';
 import { EmptyThread } from '../components/chat/shell/EmptyThread';
@@ -88,6 +89,7 @@ export const Chats = memo(function Chats() {
                 onOpen={open}
                 onOpenRoom={() => open(DOCK_ROOM)}
               />
+              <UploadTray except={room ? roomChat : selected} />
             </Panel>
             <Panel className={`min-w-0 flex-1 ${selected ? '' : '@max-[640px]:hidden'}`}>
               {thread}

@@ -2,6 +2,7 @@ import {
   type ChangeEvent,
   type KeyboardEvent,
   memo,
+  useCallback,
   useEffect,
   useLayoutEffect,
   useMemo,
@@ -16,12 +17,16 @@ import { surface } from '../../../lib/chat/tone';
 import type { ConvId, Embed, Member, Message, UserRef } from '../../../lib/chat/types';
 import { hasLink } from '../../../lib/together/room-rules';
 import { useChatStore } from '../../../stores/chat';
+import { useChatMediaStore } from '../../../stores/chat/media';
 import { type Compose, useChatThreadStore } from '../../../stores/chat/thread';
 import { findBySeq } from '../../../stores/chat/thread-messages';
 import { startEdit } from '../bubbles/message-menu';
 import { ComposerEmbeds } from '../embeds/ComposerEmbeds';
 import { type PendingEmbed, useLinkEmbeds } from '../embeds/useLinkEmbeds';
 import { AttachButton } from '../media/AttachButton';
+import { SkippedNote } from '../media/compose/SkippedNote';
+import { StagedAlbum } from '../media/compose/StagedAlbum';
+import { useComposerMedia } from '../media/compose/useComposerMedia';
 import { useRoomLinkBlock, useRoomMembers } from '../room/useRoom';
 import { useThread } from '../thread/context';
 import { toastError } from '../thread/errors';
@@ -101,6 +106,9 @@ export const Composer = memo(function Composer({ conversationId }: { conversatio
   );
   const ping = useTypingPing(conversationId);
   const linkBlock = useRoomLinkBlock(conversationId);
+  const focusInput = useCallback(() => inputRef.current?.focus(), []);
+  const media = useComposerMedia(conversation, focusInput);
+  const album = !editing && media.ready ? media.album.id : null;
 
   useEffect(() => {
     if (compose.reply !== null) inputRef.current?.focus();
@@ -120,9 +128,11 @@ export const Composer = memo(function Composer({ conversationId }: { conversatio
   ];
   const rich = composeRich(text, picks);
   const tooLong = rich.text.length > textMax;
-  const empty = rich.text.length === 0 && (editing !== null || outgoing.length === 0);
+  const empty =
+    rich.text.length === 0 && (editing !== null || (outgoing.length === 0 && album === null));
   const linkLocked = linkBlock !== null && hasLink(rich.text);
-  const blocked = paused || tooLong || empty || linkLocked;
+  const preparing = !editing && media.album.preparing > 0;
+  const blocked = paused || tooLong || empty || linkLocked || preparing;
 
   const submit = async () => {
     if (blocked) return;
@@ -139,12 +149,15 @@ export const Composer = memo(function Composer({ conversationId }: { conversatio
     const before = { text, picks, embeds };
     draft.clear();
     setEmbeds([]);
+    if (album) useChatMediaStore.getState().setSending(album, true);
     try {
-      await store.send(conversationId, rich, outgoing);
+      await store.send(conversationId, rich, outgoing, album ?? undefined);
     } catch (error) {
       fail(error);
       draft.restore(before);
       setEmbeds((list) => (list.length === 0 ? before.embeds : list));
+    } finally {
+      if (album) useChatMediaStore.getState().setSending(album, false);
     }
   };
 
@@ -198,7 +211,10 @@ export const Composer = memo(function Composer({ conversationId }: { conversatio
   const onKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
     if (event.nativeEvent.isComposing || mentionKey(event)) return;
     const mod = event.metaKey || event.ctrlKey;
-    if (mod && (event.key === 'b' || event.key === 'i')) {
+    if (mod && event.code === 'KeyU' && !event.shiftKey && !event.altKey && !editing) {
+      event.preventDefault();
+      media.pick();
+    } else if (mod && (event.key === 'b' || event.key === 'i')) {
       event.preventDefault();
       const wrapped = wrapSelection(event.currentTarget, event.key === 'b' ? '**' : '__');
       setText(wrapped.text);
@@ -214,6 +230,9 @@ export const Composer = memo(function Composer({ conversationId }: { conversatio
     } else if (event.key === 'Escape' && (editing || replying)) {
       event.stopPropagation();
       setComposeState(editing ? { edit: null } : { reply: null });
+    } else if (event.key === 'Escape' && media.album.id && text === '' && !preparing) {
+      event.stopPropagation();
+      media.cancel();
     }
   };
 
@@ -244,6 +263,15 @@ export const Composer = memo(function Composer({ conversationId }: { conversatio
           />
         )}
         {linkLocked && <LinkHint block={linkBlock} />}
+        {!editing && <SkippedNote conversationId={conversationId} />}
+        {!editing && (
+          <StagedAlbum
+            album={media.album}
+            max={media.access.max}
+            onAdd={media.add}
+            onFail={media.fail}
+          />
+        )}
         {!editing && pending.length > 0 && (
           <div className="mx-1 mb-1.5">
             <ComposerEmbeds items={pending} onDismiss={dismissEmbed} />
@@ -257,7 +285,7 @@ export const Composer = memo(function Composer({ conversationId }: { conversatio
             className="rounded-[22px]"
           />
           <div className="relative flex items-end gap-1 p-1" style={{ isolation: 'isolate' }}>
-            {!editing && <AttachButton conversationId={conversationId} />}
+            {!editing && <AttachButton media={media} />}
             {!editing && <NowPlayingButton onAttach={attachNowPlaying} />}
             <textarea
               ref={inputRef}
@@ -265,6 +293,7 @@ export const Composer = memo(function Composer({ conversationId }: { conversatio
               value={text}
               onChange={onChange}
               onKeyDown={onKeyDown}
+              onPaste={editing ? undefined : media.paste}
               onSelect={(event) => setCaret(event.currentTarget.selectionStart)}
               placeholder={t(
                 paused ? 'chat.thread.composer.paused' : 'chat.thread.composer.placeholder',

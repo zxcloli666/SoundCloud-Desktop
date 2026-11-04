@@ -74,7 +74,7 @@ export interface ChatThreadState {
   loadMembers: (conversationId: ConvId) => Promise<void>;
   setCompose: (conversationId: ConvId, compose: Partial<Compose>) => void;
   setConversation: (summary: ConversationSummary) => void;
-  send: (conversationId: ConvId, text: RichText, embeds: Embed[]) => Promise<void>;
+  send: (conversationId: ConvId, text: RichText, embeds: Embed[], album?: string) => Promise<void>;
   retry: (message: Message) => Promise<void>;
   discard: (message: Message) => Promise<void>;
   edit: (conversationId: ConvId, seq: Seq, text: RichText) => Promise<void>;
@@ -254,11 +254,14 @@ export const useChatThreadStore = create<ChatThreadState>()((set, get) => {
       useChatListStore.getState().upsert(summary);
     },
 
-    send: async (id, text, embeds) => {
+    send: async (id, text, embeds, album) => {
       const reply = thread(id).compose.reply;
       patch(id, () => ({ compose: NO_COMPOSE, draft: null }));
       try {
-        const message = await chatBridge.send({ conversationId: id, text, embeds, replyTo: reply });
+        const input = { conversationId: id, text, embeds, replyTo: reply };
+        const message = album
+          ? await chatBridge.mediaSend(input, album)
+          : await chatBridge.send(input);
         putMessages(id, [message]);
       } catch (error) {
         patch(id, (current) => ({ compose: { ...current.compose, reply } }));
