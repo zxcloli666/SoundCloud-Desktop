@@ -14,7 +14,7 @@ use futures_util::stream::BoxStream;
 use http::Version;
 
 pub use gateway::route;
-pub use put::{StagedFailure, Staging, put_staged};
+pub use put::{StagedFailure, Staging, fill_stage, open_filled};
 
 use crate::network::{edge, system_proxy};
 use open::Unopened;

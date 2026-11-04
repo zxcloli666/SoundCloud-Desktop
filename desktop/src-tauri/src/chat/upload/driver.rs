@@ -4,7 +4,7 @@ use std::time::Duration;
 
 use futures_util::FutureExt;
 use sc_chat::store::MediaUpload;
-use sc_chat::{ChatError, UploadState};
+use sc_chat::{ChatError, MediaKind, UploadState};
 use uuid::Uuid;
 
 use super::engine::Uploads;
@@ -33,6 +33,7 @@ impl Uploads {
                 Ok(Some(upload)) => upload,
                 Ok(None) => {
                     failures = 0;
+                    self.apply_committed().await;
                     self.rest(IDLE_RECHECK).await;
                     continue;
                 }
@@ -115,7 +116,7 @@ impl Uploads {
             return;
         };
         let keep: HashSet<String> = uploads.iter().flat_map(file_names).collect();
-        for (_, album) in albums(uploads) {
+        for album in albums(uploads).into_values() {
             if album
                 .iter()
                 .all(|upload| upload.state == UploadState::Committed)
@@ -124,6 +125,18 @@ impl Uploads {
             }
         }
         self.files.sweep(keep, ORPHAN_AGE).await;
+    }
+
+    async fn apply_committed(&self) {
+        let Ok(uploads) = self.blocking(|store| store.uploads()).await else {
+            return;
+        };
+        let single = |upload: &&MediaUpload| {
+            upload.kind != MediaKind::Image && upload.state == UploadState::Committed
+        };
+        for upload in uploads.iter().filter(single) {
+            self.committed(upload).await;
+        }
     }
 }
 

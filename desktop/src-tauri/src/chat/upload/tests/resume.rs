@@ -166,3 +166,30 @@ async fn a_put_refused_as_expired_reserves_again_and_goes_through() {
     assert_eq!(rig.world.with(|state| state.reserves.clone()), [id, id]);
     assert!(rig.host.errors.lock().unwrap().is_empty());
 }
+
+#[tokio::test(flavor = "multi_thread")]
+async fn a_presign_that_lapses_before_a_pro_stage_is_signed_again_before_it_opens() {
+    let mut rig = Rig::new(ConversationKind::Group);
+    let relay = fake_relay::serve(Kind::Forwards);
+    rig.route(vec![Path::Pro(relay.url.clone())]);
+    let views = rig
+        .uploads
+        .attach(rig.conversation, None, sources(vec![rig.image(42)]))
+        .await
+        .unwrap();
+    let id = views[0].id;
+    rig.host
+        .skip_on_route
+        .store(600_000, std::sync::atomic::Ordering::SeqCst);
+    rig.run();
+    rig.until("the commit", |rig| {
+        rig.uploads()
+            .first()
+            .is_some_and(|upload| upload.state == UploadState::Committed)
+    })
+    .await;
+    assert_eq!(rig.world.with(|state| state.reserves.clone()), [id, id]);
+    let reserved = rig.world.reservation(id).unwrap();
+    assert_eq!(rig.world.puts_of(reserved.image), 1);
+    assert_eq!(relay.stages_opened(), 2);
+}

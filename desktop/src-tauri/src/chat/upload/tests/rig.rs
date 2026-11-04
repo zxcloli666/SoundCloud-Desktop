@@ -31,6 +31,7 @@ const WAIT: Duration = Duration::from_secs(60);
 pub struct TestHost {
     pub store: Mutex<Option<Arc<Store>>>,
     pub now: AtomicI64,
+    pub skip_on_route: AtomicI64,
     pub sent: AtomicUsize,
     pub errors: Mutex<Vec<(Uuid, ChatError)>>,
 }
@@ -98,6 +99,7 @@ impl Rig {
         let host = Arc::new(TestHost {
             store: Mutex::new(Some(store)),
             now: AtomicI64::new(START),
+            skip_on_route: AtomicI64::new(0),
             sent: AtomicUsize::new(0),
             errors: Mutex::new(Vec::new()),
         });
@@ -116,7 +118,7 @@ impl Rig {
             Arc::new(api),
             host.clone(),
             &dir,
-            routes(world.s3.clone(), paths.clone()),
+            routes(world.s3.clone(), paths.clone(), host.clone()),
         ));
         Self {
             world,
@@ -235,8 +237,10 @@ pub fn envelope(item: &OutboxItem) -> Envelope {
     Envelope::decode(item.envelope.as_slice()).unwrap()
 }
 
-fn routes(s3: String, paths: Arc<Mutex<Vec<Path>>>) -> Routes {
+fn routes(s3: String, paths: Arc<Mutex<Vec<Path>>>, host: Arc<TestHost>) -> Routes {
     Arc::new(move |url: &str| {
+        let skip = host.skip_on_route.swap(0, Ordering::SeqCst);
+        host.now.fetch_add(skip, Ordering::SeqCst);
         paths
             .lock()
             .unwrap()

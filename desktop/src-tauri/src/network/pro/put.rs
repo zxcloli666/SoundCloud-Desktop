@@ -26,13 +26,18 @@ pub enum StagedFailure {
     Gone(String),
 }
 
-pub async fn put_staged(
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum Filled {
+    Stage(String),
+    Inline,
+}
+
+pub async fn fill_stage(
     node: &str,
-    asked: &Asked,
     body: &[u8],
     resume: Option<&str>,
     progress: &watch::Sender<Staging>,
-) -> Result<u16, StagedFailure> {
+) -> Result<Filled, StagedFailure> {
     let client = client().ok_or_else(|| link("pro: http client is unavailable"))?;
     let size = body.len() as u64;
     let reopened = match resume {
@@ -43,40 +48,54 @@ pub async fn put_staged(
         Some(found) => found,
         None => match stage::create(client, node, size).await.map_err(link)? {
             Some(created) => created,
-            None => return plain(client, node, asked, body).await,
+            None => return Ok(Filled::Inline),
         },
     };
-    let opened = carried(&stage, node, asked, body, missing, progress).await?;
-    Ok(answered(client, node, opened).await)
+    fill(&stage, body, missing, progress).await?;
+    Ok(Filled::Stage(stage.id))
 }
 
-async fn carried(
-    stage: &Stage,
+pub async fn open_filled(
     node: &str,
     asked: &Asked,
     body: &[u8],
-    mut missing: Vec<Range<u64>>,
+    filled: &Filled,
     progress: &watch::Sender<Staging>,
-) -> Result<Opened, StagedFailure> {
+) -> Result<u16, StagedFailure> {
     let client = client().ok_or_else(|| link("pro: http client is unavailable"))?;
+    let Filled::Stage(id) = filled else {
+        return plain(client, node, asked, body).await;
+    };
     let mut last = String::new();
     for _ in 0..OPENS {
-        fill(stage, body, missing, progress).await?;
-        match open::staged(client, node, asked, &stage.id).await {
-            Ok(opened) => return Ok(opened),
-            Err(Unopened::Refused(INCOMPLETE)) => {
-                missing = stage.missing().await.map_err(StagedFailure::Gone)?
-            }
-            Err(Unopened::Refused(GONE)) => {
-                return Err(StagedFailure::Gone("pro: the stage is gone".into()));
-            }
-            Err(unopened) => {
-                last = unopened.explained();
-                missing = Vec::new();
-            }
+        match open::staged(client, node, asked, id).await {
+            Ok(opened) => return Ok(answered(client, node, opened).await),
+            Err(Unopened::Refused(INCOMPLETE)) => refill(client, node, id, body, progress).await?,
+            Err(Unopened::Refused(GONE)) => return Err(gone()),
+            Err(unopened) => last = unopened.explained(),
         }
     }
-    Err(link(&last))
+    Err(link(last))
+}
+
+async fn refill(
+    client: &'static wreq::Client,
+    node: &str,
+    id: &str,
+    body: &[u8],
+    progress: &watch::Sender<Staging>,
+) -> Result<(), StagedFailure> {
+    match stage::reopen(client, node, id, body.len() as u64)
+        .await
+        .map_err(link)?
+    {
+        Some((stage, missing)) => fill(&stage, body, missing, progress).await,
+        None => Err(gone()),
+    }
+}
+
+fn gone() -> StagedFailure {
+    StagedFailure::Gone("pro: the stage is gone".into())
 }
 
 async fn fill(

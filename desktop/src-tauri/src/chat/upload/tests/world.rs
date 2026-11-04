@@ -204,6 +204,7 @@ impl World {
 
 fn put(s3: &str, state: &mut State, object: Uuid, len: u64) -> Value {
     let token = Uuid::new_v4().simple().to_string();
+    state.tokens.retain(|_, (signed, _)| *signed != object);
     state.tokens.insert(token.clone(), (object, len));
     json!({
         "url": format!("{s3}/scd-chat/{object}?X-Amz-Signature={token}"),

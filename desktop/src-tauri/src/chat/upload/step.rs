@@ -27,7 +27,7 @@ impl Uploads {
             UploadObject::Image => (
                 Some(upload.image_ref.clone()),
                 upload.attachment.size,
-                Some(&targets.image),
+                Some(targets.image.clone()),
             ),
             UploadObject::Thumb => (
                 upload.thumb_ref.clone(),
@@ -36,7 +36,7 @@ impl Uploads {
                     .thumb
                     .as_ref()
                     .map_or(0, |thumb| thumb.size),
-                targets.thumb.as_ref(),
+                targets.thumb.clone(),
             ),
         };
         let (Some(name), Some(target)) = (name, target) else {
@@ -48,6 +48,7 @@ impl Uploads {
             upload: &upload,
             object,
             target,
+            expires_at: targets.expires_at,
             body: Bytes::from(body),
         })
         .await
