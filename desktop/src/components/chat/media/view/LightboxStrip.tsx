@@ -28,7 +28,11 @@ const StripThumb = memo(function StripThumb({
     <button
       ref={ref}
       type="button"
-      aria-label={gone ? t('chat.gallery.grid.itemState', { item: open, state: t(`chat.gallery.tile.${gone}`) }) : open}
+      aria-label={
+        gone
+          ? t('chat.gallery.grid.itemState', { item: open, state: t(`chat.gallery.tile.${gone}`) })
+          : open
+      }
       aria-current={active ? 'true' : undefined}
       onClick={onPick}
       className={`relative size-11 shrink-0 cursor-pointer overflow-hidden rounded-[9px] bg-ink/[0.08] transition-[opacity,transform] duration-150 focus-visible:outline-2 focus-visible:outline-[var(--color-accent)] ${

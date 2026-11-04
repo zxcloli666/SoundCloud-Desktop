@@ -21,7 +21,6 @@ export interface Skipped {
   error: ChatError | null;
 }
 
-export const selectMediaOn = (state: ChatState) => state.config?.media?.uploads === true;
 export const selectMediaKnown = (state: ChatState) => (state.config?.media ?? null) !== null;
 export const selectMediaStar = (state: ChatState) => state.config?.media?.star === true;
 
@@ -147,7 +146,9 @@ export const useChatMediaStore = create<ChatMediaState>()((set, get) => ({
     }
   },
   setShown: (id, shown) =>
-    set((state) => (state.shown[id] === shown ? state : { shown: { ...state.shown, [id]: shown } })),
+    set((state) =>
+      state.shown[id] === shown ? state : { shown: { ...state.shown, [id]: shown } },
+    ),
   forgetShown: (ids) =>
     set((state) => {
       if (!ids.some((id) => id in state.shown)) return state;

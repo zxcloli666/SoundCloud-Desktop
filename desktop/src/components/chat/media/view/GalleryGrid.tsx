@@ -93,7 +93,9 @@ const GalleryTile = memo(function GalleryTile({
       data-ui="chat-gallery-tile"
       data-state={thumb.gone ?? thumb.phase}
       tabIndex={active ? 0 : -1}
-      aria-label={problem ? t('chat.gallery.grid.itemState', { item: label, state: t(problem) }) : label}
+      aria-label={
+        problem ? t('chat.gallery.grid.itemState', { item: label, state: t(problem) }) : label
+      }
       onFocus={() => onFocus(index)}
       onClick={(event) => activate(event.currentTarget)}
       onKeyDown={(event) => tileKeys(event, activate)}
@@ -187,11 +189,7 @@ export const GalleryGrid = memo(function GalleryGrid({
 
   const askedAt = useRef(-1);
   useEffect(() => {
-    if (
-      rows === 0 ||
-      lastRow < rows - LOAD_AHEAD_ROWS ||
-      askedAt.current === items.length
-    ) {
+    if (rows === 0 || lastRow < rows - LOAD_AHEAD_ROWS || askedAt.current === items.length) {
       return;
     }
     askedAt.current = items.length;

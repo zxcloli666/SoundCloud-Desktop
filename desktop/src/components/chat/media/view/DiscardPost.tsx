@@ -42,7 +42,9 @@ export const DiscardPost = memo(function DiscardPost({ message }: { message: Mes
       onClick={press}
       onBlur={() => setArmed(false)}
       className={`flex h-6 shrink-0 cursor-pointer items-center gap-1 rounded-full px-2 text-[11px] font-semibold transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-[var(--color-accent)] disabled:cursor-progress disabled:opacity-60 ${
-        armed ? 'bg-bad/15 text-bad hover:bg-bad/25' : 'text-ink-55 hover:bg-ink/[0.07] hover:text-ink-80'
+        armed
+          ? 'bg-bad/15 text-bad hover:bg-bad/25'
+          : 'text-ink-55 hover:bg-ink/[0.07] hover:text-ink-80'
       }`}
     >
       <Trash2 size={11} />

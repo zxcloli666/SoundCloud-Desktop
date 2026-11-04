@@ -6,7 +6,7 @@ import { WindowControls } from '../../../layout/Titlebar';
 import { MessageSquareShare, X, ZoomIn, ZoomOut } from './icons';
 import type { ViewImage } from './images';
 import type { LightboxSession } from './lightbox-store';
-import { ZOOM_MAX, type ZoomPan, useZoomScale } from './useZoomPan';
+import { useZoomScale, ZOOM_MAX, type ZoomPan } from './useZoomPan';
 
 function BarButton({
   label,

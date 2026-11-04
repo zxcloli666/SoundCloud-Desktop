@@ -6,6 +6,7 @@ import { useChatThreadStore } from '../../../stores/chat/thread';
 import { BubbleMeta } from '../bubbles/BubbleMeta';
 import { useThread } from '../thread/context';
 import { imagesOf, threadImages } from './view/images';
+import { LocalAlbum } from './view/LocalAlbum';
 import { showLightbox } from './view/lightbox-root';
 import { useMediaView } from './view/media-state';
 import { PendingAlbum, useAlbumUploads } from './view/PendingAlbum';
@@ -43,6 +44,9 @@ export const MediaBubble = memo(function MediaBubble({
   useMediaView();
   const { nameOf, jumpTo } = useThread();
   const uploads = useAlbumUploads(message.clientId, message.seq === null);
+  const unsent = message.seq === null && message.attachments.length > 0;
+  const parked = useChatMediaStore((state) => unsent && state.parked[message.clientId] === true);
+  const unknown = useChatMediaStore((state) => unsent && !state.parkedReady);
   const overlay = solo ? <MetaPill message={message} tick={tick} /> : undefined;
 
   const open = useCallback(
@@ -85,6 +89,19 @@ export const MediaBubble = memo(function MediaBubble({
   }
 
   if (message.attachments.length === 0) return null;
+
+  if (parked || unknown) {
+    return (
+      <div className={`first:-mt-[4px] not-first:mt-1 ${solo ? '-mb-[4px]' : 'mb-1.5'}`}>
+        <LocalAlbum
+          conversationId={message.conversationId}
+          attachments={message.attachments}
+          parked={parked}
+          overlay={overlay}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className={`first:-mt-[4px] not-first:mt-1 ${solo ? '-mb-[4px]' : 'mb-1.5'}`}>
