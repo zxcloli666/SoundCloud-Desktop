@@ -65,7 +65,14 @@ export const VoiceAvatar = memo(function VoiceAvatar({
         )}
         <span className="relative block size-full overflow-hidden rounded-full" style={body}>
           {voice.image ? (
-            <img src={voice.image} alt="" draggable={false} className="size-full object-cover" />
+            <>
+              <img src={voice.image} alt="" draggable={false} className="size-full object-cover" />
+              <span
+                aria-hidden
+                className="absolute inset-0 rounded-full"
+                style={{ boxShadow: 'inset 0 0 0 1px rgb(var(--shade) / 0.14)' }}
+              />
+            </>
           ) : (
             <Mark uid={uid} idle={perf.idleAnim} />
           )}
