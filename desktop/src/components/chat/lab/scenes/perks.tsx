@@ -47,7 +47,7 @@ function hostRoom(kit: LabKit, perks: RoomPerks, patch: Partial<RoomView> = {}) 
 
 const LAB_USER_URN = 'soundcloud:users:7001';
 
-function seedArtwork() {
+function seedArtwork(count = 8) {
   if (isHybrid()) return;
   const urn = useAuthStore.getState().user?.urn ?? LAB_USER_URN;
   const page = <T,>(collection: T[]) => ({
@@ -55,7 +55,7 @@ function seedArtwork() {
     pageParams: [0],
   });
   const tracks = page(
-    [1, 2, 3, 4, 5, 6, 7, 8].map((n) => ({
+    Array.from({ length: count }, (_, index) => index + 1).map((n) => ({
       urn: `soundcloud:tracks:${n}`,
       title: `Track ${n}`,
       artwork_url: ART(n),
@@ -66,7 +66,7 @@ function seedArtwork() {
   queryClient.setQueryData(
     ['me', 'playlists', 30],
     page(
-      [9, 10, 11].map((n) => ({
+      (count > 0 ? [9, 10, 11] : []).map((n) => ({
         urn: `soundcloud:playlists:${n}`,
         title: `Mix ${n}`,
         artwork_url: ART(n),
@@ -257,6 +257,25 @@ export const scenes: LabScene[] = [
     setup: (kit) => {
       seedArtwork();
       hostRoom(kit, FREE);
+      openCover(kit);
+    },
+  },
+  {
+    id: 'perks-cover-empty',
+    title: 'Perks: cover picker, no artwork',
+    route: '/chats/room',
+    setup: (kit) => {
+      seedArtwork(0);
+      hostRoom(kit, STAR);
+      openCover(kit);
+    },
+  },
+  {
+    id: 'perks-cover-offline',
+    title: 'Perks: cover picker, artwork loading or failed',
+    route: '/chats/room',
+    setup: (kit) => {
+      hostRoom(kit, STAR);
       openCover(kit);
     },
   },
