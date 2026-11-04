@@ -5,7 +5,7 @@ import type { ConvId } from './types';
 type LabMedia = (conversationId: ConvId, mediaId: MediaId, variant: string) => string | null;
 
 export function hideOnError(event: { currentTarget: HTMLImageElement }) {
-  event.currentTarget.style.visibility = 'hidden';
+  event.currentTarget.style.display = 'none';
 }
 
 export function chatMediaUrl(conversationId: ConvId, mediaId: MediaId, variant: MediaVariant) {

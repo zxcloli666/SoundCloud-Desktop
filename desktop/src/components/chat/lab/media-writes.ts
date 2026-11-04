@@ -127,7 +127,9 @@ function release(album: string) {
   setTimeout(() => setUploads([], ids), HOLD_MS);
 }
 
-onUploadDone((upload) => release(upload.album));
+export function startMediaWrites() {
+  onUploadDone((upload) => release(upload.album));
+}
 
 function mediaSend(args: Args): Message {
   const input = args.input as SendInput;

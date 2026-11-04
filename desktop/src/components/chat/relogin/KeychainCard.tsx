@@ -1,12 +1,12 @@
-import { memo, useEffect, useState } from 'react';
+import { memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { chatBridge } from '../../../lib/chat/bridge';
 import { KeyRound, Loader2, RefreshCw } from '../../../lib/icons';
 import { usePerfMode } from '../../../lib/perf';
 import { isLinux, isMac } from '../../../lib/platform';
+import { useChatStore } from '../../../stores/chat';
 import { GlassCard } from '../../ui/GlassCard';
 
-const PENDING_MS = 4_000;
 let retries = 0;
 
 function vaultKey(): string {
@@ -18,23 +18,19 @@ function vaultKey(): string {
 export const KeychainCard = memo(function KeychainCard() {
   const { t } = useTranslation();
   const perf = usePerfMode();
-  const [pending, setPending] = useState(false);
+  const status = useChatStore((state) => state.status);
+  const [askedAt, setAskedAt] = useState<typeof status | undefined>(undefined);
   const [failed, setFailed] = useState(false);
+  const pending = askedAt === status;
   const again = retries > 0;
-
-  useEffect(() => {
-    if (!pending) return;
-    const timer = setTimeout(() => setPending(false), PENDING_MS);
-    return () => clearTimeout(timer);
-  }, [pending]);
 
   const retry = () => {
     if (pending) return;
     retries += 1;
     setFailed(false);
-    setPending(true);
+    setAskedAt(status);
     chatBridge.keychainRetry().catch(() => {
-      setPending(false);
+      setAskedAt(undefined);
       setFailed(true);
     });
   };

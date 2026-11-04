@@ -12,7 +12,7 @@ import { joinSession } from '../../../lib/together/session';
 import { useTogetherStore } from '../../../stores/together';
 import { BackdropThumb, hasBackdropThumb } from '../room/BackdropThumb';
 import { ArtImage } from '../room/perks/ArtImage';
-import { accentRgb, roomArt } from '../room/perks/perks';
+import { accentRgb, FULL_ON_ART, roomArt } from '../room/perks/perks';
 import { StarMark } from '../room/perks/StarMark';
 import { EmbedShell } from './EmbedShell';
 import { useInView } from './useInView';
@@ -58,9 +58,6 @@ function Perforation({ edge }: { edge: number }) {
   );
 }
 
-const SOLID_FULL = {
-  background: 'color-mix(in srgb, var(--color-amber-300) 12%, rgb(var(--paper)))',
-};
 const SOLID_HERE = { background: 'color-mix(in srgb, var(--color-accent) 15%, rgb(var(--paper)))' };
 
 function JoinButton({
@@ -82,7 +79,7 @@ function JoinButton({
         className={`inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-[12px] font-semibold text-amber-200 ${
           overArt ? '' : 'bg-amber-300/[0.12]'
         }`}
-        style={overArt ? SOLID_FULL : undefined}
+        style={overArt ? FULL_ON_ART : undefined}
       >
         <Users size={12} />
         {t('chat.embeds.room.full')}
@@ -187,9 +184,10 @@ export const RoomInviteEmbed = memo(function RoomInviteEmbed({
           </span>
           {!compact && preview && live && (
             <span
-              className={`flex items-center gap-1 text-[11px] font-semibold tabular-nums ${
-                full && !overArt ? 'text-amber-200' : soft
-              }`}
+              className={`flex items-center gap-1 self-start text-[11px] font-semibold tabular-nums ${
+                full ? 'text-amber-200' : soft
+              } ${full && overArt ? '-ml-1.5 rounded-full px-1.5' : ''}`}
+              style={full && overArt ? FULL_ON_ART : undefined}
             >
               <Headphones size={11} />
               {capacity > 0 ? `${preview.listeners}/${capacity}` : preview.listeners}

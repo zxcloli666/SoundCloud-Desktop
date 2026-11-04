@@ -1,9 +1,26 @@
-import { memo } from 'react';
+import { memo, useState } from 'react';
 import type { MyMedia } from '../../../lib/chat/media-types';
+import { BlurImage } from '../media/BlurImage';
 import { ImageOff } from './icons';
 import { placeholderUrl, thumbUrl } from './thumb-url';
 
 const TILTS = [-9, 5, -3, 8, -6];
+
+const FanThumb = memo(function FanThumb({ item }: { item: MyMedia }) {
+  const [shown, setShown] = useState(false);
+  return (
+    <>
+      <BlurImage src={placeholderUrl(item)} covered={shown} zoom="" />
+      <img
+        src={thumbUrl(item)}
+        alt=""
+        draggable={false}
+        onLoad={() => setShown(true)}
+        className="absolute inset-0 size-full object-cover"
+      />
+    </>
+  );
+});
 
 export const ThumbFan = memo(function ThumbFan({ items }: { items: MyMedia[] }) {
   const shown = items.slice(0, TILTS.length);
@@ -20,17 +37,7 @@ export const ThumbFan = memo(function ThumbFan({ items }: { items: MyMedia[] }) 
               <ImageOff size={16} />
             </span>
           ) : (
-            <span
-              className="block size-full bg-cover bg-center"
-              style={{ backgroundImage: `url("${placeholderUrl(item)}")` }}
-            >
-              <img
-                src={thumbUrl(item)}
-                alt=""
-                className="size-full object-cover"
-                draggable={false}
-              />
-            </span>
+            <FanThumb item={item} />
           )}
         </span>
       ))}

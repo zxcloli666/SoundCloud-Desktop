@@ -1,5 +1,6 @@
-import { memo, useEffect, useRef } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { BlurImage } from '../BlurImage';
 import { CloudOff, ImageOff } from './icons';
 import type { ViewImage } from './images';
 import { useGone } from './media-state';
@@ -17,6 +18,7 @@ const StripThumb = memo(function StripThumb({
   const { t } = useTranslation();
   const gone = useGone(image.mediaId);
   const ref = useRef<HTMLButtonElement>(null);
+  const [shown, setShown] = useState(false);
   const open = t('chat.gallery.tile.open', { n: image.position + 1, total: image.count });
   const Icon = gone === 'deleted' ? ImageOff : CloudOff;
 
@@ -45,17 +47,17 @@ const StripThumb = memo(function StripThumb({
         </span>
       ) : (
         <>
-          <img
+          <BlurImage
             src={viewUrl(image.conversationId, image.mediaId, 'placeholder')}
-            alt=""
-            draggable={false}
-            className="absolute inset-0 size-full object-cover"
+            covered={shown}
+            zoom=""
           />
           <img
             src={viewUrl(image.conversationId, image.mediaId, 'thumb')}
             alt=""
             draggable={false}
             loading="lazy"
+            onLoad={() => setShown(true)}
             className="absolute inset-0 size-full object-cover"
           />
         </>

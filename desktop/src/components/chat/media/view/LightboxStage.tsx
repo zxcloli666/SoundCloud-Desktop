@@ -8,6 +8,7 @@ import {
   useState,
 } from 'react';
 import { useTranslation } from 'react-i18next';
+import { BlurImage } from '../BlurImage';
 import { fitInside, type Size } from './album-layout';
 import { CloudOff, ImageOff, LoaderCircle, RotateCcw } from './icons';
 import type { ViewImage } from './images';
@@ -180,13 +181,10 @@ export const LightboxStage = memo(function LightboxStage({
               className="absolute inset-0 overflow-hidden rounded-[6px] shadow-[0_24px_80px_rgb(var(--shade)/calc(0.6*var(--shade-alpha)))]"
               style={{ transformOrigin: '50% 50%' }}
             >
-              <img
+              <BlurImage
                 src={viewUrl(conversationId, mediaId, 'placeholder')}
-                alt=""
-                aria-hidden
-                draggable={false}
-                className="absolute inset-0 size-full scale-105 object-cover"
-                style={{ visibility: thumbShown || ready ? 'hidden' : undefined }}
+                covered={thumbShown || ready}
+                zoom="scale-105"
               />
               <img
                 src={viewUrl(conversationId, mediaId, 'thumb')}

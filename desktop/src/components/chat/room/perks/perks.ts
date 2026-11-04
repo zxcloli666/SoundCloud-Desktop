@@ -6,6 +6,9 @@ import { ROOM_CAPACITY, type RoomPerks, type RoomView } from '../../../../lib/to
 export const STAR_CAPACITY = 25;
 export const STAR_MODERATORS = 8;
 export const COVER_URL_MAX = 512;
+export const FULL_ON_ART = {
+  background: 'color-mix(in srgb, var(--color-amber-300) 12%, rgb(var(--paper)))',
+};
 
 export const COVER_ACCENTS = [
   '#ff6a3d',

@@ -3,7 +3,7 @@ set -euo pipefail
 
 OWNER="${CHAT_SHOT_OWNER:-soundcloud-desktop}"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-REMOTE="$ROOT/public/chat-lab-remote.json"
+REMOTE="$ROOT/.chat-lab/remote.json"
 
 usage() {
   cat <<USAGE
@@ -52,11 +52,12 @@ SWIFT
 }
 
 switch_scene() {
-  mkdir -p "$ROOT/public"
+  mkdir -p "$ROOT/.chat-lab"
   local seq
   seq=$(perl -MTime::HiRes=time -e 'printf "%d", time() * 1000')
   printf '{"seq":%s,"scene":"%s","scheme":"%s","perf":"%s","lang":"%s","motion":%s}\n' \
-    "$seq" "$1" "${2:-dark}" "${3:-beauty}" "${4:-ru}" "$([ -n "${5:-}" ] && echo '"reduce"' || echo null)" >"$REMOTE"
+    "$seq" "$1" "${2:-dark}" "${3:-beauty}" "${4:-ru}" "$([ -n "${5:-}" ] && echo '"reduce"' || echo null)" >"$REMOTE.part"
+  mv -f "$REMOTE.part" "$REMOTE"
   echo "$seq"
 }
 

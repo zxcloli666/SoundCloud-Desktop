@@ -1,3 +1,4 @@
+import { invoke } from '@tauri-apps/api/core';
 import ReactDOM from 'react-dom/client';
 import { NEWS } from '../../../lib/constants';
 import { useNewsStore } from '../../../stores/news';
@@ -6,7 +7,7 @@ import { inAppWindow } from './ipc';
 import { createKit } from './kit';
 import { forceReducedMotion } from './motion';
 import { readParams } from './params';
-import { runScene } from './ready';
+import { reportScene, runScene } from './ready';
 import { watchRemote } from './remote';
 import { labScenes } from './scenes';
 import { Toolbar } from './Toolbar';
@@ -32,7 +33,16 @@ function mountToolbar() {
   ReactDOM.createRoot(host).render(<Toolbar />);
 }
 
+async function ipcTaken(): Promise<boolean> {
+  return (await invoke<string>('lab_probe').catch(() => null)) === 'lab';
+}
+
 export async function bootChatLab() {
+  if (inAppWindow() && !(await ipcTaken())) {
+    document.body.textContent = 'chat lab: the app IPC is not mocked, the lab stops here';
+    reportScene('the app IPC is not mocked');
+    return;
+  }
   (window as LabWindow).__chatLabScenes = labScenes.map(({ id, title }) => ({ id, title }));
   applySettings();
   watchRemote();

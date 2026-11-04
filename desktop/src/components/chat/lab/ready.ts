@@ -17,6 +17,15 @@ function imagesDone(): boolean {
   return [...document.images].every((image) => image.complete);
 }
 
+export function reportScene(error?: string) {
+  if (!inAppWindow()) return;
+  import.meta.hot?.send('chat-lab:ready', {
+    state: error ? 'error' : 'ready',
+    seq: readParams().seq ?? '-',
+    error,
+  });
+}
+
 export async function runScene(steps: Step[]) {
   const lab = window as LabWindow;
   lab.__chatLabReady = false;
@@ -32,11 +41,5 @@ export async function runScene(steps: Step[]) {
   }
   document.documentElement.dataset.chatLabReady = lab.__chatLabError ? 'error' : '1';
   lab.__chatLabReady = true;
-  if (inAppWindow()) {
-    import.meta.hot?.send('chat-lab:ready', {
-      state: lab.__chatLabError ? 'error' : 'ready',
-      seq: readParams().seq ?? '-',
-      error: lab.__chatLabError,
-    });
-  }
+  reportScene(lab.__chatLabError);
 }

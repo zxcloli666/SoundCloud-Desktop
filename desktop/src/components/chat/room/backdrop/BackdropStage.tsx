@@ -1,5 +1,5 @@
 import { memo, useEffect, useMemo, useRef, useState } from 'react';
-import { hideOnError } from '../../../../lib/chat/media-url';
+import { BlurImage } from '../../media/BlurImage';
 import type { Luminance } from '../presets/types';
 import { useMotion } from './gate';
 import { measureImage } from './luminance';
@@ -8,6 +8,7 @@ import { scrimAlpha, UNKNOWN_LIGHT } from './scrim';
 import { useSchemeTokens } from './tokens';
 
 const CANVAS_SCALE = 0.5;
+const FADE_MS = 500;
 
 export interface StageProps {
   src: string;
@@ -93,15 +94,7 @@ export const BackdropStage = memo(function BackdropStage({
       className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
       style={{ contain: 'strict' }}
     >
-      {placeholder && (
-        <img
-          src={placeholder}
-          alt=""
-          draggable={false}
-          onError={hideOnError}
-          className="absolute inset-0 h-full w-full scale-110 object-cover"
-        />
-      )}
+      {placeholder && <BlurImage src={placeholder} covered={ready} holdMs={FADE_MS} />}
       <img
         ref={setImage}
         src={src}
@@ -111,8 +104,12 @@ export const BackdropStage = memo(function BackdropStage({
         draggable={false}
         onLoad={(event) => loaded(event.currentTarget)}
         onError={onFail}
-        className="absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ease-[var(--ease-apple)] motion-reduce:transition-none"
-        style={{ opacity: ready ? 1 : 0, transform: motion ? 'scale(1.07)' : undefined }}
+        className="absolute inset-0 h-full w-full object-cover transition-opacity ease-[var(--ease-apple)] motion-reduce:transition-none"
+        style={{
+          opacity: ready ? 1 : 0,
+          transform: motion ? 'scale(1.07)' : undefined,
+          transitionDuration: `${FADE_MS}ms`,
+        }}
       />
       {motion && ready && image && <Motion image={image} tone={motion} held={held} />}
       <Scrim light={light ?? measured} />

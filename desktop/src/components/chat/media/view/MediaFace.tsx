@@ -1,13 +1,15 @@
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { MediaId } from '../../../../lib/chat/media-types';
-import { hideOnError } from '../../../../lib/chat/media-url';
 import type { ConvId } from '../../../../lib/chat/types';
+import { BlurImage } from '../BlurImage';
 import { CloudOff, ImageOff, RotateCcw } from './icons';
 import { type LoadAttempt, useLoadAttempt } from './load-attempt';
 import { type GoneState, useGone } from './media-state';
 import { useCalmMotion } from './motion';
 import { viewUrl } from './urls';
+
+const THUMB_FADE_MS = 280;
 
 export interface ThumbState extends LoadAttempt {
   gone: GoneState | null;
@@ -103,13 +105,10 @@ export const MediaFace = memo(function MediaFace({
   return (
     <>
       <span aria-hidden className="absolute inset-0 bg-ink/[0.06]" />
-      <img
+      <BlurImage
         src={viewUrl(conversationId, mediaId, 'placeholder')}
-        alt=""
-        aria-hidden
-        draggable={false}
-        onError={hideOnError}
-        className="absolute inset-0 size-full scale-110 object-cover"
+        covered={thumb.phase === 'ready'}
+        holdMs={calm ? 0 : THUMB_FADE_MS}
       />
       {thumb.phase === 'loading' && !calm && <Shimmer />}
       <img
@@ -123,7 +122,7 @@ export const MediaFace = memo(function MediaFace({
         className="chat-media-motion absolute inset-0 size-full object-cover"
         style={{
           opacity: thumb.phase === 'ready' ? 1 : 0,
-          transition: calm ? undefined : 'opacity 280ms ease-out',
+          transition: calm ? undefined : `opacity ${THUMB_FADE_MS}ms ease-out`,
         }}
       />
       {thumb.phase === 'failed' && <FailedFace compact={compact} />}

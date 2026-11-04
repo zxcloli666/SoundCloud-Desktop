@@ -43,6 +43,8 @@ function netFetch(args: Record<string, unknown>): Uint8Array {
 
 export function plainCommand(cmd: string, args: Record<string, unknown> | undefined): unknown {
   switch (cmd) {
+    case 'lab_probe':
+      return 'lab';
     case 'get_server_ports':
       return [0, 0];
     case 'auth_status':

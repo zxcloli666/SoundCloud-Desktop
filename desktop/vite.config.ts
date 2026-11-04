@@ -2,26 +2,43 @@ import { defineConfig, type Plugin, searchForWorkspaceRoot } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { readFileSync, realpathSync } from "node:fs";
+import { resolve } from "node:path";
 
 // @ts-expect-error process is a nodejs global
 const host = process.env.TAURI_DEV_HOST;
 const pkg = JSON.parse(readFileSync("package.json", "utf-8"));
 const chatLab = Boolean(process.env.VITE_CHAT_LAB);
 
-const chatLabReady: Plugin = {
-  name: "chat-lab-ready",
+const chatLabRemote = resolve(".chat-lab/remote.json");
+
+const chatLabServer: Plugin = {
+  name: "chat-lab-server",
+  apply: "serve",
   configureServer(server) {
     server.ws.on("chat-lab:ready", (data: { state: string; seq: string; error?: string }) => {
       server.config.logger.info(`[chat-lab] ${data.state} ${data.seq}${data.error ? ` ${data.error}` : ""}`);
     });
+    server.middlewares.use("/chat-lab-remote.json", (_req, res) => {
+      let body: Buffer;
+      try {
+        body = readFileSync(chatLabRemote);
+      } catch {
+        res.statusCode = 404;
+        res.end();
+        return;
+      }
+      res.setHeader("content-type", "application/json");
+      res.setHeader("cache-control", "no-store");
+      res.end(body);
+    });
   },
 };
 
-export default defineConfig(async () => ({
+export default defineConfig(async ({ command }) => ({
   define: {
     __APP_VERSION__: JSON.stringify(pkg.version),
   },
-  plugins: [react(), tailwindcss(), ...(chatLab ? [chatLabReady] : [])],
+  plugins: [react(), tailwindcss(), ...(chatLab ? [chatLabServer] : [])],
   build: {
     sourcemap: 'hidden',
     rollupOptions: {
@@ -67,10 +84,11 @@ export default defineConfig(async () => ({
         }
       : undefined,
     watch: {
-      ignored: ["**/src-tauri/**"],
+      ignored: ["**/src-tauri/**", "**/.chat-lab/**"],
     },
-    fs: {
-      allow: [searchForWorkspaceRoot(process.cwd()), realpathSync("node_modules")],
-    },
+    fs:
+      command === "serve"
+        ? { allow: [searchForWorkspaceRoot(process.cwd()), realpathSync("node_modules")] }
+        : undefined,
   },
 }));

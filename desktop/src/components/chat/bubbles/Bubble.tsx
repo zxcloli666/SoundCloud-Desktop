@@ -4,7 +4,7 @@ import { Lock, Reply } from '../../../lib/chat/icons';
 import { senderColor, type Tick } from '../../../lib/chat/render';
 import type { Message } from '../../../lib/chat/types';
 import { Ban, Sparkles } from '../../../lib/icons';
-import { EmbedCard } from '../embeds/EmbedCard';
+import { CheckedEmbedCard } from '../embeds/EmbedCard';
 import { MediaBubble, useHasMedia } from '../media/MediaBubble';
 import { useThread } from '../thread/context';
 import { BubbleMeta } from './BubbleMeta';
@@ -102,7 +102,7 @@ export const Bubble = memo(function Bubble({
   const media = useHasMedia(message);
   const radius = corners(message.mine, first, last);
   const embeds = useMemo(
-    () => message.embeds.filter((embed) => receivedEmbed(embed) !== null),
+    () => message.embeds.flatMap((embed) => receivedEmbed(embed) ?? []),
     [message.embeds],
   );
   const { body } = message;
@@ -149,7 +149,7 @@ export const Bubble = memo(function Bubble({
       {embeds.length > 0 && (
         <div className={`flex w-[360px] max-w-full flex-col gap-1.5 ${hasText ? 'mt-1.5' : ''}`}>
           {embeds.map((embed, index) => (
-            <EmbedCard key={`${embed.urn}:${index}`} embed={embed} mine={message.mine} />
+            <CheckedEmbedCard key={`${embed.urn}:${index}`} embed={embed} mine={message.mine} />
           ))}
         </div>
       )}

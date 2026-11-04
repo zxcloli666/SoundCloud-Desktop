@@ -40,4 +40,4 @@ worker/venv/
 .pnpm-store/
 
 # chat lab remote control (DEV only)
-/desktop/public/chat-lab-remote.json
+/desktop/.chat-lab/

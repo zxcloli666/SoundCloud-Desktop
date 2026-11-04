@@ -1,13 +1,14 @@
 import { type MouseEvent, memo, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { MyMedia } from '../../../lib/chat/media-types';
-import { hideOnError } from '../../../lib/chat/media-url';
 import { Check, Clock } from '../../../lib/icons';
+import { BlurImage } from '../media/BlurImage';
 import { useFormatSize } from './bytes';
 import { ImageOff } from './icons';
 import { placeholderUrl, thumbUrl } from './thumb-url';
 
 const RETRY_MS = 4000;
+const TILE_FADE_MS = 240;
 const RETRIES = 2;
 
 function Unavailable({ text }: { text: string }) {
@@ -104,31 +105,28 @@ export const MediaTile = memo(function MediaTile({
         }}
       >
         {lost ? null : (
-          <img
-            src={placeholderUrl(item)}
-            alt=""
-            aria-hidden
-            draggable={false}
-            onError={hideOnError}
-            className="absolute inset-0 size-full scale-110 object-cover"
-          />
-        )}
-        {lost ? null : (
-          <img
-            key={attempt}
-            src={thumbUrl(item)}
-            alt=""
-            loading="lazy"
-            decoding="async"
-            draggable={false}
-            onLoad={() => setState('ready')}
-            onError={() => setState('failed')}
-            className="absolute inset-0 size-full object-cover"
-            style={{
-              opacity: state === 'ready' ? 1 : 0,
-              transition: reduced ? undefined : 'opacity 240ms ease',
-            }}
-          />
+          <>
+            <BlurImage
+              src={placeholderUrl(item)}
+              covered={state === 'ready'}
+              holdMs={reduced ? 0 : TILE_FADE_MS}
+            />
+            <img
+              key={attempt}
+              src={thumbUrl(item)}
+              alt=""
+              loading="lazy"
+              decoding="async"
+              draggable={false}
+              onLoad={() => setState('ready')}
+              onError={() => setState('failed')}
+              className="absolute inset-0 size-full object-cover"
+              style={{
+                opacity: state === 'ready' ? 1 : 0,
+                transition: reduced ? undefined : `opacity ${TILE_FADE_MS}ms ease`,
+              }}
+            />
+          </>
         )}
         {state === 'loading' && !lost && <span className="absolute inset-0 skeleton-shimmer" />}
         {broken && (

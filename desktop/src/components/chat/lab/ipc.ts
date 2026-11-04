@@ -3,6 +3,7 @@ import { mockIPC, mockWindows } from '@tauri-apps/api/mocks';
 import { addListener, isChatEvent, removeListener } from './bus';
 import { runChatCommand } from './handlers';
 import { routeIpcFetch } from './hybrid';
+import { startMediaWrites } from './media-writes';
 import { installLabPictures } from './pictures';
 import { plainCommand } from './plain';
 import { initWorld } from './world';
@@ -57,6 +58,7 @@ async function labCommand(
 
 export function installChatLabIpc() {
   initWorld();
+  startMediaWrites();
   installLabPictures();
   appWindow = '__TAURI_INTERNALS__' in window;
   if (appWindow) {

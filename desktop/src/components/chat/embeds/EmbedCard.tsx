@@ -12,22 +12,25 @@ export interface EmbedCardProps {
   compact?: boolean;
 }
 
-export const EmbedCard = memo(function EmbedCard({
+export const EmbedCard = memo(function EmbedCard({ embed, mine, compact }: EmbedCardProps) {
+  const safe = useMemo(() => receivedEmbed(embed), [embed]);
+  return safe ? <CheckedEmbedCard embed={safe} mine={mine} compact={compact} /> : null;
+});
+
+export const CheckedEmbedCard = memo(function CheckedEmbedCard({
   embed,
   mine = false,
   compact = false,
 }: EmbedCardProps) {
-  const safe = useMemo(() => receivedEmbed(embed), [embed]);
-  if (!safe) return null;
-  switch (safe.kind) {
+  switch (embed.kind) {
     case 'track':
-      return <TrackEmbed embed={safe} mine={mine} compact={compact} />;
+      return <TrackEmbed embed={embed} mine={mine} compact={compact} />;
     case 'playlist':
-      return <PlaylistEmbed embed={safe} mine={mine} compact={compact} />;
+      return <PlaylistEmbed embed={embed} mine={mine} compact={compact} />;
     case 'user':
-      return <UserEmbed embed={safe} mine={mine} compact={compact} />;
+      return <UserEmbed embed={embed} mine={mine} compact={compact} />;
     case 'room_invite':
-      return <RoomInviteEmbed embed={safe} mine={mine} compact={compact} />;
+      return <RoomInviteEmbed embed={embed} mine={mine} compact={compact} />;
     default:
       return null;
   }
