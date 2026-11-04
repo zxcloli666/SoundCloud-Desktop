@@ -47,6 +47,7 @@
     "emptyHint": "Albums from this chat will show up here",
     "failed": "Couldn't load images",
     "moreFailed": "Couldn't load more",
-    "retry": "Retry"
+    "retry": "Retry",
+    "older": "Search earlier"
   }
 }

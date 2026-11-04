@@ -85,7 +85,8 @@ export const FailedFace = memo(function FailedFace({ compact }: { compact: boole
   return (
     <span
       data-scheme="dark"
-      className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 bg-paper/55 text-ink-85"
+      className="chat-media-motion absolute inset-0 flex flex-col items-center justify-center gap-1.5 bg-paper/55 text-ink-85"
+      style={{ animation: 'chat-media-fade 200ms ease-out 250ms both' }}
     >
       <span className="flex size-8 items-center justify-center rounded-full bg-paper/70 ring-1 ring-ink/15">
         <RotateCcw size={15} />

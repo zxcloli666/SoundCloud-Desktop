@@ -88,6 +88,7 @@ export const MediaBubble = memo(function MediaBubble({
   return (
     <div className={`first:-mt-[4px] not-first:mt-1 ${solo ? '-mb-[4px]' : 'mb-1.5'}`}>
       <SentAlbum
+        key={message.seq === null ? 'local' : 'sent'}
         conversationId={message.conversationId}
         attachments={message.attachments}
         overlay={overlay}

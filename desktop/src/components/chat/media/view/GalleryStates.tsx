@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { CircleAlert, Images, LoaderCircle, RotateCcw } from './icons';
+import { CircleAlert, History, Images, LoaderCircle, RotateCcw } from './icons';
 import { Shimmer } from './MediaFace';
 import { useCalmMotion } from './motion';
 
@@ -38,7 +38,7 @@ export const GallerySkeleton = memo(function GallerySkeleton() {
   );
 });
 
-export const GalleryEmpty = memo(function GalleryEmpty() {
+export const GalleryEmpty = memo(function GalleryEmpty({ onOlder }: { onOlder?: () => void }) {
   const { t } = useTranslation();
   return (
     <div
@@ -58,6 +58,16 @@ export const GalleryEmpty = memo(function GalleryEmpty() {
       <span className="max-w-[240px] text-[12px] leading-snug text-ink-40">
         {t('chat.gallery.grid.emptyHint')}
       </span>
+      {onOlder && (
+        <button
+          type="button"
+          onClick={onOlder}
+          className="flex h-8 cursor-pointer items-center gap-1.5 rounded-full bg-ink/[0.06] px-3.5 text-[12px] font-semibold text-ink-75 transition-colors duration-150 hover:bg-ink/[0.1] focus-visible:outline-2 focus-visible:outline-[var(--color-accent)]"
+        >
+          <History size={13} />
+          {t('chat.gallery.grid.older')}
+        </button>
+      )}
     </div>
   );
 });

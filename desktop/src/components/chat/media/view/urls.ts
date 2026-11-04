@@ -11,7 +11,7 @@ export function viewUrl(
   attempt = 0,
 ): string {
   const url = chatMediaUrl(conversationId, mediaId, variant as MediaVariant);
-  return attempt > 0 ? `${url}?retry=${attempt}` : url;
+  return attempt > 0 && !url.startsWith('data:') ? `${url}?retry=${attempt}` : url;
 }
 
 export function warmUrl(url: string) {

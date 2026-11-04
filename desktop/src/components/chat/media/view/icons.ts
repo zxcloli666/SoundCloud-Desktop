@@ -3,6 +3,7 @@ import {
   ChevronRight as _ChevronRight,
   CircleAlert as _CircleAlert,
   CloudOff as _CloudOff,
+  History as _History,
   ImageOff as _ImageOff,
   Images as _Images,
   LoaderCircle as _LoaderCircle,
@@ -18,6 +19,7 @@ export const ChevronLeft = memo(_ChevronLeft);
 export const ChevronRight = memo(_ChevronRight);
 export const CircleAlert = memo(_CircleAlert);
 export const CloudOff = memo(_CloudOff);
+export const History = memo(_History);
 export const ImageOff = memo(_ImageOff);
 export const Images = memo(_Images);
 export const LoaderCircle = memo(_LoaderCircle);

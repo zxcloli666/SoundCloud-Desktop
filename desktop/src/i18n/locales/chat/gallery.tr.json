@@ -47,6 +47,7 @@
     "emptyHint": "Bu sohbetteki albümler burada görünecek",
     "failed": "Görseller yüklenemedi",
     "moreFailed": "Daha fazlası yüklenemedi",
-    "retry": "Yeniden dene"
+    "retry": "Yeniden dene",
+    "older": "Daha eskisini ara"
   }
 }

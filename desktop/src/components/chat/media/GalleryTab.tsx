@@ -1,4 +1,4 @@
-import { memo, type RefObject, useCallback, useEffect } from 'react';
+import { memo, type RefObject, useCallback, useEffect, useState } from 'react';
 import type { Seq } from '../../../lib/chat/types';
 import { useThread } from '../thread/context';
 import { GalleryGrid } from './view/GalleryGrid';
@@ -6,6 +6,8 @@ import { GalleryEmpty, GalleryFailed, GallerySkeleton, GalleryTail } from './vie
 import { showLightbox } from './view/lightbox-root';
 import { useMediaView } from './view/media-state';
 import { useGallery } from './view/useGallery';
+
+const AUTO_SCANS = 5;
 
 export const GalleryTab = memo(function GalleryTab({
   scrollRef,
@@ -38,16 +40,22 @@ export const GalleryTab = memo(function GalleryTab({
     if (tail === 'idle') loadMore();
   }, [tail, loadMore]);
 
+  const [scans, setScans] = useState(0);
+  const scanning = items.length === 0 && more && tail === 'idle' && scans < AUTO_SCANS;
+
   useEffect(() => {
-    if (load === 'ready' && items.length === 0 && more && tail === 'idle') loadMore();
-  }, [load, items.length, more, tail, loadMore]);
+    if (load !== 'ready' || !scanning) return;
+    setScans((count) => count + 1);
+    loadMore();
+  }, [load, scanning, loadMore]);
 
   if (load === 'failed') return <GalleryFailed onRetry={gallery.reload} />;
-  if (load === 'loading' || (items.length === 0 && more && tail !== 'failed')) {
+  if (load === 'loading' || scanning || (items.length === 0 && tail === 'loading')) {
     return <GallerySkeleton />;
   }
   if (items.length === 0) {
-    return tail === 'failed' ? <GalleryFailed onRetry={loadMore} /> : <GalleryEmpty />;
+    if (tail === 'failed') return <GalleryFailed onRetry={loadMore} />;
+    return <GalleryEmpty onOlder={more ? () => setScans(0) : undefined} />;
   }
 
   return (
