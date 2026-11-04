@@ -6,6 +6,7 @@ use std::time::Duration;
 use crate::aec::Aec;
 use crate::capture::Event;
 use crate::device::Device;
+use crate::echo_gate::EchoGate;
 use crate::frames::{FRAME, Frame, Framer, energy};
 use crate::ref_sync::RefSync;
 use crate::routing::Purpose;
@@ -21,6 +22,7 @@ pub struct Lane {
     framer: Option<(u32, Framer)>,
     aec: Option<Aec>,
     refsync: RefSync,
+    gate: EchoGate,
     level_energy: f32,
     level_frames: u32,
     alive: bool,
@@ -34,6 +36,7 @@ impl Lane {
             framer: None,
             aec,
             refsync,
+            gate: EchoGate::new(),
             level_energy: 0.0,
             level_frames: 0,
             alive: true,
@@ -73,7 +76,7 @@ impl Lane {
         if aec.render(&reference).is_err() || aec.capture(frame, &mut out).is_err() {
             return *frame;
         }
-        out
+        self.gate.mix(&reference, frame, &out)
     }
 
     fn level(&mut self, frame: &Frame, events: &Sender<Event>) -> bool {

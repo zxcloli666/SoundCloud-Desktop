@@ -40,7 +40,7 @@ fn hear(path: &str, language: Language) -> Option<(Vec<String>, voice_engine::Co
     let config = Config {
         enabled: true,
         language,
-        echo: Echo::Off,
+        echo: Echo::On,
         ..Config::default()
     };
     rig.engine.send(Command::Apply(Box::new(config)));
@@ -123,7 +123,7 @@ fn a_reply_is_spoken_with_kokoro_and_drives_speech_levels() {
     );
     let mut config = Config {
         enabled: true,
-        echo: Echo::Off,
+        echo: Echo::On,
         ..Config::default()
     };
     config.speak.voice = "af_heart".into();

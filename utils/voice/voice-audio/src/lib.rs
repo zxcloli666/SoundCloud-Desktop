@@ -2,6 +2,7 @@ pub mod aec;
 pub mod capture;
 pub mod device;
 pub mod devices;
+pub mod echo_gate;
 pub mod error;
 pub mod frames;
 pub mod permission;
