@@ -1,3 +1,4 @@
+pub mod backdrop;
 pub mod badge;
 pub mod commands;
 pub mod download;

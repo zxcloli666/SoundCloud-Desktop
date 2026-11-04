@@ -2,6 +2,7 @@ import type {
   AvatarChange,
   MediaConfig,
   MessageAttachment,
+  PublicBackdrop,
   RoomCover,
   RoomImagesPolicy,
 } from './media-types';
@@ -503,6 +504,7 @@ export interface RoomPreview {
   capacity: number;
   starHost: boolean;
   cover: RoomCover | null;
+  backdrop?: PublicBackdrop | null;
   alive: boolean;
 }
 

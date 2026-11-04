@@ -16,9 +16,9 @@ use sc_chat::{
     ConversationPatch, ConversationSummary, CreateConversation, DeleteScope, Device, DeviceId,
     Embed, EmbedPage, EmbedsQuery, HistoryPage, HistoryQuery, Invite, InviteOptions, LinkClaimed,
     LinkCreated, LinkPoll, ListQuery, LoginBegin, LoginPoll, LoginTarget, MediaUploadView, Member,
-    MemberRole, Message, MessageTarget, MineQuery, NotifyPrefs, ReportInput, RichText,
-    RoomModeration, RoomPreview, RoomSettingsPatch, SearchHit, SearchQuery, SendInput, Seq,
-    SettingsPatch, ThreadSnapshot, UserCard, UserId,
+    MemberRole, Message, MessageTarget, MineQuery, NotifyPrefs, ReportInput, ReportReason,
+    RichText, RoomModeration, RoomPreview, RoomSettingsPatch, SearchHit, SearchQuery, SendInput,
+    Seq, SettingsPatch, ThreadSnapshot, UserCard, UserId,
 };
 use tauri::State;
 use uuid::Uuid;
@@ -481,9 +481,90 @@ pub async fn chat_media_urls(
 pub async fn chat_media_attach(
     state: State<'_, ChatState>,
     conversation_id: ConvId,
+    album: Option<Uuid>,
     paths: Vec<String>,
 ) -> Result<Vec<MediaUploadView>, ChatError> {
-    media::attach(&state, conversation_id, paths).await
+    media::attach(&state, conversation_id, album, paths).await
+}
+
+#[tauri::command]
+pub async fn chat_media_attach_data(
+    state: State<'_, ChatState>,
+    request: tauri::ipc::Request<'_>,
+) -> Result<Vec<MediaUploadView>, ChatError> {
+    let header = |name: &str| {
+        request
+            .headers()
+            .get(name)
+            .and_then(|value| value.to_str().ok())
+            .filter(|value| !value.is_empty())
+            .map(Uuid::parse_str)
+            .transpose()
+            .map_err(|_| ChatError::Invalid)
+    };
+    let conversation_id = header("x-chat-conversation")?.ok_or(ChatError::Invalid)?;
+    let album = header("x-chat-album")?;
+    let tauri::ipc::InvokeBody::Raw(data) = request.body() else {
+        return Err(ChatError::Invalid);
+    };
+    media::attach_data(&state, conversation_id, album, data.clone()).await
+}
+
+#[tauri::command]
+pub async fn chat_media_send(
+    state: State<'_, ChatState>,
+    input: SendInput,
+    album: Uuid,
+) -> Result<Message, ChatError> {
+    media::send(&state, input, album).await
+}
+
+#[tauri::command]
+pub async fn chat_media_album_cancel(
+    state: State<'_, ChatState>,
+    album: Uuid,
+) -> Result<(), ChatError> {
+    media::album_cancel(&state, album).await
+}
+
+#[tauri::command]
+pub async fn chat_media_avatar(
+    state: State<'_, ChatState>,
+    conversation_id: ConvId,
+    path: String,
+) -> Result<MediaUploadView, ChatError> {
+    media::avatar(&state, conversation_id, path).await
+}
+
+#[tauri::command]
+pub async fn chat_room_backdrop(
+    state: State<'_, ChatState>,
+    code: String,
+    conversation_id: ConvId,
+    preset: Option<String>,
+) -> Result<(), ChatError> {
+    media::backdrop(&state, code, conversation_id, preset).await
+}
+
+#[tauri::command]
+pub async fn chat_room_backdrop_upload(
+    state: State<'_, ChatState>,
+    code: String,
+    conversation_id: ConvId,
+    path: String,
+) -> Result<MediaUploadView, ChatError> {
+    media::backdrop_upload(&state, code, conversation_id, path).await
+}
+
+#[tauri::command]
+pub async fn chat_room_backdrop_report(
+    state: State<'_, ChatState>,
+    conversation_id: ConvId,
+    media_id: Uuid,
+    reason: ReportReason,
+    comment: Option<String>,
+) -> Result<(), ChatError> {
+    media::backdrop_report(&state, conversation_id, media_id, reason, comment).await
 }
 
 #[tauri::command]

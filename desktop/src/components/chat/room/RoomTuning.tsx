@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { SlidersHorizontal } from '../../../lib/icons';
 import type { RoomView } from '../../../lib/together/types';
 import { CrossfadeChoice } from '../../together/CrossfadeChoice';
+import { BackdropEntry } from './BackdropEntry';
 import { RoomCapacity } from './RoomCapacity';
 import { RoomPopover } from './RoomPopover';
 
@@ -28,6 +29,7 @@ export const RoomTuning = memo(function RoomTuning({ room }: { room: RoomView })
       <div className="py-1.5">
         <CrossfadeChoice />
         <RoomCapacity room={room} />
+        <BackdropEntry room={room} />
       </div>
     </RoomPopover>
   );

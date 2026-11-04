@@ -2,7 +2,7 @@ import type { ConvId, Millis } from './types';
 
 export type MediaId = string;
 export type MediaVariant = 'thumb' | 'image';
-export type MediaKind = 'image' | 'avatar';
+export type MediaKind = 'image' | 'avatar' | 'backdrop';
 
 export interface MediaLimits {
   imageMaxBytes: number;
@@ -131,3 +131,25 @@ export interface RoomCover {
   url: string;
   accent: number;
 }
+
+export const BACKDROP_PRESET_IDS = [
+  'aurora',
+  'vinyl',
+  'sunset-clouds',
+  'ocean-rays',
+  'dunes',
+  'misty-forest',
+  'snow-lamp',
+  'satin',
+  'paper',
+  'peach-clouds',
+  'pastel-lake',
+  'watercolor',
+  'candy-sky',
+] as const;
+
+export type BackdropPresetId = (typeof BACKDROP_PRESET_IDS)[number];
+
+export type RoomBackdrop = { kind: 'preset'; id: string } | { kind: 'image'; mediaId: MediaId };
+
+export type PublicBackdrop = { kind: 'preset'; id: string };

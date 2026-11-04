@@ -1,5 +1,10 @@
 import type { Track } from '../../stores/player';
-import type { RoomCover, RoomImagesPolicy } from '../chat/media-types';
+import type {
+  PublicBackdrop,
+  RoomBackdrop,
+  RoomCover,
+  RoomImagesPolicy,
+} from '../chat/media-types';
 
 export const ROOM_CAPACITY = 10;
 
@@ -56,6 +61,8 @@ export interface RoomView {
   perks?: RoomPerks;
   cover?: RoomCover | null;
   roomImages?: RoomImagesPolicy;
+  backdrop?: RoomBackdrop | null;
+  backdropCooldownUntil?: number | null;
 }
 
 export interface OpenRoomTrack {
@@ -75,6 +82,7 @@ export interface OpenRoom {
   full: boolean;
   starHost?: boolean;
   cover?: RoomCover | null;
+  backdrop?: PublicBackdrop | null;
   createdAt: number;
 }
 

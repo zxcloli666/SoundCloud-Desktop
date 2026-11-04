@@ -2,12 +2,12 @@ use sc_chat::api::wire::{
     DeleteAnswer, MediaSelection, MediaUsage, MinePage, RestoreAnswer, UrlsAnswer,
 };
 use sc_chat::media::queue;
-use sc_chat::{ChatResult, ConvId, MediaUploadView, MineQuery};
+use sc_chat::{ChatResult, ConvId, MediaUploadView, Message, MineQuery, ReportReason, SendInput};
 use uuid::Uuid;
 
 use super::reads::blocking;
 use crate::chat::state::ChatState;
-use crate::chat::upload;
+use crate::chat::{backdrop, upload};
 
 pub async fn usage(state: &ChatState) -> ChatResult<MediaUsage> {
     state.api.media_usage().await
@@ -36,9 +36,63 @@ pub async fn urls(
 pub async fn attach(
     state: &ChatState,
     conversation_id: ConvId,
+    album: Option<Uuid>,
     paths: Vec<String>,
 ) -> ChatResult<Vec<MediaUploadView>> {
-    upload::enqueue(state, conversation_id, paths).await
+    upload::enqueue(state, conversation_id, album, paths).await
+}
+
+pub async fn attach_data(
+    state: &ChatState,
+    conversation_id: ConvId,
+    album: Option<Uuid>,
+    data: Vec<u8>,
+) -> ChatResult<Vec<MediaUploadView>> {
+    upload::enqueue_data(state, conversation_id, album, data).await
+}
+
+pub async fn send(state: &ChatState, input: SendInput, album: Uuid) -> ChatResult<Message> {
+    upload::send_album(state, input, album).await
+}
+
+pub async fn album_cancel(state: &ChatState, album: Uuid) -> ChatResult<()> {
+    upload::cancel_album(state, album).await
+}
+
+pub async fn avatar(
+    state: &ChatState,
+    conversation_id: ConvId,
+    path: String,
+) -> ChatResult<MediaUploadView> {
+    upload::avatar(state, conversation_id, path).await
+}
+
+pub async fn backdrop(
+    state: &ChatState,
+    code: String,
+    conversation_id: ConvId,
+    preset: Option<String>,
+) -> ChatResult<()> {
+    backdrop::set_preset(state, code, conversation_id, preset).await
+}
+
+pub async fn backdrop_upload(
+    state: &ChatState,
+    code: String,
+    conversation_id: ConvId,
+    path: String,
+) -> ChatResult<MediaUploadView> {
+    backdrop::upload(state, code, conversation_id, path).await
+}
+
+pub async fn backdrop_report(
+    state: &ChatState,
+    conversation_id: ConvId,
+    media_id: Uuid,
+    reason: ReportReason,
+    comment: Option<String>,
+) -> ChatResult<()> {
+    backdrop::report(state, conversation_id, media_id, reason, comment).await
 }
 
 pub async fn uploads(state: &ChatState) -> ChatResult<Vec<MediaUploadView>> {

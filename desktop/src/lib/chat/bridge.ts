@@ -1,5 +1,6 @@
 import { trackedInvoke as invoke } from '../diagnostics';
 import type {
+  BackdropPresetId,
   DeleteAnswer,
   MediaId,
   MediaSelection,
@@ -43,6 +44,7 @@ import type {
   MessageTarget,
   NotifyPrefs,
   ReportInput,
+  ReportReason,
   RichText,
   RoomModeration,
   RoomPreview,
@@ -144,13 +146,32 @@ export const chatBridge = {
     invoke<RestoreAnswer>('chat_media_restore', { selection }),
   mediaUrls: (conversationId: ConvId | null, ids: MediaId[]) =>
     invoke<UrlsAnswer>('chat_media_urls', { conversationId, ids }),
-  mediaAttach: (conversationId: ConvId, paths: string[]) =>
-    invoke<UploadView[]>('chat_media_attach', { conversationId, paths }),
+  mediaAttach: (conversationId: ConvId, paths: string[], album: string | null = null) =>
+    invoke<UploadView[]>('chat_media_attach', { conversationId, album, paths }),
+  mediaAttachData: (conversationId: ConvId, data: Uint8Array, album: string | null = null) =>
+    invoke<UploadView[]>('chat_media_attach_data', data, undefined, {
+      headers: { 'x-chat-conversation': conversationId, 'x-chat-album': album ?? '' },
+    }),
+  mediaSend: (input: SendInput, album: string) =>
+    invoke<Message>('chat_media_send', { input, album }),
+  mediaAlbumCancel: (album: string) => invoke<void>('chat_media_album_cancel', { album }),
+  mediaAvatar: (conversationId: ConvId, path: string) =>
+    invoke<UploadView>('chat_media_avatar', { conversationId, path }),
   mediaUploads: () => invoke<UploadView[]>('chat_media_uploads'),
   mediaUploadRetry: (id: string) => invoke<void>('chat_media_upload_retry', { id }),
   mediaUploadCancel: (id: string) => invoke<void>('chat_media_upload_cancel', { id }),
   mediaCacheSize: () => invoke<number>('chat_media_cache_size'),
   mediaCacheClear: () => invoke<number>('chat_media_cache_clear'),
+  roomBackdrop: (code: string, conversationId: ConvId, preset: BackdropPresetId | null) =>
+    invoke<void>('chat_room_backdrop', { code, conversationId, preset }),
+  roomBackdropUpload: (code: string, conversationId: ConvId, path: string) =>
+    invoke<UploadView>('chat_room_backdrop_upload', { code, conversationId, path }),
+  roomBackdropReport: (
+    conversationId: ConvId,
+    mediaId: MediaId,
+    reason: ReportReason,
+    comment: string | null,
+  ) => invoke<void>('chat_room_backdrop_report', { conversationId, mediaId, reason, comment }),
 
   logout: () => invoke<void>('chat_logout'),
   notifyPrefs: (prefs: NotifyPrefs | null) => invoke<NotifyPrefs>('chat_notify_prefs', { prefs }),
