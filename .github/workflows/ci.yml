@@ -92,6 +92,9 @@ jobs:
       - name: Colour scheme
         run: node scripts/check-scheme.mjs
 
+      - name: Node tests
+        run: node --experimental-strip-types --test 'src/**/*.test.mjs' 'tests/*.test.ts'
+
       - name: Types and bundle
         run: pnpm build
 
@@ -176,6 +179,12 @@ jobs:
           timeout 120 sh -c 'until curl -s -o /dev/null http://127.0.0.1:8333/; do sleep 1; done'
           echo 's3.bucket.create -name scd-chat' | docker exec -i seaweed weed shell > /dev/null
           cargo test --lib -- --ignored chat::upload::tests::seaweed
+
+      - name: Chat lab build
+        if: runner.os == 'Linux'
+        run: |
+          grep -q '^chat-lab = ' Cargo.toml || { echo "no chat-lab feature yet"; exit 0; }
+          cargo test --no-run --features chat-lab
 
       - name: Save targets
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
