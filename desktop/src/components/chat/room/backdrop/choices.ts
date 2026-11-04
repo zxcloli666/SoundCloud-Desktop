@@ -39,12 +39,11 @@ export function photoState(
   cooldownMs: number,
   now: number,
 ): PhotoState {
-  const fresh =
-    upload && !(upload.state === 'committed' && now - upload.updatedAt > STALE_COMMIT_MS);
-  if (upload && fresh) {
-    if (upload.state === 'failed' || (upload.state === 'committed' && error))
-      return { kind: 'failed' };
-    if (upload.state !== 'committed' || !imageSrc) return { kind: 'uploading', upload };
+  if (upload) {
+    const committed = upload.state === 'committed';
+    const recent = now - upload.updatedAt <= STALE_COMMIT_MS;
+    if (upload.state === 'failed' || (committed && error && recent)) return { kind: 'failed' };
+    if (!committed) return { kind: 'uploading', upload };
   }
   if (cooldownMs > 0) return { kind: 'cooldown', leftMs: cooldownMs };
   if (imageSrc) return { kind: 'current', src: imageSrc };

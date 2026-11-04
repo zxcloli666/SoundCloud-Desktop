@@ -68,9 +68,12 @@ export const BackdropPicker = memo(function BackdropPicker({
   const uploadProblem = photo.kind === 'failed' ? backdropProblem(error, serverTime()) : null;
   const shownProblem = problem ?? uploadProblem;
 
+  const shownKey = useRef(current);
   useEffect(() => {
-    if (pending !== null && pending === current) setPending(null);
-  }, [pending, current]);
+    if (shownKey.current === current) return;
+    shownKey.current = current;
+    setPending(null);
+  }, [current]);
 
   useEffect(() => {
     if (pending === null) return;
