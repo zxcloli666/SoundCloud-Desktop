@@ -43,7 +43,7 @@ function Scrim({ light }: { light: Luminance }) {
 
 function Motion({ image, tone }: { image: HTMLImageElement; tone: Tone }) {
   const canvas = useRef<HTMLCanvasElement>(null);
-  const motion = useMotion(canvas, true);
+  const motion = useMotion(canvas);
   const mode = motion.kind;
   const fps = motion.kind === 'live' ? motion.fps : 0;
 

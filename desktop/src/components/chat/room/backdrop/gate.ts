@@ -1,5 +1,5 @@
 import { type RefObject, useEffect, useState, useSyncExternalStore } from 'react';
-import { type PerfMode, usePerfMode } from '../../../../lib/perf';
+import { type PerfMode, useAppIdle, usePerfMode } from '../../../../lib/perf';
 
 export type Motion = { kind: 'live'; fps: number } | { kind: 'still' } | { kind: 'paused' };
 
@@ -16,15 +16,6 @@ function reduced() {
   return window.matchMedia(REDUCED).matches;
 }
 
-function subscribeHidden(onChange: () => void) {
-  document.addEventListener('visibilitychange', onChange);
-  return () => document.removeEventListener('visibilitychange', onChange);
-}
-
-function hidden() {
-  return document.visibilityState === 'hidden';
-}
-
 function useOnScreen(ref: RefObject<HTMLElement | null>, enabled: boolean) {
   const [onScreen, setOnScreen] = useState(true);
   useEffect(() => {
@@ -37,12 +28,12 @@ function useOnScreen(ref: RefObject<HTMLElement | null>, enabled: boolean) {
   return onScreen;
 }
 
-export function useMotion(ref: RefObject<HTMLElement | null>, wanted: boolean): Motion {
+export function useMotion(ref: RefObject<HTMLElement | null>): Motion {
   const perf = usePerfMode();
   const still = useSyncExternalStore(subscribeReduced, reduced);
-  const away = useSyncExternalStore(subscribeHidden, hidden);
+  const away = useAppIdle();
   const fps = FPS[perf.mode];
-  const animated = wanted && fps > 0 && !still;
+  const animated = fps > 0 && !still;
   const onScreen = useOnScreen(ref, animated);
   if (!animated) return { kind: 'still' };
   if (away || !onScreen) return { kind: 'paused' };
