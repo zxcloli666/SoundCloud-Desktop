@@ -27,7 +27,7 @@ pub fn open_device_sink(
     let err_flag = error_flag.clone();
     let error_cb = move |err: cpal::StreamError| {
         if err == cpal::StreamError::BufferUnderrun {
-            eprintln!("[audio] stream error: {err:?}");
+            eprintln!("[audio] stream error: {err}");
             return;
         }
         diagnostics::error(format!("[audio] stream error: {err}"));
