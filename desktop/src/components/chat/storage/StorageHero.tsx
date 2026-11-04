@@ -8,15 +8,11 @@ import { QuotaRing } from './QuotaRing';
 import { quotaFull, quotaShare } from './ring-tone';
 import { useStorageStore } from './storage-store';
 
-function Fact({ label, value, tone }: { label: string; value: string; tone?: 'bad' }) {
+function Fact({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex min-w-0 flex-col gap-0.5">
-      <span className="text-[11px] font-medium text-ink-45">{label}</span>
-      <span
-        className={`truncate text-[14px] font-semibold tabular-nums ${tone === 'bad' ? 'text-bad' : 'text-ink-85'}`}
-      >
-        {value}
-      </span>
+    <div className="flex min-w-0 items-baseline justify-between gap-2">
+      <span className="truncate text-[11.5px] font-medium text-ink-45">{label}</span>
+      <span className="shrink-0 text-[13px] font-semibold tabular-nums text-ink-85">{value}</span>
     </div>
   );
 }
@@ -60,7 +56,7 @@ export const StorageHero = memo(function StorageHero({ lapsed }: { lapsed: boole
               {full ? t('chat.storage.full') : t('chat.storage.freeLeft', { size: format(free) })}
             </span>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="flex flex-col gap-1.5 border-t border-ink/[0.07] pt-2.5">
             <Fact label={t('chat.storage.facts.files')} value={String(usage.files)} />
             <Fact
               label={t('chat.storage.facts.uploading')}
