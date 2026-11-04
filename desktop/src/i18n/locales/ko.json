@@ -1787,7 +1787,19 @@
       "extend": "연장",
       "redeem": "코드 사용",
       "canceled": "자동 갱신을 껐어요",
-      "cancelError": "자동 갱신을 끄지 못했어요"
+      "cancelError": "자동 갱신을 끄지 못했어요",
+      "sources": {
+        "platega": "카드 또는 SBP",
+        "cryptobot": "Crypto Bot",
+        "tgstars": "Telegram Stars",
+        "code": "코드",
+        "boosty": "Boosty",
+        "admin": "팀의 선물",
+        "community": "커뮤니티 보상",
+        "trial": "무료 체험",
+        "referral": "친구 초대",
+        "shared": "Duo 또는 Family 요금제"
+      }
     },
     "discord": {
       "label": "Discord",

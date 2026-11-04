@@ -1865,7 +1865,19 @@
       "extend": "Uzat",
       "redeem": "Kod gir",
       "canceled": "Otomatik yenileme kapatıldı",
-      "cancelError": "Otomatik yenileme kapatılamadı"
+      "cancelError": "Otomatik yenileme kapatılamadı",
+      "sources": {
+        "platega": "Kart veya SBP",
+        "cryptobot": "Crypto Bot",
+        "tgstars": "Telegram Stars",
+        "code": "Kod",
+        "boosty": "Boosty",
+        "admin": "Ekipten hediye",
+        "community": "Topluluk ödülü",
+        "trial": "Ücretsiz deneme",
+        "referral": "Arkadaş daveti",
+        "shared": "Duo veya Family planı"
+      }
     },
     "discord": {
       "label": "Discord",

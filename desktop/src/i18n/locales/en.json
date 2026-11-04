@@ -1942,7 +1942,19 @@
       "extend": "Extend",
       "redeem": "Redeem a code",
       "canceled": "Auto-renew turned off",
-      "cancelError": "Couldn't turn off auto-renew"
+      "cancelError": "Couldn't turn off auto-renew",
+      "sources": {
+        "platega": "Card or SBP",
+        "cryptobot": "Crypto Bot",
+        "tgstars": "Telegram Stars",
+        "code": "Code",
+        "boosty": "Boosty",
+        "admin": "Gift from the team",
+        "community": "Community reward",
+        "trial": "Free trial",
+        "referral": "Friend invite",
+        "shared": "Duo or Family plan"
+      }
     },
     "discord": {
       "label": "Discord",

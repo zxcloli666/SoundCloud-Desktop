@@ -122,7 +122,9 @@ export const ManagePane = memo(function ManagePane({
           <div className="text-[13px] font-medium text-ink-85">{t('starpass.manage.source')}</div>
           <div className="mt-0.5 text-[11.5px] text-ink-40">{t('starpass.manage.sourceSub')}</div>
         </div>
-        <span className="font-mono text-[13px] text-ink">{source || '—'}</span>
+        <span className="text-[13px] font-medium text-ink">
+          {source ? t(`starpass.manage.sources.${source}`, { defaultValue: source }) : '—'}
+        </span>
       </div>
 
       <div className="mt-1 flex flex-wrap gap-3">

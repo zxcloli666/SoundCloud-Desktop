@@ -1985,7 +1985,19 @@
       "extend": "Продлить",
       "redeem": "Ввести код",
       "canceled": "Автопродление выключено",
-      "cancelError": "Не удалось выключить автопродление"
+      "cancelError": "Не удалось выключить автопродление",
+      "sources": {
+        "platega": "Карта или СБП",
+        "cryptobot": "Crypto Bot",
+        "tgstars": "Telegram Stars",
+        "code": "Код",
+        "boosty": "Boosty",
+        "admin": "Подарок команды",
+        "community": "Награда сообщества",
+        "trial": "Пробный период",
+        "referral": "Приглашение друга",
+        "shared": "Тариф Duo или Family"
+      }
     },
     "discord": {
       "label": "Discord",

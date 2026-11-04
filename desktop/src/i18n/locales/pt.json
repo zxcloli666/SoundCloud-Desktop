@@ -1854,7 +1854,19 @@
       "extend": "Estender",
       "redeem": "Resgatar um código",
       "canceled": "Renovação automática desativada",
-      "cancelError": "Não foi possível desativar a renovação automática"
+      "cancelError": "Não foi possível desativar a renovação automática",
+      "sources": {
+        "platega": "Cartão ou SBP",
+        "cryptobot": "Crypto Bot",
+        "tgstars": "Telegram Stars",
+        "code": "Código",
+        "boosty": "Boosty",
+        "admin": "Presente da equipe",
+        "community": "Recompensa da comunidade",
+        "trial": "Teste grátis",
+        "referral": "Convite de amigo",
+        "shared": "Plano Duo ou Family"
+      }
     },
     "discord": {
       "label": "Discord",
