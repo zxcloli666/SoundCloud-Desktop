@@ -28,7 +28,7 @@ jobs:
             exit 0
           fi
           if [ "$code" != 0 ]; then exit 1; fi
-          git fetch origin refs/heads/themes-dist:refs/remotes/origin/themes-dist
+          git fetch origin +refs/heads/themes-dist:refs/remotes/origin/themes-dist
       - run: node --experimental-strip-types --test 'themes/tools/*.test.mjs'
       - run: node --experimental-strip-types themes/tools/check.mjs --previous origin/themes-dist --pr-author "$PR_AUTHOR"
         env:
@@ -95,7 +95,7 @@ jobs:
             exit 0
           fi
           if [ "$code" != 0 ]; then exit 1; fi
-          git fetch origin refs/heads/themes-dist:refs/remotes/origin/themes-dist
+          git fetch origin +refs/heads/themes-dist:refs/remotes/origin/themes-dist
       - id: build
         run: |
           set +e
