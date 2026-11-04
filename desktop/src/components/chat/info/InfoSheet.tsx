@@ -7,7 +7,7 @@ import type { Seq } from '../../../lib/chat/types';
 import { Bookmark, Images, ListMusic, Users, X } from '../../../lib/icons';
 import { linkRoute } from '../../../lib/soundcloudLink';
 import { useChatStore } from '../../../stores/chat';
-import { selectMediaOn } from '../../../stores/chat/media';
+import { selectMediaKnown } from '../../../stores/chat/media';
 import { Avatar } from '../../ui/Avatar';
 import { GroupAvatarEdit } from '../media/compose/GroupAvatarEdit';
 import { GalleryTab } from '../media/GalleryTab';
@@ -107,7 +107,7 @@ export const InfoSheet = memo(function InfoSheet({
   const { conversation } = useThread();
   const scrollRef = useRef<HTMLDivElement>(null);
   const showMembers = conversation.kind !== 'self';
-  const showGallery = useChatStore(selectMediaOn);
+  const showGallery = useChatStore(selectMediaKnown);
   const [tab, setTab] = useState<Tab>('tracks');
 
   useEffect(() => {

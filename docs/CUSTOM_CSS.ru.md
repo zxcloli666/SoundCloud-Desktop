@@ -128,6 +128,12 @@
 | `[data-ui="chat-room"]` | Вкладка комнаты совместного прослушивания |
 | `[data-ui="chat-toast"]` | Всплывающее новое сообщение |
 | `[data-ui="chat-share"]` | Окно «Отправить» |
+| `[data-ui="chat-album"]` | Картинки в сообщении. Плитка `[data-ui="chat-album-tile"]`, `[data-state]`: `loading`, `ready`, `failed`, `deleted` или `lost` |
+| `[data-ui="chat-upload-tile"]` | Ваша картинка, которая ещё загружается, `[data-state]`: `queued`, `reserved`, `uploading`, `uploaded`, `committed` или `failed` |
+| `[data-ui="chat-album-status"]` | Строка прогресса или ошибки под вашим альбомом |
+| `[data-ui="chat-media-gone"]` | Заглушка удалённой или недоступной картинки |
+| `[data-ui="chat-lightbox"]` | Просмотр картинки, область картинки `[data-ui="chat-lightbox-stage"]` |
+| `[data-ui="chat-gallery"]` | Вкладка «Картинки» в инфо чата. Плитка `[data-ui="chat-gallery-tile"]` с `[data-state]` как в альбоме, пустая вкладка `[data-ui="chat-gallery-empty"]` |
 | `[data-ui="chat-device-alert"]` | Окно о новом устройстве |
 | `[data-ui="chat-relogin"]` | Карточка входа в чаты |
 

@@ -14,16 +14,9 @@
     "retry": "Retry",
     "retryAll": "Retry all",
     "cancel": "Remove from album",
-    "errors": {
-      "generic": "Couldn't send the image",
-      "quota_exceeded": "Image storage is full",
-      "media_star_required": "Sending images needs STAR",
-      "room_star_required": "Images in this room need a STAR host",
-      "media_uploads_paused": "Image uploads are paused",
-      "media_missing": "The image got lost, send it again",
-      "offline": "No connection to the server",
-      "send_limited": "Too many images, please wait"
-    }
+    "retryReason": "Retry: {{reason}}",
+    "discard": "Delete post",
+    "discardConfirm": "Delete for good?"
   },
   "viewer": {
     "label": "Image viewer",
@@ -37,7 +30,9 @@
     "counter": "{{n}} / {{total}}",
     "loading": "Loading",
     "failed": "Original didn't load",
-    "retry": "Retry"
+    "retry": "Retry",
+    "alt": "Image from {{name}}",
+    "altOf": "Image {{n}} of {{total}} from {{name}}"
   },
   "grid": {
     "label": "Chat images",
@@ -48,6 +43,7 @@
     "failed": "Couldn't load images",
     "moreFailed": "Couldn't load more",
     "retry": "Retry",
-    "older": "Search earlier"
+    "older": "Search earlier",
+    "itemState": "{{item}}. {{state}}"
   }
 }

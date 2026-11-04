@@ -14,16 +14,9 @@
     "retry": "Yeniden dene",
     "retryAll": "Tümünü yeniden dene",
     "cancel": "Albümden çıkar",
-    "errors": {
-      "generic": "Görsel gönderilemedi",
-      "quota_exceeded": "Görsel depolama alanı dolu",
-      "media_star_required": "Görsel göndermek için STAR gerekli",
-      "room_star_required": "Bu odada görseller için STAR sahibi gerekli",
-      "media_uploads_paused": "Görsel yüklemeleri duraklatıldı",
-      "media_missing": "Görsel kayboldu, yeniden gönderin",
-      "offline": "Sunucuyla bağlantı yok",
-      "send_limited": "Çok fazla görsel, lütfen bekleyin"
-    }
+    "retryReason": "Yeniden dene: {{reason}}",
+    "discard": "Gönderiyi sil",
+    "discardConfirm": "Kalıcı olarak silinsin mi?"
   },
   "viewer": {
     "label": "Görsel görüntüleyici",
@@ -37,7 +30,9 @@
     "counter": "{{n}} / {{total}}",
     "loading": "Yükleniyor",
     "failed": "Orijinal yüklenemedi",
-    "retry": "Yeniden dene"
+    "retry": "Yeniden dene",
+    "alt": "{{name}} tarafından gönderilen görsel",
+    "altOf": "{{name}} tarafından gönderilen görsel, {{total}} görselden {{n}}."
   },
   "grid": {
     "label": "Sohbet görselleri",
@@ -48,6 +43,7 @@
     "failed": "Görseller yüklenemedi",
     "moreFailed": "Daha fazlası yüklenemedi",
     "retry": "Yeniden dene",
-    "older": "Daha eskisini ara"
+    "older": "Daha eskisini ara",
+    "itemState": "{{item}}. {{state}}"
   }
 }

@@ -1,28 +1,17 @@
 import { memo, type ReactNode, type SyntheticEvent, useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { toast } from 'sonner';
-import { chatBridge } from '../../../../lib/chat/bridge';
 import type { UploadView } from '../../../../lib/chat/media-types';
 import { useChatMediaStore } from '../../../../stores/chat/media';
+import { failureOf, notifyFailure } from '../compose/failure';
 import { AlbumFrame, type TileStyle } from './AlbumFrame';
 import { albumLayout, type Size } from './album-layout';
 import { CircleAlert, RotateCcw, X } from './icons';
-import { useUploadError } from './media-state';
 import { useCalmMotion } from './motion';
 import { ProgressRing } from './ProgressRing';
 import { uploadDone, uploadFraction } from './upload-progress';
 import { viewUrl } from './urls';
 
 const SQUARE: Size = { w: 1, h: 1 };
-const KNOWN_ERRORS = new Set([
-  'quota_exceeded',
-  'media_star_required',
-  'room_star_required',
-  'media_uploads_paused',
-  'media_missing',
-  'offline',
-  'send_limited',
-]);
 
 const NO_UPLOADS: UploadView[] = [];
 
@@ -70,15 +59,15 @@ const UploadTile = memo(function UploadTile({
 }) {
   const { t } = useTranslation();
   const calm = useCalmMotion();
-  const error = useUploadError(upload.id);
+  const error = useChatMediaStore((state) => state.errors[upload.id]);
   const done = uploadDone(upload);
   const failed = upload.state === 'failed';
   const waiting = upload.state === 'queued' || upload.state === 'reserved';
-  const reason = t(
-    `chat.gallery.upload.errors.${error && KNOWN_ERRORS.has(error) ? error : 'generic'}`,
-  );
-  const act = (call: Promise<void>) =>
-    void call.catch(() => toast.error(t('chat.gallery.upload.errors.generic')));
+  const failure = failed ? failureOf(error, t) : null;
+  const reason = failure?.text ?? '';
+  const act = (call: (id: string) => Promise<void>) =>
+    void call(upload.id).catch((problem) => notifyFailure(problem, t));
+  const media = useChatMediaStore.getState;
   const onLoad = (event: SyntheticEvent<HTMLImageElement>) => {
     const image = event.currentTarget;
     if (image.naturalWidth > 0)
@@ -113,15 +102,17 @@ const UploadTile = memo(function UploadTile({
       >
         {failed ? (
           <span className="flex items-center gap-2">
-            <RoundAction
-              label={t('chat.gallery.upload.retry')}
-              onClick={() => act(chatBridge.mediaUploadRetry(upload.id))}
-            >
-              <RotateCcw size={15} />
-            </RoundAction>
+            {failure?.action !== 'none' && (
+              <RoundAction
+                label={t('chat.gallery.upload.retryReason', { reason })}
+                onClick={() => act(media().retryUpload)}
+              >
+                <RotateCcw size={15} />
+              </RoundAction>
+            )}
             <RoundAction
               label={t('chat.gallery.upload.cancel')}
-              onClick={() => act(chatBridge.mediaUploadCancel(upload.id))}
+              onClick={() => act(media().cancelUpload)}
             >
               <X size={15} />
             </RoundAction>
@@ -132,11 +123,12 @@ const UploadTile = memo(function UploadTile({
       </span>
       {failed && (
         <span
+          aria-hidden
           data-scheme="dark"
           title={reason}
           className="absolute top-1.5 left-1.5 flex size-5 items-center justify-center rounded-full bg-paper/70 text-bad"
         >
-          <CircleAlert size={12} aria-label={reason} />
+          <CircleAlert size={12} />
         </span>
       )}
     </div>

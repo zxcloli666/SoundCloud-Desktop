@@ -23,6 +23,7 @@ export interface OpenInput {
   more: boolean;
   nameOf: NameOf;
   onJump: ((seq: Seq) => void) | null;
+  opener: HTMLElement | null;
 }
 
 interface LightboxState {
@@ -40,13 +41,12 @@ function oldestSeq(items: ViewImage[]): Seq | null {
   return null;
 }
 
-export function openLightbox({ items, start, more, nameOf, onJump }: OpenInput) {
+export function openLightbox({ items, start, more, nameOf, onJump, opener }: OpenInput) {
   const list = items.length > 0 ? items : [start];
   const index = Math.max(
     0,
     list.findIndex((item) => sameImage(item, start)),
   );
-  const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
   useLightboxStore.setState({
     session: {
       token: ++tokens,

@@ -22,6 +22,7 @@ export interface Skipped {
 }
 
 export const selectMediaOn = (state: ChatState) => state.config?.media?.uploads === true;
+export const selectMediaKnown = (state: ChatState) => (state.config?.media ?? null) !== null;
 export const selectMediaStar = (state: ChatState) => state.config?.media?.star === true;
 
 export type MediaNote = 'locked' | 'paused' | 'room-host' | 'room-mods' | 'room-off';
@@ -50,6 +51,7 @@ export interface ChatMediaState {
   setShown: (id: MediaId, shown: ShownMedia) => void;
   forgetShown: (ids: MediaId[]) => void;
   retryUpload: (id: string) => Promise<void>;
+  retryUploads: (ids: string[]) => Promise<void>;
   cancelUpload: (id: string) => Promise<void>;
 }
 
@@ -133,21 +135,29 @@ export const useChatMediaStore = create<ChatMediaState>()((set, get) => ({
       set({ usageLoad: 'failed' });
     }
   },
-  setShown: (id, shown) => set((state) => ({ shown: { ...state.shown, [id]: shown } })),
+  setShown: (id, shown) =>
+    set((state) => (state.shown[id] === shown ? state : { shown: { ...state.shown, [id]: shown } })),
   forgetShown: (ids) =>
     set((state) => {
+      if (!ids.some((id) => id in state.shown)) return state;
       const shown = { ...state.shown };
       for (const id of ids) delete shown[id];
       return { shown };
     }),
-  retryUpload: async (id) => {
-    await chatBridge.mediaUploadRetry(id);
+  retryUpload: (id) => get().retryUploads([id]),
+  retryUploads: async (ids) => {
+    const outcomes = await Promise.allSettled(ids.map((id) => chatBridge.mediaUploadRetry(id)));
+    const restarted = ids.filter((_, index) => outcomes[index].status === 'fulfilled');
     set((state) => {
       const errors = { ...state.errors };
-      delete errors[id];
+      for (const id of restarted) delete errors[id];
       return { errors };
     });
     await get().refreshUploads();
+    const refused = outcomes.find(
+      (outcome): outcome is PromiseRejectedResult => outcome.status === 'rejected',
+    );
+    if (refused) throw refused.reason;
   },
   cancelUpload: async (id) => {
     await chatBridge.mediaUploadCancel(id);

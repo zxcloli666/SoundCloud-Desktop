@@ -119,6 +119,12 @@ export interface MediaUploadErrorEvent {
   error: ChatError;
 }
 
+export interface MediaStateEvent {
+  conversationId: ConvId;
+  mediaId: MediaId;
+  state: 'deleted' | 'lost';
+}
+
 export interface MessageAttachment {
   mediaId: MediaId;
   kind: 'image';

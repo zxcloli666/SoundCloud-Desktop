@@ -1,36 +1,26 @@
-import { memo, useCallback, useState } from 'react';
+import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { MediaId } from '../../../../lib/chat/media-types';
 import type { ConvId } from '../../../../lib/chat/types';
 import { CloudOff, ImageOff, RotateCcw } from './icons';
+import { type LoadAttempt, useLoadAttempt } from './load-attempt';
 import { type GoneState, useGone } from './media-state';
 import { useCalmMotion } from './motion';
 import { viewUrl } from './urls';
 
-export type ThumbPhase = 'loading' | 'ready' | 'failed';
-
-export interface ThumbState {
-  phase: ThumbPhase;
-  attempt: number;
+export interface ThumbState extends LoadAttempt {
   gone: GoneState | null;
-  retry: () => void;
-  onLoad: () => void;
-  onError: () => void;
 }
 
 export function useThumb(mediaId: MediaId): ThumbState {
   const gone = useGone(mediaId);
-  const [load, setLoad] = useState<{ phase: ThumbPhase; attempt: number }>({
-    phase: 'loading',
-    attempt: 0,
-  });
-  const retry = useCallback(
-    () => setLoad((current) => ({ phase: 'loading', attempt: current.attempt + 1 })),
-    [],
-  );
-  const onLoad = useCallback(() => setLoad((current) => ({ ...current, phase: 'ready' })), []);
-  const onError = useCallback(() => setLoad((current) => ({ ...current, phase: 'failed' })), []);
-  return { ...load, gone, retry, onLoad, onError };
+  const load = useLoadAttempt(gone !== null);
+  return { ...load, gone };
+}
+
+export function thumbLabelKey(thumb: ThumbState): string | null {
+  if (thumb.gone) return `chat.gallery.tile.${thumb.gone}`;
+  return thumb.phase === 'failed' ? 'chat.gallery.tile.failed' : null;
 }
 
 function hidePlaceholder(event: { currentTarget: HTMLImageElement }) {

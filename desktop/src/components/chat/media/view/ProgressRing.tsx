@@ -17,6 +17,7 @@ export const ProgressRing = memo(function ProgressRing({
 }) {
   const calm = useCalmMotion();
   const spin = waiting && !calm;
+  const dashed = waiting && calm;
   const shown = waiting ? 0.22 : Math.max(0.04, fraction);
   return (
     <svg
@@ -44,8 +45,8 @@ export const ProgressRing = memo(function ProgressRing({
         stroke="rgb(var(--ink) / 0.92)"
         strokeWidth={plain ? 4 : 2.5}
         strokeLinecap="round"
-        strokeDasharray={LENGTH}
-        strokeDashoffset={LENGTH * (1 - shown)}
+        strokeDasharray={dashed ? '0.1 6' : LENGTH}
+        strokeDashoffset={dashed ? 0 : LENGTH * (1 - shown)}
         transform="rotate(-90 20 20)"
         className="chat-media-motion"
         style={{ transition: calm ? undefined : 'stroke-dashoffset 320ms ease-out' }}

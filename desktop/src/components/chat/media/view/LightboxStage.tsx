@@ -11,16 +11,27 @@ import { useTranslation } from 'react-i18next';
 import { fitInside, type Size } from './album-layout';
 import { CloudOff, ImageOff, LoaderCircle, RotateCcw } from './icons';
 import type { ViewImage } from './images';
+import { type LoadPhase, useLoadAttempt } from './load-attempt';
 import { useGone } from './media-state';
 import { useCalmMotion } from './motion';
 import { viewUrl } from './urls';
 import { useZoomPan, type ZoomPan } from './useZoomPan';
 
-type FullPhase = 'loading' | 'ready' | 'failed';
-
 const PAD_X = 72;
 const PAD_Y = 24;
 const FULL_DWELL_MS = 160;
+const LOADING_SHOWN_MS = 350;
+
+function useLate(on: boolean, delay: number): boolean {
+  const [late, setLate] = useState(false);
+  useEffect(() => {
+    setLate(false);
+    if (!on) return;
+    const timer = window.setTimeout(() => setLate(true), delay);
+    return () => window.clearTimeout(timer);
+  }, [on, delay]);
+  return on && late;
+}
 
 function useStageSize(ref: RefObject<HTMLElement | null>): Size {
   const [size, setSize] = useState<Size>({ w: 0, h: 0 });
@@ -56,11 +67,12 @@ function FullStatus({
   calm,
   onRetry,
 }: {
-  phase: FullPhase;
+  phase: LoadPhase;
   calm: boolean;
   onRetry: () => void;
 }) {
   const { t } = useTranslation();
+  const slow = useLate(phase === 'loading', LOADING_SHOWN_MS);
   if (phase === 'ready') return null;
   if (phase === 'failed') {
     return (
@@ -69,7 +81,7 @@ function FullStatus({
         <button
           type="button"
           onClick={onRetry}
-          className="flex h-7 cursor-pointer items-center gap-1 rounded-full bg-ink/[0.1] px-2.5 text-[12px] font-semibold text-ink-90 transition-colors duration-150 hover:bg-ink/[0.16]"
+          className="flex h-7 cursor-pointer items-center gap-1 rounded-full bg-ink/[0.1] px-2.5 text-[12px] font-semibold text-ink-90 transition-colors duration-150 hover:bg-ink/[0.16] focus-visible:outline-2 focus-visible:outline-[var(--color-accent)]"
         >
           <RotateCcw size={12} />
           {t('chat.gallery.viewer.retry')}
@@ -77,12 +89,13 @@ function FullStatus({
       </div>
     );
   }
+  if (!slow) return null;
   return (
     <div
       role="status"
       aria-label={t('chat.gallery.viewer.loading')}
       className="chat-media-motion absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-2 rounded-full bg-surface/85 px-3 py-1.5 text-[12px] text-ink-60 ring-1 ring-ink/10"
-      style={{ animation: 'chat-media-fade 220ms ease-out 350ms both' }}
+      style={{ animation: calm ? undefined : 'chat-media-fade 220ms ease-out' }}
     >
       <LoaderCircle
         size={13}
@@ -96,10 +109,12 @@ function FullStatus({
 
 export const LightboxStage = memo(function LightboxStage({
   image,
+  alt,
   onZoom,
   onBackdrop,
 }: {
   image: ViewImage;
+  alt: string;
   onZoom: (zoom: ZoomPan) => void;
   onBackdrop: () => void;
 }) {
@@ -116,10 +131,7 @@ export const LightboxStage = memo(function LightboxStage({
     Math.max(1, stage.h - PAD_Y * 2),
   );
   const zoom = useZoomPan(stageRef, targetRef, fit, stage, calm, gone === null);
-  const [full, setFull] = useState<{ phase: FullPhase; attempt: number }>({
-    phase: 'loading',
-    attempt: 0,
-  });
+  const full = useLoadAttempt(gone !== null);
   const [thumbShown, setThumbShown] = useState(false);
   const [wanted, setWanted] = useState(false);
 
@@ -146,7 +158,7 @@ export const LightboxStage = memo(function LightboxStage({
       data-ui="chat-lightbox-stage"
       className="relative flex min-h-0 flex-1 touch-none items-center justify-center overflow-hidden select-none"
       onClick={(event) => {
-        if (event.target === event.currentTarget && zoom.scale <= 1) onBackdrop();
+        if (event.target === event.currentTarget && zoom.scale() <= 1) onBackdrop();
       }}
     >
       {gone ? (
@@ -163,6 +175,8 @@ export const LightboxStage = memo(function LightboxStage({
           >
             <div
               ref={targetRef}
+              role="img"
+              aria-label={alt}
               className="absolute inset-0 overflow-hidden rounded-[6px] shadow-[0_24px_80px_rgb(var(--shade)/calc(0.6*var(--shade-alpha)))]"
               style={{ transformOrigin: '50% 50%' }}
             >
@@ -191,13 +205,14 @@ export const LightboxStage = memo(function LightboxStage({
                   key={full.attempt}
                   src={viewUrl(conversationId, mediaId, 'image', full.attempt)}
                   alt=""
+                  aria-hidden
                   draggable={false}
                   decoding="async"
                   onLoad={(event) => {
                     learn(event);
-                    setFull((current) => ({ ...current, phase: 'ready' }));
+                    full.onLoad();
                   }}
-                  onError={() => setFull((current) => ({ ...current, phase: 'failed' }))}
+                  onError={full.onError}
                   className="chat-media-motion absolute inset-0 size-full object-contain"
                   style={{
                     opacity: ready ? 1 : 0,
@@ -207,13 +222,7 @@ export const LightboxStage = memo(function LightboxStage({
               )}
             </div>
           </div>
-          <FullStatus
-            phase={full.phase}
-            calm={calm}
-            onRetry={() =>
-              setFull((current) => ({ phase: 'loading', attempt: current.attempt + 1 }))
-            }
-          />
+          <FullStatus phase={full.phase} calm={calm} onRetry={full.retry} />
         </>
       )}
     </div>

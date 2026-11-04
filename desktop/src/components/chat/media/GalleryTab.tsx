@@ -27,7 +27,7 @@ export const GalleryTab = memo(function GalleryTab({
   const { items, load, tail, more, loadMore } = gallery;
 
   const open = useCallback(
-    (index: number) => {
+    (index: number, opener: HTMLElement) => {
       const start = items[index];
       if (!start) return;
       showLightbox({
@@ -36,6 +36,7 @@ export const GalleryTab = memo(function GalleryTab({
         more,
         nameOf,
         onJump,
+        opener,
       });
     },
     [items, more, nameOf, onJump],

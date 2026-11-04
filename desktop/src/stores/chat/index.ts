@@ -52,6 +52,9 @@ export async function initChatBridge(): Promise<() => void> {
     onChatEvent('chat:media-upload-error', (event) =>
       useChatMediaStore.getState().applyError(event),
     ),
+    onChatEvent('chat:media-state', (event) =>
+      useChatMediaStore.getState().setShown(event.mediaId, event.state),
+    ),
     onChatEvent('chat:device-added', ({ device }) =>
       useChatDevicesStore.getState().pushAlert(device),
     ),

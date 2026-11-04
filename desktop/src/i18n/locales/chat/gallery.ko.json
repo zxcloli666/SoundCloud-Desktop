@@ -13,16 +13,9 @@
     "retry": "다시 시도",
     "retryAll": "모두 다시 시도",
     "cancel": "앨범에서 제거",
-    "errors": {
-      "generic": "이미지를 보내지 못했습니다",
-      "quota_exceeded": "이미지 저장 공간이 가득 찼습니다",
-      "media_star_required": "이미지 전송은 STAR가 필요합니다",
-      "room_star_required": "이 방에서 이미지를 쓰려면 STAR 호스트가 필요합니다",
-      "media_uploads_paused": "이미지 업로드가 일시 중지되었습니다",
-      "media_missing": "이미지를 잃어버렸습니다. 다시 보내주세요",
-      "offline": "서버에 연결되지 않았습니다",
-      "send_limited": "이미지가 너무 많습니다. 잠시 기다려 주세요"
-    }
+    "retryReason": "다시 시도: {{reason}}",
+    "discard": "게시물 삭제",
+    "discardConfirm": "정말 삭제할까요?"
   },
   "viewer": {
     "label": "이미지 보기",
@@ -36,7 +29,9 @@
     "counter": "{{n}} / {{total}}",
     "loading": "불러오는 중",
     "failed": "원본을 불러오지 못했습니다",
-    "retry": "다시 시도"
+    "retry": "다시 시도",
+    "alt": "{{name}}님의 이미지",
+    "altOf": "{{name}}님의 이미지, {{total}}장 중 {{n}}번째"
   },
   "grid": {
     "label": "채팅 이미지",
@@ -47,6 +42,7 @@
     "failed": "이미지를 불러오지 못했습니다",
     "moreFailed": "더 불러오지 못했습니다",
     "retry": "다시 시도",
-    "older": "이전 기록 찾기"
+    "older": "이전 기록 찾기",
+    "itemState": "{{item}}. {{state}}"
   }
 }

@@ -46,7 +46,7 @@ export const MediaBubble = memo(function MediaBubble({
   const overlay = solo ? <MetaPill message={message} tick={tick} /> : undefined;
 
   const open = useCallback(
-    (index: number) => {
+    (index: number, opener: HTMLElement) => {
       const own = imagesOf(message);
       const start = own[index];
       if (!start) return;
@@ -60,6 +60,7 @@ export const MediaBubble = memo(function MediaBubble({
         more: inThread && (thread?.moreBefore ?? true),
         nameOf,
         onJump: message.seq !== null ? jumpTo : null,
+        opener,
       });
     },
     [message, nameOf, jumpTo],
@@ -73,7 +74,7 @@ export const MediaBubble = memo(function MediaBubble({
     return (
       <div className={`first:-mt-[4px] not-first:mt-1 ${bottom}`}>
         <PendingAlbum uploads={uploads} overlay={status ? undefined : overlay} />
-        {status && <UploadStatus uploads={uploads} />}
+        {status && <UploadStatus uploads={uploads} message={message} />}
         {status && solo && (
           <div className="mt-1 flex justify-end">
             <BubbleMeta message={message} tick={tick} floating={false} />
@@ -88,7 +89,6 @@ export const MediaBubble = memo(function MediaBubble({
   return (
     <div className={`first:-mt-[4px] not-first:mt-1 ${solo ? '-mb-[4px]' : 'mb-1.5'}`}>
       <SentAlbum
-        key={message.seq === null ? 'local' : 'sent'}
         conversationId={message.conversationId}
         attachments={message.attachments}
         overlay={overlay}

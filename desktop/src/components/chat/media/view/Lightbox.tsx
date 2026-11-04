@@ -1,6 +1,5 @@
-import { memo, type ReactNode, useEffect, useRef, useState } from 'react';
+import { memo, type ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { usePerfMode } from '../../../../lib/perf';
 import { useChatThreadStore } from '../../../../stores/chat/thread';
 import { ChevronLeft, ChevronRight, LoaderCircle } from './icons';
 import { LightboxBar } from './LightboxBar';
@@ -69,17 +68,18 @@ function SideButton({
 
 export const LightboxView = memo(function LightboxView({ session }: { session: LightboxSession }) {
   const { t } = useTranslation();
-  const perf = usePerfMode();
   const calm = useCalmMotion();
   const dialogRef = useRef<HTMLDivElement>(null);
   const [zoom, setZoom] = useState<ZoomPan | null>(null);
   const zoomRef = useRef<ZoomPan | null>(null);
-  zoomRef.current = zoom;
+  const takeZoom = useCallback((next: ZoomPan) => {
+    zoomRef.current = next;
+    setZoom(next);
+  }, []);
   const { items, index } = session;
   const image = items[index];
   const hasPrev = index > 0 || session.more;
   const hasNext = index < items.length - 1;
-  const blur = perf.blur(18);
 
   const openId = useChatThreadStore((state) => state.openId);
   const opener = session.opener;
@@ -113,7 +113,7 @@ export const LightboxView = memo(function LightboxView({ session }: { session: L
       const plain = !event.ctrlKey && !event.metaKey && !event.altKey;
       let handled = true;
       if (event.key === 'Escape') {
-        if (zoomNow && zoomNow.scale > 1) zoomNow.reset();
+        if (zoomNow && zoomNow.scale() > 1) zoomNow.reset();
         else closeLightbox();
       } else if (event.key === 'ArrowLeft') stepLightbox(-1);
       else if (event.key === 'ArrowRight') stepLightbox(1);
@@ -131,6 +131,11 @@ export const LightboxView = memo(function LightboxView({ session }: { session: L
   }, []);
 
   if (!image) return null;
+  const name = session.nameOf(image.sender);
+  const alt =
+    image.count > 1
+      ? t('chat.gallery.viewer.altOf', { name, n: image.position + 1, total: image.count })
+      : t('chat.gallery.viewer.alt', { name });
 
   return (
     <div
@@ -151,13 +156,7 @@ export const LightboxView = memo(function LightboxView({ session }: { session: L
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0"
-        style={{
-          contain: 'strict',
-          transform: blur > 0 ? 'translateZ(0)' : undefined,
-          background: blur > 0 ? 'rgb(var(--paper) / 0.9)' : 'rgb(var(--paper) / 0.97)',
-          backdropFilter: blur > 0 ? `blur(${blur}px) saturate(1.2)` : undefined,
-          WebkitBackdropFilter: blur > 0 ? `blur(${blur}px) saturate(1.2)` : undefined,
-        }}
+        style={{ contain: 'strict', background: 'rgb(var(--paper) / 0.96)' }}
       />
       <LightboxBar
         session={session}
@@ -170,7 +169,8 @@ export const LightboxView = memo(function LightboxView({ session }: { session: L
         <LightboxStage
           key={`${image.clientId}:${image.mediaId}`}
           image={image}
-          onZoom={setZoom}
+          alt={alt}
+          onZoom={takeZoom}
           onBackdrop={closeLightbox}
         />
         {hasPrev && (

@@ -129,6 +129,12 @@ States are in attributes too: `aria-current="page"` on the open link or section,
 | `[data-ui="chat-room-stage"]` | Room area under the header that holds the room backdrop. Set `--room-accent` on it to tint the backdrop |
 | `[data-ui="chat-toast"]` | New message popup |
 | `[data-ui="chat-share"]` | "Send" window |
+| `[data-ui="chat-album"]` | Images in a message. A tile is `[data-ui="chat-album-tile"]`, `[data-state]` is `loading`, `ready`, `failed`, `deleted` or `lost` |
+| `[data-ui="chat-upload-tile"]` | Your image that is still uploading, `[data-state]` is `queued`, `reserved`, `uploading`, `uploaded`, `committed` or `failed` |
+| `[data-ui="chat-album-status"]` | Upload progress or failure line under your album |
+| `[data-ui="chat-media-gone"]` | Placeholder of a deleted or unavailable image |
+| `[data-ui="chat-lightbox"]` | Image viewer, the image area is `[data-ui="chat-lightbox-stage"]` |
+| `[data-ui="chat-gallery"]` | Images tab in chat info. A tile is `[data-ui="chat-gallery-tile"]` with `[data-state]` as in an album, the empty tab is `[data-ui="chat-gallery-empty"]` |
 | `[data-ui="chat-device-alert"]` | New device alert |
 | `[data-ui="chat-relogin"]` | Chat sign-in card |
 | `[data-ui="chat-storage"]` | Image storage page (`/chats/storage`) |
