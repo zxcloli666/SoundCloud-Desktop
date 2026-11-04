@@ -18,6 +18,7 @@ pub fn chat(kind: ConversationKind) -> ConversationSummary {
         kind,
         title: None,
         avatar_url: None,
+        avatar_media_id: None,
         peer: Some(UserRef {
             id: ANN.to_owned(),
             name: "Ann".to_owned(),
@@ -112,6 +113,7 @@ pub fn message(seq: Seq, body: MessageBody) -> Message {
         mentions: Vec::new(),
         mentions_me: false,
         embeds: Vec::new(),
+        attachments: Vec::new(),
         forwarded_from: None,
         reactions: Vec::new(),
         pinned: false,

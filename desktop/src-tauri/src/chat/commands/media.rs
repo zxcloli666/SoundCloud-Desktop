@@ -2,11 +2,12 @@ use sc_chat::api::wire::{
     DeleteAnswer, MediaSelection, MediaUsage, MinePage, RestoreAnswer, UrlsAnswer,
 };
 use sc_chat::media::queue;
-use sc_chat::{ChatResult, ConvId, MineQuery};
+use sc_chat::{ChatResult, ConvId, MediaUploadView, MineQuery};
 use uuid::Uuid;
 
+use super::reads::blocking;
 use crate::chat::state::ChatState;
-use crate::chat::upload::{self, UploadView};
+use crate::chat::upload;
 
 pub async fn usage(state: &ChatState) -> ChatResult<MediaUsage> {
     state.api.media_usage().await
@@ -36,12 +37,20 @@ pub async fn attach(
     state: &ChatState,
     conversation_id: ConvId,
     paths: Vec<String>,
-) -> ChatResult<Vec<UploadView>> {
+) -> ChatResult<Vec<MediaUploadView>> {
     upload::enqueue(state, conversation_id, paths).await
 }
 
-pub async fn uploads(state: &ChatState) -> ChatResult<Vec<UploadView>> {
-    upload::list(state).await
+pub async fn uploads(state: &ChatState) -> ChatResult<Vec<MediaUploadView>> {
+    blocking(state, |core| {
+        Ok(core
+            .store
+            .uploads()?
+            .iter()
+            .map(MediaUploadView::from)
+            .collect())
+    })
+    .await
 }
 
 pub async fn upload_retry(state: &ChatState, id: Uuid) -> ChatResult<()> {

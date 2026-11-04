@@ -62,7 +62,7 @@ uuid = { version = "1", features = ["v4"] }
 rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12"] }
 tokio-rustls = { version = "0.26", default-features = false, features = ["ring", "tls12"] }
 webpki-roots = "1"
-sc-chat = { git = "https://github.com/zxcloli666/SoundCloud-Core", tag = "sc-chat-v0.2.0-alpha.1" }
+sc-chat = { git = "https://github.com/zxcloli666/SoundCloud-Core", tag = "sc-chat-v0.2.0-alpha.2" }
 tauri-plugin-notification = "2"
 keyring = { version = "3", features = ["apple-native", "windows-native", "async-secret-service", "async-io", "crypto-rust"] }
 

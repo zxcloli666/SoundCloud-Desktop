@@ -15,17 +15,16 @@ use sc_chat::{
     ChatConfig, ChatError, ChatRequest, ChatSettings, ChatStatus, ConvId, ConversationPage,
     ConversationPatch, ConversationSummary, CreateConversation, DeleteScope, Device, DeviceId,
     Embed, EmbedPage, EmbedsQuery, HistoryPage, HistoryQuery, Invite, InviteOptions, LinkClaimed,
-    LinkCreated, LinkPoll, ListQuery, LoginBegin, LoginPoll, LoginTarget, Member, MemberRole,
-    Message, MessageTarget, MineQuery, NotifyPrefs, ReportInput, RichText, RoomModeration,
-    RoomPreview, RoomSettingsPatch, SearchHit, SearchQuery, SendInput, Seq, SettingsPatch,
-    ThreadSnapshot, UserCard, UserId,
+    LinkCreated, LinkPoll, ListQuery, LoginBegin, LoginPoll, LoginTarget, MediaUploadView, Member,
+    MemberRole, Message, MessageTarget, MineQuery, NotifyPrefs, ReportInput, RichText,
+    RoomModeration, RoomPreview, RoomSettingsPatch, SearchHit, SearchQuery, SendInput, Seq,
+    SettingsPatch, ThreadSnapshot, UserCard, UserId,
 };
 use tauri::State;
 use uuid::Uuid;
 
 use super::login;
 use super::state::ChatState;
-use super::upload::UploadView;
 
 #[tauri::command]
 pub async fn chat_status(state: State<'_, ChatState>) -> Result<ChatStatus, ChatError> {
@@ -483,12 +482,14 @@ pub async fn chat_media_attach(
     state: State<'_, ChatState>,
     conversation_id: ConvId,
     paths: Vec<String>,
-) -> Result<Vec<UploadView>, ChatError> {
+) -> Result<Vec<MediaUploadView>, ChatError> {
     media::attach(&state, conversation_id, paths).await
 }
 
 #[tauri::command]
-pub async fn chat_media_uploads(state: State<'_, ChatState>) -> Result<Vec<UploadView>, ChatError> {
+pub async fn chat_media_uploads(
+    state: State<'_, ChatState>,
+) -> Result<Vec<MediaUploadView>, ChatError> {
     media::uploads(&state).await
 }
 

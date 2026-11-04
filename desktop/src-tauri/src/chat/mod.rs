@@ -11,8 +11,6 @@ pub mod runtime;
 pub mod state;
 pub mod transport;
 pub mod upload;
-#[cfg(test)]
-mod upload_tests;
 
 use std::path::Path;
 

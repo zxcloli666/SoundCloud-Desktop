@@ -16,6 +16,7 @@ pub fn request(
         kind: view.kind,
         title: None,
         avatar_url: from.avatar_url.clone(),
+        avatar_media_id: None,
         peer: Some(from.clone()),
         role: MemberRole::Member,
         state: MemberState::Invited,

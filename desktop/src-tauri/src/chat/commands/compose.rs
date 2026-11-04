@@ -25,9 +25,10 @@ pub async fn send(state: &ChatState, input: SendInput) -> ChatResult<Message> {
             text: input.text,
             reply_to: input.reply_to,
             forwarded_from: None,
+            attachments: Vec::new(),
         },
     };
-    if post.text.text.trim().is_empty() && post.embeds.is_empty() {
+    if post.text.text.trim().is_empty() && post.embeds.is_empty() && post.attachments.is_empty() {
         return Err(ChatError::Invalid);
     }
     check_text(&post.text)?;
@@ -181,6 +182,15 @@ fn forward_of(core: &Core, source: MessageRef) -> ChatResult<Post> {
     let MessageBody::Text(text) = message.body else {
         return Err(ChatError::Invalid);
     };
+    let attachments = message
+        .attachments
+        .iter()
+        .filter_map(|shown| {
+            core.store
+                .attachment(source.conversation_id, shown.media_id)
+                .transpose()
+        })
+        .collect::<ChatResult<Vec<_>>>()?;
     let author = core.store.users(std::slice::from_ref(&message.sender))?;
     let forwarded_from = message.forwarded_from.unwrap_or_else(|| Forwarded {
         name: author
@@ -195,6 +205,7 @@ fn forward_of(core: &Core, source: MessageRef) -> ChatResult<Post> {
         text,
         reply_to: None,
         forwarded_from: Some(forwarded_from),
+        attachments,
     })
 }
 
