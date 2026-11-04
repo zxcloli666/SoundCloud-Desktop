@@ -22,7 +22,8 @@ export type ChatPhase =
   | 'bound_other'
   | 'starting'
   | 'ready'
-  | 'revoked';
+  | 'revoked'
+  | 'keychain_denied';
 export type KeyStorage = 'os' | 'file';
 export type Access = 'beta' | 'all';
 
@@ -101,6 +102,7 @@ export type ChatErrorCode =
   | 'not_ready'
   | 'store'
   | 'keychain'
+  | 'keychain_denied'
   | 'crypto'
   | 'protocol';
 

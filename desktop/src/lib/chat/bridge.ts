@@ -61,6 +61,7 @@ import type {
 
 export const chatBridge = {
   status: () => invoke<ChatStatus>('chat_status'),
+  keychainRetry: () => invoke<void>('chat_keychain_retry'),
   config: () => invoke<ChatConfig>('chat_config'),
 
   loginBegin: (target: LoginTarget) => invoke<LoginBegin>('chat_login_begin', { target }),

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { MessagesSquare, MonitorSmartphone } from '../../../lib/chat/icons';
 import { selectChatEnabled, useChatStore } from '../../../stores/chat';
 import { ListSkeleton } from '../list/ListEmpty';
+import { KeychainCard } from '../relogin/KeychainCard';
 import { ReloginCard } from '../relogin/ReloginCard';
 
 function GateNote({ icon, text }: { icon: ReactNode; text: string }) {
@@ -56,6 +57,13 @@ export const ChatGate = memo(function ChatGate({
       <Centered>
         <GateNote icon={<MonitorSmartphone size={22} />} text={t('chat.list.gate.revoked')} />
         <ReloginCard reason="unbound" />
+      </Centered>
+    );
+  }
+  if (phase === 'keychain_denied') {
+    return (
+      <Centered>
+        <KeychainCard />
       </Centered>
     );
   }

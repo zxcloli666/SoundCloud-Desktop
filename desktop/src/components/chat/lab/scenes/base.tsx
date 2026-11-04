@@ -1,5 +1,5 @@
 import { CONV } from '../convs';
-import type { LabScene } from '../types';
+import type { LabKit, LabScene } from '../types';
 
 export const scenes: LabScene[] = [
   { id: 'list', title: 'Chat list', route: '/chats' },
@@ -18,4 +18,29 @@ export const scenes: LabScene[] = [
     route: '/home',
     setup: (kit) => kit.dock(CONV.dm),
   },
+  {
+    id: 'keychain-denied',
+    title: 'Keychain access refused',
+    route: '/chats',
+    setup: (kit) => refuseKeychain(kit),
+  },
+  {
+    id: 'keychain-again',
+    title: 'Keychain refused again after a retry',
+    route: '/chats',
+    setup: (kit) => {
+      refuseKeychain(kit);
+      kit.click('[data-ui="chat-keychain"] button');
+      kit.waitFor('[data-ui="chat-keychain"] [role="status"]');
+    },
+  },
 ];
+
+function refuseKeychain(kit: LabKit) {
+  kit.world.status = { ...kit.world.status, phase: 'keychain_denied' };
+  kit.handle('chat_keychain_retry', () => {
+    kit.emit('chat:status', { ...kit.world.status, phase: 'starting' });
+    setTimeout(() => kit.emit('chat:status', { ...kit.world.status }), 900);
+    return null;
+  });
+}

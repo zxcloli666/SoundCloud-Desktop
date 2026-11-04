@@ -18,5 +18,14 @@
     "limitedDesc": "The server is limiting sign-ins right now. Try again in {{seconds}} s.",
     "expired": "Sign-in expired",
     "failed": "Sign-in failed"
+  },
+  "keychain": {
+    "title": "Chats need access to your keys",
+    "mac": "Chat encryption keys live in the macOS keychain, and access to it was denied. Press Try again and choose Allow.",
+    "linux": "Chat encryption keys live in the system password store, and the unlock window was closed. Press Try again and unlock the store.",
+    "windows": "Chat encryption keys live in Windows Credential Manager, and access to it was denied. Press Try again.",
+    "again": "Access was denied again. Chats turn on once you allow it.",
+    "failed": "Could not ask for access. Try again.",
+    "asking": "Waiting for the system"
   }
 }
