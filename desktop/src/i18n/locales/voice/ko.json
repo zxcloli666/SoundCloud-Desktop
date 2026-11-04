@@ -148,11 +148,8 @@
       "lolya": {
         "name": "롤랴"
       },
-      "calm": {
-        "name": "차분함"
-      },
-      "male": {
-        "name": "남성"
+      "moriarty": {
+        "name": "모리아티"
       },
       "robot": {
         "name": "로봇"
@@ -167,8 +164,6 @@
     "tags": {
       "cute": "귀여움",
       "bright": "밝음",
-      "soft": "부드러움",
-      "calm": "차분",
       "deep": "낮음",
       "synth": "합성",
       "fun": "재미",

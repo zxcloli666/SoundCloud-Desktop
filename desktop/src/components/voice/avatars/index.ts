@@ -1,5 +1,4 @@
 import type { ComponentType } from 'react';
-import { CalmMark } from './CalmMark';
 import { DeepMark } from './DeepMark';
 import { GemMark } from './GemMark';
 import { HeartMark } from './HeartMark';
@@ -9,8 +8,7 @@ import { RobotMark } from './RobotMark';
 
 export const MARKS: Record<string, ComponentType<MarkProps>> = {
   lolya: LolyaMark,
-  calm: CalmMark,
-  male: DeepMark,
+  moriarty: DeepMark,
   robot: RobotMark,
   af_heart: HeartMark,
   am_michael: GemMark,

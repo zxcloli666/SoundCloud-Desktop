@@ -151,11 +151,8 @@
       "lolya": {
         "name": "Lolya"
       },
-      "calm": {
-        "name": "Sakin"
-      },
-      "male": {
-        "name": "Erkek"
+      "moriarty": {
+        "name": "Moriarty"
       },
       "robot": {
         "name": "Robot"
@@ -170,8 +167,6 @@
     "tags": {
       "cute": "tatlı",
       "bright": "parlak",
-      "soft": "yumuşak",
-      "calm": "düz",
       "deep": "derin",
       "synth": "sentez",
       "fun": "eğlenceli",

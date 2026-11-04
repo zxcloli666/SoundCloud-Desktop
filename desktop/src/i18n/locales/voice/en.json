@@ -151,11 +151,8 @@
       "lolya": {
         "name": "Lolya"
       },
-      "calm": {
-        "name": "Calm"
-      },
-      "male": {
-        "name": "Male"
+      "moriarty": {
+        "name": "Moriarty"
       },
       "robot": {
         "name": "Robot"
@@ -170,8 +167,6 @@
     "tags": {
       "cute": "cute",
       "bright": "bright",
-      "soft": "soft",
-      "calm": "even",
       "deep": "deep",
       "synth": "synth",
       "fun": "fun",
