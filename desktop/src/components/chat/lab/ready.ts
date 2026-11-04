@@ -33,11 +33,10 @@ export async function runScene(steps: Step[]) {
   document.documentElement.dataset.chatLabReady = lab.__chatLabError ? 'error' : '1';
   lab.__chatLabReady = true;
   if (inAppWindow()) {
-    const seq = readParams().seq ?? '-';
-    console.warn(
-      lab.__chatLabError
-        ? `[chat-lab] error ${seq} ${lab.__chatLabError}`
-        : `[chat-lab] ready ${seq}`,
-    );
+    import.meta.hot?.send('chat-lab:ready', {
+      state: lab.__chatLabError ? 'error' : 'ready',
+      seq: readParams().seq ?? '-',
+      error: lab.__chatLabError,
+    });
   }
 }

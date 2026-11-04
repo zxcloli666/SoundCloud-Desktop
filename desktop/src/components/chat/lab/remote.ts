@@ -1,3 +1,4 @@
+import { inAppWindow } from './ipc';
 import { type LabParams, paramsUrl, readParams } from './params';
 
 const FILE = '/chat-lab-remote.json';
@@ -17,10 +18,11 @@ async function read(): Promise<Remote | null> {
 
 export function watchRemote() {
   let seen: number | null = Number(readParams().seq) || null;
+  const follow = inAppWindow();
   const tick = async () => {
     const remote = await read();
     if (remote) {
-      if (seen !== null && remote.seq !== seen) {
+      if ((seen !== null || follow) && remote.seq !== seen) {
         const { seq, ...rest } = remote;
         window.location.replace(paramsUrl({ ...rest, seq: String(seq) } as Partial<LabParams>));
         return;

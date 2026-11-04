@@ -19,7 +19,7 @@ usage:
 
 the app must run as: VITE_CHAT_LAB=1 pnpm tauri dev --features chat-lab
 env: CHAT_SHOT_OWNER (default soundcloud-desktop)
-     CHAT_SHOT_VITE_LOG (the vite output; the page reports "[chat-lab] ready <seq>" there)
+     CHAT_SHOT_VITE_LOG (the output of the VITE_CHAT_LAB=1 vite; it prints "[chat-lab] ready <seq>")
      CHAT_SHOT_TIMEOUT (seconds to wait for ready, default 40)
      CHAT_SHOT_WAIT (seconds after a switch when there is no vite log, default 5)
 USAGE

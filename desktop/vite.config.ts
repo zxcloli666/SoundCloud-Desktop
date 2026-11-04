@@ -1,17 +1,27 @@
-import { defineConfig } from "vite";
+import { defineConfig, type Plugin, searchForWorkspaceRoot } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
-import { readFileSync } from "node:fs";
+import { readFileSync, realpathSync } from "node:fs";
 
 // @ts-expect-error process is a nodejs global
 const host = process.env.TAURI_DEV_HOST;
 const pkg = JSON.parse(readFileSync("package.json", "utf-8"));
+const chatLab = Boolean(process.env.VITE_CHAT_LAB);
+
+const chatLabReady: Plugin = {
+  name: "chat-lab-ready",
+  configureServer(server) {
+    server.ws.on("chat-lab:ready", (data: { state: string; seq: string; error?: string }) => {
+      server.config.logger.info(`[chat-lab] ${data.state} ${data.seq}${data.error ? ` ${data.error}` : ""}`);
+    });
+  },
+};
 
 export default defineConfig(async () => ({
   define: {
     __APP_VERSION__: JSON.stringify(pkg.version),
   },
-  plugins: [react(), tailwindcss()],
+  plugins: [react(), tailwindcss(), ...(chatLab ? [chatLabReady] : [])],
   build: {
     sourcemap: 'hidden',
     rollupOptions: {
@@ -58,6 +68,9 @@ export default defineConfig(async () => ({
       : undefined,
     watch: {
       ignored: ["**/src-tauri/**"],
+    },
+    fs: {
+      allow: [searchForWorkspaceRoot(process.cwd()), realpathSync("node_modules")],
     },
   },
 }));
