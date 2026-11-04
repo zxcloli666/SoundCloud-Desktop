@@ -1541,10 +1541,6 @@
   "update": {
     "available": "업데이트 가능",
     "later": "나중에",
-    "year": {
-      "cta": "1년",
-      "saved": "{{sum}} ₽ 절약"
-    },
     "download": "다운로드",
     "installRestart": "설치 후 다시 시작",
     "downloading": "업데이트 다운로드 중",
@@ -2529,6 +2525,10 @@
       "free": "지금",
       "freeTime": "시간",
       "starTime": "약 2분"
+    },
+    "year": {
+      "cta": "1년",
+      "saved": "{{sum}} ₽ 절약"
     }
   },
   "recap": {

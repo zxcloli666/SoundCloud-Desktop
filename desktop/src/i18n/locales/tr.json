@@ -1611,10 +1611,6 @@
   "update": {
     "available": "Güncelleme mevcut",
     "later": "Daha sonra",
-    "year": {
-      "cta": "Yıl",
-      "saved": "{{sum}} ₽ tasarruf"
-    },
     "download": "İndir",
     "installRestart": "Yükle ve yeniden başlat",
     "downloading": "Güncelleme indiriliyor",
@@ -2610,6 +2606,10 @@
       "free": "Şimdi",
       "freeTime": "saat",
       "starTime": "~2 dk"
+    },
+    "year": {
+      "cta": "Yıl",
+      "saved": "{{sum}} ₽ tasarruf"
     }
   },
   "recap": {

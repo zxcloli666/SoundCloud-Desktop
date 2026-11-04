@@ -1695,10 +1695,6 @@
   "update": {
     "available": "Update available",
     "later": "Later",
-    "year": {
-      "cta": "Year",
-      "saved": "save {{sum}} ₽"
-    },
     "download": "Download",
     "installRestart": "Install and restart",
     "downloading": "Downloading update",
@@ -2711,6 +2707,10 @@
       "free": "Now",
       "freeTime": "hours",
       "starTime": "~2 min"
+    },
+    "year": {
+      "cta": "Year",
+      "saved": "save {{sum}} ₽"
     }
   },
   "recap": {
