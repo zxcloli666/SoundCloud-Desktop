@@ -2632,7 +2632,7 @@
     "rerun": "다시 실행",
     "forget": "기록에서 삭제",
     "pasted": "클립보드에 {{source}} 링크가 있습니다",
-    "dropFile": "목록을 가져오려면 .txt 또는 .csv 파일을 놓으세요",
+    "dropFile": "목록을 가져오려면 파일을 놓으세요",
     "err": {
       "session_expired": "SoundCloud 세션이 만료되었습니다",
       "ym_token_invalid": "Yandex Music이 토큰을 거부했습니다",

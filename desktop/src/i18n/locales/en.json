@@ -1635,7 +1635,7 @@
     "rerun": "Run again",
     "forget": "Remove from history",
     "pasted": "{{source}} link in the clipboard",
-    "dropFile": "Drop a .txt or .csv list to import it",
+    "dropFile": "Drop a list file to import it",
     "err": {
       "session_expired": "Your SoundCloud session has expired",
       "ym_token_invalid": "Yandex Music rejected the token",

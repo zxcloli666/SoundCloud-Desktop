@@ -2716,7 +2716,7 @@
     "rerun": "Yeniden çalıştır",
     "forget": "Geçmişten kaldır",
     "pasted": "Panoda bir {{source}} bağlantısı var",
-    "dropFile": "Listeyi içe aktarmak için bir .txt veya .csv dosyası bırakın",
+    "dropFile": "Listeyi içe aktarmak için dosyayı bırakın",
     "err": {
       "session_expired": "SoundCloud oturumunuzun süresi doldu",
       "ym_token_invalid": "Yandex Music jetonu reddetti",

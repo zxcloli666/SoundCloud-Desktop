@@ -2783,7 +2783,7 @@
     "rerun": "Executar de novo",
     "forget": "Remover do histórico",
     "pasted": "Link do {{source}} na área de transferência",
-    "dropFile": "Solte um arquivo .txt ou .csv para importar a lista",
+    "dropFile": "Solte um arquivo para importar a lista",
     "err": {
       "session_expired": "Sua sessão do SoundCloud expirou",
       "ym_token_invalid": "O Yandex Music recusou o token",
