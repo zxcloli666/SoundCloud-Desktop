@@ -28,6 +28,10 @@ const TEXTS: ReadonlySet<string> = new Set([
   'request_limit',
   'read_limited',
   'disabled',
+  'backdrop_cooldown',
+  'send_paused',
+  'muted',
+  'slow_mode',
 ]);
 
 const WAITS: ReadonlySet<string> = new Set([
@@ -36,6 +40,9 @@ const WAITS: ReadonlySet<string> = new Set([
   'request_limit',
   'read_limited',
   'busy',
+  'backdrop_cooldown',
+  'send_paused',
+  'slow_mode',
 ]);
 
 const HARD: ReadonlySet<string> = new Set([
@@ -43,6 +50,7 @@ const HARD: ReadonlySet<string> = new Set([
   'unavailable',
   'not_member',
   'disabled',
+  'muted',
 ]);
 
 function actionOf(code: string): FailureAction {
