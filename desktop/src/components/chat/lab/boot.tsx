@@ -1,6 +1,6 @@
-import { invoke } from '@tauri-apps/api/core';
 import ReactDOM from 'react-dom/client';
 import { NEWS } from '../../../lib/constants';
+import { trackedInvoke as invoke } from '../../../lib/diagnostics';
 import { useNewsStore } from '../../../stores/news';
 import { useSettingsStore } from '../../../stores/settings';
 import { inAppWindow } from './ipc';
