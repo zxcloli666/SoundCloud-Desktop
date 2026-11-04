@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useMyPlaylists, useUserTracks } from '../../../../lib/hooks';
 import { useAuthStore } from '../../../../stores/auth';
 import { isCoverUrl, sizedArt } from './perks';
@@ -63,15 +63,19 @@ export function useArtworkChoices(enabled: boolean): ArtworkChoices {
     [user?.avatar_url, user?.username, playlists.playlists, tracks.tracks],
   );
 
+  const refetchTracks = tracks.refetch;
+  const refetchPlaylists = playlists.refetch;
+  const retry = useCallback(() => {
+    void refetchTracks();
+    void refetchPlaylists();
+  }, [refetchTracks, refetchPlaylists]);
+
   const pending = tracks.isLoading || playlists.isLoading;
-  return {
-    choices,
-    loading: pending && choices.length <= 1,
-    failed: !pending && tracks.isError && playlists.isError && choices.length === 0,
-    partial: !pending && (tracks.isError || playlists.isError),
-    retry: () => {
-      void tracks.refetch();
-      void playlists.refetch();
-    },
-  };
+  const loading = pending && choices.length <= 1;
+  const failed = !pending && tracks.isError && playlists.isError && choices.length === 0;
+  const partial = !pending && (tracks.isError || playlists.isError);
+  return useMemo(
+    () => ({ choices, loading, failed, partial, retry }),
+    [choices, loading, failed, partial, retry],
+  );
 }

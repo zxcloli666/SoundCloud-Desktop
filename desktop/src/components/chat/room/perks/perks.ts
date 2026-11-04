@@ -18,7 +18,8 @@ export const COVER_ACCENTS = [
   '#ec4f9c',
 ] as const;
 
-const LIGHT_ACCENTS: ReadonlySet<number> = new Set([1, 2, 3]);
+const DARK_INK = '#17141d';
+const LIGHT_INK = '#ffffff';
 
 const FREE_PERKS: RoomPerks = { starHost: false, capacity: ROOM_CAPACITY, modsMax: MAX_MODERATORS };
 const SNDCDN = /^https:\/\/([a-z0-9-]+\.)*sndcdn\.com\//i;
@@ -33,13 +34,26 @@ export function accentColor(accent: number | null | undefined): string {
   return COVER_ACCENTS[index >= 0 && index < COVER_ACCENTS.length ? index : 0];
 }
 
-export function accentInk(accent: number | null | undefined): string {
-  return LIGHT_ACCENTS.has(accent ?? 0) ? '#17141d' : '#ffffff';
-}
-
 export function accentRgb(hex: string): [number, number, number] {
   const value = Number.parseInt(hex.slice(1), 16);
   return [(value >> 16) & 255, (value >> 8) & 255, value & 255];
+}
+
+function channel(value: number): number {
+  const c = value / 255;
+  return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+}
+
+function luminance(hex: string): number {
+  const [r, g, b] = accentRgb(hex);
+  return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
+}
+
+export function accentInk(accent: number | null | undefined): string {
+  const light = luminance(accentColor(accent));
+  const onWhite = 1.05 / (light + 0.05);
+  const onDark = (light + 0.05) / (luminance(DARK_INK) + 0.05);
+  return onWhite >= onDark ? LIGHT_INK : DARK_INK;
 }
 
 export function isCoverUrl(url: string | null | undefined): url is string {

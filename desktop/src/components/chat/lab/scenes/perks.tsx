@@ -244,6 +244,19 @@ export const scenes: LabScene[] = [
     },
   },
   {
+    id: 'perks-star-soon',
+    title: 'Perks: STAR bought, room not upgraded yet',
+    route: '/chats/room',
+    setup: (kit) => {
+      seedArtwork();
+      hostRoom(kit, FREE, { members: crowd(6) });
+      kit.star(true);
+      setIsPremium(true);
+      kit.click('[data-ui="room-tuning"]');
+      kit.waitFor('[data-ui="room-capacity"]');
+    },
+  },
+  {
     id: 'perks-cover-star',
     title: 'Perks: cover picker, STAR host',
     route: '/chats/room',

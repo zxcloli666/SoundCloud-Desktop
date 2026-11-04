@@ -1,5 +1,5 @@
 import * as Popover from '@radix-ui/react-popover';
-import type { ReactNode } from 'react';
+import { createContext, type ReactNode, useCallback, useContext } from 'react';
 import { surface } from '../../../lib/chat/tone';
 import { usePerfMode } from '../../../lib/perf';
 
@@ -11,8 +11,19 @@ interface RoomPopoverProps {
   children: ReactNode;
 }
 
+const CloseContext = createContext<() => void>(() => {});
+
+export function useRoomPopoverClose(): () => void {
+  return useContext(CloseContext);
+}
+
 export function RoomPopover({ trigger, open, onOpenChange, width, children }: RoomPopoverProps) {
   const blur = usePerfMode().blur(28);
+  const closeParent = useContext(CloseContext);
+  const close = useCallback(() => {
+    onOpenChange(false);
+    closeParent();
+  }, [onOpenChange, closeParent]);
   return (
     <Popover.Root open={open} onOpenChange={onOpenChange}>
       <Popover.Trigger asChild>{trigger}</Popover.Trigger>
@@ -32,7 +43,7 @@ export function RoomPopover({ trigger, open, onOpenChange, width, children }: Ro
             boxShadow: '0 18px 50px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.05)',
           }}
         >
-          {children}
+          <CloseContext.Provider value={close}>{children}</CloseContext.Provider>
         </Popover.Content>
       </Popover.Portal>
     </Popover.Root>
