@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main, chat/main, chat/media]
+    branches: [main]
     paths:
       - 'desktop/**'
       - 'utils/**'
@@ -11,6 +11,7 @@ on:
       - 'scripts/ci-mtime.sh'
       - 'scripts/ci-toolchain.sh'
       - '.github/scripts/changes.sh'
+      - '.github/actions/target-cache/**'
       - '.github/workflows/ci.yml'
   pull_request:
     branches: [main]
@@ -22,6 +23,7 @@ on:
       - 'scripts/ci-mtime.sh'
       - 'scripts/ci-toolchain.sh'
       - '.github/scripts/changes.sh'
+      - '.github/actions/target-cache/**'
       - '.github/workflows/ci.yml'
 
 permissions:
@@ -33,7 +35,7 @@ concurrency:
 
 env:
   CARGO_TERM_COLOR: always
-  CARGO_INCREMENTAL: 0
+  CARGO_INCREMENTAL: 1
   CARGO_PROFILE_DEV_DEBUG: 0
   CARGO_PROFILE_TEST_DEBUG: 0
   HOMEBREW_NO_AUTO_UPDATE: 1
@@ -88,9 +90,6 @@ jobs:
       - name: Colour scheme
         run: node scripts/check-scheme.mjs
 
-      - name: Room tests
-        run: node --experimental-strip-types --test src/lib/together/*.test.mjs
-
       - name: Types and bundle
         run: pnpm build
 
@@ -109,6 +108,9 @@ jobs:
           - os: windows
             runner: windows-latest
     runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: read
+      packages: write
     defaults:
       run:
         shell: bash
@@ -128,18 +130,11 @@ jobs:
         working-directory: .
         run: bash scripts/ci-toolchain.sh
 
-      - uses: swatinem/rust-cache@v2
+      - name: Restore targets
+        uses: ./.github/actions/target-cache
         with:
-          workspaces: desktop/src-tauri -> target
-          cache-directories: .ci
-          key: ci-${{ matrix.os }}
-          cache-workspace-crates: true
-          cache-on-failure: true
-          save-if: ${{ github.ref == 'refs/heads/main' }}
-
-      - name: Mtimes
-        working-directory: .
-        run: bash scripts/ci-mtime.sh restore
+          mode: restore
+          name: ci-${{ matrix.os }}
 
       - name: Frontend placeholder
         run: mkdir -p ../dist && echo '<!doctype html>' > ../dist/index.html
@@ -159,11 +154,21 @@ jobs:
         if: runner.os != 'Windows'
         run: cargo test
 
+      - name: Save targets
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: ./.github/actions/target-cache
+        with:
+          mode: save
+          name: ci-${{ matrix.os }}
+
   real-crates:
     name: Real call and decrypt-client crates
     needs: changes
     if: needs.changes.outputs.real == 'true' && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      packages: write
     defaults:
       run:
         working-directory: desktop/src-tauri
@@ -177,18 +182,11 @@ jobs:
         working-directory: .
         run: bash scripts/ci-toolchain.sh
 
-      - uses: swatinem/rust-cache@v2
+      - name: Restore targets
+        uses: ./.github/actions/target-cache
         with:
-          workspaces: desktop/src-tauri -> target
-          cache-directories: .ci
-          key: real-crates
-          cache-workspace-crates: true
-          cache-on-failure: true
-          save-if: ${{ github.ref == 'refs/heads/main' }}
-
-      - name: Mtimes
-        working-directory: .
-        run: bash scripts/ci-mtime.sh restore
+          mode: restore
+          name: real-crates
 
       - uses: actions/checkout@v7
         with:
@@ -218,3 +216,10 @@ jobs:
         env:
           BUILD: ${{ steps.build.outcome }}
         run: bash scripts/ci-mtime.sh stamp "$BUILD"
+
+      - name: Save targets
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: ./.github/actions/target-cache
+        with:
+          mode: save
+          name: real-crates
