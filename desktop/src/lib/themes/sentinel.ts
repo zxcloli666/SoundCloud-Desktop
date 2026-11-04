@@ -1,5 +1,6 @@
 import { BaseDirectory, mkdir, readTextFile, remove, writeTextFile } from '@tauri-apps/plugin-fs';
 import { trackedInvoke as invoke } from '../diagnostics';
+import { parseSentinel, reloadText, type Sentinel, sentinelText } from './crash-guard';
 
 const SENTINEL_PATH = 'themes/applying';
 const APP_DATA = { baseDir: BaseDirectory.AppData };
@@ -12,17 +13,22 @@ export async function writeSentinel(id: string, hash: string): Promise<void> {
   clearInterval(aliveTimer);
   await invoke('theme_alive', { alive: false }).catch(() => undefined);
   await mkdir('themes', { ...APP_DATA, recursive: true }).catch(() => undefined);
-  await writeTextFile(SENTINEL_PATH, `${id} ${hash}`, APP_DATA).catch(() => undefined);
-  written = `${id} ${hash}`;
+  await writeTextFile(SENTINEL_PATH, sentinelText(id, hash), APP_DATA).catch(() => undefined);
+  written = sentinelText(id, hash);
   aliveTimer = setInterval(() => {
     void invoke('theme_alive', { alive: true }).catch(() => undefined);
   }, ALIVE_EVERY_MS);
 }
 
-export async function readSentinel(): Promise<{ id: string; hash: string } | null> {
-  const text = await readTextFile(SENTINEL_PATH, APP_DATA).catch(() => '');
-  const [id, hash] = text.trim().split(' ');
-  return id && hash ? { id, hash } : null;
+export async function readSentinel(): Promise<Sentinel | null> {
+  return parseSentinel(await readTextFile(SENTINEL_PATH, APP_DATA).catch(() => ''));
+}
+
+export async function markReload(): Promise<void> {
+  const text = written ? reloadText(written) : null;
+  if (!text) return;
+  clearInterval(aliveTimer);
+  await writeTextFile(SENTINEL_PATH, text, APP_DATA);
 }
 
 export async function clearSentinel(): Promise<void> {
