@@ -1,49 +1,129 @@
 {
   "title": "Storage",
-  "entry": "Image storage",
-  "entryDesc": "See and delete the images you sent",
-  "used": "{{used}} of {{quota}}",
-  "empty": "You have not sent any images",
-  "failed": "Could not load storage",
+  "back": "Back",
   "retry": "Retry",
-  "locked": "Storage opens with STAR",
+  "retryIn_one": "Retry in {{count}} s",
+  "retryIn_other": "Retry in {{count}} s",
+  "cancel": "Cancel",
+  "close": "Close",
+  "ring": {
+    "of": "of {{quota}}",
+    "value": "{{used}} of {{quota}}"
+  },
+  "full": "Storage is full",
+  "freeLeft": "{{size}} free",
+  "facts": {
+    "files": "Images",
+    "uploading": "Uploading"
+  },
+  "lapsed": "New images need STAR. You can still view and delete old ones.",
+  "chats": {
+    "title": "By chat",
+    "goneChat": "Deleted chat",
+    "someChat": "Chat",
+    "gone": "Chat is gone",
+    "more_one": "{{count}} more",
+    "more_other": "{{count}} more",
+    "less": "Show less"
+  },
+  "files_one": "{{count}} image",
+  "files_other": "{{count}} images",
+  "cache": {
+    "title": "Cache on this device",
+    "desc": "Images already downloaded, yours and others",
+    "clear": "Clear cache",
+    "freed": "Freed {{size}}",
+    "failed": "Size unknown"
+  },
+  "deleteAll": {
+    "title": "Delete all my images",
+    "hint": "Gone for everyone in every chat",
+    "action": "Delete all",
+    "warn": "All your images and group avatars disappear for everyone in every chat. You can undo for {{seconds}} s.",
+    "word": "DELETE",
+    "type": "Type {{word}}",
+    "confirm": "Delete all"
+  },
+  "errors": {
+    "read_limited": "Too many requests. Wait a moment.",
+    "request_limit": "Too many requests. Wait a moment.",
+    "offline": "No connection to the server.",
+    "invalid": "The server refused the request.",
+    "quota_exceeded": "Not enough space.",
+    "generic": "Something went wrong.",
+    "more": "Could not load more",
+    "title": "Storage did not load",
+    "limitedTitle": "Too often"
+  },
+  "tile": {
+    "unavailable": "Image unavailable",
+    "kind": {
+      "avatar": "Avatar",
+      "backdrop": "Backdrop",
+      "image": "Image"
+    },
+    "unsent": "Not sent",
+    "label": "Image, {{size}}, {{date}}",
+    "chats_one": "in {{count}} chat",
+    "chats_other": "in {{count}} chats",
+    "failed": "Did not load"
+  },
   "order": {
+    "label": "Order",
     "new": "Newest",
     "old": "Oldest",
     "big": "Biggest"
   },
   "filter": {
-    "all": "All chats",
-    "gone": "Chat is gone"
+    "clear": "Remove filter {{name}}"
   },
+  "picked_one": "{{count}} selected",
+  "picked_other": "{{count}} selected",
   "select": {
     "all": "Select all",
     "clear": "Clear selection"
   },
   "delete": {
-    "one": "Delete",
-    "all": "Delete all my images",
-    "warn": "The image disappears for everyone in every chat.",
-    "warnAll": "All your images disappear for everyone in every chat.",
-    "word": "DELETE",
-    "type": "Type {{word}} to confirm",
-    "confirm": "Confirm",
-    "cancel": "Cancel"
+    "action": "Delete",
+    "some_one": "Delete {{count}}",
+    "some_other": "Delete {{count}}",
+    "title_one": "Delete {{count}} image?",
+    "title_other": "Delete {{count}} images?",
+    "count_one": "image",
+    "count_other": "images",
+    "size": "freed",
+    "chats_one": "chat",
+    "chats_other": "chats",
+    "warn_one": "The image disappears for everyone in every chat it is in.",
+    "warn_other": "The images disappear for everyone in every chat they are in.",
+    "confirm": "Delete for everyone"
   },
   "undo": {
+    "deleted_one": "{{count}} image deleted",
+    "deleted_other": "{{count}} images deleted",
+    "freed": "Freed {{size}}",
+    "quota": "Cannot undo: {{used}} of {{quota}} used. Free some space.",
     "action": "Undo",
-    "restored": "Restored",
-    "missed": "Some images could not be restored"
+    "missed_one": "Restored {{restored}}, {{count}} is gone for good",
+    "missed_other": "Restored {{restored}}, {{count}} are gone for good",
+    "restored_one": "Restored {{count}} image",
+    "restored_other": "Restored {{count}} images"
   },
-  "cache": {
-    "title": "Cache on this device",
-    "clear": "Clear cache",
-    "freed": "Freed {{size}}"
+  "empty": {
+    "title": "No images",
+    "line": "Images you send to chats show up here.",
+    "chatTitle": "No images of yours in this chat"
   },
-  "files_one": "{{count}} image",
-  "files_other": "{{count}} images",
-  "picked_one": "{{count}} selected",
-  "picked_other": "{{count}} selected",
-  "deleted_one": "{{count}} image deleted",
-  "deleted_other": "{{count}} images deleted"
+  "star": {
+    "title": "Images in chats with STAR",
+    "albums": "Albums of up to 10 images",
+    "quota": "1 GB for your images",
+    "rooms": "Room covers and backdrops"
+  },
+  "entry": {
+    "title": "Image storage",
+    "used": "{{used}} of {{quota}}",
+    "line": "Your images in every chat",
+    "open": "Open"
+  }
 }
