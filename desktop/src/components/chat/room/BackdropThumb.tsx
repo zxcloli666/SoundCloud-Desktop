@@ -1,7 +1,7 @@
 import { memo, useMemo } from 'react';
 import type { PublicBackdrop } from '../../../lib/chat/media-types';
-import { useScheme } from '../../../lib/scheme';
 import { scrimAlpha } from './backdrop/scrim';
+import { useSchemeTokens } from './backdrop/tokens';
 import { presetOf } from './presets';
 
 const CARD_TEXT_TONE = 0.55;
@@ -15,11 +15,11 @@ export const BackdropThumb = memo(function BackdropThumb({
 }: {
   backdrop: PublicBackdrop | null;
 }) {
-  const scheme = useScheme();
+  const tokens = useSchemeTokens();
   const preset = presetOf(backdrop?.kind === 'preset' ? backdrop.id : null);
   const alpha = useMemo(
-    () => (preset ? scrimAlpha(preset.light, scheme, CARD_TEXT_TONE) : 0),
-    [preset, scheme],
+    () => (preset ? scrimAlpha(preset.light, tokens, CARD_TEXT_TONE) : 0),
+    [preset, tokens],
   );
   if (!preset) return null;
   return (

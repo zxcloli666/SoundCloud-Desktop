@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { chatBridge } from '../../../lib/chat/bridge';
@@ -8,8 +8,6 @@ import { usePerfMode } from '../../../lib/perf';
 import { useScheme } from '../../../lib/scheme';
 import { serverTime } from '../../../lib/together/link';
 import type { RoomView } from '../../../lib/together/types';
-import { useBackdropStore } from '../../../stores/chat/backdrop';
-import { useChatMediaStore } from '../../../stores/chat/media';
 import { ModalTitle } from '../../ui/Modal';
 import {
   type ChoiceKey,
@@ -17,9 +15,11 @@ import {
   orderedPresets,
   photoState,
   roomImageSrc,
+  uploadStatus,
 } from './backdrop/choices';
 import { useLeftMs } from './backdrop/countdown';
 import { type BackdropProblem, backdropProblem } from './backdrop/errors';
+import { useFocusInside } from './backdrop/focus';
 import { moveInGrid } from './backdrop/grid';
 import { BACKDROP_KEYFRAMES } from './backdrop/keyframes';
 import { NoneTile } from './backdrop/NoneTile';
@@ -28,16 +28,36 @@ import { PickerFooter } from './backdrop/PickerFooter';
 import { type Focus, PickerPreview } from './backdrop/PickerPreview';
 import { PresetTile } from './backdrop/PresetTile';
 import { useRoomConversation } from './backdrop/shown';
-import { pickBackdropPath, uploadBackdrop } from './backdrop/upload';
 import { useBackdropUpload } from './backdrop/useBackdropUpload';
+import { usePhotoActions } from './backdrop/usePhotoActions';
 import { presetOf } from './presets';
 
 const PENDING_MS = 8_000;
+const FIRST_FOCUS = ['[data-tile][aria-pressed="true"]', '[data-tile]'] as const;
 
 function initialFocus(key: ChoiceKey, imageSrc: string | null): Focus {
   const preset = presetOf(key);
   if (preset) return { kind: 'preset', preset };
   return key === 'photo' ? { kind: 'photo', src: imageSrc } : { kind: 'none' };
+}
+
+function usePending(current: ChoiceKey) {
+  const [pending, setPending] = useState<ChoiceKey | null>(null);
+  const shown = useRef(current);
+
+  useEffect(() => {
+    if (shown.current === current) return;
+    shown.current = current;
+    setPending(null);
+  }, [current]);
+
+  useEffect(() => {
+    if (pending === null) return;
+    const timer = setTimeout(() => setPending(null), PENDING_MS);
+    return () => clearTimeout(timer);
+  }, [pending]);
+
+  return [pending, setPending] as const;
 }
 
 export const BackdropPicker = memo(function BackdropPicker({
@@ -56,34 +76,29 @@ export const BackdropPicker = memo(function BackdropPicker({
   const imageSrc = roomImageSrc(room, conversationId);
   const { upload, error } = useBackdropUpload(conversationId);
   const cooldownMs = useLeftMs(room.backdropCooldownUntil);
-  const forget = useBackdropStore((state) => state.forget);
   const [focus, setFocus] = useState<Focus>(() => initialFocus(current, imageSrc));
-  const [pending, setPending] = useState<ChoiceKey | null>(null);
+  const [pending, setPending] = usePending(current);
   const [problem, setProblem] = useState<BackdropProblem | null>(null);
   const retry = useRef<() => void>(() => {});
+  const grid = useRef<HTMLDivElement>(null);
+  useFocusInside(grid, FIRST_FOCUS);
 
-  const locked = room.perks?.starHost !== true || problem?.fix === 'star';
+  const loading = room.perks === undefined;
   const linking = !conversationId;
-  const photo = photoState(upload, error, imageSrc, cooldownMs, Date.now());
-  const uploadProblem = photo.kind === 'failed' ? backdropProblem(error, serverTime()) : null;
-  const shownProblem = problem ?? uploadProblem;
-
-  const shownKey = useRef(current);
-  useEffect(() => {
-    if (shownKey.current === current) return;
-    shownKey.current = current;
-    setPending(null);
-  }, [current]);
-
-  useEffect(() => {
-    if (pending === null) return;
-    const timer = setTimeout(() => setPending(null), PENDING_MS);
-    return () => clearTimeout(timer);
-  }, [pending]);
+  const locked = !loading && (room.perks?.starHost !== true || problem?.fix === 'star');
+  const ready = !loading && !linking && !locked;
+  const status = uploadStatus(upload, error);
+  const photo = photoState(status, imageSrc, cooldownMs);
+  const failed = status?.kind === 'failed';
+  const uploadProblem = useMemo(
+    () => (failed ? backdropProblem(error, serverTime()) : null),
+    [failed, error],
+  );
+  const photos = usePhotoActions(room.code, conversationId, upload, ready, setProblem);
 
   const choose = useCallback(
     async (key: ChoiceKey, preset: BackdropPresetId | null) => {
-      if (locked || !conversationId || key === current) return;
+      if (!ready || !conversationId || key === current) return;
       retry.current = () => void choose(key, preset);
       setProblem(null);
       setPending(key);
@@ -94,62 +109,21 @@ export const BackdropPicker = memo(function BackdropPicker({
         setProblem(backdropProblem(failure, serverTime()));
       }
     },
-    [locked, conversationId, current, room.code],
+    [ready, conversationId, current, room.code, setPending],
   );
-
-  const pickPhoto = useCallback(async () => {
-    if (locked || !conversationId) return;
-    retry.current = () => void pickPhoto();
-    setProblem(null);
-    try {
-      const path = await pickBackdropPath(t('chat.backdrop.images'));
-      if (!path) return;
-      const view = await uploadBackdrop(room.code, conversationId, path);
-      useChatMediaStore.getState().applyUploads({ uploads: [view], removed: [] });
-    } catch (failure) {
-      setProblem(backdropProblem(failure, serverTime()));
-    }
-  }, [locked, conversationId, room.code, t]);
-
-  const replacePhoto = useCallback(async () => {
-    if (upload?.state === 'failed') {
-      forget(upload.id);
-      await useChatMediaStore
-        .getState()
-        .cancelUpload(upload.id)
-        .catch(() => {});
-    }
-    await pickPhoto();
-  }, [upload, forget, pickPhoto]);
-
-  const dismissUpload = useCallback(async () => {
-    if (!upload) return;
-    forget(upload.id);
-    await useChatMediaStore
-      .getState()
-      .cancelUpload(upload.id)
-      .catch((failure) => setProblem(backdropProblem(failure, serverTime())));
-  }, [upload, forget]);
 
   const onPhoto = useCallback(() => {
     setFocus({ kind: 'photo', src: imageSrc });
-    if (locked) return;
-    if (photo.kind === 'failed' && upload) {
-      setProblem(null);
-      forget(upload.id);
-      void useChatMediaStore
-        .getState()
-        .retryUpload(upload.id)
-        .catch((failure) => setProblem(backdropProblem(failure, serverTime())));
-      return;
-    }
-    if (photo.kind === 'idle' || photo.kind === 'current') void pickPhoto();
-  }, [imageSrc, locked, photo.kind, upload, forget, pickPhoto]);
+    if (!ready) return;
+    retry.current = () => void photos.pick();
+    if (photo.kind === 'failed') void photos.retry();
+    else if (photo.kind === 'idle' || photo.kind === 'current') void photos.pick();
+  }, [imageSrc, ready, photo.kind, photos]);
 
   const onRetry = useCallback(() => {
-    if (uploadProblem && !problem) onPhoto();
+    if (!problem && uploadProblem) void photos.retry();
     else retry.current();
-  }, [uploadProblem, problem, onPhoto]);
+  }, [problem, uploadProblem, photos]);
 
   const track = room.playback.track;
   const cover = track ? art(track.artwork_url || track.user?.avatar_url, 't200x200') : null;
@@ -165,22 +139,25 @@ export const BackdropPicker = memo(function BackdropPicker({
         listeners={room.members.length}
       />
       <div
+        ref={grid}
         role="group"
         aria-label={t('chat.backdrop.title')}
+        aria-busy={loading || linking}
         onKeyDown={moveInGrid}
         className="grid grid-cols-4 gap-2"
-        aria-busy={linking}
       >
         <NoneTile
           cover={cover}
           current={current === 'none'}
           pending={pending === 'none'}
+          disabled={loading || linking}
           onPick={() => void choose('none', null)}
           onFocus={() => setFocus({ kind: 'none' })}
         />
         <PhotoTile
           state={photo}
           current={current === 'photo'}
+          waiting={loading || linking}
           onPick={onPhoto}
           onFocus={() => setFocus({ kind: 'photo', src: imageSrc })}
         />
@@ -191,6 +168,7 @@ export const BackdropPicker = memo(function BackdropPicker({
             live={live}
             current={current === preset.id}
             pending={pending === preset.id}
+            disabled={loading || linking}
             onPick={() => {
               setFocus({ kind: 'preset', preset });
               void choose(preset.id, preset.id);
@@ -201,15 +179,20 @@ export const BackdropPicker = memo(function BackdropPicker({
       </div>
       <PickerFooter
         locked={locked}
-        linking={linking}
-        problem={shownProblem}
+        waiting={loading || linking}
+        problem={problem ?? uploadProblem}
+        uploading={photo.kind === 'uploading' ? photo.upload : null}
         onRetry={onRetry}
-        onPhoto={() => void replacePhoto()}
+        onPhoto={() => void photos.replace()}
         onStorage={() => {
           onClose();
           navigate('/chats/storage');
         }}
-        onDismiss={uploadProblem && !problem ? () => void dismissUpload() : null}
+        onDrop={
+          !problem && (uploadProblem || photo.kind === 'uploading')
+            ? () => void photos.drop()
+            : null
+        }
         onStar={onClose}
       />
     </div>

@@ -1,26 +1,24 @@
 import { memo, useEffect, useMemo, useRef, useState } from 'react';
-import { useScheme } from '../../../../lib/scheme';
 import type { Luminance } from '../presets/types';
 import { useMotion } from './gate';
+import { measureImage } from './luminance';
 import { fitCanvas, type MotionTarget, paintStill, runMotion, type Tone } from './motion';
-import { scrimAlpha } from './scrim';
+import { scrimAlpha, UNKNOWN_LIGHT } from './scrim';
+import { useSchemeTokens } from './tokens';
 
 const CANVAS_SCALE = 0.5;
 
 export interface StageProps {
   src: string;
-  light: Luminance;
+  light?: Luminance;
   motion: Tone | null;
+  held?: boolean;
   onFail?: () => void;
 }
 
-function useScrimAlpha(light: Luminance) {
-  const scheme = useScheme();
-  return useMemo(() => scrimAlpha(light, scheme), [light, scheme]);
-}
-
 function Scrim({ light }: { light: Luminance }) {
-  const alpha = useScrimAlpha(light);
+  const tokens = useSchemeTokens();
+  const alpha = useMemo(() => scrimAlpha(light, tokens), [light, tokens]);
   const top = Math.min(0.96, alpha + 0.1);
   return (
     <>
@@ -41,16 +39,16 @@ function Scrim({ light }: { light: Luminance }) {
   );
 }
 
-function Motion({ image, tone }: { image: HTMLImageElement; tone: Tone }) {
+function Motion({ image, tone, held }: { image: HTMLImageElement; tone: Tone; held: boolean }) {
   const canvas = useRef<HTMLCanvasElement>(null);
-  const motion = useMotion(canvas);
+  const motion = useMotion(canvas, held);
   const mode = motion.kind;
   const fps = motion.kind === 'live' ? motion.fps : 0;
 
   useEffect(() => {
     const node = canvas.current;
     if (!node || mode === 'paused') return;
-    const target: MotionTarget = { canvas: node, image, tone, scale: CANVAS_SCALE };
+    const target: MotionTarget = { canvas: node, image, tone, scale: CANVAS_SCALE, pattern: null };
     fitCanvas(target);
     if (mode === 'still') paintStill(target);
     const observer = new ResizeObserver(() => {
@@ -58,9 +56,11 @@ function Motion({ image, tone }: { image: HTMLImageElement; tone: Tone }) {
     });
     observer.observe(node);
     const stop = mode === 'live' ? runMotion(target, fps) : undefined;
+    if (mode === 'live') image.style.willChange = 'transform';
     return () => {
       observer.disconnect();
       stop?.();
+      image.style.willChange = '';
     };
   }, [image, tone, mode, fps]);
 
@@ -71,10 +71,18 @@ export const BackdropStage = memo(function BackdropStage({
   src,
   light,
   motion,
+  held = false,
   onFail,
 }: StageProps) {
   const [image, setImage] = useState<HTMLImageElement | null>(null);
   const [ready, setReady] = useState(false);
+  const [measured, setMeasured] = useState<Luminance>(UNKNOWN_LIGHT);
+  const measuring = light === undefined;
+
+  const loaded = (node: HTMLImageElement) => {
+    if (measuring) setMeasured(measureImage(node));
+    setReady(true);
+  };
 
   return (
     <div
@@ -86,19 +94,16 @@ export const BackdropStage = memo(function BackdropStage({
         ref={setImage}
         src={src}
         alt=""
+        crossOrigin={measuring ? 'anonymous' : undefined}
         decoding="async"
         draggable={false}
-        onLoad={() => setReady(true)}
+        onLoad={(event) => loaded(event.currentTarget)}
         onError={onFail}
         className="absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ease-[var(--ease-apple)] motion-reduce:transition-none"
-        style={{
-          opacity: ready ? 1 : 0,
-          transform: motion ? 'scale(1.07)' : undefined,
-          willChange: motion ? 'transform' : undefined,
-        }}
+        style={{ opacity: ready ? 1 : 0, transform: motion ? 'scale(1.07)' : undefined }}
       />
-      {motion && ready && image && <Motion image={image} tone={motion} />}
-      <Scrim light={light} />
+      {motion && ready && image && <Motion image={image} tone={motion} held={held} />}
+      <Scrim light={light ?? measured} />
     </div>
   );
 });

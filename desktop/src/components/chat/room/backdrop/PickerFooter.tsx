@@ -1,14 +1,18 @@
-import { memo } from 'react';
+import { memo, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Loader2, Sparkles, TriangleAlert, X } from '../../../../lib/icons';
+import type { UploadView } from '../../../../lib/chat/media-types';
+import { ImageIcon, Loader2, Sparkles, TriangleAlert, X } from '../../../../lib/icons';
 import { StarCta } from '../../../star-moments/StarCta';
 import { clock, useLeftMs } from './countdown';
 import type { BackdropProblem } from './errors';
+import { uploadPercent } from './upload';
+
+const FOCUS = 'outline-none focus-visible:ring-2 focus-visible:ring-accent/60';
 
 function Locked({ onStar }: { onStar: () => void }) {
   const { t } = useTranslation();
   return (
-    <div className="flex items-center gap-3 rounded-2xl border border-accent/25 bg-accent/[0.08] p-3 animate-[backdrop-in_0.35s_var(--ease-apple)_both] backdrop-motion">
+    <div className="backdrop-motion flex items-center gap-3 rounded-2xl border border-accent/25 bg-accent/[0.08] p-3 animate-[backdrop-in_0.35s_var(--ease-apple)_both]">
       <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-accent/15 text-accent">
         <Sparkles size={16} />
       </span>
@@ -21,18 +25,59 @@ function Locked({ onStar }: { onStar: () => void }) {
   );
 }
 
+function DropButton({ label, onDrop }: { label: string; onDrop: () => void }) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      title={label}
+      onClick={onDrop}
+      className={`flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full text-ink-45 transition-colors hover:bg-ink/[0.08] hover:text-ink-85 ${FOCUS}`}
+    >
+      <X size={13} />
+    </button>
+  );
+}
+
+function Bar({ tone, children }: { tone: 'bad' | 'calm'; children: ReactNode }) {
+  return (
+    <div
+      role={tone === 'bad' ? 'alert' : 'status'}
+      className={`backdrop-motion flex items-center gap-2.5 rounded-2xl border px-3 py-2.5 animate-[backdrop-in_0.3s_var(--ease-apple)_both] ${
+        tone === 'bad' ? 'border-bad/25 bg-bad/10' : 'border-ink/[0.08] bg-ink/[0.04]'
+      }`}
+    >
+      {children}
+    </div>
+  );
+}
+
+function Uploading({ upload, onDrop }: { upload: UploadView; onDrop: (() => void) | null }) {
+  const { t } = useTranslation();
+  const percent = uploadPercent(upload);
+  return (
+    <Bar tone="calm">
+      <ImageIcon size={15} className="shrink-0 text-accent" />
+      <span className="min-w-0 flex-1 text-[12.5px] font-medium tabular-nums text-ink-85">
+        {t('chat.backdrop.chip', { percent })}
+      </span>
+      {onDrop && <DropButton label={t('chat.backdrop.cancelUpload')} onDrop={onDrop} />}
+    </Bar>
+  );
+}
+
 function Problem({
   problem,
   onRetry,
   onPhoto,
   onStorage,
-  onDismiss,
+  onDrop,
 }: {
   problem: BackdropProblem;
   onRetry: () => void;
   onPhoto: () => void;
   onStorage: () => void;
-  onDismiss: (() => void) | null;
+  onDrop: (() => void) | null;
 }) {
   const { t } = useTranslation();
   const left = useLeftMs(problem.fix === 'wait' ? problem.until : null);
@@ -45,10 +90,7 @@ function Problem({
           ? { label: t('chat.backdrop.storage'), run: onStorage }
           : null;
   return (
-    <div
-      role="alert"
-      className="flex items-center gap-2.5 rounded-2xl border border-bad/25 bg-bad/10 px-3 py-2.5 animate-[backdrop-in_0.3s_var(--ease-apple)_both] backdrop-motion"
-    >
+    <Bar tone="bad">
       <TriangleAlert size={15} className="shrink-0 text-bad" />
       <span className="min-w-0 flex-1 text-[12.5px] font-medium text-ink-85">
         {t(problem.key, { time: clock(left) })}
@@ -63,60 +105,54 @@ function Problem({
         <button
           type="button"
           onClick={action.run}
-          className="h-7 shrink-0 cursor-pointer rounded-full bg-ink/[0.08] px-3 text-[12px] font-semibold text-ink-85 transition-colors hover:bg-ink/[0.14]"
+          className={`h-7 shrink-0 cursor-pointer rounded-full bg-ink/[0.08] px-3 text-[12px] font-semibold text-ink-85 transition-colors hover:bg-ink/[0.14] ${FOCUS}`}
         >
           {action.label}
         </button>
       )}
-      {onDismiss && (
-        <button
-          type="button"
-          aria-label={t('chat.backdrop.dismiss')}
-          title={t('chat.backdrop.dismiss')}
-          onClick={onDismiss}
-          className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full text-ink-45 transition-colors hover:bg-ink/[0.08] hover:text-ink-85"
-        >
-          <X size={13} />
-        </button>
-      )}
-    </div>
+      {onDrop && <DropButton label={t('chat.backdrop.dismiss')} onDrop={onDrop} />}
+    </Bar>
   );
 }
 
 export const PickerFooter = memo(function PickerFooter({
   locked,
-  linking,
+  waiting,
   problem,
+  uploading,
   onRetry,
   onPhoto,
   onStorage,
-  onDismiss,
+  onDrop,
   onStar,
 }: {
   locked: boolean;
-  linking: boolean;
+  waiting: boolean;
   problem: BackdropProblem | null;
+  uploading: UploadView | null;
   onRetry: () => void;
   onPhoto: () => void;
   onStorage: () => void;
-  onDismiss: (() => void) | null;
+  onDrop: (() => void) | null;
   onStar: () => void;
 }) {
   const { t } = useTranslation();
   if (locked) return <Locked onStar={onStar} />;
-  if (problem)
+  if (problem) {
     return (
       <Problem
         problem={problem}
         onRetry={onRetry}
         onPhoto={onPhoto}
         onStorage={onStorage}
-        onDismiss={onDismiss}
+        onDrop={onDrop}
       />
     );
-  if (linking) {
+  }
+  if (uploading) return <Uploading upload={uploading} onDrop={onDrop} />;
+  if (waiting) {
     return (
-      <div className="flex items-center gap-2 px-1 text-[12px] text-ink-50">
+      <div role="status" className="flex items-center gap-2 px-1 text-[12px] text-ink-50">
         <Loader2 size={13} className="animate-spin" />
         {t('chat.backdrop.linking')}
       </div>

@@ -16,6 +16,7 @@ export interface MotionTarget {
   image: HTMLElement;
   tone: Tone;
   scale: number;
+  pattern: CanvasPattern | null;
 }
 
 function sweepAt(t: number) {
@@ -52,13 +53,15 @@ function sweep(
   context.fillRect(0, 0, width, height);
 }
 
-function grain(context: CanvasRenderingContext2D, width: number, height: number, tone: Tone) {
-  const pattern = context.createPattern(grainTile(), 'repeat');
+function grain(context: CanvasRenderingContext2D, target: MotionTarget) {
+  const { width, height } = target.canvas;
+  target.pattern ??= context.createPattern(grainTile(), 'repeat');
+  const pattern = target.pattern;
   if (!pattern) return;
   const ox = Math.floor(Math.random() * 96);
   const oy = Math.floor(Math.random() * 96);
   context.save();
-  context.globalAlpha = GRAIN[tone];
+  context.globalAlpha = GRAIN[target.tone];
   context.translate(-ox, -oy);
   context.fillStyle = pattern;
   context.fillRect(0, 0, width + ox, height + oy);
@@ -72,7 +75,7 @@ export function paintMotion(target: MotionTarget, t: number) {
   drift(image, t);
   context.clearRect(0, 0, canvas.width, canvas.height);
   sweep(context, canvas.width, canvas.height, t, tone);
-  grain(context, canvas.width, canvas.height, tone);
+  grain(context, target);
 }
 
 export function paintStill(target: MotionTarget) {

@@ -7,6 +7,7 @@ export const PresetTile = memo(function PresetTile({
   preset,
   current,
   pending,
+  disabled,
   live,
   onPick,
   onFocus,
@@ -14,6 +15,7 @@ export const PresetTile = memo(function PresetTile({
   preset: BackdropPreset;
   current: boolean;
   pending: boolean;
+  disabled: boolean;
   live: boolean;
   onPick: () => void;
   onFocus: () => void;
@@ -21,7 +23,14 @@ export const PresetTile = memo(function PresetTile({
   const { t } = useTranslation();
   const label = t(`chat.backdrop.presets.${preset.id}`);
   return (
-    <Tile label={label} current={current} pending={pending} onPick={onPick} onFocus={onFocus}>
+    <Tile
+      label={label}
+      current={current}
+      pending={pending}
+      disabled={disabled}
+      onPick={onPick}
+      onFocus={onFocus}
+    >
       <img
         src={preset.tile}
         alt=""

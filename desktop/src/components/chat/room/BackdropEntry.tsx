@@ -5,6 +5,7 @@ import { ChevronRight, Eye, EyeOff, ImageIcon, Star } from '../../../lib/icons';
 import { openRoomDock } from '../../../lib/together/room-chat';
 import type { RoomView } from '../../../lib/together/types';
 import { useBackdropStore } from '../../../stores/chat/backdrop';
+import { keepKeys } from './backdrop/keys';
 import { useRoomBackdrop } from './backdrop/shown';
 import { presetOf } from './presets';
 import { useRoomSelf } from './useRoom';
@@ -26,7 +27,8 @@ function Row({
     <button
       type="button"
       onClick={onClick}
-      className="flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-2.5 py-2 text-left transition-colors hover:bg-ink/[0.05]"
+      onKeyDown={keepKeys}
+      className="flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-2.5 py-2 text-left outline-none transition-colors hover:bg-ink/[0.05] focus-visible:ring-2 focus-visible:ring-accent/60"
     >
       <Icon size={14} className="shrink-0 text-ink-45" />
       <span className="flex-1 truncate text-[12.5px] font-semibold text-ink-85">{label}</span>

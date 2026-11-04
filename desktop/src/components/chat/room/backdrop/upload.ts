@@ -25,7 +25,3 @@ export function uploadPercent(upload: UploadView): number {
   if (upload.state !== 'uploading' || upload.imageBytes <= 0) return 0;
   return Math.min(99, Math.round(((upload.partsSent * PART_BYTES) / upload.imageBytes) * 100));
 }
-
-export function isActiveUpload(upload: UploadView): boolean {
-  return upload.state !== 'failed' && upload.state !== 'committed';
-}

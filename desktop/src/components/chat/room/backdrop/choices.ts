@@ -7,8 +7,6 @@ import { PRESETS } from '../presets';
 import type { BackdropPreset } from '../presets/types';
 import type { PhotoState } from './PhotoTile';
 
-const STALE_COMMIT_MS = 60_000;
-
 export type ChoiceKey = 'none' | 'photo' | string;
 
 export function currentKey(room: RoomView): ChoiceKey {
@@ -32,19 +30,23 @@ export function roomImageSrc(room: RoomView, conversationId: ConvId | null): str
     : null;
 }
 
+export type UploadStatus = { kind: 'active'; upload: UploadView } | { kind: 'failed' } | null;
+
+export function uploadStatus(upload: UploadView | null, error: ChatError | null): UploadStatus {
+  if (upload && upload.state !== 'failed' && upload.state !== 'committed') {
+    return { kind: 'active', upload };
+  }
+  if (upload?.state === 'failed' || error) return { kind: 'failed' };
+  return null;
+}
+
 export function photoState(
-  upload: UploadView | null,
-  error: ChatError | null,
+  status: UploadStatus,
   imageSrc: string | null,
   cooldownMs: number,
-  now: number,
 ): PhotoState {
-  if (upload) {
-    const committed = upload.state === 'committed';
-    const recent = now - upload.updatedAt <= STALE_COMMIT_MS;
-    if (upload.state === 'failed' || (committed && error && recent)) return { kind: 'failed' };
-    if (!committed) return { kind: 'uploading', upload };
-  }
+  if (status?.kind === 'active') return { kind: 'uploading', upload: status.upload };
+  if (status?.kind === 'failed') return { kind: 'failed' };
   if (cooldownMs > 0) return { kind: 'cooldown', leftMs: cooldownMs };
   if (imageSrc) return { kind: 'current', src: imageSrc };
   return { kind: 'idle' };

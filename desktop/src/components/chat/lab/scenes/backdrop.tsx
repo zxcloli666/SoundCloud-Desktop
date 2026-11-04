@@ -137,10 +137,27 @@ export const scenes: LabScene[] = [
       kit.room({ star: true, host: true, backdrop: { kind: 'preset', id: 'satin' } });
       kit.uploads([upload({ state: 'failed', partsSent: 4 })]);
       kit.after(() =>
-        useBackdropStore
-          .getState()
-          .fail({ id: 'u-backdrop-1', error: { code: 'quota_exceeded', used: 1, quota: 1 } }),
+        kit.emit('chat:media-upload-error', {
+          id: 'u-backdrop-1',
+          error: { code: 'quota_exceeded', used: 1, quota: 1 },
+        }),
       );
+      openPicker(kit);
+    },
+  },
+  {
+    id: 'backdrop-picker-refused',
+    title: 'Backdrop picker: photo refused after upload',
+    route: ROUTE,
+    setup: (kit) => {
+      kit.room({ star: true, host: true, backdrop: { kind: 'preset', id: 'vinyl' } });
+      kit.after(() => {
+        useBackdropStore.getState().started(CONV.room, 'u-backdrop-2');
+        kit.emit('chat:media-upload-error', {
+          id: 'u-backdrop-2',
+          error: { code: 'backdrop_cooldown', until: Date.now() + 42 * 60_000 },
+        });
+      });
       openPicker(kit);
     },
   },
