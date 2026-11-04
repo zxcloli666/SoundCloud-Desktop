@@ -1,5 +1,6 @@
 import { memo, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { groupAvatarUrl } from '../../../lib/chat/avatar-url';
 import { BellOff, Timer } from '../../../lib/chat/icons';
 import { conversationAvatar, conversationTitle, ttlShort } from '../../../lib/chat/render';
 import { surface } from '../../../lib/chat/tone';
@@ -7,6 +8,7 @@ import type { UserId } from '../../../lib/chat/types';
 import { Bookmark, ChevronLeft, Ellipsis, Info, Users } from '../../../lib/icons';
 import { useChatThreadStore } from '../../../stores/chat/thread';
 import { Avatar } from '../../ui/Avatar';
+import { GroupPhoto } from '../media/compose/GroupPhoto';
 import { useThread } from './context';
 import { GlassLayer } from './GlassLayer';
 import { hasTimer } from './permissions';
@@ -80,6 +82,7 @@ export const ThreadHeader = memo(function ThreadHeader({
   const typing = useChatThreadStore((state) => state.threads[conversation.id]?.typing ?? NO_TYPING);
   const title = conversationTitle(conversation, t);
   const avatar = conversationAvatar(conversation);
+  const photo = groupAvatarUrl(conversation);
   const muted = isMuted(conversation, Date.now());
 
   return (
@@ -109,6 +112,8 @@ export const ThreadHeader = memo(function ThreadHeader({
         >
           {conversation.kind === 'self' ? (
             <SavedMark />
+          ) : photo ? (
+            <GroupPhoto src={photo} size={36} fallback={<GroupMark />} />
           ) : avatar ? (
             <Avatar src={avatar} size={36} />
           ) : conversation.kind === 'direct' ? (

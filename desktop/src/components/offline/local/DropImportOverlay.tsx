@@ -2,11 +2,16 @@ import { getCurrentWebview } from '@tauri-apps/api/webview';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { isImagePath } from '../../../lib/chat/image-files';
 import { FileMusic } from '../../../lib/icons';
 import { isListFile } from '../../../lib/list-file';
 import { importLocalPaths } from '../../../lib/local-import';
 import { DropOverlay } from '../../ui/DropOverlay';
 import { runLocalImport } from './importFeedback';
+
+function isAudioCandidate(path: string): boolean {
+  return !isListFile(path) && !isImagePath(path);
+}
 
 export const DropImportOverlay = React.memo(function DropImportOverlay() {
   const { t } = useTranslation();
@@ -20,13 +25,13 @@ export const DropImportOverlay = React.memo(function DropImportOverlay() {
     void getCurrentWebview()
       .onDragDropEvent(({ payload }) => {
         if (payload.type === 'enter') {
-          const audio = payload.paths.filter((path) => !isListFile(path)).length;
+          const audio = payload.paths.filter(isAudioCandidate).length;
           setHovering(audio > 0 ? audio : null);
         } else if (payload.type === 'leave') {
           setHovering(null);
         } else if (payload.type === 'drop') {
           setHovering(null);
-          const paths = payload.paths.filter((path) => !isListFile(path));
+          const paths = payload.paths.filter(isAudioCandidate);
           if (paths.length > 0) void runLocalImport(() => importLocalPaths(paths), show);
         }
       })

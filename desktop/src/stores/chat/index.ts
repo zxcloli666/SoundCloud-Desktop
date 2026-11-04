@@ -24,9 +24,20 @@ export const useChatStore = create<ChatState>()((set) => ({
 export const selectChatEnabled = (state: ChatState) =>
   state.config?.enabled === true && state.status !== null && state.status.phase !== 'off';
 
+function refreshUploads() {
+  void useChatMediaStore
+    .getState()
+    .refreshUploads()
+    .catch(() => undefined);
+}
+
 export async function initChatBridge(): Promise<() => void> {
   const stops = await Promise.all([
-    onChatEvent('chat:status', (status) => useChatStore.getState().setStatus(status)),
+    onChatEvent('chat:status', (status) => {
+      const was = useChatStore.getState().status?.phase;
+      useChatStore.getState().setStatus(status);
+      if (status.phase === 'ready' && was !== 'ready') refreshUploads();
+    }),
     onChatEvent('chat:sync', (event) => {
       useChatListStore.getState().applySync(event);
       useChatThreadStore.getState().applyMarks(event.marks);
@@ -38,6 +49,9 @@ export async function initChatBridge(): Promise<() => void> {
       useChatThreadStore.getState().applyGone(event);
     }),
     onChatEvent('chat:media-uploads', (event) => useChatMediaStore.getState().applyUploads(event)),
+    onChatEvent('chat:media-upload-error', (event) =>
+      useChatMediaStore.getState().applyError(event),
+    ),
     onChatEvent('chat:device-added', ({ device }) =>
       useChatDevicesStore.getState().pushAlert(device),
     ),
@@ -45,6 +59,7 @@ export async function initChatBridge(): Promise<() => void> {
   const [status, config] = await Promise.allSettled([chatBridge.status(), chatBridge.config()]);
   if (status.status === 'fulfilled') useChatStore.getState().setStatus(status.value);
   useChatStore.getState().setConfig(config.status === 'fulfilled' ? config.value : null);
+  refreshUploads();
   return () => {
     for (const stop of stops) stop();
   };

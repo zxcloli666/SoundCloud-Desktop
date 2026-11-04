@@ -1,4 +1,5 @@
 import type { TFunction } from 'i18next';
+import { groupAvatarUrl } from '../../../lib/chat/avatar-url';
 import type { ConversationSummary } from '../../../lib/chat/types';
 
 export function conversationTitle(conversation: ConversationSummary, t: TFunction): string {
@@ -13,5 +14,5 @@ export function conversationTitle(conversation: ConversationSummary, t: TFunctio
 export function conversationAvatar(conversation: ConversationSummary): string | null {
   return conversation.kind === 'direct'
     ? (conversation.peer?.avatarUrl ?? null)
-    : conversation.avatarUrl;
+    : (groupAvatarUrl(conversation) ?? conversation.avatarUrl);
 }
