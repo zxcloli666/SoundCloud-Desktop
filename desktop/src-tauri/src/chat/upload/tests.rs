@@ -6,3 +6,4 @@ mod albums;
 mod attach;
 mod failures;
 mod resume;
+mod seaweed;

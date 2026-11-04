@@ -162,7 +162,7 @@ fn headers(target: &PresignedPut) -> Vec<(String, String)> {
         .collect()
 }
 
-async fn plain(
+pub(super) async fn plain(
     url: &str,
     target: &PresignedPut,
     body: Bytes,
