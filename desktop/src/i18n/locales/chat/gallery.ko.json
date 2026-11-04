@@ -1,0 +1,51 @@
+{
+  "tile": {
+    "open": "{{total}}장 중 {{n}}번째 이미지 열기",
+    "deleted": "삭제된 이미지",
+    "lost": "이미지를 사용할 수 없음",
+    "failed": "불러오지 못했습니다. 눌러서 다시 시도",
+    "retry": "다시 시도"
+  },
+  "upload": {
+    "sending": "{{total}}장 중 {{done}}장 전송",
+    "waiting": "연결 대기 중",
+    "failed_other": "{{count}}장 전송 실패",
+    "retry": "다시 시도",
+    "retryAll": "모두 다시 시도",
+    "cancel": "앨범에서 제거",
+    "errors": {
+      "generic": "이미지를 보내지 못했습니다",
+      "quota_exceeded": "이미지 저장 공간이 가득 찼습니다",
+      "media_star_required": "이미지 전송은 STAR가 필요합니다",
+      "room_star_required": "이 방에서 이미지를 쓰려면 STAR 호스트가 필요합니다",
+      "media_uploads_paused": "이미지 업로드가 일시 중지되었습니다",
+      "media_missing": "이미지를 잃어버렸습니다. 다시 보내주세요",
+      "offline": "서버에 연결되지 않았습니다",
+      "send_limited": "이미지가 너무 많습니다. 잠시 기다려 주세요"
+    }
+  },
+  "viewer": {
+    "label": "이미지 보기",
+    "close": "닫기",
+    "prev": "이전",
+    "next": "다음",
+    "zoomIn": "확대",
+    "zoomOut": "축소",
+    "zoomReset": "화면에 맞추기",
+    "jump": "메시지로 이동",
+    "counter": "{{n}} / {{total}}",
+    "loading": "불러오는 중",
+    "failed": "원본을 불러오지 못했습니다",
+    "retry": "다시 시도"
+  },
+  "grid": {
+    "label": "채팅 이미지",
+    "item": "{{name}}, {{date}}",
+    "loading": "이미지 불러오는 중",
+    "empty": "아직 이미지가 없습니다",
+    "emptyHint": "이 채팅의 앨범이 여기에 표시됩니다",
+    "failed": "이미지를 불러오지 못했습니다",
+    "moreFailed": "더 불러오지 못했습니다",
+    "retry": "다시 시도"
+  }
+}
