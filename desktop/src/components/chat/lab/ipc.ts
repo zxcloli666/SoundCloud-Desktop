@@ -13,8 +13,10 @@ function internals(): Internals {
   return (window as unknown as { __TAURI_INTERNALS__: Internals }).__TAURI_INTERNALS__;
 }
 
+let hybrid = false;
+
 export function isHybrid(): boolean {
-  return '__TAURI_INTERNALS__' in window;
+  return hybrid;
 }
 
 function eventCommand(cmd: string, args: Args): { answer: unknown } | null {
@@ -32,7 +34,7 @@ function eventCommand(cmd: string, args: Args): { answer: unknown } | null {
 
 export function installChatLabIpc() {
   installLabPictures();
-  const hybrid = isHybrid();
+  hybrid = '__TAURI_INTERNALS__' in window;
   if (!hybrid) {
     mockWindows('main');
     mockIPC((cmd, args) => plainCommand(cmd, args as Args | undefined), {

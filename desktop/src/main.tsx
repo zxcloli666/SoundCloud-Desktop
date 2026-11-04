@@ -1,8 +1,9 @@
+import './components/chat/lab/gate';
+import { chatLabWanted } from './components/chat/lab/flag';
 import { QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
-import { chatLabWanted } from './components/chat/lab/gate';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ErrorScreen } from './components/ui/ErrorScreen';
 import { changeAppLanguage } from './i18n';
@@ -10,14 +11,14 @@ import { initAuthBridge } from './lib/auth-session';
 import { setupCacheMaintenance } from './lib/cache';
 import { initCloseAction } from './lib/close-action';
 import { setServerPorts } from './lib/constants';
-import { startDiag } from './lib/diag';
 import {
   describeError,
+  reportError,
   trackedInvoke as invoke,
   logError,
-  reportError,
   setupUiWatchdog,
 } from './lib/diagnostics';
+import { startDiag } from './lib/diag';
 import { initEdge } from './lib/edge';
 import { installFpsCap } from './lib/fps-cap';
 import { queryClient } from './lib/query-client';
