@@ -3,6 +3,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { shareTrack } from '../../../lib/chat/share';
 import {
   ArrowDownToLine,
   ArrowUpToLine,
@@ -15,6 +16,7 @@ import {
   ListPlus,
   ListStart,
   ListX,
+  Send,
   User,
 } from '../../../lib/icons';
 import { setTrackLiked } from '../../../lib/like-toggle';
@@ -33,6 +35,7 @@ import {
 } from '../../../lib/track-actions';
 import { getArtistDisplay, getArtistTarget } from '../../../lib/track-display';
 import { useAppMode } from '../../../stores/app-status';
+import { selectChatEnabled, useChatStore } from '../../../stores/chat';
 import { usePlayerStore } from '../../../stores/player';
 import { type TrackMenuTarget, useTrackMenuStore } from '../../../stores/trackMenu';
 import { SuperHeart } from '../superlike/SuperHeart';
@@ -56,6 +59,7 @@ export function TrackMenuItems({ target }: { target: TrackMenuTarget }) {
   const remote = !isLocalUrn(track.urn);
   const artistPath = getArtistTarget(track);
   const order = online ? orderOf(target.scope, liked, superliked) : null;
+  const chat = useChatStore(selectChatEnabled);
 
   const run = (action: () => void) => () => {
     useTrackMenuStore.getState().close();
@@ -194,6 +198,14 @@ export function TrackMenuItems({ target }: { target: TrackMenuTarget }) {
     [
       'copy',
       [
+        chat && remote && (
+          <MenuItem
+            key="share"
+            icon={<Send size={15} />}
+            label={t('chat.embeds.share.action')}
+            onSelect={run(() => shareTrack(track))}
+          />
+        ),
         track.permalink_url && (
           <MenuItem
             key="link"

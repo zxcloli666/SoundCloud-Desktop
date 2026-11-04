@@ -6,12 +6,6 @@
     "main",
     "tray-popover"
   ],
-  "remote": {
-    "urls": [
-      "http://localhost:*",
-      "http://127.0.0.1:*"
-    ]
-  },
   "permissions": [
     "core:default",
     "core:window:allow-start-dragging",
@@ -28,22 +22,74 @@
     "core:window:allow-scale-factor",
     "core:webview:allow-set-webview-zoom",
     "opener:default",
-    "fs:allow-appcache-read-recursive",
-    "fs:allow-appcache-write-recursive",
-    "fs:allow-appdata-read-recursive",
-    "fs:allow-appdata-write-recursive",
     "dialog:default",
+    "fs:allow-exists",
     "notification:allow-notify",
     "notification:allow-is-permission-granted",
     "notification:allow-request-permission",
     {
-      "identifier": "http:default",
+      "identifier": "fs:allow-mkdir",
       "allow": [
         {
-          "url": "https://*:*"
+          "path": "$APPDATA"
+        }
+      ]
+    },
+    "fs:allow-read-dir",
+    "fs:allow-read-file",
+    "fs:allow-read-text-file",
+    "fs:allow-write-file",
+    "fs:allow-write-text-file",
+    "fs:allow-remove",
+    {
+      "identifier": "fs:scope",
+      "allow": [
+        {
+          "path": "$APPDATA/sc-*.json"
         },
         {
-          "url": "http://*:*"
+          "path": "$APPDATA/news.json"
+        },
+        {
+          "path": "$APPDATA/offline-index.json"
+        },
+        {
+          "path": "$APPDATA/ym-import-*.json"
+        },
+        {
+          "path": "$APPDATA/css-assets"
+        },
+        {
+          "path": "$APPDATA/css-assets/*"
+        },
+        {
+          "path": "$APPDATA/fonts"
+        },
+        {
+          "path": "$APPDATA/fonts/*"
+        },
+        {
+          "path": "$APPDATA/themes"
+        },
+        {
+          "path": "$APPDATA/themes/**"
+        },
+        {
+          "path": "$APPCACHE/wallpapers"
+        },
+        {
+          "path": "$APPCACHE/wallpapers/*"
+        }
+      ],
+      "deny": [
+        {
+          "path": "$APPDATA/sc-auth.json"
+        },
+        {
+          "path": "$APPDATA/chat"
+        },
+        {
+          "path": "$APPDATA/chat/**"
         }
       ]
     }

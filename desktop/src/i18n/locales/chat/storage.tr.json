@@ -1,0 +1,129 @@
+{
+  "title": "Depolama",
+  "back": "Geri",
+  "retry": "Tekrar dene",
+  "retryIn_one": "{{count}} sn sonra tekrar dene",
+  "retryIn_other": "{{count}} sn sonra tekrar dene",
+  "cancel": "İptal",
+  "close": "Kapat",
+  "ring": {
+    "of": "/ {{quota}}",
+    "value": "{{used}} / {{quota}}"
+  },
+  "full": "Depolama dolu",
+  "freeLeft": "{{size}} boş",
+  "facts": {
+    "files": "Görsel",
+    "uploading": "Yükleniyor"
+  },
+  "lapsed": "Yeni görseller için STAR gerekir. Eskileri görüp silebilirsin.",
+  "chats": {
+    "title": "Sohbetlere göre",
+    "goneChat": "Silinmiş sohbet",
+    "someChat": "Sohbet",
+    "gone": "Sohbet yok",
+    "more_one": "{{count}} daha",
+    "more_other": "{{count}} daha",
+    "less": "Daralt"
+  },
+  "files_one": "{{count}} görsel",
+  "files_other": "{{count}} görsel",
+  "cache": {
+    "title": "Bu cihazdaki önbellek",
+    "desc": "Zaten indirilen görseller",
+    "clear": "Önbelleği temizle",
+    "freed": "{{size}} boşaltıldı",
+    "failed": "Boyut bilinmiyor"
+  },
+  "deleteAll": {
+    "title": "Tüm görsellerimi sil",
+    "hint": "Her sohbette herkes için silinir",
+    "action": "Tümünü sil",
+    "warn": "Tüm görsellerin ve grup avatarların her sohbette herkes için silinir. {{seconds}} sn içinde geri alabilirsin.",
+    "word": "SİL",
+    "type": "{{word}} yaz",
+    "confirm": "Tümünü sil"
+  },
+  "errors": {
+    "read_limited": "Çok fazla istek. Biraz bekle.",
+    "request_limit": "Çok fazla istek. Biraz bekle.",
+    "offline": "Sunucuya bağlantı yok.",
+    "invalid": "Sunucu isteği reddetti.",
+    "quota_exceeded": "Yeterli alan yok.",
+    "generic": "Bir şeyler ters gitti.",
+    "more": "Daha fazlası yüklenemedi",
+    "title": "Depolama yüklenemedi",
+    "limitedTitle": "Çok sık"
+  },
+  "tile": {
+    "unavailable": "Görsel kullanılamıyor",
+    "kind": {
+      "avatar": "Avatar",
+      "backdrop": "Arka plan",
+      "image": "Görsel"
+    },
+    "unsent": "Gönderilmedi",
+    "label": "Görsel, {{size}}, {{date}}",
+    "chats_one": "{{count}} sohbette",
+    "chats_other": "{{count}} sohbette",
+    "failed": "Yüklenemedi"
+  },
+  "order": {
+    "label": "Sıralama",
+    "new": "En yeni",
+    "old": "En eski",
+    "big": "En büyük"
+  },
+  "filter": {
+    "clear": "{{name}} filtresini kaldır"
+  },
+  "picked_one": "{{count}} seçildi",
+  "picked_other": "{{count}} seçildi",
+  "select": {
+    "all": "Tümünü seç",
+    "clear": "Seçimi kaldır"
+  },
+  "delete": {
+    "action": "Sil",
+    "some_one": "{{count}} sil",
+    "some_other": "{{count}} sil",
+    "title_one": "{{count}} görsel silinsin mi?",
+    "title_other": "{{count}} görsel silinsin mi?",
+    "count_one": "görsel",
+    "count_other": "görsel",
+    "size": "boşalır",
+    "chats_one": "sohbet",
+    "chats_other": "sohbet",
+    "warn_one": "Görsel, bulunduğu her sohbette herkes için silinir.",
+    "warn_other": "Görseller, bulundukları her sohbette herkes için silinir.",
+    "confirm": "Herkes için sil"
+  },
+  "undo": {
+    "deleted_one": "{{count}} görsel silindi",
+    "deleted_other": "{{count}} görsel silindi",
+    "freed": "{{size}} boşaltıldı",
+    "quota": "Geri alınamaz: {{quota}} alanın {{used}} kadarı dolu. Yer aç.",
+    "action": "Geri al",
+    "missed_one": "{{restored}} geri geldi, {{count}} artık geri alınamaz",
+    "missed_other": "{{restored}} geri geldi, {{count}} artık geri alınamaz",
+    "restored_one": "{{count}} görsel geri geldi",
+    "restored_other": "{{count}} görsel geri geldi"
+  },
+  "empty": {
+    "title": "Görsel yok",
+    "line": "Sohbetlere gönderdiğin görseller burada görünür.",
+    "chatTitle": "Bu sohbette görselin yok"
+  },
+  "star": {
+    "title": "STAR ile sohbetlerde görseller",
+    "albums": "10 görsele kadar albümler",
+    "quota": "Görsellerin için 1 GB",
+    "rooms": "Oda kapakları ve arka planları"
+  },
+  "entry": {
+    "title": "Görsel depolama",
+    "used": "{{used}} / {{quota}}",
+    "line": "Tüm sohbetlerdeki görsellerin",
+    "open": "Aç"
+  }
+}

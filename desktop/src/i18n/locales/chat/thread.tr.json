@@ -1,0 +1,194 @@
+{
+  "saved": "Kaydedilenler",
+  "untitled": "Adsız sohbet",
+  "someone": "Üye",
+  "back": "Geri",
+  "cancel": "İptal",
+  "retry": "Tekrar dene",
+  "loadFailed": "Sohbet açılamadı",
+  "toBottom": "En yeniye git",
+  "notMember": "Artık bu sohbette değilsiniz",
+  "members_one": "{{count}} üye",
+  "members_other": "{{count}} üye",
+  "unread_one": "{{count}} yeni mesaj",
+  "unread_other": "{{count}} yeni mesaj",
+  "day": {
+    "today": "Bugün",
+    "yesterday": "Dün"
+  },
+  "empty": {
+    "chat": "İlk mesajı yazın",
+    "saved": "Notlarınızı ve parçalarınızı burada saklayın"
+  },
+  "typing": {
+    "one": "yazıyor",
+    "named": "{{name}} yazıyor",
+    "many_one": "{{count}} kişi yazıyor",
+    "many_other": "{{count}} kişi yazıyor"
+  },
+  "menu": {
+    "info": "Bilgi",
+    "more": "Diğer",
+    "mute": "Sessize al",
+    "unmute": "Sesi aç"
+  },
+  "timer": {
+    "title": "Kaybolan mesajlar"
+  },
+  "ttl": {
+    "off": "Kapalı",
+    "3600": "1 saat",
+    "86400": "1 gün",
+    "604800": "1 hafta",
+    "custom": "{{hours}} sa",
+    "short": {
+      "3600": "1 sa",
+      "86400": "1 g",
+      "604800": "1 hf"
+    }
+  },
+  "system": {
+    "ttlOn": "Kaybolan mesajlar: {{ttl}}",
+    "ttlOff": "Kaybolan mesajlar kapatıldı",
+    "created": "Sohbet oluşturuldu",
+    "joined": "{{name}} katıldı",
+    "left": "{{name}} ayrıldı",
+    "added": "{{name}} eklendi",
+    "removed": "{{name}} çıkarıldı",
+    "kicked": "{{name}} atıldı",
+    "banned": "{{name}} engellendi",
+    "muted": "{{name}} susturuldu",
+    "mutedUntil": "{{name}} susturuldu, bitiş: {{time}}",
+    "renamed": "Yeni ad: {{name}}",
+    "handoff": "Artık {{name}} yönetiyor",
+    "track": "Şimdi çalıyor: {{name}}",
+    "roleOwner": "{{name}} artık sahip",
+    "roleAdmin": "{{name}} artık yönetici",
+    "roleMember": "{{name}} artık yönetici değil",
+    "other": "Sohbet güncellendi"
+  },
+  "bubble": {
+    "deleted": "Mesaj silindi",
+    "locked": "Bu cihazı onayladıktan sonra açılır",
+    "unknown": "Görmek için uygulamayı güncelleyin",
+    "system": "Etkinlik",
+    "edited": "Düzenlendi",
+    "forwarded": "İleten: {{name}}",
+    "blocked": "Engellediğin kullanıcıdan mesaj",
+    "spoiler": "Gizli metni göster",
+    "expiresIn": "Kaybolmasına {{time}} kaldı"
+  },
+  "tick": {
+    "pending": "Gönderiliyor",
+    "sent": "Gönderildi",
+    "delivered": "İletildi",
+    "read": "Okundu",
+    "failed": "Gönderilemedi"
+  },
+  "actions": {
+    "reply": "Yanıtla",
+    "forward": "İlet",
+    "copy": "Kopyala",
+    "edit": "Düzenle",
+    "pin": "Sabitle",
+    "unpin": "Sabitlemeyi kaldır",
+    "delete": "Sil",
+    "discard": "Gönderimi iptal et",
+    "report": "Şikayet et",
+    "retry": "Tekrar gönder",
+    "more": "Diğer",
+    "react": "Tepki ver",
+    "quickReact": "Beğen",
+    "otherEmoji": "Başka emoji"
+  },
+  "reply": {
+    "missing": "Mesaj",
+    "gone": "Mesaj bulunamadı"
+  },
+  "pinned": {
+    "one": "Sabitlendi",
+    "many": "Sabitlenen {{index}} / {{total}}",
+    "unloaded": "Sabitlenmiş mesaj"
+  },
+  "history": {
+    "locked": "Eski mesajlar başka bir cihazda onayladıktan sonra görünür"
+  },
+  "composer": {
+    "placeholder": "Mesaj",
+    "paused": "Gönderim şimdilik duraklatıldı",
+    "send": "Gönder",
+    "save": "Kaydet",
+    "editing": "Düzenleniyor",
+    "cancel": "İptal",
+    "emoji": "Emoji",
+    "emojiHint": "Emoji: {{keys}}",
+    "nowPlaying": "Şimdi çalıyor: {{title}}",
+    "nothingPlaying": "Hiçbir şey çalmıyor",
+    "removeAttachment": "Kaldır"
+  },
+  "delete": {
+    "title": "Mesaj silinsin mi?",
+    "everyone": "Herkes için",
+    "me": "Yalnızca benim için"
+  },
+  "report": {
+    "title": "Şikayet et",
+    "reasons": {
+      "spam": "Spam veya reklam",
+      "harassment": "Tehdit veya taciz",
+      "doxxing": "Birinin özel bilgileri",
+      "illegal": "Yasa dışı içerik",
+      "other": "Başka bir şey"
+    },
+    "comment": "İsterseniz yorum ekleyin",
+    "policy": "Kural ihlalinde mesaj silinir. 30 gün içinde tekrarlanırsa sohbetler 7 gün kapanır, yasa dışı içerikte kalıcı olarak kapanır. Müzik ve hesabın yerinde kalır.",
+    "privacy": "Mesajlar şifrelidir ve kimse okumaz. Şikayette yalnızca bu mesajlar ve biraz bağlam otomatik moderasyona gider.",
+    "send": "Şikayeti gönder",
+    "sent": "Şikayet gönderildi"
+  },
+  "link": {
+    "title": "Bu bağlantı açılsın mı?",
+    "open": "Aç"
+  },
+  "info": {
+    "close": "Kapat",
+    "notifications": "Bildirimler",
+    "tracks": "Parçalar",
+    "membersTab": "Üyeler",
+    "noTracks": "Bu sohbette paylaşılan parçalar burada görünür",
+    "tracksFailed": "Parçalar yüklenemedi",
+    "owner": "Sahip",
+    "admin": "Yönetici",
+    "you": "Siz",
+    "makeAdmin": "Yönetici yap",
+    "removeAdmin": "Yöneticilikten çıkar",
+    "removeMember": "Sohbetten çıkar",
+    "addMembers": "Üye ekle",
+    "addPicked": "Ekle ({{n}})",
+    "inviteLink": "Davet bağlantısı",
+    "inviteCopy": "Bağlantıyı kopyala",
+    "inviteRevoke": "Bağlantıyı iptal et",
+    "add": "Ekle"
+  },
+  "errors": {
+    "generic": "Bir şeyler ters gitti, tekrar deneyin",
+    "muted": "Şimdilik buraya yazamazsınız",
+    "mutedUntil": "Tekrar yazabileceğiniz zaman: {{time}}",
+    "slowMode_one": "Yavaş mod: {{count}} saniye bekleyin",
+    "slowMode_other": "Yavaş mod: {{count}} saniye bekleyin",
+    "not_member": "Bu sohbette değilsiniz",
+    "send_paused": "Gönderim şimdilik duraklatıldı",
+    "send_limited": "Çok fazla mesaj, biraz bekleyin",
+    "request_limit": "Bugün çok fazla yeni sohbet açtınız",
+    "busy": "Sunucu meşgul, birazdan tekrar deneyin",
+    "offline": "Sunucuya bağlantı yok",
+    "unavailable": "Bu kişiye ulaşılamıyor",
+    "disabled": "Sohbetler kapalı",
+    "too_young": "Bu cihaz bunun için henüz çok yeni",
+    "not_found": "Mesaj bulunamadı",
+    "invalid": "Mesaj kontrolden geçmedi"
+  },
+  "invite": {
+    "join": "Gruba katıl"
+  }
+}

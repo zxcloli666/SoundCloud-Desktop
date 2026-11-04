@@ -5,6 +5,8 @@ mod plan;
 mod state;
 
 #[cfg(test)]
+mod media_plan_tests;
+#[cfg(test)]
 mod name_tests;
 #[cfg(test)]
 mod plan_tests;
@@ -25,7 +27,7 @@ pub use self::config::EdgeConfig;
 pub use self::name::{
     IMAGES, Key, call_host, has_direct, key_of, key_of_host, label_of, plain_host, relay_host,
 };
-pub use self::plan::{audio_plan, expand_upstreams, plan, upload_plan};
+pub use self::plan::{audio_plan, expand_upstreams, media_plan, plan, upload_plan};
 
 const STATUS_HOST: &str = "status.getsoundcloud.app";
 

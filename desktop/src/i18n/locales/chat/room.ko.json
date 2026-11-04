@@ -1,0 +1,141 @@
+{
+  "untitled": "{{name}} 님의 방",
+  "titlePlaceholder": "방 이름",
+  "rename": "이름 바꾸기",
+  "ephemeral": "세션이 끝나면 채팅이 사라져요",
+  "copyInvite": "초대 복사",
+  "copied": "복사됨",
+  "access": {
+    "private": "비공개, 코드로 참여",
+    "public": "공개, 누구나 참여 가능",
+    "toPublic": "모두에게 공개",
+    "toPrivate": "비공개로 전환"
+  },
+  "leave": "세션 나가기",
+  "end": "세션 종료",
+  "confirmLeave": "나갈까요?",
+  "confirmEnd": "종료할까요?",
+  "leaveHint": "나가면 {{name}} 님이 호스트가 돼요",
+  "role": {
+    "moderator": "모더레이터"
+  },
+  "menu": {
+    "mute": "음소거",
+    "minutes": "{{value}}분",
+    "unmute": "음소거 해제",
+    "kick": "내보내기",
+    "ban": "차단",
+    "banConfirm": "정말 차단할까요?",
+    "makeModerator": "모더레이터 지정",
+    "dropModerator": "모더레이터 해제",
+    "moderatorsFull": "모더레이터 자리가 없어요"
+  },
+  "muted": {
+    "title": "음소거되었어요"
+  },
+  "handoff": {
+    "mine": "이제 내가 호스트예요",
+    "other": "{{name}} 님이 호스트예요"
+  },
+  "exit": {
+    "ended": "세션이 끝나 채팅이 삭제됐어요",
+    "kicked": "방에서 내보내졌어요",
+    "evicted": "방의 자리가 다른 사람으로 채워졌어요",
+    "close": "닫기"
+  },
+  "quiet": {
+    "off": "호스트가 채팅을 껐어요",
+    "failed": "채팅을 열지 못했어요",
+    "gone": "채팅을 사용할 수 없어요",
+    "retry": "다시 시도"
+  },
+  "suggest": {
+    "button": "트랙 추천",
+    "short": "트랙",
+    "search": "트랙 찾기",
+    "by": "{{name}} 님의 추천",
+    "queue": "대기열에 추가",
+    "queued": "대기열에 있음",
+    "playing": "재생 중",
+    "empty": "찾은 결과가 없어요",
+    "wait": "{{value}}초 후 가능"
+  },
+  "moderatorRow": "모더레이터 권한: {{name}}",
+  "moderatorOffRow": "모더레이터 권한 해제: {{name}}",
+  "toast": {
+    "youLead": "이제 내가 음악을 제어해요",
+    "ended": "세션이 끝나 채팅이 삭제됐어요",
+    "kicked": "방에서 내보내졌어요"
+  },
+  "errors": {
+    "banned": "이 방에 들어갈 수 없어요",
+    "muted": "음소거되었어요",
+    "slow_mode": "잠시만 기다려 주세요",
+    "unavailable": "이 작업을 할 권한이 없어요",
+    "not_member": "더 이상 방에 있지 않아요",
+    "not_found": "그 사람이나 방이 더 이상 없어요",
+    "busy": "서버가 바빠요, 다시 시도해 주세요",
+    "offline": "연결이 없어요",
+    "disabled": "지금은 채팅이 꺼져 있어요",
+    "invalid": "실패했어요",
+    "room_star_required": "STAR가 필요해요",
+    "request_limit": "너무 자주 요청했어요, 잠시 후에",
+    "generic": "문제가 생겼어요, 다시 시도해 주세요"
+  },
+  "links": {
+    "off": "링크 꺼짐",
+    "new": "링크는 입장 1분 후 가능"
+  },
+  "rules": {
+    "title": "채팅 규칙",
+    "chat": "채팅",
+    "links": "링크",
+    "slow": "슬로우 모드",
+    "slowOff": "끔",
+    "seconds": "{{value}}초"
+  },
+  "perks": {
+    "tuning": "방",
+    "starHost": "STAR 호스트",
+    "seats_other": "{{count}}명",
+    "seatsOf": "{{max}}명 중 {{value}}명",
+    "withStar": "STAR로 {{count}}명",
+    "paused": "새 입장 일시 중지",
+    "nobodyKicked": "내보낸 사람 없음",
+    "moderators": "모더레이터",
+    "cover": {
+      "title": "커버",
+      "track": "트랙 아트워크",
+      "custom": "내 커버",
+      "kind": {
+        "avatar": "아바타",
+        "playlist": "플레이리스트",
+        "track": "트랙"
+      },
+      "accent": "색상",
+      "accentN": "색상 {{value}}",
+      "apply": "완료",
+      "reset": "트랙 아트워크로",
+      "empty": "아직 내 아트워크가 없어요",
+      "loadFailed": "아트워크를 불러오지 못했어요",
+      "retry": "다시 시도",
+      "needStar": "커버는 STAR 전용",
+      "invalid": "이 커버는 사용할 수 없어요",
+      "pickOther": "다른 것",
+      "limited": "너무 자주 바꿨어요",
+      "wait": "{{value}}초 후",
+      "failed": "저장되지 않았어요",
+      "loadMore": "나머지 불러오기"
+    },
+    "images": {
+      "title": "이미지",
+      "members": "모두",
+      "mods": "모더",
+      "off": "없음",
+      "withStar": "STAR로 이미지"
+    },
+    "moreMods": "STAR로 모더레이터 {{value}}명",
+    "starSoon": "몇 분 안에 STAR가 켜져요",
+    "needsStar": "STAR 필요"
+  }
+}

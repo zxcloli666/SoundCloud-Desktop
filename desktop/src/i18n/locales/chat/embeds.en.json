@@ -1,0 +1,65 @@
+{
+  "open": "Open",
+  "more": "More",
+  "remove": "Remove",
+  "track": {
+    "play": "Play",
+    "pause": "Pause",
+    "seek": "Seek",
+    "from": "Play from {{time}}",
+    "unavailable": "Unavailable",
+    "playNext": "Play next",
+    "queue": "Add to queue",
+    "together": "Listen together"
+  },
+  "playlist": {
+    "playAll": "Play",
+    "shuffle": "Shuffle",
+    "save": "Save",
+    "saved": "Saved"
+  },
+  "user": {
+    "followers_one": "{{value}} follower",
+    "followers_other": "{{value}} followers",
+    "follow": "Follow",
+    "following": "Following",
+    "top": "Popular",
+    "noTracks": "No tracks yet"
+  },
+  "room": {
+    "live": "Live",
+    "closed": "Room closed",
+    "join": "Join",
+    "here": "You're here",
+    "untitled": "Listening together",
+    "host": "Hosted by {{name}}",
+    "full": "Full"
+  },
+  "share": {
+    "action": "Send",
+    "title": "Send",
+    "search": "Search",
+    "comment": "Comment",
+    "send": "Send",
+    "sendCount": "Send ({{count}})",
+    "sent_one": "Sent to {{count}} chat",
+    "sent_other": "Sent to {{count}} chats",
+    "failed_one": "Not sent to {{count}} chat",
+    "failed_other": "Not sent to {{count}} chats",
+    "saved": "Saved",
+    "room": "Room",
+    "untitled": "No name",
+    "empty": "No chats yet",
+    "noMatch": "Nothing found",
+    "loadFailed": "Chats did not load"
+  },
+  "message": {
+    "write": "Message",
+    "unavailable": "You can't message {{name}} yet",
+    "failed": "Could not open the chat",
+    "invite": "Invite",
+    "inviteText": "Message me in SoundCloud Desktop: {{url}}",
+    "inviteCopied": "Invite copied",
+    "copyFailed": "Could not copy"
+  }
+}

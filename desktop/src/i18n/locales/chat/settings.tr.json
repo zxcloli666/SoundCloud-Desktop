@@ -1,0 +1,72 @@
+{
+  "title": "Sohbetler",
+  "unavailable": "Hesabın için henüz kullanılamıyor",
+  "loadFailed": "Ayarlar yüklenemedi",
+  "retry": "Tekrar dene",
+  "whoCanWrite": {
+    "title": "Bana kim yazabilir",
+    "everyone": "Herkes",
+    "following": "Takip ettiklerim",
+    "nobody": "Kimse",
+    "hint": {
+      "everyone": "Mesajlar hemen gelir",
+      "following": "Diğerleri isteklere düşer",
+      "nobody": "Yeni sohbetleri sadece sen başlatırsın"
+    }
+  },
+  "visibility": {
+    "title": "Görünürlük",
+    "presence": "Ne dinlediğimi göster",
+    "presenceHint": "Sadece kişilerin görür",
+    "receipts": "Okundu bilgisi",
+    "typing": "Yazdığımı göster"
+  },
+  "notify": {
+    "title": "Bildirimler",
+    "preview": "Ne gösterilsin",
+    "previews": {
+      "full": "Metin",
+      "name_only": "Sadece ad",
+      "hidden": "Hiçbir şey"
+    },
+    "streamMode": "Yayında sadece ad",
+    "streamHint": "OBS yayın yaparken",
+    "sound": "Ses"
+  },
+  "dock": {
+    "title": "Sohbet paneli",
+    "hotkey": "Göster veya gizle",
+    "reset": "Sıfırla",
+    "problem": {
+      "needsModifier": "Ctrl, Alt veya {{super}} ekle",
+      "mediaKey": "Medya tuşları oynatıcıya ait",
+      "unsupported": "Bu tuş desteklenmiyor",
+      "reserved": "Bu kısayolu uygulama kullanıyor",
+      "duplicate": "Zaten \"{{action}}\" için atanmış"
+    }
+  },
+  "blocked": {
+    "title": "Engellenenler",
+    "empty": "Kimse yok",
+    "unblock": "Engeli kaldır"
+  },
+  "policy": {
+    "title": "Kurallar ve gizlilik",
+    "forbidden": {
+      "spam": "Spam ve reklam",
+      "harassment": "Tehdit ve taciz",
+      "doxxing": "Başkasının kişisel bilgileri",
+      "illegal": "Yasa dışı: çocuk istismarı içerikleri, uyuşturucu, aşırıcılık"
+    },
+    "ladder": {
+      "delete": "Mesaj silinir",
+      "repeat": "30 gün içinde tekrar: 7 gün sohbet yasağı",
+      "illegal": "Yasa dışı içerik: kalıcı sohbet yasağı"
+    },
+    "keeps": "Müzik, odalar ve hesabın kalır"
+  },
+  "privacy": {
+    "encrypted": "Mesajlar şifrelidir, kimse okumaz",
+    "reports": "Şikayette otomatik moderasyon sadece o mesajlara ve biraz bağlama bakar"
+  }
+}

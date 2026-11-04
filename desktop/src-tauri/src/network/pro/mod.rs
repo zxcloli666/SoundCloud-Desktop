@@ -1,22 +1,27 @@
 mod gateway;
+mod open;
 mod pieces;
+mod put;
+mod stage;
+mod staged;
 
 use std::sync::OnceLock;
 use std::time::{Duration, Instant};
 
-use base64::{Engine as _, engine::general_purpose::STANDARD as BASE64};
 use bytes::Bytes;
 use futures_util::StreamExt;
 use futures_util::stream::BoxStream;
 use http::Version;
-use serde::{Deserialize, Serialize};
 
 pub use gateway::route;
+pub use put::{StagedFailure, Staging, fill_stage, open_filled};
 
 use crate::network::{edge, system_proxy};
+use open::Unopened;
 
+pub const MOST_BODY: usize = 1024 * 1024;
+const STAGED_OVER: usize = 8 * 1024;
 const CONNECT_TIMEOUT: Duration = Duration::from_secs(10);
-const OPEN_TIMEOUT: Duration = Duration::from_secs(40);
 const HEALTH_TIMEOUT: Duration = Duration::from_secs(5);
 const PROBE_TIMEOUT: Duration = Duration::from_secs(30);
 const PROBE_BYTES: usize = 64 * 1024;
@@ -37,22 +42,6 @@ pub struct Answer {
     pub body: BoxStream<'static, Result<Bytes, String>>,
 }
 
-#[derive(Serialize)]
-struct Open<'a> {
-    method: &'a str,
-    url: &'a str,
-    headers: &'a [(String, String)],
-    #[serde(skip_serializing_if = "Option::is_none")]
-    body: Option<String>,
-}
-
-#[derive(Deserialize)]
-struct Opened {
-    id: String,
-    status: u16,
-    headers: Vec<(String, String)>,
-}
-
 fn client() -> Option<&'static wreq::Client> {
     static CLIENT: OnceLock<Option<wreq::Client>> = OnceLock::new();
     CLIENT
@@ -68,27 +57,12 @@ fn client() -> Option<&'static wreq::Client> {
 
 pub async fn fetch(node: &str, asked: Asked) -> Result<Answer, String> {
     let client = client().ok_or("pro: http client is unavailable")?;
-    let open = Open {
-        method: &asked.method,
-        url: &asked.url,
-        headers: &asked.headers,
-        body: asked.body.as_deref().map(|body| BASE64.encode(body)),
+    let opened = match asked.body.as_deref() {
+        Some(body) if body.len() > STAGED_OVER => staged::open(client, node, &asked, body).await?,
+        _ => open::plain(client, node, &asked)
+            .await
+            .map_err(Unopened::explained)?,
     };
-    let response = client
-        .post(format!("{node}/open"))
-        .version(Version::HTTP_11)
-        .timeout(OPEN_TIMEOUT)
-        .json(&open)
-        .send()
-        .await
-        .map_err(|error| format!("pro: open failed: {error}"))?;
-    if !response.status().is_success() {
-        return Err(format!("pro: open answered {}", response.status()));
-    }
-    let opened: Opened = response
-        .json()
-        .await
-        .map_err(|error| format!("pro: open answer is unreadable: {error}"))?;
 
     let sized = asked.method.eq_ignore_ascii_case("GET") && SIZED.contains(&opened.status);
     let total = sized.then(|| content_length(&opened.headers)).flatten();
@@ -173,5 +147,11 @@ fn content_length(headers: &[(String, String)]) -> Option<u64> {
         .and_then(|(_, value)| value.trim().parse().ok())
 }
 
+#[cfg(test)]
+pub(crate) mod fake_relay;
+#[cfg(test)]
+pub(crate) mod faulty_link;
+#[cfg(test)]
+mod stage_tests;
 #[cfg(test)]
 mod tests;

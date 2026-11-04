@@ -1,0 +1,22 @@
+{
+  "unboundTitle": "Confirm sign-in to turn on chats",
+  "boundOtherTitle": "Confirm your sign-in again",
+  "musicStays": "Music stays signed in",
+  "confirm": "Confirm sign-in",
+  "done": "Chats are on",
+  "retry": "Try again",
+  "steps": {
+    "waiting": "Waiting for SoundCloud authorization",
+    "token": "Exchanging authorization code",
+    "extract": "Fetching your profile",
+    "finalizing": "Finalizing session"
+  },
+  "errors": {
+    "unreachable": "Can't reach the server",
+    "unreachableDesc": "The server isn't responding. Check your connection or try again in a moment.",
+    "limited": "Sign-in is temporarily limited",
+    "limitedDesc": "The server is limiting sign-ins right now. Try again in {{seconds}} s.",
+    "expired": "Sign-in expired",
+    "failed": "Sign-in failed"
+  }
+}

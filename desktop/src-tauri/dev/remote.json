@@ -1,0 +1,103 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "dev-remote",
+  "description": "Dev server pages, added at runtime in dev builds only",
+  "windows": [
+    "main",
+    "tray-popover"
+  ],
+  "remote": {
+    "urls": [
+      "http://localhost:*",
+      "http://127.0.0.1:*"
+    ]
+  },
+  "permissions": [
+    "core:default",
+    "core:window:allow-start-dragging",
+    "core:window:allow-minimize",
+    "core:window:allow-unminimize",
+    "core:window:allow-set-focus",
+    "core:window:allow-toggle-maximize",
+    "core:window:allow-is-fullscreen",
+    "core:window:allow-set-fullscreen",
+    "core:window:allow-close",
+    "core:window:allow-show",
+    "core:window:allow-hide",
+    "core:event:default",
+    "core:window:allow-scale-factor",
+    "core:webview:allow-set-webview-zoom",
+    "opener:default",
+    "dialog:default",
+    "fs:allow-exists",
+    "notification:allow-notify",
+    "notification:allow-is-permission-granted",
+    "notification:allow-request-permission",
+    {
+      "identifier": "fs:allow-mkdir",
+      "allow": [
+        {
+          "path": "$APPDATA"
+        }
+      ]
+    },
+    "fs:allow-read-dir",
+    "fs:allow-read-file",
+    "fs:allow-read-text-file",
+    "fs:allow-write-file",
+    "fs:allow-write-text-file",
+    "fs:allow-remove",
+    {
+      "identifier": "fs:scope",
+      "allow": [
+        {
+          "path": "$APPDATA/sc-*.json"
+        },
+        {
+          "path": "$APPDATA/news.json"
+        },
+        {
+          "path": "$APPDATA/offline-index.json"
+        },
+        {
+          "path": "$APPDATA/ym-import-*.json"
+        },
+        {
+          "path": "$APPDATA/css-assets"
+        },
+        {
+          "path": "$APPDATA/css-assets/*"
+        },
+        {
+          "path": "$APPDATA/fonts"
+        },
+        {
+          "path": "$APPDATA/fonts/*"
+        },
+        {
+          "path": "$APPDATA/themes"
+        },
+        {
+          "path": "$APPDATA/themes/**"
+        },
+        {
+          "path": "$APPCACHE/wallpapers"
+        },
+        {
+          "path": "$APPCACHE/wallpapers/*"
+        }
+      ],
+      "deny": [
+        {
+          "path": "$APPDATA/sc-auth.json"
+        },
+        {
+          "path": "$APPDATA/chat"
+        },
+        {
+          "path": "$APPDATA/chat/**"
+        }
+      ]
+    }
+  ]
+}

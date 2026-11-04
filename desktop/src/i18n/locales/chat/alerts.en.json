@@ -1,0 +1,19 @@
+{
+  "newMessage": "New message",
+  "kicked": "You were kicked",
+  "removed": "You were removed from the chat",
+  "banned": "You were banned",
+  "muted": "You were muted",
+  "host": "You are now the host",
+  "chat": "Chat",
+  "group": "Group",
+  "room": "Room",
+  "track": "Track: {{title}}",
+  "playlist": "Playlist: {{title}}",
+  "profile": "Profile: {{title}}",
+  "photo": "Photo",
+  "photos": "{{count}} photos",
+  "roomInvite": "Room invite",
+  "deviceTitle": "New device in chats",
+  "deviceBody": "{{device}}. Was it you?"
+}

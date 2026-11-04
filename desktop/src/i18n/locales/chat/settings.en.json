@@ -1,0 +1,72 @@
+{
+  "title": "Chats",
+  "unavailable": "Not available for your account yet",
+  "loadFailed": "Settings did not load",
+  "retry": "Retry",
+  "whoCanWrite": {
+    "title": "Who can message me",
+    "everyone": "Everyone",
+    "following": "People I follow",
+    "nobody": "Nobody",
+    "hint": {
+      "everyone": "Messages arrive right away",
+      "following": "Everyone else goes to requests",
+      "nobody": "Only you can start new chats"
+    }
+  },
+  "visibility": {
+    "title": "Visibility",
+    "presence": "Show what I'm listening to",
+    "presenceHint": "Only contacts see it",
+    "receipts": "Read receipts",
+    "typing": "Show when I'm typing"
+  },
+  "notify": {
+    "title": "Notifications",
+    "preview": "What to show",
+    "previews": {
+      "full": "Text",
+      "name_only": "Name only",
+      "hidden": "Nothing"
+    },
+    "streamMode": "Name only while live",
+    "streamHint": "While OBS is streaming",
+    "sound": "Sound"
+  },
+  "dock": {
+    "title": "Chat dock",
+    "hotkey": "Show or hide",
+    "reset": "Reset",
+    "problem": {
+      "needsModifier": "Add Ctrl, Alt or {{super}}",
+      "mediaKey": "Media keys belong to the player",
+      "unsupported": "This key is not supported",
+      "reserved": "The app already uses this shortcut",
+      "duplicate": "Already used for \"{{action}}\""
+    }
+  },
+  "blocked": {
+    "title": "Blocked",
+    "empty": "Nobody",
+    "unblock": "Unblock"
+  },
+  "policy": {
+    "title": "Rules and privacy",
+    "forbidden": {
+      "spam": "Spam and ads",
+      "harassment": "Threats and harassment",
+      "doxxing": "Someone's private data",
+      "illegal": "Illegal: child sexual abuse material, drugs, extremism"
+    },
+    "ladder": {
+      "delete": "The message is deleted",
+      "repeat": "Again within 30 days: chat ban for 7 days",
+      "illegal": "Illegal content: permanent chat ban"
+    },
+    "keeps": "Music, rooms and your account stay"
+  },
+  "privacy": {
+    "encrypted": "Messages are encrypted and nobody reads them",
+    "reports": "On a report, automatic moderation checks only those messages and a little context"
+  }
+}
