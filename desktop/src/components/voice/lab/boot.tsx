@@ -35,6 +35,7 @@ function installLabRemote() {
         expiresAt: now + 60_000,
         kind: 'link_confirm',
         provider,
+        hint: '47',
       };
       asked.set(asking.id, provider);
     }, 6000);

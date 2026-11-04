@@ -61,7 +61,10 @@ const CARDS: { label: string; hud: HudView }[] = [
       second: null,
     },
   },
-  { label: 'link confirm', hud: { kind: 'link_confirm', id: 'lab-link', provider: 'alice' } },
+  {
+    label: 'link confirm',
+    hud: { kind: 'link_confirm', id: 'lab-link', provider: 'alice', hint: '47' },
+  },
   { label: 'not found', hud: { kind: 'not_found', heard: 'поставь абырвалг' } },
   { label: 'failed', hud: { kind: 'failed', display: 'Сейчас ничего не играет' } },
   { label: 'speaking', hud: { kind: 'speaking' } },

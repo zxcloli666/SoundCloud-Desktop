@@ -25,7 +25,7 @@ export type HudView =
   | { kind: 'thinking' }
   | { kind: 'done'; id: string; heard: string; items: DoneItem[]; undo: boolean; at: number }
   | { kind: 'asking'; id: string; heard: string; first: Scored; second: Scored | null }
-  | { kind: 'link_confirm'; id: string; provider: SpeakerProvider }
+  | { kind: 'link_confirm'; id: string; provider: SpeakerProvider; hint?: string }
   | { kind: 'not_found'; heard: string }
   | { kind: 'failed'; display: string }
   | { kind: 'error'; code: VoiceErrorCode }

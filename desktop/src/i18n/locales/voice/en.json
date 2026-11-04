@@ -204,6 +204,7 @@
         "salut": "Connect Salut?"
       },
       "confirmSub": "The code was entered on a speaker",
+      "confirmHint": "Check the number",
       "yes": "Yes",
       "no": "No"
     },

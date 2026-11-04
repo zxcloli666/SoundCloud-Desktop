@@ -11,6 +11,7 @@ export interface RemoteCommand {
   expiresAt: number;
   kind?: RemoteKind;
   provider?: SpeakerProvider;
+  hint?: string;
 }
 
 export interface RemoteWait {
@@ -43,4 +44,5 @@ export interface LinkAsk {
   id: string;
   provider: SpeakerProvider;
   expiresAt: number;
+  hint?: string;
 }

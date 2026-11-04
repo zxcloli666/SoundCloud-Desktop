@@ -208,6 +208,7 @@
         "salut": "Conectar o Salut?"
       },
       "confirmSub": "O código foi digitado numa caixa de som",
+      "confirmHint": "Confira o número",
       "yes": "Sim",
       "no": "Não"
     },

@@ -16,6 +16,7 @@ import { RadioTower } from '../icons';
 import { ago } from '../time';
 import { Pill, SmallButton } from './Block';
 import { LinkCodePanel } from './LinkCodePanel';
+import { LinkHint } from './LinkHint';
 import { ProviderGlyph } from './ProviderGlyph';
 
 const PROVIDERS: SpeakerProvider[] = ['alice', 'salut'];
@@ -76,18 +77,25 @@ function LinkConfirm({ ask }: { ask: LinkAsk }) {
   return (
     <div
       data-ui="voice-link-confirm"
-      className="mt-3 flex items-center gap-2 rounded-2xl border border-accent/30 bg-accent/[0.06] p-3"
+      className="mt-3 flex flex-wrap items-center gap-2 rounded-2xl border border-accent/30 bg-accent/[0.06] p-3"
     >
-      <div className="min-w-0 flex-1">
+      {ask.hint && <LinkHint hint={ask.hint} />}
+      <div className="min-w-[8.5rem] flex-1">
         <p className="truncate text-[13px] font-semibold text-ink-90">
           {t(`voice.speakers.confirm.${ask.provider}`)}
         </p>
-        <p className="truncate text-[11.5px] text-ink-45">{t('voice.speakers.confirmSub')}</p>
+        <p className="truncate text-[11.5px] text-ink-45">
+          {t(ask.hint ? 'voice.speakers.confirmHint' : 'voice.speakers.confirmSub')}
+        </p>
       </div>
-      <SmallButton onClick={() => answerLink(ask.id, false)}>{t('voice.speakers.no')}</SmallButton>
-      <SmallButton primary onClick={() => answerLink(ask.id, true)}>
-        {t('voice.speakers.yes')}
-      </SmallButton>
+      <div className="ml-auto flex gap-2">
+        <SmallButton onClick={() => answerLink(ask.id, false)}>
+          {t('voice.speakers.no')}
+        </SmallButton>
+        <SmallButton primary onClick={() => answerLink(ask.id, true)}>
+          {t('voice.speakers.yes')}
+        </SmallButton>
+      </div>
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import { usePlayerStore } from '../../stores/player';
+import { ApiError } from '../api';
 import { trackedInvoke as invoke } from '../diagnostics';
 import { ACTIVITY_EVENTS } from '../idle';
 import { queryClient } from '../query-client';
@@ -11,6 +12,7 @@ import { useVoiceStore } from './store';
 
 const FALLBACK_MS = 2_400;
 const MAX_BACKOFF_MS = 30_000;
+const MAX_RETRY_AFTER_MS = 60_000;
 const PROVIDERS: SpeakerProvider[] = ['alice', 'salut'];
 
 let generation = 0;
@@ -21,6 +23,11 @@ const pending = new Map<string, ReturnType<typeof setTimeout>>();
 
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function retryAfter(err: unknown): number {
+  if (!(err instanceof ApiError) || err.status !== 429) return 0;
+  return Math.min((err.retryAfterSeconds ?? 0) * 1000, MAX_RETRY_AFTER_MS);
 }
 
 function deviceId(): Promise<string> {
@@ -84,9 +91,9 @@ function askLink(cmd: RemoteCommand) {
     cmd.id,
     setTimeout(() => answerLink(cmd.id, false), left),
   );
-  const ask = { id: cmd.id, provider, expiresAt: cmd.expiresAt };
+  const ask = { id: cmd.id, provider, expiresAt: cmd.expiresAt, hint: cmd.hint };
   useVoiceRuntime.setState({ linkAsk: ask });
-  useVoiceRuntime.getState().setHud({ kind: 'link_confirm', id: cmd.id, provider });
+  useVoiceRuntime.getState().setHud({ kind: 'link_confirm', id: cmd.id, provider, hint: cmd.hint });
 }
 
 function feed(cmd: RemoteCommand) {
@@ -110,11 +117,11 @@ async function loop(gen: number) {
       failures = 0;
       useVoiceRuntime.setState({ remote: 'live' });
       for (const cmd of wait.commands) feed(cmd);
-    } catch {
+    } catch (err) {
       if (gen !== generation) return;
       failures++;
       useVoiceRuntime.setState({ remote: 'retrying' });
-      await sleep(Math.min(1000 * 2 ** failures, MAX_BACKOFF_MS));
+      await sleep(Math.max(retryAfter(err), Math.min(1000 * 2 ** failures, MAX_BACKOFF_MS)));
     }
   }
 }

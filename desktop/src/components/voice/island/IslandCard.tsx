@@ -65,7 +65,7 @@ function Body({
         />
       );
     case 'link_confirm':
-      return <LinkConfirmView id={hud.id} provider={hud.provider} />;
+      return <LinkConfirmView id={hud.id} provider={hud.provider} hint={hud.hint} />;
     case 'not_found':
       return <NotFoundView heard={hud.heard} onClose={onClose} />;
     case 'failed':
