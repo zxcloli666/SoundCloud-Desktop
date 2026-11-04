@@ -12,6 +12,7 @@ on:
       - 'scripts/ci-toolchain.sh'
       - '.github/scripts/changes.sh'
       - '.github/actions/target-cache/**'
+      - '.github/actions/apt-packages/**'
       - '.github/workflows/ci.yml'
   pull_request:
     branches: [main]
@@ -24,6 +25,7 @@ on:
       - 'scripts/ci-toolchain.sh'
       - '.github/scripts/changes.sh'
       - '.github/actions/target-cache/**'
+      - '.github/actions/apt-packages/**'
       - '.github/workflows/ci.yml'
 
 permissions:
@@ -120,7 +122,10 @@ jobs:
 
       - name: System packages
         if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libasound2-dev cmake clang libclang-dev pkg-config
+        uses: ./.github/actions/apt-packages
+        with:
+          packages: libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libasound2-dev cmake clang libclang-dev pkg-config
+          save: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
 
       - name: System packages
         if: runner.os == 'macOS'
@@ -176,7 +181,10 @@ jobs:
       - uses: actions/checkout@v7
 
       - name: System packages
-        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libasound2-dev protobuf-compiler cmake clang libclang-dev pkg-config
+        uses: ./.github/actions/apt-packages
+        with:
+          packages: libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libasound2-dev protobuf-compiler cmake clang libclang-dev pkg-config
+          save: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
 
       - name: Toolchain
         working-directory: .
