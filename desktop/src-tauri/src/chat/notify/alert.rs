@@ -88,12 +88,14 @@ fn message_line(
     let MessageBody::Text(text) = &message.body else {
         return None;
     };
-    let line = plain(text).or_else(|| {
-        message
-            .embeds
-            .first()
-            .map(|embed| embed_line(embed, strings))
-    })?;
+    let line = plain(text)
+        .or_else(|| {
+            message
+                .embeds
+                .first()
+                .map(|embed| embed_line(embed, strings))
+        })
+        .or_else(|| photos_line(message.attachments.len(), strings))?;
     let line = match sender.map(one_line).filter(|name| !name.is_empty()) {
         Some(name) => format!("{name}: {line}"),
         None => line,
@@ -137,6 +139,14 @@ fn embed_line(embed: &Embed, strings: &Strings) -> String {
         EmbedKind::RoomInvite => return strings.room_invite.clone(),
     };
     template.replace("{{title}}", &one_line(&embed.title))
+}
+
+fn photos_line(count: usize, strings: &Strings) -> Option<String> {
+    match count {
+        0 => None,
+        1 => Some(strings.photo.clone()),
+        _ => Some(strings.photos.replace("{{count}}", &count.to_string())),
+    }
 }
 
 fn one_line(text: &str) -> String {
