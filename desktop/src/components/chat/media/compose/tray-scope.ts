@@ -7,9 +7,12 @@ export interface TrayWork {
   failed: number;
 }
 
-export function trayWork(uploads: UploadView[], hiddenAlbum: string | null): TrayWork {
-  const busy = new Set(uploads.filter((upload) => !isDone(upload)).map((upload) => upload.album));
-  busy.delete(hiddenAlbum ?? '');
+export function trayWork(uploads: UploadView[], hidden: ReadonlySet<string>): TrayWork {
+  const busy = new Set(
+    uploads
+      .filter((upload) => !isDone(upload) && !hidden.has(upload.album))
+      .map((upload) => upload.album),
+  );
   const rows = uploads
     .filter((upload) => busy.has(upload.album))
     .sort((a, b) => a.album.localeCompare(b.album) || a.position - b.position);
