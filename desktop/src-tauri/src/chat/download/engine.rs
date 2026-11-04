@@ -63,18 +63,36 @@ impl Downloads {
     pub async fn fetch(
         self: &Arc<Self>,
         conversation_id: ConvId,
+        media_id: Uuid,
         attachment: Attachment,
         part: Part,
     ) -> ChatResult<Fetched> {
         let Some(object) = Object::of(conversation_id, attachment, part) else {
-            return Ok(Fetched::Lost);
+            return Ok(self.tell(conversation_id, media_id, Fetched::Lost));
         };
         let this = self.clone();
-        let key = (conversation_id, object.media_id, object.part);
+        let key = (conversation_id, media_id, object.part);
         self.flights
-            .run(key, async move { this.fetch_once(object).await })
+            .run(key, async move {
+                let fetched = this.fetch_once(object).await?;
+                Ok::<_, ChatError>(this.tell(conversation_id, media_id, fetched))
+            })
             .await
             .unwrap_or(Err(ChatError::Internal))
+    }
+
+    pub fn tell(&self, conversation_id: ConvId, media_id: Uuid, fetched: Fetched) -> Fetched {
+        let state = match fetched {
+            Fetched::Deleted => Gone::Deleted,
+            Fetched::Lost => Gone::Lost,
+            Fetched::Image(_) => return fetched,
+        };
+        (self.notice)(MediaState {
+            conversation_id,
+            media_id,
+            state,
+        });
+        fetched
     }
 
     async fn fetch_once(&self, object: Object) -> ChatResult<Fetched> {
@@ -168,11 +186,6 @@ impl Downloads {
         let cache = self.cache.clone();
         let media_id = object.media_id;
         let _ = tokio::task::spawn_blocking(move || cache.forget(media_id)).await;
-        (self.notice)(MediaState {
-            conversation_id: object.conversation_id,
-            media_id,
-            state: gone,
-        });
         match gone {
             Gone::Deleted => Fetched::Deleted,
             Gone::Lost => Fetched::Lost,

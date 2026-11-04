@@ -23,7 +23,7 @@ async fn a_404_asks_urls_once_more_then_answers_lost() {
         rig.cache.get(media.image_id, Part::Image).unwrap(),
         Some(media.image.clone())
     );
-    assert!(rig.notices().is_empty());
+    assert_eq!(rig.notices(), vec![rig.told(&media, Gone::Lost)]);
 }
 
 #[tokio::test]
@@ -127,8 +127,12 @@ async fn one_media_in_two_conversations_is_judged_per_conversation() {
 
     let (allowed, denied) = tokio::join!(
         rig.load(&media, Part::Image),
-        rig.downloads
-            .fetch(banned, media.attachment.clone(), Part::Image)
+        rig.downloads.fetch(
+            banned,
+            media.image_id,
+            media.attachment.clone(),
+            Part::Image
+        )
     );
 
     assert_eq!(shown(&allowed.unwrap()), "image/jpeg");
@@ -137,5 +141,12 @@ async fn one_media_in_two_conversations_is_judged_per_conversation() {
         rig.cache.get(media.image_id, Part::Image).unwrap(),
         Some(media.image.clone())
     );
-    assert!(rig.notices().is_empty());
+    assert_eq!(
+        rig.notices(),
+        vec![MediaState {
+            conversation_id: banned,
+            media_id: media.image_id,
+            state: Gone::Deleted,
+        }]
+    );
 }
