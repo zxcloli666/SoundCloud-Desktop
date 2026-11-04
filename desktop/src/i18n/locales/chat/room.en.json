@@ -133,6 +133,7 @@
       "mods": "Mods",
       "off": "Nobody",
       "withStar": "Images with STAR"
-    }
+    },
+    "moreMods": "{{value}} moderators with STAR"
   }
 }

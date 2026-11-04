@@ -313,7 +313,7 @@ export const scenes: LabScene[] = [
           ...thread,
           {
             ...last,
-            seq: last.seq + 1,
+            seq: (last.seq ?? 0) + 1,
             clientId: `perks-invite-${star}`,
             sender: 'u-kai',
             mine: false,
@@ -322,7 +322,7 @@ export const scenes: LabScene[] = [
           },
           {
             ...last,
-            seq: last.seq + 2,
+            seq: (last.seq ?? 0) + 2,
             clientId: `perks-invite-${full}`,
             sender: 'u-lena',
             mine: false,

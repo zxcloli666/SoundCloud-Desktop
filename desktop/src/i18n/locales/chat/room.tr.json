@@ -133,6 +133,7 @@
       "mods": "Modlar",
       "off": "Kimse",
       "withStar": "STAR ile görseller"
-    }
+    },
+    "moreMods": "STAR ile {{value}} moderatör"
   }
 }

@@ -27,7 +27,9 @@ function TileArt({ url }: { url: string }) {
     return (
       <span
         className="block h-full w-full"
-        style={{ background: `linear-gradient(135deg, hsl(${h} 62% 58%), hsl(${(h + 48) % 360} 58% 38%))` }}
+        style={{
+          background: `linear-gradient(135deg, hsl(${h} 62% 58%), hsl(${(h + 48) % 360} 58% 38%))`,
+        }}
       />
     );
   }

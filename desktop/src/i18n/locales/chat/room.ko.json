@@ -132,6 +132,7 @@
       "mods": "모더",
       "off": "없음",
       "withStar": "STAR로 이미지"
-    }
+    },
+    "moreMods": "STAR로 모더레이터 {{value}}명"
   }
 }

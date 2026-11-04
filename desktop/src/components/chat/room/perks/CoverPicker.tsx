@@ -94,7 +94,7 @@ export const CoverPicker = memo(function CoverPicker({
     accent: current?.accent ?? 0,
   });
   const [saving, setSaving] = useState<'set' | 'reset' | null>(null);
-  const [error, setError] = useState<CoverError | null>(null);
+  const [error, setError] = useState<(CoverError & { attempt: number }) | null>(null);
 
   const track = room.playback.track;
   const trackArt = track ? track.artwork_url || track.user?.avatar_url : null;
@@ -105,11 +105,17 @@ export const CoverPicker = memo(function CoverPicker({
 
   const save = async (cover: RoomCover | null) => {
     setSaving(cover ? 'set' : 'reset');
-    setError(null);
     const outcome = await setRoomCover(cover);
     setSaving(null);
-    if (outcome.ok) onSaved(cover);
-    else setError({ code: outcome.code, retryMs: outcome.retryMs });
+    if (outcome.ok) {
+      setError(null);
+      onSaved(cover);
+    } else
+      setError((prev) => ({
+        code: outcome.code,
+        retryMs: outcome.retryMs,
+        attempt: (prev?.attempt ?? 0) + 1,
+      }));
   };
 
   const apply = () => {
@@ -150,7 +156,7 @@ export const CoverPicker = memo(function CoverPicker({
 
       {error && (
         <CoverIssue
-          key={`${error.code}-${error.retryMs}`}
+          key={error.attempt}
           error={error}
           onRetry={apply}
           onPickOther={() => {
