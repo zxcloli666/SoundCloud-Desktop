@@ -1,0 +1,54 @@
+name: apt-packages
+description: Install apt packages from debs kept in the public ghcr package cache/desktop-ci; the mirror is used only when the runner image or the list changes
+
+inputs:
+  packages:
+    description: Packages, space separated
+    required: true
+  save:
+    description: true pushes the downloaded debs
+    default: 'false'
+  token:
+    description: Token that may push packages
+    default: ${{ github.token }}
+
+runs:
+  using: composite
+  steps:
+    - uses: oras-project/setup-oras@v2
+      with:
+        version: 1.3.4
+
+    - name: Install
+      shell: bash
+      env:
+        PACKAGES: ${{ inputs.packages }}
+        SAVE: ${{ inputs.save }}
+        TOKEN: ${{ inputs.token }}
+      run: |
+        owner=$(printf '%s' "$GITHUB_REPOSITORY_OWNER" | tr '[:upper:]' '[:lower:]')
+        repo=ghcr.io/$owner/cache/desktop-ci
+        tag=apt-$ImageOS-$RUNNER_ARCH-$ImageVersion-$(printf '%s' "$PACKAGES" | sha256sum | cut -c1-12)
+        pack=$RUNNER_TEMP/apt-pack
+        debs=$RUNNER_TEMP/apt-debs
+        mkdir -p "$pack" "$debs/partial"
+        if oras pull "$repo:$tag" --output "$pack" > /dev/null 2>&1 && tar -xf "$pack/debs.tar" -C "$debs"; then
+          sudo dpkg -i "$debs"/*.deb > /dev/null
+          echo "installed $PACKAGES from $repo:$tag"
+          exit 0
+        fi
+        apt="-o Acquire::Retries=3 -o Acquire::http::Timeout=30"
+        sudo apt-get update $apt
+        sudo apt-get install -y --no-install-recommends --download-only $apt -o Dir::Cache::archives="$debs" $PACKAGES
+        if ls "$debs"/*.deb > /dev/null 2>&1; then
+          sudo dpkg -i "$debs"/*.deb > /dev/null
+        fi
+        echo "installed $PACKAGES from the mirror"
+        [ "$SAVE" = true ] || exit 0
+        ls "$debs"/*.deb > /dev/null 2>&1 || exit 0
+        tar -cf "$pack/debs.tar" -C "$debs" $(cd "$debs" && ls *.deb)
+        printf '%s' "$TOKEN" | oras login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+        cd "$pack"
+        oras push "$repo:$tag" debs.tar:application/x-tar \
+          --annotation "org.opencontainers.image.source=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY" > /dev/null
+        echo "pushed $repo:$tag"
