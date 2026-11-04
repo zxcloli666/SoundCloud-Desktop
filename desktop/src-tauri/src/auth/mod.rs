@@ -60,6 +60,10 @@ impl SessionStore {
         })
     }
 
+    pub fn premium_at_start(&self) -> bool {
+        self.state.try_read().is_ok_and(|state| state.premium)
+    }
+
     pub async fn premium(&self) -> bool {
         self.state.read().await.premium
     }
@@ -132,6 +136,12 @@ fn write_state(path: &Path, state: &AuthState) -> std::io::Result<()> {
     Ok(())
 }
 
+fn gate_effects(app: &AppHandle, premium: bool) {
+    if let Some(audio) = app.try_state::<crate::audio::AudioState>() {
+        audio.effects.set_premium(premium);
+    }
+}
+
 #[tauri::command]
 pub async fn auth_status(state: State<'_, Arc<SessionStore>>) -> Result<AuthState, String> {
     Ok(state.state.read().await.clone())
@@ -152,6 +162,7 @@ pub async fn auth_set_session(
     // Persist + emit under the write lock so file/event order matches memory.
     let mut guard = state.state.write().await;
     *guard = new.clone();
+    gate_effects(&app, false);
     if let Err(e) = write_state(&state.path, &guard) {
         log_native(&app, "ERROR", format!("[auth] persist failed: {e}"));
     }
@@ -170,6 +181,7 @@ pub async fn auth_set_premium(
         return Ok(());
     }
     guard.premium = premium;
+    gate_effects(&app, premium);
     if let Err(e) = write_state(&state.path, &guard) {
         log_native(&app, "ERROR", format!("[auth] premium persist failed: {e}"));
     }
@@ -189,6 +201,7 @@ pub async fn auth_logout(
     let old = {
         let mut guard = state.state.write().await;
         let old = std::mem::take(&mut *guard);
+        gate_effects(&app, false);
         if let Err(e) = write_state(&state.path, &AuthState::default()) {
             log_native(&app, "ERROR", format!("[auth] clear failed: {e}"));
         }

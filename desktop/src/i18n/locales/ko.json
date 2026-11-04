@@ -1246,7 +1246,6 @@
     "wpKeyNeeded": "18+ 결과를 보려면 Wallhaven API 키를 입력하세요.",
     "bypassWhitelistSoonDesc": "우회 라우팅을 준비하고 있어요. 조금만 기다려 주세요",
     "import": "가져오기",
-    "importYandex": "Yandex Music에서 가져오기",
     "fontTitle": "인터페이스 글꼴",
     "fontDesc": "메뉴, 제목, 목록에 쓰이는 글꼴",
     "fontSystem": "시스템",
@@ -1446,6 +1445,32 @@
       "no_space": "해당 드라이브의 여유 공간이 부족해요",
       "sandboxed": "이 폴더는 샌드박스 포털을 통해서만 접근할 수 있어요. /media, /run/media, /mnt 아래 드라이브의 폴더나 음악 또는 다운로드 폴더 안의 폴더를 선택하세요",
       "failed": "캐시를 이동하지 못했어요"
+    },
+    "releaseNotifications": "새 릴리스 알림",
+    "releaseNotificationsDesc": "팔로우한 아티스트가 새 곡을 올리면 시스템 알림을 보냅니다. 앱이 실행 중일 때 30분마다 확인합니다"
+  },
+  "effects": {
+    "title": "효과",
+    "toggle": "효과 켜기 또는 끄기",
+    "locked": "리버브, 8D, 베이스 부스트는 STAR에 포함됩니다",
+    "reverb": "리버브",
+    "room": "공간 크기",
+    "eightDSpeed": "8D 속도",
+    "bass": "베이스",
+    "preset": {
+      "off": "끄기",
+      "slowedReverb": "슬로우 + 리버브",
+      "spedUp": "스피드 업",
+      "eightD": "8D",
+      "bass": "베이스 부스트",
+      "custom": "사용자 지정"
+    },
+    "short": {
+      "slowedReverb": "슬로우",
+      "spedUp": "빠름",
+      "eightD": "8D",
+      "bass": "베이스",
+      "custom": "FX"
     }
   },
   "eq": {
@@ -1512,41 +1537,6 @@
     "zoomIn": "인터페이스 확대",
     "zoomOut": "인터페이스 축소",
     "zoomReset": "인터페이스 크기 초기화"
-  },
-  "ym": {
-    "instructions": "Yandex Music 토큰 받는 방법:",
-    "step1": "브라우저 확장 프로그램을 설치하세요: Chrome — \"Yandex Music Token\", Firefox — \"Yandex Music Token\"",
-    "step2": "music.yandex.ru를 열고 확장 프로그램 아이콘을 클릭하세요",
-    "step3": "확장 프로그램에서 OAuth 토큰을 복사하세요",
-    "tokenPlaceholder": "Yandex Music 토큰 붙여넣기...",
-    "start": "가져오기 시작",
-    "stop": "중지",
-    "hide": "숨기기",
-    "found": "찾음",
-    "notFound": "찾지 못함",
-    "done": "가져오기 완료!",
-    "savingPlaylist": "재생 목록 저장 중...",
-    "backgroundHint": "가져오기는 백그라운드에서 계속돼요. 이 창을 닫아도 돼요",
-    "error": "가져오기에 실패했어요",
-    "pending": "재생 목록이 서버 대기열에 있어요. 곧 라이브러리에 나타나요",
-    "delayed": "SoundCloud가 제한 중이에요. 재생 목록은 나중에 만들어져요",
-    "createFailed": "재생 목록 \"{{title}}\"을(를) 만들지 못했어요",
-    "relogin": "다시 로그인하지 않으면 재생 목록이 만들어지지 않아요",
-    "partial": "가져온 항목 중 일부만 저장됐어요. 아래에서 이유를 확인하세요",
-    "errors": "오류",
-    "nothingFound": "아무것도 찾지 못했어요. 연결과 토큰을 확인한 뒤 다시 시도해 주세요",
-    "limitHint": "SoundCloud 재생 목록에는 최대 500곡까지 담을 수 있어요. 나머지는 \"Yandex Music 2\", \"Yandex Music 3\" 등으로 나뉘어 저장돼요",
-    "sessionExpired": "SoundCloud 세션이 만료됐어요. 다시 로그인한 뒤 가져오기를 다시 시작하세요",
-    "playlistNotSynced": "기존 \"Yandex Music\" 재생 목록이 아직 SoundCloud와 동기화 중이에요. 몇 분 후에 다시 가져와 주세요",
-    "saveFailed": "일부 재생 목록을 저장하지 못했어요 (오류 {{status}})",
-    "tokenInvalid": "Yandex Music에서 토큰을 받아들이지 않았어요. 새 토큰을 받아 다시 시도해 주세요",
-    "ymUnavailable": "Yandex Music에서 좋아요를 불러오지 못했어요. 연결을 확인하고 다시 시도해 주세요",
-    "searchUnavailable": "SoundCloud 검색이 응답하지 않아요. 나중에 다시 가져와 주세요",
-    "unknownError": "가져오는 중 문제가 발생했어요. 나중에 다시 시도해 주세요",
-    "orderLabel": "재생 목록 내 순서",
-    "orderNewest": "최신 항목을 위로",
-    "orderOldest": "오래된 항목을 위로",
-    "orderHint": "다시 가져오면 \"Yandex Music\" 재생 목록이 이 순서로 다시 작성돼요"
   },
   "update": {
     "available": "업데이트 가능",
@@ -1694,6 +1684,23 @@
       "sync": {
         "title": "빠른 동기화",
         "tag": "몇 분 만에"
+      },
+      "fresh": "신규",
+      "effects": {
+        "title": "사운드 효과",
+        "tag": "리버브, 8D, 베이스"
+      },
+      "releases": {
+        "title": "새 릴리스",
+        "tag": "나오는 즉시"
+      },
+      "importSync": {
+        "title": "가져오기 동기화",
+        "tag": "플레이리스트가 자동으로 채워짐"
+      },
+      "streak": {
+        "title": "STAR 연속",
+        "tag": "달마다 배지가 성장"
       }
     },
     "method": {
@@ -1797,7 +1804,19 @@
       "extend": "연장",
       "redeem": "코드 사용",
       "canceled": "자동 갱신을 껐어요",
-      "cancelError": "자동 갱신을 끄지 못했어요"
+      "cancelError": "자동 갱신을 끄지 못했어요",
+      "sources": {
+        "platega": "카드 또는 SBP",
+        "cryptobot": "Crypto Bot",
+        "tgstars": "Telegram Stars",
+        "code": "코드",
+        "boosty": "Boosty",
+        "admin": "팀의 선물",
+        "community": "커뮤니티 보상",
+        "trial": "무료 체험",
+        "referral": "친구 초대",
+        "shared": "Duo 또는 Family 요금제"
+      }
     },
     "discord": {
       "label": "Discord",
@@ -1868,7 +1887,75 @@
       "notFirst": "친구 코드는 첫 구매에만 적용됩니다.",
       "failed": "코드를 확인할 수 없습니다."
     },
-    "qrRefreshing": "QR이 만료되어 새로 만듭니다…"
+    "qrRefreshing": "QR이 만료되어 새로 만듭니다…",
+    "tier": {
+      "solo": "개인",
+      "duo": "Duo",
+      "family": "Family",
+      "people_other": "{{count}}명",
+      "each": "1인당 {{price}} ₽",
+      "price": "{{price}} ₽",
+      "save": "−{{pct}}%"
+    },
+    "shared": {
+      "carryTitle": "현재 STAR가 그대로 이어집니다",
+      "carryDays_other": "+{{count}}일",
+      "carryEnd": "새 종료일 {{date}}",
+      "memberBuy": "다른 사람의 플랜에 참여 중입니다. 직접 구매하려면 먼저 나가세요.",
+      "manageCta": "멤버",
+      "seatsOf": "{{seats}}석 중 {{used}}석",
+      "until": "{{date}}까지",
+      "invite": {
+        "title": "초대 코드",
+        "copy": "초대 복사",
+        "copied": "복사됨",
+        "regenerate": "새 코드",
+        "regenerated": "새 코드가 준비되었습니다. 이전 코드는 더 이상 쓸 수 없습니다",
+        "shareText": "SoundCloud Desktop에서 내 STAR {{tier}}에 참여하세요: STAR를 열고 \"코드가 있어요\"를 눌러 {{code}}를 입력하세요. https://getsoundcloud.app"
+      },
+      "seat": {
+        "free": "빈 자리",
+        "joined": "{{date}} 참여",
+        "remove": "내보내기",
+        "removeAsk": "플랜에서 내보낼까요?",
+        "removeYes": "내보내기",
+        "removeNo": "유지",
+        "removed": "플랜에서 내보냈습니다",
+        "locked": "{{date}}부터 다시 내보낼 수 있습니다"
+      },
+      "member": {
+        "from": "{{name}}님의 {{tier}} STAR",
+        "sub": "{{date}}까지",
+        "leave": "플랜 나가기",
+        "leaveAsk": "이 플랜에서 나갈까요? 본인의 STAR는 유지됩니다.",
+        "leaveYes": "나가기",
+        "leaveNo": "머무르기",
+        "left": "플랜에서 나갔습니다",
+        "joined": "플랜에 참여했습니다"
+      },
+      "empty": {
+        "title": "아직 공유 플랜이 없습니다",
+        "text": "Duo 또는 Family를 구매하고 코드로 사람들을 초대하세요.",
+        "cta": "플랜 선택"
+      },
+      "inviteMembers": "사람 초대",
+      "joinHint": "또는 Duo/Family 소유자의 초대 코드(JOIN-…).",
+      "error": {
+        "generic": "문제가 발생했습니다. 다시 시도해 주세요.",
+        "invite_invalid": "없거나 교체된 초대 코드입니다.",
+        "plan_full": "플랜에 빈 자리가 없습니다.",
+        "plan_expired": "이 플랜은 만료되었습니다.",
+        "own_plan": "본인의 플랜입니다.",
+        "owner_of_plan": "플랜을 소유하고 있어 다른 플랜에 참여할 수 없습니다.",
+        "already_member": "이미 이 플랜에 있습니다.",
+        "in_other_plan": "다른 플랜에 있습니다. 먼저 나가세요.",
+        "member_of_plan": "직접 구매하려면 현재 플랜에서 먼저 나가세요.",
+        "too_many_members": "먼저 멤버를 내보내세요. 작은 플랜은 자리가 적습니다.",
+        "removal_limit": "이 자리는 이번 달에 두 번 바뀌었습니다. 나중에 다시 시도하세요.",
+        "not_a_member": "이 사람은 플랜에 없습니다."
+      },
+      "centerSeats": "{{seats}}석 중 {{used}}석 사용"
+    }
   },
   "soundwaveLock": {
     "wordmark": "사운드 웨이브",
@@ -2421,6 +2508,18 @@
     "sendReports": "오류 리포트 보내기",
     "sendReportsDesc": "앱 오류를 개발자에게 보냅니다. 계정 정보는 없습니다"
   },
+  "starTenure": {
+    "title": "STAR 연속 구독",
+    "months_other": "{{count}}개월 연속",
+    "next": "{{tier}}까지 {{count}}개월",
+    "reached": "새 연속 레벨",
+    "tier": {
+      "0": "불씨",
+      "1": "빛",
+      "2": "불꽃",
+      "3": "별자리"
+    }
+  },
   "starMoments": {
     "tryFree_other": "{{count}}일 무료",
     "getStar": "STAR 받기",
@@ -2430,7 +2529,8 @@
     "later": "나중에",
     "expiry": {
       "trial": "STAR 체험판",
-      "left_other": "{{count}}일 남음"
+      "left_other": "{{count}}일 남음",
+      "streakLost": "연속 기록이 사라집니다"
     },
     "preview": {
       "label": "Go+ 미리보기"
@@ -2454,6 +2554,10 @@
       "free": "지금",
       "freeTime": "시간",
       "starTime": "약 2분"
+    },
+    "year": {
+      "cta": "1년",
+      "saved": "{{sum}} ₽ 절약"
     }
   },
   "recap": {
@@ -2469,5 +2573,156 @@
     "next": "다음",
     "empty": "아직 결산할 만큼의 음악이 없습니다",
     "emptyHint": "음악을 재생해보세요"
+  },
+  "releases": {
+    "title": "새 릴리스",
+    "new": "신규",
+    "heard": "들음",
+    "why_other": "팔로우한 아티스트의 원곡, 최근 {{count}}일",
+    "playAll": "모두 재생",
+    "addToQueue": "대기열에 추가",
+    "lockedWhy": "내 아티스트의 신곡과 공개되는 순간 받는 알림",
+    "notifyBody_other": "새 릴리스 {{count}}개: {{artists}}",
+    "open": "열기"
+  },
+  "importer": {
+    "title": "가져오기",
+    "openButton": "플레이리스트와 트랙 가져오기",
+    "tab": {
+      "yandex": "Yandex Music",
+      "link": "링크",
+      "text": "목록"
+    },
+    "source": {
+      "spotify": "Spotify",
+      "youtube": "YouTube",
+      "yandex": "Yandex Music"
+    },
+    "instructions": "Yandex Music 토큰을 받는 방법:",
+    "step1": "브라우저 확장 프로그램을 설치하세요: Chrome — \"Yandex Music Token\", Firefox — \"Yandex Music Token\"",
+    "step2": "music.yandex.ru를 열고 확장 프로그램 아이콘을 클릭하세요",
+    "step3": "확장 프로그램에서 OAuth 토큰을 복사하세요",
+    "tokenPlaceholder": "Yandex Music 토큰을 붙여넣으세요...",
+    "connect": "연결",
+    "likes": "좋아요",
+    "linkPlaceholder": "Spotify, YouTube 또는 Yandex Music 링크를 붙여넣으세요...",
+    "unknownLink": "인식할 수 없는 링크입니다",
+    "textPlaceholder": "아티스트 - 제목\n아티스트 - 제목\n...",
+    "namePlaceholder": "플레이리스트 이름",
+    "defaultTitle": "가져옴",
+    "start": "가져오기 시작",
+    "stop": "중지",
+    "hide": "숨기기",
+    "again": "새로 가져오기",
+    "step": {
+      "reading": "읽는 중",
+      "matching": "매칭 중",
+      "saving": "저장 중",
+      "review": "검토",
+      "syncing": "동기화 중"
+    },
+    "found": "찾음",
+    "notFound": "못 찾음",
+    "copied": "복사됨",
+    "partialSource": "Spotify는 로그인 없이 플레이리스트의 처음 100곡만 제공합니다",
+    "pending": "플레이리스트가 서버 대기열에 있으며 곧 라이브러리에 나타납니다",
+    "delayed": "SoundCloud가 요청을 제한하고 있어 플레이리스트는 나중에 만들어집니다",
+    "createFailed": "플레이리스트 \"{{title}}\"을(를) 만들 수 없습니다",
+    "relogin": "다시 로그인하지 않으면 플레이리스트가 만들어지지 않습니다",
+    "limitHint": "SoundCloud 플레이리스트는 최대 500곡이며, 나머지는 \"... 2\", \"... 3\" 등으로 나뉩니다",
+    "orderLabel": "플레이리스트 내 순서",
+    "orderNewest": "최신순",
+    "orderOldest": "오래된 순",
+    "orderHint": "다시 가져오면 \"Yandex Music\" 플레이리스트가 이 순서로 덮어쓰기됩니다",
+    "find": "찾기",
+    "findPlaceholder": "SoundCloud에서 검색...",
+    "findEmpty": "결과가 없습니다",
+    "removeMatch": "매칭 해제",
+    "filter": {
+      "all": "전체",
+      "missed": "못 찾음"
+    },
+    "copyMissed": "못 찾은 곡 복사",
+    "noMissed": "모두 매칭되었습니다",
+    "destination": "저장 위치",
+    "mode": {
+      "create": "새 플레이리스트",
+      "likes": "좋아요",
+      "existing": "기존 플레이리스트"
+    },
+    "pickPlaylist": "플레이리스트 선택...",
+    "discard": "버리기",
+    "save": "{{count}}곡 저장",
+    "saved": "{{count}}곡 저장됨",
+    "savedCount": "{{count}}곡",
+    "openPlaylist": "플레이리스트 열기",
+    "openView": "가져오기 열기",
+    "history": "기록",
+    "rerun": "다시 실행",
+    "forget": "기록에서 삭제",
+    "pasted": "클립보드에 {{source}} 링크가 있습니다",
+    "dropFile": "목록을 가져오려면 파일을 놓으세요",
+    "err": {
+      "session_expired": "SoundCloud 세션이 만료되었습니다",
+      "ym_token_invalid": "Yandex Music이 토큰을 거부했습니다",
+      "ym_unavailable": "Yandex Music이 응답하지 않습니다",
+      "search_unavailable": "SoundCloud 검색이 응답하지 않습니다",
+      "source_unavailable": "소스를 읽을 수 없습니다",
+      "source_not_found": "이 링크에서 아무것도 찾을 수 없습니다",
+      "source_unparsed": "소스 페이지의 형식이 예상과 다릅니다",
+      "source_empty": "소스에 트랙이 없습니다",
+      "bad_link": "지원하지 않는 링크입니다",
+      "bad_file": "이 파일은 가져올 수 없습니다",
+      "playlist_not_synced": "플레이리스트가 아직 SoundCloud와 동기화 중입니다",
+      "save_failed": "저장할 수 없습니다 (오류 {{status}})",
+      "unknown": "문제가 발생했습니다",
+      "target_missing": "대상 플레이리스트가 없어졌습니다"
+    },
+    "hint": {
+      "session_expired": "다시 로그인하세요. 매칭된 트랙은 그대로 남습니다",
+      "ym_token_invalid": "확장 프로그램에서 새 토큰을 받아 다시 연결하세요",
+      "ym_unavailable": "연결을 확인하고 다시 시도하세요",
+      "search_unavailable": "잠시 후 다시 시도하세요. 매칭된 트랙은 그대로 남습니다",
+      "source_unavailable": "연결을 확인하고 다시 시도하세요",
+      "source_not_found.spotify": "플레이리스트가 비공개이거나 삭제되었을 수 있습니다. Spotify에서 공개로 바꾸고 다시 시도하세요",
+      "source_not_found.youtube": "플레이리스트가 비공개이거나 삭제되었을 수 있습니다. 일부 공개 또는 공개로 설정하고 다시 시도하세요",
+      "source_not_found.yandex": "플레이리스트가 비공개일 수 있습니다. Yandex Music 탭에서 계정을 연결하세요",
+      "source_not_found": "링크가 비공개이거나 삭제되었을 수 있습니다",
+      "source_unparsed": "대신 트랙을 목록으로 붙여넣으세요",
+      "source_empty": "다른 링크를 시도하거나 트랙을 목록으로 붙여넣으세요",
+      "bad_link": "Spotify, YouTube 또는 Yandex Music 링크를 사용하세요",
+      "bad_file": "2MB 이하의 .txt 또는 .csv 파일을 사용하세요",
+      "playlist_not_synced": "몇 분 기다린 후 다시 저장하세요",
+      "save_failed": "다시 저장해 보세요",
+      "unknown": "나중에 다시 시도하세요"
+    },
+    "action": {
+      "retry": "다시 시도",
+      "reconnect": "다시 연결",
+      "signin": "로그인",
+      "change": "소스 변경"
+    },
+    "sync": {
+      "keep": "동기화 유지",
+      "title": "플레이리스트 동기화",
+      "empty": "아직 동기화 중인 항목이 없습니다. 가져온 뒤 동기화 유지를 켜세요.",
+      "paused": "STAR가 활성화될 때까지 일시 중지됨",
+      "needsReconnect": "Yandex Music에 새 토큰이 필요합니다",
+      "last": "동기화: {{when}}",
+      "new_other": "새 곡 +{{count}}",
+      "now": "지금 동기화",
+      "toast_other": "{{title}}에 {{count}}곡 동기화됨",
+      "ymConnected": "Yandex Music 연결됨",
+      "disconnectYm": "연결 해제"
+    }
+  },
+  "ago": {
+    "now": "방금",
+    "m": "{{count}}분",
+    "h": "{{count}}시간",
+    "d": "{{count}}일",
+    "w": "{{count}}주",
+    "mo": "{{count}}개월",
+    "y": "{{count}}년"
   }
 }

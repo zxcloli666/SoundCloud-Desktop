@@ -1312,7 +1312,6 @@
     "wpKeyNeeded": "18+ sonuçlar için Wallhaven API anahtarını girin.",
     "bypassWhitelistSoonDesc": "Atlatma rotalaması geliştirme aşamasında",
     "import": "İçe aktar",
-    "importYandex": "Yandex Music'ten içe aktar",
     "fontTitle": "Arayüz yazı tipi",
     "fontDesc": "Menüler, başlıklar ve listeler için yazı tipi",
     "fontSystem": "Sistem",
@@ -1514,6 +1513,32 @@
       "no_space": "Bu sürücüde yeterli boş alan yok",
       "sandboxed": "Bu klasöre yalnızca korumalı alan portalı üzerinden erişilebiliyor. /media, /run/media veya /mnt altındaki bir sürücüde ya da Müzik veya İndirilenler içinde bir klasör seçin",
       "failed": "Önbellek taşınamadı"
+    },
+    "releaseNotifications": "Yeni çıkış bildirimleri",
+    "releaseNotificationsDesc": "Takip ettiğiniz sanatçılar yeni bir şey yüklediğinde sistem bildirimi. Uygulama açıkken 30 dakikada bir kontrol edilir"
+  },
+  "effects": {
+    "title": "Efektler",
+    "toggle": "Efektleri aç veya kapat",
+    "locked": "Reverb, 8D ve bas güçlendirme STAR'a dahildir",
+    "reverb": "Reverb",
+    "room": "Oda boyutu",
+    "eightDSpeed": "8D hızı",
+    "bass": "Bas",
+    "preset": {
+      "off": "Kapalı",
+      "slowedReverb": "Yavaş + reverb",
+      "spedUp": "Hızlandırılmış",
+      "eightD": "8D",
+      "bass": "Bas güçlendirme",
+      "custom": "Özel"
+    },
+    "short": {
+      "slowedReverb": "Yavaş",
+      "spedUp": "Hızlı",
+      "eightD": "8D",
+      "bass": "Bas",
+      "custom": "FX"
     }
   },
   "eq": {
@@ -1582,41 +1607,6 @@
     "zoomIn": "Arayüzü büyüt",
     "zoomOut": "Arayüzü küçült",
     "zoomReset": "Arayüz ölçeğini sıfırla"
-  },
-  "ym": {
-    "instructions": "Yandex Music tokeninizi nasıl alırsınız:",
-    "step1": "Tarayıcı eklentisini kurun: Chrome — \"Yandex Music Token\", Firefox — \"Yandex Music Token\"",
-    "step2": "music.yandex.ru adresini açın ve eklenti simgesine tıklayın",
-    "step3": "Eklentiden OAuth tokenini kopyalayın",
-    "tokenPlaceholder": "Yandex Music tokeninizi yapıştırın...",
-    "start": "İçe aktarmayı başlat",
-    "stop": "Durdur",
-    "hide": "Gizle",
-    "found": "Bulundu",
-    "notFound": "Bulunamadı",
-    "done": "İçe aktarma tamamlandı!",
-    "savingPlaylist": "Çalma listesi kaydediliyor...",
-    "backgroundHint": "İçe aktarma arka planda sürer, bu pencereyi kapatabilirsiniz",
-    "error": "İçe aktarma başarısız",
-    "pending": "Çalma listesi sunucuda oluşturuluyor, kısa süre sonra kitaplığınızda görünecek",
-    "delayed": "SoundCloud sınırlıyor, çalma listesi daha sonra oluşturulacak",
-    "createFailed": "\"{{title}}\" çalma listesi oluşturulamadı",
-    "relogin": "Yeniden giriş yapın, yoksa çalma listesi oluşturulmayacak",
-    "partial": "İçe aktarmanın bir kısmı kaydedildi, nedeni aşağıda",
-    "errors": "Hatalar",
-    "nothingFound": "Hiçbir şey bulunamadı. Bağlantınızı ve tokeninizi kontrol edip tekrar deneyin",
-    "limitHint": "SoundCloud çalma listesine en fazla 500 şarkı sığar, kalanlar \"Yandex Music 2\", \"Yandex Music 3\" listelerine gider",
-    "sessionExpired": "SoundCloud oturumunuzun süresi doldu. Tekrar giriş yapın ve içe aktarmayı yeniden başlatın",
-    "playlistNotSynced": "Mevcut \"Yandex Music\" çalma listesi hâlâ SoundCloud ile eşitleniyor. Birkaç dakika sonra içe aktarmayı tekrar deneyin",
-    "saveFailed": "Bazı çalma listeleri kaydedilemedi (hata {{status}})",
-    "tokenInvalid": "Yandex Music tokeni kabul etmedi. Yeni bir token alıp tekrar deneyin",
-    "ymUnavailable": "Yandex Music beğenileri yüklenemedi. Bağlantınızı kontrol edip tekrar deneyin",
-    "searchUnavailable": "SoundCloud araması yanıt vermiyor. İçe aktarmayı daha sonra tekrar deneyin",
-    "unknownError": "İçe aktarma sırasında bir sorun oluştu. Daha sonra tekrar deneyin",
-    "orderLabel": "Çalma listesindeki sıra",
-    "orderNewest": "En yeniler üstte",
-    "orderOldest": "En eskiler üstte",
-    "orderHint": "Yeniden içe aktarma, \"Yandex Music\" listelerini bu sırayla yeniden yazar"
   },
   "update": {
     "available": "Güncelleme mevcut",
@@ -1772,6 +1762,23 @@
       "sync": {
         "title": "Hızlı senkronizasyon",
         "tag": "Dakikalar içinde"
+      },
+      "fresh": "Yeni",
+      "effects": {
+        "title": "Ses efektleri",
+        "tag": "Reverb, 8D, bas"
+      },
+      "releases": {
+        "title": "Yeni çıkanlar",
+        "tag": "Çıktığı anda"
+      },
+      "importSync": {
+        "title": "İçe aktarma senkronu",
+        "tag": "Listeler kendiliğinden dolar"
+      },
+      "streak": {
+        "title": "STAR serisi",
+        "tag": "Rozet her ay büyür"
       }
     },
     "method": {
@@ -1875,7 +1882,19 @@
       "extend": "Uzat",
       "redeem": "Kod gir",
       "canceled": "Otomatik yenileme kapatıldı",
-      "cancelError": "Otomatik yenileme kapatılamadı"
+      "cancelError": "Otomatik yenileme kapatılamadı",
+      "sources": {
+        "platega": "Kart veya SBP",
+        "cryptobot": "Crypto Bot",
+        "tgstars": "Telegram Stars",
+        "code": "Kod",
+        "boosty": "Boosty",
+        "admin": "Ekipten hediye",
+        "community": "Topluluk ödülü",
+        "trial": "Ücretsiz deneme",
+        "referral": "Arkadaş daveti",
+        "shared": "Duo veya Family planı"
+      }
     },
     "discord": {
       "label": "Discord",
@@ -1949,7 +1968,77 @@
       "notFirst": "Arkadaş kodu sadece ilk satışta geçerlidir.",
       "failed": "Kod doğrulanamadı."
     },
-    "qrRefreshing": "QR süresi doldu, yenisi oluşturuluyor…"
+    "qrRefreshing": "QR süresi doldu, yenisi oluşturuluyor…",
+    "tier": {
+      "solo": "Kişisel",
+      "duo": "Duo",
+      "family": "Family",
+      "people_one": "{{count}} kişi",
+      "people_other": "{{count}} kişi",
+      "each": "kişi başı {{price}} ₽",
+      "price": "{{price}} ₽",
+      "save": "−{{pct}}%"
+    },
+    "shared": {
+      "carryTitle": "Mevcut STAR'ınız aktarılır",
+      "carryDays_one": "+{{count}} gün",
+      "carryDays_other": "+{{count}} gün",
+      "carryEnd": "Yeni bitiş {{date}}",
+      "memberBuy": "Başkasının planındasınız. Kendi planınızı almak için önce ayrılın.",
+      "manageCta": "Üyeler",
+      "seatsOf": "{{seats}} yerden {{used}}",
+      "until": "{{date}} tarihine kadar",
+      "invite": {
+        "title": "Davet kodu",
+        "copy": "Daveti kopyala",
+        "copied": "Kopyalandı",
+        "regenerate": "Yeni kod",
+        "regenerated": "Yeni kod hazır, eskisi artık çalışmaz",
+        "shareText": "SoundCloud Desktop'taki STAR {{tier}} planıma katıl: STAR'ı aç, \"Kodum var\"a dokun ve {{code}} gir. https://getsoundcloud.app"
+      },
+      "seat": {
+        "free": "Boş yer",
+        "joined": "{{date}} tarihinde katıldı",
+        "remove": "Çıkar",
+        "removeAsk": "Plandan çıkarılsın mı?",
+        "removeYes": "Çıkar",
+        "removeNo": "Kalsın",
+        "removed": "Plandan çıkarıldı",
+        "locked": "{{date}} tarihinde tekrar çıkarılabilir"
+      },
+      "member": {
+        "from": "{{name}} kişisinin {{tier}} planından STAR",
+        "sub": "{{date}} tarihine kadar",
+        "leave": "Plandan ayrıl",
+        "leaveAsk": "Bu plandan ayrılınsın mı? Kendi STAR'ınız kalır.",
+        "leaveYes": "Ayrıl",
+        "leaveNo": "Kal",
+        "left": "Plandan ayrıldınız",
+        "joined": "Plana katıldınız"
+      },
+      "empty": {
+        "title": "Henüz paylaşılan plan yok",
+        "text": "Duo veya Family alın ve insanları kodla davet edin.",
+        "cta": "Plan seç"
+      },
+      "inviteMembers": "İnsanları davet et",
+      "joinHint": "Ya da Duo veya Family sahibinden bir davet kodu (JOIN-…).",
+      "error": {
+        "generic": "Bir şeyler ters gitti. Tekrar deneyin.",
+        "invite_invalid": "Bu kod yok ya da değiştirilmiş.",
+        "plan_full": "Planda boş yer yok.",
+        "plan_expired": "Bu planın süresi doldu.",
+        "own_plan": "Bu sizin kendi planınız.",
+        "owner_of_plan": "Bir planınız var, başkasına katılamazsınız.",
+        "already_member": "Zaten bu plandasınız.",
+        "in_other_plan": "Başka bir plandasınız. Önce ondan ayrılın.",
+        "member_of_plan": "Kendi planınızı almadan önce mevcut plandan ayrılın.",
+        "too_many_members": "Önce üyeleri çıkarın: küçük planda daha az yer var.",
+        "removal_limit": "Bu yer bu ay iki kez değişti. Sonra deneyin.",
+        "not_a_member": "Bu kişi planda değil."
+      },
+      "centerSeats": "{{seats}} yerden {{used}} dolu"
+    }
   },
   "soundwaveLock": {
     "wordmark": "SES DALGASI",
@@ -2497,6 +2586,19 @@
     "sendReports": "Hata raporlarını gönder",
     "sendReportsDesc": "Uygulama hatalarını geliştiricilere gönderir, hesap verisi yok"
   },
+  "starTenure": {
+    "title": "STAR serisi",
+    "months_other": "{{count}} ay üst üste",
+    "next": "{{tier}} seviyesine {{count}} ay",
+    "reached": "Yeni seri seviyesi",
+    "tier": {
+      "0": "Kıvılcım",
+      "1": "Işıltı",
+      "2": "Alev",
+      "3": "Takımyıldız"
+    },
+    "months_one": "{{count}} ay üst üste"
+  },
   "starMoments": {
     "tryFree_one": "{{count}} gün ücretsiz",
     "tryFree_other": "{{count}} gün ücretsiz",
@@ -2508,7 +2610,8 @@
     "expiry": {
       "trial": "STAR deneme",
       "left_one": "{{count}} gün kaldı",
-      "left_other": "{{count}} gün kaldı"
+      "left_other": "{{count}} gün kaldı",
+      "streakLost": "Seri sona erecek"
     },
     "preview": {
       "label": "Go+ önizleme"
@@ -2532,6 +2635,10 @@
       "free": "Şimdi",
       "freeTime": "saat",
       "starTime": "~2 dk"
+    },
+    "year": {
+      "cta": "Yıl",
+      "saved": "{{sum}} ₽ tasarruf"
     }
   },
   "recap": {
@@ -2548,5 +2655,160 @@
     "next": "Sonraki",
     "empty": "Henüz özet için yeterli müzik yok",
     "emptyHint": "Müzik çalın"
+  },
+  "releases": {
+    "title": "Yeni çıkışlar",
+    "new": "Yeni",
+    "heard": "Dinlendi",
+    "why_other": "Takip ettiğiniz sanatçılardan orijinaller, son {{count}} gün",
+    "playAll": "Tümünü çal",
+    "addToQueue": "Sıraya ekle",
+    "lockedWhy": "Sanatçılarınızın yeni parçaları ve çıktıkları anda bildirim",
+    "notifyBody_other": "{{count}} yeni çıkış: {{artists}}",
+    "open": "Aç",
+    "notifyBody_one": "{{count}} yeni çıkış: {{artists}}",
+    "why_one": "Takip ettiğiniz sanatçılardan orijinaller, son {{count}} gün"
+  },
+  "importer": {
+    "title": "İçe aktar",
+    "openButton": "Çalma listelerini ve parçaları içe aktar",
+    "tab": {
+      "yandex": "Yandex Music",
+      "link": "Bağlantı",
+      "text": "Liste"
+    },
+    "source": {
+      "spotify": "Spotify",
+      "youtube": "YouTube",
+      "yandex": "Yandex Music"
+    },
+    "instructions": "Yandex Music jetonu nasıl alınır:",
+    "step1": "Tarayıcı eklentisini kurun: Chrome — \"Yandex Music Token\", Firefox — \"Yandex Music Token\"",
+    "step2": "music.yandex.ru adresini açın ve eklenti simgesine tıklayın",
+    "step3": "OAuth jetonunu eklentiden kopyalayın",
+    "tokenPlaceholder": "Yandex Music jetonunuzu yapıştırın...",
+    "connect": "Bağlan",
+    "likes": "Beğeniler",
+    "linkPlaceholder": "Spotify, YouTube veya Yandex Music bağlantısı yapıştırın...",
+    "unknownLink": "Bağlantı tanınmadı",
+    "textPlaceholder": "Sanatçı - Başlık\nSanatçı - Başlık\n...",
+    "namePlaceholder": "Çalma listesi adı",
+    "defaultTitle": "İçe aktarılan",
+    "start": "İçe aktarmayı başlat",
+    "stop": "Durdur",
+    "hide": "Gizle",
+    "again": "Yeni içe aktarma",
+    "step": {
+      "reading": "Okunuyor",
+      "matching": "Eşleştiriliyor",
+      "saving": "Kaydediliyor",
+      "review": "Gözden geçir",
+      "syncing": "Eşitleniyor"
+    },
+    "found": "Bulundu",
+    "notFound": "Bulunamadı",
+    "copied": "Kopyalandı",
+    "partialSource": "Spotify, giriş yapmadan bir çalma listesinin yalnızca ilk 100 parçasını verir",
+    "pending": "Çalma listesi sunucuda sırada, birazdan kitaplığınızda görünecek",
+    "delayed": "SoundCloud istekleri sınırlıyor, çalma listesi daha sonra oluşturulacak",
+    "createFailed": "\"{{title}}\" çalma listesi oluşturulamadı",
+    "relogin": "Yeniden giriş yapın, yoksa çalma listesi oluşturulmaz",
+    "limitHint": "SoundCloud bir çalma listesinde 500 parçaya izin verir, kalanlar \"... 2\", \"... 3\" gibi listelere gider",
+    "orderLabel": "Çalma listesindeki sıra",
+    "orderNewest": "En yeniler üstte",
+    "orderOldest": "En eskiler üstte",
+    "orderHint": "Yeniden içe aktarmak \"Yandex Music\" çalma listelerini bu sırayla yeniden yazar",
+    "find": "Bul",
+    "findPlaceholder": "SoundCloud'da ara...",
+    "findEmpty": "Hiçbir şey bulunamadı",
+    "removeMatch": "Eşleşmeyi kaldır",
+    "filter": {
+      "all": "Tümü",
+      "missed": "Bulunamayanlar"
+    },
+    "copyMissed": "Bulunamayanları kopyala",
+    "noMissed": "Hepsi eşleşti",
+    "destination": "Nereye kaydedilsin",
+    "mode": {
+      "create": "Yeni çalma listesi",
+      "likes": "Beğeniler",
+      "existing": "Mevcut çalma listesi"
+    },
+    "pickPlaylist": "Bir çalma listesi seçin...",
+    "discard": "Vazgeç",
+    "save": "{{count}} parçayı kaydet",
+    "saved": "{{count}} parça kaydedildi",
+    "savedCount": "{{count}} parça",
+    "openPlaylist": "Çalma listesini aç",
+    "openView": "İçe aktarmayı aç",
+    "history": "Geçmiş",
+    "rerun": "Yeniden çalıştır",
+    "forget": "Geçmişten kaldır",
+    "pasted": "Panoda bir {{source}} bağlantısı var",
+    "dropFile": "Listeyi içe aktarmak için dosyayı bırakın",
+    "err": {
+      "session_expired": "SoundCloud oturumunuzun süresi doldu",
+      "ym_token_invalid": "Yandex Music jetonu reddetti",
+      "ym_unavailable": "Yandex Music yanıt vermiyor",
+      "search_unavailable": "SoundCloud araması yanıt vermiyor",
+      "source_unavailable": "Kaynak okunamadı",
+      "source_not_found": "Bu bağlantıda hiçbir şey bulunamadı",
+      "source_unparsed": "Kaynak sayfanın biçimi beklenmedik",
+      "source_empty": "Kaynakta parça yok",
+      "bad_link": "Bu bağlantı desteklenmiyor",
+      "bad_file": "Bu dosya içe aktarılamaz",
+      "playlist_not_synced": "Çalma listesi hâlâ SoundCloud ile eşitleniyor",
+      "save_failed": "Kaydedilemedi (hata {{status}})",
+      "unknown": "Bir şeyler ters gitti",
+      "target_missing": "Hedef çalma listesi artık yok"
+    },
+    "hint": {
+      "session_expired": "Yeniden giriş yapın, eşleşen parçalar burada kalır",
+      "ym_token_invalid": "Eklentiden yeni bir jeton alıp tekrar bağlanın",
+      "ym_unavailable": "Bağlantınızı kontrol edip tekrar deneyin",
+      "search_unavailable": "Bir dakika sonra tekrar deneyin, eşleşen parçalar burada kalır",
+      "source_unavailable": "Bağlantınızı kontrol edip tekrar deneyin",
+      "source_not_found.spotify": "Çalma listesi gizli olabilir veya silinmiş olabilir. Spotify'da herkese açık yapıp tekrar deneyin",
+      "source_not_found.youtube": "Çalma listesi gizli olabilir veya silinmiş olabilir. Listelenmemiş ya da herkese açık yapıp tekrar deneyin",
+      "source_not_found.yandex": "Çalma listesi gizli olabilir. Hesabınızı Yandex Music sekmesinden bağlayın",
+      "source_not_found": "Bağlantı gizli olabilir veya silinmiş olabilir",
+      "source_unparsed": "Parçaları bunun yerine liste olarak yapıştırın",
+      "source_empty": "Başka bir bağlantı deneyin veya parçaları liste olarak yapıştırın",
+      "bad_link": "Spotify, YouTube veya Yandex Music bağlantısı kullanın",
+      "bad_file": "2 MB'a kadar bir .txt veya .csv dosyası kullanın",
+      "playlist_not_synced": "Birkaç dakika bekleyip tekrar kaydedin",
+      "save_failed": "Tekrar kaydetmeyi deneyin",
+      "unknown": "Daha sonra tekrar deneyin"
+    },
+    "action": {
+      "retry": "Tekrar dene",
+      "reconnect": "Yeniden bağlan",
+      "signin": "Giriş yap",
+      "change": "Kaynağı değiştir"
+    },
+    "sync": {
+      "keep": "Eşitlemeyi sürdür",
+      "title": "Çalma listesi eşitleme",
+      "empty": "Henüz eşitlenen bir şey yok. İçe aktarmadan sonra Eşitlemeyi sürdür seçeneğini açın.",
+      "paused": "STAR etkin olana kadar duraklatıldı",
+      "needsReconnect": "Yandex Music için yeni bir jeton gerekiyor",
+      "last": "Eşitlendi: {{when}}",
+      "new_one": "+{{count}} yeni",
+      "new_other": "+{{count}} yeni",
+      "now": "Şimdi eşitle",
+      "toast_one": "{{title}} listesine +{{count}} parça eşitlendi",
+      "toast_other": "{{title}} listesine +{{count}} parça eşitlendi",
+      "ymConnected": "Yandex Music bağlı",
+      "disconnectYm": "Bağlantıyı kes"
+    }
+  },
+  "ago": {
+    "now": "şimdi",
+    "m": "{{count}} dk",
+    "h": "{{count}} sa",
+    "d": "{{count}} g",
+    "w": "{{count}} hf",
+    "mo": "{{count}} ay",
+    "y": "{{count}} yıl"
   }
 }

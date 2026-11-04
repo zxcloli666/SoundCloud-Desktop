@@ -5,8 +5,11 @@ import { daysUntil, passDate } from '../../lib/star-format';
 import { usePaySubscription } from '../../lib/star-offer';
 import { useStarMoments } from '../../stores/star-moments';
 import { primaryEntitlement } from '../subscription/star/meta';
+import { useOwnTenure } from '../../lib/star-tenure';
+import { LostStreak } from './LostStreak';
 import { MomentCard } from './MomentCard';
 import { StarCta } from './StarCta';
+import { YearCta } from './YearCta';
 
 const WARN_DAYS = 3;
 
@@ -40,6 +43,7 @@ export const ExpiryNudge = memo(function ExpiryNudge({ moment }: { moment: Expir
   const { t } = useTranslation();
   const mark = useStarMoments((s) => s.mark);
   const close = () => mark(moment.key);
+  const tenure = useOwnTenure();
 
   return (
     <MomentCard onClose={close}>
@@ -58,8 +62,10 @@ export const ExpiryNudge = memo(function ExpiryNudge({ moment }: { moment: Expir
         </div>
       </div>
       <DayCells total={WARN_DAYS} left={moment.days} />
-      <div className="mt-3.5 flex justify-end">
+      {tenure && tenure.months >= 1 && !moment.trial && <LostStreak tenure={tenure} />}
+      <div className="mt-3.5 flex flex-wrap items-center justify-end gap-2">
         <StarCta intent={moment.trial ? 'buy' : 'extend'} onOpen={close} />
+        <YearCta onOpen={close} size="sm" />
       </div>
     </MomentCard>
   );

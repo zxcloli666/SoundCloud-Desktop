@@ -10,11 +10,13 @@ export const SuccessPane = memo(function SuccessPane({
   onManage,
   gift,
   onGifts,
+  onPlan,
 }: {
   onMusic: () => void;
   onManage: () => void;
   gift?: { code: string; periodDays: number } | null;
   onGifts: () => void;
+  onPlan?: () => void;
 }) {
   const { t } = useTranslation();
   if (gift) {
@@ -44,6 +46,7 @@ export const SuccessPane = memo(function SuccessPane({
       <div className="mt-4 flex flex-wrap gap-3">
         <PrimaryBtn onClick={onMusic}>{t('starpass.backToMusic')}</PrimaryBtn>
         <GhostBtn onClick={onManage}>{t('starpass.managePass')}</GhostBtn>
+        {onPlan && <GhostBtn onClick={onPlan}>{t('starpass.shared.inviteMembers')}</GhostBtn>}
       </div>
     </div>
   );

@@ -3,50 +3,62 @@ import { Fragment, memo, useCallback, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { payApi } from '../../../lib/pay-client';
 import { requestPremiumRecheck } from '../../../lib/premium-cache';
-import { CODE_RE, formatCode, normalizeBody, redeemErrorKey } from './redeem-code';
+import { refreshShared, sharedErrorKey } from '../../../lib/star-shared';
+import { BODY_LEN, CODE_RE, formatCode, parseCode, redeemErrorKey } from './redeem-code';
 import { LinkBtn, PrimaryBtn, Ttl } from './StarConsole';
 
-const GROUPS = [0, 1, 2, 3];
 const CELLS = [0, 1, 2, 3];
+const GROUP_COUNT = { star: 4, join: 3 } as const;
 
 /** Redeem a STAR code — segmented cells (grey "X" placeholders) over a hidden input. */
 export const RedeemPane = memo(function RedeemPane({ onRedeemed }: { onRedeemed: () => void }) {
   const { t } = useTranslation();
-  const [body, setBody] = useState('');
+  const [text, setText] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
-  const code = useMemo(() => formatCode(body), [body]);
-  const valid = CODE_RE.test(code);
+  const { kind, body } = useMemo(() => parseCode(text), [text]);
+  const code = useMemo(() => formatCode(kind, body), [kind, body]);
+  const valid = CODE_RE[kind].test(code);
+  const groups = Array.from({ length: GROUP_COUNT[kind] }, (_, g) => g);
 
   const mutation = useMutation({
-    mutationFn: () => payApi.redeem(code),
+    mutationFn: async () => {
+      await (kind === 'join' ? payApi.joinShared(code) : payApi.redeem(code));
+    },
     onSuccess: () => {
+      if (kind === 'join') refreshShared();
       requestPremiumRecheck();
       onRedeemed();
     },
   });
 
+  const setCode = useCallback((raw: string) => {
+    const parsed = parseCode(raw);
+    setText(parsed.kind === 'join' ? `JOIN${parsed.body}` : parsed.body);
+  }, []);
+
   const onChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      setBody(normalizeBody(e.target.value));
+      setCode(e.target.value);
       mutation.reset();
     },
-    [mutation],
+    [mutation, setCode],
   );
 
   const onPaste = useCallback(async () => {
     try {
-      const text = await navigator.clipboard.readText();
-      setBody(normalizeBody(text));
+      const clip = await navigator.clipboard.readText();
+      setCode(clip);
       mutation.reset();
       inputRef.current?.focus();
     } catch {
       /* clipboard denied */
     }
-  }, [mutation]);
+  }, [mutation, setCode]);
 
   return (
     <div>
       <Ttl>{t('starpass.redeem.lead')}</Ttl>
+      <p className="-mt-2 mb-3 text-[11.5px] text-ink-40">{t('starpass.shared.joinHint')}</p>
 
       {/* segmented code field: cells render the value (or a grey X); a transparent
           full-cover input captures typing / paste / backspace (clicks land on it) */}
@@ -55,7 +67,7 @@ export const RedeemPane = memo(function RedeemPane({ onRedeemed }: { onRedeemed:
           aria-label={t('starpass.redeem.label')}
           ref={inputRef}
           type="text"
-          value={body}
+          value={text}
           onChange={onChange}
           spellCheck={false}
           autoCapitalize="characters"
@@ -64,16 +76,16 @@ export const RedeemPane = memo(function RedeemPane({ onRedeemed }: { onRedeemed:
         />
         <div className="flex select-none items-stretch gap-2">
           <span className="self-center font-mono text-[15px] tracking-[0.12em] text-ink-45">
-            STAR
+            {kind === 'join' ? 'JOIN' : 'STAR'}
           </span>
-          {GROUPS.map((g) => (
+          {groups.map((g) => (
             <Fragment key={g}>
               <span className="self-center font-mono text-ink-25">–</span>
               <div className="flex flex-1 gap-1.5">
                 {CELLS.map((c) => {
                   const idx = g * 4 + c;
                   const ch = body[idx];
-                  const active = idx === body.length && body.length < 16;
+                  const active = idx === body.length && body.length < BODY_LEN[kind];
                   return (
                     <div
                       key={c}
@@ -101,7 +113,7 @@ export const RedeemPane = memo(function RedeemPane({ onRedeemed }: { onRedeemed:
 
       {mutation.isError && (
         <div className="mt-2.5 text-[12.5px] text-red-300/95">
-          {t(redeemErrorKey(mutation.error))}
+          {t(kind === 'join' ? sharedErrorKey(mutation.error) : redeemErrorKey(mutation.error))}
         </div>
       )}
       <div className="mt-[18px] flex flex-wrap items-center gap-3">

@@ -56,9 +56,21 @@ export interface Plan {
   stars: number;
 }
 
+export type SharedTierId = 'duo' | 'family';
+export type TierId = 'solo' | SharedTierId;
+
+export interface SharedTier {
+  tier: SharedTierId;
+  /** Members besides the owner. */
+  seats: number;
+  monthly_rub: number;
+  plans: Plan[];
+}
+
 export interface PlansResponse {
   monthly_rub: number;
   plans: Plan[];
+  shared?: SharedTier[];
   providers: Record<ProviderId, boolean>;
   methods: { platega: PlategaMethod[] };
 }
@@ -69,6 +81,7 @@ export interface CheckoutReq {
   method?: PlategaMethod;
   recurring?: boolean;
   gift?: boolean;
+  tier?: SharedTierId;
   ref?: string;
 }
 
@@ -133,6 +146,7 @@ export interface DiscordLink {
 export interface PaySubscription {
   premium: boolean;
   premium_until: number;
+  star_since?: number | null;
   entitlements: Entitlement[];
   /** Mirror of the user's linked Discord (bot-owned). Null if not linked. */
   discord: DiscordLink | null;
@@ -166,6 +180,42 @@ export interface RedeemResp {
   premium_until: number;
 }
 
+export interface SharedMember {
+  sc_user_id: string;
+  seat: number;
+  joined_at: number;
+  /** Unix seconds from which the owner may remove this member again. */
+  removable_at: number;
+}
+
+export interface SharedOwner {
+  tier: SharedTierId;
+  seats: number;
+  ends_at: number;
+  invite_code: string;
+  members: SharedMember[];
+}
+
+export interface SharedMembership {
+  owner_sc_user_id: string;
+  tier: SharedTierId;
+  ends_at: number;
+}
+
+export interface SharedOverview {
+  role: 'none' | 'owner' | 'member';
+  owner: SharedOwner | null;
+  member_of: SharedMembership | null;
+}
+
+export interface SharedPreview {
+  tier: SharedTierId;
+  from_personal_days: number;
+  from_plan_days: number;
+  carry_days: number;
+  ends_at: number;
+}
+
 export const payApi = {
   plans: () => payRequest<PlansResponse>('/api/plans'),
   checkout: (req: CheckoutReq) =>
@@ -184,6 +234,24 @@ export const payApi = {
       method: 'POST',
       body: JSON.stringify({ device_id: deviceId }),
     }),
+  shared: () => payRequest<SharedOverview>('/api/shared'),
+  sharedPreview: (tier: SharedTierId, planId: string) =>
+    payRequest<SharedPreview>(
+      `/api/shared/preview?tier=${encodeURIComponent(tier)}&plan_id=${encodeURIComponent(planId)}`,
+    ),
+  joinShared: (code: string) =>
+    payRequest<SharedMembership>('/api/shared/join', {
+      method: 'POST',
+      body: JSON.stringify({ code }),
+    }),
+  leaveShared: () => payRequest<{ ok: boolean }>('/api/shared/leave', { method: 'POST' }),
+  removeMember: (member: string) =>
+    payRequest<{ ok: boolean }>('/api/shared/remove', {
+      method: 'POST',
+      body: JSON.stringify({ member }),
+    }),
+  regenerateInvite: () =>
+    payRequest<{ invite_code: string }>('/api/shared/invite', { method: 'POST' }),
   gifts: () => payRequest<{ gifts: Gift[] }>('/api/me/gifts'),
   referral: () => payRequest<Referral>('/api/me/referral'),
   checkRef: (code: string) =>

@@ -47,7 +47,7 @@ async function writeEntries(entries: PendingCreate[]) {
   try {
     await tauriStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
   } catch (error) {
-    console.warn('[YM Import] could not remember queued playlists:', error);
+    console.warn('[Import] could not remember queued playlists:', error);
   }
 }
 

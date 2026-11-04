@@ -16,6 +16,7 @@ import {useLyricsStore} from '../../stores/lyrics';
 import {usePlayerStore} from '../../stores/player';
 import {useSettingsStore} from '../../stores/settings';
 import {ChatDock} from '../chat/shell/ChatDock';
+import {ImportHost} from '../import/ImportHost';
 import {AddToPlaylistHost} from '../music/AddToPlaylistHost';
 import {SuperlikeLimitHost} from '../music/superlike/SuperlikeLimitHost';
 import {TrackContextMenu} from '../music/track-menu/TrackContextMenu';
@@ -33,6 +34,7 @@ import {ScrollReset} from './ScrollReset';
 import {Sidebar} from './Sidebar';
 import {ThemeTryBar} from './ThemeTryBar';
 import {Titlebar} from './Titlebar';
+import {ReleaseWatch} from '../releases/ReleaseWatch';
 
 const LyricsPanel = lazy(() =>
   import('../music/LyricsPanel').then((module) => ({ default: module.LyricsPanel })),
@@ -467,6 +469,7 @@ export const AppShell = React.memo(() => {
   return (
     <div data-ui="app" className="flex flex-col h-screen relative overflow-hidden">
       <WallpaperRotator />
+      <ReleaseWatch />
       <CustomBackground />
       <CoverTint />
       <AmbientGlow />
@@ -485,6 +488,7 @@ export const AppShell = React.memo(() => {
       <SuperlikeLimitHost />
       <StarMomentsHost />
       <UploadTrackDialog />
+      <ImportHost />
       {queueOpen && (
         <Suspense fallback={null}>
           <QueuePanel open={queueOpen} onClose={onQueueClose} />

@@ -18,6 +18,7 @@ import {
 } from '../components/user/UserTabs';
 import { useEditableUserAura, useUserAura } from '../components/user/useUserAura';
 import { useUser, useUserSubscription, useUserWebProfiles } from '../lib/hooks';
+import { tierOfSince, useOwnTenure } from '../lib/star-tenure';
 import { Loader2 } from '../lib/icons';
 import { likedTracksCount } from '../lib/likes';
 import {usePerfMode} from '../lib/perf';
@@ -79,8 +80,10 @@ export function UserPage() {
   const isOwnProfile = !!user && currentUser?.urn === user.urn;
 
   const { data: myStar = false } = useSubscription(isOwnProfile);
-  const { data: otherStar = false } = useUserSubscription(!isOwnProfile && urn ? urn : undefined);
-  const hasStar = isOwnProfile ? myStar : otherStar;
+  const { data: otherSub } = useUserSubscription(!isOwnProfile && urn ? urn : undefined);
+  const ownTenure = useOwnTenure();
+  const hasStar = isOwnProfile ? myStar : !!otherSub?.premium;
+  const starTier = isOwnProfile ? (ownTenure?.tier ?? 0) : tierOfSince(otherSub?.starSince);
 
   const readonly = useUserAura(urn, hasStar && !isOwnProfile);
   const editable = useEditableUserAura(urn, hasStar && isOwnProfile);
@@ -134,6 +137,7 @@ export function UserPage() {
           <IdentityHub
             user={user}
             hasStar={hasStar}
+            starTier={starTier}
             webProfiles={webProfiles}
             aura={aura}
             isOwnProfile={isOwnProfile}

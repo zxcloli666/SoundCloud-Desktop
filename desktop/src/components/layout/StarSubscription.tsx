@@ -130,42 +130,7 @@ export const StarHeroBackground = React.memo(() => {
   );
 });
 
-/* ── Star Badge (next to username / plan badge) ─────────────────── */
-
-interface StarBadgeProps {
-  size?: 'sm' | 'lg';
-}
-
-export const StarBadge = React.memo(({ size = 'sm' }: StarBadgeProps) => {
-  const isLg = size === 'lg';
-  return (
-    <span
-      className={`inline-flex items-center shrink-0 rounded-full uppercase text-ink-95 ${
-        isLg
-          ? 'gap-1.5 px-3 py-1 text-[10px] font-extrabold tracking-widest'
-          : 'gap-[3px] px-[6px] py-[1px] text-[9px] font-bold tracking-wider'
-      }`}
-      style={{
-        background:
-          'linear-gradient(135deg, rgba(139,92,246,0.45), rgba(168,85,247,0.32), rgba(192,132,252,0.25))',
-        backdropFilter: 'blur(12px)',
-        WebkitBackdropFilter: 'blur(12px)',
-        boxShadow: isLg
-          ? 'inset 0 0.5px 0 rgba(255,255,255,0.2), 0 0 20px rgba(139,92,246,0.4)'
-          : 'inset 0 0.5px 0 rgba(255,255,255,0.15), 0 0 8px rgba(139,92,246,0.25)',
-        border: '0.5px solid rgba(168,85,247,0.35)',
-      }}
-    >
-      <Star
-        size={isLg ? 12 : 10}
-        fill="currentColor"
-        className="text-amber-400"
-        style={isLg ? { filter: 'drop-shadow(0 0 4px rgba(168,85,247,0.6))' } : undefined}
-      />
-      Star
-    </span>
-  );
-});
+export { StarBadge } from './StarBadge';
 
 /* ── Star Card (sidebar, above collapse button) ────────────────── */
 

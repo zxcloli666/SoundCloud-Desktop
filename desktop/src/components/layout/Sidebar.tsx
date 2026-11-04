@@ -1,15 +1,15 @@
-import React, { type ReactNode, useCallback, useMemo } from 'react';
+import React, { type ReactNode, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useShallow } from 'zustand/shallow';
 import { changeAppLanguage } from '../../i18n';
 import { Clock, Globe, PanelLeftClose, PanelLeftOpen, Settings } from '../../lib/icons';
-import { gatedIds, LAYOUT_IDS, moveEntry, resolveLayout } from '../../lib/layout';
+import { moveEntry } from '../../lib/layout';
+import { useReleaseFeed } from '../../lib/new-releases-api';
 import { usePerfMode } from '../../lib/perf';
 import { useSuperlikeCount } from '../../lib/superlikes';
 import { useAppMode } from '../../stores/app-status';
 import { useAuthStore } from '../../stores/auth';
-import { selectChatEnabled, useChatStore } from '../../stores/chat';
 import { useSettingsStore } from '../../stores/settings';
 import { ChatNavBadge } from '../chat/shell/ChatNavBadge';
 import { SuperHeart } from '../music/superlike/SuperHeart';
@@ -18,6 +18,8 @@ import { type IconCmp, NAV_ITEMS } from './nav-items';
 import { ACTIVE, IconBox, Label, ROW, sidebarWidth } from './SidebarChrome';
 import { SidebarPins } from './SidebarPins';
 import { SortableSlot, SortableStack } from './SortableStack';
+import { useOwnTenure } from '../../lib/star-tenure';
+import { useLayout } from '../../lib/use-layout';
 import { StarBadge, StarCard, useStarSubscription } from './StarSubscription';
 
 const languages = [
@@ -27,6 +29,20 @@ const languages = [
   { code: 'ko', label: '한국어' },
   { code: 'pt', label: 'Português' },
 ] as const;
+
+function CountBadge({ count, collapsed }: { count: number; collapsed: boolean }) {
+  if (count <= 0) return null;
+  if (collapsed) {
+    return (
+      <span className="absolute right-2 top-1.5 size-2 rounded-full bg-accent shadow-[0_0_8px_var(--color-accent-glow)]" />
+    );
+  }
+  return (
+    <span className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full bg-accent px-1.5 text-[10.5px] font-black leading-[16px] tabular-nums text-accent-contrast">
+      {count > 99 ? '99+' : count}
+    </span>
+  );
+}
 
 function NavItem({
   to,
@@ -83,21 +99,18 @@ export const Sidebar = React.memo(() => {
       setLayout: s.setLayout,
     })),
   );
-  const savedLayout = useSettingsStore((s) => s.layouts.sidebar);
-  const chatEnabled = useChatStore(selectChatEnabled);
-  const layout = useMemo(
-    () => resolveLayout(savedLayout, LAYOUT_IDS.sidebar, gatedIds(chatEnabled)),
-    [savedLayout, chatEnabled],
-  );
+  const layout = useLayout('sidebar');
   const navIds = layout
     .filter((e) => !e.hidden || (e.id === 'offline' && appMode !== 'online'))
     .map((e) => e.id);
   const moveNav = (from: string, to: string) => setLayout('sidebar', moveEntry(layout, from, to));
   const { isPremium } = useStarSubscription();
+  const ownTenure = useOwnTenure();
   const navigate = useNavigate();
   const openStar = useCallback(() => navigate('/star'), [navigate]);
   const perf = usePerfMode();
   const superlikeCount = useSuperlikeCount();
+  const { unheard } = useReleaseFeed();
 
   const toggleLanguage = () => {
     void changeAppLanguage(i18n.language === 'ru' ? 'en' : 'ru');
@@ -128,7 +141,13 @@ export const Sidebar = React.memo(() => {
                   collapsed={collapsed}
                   title={collapsed ? t(item.label) : undefined}
                   alert={id === 'offline' && appMode !== 'online'}
-                  badge={id === 'chats' ? <ChatNavBadge collapsed={collapsed} /> : undefined}
+                  badge={
+                    id === 'chats' ? (
+                      <ChatNavBadge collapsed={collapsed} />
+                    ) : id === 'library' ? (
+                      <CountBadge count={unheard} collapsed={collapsed} />
+                    ) : undefined
+                  }
                 />
               </SortableSlot>
             );
@@ -237,7 +256,7 @@ export const Sidebar = React.memo(() => {
               <span className="text-[12.5px] text-ink-55 truncate font-medium">
                 {user.username}
               </span>
-              {isPremium && <StarBadge />}
+              {isPremium && <StarBadge tier={ownTenure?.tier ?? 0} />}
             </Label>
           </NavLink>
         </div>

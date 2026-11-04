@@ -8,6 +8,7 @@ import { usePaySubscription } from '../../lib/star-offer';
 import { useStarMoments } from '../../stores/star-moments';
 import { Modal, ModalContent, ModalTitle } from '../ui/Modal';
 import { StarCta } from './StarCta';
+import { YearCta } from './YearCta';
 
 const RECENT_SEC = 30 * 86_400;
 const SETTLE_MS = 4_000;
@@ -97,8 +98,9 @@ const WinbackBody = memo(function WinbackBody({
           ))}
         </div>
 
-        <div className="mt-6 flex items-center justify-center gap-3">
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
           <StarCta intent="buy" onOpen={onDone} />
+          <YearCta onOpen={onDone} />
           <button
             type="button"
             onClick={onDone}

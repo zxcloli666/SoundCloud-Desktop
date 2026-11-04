@@ -7,7 +7,6 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { HostStatusBanner } from './components/host-status/HostStatusBanner';
 import { HostStatusModal } from './components/host-status/HostStatusModal';
 import { AppShell } from './components/layout/AppShell';
-import YMImportFloatingStatus from './components/music/YMImportFloatingStatus';
 import { NetCheckModal } from './components/net-check/NetCheckModal';
 import { SessionRecoveryModal } from './components/SessionRecoveryModal';
 import { ThemeProvider } from './components/ThemeProvider';
@@ -19,8 +18,8 @@ import { usePerfMode } from './lib/perf';
 import { getAppMode, useAppMode, useAppStatusStore } from './stores/app-status';
 import { useAppUpdateStore } from './stores/app-update';
 import { useAuthStore } from './stores/auth';
+import { useImportStore } from './stores/import';
 import { type StartupPage, useSettingsStore } from './stores/settings';
-import { useYmImportStore } from './stores/ym-import';
 
 const Home = lazy(() => import('./pages/Home').then((module) => ({ default: module.Home })));
 const Library = lazy(() =>
@@ -107,7 +106,7 @@ export default function App() {
   const showOfflineOnlyShell = !canUseMainShell && offlineBypass;
 
   useEffect(() => {
-    useYmImportStore.getState().initBridge();
+    useImportStore.getState().initBridge();
   }, []);
 
   useEffect(() => {
@@ -217,7 +216,6 @@ export default function App() {
         }}
       />
       <SessionRecoveryModal />
-      <YMImportFloatingStatus />
       {updateRelease && (
         <Suspense fallback={null}>
           <UpdateChecker release={updateRelease} onDismiss={dismissUpdate} />

@@ -67,6 +67,7 @@ function startDeferredRuntime() {
     void import('./lib/tray-menu').then((m) => m.initTrayMenu());
     void import('./lib/audio');
     void import('./lib/track-sound').then((m) => m.initTrackSound());
+    void import('./lib/effects').then((m) => m.initEffects());
     void import('./lib/queue-autopilot');
     void import('./lib/discord');
     void import('./lib/hotkeys').then((m) => m.initGlobalHotkeys());

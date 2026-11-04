@@ -1,4 +1,27 @@
-pub mod ym;
-mod ym_search;
+mod commands;
+mod events;
+mod failure;
+mod hop;
+mod matcher;
+mod model;
+mod request;
+mod run;
+mod source;
+mod sync;
+mod sync_plan;
+mod sync_store;
+mod spotify;
+mod text;
+mod ym;
+mod ym_link;
+mod youtube;
+mod youtube_title;
 
-pub use ym::*;
+#[cfg(test)]
+mod live_tests;
+#[cfg(test)]
+mod sync_live_tests;
+
+pub use commands::*;
+pub use sync::*;
+pub use sync_store::*;

@@ -18,6 +18,7 @@ import {HelpCard} from './cards/HelpCard';
 import {HiddenKeywordsCard} from './cards/HiddenKeywordsCard';
 import {HotkeysCard} from './cards/HotkeysCard';
 import {ImportCard} from './cards/ImportCard';
+import {ImportSyncCard} from './cards/ImportSyncCard';
 import {LanguageCard} from './cards/LanguageCard';
 import {LayoutCard} from './cards/LayoutCard';
 import {MiniPlayerCard} from './cards/MiniPlayerCard';
@@ -128,6 +129,7 @@ export const SETTINGS_CATEGORIES: SettingsCategory[] = [
                 <ScrobbleCard/>
                 <ObsCard/>
                 <ImportCard/>
+                <ImportSyncCard/>
             </>
         ),
     },

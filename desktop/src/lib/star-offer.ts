@@ -33,7 +33,7 @@ export function useStarOffer() {
 export function useOpenStar() {
   const navigate = useNavigate();
   return useCallback(
-    (intent: StarIntent = 'buy') => navigate('/star', { state: { intent } }),
+    (intent: StarIntent = 'buy', plan?: string) => navigate('/star', { state: { intent, plan } }),
     [navigate],
   );
 }

@@ -67,6 +67,7 @@ export const CenterReadout = memo(function CenterReadout({
   serialSeed,
   gift,
   inviteDays,
+  seats,
 }: {
   step: Step;
   phase: PayPhase;
@@ -76,8 +77,21 @@ export const CenterReadout = memo(function CenterReadout({
   serialSeed: string;
   gift: boolean;
   inviteDays: number | null;
+  seats: { tier: string; used: number; total: number } | null;
 }) {
   const { t } = useTranslation();
+
+  if (step === 'plan' && seats) {
+    return (
+      <div style={SHADOW}>
+        <Eyebrow>✦</Eyebrow>
+        <Hero size={46}>{t(`starpass.tier.${seats.tier}`)}</Hero>
+        <Caption>
+          {t('starpass.shared.centerSeats', { used: seats.used, seats: seats.total })}
+        </Caption>
+      </div>
+    );
+  }
 
   if (step === 'invite') {
     return (

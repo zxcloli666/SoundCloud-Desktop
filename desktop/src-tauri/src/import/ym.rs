@@ -1,458 +1,325 @@
 use std::collections::HashMap;
-use std::sync::Arc;
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::Ordering;
 use std::time::Duration;
 
-use tauri::Emitter;
+use serde_json::Value;
 
-use crate::app::diagnostics::log_native;
-use crate::rt::AppHandle;
+use super::failure::{Failure, SOURCE_EMPTY, SOURCE_NOT_FOUND, YM_TOKEN_INVALID, YM_UNAVAILABLE};
+use super::model::{Cancel, ExtList, ExtTrack, OnRead};
+use super::ym_link::YmRef;
 
-use super::ym_search;
+const API: &str = "https://api.music.yandex.net";
+const TRACKS_PER_REQUEST: usize = 50;
+const TRACKS_ATTEMPTS: u64 = 3;
+const DIRECT_SHARE: usize = 9;
 
-const SESSION_EXPIRED: &str = "session_expired";
-const YM_TOKEN_INVALID: &str = "ym_token_invalid";
-const YM_UNAVAILABLE: &str = "ym_unavailable";
-const SEARCH_UNAVAILABLE: &str = "search_unavailable";
-
-const YM_API: &str = "https://api.music.yandex.net";
-const YM_CONNECT_TIMEOUT: Duration = Duration::from_secs(10);
-const YM_REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
-const YM_TRACKS_ATTEMPTS: u64 = 3;
-const MAX_YM_FAILURES_IN_ROW: usize = 3;
-const MAX_SEARCH_ERRORS_IN_ROW: usize = 15;
-const SEARCH_ERROR_PAUSE: Duration = Duration::from_secs(1);
-
-static CANCEL_FLAG: std::sync::LazyLock<Arc<AtomicBool>> =
-    std::sync::LazyLock::new(|| Arc::new(AtomicBool::new(false)));
-
-#[derive(serde::Serialize, Clone)]
-pub struct YmImportProgress {
-    pub total: usize,
-    pub current: usize,
-    pub found: usize,
-    pub not_found: usize,
-    pub errors: usize,
-    pub current_track: String,
+#[derive(serde::Serialize)]
+pub struct YmPlaylistInfo {
+    pub kind: String,
+    pub title: String,
+    pub track_count: usize,
 }
 
-#[derive(serde::Serialize, Clone)]
-pub struct YmImportMatch {
-    pub urn: String,
-    pub position: usize,
+#[derive(serde::Serialize)]
+pub struct YmLibrary {
+    pub owner: String,
+    pub playlists: Vec<YmPlaylistInfo>,
 }
 
-struct YmFailure {
-    code: &'static str,
-    detail: String,
+pub struct Ym<'a> {
+    pub client: &'a wreq::Client,
+    pub token: Option<&'a str>,
+    pub cancel: &'a Cancel,
 }
 
-#[derive(serde::Deserialize)]
-struct YmLikesResponse {
-    result: YmLikesResult,
-}
-
-#[derive(serde::Deserialize)]
-struct YmLikesResult {
-    library: YmLibrary,
-}
-
-#[derive(serde::Deserialize)]
-struct YmLibrary {
-    tracks: Vec<YmLikedTrack>,
-}
-
-#[derive(serde::Deserialize)]
-struct YmLikedTrack {
-    id: serde_json::Value,
-    timestamp: Option<String>,
-}
-
-#[derive(serde::Deserialize)]
-struct YmTrackInfo {
-    result: Vec<YmTrack>,
-}
-
-#[derive(serde::Deserialize)]
-struct YmTrack {
-    id: Option<serde_json::Value>,
-    title: Option<String>,
-    artists: Option<Vec<YmArtist>>,
-}
-
-#[derive(serde::Deserialize)]
-struct YmArtist {
-    name: Option<String>,
-}
-
-fn ym_id(value: &serde_json::Value) -> String {
-    match value {
-        serde_json::Value::Number(n) => n.to_string(),
-        serde_json::Value::String(s) => s.clone(),
-        v => v.to_string(),
+pub fn clean_token(raw: &str) -> String {
+    let raw = raw.trim();
+    match raw.split_once("access_token=") {
+        Some((_, rest)) => rest
+            .split(['&', '#', ' '])
+            .next()
+            .unwrap_or(rest)
+            .to_string(),
+        None => raw.to_string(),
     }
 }
 
-fn liked_at(track: &YmLikedTrack) -> Option<chrono::DateTime<chrono::FixedOffset>> {
-    chrono::DateTime::parse_from_rfc3339(track.timestamp.as_deref()?).ok()
+fn text<'a>(value: &'a Value, pointer: &str) -> Option<&'a str> {
+    value.pointer(pointer).and_then(Value::as_str)
 }
 
-fn newest_first(mut tracks: Vec<YmLikedTrack>) -> Vec<String> {
-    if tracks.iter().all(|track| liked_at(track).is_some()) {
-        tracks.sort_by_key(|track| std::cmp::Reverse(liked_at(track)));
-    }
-    tracks.iter().map(|track| ym_id(&track.id)).collect()
-}
-
-fn emit_progress(
-    app: &AppHandle,
-    total: usize,
-    current: usize,
-    found: usize,
-    not_found: usize,
-    errors: usize,
-    current_track: String,
-) {
-    app.emit(
-        "ym_import:progress",
-        YmImportProgress {
-            total,
-            current,
-            found,
-            not_found,
-            errors,
-            current_track,
-        },
-    )
-    .ok();
-}
-
-async fn ym_get<T: serde::de::DeserializeOwned>(
-    client: &wreq::Client,
-    ym_token: &str,
-    path: &str,
-) -> Result<T, YmFailure> {
-    let unavailable = |detail: String| YmFailure {
-        code: YM_UNAVAILABLE,
-        detail,
+fn id_of(value: &Value) -> Option<String> {
+    let raw = match value {
+        Value::Number(n) => n.to_string(),
+        Value::String(s) => s.clone(),
+        _ => return None,
     };
-    let resp = client
-        .get(format!("{YM_API}{path}"))
-        .header("Authorization", format!("OAuth {ym_token}"))
-        .send()
-        .await
-        .map_err(|e| unavailable(e.to_string()))?;
-
-    let status = resp.status();
-    if matches!(status.as_u16(), 401 | 403) {
-        return Err(YmFailure {
-            code: YM_TOKEN_INVALID,
-            detail: format!("HTTP {status}"),
-        });
-    }
-    if !status.is_success() {
-        return Err(unavailable(format!("HTTP {status}")));
-    }
-    resp.json().await.map_err(|e| unavailable(e.to_string()))
+    raw.split(':').next().map(str::to_string)
 }
 
-fn give_up(app: &AppHandle, step: &str, failure: YmFailure) -> String {
-    log_native(
-        app,
-        "WARN",
-        format!("[YM Import] {step} failed: {}", failure.detail),
-    );
-    failure.code.to_string()
+fn items<'a>(value: &'a Value, pointer: &str) -> &'a [Value] {
+    value
+        .pointer(pointer)
+        .and_then(Value::as_array)
+        .map_or(&[], Vec::as_slice)
 }
 
-async fn fetch_ym_tracks(
-    client: &wreq::Client,
-    ym_token: &str,
-    ids: &str,
-) -> Result<Vec<YmTrack>, YmFailure> {
-    let path = format!("/tracks?trackIds={ids}");
-    let mut attempt = 0;
-
-    loop {
-        match ym_get::<YmTrackInfo>(client, ym_token, &path).await {
-            Ok(info) => return Ok(info.result),
-            Err(failure) if failure.code == YM_TOKEN_INVALID => return Err(failure),
-            Err(failure)
-                if attempt + 1 >= YM_TRACKS_ATTEMPTS || CANCEL_FLAG.load(Ordering::Relaxed) =>
-            {
-                return Err(failure);
-            }
-            Err(_) => {
-                attempt += 1;
-                tokio::time::sleep(Duration::from_millis(500 * attempt)).await;
-            }
-        }
+fn to_track(track: &Value) -> Option<ExtTrack> {
+    let title = text(track, "/title").unwrap_or("").trim();
+    let version = text(track, "/version").unwrap_or("").trim();
+    let artist = text(track, "/artists/0/name").unwrap_or("").trim();
+    if title.is_empty() && artist.is_empty() {
+        return None;
     }
-}
-
-#[tauri::command]
-pub async fn ym_import_start(
-    ym_token: String,
-    backend_url: String,
-    session_id: String,
-    app: AppHandle,
-) -> Result<(), String> {
-    CANCEL_FLAG.store(false, Ordering::Relaxed);
-
-    let client = crate::network::system_proxy::follow(wreq::Client::builder())
-        .connect_timeout(YM_CONNECT_TIMEOUT)
-        .timeout(YM_REQUEST_TIMEOUT)
-        .build()
-        .map_err(|e| e.to_string())?;
-
-    let account: serde_json::Value = ym_get(&client, &ym_token, "/account/status")
-        .await
-        .map_err(|failure| give_up(&app, "account status", failure))?;
-    let Some(uid) = account["result"]["account"]["uid"].as_i64() else {
-        log_native(&app, "WARN", "[YM Import] account status has no user id");
-        return Err(YM_TOKEN_INVALID.to_string());
+    let title = if !version.is_empty() && !title.to_lowercase().contains(&version.to_lowercase()) {
+        format!("{title} ({version})")
+    } else {
+        title.to_string()
     };
+    Some(ExtTrack {
+        artist: artist.to_string(),
+        title,
+        duration_ms: track.get("durationMs").and_then(Value::as_u64),
+    })
+}
 
-    let likes: YmLikesResponse = ym_get(&client, &ym_token, &format!("/users/{uid}/likes/tracks"))
-        .await
-        .map_err(|failure| give_up(&app, "likes request", failure))?;
-    let track_ids = newest_first(likes.result.library.tracks);
+fn liked_at(track: &Value) -> Option<chrono::DateTime<chrono::FixedOffset>> {
+    chrono::DateTime::parse_from_rfc3339(text(track, "/timestamp")?).ok()
+}
 
-    let total = track_ids.len();
-    let mut found = 0usize;
-    let mut not_found = 0usize;
-    let mut errors = 0usize;
-    let mut search_errors_in_row = 0usize;
-    let mut ym_failures_in_row = 0usize;
-    let mut processed = 0usize;
+fn newest_first(tracks: &[Value]) -> Vec<String> {
+    let mut sorted: Vec<&Value> = tracks.iter().collect();
+    if sorted.iter().all(|track| liked_at(track).is_some()) {
+        sorted.sort_by_key(|track| std::cmp::Reverse(liked_at(track)));
+    }
+    sorted
+        .into_iter()
+        .filter_map(|track| id_of(&track["id"]))
+        .collect()
+}
 
-    'batches: for (batch, chunk) in track_ids.chunks(50).enumerate() {
-        if CANCEL_FLAG.load(Ordering::Relaxed) {
-            break;
+impl Ym<'_> {
+    async fn get(&self, path: &str) -> Result<Value, Failure> {
+        let mut request = self
+            .client
+            .get(format!("{API}{path}"))
+            .header("User-Agent", "Yandex-Music-API")
+            .header("X-Yandex-Music-Client", "YandexMusicAndroid/24023621");
+        if let Some(token) = self.token {
+            request = request.header("Authorization", format!("OAuth {token}"));
         }
-        let offset = batch * 50;
-        let positions: HashMap<&str, usize> = chunk
+        let resp = request
+            .send()
+            .await
+            .map_err(|e| Failure::new(YM_UNAVAILABLE, e.to_string()))?;
+        let status = resp.status();
+        let code = match status.as_u16() {
+            401 | 403 => YM_TOKEN_INVALID,
+            404 => SOURCE_NOT_FOUND,
+            _ => YM_UNAVAILABLE,
+        };
+        if !status.is_success() {
+            return Err(Failure::new(code, format!("HTTP {status}")));
+        }
+        resp.json()
+            .await
+            .map_err(|e| Failure::new(YM_UNAVAILABLE, e.to_string()))
+    }
+
+    async fn uid(&self) -> Result<i64, Failure> {
+        let account = self.get("/account/status").await?;
+        account
+            .pointer("/result/account/uid")
+            .and_then(Value::as_i64)
+            .ok_or_else(|| Failure::new(YM_TOKEN_INVALID, "account status has no user id"))
+    }
+
+    pub async fn library(&self) -> Result<YmLibrary, Failure> {
+        let uid = self.uid().await?;
+        let lists = self.get(&format!("/users/{uid}/playlists/list")).await?;
+        let playlists = items(&lists, "/result")
             .iter()
-            .enumerate()
-            .map(|(index, id)| (id.as_str(), offset + index))
+            .filter_map(|list| {
+                Some(YmPlaylistInfo {
+                    kind: id_of(&list["kind"])?,
+                    title: text(list, "/title")?.to_string(),
+                    track_count: list["trackCount"].as_u64().unwrap_or(0) as usize,
+                })
+            })
             .collect();
+        Ok(YmLibrary {
+            owner: uid.to_string(),
+            playlists,
+        })
+    }
 
-        let tracks = match fetch_ym_tracks(&client, &ym_token, &chunk.join(",")).await {
-            Ok(tracks) => {
-                ym_failures_in_row = 0;
-                tracks
+    pub async fn likes(&self, on_read: OnRead<'_>) -> Result<ExtList, Failure> {
+        let uid = self.uid().await?;
+        let likes = self.get(&format!("/users/{uid}/likes/tracks")).await?;
+        let ids = newest_first(items(&likes, "/result/library/tracks"));
+        let tracks = self.resolve(&ids, on_read).await?;
+        Ok(ExtList {
+            title: String::new(),
+            tracks,
+            partial: false,
+        })
+    }
+
+    pub async fn fetch(&self, source: &YmRef, on_read: OnRead<'_>) -> Result<ExtList, Failure> {
+        let list = match source {
+            YmRef::UserPlaylist { owner, kind } => {
+                let playlist = self
+                    .get(&format!("/users/{owner}/playlists/{kind}"))
+                    .await?;
+                self.playlist_list(&playlist, on_read).await?
             }
-            Err(failure) if failure.code == YM_TOKEN_INVALID => {
-                return Err(give_up(&app, "tracks request", failure));
+            YmRef::Playlist { uuid } => {
+                let playlist = self.get(&format!("/playlist/{uuid}")).await?;
+                self.playlist_list(&playlist, on_read).await?
             }
-            Err(_) if CANCEL_FLAG.load(Ordering::Relaxed) => break,
-            Err(failure) => {
-                ym_failures_in_row += 1;
-                if ym_failures_in_row >= MAX_YM_FAILURES_IN_ROW {
-                    return Err(give_up(&app, "tracks request", failure));
+            YmRef::Album { id } => {
+                let album = self.get(&format!("/albums/{id}/with-tracks")).await?;
+                let tracks = items(&album, "/result/volumes")
+                    .iter()
+                    .flat_map(|volume| volume.as_array().into_iter().flatten())
+                    .filter_map(to_track)
+                    .collect();
+                ExtList {
+                    title: text(&album, "/result/title").unwrap_or("").to_string(),
+                    tracks,
+                    partial: false,
                 }
-                log_native(
-                    &app,
-                    "WARN",
-                    format!("[YM Import] tracks request failed: {}", failure.detail),
-                );
-                let remaining = total.saturating_sub(processed);
-                for _ in 0..chunk.len().min(remaining) {
-                    processed += 1;
-                    errors += 1;
-                    emit_progress(
-                        &app,
-                        total,
-                        processed,
-                        found,
-                        not_found,
-                        errors,
-                        String::new(),
-                    );
+            }
+            YmRef::Track { id } => {
+                let found = self.get(&format!("/tracks/{id}")).await?;
+                let tracks: Vec<ExtTrack> = items(&found, "/result")
+                    .iter()
+                    .filter_map(to_track)
+                    .collect();
+                ExtList {
+                    title: tracks.first().map(ExtTrack::label).unwrap_or_default(),
+                    tracks,
+                    partial: false,
                 }
-                continue;
             }
         };
-
-        for (index, track) in tracks.iter().enumerate() {
-            if CANCEL_FLAG.load(Ordering::Relaxed) {
-                break 'batches;
-            }
-
-            processed += 1;
-            let title = track.title.as_deref().unwrap_or("");
-            let artist = track
-                .artists
-                .as_ref()
-                .and_then(|a: &Vec<YmArtist>| a.first())
-                .and_then(|a| a.name.as_deref())
-                .unwrap_or("");
-
-            if title.is_empty() && artist.is_empty() {
-                not_found += 1;
-                emit_progress(
-                    &app,
-                    total,
-                    processed,
-                    found,
-                    not_found,
-                    errors,
-                    String::new(),
-                );
-                continue;
-            }
-
-            let current_track = format!("{} - {}", artist, title);
-
-            match ym_search::find_track(
-                &client,
-                &backend_url,
-                &session_id,
-                artist,
-                title,
-                &CANCEL_FLAG,
-            )
-            .await
-            {
-                Ok(Some(urn)) => {
-                    search_errors_in_row = 0;
-                    found += 1;
-                    let position = track
-                        .id
-                        .as_ref()
-                        .and_then(|id| positions.get(ym_id(id).as_str()).copied())
-                        .unwrap_or(offset + index);
-                    app.emit("ym_import:match", YmImportMatch { urn, position })
-                        .ok();
-                }
-                Ok(None) => {
-                    search_errors_in_row = 0;
-                    not_found += 1;
-                }
-                Err(error) if error.is_unauthorized() => {
-                    errors += 1;
-                    log_native(
-                        &app,
-                        "WARN",
-                        "[YM Import] search rejected the session (HTTP 401)",
-                    );
-                    emit_progress(
-                        &app,
-                        total,
-                        processed,
-                        found,
-                        not_found,
-                        errors,
-                        current_track,
-                    );
-                    return Err(SESSION_EXPIRED.to_string());
-                }
-                Err(error) => {
-                    let reason = error.reason;
-                    errors += 1;
-                    search_errors_in_row += 1;
-                    if search_errors_in_row == 1 {
-                        log_native(&app, "WARN", format!("[YM Import] search failed: {reason}"));
-                    }
-                    if search_errors_in_row >= MAX_SEARCH_ERRORS_IN_ROW {
-                        log_native(
-                            &app,
-                            "WARN",
-                            format!("[YM Import] search gave up: {reason}"),
-                        );
-                        emit_progress(
-                            &app,
-                            total,
-                            processed,
-                            found,
-                            not_found,
-                            errors,
-                            current_track,
-                        );
-                        return Err(SEARCH_UNAVAILABLE.to_string());
-                    }
-                    tokio::time::sleep(SEARCH_ERROR_PAUSE).await;
-                }
-            }
-
-            emit_progress(
-                &app,
-                total,
-                processed,
-                found,
-                not_found,
-                errors,
-                current_track.clone(),
-            );
-
-            tokio::time::sleep(Duration::from_millis(150)).await;
+        if list.tracks.is_empty() {
+            return Err(Failure::new(SOURCE_EMPTY, "no tracks"));
         }
+        Ok(list)
+    }
 
-        if tracks.len() < chunk.len() {
-            let missed = chunk.len() - tracks.len();
-            let remaining = total.saturating_sub(processed);
-            for _ in 0..missed.min(remaining) {
-                processed += 1;
-                not_found += 1;
-                emit_progress(
-                    &app,
-                    total,
-                    processed,
-                    found,
-                    not_found,
-                    errors,
-                    String::new(),
-                );
+    async fn playlist_list(
+        &self,
+        playlist: &Value,
+        on_read: OnRead<'_>,
+    ) -> Result<ExtList, Failure> {
+        let entries = items(playlist, "/result/tracks");
+        let direct: Vec<ExtTrack> = entries
+            .iter()
+            .filter_map(|entry| to_track(&entry["track"]))
+            .collect();
+        let tracks = if !direct.is_empty() && direct.len() >= entries.len() * DIRECT_SHARE / 10 {
+            direct
+        } else {
+            let ids: Vec<String> = entries
+                .iter()
+                .filter_map(|entry| id_of(&entry["id"]).or_else(|| id_of(&entry["track"]["id"])))
+                .collect();
+            self.resolve(&ids, on_read).await?
+        };
+        Ok(ExtList {
+            title: text(playlist, "/result/title").unwrap_or("").to_string(),
+            tracks,
+            partial: false,
+        })
+    }
+
+    async fn resolve(&self, ids: &[String], on_read: OnRead<'_>) -> Result<Vec<ExtTrack>, Failure> {
+        let mut found: HashMap<String, ExtTrack> = HashMap::new();
+        for chunk in ids.chunks(TRACKS_PER_REQUEST) {
+            if self.cancel.load(Ordering::Relaxed) {
+                break;
+            }
+            let reply = self.tracks_with_retry(&chunk.join(",")).await?;
+            for track in items(&reply, "/result") {
+                if let (Some(id), Some(track)) = (id_of(&track["id"]), to_track(track)) {
+                    found.insert(id, track);
+                }
+            }
+            on_read(found.len(), ids.len());
+        }
+        Ok(ids.iter().filter_map(|id| found.remove(id)).collect())
+    }
+
+    async fn tracks_with_retry(&self, ids: &str) -> Result<Value, Failure> {
+        let path = format!("/tracks?trackIds={ids}");
+        let mut attempt = 0;
+        loop {
+            match self.get(&path).await {
+                Err(failure) if failure.code == YM_TOKEN_INVALID => return Err(failure),
+                Err(failure)
+                    if attempt + 1 >= TRACKS_ATTEMPTS || self.cancel.load(Ordering::Relaxed) =>
+                {
+                    return Err(failure);
+                }
+                Err(_) => {
+                    attempt += 1;
+                    tokio::time::sleep(Duration::from_millis(500 * attempt)).await;
+                }
+                Ok(reply) => return Ok(reply),
             }
         }
     }
-
-    emit_progress(
-        &app,
-        total,
-        processed,
-        found,
-        not_found,
-        errors,
-        String::new(),
-    );
-
-    Ok(())
-}
-
-#[tauri::command]
-pub fn ym_import_stop() {
-    CANCEL_FLAG.store(true, Ordering::Relaxed);
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use serde_json::json;
 
-    fn liked(id: serde_json::Value, timestamp: Option<&str>) -> YmLikedTrack {
-        YmLikedTrack {
-            id,
-            timestamp: timestamp.map(str::to_string),
-        }
-    }
+    use super::{clean_token, newest_first, to_track};
 
     #[test]
     fn orders_likes_from_newest_to_oldest() {
         let tracks = vec![
-            liked(serde_json::json!(1), Some("2021-03-01T10:00:00+00:00")),
-            liked(serde_json::json!("3"), Some("2024-01-05T09:00:00+03:00")),
-            liked(serde_json::json!(2), Some("2022-07-12T18:30:00+00:00")),
+            json!({"id": 1, "timestamp": "2021-03-01T10:00:00+00:00"}),
+            json!({"id": "3", "timestamp": "2024-01-05T09:00:00+03:00"}),
+            json!({"id": 2, "timestamp": "2022-07-12T18:30:00+00:00"}),
         ];
-        assert_eq!(newest_first(tracks), vec!["3", "2", "1"]);
+        assert_eq!(newest_first(&tracks), vec!["3", "2", "1"]);
     }
 
     #[test]
     fn keeps_api_order_without_timestamps() {
         let tracks = vec![
-            liked(serde_json::json!(5), Some("2021-03-01T10:00:00+00:00")),
-            liked(serde_json::json!(4), None),
-            liked(serde_json::json!(9), Some("2024-01-05T09:00:00+00:00")),
+            json!({"id": 5, "timestamp": "2021-03-01T10:00:00+00:00"}),
+            json!({"id": 4}),
+            json!({"id": "9:77", "timestamp": "2024-01-05T09:00:00+00:00"}),
         ];
-        assert_eq!(newest_first(tracks), vec!["5", "4", "9"]);
+        assert_eq!(newest_first(&tracks), vec!["5", "4", "9"]);
+    }
+
+    #[test]
+    fn track_gets_version_and_first_artist() {
+        let track = to_track(&json!({
+            "title": "Gravity",
+            "version": "Remix",
+            "durationMs": 215000,
+            "artists": [{"name": "Boris"}, {"name": "Other"}]
+        }))
+        .unwrap();
+        assert_eq!(track.title, "Gravity (Remix)");
+        assert_eq!(track.artist, "Boris");
+        assert_eq!(track.duration_ms, Some(215000));
+        assert!(to_track(&json!({"id": 1})).is_none());
+    }
+
+    #[test]
+    fn token_is_taken_from_a_pasted_address() {
+        assert_eq!(
+            clean_token("https://music.yandex.ru/#access_token=y0_abc&token_type=bearer"),
+            "y0_abc"
+        );
+        assert_eq!(clean_token("  y0_abc "), "y0_abc");
     }
 }
