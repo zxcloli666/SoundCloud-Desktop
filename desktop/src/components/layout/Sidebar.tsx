@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { type ReactNode, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useShallow } from 'zustand/shallow';
@@ -8,10 +8,10 @@ import { moveEntry } from '../../lib/layout';
 import { useReleaseFeed } from '../../lib/new-releases-api';
 import { usePerfMode } from '../../lib/perf';
 import { useSuperlikeCount } from '../../lib/superlikes';
-import { useLayout } from '../../lib/use-layout';
 import { useAppMode } from '../../stores/app-status';
 import { useAuthStore } from '../../stores/auth';
 import { useSettingsStore } from '../../stores/settings';
+import { ChatNavBadge } from '../chat/shell/ChatNavBadge';
 import { SuperHeart } from '../music/superlike/SuperHeart';
 import { Avatar } from '../ui/Avatar';
 import { type IconCmp, NAV_ITEMS } from './nav-items';
@@ -19,6 +19,7 @@ import { ACTIVE, IconBox, Label, ROW, sidebarWidth } from './SidebarChrome';
 import { SidebarPins } from './SidebarPins';
 import { SortableSlot, SortableStack } from './SortableStack';
 import { useOwnTenure } from '../../lib/star-tenure';
+import { useLayout } from '../../lib/use-layout';
 import { StarBadge, StarCard, useStarSubscription } from './StarSubscription';
 
 const languages = [
@@ -29,6 +30,20 @@ const languages = [
   { code: 'pt', label: 'Português' },
 ] as const;
 
+function CountBadge({ count, collapsed }: { count: number; collapsed: boolean }) {
+  if (count <= 0) return null;
+  if (collapsed) {
+    return (
+      <span className="absolute right-2 top-1.5 size-2 rounded-full bg-accent shadow-[0_0_8px_var(--color-accent-glow)]" />
+    );
+  }
+  return (
+    <span className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full bg-accent px-1.5 text-[10.5px] font-black leading-[16px] tabular-nums text-accent-contrast">
+      {count > 99 ? '99+' : count}
+    </span>
+  );
+}
+
 function NavItem({
   to,
   icon: Icon,
@@ -36,7 +51,7 @@ function NavItem({
   collapsed,
   title,
   alert,
-  badge = 0,
+  badge,
 }: {
   to: string;
   icon: IconCmp;
@@ -44,7 +59,7 @@ function NavItem({
   collapsed: boolean;
   title?: string;
   alert?: boolean;
-  badge?: number;
+  badge?: ReactNode;
 }) {
   return (
     <NavLink
@@ -68,14 +83,7 @@ function NavItem({
       <Label collapsed={collapsed} className="text-[13px] font-medium pr-3">
         {label}
       </Label>
-      {badge > 0 &&
-        (collapsed ? (
-          <span className="absolute right-2 top-1.5 size-2 rounded-full bg-accent shadow-[0_0_8px_var(--color-accent-glow)]" />
-        ) : (
-          <span className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full bg-accent px-1.5 text-[10.5px] font-black leading-[16px] tabular-nums text-accent-contrast">
-            {badge > 99 ? '99+' : badge}
-          </span>
-        ))}
+      {badge}
     </NavLink>
   );
 }
@@ -133,7 +141,13 @@ export const Sidebar = React.memo(() => {
                   collapsed={collapsed}
                   title={collapsed ? t(item.label) : undefined}
                   alert={id === 'offline' && appMode !== 'online'}
-                  badge={id === 'library' ? unheard : 0}
+                  badge={
+                    id === 'chats' ? (
+                      <ChatNavBadge collapsed={collapsed} />
+                    ) : id === 'library' ? (
+                      <CountBadge count={unheard} collapsed={collapsed} />
+                    ) : undefined
+                  }
                 />
               </SortableSlot>
             );

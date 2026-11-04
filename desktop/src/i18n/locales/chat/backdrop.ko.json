@@ -1,0 +1,60 @@
+{
+  "title": "방 배경",
+  "none": "배경 없음",
+  "photo": "내 사진",
+  "photoIn": "{{time}} 후 사진",
+  "percent": "{{percent}}%",
+  "retry": "다시 시도",
+  "pickAgain": "다른 사진",
+  "storage": "저장 공간",
+  "images": "이미지",
+  "linking": "방 채팅 연결 중",
+  "done": "완료",
+  "cancel": "취소",
+  "hide": "배경 숨기기",
+  "show": "배경 보기",
+  "chip": "배경 {{percent}}%",
+  "chipFailed": "배경 업로드 실패",
+  "star": {
+    "title": "STAR로 방 배경",
+    "body": "방 전체를 위한 움직이는 배경과 내 사진"
+  },
+  "report": {
+    "entry": "배경 신고",
+    "title": "배경 신고",
+    "comment": "코멘트 (선택)",
+    "send": "보내기",
+    "sent": "신고를 보냈습니다",
+    "changed": "배경이 이미 바뀌었습니다",
+    "failed": "보내지 못했습니다"
+  },
+  "errors": {
+    "room_star_required": "배경은 STAR로 사용할 수 있습니다",
+    "media_star_required": "사진은 STAR로 사용할 수 있습니다",
+    "invalid": "이 배경은 사용할 수 없습니다",
+    "media_missing": "사진이 없어졌습니다. 다시 올려 주세요",
+    "backdrop_cooldown": "{{time}} 후 다시 내 사진",
+    "request_limit": "너무 자주 바꿨습니다. 잠시 기다려 주세요",
+    "quota_exceeded": "저장 공간이 가득 찼습니다",
+    "media_uploads_paused": "업로드가 일시 중지되었습니다",
+    "offline": "연결 없음",
+    "generic": "문제가 발생했습니다"
+  },
+  "presets": {
+    "aurora": "오로라",
+    "vinyl": "바이닐",
+    "sunset-clouds": "노을",
+    "ocean-rays": "심해",
+    "dunes": "사구",
+    "misty-forest": "안개 숲",
+    "snow-lamp": "눈",
+    "satin": "새틴",
+    "paper": "종이",
+    "peach-clouds": "복숭아",
+    "pastel-lake": "호수",
+    "watercolor": "수채화",
+    "candy-sky": "캔디"
+  },
+  "dismiss": "닫기",
+  "cancelUpload": "업로드 취소"
+}

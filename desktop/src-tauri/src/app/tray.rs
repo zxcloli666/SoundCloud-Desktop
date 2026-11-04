@@ -58,6 +58,17 @@ pub fn refresh_labels(app: &AppHandle) {
     }
 }
 
+pub fn set_unread(app: &AppHandle, unread: bool) {
+    #[cfg(target_os = "linux")]
+    {
+        linux::set_unread(app, unread);
+    }
+    #[cfg(not(target_os = "linux"))]
+    {
+        native::set_unread(app, unread);
+    }
+}
+
 /// Выполнить действие пункта меню на main-потоке.
 pub fn run_action(app: &AppHandle, id: &str) {
     let h = app.clone();
@@ -141,6 +152,16 @@ mod linux {
         });
     }
 
+    pub fn set_unread(app: &AppHandle, unread: bool) {
+        let Some(spawned) = app.try_state::<Spawned>() else {
+            return;
+        };
+        let tray = spawned.0.clone();
+        tauri::async_runtime::spawn(async move {
+            tray.update(|tray| tray.unread = unread).await;
+        });
+    }
+
     fn go_offline(app: &AppHandle) {
         ONLINE.store(false, Ordering::Relaxed);
         autostart::reveal_if_hidden(app);
@@ -153,6 +174,8 @@ mod linux {
     struct ScTray {
         app: AppHandle,
         icon: Vec<ksni::Icon>,
+        dotted: Vec<ksni::Icon>,
+        unread: bool,
     }
 
     impl Tray for ScTray {
@@ -163,7 +186,11 @@ mod linux {
             "SoundCloud Desktop".into()
         }
         fn icon_pixmap(&self) -> Vec<ksni::Icon> {
-            self.icon.clone()
+            if self.unread {
+                self.dotted.clone()
+            } else {
+                self.icon.clone()
+            }
         }
         // Левый клик по иконке → мини-плеер у курсора.
         fn activate(&mut self, x: i32, y: i32) {
@@ -208,12 +235,14 @@ mod linux {
 
     pub fn setup(app: &crate::rt::App) {
         let handle = app.handle().clone();
-        let icon = icon_pixmap(app);
+        let (icon, dotted) = icon_pixmaps(app);
         // ksni поднимает D-Bus-сервис на нашем tokio-рантайме; держим задачу живой.
         tauri::async_runtime::spawn(async move {
             let tray = ScTray {
                 app: handle.clone(),
                 icon,
+                dotted,
+                unread: false,
             };
             let spawned = tray
                 .assume_sni_available(true)
@@ -222,7 +251,9 @@ mod linux {
                 .await;
             match spawned {
                 Ok(tray) => {
-                    handle.manage(Spawned(tray));
+                    handle.manage(Spawned(tray.clone()));
+                    tray.update(|tray| tray.unread = crate::chat::badge::has_unread())
+                        .await;
                     std::future::pending::<()>().await
                 }
                 Err(err) => {
@@ -233,19 +264,25 @@ mod linux {
         });
     }
 
-    /// Иконка приложения → ARGB32-пиксмап SNI (RGBA из Tauri → A,R,G,B).
-    fn icon_pixmap(app: &crate::rt::App) -> Vec<ksni::Icon> {
+    fn icon_pixmaps(app: &crate::rt::App) -> (Vec<ksni::Icon>, Vec<ksni::Icon>) {
         let Some(img) = app.default_window_icon() else {
-            return Vec::new();
+            return (Vec::new(), Vec::new());
         };
-        let rgba = img.rgba();
+        let dotted = crate::app::tray_dot::with_dot(img.rgba(), img.width(), img.height());
+        (
+            pixmap(img.rgba(), img.width(), img.height()),
+            pixmap(&dotted, img.width(), img.height()),
+        )
+    }
+
+    fn pixmap(rgba: &[u8], width: u32, height: u32) -> Vec<ksni::Icon> {
         let mut data = Vec::with_capacity(rgba.len());
         for [r, g, b, a] in rgba.as_chunks::<4>().0 {
             data.extend_from_slice(&[*a, *r, *g, *b]);
         }
         vec![ksni::Icon {
-            width: img.width() as i32,
-            height: img.height() as i32,
+            width: width as i32,
+            height: height as i32,
             data,
         }]
     }
@@ -257,11 +294,27 @@ mod linux {
 #[cfg(not(target_os = "linux"))]
 mod native {
     use tauri::Manager;
+    use tauri::image::Image;
     use tauri::menu::{MenuBuilder, MenuItem, MenuItemBuilder};
-    use tauri::tray::TrayIconBuilder;
+    use tauri::tray::{TrayIcon, TrayIconBuilder};
 
+    use crate::app::tray_dot::with_dot;
     use crate::app::tray_labels::{self, TrayLabels};
     use crate::rt::{AppHandle, Rt};
+
+    struct Icons {
+        tray: TrayIcon<Rt>,
+        plain: Image<'static>,
+        dotted: Image<'static>,
+    }
+
+    pub fn set_unread(app: &AppHandle, unread: bool) {
+        let Some(icons) = app.try_state::<Icons>() else {
+            return;
+        };
+        let image = if unread { &icons.dotted } else { &icons.plain };
+        let _ = icons.tray.set_icon(Some(image.clone()));
+    }
 
     struct Items {
         show: MenuItem<Rt>,
@@ -316,8 +369,13 @@ mod native {
             .build()?;
         app.manage(items);
 
-        TrayIconBuilder::new()
-            .icon(app.default_window_icon().cloned().expect("no app icon"))
+        let icon = app.default_window_icon().expect("no app icon");
+        let (width, height) = (icon.width(), icon.height());
+        let plain = Image::new_owned(icon.rgba().to_vec(), width, height);
+        let dotted = Image::new_owned(with_dot(icon.rgba(), width, height), width, height);
+
+        let tray = TrayIconBuilder::new()
+            .icon(plain.clone())
             .tooltip("SoundCloud Desktop")
             .menu(&menu)
             // Левый клик открывает мини-плеер (ниже); меню — на правый клик.
@@ -337,6 +395,11 @@ mod native {
                 }
             })
             .build(app)?;
+        app.manage(Icons {
+            tray,
+            plain,
+            dotted,
+        });
 
         Ok(())
     }

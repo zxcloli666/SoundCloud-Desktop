@@ -107,6 +107,51 @@ Tailwind class names change from release to release. These attributes do not.
 
 States are in attributes too: `aria-current="page"` on the open link or section, `aria-checked` on switches, `aria-selected` or `data-active="true"` on tabs, chips and options. `html[data-perf="beauty"]`, `"medium"` or `"light"` is the performance mode.
 
+### Chats
+
+| Selector | Element |
+|---|---|
+| `[data-ui="chat-page"]` | Chats page |
+| `[data-ui="chat-dock"]` | Chat panel at the right edge |
+| `[data-ui="chat-dock-tabs"]` | Tab row of the chat panel |
+| `[data-ui="chat-list"]` | Chat list |
+| `[data-ui="chat-filter"]` | Filter above the chat list. `[data-kind]` is `all`, `direct`, `groups`, `unread`, `requests` or `archived`, the chosen one has `[aria-pressed="true"]` |
+| `[data-ui="chat-row"]` | A chat in the list. `[data-kind]` is `direct`, `group`, `self` or `room`, the open one has `[aria-current]` |
+| `[data-ui="chat-thread"]` | Open chat with its messages, `[data-kind]` as above |
+| `[data-ui="chat-thread-header"]` | Header of the open chat |
+| `[data-ui="chat-bubble"]` | A message. Yours have `[data-mine]`, unsent ones `[data-failed]` |
+| `[data-ui="chat-system-row"]` | Service line between messages, `[data-kind]` names the event |
+| `[data-ui="chat-composer"]` | Message input |
+| `[data-ui="chat-embed"]` | Card in a message. `[data-kind]` is `track`, `playlist`, `user` or `room_invite` |
+| `[data-ui="chat-info"]` | Chat info panel |
+| `[data-ui="chat-requests"]` | Message requests: the list and the bar in a chat |
+| `[data-ui="chat-room"]` | Listening room tab |
+| `[data-ui="chat-room-stage"]` | Room area under the header that holds the room backdrop. Set `--room-accent` on it to tint the backdrop |
+| `[data-ui="room-tuning"]` | Room settings button in the room header |
+| `[data-ui="room-capacity"]` | Seats row in room settings: members of capacity, the seat strip, paused joins |
+| `[data-ui="room-rules"]` | Room rules button in the room header (host) |
+| `[data-ui="room-images-policy"]` | Who may post images in the room (host) |
+| `[data-ui="room-cover"]` | Room cover row in the room rules (host) |
+| `[data-ui="room-cover-picker"]` | Cover picker: artwork grid, accent colors, apply and reset |
+| `[data-ui="open-room"]` | A room in the open rooms list |
+| `[data-ui="chat-toast"]` | New message popup |
+| `[data-ui="chat-share"]` | "Send" window |
+| `[data-ui="chat-album"]` | Images in a message. A tile is `[data-ui="chat-album-tile"]`, `[data-state]` is `loading`, `ready`, `failed`, `deleted` or `lost` |
+| `[data-ui="chat-upload-tile"]` | Your image that is still uploading, `[data-state]` is `queued`, `reserved`, `uploading`, `uploaded`, `committed` or `failed` |
+| `[data-ui="chat-album-status"]` | Upload progress or failure line under your album |
+| `[data-ui="chat-media-gone"]` | Placeholder of a deleted or unavailable image |
+| `[data-ui="chat-lightbox"]` | Image viewer, the image area is `[data-ui="chat-lightbox-stage"]` |
+| `[data-ui="chat-gallery"]` | Images tab in chat info. A tile is `[data-ui="chat-gallery-tile"]` with `[data-state]` as in an album, the empty tab is `[data-ui="chat-gallery-empty"]` |
+| `[data-ui="chat-device-alert"]` | New device alert |
+| `[data-ui="chat-relogin"]` | Chat sign-in card |
+| `[data-ui="chat-storage"]` | Image storage page (`/chats/storage`) |
+| `[data-ui="chat-quota-ring"]` | Quota ring: used of quota, on the storage page and in chat settings |
+| `[data-ui="chat-storage-grid"]` | Grid of your images; a tile is `[data-ui="chat-storage-tile"]`, a selected one has `[aria-pressed="true"]` |
+| `[data-ui="chat-storage-undo"]` | Undo bar after deleting images |
+| `[data-ui="chat-storage-entry"]` | Storage card in chat settings |
+
+Other chat windows (new chat, report, delete) are `[data-ui="modal"]`. Chat colors come from the scheme tokens (see "White and dark"): `--ink` for text and lines, `--paper` and `--surface` for surfaces, `--shade` for wells and scrims. A theme that sets them restyles chats too. Your messages, the open chat and the chosen filter are tinted with `--color-chat-tint`.
+
 ## Variables
 
 | Variable | Meaning |

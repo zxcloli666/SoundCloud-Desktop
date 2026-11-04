@@ -9,6 +9,7 @@ const WHITELIST = [
   new URL(IMAGES_BASE).hostname,
   'unpkg.com',
 ];
+const DIRECT_IMAGE_HOSTS = ['i1.sndcdn.com', 'a1.sndcdn.com'];
 const RETRY_BYPASS_CACHE_PARAM = '__scproxy_bust';
 const LOCAL_PROXY_SHARDS = 20;
 
@@ -37,6 +38,15 @@ export function isWhitelistedAssetUrl(url: string): boolean {
     return WHITELIST.some((domain) => hostname === domain || hostname.endsWith(`.${domain}`));
   } catch {
     return true;
+  }
+}
+
+export function isDirectImageUrl(url: string): boolean {
+  try {
+    const { protocol, hostname } = new URL(url);
+    return protocol === 'https:' && DIRECT_IMAGE_HOSTS.includes(hostname);
+  } catch {
+    return false;
   }
 }
 

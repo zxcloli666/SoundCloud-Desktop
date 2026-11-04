@@ -13,6 +13,23 @@ const localeLoaders = {
 
 type AppLanguage = keyof typeof localeLoaders;
 
+const chatLocaleLoaders = import.meta.glob<Record<string, unknown>>('./locales/chat/*.json', {
+  import: 'default',
+});
+
+async function loadChatLocale(language: AppLanguage) {
+  const suffix = `.${language}.json`;
+  const areas = await Promise.all(
+    Object.entries(chatLocaleLoaders)
+      .filter(([path]) => path.endsWith(suffix))
+      .map(async ([path, load]) => {
+        const area = path.slice(path.lastIndexOf('/') + 1, -suffix.length);
+        return [area, await load()] as const;
+      }),
+  );
+  return Object.fromEntries(areas);
+}
+
 function normalizeLanguage(language: string | undefined | null): AppLanguage {
   const code = language?.split('-')[0];
   return code && code in localeLoaders ? (code as AppLanguage) : FALLBACK_LANGUAGE;
@@ -35,8 +52,12 @@ export async function ensureLocaleLoaded(language: string) {
     return normalized;
   }
 
-  const module = await localeLoaders[normalized]();
+  const [module, chat] = await Promise.all([
+    localeLoaders[normalized](),
+    loadChatLocale(normalized),
+  ]);
   i18n.addResourceBundle(normalized, 'translation', module.default, true, true);
+  i18n.addResourceBundle(normalized, 'translation', { chat }, true, true);
   loadedLanguages.add(normalized);
   return normalized;
 }

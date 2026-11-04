@@ -1,0 +1,68 @@
+{
+  "open": "Открыть",
+  "more": "Ещё",
+  "remove": "Убрать",
+  "track": {
+    "play": "Играть",
+    "pause": "Пауза",
+    "seek": "Перемотать",
+    "from": "Играть с {{time}}",
+    "unavailable": "Недоступен",
+    "playNext": "Следующим",
+    "queue": "В очередь",
+    "together": "Слушать вместе"
+  },
+  "playlist": {
+    "playAll": "Слушать",
+    "shuffle": "Перемешать",
+    "save": "Сохранить",
+    "saved": "Сохранено"
+  },
+  "user": {
+    "followers_one": "{{value}} подписчик",
+    "followers_few": "{{value}} подписчика",
+    "followers_many": "{{value}} подписчиков",
+    "follow": "Подписаться",
+    "following": "Вы подписаны",
+    "top": "Популярное",
+    "noTracks": "У автора пока нет треков"
+  },
+  "room": {
+    "live": "В эфире",
+    "closed": "Комната закрыта",
+    "join": "Войти",
+    "here": "Вы здесь",
+    "untitled": "Слушаем вместе",
+    "host": "Ведёт {{name}}",
+    "full": "Мест нет"
+  },
+  "share": {
+    "action": "Отправить",
+    "title": "Отправить",
+    "search": "Поиск",
+    "comment": "Комментарий",
+    "send": "Отправить",
+    "sendCount": "Отправить ({{count}})",
+    "sent_one": "Отправлено в {{count}} чат",
+    "sent_few": "Отправлено в {{count}} чата",
+    "sent_many": "Отправлено в {{count}} чатов",
+    "failed_one": "Не отправлено в {{count}} чат",
+    "failed_few": "Не отправлено в {{count}} чата",
+    "failed_many": "Не отправлено в {{count}} чатов",
+    "saved": "Избранное",
+    "room": "Комната",
+    "untitled": "Без имени",
+    "empty": "Пока нет чатов",
+    "noMatch": "Ничего не нашлось",
+    "loadFailed": "Чаты не загрузились"
+  },
+  "message": {
+    "write": "Написать",
+    "unavailable": "{{name}} пока нельзя написать",
+    "failed": "Не удалось открыть чат",
+    "invite": "Пригласить",
+    "inviteText": "Пиши мне в SoundCloud Desktop: {{url}}",
+    "inviteCopied": "Приглашение скопировано",
+    "copyFailed": "Не удалось скопировать"
+  }
+}

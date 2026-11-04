@@ -103,10 +103,29 @@ const WinButton = ({
     </button>
 );
 
-export const Titlebar = React.memo(() => {
+export const WindowControls = React.memo(() => {
   const { t } = useTranslation();
+  const win = getCurrentWindow();
+  return (
+    <div data-ui="window-controls" className="flex items-center gap-0.5 shrink-0">
+      <WinButton onClick={() => void toggleWindowFullscreen()} label={t('kb.fullscreen')}>
+        <Fullscreen size={13} />
+      </WinButton>
+      <WinButton onClick={() => win.minimize()} label="Minimize">
+        <Minus size={15} />
+      </WinButton>
+      <WinButton onClick={() => win.toggleMaximize()} label="Maximize">
+        <Square size={12} />
+      </WinButton>
+      <WinButton onClick={() => win.close()} danger label="Close">
+        <X size={15} />
+      </WinButton>
+    </div>
+  );
+});
+
+export const Titlebar = React.memo(() => {
     const collapsed = useSettingsStore((s) => s.sidebarCollapsed);
-    const win = getCurrentWindow();
 
   return (
     <div
@@ -168,20 +187,7 @@ export const Titlebar = React.memo(() => {
         </div>
 
         {/* RIGHT: window controls */}
-        <div data-ui="window-controls" className="flex items-center gap-0.5 shrink-0">
-            <WinButton onClick={() => void toggleWindowFullscreen()} label={t('kb.fullscreen')}>
-                <Fullscreen size={13}/>
-            </WinButton>
-            <WinButton onClick={() => win.minimize()} label="Minimize">
-                <Minus size={15}/>
-            </WinButton>
-            <WinButton onClick={() => win.toggleMaximize()} label="Maximize">
-                <Square size={12}/>
-            </WinButton>
-            <WinButton onClick={() => win.close()} danger label="Close">
-                <X size={15}/>
-            </WinButton>
-      </div>
+        <WindowControls />
     </div>
   );
 });

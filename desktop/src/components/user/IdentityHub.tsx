@@ -1,9 +1,12 @@
 import {useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
 import {type Aura, auraRgb, auraRgba} from '../../lib/aura';
+import {userEmbed} from '../../lib/chat/embed-snapshot';
 import {Calendar, Globe, Sparkles} from '../../lib/icons';
 import {likedTracksCount} from '../../lib/likes';
 import {usePerfMode} from '../../lib/perf';
+import {MessageButton} from '../chat/share/MessageButton';
+import {ShareButton} from '../chat/share/ShareButton';
 import {BlockArtistButton} from '../music/blocklist/BlockArtistButton';
 import {userTarget} from '../music/blocklist/targets';
 import {CopyLinkButton} from '../ui/CopyLinkButton';
@@ -152,6 +155,7 @@ export function IdentityHub({
 
           <div className="flex flex-wrap items-center gap-3 pt-1 justify-center lg:justify-start">
             {!isOwnProfile && <FollowBtn userUrn={user.urn} aura={aura} />}
+            {!isOwnProfile && <MessageButton userUrn={user.urn} name={user.username} />}
             {!isOwnProfile && (
               <PinArtistButton
                 artist={{
@@ -164,6 +168,11 @@ export function IdentityHub({
             )}
             {isOwnProfile && <UploadTrackButton aura={aura} />}
             {user.permalink_url && <CopyLinkButton url={user.permalink_url} />}
+            <ShareButton
+              embed={userEmbed(user)}
+              size={15}
+              className="inline-flex size-11 cursor-pointer items-center justify-center rounded-full border-[0.5px] border-ink/[0.08] bg-ink/[0.04] text-ink-50 transition-all duration-300 ease-[var(--ease-apple)] hover:border-ink/[0.14] hover:bg-ink/[0.08] hover:text-ink-80"
+            />
             {!isOwnProfile && <BlockArtistButton target={blockTarget} />}
             {hasStar && isOwnProfile && (
               <AuraPicker

@@ -1,0 +1,167 @@
+{
+  "attach": {
+    "title": "이미지 추가",
+    "drop": "이미지를 놓아 보내기",
+    "dropLocked": "이미지는 STAR가 필요해요",
+    "locked": "이미지는 STAR 혜택이에요"
+  },
+  "star": {
+    "title": "STAR로 이미지 보내기",
+    "desc": "최대 10장 앨범과 1GB 개인 저장 공간. 보기는 누구나 가능해요.",
+    "cta": "STAR 시작"
+  },
+  "tray": {
+    "sending": "{{total}}개 중 {{done}}개 전송 중",
+    "waiting": "연결을 기다리는 중",
+    "resumed": "전송을 다시 시작했어요",
+    "sent": "전송됨",
+    "retry": "다시 시도",
+    "cancel": "취소",
+    "cancelAll": "모두 취소"
+  },
+  "bubble": {
+    "deleted": "삭제된 이미지",
+    "lost": "이미지를 불러올 수 없어요",
+    "loading": "불러오는 중",
+    "failed": "불러오지 못했어요",
+    "retry": "다시 시도",
+    "open": "열기"
+  },
+  "gallery": {
+    "tab": "이미지",
+    "empty": "아직 이미지가 없어요",
+    "emptyHint": "이 채팅의 이미지가 여기에 표시돼요",
+    "failed": "이미지를 불러오지 못했어요",
+    "retry": "다시 시도",
+    "locked": "이미지는 지금 꺼져 있어요"
+  },
+  "viewer": {
+    "close": "닫기",
+    "prev": "이전",
+    "next": "다음",
+    "zoomIn": "확대",
+    "zoomOut": "축소",
+    "save": "저장"
+  },
+  "errors": {
+    "generic": "이미지를 보내지 못했어요",
+    "quota_exceeded": "이미지 저장 공간이 가득 찼어요",
+    "media_star_required": "이미지 전송에는 STAR가 필요해요",
+    "room_star_required": "이 방의 이미지는 STAR 호스트가 필요해요",
+    "media_uploads_paused": "이미지 업로드가 잠시 중단됐어요",
+    "media_missing": "일부 이미지가 사라졌어요. 다시 보내주세요",
+    "send_limited": "이미지가 너무 많아요. 잠시 기다려주세요",
+    "not_member": "이 채팅에 참여하고 있지 않아요",
+    "unavailable": "여기서는 이미지를 보낼 수 없어요",
+    "invalid": "이 이미지는 보낼 수 없어요",
+    "offline": "서버에 연결할 수 없어요",
+    "busy": "서버가 바빠요. 잠시 후 다시 시도해주세요",
+    "not_ready": "앱이 아직 준비 중입니다. 다시 시도하세요",
+    "crypto": "이미지를 암호화할 수 없습니다",
+    "store": "이미지를 저장할 수 없습니다",
+    "request_limit": "요청이 너무 많습니다. 잠시 기다리세요",
+    "read_limited": "요청이 너무 많습니다. 잠시 기다리세요",
+    "disabled": "서버에서 이미지가 꺼져 있습니다",
+    "backdrop_cooldown": "배경은 잠시 후에 바꿀 수 있습니다",
+    "send_paused": "전송이 일시 중지됨",
+    "muted": "지금은 여기에 쓸 수 없습니다",
+    "slow_mode": "슬로 모드입니다. 잠시 기다리세요"
+  },
+  "room": {
+    "capacity": "{{count}}명",
+    "capacityStar": "STAR는 {{count}}명",
+    "cover": "방 커버",
+    "coverPick": "커버 선택",
+    "coverTrack": "트랙 아트워크",
+    "coverClear": "커버 제거",
+    "coverLocked": "커버는 STAR 호스트가 필요해요",
+    "images": "채팅 이미지",
+    "imagesMembers": "멤버",
+    "imagesMods": "관리자",
+    "imagesOff": "없음",
+    "imagesLocked": "이미지는 STAR 호스트가 필요해요"
+  },
+  "album": {
+    "count_other": "이미지 {{count}}장"
+  },
+  "compose": {
+    "attach": "이미지",
+    "preparing": "준비 중",
+    "uploading": "업로드 중",
+    "ready": "완료",
+    "failed": "실패",
+    "remove": "삭제",
+    "removeAll": "앨범 삭제",
+    "retry": "다시 시도",
+    "add": "추가",
+    "full": "앨범 가득 참",
+    "count": "{{count}}/{{max}}",
+    "sendAlbum": "앨범 보내기",
+    "waiting": "대기 중",
+    "albumRemoved": "앨범 삭제됨",
+    "undo": "되돌리기"
+  },
+  "skipped": {
+    "title_other": "{{count}}개 파일 건너뜀",
+    "type": "이미지가 아님",
+    "invalid": "너무 크거나 손상됨",
+    "full": "앨범에 안 들어감",
+    "dismiss": "숨기기"
+  },
+  "gate": {
+    "pausedTitle": "이미지 일시 중지",
+    "pausedDesc": "업로드가 곧 돌아옵니다. 텍스트는 그대로 보내집니다.",
+    "roomHostTitle": "호스트에게 STAR 필요",
+    "roomHostDesc": "호스트가 STAR이면 이 방에서 이미지를 쓸 수 있습니다.",
+    "roomHostSelf": "STAR로 내 방에서 이미지를 쓸 수 있습니다.",
+    "roomModsTitle": "호스트와 모더레이터만",
+    "roomModsDesc": "이 방에서는 호스트와 모더레이터가 이미지를 보냅니다.",
+    "roomOffTitle": "이미지 꺼짐",
+    "roomOffDesc": "호스트가 이 방의 이미지를 껐습니다.",
+    "roomOffSelf": "방 설정에서 이미지를 켜세요."
+  },
+  "preview": {
+    "title": "채팅 속 이미지",
+    "album": "최대 10장 앨범",
+    "albumHint": "끌어오기, 붙여넣기 또는 {{key}}",
+    "quota": "내 이미지 1 GB",
+    "quotaHint": "누구나 볼 수 있음",
+    "covers": "방 커버",
+    "coversHint": "내 방만의 커버",
+    "caption": "우리의 밤"
+  },
+  "drop": {
+    "title": "놓아서 추가",
+    "hint": "이미지는 입력창 위 앨범에 들어갑니다",
+    "full": "앨범이 가득 찼습니다",
+    "fullHint": "보내거나 일부를 삭제하세요",
+    "locked": "이미지는 STAR와 함께",
+    "lockedHint": "놓으면 미리 볼 수 있습니다",
+    "closed": "여기서는 이미지를 보낼 수 없습니다",
+    "notImages": "이미지만 가능",
+    "notImagesHint": "PNG, JPEG, WebP 또는 GIF",
+    "elsewhere": "열린 채팅에 이미지를 놓으세요",
+    "notAudio": "이미지는 내 파일에 추가되지 않습니다"
+  },
+  "rows": {
+    "title": "전송",
+    "image": "이미지",
+    "avatar": "그룹 사진",
+    "queued": "대기 중",
+    "done": "완료",
+    "collapse": "접기",
+    "expand": "자세히",
+    "storage": "저장소",
+    "star": "STAR 받기",
+    "allDone": "모두 전송됨",
+    "failedCount_other": "{{count}}개 실패"
+  },
+  "avatar": {
+    "set": "사진 설정",
+    "change": "사진 변경",
+    "clear": "사진 삭제",
+    "uploading": "사진 업로드 중",
+    "failed": "사진 업로드 실패",
+    "title": "그룹 사진"
+  }
+}

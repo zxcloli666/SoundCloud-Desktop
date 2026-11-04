@@ -11,6 +11,7 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
 tauri-build = { version = "2.7.3", features = [] }
+serde_json = "1"
 
 [dependencies]
 tauri = { version = "2.12.4", features = ["macos-private-api", "tray-icon"] }
@@ -63,6 +64,10 @@ uuid = { version = "1", features = ["v4"] }
 rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12"] }
 tokio-rustls = { version = "0.26", default-features = false, features = ["ring", "tls12"] }
 webpki-roots = "1"
+sc-chat = { git = "https://github.com/zxcloli666/SoundCloud-Core", rev = "1d8713e0042cb8e322d618aca2ac73bca67464df" }
+thumbhash = { version = "0.1.0", default-features = false }
+image = { version = "0.25", default-features = false, features = ["png"] }
+keyring = { version = "3", features = ["apple-native", "windows-native", "async-secret-service", "async-io", "crypto-rust"] }
 
 [dev-dependencies]
 tokio = { version = "1", features = ["test-util"] }
@@ -71,6 +76,33 @@ tokio = { version = "1", features = ["test-util"] }
 lto = true
 
 [profile.dev.package.signalsmith-stretch]
+opt-level = 3
+
+[profile.dev.package.image]
+opt-level = 3
+
+[profile.dev.package.image-webp]
+opt-level = 3
+
+[profile.dev.package.zune-jpeg]
+opt-level = 3
+
+[profile.dev.package.png]
+opt-level = 3
+
+[profile.dev.package.fdeflate]
+opt-level = 3
+
+[profile.dev.package.miniz_oxide]
+opt-level = 3
+
+[profile.dev.package.libwebp-sys]
+opt-level = 3
+
+[profile.dev.package.qcms]
+opt-level = 3
+
+[profile.dev.package.thumbhash]
 opt-level = 3
 
 [target.'cfg(windows)'.dependencies]
@@ -85,3 +117,6 @@ objc2-foundation = { version = "0.3", default-features = false, features = ["std
 [target.'cfg(target_os = "linux")'.dependencies]
 ksni = { version = "0.3.5", default-features = false, features = ["tokio"] }
 zbus = { version = "5", default-features = false, features = ["tokio"] }
+
+[features]
+chat-lab = []

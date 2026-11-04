@@ -57,6 +57,10 @@ const Discover = lazy(() =>
 const StarPage = lazy(() =>
   import('./pages/StarPage').then((module) => ({ default: module.StarPage })),
 );
+const Chats = lazy(() => import('./pages/Chats').then((module) => ({ default: module.Chats })));
+const ChatStorage = lazy(() =>
+  import('./pages/ChatStorage').then((module) => ({ default: module.ChatStorage })),
+);
 const RecapPage = lazy(() =>
   import('./pages/RecapPage').then((module) => ({ default: module.RecapPage })),
 );
@@ -366,6 +370,30 @@ export default function App() {
                   element={
                     <RouteLoader>
                       <Settings />
+                    </RouteLoader>
+                  }
+                />
+                <Route
+                  path="chats"
+                  element={
+                    <RouteLoader>
+                      <Chats />
+                    </RouteLoader>
+                  }
+                />
+                <Route
+                  path="chats/storage"
+                  element={
+                    <RouteLoader>
+                      <ChatStorage />
+                    </RouteLoader>
+                  }
+                />
+                <Route
+                  path="chats/:id"
+                  element={
+                    <RouteLoader>
+                      <Chats />
                     </RouteLoader>
                   }
                 />
