@@ -22,14 +22,18 @@ const FIXES: Record<string, BackdropFix> = {
   offline: 'retry',
 };
 
+const LIMIT_PAUSE_MS = 60_000;
+
+function untilOf(chat: ChatError | null, code: string, now: number): number | null {
+  if (chat?.until) return chat.until;
+  if (chat?.retryMs) return now + chat.retryMs;
+  return code === 'request_limit' ? now + LIMIT_PAUSE_MS : null;
+}
+
 export function backdropProblem(error: unknown, now: number): BackdropProblem {
   const chat: ChatError | null = chatError(error);
   const code: string = chat?.code ?? 'generic';
   const fix = FIXES[code] ?? 'retry';
-  const until = chat?.until ?? (chat?.retryMs ? now + chat.retryMs : null);
+  const until = untilOf(chat, code, now);
   return { code, key: `chat.backdrop.errors.${code in FIXES ? code : 'generic'}`, fix, until };
-}
-
-export function isCooldown(problem: BackdropProblem | null): boolean {
-  return problem?.code === 'backdrop_cooldown';
 }

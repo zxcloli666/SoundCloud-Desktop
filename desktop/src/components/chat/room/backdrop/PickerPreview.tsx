@@ -1,9 +1,9 @@
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Music, Upload, Users } from '../../../../lib/icons';
+import { usePerfMode } from '../../../../lib/perf';
 import type { BackdropPreset } from '../presets/types';
 import { BackdropStage } from './BackdropStage';
-import { UNKNOWN_LIGHT } from './scrim';
 
 export type Focus =
   | { kind: 'preset'; preset: BackdropPreset }
@@ -11,17 +11,18 @@ export type Focus =
   | { kind: 'photo'; src: string | null };
 
 function Cover({ cover }: { cover: string | null }) {
+  const blur = usePerfMode().blur(30);
   return (
     <div
       aria-hidden
       className="pointer-events-none absolute inset-0 -z-10 overflow-hidden bg-chat-cutout"
     >
-      {cover && (
+      {cover && blur > 0 && (
         <img
           src={cover}
           alt=""
           className="absolute -inset-8 h-[calc(100%+4rem)] w-[calc(100%+4rem)] max-w-none object-cover opacity-50"
-          style={{ filter: 'blur(30px) saturate(1.5)' }}
+          style={{ filter: `blur(${blur}px) saturate(1.5)` }}
         />
       )}
       <div
@@ -40,7 +41,7 @@ function Ground({ focus, cover }: { focus: Focus; cover: string | null }) {
     );
   }
   if (focus.kind === 'photo' && focus.src) {
-    return <BackdropStage key={focus.src} src={focus.src} light={UNKNOWN_LIGHT} motion={null} />;
+    return <BackdropStage key={focus.src} src={focus.src} motion={null} />;
   }
   if (focus.kind === 'photo') {
     return (

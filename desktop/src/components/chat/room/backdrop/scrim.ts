@@ -36,17 +36,20 @@ function mix(top: number, bottom: number, alpha: number) {
   return alpha * top + (1 - alpha) * bottom;
 }
 
-function readToken(name: string): string {
-  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+export interface SchemeTokens {
+  scheme: Scheme;
+  ink: string;
+  paper: string;
+  lift: string;
 }
 
-function readChannels(name: string, fallback: number[]): number[] {
-  const parts = readToken(name).split(/\s+/).map(Number);
+function channels(raw: string, fallback: number[]): number[] {
+  const parts = raw.trim().split(/\s+/).map(Number);
   return parts.length === 3 && parts.every(Number.isFinite) ? parts : fallback;
 }
 
-function readLift(fallback: number): number {
-  const value = Number.parseFloat(readToken('--ink-lift'));
+function liftOf(raw: string, fallback: number): number {
+  const value = Number.parseFloat(raw);
   return Number.isFinite(value) ? value : fallback;
 }
 
@@ -54,11 +57,11 @@ function textContrast(inkCode: number, groundCode: number, alpha: number) {
   return contrast(decode(mix(inkCode, groundCode, alpha)), decode(groundCode));
 }
 
-export function scrimAlpha(light: Luminance, scheme: Scheme, tone = ROOM_TEXT_TONE): number {
-  const fallback = FALLBACK[scheme];
-  const inkLight = channelLight(readChannels('--ink', fallback.ink));
-  const paperLight = channelLight(readChannels('--paper', fallback.paper));
-  const textAlpha = tone * (1 + readLift(fallback.lift) * (1 - tone));
+export function scrimAlpha(light: Luminance, tokens: SchemeTokens, tone = ROOM_TEXT_TONE): number {
+  const fallback = FALLBACK[tokens.scheme];
+  const inkLight = channelLight(channels(tokens.ink, fallback.ink));
+  const paperLight = channelLight(channels(tokens.paper, fallback.paper));
+  const textAlpha = tone * (1 + liftOf(tokens.lift, fallback.lift) * (1 - tone));
   const worst = inkLight > paperLight ? light.high : light.low;
   const inkCode = encode(inkLight);
   const paperCode = encode(paperLight);

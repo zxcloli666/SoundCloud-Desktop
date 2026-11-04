@@ -13,11 +13,17 @@ function latest(uploads: UploadView[], conversationId: ConvId | null): UploadVie
   return found;
 }
 
-export function useBackdropUpload(conversationId: ConvId | null): {
+export interface BackdropUpload {
   upload: UploadView | null;
   error: ChatError | null;
-} {
+}
+
+export function useBackdropUpload(conversationId: ConvId | null): BackdropUpload {
   const upload = useChatMediaStore((state) => latest(state.uploads, conversationId));
-  const error = useBackdropStore((state) => (upload ? (state.failures[upload.id] ?? null) : null));
-  return { upload, error };
+  const attempt = useBackdropStore((state) =>
+    conversationId ? (state.attempts[conversationId] ?? null) : null,
+  );
+  const orphan = useBackdropStore((state) => (upload ? (state.orphans[upload.id] ?? null) : null));
+  const own = attempt && (!upload || attempt.id === upload.id);
+  return { upload, error: own ? attempt.error : orphan };
 }

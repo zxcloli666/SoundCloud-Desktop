@@ -76,11 +76,13 @@ function Body({ state }: { state: PhotoState }) {
 export const PhotoTile = memo(function PhotoTile({
   state,
   current,
+  waiting,
   onPick,
   onFocus,
 }: {
   state: PhotoState;
   current: boolean;
+  waiting: boolean;
   onPick: () => void;
   onFocus: () => void;
 }) {
@@ -94,7 +96,7 @@ export const PhotoTile = memo(function PhotoTile({
       label={label}
       current={current}
       pending={false}
-      disabled={state.kind === 'cooldown' || state.kind === 'uploading'}
+      disabled={waiting || state.kind === 'cooldown' || state.kind === 'uploading'}
       onPick={onPick}
       onFocus={onFocus}
     >
