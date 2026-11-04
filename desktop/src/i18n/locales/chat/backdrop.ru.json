@@ -1,1 +1,59 @@
-{}
+{
+  "title": "Фон комнаты",
+  "none": "Без фона",
+  "photo": "Своё фото",
+  "photoIn": "Фото через {{time}}",
+  "percent": "{{percent}}%",
+  "retry": "Повторить",
+  "pickAgain": "Другое фото",
+  "storage": "Хранилище",
+  "images": "Картинки",
+  "linking": "Подключаем чат комнаты",
+  "done": "Готово",
+  "cancel": "Отмена",
+  "hide": "Скрыть фон",
+  "show": "Показать фон",
+  "chip": "Фон {{percent}}%",
+  "chipFailed": "Фон не загрузился",
+  "star": {
+    "title": "Фоны комнаты со STAR",
+    "body": "Живые фоны и своё фото для всех в комнате"
+  },
+  "report": {
+    "entry": "Пожаловаться на фон",
+    "title": "Жалоба на фон",
+    "comment": "Комментарий, если нужно",
+    "send": "Отправить",
+    "sent": "Жалоба отправлена",
+    "changed": "Фон уже сменили",
+    "failed": "Не отправилось"
+  },
+  "errors": {
+    "room_star_required": "Фоны доступны со STAR",
+    "media_star_required": "Фото доступны со STAR",
+    "invalid": "Этот фон недоступен",
+    "media_missing": "Фото пропало, загрузите снова",
+    "backdrop_cooldown": "Своё фото снова через {{time}}",
+    "request_limit": "Слишком часто, подождите",
+    "quota_exceeded": "Хранилище заполнено",
+    "media_uploads_paused": "Загрузки на паузе",
+    "offline": "Нет сети",
+    "generic": "Не получилось"
+  },
+  "presets": {
+    "aurora": "Сияние",
+    "vinyl": "Винил",
+    "sunset-clouds": "Закат",
+    "ocean-rays": "Глубина",
+    "dunes": "Дюны",
+    "misty-forest": "Туманный лес",
+    "snow-lamp": "Снег",
+    "satin": "Атлас",
+    "paper": "Бумага",
+    "peach-clouds": "Персик",
+    "pastel-lake": "Озеро",
+    "watercolor": "Акварель",
+    "candy-sky": "Карамель"
+  },
+  "dismiss": "Убрать"
+}
