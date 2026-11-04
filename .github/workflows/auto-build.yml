@@ -129,9 +129,10 @@ jobs:
 
       - name: Install dependencies (ubuntu only)
         if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf xdg-utils libasound2-dev protobuf-compiler cmake clang libclang-dev pkg-config
+        uses: ./.github/actions/apt-packages
+        with:
+          packages: libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf xdg-utils libasound2-dev protobuf-compiler cmake clang libclang-dev pkg-config
+          save: ${{ github.event_name == 'push' }}
 
       - name: Install dependencies (macos only)
         if: runner.os == 'macOS'

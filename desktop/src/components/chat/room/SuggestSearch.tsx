@@ -47,7 +47,7 @@ export function SuggestSearch({ onPick }: { onPick: (track: Track) => void }) {
           value={text}
           onChange={(event) => setText(event.target.value)}
           placeholder={t('chat.room.suggest.search')}
-          className="min-w-0 flex-1 bg-transparent text-[13px] text-white outline-none placeholder:text-ink-35"
+          className="min-w-0 flex-1 bg-transparent text-[13px] text-ink outline-none placeholder:text-ink-35"
         />
         {ready && results.isFetching && <Loader2 size={13} className="shrink-0 animate-spin" />}
       </label>

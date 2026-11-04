@@ -80,7 +80,7 @@ function ReportBody({ target, onClose }: { target: ReportTarget; onClose: () => 
           onChange={(event) => setComment(event.target.value)}
           placeholder={t('chat.list.report.comment')}
           rows={2}
-          className="w-full resize-none rounded-2xl border border-ink/[0.07] bg-black/20 px-3.5 py-2.5 text-[13px] text-ink-85 outline-none placeholder:text-ink-30 focus:border-ink/[0.16]"
+          className="w-full resize-none rounded-2xl border border-ink/[0.07] bg-shade-20 px-3.5 py-2.5 text-[13px] text-ink-85 outline-none placeholder:text-ink-30 focus:border-ink/[0.16]"
         />
         {target.userId && (
           <div className="flex items-center justify-between gap-3 rounded-2xl bg-ink/[0.03] px-3.5 py-2.5">

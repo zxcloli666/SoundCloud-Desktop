@@ -27,7 +27,7 @@ export const ReportReasons = memo(function ReportReasons({ value, onChange }: Re
               id === 'other' ? 'col-span-2' : ''
             } ${
               active
-                ? 'border-rose-400/45 bg-rose-500/15 text-white'
+                ? 'border-rose-400/45 bg-rose-500/15 text-ink'
                 : 'border-ink/[0.06] bg-ink/[0.03] text-ink-65 hover:bg-ink/[0.06]'
             }`}
           >

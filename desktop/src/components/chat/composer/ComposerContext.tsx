@@ -35,15 +35,13 @@ export const ComposerContext = memo(function ComposerContext({
         <span className="block truncate text-[11.5px] font-semibold" style={{ color }}>
           {mode === 'edit' ? t('chat.thread.composer.editing') : nameOf(message.sender)}
         </span>
-        <span className="block truncate text-[12px] text-ink-55">
-          {messageSnippet(message, t)}
-        </span>
+        <span className="block truncate text-[12px] text-ink-55">{messageSnippet(message, t)}</span>
       </button>
       <button
         type="button"
         aria-label={t('chat.thread.composer.cancel')}
         onClick={onCancel}
-        className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full text-ink-45 transition-colors duration-150 hover:bg-ink/[0.08] hover:text-white"
+        className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full text-ink-45 transition-colors duration-150 hover:bg-ink/[0.08] hover:text-ink"
       >
         <X size={15} />
       </button>

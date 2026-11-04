@@ -77,7 +77,7 @@ export const PinnedBar = memo(function PinnedBar() {
           type="button"
           aria-label={t('chat.thread.actions.unpin')}
           onClick={unpin}
-          className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full text-ink-40 transition-colors duration-150 hover:bg-ink/[0.08] hover:text-white"
+          className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full text-ink-40 transition-colors duration-150 hover:bg-ink/[0.08] hover:text-ink"
         >
           <X size={14} />
         </button>

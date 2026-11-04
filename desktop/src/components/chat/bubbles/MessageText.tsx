@@ -52,7 +52,7 @@ const MentionText = memo(function MentionText({
         openUser(userId);
       }}
       className={`inline cursor-pointer rounded-[5px] font-semibold transition-colors duration-150 ${
-        self ? 'px-0.5 text-white' : 'text-[var(--color-accent-hover)] hover:underline'
+        self ? 'px-0.5 text-ink' : 'text-[var(--color-accent-hover)] hover:underline'
       }`}
       style={self ? { background: 'var(--color-accent-glow)' } : undefined}
     >
@@ -119,12 +119,12 @@ function SegmentView({ segment, links }: { segment: Segment; links: boolean }) {
   let node: ReactNode = plain ? segment.text : autoLinks(segment.text);
   if (segment.code) {
     node = (
-      <code className="rounded-[5px] bg-black/30 px-[3px] py-px font-mono text-[0.9em] text-ink-90 ring-1 ring-ink/[0.08] ring-inset">
+      <code className="rounded-[5px] bg-shade-30 px-[3px] py-px font-mono text-[0.9em] text-ink-90 ring-1 ring-ink/[0.08] ring-inset">
         {node}
       </code>
     );
   }
-  if (segment.bold) node = <strong className="font-semibold text-white">{node}</strong>;
+  if (segment.bold) node = <strong className="font-semibold text-ink">{node}</strong>;
   if (segment.italic) node = <em>{node}</em>;
   if (segment.link && links) node = <LinkText url={segment.link}>{node}</LinkText>;
   else if (segment.mention) node = <MentionText userId={segment.mention}>{node}</MentionText>;

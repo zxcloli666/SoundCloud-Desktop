@@ -63,7 +63,7 @@ function NewChatBody({ onDone }: { onDone: () => void }) {
     <div className="flex min-h-0 flex-col">
       <div className="flex flex-col gap-3 px-6 pt-6 pb-3">
         <ModalTitle>{t('chat.list.new.title')}</ModalTitle>
-        <label className="flex h-10 items-center gap-2.5 rounded-2xl border border-ink/[0.07] bg-black/20 px-3.5 focus-within:border-ink/[0.16]">
+        <label className="flex h-10 items-center gap-2.5 rounded-2xl border border-ink/[0.07] bg-shade-20 px-3.5 focus-within:border-ink/[0.16]">
           <Search size={15} className="shrink-0 text-ink-35" />
           <input
             autoFocus
@@ -80,7 +80,7 @@ function NewChatBody({ onDone }: { onDone: () => void }) {
             maxLength={TITLE_MAX}
             onChange={(event) => setTitle(event.target.value)}
             placeholder={t('chat.list.new.groupName')}
-            className="h-10 rounded-2xl border border-ink/[0.07] bg-black/20 px-3.5 text-[13.5px] text-ink-90 outline-none placeholder:text-ink-30 focus:border-ink/[0.16]"
+            className="h-10 rounded-2xl border border-ink/[0.07] bg-shade-20 px-3.5 text-[13.5px] text-ink-90 outline-none placeholder:text-ink-30 focus:border-ink/[0.16]"
           />
         )}
       </div>
@@ -102,9 +102,7 @@ function NewChatBody({ onDone }: { onDone: () => void }) {
             >
               <Bookmark size={16} strokeWidth={2.2} />
             </span>
-            <span className="text-[13.5px] font-semibold text-ink-85">
-              {t('chat.list.saved')}
-            </span>
+            <span className="text-[13.5px] font-semibold text-ink-85">{t('chat.list.saved')}</span>
           </button>
         )}
         <PeoplePicker

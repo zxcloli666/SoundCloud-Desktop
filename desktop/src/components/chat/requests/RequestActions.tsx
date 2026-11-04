@@ -56,7 +56,7 @@ export const RequestActions = memo(function RequestActions({
         title={t('chat.list.requests.decline')}
         aria-label={t('chat.list.requests.decline')}
         onClick={stop(() => void actions.decline(conversation))}
-        className={`${ROUND} size-8 border border-ink/[0.08] bg-ink/[0.05] text-ink-60 hover:bg-ink/[0.1] hover:text-white`}
+        className={`${ROUND} size-8 border border-ink/[0.08] bg-ink/[0.05] text-ink-60 hover:bg-ink/[0.1] hover:text-ink`}
       >
         <X size={14} />
       </button>

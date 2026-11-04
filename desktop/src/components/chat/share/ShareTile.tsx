@@ -74,7 +74,7 @@ export const ShareTile = memo(function ShareTile({
       </span>
       <span
         className={`line-clamp-2 w-full text-center text-[11.5px] leading-tight ${
-          selected ? 'text-white' : 'text-ink-65'
+          selected ? 'text-ink' : 'text-ink-65'
         }`}
       >
         {title}

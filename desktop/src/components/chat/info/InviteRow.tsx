@@ -26,7 +26,7 @@ function IconButton({
       title={label}
       aria-label={label}
       onClick={onClick}
-      className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full text-ink-50 transition-colors duration-150 hover:bg-ink/[0.08] hover:text-white"
+      className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full text-ink-50 transition-colors duration-150 hover:bg-ink/[0.08] hover:text-ink"
     >
       {children}
     </button>

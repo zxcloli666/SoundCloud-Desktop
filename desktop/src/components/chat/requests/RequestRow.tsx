@@ -40,7 +40,7 @@ export const RequestRow = memo(function RequestRow({ request, selected, onOpen }
         </div>
       </div>
       {preview && (
-        <p className="line-clamp-2 rounded-xl bg-black/15 px-3 py-2 text-[12.5px] leading-snug break-words text-ink-60">
+        <p className="line-clamp-2 rounded-xl bg-shade-15 px-3 py-2 text-[12.5px] leading-snug break-words text-ink-60">
           {preview}
         </p>
       )}
