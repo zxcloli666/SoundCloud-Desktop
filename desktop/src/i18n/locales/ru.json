@@ -2829,5 +2829,17 @@
     "notifyBody_many": "{{count}} новых релизов: {{artists}}",
     "notifyBody_other": "{{count}} новых релиза: {{artists}}",
     "open": "Открыть"
+  },
+  "ago": {
+    "now": "сейчас",
+    "m": "{{count}} мин",
+    "h": "{{count}} ч",
+    "d": "{{count}} дн.",
+    "w": "{{count}} нед.",
+    "mo": "{{count}} мес.",
+    "y_one": "{{count}} г.",
+    "y_few": "{{count}} г.",
+    "y_many": "{{count}} л.",
+    "y_other": "{{count}} г."
   }
 }

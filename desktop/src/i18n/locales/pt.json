@@ -2841,5 +2841,16 @@
       "ymConnected": "Yandex Music conectado",
       "disconnectYm": "Desconectar"
     }
+  },
+  "ago": {
+    "now": "agora",
+    "m": "{{count}} min",
+    "h": "{{count}} h",
+    "d": "{{count}} d",
+    "w": "{{count}} sem.",
+    "mo_one": "{{count}} mês",
+    "mo_other": "{{count}} meses",
+    "y_one": "{{count}} ano",
+    "y_other": "{{count}} anos"
   }
 }

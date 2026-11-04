@@ -2772,5 +2772,14 @@
       "ymConnected": "Yandex Music bağlı",
       "disconnectYm": "Bağlantıyı kes"
     }
+  },
+  "ago": {
+    "now": "şimdi",
+    "m": "{{count}} dk",
+    "h": "{{count}} sa",
+    "d": "{{count}} g",
+    "w": "{{count}} hf",
+    "mo": "{{count}} ay",
+    "y": "{{count}} yıl"
   }
 }

@@ -2740,5 +2740,14 @@
     "notifyBody_one": "{{count}} new release: {{artists}}",
     "notifyBody_other": "{{count}} new releases: {{artists}}",
     "open": "Open"
+  },
+  "ago": {
+    "now": "now",
+    "m": "{{count}}m",
+    "h": "{{count}}h",
+    "d": "{{count}}d",
+    "w": "{{count}}w",
+    "mo": "{{count}}mo",
+    "y": "{{count}}y"
   }
 }

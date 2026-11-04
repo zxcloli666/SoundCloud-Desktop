@@ -2686,5 +2686,14 @@
       "ymConnected": "Yandex Music 연결됨",
       "disconnectYm": "연결 해제"
     }
+  },
+  "ago": {
+    "now": "방금",
+    "m": "{{count}}분",
+    "h": "{{count}}시간",
+    "d": "{{count}}일",
+    "w": "{{count}}주",
+    "mo": "{{count}}개월",
+    "y": "{{count}}년"
   }
 }
