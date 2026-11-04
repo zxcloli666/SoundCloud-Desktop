@@ -62,9 +62,7 @@ export const BackdropPicker = memo(function BackdropPicker({
   const [problem, setProblem] = useState<BackdropProblem | null>(null);
   const retry = useRef<() => void>(() => {});
 
-  const starLost =
-    problem?.fix === 'star' || (error !== null && backdropProblem(error, 0).fix === 'star');
-  const locked = room.perks?.starHost !== true || starLost;
+  const locked = room.perks?.starHost !== true || problem?.fix === 'star';
   const linking = !conversationId;
   const photo = photoState(upload, error, imageSrc, cooldownMs, Date.now());
   const uploadProblem = photo.kind === 'failed' ? backdropProblem(error, serverTime()) : null;
@@ -99,10 +97,10 @@ export const BackdropPicker = memo(function BackdropPicker({
   const pickPhoto = useCallback(async () => {
     if (locked || !conversationId) return;
     retry.current = () => void pickPhoto();
-    const path = await pickBackdropPath(t('chat.backdrop.images'));
-    if (!path) return;
     setProblem(null);
     try {
+      const path = await pickBackdropPath(t('chat.backdrop.images'));
+      if (!path) return;
       const view = await uploadBackdrop(room.code, conversationId, path);
       useChatMediaStore.getState().applyUploads({ uploads: [view], removed: [] });
     } catch (failure) {

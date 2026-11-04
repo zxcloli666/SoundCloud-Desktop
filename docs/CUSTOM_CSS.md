@@ -126,6 +126,7 @@ States are in attributes too: `aria-current="page"` on the open link or section,
 | `[data-ui="chat-info"]` | Chat info panel |
 | `[data-ui="chat-requests"]` | Message requests: the list and the bar in a chat |
 | `[data-ui="chat-room"]` | Listening room tab |
+| `[data-ui="chat-room-stage"]` | Room area under the header that holds the room backdrop. Set `--room-accent` on it to tint the backdrop |
 | `[data-ui="chat-toast"]` | New message popup |
 | `[data-ui="chat-share"]` | "Send" window |
 | `[data-ui="chat-device-alert"]` | New device alert |

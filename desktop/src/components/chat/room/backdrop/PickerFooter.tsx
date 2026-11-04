@@ -58,6 +58,7 @@ function Problem({
           {clock(left)}
         </span>
       )}
+      {problem.fix === 'star' && <StarCta size="sm" />}
       {action && (
         <button
           type="button"

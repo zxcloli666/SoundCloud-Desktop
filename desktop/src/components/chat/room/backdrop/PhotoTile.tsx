@@ -107,6 +107,7 @@ export const PhotoTile = memo(function PhotoTile({
           className="absolute inset-0 h-full w-full object-cover opacity-55"
         />
       )}
+      {state.kind === 'current' && <span className="absolute inset-0 bg-shade-30" />}
       <span className="absolute inset-0 flex flex-col items-center justify-center gap-1">
         <Body state={state} />
       </span>
