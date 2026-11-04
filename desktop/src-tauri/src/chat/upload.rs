@@ -24,10 +24,10 @@ use uuid::Uuid;
 use super::state::ChatState;
 use attach::Source;
 
-pub use album::parked;
 pub use engine::Uploads;
 pub use files::DIR as UPLOADS_DIR;
 pub use host::RuntimeHost;
+pub use post::pending_post as parked;
 
 pub fn start(state: &ChatState) {
     host::watch(&state.app, &state.uploads);

@@ -9,6 +9,7 @@ use uuid::Uuid;
 
 use super::engine::Uploads;
 use super::errors::{Outcome, Snag, backoff, outcome};
+use super::post::finish_renewals;
 use super::schedule::{Rows, queued};
 
 const IDLE_RECHECK: Duration = Duration::from_secs(30);
@@ -145,7 +146,11 @@ impl Uploads {
     }
 
     async fn recover(&self) {
-        let Ok(uploads) = self.blocking(|store| store.uploads()).await else {
+        let found = self.blocking(|store| {
+            finish_renewals(store)?;
+            store.uploads()
+        });
+        let Ok(uploads) = found.await else {
             return;
         };
         let keep: HashSet<String> = uploads.iter().flat_map(file_names).collect();

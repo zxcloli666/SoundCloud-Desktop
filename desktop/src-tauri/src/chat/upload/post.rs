@@ -4,7 +4,7 @@ use sc_chat::envelope::{self, Content, Post};
 use sc_chat::outbox::{Outbox, OutboxItem};
 use sc_chat::sc_chat_wire::prost::Message as _;
 use sc_chat::sc_chat_wire::proto::Attachment;
-use sc_chat::store::{MediaUpload, Store};
+use sc_chat::store::{MediaUpload, NewUpload, Store};
 use sc_chat::{
     ChatError, ChatResult, ConvId, DeliveryState, MediaKind, Message, MessageBody, MessageClass,
     Millis, UploadState,
@@ -116,7 +116,8 @@ fn renew_in(
 ) -> ChatResult<Released> {
     let mut gone = Vec::new();
     for upload in uploads.iter().filter(|upload| lapsed(upload, now)) {
-        store.upload_renew(upload.id, now)?;
+        store.enqueue_upload(&again(upload), now)?;
+        store.remove_upload(upload.id)?;
         gone.extend(upload.media_id);
     }
     let renewed = store.album_uploads(album)?;
@@ -129,6 +130,21 @@ fn renew_in(
         now,
     )?;
     Ok(Released::Renewed(gone))
+}
+
+pub fn finish_renewals(store: &Arc<Store>) -> ChatResult<()> {
+    let uploads = store.uploads()?;
+    for upload in &uploads {
+        let renewed = uploads.iter().any(|other| {
+            other.album == upload.album
+                && other.image_ref == upload.image_ref
+                && other.created_at > upload.created_at
+        });
+        if renewed {
+            store.remove_upload(upload.id)?;
+        }
+    }
+    Ok(())
 }
 
 pub fn push(
@@ -175,6 +191,18 @@ pub fn pending_post(
         .pending(conversation_id)?
         .into_iter()
         .find(|message| message.client_id == album))
+}
+
+fn again(upload: &MediaUpload) -> NewUpload {
+    NewUpload {
+        album: upload.album,
+        position: upload.position,
+        conversation_id: upload.conversation_id,
+        kind: upload.kind,
+        image_ref: upload.image_ref.clone(),
+        thumb_ref: upload.thumb_ref.clone(),
+        attachment: upload.attachment.clone(),
+    }
 }
 
 fn lapsed(upload: &MediaUpload, now: Millis) -> bool {

@@ -1,6 +1,7 @@
 use std::time::Duration;
 
 use sc_chat::media::post_media;
+use sc_chat::store::NewUpload;
 use sc_chat::{ConversationKind, DeliveryState, UploadState};
 use uuid::Uuid;
 
@@ -92,4 +93,35 @@ async fn a_restart_between_commit_and_send_keeps_the_files_until_the_server_take
     })
     .await;
     assert!(rig.world.with(|state| state.deleted.is_empty()));
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn a_crash_in_the_middle_of_a_renewal_ends_with_one_row_per_image() {
+    let mut rig = Rig::new(ConversationKind::Group);
+    rig.relays();
+    let (album, first) = released(&mut rig, 1).await;
+    rig.refuse_send(album);
+    rig.stop();
+    let old = rig.uploads().remove(0);
+    rig.advance(HOUR_AND_MORE);
+    let again = NewUpload {
+        album,
+        position: old.position,
+        conversation_id: old.conversation_id,
+        kind: old.kind,
+        image_ref: old.image_ref.clone(),
+        thumb_ref: old.thumb_ref.clone(),
+        attachment: old.attachment.clone(),
+    };
+    rig.store()
+        .enqueue_upload(&again, rig.host.now_ms())
+        .unwrap();
+    let mut rig = rig.restart();
+    rig.run();
+    rig.until("one row per image and the post out again", |rig| {
+        rig.uploads().len() == 1 && sent_images(rig, album).is_some_and(|images| images != first)
+    })
+    .await;
+    assert!(rig.uploads().iter().all(|upload| upload.id != old.id));
+    assert_eq!(rig.upload_files().len(), 2);
 }
