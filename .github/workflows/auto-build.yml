@@ -181,9 +181,8 @@ jobs:
         if: matrix.job_name == 'macos-amd64'
         run: |
           cat >> "$GITHUB_ENV" <<EOF
-          CFLAGS=-arch x86_64
-          CXXFLAGS=-arch x86_64
-          LDFLAGS=-arch x86_64
+          CFLAGS_x86_64_apple_darwin=-arch x86_64
+          CXXFLAGS_x86_64_apple_darwin=-arch x86_64
           CC_x86_64_apple_darwin=clang
           CXX_x86_64_apple_darwin=clang++
           CARGO_TARGET_X86_64_APPLE_DARWIN_LINKER=clang
