@@ -67,8 +67,7 @@ export const BackdropPicker = memo(function BackdropPicker({
   const locked = room.perks?.starHost !== true || starLost;
   const linking = !conversationId;
   const photo = photoState(upload, error, imageSrc, cooldownMs, Date.now());
-  const uploadProblem =
-    photo.kind === 'failed' && error ? backdropProblem(error, serverTime()) : null;
+  const uploadProblem = photo.kind === 'failed' ? backdropProblem(error, serverTime()) : null;
   const shownProblem = problem ?? uploadProblem;
 
   useEffect(() => {
@@ -121,6 +120,15 @@ export const BackdropPicker = memo(function BackdropPicker({
     }
     await pickPhoto();
   }, [upload, forget, pickPhoto]);
+
+  const dismissUpload = useCallback(async () => {
+    if (!upload) return;
+    forget(upload.id);
+    await useChatMediaStore
+      .getState()
+      .cancelUpload(upload.id)
+      .catch((failure) => setProblem(backdropProblem(failure, serverTime())));
+  }, [upload, forget]);
 
   const onPhoto = useCallback(() => {
     setFocus({ kind: 'photo', src: imageSrc });
@@ -200,6 +208,7 @@ export const BackdropPicker = memo(function BackdropPicker({
           onClose();
           navigate('/chats/storage');
         }}
+        onDismiss={uploadProblem && !problem ? () => void dismissUpload() : null}
         onStar={onClose}
       />
     </div>

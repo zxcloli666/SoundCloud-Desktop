@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Loader2, Sparkles, TriangleAlert } from '../../../../lib/icons';
+import { Loader2, Sparkles, TriangleAlert, X } from '../../../../lib/icons';
 import { StarCta } from '../../../star-moments/StarCta';
 import { clock, useLeftMs } from './countdown';
 import type { BackdropProblem } from './errors';
@@ -26,11 +26,13 @@ function Problem({
   onRetry,
   onPhoto,
   onStorage,
+  onDismiss,
 }: {
   problem: BackdropProblem;
   onRetry: () => void;
   onPhoto: () => void;
   onStorage: () => void;
+  onDismiss: (() => void) | null;
 }) {
   const { t } = useTranslation();
   const left = useLeftMs(problem.fix === 'wait' ? problem.until : null);
@@ -65,6 +67,17 @@ function Problem({
           {action.label}
         </button>
       )}
+      {onDismiss && (
+        <button
+          type="button"
+          aria-label={t('chat.backdrop.dismiss')}
+          title={t('chat.backdrop.dismiss')}
+          onClick={onDismiss}
+          className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full text-ink-45 transition-colors hover:bg-ink/[0.08] hover:text-ink-85"
+        >
+          <X size={13} />
+        </button>
+      )}
     </div>
   );
 }
@@ -76,6 +89,7 @@ export const PickerFooter = memo(function PickerFooter({
   onRetry,
   onPhoto,
   onStorage,
+  onDismiss,
   onStar,
 }: {
   locked: boolean;
@@ -84,12 +98,21 @@ export const PickerFooter = memo(function PickerFooter({
   onRetry: () => void;
   onPhoto: () => void;
   onStorage: () => void;
+  onDismiss: (() => void) | null;
   onStar: () => void;
 }) {
   const { t } = useTranslation();
   if (locked) return <Locked onStar={onStar} />;
   if (problem)
-    return <Problem problem={problem} onRetry={onRetry} onPhoto={onPhoto} onStorage={onStorage} />;
+    return (
+      <Problem
+        problem={problem}
+        onRetry={onRetry}
+        onPhoto={onPhoto}
+        onStorage={onStorage}
+        onDismiss={onDismiss}
+      />
+    );
   if (linking) {
     return (
       <div className="flex items-center gap-2 px-1 text-[12px] text-ink-50">
