@@ -21,4 +21,7 @@ pub mod webview_data;
 #[cfg(windows)]
 pub mod webview2;
 
+#[cfg(not(feature = "chat-lab"))]
 pub const APP_IDENTIFIER: &str = "com.soundcloud.desktop";
+#[cfg(feature = "chat-lab")]
+pub const APP_IDENTIFIER: &str = "com.soundcloud.desktop.lab";

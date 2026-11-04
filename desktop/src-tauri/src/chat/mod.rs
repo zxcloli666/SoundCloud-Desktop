@@ -1,3 +1,5 @@
+#![cfg_attr(feature = "chat-lab", allow(dead_code))]
+
 pub mod backdrop;
 pub mod badge;
 pub mod commands;
@@ -34,6 +36,11 @@ pub fn start(app: &AppHandle, rt: tokio::runtime::Handle, data_dir: &Path) {
 
 #[cfg(feature = "chat-lab")]
 pub fn start(app: &AppHandle, rt: tokio::runtime::Handle, _data_dir: &Path) {
+    assert_eq!(
+        app.config().identifier,
+        crate::app::APP_IDENTIFIER,
+        "the chat lab runs only under its own app identifier"
+    );
     let dir = std::env::temp_dir().join("soundcloud-chat-lab");
     app.manage(state::ChatState::new(app.clone(), rt, dir));
 }

@@ -16,7 +16,7 @@ usage:
                                                   switch scene, wait, capture
   chat-window-shot.sh clean                       remove the remote file
 
-the app must run as: VITE_CHAT_LAB=1 pnpm tauri dev
+the app must run as: VITE_CHAT_LAB=1 pnpm tauri dev --features chat-lab
 env: CHAT_SHOT_OWNER (default soundcloud-desktop), CHAT_SHOT_WAIT (seconds after a switch, default 5)
 USAGE
 }

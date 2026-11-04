@@ -7,7 +7,6 @@ import type { OpenRoom, RoomPerks, RoomView } from '../../../../lib/together/typ
 import { useAuthStore } from '../../../../stores/auth';
 import { useTogetherStore } from '../../../../stores/together';
 import { CONV } from '../convs';
-import { isHybrid } from '../ipc';
 import { ME_ID, person } from '../people';
 import { sleep, waitUntil } from '../steps';
 import type { LabKit, LabScene } from '../types';
@@ -48,7 +47,6 @@ function hostRoom(kit: LabKit, perks: RoomPerks, patch: Partial<RoomView> = {}) 
 const LAB_USER_URN = 'soundcloud:users:7001';
 
 function seedArtwork(count = 8) {
-  if (isHybrid()) return;
   const urn = useAuthStore.getState().user?.urn ?? LAB_USER_URN;
   const page = <T,>(collection: T[]) => ({
     pages: [{ collection, has_more: false, page: 0 }],

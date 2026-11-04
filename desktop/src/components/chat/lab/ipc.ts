@@ -15,10 +15,10 @@ function internals(): Internals {
   return (window as unknown as { __TAURI_INTERNALS__: Internals }).__TAURI_INTERNALS__;
 }
 
-let hybrid = false;
+let appWindow = false;
 
-export function isHybrid(): boolean {
-  return hybrid;
+export function inAppWindow(): boolean {
+  return appWindow;
 }
 
 function eventCommand(cmd: string, args: Args): { answer: unknown } | null {
@@ -44,7 +44,11 @@ function chatArgs(args: InvokeArgs | undefined, options: unknown): Args {
   };
 }
 
-async function labCommand(cmd: string, args: unknown, options: unknown) {
+async function labCommand(
+  cmd: string,
+  args: unknown,
+  options: unknown,
+): Promise<{ answer: unknown } | null> {
   const event = eventCommand(cmd, (args ?? {}) as Args);
   if (event) return event;
   if (!cmd.startsWith('chat_')) return null;
@@ -54,9 +58,14 @@ async function labCommand(cmd: string, args: unknown, options: unknown) {
 export function installChatLabIpc() {
   initWorld();
   installLabPictures();
-  hybrid = '__TAURI_INTERNALS__' in window;
-  if (hybrid) {
-    routeIpcFetch(labCommand);
+  appWindow = '__TAURI_INTERNALS__' in window;
+  if (appWindow) {
+    routeIpcFetch(
+      async (cmd, args, options) =>
+        (await labCommand(cmd, args, options)) ?? {
+          answer: plainCommand(cmd, args as Args | undefined),
+        },
+    );
     return;
   }
   mockWindows('main');

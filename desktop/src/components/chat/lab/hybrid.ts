@@ -22,6 +22,11 @@ function argsOf(body: BodyInit | null | undefined, headers: Headers): unknown {
 }
 
 function reply(ok: boolean, value: unknown): Response {
+  if (ok && (value instanceof ArrayBuffer || ArrayBuffer.isView(value))) {
+    return new Response(value as BodyInit, {
+      headers: { 'Content-Type': 'application/octet-stream', 'Tauri-Response': 'ok' },
+    });
+  }
   const body = value instanceof Error ? value.message : value;
   return new Response(JSON.stringify(body ?? null), {
     headers: { 'Content-Type': 'application/json', 'Tauri-Response': ok ? 'ok' : 'error' },
