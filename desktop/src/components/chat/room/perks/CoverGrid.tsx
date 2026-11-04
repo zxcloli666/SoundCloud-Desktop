@@ -97,7 +97,7 @@ export const CoverGrid = memo(function CoverGrid({
             {on && (
               <span
                 data-scheme="dark"
-                className="absolute inset-0 flex items-center justify-center bg-black/30"
+                className="absolute inset-0 flex items-center justify-center bg-shade-30"
               >
                 <span
                   className="flex size-5 items-center justify-center rounded-full"

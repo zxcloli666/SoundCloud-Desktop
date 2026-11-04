@@ -108,11 +108,7 @@ export const CoverPicker = memo(function CoverPicker({
         gridRef={grid}
       />
 
-      <AccentSwatches
-        value={draft.accent}
-        disabled={draft.url === null}
-        onChange={pickAccent}
-      />
+      <AccentSwatches value={draft.accent} disabled={draft.url === null} onChange={pickAccent} />
 
       {error && (
         <CoverIssue
