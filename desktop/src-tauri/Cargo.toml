@@ -75,6 +75,33 @@ lto = true
 [profile.dev.package.signalsmith-stretch]
 opt-level = 3
 
+[profile.dev.package.image]
+opt-level = 3
+
+[profile.dev.package.image-webp]
+opt-level = 3
+
+[profile.dev.package.zune-jpeg]
+opt-level = 3
+
+[profile.dev.package.png]
+opt-level = 3
+
+[profile.dev.package.fdeflate]
+opt-level = 3
+
+[profile.dev.package.miniz_oxide]
+opt-level = 3
+
+[profile.dev.package.libwebp-sys]
+opt-level = 3
+
+[profile.dev.package.qcms]
+opt-level = 3
+
+[profile.dev.package.thumbhash]
+opt-level = 3
+
 [target.'cfg(windows)'.dependencies]
 windows-registry = "0.6"
 windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_System_IO", "Win32_System_Diagnostics_ToolHelp", "Win32_Networking_WinSock", "Win32_NetworkManagement_IpHelper", "Win32_NetworkManagement_Ndis", "Win32_UI_WindowsAndMessaging"] }

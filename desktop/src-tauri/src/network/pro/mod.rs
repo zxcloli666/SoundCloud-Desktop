@@ -1,6 +1,7 @@
 mod gateway;
 mod open;
 mod pieces;
+mod put;
 mod stage;
 mod staged;
 
@@ -13,6 +14,7 @@ use futures_util::stream::BoxStream;
 use http::Version;
 
 pub use gateway::route;
+pub use put::{StagedFailure, Staging, put_staged};
 
 use crate::network::{edge, system_proxy};
 use open::Unopened;
@@ -146,9 +148,9 @@ fn content_length(headers: &[(String, String)]) -> Option<u64> {
 }
 
 #[cfg(test)]
-mod fake_relay;
+pub(crate) mod fake_relay;
 #[cfg(test)]
-mod faulty_link;
+pub(crate) mod faulty_link;
 #[cfg(test)]
 mod stage_tests;
 #[cfg(test)]

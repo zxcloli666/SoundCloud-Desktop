@@ -30,6 +30,23 @@ pub fn upload_plan_of(url: &str, bytes: u64) -> Vec<Hop> {
     planned(url, pro)
 }
 
+pub fn media_plan(url: &str) -> Vec<Hop> {
+    media_plan_in(&lock(), url, Instant::now())
+}
+
+pub fn media_plan_in(inner: &Inner, url: &str, now: Instant) -> Vec<Hop> {
+    let Key::Service(label) = name::key_of(url) else {
+        return Vec::new();
+    };
+    let relays = relay_hops(inner, url, label, now);
+    let pros = staged_hops(inner, label);
+    if inner.level(label, now) == Tier::Pro {
+        [pros, relays].concat()
+    } else {
+        [relays, pros].concat()
+    }
+}
+
 pub fn audio_plan(url: &str) -> Vec<Hop> {
     planned(url, Pro::WhenPinned)
 }
@@ -105,6 +122,18 @@ fn pro_hops(inner: &Inner, url: &str, label: &str) -> Vec<Hop> {
         .iter()
         .map(|gateway| Hop {
             url: through_gateway(gateway, &carried),
+            tier: Tier::Pro,
+            origin: label.to_string(),
+        })
+        .collect()
+}
+
+fn staged_hops(inner: &Inner, label: &str) -> Vec<Hop> {
+    inner
+        .pro_hosts()
+        .into_iter()
+        .map(|host| Hop {
+            url: format!("https://{host}"),
             tier: Tier::Pro,
             origin: label.to_string(),
         })

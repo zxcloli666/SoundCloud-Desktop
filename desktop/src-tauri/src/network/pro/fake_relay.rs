@@ -22,6 +22,7 @@ pub enum Kind {
     ForgetsOnce,
     RefusesOpen,
     Vanishes,
+    Forwards,
 }
 
 #[derive(Deserialize)]
@@ -31,6 +32,12 @@ struct Size {
 
 #[derive(Deserialize)]
 struct Opening {
+    #[serde(default)]
+    method: String,
+    #[serde(default)]
+    url: String,
+    #[serde(default)]
+    headers: Vec<(String, String)>,
     body: Option<String>,
     body_stage: Option<String>,
 }
@@ -165,7 +172,7 @@ pub fn serve(kind: Kind) -> FakeRelay {
         .and(warp::post())
         .and(shared.clone())
         .and(warp::body::json())
-        .map(move |relay: Shared, asked: Opening| open(&relay, kind, asked));
+        .then(move |relay: Shared, asked: Opening| opened(relay, kind, asked));
     let take = warp::path!("take" / String)
         .and(warp::get())
         .and(shared)
@@ -250,30 +257,64 @@ fn status(relay: &Shared, id: &str) -> Response<Body> {
     }
 }
 
+async fn opened(relay: Shared, kind: Kind, asked: Opening) -> Response<Body> {
+    if kind != Kind::Forwards {
+        return open(&relay, kind, asked);
+    }
+    let request = forwarded(&asked);
+    let body = {
+        let mut relay = relay.lock().unwrap();
+        relay.opens += 1;
+        match carried(&mut relay, kind, asked) {
+            Ok(body) => body,
+            Err(status) => return empty(status),
+        }
+    };
+    let sent = request.body(body.clone()).send().await;
+    let status = sent.map_or(502, |answer| answer.status().as_u16());
+    let mut relay = relay.lock().unwrap();
+    relay.delivered.push(body);
+    answered(&mut relay, status, Vec::new())
+}
+
+fn forwarded(asked: &Opening) -> wreq::RequestBuilder {
+    let method = wreq::Method::from_bytes(asked.method.as_bytes()).unwrap();
+    let mut request = wreq::Client::new().request(method, &asked.url);
+    for (name, value) in &asked.headers {
+        request = request.header(name, value);
+    }
+    request
+}
+
 fn open(relay: &Shared, kind: Kind, asked: Opening) -> Response<Body> {
     let mut relay = relay.lock().unwrap();
     relay.opens += 1;
     if kind == Kind::RefusesOpen && asked.body_stage.is_some() {
         return empty(429);
     }
-    let stage = asked.body_stage.filter(|_| kind != Kind::Old);
-    let body = match (asked.body, stage) {
-        (Some(_), Some(_)) => return empty(400),
-        (Some(body), None) => match BASE64.decode(body) {
-            Ok(body) => body,
-            Err(_) => return empty(400),
-        },
-        (None, Some(id)) => match relay.take(&id, kind) {
-            Ok(body) => body,
-            Err(status) => return empty(status),
-        },
-        (None, None) => Vec::new(),
+    let body = match carried(&mut relay, kind, asked) {
+        Ok(body) => body,
+        Err(status) => return empty(status),
     };
     relay.delivered.push(body.clone());
+    answered(&mut relay, 200, body)
+}
+
+fn carried(relay: &mut Relay, kind: Kind, asked: Opening) -> Result<Vec<u8>, u16> {
+    let stage = asked.body_stage.filter(|_| kind != Kind::Old);
+    match (asked.body, stage) {
+        (Some(_), Some(_)) => Err(400),
+        (Some(body), None) => BASE64.decode(body).map_err(|_| 400),
+        (None, Some(id)) => relay.take(&id, kind),
+        (None, None) => Ok(Vec::new()),
+    }
+}
+
+fn answered(relay: &mut Relay, status: u16, body: Vec<u8>) -> Response<Body> {
     let id = format!("answer-{}", relay.opens);
     let headers = json!([["content-length", body.len().to_string()]]);
     relay.answers.insert(id.clone(), body);
-    json(json!({ "id": id, "status": 200, "headers": headers }))
+    json(json!({ "id": id, "status": status, "headers": headers }))
 }
 
 fn piece(relay: &Shared, id: &str, asked: &HashMap<String, String>) -> Response<Body> {

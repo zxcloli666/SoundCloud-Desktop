@@ -11,6 +11,7 @@ use super::media_cache::MediaCache;
 use super::notify::Notifier;
 use super::runtime::{Core, Parts, Runtime, StatusCell, SystemClock, Tap};
 use super::transport::{EdgeTransport, Route};
+use super::upload::{RuntimeHost, Uploads};
 use crate::rt::AppHandle;
 
 const KEYCHAIN_SUFFIX: &str = ".chat";
@@ -25,6 +26,7 @@ pub struct ChatState {
     pub runtime: Arc<Runtime>,
     pub notifier: Arc<Notifier>,
     pub media_cache: Arc<MediaCache>,
+    pub uploads: Arc<Uploads>,
 }
 
 impl ChatState {
@@ -40,6 +42,7 @@ impl ChatState {
         let api = Arc::new(Api::new(channel, transport.clone()));
         let notifier = Arc::new(Notifier::default());
         let media_cache = Arc::new(MediaCache::open(&dir));
+        let chat_dir = dir.clone();
         let runtime = Arc::new(Runtime::new(Parts {
             app: app.clone(),
             rt: rt.clone(),
@@ -51,6 +54,8 @@ impl ChatState {
             status,
             notifier: notifier.clone(),
         }));
+        let host = Arc::new(RuntimeHost::new(app.clone(), &runtime));
+        let uploads = Arc::new(Uploads::new(api.clone(), host, &chat_dir));
         Self {
             app,
             rt,
@@ -61,6 +66,7 @@ impl ChatState {
             runtime,
             notifier,
             media_cache,
+            uploads,
         }
     }
 

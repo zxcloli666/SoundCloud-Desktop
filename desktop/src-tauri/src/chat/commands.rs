@@ -1,4 +1,4 @@
-mod compose;
+pub(crate) mod compose;
 mod conversations;
 mod convert;
 mod devices;

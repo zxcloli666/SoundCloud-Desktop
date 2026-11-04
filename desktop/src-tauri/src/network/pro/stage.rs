@@ -31,7 +31,7 @@ struct Staged {
     missing: Vec<[u64; 2]>,
 }
 
-enum Failed {
+pub enum Failed {
     Link(String),
     Gone(String),
 }
@@ -82,6 +82,39 @@ pub async fn create(
         }
     }
     Err(format!("pro: the stage did not open: {last}"))
+}
+
+pub async fn reopen(
+    client: &'static wreq::Client,
+    node: &str,
+    id: &str,
+    size: u64,
+) -> Result<Option<(Stage, Vec<Range<u64>>)>, String> {
+    let url = format!("{node}/stage/{id}");
+    let mut last = String::new();
+    for _ in 0..ATTEMPTS {
+        let asked = client
+            .get(&url)
+            .version(Version::HTTP_11)
+            .timeout(ASK_TIMEOUT);
+        match staged(asked).await {
+            Ok(found) => {
+                let Ok(missing) = holes(&found.missing, found.size, size) else {
+                    return Ok(None);
+                };
+                let stage = Stage {
+                    client,
+                    url,
+                    id: id.to_string(),
+                    size,
+                };
+                return Ok(Some((stage, missing)));
+            }
+            Err(Failed::Gone(_)) => return Ok(None),
+            Err(Failed::Link(why)) => last = why,
+        }
+    }
+    Err(format!("pro: the stage did not answer: {last}"))
 }
 
 impl Stage {
@@ -149,7 +182,7 @@ impl Stage {
         });
     }
 
-    async fn put(&self, body: &[u8], part: Range<u64>) -> Result<(), Failed> {
+    pub async fn put(&self, body: &[u8], part: Range<u64>) -> Result<(), Failed> {
         let bytes = Bytes::copy_from_slice(&body[part.start as usize..part.end as usize]);
         let response = self
             .client
