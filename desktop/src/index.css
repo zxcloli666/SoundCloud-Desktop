@@ -1693,6 +1693,35 @@ select,
   animation: star-badge-twinkle 2.4s ease-in-out infinite;
 }
 
+@keyframes perk-bars {
+  0%, 100% {
+    transform: scaleY(0.45);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+.perk-bars {
+  animation: perk-bars 1.1s ease-in-out infinite;
+}
+
+@keyframes perk-sync-dot {
+  0%, 70%, 100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  35% {
+    opacity: 0.4;
+    transform: translateY(-2px);
+  }
+}
+
+.perk-sync-dot {
+  display: inline-block;
+  animation: perk-sync-dot 2.4s ease-in-out infinite;
+}
+
 @keyframes tenure-burst {
   from {
     transform: scale(0.3);
@@ -1724,6 +1753,8 @@ select,
 @media (prefers-reduced-motion: reduce) {
   .star-badge-sheen::after,
   .star-badge-twinkle,
+  .perk-bars,
+  .perk-sync-dot,
   .tenure-burst,
   .import-bar-sweep {
     animation: none !important;

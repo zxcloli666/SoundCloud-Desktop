@@ -1762,6 +1762,23 @@
       "sync": {
         "title": "Hızlı senkronizasyon",
         "tag": "Dakikalar içinde"
+      },
+      "fresh": "Yeni",
+      "effects": {
+        "title": "Ses efektleri",
+        "tag": "Reverb, 8D, bas"
+      },
+      "releases": {
+        "title": "Yeni çıkanlar",
+        "tag": "Çıktığı anda"
+      },
+      "importSync": {
+        "title": "İçe aktarma senkronu",
+        "tag": "Listeler kendiliğinden dolar"
+      },
+      "streak": {
+        "title": "STAR serisi",
+        "tag": "Rozet her ay büyür"
       }
     },
     "method": {

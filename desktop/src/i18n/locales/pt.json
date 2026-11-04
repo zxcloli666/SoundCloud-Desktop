@@ -1751,6 +1751,23 @@
       "sync": {
         "title": "Sincronização rápida",
         "tag": "Em minutos"
+      },
+      "fresh": "Novo",
+      "effects": {
+        "title": "Efeitos de som",
+        "tag": "Reverb, 8D, grave"
+      },
+      "releases": {
+        "title": "Lançamentos",
+        "tag": "Assim que saem"
+      },
+      "importSync": {
+        "title": "Sincronizar importação",
+        "tag": "Playlists se atualizam sozinhas"
+      },
+      "streak": {
+        "title": "Sequência STAR",
+        "tag": "O selo cresce a cada mês"
       }
     },
     "method": {

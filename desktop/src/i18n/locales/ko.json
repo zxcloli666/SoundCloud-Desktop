@@ -1684,6 +1684,23 @@
       "sync": {
         "title": "빠른 동기화",
         "tag": "몇 분 만에"
+      },
+      "fresh": "신규",
+      "effects": {
+        "title": "사운드 효과",
+        "tag": "리버브, 8D, 베이스"
+      },
+      "releases": {
+        "title": "새 릴리스",
+        "tag": "나오는 즉시"
+      },
+      "importSync": {
+        "title": "가져오기 동기화",
+        "tag": "플레이리스트가 자동으로 채워짐"
+      },
+      "streak": {
+        "title": "STAR 연속",
+        "tag": "달마다 배지가 성장"
       }
     },
     "method": {

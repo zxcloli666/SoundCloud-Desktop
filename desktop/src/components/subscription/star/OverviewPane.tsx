@@ -4,7 +4,8 @@ import { ArrowRight, Gift, RefreshCw } from '../../../lib/icons';
 import type { Plan, SharedPreview, TierId } from '../../../lib/pay-client';
 import { passDate } from '../../../lib/star-format';
 import { TRIAL_DAYS } from '../../../lib/star-offer';
-import { monthsKey, PERKS, type Recipient } from './meta';
+import { monthsKey, type Recipient } from './meta';
+import { PerkGrid } from './PerkGrid';
 import { RecipientSwitch } from './RecipientSwitch';
 import { type RefBonus, RefField } from './RefField';
 import { GhostBtn, LinkBtn, PrimaryBtn } from './StarConsole';
@@ -140,29 +141,7 @@ export const OverviewPane = memo(function OverviewPane({
         </div>
       )}
 
-      {/* perks */}
-      <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3">
-        {PERKS.map(({ key, Icon }) => (
-          <div
-            key={key}
-            className="flex items-center gap-2.5 rounded-[11px] border border-ink/[0.08] bg-ink/[0.025] px-2.5 py-2"
-          >
-            <span
-              className="grid size-[28px] shrink-0 place-items-center rounded-[8px]"
-              style={{
-                background: 'color-mix(in srgb, var(--color-accent) 13%, transparent)',
-                boxShadow:
-                  'inset 0 0 0 1px color-mix(in srgb, var(--color-accent) 22%, transparent)',
-              }}
-            >
-              <Icon size={14} className="text-accent" />
-            </span>
-            <span className="text-[12px] font-medium leading-tight text-ink-85">
-              {t(`starpass.perk.${key}.title`)}
-            </span>
-          </div>
-        ))}
-      </div>
+      <PerkGrid />
 
       <div className="mt-[18px] flex flex-wrap items-center gap-3">
         <PrimaryBtn onClick={onIgnite} disabled={!selectedId}>

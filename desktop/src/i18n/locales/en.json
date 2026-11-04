@@ -1839,6 +1839,23 @@
       "sync": {
         "title": "Fast sync",
         "tag": "In minutes"
+      },
+      "fresh": "New",
+      "effects": {
+        "title": "Sound effects",
+        "tag": "Reverb, 8D, bass"
+      },
+      "releases": {
+        "title": "New releases",
+        "tag": "The moment they drop"
+      },
+      "importSync": {
+        "title": "Import sync",
+        "tag": "Playlists top up by themselves"
+      },
+      "streak": {
+        "title": "STAR streak",
+        "tag": "The badge grows each month"
       }
     },
     "method": {

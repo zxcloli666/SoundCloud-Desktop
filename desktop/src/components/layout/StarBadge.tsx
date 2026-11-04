@@ -60,6 +60,8 @@ const LOOKS: Record<StarTier, TierLook> = {
   },
 };
 
+export const TIER_FILLS = ([0, 1, 2, 3] as const).map((tier) => LOOKS[tier].background);
+
 const SPARKLES = [
   { left: '-3px', top: '-3px', delay: '0s' },
   { left: '82%', top: '-4px', delay: '0.7s' },
