@@ -33,7 +33,7 @@ runs:
         debs=$RUNNER_TEMP/apt-debs
         mkdir -p "$pack" "$debs/partial"
         if oras pull "$repo:$tag" --output "$pack" > /dev/null 2>&1 && tar -xf "$pack/debs.tar" -C "$debs"; then
-          sudo dpkg -i "$debs"/*.deb > /dev/null
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends "$debs"/*.deb > /dev/null
           echo "installed $PACKAGES from $repo:$tag"
           exit 0
         fi
@@ -41,7 +41,7 @@ runs:
         sudo apt-get update $apt
         sudo apt-get install -y --no-install-recommends --download-only $apt -o Dir::Cache::archives="$debs" $PACKAGES
         if ls "$debs"/*.deb > /dev/null 2>&1; then
-          sudo dpkg -i "$debs"/*.deb > /dev/null
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends "$debs"/*.deb > /dev/null
         fi
         echo "installed $PACKAGES from the mirror"
         [ "$SAVE" = true ] || exit 0
