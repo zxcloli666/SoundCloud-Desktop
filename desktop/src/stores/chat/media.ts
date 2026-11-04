@@ -35,6 +35,7 @@ export interface ChatMediaState {
   preparing: Record<ConvId, number>;
   skipped: Record<ConvId, Skipped[]>;
   sending: Record<string, true>;
+  parked: Record<string, true>;
   note: { conversationId: ConvId; gate: MediaNote } | null;
   setNote: (note: { conversationId: ConvId; gate: MediaNote } | null) => void;
   setUploads: (uploads: UploadView[]) => void;
@@ -44,6 +45,7 @@ export interface ChatMediaState {
   setSkipped: (conversationId: ConvId, skipped: Skipped[]) => void;
   setSending: (album: string, sending: boolean) => void;
   refreshUploads: () => Promise<void>;
+  refreshParked: () => Promise<void>;
   refreshUsage: () => Promise<void>;
   setShown: (id: MediaId, shown: ShownMedia) => void;
   forgetShown: (ids: MediaId[]) => void;
@@ -82,6 +84,7 @@ export const useChatMediaStore = create<ChatMediaState>()((set, get) => ({
   preparing: {},
   skipped: {},
   sending: {},
+  parked: {},
   note: null,
   setNote: (note) => set({ note }),
   setUploads: (uploads) => set((state) => ({ uploads, errors: keptErrors(state.errors, uploads) })),
@@ -95,6 +98,7 @@ export const useChatMediaStore = create<ChatMediaState>()((set, get) => ({
       const known = new Set(kept.map((upload) => upload.id));
       const added = uploads.filter((upload) => !known.has(upload.id) && !gone.has(upload.id));
       const next = [...kept, ...added];
+      if (added.length > 0 || gone.size > 0) queueMicrotask(() => void get().refreshParked());
       return { uploads: next, errors: keptErrors(state.errors, next) };
     }),
   applyError: ({ id, error }) => set((state) => ({ errors: { ...state.errors, [id]: error } })),
@@ -111,6 +115,15 @@ export const useChatMediaStore = create<ChatMediaState>()((set, get) => ({
     }),
   refreshUploads: async () => {
     get().setUploads(await chatBridge.mediaUploads());
+    await get().refreshParked();
+  },
+  refreshParked: async () => {
+    try {
+      const albums = await chatBridge.mediaParked();
+      set({ parked: Object.fromEntries(albums.map((album) => [album, true as const])) });
+    } catch {
+      return;
+    }
   },
   refreshUsage: async () => {
     set({ usageLoad: 'loading' });

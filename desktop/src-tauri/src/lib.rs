@@ -476,6 +476,7 @@ pub fn run() {
             chat::commands::chat_room_backdrop_upload,
             chat::commands::chat_room_backdrop_report,
             chat::commands::chat_media_uploads,
+            chat::commands::chat_media_parked,
             chat::commands::chat_media_upload_retry,
             chat::commands::chat_media_upload_cancel,
             chat::commands::chat_media_cache_size,

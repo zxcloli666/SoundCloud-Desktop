@@ -74,6 +74,7 @@ fn an_image_is_served_with_its_type_and_kept_privately() {
         response.headers()["cache-control"],
         "private, max-age=86400"
     );
+    assert_eq!(response.headers()["access-control-allow-origin"], "*");
     assert_eq!(response.body(), &vec![1, 2, 3]);
 }
 

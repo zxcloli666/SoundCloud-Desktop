@@ -109,6 +109,27 @@ pub async fn uploads(state: &ChatState) -> ChatResult<Vec<MediaUploadView>> {
     .await
 }
 
+pub async fn parked(state: &ChatState) -> ChatResult<Vec<Uuid>> {
+    blocking(state, |core| {
+        let mut albums: Vec<(ConvId, Uuid)> = core
+            .store
+            .uploads()?
+            .iter()
+            .map(|upload| (upload.conversation_id, upload.album))
+            .collect();
+        albums.sort_unstable();
+        albums.dedup();
+        let mut parked = Vec::new();
+        for (conversation_id, album) in albums {
+            if upload::parked(&core.store, conversation_id, album)?.is_some() {
+                parked.push(album);
+            }
+        }
+        Ok(parked)
+    })
+    .await
+}
+
 pub async fn upload_retry(state: &ChatState, id: Uuid) -> ChatResult<()> {
     upload::retry(state, id).await
 }

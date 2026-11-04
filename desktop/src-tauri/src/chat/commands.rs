@@ -575,6 +575,11 @@ pub async fn chat_media_uploads(
 }
 
 #[tauri::command]
+pub async fn chat_media_parked(state: State<'_, ChatState>) -> Result<Vec<Uuid>, ChatError> {
+    media::parked(&state).await
+}
+
+#[tauri::command]
 pub async fn chat_media_upload_retry(
     state: State<'_, ChatState>,
     id: Uuid,

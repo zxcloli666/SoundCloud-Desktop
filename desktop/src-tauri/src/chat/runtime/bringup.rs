@@ -13,7 +13,6 @@ use crate::chat::keychain::should_fall_back;
 
 const RETRY_MIN: Duration = Duration::from_secs(2);
 const RETRY_MAX: Duration = Duration::from_secs(60);
-const STUB_RETRY: Duration = Duration::from_secs(60);
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Halt {
@@ -171,7 +170,6 @@ impl Runtime {
             ChatError::SessionBoundOther => Halt::Phase(ChatPhase::BoundOther),
             ChatError::DeviceRevoked => Halt::Phase(ChatPhase::Revoked),
             ChatError::Disabled => Halt::Phase(ChatPhase::Off),
-            ChatError::Unimplemented => Halt::Retry(STUB_RETRY),
             ChatError::Busy { retry_ms } => Halt::Retry(busy_retry(*retry_ms)),
             ChatError::Clock { server_now } => {
                 self.api.channel().note_server_now(*server_now);

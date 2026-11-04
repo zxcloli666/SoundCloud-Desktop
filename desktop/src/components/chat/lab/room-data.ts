@@ -65,11 +65,9 @@ export function labRoomView(options: RoomOptions): RoomView {
     links: true,
     banned: [],
     perks: options.star
-      ? { starHost: true, capacity: 30, modsMax: 5 }
-      : { starHost: false, capacity: 10, modsMax: 1 },
-    cover: options.cover
-      ? { url: labPicture('', 'room-cover', 'thumb') ?? '', accent: 0x7c5cff }
-      : null,
+      ? { starHost: true, capacity: 25, modsMax: 8 }
+      : { starHost: false, capacity: 10, modsMax: 3 },
+    cover: options.cover ? { url: labPicture('', 'room-cover', 'thumb') ?? '', accent: 3 } : null,
     roomImages: options.roomImages ?? 'members',
     backdrop: options.backdrop ?? null,
     backdropCooldownUntil: null,

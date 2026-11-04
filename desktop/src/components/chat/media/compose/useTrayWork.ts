@@ -18,6 +18,7 @@ export function useThreadTrayWork(conversationId: ConvId): TrayWork {
 export function useGlobalTrayWork(except: ConvId | null): TrayWork {
   const uploads = useChatMediaStore((state) => state.uploads);
   const sending = useChatMediaStore((state) => state.sending);
+  const parked = useChatMediaStore((state) => state.parked);
   const threads = useChatThreadStore((state) => state.threads);
   return useMemo(() => {
     const shown = uploads.filter((upload) => upload.conversationId !== except);
@@ -25,11 +26,17 @@ export function useGlobalTrayWork(except: ConvId | null): TrayWork {
     const staged = new Set<string>();
     for (const id of chats) {
       const thread = threads[id];
-      if (thread?.load !== 'ready') continue;
-      for (const upload of stagedUploads(id, shown, thread.messages, sending)) {
-        staged.add(upload.album);
+      if (thread?.load === 'ready') {
+        for (const upload of stagedUploads(id, shown, thread.messages, sending)) {
+          staged.add(upload.album);
+        }
+        continue;
+      }
+      for (const upload of shown) {
+        if (upload.conversationId !== id || upload.kind !== 'image') continue;
+        if (!parked[upload.album] && !sending[upload.album]) staged.add(upload.album);
       }
     }
     return trayWork(shown, staged);
-  }, [uploads, sending, threads, except]);
+  }, [uploads, sending, parked, threads, except]);
 }

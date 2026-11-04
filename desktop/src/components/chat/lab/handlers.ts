@@ -167,11 +167,21 @@ export const defaultHandlers: Record<string, (args: Args) => unknown> = {
   chat_media_restore: restoreMedia,
   chat_media_urls: mediaUrls,
   chat_media_uploads: () => world.uploads,
+  chat_media_parked: parkedAlbums,
   chat_media_upload_retry: retryUpload,
   chat_media_upload_cancel: cancelUpload,
   chat_media_cache_size: () => 48 * 1024 * 1024,
   chat_media_cache_clear: () => 48 * 1024 * 1024,
 };
+
+function parkedAlbums(): string[] {
+  const posted = new Set(
+    Object.values(world.threads).flatMap((messages) => messages.map((message) => message.clientId)),
+  );
+  return [...new Set(world.uploads.map((upload) => upload.album))].filter((album) =>
+    posted.has(album),
+  );
+}
 
 export async function runChatCommand(cmd: string, args: Args): Promise<unknown> {
   await new Promise((resolve) => setTimeout(resolve, world.latencyMs));

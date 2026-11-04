@@ -84,11 +84,18 @@ export const ChatUsageList = memo(function ChatUsageList() {
   const origin = useStorageStore((state) => state.origin);
   const setOrigin = useStorageStore((state) => state.setOrigin);
   const listLoad = useChatListStore((state) => state.load);
+  const nextCursor = useChatListStore((state) => state.nextCursor);
+  const byId = useChatListStore((state) => state.byId);
   const [open, setOpen] = useState(false);
+  const missing = usage?.conversations.some((row) => !byId[row.conversation_id]) ?? false;
 
   useEffect(() => {
     if (listLoad === 'idle') void useChatListStore.getState().refresh();
   }, [listLoad]);
+
+  useEffect(() => {
+    if (missing && nextCursor && listLoad === 'ready') void useChatListStore.getState().loadMore();
+  }, [missing, nextCursor, listLoad]);
 
   if (!usage || usage.conversations.length === 0) return null;
   const rows = open ? usage.conversations : usage.conversations.slice(0, SHOWN);

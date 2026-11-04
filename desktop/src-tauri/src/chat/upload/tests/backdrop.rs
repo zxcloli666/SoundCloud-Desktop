@@ -126,7 +126,7 @@ async fn a_refused_backdrop_drops_the_upload_frees_it_and_reports_why() {
     .await;
     assert_eq!(
         *rig.host.errors.lock().unwrap(),
-        [(view.id, ChatError::Unavailable)]
+        [(view.id, ChatError::BackdropCooldown { until: 1 })]
     );
     let reserved = rig.world.reservation(view.id).unwrap();
     assert!(

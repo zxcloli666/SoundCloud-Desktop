@@ -33,7 +33,7 @@ export const RoomTuning = memo(function RoomTuning({ room }: { room: RoomView })
       <div className="py-1.5">
         {!host && <CrossfadeChoice />}
         <RoomCapacity room={room} />
-        <BackdropEntry room={room} />
+        {!host && <BackdropEntry room={room} />}
       </div>
     </RoomPopover>
   );

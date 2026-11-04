@@ -1,5 +1,5 @@
 import type { TFunction } from 'i18next';
-import { chatMediaUrl } from '../../../lib/chat/media-url';
+import { groupAvatarUrl } from '../../../lib/chat/avatar-url';
 import type { ConversationKind, ConversationSummary } from '../../../lib/chat/types';
 import { conversationAvatar, conversationTitle } from '../list/conversation-meta';
 
@@ -29,8 +29,5 @@ export function lookOf(
 }
 
 function avatarOf(conversation: ConversationSummary): string | null {
-  if (conversation.kind === 'group' && conversation.avatarMediaId) {
-    return chatMediaUrl(conversation.id, conversation.avatarMediaId, 'image');
-  }
-  return conversationAvatar(conversation);
+  return groupAvatarUrl(conversation) ?? conversationAvatar(conversation);
 }

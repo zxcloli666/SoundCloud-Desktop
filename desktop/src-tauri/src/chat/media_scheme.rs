@@ -45,6 +45,7 @@ pub fn answer(loaded: Result<Fetched, ChatError>) -> Response<Vec<u8>> {
             .status(StatusCode::OK)
             .header("content-type", picture.mime)
             .header("cache-control", KEEP)
+            .header("access-control-allow-origin", "*")
             .body(picture.bytes)
             .unwrap_or_else(|_| refused(StatusCode::INTERNAL_SERVER_ERROR)),
         Ok(Fetched::Deleted) => refused(StatusCode::GONE),
