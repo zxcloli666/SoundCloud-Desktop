@@ -125,7 +125,7 @@ jobs:
         uses: ./.github/actions/apt-packages
         with:
           packages: libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libasound2-dev cmake clang libclang-dev pkg-config
-          save: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.head_ref == 'ci/apt' }}
+          save: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
 
       - name: System packages
         if: runner.os == 'macOS'
@@ -184,7 +184,7 @@ jobs:
         uses: ./.github/actions/apt-packages
         with:
           packages: libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libasound2-dev protobuf-compiler cmake clang libclang-dev pkg-config
-          save: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.head_ref == 'ci/apt' }}
+          save: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
 
       - name: Toolchain
         working-directory: .
