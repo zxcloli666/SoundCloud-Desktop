@@ -36,7 +36,7 @@ export const TimerPicker = memo(function TimerPicker() {
         </span>
         {!editable && <Lock size={12} className="text-ink-30" />}
       </div>
-      <div role="radiogroup" className="grid grid-cols-4 gap-1 rounded-xl bg-black/25 p-1">
+      <div role="radiogroup" className="grid grid-cols-4 gap-1 rounded-xl bg-shade-25 p-1">
         {CHOICES.map((ttlS) => {
           const active = current === ttlS;
           return (

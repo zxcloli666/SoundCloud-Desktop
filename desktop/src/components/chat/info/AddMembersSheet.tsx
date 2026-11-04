@@ -57,7 +57,7 @@ function AddMembersBody({ conversationId, present, onDone }: AddMembersProps) {
     <div className="flex min-h-0 flex-col">
       <div className="flex flex-col gap-3 px-6 pt-6 pb-3">
         <ModalTitle>{t('chat.thread.info.addMembers')}</ModalTitle>
-        <label className="flex h-10 items-center gap-2.5 rounded-2xl border border-ink/[0.07] bg-black/20 px-3.5 focus-within:border-ink/[0.16]">
+        <label className="flex h-10 items-center gap-2.5 rounded-2xl border border-ink/[0.07] bg-shade-20 px-3.5 focus-within:border-ink/[0.16]">
           <Search size={15} className="shrink-0 text-ink-35" />
           <input
             autoFocus

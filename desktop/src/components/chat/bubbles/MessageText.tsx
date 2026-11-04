@@ -119,7 +119,7 @@ function SegmentView({ segment, links }: { segment: Segment; links: boolean }) {
   let node: ReactNode = plain ? segment.text : autoLinks(segment.text);
   if (segment.code) {
     node = (
-      <code className="rounded-[5px] bg-black/30 px-[3px] py-px font-mono text-[0.9em] text-ink-90 ring-1 ring-ink/[0.08] ring-inset">
+      <code className="rounded-[5px] bg-shade-30 px-[3px] py-px font-mono text-[0.9em] text-ink-90 ring-1 ring-ink/[0.08] ring-inset">
         {node}
       </code>
     );

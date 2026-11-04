@@ -124,7 +124,7 @@ export const InfoSheet = memo(function InfoSheet({
         type="button"
         aria-label={t('chat.thread.info.close')}
         onClick={onClose}
-        className="absolute inset-0 cursor-default bg-black/45"
+        className="absolute inset-0 cursor-default bg-shade-45"
       />
       <aside
         data-ui="chat-info"

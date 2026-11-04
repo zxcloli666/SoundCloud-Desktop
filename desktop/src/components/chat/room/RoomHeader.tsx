@@ -19,7 +19,7 @@ function Ephemeral() {
     <span
       title={t('chat.room.ephemeral')}
       aria-label={t('chat.room.ephemeral')}
-      className="flex size-7 shrink-0 items-center justify-center rounded-full border border-ink/[0.09] bg-black/25 text-amber-200/80"
+      className="flex size-7 shrink-0 items-center justify-center rounded-full border border-ink/[0.09] bg-shade-25 text-amber-200/80"
     >
       <Hourglass size={13} />
     </span>

@@ -18,7 +18,7 @@ export const RoomAccessToggle = memo(function RoomAccessToggle({
   const action = t(open ? 'chat.room.access.toPrivate' : 'chat.room.access.toPublic');
   const tone = open
     ? 'border-accent/40 bg-accent/15 text-accent'
-    : 'border-ink/[0.09] bg-black/25 text-ink-60';
+    : 'border-ink/[0.09] bg-shade-25 text-ink-60';
 
   if (!host) {
     return (

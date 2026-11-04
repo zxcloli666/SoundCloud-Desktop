@@ -46,11 +46,11 @@ function Perforation({ edge }: { edge: number }) {
         }}
       />
       <span
-        className="absolute -left-[5px] h-2.5 w-2.5 rounded-full bg-black/40"
+        className="absolute -left-[5px] h-2.5 w-2.5 rounded-full bg-shade-40"
         style={{ top: -edge }}
       />
       <span
-        className="absolute -left-[5px] h-2.5 w-2.5 rounded-full bg-black/40"
+        className="absolute -left-[5px] h-2.5 w-2.5 rounded-full bg-shade-40"
         style={{ bottom: -edge }}
       />
     </span>

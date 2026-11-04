@@ -21,7 +21,7 @@ export const ReplyQuote = memo(function ReplyQuote({
         event.stopPropagation();
         jumpTo(seq);
       }}
-      className="mb-1 flex w-full min-w-0 cursor-pointer items-stretch gap-2 rounded-[10px] bg-black/20 py-1 pr-2.5 pl-1 text-left transition-colors duration-150 hover:bg-black/30"
+      className="mb-1 flex w-full min-w-0 cursor-pointer items-stretch gap-2 rounded-[10px] bg-shade-20 py-1 pr-2.5 pl-1 text-left transition-colors duration-150 hover:bg-shade-30"
     >
       <span aria-hidden className="w-[3px] shrink-0 rounded-full" style={{ background: color }} />
       <span className="min-w-0 flex-1">

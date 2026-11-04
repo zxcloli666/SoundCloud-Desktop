@@ -53,7 +53,7 @@ export const QuickReply = memo(function QuickReply({
 
   return (
     <div className="flex flex-col gap-1">
-      <div className="flex items-center gap-1.5 rounded-xl border border-ink/[0.08] bg-black/25 pr-1 pl-3 focus-within:border-ink/[0.18]">
+      <div className="flex items-center gap-1.5 rounded-xl border border-ink/[0.08] bg-shade-25 pr-1 pl-3 focus-within:border-ink/[0.18]">
         <input
           autoFocus
           value={text}

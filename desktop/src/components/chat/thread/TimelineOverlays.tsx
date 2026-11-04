@@ -50,7 +50,7 @@ export const FloatingDay = memo(function FloatingDay({ ts }: { ts: number }) {
 export const TopSpinner = memo(function TopSpinner() {
   return (
     <div className="pointer-events-none absolute inset-x-0 top-2 z-10 flex justify-center">
-      <span className="flex size-7 items-center justify-center rounded-full bg-black/40 text-ink-60">
+      <span className="flex size-7 items-center justify-center rounded-full bg-shade-40 text-ink-60">
         <Loader2 size={14} className="animate-spin" />
       </span>
     </div>
