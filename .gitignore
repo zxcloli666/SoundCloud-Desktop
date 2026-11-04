@@ -35,3 +35,6 @@ worker/venv/
 
 # CI cache stamp.
 /.ci
+
+# pnpm store
+.pnpm-store/
