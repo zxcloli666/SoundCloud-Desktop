@@ -72,6 +72,13 @@ impl Uploads {
     pub(super) async fn dropped(&self, removed: Vec<MediaUpload>) {
         let ids: Vec<Uuid> = removed.iter().map(|upload| upload.id).collect();
         self.abort_if_current(&ids);
+        self.discard(removed).await;
+    }
+
+    pub(super) async fn discard(&self, removed: Vec<MediaUpload>) {
+        for upload in &removed {
+            self.forget_targets(upload.id);
+        }
         self.files
             .remove(removed.iter().flat_map(file_names).collect())
             .await;

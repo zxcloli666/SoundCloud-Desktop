@@ -120,7 +120,8 @@ async fn a_refused_backdrop_drops_the_upload_frees_it_and_reports_why() {
         .unwrap();
     rig.run();
     rig.until("the refusal", |rig| {
-        !rig.host.errors.lock().unwrap().is_empty() && rig.uploads().is_empty()
+        let deleted = rig.world.with(|state| !state.deleted.is_empty());
+        deleted && !rig.host.errors.lock().unwrap().is_empty() && rig.uploads().is_empty()
     })
     .await;
     assert_eq!(

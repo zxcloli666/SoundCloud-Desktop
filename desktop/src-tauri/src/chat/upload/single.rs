@@ -93,7 +93,7 @@ impl Uploads {
                     .blocking(move |store| store.remove_album_uploads(album))
                     .await
                 {
-                    self.dropped(removed).await;
+                    self.discard(removed).await;
                 }
             }
         }
