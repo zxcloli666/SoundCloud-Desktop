@@ -1,10 +1,8 @@
 import React, {useEffect, useRef} from 'react';
-import {useTranslation} from 'react-i18next';
 import {usePlayingCopy} from '../../lib/alt-upload';
 import {getCurrentTime, subscribe} from '../../lib/audio';
 import {durLong} from '../../lib/formatters';
 import type {Comment} from '../../lib/hooks';
-import {isPreviewOnly} from '../../lib/track-access';
 import type {Track} from '../../stores/player';
 import {useSettingsStore} from '../../stores/settings';
 import {LiveWaveform} from '../music/soundwave/waveform';
@@ -26,7 +24,6 @@ export const RoomFloor = React.memo(function RoomFloor({
     aura: TrackAura;
     onSeek: (seconds: number) => void;
 }) {
-    const {t} = useTranslation();
     const elapsedRef = useRef<HTMLSpanElement>(null);
     const floatingComments = useSettingsStore((s) => s.floatingComments);
     const playingCopy = usePlayingCopy(track.urn);
@@ -46,8 +43,6 @@ export const RoomFloor = React.memo(function RoomFloor({
     }, [isCurrent]);
 
     const durationMs = track.full_duration ?? track.duration;
-    const playableFrac = durationMs > 0 ? Math.min(1, track.duration / durationMs) : 1;
-    const previewTail = !copy && isPreviewOnly(track) && playableFrac < 0.995 ? 1 - playableFrac : 0;
 
     return (
         <div
@@ -61,17 +56,6 @@ export const RoomFloor = React.memo(function RoomFloor({
         >
             <div className="relative w-full">
                 <LiveWaveform track={track} isCurrent={isCurrent}/>
-                {previewTail > 0 && (
-                    <div
-                        className="absolute inset-y-0 right-0 pointer-events-none rounded-r-lg"
-                        style={{
-                            width: `${previewTail * 100}%`,
-                            background:
-                                'linear-gradient(90deg, transparent, rgb(var(--paper) / 0.55) 40%, rgb(var(--paper) / 0.7))',
-                        }}
-                        title={t('track.previewOnly')}
-                    />
-                )}
                 {floatingComments && (
                     <WaveVoices
                         comments={comments}
@@ -83,11 +67,6 @@ export const RoomFloor = React.memo(function RoomFloor({
             </div>
             <div className="flex items-center justify-between mt-2.5 px-0.5 text-[11px] tabular-nums text-ink-35">
                 <span ref={elapsedRef}>0:00</span>
-                {previewTail > 0 && (
-                    <span className="text-ink-25 uppercase tracking-[0.18em] text-[9px]">
-            {t('track.previewOnly')}
-          </span>
-                )}
                 <span>{durLong((copy ?? track).duration)}</span>
             </div>
         </div>

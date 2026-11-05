@@ -106,7 +106,7 @@
     "abLoopClear": "A-B döngüsünü temizle",
     "notPlaying": "Çalmıyor",
     "noContinuation": "Benzer parça bulunamadı, çalma durduruldu",
-    "altUpload": "{{name}} hesabından tam kopya çalıyor",
+    "altUpload": "{{name}} hesabından kopya çalıyor",
     "cancelLoad": "Yüklemeyi durdur",
     "volume": "Ses",
     "volumeReset": "Sesi %100'e sıfırla",
@@ -248,7 +248,6 @@
   },
   "track": {
     "comments": "Yorumlar",
-    "previewOnly": "Sadece önizleme",
     "source": "Kaynak",
     "showMore": "Daha fazla göster",
     "showLess": "Daha az göster",
@@ -959,7 +958,7 @@
     "listWeight": "Boyut",
     "listTime": "Süre",
     "stampForging": "İŞLENİYOR",
-    "stampPreview": "ÖNİZLEME",
+    "stampCut": "KESİK",
     "stampMissing": "DOSYA YOK",
     "rowForging": "işleniyor · ffmpeg",
     "actPlay": "Çal",
@@ -1234,7 +1233,6 @@
     "scrobbleLiveListening": "{{time}} sonra scrobble edilecek",
     "scrobbleLiveScrobbled": "Scrobble edildi",
     "scrobbleLiveShort": "30 saniyeden kısa parçalar scrobble edilmez",
-    "scrobbleLivePreview": "Önizlemeler scrobble edilmez",
     "scrobbleLiveSession_one": "Bu oturumda {{count}}",
     "scrobbleLiveSession_other": "Bu oturumda {{count}}",
     "scrobblePaused": "Scrobble duraklatıldı. Dinlemelerini tekrar göndermek için aç.",
@@ -1472,8 +1470,8 @@
     "manualUpdates": "Güncellemeler elle kurulur",
     "autoplay": "Otomatik devam",
     "autoplayDesc": "Sıra bittiğinde son parçanın dalgasından benzer parçalar çalmaya devam eder",
-    "altUploads": "Önizleme yerine tam kopya",
-    "altUploadsDesc": "STAR olmadan sadece önizlemesi olan parça, bulunursa aynı parçanın başka bir hesaptaki tam yüklemesinden çalar",
+    "altUploads": "Erişilemeyen parça yerine kopya",
+    "altUploadsDesc": "STAR olmadan Go+ ve bölgede kilitli parçalar, bulunursa aynı parçanın başka bir hesaptaki yüklemesinden çalar",
     "searchPlayback": "Aramadan çalma",
     "searchPlaybackSimilar": "Benzer parçalar",
     "searchPlaybackResults": "Arama sonuçları",
@@ -2613,9 +2611,6 @@
       "left_other": "{{count}} gün kaldı",
       "streakLost": "Seri sona erecek"
     },
-    "preview": {
-      "label": "Go+ önizleme"
-    },
     "winback": {
       "title": "STAR'ınız bitti",
       "sound": {
@@ -2623,8 +2618,8 @@
         "free": "HQ"
       },
       "goPlus": {
-        "star": "tam",
-        "free": "30 sn"
+        "star": "var",
+        "free": "yok"
       },
       "sync": {
         "star": "dakika",

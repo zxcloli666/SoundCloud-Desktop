@@ -1,6 +1,5 @@
 import {Pause, Play, Sparkles} from 'lucide-react';
 import {memo} from 'react';
-import {useTranslation} from 'react-i18next';
 import {cancelPreload, preloadTrack} from '../../lib/audio';
 import {
   hardStopHoverPreview,
@@ -11,7 +10,6 @@ import {
 } from '../../lib/audioPreview';
 import {art} from '../../lib/formatters';
 import {usePerfMode} from '../../lib/perf';
-import {isPreviewOnly} from '../../lib/track-access';
 import {useArtistDisplay, useDisplayTitle} from '../../lib/track-display';
 import {useTrackContextMenu} from '../../lib/useTrackContextMenu';
 import {useTrackPlay} from '../../lib/useTrackPlay';
@@ -43,7 +41,6 @@ export const CoverTile = memo(function CoverTile({
   onOpen,
   onPlay,
 }: CoverTileProps) {
-  const { t } = useTranslation();
   const perf = usePerfMode();
   const { track, kind, matchedLine, hero } = item;
   const displayTitle = useDisplayTitle(track);
@@ -175,15 +172,6 @@ export const CoverTile = memo(function CoverTile({
               <div className="absolute top-2 left-2 text-accent/70 group-hover:text-accent transition-colors duration-300">
                 <Sparkles size={hero ? 16 : 12} />
               </div>
-            )}
-
-            {isPreviewOnly(track) && (
-              <span
-                className={`absolute ${kind === 'vibe' ? 'top-7' : 'top-2'} left-2 h-4 px-1.5 rounded-full text-[9px] font-semibold uppercase tracking-wide leading-4 text-amber-300/90`}
-                style={{ background: 'rgba(0,0,0,0.62)', border: '0.5px solid rgb(var(--ink) / 0.18)' }}
-              >
-                {t('track.previewOnly')}
-              </span>
             )}
 
             {/* Play affordance */}

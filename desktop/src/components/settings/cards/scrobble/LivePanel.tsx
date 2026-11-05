@@ -72,8 +72,6 @@ function phaseText(
       return t('settings.scrobbleLiveScrobbled');
     case 'short':
       return t('settings.scrobbleLiveShort');
-    case 'preview':
-      return t('settings.scrobbleLivePreview');
     case 'listening':
       return t('settings.scrobbleLiveListening', {
         time: formatTime(Math.max(0, live.threshold - live.played)),
