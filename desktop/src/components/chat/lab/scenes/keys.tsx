@@ -1,4 +1,4 @@
-import type { KeyStorage } from '../../../../lib/chat/types';
+import type { DeviceLimit, KeyStorage } from '../../../../lib/chat/types';
 import { sleep } from '../steps';
 import type { LabKit, LabScene } from '../types';
 import { openChatSettings, scrollSettled } from './storage';
@@ -70,6 +70,12 @@ function confirmReset(kit: LabKit, answer: Answer, state: string) {
   openDialog(kit);
   kit.click(CONFIRM);
   kit.waitFor(`${DIALOG}[data-state="${state}"]`);
+}
+
+function signInRefused(kit: LabKit, limit: DeviceLimit) {
+  kit.world.status = { ...kit.world.status, phase: 'starting', deviceId: null, online: false };
+  kit.handle('chat_device_limit', () => limit);
+  kit.waitFor(`[data-ui="chat-sign-in-limit"][data-kind="${limit.kind}"]`);
 }
 
 function showChatSettings(kit: LabKit, target: string) {
@@ -200,9 +206,17 @@ export const scenes: LabScene[] = [
     route: '/chats',
     setup: (kit) => {
       const opensBy = Date.now() + 5 * HOUR_MS;
-      kit.world.status = { ...kit.world.status, phase: 'starting', deviceId: null, online: false };
-      kit.handle('chat_device_limit', () => ({ opensBy }));
-      kit.waitFor('[data-ui="chat-sign-in-limit"]');
+      signInRefused(kit, { kind: 'daily', opensBy });
+    },
+  },
+  {
+    id: 'device-cap',
+    title: 'Chats already open on the most devices an account may have',
+    route: '/chats',
+    setup: (kit) => {
+      const limits = { ...kit.world.config.limits, devicesMax: 10 };
+      kit.world.config = { ...kit.world.config, limits };
+      signInRefused(kit, { kind: 'cap', devicesMax: limits.devicesMax });
     },
   },
 ];

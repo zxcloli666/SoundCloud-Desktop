@@ -65,6 +65,11 @@
   "limit": {
     "title": "Too many new sign-ins today",
     "opens": "Chats on this computer open by {{time}}",
-    "trying": "Chats keep trying on their own"
+    "trying": "Chats keep trying on their own",
+    "cap": {
+      "title_one": "Chats are already open on {{count}} device, the maximum",
+      "title_other": "Chats are already open on {{count}} devices, the maximum",
+      "remove": "On another device, remove one you no longer use"
+    }
   }
 }

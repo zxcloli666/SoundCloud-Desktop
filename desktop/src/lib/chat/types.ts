@@ -52,9 +52,7 @@ export interface ChatStatus {
   requests: number;
 }
 
-export interface DeviceLimit {
-  opensBy: Millis | null;
-}
+export type DeviceLimit = { kind: 'daily'; opensBy: Millis } | { kind: 'cap'; devicesMax: number };
 
 export interface ChatLimits {
   textMax: number;

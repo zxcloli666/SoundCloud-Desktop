@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { chatBridge } from '../../lib/chat/bridge';
 import { onChatEvent } from '../../lib/chat/events';
 import { chatNavShown } from '../../lib/chat/gate';
-import type { ChatConfig, ChatStatus, Millis } from '../../lib/chat/types';
+import type { ChatConfig, ChatStatus, DeviceLimit } from '../../lib/chat/types';
 import { accountChange, holdsLocalStore } from './account';
 import { useBackdropStore } from './backdrop';
 import { useChatDevicesStore } from './devices';
@@ -13,7 +13,7 @@ import { useChatThreadStore } from './thread';
 export interface ChatState {
   status: ChatStatus | null;
   config: ChatConfig | null;
-  limitOpensBy: Millis | null;
+  deviceLimit: DeviceLimit | null;
   setStatus: (status: ChatStatus) => void;
   setConfig: (config: ChatConfig | null) => void;
 }
@@ -21,7 +21,7 @@ export interface ChatState {
 export const useChatStore = create<ChatState>()((set) => ({
   status: null,
   config: null,
-  limitOpensBy: null,
+  deviceLimit: null,
   setStatus: (status) => set({ status }),
   setConfig: (config) => set({ config }),
 }));
@@ -93,9 +93,7 @@ export async function initChatBridge(): Promise<() => void> {
     onChatEvent('chat:device-added', ({ device }) =>
       useChatDevicesStore.getState().pushAlert(device),
     ),
-    onChatEvent('chat:device-limit', ({ opensBy }) =>
-      useChatStore.setState({ limitOpensBy: opensBy }),
-    ),
+    onChatEvent('chat:device-limit', (deviceLimit) => useChatStore.setState({ deviceLimit })),
   ]);
   const [status, config, limit] = await Promise.allSettled([
     chatBridge.status(),
@@ -103,7 +101,7 @@ export async function initChatBridge(): Promise<() => void> {
     chatBridge.deviceLimit(),
   ]);
   if (status.status === 'fulfilled') useChatStore.getState().setStatus(status.value);
-  if (limit.status === 'fulfilled') useChatStore.setState({ limitOpensBy: limit.value.opensBy });
+  if (limit.status === 'fulfilled') useChatStore.setState({ deviceLimit: limit.value });
   useChatStore.getState().setConfig(config.status === 'fulfilled' ? config.value : null);
   refreshUploads();
   return () => {

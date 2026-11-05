@@ -147,6 +147,10 @@
 | `[data-ui="chat-gallery"]` | Вкладка «Картинки» в инфо чата. Плитка `[data-ui="chat-gallery-tile"]` с `[data-state]` как в альбоме, пустая вкладка `[data-ui="chat-gallery-empty"]` |
 | `[data-ui="chat-device-alert"]` | Окно о новом устройстве |
 | `[data-ui="chat-relogin"]` | Карточка входа в чаты |
+| `[data-ui="chat-keychain"]` | Карточка, когда ключи чатов не читаются, `[data-reason]`: `keychain_denied` или `keychain_unavailable` |
+| `[data-ui="chat-keys-reset"]` | Окно сброса ключей чатов, `[data-state]`: `ready`, `working` или `failed` |
+| `[data-ui="chat-keys-storage"]` | Карточка «Ключи чатов» в настройках чатов, `[data-storage]`: `os` или `file` |
+| `[data-ui="chat-sign-in-limit"]` | Карточка, пока этот компьютер не может войти в чаты. `[data-kind]`: `daily` (много новых входов за сегодня) или `cap` (у аккаунта уже максимум устройств) |
 | `[data-ui="chat-storage"]` | Страница хранилища картинок (`/chats/storage`) |
 | `[data-ui="chat-quota-ring"]` | Кольцо квоты: занято из доступного, на странице хранилища и в настройках чатов |
 | `[data-ui="chat-storage-grid"]` | Сетка ваших картинок; плитка это `[data-ui="chat-storage-tile"]`, у выбранной есть `[aria-pressed="true"]` |

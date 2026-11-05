@@ -36,7 +36,7 @@ export interface ChatEventMap {
   'chat:media-uploads': MediaUploadsEvent;
   'chat:media-upload-error': MediaUploadErrorEvent;
   'chat:media-state': MediaStateEvent;
-  'chat:device-limit': DeviceLimit;
+  'chat:device-limit': DeviceLimit | null;
 }
 
 export type ChatEventName = keyof ChatEventMap;

@@ -99,6 +99,23 @@ test('every key the reset helpers build exists in all five languages', () => {
   }
 });
 
+test('a full account names its device maximum in every plural form of every language', () => {
+  const names = (text: unknown) =>
+    typeof text === 'string' ? [...text.matchAll(/\{\{(\w+)\}\}/g)].map((m) => m[1]) : [];
+  for (const language of LANGUAGES) {
+    const tree = bundle(language);
+    const rules = new Intl.PluralRules(language);
+    const forms = new Set(Array.from({ length: 32 }, (_, index) => rules.select(index + 1)));
+    for (const form of forms) {
+      const title = lookup(tree, `chat.relogin.limit.cap.title_${form}`);
+      assert.deepEqual(names(title), ['count'], `${language} ${form}`);
+    }
+    const remove = lookup(tree, 'chat.relogin.limit.cap.remove');
+    assert.equal(typeof remove, 'string', language);
+    assert.deepEqual(names(remove), [], language);
+  }
+});
+
 test('the limit time is a clock today and a weekday with a clock tomorrow', () => {
   const now = new Date(2026, 10, 5, 9, 0).getTime();
   const later = new Date(2026, 10, 5, 18, 30).getTime();

@@ -66,7 +66,7 @@ export const chatBridge = {
   keychainRetry: () => invoke<void>('chat_keychain_retry'),
   keysReset: () => invoke<void>('chat_keys_reset'),
   keysResetPlan: () => invoke<ResetPlan>('chat_keys_reset_plan'),
-  deviceLimit: () => invoke<DeviceLimit>('chat_device_limit'),
+  deviceLimit: () => invoke<DeviceLimit | null>('chat_device_limit'),
   config: () => invoke<ChatConfig>('chat_config'),
 
   loginBegin: (target: LoginTarget) => invoke<LoginBegin>('chat_login_begin', { target }),

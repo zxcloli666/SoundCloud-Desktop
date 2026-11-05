@@ -5,6 +5,7 @@ use sc_chat::api::Api;
 use sc_chat::channel::Channel;
 use sc_chat::{ChatResult, ChatStatus, Clock, Events, Transport};
 
+use super::DEV_BUILD;
 use super::events::TauriEvents;
 use super::keychain::Keychain;
 use super::media_cache::MediaCache;
@@ -14,7 +15,13 @@ use super::transport::{EdgeTransport, Route};
 use super::upload::{RuntimeHost, Uploads};
 use crate::rt::AppHandle;
 
-const KEYCHAIN_SUFFIX: &str = ".chat";
+pub(super) const RELEASE_KEYCHAIN_SUFFIX: &str = ".chat";
+pub(super) const DEV_KEYCHAIN_SUFFIX: &str = ".chat.dev";
+pub(super) const KEYCHAIN_SUFFIX: &str = if DEV_BUILD {
+    DEV_KEYCHAIN_SUFFIX
+} else {
+    RELEASE_KEYCHAIN_SUFFIX
+};
 
 pub struct ChatState {
     pub app: AppHandle,

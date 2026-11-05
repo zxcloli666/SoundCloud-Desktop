@@ -51,7 +51,9 @@ pub async fn chat_keys_reset_plan(state: State<'_, ChatState>) -> Result<ResetPl
 }
 
 #[tauri::command]
-pub async fn chat_device_limit(state: State<'_, ChatState>) -> Result<DeviceLimit, ChatError> {
+pub async fn chat_device_limit(
+    state: State<'_, ChatState>,
+) -> Result<Option<DeviceLimit>, ChatError> {
     Ok(state.runtime.device_limit())
 }
 

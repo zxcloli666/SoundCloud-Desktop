@@ -1,6 +1,6 @@
 {
   "title": "Chats",
-  "unavailable": "Ainda não disponível para sua conta",
+  "unavailable": "Os chats não estão disponíveis agora",
   "loadFailed": "As configurações não carregaram",
   "retry": "Tentar de novo",
   "whoCanWrite": {

@@ -1,7 +1,7 @@
 use std::sync::Mutex;
 use std::time::Duration;
 
-use sc_chat::{ChatPhase, Millis};
+use sc_chat::{ChatError, ChatPhase, Millis};
 use serde::Serialize;
 use tauri::Emitter;
 
@@ -14,56 +14,75 @@ const RECHECK_MS: u64 = 5 * 60_000;
 
 #[derive(Default)]
 pub struct SignInLimit {
-    opens_by: Mutex<Option<Millis>>,
+    current: Mutex<Option<DeviceLimit>>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct DeviceLimit {
-    pub opens_by: Option<Millis>,
+#[serde(
+    tag = "kind",
+    rename_all = "snake_case",
+    rename_all_fields = "camelCase"
+)]
+pub enum DeviceLimit {
+    Daily { opens_by: Millis },
+    Cap { devices_max: u32 },
 }
 
 impl SignInLimit {
-    pub fn get(&self) -> Option<Millis> {
-        self.opens_by.lock().ok().and_then(|opens_by| *opens_by)
+    pub fn get(&self) -> Option<DeviceLimit> {
+        self.current.lock().ok().and_then(|current| *current)
     }
 
-    pub fn set(&self, next: Option<Millis>) -> bool {
-        let Ok(mut opens_by) = self.opens_by.lock() else {
+    pub fn set(&self, next: Option<DeviceLimit>) -> bool {
+        let Ok(mut current) = self.current.lock() else {
             return false;
         };
-        let changed = *opens_by != next;
-        *opens_by = next;
+        let changed = *current != next;
+        *current = next;
         changed
     }
 }
 
 impl Runtime {
-    pub fn device_limit(&self) -> DeviceLimit {
-        DeviceLimit {
-            opens_by: self.limit.get(),
-        }
+    pub fn device_limit(&self) -> Option<DeviceLimit> {
+        self.limit.get()
     }
 
-    pub(super) fn limited(&self) -> Halt {
-        self.note_limit(Some(opens_by(self.limit.get(), self.now_ms())));
-        limit_wait()
+    pub(super) fn limited(&self, error: &ChatError, devices_max: u32) -> Option<Halt> {
+        let limit = next_limit(error, self.limit.get(), self.now_ms(), devices_max)?;
+        self.note_limit(Some(limit));
+        Some(limit_wait())
     }
 
     pub(super) fn unlimited(&self) {
         self.note_limit(None);
     }
 
-    fn note_limit(&self, opens_by: Option<Millis>) {
-        if self.limit.set(opens_by) {
-            let _ = self.app.emit(DEVICE_LIMIT, DeviceLimit { opens_by });
+    fn note_limit(&self, limit: Option<DeviceLimit>) {
+        if self.limit.set(limit) {
+            let _ = self.app.emit(DEVICE_LIMIT, limit);
         }
     }
 }
 
-pub fn opens_by(known: Option<Millis>, now: Millis) -> Millis {
+pub fn next_limit(
+    error: &ChatError,
+    known: Option<DeviceLimit>,
+    now: Millis,
+    devices_max: u32,
+) -> Option<DeviceLimit> {
+    match error {
+        ChatError::RequestLimit => Some(DeviceLimit::Daily {
+            opens_by: opens_by(known, now),
+        }),
+        ChatError::DeviceCap => Some(DeviceLimit::Cap { devices_max }),
+        _ => None,
+    }
+}
+
+pub fn opens_by(known: Option<DeviceLimit>, now: Millis) -> Millis {
     match known {
-        Some(at) if at > now => at,
+        Some(DeviceLimit::Daily { opens_by }) if opens_by > now => opens_by,
         _ => now + WINDOW_MS,
     }
 }

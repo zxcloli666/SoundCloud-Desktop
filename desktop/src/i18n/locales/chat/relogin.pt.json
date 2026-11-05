@@ -65,6 +65,12 @@
   "limit": {
     "title": "Muitos acessos novos hoje",
     "opens": "Os chats neste computador abrem até {{time}}",
-    "trying": "Os chats continuam tentando sozinhos"
+    "trying": "Os chats continuam tentando sozinhos",
+    "cap": {
+      "title_one": "Os chats já estão abertos em {{count}} dispositivo, o máximo",
+      "title_other": "Os chats já estão abertos em {{count}} dispositivos, o máximo",
+      "title_many": "Os chats já estão abertos em {{count}} dispositivos, o máximo",
+      "remove": "Em outro dispositivo, remova um que você não usa mais"
+    }
   }
 }

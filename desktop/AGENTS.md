@@ -124,7 +124,7 @@ desktop/
 - `app_data_dir/images/` — постоянный кеш картинок (чистится только вручную)
 - `app_data_dir/*.json` — zustand-сторы через `tauri-storage.ts` (каждый файл по имени в fs-скоупах)
 - `app_data_dir/call_enabled.json` — флаг call-режима
-- `app_data_dir/chat/` — данные чатов (chat.db, загрузки, очередь удалений); на Windows `app_local_data_dir/chat/`, чтобы не роумились, старая папка из `%APPDATA%` переносится при старте (`chat/relocate.rs`). Ключи чатов на Windows в Credential Manager с `CRED_PERSIST_LOCAL_MACHINE` (`chat/keychain/wincred.rs`), на macOS и Linux через keyring
+- `app_data_dir/chat/` — данные чатов (chat.db, загрузки, очередь удалений); на Windows `app_local_data_dir/chat/`, чтобы не роумились, старая папка из `%APPDATA%` переносится при старте (`chat/relocate.rs`). Ключи чатов на Windows в Credential Manager с `CRED_PERSIST_LOCAL_MACHINE` (`chat/keychain/wincred.rs`), на macOS и Linux через keyring. Debug-сборка без chat-lab берёт папку `chat-dev/` и сервис ключей `<identifier>.chat.dev`, чтобы не трогать ключи и данные установленного приложения (`chat/mod.rs` DIR, `chat/state.rs` KEYCHAIN_SUFFIX)
 - `app_log_dir/desktop.log` — лог из `diagnostics_log` и нативной части (`diagnostics::log/warn/error`, panic hook); ротация в `desktop.old.log` при старте, если больше 5 МБ
 - Профиль вебвью (WebView2 `EBWebView`, папки WebKit/WebKitGTK) стирается при каждом запуске до создания окна, если не запущена другая копия (`app/webview_data.rs`, лок `instance.lock`). Список имён там же: свои файлы так не называть, на Linux вебвью пишет прямо в `app_data_dir`
 

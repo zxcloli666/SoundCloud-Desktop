@@ -39,9 +39,9 @@ export const ChatGate = memo(function ChatGate({
   const { t } = useTranslation();
   const enabled = useChatStore(selectChatEnabled);
   const phase = useChatStore((state) => state.status?.phase ?? null);
-  const opensBy = useChatStore((state) => state.limitOpensBy);
+  const limit = useChatStore((state) => state.deviceLimit);
 
-  const gate = gateOf(enabled, phase, opensBy !== null);
+  const gate = gateOf(enabled, phase, limit !== null);
 
   if (gate === 'keychain') {
     return (
@@ -72,10 +72,10 @@ export const ChatGate = memo(function ChatGate({
       </Centered>
     );
   }
-  if (gate === 'limit' && opensBy !== null) {
+  if (gate === 'limit' && limit !== null) {
     return (
       <Centered>
-        <SignInLimitCard opensBy={opensBy} />
+        <SignInLimitCard limit={limit} />
       </Centered>
     );
   }

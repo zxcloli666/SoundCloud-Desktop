@@ -141,6 +141,12 @@
         },
         {
           "path": "$APPDATA/chat/**"
+        },
+        {
+          "path": "$APPDATA/chat-dev"
+        },
+        {
+          "path": "$APPDATA/chat-dev/**"
         }
       ]
     }

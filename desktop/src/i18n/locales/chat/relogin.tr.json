@@ -65,6 +65,11 @@
   "limit": {
     "title": "Bugün çok fazla yeni giriş yapıldı",
     "opens": "Bu bilgisayardaki sohbetler en geç {{time}} açılır",
-    "trying": "Sohbetler kendi kendine yeniden deniyor"
+    "trying": "Sohbetler kendi kendine yeniden deniyor",
+    "cap": {
+      "title_one": "Sohbetler zaten izin verilen en fazla {{count}} cihazda açık",
+      "title_other": "Sohbetler zaten izin verilen en fazla {{count}} cihazda açık",
+      "remove": "Başka bir cihazda, artık kullanmadığınız bir cihazı kaldırın"
+    }
   }
 }
