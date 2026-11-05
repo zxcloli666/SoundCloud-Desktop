@@ -34,6 +34,7 @@ async fn a_sent_image_and_its_thumb_open_from_the_cache_without_a_single_get() {
         .find(|item| item.client_id == album)
         .unwrap();
     let attachment = envelope(&item).attachments[0].clone();
+    let media_id = uuid::Uuid::parse_str(&attachment.media_id).unwrap();
     rig.ack(album);
     rig.until("the rows and files to go", |rig| {
         rig.uploads().is_empty() && rig.upload_files().is_empty()
@@ -57,7 +58,7 @@ async fn a_sent_image_and_its_thumb_open_from_the_cache_without_a_single_get() {
     ));
     for part in [Part::Image, Part::Thumb] {
         let fetched = downloads
-            .fetch(rig.conversation, attachment.clone(), part)
+            .fetch(rig.conversation, media_id, attachment.clone(), part)
             .await;
         assert!(matches!(fetched, Ok(Fetched::Image(_))));
     }
