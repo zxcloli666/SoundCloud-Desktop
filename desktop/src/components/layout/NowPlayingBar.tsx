@@ -909,7 +909,9 @@ const PillTrack = React.memo(({ loadProgress }: { loadProgress: number | null })
           <div className="npb-artfb" />
         </div>
         <div className="npb-txt">
-          <span className="npb-sub">{t('player.notPlaying')}</span>
+          <span className="npb-sub">
+            <span>{t('player.notPlaying')}</span>
+          </span>
         </div>
       </div>
     );
@@ -1098,21 +1100,6 @@ const BackgroundGlow = React.memo(() => {
 
 /* ── NowPlayingBar ───────────────────────────────────────────── */
 
-const COMPACT_DOCK_AREA = 1160;
-const TIGHT_DOCK_AREA = 1000;
-const MINI_DOCK_AREA = 900;
-const MICRO_DOCK_AREA = 760;
-const NANO_DOCK_AREA = 600;
-
-function subscribeResize(onChange: () => void) {
-  window.addEventListener('resize', onChange);
-  return () => window.removeEventListener('resize', onChange);
-}
-
-function readWindowWidth() {
-  return window.innerWidth;
-}
-
 export const NowPlayingBar = React.memo(
   ({ onQueueToggle, queueOpen }: { onQueueToggle: () => void; queueOpen: boolean }) => {
     const isPlaying = usePlayerStore((s) => s.isPlaying);
@@ -1121,20 +1108,13 @@ export const NowPlayingBar = React.memo(
     const loadProgress = useLoadProgress();
     const sidebarCollapsed = useSettingsStore((s) => s.sidebarCollapsed);
     const perf = usePerfMode();
-    const windowWidth = useSyncExternalStore(subscribeResize, readWindowWidth);
     const right = useChatDockWidth();
     const left = sidebarWidth(sidebarCollapsed);
-    const area = windowWidth - left - right;
 
     return (
       <div
         className="npb"
         data-ui="player"
-        data-compact={area < COMPACT_DOCK_AREA ? '' : undefined}
-        data-tight={area < TIGHT_DOCK_AREA ? '' : undefined}
-        data-mini={area < MINI_DOCK_AREA ? '' : undefined}
-        data-micro={area < MICRO_DOCK_AREA ? '' : undefined}
-        data-nano={area < NANO_DOCK_AREA ? '' : undefined}
         style={{
           left,
           right,
