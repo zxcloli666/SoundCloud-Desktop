@@ -98,7 +98,7 @@ const CastRow = memo(function CastRow({
       <span className="text-[9px] font-bold uppercase tracking-[0.28em] text-ink-30">
         {roleLabel} · {items.length}
       </span>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 @min-[384px]:grid-cols-3 @min-[512px]:grid-cols-4 @min-[740px]:grid-cols-5 @min-[960px]:grid-cols-6 gap-3">
         {items.map((artist) => (
           <CastCard key={artist.id} artist={artist} roleLabel={roleLabel} aura={aura} />
         ))}
@@ -117,7 +117,7 @@ function AlbumCastImpl({ artists, aura }: AlbumCastProps) {
   const b = perf.blur(28);
   return (
     <div
-      className="rounded-[2rem] p-5 md:p-7"
+      className="rounded-[2rem] p-5 @min-[512px]:p-7"
       style={{
         background:
             b > 0

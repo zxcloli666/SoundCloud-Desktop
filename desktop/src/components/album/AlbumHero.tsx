@@ -96,14 +96,14 @@ function AlbumHeroImpl({ album, hasStar, aura }: AlbumHeroProps) {
   }, [album.tracks, album.artists]);
 
   return (
-    <GlassHeroPanel hasStar={hasStar} aura={aura}>
+    <GlassHeroPanel hasStar={hasStar} aura={aura} className="@container">
         {album.cover_url &&
             perf.bloom &&
             (() => {
                 const hb = perf.blur(50);
                 return (
                     <div
-                        className="absolute -top-10 left-6 md:left-10 w-[220px] h-[220px] md:w-[280px] md:h-[280px] pointer-events-none rounded-[3rem] overflow-hidden opacity-50"
+                        className="absolute -top-10 left-6 @min-[512px]:left-10 w-[220px] h-[220px] @min-[512px]:w-[280px] @min-[512px]:h-[280px] pointer-events-none rounded-[3rem] overflow-hidden opacity-50"
                         style={{
                             filter: `blur(${hb}px)`,
                             transform: 'translateZ(0)',
@@ -120,7 +120,7 @@ function AlbumHeroImpl({ album, hasStar, aura }: AlbumHeroProps) {
                 );
             })()}
 
-      <div data-ui="album-hero" className="relative p-6 md:p-10 flex flex-col lg:flex-row gap-8 lg:gap-12 items-center lg:items-start">
+      <div data-ui="album-hero" className="relative p-6 @min-[512px]:p-10 flex flex-col @min-[740px]:flex-row gap-8 @min-[740px]:gap-12 items-center @min-[740px]:items-start">
         <AlbumCoverArtifact
           title={album.title}
           coverUrl={album.cover_url}
@@ -128,8 +128,8 @@ function AlbumHeroImpl({ album, hasStar, aura }: AlbumHeroProps) {
           aura={aura}
         />
 
-        <div className="flex-1 min-w-0 flex flex-col gap-5 text-center lg:text-left">
-          <div className="flex flex-wrap items-center gap-2 justify-center lg:justify-start">
+        <div className="flex-1 min-w-0 flex flex-col gap-5 text-center @min-[740px]:text-left">
+          <div className="flex flex-wrap items-center gap-2 justify-center @min-[740px]:justify-start">
             <span
               className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-[0.28em]"
               style={{
@@ -162,7 +162,7 @@ function AlbumHeroImpl({ album, hasStar, aura }: AlbumHeroProps) {
           </div>
 
           <h1
-            className="text-5xl md:text-7xl font-black leading-[0.85] tracking-tighter wrap-break-word max-w-full"
+            className="text-5xl @min-[512px]:text-7xl font-black leading-[0.85] tracking-tighter wrap-break-word max-w-full"
             style={
               hasStar
                 ? {
@@ -181,7 +181,7 @@ function AlbumHeroImpl({ album, hasStar, aura }: AlbumHeroProps) {
           </h1>
 
           {(album.primary_artist || featured.length > 0) && (
-            <div className="flex flex-wrap gap-2 justify-center lg:justify-start items-center">
+            <div className="flex flex-wrap gap-2 justify-center @min-[740px]:justify-start items-center">
               {album.primary_artist && (
                 <ArtistChip
                   id={album.primary_artist.id}
@@ -204,7 +204,7 @@ function AlbumHeroImpl({ album, hasStar, aura }: AlbumHeroProps) {
             </div>
           )}
 
-          <div className="flex flex-wrap items-center gap-2 justify-center lg:justify-start">
+          <div className="flex flex-wrap items-center gap-2 justify-center @min-[740px]:justify-start">
             {album.release_year && (
               <InfoChip icon={<Calendar size={11} />}>{album.release_year}</InfoChip>
             )}
@@ -231,7 +231,7 @@ function AlbumHeroImpl({ album, hasStar, aura }: AlbumHeroProps) {
             )}
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 pt-1 justify-center lg:justify-start">
+          <div className="flex flex-wrap items-center gap-3 pt-1 justify-center @min-[740px]:justify-start">
             <AlbumPlayButton tracks={album.tracks} aura={aura} />
             <AlbumSaveButton album={album} />
           </div>

@@ -57,7 +57,7 @@ export const CrateStack = React.memo(function CrateStack({
             type="button"
             onClick={onPlay}
             aria-label={playlist.title}
-            className="relative shrink-0 self-center lg:self-start group/crate cursor-pointer w-[150px] h-[150px] md:w-[200px] md:h-[200px]"
+            className="relative shrink-0 self-center @min-[740px]:self-start group/crate cursor-pointer w-[150px] h-[150px] @min-[512px]:w-[200px] @min-[512px]:h-[200px]"
             style={{perspective: '1000px'}}
         >
             {covers.length === 0 && (

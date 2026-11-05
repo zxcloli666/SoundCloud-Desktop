@@ -164,7 +164,7 @@ export const PlaylistActions = React.memo(function PlaylistActions({
     const shareEmbed = useMemo(() => playlistEmbed(playlist, null, coverSource ?? []), [playlist, coverSource]);
 
     return (
-        <div className="flex items-center gap-3 flex-wrap justify-center lg:justify-start">
+        <div className="flex items-center gap-3 flex-wrap justify-center @min-[740px]:justify-start">
             <button
                 type="button"
                 onClick={onPlayAll}
@@ -192,7 +192,7 @@ export const PlaylistActions = React.memo(function PlaylistActions({
                 className="inline-flex items-center gap-1.5 px-3.5 h-11 rounded-2xl text-[12.5px] font-semibold border bg-ink/[0.04] border-ink/[0.07] text-ink-65 hover:bg-ink/[0.07] hover:text-ink-90 hover:border-ink/[0.12] transition-all duration-300 ease-[var(--ease-apple)] cursor-pointer active:scale-[0.96]"
             >
                 <Shuffle size={14}/>
-                <span className="hidden sm:inline">{t('playlist.shuffle')}</span>
+                <span className="hidden @min-[384px]:inline">{t('playlist.shuffle')}</span>
             </button>
 
             <PlaylistLikeBtn playlistUrn={playlist.urn} count={playlist.likes_count}/>

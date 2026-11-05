@@ -30,10 +30,10 @@ import {type Track, usePlayerStore} from '../stores/player';
 
 function HeroSkeleton() {
   return (
-      <div className="relative rounded-[2rem] overflow-hidden glass-featured p-6 md:p-8">
-          <div className="flex flex-col lg:flex-row gap-8">
+      <div className="relative rounded-[2rem] overflow-hidden glass-featured p-6 @min-[512px]:p-8">
+          <div className="flex flex-col @min-[740px]:flex-row gap-8">
               <div
-                  className="w-[180px] h-[180px] md:w-[220px] md:h-[220px] rounded-[2.2rem] skeleton-shimmer shrink-0 self-center lg:self-start"/>
+                  className="w-[180px] h-[180px] @min-[512px]:w-[220px] @min-[512px]:h-[220px] rounded-[2.2rem] skeleton-shimmer shrink-0 self-center @min-[740px]:self-start"/>
               <div className="flex-1 space-y-4 w-full">
                   <div className="h-4 w-40 rounded-full skeleton-shimmer"/>
                   <div className="h-12 w-3/4 rounded-2xl skeleton-shimmer"/>
@@ -125,7 +125,7 @@ export const TrackPage = React.memo(function TrackPage() {
             <style>{ROOM_KEYFRAMES}</style>
             <Atmosphere/>
             <div
-                className="relative z-10 max-w-[1320px] mx-auto px-4 md:px-8 pt-5 pb-10"
+                className="@container relative z-10 max-w-[1320px] mx-auto px-4 md:px-8 pt-5 pb-10"
                 style={{isolation: 'isolate'}}
             >
                 <HeroSkeleton/>
@@ -157,7 +157,7 @@ export const TrackPage = React.memo(function TrackPage() {
             )}
 
             <div
-                className="relative z-10 max-w-[1320px] mx-auto px-4 md:px-8 pt-5 pb-10 space-y-7"
+                className="@container relative z-10 max-w-[1320px] mx-auto px-4 md:px-8 pt-5 pb-10 space-y-7"
                 style={{isolation: 'isolate'}}
             >
                 <div className="flex items-center justify-between">
@@ -191,7 +191,7 @@ export const TrackPage = React.memo(function TrackPage() {
 
                 <SoundWaveSimilarBlock trackUrn={track.urn}/>
 
-                <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6 lg:gap-8 items-start">
+                <div className="grid grid-cols-1 @min-[740px]:grid-cols-[1fr_340px] gap-6 @min-[740px]:gap-8 items-start">
                     <RoomVoices
                         trackUrn={track.urn}
                         durationMs={track.duration}

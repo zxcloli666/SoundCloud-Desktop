@@ -40,9 +40,9 @@ import {useSettingsStore} from '../stores/settings';
 
 function HeroSkeleton() {
   return (
-    <div className="relative rounded-[2.5rem] overflow-hidden glass-featured p-6 md:p-10">
-      <div className="flex flex-col lg:flex-row gap-10">
-        <div className="w-[150px] h-[150px] md:w-[200px] md:h-[200px] rounded-[1.7rem] skeleton-shimmer shrink-0 self-center lg:self-start" />
+    <div className="relative rounded-[2.5rem] overflow-hidden glass-featured p-6 @min-[512px]:p-10">
+      <div className="flex flex-col @min-[740px]:flex-row gap-10">
+        <div className="w-[150px] h-[150px] @min-[512px]:w-[200px] @min-[512px]:h-[200px] rounded-[1.7rem] skeleton-shimmer shrink-0 self-center @min-[740px]:self-start" />
         <div className="flex-1 space-y-4 w-full">
           <div className="h-4 w-32 rounded-full skeleton-shimmer" />
           <div className="h-14 w-2/3 rounded-2xl skeleton-shimmer" />
@@ -378,7 +378,7 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
         <style>{PLAYLIST_KEYFRAMES}</style>
         {perf.atmosphere && <Atmosphere />}
         <div
-          className="relative z-10 max-w-[1320px] mx-auto px-4 md:px-8 pt-5 pb-10"
+          className="@container relative z-10 max-w-[1320px] mx-auto px-4 md:px-8 pt-5 pb-10"
           style={{ isolation: 'isolate' }}
         >
           <HeroSkeleton />

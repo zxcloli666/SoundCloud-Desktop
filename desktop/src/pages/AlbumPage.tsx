@@ -43,7 +43,7 @@ export function AlbumPage() {
         <AuraField aura={aura} isStar={hasStar} />
 
         <div
-          className="relative z-10 w-full max-w-[1480px] mx-auto px-4 md:px-8 pt-10 md:pt-16 pb-32 flex flex-col gap-8"
+          className="@container relative z-10 w-full max-w-[1480px] mx-auto px-4 md:px-8 pt-10 md:pt-16 pb-32 flex flex-col gap-8"
           style={{ isolation: 'isolate' }}
         >
           <AlbumHero album={data} hasStar={hasStar} aura={aura} />
