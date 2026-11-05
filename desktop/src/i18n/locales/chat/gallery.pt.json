@@ -1,0 +1,51 @@
+{
+  "tile": {
+    "open": "Abrir imagem {{n}} de {{total}}",
+    "deleted": "Imagem apagada",
+    "lost": "Imagem indisponível",
+    "lostRetry": "Imagem indisponível, clique para tentar de novo",
+    "failed": "Falha ao carregar, clique para tentar de novo",
+    "retry": "Tentar de novo"
+  },
+  "upload": {
+    "sending": "Enviando {{done}} de {{total}}",
+    "waiting": "Aguardando conexão",
+    "failed_one": "{{count}} imagem não enviada",
+    "failed_many": "{{count}} de imagens não enviadas",
+    "failed_other": "{{count}} imagens não enviadas",
+    "retry": "Tentar de novo",
+    "retryAll": "Tentar todas de novo",
+    "cancel": "Tirar do álbum",
+    "retryReason": "Tentar de novo: {{reason}}",
+    "discard": "Apagar post",
+    "discardConfirm": "Apagar de vez?"
+  },
+  "viewer": {
+    "label": "Visualizador de imagens",
+    "close": "Fechar",
+    "prev": "Anterior",
+    "next": "Próxima",
+    "zoomIn": "Aproximar",
+    "zoomOut": "Afastar",
+    "zoomReset": "Ajustar à tela",
+    "jump": "Ir para a mensagem",
+    "counter": "{{n}} / {{total}}",
+    "loading": "Carregando",
+    "failed": "O original não carregou",
+    "retry": "Tentar de novo",
+    "alt": "Imagem de {{name}}",
+    "altOf": "Imagem {{n}} de {{total}} de {{name}}"
+  },
+  "grid": {
+    "label": "Imagens do chat",
+    "item": "{{name}}, {{date}}",
+    "loading": "Carregando imagens",
+    "empty": "Ainda sem imagens",
+    "emptyHint": "Os álbuns deste chat aparecem aqui",
+    "failed": "Não foi possível carregar as imagens",
+    "moreFailed": "Não foi possível carregar mais",
+    "retry": "Tentar de novo",
+    "older": "Buscar mais antigas",
+    "itemState": "{{item}}. {{state}}"
+  }
+}

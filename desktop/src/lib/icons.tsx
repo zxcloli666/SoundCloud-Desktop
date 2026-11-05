@@ -60,8 +60,10 @@ import {
   Heart as _Heart,
   Home as _Home,
   Image as _Image,
+  Images as _Images,
   Info as _Info,
   Keyboard as _Keyboard,
+  KeyRound as _KeyRound,
   LayoutDashboard as _LayoutDashboard,
   Library as _Library,
   LifeBuoy as _LifeBuoy,
@@ -74,7 +76,6 @@ import {
   ListX as _ListX,
   Loader2 as _Loader2,
   Lock as _Lock,
-  Waves as _Waves,
   MapPin as _MapPin,
   MessageCircle as _MessageCircle,
   MicVocal as _MicVocal,
@@ -131,6 +132,7 @@ import {
   Volume1 as _Volume1,
   Volume2 as _Volume2,
   VolumeX as _VolumeX,
+  Waves as _Waves,
   Wifi as _Wifi,
   WifiOff as _WifiOff,
   X as _X,
@@ -217,8 +219,10 @@ export const Headphones = memo(_Headphones);
 export const Heart = memo(_Heart);
 export const Home = memo(_Home);
 export const ImageIcon = memo(_Image);
+export const Images = memo(_Images);
 export const Info = memo(_Info);
 export const Keyboard = memo(_Keyboard);
+export const KeyRound = memo(_KeyRound);
 export const LifeBuoy = memo(_LifeBuoy);
 export const Instagram = memo(({ size, className }: { size?: number; className?: string }) => (
   <SimpleIcon icon={siInstagram} size={size} className={className} />

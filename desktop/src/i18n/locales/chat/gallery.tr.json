@@ -1,0 +1,50 @@
+{
+  "tile": {
+    "open": "{{total}} görselden {{n}}. görseli aç",
+    "deleted": "Görsel silindi",
+    "lost": "Görsel kullanılamıyor",
+    "lostRetry": "Görsel kullanılamıyor, yeniden denemek için tıklayın",
+    "failed": "Yüklenemedi, yeniden denemek için tıklayın",
+    "retry": "Yeniden dene"
+  },
+  "upload": {
+    "sending": "{{total}} görselden {{done}} gönderildi",
+    "waiting": "Bağlantı bekleniyor",
+    "failed_one": "{{count}} görsel gönderilmedi",
+    "failed_other": "{{count}} görsel gönderilmedi",
+    "retry": "Yeniden dene",
+    "retryAll": "Tümünü yeniden dene",
+    "cancel": "Albümden çıkar",
+    "retryReason": "Yeniden dene: {{reason}}",
+    "discard": "Gönderiyi sil",
+    "discardConfirm": "Kalıcı olarak silinsin mi?"
+  },
+  "viewer": {
+    "label": "Görsel görüntüleyici",
+    "close": "Kapat",
+    "prev": "Önceki",
+    "next": "Sonraki",
+    "zoomIn": "Yakınlaştır",
+    "zoomOut": "Uzaklaştır",
+    "zoomReset": "Ekrana sığdır",
+    "jump": "Mesaja git",
+    "counter": "{{n}} / {{total}}",
+    "loading": "Yükleniyor",
+    "failed": "Orijinal yüklenemedi",
+    "retry": "Yeniden dene",
+    "alt": "{{name}} tarafından gönderilen görsel",
+    "altOf": "{{name}} tarafından gönderilen görsel, {{total}} görselden {{n}}."
+  },
+  "grid": {
+    "label": "Sohbet görselleri",
+    "item": "{{name}}, {{date}}",
+    "loading": "Görseller yükleniyor",
+    "empty": "Henüz görsel yok",
+    "emptyHint": "Bu sohbetteki albümler burada görünecek",
+    "failed": "Görseller yüklenemedi",
+    "moreFailed": "Daha fazlası yüklenemedi",
+    "retry": "Yeniden dene",
+    "older": "Daha eskisini ara",
+    "itemState": "{{item}}. {{state}}"
+  }
+}

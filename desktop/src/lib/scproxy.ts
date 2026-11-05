@@ -1,4 +1,9 @@
-import { isWhitelistedAssetUrl, toImageCacheUrl, toScproxyUrl } from './asset-url';
+import {
+  isDirectImageUrl,
+  isWhitelistedAssetUrl,
+  toImageCacheUrl,
+  toScproxyUrl,
+} from './asset-url';
 
 type PatchedImage = HTMLImageElement & {
   __origSrc?: string;
@@ -48,6 +53,15 @@ Object.defineProperty(HTMLImageElement.prototype, 'src', {
   },
 });
 
+const setImgAttribute = HTMLImageElement.prototype.setAttribute;
+HTMLImageElement.prototype.setAttribute = function (name: string, value: string) {
+  if (name.toLowerCase() === 'src') {
+    this.src = value;
+    return;
+  }
+  setImgAttribute.call(this, name, value);
+};
+
 // Global: hide broken images (proxy error, CDN blocked, etc.)
 document.addEventListener(
   'error',
@@ -64,7 +78,7 @@ document.addEventListener(
         return;
       }
 
-      if (originalUrl && retryStage === 1) {
+      if (originalUrl && retryStage === 1 && isDirectImageUrl(originalUrl)) {
         img.__proxyRetryStage = 2;
         img.style.removeProperty('display');
         imgSrcDesc.set!.call(img, originalUrl);

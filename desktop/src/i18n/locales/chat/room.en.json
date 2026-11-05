@@ -1,0 +1,142 @@
+{
+  "untitled": "{{name}}'s room",
+  "titlePlaceholder": "Room name",
+  "rename": "Rename",
+  "ephemeral": "The chat disappears after the session",
+  "copyInvite": "Copy invite",
+  "copied": "Copied",
+  "access": {
+    "private": "Private, join by code",
+    "public": "Open, anyone can join",
+    "toPublic": "Open to everyone",
+    "toPrivate": "Make private"
+  },
+  "leave": "Leave session",
+  "end": "End session",
+  "confirmLeave": "Leave?",
+  "confirmEnd": "End?",
+  "leaveHint": "Leave, {{name}} becomes the host",
+  "role": {
+    "moderator": "Moderator"
+  },
+  "menu": {
+    "mute": "Mute",
+    "minutes": "{{value}} min",
+    "unmute": "Unmute",
+    "kick": "Kick",
+    "ban": "Ban",
+    "banConfirm": "Ban for sure?",
+    "makeModerator": "Make moderator",
+    "dropModerator": "Remove moderator",
+    "moderatorsFull": "No moderator slots left"
+  },
+  "muted": {
+    "title": "You are muted"
+  },
+  "handoff": {
+    "mine": "You are the host now",
+    "other": "{{name}} is the host"
+  },
+  "exit": {
+    "ended": "Session ended, chat deleted",
+    "kicked": "You were removed from the room",
+    "evicted": "Your spot in the room was taken",
+    "close": "Close"
+  },
+  "quiet": {
+    "off": "The host turned the chat off",
+    "failed": "The chat did not open",
+    "gone": "Chat unavailable",
+    "retry": "Retry"
+  },
+  "suggest": {
+    "button": "Suggest a track",
+    "short": "Track",
+    "search": "Find a track",
+    "by": "Suggested by {{name}}",
+    "queue": "Queue",
+    "queued": "Queued",
+    "playing": "Playing",
+    "empty": "Nothing found",
+    "wait": "Wait {{value}} s"
+  },
+  "moderatorRow": "Moderator rights: {{name}}",
+  "moderatorOffRow": "Moderator rights removed: {{name}}",
+  "toast": {
+    "youLead": "You control the music now",
+    "ended": "Session ended, chat deleted",
+    "kicked": "You were removed from the room"
+  },
+  "errors": {
+    "banned": "This room is closed to you",
+    "muted": "You are muted",
+    "slow_mode": "Wait a moment",
+    "unavailable": "You can't do that here",
+    "not_member": "You are no longer in the room",
+    "not_found": "That person or room is gone",
+    "busy": "Server is busy, try again",
+    "offline": "No connection",
+    "disabled": "Chats are off right now",
+    "invalid": "That did not work",
+    "room_star_required": "Needs STAR",
+    "request_limit": "Too often, wait a bit",
+    "generic": "Something went wrong, try again"
+  },
+  "links": {
+    "off": "Links are off",
+    "new": "Links unlock a minute after joining"
+  },
+  "rules": {
+    "title": "Chat rules",
+    "chat": "Chat",
+    "links": "Links",
+    "slow": "Slow mode",
+    "slowOff": "Off",
+    "seconds": "{{value}}s"
+  },
+  "perks": {
+    "tuning": "Room",
+    "starHost": "STAR host",
+    "seats_one": "{{count}} member",
+    "seats_other": "{{count}} members",
+    "seatsOf": "{{value}} of {{max}}",
+    "withStar": "{{count}} with STAR",
+    "paused": "New joins paused",
+    "nobodyKicked": "Nobody was removed",
+    "moderators": "Moderators",
+    "cover": {
+      "title": "Cover",
+      "track": "Track artwork",
+      "custom": "Custom cover",
+      "kind": {
+        "avatar": "Avatar",
+        "playlist": "Playlist",
+        "track": "Track"
+      },
+      "accent": "Color",
+      "accentN": "Color {{value}}",
+      "apply": "Done",
+      "reset": "Use track art",
+      "empty": "No artwork of your own yet",
+      "loadFailed": "Artwork did not load",
+      "retry": "Retry",
+      "needStar": "Covers come with STAR",
+      "invalid": "This cover did not fit",
+      "pickOther": "Another",
+      "limited": "Too often",
+      "wait": "In {{value}} s",
+      "failed": "Not saved",
+      "loadMore": "Load the rest"
+    },
+    "images": {
+      "title": "Images",
+      "members": "All",
+      "mods": "Mods",
+      "off": "Nobody",
+      "withStar": "Images with STAR"
+    },
+    "moreMods": "{{value}} moderators with STAR",
+    "starSoon": "STAR turns on in a few minutes",
+    "needsStar": "Needs STAR"
+  }
+}

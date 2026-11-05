@@ -15,7 +15,7 @@ use crate::network::edge::{self, Hop};
 
 use crate::network::netcheck::model::Role;
 use crate::network::traced;
-use crate::shared::constants::is_domain_whitelisted;
+use crate::shared::constants::{is_domain_whitelisted, is_image_upstream};
 use crate::shared::file_lru::{last_used, mark_used};
 
 pub mod maintenance;
@@ -157,6 +157,13 @@ pub async fn handle(encoded: &str) -> ImageResult {
             status: 400,
             content_type: "text/plain".into(),
             data: b"missing upstream".to_vec(),
+        };
+    }
+    if !upstreams.iter().all(|upstream| is_image_upstream(upstream)) {
+        return ImageResult {
+            status: 403,
+            content_type: "text/plain".into(),
+            data: b"upstream not allowed".to_vec(),
         };
     }
 

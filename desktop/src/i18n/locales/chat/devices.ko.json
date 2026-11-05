@@ -1,0 +1,58 @@
+{
+  "span": {
+    "d": "{{count}}일",
+    "h": "{{count}}시간",
+    "m": "{{count}}분"
+  },
+  "seen": {
+    "now": "지금"
+  },
+  "tier": {
+    "direct": "직접 연결",
+    "relay": "예비 경로 경유",
+    "pro": "두 번째 예비 경로 경유"
+  },
+  "version": "v{{version}}",
+  "alert": {
+    "title": "채팅에 새 로그인",
+    "confirm": "본인입니다",
+    "notMe": "본인이 아닙니다",
+    "queue": "+{{count}}개 더",
+    "unlocked": "기록이 열렸습니다",
+    "opensIn": "{{span}} 후 기록이 열립니다",
+    "revoked": "기기가 로그아웃되었습니다",
+    "revokedHint": "본인이었다면 그 기기에서 다시 로그인하세요",
+    "done": "완료"
+  },
+  "banner": {
+    "title": "다른 기기에서 확인하면 이전 메시지가 표시됩니다",
+    "alone": "{{span}} 후 이전 메시지가 표시됩니다",
+    "orIn": "또는 {{span}} 후 자동으로"
+  },
+  "list": {
+    "title": "기기",
+    "limit": "{{count}}/{{max}}",
+    "current": "이 기기",
+    "waiting": "확인 대기 중",
+    "revoked": "로그아웃됨",
+    "added": "추가됨: {{at}}",
+    "young": "새 기기입니다. {{span}} 후 다른 기기를 관리할 수 있습니다",
+    "remove": "삭제",
+    "removeSure": "삭제할까요?",
+    "logout": "로그아웃",
+    "logoutSure": "채팅에서 로그아웃할까요?",
+    "lockedFor": "{{span}} 후 사용 가능",
+    "olderOnly": "더 오래된 기기만 확인할 수 있습니다",
+    "loadFailed": "기기를 불러오지 못했습니다",
+    "retry": "다시 시도"
+  },
+  "errors": {
+    "too_young": "이 기기는 아직 너무 새 기기입니다",
+    "not_found": "이미 로그아웃된 기기입니다",
+    "offline": "채팅에 연결할 수 없습니다",
+    "busy": "서버가 바쁩니다. 잠시 후 다시 시도하세요",
+    "device_revoked": "이 기기는 채팅에서 로그아웃되었습니다",
+    "disabled": "지금은 채팅이 꺼져 있습니다",
+    "generic": "실패했습니다. 다시 시도하세요"
+  }
+}

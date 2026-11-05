@@ -36,7 +36,7 @@ function useBadge(): { tone: Tone; label: string } | null {
   return { tone: 'good', label: t('together.sync.synced') };
 }
 
-export function SyncBadge() {
+export function SyncBadge({ className = '' }: { className?: string }) {
   const badge = useBadge();
   if (!badge) return null;
   const icon =
@@ -49,7 +49,7 @@ export function SyncBadge() {
     );
   return (
     <div
-      className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold transition-colors duration-300 ${TONES[badge.tone]}`}
+      className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold transition-colors duration-300 ${TONES[badge.tone]} ${className}`}
     >
       {icon}
       <span className="truncate">{badge.label}</span>

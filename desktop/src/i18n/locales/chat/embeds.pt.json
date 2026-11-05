@@ -1,0 +1,68 @@
+{
+  "open": "Abrir",
+  "more": "Mais",
+  "remove": "Remover",
+  "track": {
+    "play": "Tocar",
+    "pause": "Pausar",
+    "seek": "Avançar",
+    "from": "Tocar a partir de {{time}}",
+    "unavailable": "Indisponível",
+    "playNext": "Tocar em seguida",
+    "queue": "Adicionar à fila",
+    "together": "Ouvir juntos"
+  },
+  "playlist": {
+    "playAll": "Tocar",
+    "shuffle": "Aleatório",
+    "save": "Salvar",
+    "saved": "Salva"
+  },
+  "user": {
+    "followers_one": "{{value}} seguidor",
+    "followers_many": "{{value}} de seguidores",
+    "followers_other": "{{value}} seguidores",
+    "follow": "Seguir",
+    "following": "Seguindo",
+    "top": "Populares",
+    "noTracks": "Ainda sem faixas"
+  },
+  "room": {
+    "live": "Ao vivo",
+    "closed": "Sala fechada",
+    "join": "Entrar",
+    "here": "Você está aqui",
+    "untitled": "Ouvindo juntos",
+    "host": "Anfitrião: {{name}}",
+    "full": "Lotada"
+  },
+  "share": {
+    "action": "Enviar",
+    "title": "Enviar",
+    "search": "Buscar",
+    "comment": "Comentário",
+    "send": "Enviar",
+    "sendCount": "Enviar ({{count}})",
+    "sent_one": "Enviado para {{count}} chat",
+    "sent_many": "Enviado para {{count}} de chats",
+    "sent_other": "Enviado para {{count}} chats",
+    "failed_one": "Não enviado para {{count}} chat",
+    "failed_many": "Não enviado para {{count}} de chats",
+    "failed_other": "Não enviado para {{count}} chats",
+    "saved": "Salvos",
+    "room": "Sala",
+    "untitled": "Sem nome",
+    "empty": "Ainda sem chats",
+    "noMatch": "Nada encontrado",
+    "loadFailed": "Os chats não carregaram"
+  },
+  "message": {
+    "write": "Mensagem",
+    "unavailable": "Você ainda não pode mandar mensagem para {{name}}",
+    "failed": "Não foi possível abrir o chat",
+    "invite": "Convidar",
+    "inviteText": "Fale comigo no SoundCloud Desktop: {{url}}",
+    "inviteCopied": "Convite copiado",
+    "copyFailed": "Não foi possível copiar"
+  }
+}

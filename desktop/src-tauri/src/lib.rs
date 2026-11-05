@@ -1,6 +1,7 @@
 mod app;
 mod audio;
 mod auth;
+mod chat;
 mod diag;
 mod discord;
 mod import;
@@ -52,6 +53,7 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_notification::init())
         .plugin(app::hotkeys::plugin())
+        .plugin(app::navigation::plugin())
         .register_asynchronous_uri_scheme_protocol("scproxy", |_ctx, request, responder| {
             let Some(state) = network::proxy::STATE.get() else {
                 responder.respond(
@@ -66,6 +68,15 @@ pub fn run() {
                 responder.respond(network::proxy::handle_uri(request).await);
             });
         })
+        .register_asynchronous_uri_scheme_protocol(
+            chat::media_scheme::SCHEME,
+            |ctx, request, responder| {
+                let app = ctx.app_handle().clone();
+                tauri::async_runtime::spawn(async move {
+                    responder.respond(chat::media_scheme::handle(&app, request).await);
+                });
+            },
+        )
         .setup(move |app| {
             #[cfg(windows)]
             app::webview2::exit_if_main_window_missing(app);
@@ -207,6 +218,8 @@ pub fn run() {
                 .set_premium(auth_state.premium_at_start());
             app.manage(auth_state);
 
+            chat::start(app.handle(), rt_handle.clone(), &data_dir);
+
             let call_state = network::call::CallState::init(data_dir.clone(), rt_handle);
             network::call::manage_state(app.handle(), call_state.clone());
             network::call::maybe_autostart(app.handle(), call_state);
@@ -231,6 +244,9 @@ pub fn run() {
             }
             tauri::WindowEvent::Resized(size) if window.label() == "main" => {
                 app::visibility::follow_minimize(window, size);
+            }
+            tauri::WindowEvent::DragDrop(tauri::DragDropEvent::Drop { paths, .. }) => {
+                chat::upload::dropped(window.app_handle(), paths);
             }
             // Transient popover (tray left-click) dismisses on blur; a pinned one
             // (opened from the "Mini player" menu) stays put — closed only by its ✕.
@@ -401,12 +417,89 @@ pub fn run() {
             network::wallpapers::wallpaper_search,
             app::desktop_wallpaper::desktop_wallpaper_found,
             app::desktop_wallpaper::desktop_wallpaper_sync,
+            chat::commands::chat_status,
+            chat::commands::chat_keychain_retry,
+            chat::commands::chat_config,
+            chat::commands::chat_login_begin,
+            chat::commands::chat_login_poll,
+            chat::commands::chat_link_create_pull,
+            chat::commands::chat_link_claim_push,
+            chat::commands::chat_link_poll,
+            chat::commands::chat_list,
+            chat::commands::chat_open,
+            chat::commands::chat_history,
+            chat::commands::chat_images,
+            chat::commands::chat_create,
+            chat::commands::chat_conversation_update,
+            chat::commands::chat_conversation_delete,
+            chat::commands::chat_set_ttl,
+            chat::commands::chat_send,
+            chat::commands::chat_edit,
+            chat::commands::chat_delete,
+            chat::commands::chat_react,
+            chat::commands::chat_pin,
+            chat::commands::chat_mark_read,
+            chat::commands::chat_typing,
+            chat::commands::chat_focus,
+            chat::commands::chat_draft_save,
+            chat::commands::chat_search,
+            chat::commands::chat_members,
+            chat::commands::chat_member_add,
+            chat::commands::chat_member_remove,
+            chat::commands::chat_member_role,
+            chat::commands::chat_accept,
+            chat::commands::chat_decline,
+            chat::commands::chat_requests,
+            chat::commands::chat_invite_create,
+            chat::commands::chat_invite_revoke,
+            chat::commands::chat_invite_join,
+            chat::commands::chat_block,
+            chat::commands::chat_unblock,
+            chat::commands::chat_report,
+            chat::commands::chat_settings_get,
+            chat::commands::chat_settings_put,
+            chat::commands::chat_user_card,
+            chat::commands::chat_devices,
+            chat::commands::chat_device_confirm,
+            chat::commands::chat_device_not_me,
+            chat::commands::chat_device_remove,
+            chat::commands::chat_room_chat,
+            chat::commands::chat_room_preview,
+            chat::commands::chat_room_moderate,
+            chat::commands::chat_room_settings,
+            chat::commands::chat_room_suggest,
+            chat::commands::chat_logout,
+            chat::commands::chat_notify_prefs,
+            chat::commands::chat_embeds,
+            chat::commands::chat_media_usage,
+            chat::commands::chat_media_mine,
+            chat::commands::chat_media_delete,
+            chat::commands::chat_media_restore,
+            chat::commands::chat_media_urls,
+            chat::commands::chat_media_attach,
+            chat::commands::chat_media_attach_data,
+            chat::commands::chat_media_send,
+            chat::commands::chat_media_album_cancel,
+            chat::commands::chat_media_avatar,
+            chat::commands::chat_room_backdrop,
+            chat::commands::chat_room_backdrop_upload,
+            chat::commands::chat_room_backdrop_report,
+            chat::commands::chat_media_uploads,
+            chat::commands::chat_media_parked,
+            chat::commands::chat_media_upload_retry,
+            chat::commands::chat_media_upload_cancel,
+            chat::commands::chat_media_cache_size,
+            chat::commands::chat_media_cache_clear,
+            chat::commands::chat_media_retry,
+            chat::login::chat_link_create_push,
+            chat::login::chat_link_claim_pull,
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")
-        .run(|app, event| {
-            if let tauri::RunEvent::Exit = event {
-                app::themes::sentinel::clear_applying(app);
-            }
+        .run(|app, event| match event {
+            tauri::RunEvent::Exit => app::themes::sentinel::clear_applying(app),
+            #[cfg(target_os = "macos")]
+            tauri::RunEvent::Reopen { .. } => app::visibility::show_main(app),
+            _ => {}
         });
 }

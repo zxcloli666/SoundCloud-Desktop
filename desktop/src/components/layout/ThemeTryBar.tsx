@@ -55,7 +55,7 @@ export function ThemeTryBar() {
   useEffect(() => {
     if (!trial) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape') return;
+      if (e.key !== 'Escape' || document.querySelector('[aria-modal="true"]')) return;
       e.preventDefault();
       e.stopPropagation();
       useThemesStore.getState().revertTrial();

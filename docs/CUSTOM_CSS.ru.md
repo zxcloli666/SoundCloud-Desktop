@@ -107,6 +107,51 @@
 
 Состояния тоже в атрибутах: `aria-current="page"` у открытой ссылки или раздела, `aria-checked` у переключателей, `aria-selected` или `data-active="true"` у вкладок, чипов и вариантов. `html[data-perf="beauty"]`, `"medium"` или `"light"` показывает режим производительности.
 
+### Чаты
+
+| Селектор | Элемент |
+|---|---|
+| `[data-ui="chat-page"]` | Страница «Чаты» |
+| `[data-ui="chat-dock"]` | Панель чатов у правого края |
+| `[data-ui="chat-dock-tabs"]` | Ряд вкладок панели чатов |
+| `[data-ui="chat-list"]` | Список чатов |
+| `[data-ui="chat-filter"]` | Фильтр над списком чатов. `[data-kind]`: `all`, `direct`, `groups`, `unread`, `requests` или `archived`, у выбранного есть `[aria-pressed="true"]` |
+| `[data-ui="chat-row"]` | Чат в списке. `[data-kind]`: `direct`, `group`, `self` или `room`, у открытого есть `[aria-current]` |
+| `[data-ui="chat-thread"]` | Открытый чат с сообщениями, `[data-kind]` как выше |
+| `[data-ui="chat-thread-header"]` | Шапка открытого чата |
+| `[data-ui="chat-bubble"]` | Сообщение. У ваших есть `[data-mine]`, у неотправленных `[data-failed]` |
+| `[data-ui="chat-system-row"]` | Служебная строка между сообщениями, `[data-kind]` называет событие |
+| `[data-ui="chat-composer"]` | Поле ввода сообщения |
+| `[data-ui="chat-embed"]` | Карточка в сообщении. `[data-kind]`: `track`, `playlist`, `user` или `room_invite` |
+| `[data-ui="chat-info"]` | Панель «О чате» |
+| `[data-ui="chat-requests"]` | Запросы на переписку: список и полоса в чате |
+| `[data-ui="chat-room"]` | Вкладка комнаты совместного прослушивания |
+| `[data-ui="chat-room-stage"]` | Область комнаты под шапкой, в ней фон комнаты. `--room-accent` на ней подкрашивает фон |
+| `[data-ui="room-tuning"]` | Кнопка настроек комнаты в шапке комнаты |
+| `[data-ui="room-capacity"]` | Строка мест в настройках комнаты: участники из вместимости, полоса мест, пауза входов |
+| `[data-ui="room-rules"]` | Кнопка правил комнаты в шапке комнаты (ведущий) |
+| `[data-ui="room-images-policy"]` | Кто может отправлять картинки в комнате (ведущий) |
+| `[data-ui="room-cover"]` | Строка обложки комнаты в правилах (ведущий) |
+| `[data-ui="room-cover-picker"]` | Выбор обложки: сетка обложек, цвета, применить и сбросить |
+| `[data-ui="open-room"]` | Комната в списке открытых комнат |
+| `[data-ui="chat-toast"]` | Всплывающее новое сообщение |
+| `[data-ui="chat-share"]` | Окно «Отправить» |
+| `[data-ui="chat-album"]` | Картинки в сообщении. Плитка `[data-ui="chat-album-tile"]`, `[data-state]`: `loading`, `ready`, `failed`, `deleted` или `lost` |
+| `[data-ui="chat-upload-tile"]` | Ваша картинка, которая ещё загружается, `[data-state]`: `queued`, `reserved`, `uploading`, `uploaded`, `committed` или `failed` |
+| `[data-ui="chat-album-status"]` | Строка прогресса или ошибки под вашим альбомом |
+| `[data-ui="chat-media-gone"]` | Заглушка удалённой или недоступной картинки |
+| `[data-ui="chat-lightbox"]` | Просмотр картинки, область картинки `[data-ui="chat-lightbox-stage"]` |
+| `[data-ui="chat-gallery"]` | Вкладка «Картинки» в инфо чата. Плитка `[data-ui="chat-gallery-tile"]` с `[data-state]` как в альбоме, пустая вкладка `[data-ui="chat-gallery-empty"]` |
+| `[data-ui="chat-device-alert"]` | Окно о новом устройстве |
+| `[data-ui="chat-relogin"]` | Карточка входа в чаты |
+| `[data-ui="chat-storage"]` | Страница хранилища картинок (`/chats/storage`) |
+| `[data-ui="chat-quota-ring"]` | Кольцо квоты: занято из доступного, на странице хранилища и в настройках чатов |
+| `[data-ui="chat-storage-grid"]` | Сетка ваших картинок; плитка это `[data-ui="chat-storage-tile"]`, у выбранной есть `[aria-pressed="true"]` |
+| `[data-ui="chat-storage-undo"]` | Полоса отмены после удаления картинок |
+| `[data-ui="chat-storage-entry"]` | Карточка хранилища в настройках чатов |
+
+Остальные окна чатов (новый чат, жалоба, удаление) это `[data-ui="modal"]`. Цвета чатов берутся из токенов схемы (раздел «Белая и тёмная»): `--ink` для текста и линий, `--paper` и `--surface` для подложек, `--shade` для колодцев и затемнений. Тема, которая их задаёт, меняет и чаты. Ваши сообщения, открытый чат и выбранный фильтр подкрашены `--color-chat-tint`.
+
 ## Переменные
 
 | Переменная | Значение |
