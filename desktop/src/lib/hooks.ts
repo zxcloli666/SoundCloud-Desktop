@@ -125,6 +125,7 @@ export interface SCUser {
   urn: string;
   username: string;
   avatar_url: string;
+  banner_url?: string | null;
   permalink_url?: string;
   followers_count?: number;
   followings_count?: number;

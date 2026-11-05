@@ -18,6 +18,7 @@ import {AuraPicker} from './AuraPicker';
 import type { StarTier } from '../../lib/star-tenure';
 import {AvatarArtifact} from './AvatarArtifact';
 import {FollowBtn} from './FollowBtn';
+import {ProfileBanner} from './ProfileBanner';
 import {StatOrb} from './StatOrb';
 import {getWebIcon, InfoChip, ProChip, VerifiedBadge} from './UserChips';
 
@@ -35,6 +36,7 @@ interface IdentityHubProps {
     full_name?: string | null;
     description?: string | null;
     avatar_url?: string | null;
+    banner_url?: string | null;
     permalink_url?: string | null;
     plan?: string | null;
     verified?: boolean;
@@ -79,6 +81,7 @@ export function IdentityHub({
 
   return (
     <GlassHeroPanel hasStar={hasStar} aura={aura}>
+      {user.banner_url && <ProfileBanner key={user.banner_url} url={user.banner_url} hasStar={hasStar} />}
       <div data-ui="user-hero" className="relative p-6 md:p-10 flex flex-col lg:flex-row gap-8 lg:gap-10 items-center lg:items-stretch">
         <AvatarArtifact
           username={user.username}
