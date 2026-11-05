@@ -146,6 +146,10 @@ States are in attributes too: `aria-current="page"` on the open link or section,
 | `[data-ui="chat-gallery"]` | Images tab in chat info. A tile is `[data-ui="chat-gallery-tile"]` with `[data-state]` as in an album, the empty tab is `[data-ui="chat-gallery-empty"]` |
 | `[data-ui="chat-device-alert"]` | New device alert |
 | `[data-ui="chat-relogin"]` | Chat sign-in card |
+| `[data-ui="chat-keychain"]` | Card shown when the chat keys can't be read, `[data-reason]` is `keychain_denied` or `keychain_unavailable` |
+| `[data-ui="chat-keys-reset"]` | Reset chat keys window, `[data-state]` is `ready`, `working` or `failed` |
+| `[data-ui="chat-keys-storage"]` | Chat keys card in chat settings, `[data-storage]` is `os` or `file` |
+| `[data-ui="chat-sign-in-limit"]` | Card shown while this computer can't sign in to chats. `[data-kind]` is `daily` (too many new sign-ins today) or `cap` (the account is on its maximum number of devices) |
 | `[data-ui="chat-storage"]` | Image storage page (`/chats/storage`) |
 | `[data-ui="chat-quota-ring"]` | Quota ring: used of quota, on the storage page and in chat settings |
 | `[data-ui="chat-storage-grid"]` | Grid of your images; a tile is `[data-ui="chat-storage-tile"]`, a selected one has `[aria-pressed="true"]` |

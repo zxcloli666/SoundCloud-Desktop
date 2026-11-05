@@ -1,6 +1,6 @@
 {
   "title": "채팅",
-  "unavailable": "아직 이 계정에서는 사용할 수 없어요",
+  "unavailable": "지금은 채팅을 사용할 수 없어요",
   "loadFailed": "설정을 불러오지 못했어요",
   "retry": "다시 시도",
   "whoCanWrite": {

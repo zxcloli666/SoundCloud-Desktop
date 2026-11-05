@@ -1,6 +1,6 @@
 {
   "title": "Chats",
-  "unavailable": "Not available for your account yet",
+  "unavailable": "Chats are not available right now",
   "loadFailed": "Settings did not load",
   "retry": "Retry",
   "whoCanWrite": {
