@@ -1403,7 +1403,7 @@
     "autoplay": "자동 재생",
     "autoplayDesc": "대기열이 끝나면 마지막 곡의 웨이브에서 비슷한 트랙을 이어서 재생해요",
     "altUploads": "재생할 수 없는 트랙 대신 사본",
-    "altUploadsDesc": "STAR가 없으면 Go+ 트랙과 지역 제한 트랙은 다른 계정에 올라온 같은 곡의 업로드를 찾아 재생해요",
+    "altUploadsDesc": "í¸ëì ì¬ìí  ì ìì¼ë©´ ë¤ë¥¸ ê³ì ì ì¬ë¼ì¨ ê°ì ê³¡ì ìë¡ëë¥¼ ì°¾ì ëì  ì¬ìí´ì",
     "searchPlayback": "검색에서 재생",
     "searchPlaybackSimilar": "비슷한 트랙",
     "searchPlaybackResults": "검색 결과",

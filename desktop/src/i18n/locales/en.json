@@ -1419,7 +1419,7 @@
     "autoplay": "Autoplay",
     "autoplayDesc": "When the queue runs out, keep playing similar tracks from the wave of the last one",
     "altUploads": "Copy instead of an unavailable track",
-    "altUploadsDesc": "Without STAR, Go+ and region-locked tracks play from an upload of the same track on another account when one is found",
+    "altUploadsDesc": "If a track can't be played, an upload of the same track on another account plays instead when one is found",
     "searchPlayback": "Playing from search",
     "searchPlaybackSimilar": "Similar tracks",
     "searchPlaybackResults": "Search results",

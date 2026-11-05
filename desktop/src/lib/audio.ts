@@ -10,9 +10,9 @@ import {
   dropAltUpload,
   findAltUpload,
   knownAltUpload,
+  mayUseAltUpload,
   playingCopyOf,
   setPlayingCopy,
-  wantsAltUpload,
 } from './alt-upload';
 import {
   api,
@@ -505,16 +505,10 @@ async function loadTrack(track: Track, resumeAt = 0) {
       return;
     }
 
-    if (swapsToCopy(track)) {
-      setDownloadProgress(0);
-      const copy = await findAltUpload(track);
-      if (gen !== loadGen) return;
-      if (copy && startGate == null) {
-        file = copy;
-        fallbackDuration = copy.duration / 1000;
-        cachedDuration = fallbackDuration;
-      }
-      setDownloadProgress(null);
+    file = playableFile(track);
+    if (file !== track) {
+      fallbackDuration = file.duration / 1000;
+      cachedDuration = fallbackDuration;
     }
     setPlayingCopy(urn, file === track ? null : file);
     fileUrn = file.urn;
@@ -571,8 +565,8 @@ async function loadTrack(track: Track, resumeAt = 0) {
     setDownloadProgress(0);
     watchLoad(() => {
       if (gen !== loadGen) return;
-      if (file === track) skipUnloadable(track, true);
-      else playOriginal(track);
+      if (file !== track) dropAltUpload(track);
+      skipUnloadable(track, true);
     });
     setTimeout(() => {
       if (gen !== loadGen || downloadProgress !== 0) return;
@@ -632,14 +626,22 @@ async function loadTrack(track: Track, resumeAt = 0) {
     stopLoadWatch();
     setDownloadProgress(null);
     usePlayerStore.getState().setPlaybackTransport(null, null);
-    if (file !== track) {
-      playOriginal(track);
-      return;
-    }
+    const isCopy = file !== track;
+    if (isCopy) dropAltUpload(track);
     const localMissing = local && isFileMissing(e);
     if (localMissing) markLocalMissing(urn);
     const errorText = localMissing ? i18n.t('local.fileMissing') : getLoadErrorText(e);
-    if (errorText?.includes('no stream available')) {
+    if (!isCopy && errorText?.includes('no stream available')) {
+      if (startGate == null && mayUseAltUpload(track)) {
+        setDownloadProgress(0);
+        const found = await findAltUpload(track);
+        if (gen !== loadGen) return;
+        setDownloadProgress(null);
+        if (found) {
+          void loadTrack(track, resumeAt);
+          return;
+        }
+      }
       notifyError(i18n.t('track.noStream'), {
         id: 'track-load-error',
         description: `${track.title}: ${i18n.t('track.noStreamHint')}`,
@@ -654,13 +656,9 @@ async function loadTrack(track: Track, resumeAt = 0) {
   }
 }
 
-function swapsToCopy(track: Track): boolean {
-  return startGate == null && wantsAltUpload(track);
-}
-
-function playOriginal(track: Track) {
-  dropAltUpload(track);
-  void loadTrack(track);
+function playableFile(track: Track): Track {
+  if (startGate != null || !mayUseAltUpload(track)) return track;
+  return knownAltUpload(track) ?? track;
 }
 
 function skipUnloadable(track: Track, stuck: boolean): boolean {
@@ -858,7 +856,7 @@ function maybeStartCrossfade() {
   const next = upcomingTrack();
   if (!canCrossfade() || !next || isUrnDisliked(next.urn) || isTrackBlocked(next)) return;
   const gen = loadGen;
-  const file = swapsToCopy(next) ? (knownAltUpload(next) ?? next) : next;
+  const file = playableFile(next);
   void getCacheInfo(file.urn).then((info) => {
     if (!info?.path || gen !== loadGen || !hasTrack || !currentUrn) return;
     if (!canCrossfade() || upcomingTrack()?.urn !== next.urn) return;
@@ -1149,8 +1147,8 @@ export function preloadQueue() {
     .slice(queueIndex + 1)
     .filter(canPreload)
     .slice(0, 3)
-    .map(async (track) => (swapsToCopy(track) ? ((await findAltUpload(track)) ?? track) : track));
-  void Promise.all(upcoming).then(preloadNow);
+    .map(playableFile);
+  preloadNow(upcoming);
 }
 
 usePlayerStore.subscribe((state, prev) => {
