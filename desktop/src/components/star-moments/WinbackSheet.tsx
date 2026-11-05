@@ -43,7 +43,7 @@ export const WinbackSheet = memo(function WinbackSheet() {
 
 const ROWS = [
   { key: 'sound', Icon: AudioLines, star: 1, free: 0.62 },
-  { key: 'goPlus', Icon: Music, star: 1, free: 0.12 },
+  { key: 'goPlus', Icon: Music, star: 1, free: 0 },
   { key: 'sync', Icon: RefreshCw, star: 1, free: 0.18 },
 ] as const;
 

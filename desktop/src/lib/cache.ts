@@ -17,7 +17,6 @@ import {sanitizeFilename} from './filename';
 import {onIdle} from './idle';
 import {forgetAllPinned, forgetLikedUrn, forgetPinned, getOfflineKeptUrns} from './offline-index';
 import { requestedQuality } from './streaming';
-import {isPreviewOnly} from './track-access';
 
 type StorageQuality = TrackScdMeta['storage_quality'];
 
@@ -105,8 +104,8 @@ async function buildCacheRequest(
   };
 }
 
-export function expectedDurationMs(track: Pick<Track, 'duration' | 'access' | 'policy'>) {
-  return isPreviewOnly(track) ? undefined : track.duration;
+export function expectedDurationMs(track: Pick<Track, 'duration' | 'full_duration'>) {
+  return track.full_duration ?? track.duration;
 }
 
 export async function ensureTrackCached(

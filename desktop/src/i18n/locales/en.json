@@ -73,7 +73,7 @@
     "openApp": "Open SoundCloud",
     "notPlaying": "Not playing",
     "noContinuation": "No similar tracks found, playback stopped",
-    "altUpload": "Playing a full copy by {{name}}",
+    "altUpload": "Playing a copy by {{name}}",
     "cancelLoad": "Stop loading",
     "volume": "Volume",
     "volumeReset": "Reset volume to 100%",
@@ -307,7 +307,6 @@
     "language": "Language",
     "album": "From album",
     "fullLength": "Full length",
-    "previewOnly": "Preview only",
     "source": "Source",
     "showMore": "Show more",
     "showLess": "Show less",
@@ -912,7 +911,7 @@
     "listWeight": "Weight",
     "listTime": "Time",
     "stampForging": "FORGING",
-    "stampPreview": "PREVIEW",
+    "stampCut": "CUT SHORT",
     "stampMissing": "NO FILE",
     "rowForging": "forging · ffmpeg",
     "actPlay": "Play",
@@ -1187,7 +1186,6 @@
     "scrobbleLiveListening": "Scrobbles in {{time}}",
     "scrobbleLiveScrobbled": "Scrobbled",
     "scrobbleLiveShort": "Tracks under 30 seconds are not scrobbled",
-    "scrobbleLivePreview": "Previews are not scrobbled",
     "scrobbleLiveSession_one": "{{count}} this session",
     "scrobbleLiveSession_other": "{{count}} this session",
     "scrobblePaused": "Scrobbling is paused. Turn it on to send your listens again.",
@@ -1420,8 +1418,8 @@
     "manualUpdates": "Updates are installed manually",
     "autoplay": "Autoplay",
     "autoplayDesc": "When the queue runs out, keep playing similar tracks from the wave of the last one",
-    "altUploads": "Full copy instead of preview",
-    "altUploadsDesc": "Without STAR, a preview-only track plays from a full upload of the same track on another account when one is found",
+    "altUploads": "Copy instead of an unavailable track",
+    "altUploadsDesc": "Without STAR, Go+ and region-locked tracks play from an upload of the same track on another account when one is found",
     "searchPlayback": "Playing from search",
     "searchPlaybackSimilar": "Similar tracks",
     "searchPlaybackResults": "Search results",
@@ -2714,9 +2712,6 @@
       "left_other": "{{count}} days left",
       "streakLost": "Streak will be lost"
     },
-    "preview": {
-      "label": "Go+ preview"
-    },
     "winback": {
       "title": "Your STAR went out",
       "sound": {
@@ -2724,8 +2719,8 @@
         "free": "HQ"
       },
       "goPlus": {
-        "star": "full",
-        "free": "30 s"
+        "star": "yes",
+        "free": "no"
       },
       "sync": {
         "star": "minutes",

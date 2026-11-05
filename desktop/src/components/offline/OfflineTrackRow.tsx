@@ -30,14 +30,14 @@ function Stamp({
   tone,
   children,
 }: {
-  tone: 'raw' | 'forge' | 'preview' | 'missing';
+  tone: 'raw' | 'forge' | 'cut' | 'missing';
   children: React.ReactNode;
 }) {
   const cls = {
     raw: 'border-dashed border-ink/[0.18] text-ink-45',
     forge:
       'border-[var(--color-accent-glow)] text-[var(--color-accent-hover)] bg-[var(--color-accent-glow)]',
-    preview: 'border-amber-400/40 bg-amber-400/[0.08] text-amber-200/90',
+    cut: 'border-amber-400/40 bg-amber-400/[0.08] text-amber-200/90',
     missing: 'border-ink/[0.08] text-ink-25',
   }[tone];
   return (
@@ -221,7 +221,7 @@ export const OfflineTrackRow = React.memo(function OfflineTrackRow({
         <TrackStatusBadges meta={track._scd_meta} />
         {inv?.stage === 'raw' && !forging && <Stamp tone="raw">RAW</Stamp>}
         {forging && <Stamp tone="forge">{t('offline.stampForging')}</Stamp>}
-        {truncated && <Stamp tone="preview">{t('offline.stampPreview')}</Stamp>}
+        {truncated && <Stamp tone="cut">{t('offline.stampCut')}</Stamp>}
         {!cached && likesSection && !downloading && (
           <Stamp tone="missing">{t('offline.stampMissing')}</Stamp>
         )}

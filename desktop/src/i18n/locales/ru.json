@@ -73,7 +73,7 @@
     "openApp": "Открыть SoundCloud",
     "notPlaying": "Ничего не играет",
     "noContinuation": "Похожих треков не нашлось, воспроизведение остановлено",
-    "altUpload": "Играет полная копия от {{name}}",
+    "altUpload": "Играет копия от {{name}}",
     "cancelLoad": "Остановить загрузку",
     "volume": "Громкость",
     "volumeReset": "Сбросить громкость до 100%",
@@ -308,7 +308,6 @@
     "language": "Язык",
     "album": "Из альбома",
     "fullLength": "Полная длина",
-    "previewOnly": "Только превью",
     "source": "Источник",
     "showMore": "Показать ещё",
     "showLess": "Свернуть",
@@ -928,7 +927,7 @@
     "listWeight": "Вес",
     "listTime": "Время",
     "stampForging": "КУЁТСЯ",
-    "stampPreview": "ПРЕВЬЮ",
+    "stampCut": "ОБРЕЗАН",
     "stampMissing": "НЕ СКАЧАН",
     "rowForging": "куётся · ffmpeg",
     "actPlay": "Играть",
@@ -1217,7 +1216,6 @@
     "scrobbleLiveListening": "Скроббл через {{time}}",
     "scrobbleLiveScrobbled": "Заскробблено",
     "scrobbleLiveShort": "Треки короче 30 секунд не скробблятся",
-    "scrobbleLivePreview": "Превью не скробблятся",
     "scrobbleLiveSession_one": "{{count}} за сеанс",
     "scrobbleLiveSession_few": "{{count}} за сеанс",
     "scrobbleLiveSession_many": "{{count}} за сеанс",
@@ -1456,8 +1454,8 @@
     "manualUpdates": "Обновления ставятся вручную",
     "autoplay": "Автопродолжение",
     "autoplayDesc": "Когда очередь закончится, дальше играют похожие треки из волны от последнего",
-    "altUploads": "Полная копия вместо превью",
-    "altUploadsDesc": "Без STAR вместо превью играет полная загрузка этого трека с другого аккаунта, если она нашлась",
+    "altUploads": "Копия вместо недоступного трека",
+    "altUploadsDesc": "Без STAR Go+ и закрытые в регионе треки играют с загрузки того же трека на другом аккаунте, если она нашлась",
     "searchPlayback": "Воспроизведение из поиска",
     "searchPlaybackSimilar": "Похожие треки",
     "searchPlaybackResults": "Результаты поиска",
@@ -2798,9 +2796,6 @@
       "left_many": "Ещё {{count}} дней",
       "streakLost": "Серия сгорит"
     },
-    "preview": {
-      "label": "Превью Go+"
-    },
     "winback": {
       "title": "STAR погас",
       "sound": {
@@ -2808,8 +2803,8 @@
         "free": "HQ"
       },
       "goPlus": {
-        "star": "целиком",
-        "free": "30 сек"
+        "star": "есть",
+        "free": "нет"
       },
       "sync": {
         "star": "минуты",

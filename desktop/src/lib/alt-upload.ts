@@ -6,7 +6,6 @@ import { isTrackBlocked } from './blocked-artists';
 import { isUrnDisliked } from './dislikes';
 import { type PagedResponse, pagedUrl } from './hooks';
 import { isKnownNonPremium } from './subscription';
-import { isPreviewOnly } from './track-access';
 import { foldName, getTrackDisplay, stripNoiseTags } from './track-display';
 
 const PREVIEW_MS = 30_000;
@@ -26,7 +25,12 @@ function lengthOf(track: Track): number {
 }
 
 function isLocked(track: Track): boolean {
-  return isPreviewOnly(track) || track.access === 'blocked' || track.policy === 'BLOCK';
+  return (
+    track.access === 'preview' ||
+    track.access === 'blocked' ||
+    track.policy === 'SNIP' ||
+    track.policy === 'BLOCK'
+  );
 }
 
 function isUsable(track: Track): boolean {
