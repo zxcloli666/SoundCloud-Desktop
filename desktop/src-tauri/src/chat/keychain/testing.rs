@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::sync::atomic::{AtomicU32, Ordering};
 use std::sync::{Arc, Mutex};
 
 use sc_chat::{ChatError, ChatResult, KeyName, Zeroizing};
@@ -49,6 +50,73 @@ impl Vault for SharedVault {
     fn delete(&self, name: KeyName) -> ChatResult<()> {
         self.check()?;
         self.keys.lock().unwrap().remove(&name);
+        Ok(())
+    }
+}
+
+pub struct Broken;
+
+impl Vault for Broken {
+    fn load(&self, _name: KeyName) -> ChatResult<Option<Zeroizing<Vec<u8>>>> {
+        Err(ChatError::Keychain)
+    }
+
+    fn save(&self, _name: KeyName, _secret: &[u8]) -> ChatResult<()> {
+        Err(ChatError::Keychain)
+    }
+
+    fn delete(&self, _name: KeyName) -> ChatResult<()> {
+        Err(ChatError::Keychain)
+    }
+}
+
+#[derive(Clone, Default)]
+pub struct Refusing {
+    pub asked: Arc<AtomicU32>,
+    pub allow_after: Option<u32>,
+}
+
+impl Refusing {
+    fn answer<T>(&self, granted: T) -> ChatResult<T> {
+        let asked = self.asked.fetch_add(1, Ordering::SeqCst) + 1;
+        match self.allow_after {
+            Some(after) if asked > after => Ok(granted),
+            _ => Err(ChatError::KeychainDenied),
+        }
+    }
+
+    pub fn asked(&self) -> u32 {
+        self.asked.load(Ordering::SeqCst)
+    }
+}
+
+impl Vault for Refusing {
+    fn load(&self, _name: KeyName) -> ChatResult<Option<Zeroizing<Vec<u8>>>> {
+        self.answer(None)
+    }
+
+    fn save(&self, _name: KeyName, _secret: &[u8]) -> ChatResult<()> {
+        self.answer(())
+    }
+
+    fn delete(&self, _name: KeyName) -> ChatResult<()> {
+        self.answer(())
+    }
+}
+
+#[derive(Clone, Default)]
+pub struct Sticky(pub SharedVault);
+
+impl Vault for Sticky {
+    fn load(&self, name: KeyName) -> ChatResult<Option<Zeroizing<Vec<u8>>>> {
+        self.0.load(name)
+    }
+
+    fn save(&self, name: KeyName, secret: &[u8]) -> ChatResult<()> {
+        self.0.save(name, secret)
+    }
+
+    fn delete(&self, _name: KeyName) -> ChatResult<()> {
         Ok(())
     }
 }

@@ -1,21 +1,15 @@
 import { memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { chatBridge } from '../../../lib/chat/bridge';
+import { type KeychainReason, keychainText, resetLinkText } from '../../../lib/chat/gate';
 import { KeyRound, Loader2, RefreshCw } from '../../../lib/icons';
 import { usePerfMode } from '../../../lib/perf';
-import { isLinux, isMac } from '../../../lib/platform';
+import { desktopOs } from '../../../lib/platform';
 import { useChatStore } from '../../../stores/chat';
 import { GlassCard } from '../../ui/GlassCard';
-
-export type KeychainReason = 'keychain_denied' | 'keychain_unavailable';
+import { ResetKeysDialog } from './ResetKeysDialog';
 
 let retries = 0;
-
-function vaultKey(base: string): string {
-  if (isMac()) return `${base}.mac`;
-  if (isLinux()) return `${base}.linux`;
-  return `${base}.windows`;
-}
 
 export const KeychainCard = memo(function KeychainCard({ reason }: { reason: KeychainReason }) {
   const { t } = useTranslation();
@@ -25,8 +19,10 @@ export const KeychainCard = memo(function KeychainCard({ reason }: { reason: Key
       : 'chat.relogin.keychain';
   const perf = usePerfMode();
   const status = useChatStore((state) => state.status);
+  const storage = status?.keyStorage ?? 'os';
   const [askedAt, setAskedAt] = useState<typeof status | undefined>(undefined);
   const [failed, setFailed] = useState(false);
+  const [resetting, setResetting] = useState(false);
   const pending = askedAt === status;
   const again = retries > 0;
 
@@ -71,7 +67,9 @@ export const KeychainCard = memo(function KeychainCard({ reason }: { reason: Key
           <p className="text-[14.5px] font-semibold leading-snug text-ink-90">
             {t(`${base}.title`)}
           </p>
-          <p className="text-[12.5px] leading-snug text-ink-60">{t(vaultKey(base))}</p>
+          <p className="text-[12.5px] leading-snug text-ink-60">
+            {t(keychainText(reason, storage, desktopOs()))}
+          </p>
           <p className="text-[12px] text-ink-40">{t('chat.relogin.musicStays')}</p>
         </div>
         {(again || failed) && !pending && (
@@ -92,7 +90,16 @@ export const KeychainCard = memo(function KeychainCard({ reason }: { reason: Key
           {pending ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
           {t(pending ? `${base}.asking` : 'chat.relogin.retry')}
         </button>
+        <button
+          type="button"
+          data-ui="chat-keys-reset-open"
+          onClick={() => setResetting(true)}
+          className="-mt-1 cursor-pointer rounded-lg px-2 py-1 text-[12px] font-medium text-ink-45 underline decoration-ink/20 underline-offset-4 outline-none transition-colors duration-200 hover:text-ink-75 hover:decoration-ink/40 focus-visible:ring-2 focus-visible:ring-accent/60"
+        >
+          {t(resetLinkText(storage))}
+        </button>
       </div>
+      <ResetKeysDialog open={resetting} onClose={() => setResetting(false)} />
     </GlassCard>
   );
 });

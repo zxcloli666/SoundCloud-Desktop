@@ -5,6 +5,7 @@ mod file;
 mod memory;
 #[cfg(all(not(windows), not(feature = "chat-lab")))]
 mod os;
+mod reset;
 #[cfg(test)]
 pub(crate) mod testing;
 #[cfg(all(windows, not(feature = "chat-lab")))]
@@ -27,8 +28,12 @@ use os::OsVault;
 #[cfg(all(windows, not(feature = "chat-lab")))]
 use wincred::CredVault;
 
+pub use reset::ResetPlan;
+
 const STALE: &str = "keys-stale";
 const MADE: &str = "keys-made";
+const RESETTING: &str = "keys-resetting";
+const RESET: &str = "keys-reset";
 
 pub trait Vault: Send + Sync {
     fn load(&self, name: KeyName) -> ChatResult<Option<Zeroizing<Vec<u8>>>>;
@@ -41,9 +46,12 @@ pub trait Vault: Send + Sync {
 pub struct Keychain {
     os: Box<dyn Vault>,
     file: FileVault,
+    dir: PathBuf,
     database: PathBuf,
     stale: PathBuf,
     made: PathBuf,
+    resetting: PathBuf,
+    reset: PathBuf,
     storage: Mutex<KeyStorage>,
     denied: AtomicBool,
     refusals: Notify,
@@ -65,9 +73,12 @@ impl Keychain {
         Self {
             os,
             file,
+            dir: dir.to_path_buf(),
             database: database_path(dir),
             stale: dir.join(STALE),
             made: dir.join(MADE),
+            resetting: dir.join(RESETTING),
+            reset: dir.join(RESET),
             storage: Mutex::new(storage),
             denied: AtomicBool::new(false),
             refusals: Notify::new(),
@@ -76,7 +87,7 @@ impl Keychain {
     }
 
     pub fn denied(&self) -> bool {
-        self.denied.load(Ordering::SeqCst)
+        self.storage() == KeyStorage::Os && self.denied.load(Ordering::SeqCst)
     }
 
     pub fn allow(&self) {
@@ -120,7 +131,7 @@ impl Keychain {
         let storage = self.storage();
         let wiped = KeyName::ALL
             .into_iter()
-            .try_for_each(|name| self.ask(storage, |vault| vault.delete(name)));
+            .try_for_each(|name| self.ask(storage, |vault| erase(vault, name)));
         match wiped {
             Ok(()) => remove_marker(&self.stale).and(remove_marker(&self.made)),
             Err(error) => {
@@ -133,11 +144,13 @@ impl Keychain {
     }
 
     pub fn sweep(&self) -> ChatResult<()> {
-        if !self.stale.exists() {
+        if !self.resetting.exists() && !self.stale.exists() {
             return Ok(());
         }
         let _one_at_a_time = DeviceKeys::exclusive();
-        if self.stale.exists() {
+        if let Some(plan) = self.unfinished_reset() {
+            self.reset_held(plan)
+        } else if self.stale.exists() {
             self.wipe_held()
         } else {
             Ok(())
@@ -163,7 +176,7 @@ impl Keychain {
         op: impl Fn(&dyn Vault) -> ChatResult<T>,
     ) -> ChatResult<T> {
         let _one_prompt_at_a_time = self.asking.lock();
-        if storage == KeyStorage::Os && self.denied() {
+        if storage == KeyStorage::Os && self.denied.load(Ordering::SeqCst) {
             return Err(ChatError::KeychainDenied);
         }
         let done = op(self.vault(storage));
@@ -230,6 +243,18 @@ fn device_vault(service: &str) -> Box<dyn Vault> {
 #[cfg(feature = "chat-lab")]
 fn device_vault(_service: &str) -> Box<dyn Vault> {
     Box::new(memory::MemoryVault::default())
+}
+
+fn erase(vault: &dyn Vault, name: KeyName) -> ChatResult<()> {
+    vault.delete(name)?;
+    if vault.load(name)?.is_none() {
+        return Ok(());
+    }
+    diagnostics::warn(format!(
+        "[chat] keychain {} is still there after a delete",
+        name.as_str()
+    ));
+    Err(ChatError::Keychain)
 }
 
 fn remove_marker(path: &Path) -> ChatResult<()> {

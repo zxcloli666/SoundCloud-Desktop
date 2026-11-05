@@ -26,6 +26,7 @@ export type ChatPhase =
   | 'keychain_denied'
   | 'keychain_unavailable';
 export type KeyStorage = 'os' | 'file';
+export type ResetPlan = 'file' | 'probe' | 'in_place';
 export type Access = 'beta' | 'all';
 
 export const DISAPPEARING_TTLS = [3_600, 86_400, 604_800] as const;
@@ -49,6 +50,10 @@ export interface ChatStatus {
   unread: number;
   mentions: number;
   requests: number;
+}
+
+export interface DeviceLimit {
+  opensBy: Millis | null;
 }
 
 export interface ChatLimits {

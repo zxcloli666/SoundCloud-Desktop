@@ -12,7 +12,7 @@ use uuid::Uuid;
 use self::index::Index;
 use super::download::Part;
 
-const DIR: &str = "media";
+pub const DIR: &str = "media";
 const TMP: &str = "tmp";
 pub const CAP: u64 = 1024 * 1024 * 1024;
 

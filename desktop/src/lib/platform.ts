@@ -9,3 +9,11 @@ export function isLinux(): boolean {
 export function isWindows(): boolean {
   return !!(navigator.platform?.startsWith('Win') || navigator.userAgent.includes('Windows'));
 }
+
+export type DesktopOs = 'mac' | 'linux' | 'windows';
+
+export function desktopOs(): DesktopOs {
+  if (isMac()) return 'mac';
+  if (isLinux()) return 'linux';
+  return 'windows';
+}

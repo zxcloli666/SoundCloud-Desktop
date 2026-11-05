@@ -6,7 +6,7 @@ import type { LabScene } from '../types';
 const ROUTE = '/chats/storage';
 const TILE = (index: number) => `[data-ui="chat-storage-grid"] [data-tile="${index}"]`;
 
-function openChatSettings() {
+export function openChatSettings() {
   const label = i18n.t('chat.settings.title');
   const items = document.querySelectorAll<HTMLElement>('[data-ui="settings-nav-item"]');
   const item = [...items].find((node) => node.textContent?.trim() === label);
@@ -15,7 +15,7 @@ function openChatSettings() {
 
 const STILL_POLLS = 4;
 
-async function scrollSettled() {
+export async function scrollSettled() {
   const main = document.querySelector('main');
   let last = Number.NaN;
   let still = 0;

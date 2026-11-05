@@ -66,7 +66,18 @@
     "keeps": "Music, rooms and your account stay"
   },
   "privacy": {
-    "encrypted": "Messages are encrypted and nobody reads them",
+    "encrypted": "Messages are encrypted on the way, on the server and on this computer",
     "reports": "On a report, automatic moderation checks only those messages and a little context"
+  },
+  "keys": {
+    "title": "Chat keys",
+    "os": {
+      "mac": "Kept in the macOS keychain",
+      "linux": "Kept in the system password store",
+      "windows": "Kept in Windows Credential Manager"
+    },
+    "file": "Kept in a private file in the app folder",
+    "reset": "Reset chat keys",
+    "resetHint": "Deletes chats on this computer and makes new keys. Your chats come back from the server."
   }
 }

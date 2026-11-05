@@ -6,6 +6,7 @@ import { selectChatEnabled, useChatStore } from '../../../stores/chat';
 import { ListSkeleton } from '../list/ListEmpty';
 import { KeychainCard } from '../relogin/KeychainCard';
 import { ReloginCard } from '../relogin/ReloginCard';
+import { SignInLimitCard } from '../relogin/SignInLimitCard';
 
 function GateNote({ icon, text }: { icon: ReactNode; text: string }) {
   return (
@@ -38,8 +39,9 @@ export const ChatGate = memo(function ChatGate({
   const { t } = useTranslation();
   const enabled = useChatStore(selectChatEnabled);
   const phase = useChatStore((state) => state.status?.phase ?? null);
+  const opensBy = useChatStore((state) => state.limitOpensBy);
 
-  const gate = gateOf(enabled, phase);
+  const gate = gateOf(enabled, phase, opensBy !== null);
 
   if (gate === 'keychain') {
     return (
@@ -67,6 +69,13 @@ export const ChatGate = memo(function ChatGate({
     return (
       <Centered>
         <GateNote icon={<MessagesSquare size={22} />} text={t('chat.list.gate.off')} />
+      </Centered>
+    );
+  }
+  if (gate === 'limit' && opensBy !== null) {
+    return (
+      <Centered>
+        <SignInLimitCard opensBy={opensBy} />
       </Centered>
     );
   }

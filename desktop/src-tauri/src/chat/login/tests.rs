@@ -332,6 +332,16 @@ fn a_flow_keeps_its_keys_until_it_ends() {
 }
 
 #[test]
+fn a_key_reset_drops_every_held_flow() {
+    let lane = Lane::new();
+    lane.hold("req-1", signer());
+    lane.hold("req-2", signer());
+    lane.release_all();
+    assert!(lane.held("req-1").is_none());
+    assert!(lane.held("req-2").is_none());
+}
+
+#[test]
 fn link_modes_go_out_as_the_server_names_them() {
     assert_eq!(json!({ "mode": LinkMode::Pull }), json!({ "mode": "pull" }));
     assert_eq!(json!({ "mode": LinkMode::Push }), json!({ "mode": "push" }));

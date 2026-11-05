@@ -13,6 +13,7 @@ pub const GONE: &str = "chat:gone";
 pub const DEVICE_ADDED: &str = "chat:device-added";
 pub const MEDIA_UPLOADS: &str = "chat:media-uploads";
 pub const NOTIFY_OPEN: &str = "chat:notify-open";
+pub const DEVICE_LIMIT: &str = "chat:device-limit";
 
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]

@@ -9,7 +9,7 @@ use sc_chat::{
 };
 
 use super::Runtime;
-use super::lifecycle::uploads_present;
+use super::lifecycle::{Keys, uploads_present};
 use super::local::Core;
 
 const RETRY_MIN: Duration = Duration::from_secs(2);
@@ -31,6 +31,8 @@ impl Runtime {
         let Some(session_id) = session else {
             return Err(Halt::Phase(ChatPhase::SignedOut));
         };
+        self.status
+            .update(|status| status.key_storage = self.keychain.storage());
         if self.keychain.denied() {
             self.set_core(None);
             return Err(Halt::Phase(ChatPhase::KeychainDenied));
@@ -56,11 +58,12 @@ impl Runtime {
         if !config.enabled {
             return Err(Halt::Phase(ChatPhase::Off));
         }
-        let device = self
-            .api
-            .register_device(&registration(&self.app))
-            .await
-            .map_err(|error| self.fail(&error, failures))?;
+        let device = match self.api.register_device(&registration(&self.app)).await {
+            Ok(device) => device,
+            Err(ChatError::RequestLimit) => return Err(self.limited()),
+            Err(error) => return Err(self.fail(&error, failures)),
+        };
+        self.unlimited();
         self.adopt_device(device.id);
         if let Some(user_id) = user_id {
             self.adopt_user(&core, user_id, failures).await?;
@@ -96,7 +99,7 @@ impl Runtime {
             .unwrap_or(Err(ChatError::Internal))
             .map_err(|error| self.fail(&error, failures))?;
         if other_account {
-            let _ = self.wipe(false).await;
+            let _ = self.wipe(Keys::Keep).await;
             return Err(Halt::Restart);
         }
         core.sync.set_user(Some(user_id.clone()));
@@ -113,6 +116,9 @@ impl Runtime {
         let _lifecycle = self.lifecycle.lock().await;
         if let Some(core) = self.core() {
             return Ok(core);
+        }
+        if self.session.logged_out() {
+            return Err(ChatError::ReloginRequired);
         }
         let runtime = self.clone();
         let core = self

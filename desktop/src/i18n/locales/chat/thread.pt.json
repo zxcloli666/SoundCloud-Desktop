@@ -145,7 +145,7 @@
     },
     "comment": "Comentário, se quiser",
     "policy": "Uma regra quebrada apaga a mensagem. Uma repetição em 30 dias fecha os chats por 7 dias, e conteúdo ilegal fecha de vez. A música e sua conta continuam.",
-    "privacy": "As mensagens são criptografadas e ninguém as lê. Uma denúncia envia só estas mensagens e um pouco de contexto para a moderação automática.",
+    "privacy": "As mensagens são criptografadas no caminho, no servidor e neste computador. Uma denúncia envia só estas mensagens e um pouco de contexto para a moderação automática.",
     "send": "Enviar denúncia",
     "sent": "Denúncia enviada"
   },

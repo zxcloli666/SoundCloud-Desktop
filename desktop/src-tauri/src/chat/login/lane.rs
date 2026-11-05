@@ -81,6 +81,10 @@ impl Lane {
     pub fn release(&self, request_id: &str) {
         lock(&self.held).remove(request_id);
     }
+
+    pub fn release_all(&self) {
+        lock(&self.held).clear();
+    }
 }
 
 pub fn tier_order(tiers: Vec<Tier>, last: Option<Tier>) -> Vec<Tier> {

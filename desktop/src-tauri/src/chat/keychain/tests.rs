@@ -1,64 +1,12 @@
 use std::path::PathBuf;
-use std::sync::Arc;
-use std::sync::atomic::{AtomicU32, Ordering};
 use std::time::Duration;
 
 use sc_chat::crypto::DeviceKeys;
 use sc_chat::store::Store;
-use sc_chat::{ChatError, ChatResult, KeyName, KeyStorage, KeyStore, Zeroizing};
+use sc_chat::{ChatError, KeyName, KeyStorage, KeyStore};
 
-use super::testing::SharedVault;
+use super::testing::{Broken, Refusing, SharedVault, Sticky};
 use super::{FileVault, Keychain, Vault, database_path, should_fall_back};
-
-struct Broken;
-
-impl Vault for Broken {
-    fn load(&self, _name: KeyName) -> ChatResult<Option<Zeroizing<Vec<u8>>>> {
-        Err(ChatError::Keychain)
-    }
-
-    fn save(&self, _name: KeyName, _secret: &[u8]) -> ChatResult<()> {
-        Err(ChatError::Keychain)
-    }
-
-    fn delete(&self, _name: KeyName) -> ChatResult<()> {
-        Err(ChatError::Keychain)
-    }
-}
-
-#[derive(Clone, Default)]
-struct Refusing {
-    asked: Arc<AtomicU32>,
-    allow_after: Option<u32>,
-}
-
-impl Refusing {
-    fn answer<T>(&self, granted: T) -> ChatResult<T> {
-        let asked = self.asked.fetch_add(1, Ordering::SeqCst) + 1;
-        match self.allow_after {
-            Some(after) if asked > after => Ok(granted),
-            _ => Err(ChatError::KeychainDenied),
-        }
-    }
-
-    fn asked(&self) -> u32 {
-        self.asked.load(Ordering::SeqCst)
-    }
-}
-
-impl Vault for Refusing {
-    fn load(&self, _name: KeyName) -> ChatResult<Option<Zeroizing<Vec<u8>>>> {
-        self.answer(None)
-    }
-
-    fn save(&self, _name: KeyName, _secret: &[u8]) -> ChatResult<()> {
-        self.answer(())
-    }
-
-    fn delete(&self, _name: KeyName) -> ChatResult<()> {
-        self.answer(())
-    }
-}
 
 fn scratch(name: &str) -> PathBuf {
     let dir =
@@ -387,10 +335,41 @@ fn keys_left_by_a_refused_wipe_go_after_the_retry() {
     assert_eq!(vault.asked(), 1);
     keychain.allow();
     keychain.sweep().unwrap();
-    let every_key = 1 + KeyName::ALL.len() as u32;
+    let every_key = 1 + 2 * KeyName::ALL.len() as u32;
     assert_eq!(vault.asked(), every_key);
     assert!(!stale.exists());
     keychain.sweep().unwrap();
     assert_eq!(vault.asked(), every_key);
+    std::fs::remove_dir_all(dir).unwrap();
+}
+
+#[test]
+fn a_wipe_that_leaves_a_key_behind_fails_and_is_swept_again() {
+    let dir = scratch("sticky-wipe");
+    let vault = SharedVault::default();
+    let keychain = Keychain::with_os(Box::new(Sticky(vault.clone())), &dir);
+    DeviceKeys::load_or_create(&keychain).unwrap();
+    assert_eq!(keychain.wipe().err(), Some(ChatError::Keychain));
+    assert!(vault.holds(KeyName::DeviceId));
+    assert!(dir.join("keys-stale").exists());
+    assert_eq!(keychain.sweep().err(), Some(ChatError::Keychain));
+    std::fs::remove_dir_all(dir).unwrap();
+}
+
+#[test]
+fn an_old_refusal_does_not_park_a_keychain_on_the_file() {
+    let dir = scratch("refused-file");
+    std::fs::write(dir.join("chat.db"), b"").unwrap();
+    let vault = Refusing::default();
+    let keychain = Keychain::with_os(Box::new(vault.clone()), &dir);
+    assert_eq!(
+        keychain.load(KeyName::Database).err(),
+        Some(ChatError::KeychainDenied)
+    );
+    assert!(keychain.denied());
+    keychain.fall_back().unwrap();
+    assert!(!keychain.denied());
+    keychain.save(KeyName::DeviceId, b"device").unwrap();
+    assert_eq!(vault.asked(), 1);
     std::fs::remove_dir_all(dir).unwrap();
 }

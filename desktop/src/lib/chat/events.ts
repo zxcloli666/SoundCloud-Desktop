@@ -3,6 +3,7 @@ import type { MediaStateEvent, MediaUploadErrorEvent, MediaUploadsEvent } from '
 import type {
   ChatStatus,
   DeviceAddedEvent,
+  DeviceLimit,
   GoneEvent,
   MessagesEvent,
   NotifyOpenEvent,
@@ -21,6 +22,7 @@ export const CHAT_EVENTS = {
   mediaUploads: 'chat:media-uploads',
   mediaUploadError: 'chat:media-upload-error',
   mediaState: 'chat:media-state',
+  deviceLimit: 'chat:device-limit',
 } as const;
 
 export interface ChatEventMap {
@@ -34,6 +36,7 @@ export interface ChatEventMap {
   'chat:media-uploads': MediaUploadsEvent;
   'chat:media-upload-error': MediaUploadErrorEvent;
   'chat:media-state': MediaStateEvent;
+  'chat:device-limit': DeviceLimit;
 }
 
 export type ChatEventName = keyof ChatEventMap;

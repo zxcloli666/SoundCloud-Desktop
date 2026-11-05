@@ -2,7 +2,9 @@ use std::sync::{Arc, Mutex, RwLock};
 use std::time::Duration;
 
 use sc_chat::api::wire::{ConfigView, LimitsView, MediaConfigView, MediaLimitsView};
-use sc_chat::{Access, ChatPhase, ChatStatus, CoreEvent, Events, HistoryGate, Tier, TypingEvent};
+use sc_chat::{
+    Access, ChatPhase, ChatStatus, CoreEvent, Events, HistoryGate, KeyStorage, Tier, TypingEvent,
+};
 use uuid::Uuid;
 
 use super::bringup::{
@@ -11,10 +13,14 @@ use super::bringup::{
 use super::clock::spread;
 use super::expiry::nap_of;
 use super::lifecycle::{AuthMove, auth_move, forget_account};
+use super::limit::{SignInLimit, limit_wait, opens_by};
+use super::reset::choose_plan;
+use super::session::Session;
 use super::signals::Signals;
 use super::status::{StatusCell, take_engine_part};
 use super::tap::Tap;
 use super::wake::WakeWatch;
+use crate::chat::keychain::ResetPlan;
 
 #[derive(Default)]
 struct Seen(Mutex<Vec<CoreEvent>>);
@@ -321,4 +327,63 @@ fn a_keychain_that_keeps_failing_parks_the_chat_visibly_and_keeps_retrying() {
             Halt::Wait(ChatPhase::KeychainUnavailable, pause) if pause > Duration::ZERO
         ));
     }
+}
+
+#[test]
+fn a_reset_asks_the_os_only_when_it_can_still_answer() {
+    use KeyStorage::{File, Os};
+    for windows in [false, true] {
+        assert_eq!(choose_plan(true, windows, Os, false), ResetPlan::InPlace);
+        assert_eq!(choose_plan(true, windows, Os, true), ResetPlan::File);
+        assert_eq!(choose_plan(true, windows, File, false), ResetPlan::File);
+        assert_eq!(choose_plan(false, windows, File, false), ResetPlan::File);
+        assert_eq!(choose_plan(false, windows, Os, true), ResetPlan::File);
+    }
+    assert_eq!(choose_plan(false, false, Os, false), ResetPlan::File);
+    assert_eq!(choose_plan(false, true, Os, false), ResetPlan::Probe);
+}
+
+#[test]
+fn a_chat_sign_out_survives_a_restart_until_the_next_sign_in() {
+    let dir = std::env::temp_dir().join(format!("sc-chat-session-{}", Uuid::new_v4()));
+    std::fs::create_dir_all(&dir).unwrap();
+    let session = Session::stored_in(&dir);
+    assert!(!session.logged_out());
+    session.log_out();
+    assert!(session.logged_out());
+    assert!(Session::stored_in(&dir).logged_out());
+    assert_eq!(
+        auth_move(true, true, false, ChatPhase::Unbound),
+        AuthMove::Restart
+    );
+    session.log_in();
+    assert!(!session.logged_out());
+    assert!(!Session::stored_in(&dir).logged_out());
+    session.log_in();
+    std::fs::remove_dir_all(dir).unwrap();
+}
+
+#[test]
+fn too_many_new_devices_wait_visibly_and_recheck_every_few_minutes() {
+    for _ in 0..20 {
+        assert!(matches!(
+            limit_wait(),
+            Halt::Wait(ChatPhase::Starting, pause)
+                if pause >= Duration::from_secs(240) && pause <= Duration::from_secs(360)
+        ));
+    }
+}
+
+#[test]
+fn the_sign_in_limit_opens_within_a_day_of_the_first_refusal() {
+    let day = 24 * 3_600_000;
+    assert_eq!(opens_by(None, 1_000), 1_000 + day);
+    assert_eq!(opens_by(Some(1_000 + day), 5_000), 1_000 + day);
+    assert_eq!(opens_by(Some(1_000 + day), 2_000 + day), 2_000 + 2 * day);
+    let limit = SignInLimit::default();
+    assert!(limit.set(Some(9)));
+    assert!(!limit.set(Some(9)));
+    assert_eq!(limit.get(), Some(9));
+    assert!(limit.set(None));
+    assert!(!limit.set(None));
 }

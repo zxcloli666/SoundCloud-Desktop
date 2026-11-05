@@ -33,7 +33,38 @@
       "linux": "O cofre de senhas do sistema não está respondendo. Inicie ou desbloqueie o cofre. Os chats continuam tentando sozinhos, e seu histórico fica neste computador.",
       "windows": "O Gerenciador de Credenciais do Windows não está respondendo. Os chats continuam tentando sozinhos, e seu histórico fica neste computador.",
       "again": "Ainda sem resposta. Os chats continuam tentando sozinhos.",
-      "asking": "Verificando as chaves"
+      "asking": "Verificando as chaves",
+      "file": "O arquivo de chaves na pasta do app não pode ser lido. Os chats continuam tentando sozinhos."
+    },
+    "reset": {
+      "open": "Esqueceu a senha? Redefinir chaves dos chats",
+      "openFile": "Redefinir chaves dos chats",
+      "title": "Redefinir as chaves dos chats neste computador?",
+      "lost": "Os chats salvos neste computador são apagados: mensagens, rascunhos, mensagens não enviadas, fotos aguardando envio e o cache de fotos.",
+      "back": "Seus chats continuam no servidor. Depois que você confirmar o acesso, as mensagens novas chegam na hora.",
+      "history": "As mensagens antigas voltam quando você tocar em Sou eu em um dispositivo que usa há 3 dias ou mais, ou sozinhas depois de 3 dias.",
+      "hidden": "Mensagens que você apagou só para você podem aparecer de novo.",
+      "others": "Seus outros dispositivos vão mostrar Novo acesso aos seus chats. Escolha Sou eu. Não sou eu desconecta este computador do SoundCloud.",
+      "file": {
+        "mac": "As novas chaves ficam em um arquivo privado na pasta do app, não no Acesso às Chaves do macOS.",
+        "linux": "As novas chaves ficam em um arquivo privado na pasta do app, não no cofre de senhas do sistema.",
+        "windows": "As novas chaves ficam em um arquivo privado na pasta do app, não no Gerenciador de Credenciais do Windows."
+      },
+      "probe": "Se o Gerenciador de Credenciais do Windows continuar falhando, as novas chaves ficam em um arquivo privado na pasta do app.",
+      "os": {
+        "mac": "As novas chaves voltam para o Acesso às Chaves do macOS. Se ele recusar, elas ficam em um arquivo privado na pasta do app.",
+        "linux": "As novas chaves voltam para o cofre de senhas do sistema. Se ele recusar, elas ficam em um arquivo privado na pasta do app.",
+        "windows": "As novas chaves voltam para o Gerenciador de Credenciais do Windows. Se ele falhar, elas ficam em um arquivo privado na pasta do app."
+      },
+      "confirm": "Redefinir chaves",
+      "cancel": "Cancelar",
+      "working": "Redefinindo",
+      "failed": "Não foi possível apagar os dados dos chats neste computador. Tente de novo."
     }
+  },
+  "limit": {
+    "title": "Muitos acessos novos hoje",
+    "opens": "Os chats neste computador abrem até {{time}}",
+    "trying": "Os chats continuam tentando sozinhos"
   }
 }
