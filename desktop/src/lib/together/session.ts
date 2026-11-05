@@ -1,12 +1,17 @@
 import { toast } from 'sonner';
 import i18n from '../../i18n';
 import { useAuthStore } from '../../stores/auth';
+import { useChatRoomStore } from '../../stores/chat/room';
 import { isRoomHost, useTogetherStore } from '../../stores/together';
 import { ApiError } from '../api';
 import { roomsApi, type Timed } from './api';
 import { attachGuest } from './guest';
 import { attachHost } from './host';
-import { acceptTimed, type RoomRole, resetClock, setViewListener, sleep } from './link';
+import { acceptTimed, type RoomRole, resetClock, serverTime, setViewListener, sleep } from './link';
+import { roomChanges } from './room-changes';
+import { startRoomChat } from './room-chat';
+import { exited } from './room-chat-state';
+import { exitOf, exitToast, type RoomExit } from './room-rules';
 import type { Profile, RoomView } from './types';
 
 const CLOCK_WARMUP_SAMPLES = 3;
@@ -44,12 +49,29 @@ function announceMembers(view: RoomView, previous: RoomView | null): void {
   }
 }
 
-function endSession(reason: 'left' | 'ended' | 'evicted'): void {
+function followHost(view: RoomView, previous: RoomView | null): void {
+  if (!previous) return;
+  const self = useTogetherStore.getState().selfId;
+  for (const change of roomChanges(previous, view, self, serverTime())) {
+    if (change.kind !== 'handoff') continue;
+    if (change.mine !== (previous.hostId === self)) {
+      role?.detach();
+      role = change.mine ? attachHost() : attachGuest();
+    }
+    useChatRoomStore.getState().setHandoff({ ...change, at: Date.now() });
+    if (change.mine) toast(i18n.t('chat.room.toast.youLead'));
+  }
+}
+
+function endSession(reason: RoomExit | 'left'): void {
   generation++;
   role?.detach();
   role = null;
   setViewListener(null);
+  const withChat = useChatRoomStore.getState().code !== null;
   const wasGuest = !isRoomHost(useTogetherStore.getState());
+  if (reason !== 'left') useChatRoomStore.getState().apply((state) => exited(state, reason));
+  useChatRoomStore.getState().setHandoff(null);
   useTogetherStore.setState({
     phase: 'idle',
     room: null,
@@ -57,8 +79,8 @@ function endSession(reason: 'left' | 'ended' | 'evicted'): void {
     sync: 'synced',
     waitingFor: 0,
   });
-  if (reason === 'ended' && wasGuest) toast(i18n.t('together.toast.ended'));
-  if (reason === 'evicted') toast(i18n.t('together.toast.evicted'));
+  const message = reason === 'left' ? null : exitToast(reason, withChat, wasGuest);
+  if (message) toast(i18n.t(message));
 }
 
 async function warmClock(gen: number, code: string): Promise<void> {
@@ -93,8 +115,10 @@ async function pollLoop(gen: number): Promise<void> {
       }
     } catch (error) {
       if (gen !== generation) return;
-      if (error instanceof ApiError && error.status === 404) {
-        endSession(error.code === 'room_not_member' ? 'evicted' : 'ended');
+      const wasLive = useTogetherStore.getState().phase === 'live';
+      const exit = error instanceof ApiError ? exitOf(error.status, error.code, wasLive) : null;
+      if (exit) {
+        endSession(exit);
         return;
       }
       failures++;
@@ -121,6 +145,7 @@ async function enter(open: () => Promise<Timed>): Promise<void> {
   role = isRoomHost(useTogetherStore.getState()) ? attachHost() : attachGuest();
   setViewListener((view, previous) => {
     announceMembers(view, previous);
+    followHost(view, previous);
     role?.onView(view);
   });
   acceptTimed(timed);
@@ -161,3 +186,5 @@ export function shareText(code: string): string {
 useAuthStore.subscribe((state, prev) => {
   if (prev.user && !state.user) void leaveSession();
 });
+
+startRoomChat();

@@ -5,6 +5,7 @@ export function sessionErrorKey(error: unknown): string {
     if (error.status === 404) return 'together.errors.notFound';
     if (error.status === 409) return 'together.errors.full';
     if (error.status === 401) return 'together.errors.signIn';
+    if (error.code === 'room_banned') return 'chat.room.errors.banned';
   }
   return 'together.errors.generic';
 }

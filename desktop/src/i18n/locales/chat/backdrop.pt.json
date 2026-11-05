@@ -1,0 +1,60 @@
+{
+  "title": "Fundo da sala",
+  "none": "Sem fundo",
+  "photo": "Foto própria",
+  "photoIn": "Foto em {{time}}",
+  "percent": "{{percent}}%",
+  "retry": "Tentar de novo",
+  "pickAgain": "Outra foto",
+  "storage": "Armazenamento",
+  "images": "Imagens",
+  "linking": "Conectando o chat da sala",
+  "done": "Pronto",
+  "cancel": "Cancelar",
+  "hide": "Ocultar fundo",
+  "show": "Mostrar fundo",
+  "chip": "Fundo {{percent}}%",
+  "chipFailed": "Falha no fundo",
+  "star": {
+    "title": "Fundos de sala com STAR",
+    "body": "Fundos animados e sua própria foto para a sala inteira"
+  },
+  "report": {
+    "entry": "Denunciar fundo",
+    "title": "Denunciar fundo",
+    "comment": "Comentário, opcional",
+    "send": "Enviar",
+    "sent": "Denúncia enviada",
+    "changed": "O fundo já mudou",
+    "failed": "Não enviada"
+  },
+  "errors": {
+    "room_star_required": "Fundos vêm com o STAR",
+    "media_star_required": "Fotos vêm com o STAR",
+    "invalid": "Este fundo não está disponível",
+    "media_missing": "A foto sumiu, envie de novo",
+    "backdrop_cooldown": "Nova foto própria em {{time}}",
+    "request_limit": "Rápido demais, espere um pouco",
+    "quota_exceeded": "O armazenamento está cheio",
+    "media_uploads_paused": "Os envios estão pausados",
+    "offline": "Sem conexão",
+    "generic": "Algo deu errado"
+  },
+  "presets": {
+    "aurora": "Aurora",
+    "vinyl": "Vinil",
+    "sunset-clouds": "Pôr do sol",
+    "ocean-rays": "Mar profundo",
+    "dunes": "Dunas",
+    "misty-forest": "Floresta na névoa",
+    "snow-lamp": "Neve",
+    "satin": "Cetim",
+    "paper": "Papel",
+    "peach-clouds": "Pêssego",
+    "pastel-lake": "Lago",
+    "watercolor": "Aquarela",
+    "candy-sky": "Doce"
+  },
+  "dismiss": "Dispensar",
+  "cancelUpload": "Cancelar envio"
+}

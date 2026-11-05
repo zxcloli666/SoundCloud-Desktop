@@ -1,0 +1,39 @@
+{
+  "unboundTitle": "Confirm sign-in to turn on chats",
+  "boundOtherTitle": "Confirm your sign-in again",
+  "musicStays": "Music stays signed in",
+  "confirm": "Confirm sign-in",
+  "done": "Chats are on",
+  "retry": "Try again",
+  "steps": {
+    "waiting": "Waiting for SoundCloud authorization",
+    "token": "Exchanging authorization code",
+    "extract": "Fetching your profile",
+    "finalizing": "Finalizing session"
+  },
+  "errors": {
+    "unreachable": "Can't reach the server",
+    "unreachableDesc": "The server isn't responding. Check your connection or try again in a moment.",
+    "limited": "Sign-in is temporarily limited",
+    "limitedDesc": "The server is limiting sign-ins right now. Try again in {{seconds}} s.",
+    "expired": "Sign-in expired",
+    "failed": "Sign-in failed"
+  },
+  "keychain": {
+    "title": "Chats need access to your keys",
+    "mac": "Chat encryption keys live in the macOS keychain, and access to it was denied. Press Try again and choose Allow.",
+    "linux": "Chat encryption keys live in the system password store, and the unlock window was closed. Press Try again and unlock the store.",
+    "windows": "Chat encryption keys live in Windows Credential Manager, and access to it was denied. Press Try again.",
+    "again": "Access was denied again. Chats turn on once you allow it.",
+    "failed": "Could not ask for access. Try again.",
+    "asking": "Waiting for the system",
+    "unavailable": {
+      "title": "Chat keys are out of reach",
+      "mac": "The macOS keychain is not answering. Chats keep trying on their own, and your history stays on this computer.",
+      "linux": "The system password store is not answering. Start or unlock it. Chats keep trying on their own, and your history stays on this computer.",
+      "windows": "Windows Credential Manager is not answering. Chats keep trying on their own, and your history stays on this computer.",
+      "again": "Still no answer. Chats keep trying on their own.",
+      "asking": "Checking the keys"
+    }
+  }
+}

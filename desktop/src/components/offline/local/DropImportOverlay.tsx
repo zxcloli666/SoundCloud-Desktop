@@ -2,11 +2,29 @@ import { getCurrentWebview } from '@tauri-apps/api/webview';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
+import i18n from '../../../i18n';
+import { imageDropClaimed, isImagePath } from '../../../lib/chat/image-files';
 import { FileMusic } from '../../../lib/icons';
 import { isListFile } from '../../../lib/list-file';
 import { importLocalPaths } from '../../../lib/local-import';
+import { useChatStore } from '../../../stores/chat';
 import { DropOverlay } from '../../ui/DropOverlay';
 import { runLocalImport } from './importFeedback';
+
+function isAudioCandidate(path: string): boolean {
+  return !isListFile(path) && !isImagePath(path);
+}
+
+const HINT_DELAY_MS = 120;
+
+function hintImages() {
+  setTimeout(() => {
+    if (imageDropClaimed()) return;
+    const chats = useChatStore.getState().config?.media != null;
+    toast(i18n.t(chats ? 'chat.media.drop.elsewhere' : 'chat.media.drop.notAudio'));
+  }, HINT_DELAY_MS);
+}
 
 export const DropImportOverlay = React.memo(function DropImportOverlay() {
   const { t } = useTranslation();
@@ -20,14 +38,15 @@ export const DropImportOverlay = React.memo(function DropImportOverlay() {
     void getCurrentWebview()
       .onDragDropEvent(({ payload }) => {
         if (payload.type === 'enter') {
-          const audio = payload.paths.filter((path) => !isListFile(path)).length;
+          const audio = payload.paths.filter(isAudioCandidate).length;
           setHovering(audio > 0 ? audio : null);
         } else if (payload.type === 'leave') {
           setHovering(null);
         } else if (payload.type === 'drop') {
           setHovering(null);
-          const paths = payload.paths.filter((path) => !isListFile(path));
+          const paths = payload.paths.filter(isAudioCandidate);
           if (paths.length > 0) void runLocalImport(() => importLocalPaths(paths), show);
+          if (payload.paths.some(isImagePath)) hintImages();
         }
       })
       .then((fn) => {

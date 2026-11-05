@@ -1,0 +1,50 @@
+{
+  "tile": {
+    "open": "Open image {{n}} of {{total}}",
+    "deleted": "Image deleted",
+    "lost": "Image unavailable",
+    "lostRetry": "Image unavailable, click to retry",
+    "failed": "Failed to load, click to retry",
+    "retry": "Retry"
+  },
+  "upload": {
+    "sending": "Sending {{done}} of {{total}}",
+    "waiting": "Waiting for connection",
+    "failed_one": "{{count}} image not sent",
+    "failed_other": "{{count}} images not sent",
+    "retry": "Retry",
+    "retryAll": "Retry all",
+    "cancel": "Remove from album",
+    "retryReason": "Retry: {{reason}}",
+    "discard": "Delete post",
+    "discardConfirm": "Delete for good?"
+  },
+  "viewer": {
+    "label": "Image viewer",
+    "close": "Close",
+    "prev": "Previous",
+    "next": "Next",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "zoomReset": "Fit to screen",
+    "jump": "Go to message",
+    "counter": "{{n}} / {{total}}",
+    "loading": "Loading",
+    "failed": "Original didn't load",
+    "retry": "Retry",
+    "alt": "Image from {{name}}",
+    "altOf": "Image {{n}} of {{total}} from {{name}}"
+  },
+  "grid": {
+    "label": "Chat images",
+    "item": "{{name}}, {{date}}",
+    "loading": "Loading images",
+    "empty": "No images yet",
+    "emptyHint": "Albums from this chat will show up here",
+    "failed": "Couldn't load images",
+    "moreFailed": "Couldn't load more",
+    "retry": "Retry",
+    "older": "Search earlier",
+    "itemState": "{{item}}. {{state}}"
+  }
+}

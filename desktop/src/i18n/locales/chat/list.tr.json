@@ -1,0 +1,128 @@
+{
+  "title": "Sohbetler",
+  "search": "Sohbetlerde ara",
+  "clear": "Temizle",
+  "newChat": "Yeni sohbet",
+  "saved": "Kaydedilenler",
+  "room": "Oda",
+  "unknown": "Adsız",
+  "untitledGroup": "Grup",
+  "you": "Sen",
+  "draft": "Taslak",
+  "typing": "yazıyor",
+  "pick": "Bir sohbet seç",
+  "failed": "Yüklenemedi",
+  "retry": "Tekrar dene",
+  "cancel": "İptal",
+  "blockedToast": "{{name}} engellendi",
+  "filters": {
+    "all": "Tümü",
+    "direct": "Kişisel",
+    "groups": "Gruplar",
+    "unread": "Okunmamış",
+    "requests": "İstekler",
+    "archived": "Arşiv",
+    "back": "Geri",
+    "more": "Daha fazla"
+  },
+  "preview": {
+    "embed": "Müzik",
+    "image": "Fotoğraf",
+    "deleted": "Mesaj silindi",
+    "locked": "Bu cihazı onayladıktan sonra açılır",
+    "unknown": "Görmek için uygulamayı güncelle"
+  },
+  "empty": {
+    "all": "Henüz sohbet yok",
+    "direct": "Kişisel sohbet yok",
+    "groups": "Grup yok",
+    "unread": "Hepsi okundu",
+    "requests": "Yeni istek yok",
+    "archived": "Arşiv boş",
+    "search": "Hiçbir şey bulunamadı"
+  },
+  "menu": {
+    "more": "Daha fazla",
+    "openDock": "Panelde aç",
+    "openPage": "Sayfada aç",
+    "pin": "Sabitle",
+    "unpin": "Sabitlemeyi kaldır",
+    "read": "Okundu işaretle",
+    "mute1h": "Bir saat sessize al",
+    "mute8h": "8 saat sessize al",
+    "muteForever": "Sürekli sessize al",
+    "unmute": "Sesi aç",
+    "archive": "Arşivle",
+    "unarchive": "Arşivden çıkar",
+    "block": "Engelle",
+    "delete": "Sohbeti sil"
+  },
+  "delete": {
+    "title": "\"{{name}}\" silinsin mi?",
+    "forMe": "Sadece benim için",
+    "forEveryone": "Herkes için"
+  },
+  "dock": {
+    "list": "Tüm sohbetler",
+    "close": "Paneli kapat",
+    "closeTab": "Sekmeyi kapat",
+    "expand": "Sayfada aç",
+    "toDock": "Panelde aç",
+    "resize": "Panel genişliği"
+  },
+  "gate": {
+    "off": "Sohbetler kullanılamıyor",
+    "revoked": "Bu cihaz sohbetlerden çıkarıldı"
+  },
+  "new": {
+    "title": "Yeni sohbet",
+    "search": "Birini bul",
+    "following": "Takip edilenler",
+    "people": "Kişiler",
+    "nobody": "Kimse bulunamadı",
+    "remove": "Kaldır",
+    "groupName": "Grup adı",
+    "write": "Mesaj yaz",
+    "createGroup": "Grup oluştur · {{n}}"
+  },
+  "requests": {
+    "badge": "İstek",
+    "accept": "Kabul et",
+    "decline": "Reddet",
+    "block": "Engelle",
+    "report": "Şikayet et",
+    "wantsToWrite": "{{name}} sana yazmak istiyor",
+    "invitedBy": "{{name}} seni bir gruba çağırıyor",
+    "groupInvite": "\"{{name}}\" grubuna çağırıyor",
+    "messages_one": "{{count}} mesaj",
+    "messages_other": "{{count}} mesaj"
+  },
+  "report": {
+    "title": "{{name}} kullanıcısını şikayet et",
+    "comment": "Gerekirse yorum",
+    "alsoBlock": "Engelle",
+    "send": "Gönder",
+    "sent": "Şikayet gönderildi",
+    "reasons": {
+      "spam": "Spam ve reklam",
+      "harassment": "Tehdit ve taciz",
+      "doxxing": "Başkasının kişisel bilgileri",
+      "illegal": "Yasa dışı içerik",
+      "other": "Diğer"
+    }
+  },
+  "errors": {
+    "unavailable": "Bu kişiye yazamazsın",
+    "request_limit": "Bugünkü yeni sohbet sınırına ulaşıldı",
+    "too_young": "Girişten bir saat sonra sohbet başlatabilirsin",
+    "send_limited": "Çok hızlı, biraz bekle",
+    "slow_mode": "Yavaş mod, lütfen bekle",
+    "busy": "Sunucu meşgul, sonra tekrar dene",
+    "offline": "Sunucuya bağlantı yok",
+    "disabled": "Sohbetler kapalı",
+    "send_paused": "Gönderim duraklatıldı",
+    "muted": "Şu anda burada yazamazsın",
+    "not_member": "Artık bu sohbette değilsin",
+    "generic": "Bir şeyler ters gitti, tekrar dene"
+  }
+}

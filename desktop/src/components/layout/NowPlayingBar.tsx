@@ -64,6 +64,7 @@ import {
     usePlayerStore,
 } from '../../stores/player';
 import {useSettingsStore} from '../../stores/settings';
+import {useChatDockWidth} from '../chat/shell/useChatDockWidth';
 import {AlbumLinkButton} from '../music/AlbumLinkButton';
 import {AltUploadMark} from '../music/AltUploadMark';
 import {ArtistNameLinks} from '../music/ArtistNameLinks';
@@ -1018,8 +1019,10 @@ const ReactClusterBody = React.memo(({ urn }: { urn: string }) => {
   return (
     <div className="npb-react">
       <LikeButton trackUrn={urn} trackData={trackData} />
-      <NowBarDislikeButton trackUrn={urn} trackData={trackData} disliked={disliked} />
-      <NowBarAddToPlaylistButton trackUrn={urn} />
+      <span className="npb-extra">
+        <NowBarDislikeButton trackUrn={urn} trackData={trackData} disliked={disliked} />
+        <NowBarAddToPlaylistButton trackUrn={urn} />
+      </span>
       <span className="npb-slot">
         {trackData && (
           <AlbumLinkButton
@@ -1093,7 +1096,8 @@ const BackgroundGlow = React.memo(() => {
 const COMPACT_DOCK_AREA = 1160;
 const TIGHT_DOCK_AREA = 1000;
 const MINI_DOCK_AREA = 900;
-const MIN_DOCK_AREA = 800;
+const MICRO_DOCK_AREA = 760;
+const NANO_DOCK_AREA = 600;
 
 function subscribeResize(onChange: () => void) {
   window.addEventListener('resize', onChange);
@@ -1113,9 +1117,9 @@ export const NowPlayingBar = React.memo(
     const sidebarCollapsed = useSettingsStore((s) => s.sidebarCollapsed);
     const perf = usePerfMode();
     const windowWidth = useSyncExternalStore(subscribeResize, readWindowWidth);
-    const sidebar = sidebarWidth(sidebarCollapsed);
-    const left = windowWidth - sidebar < MIN_DOCK_AREA ? 0 : sidebar;
-    const area = windowWidth - left;
+    const right = useChatDockWidth();
+    const left = sidebarWidth(sidebarCollapsed);
+    const area = windowWidth - left - right;
 
     return (
       <div
@@ -1124,8 +1128,11 @@ export const NowPlayingBar = React.memo(
         data-compact={area < COMPACT_DOCK_AREA ? '' : undefined}
         data-tight={area < TIGHT_DOCK_AREA ? '' : undefined}
         data-mini={area < MINI_DOCK_AREA ? '' : undefined}
+        data-micro={area < MICRO_DOCK_AREA ? '' : undefined}
+        data-nano={area < NANO_DOCK_AREA ? '' : undefined}
         style={{
           left,
+          right,
           transitionDuration: perf.mode === 'light' ? '0ms' : undefined,
         }}
       >
@@ -1151,11 +1158,15 @@ export const NowPlayingBar = React.memo(
               <div className="npb-sep" />
 
               <div className="flex items-center gap-0.5">
-                <ShuffleBtn />
+                <span className="npb-spare">
+                  <ShuffleBtn />
+                </span>
                 <PrevBtn />
                 <PlayPauseBtn />
                 <NextBtn />
-                <RepeatBtn />
+                <span className="npb-spare">
+                  <RepeatBtn />
+                </span>
                 <AbLoopBtn />
               </div>
 
@@ -1163,10 +1174,14 @@ export const NowPlayingBar = React.memo(
 
               <div className="flex items-center gap-0.5">
                 <TogetherButton />
-                <TuningBtn />
-                <EqBtn />
-                <EffectsBtn className={(active) => btnClass(active, 'sm')} />
-                <LyricsBtn />
+                <span className="npb-extra">
+                  <TuningBtn />
+                  <EqBtn />
+                  <EffectsBtn className={(active) => btnClass(active, 'sm')} />
+                </span>
+                <span className="npb-spare">
+                  <LyricsBtn />
+                </span>
                 <QueueBtn onClick={onQueueToggle} active={queueOpen} />
                 <VolumeFlyout />
                 <div className="npb-vol-slider flex items-center gap-2 pl-1">

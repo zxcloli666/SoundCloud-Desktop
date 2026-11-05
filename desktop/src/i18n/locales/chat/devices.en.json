@@ -1,0 +1,58 @@
+{
+  "span": {
+    "d": "{{count}}d",
+    "h": "{{count}}h",
+    "m": "{{count}}m"
+  },
+  "seen": {
+    "now": "now"
+  },
+  "tier": {
+    "direct": "direct",
+    "relay": "via a backup route",
+    "pro": "via a second backup route"
+  },
+  "version": "v{{version}}",
+  "alert": {
+    "title": "New sign-in to your chats",
+    "confirm": "It's me",
+    "notMe": "Not me",
+    "queue": "+{{count}} more",
+    "unlocked": "History unlocked",
+    "opensIn": "History unlocks in {{span}}",
+    "revoked": "Device signed out",
+    "revokedHint": "If it was you, sign in on it again",
+    "done": "Done"
+  },
+  "banner": {
+    "title": "Older messages appear once you confirm on another device",
+    "alone": "Older messages appear in {{span}}",
+    "orIn": "or on their own in {{span}}"
+  },
+  "list": {
+    "title": "Devices",
+    "limit": "{{count}} of {{max}}",
+    "current": "this device",
+    "waiting": "awaiting confirmation",
+    "revoked": "signed out",
+    "added": "Added {{at}}",
+    "young": "This device is new. You can manage the others in {{span}}",
+    "remove": "Remove",
+    "removeSure": "Remove it?",
+    "logout": "Sign out",
+    "logoutSure": "Sign out of chats?",
+    "lockedFor": "Available in {{span}}",
+    "olderOnly": "Only an older device can confirm",
+    "loadFailed": "Couldn't load devices",
+    "retry": "Retry"
+  },
+  "errors": {
+    "too_young": "This device is too new for that yet",
+    "not_found": "That device is already signed out",
+    "offline": "No connection to chats",
+    "busy": "Server is busy, try again in a minute",
+    "device_revoked": "This device was signed out of chats",
+    "disabled": "Chats are turned off right now",
+    "generic": "That didn't work, try again"
+  }
+}
