@@ -78,7 +78,7 @@ export function IdentityHub({
 
   return (
     <GlassHeroPanel hasStar={hasStar} aura={aura}>
-      {user.banner_url && <ProfileBanner key={user.banner_url} url={user.banner_url} />}
+      {user.banner_url && <ProfileBanner key={user.banner_url} url={user.banner_url} hasStar={hasStar} />}
       <div data-ui="user-hero" className="relative p-6 md:p-10 flex flex-col lg:flex-row gap-8 lg:gap-10 items-center lg:items-stretch">
         <AvatarArtifact
           username={user.username}
