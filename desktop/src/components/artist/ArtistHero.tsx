@@ -81,8 +81,8 @@ function ArtistHeroImpl({ artist, hasStar, aura }: ArtistHeroProps) {
   const blockTarget = useMemo(() => artistTarget(artist), [artist]);
 
   return (
-    <GlassHeroPanel hasStar={hasStar} aura={aura}>
-      <div data-ui="artist-hero" className="relative p-6 md:p-10 flex flex-col lg:flex-row gap-8 lg:gap-10 items-center lg:items-stretch">
+    <GlassHeroPanel hasStar={hasStar} aura={aura} className="@container">
+      <div data-ui="artist-hero" className="relative p-6 @lg:p-10 flex flex-col @min-[720px]:flex-row gap-8 @min-[720px]:gap-10 items-center @min-[720px]:items-stretch">
         <AvatarArtifact
           username={artist.name}
           avatarUrl={artist.avatar_url}
@@ -90,9 +90,9 @@ function ArtistHeroImpl({ artist, hasStar, aura }: ArtistHeroProps) {
           aura={aura}
         />
 
-        <div className="flex-1 min-w-0 flex flex-col justify-start gap-5 text-center lg:text-left">
+        <div className="flex-1 min-w-0 flex flex-col justify-start gap-5 text-center @min-[720px]:text-left">
           {/* Top chips */}
-          <div className="flex flex-wrap items-center gap-2 justify-center lg:justify-start">
+          <div className="flex flex-wrap items-center gap-2 justify-center @min-[720px]:justify-start">
             {artist.confidence >= 0.7 && (
               <VerifiedBadge
                 title={t('track.verifiedArtist', { confidence: artist.confidence.toFixed(2) })}
@@ -104,7 +104,7 @@ function ArtistHeroImpl({ artist, hasStar, aura }: ArtistHeroProps) {
 
           {/* Name */}
           <h1
-            className="text-5xl md:text-7xl font-black leading-[0.85] tracking-tighter break-words max-w-full"
+            className="text-5xl @lg:text-7xl font-black leading-[0.85] tracking-tighter break-words max-w-full"
             style={
               hasStar
                 ? {
@@ -130,7 +130,7 @@ function ArtistHeroImpl({ artist, hasStar, aura }: ArtistHeroProps) {
               className="group text-left cursor-pointer"
             >
               <p
-                  className={`selectable text-[14px] md:text-[15px] text-ink-65 leading-relaxed max-w-2xl transition-all duration-700 ${
+                  className={`selectable text-[14px] @lg:text-[15px] text-ink-65 leading-relaxed max-w-2xl transition-all duration-700 ${
                   bioExpanded ? '' : 'line-clamp-2'
                 }`}
               >
@@ -146,7 +146,7 @@ function ArtistHeroImpl({ artist, hasStar, aura }: ArtistHeroProps) {
             </button>
           )}
 
-          <div className="flex flex-wrap items-center gap-3 justify-center lg:justify-start">
+          <div className="flex flex-wrap items-center gap-3 justify-center @min-[720px]:justify-start">
             <PinArtistButton
               artist={{
                 id: `artist:${artist.id}`,
@@ -159,7 +159,7 @@ function ArtistHeroImpl({ artist, hasStar, aura }: ArtistHeroProps) {
 
           {/* Socials + SC accounts */}
           {(artist.socials.length > 0 || artist.sc_accounts.length > 0) && (
-            <div className="flex flex-wrap gap-1.5 justify-center lg:justify-start lg:pt-2">
+            <div className="flex flex-wrap gap-1.5 justify-center @min-[720px]:justify-start @min-[720px]:pt-2">
               {artist.sc_accounts.map((acc) => (
                 <ScAccountChip
                   key={acc.sc_user_id}
@@ -174,13 +174,13 @@ function ArtistHeroImpl({ artist, hasStar, aura }: ArtistHeroProps) {
             </div>
           )}
 
-          <div className="flex flex-wrap items-center gap-3 justify-center lg:justify-start lg:mt-auto">
+          <div className="flex flex-wrap items-center gap-3 justify-center @min-[720px]:justify-start @min-[720px]:mt-auto">
             <BlockArtistButton target={blockTarget} />
           </div>
         </div>
 
         {/* Right column stats */}
-        <div className="hidden lg:flex flex-col gap-3 self-stretch min-w-[180px]">
+        <div className="hidden @min-[960px]:flex flex-col gap-3 self-stretch min-w-[180px]">
           <StatOrb
             value={artist.track_count_primary}
             label={t('artist.statsTracks')}
@@ -201,7 +201,7 @@ function ArtistHeroImpl({ artist, hasStar, aura }: ArtistHeroProps) {
       </div>
 
       {/* Stats strip on narrow */}
-      <div className="lg:hidden flex flex-wrap gap-2 px-6 md:px-10 pb-6 md:pb-8 justify-center">
+      <div className="@min-[960px]:hidden flex flex-wrap gap-2 px-6 @lg:px-10 pb-6 @lg:pb-8 justify-center">
         <CompactStat
           icon={<Music size={12} />}
           value={artist.track_count_primary}
