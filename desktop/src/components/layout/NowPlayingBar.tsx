@@ -4,7 +4,6 @@ import {useQuery, useQueryClient} from '@tanstack/react-query';
 import React, {useCallback, useEffect, useRef, useState, useSyncExternalStore} from 'react';
 import {useTranslation} from 'react-i18next';
 import {useNavigate} from 'react-router-dom';
-import {useShallow} from 'zustand/shallow';
 import {api} from '../../lib/api';
 import {
     cancelTrackLoad,
@@ -75,6 +74,7 @@ import {HoldHeart} from '../music/superlike/HoldHeart';
 import {heartTitle} from '../music/superlike/heart-title';
 import {useSuperlikeGesture} from '../music/superlike/useSuperlikeGesture';
 import {TrackSoundToggle} from '../music/TrackSoundToggle';
+import {RATING_CHIPS, tierOf, tierTitleKey} from '../music/TrackStatusBadges';
 import {UploadKindDot} from '../music/UploadKindDot';
 import {TogetherButton} from '../together/TogetherButton';
 import {NowPlayingNameCard} from './NowPlayingNameCard';
@@ -380,14 +380,28 @@ export const ProgressTime = React.memo(() => {
   );
 });
 
+const RatingChip = React.memo(() => {
+  const { t } = useTranslation();
+  const meta = usePlayerStore((s) => s.currentTrack?._scd_meta);
+  const tier = meta ? tierOf(meta, true) : null;
+  if (!meta || !tier) return null;
+  const { letter, chip, dot } = RATING_CHIPS[tier];
+
+  return (
+    <span
+      data-ui="npb-rating"
+      title={t(tierTitleKey(tier, meta))}
+      className={`npb-cdn inline-flex h-6 shrink-0 items-center gap-1.5 rounded-md border px-2 text-[8px] font-medium tracking-[0.12em] ${chip}`}
+    >
+      <span className={`h-1.5 w-1.5 rounded-full ${dot}`} />
+      <span className="npb-cdn-label">{letter}</span>
+    </span>
+  );
+});
+
 const PlaybackQualityBadge = React.memo(() => {
   const { t } = useTranslation();
-  const { playbackQuality, playbackSource } = usePlayerStore(
-    useShallow((s) => ({
-      playbackQuality: s.playbackQuality,
-      playbackSource: s.playbackSource,
-    })),
-  );
+  const playbackQuality = usePlayerStore((s) => s.playbackQuality);
 
   if (!playbackQuality) return null;
 
@@ -404,15 +418,7 @@ const PlaybackQualityBadge = React.memo(() => {
       >
         {t(QUALITY_LABEL_KEYS[playbackQuality])}
       </span>
-      {playbackSource === 'storage' && (
-        <span
-          title={t('player.qualityCDN')}
-          className="npb-cdn inline-flex h-6 shrink-0 items-center gap-1.5 rounded-md border border-mint/[0.16] bg-mint/[0.07] px-2 text-[8px] font-medium tracking-[0.12em] text-mint-ink/82"
-        >
-          <span className="h-1.5 w-1.5 rounded-full bg-mint shadow-[0_0_8px_rgb(var(--mint)/0.55)]" />
-          <span className="npb-cdn-label">{t('player.qualityCDN')}</span>
-        </span>
-      )}
+      <RatingChip />
     </div>
   );
 });
