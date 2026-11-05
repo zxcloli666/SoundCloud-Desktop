@@ -39,7 +39,6 @@ impl Uploads {
         single: Single,
     ) -> ChatResult<Option<MediaUploadView>> {
         let (conversation_id, kind) = (single.conversation_id, single.kind);
-        self.drop_pending(conversation_id, kind).await?;
         let image_ref = self.files.write(IMAGE, &single.image).await?;
         let upload = NewUpload {
             album: Uuid::new_v4(),
@@ -56,28 +55,27 @@ impl Uploads {
             self.files.remove(vec![image_ref]).await;
             return Ok(None);
         }
-        let view = self.enqueued(upload, vec![image_ref]).await?;
+        let replaced = match self
+            .blocking(move |store| remove_pending(store, conversation_id, kind))
+            .await
+        {
+            Ok(replaced) => replaced,
+            Err(error) => {
+                drop(albums);
+                self.files.remove(vec![image_ref]).await;
+                return Err(error);
+            }
+        };
+        let view = self.enqueued(upload, vec![image_ref]).await;
         drop(albums);
+        self.dropped(replaced).await;
+        let view = view?;
         self.kick();
         Ok(Some(view))
     }
 
     fn wanted(&self, conversation_id: ConvId, turn: Option<u64>) -> bool {
         turn.is_none_or(|turn| self.turns.holds(conversation_id, turn))
-    }
-
-    pub(super) async fn drop_pending(
-        &self,
-        conversation_id: ConvId,
-        kind: MediaKind,
-    ) -> ChatResult<()> {
-        let albums = self.albums.lock().await;
-        let removed = self
-            .blocking(move |store| remove_pending(store, conversation_id, kind))
-            .await?;
-        drop(albums);
-        self.dropped(removed).await;
-        Ok(())
     }
 
     pub(super) async fn applied(

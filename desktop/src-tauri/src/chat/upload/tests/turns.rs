@@ -1,6 +1,6 @@
 use std::future::Future;
 
-use sc_chat::{ChatError, ChatResult, ConversationKind};
+use sc_chat::{ChatError, ChatResult, ConversationKind, MediaKind, media};
 use serde_json::json;
 use tokio::sync::oneshot;
 
@@ -8,6 +8,7 @@ use super::backdrop::disk;
 use super::fixtures::ROOM_CODE;
 use super::png;
 use super::rig::Rig;
+use crate::chat::upload::single::Single;
 
 fn held() -> (
     oneshot::Sender<Vec<u8>>,
@@ -105,4 +106,33 @@ async fn a_stop_that_lands_after_the_pick_was_queued_drops_the_upload() {
     rig.uploads.stop_backdrop(room).await.unwrap();
     assert!(rig.uploads().is_empty() && rig.upload_files().is_empty());
     assert!(rig.world.with(|state| state.settings.is_empty()));
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn a_prepared_pick_that_lost_its_turn_keeps_the_newer_upload() {
+    let rig = Rig::new(ConversationKind::Room);
+    let room = rig.conversation;
+    let stale = rig.uploads.turns.take(room);
+    let fresh = rig
+        .uploads
+        .backdrop(ROOM_CODE, room, disk(&rig, 86))
+        .await
+        .unwrap()
+        .unwrap();
+    let prepared = media::prepare_backdrop(&png::noisy(800, 450, 87)).unwrap();
+    let late = rig
+        .uploads
+        .enqueue_single(Single {
+            conversation_id: room,
+            kind: MediaKind::Backdrop,
+            image: prepared.image,
+            attachment: prepared.attachment,
+            turn: Some(stale),
+        })
+        .await;
+    assert_eq!(late, Ok(None));
+    let rows = rig.uploads();
+    assert_eq!(rows.len(), 1);
+    assert_eq!(rows[0].id, fresh.id);
+    assert_eq!(rig.upload_files().len(), 1);
 }
