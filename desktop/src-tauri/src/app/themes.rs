@@ -1,7 +1,8 @@
+pub mod sentinel;
+
 use std::path::{Path, PathBuf};
-use std::sync::Mutex;
 use std::sync::atomic::{AtomicU64, Ordering};
-use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use sha2::{Digest, Sha256};
 use tauri::Manager;
@@ -16,10 +17,8 @@ const EXTENSIONS: [&str; 9] = [
 const CSS_MAX_BYTES: usize = 256 * 1024;
 const ASSET_MAX_BYTES: usize = 1024 * 1024;
 const TMP_MAX_AGE: Duration = Duration::from_secs(60 * 60);
-const ALIVE_FRESH: Duration = Duration::from_secs(5);
 
 static TMP_COUNTER: AtomicU64 = AtomicU64::new(0);
-static ALIVE_AT: Mutex<Option<Instant>> = Mutex::new(None);
 
 pub fn files_dir(data_dir: &Path) -> PathBuf {
     data_dir.join("themes").join("files")
@@ -148,23 +147,6 @@ pub async fn theme_files_gc(app: AppHandle, keep: Vec<String>) -> Result<u32, St
     }
     let dir = app_files_dir(&app)?;
     run_blocking(move || collect(&dir, &keep, SystemTime::now())).await
-}
-
-#[tauri::command]
-pub fn theme_alive(alive: bool) {
-    if let Ok(mut at) = ALIVE_AT.lock() {
-        *at = alive.then(Instant::now);
-    }
-}
-
-pub fn clear_applying(app: &AppHandle) {
-    let hidden = crate::app::visibility::pages_hidden();
-    let alive = ALIVE_AT
-        .lock()
-        .is_ok_and(|at| at.is_some_and(|at| hidden || at.elapsed() < ALIVE_FRESH));
-    if let (true, Ok(dir)) = (alive, app.path().app_data_dir()) {
-        let _ = std::fs::remove_file(dir.join("themes").join("applying"));
-    }
 }
 
 #[cfg(test)]

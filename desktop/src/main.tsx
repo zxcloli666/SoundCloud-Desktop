@@ -22,6 +22,7 @@ import { startDiag } from './lib/diag';
 import { initEdge } from './lib/edge';
 import { installFpsCap } from './lib/fps-cap';
 import { queryClient } from './lib/query-client';
+import { initReloadKeys } from './lib/reload';
 import { bootstrapPremium } from './lib/subscription';
 import { bootThemes } from './lib/themes/boot';
 import { initUiScale } from './lib/ui-scale';
@@ -88,6 +89,7 @@ async function bootstrap() {
   await useSettingsStore.persist.rehydrate();
   if (import.meta.env.DEV && chatLabWanted) await import('./components/chat/lab/boot').then((m) => m.bootChatLab());
   await initUiScale();
+  initReloadKeys();
 
   const settings = useSettingsStore.getState();
   startDiag(settings.sendErrorReports);

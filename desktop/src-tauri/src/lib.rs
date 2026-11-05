@@ -283,7 +283,11 @@ pub fn run() {
             app::launch_flags::custom_css_suppressed,
             app::themes::theme_file_store,
             app::themes::theme_files_gc,
-            app::themes::theme_alive,
+            app::themes::sentinel::theme_alive,
+            app::themes::sentinel::theme_sentinel_read,
+            app::themes::sentinel::theme_sentinel_write,
+            app::themes::sentinel::theme_sentinel_clear,
+            app::themes::sentinel::theme_mark_reload,
             app::visibility::show_main_window,
             app::popover::tray_popover_hide,
             app::tray_labels::tray_set_labels,
@@ -490,7 +494,7 @@ pub fn run() {
         .build(tauri::generate_context!())
         .expect("error while building tauri application")
         .run(|app, event| match event {
-            tauri::RunEvent::Exit => app::themes::clear_applying(app),
+            tauri::RunEvent::Exit => app::themes::sentinel::clear_applying(app),
             #[cfg(target_os = "macos")]
             tauri::RunEvent::Reopen { .. } => app::visibility::show_main(app),
             _ => {}

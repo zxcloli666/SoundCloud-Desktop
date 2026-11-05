@@ -13,6 +13,7 @@ import {
   Square,
   X,
 } from '../../lib/icons';
+import { reloadApp } from '../../lib/reload';
 import { toggleWindowFullscreen } from '../../lib/window';
 import {useSettingsStore} from '../../stores/settings';
 import {GlobalSearch} from './GlobalSearch';
@@ -68,7 +69,7 @@ const NavButtons = React.memo(() => {
       </button>
       <button
         type="button"
-        onClick={() => window.location.reload()}
+        onClick={() => void reloadApp()}
         className={navCls}
         aria-label={t('nav.reload')}
         title={t('nav.reload')}
