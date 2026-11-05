@@ -1,0 +1,63 @@
+name: Probe chat storage on Windows
+
+on:
+  push:
+    branches: [probe/chat-windows-storage]
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_PROFILE_TEST_DEBUG: 0
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: desktop/src-tauri
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Toolchain
+        working-directory: .
+        run: bash scripts/ci-toolchain.sh
+
+      - name: Frontend placeholder
+        run: mkdir -p ../dist && echo '<!doctype html>' > ../dist/index.html
+
+      - name: Build lib tests
+        run: cargo test --locked --lib --no-run --message-format=json > "$RUNNER_TEMP/build.json"
+
+      - name: Common controls manifest
+        run: |
+          exe=$(jq -r 'select(.reason == "compiler-artifact" and .target.name == "soundcloud_desktop_lib" and .profile.test == true) | .executable' "$RUNNER_TEMP/build.json" | tail -1)
+          exe=$(cygpath -u "$exe")
+          ls -l "$exe"
+          cat > "$exe.manifest" <<'XML'
+          <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+          <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
+            <dependency>
+              <dependentAssembly>
+                <assemblyIdentity type="win32" name="Microsoft.Windows.Common-Controls" version="6.0.0.0" processorArchitecture="*" publicKeyToken="6595b64144ccf1df" language="*"/>
+              </dependentAssembly>
+            </dependency>
+          </assembly>
+          XML
+          echo "EXE=$exe" >> "$GITHUB_ENV"
+
+      - name: Chat storage tests
+        run: '"$EXE" chat::keychain chat::relocate chat::notify'
+
+      - name: Other volume
+        env:
+          CHAT_OTHER_VOLUME: ${{ runner.temp }}
+        run: |
+          echo "temp $(cmd //c echo %TEMP%), other volume $CHAT_OTHER_VOLUME"
+          "$EXE" --ignored --exact chat::relocate::tests::a_folder_on_a_real_other_volume_is_copied_verified_and_then_removed
+
+      - name: All chat tests
+        if: always()
+        run: '"$EXE" chat::'
