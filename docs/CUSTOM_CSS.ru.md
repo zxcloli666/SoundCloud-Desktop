@@ -77,6 +77,8 @@
 | `[data-ui="album-hero"]` | Верхний блок страницы альбома |
 | `[data-ui="playlist-hero"]` | Верхний блок страницы плейлиста |
 | `[data-ui="user-hero"]` | Верхний блок профиля |
+| `[data-ui="user-banner"]` | Баннер профиля над этим блоком |
+| `[data-ui="user-banner-glow"]` | Размытый баннер под всем блоком |
 | `[data-ui="track-hero"]` | Верхний блок страницы трека |
 | `[data-ui="discover-hero"]` | Верхний блок Обзора |
 | `[data-ui="comments"]` | Список комментариев |
