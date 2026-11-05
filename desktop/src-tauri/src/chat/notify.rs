@@ -9,7 +9,7 @@ mod settings;
 mod show;
 mod strings;
 #[cfg(test)]
-mod tests;
+pub(crate) mod tests;
 
 use std::collections::HashSet;
 use std::path::{Path, PathBuf};

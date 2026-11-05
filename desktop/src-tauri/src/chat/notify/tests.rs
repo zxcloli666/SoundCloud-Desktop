@@ -1,6 +1,6 @@
 mod alerts;
 mod files;
-mod fixtures;
+pub(crate) mod fixtures;
 mod flow;
 mod locales;
 mod photos;

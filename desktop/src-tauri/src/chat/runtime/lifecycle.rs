@@ -14,7 +14,7 @@ use crate::chat::state::ChatState;
 use crate::chat::upload::UPLOADS_DIR;
 
 use super::bringup::Halt;
-use super::local::Core;
+use super::local::{Core, remove_database};
 use super::status::StatusCell;
 use super::{Runtime, clock};
 
@@ -83,6 +83,7 @@ impl Runtime {
         self.api.set_identity(None);
         self.restart();
         let keychain = self.keychain.clone();
+        let dir = self.dir.clone();
         let uploads = self.dir.join(UPLOADS_DIR);
         let wiped = self
             .rt
@@ -95,7 +96,7 @@ impl Runtime {
                 let gone = core.as_ref().and_then(|core| uploads_gone(&core.store));
                 let steps = [
                     keys,
-                    core.map_or(Ok(()), |core| core.store.wipe()),
+                    core.map_or_else(|| remove_database(&dir), |core| core.store.wipe()),
                     local_media.map_or(Ok(()), |cache| cache.clear().map(drop)),
                     remove_dir(&uploads),
                 ];

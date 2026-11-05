@@ -10,6 +10,7 @@ use sc_chat::sync::SyncEngine;
 use sc_chat::{ChatError, ChatResult, DeviceId, Events, KeyStore};
 
 const DATABASE: &str = "chat.db";
+const COMPANIONS: [&str; 3] = ["", "-wal", "-shm"];
 
 pub struct Core {
     pub device_id: DeviceId,
@@ -44,3 +45,22 @@ impl Core {
 pub fn database_path(dir: &Path) -> PathBuf {
     dir.join(DATABASE)
 }
+
+pub fn remove_database(dir: &Path) -> ChatResult<()> {
+    let database = database_path(dir);
+    let mut removed = Ok(());
+    for suffix in COMPANIONS {
+        let mut name = database.clone().into_os_string();
+        name.push(suffix);
+        match std::fs::remove_file(PathBuf::from(name)) {
+            Err(error) if error.kind() != std::io::ErrorKind::NotFound => {
+                removed = Err(ChatError::Store);
+            }
+            _ => {}
+        }
+    }
+    removed.and(sc_chat::store::remove_orphans(&database))
+}
+
+#[cfg(test)]
+mod tests;
