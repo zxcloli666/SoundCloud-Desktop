@@ -60,8 +60,11 @@ impl Runtime {
         }
         let device = match self.api.register_device(&registration(&self.app)).await {
             Ok(device) => device,
-            Err(ChatError::RequestLimit) => return Err(self.limited()),
-            Err(error) => return Err(self.fail(&error, failures)),
+            Err(error) => {
+                return Err(self
+                    .limited(&error, config.limits.devices_max)
+                    .unwrap_or_else(|| self.fail(&error, failures)));
+            }
         };
         self.unlimited();
         self.adopt_device(device.id);

@@ -3,7 +3,8 @@ use std::time::Duration;
 
 use sc_chat::api::wire::{ConfigView, LimitsView, MediaConfigView, MediaLimitsView};
 use sc_chat::{
-    Access, ChatPhase, ChatStatus, CoreEvent, Events, HistoryGate, KeyStorage, Tier, TypingEvent,
+    Access, ChatError, ChatPhase, ChatStatus, CoreEvent, Events, HistoryGate, KeyStorage, Tier,
+    TypingEvent,
 };
 use uuid::Uuid;
 
@@ -13,7 +14,7 @@ use super::bringup::{
 use super::clock::spread;
 use super::expiry::nap_of;
 use super::lifecycle::{AuthMove, auth_move, forget_account};
-use super::limit::{SignInLimit, limit_wait, opens_by};
+use super::limit::{DeviceLimit, SignInLimit, limit_wait, next_limit, opens_by};
 use super::reset::choose_plan;
 use super::session::Session;
 use super::signals::Signals;
@@ -377,13 +378,42 @@ fn too_many_new_devices_wait_visibly_and_recheck_every_few_minutes() {
 #[test]
 fn the_sign_in_limit_opens_within_a_day_of_the_first_refusal() {
     let day = 24 * 3_600_000;
+    let daily = |opens_by| Some(DeviceLimit::Daily { opens_by });
     assert_eq!(opens_by(None, 1_000), 1_000 + day);
-    assert_eq!(opens_by(Some(1_000 + day), 5_000), 1_000 + day);
-    assert_eq!(opens_by(Some(1_000 + day), 2_000 + day), 2_000 + 2 * day);
+    assert_eq!(opens_by(daily(1_000 + day), 5_000), 1_000 + day);
+    assert_eq!(opens_by(daily(1_000 + day), 2_000 + day), 2_000 + 2 * day);
+    assert_eq!(
+        opens_by(Some(DeviceLimit::Cap { devices_max: 10 }), 5_000),
+        5_000 + day
+    );
     let limit = SignInLimit::default();
-    assert!(limit.set(Some(9)));
-    assert!(!limit.set(Some(9)));
-    assert_eq!(limit.get(), Some(9));
+    assert!(limit.set(daily(9)));
+    assert!(!limit.set(daily(9)));
+    assert_eq!(limit.get(), daily(9));
     assert!(limit.set(None));
     assert!(!limit.set(None));
+}
+
+#[test]
+fn a_full_account_waits_for_a_removed_device_and_names_no_time() {
+    let day = 24 * 3_600_000;
+    let cap = next_limit(&ChatError::DeviceCap, None, 1_000, 7);
+    assert_eq!(cap, Some(DeviceLimit::Cap { devices_max: 7 }));
+    assert_eq!(
+        serde_json::to_value(cap).unwrap(),
+        serde_json::json!({"kind": "cap", "devicesMax": 7})
+    );
+    let daily = next_limit(&ChatError::RequestLimit, cap, 2_000, 7);
+    assert_eq!(
+        daily,
+        Some(DeviceLimit::Daily {
+            opens_by: 2_000 + day
+        })
+    );
+    assert_eq!(
+        serde_json::to_value(daily).unwrap(),
+        serde_json::json!({"kind": "daily", "opensBy": 2_000 + day})
+    );
+    assert_eq!(next_limit(&ChatError::Offline, daily, 3_000, 7), None);
+    assert_eq!(next_limit(&ChatError::Protocol, None, 3_000, 7), None);
 }
