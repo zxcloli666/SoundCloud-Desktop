@@ -1553,12 +1553,12 @@ select,
     width: calc(5 * 36px + 5 * 2px + 72px);
 }
 
-.npb[data-compact] .npb-cdn {
+.npb[data-compact] .npb-rating {
     gap: 0;
-    padding-inline: 9px;
+    padding-inline: 8px;
 }
 
-.npb[data-compact] .npb-cdn-label {
+.npb[data-compact] .npb-rating-dot {
     display: none;
 }
 

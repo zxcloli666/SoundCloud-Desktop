@@ -49,6 +49,7 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="player"]` | Floating player bar |
 | `[data-ui="player-art"]` | Cover in the player |
 | `[data-ui="player-title"]` | Track title in the player |
+| `[data-ui="player-rating"]` | Track rating chip (A, C, F) in the player |
 | `[data-ui="play-button"]` | Play and pause |
 | `[data-ui="progress"]` | Progress bar |
 | `[data-ui="volume"]` | Volume |

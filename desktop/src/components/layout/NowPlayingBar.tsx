@@ -389,12 +389,12 @@ const RatingChip = React.memo(() => {
 
   return (
     <span
-      data-ui="npb-rating"
+      data-ui="player-rating"
       title={t(tierTitleKey(tier, meta))}
-      className={`npb-cdn inline-flex h-6 shrink-0 items-center gap-1.5 rounded-md border px-2 text-[8px] font-medium tracking-[0.12em] ${chip}`}
+      className={`npb-rating inline-flex h-6 shrink-0 items-center gap-1.5 rounded-md border px-2 text-[10px] font-semibold tracking-[0.14em] ${chip}`}
     >
-      <span className={`h-1.5 w-1.5 rounded-full ${dot}`} />
-      <span className="npb-cdn-label">{letter}</span>
+      <span className={`npb-rating-dot h-1.5 w-1.5 rounded-full ${dot}`} />
+      <span>{letter}</span>
     </span>
   );
 });

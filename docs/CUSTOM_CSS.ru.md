@@ -49,6 +49,7 @@
 | `[data-ui="player"]` | Плавающий плеер |
 | `[data-ui="player-art"]` | Обложка в плеере |
 | `[data-ui="player-title"]` | Название трека в плеере |
+| `[data-ui="player-rating"]` | Чип рейтинга трека (A, C, F) в плеере |
 | `[data-ui="play-button"]` | Пуск и пауза |
 | `[data-ui="progress"]` | Полоса прогресса |
 | `[data-ui="volume"]` | Громкость |
