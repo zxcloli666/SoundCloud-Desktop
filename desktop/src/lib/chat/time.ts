@@ -32,6 +32,15 @@ export function clockTime(ts: Millis, language: string): string {
   return dateFormat(language, 'clock', { hour: '2-digit', minute: '2-digit' }).format(ts);
 }
 
+export function soonTime(ts: Millis, now: Millis, language: string): string {
+  if (sameDay(ts, now)) return clockTime(ts, language);
+  return dateFormat(language, 'weekday', {
+    weekday: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(ts);
+}
+
 export function fullTime(ts: Millis, language: string): string {
   return dateFormat(language, 'full', {
     day: 'numeric',

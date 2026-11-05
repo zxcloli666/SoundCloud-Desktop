@@ -4,6 +4,7 @@ import {scrollMainToTop} from '../components/layout/ScrollReset';
 import {SETTINGS_CATEGORIES, type SettingsCategoryId} from '../components/settings/registry';
 import {SettingsFrame} from '../components/settings/SettingsFrame';
 import {SettingsNav} from '../components/settings/SettingsNav';
+import {chatSettingsShown} from '../lib/chat/gate';
 import {useViewerAura} from '../lib/useViewerAura';
 import {selectChatEnabled, useChatStore} from '../stores/chat';
 
@@ -13,8 +14,10 @@ import {selectChatEnabled, useChatStore} from '../stores/chat';
 export function Settings() {
   const { t } = useTranslation();
     const aura = useViewerAura();
-    const chatEnabled = useChatStore(selectChatEnabled);
-    const categories = chatEnabled
+    const chatShown = useChatStore((state) =>
+        chatSettingsShown(selectChatEnabled(state), state.status?.phase ?? null),
+    );
+    const categories = chatShown
         ? SETTINGS_CATEGORIES
         : SETTINGS_CATEGORIES.filter((c) => c.id !== 'chats');
     const [active, setActive] = useState<SettingsCategoryId>('general');

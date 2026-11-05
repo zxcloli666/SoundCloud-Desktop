@@ -66,7 +66,18 @@
     "keeps": "Müzik, odalar ve hesabın kalır"
   },
   "privacy": {
-    "encrypted": "Mesajlar şifrelidir, kimse okumaz",
+    "encrypted": "Mesajlar yolda, sunucuda ve bu bilgisayarda şifrelidir",
     "reports": "Şikayette otomatik moderasyon sadece o mesajlara ve biraz bağlama bakar"
+  },
+  "keys": {
+    "title": "Sohbet anahtarları",
+    "os": {
+      "mac": "macOS anahtar zincirinde",
+      "linux": "Sistem parola deposunda",
+      "windows": "Windows Kimlik Bilgisi Yöneticisi'nde"
+    },
+    "file": "Uygulama klasöründeki özel bir dosyada",
+    "reset": "Sohbet anahtarlarını sıfırla",
+    "resetHint": "Bu bilgisayardaki sohbetleri siler ve yeni anahtarlar oluşturur. Sohbetleriniz sunucudan geri gelir."
   }
 }

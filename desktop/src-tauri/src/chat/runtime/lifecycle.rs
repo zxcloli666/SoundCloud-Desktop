@@ -1,8 +1,7 @@
-use std::path::Path;
 use std::sync::{Arc, RwLock};
 use std::time::Duration;
 
-use sc_chat::api::Api;
+use sc_chat::api::{Api, Identity};
 use sc_chat::store::Store;
 use sc_chat::{
     ChatConfig, ChatError, ChatPhase, ChatResult, CoreEvent, Events, HistoryGate, MediaUploadView,
@@ -10,16 +9,25 @@ use sc_chat::{
 };
 use tauri::Manager;
 
+use crate::chat::keychain::ResetPlan;
+use crate::chat::media_cache::MediaCache;
 use crate::chat::state::ChatState;
 use crate::chat::upload::UPLOADS_DIR;
 
 use super::bringup::Halt;
-use super::local::{Core, remove_database, wipe_store};
+use super::local::{Core, remove_database, remove_dir, wipe_store};
 use super::status::StatusCell;
 use super::{Runtime, clock};
 
 const OFF_RECHECK: Duration = Duration::from_secs(3600);
 const OFF_SPREAD_MS: u64 = 600_000;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Keys {
+    Keep,
+    Wipe,
+    Reset(ResetPlan),
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum AuthMove {
@@ -41,7 +49,7 @@ impl Runtime {
 
     pub async fn log_out(&self) -> ChatResult<()> {
         self.session.log_out();
-        self.wipe(true).await
+        self.wipe(Keys::Wipe).await
     }
 
     pub(super) async fn auth_changed(&self) {
@@ -60,10 +68,13 @@ impl Runtime {
 
     async fn drop_device(&self) {
         let identity = self.api.identity();
-        let _ = self.wipe(true).await;
-        let Some(identity) = identity else {
-            return;
-        };
+        let _ = self.wipe(Keys::Wipe).await;
+        if let Some(identity) = identity {
+            self.remove_on_server(identity);
+        }
+    }
+
+    pub(super) fn remove_on_server(&self, identity: Identity) {
         let api = Api::new(self.api.channel().clone(), self.api.transport().clone());
         api.set_identity(Some(identity));
         self.rt.spawn(async move {
@@ -71,9 +82,14 @@ impl Runtime {
         });
     }
 
-    pub async fn wipe(&self, forget_device: bool) -> ChatResult<()> {
+    pub async fn wipe(&self, keys: Keys) -> ChatResult<()> {
         let _lifecycle = self.lifecycle.lock().await;
+        self.wipe_held(keys).await
+    }
+
+    pub(super) async fn wipe_held(&self, keys: Keys) -> ChatResult<()> {
         self.forget_user();
+        self.unlimited();
         let chat = self.app.try_state::<ChatState>();
         let local_media = chat.as_ref().map(|state| state.media_cache.clone());
         if let Some(uploads) = chat.map(|state| state.uploads.clone()) {
@@ -82,11 +98,33 @@ impl Runtime {
         let core = self.core.write().ok().and_then(|mut core| core.take());
         self.api.set_identity(None);
         self.restart();
+        let (wiped, gone) = match keys {
+            Keys::Reset(plan) => self.reset_local(core, local_media, plan).await,
+            Keys::Keep | Keys::Wipe => self.wipe_local(core, local_media, keys == Keys::Wipe).await,
+        };
+        if let Some(gone) = gone {
+            self.events.emit(CoreEvent::MediaUploads(gone));
+        }
+        self.status.update(|status| {
+            status.device_id = None;
+            status.history = HistoryGate::default();
+            status.unread = 0;
+            status.mentions = 0;
+            status.requests = 0;
+        });
+        wiped
+    }
+
+    async fn wipe_local(
+        &self,
+        core: Option<Arc<Core>>,
+        local_media: Option<Arc<MediaCache>>,
+        forget_device: bool,
+    ) -> (ChatResult<()>, Option<MediaUploadsEvent>) {
         let keychain = self.keychain.clone();
         let dir = self.dir.clone();
         let uploads = self.dir.join(UPLOADS_DIR);
-        let wiped = self
-            .rt
+        self.rt
             .spawn_blocking(move || {
                 let keys = if forget_device {
                     keychain.wipe()
@@ -107,19 +145,7 @@ impl Runtime {
                 (wiped, gone)
             })
             .await
-            .unwrap_or((Err(ChatError::Internal), None));
-        let (wiped, gone) = wiped;
-        if let Some(gone) = gone {
-            self.events.emit(CoreEvent::MediaUploads(gone));
-        }
-        self.status.update(|status| {
-            status.device_id = None;
-            status.history = HistoryGate::default();
-            status.unread = 0;
-            status.mentions = 0;
-            status.requests = 0;
-        });
-        wiped
+            .unwrap_or((Err(ChatError::Internal), None))
     }
 
     fn forget_user(&self) {
@@ -181,7 +207,7 @@ impl Runtime {
                     status.online = false;
                 });
                 let generation = if phase == ChatPhase::Revoked {
-                    let _ = self.wipe(true).await;
+                    let _ = self.wipe(Keys::Wipe).await;
                     generation + 1
                 } else {
                     generation
@@ -252,13 +278,5 @@ pub fn auth_move(
         AuthMove::Restart
     } else {
         AuthMove::Stay
-    }
-}
-
-fn remove_dir(dir: &Path) -> ChatResult<()> {
-    match std::fs::remove_dir_all(dir) {
-        Ok(()) => Ok(()),
-        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(()),
-        Err(_) => Err(ChatError::Store),
     }
 }

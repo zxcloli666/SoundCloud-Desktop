@@ -5,7 +5,9 @@ mod clock;
 mod drive;
 mod expiry;
 mod lifecycle;
+mod limit;
 mod local;
+mod reset;
 mod session;
 mod signals;
 mod status;
@@ -26,6 +28,7 @@ use super::keychain::Keychain;
 use super::notify::Notifier;
 use super::state::ChatState;
 use crate::rt::AppHandle;
+use limit::SignInLimit;
 use session::Session;
 use signals::Signals;
 
@@ -33,7 +36,8 @@ pub use bringup::config_of;
 pub use clock::SystemClock;
 #[cfg(test)]
 pub use lifecycle::{uploads_gone, uploads_present};
-pub use local::{Core, database_path};
+pub use limit::DeviceLimit;
+pub use local::{Core, clear_local, database_path};
 pub use status::StatusCell;
 pub use tap::Tap;
 
@@ -56,6 +60,7 @@ pub struct Runtime {
     core: RwLock<Option<Arc<Core>>>,
     config: RwLock<Option<ChatConfig>>,
     session: Session,
+    limit: SignInLimit,
     typing_sent: Mutex<HashMap<ConvId, Instant>>,
 }
 
@@ -96,6 +101,7 @@ pub fn start(state: &ChatState) {
 impl Runtime {
     pub fn new(parts: Parts) -> Self {
         Self {
+            session: Session::stored_in(&parts.dir),
             app: parts.app,
             rt: parts.rt,
             dir: parts.dir,
@@ -110,7 +116,7 @@ impl Runtime {
             lifecycle: tokio::sync::Mutex::new(()),
             core: RwLock::new(None),
             config: RwLock::new(None),
-            session: Session::default(),
+            limit: SignInLimit::default(),
             typing_sent: Mutex::new(HashMap::new()),
         }
     }

@@ -24,7 +24,9 @@ use sc_chat::{
 use tauri::State;
 use uuid::Uuid;
 
+use super::keychain::ResetPlan;
 use super::login;
+use super::runtime::DeviceLimit;
 use super::state::ChatState;
 
 #[tauri::command]
@@ -36,6 +38,21 @@ pub async fn chat_status(state: State<'_, ChatState>) -> Result<ChatStatus, Chat
 pub async fn chat_keychain_retry(state: State<'_, ChatState>) -> Result<(), ChatError> {
     state.runtime.retry_keychain();
     Ok(())
+}
+
+#[tauri::command]
+pub async fn chat_keys_reset(state: State<'_, ChatState>) -> Result<(), ChatError> {
+    state.runtime.reset_keys().await
+}
+
+#[tauri::command]
+pub async fn chat_keys_reset_plan(state: State<'_, ChatState>) -> Result<ResetPlan, ChatError> {
+    Ok(state.runtime.reset_plan())
+}
+
+#[tauri::command]
+pub async fn chat_device_limit(state: State<'_, ChatState>) -> Result<DeviceLimit, ChatError> {
+    Ok(state.runtime.device_limit())
 }
 
 #[tauri::command]

@@ -9,6 +9,9 @@ use sc_chat::store::{Store, remove_orphans};
 use sc_chat::sync::SyncEngine;
 use sc_chat::{ChatError, ChatResult, DeviceId, Events, KeyStore};
 
+use crate::chat::media_cache::DIR as MEDIA_DIR;
+use crate::chat::upload::UPLOADS_DIR;
+
 const DATABASE: &str = "chat.db";
 
 pub struct Core {
@@ -54,6 +57,20 @@ pub fn remove_database(dir: &Path) -> ChatResult<()> {
 pub fn wipe_store(store: &Store, dir: &Path) -> ChatResult<()> {
     let wiped = store.wipe();
     wiped.and(remove_orphans(&database_path(dir)))
+}
+
+pub fn clear_local(dir: &Path) -> ChatResult<()> {
+    remove_database(dir)?;
+    remove_dir(&dir.join(MEDIA_DIR))?;
+    remove_dir(&dir.join(UPLOADS_DIR))
+}
+
+pub fn remove_dir(dir: &Path) -> ChatResult<()> {
+    match std::fs::remove_dir_all(dir) {
+        Ok(()) => Ok(()),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(()),
+        Err(_) => Err(ChatError::Store),
+    }
 }
 
 #[cfg(test)]

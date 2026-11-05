@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { chatSettingsShown } from '../../../lib/chat/gate';
 import { MessagesSquare } from '../../../lib/chat/icons';
 import { RefreshCw } from '../../../lib/icons';
 import { selectChatEnabled, useChatStore } from '../../../stores/chat';
@@ -9,6 +10,7 @@ import { BlockedCard } from './BlockedCard';
 import { ChatNotifyCard } from './ChatNotifyCard';
 import { DockHotkeyCard } from './DockHotkeyCard';
 import { DevicesCard } from './devices/DevicesCard';
+import { KeysCard } from './KeysCard';
 import { RulesCard } from './RulesCard';
 import { useChatSettings } from './useChatSettings';
 import { VisibilityCard } from './VisibilityCard';
@@ -51,9 +53,10 @@ function BlockedSection() {
 export function ChatSettings() {
   const { t } = useTranslation();
   const enabled = useChatStore(selectChatEnabled);
-  const ready = useChatStore((state) => state.status?.phase === 'ready');
+  const phase = useChatStore((state) => state.status?.phase ?? null);
+  const ready = phase === 'ready';
 
-  if (!enabled) {
+  if (!chatSettingsShown(enabled, phase)) {
     return (
       <Card
         title={t('chat.settings.title')}
@@ -73,6 +76,7 @@ export function ChatSettings() {
       <ChatNotifyCard />
       <DockHotkeyCard />
       {ready && <DevicesCard />}
+      {ready && <KeysCard />}
       {ready && <BlockedSection />}
       {ready && <StorageEntry />}
       <RulesCard />

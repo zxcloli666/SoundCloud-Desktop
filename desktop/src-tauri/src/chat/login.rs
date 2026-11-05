@@ -122,6 +122,10 @@ pub async fn link_poll(state: &ChatState, link_request_id: &str) -> ChatResult<L
     Ok(polled)
 }
 
+pub fn forget_held() {
+    lane().release_all();
+}
+
 fn lane() -> &'static Lane {
     static LANE: OnceLock<Lane> = OnceLock::new();
     LANE.get_or_init(Lane::new)

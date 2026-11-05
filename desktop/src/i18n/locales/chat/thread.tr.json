@@ -142,7 +142,7 @@
     },
     "comment": "İsterseniz yorum ekleyin",
     "policy": "Kural ihlalinde mesaj silinir. 30 gün içinde tekrarlanırsa sohbetler 7 gün kapanır, yasa dışı içerikte kalıcı olarak kapanır. Müzik ve hesabın yerinde kalır.",
-    "privacy": "Mesajlar şifrelidir ve kimse okumaz. Şikayette yalnızca bu mesajlar ve biraz bağlam otomatik moderasyona gider.",
+    "privacy": "Mesajlar yolda, sunucuda ve bu bilgisayarda şifrelidir. Şikayette yalnızca bu mesajlar ve biraz bağlam otomatik moderasyona gider.",
     "send": "Şikayeti gönder",
     "sent": "Şikayet gönderildi"
   },

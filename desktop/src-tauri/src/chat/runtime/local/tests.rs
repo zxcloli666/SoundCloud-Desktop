@@ -5,7 +5,7 @@ use sc_chat::ConversationKind;
 use sc_chat::store::Store;
 use uuid::Uuid;
 
-use super::{database_path, remove_database};
+use super::{clear_local, database_path, remove_database};
 use crate::chat::keychain::Keychain;
 use crate::chat::keychain::testing::SharedVault;
 use crate::chat::notify::tests::fixtures::chat;
@@ -59,5 +59,34 @@ fn a_wipe_with_no_database_is_fine() {
     let dir = scratch();
     remove_database(&dir).unwrap();
     remove_database(&dir.join("gone")).unwrap();
+    fs::remove_dir_all(dir).unwrap();
+}
+
+#[test]
+fn clearing_local_chats_keeps_pending_server_deletes_and_notify_prefs() {
+    let dir = scratch();
+    let keychain = Keychain::with_os(Box::new(SharedVault::default()), &dir);
+    let store = Store::open_keyed(&database_path(&dir), &keychain).unwrap();
+    store.set_me("200").unwrap();
+    drop(store);
+    fs::write(dir.join("chat.db-wal"), b"wal").unwrap();
+    fs::write(dir.join("chat.db.orphan-7"), b"older").unwrap();
+    for (folder, file) in [
+        ("media", "a.image"),
+        ("uploads", "deletes.json"),
+        ("deletes", "313030.json"),
+    ] {
+        fs::create_dir_all(dir.join(folder)).unwrap();
+        fs::write(dir.join(folder).join(file), b"[]").unwrap();
+    }
+    fs::write(dir.join("notify.json"), b"{}").unwrap();
+
+    clear_local(&dir).unwrap();
+    assert!(database_files(&dir).is_empty());
+    assert!(!dir.join("media").exists());
+    assert!(!dir.join("uploads").exists());
+    assert!(dir.join("deletes").join("313030.json").exists());
+    assert!(dir.join("notify.json").exists());
+    clear_local(&dir).unwrap();
     fs::remove_dir_all(dir).unwrap();
 }

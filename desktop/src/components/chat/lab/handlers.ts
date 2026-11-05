@@ -107,6 +107,9 @@ function minePage(query: MineQuery): MinePage {
 export const defaultHandlers: Record<string, (args: Args) => unknown> = {
   chat_status: () => world.status,
   chat_config: () => world.config,
+  chat_device_limit: () => ({ opensBy: null }),
+  chat_keys_reset_plan: () =>
+    world.status.phase === 'ready' && world.status.keyStorage === 'os' ? 'in_place' : 'file',
   chat_list: () => ({ items: world.conversations, nextCursor: null }),
   chat_requests: () => [],
   chat_open: (a) => snapshot(String(a.conversationId)),

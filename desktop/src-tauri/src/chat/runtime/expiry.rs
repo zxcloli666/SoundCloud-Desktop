@@ -22,10 +22,14 @@ impl Runtime {
         let core = Arc::downgrade(core);
         self.rt.spawn(async move {
             while runtime.still_open(&core) {
+                let generation = runtime.signals.generation();
                 let sweeper = timer.clone();
                 let swept = runtime.rt.spawn_blocking(move || sweeper.sweep()).await;
                 let nap = swept.ok().and_then(Result::ok).unwrap_or(NAP_MAX_MS);
-                tokio::time::sleep(nap_of(nap)).await;
+                tokio::select! {
+                    _ = tokio::time::sleep(nap_of(nap)) => {}
+                    _ = runtime.signals.restarted(generation) => {}
+                }
             }
         });
     }
