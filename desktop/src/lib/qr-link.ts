@@ -33,8 +33,13 @@ interface PlainLink {
   expiresAt: string;
 }
 
-export async function createLinkRequest(mode: LinkMode): Promise<CreateLinkResponse> {
-  const sealed = await (mode === 'pull' ? sealedLinkCreatePull() : sealedLinkCreatePush());
+export async function createLinkRequest(
+  mode: LinkMode,
+  plain = false,
+): Promise<CreateLinkResponse> {
+  const sealed = plain
+    ? null
+    : await (mode === 'pull' ? sealedLinkCreatePull() : sealedLinkCreatePush());
   if (sealed) {
     return {
       linkRequestId: sealed.linkRequestId,

@@ -27,6 +27,7 @@
     "again": "Erişim yine reddedildi. İzin verdiğinizde sohbetler açılır.",
     "failed": "Erişim istenemedi. Yeniden deneyin.",
     "asking": "Sistemin yanıtı bekleniyor",
+    "skip": "Sohbetsiz giriş yap",
     "unavailable": {
       "title": "Sohbet anahtarlarına ulaşılamıyor",
       "mac": "macOS anahtar zinciri yanıt vermiyor. Sohbetler kendi kendine yeniden deniyor, geçmişiniz bu bilgisayarda kalıyor.",

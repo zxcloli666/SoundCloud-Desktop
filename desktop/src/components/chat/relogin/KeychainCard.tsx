@@ -2,7 +2,7 @@ import { memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { chatBridge } from '../../../lib/chat/bridge';
 import { type KeychainReason, keychainText, resetLinkText } from '../../../lib/chat/gate';
-import { KeyRound, Loader2, RefreshCw } from '../../../lib/icons';
+import { KeyRound, Loader2, LogIn, RefreshCw } from '../../../lib/icons';
 import { usePerfMode } from '../../../lib/perf';
 import { desktopOs } from '../../../lib/platform';
 import { useChatStore } from '../../../stores/chat';
@@ -11,7 +11,15 @@ import { ResetKeysDialog } from './ResetKeysDialog';
 
 let retries = 0;
 
-export const KeychainCard = memo(function KeychainCard({ reason }: { reason: KeychainReason }) {
+export const KeychainCard = memo(function KeychainCard({
+  reason,
+  onResolved,
+  onSkip,
+}: {
+  reason: KeychainReason;
+  onResolved?: () => void;
+  onSkip?: () => void;
+}) {
   const { t } = useTranslation();
   const base =
     reason === 'keychain_unavailable'
@@ -31,10 +39,13 @@ export const KeychainCard = memo(function KeychainCard({ reason }: { reason: Key
     retries += 1;
     setFailed(false);
     setAskedAt(status);
-    chatBridge.keychainRetry().catch(() => {
-      setAskedAt(undefined);
-      setFailed(true);
-    });
+    chatBridge
+      .keychainRetry()
+      .then(() => onResolved?.())
+      .catch(() => {
+        setAskedAt(undefined);
+        setFailed(true);
+      });
   };
 
   return (
@@ -98,8 +109,19 @@ export const KeychainCard = memo(function KeychainCard({ reason }: { reason: Key
         >
           {t(resetLinkText(storage))}
         </button>
+        {onSkip && (
+          <button
+            type="button"
+            data-ui="chat-keychain-skip"
+            onClick={onSkip}
+            className="-mt-1 flex h-10 w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-ink/[0.08] text-[13px] font-semibold text-ink-70 transition-colors duration-200 hover:bg-ink/[0.06] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-accent)]"
+          >
+            <LogIn size={14} />
+            {t('chat.relogin.keychain.skip')}
+          </button>
+        )}
       </div>
-      <ResetKeysDialog open={resetting} onClose={() => setResetting(false)} />
+      <ResetKeysDialog open={resetting} onClose={() => setResetting(false)} onDone={onResolved} />
     </GlassCard>
   );
 });

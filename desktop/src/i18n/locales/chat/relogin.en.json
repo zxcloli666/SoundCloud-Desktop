@@ -27,6 +27,7 @@
     "again": "Access was denied again. Chats turn on once you allow it.",
     "failed": "Could not ask for access. Try again.",
     "asking": "Waiting for the system",
+    "skip": "Sign in without chats",
     "unavailable": {
       "title": "Chat keys are out of reach",
       "mac": "The macOS keychain is not answering. Chats keep trying on their own, and your history stays on this computer.",

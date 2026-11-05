@@ -40,9 +40,11 @@ function Line({ icon, children }: { icon: ReactNode; children: ReactNode }) {
 export const ResetKeysDialog = memo(function ResetKeysDialog({
   open,
   onClose,
+  onDone,
 }: {
   open: boolean;
   onClose: () => void;
+  onDone?: () => void;
 }) {
   const { t } = useTranslation();
   const plan = usePlan(open);
@@ -64,6 +66,7 @@ export const ResetKeysDialog = memo(function ResetKeysDialog({
       await chatBridge.keysReset();
       setBusy(false);
       onClose();
+      onDone?.();
     } catch {
       setBusy(false);
       setFailed(true);

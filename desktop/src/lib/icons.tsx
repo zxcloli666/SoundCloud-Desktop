@@ -76,6 +76,7 @@ import {
   ListX as _ListX,
   Loader2 as _Loader2,
   Lock as _Lock,
+  LogIn as _LogIn,
   MapPin as _MapPin,
   MessageCircle as _MessageCircle,
   MicVocal as _MicVocal,
@@ -223,6 +224,7 @@ export const Images = memo(_Images);
 export const Info = memo(_Info);
 export const Keyboard = memo(_Keyboard);
 export const KeyRound = memo(_KeyRound);
+export const LogIn = memo(_LogIn);
 export const LifeBuoy = memo(_LifeBuoy);
 export const Instagram = memo(({ size, className }: { size?: number; className?: string }) => (
   <SimpleIcon icon={siInstagram} size={size} className={className} />
