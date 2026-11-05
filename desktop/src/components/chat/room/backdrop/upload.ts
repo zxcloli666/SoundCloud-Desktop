@@ -1,5 +1,5 @@
 import { chatBridge } from '../../../../lib/chat/bridge';
-import type { UploadView } from '../../../../lib/chat/media-types';
+import type { MediaRef, UploadView } from '../../../../lib/chat/media-types';
 import type { ConvId } from '../../../../lib/chat/types';
 
 export const BACKDROP_EXTENSIONS = ['png', 'jpg', 'jpeg', 'webp'];
@@ -20,7 +20,12 @@ export function uploadBackdrop(code: string, conversationId: ConvId, path: strin
   return chatBridge.roomBackdropUpload(code, conversationId, path);
 }
 
-export function uploadPercent(upload: UploadView): number {
+export function uploadStoredBackdrop(code: string, conversationId: ConvId, source: MediaRef) {
+  return chatBridge.roomBackdropStored(code, conversationId, source.conversationId, source.mediaId);
+}
+
+export function uploadPercent(upload: UploadView | null): number {
+  if (!upload) return 0;
   if (upload.state === 'uploaded' || upload.state === 'committed') return 100;
   if (upload.state !== 'uploading' || upload.imageBytes <= 0) return 0;
   return Math.min(99, Math.round(((upload.partsSent * PART_BYTES) / upload.imageBytes) * 100));

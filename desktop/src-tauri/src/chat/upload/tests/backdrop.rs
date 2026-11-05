@@ -1,3 +1,4 @@
+use std::path::PathBuf;
 use std::time::Duration;
 
 use sc_chat::media;
@@ -11,6 +12,11 @@ use uuid::Uuid;
 use super::fixtures::ROOM_CODE;
 use super::png;
 use super::rig::{Rig, envelope};
+use crate::chat::upload::read_source;
+
+pub async fn disk(rig: &Rig, seed: u64) -> sc_chat::ChatResult<Vec<u8>> {
+    read_source(&PathBuf::from(rig.image(seed))).await
+}
 
 fn snapshot(rig: &Rig) -> (String, usize) {
     let due = rig.due();
@@ -40,16 +46,17 @@ fn settings(rig: &Rig) -> Vec<Value> {
 async fn a_backdrop_upload_sets_the_room_image_first_and_queues_the_meta_after() {
     let mut rig = Rig::new(ConversationKind::Room);
     rig.relays();
-    let path = rig.image(95);
+    let path = PathBuf::from(rig.image(95));
     let elsewhere = rig
         .uploads
-        .backdrop("another", rig.conversation, path.clone().into())
+        .backdrop("another", rig.conversation, read_source(&path))
         .await;
     assert_eq!(elsewhere.err(), Some(ChatError::Invalid));
     let view = rig
         .uploads
-        .backdrop(ROOM_CODE, rig.conversation, path.into())
+        .backdrop(ROOM_CODE, rig.conversation, read_source(&path))
         .await
+        .unwrap()
         .unwrap();
     assert_eq!((view.kind, view.thumb_bytes), (MediaKind::Backdrop, 0));
     rig.run();
@@ -78,7 +85,7 @@ async fn a_preset_drops_a_pending_upload_and_clears_the_image_only_when_there_wa
     let rig = Rig::new(ConversationKind::Room);
     let room = rig.conversation;
     rig.uploads
-        .backdrop(ROOM_CODE, room, rig.image(96).into())
+        .backdrop(ROOM_CODE, room, disk(&rig, 96))
         .await
         .unwrap();
     rig.uploads
@@ -116,7 +123,7 @@ async fn a_preset_picked_while_the_image_is_being_applied_lands_last_without_an_
     let setting = format!("PUT /chat/rooms/{ROOM_CODE}/settings");
     rig.world.hold(&setting, Duration::from_millis(400));
     rig.uploads
-        .backdrop(ROOM_CODE, room, rig.image(99).into())
+        .backdrop(ROOM_CODE, room, disk(&rig, 99))
         .await
         .unwrap();
     rig.run();
@@ -146,8 +153,9 @@ async fn a_refused_backdrop_drops_the_upload_frees_it_and_reports_why() {
     });
     let view = rig
         .uploads
-        .backdrop(ROOM_CODE, rig.conversation, rig.image(97).into())
+        .backdrop(ROOM_CODE, rig.conversation, disk(&rig, 97))
         .await
+        .unwrap()
         .unwrap();
     rig.run();
     rig.until("the refusal", |rig| {

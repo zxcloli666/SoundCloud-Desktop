@@ -3,9 +3,22 @@ import type { ChatError } from '../../../../lib/chat/types';
 import type { BackdropProblem } from './errors';
 import type { PhotoState } from './PhotoTile';
 
-export type UploadStatus = { kind: 'active'; upload: UploadView } | { kind: 'failed' } | null;
+export type UploadStatus =
+  | { kind: 'active'; upload: UploadView | null }
+  | { kind: 'failed' }
+  | null;
 
-export function uploadStatus(upload: UploadView | null, error: ChatError | null): UploadStatus {
+export interface ImageGate {
+  disabled: boolean;
+  acts: boolean;
+}
+
+export function uploadStatus(
+  upload: UploadView | null,
+  error: ChatError | null,
+  fetching = false,
+): UploadStatus {
+  if (fetching) return { kind: 'active', upload: null };
   if (upload && upload.state !== 'failed' && upload.state !== 'committed') {
     return { kind: 'active', upload };
   }
@@ -31,4 +44,9 @@ export function photoState(
   if (status?.kind === 'failed') return { kind: 'failed' };
   if (imageSrc) return { kind: 'current', src: imageSrc };
   return { kind: 'idle' };
+}
+
+export function imageGate(photo: PhotoState, waiting: boolean, ready: boolean): ImageGate {
+  const busy = photo.kind === 'uploading' || photo.kind === 'cooldown';
+  return { disabled: waiting || busy, acts: ready && !busy };
 }

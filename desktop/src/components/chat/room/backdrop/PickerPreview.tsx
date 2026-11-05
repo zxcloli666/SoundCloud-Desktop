@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Music, Upload, Users } from '../../../../lib/icons';
+import { Images, Music, Upload, Users } from '../../../../lib/icons';
 import { usePerfMode } from '../../../../lib/perf';
 import type { BackdropPreset } from '../presets/types';
 import { BackdropStage } from './BackdropStage';
@@ -8,7 +8,8 @@ import { BackdropStage } from './BackdropStage';
 export type Focus =
   | { kind: 'preset'; preset: BackdropPreset }
   | { kind: 'none' }
-  | { kind: 'photo'; src: string | null };
+  | { kind: 'photo'; src: string | null }
+  | { kind: 'stored'; src: string | null };
 
 function Cover({ cover }: { cover: string | null }) {
   const blur = usePerfMode().blur(30);
@@ -40,20 +41,17 @@ function Ground({ focus, cover }: { focus: Focus; cover: string | null }) {
       <BackdropStage key={preset.id} src={preset.image} light={preset.light} motion={preset.tone} />
     );
   }
-  if (focus.kind === 'photo' && focus.src) {
-    return <BackdropStage key={focus.src} src={focus.src} motion={null} />;
-  }
-  if (focus.kind === 'photo') {
-    return (
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 -z-10 flex items-center justify-center bg-ink/[0.04]"
-      >
-        <Upload size={26} className="text-ink-25" />
-      </div>
-    );
-  }
-  return <Cover cover={cover} />;
+  if (focus.kind === 'none') return <Cover cover={cover} />;
+  if (focus.src) return <BackdropStage key={focus.src} src={focus.src} motion={null} />;
+  const Icon = focus.kind === 'stored' ? Images : Upload;
+  return (
+    <div
+      aria-hidden
+      className="pointer-events-none absolute inset-0 -z-10 flex items-center justify-center bg-ink/[0.04]"
+    >
+      <Icon size={26} className="text-ink-25" />
+    </div>
+  );
 }
 
 export const PickerPreview = memo(function PickerPreview({
@@ -73,7 +71,9 @@ export const PickerPreview = memo(function PickerPreview({
       ? t(`chat.backdrop.presets.${focus.preset.id}`)
       : focus.kind === 'none'
         ? t('chat.backdrop.none')
-        : t('chat.backdrop.photo');
+        : focus.kind === 'stored'
+          ? t('chat.backdrop.stored')
+          : t('chat.backdrop.photo');
   return (
     <div className="relative isolate h-40 overflow-hidden rounded-2xl ring-1 ring-ink/[0.08]">
       <Ground focus={focus} cover={cover} />

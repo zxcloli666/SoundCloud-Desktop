@@ -3,5 +3,5 @@ mod gone;
 mod local;
 mod placeholder;
 mod remote;
-mod rig;
+pub(crate) mod rig;
 mod world;

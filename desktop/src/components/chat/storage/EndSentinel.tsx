@@ -1,4 +1,5 @@
 import { memo, useEffect, useRef } from 'react';
+import { SCROLL_ROOT } from '../../ui/useMainScroll';
 
 export const EndSentinel = memo(function EndSentinel({
   token,
@@ -18,7 +19,7 @@ export const EndSentinel = memo(function EndSentinel({
       (entries) => {
         if (entries.some((entry) => entry.isIntersecting)) reach.current();
       },
-      { root: node.closest('main'), rootMargin: '700px 0px' },
+      { root: node.closest(SCROLL_ROOT), rootMargin: '700px 0px' },
     );
     observer.observe(node);
     return () => observer.disconnect();

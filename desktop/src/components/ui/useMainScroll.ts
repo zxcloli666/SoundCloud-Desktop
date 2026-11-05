@@ -1,12 +1,14 @@
 import { type RefObject, useLayoutEffect, useState } from 'react';
 
+export const SCROLL_ROOT = '[data-scroll-root], main';
+
 export function useMainScroll(containerRef: RefObject<HTMLElement | null>) {
   const [scrollElement, setScrollElement] = useState<HTMLElement | null>(null);
   const [scrollMargin, setScrollMargin] = useState(0);
 
   useLayoutEffect(() => {
     const container = containerRef.current;
-    const main = container?.closest('main');
+    const main = container?.closest<HTMLElement>(SCROLL_ROOT);
     if (!container || !main) return;
 
     const measure = () => {

@@ -1,4 +1,4 @@
-import { type RefObject, useEffect, useState } from 'react';
+import { type KeyboardEvent, type RefObject, useEffect, useState } from 'react';
 
 export const TILE_MIN = 132;
 export const TILE_GAP = 10;
@@ -32,4 +32,32 @@ export function useTileSize(ref: RefObject<HTMLElement | null>): number {
 
 export function columnsIn(node: HTMLElement, tile: number): number {
   return Math.max(1, Math.round((node.clientWidth + TILE_GAP) / (tile + TILE_GAP)));
+}
+
+function tileStep(key: string, columns: number): number | null {
+  if (key === 'ArrowRight') return 1;
+  if (key === 'ArrowLeft') return -1;
+  if (key === 'ArrowDown') return columns;
+  if (key === 'ArrowUp') return -columns;
+  return null;
+}
+
+export function moveTileFocus(
+  event: KeyboardEvent<HTMLElement>,
+  node: HTMLElement | null,
+  tile: number,
+  count: number,
+): number | null {
+  const target = event.target as HTMLElement;
+  if (!node || target.dataset.tile === undefined) return null;
+  const step = tileStep(event.key, columnsIn(node, tile));
+  if (step === null) return null;
+  event.preventDefault();
+  event.stopPropagation();
+  const next = Math.min(count - 1, Math.max(0, Number(target.dataset.tile) + step));
+  const nextTile = node.querySelector<HTMLElement>(`[data-tile="${next}"]`);
+  if (!nextTile) return null;
+  nextTile.focus({ preventScroll: true });
+  nextTile.scrollIntoView({ block: 'nearest' });
+  return next;
 }

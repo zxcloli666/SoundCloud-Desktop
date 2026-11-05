@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::future::Future;
 use std::sync::Arc;
 
 use sc_chat::api::wire::FileBackdropReport;
@@ -11,7 +11,6 @@ use sc_chat::{
 use uuid::Uuid;
 
 use super::engine::Uploads;
-use super::prepare::read_source;
 use super::single::{Single, queue_meta, remove_pending};
 
 impl Uploads {
@@ -19,21 +18,34 @@ impl Uploads {
         &self,
         code: &str,
         room: ConvId,
-        path: PathBuf,
-    ) -> ChatResult<MediaUploadView> {
+        original: impl Future<Output = ChatResult<Vec<u8>>>,
+    ) -> ChatResult<Option<MediaUploadView>> {
         self.room_of(code, room).await?;
-        let bytes = read_source(&path).await?;
-        let prepared: PreparedBackdrop = self
-            .prepare
-            .run(move || media::prepare_backdrop(&bytes))
-            .await?;
+        let turn = self.turns.take(room);
+        let prepared = tokio::select! {
+            biased;
+            () = self.turns.passed(room, turn) => return Ok(None),
+            prepared = self.prepared_backdrop(original) => prepared?,
+        };
         self.enqueue_single(Single {
             conversation_id: room,
             kind: MediaKind::Backdrop,
             image: prepared.image,
             attachment: prepared.attachment,
+            turn: Some(turn),
         })
         .await
+    }
+
+    pub async fn stop_backdrop(&self, room: ConvId) -> ChatResult<()> {
+        self.turns.take(room);
+        let albums = self.albums.lock().await;
+        let removed = self
+            .blocking(move |store| remove_pending(store, room, MediaKind::Backdrop))
+            .await?;
+        drop(albums);
+        self.dropped(removed).await;
+        Ok(())
     }
 
     pub async fn set_backdrop(
@@ -43,6 +55,7 @@ impl Uploads {
         preset: Option<String>,
     ) -> ChatResult<()> {
         self.room_of(code, room).await?;
+        self.turns.take(room);
         let albums = self.albums.lock().await;
         let removed = self
             .blocking(move |store| remove_pending(store, room, MediaKind::Backdrop))
@@ -116,6 +129,16 @@ impl Uploads {
             store.remove_album_uploads(album)
         })
         .await
+    }
+
+    async fn prepared_backdrop(
+        &self,
+        original: impl Future<Output = ChatResult<Vec<u8>>>,
+    ) -> ChatResult<PreparedBackdrop> {
+        let bytes = original.await?;
+        self.prepare
+            .run(move || media::prepare_backdrop(&bytes))
+            .await
     }
 
     async fn room_of(&self, code: &str, room: ConvId) -> ChatResult<()> {

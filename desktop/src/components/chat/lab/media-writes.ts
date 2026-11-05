@@ -2,13 +2,17 @@ import type { UploadView } from '../../../lib/chat/media-types';
 import type { ConversationSummary, Message, SendInput } from '../../../lib/chat/types';
 import type { RoomView } from '../../../lib/together/types';
 import { emitChat } from './bus';
-import { pictureSize, thumbhashOf } from './pictures';
+import { mediaMark, pictureSize, thumbhashOf } from './pictures';
+import { sleep } from './steps';
 import { cancel, commit, enqueue, onUploadDone, retry, setUploads } from './uploads-sim';
 import { world } from './world';
 
 type Args = Record<string, unknown>;
 
 const HOLD_MS = 450;
+const FETCH_MS = 900;
+
+let picks = 0;
 
 export const cooldown: { until: number | null } = { until: null };
 
@@ -194,31 +198,53 @@ function needIdle() {
   }
 }
 
+function nextPick(conversationId: string) {
+  picks += 1;
+  const pending = world.uploads.filter(
+    (u) => u.kind === 'backdrop' && u.conversationId === conversationId && u.state !== 'committed',
+  );
+  for (const upload of pending) cancel(upload.id);
+  return picks;
+}
+
 async function roomBackdrop(args: Args) {
   needStar();
   needIdle();
+  nextPick(String(args.conversationId));
   const preset = args.preset as string | null;
   await patchRoom(() => ({ backdrop: preset ? { kind: 'preset', id: preset } : null }));
   return null;
 }
 
-function roomBackdropUpload(args: Args): UploadView {
-  mediaOn();
-  needStar();
-  needIdle();
-  const view = enqueue(
-    String(args.conversationId),
-    `backdrop-${args.code}`,
-    'backdrop',
-    String(args.path),
-    480_000,
-  );
+function backdropUpload(conversationId: string, code: string, path: string): UploadView {
+  const view = enqueue(conversationId, `backdrop-${code}`, 'backdrop', path, 480_000);
   const stop = onUploadDone((done) => {
     if (done.id !== view.id) return;
     stop();
     void patchRoom(() => ({ backdrop: { kind: 'image', mediaId: done.id } }));
   });
   return view;
+}
+
+function roomBackdropUpload(args: Args): UploadView {
+  mediaOn();
+  needStar();
+  needIdle();
+  nextPick(String(args.conversationId));
+  return backdropUpload(String(args.conversationId), String(args.code), String(args.path));
+}
+
+async function roomBackdropStored(args: Args): Promise<UploadView | null> {
+  mediaOn();
+  needStar();
+  needIdle();
+  const turn = nextPick(String(args.conversationId));
+  const mediaId = String(args.mediaId);
+  await sleep(FETCH_MS);
+  if (turn !== picks) return null;
+  const mark = mediaMark(mediaId);
+  if (mark === 'deleted' || mark === 'lost') throw { code: 'media_missing', ids: [mediaId] };
+  return backdropUpload(String(args.conversationId), String(args.code), mediaId);
 }
 
 function roomBackdropReport(args: Args) {
@@ -259,6 +285,11 @@ export const writeHandlers: Record<string, (args: Args) => unknown> = {
   },
   chat_room_backdrop: roomBackdrop,
   chat_room_backdrop_upload: roomBackdropUpload,
+  chat_room_backdrop_stored: roomBackdropStored,
+  chat_room_backdrop_stop: (args) => {
+    nextPick(String(args.conversationId));
+    return null;
+  },
   chat_room_backdrop_report: roomBackdropReport,
   chat_room_settings: roomSettings,
 };
