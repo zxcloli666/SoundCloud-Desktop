@@ -21,7 +21,7 @@ export interface ScrobbleStatus {
   listenbrainz: ScrobbleServiceStatus;
 }
 
-export type ScrobblePhase = 'idle' | 'listening' | 'scrobbled' | 'short' | 'preview';
+export type ScrobblePhase = 'idle' | 'listening' | 'scrobbled' | 'short';
 
 export interface LiveScrobble {
   urn: string | null;

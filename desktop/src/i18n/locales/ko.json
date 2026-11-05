@@ -73,7 +73,7 @@
     "openApp": "SoundCloud 열기",
     "notPlaying": "재생 중이 아님",
     "noContinuation": "비슷한 트랙을 찾지 못해 재생을 멈췄어요",
-    "altUpload": "{{name}}님의 전체 사본 재생 중",
+    "altUpload": "{{name}}님의 사본 재생 중",
     "cancelLoad": "로딩 중지",
     "volume": "볼륨",
     "volumeReset": "볼륨을 100%로 초기화",
@@ -306,7 +306,6 @@
     "language": "언어",
     "album": "수록 앨범",
     "fullLength": "전체 길이",
-    "previewOnly": "미리듣기만 가능",
     "source": "출처",
     "showMore": "더 보기",
     "showLess": "접기",
@@ -901,7 +900,7 @@
     "listWeight": "용량",
     "listTime": "시간",
     "stampForging": "변환 중",
-    "stampPreview": "미리듣기",
+    "stampCut": "잘림",
     "stampMissing": "파일 없음",
     "rowForging": "변환 중 · ffmpeg",
     "actPlay": "재생",
@@ -1169,7 +1168,6 @@
     "scrobbleLiveListening": "{{time}} 후 스크로블",
     "scrobbleLiveScrobbled": "스크로블 완료",
     "scrobbleLiveShort": "30초 미만 트랙은 스크로블되지 않아요",
-    "scrobbleLivePreview": "미리듣기는 스크로블되지 않아요",
     "scrobbleLiveSession_other": "이번 세션 {{count}}곡",
     "scrobblePaused": "스크로블링이 일시정지됐어요. 켜면 청취 기록을 다시 전송해요.",
     "scrobbleNowPlaying": "지금 재생 중 표시",
@@ -1404,8 +1402,8 @@
     "manualUpdates": "업데이트를 직접 설치해야 해요",
     "autoplay": "자동 재생",
     "autoplayDesc": "대기열이 끝나면 마지막 곡의 웨이브에서 비슷한 트랙을 이어서 재생해요",
-    "altUploads": "미리듣기 대신 전체 사본",
-    "altUploadsDesc": "STAR가 없으면 미리듣기만 되는 트랙은 다른 계정에 올라온 같은 곡의 전체 업로드를 찾아 재생해요",
+    "altUploads": "재생할 수 없는 트랙 대신 사본",
+    "altUploadsDesc": "STAR가 없으면 Go+ 트랙과 지역 제한 트랙은 다른 계정에 올라온 같은 곡의 업로드를 찾아 재생해요",
     "searchPlayback": "검색에서 재생",
     "searchPlaybackSimilar": "비슷한 트랙",
     "searchPlaybackResults": "검색 결과",
@@ -2532,9 +2530,6 @@
       "left_other": "{{count}}일 남음",
       "streakLost": "연속 기록이 사라집니다"
     },
-    "preview": {
-      "label": "Go+ 미리보기"
-    },
     "winback": {
       "title": "STAR이 만료됨",
       "sound": {
@@ -2542,8 +2537,8 @@
         "free": "HQ"
       },
       "goPlus": {
-        "star": "전체",
-        "free": "30초"
+        "star": "있음",
+        "free": "없음"
       },
       "sync": {
         "star": "분",

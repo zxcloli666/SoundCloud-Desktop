@@ -9,7 +9,6 @@ import { durLong } from '../../../lib/formatters';
 import { Ellipsis, ListEnd, ListStart, Send, Users } from '../../../lib/icons';
 import { usePerfMode } from '../../../lib/perf';
 import { linkRoute } from '../../../lib/soundcloudLink';
-import { isPreviewOnly } from '../../../lib/track-access';
 import { playTrackLast, playTrackNext } from '../../../lib/track-actions';
 import { getTrackDisplay } from '../../../lib/track-display';
 import { isRoomGuest, useTogetherStore } from '../../../stores/together';
@@ -76,12 +75,7 @@ export const TrackEmbed = memo(function TrackEmbed({ embed, mine, compact }: Tra
   };
 
   const badges = (
-    <>
-      {unavailable && <StateBadge tone="rose">{t('chat.embeds.track.unavailable')}</StateBadge>}
-      {!unavailable && isPreviewOnly(track) && (
-        <StateBadge tone="amber">{t('track.previewOnly')}</StateBadge>
-      )}
-    </>
+    <>{unavailable && <StateBadge tone="rose">{t('chat.embeds.track.unavailable')}</StateBadge>}</>
   );
 
   return (

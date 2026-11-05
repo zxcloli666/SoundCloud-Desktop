@@ -5,7 +5,6 @@ import i18n from '../i18n';
 import {useBlockedArtistsStore} from '../stores/blocked-artists';
 import type {Track} from '../stores/player';
 import {playbackAllowed, usePlayerStore} from '../stores/player';
-import {usePreviewEnd} from '../stores/preview-end';
 import {useSettingsStore} from '../stores/settings';
 import {
   dropAltUpload,
@@ -59,9 +58,7 @@ import {localTrackPath, markLocalMissing, noteLocalDuration} from './local-impor
 import {isLocalUrn} from './local-library';
 import {notifyError} from './notify';
 import {rememberTracks} from './offline-index';
-import {getIsPremium} from './premium-cache';
 import {getUrnCluster, recordClusterFeedback} from './recsFeedback';
-import {isPreviewOnly} from './track-access';
 import {getArtistDisplay, getDisplayTitle} from './track-display';
 import {LATE_SKIP_SHARE} from './wave-feedback';
 
@@ -765,7 +762,6 @@ async function hydrateTrackMetadata(track: Track, gen: number) {
 }
 
 function endedEarly(file: Track): boolean {
-  if (isPreviewOnly(file)) return false;
   if (Math.abs(cachedTime - API_PREVIEW_DURATION_MS / 1000) < 2) return false;
   const expected = Math.max(cachedDuration, file.duration / 1000);
   if (expected < EARLY_END_MIN_EXPECTED_SEC) return false;
@@ -918,8 +914,6 @@ listen<boolean | null>('audio:ended', (event) => {
     recordFullPlay(currentUrn, silentTail);
     lastEndedUrn = currentUrn;
   }
-  const ended = usePlayerStore.getState().currentTrack;
-  if (ended && isPreviewOnly(ended) && !getIsPremium()) usePreviewEnd.getState().ended(ended);
   hasTrack = false;
   handleTrackEnd();
 });

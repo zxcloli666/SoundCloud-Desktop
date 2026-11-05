@@ -73,7 +73,7 @@
     "openApp": "Abrir SoundCloud",
     "notPlaying": "Nada tocando",
     "noContinuation": "Nenhuma faixa parecida encontrada, reprodução parada",
-    "altUpload": "Tocando uma cópia completa de {{name}}",
+    "altUpload": "Tocando uma cópia de {{name}}",
     "cancelLoad": "Parar carregamento",
     "volume": "Volume",
     "volumeReset": "Voltar o volume para 100%",
@@ -309,7 +309,6 @@
     "language": "Idioma",
     "album": "Do álbum",
     "fullLength": "Versão completa",
-    "previewOnly": "Somente prévia",
     "source": "Origem",
     "showMore": "Mostrar mais",
     "showLess": "Mostrar menos",
@@ -934,7 +933,7 @@
     "listWeight": "Peso",
     "listTime": "Tempo",
     "stampForging": "FORJANDO",
-    "stampPreview": "PRÉVIA",
+    "stampCut": "CORTADO",
     "stampMissing": "SEM ARQUIVO",
     "rowForging": "forjando · ffmpeg",
     "actPlay": "Reproduzir",
@@ -1223,7 +1222,6 @@
     "scrobbleLiveListening": "Scrobble em {{time}}",
     "scrobbleLiveScrobbled": "Scrobble feito",
     "scrobbleLiveShort": "Faixas com menos de 30 segundos não contam como scrobble",
-    "scrobbleLivePreview": "Prévias não contam como scrobble",
     "scrobbleLiveSession_one": "{{count}} nesta sessão",
     "scrobbleLiveSession_other": "{{count}} nesta sessão",
     "scrobbleLiveSession_many": "{{count}} nesta sessão",
@@ -1462,8 +1460,8 @@
     "manualUpdates": "As atualizações são instaladas manualmente",
     "autoplay": "Reprodução automática",
     "autoplayDesc": "Quando a fila acabar, continua tocando faixas parecidas com a onda da última",
-    "altUploads": "Cópia completa no lugar da prévia",
-    "altUploadsDesc": "Sem STAR, uma faixa só com prévia toca a partir de um envio completo da mesma faixa em outra conta, quando houver",
+    "altUploads": "Cópia no lugar de uma faixa indisponível",
+    "altUploadsDesc": "Sem STAR, faixas Go+ e bloqueadas na região tocam a partir de um envio da mesma faixa em outra conta, quando houver",
     "searchPlayback": "Reprodução pela busca",
     "searchPlaybackSimilar": "Faixas parecidas",
     "searchPlaybackResults": "Resultados da busca",
@@ -2675,9 +2673,6 @@
       "left_many": "{{count}} dias restantes",
       "left_zero": "{{count}} dias restantes"
     },
-    "preview": {
-      "label": "Prévia do Go+"
-    },
     "winback": {
       "title": "Seu STAR acabou",
       "sound": {
@@ -2685,8 +2680,8 @@
         "free": "HQ"
       },
       "goPlus": {
-        "star": "completa",
-        "free": "30 s"
+        "star": "sim",
+        "free": "não"
       },
       "sync": {
         "star": "minutos",
