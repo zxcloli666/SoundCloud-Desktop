@@ -196,7 +196,15 @@ async fn a_closed_port_is_refused() {
     let free = TcpListener::bind((Ipv4Addr::LOCALHOST, 0)).await.unwrap();
     let port = free.local_addr().unwrap().port();
     drop(free);
-    let report = probe("localhost", LOCALHOST, port, "/", &trusting_good(), quick()).await;
+    let report = probe(
+        "localhost",
+        LOCALHOST,
+        port,
+        "/",
+        &trusting_good(),
+        Budget::default(),
+    )
+    .await;
     assert_eq!(
         kind_and_phase(&report),
         Some((FailKind::Refused, Some(Phase::Tcp)))

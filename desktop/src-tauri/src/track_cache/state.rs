@@ -674,7 +674,9 @@ fn write_cache_metadata_sync(path: &Path, meta: &TrackCacheMetadata) {
 fn move_by_copy(from: &Path, to: &Path) -> bool {
     let temp = PathBuf::from(format!("{}.tmp", to.display()));
     let copied = std::fs::copy(from, &temp).is_ok()
-        && std::fs::File::open(&temp)
+        && std::fs::OpenOptions::new()
+            .write(true)
+            .open(&temp)
             .and_then(|f| f.sync_all())
             .is_ok()
         && std::fs::rename(&temp, to).is_ok();
