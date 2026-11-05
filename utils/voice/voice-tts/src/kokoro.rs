@@ -50,12 +50,44 @@ impl Kokoro {
         let audio = self.tts.generate_with_config("", &config, None::<fn(&[f32], f32) -> bool>)?;
         let compute = started.elapsed().as_secs_f64();
         let rate = audio.sample_rate();
-        let samples = audio.samples().to_vec();
+        let mut samples = audio.samples().to_vec();
+        remove_dc(&mut samples, rate);
         Some(Spoken {
             seconds_of_audio: samples.len() as f64 / rate as f64,
             samples,
             sample_rate: rate,
             seconds_of_compute: compute,
         })
+    }
+}
+
+const DC_CUTOFF_HZ: f32 = 25.0;
+
+fn remove_dc(samples: &mut [f32], rate: i32) {
+    let pole = (-2.0 * std::f32::consts::PI * DC_CUTOFF_HZ / rate as f32).exp();
+    let (mut last_in, mut last_out) = (0.0f32, 0.0f32);
+    for sample in samples.iter_mut() {
+        let out = *sample - last_in + pole * last_out;
+        last_in = *sample;
+        last_out = out;
+        *sample = out;
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn a_constant_offset_fades_and_a_voice_band_tone_stays() {
+        let rate = 24000;
+        let tone = |i: usize| (2.0 * std::f32::consts::PI * 120.0 * i as f32 / rate as f32).sin();
+        let mut samples: Vec<f32> = (0..rate as usize).map(|i| 0.3 + 0.5 * tone(i)).collect();
+        remove_dc(&mut samples, rate);
+        let tail = &samples[rate as usize / 2..];
+        let mean = tail.iter().sum::<f32>() / tail.len() as f32;
+        let peak = tail.iter().fold(0.0f32, |m, s| m.max(s.abs()));
+        assert!(mean.abs() < 0.01, "{mean}");
+        assert!(peak > 0.47 && peak < 0.53, "{peak}");
     }
 }
