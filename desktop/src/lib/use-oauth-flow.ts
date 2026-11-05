@@ -2,6 +2,8 @@ import { openUrl } from '@tauri-apps/plugin-opener';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ApiError, fetchWithAuthFallback, getSessionId } from './api-client';
 import { useChecking } from './chat/checking';
+import { keychainReasonOf } from './chat/errors';
+import type { KeychainReason } from './chat/gate';
 import { busyRetrySec, sealedLoginBegin, sealedLoginPoll } from './chat/login';
 import type { LoginStep, LoginTarget } from './chat/types';
 import { API_BASE } from './constants';
@@ -54,6 +56,7 @@ export function useOAuthFlow(
   const [error, setError] = useState<OAuthFlowError | null>(null);
   const [browserFailed, setBrowserFailed] = useState(false);
   const [callbackSlow, setCallbackSlow] = useState(false);
+  const [keychain, setKeychain] = useState<KeychainReason | null>(null);
   const pollRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const attemptRef = useRef(0);
   const resumeRef = useRef<(() => void) | null>(null);
@@ -78,6 +81,7 @@ export function useOAuthFlow(
     setError(null);
     setBrowserFailed(false);
     setCallbackSlow(false);
+    setKeychain(null);
     setStep('waiting');
   }, [cancelChecking]);
 
@@ -93,108 +97,118 @@ export function useOAuthFlow(
     [cancel],
   );
 
-  const startLogin = useCallback(async () => {
-    cancel();
-    const attempt = attemptRef.current;
-    const isStale = () => attempt !== attemptRef.current;
-    setError(null);
-    setIsPolling(true);
-    setStep('waiting');
-
-    let login: LoginRequest | null;
-    try {
-      login = await requestLogin(optionsRef.current);
-    } catch (e) {
-      if (!isStale()) fail(loginRequestError(e));
-      return;
-    }
-    if (isStale()) return;
-    if (!login) {
-      fail({ kind: 'unreachable', message: 'Sealed login unavailable' });
-      return;
-    }
-    const request = login;
-    setAuthUrl(request.url);
-    try {
-      await openUrl(request.url);
-    } catch (e) {
-      logInfo(`[Auth] browser did not open the login page: ${describeError(e)}`);
-      setBrowserFailed(true);
-    }
-    if (isStale()) return;
-
-    const startedAt = Date.now();
-    let failingSince: number | null = null;
-    let lastRedirect: string | null = null;
-    let stalled = false;
-    let requesting = false;
-
-    const schedule = (delayMs: number) => {
-      pollRef.current = setTimeout(pollOnce, delayMs);
-    };
-
-    const pollOnce = async () => {
-      if (Date.now() - startedAt > LOGIN_TTL_MS) {
-        fail({ kind: 'expired', message: 'Login request expired' });
-        return;
-      }
-      let data: LoginStatusResponse | null = null;
-      requesting = true;
-      try {
-        data = await fetchLoginStatus(request);
-      } catch {}
-      requesting = false;
-      if (isStale()) return;
-
-      if (!data) {
-        failingSince ??= Date.now();
-        if (!stalled && Date.now() - failingSince >= UNREACHABLE_AFTER_MS) {
-          stalled = true;
-          logInfo('[Auth] login status unreachable, keep polling in background');
-          setIsPolling(false);
-          setError({ kind: 'unreachable', message: 'Backend unreachable' });
-        }
-        schedule(stalled ? STALLED_POLL_MS : POLL_INTERVAL_MS);
-        return;
-      }
-      failingSince = null;
-
-      if (data.status === 'completed' && data.sessionId) {
-        cancel();
-        onSuccessRef.current(data.sessionId);
-        return;
-      }
-      if (data.status === 'completed' && request.sealed) {
-        fail({ kind: 'failed', message: data.error ?? 'Login failed' });
-        return;
-      }
-      if (data.status === 'failed' || data.status === 'expired') {
-        fail({ kind: data.status, message: data.error ?? 'Login failed' });
-        return;
-      }
-
-      if (data.redirectUrl && data.redirectUrl !== lastRedirect) {
-        lastRedirect = data.redirectUrl;
-        setAuthUrl(data.redirectUrl);
-        setStep('waiting');
-      } else if (!stalled) {
-        if (data.step) setStep(data.step);
-        setCallbackSlow(!data.step && Date.now() - startedAt >= CALLBACK_HINT_AFTER_MS);
-      }
-      schedule(stalled ? STALLED_POLL_MS : POLL_INTERVAL_MS);
-    };
-
-    resumeRef.current = () => {
-      stalled = false;
-      failingSince = null;
+  const startLogin = useCallback(
+    async (plain = false) => {
+      cancel();
+      const attempt = attemptRef.current;
+      const isStale = () => attempt !== attemptRef.current;
       setError(null);
       setIsPolling(true);
-      if (requesting) return;
-      if (pollRef.current) clearTimeout(pollRef.current);
-      schedule(0);
-    };
-    schedule(POLL_INTERVAL_MS);
-  }, [cancel, fail]);
+      setStep('waiting');
+
+      let login: LoginRequest | null;
+      try {
+        login = await requestLogin(optionsRef.current, plain);
+      } catch (e) {
+        if (isStale()) return;
+        const refused = optionsRef.current.sealedOnly ? null : keychainReasonOf(e);
+        if (refused) {
+          setIsPolling(false);
+          setKeychain(refused);
+        } else {
+          fail(loginRequestError(e));
+        }
+        return;
+      }
+      if (isStale()) return;
+      if (!login) {
+        fail({ kind: 'unreachable', message: 'Sealed login unavailable' });
+        return;
+      }
+      const request = login;
+      setAuthUrl(request.url);
+      try {
+        await openUrl(request.url);
+      } catch (e) {
+        logInfo(`[Auth] browser did not open the login page: ${describeError(e)}`);
+        setBrowserFailed(true);
+      }
+      if (isStale()) return;
+
+      const startedAt = Date.now();
+      let failingSince: number | null = null;
+      let lastRedirect: string | null = null;
+      let stalled = false;
+      let requesting = false;
+
+      const schedule = (delayMs: number) => {
+        pollRef.current = setTimeout(pollOnce, delayMs);
+      };
+
+      const pollOnce = async () => {
+        if (Date.now() - startedAt > LOGIN_TTL_MS) {
+          fail({ kind: 'expired', message: 'Login request expired' });
+          return;
+        }
+        let data: LoginStatusResponse | null = null;
+        requesting = true;
+        try {
+          data = await fetchLoginStatus(request);
+        } catch {}
+        requesting = false;
+        if (isStale()) return;
+
+        if (!data) {
+          failingSince ??= Date.now();
+          if (!stalled && Date.now() - failingSince >= UNREACHABLE_AFTER_MS) {
+            stalled = true;
+            logInfo('[Auth] login status unreachable, keep polling in background');
+            setIsPolling(false);
+            setError({ kind: 'unreachable', message: 'Backend unreachable' });
+          }
+          schedule(stalled ? STALLED_POLL_MS : POLL_INTERVAL_MS);
+          return;
+        }
+        failingSince = null;
+
+        if (data.status === 'completed' && data.sessionId) {
+          cancel();
+          onSuccessRef.current(data.sessionId);
+          return;
+        }
+        if (data.status === 'completed' && request.sealed) {
+          fail({ kind: 'failed', message: data.error ?? 'Login failed' });
+          return;
+        }
+        if (data.status === 'failed' || data.status === 'expired') {
+          fail({ kind: data.status, message: data.error ?? 'Login failed' });
+          return;
+        }
+
+        if (data.redirectUrl && data.redirectUrl !== lastRedirect) {
+          lastRedirect = data.redirectUrl;
+          setAuthUrl(data.redirectUrl);
+          setStep('waiting');
+        } else if (!stalled) {
+          if (data.step) setStep(data.step);
+          setCallbackSlow(!data.step && Date.now() - startedAt >= CALLBACK_HINT_AFTER_MS);
+        }
+        schedule(stalled ? STALLED_POLL_MS : POLL_INTERVAL_MS);
+      };
+
+      resumeRef.current = () => {
+        stalled = false;
+        failingSince = null;
+        setError(null);
+        setIsPolling(true);
+        if (requesting) return;
+        if (pollRef.current) clearTimeout(pollRef.current);
+        schedule(0);
+      };
+      schedule(POLL_INTERVAL_MS);
+    },
+    [cancel, fail],
+  );
 
   const retry = useCallback(() => {
     if (resumeRef.current) resumeRef.current();
@@ -220,21 +234,24 @@ export function useOAuthFlow(
     error,
     browserFailed,
     callbackSlow,
+    keychain,
     checking,
   };
 }
 
-async function requestLogin({
-  target,
-  sealedOnly,
-}: OAuthFlowOptions): Promise<LoginRequest | null> {
-  const sealed = await sealedLoginBegin(target ?? (getSessionId() ? 'current' : 'fresh'));
+async function requestLogin(
+  { target, sealedOnly }: OAuthFlowOptions,
+  plain: boolean,
+): Promise<LoginRequest | null> {
+  const sealed = plain
+    ? null
+    : await sealedLoginBegin(target ?? (getSessionId() ? 'current' : 'fresh'));
   if (sealed) return { ...sealed, sealed: true };
   if (sealedOnly) return null;
-  const plain = await fetchWithAuthFallback<Omit<LoginRequest, 'sealed'>>('/auth/login', {
+  const fetched = await fetchWithAuthFallback<Omit<LoginRequest, 'sealed'>>('/auth/login', {
     silentStatuses: [429, 503],
   });
-  return { url: plain.url, loginRequestId: plain.loginRequestId, sealed: false };
+  return { url: fetched.url, loginRequestId: fetched.loginRequestId, sealed: false };
 }
 
 function loginRequestError(e: unknown): OAuthFlowError {

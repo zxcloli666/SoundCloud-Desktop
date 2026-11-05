@@ -27,6 +27,7 @@
     "again": "O acesso foi negado de novo. Os chats ligam quando você permitir.",
     "failed": "Não foi possível pedir acesso. Tente de novo.",
     "asking": "Aguardando o sistema",
+    "skip": "Entrar sem chats",
     "unavailable": {
       "title": "As chaves dos chats estão fora de alcance",
       "mac": "O Acesso às Chaves do macOS não está respondendo. Os chats continuam tentando sozinhos, e seu histórico fica neste computador.",

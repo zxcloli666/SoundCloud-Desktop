@@ -5,6 +5,7 @@ import { ANDROID_CLIENT_URL } from '../../lib/constants';
 import { helpUrl } from '../../lib/help-url';
 import { Check, ExternalLink, RefreshCw, Smartphone, X } from '../../lib/icons';
 import { encodeQrPayload } from '../../lib/qr-link';
+import { KeychainCard } from '../chat/relogin/KeychainCard';
 import { Modal, ModalClose, ModalContent, ModalTitle } from '../ui/Modal';
 import { QrCode } from './QrCode';
 import { useQrLink } from './useQrLink';
@@ -100,6 +101,14 @@ export const QrLinkSheet = React.memo(
               </div>
             )}
 
+            {state.status === 'keychain' && state.keychain && (
+              <KeychainCard
+                reason={state.keychain}
+                onResolved={() => start()}
+                onSkip={() => start(true)}
+              />
+            )}
+
             {state.status === 'pending' && state.claimToken && (
               <div className="flex flex-col items-center gap-4">
                 <QrCode payload={encodeQrPayload(state.claimToken, mode)} size={260} />
@@ -147,7 +156,7 @@ export const QrLinkSheet = React.memo(
               </div>
             )}
 
-            {state.status !== 'claimed' && !checking && (
+            {state.status !== 'claimed' && state.status !== 'keychain' && !checking && (
               <div className="mt-5 mx-auto flex items-center justify-center gap-1.5 text-[11.5px] text-ink-35">
                 <span>{t('qrLink.noPhoneApp')}</span>
                 <button

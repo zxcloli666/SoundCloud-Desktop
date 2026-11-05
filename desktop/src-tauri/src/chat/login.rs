@@ -38,7 +38,7 @@ pub async fn begin(state: &ChatState, target: LoginTarget) -> ChatResult<LoginBe
         LoginTarget::Fresh => None,
         LoginTarget::Current => crate::auth::session_token(Some(&state.app)).await,
     };
-    let signer = load_signer(state).await?;
+    let signer = swept_signer(lane(), state.keys.clone()).await?;
     let call = Call::new(get(LOGIN, String::new()), session, START_TIMEOUT_MS);
     let (node, answer) = start(state, &signer, &call).await?;
     let begun: LoginBegin = wire::decode(&answer)?;
@@ -79,7 +79,7 @@ async fn create_link(
     mode: LinkMode,
     session: Option<String>,
 ) -> ChatResult<LinkCreated> {
-    let signer = load_signer(state).await?;
+    let signer = swept_signer(lane(), state.keys.clone()).await?;
     let body = json!({ "mode": mode });
     let call = Call::new(post(LINK_CREATE, &body), session, START_TIMEOUT_MS);
     let (node, answer) = start(state, &signer, &call).await?;
@@ -112,7 +112,7 @@ async fn claim_link(
     claim_token: &str,
     session: Option<String>,
 ) -> ChatResult<LinkClaimed> {
-    let signer = load_signer(state).await?;
+    let signer = swept_signer(lane(), state.keys.clone()).await?;
     let (_, answer) = start(state, &signer, &claim_call(claim_token, session)).await?;
     wire::decode(&answer)
 }
@@ -176,16 +176,6 @@ async fn following(state: &ChatState, request_id: &str) -> ChatResult<(Arc<Signe
             let signer = swept_signer(lane(), state.keys.clone()).await?;
             Ok((signer, Node::ALL.to_vec()))
         }
-    }
-}
-
-async fn load_signer(state: &ChatState) -> ChatResult<Arc<Signer>> {
-    match swept_signer(lane(), state.keys.clone()).await {
-        Err(ChatError::Keychain | ChatError::KeychainDenied) => {
-            state.runtime.reset_keys().await?;
-            swept_signer(lane(), state.keys.clone()).await
-        }
-        loaded => loaded,
     }
 }
 

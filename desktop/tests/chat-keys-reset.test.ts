@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from 'node:test';
+import { keychainReasonOf } from '../src/lib/chat/errors.ts';
 import {
   chatSettingsShown,
   gateOf,
@@ -124,4 +125,12 @@ test('the limit time is a clock today and a weekday with a clock tomorrow', () =
   const weekday = new Intl.DateTimeFormat('en', { weekday: 'short' }).format(tomorrow);
   assert.ok(soonTime(tomorrow, now, 'en').includes(weekday));
   assert.ok(soonTime(tomorrow, now, 'en').includes('08:15'));
+});
+
+test('a start refused by the key store shows the keychain card, other errors do not', () => {
+  assert.equal(keychainReasonOf({ code: 'keychain_denied' }), 'keychain_denied');
+  assert.equal(keychainReasonOf({ code: 'keychain' }), 'keychain_unavailable');
+  assert.equal(keychainReasonOf({ code: 'busy', retryMs: 1000 }), null);
+  assert.equal(keychainReasonOf(new Error('keychain')), null);
+  assert.equal(keychainReasonOf(null), null);
 });

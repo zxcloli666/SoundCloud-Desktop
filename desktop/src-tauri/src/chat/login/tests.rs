@@ -438,3 +438,31 @@ async fn a_refused_store_ends_on_the_file_vault_after_the_reset_the_login_runs()
     assert_eq!(keys.auth_public(), signer.keys.auth_public());
     std::fs::remove_dir_all(dir).unwrap();
 }
+
+#[tokio::test]
+async fn a_refused_store_stays_refused_until_a_retry_and_then_the_start_goes_through() {
+    let dir = std::env::temp_dir().join(format!("sc-chat-retry-{}", Uuid::new_v4()));
+    std::fs::create_dir_all(&dir).unwrap();
+    let vault = SharedVault::default();
+    vault.fail_with(Some(ChatError::KeychainDenied));
+    let keychain = Arc::new(Keychain::with_os(Box::new(vault.clone()), &dir));
+    let lane = Lane::new();
+    assert_eq!(
+        swept_signer(&lane, keychain.clone()).await.err(),
+        Some(ChatError::KeychainDenied)
+    );
+
+    vault.fail_with(None);
+    assert_eq!(
+        swept_signer(&lane, keychain.clone()).await.err(),
+        Some(ChatError::KeychainDenied)
+    );
+
+    keychain.allow();
+    let signer = swept_signer(&lane, keychain.clone()).await.unwrap();
+    assert_eq!(keychain.storage(), KeyStorage::Os);
+    let (stored, _) = DeviceKeys::load_or_create(keychain.as_ref()).unwrap();
+    assert_eq!(stored, signer.device_id);
+    assert!(!dir.join("keys").exists());
+    std::fs::remove_dir_all(dir).unwrap();
+}
