@@ -901,6 +901,7 @@ select,
    (vinyl ring, eq bars, play pulse) run only while [data-playing] is true
    (= playing AND window visible). */
 .npb {
+    --npb-quality-w: 66px;
     position: absolute;
     left: 0;
     right: 0;
@@ -1021,7 +1022,7 @@ select,
 
 .npb-quality {
     flex: 0 0 auto;
-    width: 96px;
+    width: auto;
 }
 
 .npb-react {
@@ -1033,7 +1034,7 @@ select,
 
 .npb-react.is-local {
     justify-content: center;
-    width: calc(5 * 36px + 5 * 2px + 96px);
+    width: calc(5 * 36px + 5 * 2px + var(--npb-quality-w));
 }
 
 .npb-slot {
@@ -1545,12 +1546,8 @@ select,
     flex-basis: 112px;
 }
 
-.npb[data-compact] .npb-quality {
-    width: 78px;
-}
-
 .npb[data-compact] .npb-react.is-local {
-    width: calc(5 * 36px + 5 * 2px + 78px);
+    width: calc(5 * 36px + 5 * 2px + var(--npb-quality-w));
 }
 
 .together-icon {
