@@ -39,7 +39,7 @@ function ProfileBannerImpl({ url, hasStar }: { url: string; hasStar: boolean }) 
       )}
       <div
         data-ui="user-banner"
-        className="relative w-full aspect-[2480/520] max-h-[280px] -mb-12 md:-mb-16 overflow-hidden rounded-t-[2.5rem] pointer-events-none"
+        className="relative w-full aspect-[2480/520] max-h-[280px] -mb-12 @lg:-mb-16 overflow-hidden rounded-t-[2.5rem] pointer-events-none"
       >
         <img
           src={src}

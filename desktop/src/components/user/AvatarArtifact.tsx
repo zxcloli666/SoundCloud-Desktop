@@ -18,7 +18,7 @@ function AvatarArtifactImpl({ username, avatarUrl, hasStar, tier = 0, aura }: Av
     const perf = usePerfMode();
   const url = art(avatarUrl, 't500x500');
   return (
-    <div className="relative shrink-0 self-center lg:self-start group w-[148px] h-[148px] md:w-[180px] md:h-[180px]">
+    <div className="relative shrink-0 self-center @min-[720px]:self-start group w-[148px] h-[148px] @lg:w-[180px] @lg:h-[180px]">
       {hasStar && (
         <div
           className="absolute -inset-[5px] rounded-[2.2rem] pointer-events-none overflow-hidden"
@@ -40,7 +40,7 @@ function AvatarArtifactImpl({ username, avatarUrl, hasStar, tier = 0, aura }: Av
         </div>
       )}
       <div
-        className="relative w-[148px] h-[148px] md:w-[180px] md:h-[180px] rounded-[2rem] overflow-hidden"
+        className="relative w-[148px] h-[148px] @lg:w-[180px] @lg:h-[180px] rounded-[2rem] overflow-hidden"
         style={{
           background: 'rgb(var(--ink) / 0.03)',
           border: '0.5px solid rgb(var(--ink) / 0.10)',
