@@ -1,0 +1,49 @@
+{
+  "tile": {
+    "open": "{{total}}장 중 {{n}}번째 이미지 열기",
+    "deleted": "삭제된 이미지",
+    "lost": "이미지를 사용할 수 없음",
+    "lostRetry": "이미지를 사용할 수 없습니다. 눌러서 다시 시도",
+    "failed": "불러오지 못했습니다. 눌러서 다시 시도",
+    "retry": "다시 시도"
+  },
+  "upload": {
+    "sending": "{{total}}장 중 {{done}}장 전송",
+    "waiting": "연결 대기 중",
+    "failed_other": "{{count}}장 전송 실패",
+    "retry": "다시 시도",
+    "retryAll": "모두 다시 시도",
+    "cancel": "앨범에서 제거",
+    "retryReason": "다시 시도: {{reason}}",
+    "discard": "게시물 삭제",
+    "discardConfirm": "정말 삭제할까요?"
+  },
+  "viewer": {
+    "label": "이미지 보기",
+    "close": "닫기",
+    "prev": "이전",
+    "next": "다음",
+    "zoomIn": "확대",
+    "zoomOut": "축소",
+    "zoomReset": "화면에 맞추기",
+    "jump": "메시지로 이동",
+    "counter": "{{n}} / {{total}}",
+    "loading": "불러오는 중",
+    "failed": "원본을 불러오지 못했습니다",
+    "retry": "다시 시도",
+    "alt": "{{name}}님의 이미지",
+    "altOf": "{{name}}님의 이미지, {{total}}장 중 {{n}}번째"
+  },
+  "grid": {
+    "label": "채팅 이미지",
+    "item": "{{name}}, {{date}}",
+    "loading": "이미지 불러오는 중",
+    "empty": "아직 이미지가 없습니다",
+    "emptyHint": "이 채팅의 앨범이 여기에 표시됩니다",
+    "failed": "이미지를 불러오지 못했습니다",
+    "moreFailed": "더 불러오지 못했습니다",
+    "retry": "다시 시도",
+    "older": "이전 기록 찾기",
+    "itemState": "{{item}}. {{state}}"
+  }
+}

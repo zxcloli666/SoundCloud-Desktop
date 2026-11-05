@@ -1,0 +1,19 @@
+.chat-vinyl-label {
+  background:
+    radial-gradient(circle, #101014 0 3px, rgba(255, 255, 255, 0.35) 3.5px 4px, transparent 4.5px),
+    repeating-radial-gradient(circle, transparent 0 2px, rgba(0, 0, 0, 0.12) 2px 3px);
+}
+
+.chat-vinyl-disc {
+  background:
+    radial-gradient(circle, var(--color-accent) 0 17%, #0b0b0d 17.5% 19.5%, transparent 20%),
+    conic-gradient(
+      from 40deg,
+      transparent 0 10%,
+      rgba(255, 255, 255, 0.14) 17%,
+      transparent 25% 60%,
+      rgba(255, 255, 255, 0.1) 67%,
+      transparent 75%
+    ),
+    repeating-radial-gradient(circle, #18181c 0 1.3px, #24242a 1.3px 2.6px);
+}

@@ -1,3 +1,5 @@
+import './components/chat/lab/gate';
+import { chatLabWanted } from './components/chat/lab/flag';
 import { QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
@@ -26,6 +28,7 @@ import { bootThemes } from './lib/themes/boot';
 import { initUiScale } from './lib/ui-scale';
 import './fonts';
 import './index.css';
+import './lib/scproxy';
 import { useSettingsStore } from './stores/settings';
 
 // Кап 60 fps: троттл requestAnimationFrame (см. lib/fps-cap.ts). На высокогерцовых
@@ -40,7 +43,7 @@ useSettingsStore.persist.onFinishHydration((state) => {
   }
 });
 
-if (import.meta.env.DEV) {
+if (import.meta.env.DEV && !chatLabWanted) {
   const script = document.createElement('script');
   script.src = 'https://unpkg.com/react-scan/dist/auto.global.js';
   script.crossOrigin = 'anonymous';
@@ -63,7 +66,6 @@ function startDeferredRuntime() {
   scheduleAfterFirstPaint(() => {
     setupUiWatchdog();
     setupCacheMaintenance();
-    void import('./lib/scproxy');
     void import('./lib/tray');
     void import('./lib/tray-menu').then((m) => m.initTrayMenu());
     void import('./lib/audio');
@@ -85,6 +87,7 @@ function startDeferredRuntime() {
 
 async function bootstrap() {
   await useSettingsStore.persist.rehydrate();
+  if (import.meta.env.DEV && chatLabWanted) await import('./components/chat/lab/boot').then((m) => m.bootChatLab());
   await initUiScale();
   initReloadKeys();
 

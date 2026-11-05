@@ -1,0 +1,129 @@
+{
+  "title": "Chats",
+  "search": "Buscar chats",
+  "clear": "Limpar",
+  "newChat": "Novo chat",
+  "saved": "Salvos",
+  "room": "Sala",
+  "unknown": "Sem nome",
+  "untitledGroup": "Grupo",
+  "you": "Você",
+  "draft": "Rascunho",
+  "typing": "digitando",
+  "pick": "Escolha um chat",
+  "failed": "Não foi possível carregar",
+  "retry": "Tentar de novo",
+  "cancel": "Cancelar",
+  "blockedToast": "{{name}} bloqueado",
+  "filters": {
+    "all": "Todos",
+    "direct": "Diretos",
+    "groups": "Grupos",
+    "unread": "Não lidos",
+    "requests": "Pedidos",
+    "archived": "Arquivo",
+    "back": "Voltar",
+    "more": "Mais"
+  },
+  "preview": {
+    "embed": "Música",
+    "image": "Foto",
+    "deleted": "Mensagem apagada",
+    "locked": "Abre depois que você confirmar este dispositivo",
+    "unknown": "Atualize o app para ver isto"
+  },
+  "empty": {
+    "all": "Ainda sem chats",
+    "direct": "Sem chats diretos",
+    "groups": "Sem grupos",
+    "unread": "Tudo lido",
+    "requests": "Sem pedidos novos",
+    "archived": "O arquivo está vazio",
+    "search": "Nada encontrado"
+  },
+  "menu": {
+    "more": "Mais",
+    "openDock": "Abrir no painel",
+    "openPage": "Abrir como página",
+    "pin": "Fixar",
+    "unpin": "Desafixar",
+    "read": "Marcar como lido",
+    "mute1h": "Silenciar por uma hora",
+    "mute8h": "Silenciar por 8 horas",
+    "muteForever": "Silenciar para sempre",
+    "unmute": "Reativar som",
+    "archive": "Arquivar",
+    "unarchive": "Desarquivar",
+    "block": "Bloquear",
+    "delete": "Apagar chat"
+  },
+  "delete": {
+    "title": "Apagar \"{{name}}\"?",
+    "forMe": "Só para mim",
+    "forEveryone": "Para todos"
+  },
+  "dock": {
+    "list": "Todos os chats",
+    "close": "Fechar painel",
+    "closeTab": "Fechar aba",
+    "expand": "Abrir como página",
+    "toDock": "Abrir no painel",
+    "resize": "Largura do painel"
+  },
+  "gate": {
+    "off": "Os chats não estão disponíveis",
+    "revoked": "Este dispositivo foi removido dos chats"
+  },
+  "new": {
+    "title": "Novo chat",
+    "search": "Encontrar uma pessoa",
+    "following": "Seguindo",
+    "people": "Pessoas",
+    "nobody": "Ninguém encontrado",
+    "remove": "Remover",
+    "groupName": "Nome do grupo",
+    "write": "Mensagem",
+    "createGroup": "Criar grupo · {{n}}"
+  },
+  "requests": {
+    "badge": "Pedido",
+    "accept": "Aceitar",
+    "decline": "Recusar",
+    "block": "Bloquear",
+    "report": "Denunciar",
+    "wantsToWrite": "{{name}} quer falar com você",
+    "invitedBy": "{{name}} convida você para um grupo",
+    "groupInvite": "Convida você para \"{{name}}\"",
+    "messages_one": "{{count}} mensagem",
+    "messages_many": "{{count}} de mensagens",
+    "messages_other": "{{count}} mensagens"
+  },
+  "report": {
+    "title": "Denunciar {{name}}",
+    "comment": "Comentário, se precisar",
+    "alsoBlock": "Bloquear",
+    "send": "Enviar",
+    "sent": "Denúncia enviada",
+    "reasons": {
+      "spam": "Spam e anúncios",
+      "harassment": "Ameaças e assédio",
+      "doxxing": "Dados privados de alguém",
+      "illegal": "Conteúdo ilegal",
+      "other": "Outro"
+    }
+  },
+  "errors": {
+    "unavailable": "Você não pode mandar mensagem para esta pessoa",
+    "request_limit": "Limite diário de chats novos atingido",
+    "too_young": "Você pode iniciar chats uma hora depois de entrar",
+    "send_limited": "Rápido demais, espere um pouco",
+    "slow_mode": "Modo lento, aguarde",
+    "busy": "O servidor está ocupado, tente mais tarde",
+    "offline": "Sem conexão com o servidor",
+    "disabled": "Os chats estão desligados",
+    "send_paused": "O envio está pausado",
+    "muted": "Você não pode escrever aqui agora",
+    "not_member": "Você não está mais neste chat",
+    "generic": "Algo deu errado, tente de novo"
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "unboundTitle": "Confirme o acesso para ligar os chats",
+  "boundOtherTitle": "Confirme seu acesso de novo",
+  "musicStays": "A música continua conectada",
+  "confirm": "Confirmar acesso",
+  "done": "Chats ligados",
+  "retry": "Tentar de novo",
+  "steps": {
+    "waiting": "Aguardando a autorização do SoundCloud",
+    "token": "Trocando o código de autorização",
+    "extract": "Buscando seu perfil",
+    "finalizing": "Finalizando a sessão"
+  },
+  "errors": {
+    "unreachable": "Não foi possível falar com o servidor",
+    "unreachableDesc": "O servidor não está respondendo. Verifique sua conexão ou tente de novo em instantes.",
+    "limited": "O acesso está limitado por enquanto",
+    "limitedDesc": "O servidor está limitando os acessos agora. Tente de novo em {{seconds}} s.",
+    "expired": "O acesso expirou",
+    "failed": "Falha no acesso"
+  },
+  "keychain": {
+    "title": "Os chats precisam de acesso às suas chaves",
+    "mac": "As chaves de criptografia dos chats ficam no Acesso às Chaves do macOS, e o acesso foi negado. Toque em Tentar de novo e escolha Permitir.",
+    "linux": "As chaves de criptografia dos chats ficam no cofre de senhas do sistema, e a janela de desbloqueio foi fechada. Toque em Tentar de novo e desbloqueie o cofre.",
+    "windows": "As chaves de criptografia dos chats ficam no Gerenciador de Credenciais do Windows, e o acesso foi negado. Toque em Tentar de novo.",
+    "again": "O acesso foi negado de novo. Os chats ligam quando você permitir.",
+    "failed": "Não foi possível pedir acesso. Tente de novo.",
+    "asking": "Aguardando o sistema",
+    "unavailable": {
+      "title": "As chaves dos chats estão fora de alcance",
+      "mac": "O Acesso às Chaves do macOS não está respondendo. Os chats continuam tentando sozinhos, e seu histórico fica neste computador.",
+      "linux": "O cofre de senhas do sistema não está respondendo. Inicie ou desbloqueie o cofre. Os chats continuam tentando sozinhos, e seu histórico fica neste computador.",
+      "windows": "O Gerenciador de Credenciais do Windows não está respondendo. Os chats continuam tentando sozinhos, e seu histórico fica neste computador.",
+      "again": "Ainda sem resposta. Os chats continuam tentando sozinhos.",
+      "asking": "Verificando as chaves"
+    }
+  }
+}

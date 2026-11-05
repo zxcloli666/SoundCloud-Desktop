@@ -1,71 +1,88 @@
 import { fetchWithAuthFallback } from './api-client';
-
-/**
- * QR-link API — single-use токен для переноса сессии между устройствами.
- *
- * pull: caller (без сессии) показывает QR, другое (залогиненное) сканирует и пушит.
- * push: caller (залогинен) показывает QR, другое (без сессии) сканирует и забирает.
- *
- * Результат claim'а в обе стороны — новая сессия на устройстве, у которого её не было.
- */
+import {
+  sealedLinkClaimPull,
+  sealedLinkClaimPush,
+  sealedLinkCreatePull,
+  sealedLinkCreatePush,
+  sealedLinkPoll,
+} from './chat/login';
+import type { LinkMode, LinkState } from './chat/types';
 
 export interface CreateLinkResponse {
+  linkRequestId: string;
+  claimToken: string;
+  expiresAt: number;
+  sealed: boolean;
+}
+
+export interface LinkStatusResponse {
+  status: LinkState;
+  mode: LinkMode;
+  sessionId?: string | null;
+  error?: string | null;
+}
+
+export interface ClaimLinkResponse {
+  sessionId: string;
+  mode: LinkMode;
+}
+
+interface PlainLink {
   linkRequestId: string;
   claimToken: string;
   expiresAt: string;
 }
 
-export interface LinkStatusResponse {
-  status: 'pending' | 'claimed' | 'failed' | 'expired';
-  mode: 'pull' | 'push';
-  sessionId?: string;
-  error?: string;
-}
-
-export interface ClaimLinkResponse {
-  sessionId: string;
-  mode: 'pull' | 'push';
-}
-
-export async function createLinkRequest(mode: 'pull' | 'push'): Promise<CreateLinkResponse> {
-  const created = await fetchWithAuthFallback<CreateLinkResponse>('/auth/link/create', {
+export async function createLinkRequest(mode: LinkMode): Promise<CreateLinkResponse> {
+  const sealed = await (mode === 'pull' ? sealedLinkCreatePull() : sealedLinkCreatePush());
+  if (sealed) {
+    return {
+      linkRequestId: sealed.linkRequestId,
+      claimToken: sealed.claimToken,
+      expiresAt: sealed.expiresAt,
+      sealed: true,
+    };
+  }
+  const created = await fetchWithAuthFallback<PlainLink>('/auth/link/create', {
     method: 'POST',
     body: JSON.stringify({ mode }),
   });
-  return { ...created, expiresAt: withUtcOffset(created.expiresAt) };
+  return {
+    linkRequestId: created.linkRequestId,
+    claimToken: created.claimToken,
+    expiresAt: Date.parse(withUtcOffset(created.expiresAt)),
+    sealed: false,
+  };
 }
 
 function withUtcOffset(timestamp: string): string {
   return /(Z|[+-]\d\d:?\d\d)$/i.test(timestamp) ? timestamp : `${timestamp}Z`;
 }
 
-export async function claimLinkRequest(claimToken: string): Promise<ClaimLinkResponse> {
+export async function claimLinkRequest(
+  claimToken: string,
+  mode: LinkMode,
+): Promise<ClaimLinkResponse> {
+  const sealed = await (mode === 'push'
+    ? sealedLinkClaimPush(claimToken)
+    : sealedLinkClaimPull(claimToken));
+  if (sealed) return sealed;
   return fetchWithAuthFallback<ClaimLinkResponse>('/auth/link/claim', {
     method: 'POST',
     body: JSON.stringify({ claimToken }),
   });
 }
 
-export async function getLinkStatus(linkRequestId: string): Promise<LinkStatusResponse> {
+export async function getLinkStatus(
+  link: Pick<CreateLinkResponse, 'linkRequestId' | 'sealed'>,
+): Promise<LinkStatusResponse | null> {
+  if (link.sealed) return sealedLinkPoll(link.linkRequestId);
   return fetchWithAuthFallback<LinkStatusResponse>(
-    `/auth/link/status?id=${encodeURIComponent(linkRequestId)}`,
+    `/auth/link/status?id=${encodeURIComponent(link.linkRequestId)}`,
   );
 }
 
-/**
- * Encoded payload для QR. Это deep-link с claimToken, чтобы мобильный клиент
- * мог автоматически открыть приложение и заклеймить.
- *
- * Формат: scd://link?token=<claimToken>&mode=<pull|push>
- *
- * Мобильное приложение должно:
- *  1. Парсить URL.
- *  2. Если mode=pull (десктоп ждёт сессию) — отправить POST /auth/link/claim со
- *     своим x-session-id и claimToken; если получится — показать "успешно".
- *  3. Если mode=push (десктоп отдаёт свою сессию) — отправить POST /auth/link/claim
- *     БЕЗ x-session-id, бэк вернёт sessionId — сохранить локально и юзер залогинен.
- */
-export function encodeQrPayload(claimToken: string, mode: 'pull' | 'push'): string {
+export function encodeQrPayload(claimToken: string, mode: LinkMode): string {
   const params = new URLSearchParams({ token: claimToken, mode });
   return `scd://link?${params.toString()}`;
 }

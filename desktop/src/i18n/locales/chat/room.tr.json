@@ -1,0 +1,142 @@
+{
+  "untitled": "{{name}} odası",
+  "titlePlaceholder": "Oda adı",
+  "rename": "Yeniden adlandır",
+  "ephemeral": "Sohbet oturumdan sonra silinir",
+  "copyInvite": "Daveti kopyala",
+  "copied": "Kopyalandı",
+  "access": {
+    "private": "Özel, kodla giriş",
+    "public": "Açık, herkes katılabilir",
+    "toPublic": "Herkese aç",
+    "toPrivate": "Özel yap"
+  },
+  "leave": "Oturumdan ayrıl",
+  "end": "Oturumu bitir",
+  "confirmLeave": "Ayrılsın mı?",
+  "confirmEnd": "Bitirilsin mi?",
+  "leaveHint": "Ayrıl, sunucu {{name}} olur",
+  "role": {
+    "moderator": "Moderatör"
+  },
+  "menu": {
+    "mute": "Sustur",
+    "minutes": "{{value}} dk",
+    "unmute": "Susturmayı kaldır",
+    "kick": "At",
+    "ban": "Yasakla",
+    "banConfirm": "Kesin yasaklansın mı?",
+    "makeModerator": "Moderatör yap",
+    "dropModerator": "Moderatörlüğü al",
+    "moderatorsFull": "Moderatör yeri kalmadı"
+  },
+  "muted": {
+    "title": "Susturuldun"
+  },
+  "handoff": {
+    "mine": "Artık sunucu sensin",
+    "other": "Sunucu artık {{name}}"
+  },
+  "exit": {
+    "ended": "Oturum bitti, sohbet silindi",
+    "kicked": "Odadan çıkarıldın",
+    "evicted": "Odadaki yerin doldu",
+    "close": "Kapat"
+  },
+  "quiet": {
+    "off": "Sunucu sohbeti kapattı",
+    "failed": "Sohbet açılmadı",
+    "gone": "Sohbet kullanılamıyor",
+    "retry": "Tekrar dene"
+  },
+  "suggest": {
+    "button": "Parça öner",
+    "short": "Parça",
+    "search": "Parça bul",
+    "by": "{{name}} öneriyor",
+    "queue": "Sıraya ekle",
+    "queued": "Sırada",
+    "playing": "Çalıyor",
+    "empty": "Hiçbir şey bulunamadı",
+    "wait": "{{value}} sn bekle"
+  },
+  "moderatorRow": "Moderatörlük: {{name}}",
+  "moderatorOffRow": "Moderatörlük kaldırıldı: {{name}}",
+  "toast": {
+    "youLead": "Müziği artık sen yönetiyorsun",
+    "ended": "Oturum bitti, sohbet silindi",
+    "kicked": "Odadan çıkarıldın"
+  },
+  "errors": {
+    "banned": "Bu odaya girişin kapalı",
+    "muted": "Susturuldun",
+    "slow_mode": "Biraz bekle",
+    "unavailable": "Bunu yapma yetkin yok",
+    "not_member": "Artık odada değilsin",
+    "not_found": "Bu kişi ya da oda artık yok",
+    "busy": "Sunucu meşgul, tekrar dene",
+    "offline": "Bağlantı yok",
+    "disabled": "Sohbetler şu an kapalı",
+    "invalid": "Olmadı",
+    "room_star_required": "STAR gerekli",
+    "request_limit": "Çok sık, biraz bekle",
+    "generic": "Bir şeyler ters gitti, tekrar dene"
+  },
+  "links": {
+    "off": "Bağlantılar kapalı",
+    "new": "Bağlantılar katıldıktan bir dakika sonra açılır"
+  },
+  "rules": {
+    "title": "Sohbet kuralları",
+    "chat": "Sohbet",
+    "links": "Bağlantılar",
+    "slow": "Yavaş mod",
+    "slowOff": "Kapalı",
+    "seconds": "{{value}} sn"
+  },
+  "perks": {
+    "tuning": "Oda",
+    "starHost": "STAR sunucu",
+    "seats_one": "{{count}} katılımcı",
+    "seats_other": "{{count}} katılımcı",
+    "seatsOf": "{{max}} kişiden {{value}}",
+    "withStar": "STAR ile {{count}}",
+    "paused": "Yeni katılımlar durdu",
+    "nobodyKicked": "Kimse çıkarılmadı",
+    "moderators": "Moderatörler",
+    "cover": {
+      "title": "Kapak",
+      "track": "Parça kapağı",
+      "custom": "Özel kapak",
+      "kind": {
+        "avatar": "Avatar",
+        "playlist": "Çalma listesi",
+        "track": "Parça"
+      },
+      "accent": "Renk",
+      "accentN": "Renk {{value}}",
+      "apply": "Tamam",
+      "reset": "Parça kapağı",
+      "empty": "Henüz kendi kapağın yok",
+      "loadFailed": "Kapaklar yüklenmedi",
+      "retry": "Tekrar dene",
+      "needStar": "Kapak STAR ile",
+      "invalid": "Bu kapak uymadı",
+      "pickOther": "Başka",
+      "limited": "Çok sık",
+      "wait": "{{value}} sn sonra",
+      "failed": "Kaydedilmedi",
+      "loadMore": "Kalanları yükle"
+    },
+    "images": {
+      "title": "Görseller",
+      "members": "Herkes",
+      "mods": "Modlar",
+      "off": "Kimse",
+      "withStar": "STAR ile görseller"
+    },
+    "moreMods": "STAR ile {{value}} moderatör",
+    "starSoon": "STAR birkaç dakika içinde açılır",
+    "needsStar": "STAR gerekli"
+  }
+}

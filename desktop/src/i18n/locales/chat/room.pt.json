@@ -1,0 +1,143 @@
+{
+  "untitled": "Sala de {{name}}",
+  "titlePlaceholder": "Nome da sala",
+  "rename": "Renomear",
+  "ephemeral": "O chat some depois da sessão",
+  "copyInvite": "Copiar convite",
+  "copied": "Copiado",
+  "access": {
+    "private": "Privada, entrada por código",
+    "public": "Aberta, qualquer um pode entrar",
+    "toPublic": "Abrir para todos",
+    "toPrivate": "Tornar privada"
+  },
+  "leave": "Sair da sessão",
+  "end": "Encerrar sessão",
+  "confirmLeave": "Sair?",
+  "confirmEnd": "Encerrar?",
+  "leaveHint": "Sair, {{name}} vira o anfitrião",
+  "role": {
+    "moderator": "Moderador"
+  },
+  "menu": {
+    "mute": "Silenciar",
+    "minutes": "{{value}} min",
+    "unmute": "Reativar",
+    "kick": "Expulsar",
+    "ban": "Banir",
+    "banConfirm": "Banir mesmo?",
+    "makeModerator": "Tornar moderador",
+    "dropModerator": "Tirar moderador",
+    "moderatorsFull": "Não há mais vagas de moderador"
+  },
+  "muted": {
+    "title": "Você está silenciado"
+  },
+  "handoff": {
+    "mine": "Agora você é o anfitrião",
+    "other": "{{name}} é o anfitrião"
+  },
+  "exit": {
+    "ended": "Sessão encerrada, chat apagado",
+    "kicked": "Você foi removido da sala",
+    "evicted": "Sua vaga na sala foi ocupada",
+    "close": "Fechar"
+  },
+  "quiet": {
+    "off": "O anfitrião desligou o chat",
+    "failed": "O chat não abriu",
+    "gone": "Chat indisponível",
+    "retry": "Tentar de novo"
+  },
+  "suggest": {
+    "button": "Sugerir uma faixa",
+    "short": "Faixa",
+    "search": "Encontrar uma faixa",
+    "by": "Sugerida por {{name}}",
+    "queue": "Na fila",
+    "queued": "Na fila",
+    "playing": "Tocando",
+    "empty": "Nada encontrado",
+    "wait": "Espere {{value}} s"
+  },
+  "moderatorRow": "Direitos de moderador: {{name}}",
+  "moderatorOffRow": "Direitos de moderador retirados: {{name}}",
+  "toast": {
+    "youLead": "Agora você controla a música",
+    "ended": "Sessão encerrada, chat apagado",
+    "kicked": "Você foi removido da sala"
+  },
+  "errors": {
+    "banned": "Esta sala está fechada para você",
+    "muted": "Você está silenciado",
+    "slow_mode": "Espere um momento",
+    "unavailable": "Você não pode fazer isso aqui",
+    "not_member": "Você não está mais na sala",
+    "not_found": "Essa pessoa ou sala não existe mais",
+    "busy": "O servidor está ocupado, tente de novo",
+    "offline": "Sem conexão",
+    "disabled": "Os chats estão desligados agora",
+    "invalid": "Não deu certo",
+    "room_star_required": "Precisa do STAR",
+    "request_limit": "Rápido demais, espere um pouco",
+    "generic": "Algo deu errado, tente de novo"
+  },
+  "links": {
+    "off": "Links desligados",
+    "new": "Links liberam um minuto depois de entrar"
+  },
+  "rules": {
+    "title": "Regras do chat",
+    "chat": "Chat",
+    "links": "Links",
+    "slow": "Modo lento",
+    "slowOff": "Desligado",
+    "seconds": "{{value}} s"
+  },
+  "perks": {
+    "tuning": "Sala",
+    "starHost": "Anfitrião STAR",
+    "seats_one": "{{count}} participante",
+    "seats_many": "{{count}} de participantes",
+    "seats_other": "{{count}} participantes",
+    "seatsOf": "{{value}} de {{max}}",
+    "withStar": "{{count}} com STAR",
+    "paused": "Novas entradas pausadas",
+    "nobodyKicked": "Ninguém foi removido",
+    "moderators": "Moderadores",
+    "cover": {
+      "title": "Capa",
+      "track": "Arte da faixa",
+      "custom": "Capa própria",
+      "kind": {
+        "avatar": "Avatar",
+        "playlist": "Playlist",
+        "track": "Faixa"
+      },
+      "accent": "Cor",
+      "accentN": "Cor {{value}}",
+      "apply": "Pronto",
+      "reset": "Usar arte da faixa",
+      "empty": "Você ainda não tem artes próprias",
+      "loadFailed": "As artes não carregaram",
+      "retry": "Tentar de novo",
+      "needStar": "Capas vêm com o STAR",
+      "invalid": "Esta capa não serviu",
+      "pickOther": "Outra",
+      "limited": "Rápido demais",
+      "wait": "Em {{value}} s",
+      "failed": "Não salvo",
+      "loadMore": "Carregar o resto"
+    },
+    "images": {
+      "title": "Imagens",
+      "members": "Todos",
+      "mods": "Moderadores",
+      "off": "Ninguém",
+      "withStar": "Imagens com STAR"
+    },
+    "moreMods": "{{value}} moderadores com STAR",
+    "starSoon": "O STAR liga em alguns minutos",
+    "needsStar": "Precisa do STAR"
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "span": {
+    "d": "{{count}} d",
+    "h": "{{count}} h",
+    "m": "{{count}} min"
+  },
+  "seen": {
+    "now": "agora"
+  },
+  "tier": {
+    "direct": "direto",
+    "relay": "por uma rota reserva",
+    "pro": "por uma segunda rota reserva"
+  },
+  "version": "v{{version}}",
+  "alert": {
+    "title": "Novo acesso aos seus chats",
+    "confirm": "Sou eu",
+    "notMe": "Não sou eu",
+    "queue": "+{{count}} mais",
+    "unlocked": "Histórico liberado",
+    "opensIn": "O histórico abre em {{span}}",
+    "revoked": "Dispositivo desconectado",
+    "revokedHint": "Se foi você, entre nele de novo",
+    "done": "Pronto"
+  },
+  "banner": {
+    "title": "Mensagens antigas aparecem quando você confirmar em outro dispositivo",
+    "alone": "Mensagens antigas aparecem em {{span}}",
+    "orIn": "ou sozinhas em {{span}}"
+  },
+  "list": {
+    "title": "Dispositivos",
+    "limit": "{{count}} de {{max}}",
+    "current": "este dispositivo",
+    "waiting": "aguardando confirmação",
+    "revoked": "desconectado",
+    "added": "Adicionado em {{at}}",
+    "young": "Este dispositivo é novo. Você poderá gerenciar os outros em {{span}}",
+    "remove": "Remover",
+    "removeSure": "Remover?",
+    "logout": "Sair",
+    "logoutSure": "Sair dos chats?",
+    "lockedFor": "Disponível em {{span}}",
+    "olderOnly": "Só um dispositivo mais antigo pode confirmar",
+    "loadFailed": "Não foi possível carregar os dispositivos",
+    "retry": "Tentar de novo"
+  },
+  "errors": {
+    "too_young": "Este dispositivo ainda é novo demais para isso",
+    "not_found": "Esse dispositivo já foi desconectado",
+    "offline": "Sem conexão com os chats",
+    "busy": "O servidor está ocupado, tente em um minuto",
+    "device_revoked": "Este dispositivo foi desconectado dos chats",
+    "disabled": "Os chats estão desligados agora",
+    "generic": "Não deu certo, tente de novo"
+  }
+}

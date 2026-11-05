@@ -1,0 +1,16 @@
+{
+  "newMessage": "Yeni mesaj",
+  "more": "+{{n}}",
+  "reply": "Yanıtla",
+  "replyPlaceholder": "Yanıt",
+  "send": "Gönder",
+  "openDock": "Panele",
+  "mute1h": "1 saat sessiz",
+  "close": "Kapat",
+  "system": {
+    "kicked": "Odadan çıkarıldın",
+    "banned": "Odadan yasaklandın",
+    "muted": "Sesin kapatıldı",
+    "handoff": "Artık odayı sen yönetiyorsun"
+  }
+}

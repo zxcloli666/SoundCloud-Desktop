@@ -1,6 +1,8 @@
 import { useMemo } from 'react';
+import { selectChatInNav, useChatStore } from '../stores/chat';
 import { useSettingsStore } from '../stores/settings';
 import {
+  gatedIds,
   LAYOUT_IDS,
   type LayoutId,
   type LayoutScope,
@@ -10,9 +12,15 @@ import {
 
 export function useLayout<S extends LayoutScope>(scope: S): ResolvedEntry<LayoutId<S>>[] {
   const saved = useSettingsStore((s) => s.layouts[scope]);
+  const chatShown = useChatStore(selectChatInNav);
   return useMemo(
-    () => resolveLayout<LayoutId<S>>(saved, LAYOUT_IDS[scope] as readonly LayoutId<S>[]),
-    [saved, scope],
+    () =>
+      resolveLayout<LayoutId<S>>(
+        saved,
+        LAYOUT_IDS[scope] as readonly LayoutId<S>[],
+        gatedIds(chatShown),
+      ),
+    [saved, scope, chatShown],
   );
 }
 

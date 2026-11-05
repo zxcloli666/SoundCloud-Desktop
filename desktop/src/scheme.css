@@ -46,10 +46,15 @@
   --color-purple-300: oklch(82.7% 0.119 306.383);
   --color-fuchsia-300: oklch(83.3% 0.145 321.434);
   --color-fuchsia-400: oklch(74% 0.238 322.16);
+  --tone-hi: var(--color-white);
+  --tone-lo: var(--color-black);
 }
 
 [data-scheme="white"] {
   color-scheme: light;
+  --tone-hi: rgb(var(--ink));
+  --tone-lo: rgb(var(--paper));
+  --color-chat-cutout: color-mix(in srgb, rgb(var(--ink)) 7%, rgb(var(--paper)));
   --ink: 22 20 28;
   --paper: 245 245 247;
   --surface: 255 255 255;

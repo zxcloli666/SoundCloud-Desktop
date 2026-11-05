@@ -1,0 +1,16 @@
+{
+  "newMessage": "새 메시지",
+  "more": "+{{n}}",
+  "reply": "답장",
+  "replyPlaceholder": "답장",
+  "send": "보내기",
+  "openDock": "도크로",
+  "mute1h": "1시간 조용히",
+  "close": "닫기",
+  "system": {
+    "kicked": "방에서 내보내졌어요",
+    "banned": "방에서 차단됐어요",
+    "muted": "음소거됐어요",
+    "handoff": "이제 내가 호스트예요"
+  }
+}
