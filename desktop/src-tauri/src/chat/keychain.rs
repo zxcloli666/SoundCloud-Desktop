@@ -1,10 +1,14 @@
+#[cfg(any(all(windows, not(feature = "chat-lab")), test))]
+mod cred_move;
 mod file;
 #[cfg(feature = "chat-lab")]
 mod memory;
-#[cfg(not(feature = "chat-lab"))]
+#[cfg(all(not(windows), not(feature = "chat-lab")))]
 mod os;
 #[cfg(test)]
 pub(crate) mod testing;
+#[cfg(all(windows, not(feature = "chat-lab")))]
+mod wincred;
 
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
@@ -18,8 +22,10 @@ use super::runtime::database_path;
 use crate::app::diagnostics;
 
 use file::FileVault;
-#[cfg(not(feature = "chat-lab"))]
+#[cfg(all(not(windows), not(feature = "chat-lab")))]
 use os::OsVault;
+#[cfg(all(windows, not(feature = "chat-lab")))]
+use wincred::CredVault;
 
 const STALE: &str = "keys-stale";
 const MADE: &str = "keys-made";
@@ -211,9 +217,14 @@ impl KeyStore for Keychain {
     }
 }
 
-#[cfg(not(feature = "chat-lab"))]
+#[cfg(all(not(windows), not(feature = "chat-lab")))]
 fn device_vault(service: &str) -> Box<dyn Vault> {
     Box::new(OsVault::new(service))
+}
+
+#[cfg(all(windows, not(feature = "chat-lab")))]
+fn device_vault(service: &str) -> Box<dyn Vault> {
+    Box::new(CredVault::new(service))
 }
 
 #[cfg(feature = "chat-lab")]

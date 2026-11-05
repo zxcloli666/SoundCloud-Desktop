@@ -2,13 +2,10 @@ use std::path::{Path, PathBuf};
 
 use sc_chat::NotifyPrefs;
 
-use crate::app::APP_IDENTIFIER;
-use crate::chat::DIR;
-
 const FILE: &str = "notify.json";
 
-pub fn path() -> Option<PathBuf> {
-    dirs::data_dir().map(|dir| dir.join(APP_IDENTIFIER).join(DIR).join(FILE))
+pub fn path(chat_dir: &Path) -> PathBuf {
+    chat_dir.join(FILE)
 }
 
 pub fn read(path: &Path) -> Option<NotifyPrefs> {

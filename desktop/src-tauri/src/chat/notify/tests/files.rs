@@ -30,3 +30,18 @@ fn prefs_survive_a_restart() {
     assert_eq!(read(&path), None);
     let _ = std::fs::remove_dir_all(&dir);
 }
+
+#[test]
+fn prefs_live_in_the_chat_folder_the_app_picked() {
+    let dir = std::env::temp_dir().join(format!("sc-notify-{}", Uuid::new_v4()));
+    let prefs = NotifyPrefs {
+        enabled: true,
+        preview: PreviewMode::Hidden,
+        sound: false,
+        stream_mode: false,
+    };
+    super::super::Notifier::stored_in(&dir).prefs(Some(prefs));
+    assert_eq!(read(&dir.join("notify.json")), Some(prefs));
+    assert_eq!(super::super::Notifier::stored_in(&dir).prefs(None), prefs);
+    std::fs::remove_dir_all(dir).unwrap();
+}

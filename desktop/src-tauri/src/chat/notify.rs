@@ -12,6 +12,7 @@ mod strings;
 mod tests;
 
 use std::collections::HashSet;
+use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, AtomicI64, Ordering};
 use std::sync::{Arc, Mutex, Once, RwLock};
 
@@ -37,6 +38,7 @@ struct Source {
 
 pub struct Notifier {
     prefs: RwLock<NotifyPrefs>,
+    prefs_file: Option<PathBuf>,
     restored: Once,
     source: RwLock<Option<Arc<Source>>>,
     history: Mutex<History>,
@@ -48,6 +50,7 @@ impl Default for Notifier {
     fn default() -> Self {
         Self {
             prefs: RwLock::default(),
+            prefs_file: None,
             restored: Once::new(),
             source: RwLock::default(),
             history: Mutex::default(),
@@ -58,6 +61,13 @@ impl Default for Notifier {
 }
 
 impl Notifier {
+    pub fn stored_in(chat_dir: &Path) -> Self {
+        Self {
+            prefs_file: Some(prefs_file::path(chat_dir)),
+            ..Self::default()
+        }
+    }
+
     pub fn prefs(&self, update: Option<NotifyPrefs>) -> NotifyPrefs {
         self.restored.call_once(|| self.restore());
         if let Some(update) = update {
@@ -70,13 +80,13 @@ impl Notifier {
         if let Ok(mut prefs) = self.prefs.write() {
             *prefs = update;
         }
-        if let Some(path) = prefs_file::path() {
-            prefs_file::write(&path, &update);
+        if let Some(path) = &self.prefs_file {
+            prefs_file::write(path, &update);
         }
     }
 
     fn restore(&self) {
-        let saved = prefs_file::path().and_then(|path| prefs_file::read(&path));
+        let saved = self.prefs_file.as_deref().and_then(prefs_file::read);
         if let (Some(saved), Ok(mut prefs)) = (saved, self.prefs.write()) {
             *prefs = saved;
         }

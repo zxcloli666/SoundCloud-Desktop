@@ -40,7 +40,7 @@ impl ChatState {
         let transport: Arc<dyn Transport> = Arc::new(EdgeTransport::new(Route::from_env()));
         let channel = Arc::new(Channel::new(clock.clone()));
         let api = Arc::new(Api::new(channel, transport.clone()));
-        let notifier = Arc::new(Notifier::default());
+        let notifier = Arc::new(Notifier::stored_in(&dir));
         let media_cache = Arc::new(MediaCache::open(&dir));
         let runtime = Arc::new(Runtime::new(Parts {
             app: app.clone(),
