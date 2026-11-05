@@ -97,6 +97,7 @@
     "callbackSlow": "A página depois do SoundCloud não carrega? O domínio pode estar bloqueado para você. Ligue uma VPN e abra o link de novo.",
     "reopenLink": "Abrir link de novo",
     "stepWaiting": "Aguardando autorização do SoundCloud",
+    "checking": "Verificando…",
     "stepToken": "Trocando o código de autorização",
     "stepProfile": "Buscando seu perfil",
     "stepSession": "Finalizando a sessão",

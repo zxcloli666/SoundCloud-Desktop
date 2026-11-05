@@ -3,6 +3,7 @@ use std::future::Future;
 use sc_chat::channel::{BUSY_RETRY_MAX_MS, BUSY_RETRY_MS, Channel, InnerAnswer, InnerCall};
 use sc_chat::crypto::DeviceKeys;
 use sc_chat::login::seal_login;
+use sc_chat::sc_chat_wire::proto::Pow;
 use sc_chat::{
     ChatError, DeviceId, Tier, Transport, TransportError, TransportRequest, TransportResponse,
 };
@@ -39,7 +40,7 @@ pub enum Miss {
 pub async fn over_tiers<F, Fut>(
     order: Vec<Tier>,
     mut attempt: F,
-) -> Result<(Tier, InnerAnswer), ChatError>
+) -> Result<(Tier, InnerAnswer), Miss>
 where
     F: FnMut(Tier) -> Fut,
     Fut: Future<Output = Result<InnerAnswer, Miss>>,
@@ -48,11 +49,11 @@ where
     for tier in order {
         match attempt(tier).await {
             Ok(answer) => return Ok((tier, answer)),
-            Err(Miss::Fatal(error)) => return Err(error),
+            Err(Miss::Fatal(error)) => return Err(Miss::Fatal(error)),
             Err(Miss::Tier(error)) => missed = error,
         }
     }
-    Err(missed)
+    Err(Miss::Tier(missed))
 }
 
 pub async fn attempt(
@@ -60,14 +61,15 @@ pub async fn attempt(
     transport: &dyn Transport,
     signer: &Signer,
     call: &Call,
+    pow: Option<&Pow>,
     tier: Tier,
 ) -> Result<InnerAnswer, Miss> {
-    let answer = round(channel, transport, signer, call, tier).await?;
+    let answer = round(channel, transport, signer, call, pow, tier).await?;
     let Some(server_now) = wire::server_now(&answer) else {
         return Ok(answer);
     };
     channel.note_server_now(server_now);
-    round(channel, transport, signer, call, tier).await
+    round(channel, transport, signer, call, pow, tier).await
 }
 
 async fn round(
@@ -75,6 +77,7 @@ async fn round(
     transport: &dyn Transport,
     signer: &Signer,
     call: &Call,
+    pow: Option<&Pow>,
     tier: Tier,
 ) -> Result<InnerAnswer, Miss> {
     let mut sealed = seal_login(
@@ -84,6 +87,7 @@ async fn round(
         &call.inner,
         call.session.as_deref(),
         tier,
+        pow,
     )
     .map_err(Miss::Fatal)?;
     let request = TransportRequest {
@@ -115,6 +119,7 @@ pub fn outer(response: TransportResponse) -> Result<Vec<u8>, Miss> {
             None => Miss::Tier(ChatError::Offline),
         }),
         400 => Err(Miss::Tier(ChatError::Protocol)),
+        404 => Err(Miss::Tier(ChatError::Disabled)),
         _ => Err(Miss::Tier(ChatError::Offline)),
     }
 }

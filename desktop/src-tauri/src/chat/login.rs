@@ -1,5 +1,9 @@
 mod exchange;
+#[cfg(test)]
+mod harness;
 mod lane;
+mod node;
+mod pow;
 mod wire;
 
 use std::sync::{Arc, OnceLock};
@@ -10,12 +14,15 @@ use sc_chat::{
     LoginPoll, LoginState, LoginTarget,
 };
 use serde_json::{Value, json};
+use tauri::Emitter;
 use uuid::Uuid;
 
+use super::events::AUTH_CHECKING;
 use super::keychain::Keychain;
 use super::state::ChatState;
 use exchange::{Call, Signer};
 use lane::Lane;
+use node::{Node, Nodes};
 
 const LOGIN: &str = "/auth/login";
 const LOGIN_STATUS: &str = "/auth/login/status";
@@ -33,16 +40,18 @@ pub async fn begin(state: &ChatState, target: LoginTarget) -> ChatResult<LoginBe
     };
     let signer = load_signer(state).await?;
     let call = Call::new(get(LOGIN, String::new()), session, START_TIMEOUT_MS);
-    let begun: LoginBegin = wire::decode(&send(state, &signer, &call).await?)?;
-    lane().hold(&begun.login_request_id, signer);
+    let (node, answer) = start(state, &signer, &call).await?;
+    let begun: LoginBegin = wire::decode(&answer)?;
+    lane().hold(&begun.login_request_id, signer, node);
     Ok(begun)
 }
 
 pub async fn poll(state: &ChatState, login_request_id: &str) -> ChatResult<LoginPoll> {
     let query = by_id(login_request_id)?;
-    let signer = held_signer(state, login_request_id).await?;
+    let (signer, order) = following(state, login_request_id).await?;
     let call = Call::new(get(LOGIN_STATUS, query), None, POLL_TIMEOUT_MS);
-    let polled = wire::login_poll(&send(state, &signer, &call).await?)?;
+    let (_, answer) = send(state, &order, &signer, &call).await?;
+    let polled = wire::login_poll(&answer)?;
     if polled.status != LoginState::Pending {
         lane().release(login_request_id);
     }
@@ -73,8 +82,9 @@ async fn create_link(
     let signer = load_signer(state).await?;
     let body = json!({ "mode": mode });
     let call = Call::new(post(LINK_CREATE, &body), session, START_TIMEOUT_MS);
-    let created: LinkCreated = wire::decode(&send(state, &signer, &call).await?)?;
-    lane().hold(&created.link_request_id, signer);
+    let (node, answer) = start(state, &signer, &call).await?;
+    let created: LinkCreated = wire::decode(&answer)?;
+    lane().hold(&created.link_request_id, signer, node);
     Ok(created)
 }
 
@@ -103,7 +113,8 @@ async fn claim_link(
     session: Option<String>,
 ) -> ChatResult<LinkClaimed> {
     let signer = load_signer(state).await?;
-    wire::decode(&send(state, &signer, &claim_call(claim_token, session)).await?)
+    let (_, answer) = start(state, &signer, &claim_call(claim_token, session)).await?;
+    wire::decode(&answer)
 }
 
 fn claim_call(claim_token: &str, session: Option<String>) -> Call {
@@ -113,9 +124,10 @@ fn claim_call(claim_token: &str, session: Option<String>) -> Call {
 
 pub async fn link_poll(state: &ChatState, link_request_id: &str) -> ChatResult<LinkPoll> {
     let query = by_id(link_request_id)?;
-    let signer = held_signer(state, link_request_id).await?;
+    let (signer, order) = following(state, link_request_id).await?;
     let call = Call::new(get(LINK_STATUS, query), None, POLL_TIMEOUT_MS);
-    let polled = wire::link_poll(&send(state, &signer, &call).await?)?;
+    let (_, answer) = send(state, &order, &signer, &call).await?;
+    let polled = wire::link_poll(&answer)?;
     if polled.status != LinkState::Pending {
         lane().release(link_request_id);
     }
@@ -126,24 +138,55 @@ pub fn forget_held() {
     lane().release_all();
 }
 
+#[tauri::command]
+pub fn chat_auth_cancel() {
+    lane().cancel();
+}
+
 fn lane() -> &'static Lane {
     static LANE: OnceLock<Lane> = OnceLock::new();
     LANE.get_or_init(Lane::new)
 }
 
-async fn send(state: &ChatState, signer: &Signer, call: &Call) -> ChatResult<InnerAnswer> {
-    lane().send(state.transport.as_ref(), signer, call).await
+fn nodes() -> &'static Nodes {
+    static NODES: OnceLock<Nodes> = OnceLock::new();
+    NODES.get_or_init(Nodes::edge)
 }
 
-async fn held_signer(state: &ChatState, request_id: &str) -> ChatResult<Arc<Signer>> {
+async fn start(state: &ChatState, signer: &Signer, call: &Call) -> ChatResult<(Node, InnerAnswer)> {
+    send(state, &Node::ALL, signer, call).await
+}
+
+async fn send(
+    state: &ChatState,
+    order: &[Node],
+    signer: &Signer,
+    call: &Call,
+) -> ChatResult<(Node, InnerAnswer)> {
+    let checking = |on: bool| {
+        let _ = state.app.emit(AUTH_CHECKING, on);
+    };
+    lane().send(nodes(), order, signer, call, &checking).await
+}
+
+async fn following(state: &ChatState, request_id: &str) -> ChatResult<(Arc<Signer>, Vec<Node>)> {
     match lane().held(request_id) {
-        Some(signer) => Ok(signer),
-        None => load_signer(state).await,
+        Some((signer, node)) => Ok((signer, vec![node])),
+        None => {
+            let signer = swept_signer(lane(), state.keys.clone()).await?;
+            Ok((signer, Node::ALL.to_vec()))
+        }
     }
 }
 
 async fn load_signer(state: &ChatState) -> ChatResult<Arc<Signer>> {
-    swept_signer(lane(), state.keys.clone()).await
+    match swept_signer(lane(), state.keys.clone()).await {
+        Err(ChatError::Keychain | ChatError::KeychainDenied) => {
+            state.runtime.reset_keys().await?;
+            swept_signer(lane(), state.keys.clone()).await
+        }
+        loaded => loaded,
+    }
 }
 
 async fn swept_signer(lane: &Lane, keychain: Arc<Keychain>) -> ChatResult<Arc<Signer>> {
@@ -177,6 +220,8 @@ fn by_id(request_id: &str) -> ChatResult<String> {
     Ok(format!("id={id}"))
 }
 
+#[cfg(test)]
+mod pow_tests;
 #[cfg(test)]
 mod sealed_tests;
 #[cfg(test)]

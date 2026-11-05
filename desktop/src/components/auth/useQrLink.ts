@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import i18n from '../../i18n';
 import { ApiError } from '../../lib/api';
+import { useChecking } from '../../lib/chat/checking';
 import type { LinkMode } from '../../lib/chat/types';
 import { createLinkRequest, getLinkStatus } from '../../lib/qr-link';
 
@@ -20,15 +21,17 @@ export function useQrLink(mode: LinkMode, onSuccess?: (sessionId: string) => voi
   const pollRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const flowRef = useRef(0);
   const onSuccessRef = useRef(onSuccess);
+  const { checking, cancelChecking } = useChecking();
   onSuccessRef.current = onSuccess;
 
   const stop = useCallback(() => {
+    cancelChecking();
     flowRef.current++;
     if (pollRef.current) {
       clearTimeout(pollRef.current);
       pollRef.current = null;
     }
-  }, []);
+  }, [cancelChecking]);
 
   const reset = useCallback(() => {
     stop();
@@ -85,5 +88,5 @@ export function useQrLink(mode: LinkMode, onSuccess?: (sessionId: string) => voi
     }
   }, [mode, stop]);
 
-  return { state, start, reset };
+  return { state, start, reset, checking };
 }

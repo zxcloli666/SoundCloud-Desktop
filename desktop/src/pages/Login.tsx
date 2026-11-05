@@ -53,6 +53,7 @@ export function Login() {
     error,
     browserFailed,
     callbackSlow,
+    checking,
     cancel,
   } = useOAuthFlow(onLoginSuccess);
 
@@ -66,8 +67,9 @@ export function Login() {
 
   const errorText = error ? oauthErrorText(error, t) : null;
 
-  const stepLabel =
-    step === 'token'
+  const stepLabel = checking
+    ? t('auth.checking')
+    : step === 'token'
       ? t('auth.stepToken')
       : step === 'extract'
         ? t('auth.stepProfile')

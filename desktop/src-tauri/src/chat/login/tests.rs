@@ -1,20 +1,23 @@
 use std::cell::RefCell;
 use std::sync::Arc;
 
+use base64::Engine;
+use base64::engine::general_purpose::URL_SAFE_NO_PAD;
 use sc_chat::channel::InnerAnswer;
 use sc_chat::crypto::DeviceKeys;
 use sc_chat::{
-    ChatError, LinkCreated, LinkMode, LinkState, LoginBegin, LoginState, LoginStep, Tier,
-    TransportResponse,
+    ChatError, KeyStorage, KeyStore, LinkCreated, LinkMode, LinkState, LoginBegin, LoginState,
+    LoginStep, Tier, TransportResponse,
 };
 use serde_json::{Value, json};
 use uuid::Uuid;
 
 use super::exchange::{Miss, Signer, outer, over_tiers};
 use super::lane::{Lane, tier_order};
+use super::node::Node;
 use super::{by_id, get, post, swept_signer, wire};
-use crate::chat::keychain::Keychain;
 use crate::chat::keychain::testing::SharedVault;
+use crate::chat::keychain::{Keychain, ResetPlan};
 
 fn answer(status: u16, body: Value) -> InnerAnswer {
     InnerAnswer {
@@ -120,6 +123,40 @@ fn login_poll_hands_over_the_bound_session() {
     .unwrap();
     assert_eq!(failed.status, LoginState::Failed);
     assert_eq!(failed.error.as_deref(), Some("Authentication failed"));
+}
+
+#[test]
+fn a_pow_answer_hands_over_its_seed_and_effort() {
+    let seed = [9u8; 32];
+    let asked = answer(
+        429,
+        json!({ "error": "chat_pow_required", "v": 1, "seed": URL_SAFE_NO_PAD.encode(seed), "effort": 300 }),
+    );
+    assert_eq!(wire::pow_ticket(&asked), Some((seed.to_vec(), 300)));
+    assert_eq!(
+        wire::decode::<LoginBegin>(&asked),
+        Err(ChatError::PowRequired {
+            seed: seed.to_vec(),
+            effort: 300
+        })
+    );
+
+    let short = answer(
+        429,
+        json!({ "error": "chat_pow_required", "seed": "AAAA", "effort": 300 }),
+    );
+    assert_eq!(wire::pow_ticket(&short), None);
+    assert_eq!(wire::pow_ticket(&answer(200, json!({}))), None);
+    assert_eq!(
+        wire::pow_ticket(&answer(429, json!({ "error": "chat_busy" }))),
+        None
+    );
+}
+
+#[test]
+fn the_server_switch_reads_as_disabled() {
+    let off = answer(503, json!({ "error": "chat_disabled" }));
+    assert_eq!(wire::decode::<LoginBegin>(&off), Err(ChatError::Disabled));
 }
 
 #[test]
@@ -247,7 +284,11 @@ fn outer_status_decides_between_next_tier_and_stop() {
         outer(response(413, None)),
         Err(Miss::Fatal(ChatError::Invalid))
     );
-    for blocked in [403, 404, 502, 504] {
+    assert_eq!(
+        outer(response(404, None)),
+        Err(Miss::Tier(ChatError::Disabled))
+    );
+    for blocked in [403, 502, 504] {
         assert_eq!(
             outer(response(blocked, None)),
             Err(Miss::Tier(ChatError::Offline))
@@ -281,7 +322,10 @@ async fn a_fatal_miss_stops_the_walk() {
         async { Err(Miss::Fatal(ChatError::Busy { retry_ms: 5 })) }
     })
     .await;
-    assert_eq!(result.unwrap_err(), ChatError::Busy { retry_ms: 5 });
+    assert_eq!(
+        result.unwrap_err(),
+        Miss::Fatal(ChatError::Busy { retry_ms: 5 })
+    );
     assert_eq!(*tried.borrow(), vec![Tier::Direct]);
 }
 
@@ -294,10 +338,10 @@ async fn every_tier_down_reports_the_last_miss() {
         }
     })
     .await;
-    assert_eq!(result.unwrap_err(), ChatError::Protocol);
+    assert_eq!(result.unwrap_err(), Miss::Tier(ChatError::Protocol));
 
     let nothing = over_tiers(Vec::new(), |_| async { Ok(answer(200, json!({}))) }).await;
-    assert_eq!(nothing.unwrap_err(), ChatError::Offline);
+    assert_eq!(nothing.unwrap_err(), Miss::Tier(ChatError::Offline));
 }
 
 #[test]
@@ -322,9 +366,10 @@ fn the_last_good_tier_goes_first() {
 fn a_flow_keeps_its_keys_until_it_ends() {
     let lane = Lane::new();
     let held = signer();
-    lane.hold("req-1", held.clone());
-    let again = lane.held("req-1").unwrap();
+    lane.hold("req-1", held.clone(), Node::Star);
+    let (again, node) = lane.held("req-1").unwrap();
     assert!(Arc::ptr_eq(&held, &again));
+    assert_eq!(node, Node::Star);
     assert_eq!(again.keys.auth_public(), held.keys.auth_public());
     assert!(lane.held("req-2").is_none());
     lane.release("req-1");
@@ -334,8 +379,8 @@ fn a_flow_keeps_its_keys_until_it_ends() {
 #[test]
 fn a_key_reset_drops_every_held_flow() {
     let lane = Lane::new();
-    lane.hold("req-1", signer());
-    lane.hold("req-2", signer());
+    lane.hold("req-1", signer(), Node::Main);
+    lane.hold("req-2", signer(), Node::Main);
     lane.release_all();
     assert!(lane.held("req-1").is_none());
     assert!(lane.held("req-2").is_none());
@@ -368,6 +413,27 @@ async fn a_sign_in_after_a_refused_sign_out_starts_one_new_device() {
     let again = swept_signer(&lane, restarted.clone()).await.unwrap();
     assert_eq!(again.device_id, signer.device_id);
     let (stored, keys) = DeviceKeys::load_or_create(restarted.as_ref()).unwrap();
+    assert_eq!(stored, signer.device_id);
+    assert_eq!(keys.auth_public(), signer.keys.auth_public());
+    std::fs::remove_dir_all(dir).unwrap();
+}
+
+#[tokio::test]
+async fn a_refused_store_ends_on_the_file_vault_after_the_reset_the_login_runs() {
+    let dir = std::env::temp_dir().join(format!("sc-chat-refused-{}", Uuid::new_v4()));
+    std::fs::create_dir_all(&dir).unwrap();
+    let vault = SharedVault::default();
+    vault.fail_with(Some(ChatError::KeychainDenied));
+    let keychain = Arc::new(Keychain::with_os(Box::new(vault.clone()), &dir));
+    let lane = Lane::new();
+    let refused = swept_signer(&lane, keychain.clone()).await.err();
+    assert_eq!(refused, Some(ChatError::KeychainDenied));
+
+    keychain.reset(ResetPlan::File).unwrap();
+    let signer = swept_signer(&lane, keychain.clone()).await.unwrap();
+    assert_eq!(keychain.storage(), KeyStorage::File);
+    assert!(!keychain.denied());
+    let (stored, keys) = DeviceKeys::load_or_create(keychain.as_ref()).unwrap();
     assert_eq!(stored, signer.device_id);
     assert_eq!(keys.auth_public(), signer.keys.auth_public());
     std::fs::remove_dir_all(dir).unwrap();
