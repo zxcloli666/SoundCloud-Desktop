@@ -158,7 +158,7 @@ jobs:
 
       - name: Build tests
         id: build
-        run: cargo test --no-run
+        run: cargo test --no-run --message-format=json-render-diagnostics > "$RUNNER_TEMP/build.json"
 
       - name: Stamp
         if: always()
@@ -167,9 +167,36 @@ jobs:
           BUILD: ${{ steps.build.outcome }}
         run: bash scripts/ci-mtime.sh stamp "$BUILD"
 
+      - name: Common controls manifest
+        if: runner.os == 'Windows'
+        run: |
+          jq -r 'select(.reason == "compiler-artifact" and .profile.test == true and .executable != null) | .executable' "$RUNNER_TEMP/build.json" | while read -r exe; do
+            cat > "$(cygpath -u "$exe").manifest" <<'XML'
+          <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+          <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
+            <dependency>
+              <dependentAssembly>
+                <assemblyIdentity type="win32" name="Microsoft.Windows.Common-Controls" version="6.0.0.0" processorArchitecture="*" publicKeyToken="6595b64144ccf1df" language="*"/>
+              </dependentAssembly>
+            </dependency>
+          </assembly>
+          XML
+            echo "manifest for $(basename "$exe")"
+          done
+
       - name: Tests
-        if: runner.os != 'Windows'
-        run: cargo test
+        run: |
+          if [ "$RUNNER_OS" = Windows ]; then
+            cargo test --lib --bins --tests
+          else
+            cargo test
+          fi
+
+      - name: Other volume
+        if: runner.os == 'Windows'
+        env:
+          CHAT_OTHER_VOLUME: ${{ runner.temp }}
+        run: cargo test --lib -- --ignored --exact chat::relocate::tests::a_folder_on_a_real_other_volume_is_copied_verified_and_then_removed
 
       - name: SeaweedFS tests
         if: runner.os == 'Linux'
