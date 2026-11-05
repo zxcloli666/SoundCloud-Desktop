@@ -20,6 +20,7 @@ export interface RaceWinner {
 export interface RaceHooks {
   quality: PlaybackQuality;
   canRace: () => boolean;
+  isCurrent: () => boolean;
   onCopy: (urn: string) => void;
   onOriginalFailed: (error: unknown) => void;
 }
@@ -76,8 +77,8 @@ export function raceWithCopy(
         copy._scd_meta?.storage_quality,
       ).then(
         (info) => {
-          if (!winner) win(copy, info);
-          else if (winner !== copy && !existed) removeCachedTrack(copy.urn).catch(() => {});
+          if (!winner && hooks.isCurrent()) win(copy, info);
+          else if (!existed) removeCachedTrack(copy.urn).catch(() => {});
         },
         () => {
           dropAltUpload(track);

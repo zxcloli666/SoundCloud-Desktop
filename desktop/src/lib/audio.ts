@@ -605,6 +605,7 @@ async function loadTrack(track: Track, resumeAt = 0) {
     } else {
       const raced = await raceWithCopy(track, fetchFile(), {
         quality,
+        isCurrent: () => gen === loadGen,
         canRace: () => gen === loadGen && startGate == null && mayUseAltUpload(track),
         onCopy: (copyUrn) => {
           if (gen === loadGen) raceUrn = copyUrn;
