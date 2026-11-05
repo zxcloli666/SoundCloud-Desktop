@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import type { MediaId, UploadState } from '../../lib/chat/media-types';
+import type { MediaId, MediaRef, UploadState } from '../../lib/chat/media-types';
 import type { ChatError, ConvId } from '../../lib/chat/types';
 import { tauriStorage } from '../../lib/tauri-storage';
 import { useChatMediaStore } from './media';
@@ -18,10 +18,17 @@ export interface BackdropAttempt {
   at: number;
 }
 
+export interface StoredFailure {
+  source: MediaRef;
+  error: ChatError;
+}
+
 interface BackdropState {
   hidden: Record<string, number>;
   attempts: Record<ConvId, BackdropAttempt>;
   orphans: Record<string, ChatError>;
+  fetching: Record<ConvId, number>;
+  failures: Record<ConvId, StoredFailure>;
   dialog: BackdropDialog | null;
   open: (dialog: BackdropDialog) => void;
   close: () => void;
@@ -31,6 +38,10 @@ interface BackdropState {
   failed: (uploadId: string, error: ChatError) => void;
   recovered: (uploadId: string) => void;
   dismiss: (conversationId: ConvId) => void;
+  fetchStart: (conversationId: ConvId) => number;
+  fetchFailed: (conversationId: ConvId, ticket: number, failure: StoredFailure) => void;
+  fetchEnd: (conversationId: ConvId, ticket: number) => void;
+  forgetFetch: (conversationId: ConvId) => void;
   forgetUploads: () => void;
 }
 
@@ -61,12 +72,22 @@ function withAttempt(
   return { attempts };
 }
 
+function without<T>(entries: Record<ConvId, T>, conversationId: ConvId): Record<ConvId, T> {
+  const rest = { ...entries };
+  delete rest[conversationId];
+  return rest;
+}
+
+let tickets = 0;
+
 export const useBackdropStore = create<BackdropState>()(
   persist(
     (set) => ({
       hidden: {},
       attempts: {},
       orphans: {},
+      fetching: {},
+      failures: {},
       dialog: null,
       open: (dialog) => set({ dialog }),
       close: () => set({ dialog: null }),
@@ -90,7 +111,10 @@ export const useBackdropStore = create<BackdropState>()(
             ...state.attempts,
             [conversationId]: { id: uploadId, error, at: now },
           };
-          return { attempts: fresh(attempts, (attempt) => attempt.at, now) };
+          return {
+            attempts: fresh(attempts, (attempt) => attempt.at, now),
+            failures: without(state.failures, conversationId),
+          };
         }),
       failed: (uploadId, error) =>
         set((state) => {
@@ -108,7 +132,33 @@ export const useBackdropStore = create<BackdropState>()(
           return withAttempt(state, room, { ...state.attempts[room], error: null });
         }),
       dismiss: (conversationId) => set((state) => withAttempt(state, conversationId, null)),
-      forgetUploads: () => set({ attempts: {}, orphans: {}, dialog: null }),
+      fetchStart: (conversationId) => {
+        const ticket = ++tickets;
+        set((state) => ({
+          fetching: { ...state.fetching, [conversationId]: ticket },
+          failures: without(state.failures, conversationId),
+        }));
+        return ticket;
+      },
+      fetchFailed: (conversationId, ticket, failure) =>
+        set((state) =>
+          state.fetching[conversationId] === ticket
+            ? { failures: { ...state.failures, [conversationId]: failure } }
+            : state,
+        ),
+      fetchEnd: (conversationId, ticket) =>
+        set((state) =>
+          state.fetching[conversationId] === ticket
+            ? { fetching: without(state.fetching, conversationId) }
+            : state,
+        ),
+      forgetFetch: (conversationId) =>
+        set((state) => ({
+          fetching: without(state.fetching, conversationId),
+          failures: without(state.failures, conversationId),
+        })),
+      forgetUploads: () =>
+        set({ attempts: {}, orphans: {}, fetching: {}, failures: {}, dialog: null }),
     }),
     {
       name: 'sc-chat-backdrop',

@@ -1,52 +1,17 @@
 import { type KeyboardEvent, memo, useCallback, useMemo, useRef } from 'react';
-import { useTranslation } from 'react-i18next';
 import type { MyMedia } from '../../../lib/chat/media-types';
-import { Loader2, RefreshCw } from '../../../lib/icons';
 import { VirtualGrid } from '../../ui/VirtualGrid';
 import { EndSentinel } from './EndSentinel';
-import { columnsIn, TILE_GAP, TILE_MIN, useTileSize } from './grid-size';
+import { moveTileFocus, TILE_GAP, TILE_MIN, useTileSize } from './grid-size';
 import { MediaTile } from './MediaTile';
+import { MoreRow } from './MoreRow';
 import { useReducedMotion } from './motion';
 import { useSelectionStore } from './selection-store';
 import { useStorageStore } from './storage-store';
 
-function stepFor(key: string, columns: number): number | null {
-  if (key === 'ArrowRight') return 1;
-  if (key === 'ArrowLeft') return -1;
-  if (key === 'ArrowDown') return columns;
-  if (key === 'ArrowUp') return -columns;
-  return null;
-}
-
-function MoreRow() {
-  const { t } = useTranslation();
-  const moreLoad = useStorageStore((state) => state.moreLoad);
-  const loadMore = useStorageStore((state) => state.loadMore);
-  if (moreLoad === 'loading') {
-    return (
-      <div className="flex justify-center py-5 text-ink-40">
-        <Loader2 size={18} className="animate-spin" />
-      </div>
-    );
-  }
-  if (moreLoad !== 'failed') return null;
-  return (
-    <div className="flex items-center justify-center gap-3 py-5 text-[12.5px] text-ink-55">
-      {t('chat.storage.errors.more')}
-      <button
-        type="button"
-        onClick={() => void loadMore()}
-        className="flex cursor-pointer items-center gap-1.5 rounded-xl bg-ink/[0.06] px-3 py-1.5 font-semibold text-ink-75 outline-none hover:bg-ink/[0.1] focus-visible:ring-2 focus-visible:ring-accent/60"
-      >
-        <RefreshCw size={12} />
-        {t('chat.storage.retry')}
-      </button>
-    </div>
-  );
-}
-
 export const MediaGrid = memo(function MediaGrid({ items }: { items: MyMedia[] }) {
   const cursor = useStorageStore((state) => state.cursor);
+  const moreLoad = useStorageStore((state) => state.moreLoad);
   const loadMore = useStorageStore((state) => state.loadMore);
   const picked = useSelectionStore((state) => state.picked);
   const reduced = useReducedMotion();
@@ -64,24 +29,13 @@ export const MediaGrid = memo(function MediaGrid({ items }: { items: MyMedia[] }
   }, []);
 
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    const target = event.target as HTMLElement;
-    const node = box.current;
-    if (!node || target.dataset.tile === undefined) return;
-    if (event.code === 'Space') {
+    const onTile = (event.target as HTMLElement).dataset.tile !== undefined;
+    if (onTile && event.code === 'Space') {
       event.stopPropagation();
       return;
     }
-    const step = stepFor(event.key, columnsIn(node, tile));
-    if (step === null) return;
-    event.preventDefault();
-    event.stopPropagation();
-    const at = Number(target.dataset.tile);
-    const next = Math.min(ids.length - 1, Math.max(0, at + step));
-    const nextTile = node.querySelector<HTMLElement>(`[data-tile="${next}"]`);
-    if (!nextTile) return;
-    nextTile.focus({ preventScroll: true });
-    nextTile.scrollIntoView({ block: 'nearest' });
-    if (event.shiftKey) useSelectionStore.getState().range(ids, next);
+    const next = moveTileFocus(event, box.current, tile, ids.length);
+    if (next !== null && event.shiftKey) useSelectionStore.getState().range(ids, next);
   };
 
   return (
@@ -106,7 +60,7 @@ export const MediaGrid = memo(function MediaGrid({ items }: { items: MyMedia[] }
         )}
       />
       {cursor && <EndSentinel token={items.length} onReach={() => void loadMore()} />}
-      <MoreRow />
+      <MoreRow load={moreLoad} onRetry={() => void loadMore()} />
     </div>
   );
 });

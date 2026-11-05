@@ -1,18 +1,33 @@
 import { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { UploadView } from '../../../../lib/chat/media-types';
-import type { ConvId } from '../../../../lib/chat/types';
+import { chatBridge } from '../../../../lib/chat/bridge';
+import { chatError } from '../../../../lib/chat/errors';
+import type { MediaRef, UploadView } from '../../../../lib/chat/media-types';
+import type { ChatError, ConvId } from '../../../../lib/chat/types';
 import { serverTime } from '../../../../lib/together/link';
 import { useBackdropStore } from '../../../../stores/chat/backdrop';
 import { useChatMediaStore } from '../../../../stores/chat/media';
-import { type BackdropProblem, backdropProblem } from './errors';
-import { pickBackdropPath, uploadBackdrop } from './upload';
+import { type BackdropProblem, backdropProblem, storedProblem } from './errors';
+import { pickBackdropPath, uploadBackdrop, uploadStoredBackdrop } from './upload';
 
 export interface PhotoActions {
   pick: () => Promise<void>;
+  pickStored: (source: MediaRef) => Promise<BackdropProblem | null>;
   retry: () => Promise<void>;
   replace: () => Promise<void>;
   drop: () => Promise<void>;
+}
+
+function started(conversationId: ConvId, view: UploadView | null) {
+  if (!view) return;
+  useBackdropStore.getState().started(conversationId, view.id);
+  useChatMediaStore.getState().applyUploads({ uploads: [view], removed: [] });
+}
+
+const INTERNAL: ChatError = { code: 'internal' };
+
+function stillFetching(conversationId: ConvId, ticket: number) {
+  return useBackdropStore.getState().fetching[conversationId] === ticket;
 }
 
 export function usePhotoActions(
@@ -35,16 +50,44 @@ export function usePhotoActions(
     try {
       const path = await pickBackdropPath(t('chat.backdrop.images'));
       if (!path) return;
-      const view = await uploadBackdrop(code, conversationId, path);
-      useBackdropStore.getState().started(conversationId, view.id);
-      useChatMediaStore.getState().applyUploads({ uploads: [view], removed: [] });
+      useBackdropStore.getState().forgetFetch(conversationId);
+      started(conversationId, await uploadBackdrop(code, conversationId, path));
     } catch (failure) {
       fail(failure);
     }
   }, [allowed, conversationId, code, t, report, fail]);
 
+  const pickStored = useCallback(
+    async (source: MediaRef) => {
+      if (!allowed || !conversationId) return null;
+      report(null);
+      const ticket = useBackdropStore.getState().fetchStart(conversationId);
+      try {
+        const view = await uploadStoredBackdrop(code, conversationId, source);
+        if (stillFetching(conversationId, ticket)) started(conversationId, view);
+        return null;
+      } catch (failure) {
+        if (!stillFetching(conversationId, ticket)) return null;
+        const error = chatError(failure) ?? INTERNAL;
+        useBackdropStore.getState().fetchFailed(conversationId, ticket, { source, error });
+        return storedProblem(error, serverTime());
+      } finally {
+        useBackdropStore.getState().fetchEnd(conversationId, ticket);
+      }
+    },
+    [allowed, conversationId, code, report],
+  );
+
   const drop = useCallback(async () => {
-    if (conversationId) useBackdropStore.getState().dismiss(conversationId);
+    if (!conversationId) return;
+    const backdrop = useBackdropStore.getState();
+    const fetching = conversationId in backdrop.fetching;
+    backdrop.dismiss(conversationId);
+    backdrop.forgetFetch(conversationId);
+    if (fetching) {
+      await chatBridge.roomBackdropStop(conversationId).catch(fail);
+      return;
+    }
     if (!upload || upload.state === 'committed') return;
     await useChatMediaStore.getState().cancelUpload(upload.id).catch(fail);
   }, [conversationId, upload, fail]);
@@ -61,5 +104,8 @@ export function usePhotoActions(
     await pick();
   }, [drop, pick]);
 
-  return useMemo(() => ({ pick, retry, replace, drop }), [pick, retry, replace, drop]);
+  return useMemo(
+    () => ({ pick, pickStored, retry, replace, drop }),
+    [pick, pickStored, retry, replace, drop],
+  );
 }

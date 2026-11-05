@@ -1,7 +1,7 @@
-import { chatError } from '../../../../lib/chat/errors';
+import { chatError } from '../../../../lib/chat/errors.ts';
 import type { ChatError } from '../../../../lib/chat/types';
 
-export type BackdropFix = 'retry' | 'star' | 'photo' | 'storage' | 'wait' | 'none';
+export type BackdropFix = 'retry' | 'star' | 'photo' | 'stored' | 'storage' | 'wait' | 'none';
 
 export interface BackdropProblem {
   code: string;
@@ -45,4 +45,10 @@ export function backdropProblem(error: unknown, now: number): BackdropProblem {
     until,
     timeInText: TIME_IN_TEXT.has(code),
   };
+}
+
+export function storedProblem(error: unknown, now: number): BackdropProblem {
+  const problem = backdropProblem(error, now);
+  if (problem.code !== 'media_missing') return problem;
+  return { ...problem, key: 'chat.backdrop.errors.stored_gone', fix: 'stored' };
 }

@@ -8,6 +8,7 @@ use sc_chat::{
 use uuid::Uuid;
 
 use super::reads::blocking;
+use crate::chat::download::{MediaRef, keyed};
 use crate::chat::state::ChatState;
 use crate::chat::{backdrop, upload};
 
@@ -83,8 +84,26 @@ pub async fn backdrop_upload(
     code: String,
     conversation_id: ConvId,
     path: String,
-) -> ChatResult<MediaUploadView> {
+) -> ChatResult<Option<MediaUploadView>> {
     backdrop::upload(state, code, conversation_id, path).await
+}
+
+pub async fn backdrop_stored(
+    state: &ChatState,
+    code: String,
+    conversation_id: ConvId,
+    source: ConvId,
+    media_id: Uuid,
+) -> ChatResult<Option<MediaUploadView>> {
+    backdrop::upload_stored(state, code, conversation_id, source, media_id).await
+}
+
+pub async fn backdrop_stop(state: &ChatState, conversation_id: ConvId) -> ChatResult<()> {
+    backdrop::stop(state, conversation_id).await
+}
+
+pub async fn known(state: &ChatState, media: Vec<MediaRef>) -> ChatResult<Vec<Uuid>> {
+    blocking(state, move |core| keyed(&core.store, &media)).await
 }
 
 pub async fn backdrop_report(

@@ -30,8 +30,10 @@ impl Uploads {
             kind: MediaKind::Avatar,
             image: prepared.image,
             attachment: prepared.attachment,
+            turn: None,
         })
-        .await
+        .await?
+        .ok_or(ChatError::Internal)
     }
 
     pub(super) async fn avatar_committed(&self, upload: &MediaUpload) {

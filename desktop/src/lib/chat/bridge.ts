@@ -3,6 +3,7 @@ import type {
   BackdropPresetId,
   DeleteAnswer,
   MediaId,
+  MediaRef,
   MediaSelection,
   MediaUsage,
   MinePage,
@@ -165,6 +166,7 @@ export const chatBridge = {
   mediaAlbumCancel: (album: string) => invoke<void>('chat_media_album_cancel', { album }),
   mediaAvatar: (conversationId: ConvId, path: string) =>
     invoke<UploadView>('chat_media_avatar', { conversationId, path }),
+  mediaKnown: (media: MediaRef[]) => invoke<MediaId[]>('chat_media_known', { media }),
   mediaUploads: () => invoke<UploadView[]>('chat_media_uploads'),
   mediaParked: () => invoke<string[]>('chat_media_parked'),
   mediaUploadRetry: (id: string) => invoke<void>('chat_media_upload_retry', { id }),
@@ -175,7 +177,16 @@ export const chatBridge = {
   roomBackdrop: (code: string, conversationId: ConvId, preset: BackdropPresetId | null) =>
     invoke<void>('chat_room_backdrop', { code, conversationId, preset }),
   roomBackdropUpload: (code: string, conversationId: ConvId, path: string) =>
-    invoke<UploadView>('chat_room_backdrop_upload', { code, conversationId, path }),
+    invoke<UploadView | null>('chat_room_backdrop_upload', { code, conversationId, path }),
+  roomBackdropStored: (code: string, conversationId: ConvId, source: ConvId, mediaId: MediaId) =>
+    invoke<UploadView | null>('chat_room_backdrop_stored', {
+      code,
+      conversationId,
+      source,
+      mediaId,
+    }),
+  roomBackdropStop: (conversationId: ConvId) =>
+    invoke<void>('chat_room_backdrop_stop', { conversationId }),
   roomBackdropReport: (
     conversationId: ConvId,
     mediaId: MediaId,

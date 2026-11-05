@@ -9,7 +9,7 @@ import { uploadPercent } from './upload';
 export type PhotoState =
   | { kind: 'idle' }
   | { kind: 'current'; src: string }
-  | { kind: 'uploading'; upload: UploadView }
+  | { kind: 'uploading'; upload: UploadView | null }
   | { kind: 'failed' }
   | { kind: 'cooldown'; leftMs: number };
 
@@ -73,16 +73,18 @@ function Body({ state }: { state: PhotoState }) {
   );
 }
 
+export const PHOTO_TILE = '[data-ui="chat-backdrop-photo"]';
+
 export const PhotoTile = memo(function PhotoTile({
   state,
   current,
-  waiting,
+  disabled,
   onPick,
   onFocus,
 }: {
   state: PhotoState;
   current: boolean;
-  waiting: boolean;
+  disabled: boolean;
   onPick: () => void;
   onFocus: () => void;
 }) {
@@ -94,9 +96,10 @@ export const PhotoTile = memo(function PhotoTile({
   return (
     <Tile
       label={label}
+      ui="chat-backdrop-photo"
       current={current}
       pending={false}
-      disabled={waiting || state.kind === 'cooldown' || state.kind === 'uploading'}
+      disabled={disabled}
       onPick={onPick}
       onFocus={onFocus}
     >

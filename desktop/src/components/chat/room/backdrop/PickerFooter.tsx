@@ -1,11 +1,9 @@
 import { memo, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { UploadView } from '../../../../lib/chat/media-types';
 import { ImageIcon, Loader2, Sparkles, TriangleAlert, X } from '../../../../lib/icons';
 import { StarCta } from '../../../star-moments/StarCta';
 import { clock, useLeftMs } from './countdown';
 import type { BackdropProblem } from './errors';
-import { uploadPercent } from './upload';
 
 const FOCUS = 'outline-none focus-visible:ring-2 focus-visible:ring-accent/60';
 
@@ -52,9 +50,8 @@ function Bar({ tone, children }: { tone: 'bad' | 'calm'; children: ReactNode }) 
   );
 }
 
-function Uploading({ upload, onDrop }: { upload: UploadView; onDrop: (() => void) | null }) {
+function Uploading({ percent, onDrop }: { percent: number; onDrop: (() => void) | null }) {
   const { t } = useTranslation();
-  const percent = uploadPercent(upload);
   return (
     <Bar tone="calm">
       <ImageIcon size={15} className="shrink-0 text-accent" />
@@ -70,12 +67,14 @@ function Problem({
   problem,
   onRetry,
   onPhoto,
+  onStored,
   onStorage,
   onDrop,
 }: {
   problem: BackdropProblem;
   onRetry: () => void;
   onPhoto: () => void;
+  onStored: () => void;
   onStorage: () => void;
   onDrop: (() => void) | null;
 }) {
@@ -86,9 +85,11 @@ function Problem({
       ? { label: t('chat.backdrop.retry'), run: onRetry }
       : problem.fix === 'photo'
         ? { label: t('chat.backdrop.pickAgain'), run: onPhoto }
-        : problem.fix === 'storage'
-          ? { label: t('chat.backdrop.storage'), run: onStorage }
-          : null;
+        : problem.fix === 'stored'
+          ? { label: t('chat.backdrop.pickStored'), run: onStored }
+          : problem.fix === 'storage'
+            ? { label: t('chat.backdrop.storage'), run: onStorage }
+            : null;
   return (
     <Bar tone="bad">
       <TriangleAlert size={15} className="shrink-0 text-bad" />
@@ -122,6 +123,7 @@ export const PickerFooter = memo(function PickerFooter({
   uploading,
   onRetry,
   onPhoto,
+  onStored,
   onStorage,
   onDrop,
   onStar,
@@ -129,9 +131,10 @@ export const PickerFooter = memo(function PickerFooter({
   locked: boolean;
   waiting: boolean;
   problem: BackdropProblem | null;
-  uploading: UploadView | null;
+  uploading: number | null;
   onRetry: () => void;
   onPhoto: () => void;
+  onStored: () => void;
   onStorage: () => void;
   onDrop: (() => void) | null;
   onStar: () => void;
@@ -144,12 +147,13 @@ export const PickerFooter = memo(function PickerFooter({
         problem={problem}
         onRetry={onRetry}
         onPhoto={onPhoto}
+        onStored={onStored}
         onStorage={onStorage}
         onDrop={onDrop}
       />
     );
   }
-  if (uploading) return <Uploading upload={uploading} onDrop={onDrop} />;
+  if (uploading !== null) return <Uploading percent={uploading} onDrop={onDrop} />;
   if (waiting) {
     return (
       <div role="status" className="flex items-center gap-2 px-1 text-[12px] text-ink-50">

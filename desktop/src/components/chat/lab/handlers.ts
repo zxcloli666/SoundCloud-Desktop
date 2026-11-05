@@ -1,4 +1,4 @@
-import type { MediaUrl, MinePage, MineQuery } from '../../../lib/chat/media-types';
+import type { MediaRef, MediaUrl, MinePage, MineQuery } from '../../../lib/chat/media-types';
 import { chatMediaUrl } from '../../../lib/chat/media-url';
 import type {
   ConversationPatch,
@@ -129,6 +129,10 @@ export const defaultHandlers: Record<string, (args: Args) => unknown> = {
   chat_media_delete: (a) => deleteSelection(a.selection as Selection),
   chat_media_restore: (a) => restoreSelection(a.selection as Selection),
   chat_media_urls: mediaUrls,
+  chat_media_known: (a) =>
+    ((a.media as MediaRef[]) ?? [])
+      .filter((ref) => mediaMark(ref.mediaId) === null)
+      .map((ref) => ref.mediaId),
   chat_media_uploads: () => world.uploads,
   chat_media_parked: parkedAlbums,
   ...writeHandlers,

@@ -14,6 +14,7 @@ use super::files::Files;
 use super::host::Host;
 use super::picked::Picked;
 use super::prepare::Prepare;
+use super::turns::Turns;
 use crate::chat::media_cache::MediaCache;
 use crate::network::edge::{self, Hop};
 
@@ -36,6 +37,7 @@ pub struct Uploads {
     pub(super) deletes: tokio::sync::Mutex<()>,
     pub(super) halted: Mutex<Weak<Store>>,
     pub(super) picked: Picked,
+    pub(super) turns: Turns,
 }
 
 impl Uploads {
@@ -66,6 +68,7 @@ impl Uploads {
             deletes: tokio::sync::Mutex::new(()),
             halted: Mutex::new(Weak::new()),
             picked: Picked::default(),
+            turns: Turns::default(),
         }
     }
 

@@ -20,6 +20,7 @@ pub struct Single {
     pub kind: MediaKind,
     pub image: Vec<u8>,
     pub attachment: Attachment,
+    pub turn: Option<u64>,
 }
 
 impl Uploads {
@@ -33,22 +34,36 @@ impl Uploads {
         .await
     }
 
-    pub(super) async fn enqueue_single(&self, single: Single) -> ChatResult<MediaUploadView> {
-        self.drop_pending(single.conversation_id, single.kind)
-            .await?;
+    pub(super) async fn enqueue_single(
+        &self,
+        single: Single,
+    ) -> ChatResult<Option<MediaUploadView>> {
+        let (conversation_id, kind) = (single.conversation_id, single.kind);
+        self.drop_pending(conversation_id, kind).await?;
         let image_ref = self.files.write(IMAGE, &single.image).await?;
         let upload = NewUpload {
             album: Uuid::new_v4(),
             position: 0,
-            conversation_id: single.conversation_id,
-            kind: single.kind,
+            conversation_id,
+            kind,
             image_ref: image_ref.clone(),
             thumb_ref: None,
             attachment: single.attachment,
         };
+        let albums = self.albums.lock().await;
+        if !self.wanted(conversation_id, single.turn) {
+            drop(albums);
+            self.files.remove(vec![image_ref]).await;
+            return Ok(None);
+        }
         let view = self.enqueued(upload, vec![image_ref]).await?;
+        drop(albums);
         self.kick();
-        Ok(view)
+        Ok(Some(view))
+    }
+
+    fn wanted(&self, conversation_id: ConvId, turn: Option<u64>) -> bool {
+        turn.is_none_or(|turn| self.turns.holds(conversation_id, turn))
     }
 
     pub(super) async fn drop_pending(

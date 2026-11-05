@@ -1,6 +1,6 @@
 import type { UploadView } from '../../../../lib/chat/media-types';
 import type { ChatError, ConvId } from '../../../../lib/chat/types';
-import { useBackdropStore } from '../../../../stores/chat/backdrop';
+import { type StoredFailure, useBackdropStore } from '../../../../stores/chat/backdrop';
 import { useChatMediaStore } from '../../../../stores/chat/media';
 
 function latest(uploads: UploadView[], conversationId: ConvId | null): UploadView | null {
@@ -16,6 +16,8 @@ function latest(uploads: UploadView[], conversationId: ConvId | null): UploadVie
 export interface BackdropUpload {
   upload: UploadView | null;
   error: ChatError | null;
+  fetching: boolean;
+  failure: StoredFailure | null;
 }
 
 export function useBackdropUpload(conversationId: ConvId | null): BackdropUpload {
@@ -24,6 +26,12 @@ export function useBackdropUpload(conversationId: ConvId | null): BackdropUpload
     conversationId ? (state.attempts[conversationId] ?? null) : null,
   );
   const orphan = useBackdropStore((state) => (upload ? (state.orphans[upload.id] ?? null) : null));
+  const fetching = useBackdropStore((state) =>
+    conversationId ? conversationId in state.fetching : false,
+  );
+  const failure = useBackdropStore((state) =>
+    conversationId ? (state.failures[conversationId] ?? null) : null,
+  );
   const own = attempt && (!upload || attempt.id === upload.id);
-  return { upload, error: own ? attempt.error : orphan };
+  return { upload, error: own ? attempt.error : orphan, fetching, failure };
 }

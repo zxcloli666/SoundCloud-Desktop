@@ -13,9 +13,9 @@ export const UploadChip = memo(function UploadChip({
   conversationId: ConvId | null;
 }) {
   const { t } = useTranslation();
-  const { upload, error } = useBackdropUpload(conversationId);
+  const { upload, error, fetching, failure } = useBackdropUpload(conversationId);
   const open = useBackdropStore((state) => state.open);
-  const status = uploadStatus(upload, error);
+  const status = uploadStatus(upload, error ?? failure?.error ?? null, fetching);
   if (!status) return null;
   const failed = status.kind === 'failed';
   const percent = status.kind === 'active' ? uploadPercent(status.upload) : 0;

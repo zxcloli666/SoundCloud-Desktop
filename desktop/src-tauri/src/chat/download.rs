@@ -1,9 +1,11 @@
 mod engine;
 mod flight;
 mod get;
+mod known;
 mod local;
 mod object;
 mod open;
+mod original;
 mod refused;
 mod signed;
 
@@ -16,6 +18,7 @@ use tauri::Emitter;
 use uuid::Uuid;
 
 pub use self::engine::{Downloads, Notice};
+pub use self::known::{MediaRef, keyed};
 use super::state::ChatState;
 
 pub const MEDIA_STATE: &str = "chat:media-state";
@@ -124,6 +127,22 @@ async fn remote(
     }
 }
 
+pub async fn original(
+    state: &ChatState,
+    conversation_id: ConvId,
+    media_id: Uuid,
+) -> ChatResult<Vec<u8>> {
+    let key = MediaKey {
+        conversation_id,
+        media_id,
+        variant: Variant::Image,
+    };
+    let attachment = attachment(state, &key).await?;
+    downloads(state)
+        .original(conversation_id, media_id, attachment)
+        .await
+}
+
 pub fn forget(state: &ChatState, media_id: Uuid) {
     downloads(state).forget(media_id);
 }
@@ -158,4 +177,4 @@ fn downloads(state: &ChatState) -> &'static Arc<Downloads> {
 }
 
 #[cfg(test)]
-mod tests;
+pub(crate) mod tests;

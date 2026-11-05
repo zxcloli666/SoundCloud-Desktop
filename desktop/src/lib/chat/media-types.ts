@@ -57,6 +57,11 @@ export interface MineQuery {
 
 export type MyMediaStatus = 'uploaded' | 'attached' | 'lost';
 
+export interface MediaRef {
+  conversationId: ConvId;
+  mediaId: MediaId;
+}
+
 export interface MyMedia {
   id: MediaId;
   kind: MediaKind;

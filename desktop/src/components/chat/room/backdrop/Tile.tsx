@@ -3,6 +3,7 @@ import { Check, Loader2 } from '../../../../lib/icons';
 
 export interface TileProps {
   label: string;
+  ui?: string;
   current: boolean;
   pending: boolean;
   disabled?: boolean;
@@ -13,6 +14,7 @@ export interface TileProps {
 
 export const Tile = memo(function Tile({
   label,
+  ui,
   current,
   pending,
   disabled,
@@ -24,6 +26,7 @@ export const Tile = memo(function Tile({
     <button
       type="button"
       data-tile
+      data-ui={ui}
       aria-label={label}
       aria-pressed={current}
       aria-busy={pending}

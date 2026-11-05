@@ -24,6 +24,7 @@ use sc_chat::{
 use tauri::State;
 use uuid::Uuid;
 
+use super::download::MediaRef;
 use super::keychain::ResetPlan;
 use super::login;
 use super::runtime::DeviceLimit;
@@ -588,8 +589,27 @@ pub async fn chat_room_backdrop_upload(
     code: String,
     conversation_id: ConvId,
     path: String,
-) -> Result<MediaUploadView, ChatError> {
+) -> Result<Option<MediaUploadView>, ChatError> {
     media::backdrop_upload(&state, code, conversation_id, path).await
+}
+
+#[tauri::command]
+pub async fn chat_room_backdrop_stored(
+    state: State<'_, ChatState>,
+    code: String,
+    conversation_id: ConvId,
+    source: ConvId,
+    media_id: Uuid,
+) -> Result<Option<MediaUploadView>, ChatError> {
+    media::backdrop_stored(&state, code, conversation_id, source, media_id).await
+}
+
+#[tauri::command]
+pub async fn chat_room_backdrop_stop(
+    state: State<'_, ChatState>,
+    conversation_id: ConvId,
+) -> Result<(), ChatError> {
+    media::backdrop_stop(&state, conversation_id).await
 }
 
 #[tauri::command]
@@ -601,6 +621,14 @@ pub async fn chat_room_backdrop_report(
     comment: Option<String>,
 ) -> Result<(), ChatError> {
     media::backdrop_report(&state, conversation_id, media_id, reason, comment).await
+}
+
+#[tauri::command]
+pub async fn chat_media_known(
+    state: State<'_, ChatState>,
+    media: Vec<MediaRef>,
+) -> Result<Vec<Uuid>, ChatError> {
+    media::known(&state, media).await
 }
 
 #[tauri::command]
