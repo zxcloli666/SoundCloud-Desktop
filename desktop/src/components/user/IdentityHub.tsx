@@ -80,9 +80,9 @@ export function IdentityHub({
   const country = [user.city, user.country_code].filter(Boolean).join(', ');
 
   return (
-    <GlassHeroPanel hasStar={hasStar} aura={aura}>
+    <GlassHeroPanel hasStar={hasStar} aura={aura} className="@container">
       {user.banner_url && <ProfileBanner key={user.banner_url} url={user.banner_url} hasStar={hasStar} />}
-      <div data-ui="user-hero" className="relative p-6 md:p-10 flex flex-col lg:flex-row gap-8 lg:gap-10 items-center lg:items-stretch">
+      <div data-ui="user-hero" className="relative p-6 @lg:p-10 flex flex-col @min-[720px]:flex-row gap-8 @min-[720px]:gap-10 items-center @min-[720px]:items-stretch">
         <AvatarArtifact
           username={user.username}
           avatarUrl={user.avatar_url}
@@ -91,8 +91,8 @@ export function IdentityHub({
           aura={aura}
         />
 
-        <div className="flex-1 min-w-0 flex flex-col justify-between gap-5 text-center lg:text-left">
-          <div className="flex flex-wrap items-center gap-2 justify-center lg:justify-start">
+        <div className="flex-1 min-w-0 flex flex-col justify-between gap-5 text-center @min-[720px]:text-left">
+          <div className="flex flex-wrap items-center gap-2 justify-center @min-[720px]:justify-start">
             {user.verified && <VerifiedBadge title={t('user.verifiedArtist')} />}
             {user.plan && user.plan !== 'Free' && <ProChip plan={user.plan} />}
             {formattedDate && <InfoChip icon={<Calendar size={11} />}>{formattedDate}</InfoChip>}
@@ -102,9 +102,9 @@ export function IdentityHub({
             )}
           </div>
 
-          <div className="flex flex-col items-center lg:items-start gap-3">
+          <div className="flex flex-col items-center @min-[720px]:items-start gap-3">
             <h1
-              className="text-5xl md:text-7xl font-black leading-[0.85] tracking-tighter break-words max-w-full"
+              className="text-5xl @lg:text-7xl font-black leading-[0.85] tracking-tighter break-words max-w-full"
               style={
                 hasStar
                   ? {
@@ -128,13 +128,13 @@ export function IdentityHub({
           </div>
 
           {user.description && (
-              <p className="selectable text-[14px] md:text-[15px] text-ink-65 leading-relaxed max-w-2xl line-clamp-3 hover:line-clamp-none transition-all duration-700 cursor-help">
+              <p className="selectable text-[14px] @lg:text-[15px] text-ink-65 leading-relaxed max-w-2xl line-clamp-3 hover:line-clamp-none transition-all duration-700 cursor-help">
               <RichText text={user.description} accent={auraRgb(aura)}/>
             </p>
           )}
 
           {webProfiles && webProfiles.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 justify-center lg:justify-start">
+            <div className="flex flex-wrap gap-1.5 justify-center @min-[720px]:justify-start">
               {webProfiles.map((link) => (
                 <a
                   key={link.id}
@@ -156,7 +156,7 @@ export function IdentityHub({
             </div>
           )}
 
-          <div className="flex flex-wrap items-center gap-3 pt-1 justify-center lg:justify-start">
+          <div className="flex flex-wrap items-center gap-3 pt-1 justify-center @min-[720px]:justify-start">
             {!isOwnProfile && <FollowBtn userUrn={user.urn} aura={aura} />}
             {!isOwnProfile && <MessageButton userUrn={user.urn} name={user.username} />}
             {!isOwnProfile && (
@@ -188,7 +188,7 @@ export function IdentityHub({
           </div>
         </div>
 
-        <div className="hidden xl:flex flex-col gap-3 self-stretch min-w-[160px]">
+        <div className="hidden @min-[960px]:flex flex-col gap-3 self-stretch min-w-[160px]">
           <StatOrb
             value={user.followers_count}
             label={t('user.followers')}
@@ -212,7 +212,7 @@ export function IdentityHub({
         </div>
       </div>
 
-      <div className="xl:hidden flex flex-wrap gap-2 px-6 md:px-10 pb-6 md:pb-8 justify-center lg:justify-start">
+      <div className="@min-[960px]:hidden flex flex-wrap gap-2 px-6 @lg:px-10 pb-6 @lg:pb-8 justify-center @min-[720px]:justify-start">
         <StatOrb
           value={user.followers_count}
           label={t('user.followers')}
