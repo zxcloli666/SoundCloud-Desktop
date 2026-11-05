@@ -87,6 +87,7 @@ fn temp_dir(name: &str) -> PathBuf {
 
 #[test]
 fn uris_and_plain_paths_become_files() {
+    #[cfg(unix)]
     assert_eq!(
         uri_path("file:///home/u/My%20Pictures/a.jpg\n"),
         Some(PathBuf::from("/home/u/My Pictures/a.jpg"))

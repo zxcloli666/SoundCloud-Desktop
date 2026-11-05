@@ -185,16 +185,9 @@ jobs:
           done
 
       - name: Tests
-        env:
-          KNOWN_WINDOWS_FAILURES: >-
-            --skip app::desktop_wallpaper::tests::uris_and_plain_paths_become_files
-            --skip network::netcheck::phases::tests::a_closed_port_is_refused
-            --skip network::netcheck::targets::tests::a_refused_app_path_is_not_tried_again
-            --skip track_cache::state::tests::move_by_copy_replaces_the_source
         run: |
           if [ "$RUNNER_OS" = Windows ]; then
-            read -ra skips <<< "$KNOWN_WINDOWS_FAILURES"
-            cargo test --lib --bins --tests -- "${skips[@]}"
+            cargo test --lib --bins --tests
           else
             cargo test
           fi
