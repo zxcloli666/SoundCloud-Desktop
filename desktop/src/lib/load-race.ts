@@ -33,12 +33,19 @@ export function forgetDownloadSource(urn: string): void {
   storageUrns.delete(urn);
 }
 
+export interface RaceHandle {
+  result: Promise<RaceWinner>;
+  startNow: () => boolean;
+}
+
 export function raceWithCopy(
   track: Track,
   original: Promise<TrackCacheInfo>,
   hooks: RaceHooks,
-): Promise<RaceWinner> {
-  return new Promise((resolve, reject) => {
+): RaceHandle {
+  let startNow = () => false;
+  const result = new Promise<RaceWinner>((resolve, reject) => {
+    let started = false;
     let winner: Track | null = null;
     let racing = false;
     let failure: { error: unknown } | null = null;
@@ -59,8 +66,15 @@ export function raceWithCopy(
       reject(failure.error);
     };
 
+    const allowed = () =>
+      !winner &&
+      !storageUrns.has(track.urn) &&
+      track._scd_meta?.storage_state !== 'ok' &&
+      hooks.canRace();
+
     const race = async () => {
-      if (winner || storageUrns.has(track.urn) || !hooks.canRace()) return;
+      if (started || !allowed()) return;
+      started = true;
       racing = true;
       const copy = await findAltUpload(track).catch(() => null);
       if (winner || !copy || !hooks.canRace()) {
@@ -89,6 +103,13 @@ export function raceWithCopy(
     };
 
     const timer = setTimeout(() => void race(), LOAD_RACE_MS);
+    startNow = () => {
+      if (started) return racing;
+      if (!allowed()) return false;
+      clearTimeout(timer);
+      void race();
+      return true;
+    };
     original.then(
       (info) => win(track, info),
       (error) => {
@@ -98,4 +119,5 @@ export function raceWithCopy(
       },
     );
   });
+  return { result, startNow: () => startNow() };
 }

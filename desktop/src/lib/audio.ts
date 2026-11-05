@@ -55,7 +55,7 @@ import {
   takeSkipAttempt,
   watchLoad,
 } from './load-watchdog';
-import { forgetDownloadSource, noteDownloadSource, raceWithCopy } from './load-race';
+import { forgetDownloadSource, noteDownloadSource, type RaceHandle, raceWithCopy } from './load-race';
 import {localTrackPath, markLocalMissing, noteLocalDuration} from './local-import';
 import {isLocalUrn} from './local-library';
 import {notifyError} from './notify';
@@ -569,8 +569,13 @@ async function loadTrack(track: Track, resumeAt = 0) {
     // Strategy 2: Download full track to cache — Rust picks storage/API internally
     if (crossfadeMs > 0) invoke('audio_stop').catch(console.error);
     setDownloadProgress(0);
+    let raceHandle: RaceHandle | null = null;
     watchLoad(() => {
       if (gen !== loadGen) return;
+      if (file === track && raceHandle?.startNow()) {
+        bumpLoadWatch();
+        return;
+      }
       if (file !== track) dropAltUpload(track);
       skipUnloadable(track, true);
     });
@@ -603,7 +608,7 @@ async function loadTrack(track: Track, resumeAt = 0) {
     if (file !== track) {
       cachedInfo = await fetchFile();
     } else {
-      const raced = await raceWithCopy(track, fetchFile(), {
+      raceHandle = raceWithCopy(track, fetchFile(), {
         quality,
         isCurrent: () => gen === loadGen,
         canRace: () => gen === loadGen && startGate == null && mayUseAltUpload(track),
@@ -614,6 +619,7 @@ async function loadTrack(track: Track, resumeAt = 0) {
           if (getLoadErrorText(error)?.includes('no stream available')) markNoStream(track);
         },
       });
+      const raced = await raceHandle.result;
       raceUrn = null;
       if (gen !== loadGen) return;
       cachedInfo = raced.info;
