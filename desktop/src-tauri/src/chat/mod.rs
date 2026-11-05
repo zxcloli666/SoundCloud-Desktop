@@ -25,7 +25,11 @@ use tauri::Manager;
 
 use crate::rt::AppHandle;
 
-pub const DIR: &str = "chat";
+const DEV_BUILD: bool = cfg!(all(debug_assertions, not(feature = "chat-lab")));
+const RELEASE_DIR: &str = "chat";
+const DEV_DIR: &str = "chat-dev";
+
+pub const DIR: &str = if DEV_BUILD { DEV_DIR } else { RELEASE_DIR };
 
 #[cfg(all(feature = "chat-lab", not(debug_assertions)))]
 compile_error!("the chat-lab feature is for dev builds only");
@@ -48,6 +52,9 @@ pub fn start(app: &AppHandle, rt: tokio::runtime::Handle, _data_dir: &Path) {
     let dir = std::env::temp_dir().join("soundcloud-chat-lab");
     app.manage(state::ChatState::new(app.clone(), rt, dir));
 }
+
+#[cfg(test)]
+mod tests;
 
 #[cfg(all(windows, not(feature = "chat-lab")))]
 fn home(app: &AppHandle, data_dir: &Path) -> PathBuf {

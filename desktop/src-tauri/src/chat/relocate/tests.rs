@@ -21,11 +21,16 @@ impl Scratch {
     }
 
     fn roaming(&self) -> PathBuf {
-        self.0.join("Roaming").join("app").join("chat")
+        self.0.join("Roaming").join("app").join(crate::chat::DIR)
     }
 
     fn local(&self) -> PathBuf {
-        self.0.join("Local").join("app").join("chat")
+        self.0.join("Local").join("app").join(crate::chat::DIR)
+    }
+
+    fn staging(&self) -> PathBuf {
+        self.local()
+            .with_file_name(format!("{}.moving", crate::chat::DIR))
     }
 }
 
@@ -107,7 +112,7 @@ fn walk(root: &Path, dir: &Path, found: &mut Vec<(String, Vec<u8>)>) {
 }
 
 fn staging_left(scratch: &Scratch) -> bool {
-    scratch.local().with_file_name("chat.moving").exists()
+    scratch.staging().exists()
 }
 
 #[test]
@@ -199,7 +204,7 @@ fn a_rerun_after_a_failed_copy_moves_everything() {
 fn a_staging_folder_left_by_a_crash_is_replaced() {
     let scratch = Scratch::new();
     chat_folder(&scratch.roaming());
-    let staging = scratch.local().with_file_name("chat.moving");
+    let staging = scratch.staging();
     fs::create_dir_all(&staging).unwrap();
     fs::write(staging.join("chat.db"), b"torn").unwrap();
     let before = listing(&scratch.roaming());

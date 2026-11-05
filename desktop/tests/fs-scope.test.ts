@@ -87,10 +87,11 @@ for (const capability of CAPABILITIES) {
   });
 
   test(`${capability} keeps the session and chat files closed`, () => {
-    for (const closed of ['$APPDATA/sc-auth.json', '$APPDATA/chat', '$APPDATA/chat/**']) {
-      assert.ok(deny.includes(closed), closed);
-    }
+    const closed = ['$APPDATA/sc-auth.json'];
+    for (const dir of ['chat', 'chat-dev']) closed.push(`$APPDATA/${dir}`, `$APPDATA/${dir}/**`);
+    for (const path of closed) assert.ok(deny.includes(path), path);
     assert.ok(!allow.some((pattern) => covers(pattern, 'sc-auth.json')));
     assert.ok(!allow.some((pattern) => covers(pattern, 'chat/chat.db')));
+    assert.ok(!allow.some((pattern) => covers(pattern, 'chat-dev/chat.db')));
   });
 }
