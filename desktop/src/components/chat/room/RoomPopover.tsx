@@ -33,9 +33,10 @@ export function RoomPopover({ trigger, open, onOpenChange, width, children }: Ro
           align="start"
           sideOffset={8}
           collisionPadding={12}
-          className="ctx-menu z-[300] rounded-[16px] p-1.5 outline-none"
+          className="ctx-menu z-[300] flex flex-col overflow-y-auto overscroll-contain rounded-[16px] p-1.5 outline-none"
           style={{
             width,
+            maxHeight: 'var(--radix-popover-content-available-height)',
             background: blur > 0 ? surface(7, 86) : surface(8),
             backdropFilter: blur > 0 ? `blur(${blur}px) saturate(1.8)` : undefined,
             WebkitBackdropFilter: blur > 0 ? `blur(${blur}px) saturate(1.8)` : undefined,

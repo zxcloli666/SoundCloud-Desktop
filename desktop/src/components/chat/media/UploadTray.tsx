@@ -5,10 +5,19 @@ import { useTrayWork } from './compose/useTrayWork';
 
 export const UploadTray = memo(function UploadTray({
   conversationId,
+  onSpace,
 }: {
   conversationId?: ConvId;
+  onSpace?: (px: number) => void;
 }) {
   const current = conversationId ?? null;
   const work = useTrayWork(current);
-  return <TrayPanel work={work} current={current} place={current ? 'thread' : 'dock'} />;
+  return (
+    <TrayPanel
+      work={work}
+      current={current}
+      place={current ? 'thread' : 'dock'}
+      onSpace={onSpace}
+    />
+  );
 });

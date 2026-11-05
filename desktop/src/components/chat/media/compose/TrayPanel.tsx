@@ -1,4 +1,4 @@
-import { memo, useEffect, useState } from 'react';
+import { memo, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ConvId } from '../../../../lib/chat/types';
 import { ChevronDown, ChevronUp, TriangleAlert } from '../../../../lib/icons';
@@ -10,20 +10,26 @@ import { albumFraction } from './progress';
 import { TrayRow } from './TrayRow';
 import type { TrayWork } from './tray-scope';
 
+const PILL_BOTTOM = { thread: 6, dock: 18 } as const;
+
 export const TrayPanel = memo(function TrayPanel({
   work,
   current,
   place,
+  onSpace,
 }: {
   work: TrayWork;
   current: ConvId | null;
   place: 'thread' | 'dock';
+  onSpace?: (px: number) => void;
 }) {
   const { t, i18n } = useTranslation();
   const perf = usePerfMode();
   const blur = perf.blur(24);
   const [open, setOpen] = useState(false);
+  const pill = useRef<HTMLButtonElement>(null);
   const total = work.rows.length;
+  const shown = total > 0;
 
   useEffect(() => {
     if (total === 0) setOpen(false);
@@ -40,7 +46,20 @@ export const TrayPanel = memo(function TrayPanel({
     return () => document.removeEventListener('keydown', onKey, true);
   }, [open]);
 
-  if (total === 0) return null;
+  useLayoutEffect(() => {
+    const button = pill.current;
+    if (!onSpace || !shown || !button) return;
+    const report = () => onSpace(button.offsetHeight + PILL_BOTTOM[place]);
+    report();
+    const observer = new ResizeObserver(report);
+    observer.observe(button);
+    return () => {
+      observer.disconnect();
+      onSpace(0);
+    };
+  }, [onSpace, shown, place]);
+
+  if (!shown) return null;
   const fail = (error: unknown) => toastError(error, t, i18n.language);
   const failed = work.failed > 0;
   const glass = {
@@ -54,9 +73,12 @@ export const TrayPanel = memo(function TrayPanel({
     <div
       data-ui="chat-upload-tray"
       data-place={place}
-      className={`pointer-events-none z-30 h-0 ${place === 'dock' ? 'absolute inset-x-0 bottom-3' : 'relative'}`}
+      className={`pointer-events-none z-30 h-0 ${place === 'dock' ? 'absolute inset-x-0 bottom-0' : 'relative'}`}
     >
-      <div className="absolute inset-x-0 bottom-1.5 flex flex-col items-center gap-1.5 px-3">
+      <div
+        className="absolute inset-x-0 flex flex-col items-center gap-1.5 px-3"
+        style={{ bottom: PILL_BOTTOM[place] }}
+      >
         {open && (
           <div
             className={`pointer-events-auto w-full max-w-[420px] overflow-hidden rounded-[18px] border border-ink/[0.08] p-1.5 ${RISE}`}
@@ -83,6 +105,7 @@ export const TrayPanel = memo(function TrayPanel({
           </div>
         )}
         <button
+          ref={pill}
           type="button"
           aria-expanded={open}
           onClick={() => setOpen((value) => !value)}

@@ -15,6 +15,7 @@ import { peerSeqs, type Tick, tickOf } from '../../../lib/chat/render';
 import type { ConvId, Message, PeerMark, Seq } from '../../../lib/chat/types';
 import { useChatThreadStore } from '../../../stores/chat/thread';
 import { MessageRow } from '../bubbles/MessageRow';
+import { useTraySpace } from '../media/compose/tray-space';
 import { useThread } from './context';
 import { isRequest } from './permissions';
 import { buildRows, estimateRow, type Row, rowIndexOfSeq, unseenBelow } from './rows';
@@ -33,6 +34,7 @@ const NO_MESSAGES: Message[] = [];
 const NO_MARKS: PeerMark[] = [];
 const FLASH_MS = 1500;
 const LOAD_AHEAD = 3;
+const END_GAP = 14;
 
 function nextFrame(): Promise<void> {
   return new Promise((resolve) => requestAnimationFrame(() => resolve()));
@@ -73,6 +75,7 @@ export const Timeline = memo(function Timeline({
   const initialIndex = useMemo(() => rows.findIndex((row) => row.kind === 'unread'), [rows]);
   const avatars = conversation.kind === 'group' || conversation.kind === 'room';
   const saved = conversation.kind === 'self';
+  const traySpace = useTraySpace();
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const perLine = useLineChars(scrollRef);
@@ -88,7 +91,7 @@ export const Timeline = memo(function Timeline({
     getItemKey,
     overscan: 8,
     paddingStart: 8,
-    paddingEnd: 14,
+    paddingEnd: END_GAP + traySpace,
   });
 
   useEffect(() => {
@@ -198,7 +201,13 @@ export const Timeline = memo(function Timeline({
       </div>
       {thread?.loadingBefore && <TopSpinner />}
       {!thread?.loadingBefore && topTs !== null && <FloatingDay ts={topTs} />}
-      {away && <JumpButton count={unseenBelow(rows, endIndex, readSeq)} onClick={toBottom} />}
+      {away && (
+        <JumpButton
+          count={unseenBelow(rows, endIndex, readSeq)}
+          lift={traySpace}
+          onClick={toBottom}
+        />
+      )}
     </div>
   );
 });

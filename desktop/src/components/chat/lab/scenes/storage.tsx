@@ -1,4 +1,5 @@
 import i18n from 'i18next';
+import { waitUntil } from '../steps';
 import { never, storageWorld, typeInto } from '../storage-world';
 import type { LabScene } from '../types';
 
@@ -10,6 +11,20 @@ function openChatSettings() {
   const items = document.querySelectorAll<HTMLElement>('[data-ui="settings-nav-item"]');
   const item = [...items].find((node) => node.textContent?.trim() === label);
   item?.click();
+}
+
+const STILL_POLLS = 4;
+
+async function scrollSettled() {
+  const main = document.querySelector('main');
+  let last = Number.NaN;
+  let still = 0;
+  await waitUntil(() => {
+    const top = main?.scrollTop ?? 0;
+    still = top === last ? still + 1 : 0;
+    last = top;
+    return still >= STILL_POLLS;
+  }, 3000);
 }
 
 export const scenes: LabScene[] = [
@@ -160,11 +175,13 @@ export const scenes: LabScene[] = [
       kit.waitFor('[data-ui="settings-nav-item"]');
       kit.after(openChatSettings);
       kit.waitFor('[data-ui="chat-storage-entry"]');
-      kit.after(() =>
+      kit.after(async () => {
+        await document.fonts.ready;
+        await scrollSettled();
         document
           .querySelector('[data-ui="chat-storage-entry"]')
-          ?.scrollIntoView({ block: 'center' }),
-      );
+          ?.scrollIntoView({ block: 'center' });
+      });
     },
   },
 ];

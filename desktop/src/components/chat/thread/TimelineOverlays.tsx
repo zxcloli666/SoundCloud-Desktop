@@ -4,11 +4,15 @@ import { surface } from '../../../lib/chat/tone';
 import { ChevronDown, Loader2 } from '../../../lib/icons';
 import { dayText } from './Separators';
 
+const JUMP_BOTTOM = 12;
+
 export const JumpButton = memo(function JumpButton({
   count,
+  lift,
   onClick,
 }: {
   count: number;
+  lift: number;
   onClick: () => void;
 }) {
   const { t } = useTranslation();
@@ -17,8 +21,12 @@ export const JumpButton = memo(function JumpButton({
       type="button"
       aria-label={t('chat.thread.toBottom')}
       onClick={onClick}
-      className="chat-thread-motion absolute right-4 bottom-3 z-10 flex size-10 cursor-pointer items-center justify-center rounded-full border border-ink/[0.09] text-ink-75 shadow-[0_10px_28px_rgba(0,0,0,0.5)] transition-colors duration-150 hover:text-ink"
-      style={{ background: surface(12), animation: 'chat-thread-rise 180ms ease-out' }}
+      className="chat-thread-motion absolute right-4 z-10 flex size-10 cursor-pointer items-center justify-center rounded-full border border-ink/[0.09] text-ink-75 shadow-[0_10px_28px_rgba(0,0,0,0.5)] transition-colors duration-150 hover:text-ink"
+      style={{
+        bottom: JUMP_BOTTOM + lift,
+        background: surface(12),
+        animation: 'chat-thread-rise 180ms ease-out',
+      }}
     >
       <ChevronDown size={18} />
       {count > 0 && (

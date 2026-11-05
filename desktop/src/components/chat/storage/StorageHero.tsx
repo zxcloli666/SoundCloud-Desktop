@@ -26,10 +26,12 @@ function LapsedNote() {
       style={{ background: 'linear-gradient(120deg, var(--color-accent-glow), transparent 75%)' }}
     >
       <Lock size={14} className="shrink-0 text-ink-70" />
-      <span className="min-w-0 flex-1 text-[12.5px] font-medium text-ink-80">
+      <span className="min-w-[11rem] flex-1 text-[12.5px] font-medium text-ink-80">
         {t('chat.storage.lapsed')}
       </span>
-      <StarCta size="sm" />
+      <span className="ml-auto">
+        <StarCta size="sm" />
+      </span>
     </div>
   );
 }

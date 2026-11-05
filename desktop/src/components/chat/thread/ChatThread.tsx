@@ -7,6 +7,7 @@ import { useChatThreadStore } from '../../../stores/chat/thread';
 import { ComposerGate } from '../composer/ComposerGate';
 import { InfoSheet } from '../info/InfoSheet';
 import { ThreadDrop } from '../media/compose/ThreadDrop';
+import { TraySpace } from '../media/compose/tray-space';
 import { UploadTray } from '../media/UploadTray';
 import { useRoomMembers, useRoomModerator } from '../room/useRoom';
 import { ThreadContext, type ThreadContextValue } from './context';
@@ -55,6 +56,7 @@ export const ChatThread = memo(function ChatThread({
   const blocked = useBlocked(shared);
   const timeline = useRef<TimelineHandle>(null);
   const [info, setInfo] = useState(false);
+  const [traySpace, setTraySpace] = useState(0);
   const leave = useRef(onLeave);
   leave.current = onLeave;
 
@@ -127,12 +129,14 @@ export const ChatThread = memo(function ChatThread({
         {!bare && <ThreadHeader onBack={onBack} onInfo={openInfo} actions={actions} />}
         <PinnedBar />
         <HistorySlot />
-        {empty && load === 'ready' ? (
-          <ThreadEmpty saved={context.conversation.kind === 'self'} />
-        ) : (
-          <Timeline ref={timeline} conversationId={conversationId} />
-        )}
-        <UploadTray conversationId={conversationId} />
+        <TraySpace.Provider value={traySpace}>
+          {empty && load === 'ready' ? (
+            <ThreadEmpty saved={context.conversation.kind === 'self'} />
+          ) : (
+            <Timeline ref={timeline} conversationId={conversationId} />
+          )}
+        </TraySpace.Provider>
+        <UploadTray conversationId={conversationId} onSpace={setTraySpace} />
         <ComposerGate conversationId={conversationId} />
         {info && <InfoSheet onClose={closeInfo} onJump={jumpFromInfo} />}
         <ThreadDialogs conversationId={conversationId} />

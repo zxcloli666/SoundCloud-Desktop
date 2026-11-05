@@ -84,7 +84,7 @@ export const CoverPicker = memo(function CoverPicker({
   };
 
   return (
-    <div data-ui="room-cover-picker" className="flex flex-col gap-2.5">
+    <div data-ui="room-cover-picker" className="flex min-h-0 flex-col gap-2.5">
       <CoverPreview
         src={src}
         accent={draft.url ? accentColor(draft.accent) : null}
@@ -100,13 +100,15 @@ export const CoverPicker = memo(function CoverPicker({
         </p>
       </CoverPreview>
 
-      <CoverChoices
-        artwork={artwork}
-        selected={draft.url}
-        accent={draft.accent}
-        onSelect={select}
-        gridRef={grid}
-      />
+      <div className="-m-1 min-h-0 overflow-y-auto overscroll-contain p-1">
+        <CoverChoices
+          artwork={artwork}
+          selected={draft.url}
+          accent={draft.accent}
+          onSelect={select}
+          gridRef={grid}
+        />
+      </div>
 
       <AccentSwatches value={draft.accent} disabled={draft.url === null} onChange={pickAccent} />
 

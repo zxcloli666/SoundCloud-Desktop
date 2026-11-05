@@ -5,6 +5,7 @@ import { chatBridge } from '../../../lib/chat/bridge';
 import type { ConvId, SearchHit } from '../../../lib/chat/types';
 import { useChatListStore } from '../../../stores/chat/list';
 import { useDebouncedValue } from '../../discover/useDebouncedValue';
+import { useTraySpace } from '../media/compose/tray-space';
 import { ConversationAvatar } from './ConversationAvatar';
 import { conversationAvatar, conversationTitle } from './conversation-meta';
 import { ListEmpty, ListFailed, ListSkeleton } from './ListEmpty';
@@ -59,6 +60,7 @@ export const SearchResults = memo(function SearchResults({
   onOpen: (conversationId: ConvId) => void;
 }) {
   const text = useDebouncedValue(query.trim(), 200);
+  const traySpace = useTraySpace();
   const search = useQuery({
     queryKey: ['chat', 'search', text],
     queryFn: () => chatBridge.search({ text, conversationId: null, limit: SEARCH_LIMIT }),
@@ -75,6 +77,7 @@ export const SearchResults = memo(function SearchResults({
       {search.data.map((hit) => (
         <HitRow key={`${hit.conversationId}:${hit.seq}`} hit={hit} onOpen={onOpen} />
       ))}
+      {traySpace > 0 && <div style={{ height: traySpace }} />}
     </div>
   );
 });

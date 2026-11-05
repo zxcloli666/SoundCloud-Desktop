@@ -2,6 +2,7 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 import { memo, useEffect, useRef } from 'react';
 import type { ConvId } from '../../../lib/chat/types';
 import { useChatListStore } from '../../../stores/chat/list';
+import { useTraySpace } from '../media/compose/tray-space';
 import { ConversationRow, ROW_HEIGHT, type RowMenu } from './ConversationRow';
 import { ListEmpty, ListFailed, ListSkeleton } from './ListEmpty';
 import { useScrollGuard } from './useScrollGuard';
@@ -26,6 +27,7 @@ export const ConversationRows = memo(function ConversationRows({
   const refresh = useChatListStore((state) => state.refresh);
   const scrollRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  const traySpace = useTraySpace();
   const hasItems = items.length > 0;
 
   const virtualizer = useVirtualizer({
@@ -33,6 +35,7 @@ export const ConversationRows = memo(function ConversationRows({
     getScrollElement: () => scrollRef.current,
     estimateSize: () => ROW_HEIGHT,
     overscan: 8,
+    paddingEnd: traySpace,
     getItemKey: (index) => items[index].id,
   });
   const rows = virtualizer.getVirtualItems();
