@@ -380,6 +380,9 @@ export const ProgressTime = React.memo(() => {
   );
 });
 
+const CHIP_BASE =
+  'inline-flex h-6 w-9 shrink-0 items-center justify-center rounded-md border pl-[0.14em] text-[9px] font-semibold tracking-[0.14em]';
+
 const RatingChip = React.memo(() => {
   const { t } = useTranslation();
   const meta = usePlayerStore((s) => s.currentTrack?._scd_meta);
@@ -391,7 +394,7 @@ const RatingChip = React.memo(() => {
     <span
       data-ui="player-rating"
       title={t(tierTitleKey(tier, meta))}
-      className={`inline-flex h-6 shrink-0 items-center rounded-md border px-2 text-[10px] font-semibold tracking-[0.14em] ${chip}`}
+      className={`${CHIP_BASE} ${chip}`}
     >
       {letter}
     </span>
@@ -409,7 +412,7 @@ const PlaybackQualityBadge = React.memo(() => {
   return (
     <div className="flex shrink-0 items-center gap-1.5">
       <span
-        className={`inline-flex h-6 shrink-0 items-center rounded-md border px-2 text-[9px] font-semibold tracking-[0.14em] ${
+        className={`${CHIP_BASE} ${
           isHq
             ? 'border-ink/[0.14] bg-ink/[0.08] text-ink-92'
             : 'border-ink/[0.08] bg-ink/[0.04] text-ink-68'

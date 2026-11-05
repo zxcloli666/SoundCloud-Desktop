@@ -1546,11 +1546,11 @@ select,
 }
 
 .npb[data-compact] .npb-quality {
-    width: 72px;
+    width: 78px;
 }
 
 .npb[data-compact] .npb-react.is-local {
-    width: calc(5 * 36px + 5 * 2px + 72px);
+    width: calc(5 * 36px + 5 * 2px + 78px);
 }
 
 .together-icon {
