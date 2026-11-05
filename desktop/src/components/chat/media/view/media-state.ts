@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import type { MediaId } from '../../../../lib/chat/media-types';
 import { type ShownMedia, useChatMediaStore } from '../../../../stores/chat/media';
 import { injectMediaKeyframes } from './keyframes';
@@ -15,4 +15,11 @@ export function useMediaView() {
 
 export function useGone(mediaId: MediaId): GoneState | null {
   return useChatMediaStore((state) => goneOf(state.shown[mediaId]));
+}
+
+export function useRevive(mediaId: MediaId, retry: () => void): () => void {
+  const reviveMedia = useChatMediaStore((state) => state.reviveMedia);
+  return useCallback(() => {
+    void reviveMedia(mediaId).then(retry);
+  }, [reviveMedia, mediaId, retry]);
 }

@@ -5,7 +5,9 @@ use sc_chat::api::wire::{ConfigView, LimitsView, MediaConfigView, MediaLimitsVie
 use sc_chat::{Access, ChatPhase, ChatStatus, CoreEvent, Events, HistoryGate, Tier, TypingEvent};
 use uuid::Uuid;
 
-use super::bringup::{backoff, busy_retry, clock_retry, config_of, parked_phase};
+use super::bringup::{
+    Halt, backoff, busy_retry, clock_retry, config_of, keychain_unavailable, parked_phase,
+};
 use super::clock::spread;
 use super::expiry::nap_of;
 use super::lifecycle::{AuthMove, auth_move};
@@ -293,4 +295,15 @@ fn a_refused_keychain_parks_the_chat_until_the_user_retries() {
         Some(ChatPhase::KeychainDenied)
     );
     assert_eq!(parked_phase(&sc_chat::ChatError::Keychain), None);
+}
+
+#[test]
+fn a_keychain_that_keeps_failing_parks_the_chat_visibly_and_keeps_retrying() {
+    assert!(matches!(keychain_unavailable(1), Halt::Retry(_)));
+    for failures in [2, 5, 6, 50] {
+        assert!(matches!(
+            keychain_unavailable(failures),
+            Halt::Wait(ChatPhase::KeychainUnavailable, pause) if pause > Duration::ZERO
+        ));
+    }
 }

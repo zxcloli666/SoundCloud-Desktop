@@ -45,7 +45,13 @@
       "identifier": "fs:scope",
       "allow": [
         {
-          "path": "$APPDATA/sc-*.json"
+          "path": "$APPDATA/import-history.json"
+        },
+        {
+          "path": "$APPDATA/import-session.json"
+        },
+        {
+          "path": "$APPDATA/import-sync.json"
         },
         {
           "path": "$APPDATA/news.json"
@@ -54,7 +60,52 @@
           "path": "$APPDATA/offline-index.json"
         },
         {
-          "path": "$APPDATA/ym-import-*.json"
+          "path": "$APPDATA/sc-app-status.json"
+        },
+        {
+          "path": "$APPDATA/sc-blocked-artists.json"
+        },
+        {
+          "path": "$APPDATA/sc-chat-backdrop.json"
+        },
+        {
+          "path": "$APPDATA/sc-chat-prefs.json"
+        },
+        {
+          "path": "$APPDATA/sc-effects.json"
+        },
+        {
+          "path": "$APPDATA/sc-local-library.json"
+        },
+        {
+          "path": "$APPDATA/sc-player.json"
+        },
+        {
+          "path": "$APPDATA/sc-releases-seen.json"
+        },
+        {
+          "path": "$APPDATA/sc-search-history.json"
+        },
+        {
+          "path": "$APPDATA/sc-search-prefs.json"
+        },
+        {
+          "path": "$APPDATA/sc-settings.json"
+        },
+        {
+          "path": "$APPDATA/sc-themes.json"
+        },
+        {
+          "path": "$APPDATA/sc-track-sound.json"
+        },
+        {
+          "path": "$APPDATA/star-moments.json"
+        },
+        {
+          "path": "$APPDATA/ym-import-owned.json"
+        },
+        {
+          "path": "$APPDATA/ym-import-pending.json"
         },
         {
           "path": "$APPDATA/css-assets"

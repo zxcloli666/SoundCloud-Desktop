@@ -13,7 +13,7 @@ import { fitInside, type Size } from './album-layout';
 import { CloudOff, ImageOff, LoaderCircle, RotateCcw } from './icons';
 import type { ViewImage } from './images';
 import { type LoadPhase, useLoadAttempt } from './load-attempt';
-import { useGone } from './media-state';
+import { useGone, useRevive } from './media-state';
 import { useCalmMotion } from './motion';
 import { viewUrl } from './urls';
 import { useZoomPan, type ZoomPan } from './useZoomPan';
@@ -48,17 +48,31 @@ function useStageSize(ref: RefObject<HTMLElement | null>): Size {
   return size;
 }
 
-function GoneCard({ state }: { state: 'deleted' | 'lost' }) {
+function GoneCard({ state, onRetry }: { state: 'deleted' | 'lost'; onRetry: () => void }) {
   const { t } = useTranslation();
   const Icon = state === 'deleted' ? ImageOff : CloudOff;
   return (
-    <div className="flex flex-col items-center gap-3 text-center text-ink-55">
+    <div
+      data-ui="chat-lightbox-gone"
+      data-state={state}
+      className="flex flex-col items-center gap-3 text-center text-ink-55"
+    >
       <span className="flex size-16 items-center justify-center rounded-[22px] bg-ink/[0.06] text-ink-45 ring-1 ring-ink/[0.08]">
         <Icon size={26} strokeWidth={1.6} />
       </span>
       <span className="text-[14px] font-semibold text-ink-80">
         {t(`chat.gallery.tile.${state}`)}
       </span>
+      {state === 'lost' && (
+        <button
+          type="button"
+          onClick={onRetry}
+          className="flex h-8 cursor-pointer items-center gap-1.5 rounded-full bg-ink/[0.1] px-3.5 text-[12.5px] font-semibold text-ink-90 transition-colors duration-150 hover:bg-ink/[0.16] focus-visible:outline-2 focus-visible:outline-[var(--color-accent)]"
+        >
+          <RotateCcw size={13} />
+          {t('chat.gallery.viewer.retry')}
+        </button>
+      )}
     </div>
   );
 }
@@ -133,6 +147,7 @@ export const LightboxStage = memo(function LightboxStage({
   );
   const zoom = useZoomPan(stageRef, targetRef, fit, stage, calm, gone === null);
   const full = useLoadAttempt(gone !== null);
+  const revive = useRevive(image.mediaId, full.retry);
   const [thumbShown, setThumbShown] = useState(false);
   const [wanted, setWanted] = useState(false);
 
@@ -163,7 +178,7 @@ export const LightboxStage = memo(function LightboxStage({
       }}
     >
       {gone ? (
-        <GoneCard state={gone} />
+        <GoneCard state={gone} onRetry={revive} />
       ) : (
         <>
           <div

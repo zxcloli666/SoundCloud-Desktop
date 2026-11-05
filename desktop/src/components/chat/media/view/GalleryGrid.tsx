@@ -84,8 +84,11 @@ const GalleryTile = memo(function GalleryTile({
   const { t } = useTranslation();
   const thumb = useThumb(image.mediaId);
   const problem = thumbLabelKey(thumb);
-  const activate = (opener: HTMLElement) =>
-    thumb.phase === 'failed' && !thumb.gone ? thumb.retry() : onOpen(index, opener);
+  const activate = (opener: HTMLElement) => {
+    if (thumb.gone === 'lost') thumb.revive();
+    else if (thumb.phase === 'failed' && !thumb.gone) thumb.retry();
+    else onOpen(index, opener);
+  };
   return (
     <button
       type="button"

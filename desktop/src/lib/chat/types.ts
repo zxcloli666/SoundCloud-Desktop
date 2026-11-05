@@ -23,7 +23,8 @@ export type ChatPhase =
   | 'starting'
   | 'ready'
   | 'revoked'
-  | 'keychain_denied';
+  | 'keychain_denied'
+  | 'keychain_unavailable';
 export type KeyStorage = 'os' | 'file';
 export type Access = 'beta' | 'all';
 

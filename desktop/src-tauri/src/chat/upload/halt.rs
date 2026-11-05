@@ -24,10 +24,11 @@ impl Uploads {
             targets.clear();
         }
         let found = tokio::task::spawn_blocking(move || orphans(&store)).await;
+        let slot = self.delete_slot().await;
         if let Ok(Ok(media)) = found {
-            let deleted = self.delete_on_server(media);
-            let _ = tokio::time::timeout(DELETE_WAIT, deleted).await;
+            self.queue_deletes(&slot, media).await;
         }
+        let _ = tokio::time::timeout(DELETE_WAIT, self.flush_deletes(&slot)).await;
     }
 }
 

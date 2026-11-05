@@ -3,7 +3,10 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use sc_chat::api::Api;
-use sc_chat::{ChatError, ChatPhase, ChatResult, HistoryGate};
+use sc_chat::store::Store;
+use sc_chat::{
+    ChatError, ChatPhase, ChatResult, CoreEvent, Events, HistoryGate, MediaUploadsEvent,
+};
 use tauri::Manager;
 
 use crate::chat::state::ChatState;
@@ -87,16 +90,22 @@ impl Runtime {
                 } else {
                     Ok(())
                 };
+                let gone = core.as_ref().and_then(|core| uploads_gone(&core.store));
                 let steps = [
                     keys,
                     core.map_or(Ok(()), |core| core.store.wipe()),
                     local_media.map_or(Ok(()), |cache| cache.clear().map(drop)),
                     remove_dir(&uploads),
                 ];
-                steps.into_iter().collect::<ChatResult<Vec<()>>>().map(drop)
+                let wiped = steps.into_iter().collect::<ChatResult<Vec<()>>>().map(drop);
+                (wiped, gone)
             })
             .await
-            .unwrap_or(Err(ChatError::Internal));
+            .unwrap_or((Err(ChatError::Internal), None));
+        let (wiped, gone) = wiped;
+        if let Some(gone) = gone {
+            self.events.emit(CoreEvent::MediaUploads(gone));
+        }
         self.status.update(|status| {
             status.device_id = None;
             status.history = HistoryGate::default();
@@ -147,6 +156,16 @@ impl Runtime {
                     _ = self.signals.restarted(generation) => {}
                 }
             }
+            Halt::Wait(phase, pause) => {
+                self.status.update(|status| {
+                    status.phase = phase;
+                    status.online = false;
+                });
+                tokio::select! {
+                    _ = tokio::time::sleep(pause) => {}
+                    _ = self.signals.restarted(generation) => {}
+                }
+            }
             Halt::Phase(phase) => {
                 if signed_out(phase) {
                     self.forget_user();
@@ -173,6 +192,19 @@ impl Runtime {
             }
         }
     }
+}
+
+pub fn uploads_gone(store: &Store) -> Option<MediaUploadsEvent> {
+    let removed: Vec<_> = store
+        .uploads()
+        .ok()?
+        .iter()
+        .map(|upload| upload.id)
+        .collect();
+    (!removed.is_empty()).then(|| MediaUploadsEvent {
+        uploads: Vec::new(),
+        removed,
+    })
 }
 
 pub fn signed_out(phase: ChatPhase) -> bool {

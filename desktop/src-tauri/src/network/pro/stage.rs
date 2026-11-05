@@ -1,5 +1,4 @@
 use std::ops::Range;
-use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::Duration;
 
 use bytes::Bytes;
@@ -7,8 +6,8 @@ use futures_util::stream::{self, StreamExt};
 use http::{StatusCode, Version};
 use serde::{Deserialize, Serialize};
 
-const START_PART: usize = 32 * 1024;
-const SMALLEST_PART: usize = 4 * 1024;
+use super::part_size::PartSize;
+
 const PARALLEL: usize = 4;
 const ATTEMPTS: usize = 5;
 const ROUNDS: usize = 16;
@@ -20,7 +19,7 @@ const MOST_HOLES: usize = 257;
 const LOST: [StatusCode; 2] = [StatusCode::NOT_FOUND, StatusCode::PAYLOAD_TOO_LARGE];
 const UNSTAGED: [StatusCode; 2] = [StatusCode::NOT_FOUND, StatusCode::METHOD_NOT_ALLOWED];
 
-static PART: AtomicUsize = AtomicUsize::new(START_PART);
+static PART: PartSize = PartSize::new();
 
 #[derive(Serialize)]
 struct Asked {
@@ -123,7 +122,7 @@ impl Stage {
             if missing.is_empty() {
                 return Ok(());
             }
-            let size = PART.load(Ordering::Relaxed);
+            let size = PART.get();
             let left = bytes_in(&missing);
             let sent: Vec<Result<(), Failed>> = stream::iter(parts(&missing, size))
                 .map(|part| self.put(body, part))
@@ -136,9 +135,10 @@ impl Stage {
                 }
             }
             if sent.iter().all(Result::is_ok) {
+                PART.landed(size, sent.len());
                 return Ok(());
             }
-            shrink(size);
+            PART.failed(size);
             missing = self.missing().await.map_err(Failed::why)?;
             stalls = if bytes_in(&missing) < left {
                 0
@@ -260,13 +260,4 @@ async fn paused(attempt: usize) {
 
 pub fn bytes_in(missing: &[Range<u64>]) -> u64 {
     missing.iter().map(|hole| hole.end - hole.start).sum()
-}
-
-fn shrink(failed: usize) {
-    PART.fetch_min((failed / 2).max(SMALLEST_PART), Ordering::Relaxed);
-}
-
-#[cfg(test)]
-pub fn part_size() -> usize {
-    PART.load(Ordering::Relaxed)
 }

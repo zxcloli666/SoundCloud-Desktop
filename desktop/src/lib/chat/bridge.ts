@@ -166,6 +166,7 @@ export const chatBridge = {
   mediaUploadCancel: (id: string) => invoke<void>('chat_media_upload_cancel', { id }),
   mediaCacheSize: () => invoke<number>('chat_media_cache_size'),
   mediaCacheClear: () => invoke<number>('chat_media_cache_clear'),
+  mediaRetry: (mediaId: MediaId) => invoke<void>('chat_media_retry', { mediaId }),
   roomBackdrop: (code: string, conversationId: ConvId, preset: BackdropPresetId | null) =>
     invoke<void>('chat_room_backdrop', { code, conversationId, preset }),
   roomBackdropUpload: (code: string, conversationId: ConvId, path: string) =>

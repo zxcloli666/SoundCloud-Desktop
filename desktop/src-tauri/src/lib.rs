@@ -490,6 +490,7 @@ pub fn run() {
             chat::commands::chat_media_upload_cancel,
             chat::commands::chat_media_cache_size,
             chat::commands::chat_media_cache_clear,
+            chat::commands::chat_media_retry,
             chat::login::chat_link_create_push,
             chat::login::chat_link_claim_pull,
         ])

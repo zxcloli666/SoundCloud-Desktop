@@ -28,8 +28,11 @@ const AlbumTile = memo(function AlbumTile({
   const thumb = useThumb(attachment.mediaId);
   const problem = thumbLabelKey(thumb);
   const label = problem ? t(problem) : t('chat.gallery.tile.open', { n: index + 1, total });
-  const activate = (opener: HTMLElement) =>
-    thumb.phase === 'failed' ? thumb.retry() : onOpen(index, opener);
+  const activate = (opener: HTMLElement) => {
+    if (thumb.gone === 'lost') thumb.revive();
+    else if (thumb.phase === 'failed') thumb.retry();
+    else onOpen(index, opener);
+  };
   return (
     <button
       type="button"
@@ -37,7 +40,7 @@ const AlbumTile = memo(function AlbumTile({
       data-state={thumb.gone ?? thumb.phase}
       aria-label={label}
       title={problem ? label : undefined}
-      disabled={thumb.gone !== null}
+      disabled={thumb.gone === 'deleted'}
       onClick={(event) => activate(event.currentTarget)}
       onKeyDown={(event) => tileKeys(event, activate)}
       className="group absolute cursor-pointer overflow-hidden outline-none focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-[var(--color-accent)] focus-visible:ring-inset disabled:cursor-default"

@@ -18,6 +18,7 @@ use super::world::{self, World};
 use super::{fixtures, png};
 use crate::chat::media_cache::MediaCache;
 use crate::chat::runtime::SystemClock;
+use crate::chat::upload::delete_queue::{DeleteQueue, Slot};
 use crate::chat::upload::engine::{Routes, Uploads};
 use crate::chat::upload::host::Host;
 use crate::network::edge::{Hop, Tier};
@@ -147,6 +148,22 @@ impl Rig {
 
     pub fn store(&self) -> Arc<Store> {
         self.host.store().unwrap()
+    }
+
+    pub fn sign_in(&self, me: &str) {
+        let store = Arc::new(Store::open(&self.dir.join("chat.db"), &MASTER).unwrap());
+        store.set_me(me).unwrap();
+        store
+            .put_conversations(&[fixtures::summary(
+                self.conversation,
+                ConversationKind::Group,
+            )])
+            .unwrap();
+        *self.host.store.lock().unwrap() = Some(store);
+    }
+
+    pub fn queued_deletes(&self, account: &str) -> Vec<Uuid> {
+        DeleteQueue::new(&self.dir).read(&Slot::Account(account.into()))
     }
 
     pub fn run(&mut self) {

@@ -31,6 +31,7 @@ interface BackdropState {
   failed: (uploadId: string, error: ChatError) => void;
   recovered: (uploadId: string) => void;
   dismiss: (conversationId: ConvId) => void;
+  forgetUploads: () => void;
 }
 
 export function hiddenKey(conversationId: ConvId, mediaId: MediaId) {
@@ -107,6 +108,7 @@ export const useBackdropStore = create<BackdropState>()(
           return withAttempt(state, room, { ...state.attempts[room], error: null });
         }),
       dismiss: (conversationId) => set((state) => withAttempt(state, conversationId, null)),
+      forgetUploads: () => set({ attempts: {}, orphans: {}, dialog: null }),
     }),
     {
       name: 'sc-chat-backdrop',

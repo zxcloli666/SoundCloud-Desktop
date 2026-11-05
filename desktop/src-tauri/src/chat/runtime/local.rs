@@ -41,10 +41,6 @@ impl Core {
     }
 }
 
-pub fn has_local_state(dir: &Path) -> bool {
-    database_path(dir).exists()
-}
-
 pub fn database_path(dir: &Path) -> PathBuf {
     dir.join(DATABASE)
 }

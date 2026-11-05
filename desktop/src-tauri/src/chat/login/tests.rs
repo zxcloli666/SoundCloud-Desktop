@@ -12,7 +12,9 @@ use uuid::Uuid;
 
 use super::exchange::{Miss, Signer, outer, over_tiers};
 use super::lane::{Lane, tier_order};
-use super::{by_id, get, post, wire};
+use super::{by_id, get, post, swept_signer, wire};
+use crate::chat::keychain::Keychain;
+use crate::chat::keychain::testing::SharedVault;
 
 fn answer(status: u16, body: Value) -> InnerAnswer {
     InnerAnswer {
@@ -333,4 +335,30 @@ fn a_flow_keeps_its_keys_until_it_ends() {
 fn link_modes_go_out_as_the_server_names_them() {
     assert_eq!(json!({ "mode": LinkMode::Pull }), json!({ "mode": "pull" }));
     assert_eq!(json!({ "mode": LinkMode::Push }), json!({ "mode": "push" }));
+}
+
+#[tokio::test]
+async fn a_sign_in_after_a_refused_sign_out_starts_one_new_device() {
+    let dir = std::env::temp_dir().join(format!("sc-chat-sign-in-{}", Uuid::new_v4()));
+    std::fs::create_dir_all(&dir).unwrap();
+    let vault = SharedVault::default();
+    let before = Keychain::with_os(Box::new(vault.clone()), &dir);
+    let (left, _) = DeviceKeys::load_or_create(&before).unwrap();
+    vault.fail_with(Some(ChatError::KeychainDenied));
+    assert_eq!(before.wipe().err(), Some(ChatError::KeychainDenied));
+    drop(before);
+
+    vault.fail_with(None);
+    let restarted = Arc::new(Keychain::with_os(Box::new(vault.clone()), &dir));
+    let lane = Lane::new();
+    let signer = swept_signer(&lane, restarted.clone()).await.unwrap();
+    assert_ne!(signer.device_id, left);
+    assert!(!dir.join("keys-stale").exists());
+
+    let again = swept_signer(&lane, restarted.clone()).await.unwrap();
+    assert_eq!(again.device_id, signer.device_id);
+    let (stored, keys) = DeviceKeys::load_or_create(restarted.as_ref()).unwrap();
+    assert_eq!(stored, signer.device_id);
+    assert_eq!(keys.auth_public(), signer.keys.auth_public());
+    std::fs::remove_dir_all(dir).unwrap();
 }

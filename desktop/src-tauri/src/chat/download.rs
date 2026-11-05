@@ -90,6 +90,7 @@ pub struct MediaState {
     pub conversation_id: ConvId,
     pub media_id: Uuid,
     pub state: Gone,
+    pub retry_in_ms: Option<u64>,
 }
 
 pub async fn load(state: &ChatState, key: &MediaKey) -> ChatResult<Fetched> {
@@ -121,6 +122,10 @@ async fn remote(
         }
         None => Ok(unknown(downloads, &key)),
     }
+}
+
+pub fn forget(state: &ChatState, media_id: Uuid) {
+    downloads(state).forget(media_id);
 }
 
 fn unknown(downloads: &Downloads, key: &MediaKey) -> Fetched {

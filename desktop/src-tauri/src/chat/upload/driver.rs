@@ -7,7 +7,7 @@ use sc_chat::store::{MediaUpload, Store};
 use sc_chat::{ChatError, ChatResult};
 use uuid::Uuid;
 
-use super::deletes::DELETES;
+use super::delete_queue::DELETES;
 use super::engine::Uploads;
 use super::errors::{Outcome, Snag, backoff, outcome};
 use super::post::finish_renewals;

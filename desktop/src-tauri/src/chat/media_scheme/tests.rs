@@ -62,7 +62,7 @@ fn status(loaded: Result<Fetched, ChatError>) -> (u16, String) {
 }
 
 #[test]
-fn an_image_is_served_with_its_type_and_kept_privately() {
+fn an_image_is_served_with_its_type_and_never_stored_by_the_webview() {
     let response = answer(Ok(Fetched::Image(Picture {
         bytes: vec![1, 2, 3],
         mime: "image/jpeg",
@@ -70,10 +70,7 @@ fn an_image_is_served_with_its_type_and_kept_privately() {
 
     assert_eq!(response.status().as_u16(), 200);
     assert_eq!(response.headers()["content-type"], "image/jpeg");
-    assert_eq!(
-        response.headers()["cache-control"],
-        "private, max-age=86400"
-    );
+    assert_eq!(response.headers()["cache-control"], "no-store");
     assert_eq!(response.headers()["access-control-allow-origin"], "*");
     assert_eq!(response.body(), &vec![1, 2, 3]);
 }

@@ -26,6 +26,14 @@
     "windows": "Sohbet şifreleme anahtarları Windows Kimlik Bilgisi Yöneticisi'nde duruyor ve erişim reddedildi. Tekrar dene'ye basın.",
     "again": "Erişim yine reddedildi. İzin verdiğinizde sohbetler açılır.",
     "failed": "Erişim istenemedi. Yeniden deneyin.",
-    "asking": "Sistemin yanıtı bekleniyor"
+    "asking": "Sistemin yanıtı bekleniyor",
+    "unavailable": {
+      "title": "Sohbet anahtarlarına ulaşılamıyor",
+      "mac": "macOS anahtar zinciri yanıt vermiyor. Sohbetler kendi kendine yeniden deniyor, geçmişiniz bu bilgisayarda kalıyor.",
+      "linux": "Sistem parola deposu yanıt vermiyor. Depoyu başlatın veya kilidini açın. Sohbetler kendi kendine yeniden deniyor, geçmişiniz bu bilgisayarda kalıyor.",
+      "windows": "Windows Kimlik Bilgisi Yöneticisi yanıt vermiyor. Sohbetler kendi kendine yeniden deniyor, geçmişiniz bu bilgisayarda kalıyor.",
+      "again": "Hâlâ yanıt yok. Sohbetler kendi kendine denemeye devam ediyor.",
+      "asking": "Anahtarlar kontrol ediliyor"
+    }
   }
 }

@@ -10,7 +10,7 @@ import type {
 import { deleteSelection, restoreSelection, type Selection } from './media-trash';
 import { writeHandlers } from './media-writes';
 import { ME_ID } from './people';
-import { mediaMark } from './pictures';
+import { markMedia, mediaMark } from './pictures';
 import { conversation, world } from './world';
 
 type Args = Record<string, unknown>;
@@ -131,6 +131,11 @@ export const defaultHandlers: Record<string, (args: Args) => unknown> = {
   ...writeHandlers,
   chat_media_cache_size: () => 48 * 1024 * 1024,
   chat_media_cache_clear: () => 48 * 1024 * 1024,
+  chat_media_retry: (a) => {
+    const id = String(a.mediaId ?? '');
+    if (mediaMark(id) === 'lost') markMedia([id], null);
+    return null;
+  },
 };
 
 function parkedAlbums(): string[] {

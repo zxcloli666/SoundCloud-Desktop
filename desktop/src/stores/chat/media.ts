@@ -9,6 +9,7 @@ import type {
   UploadView,
 } from '../../lib/chat/media-types';
 import type { ChatError, ConvId } from '../../lib/chat/types';
+import { forgetTimers } from './forget-timers';
 import type { ChatState } from './index';
 
 export type MediaLoad = 'idle' | 'loading' | 'ready' | 'failed';
@@ -26,7 +27,7 @@ export const selectMediaStar = (state: ChatState) => state.config?.media?.star =
 
 export type MediaNote = 'locked' | 'paused' | 'room-host' | 'room-mods' | 'room-off';
 
-export interface ChatMediaState {
+interface MediaData {
   uploads: UploadView[];
   usage: MediaUsage | null;
   usageLoad: MediaLoad;
@@ -39,6 +40,9 @@ export interface ChatMediaState {
   parkedReady: boolean;
   dismissed: Record<string, true>;
   note: { conversationId: ConvId; gate: MediaNote } | null;
+}
+
+export interface ChatMediaState extends MediaData {
   setNote: (note: { conversationId: ConvId; gate: MediaNote } | null) => void;
   setUploads: (uploads: UploadView[]) => void;
   applyUploads: (event: MediaUploadsEvent) => void;
@@ -50,14 +54,34 @@ export interface ChatMediaState {
   refreshUploads: () => Promise<void>;
   refreshParked: () => Promise<void>;
   refreshUsage: () => Promise<void>;
-  setShown: (id: MediaId, shown: ShownMedia) => void;
+  setShown: (id: MediaId, shown: ShownMedia, forgetInMs?: number | null) => void;
+  reviveMedia: (id: MediaId) => Promise<void>;
   forgetShown: (ids: MediaId[]) => void;
   retryUpload: (id: string) => Promise<void>;
   retryUploads: (ids: string[]) => Promise<void>;
   cancelUpload: (id: string) => Promise<void>;
+  reset: () => void;
 }
 
 const STALLED: ReadonlySet<UploadState> = new Set(['failed', 'queued', 'reserved']);
+const forgetting = forgetTimers<MediaId>((id) => useChatMediaStore.getState().forgetShown([id]));
+
+function emptyMedia(): MediaData {
+  return {
+    uploads: [],
+    usage: null,
+    usageLoad: 'idle',
+    shown: {},
+    errors: {},
+    preparing: {},
+    skipped: {},
+    sending: {},
+    parked: {},
+    parkedReady: false,
+    dismissed: {},
+    note: null,
+  };
+}
 
 function keptErrors(
   errors: Record<string, ChatError>,
@@ -87,18 +111,7 @@ export function uploadsIn(uploads: UploadView[], conversationId: ConvId | null):
 }
 
 export const useChatMediaStore = create<ChatMediaState>()((set, get) => ({
-  uploads: [],
-  usage: null,
-  usageLoad: 'idle',
-  shown: {},
-  errors: {},
-  preparing: {},
-  skipped: {},
-  sending: {},
-  parked: {},
-  parkedReady: false,
-  dismissed: {},
-  note: null,
+  ...emptyMedia(),
   setNote: (note) => set({ note }),
   setUploads: (uploads) => set((state) => ({ uploads, errors: keptErrors(state.errors, uploads) })),
   applyUploads: ({ uploads, removed }) => {
@@ -145,12 +158,19 @@ export const useChatMediaStore = create<ChatMediaState>()((set, get) => ({
       set({ usageLoad: 'failed' });
     }
   },
-  setShown: (id, shown) =>
+  setShown: (id, shown, forgetInMs) => {
+    forgetting.schedule(id, forgetInMs);
     set((state) =>
       state.shown[id] === shown ? state : { shown: { ...state.shown, [id]: shown } },
-    ),
+    );
+  },
+  reviveMedia: async (id) => {
+    await chatBridge.mediaRetry(id).catch(() => undefined);
+    get().forgetShown([id]);
+  },
   forgetShown: (ids) =>
     set((state) => {
+      for (const id of ids) forgetting.cancel(id);
       if (!ids.some((id) => id in state.shown)) return state;
       const shown = { ...state.shown };
       for (const id of ids) delete shown[id];
@@ -174,5 +194,9 @@ export const useChatMediaStore = create<ChatMediaState>()((set, get) => ({
   cancelUpload: async (id) => {
     await chatBridge.mediaUploadCancel(id);
     await get().refreshUploads();
+  },
+  reset: () => {
+    forgetting.clear();
+    set(emptyMedia());
   },
 }));

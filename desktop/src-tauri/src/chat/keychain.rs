@@ -3,6 +3,8 @@ mod file;
 mod memory;
 #[cfg(not(feature = "chat-lab"))]
 mod os;
+#[cfg(test)]
+pub(crate) mod testing;
 
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
@@ -19,7 +21,6 @@ use file::FileVault;
 #[cfg(not(feature = "chat-lab"))]
 use os::OsVault;
 
-const FALL_BACK_AFTER: u32 = 5;
 const STALE: &str = "keys-stale";
 
 pub trait Vault: Send + Sync {
@@ -46,7 +47,7 @@ impl Keychain {
         Self::with_os(device_vault(service), dir)
     }
 
-    fn with_os(os: Box<dyn Vault>, dir: &Path) -> Self {
+    pub(crate) fn with_os(os: Box<dyn Vault>, dir: &Path) -> Self {
         let file = FileVault::new(dir);
         let storage = if file.exists() {
             KeyStorage::File
@@ -77,6 +78,14 @@ impl Keychain {
         &self.refusals
     }
 
+    pub fn may_fall_back(&self) -> bool {
+        should_fall_back(self.storage(), self.has_local_state())
+    }
+
+    fn has_local_state(&self) -> bool {
+        self.database.exists() || self.stale.exists()
+    }
+
     pub fn fall_back(&self) -> ChatResult<()> {
         self.file.create()?;
         self.set_storage(KeyStorage::File);
@@ -86,6 +95,10 @@ impl Keychain {
 
     pub fn wipe(&self) -> ChatResult<()> {
         let _one_at_a_time = DeviceKeys::exclusive();
+        self.wipe_held()
+    }
+
+    fn wipe_held(&self) -> ChatResult<()> {
         let storage = self.storage();
         let wiped = KeyName::ALL
             .into_iter()
@@ -102,8 +115,12 @@ impl Keychain {
     }
 
     pub fn sweep(&self) -> ChatResult<()> {
+        if !self.stale.exists() {
+            return Ok(());
+        }
+        let _one_at_a_time = DeviceKeys::exclusive();
         if self.stale.exists() {
-            self.wipe()
+            self.wipe_held()
         } else {
             Ok(())
         }
@@ -146,7 +163,7 @@ impl Keychain {
     fn run<T>(&self, op: impl Fn(&dyn Vault) -> ChatResult<T>) -> ChatResult<T> {
         let storage = self.storage();
         match self.ask(storage, &op) {
-            Err(ChatError::Keychain) if storage == KeyStorage::Os && !self.database.exists() => {
+            Err(ChatError::Keychain) if self.may_fall_back() => {
                 self.fall_back()?;
                 self.ask(KeyStorage::File, &op)
             }
@@ -196,8 +213,8 @@ fn remove_marker(path: &Path) -> ChatResult<()> {
     }
 }
 
-pub fn should_fall_back(storage: KeyStorage, has_local_state: bool, failures: u32) -> bool {
-    storage == KeyStorage::Os && (!has_local_state || failures >= FALL_BACK_AFTER)
+pub fn should_fall_back(storage: KeyStorage, has_local_state: bool) -> bool {
+    storage == KeyStorage::Os && !has_local_state
 }
 
 #[cfg(test)]

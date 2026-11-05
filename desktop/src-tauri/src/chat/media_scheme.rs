@@ -8,7 +8,6 @@ use super::state::ChatState;
 use crate::rt::AppHandle;
 
 pub const SCHEME: &str = "chatmedia";
-const KEEP: &str = "private, max-age=86400";
 const NO_STORE: &str = "no-store";
 
 pub async fn handle(app: &AppHandle, request: http::Request<Vec<u8>>) -> Response<Vec<u8>> {
@@ -44,7 +43,7 @@ pub fn answer(loaded: Result<Fetched, ChatError>) -> Response<Vec<u8>> {
         Ok(Fetched::Image(picture)) => Response::builder()
             .status(StatusCode::OK)
             .header("content-type", picture.mime)
-            .header("cache-control", KEEP)
+            .header("cache-control", NO_STORE)
             .header("access-control-allow-origin", "*")
             .body(picture.bytes)
             .unwrap_or_else(|_| refused(StatusCode::INTERNAL_SERVER_ERROR)),

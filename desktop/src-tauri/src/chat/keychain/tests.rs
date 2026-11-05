@@ -3,9 +3,12 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicU32, Ordering};
 use std::time::Duration;
 
+use sc_chat::crypto::DeviceKeys;
+use sc_chat::store::Store;
 use sc_chat::{ChatError, ChatResult, KeyName, KeyStorage, KeyStore, Zeroizing};
 
-use super::{FileVault, Keychain, Vault, should_fall_back};
+use super::testing::SharedVault;
+use super::{FileVault, Keychain, Vault, database_path, should_fall_back};
 
 struct Broken;
 
@@ -174,12 +177,57 @@ fn a_broken_os_keychain_with_a_local_chat_keeps_failing() {
 }
 
 #[test]
-fn a_fresh_install_falls_back_at_once_and_an_old_one_waits() {
-    assert!(should_fall_back(KeyStorage::Os, false, 1));
-    assert!(!should_fall_back(KeyStorage::Os, true, 1));
-    assert!(!should_fall_back(KeyStorage::Os, true, 4));
-    assert!(should_fall_back(KeyStorage::Os, true, 5));
-    assert!(!should_fall_back(KeyStorage::File, false, 9));
+fn only_a_fresh_install_may_fall_back() {
+    assert!(should_fall_back(KeyStorage::Os, false));
+    assert!(!should_fall_back(KeyStorage::Os, true));
+    assert!(!should_fall_back(KeyStorage::File, false));
+}
+
+#[test]
+fn an_existing_chat_survives_a_keychain_that_keeps_failing() {
+    let dir = scratch("survives");
+    let vault = SharedVault::default();
+    let keychain = Keychain::with_os(Box::new(vault.clone()), &dir);
+    let (device, _) = DeviceKeys::load_or_create(&keychain).unwrap();
+    let store = Store::open_keyed(&database_path(&dir), &keychain).unwrap();
+    store.set_me("100").unwrap();
+    drop(store);
+
+    vault.fail_with(Some(ChatError::Keychain));
+    for _ in 0..8 {
+        assert_eq!(
+            DeviceKeys::load_or_create(&keychain).err(),
+            Some(ChatError::Keychain)
+        );
+        assert!(!keychain.may_fall_back());
+    }
+    assert_eq!(keychain.storage(), KeyStorage::Os);
+    assert!(!dir.join("keys").exists());
+    assert!(database_path(&dir).exists());
+    assert!(vault.holds(KeyName::Database));
+
+    vault.fail_with(None);
+    let (again, _) = DeviceKeys::load_or_create(&keychain).unwrap();
+    assert_eq!(again, device);
+    let store = Store::open_keyed(&database_path(&dir), &keychain).unwrap();
+    assert_eq!(store.me().unwrap().as_deref(), Some("100"));
+    drop(store);
+    std::fs::remove_dir_all(dir).unwrap();
+}
+
+#[test]
+fn keys_left_behind_keep_a_fresh_install_off_the_file() {
+    let dir = scratch("stale-fresh");
+    std::fs::write(dir.join("keys-stale"), []).unwrap();
+    let keychain = Keychain::with_os(Box::new(Broken), &dir);
+    assert!(!keychain.may_fall_back());
+    assert_eq!(
+        keychain.load(KeyName::DeviceId).err(),
+        Some(ChatError::Keychain)
+    );
+    assert_eq!(keychain.storage(), KeyStorage::Os);
+    assert!(!dir.join("keys").exists());
+    std::fs::remove_dir_all(dir).unwrap();
 }
 
 #[test]

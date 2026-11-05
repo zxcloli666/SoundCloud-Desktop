@@ -4,7 +4,8 @@ use futures_util::StreamExt;
 
 use super::fake_relay::{self, Kind};
 use super::faulty_link::{self, Fault};
-use super::stage::{holes, part_size, parts};
+use super::part_size::{GROW_AFTER, PartSize, SMALLEST_PART, START_PART};
+use super::stage::{holes, parts};
 use super::{Asked, fetch};
 
 const SEALED: usize = 60 * 1024;
@@ -62,7 +63,46 @@ async fn a_60_kb_sealed_body_crosses_a_link_that_drops_every_16_kb() {
     assert_eq!(answered(&node, body.clone()).await.unwrap(), body);
     assert_eq!(relay.delivered(), [body]);
     assert_eq!(relay.stages_left(), 0);
-    assert!(part_size() <= CUT);
+}
+
+#[test]
+fn the_part_size_halves_on_a_failed_round_and_never_drops_below_4_kb() {
+    let part = PartSize::new();
+    part.failed(START_PART);
+    assert_eq!(part.get(), START_PART / 2);
+    for _ in 0..10 {
+        part.failed(part.get());
+    }
+    assert_eq!(part.get(), SMALLEST_PART);
+}
+
+#[test]
+fn the_part_size_grows_back_after_parts_land_and_stops_at_the_start() {
+    let part = PartSize::new();
+    part.failed(START_PART);
+    part.failed(part.get());
+    assert_eq!(part.get(), START_PART / 4);
+    part.landed(part.get(), GROW_AFTER - 1);
+    assert_eq!(part.get(), START_PART / 4);
+    part.landed(part.get(), 1);
+    assert_eq!(part.get(), START_PART / 2);
+    part.landed(part.get(), GROW_AFTER);
+    assert_eq!(part.get(), START_PART);
+    part.landed(part.get(), GROW_AFTER * 4);
+    assert_eq!(part.get(), START_PART);
+}
+
+#[test]
+fn a_failure_resets_the_count_toward_growing_back() {
+    let part = PartSize::new();
+    part.failed(START_PART);
+    let small = part.get();
+    part.landed(small, GROW_AFTER - 1);
+    part.failed(START_PART);
+    part.landed(small, GROW_AFTER - 1);
+    assert_eq!(part.get(), small);
+    part.landed(START_PART, GROW_AFTER);
+    assert_eq!(part.get(), small);
 }
 
 #[tokio::test(flavor = "multi_thread")]

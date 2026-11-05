@@ -68,6 +68,24 @@ export const scenes: LabScene[] = [
     },
   },
   {
+    id: 'backdrop-deleted',
+    title: 'Backdrop: a deleted image falls back to the cover',
+    route: ROUTE,
+    setup: (kit) => {
+      kit.room({ star: true, host: false, backdrop: { kind: 'image', mediaId: IMAGE_ID } });
+      kit.mark(IMAGE_ID, 'deleted');
+      kit.after(() => {
+        useBackdropStore.getState().show(CONV.room, IMAGE_ID);
+        kit.emit('chat:media-state', {
+          conversationId: CONV.room,
+          mediaId: IMAGE_ID,
+          state: 'deleted',
+          retryInMs: null,
+        });
+      });
+    },
+  },
+  {
     id: 'backdrop-hidden',
     title: 'Backdrop: image hidden locally',
     route: ROUTE,

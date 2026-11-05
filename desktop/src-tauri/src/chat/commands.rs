@@ -618,6 +618,15 @@ pub async fn chat_media_cache_size(state: State<'_, ChatState>) -> Result<u64, C
 }
 
 #[tauri::command]
+pub async fn chat_media_retry(
+    state: State<'_, ChatState>,
+    media_id: Uuid,
+) -> Result<(), ChatError> {
+    super::download::forget(&state, media_id);
+    Ok(())
+}
+
+#[tauri::command]
 pub async fn chat_media_cache_clear(state: State<'_, ChatState>) -> Result<u64, ChatError> {
     media::cache_clear(&state).await
 }

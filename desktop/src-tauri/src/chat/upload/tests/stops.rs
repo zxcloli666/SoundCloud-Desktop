@@ -6,7 +6,7 @@ use sc_chat::{ConversationKind, UploadState};
 
 use super::albums::sources;
 use super::rig::{Path, Rig, envelope};
-use crate::chat::upload::deletes::DELETES;
+use crate::chat::runtime::uploads_gone;
 
 #[tokio::test(flavor = "multi_thread")]
 async fn a_halt_mid_put_aborts_it_frees_the_server_row_and_starts_nothing_new() {
@@ -98,7 +98,7 @@ async fn a_server_delete_that_fails_offline_is_kept_on_disk_and_sent_again() {
     rig.uploads.cancel_album(views[0].album).await.unwrap();
     let reserved = rig.world.reservation(id).unwrap();
     assert!(rig.world.with(|state| state.deleted.is_empty()));
-    assert!(rig.dir.join("uploads").join(DELETES).exists());
+    assert_eq!(rig.queued_deletes("100"), vec![reserved.image]);
     rig.run();
     rig.until("the delete to go again", |rig| {
         rig.world
@@ -106,7 +106,74 @@ async fn a_server_delete_that_fails_offline_is_kept_on_disk_and_sent_again() {
     })
     .await;
     rig.until("the list to clear", |rig| {
-        !rig.dir.join("uploads").join(DELETES).exists()
+        rig.queued_deletes("100").is_empty()
+    })
+    .await;
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn a_wipe_tells_the_webview_every_upload_it_drops() {
+    let rig = Rig::new(ConversationKind::Group);
+    let views = rig
+        .uploads
+        .attach(
+            rig.conversation,
+            None,
+            sources(vec![rig.image(85), rig.image(86)]),
+        )
+        .await
+        .unwrap();
+    let gone = uploads_gone(&rig.store()).unwrap();
+    assert!(gone.uploads.is_empty());
+    let mut removed = gone.removed.clone();
+    removed.sort();
+    let mut attached: Vec<_> = views.iter().map(|view| view.id).collect();
+    attached.sort();
+    assert_eq!(removed, attached);
+    rig.store().wipe().unwrap();
+    assert!(uploads_gone(&rig.store()).is_none());
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn deletes_left_by_a_sign_out_wait_for_that_account_and_go_on_its_next_sign_in() {
+    let mut rig = Rig::new(ConversationKind::Group);
+    let (slow, hits) = rig.answering(200, 0, Duration::from_secs(30));
+    rig.route(vec![Path::Relay(slow)]);
+    let views = rig
+        .uploads
+        .attach(rig.conversation, None, sources(vec![rig.image(84)]))
+        .await
+        .unwrap();
+    let id = views[0].id;
+    rig.run();
+    rig.until("the put to start", |_| hits.load(Ordering::SeqCst) == 1)
+        .await;
+    rig.world.with(|state| state.offline_deletes = usize::MAX);
+    rig.uploads.halt().await;
+    rig.stop();
+    let reserved = rig.world.reservation(id).unwrap();
+    rig.store().wipe().unwrap();
+    std::fs::remove_dir_all(rig.dir.join("uploads")).unwrap();
+    assert!(rig.world.with(|state| state.deleted.is_empty()));
+    assert_eq!(rig.queued_deletes("100"), vec![reserved.image]);
+    rig.world.with(|state| state.offline_deletes = 0);
+
+    rig.sign_in("200");
+    rig.run();
+    tokio::time::sleep(Duration::from_millis(600)).await;
+    rig.stop();
+    assert!(rig.world.with(|state| state.deleted.is_empty()));
+    assert_eq!(rig.queued_deletes("100"), vec![reserved.image]);
+
+    rig.sign_in("100");
+    rig.run();
+    rig.until("the left delete to go", |rig| {
+        rig.world
+            .with(|state| state.deleted.contains(&reserved.image))
+    })
+    .await;
+    rig.until("the queue to clear", |rig| {
+        rig.queued_deletes("100").is_empty()
     })
     .await;
 }

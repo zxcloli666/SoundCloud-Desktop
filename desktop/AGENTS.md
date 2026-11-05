@@ -122,7 +122,7 @@ desktop/
 - `app_cache_dir/assets/` — кеш ответов прокси (картинки/шрифты/css/js)
 - `app_cache_dir/wallpapers/` — скачанные обои
 - `app_data_dir/images/` — постоянный кеш картинок (чистится только вручную)
-- `app_data_dir/*.json` — zustand-сторы через `tauri-storage.ts` (новые только `sc-*.json`, см. fs-скоупы)
+- `app_data_dir/*.json` — zustand-сторы через `tauri-storage.ts` (каждый файл по имени в fs-скоупах)
 - `app_data_dir/call_enabled.json` — флаг call-режима
 - `app_log_dir/desktop.log` — лог из `diagnostics_log` и нативной части (`diagnostics::log/warn/error`, panic hook); ротация в `desktop.old.log` при старте, если больше 5 МБ
 - Профиль вебвью (WebView2 `EBWebView`, папки WebKit/WebKitGTK) стирается при каждом запуске до создания окна, если не запущена другая копия (`app/webview_data.rs`, лок `instance.lock`). Список имён там же: свои файлы так не называть, на Linux вебвью пишет прямо в `app_data_dir`
@@ -201,8 +201,8 @@ desktop/
   `art()` и `proxiedAssetUrl` тоже. Запросы в сеть только через `net_fetch`, `connect-src` пускает лишь IPC и loopback.
 - **Навигация** (`app/navigation.rs`): окно остаётся на origin приложения, кадр OBS `/overlay` и `about:blank`,
   остальное открывается в браузере после подтверждения.
-- **fs-скоупы** (`capabilities/default.json`): вебвью видит только свои файлы. Имя нового zustand-стора начинать с `sc-`,
-  иначе он молча не сохранится. Файлы Rust (`auth_session.json`, `scrobble_accounts.json` и т.п.) и `chat/**` закрыты.
+- **fs-скоупы** (`capabilities/default.json`): вебвью видит только свои файлы. Файл нового стора вписать по имени в
+  `fs:scope` здесь и в `dev/remote.json`, иначе он молча не сохранится; `tests/fs-scope.test.ts` это ловит. Файлы Rust (`auth_session.json`, `scrobble_accounts.json` и т.п.) и `chat/**` закрыты.
   `remote`-доступ для dev-сервера в `dev/remote.json`, подключается только в dev.
 - **Не буферизовать** большие ответы целиком, если не нужно кешировать — стримить через `Body::wrap_stream`.
 - **Ошибки** — возвращать HTTP-статусы (502, 400, 404), НЕ паниковать. `.unwrap()` допустим только для заведомо валидных

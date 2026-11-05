@@ -123,6 +123,7 @@ export interface MediaStateEvent {
   conversationId: ConvId;
   mediaId: MediaId;
   state: 'deleted' | 'lost';
+  retryInMs: number | null;
 }
 
 export interface MessageAttachment {

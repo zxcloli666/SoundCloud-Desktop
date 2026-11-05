@@ -3,6 +3,7 @@ mod attach;
 mod avatar;
 mod backdrop;
 mod cancel;
+mod delete_queue;
 mod deletes;
 mod driver;
 mod engine;

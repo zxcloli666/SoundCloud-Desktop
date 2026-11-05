@@ -9,6 +9,7 @@ use sc_chat::{ChatError, ChatResult, Millis};
 use tokio::sync::Notify;
 use uuid::Uuid;
 
+use super::delete_queue::DeleteQueue;
 use super::files::Files;
 use super::host::Host;
 use super::picked::Picked;
@@ -22,6 +23,7 @@ pub struct Uploads {
     pub(super) api: Arc<Api>,
     pub(super) host: Arc<dyn Host>,
     pub(super) files: Files,
+    pub(super) queue: Arc<DeleteQueue>,
     pub(super) cache: Arc<MediaCache>,
     pub(super) routes: Routes,
     pub(super) prepare: Prepare,
@@ -51,6 +53,7 @@ impl Uploads {
             api,
             host,
             files: Files::new(cache.chat_dir()),
+            queue: Arc::new(DeleteQueue::new(cache.chat_dir())),
             cache,
             routes,
             prepare: Prepare::default(),

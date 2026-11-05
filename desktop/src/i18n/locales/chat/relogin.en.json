@@ -26,6 +26,14 @@
     "windows": "Chat encryption keys live in Windows Credential Manager, and access to it was denied. Press Try again.",
     "again": "Access was denied again. Chats turn on once you allow it.",
     "failed": "Could not ask for access. Try again.",
-    "asking": "Waiting for the system"
+    "asking": "Waiting for the system",
+    "unavailable": {
+      "title": "Chat keys are out of reach",
+      "mac": "The macOS keychain is not answering. Chats keep trying on their own, and your history stays on this computer.",
+      "linux": "The system password store is not answering. Start or unlock it. Chats keep trying on their own, and your history stays on this computer.",
+      "windows": "Windows Credential Manager is not answering. Chats keep trying on their own, and your history stays on this computer.",
+      "again": "Still no answer. Chats keep trying on their own.",
+      "asking": "Checking the keys"
+    }
   }
 }

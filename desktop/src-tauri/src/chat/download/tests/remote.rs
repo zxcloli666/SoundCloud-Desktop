@@ -79,7 +79,7 @@ async fn a_wrong_sha256_is_refused_and_never_cached() {
     assert_eq!(refused, Fetched::Lost);
     assert_eq!(rig.cache.get(media.image_id, Part::Image).unwrap(), None);
     assert!(rig.world.with(|state| state.tampered_gets) >= 1);
-    assert_eq!(rig.notices(), vec![rig.told(&media, Gone::Lost)]);
+    assert_eq!(rig.refused_notices(), vec![rig.told(&media, Gone::Lost)]);
 }
 
 #[tokio::test]
@@ -107,7 +107,7 @@ async fn a_tampered_thumb_fails_its_aead_and_is_not_cached() {
 
     assert_eq!(thumb, Fetched::Lost);
     assert_eq!(rig.cache.get(media.image_id, Part::Thumb).unwrap(), None);
-    assert_eq!(rig.notices(), vec![rig.told(&media, Gone::Lost)]);
+    assert_eq!(rig.refused_notices(), vec![rig.told(&media, Gone::Lost)]);
 }
 
 #[tokio::test]
@@ -154,7 +154,7 @@ async fn an_oversized_body_is_refused() {
 
     assert_eq!(image, Fetched::Lost);
     assert_eq!(rig.cache.get(media.image_id, Part::Image).unwrap(), None);
-    assert_eq!(rig.notices(), vec![rig.told(&media, Gone::Lost)]);
+    assert_eq!(rig.refused_notices(), vec![rig.told(&media, Gone::Lost)]);
 }
 
 #[tokio::test]
@@ -170,7 +170,24 @@ async fn refused_content_is_not_fetched_again_at_once() {
     assert_eq!((first, again), (Fetched::Lost, Fetched::Lost));
     assert_eq!(rig.world.gets_of(media.image_id), 1);
     let lost = rig.told(&media, Gone::Lost);
-    assert_eq!(rig.notices(), vec![lost.clone(), lost]);
+    assert_eq!(rig.refused_notices(), vec![lost.clone(), lost]);
+}
+
+#[tokio::test]
+async fn a_retry_fetches_refused_content_again() {
+    let rig = Rig::new();
+    let media = rig.uploaded(19);
+    rig.world
+        .with(|state| state.tamper_all.insert(media.image_id));
+    assert_eq!(rig.load(&media, Part::Image).await.unwrap(), Fetched::Lost);
+
+    rig.world
+        .with(|state| state.tamper_all.remove(&media.image_id));
+    rig.downloads.forget(media.image_id);
+    let image = rig.load(&media, Part::Image).await.unwrap();
+
+    assert!(matches!(image, Fetched::Image(_)));
+    assert_eq!(rig.world.gets_of(media.image_id), 2);
 }
 
 #[tokio::test]
@@ -183,7 +200,7 @@ async fn a_body_that_does_not_open_with_its_key_is_lost_and_dropped() {
 
     assert_eq!(image, Fetched::Lost);
     assert_eq!(rig.cache.get(media.image_id, Part::Image).unwrap(), None);
-    assert_eq!(rig.notices(), vec![rig.told(&media, Gone::Lost)]);
+    assert_eq!(rig.refused_notices(), vec![rig.told(&media, Gone::Lost)]);
 }
 
 #[tokio::test]

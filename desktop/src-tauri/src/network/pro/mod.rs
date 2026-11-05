@@ -1,5 +1,6 @@
 mod gateway;
 mod open;
+mod part_size;
 mod pieces;
 mod put;
 mod stage;

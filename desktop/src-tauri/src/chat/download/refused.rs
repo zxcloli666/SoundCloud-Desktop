@@ -29,6 +29,23 @@ impl Refused {
         }
     }
 
+    pub fn left(&self, media_id: Uuid) -> Option<Duration> {
+        let until = self.until.lock().ok()?;
+        let now = Instant::now();
+        [Part::Thumb, Part::Image]
+            .into_iter()
+            .filter_map(|part| until.get(&(media_id, part)))
+            .filter(|at| **at > now)
+            .map(|at| *at - now)
+            .max()
+    }
+
+    pub fn forget(&self, media_id: Uuid) {
+        if let Ok(mut until) = self.until.lock() {
+            until.retain(|(id, _), _| *id != media_id);
+        }
+    }
+
     pub fn holds(&self, media_id: Uuid, part: Part) -> bool {
         self.until.lock().is_ok_and(|until| {
             until

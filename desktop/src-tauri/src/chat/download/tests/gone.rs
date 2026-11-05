@@ -69,6 +69,7 @@ async fn deleted_from_urls_drops_every_cached_part() {
             conversation_id: rig.conversation,
             media_id: media.image_id,
             state: Gone::Deleted,
+            retry_in_ms: None,
         }]
     );
     assert_eq!(rig.world.gets_of(media.thumb_id), 0);
@@ -147,6 +148,7 @@ async fn one_media_in_two_conversations_is_judged_per_conversation() {
             conversation_id: banned,
             media_id: media.image_id,
             state: Gone::Deleted,
+            retry_in_ms: None,
         }]
     );
 }

@@ -4,16 +4,19 @@ import { chatMediaUrl } from '../../../lib/chat/media-url';
 import type { ConvId } from '../../../lib/chat/types';
 import type { RoomView } from '../../../lib/together/types';
 import { useBackdropStore, watchBackdropUploads } from '../../../stores/chat/backdrop';
+import { useChatMediaStore } from '../../../stores/chat/media';
 import { BackdropStage } from './backdrop/BackdropStage';
+import { backdropFace, retriesAfter } from './backdrop/retry';
 import { useRoomBackdrop } from './backdrop/shown';
 
-const RETRY_MS = 30_000;
-
-function useFailed(src: string | null, conversationId: ConvId | null) {
+function useFace(src: string | null, mediaId: string | null, conversationId: ConvId | null) {
   const [failed, setFailed] = useState<string | null>(null);
+  const shown = useChatMediaStore((state) => (mediaId ? state.shown[mediaId] : undefined));
+  const face = backdropFace(shown, failed !== null && failed === src);
+  const retry = retriesAfter(face);
   useEffect(() => {
-    if (failed === null) return;
-    const timer = setTimeout(() => setFailed(null), RETRY_MS);
+    if (retry === null) return;
+    const timer = setTimeout(() => setFailed(null), retry);
     const listening = onChatEvent('chat:sync', (event) => {
       if (event.conversations.some((summary) => summary.id === conversationId)) setFailed(null);
     });
@@ -21,15 +24,15 @@ function useFailed(src: string | null, conversationId: ConvId | null) {
       clearTimeout(timer);
       void listening.then((stop) => stop());
     };
-  }, [failed, conversationId]);
-  return [failed !== null && failed === src, () => setFailed(src)] as const;
+  }, [retry, conversationId]);
+  return [face, () => setFailed(src)] as const;
 }
 
 export const RoomBackdrop = memo(function RoomBackdrop({ room }: { room: RoomView }) {
   const { shown } = useRoomBackdrop(room);
   const image = shown?.kind === 'image' ? shown : null;
   const src = image ? chatMediaUrl(image.conversationId, image.mediaId, 'image') : null;
-  const [failed, fail] = useFailed(src, image?.conversationId ?? null);
+  const [face, fail] = useFace(src, image?.mediaId ?? null, image?.conversationId ?? null);
   const held = useBackdropStore((state) => state.dialog !== null);
 
   useEffect(() => {
@@ -48,7 +51,7 @@ export const RoomBackdrop = memo(function RoomBackdrop({ room }: { room: RoomVie
       />
     );
   }
-  if (!src || failed) return null;
+  if (!src || face !== 'image') return null;
   return (
     <BackdropStage
       key={src}

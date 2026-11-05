@@ -125,11 +125,26 @@ impl Rig {
         self.notices.lock().unwrap().clone()
     }
 
+    pub fn refused_notices(&self) -> Vec<MediaState> {
+        self.notices()
+            .into_iter()
+            .map(|notice| {
+                let retry_in = notice.retry_in_ms.expect("a refusal tells when it lapses");
+                assert!(retry_in > 0 && retry_in <= 600_000, "{retry_in}");
+                MediaState {
+                    retry_in_ms: None,
+                    ..notice
+                }
+            })
+            .collect()
+    }
+
     pub fn told(&self, media: &Media, state: Gone) -> MediaState {
         MediaState {
             conversation_id: self.conversation,
             media_id: media.image_id,
             state,
+            retry_in_ms: None,
         }
     }
 }

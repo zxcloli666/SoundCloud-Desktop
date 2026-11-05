@@ -60,10 +60,10 @@ export const ChatGate = memo(function ChatGate({
       </Centered>
     );
   }
-  if (phase === 'keychain_denied') {
+  if (phase === 'keychain_denied' || phase === 'keychain_unavailable') {
     return (
       <Centered>
-        <KeychainCard />
+        <KeychainCard reason={phase} />
       </Centered>
     );
   }

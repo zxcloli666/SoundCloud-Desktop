@@ -12,6 +12,7 @@ use sc_chat::{
 use serde_json::{Value, json};
 use uuid::Uuid;
 
+use super::keychain::Keychain;
 use super::state::ChatState;
 use exchange::{Call, Signer};
 use lane::Lane;
@@ -138,7 +139,15 @@ async fn held_signer(state: &ChatState, request_id: &str) -> ChatResult<Arc<Sign
 }
 
 async fn load_signer(state: &ChatState) -> ChatResult<Arc<Signer>> {
-    lane().signer(state.keys.clone()).await
+    swept_signer(lane(), state.keys.clone()).await
+}
+
+async fn swept_signer(lane: &Lane, keychain: Arc<Keychain>) -> ChatResult<Arc<Signer>> {
+    let sweeping = keychain.clone();
+    tokio::task::spawn_blocking(move || sweeping.sweep())
+        .await
+        .map_err(|_| ChatError::Keychain)??;
+    lane.signer(keychain).await
 }
 
 fn get(path: &str, query: String) -> InnerCall {

@@ -3,6 +3,7 @@
     "open": "Open image {{n}} of {{total}}",
     "deleted": "Image deleted",
     "lost": "Image unavailable",
+    "lostRetry": "Image unavailable, click to retry",
     "failed": "Failed to load, click to retry",
     "retry": "Retry"
   },

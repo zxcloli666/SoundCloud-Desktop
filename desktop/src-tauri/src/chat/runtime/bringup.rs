@@ -8,17 +8,18 @@ use sc_chat::{
 };
 
 use super::Runtime;
-use super::local::{self, Core};
-use crate::chat::keychain::should_fall_back;
+use super::local::Core;
 
 const RETRY_MIN: Duration = Duration::from_secs(2);
 const RETRY_MAX: Duration = Duration::from_secs(60);
+const QUIET_KEYCHAIN_FAILURES: u32 = 1;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Halt {
     Restart,
     Phase(ChatPhase),
     Retry(Duration),
+    Wait(ChatPhase, Duration),
 }
 
 impl Runtime {
@@ -139,15 +140,12 @@ impl Runtime {
             Err(error @ ChatError::KeychainDenied) => Err(self.halt(&error, *failures)),
             Err(ChatError::Keychain) => {
                 *failures += 1;
-                let local = local::has_local_state(&self.dir);
-                if should_fall_back(self.keychain.storage(), local, *failures)
-                    && self.keychain.fall_back().is_ok()
-                {
+                if self.keychain.may_fall_back() && self.keychain.fall_back().is_ok() {
                     self.status
                         .update(|status| status.key_storage = self.keychain.storage());
                     return Err(Halt::Retry(Duration::ZERO));
                 }
-                Err(Halt::Retry(backoff(*failures)))
+                Err(keychain_unavailable(*failures))
             }
             Err(error) => Err(self.fail(&error, failures)),
         }
@@ -193,6 +191,15 @@ pub(super) fn parked_phase(error: &ChatError) -> Option<ChatPhase> {
         ChatError::Disabled => Some(ChatPhase::Off),
         ChatError::KeychainDenied => Some(ChatPhase::KeychainDenied),
         _ => None,
+    }
+}
+
+pub fn keychain_unavailable(failures: u32) -> Halt {
+    let pause = backoff(failures);
+    if failures > QUIET_KEYCHAIN_FAILURES {
+        Halt::Wait(ChatPhase::KeychainUnavailable, pause)
+    } else {
+        Halt::Retry(pause)
     }
 }
 

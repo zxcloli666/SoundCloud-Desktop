@@ -5,36 +5,46 @@ use sc_chat::store::Store;
 use sc_chat::{ChatResult, Millis};
 use uuid::Uuid;
 
+use super::delete_queue::Slot;
 use super::engine::Uploads;
 use super::single::later;
 use crate::app::diagnostics;
-
-pub const DELETES: &str = "deletes.json";
 
 impl Uploads {
     pub(super) async fn delete_on_server(&self, media: Vec<Uuid>) {
         if media.is_empty() {
             return;
         }
-        let _held = self.deletes.lock().await;
-        let mut pending = self.pending_deletes().await;
-        for id in media {
-            if !pending.contains(&id) {
-                pending.push(id);
-            }
+        let slot = self.delete_slot().await;
+        self.queue_deletes(&slot, media).await;
+        self.flush_deletes(&slot).await;
+    }
+
+    pub(super) async fn queue_deletes(&self, slot: &Slot, media: Vec<Uuid>) {
+        if media.is_empty() {
+            return;
         }
-        if let Ok(listed) = serde_json::to_vec(&pending) {
-            let _ = self.files.write_named(DELETES, &listed).await;
+        let queue = self.queue.clone();
+        let slot = slot.clone();
+        let queued = tokio::task::spawn_blocking(move || queue.add(&slot, &media)).await;
+        if !matches!(queued, Ok(Ok(()))) {
+            diagnostics::warn("[ChatUpload] could not keep a server delete on disk");
         }
-        self.flush_deletes(pending).await;
     }
 
     pub(super) async fn retry_deletes(&self) {
-        let _held = self.deletes.lock().await;
-        let pending = self.pending_deletes().await;
-        if !pending.is_empty() {
-            self.flush_deletes(pending).await;
+        let slot = self.delete_slot().await;
+        if let Slot::Account(account) = &slot {
+            let queue = self.queue.clone();
+            let account = account.clone();
+            let _ = tokio::task::spawn_blocking(move || queue.adopt(&account)).await;
         }
+        self.flush_deletes(&slot).await;
+    }
+
+    pub(super) async fn delete_slot(&self) -> Slot {
+        let me = self.blocking(|store| store.me()).await;
+        me.ok().flatten().map_or(Slot::Store, Slot::Account)
     }
 
     pub(super) async fn restart_rows(&self, ids: Vec<Uuid>) -> ChatResult<()> {
@@ -52,23 +62,35 @@ impl Uploads {
         Ok(())
     }
 
-    async fn pending_deletes(&self) -> Vec<Uuid> {
-        let listed = self.files.read_named(DELETES).await;
-        listed
-            .and_then(|listed| serde_json::from_slice(&listed).ok())
-            .unwrap_or_default()
-    }
-
-    async fn flush_deletes(&self, pending: Vec<Uuid>) {
-        let selection = MediaSelection::ids(pending);
+    pub(super) async fn flush_deletes(&self, slot: &Slot) {
+        let _flushing = self.deletes.lock().await;
+        let pending = self.pending_deletes(slot).await;
+        if pending.is_empty() {
+            return;
+        }
+        let selection = MediaSelection::ids(pending.clone());
         match self.api.delete_media(&selection).await {
-            Ok(_) => self.files.remove(vec![DELETES.to_string()]).await,
+            Ok(_) => self.settle_deletes(slot, pending).await,
             Err(error) if later(&error) => {}
             Err(error) => {
                 diagnostics::warn(format!("[ChatUpload] server delete refused: {error}"));
-                self.files.remove(vec![DELETES.to_string()]).await;
+                self.settle_deletes(slot, pending).await;
             }
         }
+    }
+
+    async fn pending_deletes(&self, slot: &Slot) -> Vec<Uuid> {
+        let queue = self.queue.clone();
+        let slot = slot.clone();
+        tokio::task::spawn_blocking(move || queue.read(&slot))
+            .await
+            .unwrap_or_default()
+    }
+
+    async fn settle_deletes(&self, slot: &Slot, done: Vec<Uuid>) {
+        let queue = self.queue.clone();
+        let slot = slot.clone();
+        let _ = tokio::task::spawn_blocking(move || queue.settle(&slot, &done)).await;
     }
 }
 

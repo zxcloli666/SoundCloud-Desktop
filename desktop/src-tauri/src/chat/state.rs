@@ -3,7 +3,7 @@ use std::sync::Arc;
 
 use sc_chat::api::Api;
 use sc_chat::channel::Channel;
-use sc_chat::{ChatResult, ChatStatus, Clock, Events, KeyStore, Transport};
+use sc_chat::{ChatResult, ChatStatus, Clock, Events, Transport};
 
 use super::events::TauriEvents;
 use super::keychain::Keychain;
@@ -19,7 +19,7 @@ const KEYCHAIN_SUFFIX: &str = ".chat";
 pub struct ChatState {
     pub app: AppHandle,
     pub rt: tokio::runtime::Handle,
-    pub keys: Arc<dyn KeyStore>,
+    pub keys: Arc<Keychain>,
     pub transport: Arc<dyn Transport>,
     pub events: Arc<dyn Events>,
     pub api: Arc<Api>,

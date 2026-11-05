@@ -3,6 +3,7 @@
     "open": "{{total}} görselden {{n}}. görseli aç",
     "deleted": "Görsel silindi",
     "lost": "Görsel kullanılamıyor",
+    "lostRetry": "Görsel kullanılamıyor, yeniden denemek için tıklayın",
     "failed": "Yüklenemedi, yeniden denemek için tıklayın",
     "retry": "Yeniden dene"
   },

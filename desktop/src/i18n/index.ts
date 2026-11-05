@@ -44,21 +44,18 @@ const initPromise = i18n.use(initReactI18next).init({
   interpolation: { escapeValue: false },
 });
 
+async function loadLanguage(language: AppLanguage) {
+  if (loadedLanguages.has(language)) return;
+  const [module, chat] = await Promise.all([localeLoaders[language](), loadChatLocale(language)]);
+  i18n.addResourceBundle(language, 'translation', module.default, true, true);
+  i18n.addResourceBundle(language, 'translation', { chat }, true, true);
+  loadedLanguages.add(language);
+}
+
 export async function ensureLocaleLoaded(language: string) {
   const normalized = normalizeLanguage(language);
   await initPromise;
-
-  if (loadedLanguages.has(normalized)) {
-    return normalized;
-  }
-
-  const [module, chat] = await Promise.all([
-    localeLoaders[normalized](),
-    loadChatLocale(normalized),
-  ]);
-  i18n.addResourceBundle(normalized, 'translation', module.default, true, true);
-  i18n.addResourceBundle(normalized, 'translation', { chat }, true, true);
-  loadedLanguages.add(normalized);
+  await Promise.all([loadLanguage(normalized), loadLanguage(FALLBACK_LANGUAGE)]);
   return normalized;
 }
 

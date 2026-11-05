@@ -25,6 +25,12 @@ export const scenes: LabScene[] = [
     setup: (kit) => refuseKeychain(kit),
   },
   {
+    id: 'keychain-unavailable',
+    title: 'Keychain not answering',
+    route: '/chats',
+    setup: (kit) => refuseKeychain(kit, 'keychain_unavailable'),
+  },
+  {
     id: 'keychain-again',
     title: 'Keychain refused again after a retry',
     route: '/chats',
@@ -36,8 +42,11 @@ export const scenes: LabScene[] = [
   },
 ];
 
-function refuseKeychain(kit: LabKit) {
-  kit.world.status = { ...kit.world.status, phase: 'keychain_denied' };
+function refuseKeychain(
+  kit: LabKit,
+  phase: 'keychain_denied' | 'keychain_unavailable' = 'keychain_denied',
+) {
+  kit.world.status = { ...kit.world.status, phase };
   kit.handle('chat_keychain_retry', () => {
     kit.emit('chat:status', { ...kit.world.status, phase: 'starting' });
     setTimeout(() => kit.emit('chat:status', { ...kit.world.status }), 900);

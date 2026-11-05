@@ -217,6 +217,20 @@ export const scenes: LabScene[] = [
     },
   },
   {
+    id: 'view-lost-retry',
+    title: 'A lost image comes back on Retry',
+    route: ROUTE_DM,
+    setup: (kit) => {
+      seedThread(kit, CONV.dm, [
+        { from: 'u-mira', ago: 20, text: 'Старый альбом', attachments: album('m-back', 2) },
+      ]);
+      markState(kit, ['m-back-1'], 'lost', CONV.dm);
+      kit.waitFor('[data-ui="chat-album-tile"][data-state="lost"]');
+      kit.click('[data-ui="chat-album-tile"][data-state="lost"]');
+      kit.wait(1500);
+    },
+  },
+  {
     id: 'view-pending',
     title: 'Pending albums with progress',
     route: ROUTE_DM,

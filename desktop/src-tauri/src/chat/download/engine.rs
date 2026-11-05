@@ -82,17 +82,22 @@ impl Downloads {
     }
 
     pub fn tell(&self, conversation_id: ConvId, media_id: Uuid, fetched: Fetched) -> Fetched {
-        let state = match fetched {
-            Fetched::Deleted => Gone::Deleted,
-            Fetched::Lost => Gone::Lost,
+        let (state, retry_in) = match fetched {
+            Fetched::Deleted => (Gone::Deleted, None),
+            Fetched::Lost => (Gone::Lost, self.refused.left(media_id)),
             Fetched::Image(_) => return fetched,
         };
         (self.notice)(MediaState {
             conversation_id,
             media_id,
             state,
+            retry_in_ms: retry_in.map(|left| u64::try_from(left.as_millis()).unwrap_or(u64::MAX)),
         });
         fetched
+    }
+
+    pub fn forget(&self, media_id: Uuid) {
+        self.refused.forget(media_id);
     }
 
     async fn fetch_once(&self, object: Object) -> ChatResult<Fetched> {

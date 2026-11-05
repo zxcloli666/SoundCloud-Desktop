@@ -12,6 +12,7 @@ mod cached;
 mod cancel;
 mod failures;
 mod lapse;
+mod queue;
 mod resume;
 mod routes;
 mod seaweed;

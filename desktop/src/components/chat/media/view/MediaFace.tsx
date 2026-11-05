@@ -5,7 +5,7 @@ import type { ConvId } from '../../../../lib/chat/types';
 import { BlurImage } from '../BlurImage';
 import { CloudOff, ImageOff, RotateCcw } from './icons';
 import { type LoadAttempt, useLoadAttempt } from './load-attempt';
-import { type GoneState, useGone } from './media-state';
+import { type GoneState, useGone, useRevive } from './media-state';
 import { useCalmMotion } from './motion';
 import { viewUrl } from './urls';
 
@@ -13,15 +13,18 @@ const THUMB_FADE_MS = 280;
 
 export interface ThumbState extends LoadAttempt {
   gone: GoneState | null;
+  revive: () => void;
 }
 
 export function useThumb(mediaId: MediaId): ThumbState {
   const gone = useGone(mediaId);
   const load = useLoadAttempt(gone !== null);
-  return { ...load, gone };
+  const revive = useRevive(mediaId, load.retry);
+  return { ...load, gone, revive };
 }
 
 export function thumbLabelKey(thumb: ThumbState): string | null {
+  if (thumb.gone === 'lost') return 'chat.gallery.tile.lostRetry';
   if (thumb.gone) return `chat.gallery.tile.${thumb.gone}`;
   return thumb.phase === 'failed' ? 'chat.gallery.tile.failed' : null;
 }
@@ -63,6 +66,12 @@ export const GoneFace = memo(function GoneFace({
       {!compact && (
         <span className="text-[11.5px] font-medium leading-tight">
           {t(`chat.gallery.tile.${state}`)}
+        </span>
+      )}
+      {!compact && state === 'lost' && (
+        <span className="mt-0.5 flex items-center gap-1 rounded-full bg-ink/[0.07] px-2 py-0.5 text-[11px] font-semibold text-ink-70 transition-colors duration-150 group-hover:bg-ink/[0.12]">
+          <RotateCcw size={11} />
+          {t('chat.gallery.tile.retry')}
         </span>
       )}
     </span>
