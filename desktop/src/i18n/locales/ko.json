@@ -97,6 +97,7 @@
     "callbackSlow": "SoundCloud 다음 페이지가 열리지 않나요? 해당 도메인이 차단됐을 수 있어요. VPN을 켜고 링크를 다시 열어 보세요.",
     "reopenLink": "링크 다시 열기",
     "stepWaiting": "SoundCloud 인증 대기 중",
+    "checking": "확인 중…",
     "stepToken": "인증 코드 교환 중",
     "stepProfile": "프로필 불러오는 중",
     "stepSession": "세션 마무리 중",

@@ -75,6 +75,31 @@ fn the_edge_route_has_no_direct_hop_and_follows_the_api_plan() {
 }
 
 #[test]
+fn the_auth_routes_post_to_the_api_nodes_in_their_own_path() {
+    edge::set_gateway(4321);
+    for (route, host) in [
+        (Route::auth_main(), "api"),
+        (Route::auth_star(), "api-star"),
+    ] {
+        assert_eq!(route.tiers(), [Tier::Relay, Tier::Pro]);
+        let relays = route.hops(Tier::Relay);
+        assert!(!relays.is_empty());
+        assert!(relays.iter().all(|hop| hop.0.ends_with("/auth/x")));
+        assert!(
+            relays
+                .iter()
+                .all(|hop| hop.0.starts_with(&format!("https://{host}.")))
+        );
+        assert!(
+            route
+                .hops(Tier::Pro)
+                .iter()
+                .all(|hop| hop.0.starts_with("http://127.0.0.1:4321/pro/"))
+        );
+    }
+}
+
+#[test]
 fn a_fixed_dev_origin_is_direct_only() {
     let route = Route::fixed("http://127.0.0.1:3000/");
     assert_eq!(route.tiers(), [Tier::Direct]);

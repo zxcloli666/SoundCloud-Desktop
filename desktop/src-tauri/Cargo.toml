@@ -64,7 +64,7 @@ uuid = { version = "1", features = ["v4"] }
 rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12"] }
 tokio-rustls = { version = "0.26", default-features = false, features = ["ring", "tls12"] }
 webpki-roots = "1"
-sc-chat = { git = "https://github.com/zxcloli666/SoundCloud-Core", tag = "sc-chat-v0.2.5" }
+sc-chat = { git = "https://github.com/zxcloli666/SoundCloud-Core", tag = "sc-chat-v0.2.6" }
 thumbhash = { version = "0.1.0", default-features = false }
 image = { version = "0.25", default-features = false, features = ["png"] }
 

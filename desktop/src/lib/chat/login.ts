@@ -34,10 +34,8 @@ async function sealedOrPlain<T>(what: string, call: () => Promise<T>): Promise<T
   try {
     return await call();
   } catch (error) {
-    if (busyRetrySec(error) !== null) throw error;
-    logInfo(
-      `[Auth] sealed ${what} unavailable, plain flow: ${chatError(error)?.code ?? describeError(error)}`,
-    );
+    if (chatError(error)?.code !== 'disabled') throw error;
+    logInfo(`[Auth] sealed ${what} is off on the server, plain flow`);
     return null;
   }
 }

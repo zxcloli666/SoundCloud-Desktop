@@ -97,6 +97,7 @@
     "callbackSlow": "Page after SoundCloud won't load? Its domain may be blocked for you. Turn on a VPN and open the link again.",
     "reopenLink": "Open link again",
     "stepWaiting": "Waiting for SoundCloud authorization",
+    "checking": "Checking…",
     "stepToken": "Exchanging authorization code",
     "stepProfile": "Fetching your profile",
     "stepSession": "Finalizing session",

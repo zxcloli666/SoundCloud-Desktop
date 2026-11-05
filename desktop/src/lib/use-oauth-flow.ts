@@ -1,6 +1,7 @@
 import { openUrl } from '@tauri-apps/plugin-opener';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ApiError, fetchWithAuthFallback, getSessionId } from './api-client';
+import { useChecking } from './chat/checking';
 import { busyRetrySec, sealedLoginBegin, sealedLoginPoll } from './chat/login';
 import type { LoginStep, LoginTarget } from './chat/types';
 import { API_BASE } from './constants';
@@ -59,11 +60,13 @@ export function useOAuthFlow(
   const onSuccessRef = useRef(onSuccess);
   const onFailureRef = useRef(onFailure);
   const optionsRef = useRef(options);
+  const { checking, cancelChecking } = useChecking();
   onSuccessRef.current = onSuccess;
   onFailureRef.current = onFailure;
   optionsRef.current = options;
 
   const cancel = useCallback(() => {
+    cancelChecking();
     attemptRef.current++;
     resumeRef.current = null;
     if (pollRef.current) {
@@ -76,7 +79,7 @@ export function useOAuthFlow(
     setBrowserFailed(false);
     setCallbackSlow(false);
     setStep('waiting');
-  }, []);
+  }, [cancelChecking]);
 
   useEffect(() => cancel, [cancel]);
 
@@ -217,6 +220,7 @@ export function useOAuthFlow(
     error,
     browserFailed,
     callbackSlow,
+    checking,
   };
 }
 

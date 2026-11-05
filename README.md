@@ -313,6 +313,8 @@ npx biome check src/     # линтинг
 
 MIT. Подробности — в файле [LICENSE](LICENSE).
 
+Third-party code under LGPL-3.0-only: `equix` and `hashx` from the [Arti](https://gitlab.torproject.org/tpo/core/arti) project (sign-in proof of work).
+
 SoundCloud — торговая марка SoundCloud Ltd. Это приложение не аффилировано с SoundCloud.
 
 ---

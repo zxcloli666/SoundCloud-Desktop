@@ -72,6 +72,16 @@ pub fn link_poll(answer: &InnerAnswer) -> ChatResult<LinkPoll> {
     })
 }
 
+pub fn pow_ticket(answer: &InnerAnswer) -> Option<(Vec<u8>, u32)> {
+    if succeeded(answer) {
+        return None;
+    }
+    match rejection(answer) {
+        ChatError::PowRequired { seed, effort } => Some((seed, effort)),
+        _ => None,
+    }
+}
+
 pub fn server_now(answer: &InnerAnswer) -> Option<Millis> {
     if succeeded(answer) {
         return None;

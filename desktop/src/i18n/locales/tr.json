@@ -133,6 +133,7 @@
     "callbackSlow": "SoundCloud sonrası sayfa yüklenmiyor mu? Alan adı engellenmiş olabilir. VPN açın ve bağlantıyı tekrar açın.",
     "reopenLink": "Bağlantıyı tekrar aç",
     "stepWaiting": "SoundCloud yetkilendirmesi bekleniyor",
+    "checking": "Kontrol ediliyor…",
     "stepToken": "Yetkilendirme kodu değiştiriliyor",
     "stepProfile": "Profilin alınıyor",
     "stepSession": "Oturum tamamlanıyor",
