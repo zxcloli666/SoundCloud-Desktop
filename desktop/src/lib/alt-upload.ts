@@ -15,6 +15,7 @@ const FAILED_SEARCH_PAUSE_MS = 60_000;
 const JOINERS = ['feat', 'ft', 'x', 'and', 'with', 'vs', 'the'];
 
 const altByOriginal = new Map<string, Track | null>();
+const noStream = new Set<string>();
 const searches = new Map<string, Promise<Track | null>>();
 const listeners = new Set<() => void>();
 let playing: { original: string; copy: Track } | null = null;
@@ -110,8 +111,12 @@ async function searchAltUpload(track: Track): Promise<Track | null> {
 }
 
 export function knownAltUpload(original: Track): Track | null {
-  if (!useSettingsStore.getState().playAltUploads) return null;
+  if (!useSettingsStore.getState().playAltUploads || !noStream.has(original.urn)) return null;
   return altByOriginal.get(original.urn) ?? null;
+}
+
+export function markNoStream(original: Track): void {
+  noStream.add(original.urn);
 }
 
 export function dropAltUpload(original: Track): void {

@@ -10,6 +10,7 @@ import {
   dropAltUpload,
   findAltUpload,
   knownAltUpload,
+  markNoStream,
   mayUseAltUpload,
   playingCopyOf,
   setPlayingCopy,
@@ -54,6 +55,7 @@ import {
   takeSkipAttempt,
   watchLoad,
 } from './load-watchdog';
+import { forgetDownloadSource, noteDownloadSource, raceWithCopy } from './load-race';
 import {localTrackPath, markLocalMissing, noteLocalDuration} from './local-import';
 import {isLocalUrn} from './local-library';
 import {notifyError} from './notify';
@@ -77,6 +79,7 @@ const healedUrns = new Set<string>();
 
 let currentUrn: string | null = null;
 let fileUrn: string | null = null;
+let raceUrn: string | null = null;
 let hasTrack = false;
 let fallbackDuration = 0;
 let cachedTime = 0;
@@ -465,6 +468,8 @@ async function loadTrack(track: Track, resumeAt = 0) {
   }
   currentUrn = track.urn;
   fileUrn = track.urn;
+  raceUrn = null;
+  forgetDownloadSource(track.urn);
   acceptedShortFile = false;
   const urn = track.urn;
   let file = track;
@@ -505,7 +510,8 @@ async function loadTrack(track: Track, resumeAt = 0) {
       return;
     }
 
-    file = playableFile(track);
+    file = await startFile(track);
+    if (gen !== loadGen) return;
     if (file !== track) {
       fallbackDuration = file.duration / 1000;
       cachedDuration = fallbackDuration;
@@ -575,26 +581,48 @@ async function loadTrack(track: Track, resumeAt = 0) {
       });
     }, SLOW_LOAD_HINT_MS);
 
+    const fetchFile = async (): Promise<TrackCacheInfo> => {
+      try {
+        return await ensureTrackCached(
+          file.urn,
+          quality,
+          expectedDurationMs(file),
+          storageQuality,
+        );
+      } catch (error) {
+        const premiumRefused = getLoadErrorText(error)?.includes('HTTP 403 Forbidden: forbidden');
+        if (quality === 'sq' || !premiumRefused || gen !== loadGen) throw error;
+        console.warn(`[Audio] ${quality} load failed, retrying in sq:`, error);
+        setDownloadProgress(0);
+        bumpLoadWatch();
+        return ensureTrackCached(file.urn, 'sq', expectedDurationMs(file), storageQuality);
+      }
+    };
+
     let cachedInfo: TrackCacheInfo;
-    try {
-      cachedInfo = await ensureTrackCached(
-        file.urn,
+    if (file !== track) {
+      cachedInfo = await fetchFile();
+    } else {
+      const raced = await raceWithCopy(track, fetchFile(), {
         quality,
-        expectedDurationMs(file),
-        storageQuality,
-      );
-    } catch (error) {
-      const premiumRefused = getLoadErrorText(error)?.includes('HTTP 403 Forbidden: forbidden');
-      if (quality === 'sq' || !premiumRefused || gen !== loadGen) throw error;
-      console.warn(`[Audio] ${quality} load failed, retrying in sq:`, error);
-      setDownloadProgress(0);
-      bumpLoadWatch();
-      cachedInfo = await ensureTrackCached(
-        file.urn,
-        'sq',
-        expectedDurationMs(file),
-        storageQuality,
-      );
+        canRace: () => gen === loadGen && startGate == null && mayUseAltUpload(track),
+        onCopy: (copyUrn) => {
+          if (gen === loadGen) raceUrn = copyUrn;
+        },
+        onOriginalFailed: (error) => {
+          if (getLoadErrorText(error)?.includes('no stream available')) markNoStream(track);
+        },
+      });
+      raceUrn = null;
+      if (gen !== loadGen) return;
+      cachedInfo = raced.info;
+      if (raced.file !== track) {
+        file = raced.file;
+        fileUrn = file.urn;
+        setPlayingCopy(urn, file);
+        fallbackDuration = file.duration / 1000;
+        cachedDuration = fallbackDuration;
+      }
     }
 
     if (gen !== loadGen) return;
@@ -621,6 +649,7 @@ async function loadTrack(track: Track, resumeAt = 0) {
   } catch (e) {
     console.error('[Audio] Load failed:', e);
     if (gen !== loadGen) return;
+    raceUrn = null;
     reportPlaybackFailure(e, track);
     if (crossfadeMs > 0) invoke('audio_stop').catch(console.error);
     stopLoadWatch();
@@ -632,6 +661,7 @@ async function loadTrack(track: Track, resumeAt = 0) {
     if (localMissing) markLocalMissing(urn);
     const errorText = localMissing ? i18n.t('local.fileMissing') : getLoadErrorText(e);
     if (!isCopy && errorText?.includes('no stream available')) {
+      markNoStream(track);
       if (startGate == null && mayUseAltUpload(track)) {
         setDownloadProgress(0);
         const found = await findAltUpload(track);
@@ -659,6 +689,12 @@ async function loadTrack(track: Track, resumeAt = 0) {
 function playableFile(track: Track): Track {
   if (startGate != null || !mayUseAltUpload(track)) return track;
   return knownAltUpload(track) ?? track;
+}
+
+async function startFile(track: Track): Promise<Track> {
+  const file = playableFile(track);
+  if (file === track || !(await getCacheInfo(track.urn))?.path) return file;
+  return track;
 }
 
 function skipUnloadable(track: Track, stuck: boolean): boolean {
@@ -856,8 +892,7 @@ function maybeStartCrossfade() {
   const next = upcomingTrack();
   if (!canCrossfade() || !next || isUrnDisliked(next.urn) || isTrackBlocked(next)) return;
   const gen = loadGen;
-  const file = playableFile(next);
-  void getCacheInfo(file.urn).then((info) => {
+  void startFile(next).then((file) => getCacheInfo(file.urn)).then((info) => {
     if (!info?.path || gen !== loadGen || !hasTrack || !currentUrn) return;
     if (!canCrossfade() || upcomingTrack()?.urn !== next.urn) return;
     recordFullPlay(currentUrn, true);
@@ -877,10 +912,11 @@ listen<number>('audio:tick', (event) => {
   maybeStartCrossfade();
 });
 
-listen<{ urn: string; progress: number }>('track:download-progress', (event) => {
-  const { urn, progress } = event.payload;
-  if (urn === fileUrn && downloadProgress !== null) {
-    if (progress > downloadProgress) bumpLoadWatch();
+listen<{ urn: string; progress: number; source?: string }>('track:download-progress', (event) => {
+  const { urn, progress, source } = event.payload;
+  if (urn === fileUrn) noteDownloadSource(urn, source);
+  if ((urn === fileUrn || urn === raceUrn) && downloadProgress !== null) {
+    if (progress > downloadProgress || raceUrn) bumpLoadWatch();
     setDownloadProgress(Math.max(downloadProgress, progress));
   }
 });
