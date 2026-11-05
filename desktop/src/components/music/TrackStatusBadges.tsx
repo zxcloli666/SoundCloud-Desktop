@@ -54,33 +54,26 @@ export const TIERS: Record<Tier, { letter: string; inline: string; overlay: stri
     },
 };
 
-const glow = (c: string) => `shadow-[0_0_8px_color-mix(in_oklab,var(--color-${c})_55%,transparent)]`;
-
-export const RATING_CHIPS: Record<Tier, { letter: string; chip: string; dot: string }> = {
+export const RATING_CHIPS: Record<Tier, { letter: string; chip: string }> = {
     analyzed: {
         letter: TIERS.analyzed.letter,
         chip: 'border-mint/[0.16] bg-mint/[0.07] text-mint-ink/82',
-        dot: 'bg-mint shadow-[0_0_8px_rgb(var(--mint)/0.55)]',
     },
     cached: {
         letter: TIERS.cached.letter,
         chip: 'border-amber-300/[0.18] bg-amber-300/[0.07] text-amber-300',
-        dot: `bg-amber-300 ${glow('amber-300')}`,
     },
     pending: {
         letter: TIERS.pending.letter,
         chip: 'border-ink/[0.08] bg-ink/[0.04] text-ink-50',
-        dot: 'bg-ink-40',
     },
     tooLong: {
         letter: TIERS.tooLong.letter,
         chip: 'border-ink/[0.12] bg-ink/[0.06] text-ink-68',
-        dot: 'bg-ink-50',
     },
     failed: {
         letter: TIERS.failed.letter,
         chip: 'border-rose-300/[0.18] bg-rose-300/[0.07] text-rose-300',
-        dot: `bg-rose-300 ${glow('rose-300')}`,
     },
 };
 

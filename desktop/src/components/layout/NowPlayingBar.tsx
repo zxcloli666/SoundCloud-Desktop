@@ -385,16 +385,15 @@ const RatingChip = React.memo(() => {
   const meta = usePlayerStore((s) => s.currentTrack?._scd_meta);
   const tier = meta ? tierOf(meta, true) : null;
   if (!meta || !tier) return null;
-  const { letter, chip, dot } = RATING_CHIPS[tier];
+  const { letter, chip } = RATING_CHIPS[tier];
 
   return (
     <span
       data-ui="player-rating"
       title={t(tierTitleKey(tier, meta))}
-      className={`npb-rating inline-flex h-6 shrink-0 items-center gap-1.5 rounded-md border px-2 text-[10px] font-semibold tracking-[0.14em] ${chip}`}
+      className={`inline-flex h-6 shrink-0 items-center rounded-md border px-2 text-[10px] font-semibold tracking-[0.14em] ${chip}`}
     >
-      <span className={`npb-rating-dot h-1.5 w-1.5 rounded-full ${dot}`} />
-      <span>{letter}</span>
+      {letter}
     </span>
   );
 });
