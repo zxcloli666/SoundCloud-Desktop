@@ -29,6 +29,7 @@ export type MediaNote = 'locked' | 'paused' | 'room-host' | 'room-mods' | 'room-
 
 interface MediaData {
   uploads: UploadView[];
+  local: boolean;
   usage: MediaUsage | null;
   usageLoad: MediaLoad;
   shown: Record<MediaId, ShownMedia>;
@@ -69,6 +70,7 @@ const forgetting = forgetTimers<MediaId>((id) => useChatMediaStore.getState().fo
 function emptyMedia(): MediaData {
   return {
     uploads: [],
+    local: false,
     usage: null,
     usageLoad: 'idle',
     shown: {},
@@ -113,7 +115,8 @@ export function uploadsIn(uploads: UploadView[], conversationId: ConvId | null):
 export const useChatMediaStore = create<ChatMediaState>()((set, get) => ({
   ...emptyMedia(),
   setNote: (note) => set({ note }),
-  setUploads: (uploads) => set((state) => ({ uploads, errors: keptErrors(state.errors, uploads) })),
+  setUploads: (uploads) =>
+    set((state) => ({ uploads, local: true, errors: keptErrors(state.errors, uploads) })),
   applyUploads: ({ uploads, removed }) => {
     const gone = new Set(removed);
     const changed = new Map(uploads.map((upload) => [upload.id, upload]));
@@ -123,7 +126,7 @@ export const useChatMediaStore = create<ChatMediaState>()((set, get) => ({
     const known = new Set(kept.map((upload) => upload.id));
     const added = uploads.filter((upload) => !known.has(upload.id) && !gone.has(upload.id));
     const next = [...kept, ...added];
-    set((state) => ({ uploads: next, errors: keptErrors(state.errors, next) }));
+    set((state) => ({ uploads: next, local: true, errors: keptErrors(state.errors, next) }));
     if (added.length > 0 || gone.size > 0) void get().refreshParked();
   },
   applyError: ({ id, error }) => set((state) => ({ errors: { ...state.errors, [id]: error } })),

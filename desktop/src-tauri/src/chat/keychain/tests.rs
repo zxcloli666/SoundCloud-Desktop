@@ -216,6 +216,44 @@ fn an_existing_chat_survives_a_keychain_that_keeps_failing() {
 }
 
 #[test]
+fn os_keys_without_a_chat_database_keep_the_install_off_the_file() {
+    let dir = scratch("os-keys");
+    let vault = SharedVault::default();
+    let keychain = Keychain::with_os(Box::new(vault.clone()), &dir);
+    let (device, _) = DeviceKeys::load_or_create(&keychain).unwrap();
+    assert!(!database_path(&dir).exists());
+
+    vault.fail_with(Some(ChatError::Keychain));
+    let restarted = Keychain::with_os(Box::new(vault.clone()), &dir);
+    assert!(!restarted.may_fall_back());
+    assert_eq!(
+        DeviceKeys::load_or_create(&restarted).err(),
+        Some(ChatError::Keychain)
+    );
+    assert_eq!(restarted.storage(), KeyStorage::Os);
+    assert!(!dir.join("keys").exists());
+
+    vault.fail_with(None);
+    let (again, _) = DeviceKeys::load_or_create(&restarted).unwrap();
+    assert_eq!(again, device);
+    restarted.wipe().unwrap();
+    assert!(restarted.may_fall_back());
+    std::fs::remove_dir_all(dir).unwrap();
+}
+
+#[test]
+fn keys_found_in_the_os_vault_are_noted_even_when_this_build_did_not_save_them() {
+    let dir = scratch("os-keys-found");
+    let vault = SharedVault::default();
+    vault.save(KeyName::DeviceId, b"device").unwrap();
+    let keychain = Keychain::with_os(Box::new(vault.clone()), &dir);
+    assert!(keychain.may_fall_back());
+    assert!(keychain.load(KeyName::DeviceId).unwrap().is_some());
+    assert!(!keychain.may_fall_back());
+    std::fs::remove_dir_all(dir).unwrap();
+}
+
+#[test]
 fn keys_left_behind_keep_a_fresh_install_off_the_file() {
     let dir = scratch("stale-fresh");
     std::fs::write(dir.join("keys-stale"), []).unwrap();

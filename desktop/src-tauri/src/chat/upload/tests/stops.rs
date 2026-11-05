@@ -3,13 +3,15 @@ use std::time::Duration;
 
 use sc_chat::sc_chat_wire::proto::envelope::Body;
 use sc_chat::{ConversationKind, UploadState};
+use uuid::Uuid;
 
 use super::albums::sources;
 use super::rig::{Path, Rig, envelope};
-use crate::chat::runtime::uploads_gone;
+use crate::chat::runtime::{uploads_gone, uploads_present};
+use crate::chat::upload::deletes::DELETE_CHUNK;
 
 #[tokio::test(flavor = "multi_thread")]
-async fn a_halt_mid_put_aborts_it_frees_the_server_row_and_starts_nothing_new() {
+async fn a_halt_mid_put_aborts_it_queues_the_server_row_and_starts_nothing_new() {
     let mut rig = Rig::new(ConversationKind::Group);
     let (slow, hits) = rig.answering(200, 0, Duration::from_secs(30));
     rig.route(vec![Path::Relay(slow)]);
@@ -24,10 +26,7 @@ async fn a_halt_mid_put_aborts_it_frees_the_server_row_and_starts_nothing_new() 
         .await;
     rig.uploads.halt().await;
     let reserved = rig.world.reservation(id).unwrap();
-    assert!(
-        rig.world
-            .with(|state| state.deleted.contains(&reserved.image))
-    );
+    assert_eq!(rig.queued_deletes("100"), vec![reserved.image]);
     rig.uploads.wake_all();
     tokio::time::sleep(Duration::from_millis(400)).await;
     assert_eq!(hits.load(Ordering::SeqCst), 1);
@@ -135,7 +134,29 @@ async fn a_wipe_tells_the_webview_every_upload_it_drops() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-async fn deletes_left_by_a_sign_out_wait_for_that_account_and_go_on_its_next_sign_in() {
+async fn an_opened_store_tells_the_webview_the_uploads_it_still_holds() {
+    let rig = Rig::new(ConversationKind::Group);
+    assert!(uploads_present(&rig.store()).uploads.is_empty());
+    let views = rig
+        .uploads
+        .attach(rig.conversation, None, sources(vec![rig.image(87)]))
+        .await
+        .unwrap();
+    let rig = rig.restart();
+    let present = uploads_present(&rig.store());
+    assert!(present.removed.is_empty());
+    assert_eq!(
+        present
+            .uploads
+            .iter()
+            .map(|upload| upload.id)
+            .collect::<Vec<_>>(),
+        vec![views[0].id]
+    );
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn a_sign_out_queues_its_deletes_and_only_that_account_sends_them() {
     let mut rig = Rig::new(ConversationKind::Group);
     let (slow, hits) = rig.answering(200, 0, Duration::from_secs(30));
     rig.route(vec![Path::Relay(slow)]);
@@ -148,21 +169,20 @@ async fn deletes_left_by_a_sign_out_wait_for_that_account_and_go_on_its_next_sig
     rig.run();
     rig.until("the put to start", |_| hits.load(Ordering::SeqCst) == 1)
         .await;
-    rig.world.with(|state| state.offline_deletes = usize::MAX);
+    rig.act_as("200");
     rig.uploads.halt().await;
     rig.stop();
     let reserved = rig.world.reservation(id).unwrap();
     rig.store().wipe().unwrap();
     std::fs::remove_dir_all(rig.dir.join("uploads")).unwrap();
-    assert!(rig.world.with(|state| state.deleted.is_empty()));
+    assert!(rig.world.with(|state| state.delete_batches.is_empty()));
     assert_eq!(rig.queued_deletes("100"), vec![reserved.image]);
-    rig.world.with(|state| state.offline_deletes = 0);
 
     rig.sign_in("200");
     rig.run();
     tokio::time::sleep(Duration::from_millis(600)).await;
     rig.stop();
-    assert!(rig.world.with(|state| state.deleted.is_empty()));
+    assert!(rig.world.with(|state| state.delete_batches.is_empty()));
     assert_eq!(rig.queued_deletes("100"), vec![reserved.image]);
 
     rig.sign_in("100");
@@ -176,4 +196,36 @@ async fn deletes_left_by_a_sign_out_wait_for_that_account_and_go_on_its_next_sig
         rig.queued_deletes("100").is_empty()
     })
     .await;
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn a_long_delete_queue_goes_in_chunks_and_keeps_what_was_not_sent() {
+    let mut rig = Rig::new(ConversationKind::Group);
+    let media: Vec<Uuid> = (0..1201).map(|_| Uuid::new_v4()).collect();
+    rig.queue_deletes("100", &media);
+    rig.world
+        .with(|state| state.deletes_before_offline = Some(1));
+    rig.run();
+    rig.until("the link to drop after the first chunk", |rig| {
+        rig.world
+            .with(|state| state.deletes_before_offline.is_none())
+    })
+    .await;
+    tokio::time::sleep(Duration::from_millis(200)).await;
+    assert_eq!(rig.world.with(|state| state.deleted.len()), DELETE_CHUNK);
+    assert_eq!(rig.queued_deletes("100"), media[DELETE_CHUNK..].to_vec());
+
+    rig.world.with(|state| state.offline_deletes = 0);
+    rig.uploads.wake_all();
+    rig.until("the queue to clear", |rig| {
+        rig.queued_deletes("100").is_empty()
+    })
+    .await;
+    let batches = rig.world.with(|state| state.delete_batches.clone());
+    assert!(batches.iter().all(|batch| *batch <= DELETE_CHUNK));
+    let mut deleted = rig.world.with(|state| state.deleted.clone());
+    deleted.sort();
+    let mut expected = media.clone();
+    expected.sort();
+    assert_eq!(deleted, expected);
 }

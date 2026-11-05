@@ -1,5 +1,6 @@
 import { memo, useState } from 'react';
 import { useChatStore } from '../../../stores/chat';
+import { holdsLocalStore } from '../../../stores/chat/account';
 import { DOCK_LIST, DOCK_ROOM, useChatPrefsStore } from '../../../stores/chat/prefs';
 import { useChatRoomStore } from '../../../stores/chat/room';
 import { ConversationList } from '../list/ConversationList';
@@ -27,7 +28,7 @@ export const DockBody = memo(function DockBody() {
   const tabs = useChatPrefsStore((state) => state.tabs);
   const roomCode = useChatRoomStore((state) => state.code);
   const roomChat = useChatRoomStore((state) => state.conversationId);
-  const ready = useChatStore((state) => state.status?.phase === 'ready');
+  const local = useChatStore((state) => holdsLocalStore(state.status?.phase ?? null));
   const [traySpace, setTraySpace] = useState(0);
 
   let content = <DockList />;
@@ -42,10 +43,10 @@ export const DockBody = memo(function DockBody() {
 
   return (
     <div className="relative min-h-0 flex-1">
-      <TraySpace.Provider value={ready ? traySpace : 0}>
+      <TraySpace.Provider value={local ? traySpace : 0}>
         <ChatGate>{content}</ChatGate>
       </TraySpace.Provider>
-      {!thread && ready && <UploadTray onSpace={setTraySpace} />}
+      {!thread && local && <UploadTray onSpace={setTraySpace} />}
     </div>
   );
 });

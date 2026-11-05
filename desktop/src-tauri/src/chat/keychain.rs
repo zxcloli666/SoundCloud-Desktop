@@ -22,6 +22,7 @@ use file::FileVault;
 use os::OsVault;
 
 const STALE: &str = "keys-stale";
+const MADE: &str = "keys-made";
 
 pub trait Vault: Send + Sync {
     fn load(&self, name: KeyName) -> ChatResult<Option<Zeroizing<Vec<u8>>>>;
@@ -36,6 +37,7 @@ pub struct Keychain {
     file: FileVault,
     database: PathBuf,
     stale: PathBuf,
+    made: PathBuf,
     storage: Mutex<KeyStorage>,
     denied: AtomicBool,
     refusals: Notify,
@@ -59,6 +61,7 @@ impl Keychain {
             file,
             database: database_path(dir),
             stale: dir.join(STALE),
+            made: dir.join(MADE),
             storage: Mutex::new(storage),
             denied: AtomicBool::new(false),
             refusals: Notify::new(),
@@ -83,7 +86,16 @@ impl Keychain {
     }
 
     fn has_local_state(&self) -> bool {
-        self.database.exists() || self.stale.exists()
+        self.database.exists() || self.stale.exists() || self.made.exists()
+    }
+
+    fn note_os_keys(&self) {
+        if self.storage() != KeyStorage::Os || self.made.exists() {
+            return;
+        }
+        if let Err(error) = std::fs::write(&self.made, []) {
+            diagnostics::warn(format!("[chat] key marker: {error}"));
+        }
     }
 
     pub fn fall_back(&self) -> ChatResult<()> {
@@ -104,7 +116,7 @@ impl Keychain {
             .into_iter()
             .try_for_each(|name| self.ask(storage, |vault| vault.delete(name)));
         match wiped {
-            Ok(()) => remove_marker(&self.stale),
+            Ok(()) => remove_marker(&self.stale).and(remove_marker(&self.made)),
             Err(error) => {
                 if let Err(marker) = std::fs::write(&self.stale, []) {
                     diagnostics::warn(format!("[chat] stale key marker: {marker}"));
@@ -181,11 +193,17 @@ impl KeyStore for Keychain {
     }
 
     fn load(&self, name: KeyName) -> ChatResult<Option<Zeroizing<Vec<u8>>>> {
-        self.run(|vault| vault.load(name))
+        let loaded = self.run(|vault| vault.load(name))?;
+        if loaded.is_some() {
+            self.note_os_keys();
+        }
+        Ok(loaded)
     }
 
     fn save(&self, name: KeyName, secret: &[u8]) -> ChatResult<()> {
-        self.run(|vault| vault.save(name, secret))
+        self.run(|vault| vault.save(name, secret))?;
+        self.note_os_keys();
+        Ok(())
     }
 
     fn delete(&self, name: KeyName) -> ChatResult<()> {
@@ -206,7 +224,7 @@ fn device_vault(_service: &str) -> Box<dyn Vault> {
 fn remove_marker(path: &Path) -> ChatResult<()> {
     match std::fs::remove_file(path) {
         Err(error) if error.kind() != std::io::ErrorKind::NotFound => {
-            diagnostics::warn(format!("[chat] stale key marker: {error}"));
+            diagnostics::warn(format!("[chat] key marker: {error}"));
             Err(ChatError::Store)
         }
         _ => Ok(()),

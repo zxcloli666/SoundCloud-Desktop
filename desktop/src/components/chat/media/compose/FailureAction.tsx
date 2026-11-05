@@ -6,9 +6,10 @@ import { Clock, HardDrive, RotateCcw } from '../../../../lib/icons';
 import { useChatMediaStore } from '../../../../stores/chat/media';
 import { StarCta } from '../../../star-moments/StarCta';
 import { type Failure, notifyFailure } from './failure';
+import { useUploadActions } from './useUploadActions';
 
 const BUTTON =
-  'flex shrink-0 cursor-pointer items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium text-ink-80 bg-ink/[0.07] transition-colors duration-150 hover:bg-ink/[0.12] hover:text-ink';
+  'flex shrink-0 cursor-pointer items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-medium text-ink-80 bg-ink/[0.07] transition-colors duration-150 hover:bg-ink/[0.12] hover:text-ink disabled:cursor-default disabled:opacity-40 disabled:hover:bg-ink/[0.07] disabled:hover:text-ink-80';
 
 export const FailureAction = memo(function FailureAction({
   failure,
@@ -53,11 +54,13 @@ function RetryButton({
   bare?: boolean;
 }) {
   const { t } = useTranslation();
+  const actionable = useUploadActions();
   return (
     <button
       type="button"
       aria-label={label}
       title={label}
+      disabled={!actionable}
       className={bare ? `${BUTTON} px-1.5` : BUTTON}
       onClick={() =>
         void useChatMediaStore

@@ -138,6 +138,20 @@ export const scenes: LabScene[] = [
     },
   },
   {
+    id: 'compose-tray-starting',
+    title: 'Upload tray stays in the dock while chats restart offline',
+    route: '/home',
+    setup: (kit) => {
+      kit.star(true);
+      kit.world.status = { ...kit.world.status, phase: 'starting', online: false };
+      kit.uploads(album(SENT, CONV.dm, ['committed', 'queued', 'failed'], 'ts'));
+      kit.handle('chat_media_parked', () => [SENT]);
+      kit.dock(DOCK_LIST);
+      kit.waitFor('[data-ui="chat-upload-tray"] button');
+      kit.click('[data-ui="chat-upload-tray"] button');
+    },
+  },
+  {
     id: 'compose-drop',
     title: 'Drop overlay over the thread',
     route: `/chats/${CONV.group}`,

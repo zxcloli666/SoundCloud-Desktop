@@ -44,6 +44,8 @@ pub struct State {
     pub reports: Vec<Value>,
     pub holds: Vec<(String, Duration)>,
     pub offline_deletes: usize,
+    pub deletes_before_offline: Option<usize>,
+    pub delete_batches: Vec<usize>,
 }
 
 pub struct World {
@@ -79,6 +81,14 @@ impl World {
 
     fn offline_delete(&self) -> bool {
         self.with(|state| {
+            match state.deletes_before_offline {
+                Some(0) => {
+                    state.deletes_before_offline = None;
+                    state.offline_deletes = usize::MAX;
+                }
+                Some(left) => state.deletes_before_offline = Some(left - 1),
+                None => {}
+            }
             let offline = state.offline_deletes > 0;
             state.offline_deletes = state.offline_deletes.saturating_sub(1);
             offline
@@ -237,6 +247,10 @@ impl World {
     fn delete(&self, body: &Value) -> (u16, Value) {
         let ids: Vec<Uuid> = serde_json::from_value(body["ids"].clone()).unwrap_or_default();
         let count = ids.len();
+        self.with(|state| state.delete_batches.push(count));
+        if count > 500 {
+            return (400, json!({"error": "invalid", "message": "too many ids"}));
+        }
         self.with(|state| state.deleted.extend(ids));
         (
             200,

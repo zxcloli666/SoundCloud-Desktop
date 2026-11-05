@@ -1,5 +1,4 @@
 use std::sync::Arc;
-use std::time::Duration;
 
 use sc_chat::store::Store;
 use sc_chat::{ChatResult, MediaKind};
@@ -8,8 +7,6 @@ use uuid::Uuid;
 use super::engine::Uploads;
 use super::post::{pending_post, ready};
 use super::schedule::grouped;
-
-const DELETE_WAIT: Duration = Duration::from_secs(5);
 
 impl Uploads {
     pub async fn halt(&self) {
@@ -28,7 +25,6 @@ impl Uploads {
         if let Ok(Ok(media)) = found {
             self.queue_deletes(&slot, media).await;
         }
-        let _ = tokio::time::timeout(DELETE_WAIT, self.flush_deletes(&slot)).await;
     }
 }
 

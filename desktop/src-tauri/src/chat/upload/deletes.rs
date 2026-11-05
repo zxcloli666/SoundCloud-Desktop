@@ -10,6 +10,8 @@ use super::engine::Uploads;
 use super::single::later;
 use crate::app::diagnostics;
 
+pub const DELETE_CHUNK: usize = 500;
+
 impl Uploads {
     pub(super) async fn delete_on_server(&self, media: Vec<Uuid>) {
         if media.is_empty() {
@@ -63,19 +65,35 @@ impl Uploads {
     }
 
     pub(super) async fn flush_deletes(&self, slot: &Slot) {
-        let _flushing = self.deletes.lock().await;
-        let pending = self.pending_deletes(slot).await;
-        if pending.is_empty() {
+        if !self.speaks_for(slot) {
             return;
         }
-        let selection = MediaSelection::ids(pending.clone());
-        match self.api.delete_media(&selection).await {
-            Ok(_) => self.settle_deletes(slot, pending).await,
-            Err(error) if later(&error) => {}
-            Err(error) => {
-                diagnostics::warn(format!("[ChatUpload] server delete refused: {error}"));
-                self.settle_deletes(slot, pending).await;
+        let _flushing = self.deletes.lock().await;
+        let pending = self.pending_deletes(slot).await;
+        for chunk in pending.chunks(DELETE_CHUNK) {
+            if !self.speaks_for(slot) {
+                return;
             }
+            let chunk = chunk.to_vec();
+            match self
+                .api
+                .delete_media(&MediaSelection::ids(chunk.clone()))
+                .await
+            {
+                Ok(_) => self.settle_deletes(slot, chunk).await,
+                Err(error) if later(&error) => return,
+                Err(error) => {
+                    diagnostics::warn(format!("[ChatUpload] server delete refused: {error}"));
+                    self.settle_deletes(slot, chunk).await;
+                }
+            }
+        }
+    }
+
+    fn speaks_for(&self, slot: &Slot) -> bool {
+        match slot {
+            Slot::Account(account) => self.host.account().as_ref() == Some(account),
+            Slot::Store => false,
         }
     }
 

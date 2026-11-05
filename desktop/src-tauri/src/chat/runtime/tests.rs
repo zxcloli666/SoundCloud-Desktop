@@ -1,4 +1,4 @@
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, RwLock};
 use std::time::Duration;
 
 use sc_chat::api::wire::{ConfigView, LimitsView, MediaConfigView, MediaLimitsView};
@@ -10,7 +10,7 @@ use super::bringup::{
 };
 use super::clock::spread;
 use super::expiry::nap_of;
-use super::lifecycle::{AuthMove, auth_move};
+use super::lifecycle::{AuthMove, auth_move, forget_account};
 use super::signals::Signals;
 use super::status::{StatusCell, take_engine_part};
 use super::tap::Tap;
@@ -222,9 +222,8 @@ fn a_new_session_or_a_relogin_from_a_stuck_phase_restarts() {
     assert_eq!(auth_move(true, true, false, ChatPhase::Off), AuthMove::Stay);
 }
 
-#[test]
-fn server_config_maps_to_the_client_config() {
-    let config = config_of(ConfigView {
+fn star_view() -> ConfigView {
+    ConfigView {
         enabled: true,
         access: "all".into(),
         send_paused: false,
@@ -255,7 +254,23 @@ fn server_config_maps_to_the_client_config() {
                 restore_window_s: 15,
             },
         },
-    });
+    }
+}
+
+#[test]
+fn a_sign_out_forgets_the_account_config_so_star_and_quota_do_not_outlive_it() {
+    let status = StatusCell::new(Arc::new(Seen::default()));
+    status.update(|status| status.user_id = Some("100".into()));
+    let config = RwLock::new(Some(config_of(star_view())));
+    assert!(config.read().unwrap().as_ref().unwrap().media.star);
+    forget_account(&status, &config);
+    assert!(config.read().unwrap().is_none());
+    assert_eq!(status.get().user_id, None);
+}
+
+#[test]
+fn server_config_maps_to_the_client_config() {
+    let config = config_of(star_view());
     assert_eq!(config.access, Access::All);
     assert_eq!(config.limits.group_members_max, 200);
     assert!(config.media.uploads);

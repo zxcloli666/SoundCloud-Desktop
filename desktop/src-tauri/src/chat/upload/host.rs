@@ -3,7 +3,7 @@ use std::sync::{Arc, Weak};
 
 use sc_chat::media::{ALBUM_MAX, ROOM_ALBUM_MAX};
 use sc_chat::store::Store;
-use sc_chat::{ChatError, Millis};
+use sc_chat::{ChatError, Millis, UserId};
 use serde::Serialize;
 use serde_json::Value;
 use tauri::{Emitter, Listener};
@@ -22,6 +22,7 @@ pub trait Host: Send + Sync {
     fn sent(&self);
     fn failed(&self, id: Uuid, error: &ChatError);
     fn album_max(&self, room: bool) -> usize;
+    fn account(&self) -> Option<UserId>;
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -63,6 +64,10 @@ impl Host for RuntimeHost {
 
     fn failed(&self, id: Uuid, error: &ChatError) {
         let _ = self.app.emit(UPLOAD_ERROR, UploadError { id, error });
+    }
+
+    fn account(&self) -> Option<UserId> {
+        self.runtime.upgrade()?.status().user_id
     }
 
     fn album_max(&self, room: bool) -> usize {

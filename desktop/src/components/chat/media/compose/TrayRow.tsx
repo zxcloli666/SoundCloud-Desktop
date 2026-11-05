@@ -11,6 +11,7 @@ import { failureOf } from './failure';
 import { ProgressRing } from './ProgressRing';
 import { isDone, uploadFraction } from './progress';
 import { UploadThumb } from './UploadThumb';
+import { useUploadActions } from './useUploadActions';
 
 export const TrayRow = memo(function TrayRow({
   upload,
@@ -23,6 +24,7 @@ export const TrayRow = memo(function TrayRow({
 }) {
   const { t } = useTranslation();
   const perf = usePerfMode();
+  const actionable = useUploadActions();
   const error = useChatMediaStore((state) => state.errors[upload.id]);
   const chat = useChatListStore((state) => state.byId[upload.conversationId]);
   const done = isDone(upload);
@@ -78,8 +80,9 @@ export const TrayRow = memo(function TrayRow({
           type="button"
           aria-label={t('chat.media.tray.cancel')}
           title={t('chat.media.tray.cancel')}
+          disabled={!actionable}
           onClick={() => void useChatMediaStore.getState().cancelUpload(upload.id).catch(onFail)}
-          className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full text-ink-35 transition-colors duration-150 hover:bg-ink/[0.08] hover:text-ink-80"
+          className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full text-ink-35 transition-colors duration-150 hover:bg-ink/[0.08] hover:text-ink-80 disabled:cursor-default disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-ink-35"
         >
           <X size={13} />
         </button>

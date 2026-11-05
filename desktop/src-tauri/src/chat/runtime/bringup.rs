@@ -4,10 +4,12 @@ use std::time::Duration;
 use sc_chat::api::Identity;
 use sc_chat::api::wire::{ConfigView, RegisterDevice};
 use sc_chat::{
-    Access, ChatConfig, ChatError, ChatLimits, ChatPhase, ChatResult, KeyStore, MediaConfig, UserId,
+    Access, ChatConfig, ChatError, ChatLimits, ChatPhase, ChatResult, CoreEvent, Events, KeyStore,
+    MediaConfig, UserId,
 };
 
 use super::Runtime;
+use super::lifecycle::uploads_present;
 use super::local::Core;
 
 const RETRY_MIN: Duration = Duration::from_secs(2);
@@ -117,17 +119,21 @@ impl Runtime {
             .rt
             .spawn_blocking(move || {
                 runtime.keychain.sweep()?;
-                Core::open(
+                let core = Core::open(
                     &runtime.dir,
                     runtime.keychain.as_ref(),
                     runtime.api.clone(),
                     runtime.events.clone(),
-                )
+                )?;
+                let present = uploads_present(&core.store);
+                Ok::<_, ChatError>((core, present))
             })
             .await
             .unwrap_or(Err(ChatError::Internal))?;
+        let (core, present) = core;
         let core = Arc::new(core);
         self.set_core(Some(core.clone()));
+        self.events.emit(CoreEvent::MediaUploads(present));
         self.watch_expiry(&core);
         self.status
             .update(|status| status.key_storage = self.keychain.storage());

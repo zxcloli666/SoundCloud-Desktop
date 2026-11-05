@@ -29,6 +29,7 @@ const WAIT: Duration = Duration::from_secs(60);
 
 pub struct TestHost {
     pub store: Mutex<Option<Arc<Store>>>,
+    pub account: Mutex<Option<String>>,
     pub now: AtomicI64,
     pub sent: AtomicUsize,
     pub errors: Mutex<Vec<(Uuid, ChatError)>>,
@@ -53,6 +54,10 @@ impl Host for TestHost {
 
     fn album_max(&self, room: bool) -> usize {
         if room { 4 } else { 10 }
+    }
+
+    fn account(&self) -> Option<String> {
+        self.account.lock().unwrap().clone()
     }
 }
 
@@ -97,6 +102,7 @@ impl Rig {
         let store = Arc::new(Store::open(&dir.join("chat.db"), &MASTER).unwrap());
         let host = Arc::new(TestHost {
             store: Mutex::new(Some(store)),
+            account: Mutex::new(Some("100".into())),
             now: AtomicI64::new(START),
             sent: AtomicUsize::new(0),
             errors: Mutex::new(Vec::new()),
@@ -160,6 +166,17 @@ impl Rig {
             )])
             .unwrap();
         *self.host.store.lock().unwrap() = Some(store);
+        self.act_as(me);
+    }
+
+    pub fn act_as(&self, account: &str) {
+        *self.host.account.lock().unwrap() = Some(account.into());
+    }
+
+    pub fn queue_deletes(&self, account: &str, media: &[Uuid]) {
+        DeleteQueue::new(&self.dir)
+            .add(&Slot::Account(account.into()), media)
+            .unwrap();
     }
 
     pub fn queued_deletes(&self, account: &str) -> Vec<Uuid> {

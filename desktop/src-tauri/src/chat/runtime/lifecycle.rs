@@ -1,11 +1,12 @@
 use std::path::Path;
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 use std::time::Duration;
 
 use sc_chat::api::Api;
 use sc_chat::store::Store;
 use sc_chat::{
-    ChatError, ChatPhase, ChatResult, CoreEvent, Events, HistoryGate, MediaUploadsEvent,
+    ChatConfig, ChatError, ChatPhase, ChatResult, CoreEvent, Events, HistoryGate, MediaUploadView,
+    MediaUploadsEvent,
 };
 use tauri::Manager;
 
@@ -14,6 +15,7 @@ use crate::chat::upload::UPLOADS_DIR;
 
 use super::bringup::Halt;
 use super::local::Core;
+use super::status::StatusCell;
 use super::{Runtime, clock};
 
 const OFF_RECHECK: Duration = Duration::from_secs(3600);
@@ -122,7 +124,7 @@ impl Runtime {
             core.sync.set_user(None);
         }
         self.note_blocked([]);
-        self.status.update(|status| status.user_id = None);
+        forget_account(&self.status, &self.config);
     }
 
     pub(super) fn set_core(&self, core: Option<Arc<Core>>) {
@@ -191,6 +193,21 @@ impl Runtime {
                 }
             }
         }
+    }
+}
+
+pub fn forget_account(status: &StatusCell, config: &RwLock<Option<ChatConfig>>) {
+    if let Ok(mut config) = config.write() {
+        *config = None;
+    }
+    status.update(|status| status.user_id = None);
+}
+
+pub fn uploads_present(store: &Store) -> MediaUploadsEvent {
+    let uploads = store.uploads().unwrap_or_default();
+    MediaUploadsEvent {
+        uploads: uploads.iter().map(MediaUploadView::from).collect(),
+        removed: Vec::new(),
     }
 }
 

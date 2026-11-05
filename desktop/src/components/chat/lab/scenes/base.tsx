@@ -40,16 +40,38 @@ export const scenes: LabScene[] = [
       kit.waitFor('[data-ui="chat-keychain"] [role="status"]');
     },
   },
+  {
+    id: 'keychain-heals',
+    title: 'Keychain answers on Retry and the chats open',
+    route: '/chats',
+    setup: (kit) => {
+      refuseKeychain(kit, 'keychain_unavailable', true);
+      kit.click('[data-ui="chat-keychain"] button');
+      kit.waitFor('[data-ui="chat-row"]');
+    },
+  },
 ];
 
 function refuseKeychain(
   kit: LabKit,
   phase: 'keychain_denied' | 'keychain_unavailable' = 'keychain_denied',
+  heals = false,
 ) {
-  kit.world.status = { ...kit.world.status, phase };
+  const ready = { ...kit.world.status };
+  const parked = { ...ready, phase, userId: null, deviceId: null };
+  kit.world.status = parked;
+  kit.handle('chat_config', () => {
+    throw { code: 'not_ready' };
+  });
   kit.handle('chat_keychain_retry', () => {
-    kit.emit('chat:status', { ...kit.world.status, phase: 'starting' });
-    setTimeout(() => kit.emit('chat:status', { ...kit.world.status }), 900);
+    kit.emit('chat:status', { ...parked, phase: 'starting' });
+    setTimeout(() => {
+      if (heals) {
+        delete kit.world.handlers.chat_config;
+        kit.world.status = ready;
+      }
+      kit.emit('chat:status', kit.world.status);
+    }, 900);
     return null;
   });
 }

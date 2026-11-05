@@ -5,7 +5,8 @@ import {
   RETRY_MS,
   retriesAfter,
 } from '../src/components/chat/room/backdrop/retry.ts';
-import { accountMoved } from '../src/stores/chat/account.ts';
+import { gateOf } from '../src/components/chat/shell/gate.ts';
+import { accountChange, holdsLocalStore, uploadActionsRun } from '../src/stores/chat/account.ts';
 import { forgetTimers } from '../src/stores/chat/forget-timers.ts';
 
 test('a lost image is forgotten when the Rust side forgets it', () => {
@@ -45,12 +46,44 @@ test('a new notice, a retry or a reset replaces the pending forget', () => {
   }
 });
 
-test('the media store resets when the chat account changes or signs out', () => {
-  assert.equal(accountMoved(null, { userId: '100' }), false);
-  assert.equal(accountMoved({ userId: '100' }, { userId: '100' }), false);
-  assert.equal(accountMoved({ userId: '100' }, { userId: null }), true);
-  assert.equal(accountMoved({ userId: null }, { userId: '200' }), true);
-  assert.equal(accountMoved({ userId: '100' }, { userId: '200' }), true);
+test('only a sign-out or a switch resets the media store, a cold start does not', () => {
+  assert.equal(accountChange(null, { userId: '100' }), 'none');
+  assert.equal(accountChange({ userId: null }, { userId: '100' }), 'arrived');
+  assert.equal(accountChange({ userId: '100' }, { userId: '100' }), 'none');
+  assert.equal(accountChange({ userId: '100' }, { userId: null }), 'switched');
+  assert.equal(accountChange({ userId: '100' }, { userId: '200' }), 'switched');
+});
+
+test('the keychain card shows on a cold start with no chat config', () => {
+  assert.equal(gateOf(false, 'keychain_denied'), 'keychain');
+  assert.equal(gateOf(false, 'keychain_unavailable'), 'keychain');
+  assert.equal(gateOf(true, 'keychain_unavailable'), 'keychain');
+  assert.equal(gateOf(false, 'unbound'), 'relogin');
+  assert.equal(gateOf(false, 'revoked'), 'revoked');
+  assert.equal(gateOf(false, 'signed_out'), 'off');
+  assert.equal(gateOf(false, null), 'off');
+  assert.equal(gateOf(true, 'starting'), 'loading');
+  assert.equal(gateOf(true, 'ready'), 'open');
+});
+
+test('uploads stay visible while a local store exists and act only when it answers', () => {
+  for (const phase of ['starting', 'ready', 'off'] as const) {
+    assert.equal(holdsLocalStore(phase), true, phase);
+    assert.equal(uploadActionsRun(phase, true), true, phase);
+    assert.equal(uploadActionsRun(phase, false), false, phase);
+  }
+  for (const phase of [
+    'signed_out',
+    'unbound',
+    'bound_other',
+    'revoked',
+    'keychain_denied',
+    'keychain_unavailable',
+  ] as const) {
+    assert.equal(holdsLocalStore(phase), false, phase);
+    assert.equal(uploadActionsRun(phase, true), false, phase);
+  }
+  assert.equal(holdsLocalStore(null), false);
 });
 
 test('a deleted backdrop shows the cover and never asks again', () => {

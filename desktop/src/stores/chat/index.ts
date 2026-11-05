@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { chatBridge } from '../../lib/chat/bridge';
 import { onChatEvent } from '../../lib/chat/events';
 import type { ChatConfig, ChatStatus } from '../../lib/chat/types';
-import { accountMoved } from './account';
+import { accountChange, holdsLocalStore } from './account';
 import { useBackdropStore } from './backdrop';
 import { useChatDevicesStore } from './devices';
 import { useChatListStore } from './list';
@@ -28,12 +28,16 @@ export const selectChatEnabled = (state: ChatState) =>
 
 let accountTurn = 0;
 
-function accountChanged() {
-  const turn = ++accountTurn;
+function accountSwitched() {
   useChatMediaStore.getState().reset();
   useBackdropStore.getState().forgetUploads();
   const { config, setConfig } = useChatStore.getState();
   if (config?.media) setConfig({ ...config, media: undefined });
+  refreshAccount();
+}
+
+function refreshAccount() {
+  const turn = ++accountTurn;
   void chatBridge
     .config()
     .then((next) => {
@@ -55,8 +59,13 @@ export async function initChatBridge(): Promise<() => void> {
     onChatEvent('chat:status', (status) => {
       const before = useChatStore.getState().status;
       useChatStore.getState().setStatus(status);
-      if (accountMoved(before, status)) accountChanged();
+      const change = accountChange(before, status);
+      if (change === 'switched') accountSwitched();
+      else if (change === 'arrived') refreshAccount();
       else if (status.phase === 'ready' && before?.phase !== 'ready') refreshUploads();
+      if (!holdsLocalStore(status.phase) && useChatMediaStore.getState().local) {
+        useChatMediaStore.setState({ local: false });
+      }
     }),
     onChatEvent('chat:sync', (event) => {
       useChatListStore.getState().applySync(event);

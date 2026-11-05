@@ -5,6 +5,7 @@ import { selectChatEnabled, useChatStore } from '../../../stores/chat';
 import { ListSkeleton } from '../list/ListEmpty';
 import { KeychainCard } from '../relogin/KeychainCard';
 import { ReloginCard } from '../relogin/ReloginCard';
+import { gateOf } from './gate';
 
 function GateNote({ icon, text }: { icon: ReactNode; text: string }) {
   return (
@@ -38,21 +39,23 @@ export const ChatGate = memo(function ChatGate({
   const enabled = useChatStore(selectChatEnabled);
   const phase = useChatStore((state) => state.status?.phase ?? null);
 
-  if (!enabled) {
+  const gate = gateOf(enabled, phase);
+
+  if (gate === 'keychain') {
     return (
       <Centered>
-        <GateNote icon={<MessagesSquare size={22} />} text={t('chat.list.gate.off')} />
+        <KeychainCard reason={phase === 'keychain_unavailable' ? phase : 'keychain_denied'} />
       </Centered>
     );
   }
-  if (phase === 'unbound' || phase === 'bound_other') {
+  if (gate === 'relogin') {
     return (
       <Centered>
-        <ReloginCard reason={phase} />
+        <ReloginCard reason={phase === 'bound_other' ? phase : 'unbound'} />
       </Centered>
     );
   }
-  if (phase === 'revoked') {
+  if (gate === 'revoked') {
     return (
       <Centered>
         <GateNote icon={<MonitorSmartphone size={22} />} text={t('chat.list.gate.revoked')} />
@@ -60,13 +63,13 @@ export const ChatGate = memo(function ChatGate({
       </Centered>
     );
   }
-  if (phase === 'keychain_denied' || phase === 'keychain_unavailable') {
+  if (gate === 'off') {
     return (
       <Centered>
-        <KeychainCard reason={phase} />
+        <GateNote icon={<MessagesSquare size={22} />} text={t('chat.list.gate.off')} />
       </Centered>
     );
   }
-  if (phase !== 'ready') return loading;
+  if (gate === 'loading') return loading;
   return children;
 });

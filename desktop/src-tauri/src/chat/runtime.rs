@@ -32,7 +32,7 @@ use signals::Signals;
 pub use bringup::config_of;
 pub use clock::SystemClock;
 #[cfg(test)]
-pub use lifecycle::uploads_gone;
+pub use lifecycle::{uploads_gone, uploads_present};
 pub use local::{Core, database_path};
 pub use status::StatusCell;
 pub use tap::Tap;
