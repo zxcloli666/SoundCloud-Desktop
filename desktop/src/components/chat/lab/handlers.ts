@@ -111,6 +111,7 @@ export const defaultHandlers: Record<string, (args: Args) => unknown> = {
   chat_requests: () => [],
   chat_open: (a) => snapshot(String(a.conversationId)),
   chat_history: () => ({ messages: [], more: false }),
+  chat_images: () => ({ messages: [], more: false }),
   chat_members: (a) => world.members[String(a.conversationId)] ?? [],
   chat_send: (a) => sent(a.input as SendInput),
   chat_conversation_update: (a) => patched(String(a.conversationId), a.patch as ConversationPatch),

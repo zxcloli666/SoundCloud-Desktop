@@ -85,6 +85,15 @@ function seedThread(kit: LabKit, conv: ConvId, posts: Post[]) {
     const page = older.slice(Math.max(0, older.length - query.limit));
     return { messages: page, more: page.length < older.length };
   });
+  kit.handle('chat_images', (args) => {
+    const before = args.before as Seq | null;
+    const limit = args.limit as number;
+    const posts = (kit.world.threads[String(args.conversationId)] ?? [])
+      .filter((message) => message.seq !== null && message.attachments.length > 0)
+      .filter((message) => before == null || (message.seq ?? 0) < before)
+      .reverse();
+    return { messages: posts.slice(0, limit), more: posts.length > limit };
+  });
 }
 
 function emit(event: string, payload: unknown) {

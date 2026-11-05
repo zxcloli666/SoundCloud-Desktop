@@ -9,6 +9,7 @@ use uuid::Uuid;
 
 use super::compose::{check_text, mentions};
 use super::convert;
+use super::gallery::reached;
 use super::reads::reaches_back;
 use super::safety::checked;
 
@@ -76,6 +77,15 @@ fn members_and_requests_parse_from_the_server() {
 }
 
 #[test]
+fn the_gallery_reaches_back_only_while_the_server_gives_older_posts() {
+    assert_eq!(reached([40, 12, 30].into_iter(), Some(50)), Some(12));
+    assert_eq!(reached([40, 12].into_iter(), None), Some(12));
+    assert_eq!(reached([50, 60].into_iter(), Some(50)), None);
+    assert_eq!(reached([-3, -1].into_iter(), Some(50)), None);
+    assert_eq!(reached(std::iter::empty(), Some(50)), None);
+}
+
+#[test]
 fn a_report_is_trimmed_and_checked_before_it_leaves() {
     let report = |seq_from, seq_to, comment: Option<&str>| ReportInput {
         conversation_id: Uuid::nil(),
@@ -112,10 +122,24 @@ fn older_history_is_asked_from_the_server_only_past_the_local_end() {
     assert!(!reaches_back(&query(Some(100), None, 0), &empty));
 }
 
+fn stored_group(store: &Store, id: Uuid) {
+    let listed: RequestList = serde_json::from_value(json!({
+        "requests": [{
+            "conversation_id": id, "kind": "group", "from": "42", "since": 1, "last_seq": 0,
+            "last_at": 0, "member_count": 3, "meta_ct": null, "meta_epoch": null
+        }],
+        "count": 1
+    }))
+    .unwrap();
+    let summary = convert::request(&listed.requests[0], None, convert::bare("42")).conversation;
+    store.put_conversations(&[summary]).unwrap();
+}
+
 #[test]
 fn a_rename_keeps_the_description() {
     let store = Store::open_in_memory(&[7; 32]).unwrap();
     let id = Uuid::from_u128(9);
+    stored_group(&store, id);
     let meta = ConversationMeta {
         title: "Old".into(),
         description: "About us".into(),

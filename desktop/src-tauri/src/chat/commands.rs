@@ -2,6 +2,7 @@ pub(crate) mod compose;
 mod conversations;
 mod convert;
 mod devices;
+mod gallery;
 mod media;
 mod members;
 mod reads;
@@ -29,6 +30,12 @@ use super::state::ChatState;
 #[tauri::command]
 pub async fn chat_status(state: State<'_, ChatState>) -> Result<ChatStatus, ChatError> {
     Ok(state.status())
+}
+
+#[tauri::command]
+pub async fn chat_keychain_retry(state: State<'_, ChatState>) -> Result<(), ChatError> {
+    state.runtime.retry_keychain();
+    Ok(())
 }
 
 #[tauri::command]
@@ -96,6 +103,16 @@ pub async fn chat_history(
     query: HistoryQuery,
 ) -> Result<HistoryPage, ChatError> {
     reads::history(&state, conversation_id, query).await
+}
+
+#[tauri::command]
+pub async fn chat_images(
+    state: State<'_, ChatState>,
+    conversation_id: ConvId,
+    before: Option<Seq>,
+    limit: u32,
+) -> Result<HistoryPage, ChatError> {
+    gallery::images(&state, conversation_id, before, limit).await
 }
 
 #[tauri::command]

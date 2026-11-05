@@ -77,6 +77,8 @@ export const chatBridge = {
   open: (conversationId: ConvId) => invoke<ThreadSnapshot>('chat_open', { conversationId }),
   history: (conversationId: ConvId, query: HistoryQuery) =>
     invoke<HistoryPage>('chat_history', { conversationId, query }),
+  images: (conversationId: ConvId, before: Seq | null, limit: number) =>
+    invoke<HistoryPage>('chat_images', { conversationId, before, limit }),
   create: (input: CreateConversation) => invoke<ConversationSummary>('chat_create', { input }),
   conversationUpdate: (conversationId: ConvId, patch: ConversationPatch) =>
     invoke<ConversationSummary>('chat_conversation_update', { conversationId, patch }),

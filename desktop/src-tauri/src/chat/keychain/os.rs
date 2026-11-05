@@ -45,5 +45,45 @@ impl Vault for OsVault {
 
 fn failed(name: KeyName, error: Error) -> ChatError {
     diagnostics::warn(format!("[chat] keychain {}: {error}", name.as_str()));
-    ChatError::Keychain
+    if refused(&error) {
+        ChatError::KeychainDenied
+    } else {
+        ChatError::Keychain
+    }
 }
+
+#[cfg(target_os = "macos")]
+fn refused(error: &Error) -> bool {
+    const USER_CANCELED: i32 = -128;
+    const AUTH_FAILED: i32 = -25293;
+    const INTERACTION_NOT_ALLOWED: i32 = -25308;
+    match error {
+        Error::PlatformFailure(inner) | Error::NoStorageAccess(inner) => inner
+            .downcast_ref::<security_framework::base::Error>()
+            .is_some_and(|status| {
+                matches!(
+                    status.code(),
+                    USER_CANCELED | AUTH_FAILED | INTERACTION_NOT_ALLOWED
+                )
+            }),
+        _ => false,
+    }
+}
+
+#[cfg(target_os = "linux")]
+fn refused(error: &Error) -> bool {
+    match error {
+        Error::NoStorageAccess(inner) => inner
+            .downcast_ref::<secret_service::Error>()
+            .is_some_and(|failure| matches!(failure, secret_service::Error::Prompt)),
+        _ => false,
+    }
+}
+
+#[cfg(not(any(target_os = "macos", target_os = "linux")))]
+fn refused(_error: &Error) -> bool {
+    false
+}
+
+#[cfg(test)]
+mod tests;

@@ -6,9 +6,11 @@ mod os;
 
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
+use std::sync::atomic::{AtomicBool, Ordering};
 
 use sc_chat::crypto::DeviceKeys;
 use sc_chat::{ChatError, ChatResult, KeyName, KeyStorage, KeyStore, Zeroizing};
+use tokio::sync::Notify;
 
 use super::runtime::database_path;
 use crate::app::diagnostics;
@@ -18,6 +20,7 @@ use file::FileVault;
 use os::OsVault;
 
 const FALL_BACK_AFTER: u32 = 5;
+const STALE: &str = "keys-stale";
 
 pub trait Vault: Send + Sync {
     fn load(&self, name: KeyName) -> ChatResult<Option<Zeroizing<Vec<u8>>>>;
@@ -31,7 +34,11 @@ pub struct Keychain {
     os: Box<dyn Vault>,
     file: FileVault,
     database: PathBuf,
+    stale: PathBuf,
     storage: Mutex<KeyStorage>,
+    denied: AtomicBool,
+    refusals: Notify,
+    asking: Mutex<()>,
 }
 
 impl Keychain {
@@ -50,8 +57,24 @@ impl Keychain {
             os,
             file,
             database: database_path(dir),
+            stale: dir.join(STALE),
             storage: Mutex::new(storage),
+            denied: AtomicBool::new(false),
+            refusals: Notify::new(),
+            asking: Mutex::new(()),
         }
+    }
+
+    pub fn denied(&self) -> bool {
+        self.denied.load(Ordering::SeqCst)
+    }
+
+    pub fn allow(&self) {
+        self.denied.store(false, Ordering::SeqCst);
+    }
+
+    pub fn refusals(&self) -> &Notify {
+        &self.refusals
     }
 
     pub fn fall_back(&self) -> ChatResult<()> {
@@ -63,11 +86,27 @@ impl Keychain {
 
     pub fn wipe(&self) -> ChatResult<()> {
         let _one_at_a_time = DeviceKeys::exclusive();
-        let vault = self.vault(self.storage());
-        for name in KeyName::ALL {
-            vault.delete(name)?;
+        let storage = self.storage();
+        let wiped = KeyName::ALL
+            .into_iter()
+            .try_for_each(|name| self.ask(storage, |vault| vault.delete(name)));
+        match wiped {
+            Ok(()) => remove_marker(&self.stale),
+            Err(error) => {
+                if let Err(marker) = std::fs::write(&self.stale, []) {
+                    diagnostics::warn(format!("[chat] stale key marker: {marker}"));
+                }
+                Err(error)
+            }
         }
-        Ok(())
+    }
+
+    pub fn sweep(&self) -> ChatResult<()> {
+        if self.stale.exists() {
+            self.wipe()
+        } else {
+            Ok(())
+        }
     }
 
     fn set_storage(&self, storage: KeyStorage) {
@@ -83,12 +122,33 @@ impl Keychain {
         }
     }
 
+    fn ask<T>(
+        &self,
+        storage: KeyStorage,
+        op: impl Fn(&dyn Vault) -> ChatResult<T>,
+    ) -> ChatResult<T> {
+        let _one_prompt_at_a_time = self.asking.lock();
+        if storage == KeyStorage::Os && self.denied() {
+            return Err(ChatError::KeychainDenied);
+        }
+        let done = op(self.vault(storage));
+        if matches!(done, Err(ChatError::KeychainDenied))
+            && !self.denied.swap(true, Ordering::SeqCst)
+        {
+            diagnostics::warn(
+                "[chat] keychain access was refused, chat waits for the user to retry",
+            );
+            self.refusals.notify_one();
+        }
+        done
+    }
+
     fn run<T>(&self, op: impl Fn(&dyn Vault) -> ChatResult<T>) -> ChatResult<T> {
         let storage = self.storage();
-        match op(self.vault(storage)) {
+        match self.ask(storage, &op) {
             Err(ChatError::Keychain) if storage == KeyStorage::Os && !self.database.exists() => {
                 self.fall_back()?;
-                op(&self.file)
+                self.ask(KeyStorage::File, &op)
             }
             done => done,
         }
@@ -124,6 +184,16 @@ fn device_vault(service: &str) -> Box<dyn Vault> {
 #[cfg(feature = "chat-lab")]
 fn device_vault(_service: &str) -> Box<dyn Vault> {
     Box::new(memory::MemoryVault::default())
+}
+
+fn remove_marker(path: &Path) -> ChatResult<()> {
+    match std::fs::remove_file(path) {
+        Err(error) if error.kind() != std::io::ErrorKind::NotFound => {
+            diagnostics::warn(format!("[chat] stale key marker: {error}"));
+            Err(ChatError::Store)
+        }
+        _ => Ok(()),
+    }
 }
 
 pub fn should_fall_back(storage: KeyStorage, has_local_state: bool, failures: u32) -> bool {

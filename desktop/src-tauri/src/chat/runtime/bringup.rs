@@ -28,6 +28,10 @@ impl Runtime {
         let Some(session_id) = session else {
             return Err(Halt::Phase(ChatPhase::SignedOut));
         };
+        if self.keychain.denied() {
+            self.set_core(None);
+            return Err(Halt::Phase(ChatPhase::KeychainDenied));
+        }
         if self.session.logged_out() {
             return Err(Halt::Phase(ChatPhase::Unbound));
         }
@@ -111,6 +115,7 @@ impl Runtime {
         let core = self
             .rt
             .spawn_blocking(move || {
+                runtime.keychain.sweep()?;
                 Core::open(
                     &runtime.dir,
                     runtime.keychain.as_ref(),
@@ -131,6 +136,7 @@ impl Runtime {
     async fn open_core(self: &Arc<Self>, failures: &mut u32) -> Result<Arc<Core>, Halt> {
         match self.local_core().await {
             Ok(core) => Ok(core),
+            Err(error @ ChatError::KeychainDenied) => Err(self.halt(&error, *failures)),
             Err(ChatError::Keychain) => {
                 *failures += 1;
                 let local = local::has_local_state(&self.dir);
@@ -165,11 +171,10 @@ impl Runtime {
     }
 
     pub(super) fn halt(&self, error: &ChatError, failures: u32) -> Halt {
+        if let Some(phase) = parked_phase(error) {
+            return Halt::Phase(phase);
+        }
         match error {
-            ChatError::ReloginRequired => Halt::Phase(ChatPhase::Unbound),
-            ChatError::SessionBoundOther => Halt::Phase(ChatPhase::BoundOther),
-            ChatError::DeviceRevoked => Halt::Phase(ChatPhase::Revoked),
-            ChatError::Disabled => Halt::Phase(ChatPhase::Off),
             ChatError::Busy { retry_ms } => Halt::Retry(busy_retry(*retry_ms)),
             ChatError::Clock { server_now } => {
                 self.api.channel().note_server_now(*server_now);
@@ -177,6 +182,17 @@ impl Runtime {
             }
             _ => Halt::Retry(backoff(failures)),
         }
+    }
+}
+
+pub(super) fn parked_phase(error: &ChatError) -> Option<ChatPhase> {
+    match error {
+        ChatError::ReloginRequired => Some(ChatPhase::Unbound),
+        ChatError::SessionBoundOther => Some(ChatPhase::BoundOther),
+        ChatError::DeviceRevoked => Some(ChatPhase::Revoked),
+        ChatError::Disabled => Some(ChatPhase::Off),
+        ChatError::KeychainDenied => Some(ChatPhase::KeychainDenied),
+        _ => None,
     }
 }
 

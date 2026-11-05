@@ -5134,8 +5134,8 @@ dependencies = [
 
 [[package]]
 name = "sc-chat"
-version = "0.2.0-alpha.4"
-source = "git+https://github.com/zxcloli666/SoundCloud-Core?rev=1d8713e0042cb8e322d618aca2ac73bca67464df#1d8713e0042cb8e322d618aca2ac73bca67464df"
+version = "0.2.0"
+source = "git+https://github.com/zxcloli666/SoundCloud-Core?tag=sc-chat-v0.2.0#5cdf864e649f22aed416932d87d5f65d44e98999"
 dependencies = [
  "async-trait",
  "base64 0.22.1",
@@ -5159,7 +5159,7 @@ dependencies = [
 [[package]]
 name = "sc-chat-wire"
 version = "0.1.1"
-source = "git+https://github.com/zxcloli666/SoundCloud-Core?rev=1d8713e0042cb8e322d618aca2ac73bca67464df#1d8713e0042cb8e322d618aca2ac73bca67464df"
+source = "git+https://github.com/zxcloli666/SoundCloud-Core?tag=sc-chat-v0.2.0#5cdf864e649f22aed416932d87d5f65d44e98999"
 dependencies = [
  "chacha20poly1305",
  "ed25519-dalek",
@@ -5702,6 +5702,8 @@ dependencies = [
  "rustls",
  "sc-chat",
  "sc-fingerprint",
+ "secret-service",
+ "security-framework 3.7.0",
  "serde",
  "serde_json",
  "sha2",

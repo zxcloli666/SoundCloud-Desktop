@@ -5,7 +5,7 @@ use sc_chat::api::wire::{ConfigView, LimitsView, MediaConfigView, MediaLimitsVie
 use sc_chat::{Access, ChatPhase, ChatStatus, CoreEvent, Events, HistoryGate, Tier, TypingEvent};
 use uuid::Uuid;
 
-use super::bringup::{backoff, busy_retry, clock_retry, config_of};
+use super::bringup::{backoff, busy_retry, clock_retry, config_of, parked_phase};
 use super::clock::spread;
 use super::expiry::nap_of;
 use super::lifecycle::{AuthMove, auth_move};
@@ -284,4 +284,13 @@ fn server_config_maps_to_the_client_config() {
     assert!(!beta.media.star);
     assert!(beta.send_paused);
     assert_eq!(beta.ock_current, 2);
+}
+
+#[test]
+fn a_refused_keychain_parks_the_chat_until_the_user_retries() {
+    assert_eq!(
+        parked_phase(&sc_chat::ChatError::KeychainDenied),
+        Some(ChatPhase::KeychainDenied)
+    );
+    assert_eq!(parked_phase(&sc_chat::ChatError::Keychain), None);
 }

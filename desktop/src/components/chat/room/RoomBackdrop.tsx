@@ -1,5 +1,7 @@
 import { memo, useEffect, useState } from 'react';
+import { onChatEvent } from '../../../lib/chat/events';
 import { chatMediaUrl } from '../../../lib/chat/media-url';
+import type { ConvId } from '../../../lib/chat/types';
 import type { RoomView } from '../../../lib/together/types';
 import { useBackdropStore, watchBackdropUploads } from '../../../stores/chat/backdrop';
 import { BackdropStage } from './backdrop/BackdropStage';
@@ -7,13 +9,19 @@ import { useRoomBackdrop } from './backdrop/shown';
 
 const RETRY_MS = 30_000;
 
-function useFailed(src: string | null) {
+function useFailed(src: string | null, conversationId: ConvId | null) {
   const [failed, setFailed] = useState<string | null>(null);
   useEffect(() => {
     if (failed === null) return;
     const timer = setTimeout(() => setFailed(null), RETRY_MS);
-    return () => clearTimeout(timer);
-  }, [failed]);
+    const listening = onChatEvent('chat:sync', (event) => {
+      if (event.conversations.some((summary) => summary.id === conversationId)) setFailed(null);
+    });
+    return () => {
+      clearTimeout(timer);
+      void listening.then((stop) => stop());
+    };
+  }, [failed, conversationId]);
   return [failed !== null && failed === src, () => setFailed(src)] as const;
 }
 
@@ -21,7 +29,7 @@ export const RoomBackdrop = memo(function RoomBackdrop({ room }: { room: RoomVie
   const { shown } = useRoomBackdrop(room);
   const image = shown?.kind === 'image' ? shown : null;
   const src = image ? chatMediaUrl(image.conversationId, image.mediaId, 'image') : null;
-  const [failed, fail] = useFailed(src);
+  const [failed, fail] = useFailed(src, image?.conversationId ?? null);
   const held = useBackdropStore((state) => state.dialog !== null);
 
   useEffect(() => {

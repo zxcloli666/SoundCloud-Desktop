@@ -10,8 +10,6 @@ use super::hops::Hop;
 use super::{EdgeTransport, Route};
 use crate::network::edge;
 
-const CHAT_URL: &str = "https://api.scnative.dev/chat/x";
-
 fn request(tier: Tier, timeout_ms: u64) -> TransportRequest {
     TransportRequest {
         tier,

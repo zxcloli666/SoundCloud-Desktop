@@ -84,6 +84,10 @@ pub fn start(state: &ChatState) {
     state
         .app
         .listen_any(EDGE_CHANGED, move |_| rerouted.reroute());
+    let parked = runtime.clone();
+    state
+        .rt
+        .spawn(async move { parked.park_on_refusal().await });
     state.rt.spawn(runtime.run());
 }
 
@@ -141,6 +145,18 @@ impl Runtime {
 
     pub fn restart(&self) {
         self.signals.restart();
+    }
+
+    pub fn retry_keychain(&self) {
+        self.keychain.allow();
+        self.signals.restart();
+    }
+
+    async fn park_on_refusal(&self) {
+        loop {
+            self.keychain.refusals().notified().await;
+            self.signals.restart();
+        }
     }
 
     pub fn adopt_device(&self, device_id: DeviceId) {

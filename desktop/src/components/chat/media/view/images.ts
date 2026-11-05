@@ -22,9 +22,7 @@ export interface ImagePage {
   more: boolean;
 }
 
-const HISTORY_PAGE = 200;
-const PAGES_PER_STEP = 4;
-const WANT_PER_STEP = 24;
+const POSTS_PER_STEP = 24;
 
 export function imagesOf(message: Message): ViewImage[] {
   if (message.body.type !== 'text') return [];
@@ -56,35 +54,15 @@ function bySeq(a: Message, b: Message): number {
 }
 
 export async function imagesBefore(conversationId: ConvId, before: Seq | null): Promise<ImagePage> {
-  const found: Message[] = [];
-  let cursor = before;
-  let newest: Seq | null = null;
-  let more = true;
-  let images = 0;
-  for (let page = 0; page < PAGES_PER_STEP && more && images < WANT_PER_STEP; page++) {
-    const result = await chatBridge.history(conversationId, {
-      before: cursor,
-      limit: HISTORY_PAGE,
-    });
-    const sent = result.messages.filter((message) => message.seq !== null);
-    more = result.more && sent.length > 0;
-    if (sent.length === 0) break;
-    sent.sort(bySeq);
-    cursor = sent[0].seq;
-    newest = Math.max(newest ?? 0, sent[sent.length - 1].seq ?? 0);
-    for (const message of sent) {
-      if (message.attachments.length > 0 && message.body.type === 'text') {
-        found.push(message);
-        images += message.attachments.length;
-      }
-    }
-  }
-  found.sort(bySeq);
+  const page = await chatBridge.images(conversationId, before, POSTS_PER_STEP);
+  const posts = page.messages
+    .filter((message) => message.seq !== null && message.attachments.length > 0)
+    .sort(bySeq);
   return {
-    images: found.flatMap(imagesOf),
-    oldest: cursor,
-    newest,
-    more,
+    images: posts.flatMap(imagesOf),
+    oldest: posts[0]?.seq ?? before,
+    newest: posts[posts.length - 1]?.seq ?? null,
+    more: page.more,
   };
 }
 
