@@ -1,30 +1,20 @@
-import { memo, useEffect } from 'react';
+import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { ChevronRight, Images } from '../../../lib/icons';
-import { useChatStore } from '../../../stores/chat';
-import { useChatMediaStore } from '../../../stores/chat/media';
 import { Card } from '../../settings/primitives';
 import { useFormatSize } from '../storage/bytes';
 import { QuotaRing } from '../storage/QuotaRing';
-import { quotaFull } from '../storage/ring-tone';
+import { useStorageMeter } from '../storage/useStorageMeter';
 
 export const StorageEntry = memo(function StorageEntry() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const format = useFormatSize();
-  const media = useChatStore((state) => state.config?.media ?? null);
-  const usage = useChatMediaStore((state) => state.usage);
+  const meter = useStorageMeter();
 
-  const hasMedia = media !== null;
-  useEffect(() => {
-    if (hasMedia) void useChatMediaStore.getState().refreshUsage();
-  }, [hasMedia]);
-
-  if (!media) return null;
-  const used = usage ? usage.bytes + usage.reserved : media.used;
-  const quota = usage?.quota ?? media.quota;
-  const full = quotaFull(used, quota);
+  if (!meter) return null;
+  const { used, quota, full, files } = meter;
 
   return (
     <Card title={t('chat.storage.entry.title')} icon={<Images size={17} />}>
@@ -42,7 +32,9 @@ export const StorageEntry = memo(function StorageEntry() {
             {t('chat.storage.entry.used', { used: format(used), quota: format(quota) })}
           </span>
           <span className="truncate text-[12px] text-ink-45">
-            {usage ? t('chat.storage.files', { count: usage.files }) : t('chat.storage.entry.line')}
+            {files === null
+              ? t('chat.storage.entry.line')
+              : t('chat.storage.files', { count: files })}
           </span>
         </span>
         <span className="flex shrink-0 items-center gap-1 text-[12px] font-semibold text-ink-55 transition-colors group-hover:text-ink-85">

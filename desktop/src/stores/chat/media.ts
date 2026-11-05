@@ -65,6 +65,7 @@ export interface ChatMediaState extends MediaData {
 }
 
 const STALLED: ReadonlySet<UploadState> = new Set(['failed', 'queued', 'reserved']);
+let usageFetch: Promise<void> | null = null;
 const forgetting = forgetTimers<MediaId>((id) => useChatMediaStore.getState().forgetShown([id]));
 
 function emptyMedia(): MediaData {
@@ -153,13 +154,18 @@ export const useChatMediaStore = create<ChatMediaState>()((set, get) => ({
       return;
     }
   },
-  refreshUsage: async () => {
-    set({ usageLoad: 'loading' });
-    try {
-      set({ usage: await chatBridge.mediaUsage(), usageLoad: 'ready' });
-    } catch {
-      set({ usageLoad: 'failed' });
-    }
+  refreshUsage: () => {
+    usageFetch ??= (async () => {
+      set({ usageLoad: 'loading' });
+      try {
+        set({ usage: await chatBridge.mediaUsage(), usageLoad: 'ready' });
+      } catch {
+        set({ usageLoad: 'failed' });
+      } finally {
+        usageFetch = null;
+      }
+    })();
+    return usageFetch;
   },
   setShown: (id, shown, forgetInMs) => {
     forgetting.schedule(id, forgetInMs);

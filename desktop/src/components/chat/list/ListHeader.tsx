@@ -2,6 +2,7 @@ import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Plus, Search, X } from '../../../lib/icons';
 import { openNewChat } from '../new-chat/new-chat-store';
+import { StorageButton } from './StorageButton';
 import type { ListVariant } from './useRowMenu';
 
 interface ListHeaderProps {
@@ -67,6 +68,7 @@ export const ListHeader = memo(function ListHeader({ variant, query, onQuery }: 
     return (
       <div className="flex items-center gap-2 px-3 pt-1 pb-2.5">
         {search}
+        <StorageButton big={false} />
         <NewChatButton big={false} />
       </div>
     );
@@ -78,7 +80,10 @@ export const ListHeader = memo(function ListHeader({ variant, query, onQuery }: 
         <h1 className="text-[22px] font-black tracking-tight text-ink-92">
           {t('chat.list.title')}
         </h1>
-        <NewChatButton big />
+        <div className="flex items-center gap-2">
+          <StorageButton big />
+          <NewChatButton big />
+        </div>
       </div>
       {search}
     </div>
