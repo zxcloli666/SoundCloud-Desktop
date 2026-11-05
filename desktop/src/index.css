@@ -1618,6 +1618,10 @@ select,
     .npb-meta {
         flex-basis: 100%;
     }
+
+    .npb-react.is-local {
+        display: none;
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {
