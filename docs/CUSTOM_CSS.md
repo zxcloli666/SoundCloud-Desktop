@@ -156,6 +156,7 @@ States are in attributes too: `aria-current="page"` on the open link or section,
 | `[data-ui="chat-storage-grid"]` | Grid of your images; a tile is `[data-ui="chat-storage-tile"]`, a selected one has `[aria-pressed="true"]` |
 | `[data-ui="chat-storage-undo"]` | Undo bar after deleting images |
 | `[data-ui="chat-storage-entry"]` | Storage card in chat settings |
+| `[data-ui="chat-storage-button"]` | Image storage button in the chat list header, `[data-full]` when the quota is full |
 
 Other chat windows (new chat, report, delete) are `[data-ui="modal"]`. Chat colors come from the scheme tokens (see "White and dark"): `--ink` for text and lines, `--paper` and `--surface` for surfaces, `--shade` for wells and scrims. A theme that sets them restyles chats too. Your messages, the open chat and the chosen filter are tinted with `--color-chat-tint`.
 
