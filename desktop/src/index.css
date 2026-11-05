@@ -901,7 +901,7 @@ select,
    (vinyl ring, eq bars, play pulse) run only while [data-playing] is true
    (= playing AND window visible). */
 .npb {
-    --npb-quality-w: 66px;
+    --npb-quality-w: 67px;
     position: absolute;
     left: 0;
     right: 0;
@@ -1532,6 +1532,10 @@ select,
 
 .npb-art-load:hover .npb-art-load-cancel {
     display: block;
+}
+
+.npb[data-compact] {
+    --npb-quality-w: 64px;
 }
 
 .npb[data-compact] .npb-vol-slider {
