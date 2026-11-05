@@ -91,7 +91,7 @@ export const RoomHero = React.memo(function RoomHero({
   return (
     <section
       data-ui="track-hero"
-      className="relative rounded-[2rem] overflow-hidden glass-featured"
+      className="@container relative rounded-[2rem] overflow-hidden glass-featured"
       style={{ isolation: 'isolate' }}
     >
       {cover && hb > 0 && (
@@ -111,8 +111,8 @@ export const RoomHero = React.memo(function RoomHero({
         </div>
       )}
 
-      <div className="relative p-6 md:p-8 flex flex-col gap-7">
-        <div className="flex flex-col lg:flex-row items-center lg:items-start gap-6 lg:gap-8">
+      <div className="relative p-6 @min-[512px]:p-8 flex flex-col gap-7">
+        <div className="flex flex-col @min-[740px]:flex-row items-center @min-[740px]:items-start gap-6 @min-[740px]:gap-8">
           <TrackCover
             title={title}
             coverUrl={cover ?? undefined}
@@ -122,8 +122,8 @@ export const RoomHero = React.memo(function RoomHero({
             onToggle={onPlay}
           />
 
-          <div className="flex-1 min-w-0 w-full text-center lg:text-left">
-            <div className="flex items-center gap-2 flex-wrap justify-center lg:justify-start mb-3.5">
+          <div className="flex-1 min-w-0 w-full text-center @min-[740px]:text-left">
+            <div className="flex items-center gap-2 flex-wrap justify-center @min-[740px]:justify-start mb-3.5">
               <TrackStatusBadges meta={track._scd_meta} />
               {track.genre && (
                 <span
@@ -152,7 +152,7 @@ export const RoomHero = React.memo(function RoomHero({
             </div>
 
             <h1
-              className="text-4xl md:text-6xl xl:text-7xl font-black leading-[0.95] tracking-tighter break-words"
+              className="text-4xl @min-[512px]:text-6xl @min-[960px]:text-7xl font-black leading-[0.95] tracking-tighter break-words"
               style={titleStyle}
             >
               {title}
@@ -209,7 +209,7 @@ export const RoomHero = React.memo(function RoomHero({
               </div>
 
               {(featLinks.length > 0 || participants || ad.uploader) && (
-                <div className="mt-1.5 text-[12px] text-ink-40 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 justify-center lg:justify-start">
+                <div className="mt-1.5 text-[12px] text-ink-40 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 justify-center @min-[740px]:justify-start">
                   {featLinks.length > 0 && (
                     <span>
                       {t('track.feat')}{' '}
@@ -249,7 +249,7 @@ export const RoomHero = React.memo(function RoomHero({
               )}
             </div>
 
-            <div className="mt-6 flex justify-center lg:justify-start">
+            <div className="mt-6 flex justify-center @min-[740px]:justify-start">
               <TrackActionRail
                 track={track}
                 isPlaying={isThisPlaying}

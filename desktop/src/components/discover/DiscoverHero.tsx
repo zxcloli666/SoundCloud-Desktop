@@ -30,13 +30,13 @@ function DiscoverHeroImpl({
     const perf = usePerfMode();
 
   return (
-    <GlassHeroPanel hasStar={false} aura={aura}>
-      <div data-ui="discover-hero" className="relative p-6 md:p-12 flex flex-col lg:flex-row gap-8 lg:gap-12 items-center lg:items-stretch">
+    <GlassHeroPanel hasStar={false} aura={aura} className="@container">
+      <div data-ui="discover-hero" className="relative p-6 @min-[512px]:p-12 flex flex-col @min-[740px]:flex-row gap-8 @min-[740px]:gap-12 items-center @min-[740px]:items-stretch">
           <CompassArtifact aura={aura} idleAnim={perf.idleAnim}/>
 
-        <div className="flex-1 min-w-0 flex flex-col justify-between gap-6 text-center lg:text-left">
+        <div className="flex-1 min-w-0 flex flex-col justify-between gap-6 text-center @min-[740px]:text-left">
           <h1
-            className="text-5xl md:text-7xl lg:text-[88px] font-black leading-[0.85] tracking-tighter break-words max-w-full"
+            className="text-5xl @min-[512px]:text-7xl @min-[740px]:text-[88px] font-black leading-[0.85] tracking-tighter break-words max-w-full"
             style={{
               background: aura.nameGradient,
               backgroundSize: '200% auto',
@@ -50,7 +50,7 @@ function DiscoverHeroImpl({
             {t('discover.title')}
           </h1>
 
-          <div className="flex flex-wrap items-center gap-2.5 justify-center lg:justify-start text-[11px] font-bold uppercase tracking-[0.22em] text-ink-55">
+          <div className="flex flex-wrap items-center gap-2.5 justify-center @min-[740px]:justify-start text-[11px] font-bold uppercase tracking-[0.22em] text-ink-55">
             <MetaPill
               icon={<MicVocal size={11} className="text-ink-45" />}
               text={
@@ -83,7 +83,7 @@ function DiscoverHeroImpl({
             />
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 pt-1 justify-center lg:justify-start">
+          <div className="flex flex-wrap items-center gap-3 pt-1 justify-center @min-[740px]:justify-start">
             <button
               type="button"
               onClick={onSurpriseMe}
@@ -108,7 +108,7 @@ function DiscoverHeroImpl({
           </div>
         </div>
 
-        <div className="hidden xl:flex flex-col gap-3 self-stretch min-w-[200px]">
+        <div className="hidden @min-[1000px]:flex flex-col gap-3 self-stretch min-w-[200px]">
           <Stat
             value={artistsCount}
             label={t('discover.statArtists')}
@@ -214,7 +214,7 @@ const CompassArtifact = memo(function CompassArtifact({
     idleAnim: boolean;
 }) {
   return (
-    <div className="relative shrink-0 self-center lg:self-start w-[180px] h-[180px] md:w-[220px] md:h-[220px]">
+    <div className="relative shrink-0 self-center @min-[740px]:self-start w-[180px] h-[180px] @min-[512px]:w-[220px] @min-[512px]:h-[220px]">
       <div
         className="absolute -inset-[5px] rounded-[2.4rem] pointer-events-none overflow-hidden"
         style={{

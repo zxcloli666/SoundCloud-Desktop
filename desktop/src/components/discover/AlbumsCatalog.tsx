@@ -174,9 +174,9 @@ const YearGroup = memo(function YearGroup({
 }) {
   const { t } = useTranslation();
   return (
-    <div className="flex flex-col md:flex-row md:gap-8 gap-4">
-      <div className="md:w-[200px] md:shrink-0 flex md:flex-col md:items-end items-center md:sticky md:top-24 self-start">
-        <div className="flex items-baseline gap-3 md:flex-col md:items-end md:gap-1 min-w-0 max-w-full">
+    <div className="flex flex-col @min-[512px]:flex-row @min-[512px]:gap-8 gap-4">
+      <div className="@min-[512px]:w-[200px] @min-[512px]:shrink-0 flex @min-[512px]:flex-col @min-[512px]:items-end items-center @min-[512px]:sticky @min-[512px]:top-24 self-start">
+        <div className="flex items-baseline gap-3 @min-[512px]:flex-col @min-[512px]:items-end @min-[512px]:gap-1 min-w-0 max-w-full">
           <span
             className="font-black leading-none tabular-nums tracking-tight whitespace-nowrap text-[clamp(48px,7vw,80px)]"
             style={{
@@ -189,13 +189,13 @@ const YearGroup = memo(function YearGroup({
           >
             {year}
           </span>
-          <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-ink-30 md:text-right whitespace-nowrap">
+          <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-ink-30 @min-[512px]:text-right whitespace-nowrap">
             {t('artist.releaseYear')} · {items.length}
           </span>
         </div>
       </div>
 
-      <div className="flex-1 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
+      <div className="flex-1 grid grid-cols-2 @min-[384px]:grid-cols-3 @min-[512px]:grid-cols-4 @min-[740px]:grid-cols-5 gap-5">
         {items.map((al) => (
             <AlbumGridCard key={al.id} album={al} aura={aura}/>
         ))}
@@ -217,7 +217,7 @@ const RefineHint = memo(function RefineHint() {
 
 const SkeletonGrid = memo(function SkeletonGrid() {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
+    <div className="grid grid-cols-2 @min-[384px]:grid-cols-3 @min-[512px]:grid-cols-4 @min-[740px]:grid-cols-5 gap-5">
       {Array.from({ length: 10 }).map((_, i) => (
         <Skeleton key={i} className="h-[300px] rounded-3xl" />
       ))}
@@ -229,9 +229,9 @@ const YearBucketsSkeleton = memo(function YearBucketsSkeleton() {
   return (
     <div className="flex flex-col gap-12">
       {Array.from({ length: 3 }).map((_, i) => (
-        <div key={i} className="flex flex-col md:flex-row md:gap-8 gap-4">
-          <Skeleton className="md:w-[200px] h-[64px] rounded-2xl" />
-          <div className="flex-1 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
+        <div key={i} className="flex flex-col @min-[512px]:flex-row @min-[512px]:gap-8 gap-4">
+          <Skeleton className="@min-[512px]:w-[200px] h-[64px] rounded-2xl" />
+          <div className="flex-1 grid grid-cols-2 @min-[384px]:grid-cols-3 @min-[512px]:grid-cols-4 @min-[740px]:grid-cols-5 gap-5">
             {Array.from({ length: 5 }).map((_, j) => (
               <Skeleton key={j} className="h-[300px] rounded-3xl" />
             ))}

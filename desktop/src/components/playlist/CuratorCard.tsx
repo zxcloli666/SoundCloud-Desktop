@@ -36,7 +36,7 @@ export const CuratorCard = React.memo(function CuratorCard({
 
     return (
         <div
-            className="rounded-[1.4rem] p-4 md:p-5"
+            className="rounded-[1.4rem] p-4 @min-[512px]:p-5"
             style={{
                 background: 'rgb(var(--ink) / 0.035)',
                 border: '0.5px solid rgb(var(--ink) / 0.07)',

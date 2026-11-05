@@ -65,7 +65,7 @@ export const Discover = memo(function Discover() {
         <AuraField aura={aura} isStar={false} />
 
         <div
-          className="relative z-10 w-full max-w-[1480px] mx-auto px-4 md:px-8 pt-10 md:pt-16 pb-32 flex flex-col gap-10"
+          className="@container relative z-10 w-full max-w-[1480px] mx-auto px-4 md:px-8 pt-10 md:pt-16 pb-32 flex flex-col gap-10"
           style={{ isolation: 'isolate' }}
         >
           <DiscoverHero
