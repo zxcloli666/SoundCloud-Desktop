@@ -58,7 +58,6 @@ jobs:
           sparse-checkout-cone-mode: false
 
       - name: Setup SSH for AUR
-        if: ${{ !inputs.dry_run }}
         env:
           AUR_SSH_PRIVATE_KEY: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
         run: |
@@ -92,6 +91,11 @@ jobs:
             StrictHostKeyChecking yes
           EOF
           chmod 600 "$HOME/.ssh/config"
+
+      # dry_run проверяет и SSH (ключ + known_hosts), ничего не пуша.
+      - name: Check AUR SSH access
+        if: ${{ inputs.dry_run }}
+        run: ssh -o BatchMode=yes aur@aur.archlinux.org help
 
       - name: Publish
         env:
