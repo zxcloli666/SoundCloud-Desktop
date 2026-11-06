@@ -1,133 +1,102 @@
 name: Publish to AUR
 
+# Логика — в .github/scripts/aur-publish.sh (идемпотентна, гоняется локально).
+# Что тут держит публикацию живой:
+#   - расписание: упал запуск на релизе (реестр образов, AUR, сеть) — догонит само;
+#   - образ Arch из трёх реестров по очереди, без pacman -Syu и зеркал Arch;
+#   - ключи хоста AUR зашиты, без ssh-keyscan; сеть — с повторами.
+
 on:
   release:
     types: [published]
+  schedule:
+    - cron: "41 */3 * * *"
   workflow_dispatch:
     inputs:
       tag:
-        description: "Тег релиза (например 7.5.0). Пусто = взять из release event."
+        description: "Тег релиза (например 8.8.0). Пусто = последний релиз."
         required: false
         default: ""
+      force:
+        description: "Публиковать, даже если в AUR уже эта версия (pkgrel+1)"
+        type: boolean
+        default: false
+      dry_run:
+        description: "Всё, кроме push в AUR"
+        type: boolean
+        default: false
   workflow_call:
     inputs:
       tag:
         description: "Тег опубликованного релиза"
         required: true
         type: string
+      force:
+        type: boolean
+        default: false
+      dry_run:
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+# Релиз и расписание не пушат в AUR одновременно.
+concurrency:
+  group: aur-publish
+  cancel-in-progress: false
 
 jobs:
   publish-to-aur:
+    if: github.repository == 'zxcloli666/SoundCloud-Desktop'
     runs-on: ubuntu-latest
-    # Используем контейнер Arch Linux, чтобы у нас была команда makepkg
-    container: mirror.gcr.io/library/archlinux:base-devel
+    timeout-minutes: 30
     steps:
-      - name: Install dependencies
-        run: pacman -Syu --noconfirm git openssh wget sudo awk
+      - uses: actions/checkout@v7
+        with:
+          sparse-checkout: .github/scripts/aur-publish.sh
+          sparse-checkout-cone-mode: false
 
-      - name: Setup SSH keys
+      - name: Setup SSH for AUR
+        if: ${{ !inputs.dry_run }}
         env:
           AUR_SSH_PRIVATE_KEY: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
         run: |
-          set -eux
-          # ВАЖНО: OpenSSH 10.x резолвит ~ из /etc/passwd (pw_dir), а не из $HOME.
-          # В Github Actions с контейнером $HOME=/github/home, но для root
-          # pw_dir=/root, поэтому ssh всё ищет в /root/.ssh — кладём туда напрямую.
-          SSH_DIR=/root/.ssh
-          mkdir -p "$SSH_DIR"
-          chmod 700 "$SSH_DIR"
-
-          # Приватный ключ — через env, чтобы не сломать переводы строк/спецсимволы
-          printf '%s\n' "$AUR_SSH_PRIVATE_KEY" > "$SSH_DIR/id_rsa"
-          chmod 600 "$SSH_DIR/id_rsa"
-
-          # Тянем host keys по одному типу (comma-list иногда едят криво),
-          # stderr — отдельно, чтобы баннеры не попадали в known_hosts.
-          : > "$SSH_DIR/known_hosts"
-          for kt in rsa ed25519 ecdsa; do
-            ssh-keyscan -t "$kt" -T 30 aur.archlinux.org \
-              >> "$SSH_DIR/known_hosts" 2>> /tmp/keyscan.err || true
-          done
-          chmod 644 "$SSH_DIR/known_hosts"
-
-          # Проверяем что есть валидная запись (не только баннеры/комменты)
-          if ! ssh-keygen -F aur.archlinux.org -f "$SSH_DIR/known_hosts" >/dev/null; then
-            echo "ssh-keyscan не вернул валидных ключей для aur.archlinux.org"
-            cat /tmp/keyscan.err || true
+          set -euo pipefail
+          if [ -z "$AUR_SSH_PRIVATE_KEY" ]; then
+            echo "::error::нет секрета AUR_SSH_PRIVATE_KEY"
             exit 1
           fi
+          install -d -m 700 "$HOME/.ssh"
+          # Приватный ключ — через env, чтобы не сломать переводы строк/спецсимволы.
+          printf '%s\n' "$AUR_SSH_PRIVATE_KEY" > "$HOME/.ssh/aur"
+          chmod 600 "$HOME/.ssh/aur"
 
-          # SSH-конфиг: абсолютные пути (~ в ssh_config тоже резолвится по pw_dir,
-          # но абсолютные пути работают одинаково независимо от того кто читает).
-          cat > "$SSH_DIR/config" <<EOF
+          # Ключи хоста зашиты: ssh-keyscan в CI мог отвалиться или подсунуть чужой ключ.
+          # Отпечатки сверены с опубликованными на https://aur.archlinux.org:
+          #   ED25519 SHA256:RFzBCUItH9LZS0cKB5UE6ceAYhBD5C8GeOBip8Z11+4
+          #   ECDSA   SHA256:uTa/0PndEgPZTf76e1DFqXKJEXKsn7m9ivhLQtzGOCI
+          #   RSA     SHA256:5s5cIyReIfNNVGRFdDbe3hdYiI5OelHGpw2rOUud3Q8
+          cat > "$HOME/.ssh/known_hosts_aur" <<'EOF'
+          aur.archlinux.org ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEuBKrPzbawxA/k2g6NcyV5jmqwJ2s+zpgZGZ7tpLIcN
+          aur.archlinux.org ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBLMiLrP8pVi5BFX2i3vepSUnpedeiewE5XptnUnau+ZoeUOPkpoCgZZuYfpaIQfhhJJI5qgnjJmr4hyJbe/zxow=
+          aur.archlinux.org ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDKF9vAFWdgm9Bi8uc+tYRBmXASBb5cB5iZsB7LOWWFeBrLp3r14w0/9S2vozjgqY5sJLDPONWoTTaVTbhe3vwO8CBKZTEt1AcWxuXNlRnk9FliR1/eNB9uz/7y1R0+c1Md+P98AJJSJWKN12nqIDIhjl2S1vOUvm7FNY43fU2knIhEbHybhwWeg+0wxpKwcAd/JeL5i92Uv03MYftOToUijd1pqyVFdJvQFhqD4v3M157jxS5FTOBrccAEjT+zYmFyD8WvKUa9vUclRddNllmBJdy4NyLB8SvVZULUPrP3QOlmzemeKracTlVOUG1wsDbxknF1BwSCU7CmU6UFP90kpWIyz66bP0bl67QAvlIc52Yix7pKJPbw85+zykvnfl2mdROsaT8p8R9nwCdFsBc9IiD0NhPEHcyHRwB8fokXTajk2QnGhL+zP5KnkmXnyQYOCUYo3EKMXIlVOVbPDgRYYT/XqvBuzq5S9rrU70KoI/S5lDnFfx/+lPLdtcnnEPk=
+          EOF
+
+          cat >> "$HOME/.ssh/config" <<EOF
           Host aur.archlinux.org
             User aur
-            IdentityFile $SSH_DIR/id_rsa
+            IdentityFile $HOME/.ssh/aur
             IdentitiesOnly yes
-            UserKnownHostsFile $SSH_DIR/known_hosts
+            UserKnownHostsFile $HOME/.ssh/known_hosts_aur
             StrictHostKeyChecking yes
           EOF
-          chmod 600 "$SSH_DIR/config"
+          chmod 600 "$HOME/.ssh/config"
 
-          # Sanity-check соединения
-          ssh -T -o BatchMode=yes aur@aur.archlinux.org || true
-
-      - name: Update PKGBUILD and Push
+      - name: Publish
         env:
-          RELEASE_TAG: ${{ github.event.release.tag_name }}
-          INPUT_TAG: ${{ inputs.tag }}
-        run: |
-          # Настраиваем Git
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          # "*" — чтобы покрыть и aur-repo, и момент после chown -R builder
-          # (когда git снова используется от root для add/commit/push)
-          git config --global --add safe.directory '*'
-
-          # Клонируем наш AUR-пакет
-          git clone ssh://aur@aur.archlinux.org/soundcloud-bin.git aur-repo
-          cd aur-repo
-
-          # Тег: при ручном запуске берём из inputs.tag, иначе из release event
-          TAG="${INPUT_TAG:-$RELEASE_TAG}"
-          if [ -z "$TAG" ]; then
-            echo "Tag is empty: ни release.tag_name, ни inputs.tag не заданы"
-            exit 1
-          fi
-          NEW_VER="${TAG#v}"
-          
-          # Скачиваем новые .deb файлы для вычисления хэшей
-          URL="https://github.com/zxcloli666/SoundCloud-Desktop/releases/download/${TAG}"
-          wget -q "${URL}/soundcloud-desktop_${NEW_VER}_amd64.deb"
-          wget -q "${URL}/soundcloud-desktop_${NEW_VER}_arm64.deb"
-          
-          # Вычисляем SHA256
-          SHA_AMD=$(sha256sum "soundcloud-desktop_${NEW_VER}_amd64.deb" | awk '{print $1}')
-          SHA_ARM=$(sha256sum "soundcloud-desktop_${NEW_VER}_arm64.deb" | awk '{print $1}')
-          
-          # Удаляем скачанные файлы (они не нужны в Git)
-          rm ./*.deb
-          
-          # Обновляем значения в PKGBUILD
-          OLD_VER=$(sed -n 's/^pkgver=//p' PKGBUILD)
-          OLD_REL=$(sed -n 's/^pkgrel=//p' PKGBUILD)
-          if [ "$OLD_VER" = "$NEW_VER" ]; then REL=$((OLD_REL + 1)); else REL=1; fi
-          sed -i "s/^pkgver=.*/pkgver=${NEW_VER}/" PKGBUILD
-          sed -i "s/^pkgrel=.*/pkgrel=${REL}/" PKGBUILD
-          for dep in opus alsa-lib; do
-            grep -Eq "^depends=\\(.*'${dep}'" PKGBUILD || sed -i "s/^depends=(\\(.*\\))$/depends=(\\1 '${dep}')/" PKGBUILD
-          done
-          sed -i "s/^sha256sums_x86_64=.*/sha256sums_x86_64=('${SHA_AMD}')/" PKGBUILD
-          sed -i "s/^sha256sums_aarch64=.*/sha256sums_aarch64=('${SHA_ARM}')/" PKGBUILD
-          
-          # makepkg не работает от рута, создаем временного юзера
-          useradd -m builder
-          chown -R builder:builder .
-          
-          # Генерируем новый .SRCINFO
-          su builder -c "makepkg --printsrcinfo > .SRCINFO"
-          
-          # Отправляем изменения в AUR
-          git add PKGBUILD .SRCINFO
-          git commit -m "Auto-update to version ${NEW_VER}"
-          git push
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag || github.event.release.tag_name }}
+          MODE: ${{ inputs.force && 'force' || 'auto' }}
+          DRY_RUN: ${{ inputs.dry_run && '1' || '0' }}
+        run: bash .github/scripts/aur-publish.sh
