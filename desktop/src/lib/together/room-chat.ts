@@ -1,6 +1,5 @@
 import { type ChatState, selectChatEnabled, useChatStore } from '../../stores/chat';
 import { useChatListStore } from '../../stores/chat/list';
-import { DOCK_ROOM, useChatPrefsStore } from '../../stores/chat/prefs';
 import { useChatRoomStore } from '../../stores/chat/room';
 import { useTogetherStore } from '../../stores/together';
 import { chatBridge } from '../chat/bridge';
@@ -69,10 +68,6 @@ function sync(): void {
   if (step.kind === 'open') void open(step.code);
   if (step.kind === 'move') room.apply((state) => moved(state, step.code));
   if (step.kind === 'clear') room.apply(() => NO_ROOM_CHAT);
-}
-
-export function openRoomDock(): void {
-  useChatPrefsStore.getState().show(DOCK_ROOM);
 }
 
 export function roomLinkBlock(conversationId: ConvId, text: string): RoomLinkBlock {

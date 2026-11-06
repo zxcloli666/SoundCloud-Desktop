@@ -4,9 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { Archive, BellOff, CheckCheck } from '../../../lib/chat/icons';
 import type { ConversationSummary } from '../../../lib/chat/types';
 import { Ban, Bell, Fullscreen, PictureInPicture2, Pin, Trash2 } from '../../../lib/icons';
-import { useChatPrefsStore } from '../../../stores/chat/prefs';
 import { type ContextMenuEntry, openContextMenu } from '../../../stores/context-menu';
-import { chatPath } from '../shell/useOpenChat';
+import { chatPath, useMoveToDock } from '../shell/useOpenChat';
 import { openDeleteChat } from './delete-chat-store';
 import { isMuted, muteForHours } from './mute';
 import { blockUser, markRead, patchMine } from './row-actions';
@@ -18,6 +17,7 @@ const ICON = 14;
 export function useRowMenu(variant: ListVariant) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const moveToDock = useMoveToDock();
 
   return useCallback(
     (event: Pick<MouseEvent, 'clientX' | 'clientY' | 'preventDefault'>, c: ConversationSummary) => {
@@ -29,7 +29,7 @@ export function useRowMenu(variant: ListVariant) {
               id: 'dock',
               label: t('chat.list.menu.openDock'),
               icon: <PictureInPicture2 size={ICON} />,
-              onSelect: () => useChatPrefsStore.getState().openInDock(c.id),
+              onSelect: () => moveToDock(c.id),
             }
           : {
               id: 'page',
@@ -113,6 +113,6 @@ export function useRowMenu(variant: ListVariant) {
       ];
       openContextMenu(event, entries);
     },
-    [navigate, t, variant],
+    [moveToDock, navigate, t, variant],
   );
 }

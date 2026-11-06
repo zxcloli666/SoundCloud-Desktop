@@ -10,7 +10,7 @@ function SyncRow({ status }: { status: SyncStatus }) {
   return (
     <div className="mb-4 border-b border-ink/[0.05] pb-4">
       <Row title={t('sync.title')} desc={hint}>
-        <SyncStatusBadge status={status} withAction={false} />
+        <SyncStatusBadge status={status} withAction={false} className="max-w-full" />
         {action && (
           <button
             type="button"

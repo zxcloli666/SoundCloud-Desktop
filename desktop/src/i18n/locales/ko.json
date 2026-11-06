@@ -2182,14 +2182,14 @@
   "sync": {
     "title": "SoundCloud 동기화",
     "retrySoon": "1분 이내",
-    "retryMinutes_other": "약 {{count}}분",
-    "retryHours_other": "약 {{count}}시간",
+    "retryMinutes_other": "약\u00a0{{count}}분",
+    "retryHours_other": "약\u00a0{{count}}시간",
     "signIn": "로그인",
     "chip": {
       "synced": "변경 사항 전송됨",
       "relogin": "다시 로그인하세요",
       "syncing_other": "{{count}}개 동기화 중",
-      "delayed": "SoundCloud 제한 중 · {{time}} 후 재시도",
+      "delayed": "SoundCloud 제한 중 · {{time}}\u00a0후\u00a0재시도",
       "failed_other": "{{count}}개 오류",
       "dead_other": "{{count}}개 전송 안 됨"
     },

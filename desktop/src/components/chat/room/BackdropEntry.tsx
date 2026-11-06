@@ -2,9 +2,9 @@ import { type ComponentType, memo, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Flag } from '../../../lib/chat/icons';
 import { ChevronRight, Eye, EyeOff, ImageIcon, Star } from '../../../lib/icons';
-import { openRoomDock } from '../../../lib/together/room-chat';
 import type { RoomView } from '../../../lib/together/types';
 import { useBackdropStore } from '../../../stores/chat/backdrop';
+import { useOpenRoomChat } from '../shell/useOpenChat';
 import { keepKeys } from './backdrop/keys';
 import { useRoomBackdrop } from './backdrop/shown';
 import { presetOf } from './presets';
@@ -62,13 +62,14 @@ function Swatch({ room }: { room: RoomView }) {
 function HostEntry({ room }: { room: RoomView }) {
   const { t } = useTranslation();
   const open = useBackdropStore((state) => state.open);
+  const openRoom = useOpenRoomChat();
   const star = room.perks?.starHost === true;
   return (
     <Row
       icon={ImageIcon}
       label={t('chat.backdrop.title')}
       onClick={() => {
-        openRoomDock();
+        openRoom();
         open('picker');
       }}
       trailing={

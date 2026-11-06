@@ -4,8 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import type { ConvId } from '../../../lib/chat/types';
 import { Fullscreen, PictureInPicture2, X } from '../../../lib/icons';
 import { useChatPrefsStore } from '../../../stores/chat/prefs';
-import { lastOutsidePath } from './useDockMode';
-import { chatPath } from './useOpenChat';
+import { chatPath, useMoveToDock } from './useOpenChat';
 
 function ActionButton({
   label,
@@ -35,15 +34,10 @@ export const PageThreadActions = memo(function PageThreadActions({
   conversationId: ConvId;
 }) {
   const { t } = useTranslation();
-  const navigate = useNavigate();
-
-  const toDock = () => {
-    useChatPrefsStore.getState().openInDock(conversationId);
-    navigate(lastOutsidePath());
-  };
+  const moveToDock = useMoveToDock();
 
   return (
-    <ActionButton label={t('chat.list.dock.toDock')} onClick={toDock}>
+    <ActionButton label={t('chat.list.dock.toDock')} onClick={() => moveToDock(conversationId)}>
       <PictureInPicture2 size={16} />
     </ActionButton>
   );

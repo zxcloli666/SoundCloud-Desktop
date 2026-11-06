@@ -2235,14 +2235,14 @@
   "sync": {
     "title": "SoundCloud senkronizasyonu",
     "retrySoon": "bir dakikadan az",
-    "retryMinutes": "~{{count}} dk",
-    "retryHours": "~{{count}} sa",
+    "retryMinutes": "~{{count}}\u00a0dk",
+    "retryHours": "~{{count}}\u00a0sa",
     "signIn": "Giriş yap",
     "chip": {
       "synced": "Değişiklikler gönderildi",
       "relogin": "Yeniden giriş yapın",
       "syncing": "{{count}} sırada",
-      "delayed": "SoundCloud sınırlıyor · {{time}} sonra tekrar",
+      "delayed": "SoundCloud sınırlıyor · {{time}}\u00a0sonra\u00a0tekrar",
       "failed": "{{count}} hatalı",
       "dead": "{{count}} gönderilmedi"
     },

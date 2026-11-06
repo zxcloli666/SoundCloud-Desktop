@@ -3,9 +3,9 @@ import { useTranslation } from 'react-i18next';
 import { BellOff, Reply } from '../../../lib/chat/icons';
 import type { ConvId } from '../../../lib/chat/types';
 import { PictureInPicture2 } from '../../../lib/icons';
-import { useChatPrefsStore } from '../../../stores/chat/prefs';
 import { muteForHours } from '../list/mute';
 import { patchMine } from '../list/row-actions';
+import { useMoveToDock } from '../shell/useOpenChat';
 
 const ACTION =
   'flex h-7 cursor-pointer items-center gap-1.5 rounded-lg px-2.5 text-[11.5px] font-semibold text-ink-65 transition-colors hover:bg-ink/[0.08] hover:text-ink';
@@ -22,6 +22,7 @@ export const ToastActions = memo(function ToastActions({
   onDone,
 }: ToastActionsProps) {
   const { t } = useTranslation();
+  const moveToDock = useMoveToDock();
   return (
     <div className="-ml-1 flex items-center gap-0.5">
       <button type="button" className={ACTION} onClick={onReply}>
@@ -32,7 +33,7 @@ export const ToastActions = memo(function ToastActions({
         type="button"
         className={ACTION}
         onClick={() => {
-          useChatPrefsStore.getState().openInDock(conversationId);
+          moveToDock(conversationId);
           onDone();
         }}
       >

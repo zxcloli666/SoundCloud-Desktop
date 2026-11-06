@@ -48,14 +48,14 @@ export function Row({
     children?: ReactNode;
 }) {
     return (
-        <div data-ui="settings-row" className="flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0">
-            <div className="min-w-0">
+        <div data-ui="settings-row" className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2.5 py-3 first:pt-0 last:pb-0">
+            <div className="min-w-0 flex-[1_1_15rem]">
                 <div className="text-[13.5px] text-ink-80 font-medium flex items-center gap-2">
                     {title}
                 </div>
                 {desc && <p className="text-[11.5px] text-ink-35 mt-0.5 leading-snug">{desc}</p>}
             </div>
-            {children && <div className="shrink-0 flex items-center gap-2">{children}</div>}
+            {children && <div className="max-w-full shrink-0 flex flex-wrap items-center gap-2">{children}</div>}
         </div>
     );
 }
