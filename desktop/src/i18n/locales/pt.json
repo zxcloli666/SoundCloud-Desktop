@@ -1462,7 +1462,7 @@
     "autoplay": "Reprodução automática",
     "autoplayDesc": "Quando a fila acabar, continua tocando faixas parecidas com a onda da última",
     "altUploads": "Cópia no lugar de uma faixa indisponível",
-    "altUploadsDesc": "Se uma faixa nÃ£o puder ser tocada, toca um envio da mesma faixa em outra conta, quando houver",
+    "altUploadsDesc": "Se uma faixa não puder ser tocada, toca um envio da mesma faixa em outra conta, quando houver",
     "searchPlayback": "Reprodução pela busca",
     "searchPlaybackSimilar": "Faixas parecidas",
     "searchPlaybackResults": "Resultados da busca",

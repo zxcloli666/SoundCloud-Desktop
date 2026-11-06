@@ -1472,7 +1472,7 @@
     "autoplay": "Otomatik devam",
     "autoplayDesc": "Sıra bittiğinde son parçanın dalgasından benzer parçalar çalmaya devam eder",
     "altUploads": "Erişilemeyen parça yerine kopya",
-    "altUploadsDesc": "Bir parÃ§a Ã§alÄ±namazsa, bulunursa aynÄ± parÃ§anÄ±n baÅka bir hesaptaki yÃ¼klemesi Ã§alar",
+    "altUploadsDesc": "Bir parça çalınamazsa, bulunursa aynı parçanın başka bir hesaptaki yüklemesi çalar",
     "searchPlayback": "Aramadan çalma",
     "searchPlaybackSimilar": "Benzer parçalar",
     "searchPlaybackResults": "Arama sonuçları",
