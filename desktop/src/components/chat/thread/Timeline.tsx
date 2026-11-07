@@ -74,7 +74,7 @@ export const Timeline = memo(function Timeline({
   }, [messages]);
   const { read, delivered } = useMemo(() => peerSeqs(marks, me), [marks, me]);
   const initialIndex = useMemo(() => rows.findIndex((row) => row.kind === 'unread'), [rows]);
-  const avatars = conversation.kind === 'group' || conversation.kind === 'room';
+  const avatars = ['group', 'room', 'public'].includes(conversation.kind);
   const saved = conversation.kind === 'self';
   const traySpace = useTraySpace();
 

@@ -119,7 +119,13 @@ States are in attributes too: `aria-current="page"` on the open link or section,
 | `[data-ui="chat-dock-tabs"]` | Tab row of the chat panel |
 | `[data-ui="chat-list"]` | Chat list |
 | `[data-ui="chat-filter"]` | Filter above the chat list. `[data-kind]` is `all`, `direct`, `groups`, `unread`, `requests` or `archived`, the chosen one has `[aria-pressed="true"]` |
-| `[data-ui="chat-row"]` | A chat in the list. `[data-kind]` is `direct`, `group`, `self` or `room`, the open one has `[aria-current]` |
+| `[data-ui="chat-row"]` | A chat in the list. `[data-kind]` is `direct`, `group`, `self`, `room` or `public`, the open one has `[aria-current]` |
+| `[data-ui="chat-public-mark"]` | Glyph of the public chat in the list, the header and the info panel |
+| `[data-ui="chat-public-slow"]` | Slow mode chip in the public chat header |
+| `[data-ui="chat-public-sanction"]` | Muted or banned bar instead of the composer, `[data-kind]` is `muted` or `banned` |
+| `[data-ui="chat-public-gate"]` | The public chat cannot open, `[data-gate]` is `muted`, `off` or `failed` |
+| `[data-ui="chat-public-staff"]` | Moderators tab of the public chat |
+| `[data-ui="chat-public-log"]` | Moderation log of the public chat |
 | `[data-ui="chat-thread"]` | Open chat with its messages, `[data-kind]` as above |
 | `[data-ui="chat-thread-header"]` | Header of the open chat |
 | `[data-ui="chat-bubble"]` | A message. Yours have `[data-mine]`, unsent ones `[data-failed]` |

@@ -5,6 +5,7 @@ import { chatBridge } from '../../../lib/chat/bridge';
 import { Reply } from '../../../lib/chat/icons';
 import type { ConversationSummary, ConvId, Message, MessageRef } from '../../../lib/chat/types';
 import { Loader2, Search } from '../../../lib/icons';
+import { canForwardFrom } from '../../../lib/together/room-rows';
 import { ModalTitle } from '../../ui/Modal';
 import { ShareGrid } from '../share/ShareGrid';
 import { targetTitle } from '../share/share-target';
@@ -43,7 +44,10 @@ export const ForwardDialog = memo(function ForwardDialog({
   const titleOf = useCallback((c: ConversationSummary) => targetTitle(t, c), [t]);
   const all = useShareTargets(search, titleOf);
   const targets = useMemo(
-    () => ({ ...all, items: all.items.filter((conversation) => conversation.kind !== 'room') }),
+    () => ({
+      ...all,
+      items: all.items.filter((conversation) => canForwardFrom(conversation.kind)),
+    }),
     [all],
   );
 

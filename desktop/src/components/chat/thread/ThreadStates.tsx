@@ -1,7 +1,8 @@
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MessageCircle } from '../../../lib/chat/icons';
-import { Ban, Bookmark, RotateCcw } from '../../../lib/icons';
+import type { ConversationKind } from '../../../lib/chat/types';
+import { Ban, Bookmark, Globe, RotateCcw } from '../../../lib/icons';
 import { Skeleton } from '../../ui/Skeleton';
 
 const SHAPES = [
@@ -47,9 +48,14 @@ export const ThreadFailed = memo(function ThreadFailed({ onRetry }: { onRetry: (
   );
 });
 
-export const ThreadEmpty = memo(function ThreadEmpty({ saved }: { saved: boolean }) {
+const EMPTY_KEYS: Partial<Record<ConversationKind, string>> = {
+  self: 'chat.thread.empty.saved',
+  public: 'chat.public.empty',
+};
+
+export const ThreadEmpty = memo(function ThreadEmpty({ kind }: { kind: ConversationKind }) {
   const { t } = useTranslation();
-  const Icon = saved ? Bookmark : MessageCircle;
+  const Icon = kind === 'self' ? Bookmark : kind === 'public' ? Globe : MessageCircle;
   return (
     <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-3 px-6 text-center">
       <span
@@ -59,7 +65,7 @@ export const ThreadEmpty = memo(function ThreadEmpty({ saved }: { saved: boolean
         <Icon size={24} />
       </span>
       <span className="max-w-[260px] text-[13px] leading-snug text-ink-50">
-        {t(saved ? 'chat.thread.empty.saved' : 'chat.thread.empty.chat')}
+        {t(EMPTY_KEYS[kind] ?? 'chat.thread.empty.chat')}
       </span>
     </div>
   );

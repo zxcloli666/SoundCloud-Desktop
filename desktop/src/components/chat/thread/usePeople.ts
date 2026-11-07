@@ -5,18 +5,20 @@ import type { ConversationSummary, Member, UserId, UserRef } from '../../../lib/
 import { useAuthStore } from '../../../stores/auth';
 
 const NO_MEMBERS: Member[] = [];
+const NO_SEEN: Record<UserId, UserRef> = {};
 
 export function usePeople(
   conversation: ConversationSummary | null,
   members: Member[] | undefined,
   me: UserId | null,
+  seen: Record<UserId, UserRef> = NO_SEEN,
 ): { people: Map<UserId, UserRef>; nameOf: NameOf } {
   const { t } = useTranslation();
   const user = useAuthStore((state) => state.user);
   const list = members ?? NO_MEMBERS;
 
   return useMemo(() => {
-    const people = new Map<UserId, UserRef>();
+    const people = new Map<UserId, UserRef>(Object.entries(seen));
     for (const member of list) people.set(member.user.id, member.user);
     const peer = conversation?.peer;
     if (peer) people.set(peer.id, peer);
@@ -31,5 +33,5 @@ export function usePeople(
     const nameOf: NameOf = (userId) =>
       (userId && people.get(userId)?.name) || t('chat.thread.someone');
     return { people, nameOf };
-  }, [list, conversation?.peer, me, user, t]);
+  }, [list, conversation?.peer, me, user, seen, t]);
 }

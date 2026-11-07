@@ -18,6 +18,7 @@ const SNIPPET_MAX = 140;
 
 export function conversationTitle(conversation: ConversationSummary, t: TFunction): string {
   if (conversation.kind === 'self') return t('chat.thread.saved');
+  if (conversation.kind === 'public') return t('chat.public.title');
   return conversation.title?.trim() || conversation.peer?.name || t('chat.thread.untitled');
 }
 

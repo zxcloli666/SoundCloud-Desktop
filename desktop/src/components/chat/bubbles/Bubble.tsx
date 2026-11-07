@@ -4,9 +4,12 @@ import { Lock, Reply } from '../../../lib/chat/icons';
 import { senderColor, type Tick } from '../../../lib/chat/render';
 import type { Message } from '../../../lib/chat/types';
 import { Ban, Sparkles } from '../../../lib/icons';
+import { useChatThreadStore } from '../../../stores/chat/thread';
 import { CheckedEmbedCard } from '../embeds/EmbedCard';
 import { MediaBubble, useHasMedia } from '../media/MediaBubble';
+import { openPublicUserMenu } from '../public/user-menu';
 import { useThread } from '../thread/context';
+import { isPublicStaff } from '../thread/permissions';
 import { BubbleMeta } from './BubbleMeta';
 import { MessageText } from './MessageText';
 import { ReplyQuote } from './ReplyQuote';
@@ -98,7 +101,7 @@ export const Bubble = memo(function Bubble({
   last,
   flash,
 }: BubbleProps) {
-  const { nameOf, conversation } = useThread();
+  const { nameOf, conversation, people, me, t } = useThread();
   const media = useHasMedia(message);
   const radius = corners(message.mine, first, last);
   const embeds = useMemo(
@@ -116,6 +119,18 @@ export const Bubble = memo(function Bubble({
   const solo = media && !hasText && embeds.length === 0;
   const tone = tick === 'failed' ? FAILED : message.mine ? MINE : THEIRS;
   const showName = first && !message.mine && conversation.kind !== 'direct';
+  const moderated = showName && isPublicStaff(conversation) && message.sender !== me;
+  const openSender = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    const user = people.get(message.sender) ?? {
+      id: message.sender,
+      name: nameOf(message.sender),
+      avatarUrl: null,
+      permalink: null,
+    };
+    const staff = useChatThreadStore.getState().threads[conversation.id]?.members ?? [];
+    openPublicUserMenu(event, user, conversation, me, staff, t);
+  };
 
   return (
     <div
@@ -129,7 +144,18 @@ export const Bubble = memo(function Bubble({
         animation: flash ? 'chat-thread-flash 1.4s ease-out' : undefined,
       }}
     >
-      {showName && (
+      {showName && moderated && (
+        <button
+          type="button"
+          data-ui="chat-sender"
+          onClick={openSender}
+          className="mb-0.5 block max-w-full cursor-pointer truncate text-left text-[12px] font-semibold hover:underline"
+          style={{ color: senderColor(message.sender) }}
+        >
+          {nameOf(message.sender)}
+        </button>
+      )}
+      {showName && !moderated && (
         <div
           className="mb-0.5 truncate text-[12px] font-semibold"
           style={{ color: senderColor(message.sender) }}

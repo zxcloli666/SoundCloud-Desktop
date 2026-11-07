@@ -8,7 +8,12 @@ import type { UserId } from '../../../lib/chat/types';
 import { Bookmark, ChevronLeft, Ellipsis, Info, Users } from '../../../lib/icons';
 import { useChatThreadStore } from '../../../stores/chat/thread';
 import { Avatar } from '../../ui/Avatar';
+import type { InfoTab } from '../info/InfoSheet';
 import { GroupPhoto } from '../media/compose/GroupPhoto';
+import { PublicMark } from '../public/PublicMark';
+import { PublicOnline } from '../public/PublicRow';
+import { SlowModeChip } from '../public/SlowModeChip';
+import { StaffMark } from '../public/StaffMark';
 import { useThread } from './context';
 import { GlassLayer } from './GlassLayer';
 import { hasTimer } from './permissions';
@@ -37,6 +42,9 @@ function Subtitle({ typing }: { typing: UserId[] }) {
         <span className="truncate">{label}</span>
       </span>
     );
+  }
+  if (conversation.kind === 'public') {
+    return <PublicOnline count={conversation.memberCount} />;
   }
   if (conversation.kind === 'group' || conversation.kind === 'room') {
     return (
@@ -74,7 +82,7 @@ export const ThreadHeader = memo(function ThreadHeader({
   actions,
 }: {
   onBack?: () => void;
-  onInfo: () => void;
+  onInfo: (tab?: InfoTab) => void;
   actions?: ReactNode;
 }) {
   const { t, i18n } = useTranslation();
@@ -107,11 +115,13 @@ export const ThreadHeader = memo(function ThreadHeader({
         )}
         <button
           type="button"
-          onClick={onInfo}
+          onClick={() => onInfo()}
           className="flex min-w-0 flex-1 cursor-pointer items-center gap-2.5 rounded-xl py-1 pr-2 pl-1 text-left transition-colors duration-150 hover:bg-ink/[0.04]"
         >
           {conversation.kind === 'self' ? (
             <SavedMark />
+          ) : conversation.kind === 'public' ? (
+            <PublicMark size={36} live />
           ) : photo ? (
             <GroupPhoto
               src={photo}
@@ -130,6 +140,7 @@ export const ThreadHeader = memo(function ThreadHeader({
               <span className="truncate text-[14px] font-semibold tracking-tight text-ink-92">
                 {title}
               </span>
+              {conversation.kind === 'public' && <StaffMark role={conversation.role} />}
               {muted && <BellOff size={12} className="shrink-0 text-ink-30" />}
             </span>
             <span className="block truncate text-[11.5px] text-ink-40">
@@ -137,6 +148,7 @@ export const ThreadHeader = memo(function ThreadHeader({
             </span>
           </span>
         </button>
+        {conversation.kind === 'public' && <SlowModeChip conversation={conversation} />}
         {hasTimer(conversation) && conversation.ttlS !== null && (
           <button
             type="button"
@@ -152,7 +164,7 @@ export const ThreadHeader = memo(function ThreadHeader({
         <button
           type="button"
           aria-label={t('chat.thread.menu.info')}
-          onClick={onInfo}
+          onClick={() => onInfo()}
           className="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-ink-50 transition-colors duration-150 hover:bg-ink/[0.07] hover:text-ink @max-[480px]/header:hidden"
         >
           <Info size={17} />

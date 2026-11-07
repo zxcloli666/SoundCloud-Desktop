@@ -1,0 +1,95 @@
+{
+  "title": "공개 채팅",
+  "tagline": "모두를 위한 하나의 방",
+  "online_other": "{{count}}명 접속 중",
+  "pinged": "답글과 멘션",
+  "empty": "아직 아무도 쓰지 않았어요. 인사해 보세요",
+  "slow": {
+    "title": "느린 모드",
+    "off": "끄기",
+    "seconds": "{{value}}초",
+    "minutes": "{{value}}분",
+    "wait_other": "{{count}}초 기다리세요"
+  },
+  "muted": {
+    "title": "채팅이 금지되었습니다",
+    "until": "{{time}}까지",
+    "rules": "규칙"
+  },
+  "banned": {
+    "title": "공개 채팅에서 차단되었습니다",
+    "hint": "읽기와 쓰기가 닫혔습니다"
+  },
+  "gate": {
+    "restricted": "지금은 공개 채팅을 열 수 없습니다",
+    "off": "공개 채팅이 지금 꺼져 있습니다",
+    "offHint": "다른 채팅은 계속 작동합니다",
+    "failed": "공개 채팅을 열 수 없습니다"
+  },
+  "roles": {
+    "owner": "소유자",
+    "moderator": "운영자"
+  },
+  "menu": {
+    "mute": "{{duration}} 채팅 금지",
+    "unmute": "채팅 금지 해제",
+    "ban": "차단",
+    "unban": "차단 해제",
+    "makeModerator": "운영자로 지정",
+    "dropModerator": "운영자 해제",
+    "log": "관리 기록"
+  },
+  "dialog": {
+    "muteTitle": "{{name}} 채팅 금지",
+    "banTitle": "{{name}} 차단",
+    "reason": "사유 (선택)",
+    "mute": "채팅 금지",
+    "ban": "차단"
+  },
+  "duration": {
+    "hours_other": "{{count}}시간",
+    "minutes_other": "{{count}}분",
+    "seconds_other": "{{count}}초"
+  },
+  "toast": {
+    "muted": "{{name}} 님이 {{time}}까지 채팅 금지됨",
+    "unmuted": "{{name}} 님이 다시 쓸 수 있습니다",
+    "banned": "{{name}} 님이 차단됨",
+    "unbanned": "{{name}} 님의 차단이 해제됨",
+    "moderatorOn": "{{name}} 님이 이제 운영자입니다",
+    "moderatorOff": "{{name}} 님은 더 이상 운영자가 아닙니다",
+    "slow": "느린 모드: {{value}}",
+    "slowOff": "느린 모드 꺼짐"
+  },
+  "staff": {
+    "title": "운영자",
+    "add": "운영자 추가",
+    "empty": "아직 운영자가 없습니다"
+  },
+  "log": {
+    "title": "기록",
+    "empty": "아직 기록이 없습니다",
+    "failed": "기록을 불러올 수 없습니다",
+    "more": "더 보기",
+    "mute": "{{by}} 님이 {{user}} 님을 {{duration}} 채팅 금지함",
+    "unmute": "{{by}} 님이 {{user}} 님의 채팅 금지를 해제함",
+    "ban": "{{by}} 님이 {{user}} 님을 차단함",
+    "unban": "{{by}} 님이 {{user}} 님의 차단을 해제함",
+    "delete": "{{by}} 님이 {{user}} 님의 메시지를 삭제함",
+    "moderator_add": "{{by}} 님이 {{user}} 님을 운영자로 지정함",
+    "moderator_remove": "{{by}} 님이 {{user}} 님의 운영자를 해제함",
+    "slow_mode": "{{by}} 님이 느린 모드를 설정함: {{value}}",
+    "slowOff": "{{by}} 님이 느린 모드를 끔",
+    "other": "{{by}}: {{action}}"
+  },
+  "errors": {
+    "not_member": "이 사람에게는 할 수 없습니다",
+    "not_found": "해제할 것이 없습니다",
+    "invalid": "실패했습니다",
+    "busy": "서버가 바쁩니다. 잠시 후 다시 시도하세요",
+    "offline": "서버에 연결할 수 없습니다",
+    "disabled": "공개 채팅이 꺼져 있습니다",
+    "send_limited": "작업이 너무 많습니다. 잠시 기다리세요",
+    "generic": "문제가 생겼습니다. 다시 시도하세요"
+  }
+}

@@ -56,12 +56,19 @@ function canTouch(member: Member, conversation: ConversationSummary, me: string 
   return conversation.role === 'owner' || member.role === 'member';
 }
 
-const MemberRow = memo(function MemberRow({ member }: { member: Member }) {
-  const { t, i18n } = useTranslation();
-  const { conversation, me } = useThread();
-  const manage = canTouch(member, conversation, me);
-  const open = (event: MouseEvent) =>
-    openContextMenu(event, memberMenu(member, conversation, t, i18n.language));
+export const MemberRow = memo(function MemberRow({
+  member,
+  menu,
+}: {
+  member: Member;
+  menu: ContextMenuEntry[] | null;
+}) {
+  const { t } = useTranslation();
+  const { me } = useThread();
+  const manage = menu !== null && menu.length > 0;
+  const open = (event: MouseEvent) => {
+    if (menu) openContextMenu(event, menu);
+  };
 
   return (
     <div
@@ -152,7 +159,8 @@ function AddMembersRow({ members }: { members: Member[] }) {
 }
 
 export const MembersTab = memo(function MembersTab() {
-  const { conversation } = useThread();
+  const { t, i18n } = useTranslation();
+  const { conversation, me } = useThread();
   const members = useChatThreadStore(
     (state) => state.threads[conversation.id]?.members ?? NO_MEMBERS,
   );
@@ -171,7 +179,15 @@ export const MembersTab = memo(function MembersTab() {
     <div className="flex flex-col gap-0.5">
       {canManageMembers(conversation) && <AddMembersRow members={members} />}
       {sorted.map((member) => (
-        <MemberRow key={member.user.id} member={member} />
+        <MemberRow
+          key={member.user.id}
+          member={member}
+          menu={
+            canTouch(member, conversation, me)
+              ? memberMenu(member, conversation, t, i18n.language)
+              : null
+          }
+        />
       ))}
     </div>
   );

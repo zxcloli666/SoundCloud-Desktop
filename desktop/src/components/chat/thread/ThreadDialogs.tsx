@@ -5,6 +5,7 @@ import type { ConvId } from '../../../lib/chat/types';
 import { ExternalLink } from '../../../lib/icons';
 import { Modal, ModalContent, ModalTitle } from '../../ui/Modal';
 import { ReactionPicker } from '../bubbles/ReactionPicker';
+import { SanctionDialog } from '../public/SanctionDialog';
 import { DeleteDialog } from './DeleteDialog';
 import { useThreadDialogs } from './dialogs';
 import { ForwardDialog } from './ForwardDialog';
@@ -76,6 +77,16 @@ export const ThreadDialogs = memo(function ThreadDialogs({
           {view?.kind === 'report' && <ReportDialog message={view.message} onClose={close} />}
           {view?.kind === 'link' && <LinkDialog url={view.url} onClose={close} />}
           {view?.kind === 'forward' && <ForwardDialog message={view.message} onClose={close} />}
+          {view?.kind === 'public-mute' && (
+            <SanctionDialog
+              user={view.user}
+              sanction={{ kind: 'mute', seconds: view.seconds }}
+              onClose={close}
+            />
+          )}
+          {view?.kind === 'public-ban' && (
+            <SanctionDialog user={view.user} sanction={{ kind: 'ban' }} onClose={close} />
+          )}
         </ModalContent>
       </Modal>
     </>

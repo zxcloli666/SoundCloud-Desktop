@@ -2,6 +2,8 @@ import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { ConvId } from '../../../lib/chat/types';
 import { Ban } from '../../../lib/icons';
+import { usePublicStore } from '../../../stores/chat/public';
+import { PublicBannedBar, PublicMutedBar } from '../public/SanctionBar';
 import { RequestBar } from '../requests/RequestBar';
 import { useRoomSendLock } from '../room/useRoom';
 import { useThread } from '../thread/context';
@@ -25,6 +27,11 @@ export const ComposerGate = memo(function ComposerGate({
 }) {
   const { conversation } = useThread();
   const locked = useRoomSendLock(conversationId) !== null;
+  const isPublic = conversation.kind === 'public';
+  const mutedUntil = usePublicStore((state) => (isPublic ? state.mutedUntil : null));
+  const muted = mutedUntil !== null && mutedUntil > Date.now();
+  if (isPublic && conversation.state === 'banned') return <PublicBannedBar />;
+  if (isPublic && muted && mutedUntil !== null) return <PublicMutedBar until={mutedUntil} />;
   if (isRequest(conversation)) return <RequestBar conversation={conversation} />;
   if (!isActiveMember(conversation)) return <GoneBar />;
   if (locked) return null;

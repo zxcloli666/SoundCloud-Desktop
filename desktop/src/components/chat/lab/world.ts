@@ -8,7 +8,7 @@ import type {
   Member,
   Message,
 } from '../../../lib/chat/types';
-import { groupMembers, labConversations } from './convs';
+import { groupMembers, labConversations, publicStaff } from './convs';
 import { labMediaConfig, labMine, labUsage } from './media-data';
 import { labThreads } from './messages';
 import { ME_ID, person } from './people';
@@ -87,6 +87,7 @@ export function createWorld(star = false): LabWorld {
     members: {
       'c-group': groupMembers(),
       'c-dm': [me(), other('u-mira')],
+      'c-public': publicStaff(),
     },
     uploads: [],
     usage,

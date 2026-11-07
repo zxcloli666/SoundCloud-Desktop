@@ -1,9 +1,10 @@
 import type { TFunction } from 'i18next';
 import { Flag, Pin, Reply } from '../../../lib/chat/icons';
-import type { ConversationSummary, Message } from '../../../lib/chat/types';
+import type { ConversationSummary, Message, UserId, UserRef } from '../../../lib/chat/types';
 import { Copy, Pencil, RotateCcw, Trash2, X } from '../../../lib/icons';
 import { useChatThreadStore } from '../../../stores/chat/thread';
 import type { ContextMenuEntry } from '../../../stores/context-menu';
+import { publicUserEntries } from '../public/user-menu';
 import { useThreadDialogs } from '../thread/dialogs';
 import { toastError } from '../thread/errors';
 import { canEdit, canForward, canPin, canReport, isActiveMember } from '../thread/permissions';
@@ -120,4 +121,23 @@ export function messageMenu(
   }
 
   return top.length > 0 ? [...top, 'separator', ...bottom] : bottom;
+}
+
+export function moderationEntries(
+  message: Message,
+  conversation: ConversationSummary,
+  me: UserId | null,
+  people: Map<UserId, UserRef>,
+  t: TFunction,
+): ContextMenuEntry[] {
+  if (message.mine || conversation.kind !== 'public') return [];
+  const user = people.get(message.sender) ?? {
+    id: message.sender,
+    name: message.sender,
+    avatarUrl: null,
+    permalink: null,
+  };
+  const staff = useChatThreadStore.getState().threads[conversation.id]?.members ?? [];
+  const entries = publicUserEntries(user, conversation, me, staff, t);
+  return entries.length > 0 ? ['separator', ...entries] : [];
 }
