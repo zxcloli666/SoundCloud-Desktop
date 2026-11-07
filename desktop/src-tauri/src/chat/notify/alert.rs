@@ -61,7 +61,10 @@ fn chat_title(chat: &ConversationSummary, strings: &Strings) -> String {
         (ConversationKind::Room, Some(code)) => format!("{} {code}", strings.room),
         (ConversationKind::Room, None) => strings.room.clone(),
         (ConversationKind::Group, _) => strings.group.clone(),
-        (ConversationKind::Direct | ConversationKind::Saved, _) => strings.chat.clone(),
+        (ConversationKind::Public, _) => strings.public.clone(),
+        (ConversationKind::Direct | ConversationKind::Saved | ConversationKind::Unknown, _) => {
+            strings.chat.clone()
+        }
     }
 }
 

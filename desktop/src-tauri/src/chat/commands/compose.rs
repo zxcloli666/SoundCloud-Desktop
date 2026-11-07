@@ -138,6 +138,7 @@ pub async fn typing(state: &ChatState, conversation_id: ConvId) -> ChatResult<()
 
 pub async fn focus(state: &ChatState, conversation_id: Option<ConvId>) -> ChatResult<()> {
     state.core()?.sync.set_focus(conversation_id);
+    super::public::focused(state, conversation_id).await;
     Ok(())
 }
 

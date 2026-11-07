@@ -5,7 +5,7 @@ use sc_chat::api::Identity;
 use sc_chat::api::wire::{ConfigView, RegisterDevice};
 use sc_chat::{
     Access, ChatConfig, ChatError, ChatLimits, ChatPhase, ChatResult, CoreEvent, Events, KeyStore,
-    MediaConfig, UserId,
+    MediaConfig, UserId, caps_with_public_chat,
 };
 
 use super::Runtime;
@@ -58,7 +58,8 @@ impl Runtime {
         if !config.enabled {
             return Err(Halt::Phase(ChatPhase::Off));
         }
-        let device = match self.api.register_device(&registration(&self.app)).await {
+        let registration = registration(&self.app);
+        let device = match self.api.register_device(&registration).await {
             Ok(device) => device,
             Err(error) => {
                 return Err(self
@@ -68,6 +69,7 @@ impl Runtime {
         };
         self.unlimited();
         self.adopt_device(device.id);
+        self.refresh_caps(&registration).await;
         if let Some(user_id) = user_id {
             self.adopt_user(&core, user_id, failures).await?;
         }
@@ -79,6 +81,16 @@ impl Runtime {
         self.rt
             .spawn(async move { runtime.refresh_blocked().await });
         Ok(core)
+    }
+
+    async fn refresh_caps(&self, registration: &RegisterDevice) {
+        let refreshed = self
+            .api
+            .refresh_device(&registration.app_version, &registration.caps)
+            .await;
+        if let Err(error) = refreshed {
+            crate::app::diagnostics::warn(format!("chat: device refresh failed: {error}"));
+        }
     }
 
     async fn adopt_user(
@@ -280,6 +292,6 @@ fn registration(app: &crate::rt::AppHandle) -> RegisterDevice {
         platform: platform.to_string(),
         name: name.to_string(),
         app_version: app.package_info().version.to_string(),
-        caps: Vec::new(),
+        caps: caps_with_public_chat(Vec::new()),
     }
 }

@@ -36,6 +36,8 @@ pub fn request(
         room_code: None,
         history_locked: false,
         has_draft: false,
+        pinged: false,
+        slow_mode_s: 0,
     });
     ChatRequest {
         conversation,

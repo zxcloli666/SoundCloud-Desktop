@@ -5,6 +5,7 @@ mod devices;
 mod gallery;
 mod media;
 mod members;
+mod public;
 mod reads;
 mod rooms;
 mod safety;
@@ -19,7 +20,7 @@ use sc_chat::{
     LinkCreated, LinkPoll, ListQuery, LoginBegin, LoginPoll, LoginTarget, MediaUploadView, Member,
     MemberRole, Message, MessageTarget, MineQuery, NotifyPrefs, ReportInput, ReportReason,
     RichText, RoomModeration, RoomPreview, RoomSettingsPatch, SearchHit, SearchQuery, SendInput,
-    Seq, SettingsPatch, ThreadSnapshot, UserCard, UserId,
+    Seq, SettingsPatch, ThreadSnapshot, UserCard, UserId, UserRef,
 };
 use tauri::State;
 use uuid::Uuid;
@@ -29,6 +30,7 @@ use super::keychain::ResetPlan;
 use super::login;
 use super::runtime::DeviceLimit;
 use super::state::ChatState;
+pub use public::{PublicLog, PublicOpened};
 
 #[tauri::command]
 pub async fn chat_status(state: State<'_, ChatState>) -> Result<ChatStatus, ChatError> {
@@ -418,6 +420,81 @@ pub async fn chat_device_remove(
     device_id: DeviceId,
 ) -> Result<(), ChatError> {
     devices::remove(&state, device_id).await
+}
+
+#[tauri::command]
+pub async fn chat_public_open(state: State<'_, ChatState>) -> Result<PublicOpened, ChatError> {
+    public::open(&state).await
+}
+
+#[tauri::command]
+pub async fn chat_public_moderator(
+    state: State<'_, ChatState>,
+    user_id: UserId,
+    on: bool,
+) -> Result<(), ChatError> {
+    public::moderator(&state, user_id, on).await
+}
+
+#[tauri::command]
+pub async fn chat_public_mute(
+    state: State<'_, ChatState>,
+    user_id: UserId,
+    seconds: u32,
+    reason: Option<String>,
+) -> Result<i64, ChatError> {
+    public::mute(&state, user_id, seconds, reason).await
+}
+
+#[tauri::command]
+pub async fn chat_public_unmute(
+    state: State<'_, ChatState>,
+    user_id: UserId,
+) -> Result<(), ChatError> {
+    public::unmute(&state, user_id).await
+}
+
+#[tauri::command]
+pub async fn chat_public_ban(
+    state: State<'_, ChatState>,
+    user_id: UserId,
+    reason: Option<String>,
+) -> Result<(), ChatError> {
+    public::ban(&state, user_id, reason).await
+}
+
+#[tauri::command]
+pub async fn chat_public_unban(
+    state: State<'_, ChatState>,
+    user_id: UserId,
+) -> Result<(), ChatError> {
+    public::unban(&state, user_id).await
+}
+
+#[tauri::command]
+pub async fn chat_public_slow_mode(
+    state: State<'_, ChatState>,
+    conversation_id: ConvId,
+    seconds: u32,
+) -> Result<ConversationSummary, ChatError> {
+    public::slow_mode(&state, conversation_id, seconds).await
+}
+
+#[tauri::command]
+pub async fn chat_public_people(
+    state: State<'_, ChatState>,
+    user_ids: Vec<UserId>,
+) -> Result<Vec<UserRef>, ChatError> {
+    public::people(&state, user_ids).await
+}
+
+#[tauri::command]
+pub async fn chat_public_log(
+    state: State<'_, ChatState>,
+    before: Option<Uuid>,
+    limit: Option<u32>,
+) -> Result<PublicLog, ChatError> {
+    public::log(&state, before, limit).await
 }
 
 #[tauri::command]

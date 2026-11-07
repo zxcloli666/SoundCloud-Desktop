@@ -7,6 +7,7 @@ mod expiry;
 mod lifecycle;
 mod limit;
 mod local;
+mod public;
 mod reset;
 mod session;
 mod signals;
@@ -62,6 +63,7 @@ pub struct Runtime {
     session: Session,
     limit: SignInLimit,
     typing_sent: Mutex<HashMap<ConvId, Instant>>,
+    public: public::PublicWatch,
 }
 
 pub struct Parts {
@@ -80,6 +82,7 @@ pub fn start(state: &ChatState) {
     let runtime = state.runtime.clone();
     visibility::watch(&state.app, runtime.clone(), &state.rt);
     wake::watch(runtime.clone(), &state.rt);
+    public::watch(runtime.clone(), &state.rt);
     let watcher = runtime.clone();
     state.app.listen_any(AUTH_CHANGED, move |_| {
         let runtime = watcher.clone();
@@ -118,6 +121,7 @@ impl Runtime {
             config: RwLock::new(None),
             limit: SignInLimit::default(),
             typing_sent: Mutex::new(HashMap::new()),
+            public: public::PublicWatch::default(),
         }
     }
 
@@ -177,6 +181,7 @@ impl Runtime {
             return;
         }
         self.status.update(|status| status.visible = visible);
+        self.public.poke();
         if let Some(core) = self.core() {
             core.sync.set_visible(visible);
         }
