@@ -10,5 +10,5 @@ export function roomRowKind(event: SystemEvent): RoomRowKind | null {
 }
 
 export function canForwardFrom(kind: ConversationKind): boolean {
-  return kind !== 'room';
+  return kind !== 'room' && kind !== 'public';
 }

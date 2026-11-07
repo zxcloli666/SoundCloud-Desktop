@@ -90,6 +90,7 @@ impl Runtime {
     pub(super) async fn wipe_held(&self, keys: Keys) -> ChatResult<()> {
         self.forget_user();
         self.unlimited();
+        self.public.set(false);
         let chat = self.app.try_state::<ChatState>();
         let local_media = chat.as_ref().map(|state| state.media_cache.clone());
         if let Some(uploads) = chat.map(|state| state.uploads.clone()) {

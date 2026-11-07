@@ -1,13 +1,15 @@
 import type { TFunction } from 'i18next';
 import { chatBridge } from '../../../lib/chat/bridge';
-import { BellOff, Timer } from '../../../lib/chat/icons';
+import { BellOff, Timer as SlowIcon, Timer } from '../../../lib/chat/icons';
 import { ttlLabel } from '../../../lib/chat/render';
 import { type ConversationSummary, DISAPPEARING_TTLS } from '../../../lib/chat/types';
-import { Bell, Info, X } from '../../../lib/icons';
+import { Bell, Info, Shield, X } from '../../../lib/icons';
 import { useChatThreadStore } from '../../../stores/chat/thread';
 import { type ContextMenuEntry, openContextMenu } from '../../../stores/context-menu';
+import type { InfoTab } from '../info/InfoSheet';
+import { openSlowModeMenu } from '../public/SlowModeChip';
 import { toastError } from './errors';
-import { canSetTimer, hasTimer, isActiveMember } from './permissions';
+import { canSetTimer, hasTimer, isActiveMember, isPublicStaff } from './permissions';
 
 type MenuEvent = Pick<MouseEvent, 'clientX' | 'clientY' | 'preventDefault'>;
 
@@ -58,7 +60,7 @@ export function openThreadMenu(
   conversation: ConversationSummary,
   t: TFunction,
   language: string,
-  onInfo: () => void,
+  onInfo: (tab?: InfoTab) => void,
 ) {
   const muted = isMuted(conversation, Date.now());
   const entries: ContextMenuEntry[] = [
@@ -66,9 +68,26 @@ export function openThreadMenu(
       id: 'info',
       label: t('chat.thread.menu.info'),
       icon: <Info size={14} />,
-      onSelect: onInfo,
+      onSelect: () => onInfo(),
     },
   ];
+  if (isPublicStaff(conversation)) {
+    entries.push(
+      {
+        id: 'slow',
+        label: t('chat.public.slow.title'),
+        hint: conversation.slowModeS > 0 ? `${conversation.slowModeS}s` : undefined,
+        icon: <SlowIcon size={14} />,
+        onSelect: () => requestAnimationFrame(() => openSlowModeMenu(event, conversation, t)),
+      },
+      {
+        id: 'moderation',
+        label: t('chat.public.menu.log'),
+        icon: <Shield size={14} />,
+        onSelect: () => onInfo('log'),
+      },
+    );
+  }
   if (hasTimer(conversation) && isActiveMember(conversation)) {
     entries.push({
       id: 'timer',

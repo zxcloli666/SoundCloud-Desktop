@@ -1,6 +1,7 @@
 import { memo, useEffect, useState } from 'react';
 import type { ConvId } from '../../../lib/chat/types';
 import { useChatListStore } from '../../../stores/chat/list';
+import { PublicRow } from '../public/PublicRow';
 import { RequestsList } from '../requests/RequestsList';
 import { ConversationRows } from './ConversationRows';
 import { FilterChips } from './FilterChips';
@@ -28,6 +29,7 @@ export const ConversationList = memo(function ConversationList({
   const filter = useChatListStore((state) => state.filter);
   const load = useChatListStore((state) => state.load);
   const refresh = useChatListStore((state) => state.refresh);
+  const publicId = useChatListStore((state) => state.publicId);
   const onMenu = useRowMenu(variant);
   const searching = query.trim().length >= SEARCH_MIN;
 
@@ -39,6 +41,9 @@ export const ConversationList = memo(function ConversationList({
     <div data-ui="chat-list" className="flex h-full min-h-0 flex-col">
       <ListHeader variant={variant} query={query} onQuery={setQuery} />
       {!searching && <FilterChips />}
+      {!searching && filter === 'all' && (
+        <PublicRow selected={publicId !== null && selectedId === publicId} onOpen={onOpen} />
+      )}
       {!searching && filter === 'all' && <RoomRow selected={roomSelected} onOpen={onOpenRoom} />}
       {searching ? (
         <SearchResults query={query} onOpen={onOpen} />

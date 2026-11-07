@@ -3,12 +3,15 @@ import { useTranslation } from 'react-i18next';
 import type { ConvId, Seq } from '../../../lib/chat/types';
 import { useChatStore } from '../../../stores/chat';
 import { useChatListStore } from '../../../stores/chat/list';
+import { usePublicStore } from '../../../stores/chat/public';
 import { useChatThreadStore } from '../../../stores/chat/thread';
 import { ComposerGate } from '../composer/ComposerGate';
-import { InfoSheet } from '../info/InfoSheet';
+import { InfoSheet, type InfoTab } from '../info/InfoSheet';
 import { ThreadDrop } from '../media/compose/ThreadDrop';
 import { TraySpace } from '../media/compose/tray-space';
 import { UploadTray } from '../media/UploadTray';
+import { PublicGateView } from '../public/PublicGate';
+import { usePublicPeople } from '../public/usePublicPeople';
 import { useRoomMembers, useRoomModerator } from '../room/useRoom';
 import { ThreadContext, type ThreadContextValue } from './context';
 import { focusThread } from './focus';
@@ -51,11 +54,13 @@ export const ChatThread = memo(function ChatThread({
   );
   const me = useChatStore((state) => state.status?.userId ?? null);
   const { t, i18n } = useTranslation();
-  const { people, nameOf } = usePeople(conversation, members, me);
-  const shared = conversation?.kind === 'group' || conversation?.kind === 'room';
+  const seen = usePublicPeople(conversationId, listed?.kind === 'public');
+  const { people, nameOf } = usePeople(conversation, members, me, seen);
+  const shared = ['group', 'room', 'public'].includes(conversation?.kind ?? '');
   const blocked = useBlocked(shared);
+  const gate = usePublicStore((state) => (listed?.kind === 'public' ? state.gate : null));
   const timeline = useRef<TimelineHandle>(null);
-  const [info, setInfo] = useState(false);
+  const [info, setInfo] = useState<InfoTab | null>(null);
   const [traySpace, setTraySpace] = useState(0);
   const leave = useRef(onLeave);
   leave.current = onLeave;
@@ -69,7 +74,7 @@ export const ChatThread = memo(function ChatThread({
     store.setOpen(conversationId);
     void store.load(conversationId);
     const release = focusThread(conversationId);
-    setInfo(false);
+    setInfo(null);
     return () => {
       release();
       if (useChatThreadStore.getState().openId === conversationId) {
@@ -79,11 +84,11 @@ export const ChatThread = memo(function ChatThread({
   }, [conversationId]);
 
   const jumpTo = useCallback((seq: Seq) => void timeline.current?.jumpTo(seq), []);
-  const openInfo = useCallback(() => setInfo(true), []);
-  const closeInfo = useCallback(() => setInfo(false), []);
+  const openInfo = useCallback((tab: InfoTab = 'tracks') => setInfo(tab), []);
+  const closeInfo = useCallback(() => setInfo(null), []);
   const jumpFromInfo = useCallback(
     (seq: Seq) => {
-      setInfo(false);
+      setInfo(null);
       jumpTo(seq);
     },
     [jumpTo],
@@ -107,7 +112,15 @@ export const ChatThread = memo(function ChatThread({
     [t, i18n.language, conversation, me, people, blocked, moderator, nameOf, jumpTo],
   );
 
-  if (!context) {
+  if (!context || (gate && load !== 'ready')) {
+    if (gate) {
+      return (
+        <PublicGateView
+          gate={gate}
+          onRetry={() => void useChatThreadStore.getState().load(conversationId)}
+        />
+      );
+    }
     if (load === 'failed') {
       return (
         <ThreadFailed onRetry={() => void useChatThreadStore.getState().load(conversationId)} />
@@ -131,14 +144,14 @@ export const ChatThread = memo(function ChatThread({
         <HistorySlot />
         <TraySpace.Provider value={traySpace}>
           {empty && load === 'ready' ? (
-            <ThreadEmpty saved={context.conversation.kind === 'self'} />
+            <ThreadEmpty kind={context.conversation.kind} />
           ) : (
             <Timeline ref={timeline} conversationId={conversationId} />
           )}
         </TraySpace.Provider>
         <UploadTray conversationId={conversationId} onSpace={setTraySpace} />
         <ComposerGate conversationId={conversationId} />
-        {info && <InfoSheet onClose={closeInfo} onJump={jumpFromInfo} />}
+        {info && <InfoSheet initialTab={info} onClose={closeInfo} onJump={jumpFromInfo} />}
         <ThreadDialogs conversationId={conversationId} />
         <ThreadDrop conversation={context.conversation} />
       </section>

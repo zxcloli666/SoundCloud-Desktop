@@ -5,6 +5,7 @@ import { queryClient } from '../../../lib/query-client';
 import { initChatBridge, useChatStore } from '../../../stores/chat';
 import { useChatListStore } from '../../../stores/chat/list';
 import { useChatPrefsStore } from '../../../stores/chat/prefs';
+import { usePublicStore } from '../../../stores/chat/public';
 import { useChatThreadStore } from '../../../stores/chat/thread';
 import { useChatToastStore } from '../toasts/toast-store';
 
@@ -19,6 +20,7 @@ function refetchConfig() {
 function forgetAccount() {
   useChatListStore.getState().clear();
   useChatThreadStore.getState().clear();
+  usePublicStore.getState().clear();
   useChatToastStore.getState().clear();
   queryClient.removeQueries({ queryKey: ['chat'] });
 }

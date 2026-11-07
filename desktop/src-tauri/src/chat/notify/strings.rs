@@ -34,6 +34,8 @@ pub struct Strings {
     pub host: String,
     pub chat: String,
     pub group: String,
+    #[serde(default)]
+    pub public: String,
     pub room: String,
     pub track: String,
     pub playlist: String,

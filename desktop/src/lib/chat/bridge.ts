@@ -45,6 +45,8 @@ import type {
   Message,
   MessageTarget,
   NotifyPrefs,
+  PublicLog,
+  PublicOpened,
   ReportInput,
   ReportReason,
   ResetPlan,
@@ -60,6 +62,7 @@ import type {
   ThreadSnapshot,
   UserCard,
   UserId,
+  UserRef,
 } from './types';
 
 export const chatBridge = {
@@ -138,6 +141,21 @@ export const chatBridge = {
   deviceConfirm: (deviceId: DeviceId) => invoke<void>('chat_device_confirm', { deviceId }),
   deviceNotMe: (deviceId: DeviceId) => invoke<void>('chat_device_not_me', { deviceId }),
   deviceRemove: (deviceId: DeviceId) => invoke<void>('chat_device_remove', { deviceId }),
+
+  publicOpen: () => invoke<PublicOpened>('chat_public_open'),
+  publicModerator: (userId: UserId, on: boolean) =>
+    invoke<void>('chat_public_moderator', { userId, on }),
+  publicMute: (userId: UserId, seconds: number, reason: string | null) =>
+    invoke<number>('chat_public_mute', { userId, seconds, reason }),
+  publicUnmute: (userId: UserId) => invoke<void>('chat_public_unmute', { userId }),
+  publicBan: (userId: UserId, reason: string | null) =>
+    invoke<void>('chat_public_ban', { userId, reason }),
+  publicUnban: (userId: UserId) => invoke<void>('chat_public_unban', { userId }),
+  publicPeople: (userIds: UserId[]) => invoke<UserRef[]>('chat_public_people', { userIds }),
+  publicSlowMode: (conversationId: ConvId, seconds: number) =>
+    invoke<ConversationSummary>('chat_public_slow_mode', { conversationId, seconds }),
+  publicLog: (before: string | null, limit: number) =>
+    invoke<PublicLog>('chat_public_log', { before, limit }),
 
   roomChat: (code: string) => invoke<ConversationSummary>('chat_room_chat', { code }),
   roomPreview: (code: string) => invoke<RoomPreview>('chat_room_preview', { code }),

@@ -16,9 +16,19 @@ interface AddMembersProps {
   conversationId: ConvId;
   present: ReadonlySet<UserId>;
   onDone: () => void;
+  title?: string;
+  limit?: number;
+  submit?: (people: UserRef[]) => Promise<void>;
 }
 
-function AddMembersBody({ conversationId, present, onDone }: AddMembersProps) {
+function AddMembersBody({
+  conversationId,
+  present,
+  onDone,
+  title,
+  limit,
+  submit,
+}: AddMembersProps) {
   const { t, i18n } = useTranslation();
   const membersMax = useChatStore(
     (state) => state.config?.limits.groupMembersMax ?? GROUP_MEMBERS_DEFAULT,
@@ -27,7 +37,7 @@ function AddMembersBody({ conversationId, present, onDone }: AddMembersProps) {
   const [picked, setPicked] = useState<UserRef[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const free = Math.max(0, membersMax - present.size);
+  const free = limit ?? Math.max(0, membersMax - present.size);
 
   const toggle = (person: UserRef) =>
     setPicked((list) =>
@@ -40,11 +50,14 @@ function AddMembersBody({ conversationId, present, onDone }: AddMembersProps) {
     setBusy(true);
     setError(null);
     try {
-      await chatBridge.memberAdd(
-        conversationId,
-        picked.map((person) => person.id),
-      );
-      await useChatThreadStore.getState().loadMembers(conversationId);
+      if (submit) await submit(picked);
+      else {
+        await chatBridge.memberAdd(
+          conversationId,
+          picked.map((person) => person.id),
+        );
+        await useChatThreadStore.getState().loadMembers(conversationId);
+      }
       onDone();
     } catch (failure) {
       setError(errorText(failure, t, i18n.language));
@@ -56,7 +69,7 @@ function AddMembersBody({ conversationId, present, onDone }: AddMembersProps) {
   return (
     <div className="flex min-h-0 flex-col">
       <div className="flex flex-col gap-3 px-6 pt-6 pb-3">
-        <ModalTitle>{t('chat.thread.info.addMembers')}</ModalTitle>
+        <ModalTitle>{title ?? t('chat.thread.info.addMembers')}</ModalTitle>
         <label className="flex h-10 items-center gap-2.5 rounded-2xl border border-ink/[0.07] bg-shade-20 px-3.5 focus-within:border-ink/[0.16]">
           <Search size={15} className="shrink-0 text-ink-35" />
           <input
@@ -91,7 +104,7 @@ function AddMembersBody({ conversationId, present, onDone }: AddMembersProps) {
             boxShadow: '0 10px 28px var(--color-accent-glow)',
           }}
         >
-          {picked.length > 0
+          {picked.length > 1
             ? t('chat.thread.info.addPicked', { n: picked.length })
             : t('chat.thread.info.add')}
         </button>

@@ -4,7 +4,10 @@ import { labAvatar } from './pictures';
 export const ME_ID = 'u-me';
 
 const NAMES: Record<string, string> = {
-  [ME_ID]: 'Лёша',
+  [ME_ID]: 'Астольфо',
+  'u-owner': 'Cute Loli',
+  'u-vera': 'Vera Nova',
+  'u-roma': 'Roma FM',
   'u-mira': 'Mira',
   'u-danil': 'Данил',
   'u-sasha': 'Саша Orbit',

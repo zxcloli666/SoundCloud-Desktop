@@ -119,7 +119,13 @@
 | `[data-ui="chat-dock-tabs"]` | Ряд вкладок панели чатов |
 | `[data-ui="chat-list"]` | Список чатов |
 | `[data-ui="chat-filter"]` | Фильтр над списком чатов. `[data-kind]`: `all`, `direct`, `groups`, `unread`, `requests` или `archived`, у выбранного есть `[aria-pressed="true"]` |
-| `[data-ui="chat-row"]` | Чат в списке. `[data-kind]`: `direct`, `group`, `self` или `room`, у открытого есть `[aria-current]` |
+| `[data-ui="chat-row"]` | Чат в списке. `[data-kind]`: `direct`, `group`, `self`, `room` или `public`, у открытого есть `[aria-current]` |
+| `[data-ui="chat-public-mark"]` | Значок общего чата в списке, шапке и панели «О чате» |
+| `[data-ui="chat-public-slow"]` | Чип медленного режима в шапке общего чата |
+| `[data-ui="chat-public-sanction"]` | Плашка «вам запрещено писать» или «вы забанены» вместо поля ввода, `[data-kind]`: `muted` или `banned` |
+| `[data-ui="chat-public-gate"]` | Общий чат не открывается, `[data-gate]`: `muted`, `off` или `failed` |
+| `[data-ui="chat-public-staff"]` | Вкладка «Модераторы» общего чата |
+| `[data-ui="chat-public-log"]` | Журнал модерации общего чата |
 | `[data-ui="chat-thread"]` | Открытый чат с сообщениями, `[data-kind]` как выше |
 | `[data-ui="chat-thread-header"]` | Шапка открытого чата |
 | `[data-ui="chat-bubble"]` | Сообщение. У ваших есть `[data-mine]`, у неотправленных `[data-failed]` |

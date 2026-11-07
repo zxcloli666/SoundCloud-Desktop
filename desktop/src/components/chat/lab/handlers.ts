@@ -7,9 +7,10 @@ import type {
   SendInput,
   ThreadSnapshot,
 } from '../../../lib/chat/types';
+import { CONV } from './convs';
 import { deleteSelection, restoreSelection, type Selection } from './media-trash';
 import { writeHandlers } from './media-writes';
-import { ME_ID } from './people';
+import { ME_ID, person } from './people';
 import { markMedia, mediaMark } from './pictures';
 import { conversation, world } from './world';
 
@@ -119,6 +120,18 @@ export const defaultHandlers: Record<string, (args: Args) => unknown> = {
   chat_send: (a) => sent(a.input as SendInput),
   chat_conversation_update: (a) => patched(String(a.conversationId), a.patch as ConversationPatch),
   chat_room_chat: () => summary('c-room'),
+  chat_public_open: () => ({
+    conversation: summary(CONV.public),
+    online: summary(CONV.public).memberCount,
+  }),
+  chat_public_log: () => ({ entries: [], next: null }),
+  chat_public_mute: () => Date.now() + 600_000,
+  chat_public_unmute: () => null,
+  chat_public_ban: () => null,
+  chat_public_unban: () => null,
+  chat_public_moderator: () => null,
+  chat_public_people: (a) => (a.userIds as string[]).map((id) => person(id)),
+  chat_public_slow_mode: (a) => summary(String(a.conversationId)),
   chat_settings_get: () => world.settings,
   chat_devices: () => [],
   chat_search: () => [],

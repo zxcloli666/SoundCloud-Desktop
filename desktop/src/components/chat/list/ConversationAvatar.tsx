@@ -3,6 +3,7 @@ import { ink } from '../../../lib/chat/tone';
 import type { ConversationKind } from '../../../lib/chat/types';
 import { Bookmark, Radio } from '../../../lib/icons';
 import { Avatar } from '../../ui/Avatar';
+import { PublicMark } from '../public/PublicMark';
 
 interface ConversationAvatarProps {
   kind: ConversationKind;
@@ -62,6 +63,7 @@ export const ConversationAvatar = memo(function ConversationAvatar({
       </GlyphTile>
     );
   }
+  if (kind === 'public') return <PublicMark size={size} />;
   if (kind === 'room') {
     return (
       <GlyphTile size={size}>

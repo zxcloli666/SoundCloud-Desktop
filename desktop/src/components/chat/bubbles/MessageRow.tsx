@@ -11,7 +11,7 @@ import { toastError } from '../thread/errors';
 import { isActiveMember } from '../thread/permissions';
 import { Bubble } from './Bubble';
 import { HoverActions, QUICK_REACTION } from './HoverActions';
-import { messageMenu, startReply } from './message-menu';
+import { messageMenu, moderationEntries, startReply } from './message-menu';
 import { Reactions } from './Reactions';
 
 export interface MessageRowProps {
@@ -49,7 +49,7 @@ export const MessageRow = memo(function MessageRow({
   flash,
   avatars,
 }: MessageRowProps) {
-  const { t, language, conversation, moderator, people, blocked } = useThread();
+  const { t, language, conversation, moderator, people, blocked, me } = useThread();
   const live = message.body.type === 'text' && message.seq !== null;
   const active = isActiveMember(conversation);
   const fail = (error: unknown) => toastError(error, t, language);
@@ -60,7 +60,10 @@ export const MessageRow = memo(function MessageRow({
   };
 
   const openMenu = (event: MouseEvent) =>
-    openContextMenu(event, messageMenu(message, conversation, moderator, t, language));
+    openContextMenu(event, [
+      ...messageMenu(message, conversation, moderator, t, language),
+      ...moderationEntries(message, conversation, me, people, t),
+    ]);
   const react = (emoji: string) =>
     void useChatThreadStore.getState().react(message, emoji).catch(fail);
   const openPicker = (event: MouseEvent<HTMLButtonElement>) => {

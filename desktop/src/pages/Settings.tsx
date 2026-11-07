@@ -1,5 +1,6 @@
 import {useState} from 'react';
 import {useTranslation} from 'react-i18next';
+import {useLocation} from 'react-router-dom';
 import {scrollMainToTop} from '../components/layout/ScrollReset';
 import {SETTINGS_CATEGORIES, type SettingsCategoryId} from '../components/settings/registry';
 import {SettingsFrame} from '../components/settings/SettingsFrame';
@@ -20,7 +21,8 @@ export function Settings() {
     const categories = chatShown
         ? SETTINGS_CATEGORIES
         : SETTINGS_CATEGORIES.filter((c) => c.id !== 'chats');
-    const [active, setActive] = useState<SettingsCategoryId>('general');
+    const opened = (useLocation().state as { category?: SettingsCategoryId } | null)?.category;
+    const [active, setActive] = useState<SettingsCategoryId>(opened ?? 'general');
     const selectCategory = (id: SettingsCategoryId) => {
         setActive(id);
         scrollMainToTop();

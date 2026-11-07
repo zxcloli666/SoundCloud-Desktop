@@ -7,6 +7,7 @@
   "host": "You are now the host",
   "chat": "Chat",
   "group": "Group",
+  "public": "Public chat",
   "room": "Room",
   "track": "Track: {{title}}",
   "playlist": "Playlist: {{title}}",

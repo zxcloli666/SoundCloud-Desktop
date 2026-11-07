@@ -18,7 +18,8 @@ export function isRequest(conversation: ConversationSummary): boolean {
 }
 
 function isListed(conversation: ConversationSummary): boolean {
-  if (conversation.kind === 'room') return false;
+  if (conversation.kind === 'room' || conversation.kind === 'public') return false;
+  if (conversation.kind === 'unknown') return false;
   return conversation.state === 'active' || conversation.state === 'invited';
 }
 
@@ -59,10 +60,21 @@ function withSummaries(
   return next;
 }
 
+export function publicOf(byId: Record<ConvId, ConversationSummary>): ConvId | null {
+  for (const conversation of Object.values(byId)) {
+    if (conversation.kind === 'public') return conversation.id;
+  }
+  return null;
+}
+
+export const selectPublic = (state: ChatListState): ConversationSummary | null =>
+  state.publicId ? (state.byId[state.publicId] ?? null) : null;
+
 export interface ChatListState {
   filter: ListFilter;
   items: ConversationSummary[];
   byId: Record<ConvId, ConversationSummary>;
+  publicId: ConvId | null;
   nextCursor: string | null;
   requests: number;
   requestItems: ChatRequest[];
@@ -83,7 +95,7 @@ let generation = 0;
 
 export const useChatListStore = create<ChatListState>()((set, get) => {
   const place = (byId: Record<ConvId, ConversationSummary>) =>
-    set({ byId, items: listFor(byId, get().filter) });
+    set({ byId, items: listFor(byId, get().filter), publicId: publicOf(byId) });
 
   const loadRequests = async (ticket: number) => {
     const requestItems = await chatBridge.requests();
@@ -119,6 +131,7 @@ export const useChatListStore = create<ChatListState>()((set, get) => {
     filter: 'all',
     items: [],
     byId: {},
+    publicId: null,
     nextCursor: null,
     requests: 0,
     requestItems: [],
@@ -170,6 +183,7 @@ export const useChatListStore = create<ChatListState>()((set, get) => {
         filter: 'all',
         items: [],
         byId: {},
+        publicId: null,
         nextCursor: null,
         requests: 0,
         requestItems: [],

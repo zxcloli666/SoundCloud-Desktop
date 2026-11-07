@@ -18,6 +18,7 @@ import type { ConvId, Embed, Member, Message, UserRef } from '../../../lib/chat/
 import { hasLink } from '../../../lib/together/room-rules';
 import { useChatStore } from '../../../stores/chat';
 import { useChatMediaStore } from '../../../stores/chat/media';
+import { usePublicStore } from '../../../stores/chat/public';
 import { type Compose, useChatThreadStore } from '../../../stores/chat/thread';
 import { findBySeq } from '../../../stores/chat/thread-messages';
 import { startEdit } from '../bubbles/message-menu';
@@ -27,6 +28,7 @@ import { AttachButton } from '../media/AttachButton';
 import { SkippedNote } from '../media/compose/SkippedNote';
 import { StagedAlbum } from '../media/compose/StagedAlbum';
 import { useComposerMedia } from '../media/compose/useComposerMedia';
+import { useCountdown } from '../public/useCountdown';
 import { useRoomLinkBlock, useRoomMembers } from '../room/useRoom';
 import { useThread } from '../thread/context';
 import { toastError } from '../thread/errors';
@@ -57,6 +59,10 @@ function lastEditable(conversationId: ConvId): Message | null {
   return null;
 }
 
+function asMember(user: UserRef): Member {
+  return { user, role: 'member', state: 'active', accepted: true, joinedSeq: 0, invitedBy: null };
+}
+
 function fitHeight(input: HTMLTextAreaElement | null, empty: boolean) {
   if (!input) return;
   input.style.height = 'auto';
@@ -65,7 +71,10 @@ function fitHeight(input: HTMLTextAreaElement | null, empty: boolean) {
 
 export const Composer = memo(function Composer({ conversationId }: { conversationId: ConvId }) {
   const { t, i18n } = useTranslation();
-  const { conversation, me } = useThread();
+  const { conversation, me, people } = useThread();
+  const isPublic = conversation.kind === 'public';
+  const slowUntil = usePublicStore((state) => (isPublic ? state.slowUntil : null));
+  const slowLeft = useCountdown(slowUntil);
   const compose = useChatThreadStore(
     (state) => state.threads[conversationId]?.compose ?? NO_COMPOSE,
   );
@@ -74,7 +83,11 @@ export const Composer = memo(function Composer({ conversationId }: { conversatio
     (state) => state.threads[conversationId]?.members ?? NO_MEMBERS,
   );
   const roomMembers = useRoomMembers(conversationId);
-  const members = roomMembers ?? threadMembers;
+  const seen = useMemo(
+    () => (isPublic ? [...people.values()].map(asMember) : NO_MEMBERS),
+    [isPublic, people],
+  );
+  const members = roomMembers ?? (isPublic ? [...threadMembers, ...seen] : threadMembers);
   const editing = useChatThreadStore((state) =>
     compose.edit
       ? (state.threads[conversationId]?.messages.find((m) => m.clientId === compose.edit) ?? null)
@@ -97,7 +110,7 @@ export const Composer = memo(function Composer({ conversationId }: { conversatio
   const { text, setText, picks, setPicks } = draft;
   const [embeds, setEmbeds] = useState<Embed[]>([]);
   const [caret, setCaret] = useState(0);
-  const groupLike = conversation.kind === 'group' || conversation.kind === 'room';
+  const groupLike = conversation.kind === 'group' || conversation.kind === 'room' || isPublic;
   const mentions = useMentions(text, caret, members, me, groupLike);
   const links = useLinkEmbeds(text, Math.max(0, embedsMax - embeds.length));
   const present = useMemo(
@@ -132,7 +145,7 @@ export const Composer = memo(function Composer({ conversationId }: { conversatio
     rich.text.length === 0 && (editing !== null || (outgoing.length === 0 && album === null));
   const linkLocked = linkBlock !== null && hasLink(rich.text);
   const preparing = !editing && media.album.preparing > 0;
-  const blocked = paused || tooLong || empty || linkLocked || preparing;
+  const blocked = paused || tooLong || empty || linkLocked || preparing || slowLeft > 0;
 
   const submit = async () => {
     if (blocked) return;
@@ -307,6 +320,7 @@ export const Composer = memo(function Composer({ conversationId }: { conversatio
             <SendButton
               editing={editing !== null}
               disabled={blocked}
+              hold={slowLeft > 0 ? { left: slowLeft, total: conversation.slowModeS } : null}
               onSend={() => void submit()}
             />
           </div>

@@ -69,6 +69,26 @@ function thread(conv: string, drafts: Omit<Draft, 'conv' | 'seq'>[]): Message[] 
   return drafts.map((draft, index) => message({ ...draft, conv, seq: index + 1 }));
 }
 
+function publicThread(): Message[] {
+  const posts = thread(CONV.public, [
+    { from: 'u-tim', ago: 95, text: 'Кто-нибудь слушал новый альбом Burial? Это что-то' },
+    { from: 'u-sasha', ago: 90, text: 'Да! Трек 3 просто уносит' },
+    { from: 'u-kai', ago: 70, text: 'Собираю плейлист на вечер, кидайте идеи' },
+    {
+      from: 'u-mira',
+      ago: 64,
+      text: 'Вот это в тему',
+      embeds: [labEmbed('Archangel', 'Burial', 7)],
+    },
+    { from: ME_ID, ago: 40, text: 'Добавил бы ещё что-то из Four Tet' },
+    { from: 'u-vera', ago: 22, text: '@Астольфо согласна, Two Thousand and Seventeen идеально' },
+    { from: 'u-roma', ago: 12, text: 'Ребята, а эквалайзер в новой версии кто пробовал?' },
+    { from: 'u-tim', ago: 3, text: 'Пробовал, пресеты сохраняются, удобно' },
+  ]);
+  posts[5] = { ...posts[5], mentions: [ME_ID], mentionsMe: true, replyTo: 5 };
+  return posts;
+}
+
 export function labThreads(): Record<string, Message[]> {
   return {
     [CONV.dm]: thread(CONV.dm, [
@@ -112,6 +132,7 @@ export function labThreads(): Record<string, Message[]> {
       },
       { from: 'u-mira', ago: 20, text: 'Супер, добавляю в общий' },
     ]),
+    [CONV.public]: publicThread(),
     [CONV.self]: thread(CONV.self, [
       { from: ME_ID, ago: 1500, text: 'Идеи для обложки: туман, неон, плёнка' },
       {

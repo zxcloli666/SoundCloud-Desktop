@@ -18,6 +18,7 @@ import type {
   UserId,
 } from '../../lib/chat/types';
 import { useChatListStore } from './list';
+import { usePublicStore } from './public';
 import {
   expiredSeqs,
   goneByConversation,
@@ -196,6 +197,9 @@ export const useChatThreadStore = create<ChatThreadState>()((set, get) => {
       set((state) => ({ threads: evicted(state.threads, id) }));
       patch(id, () => ({ load: thread(id).load === 'ready' ? 'ready' : 'loading' }));
       try {
+        if (useChatListStore.getState().byId[id]?.kind === 'public') {
+          if ((await usePublicStore.getState().open()) === null) throw new Error('public');
+        }
         const snapshot = await chatBridge.open(id);
         const oldest = oldestSeq(snapshot.messages) ?? 0;
         patch(id, (current) => ({
@@ -215,7 +219,7 @@ export const useChatThreadStore = create<ChatThreadState>()((set, get) => {
           openedAt: Date.now(),
         }));
         useChatListStore.getState().upsert(snapshot.conversation);
-        if (snapshot.conversation.kind === 'group' || snapshot.conversation.kind === 'room') {
+        if (['group', 'room', 'public'].includes(snapshot.conversation.kind)) {
           void get().loadMembers(id);
         }
       } catch {
@@ -263,8 +267,11 @@ export const useChatThreadStore = create<ChatThreadState>()((set, get) => {
           ? await chatBridge.mediaSend(input, album)
           : await chatBridge.send(input);
         putMessages(id, [message]);
+        const conversation = thread(id).conversation;
+        if (conversation?.kind === 'public') usePublicStore.getState().noteSent(conversation);
       } catch (error) {
         patch(id, (current) => ({ compose: { ...current.compose, reply } }));
+        if (thread(id).conversation?.kind === 'public') usePublicStore.getState().noteError(error);
         throw error;
       }
     },

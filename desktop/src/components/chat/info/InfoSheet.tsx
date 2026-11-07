@@ -4,23 +4,29 @@ import { useNavigate } from 'react-router-dom';
 import { conversationAvatar, conversationTitle } from '../../../lib/chat/render';
 import { surface } from '../../../lib/chat/tone';
 import type { Seq } from '../../../lib/chat/types';
-import { Bookmark, Images, ListMusic, Users, X } from '../../../lib/icons';
+import { Bookmark, Images, ListMusic, Shield, Users, X } from '../../../lib/icons';
 import { linkRoute } from '../../../lib/soundcloudLink';
 import { useChatStore } from '../../../stores/chat';
 import { selectMediaKnown } from '../../../stores/chat/media';
 import { Avatar } from '../../ui/Avatar';
 import { GroupAvatarEdit } from '../media/compose/GroupAvatarEdit';
 import { GalleryTab } from '../media/GalleryTab';
+import { ScrollText } from '../public/icons';
+import { LogTab } from '../public/LogTab';
+import { PublicMark } from '../public/PublicMark';
+import { PublicOnline } from '../public/PublicRow';
+import { SlowModePicker } from '../public/SlowModePicker';
+import { StaffTab } from '../public/StaffTab';
 import { useThread } from '../thread/context';
 import { GlassLayer } from '../thread/GlassLayer';
-import { canManageMembers, hasTimer, isActiveMember } from '../thread/permissions';
+import { canManageMembers, hasTimer, isActiveMember, isPublicStaff } from '../thread/permissions';
 import { InviteRow } from './InviteRow';
 import { MembersTab } from './MembersTab';
 import { MuteRow } from './MuteRow';
 import { TimerPicker } from './TimerPicker';
 import { TracksTab } from './TracksTab';
 
-type Tab = 'tracks' | 'members' | 'gallery';
+export type InfoTab = 'tracks' | 'members' | 'gallery' | 'staff' | 'log';
 
 function Identity() {
   const { t } = useTranslation();
@@ -48,6 +54,8 @@ function Identity() {
             >
               <Bookmark size={28} />
             </span>
+          ) : conversation.kind === 'public' ? (
+            <PublicMark size={72} live />
           ) : avatar || conversation.kind === 'direct' ? (
             <Avatar src={avatar} size={72} />
           ) : (
@@ -63,6 +71,12 @@ function Identity() {
       {(conversation.kind === 'group' || conversation.kind === 'room') && (
         <div className="text-[12px] text-ink-40">
           {t('chat.thread.members', { count: conversation.memberCount })}
+        </div>
+      )}
+      {conversation.kind === 'public' && (
+        <div className="flex flex-col items-center gap-1 text-[12px] text-ink-40">
+          <PublicOnline count={conversation.memberCount} className="text-ink-60" />
+          <span>{t('chat.public.tagline')}</span>
         </div>
       )}
     </div>
@@ -97,18 +111,22 @@ function TabButton({
 }
 
 export const InfoSheet = memo(function InfoSheet({
+  initialTab = 'tracks',
   onClose,
   onJump,
 }: {
+  initialTab?: InfoTab;
   onClose: () => void;
   onJump: (seq: Seq) => void;
 }) {
   const { t } = useTranslation();
   const { conversation } = useThread();
   const scrollRef = useRef<HTMLDivElement>(null);
-  const showMembers = conversation.kind !== 'self';
+  const isPublic = conversation.kind === 'public';
+  const staff = isPublicStaff(conversation);
+  const showMembers = conversation.kind !== 'self' && !isPublic;
   const showGallery = useChatStore(selectMediaKnown);
-  const [tab, setTab] = useState<Tab>('tracks');
+  const [tab, setTab] = useState<InfoTab>(initialTab);
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -154,6 +172,7 @@ export const InfoSheet = memo(function InfoSheet({
             <div className="flex flex-col gap-2">
               {hasTimer(conversation) && isActiveMember(conversation) && <TimerPicker />}
               {conversation.kind !== 'self' && isActiveMember(conversation) && <MuteRow />}
+              {staff && <SlowModePicker />}
               {canManageMembers(conversation) && <InviteRow />}
             </div>
             <div
@@ -175,6 +194,22 @@ export const InfoSheet = memo(function InfoSheet({
                   label={t('chat.thread.info.membersTab')}
                 />
               )}
+              {isPublic && (
+                <TabButton
+                  active={tab === 'staff'}
+                  onClick={() => setTab('staff')}
+                  icon={<Shield size={14} />}
+                  label={t('chat.public.staff.title')}
+                />
+              )}
+              {staff && (
+                <TabButton
+                  active={tab === 'log'}
+                  onClick={() => setTab('log')}
+                  icon={<ScrollText size={14} />}
+                  label={t('chat.public.log.title')}
+                />
+              )}
               {showGallery && (
                 <TabButton
                   active={tab === 'gallery'}
@@ -186,6 +221,8 @@ export const InfoSheet = memo(function InfoSheet({
             </div>
             {tab === 'tracks' && <TracksTab scrollRef={scrollRef} onJump={onJump} />}
             {tab === 'members' && showMembers && <MembersTab />}
+            {tab === 'staff' && isPublic && <StaffTab />}
+            {tab === 'log' && staff && <LogTab />}
             {tab === 'gallery' && showGallery && (
               <GalleryTab scrollRef={scrollRef} onJump={onJump} />
             )}

@@ -4,7 +4,7 @@ import { world } from './world';
 const USER = {
   id: 7001,
   urn: 'soundcloud:users:7001',
-  username: 'Лёша',
+  username: 'Астольфо',
   avatar_url: '',
   permalink_url: 'https://soundcloud.com/lab',
   followers_count: 214,
@@ -33,7 +33,7 @@ function frame(status: number, body: unknown): Uint8Array {
 function netFetch(args: Record<string, unknown>): Uint8Array {
   const request = args.request as { url: string };
   if (request.url.includes('/me/cold')) {
-    return frame(200, { ...USER, avatar_url: labAvatar('Лёша') });
+    return frame(200, { ...USER, avatar_url: labAvatar(USER.username) });
   }
   if (request.url.includes('/me/subscription')) {
     return frame(200, { premium: world.config.media?.star === true, entitlements: [] });

@@ -311,7 +311,7 @@ export interface SearchHit {
   snippet: string;
 }
 
-export type ConversationKind = 'direct' | 'group' | 'room' | 'self';
+export type ConversationKind = 'direct' | 'group' | 'room' | 'self' | 'public' | 'unknown';
 export type MemberRole = 'owner' | 'admin' | 'member';
 export type MemberState = 'active' | 'invited' | 'left' | 'kicked' | 'banned';
 export type NotifyLevel = 'all' | 'mentions' | 'none';
@@ -358,6 +358,8 @@ export interface ConversationSummary {
   roomCode: string | null;
   historyLocked: boolean;
   hasDraft: boolean;
+  pinged: boolean;
+  slowModeS: number;
 }
 
 export type ListFilter = 'all' | 'direct' | 'groups' | 'unread' | 'requests' | 'archived';
@@ -614,4 +616,42 @@ export interface DeviceAddedEvent {
 
 export interface NotifyOpenEvent {
   conversationId: ConvId;
+}
+
+export const PUBLIC_MUTE_SECONDS = [600, 3_600, 86_400] as const;
+export const PUBLIC_SLOW_MODE_SECONDS = [0, 5, 15, 30, 60, 300, 600] as const;
+export const PUBLIC_REASON_MAX = 200;
+
+export type PublicMuteSeconds = (typeof PUBLIC_MUTE_SECONDS)[number];
+
+export type PublicAction =
+  | 'mute'
+  | 'unmute'
+  | 'ban'
+  | 'unban'
+  | 'slow_mode'
+  | 'delete'
+  | 'moderator_add'
+  | 'moderator_remove';
+
+export interface PublicOpened {
+  conversation: ConversationSummary;
+  online: number;
+}
+
+export interface PublicLogEntry {
+  id: string;
+  by: UserRef;
+  action: PublicAction | string;
+  user: UserRef | null;
+  seq: Seq | null;
+  until: Millis | null;
+  seconds: number | null;
+  reason: string | null;
+  ts: Millis;
+}
+
+export interface PublicLog {
+  entries: PublicLogEntry[];
+  next: string | null;
 }

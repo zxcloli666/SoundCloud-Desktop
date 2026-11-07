@@ -11,9 +11,12 @@ export const CONV = {
   dm2: 'c-dm-danil',
   dm3: 'c-dm-lena',
   room: 'c-room',
+  public: 'c-public',
 } as const;
 
 export const ROOM_CODE = 'LAB42';
+export const PUBLIC_ONLINE = 128;
+export const OWNER_ID = 'u-owner';
 export const GROUP_AVATAR = 'avatar-group';
 
 function base(id: string): ConversationSummary {
@@ -42,6 +45,8 @@ function base(id: string): ConversationSummary {
     roomCode: null,
     historyLocked: false,
     hasDraft: false,
+    pinged: false,
+    slowModeS: 0,
   };
 }
 
@@ -96,7 +101,28 @@ export function labConversations(threads: Record<string, Message[]>): Conversati
     roomCode: ROOM_CODE,
     memberCount: 4,
   };
-  return [dm, group, self, danil, lena, room].map((conv) => lastOf(threads[conv.id] ?? [], conv));
+  const open: ConversationSummary = {
+    ...base(CONV.public),
+    kind: 'public',
+    notify: 'mentions',
+    pinnedAt: NOW - 400 * 24 * 3_600_000,
+    memberCount: PUBLIC_ONLINE,
+    slowModeS: 5,
+  };
+  return [open, dm, group, self, danil, lena, room].map((conv) =>
+    lastOf(threads[conv.id] ?? [], conv),
+  );
+}
+
+export function publicStaff(moderators: string[] = ['u-mira']) {
+  return [OWNER_ID, ...moderators].map((id, index) => ({
+    user: person(id),
+    role: index === 0 ? ('owner' as const) : ('admin' as const),
+    state: 'active' as const,
+    accepted: true,
+    joinedSeq: 0,
+    invitedBy: null,
+  }));
 }
 
 export function groupMembers() {
