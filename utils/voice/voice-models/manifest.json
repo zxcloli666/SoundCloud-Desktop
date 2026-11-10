@@ -197,6 +197,256 @@
           "sha256": "f2edb2cfb74dc4b5952a249a057814f99bd7498cea04879befbe109cf623ecb2"
         }
       ]
+    },
+    {
+      "id": "qwen-engine-macos-aarch64",
+      "version": "1",
+      "kind": "engine",
+      "language": "any",
+      "license": "MIT",
+      "unpacked_size": 7503816,
+      "platform": "macos-aarch64",
+      "requires": [],
+      "files": [
+        {
+          "path": "scd-qwen",
+          "size": 7503816,
+          "sha256": "e69044e3da43918e210fdc08247bb16416c170a652f951a63a257ca1dba9825c",
+          "executable": true
+        }
+      ]
+    },
+    {
+      "id": "qwen-engine-macos-x86_64",
+      "version": "1",
+      "kind": "engine",
+      "language": "any",
+      "license": "MIT",
+      "unpacked_size": 2527048,
+      "platform": "macos-x86_64",
+      "requires": [],
+      "files": [
+        {
+          "path": "scd-qwen",
+          "size": 2527048,
+          "sha256": "6786308bb2e2d245ebe78d33d655df44e50d516105de613b605f5dafe6cf6cdd",
+          "executable": true
+        }
+      ]
+    },
+    {
+      "id": "qwen-engine-linux-x86_64",
+      "version": "1",
+      "kind": "engine",
+      "language": "any",
+      "license": "MIT",
+      "unpacked_size": 53013872,
+      "platform": "linux-x86_64",
+      "requires": [],
+      "files": [
+        {
+          "path": "scd-qwen",
+          "size": 407936,
+          "sha256": "fa4fdae5344685bfa0eabcc2f29819240209481ed015dea68659dbbbcc60adb7",
+          "executable": true
+        },
+        {
+          "path": "libggml-base.so.0",
+          "size": 937296,
+          "sha256": "d9ea1fc950ff08de6c927ca46e22a8ed081c6edc42bee4aea55a498569881a2c"
+        },
+        {
+          "path": "libggml-cpu-alderlake.so",
+          "size": 1294424,
+          "sha256": "495d5ea066ae1945e6980b361e387581cc6f1dd9ad73e4646e47b01c0eb1ded5"
+        },
+        {
+          "path": "libggml-cpu-cannonlake.so",
+          "size": 1376456,
+          "sha256": "b398d061293c9138286bc2896e687ca107280acce28ee595660425f39b90a9d6"
+        },
+        {
+          "path": "libggml-cpu-cascadelake.so",
+          "size": 1392544,
+          "sha256": "fd496fd6582c025bf819ec13130dcb7796bfea2ac5c1c4407762471168af9102"
+        },
+        {
+          "path": "libggml-cpu-cooperlake.so",
+          "size": 1392544,
+          "sha256": "abded0c896d877b42812675ee53a9450bfc99826b6039b6af2506d1805e5c18d"
+        },
+        {
+          "path": "libggml-cpu-haswell.so",
+          "size": 1294424,
+          "sha256": "64d47ea00ff4401914f15ce6f2dcc3d77799746379c60881008929d41b66b13c"
+        },
+        {
+          "path": "libggml-cpu-icelake.so",
+          "size": 1392544,
+          "sha256": "8b7b289f3e81b4cbc1e31448d0cdddbb31f451f9742c74444ecbed1022ed8b88"
+        },
+        {
+          "path": "libggml-cpu-ivybridge.so",
+          "size": 1227208,
+          "sha256": "09221b19d06007d87e3a0c6e1a4abdfd18591da119bc43121f81a58602d94365"
+        },
+        {
+          "path": "libggml-cpu-piledriver.so",
+          "size": 1227208,
+          "sha256": "4f0be205cb5607ce1a527f25686217179ed83f9faef0cfde7f206de2ee26c73d"
+        },
+        {
+          "path": "libggml-cpu-sandybridge.so",
+          "size": 1247856,
+          "sha256": "7ed149113743a01871662f94f51531e4f06f20cb8255c04797e04e3b8287c52d"
+        },
+        {
+          "path": "libggml-cpu-sapphirerapids.so",
+          "size": 1688776,
+          "sha256": "724cb4d75cd14fc1ae74282ef28f27cea68040627afb2c0de98dfd400b2fa39e"
+        },
+        {
+          "path": "libggml-cpu-skylakex.so",
+          "size": 1376456,
+          "sha256": "76c611c8e156aace3c30c225231cfa396d644171f6655cca34fc7a08831ce240"
+        },
+        {
+          "path": "libggml-cpu-sse42.so",
+          "size": 980840,
+          "sha256": "e99f5352057fbf823a7826116589c775bd557b8b2fd466c2483479d40f36925e"
+        },
+        {
+          "path": "libggml-cpu-x64.so",
+          "size": 980960,
+          "sha256": "8a7ff79d27fa7168e43c16d552dc578c8dc75029850534eb105ff6ed805406d2"
+        },
+        {
+          "path": "libggml-cpu-zen4.so",
+          "size": 1392544,
+          "sha256": "38aea82ad8d4d2506f28899e16192bbc8f7fef242d0baad13a2cdfb90fab4715"
+        },
+        {
+          "path": "libggml-vulkan.so",
+          "size": 33352816,
+          "sha256": "487a41eb8f31f23ea369884ee476d9d75daad685859958b6ac490c466a28a756"
+        },
+        {
+          "path": "libggml.so.0",
+          "size": 51040,
+          "sha256": "de890b08e24547b45326b4283ffe8ab8eed542fe49158f5a8c6bd2dee6e67e82"
+        }
+      ]
+    },
+    {
+      "id": "qwen-engine-linux-aarch64",
+      "version": "1",
+      "kind": "engine",
+      "language": "any",
+      "license": "MIT",
+      "unpacked_size": 1987056,
+      "platform": "linux-aarch64",
+      "requires": [],
+      "files": [
+        {
+          "path": "scd-qwen",
+          "size": 1987056,
+          "sha256": "166486213ea92c3c5f0f830ad0d4b7c73310088d89d9630ea890a5a85665419c",
+          "executable": true
+        }
+      ]
+    },
+    {
+      "id": "qwen-engine-windows-x86_64",
+      "version": "1",
+      "kind": "engine",
+      "language": "any",
+      "license": "MIT",
+      "unpacked_size": 51457840,
+      "platform": "windows-x86_64",
+      "requires": [],
+      "files": [
+        {
+          "path": "scd-qwen.exe",
+          "size": 315904,
+          "sha256": "d01610a1a87070fb2f684d7d1e14a710424d8412c929da866ba053819210bb09",
+          "executable": true
+        },
+        {
+          "path": "ggml-base.dll",
+          "size": 714752,
+          "sha256": "5d40aca215bd882cb4d7b43fb311457f692ddba4849afa55e17569590aba8408"
+        },
+        {
+          "path": "ggml-cpu-alderlake.dll",
+          "size": 999424,
+          "sha256": "6454e446723a5f24a62ba1abb90faf00d8a41a9354dfbee3ae45739abb933759"
+        },
+        {
+          "path": "ggml-cpu-cannonlake.dll",
+          "size": 1041408,
+          "sha256": "1a9d8642507df796ef8c42bd8c9e7f359dbf9b8d8b3b996d9780ed900090c73a"
+        },
+        {
+          "path": "ggml-cpu-cascadelake.dll",
+          "size": 1055232,
+          "sha256": "f6adee60bec05675a8a30ebf28dee8daf356ac15e970cdefd20608cac8d97e55"
+        },
+        {
+          "path": "ggml-cpu-haswell.dll",
+          "size": 1000960,
+          "sha256": "e644dc5ba4330922a31161aff68d5267388f90672da375a96fe2b78626cbe3b2"
+        },
+        {
+          "path": "ggml-cpu-icelake.dll",
+          "size": 1055232,
+          "sha256": "85673f9fc1abc41f9f40e87fa623ae2b61eb23f5d0be3f9587c5b629e2032e57"
+        },
+        {
+          "path": "ggml-cpu-sandybridge.dll",
+          "size": 1048064,
+          "sha256": "6efbffdf6d350eb4be08494657a994cce6428c0897430ff13d70293337557ad5"
+        },
+        {
+          "path": "ggml-cpu-skylakex.dll",
+          "size": 1041408,
+          "sha256": "bbe3747e28fcf4ab65446b107d78dec2fb9e49defb65698e112f30f57dc05dab"
+        },
+        {
+          "path": "ggml-cpu-sse42.dll",
+          "size": 883712,
+          "sha256": "75032feb9177d6d92c2cc0faf776e969b9653ffb1e6bdce61ba744e67c288fee"
+        },
+        {
+          "path": "ggml-cpu-x64.dll",
+          "size": 887296,
+          "sha256": "7513b2e55e9602deb0eb61351cb0885818b1bb4f7093b653b7ab3ff3361938cf"
+        },
+        {
+          "path": "ggml-vulkan.dll",
+          "size": 40480256,
+          "sha256": "6d39650648a71deb11512ec0b73d78190e212bc40379ed25535f0ef61471b2e6"
+        },
+        {
+          "path": "ggml.dll",
+          "size": 61952,
+          "sha256": "3ad575f0af5be07a082a7dcf7c3706e2f324123d51c73f0ac9098af59a7b506c"
+        },
+        {
+          "path": "msvcp140.dll",
+          "size": 643512,
+          "sha256": "7c26614e1d733892c2deac7e245ce115504b1d80592dd0a01b08e3e5a55f89ca"
+        },
+        {
+          "path": "vcruntime140.dll",
+          "size": 178616,
+          "sha256": "d1f4225df2cd877dbf130d5668a021dce3f94118455ff5ec952061c30afc9ce7"
+        },
+        {
+          "path": "vcruntime140_1.dll",
+          "size": 50112,
+          "sha256": "a7146c08f89fe5b04541ab507cdb59ff7b44534d4ba3c668a426c6450a03434e"
+        }
+      ]
     }
   ]
 }

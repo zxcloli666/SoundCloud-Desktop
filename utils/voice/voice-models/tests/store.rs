@@ -344,6 +344,26 @@ fn embedded_manifest_is_valid() {
     let lolya = m.get("qwen-lolya").unwrap();
     assert_eq!(lolya.requires, vec!["qwen-codec".to_string()]);
     assert!(m.get("qwen-moriarty").is_ok());
-    let engines = m.models.iter().filter(|model| model.kind == Kind::Engine);
-    assert!(engines.count() <= 1);
+}
+
+#[test]
+fn every_platform_gets_one_engine_with_one_program() {
+    let text = include_str!("../manifest.json");
+    for platform in [
+        "macos-aarch64",
+        "macos-x86_64",
+        "linux-x86_64",
+        "linux-aarch64",
+        "windows-x86_64",
+    ] {
+        let manifest = Manifest::parse(text).unwrap().on(platform);
+        let engines: Vec<_> = manifest
+            .models
+            .iter()
+            .filter(|model| model.kind == Kind::Engine)
+            .collect();
+        assert_eq!(engines.len(), 1, "{platform}");
+        let programs = engines[0].files.iter().filter(|file| file.executable);
+        assert_eq!(programs.count(), 1, "{platform}");
+    }
 }
