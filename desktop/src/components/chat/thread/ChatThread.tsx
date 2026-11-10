@@ -18,6 +18,7 @@ import { focusThread } from './focus';
 import { HistorySlot } from './HistorySlot';
 import { THREAD_KEYFRAMES } from './keyframes';
 import { PinnedBar } from './PinnedBar';
+import { hasOwnBackdrop, ThreadBackdrop, ThreadBackdropDialogs } from './ThreadBackdrop';
 import { ThreadDialogs } from './ThreadDialogs';
 import { ThreadHeader } from './ThreadHeader';
 import { ThreadEmpty, ThreadFailed, ThreadGone, ThreadSkeleton } from './ThreadStates';
@@ -137,8 +138,11 @@ export const ChatThread = memo(function ChatThread({
         key={conversationId}
         data-ui="chat-thread"
         data-kind={context.conversation.kind}
-        className="relative flex h-full min-h-0 flex-col overflow-hidden"
+        className="relative isolate flex h-full min-h-0 flex-col overflow-hidden"
       >
+        {hasOwnBackdrop(context.conversation) && (
+          <ThreadBackdrop conversation={context.conversation} />
+        )}
         {!bare && <ThreadHeader onBack={onBack} onInfo={openInfo} actions={actions} />}
         <PinnedBar />
         <HistorySlot />
@@ -153,6 +157,9 @@ export const ChatThread = memo(function ChatThread({
         <ComposerGate conversationId={conversationId} />
         {info && <InfoSheet initialTab={info} onClose={closeInfo} onJump={jumpFromInfo} />}
         <ThreadDialogs conversationId={conversationId} />
+        {hasOwnBackdrop(context.conversation) && (
+          <ThreadBackdropDialogs conversation={context.conversation} />
+        )}
         <ThreadDrop conversation={context.conversation} />
       </section>
     </ThreadContext.Provider>

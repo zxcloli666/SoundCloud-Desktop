@@ -1,5 +1,5 @@
 {
-  "title": "Fundo da sala",
+  "title": "Fundo",
   "none": "Sem fundo",
   "photo": "Foto própria",
   "photoIn": "Foto em {{time}}",
@@ -13,16 +13,35 @@
   "images": "Imagens",
   "storedEmpty": "Nada para escolher ainda",
   "storedEmptyLine": "As imagens dos seus chats neste aparelho aparecem aqui",
-  "linking": "Conectando o chat da sala",
+  "linking": "Conectando",
   "done": "Pronto",
   "cancel": "Cancelar",
   "hide": "Ocultar fundo",
   "show": "Mostrar fundo",
+  "clear": "Remover fundo",
   "chip": "Fundo {{percent}}%",
   "chipFailed": "Falha no fundo",
   "star": {
-    "title": "Fundos de sala com STAR",
-    "body": "Fundos animados e sua própria foto para a sala inteira"
+    "room": {
+      "title": "Fundos de sala com STAR",
+      "body": "Fundos animados e sua própria foto para a sala inteira"
+    },
+    "chat": {
+      "title": "Fundos de chat com STAR",
+      "body": "Fundos animados e sua própria foto, vistos por todos no chat"
+    },
+    "public": {
+      "title": "Foto própria com STAR",
+      "body": "Os fundos prontos são grátis aqui"
+    }
+  },
+  "locked": {
+    "room": "Só o anfitrião",
+    "direct": "Só participantes",
+    "group": "Só dono e admins",
+    "self": "Indisponível",
+    "public": "Só dono e moderadores",
+    "pending": "Depois que o pedido for aceito"
   },
   "report": {
     "entry": "Denunciar fundo",
@@ -36,11 +55,13 @@
   "errors": {
     "room_star_required": "Fundos vêm com o STAR",
     "media_star_required": "Fotos vêm com o STAR",
+    "backdrop_star_required": "Fundos vêm com o STAR",
+    "not_member": "Sem permissão",
     "invalid": "Este fundo não está disponível",
     "media_missing": "A foto sumiu, envie de novo",
     "stored_gone": "A imagem sumiu, escolha outra",
     "backdrop_cooldown": "Nova foto própria em {{time}}",
-    "request_limit": "Rápido demais, espere um pouco",
+    "request_limit": "Rápido demais",
     "quota_exceeded": "O armazenamento está cheio",
     "media_uploads_paused": "Os envios estão pausados",
     "offline": "Sem conexão",

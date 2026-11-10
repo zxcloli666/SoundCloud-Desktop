@@ -16,6 +16,11 @@
     "until": "{{time}}까지",
     "rules": "규칙"
   },
+  "newcomer": {
+    "title": "신규 사용자 제한",
+    "over": "신규 사용자에게는 너무 깁니다",
+    "left_other": "{{count}}자 남음"
+  },
   "banned": {
     "title": "공개 채팅에서 차단되었습니다",
     "hint": "읽기와 쓰기가 닫혔습니다"

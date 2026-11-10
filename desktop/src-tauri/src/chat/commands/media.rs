@@ -98,6 +98,31 @@ pub async fn backdrop_stored(
     backdrop::upload_stored(state, code, conversation_id, source, media_id).await
 }
 
+pub async fn chat_backdrop(
+    state: &ChatState,
+    conversation_id: ConvId,
+    preset: Option<String>,
+) -> ChatResult<()> {
+    backdrop::set_chat(state, conversation_id, preset).await
+}
+
+pub async fn chat_backdrop_upload(
+    state: &ChatState,
+    conversation_id: ConvId,
+    path: String,
+) -> ChatResult<Option<MediaUploadView>> {
+    backdrop::upload_chat(state, conversation_id, path).await
+}
+
+pub async fn chat_backdrop_stored(
+    state: &ChatState,
+    conversation_id: ConvId,
+    source: ConvId,
+    media_id: Uuid,
+) -> ChatResult<Option<MediaUploadView>> {
+    backdrop::upload_chat_stored(state, conversation_id, source, media_id).await
+}
+
 pub async fn backdrop_stop(state: &ChatState, conversation_id: ConvId) -> ChatResult<()> {
     backdrop::stop(state, conversation_id).await
 }

@@ -1,7 +1,14 @@
 import { create } from 'zustand';
 import { chatBridge } from '../../lib/chat/bridge';
 import { chatError } from '../../lib/chat/errors';
-import type { ConversationSummary, ConvId, Millis, UserId, UserRef } from '../../lib/chat/types';
+import type {
+  ConversationSummary,
+  ConvId,
+  Millis,
+  Newcomer,
+  UserId,
+  UserRef,
+} from '../../lib/chat/types';
 import { useChatListStore } from './list';
 
 export type PublicGate =
@@ -20,6 +27,8 @@ export interface PublicState {
   gate: PublicGate;
   opening: boolean;
   mutedUntil: Millis | null;
+  muteReason: string | null;
+  newcomer: Newcomer | null;
   slowUntil: Millis | null;
   sanctions: Record<UserId, Sanction>;
   people: Record<UserId, UserRef>;
@@ -32,6 +41,7 @@ export interface PublicState {
 }
 
 const NO_SANCTION: Sanction = { mutedUntil: null, banned: false };
+const NEWCOMER_WINDOW_MS = 10 * 60_000;
 const pending = new Set<UserId>();
 
 function isStaff(conversation: ConversationSummary): boolean {
@@ -54,6 +64,8 @@ export const usePublicStore = create<PublicState>()((set, get) => ({
   gate: null,
   opening: false,
   mutedUntil: null,
+  muteReason: null,
+  newcomer: null,
   slowUntil: null,
   sanctions: {},
   people: {},
@@ -63,7 +75,14 @@ export const usePublicStore = create<PublicState>()((set, get) => ({
     try {
       const opened = await chatBridge.publicOpen();
       useChatListStore.getState().upsert(opened.conversation);
-      set({ online: opened.online, gate: null, opening: false });
+      set({
+        online: opened.online,
+        gate: null,
+        opening: false,
+        mutedUntil: opened.mute?.until ?? null,
+        muteReason: opened.mute?.reason ?? null,
+        newcomer: opened.newcomer ?? null,
+      });
       return opened.conversation.id;
     } catch (error) {
       set({ gate: gateOf(error), opening: false });
@@ -91,13 +110,22 @@ export const usePublicStore = create<PublicState>()((set, get) => ({
   },
 
   noteSent: (conversation) => {
+    const newcomer = get().newcomer;
+    if (newcomer && newcomer.until === null) {
+      set({ newcomer: { ...newcomer, until: Date.now() + NEWCOMER_WINDOW_MS } });
+    }
     if (conversation.slowModeS <= 0 || isStaff(conversation)) return;
     set({ slowUntil: Date.now() + conversation.slowModeS * 1000 });
   },
 
   noteError: (error) => {
     const known = chatError(error);
-    if (known?.code === 'muted' && known.until) set({ mutedUntil: known.until });
+    if (known?.code === 'muted' && known.until) {
+      set((state) => ({
+        mutedUntil: known.until,
+        muteReason: state.mutedUntil === known.until ? state.muteReason : null,
+      }));
+    }
     if (known?.code === 'slow_mode' && known.retryMs) {
       set({ slowUntil: Date.now() + known.retryMs });
     }
@@ -114,6 +142,8 @@ export const usePublicStore = create<PublicState>()((set, get) => ({
       gate: null,
       opening: false,
       mutedUntil: null,
+      muteReason: null,
+      newcomer: null,
       slowUntil: null,
       sanctions: {},
       people: {},

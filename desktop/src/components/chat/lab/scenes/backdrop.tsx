@@ -2,7 +2,7 @@ import type { RoomBackdrop, UploadView } from '../../../../lib/chat/media-types'
 import type { RoomView } from '../../../../lib/together/types';
 import { useBackdropStore } from '../../../../stores/chat/backdrop';
 import { useTogetherStore } from '../../../../stores/together';
-import { PRESETS } from '../../room/presets';
+import { PRESETS } from '../../backdrop/presets';
 import { CONV } from '../convs';
 import type { LabKit, LabScene } from '../types';
 

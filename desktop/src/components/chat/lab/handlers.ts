@@ -123,6 +123,8 @@ export const defaultHandlers: Record<string, (args: Args) => unknown> = {
   chat_public_open: () => ({
     conversation: summary(CONV.public),
     online: summary(CONV.public).memberCount,
+    mute: null,
+    newcomer: null,
   }),
   chat_public_log: () => ({ entries: [], next: null }),
   chat_public_mute: () => Date.now() + 600_000,

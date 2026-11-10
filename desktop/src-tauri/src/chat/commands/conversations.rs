@@ -29,8 +29,9 @@ pub async fn create(
             title,
             description: String::new(),
             avatar: None,
+            backdrop: None,
         };
-        queue(state, view.id, None, Content::Meta(meta)).await?;
+        queue(state, view.id, None, Content::Meta(Box::new(meta))).await?;
     }
     Ok(summary)
 }
@@ -46,7 +47,7 @@ pub async fn update(
             core.store.next_meta(conversation_id, &next)
         })
         .await?;
-        queue(state, conversation_id, None, Content::Meta(meta)).await?;
+        queue(state, conversation_id, None, Content::Meta(Box::new(meta))).await?;
     }
     match patch.me {
         Some(mine) => {

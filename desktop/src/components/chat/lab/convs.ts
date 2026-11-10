@@ -47,6 +47,7 @@ function base(id: string): ConversationSummary {
     hasDraft: false,
     pinged: false,
     slowModeS: 0,
+    backdrop: null,
   };
 }
 

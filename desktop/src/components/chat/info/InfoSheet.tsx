@@ -20,6 +20,8 @@ import { StaffTab } from '../public/StaffTab';
 import { useThread } from '../thread/context';
 import { GlassLayer } from '../thread/GlassLayer';
 import { canManageMembers, hasTimer, isActiveMember, isPublicStaff } from '../thread/permissions';
+import { hasOwnBackdrop } from '../thread/ThreadBackdrop';
+import { BackdropRow } from './BackdropRow';
 import { InviteRow } from './InviteRow';
 import { MembersTab } from './MembersTab';
 import { MuteRow } from './MuteRow';
@@ -172,6 +174,7 @@ export const InfoSheet = memo(function InfoSheet({
             <div className="flex flex-col gap-2">
               {hasTimer(conversation) && isActiveMember(conversation) && <TimerPicker />}
               {conversation.kind !== 'self' && isActiveMember(conversation) && <MuteRow />}
+              {hasOwnBackdrop(conversation) && <BackdropRow />}
               {staff && <SlowModePicker />}
               {canManageMembers(conversation) && <InviteRow />}
             </div>

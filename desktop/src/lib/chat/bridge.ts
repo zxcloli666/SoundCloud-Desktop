@@ -203,6 +203,12 @@ export const chatBridge = {
       source,
       mediaId,
     }),
+  backdropSet: (conversationId: ConvId, preset: BackdropPresetId | null) =>
+    invoke<void>('chat_backdrop_set', { conversationId, preset }),
+  backdropUpload: (conversationId: ConvId, path: string) =>
+    invoke<UploadView | null>('chat_backdrop_upload', { conversationId, path }),
+  backdropStored: (conversationId: ConvId, source: ConvId, mediaId: MediaId) =>
+    invoke<UploadView | null>('chat_backdrop_stored', { conversationId, source, mediaId }),
   roomBackdropStop: (conversationId: ConvId) =>
     invoke<void>('chat_room_backdrop_stop', { conversationId }),
   roomBackdropReport: (

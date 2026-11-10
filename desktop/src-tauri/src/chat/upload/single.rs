@@ -127,7 +127,7 @@ pub fn queue_meta(
     meta: ConversationMeta,
     now: Millis,
 ) -> ChatResult<()> {
-    let content = Content::Meta(meta);
+    let content = Content::Meta(Box::new(meta));
     let envelope = envelope::encode(&content)?.encode_to_vec();
     Outbox::new(store.clone()).push(OutboxItem {
         client_id,

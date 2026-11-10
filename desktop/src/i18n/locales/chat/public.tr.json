@@ -18,6 +18,12 @@
     "until": "{{time}} kadar",
     "rules": "Kurallar"
   },
+  "newcomer": {
+    "title": "Yeni üye sınırı",
+    "over": "Yeni üye için çok uzun",
+    "left_one": "{{count}} karakter kaldı",
+    "left_other": "{{count}} karakter kaldı"
+  },
   "banned": {
     "title": "Genel sohbetten yasaklandın",
     "hint": "Okuma ve yazma kapalı"

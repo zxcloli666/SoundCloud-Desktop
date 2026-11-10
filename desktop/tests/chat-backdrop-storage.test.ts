@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { storedProblem } from '../src/components/chat/room/backdrop/errors.ts';
-import type { PhotoState } from '../src/components/chat/room/backdrop/PhotoTile.tsx';
-import { imageGate, uploadStatus } from '../src/components/chat/room/backdrop/photo-state.ts';
-import { storedChoices, worthAsking } from '../src/components/chat/room/backdrop/stored-list.ts';
+import { storedProblem } from '../src/components/chat/backdrop/errors.ts';
+import type { PhotoState } from '../src/components/chat/backdrop/PhotoTile.tsx';
+import { imageGate, uploadStatus } from '../src/components/chat/backdrop/photo-state.ts';
+import { storedChoices, worthAsking } from '../src/components/chat/backdrop/stored-list.ts';
 import type { MyMedia, UploadView } from '../src/lib/chat/media-types.ts';
 
 const upload: UploadView = {

@@ -4,11 +4,12 @@ import { Flag } from '../../../lib/chat/icons';
 import { ChevronRight, Eye, EyeOff, ImageIcon, Star } from '../../../lib/icons';
 import type { RoomView } from '../../../lib/together/types';
 import { useBackdropStore } from '../../../stores/chat/backdrop';
+import { keepKeys } from '../backdrop/keys';
+import { presetOf } from '../backdrop/presets';
+import { useBackdropView } from '../backdrop/shown';
 import { useOpenRoomChat } from '../shell/useOpenChat';
-import { keepKeys } from './backdrop/keys';
-import { useRoomBackdrop } from './backdrop/shown';
-import { presetOf } from './presets';
 import { useRoomSelf } from './useRoom';
+import { useRoomConversation } from './useRoomTarget';
 
 type IconType = ComponentType<{ size?: number; className?: string }>;
 
@@ -88,7 +89,8 @@ function HostEntry({ room }: { room: RoomView }) {
 
 function MemberEntry({ room }: { room: RoomView }) {
   const { t } = useTranslation();
-  const { conversationId, imageId, hidden } = useRoomBackdrop(room);
+  const conversationId = useRoomConversation(room);
+  const { imageId, hidden } = useBackdropView(conversationId, room.backdrop ?? null);
   const hide = useBackdropStore((state) => state.hide);
   const show = useBackdropStore((state) => state.show);
   const open = useBackdropStore((state) => state.open);

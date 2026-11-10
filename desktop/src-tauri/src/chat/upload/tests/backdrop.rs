@@ -102,6 +102,7 @@ async fn a_preset_drops_a_pending_upload_and_clears_the_image_only_when_there_wa
         title: String::new(),
         description: String::new(),
         avatar: Some(image),
+        backdrop: None,
     };
     rig.store().put_room_meta(room, Some(&meta)).unwrap();
     rig.uploads

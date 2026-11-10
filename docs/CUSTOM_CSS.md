@@ -164,6 +164,10 @@ States are in attributes too: `aria-current="page"` on the open link or section,
 | `[data-ui="chat-storage-entry"]` | Storage card in chat settings |
 | `[data-ui="chat-storage-button"]` | Image storage button in the chat list header, `[data-full]` when the quota is full |
 | `[data-ui="chat-backdrop-stored-sheet"]` | Your images in the room backdrop picker. The grid is `[data-ui="chat-backdrop-stored-grid"]` with storage tiles `[data-ui="chat-storage-tile"]` |
+| `[data-ui="chat-backdrop-picker"]` | Backdrop picker of a chat or a room, `[data-lock]` is `star`, `role` or `pending` when it cannot be changed. The reason bar is `[data-ui="chat-backdrop-locked"]` |
+| `[data-ui="chat-info-backdrop"]` | Backdrop row in chat info, `[data-access]` is `ready`, `star`, `role`, `pending` or `loading` |
+| `[data-ui="chat-newcomer"]` | Newcomer length ring in the public chat composer, `[data-over]` when the text is too long |
+| `[data-ui="chat-public-mute-reason"]` | Second line of the muted bar: the moderator's reason or the end time |
 
 Other chat windows (new chat, report, delete) are `[data-ui="modal"]`. Chat colors come from the scheme tokens (see "White and dark"): `--ink` for text and lines, `--paper` and `--surface` for surfaces, `--shade` for wells and scrims. A theme that sets them restyles chats too. Your messages, the open chat and the chosen filter are tinted with `--color-chat-tint`.
 

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import type { MediaId, MediaRef, UploadState } from '../../lib/chat/media-types';
+import type { MediaRef, RoomBackdrop, UploadState } from '../../lib/chat/media-types';
 import type { ChatError, ConvId } from '../../lib/chat/types';
 import { tauriStorage } from '../../lib/tauri-storage';
 import { useChatMediaStore } from './media';
@@ -10,7 +10,12 @@ const KEEP_MAX = 200;
 const ORPHANS_MAX = 40;
 const MOVING: ReadonlySet<UploadState> = new Set(['uploading', 'uploaded']);
 
-export type BackdropDialog = 'picker' | 'report';
+export type BackdropDialogKind = 'picker' | 'report';
+
+export interface BackdropDialog {
+  kind: BackdropDialogKind;
+  scope: ConvId | null;
+}
 
 export interface BackdropAttempt {
   id: string;
@@ -29,11 +34,12 @@ interface BackdropState {
   orphans: Record<string, ChatError>;
   fetching: Record<ConvId, number>;
   failures: Record<ConvId, StoredFailure>;
+  limited: Record<ConvId, number>;
   dialog: BackdropDialog | null;
-  open: (dialog: BackdropDialog) => void;
+  open: (kind: BackdropDialogKind, scope?: ConvId | null) => void;
   close: () => void;
-  hide: (conversationId: ConvId, mediaId: MediaId) => void;
-  show: (conversationId: ConvId, mediaId: MediaId) => void;
+  hide: (conversationId: ConvId, look: string) => void;
+  show: (conversationId: ConvId, look: string) => void;
   started: (conversationId: ConvId, uploadId: string) => void;
   failed: (uploadId: string, error: ChatError) => void;
   recovered: (uploadId: string) => void;
@@ -42,11 +48,17 @@ interface BackdropState {
   fetchFailed: (conversationId: ConvId, ticket: number, failure: StoredFailure) => void;
   fetchEnd: (conversationId: ConvId, ticket: number) => void;
   forgetFetch: (conversationId: ConvId) => void;
+  limit: (conversationId: ConvId, until: number) => void;
   forgetUploads: () => void;
 }
 
-export function hiddenKey(conversationId: ConvId, mediaId: MediaId) {
-  return `${conversationId}:${mediaId}`;
+export function lookKey(backdrop: RoomBackdrop | null): string | null {
+  if (!backdrop) return null;
+  return backdrop.kind === 'image' ? backdrop.mediaId : `preset:${backdrop.id}`;
+}
+
+export function hiddenKey(conversationId: ConvId, look: string) {
+  return `${conversationId}:${look}`;
 }
 
 function fresh<T>(entries: Record<string, T>, at: (value: T) => number, now: number) {
@@ -88,19 +100,20 @@ export const useBackdropStore = create<BackdropState>()(
       orphans: {},
       fetching: {},
       failures: {},
+      limited: {},
       dialog: null,
-      open: (dialog) => set({ dialog }),
+      open: (kind, scope = null) => set({ dialog: { kind, scope } }),
       close: () => set({ dialog: null }),
-      hide: (conversationId, mediaId) =>
+      hide: (conversationId, look) =>
         set((state) => {
           const now = Date.now();
-          const hidden = { ...state.hidden, [hiddenKey(conversationId, mediaId)]: now };
+          const hidden = { ...state.hidden, [hiddenKey(conversationId, look)]: now };
           return { hidden: fresh(hidden, (at) => at, now) };
         }),
-      show: (conversationId, mediaId) =>
+      show: (conversationId, look) =>
         set((state) => {
           const hidden = { ...state.hidden };
-          delete hidden[hiddenKey(conversationId, mediaId)];
+          delete hidden[hiddenKey(conversationId, look)];
           return { hidden };
         }),
       started: (conversationId, uploadId) =>
@@ -157,8 +170,10 @@ export const useBackdropStore = create<BackdropState>()(
           fetching: without(state.fetching, conversationId),
           failures: without(state.failures, conversationId),
         })),
+      limit: (conversationId, until) =>
+        set((state) => ({ limited: { ...state.limited, [conversationId]: until } })),
       forgetUploads: () =>
-        set({ attempts: {}, orphans: {}, fetching: {}, failures: {}, dialog: null }),
+        set({ attempts: {}, orphans: {}, fetching: {}, failures: {}, limited: {}, dialog: null }),
     }),
     {
       name: 'sc-chat-backdrop',
@@ -169,10 +184,14 @@ export const useBackdropStore = create<BackdropState>()(
 );
 
 export const selectHidden =
-  (conversationId: ConvId | null, mediaId: MediaId | null) => (state: BackdropState) =>
-    conversationId !== null &&
-    mediaId !== null &&
-    hiddenKey(conversationId, mediaId) in state.hidden;
+  (conversationId: ConvId | null, look: string | null) => (state: BackdropState) =>
+    conversationId !== null && look !== null && hiddenKey(conversationId, look) in state.hidden;
+
+export const selectDialog = (scope: ConvId | null) => (state: BackdropState) =>
+  state.dialog?.scope === scope ? state.dialog.kind : null;
+
+export const selectLimitedUntil = (conversationId: ConvId | null) => (state: BackdropState) =>
+  conversationId !== null ? (state.limited[conversationId] ?? null) : null;
 
 let watching = false;
 

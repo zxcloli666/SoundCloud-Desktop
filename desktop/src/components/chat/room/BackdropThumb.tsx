@@ -1,8 +1,8 @@
 import { memo, useMemo } from 'react';
 import type { PublicBackdrop } from '../../../lib/chat/media-types';
-import { scrimAlpha } from './backdrop/scrim';
-import { useSchemeTokens } from './backdrop/tokens';
-import { presetOf } from './presets';
+import { presetOf } from '../backdrop/presets';
+import { scrimAlpha } from '../backdrop/scrim';
+import { useSchemeTokens } from '../backdrop/tokens';
 
 const CARD_TEXT_TONE = 0.55;
 

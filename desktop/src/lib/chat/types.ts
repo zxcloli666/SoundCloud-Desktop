@@ -3,6 +3,7 @@ import type {
   MediaConfig,
   MessageAttachment,
   PublicBackdrop,
+  RoomBackdrop,
   RoomCover,
   RoomImagesPolicy,
 } from './media-types';
@@ -99,6 +100,7 @@ export type ChatErrorCode =
   | 'media_uploads_paused'
   | 'media_missing'
   | 'backdrop_cooldown'
+  | 'backdrop_star_required'
   | 'invalid'
   | 'not_found'
   | 'internal'
@@ -360,7 +362,10 @@ export interface ConversationSummary {
   hasDraft: boolean;
   pinged: boolean;
   slowModeS: number;
+  backdrop: ConversationBackdrop | null;
 }
+
+export type ConversationBackdrop = RoomBackdrop & { by: UserId };
 
 export type ListFilter = 'all' | 'direct' | 'groups' | 'unread' | 'requests' | 'archived';
 
@@ -637,6 +642,18 @@ export type PublicAction =
 export interface PublicOpened {
   conversation: ConversationSummary;
   online: number;
+  mute: ModeratorMute | null;
+  newcomer: Newcomer | null;
+}
+
+export interface ModeratorMute {
+  until: Millis;
+  reason: string | null;
+}
+
+export interface Newcomer {
+  until: Millis | null;
+  bodyMax: number;
 }
 
 export interface PublicLogEntry {

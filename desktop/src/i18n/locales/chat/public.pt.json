@@ -20,6 +20,13 @@
     "until": "Até {{time}}",
     "rules": "Regras"
   },
+  "newcomer": {
+    "title": "Limite de novato",
+    "over": "Longo demais para um novato",
+    "left_one": "{{count}} caractere restante",
+    "left_many": "{{count}} caracteres restantes",
+    "left_other": "{{count}} caracteres restantes"
+  },
   "banned": {
     "title": "Você foi banido do chat público",
     "hint": "Leitura e escrita fechadas"

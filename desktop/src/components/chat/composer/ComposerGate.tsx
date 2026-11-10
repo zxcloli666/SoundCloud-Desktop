@@ -29,9 +29,11 @@ export const ComposerGate = memo(function ComposerGate({
   const locked = useRoomSendLock(conversationId) !== null;
   const isPublic = conversation.kind === 'public';
   const mutedUntil = usePublicStore((state) => (isPublic ? state.mutedUntil : null));
+  const reason = usePublicStore((state) => (isPublic ? state.muteReason : null));
   const muted = mutedUntil !== null && mutedUntil > Date.now();
   if (isPublic && conversation.state === 'banned') return <PublicBannedBar />;
-  if (isPublic && muted && mutedUntil !== null) return <PublicMutedBar until={mutedUntil} />;
+  if (isPublic && muted && mutedUntil !== null)
+    return <PublicMutedBar until={mutedUntil} reason={reason} />;
   if (isRequest(conversation)) return <RequestBar conversation={conversation} />;
   if (!isActiveMember(conversation)) return <GoneBar />;
   if (locked) return null;

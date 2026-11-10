@@ -18,6 +18,12 @@
     "until": "Until {{time}}",
     "rules": "Rules"
   },
+  "newcomer": {
+    "title": "Newcomer limit",
+    "over": "Too long for a newcomer",
+    "left_one": "{{count}} character left",
+    "left_other": "{{count}} characters left"
+  },
   "banned": {
     "title": "You are banned from the public chat",
     "hint": "Reading and writing are closed"

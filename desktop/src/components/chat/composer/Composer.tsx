@@ -11,6 +11,7 @@ import {
 } from 'react';
 import { useTranslation } from 'react-i18next';
 import { nowPlayingEmbed } from '../../../lib/chat/embed-snapshot';
+import { postBodyLen } from '../../../lib/chat/post-body';
 import { findChatLinks } from '../../../lib/chat/soundcloud-link';
 import { composeRich, sameRich } from '../../../lib/chat/spans';
 import { surface } from '../../../lib/chat/tone';
@@ -28,6 +29,7 @@ import { AttachButton } from '../media/AttachButton';
 import { SkippedNote } from '../media/compose/SkippedNote';
 import { StagedAlbum } from '../media/compose/StagedAlbum';
 import { useComposerMedia } from '../media/compose/useComposerMedia';
+import { NewcomerRing } from '../public/NewcomerRing';
 import { useCountdown } from '../public/useCountdown';
 import { useRoomLinkBlock, useRoomMembers } from '../room/useRoom';
 import { useThread } from '../thread/context';
@@ -75,6 +77,9 @@ export const Composer = memo(function Composer({ conversationId }: { conversatio
   const isPublic = conversation.kind === 'public';
   const slowUntil = usePublicStore((state) => (isPublic ? state.slowUntil : null));
   const slowLeft = useCountdown(slowUntil);
+  const newcomer = usePublicStore((state) => (isPublic ? state.newcomer : null));
+  const newcomerLeft = useCountdown(newcomer?.until ?? null);
+  const limited = newcomer !== null && (newcomer.until === null || newcomerLeft > 0);
   const compose = useChatThreadStore(
     (state) => state.threads[conversationId]?.compose ?? NO_COMPOSE,
   );
@@ -145,7 +150,8 @@ export const Composer = memo(function Composer({ conversationId }: { conversatio
     rich.text.length === 0 && (editing !== null || (outgoing.length === 0 && album === null));
   const linkLocked = linkBlock !== null && hasLink(rich.text);
   const preparing = !editing && media.album.preparing > 0;
-  const blocked = paused || tooLong || empty || linkLocked || preparing || slowLeft > 0;
+  const cramped = limited && !editing && postBodyLen(rich.text) > newcomer.bodyMax;
+  const blocked = paused || tooLong || empty || linkLocked || preparing || slowLeft > 0 || cramped;
 
   const submit = async () => {
     if (blocked) return;
@@ -316,6 +322,7 @@ export const Composer = memo(function Composer({ conversationId }: { conversatio
               style={{ outline: 'none' }}
               className="max-h-[168px] min-h-[36px] flex-1 resize-none bg-transparent px-2 py-[8px] text-[13.5px] leading-[1.45] text-ink-92 outline-none placeholder:text-ink-30 disabled:cursor-not-allowed"
             />
+            {limited && !editing && <NewcomerRing text={rich.text} bodyMax={newcomer.bodyMax} />}
             <EmojiButton onFocusInput={() => inputRef.current?.focus()} />
             <SendButton
               editing={editing !== null}
