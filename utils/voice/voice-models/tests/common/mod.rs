@@ -233,6 +233,7 @@ pub fn fixture(name: &str, sizes: &[usize]) -> Fixture {
             url: format!("{}/{id}/1/{path}", server.base),
             size: bytes.len() as u64,
             sha256: sha(bytes),
+            executable: false,
         })
         .collect();
     let model = Model {
@@ -242,6 +243,7 @@ pub fn fixture(name: &str, sizes: &[usize]) -> Fixture {
         language: "any".into(),
         license: "MIT".into(),
         unpacked_size: model_files.iter().map(|f| f.size).sum(),
+        platform: None,
         requires: vec![],
         files: model_files,
     };

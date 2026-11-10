@@ -60,6 +60,9 @@ pub fn download_file(
     loop {
         let digest = fetch_with_retries(fetch, options, cancel, report, file, &part)?;
         if digest == file.sha256.to_ascii_lowercase() {
+            if file.executable {
+                allow_running(&part)?;
+            }
             fs::rename(&part, dest)?;
             sync_dir(dest);
             report.send(file, file.size);
@@ -73,6 +76,18 @@ pub fn download_file(
         }
         corrupted_once = true;
     }
+}
+
+#[cfg(unix)]
+fn allow_running(path: &Path) -> Result<(), Error> {
+    use std::os::unix::fs::PermissionsExt;
+    fs::set_permissions(path, fs::Permissions::from_mode(0o755))?;
+    Ok(())
+}
+
+#[cfg(not(unix))]
+fn allow_running(_: &Path) -> Result<(), Error> {
+    Ok(())
 }
 
 fn fetch_with_retries(

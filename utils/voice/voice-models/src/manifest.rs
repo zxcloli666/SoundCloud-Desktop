@@ -17,6 +17,7 @@ pub enum Kind {
     Tts,
     Llm,
     Aux,
+    Engine,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -26,6 +27,8 @@ pub struct File {
     pub url: String,
     pub size: u64,
     pub sha256: String,
+    #[serde(default)]
+    pub executable: bool,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -36,6 +39,8 @@ pub struct Model {
     pub language: String,
     pub license: String,
     pub unpacked_size: u64,
+    #[serde(default)]
+    pub platform: Option<String>,
     #[serde(default)]
     pub requires: Vec<String>,
     pub files: Vec<File>,
@@ -53,7 +58,15 @@ pub struct Manifest {
 
 impl Manifest {
     pub fn embedded() -> Manifest {
-        Manifest::parse(EMBEDDED).expect("embedded manifest is valid")
+        Manifest::parse(EMBEDDED)
+            .expect("embedded manifest is valid")
+            .on(&platform())
+    }
+
+    pub fn on(mut self, platform: &str) -> Manifest {
+        self.models
+            .retain(|model| model.platform.as_deref().is_none_or(|p| p == platform));
+        self
     }
 
     pub fn parse(text: &str) -> Result<Manifest, Error> {
@@ -132,6 +145,10 @@ impl Manifest {
         }
         Ok(())
     }
+}
+
+pub fn platform() -> String {
+    format!("{}-{}", std::env::consts::OS, std::env::consts::ARCH)
 }
 
 fn bad(text: String) -> Error {

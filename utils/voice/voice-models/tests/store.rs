@@ -7,7 +7,7 @@ use std::sync::{Arc, Mutex};
 use std::thread;
 
 use common::*;
-use voice_models::{Cancel, Error, Fetch, FetchError, Manifest, Response, Status, Store};
+use voice_models::{Cancel, Error, Fetch, FetchError, Kind, Manifest, Response, Status, Store};
 
 fn store(f: &Fixture) -> Store {
     Store::with_manifest(
@@ -285,6 +285,40 @@ fn old_version_dir_is_removed_after_install() {
     assert!(!stale.exists());
 }
 
+#[cfg(unix)]
+#[test]
+fn an_executable_file_can_run_after_install() {
+    use std::os::unix::fs::PermissionsExt;
+    let mut f = fixture("exec", &[1000, 1000]);
+    f.manifest.models[0].files[0].executable = true;
+    store(&f).install("m1", &Cancel::new(), None).unwrap();
+    let mode = |index| {
+        fs::metadata(file_on_disk(&f, index))
+            .unwrap()
+            .permissions()
+            .mode()
+    };
+    assert_eq!(mode(0) & 0o111, 0o111);
+    assert_eq!(mode(1) & 0o111, 0);
+}
+
+#[test]
+fn models_for_other_platforms_are_left_out() {
+    let text = r#"{"models": [
+        {"id": "everywhere", "version": "1", "kind": "aux", "language": "any", "license": "MIT",
+         "unpacked_size": 1, "files": [{"path": "a", "size": 1, "sha256": "SHA"}]},
+        {"id": "engine-here", "version": "1", "kind": "engine", "language": "any", "license": "MIT",
+         "unpacked_size": 1, "platform": "here", "files": [{"path": "a", "size": 1, "sha256": "SHA", "executable": true}]},
+        {"id": "engine-there", "version": "1", "kind": "engine", "language": "any", "license": "MIT",
+         "unpacked_size": 1, "platform": "there", "files": [{"path": "a", "size": 1, "sha256": "SHA"}]}
+    ]}"#
+    .replace("SHA", &"ab".repeat(32));
+    let manifest = Manifest::parse(&text).unwrap().on("here");
+    let ids: Vec<&str> = manifest.models.iter().map(|m| m.id.as_str()).collect();
+    assert_eq!(ids, vec!["everywhere", "engine-here"]);
+    assert!(manifest.models[1].files[0].executable);
+}
+
 #[test]
 fn unknown_model() {
     let f = fixture("unknown", &[10]);
@@ -307,5 +341,9 @@ fn embedded_manifest_is_valid() {
             .url
             .starts_with("https://storage.scnative.dev/voice-models/")
     );
-    assert_eq!(m.models.len(), 4);
+    let lolya = m.get("qwen-lolya").unwrap();
+    assert_eq!(lolya.requires, vec!["qwen-codec".to_string()]);
+    assert!(m.get("qwen-moriarty").is_ok());
+    let engines = m.models.iter().filter(|model| model.kind == Kind::Engine);
+    assert!(engines.count() <= 1);
 }

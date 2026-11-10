@@ -145,6 +145,58 @@
           "sha256": "6ebb6bb288f20f3ae8d004d3c2ca27697da27c037d75e81a60e2a6a663f95425"
         }
       ]
+    },
+    {
+      "id": "qwen-codec",
+      "version": "1",
+      "kind": "tts",
+      "language": "any",
+      "license": "Apache-2.0",
+      "unpacked_size": 291150624,
+      "requires": [],
+      "files": [
+        {
+          "path": "qwen-tokenizer-12hz-Q8_0.gguf",
+          "size": 291150624,
+          "sha256": "1883beeed99348fc35e23dd225e9082f93f6f8c109330a33d935baa8acdbfd94"
+        }
+      ]
+    },
+    {
+      "id": "qwen-lolya",
+      "version": "1",
+      "kind": "tts",
+      "language": "ru",
+      "license": "own",
+      "unpacked_size": 1182631008,
+      "requires": [
+        "qwen-codec"
+      ],
+      "files": [
+        {
+          "path": "qwen-talker-1.7b-lolya-Q4_K_M.gguf",
+          "size": 1182631008,
+          "sha256": "02b4d61a479ca6b3d8b484ad809178aca3efdb177f226ede7121fe0db51bd30a"
+        }
+      ]
+    },
+    {
+      "id": "qwen-moriarty",
+      "version": "1",
+      "kind": "tts",
+      "language": "ru",
+      "license": "own",
+      "unpacked_size": 1182631008,
+      "requires": [
+        "qwen-codec"
+      ],
+      "files": [
+        {
+          "path": "qwen-talker-1.7b-moriarty-Q4_K_M.gguf",
+          "size": 1182631008,
+          "sha256": "f2edb2cfb74dc4b5952a249a057814f99bd7498cea04879befbe109cf623ecb2"
+        }
+      ]
     }
   ]
 }
