@@ -96,7 +96,8 @@
     "more": "더 보기",
     "react": "반응",
     "quickReact": "좋아요",
-    "otherEmoji": "다른 이모지"
+    "otherEmoji": "다른 이모지",
+    "profile": "프로필"
   },
   "reply": {
     "missing": "메시지",

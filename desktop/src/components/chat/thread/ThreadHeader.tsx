@@ -10,6 +10,7 @@ import { useChatThreadStore } from '../../../stores/chat/thread';
 import { Avatar } from '../../ui/Avatar';
 import type { InfoTab } from '../info/InfoSheet';
 import { GroupPhoto } from '../media/compose/GroupPhoto';
+import { useOpenProfile } from '../profile';
 import { PublicMark } from '../public/PublicMark';
 import { PublicOnline } from '../public/PublicRow';
 import { SlowModeChip } from '../public/SlowModeChip';
@@ -87,6 +88,7 @@ export const ThreadHeader = memo(function ThreadHeader({
 }) {
   const { t, i18n } = useTranslation();
   const { conversation } = useThread();
+  const openProfile = useOpenProfile();
   const typing = useChatThreadStore((state) => state.threads[conversation.id]?.typing ?? NO_TYPING);
   const title = conversationTitle(conversation, t);
   const avatar = conversationAvatar(conversation);
@@ -172,7 +174,9 @@ export const ThreadHeader = memo(function ThreadHeader({
         <button
           type="button"
           aria-label={t('chat.thread.menu.more')}
-          onClick={(event) => openThreadMenu(event, conversation, t, i18n.language, onInfo)}
+          onClick={(event) =>
+            openThreadMenu(event, conversation, t, i18n.language, onInfo, openProfile)
+          }
           className="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-ink-50 transition-colors duration-150 hover:bg-ink/[0.07] hover:text-ink"
         >
           <Ellipsis size={17} />

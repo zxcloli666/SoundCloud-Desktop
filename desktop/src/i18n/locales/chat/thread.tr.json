@@ -99,7 +99,8 @@
     "more": "Diğer",
     "react": "Tepki ver",
     "quickReact": "Beğen",
-    "otherEmoji": "Başka emoji"
+    "otherEmoji": "Başka emoji",
+    "profile": "Profil"
   },
   "reply": {
     "missing": "Mesaj",

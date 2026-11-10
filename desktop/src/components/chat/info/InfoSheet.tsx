@@ -5,12 +5,12 @@ import { conversationAvatar, conversationTitle } from '../../../lib/chat/render'
 import { surface } from '../../../lib/chat/tone';
 import type { Seq } from '../../../lib/chat/types';
 import { Bookmark, Images, ListMusic, Shield, Users, X } from '../../../lib/icons';
-import { linkRoute } from '../../../lib/soundcloudLink';
 import { useChatStore } from '../../../stores/chat';
 import { selectMediaKnown } from '../../../stores/chat/media';
 import { Avatar } from '../../ui/Avatar';
 import { GroupAvatarEdit } from '../media/compose/GroupAvatarEdit';
 import { GalleryTab } from '../media/GalleryTab';
+import { profileRoute } from '../profile';
 import { ScrollText } from '../public/icons';
 import { LogTab } from '../public/LogTab';
 import { PublicMark } from '../public/PublicMark';
@@ -36,7 +36,7 @@ function Identity() {
   const { conversation } = useThread();
   const avatar = conversationAvatar(conversation);
   const peer = conversation.kind === 'direct' ? conversation.peer : null;
-  const route = peer ? linkRoute(`soundcloud:users:${peer.id}`) : null;
+  const route = peer ? profileRoute(peer.id) : null;
 
   return (
     <div className="flex flex-col items-center gap-2 px-4 pt-2 pb-4 text-center">

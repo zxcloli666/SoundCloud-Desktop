@@ -8,6 +8,7 @@ import { useChatThreadStore } from '../../../stores/chat/thread';
 import { type ContextMenuEntry, openContextMenu } from '../../../stores/context-menu';
 import { backdropEntries } from '../backdrop/menu';
 import type { InfoTab } from '../info/InfoSheet';
+import { type OpenProfile, profileEntry } from '../profile';
 import { openSlowModeMenu } from '../public/SlowModeChip';
 import { toastError } from './errors';
 import { canSetTimer, hasTimer, isActiveMember, isPublicStaff } from './permissions';
@@ -62,6 +63,7 @@ export function openThreadMenu(
   t: TFunction,
   language: string,
   onInfo: (tab?: InfoTab) => void,
+  onProfile: OpenProfile,
 ) {
   const muted = isMuted(conversation, Date.now());
   const entries: ContextMenuEntry[] = [
@@ -72,6 +74,9 @@ export function openThreadMenu(
       onSelect: () => onInfo(),
     },
   ];
+  if (conversation.kind === 'direct' && conversation.peer) {
+    entries.push(profileEntry(conversation.peer.id, t, onProfile));
+  }
   if (isPublicStaff(conversation)) {
     entries.push(
       {

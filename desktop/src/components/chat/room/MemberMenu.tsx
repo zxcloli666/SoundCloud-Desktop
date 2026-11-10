@@ -1,6 +1,6 @@
 import { type ReactNode, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Ban, Star } from '../../../lib/icons';
+import { Ban, Star, User } from '../../../lib/icons';
 import { useOpenStar, useStarOffer } from '../../../lib/star-offer';
 import {
   banMember,
@@ -13,6 +13,7 @@ import { type MemberActions, MUTE_MINUTES } from '../../../lib/together/room-rul
 import type { RoomMember } from '../../../lib/together/types';
 import { useTogetherStore } from '../../../stores/together';
 import { Avatar } from '../../ui/Avatar';
+import { useOpenProfile } from '../profile';
 import { MicOff, ShieldMinus, ShieldPlus, UserX } from './icons';
 import { STAR_MODERATORS } from './perks/perks';
 import { useStarState } from './perks/StarAction';
@@ -82,6 +83,7 @@ function MuteRow({ onMute }: { onMute: (minutes: number) => void }) {
 export function MemberMenu({ member, actions, muted, onDone }: MemberMenuProps) {
   const { t } = useTranslation();
   const [banArmed, setBanArmed] = useState(false);
+  const openProfile = useOpenProfile();
   const perks = useTogetherStore((s) => s.room?.perks);
   const star = useStarState(perks);
   const { trial } = useStarOffer();
@@ -103,6 +105,14 @@ export function MemberMenu({ member, actions, muted, onDone }: MemberMenuProps) 
         </span>
       </div>
       <div className="mx-2 mb-1 h-px bg-ink/[0.06]" />
+      <Item
+        icon={<User size={14} />}
+        label={t('chat.thread.actions.profile')}
+        onSelect={() => {
+          onDone();
+          openProfile(member.userId);
+        }}
+      />
       {actions.mute &&
         (muted ? (
           <Item
