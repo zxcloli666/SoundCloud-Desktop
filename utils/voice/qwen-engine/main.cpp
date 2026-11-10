@@ -1,3 +1,4 @@
+#include "ggml-backend.h"
 #include "qwen.h"
 
 #include <atomic>
@@ -180,6 +181,17 @@ void listen() {
     }
 }
 
+std::string device_name(const char * asked) {
+    if (asked) {
+        return asked;
+    }
+    ggml_backend_dev_t best = ggml_backend_dev_by_type(GGML_BACKEND_DEVICE_TYPE_GPU);
+    if (!best) {
+        best = ggml_backend_dev_by_type(GGML_BACKEND_DEVICE_TYPE_IGPU);
+    }
+    return best ? ggml_backend_dev_name(best) : "CPU";
+}
+
 void log_line(qt_log_level level, const char * line, void *) {
     if (level >= QT_LOG_WARN) {
         fprintf(stderr, "%s\n", line);
@@ -208,7 +220,7 @@ int main(int argc, char ** argv) {
         send_text(Failed, 0, qt_last_error());
         return 1;
     }
-    send_text(Ready, 0, "24000");
+    send_text(Ready, 0, "24000\n" + device_name(init.device));
 
     std::thread worker(work, engine);
     listen();

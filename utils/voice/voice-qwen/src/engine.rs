@@ -58,6 +58,7 @@ pub struct Engine {
     frames: Receiver<Frame>,
     log: Log,
     rate: u32,
+    device: String,
     last: u32,
 }
 
@@ -88,14 +89,19 @@ impl Engine {
             frames,
             log,
             rate: 0,
+            device: String::new(),
             last: 0,
         };
         match engine.frames.recv_timeout(READY) {
             Ok(frame) if frame.kind == wire::READY => {
-                engine.rate = String::from_utf8_lossy(&frame.payload)
-                    .trim()
+                let greeting = String::from_utf8_lossy(&frame.payload);
+                let (rate, device) = greeting
+                    .split_once('\n')
+                    .ok_or("speech engine sent a bad greeting")?;
+                engine.rate = rate
                     .parse()
                     .map_err(|_| "speech engine sent a bad greeting".to_string())?;
+                engine.device = device.to_string();
                 Ok(engine)
             }
             Ok(frame) if frame.kind == wire::FAILED => Err(engine.detail(&frame.payload)),
@@ -105,6 +111,10 @@ impl Engine {
 
     pub fn rate(&self) -> u32 {
         self.rate
+    }
+
+    pub fn device(&self) -> &str {
+        &self.device
     }
 
     pub fn say(&mut self, request: &Request, sink: &mut dyn Sink) -> Result<(), Error> {

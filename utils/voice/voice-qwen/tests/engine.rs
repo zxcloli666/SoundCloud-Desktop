@@ -62,6 +62,8 @@ fn the_engine_speaks_stops_and_survives_a_bad_request() {
     let speaker = speaker();
     let mut engine = Engine::start(&launch).expect("engine starts");
     assert_eq!(engine.rate(), 24000);
+    assert!(!engine.device().is_empty());
+    eprintln!("runs on {}", engine.device());
 
     let mut whole = heard(usize::MAX);
     let started = Instant::now();

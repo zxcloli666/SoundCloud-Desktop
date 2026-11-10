@@ -28,7 +28,7 @@ cmake -S "$src" -B "$build" \
 cmake --build "$build" --config Release --parallel "$(getconf _NPROCESSORS_ONLN)"
 
 bin=$build
-if [ -d "$build/Release" ]; then
+if [ -f "$build/Release/scd-qwen.exe" ]; then
     bin=$build/Release
 fi
 mkdir -p "$out"
