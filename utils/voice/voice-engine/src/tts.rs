@@ -47,7 +47,7 @@ pub enum Piece {
 pub type Reply = Box<dyn Fn(u64, Piece) + Send>;
 
 enum Job {
-    Warm(Paths),
+    Warm(Paths, &'static str),
     Say(Say),
 }
 
@@ -89,7 +89,11 @@ impl Tts {
                 };
                 loop {
                     match inbox.recv_timeout(REST) {
-                        Ok(Job::Warm(paths)) => voices.qwen.warm(&paths),
+                        Ok(Job::Warm(paths, speaker)) => {
+                            let at = asked.load(Ordering::Relaxed);
+                            let busy = || asked.load(Ordering::Relaxed) != at;
+                            voices.qwen.warm(&paths, speaker, &busy);
+                        }
                         Ok(Job::Say(say)) => {
                             let out = Out {
                                 r#gen: say.r#gen,
@@ -114,8 +118,8 @@ impl Tts {
         let _ = self.jobs.send(Job::Say(say));
     }
 
-    pub fn warm(&self, paths: Paths) {
-        let _ = self.jobs.send(Job::Warm(paths));
+    pub fn warm(&self, paths: Paths, speaker: &'static str) {
+        let _ = self.jobs.send(Job::Warm(paths, speaker));
     }
 
     pub fn forget(&self) {

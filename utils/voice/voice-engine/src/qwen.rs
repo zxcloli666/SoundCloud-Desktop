@@ -1,4 +1,6 @@
+use std::fs;
 use std::path::PathBuf;
+use std::time::Instant;
 
 use voice_qwen::{Engine, Error, Launch, Request, Sink};
 
@@ -7,8 +9,12 @@ pub const RATE: u32 = 24000;
 const FRAMES_PER_SECOND: f32 = 12.5;
 const CHARS_PER_SECOND: f32 = 11.0;
 const CPU: &str = "CPU";
+const BEST: &str = "best";
+const CHOICE: &str = "device";
 const LANG: &str = "auto";
 const SEED: i64 = 1;
+const TRIAL: &str = "Проверяю, как быстро получается говорить на этом компьютере.";
+const REAL_TIME: f32 = 1.0;
 
 #[derive(Clone, PartialEq)]
 pub struct Paths {
@@ -47,9 +53,84 @@ impl Sink for Counted<'_> {
     }
 }
 
+struct Timed<'a> {
+    busy: &'a dyn Fn() -> bool,
+    first: Option<Instant>,
+    last: Instant,
+    later: usize,
+}
+
+impl Sink for Timed<'_> {
+    fn audio(&mut self, samples: Vec<f32>) {
+        self.last = Instant::now();
+        match self.first {
+            Some(_) => self.later += samples.len(),
+            None => self.first = Some(self.last),
+        }
+    }
+
+    fn wanted(&self) -> bool {
+        !(self.busy)()
+    }
+}
+
+impl Timed<'_> {
+    fn pace(&self) -> Option<f32> {
+        let took = self.last.duration_since(self.first?).as_secs_f32();
+        (self.wanted() && took > 0.0).then(|| self.later as f32 / RATE as f32 / took)
+    }
+}
+
+impl Paths {
+    fn choice(&self) -> PathBuf {
+        self.program.with_file_name(CHOICE)
+    }
+
+    fn choose(&self, device: &str) {
+        let _ = fs::write(self.choice(), device);
+    }
+
+    fn launch(&self, device: Option<&str>) -> Launch {
+        Launch {
+            program: self.program.clone(),
+            talker: self.talker.clone(),
+            codec: self.codec.clone(),
+            device: device.map(str::to_string),
+        }
+    }
+}
+
 impl Qwen {
-    pub fn warm(&mut self, paths: &Paths) {
-        let _ = self.engine(paths);
+    pub fn warm(&mut self, paths: &Paths, speaker: &str, busy: &dyn Fn() -> bool) {
+        let Ok(engine) = self.engine(paths) else {
+            return;
+        };
+        if engine.device() == CPU || paths.choice().exists() {
+            return;
+        }
+        let Some(best) = self.pace(paths, speaker, busy) else {
+            return;
+        };
+        if self.cpu_only {
+            return;
+        }
+        if best >= REAL_TIME {
+            return paths.choose(BEST);
+        }
+        self.running = None;
+        let Ok(engine) = Engine::start(&paths.launch(Some(CPU))) else {
+            return paths.choose(BEST);
+        };
+        self.running = Some((paths.clone(), engine));
+        match self.pace(paths, speaker, busy) {
+            Some(cpu) if cpu > best => paths.choose(CPU),
+            Some(_) => {
+                paths.choose(BEST);
+                self.running = None;
+                let _ = self.engine(paths);
+            }
+            None => {}
+        }
     }
 
     pub fn rest(&mut self) {
@@ -101,21 +182,27 @@ impl Qwen {
         }
     }
 
-    fn start(&mut self, paths: &Paths) -> Result<Engine, String> {
-        let launch = |device: Option<&str>| Launch {
-            program: paths.program.clone(),
-            talker: paths.talker.clone(),
-            codec: paths.codec.clone(),
-            device: device.map(str::to_string),
+    fn pace(&mut self, paths: &Paths, speaker: &str, busy: &dyn Fn() -> bool) -> Option<f32> {
+        let mut timed = Timed {
+            busy,
+            first: None,
+            last: Instant::now(),
+            later: 0,
         };
-        let engine = if self.cpu_only {
-            Engine::start(&launch(Some(CPU)))?
+        self.say(paths, speaker, TRIAL, &mut timed).ok()?;
+        timed.pace()
+    }
+
+    fn start(&mut self, paths: &Paths) -> Result<Engine, String> {
+        let chosen = fs::read_to_string(paths.choice()).unwrap_or_default();
+        let engine = if self.cpu_only || chosen == CPU {
+            Engine::start(&paths.launch(Some(CPU)))?
         } else {
-            match Engine::start(&launch(None)) {
+            match Engine::start(&paths.launch(None)) {
                 Ok(engine) => engine,
                 Err(_) => {
                     self.cpu_only = true;
-                    Engine::start(&launch(Some(CPU)))?
+                    Engine::start(&paths.launch(Some(CPU)))?
                 }
             }
         };
@@ -129,6 +216,59 @@ impl Qwen {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn real(name: &str) -> Option<Paths> {
+        let path = |name: &str| std::env::var_os(name).map(PathBuf::from);
+        let (program, talker, codec) = (
+            path("SCD_QWEN")?,
+            path("SCD_QWEN_TALKER")?,
+            path("SCD_QWEN_CODEC")?,
+        );
+        let dir = std::env::temp_dir().join(format!("voice-qwen-{name}-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&dir);
+        fs::create_dir_all(&dir).unwrap();
+        std::os::unix::fs::symlink(program, dir.join("scd-qwen")).unwrap();
+        Some(Paths {
+            program: dir.join("scd-qwen"),
+            talker,
+            codec,
+        })
+    }
+
+    fn device(qwen: &mut Qwen, paths: &Paths) -> String {
+        qwen.engine(paths).unwrap().device().to_string()
+    }
+
+    #[test]
+    fn the_first_warm_up_picks_the_faster_device_and_remembers_it() {
+        let Some(paths) = real("trial") else {
+            eprintln!("SCD_QWEN, SCD_QWEN_TALKER, SCD_QWEN_CODEC are not set, skipped");
+            return;
+        };
+        let mut qwen = Qwen::default();
+        let best = device(&mut qwen, &paths);
+        if best == CPU {
+            eprintln!("no faster device than the CPU here, nothing to pick");
+            return;
+        }
+        eprintln!("{best} pace {:?}", qwen.pace(&paths, "lolya", &|| false));
+
+        qwen.warm(&paths, "lolya", &|| true);
+        assert!(!paths.choice().exists(), "a trial cut short decides nothing");
+
+        let started = Instant::now();
+        qwen.warm(&paths, "lolya", &|| false);
+        let chosen = fs::read_to_string(paths.choice()).unwrap();
+        eprintln!("chose {chosen} in {:?}", started.elapsed());
+        assert!(chosen == BEST || chosen == CPU, "{chosen}");
+        assert_eq!(device(&mut qwen, &paths) == CPU, chosen == CPU);
+
+        let mut later = Qwen::default();
+        assert_eq!(device(&mut later, &paths) == CPU, chosen == CPU);
+        let started = Instant::now();
+        later.warm(&paths, "lolya", &|| false);
+        assert!(started.elapsed().as_secs_f32() < 0.5, "a made choice is not tried again");
+    }
 
     #[test]
     fn longer_text_gets_more_room() {

@@ -170,10 +170,13 @@ impl Core {
         if !self.config.speak.replies {
             return;
         }
-        let paths = voices::find(&self.config.speak.voice)
-            .and_then(|voice| models::qwen(&self.deps.store, voice));
-        if let Some(paths) = paths {
-            self.tts.warm(paths);
+        let Some(voice) = voices::find(&self.config.speak.voice) else {
+            return;
+        };
+        if let voices::Kind::Qwen { speaker, .. } = voice.kind
+            && let Some(paths) = models::qwen(&self.deps.store, voice)
+        {
+            self.tts.warm(paths, speaker);
         }
     }
 
