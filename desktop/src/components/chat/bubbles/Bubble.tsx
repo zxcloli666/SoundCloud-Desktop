@@ -7,6 +7,7 @@ import { Ban, Sparkles } from '../../../lib/icons';
 import { useChatThreadStore } from '../../../stores/chat/thread';
 import { CheckedEmbedCard } from '../embeds/EmbedCard';
 import { MediaBubble, useHasMedia } from '../media/MediaBubble';
+import { useOpenProfile } from '../profile';
 import { openPublicUserMenu } from '../public/user-menu';
 import { useThread } from '../thread/context';
 import { isPublicStaff } from '../thread/permissions';
@@ -102,6 +103,7 @@ export const Bubble = memo(function Bubble({
   flash,
 }: BubbleProps) {
   const { nameOf, conversation, people, me, t } = useThread();
+  const openProfile = useOpenProfile();
   const media = useHasMedia(message);
   const radius = corners(message.mine, first, last);
   const embeds = useMemo(
@@ -122,6 +124,10 @@ export const Bubble = memo(function Bubble({
   const moderated = showName && isPublicStaff(conversation) && message.sender !== me;
   const openSender = (event: React.MouseEvent) => {
     event.stopPropagation();
+    if (!moderated) {
+      openProfile(message.sender);
+      return;
+    }
     const user = people.get(message.sender) ?? {
       id: message.sender,
       name: nameOf(message.sender),
@@ -129,7 +135,7 @@ export const Bubble = memo(function Bubble({
       permalink: null,
     };
     const staff = useChatThreadStore.getState().threads[conversation.id]?.members ?? [];
-    openPublicUserMenu(event, user, conversation, me, staff, t);
+    openPublicUserMenu(event, user, conversation, me, staff, t, openProfile);
   };
 
   return (
@@ -144,7 +150,7 @@ export const Bubble = memo(function Bubble({
         animation: flash ? 'chat-thread-flash 1.4s ease-out' : undefined,
       }}
     >
-      {showName && moderated && (
+      {showName && (
         <button
           type="button"
           data-ui="chat-sender"
@@ -154,14 +160,6 @@ export const Bubble = memo(function Bubble({
         >
           {nameOf(message.sender)}
         </button>
-      )}
-      {showName && !moderated && (
-        <div
-          className="mb-0.5 truncate text-[12px] font-semibold"
-          style={{ color: senderColor(message.sender) }}
-        >
-          {nameOf(message.sender)}
-        </div>
       )}
       {message.forwardedFrom && <Forwarded forwarded={message.forwardedFrom} />}
       {message.replyTo !== null && <ReplyQuote seq={message.replyTo} message={replied} />}

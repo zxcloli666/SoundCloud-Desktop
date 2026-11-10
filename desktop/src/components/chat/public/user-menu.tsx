@@ -10,6 +10,7 @@ import { Ban } from '../../../lib/icons';
 import { sanctionOf, usePublicStore } from '../../../stores/chat/public';
 import { type ContextMenuEntry, openContextMenu } from '../../../stores/context-menu';
 import { Avatar } from '../../ui/Avatar';
+import { type OpenProfile, profileEntry } from '../profile';
 import { MicOff, ShieldMinus, ShieldPlus } from '../room/icons';
 import { useThreadDialogs } from '../thread/dialogs';
 import { canSanction } from '../thread/permissions';
@@ -82,12 +83,16 @@ export function openPublicUserMenu(
   me: UserId | null,
   staff: Member[],
   t: TFunction,
+  onProfile: OpenProfile,
 ) {
-  const entries = publicUserEntries(user, conversation, me, staff, t);
-  if (entries.length === 0) return;
+  const moderation = publicUserEntries(user, conversation, me, staff, t);
+  if (moderation.length === 0) {
+    onProfile(user.id);
+    return;
+  }
   openContextMenu(
     event,
-    entries,
+    [profileEntry(user.id, t, onProfile), 'separator', ...moderation],
     <div className="flex items-center gap-2.5 px-2.5 pt-1.5 pb-2">
       <Avatar src={user.avatarUrl} alt="" size={28} />
       <span className="min-w-0 truncate text-[13px] font-semibold text-ink-90">{user.name}</span>

@@ -99,7 +99,8 @@
     "more": "More",
     "react": "React",
     "quickReact": "Love",
-    "otherEmoji": "Other emoji"
+    "otherEmoji": "Other emoji",
+    "profile": "Profile"
   },
   "reply": {
     "missing": "Message",

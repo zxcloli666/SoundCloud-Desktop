@@ -3,6 +3,7 @@ import type { UserId, UserRef } from '../../../lib/chat/types';
 import { Ban } from '../../../lib/icons';
 import { Card } from '../../settings/primitives';
 import { Avatar } from '../../ui/Avatar';
+import { useOpenProfile } from '../profile';
 
 interface BlockedCardProps {
   blocked: UserRef[];
@@ -11,6 +12,7 @@ interface BlockedCardProps {
 
 export function BlockedCard({ blocked, onUnblock }: BlockedCardProps) {
   const { t } = useTranslation();
+  const openProfile = useOpenProfile();
   return (
     <Card title={t('chat.settings.blocked.title')} icon={<Ban size={17} />}>
       {blocked.length === 0 ? (
@@ -19,10 +21,17 @@ export function BlockedCard({ blocked, onUnblock }: BlockedCardProps) {
         <div className="flex max-h-[320px] flex-col gap-1 overflow-y-auto">
           {blocked.map((user) => (
             <div key={user.id} className="flex items-center gap-3 rounded-2xl px-1 py-1.5">
-              <Avatar src={user.avatarUrl} alt={user.name} size={32} />
-              <span className="min-w-0 flex-1 truncate text-[13px] font-medium text-ink-80">
-                {user.name}
-              </span>
+              <button
+                type="button"
+                aria-label={t('chat.thread.actions.profile')}
+                onClick={() => openProfile(user.id)}
+                className="group flex min-w-0 flex-1 cursor-pointer items-center gap-3 text-left"
+              >
+                <Avatar src={user.avatarUrl} alt={user.name} size={32} />
+                <span className="min-w-0 flex-1 truncate text-[13px] font-medium text-ink-80 group-hover:text-ink">
+                  {user.name}
+                </span>
+              </button>
               <button
                 type="button"
                 onClick={() => onUnblock(user.id)}

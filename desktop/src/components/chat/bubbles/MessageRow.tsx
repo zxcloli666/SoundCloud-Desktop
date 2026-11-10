@@ -3,8 +3,9 @@ import type { Tick } from '../../../lib/chat/render';
 import type { Message } from '../../../lib/chat/types';
 import { EyeOff, RotateCcw } from '../../../lib/icons';
 import { useChatThreadStore } from '../../../stores/chat/thread';
-import { openContextMenu } from '../../../stores/context-menu';
+import { type ContextMenuEntry, openContextMenu } from '../../../stores/context-menu';
 import { Avatar } from '../../ui/Avatar';
+import { profileEntry, useOpenProfile } from '../profile';
 import { useThread } from '../thread/context';
 import { useThreadDialogs } from '../thread/dialogs';
 import { toastError } from '../thread/errors';
@@ -55,15 +56,24 @@ export const MessageRow = memo(function MessageRow({
   const fail = (error: unknown) => toastError(error, t, language);
   const [hover, setHover] = useState(false);
   const [revealed, setRevealed] = useState(false);
+  const openProfile = useOpenProfile();
+  const author = !message.mine && conversation.kind !== 'direct' && conversation.kind !== 'self';
   const leave = (event: FocusEvent<HTMLDivElement>) => {
     if (!event.currentTarget.contains(event.relatedTarget)) setHover(false);
   };
 
-  const openMenu = (event: MouseEvent) =>
+  const openMenu = (event: MouseEvent) => {
+    const base = messageMenu(message, conversation, moderator, t, language);
+    const profile: ContextMenuEntry[] = author
+      ? [profileEntry(message.sender, t, openProfile)]
+      : [];
     openContextMenu(event, [
-      ...messageMenu(message, conversation, moderator, t, language),
+      ...base,
+      ...(base.length > 0 && profile.length > 0 ? ['separator' as const] : []),
+      ...profile,
       ...moderationEntries(message, conversation, me, people, t),
     ]);
+  };
   const react = (emoji: string) =>
     void useChatThreadStore.getState().react(message, emoji).catch(fail);
   const openPicker = (event: MouseEvent<HTMLButtonElement>) => {
@@ -89,7 +99,16 @@ export const MessageRow = memo(function MessageRow({
     >
       {avatars && !message.mine && (
         <div className="w-7 shrink-0 pb-px">
-          {last && <Avatar src={people.get(message.sender)?.avatarUrl} size={28} />}
+          {last && (
+            <button
+              type="button"
+              aria-label={t('chat.thread.actions.profile')}
+              onClick={() => openProfile(message.sender)}
+              className="block cursor-pointer rounded-full transition-transform duration-150 hover:scale-[1.06]"
+            >
+              <Avatar src={people.get(message.sender)?.avatarUrl} size={28} />
+            </button>
+          )}
         </div>
       )}
       <div

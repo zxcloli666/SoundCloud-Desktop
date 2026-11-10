@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { findSoundCloudLink, linkRoute } from '../../../lib/soundcloudLink';
+import { findSoundCloudLink } from '../../../lib/soundcloudLink';
 import { useRichLinks } from '../../ui/useRichLinks';
+import { useOpenProfile } from '../profile';
 import { useThread } from '../thread/context';
 import { useThreadDialogs } from '../thread/dialogs';
 
@@ -15,7 +15,6 @@ function onSoundCloud(url: string): boolean {
 }
 
 export function useChatLinks() {
-  const navigate = useNavigate();
   const { openLink } = useRichLinks();
   const { conversation } = useThread();
 
@@ -30,13 +29,7 @@ export function useChatLinks() {
     [openLink, conversation.id],
   );
 
-  const openUser = useCallback(
-    (userId: string) => {
-      const route = linkRoute(`soundcloud:users:${userId}`);
-      if (route) navigate(route);
-    },
-    [navigate],
-  );
+  const openUser = useOpenProfile();
 
   return { openUrl, openUser };
 }

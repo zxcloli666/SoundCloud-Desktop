@@ -9,6 +9,7 @@ import { Crown, Ellipsis, Shield, ShieldAlert, X } from '../../../lib/icons';
 import { useChatThreadStore } from '../../../stores/chat/thread';
 import { type ContextMenuEntry, openContextMenu } from '../../../stores/context-menu';
 import { Avatar } from '../../ui/Avatar';
+import { useOpenProfile } from '../profile';
 import { useThread } from '../thread/context';
 import { toastError } from '../thread/errors';
 import { canManageMembers } from '../thread/permissions';
@@ -65,6 +66,7 @@ export const MemberRow = memo(function MemberRow({
 }) {
   const { t } = useTranslation();
   const { me } = useThread();
+  const openProfile = useOpenProfile();
   const manage = menu !== null && menu.length > 0;
   const open = (event: MouseEvent) => {
     if (menu) openContextMenu(event, menu);
@@ -77,18 +79,25 @@ export const MemberRow = memo(function MemberRow({
         member.state === 'invited' ? 'opacity-55' : ''
       }`}
     >
-      <Avatar src={member.user.avatarUrl} size={34} />
-      <span className="min-w-0 flex-1">
-        <span
-          className="block truncate text-[13px] font-semibold"
-          style={{ color: senderColor(member.user.id) }}
-        >
-          {member.user.name}
+      <button
+        type="button"
+        aria-label={t('chat.thread.actions.profile')}
+        onClick={() => openProfile(member.user.id)}
+        className="flex min-w-0 flex-1 cursor-pointer items-center gap-2.5 text-left"
+      >
+        <Avatar src={member.user.avatarUrl} size={34} />
+        <span className="min-w-0 flex-1">
+          <span
+            className="block truncate text-[13px] font-semibold"
+            style={{ color: senderColor(member.user.id) }}
+          >
+            {member.user.name}
+          </span>
+          {member.user.id === me && (
+            <span className="block text-[11px] text-ink-35">{t('chat.thread.info.you')}</span>
+          )}
         </span>
-        {member.user.id === me && (
-          <span className="block text-[11px] text-ink-35">{t('chat.thread.info.you')}</span>
-        )}
-      </span>
+      </button>
       {member.role === 'owner' && (
         <Crown
           size={14}
