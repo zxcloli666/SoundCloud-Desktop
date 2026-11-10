@@ -86,8 +86,8 @@ export const PlaylistHero = React.memo(function PlaylistHero({
         : {color: 'rgb(var(--ink))', textShadow: '0 8px 24px rgb(var(--shade) / calc(0.5 * var(--shade-alpha)))'};
 
     return (
-        <GlassHeroPanel hasStar={false} aura={aura.aura} className="p-6 md:p-10">
-            <div data-ui="playlist-hero" className="flex flex-col lg:flex-row gap-8 lg:gap-12 items-center lg:items-start">
+        <GlassHeroPanel hasStar={false} aura={aura.aura} className="@container">
+            <div data-ui="playlist-hero" className="p-6 @min-[512px]:p-10 flex flex-col @min-[740px]:flex-row gap-8 @min-[740px]:gap-12 items-center @min-[740px]:items-start">
                 <CrateStack
                     playlist={playlist}
                     tracks={tracks}
@@ -96,8 +96,8 @@ export const PlaylistHero = React.memo(function PlaylistHero({
                     onPlay={onPlayAll}
                 />
 
-                <div className="flex-1 min-w-0 w-full flex flex-col gap-5 text-center lg:text-left">
-                    <div className="flex flex-wrap items-center gap-2 justify-center lg:justify-start">
+                <div className="flex-1 min-w-0 w-full flex flex-col gap-5 text-center @min-[740px]:text-left">
+                    <div className="flex flex-wrap items-center gap-2 justify-center @min-[740px]:justify-start">
             <span
                 className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-[0.28em] text-ink-70"
                 style={{
@@ -118,14 +118,14 @@ export const PlaylistHero = React.memo(function PlaylistHero({
                     </div>
 
                     <h1
-                        className="text-4xl md:text-6xl xl:text-7xl font-black leading-[0.9] tracking-tighter break-words"
+                        className="text-4xl @min-[512px]:text-6xl @min-[960px]:text-7xl font-black leading-[0.9] tracking-tighter break-words"
                         style={titleStyle}
                     >
                         {playlist.title}
                     </h1>
 
                     {hasGenres && (
-                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 justify-center lg:justify-start">
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 justify-center @min-[740px]:justify-start">
                             {aura.topGenres.map((g) => (
                                 <span
                                     key={g.genre}
@@ -141,7 +141,7 @@ export const PlaylistHero = React.memo(function PlaylistHero({
                         </div>
                     )}
 
-                    <div className="flex flex-wrap items-center gap-2 justify-center lg:justify-start">
+                    <div className="flex flex-wrap items-center gap-2 justify-center @min-[740px]:justify-start">
                         {playlist.duration > 0 && (
                             <Meta icon={<Clock size={11}/>}>{durLong(playlist.duration)}</Meta>
                         )}

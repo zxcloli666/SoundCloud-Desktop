@@ -1,0 +1,62 @@
+{
+  "open": "열기",
+  "more": "더 보기",
+  "remove": "제거",
+  "track": {
+    "play": "재생",
+    "pause": "일시정지",
+    "seek": "탐색",
+    "from": "{{time}}부터 재생",
+    "unavailable": "재생 불가",
+    "playNext": "다음에 재생",
+    "queue": "대기열에 추가",
+    "together": "함께 듣기"
+  },
+  "playlist": {
+    "playAll": "재생",
+    "shuffle": "셔플",
+    "save": "저장",
+    "saved": "저장됨"
+  },
+  "user": {
+    "followers_other": "팔로워 {{value}}명",
+    "follow": "팔로우",
+    "following": "팔로잉",
+    "top": "인기 트랙",
+    "noTracks": "아직 트랙이 없어요"
+  },
+  "room": {
+    "live": "라이브",
+    "closed": "방이 닫혔어요",
+    "join": "입장",
+    "here": "참여 중",
+    "untitled": "함께 듣는 중",
+    "host": "{{name}} 님이 진행",
+    "full": "자리 없음"
+  },
+  "share": {
+    "action": "보내기",
+    "title": "보내기",
+    "search": "검색",
+    "comment": "코멘트",
+    "send": "보내기",
+    "sendCount": "보내기 ({{count}})",
+    "sent_other": "채팅 {{count}}곳에 보냈어요",
+    "failed_other": "채팅 {{count}}곳에 보내지 못했어요",
+    "saved": "저장됨",
+    "room": "방",
+    "untitled": "이름 없음",
+    "empty": "아직 채팅이 없어요",
+    "noMatch": "결과가 없어요",
+    "loadFailed": "채팅을 불러오지 못했어요"
+  },
+  "message": {
+    "write": "메시지",
+    "unavailable": "아직 {{name}} 님에게 메시지를 보낼 수 없어요",
+    "failed": "채팅을 열지 못했어요",
+    "invite": "초대",
+    "inviteText": "SoundCloud Desktop에서 메시지 보내 줘: {{url}}",
+    "inviteCopied": "초대 문구를 복사했어요",
+    "copyFailed": "복사하지 못했어요"
+  }
+}

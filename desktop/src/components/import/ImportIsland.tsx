@@ -3,6 +3,7 @@ import { useShallow } from 'zustand/shallow';
 import { Check, Loader2, X } from '../../lib/icons';
 import { usePerfMode } from '../../lib/perf';
 import { importStageOf, useImportStore } from '../../stores/import';
+import { ImportBar } from './ImportBar';
 import { ImportSourceIcon } from './ImportSourceIcon';
 import { etaOf, formatEta } from './importFormat';
 
@@ -37,7 +38,8 @@ export function ImportIsland() {
   }
 
   const working = s.phase === 'running' || s.phase === 'stopping' || s.phase === 'saving';
-  const pct = s.total > 0 && working ? Math.min(100, (s.current / s.total) * 100) : 100;
+  const counted = s.total > 0 || !working;
+  const pct = s.total > 0 && working ? (s.current / s.total) * 100 : 100;
   const eta = s.stage === 'matching' ? etaOf(s.startedAt, s.current, s.total) : null;
 
   return (
@@ -72,21 +74,32 @@ export function ImportIsland() {
                 {t(`importer.step.${s.stage}`)}
                 {s.title && <span className="font-normal text-ink-45"> · {s.title}</span>}
               </span>
-              <span className="shrink-0 font-mono text-[11px] tabular-nums text-ink-60">
-                {s.total > 0 ? `${s.current}/${s.total}` : s.current}
+              {s.total > 0 && (
+                <span className="shrink-0 font-mono text-[11px] tabular-nums text-ink-60">
+                  {s.current}/{s.total}
+                </span>
+              )}
+            </span>
+            <ImportBar pct={pct} indeterminate={!counted} className="h-1.5" />
+            {counted && (
+              <span className="flex items-center gap-3 text-[11px] tabular-nums">
+                <span
+                  className="flex items-center gap-1 text-green-400"
+                  title={t('importer.found')}
+                >
+                  <Check size={11} />
+                  {s.found}
+                </span>
+                <span
+                  className="flex items-center gap-1 text-red-400"
+                  title={t('importer.notFound')}
+                >
+                  <X size={11} />
+                  {s.missed}
+                </span>
+                {eta !== null && <span className="text-ink-40">~{formatEta(eta)}</span>}
               </span>
-            </span>
-            <span className="relative block h-1.5 overflow-hidden rounded-full bg-ink/[0.08]">
-              <span
-                className="absolute inset-y-0 left-0 rounded-full bg-accent transition-[width] duration-500 ease-out"
-                style={{ width: `${pct}%` }}
-              />
-            </span>
-            <span className="flex items-center gap-3 text-[11px] tabular-nums">
-              <span className="text-green-400">{s.found}</span>
-              <span className="text-red-400">{s.missed}</span>
-              {eta !== null && <span className="text-ink-40">~{formatEta(eta)}</span>}
-            </span>
+            )}
           </span>
         </button>
         {s.phase === 'done' && (

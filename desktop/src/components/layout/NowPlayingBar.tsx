@@ -4,7 +4,6 @@ import {useQuery, useQueryClient} from '@tanstack/react-query';
 import React, {useCallback, useEffect, useRef, useState, useSyncExternalStore} from 'react';
 import {useTranslation} from 'react-i18next';
 import {useNavigate} from 'react-router-dom';
-import {useShallow} from 'zustand/shallow';
 import {api} from '../../lib/api';
 import {
     cancelTrackLoad,
@@ -64,6 +63,7 @@ import {
     usePlayerStore,
 } from '../../stores/player';
 import {useSettingsStore} from '../../stores/settings';
+import {useChatDockWidth} from '../chat/shell/useChatDockWidth';
 import {AlbumLinkButton} from '../music/AlbumLinkButton';
 import {AltUploadMark} from '../music/AltUploadMark';
 import {ArtistNameLinks} from '../music/ArtistNameLinks';
@@ -75,6 +75,7 @@ import {HoldHeart} from '../music/superlike/HoldHeart';
 import {heartTitle} from '../music/superlike/heart-title';
 import {useSuperlikeGesture} from '../music/superlike/useSuperlikeGesture';
 import {TrackSoundToggle} from '../music/TrackSoundToggle';
+import {RATING_CHIPS, tierOf, tierTitleKey} from '../music/TrackStatusBadges';
 import {UploadKindDot} from '../music/UploadKindDot';
 import {TogetherButton} from '../together/TogetherButton';
 import {NowPlayingNameCard} from './NowPlayingNameCard';
@@ -380,14 +381,27 @@ export const ProgressTime = React.memo(() => {
   );
 });
 
+const RatingChip = React.memo(() => {
+  const { t } = useTranslation();
+  const meta = usePlayerStore((s) => s.currentTrack?._scd_meta);
+  const tier = meta ? tierOf(meta, true) : null;
+  if (!meta || !tier) return null;
+  const { letter, chip } = RATING_CHIPS[tier];
+
+  return (
+    <span
+      data-ui="player-rating"
+      title={t(tierTitleKey(tier, meta))}
+      className={`inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md border pl-[0.14em] text-[10px] font-semibold tracking-[0.14em] ${chip}`}
+    >
+      {letter}
+    </span>
+  );
+});
+
 const PlaybackQualityBadge = React.memo(() => {
   const { t } = useTranslation();
-  const { playbackQuality, playbackSource } = usePlayerStore(
-    useShallow((s) => ({
-      playbackQuality: s.playbackQuality,
-      playbackSource: s.playbackSource,
-    })),
-  );
+  const playbackQuality = usePlayerStore((s) => s.playbackQuality);
 
   if (!playbackQuality) return null;
 
@@ -404,15 +418,7 @@ const PlaybackQualityBadge = React.memo(() => {
       >
         {t(QUALITY_LABEL_KEYS[playbackQuality])}
       </span>
-      {playbackSource === 'storage' && (
-        <span
-          title={t('player.qualityCDN')}
-          className="npb-cdn inline-flex h-6 shrink-0 items-center gap-1.5 rounded-md border border-mint/[0.16] bg-mint/[0.07] px-2 text-[8px] font-medium tracking-[0.12em] text-mint-ink/82"
-        >
-          <span className="h-1.5 w-1.5 rounded-full bg-mint shadow-[0_0_8px_rgb(var(--mint)/0.55)]" />
-          <span className="npb-cdn-label">{t('player.qualityCDN')}</span>
-        </span>
-      )}
+      <RatingChip />
     </div>
   );
 });
@@ -904,7 +910,9 @@ const PillTrack = React.memo(({ loadProgress }: { loadProgress: number | null })
           <div className="npb-artfb" />
         </div>
         <div className="npb-txt">
-          <span className="npb-sub">{t('player.notPlaying')}</span>
+          <span className="npb-sub">
+            <span>{t('player.notPlaying')}</span>
+          </span>
         </div>
       </div>
     );
@@ -1019,8 +1027,10 @@ const ReactClusterBody = React.memo(({ urn }: { urn: string }) => {
   return (
     <div className="npb-react">
       <LikeButton trackUrn={urn} trackData={trackData} />
-      <NowBarDislikeButton trackUrn={urn} trackData={trackData} disliked={disliked} />
-      <NowBarAddToPlaylistButton trackUrn={urn} />
+      <span className="npb-extra">
+        <NowBarDislikeButton trackUrn={urn} trackData={trackData} disliked={disliked} />
+        <NowBarAddToPlaylistButton trackUrn={urn} />
+      </span>
       <span className="npb-slot">
         {trackData && (
           <AlbumLinkButton
@@ -1091,20 +1101,6 @@ const BackgroundGlow = React.memo(() => {
 
 /* ── NowPlayingBar ───────────────────────────────────────────── */
 
-const COMPACT_DOCK_AREA = 1160;
-const TIGHT_DOCK_AREA = 1000;
-const MINI_DOCK_AREA = 900;
-const MIN_DOCK_AREA = 800;
-
-function subscribeResize(onChange: () => void) {
-  window.addEventListener('resize', onChange);
-  return () => window.removeEventListener('resize', onChange);
-}
-
-function readWindowWidth() {
-  return window.innerWidth;
-}
-
 export const NowPlayingBar = React.memo(
   ({ onQueueToggle, queueOpen }: { onQueueToggle: () => void; queueOpen: boolean }) => {
     const isPlaying = usePlayerStore((s) => s.isPlaying);
@@ -1113,20 +1109,16 @@ export const NowPlayingBar = React.memo(
     const loadProgress = useLoadProgress();
     const sidebarCollapsed = useSettingsStore((s) => s.sidebarCollapsed);
     const perf = usePerfMode();
-    const windowWidth = useSyncExternalStore(subscribeResize, readWindowWidth);
-    const sidebar = sidebarWidth(sidebarCollapsed);
-    const left = windowWidth - sidebar < MIN_DOCK_AREA ? 0 : sidebar;
-    const area = windowWidth - left;
+    const right = useChatDockWidth();
+    const left = sidebarWidth(sidebarCollapsed);
 
     return (
       <div
         className="npb"
         data-ui="player"
-        data-compact={area < COMPACT_DOCK_AREA ? '' : undefined}
-        data-tight={area < TIGHT_DOCK_AREA ? '' : undefined}
-        data-mini={area < MINI_DOCK_AREA ? '' : undefined}
         style={{
           left,
+          right,
           transitionDuration: perf.mode === 'light' ? '0ms' : undefined,
         }}
       >
@@ -1152,11 +1144,15 @@ export const NowPlayingBar = React.memo(
               <div className="npb-sep" />
 
               <div className="flex items-center gap-0.5">
-                <ShuffleBtn />
+                <span className="npb-spare">
+                  <ShuffleBtn />
+                </span>
                 <PrevBtn />
                 <PlayPauseBtn />
                 <NextBtn />
-                <RepeatBtn />
+                <span className="npb-spare">
+                  <RepeatBtn />
+                </span>
                 <AbLoopBtn />
               </div>
 
@@ -1165,10 +1161,14 @@ export const NowPlayingBar = React.memo(
               <div className="flex items-center gap-0.5">
                 <VoiceMicButton className={(active) => btnClass(active, 'sm')} />
                 <TogetherButton />
-                <TuningBtn />
-                <EqBtn />
-                <EffectsBtn className={(active) => btnClass(active, 'sm')} />
-                <LyricsBtn />
+                <span className="npb-extra">
+                  <TuningBtn />
+                  <EqBtn />
+                  <EffectsBtn className={(active) => btnClass(active, 'sm')} />
+                </span>
+                <span className="npb-spare">
+                  <LyricsBtn />
+                </span>
                 <QueueBtn onClick={onQueueToggle} active={queueOpen} />
                 <VolumeFlyout />
                 <div className="npb-vol-slider flex items-center gap-2 pl-1">

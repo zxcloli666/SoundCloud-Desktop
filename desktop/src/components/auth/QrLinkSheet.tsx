@@ -5,6 +5,7 @@ import { ANDROID_CLIENT_URL } from '../../lib/constants';
 import { helpUrl } from '../../lib/help-url';
 import { Check, ExternalLink, RefreshCw, Smartphone, X } from '../../lib/icons';
 import { encodeQrPayload } from '../../lib/qr-link';
+import { KeychainCard } from '../chat/relogin/KeychainCard';
 import { Modal, ModalClose, ModalContent, ModalTitle } from '../ui/Modal';
 import { QrCode } from './QrCode';
 import { useQrLink } from './useQrLink';
@@ -19,7 +20,7 @@ interface QrLinkSheetProps {
 export const QrLinkSheet = React.memo(
   ({ open, onOpenChange, mode, onSuccess }: QrLinkSheetProps) => {
     const { t, i18n } = useTranslation();
-    const { state, start, reset } = useQrLink(mode, onSuccess);
+    const { state, start, reset, checking } = useQrLink(mode, onSuccess);
     const [now, setNow] = useState(Date.now());
 
     // Auto-start when opened, reset when closed.
@@ -85,8 +86,27 @@ export const QrLinkSheet = React.memo(
             {(state.status === 'creating' || state.status === 'idle') && (
               <div className="flex flex-col items-center justify-center py-12 gap-3">
                 <div className="w-8 h-8 rounded-full border-2 border-ink/[0.06] border-t-accent animate-spin" />
-                <p className="text-[11.5px] text-ink-30">{t('qrLink.preparing')}</p>
+                <p className="text-[11.5px] text-ink-30">
+                  {checking ? t('auth.checking') : t('qrLink.preparing')}
+                </p>
+                {checking && (
+                  <button
+                    type="button"
+                    onClick={() => onOpenChange(false)}
+                    className="text-[11.5px] text-ink-35 hover:text-ink-65 transition-colors cursor-pointer"
+                  >
+                    {t('common.cancel')}
+                  </button>
+                )}
               </div>
+            )}
+
+            {state.status === 'keychain' && state.keychain && (
+              <KeychainCard
+                reason={state.keychain}
+                onResolved={() => start()}
+                onSkip={() => start(true)}
+              />
             )}
 
             {state.status === 'pending' && state.claimToken && (
@@ -136,7 +156,7 @@ export const QrLinkSheet = React.memo(
               </div>
             )}
 
-            {state.status !== 'claimed' && (
+            {state.status !== 'claimed' && state.status !== 'keychain' && !checking && (
               <div className="mt-5 mx-auto flex items-center justify-center gap-1.5 text-[11.5px] text-ink-35">
                 <span>{t('qrLink.noPhoneApp')}</span>
                 <button

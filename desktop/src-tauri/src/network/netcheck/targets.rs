@@ -597,7 +597,7 @@ mod tests {
         let url = format!("http://{}/health", listener.local_addr().unwrap());
         drop(listener);
         let client = wreq::Client::builder().no_proxy().build().unwrap();
-        let first = app_probe(&client, &url, Duration::from_secs(2)).await;
+        let first = app_probe(&client, &url, APP_TIMEOUT).await;
         assert_eq!(
             first.fail.as_ref().map(|fail| fail.kind),
             Some(FailKind::Refused)

@@ -2,17 +2,34 @@ import { getCurrentWebview } from '@tauri-apps/api/webview';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
+import i18n from '../../../i18n';
+import { imageDropClaimed, isImagePath } from '../../../lib/chat/image-files';
 import { FileMusic } from '../../../lib/icons';
+import { isListFile } from '../../../lib/list-file';
 import { importLocalPaths } from '../../../lib/local-import';
-import { usePerfMode } from '../../../lib/perf';
+import { useChatStore } from '../../../stores/chat';
+import { DropOverlay } from '../../ui/DropOverlay';
 import { runLocalImport } from './importFeedback';
+
+function isAudioCandidate(path: string): boolean {
+  return !isListFile(path) && !isImagePath(path);
+}
+
+const HINT_DELAY_MS = 120;
+
+function hintImages() {
+  setTimeout(() => {
+    if (imageDropClaimed()) return;
+    const chats = useChatStore.getState().config?.media != null;
+    toast(i18n.t(chats ? 'chat.media.drop.elsewhere' : 'chat.media.drop.notAudio'));
+  }, HINT_DELAY_MS);
+}
 
 export const DropImportOverlay = React.memo(function DropImportOverlay() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const perf = usePerfMode();
   const [hovering, setHovering] = useState<number | null>(null);
-  const blur = perf.blur(18);
 
   useEffect(() => {
     const show = () => navigate('/offline', { state: { section: 'local' } });
@@ -21,13 +38,15 @@ export const DropImportOverlay = React.memo(function DropImportOverlay() {
     void getCurrentWebview()
       .onDragDropEvent(({ payload }) => {
         if (payload.type === 'enter') {
-          setHovering(payload.paths.length > 0 ? payload.paths.length : null);
+          const audio = payload.paths.filter(isAudioCandidate).length;
+          setHovering(audio > 0 ? audio : null);
         } else if (payload.type === 'leave') {
           setHovering(null);
         } else if (payload.type === 'drop') {
           setHovering(null);
-          const { paths } = payload;
+          const paths = payload.paths.filter(isAudioCandidate);
           if (paths.length > 0) void runLocalImport(() => importLocalPaths(paths), show);
+          if (payload.paths.some(isImagePath)) hintImages();
         }
       })
       .then((fn) => {
@@ -44,52 +63,11 @@ export const DropImportOverlay = React.memo(function DropImportOverlay() {
   if (hovering === null) return null;
 
   return (
-    <div
-      className="pointer-events-none fixed inset-0 z-[90] flex items-center justify-center p-5 animate-fade-in-up"
-      style={{
-        background: blur > 0 ? 'rgb(var(--paper) / 0.55)' : 'rgb(var(--paper) / 0.85)',
-        backdropFilter: blur > 0 ? `blur(${blur}px) saturate(1.3)` : undefined,
-        WebkitBackdropFilter: blur > 0 ? `blur(${blur}px) saturate(1.3)` : undefined,
-      }}
-    >
-      <div
-        className="absolute inset-5 rounded-[28px] border-2 border-dashed"
-        style={{
-          borderColor: 'var(--color-accent)',
-          background:
-            'radial-gradient(60% 60% at 50% 45%, var(--color-accent-glow), transparent 70%)',
-        }}
-      />
-      <div className="relative flex flex-col items-center text-center">
-        <span
-          className="relative flex size-24 items-center justify-center rounded-[30px]"
-          style={{
-            background: 'var(--color-accent-glow)',
-            color: 'var(--color-accent-hover)',
-            boxShadow: perf.glow ? '0 20px 60px -12px var(--color-accent-glow)' : undefined,
-          }}
-        >
-          {perf.idleAnim && (
-            <span
-              className="absolute inset-0 animate-ping rounded-[30px] opacity-30"
-              style={{ background: 'var(--color-accent-glow)' }}
-            />
-          )}
-          <FileMusic size={40} strokeWidth={1.6} />
-        </span>
-        <div className="mt-6 text-[22px] font-semibold tracking-[-0.02em] text-ink-95">
-          {t('local.dropOverlayTitle')}
-        </div>
-        <div className="mt-1.5 max-w-[360px] text-[13px] leading-snug text-ink-55">
-          {t('local.dropOverlayHint')}
-        </div>
-        <div
-          className="mt-4 rounded-full border px-3 py-1 font-mono text-[11px] font-semibold tabular-nums"
-          style={{ borderColor: 'var(--color-accent-glow)', color: 'var(--color-accent-hover)' }}
-        >
-          {t('local.dropCount', { count: hovering })}
-        </div>
-      </div>
-    </div>
+    <DropOverlay
+      icon={<FileMusic size={40} strokeWidth={1.6} />}
+      title={t('local.dropOverlayTitle')}
+      hint={t('local.dropOverlayHint')}
+      chip={t('local.dropCount', { count: hovering })}
+    />
   );
 });

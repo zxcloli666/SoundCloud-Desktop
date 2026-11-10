@@ -1,0 +1,65 @@
+{
+  "open": "Aç",
+  "more": "Daha fazla",
+  "remove": "Kaldır",
+  "track": {
+    "play": "Çal",
+    "pause": "Duraklat",
+    "seek": "Sar",
+    "from": "{{time}} itibarıyla çal",
+    "unavailable": "Kullanılamıyor",
+    "playNext": "Sıradaki",
+    "queue": "Sıraya ekle",
+    "together": "Birlikte dinle"
+  },
+  "playlist": {
+    "playAll": "Çal",
+    "shuffle": "Karıştır",
+    "save": "Kaydet",
+    "saved": "Kaydedildi"
+  },
+  "user": {
+    "followers_one": "{{value}} takipçi",
+    "followers_other": "{{value}} takipçi",
+    "follow": "Takip et",
+    "following": "Takip ediliyor",
+    "top": "Popüler",
+    "noTracks": "Henüz parça yok"
+  },
+  "room": {
+    "live": "Canlı",
+    "closed": "Oda kapandı",
+    "join": "Katıl",
+    "here": "Buradasın",
+    "untitled": "Birlikte dinliyoruz",
+    "host": "Sunucu: {{name}}",
+    "full": "Dolu"
+  },
+  "share": {
+    "action": "Gönder",
+    "title": "Gönder",
+    "search": "Ara",
+    "comment": "Yorum",
+    "send": "Gönder",
+    "sendCount": "Gönder ({{count}})",
+    "sent_one": "{{count}} sohbete gönderildi",
+    "sent_other": "{{count}} sohbete gönderildi",
+    "failed_one": "{{count}} sohbete gönderilemedi",
+    "failed_other": "{{count}} sohbete gönderilemedi",
+    "saved": "Kaydedilenler",
+    "room": "Oda",
+    "untitled": "Adsız",
+    "empty": "Henüz sohbet yok",
+    "noMatch": "Hiçbir şey bulunamadı",
+    "loadFailed": "Sohbetler yüklenmedi"
+  },
+  "message": {
+    "write": "Mesaj yaz",
+    "unavailable": "{{name}} adlı kişiye henüz yazamazsın",
+    "failed": "Sohbet açılamadı",
+    "invite": "Davet et",
+    "inviteText": "Bana SoundCloud Desktop'tan yaz: {{url}}",
+    "inviteCopied": "Davet kopyalandı",
+    "copyFailed": "Kopyalanamadı"
+  }
+}

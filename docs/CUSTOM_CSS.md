@@ -49,6 +49,7 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="player"]` | Floating player bar |
 | `[data-ui="player-art"]` | Cover in the player |
 | `[data-ui="player-title"]` | Track title in the player |
+| `[data-ui="player-rating"]` | Track rating chip (A, C, F) in the player |
 | `[data-ui="play-button"]` | Play and pause |
 | `[data-ui="progress"]` | Progress bar |
 | `[data-ui="volume"]` | Volume |
@@ -95,6 +96,8 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="album-hero"]` | Top block of an album page |
 | `[data-ui="playlist-hero"]` | Top block of a playlist page |
 | `[data-ui="user-hero"]` | Top block of a profile page |
+| `[data-ui="user-banner"]` | Profile banner above that block |
+| `[data-ui="user-banner-glow"]` | Blurred banner behind the whole block |
 | `[data-ui="track-hero"]` | Top block of a track page |
 | `[data-ui="discover-hero"]` | Top block of Discover |
 | `[data-ui="comments"]` | Comments list |
@@ -124,6 +127,67 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="segment"]` | One option in a group |
 
 States are in attributes too: `aria-current="page"` on the open link or section, `aria-checked` on switches, `aria-selected` or `data-active="true"` on tabs, chips and options. `html[data-perf="beauty"]`, `"medium"` or `"light"` is the performance mode.
+
+### Chats
+
+| Selector | Element |
+|---|---|
+| `[data-ui="chat-page"]` | Chats page |
+| `[data-ui="chat-dock"]` | Chat panel at the right edge |
+| `[data-ui="chat-dock-tabs"]` | Tab row of the chat panel |
+| `[data-ui="chat-list"]` | Chat list |
+| `[data-ui="chat-filter"]` | Filter above the chat list. `[data-kind]` is `all`, `direct`, `groups`, `unread`, `requests` or `archived`, the chosen one has `[aria-pressed="true"]` |
+| `[data-ui="chat-row"]` | A chat in the list. `[data-kind]` is `direct`, `group`, `self`, `room` or `public`, the open one has `[aria-current]` |
+| `[data-ui="chat-public-mark"]` | Glyph of the public chat in the list, the header and the info panel |
+| `[data-ui="chat-public-slow"]` | Slow mode chip in the public chat header |
+| `[data-ui="chat-public-sanction"]` | Muted or banned bar instead of the composer, `[data-kind]` is `muted` or `banned` |
+| `[data-ui="chat-public-gate"]` | The public chat cannot open, `[data-gate]` is `muted`, `off` or `failed` |
+| `[data-ui="chat-public-staff"]` | Moderators tab of the public chat |
+| `[data-ui="chat-public-log"]` | Moderation log of the public chat |
+| `[data-ui="chat-thread"]` | Open chat with its messages, `[data-kind]` as above |
+| `[data-ui="chat-thread-header"]` | Header of the open chat |
+| `[data-ui="chat-bubble"]` | A message. Yours have `[data-mine]`, unsent ones `[data-failed]` |
+| `[data-ui="chat-system-row"]` | Service line between messages, `[data-kind]` names the event |
+| `[data-ui="chat-composer"]` | Message input |
+| `[data-ui="chat-embed"]` | Card in a message. `[data-kind]` is `track`, `playlist`, `user` or `room_invite` |
+| `[data-ui="chat-info"]` | Chat info panel |
+| `[data-ui="chat-requests"]` | Message requests: the list and the bar in a chat |
+| `[data-ui="chat-room"]` | Listening room tab |
+| `[data-ui="chat-room-stage"]` | Room area under the header that holds the room backdrop. Set `--room-accent` on it to tint the backdrop |
+| `[data-ui="room-tuning"]` | Room settings button in the room header |
+| `[data-ui="room-capacity"]` | Seats row in room settings: members of capacity, the seat strip, paused joins |
+| `[data-ui="room-rules"]` | Room rules button in the room header (host) |
+| `[data-ui="room-images-policy"]` | Who may post images in the room (host) |
+| `[data-ui="room-cover"]` | Room cover row in the room rules (host) |
+| `[data-ui="room-cover-picker"]` | Cover picker: artwork grid, accent colors, apply and reset |
+| `[data-ui="open-room"]` | A room in the open rooms list |
+| `[data-ui="chat-toast"]` | New message popup |
+| `[data-ui="chat-share"]` | "Send" window |
+| `[data-ui="chat-album"]` | Images in a message. A tile is `[data-ui="chat-album-tile"]`, `[data-state]` is `loading`, `ready`, `failed`, `deleted` or `lost` |
+| `[data-ui="chat-upload-tile"]` | Your image that is still uploading, `[data-state]` is `queued`, `reserved`, `uploading`, `uploaded`, `committed` or `failed` |
+| `[data-ui="chat-album-status"]` | Upload progress or failure line under your album |
+| `[data-ui="chat-media-gone"]` | Placeholder of a deleted or unavailable image |
+| `[data-ui="chat-lightbox"]` | Image viewer, the image area is `[data-ui="chat-lightbox-stage"]` |
+| `[data-ui="chat-gallery"]` | Images tab in chat info. A tile is `[data-ui="chat-gallery-tile"]` with `[data-state]` as in an album, the empty tab is `[data-ui="chat-gallery-empty"]` |
+| `[data-ui="chat-device-alert"]` | New device alert |
+| `[data-ui="chat-relogin"]` | Chat sign-in card |
+| `[data-ui="chat-keychain"]` | Card shown when the chat keys can't be read, `[data-reason]` is `keychain_denied` or `keychain_unavailable` |
+| `[data-ui="chat-keys-reset"]` | Reset chat keys window, `[data-state]` is `ready`, `working` or `failed` |
+| `[data-ui="chat-keys-storage"]` | Chat keys card in chat settings, `[data-storage]` is `os` or `file` |
+| `[data-ui="chat-sign-in-limit"]` | Card shown while this computer can't sign in to chats. `[data-kind]` is `daily` (too many new sign-ins today) or `cap` (the account is on its maximum number of devices) |
+| `[data-ui="chat-storage"]` | Image storage page (`/chats/storage`) |
+| `[data-ui="chat-quota-ring"]` | Quota ring: used of quota, on the storage page and in chat settings |
+| `[data-ui="chat-storage-grid"]` | Grid of your images; a tile is `[data-ui="chat-storage-tile"]`, a selected one has `[aria-pressed="true"]` |
+| `[data-ui="chat-storage-undo"]` | Undo bar after deleting images |
+| `[data-ui="chat-storage-entry"]` | Storage card in chat settings |
+| `[data-ui="chat-storage-button"]` | Image storage button in the chat list header, `[data-full]` when the quota is full |
+| `[data-ui="chat-backdrop-stored-sheet"]` | Your images in the room backdrop picker. The grid is `[data-ui="chat-backdrop-stored-grid"]` with storage tiles `[data-ui="chat-storage-tile"]` |
+| `[data-ui="chat-backdrop-picker"]` | Backdrop picker of a chat or a room, `[data-lock]` is `star`, `role` or `pending` when it cannot be changed. The reason bar is `[data-ui="chat-backdrop-locked"]` |
+| `[data-ui="chat-info-backdrop"]` | Backdrop row in chat info, `[data-access]` is `ready`, `star`, `role`, `pending` or `loading` |
+| `[data-ui="chat-newcomer"]` | Newcomer length ring in the public chat composer, `[data-over]` when the text is too long |
+| `[data-ui="chat-public-mute-reason"]` | Second line of the muted bar: the moderator's reason or the end time |
+
+Other chat windows (new chat, report, delete) are `[data-ui="modal"]`. Chat colors come from the scheme tokens (see "White and dark"): `--ink` for text and lines, `--paper` and `--surface` for surfaces, `--shade` for wells and scrims. A theme that sets them restyles chats too. Your messages, the open chat and the chosen filter are tinted with `--color-chat-tint`.
 
 ## Variables
 

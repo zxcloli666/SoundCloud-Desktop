@@ -49,6 +49,7 @@
 | `[data-ui="player"]` | Плавающий плеер |
 | `[data-ui="player-art"]` | Обложка в плеере |
 | `[data-ui="player-title"]` | Название трека в плеере |
+| `[data-ui="player-rating"]` | Чип рейтинга трека (A, C, F) в плеере |
 | `[data-ui="play-button"]` | Пуск и пауза |
 | `[data-ui="progress"]` | Полоса прогресса |
 | `[data-ui="volume"]` | Громкость |
@@ -77,6 +78,8 @@
 | `[data-ui="album-hero"]` | Верхний блок страницы альбома |
 | `[data-ui="playlist-hero"]` | Верхний блок страницы плейлиста |
 | `[data-ui="user-hero"]` | Верхний блок профиля |
+| `[data-ui="user-banner"]` | Баннер профиля над этим блоком |
+| `[data-ui="user-banner-glow"]` | Размытый баннер под всем блоком |
 | `[data-ui="track-hero"]` | Верхний блок страницы трека |
 | `[data-ui="discover-hero"]` | Верхний блок Обзора |
 | `[data-ui="comments"]` | Список комментариев |
@@ -106,6 +109,67 @@
 | `[data-ui="segment"]` | Вариант в группе |
 
 Состояния тоже в атрибутах: `aria-current="page"` у открытой ссылки или раздела, `aria-checked` у переключателей, `aria-selected` или `data-active="true"` у вкладок, чипов и вариантов. `html[data-perf="beauty"]`, `"medium"` или `"light"` показывает режим производительности.
+
+### Чаты
+
+| Селектор | Элемент |
+|---|---|
+| `[data-ui="chat-page"]` | Страница «Чаты» |
+| `[data-ui="chat-dock"]` | Панель чатов у правого края |
+| `[data-ui="chat-dock-tabs"]` | Ряд вкладок панели чатов |
+| `[data-ui="chat-list"]` | Список чатов |
+| `[data-ui="chat-filter"]` | Фильтр над списком чатов. `[data-kind]`: `all`, `direct`, `groups`, `unread`, `requests` или `archived`, у выбранного есть `[aria-pressed="true"]` |
+| `[data-ui="chat-row"]` | Чат в списке. `[data-kind]`: `direct`, `group`, `self`, `room` или `public`, у открытого есть `[aria-current]` |
+| `[data-ui="chat-public-mark"]` | Значок общего чата в списке, шапке и панели «О чате» |
+| `[data-ui="chat-public-slow"]` | Чип медленного режима в шапке общего чата |
+| `[data-ui="chat-public-sanction"]` | Плашка «вам запрещено писать» или «вы забанены» вместо поля ввода, `[data-kind]`: `muted` или `banned` |
+| `[data-ui="chat-public-gate"]` | Общий чат не открывается, `[data-gate]`: `muted`, `off` или `failed` |
+| `[data-ui="chat-public-staff"]` | Вкладка «Модераторы» общего чата |
+| `[data-ui="chat-public-log"]` | Журнал модерации общего чата |
+| `[data-ui="chat-thread"]` | Открытый чат с сообщениями, `[data-kind]` как выше |
+| `[data-ui="chat-thread-header"]` | Шапка открытого чата |
+| `[data-ui="chat-bubble"]` | Сообщение. У ваших есть `[data-mine]`, у неотправленных `[data-failed]` |
+| `[data-ui="chat-system-row"]` | Служебная строка между сообщениями, `[data-kind]` называет событие |
+| `[data-ui="chat-composer"]` | Поле ввода сообщения |
+| `[data-ui="chat-embed"]` | Карточка в сообщении. `[data-kind]`: `track`, `playlist`, `user` или `room_invite` |
+| `[data-ui="chat-info"]` | Панель «О чате» |
+| `[data-ui="chat-requests"]` | Запросы на переписку: список и полоса в чате |
+| `[data-ui="chat-room"]` | Вкладка комнаты совместного прослушивания |
+| `[data-ui="chat-room-stage"]` | Область комнаты под шапкой, в ней фон комнаты. `--room-accent` на ней подкрашивает фон |
+| `[data-ui="room-tuning"]` | Кнопка настроек комнаты в шапке комнаты |
+| `[data-ui="room-capacity"]` | Строка мест в настройках комнаты: участники из вместимости, полоса мест, пауза входов |
+| `[data-ui="room-rules"]` | Кнопка правил комнаты в шапке комнаты (ведущий) |
+| `[data-ui="room-images-policy"]` | Кто может отправлять картинки в комнате (ведущий) |
+| `[data-ui="room-cover"]` | Строка обложки комнаты в правилах (ведущий) |
+| `[data-ui="room-cover-picker"]` | Выбор обложки: сетка обложек, цвета, применить и сбросить |
+| `[data-ui="open-room"]` | Комната в списке открытых комнат |
+| `[data-ui="chat-toast"]` | Всплывающее новое сообщение |
+| `[data-ui="chat-share"]` | Окно «Отправить» |
+| `[data-ui="chat-album"]` | Картинки в сообщении. Плитка `[data-ui="chat-album-tile"]`, `[data-state]`: `loading`, `ready`, `failed`, `deleted` или `lost` |
+| `[data-ui="chat-upload-tile"]` | Ваша картинка, которая ещё загружается, `[data-state]`: `queued`, `reserved`, `uploading`, `uploaded`, `committed` или `failed` |
+| `[data-ui="chat-album-status"]` | Строка прогресса или ошибки под вашим альбомом |
+| `[data-ui="chat-media-gone"]` | Заглушка удалённой или недоступной картинки |
+| `[data-ui="chat-lightbox"]` | Просмотр картинки, область картинки `[data-ui="chat-lightbox-stage"]` |
+| `[data-ui="chat-gallery"]` | Вкладка «Картинки» в инфо чата. Плитка `[data-ui="chat-gallery-tile"]` с `[data-state]` как в альбоме, пустая вкладка `[data-ui="chat-gallery-empty"]` |
+| `[data-ui="chat-device-alert"]` | Окно о новом устройстве |
+| `[data-ui="chat-relogin"]` | Карточка входа в чаты |
+| `[data-ui="chat-keychain"]` | Карточка, когда ключи чатов не читаются, `[data-reason]`: `keychain_denied` или `keychain_unavailable` |
+| `[data-ui="chat-keys-reset"]` | Окно сброса ключей чатов, `[data-state]`: `ready`, `working` или `failed` |
+| `[data-ui="chat-keys-storage"]` | Карточка «Ключи чатов» в настройках чатов, `[data-storage]`: `os` или `file` |
+| `[data-ui="chat-sign-in-limit"]` | Карточка, пока этот компьютер не может войти в чаты. `[data-kind]`: `daily` (много новых входов за сегодня) или `cap` (у аккаунта уже максимум устройств) |
+| `[data-ui="chat-storage"]` | Страница хранилища картинок (`/chats/storage`) |
+| `[data-ui="chat-quota-ring"]` | Кольцо квоты: занято из доступного, на странице хранилища и в настройках чатов |
+| `[data-ui="chat-storage-grid"]` | Сетка ваших картинок; плитка это `[data-ui="chat-storage-tile"]`, у выбранной есть `[aria-pressed="true"]` |
+| `[data-ui="chat-storage-undo"]` | Полоса отмены после удаления картинок |
+| `[data-ui="chat-storage-entry"]` | Карточка хранилища в настройках чатов |
+| `[data-ui="chat-storage-button"]` | Кнопка хранилища картинок в шапке списка чатов, `[data-full]` когда квота заполнена |
+| `[data-ui="chat-backdrop-stored-sheet"]` | Ваши картинки в выборе фона комнаты. Сетка `[data-ui="chat-backdrop-stored-grid"]` с плитками хранилища `[data-ui="chat-storage-tile"]` |
+| `[data-ui="chat-backdrop-picker"]` | Выбор фона чата или комнаты, `[data-lock]`: `star`, `role` или `pending`, когда фон сменить нельзя. Плашка с причиной: `[data-ui="chat-backdrop-locked"]` |
+| `[data-ui="chat-info-backdrop"]` | Строка «Фон» в панели «О чате», `[data-access]`: `ready`, `star`, `role`, `pending` или `loading` |
+| `[data-ui="chat-newcomer"]` | Кольцо длины сообщения новичка в поле ввода общего чата, `[data-over]`, когда текст слишком длинный |
+| `[data-ui="chat-public-mute-reason"]` | Вторая строка плашки «вам запрещено писать»: причина от модератора или время окончания |
+
+Остальные окна чатов (новый чат, жалоба, удаление) это `[data-ui="modal"]`. Цвета чатов берутся из токенов схемы (раздел «Белая и тёмная»): `--ink` для текста и линий, `--paper` и `--surface` для подложек, `--shade` для колодцев и затемнений. Тема, которая их задаёт, меняет и чаты. Ваши сообщения, открытый чат и выбранный фильтр подкрашены `--color-chat-tint`.
 
 ## Переменные
 

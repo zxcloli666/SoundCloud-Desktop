@@ -35,3 +35,9 @@ worker/venv/
 
 # CI cache stamp.
 /.ci
+
+# pnpm store
+.pnpm-store/
+
+# chat lab remote control (DEV only)
+/desktop/.chat-lab/

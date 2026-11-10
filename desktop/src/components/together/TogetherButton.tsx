@@ -2,7 +2,9 @@ import * as Popover from '@radix-ui/react-popover';
 import React, { type ComponentPropsWithoutRef, forwardRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Users } from '../../lib/icons';
+import { selectRoomThread, useChatRoomStore } from '../../stores/chat/room';
 import { useTogetherStore } from '../../stores/together';
+import { useOpenRoomChat } from '../chat/shell/useOpenChat';
 import { Avatar } from '../ui/Avatar';
 import { LiveView } from './LiveView';
 import { StartView } from './StartView';
@@ -66,6 +68,9 @@ const Trigger = forwardRef<HTMLButtonElement, ComponentPropsWithoutRef<'button'>
 
 export const TogetherButton = React.memo(() => {
   const room = useTogetherStore((s) => s.room);
+  const docked = useChatRoomStore((s) => selectRoomThread(s) !== null);
+  const openRoom = useOpenRoomChat();
+  if (room && docked) return <Trigger onClick={openRoom} />;
   return (
     <Popover.Root>
       <Popover.Trigger asChild>

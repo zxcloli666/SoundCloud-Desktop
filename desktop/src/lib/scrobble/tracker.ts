@@ -10,7 +10,6 @@ import {
 import { useSettingsStore } from '../../stores/settings';
 import { playingCopyOf } from '../alt-upload';
 import { getDuration } from '../audio';
-import { isPreviewOnly } from '../track-access';
 import { getArtistDisplay, getDisplayTitle } from '../track-display';
 import { loadScrobbleStatus } from './client';
 import { isLongEnough, isRestart, playedStep, scrobbleThreshold } from './rules';
@@ -40,12 +39,13 @@ function heard(track: Track): Track {
 }
 
 function durationOf(track: Track): number {
-  const fromTrack = heard(track).duration / 1000;
+  const heardTrack = heard(track);
+  const fromTrack = (heardTrack.full_duration ?? heardTrack.duration) / 1000;
   return fromTrack > 0 ? fromTrack : getDuration();
 }
 
 function eligible(track: Track): boolean {
-  return !isPreviewOnly(heard(track)) && isLongEnough(durationOf(track));
+  return isLongEnough(durationOf(track));
 }
 
 function payload(track: Track, timestamp: number) {
@@ -60,7 +60,6 @@ function payload(track: Track, timestamp: number) {
 
 function phaseOf(track: Track, current: Session): ScrobblePhase {
   if (current.done) return 'scrobbled';
-  if (isPreviewOnly(heard(track))) return 'preview';
   return isLongEnough(durationOf(track)) ? 'listening' : 'short';
 }
 

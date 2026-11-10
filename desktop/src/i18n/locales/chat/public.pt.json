@@ -1,0 +1,112 @@
+{
+  "title": "Chat público",
+  "tagline": "Uma sala para todos",
+  "online_one": "{{count}} online",
+  "online_many": "{{count}} online",
+  "online_other": "{{count}} online",
+  "pinged": "Respostas e menções",
+  "empty": "Ninguém escreveu ainda. Diga olá",
+  "slow": {
+    "title": "Modo lento",
+    "off": "Desligado",
+    "seconds": "{{value}}s",
+    "minutes": "{{value}} min",
+    "wait_one": "Aguarde {{count}} segundo",
+    "wait_many": "Aguarde {{count}} segundos",
+    "wait_other": "Aguarde {{count}} segundos"
+  },
+  "muted": {
+    "title": "Você está silenciado",
+    "until": "Até {{time}}",
+    "rules": "Regras"
+  },
+  "newcomer": {
+    "title": "Limite de novato",
+    "over": "Longo demais para um novato",
+    "left_one": "{{count}} caractere restante",
+    "left_many": "{{count}} caracteres restantes",
+    "left_other": "{{count}} caracteres restantes"
+  },
+  "banned": {
+    "title": "Você foi banido do chat público",
+    "hint": "Leitura e escrita fechadas"
+  },
+  "gate": {
+    "restricted": "O chat público está fechado para você por enquanto",
+    "off": "O chat público está desligado por enquanto",
+    "offHint": "Seus outros chats continuam funcionando",
+    "failed": "Não foi possível abrir o chat público"
+  },
+  "roles": {
+    "owner": "Dono",
+    "moderator": "Moderador"
+  },
+  "menu": {
+    "mute": "Silenciar por {{duration}}",
+    "unmute": "Tirar silêncio",
+    "ban": "Banir",
+    "unban": "Desbanir",
+    "makeModerator": "Tornar moderador",
+    "dropModerator": "Remover moderador",
+    "log": "Registro de moderação"
+  },
+  "dialog": {
+    "muteTitle": "Silenciar {{name}}",
+    "banTitle": "Banir {{name}}",
+    "reason": "Motivo (opcional)",
+    "mute": "Silenciar",
+    "ban": "Banir"
+  },
+  "duration": {
+    "hours_one": "{{count}} hora",
+    "hours_many": "{{count}} horas",
+    "hours_other": "{{count}} horas",
+    "minutes_one": "{{count}} min",
+    "minutes_many": "{{count}} min",
+    "minutes_other": "{{count}} min",
+    "seconds_one": "{{count}} s",
+    "seconds_many": "{{count}} s",
+    "seconds_other": "{{count}} s"
+  },
+  "toast": {
+    "muted": "{{name}} silenciado até {{time}}",
+    "unmuted": "{{name}} pode escrever de novo",
+    "banned": "{{name}} banido",
+    "unbanned": "{{name}} desbanido",
+    "moderatorOn": "{{name}} agora é moderador",
+    "moderatorOff": "{{name}} não é mais moderador",
+    "slow": "Modo lento: {{value}}",
+    "slowOff": "Modo lento desligado"
+  },
+  "staff": {
+    "title": "Moderadores",
+    "add": "Adicionar moderador",
+    "empty": "Ainda não há moderadores"
+  },
+  "log": {
+    "title": "Registro",
+    "empty": "Nenhuma ação ainda",
+    "failed": "Não foi possível carregar o registro",
+    "more": "Mostrar mais",
+    "mute": "{{by}} silenciou {{user}} por {{duration}}",
+    "unmute": "{{by}} tirou o silêncio de {{user}}",
+    "ban": "{{by}} baniu {{user}}",
+    "unban": "{{by}} desbaniu {{user}}",
+    "delete": "{{by}} apagou uma mensagem de {{user}}",
+    "moderator_add": "{{by}} tornou {{user}} moderador",
+    "moderator_remove": "{{by}} removeu {{user}} da moderação",
+    "slow_mode": "{{by}} definiu o modo lento: {{value}}",
+    "slowOff": "{{by}} desligou o modo lento",
+    "other": "{{by}}: {{action}}"
+  },
+  "errors": {
+    "not_member": "Isso não pode ser feito com essa pessoa",
+    "not_found": "Nada para retirar",
+    "invalid": "Não funcionou",
+    "busy": "O servidor está ocupado, tente de novo em breve",
+    "offline": "Sem conexão com o servidor",
+    "disabled": "O chat público está desligado",
+    "send_limited": "Muitas ações, aguarde um pouco",
+    "generic": "Algo deu errado, tente de novo"
+  }
+}

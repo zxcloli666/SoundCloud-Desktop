@@ -5,7 +5,9 @@ import {scrollMainToTop} from '../components/layout/ScrollReset';
 import {SETTINGS_CATEGORIES, type SettingsCategoryId} from '../components/settings/registry';
 import {SettingsFrame} from '../components/settings/SettingsFrame';
 import {SettingsNav} from '../components/settings/SettingsNav';
+import {chatSettingsShown} from '../lib/chat/gate';
 import {useViewerAura} from '../lib/useViewerAura';
+import {selectChatEnabled, useChatStore} from '../stores/chat';
 
 function askedCategory(state: { category?: SettingsCategoryId } | null): SettingsCategoryId | undefined {
     const id = state?.category;
@@ -18,6 +20,12 @@ function askedCategory(state: { category?: SettingsCategoryId } | null): Setting
 export function Settings() {
   const { t } = useTranslation();
     const aura = useViewerAura();
+    const chatShown = useChatStore((state) =>
+        chatSettingsShown(selectChatEnabled(state), state.status?.phase ?? null),
+    );
+    const categories = chatShown
+        ? SETTINGS_CATEGORIES
+        : SETTINGS_CATEGORIES.filter((c) => c.id !== 'chats');
     const asked = useLocation().state as { category?: SettingsCategoryId } | null;
     const [active, setActive] = useState<SettingsCategoryId>(() => askedCategory(asked) ?? 'general');
     useEffect(() => {
@@ -28,13 +36,13 @@ export function Settings() {
         setActive(id);
         scrollMainToTop();
     };
-    const category = SETTINGS_CATEGORIES.find((c) => c.id === active) ?? SETTINGS_CATEGORIES[0];
+    const category = categories.find((c) => c.id === active) ?? categories[0];
     const Body = category.Body;
 
   return (
       <SettingsFrame aura={aura}>
           <div data-ui="page" data-page="settings" className="max-w-[1080px] mx-auto px-6 md:px-8 pt-8 pb-32 flex gap-8">
-              <SettingsNav categories={SETTINGS_CATEGORIES} active={active} onChange={selectCategory}/>
+              <SettingsNav categories={categories} active={category.id} onChange={selectCategory}/>
               <div className="flex-1 min-w-0">
                   <header className="mb-7 flex items-center gap-4">
                       <div
@@ -66,7 +74,7 @@ export function Settings() {
                           </h1>
             </div>
                   </header>
-                  <div key={active} className="space-y-5 animate-fade-in-up">
+                  <div key={category.id} className="space-y-5 animate-fade-in-up">
                       <Body/>
           </div>
               </div>

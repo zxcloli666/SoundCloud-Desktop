@@ -1,0 +1,20 @@
+{
+  "newMessage": "새 메시지",
+  "kicked": "강퇴되었어요",
+  "removed": "채팅에서 내보내졌어요",
+  "banned": "차단되었어요",
+  "muted": "채팅이 제한되었어요",
+  "host": "이제 호스트예요",
+  "chat": "채팅",
+  "group": "그룹",
+  "public": "공개 채팅",
+  "room": "방",
+  "track": "트랙: {{title}}",
+  "playlist": "재생 목록: {{title}}",
+  "profile": "프로필: {{title}}",
+  "photo": "사진",
+  "photos": "사진 {{count}}장",
+  "roomInvite": "방 초대",
+  "deviceTitle": "채팅에 새 기기",
+  "deviceBody": "{{device}}. 본인이 맞나요?"
+}

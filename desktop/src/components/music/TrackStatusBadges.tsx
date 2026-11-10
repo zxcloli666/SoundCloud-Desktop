@@ -23,10 +23,10 @@ export function sameScdMeta(a?: TrackScdMeta, b?: TrackScdMeta): boolean {
     );
 }
 
-type Tier = 'analyzed' | 'cached' | 'pending' | 'tooLong' | 'failed';
+export type Tier = 'analyzed' | 'cached' | 'pending' | 'tooLong' | 'failed';
 
 // letter + per-tier tone; second value is overlay tone (solid on artwork)
-const TIERS: Record<Tier, { letter: string; inline: string; overlay: string }> = {
+export const TIERS: Record<Tier, { letter: string; inline: string; overlay: string }> = {
     analyzed: {
         letter: 'A',
         inline: 'bg-emerald-500/15 text-emerald-300 ring-emerald-400/25',
@@ -54,13 +54,45 @@ const TIERS: Record<Tier, { letter: string; inline: string; overlay: string }> =
     },
 };
 
-function tierOf(meta: TrackScdMeta, showIndex: boolean): Tier | null {
+export const RATING_CHIPS: Record<Tier, { letter: string; chip: string }> = {
+    analyzed: {
+        letter: TIERS.analyzed.letter,
+        chip: 'border-mint/[0.16] bg-mint/[0.07] text-mint-ink/82',
+    },
+    cached: {
+        letter: TIERS.cached.letter,
+        chip: 'border-amber-300/[0.18] bg-amber-300/[0.07] text-amber-300',
+    },
+    pending: {
+        letter: TIERS.pending.letter,
+        chip: 'border-ink/[0.08] bg-ink/[0.04] text-ink-50',
+    },
+    tooLong: {
+        letter: TIERS.tooLong.letter,
+        chip: 'border-ink/[0.12] bg-ink/[0.06] text-ink-68',
+    },
+    failed: {
+        letter: TIERS.failed.letter,
+        chip: 'border-rose-300/[0.18] bg-rose-300/[0.07] text-rose-300',
+    },
+};
+
+export function tierOf(meta: TrackScdMeta, showIndex: boolean): Tier | null {
     const s = meta.storage_state;
     const i = meta.index_state;
     if (s === 'too_long' || i === 'too_long') return 'tooLong';
     if (s === 'failed' || s === 'missing' || i === 'failed') return 'failed';
     if (s === 'ok') return showIndex && i === 'indexed' ? 'analyzed' : 'cached';
     return showIndex ? 'pending' : null;
+}
+
+function storedQuality(meta: TrackScdMeta, tier: Tier) {
+    return tier === 'analyzed' || tier === 'cached' ? meta.storage_quality : undefined;
+}
+
+export function tierTitleKey(tier: Tier, meta: TrackScdMeta): string {
+    const stored = storedQuality(meta, tier);
+    return `track.status.${tier}${stored === 'uq' ? 'Uq' : stored === 'hq' ? 'Hq' : ''}`;
 }
 
 function TrackStatusBadgesInner({ meta, variant = 'inline', showIndex = true }: Props) {
@@ -71,13 +103,13 @@ function TrackStatusBadgesInner({ meta, variant = 'inline', showIndex = true }: 
 
     const {letter, inline, overlay} = TIERS[tier];
     const tone = variant === 'overlay' ? overlay : inline;
-    const stored = tier === 'analyzed' || tier === 'cached' ? meta.storage_quality : undefined;
+    const stored = storedQuality(meta, tier);
     const hq = stored === 'hq' || stored === 'uq';
 
   return (
       <span
           data-scheme={variant === 'overlay' ? 'dark' : undefined}
-          title={t(`track.status.${tier}${stored === 'uq' ? 'Uq' : hq ? 'Hq' : ''}`)}
+          title={t(tierTitleKey(tier, meta))}
           className={`relative inline-flex items-center justify-center w-[18px] h-[18px] rounded-[6px] text-[10px] font-bold leading-none ring-1 ring-inset select-none ${tone}`}
       >
       {letter}

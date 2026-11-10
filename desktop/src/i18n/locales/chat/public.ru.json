@@ -1,0 +1,112 @@
+{
+  "title": "Общий чат",
+  "tagline": "Одна комната для всех",
+  "online_one": "{{count}} онлайн",
+  "online_few": "{{count}} онлайн",
+  "online_many": "{{count}} онлайн",
+  "pinged": "Ответы и упоминания",
+  "empty": "Пока никто не писал. Поздоровайтесь",
+  "slow": {
+    "title": "Медленный режим",
+    "off": "Выкл",
+    "seconds": "{{value}} с",
+    "minutes": "{{value}} мин",
+    "wait_one": "Подождите {{count}} секунду",
+    "wait_few": "Подождите {{count}} секунды",
+    "wait_many": "Подождите {{count}} секунд"
+  },
+  "muted": {
+    "title": "Вам запрещено писать",
+    "until": "До {{time}}",
+    "rules": "Правила"
+  },
+  "newcomer": {
+    "title": "Лимит новичка",
+    "over": "Слишком длинно для новичка",
+    "left_one": "Остался {{count}} знак",
+    "left_few": "Осталось {{count}} знака",
+    "left_many": "Осталось {{count}} знаков"
+  },
+  "banned": {
+    "title": "Вы забанены в общем чате",
+    "hint": "Чтение и запись закрыты"
+  },
+  "gate": {
+    "restricted": "Общий чат пока закрыт для вас",
+    "off": "Общий чат пока выключен",
+    "offHint": "Остальные чаты работают",
+    "failed": "Не удалось открыть общий чат"
+  },
+  "roles": {
+    "owner": "Владелец",
+    "moderator": "Модератор"
+  },
+  "menu": {
+    "mute": "Мут на {{duration}}",
+    "unmute": "Снять мут",
+    "ban": "Забанить",
+    "unban": "Разбанить",
+    "makeModerator": "Сделать модератором",
+    "dropModerator": "Снять модератора",
+    "log": "Журнал модерации"
+  },
+  "dialog": {
+    "muteTitle": "Мут для {{name}}",
+    "banTitle": "Забанить {{name}}",
+    "reason": "Причина (необязательно)",
+    "mute": "Замутить",
+    "ban": "Забанить"
+  },
+  "duration": {
+    "hours_one": "{{count}} час",
+    "hours_few": "{{count}} часа",
+    "hours_many": "{{count}} часов",
+    "minutes_one": "{{count}} мин",
+    "minutes_few": "{{count}} мин",
+    "minutes_many": "{{count}} мин",
+    "seconds_one": "{{count}} с",
+    "seconds_few": "{{count}} с",
+    "seconds_many": "{{count}} с"
+  },
+  "toast": {
+    "muted": "{{name}} в муте до {{time}}",
+    "unmuted": "{{name}} снова может писать",
+    "banned": "{{name}} забанен",
+    "unbanned": "{{name}} разбанен",
+    "moderatorOn": "{{name}} теперь модератор",
+    "moderatorOff": "{{name}} больше не модератор",
+    "slow": "Медленный режим: {{value}}",
+    "slowOff": "Медленный режим выключен"
+  },
+  "staff": {
+    "title": "Модераторы",
+    "add": "Добавить модератора",
+    "empty": "Модераторов пока нет"
+  },
+  "log": {
+    "title": "Журнал",
+    "empty": "Действий пока нет",
+    "failed": "Не удалось загрузить журнал",
+    "more": "Показать ещё",
+    "mute": "{{by}} дал мут {{user}} на {{duration}}",
+    "unmute": "{{by}} снял мут с {{user}}",
+    "ban": "{{by}} забанил {{user}}",
+    "unban": "{{by}} разбанил {{user}}",
+    "delete": "{{by}} удалил сообщение {{user}}",
+    "moderator_add": "{{by}} сделал {{user}} модератором",
+    "moderator_remove": "{{by}} снял {{user}} с модерации",
+    "slow_mode": "{{by}} включил медленный режим: {{value}}",
+    "slowOff": "{{by}} выключил медленный режим",
+    "other": "{{by}}: {{action}}"
+  },
+  "errors": {
+    "not_member": "С этим человеком так нельзя",
+    "not_found": "Снимать нечего",
+    "invalid": "Не получилось",
+    "busy": "Сервер занят, попробуйте позже",
+    "offline": "Нет связи с сервером",
+    "disabled": "Общий чат выключен",
+    "send_limited": "Слишком много действий, подождите",
+    "generic": "Что-то пошло не так, попробуйте ещё раз"
+  }
+}

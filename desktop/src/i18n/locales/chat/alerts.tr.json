@@ -1,0 +1,20 @@
+{
+  "newMessage": "Yeni mesaj",
+  "kicked": "Atıldınız",
+  "removed": "Sohbetten çıkarıldınız",
+  "banned": "Yasaklandınız",
+  "muted": "Susturuldunuz",
+  "host": "Artık sunucu sizsiniz",
+  "chat": "Sohbet",
+  "group": "Grup",
+  "public": "Genel sohbet",
+  "room": "Oda",
+  "track": "Parça: {{title}}",
+  "playlist": "Çalma listesi: {{title}}",
+  "profile": "Profil: {{title}}",
+  "photo": "Fotoğraf",
+  "photos": "{{count}} fotoğraf",
+  "roomInvite": "Oda daveti",
+  "deviceTitle": "Sohbetlerde yeni cihaz",
+  "deviceBody": "{{device}}. Siz miydiniz?"
+}

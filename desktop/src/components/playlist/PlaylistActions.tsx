@@ -3,6 +3,7 @@ import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {api} from '../../lib/api';
 import {playlistScope} from '../../lib/bulk-cache';
+import {playlistEmbed} from '../../lib/chat/embed-snapshot';
 import {fc} from '../../lib/formatters';
 import {fetchAllPlaylistTracks, type Playlist} from '../../lib/hooks';
 import {
@@ -19,6 +20,7 @@ import {
 import {rawPlaylistCover} from '../../lib/playlist-cover';
 import type {ArrangeMode} from '../../lib/track-order';
 import type {Track} from '../../stores/player';
+import {ShareButton} from '../chat/share/ShareButton';
 import {SaveCollectionMenu} from '../collection-save/SaveCollectionMenu';
 import {SharingToggle} from '../music/SharingToggle';
 import {ArrangeMenu} from './ArrangeMenu';
@@ -159,9 +161,10 @@ export const PlaylistActions = React.memo(function PlaylistActions({
         }),
         [playlist.title, playlist.user.username, playlist.artwork_url, coverSource],
     );
+    const shareEmbed = useMemo(() => playlistEmbed(playlist, null, coverSource ?? []), [playlist, coverSource]);
 
     return (
-        <div className="flex items-center gap-3 flex-wrap justify-center lg:justify-start">
+        <div className="flex items-center gap-3 flex-wrap justify-center @min-[740px]:justify-start">
             <button
                 type="button"
                 onClick={onPlayAll}
@@ -189,7 +192,7 @@ export const PlaylistActions = React.memo(function PlaylistActions({
                 className="inline-flex items-center gap-1.5 px-3.5 h-11 rounded-2xl text-[12.5px] font-semibold border bg-ink/[0.04] border-ink/[0.07] text-ink-65 hover:bg-ink/[0.07] hover:text-ink-90 hover:border-ink/[0.12] transition-all duration-300 ease-[var(--ease-apple)] cursor-pointer active:scale-[0.96]"
             >
                 <Shuffle size={14}/>
-                <span className="hidden sm:inline">{t('playlist.shuffle')}</span>
+                <span className="hidden @min-[384px]:inline">{t('playlist.shuffle')}</span>
             </button>
 
             <PlaylistLikeBtn playlistUrn={playlist.urn} count={playlist.likes_count}/>
@@ -215,6 +218,11 @@ export const PlaylistActions = React.memo(function PlaylistActions({
                     <MapPin size={16}/>
                 </button>
                 <CopyIconAction url={playlist.permalink_url}/>
+                <ShareButton
+                    embed={shareEmbed}
+                    size={16}
+                    className="inline-flex items-center justify-center w-10 h-10 rounded-xl text-ink-60 hover:text-ink-95 hover:bg-ink/[0.07] transition-all duration-200 ease-[var(--ease-apple)] cursor-pointer"
+                />
                 <SaveCollectionMenu
                     scope={playlistScope(playlist.urn)}
                     meta={meta}

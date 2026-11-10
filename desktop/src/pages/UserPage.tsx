@@ -131,7 +131,7 @@ export function UserPage() {
         <AuraField aura={aura} isStar={hasStar} />
 
         <div
-          className="relative z-10 w-full max-w-[1480px] mx-auto px-4 md:px-8 pt-10 md:pt-16 pb-32"
+          className="@container relative z-10 w-full max-w-[1480px] mx-auto px-4 md:px-8 pt-10 md:pt-16 pb-32"
           style={{ isolation: 'isolate' }}
         >
           <IdentityHub
@@ -146,9 +146,9 @@ export function UserPage() {
             onPickCustom={editable.onPickCustom}
           />
 
-          <div className="mt-10 mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="mt-10 mb-6 flex flex-col @min-[980px]:flex-row @min-[980px]:items-center @min-[980px]:justify-between gap-4">
             <TabDock tabs={tabs} active={activeTab} onChange={setActiveTab} aura={aura} />
-            <div className="md:max-w-sm md:w-80 w-full">
+            <div className="w-full @min-[980px]:w-auto @min-[980px]:flex-1 @min-[980px]:min-w-56 @min-[980px]:max-w-80">
               <UserSearchBox
                 value={searchInput}
                 onChange={setSearchInput}

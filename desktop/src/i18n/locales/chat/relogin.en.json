@@ -1,0 +1,76 @@
+{
+  "unboundTitle": "Confirm sign-in to turn on chats",
+  "boundOtherTitle": "Confirm your sign-in again",
+  "musicStays": "Music stays signed in",
+  "confirm": "Confirm sign-in",
+  "done": "Chats are on",
+  "retry": "Try again",
+  "steps": {
+    "waiting": "Waiting for SoundCloud authorization",
+    "token": "Exchanging authorization code",
+    "extract": "Fetching your profile",
+    "finalizing": "Finalizing session"
+  },
+  "errors": {
+    "unreachable": "Can't reach the server",
+    "unreachableDesc": "The server isn't responding. Check your connection or try again in a moment.",
+    "limited": "Sign-in is temporarily limited",
+    "limitedDesc": "The server is limiting sign-ins right now. Try again in {{seconds}} s.",
+    "expired": "Sign-in expired",
+    "failed": "Sign-in failed"
+  },
+  "keychain": {
+    "title": "Chats need access to your keys",
+    "mac": "Chat encryption keys live in the macOS keychain, and access to it was denied. Press Try again and choose Allow.",
+    "linux": "Chat encryption keys live in the system password store, and the unlock window was closed. Press Try again and unlock the store.",
+    "windows": "Chat encryption keys live in Windows Credential Manager, and access to it was denied. Press Try again.",
+    "again": "Access was denied again. Chats turn on once you allow it.",
+    "failed": "Could not ask for access. Try again.",
+    "asking": "Waiting for the system",
+    "skip": "Sign in without chats",
+    "unavailable": {
+      "title": "Chat keys are out of reach",
+      "mac": "The macOS keychain is not answering. Chats keep trying on their own, and your history stays on this computer.",
+      "linux": "The system password store is not answering. Start or unlock it. Chats keep trying on their own, and your history stays on this computer.",
+      "windows": "Windows Credential Manager is not answering. Chats keep trying on their own, and your history stays on this computer.",
+      "again": "Still no answer. Chats keep trying on their own.",
+      "asking": "Checking the keys",
+      "file": "The key file in the app folder can't be read. Chats keep trying on their own."
+    },
+    "reset": {
+      "open": "Forgot the password? Reset chat keys",
+      "openFile": "Reset chat keys",
+      "title": "Reset chat keys on this computer?",
+      "lost": "Chats saved on this computer are deleted: messages, drafts, unsent messages, photos waiting to upload and the photo cache.",
+      "back": "Your chats stay on the server. After you confirm sign-in, new messages arrive right away.",
+      "history": "Older messages come back when you choose It's me on a device you have used for 3 days or more, or on their own after 3 days.",
+      "hidden": "Messages you deleted only for yourself may show up again.",
+      "others": "Your other devices will show New sign-in to your chats. Choose It's me. Not me signs this computer out of SoundCloud.",
+      "file": {
+        "mac": "New keys go in a private file in the app folder, not in the macOS keychain.",
+        "linux": "New keys go in a private file in the app folder, not in the system password store.",
+        "windows": "New keys go in a private file in the app folder, not in Windows Credential Manager."
+      },
+      "probe": "If Windows Credential Manager still fails, new keys go in a private file in the app folder.",
+      "os": {
+        "mac": "New keys go back in the macOS keychain. If it refuses, they go in a private file in the app folder.",
+        "linux": "New keys go back in the system password store. If it refuses, they go in a private file in the app folder.",
+        "windows": "New keys go back in Windows Credential Manager. If it fails, they go in a private file in the app folder."
+      },
+      "confirm": "Reset keys",
+      "cancel": "Cancel",
+      "working": "Resetting",
+      "failed": "Could not clear chat data on this computer. Try again."
+    }
+  },
+  "limit": {
+    "title": "Too many new sign-ins today",
+    "opens": "Chats on this computer open by {{time}}",
+    "trying": "Chats keep trying on their own",
+    "cap": {
+      "title_one": "Chats are already open on {{count}} device, the maximum",
+      "title_other": "Chats are already open on {{count}} devices, the maximum",
+      "remove": "On another device, remove one you no longer use"
+    }
+  }
+}

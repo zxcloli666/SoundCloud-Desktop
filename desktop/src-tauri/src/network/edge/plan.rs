@@ -4,6 +4,7 @@ use super::name::{self, Key};
 use super::state::Inner;
 use super::{Hop, Tier, lock, through_gateway};
 use crate::app::diagnostics;
+use crate::network::pro::MOST_BODY;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum Pro {
@@ -17,7 +18,33 @@ pub fn plan(url: &str) -> Vec<Hop> {
 }
 
 pub fn upload_plan(url: &str) -> Vec<Hop> {
-    planned(url, Pro::Never)
+    upload_plan_of(url, u64::MAX)
+}
+
+pub fn upload_plan_of(url: &str, bytes: u64) -> Vec<Hop> {
+    let pro = if bytes > MOST_BODY as u64 {
+        Pro::Never
+    } else {
+        Pro::Last
+    };
+    planned(url, pro)
+}
+
+pub fn media_plan(url: &str) -> Vec<Hop> {
+    media_plan_in(&lock(), url, Instant::now())
+}
+
+pub fn media_plan_in(inner: &Inner, url: &str, now: Instant) -> Vec<Hop> {
+    let Key::Service(label) = name::key_of(url) else {
+        return Vec::new();
+    };
+    let relays = relay_hops(inner, url, label, now);
+    let pros = staged_hops(inner, label);
+    if inner.level(label, now) == Tier::Pro {
+        [pros, relays].concat()
+    } else {
+        [relays, pros].concat()
+    }
 }
 
 pub fn audio_plan(url: &str) -> Vec<Hop> {
@@ -95,6 +122,18 @@ fn pro_hops(inner: &Inner, url: &str, label: &str) -> Vec<Hop> {
         .iter()
         .map(|gateway| Hop {
             url: through_gateway(gateway, &carried),
+            tier: Tier::Pro,
+            origin: label.to_string(),
+        })
+        .collect()
+}
+
+fn staged_hops(inner: &Inner, label: &str) -> Vec<Hop> {
+    inner
+        .pro_hosts()
+        .into_iter()
+        .map(|host| Hop {
+            url: format!("https://{host}"),
             tier: Tier::Pro,
             origin: label.to_string(),
         })

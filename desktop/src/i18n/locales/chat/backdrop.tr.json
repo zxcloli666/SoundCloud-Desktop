@@ -1,0 +1,87 @@
+{
+  "title": "Arka plan",
+  "none": "Arka plan yok",
+  "photo": "Kendi fotoğrafım",
+  "photoIn": "Fotoğraf {{time}} sonra",
+  "stored": "Depolamadan",
+  "storedIn": "Depolama {{time}} sonra",
+  "percent": "%{{percent}}",
+  "retry": "Tekrar dene",
+  "pickAgain": "Başka fotoğraf",
+  "pickStored": "Başka görsel",
+  "storage": "Depolama",
+  "images": "Görseller",
+  "storedEmpty": "Henüz seçilecek bir şey yok",
+  "storedEmptyLine": "Bu cihazdaki sohbet görsellerin burada görünür",
+  "linking": "Bağlanıyor",
+  "done": "Tamam",
+  "cancel": "İptal",
+  "hide": "Arka planı gizle",
+  "show": "Arka planı göster",
+  "clear": "Arka planı kaldır",
+  "chip": "Arka plan %{{percent}}",
+  "chipFailed": "Arka plan yüklenemedi",
+  "star": {
+    "room": {
+      "title": "STAR ile oda arka planları",
+      "body": "Tüm oda için canlı arka planlar ve kendi fotoğrafın"
+    },
+    "chat": {
+      "title": "STAR ile sohbet arka planları",
+      "body": "Sohbetteki herkesin gördüğü canlı arka planlar ve kendi fotoğrafın"
+    },
+    "public": {
+      "title": "STAR ile kendi fotoğrafın",
+      "body": "Hazır arka planlar burada ücretsiz"
+    }
+  },
+  "locked": {
+    "room": "Yalnızca ev sahibi",
+    "direct": "Yalnızca üyeler",
+    "group": "Yalnızca sahip ve yöneticiler",
+    "self": "Kullanılamıyor",
+    "public": "Yalnızca sahip ve moderatörler",
+    "pending": "İstek kabul edilince"
+  },
+  "report": {
+    "entry": "Arka planı şikayet et",
+    "title": "Arka plan şikayeti",
+    "comment": "Yorum, isteğe bağlı",
+    "send": "Gönder",
+    "sent": "Şikayet gönderildi",
+    "changed": "Arka plan zaten değişti",
+    "failed": "Gönderilemedi"
+  },
+  "errors": {
+    "room_star_required": "Arka planlar STAR ile gelir",
+    "media_star_required": "Fotoğraflar STAR ile gelir",
+    "backdrop_star_required": "Arka planlar STAR ile gelir",
+    "not_member": "Yetki yok",
+    "invalid": "Bu arka plan kullanılamıyor",
+    "media_missing": "Fotoğraf yok, tekrar yükle",
+    "stored_gone": "Görsel yok, başka birini seç",
+    "backdrop_cooldown": "Kendi fotoğrafın {{time}} sonra",
+    "request_limit": "Çok sık",
+    "quota_exceeded": "Depolama dolu",
+    "media_uploads_paused": "Yüklemeler duraklatıldı",
+    "offline": "Bağlantı yok",
+    "generic": "Bir şeyler ters gitti"
+  },
+  "presets": {
+    "aurora": "Kutup ışığı",
+    "vinyl": "Plak",
+    "sunset-clouds": "Gün batımı",
+    "ocean-rays": "Derin deniz",
+    "dunes": "Kumullar",
+    "misty-forest": "Sisli orman",
+    "snow-lamp": "Kar",
+    "satin": "Saten",
+    "paper": "Kağıt",
+    "peach-clouds": "Şeftali",
+    "pastel-lake": "Göl",
+    "watercolor": "Suluboya",
+    "candy-sky": "Şeker"
+  },
+  "dismiss": "Kaldır",
+  "cancelUpload": "Yüklemeyi iptal et"
+}

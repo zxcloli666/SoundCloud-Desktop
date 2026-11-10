@@ -1,5 +1,7 @@
 import type {ReactNode} from 'react';
+import {MessagesSquare} from '../../lib/chat/icons';
 import {Cloud, Database, Globe, Headphones, Link, Sparkles, User} from '../../lib/icons';
+import {ChatSettings} from '../chat/settings/ChatSettings';
 import {CallProxySection} from './CallProxySection';
 import {AccountCard} from './cards/AccountCard';
 import {AndroidCard} from './cards/AndroidCard';
@@ -45,6 +47,7 @@ export type SettingsCategoryId =
     | 'voice'
     | 'network'
     | 'integrations'
+    | 'chats'
     | 'storage'
     | 'account';
 
@@ -138,6 +141,12 @@ export const SETTINGS_CATEGORIES: SettingsCategory[] = [
                 <ImportSyncCard/>
             </>
         ),
+    },
+    {
+        id: 'chats',
+        labelKey: 'chat.settings.title',
+        icon: <MessagesSquare size={17}/>,
+        Body: () => <ChatSettings/>,
     },
     {
         id: 'storage',

@@ -5,8 +5,6 @@ import { api } from './api';
 import { isTrackBlocked } from './blocked-artists';
 import { isUrnDisliked } from './dislikes';
 import { type PagedResponse, pagedUrl } from './hooks';
-import { isKnownNonPremium } from './subscription';
-import { isPreviewOnly } from './track-access';
 import { foldName, getTrackDisplay, stripNoiseTags } from './track-display';
 
 const PREVIEW_MS = 30_000;
@@ -17,6 +15,7 @@ const FAILED_SEARCH_PAUSE_MS = 60_000;
 const JOINERS = ['feat', 'ft', 'x', 'and', 'with', 'vs', 'the'];
 
 const altByOriginal = new Map<string, Track | null>();
+const noStream = new Set<string>();
 const searches = new Map<string, Promise<Track | null>>();
 const listeners = new Set<() => void>();
 let playing: { original: string; copy: Track } | null = null;
@@ -26,23 +25,23 @@ function lengthOf(track: Track): number {
 }
 
 function isLocked(track: Track): boolean {
-  return isPreviewOnly(track) || track.access === 'blocked' || track.policy === 'BLOCK';
+  return (
+    track.access === 'preview' ||
+    track.access === 'blocked' ||
+    track.policy === 'SNIP' ||
+    track.policy === 'BLOCK'
+  );
 }
 
 function isUsable(track: Track): boolean {
   return !isLocked(track) && !isUrnDisliked(track.urn) && !isTrackBlocked(track);
 }
 
-export function wantsAltUpload(track: Track): boolean {
-  const known = altByOriginal.get(track.urn);
+export function mayUseAltUpload(track: Track): boolean {
   return (
     useSettingsStore.getState().playAltUploads &&
-    isLocked(track) &&
-    track._scd_meta?.storage_state !== 'ok' &&
     lengthOf(track) > PREVIEW_MS &&
-    known !== null &&
-    (known === undefined || isUsable(known)) &&
-    isKnownNonPremium()
+    altByOriginal.get(track.urn) !== null
   );
 }
 
@@ -112,7 +111,12 @@ async function searchAltUpload(track: Track): Promise<Track | null> {
 }
 
 export function knownAltUpload(original: Track): Track | null {
+  if (!useSettingsStore.getState().playAltUploads || !noStream.has(original.urn)) return null;
   return altByOriginal.get(original.urn) ?? null;
+}
+
+export function markNoStream(original: Track): void {
+  noStream.add(original.urn);
 }
 
 export function dropAltUpload(original: Track): void {

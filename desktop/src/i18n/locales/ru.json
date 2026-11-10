@@ -73,7 +73,7 @@
     "openApp": "Открыть SoundCloud",
     "notPlaying": "Ничего не играет",
     "noContinuation": "Похожих треков не нашлось, воспроизведение остановлено",
-    "altUpload": "Играет полная копия от {{name}}",
+    "altUpload": "Играет копия от {{name}}",
     "cancelLoad": "Остановить загрузку",
     "volume": "Громкость",
     "volumeReset": "Сбросить громкость до 100%",
@@ -97,6 +97,7 @@
     "callbackSlow": "Страница после SoundCloud не загружается? Её домен может быть заблокирован. Включите VPN и откройте ссылку снова.",
     "reopenLink": "Открыть ссылку снова",
     "stepWaiting": "Ожидание авторизации в SoundCloud",
+    "checking": "Проверка…",
     "stepToken": "Обмен кода авторизации",
     "stepProfile": "Получение профиля",
     "stepSession": "Завершение сессии",
@@ -308,7 +309,6 @@
     "language": "Язык",
     "album": "Из альбома",
     "fullLength": "Полная длина",
-    "previewOnly": "Только превью",
     "source": "Источник",
     "showMore": "Показать ещё",
     "showLess": "Свернуть",
@@ -928,7 +928,7 @@
     "listWeight": "Вес",
     "listTime": "Время",
     "stampForging": "КУЁТСЯ",
-    "stampPreview": "ПРЕВЬЮ",
+    "stampCut": "ОБРЕЗАН",
     "stampMissing": "НЕ СКАЧАН",
     "rowForging": "куётся · ffmpeg",
     "actPlay": "Играть",
@@ -1217,7 +1217,6 @@
     "scrobbleLiveListening": "Скроббл через {{time}}",
     "scrobbleLiveScrobbled": "Заскробблено",
     "scrobbleLiveShort": "Треки короче 30 секунд не скробблятся",
-    "scrobbleLivePreview": "Превью не скробблятся",
     "scrobbleLiveSession_one": "{{count}} за сеанс",
     "scrobbleLiveSession_few": "{{count}} за сеанс",
     "scrobbleLiveSession_many": "{{count}} за сеанс",
@@ -1456,8 +1455,8 @@
     "manualUpdates": "Обновления ставятся вручную",
     "autoplay": "Автопродолжение",
     "autoplayDesc": "Когда очередь закончится, дальше играют похожие треки из волны от последнего",
-    "altUploads": "Полная копия вместо превью",
-    "altUploadsDesc": "Без STAR вместо превью играет полная загрузка этого трека с другого аккаунта, если она нашлась",
+    "altUploads": "Копия вместо недоступного трека",
+    "altUploadsDesc": "Если трек не отдаётся, играет загрузка того же трека на другом аккаунте, если она нашлась",
     "searchPlayback": "Воспроизведение из поиска",
     "searchPlaybackSimilar": "Похожие треки",
     "searchPlaybackResults": "Результаты поиска",
@@ -1661,7 +1660,10 @@
     },
     "pickPlaylist": "Выберите плейлист...",
     "discard": "Сбросить",
-    "save": "Сохранить {{count}} треков",
+    "save_one": "Сохранить {{count}} трек",
+    "save_few": "Сохранить {{count}} трека",
+    "save_many": "Сохранить {{count}} треков",
+    "save_other": "Сохранить {{count}} трека",
     "saved": "Сохранено треков: {{count}}",
     "savedCount": "Треков: {{count}}",
     "openPlaylist": "Открыть плейлист",
@@ -1670,7 +1672,7 @@
     "rerun": "Запустить снова",
     "forget": "Убрать из истории",
     "pasted": "В буфере ссылка {{source}}",
-    "dropFile": "Отпустите .txt или .csv со списком, чтобы импортировать",
+    "dropFile": "Отпустите файл со списком, чтобы импортировать",
     "err": {
       "session_expired": "Сессия SoundCloud истекла",
       "ym_token_invalid": "Яндекс Музыка не приняла токен",
@@ -1734,10 +1736,6 @@
   "update": {
     "available": "Доступно обновление",
     "later": "Позже",
-    "year": {
-      "cta": "Год",
-      "saved": "выгода {{sum}} ₽"
-    },
     "download": "Скачать",
     "installRestart": "Установить и перезапустить",
     "downloading": "Скачиваем обновление",
@@ -1883,6 +1881,23 @@
       "sync": {
         "title": "Быстрая синхронизация",
         "tag": "За пару минут"
+      },
+      "fresh": "Новое",
+      "effects": {
+        "title": "Эффекты звука",
+        "tag": "Реверб, 8D, бас"
+      },
+      "releases": {
+        "title": "Новые релизы",
+        "tag": "Сразу как вышло"
+      },
+      "importSync": {
+        "title": "Синхронизация импорта",
+        "tag": "Плейлисты пополняются сами"
+      },
+      "streak": {
+        "title": "Серия STAR",
+        "tag": "Значок растёт с месяцами"
       }
     },
     "method": {
@@ -1986,7 +2001,19 @@
       "extend": "Продлить",
       "redeem": "Ввести код",
       "canceled": "Автопродление выключено",
-      "cancelError": "Не удалось выключить автопродление"
+      "cancelError": "Не удалось выключить автопродление",
+      "sources": {
+        "platega": "Карта или СБП",
+        "cryptobot": "Crypto Bot",
+        "tgstars": "Telegram Stars",
+        "code": "Код",
+        "boosty": "Boosty",
+        "admin": "Подарок команды",
+        "community": "Награда сообщества",
+        "trial": "Пробный период",
+        "referral": "Приглашение друга",
+        "shared": "Тариф Duo или Family"
+      }
     },
     "discord": {
       "label": "Discord",
@@ -2073,6 +2100,7 @@
       "people_many": "{{count}} человек",
       "people_other": "{{count}} человека",
       "each": "{{price}} ₽ с человека",
+      "price": "{{price}} ₽",
       "save": "−{{pct}}%"
     },
     "shared": {
@@ -2376,12 +2404,12 @@
   "sync": {
     "title": "Синхронизация с SoundCloud",
     "retrySoon": "меньше минуты",
-    "retryMinutes_one": "~{{count}} мин",
-    "retryMinutes_few": "~{{count}} мин",
-    "retryMinutes_many": "~{{count}} мин",
-    "retryHours_one": "~{{count}} ч",
-    "retryHours_few": "~{{count}} ч",
-    "retryHours_many": "~{{count}} ч",
+    "retryMinutes_one": "~{{count}}\u00a0мин",
+    "retryMinutes_few": "~{{count}}\u00a0мин",
+    "retryMinutes_many": "~{{count}}\u00a0мин",
+    "retryHours_one": "~{{count}}\u00a0ч",
+    "retryHours_few": "~{{count}}\u00a0ч",
+    "retryHours_many": "~{{count}}\u00a0ч",
     "signIn": "Войти",
     "chip": {
       "synced": "Изменения отправлены",
@@ -2389,7 +2417,7 @@
       "syncing_one": "{{count}} в очереди",
       "syncing_few": "{{count}} в очереди",
       "syncing_many": "{{count}} в очереди",
-      "delayed": "SoundCloud ограничивает · повтор через {{time}}",
+      "delayed": "SoundCloud ограничивает · повтор\u00a0через\u00a0{{time}}",
       "failed_one": "{{count}} с ошибкой",
       "failed_few": "{{count}} с ошибкой",
       "failed_many": "{{count}} с ошибкой",
@@ -2769,9 +2797,6 @@
       "left_many": "Ещё {{count}} дней",
       "streakLost": "Серия сгорит"
     },
-    "preview": {
-      "label": "Превью Go+"
-    },
     "winback": {
       "title": "STAR погас",
       "sound": {
@@ -2779,8 +2804,8 @@
         "free": "HQ"
       },
       "goPlus": {
-        "star": "целиком",
-        "free": "30 сек"
+        "star": "есть",
+        "free": "нет"
       },
       "sync": {
         "star": "минуты",
@@ -2791,6 +2816,10 @@
       "free": "Сейчас",
       "freeTime": "часы",
       "starTime": "~2 мин"
+    },
+    "year": {
+      "cta": "Год",
+      "saved": "выгода {{sum}} ₽"
     }
   },
   "recap": {
@@ -2825,5 +2854,17 @@
     "notifyBody_many": "{{count}} новых релизов: {{artists}}",
     "notifyBody_other": "{{count}} новых релиза: {{artists}}",
     "open": "Открыть"
+  },
+  "ago": {
+    "now": "сейчас",
+    "m": "{{count}} мин",
+    "h": "{{count}} ч",
+    "d": "{{count}} дн.",
+    "w": "{{count}} нед.",
+    "mo": "{{count}} мес.",
+    "y_one": "{{count}} г.",
+    "y_few": "{{count}} г.",
+    "y_many": "{{count}} л.",
+    "y_other": "{{count}} г."
   }
 }

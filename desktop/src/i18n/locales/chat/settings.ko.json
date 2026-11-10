@@ -1,0 +1,83 @@
+{
+  "title": "채팅",
+  "unavailable": "지금은 채팅을 사용할 수 없어요",
+  "loadFailed": "설정을 불러오지 못했어요",
+  "retry": "다시 시도",
+  "whoCanWrite": {
+    "title": "메시지를 보낼 수 있는 사람",
+    "everyone": "모두",
+    "following": "내가 팔로우한 사람",
+    "nobody": "아무도",
+    "hint": {
+      "everyone": "메시지가 바로 도착해요",
+      "following": "나머지는 요청함으로 가요",
+      "nobody": "새 채팅은 나만 시작할 수 있어요"
+    }
+  },
+  "visibility": {
+    "title": "공개 범위",
+    "presence": "듣고 있는 음악 표시",
+    "presenceHint": "연락처만 볼 수 있어요",
+    "receipts": "읽음 확인",
+    "typing": "입력 중 표시"
+  },
+  "notify": {
+    "title": "알림",
+    "preview": "표시 내용",
+    "previews": {
+      "full": "텍스트",
+      "name_only": "이름만",
+      "hidden": "표시 안 함"
+    },
+    "streamMode": "방송 중에는 이름만",
+    "streamHint": "OBS로 방송하는 동안",
+    "sound": "소리"
+  },
+  "dock": {
+    "title": "채팅 도크",
+    "hotkey": "열기 또는 숨기기",
+    "reset": "초기화",
+    "problem": {
+      "needsModifier": "Ctrl, Alt 또는 {{super}} 키를 함께 누르세요",
+      "mediaKey": "미디어 키는 플레이어가 사용해요",
+      "unsupported": "지원하지 않는 키예요",
+      "reserved": "앱에서 이미 쓰는 단축키예요",
+      "duplicate": "이미 \"{{action}}\"에 지정되어 있어요"
+    }
+  },
+  "blocked": {
+    "title": "차단한 사용자",
+    "empty": "없음",
+    "unblock": "차단 해제"
+  },
+  "policy": {
+    "title": "규칙과 개인정보",
+    "forbidden": {
+      "spam": "스팸과 광고",
+      "harassment": "협박과 괴롭힘",
+      "doxxing": "다른 사람의 개인 정보",
+      "illegal": "불법: 아동 성착취물, 마약, 극단주의"
+    },
+    "ladder": {
+      "delete": "메시지가 삭제돼요",
+      "repeat": "30일 안에 다시 위반하면 7일간 채팅 금지",
+      "illegal": "불법 콘텐츠는 영구 채팅 금지"
+    },
+    "keeps": "음악, 방, 계정은 그대로 유지돼요"
+  },
+  "privacy": {
+    "encrypted": "메시지는 전송 중에도, 서버와 이 컴퓨터에서도 암호화돼요",
+    "reports": "신고가 들어오면 자동 검토가 해당 메시지와 약간의 맥락만 확인해요"
+  },
+  "keys": {
+    "title": "채팅 키",
+    "os": {
+      "mac": "macOS 키체인에 저장됨",
+      "linux": "시스템 비밀번호 저장소에 저장됨",
+      "windows": "Windows 자격 증명 관리자에 저장됨"
+    },
+    "file": "앱 폴더의 비공개 파일에 저장됨",
+    "reset": "채팅 키 초기화",
+    "resetHint": "이 컴퓨터의 채팅을 지우고 새 키를 만듭니다. 채팅은 서버에서 다시 받아옵니다."
+  }
+}

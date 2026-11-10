@@ -1,6 +1,7 @@
 import { useThemesStore } from '../../stores/themes';
 import { describeError, trackedInvoke as invoke, logError } from '../diagnostics';
 import { safeModeOff } from '../safe-mode';
+import { crashedTheme } from './crash-guard';
 import { applyLook } from './look';
 import { activeTheme } from './records';
 import { clearSentinel, readSentinel, writeSentinel } from './sentinel';
@@ -15,7 +16,7 @@ export async function bootThemes() {
     const state = useThemesStore.getState();
     const theme = activeTheme(state);
     if (sentinel) await clearSentinel();
-    if (theme && sentinel?.id === state.activeId && sentinel?.hash === theme.hash) {
+    if (theme && crashedTheme(sentinel, state.activeId, theme.hash)) {
       useThemesStore.setState({ enabled: false });
       state.notify([{ kind: 'crashOff', id: sentinel.id, name: theme.name }]);
     } else if (theme && state.activeId && document.visibilityState === 'visible') {

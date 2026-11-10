@@ -1,0 +1,192 @@
+{
+  "saved": "저장한 메시지",
+  "untitled": "제목 없는 채팅",
+  "someone": "멤버",
+  "back": "뒤로",
+  "cancel": "취소",
+  "retry": "다시 시도",
+  "loadFailed": "채팅을 열 수 없습니다",
+  "toBottom": "최신 메시지로",
+  "notMember": "더 이상 이 채팅의 멤버가 아닙니다",
+  "members_other": "멤버 {{count}}명",
+  "unread_other": "새 메시지 {{count}}개",
+  "day": {
+    "today": "오늘",
+    "yesterday": "어제"
+  },
+  "empty": {
+    "chat": "첫 메시지를 보내 보세요",
+    "saved": "메모와 트랙을 여기에 보관하세요"
+  },
+  "typing": {
+    "one": "입력 중",
+    "named": "{{name}} 님이 입력 중",
+    "many_other": "{{count}}명이 입력 중"
+  },
+  "menu": {
+    "info": "정보",
+    "more": "더 보기",
+    "mute": "알림 끄기",
+    "unmute": "알림 켜기"
+  },
+  "timer": {
+    "title": "사라지는 메시지"
+  },
+  "ttl": {
+    "off": "끄기",
+    "3600": "1시간",
+    "86400": "1일",
+    "604800": "1주",
+    "custom": "{{hours}}시간",
+    "short": {
+      "3600": "1시간",
+      "86400": "1일",
+      "604800": "1주"
+    }
+  },
+  "system": {
+    "ttlOn": "사라지는 메시지: {{ttl}}",
+    "ttlOff": "사라지는 메시지가 꺼졌습니다",
+    "created": "채팅이 만들어졌습니다",
+    "joined": "{{name}} 님이 참여했습니다",
+    "left": "{{name}} 님이 나갔습니다",
+    "added": "{{name}} 님이 추가되었습니다",
+    "removed": "{{name}} 님이 내보내졌습니다",
+    "kicked": "{{name}} 님이 강퇴되었습니다",
+    "banned": "{{name}} 님이 차단되었습니다",
+    "muted": "{{name}} 님이 음소거되었습니다",
+    "mutedUntil": "{{name}} 님이 {{time}}까지 음소거되었습니다",
+    "renamed": "새 이름: {{name}}",
+    "handoff": "이제 {{name}} 님이 진행합니다",
+    "track": "지금 재생 중: {{name}}",
+    "roleOwner": "이제 {{name}} 님이 소유자입니다",
+    "roleAdmin": "이제 {{name}} 님이 관리자입니다",
+    "roleMember": "{{name}} 님은 더 이상 관리자가 아닙니다",
+    "other": "채팅이 변경되었습니다"
+  },
+  "bubble": {
+    "deleted": "삭제된 메시지",
+    "locked": "이 기기를 확인하면 열립니다",
+    "unknown": "앱을 업데이트하면 볼 수 있습니다",
+    "system": "이벤트",
+    "edited": "수정됨",
+    "forwarded": "{{name}} 님의 메시지 전달",
+    "blocked": "차단한 사용자의 메시지",
+    "spoiler": "숨긴 텍스트 보기",
+    "expiresIn": "{{time}} 후 사라짐"
+  },
+  "tick": {
+    "pending": "보내는 중",
+    "sent": "보냄",
+    "delivered": "전달됨",
+    "read": "읽음",
+    "failed": "보내지 못함"
+  },
+  "actions": {
+    "reply": "답장",
+    "forward": "전달",
+    "copy": "복사",
+    "edit": "수정",
+    "pin": "고정",
+    "unpin": "고정 해제",
+    "delete": "삭제",
+    "discard": "보내기 취소",
+    "report": "신고",
+    "retry": "다시 보내기",
+    "more": "더 보기",
+    "react": "반응",
+    "quickReact": "좋아요",
+    "otherEmoji": "다른 이모지",
+    "profile": "프로필"
+  },
+  "reply": {
+    "missing": "메시지",
+    "gone": "메시지를 찾을 수 없습니다"
+  },
+  "pinned": {
+    "one": "고정됨",
+    "many": "고정 {{index}}/{{total}}",
+    "unloaded": "고정된 메시지"
+  },
+  "history": {
+    "locked": "다른 기기에서 확인하면 이전 메시지가 표시됩니다"
+  },
+  "composer": {
+    "placeholder": "메시지",
+    "paused": "지금은 보내기가 일시 중지되었습니다",
+    "send": "보내기",
+    "save": "저장",
+    "editing": "수정 중",
+    "cancel": "취소",
+    "emoji": "이모지",
+    "emojiHint": "이모지: {{keys}}",
+    "nowPlaying": "지금 재생 중: {{title}}",
+    "nothingPlaying": "재생 중인 곡이 없습니다",
+    "removeAttachment": "제거"
+  },
+  "delete": {
+    "title": "메시지를 삭제할까요?",
+    "everyone": "모두에게서",
+    "me": "나에게서만"
+  },
+  "report": {
+    "title": "신고",
+    "reasons": {
+      "spam": "스팸 또는 광고",
+      "harassment": "위협 또는 괴롭힘",
+      "doxxing": "다른 사람의 개인 정보",
+      "illegal": "불법 콘텐츠",
+      "other": "기타"
+    },
+    "comment": "필요하면 설명을 남겨 주세요",
+    "policy": "규칙을 어기면 메시지가 삭제됩니다. 30일 안에 다시 어기면 7일 동안 채팅이 막히고, 불법 콘텐츠는 영구히 막힙니다. 음악과 계정은 그대로 유지됩니다.",
+    "privacy": "메시지는 전송 중에도, 서버와 이 컴퓨터에서도 암호화됩니다. 신고하면 이 메시지와 약간의 앞뒤 내용만 자동 검토로 전달됩니다.",
+    "send": "신고 보내기",
+    "sent": "신고를 보냈습니다"
+  },
+  "link": {
+    "title": "이 링크를 열까요?",
+    "open": "열기"
+  },
+  "info": {
+    "close": "닫기",
+    "notifications": "알림",
+    "tracks": "트랙",
+    "membersTab": "멤버",
+    "noTracks": "이 채팅에서 공유한 트랙이 여기에 표시됩니다",
+    "tracksFailed": "트랙을 불러오지 못했습니다",
+    "owner": "소유자",
+    "admin": "관리자",
+    "you": "나",
+    "makeAdmin": "관리자로 지정",
+    "removeAdmin": "관리자 해제",
+    "removeMember": "채팅에서 내보내기",
+    "addMembers": "멤버 추가",
+    "addPicked": "추가 ({{n}})",
+    "inviteLink": "초대 링크",
+    "inviteCopy": "링크 복사",
+    "inviteRevoke": "링크 취소",
+    "add": "추가"
+  },
+  "errors": {
+    "generic": "문제가 발생했습니다. 다시 시도해 주세요",
+    "muted": "지금은 메시지를 보낼 수 없습니다",
+    "mutedUntil": "{{time}}부터 다시 보낼 수 있습니다",
+    "slowMode_other": "슬로우 모드: {{count}}초 후에 보낼 수 있습니다",
+    "not_member": "이 채팅의 멤버가 아닙니다",
+    "send_paused": "지금은 보내기가 일시 중지되었습니다",
+    "send_limited": "메시지가 너무 많습니다. 잠시 기다려 주세요",
+    "request_limit": "오늘 새 채팅을 너무 많이 만들었습니다",
+    "busy": "서버가 바쁩니다. 잠시 후 다시 시도해 주세요",
+    "offline": "서버에 연결할 수 없습니다",
+    "unavailable": "이 사용자에게 연락할 수 없습니다",
+    "disabled": "채팅이 꺼져 있습니다",
+    "keychain_denied": "채팅 키에 접근할 수 없습니다. 채팅을 열고 다시 시도를 누르세요",
+    "too_young": "이 기기는 아직 이 작업을 할 수 없습니다",
+    "not_found": "메시지를 찾을 수 없습니다",
+    "invalid": "메시지가 검사를 통과하지 못했습니다"
+  },
+  "invite": {
+    "join": "그룹 참여"
+  }
+}

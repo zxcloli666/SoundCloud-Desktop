@@ -1,4 +1,5 @@
 import type React from 'react';
+import { MessagesSquare } from '../../lib/chat/icons';
 import { Compass, Download, Home, Library, Search, Star } from '../../lib/icons';
 import type { LayoutId } from '../../lib/layout';
 
@@ -16,6 +17,7 @@ export const NAV_ITEMS: Record<
   search: { to: '/search', icon: Search, label: 'nav.search' },
   discover: { to: '/discover', icon: Compass, label: 'nav.discover' },
   library: { to: '/library', icon: Library, label: 'nav.library' },
+  chats: { to: '/chats', icon: MessagesSquare, label: 'chat.nav.title' },
   star: { to: '/star', icon: Star, label: 'nav.star' },
   offline: { to: '/offline', icon: Download, label: 'nav.offline' },
 };

@@ -106,7 +106,7 @@
     "abLoopClear": "A-B döngüsünü temizle",
     "notPlaying": "Çalmıyor",
     "noContinuation": "Benzer parça bulunamadı, çalma durduruldu",
-    "altUpload": "{{name}} hesabından tam kopya çalıyor",
+    "altUpload": "{{name}} hesabından kopya çalıyor",
     "cancelLoad": "Yüklemeyi durdur",
     "volume": "Ses",
     "volumeReset": "Sesi %100'e sıfırla",
@@ -133,6 +133,7 @@
     "callbackSlow": "SoundCloud sonrası sayfa yüklenmiyor mu? Alan adı engellenmiş olabilir. VPN açın ve bağlantıyı tekrar açın.",
     "reopenLink": "Bağlantıyı tekrar aç",
     "stepWaiting": "SoundCloud yetkilendirmesi bekleniyor",
+    "checking": "Kontrol ediliyor…",
     "stepToken": "Yetkilendirme kodu değiştiriliyor",
     "stepProfile": "Profilin alınıyor",
     "stepSession": "Oturum tamamlanıyor",
@@ -248,7 +249,6 @@
   },
   "track": {
     "comments": "Yorumlar",
-    "previewOnly": "Sadece önizleme",
     "source": "Kaynak",
     "showMore": "Daha fazla göster",
     "showLess": "Daha az göster",
@@ -959,7 +959,7 @@
     "listWeight": "Boyut",
     "listTime": "Süre",
     "stampForging": "İŞLENİYOR",
-    "stampPreview": "ÖNİZLEME",
+    "stampCut": "KESİK",
     "stampMissing": "DOSYA YOK",
     "rowForging": "işleniyor · ffmpeg",
     "actPlay": "Çal",
@@ -1234,7 +1234,6 @@
     "scrobbleLiveListening": "{{time}} sonra scrobble edilecek",
     "scrobbleLiveScrobbled": "Scrobble edildi",
     "scrobbleLiveShort": "30 saniyeden kısa parçalar scrobble edilmez",
-    "scrobbleLivePreview": "Önizlemeler scrobble edilmez",
     "scrobbleLiveSession_one": "Bu oturumda {{count}}",
     "scrobbleLiveSession_other": "Bu oturumda {{count}}",
     "scrobblePaused": "Scrobble duraklatıldı. Dinlemelerini tekrar göndermek için aç.",
@@ -1472,8 +1471,8 @@
     "manualUpdates": "Güncellemeler elle kurulur",
     "autoplay": "Otomatik devam",
     "autoplayDesc": "Sıra bittiğinde son parçanın dalgasından benzer parçalar çalmaya devam eder",
-    "altUploads": "Önizleme yerine tam kopya",
-    "altUploadsDesc": "STAR olmadan sadece önizlemesi olan parça, bulunursa aynı parçanın başka bir hesaptaki tam yüklemesinden çalar",
+    "altUploads": "Erişilemeyen parça yerine kopya",
+    "altUploadsDesc": "Bir parça çalınamazsa, bulunursa aynı parçanın başka bir hesaptaki yüklemesi çalar",
     "searchPlayback": "Aramadan çalma",
     "searchPlaybackSimilar": "Benzer parçalar",
     "searchPlaybackResults": "Arama sonuçları",
@@ -1513,6 +1512,32 @@
       "no_space": "Bu sürücüde yeterli boş alan yok",
       "sandboxed": "Bu klasöre yalnızca korumalı alan portalı üzerinden erişilebiliyor. /media, /run/media veya /mnt altındaki bir sürücüde ya da Müzik veya İndirilenler içinde bir klasör seçin",
       "failed": "Önbellek taşınamadı"
+    },
+    "releaseNotifications": "Yeni çıkış bildirimleri",
+    "releaseNotificationsDesc": "Takip ettiğiniz sanatçılar yeni bir şey yüklediğinde sistem bildirimi. Uygulama açıkken 30 dakikada bir kontrol edilir"
+  },
+  "effects": {
+    "title": "Efektler",
+    "toggle": "Efektleri aç veya kapat",
+    "locked": "Reverb, 8D ve bas güçlendirme STAR'a dahildir",
+    "reverb": "Reverb",
+    "room": "Oda boyutu",
+    "eightDSpeed": "8D hızı",
+    "bass": "Bas",
+    "preset": {
+      "off": "Kapalı",
+      "slowedReverb": "Yavaş + reverb",
+      "spedUp": "Hızlandırılmış",
+      "eightD": "8D",
+      "bass": "Bas güçlendirme",
+      "custom": "Özel"
+    },
+    "short": {
+      "slowedReverb": "Yavaş",
+      "spedUp": "Hızlı",
+      "eightD": "8D",
+      "bass": "Bas",
+      "custom": "FX"
     }
   },
   "eq": {
@@ -1736,6 +1761,23 @@
       "sync": {
         "title": "Hızlı senkronizasyon",
         "tag": "Dakikalar içinde"
+      },
+      "fresh": "Yeni",
+      "effects": {
+        "title": "Ses efektleri",
+        "tag": "Reverb, 8D, bas"
+      },
+      "releases": {
+        "title": "Yeni çıkanlar",
+        "tag": "Çıktığı anda"
+      },
+      "importSync": {
+        "title": "İçe aktarma senkronu",
+        "tag": "Listeler kendiliğinden dolar"
+      },
+      "streak": {
+        "title": "STAR serisi",
+        "tag": "Rozet her ay büyür"
       }
     },
     "method": {
@@ -1839,7 +1881,19 @@
       "extend": "Uzat",
       "redeem": "Kod gir",
       "canceled": "Otomatik yenileme kapatıldı",
-      "cancelError": "Otomatik yenileme kapatılamadı"
+      "cancelError": "Otomatik yenileme kapatılamadı",
+      "sources": {
+        "platega": "Kart veya SBP",
+        "cryptobot": "Crypto Bot",
+        "tgstars": "Telegram Stars",
+        "code": "Kod",
+        "boosty": "Boosty",
+        "admin": "Ekipten hediye",
+        "community": "Topluluk ödülü",
+        "trial": "Ücretsiz deneme",
+        "referral": "Arkadaş daveti",
+        "shared": "Duo veya Family planı"
+      }
     },
     "discord": {
       "label": "Discord",
@@ -1921,6 +1975,7 @@
       "people_one": "{{count}} kişi",
       "people_other": "{{count}} kişi",
       "each": "kişi başı {{price}} ₽",
+      "price": "{{price}} ₽",
       "save": "−{{pct}}%"
     },
     "shared": {
@@ -2180,14 +2235,14 @@
   "sync": {
     "title": "SoundCloud senkronizasyonu",
     "retrySoon": "bir dakikadan az",
-    "retryMinutes": "~{{count}} dk",
-    "retryHours": "~{{count}} sa",
+    "retryMinutes": "~{{count}}\u00a0dk",
+    "retryHours": "~{{count}}\u00a0sa",
     "signIn": "Giriş yap",
     "chip": {
       "synced": "Değişiklikler gönderildi",
       "relogin": "Yeniden giriş yapın",
       "syncing": "{{count}} sırada",
-      "delayed": "SoundCloud sınırlıyor · {{time}} sonra tekrar",
+      "delayed": "SoundCloud sınırlıyor · {{time}}\u00a0sonra\u00a0tekrar",
       "failed": "{{count}} hatalı",
       "dead": "{{count}} gönderilmedi"
     },
@@ -2530,6 +2585,19 @@
     "sendReports": "Hata raporlarını gönder",
     "sendReportsDesc": "Uygulama hatalarını geliştiricilere gönderir, hesap verisi yok"
   },
+  "starTenure": {
+    "title": "STAR serisi",
+    "months_other": "{{count}} ay üst üste",
+    "next": "{{tier}} seviyesine {{count}} ay",
+    "reached": "Yeni seri seviyesi",
+    "tier": {
+      "0": "Kıvılcım",
+      "1": "Işıltı",
+      "2": "Alev",
+      "3": "Takımyıldız"
+    },
+    "months_one": "{{count}} ay üst üste"
+  },
   "starMoments": {
     "tryFree_one": "{{count}} gün ücretsiz",
     "tryFree_other": "{{count}} gün ücretsiz",
@@ -2541,10 +2609,8 @@
     "expiry": {
       "trial": "STAR deneme",
       "left_one": "{{count}} gün kaldı",
-      "left_other": "{{count}} gün kaldı"
-    },
-    "preview": {
-      "label": "Go+ önizleme"
+      "left_other": "{{count}} gün kaldı",
+      "streakLost": "Seri sona erecek"
     },
     "winback": {
       "title": "STAR'ınız bitti",
@@ -2553,8 +2619,8 @@
         "free": "HQ"
       },
       "goPlus": {
-        "star": "tam",
-        "free": "30 sn"
+        "star": "var",
+        "free": "yok"
       },
       "sync": {
         "star": "dakika",
@@ -2565,6 +2631,10 @@
       "free": "Şimdi",
       "freeTime": "saat",
       "starTime": "~2 dk"
+    },
+    "year": {
+      "cta": "Yıl",
+      "saved": "{{sum}} ₽ tasarruf"
     }
   },
   "recap": {
@@ -2581,6 +2651,19 @@
     "next": "Sonraki",
     "empty": "Henüz özet için yeterli müzik yok",
     "emptyHint": "Müzik çalın"
+  },
+  "releases": {
+    "title": "Yeni çıkışlar",
+    "new": "Yeni",
+    "heard": "Dinlendi",
+    "why_other": "Takip ettiğiniz sanatçılardan orijinaller, son {{count}} gün",
+    "playAll": "Tümünü çal",
+    "addToQueue": "Sıraya ekle",
+    "lockedWhy": "Sanatçılarınızın yeni parçaları ve çıktıkları anda bildirim",
+    "notifyBody_other": "{{count}} yeni çıkış: {{artists}}",
+    "open": "Aç",
+    "notifyBody_one": "{{count}} yeni çıkış: {{artists}}",
+    "why_one": "Takip ettiğiniz sanatçılardan orijinaller, son {{count}} gün"
   },
   "importer": {
     "title": "İçe aktar",
@@ -2658,7 +2741,7 @@
     "rerun": "Yeniden çalıştır",
     "forget": "Geçmişten kaldır",
     "pasted": "Panoda bir {{source}} bağlantısı var",
-    "dropFile": "Listeyi içe aktarmak için bir .txt veya .csv dosyası bırakın",
+    "dropFile": "Listeyi içe aktarmak için dosyayı bırakın",
     "err": {
       "session_expired": "SoundCloud oturumunuzun süresi doldu",
       "ym_token_invalid": "Yandex Music jetonu reddetti",
@@ -2714,5 +2797,14 @@
       "ymConnected": "Yandex Music bağlı",
       "disconnectYm": "Bağlantıyı kes"
     }
+  },
+  "ago": {
+    "now": "şimdi",
+    "m": "{{count}} dk",
+    "h": "{{count}} sa",
+    "d": "{{count}} g",
+    "w": "{{count}} hf",
+    "mo": "{{count}} ay",
+    "y": "{{count}} yıl"
   }
 }

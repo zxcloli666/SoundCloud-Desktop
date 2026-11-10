@@ -73,7 +73,7 @@
     "openApp": "Open SoundCloud",
     "notPlaying": "Not playing",
     "noContinuation": "No similar tracks found, playback stopped",
-    "altUpload": "Playing a full copy by {{name}}",
+    "altUpload": "Playing a copy by {{name}}",
     "cancelLoad": "Stop loading",
     "volume": "Volume",
     "volumeReset": "Reset volume to 100%",
@@ -97,6 +97,7 @@
     "callbackSlow": "Page after SoundCloud won't load? Its domain may be blocked for you. Turn on a VPN and open the link again.",
     "reopenLink": "Open link again",
     "stepWaiting": "Waiting for SoundCloud authorization",
+    "checking": "Checking…",
     "stepToken": "Exchanging authorization code",
     "stepProfile": "Fetching your profile",
     "stepSession": "Finalizing session",
@@ -307,7 +308,6 @@
     "language": "Language",
     "album": "From album",
     "fullLength": "Full length",
-    "previewOnly": "Preview only",
     "source": "Source",
     "showMore": "Show more",
     "showLess": "Show less",
@@ -912,7 +912,7 @@
     "listWeight": "Weight",
     "listTime": "Time",
     "stampForging": "FORGING",
-    "stampPreview": "PREVIEW",
+    "stampCut": "CUT SHORT",
     "stampMissing": "NO FILE",
     "rowForging": "forging · ffmpeg",
     "actPlay": "Play",
@@ -1187,7 +1187,6 @@
     "scrobbleLiveListening": "Scrobbles in {{time}}",
     "scrobbleLiveScrobbled": "Scrobbled",
     "scrobbleLiveShort": "Tracks under 30 seconds are not scrobbled",
-    "scrobbleLivePreview": "Previews are not scrobbled",
     "scrobbleLiveSession_one": "{{count}} this session",
     "scrobbleLiveSession_other": "{{count}} this session",
     "scrobblePaused": "Scrobbling is paused. Turn it on to send your listens again.",
@@ -1420,8 +1419,8 @@
     "manualUpdates": "Updates are installed manually",
     "autoplay": "Autoplay",
     "autoplayDesc": "When the queue runs out, keep playing similar tracks from the wave of the last one",
-    "altUploads": "Full copy instead of preview",
-    "altUploadsDesc": "Without STAR, a preview-only track plays from a full upload of the same track on another account when one is found",
+    "altUploads": "Copy instead of an unavailable track",
+    "altUploadsDesc": "If a track can't be played, an upload of the same track on another account plays instead when one is found",
     "searchPlayback": "Playing from search",
     "searchPlaybackSimilar": "Similar tracks",
     "searchPlaybackResults": "Search results",
@@ -1623,16 +1622,19 @@
     },
     "pickPlaylist": "Choose a playlist...",
     "discard": "Discard",
-    "save": "Save {{count}} tracks",
-    "saved": "{{count}} tracks saved",
-    "savedCount": "{{count}} tracks",
+    "save_one": "Save {{count}} track",
+    "save_other": "Save {{count}} tracks",
+    "saved_one": "{{count}} track saved",
+    "saved_other": "{{count}} tracks saved",
+    "savedCount_one": "{{count}} track",
+    "savedCount_other": "{{count}} tracks",
     "openPlaylist": "Open playlist",
     "openView": "Open import",
     "history": "History",
     "rerun": "Run again",
     "forget": "Remove from history",
     "pasted": "{{source}} link in the clipboard",
-    "dropFile": "Drop a .txt or .csv list to import it",
+    "dropFile": "Drop a list file to import it",
     "err": {
       "session_expired": "Your SoundCloud session has expired",
       "ym_token_invalid": "Yandex Music rejected the token",
@@ -1692,10 +1694,6 @@
   "update": {
     "available": "Update available",
     "later": "Later",
-    "year": {
-      "cta": "Year",
-      "saved": "save {{sum}} ₽"
-    },
     "download": "Download",
     "installRestart": "Install and restart",
     "downloading": "Downloading update",
@@ -1840,6 +1838,23 @@
       "sync": {
         "title": "Fast sync",
         "tag": "In minutes"
+      },
+      "fresh": "New",
+      "effects": {
+        "title": "Sound effects",
+        "tag": "Reverb, 8D, bass"
+      },
+      "releases": {
+        "title": "New releases",
+        "tag": "The moment they drop"
+      },
+      "importSync": {
+        "title": "Import sync",
+        "tag": "Playlists top up by themselves"
+      },
+      "streak": {
+        "title": "STAR streak",
+        "tag": "The badge grows each month"
       }
     },
     "method": {
@@ -1943,7 +1958,19 @@
       "extend": "Extend",
       "redeem": "Redeem a code",
       "canceled": "Auto-renew turned off",
-      "cancelError": "Couldn't turn off auto-renew"
+      "cancelError": "Couldn't turn off auto-renew",
+      "sources": {
+        "platega": "Card or SBP",
+        "cryptobot": "Crypto Bot",
+        "tgstars": "Telegram Stars",
+        "code": "Code",
+        "boosty": "Boosty",
+        "admin": "Gift from the team",
+        "community": "Community reward",
+        "trial": "Free trial",
+        "referral": "Friend invite",
+        "shared": "Duo or Family plan"
+      }
     },
     "discord": {
       "label": "Discord",
@@ -2025,6 +2052,7 @@
       "people_one": "{{count}} person",
       "people_other": "{{count}} people",
       "each": "{{price}} ₽ each",
+      "price": "{{price}} ₽",
       "save": "−{{pct}}%"
     },
     "shared": {
@@ -2318,17 +2346,17 @@
   "sync": {
     "title": "SoundCloud sync",
     "retrySoon": "under a minute",
-    "retryMinutes_one": "~{{count}} min",
-    "retryMinutes_other": "~{{count}} min",
-    "retryHours_one": "~{{count}} h",
-    "retryHours_other": "~{{count}} h",
+    "retryMinutes_one": "~{{count}}\u00a0min",
+    "retryMinutes_other": "~{{count}}\u00a0min",
+    "retryHours_one": "~{{count}}\u00a0h",
+    "retryHours_other": "~{{count}}\u00a0h",
     "signIn": "Sign in",
     "chip": {
       "synced": "Changes sent",
       "relogin": "Sign in again",
       "syncing_one": "{{count}} syncing",
       "syncing_other": "{{count}} syncing",
-      "delayed": "SoundCloud is limiting · retry in {{time}}",
+      "delayed": "SoundCloud is limiting · retry\u00a0in\u00a0{{time}}",
       "failed_one": "{{count}} with errors",
       "failed_other": "{{count}} with errors",
       "dead_one": "{{count}} not sent",
@@ -2685,9 +2713,6 @@
       "left_other": "{{count}} days left",
       "streakLost": "Streak will be lost"
     },
-    "preview": {
-      "label": "Go+ preview"
-    },
     "winback": {
       "title": "Your STAR went out",
       "sound": {
@@ -2695,8 +2720,8 @@
         "free": "HQ"
       },
       "goPlus": {
-        "star": "full",
-        "free": "30 s"
+        "star": "yes",
+        "free": "no"
       },
       "sync": {
         "star": "minutes",
@@ -2707,6 +2732,10 @@
       "free": "Now",
       "freeTime": "hours",
       "starTime": "~2 min"
+    },
+    "year": {
+      "cta": "Year",
+      "saved": "save {{sum}} ₽"
     }
   },
   "recap": {
@@ -2736,5 +2765,14 @@
     "notifyBody_one": "{{count}} new release: {{artists}}",
     "notifyBody_other": "{{count}} new releases: {{artists}}",
     "open": "Open"
+  },
+  "ago": {
+    "now": "now",
+    "m": "{{count}}m",
+    "h": "{{count}}h",
+    "d": "{{count}}d",
+    "w": "{{count}}w",
+    "mo": "{{count}}mo",
+    "y": "{{count}}y"
   }
 }

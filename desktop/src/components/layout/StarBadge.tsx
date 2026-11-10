@@ -10,61 +10,57 @@ interface StarBadgeProps {
 
 interface TierLook {
   background: string;
-  border: string;
+  ring: string;
   glow: string;
   starColor: string;
   pips: number;
   sheen: boolean;
-  aurora: boolean;
   sparkles: boolean;
 }
 
+const NIGHT_STARS =
+  'radial-gradient(1px 1px at 18% 30%, #fff 60%, transparent 61%), radial-gradient(1px 1px at 46% 72%, #e0f2fe 60%, transparent 61%), radial-gradient(1.5px 1.5px at 74% 26%, #fff 60%, transparent 61%), radial-gradient(1px 1px at 90% 70%, #bae6fd 60%, transparent 61%)';
+
 const LOOKS: Record<StarTier, TierLook> = {
   0: {
-    background:
-      'linear-gradient(135deg, rgba(139,92,246,0.45), rgba(168,85,247,0.32), rgba(192,132,252,0.25))',
-    border: '0.5px solid rgba(168,85,247,0.35)',
+    background: 'linear-gradient(135deg, #5b21b6, #7c3aed 55%, #a855f7)',
+    ring: '196,181,253',
     glow: '139,92,246',
     starColor: '#fbbf24',
     pips: 0,
     sheen: false,
-    aurora: false,
     sparkles: false,
   },
   1: {
-    background:
-      'linear-gradient(135deg, rgba(124,58,237,0.7), rgba(192,38,211,0.5), rgba(192,132,252,0.4))',
-    border: '0.5px solid rgba(232,121,249,0.6)',
-    glow: '217,70,239',
-    starColor: '#fcd34d',
+    background: 'linear-gradient(135deg, #9d174d, #db2777 50%, #f472b6)',
+    ring: '251,207,232',
+    glow: '236,72,153',
+    starColor: '#fde68a',
     pips: 1,
-    sheen: false,
-    aurora: false,
+    sheen: true,
     sparkles: false,
   },
   2: {
-    background:
-      'linear-gradient(135deg, rgba(109,40,217,0.8), rgba(219,39,119,0.6), rgba(245,158,11,0.5))',
-    border: '0.75px solid rgba(252,211,77,0.7)',
-    glow: '245,158,11',
-    starColor: '#fde68a',
+    background: 'linear-gradient(120deg, #991b1b, #ea580c 45%, #f59e0b 80%, #fcd34d)',
+    ring: '254,215,170',
+    glow: '249,115,22',
+    starColor: '#fffbeb',
     pips: 2,
     sheen: true,
-    aurora: false,
     sparkles: false,
   },
   3: {
-    background:
-      'linear-gradient(110deg, #6d28d9, #db2777, #f59e0b, #fde047, #db2777, #6d28d9)',
-    border: '1px solid rgba(254,240,138,0.9)',
-    glow: '250,204,21',
-    starColor: '#fffbeb',
+    background: `${NIGHT_STARS}, linear-gradient(110deg, #0f172a, #312e81 40%, #1d4ed8 75%, #0891b2)`,
+    ring: '165,243,252',
+    glow: '56,189,248',
+    starColor: '#fde047',
     pips: 3,
     sheen: true,
-    aurora: true,
     sparkles: true,
   },
 };
+
+export const TIER_FILLS = ([0, 1, 2, 3] as const).map((tier) => LOOKS[tier].background);
 
 const SPARKLES = [
   { left: '-3px', top: '-3px', delay: '0s' },
@@ -79,13 +75,11 @@ export const StarBadge = React.memo(({ size = 'sm', tier = 0 }: StarBadgeProps) 
   const glowPx = isLg ? 20 + tier * 8 : 8 + tier * 4;
   const moving = perf.idleAnim;
   const pillClass = [
-    'inline-flex items-center shrink-0 rounded-full uppercase',
-    tier === 3 ? 'text-white' : 'text-ink-95',
+    'inline-flex items-center shrink-0 rounded-full uppercase text-white',
     isLg
       ? 'gap-1.5 px-3 py-1 text-[10px] font-extrabold tracking-widest'
       : 'gap-[3px] px-[6px] py-[1px] text-[9px] font-bold tracking-wider',
     moving && look.sheen ? 'star-badge-sheen' : '',
-    moving && look.aurora ? 'star-badge-aurora' : '',
   ].join(' ');
 
   return (
@@ -94,13 +88,10 @@ export const StarBadge = React.memo(({ size = 'sm', tier = 0 }: StarBadgeProps) 
         className={pillClass}
         style={{
           background: look.background,
-          backdropFilter: 'blur(12px)',
-          WebkitBackdropFilter: 'blur(12px)',
-          boxShadow: `inset 0 0.5px 0 rgba(255,255,255,0.2)${
+          boxShadow: `inset 0 1px 0 rgba(255,255,255,0.28), 0 0 0 1px rgba(${look.ring},0.55), 0 1px 4px rgba(0,0,0,0.35)${
             perf.glow || tier > 0 ? `, 0 0 ${glowPx}px rgba(${look.glow},${0.3 + tier * 0.12})` : ''
           }`,
-          border: look.border,
-          textShadow: tier === 3 ? '0 1px 2px rgba(88,28,135,0.6)' : undefined,
+          textShadow: '0 1px 2px rgba(0,0,0,0.45)',
         }}
       >
         <Star

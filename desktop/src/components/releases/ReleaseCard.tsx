@@ -61,7 +61,7 @@ export const ReleaseCard = memo(function ReleaseCard({
             isThisPlaying ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
           }`}
         >
-          <span data-scheme="dark" className="flex size-12 items-center justify-center rounded-full bg-ink/20 backdrop-blur-md">
+          <span className="flex size-12 items-center justify-center rounded-full bg-ink/20 backdrop-blur-md">
             {isThisPlaying ? pauseWhite14 : playWhite14}
           </span>
         </span>

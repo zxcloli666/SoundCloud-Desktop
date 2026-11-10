@@ -1,0 +1,46 @@
+.chat-chips {
+  --chips-clear-before: 0px;
+  --chips-fade-before: 0px;
+  --chips-clear-after: 0px;
+  --chips-fade-after: 0px;
+  scroll-snap-type: x proximity;
+  scroll-padding-inline: 52px;
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent var(--chips-clear-before),
+    #000 var(--chips-fade-before),
+    #000 calc(100% - var(--chips-fade-after)),
+    transparent calc(100% - var(--chips-clear-after))
+  );
+  mask-image: linear-gradient(
+    90deg,
+    transparent var(--chips-clear-before),
+    #000 var(--chips-fade-before),
+    #000 calc(100% - var(--chips-fade-after)),
+    transparent calc(100% - var(--chips-clear-after))
+  );
+}
+
+.chat-chips[data-before] {
+  --chips-clear-before: 22px;
+  --chips-fade-before: 52px;
+}
+
+.chat-chips[data-after] {
+  --chips-clear-after: 22px;
+  --chips-fade-after: 52px;
+}
+
+.chat-chips > * {
+  scroll-snap-align: start;
+}
+
+.chat-chips-prev,
+.chat-chips-next {
+  display: none;
+}
+
+.chat-chips[data-before] ~ .chat-chips-prev,
+.chat-chips[data-after] ~ .chat-chips-next {
+  display: flex;
+}

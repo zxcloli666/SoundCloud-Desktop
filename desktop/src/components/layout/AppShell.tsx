@@ -15,6 +15,7 @@ import {toggleWindowFullscreen} from '../../lib/window';
 import {useLyricsStore} from '../../stores/lyrics';
 import {usePlayerStore} from '../../stores/player';
 import {useSettingsStore} from '../../stores/settings';
+import {ChatDock} from '../chat/shell/ChatDock';
 import {ImportHost} from '../import/ImportHost';
 import {AddToPlaylistHost} from '../music/AddToPlaylistHost';
 import {SuperlikeLimitHost} from '../music/superlike/SuperlikeLimitHost';
@@ -481,6 +482,7 @@ export const AppShell = React.memo(() => {
           <ScrollReset target={mainRef} />
           <StableOutlet />
         </main>
+        <ChatDock />
       </div>
       <NowPlayingBar onQueueToggle={onQueueToggle} queueOpen={queueOpen} />
       <AddToPlaylistHost />

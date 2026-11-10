@@ -122,7 +122,7 @@ const RefineHint = memo(function RefineHint() {
 
 const SkeletonGrid = memo(function SkeletonGrid() {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
+    <div className="grid grid-cols-2 @min-[384px]:grid-cols-3 @min-[512px]:grid-cols-4 @min-[740px]:grid-cols-5 gap-5">
       {Array.from({ length: 10 }).map((_, i) => (
         <Skeleton key={i} className="h-[320px] rounded-3xl" />
       ))}

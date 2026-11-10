@@ -73,7 +73,7 @@
     "openApp": "SoundCloud 열기",
     "notPlaying": "재생 중이 아님",
     "noContinuation": "비슷한 트랙을 찾지 못해 재생을 멈췄어요",
-    "altUpload": "{{name}}님의 전체 사본 재생 중",
+    "altUpload": "{{name}}님의 사본 재생 중",
     "cancelLoad": "로딩 중지",
     "volume": "볼륨",
     "volumeReset": "볼륨을 100%로 초기화",
@@ -97,6 +97,7 @@
     "callbackSlow": "SoundCloud 다음 페이지가 열리지 않나요? 해당 도메인이 차단됐을 수 있어요. VPN을 켜고 링크를 다시 열어 보세요.",
     "reopenLink": "링크 다시 열기",
     "stepWaiting": "SoundCloud 인증 대기 중",
+    "checking": "확인 중…",
     "stepToken": "인증 코드 교환 중",
     "stepProfile": "프로필 불러오는 중",
     "stepSession": "세션 마무리 중",
@@ -306,7 +307,6 @@
     "language": "언어",
     "album": "수록 앨범",
     "fullLength": "전체 길이",
-    "previewOnly": "미리듣기만 가능",
     "source": "출처",
     "showMore": "더 보기",
     "showLess": "접기",
@@ -901,7 +901,7 @@
     "listWeight": "용량",
     "listTime": "시간",
     "stampForging": "변환 중",
-    "stampPreview": "미리듣기",
+    "stampCut": "잘림",
     "stampMissing": "파일 없음",
     "rowForging": "변환 중 · ffmpeg",
     "actPlay": "재생",
@@ -1169,7 +1169,6 @@
     "scrobbleLiveListening": "{{time}} 후 스크로블",
     "scrobbleLiveScrobbled": "스크로블 완료",
     "scrobbleLiveShort": "30초 미만 트랙은 스크로블되지 않아요",
-    "scrobbleLivePreview": "미리듣기는 스크로블되지 않아요",
     "scrobbleLiveSession_other": "이번 세션 {{count}}곡",
     "scrobblePaused": "스크로블링이 일시정지됐어요. 켜면 청취 기록을 다시 전송해요.",
     "scrobbleNowPlaying": "지금 재생 중 표시",
@@ -1404,8 +1403,8 @@
     "manualUpdates": "업데이트를 직접 설치해야 해요",
     "autoplay": "자동 재생",
     "autoplayDesc": "대기열이 끝나면 마지막 곡의 웨이브에서 비슷한 트랙을 이어서 재생해요",
-    "altUploads": "미리듣기 대신 전체 사본",
-    "altUploadsDesc": "STAR가 없으면 미리듣기만 되는 트랙은 다른 계정에 올라온 같은 곡의 전체 업로드를 찾아 재생해요",
+    "altUploads": "재생할 수 없는 트랙 대신 사본",
+    "altUploadsDesc": "트랙을 재생할 수 없으면 다른 계정에 올라온 같은 곡의 업로드를 찾아 대신 재생해요",
     "searchPlayback": "검색에서 재생",
     "searchPlaybackSimilar": "비슷한 트랙",
     "searchPlaybackResults": "검색 결과",
@@ -1445,6 +1444,32 @@
       "no_space": "해당 드라이브의 여유 공간이 부족해요",
       "sandboxed": "이 폴더는 샌드박스 포털을 통해서만 접근할 수 있어요. /media, /run/media, /mnt 아래 드라이브의 폴더나 음악 또는 다운로드 폴더 안의 폴더를 선택하세요",
       "failed": "캐시를 이동하지 못했어요"
+    },
+    "releaseNotifications": "새 릴리스 알림",
+    "releaseNotificationsDesc": "팔로우한 아티스트가 새 곡을 올리면 시스템 알림을 보냅니다. 앱이 실행 중일 때 30분마다 확인합니다"
+  },
+  "effects": {
+    "title": "효과",
+    "toggle": "효과 켜기 또는 끄기",
+    "locked": "리버브, 8D, 베이스 부스트는 STAR에 포함됩니다",
+    "reverb": "리버브",
+    "room": "공간 크기",
+    "eightDSpeed": "8D 속도",
+    "bass": "베이스",
+    "preset": {
+      "off": "끄기",
+      "slowedReverb": "슬로우 + 리버브",
+      "spedUp": "스피드 업",
+      "eightD": "8D",
+      "bass": "베이스 부스트",
+      "custom": "사용자 지정"
+    },
+    "short": {
+      "slowedReverb": "슬로우",
+      "spedUp": "빠름",
+      "eightD": "8D",
+      "bass": "베이스",
+      "custom": "FX"
     }
   },
   "eq": {
@@ -1658,6 +1683,23 @@
       "sync": {
         "title": "빠른 동기화",
         "tag": "몇 분 만에"
+      },
+      "fresh": "신규",
+      "effects": {
+        "title": "사운드 효과",
+        "tag": "리버브, 8D, 베이스"
+      },
+      "releases": {
+        "title": "새 릴리스",
+        "tag": "나오는 즉시"
+      },
+      "importSync": {
+        "title": "가져오기 동기화",
+        "tag": "플레이리스트가 자동으로 채워짐"
+      },
+      "streak": {
+        "title": "STAR 연속",
+        "tag": "달마다 배지가 성장"
       }
     },
     "method": {
@@ -1761,7 +1803,19 @@
       "extend": "연장",
       "redeem": "코드 사용",
       "canceled": "자동 갱신을 껐어요",
-      "cancelError": "자동 갱신을 끄지 못했어요"
+      "cancelError": "자동 갱신을 끄지 못했어요",
+      "sources": {
+        "platega": "카드 또는 SBP",
+        "cryptobot": "Crypto Bot",
+        "tgstars": "Telegram Stars",
+        "code": "코드",
+        "boosty": "Boosty",
+        "admin": "팀의 선물",
+        "community": "커뮤니티 보상",
+        "trial": "무료 체험",
+        "referral": "친구 초대",
+        "shared": "Duo 또는 Family 요금제"
+      }
     },
     "discord": {
       "label": "Discord",
@@ -1839,6 +1893,7 @@
       "family": "Family",
       "people_other": "{{count}}명",
       "each": "1인당 {{price}} ₽",
+      "price": "{{price}} ₽",
       "save": "−{{pct}}%"
     },
     "shared": {
@@ -2127,14 +2182,14 @@
   "sync": {
     "title": "SoundCloud 동기화",
     "retrySoon": "1분 이내",
-    "retryMinutes_other": "약 {{count}}분",
-    "retryHours_other": "약 {{count}}시간",
+    "retryMinutes_other": "약\u00a0{{count}}분",
+    "retryHours_other": "약\u00a0{{count}}시간",
     "signIn": "로그인",
     "chip": {
       "synced": "변경 사항 전송됨",
       "relogin": "다시 로그인하세요",
       "syncing_other": "{{count}}개 동기화 중",
-      "delayed": "SoundCloud 제한 중 · {{time}} 후 재시도",
+      "delayed": "SoundCloud 제한 중 · {{time}}\u00a0후\u00a0재시도",
       "failed_other": "{{count}}개 오류",
       "dead_other": "{{count}}개 전송 안 됨"
     },
@@ -2452,6 +2507,18 @@
     "sendReports": "오류 리포트 보내기",
     "sendReportsDesc": "앱 오류를 개발자에게 보냅니다. 계정 정보는 없습니다"
   },
+  "starTenure": {
+    "title": "STAR 연속 구독",
+    "months_other": "{{count}}개월 연속",
+    "next": "{{tier}}까지 {{count}}개월",
+    "reached": "새 연속 레벨",
+    "tier": {
+      "0": "불씨",
+      "1": "빛",
+      "2": "불꽃",
+      "3": "별자리"
+    }
+  },
   "starMoments": {
     "tryFree_other": "{{count}}일 무료",
     "getStar": "STAR 받기",
@@ -2461,10 +2528,8 @@
     "later": "나중에",
     "expiry": {
       "trial": "STAR 체험판",
-      "left_other": "{{count}}일 남음"
-    },
-    "preview": {
-      "label": "Go+ 미리보기"
+      "left_other": "{{count}}일 남음",
+      "streakLost": "연속 기록이 사라집니다"
     },
     "winback": {
       "title": "STAR이 만료됨",
@@ -2473,8 +2538,8 @@
         "free": "HQ"
       },
       "goPlus": {
-        "star": "전체",
-        "free": "30초"
+        "star": "있음",
+        "free": "없음"
       },
       "sync": {
         "star": "분",
@@ -2485,6 +2550,10 @@
       "free": "지금",
       "freeTime": "시간",
       "starTime": "약 2분"
+    },
+    "year": {
+      "cta": "1년",
+      "saved": "{{sum}} ₽ 절약"
     }
   },
   "recap": {
@@ -2500,6 +2569,17 @@
     "next": "다음",
     "empty": "아직 결산할 만큼의 음악이 없습니다",
     "emptyHint": "음악을 재생해보세요"
+  },
+  "releases": {
+    "title": "새 릴리스",
+    "new": "신규",
+    "heard": "들음",
+    "why_other": "팔로우한 아티스트의 원곡, 최근 {{count}}일",
+    "playAll": "모두 재생",
+    "addToQueue": "대기열에 추가",
+    "lockedWhy": "내 아티스트의 신곡과 공개되는 순간 받는 알림",
+    "notifyBody_other": "새 릴리스 {{count}}개: {{artists}}",
+    "open": "열기"
   },
   "importer": {
     "title": "가져오기",
@@ -2577,7 +2657,7 @@
     "rerun": "다시 실행",
     "forget": "기록에서 삭제",
     "pasted": "클립보드에 {{source}} 링크가 있습니다",
-    "dropFile": "목록을 가져오려면 .txt 또는 .csv 파일을 놓으세요",
+    "dropFile": "목록을 가져오려면 파일을 놓으세요",
     "err": {
       "session_expired": "SoundCloud 세션이 만료되었습니다",
       "ym_token_invalid": "Yandex Music이 토큰을 거부했습니다",
@@ -2631,5 +2711,14 @@
       "ymConnected": "Yandex Music 연결됨",
       "disconnectYm": "연결 해제"
     }
+  },
+  "ago": {
+    "now": "방금",
+    "m": "{{count}}분",
+    "h": "{{count}}시간",
+    "d": "{{count}}일",
+    "w": "{{count}}주",
+    "mo": "{{count}}개월",
+    "y": "{{count}}년"
   }
 }

@@ -5,13 +5,14 @@ import { useNavigate } from 'react-router';
 import { toast } from 'sonner';
 import { trackedInvoke as invoke } from '../../lib/diagnostics';
 import { FileText } from '../../lib/icons';
+import { isListFile } from '../../lib/list-file';
 import { useImportStore } from '../../stores/import';
 import { startImportSync } from '../../stores/import-sync';
+import { DropOverlay } from '../ui/DropOverlay';
 import { ImportIsland } from './ImportIsland';
 import { ImportSyncIsland } from './ImportSyncIsland';
 
 const ImportDialog = lazy(() => import('./ImportDialog'));
-const LIST_FILE = /\.(txt|csv|tsv)$/i;
 
 function isTextTarget(target: EventTarget | null): boolean {
   const el = target as HTMLElement | null;
@@ -53,12 +54,12 @@ export function ImportHost() {
     void getCurrentWebview()
       .onDragDropEvent(({ payload }) => {
         if (payload.type === 'enter') {
-          setDropping(payload.paths.some((path) => LIST_FILE.test(path)));
+          setDropping(payload.paths.some(isListFile));
         } else if (payload.type === 'leave') {
           setDropping(false);
         } else if (payload.type === 'drop') {
           setDropping(false);
-          const path = payload.paths.find((p) => LIST_FILE.test(p));
+          const path = payload.paths.find(isListFile);
           if (!path) return;
           invoke<string>('import_read_list_file', { path }).then(
             (value) => useImportStore.getState().openDialog({ tab: 'text', value }),
@@ -110,13 +111,11 @@ export function ImportHost() {
         </Suspense>
       )}
       {dropping && (
-        <div className="pointer-events-none fixed inset-0 z-[90] flex items-center justify-center p-5 bg-[rgb(var(--paper)/0.7)] backdrop-blur-xl animate-fade-in-up motion-reduce:animate-none">
-          <div className="absolute inset-5 rounded-[28px] border-2 border-dashed border-accent" />
-          <div className="relative flex flex-col items-center gap-3 text-center text-accent">
-            <FileText size={40} />
-            <p className="text-[16px] font-semibold text-ink-90">{t('importer.dropFile')}</p>
-          </div>
-        </div>
+        <DropOverlay
+          icon={<FileText size={40} strokeWidth={1.6} />}
+          title={t('importer.dropFile')}
+          chip=".txt · .csv · .tsv"
+        />
       )}
     </>
   );

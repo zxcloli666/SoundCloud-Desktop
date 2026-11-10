@@ -1,0 +1,106 @@
+{
+  "title": "Public chat",
+  "tagline": "One room for everyone",
+  "online_one": "{{count}} online",
+  "online_other": "{{count}} online",
+  "pinged": "Replies and mentions",
+  "empty": "Nobody has written yet. Say hi",
+  "slow": {
+    "title": "Slow mode",
+    "off": "Off",
+    "seconds": "{{value}}s",
+    "minutes": "{{value}} min",
+    "wait_one": "Wait {{count}} second",
+    "wait_other": "Wait {{count}} seconds"
+  },
+  "muted": {
+    "title": "You are muted",
+    "until": "Until {{time}}",
+    "rules": "Rules"
+  },
+  "newcomer": {
+    "title": "Newcomer limit",
+    "over": "Too long for a newcomer",
+    "left_one": "{{count}} character left",
+    "left_other": "{{count}} characters left"
+  },
+  "banned": {
+    "title": "You are banned from the public chat",
+    "hint": "Reading and writing are closed"
+  },
+  "gate": {
+    "restricted": "The public chat is closed to you for now",
+    "off": "The public chat is off for now",
+    "offHint": "Your other chats keep working",
+    "failed": "Could not open the public chat"
+  },
+  "roles": {
+    "owner": "Owner",
+    "moderator": "Moderator"
+  },
+  "menu": {
+    "mute": "Mute {{duration}}",
+    "unmute": "Unmute",
+    "ban": "Ban",
+    "unban": "Unban",
+    "makeModerator": "Make moderator",
+    "dropModerator": "Remove moderator",
+    "log": "Moderation log"
+  },
+  "dialog": {
+    "muteTitle": "Mute {{name}}",
+    "banTitle": "Ban {{name}}",
+    "reason": "Reason (optional)",
+    "mute": "Mute",
+    "ban": "Ban"
+  },
+  "duration": {
+    "hours_one": "{{count}} hour",
+    "hours_other": "{{count}} hours",
+    "minutes_one": "{{count}} min",
+    "minutes_other": "{{count}} min",
+    "seconds_one": "{{count}} s",
+    "seconds_other": "{{count}} s"
+  },
+  "toast": {
+    "muted": "{{name}} muted until {{time}}",
+    "unmuted": "{{name}} can write again",
+    "banned": "{{name}} banned",
+    "unbanned": "{{name}} unbanned",
+    "moderatorOn": "{{name}} is a moderator now",
+    "moderatorOff": "{{name}} is no longer a moderator",
+    "slow": "Slow mode: {{value}}",
+    "slowOff": "Slow mode off"
+  },
+  "staff": {
+    "title": "Moderators",
+    "add": "Add moderator",
+    "empty": "No moderators yet"
+  },
+  "log": {
+    "title": "Log",
+    "empty": "No actions yet",
+    "failed": "Could not load the log",
+    "more": "Show more",
+    "mute": "{{by}} muted {{user}} for {{duration}}",
+    "unmute": "{{by}} unmuted {{user}}",
+    "ban": "{{by}} banned {{user}}",
+    "unban": "{{by}} unbanned {{user}}",
+    "delete": "{{by}} deleted a message by {{user}}",
+    "moderator_add": "{{by}} made {{user}} a moderator",
+    "moderator_remove": "{{by}} removed {{user}} as moderator",
+    "slow_mode": "{{by}} set slow mode to {{value}}",
+    "slowOff": "{{by}} turned slow mode off",
+    "other": "{{by}}: {{action}}"
+  },
+  "errors": {
+    "not_member": "You can't do that to this person",
+    "not_found": "Nothing to lift",
+    "invalid": "That did not work",
+    "busy": "The server is busy, try again soon",
+    "offline": "No connection to the server",
+    "disabled": "The public chat is off",
+    "send_limited": "Too many actions, wait a bit",
+    "generic": "Something went wrong, try again"
+  }
+}

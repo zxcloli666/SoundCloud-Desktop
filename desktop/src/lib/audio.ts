@@ -5,15 +5,15 @@ import i18n from '../i18n';
 import {useBlockedArtistsStore} from '../stores/blocked-artists';
 import type {Track} from '../stores/player';
 import {playbackAllowed, usePlayerStore} from '../stores/player';
-import {usePreviewEnd} from '../stores/preview-end';
 import {useSettingsStore} from '../stores/settings';
 import {
   dropAltUpload,
   findAltUpload,
   knownAltUpload,
+  markNoStream,
+  mayUseAltUpload,
   playingCopyOf,
   setPlayingCopy,
-  wantsAltUpload,
 } from './alt-upload';
 import {
   api,
@@ -55,13 +55,12 @@ import {
   takeSkipAttempt,
   watchLoad,
 } from './load-watchdog';
+import { forgetDownloadSource, noteDownloadSource, type RaceHandle, raceWithCopy } from './load-race';
 import {localTrackPath, markLocalMissing, noteLocalDuration} from './local-import';
 import {isLocalUrn} from './local-library';
 import {notifyError} from './notify';
 import {rememberTracks} from './offline-index';
-import {getIsPremium} from './premium-cache';
 import {getUrnCluster, recordClusterFeedback} from './recsFeedback';
-import {isPreviewOnly} from './track-access';
 import {getArtistDisplay, getDisplayTitle} from './track-display';
 import {LATE_SKIP_SHARE} from './wave-feedback';
 
@@ -80,6 +79,7 @@ const healedUrns = new Set<string>();
 
 let currentUrn: string | null = null;
 let fileUrn: string | null = null;
+let raceUrn: string | null = null;
 let hasTrack = false;
 let fallbackDuration = 0;
 let cachedTime = 0;
@@ -468,6 +468,8 @@ async function loadTrack(track: Track, resumeAt = 0) {
   }
   currentUrn = track.urn;
   fileUrn = track.urn;
+  raceUrn = null;
+  forgetDownloadSource(track.urn);
   acceptedShortFile = false;
   const urn = track.urn;
   let file = track;
@@ -508,16 +510,11 @@ async function loadTrack(track: Track, resumeAt = 0) {
       return;
     }
 
-    if (swapsToCopy(track)) {
-      setDownloadProgress(0);
-      const copy = await findAltUpload(track);
-      if (gen !== loadGen) return;
-      if (copy && startGate == null) {
-        file = copy;
-        fallbackDuration = copy.duration / 1000;
-        cachedDuration = fallbackDuration;
-      }
-      setDownloadProgress(null);
+    file = await startFile(track);
+    if (gen !== loadGen) return;
+    if (file !== track) {
+      fallbackDuration = file.duration / 1000;
+      cachedDuration = fallbackDuration;
     }
     setPlayingCopy(urn, file === track ? null : file);
     fileUrn = file.urn;
@@ -572,10 +569,15 @@ async function loadTrack(track: Track, resumeAt = 0) {
     // Strategy 2: Download full track to cache — Rust picks storage/API internally
     if (crossfadeMs > 0) invoke('audio_stop').catch(console.error);
     setDownloadProgress(0);
+    let raceHandle: RaceHandle | null = null;
     watchLoad(() => {
       if (gen !== loadGen) return;
-      if (file === track) skipUnloadable(track, true);
-      else playOriginal(track);
+      if (file === track && raceHandle?.startNow()) {
+        bumpLoadWatch();
+        return;
+      }
+      if (file !== track) dropAltUpload(track);
+      skipUnloadable(track, true);
     });
     setTimeout(() => {
       if (gen !== loadGen || downloadProgress !== 0) return;
@@ -584,26 +586,50 @@ async function loadTrack(track: Track, resumeAt = 0) {
       });
     }, SLOW_LOAD_HINT_MS);
 
+    const fetchFile = async (): Promise<TrackCacheInfo> => {
+      try {
+        return await ensureTrackCached(
+          file.urn,
+          quality,
+          expectedDurationMs(file),
+          storageQuality,
+        );
+      } catch (error) {
+        const premiumRefused = getLoadErrorText(error)?.includes('HTTP 403 Forbidden: forbidden');
+        if (quality === 'sq' || !premiumRefused || gen !== loadGen) throw error;
+        console.warn(`[Audio] ${quality} load failed, retrying in sq:`, error);
+        setDownloadProgress(0);
+        bumpLoadWatch();
+        return ensureTrackCached(file.urn, 'sq', expectedDurationMs(file), storageQuality);
+      }
+    };
+
     let cachedInfo: TrackCacheInfo;
-    try {
-      cachedInfo = await ensureTrackCached(
-        file.urn,
+    if (file !== track) {
+      cachedInfo = await fetchFile();
+    } else {
+      raceHandle = raceWithCopy(track, fetchFile(), {
         quality,
-        expectedDurationMs(file),
-        storageQuality,
-      );
-    } catch (error) {
-      const premiumRefused = getLoadErrorText(error)?.includes('HTTP 403 Forbidden: forbidden');
-      if (quality === 'sq' || !premiumRefused || gen !== loadGen) throw error;
-      console.warn(`[Audio] ${quality} load failed, retrying in sq:`, error);
-      setDownloadProgress(0);
-      bumpLoadWatch();
-      cachedInfo = await ensureTrackCached(
-        file.urn,
-        'sq',
-        expectedDurationMs(file),
-        storageQuality,
-      );
+        isCurrent: () => gen === loadGen,
+        canRace: () => gen === loadGen && startGate == null && mayUseAltUpload(track),
+        onCopy: (copyUrn) => {
+          if (gen === loadGen) raceUrn = copyUrn;
+        },
+        onOriginalFailed: (error) => {
+          if (getLoadErrorText(error)?.includes('no stream available')) markNoStream(track);
+        },
+      });
+      const raced = await raceHandle.result;
+      raceUrn = null;
+      if (gen !== loadGen) return;
+      cachedInfo = raced.info;
+      if (raced.file !== track) {
+        file = raced.file;
+        fileUrn = file.urn;
+        setPlayingCopy(urn, file);
+        fallbackDuration = file.duration / 1000;
+        cachedDuration = fallbackDuration;
+      }
     }
 
     if (gen !== loadGen) return;
@@ -630,19 +656,29 @@ async function loadTrack(track: Track, resumeAt = 0) {
   } catch (e) {
     console.error('[Audio] Load failed:', e);
     if (gen !== loadGen) return;
+    raceUrn = null;
     reportPlaybackFailure(e, track);
     if (crossfadeMs > 0) invoke('audio_stop').catch(console.error);
     stopLoadWatch();
     setDownloadProgress(null);
     usePlayerStore.getState().setPlaybackTransport(null, null);
-    if (file !== track) {
-      playOriginal(track);
-      return;
-    }
+    const isCopy = file !== track;
+    if (isCopy) dropAltUpload(track);
     const localMissing = local && isFileMissing(e);
     if (localMissing) markLocalMissing(urn);
     const errorText = localMissing ? i18n.t('local.fileMissing') : getLoadErrorText(e);
-    if (errorText?.includes('no stream available')) {
+    if (!isCopy && errorText?.includes('no stream available')) {
+      markNoStream(track);
+      if (startGate == null && mayUseAltUpload(track)) {
+        setDownloadProgress(0);
+        const found = await findAltUpload(track);
+        if (gen !== loadGen) return;
+        setDownloadProgress(null);
+        if (found) {
+          void loadTrack(track, resumeAt);
+          return;
+        }
+      }
       notifyError(i18n.t('track.noStream'), {
         id: 'track-load-error',
         description: `${track.title}: ${i18n.t('track.noStreamHint')}`,
@@ -657,13 +693,15 @@ async function loadTrack(track: Track, resumeAt = 0) {
   }
 }
 
-function swapsToCopy(track: Track): boolean {
-  return startGate == null && wantsAltUpload(track);
+function playableFile(track: Track): Track {
+  if (startGate != null || !mayUseAltUpload(track)) return track;
+  return knownAltUpload(track) ?? track;
 }
 
-function playOriginal(track: Track) {
-  dropAltUpload(track);
-  void loadTrack(track);
+async function startFile(track: Track): Promise<Track> {
+  const file = playableFile(track);
+  if (file === track || !(await getCacheInfo(track.urn))?.path) return file;
+  return track;
 }
 
 function skipUnloadable(track: Track, stuck: boolean): boolean {
@@ -765,7 +803,6 @@ async function hydrateTrackMetadata(track: Track, gen: number) {
 }
 
 function endedEarly(file: Track): boolean {
-  if (isPreviewOnly(file)) return false;
   if (Math.abs(cachedTime - API_PREVIEW_DURATION_MS / 1000) < 2) return false;
   const expected = Math.max(cachedDuration, file.duration / 1000);
   if (expected < EARLY_END_MIN_EXPECTED_SEC) return false;
@@ -862,8 +899,7 @@ function maybeStartCrossfade() {
   const next = upcomingTrack();
   if (!canCrossfade() || !next || isUrnDisliked(next.urn) || isTrackBlocked(next)) return;
   const gen = loadGen;
-  const file = swapsToCopy(next) ? (knownAltUpload(next) ?? next) : next;
-  void getCacheInfo(file.urn).then((info) => {
+  void startFile(next).then((file) => getCacheInfo(file.urn)).then((info) => {
     if (!info?.path || gen !== loadGen || !hasTrack || !currentUrn) return;
     if (!canCrossfade() || upcomingTrack()?.urn !== next.urn) return;
     recordFullPlay(currentUrn, true);
@@ -883,10 +919,11 @@ listen<number>('audio:tick', (event) => {
   maybeStartCrossfade();
 });
 
-listen<{ urn: string; progress: number }>('track:download-progress', (event) => {
-  const { urn, progress } = event.payload;
-  if (urn === fileUrn && downloadProgress !== null) {
-    if (progress > downloadProgress) bumpLoadWatch();
+listen<{ urn: string; progress: number; source?: string }>('track:download-progress', (event) => {
+  const { urn, progress, source } = event.payload;
+  if (urn === fileUrn) noteDownloadSource(urn, source);
+  if ((urn === fileUrn || urn === raceUrn) && downloadProgress !== null) {
+    if (progress > downloadProgress || raceUrn) bumpLoadWatch();
     setDownloadProgress(Math.max(downloadProgress, progress));
   }
 });
@@ -918,8 +955,6 @@ listen<boolean | null>('audio:ended', (event) => {
     recordFullPlay(currentUrn, silentTail);
     lastEndedUrn = currentUrn;
   }
-  const ended = usePlayerStore.getState().currentTrack;
-  if (ended && isPreviewOnly(ended) && !getIsPremium()) usePreviewEnd.getState().ended(ended);
   hasTrack = false;
   handleTrackEnd();
 });
@@ -1155,8 +1190,8 @@ export function preloadQueue() {
     .slice(queueIndex + 1)
     .filter(canPreload)
     .slice(0, 3)
-    .map(async (track) => (swapsToCopy(track) ? ((await findAltUpload(track)) ?? track) : track));
-  void Promise.all(upcoming).then(preloadNow);
+    .map(playableFile);
+  preloadNow(upcoming);
 }
 
 usePlayerStore.subscribe((state, prev) => {

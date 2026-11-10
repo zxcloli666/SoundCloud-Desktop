@@ -89,7 +89,7 @@ export const LinerNotes = React.memo(function LinerNotes({
     if (isrc) credits.push({label: t('track.isrc'), value: isrc});
 
     return (
-        <section className="glass rounded-[2rem] p-6 md:p-7 space-y-6">
+        <section className="glass rounded-[2rem] p-6 @min-[512px]:p-7 space-y-6">
             <div className="flex flex-wrap gap-2.5">
                 <StatOrb value={track.playback_count} label={t('track.plays')} accent={aura.accentGlow}/>
                 <StatOrb
@@ -139,7 +139,7 @@ export const LinerNotes = React.memo(function LinerNotes({
             )}
 
             {credits.length > 0 && (
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-4">
+                <div className="grid grid-cols-2 @min-[512px]:grid-cols-3 gap-x-8 gap-y-4">
                     {credits.map((c) => (
                         <Credit key={c.label} {...c} />
                     ))}

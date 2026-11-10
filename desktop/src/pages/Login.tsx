@@ -6,6 +6,7 @@ import { BrandMark } from '../components/auth/BrandMark';
 import { OfflineEntryCard } from '../components/auth/OfflineEntryCard';
 import { oauthErrorText } from '../components/auth/oauth-error';
 import { QrLinkSheet } from '../components/auth/QrLinkSheet';
+import { KeychainCard } from '../components/chat/relogin/KeychainCard';
 import {
   AlertCircle,
   Check,
@@ -53,6 +54,8 @@ export function Login() {
     error,
     browserFailed,
     callbackSlow,
+    keychain,
+    checking,
     cancel,
   } = useOAuthFlow(onLoginSuccess);
 
@@ -66,8 +69,9 @@ export function Login() {
 
   const errorText = error ? oauthErrorText(error, t) : null;
 
-  const stepLabel =
-    step === 'token'
+  const stepLabel = checking
+    ? t('auth.checking')
+    : step === 'token'
       ? t('auth.stepToken')
       : step === 'extract'
         ? t('auth.stepProfile')
@@ -105,7 +109,13 @@ export function Login() {
           <BrandMark subtitle={isPolling ? t('auth.signingIn') : t('auth.tagline')} />
 
           <div className="mt-8">
-            {errorText ? (
+            {keychain ? (
+              <KeychainCard
+                reason={keychain}
+                onResolved={() => void handleLogin()}
+                onSkip={() => void startLogin(true)}
+              />
+            ) : errorText ? (
               <div className="flex flex-col items-stretch gap-4">
                 <div className="flex flex-col items-center gap-3 rounded-2xl border border-red-500/20 bg-red-500/[0.06] px-5 py-5 text-center">
                   <div className="flex size-11 items-center justify-center rounded-full border border-red-500/25 bg-red-500/10">

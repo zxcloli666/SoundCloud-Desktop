@@ -17,6 +17,8 @@
   --color-accent-glow: rgba(255, 85, 0, 0.2);
   --color-accent-selection: rgba(255, 85, 0, 0.3);
   --color-accent-contrast: #ffffff;
+  --color-chat-cutout: color-mix(in srgb, var(--color-white) 7%, var(--color-black));
+  --color-chat-tint: color-mix(in srgb, var(--color-accent) 20%, transparent);
   --color-superlike-from: #ffd166;
   --color-superlike-via: #ff7a59;
   --color-superlike-to: #ff3d81;
@@ -263,14 +265,16 @@ select,
 }
 
 /* ── Focus reset ───────────────────────────────────────────── */
-:focus {
-  outline: none;
-}
+@layer base {
+  :focus {
+    outline: none;
+  }
 
-:focus-visible {
-  outline: 1px solid var(--color-accent);
-  outline-offset: 2px;
-  border-radius: 8px;
+  :focus-visible {
+    outline: 1px solid var(--color-accent);
+    outline-offset: 2px;
+    border-radius: 8px;
+  }
 }
 
 /* ── Feed animations ──────────────────────────────────────── */
@@ -897,6 +901,7 @@ select,
    (vinyl ring, eq bars, play pulse) run only while [data-playing] is true
    (= playing AND window visible). */
 .npb {
+    --npb-quality-w: 67px;
     position: absolute;
     left: 0;
     right: 0;
@@ -908,7 +913,7 @@ select,
     padding: 11px 16px 15px;
     /* overlay: empty areas around the pill let clicks fall through to the page */
     pointer-events: none;
-    transition: left 300ms var(--ease-apple);
+    transition: left 300ms var(--ease-apple), right 300ms var(--ease-apple);
     animation: npb-rise 0.7s var(--ease-apple) both;
 }
 
@@ -951,6 +956,7 @@ select,
     width: 1128px;
     max-width: calc(100% - 32px);
     border-radius: 28px;
+    container: npb / inline-size;
     box-shadow: 0 30px 70px -22px rgb(var(--shade) / calc(0.78 * var(--shade-alpha))),
     0 0 64px -18px var(--color-accent-glow);
 }
@@ -1017,7 +1023,7 @@ select,
 
 .npb-quality {
     flex: 0 0 auto;
-    width: 96px;
+    width: auto;
 }
 
 .npb-react {
@@ -1029,7 +1035,7 @@ select,
 
 .npb-react.is-local {
     justify-content: center;
-    width: calc(5 * 36px + 5 * 2px + 96px);
+    width: calc(5 * 36px + 5 * 2px + var(--npb-quality-w));
 }
 
 .npb-slot {
@@ -1529,62 +1535,93 @@ select,
     display: block;
 }
 
-.npb[data-compact] .npb-vol-slider {
-    display: none;
-}
-
-.npb[data-compact] .npb-vol:hover .npb-vol-pop {
-    display: block;
-}
-
-.npb[data-compact] .npb-txt {
-    flex-basis: 112px;
-}
-
-.npb[data-compact] .npb-quality {
-    width: 72px;
-}
-
-.npb[data-compact] .npb-react.is-local {
-    width: calc(5 * 36px + 5 * 2px + 72px);
-}
-
-.npb[data-compact] .npb-cdn {
-    gap: 0;
-    padding-inline: 9px;
-}
-
-.npb[data-compact] .npb-cdn-label {
-    display: none;
-}
-
 .together-icon {
     display: none;
 }
 
-.npb[data-compact] .together-icon {
-    display: block;
+.npb-extra,
+.npb-spare {
+    display: contents;
 }
 
-.npb[data-compact] .together-stack {
-    display: none;
+@container npb (width < 1096px) {
+    .npb-content {
+        --npb-quality-w: 64px;
+    }
+
+    .npb-vol-slider {
+        display: none;
+    }
+
+    .npb-vol:hover .npb-vol-pop {
+        display: block;
+    }
+
+    .npb-txt {
+        flex-basis: 112px;
+    }
+
+    .together-icon {
+        display: block;
+    }
+
+    .together-stack {
+        display: none;
+    }
 }
 
-.npb[data-tight] .npb-quality {
-    display: none;
+@container npb (width < 936px) {
+    .npb-quality {
+        display: none;
+    }
+
+    .npb-react.is-local {
+        width: auto;
+    }
 }
 
-.npb[data-tight] .npb-react.is-local {
-    width: auto;
+@container npb (width < 836px) {
+    .npb-row {
+        gap: 8px;
+    }
+
+    .npb-slot,
+    .npb-abloop:not(.is-active) {
+        display: none;
+    }
 }
 
-.npb[data-mini] .npb-row {
-    gap: 8px;
+@container npb (width < 696px) {
+    .npb-extra,
+    .npb-sep {
+        display: none;
+    }
+
+    .npb-content {
+        padding-inline: 14px;
+    }
 }
 
-.npb[data-mini] .npb-slot,
-.npb[data-mini] .npb-abloop:not(.is-active) {
-    display: none;
+@container npb (width < 536px) {
+    .npb-spare {
+        display: none;
+    }
+}
+
+@container npb (width < 480px) {
+    .npb-row {
+        flex-wrap: wrap;
+        justify-content: center;
+        row-gap: 6px;
+    }
+
+    .npb-meta {
+        flex-basis: 100%;
+    }
+
+    .npb-react.is-local {
+        display: none;
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1664,15 +1701,6 @@ select,
   }
 }
 
-@keyframes star-badge-aurora {
-  from {
-    background-position: 0% 50%;
-  }
-  to {
-    background-position: 300% 50%;
-  }
-}
-
 @keyframes star-badge-twinkle {
   0%, 100% {
     opacity: 0;
@@ -1698,13 +1726,37 @@ select,
   pointer-events: none;
 }
 
-.star-badge-aurora {
-  background-size: 300% 100% !important;
-  animation: star-badge-aurora 7s linear infinite;
-}
-
 .star-badge-twinkle {
   animation: star-badge-twinkle 2.4s ease-in-out infinite;
+}
+
+@keyframes perk-bars {
+  0%, 100% {
+    transform: scaleY(0.45);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+.perk-bars {
+  animation: perk-bars 1.1s ease-in-out infinite;
+}
+
+@keyframes perk-sync-dot {
+  0%, 70%, 100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  35% {
+    opacity: 0.4;
+    transform: translateY(-2px);
+  }
+}
+
+.perk-sync-dot {
+  display: inline-block;
+  animation: perk-sync-dot 2.4s ease-in-out infinite;
 }
 
 @keyframes tenure-burst {
@@ -1722,11 +1774,26 @@ select,
   animation: tenure-burst 1.4s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+@keyframes import-bar-sweep {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(250%);
+  }
+}
+
+.import-bar-sweep {
+  animation: import-bar-sweep 1.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .star-badge-sheen::after,
-  .star-badge-aurora,
   .star-badge-twinkle,
-  .tenure-burst {
+  .perk-bars,
+  .perk-sync-dot,
+  .tenure-burst,
+  .import-bar-sweep {
     animation: none !important;
   }
   .star-badge-twinkle {

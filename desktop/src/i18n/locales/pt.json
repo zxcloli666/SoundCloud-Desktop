@@ -73,7 +73,7 @@
     "openApp": "Abrir SoundCloud",
     "notPlaying": "Nada tocando",
     "noContinuation": "Nenhuma faixa parecida encontrada, reprodução parada",
-    "altUpload": "Tocando uma cópia completa de {{name}}",
+    "altUpload": "Tocando uma cópia de {{name}}",
     "cancelLoad": "Parar carregamento",
     "volume": "Volume",
     "volumeReset": "Voltar o volume para 100%",
@@ -97,6 +97,7 @@
     "callbackSlow": "A página depois do SoundCloud não carrega? O domínio pode estar bloqueado para você. Ligue uma VPN e abra o link de novo.",
     "reopenLink": "Abrir link de novo",
     "stepWaiting": "Aguardando autorização do SoundCloud",
+    "checking": "Verificando…",
     "stepToken": "Trocando o código de autorização",
     "stepProfile": "Buscando seu perfil",
     "stepSession": "Finalizando a sessão",
@@ -309,7 +310,6 @@
     "language": "Idioma",
     "album": "Do álbum",
     "fullLength": "Versão completa",
-    "previewOnly": "Somente prévia",
     "source": "Origem",
     "showMore": "Mostrar mais",
     "showLess": "Mostrar menos",
@@ -934,7 +934,7 @@
     "listWeight": "Peso",
     "listTime": "Tempo",
     "stampForging": "FORJANDO",
-    "stampPreview": "PRÉVIA",
+    "stampCut": "CORTADO",
     "stampMissing": "SEM ARQUIVO",
     "rowForging": "forjando · ffmpeg",
     "actPlay": "Reproduzir",
@@ -1223,7 +1223,6 @@
     "scrobbleLiveListening": "Scrobble em {{time}}",
     "scrobbleLiveScrobbled": "Scrobble feito",
     "scrobbleLiveShort": "Faixas com menos de 30 segundos não contam como scrobble",
-    "scrobbleLivePreview": "Prévias não contam como scrobble",
     "scrobbleLiveSession_one": "{{count}} nesta sessão",
     "scrobbleLiveSession_other": "{{count}} nesta sessão",
     "scrobbleLiveSession_many": "{{count}} nesta sessão",
@@ -1462,8 +1461,8 @@
     "manualUpdates": "As atualizações são instaladas manualmente",
     "autoplay": "Reprodução automática",
     "autoplayDesc": "Quando a fila acabar, continua tocando faixas parecidas com a onda da última",
-    "altUploads": "Cópia completa no lugar da prévia",
-    "altUploadsDesc": "Sem STAR, uma faixa só com prévia toca a partir de um envio completo da mesma faixa em outra conta, quando houver",
+    "altUploads": "Cópia no lugar de uma faixa indisponível",
+    "altUploadsDesc": "Se uma faixa não puder ser tocada, toca um envio da mesma faixa em outra conta, quando houver",
     "searchPlayback": "Reprodução pela busca",
     "searchPlaybackSimilar": "Faixas parecidas",
     "searchPlaybackResults": "Resultados da busca",
@@ -1503,6 +1502,32 @@
       "no_space": "Não há espaço livre suficiente nesse disco",
       "sandboxed": "Esta pasta só é acessível pelo portal do sandbox. Escolha uma pasta em um disco em /media, /run/media ou /mnt, ou dentro de Música ou Downloads",
       "failed": "Não foi possível mover o cache"
+    },
+    "releaseNotifications": "Notificações de lançamentos",
+    "releaseNotificationsDesc": "Uma notificação do sistema quando artistas que você segue publicam algo novo. Verificamos a cada 30 minutos enquanto o app está aberto"
+  },
+  "effects": {
+    "title": "Efeitos",
+    "toggle": "Ligar ou desligar efeitos",
+    "locked": "Reverb, 8D e reforço de graves fazem parte do STAR",
+    "reverb": "Reverb",
+    "room": "Tamanho da sala",
+    "eightDSpeed": "Velocidade do 8D",
+    "bass": "Graves",
+    "preset": {
+      "off": "Desligado",
+      "slowedReverb": "Slowed + reverb",
+      "spedUp": "Acelerado",
+      "eightD": "8D",
+      "bass": "Reforço de graves",
+      "custom": "Personalizado"
+    },
+    "short": {
+      "slowedReverb": "Lento",
+      "spedUp": "Rápido",
+      "eightD": "8D",
+      "bass": "Graves",
+      "custom": "FX"
     }
   },
   "eq": {
@@ -1725,6 +1750,23 @@
       "sync": {
         "title": "Sincronização rápida",
         "tag": "Em minutos"
+      },
+      "fresh": "Novo",
+      "effects": {
+        "title": "Efeitos de som",
+        "tag": "Reverb, 8D, grave"
+      },
+      "releases": {
+        "title": "Lançamentos",
+        "tag": "Assim que saem"
+      },
+      "importSync": {
+        "title": "Sincronizar importação",
+        "tag": "Playlists se atualizam sozinhas"
+      },
+      "streak": {
+        "title": "Sequência STAR",
+        "tag": "O selo cresce a cada mês"
       }
     },
     "method": {
@@ -1828,7 +1870,19 @@
       "extend": "Estender",
       "redeem": "Resgatar um código",
       "canceled": "Renovação automática desativada",
-      "cancelError": "Não foi possível desativar a renovação automática"
+      "cancelError": "Não foi possível desativar a renovação automática",
+      "sources": {
+        "platega": "Cartão ou SBP",
+        "cryptobot": "Crypto Bot",
+        "tgstars": "Telegram Stars",
+        "code": "Código",
+        "boosty": "Boosty",
+        "admin": "Presente da equipe",
+        "community": "Recompensa da comunidade",
+        "trial": "Teste grátis",
+        "referral": "Convite de amigo",
+        "shared": "Plano Duo ou Family"
+      }
     },
     "discord": {
       "label": "Discord",
@@ -1916,6 +1970,7 @@
       "people_one": "{{count}} pessoa",
       "people_other": "{{count}} pessoas",
       "each": "{{price}} ₽ cada",
+      "price": "{{price}} ₽",
       "save": "−{{pct}}%"
     },
     "shared": {
@@ -2217,14 +2272,14 @@
   "sync": {
     "title": "Sincronização com o SoundCloud",
     "retrySoon": "menos de um minuto",
-    "retryMinutes_one": "~{{count}} min",
-    "retryMinutes_other": "~{{count}} min",
-    "retryMinutes_many": "~{{count}} min",
-    "retryMinutes_zero": "~{{count}} min",
-    "retryHours_one": "~{{count}} h",
-    "retryHours_other": "~{{count}} h",
-    "retryHours_many": "~{{count}} h",
-    "retryHours_zero": "~{{count}} h",
+    "retryMinutes_one": "~{{count}}\u00a0min",
+    "retryMinutes_other": "~{{count}}\u00a0min",
+    "retryMinutes_many": "~{{count}}\u00a0min",
+    "retryMinutes_zero": "~{{count}}\u00a0min",
+    "retryHours_one": "~{{count}}\u00a0h",
+    "retryHours_other": "~{{count}}\u00a0h",
+    "retryHours_many": "~{{count}}\u00a0h",
+    "retryHours_zero": "~{{count}}\u00a0h",
     "signIn": "Entrar",
     "chip": {
       "synced": "Alterações enviadas",
@@ -2233,7 +2288,7 @@
       "syncing_other": "{{count}} sincronizando",
       "syncing_many": "{{count}} sincronizando",
       "syncing_zero": "{{count}} sincronizando",
-      "delayed": "O SoundCloud está limitando · nova tentativa em {{time}}",
+      "delayed": "O SoundCloud está limitando · nova\u00a0tentativa\u00a0em\u00a0{{time}}",
       "failed_one": "{{count}} com erro",
       "failed_other": "{{count}} com erros",
       "failed_many": "{{count}} com erros",
@@ -2587,6 +2642,20 @@
     "sendReports": "Enviar relatórios de erro",
     "sendReportsDesc": "Envia erros do app para os desenvolvedores, sem dados da conta"
   },
+  "starTenure": {
+    "title": "Sequência STAR",
+    "months_other": "{{count}} meses seguidos",
+    "reached": "Novo nível da sequência",
+    "tier": {
+      "0": "Faísca",
+      "1": "Brilho",
+      "2": "Chama",
+      "3": "Constelação"
+    },
+    "next_other": "Faltam {{count}} meses para {{tier}}",
+    "next_one": "Falta {{count}} mês para {{tier}}",
+    "months_one": "{{count}} mês seguido"
+  },
   "starMoments": {
     "tryFree_one": "{{count}} dia grátis",
     "tryFree_other": "{{count}} dias grátis",
@@ -2601,11 +2670,9 @@
       "trial": "Teste do STAR",
       "left_one": "{{count}} dia restante",
       "left_other": "{{count}} dias restantes",
+      "streakLost": "A sequência será perdida",
       "left_many": "{{count}} dias restantes",
       "left_zero": "{{count}} dias restantes"
-    },
-    "preview": {
-      "label": "Prévia do Go+"
     },
     "winback": {
       "title": "Seu STAR acabou",
@@ -2614,8 +2681,8 @@
         "free": "HQ"
       },
       "goPlus": {
-        "star": "completa",
-        "free": "30 s"
+        "star": "sim",
+        "free": "não"
       },
       "sync": {
         "star": "minutos",
@@ -2626,6 +2693,10 @@
       "free": "Agora",
       "freeTime": "horas",
       "starTime": "~2 min"
+    },
+    "year": {
+      "cta": "Ano",
+      "saved": "economize {{sum}} ₽"
     }
   },
   "recap": {
@@ -2644,6 +2715,19 @@
     "next": "Próximo",
     "empty": "Ainda não há música suficiente para uma retrospectiva",
     "emptyHint": "Toque algumas músicas"
+  },
+  "releases": {
+    "title": "Novos lançamentos",
+    "new": "Novo",
+    "heard": "Ouvido",
+    "why_other": "Originais dos artistas que você segue, últimos {{count}} dias",
+    "playAll": "Tocar tudo",
+    "addToQueue": "Adicionar à fila",
+    "lockedWhy": "Faixas novas dos seus artistas e uma notificação assim que saem",
+    "notifyBody_other": "{{count}} novos lançamentos: {{artists}}",
+    "open": "Abrir",
+    "notifyBody_one": "{{count}} novo lançamento: {{artists}}",
+    "why_one": "Originais dos artistas que você segue, último {{count}} dia"
   },
   "importer": {
     "title": "Importar",
@@ -2712,16 +2796,19 @@
     },
     "pickPlaylist": "Escolha uma playlist...",
     "discard": "Descartar",
-    "save": "Salvar {{count}} faixas",
-    "saved": "{{count}} faixas salvas",
-    "savedCount": "{{count}} faixas",
+    "save_one": "Salvar {{count}} faixa",
+    "save_other": "Salvar {{count}} faixas",
+    "saved_one": "{{count}} faixa salva",
+    "saved_other": "{{count}} faixas salvas",
+    "savedCount_one": "{{count}} faixa",
+    "savedCount_other": "{{count}} faixas",
     "openPlaylist": "Abrir playlist",
     "openView": "Abrir importação",
     "history": "Histórico",
     "rerun": "Executar de novo",
     "forget": "Remover do histórico",
     "pasted": "Link do {{source}} na área de transferência",
-    "dropFile": "Solte um arquivo .txt ou .csv para importar a lista",
+    "dropFile": "Solte um arquivo para importar a lista",
     "err": {
       "session_expired": "Sua sessão do SoundCloud expirou",
       "ym_token_invalid": "O Yandex Music recusou o token",
@@ -2779,5 +2866,16 @@
       "ymConnected": "Yandex Music conectado",
       "disconnectYm": "Desconectar"
     }
+  },
+  "ago": {
+    "now": "agora",
+    "m": "{{count}} min",
+    "h": "{{count}} h",
+    "d": "{{count}} d",
+    "w": "{{count}} sem.",
+    "mo_one": "{{count}} mês",
+    "mo_other": "{{count}} meses",
+    "y_one": "{{count}} ano",
+    "y_other": "{{count}} anos"
   }
 }

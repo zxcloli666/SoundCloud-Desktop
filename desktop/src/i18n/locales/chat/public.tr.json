@@ -1,0 +1,106 @@
+{
+  "title": "Genel sohbet",
+  "tagline": "Herkes için tek oda",
+  "online_one": "{{count}} çevrimiçi",
+  "online_other": "{{count}} çevrimiçi",
+  "pinged": "Yanıtlar ve bahsetmeler",
+  "empty": "Henüz kimse yazmadı. Merhaba de",
+  "slow": {
+    "title": "Yavaş mod",
+    "off": "Kapalı",
+    "seconds": "{{value}} sn",
+    "minutes": "{{value}} dk",
+    "wait_one": "{{count}} saniye bekle",
+    "wait_other": "{{count}} saniye bekle"
+  },
+  "muted": {
+    "title": "Susturuldun",
+    "until": "{{time}} kadar",
+    "rules": "Kurallar"
+  },
+  "newcomer": {
+    "title": "Yeni üye sınırı",
+    "over": "Yeni üye için çok uzun",
+    "left_one": "{{count}} karakter kaldı",
+    "left_other": "{{count}} karakter kaldı"
+  },
+  "banned": {
+    "title": "Genel sohbetten yasaklandın",
+    "hint": "Okuma ve yazma kapalı"
+  },
+  "gate": {
+    "restricted": "Genel sohbet şimdilik sana kapalı",
+    "off": "Genel sohbet şimdilik kapalı",
+    "offHint": "Diğer sohbetlerin çalışmaya devam ediyor",
+    "failed": "Genel sohbet açılamadı"
+  },
+  "roles": {
+    "owner": "Sahip",
+    "moderator": "Moderatör"
+  },
+  "menu": {
+    "mute": "{{duration}} sustur",
+    "unmute": "Susturmayı kaldır",
+    "ban": "Yasakla",
+    "unban": "Yasağı kaldır",
+    "makeModerator": "Moderatör yap",
+    "dropModerator": "Moderatörlükten al",
+    "log": "Moderasyon günlüğü"
+  },
+  "dialog": {
+    "muteTitle": "{{name}} sustur",
+    "banTitle": "{{name}} yasakla",
+    "reason": "Sebep (isteğe bağlı)",
+    "mute": "Sustur",
+    "ban": "Yasakla"
+  },
+  "duration": {
+    "hours_one": "{{count}} saat",
+    "hours_other": "{{count}} saat",
+    "minutes_one": "{{count}} dk",
+    "minutes_other": "{{count}} dk",
+    "seconds_one": "{{count}} sn",
+    "seconds_other": "{{count}} sn"
+  },
+  "toast": {
+    "muted": "{{name}} {{time}} kadar susturuldu",
+    "unmuted": "{{name}} yeniden yazabilir",
+    "banned": "{{name}} yasaklandı",
+    "unbanned": "{{name}} yasağı kaldırıldı",
+    "moderatorOn": "{{name}} artık moderatör",
+    "moderatorOff": "{{name}} artık moderatör değil",
+    "slow": "Yavaş mod: {{value}}",
+    "slowOff": "Yavaş mod kapalı"
+  },
+  "staff": {
+    "title": "Moderatörler",
+    "add": "Moderatör ekle",
+    "empty": "Henüz moderatör yok"
+  },
+  "log": {
+    "title": "Günlük",
+    "empty": "Henüz işlem yok",
+    "failed": "Günlük yüklenemedi",
+    "more": "Daha fazla göster",
+    "mute": "{{by}}, {{user}} kişisini {{duration}} susturdu",
+    "unmute": "{{by}}, {{user}} susturmasını kaldırdı",
+    "ban": "{{by}}, {{user}} kişisini yasakladı",
+    "unban": "{{by}}, {{user}} yasağını kaldırdı",
+    "delete": "{{by}}, {{user}} mesajını sildi",
+    "moderator_add": "{{by}}, {{user}} kişisini moderatör yaptı",
+    "moderator_remove": "{{by}}, {{user}} moderatörlüğünü aldı",
+    "slow_mode": "{{by}} yavaş modu ayarladı: {{value}}",
+    "slowOff": "{{by}} yavaş modu kapattı",
+    "other": "{{by}}: {{action}}"
+  },
+  "errors": {
+    "not_member": "Bu kişiye bunu yapamazsın",
+    "not_found": "Kaldırılacak bir şey yok",
+    "invalid": "Olmadı",
+    "busy": "Sunucu meşgul, birazdan tekrar dene",
+    "offline": "Sunucuya bağlantı yok",
+    "disabled": "Genel sohbet kapalı",
+    "send_limited": "Çok fazla işlem, biraz bekle",
+    "generic": "Bir şeyler ters gitti, tekrar dene"
+  }
+}

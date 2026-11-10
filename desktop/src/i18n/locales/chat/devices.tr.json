@@ -1,0 +1,58 @@
+{
+  "span": {
+    "d": "{{count}} g",
+    "h": "{{count}} sa",
+    "m": "{{count}} dk"
+  },
+  "seen": {
+    "now": "şimdi"
+  },
+  "tier": {
+    "direct": "doğrudan",
+    "relay": "yedek yoldan",
+    "pro": "ikinci yedek yoldan"
+  },
+  "version": "v{{version}}",
+  "alert": {
+    "title": "Sohbetlerinize yeni giriş",
+    "confirm": "Bu benim",
+    "notMe": "Ben değilim",
+    "queue": "+{{count}} daha",
+    "unlocked": "Geçmiş açıldı",
+    "opensIn": "Geçmiş {{span}} sonra açılacak",
+    "revoked": "Cihazın oturumu kapatıldı",
+    "revokedHint": "Sizseniz o cihazda yeniden giriş yapın",
+    "done": "Tamam"
+  },
+  "banner": {
+    "title": "Eski mesajlar başka bir cihazda onayladıktan sonra görünecek",
+    "alone": "Eski mesajlar {{span}} sonra görünecek",
+    "orIn": "ya da {{span}} sonra kendiliğinden"
+  },
+  "list": {
+    "title": "Cihazlar",
+    "limit": "{{count}} / {{max}}",
+    "current": "bu cihaz",
+    "waiting": "onay bekliyor",
+    "revoked": "oturum kapalı",
+    "added": "Eklendi: {{at}}",
+    "young": "Bu cihaz yeni. Diğerlerini {{span}} sonra yönetebilirsiniz",
+    "remove": "Kaldır",
+    "removeSure": "Kaldırılsın mı?",
+    "logout": "Çıkış yap",
+    "logoutSure": "Sohbetlerden çıkılsın mı?",
+    "lockedFor": "{{span}} sonra kullanılabilir",
+    "olderOnly": "Yalnızca daha eski bir cihaz onaylayabilir",
+    "loadFailed": "Cihazlar yüklenemedi",
+    "retry": "Tekrar dene"
+  },
+  "errors": {
+    "too_young": "Bu cihaz bunun için henüz çok yeni",
+    "not_found": "Bu cihazın oturumu zaten kapatıldı",
+    "offline": "Sohbetlere bağlantı yok",
+    "busy": "Sunucu meşgul, bir dakika sonra deneyin",
+    "device_revoked": "Bu cihazın sohbet oturumu kapatıldı",
+    "disabled": "Sohbetler şu an kapalı",
+    "generic": "Olmadı, tekrar deneyin"
+  }
+}

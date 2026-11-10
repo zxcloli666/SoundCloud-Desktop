@@ -1,0 +1,217 @@
+import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
+import type { MediaRef, RoomBackdrop, UploadState } from '../../lib/chat/media-types';
+import type { ChatError, ConvId } from '../../lib/chat/types';
+import { tauriStorage } from '../../lib/tauri-storage';
+import { useChatMediaStore } from './media';
+
+const KEEP_MS = 7 * 24 * 60 * 60 * 1000;
+const KEEP_MAX = 200;
+const ORPHANS_MAX = 40;
+const MOVING: ReadonlySet<UploadState> = new Set(['uploading', 'uploaded']);
+
+export type BackdropDialogKind = 'picker' | 'report';
+
+export interface BackdropDialog {
+  kind: BackdropDialogKind;
+  scope: ConvId | null;
+}
+
+export interface BackdropAttempt {
+  id: string;
+  error: ChatError | null;
+  at: number;
+}
+
+export interface StoredFailure {
+  source: MediaRef;
+  error: ChatError;
+}
+
+interface BackdropState {
+  hidden: Record<string, number>;
+  attempts: Record<ConvId, BackdropAttempt>;
+  orphans: Record<string, ChatError>;
+  fetching: Record<ConvId, number>;
+  failures: Record<ConvId, StoredFailure>;
+  limited: Record<ConvId, number>;
+  dialog: BackdropDialog | null;
+  open: (kind: BackdropDialogKind, scope?: ConvId | null) => void;
+  close: () => void;
+  hide: (conversationId: ConvId, look: string) => void;
+  show: (conversationId: ConvId, look: string) => void;
+  started: (conversationId: ConvId, uploadId: string) => void;
+  failed: (uploadId: string, error: ChatError) => void;
+  recovered: (uploadId: string) => void;
+  dismiss: (conversationId: ConvId) => void;
+  fetchStart: (conversationId: ConvId) => number;
+  fetchFailed: (conversationId: ConvId, ticket: number, failure: StoredFailure) => void;
+  fetchEnd: (conversationId: ConvId, ticket: number) => void;
+  forgetFetch: (conversationId: ConvId) => void;
+  limit: (conversationId: ConvId, until: number) => void;
+  forgetUploads: () => void;
+}
+
+export function lookKey(backdrop: RoomBackdrop | null): string | null {
+  if (!backdrop) return null;
+  return backdrop.kind === 'image' ? backdrop.mediaId : `preset:${backdrop.id}`;
+}
+
+export function hiddenKey(conversationId: ConvId, look: string) {
+  return `${conversationId}:${look}`;
+}
+
+function fresh<T>(entries: Record<string, T>, at: (value: T) => number, now: number) {
+  const kept = Object.entries(entries)
+    .filter(([, value]) => now - at(value) < KEEP_MS)
+    .sort((a, b) => at(b[1]) - at(a[1]))
+    .slice(0, KEEP_MAX);
+  return Object.fromEntries(kept);
+}
+
+function attemptOf(attempts: Record<ConvId, BackdropAttempt>, uploadId: string) {
+  return Object.entries(attempts).find(([, attempt]) => attempt.id === uploadId)?.[0] ?? null;
+}
+
+function withAttempt(
+  state: BackdropState,
+  conversationId: ConvId,
+  attempt: BackdropAttempt | null,
+) {
+  const attempts = { ...state.attempts };
+  if (attempt) attempts[conversationId] = attempt;
+  else delete attempts[conversationId];
+  return { attempts };
+}
+
+function without<T>(entries: Record<ConvId, T>, conversationId: ConvId): Record<ConvId, T> {
+  const rest = { ...entries };
+  delete rest[conversationId];
+  return rest;
+}
+
+let tickets = 0;
+
+export const useBackdropStore = create<BackdropState>()(
+  persist(
+    (set) => ({
+      hidden: {},
+      attempts: {},
+      orphans: {},
+      fetching: {},
+      failures: {},
+      limited: {},
+      dialog: null,
+      open: (kind, scope = null) => set({ dialog: { kind, scope } }),
+      close: () => set({ dialog: null }),
+      hide: (conversationId, look) =>
+        set((state) => {
+          const now = Date.now();
+          const hidden = { ...state.hidden, [hiddenKey(conversationId, look)]: now };
+          return { hidden: fresh(hidden, (at) => at, now) };
+        }),
+      show: (conversationId, look) =>
+        set((state) => {
+          const hidden = { ...state.hidden };
+          delete hidden[hiddenKey(conversationId, look)];
+          return { hidden };
+        }),
+      started: (conversationId, uploadId) =>
+        set((state) => {
+          const now = Date.now();
+          const error = state.orphans[uploadId] ?? null;
+          const attempts = {
+            ...state.attempts,
+            [conversationId]: { id: uploadId, error, at: now },
+          };
+          return {
+            attempts: fresh(attempts, (attempt) => attempt.at, now),
+            failures: without(state.failures, conversationId),
+          };
+        }),
+      failed: (uploadId, error) =>
+        set((state) => {
+          const room = attemptOf(state.attempts, uploadId);
+          if (room) return withAttempt(state, room, { ...state.attempts[room], error });
+          const orphans = Object.entries({ ...state.orphans, [uploadId]: error }).slice(
+            -ORPHANS_MAX,
+          );
+          return { orphans: Object.fromEntries(orphans) };
+        }),
+      recovered: (uploadId) =>
+        set((state) => {
+          const room = attemptOf(state.attempts, uploadId);
+          if (!room || state.attempts[room].error === null) return state;
+          return withAttempt(state, room, { ...state.attempts[room], error: null });
+        }),
+      dismiss: (conversationId) => set((state) => withAttempt(state, conversationId, null)),
+      fetchStart: (conversationId) => {
+        const ticket = ++tickets;
+        set((state) => ({
+          fetching: { ...state.fetching, [conversationId]: ticket },
+          failures: without(state.failures, conversationId),
+        }));
+        return ticket;
+      },
+      fetchFailed: (conversationId, ticket, failure) =>
+        set((state) =>
+          state.fetching[conversationId] === ticket
+            ? { failures: { ...state.failures, [conversationId]: failure } }
+            : state,
+        ),
+      fetchEnd: (conversationId, ticket) =>
+        set((state) =>
+          state.fetching[conversationId] === ticket
+            ? { fetching: without(state.fetching, conversationId) }
+            : state,
+        ),
+      forgetFetch: (conversationId) =>
+        set((state) => ({
+          fetching: without(state.fetching, conversationId),
+          failures: without(state.failures, conversationId),
+        })),
+      limit: (conversationId, until) =>
+        set((state) => ({ limited: { ...state.limited, [conversationId]: until } })),
+      forgetUploads: () =>
+        set({ attempts: {}, orphans: {}, fetching: {}, failures: {}, limited: {}, dialog: null }),
+    }),
+    {
+      name: 'sc-chat-backdrop',
+      storage: createJSONStorage(() => tauriStorage),
+      partialize: (state) => ({ hidden: state.hidden, attempts: state.attempts }),
+    },
+  ),
+);
+
+export const selectHidden =
+  (conversationId: ConvId | null, look: string | null) => (state: BackdropState) =>
+    conversationId !== null && look !== null && hiddenKey(conversationId, look) in state.hidden;
+
+export const selectDialog = (scope: ConvId | null) => (state: BackdropState) =>
+  state.dialog?.scope === scope ? state.dialog.kind : null;
+
+export const selectLimitedUntil = (conversationId: ConvId | null) => (state: BackdropState) =>
+  conversationId !== null ? (state.limited[conversationId] ?? null) : null;
+
+let watching = false;
+
+export function watchBackdropUploads() {
+  if (watching) return;
+  watching = true;
+  for (const [id, error] of Object.entries(useChatMediaStore.getState().errors)) {
+    useBackdropStore.getState().failed(id, error);
+  }
+  useChatMediaStore.subscribe((state, previous) => {
+    const backdrop = useBackdropStore.getState();
+    if (state.errors !== previous.errors) {
+      for (const [id, error] of Object.entries(state.errors)) {
+        if (previous.errors[id] !== error) backdrop.failed(id, error);
+      }
+    }
+    if (state.uploads !== previous.uploads) {
+      for (const upload of state.uploads) {
+        if (upload.kind === 'backdrop' && MOVING.has(upload.state)) backdrop.recovered(upload.id);
+      }
+    }
+  });
+}

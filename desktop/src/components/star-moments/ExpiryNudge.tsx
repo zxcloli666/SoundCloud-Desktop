@@ -65,7 +65,7 @@ export const ExpiryNudge = memo(function ExpiryNudge({ moment }: { moment: Expir
       {tenure && tenure.months >= 1 && !moment.trial && <LostStreak tenure={tenure} />}
       <div className="mt-3.5 flex flex-wrap items-center justify-end gap-2">
         <StarCta intent={moment.trial ? 'buy' : 'extend'} onOpen={close} />
-        <YearCta onOpen={close} />
+        <YearCta onOpen={close} size="sm" />
       </div>
     </MomentCard>
   );

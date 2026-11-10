@@ -1,0 +1,87 @@
+{
+  "title": "Backdrop",
+  "none": "No backdrop",
+  "photo": "Own photo",
+  "photoIn": "Photo in {{time}}",
+  "stored": "From storage",
+  "storedIn": "Storage in {{time}}",
+  "percent": "{{percent}}%",
+  "retry": "Retry",
+  "pickAgain": "Another photo",
+  "pickStored": "Another image",
+  "storage": "Storage",
+  "images": "Images",
+  "storedEmpty": "Nothing to pick yet",
+  "storedEmptyLine": "Images from your chats on this device show up here",
+  "linking": "Connecting",
+  "done": "Done",
+  "cancel": "Cancel",
+  "hide": "Hide backdrop",
+  "show": "Show backdrop",
+  "clear": "Clear backdrop",
+  "chip": "Backdrop {{percent}}%",
+  "chipFailed": "Backdrop failed",
+  "star": {
+    "room": {
+      "title": "Room backdrops with STAR",
+      "body": "Live backdrops and your own photo for the whole room"
+    },
+    "chat": {
+      "title": "Chat backdrops with STAR",
+      "body": "Live backdrops and your own photo, seen by everyone in the chat"
+    },
+    "public": {
+      "title": "Own photo with STAR",
+      "body": "Presets are free here"
+    }
+  },
+  "locked": {
+    "room": "Only the host",
+    "direct": "Members only",
+    "group": "Owner and admins only",
+    "self": "Unavailable",
+    "public": "Owner and moderators only",
+    "pending": "After the request is accepted"
+  },
+  "report": {
+    "entry": "Report backdrop",
+    "title": "Report backdrop",
+    "comment": "Comment, optional",
+    "send": "Send",
+    "sent": "Report sent",
+    "changed": "The backdrop already changed",
+    "failed": "Not sent"
+  },
+  "errors": {
+    "room_star_required": "Backdrops come with STAR",
+    "media_star_required": "Photos come with STAR",
+    "backdrop_star_required": "Backdrops come with STAR",
+    "not_member": "Not enough rights",
+    "invalid": "This backdrop is unavailable",
+    "media_missing": "The photo is gone, upload it again",
+    "stored_gone": "The image is gone, pick another",
+    "backdrop_cooldown": "Own photo again in {{time}}",
+    "request_limit": "Too often",
+    "quota_exceeded": "Storage is full",
+    "media_uploads_paused": "Uploads are paused",
+    "offline": "No connection",
+    "generic": "Something went wrong"
+  },
+  "presets": {
+    "aurora": "Aurora",
+    "vinyl": "Vinyl",
+    "sunset-clouds": "Sunset",
+    "ocean-rays": "Deep sea",
+    "dunes": "Dunes",
+    "misty-forest": "Misty forest",
+    "snow-lamp": "Snow",
+    "satin": "Satin",
+    "paper": "Paper",
+    "peach-clouds": "Peach",
+    "pastel-lake": "Lake",
+    "watercolor": "Watercolor",
+    "candy-sky": "Candy"
+  },
+  "dismiss": "Dismiss",
+  "cancelUpload": "Cancel upload"
+}

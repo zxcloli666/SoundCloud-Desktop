@@ -1,0 +1,128 @@
+{
+  "title": "Chats",
+  "search": "Search chats",
+  "clear": "Clear",
+  "newChat": "New chat",
+  "saved": "Saved",
+  "room": "Room",
+  "unknown": "No name",
+  "untitledGroup": "Group",
+  "you": "You",
+  "draft": "Draft",
+  "typing": "typing",
+  "pick": "Pick a chat",
+  "failed": "Could not load",
+  "retry": "Retry",
+  "cancel": "Cancel",
+  "blockedToast": "{{name}} blocked",
+  "filters": {
+    "all": "All",
+    "direct": "Direct",
+    "groups": "Groups",
+    "unread": "Unread",
+    "requests": "Requests",
+    "archived": "Archive",
+    "back": "Back",
+    "more": "More"
+  },
+  "preview": {
+    "embed": "Music",
+    "image": "Photo",
+    "deleted": "Message deleted",
+    "locked": "Opens after you confirm this device",
+    "unknown": "Update the app to see this"
+  },
+  "empty": {
+    "all": "No chats yet",
+    "direct": "No direct chats",
+    "groups": "No groups",
+    "unread": "All read",
+    "requests": "No new requests",
+    "archived": "Archive is empty",
+    "search": "Nothing found"
+  },
+  "menu": {
+    "more": "More",
+    "openDock": "Open in dock",
+    "openPage": "Open as page",
+    "pin": "Pin",
+    "unpin": "Unpin",
+    "read": "Mark as read",
+    "mute1h": "Mute for an hour",
+    "mute8h": "Mute for 8 hours",
+    "muteForever": "Mute forever",
+    "unmute": "Unmute",
+    "archive": "Archive",
+    "unarchive": "Unarchive",
+    "block": "Block",
+    "delete": "Delete chat"
+  },
+  "delete": {
+    "title": "Delete \"{{name}}\"?",
+    "forMe": "Only for me",
+    "forEveryone": "For everyone"
+  },
+  "dock": {
+    "list": "All chats",
+    "close": "Close dock",
+    "closeTab": "Close tab",
+    "expand": "Open as page",
+    "toDock": "Open in dock",
+    "resize": "Dock width"
+  },
+  "gate": {
+    "off": "Chats are not available",
+    "revoked": "This device was removed from chats"
+  },
+  "new": {
+    "title": "New chat",
+    "search": "Find a person",
+    "following": "Following",
+    "people": "People",
+    "nobody": "Nobody found",
+    "remove": "Remove",
+    "groupName": "Group name",
+    "write": "Message",
+    "createGroup": "Create group · {{n}}"
+  },
+  "requests": {
+    "badge": "Request",
+    "accept": "Accept",
+    "decline": "Decline",
+    "block": "Block",
+    "report": "Report",
+    "wantsToWrite": "{{name}} wants to message you",
+    "invitedBy": "{{name}} invites you to a group",
+    "groupInvite": "Invites you to \"{{name}}\"",
+    "messages_one": "{{count}} message",
+    "messages_other": "{{count}} messages"
+  },
+  "report": {
+    "title": "Report {{name}}",
+    "comment": "Comment, if needed",
+    "alsoBlock": "Block",
+    "send": "Send",
+    "sent": "Report sent",
+    "reasons": {
+      "spam": "Spam and ads",
+      "harassment": "Threats and harassment",
+      "doxxing": "Someone's private data",
+      "illegal": "Illegal content",
+      "other": "Other"
+    }
+  },
+  "errors": {
+    "unavailable": "You can't message this person",
+    "request_limit": "Daily limit for new chats reached",
+    "too_young": "You can start chats an hour after signing in",
+    "send_limited": "Too fast, wait a little",
+    "slow_mode": "Slow mode, please wait",
+    "busy": "Server is busy, try again later",
+    "offline": "No connection to the server",
+    "disabled": "Chats are turned off",
+    "send_paused": "Sending is paused",
+    "muted": "You can't write here right now",
+    "not_member": "You are no longer in this chat",
+    "generic": "Something went wrong, try again"
+  }
+}

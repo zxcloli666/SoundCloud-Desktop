@@ -1,0 +1,76 @@
+{
+  "unboundTitle": "Sohbetleri açmak için girişi onaylayın",
+  "boundOtherTitle": "Girişi yeniden onaylamanız gerekiyor",
+  "musicStays": "Müzik oturumu açık kalır",
+  "confirm": "Girişi onayla",
+  "done": "Sohbetler açık",
+  "retry": "Tekrar dene",
+  "steps": {
+    "waiting": "SoundCloud onayı bekleniyor",
+    "token": "Yetki kodu alınıyor",
+    "extract": "Profil yükleniyor",
+    "finalizing": "Oturum tamamlanıyor"
+  },
+  "errors": {
+    "unreachable": "Sunucuya ulaşılamıyor",
+    "unreachableDesc": "Sunucu yanıt vermiyor. Bağlantınızı kontrol edin veya biraz sonra tekrar deneyin.",
+    "limited": "Giriş geçici olarak sınırlı",
+    "limitedDesc": "Sunucu şu anda girişleri sınırlıyor. {{seconds}} sn sonra tekrar deneyin.",
+    "expired": "Girişin süresi doldu",
+    "failed": "Giriş yapılamadı"
+  },
+  "keychain": {
+    "title": "Sohbetlerin anahtarlarınıza erişmesi gerekiyor",
+    "mac": "Sohbet şifreleme anahtarları macOS anahtar zincirinde duruyor ve erişim reddedildi. Tekrar dene'ye basın ve İzin Ver'i seçin.",
+    "linux": "Sohbet şifreleme anahtarları sistem parola deposunda duruyor ve kilit açma penceresi kapatıldı. Tekrar dene'ye basın ve depoyu açın.",
+    "windows": "Sohbet şifreleme anahtarları Windows Kimlik Bilgisi Yöneticisi'nde duruyor ve erişim reddedildi. Tekrar dene'ye basın.",
+    "again": "Erişim yine reddedildi. İzin verdiğinizde sohbetler açılır.",
+    "failed": "Erişim istenemedi. Yeniden deneyin.",
+    "asking": "Sistemin yanıtı bekleniyor",
+    "skip": "Sohbetsiz giriş yap",
+    "unavailable": {
+      "title": "Sohbet anahtarlarına ulaşılamıyor",
+      "mac": "macOS anahtar zinciri yanıt vermiyor. Sohbetler kendi kendine yeniden deniyor, geçmişiniz bu bilgisayarda kalıyor.",
+      "linux": "Sistem parola deposu yanıt vermiyor. Depoyu başlatın veya kilidini açın. Sohbetler kendi kendine yeniden deniyor, geçmişiniz bu bilgisayarda kalıyor.",
+      "windows": "Windows Kimlik Bilgisi Yöneticisi yanıt vermiyor. Sohbetler kendi kendine yeniden deniyor, geçmişiniz bu bilgisayarda kalıyor.",
+      "again": "Hâlâ yanıt yok. Sohbetler kendi kendine denemeye devam ediyor.",
+      "asking": "Anahtarlar kontrol ediliyor",
+      "file": "Uygulama klasöründeki anahtar dosyası okunamıyor. Sohbetler kendi kendine yeniden deniyor."
+    },
+    "reset": {
+      "open": "Parolayı mı unuttunuz? Sohbet anahtarlarını sıfırla",
+      "openFile": "Sohbet anahtarlarını sıfırla",
+      "title": "Bu bilgisayardaki sohbet anahtarları sıfırlansın mı?",
+      "lost": "Bu bilgisayarda kayıtlı sohbetler silinir: mesajlar, taslaklar, gönderilmemiş mesajlar, yüklenmeyi bekleyen fotoğraflar ve fotoğraf önbelleği.",
+      "back": "Sohbetleriniz sunucuda kalır. Girişi onayladıktan sonra yeni mesajlar hemen gelir.",
+      "history": "Eski mesajlar, en az 3 gündür kullandığınız bir cihazda Bu benim'i seçtiğinizde ya da 3 gün sonra kendiliğinden geri gelir.",
+      "hidden": "Yalnızca kendiniz için sildiğiniz mesajlar yeniden görünebilir.",
+      "others": "Diğer cihazlarınızda Sohbetlerinize yeni giriş görünecek. Bu benim'i seçin. Ben değilim bu bilgisayarın SoundCloud oturumunu kapatır.",
+      "file": {
+        "mac": "Yeni anahtarlar macOS anahtar zinciri yerine uygulama klasöründeki özel bir dosyada durur.",
+        "linux": "Yeni anahtarlar sistem parola deposu yerine uygulama klasöründeki özel bir dosyada durur.",
+        "windows": "Yeni anahtarlar Windows Kimlik Bilgisi Yöneticisi yerine uygulama klasöründeki özel bir dosyada durur."
+      },
+      "probe": "Windows Kimlik Bilgisi Yöneticisi yine başarısız olursa yeni anahtarlar uygulama klasöründeki özel bir dosyada durur.",
+      "os": {
+        "mac": "Yeni anahtarlar yine macOS anahtar zincirinde durur. Reddederse uygulama klasöründeki özel bir dosyada durur.",
+        "linux": "Yeni anahtarlar yine sistem parola deposunda durur. Reddederse uygulama klasöründeki özel bir dosyada durur.",
+        "windows": "Yeni anahtarlar yine Windows Kimlik Bilgisi Yöneticisi'nde durur. Başarısız olursa uygulama klasöründeki özel bir dosyada durur."
+      },
+      "confirm": "Anahtarları sıfırla",
+      "cancel": "Vazgeç",
+      "working": "Sıfırlanıyor",
+      "failed": "Bu bilgisayardaki sohbet verileri silinemedi. Yeniden deneyin."
+    }
+  },
+  "limit": {
+    "title": "Bugün çok fazla yeni giriş yapıldı",
+    "opens": "Bu bilgisayardaki sohbetler en geç {{time}} açılır",
+    "trying": "Sohbetler kendi kendine yeniden deniyor",
+    "cap": {
+      "title_one": "Sohbetler zaten izin verilen en fazla {{count}} cihazda açık",
+      "title_other": "Sohbetler zaten izin verilen en fazla {{count}} cihazda açık",
+      "remove": "Başka bir cihazda, artık kullanmadığınız bir cihazı kaldırın"
+    }
+  }
+}

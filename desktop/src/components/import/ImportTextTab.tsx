@@ -24,7 +24,9 @@ export function ImportTextTab({ text, onText, disabled }: Props) {
         spellCheck={false}
         className={`${FIELD} resize-none font-mono text-[12px] leading-relaxed`}
       />
-      <p className="text-right font-mono text-[12px] text-ink-40">{lines}</p>
+      <p className="min-h-[18px] text-right text-[12px] tabular-nums text-ink-40">
+        {lines > 0 && t('importer.savedCount', { count: lines })}
+      </p>
     </div>
   );
 }

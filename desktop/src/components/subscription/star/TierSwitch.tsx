@@ -51,7 +51,11 @@ export const TierSwitch = memo(function TierSwitch({
             </span>
             <span className="mt-1 flex items-center justify-center gap-1.5 font-mono text-[9.5px]">
               {o.each > 0 && (
-                <span className="text-ink-60">{t('starpass.tier.each', { price: o.each })}</span>
+                <span className="text-ink-60">
+                  {t(o.people > 1 ? 'starpass.tier.each' : 'starpass.tier.price', {
+                    price: o.each,
+                  })}
+                </span>
               )}
               {o.savePct > 0 && (
                 <span className="font-semibold text-accent">

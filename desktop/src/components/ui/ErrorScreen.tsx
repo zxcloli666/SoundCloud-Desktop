@@ -1,5 +1,6 @@
 import {useTranslation} from 'react-i18next';
 import {AlertCircle, Home, RefreshCw} from '../../lib/icons';
+import {reloadApp} from '../../lib/reload';
 import {ReportButton} from './ReportButton';
 
 /** Premium crash screen shown by the ErrorBoundary. Dark, accent-lit glass,
@@ -138,7 +139,7 @@ export function ErrorScreen({
                         <div className="flex gap-2.5">
                             <button
                                 type="button"
-                                onClick={() => window.location.reload()}
+                                onClick={() => void reloadApp()}
                                 className="flex h-11 flex-1 items-center justify-center gap-2 rounded-2xl border border-ink/[0.1] bg-ink/[0.04] text-[13px] font-semibold text-ink-70 transition-all hover:bg-ink/[0.08] hover:text-ink-90 active:scale-[0.97] cursor-pointer"
                             >
                                 <RefreshCw size={14}/>
@@ -146,9 +147,7 @@ export function ErrorScreen({
                             </button>
                             <button
                                 type="button"
-                                onClick={() => {
-                                    window.location.assign('/');
-                                }}
+                                onClick={() => void reloadApp('/')}
                                 className="flex h-11 flex-1 items-center justify-center gap-2 rounded-2xl border border-ink/[0.1] bg-ink/[0.04] text-[13px] font-semibold text-ink-70 transition-all hover:bg-ink/[0.08] hover:text-ink-90 active:scale-[0.97] cursor-pointer"
                             >
                                 <Home size={14}/>

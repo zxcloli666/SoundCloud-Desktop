@@ -1,0 +1,127 @@
+{
+  "title": "채팅",
+  "search": "채팅 검색",
+  "clear": "지우기",
+  "newChat": "새 채팅",
+  "saved": "저장됨",
+  "room": "방",
+  "unknown": "이름 없음",
+  "untitledGroup": "그룹",
+  "you": "나",
+  "draft": "임시 저장",
+  "typing": "입력 중",
+  "pick": "채팅을 선택하세요",
+  "failed": "불러오지 못했어요",
+  "retry": "다시 시도",
+  "cancel": "취소",
+  "blockedToast": "{{name}} 님을 차단했어요",
+  "filters": {
+    "all": "전체",
+    "direct": "개인",
+    "groups": "그룹",
+    "unread": "읽지 않음",
+    "requests": "요청",
+    "archived": "보관함",
+    "back": "이전",
+    "more": "더 보기"
+  },
+  "preview": {
+    "embed": "음악",
+    "image": "사진",
+    "deleted": "삭제된 메시지",
+    "locked": "이 기기를 확인하면 열려요",
+    "unknown": "앱을 업데이트하면 볼 수 있어요"
+  },
+  "empty": {
+    "all": "아직 채팅이 없어요",
+    "direct": "개인 채팅이 없어요",
+    "groups": "그룹이 없어요",
+    "unread": "모두 읽었어요",
+    "requests": "새 요청이 없어요",
+    "archived": "보관함이 비어 있어요",
+    "search": "찾은 결과가 없어요"
+  },
+  "menu": {
+    "more": "더보기",
+    "openDock": "도크에서 열기",
+    "openPage": "페이지로 열기",
+    "pin": "고정",
+    "unpin": "고정 해제",
+    "read": "읽음으로 표시",
+    "mute1h": "1시간 알림 끄기",
+    "mute8h": "8시간 알림 끄기",
+    "muteForever": "알림 계속 끄기",
+    "unmute": "알림 켜기",
+    "archive": "보관",
+    "unarchive": "보관 해제",
+    "block": "차단",
+    "delete": "채팅 삭제"
+  },
+  "delete": {
+    "title": "\"{{name}}\" 채팅을 삭제할까요?",
+    "forMe": "나에게서만",
+    "forEveryone": "모두에게서"
+  },
+  "dock": {
+    "list": "모든 채팅",
+    "close": "도크 닫기",
+    "closeTab": "탭 닫기",
+    "expand": "페이지로 열기",
+    "toDock": "도크에서 열기",
+    "resize": "도크 너비"
+  },
+  "gate": {
+    "off": "채팅을 사용할 수 없어요",
+    "revoked": "이 기기는 채팅에서 제거되었어요"
+  },
+  "new": {
+    "title": "새 채팅",
+    "search": "사람 찾기",
+    "following": "팔로잉",
+    "people": "사람",
+    "nobody": "찾은 사람이 없어요",
+    "remove": "빼기",
+    "groupName": "그룹 이름",
+    "write": "메시지 보내기",
+    "createGroup": "그룹 만들기 · {{n}}"
+  },
+  "requests": {
+    "badge": "요청",
+    "accept": "수락",
+    "decline": "거절",
+    "block": "차단",
+    "report": "신고",
+    "wantsToWrite": "{{name}} 님이 메시지를 보내고 싶어 해요",
+    "invitedBy": "{{name}} 님이 그룹에 초대했어요",
+    "groupInvite": "\"{{name}}\" 그룹 초대",
+    "messages_other": "메시지 {{count}}개"
+  },
+  "report": {
+    "title": "{{name}} 님 신고",
+    "comment": "필요하면 설명을 남기세요",
+    "alsoBlock": "차단",
+    "send": "보내기",
+    "sent": "신고를 보냈어요",
+    "reasons": {
+      "spam": "스팸과 광고",
+      "harassment": "협박과 괴롭힘",
+      "doxxing": "다른 사람의 개인 정보",
+      "illegal": "불법 콘텐츠",
+      "other": "기타"
+    }
+  },
+  "errors": {
+    "unavailable": "이 사람에게는 메시지를 보낼 수 없어요",
+    "request_limit": "오늘 새 채팅 한도에 도달했어요",
+    "too_young": "로그인 후 1시간이 지나면 채팅을 시작할 수 있어요",
+    "send_limited": "너무 빨라요, 잠시 기다리세요",
+    "slow_mode": "슬로우 모드예요, 잠시 기다리세요",
+    "busy": "서버가 바빠요, 나중에 다시 시도하세요",
+    "offline": "서버에 연결되지 않아요",
+    "disabled": "채팅이 꺼져 있어요",
+    "send_paused": "전송이 일시 중지됐어요",
+    "muted": "지금은 여기에 쓸 수 없어요",
+    "not_member": "더 이상 이 채팅의 멤버가 아니에요",
+    "generic": "문제가 생겼어요, 다시 시도하세요"
+  }
+}
