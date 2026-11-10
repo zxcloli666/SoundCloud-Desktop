@@ -33,7 +33,7 @@ jobs:
             flags: -DGGML_VULKAN=ON -DGGML_BACKEND_DL=ON -DGGML_CPU_ALL_VARIANTS=ON -DGGML_OPENMP=OFF
           - platform: linux-aarch64
             runner: ubuntu-22.04-arm
-            flags: -DGGML_BACKEND_DL=ON -DGGML_CPU_ALL_VARIANTS=ON -DGGML_OPENMP=OFF
+            flags: -DBUILD_SHARED_LIBS=OFF -DGGML_OPENMP=OFF -DGGML_CPU_ARM_ARCH=armv8.2-a+dotprod+fp16
           - platform: windows-x86_64
             runner: windows-latest
             flags: -DGGML_VULKAN=ON -DGGML_BACKEND_DL=ON -DGGML_CPU_ALL_VARIANTS=ON -DGGML_OPENMP=OFF
@@ -68,7 +68,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: bash
         run: |
-          redist=$(ls -d "/c/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Redist/MSVC/"*/x64/Microsoft.VC143.CRT | tail -1)
+          redist=$(ls -d "/c/Program Files/Microsoft Visual Studio/"*/*/VC/Redist/MSVC/*/x64/Microsoft.VC*.CRT | tail -1)
           cp "$redist/msvcp140.dll" "$redist/vcruntime140.dll" "$redist/vcruntime140_1.dll" engine/
 
       - name: Check that it starts

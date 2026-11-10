@@ -25,7 +25,7 @@ cmake -S "$src" -B "$build" \
     "-DCMAKE_PROJECT_qwentts-ggml_INCLUDE=$here/scd-qwen.cmake" \
     "-DSCD_QWEN_MAIN=$here/main.cpp" \
     "$@"
-cmake --build "$build" --config Release --parallel
+cmake --build "$build" --config Release --parallel "$(getconf _NPROCESSORS_ONLN)"
 
 bin=$build
 if [ -d "$build/Release" ]; then
