@@ -1,0 +1,90 @@
+name: Voice engine
+
+on:
+  workflow_dispatch:
+  push:
+    paths: ['utils/voice/qwen-engine/**', '.github/workflows/voice-engine.yml']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: voice-engine-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  VULKAN_LINUX: 1.3.296
+  VULKAN_WINDOWS: 1.4.328.1
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: macos-aarch64
+            runner: macos-latest
+            flags: -DBUILD_SHARED_LIBS=OFF
+          - platform: macos-x86_64
+            runner: macos-latest
+            flags: -DBUILD_SHARED_LIBS=OFF -DCMAKE_OSX_ARCHITECTURES=x86_64 -DCMAKE_SYSTEM_PROCESSOR=x86_64 -DGGML_METAL=OFF
+          - platform: linux-x86_64
+            runner: ubuntu-22.04
+            flags: -DGGML_VULKAN=ON -DGGML_BACKEND_DL=ON -DGGML_CPU_ALL_VARIANTS=ON -DGGML_OPENMP=OFF
+          - platform: linux-aarch64
+            runner: ubuntu-22.04-arm
+            flags: -DGGML_BACKEND_DL=ON -DGGML_CPU_ALL_VARIANTS=ON -DGGML_OPENMP=OFF
+          - platform: windows-x86_64
+            runner: windows-latest
+            flags: -DGGML_VULKAN=ON -DGGML_BACKEND_DL=ON -DGGML_CPU_ALL_VARIANTS=ON -DGGML_OPENMP=OFF
+    name: ${{ matrix.platform }}
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Vulkan SDK
+        if: matrix.platform == 'linux-x86_64'
+        run: |
+          wget -qO- https://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo gpg --dearmor -o /usr/share/keyrings/lunarg.gpg
+          echo "deb [signed-by=/usr/share/keyrings/lunarg.gpg] https://packages.lunarg.com/vulkan/$VULKAN_LINUX jammy main" | sudo tee /etc/apt/sources.list.d/lunarg-vulkan.list
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq --no-install-recommends vulkan-sdk
+
+      - name: Vulkan SDK
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $installer = "$env:RUNNER_TEMP\vulkan-sdk.exe"
+          curl.exe -fsSL -o $installer "https://sdk.lunarg.com/sdk/download/$env:VULKAN_WINDOWS/windows/vulkansdk-windows-X64-$env:VULKAN_WINDOWS.exe"
+          & $installer --accept-licenses --default-answer --confirm-command install | Out-Null
+          Add-Content $env:GITHUB_ENV "VULKAN_SDK=C:\VulkanSDK\$env:VULKAN_WINDOWS"
+          Add-Content $env:GITHUB_PATH "C:\VulkanSDK\$env:VULKAN_WINDOWS\Bin"
+
+      - name: Build
+        shell: bash
+        run: utils/voice/qwen-engine/build.sh "$PWD/engine" ${{ matrix.flags }}
+
+      - name: Runtime libraries
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          redist=$(ls -d "/c/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Redist/MSVC/"*/x64/Microsoft.VC143.CRT | tail -1)
+          cp "$redist/msvcp140.dll" "$redist/vcruntime140.dll" "$redist/vcruntime140_1.dll" engine/
+
+      - name: Check that it starts
+        shell: bash
+        run: |
+          mkdir check
+          cd check
+          code=0
+          ../engine/scd-qwen missing-talker.gguf missing-codec.gguf > greeting.bin 2> log.txt || code=$?
+          cat log.txt
+          od -c greeting.bin | head -5
+          test "$code" = 1
+          test "$(head -c 1 greeting.bin)" = E
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: qwen-engine-${{ matrix.platform }}
+          path: engine/
+          if-no-files-found: error
