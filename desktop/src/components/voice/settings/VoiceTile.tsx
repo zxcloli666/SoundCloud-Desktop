@@ -1,8 +1,9 @@
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Lock, Play } from '../../../lib/icons';
+import { Download, Lock, Play } from '../../../lib/icons';
 import { SPEECH } from '../../../lib/voice/levels';
 import { useVoiceRuntime } from '../../../lib/voice/runtime';
+import { percent, useFormatBytes } from '../format';
 import { StopSquare } from '../icons';
 import { VoiceAvatar } from '../VoiceAvatar';
 import type { VoiceInfo } from '../voices';
@@ -33,6 +34,25 @@ function PreviewButton({ id, name }: { id: string; name: string }) {
         <Play size={12} fill="currentColor" className="translate-x-[1px]" />
       )}
     </button>
+  );
+}
+
+function ModelBadge({ id }: { id: string }) {
+  const bytes = useFormatBytes();
+  const model = useVoiceRuntime((s) => s.models.find((m) => m.id === id));
+  if (!model || model.state === 'ready') return null;
+  const total = model.total || model.size;
+  return (
+    <span
+      data-ui="voice-tile-model"
+      data-state={model.state}
+      className={`flex items-center gap-1 rounded-md px-1.5 py-[1px] font-mono text-[9.5px] font-bold tabular-nums ${
+        model.state === 'downloading' ? 'bg-accent/15 text-accent' : 'bg-ink/[0.07] text-ink-55'
+      }`}
+    >
+      <Download size={9} />
+      {model.state === 'downloading' ? `${percent(model.done, total)}%` : bytes(total)}
+    </span>
   );
 }
 
@@ -102,6 +122,7 @@ export const VoiceTile = memo(function VoiceTile({
                   {t(`voice.tags.${tag}`)}
                 </span>
               ))}
+              <ModelBadge id={voice.model} />
             </span>
           )}
         </span>

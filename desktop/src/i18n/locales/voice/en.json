@@ -225,7 +225,12 @@
         "tts": "Speech synthesis",
         "wake": "Wake word",
         "g2p": "Pronunciation",
-        "llm": "Smart parsing"
+        "llm": "Smart parsing",
+        "engine": "Speech engine"
+      },
+      "voice": "Voice: {{name}}",
+      "name": {
+        "qwen-codec": "Voice decoder"
       }
     },
     "history": {

@@ -229,7 +229,12 @@
         "tts": "Síntese de voz",
         "wake": "Palavra de ativação",
         "g2p": "Pronúncia",
-        "llm": "Análise inteligente"
+        "llm": "Análise inteligente",
+        "engine": "Motor de voz"
+      },
+      "voice": "Voz: {{name}}",
+      "name": {
+        "qwen-codec": "Decodificador de voz"
       }
     },
     "history": {

@@ -1,7 +1,14 @@
+const LOLYA: &[u8] = include_bytes!("../../resources/voice/preview-lolya.wav");
+const MORIARTY: &[u8] = include_bytes!("../../resources/voice/preview-moriarty.wav");
+const ROBOT: &[u8] = include_bytes!("../../resources/voice/preview-robot.wav");
 const PLACEHOLDER: &[u8] = include_bytes!("../../resources/voice/preview-placeholder.wav");
 
-const VOICES: [&str; 5] = ["lolya", "moriarty", "robot", "af_heart", "am_michael"];
-
 pub fn clip(voice: &str) -> Option<&'static [u8]> {
-    VOICES.contains(&voice).then_some(PLACEHOLDER)
+    match voice {
+        "lolya" => Some(LOLYA),
+        "moriarty" => Some(MORIARTY),
+        "robot" => Some(ROBOT),
+        "af_heart" | "am_michael" => Some(PLACEHOLDER),
+        _ => None,
+    }
 }

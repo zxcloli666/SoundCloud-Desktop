@@ -219,7 +219,13 @@ pub fn run() {
                 .effects
                 .set_premium(premium);
             app.manage(auth_state);
-            voice::init(app.handle(), &data_dir, rt_handle.clone(), premium);
+            voice::init(
+                app.handle(),
+                &data_dir,
+                &cache_dir,
+                rt_handle.clone(),
+                premium,
+            );
 
             chat::start(app.handle(), rt_handle.clone(), &data_dir);
 

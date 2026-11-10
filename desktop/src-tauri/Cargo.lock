@@ -7840,11 +7840,13 @@ dependencies = [
  "cpal",
  "hound",
  "serde",
+ "sha2 0.10.9",
  "signalsmith-stretch",
  "voice-audio",
  "voice-g2p",
  "voice-models",
  "voice-nlu",
+ "voice-qwen",
  "voice-resolve",
  "voice-speech",
  "voice-tts",
@@ -7872,6 +7874,10 @@ version = "0.1.0"
 dependencies = [
  "serde",
 ]
+
+[[package]]
+name = "voice-qwen"
+version = "0.1.0"
 
 [[package]]
 name = "voice-resolve"

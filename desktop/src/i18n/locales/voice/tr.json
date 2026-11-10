@@ -225,7 +225,12 @@
         "tts": "Ses sentezi",
         "wake": "Uyandırma sözcüğü",
         "g2p": "Telaffuz",
-        "llm": "Akıllı ayrıştırma"
+        "llm": "Akıllı ayrıştırma",
+        "engine": "Konuşma motoru"
+      },
+      "voice": "Ses: {{name}}",
+      "name": {
+        "qwen-codec": "Ses çözücü"
       }
     },
     "history": {

@@ -158,6 +158,7 @@ export interface Model {
   total: number;
   license: string;
   optional?: boolean;
+  listen?: boolean;
 }
 
 export interface ModelProgress {

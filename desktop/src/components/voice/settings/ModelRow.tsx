@@ -4,7 +4,8 @@ import { Check, Download, RotateCcw, Trash2 } from '../../../lib/icons';
 import { deleteModel, downloadModel } from '../../../lib/voice/models';
 import type { Model } from '../../../lib/voice/types';
 import { percent, useFormatBytes } from '../format';
-import { AudioWaveform, Brain, Ear, Languages, Speaker, WandSparkles } from '../icons';
+import { AudioWaveform, Brain, Cpu, Ear, Languages, Speaker, WandSparkles } from '../icons';
+import { voiceOfModel } from '../voices';
 import { Pill, SmallButton } from './Block';
 
 function kindIcon(kind: string): ReactNode {
@@ -13,6 +14,7 @@ function kindIcon(kind: string): ReactNode {
   if (kind === 'tts') return <Speaker size={16} />;
   if (kind === 'wake') return <WandSparkles size={16} />;
   if (kind === 'llm') return <Brain size={16} />;
+  if (kind === 'engine') return <Cpu size={16} />;
   return <Languages size={16} />;
 }
 
@@ -27,7 +29,12 @@ export const ModelRow = memo(function ModelRow({ model }: { model: Model }) {
   const bytes = useFormatBytes();
   const total = model.total || model.size;
   const pct = percent(model.done, total);
-  const name = t(`voice.models.kind.${model.kind}`, { defaultValue: model.id });
+  const voice = voiceOfModel(model.id);
+  const name = voice
+    ? t('voice.models.voice', { name: t(`voice.voices.${voice.id}.name`) })
+    : t(`voice.models.name.${model.id}`, {
+        defaultValue: t(`voice.models.kind.${model.kind}`, { defaultValue: model.id }),
+      });
   const lang = model.language && model.language !== 'any' ? model.language.toUpperCase() : null;
 
   return (

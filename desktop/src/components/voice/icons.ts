@@ -5,6 +5,7 @@ import {
   Brain as _Brain,
   Cable as _Cable,
   CircleAlert as _CircleAlert,
+  Cpu as _Cpu,
   Ear as _Ear,
   Flag as _Flag,
   Hand as _Hand,
@@ -32,6 +33,7 @@ export const Bot = memo(_Bot);
 export const Brain = memo(_Brain);
 export const Cable = memo(_Cable);
 export const CircleAlert = memo(_CircleAlert);
+export const Cpu = memo(_Cpu);
 export const Ear = memo(_Ear);
 export const Flag = memo(_Flag);
 export const Hand = memo(_Hand);

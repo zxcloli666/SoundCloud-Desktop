@@ -50,6 +50,7 @@ function model(
     total,
     license: LICENSES[id] ?? 'Apache-2.0',
     optional,
+    listen: !optional && (kind === 'vad' || kind === 'asr'),
   };
 }
 

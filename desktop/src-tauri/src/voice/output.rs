@@ -5,14 +5,45 @@ use std::sync::{Arc, Mutex};
 use std::thread::JoinHandle;
 use std::time::Duration;
 
-use rodio::buffer::SamplesBuffer;
+use rodio::Source;
 use voice_audio::RefTap;
-use voice_engine::Clip;
+use voice_engine::Stream;
 
 use crate::audio::master::Master;
 
 const PUMP_IDLE: Duration = Duration::from_millis(5);
 const HUSH_POLL: Duration = Duration::from_millis(20);
+
+struct Spoken {
+    stream: Stream,
+    rate: NonZero<u32>,
+}
+
+impl Iterator for Spoken {
+    type Item = f32;
+
+    fn next(&mut self) -> Option<f32> {
+        self.stream.next()
+    }
+}
+
+impl Source for Spoken {
+    fn current_span_len(&self) -> Option<usize> {
+        None
+    }
+
+    fn channels(&self) -> NonZero<u16> {
+        NonZero::<u16>::MIN
+    }
+
+    fn sample_rate(&self) -> NonZero<u32> {
+        self.rate
+    }
+
+    fn total_duration(&self) -> Option<Duration> {
+        None
+    }
+}
 
 pub struct MasterOutput {
     pub master: Arc<Master>,
@@ -80,11 +111,10 @@ impl voice_engine::Output for MasterOutput {
         self.active.lock().unwrap().clone()
     }
 
-    fn speak(&self, clip: Clip) -> Result<Receiver<()>, String> {
+    fn speak(&self, stream: Stream) -> Result<Receiver<()>, String> {
         self.hush();
-        let rate = NonZero::new(clip.rate).ok_or("clip has no sample rate")?;
-        let source = SamplesBuffer::new(NonZero::<u16>::MIN, rate, clip.samples);
-        let speech = self.master.speak(source);
+        let rate = NonZero::new(stream.rate()).ok_or("speech has no sample rate")?;
+        let speech = self.master.speak(Spoken { stream, rate });
         let flag = Arc::new(AtomicBool::new(false));
         *self.hush.lock().unwrap() = flag.clone();
         let (done, ended) = channel();

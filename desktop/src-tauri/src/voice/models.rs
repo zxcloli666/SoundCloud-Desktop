@@ -25,6 +25,7 @@ pub struct ModelInfo {
     total: u64,
     license: String,
     optional: bool,
+    listen: bool,
 }
 
 #[derive(Serialize, Clone)]
@@ -43,6 +44,7 @@ fn kind_name(kind: Kind) -> &'static str {
         Kind::Tts => "tts",
         Kind::Llm => "llm",
         Kind::Aux => "aux",
+        Kind::Engine => "engine",
     }
 }
 
@@ -63,6 +65,7 @@ fn state_of(voice: &Voice, id: &str, total: u64) -> (&'static str, u64) {
 
 pub fn list(voice: &Voice) -> Vec<ModelInfo> {
     let required = voice.required();
+    let hearing = voice_engine::hearing(&voice.config.lock().unwrap());
     voice
         .store
         .manifest()
@@ -80,6 +83,7 @@ pub fn list(voice: &Voice) -> Vec<ModelInfo> {
                 total: model.unpacked_size,
                 license: model.license.clone(),
                 optional: !required.iter().any(|id| *id == model.id),
+                listen: hearing.contains(&model.id.as_str()),
             }
         })
         .collect()

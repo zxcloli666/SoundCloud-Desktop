@@ -6,7 +6,7 @@ import { usePerfMode } from '../../../lib/perf';
 import { isMac, isWindows } from '../../../lib/platform';
 import { toggleListening } from '../../../lib/voice/listen';
 import { downloadMissing } from '../../../lib/voice/models';
-import { summarize, useVoiceRuntime } from '../../../lib/voice/runtime';
+import { modelsReady, summarize, useVoiceRuntime } from '../../../lib/voice/runtime';
 import { useVoiceStore } from '../../../lib/voice/store';
 import { refreshEngine } from '../../../lib/voice/sync';
 import type { Model, VoiceLanguage } from '../../../lib/voice/types';
@@ -130,10 +130,7 @@ export function HeroCard() {
   const patch = useVoiceStore((s) => s.patch);
   const engine = useVoiceRuntime((s) => s.engine);
   const availability = useVoiceRuntime((s) => s.availability);
-  const ready = useVoiceRuntime((s) => {
-    const sum = summarize(s.models);
-    return sum.required === 0 || sum.ready === sum.required;
-  });
+  const ready = useVoiceRuntime((s) => s.models.length === 0 || modelsReady(s.models));
   const mode = useOrbMode(config.enabled, ready);
   const blur = perf.blur(40);
   const listening = engine === 'listening';

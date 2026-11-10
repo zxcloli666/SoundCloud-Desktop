@@ -24,6 +24,7 @@ use crate::rt::AppHandle;
 
 pub const MAIN: &str = "main";
 const MODELS_DIR: &str = "voice-models";
+const PHRASES_DIR: &str = "voice-phrases";
 
 pub struct Voice {
     pub engine: Engine,
@@ -37,7 +38,7 @@ pub struct Voice {
     pub progress: Mutex<HashMap<String, (u64, u64)>>,
 }
 
-pub fn init(app: &AppHandle, data_dir: &Path, rt: Handle, premium: bool) {
+pub fn init(app: &AppHandle, data_dir: &Path, cache_dir: &Path, rt: Handle, premium: bool) {
     let audio = app.state::<AudioState>();
     let tap = RefTap::new();
     let fetch = Arc::new(fetch::ModelFetch { rt: rt.clone() });
@@ -56,6 +57,7 @@ pub fn init(app: &AppHandle, data_dir: &Path, rt: Handle, premium: bool) {
         )),
         devices: DeviceList::default(),
         timing: Timing::default(),
+        phrases: cache_dir.join(PHRASES_DIR),
     };
     let (engine, events) = Engine::start(deps);
     engine.send(Command::Star(premium));
@@ -88,7 +90,7 @@ impl Voice {
         }
     }
 
-    fn required(&self) -> Vec<&'static str> {
+    fn required(&self) -> Vec<String> {
         voice_engine::required(&self.config.lock().unwrap(), &self.store)
     }
 

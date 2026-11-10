@@ -109,6 +109,6 @@ export function summarize(models: Model[]): ModelSummary {
 }
 
 export function modelsReady(models: Model[]): boolean {
-  const s = summarize(models);
-  return s.required > 0 && s.ready === s.required;
+  const needed = models.filter((m) => m.listen);
+  return needed.length > 0 && needed.every((m) => m.state === 'ready');
 }
