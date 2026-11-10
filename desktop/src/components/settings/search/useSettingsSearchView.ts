@@ -3,6 +3,7 @@ import {
   type SettingsResult,
   useSettingsSearch,
 } from '../../../lib/settings-search/useSettingsSearch';
+import { openPointer } from './pointers';
 import { cancelReveal, revealResult } from './reveal';
 import { rowId } from './SearchResults';
 
@@ -32,6 +33,10 @@ export function useSettingsSearchView(categories: string[], openCategory: (id: s
   }, [filled]);
 
   const choose = (result: SettingsResult) => {
+    if (result.kind === 'pointer') {
+      openPointer(result);
+      return;
+    }
     setOpen(false);
     openCategory(result.category);
     if (result.kind === 'section') cancelReveal();

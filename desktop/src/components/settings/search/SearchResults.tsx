@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import type { SettingsResult } from '../../../lib/settings-search/useSettingsSearch';
 import { usePerfMode } from '../../../lib/perf';
 import { SETTINGS_CATEGORIES } from '../registry';
+import { POINTER_ICONS } from './pointers';
 import { ResultRow } from './ResultRow';
 import { SearchEmpty } from './SearchEmpty';
 
@@ -61,7 +62,11 @@ export function SearchResults({
               key={result.id}
               id={rowId(index)}
               result={result}
-              icon={SETTINGS_CATEGORIES.find((item) => item.id === result.category)?.icon}
+              icon={
+                result.kind === 'pointer'
+                  ? POINTER_ICONS[result.id]
+                  : SETTINGS_CATEGORIES.find((item) => item.id === result.category)?.icon
+              }
               query={query}
               on={index === active}
               onActive={() => onActive(index)}

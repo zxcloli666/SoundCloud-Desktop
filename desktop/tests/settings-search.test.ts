@@ -5,6 +5,7 @@ import { test } from 'node:test';
 import { loadLocale, textOf } from '../scripts/settings-index-locale.mjs';
 import { buildSettingsIndex } from '../scripts/settings-index.mjs';
 import { buildDocs } from '../src/lib/settings-search/docs.ts';
+import { pointers } from '../src/lib/settings-search/pointers.ts';
 import { buildSearchIndex, search } from '../src/lib/settings-search/search-index.ts';
 import type { SearchDoc } from '../src/lib/settings-search/types.ts';
 
@@ -19,6 +20,7 @@ const MIN_HIT_AT_3 = 0.95;
 const BUDGET_MS = 1500;
 
 const built = buildSettingsIndex(ROOT);
+const allEntries = [...built.entries, ...pointers];
 const locales = new Map(LANGUAGES.map((lang) => [lang, loadLocale(ROOT, lang)]));
 
 function readJson<T>(path: string): T {
@@ -37,7 +39,7 @@ function docsFor(lang: string): SearchDoc[] {
     const info = built.categories.find((item) => item.id === category);
     return info ? texts(info.labelKey) : [];
   };
-  return buildDocs(built.entries, texts, [phraseFile('en'), phraseFile(lang)], categoryLabel);
+  return buildDocs(allEntries, texts, [phraseFile('en'), phraseFile(lang)], categoryLabel);
 }
 
 function doc(id: string, fields: SearchDoc['fields']): SearchDoc {
@@ -88,11 +90,27 @@ test('index has no problems, unique ids, english titles and every category', () 
   }
 });
 
+test('pointers: unique ids, existing keys and an english title', () => {
+  const english = locales.get('en')!;
+  const idList = allEntries.map((entry) => entry.id);
+  assert.equal(new Set(idList).size, idList.length);
+  for (const entry of pointers) {
+    assert.equal(entry.kind, 'pointer');
+    assert.ok(entry.title.some((key) => textOf(english, key)), `no english title for ${entry.id}`);
+    assert.ok(textOf(english, entry.place ?? ''), `no english place for ${entry.id}`);
+    for (const key of [...entry.title, ...entry.desc, ...entry.keys, entry.place ?? '']) {
+      for (const lang of LANGUAGES) {
+        assert.ok(textOf(locales.get(lang)!, key), `${lang}: no text for ${key} of ${entry.id}`);
+      }
+    }
+  }
+});
+
 test('phrase files cover the entries', () => {
-  const known = new Set(built.entries.map((entry) => entry.id));
+  const known = new Set(allEntries.map((entry) => entry.id));
   for (const lang of ['ru', 'en']) {
     const phrases = phraseFile(lang);
-    const thin = built.entries
+    const thin = allEntries
       .filter((entry) => (phrases[entry.id]?.length ?? 0) < MIN_PHRASES)
       .map((entry) => entry.id);
     assert.deepEqual(thin, [], `${lang}: entries with fewer than ${MIN_PHRASES} phrases`);

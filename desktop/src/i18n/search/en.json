@@ -1062,5 +1062,52 @@
     "sign in again",
     "sync",
     "actions not going through"
+  ],
+  "elsewhere.equalizer": [
+    "equalizer",
+    "eq",
+    "audio equalizer",
+    "frequency bands",
+    "tune frequencies",
+    "preamp",
+    "equalizer preset",
+    "adjust sound for headphones",
+    "boost treble and bass",
+    "import apo preset"
+  ],
+  "elsewhere.effects": [
+    "bass boost",
+    "boost the bass",
+    "more bass",
+    "reverb",
+    "8d audio",
+    "8d",
+    "echo",
+    "sound effects",
+    "nightcore",
+    "slowed and reverb",
+    "club sound"
+  ],
+  "elsewhere.speed": [
+    "playback speed",
+    "speed up a track",
+    "slow down a track",
+    "pitch",
+    "change key",
+    "change song speed",
+    "faster slower",
+    "nightcore",
+    "slowed",
+    "sped up"
+  ],
+  "elsewhere.shortcuts": [
+    "keyboard shortcuts",
+    "shortcut list",
+    "list of hotkeys",
+    "shortcuts window",
+    "which keys are there",
+    "key cheat sheet",
+    "what to press to pause",
+    "all app keys"
   ]
 }

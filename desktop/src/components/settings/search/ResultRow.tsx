@@ -1,6 +1,6 @@
 import { memo, type ReactNode } from 'react';
 import type { SettingsResult } from '../../../lib/settings-search/useSettingsSearch';
-import { ChevronRight } from '../../../lib/icons';
+import { ChevronRight, ExternalLink } from '../../../lib/icons';
 import { Highlighted } from './Highlighted';
 
 const LIT = {
@@ -27,6 +27,7 @@ export const ResultRow = memo(function ResultRow({
   onChoose: () => void;
 }) {
   const section = result.kind === 'section';
+  const pointer = result.kind === 'pointer';
   return (
     <button
       type="button"
@@ -91,9 +92,10 @@ export const ResultRow = memo(function ResultRow({
         aria-hidden
         className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border-[0.5px] text-[12px] transition-opacity duration-200 ${
           on ? 'border-ink/[0.14] bg-ink/[0.06] text-ink-60' : 'border-transparent text-ink-40'
-        } ${on || section ? 'opacity-100' : 'opacity-0'}`}
+        } ${on || section || pointer ? 'opacity-100' : 'opacity-0'}`}
       >
-        {section && !on ? <ChevronRight size={16} /> : '↵'}
+        {pointer && <ExternalLink size={13} />}
+        {!pointer && (section && !on ? <ChevronRight size={16} /> : '↵')}
       </span>
     </button>
   );

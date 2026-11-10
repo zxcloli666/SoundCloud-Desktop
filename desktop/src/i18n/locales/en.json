@@ -1429,6 +1429,8 @@
     "searchPlaybackResults": "Search results",
     "searchPlaybackSimilarDesc": "The picked track starts a wave of similar music instead of the next search result",
     "searchPlaybackResultsDesc": "Search results play one after another in their order",
+    "pointerPlayer": "Player",
+    "pointerApp": "App",
     "storageLocation": "Cache location",
     "storageLocationDesc": "Where cached tracks and liked tracks are stored",
     "storageDefault": "Default",
