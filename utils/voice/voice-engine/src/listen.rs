@@ -98,6 +98,7 @@ impl Core {
         if let Some(listener) = self.listener.as_mut() {
             listener.2.reset();
         }
+        self.warm_voice();
         self.release_at = None;
         self.phase = Phase::Listening(Box::new(Listen {
             r#gen,

@@ -4,14 +4,13 @@ use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 use voice_audio::{Event as CaptureEvent, Session};
 use voice_speech::Listener;
 
-use crate::clip::Clip;
 use crate::config::Config;
 use crate::event::{Event, LevelEvent, Source, State, StateEvent};
 use crate::listen::Listen;
 use crate::plan::Plan;
-use crate::speak::Speech;
+use crate::speak::{Draft, Speech};
 use crate::speaker::Playing;
-use crate::tts::Tts;
+use crate::tts::{Piece, Tts};
 use crate::{Command, Deps};
 
 const IDLE_WAIT: Duration = Duration::from_secs(3600);
@@ -21,7 +20,7 @@ pub enum Msg {
     Capture(u64, CaptureEvent),
     Closed(u64),
     Meter(u64, CaptureEvent),
-    Synth(u64, Result<Clip, String>),
+    Synth(u64, Piece),
     Spoken(u64),
     Previewed(u64),
 }
@@ -46,6 +45,7 @@ pub struct Core {
     pub listener: Option<(String, Vec<String>, Listener)>,
     pub tts: Tts,
     pub synth: Option<u64>,
+    pub draft: Option<Draft>,
     pub playing: Option<Playing>,
     pub meter: Option<(u64, Session)>,
     pub preview: Option<u64>,
@@ -59,9 +59,12 @@ pub struct Core {
 impl Core {
     pub fn new(deps: Deps, events: Sender<Event>, inbox: Sender<Msg>) -> Self {
         let reply = inbox.clone();
-        let tts = Tts::start(Box::new(move |r#gen, result| {
-            let _ = reply.send(Msg::Synth(r#gen, result));
-        }));
+        let tts = Tts::start(
+            Box::new(move |r#gen, piece| {
+                let _ = reply.send(Msg::Synth(r#gen, piece));
+            }),
+            deps.phrases.clone(),
+        );
         let prefix = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .map(|d| d.as_millis() as u64)
@@ -78,6 +81,7 @@ impl Core {
             listener: None,
             tts,
             synth: None,
+            draft: None,
             playing: None,
             meter: None,
             preview: None,
@@ -135,7 +139,7 @@ impl Core {
         if let Phase::Listening(listen) = phase {
             self.close(*listen);
         }
-        self.synth = None;
+        self.drop_reply();
         self.release_at = None;
         self.deps.output.duck(1.0);
         self.emit_state(State::Idle, None);
@@ -147,6 +151,14 @@ impl Core {
             playing.stop();
         }
         self.preview = None;
+        self.drop_reply();
+    }
+
+    fn drop_reply(&mut self) {
+        if self.synth.take().is_some() {
+            self.tts.forget();
+        }
+        self.draft = None;
     }
 
     fn deadline(&self) -> Option<Instant> {
@@ -193,7 +205,7 @@ impl Core {
             Msg::Capture(r#gen, event) => self.capture(r#gen, event),
             Msg::Closed(r#gen) => self.closed(r#gen),
             Msg::Meter(r#gen, event) => self.meter_event(r#gen, event),
-            Msg::Synth(r#gen, result) => self.synthesized(r#gen, result),
+            Msg::Synth(r#gen, piece) => self.synthesized(r#gen, piece),
             Msg::Spoken(r#gen) => self.spoken(r#gen),
             Msg::Previewed(r#gen) => {
                 if self.preview == Some(r#gen) {
@@ -225,7 +237,11 @@ impl Core {
                 }
             }
             Command::Devices(devices) => self.deps.devices = devices,
-            Command::Models => self.listener = None,
+            Command::Models => {
+                if !matches!(self.phase, Phase::Listening(_)) {
+                    self.listener = None;
+                }
+            }
             Command::Start(source) => self.start(source),
             Command::Press(source) => self.press(source),
             Command::Release(_) => self.release(),
@@ -324,7 +340,7 @@ impl Core {
         if !asking {
             self.plan = None;
         }
-        self.synth = None;
+        self.drop_reply();
     }
 
     fn text(&mut self, text: String, source: Source, id: Option<String>) {

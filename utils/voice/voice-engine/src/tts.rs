@@ -1,105 +1,223 @@
 use std::path::PathBuf;
-use std::sync::mpsc::{Sender, channel};
+use std::sync::Arc;
+use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::mpsc::{RecvTimeoutError, Sender, channel};
+use std::time::Duration;
 
-use signalsmith_stretch::Stretch;
-use voice_g2p::en::{English, Lexicon};
-use voice_g2p::kokoro::{map_russian, split_sentences};
-use voice_g2p::ru::Russian;
-use voice_tts::Kokoro;
+use voice_qwen::Sink;
 
+use crate::cache::{self, Cache};
 use crate::clip::Clip;
 use crate::config::Language;
-use crate::voices::Voice;
+use crate::kokoro::{Frontends, Line};
+use crate::qwen::{self, Paths, Qwen};
+use crate::shape::Shaper;
 
-const THREADS: i32 = 2;
+const REST: Duration = Duration::from_secs(120);
 
-pub struct Job {
+pub enum Source {
+    Kokoro {
+        dir: PathBuf,
+        file: &'static str,
+        speaker: i32,
+    },
+    Qwen {
+        paths: Paths,
+        speaker: &'static str,
+        robot: bool,
+        cached_as: String,
+    },
+}
+
+pub struct Say {
     pub r#gen: u64,
     pub text: String,
     pub language: Language,
-    pub voice: &'static Voice,
-    pub dir: PathBuf,
+    pub source: Source,
     pub speed: f32,
     pub pitch: f32,
 }
 
-pub type Reply = Box<dyn Fn(u64, Result<Clip, String>) + Send>;
+pub enum Piece {
+    Audio { rate: u32, samples: Vec<f32> },
+    End,
+    Failed(String),
+}
+
+pub type Reply = Box<dyn Fn(u64, Piece) + Send>;
+
+enum Job {
+    Warm(Paths),
+    Say(Say),
+}
 
 pub struct Tts {
     jobs: Sender<Job>,
+    wanted: Arc<AtomicU64>,
 }
 
-struct Frontends {
-    russian: Option<Russian>,
-    english: Option<English>,
-    kokoro: Option<(PathBuf, Kokoro)>,
+struct Voices {
+    kokoro: Frontends,
+    qwen: Qwen,
+    cache: Cache,
+}
+
+struct Out<'a> {
+    r#gen: u64,
+    reply: &'a Reply,
+    wanted: &'a AtomicU64,
+}
+
+struct Live<'a> {
+    out: &'a Out<'a>,
+    shaper: &'a mut Shaper,
+    raw: Vec<f32>,
 }
 
 impl Tts {
-    pub fn start(reply: Reply) -> Tts {
+    pub fn start(reply: Reply, phrases: PathBuf) -> Tts {
         let (jobs, inbox) = channel::<Job>();
+        let wanted = Arc::new(AtomicU64::new(0));
+        let asked = wanted.clone();
         std::thread::Builder::new()
             .name("voice-tts".into())
             .spawn(move || {
-                let mut frontends = Frontends {
-                    russian: None,
-                    english: None,
-                    kokoro: None,
+                let mut voices = Voices {
+                    kokoro: Frontends::default(),
+                    qwen: Qwen::default(),
+                    cache: Cache::new(phrases),
                 };
-                for job in inbox {
-                    let result = frontends.synth(&job);
-                    reply(job.r#gen, result);
+                loop {
+                    match inbox.recv_timeout(REST) {
+                        Ok(Job::Warm(paths)) => voices.qwen.warm(&paths),
+                        Ok(Job::Say(say)) => {
+                            let out = Out {
+                                r#gen: say.r#gen,
+                                reply: &reply,
+                                wanted: &asked,
+                            };
+                            if out.wanted() {
+                                voices.say(&say, &out);
+                            }
+                        }
+                        Err(RecvTimeoutError::Timeout) => voices.qwen.rest(),
+                        Err(RecvTimeoutError::Disconnected) => return,
+                    }
                 }
             })
             .expect("spawn voice-tts");
-        Tts { jobs }
+        Tts { jobs, wanted }
     }
 
-    pub fn say(&self, job: Job) {
-        let _ = self.jobs.send(job);
+    pub fn say(&self, say: Say) {
+        self.wanted.store(say.r#gen, Ordering::Relaxed);
+        let _ = self.jobs.send(Job::Say(say));
+    }
+
+    pub fn warm(&self, paths: Paths) {
+        let _ = self.jobs.send(Job::Warm(paths));
+    }
+
+    pub fn forget(&self) {
+        self.wanted.store(0, Ordering::Relaxed);
     }
 }
 
-impl Frontends {
-    fn synth(&mut self, job: &Job) -> Result<Clip, String> {
-        let ipa = match job.language {
-            Language::Ru => {
-                let russian = self.russian.get_or_insert_with(Russian::bundled);
-                map_russian(&russian.speak(&job.text).ipa)
-            }
-            Language::En => {
-                let english = self
-                    .english
-                    .get_or_insert_with(|| English::new(Lexicon::bundled()));
-                english.phonemize(&job.text).text
-            }
-        };
-        let fresh = !matches!(&self.kokoro, Some((dir, _)) if *dir == job.dir);
-        if fresh {
-            self.kokoro = None;
-            let kokoro =
-                Kokoro::open(&job.dir, job.voice.file, THREADS).ok_or("tts model did not load")?;
-            self.kokoro = Some((job.dir.clone(), kokoro));
+impl Out<'_> {
+    fn wanted(&self) -> bool {
+        self.wanted.load(Ordering::Relaxed) == self.r#gen
+    }
+
+    fn audio(&self, rate: u32, samples: Vec<f32>) {
+        if !samples.is_empty() {
+            (self.reply)(self.r#gen, Piece::Audio { rate, samples });
         }
-        let (_, kokoro) = self.kokoro.as_ref().ok_or("tts model did not load")?;
-        let speed = job.speed.clamp(0.5, 2.0);
-        let spoken = kokoro
-            .speak(&split_sentences(&ipa), job.voice.speaker, speed)
-            .ok_or("tts produced no audio")?;
-        let rate = spoken.sample_rate.max(1) as u32;
-        let samples = if job.pitch.abs() >= 0.05 {
-            shift(&spoken.samples, rate, job.pitch.clamp(-12.0, 12.0))
-        } else {
-            spoken.samples
-        };
-        Ok(Clip { samples, rate })
     }
 }
 
-fn shift(samples: &[f32], rate: u32, semitones: f32) -> Vec<f32> {
-    let mut stretch = Stretch::preset_default(1, rate);
-    stretch.set_transpose_factor_semitones(semitones, None);
-    let mut out = vec![0.0; samples.len()];
-    stretch.exact(samples, &mut out);
-    out
+impl Sink for Live<'_> {
+    fn audio(&mut self, samples: Vec<f32>) {
+        self.raw.extend_from_slice(&samples);
+        self.out.audio(qwen::RATE, self.shaper.push(samples));
+    }
+
+    fn wanted(&self) -> bool {
+        self.out.wanted()
+    }
+}
+
+impl Voices {
+    fn say(&mut self, say: &Say, out: &Out) {
+        let result = match &say.source {
+            Source::Kokoro { dir, file, speaker } => self.kokoro(say, dir, file, *speaker, out),
+            Source::Qwen {
+                paths,
+                speaker,
+                robot,
+                cached_as,
+            } => self.qwen(say, paths, speaker, *robot, cached_as, out),
+        };
+        let piece = match result {
+            Ok(()) => Piece::End,
+            Err(error) => Piece::Failed(error),
+        };
+        (out.reply)(out.r#gen, piece);
+    }
+
+    fn kokoro(
+        &mut self,
+        say: &Say,
+        dir: &std::path::Path,
+        file: &str,
+        speaker: i32,
+        out: &Out,
+    ) -> Result<(), String> {
+        let clip = self.kokoro.synth(&Line {
+            text: &say.text,
+            language: say.language,
+            dir,
+            file,
+            speaker,
+            speed: say.speed,
+            pitch: say.pitch,
+        })?;
+        out.audio(clip.rate, clip.samples);
+        Ok(())
+    }
+
+    fn qwen(
+        &mut self,
+        say: &Say,
+        paths: &Paths,
+        speaker: &str,
+        robot: bool,
+        cached_as: &str,
+        out: &Out,
+    ) -> Result<(), String> {
+        let mut shaper = Shaper::new(qwen::RATE, say.speed, say.pitch, robot);
+        let key = cache::key(&[cached_as, &say.text]);
+        if let Some(clip) = self.cache.get(&key).filter(|clip| clip.rate == qwen::RATE) {
+            out.audio(qwen::RATE, shaper.push(clip.samples));
+            out.audio(qwen::RATE, shaper.finish());
+            return Ok(());
+        }
+        let mut live = Live {
+            out,
+            shaper: &mut shaper,
+            raw: Vec::new(),
+        };
+        self.qwen.say(paths, speaker, &say.text, &mut live)?;
+        let raw = live.raw;
+        if out.wanted() {
+            out.audio(qwen::RATE, shaper.finish());
+            self.cache.put(
+                &key,
+                &Clip {
+                    samples: raw,
+                    rate: qwen::RATE,
+                },
+            );
+        }
+        Ok(())
+    }
 }

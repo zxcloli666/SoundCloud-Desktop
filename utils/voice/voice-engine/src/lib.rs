@@ -1,20 +1,26 @@
+mod cache;
 mod catalog;
 mod clip;
 mod config;
 mod event;
 mod gesture;
 mod hotwords;
+mod kokoro;
 mod listen;
 mod machine;
 mod models;
 mod output;
 mod plan;
+mod qwen;
+mod shape;
 mod speak;
 mod speaker;
+mod stream;
 mod tts;
 mod voices;
 mod wire;
 
+use std::path::PathBuf;
 use std::sync::Arc;
 use std::sync::mpsc::{Receiver, Sender, channel};
 use std::time::Duration;
@@ -32,8 +38,9 @@ pub use event::{
     ScoredEvent, Source, State, StateEvent,
 };
 pub use gesture::{Press, Presses};
-pub use models::{ASR_EN, ASR_RU, VAD, required};
+pub use models::{ASR_EN, ASR_RU, VAD, hearing, required};
 pub use output::Output;
+pub use stream::Stream;
 pub use voices::KOKORO;
 
 pub enum Command {
@@ -90,6 +97,7 @@ pub struct Deps {
     pub output: Box<dyn Output>,
     pub devices: DeviceList,
     pub timing: Timing,
+    pub phrases: PathBuf,
 }
 
 #[derive(Clone)]

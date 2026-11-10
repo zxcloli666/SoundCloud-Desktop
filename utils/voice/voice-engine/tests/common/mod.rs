@@ -9,7 +9,7 @@ use std::time::{Duration, Instant};
 use voice_audio::source::{Msg, OpenFn, SourceCtx};
 use voice_audio::{Capture, CaptureError, Device, DeviceList, RefTap, Transport};
 use voice_engine::{
-    Catalog, Clip, Command, Config, Deps, Engine, Event, Output, Source, State, Timing,
+    Catalog, Command, Config, Deps, Engine, Event, Output, Source, State, Stream, Timing,
 };
 use voice_models::{Fetch, FetchError, Response, Store};
 use voice_nlu::{Kind, Variant};
@@ -54,12 +54,23 @@ impl Output for FakeOutput {
         None
     }
 
-    fn speak(&self, clip: Clip) -> Result<Receiver<()>, String> {
-        self.calls
-            .push(format!("speak {} at {}", clip.samples.len(), clip.rate));
+    fn speak(&self, stream: Stream) -> Result<Receiver<()>, String> {
+        let calls = self.calls.clone();
         let (tx, rx) = channel();
         std::thread::spawn(move || {
-            std::thread::sleep(Duration::from_millis(50));
+            let mut stream = stream;
+            let rate = stream.rate();
+            let tick = rate as usize / 100;
+            let mut count = 0;
+            loop {
+                let played = stream.by_ref().take(tick).count();
+                count += played;
+                if played < tick {
+                    break;
+                }
+                std::thread::sleep(Duration::from_millis(10));
+            }
+            calls.push(format!("speak {count} at {rate}"));
             let _ = tx.send(());
         });
         Ok(rx)
@@ -182,16 +193,21 @@ pub fn timing() -> Timing {
 }
 
 pub fn rig_with(open: OpenFn, catalog: Box<dyn Catalog>, root: PathBuf, timing: Timing) -> Rig {
+    rig_on(open, catalog, store(root), timing)
+}
+
+pub fn rig_on(open: OpenFn, catalog: Box<dyn Catalog>, store: Arc<Store>, timing: Timing) -> Rig {
     let calls = Calls::default();
     let deps = Deps {
         capture: Capture::with_source(RefTap::new(), open),
-        store: store(root),
+        store,
         catalog,
         output: Box::new(FakeOutput {
             calls: calls.clone(),
         }),
         devices: devices(),
         timing,
+        phrases: std::env::temp_dir().join(format!("voice-engine-phrases-{}", std::process::id())),
     };
     let (engine, events) = Engine::start(deps);
     let mut config = Config {

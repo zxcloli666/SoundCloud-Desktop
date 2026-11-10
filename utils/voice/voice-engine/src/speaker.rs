@@ -1,12 +1,12 @@
 use std::sync::Arc;
-use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::mpsc::{Receiver, channel};
 use std::time::Duration;
 
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
-use cpal::{FromSample, SampleFormat, SizedSample, Stream, StreamConfig};
+use cpal::{FromSample, SampleFormat, SizedSample, StreamConfig};
 
-use crate::clip::Clip;
+use crate::stream::{Resampled, Stream};
 
 const DRAIN: Duration = Duration::from_millis(150);
 
@@ -20,7 +20,7 @@ impl Playing {
     }
 }
 
-pub fn play(device: Option<String>, clip: Clip) -> Result<(Playing, Receiver<()>), String> {
+pub fn play(device: Option<String>, speech: Stream) -> Result<(Playing, Receiver<()>), String> {
     let stop = Arc::new(AtomicBool::new(false));
     let (ended_tx, ended) = channel();
     let (ready_tx, ready) = channel();
@@ -29,7 +29,7 @@ pub fn play(device: Option<String>, clip: Clip) -> Result<(Playing, Receiver<()>
         .name("voice-speaker".into())
         .spawn(move || {
             let done = Arc::new(AtomicBool::new(false));
-            let stream = match open(device.as_deref(), &clip, done.clone()) {
+            let stream = match open(device.as_deref(), speech, done.clone()) {
                 Ok(stream) => stream,
                 Err(error) => {
                     let _ = ready_tx.send(Err(error));
@@ -53,7 +53,7 @@ pub fn play(device: Option<String>, clip: Clip) -> Result<(Playing, Receiver<()>
     Ok((Playing { stop }, ended))
 }
 
-fn open(id: Option<&str>, clip: &Clip, done: Arc<AtomicBool>) -> Result<Stream, String> {
+fn open(id: Option<&str>, speech: Stream, done: Arc<AtomicBool>) -> Result<cpal::Stream, String> {
     let host = cpal::default_host();
     let device = match id {
         Some(id) => {
@@ -64,7 +64,7 @@ fn open(id: Option<&str>, clip: &Clip, done: Arc<AtomicBool>) -> Result<Stream, 
     };
     let supported = device.default_output_config().map_err(|e| e.to_string())?;
     let config = supported.config();
-    let samples = Arc::new(clip.at_rate(config.sample_rate));
+    let samples = speech.at_rate(config.sample_rate);
     let stream = match supported.sample_format() {
         SampleFormat::F32 => build::<f32>(&device, &config, samples, done),
         SampleFormat::I16 => build::<i16>(&device, &config, samples, done),
@@ -79,29 +79,25 @@ fn open(id: Option<&str>, clip: &Clip, done: Arc<AtomicBool>) -> Result<Stream, 
 fn build<T>(
     device: &cpal::Device,
     config: &StreamConfig,
-    samples: Arc<Vec<f32>>,
+    mut samples: Resampled,
     done: Arc<AtomicBool>,
-) -> Result<Stream, String>
+) -> Result<cpal::Stream, String>
 where
     T: SizedSample + FromSample<f32>,
 {
     let channels = config.channels.max(1) as usize;
-    let at = AtomicUsize::new(0);
     device
         .build_output_stream(
             config,
             move |out: &mut [T], _| {
-                let mut pos = at.load(Ordering::Relaxed);
                 for frame in out.chunks_mut(channels) {
-                    let value = samples.get(pos).copied().unwrap_or(0.0);
-                    pos += 1;
+                    let value = samples.next().unwrap_or_else(|| {
+                        done.store(true, Ordering::Relaxed);
+                        0.0
+                    });
                     for slot in frame {
                         *slot = T::from_sample(value);
                     }
-                }
-                at.store(pos, Ordering::Relaxed);
-                if pos >= samples.len() {
-                    done.store(true, Ordering::Relaxed);
                 }
             },
             |_| {},

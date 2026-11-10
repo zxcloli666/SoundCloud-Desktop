@@ -14,12 +14,14 @@ voice-audio = { path = "../voice-audio" }
 voice-g2p = { path = "../voice-g2p" }
 voice-models = { path = "../voice-models" }
 voice-nlu = { path = "../voice-nlu" }
+voice-qwen = { path = "../voice-qwen" }
 voice-resolve = { path = "../voice-resolve" }
 voice-speech = { path = "../voice-speech", default-features = false }
 voice-tts = { path = "../voice-tts", default-features = false }
 cpal = "0.17"
 hound = "3"
 serde = { version = "1", features = ["derive"] }
+sha2 = "0.10"
 signalsmith-stretch = "0.1.3"
 
 [dev-dependencies]
