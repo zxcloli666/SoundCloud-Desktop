@@ -59,6 +59,7 @@ export function TextFilePanel() {
 
   return (
     <Panel
+      data-ui="settings-row"
       icon={<FileText size={17} />}
       title={t('settings.obsText')}
       desc={t('settings.obsTextDesc')}
@@ -86,7 +87,7 @@ export function TextFilePanel() {
           {t('settings.obsTextError', { error })}
         </div>
       )}
-      <div className="space-y-2">
+      <div data-ui="settings-row" className="space-y-2">
         <Label>{t('settings.obsTemplate')}</Label>
         <TemplateField value={template} onChange={setTemplate} />
       </div>

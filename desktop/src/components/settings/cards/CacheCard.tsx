@@ -34,15 +34,17 @@ function CacheRow({
   clearing,
   onClear,
   clearLabel,
+  'data-ui': dataUi,
 }: {
   label: string;
   size: number | null;
   clearing: boolean;
   onClear: () => void;
   clearLabel: string;
+  'data-ui'?: string;
 }) {
   return (
-    <div className="flex items-center justify-between py-3">
+    <div data-ui={dataUi} className="flex items-center justify-between py-3">
       <div>
         <p className="text-[13px] text-ink-60 font-medium">{label}</p>
         <div className="h-[25px] flex items-center">
@@ -177,6 +179,7 @@ export function CacheCard() {
     >
       <div className="divide-y divide-ink/[0.04]">
         <CacheRow
+          data-ui="settings-row"
           label={t('settings.audioCacheSize')}
           size={audioSize}
           clearing={clearingAudio}
@@ -184,6 +187,7 @@ export function CacheCard() {
           onClear={() => clearWith(clearCache, setClearingAudio, setAudioSize)}
         />
         <CacheRow
+          data-ui="settings-row"
           label={t('settings.assetsCacheSize')}
           size={imagesSize}
           clearing={clearingImages}
@@ -191,6 +195,7 @@ export function CacheCard() {
           onClear={() => clearWith(clearImageCache, setClearingImages, setImagesSize)}
         />
         <CacheRow
+          data-ui="settings-row"
           label={t('settings.likedCacheSize')}
           size={likedSize}
           clearing={clearingLiked}
@@ -245,6 +250,7 @@ export function CacheCard() {
 
       <Divider />
       <CacheLimitSlider
+        data-ui="settings-row"
         title={t('settings.audioCacheLimit')}
         desc={cacheOff ? t('settings.audioCacheOffDesc') : t('settings.audioCacheLimitDesc')}
         valueLabel={limitLabel}
@@ -258,6 +264,7 @@ export function CacheCard() {
 
       <Divider />
       <CacheLimitSlider
+        data-ui="settings-row"
         title={t('settings.imageCacheLimit')}
         desc={t('settings.imageCacheLimitDesc')}
         valueLabel={imageLimitLabel}

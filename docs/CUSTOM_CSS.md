@@ -104,6 +104,12 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="settings-nav"]` | Section list in Settings |
 | `[data-ui="settings-nav-item"]` | A section in that list |
 | `[data-ui="settings-row"]` | A setting row |
+| `[data-ui="settings-search"]` | Search field at the top of the Settings section list |
+| `[data-ui="settings-search-result"]` | Search result row, `[data-active]` is `true` on the lit one |
+| `[data-ui="settings-search-results"]` | Results list in Settings search |
+| `[data-ui="settings-search-count"]` | Result count next to the Settings search title |
+| `[data-ui="settings-search-empty"]` | Nothing-found block in Settings search |
+| `[data-ui="settings-search-clear"]` | Clear button in the search field |
 | `[data-ui="switch"]` | On/off switch |
 | `[data-ui="segmented"]` | Group of options |
 | `[data-ui="segment"]` | One option in a group |

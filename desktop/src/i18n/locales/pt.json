@@ -1018,6 +1018,9 @@
   },
   "settings": {
     "title": "Configurações",
+    "search": "Buscar",
+    "searchClear": "Limpar",
+    "searchEmpty": "Nada encontrado",
     "cache": "Cache",
     "total": "Total",
     "audioCacheSize": "Áudio",

@@ -1035,6 +1035,9 @@
   },
   "settings": {
     "title": "Ayarlar",
+    "search": "Ara",
+    "searchClear": "Temizle",
+    "searchEmpty": "Sonuç yok",
     "cache": "Önbellek",
     "total": "Toplam",
     "audioCacheSize": "Ses",

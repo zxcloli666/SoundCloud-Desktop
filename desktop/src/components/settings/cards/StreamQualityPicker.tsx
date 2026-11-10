@@ -50,7 +50,7 @@ export function StreamQualityPicker({ isPremium }: { isPremium: boolean }) {
   const streamQuality = chosen === 'uq' && !isPremium ? 'hq' : chosen;
 
   return (
-    <div className="space-y-3 py-3 first:pt-0 last:pb-0">
+    <div data-ui="settings-row" className="space-y-3 py-3 first:pt-0 last:pb-0">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
           <div className="text-[13.5px] text-ink-80 font-medium">

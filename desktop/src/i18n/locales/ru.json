@@ -1012,6 +1012,9 @@
   },
   "settings": {
     "title": "Настройки",
+    "search": "Поиск",
+    "searchClear": "Сбросить",
+    "searchEmpty": "Ничего не найдено",
     "cache": "Кэш",
     "total": "Всего",
     "audioCacheSize": "Аудио",

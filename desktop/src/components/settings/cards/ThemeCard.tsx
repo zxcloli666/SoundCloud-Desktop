@@ -55,7 +55,7 @@ export function ThemeCard() {
                     <ThemeOverrideRow label={t('settings.themesColorsFromTheme', {name: look.name})}/>
                 )}
                 <SchemePicker/>
-                <div className="space-y-3">
+                <div data-ui="settings-row" className="space-y-3">
                     <label className="text-[13px] text-ink-50 font-medium">
                         {t('settings.themePreset')}
                     </label>
@@ -126,7 +126,7 @@ export function ThemeCard() {
                 </div>
 
                 {themePreset === 'custom' && (
-                    <div className="space-y-3">
+                    <div data-ui="settings-row" className="space-y-3">
                         <label className="text-[13px] text-ink-50 font-medium">
                             {t('settings.accentColor')}
                         </label>

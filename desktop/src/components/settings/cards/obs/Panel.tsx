@@ -8,6 +8,7 @@ export function Panel({
   checked,
   onToggle,
   children,
+  'data-ui': dataUi,
 }: {
   icon: ReactNode;
   title: string;
@@ -15,9 +16,11 @@ export function Panel({
   checked: boolean;
   onToggle: () => void;
   children?: ReactNode;
+  'data-ui'?: string;
 }) {
   return (
     <div
+      data-ui={dataUi}
       className="relative overflow-hidden rounded-2xl p-4 transition-[border-color,box-shadow] duration-500"
       style={{
         border: `0.5px solid ${checked ? 'var(--color-accent-glow)' : 'rgb(var(--ink) / 0.06)'}`,
