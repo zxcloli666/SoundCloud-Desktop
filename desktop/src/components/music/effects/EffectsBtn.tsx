@@ -20,6 +20,7 @@ export const EffectsBtn = memo(function EffectsBtn({
     <EffectsPanel>
       <button
         type="button"
+        data-ui="player-effects"
         title={t('effects.title')}
         aria-label={t('effects.title')}
         className={`relative ${className(active)}`}

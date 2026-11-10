@@ -19,12 +19,14 @@ export interface SearchHit {
 
 export interface SettingsEntry {
   id: string;
-  kind: 'card' | 'row';
+  kind: 'card' | 'row' | 'pointer';
   category: string;
   card: string;
   title: string[];
   desc: string[];
   keys: string[];
+  place?: string;
+  trigger?: string;
 }
 
 export interface SettingsCategoryInfo {

@@ -1465,6 +1465,8 @@
     "searchPlaybackResults": "Результаты поиска",
     "searchPlaybackSimilarDesc": "Выбранный трек запускает волну похожей музыки вместо следующего результата поиска",
     "searchPlaybackResultsDesc": "Результаты поиска играют подряд в порядке выдачи",
+    "pointerPlayer": "Плеер",
+    "pointerApp": "Приложение",
     "storageLocation": "Расположение кэша",
     "storageLocationDesc": "Где хранятся закэшированные треки и лайки",
     "storageDefault": "По умолчанию",

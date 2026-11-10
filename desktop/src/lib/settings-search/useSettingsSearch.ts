@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { categories, entries } from 'virtual:settings-index';
 import { buildDocs } from './docs';
+import { pointers } from './pointers';
 import { buildSearchIndex, search } from './search-index';
 import { lookupText, plainText } from './texts';
 import type { FieldKind, SettingsEntry } from './types';
@@ -19,6 +20,7 @@ export interface SettingsResult {
   descMatched: boolean;
   titles: string[];
   cardTitles: string[];
+  trigger?: string;
 }
 
 const LIMIT = 20;
@@ -67,7 +69,7 @@ export function useSettingsSearch(
   const built = useMemo(() => {
     if (!files) return null;
     const shown = new Set(visibleKey.split(','));
-    const list = entries.filter((entry) => shown.has(entry.category));
+    const list = [...entries.filter((entry) => shown.has(entry.category)), ...pointers];
     const shownCategories = categories.filter((item) => shown.has(item.id));
     const codes = [...new Set([language, 'en'])];
     const texts = (key: string) =>
@@ -94,12 +96,18 @@ export function useSettingsSearch(
     );
     const settings = search(built.index, query, LIMIT).flatMap((hit) => {
       const entry = built.byId.get(hit.id);
-      return entry ? [toResult(entry, hit.kind, hit.text, built.byId, language)] : [];
+      if (!entry || (entry.trigger && !isShown(entry.trigger))) return [];
+      return [toResult(entry, hit.kind, hit.text, built.byId, language)];
     });
     return [...sections, ...settings];
   }, [query, built, language]);
 
   return { results, ready: built !== null };
+}
+
+function isShown(trigger: string): boolean {
+  const button = document.querySelector(`[data-ui="${trigger}"]`);
+  return button !== null && button.getClientRects().length > 0;
 }
 
 function toSection(category: string, language: string): SettingsResult {
@@ -133,7 +141,8 @@ function toResult(
   const host = entry.kind === 'row' ? byId.get(entry.card) : undefined;
   const cardTitles = host ? ui(host.title) : [];
   const label =
-    ui([categories.find((item) => item.id === entry.category)?.labelKey ?? ''])[0] ?? '';
+    ui([entry.place ?? categories.find((item) => item.id === entry.category)?.labelKey ?? ''])[0] ??
+    '';
   const descMatched = kind === 'desc' || kind === 'option';
   return {
     id: entry.id,
@@ -145,5 +154,6 @@ function toResult(
     descMatched,
     titles,
     cardTitles,
+    trigger: entry.trigger,
   };
 }

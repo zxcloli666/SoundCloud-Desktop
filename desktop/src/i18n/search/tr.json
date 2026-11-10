@@ -923,5 +923,38 @@
     "yan panel",
     "dock",
     "sohbeti gizle göster tuşu"
+  ],
+  "elsewhere.equalizer": [
+    "ekolayzır",
+    "eq",
+    "ses ekolayzırı",
+    "frekans bantları",
+    "ön yükseltici",
+    "ekolayzır ayarı"
+  ],
+  "elsewhere.effects": [
+    "bas artır",
+    "bas güçlendirme",
+    "reverb",
+    "8d ses",
+    "yankı",
+    "ses efektleri",
+    "nightcore"
+  ],
+  "elsewhere.speed": [
+    "oynatma hızı",
+    "şarkıyı hızlandır",
+    "şarkıyı yavaşlat",
+    "perde",
+    "ton değiştir",
+    "hızlı yavaş"
+  ],
+  "elsewhere.shortcuts": [
+    "klavye kısayolları",
+    "kısayol listesi",
+    "hangi tuşlar var",
+    "tuş listesi",
+    "duraklatmak için ne basılır",
+    "kısayollar penceresi"
   ]
 }

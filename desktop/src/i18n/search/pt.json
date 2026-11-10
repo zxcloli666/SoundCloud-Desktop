@@ -912,5 +912,38 @@
     "seguidos não sincronizam",
     "erro de sincronização",
     "não enviado"
+  ],
+  "elsewhere.equalizer": [
+    "equalizador",
+    "eq",
+    "equalizador de áudio",
+    "bandas de frequência",
+    "pré-amplificador",
+    "predefinição do equalizador"
+  ],
+  "elsewhere.effects": [
+    "reforço de graves",
+    "mais grave",
+    "reverb",
+    "áudio 8d",
+    "eco",
+    "efeitos de som",
+    "nightcore"
+  ],
+  "elsewhere.speed": [
+    "velocidade de reprodução",
+    "acelerar faixa",
+    "desacelerar faixa",
+    "tom",
+    "mudar o tom",
+    "mais rápido mais lento"
+  ],
+  "elsewhere.shortcuts": [
+    "atalhos de teclado",
+    "lista de atalhos",
+    "quais teclas existem",
+    "janela de atalhos",
+    "tecla para pausar",
+    "guia de teclas"
   ]
 }

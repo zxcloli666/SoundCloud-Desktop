@@ -51,6 +51,9 @@
 | `[data-ui="player-title"]` | Название трека в плеере |
 | `[data-ui="player-rating"]` | Чип рейтинга трека (A, C, F) в плеере |
 | `[data-ui="play-button"]` | Пуск и пауза |
+| `[data-ui="player-tuning"]` | Кнопка скорости и питча в плеере |
+| `[data-ui="player-eq"]` | Кнопка эквалайзера в плеере |
+| `[data-ui="player-effects"]` | Кнопка эффектов в плеере (реверб, 8D, бас) |
 | `[data-ui="progress"]` | Полоса прогресса |
 | `[data-ui="volume"]` | Громкость |
 | `[data-ui="namecard"]` | Карточка, которая открывается по названию трека |
