@@ -38,6 +38,7 @@ pub fn request(
         has_draft: false,
         pinged: false,
         slow_mode_s: 0,
+        backdrop: None,
     });
     ChatRequest {
         conversation,

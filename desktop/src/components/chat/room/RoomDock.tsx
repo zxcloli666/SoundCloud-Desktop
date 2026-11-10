@@ -2,13 +2,13 @@ import { memo, type ReactNode } from 'react';
 import { hasModeration } from '../../../lib/together/room-rules';
 import { selectChatEnabled, useChatStore } from '../../../stores/chat';
 import { useChatRoomStore } from '../../../stores/chat/room';
-import { BackdropDialogs } from './backdrop/BackdropDialogs';
-import { UploadChip } from './backdrop/UploadChip';
+import { UploadChip } from '../backdrop/UploadChip';
 import { HandoffBanner } from './HandoffBanner';
 import { ROOM_KEYFRAMES } from './keyframes';
 import { MemberStrip } from './MemberStrip';
 import { MutedBar } from './MutedBar';
 import { RoomBackdrop } from './RoomBackdrop';
+import { RoomBackdropDialogs } from './RoomBackdropDialogs';
 import { RoomExitCard } from './RoomExitCard';
 import { RoomHeader } from './RoomHeader';
 import { RoomQuiet } from './RoomQuiet';
@@ -66,7 +66,7 @@ export const RoomDock = memo(function RoomDock({ children, onBack }: RoomDockPro
         </div>
         {thread && muted !== null && <MutedBar until={muted} />}
       </div>
-      <BackdropDialogs room={room} host={self.host} />
+      <RoomBackdropDialogs room={room} host={self.host} />
     </div>
   );
 });

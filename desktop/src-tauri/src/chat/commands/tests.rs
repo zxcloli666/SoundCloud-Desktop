@@ -144,6 +144,7 @@ fn a_rename_keeps_the_description() {
         title: "Old".into(),
         description: "About us".into(),
         avatar: None,
+        backdrop: None,
     };
     store.put_group_meta(id, &meta).unwrap();
     let patch = ConversationPatch {

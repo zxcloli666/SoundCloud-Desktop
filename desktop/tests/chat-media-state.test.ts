@@ -4,12 +4,8 @@ import {
   photoState,
   photoWaitUntil,
   uploadStatus,
-} from '../src/components/chat/room/backdrop/photo-state.ts';
-import {
-  backdropFace,
-  RETRY_MS,
-  retriesAfter,
-} from '../src/components/chat/room/backdrop/retry.ts';
+} from '../src/components/chat/backdrop/photo-state.ts';
+import { backdropFace, RETRY_MS, retriesAfter } from '../src/components/chat/backdrop/retry.ts';
 import { chatNavShown, gateOf } from '../src/lib/chat/gate.ts';
 import { accountChange, holdsLocalStore, uploadActionsRun } from '../src/stores/chat/account.ts';
 import { forgetTimers } from '../src/stores/chat/forget-timers.ts';

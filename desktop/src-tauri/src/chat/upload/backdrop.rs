@@ -101,7 +101,11 @@ impl Uploads {
     }
 
     pub(super) async fn backdrop_committed(&self, upload: &MediaUpload) {
-        let applied = self.apply_backdrop(upload).await;
+        let applied = match self.kind_of(upload.conversation_id).await {
+            Ok(ConversationKind::Room) => self.apply_backdrop(upload).await,
+            Ok(_) => self.chat_backdrop_committed(upload).await,
+            Err(error) => Err(error),
+        };
         self.applied(upload, applied).await;
     }
 
@@ -131,7 +135,7 @@ impl Uploads {
         .await
     }
 
-    async fn prepared_backdrop(
+    pub(super) async fn prepared_backdrop(
         &self,
         original: impl Future<Output = ChatResult<Vec<u8>>>,
     ) -> ChatResult<PreparedBackdrop> {

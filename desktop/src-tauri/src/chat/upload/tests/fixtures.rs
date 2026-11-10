@@ -32,5 +32,6 @@ pub fn summary(id: ConvId, kind: ConversationKind) -> ConversationSummary {
         has_draft: false,
         pinged: false,
         slow_mode_s: 0,
+        backdrop: None,
     }
 }

@@ -6,6 +6,7 @@ import { type ConversationSummary, DISAPPEARING_TTLS } from '../../../lib/chat/t
 import { Bell, Info, Shield, X } from '../../../lib/icons';
 import { useChatThreadStore } from '../../../stores/chat/thread';
 import { type ContextMenuEntry, openContextMenu } from '../../../stores/context-menu';
+import { backdropEntries } from '../backdrop/menu';
 import type { InfoTab } from '../info/InfoSheet';
 import { openSlowModeMenu } from '../public/SlowModeChip';
 import { toastError } from './errors';
@@ -106,5 +107,6 @@ export function openThreadMenu(
       onSelect: () => void setMuted(conversation, !muted).catch((e) => toastError(e, t, language)),
     });
   }
+  entries.push(...backdropEntries(conversation, t, (e) => toastError(e, t, language)));
   openContextMenu(event, entries);
 }

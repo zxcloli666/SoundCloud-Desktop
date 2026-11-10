@@ -3,8 +3,8 @@ use std::sync::Arc;
 use sc_chat::api::Api;
 use sc_chat::api::wire::LogEntry;
 use sc_chat::{
-    ChatResult, ConvId, ConversationKind, ConversationSummary, Millis, Seq, UserCard, UserId,
-    UserRef,
+    ChatResult, ConvId, ConversationKind, ConversationSummary, Millis, PublicOpened, Seq, UserCard,
+    UserId, UserRef,
 };
 use serde::Serialize;
 use tokio::task::JoinSet;
@@ -18,13 +18,6 @@ use crate::chat::state::ChatState;
 const LOG_MAX: u32 = 200;
 const CARDS_MAX: usize = 24;
 const PEOPLE_MAX: usize = 200;
-
-#[derive(Debug, Clone, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct PublicOpened {
-    pub conversation: ConversationSummary,
-    pub online: u32,
-}
 
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -48,12 +41,9 @@ pub struct PublicLog {
 }
 
 pub async fn open(state: &ChatState) -> ChatResult<PublicOpened> {
-    let (conversation, online) = state.core()?.sync.open_public().await?;
+    let opened = state.core()?.sync.open_public().await?;
     state.runtime.kick();
-    Ok(PublicOpened {
-        conversation,
-        online,
-    })
+    Ok(opened)
 }
 
 pub async fn focused(state: &ChatState, conversation_id: Option<ConvId>) {

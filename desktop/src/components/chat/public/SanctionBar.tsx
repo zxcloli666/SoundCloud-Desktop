@@ -53,7 +53,13 @@ function RulesButton() {
   );
 }
 
-export const PublicMutedBar = memo(function PublicMutedBar({ until }: { until: number }) {
+export const PublicMutedBar = memo(function PublicMutedBar({
+  until,
+  reason = null,
+}: {
+  until: number;
+  reason?: string | null;
+}) {
   const { t, i18n } = useTranslation();
   const left = useCountdown(until);
   const [total] = useState(() => Math.max(1, Math.ceil((until - Date.now()) / 1000)));
@@ -72,8 +78,13 @@ export const PublicMutedBar = memo(function PublicMutedBar({ until }: { until: n
         <span className="block truncate text-[13px] font-semibold text-rose-100/90">
           {t('chat.public.muted.title')}
         </span>
-        <span className="block truncate text-[11.5px] text-rose-200/60">
-          {t('chat.public.muted.until', { time: shortDate(until, Date.now(), i18n.language) })}
+        <span
+          data-ui="chat-public-mute-reason"
+          title={reason ?? undefined}
+          className={`block truncate text-[11.5px] ${reason ? 'text-rose-100/75' : 'text-rose-200/60'}`}
+        >
+          {reason ??
+            t('chat.public.muted.until', { time: shortDate(until, Date.now(), i18n.language) })}
         </span>
       </span>
       <span className="shrink-0 text-[15px] font-bold tabular-nums text-rose-200/90">

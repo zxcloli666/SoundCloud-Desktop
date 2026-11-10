@@ -1,4 +1,4 @@
-import type { UploadView } from '../../../lib/chat/media-types';
+import type { RoomBackdrop, UploadView } from '../../../lib/chat/media-types';
 import type { ConversationSummary, Message, SendInput } from '../../../lib/chat/types';
 import type { RoomView } from '../../../lib/together/types';
 import { emitChat } from './bus';
@@ -247,6 +247,78 @@ async function roomBackdropStored(args: Args): Promise<UploadView | null> {
   return backdropUpload(String(args.conversationId), String(args.code), mediaId);
 }
 
+const CHANGES_MAX = 6;
+const CHANGES_WINDOW_MS = 10 * 60_000;
+const changes = new Map<string, number[]>();
+
+function countChange(conversationId: string) {
+  const now = Date.now();
+  const recent = (changes.get(conversationId) ?? []).filter((at) => now - at < CHANGES_WINDOW_MS);
+  if (recent.length >= CHANGES_MAX) throw { code: 'request_limit' };
+  changes.set(conversationId, [...recent, now]);
+}
+
+function setChatBackdrop(conversationId: string, look: RoomBackdrop | null) {
+  const me = world.status.userId ?? 'u-me';
+  world.conversations = world.conversations.map((c) =>
+    c.id === conversationId ? { ...c, backdrop: look ? { ...look, by: me } : null } : c,
+  );
+  const updated = world.conversations.find((c) => c.id === conversationId);
+  if (updated) emitSummary(updated);
+}
+
+function needChatStar(conversationId: string, image: boolean) {
+  const open = world.conversations.find((c) => c.id === conversationId)?.kind === 'public';
+  if (world.config.media?.star !== true && (image || !open)) {
+    throw { code: 'backdrop_star_required' };
+  }
+}
+
+function chatBackdropSet(args: Args) {
+  const conversationId = String(args.conversationId);
+  const preset = args.preset as string | null;
+  if (preset) needChatStar(conversationId, false);
+  countChange(conversationId);
+  nextPick(conversationId);
+  setTimeout(
+    () => setChatBackdrop(conversationId, preset ? { kind: 'preset', id: preset } : null),
+    350,
+  );
+  return null;
+}
+
+function chatBackdropImage(conversationId: string, path: string): UploadView {
+  const view = enqueue(conversationId, `backdrop-${conversationId}`, 'backdrop', path, 480_000);
+  const stop = onUploadDone((done) => {
+    if (done.id !== view.id) return;
+    stop();
+    setChatBackdrop(conversationId, { kind: 'image', mediaId: done.id });
+    setTimeout(() => setUploads([], [done.id]), HOLD_MS);
+  });
+  return view;
+}
+
+function chatBackdropUpload(args: Args): UploadView {
+  const conversationId = String(args.conversationId);
+  mediaOn();
+  needChatStar(conversationId, true);
+  nextPick(conversationId);
+  return chatBackdropImage(conversationId, String(args.path));
+}
+
+async function chatBackdropStored(args: Args): Promise<UploadView | null> {
+  const conversationId = String(args.conversationId);
+  mediaOn();
+  needChatStar(conversationId, true);
+  const turn = nextPick(conversationId);
+  const mediaId = String(args.mediaId);
+  await sleep(FETCH_MS);
+  if (turn !== picks) return null;
+  const mark = mediaMark(mediaId);
+  if (mark === 'deleted' || mark === 'lost') throw { code: 'media_missing', ids: [mediaId] };
+  return chatBackdropImage(conversationId, mediaId);
+}
+
 function roomBackdropReport(args: Args) {
   const room = world.uploads.some((u) => u.id === args.mediaId);
   if (room) throw { code: 'invalid' };
@@ -286,6 +358,9 @@ export const writeHandlers: Record<string, (args: Args) => unknown> = {
   chat_room_backdrop: roomBackdrop,
   chat_room_backdrop_upload: roomBackdropUpload,
   chat_room_backdrop_stored: roomBackdropStored,
+  chat_backdrop_set: chatBackdropSet,
+  chat_backdrop_upload: chatBackdropUpload,
+  chat_backdrop_stored: chatBackdropStored,
   chat_room_backdrop_stop: (args) => {
     nextPick(String(args.conversationId));
     return null;

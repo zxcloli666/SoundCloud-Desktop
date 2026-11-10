@@ -18,9 +18,9 @@ use sc_chat::{
     ConversationPatch, ConversationSummary, CreateConversation, DeleteScope, Device, DeviceId,
     Embed, EmbedPage, EmbedsQuery, HistoryPage, HistoryQuery, Invite, InviteOptions, LinkClaimed,
     LinkCreated, LinkPoll, ListQuery, LoginBegin, LoginPoll, LoginTarget, MediaUploadView, Member,
-    MemberRole, Message, MessageTarget, MineQuery, NotifyPrefs, ReportInput, ReportReason,
-    RichText, RoomModeration, RoomPreview, RoomSettingsPatch, SearchHit, SearchQuery, SendInput,
-    Seq, SettingsPatch, ThreadSnapshot, UserCard, UserId, UserRef,
+    MemberRole, Message, MessageTarget, MineQuery, NotifyPrefs, PublicOpened, ReportInput,
+    ReportReason, RichText, RoomModeration, RoomPreview, RoomSettingsPatch, SearchHit, SearchQuery,
+    SendInput, Seq, SettingsPatch, ThreadSnapshot, UserCard, UserId, UserRef,
 };
 use tauri::State;
 use uuid::Uuid;
@@ -30,7 +30,7 @@ use super::keychain::ResetPlan;
 use super::login;
 use super::runtime::DeviceLimit;
 use super::state::ChatState;
-pub use public::{PublicLog, PublicOpened};
+pub use public::PublicLog;
 
 #[tauri::command]
 pub async fn chat_status(state: State<'_, ChatState>) -> Result<ChatStatus, ChatError> {
@@ -679,6 +679,34 @@ pub async fn chat_room_backdrop_stored(
     media_id: Uuid,
 ) -> Result<Option<MediaUploadView>, ChatError> {
     media::backdrop_stored(&state, code, conversation_id, source, media_id).await
+}
+
+#[tauri::command]
+pub async fn chat_backdrop_set(
+    state: State<'_, ChatState>,
+    conversation_id: ConvId,
+    preset: Option<String>,
+) -> Result<(), ChatError> {
+    media::chat_backdrop(&state, conversation_id, preset).await
+}
+
+#[tauri::command]
+pub async fn chat_backdrop_upload(
+    state: State<'_, ChatState>,
+    conversation_id: ConvId,
+    path: String,
+) -> Result<Option<MediaUploadView>, ChatError> {
+    media::chat_backdrop_upload(&state, conversation_id, path).await
+}
+
+#[tauri::command]
+pub async fn chat_backdrop_stored(
+    state: State<'_, ChatState>,
+    conversation_id: ConvId,
+    source: ConvId,
+    media_id: Uuid,
+) -> Result<Option<MediaUploadView>, ChatError> {
+    media::chat_backdrop_stored(&state, conversation_id, source, media_id).await
 }
 
 #[tauri::command]
