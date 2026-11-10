@@ -10,6 +10,7 @@ interface CacheLimitSliderProps {
   maxLabel: string;
   danger?: boolean;
   onChange: (step: number) => void;
+  'data-ui'?: string;
 }
 
 export function CacheLimitSlider({
@@ -22,9 +23,10 @@ export function CacheLimitSlider({
   maxLabel,
   danger = false,
   onChange,
+  'data-ui': dataUi,
 }: CacheLimitSliderProps) {
   return (
-    <div className="pt-3 space-y-3">
+    <div data-ui={dataUi} className="pt-3 space-y-3">
       <div className="flex items-center justify-between gap-4">
         <div>
           <p className="text-[13px] text-ink-60 font-medium">{title}</p>

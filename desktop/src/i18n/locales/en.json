@@ -988,6 +988,9 @@
   },
   "settings": {
     "title": "Settings",
+    "search": "Search",
+    "searchClear": "Clear",
+    "searchEmpty": "Nothing found",
     "cache": "Cache",
     "total": "Total",
     "audioCacheSize": "Audio",

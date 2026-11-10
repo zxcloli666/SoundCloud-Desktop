@@ -104,6 +104,12 @@
 | `[data-ui="settings-nav"]` | Список разделов в Настройках |
 | `[data-ui="settings-nav-item"]` | Раздел в этом списке |
 | `[data-ui="settings-row"]` | Строка настройки |
+| `[data-ui="settings-search"]` | Поле поиска над списком разделов Настроек |
+| `[data-ui="settings-search-result"]` | Строка результата поиска, `[data-active]` равен `true` у подсвеченной |
+| `[data-ui="settings-search-results"]` | Список результатов поиска в Настройках |
+| `[data-ui="settings-search-count"]` | Число результатов рядом с заголовком поиска |
+| `[data-ui="settings-search-empty"]` | Блок «ничего не найдено» в поиске |
+| `[data-ui="settings-search-clear"]` | Кнопка очистки в поле поиска |
 | `[data-ui="switch"]` | Переключатель |
 | `[data-ui="segmented"]` | Группа вариантов |
 | `[data-ui="segment"]` | Вариант в группе |

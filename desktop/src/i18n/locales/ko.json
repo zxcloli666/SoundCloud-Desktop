@@ -973,6 +973,9 @@
   },
   "settings": {
     "title": "설정",
+    "search": "검색",
+    "searchClear": "지우기",
+    "searchEmpty": "결과 없음",
     "cache": "캐시",
     "total": "전체",
     "audioCacheSize": "오디오",

@@ -1,0 +1,1129 @@
+[
+ {
+  "q": "музыка то тихая то громкая",
+  "lang": "ru",
+  "want": [
+   "settings.normalizeVolume"
+  ]
+ },
+ {
+  "q": "включается вместе с компом",
+  "lang": "ru",
+  "want": [
+   "settings.autostart",
+   "settings.startup"
+  ]
+ },
+ {
+  "q": "чтоб при старте сидело в трее",
+  "lang": "ru",
+  "want": [
+   "settings.autostartMinimized"
+  ]
+ },
+ {
+  "q": "закрываю окно а оно остаётся в фоне",
+  "lang": "ru",
+  "want": [
+   "settings.closeButton"
+  ]
+ },
+ {
+  "q": "хоткеи",
+  "lang": "ru",
+  "want": [
+   "hotkeys.title"
+  ]
+ },
+ {
+  "q": "переключать треки пока играю в игру",
+  "lang": "ru",
+  "want": [
+   "hotkeys.title"
+  ]
+ },
+ {
+  "q": "как обновить программу",
+  "lang": "ru",
+  "want": [
+   "settings.updates"
+  ]
+ },
+ {
+  "q": "отправка ошибок разрабам",
+  "lang": "ru",
+  "want": [
+   "diag.sendReports"
+  ]
+ },
+ {
+  "q": "не хочу слышать этого автора",
+  "lang": "ru",
+  "want": [
+   "blocklist.cardTitle"
+  ]
+ },
+ {
+  "q": "убрать треки где в названии ремикс",
+  "lang": "ru",
+  "want": [
+   "keywordFilter.cardTitle"
+  ]
+ },
+ {
+  "q": "всплывашки с ошибками раздражают",
+  "lang": "ru",
+  "want": [
+   "settings.showErrorToasts"
+  ]
+ },
+ {
+  "q": "когда любимый артист выпустил трек",
+  "lang": "ru",
+  "want": [
+   "settings.releaseNotifications"
+  ]
+ },
+ {
+  "q": "что значит ошибка 503",
+  "lang": "ru",
+  "want": [
+   "settings.helpErrors"
+  ]
+ },
+ {
+  "q": "не грузит сервера проверить инет",
+  "lang": "ru",
+  "want": [
+   "netCheck.title",
+   "settings.helpNetCheck"
+  ]
+ },
+ {
+  "q": "написать в поддержку",
+  "lang": "ru",
+  "want": [
+   "diag.report"
+  ]
+ },
+ {
+  "q": "где лежит лог",
+  "lang": "ru",
+  "want": [
+   "settings.helpLog"
+  ]
+ },
+ {
+  "q": "приложение на телефон",
+  "lang": "ru",
+  "want": [
+   "settings.android"
+  ]
+ },
+ {
+  "q": "задонатить",
+  "lang": "ru",
+  "want": [
+   "settings.support"
+  ]
+ },
+ {
+  "q": "тёмная тема",
+  "lang": "ru",
+  "want": [
+   "settings.scheme"
+  ]
+ },
+ {
+  "q": "цвет кнопок поменять",
+  "lang": "ru",
+  "want": [
+   "settings.accentColor"
+  ]
+ },
+ {
+  "q": "всё слишком мелкое",
+  "lang": "ru",
+  "want": [
+   "settings.uiScale"
+  ]
+ },
+ {
+  "q": "менять обои по кругу",
+  "lang": "ru",
+  "want": [
+   "settings.wpSlideshow"
+  ]
+ },
+ {
+  "q": "убрать лишние блоки с главной",
+  "lang": "ru",
+  "want": [
+   "settings.layoutTitle",
+   "settings.layoutRiverSections"
+  ]
+ },
+ {
+  "q": "маленькое окошко с плеером",
+  "lang": "ru",
+  "want": [
+   "trayMenu.mini"
+  ]
+ },
+ {
+  "q": "лагает на слабом ноуте",
+  "lang": "ru",
+  "want": [
+   "settings.performance"
+  ]
+ },
+ {
+  "q": "чёрный экран и артефакты графики",
+  "lang": "ru",
+  "want": [
+   "settings.softwareRendering"
+  ]
+ },
+ {
+  "q": "свои стили для приложения",
+  "lang": "ru",
+  "want": [
+   "settings.customCssTitle"
+  ]
+ },
+ {
+  "q": "комменты бегут поверх плеера",
+  "lang": "ru",
+  "want": [
+   "settings.floatingComments"
+  ]
+ },
+ {
+  "q": "анимация под текст песни",
+  "lang": "ru",
+  "want": [
+   "settings.lyricsVisualizer"
+  ]
+ },
+ {
+  "q": "подсветка строки в тексте песни",
+  "lang": "ru",
+  "want": [
+   "settings.lyricsHighlight"
+  ]
+ },
+ {
+  "q": "убрать паузы в треках",
+  "lang": "ru",
+  "want": [
+   "settings.skipSilence"
+  ]
+ },
+ {
+  "q": "само играет дальше после трека",
+  "lang": "ru",
+  "want": [
+   "settings.autoplay"
+  ]
+ },
+ {
+  "q": "трек недоступен в моём регионе",
+  "lang": "ru",
+  "want": [
+   "settings.altUploads"
+  ]
+ },
+ {
+  "q": "качество звука",
+  "lang": "ru",
+  "want": [
+   "settings.streamQuality"
+  ]
+ },
+ {
+  "q": "после поиска включаются похожие треки",
+  "lang": "ru",
+  "want": [
+   "settings.searchPlayback"
+  ]
+ },
+ {
+  "q": "плавный переход между песнями",
+  "lang": "ru",
+  "want": [
+   "settings.crossfade"
+  ]
+ },
+ {
+  "q": "трек завис и не грузится",
+  "lang": "ru",
+  "want": [
+   "settings.skipStuck"
+  ]
+ },
+ {
+  "q": "что я слушаю в дискорде",
+  "lang": "ru",
+  "want": [
+   "settings.discordRpc"
+  ]
+ },
+ {
+  "q": "кнопка на мой профиль в статусе дискорда",
+  "lang": "ru",
+  "want": [
+   "settings.discordRpcButton"
+  ]
+ },
+ {
+  "q": "оверлей для стрима",
+  "lang": "ru",
+  "want": [
+   "settings.obsOverlay",
+   "settings.obs"
+  ]
+ },
+ {
+  "q": "название трека в txt файл",
+  "lang": "ru",
+  "want": [
+   "settings.obsText"
+  ]
+ },
+ {
+  "q": "перенос плейлистов из яндекс музыки",
+  "lang": "ru",
+  "want": [
+   "importer.sync.title",
+   "settings.import"
+  ]
+ },
+ {
+  "q": "кто может мне писать",
+  "lang": "ru",
+  "want": [
+   "chat.settings.whoCanWrite.title"
+  ]
+ },
+ {
+  "q": "скрыть что я прочитал сообщение",
+  "lang": "ru",
+  "want": [
+   "chat.settings.visibility.receipts"
+  ]
+ },
+ {
+  "q": "чтобы не видели что я печатаю",
+  "lang": "ru",
+  "want": [
+   "chat.settings.visibility.typing"
+  ]
+ },
+ {
+  "q": "звук сообщений отключить",
+  "lang": "ru",
+  "want": [
+   "chat.settings.notify.sound"
+  ]
+ },
+ {
+  "q": "устройства где я вошёл",
+  "lang": "ru",
+  "want": [
+   "chat.devices.list.title"
+  ]
+ },
+ {
+  "q": "потерял ключи от переписки",
+  "lang": "ru",
+  "want": [
+   "chat.settings.keys.title"
+  ]
+ },
+ {
+  "q": "картинки из чатов занимают место",
+  "lang": "ru",
+  "want": [
+   "chat.storage.entry.title"
+  ]
+ },
+ {
+  "q": "кэш забил диск",
+  "lang": "ru",
+  "want": [
+   "settings.cache"
+  ]
+ },
+ {
+  "q": "куда сохраняются треки",
+  "lang": "ru",
+  "want": [
+   "settings.storageLocation"
+  ]
+ },
+ {
+  "q": "треки грузятся заранее при наведении",
+  "lang": "ru",
+  "want": [
+   "settings.hoverPreload"
+  ]
+ },
+ {
+  "q": "выйти из аккаунта",
+  "lang": "ru",
+  "want": [
+   "settings.account"
+  ]
+ },
+ {
+  "q": "лайки не синхронизируются",
+  "lang": "ru",
+  "want": [
+   "sync.title"
+  ]
+ },
+ {
+  "q": "конвертация скачанного в m4a",
+  "lang": "ru",
+  "want": [
+   "forge.title"
+  ]
+ },
+ {
+  "q": "горячие клавиши для чата",
+  "lang": "ru",
+  "want": [
+   "chat.settings.dock.title"
+  ]
+ },
+ {
+  "q": "готовые темы оформления",
+  "lang": "ru",
+  "want": [
+   "settings.themePreset",
+   "settings.themesTitle"
+  ]
+ },
+ {
+  "q": "какая страница открывается при запуске",
+  "lang": "ru",
+  "want": [
+   "settings.startup"
+  ]
+ },
+ {
+  "q": "язык интерфейса",
+  "lang": "ru",
+  "want": [
+   "settings.language"
+  ]
+ },
+ {
+  "q": "шифрование переписки",
+  "lang": "ru",
+  "want": [
+   "chat.settings.policy.title"
+  ]
+ },
+ {
+  "q": "не показывать что я сейчас слушаю в чате",
+  "lang": "ru",
+  "want": [
+   "chat.settings.visibility.presence"
+  ]
+ },
+ {
+  "q": "ккоментарии поверх плеера",
+  "lang": "ru",
+  "want": [
+   "settings.floatingComments"
+  ]
+ },
+ {
+  "q": "нармализация громкости",
+  "lang": "ru",
+  "want": [
+   "settings.normalizeVolume"
+  ]
+ },
+ {
+  "q": "полоска прогресса в оверлее",
+  "lang": "ru",
+  "want": [
+   "settings.obsProgress"
+  ]
+ },
+ {
+  "q": "прятать оверлей когда пауза",
+  "lang": "ru",
+  "want": [
+   "settings.obsHidePaused"
+  ]
+ },
+ {
+  "q": "скробблинг",
+  "lang": "ru",
+  "want": [
+   "settings.scrobble"
+  ]
+ },
+ {
+  "q": "текст песни в статусе дискорда",
+  "lang": "ru",
+  "want": [
+   "settings.discordRpcLyrics"
+  ]
+ },
+ {
+  "q": "uhjvrjcnm jlbyfrjdfz",
+  "lang": "ru",
+  "want": [
+   "settings.normalizeVolume"
+  ]
+ },
+ {
+  "q": "r'i",
+  "lang": "ru",
+  "want": [
+   "settings.cache"
+  ]
+ },
+ {
+  "q": "fdnjpfgecr",
+  "lang": "ru",
+  "want": [
+   "settings.autostart"
+  ]
+ },
+ {
+  "q": "dark mode",
+  "lang": "en",
+  "want": [
+   "settings.scheme"
+  ]
+ },
+ {
+  "q": "text too small",
+  "lang": "en",
+  "want": [
+   "settings.uiScale"
+  ]
+ },
+ {
+  "q": "run on boot",
+  "lang": "en",
+  "want": [
+   "settings.autostart"
+  ]
+ },
+ {
+  "q": "hide in tray when closed",
+  "lang": "en",
+  "want": [
+   "settings.closeButton"
+  ]
+ },
+ {
+  "q": "equalize loudness",
+  "lang": "en",
+  "want": [
+   "settings.normalizeVolume"
+  ]
+ },
+ {
+  "q": "json endpoint for bots",
+  "lang": "en",
+  "want": [
+   "settings.obsApi"
+  ]
+ },
+ {
+  "q": "skip dead air",
+  "lang": "en",
+  "want": [
+   "settings.skipSilence"
+  ]
+ },
+ {
+  "q": "keeps playing after the song ends",
+  "lang": "en",
+  "want": [
+   "settings.autoplay"
+  ]
+ },
+ {
+  "q": "bitrate",
+  "lang": "en",
+  "want": [
+   "settings.streamQuality"
+  ]
+ },
+ {
+  "q": "pick my speakers",
+  "lang": "en",
+  "want": [
+   "settings.audioDevice"
+  ]
+ },
+ {
+  "q": "now playing for obs",
+  "lang": "en",
+  "want": [
+   "settings.obs"
+  ]
+ },
+ {
+  "q": "stream overlay",
+  "lang": "en",
+  "want": [
+   "settings.obsOverlay"
+  ]
+ },
+ {
+  "q": "current song txt file",
+  "lang": "en",
+  "want": [
+   "settings.obsText"
+  ]
+ },
+ {
+  "q": "who can dm me",
+  "lang": "en",
+  "want": [
+   "chat.settings.whoCanWrite.title"
+  ]
+ },
+ {
+  "q": "seen indicator",
+  "lang": "en",
+  "want": [
+   "chat.settings.visibility.receipts"
+  ]
+ },
+ {
+  "q": "hide my activity from chat",
+  "lang": "en",
+  "want": [
+   "chat.settings.visibility.presence"
+  ]
+ },
+ {
+  "q": "storage full",
+  "lang": "en",
+  "want": [
+   "settings.cache"
+  ]
+ },
+ {
+  "q": "limit music cache size",
+  "lang": "en",
+  "want": [
+   "settings.audioCacheLimit"
+  ]
+ },
+ {
+  "q": "move cache to another drive",
+  "lang": "en",
+  "want": [
+   "settings.storageLocation"
+  ]
+ },
+ {
+  "q": "start playing on hover",
+  "lang": "en",
+  "want": [
+   "settings.hoverPreload"
+  ]
+ },
+ {
+  "q": "log out",
+  "lang": "en",
+  "want": [
+   "settings.account"
+  ]
+ },
+ {
+  "q": "likes not syncing",
+  "lang": "en",
+  "want": [
+   "sync.title"
+  ]
+ },
+ {
+  "q": "bug report",
+  "lang": "en",
+  "want": [
+   "diag.report"
+  ]
+ },
+ {
+  "q": "where are the logs",
+  "lang": "en",
+  "want": [
+   "settings.helpLog"
+  ]
+ },
+ {
+  "q": "check for updates",
+  "lang": "en",
+  "want": [
+   "settings.updates"
+  ]
+ },
+ {
+  "q": "block artist",
+  "lang": "en",
+  "want": [
+   "blocklist.cardTitle"
+  ]
+ },
+ {
+  "q": "mute word in titles",
+  "lang": "en",
+  "want": [
+   "keywordFilter.cardTitle"
+  ]
+ },
+ {
+  "q": "laggy on old pc",
+  "lang": "en",
+  "want": [
+   "settings.performance"
+  ]
+ },
+ {
+  "q": "black screen glitch on wayland",
+  "lang": "en",
+  "want": [
+   "settings.softwareRendering"
+  ]
+ },
+ {
+  "q": "inject my own stylesheet",
+  "lang": "en",
+  "want": [
+   "settings.customCssTitle"
+  ]
+ },
+ {
+  "q": "wallpaper slideshow",
+  "lang": "en",
+  "want": [
+   "settings.wpSlideshow"
+  ]
+ },
+ {
+  "q": "album art colors",
+  "lang": "en",
+  "want": [
+   "settings.coverTitle"
+  ]
+ },
+ {
+  "q": "change font",
+  "lang": "en",
+  "want": [
+   "settings.fontTitle"
+  ]
+ },
+ {
+  "q": "reorder home page blocks",
+  "lang": "en",
+  "want": [
+   "settings.layoutTitle"
+  ]
+ },
+ {
+  "q": "global shortcuts in game",
+  "lang": "en",
+  "want": [
+   "hotkeys.title"
+  ]
+ },
+ {
+  "q": "ui language",
+  "lang": "en",
+  "want": [
+   "settings.language"
+  ]
+ },
+ {
+  "q": "import playlists from another service",
+  "lang": "en",
+  "want": [
+   "settings.import"
+  ]
+ },
+ {
+  "q": "last.fm",
+  "lang": "en",
+  "want": [
+   "settings.scrobble"
+  ]
+ },
+ {
+  "q": "chat sounds off",
+  "lang": "en",
+  "want": [
+   "chat.settings.notify.sound"
+  ]
+ },
+ {
+  "q": "blocked by my isp",
+  "lang": "en",
+  "want": [
+   "netCheck.title",
+   "call.title"
+  ]
+ },
+ {
+  "q": "dak mod",
+  "lang": "en",
+  "want": [
+   "settings.scheme"
+  ]
+ },
+ {
+  "q": "volum normalisation",
+  "lang": "en",
+  "want": [
+   "settings.normalizeVolume"
+  ]
+ },
+ {
+  "q": "cashe size",
+  "lang": "en",
+  "want": [
+   "settings.cache"
+  ]
+ },
+ {
+  "q": "вфкл еруьу",
+  "lang": "en",
+  "want": [
+   "settings.scheme"
+  ]
+ },
+ {
+  "q": "скщыыафву",
+  "lang": "en",
+  "want": [
+   "settings.crossfade"
+  ]
+ },
+ {
+  "q": "kapatınca arka planda kalsın",
+  "lang": "tr",
+  "want": [
+   "settings.closeButton"
+  ]
+ },
+ {
+  "q": "karanlık mod",
+  "lang": "tr",
+  "want": [
+   "settings.scheme"
+  ]
+ },
+ {
+  "q": "yazılar çok küçük",
+  "lang": "tr",
+  "want": [
+   "settings.uiScale"
+  ]
+ },
+ {
+  "q": "ses seviyesini dengele",
+  "lang": "tr",
+  "want": [
+   "settings.normalizeVolume"
+  ]
+ },
+ {
+  "q": "şarkılar arası geçiş efekti",
+  "lang": "tr",
+  "want": [
+   "settings.crossfade"
+  ]
+ },
+ {
+  "q": "önbellek temizle",
+  "lang": "tr",
+  "want": [
+   "settings.cache"
+  ]
+ },
+ {
+  "q": "bilgisayar açılınca başlasın",
+  "lang": "tr",
+  "want": [
+   "settings.autostart"
+  ]
+ },
+ {
+  "q": "discordda ne dinlediğim görünsün",
+  "lang": "tr",
+  "want": [
+   "settings.discordRpc"
+  ]
+ },
+ {
+  "q": "kısayol tuşları",
+  "lang": "tr",
+  "want": [
+   "hotkeys.title"
+  ]
+ },
+ {
+  "q": "hoparlör seçimi",
+  "lang": "tr",
+  "want": [
+   "settings.audioDevice"
+  ]
+ },
+ {
+  "q": "arkaplan resmi",
+  "lang": "tr",
+  "want": [
+   "settings.backgroundImage"
+  ]
+ },
+ {
+  "q": "bana kim mesaj atabilir",
+  "lang": "tr",
+  "want": [
+   "chat.settings.whoCanWrite.title"
+  ]
+ },
+ {
+  "q": "okundu bilgisi",
+  "lang": "tr",
+  "want": [
+   "chat.settings.visibility.receipts"
+  ]
+ },
+ {
+  "q": "yayın için overlay",
+  "lang": "tr",
+  "want": [
+   "settings.obsOverlay"
+  ]
+ },
+ {
+  "q": "gunceleme",
+  "lang": "tr",
+  "want": [
+   "settings.updates"
+  ]
+ },
+ {
+  "q": "iniciar com o windows",
+  "lang": "pt",
+  "want": [
+   "settings.autostart"
+  ]
+ },
+ {
+  "q": "ao fechar o app continua aberto",
+  "lang": "pt",
+  "want": [
+   "settings.closeButton"
+  ]
+ },
+ {
+  "q": "tema escuro",
+  "lang": "pt",
+  "want": [
+   "settings.scheme"
+  ]
+ },
+ {
+  "q": "letra muito pequena",
+  "lang": "pt",
+  "want": [
+   "settings.uiScale"
+  ]
+ },
+ {
+  "q": "volume igual em todas as músicas",
+  "lang": "pt",
+  "want": [
+   "settings.normalizeVolume"
+  ]
+ },
+ {
+  "q": "transição suave entre músicas",
+  "lang": "pt",
+  "want": [
+   "settings.crossfade"
+  ]
+ },
+ {
+  "q": "limpar cache",
+  "lang": "pt",
+  "want": [
+   "settings.cache"
+  ]
+ },
+ {
+  "q": "bloquear artista",
+  "lang": "pt",
+  "want": [
+   "blocklist.cardTitle"
+  ]
+ },
+ {
+  "q": "quem pode me mandar mensagem",
+  "lang": "pt",
+  "want": [
+   "chat.settings.whoCanWrite.title"
+  ]
+ },
+ {
+  "q": "imagem de fundo",
+  "lang": "pt",
+  "want": [
+   "settings.backgroundImage"
+  ]
+ },
+ {
+  "q": "atalhos do teclado",
+  "lang": "pt",
+  "want": [
+   "hotkeys.title"
+  ]
+ },
+ {
+  "q": "saída de som",
+  "lang": "pt",
+  "want": [
+   "settings.audioDevice"
+  ]
+ },
+ {
+  "q": "last fm",
+  "lang": "pt",
+  "want": [
+   "settings.scrobble"
+  ]
+ },
+ {
+  "q": "notebook lento travando",
+  "lang": "pt",
+  "want": [
+   "settings.performance"
+  ]
+ },
+ {
+  "q": "qualidade do aúdio",
+  "lang": "pt",
+  "want": [
+   "settings.streamQuality"
+  ]
+ },
+ {
+  "q": "컴퓨터 켜면 자동 실행",
+  "lang": "ko",
+  "want": [
+   "settings.autostart"
+  ]
+ },
+ {
+  "q": "닫기 누르면 트레이로",
+  "lang": "ko",
+  "want": [
+   "settings.closeButton"
+  ]
+ },
+ {
+  "q": "다크 모드",
+  "lang": "ko",
+  "want": [
+   "settings.scheme"
+  ]
+ },
+ {
+  "q": "글자가 너무 작아요",
+  "lang": "ko",
+  "want": [
+   "settings.uiScale"
+  ]
+ },
+ {
+  "q": "볼륨 일정하게",
+  "lang": "ko",
+  "want": [
+   "settings.normalizeVolume"
+  ]
+ },
+ {
+  "q": "곡 사이 페이드",
+  "lang": "ko",
+  "want": [
+   "settings.crossfade"
+  ]
+ },
+ {
+  "q": "캐시 삭제",
+  "lang": "ko",
+  "want": [
+   "settings.cache"
+  ]
+ },
+ {
+  "q": "음질",
+  "lang": "ko",
+  "want": [
+   "settings.streamQuality"
+  ]
+ },
+ {
+  "q": "단축키",
+  "lang": "ko",
+  "want": [
+   "hotkeys.title"
+  ]
+ },
+ {
+  "q": "디스코드 상태 표시",
+  "lang": "ko",
+  "want": [
+   "settings.discordRpc"
+  ]
+ },
+ {
+  "q": "배경 화면",
+  "lang": "ko",
+  "want": [
+   "settings.backgroundImage"
+  ]
+ },
+ {
+  "q": "라스트에프엠",
+  "lang": "ko",
+  "want": [
+   "settings.scrobble"
+  ]
+ },
+ {
+  "q": "스피커 선택",
+  "lang": "ko",
+  "want": [
+   "settings.audioDevice"
+  ]
+ },
+ {
+  "q": "메시지 보낼 수 있는 사람",
+  "lang": "ko",
+  "want": [
+   "chat.settings.whoCanWrite.title"
+  ]
+ },
+ {
+  "q": "읽음 표시",
+  "lang": "ko",
+  "want": [
+   "chat.settings.visibility.receipts"
+  ]
+ }
+]

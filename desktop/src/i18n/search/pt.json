@@ -1,0 +1,916 @@
+{
+  "settings.language": [
+    "idioma do app",
+    "colocar em português",
+    "está em inglês",
+    "mudar a língua",
+    "tradução",
+    "pedir outro idioma"
+  ],
+  "settings.startup": [
+    "tela inicial",
+    "página que abre primeiro",
+    "abrir direto na biblioteca",
+    "o que aparece ao abrir",
+    "página padrão",
+    "aba inicial"
+  ],
+  "settings.autostart": [
+    "abrir com o windows",
+    "iniciar com o pc",
+    "inicialização automática",
+    "ligar junto com o sistema",
+    "startup",
+    "não quero abrir toda vez"
+  ],
+  "settings.autostartMinimized": [
+    "não mostrar a janela ao ligar",
+    "iniciar em segundo plano",
+    "abrir escondido",
+    "começar quieto",
+    "iniciar na bandeja",
+    "janela não atrapalhar"
+  ],
+  "settings.closeButton": [
+    "fecho no x e a música para",
+    "fechar e continuar tocando",
+    "tocar em segundo plano",
+    "sair de vez",
+    "minimizar para bandeja",
+    "o que o x faz",
+    "janela fecha mas toca"
+  ],
+  "hotkeys.title": [
+    "teclas de atalho",
+    "passar música com teclado",
+    "controlar música no jogo",
+    "sem dar alt tab",
+    "teclas de mídia",
+    "hotkey",
+    "atalho de volume",
+    "controlar sem abrir"
+  ],
+  "settings.updates": [
+    "versão nova",
+    "atualizar o app",
+    "qual versão",
+    "última versão",
+    "update",
+    "checar atualização"
+  ],
+  "settings.diagnostics": [
+    "o app fechou sozinho",
+    "motivo do crash",
+    "registro de erros",
+    "desktop.log",
+    "coletar logs",
+    "achar o problema",
+    "debug"
+  ],
+  "diag.sendReports": [
+    "relatório de crash",
+    "mandar erro pro desenvolvedor",
+    "telemetria",
+    "envio automático",
+    "coleta de dados",
+    "erros anônimos"
+  ],
+  "blocklist.cardTitle": [
+    "não quero esse artista",
+    "bloquear cantor",
+    "não aparecer mais",
+    "lista negra",
+    "tirar das recomendações",
+    "blocklist",
+    "artista que não gosto"
+  ],
+  "keywordFilter.cardTitle": [
+    "filtrar por palavra",
+    "esconder gêneros",
+    "ocultar músicas",
+    "sem remix",
+    "palavra proibida",
+    "palavra no título",
+    "esconder tag",
+    "não quero nightcore"
+  ],
+  "settings.notifications": [
+    "avisos do app",
+    "pop-ups",
+    "não perturbe",
+    "desligar notificações",
+    "alertas",
+    "toast"
+  ],
+  "settings.showErrorToasts": [
+    "aviso vermelho toda hora",
+    "pop-up de erro",
+    "alerta de erro de rede",
+    "mensagem de falha ao carregar",
+    "tirar mensagens de erro",
+    "toast de erro"
+  ],
+  "settings.releaseNotifications": [
+    "avisar quando sair música nova",
+    "artista que sigo postou",
+    "aviso de álbum novo",
+    "lançamento novo",
+    "não perder lançamento",
+    "novidade dos artistas"
+  ],
+  "settings.help": [
+    "pedir ajuda",
+    "tenho um problema",
+    "suporte",
+    "como usar",
+    "resolver problemas",
+    "central de ajuda"
+  ],
+  "settings.helpErrors": [
+    "o que é erro 404",
+    "erro 500",
+    "erro 503",
+    "significado dos códigos",
+    "códigos de erro",
+    "por que não abre",
+    "erro de servidor"
+  ],
+  "settings.helpNetCheck": [
+    "teste de internet",
+    "não conecta",
+    "preciso de vpn",
+    "ver se está bloqueado",
+    "ping",
+    "problema de conexão",
+    "dns",
+    "bloqueio de acesso"
+  ],
+  "diag.report": [
+    "mandar problema pro suporte",
+    "reportar erro",
+    "bug report",
+    "falar com desenvolvedor",
+    "relatório técnico",
+    "enviar diagnóstico"
+  ],
+  "settings.helpLog": [
+    "onde fica o log",
+    "pasta de logs",
+    "abrir o log",
+    "anexar arquivo de erro",
+    "onde está o desktop.log",
+    "arquivo de registro"
+  ],
+  "settings.helpDiscord": [
+    "comunidade no discord",
+    "falar com o desenvolvedor",
+    "entrar no servidor",
+    "aviso de instabilidade",
+    "tirar dúvida",
+    "chat da comunidade",
+    "reportar bug"
+  ],
+  "settings.android": [
+    "app de android",
+    "ouvir no celular",
+    "baixar apk",
+    "versão mobile",
+    "entrar com qr code",
+    "app do telefone",
+    "smartphone"
+  ],
+  "settings.support": [
+    "fazer doação",
+    "ajudar o desenvolvedor",
+    "doar",
+    "donate",
+    "o app é grátis",
+    "pagar um café",
+    "apoiar",
+    "sponsor"
+  ],
+  "settings.appearance": [
+    "personalizar o visual",
+    "deixar o app bonito",
+    "cores e estilo",
+    "design",
+    "aparência do app",
+    "ajustes de ui"
+  ],
+  "settings.themePreset": [
+    "tema pronto",
+    "outra combinação de cores",
+    "escolher tema",
+    "cor do app",
+    "skin",
+    "trocar tema"
+  ],
+  "settings.accentColor": [
+    "cor principal",
+    "azul no lugar do laranja",
+    "cor dos botões",
+    "mudar a cor",
+    "escolher cor",
+    "não gosto do laranja"
+  ],
+  "settings.scheme": [
+    "modo escuro",
+    "modo claro",
+    "modo noturno",
+    "dark mode",
+    "light mode",
+    "tema branco",
+    "seguir o sistema",
+    "dói meus olhos"
+  ],
+  "settings.themesTitle": [
+    "loja de temas",
+    "temas da comunidade",
+    "baixar tema",
+    "meu tema",
+    "importar tema",
+    "criar tema",
+    "temas prontos"
+  ],
+  "settings.uiScale": [
+    "letra muito pequena",
+    "aumentar o texto",
+    "tudo grande demais",
+    "zoom",
+    "ampliar tela",
+    "dpi",
+    "pequeno no 4k",
+    "escala",
+    "tamanho dos botões",
+    "tamanho da letra"
+  ],
+  "settings.coverTitle": [
+    "cores da capa do álbum",
+    "cor dinâmica",
+    "app com a cor da música",
+    "cor muda a cada faixa",
+    "artwork",
+    "ambiente colorido"
+  ],
+  "settings.coverTint": [
+    "fundo com a cor da capa",
+    "sombra colorida",
+    "janela colorida",
+    "degradê da capa",
+    "gradient de fundo"
+  ],
+  "settings.coverAccent": [
+    "botões na cor da capa",
+    "destaque dinâmico",
+    "cor do botão segue a música",
+    "barra muda de cor",
+    "pegar cor da capa"
+  ],
+  "settings.fontTitle": [
+    "mudar a fonte",
+    "tipo de letra",
+    "letra difícil de ler",
+    "outra fonte",
+    "fonte do sistema",
+    "estilo do texto"
+  ],
+  "settings.backgroundImage": [
+    "papel de parede",
+    "colocar minha foto",
+    "wallpaper",
+    "gif de fundo",
+    "fundo personalizado",
+    "enviar imagem",
+    "plano de fundo"
+  ],
+  "settings.bgDim": [
+    "fundo muito claro",
+    "não consigo ler o texto",
+    "escurecer a imagem",
+    "fundo mais escuro",
+    "baixar o brilho",
+    "texto some no fundo"
+  ],
+  "settings.bgOpacity": [
+    "sombra nas bordas",
+    "vinheta",
+    "cantos escuros",
+    "efeito de borda",
+    "suavizar a beira da imagem"
+  ],
+  "settings.bgBlur": [
+    "borrar o fundo",
+    "blur",
+    "desfocar",
+    "imagem não nítida",
+    "efeito embaçado",
+    "gaussian"
+  ],
+  "settings.wpSlideshow": [
+    "fundo mudar sozinho",
+    "ciclo de papéis de parede",
+    "fotos em sequência",
+    "wallpaper automático",
+    "várias imagens",
+    "slideshow"
+  ],
+  "settings.wpSlideshowInterval": [
+    "de quanto em quanto tempo troca",
+    "tempo de transição",
+    "duração da imagem",
+    "segundos",
+    "com que frequência"
+  ],
+  "settings.wpSlideshowOrder": [
+    "imagem aleatória",
+    "mostrar em sequência",
+    "ordem embaralhada",
+    "shuffle",
+    "ordem do fundo"
+  ],
+  "settings.layoutTitle": [
+    "organizar a tela inicial",
+    "esconder seções",
+    "mover blocos",
+    "seção que não uso",
+    "mudar a ordem",
+    "layout da home",
+    "arrastar e soltar"
+  ],
+  "settings.layoutPinned": [
+    "listas fixadas",
+    "playlists na barra lateral",
+    "fixar lista no topo",
+    "playlists favoritas",
+    "pin"
+  ],
+  "settings.layoutRiverSections": [
+    "seções do feed",
+    "o que aparece na home",
+    "prateleiras de recomendação",
+    "esconder mix",
+    "tirar descobrir",
+    "seção da onda",
+    "desligar recomendação de ia"
+  ],
+  "trayMenu.mini": [
+    "janela pequena",
+    "modo mini",
+    "player sempre no topo",
+    "janela fixa por cima",
+    "player pequeno",
+    "player no canto",
+    "miniplayer"
+  ],
+  "settings.performance": [
+    "o app está lento",
+    "travando",
+    "engasgando",
+    "lag",
+    "fps baixo",
+    "pc antigo",
+    "economizar bateria",
+    "desligar animações",
+    "cpu alta"
+  ],
+  "settings.softwareRendering": [
+    "tela preta",
+    "tela piscando",
+    "tela branca",
+    "desligar gpu",
+    "erro no driver de vídeo",
+    "aceleração de hardware",
+    "janela abre vazia",
+    "flicker"
+  ],
+  "settings.customCssTitle": [
+    "escrever meu estilo",
+    "código css",
+    "modificar a interface",
+    "editar o design na mão",
+    "mod",
+    "stylesheet",
+    "userstyle"
+  ],
+  "settings.customCssAssets": [
+    "enviar imagem pro css",
+    "imagem local",
+    "adicionar arquivo",
+    "imagem para usar no css",
+    "assets"
+  ],
+  "settings.playback": [
+    "ajustes de música",
+    "configurações de som",
+    "como a música toca",
+    "comportamento do player",
+    "ajustes de audição"
+  ],
+  "settings.floatingComments": [
+    "comentários do soundcloud",
+    "comentários na onda",
+    "comentário na linha do tempo",
+    "esconder comentários",
+    "balão de comentário",
+    "comentários dos ouvintes"
+  ],
+  "settings.lyricsVisualizer": [
+    "animação de onda sonora",
+    "efeito de equalizador",
+    "onda atrás da letra",
+    "espectro",
+    "visualizer",
+    "barras do equalizador",
+    "pesa na gpu"
+  ],
+  "settings.lyricsHighlight": [
+    "linha da letra brilhando",
+    "efeito de karaokê",
+    "destaque palavra por palavra",
+    "como a letra rola",
+    "animação da letra",
+    "cor da linha"
+  ],
+  "settings.normalizeVolume": [
+    "volume muda de música pra música",
+    "algumas tocam muito alto",
+    "estoura meu ouvido",
+    "igualar volume",
+    "loudness",
+    "replaygain",
+    "volume desigual",
+    "músicas muito baixas"
+  ],
+  "settings.skipSilence": [
+    "silêncio no começo",
+    "pular vazio",
+    "música termina quieta",
+    "trecho mudo",
+    "tempo de espera",
+    "som vazio"
+  ],
+  "settings.autoplay": [
+    "para quando a lista acaba",
+    "continuar tocando sozinho",
+    "reprodução infinita",
+    "tocar músicas parecidas",
+    "fila acabou",
+    "sem próxima música",
+    "modo rádio"
+  ],
+  "settings.altUploads": [
+    "a música não toca",
+    "faixa indisponível",
+    "faixa bloqueada",
+    "bloqueada por direitos autorais",
+    "cópia de outra conta",
+    "não abre no brasil",
+    "música cinza",
+    "upload alternativo"
+  ],
+  "settings.streamQuality": [
+    "qualidade do som ruim",
+    "aumentar a qualidade",
+    "economizar dados",
+    "poupar internet",
+    "kbps",
+    "hq uq",
+    "flac",
+    "alta qualidade",
+    "som nítido"
+  ],
+  "settings.searchPlayback": [
+    "tocar a partir da busca",
+    "resultados em ordem",
+    "tocar lista da busca",
+    "próximo resultado",
+    "o que toca depois da busca",
+    "seguir com músicas parecidas"
+  ],
+  "settings.crossfade": [
+    "transição entre músicas",
+    "fade",
+    "músicas se misturando",
+    "corte seco",
+    "transição de dj",
+    "juntar as faixas",
+    "crossfade",
+    "sem pausa entre faixas"
+  ],
+  "settings.skipStuck": [
+    "música não carrega",
+    "carregando pra sempre",
+    "não toca",
+    "faixa travada",
+    "pular sozinho",
+    "música parou",
+    "buffering",
+    "fica rodando"
+  ],
+  "settings.audioDevice": [
+    "escolher fone",
+    "mandar pro alto-falante",
+    "sem som",
+    "dispositivo de saída",
+    "bluetooth",
+    "dac usb",
+    "som sai no lugar errado",
+    "placa de som",
+    "ao plugar o fone"
+  ],
+  "netCheck.title": [
+    "não conecta",
+    "diz que está sem internet",
+    "preciso de vpn",
+    "teste de bloqueio",
+    "teste de ping",
+    "erro de conexão",
+    "soundcloud não abre",
+    "problema de dns"
+  ],
+  "call.title": ["p2p", "peer to peer", "rede peer", "relay", "ajuda de rede"],
+  "settings.discordRpc": [
+    "mostrar no discord o que ouço",
+    "status do discord",
+    "rpc",
+    "amigos verem o que ouço",
+    "atividade no discord",
+    "rich presence",
+    "música no status do discord",
+    "ouvindo no discord"
+  ],
+  "settings.discordRpcMode": [
+    "o que aparece no discord",
+    "jogando ou ouvindo",
+    "forma de exibição",
+    "listening to",
+    "aparecer playing",
+    "tipo de status",
+    "o que mostrar no perfil do discord"
+  ],
+  "settings.discordRpcStatus": [
+    "nome da faixa ou artista",
+    "nome no status",
+    "texto sob meu nome",
+    "só o artista",
+    "mostrar título",
+    "texto na lista de membros"
+  ],
+  "settings.discordRpcLyrics": [
+    "letra no discord",
+    "letra no status",
+    "mostrar letra no discord",
+    "letra ao vivo",
+    "lyrics discord",
+    "letra linha por linha"
+  ],
+  "settings.discordRpcButton": [
+    "botão no discord",
+    "botão de link",
+    "amigos abrirem a música",
+    "compartilhar link",
+    "botão ouvir",
+    "botão no perfil"
+  ],
+  "settings.scrobble": [
+    "last fm",
+    "conectar lastfm",
+    "listenbrainz",
+    "enviar histórico de audição",
+    "scrobble",
+    "guardar estatísticas",
+    "registrar o que ouvi",
+    "estatísticas de audição"
+  ],
+  "settings.scrobbleNowPlaying": [
+    "tocando agora no last.fm",
+    "audição ao vivo",
+    "now playing",
+    "faixa atual no perfil",
+    "enviar status atual"
+  ],
+  "settings.obs": [
+    "streamer",
+    "twitch",
+    "live no youtube",
+    "nome da música na live",
+    "stream",
+    "widget obs",
+    "música para live",
+    "obs",
+    "kick"
+  ],
+  "settings.obsOverlay": [
+    "browser source",
+    "adicionar widget na live",
+    "cartão da música no obs",
+    "streamlabs",
+    "overlay de live",
+    "overlay",
+    "adicionar no obs studio",
+    "capa na live"
+  ],
+  "settings.obsTheme": [
+    "visual do widget",
+    "design do cartão",
+    "temas do overlay",
+    "cor do widget",
+    "estilo do cartão"
+  ],
+  "settings.obsProgress": [
+    "barra de progresso na live",
+    "tempo decorrido",
+    "barrinha de progresso",
+    "em que segundo está a música",
+    "barra no widget"
+  ],
+  "settings.obsHidePaused": [
+    "widget sumir ao pausar",
+    "esconder sem música",
+    "esconder quando pausa",
+    "não quero cartão vazio",
+    "live sem tela vazia"
+  ],
+  "settings.obsLink": [
+    "obs url",
+    "endereço da fonte",
+    "endereço localhost",
+    "copiar link",
+    "colar no obs",
+    "link do widget",
+    "url do browser source"
+  ],
+  "settings.obsApi": [
+    "saída json",
+    "comando de bot",
+    "nightbot",
+    "comando !song",
+    "http api",
+    "pegar nome da música",
+    "bot de chat",
+    "streamelements"
+  ],
+  "settings.obsPort": [
+    "conflito de porta",
+    "mudar a porta",
+    "porta em uso",
+    "porta do localhost",
+    "porta de acesso"
+  ],
+  "settings.obsText": [
+    "arquivo txt",
+    "escrever o nome da música em arquivo",
+    "now playing txt",
+    "fonte de texto no obs",
+    "salvar em arquivo",
+    "text source"
+  ],
+  "settings.obsTemplate": [
+    "modelo de texto",
+    "formato do que vai pro arquivo",
+    "ordem artista - título",
+    "usar variáveis",
+    "formato de saída",
+    "conteúdo do txt"
+  ],
+  "settings.import": [
+    "trazer do spotify",
+    "importar do yandex music",
+    "mover listas",
+    "migrar de outro serviço",
+    "transferir playlists",
+    "youtube music",
+    "migração",
+    "trazer minhas listas"
+  ],
+  "importer.sync.title": [
+    "listas se atualizarem sozinhas",
+    "sincronizar yandex",
+    "manter lista importada atual",
+    "sync",
+    "refletir músicas novas",
+    "sincronização automática"
+  ],
+  "importer.sync.ymConnected": [
+    "desconectar yandex",
+    "conta do yandex",
+    "token do yandex",
+    "sair do yandex",
+    "desvincular conta"
+  ],
+  "chat.settings.whoCanWrite.title": [
+    "não quero receber mensagem",
+    "desligar dm",
+    "desconhecidos me chamam",
+    "caixa de solicitações",
+    "mensagem de spam",
+    "quem pode mandar dm",
+    "só quem eu sigo",
+    "ninguém pode escrever"
+  ],
+  "chat.settings.visibility.title": [
+    "privacidade",
+    "quem pode ver",
+    "status online",
+    "me esconder",
+    "ficar invisível"
+  ],
+  "chat.settings.visibility.presence": [
+    "esconder o que estou ouvindo",
+    "amigos veem minha música",
+    "ocultar status de audição",
+    "faixa atual no chat",
+    "música privada",
+    "contatos não verem"
+  ],
+  "chat.settings.visibility.receipts": [
+    "desligar visto",
+    "tique azul",
+    "não saberem que li",
+    "confirmação de leitura",
+    "seen"
+  ],
+  "chat.settings.visibility.typing": [
+    "indicador de digitação",
+    "digitando...",
+    "não mostrar que estou digitando",
+    "typing indicator",
+    "o outro vê eu digitar"
+  ],
+  "chat.settings.blocked.title": [
+    "usuário bloqueado",
+    "desbloquear",
+    "alguém me incomodando",
+    "bloqueio no chat",
+    "unblock",
+    "bloquear pessoa"
+  ],
+  "chat.settings.notify.title": [
+    "aviso de mensagem",
+    "som de mensagem nova",
+    "alerta do chat",
+    "avisar quando chegar mensagem",
+    "notificação de dm",
+    "pop-up do chat"
+  ],
+  "chat.settings.notify.streamMode": [
+    "esconder texto da mensagem na live",
+    "ocultar com obs aberto",
+    "modo streamer",
+    "dm não aparecer na tela",
+    "stream mode",
+    "só mostrar o nome"
+  ],
+  "chat.settings.notify.sound": [
+    "som de mensagem",
+    "desligar som de aviso",
+    "toque de notificação",
+    "mensagem silenciosa",
+    "melodia do aviso"
+  ],
+  "chat.settings.dock.title": [
+    "atalho do chat",
+    "abrir janela do chat",
+    "chat rápido",
+    "painel lateral",
+    "dock",
+    "tecla para mostrar ou esconder o chat"
+  ],
+  "chat.devices.list.title": [
+    "outro computador",
+    "login em outros aparelhos",
+    "remover aparelho",
+    "encerrar sessão",
+    "onde estou conectado",
+    "celular e pc",
+    "lista de aparelhos"
+  ],
+  "chat.settings.keys.title": [
+    "chave de criptografia",
+    "e2e",
+    "mensagens criptografadas",
+    "resetar chave",
+    "chat não abre",
+    "mensagens não aparecem",
+    "keychain",
+    "criptografia de ponta a ponta"
+  ],
+  "chat.storage.entry.title": [
+    "fotos que enviei",
+    "fotos do chat",
+    "espaço em disco",
+    "limite de upload de imagem",
+    "apagar fotos",
+    "imagens enviadas",
+    "espaço de armazenamento",
+    "onde ficam as fotos do chat"
+  ],
+  "chat.settings.policy.title": [
+    "regras do chat",
+    "conteúdo proibido",
+    "motivo de banimento",
+    "spam é proibido",
+    "denunciar",
+    "regras da comunidade",
+    "moderação",
+    "banido do chat"
+  ],
+  "forge.title": [
+    "conversão para m4a",
+    "conversor de áudio",
+    "ffmpeg",
+    "transcode",
+    "formato das músicas baixadas",
+    "áudio bruto",
+    "fila de codificação",
+    "uso de cpu"
+  ],
+  "settings.cache": [
+    "disco cheio",
+    "limpar cache",
+    "ocupa muito espaço",
+    "arquivos temporários",
+    "gb usados",
+    "app pesado",
+    "armazenamento de músicas",
+    "limpeza"
+  ],
+  "settings.audioCacheSize": [
+    "músicas baixadas",
+    "tamanho do cache de áudio",
+    "tamanho dos arquivos de música",
+    "faixas ouvidas",
+    "cache de músicas"
+  ],
+  "settings.assetsCacheSize": [
+    "capas de álbum",
+    "cache de avatar",
+    "imagens ocupam espaço",
+    "cache de fotos",
+    "miniaturas"
+  ],
+  "settings.likedCacheSize": [
+    "música offline",
+    "ouvir sem internet",
+    "offline",
+    "curtidas no celular",
+    "músicas que não apagam",
+    "lista de downloads",
+    "ouvir no avião"
+  ],
+  "settings.audioCacheLimit": [
+    "limite do cache",
+    "máximo de gb",
+    "tamanho do armazenamento de músicas",
+    "apagar músicas antigas",
+    "limitar disco",
+    "cache limit",
+    "não guardar nada"
+  ],
+  "settings.imageCacheLimit": [
+    "tamanho do cache de imagens",
+    "capas ocupam muito espaço",
+    "limite de armazenamento de imagens",
+    "tamanho do cache de avatares",
+    "limpar imagens sozinho"
+  ],
+  "settings.hoverPreload": [
+    "música começar na hora",
+    "espera ao clicar",
+    "carregar ao passar o mouse",
+    "início rápido",
+    "baixar antes",
+    "atraso",
+    "tocar na hora",
+    "gasta dados"
+  ],
+  "settings.storageLocation": [
+    "mover para o disco d",
+    "mudar a pasta",
+    "ssd cheio",
+    "outro drive",
+    "pasta do cache",
+    "caminho de armazenamento",
+    "hd externo"
+  ],
+  "settings.account": [
+    "sair da conta",
+    "trocar de conta",
+    "fazer login",
+    "encerrar sessão",
+    "logout",
+    "entrar com outra conta",
+    "conta do soundcloud",
+    "passar a sessão pro celular"
+  ],
+  "sync.title": [
+    "minhas curtidas não vão pro soundcloud",
+    "não aparece no site",
+    "mudanças sumiram",
+    "limitação do soundcloud",
+    "entrar de novo",
+    "seguidos não sincronizam",
+    "erro de sincronização",
+    "não enviado"
+  ]
+}

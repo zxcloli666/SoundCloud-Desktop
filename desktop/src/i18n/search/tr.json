@@ -1,0 +1,927 @@
+{
+  "settings.language": [
+    "uygulama dili",
+    "türkçe yap",
+    "arayüz ingilizce",
+    "dil değiştir",
+    "çeviri",
+    "english türkçe",
+    "başka dil ekle"
+  ],
+  "settings.startup": [
+    "açılış sayfası",
+    "ilk açılan ekran",
+    "uygulama nerede başlasın",
+    "ana sayfa yerine kitaplık",
+    "başlangıç ekranı",
+    "açılınca ne gelsin"
+  ],
+  "settings.autostart": [
+    "bilgisayarla birlikte aç",
+    "windows açılınca başlasın",
+    "otomatik başlat",
+    "her seferinde elle açmak",
+    "startup",
+    "sistemle başla"
+  ],
+  "settings.autostartMinimized": [
+    "açılışta pencere çıkmasın",
+    "arka planda başlat",
+    "sessiz başlat",
+    "pencere gizli açılsın",
+    "sistem tepsisinde başla",
+    "ekranı kaplamasın"
+  ],
+  "settings.closeButton": [
+    "x'e basınca kapanıyor",
+    "çarpıya basınca müzik duruyor",
+    "arka planda çalmaya devam",
+    "kapatınca durmasın",
+    "tamamen çık",
+    "tepsiye küçült",
+    "pencereyi kapatınca ne olsun"
+  ],
+  "hotkeys.title": [
+    "klavye kısayolları",
+    "tuşla şarkı değiştir",
+    "oyunda müzik kontrolü",
+    "alt tab yapmadan",
+    "medya tuşları",
+    "sonraki parça tuşu",
+    "hotkey",
+    "ses aç kapat tuşu"
+  ],
+  "settings.updates": [
+    "yeni sürüm",
+    "uygulamayı güncelle",
+    "sürüm numarası",
+    "update",
+    "son versiyon",
+    "güncelleme kontrolü",
+    "kaçıncı sürüm"
+  ],
+  "settings.diagnostics": [
+    "çökme sebebi",
+    "uygulama çöktü",
+    "hata kaydı",
+    "desktop.log",
+    "log toplama",
+    "sorun tespiti",
+    "debug"
+  ],
+  "diag.sendReports": [
+    "çökme raporu",
+    "geliştiriciye hata yolla",
+    "crash report",
+    "telemetri",
+    "otomatik rapor gönderme",
+    "veri paylaşma",
+    "anonim hata bilgisi"
+  ],
+  "blocklist.cardTitle": [
+    "bu sanatçıyı istemiyorum",
+    "sanatçı engelle",
+    "bir daha çıkmasın",
+    "sevmediğim şarkıcı",
+    "kara liste",
+    "öneride görünmesin",
+    "blocklist",
+    "ban"
+  ],
+  "keywordFilter.cardTitle": [
+    "kelimeye göre filtrele",
+    "istenmeyen türler",
+    "şarkı gizle",
+    "remix çıkmasın",
+    "yasaklı kelime",
+    "başlıkta geçen kelime",
+    "belirli etiket gizle",
+    "nightcore görmek istemiyorum"
+  ],
+  "settings.notifications": [
+    "bildirim ayarları",
+    "açılır pencere uyarısı",
+    "rahatsız etme",
+    "bildirimleri kapat",
+    "popup",
+    "uyarılar"
+  ],
+  "settings.showErrorToasts": [
+    "kırmızı uyarılar çıkıyor",
+    "hata mesajı sürekli çıkıyor",
+    "ağ hatası uyarısı",
+    "parça yüklenemedi mesajı",
+    "hata balonları",
+    "popup hata kapat"
+  ],
+  "settings.releaseNotifications": [
+    "yeni şarkı çıkınca haber ver",
+    "takip ettiğim sanatçı yükledi",
+    "yeni albüm bildirimi",
+    "yeni parça uyarısı",
+    "sanatçı yeni şey attı",
+    "çıkışları kaçırmak"
+  ],
+  "settings.help": [
+    "yardım al",
+    "bir sorunum var",
+    "destek",
+    "nasıl çalışır",
+    "sorun giderme",
+    "yardım merkezi",
+    "support"
+  ],
+  "settings.helpErrors": [
+    "404 ne demek",
+    "500 hatası",
+    "503 hatası",
+    "kod anlamları",
+    "hata kodları",
+    "neden açılmıyor",
+    "sunucu hatası"
+  ],
+  "settings.helpNetCheck": [
+    "internet bağlantı testi",
+    "bağlanamıyor",
+    "vpn gerekiyor mu",
+    "engelli mi kontrol",
+    "ping",
+    "bağlantı sorunu",
+    "erişim engeli",
+    "dns"
+  ],
+  "diag.report": [
+    "destek ekibine sorun gönder",
+    "hata bildir",
+    "bug report",
+    "geliştiriciye yaz",
+    "sorunu paylaş",
+    "teknik rapor"
+  ],
+  "settings.helpLog": [
+    "log dosyası nerede",
+    "günlük klasörü",
+    "log aç",
+    "hata dosyasını ekle",
+    "desktop.log nerede",
+    "kayıt dosyası"
+  ],
+  "settings.helpDiscord": [
+    "discord topluluğu",
+    "geliştiriciyle konuş",
+    "sunucuya katıl",
+    "kesinti haberi",
+    "soru sor",
+    "topluluk sohbeti",
+    "bug bildir"
+  ],
+  "settings.android": [
+    "android uygulaması",
+    "telefonda dinle",
+    "apk indir",
+    "mobil sürüm",
+    "telefondan giriş",
+    "qr kod ile giriş",
+    "cep telefonu"
+  ],
+  "settings.support": [
+    "bağış yap",
+    "geliştiriciye destek",
+    "para ver",
+    "donate",
+    "proje ücretsiz mi",
+    "kahve ısmarla",
+    "sponsor"
+  ],
+  "settings.appearance": [
+    "görünümü özelleştir",
+    "uygulamayı güzelleştir",
+    "renkler ve stil",
+    "tasarım",
+    "uygulama nasıl görünsün",
+    "ui ayarları"
+  ],
+  "settings.themePreset": [
+    "hazır tema",
+    "farklı renk şeması",
+    "tema seç",
+    "uygulama rengi",
+    "skin",
+    "tema değiştir"
+  ],
+  "settings.accentColor": [
+    "vurgu rengi değiştir",
+    "turuncu yerine mavi",
+    "buton rengi",
+    "ana renk",
+    "renk seç",
+    "turuncu istemiyorum"
+  ],
+  "settings.scheme": [
+    "karanlık mod",
+    "aydınlık mod",
+    "gece modu",
+    "dark mode",
+    "light mode",
+    "beyaz tema",
+    "sistem temasını takip et",
+    "gözüm yoruluyor"
+  ],
+  "settings.themesTitle": [
+    "tema mağazası",
+    "topluluk temaları",
+    "tema indir",
+    "kendi temam",
+    "tema yükle",
+    "tema oluştur",
+    "hazır temalar"
+  ],
+  "settings.uiScale": [
+    "yazılar çok küçük",
+    "yazı büyüt",
+    "her şey çok büyük",
+    "zoom",
+    "ekran büyütme",
+    "dpi",
+    "4k ekranda küçük",
+    "ölçek",
+    "buton büyüklüğü",
+    "yazı boyutu"
+  ],
+  "settings.coverTitle": [
+    "albüm kapağına göre renk",
+    "dinamik renk",
+    "kapak renkleri uygulansın",
+    "renkler şarkıya göre değişsin",
+    "artwork",
+    "ambiyans"
+  ],
+  "settings.coverTint": [
+    "arka plan kapak renginde",
+    "renkli gölge",
+    "pencereye renk geçişi",
+    "kapaktan degrade",
+    "gradient arka plan"
+  ],
+  "settings.coverAccent": [
+    "butonlar kapak renginde",
+    "dinamik vurgu",
+    "şarkıya göre buton rengi",
+    "çubuk rengi değişsin",
+    "kapaktan renk al"
+  ],
+  "settings.fontTitle": [
+    "yazı tipini değiştir",
+    "font",
+    "harfler okunmuyor",
+    "başka yazı karakteri",
+    "sistem fontu",
+    "yazı stili",
+    "türkçe karakter bozuk"
+  ],
+  "settings.backgroundImage": [
+    "duvar kağıdı",
+    "arka plana resim koy",
+    "kendi fotoğrafım",
+    "wallpaper",
+    "arkaplan gif",
+    "özel arka plan",
+    "resim yükle"
+  ],
+  "settings.bgDim": [
+    "arka plan çok parlak",
+    "yazılar okunmuyor",
+    "resmi karart",
+    "arka plan koyu olsun",
+    "parlaklık düşür",
+    "yazı resimde kayboluyor"
+  ],
+  "settings.bgOpacity": [
+    "kenarlar koyulaşsın",
+    "vinyet",
+    "köşe gölgesi",
+    "kenar efekti",
+    "resmin kenarını yumuşat"
+  ],
+  "settings.bgBlur": [
+    "arka planı bulanıklaştır",
+    "blur",
+    "flu yap",
+    "resim net olmasın",
+    "buğulu efekt",
+    "gaussian"
+  ],
+  "settings.wpSlideshow": [
+    "arka plan kendi değişsin",
+    "duvar kağıdı döngüsü",
+    "resimler sırayla gelsin",
+    "otomatik wallpaper",
+    "birden çok resim",
+    "slideshow"
+  ],
+  "settings.wpSlideshowInterval": [
+    "kaç dakikada bir değişsin",
+    "geçiş süresi",
+    "resim süresi",
+    "saniye ayarı",
+    "ne sıklıkla"
+  ],
+  "settings.wpSlideshowOrder": [
+    "rastgele resim",
+    "sırayla göster",
+    "karışık sıra",
+    "shuffle",
+    "arka plan sırası"
+  ],
+  "settings.layoutTitle": [
+    "ana sayfayı düzenle",
+    "bölümleri gizle",
+    "blokları taşı",
+    "istemediğim bölüm",
+    "sırayı değiştir",
+    "ana ekran düzeni",
+    "sürükle bırak"
+  ],
+  "settings.layoutPinned": [
+    "sabitlenen listeler",
+    "sol menüdeki playlist",
+    "listeyi yukarı sabitle",
+    "kenar çubuğu listeleri",
+    "favori listelerim"
+  ],
+  "settings.layoutRiverSections": [
+    "akış bölümleri",
+    "ana sayfada ne görünsün",
+    "öneri rafları",
+    "karışımı gizle",
+    "keşfet bölümü kaldır",
+    "wave bölümü",
+    "yapay zeka önerisi kapat"
+  ],
+  "trayMenu.mini": [
+    "küçük pencere",
+    "mini mod",
+    "üstte kalan oynatıcı",
+    "pencere her zaman üstte",
+    "küçük müzik çalar",
+    "köşede oynatıcı",
+    "miniplayer"
+  ],
+  "settings.performance": [
+    "uygulama yavaş",
+    "donuyor",
+    "takılıyor",
+    "kasma",
+    "fps düşük",
+    "eski bilgisayar",
+    "pil tasarrufu",
+    "animasyonları kapat",
+    "cpu yüksek",
+    "lag"
+  ],
+  "settings.softwareRendering": [
+    "siyah ekran",
+    "ekran titriyor",
+    "beyaz ekran",
+    "gpu kapat",
+    "ekran kartı sürücü hatası",
+    "donanım hızlandırma",
+    "pencere boş açılıyor",
+    "flicker"
+  ],
+  "settings.customCssTitle": [
+    "kendi stilimi yaz",
+    "css kodu",
+    "arayüzü hackle",
+    "tasarımı elle düzenle",
+    "mod",
+    "stylesheet",
+    "özel stil",
+    "userstyle"
+  ],
+  "settings.customCssAssets": [
+    "css için resim yükle",
+    "yerel görsel",
+    "dosya ekle",
+    "css'te kullanılacak resim",
+    "asset"
+  ],
+  "settings.playback": [
+    "müzik çalma ayarları",
+    "ses ayarları",
+    "çalarken ne olsun",
+    "oynatıcı davranışı",
+    "dinleme ayarları"
+  ],
+  "settings.floatingComments": [
+    "soundcloud yorumları",
+    "dalga üstünde yorumlar",
+    "zaman çizelgesi yorumu",
+    "yorumları gizle",
+    "baloncuk yorum",
+    "dinleyici yorumları"
+  ],
+  "settings.lyricsVisualizer": [
+    "ses dalgası animasyonu",
+    "ekolayzır efekti",
+    "sözlerin arkasında dalga",
+    "spektrum",
+    "visualizer",
+    "equalizer çubukları",
+    "ekran kartı yükü"
+  ],
+  "settings.lyricsHighlight": [
+    "söz satırı parlasın",
+    "karaoke efekti",
+    "kelime kelime vurgu",
+    "sözler nasıl akıyor",
+    "şarkı sözü animasyonu",
+    "satır rengi"
+  ],
+  "settings.normalizeVolume": [
+    "ses seviyesi değişiyor",
+    "şarkılar farklı seste",
+    "bazısı çok yüksek",
+    "kulağım patlıyor",
+    "ses eşitle",
+    "loudness",
+    "replaygain",
+    "sesler dengesiz",
+    "şarkılar çok sessiz"
+  ],
+  "settings.skipSilence": [
+    "baştaki sessizlik",
+    "boşluk atla",
+    "şarkı sonu sessiz",
+    "sessiz kısım",
+    "bekleme süresi",
+    "ölü zaman"
+  ],
+  "settings.autoplay": [
+    "liste bitince dursun",
+    "müzik kendiliğinden devam",
+    "sonsuz çalma",
+    "benzer şarkı çal",
+    "kuyruk bitti",
+    "sonraki şarkı yok",
+    "radyo modu"
+  ],
+  "settings.altUploads": [
+    "şarkı oynamıyor",
+    "bu parça kullanılamıyor",
+    "yasaklı parça",
+    "telif nedeniyle engelli",
+    "başka hesaptaki kopya",
+    "ülkemde açılmıyor",
+    "gri şarkı",
+    "yedek yükleme"
+  ],
+  "settings.streamQuality": [
+    "ses kalitesi düşük",
+    "kalite yükselt",
+    "veri tasarrufu",
+    "kotayı yeme",
+    "kbps",
+    "hq uq",
+    "flac",
+    "yüksek kalite",
+    "net ses"
+  ],
+  "settings.searchPlayback": [
+    "aramadan çalınca",
+    "arama sonuçları sırayla",
+    "arama listesi çalsın",
+    "sonraki sonuç",
+    "arama sonrası ne çalsın",
+    "benzer şarkılara geç"
+  ],
+  "settings.crossfade": [
+    "şarkılar arası geçiş",
+    "fade",
+    "şarkılar iç içe girsin",
+    "ani kesilme",
+    "dj geçişi",
+    "parçalar birleşsin",
+    "crossfade",
+    "boşluksuz"
+  ],
+  "settings.skipStuck": [
+    "şarkı yüklenmiyor",
+    "sonsuz yükleniyor",
+    "çalmıyor",
+    "donan parça",
+    "kendiliğinden atlasın",
+    "müzik takılıp kaldı",
+    "buffering",
+    "yükleniyor dönüyor"
+  ],
+  "settings.audioDevice": [
+    "kulaklık seç",
+    "hoparlöre ver",
+    "ses gelmiyor",
+    "çıkış cihazı",
+    "bluetooth",
+    "usb dac",
+    "ses yanlış yerden geliyor",
+    "sound card",
+    "kulaklık takınca"
+  ],
+  "netCheck.title": [
+    "bağlanamıyor",
+    "internet yok diyor",
+    "vpn gerekli mi",
+    "erişim engeli testi",
+    "ping testi",
+    "bağlantı hatası",
+    "soundcloud açılmıyor",
+    "dns sorunu"
+  ],
+  "call.title": ["p2p", "eşler arası", "peer ağı", "relay", "ağ yardımı"],
+  "settings.discordRpc": [
+    "discord'da dinlediğim görünsün",
+    "discord durumu",
+    "rpc",
+    "ne dinliyorum arkadaşlar görsün",
+    "discord oynuyor",
+    "rich presence",
+    "discord müzik durumu",
+    "dinliyor yazısı"
+  ],
+  "settings.discordRpcMode": [
+    "discord'da ne yazsın",
+    "oyun mu dinliyor mu",
+    "gösterim şekli",
+    "listening to",
+    "playing yazısı",
+    "durum türü",
+    "discord profilinde ne görünsün"
+  ],
+  "settings.discordRpcStatus": [
+    "parça adı mı sanatçı mı",
+    "durumda isim",
+    "adımın altında ne yazsın",
+    "sadece sanatçı",
+    "şarkı adı göster",
+    "üye listesi yazısı"
+  ],
+  "settings.discordRpcLyrics": [
+    "discord'da söz göster",
+    "şarkı sözü durum",
+    "sözler discord'da",
+    "canlı söz",
+    "lyrics discord",
+    "satır satır söz"
+  ],
+  "settings.discordRpcButton": [
+    "discord'daki buton",
+    "bağlantı butonu",
+    "arkadaşlar şarkıyı açsın",
+    "linki paylaş",
+    "dinle butonu",
+    "profilde buton"
+  ],
+  "settings.scrobble": [
+    "last.fm",
+    "lastfm bağla",
+    "listenbrainz",
+    "dinleme geçmişi gönder",
+    "scrobble",
+    "istatistik tut",
+    "ne dinlediğimi kaydet",
+    "dinleme istatistiği"
+  ],
+  "settings.scrobbleNowPlaying": [
+    "şu an çalan last.fm'de",
+    "canlı dinleme",
+    "now playing",
+    "profilde anlık şarkı",
+    "anlık durum gönder"
+  ],
+  "settings.obs": [
+    "yayıncı",
+    "twitch",
+    "youtube yayını",
+    "canlı yayında şarkı adı",
+    "stream",
+    "obs widget",
+    "yayın için müzik",
+    "obs",
+    "kick"
+  ],
+  "settings.obsOverlay": [
+    "browser source",
+    "yayına widget ekle",
+    "obs'de şarkı kartı",
+    "streamlabs",
+    "yayın katmanı",
+    "overlay",
+    "obs studio ekle",
+    "kapak resmi yayında"
+  ],
+  "settings.obsTheme": [
+    "widget görünümü",
+    "yayın kartı tasarımı",
+    "overlay temalar",
+    "widget rengi",
+    "kart stili"
+  ],
+  "settings.obsProgress": [
+    "süre çubuğu yayında",
+    "geçen süre",
+    "ilerleme barı",
+    "şarkı kaçıncı saniyede",
+    "widget'ta çubuk"
+  ],
+  "settings.obsHidePaused": [
+    "durunca widget kaybolsun",
+    "müzik yokken gizle",
+    "pause olunca saklan",
+    "boş kart istemiyorum",
+    "yayında boş görünmesin"
+  ],
+  "settings.obsLink": [
+    "obs url",
+    "kaynak adresi",
+    "localhost adresi",
+    "bağlantıyı kopyala",
+    "obs'ye yapıştır",
+    "widget linki",
+    "browser source url"
+  ],
+  "settings.obsApi": [
+    "json çıktı",
+    "bot komutu",
+    "nightbot",
+    "!song komutu",
+    "http api",
+    "şarkı adı al",
+    "chat botu",
+    "streamelements"
+  ],
+  "settings.obsPort": [
+    "port çakışması",
+    "port değiştir",
+    "port kullanımda",
+    "localhost portu",
+    "bağlantı noktası"
+  ],
+  "settings.obsText": [
+    "txt dosyası",
+    "şarkı adını dosyaya yaz",
+    "now playing txt",
+    "metin kaynağı obs",
+    "dosyaya kaydet",
+    "text source"
+  ],
+  "settings.obsTemplate": [
+    "metin şablonu",
+    "dosyadaki yazı biçimi",
+    "sanatçı - şarkı sırası",
+    "değişken kullan",
+    "çıktı formatı",
+    "txt içeriği"
+  ],
+  "settings.import": [
+    "spotify'dan taşı",
+    "yandex müzik aktar",
+    "listeleri taşı",
+    "başka servisten geçiş",
+    "playlist aktar",
+    "youtube music",
+    "migrate",
+    "çalma listelerimi getir"
+  ],
+  "importer.sync.title": [
+    "listeler otomatik güncellensin",
+    "yandex senkron",
+    "taşıdığım liste güncel kalsın",
+    "sync",
+    "yeni eklenenler gelsin",
+    "oto eşitleme"
+  ],
+  "importer.sync.ymConnected": [
+    "yandex bağlantısını kes",
+    "yandex hesabı",
+    "yandex token",
+    "yandex çıkış",
+    "hesabı ayır",
+    "yandex bağlantısı"
+  ],
+  "chat.settings.whoCanWrite.title": [
+    "bana mesaj atmasınlar",
+    "dm kapat",
+    "yabancılar yazıyor",
+    "istek kutusu",
+    "spam mesaj",
+    "özel mesaj izni",
+    "sadece takip ettiklerim",
+    "kimse yazamasın"
+  ],
+  "chat.settings.visibility.title": [
+    "gizlilik",
+    "kimler görsün",
+    "çevrimiçi durumu",
+    "kendimi gizle",
+    "görünmez ol"
+  ],
+  "chat.settings.visibility.presence": [
+    "ne dinlediğim görünmesin",
+    "arkadaşlar şarkımı görüyor",
+    "dinleme durumunu gizle",
+    "şu an çalan sohbette",
+    "müzik gizliliği",
+    "kişilerim görmesin"
+  ],
+  "chat.settings.visibility.receipts": [
+    "mavi tik",
+    "görüldü bilgisi",
+    "okudum görünmesin",
+    "okundu işareti",
+    "mesajı okudum bilmesinler",
+    "seen"
+  ],
+  "chat.settings.visibility.typing": [
+    "yazıyor göstergesi",
+    "yazıyor...",
+    "yazdığım görünmesin",
+    "typing indicator",
+    "karşı taraf yazdığımı görüyor"
+  ],
+  "chat.settings.blocked.title": [
+    "engellediğim kullanıcı",
+    "engeli kaldır",
+    "rahatsız eden biri",
+    "sohbette ban",
+    "unblock",
+    "kişiyi engelle"
+  ],
+  "chat.settings.notify.title": [
+    "mesaj bildirimi",
+    "yeni mesaj sesi",
+    "sohbet uyarısı",
+    "mesaj geldi haber ver",
+    "dm bildirimi",
+    "sohbet pop-up"
+  ],
+  "chat.settings.notify.streamMode": [
+    "yayında mesaj içeriği görünmesin",
+    "obs açıkken gizle",
+    "yayıncı modu",
+    "ekranda özel mesaj çıkmasın",
+    "stream mode",
+    "isim dışında gizle"
+  ],
+  "chat.settings.notify.sound": [
+    "mesaj sesi",
+    "bildirim sesi kapat",
+    "ding sesi",
+    "sessiz mesaj",
+    "ses melodisi"
+  ],
+  "chat.devices.list.title": [
+    "başka bilgisayar",
+    "diğer cihazlarda oturum",
+    "cihaz çıkar",
+    "oturum aç kapat",
+    "hangi cihazlarda açık",
+    "telefon ve pc",
+    "cihaz listesi"
+  ],
+  "chat.settings.keys.title": [
+    "şifreleme anahtarı",
+    "e2e",
+    "mesajlar şifreli mi",
+    "anahtarı sıfırla",
+    "sohbet açılmıyor",
+    "mesajlar görünmüyor",
+    "keychain",
+    "uçtan uca"
+  ],
+  "chat.storage.entry.title": [
+    "gönderdiğim resimler",
+    "sohbet fotoğrafları",
+    "disk yeri",
+    "resim yükleme kotası",
+    "görsel sil",
+    "yüklenen fotoğraflar",
+    "depolama alanı",
+    "sohbet fotoğraflarının yeri"
+  ],
+  "chat.settings.policy.title": [
+    "sohbet kuralları",
+    "yasak içerik",
+    "ban sebebi",
+    "spam yasak mı",
+    "şikayet",
+    "topluluk kuralı",
+    "moderasyon",
+    "chat banı"
+  ],
+  "forge.title": [
+    "m4a dönüştürme",
+    "ses dönüştürücü",
+    "ffmpeg",
+    "transcode",
+    "indirilen şarkı formatı",
+    "ham ses",
+    "kodlama kuyruğu",
+    "cpu kullanıyor"
+  ],
+  "settings.cache": [
+    "disk doluyor",
+    "önbellek temizle",
+    "yer kaplıyor",
+    "cache",
+    "gb yer",
+    "uygulama şişti",
+    "şarkı depolama",
+    "temizlik"
+  ],
+  "settings.audioCacheSize": [
+    "indirilen şarkılar",
+    "ses önbelleği ne kadar",
+    "müzik dosyaları boyutu",
+    "dinlenmiş parçalar",
+    "şarkı cache"
+  ],
+  "settings.assetsCacheSize": [
+    "kapak resimleri",
+    "avatar önbelleği",
+    "görseller yer kaplıyor",
+    "fotoğraf cache",
+    "küçük resimler"
+  ],
+  "settings.likedCacheSize": [
+    "çevrimdışı müzik",
+    "internetsiz dinle",
+    "offline",
+    "beğendiklerim telefonda",
+    "silinmeyen şarkılar",
+    "indirilenler",
+    "uçakta dinle"
+  ],
+  "settings.audioCacheLimit": [
+    "önbellek sınırı",
+    "maksimum gb",
+    "şarkı depolama boyutu",
+    "eski parçaları sil",
+    "disk yeri sınırla",
+    "cache limit",
+    "hiçbir şey saklama"
+  ],
+  "settings.imageCacheLimit": [
+    "resim önbelleği kapasitesi",
+    "kapaklar çok yer tutuyor",
+    "görsel depolama sınırı",
+    "avatar cache boyutu",
+    "resimleri otomatik temizle"
+  ],
+  "settings.hoverPreload": [
+    "şarkı hemen başlasın",
+    "tıklayınca bekliyor",
+    "üzerine gelince yükle",
+    "hızlı açılış",
+    "önden indir",
+    "gecikme",
+    "anında çalsın",
+    "trafik harcıyor"
+  ],
+  "settings.storageLocation": [
+    "d diskine taşı",
+    "klasör değiştir",
+    "ssd dolu",
+    "başka sürücü",
+    "önbellek klasörü",
+    "indirme yeri",
+    "depolama yolu",
+    "harici disk"
+  ],
+  "settings.account": [
+    "çıkış yap",
+    "hesap değiştir",
+    "giriş yap",
+    "oturumu kapat",
+    "logout",
+    "başka hesapla gir",
+    "soundcloud hesabı",
+    "oturumu telefona aktar"
+  ],
+  "sync.title": [
+    "beğenilerim soundcloud'a gitmiyor",
+    "siteye yansımıyor",
+    "değişiklikler kayboldu",
+    "soundcloud sınırlama",
+    "tekrar giriş yap",
+    "takipler eşitlenmiyor",
+    "senkron hatası",
+    "gönderilmedi"
+  ],
+  "chat.settings.dock.title": [
+    "sohbet kısayol tuşu",
+    "chat penceresini aç",
+    "hızlı sohbet",
+    "yan panel",
+    "dock",
+    "sohbeti gizle göster tuşu"
+  ]
+}
