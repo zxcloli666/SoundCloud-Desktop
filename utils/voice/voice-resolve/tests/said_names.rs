@@ -71,3 +71,15 @@ fn a_short_name_people_call_an_artist_by_finds_the_artist() {
         ("включи донт старт нау", "play Dua Lipa - Don't Start Now"),
     ]);
 }
+
+#[test]
+fn something_like_this_wished_for_plays_similar_and_nothing_like_it_is_talk() {
+    heard_either_way(&[
+        ("хочется чего-нибудь похожего на это", "play_similar"),
+        ("хочу чего-нибудь похожего", "play_similar"),
+        ("поставь чего-нибудь подобного", "play_similar"),
+        ("мне бы чего-нибудь похожего", "play_similar"),
+        ("ничего похожего", "none"),
+        ("нет ничего похожего на это", "none"),
+    ]);
+}

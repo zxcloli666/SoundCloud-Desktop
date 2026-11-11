@@ -181,7 +181,8 @@ pub fn content(c: &Ctx) -> Option<Detected> {
         }
     }
 
-    let similar_word = c.pos(SIMILAR);
+    let wished = c.pos(SIMILAR_WISHED).filter(|_| has_verb);
+    let similar_word = c.pos(SIMILAR).or(wished);
     let like_this = c.has(&["like"]) && c.has(&["this", "that"]) && (has_verb || c.has(&["more"]));
     if (similar_word.is_some() || like_this) && (has_verb || c.len() <= 4) {
         let mut u = used.clone();

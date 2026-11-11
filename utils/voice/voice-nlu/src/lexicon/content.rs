@@ -120,3 +120,5 @@ pub const SIMILAR: &[&str] = &[
     "такую",
     "такие",
 ];
+
+pub const SIMILAR_WISHED: &[&str] = &["похожего", "подобного"];
