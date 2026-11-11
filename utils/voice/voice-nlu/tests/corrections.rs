@@ -332,3 +332,25 @@ fn a_hurry_word_after_a_link_is_not_a_second_command_or_a_name() {
     let p = one("включи кино побыстрее");
     assert!(asks_for(&p, "кино"));
 }
+
+#[test]
+fn first_and_then_put_two_names_in_order() {
+    let said = read("включи сначала притон а потом цепи");
+    assert_eq!(said.len(), 2);
+    assert_eq!(said[0].intent, Intent::Play);
+    assert!(asks_for(&said[0], "притон"));
+    assert_eq!(said[1].intent, Intent::QueueAdd);
+    assert!(asks_for(&said[1], "цепи"));
+    let said = read("поставь сначала кино затем сплин");
+    assert!(asks_for(&said[0], "кино"));
+    assert!(asks_for(&said[1], "сплин"));
+    assert_eq!(
+        steps("сначала сделай потише потом включи сплин"),
+        ["volume_down", "play"]
+    );
+    assert_eq!(
+        steps("перемотай сначала потом следующую"),
+        ["seek_to", "next"]
+    );
+    assert_eq!(steps("включи сначала"), ["seek_to"]);
+}

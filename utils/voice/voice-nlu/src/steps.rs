@@ -11,6 +11,8 @@ const MAX_STEPS: usize = 3;
 const HARD: &[&str] = &["и", "and"];
 const SOFT: &[&str] = &["потом", "затем", "then", "только"];
 const AFTER: &[&str] = &["него", "этого", "нее", "нее"];
+const FIRST: &str = "сначала";
+const THEN: &[&str] = &["потом", "затем", "then"];
 
 pub(crate) enum Side {
     Cmd(Parsed),
@@ -29,8 +31,7 @@ pub fn parse(text: &str, names: &Names) -> Vec<Parsed> {
     let fixed = correct::resolve(text_in);
     let corrected = fixed.is_some();
     let toks = names.drop(fixed.unwrap_or_else(|| normalize(text_in).toks));
-    let from = usize::from(toks.len() > 2 && toks[0].w == "сначала");
-    let toks = &toks[from..];
+    let toks = &without_order_word(toks);
     let mut whole = parse_toks(text, toks.to_vec()).0;
     if intent::lyric(toks) {
         return vec![whole];
@@ -65,6 +66,18 @@ pub fn parse(text: &str, names: &Names) -> Vec<Parsed> {
             .extend(juxtaposed(toks, text).filter(|s| s.len() <= MAX_STEPS));
     }
     vec![whole]
+}
+
+fn without_order_word(mut toks: Vec<Tok>) -> Vec<Tok> {
+    let Some(at) = toks.iter().position(|t| t.w == FIRST) else {
+        return toks;
+    };
+    let leads = at == 0 && toks.len() > 2;
+    let then = |t: &Tok| THEN.contains(&t.w.as_str());
+    if leads || toks.iter().skip(at + 2).any(then) {
+        toks.remove(at);
+    }
+    toks
 }
 
 fn link(toks: &[Tok], i: usize) -> Option<Link> {
@@ -104,8 +117,7 @@ fn linked(toks: &[Tok], text: &str, inherit: bool) -> Option<Vec<Parsed>> {
     for i in 1..toks.len().saturating_sub(1) {
         let Some(l) = link(toks, i) else { continue };
         let mut start = i + l.len;
-        while start < toks.len() && (link(toks, start).is_some() || toks[start].w == "сначала")
-        {
+        while start < toks.len() && (link(toks, start).is_some() || toks[start].w == FIRST) {
             start += 1;
         }
         if start >= toks.len() {
