@@ -108,7 +108,9 @@ pub fn extract(toks: &[Tok], det: &Detected) -> Slots {
         })
         .collect();
     let rest = trim(rest);
-    let mut hint = None;
+    let described = without_descriptor(&rest);
+    let mut hint = described.as_ref().map(|_| Kind::Artist);
+    let rest = described.unwrap_or(rest);
     let mut kept: Vec<Tok> = Vec::new();
     let mut after_generic = false;
     let mut seen_kind = false;
@@ -155,6 +157,47 @@ pub fn extract(toks: &[Tok], det: &Detected) -> Slots {
         raw: split(kept),
         alt: kind_name_reading(&rest),
     }
+}
+
+fn without_descriptor(rest: &[Tok]) -> Option<Vec<Tok>> {
+    let word = |i: usize| rest.get(i).map_or("", |t| t.w.as_str());
+    let mut dropped = vec![false; rest.len()];
+    for i in 0..rest.len() {
+        let release = RECENT.contains(&word(i)) && is_release(word(i + 1));
+        let generic = i > 0 && matches!(word(i - 1), "чтонибудь" | "чтото");
+        let edge = i + 1 == rest.len() || ARTIST_MARKERS.contains(&word(i + 1));
+        let alone = RECENT_ALONE.contains(&word(i)) && (generic || edge);
+        if !release && !alone {
+            continue;
+        }
+        dropped[i] = true;
+        if release {
+            dropped[i + 1] = true;
+        }
+        if i > 0 && SUPERLATIVE.contains(&word(i - 1)) {
+            dropped[i - 1] = true;
+        }
+    }
+    let left: Vec<Tok> = rest
+        .iter()
+        .zip(&dropped)
+        .filter(|(_, gone)| !**gone)
+        .map(|(t, _)| t.clone())
+        .collect();
+    let named = left.iter().any(is_name);
+    (left.len() < rest.len() && named).then_some(left)
+}
+
+fn is_release(w: &str) -> bool {
+    KIND_TRACK.contains(&w) || KIND_TRACK_PLURAL.contains(&w) || KIND_ALBUM.contains(&w)
+}
+
+fn is_name(t: &Tok) -> bool {
+    let w = t.w.as_str();
+    !edge_noise(t)
+        && kind_of(w).is_none()
+        && !ARTIST_MARKERS.contains(&w)
+        && !matches!(w, "чтонибудь" | "чтото" | "из" | "-")
 }
 
 fn split(kept: Vec<Tok>) -> Raw {

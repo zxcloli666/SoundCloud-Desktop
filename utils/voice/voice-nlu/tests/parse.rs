@@ -127,6 +127,42 @@ fn slots_split_artist_and_title() {
 }
 
 #[test]
+fn a_descriptor_next_to_an_artist_is_not_a_title() {
+    let described = [
+        ("включи ленинград новая песня", "ленинград"),
+        ("включи ленинград новый трек", "ленинград"),
+        ("включи ленинград последний альбом", "ленинград"),
+        ("включи ленинград что-нибудь новое", "ленинград"),
+        ("включи ленинград новое", "ленинград"),
+        ("включи самый свежий альбом скриптонита", "скриптонит"),
+        ("поставь новенькое у басты", "баста"),
+        ("добавь в очередь последние песни земфиры", "земфира"),
+    ];
+    for (text, artist) in described {
+        let p = parse(text);
+        assert_eq!(p.kind_hint, Some(Kind::Artist), "{text}");
+        assert!(p.queries.iter().any(|q| q.text == artist), "{text}");
+        let leaked = |q: &voice_nlu::Variant| {
+            ["нов", "послед", "свеж", "сам"]
+                .iter()
+                .any(|stem| q.text.contains(stem))
+        };
+        assert!(!p.queries.iter().any(leaked), "{text}");
+    }
+    let titles = [
+        ("включи новый мерин", None),
+        ("включи у моргенштерна новый мерин", None),
+        ("поставь трек новый мерин моргенштерна", Some(Kind::Track)),
+        ("включи новая песня", Some(Kind::Track)),
+    ];
+    for (text, hint) in titles {
+        let p = parse(text);
+        assert_eq!(p.kind_hint, hint, "{text}");
+        assert!(p.queries.iter().any(|q| q.text.contains("нов")), "{text}");
+    }
+}
+
+#[test]
 fn lemma_rules_cover_common_case_forms() {
     use voice_nlu::lemma;
     let pairs = [
