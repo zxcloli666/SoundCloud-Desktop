@@ -7,10 +7,12 @@ struct Heard {
     samples: Vec<f32>,
     chunks: usize,
     stop_after: usize,
+    first: Option<Instant>,
 }
 
 impl Sink for Heard {
     fn audio(&mut self, samples: Vec<f32>) {
+        self.first.get_or_insert_with(Instant::now);
         self.chunks += 1;
         self.samples.extend(samples);
     }
@@ -25,6 +27,7 @@ fn heard(stop_after: usize) -> Heard {
         samples: Vec::new(),
         chunks: 0,
         stop_after,
+        first: None,
     }
 }
 
@@ -60,7 +63,12 @@ fn the_voice_speaks_stops_and_survives_a_bad_request() {
     };
     let speaker = speaker();
     let mut qwen = Qwen::default();
-    eprintln!("starts on {}", qwen.device(&paths).expect("engine starts"));
+    let asked = Instant::now();
+    let device = qwen.device(&paths).expect("engine starts");
+    eprintln!(
+        "starts on {device} in {:.2} s",
+        asked.elapsed().as_secs_f32()
+    );
 
     let mut whole = heard(usize::MAX);
     let started = Instant::now();
@@ -71,9 +79,11 @@ fn the_voice_speaks_stops_and_survives_a_bad_request() {
     )
     .expect("speaks");
     let seconds = whole.samples.len() as f32 / 24000.0;
+    let first = whole.first.expect("sound").duration_since(started);
     eprintln!(
-        "{seconds:.2} s of audio in {:.2} s",
-        started.elapsed().as_secs_f32()
+        "{seconds:.2} s of audio in {:.2} s, the first sound after {:.2} s",
+        started.elapsed().as_secs_f32(),
+        first.as_secs_f32()
     );
     for trouble in qwen.troubles() {
         eprintln!("{trouble}");
