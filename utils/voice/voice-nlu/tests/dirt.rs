@@ -492,10 +492,12 @@ fn playing_in_a_circle_is_repeat() {
     for silent in [
         "мы ходим по кругу",
         "бег по кругу",
+        "по кругу",
         "крути педали",
         "гоняй мяч",
     ] {
         assert_eq!(steps(silent), ["none"], "{silent}");
     }
     assert_eq!(steps("включи песню по кругу"), ["play"]);
+    assert_eq!(steps("давай по кругу"), ["play"]);
 }
