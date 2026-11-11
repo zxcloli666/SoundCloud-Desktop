@@ -2,8 +2,8 @@ use super::ctx::Ctx;
 use super::indirect;
 use super::talk;
 use crate::lexicon::{
-    self, ADDRESSEES, IMPERATIVES, NEG_FOLLOW, NEG_STEMS, PLAY_STRONG, REMARK_START, REPORT,
-    SUBJECTS,
+    self, ADDRESSEES, AFTER_ABSENT, BEFORE_ABSENT, DENY, IMPERATIVES, LONE_VERBS, NEG_FOLLOW,
+    NEG_STEMS, PLAY_STRONG, REMARK_START, REPORT, SUBJECTS,
 };
 use crate::normalize::Tok;
 use crate::types::Intent;
@@ -72,7 +72,9 @@ pub fn remark(toks: &[Tok]) -> Option<usize> {
     if talk::sentence(&Ctx::new(toks)) {
         return None;
     }
-    restated(toks).or_else(|| started(toks))
+    restated(toks)
+        .or_else(|| started(toks))
+        .or_else(|| reasoned(toks))
 }
 
 fn restated(toks: &[Tok]) -> Option<usize> {
@@ -93,6 +95,33 @@ fn started(toks: &[Tok]) -> Option<usize> {
                 .all(|t| !REMARK_START.contains(&t.w.as_str()))
         })
         .find(|&k| cuttable(toks, k))
+}
+
+fn reasoned(toks: &[Tok]) -> Option<usize> {
+    if super::detect(toks).blocked {
+        return None;
+    }
+    (2..toks.len().saturating_sub(1))
+        .find(|&k| full_command(&toks[..k]) && cuttable(toks, k) && states_absence(&toks[k..]))
+}
+
+fn full_command(said: &[Tok]) -> bool {
+    let verb = |t: &Tok| LONE_VERBS.contains(&t.w.as_str()) || PLAY_STRONG.contains(&t.w.as_str());
+    said.iter().any(verb) && !said.last().is_some_and(verb)
+}
+
+fn states_absence(after: &[Tok]) -> bool {
+    let words: Vec<&str> = after.iter().map(|t| t.w.as_str()).collect();
+    (1..words.len()).any(|at| absence(&words, at)) && !words.iter().any(|w| DENY.contains(w))
+}
+
+pub fn absence<S: AsRef<str>>(words: &[S], at: usize) -> bool {
+    let near = |i: Option<usize>, list: &[&str]| {
+        i.and_then(|i| words.get(i))
+            .is_some_and(|w| list.contains(&w.as_ref()))
+    };
+    words[at].as_ref() == "нет"
+        && (near(at.checked_sub(1), BEFORE_ABSENT) || near(Some(at + 1), AFTER_ABSENT))
 }
 
 fn cuttable(toks: &[Tok], k: usize) -> bool {

@@ -11,7 +11,7 @@ mod volume;
 use crate::lexicon;
 use crate::normalize::Tok;
 pub use ctx::{Ctx, Detected};
-pub use guard::{Negation, lyric, negation, remark, retold};
+pub use guard::{Negation, absence, lyric, negation, remark, retold};
 
 pub fn indirect_hit(toks: &[Tok]) -> bool {
     indirect::detect(&Ctx::new(toks)).is_some()

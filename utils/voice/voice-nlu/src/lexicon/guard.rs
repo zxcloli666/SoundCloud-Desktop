@@ -66,6 +66,10 @@ pub const REMARK_START: &[&str] = &[
     "давно",
 ];
 
+pub const BEFORE_ABSENT: &[&str] = &["никого", "ничего", "равно"];
+
+pub const AFTER_ABSENT: &[&str] = &["дома", "рядом", "здесь", "тут", "там", "никого"];
+
 pub const COMPLAINT_REST: &[&str] = &[
     "эту",
     "песню",

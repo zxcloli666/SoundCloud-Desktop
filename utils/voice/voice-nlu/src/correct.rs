@@ -48,7 +48,7 @@ pub fn resolve(text: &str) -> Option<Vec<Tok>> {
             .find(|m| starts(&ws, i, m))
             .map(|m| m.len())
             .or(loose.then_some(1))
-            .filter(|len| skip_noise(&ws, i + len) < ws.len());
+            .filter(|len| !intent::absence(&ws, i) && skip_noise(&ws, i + len) < ws.len());
         if let Some(m) = negating {
             found = true;
             if !dropping {
