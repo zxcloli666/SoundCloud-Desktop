@@ -201,7 +201,7 @@ fn interpret_parsed(parsed: Parsed, catalog: &dyn Catalog, boosts: &Boosts, bare
     ) {
         let d = resolve(&parsed, catalog, boosts, false);
         let d = match (&d, with_kind_in_name(&parsed)) {
-            (Decision::NotFound, Some(again)) => resolve(&again, catalog, boosts, false),
+            (Decision::NotFound, Some(again)) => resolve(&again, catalog, boosts, true),
             _ => d,
         };
         let sure = match &d {

@@ -289,3 +289,14 @@ fn one_name_of_a_credit_next_to_other_words_is_not_the_artist() {
         ("включи короля", "play Король и Шут"),
     ]);
 }
+
+#[test]
+fn a_kind_word_is_read_into_the_name_only_when_that_name_is_found_as_said() {
+    heard_either_way(&[
+        ("включи группу аукцион", "none"),
+        ("включи группу пикник", "none"),
+        ("включи группу крови", "play Кино - Группа крови?"),
+        ("включи группу кровь", "play Кино - Группа крови?"),
+        ("включи группу кино", "play Кино"),
+    ]);
+}
