@@ -2,7 +2,7 @@ use std::time::Instant;
 
 use crate::event::{Event, State, TurnEvent};
 use crate::machine::{Core, Phase};
-use crate::plan::voiced;
+use crate::plan::{Plan, voiced};
 use crate::sentences::Splitter;
 use crate::voices;
 
@@ -23,18 +23,14 @@ pub struct Turn {
 
 impl Core {
     pub fn chat(&mut self, id: String, step: Chat) {
-        if let Chat::Open { speak } = step {
-            return self.open_turn(id, speak);
-        }
-        if self.turn.as_ref().is_none_or(|turn| turn.id != id) {
-            return;
-        }
+        let open = self.turn.as_ref().is_some_and(|turn| turn.id == id);
         match step {
-            Chat::Open { .. } => {}
-            Chat::Text(text) => self.turn_text(&text),
-            Chat::Close => self.end_segment(true),
-            Chat::Cut => self.end_segment(false),
-            Chat::Cancel => self.cancel_turn(),
+            Chat::Open { speak } => self.open_turn(id, speak),
+            Chat::Cancel => self.cancel_chat(&id, open),
+            Chat::Text(text) if open => self.turn_text(&text),
+            Chat::Close if open => self.end_segment(true),
+            Chat::Cut if open => self.end_segment(false),
+            Chat::Text(_) | Chat::Close | Chat::Cut => {}
         }
     }
 
@@ -42,7 +38,7 @@ impl Core {
         let step = self
             .plan
             .as_ref()
-            .filter(|plan| plan.waiting.as_deref() == Some(id.as_str()));
+            .filter(|plan| plan.waiting.as_deref() == Some(id.as_str()) && !plan.hushed);
         let Some(source) = step.map(|plan| plan.origin.source) else {
             return self.emit(Event::Cancelled(TurnEvent { id }));
         };
@@ -82,14 +78,29 @@ impl Core {
     }
 
     fn speak(&mut self, sentences: Vec<String>) {
+        let Some(id) = self.turn.as_ref().map(|turn| turn.id.clone()) else {
+            return;
+        };
         for sentence in sentences {
-            if self.say(sentence) {
+            if self.say_in(&id, sentence) {
                 continue;
             }
             if let Some(turn) = self.turn.as_mut() {
                 turn.splitter = None;
             }
             return;
+        }
+    }
+
+    fn cancel_chat(&mut self, id: &str, open: bool) {
+        let waiting = |plan: &&mut Plan| plan.waiting.as_deref() == Some(id);
+        if let Some(plan) = self.plan.as_mut().filter(waiting) {
+            plan.hushed = true;
+        }
+        if open {
+            self.cancel_turn();
+        } else {
+            self.hush_turn(id);
         }
     }
 

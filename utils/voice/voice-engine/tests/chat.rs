@@ -219,6 +219,60 @@ fn cancel_stops_the_speech_and_tells_the_network_side() {
 }
 
 #[test]
+fn cancel_by_id_stops_a_reply_that_outlived_its_turn() {
+    let (rig, _) = speaking(timing());
+    let id = asked(&rig, Source::Button);
+    stream(&rig, &id, &[LONG, " ", LONG, " ", LONG]);
+    rig.done(&id, "");
+    rig.expect_state(State::Speaking);
+    rig.chat("another", Chat::Cancel);
+    assert!(rig.quiet_for(Duration::from_millis(100)).is_none());
+    rig.chat(&id, Chat::Cancel);
+    rig.expect_state(State::Idle);
+    assert!(rig.calls.list().contains(&"hush".to_string()));
+    assert!(rig.quiet_for(Duration::from_millis(300)).is_none());
+    assert!(rig.heard.voiced() < length(LONG) * 3);
+}
+
+#[test]
+fn a_chat_cancel_does_not_stop_a_reply_to_something_else() {
+    let (rig, _) = speaking(timing());
+    let id = asked(&rig, Source::Button);
+    stream(&rig, &id, &["Готово."]);
+    rig.done(&id, "");
+    rig.expect_state(State::Speaking);
+    rig.expect_state(State::Idle);
+    rig.engine.send(Command::Text {
+        text: "пауза".into(),
+        source: Source::Button,
+        id: None,
+    });
+    rig.expect_state(State::Thinking);
+    rig.done(&rig.command().id, LONG);
+    rig.expect_state(State::Speaking);
+    rig.chat(&id, Chat::Cancel);
+    rig.expect_state(State::Idle);
+    assert_eq!(rig.heard.voiced(), length("Готово.") + length(LONG));
+}
+
+#[test]
+fn a_turn_cancelled_between_rounds_takes_no_more_rounds() {
+    let (rig, said) = speaking(timing());
+    let id = asked(&rig, Source::Button);
+    stream(&rig, &id, &[LONG, " ", LONG]);
+    rig.expect_state(State::Speaking);
+    rig.chat(&id, Chat::Cancel);
+    assert_eq!(rig.cancelled(), id);
+    rig.expect_state(State::Thinking);
+    stream(&rig, &id, &["Нашла три альбома."]);
+    assert_eq!(rig.cancelled(), id);
+    assert!(rig.quiet_for(Duration::from_millis(300)).is_none());
+    rig.done(&id, "");
+    rig.expect_state(State::Idle);
+    assert!(said.list().iter().all(|line| line == LONG));
+}
+
+#[test]
 fn a_new_listen_cancels_the_turn() {
     let (rig, _) = speaking(timing());
     let id = asked(&rig, Source::Button);

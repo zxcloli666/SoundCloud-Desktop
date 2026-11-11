@@ -27,6 +27,7 @@ pub struct Reply {
     speech: Option<Speech>,
     broken: bool,
     until: Option<Instant>,
+    turn: Option<String>,
 }
 
 struct Line {
@@ -45,12 +46,16 @@ impl Reply {
             speech: None,
             broken: false,
             until: None,
+            turn: None,
         }
     }
 
-    fn line(&mut self, r#gen: u64, text: String, until: Instant) -> Say {
+    fn line(&mut self, r#gen: u64, text: String, until: Instant, turn: Option<&str>) -> Say {
         if self.lines.is_empty() {
             self.until = Some(until);
+        }
+        if let Some(turn) = turn {
+            self.turn = Some(turn.to_string());
         }
         self.lines.push_back(Line {
             r#gen,
@@ -107,6 +112,14 @@ fn wait(ended: Receiver<()>, inbox: std::sync::mpsc::Sender<Msg>, msg: Msg) {
 
 impl Core {
     pub fn say(&mut self, text: String) -> bool {
+        self.line(text, None)
+    }
+
+    pub fn say_in(&mut self, turn: &str, text: String) -> bool {
+        self.line(text, Some(turn))
+    }
+
+    fn line(&mut self, text: String, turn: Option<&str>) -> bool {
         let fresh = self.reply.is_none();
         if fresh {
             let Some(source) = self.voice() else {
@@ -119,7 +132,7 @@ impl Core {
         let Some(reply) = self.reply.as_mut().filter(|reply| !reply.broken) else {
             return false;
         };
-        let say = reply.line(r#gen, text, until);
+        let say = reply.line(r#gen, text, until, turn);
         if fresh {
             self.tts.say(say);
         } else {
@@ -274,6 +287,23 @@ impl Core {
         }
     }
 
+    pub fn hush_turn(&mut self, turn: &str) {
+        let spoken = |reply: &Reply| reply.turn.as_deref() == Some(turn);
+        if self.reply.as_ref().is_some_and(spoken) {
+            self.end_reply();
+        }
+    }
+
+    fn end_reply(&mut self) {
+        let spoke = self.audible();
+        self.drop_reply();
+        if matches!(self.phase, Phase::Speaking) {
+            self.go_idle();
+        } else if spoke {
+            self.emit_state(self.state(), None);
+        }
+    }
+
     pub fn drop_reply(&mut self) {
         if self.audible() {
             self.hush();
@@ -339,14 +369,7 @@ impl Core {
             return;
         };
         if reply.until.is_some_and(|until| now >= until) {
-            let spoke = self.audible();
-            self.drop_reply();
-            if matches!(self.phase, Phase::Speaking) {
-                self.go_idle();
-            } else if spoke {
-                self.emit_state(self.state(), None);
-            }
-            return;
+            return self.end_reply();
         }
         let level = reply.speech.as_mut().and_then(|speech| speech.level(now));
         if let Some(rms) = level {

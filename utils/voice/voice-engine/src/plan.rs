@@ -14,6 +14,7 @@ pub struct Plan {
     pub outcomes: Vec<Understood>,
     pub next: usize,
     pub waiting: Option<String>,
+    pub hushed: bool,
     pub speech: Vec<String>,
     pub asking: Option<(usize, Scored, Option<Scored>)>,
 }
@@ -60,6 +61,7 @@ impl Core {
             outcomes,
             next: 0,
             waiting: None,
+            hushed: false,
             speech: Vec::new(),
             asking: None,
         });
@@ -146,6 +148,7 @@ impl Core {
             command.steps = Some(steps);
         }
         plan.waiting = Some(id.clone());
+        plan.hushed = false;
         self.phase = Phase::Thinking(Instant::now() + self.deps.timing.done);
         self.emit(Event::Command(Box::new(command)));
     }
