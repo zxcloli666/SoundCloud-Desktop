@@ -95,7 +95,17 @@ pub fn understand(
 ) -> Vec<Outcome> {
     let reading = phrase.reading(catalog, boosts);
     let split = |parsed: &Parsed| interpret_split(parsed.clone(), catalog, boosts, bare);
-    reading.iter().flat_map(split).collect()
+    runnable(reading.iter().flat_map(split).collect())
+}
+
+fn runnable(mut steps: Vec<Outcome>) -> Vec<Outcome> {
+    let nothing = |step: &Outcome| step.intent == Intent::None;
+    if steps.len() > 1 && nothing(&steps[0]) {
+        steps.truncate(1);
+    } else if steps.len() > 1 {
+        steps.retain(|step| !nothing(step));
+    }
+    steps
 }
 
 const WHOLE_NAME_MIN: f32 = 0.97;
@@ -147,12 +157,13 @@ fn whole_name(
     let mut whole = parsed.clone();
     whole.queries = parsed.alt.clone();
     let d = resolve(&whole, catalog, boosts, true);
-    let sim = match &d {
-        Decision::Act { pick } => pick.sim,
-        Decision::Ask { first, .. } => first.sim,
+    let top = match &d {
+        Decision::Act { pick } => pick,
+        Decision::Ask { first, .. } => first,
         Decision::NotFound => return None,
     };
-    if sim < WHOLE_NAME_MIN {
+    let of_another_kind = whole.kind_hint.is_some_and(|kind| kind != top.entity.kind);
+    if top.sim < WHOLE_NAME_MIN || parsed.intent.is_control() && of_another_kind {
         return None;
     }
     if parsed.intent == Intent::None && !bare.trusts(&whole, &d) {
@@ -187,13 +198,12 @@ fn interpret_parsed(parsed: Parsed, catalog: &dyn Catalog, boosts: &Boosts, bare
     }
     if intent == Intent::None {
         if parsed.bare {
-            let ranked = ranked(&parsed, catalog, boosts);
-            let d = score::decide(&ranked, true);
-            if bare.plays(&parsed, &d) {
-                intent = Intent::Play;
-                decision = Some(d);
-            } else {
-                candidates = bare.hands(ranked);
+            match said_alone(&parsed, catalog, boosts, bare) {
+                Ok(d) => {
+                    intent = Intent::Play;
+                    decision = Some(d);
+                }
+                Err(hits) => candidates = hits,
             }
         }
     } else if matches!(
@@ -201,13 +211,8 @@ fn interpret_parsed(parsed: Parsed, catalog: &dyn Catalog, boosts: &Boosts, bare
         Intent::Play | Intent::QueueAdd | Intent::PlaySimilar
     ) {
         let d = resolve(&parsed, catalog, boosts, false);
-        let d = match (&d, &parsed.kind_alt) {
-            (Decision::NotFound, Some(alt)) => {
-                let mut again = parsed.clone();
-                again.queries = alt.queries.clone();
-                again.kind_hint = alt.kind_hint;
-                resolve(&again, catalog, boosts, false)
-            }
+        let d = match (&d, with_kind_in_name(&parsed)) {
+            (Decision::NotFound, Some(again)) => resolve(&again, catalog, boosts, true),
             _ => d,
         };
         let sure = match &d {
@@ -228,6 +233,35 @@ fn interpret_parsed(parsed: Parsed, catalog: &dyn Catalog, boosts: &Boosts, bare
         decision,
         candidates,
     }
+}
+
+fn said_alone(
+    parsed: &Parsed,
+    catalog: &dyn Catalog,
+    boosts: &Boosts,
+    bare: Bare,
+) -> Result<Decision, Vec<Entity>> {
+    let mut handed = Vec::new();
+    for reading in std::iter::once(parsed.clone()).chain(with_kind_in_name(parsed)) {
+        let ranked = ranked(&reading, catalog, boosts);
+        let d = score::decide(&ranked, true);
+        if bare.plays(&reading, &d) {
+            return Ok(d);
+        }
+        if handed.is_empty() {
+            handed = bare.hands(ranked);
+        }
+    }
+    Err(handed)
+}
+
+fn with_kind_in_name(parsed: &Parsed) -> Option<Parsed> {
+    let alt = parsed.kind_alt.as_ref()?;
+    Some(Parsed {
+        queries: alt.queries.clone(),
+        kind_hint: alt.kind_hint,
+        ..parsed.clone()
+    })
 }
 
 #[cfg(test)]

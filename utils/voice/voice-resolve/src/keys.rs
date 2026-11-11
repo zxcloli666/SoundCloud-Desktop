@@ -89,14 +89,14 @@ impl Keys {
             names.push((fold(&head), 1.0));
         }
         for a in &e.aliases {
-            names.push((fold(a), 0.97));
+            names.push((fold(a), CALLED));
         }
         if e.kind == Kind::Artist {
             for part in credits(&e.name) {
                 names.push((fold(&part), 0.95));
             }
             for word in name_words(&e.name) {
-                names.push((fold(word), 0.9));
+                names.push((fold(word), ONE_WORD));
             }
         }
         names.retain(|(k, _)| !k.is_empty());
@@ -147,10 +147,11 @@ impl Keys {
         if !self.own_artist_name {
             return 0.0;
         }
+        let weight = |w: f32| if w < CALLED { ONE_WORD } else { w };
         let best = self
             .names
             .iter()
-            .map(|(name, w)| near(&v.text, name) * w)
+            .map(|(name, w)| near(&v.text, name) * weight(*w))
             .fold(0.0f32, f32::max);
         best * FALLBACK_FACTOR
     }
@@ -215,6 +216,8 @@ impl Keys {
     }
 }
 
+const CALLED: f32 = 0.97;
+const ONE_WORD: f32 = 0.9;
 const STRICT_SLACK: f32 = 0.2;
 const CREDIT_MIN: f32 = 0.88;
 const FALLBACK_FACTOR: f32 = 0.92;

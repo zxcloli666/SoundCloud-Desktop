@@ -4,6 +4,7 @@ use crate::types::Variant;
 
 const VOWELS: &str = "аеёиоуыэюя";
 const MAX_VARIANTS: usize = 56;
+const JOINS: &[&str] = &["и", "and"];
 
 fn ends(w: &str, suffix: &str) -> bool {
     w.ends_with(suffix) && w.chars().count() > suffix.chars().count() + 1
@@ -183,10 +184,11 @@ fn joint(title: String, artist: String, kept: bool, lemmatized: bool) -> Variant
 fn spans(out: &mut Vec<Variant>, toks: &[Tok]) {
     let toks: Vec<Tok> = toks.iter().filter(|t| !t.amb).cloned().collect();
     let n = toks.len();
-    if !(2..=5).contains(&n) {
+    let said = toks.iter().filter(|t| !JOINS.contains(&t.w.as_str()));
+    if n < 2 || !(2..=5).contains(&said.count()) {
         return;
     }
-    for len in 1..=2.min(n - 1) {
+    for len in 1..=3.min(n - 1) {
         for part in [&toks[..len], &toks[n - len..]] {
             let command = part.iter().any(|t| {
                 crate::lexicon::LIKES_PLURAL.contains(&t.w.as_str())

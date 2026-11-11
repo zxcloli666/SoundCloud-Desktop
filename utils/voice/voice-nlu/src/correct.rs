@@ -93,6 +93,11 @@ pub fn resolve(text: &str) -> Option<Vec<Tok>> {
     Some(versions.into_iter().fold(Vec::new(), merge))
 }
 
+pub fn denies(text: &str) -> bool {
+    let ws = words(text);
+    (1..ws.len()).any(|i| NEGATING.iter().any(|m| starts(&ws, i, m)))
+}
+
 fn versions(ws: &[String]) -> Option<Vec<Version>> {
     let mut said: Vec<Version> = Vec::new();
     let mut cur = Version::default();

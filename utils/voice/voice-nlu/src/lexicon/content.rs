@@ -124,3 +124,5 @@ pub const SIMILAR: &[&str] = &[
 pub const SUCH: &[&str] = &["такое", "такого", "такую", "такие"];
 
 pub const SUCH_COMPANY: &[&str] = &["же", "еще", "побольше", "чтонибудь", "чтото"];
+
+pub const SIMILAR_WISHED: &[&str] = &["похожего", "подобного"];

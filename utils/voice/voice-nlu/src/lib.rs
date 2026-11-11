@@ -115,13 +115,14 @@ pub(crate) fn parse_toks(text: &str, mut toks: Vec<Tok>) -> (Parsed, bool) {
     } else {
         queries
     };
-    let alt = if cut {
+    let whole = if cut {
         whole_name(&original)
     } else if det.intent == Intent::Resume {
-        greeting(&toks)
+        of_any_kind(greeting(&toks))
     } else {
-        Vec::new()
+        of_any_kind(Vec::new())
     };
+    let whole_kind = whole.kind_hint.filter(|_| det.intent.is_control());
     let kind_alt = s.alt.map(|(kind_hint, raw)| Reading {
         queries: variants::expand(&raw, false),
         kind_hint,
@@ -134,7 +135,7 @@ pub(crate) fn parse_toks(text: &str, mut toks: Vec<Tok>) -> (Parsed, bool) {
     let blocked = det.blocked;
     let parsed = Parsed {
         intent: det.intent,
-        kind_hint: s.kind_hint,
+        kind_hint: s.kind_hint.or(whole_kind),
         queries,
         number: det.number,
         heard: text.to_string(),
@@ -142,14 +143,14 @@ pub(crate) fn parse_toks(text: &str, mut toks: Vec<Tok>) -> (Parsed, bool) {
         bare,
         weak_verb: det.weak,
         fraction: det.fraction,
-        alt,
+        alt: whole.queries,
         kind_alt,
         split: Vec::new(),
     };
     (parsed, blocked)
 }
 
-pub(crate) fn whole_name(toks: &[Tok]) -> Vec<Variant> {
+pub(crate) fn whole_name(toks: &[Tok]) -> Reading {
     let rest: Vec<Tok> = toks
         .iter()
         .filter(|t| !lexicon::PLAY_STRONG.contains(&t.w.as_str()))
@@ -157,10 +158,20 @@ pub(crate) fn whole_name(toks: &[Tok]) -> Vec<Variant> {
         .collect();
     let loose = |t: Option<&Tok>| t.is_some_and(|t| lexicon::PRE.contains(&t.w.as_str()));
     if loose(rest.first()) || loose(rest.last()) {
-        return Vec::new();
+        return of_any_kind(Vec::new());
     }
     let s = slots::extract(&rest, &intent::Detected::none());
-    variants::expand(&s.raw, false)
+    Reading {
+        queries: variants::expand(&s.raw, false),
+        kind_hint: s.kind_hint,
+    }
+}
+
+fn of_any_kind(queries: Vec<Variant>) -> Reading {
+    Reading {
+        queries,
+        kind_hint: None,
+    }
 }
 
 fn greeting(toks: &[Tok]) -> Vec<Variant> {
