@@ -68,6 +68,7 @@ impl Reply {
             source: self.source.clone(),
             speed: self.speed,
             pitch: self.pitch,
+            kept: turn.is_none(),
         }
     }
 
@@ -393,5 +394,24 @@ impl Core {
             }
             Err(error) => self.fail("tts_failed", Some(error)),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn only_lines_outside_a_chat_turn_are_kept_for_next_time() {
+        let source = Source::Kokoro {
+            dir: "voices".into(),
+            file: "model.onnx",
+            speaker: 0,
+        };
+        let mut reply = Reply::new(source, &Config::default());
+        let until = Instant::now();
+        assert!(reply.line(1, "Включаю.".into(), until, None).kept);
+        assert!(!reply.line(2, "Привет!".into(), until, Some("turn")).kept);
+        assert_eq!(reply.turn.as_deref(), Some("turn"));
     }
 }

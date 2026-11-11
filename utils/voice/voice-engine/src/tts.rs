@@ -42,6 +42,7 @@ pub struct Say {
     pub source: Source,
     pub speed: f32,
     pub pitch: f32,
+    pub kept: bool,
 }
 
 pub enum Piece {
@@ -267,15 +268,16 @@ impl Voices {
         let request = qwen::request(&say.text, speaker);
         self.qwen.say(paths, &request, &mut live)?;
         let raw = live.raw;
-        if out.wanted() {
-            out.audio(RATE, shaper.finish());
-            self.cache.put(
-                &key,
-                &Clip {
-                    samples: raw,
-                    rate: RATE,
-                },
-            );
+        if !out.wanted() {
+            return Ok(());
+        }
+        out.audio(RATE, shaper.finish());
+        if say.kept {
+            let clip = Clip {
+                samples: raw,
+                rate: RATE,
+            };
+            self.cache.put(&key, &clip);
         }
         Ok(())
     }

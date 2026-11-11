@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 
 use std::path::PathBuf;
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::sync::mpsc::{Receiver, channel};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
@@ -215,7 +215,10 @@ pub struct Rig {
     pub events: Receiver<Event>,
     pub calls: Calls,
     pub heard: Heard,
+    pub phrases: PathBuf,
 }
+
+static RIGS: AtomicUsize = AtomicUsize::new(0);
 
 pub fn timing() -> Timing {
     Timing {
@@ -269,6 +272,10 @@ fn rig_of(
 ) -> Rig {
     let calls = Calls::default();
     let heard = Heard::default();
+    let rig = RIGS.fetch_add(1, Ordering::Relaxed);
+    let name = format!("voice-engine-phrases-{}-{rig}", std::process::id());
+    let phrases = std::env::temp_dir().join(name);
+    let _ = std::fs::remove_dir_all(&phrases);
     let deps = Deps {
         capture: Capture::with_source(RefTap::new(), open),
         store,
@@ -280,7 +287,7 @@ fn rig_of(
         }),
         devices: devices(),
         timing,
-        phrases: std::env::temp_dir().join(format!("voice-engine-phrases-{}", std::process::id())),
+        phrases: phrases.clone(),
         voice,
     };
     let (engine, events) = Engine::start(deps);
@@ -290,6 +297,7 @@ fn rig_of(
         events,
         calls,
         heard,
+        phrases,
     }
 }
 

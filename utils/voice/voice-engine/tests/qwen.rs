@@ -188,6 +188,7 @@ fn a_reply_streams_from_the_qwen_voice_and_repeats_from_the_cache() {
     assert!((1.5..12.0).contains(&seconds), "{seconds}");
     assert!((-0.05..0.3).contains(&gaps), "{gaps}");
     assert!(again < Duration::from_millis(300), "{again:?}");
+    assert_eq!(kept(&rig), 1, "a command reply is kept for next time");
 }
 
 fn asked(rig: &Rig) -> String {
@@ -307,6 +308,10 @@ fn report(name: &str, told: &Told) -> f32 {
     lost
 }
 
+fn kept(rig: &Rig) -> usize {
+    std::fs::read_dir(&rig.phrases).map_or(0, |files| files.count())
+}
+
 #[test]
 fn a_streamed_reply_from_the_qwen_voice_starts_early_keeps_going_and_stops_on_cancel() {
     let Some(rig) = speaking_rig("loli") else {
@@ -318,8 +323,6 @@ fn a_streamed_reply_from_the_qwen_voice_starts_early_keeps_going_and_stops_on_ca
     report("all text at once", &once);
     let slowly = tell(&rig, SLOWLY, PIECE, EVERY);
     report("15 characters every 150 ms", &slowly);
-    let again = tell(&rig, SLOWLY, PIECE, EVERY);
-    let starved = report("the same again", &again);
     let (stopped, late) = cut_short(&rig);
     eprintln!("cancel after 1 s of speech: idle after {stopped:?}, {late:.2} s more were played");
     let next = tell(&rig, NEXT, NEXT.len(), Duration::ZERO);
@@ -329,15 +332,13 @@ fn a_streamed_reply_from_the_qwen_voice_starts_early_keeps_going_and_stops_on_ca
         let first = told.first_sound;
         assert!(first < Duration::from_secs(8), "{first:?}");
     }
-    for told in [&once, &slowly, &again] {
+    for told in [&once, &slowly] {
         let seconds = told.heard.len() as f32 / RATE;
         assert!((8.0..40.0).contains(&seconds), "{seconds}");
     }
-    let first = again.first_sound;
-    assert!(first < Duration::from_millis(1500), "{first:?}");
-    assert!(starved < 0.05, "{starved}");
     assert!(stopped < Duration::from_secs(1), "{stopped:?}");
     assert!(late < 0.3, "{late}");
+    assert_eq!(kept(&rig), 0, "chat lines are not kept for next time");
 }
 
 #[test]
