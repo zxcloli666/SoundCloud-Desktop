@@ -3,7 +3,8 @@ use super::indirect;
 use crate::anchor::finite;
 use crate::lexicon::{
     self, AGREEMENT, BACKWARD, CLAUSE_SUBJECTS, COMPLAINT, COMPOUNDS, DEMONSTRATIVES, DENY,
-    FORWARD, MUSIC_STEMS, NEXT_STRONG, PLAY_STRONG, PREV_STRONG, REMARK_START, SWEARS_AMB,
+    FORWARD, MUSIC_STEMS, NEXT_STRONG, OTHERS, PLAY_STRONG, PREV_STRONG, REMARK_START, SWEARS_AMB,
+    TASTE, WAS,
 };
 
 pub fn sentence(c: &Ctx) -> bool {
@@ -11,6 +12,7 @@ pub fn sentence(c: &Ctx) -> bool {
         || attribute_of_a_noun(c)
         || half_of_a_compound(c)
         || complaint_about_a_thing(c)
+        || taste_of_another(c)
 }
 
 fn adverb_of_a_clause(c: &Ctx) -> bool {
@@ -68,12 +70,16 @@ fn names_a_thing(c: &Ctx, determiners: &[&str]) -> bool {
     (1..c.len()).any(|i| determiners.contains(&c.w[i - 1]) && own_noun(c.w[i]))
 }
 
+fn taste_of_another(c: &Ctx) -> bool {
+    (c.has(TASTE) || complains(c)) && c.has(OTHERS)
+}
+
 fn own_verb(w: &str) -> bool {
     finite(w) && !command_word(w)
 }
 
 fn own_noun(w: &str) -> bool {
-    !command_word(w) && !REMARK_START.contains(&w) && !COMPLAINT.contains(&w)
+    !command_word(w) && !REMARK_START.contains(&w) && !COMPLAINT.contains(&w) && !WAS.contains(&w)
 }
 
 fn command_word(w: &str) -> bool {
