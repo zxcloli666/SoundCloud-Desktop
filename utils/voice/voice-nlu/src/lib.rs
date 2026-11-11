@@ -7,6 +7,7 @@ mod names;
 mod normalize;
 mod numbers;
 mod repair;
+mod reworded;
 mod slots;
 mod steps;
 mod types;

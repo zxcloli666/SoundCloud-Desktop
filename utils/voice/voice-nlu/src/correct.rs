@@ -2,6 +2,7 @@ use crate::intent;
 use crate::lexicon::CORRECTION_NOISE;
 use crate::normalize::{Tok, normalize, words};
 use crate::numbers;
+use crate::reworded;
 
 const REPLACE: &[&[&str]] = &[
     &["или", "нет"],
@@ -112,6 +113,10 @@ fn merge(prev: Vec<Tok>, seg: Vec<String>) -> Vec<Tok> {
         } else {
             toks(&["верни".into(), "как".into(), "было".into()])
         };
+    }
+    let part = reworded::amount(&prev, &next).or_else(|| reworded::direction(&prev, &next));
+    if let Some(same_command) = part {
+        return same_command;
     }
     let found = intent::detect(&next);
     if found.intent != crate::types::Intent::None && !found.blocked {

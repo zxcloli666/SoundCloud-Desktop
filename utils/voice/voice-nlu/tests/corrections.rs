@@ -44,3 +44,70 @@ fn at_least_is_not_a_change_of_mind() {
     assert_eq!(steps("сделай хотя бы потише"), ["volume_down"]);
     assert_eq!(steps("громче хотя нет тише"), ["volume_down"]);
 }
+
+#[test]
+fn a_corrected_amount_keeps_the_action_and_the_unit() {
+    for (text, intent, number) in [
+        (
+            "вперёд на десять нет на двадцать секунд",
+            Intent::SeekForward,
+            20,
+        ),
+        (
+            "назад на десять секунд то есть на пятнадцать",
+            Intent::SeekBackward,
+            15,
+        ),
+        (
+            "перемотай на минуту вперёд нет на две",
+            Intent::SeekForward,
+            120,
+        ),
+        (
+            "отмотай на двадцать секунд нет на минуту",
+            Intent::SeekBackward,
+            60,
+        ),
+        (
+            "перемотай на минуту тридцать ой нет на две минуты тридцать",
+            Intent::SeekTo,
+            150,
+        ),
+        (
+            "громкость на двадцать процентов нет на тридцать",
+            Intent::VolumeSet,
+            30,
+        ),
+        (
+            "убавь на десять процентов а нет на пять",
+            Intent::VolumeDown,
+            5,
+        ),
+    ] {
+        let p = one(text);
+        assert_eq!((p.intent, p.number), (intent, Some(number)), "{text}");
+    }
+}
+
+#[test]
+fn a_corrected_direction_keeps_the_amount() {
+    for (text, intent, number) in [
+        (
+            "перемотай на тридцать секунд назад то есть вперёд",
+            Intent::SeekForward,
+            30,
+        ),
+        ("вперёд на минуту ой назад", Intent::SeekBackward, 60),
+        (
+            "перемотай на десять секунд нет назад",
+            Intent::SeekBackward,
+            10,
+        ),
+    ] {
+        let p = one(text);
+        assert_eq!((p.intent, p.number), (intent, Some(number)), "{text}");
+    }
+    assert_eq!(steps("следующий ой назад"), ["previous"]);
+    assert_eq!(steps("поставь на паузу а нет дальше"), ["next"]);
+    assert_eq!(steps("перемотай назад нет дальше"), ["next"]);
+}
