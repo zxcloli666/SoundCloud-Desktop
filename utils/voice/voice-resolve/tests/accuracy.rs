@@ -14,6 +14,17 @@ struct Row {
     number: String,
     category: String,
     alt: String,
+    mode: String,
+}
+
+impl Row {
+    fn runs_with(&self, bare: Bare) -> bool {
+        match self.mode.as_str() {
+            "off" => bare == Bare::Popular,
+            "on" => bare == Bare::Certain,
+            _ => true,
+        }
+    }
 }
 
 fn rows(text: &str) -> Vec<Row> {
@@ -31,6 +42,7 @@ fn rows(text: &str) -> Vec<Row> {
                 number: col(4),
                 category: col(5),
                 alt: col(6),
+                mode: col(7),
             }
         })
         .collect()
@@ -87,6 +99,16 @@ fn sets() -> Vec<Set> {
             rows: rows(include_str!("data/phrases_skeptic_r2_pass.tsv")),
         },
     ]
+    .into_iter()
+    .chain(sets_for_both_modes())
+    .collect()
+}
+
+fn sets_for_both_modes() -> Vec<Set> {
+    vec![Set {
+        name: "skeptic_r3_pass",
+        rows: rows(include_str!("data/phrases_skeptic_r3_pass.tsv")),
+    }]
 }
 
 const VOICE: [&str; 3] = ["Loli", "Лоля", "롤리"];
@@ -196,7 +218,7 @@ fn run(
     let mut stats: BTreeMap<String, Stat> = BTreeMap::new();
     let mut failures = Vec::new();
     let names = Names::new(&VOICE);
-    for r in data {
+    for r in data.iter().filter(|r| r.runs_with(bare)) {
         let os = interpret(&r.phrase, catalog, &Boosts::none(), bare, &names);
         let s = stats.entry(r.category.clone()).or_default();
         s.rows += 1;
@@ -347,6 +369,26 @@ fn targets_with_aliases() {
     println!("all sets\n{}", report(&union));
     for f in &failures {
         println!("{f}");
+    }
+    bad.extend(check("all", &union));
+    assert!(bad.is_empty(), "under target: {bad:#?}");
+}
+
+#[test]
+fn targets_with_the_chat_on() {
+    let catalog = FixtureCatalog::from_tsv(include_str!("data/catalog.tsv"), true);
+    let mut union = BTreeMap::new();
+    let mut bad = Vec::new();
+    let mut failures = Vec::new();
+    for set in sets_for_both_modes() {
+        let (stats, f) = run(set.name, &set.rows, &catalog, Bare::Certain);
+        println!("chat on, set {}\n{}", set.name, report(&stats));
+        bad.extend(check(set.name, &stats));
+        merge(&mut union, &stats);
+        failures.extend(f);
+    }
+    for f in &failures {
+        println!("chat on, {f}");
     }
     bad.extend(check("all", &union));
     assert!(bad.is_empty(), "under target: {bad:#?}");
