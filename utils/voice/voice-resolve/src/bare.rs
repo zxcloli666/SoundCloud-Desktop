@@ -1,5 +1,6 @@
 use voice_nlu::{Kind, Parsed};
 
+use crate::WHOLE_NAME_MIN;
 use crate::alias;
 use crate::entity::{Decision, Entity, Scored};
 use crate::keys::{Keys, QueryKeys};
@@ -17,11 +18,12 @@ pub enum Bare {
 impl Bare {
     pub(crate) fn plays(self, parsed: &Parsed, decision: &Decision) -> bool {
         let top = match decision {
-            Decision::Act { pick } => &pick.entity,
-            Decision::Ask { first, .. } => &first.entity,
+            Decision::Act { pick } => pick,
+            Decision::Ask { first, .. } => first,
             Decision::NotFound => return false,
         };
-        top.popularity >= POPULAR && self.trusts(parsed, decision)
+        let known = top.entity.popularity >= POPULAR || called_by_kind(parsed, top);
+        known && self.trusts(parsed, decision)
     }
 
     pub(crate) fn trusts(self, parsed: &Parsed, decision: &Decision) -> bool {
@@ -41,6 +43,12 @@ impl Bare {
             }
         }
     }
+}
+
+fn called_by_kind(parsed: &Parsed, hit: &Scored) -> bool {
+    let kind = hit.entity.kind;
+    let kind_said_first = parsed.kind_alt.is_some() && parsed.kind_hint == Some(kind);
+    matches!(kind, Kind::Album | Kind::Playlist) && kind_said_first && hit.sim >= WHOLE_NAME_MIN
 }
 
 fn certain(parsed: &Parsed, hit: &Entity) -> bool {

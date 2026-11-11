@@ -150,3 +150,39 @@ fn a_name_that_starts_with_a_kind_word_is_found_when_said_alone() {
         assert_eq!(heard_in(KIND_NAMES, text, Bare::Certain), "none", "{text}");
     }
 }
+
+const LITTLE_KNOWN: &str = "kind\tname\tartist\tpopularity\taliases
+album\tСинева\tНикто\t500\t
+album\tКлассный\tНикто\t400\t
+playlist\tТише едешь\t\t7000\t
+track\tТуман\tНикто\t300\t
+artist\tДно\t\t200\t
+";
+
+#[test]
+fn an_album_or_a_playlist_called_by_its_kind_plays_however_little_known() {
+    let called = [
+        ("альбом синева", "play Никто - Синева"),
+        ("плейлист тише едешь", "play Тише едешь"),
+        ("подборка тише едешь", "play Тише едешь"),
+    ];
+    let talk = [
+        "синева",
+        "тише едешь",
+        "классный альбом",
+        "синева альбом",
+        "альбом синий",
+        "трек туман",
+        "группа дно",
+    ];
+    for bare in BOTH {
+        for (text, read) in called {
+            assert_eq!(heard_in(LITTLE_KNOWN, text, bare), read, "{text}");
+        }
+        for text in talk {
+            assert_eq!(heard_in(LITTLE_KNOWN, text, bare), "none", "{text}");
+        }
+        assert_eq!(heard("плейлист тише едешь", bare), "play Тише едешь");
+        assert_eq!(heard("тише едешь", bare), "none");
+    }
+}
