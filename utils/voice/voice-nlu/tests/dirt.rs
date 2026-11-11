@@ -195,3 +195,23 @@ fn a_russian_word_that_sounds_english_stays_russian_among_russian_words() {
     assert_eq!(steps("вот он"), ["none"]);
     assert_eq!(steps("он даун"), ["none"]);
 }
+
+#[test]
+fn ukrainian_and_belarusian_command_words_are_read_as_their_russian_forms() {
+    for (heard, want) in [
+        ("що це грає", "now_playing"),
+        ("што зараз грае", "now_playing"),
+        ("хто це співає", "now_playing"),
+        ("якая гэта песня", "now_playing"),
+        ("цяпер што грае", "now_playing"),
+        ("та выключи ты цю музыку", "stop"),
+        ("зупини музику", "stop"),
+        ("спыни гэту песню", "stop"),
+        ("зроби трохи тихіше", "volume_down"),
+        ("зробы крыху гучней", "volume_up"),
+    ] {
+        assert_eq!(steps(heard), [want], "{heard}");
+    }
+    assert_eq!(steps("я зараз приду"), ["none"]);
+    assert_eq!(steps("хто там"), ["none"]);
+}
