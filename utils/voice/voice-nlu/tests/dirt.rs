@@ -338,3 +338,44 @@ fn a_mood_or_a_manner_after_a_word_for_some_music_is_the_wave() {
     assert_eq!(steps("включи по красоте"), ["play"]);
     assert_eq!(steps("включи для души"), ["play"]);
 }
+
+#[test]
+fn telling_it_to_quit_the_music_is_stop() {
+    for heard in [
+        "завязывай с этой музыкой",
+        "заканчивай с музыкой",
+        "кончай эту музыку",
+        "завязывай уже",
+    ] {
+        assert_eq!(steps(heard), ["stop"], "{heard}");
+    }
+    for silent in [
+        "завязывай шнурки",
+        "заканчивай уроки",
+        "кончай болтать",
+        "не завязывай",
+        "не заканчивай с музыкой",
+    ] {
+        assert_eq!(steps(silent), ["none"], "{silent}");
+    }
+}
+
+#[test]
+fn a_complaint_that_it_yells_belongs_to_the_request_for_quieter() {
+    for heard in [
+        "харэ орать сделай тише",
+        "хватит орать потише давай",
+        "не ори сделай потише",
+        "чего орешь тише",
+    ] {
+        assert_eq!(steps(heard), ["volume_down"], "{heard}");
+    }
+    for silent in [
+        "хватит орать",
+        "не ори на меня",
+        "ори громче",
+        "чего ты орешь",
+    ] {
+        assert_eq!(steps(silent), ["none"], "{silent}");
+    }
+}
