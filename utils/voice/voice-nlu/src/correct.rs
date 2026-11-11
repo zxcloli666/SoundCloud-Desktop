@@ -76,25 +76,6 @@ const POINTERS: &[&str] = &[
 
 const NEGATING: &[&[&str]] = &[&["а", "не"], &["только", "не"], &["но", "не"], &["и", "не"]];
 
-fn starts(ws: &[String], at: usize, marker: &[&str]) -> bool {
-    at + marker.len() <= ws.len() && marker.iter().zip(&ws[at..]).all(|(m, w)| m == w)
-}
-
-fn skip_noise(ws: &[String], mut at: usize) -> usize {
-    while at + 1 < ws.len() && noise(&ws[at]) {
-        at += 1;
-    }
-    at
-}
-
-fn noise(w: &str) -> bool {
-    CORRECTION_NOISE.contains(&w)
-}
-
-fn toks(ws: &[String]) -> Vec<Tok> {
-    normalize(&ws.join(" ")).toks
-}
-
 #[derive(Default)]
 struct Version {
     words: Vec<String>,
@@ -229,8 +210,8 @@ fn merge(said: Vec<Tok>, version: Version) -> Vec<Tok> {
     }
     let first = command(&head);
     head.extend(next);
-    let taken_back = version.firm && before.intent.is_control();
-    if taken_back && (command(&head).is_none() || command(&head) == first) {
+    let changed = command(&head).is_some_and(|now| Some(now) != first);
+    if version.firm && before.intent.is_control() && !changed {
         return Vec::new();
     }
     head
@@ -253,18 +234,18 @@ fn after_not(said: &[String]) -> Option<&[String]> {
 
 fn after_rejection<'a>(words: &'a [String], said: &[Tok]) -> Option<&'a [String]> {
     let points = |w: &&String| POINTERS.contains(&w.as_str());
-    let not = words.iter().take_while(points).count();
-    let denies = words.get(not).is_some_and(|w| w == NOT);
-    let own_meaning = MERGE_PHRASES.iter().any(|(p, _)| starts(words, not, p));
+    let lead = words.iter().take_while(points).count();
+    let denies = words.get(lead).is_some_and(|w| w == NOT);
+    let own_meaning = MERGE_PHRASES.iter().any(|(p, _)| starts(words, lead, p));
     let again = words
         .iter()
-        .skip(not + 1)
+        .skip(lead + 1)
         .take_while(|w| points(w) || echoes(w, said))
         .count();
     if said.is_empty() || !denies || own_meaning || again == 0 {
         return Some(words);
     }
-    let rest = &words[not + 1 + again..];
+    let rest = &words[lead + 1 + again..];
     let from = rest.iter().position(|w| !noise(w))?;
     Some(&rest[from..])
 }
@@ -304,4 +285,23 @@ fn orders(read: Side, next: &[Tok], said: &[Tok]) -> bool {
 fn from_its_start(read: &Parsed, next: &[Tok]) -> bool {
     let mut kept = read.normalized.split(' ');
     kept.clone().count() == next.len() || kept.next() == Some(next[0].w.as_str())
+}
+
+fn starts(ws: &[String], at: usize, marker: &[&str]) -> bool {
+    at + marker.len() <= ws.len() && marker.iter().zip(&ws[at..]).all(|(m, w)| m == w)
+}
+
+fn skip_noise(ws: &[String], mut at: usize) -> usize {
+    while at + 1 < ws.len() && noise(&ws[at]) {
+        at += 1;
+    }
+    at
+}
+
+fn noise(w: &str) -> bool {
+    CORRECTION_NOISE.contains(&w)
+}
+
+fn toks(ws: &[String]) -> Vec<Tok> {
+    normalize(&ws.join(" ")).toks
 }

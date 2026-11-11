@@ -352,6 +352,7 @@ fn the_same_question_or_state_asked_twice_is_one_step() {
     assert_eq!(steps("что это играет и кто поёт"), ["now_playing"]);
     assert_eq!(steps("лайкни и поставь лайк"), ["like"]);
     assert_eq!(steps("перемешай и включи рандом"), ["shuffle_on"]);
+    assert_eq!(steps("выключи перемешивание и рандом"), ["shuffle_off"]);
     assert_eq!(steps("поставь на паузу и останови"), ["pause", "stop"]);
     assert_eq!(steps("громче и ещё громче"), ["volume_up", "volume_up"]);
 }

@@ -243,7 +243,8 @@ fn juxtaposed(toks: &[Tok], text: &str) -> Option<Vec<Parsed>> {
         {
             continue;
         }
-        let queued = ADD_WORDS.contains(&tail[0].w.as_str()) && rest[0].intent == Intent::QueueAdd;
+        let adds = ADD_WORDS.contains(&tail[0].w.as_str());
+        let queued = adds && rest.first().is_some_and(|r| r.intent == Intent::QueueAdd);
         let follows = |(at, r): (usize, &Parsed)| after_play(r.intent) || (at == 0 && queued);
         if left.intent == Intent::Play && !rest.iter().enumerate().all(follows) {
             continue;
@@ -316,6 +317,31 @@ fn own_verb(p: &Parsed) -> bool {
         .any(|w| LONE_VERBS.contains(&w) || ON_VERB_FORMS.contains(&w))
 }
 
+fn collapse(steps: Vec<Parsed>) -> Vec<Parsed> {
+    let mut out: Vec<Parsed> = Vec::new();
+    for mut p in steps {
+        let halts = |i: Intent| matches!(i, Intent::Stop | Intent::Pause);
+        if p.intent == Intent::Play && out.last().is_some_and(|l| halts(l.intent)) {
+            out.pop();
+        }
+        if let Some(last) = out.last() {
+            if matches!(last.intent, Intent::ShuffleOff | Intent::RepeatOff) && !own_verb(&p) {
+                if let Some(off) = off_form(p.intent) {
+                    p.intent = off;
+                }
+            }
+            if last.intent == Intent::Mute && p.intent == Intent::Resume {
+                p.intent = Intent::Unmute;
+            }
+        }
+        if out.last().is_some_and(|l| l.intent == p.intent) && asked_once(p.intent) {
+            continue;
+        }
+        out.push(p);
+    }
+    out
+}
+
 fn asked_once(i: Intent) -> bool {
     matches!(
         i,
@@ -334,29 +360,4 @@ fn asked_once(i: Intent) -> bool {
             | Intent::RepeatAll
             | Intent::RepeatOff
     )
-}
-
-fn collapse(steps: Vec<Parsed>) -> Vec<Parsed> {
-    let mut out: Vec<Parsed> = Vec::new();
-    for mut p in steps {
-        let halts = |i: Intent| matches!(i, Intent::Stop | Intent::Pause);
-        if p.intent == Intent::Play && out.last().is_some_and(|l| halts(l.intent)) {
-            out.pop();
-        }
-        if out.last().is_some_and(|l| l.intent == p.intent) && asked_once(p.intent) {
-            continue;
-        }
-        if let Some(last) = out.last() {
-            if matches!(last.intent, Intent::ShuffleOff | Intent::RepeatOff) && !own_verb(&p) {
-                if let Some(off) = off_form(p.intent) {
-                    p.intent = off;
-                }
-            }
-            if last.intent == Intent::Mute && p.intent == Intent::Resume {
-                p.intent = Intent::Unmute;
-            }
-        }
-        out.push(p);
-    }
-    out
 }
