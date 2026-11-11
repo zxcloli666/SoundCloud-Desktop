@@ -25,7 +25,7 @@ struct Link {
 pub fn parse(text: &str, names: &Names) -> Vec<Parsed> {
     let spoken = correction(text);
     let text_in = spoken.as_deref().unwrap_or(text);
-    let fixed = correct::resolve(text_in);
+    let fixed = correct::resolve(text_in).filter(|_| !intent::retold(&normalize(text_in).toks));
     let corrected = fixed.is_some();
     let toks = names.drop(fixed.unwrap_or_else(|| normalize(text_in).toks));
     let from = usize::from(toks.len() > 2 && toks[0].w == "сначала");

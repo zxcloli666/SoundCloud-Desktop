@@ -1,6 +1,9 @@
 use super::ctx::Ctx;
 use super::talk;
-use crate::lexicon::{self, IMPERATIVES, NEG_FOLLOW, NEG_STEMS, PLAY_STRONG, REMARK_START};
+use crate::lexicon::{
+    self, ADDRESSEES, IMPERATIVES, NEG_FOLLOW, NEG_STEMS, PLAY_STRONG, REMARK_START, REPORT,
+    SUBJECTS,
+};
 use crate::normalize::Tok;
 use crate::types::Intent;
 
@@ -29,6 +32,19 @@ fn chanted(toks: &[Tok]) -> bool {
             && w[0].w.chars().count() >= 4
             && !PLAY_STRONG.contains(&w[0].w.as_str())
     })
+}
+
+pub fn retold(toks: &[Tok]) -> bool {
+    let c = Ctx::new(toks);
+    c.has(REPORT) || (1..c.len()).any(|i| c.w[i] == "нет" && answered(&c.w[..i]))
+}
+
+fn answered(before: &[&str]) -> bool {
+    match before {
+        [.., who, whom] if ADDRESSEES.contains(whom) => SUBJECTS.contains(who),
+        [.., who] => SUBJECTS.contains(who),
+        [] => false,
+    }
 }
 
 pub fn negation(toks: &[Tok]) -> Negation {

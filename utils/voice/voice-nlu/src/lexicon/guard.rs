@@ -135,6 +135,8 @@ pub const REPORT: &[&str] = &[
 
 pub const SUBJECTS: &[&str] = &["я", "мы", "он", "она", "они"];
 
+pub const ADDRESSEES: &[&str] = &["мне", "нам", "ему", "ей", "им"];
+
 pub const CLAUSE_SUBJECTS: &[&str] = &[
     "я", "ты", "мы", "вы", "он", "она", "они", "сам", "сама", "сами",
 ];
