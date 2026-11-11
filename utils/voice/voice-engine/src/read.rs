@@ -1,3 +1,4 @@
+use std::panic::{AssertUnwindSafe, catch_unwind};
 use std::time::{Duration, Instant};
 
 use voice_nlu::Names;
@@ -8,6 +9,8 @@ use crate::lookup::Lookups;
 use crate::machine::{Core, Msg};
 use crate::turn::Chat;
 use crate::wire::{self, Origin};
+
+const STOPPED: &str = "the reading stopped";
 
 pub struct Reading {
     serial: u64,
@@ -163,6 +166,20 @@ impl Early {
 
 impl Job {
     fn run(self) -> Read {
+        let (started, parsed) = (self.started, self.parsed);
+        let read = catch_unwind(AssertUnwindSafe(|| self.read()));
+        read.unwrap_or_else(|_| Read {
+            outcomes: Err(STOPPED.into()),
+            timed: Timed {
+                read: parsed,
+                lookups: Vec::new(),
+                total: started.elapsed(),
+                ahead: None,
+            },
+        })
+    }
+
+    fn read(self) -> Read {
         let boosts = Boosts::liked_artists(&self.liked);
         let lookups = &self.lookups;
         let mut outcomes = understand(&self.phrase, lookups, &boosts, self.bare);
@@ -175,5 +192,40 @@ impl Job {
             None => Ok(outcomes),
         };
         Read { outcomes, timed }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::sync::Arc;
+
+    use voice_nlu::{Kind, Variant};
+    use voice_resolve::Entity;
+
+    use super::*;
+    use crate::catalog::Catalog;
+
+    struct Panicking;
+
+    impl Catalog for Panicking {
+        fn candidates(&self, _: &[Variant], _: &[Kind]) -> Result<Vec<Entity>, String> {
+            panic!("the catalog broke");
+        }
+    }
+
+    #[test]
+    fn a_reading_that_panics_ends_as_a_failed_read() {
+        let catalog: Arc<dyn Catalog> = Arc::new(Panicking);
+        let job = Job {
+            phrase: Phrase::read("включи скриптонита", &Names::new::<&str>(&[])),
+            lookups: Lookups::start(&catalog, &Arc::default(), Vec::new(), None),
+            bare: Bare::Popular,
+            liked: Vec::new(),
+            started: Instant::now(),
+            parsed: Duration::ZERO,
+        };
+        let read = job.run();
+        assert_eq!(read.outcomes.err().as_deref(), Some(STOPPED));
+        assert!(read.timed.lookups.is_empty());
     }
 }

@@ -45,6 +45,14 @@ impl Catalog for Slow {
     }
 }
 
+struct Panicking;
+
+impl Catalog for Panicking {
+    fn candidates(&self, _: &[Variant], _: &[Kind]) -> Result<Vec<Entity>, String> {
+        panic!("the catalog broke");
+    }
+}
+
 fn rig(wait: Duration, chat: bool, names: &[&str]) -> (Rig, Arc<Seen>) {
     let seen = Arc::new(Seen::default());
     let catalog = Slow {
@@ -259,4 +267,22 @@ fn a_search_made_while_the_same_lookup_runs_waits_for_it() {
     assert!(matches!(looked, Looked::In(took) if took < SLOW));
     assert_eq!(seen.most.load(Ordering::SeqCst), 1);
     assert_eq!(seen.finished.load(Ordering::SeqCst), 1);
+}
+
+#[test]
+fn a_catalog_that_panics_fails_the_phrase_every_time_it_is_said() {
+    let rig = rig_with(
+        silent(),
+        Arc::new(Panicking),
+        std::env::temp_dir().join("voice-engine-no-models"),
+        timing(),
+    );
+    for _ in 0..2 {
+        let asked = Instant::now();
+        rig.text("включи скриптонита");
+        rig.expect_state(State::Thinking);
+        assert_eq!(rig.error(), "network");
+        rig.expect_state(State::Idle);
+        assert!(asked.elapsed() < SLOW, "{:?}", asked.elapsed());
+    }
 }

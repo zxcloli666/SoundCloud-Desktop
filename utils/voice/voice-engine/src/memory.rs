@@ -24,6 +24,13 @@ struct Slot {
     found: Option<Vec<Entity>>,
 }
 
+struct Question<'a> {
+    memory: &'a Memory,
+    variants: &'a [Variant],
+    kinds: &'a [Kind],
+    found: Option<Vec<Entity>>,
+}
+
 impl Default for Memory {
     fn default() -> Self {
         Memory::keeping(KEPT_FOR)
@@ -48,8 +55,14 @@ impl Memory {
         if let Some(found) = self.awaited(variants, &wanted) {
             return Ok(found);
         }
+        let mut question = Question {
+            memory: self,
+            variants,
+            kinds: &wanted,
+            found: None,
+        };
         let found = catalog.candidates(variants, kinds);
-        self.answer(variants, &wanted, &found);
+        question.found = found.as_ref().ok().cloned();
         found
     }
 
@@ -78,16 +91,16 @@ impl Memory {
         None
     }
 
-    fn answer(&self, variants: &[Variant], kinds: &[Kind], found: &Found) {
+    fn answer(&self, variants: &[Variant], kinds: &[Kind], found: Option<Vec<Entity>>) {
         let mut slots = self.fresh();
         let waiting = |slot: &Slot| slot.found.is_none() && slot.holds(variants, kinds);
         if let Some(at) = slots.iter().position(waiting) {
             match found {
-                Ok(entities) => {
-                    slots[at].found = Some(entities.clone());
+                Some(entities) => {
+                    slots[at].found = Some(entities);
                     slots[at].since = Instant::now();
                 }
-                Err(_) => {
+                None => {
                     slots.remove(at);
                 }
             }
@@ -107,6 +120,13 @@ impl Memory {
 
     fn forget(&self, slots: &mut Vec<Slot>) {
         slots.retain(|slot| slot.since.elapsed() < self.kept_for);
+    }
+}
+
+impl Drop for Question<'_> {
+    fn drop(&mut self) {
+        let found = self.found.take();
+        self.memory.answer(self.variants, self.kinds, found);
     }
 }
 
@@ -270,6 +290,32 @@ mod tests {
         assert_eq!(asked(&catalog), 2);
         assert_eq!(kinds(narrow), [Kind::Artist]);
         assert_eq!(kinds(wide.join().unwrap()), Kind::ALL);
+    }
+
+    struct Panicking;
+
+    impl Catalog for Panicking {
+        fn candidates(&self, _: &[Variant], _: &[Kind]) -> Found {
+            panic!("the catalog broke");
+        }
+    }
+
+    #[test]
+    fn a_catalog_that_panics_leaves_no_question_waiting() {
+        let memory = Arc::new(Memory::keeping(Duration::from_secs(5)));
+        let broken = {
+            let memory = memory.clone();
+            std::thread::spawn(move || memory.asked(&Panicking, &[variant("кино")], &Kind::ALL))
+        };
+        assert!(broken.join().is_err());
+        let again = Instant::now();
+        let found = memory.asked(&Counted::default(), &[variant("кино")], &Kind::ALL);
+        assert_eq!(kinds(found), Kind::ALL);
+        assert!(
+            again.elapsed() < Duration::from_secs(1),
+            "{:?}",
+            again.elapsed()
+        );
     }
 
     #[test]

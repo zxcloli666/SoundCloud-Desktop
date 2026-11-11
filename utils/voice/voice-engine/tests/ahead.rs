@@ -36,6 +36,21 @@ impl Catalog for Waiting {
     }
 }
 
+struct Broken {
+    wait: Duration,
+    panics: bool,
+}
+
+impl Catalog for Broken {
+    fn candidates(&self, _: &[Variant], _: &[Kind]) -> Result<Vec<Entity>, String> {
+        std::thread::sleep(self.wait);
+        if self.panics {
+            panic!("the catalog broke");
+        }
+        Err("offline".into())
+    }
+}
+
 #[derive(Clone, Default)]
 struct Said(Arc<Mutex<Vec<String>>>);
 
@@ -89,14 +104,18 @@ impl Heard {
 }
 
 fn rig(wait: Duration, chat: bool) -> (Rig, Said) {
-    let said = Said::default();
     let catalog = Waiting {
         rows: FixtureCatalog::from_tsv(ROWS, true),
         wait,
     };
+    rig_on(Arc::new(catalog), chat)
+}
+
+fn rig_on(catalog: Arc<dyn Catalog>, chat: bool) -> (Rig, Said) {
+    let said = Said::default();
     let mut timing = timing();
     timing.lookup = BUDGET;
-    let rig = rig_speaking_on(said.clone(), Arc::new(catalog), timing);
+    let rig = rig_speaking_on(said.clone(), catalog, timing);
     let config = Config {
         enabled: true,
         llm: chat,
@@ -306,4 +325,25 @@ fn nothing_is_announced_when_the_phrase_cannot_end_in_the_chat_or_has_nothing_to
     assert_eq!(remembered.announced(), None);
     assert_eq!(remembered.command.candidates.len(), 2);
     assert!(remembered.took < QUICK, "{:?}", remembered.took);
+}
+
+#[test]
+fn a_reading_that_fails_cancels_the_chat_started_ahead_and_refuses_one_opened_later() {
+    for panics in [false, true] {
+        let wait = QUICK;
+        let (rig, said) = rig_on(Arc::new(Broken { wait, panics }), true);
+        let phrase = announced(&rig, "как дела");
+        stream(&rig, &phrase.id);
+        assert_eq!(rig.cancelled(), phrase.id, "{panics}");
+        assert_eq!(rig.error(), "network", "{panics}");
+        rig.expect_state(State::Idle);
+
+        let later = announced(&rig, "как дела");
+        assert_eq!(rig.error(), "network", "{panics}");
+        rig.expect_state(State::Idle);
+        rig.chat(&later.id, Chat::Open { speak: true });
+        assert_eq!(rig.cancelled(), later.id, "{panics}");
+        assert_eq!(rig.quiet_for(QUICK), None, "{panics}");
+        assert!(said.list().is_empty(), "{panics}");
+    }
 }
