@@ -47,6 +47,10 @@ pub fn request(
     }
 }
 
+pub fn pending(request: &ChatRequest) -> bool {
+    request.conversation.state == MemberState::Invited
+}
+
 pub fn member(view: &MemberView, user: UserRef) -> Member {
     Member {
         user,

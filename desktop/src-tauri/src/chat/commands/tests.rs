@@ -1,8 +1,9 @@
 use sc_chat::api::wire::{MemberView, RequestList};
 use sc_chat::store::Store;
 use sc_chat::{
-    ChatError, ConversationMeta, ConversationPatch, HistoryPage, HistoryQuery, MemberRole,
-    MemberState, MetaPatch, ReportInput, ReportReason, RichText, Span, SpanKind, TEXT_MAX,
+    ChatError, ConversationMeta, ConversationPatch, ConversationSummary, HistoryPage, HistoryQuery,
+    MemberRole, MemberState, MetaPatch, ReportInput, ReportReason, RichText, Span, SpanKind,
+    TEXT_MAX,
 };
 use serde_json::json;
 use uuid::Uuid;
@@ -74,6 +75,14 @@ fn members_and_requests_parse_from_the_server() {
     assert!(!request.conversation.accepted);
     assert_eq!(request.conversation.state, MemberState::Invited);
     assert_eq!(request.from.id, "42");
+    assert!(convert::pending(&request));
+
+    let unanswered = ConversationSummary {
+        state: MemberState::Active,
+        ..request.conversation.clone()
+    };
+    let known = convert::request(&listed.requests[0], Some(unanswered), convert::bare("42"));
+    assert!(!convert::pending(&known));
 }
 
 #[test]

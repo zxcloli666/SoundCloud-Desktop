@@ -71,7 +71,7 @@ pub async fn requests(state: &ChatState) -> ChatResult<Vec<ChatRequest>> {
             .map(|view| view.from.clone())
             .collect();
         let people = convert::people(&core.store, &senders);
-        listed
+        let mut requests = listed
             .requests
             .iter()
             .zip(people)
@@ -79,7 +79,9 @@ pub async fn requests(state: &ChatState) -> ChatResult<Vec<ChatRequest>> {
                 let stored = core.store.conversation(view.conversation_id)?;
                 Ok(convert::request(view, stored, from))
             })
-            .collect()
+            .collect::<ChatResult<Vec<_>>>()?;
+        requests.retain(convert::pending);
+        Ok(requests)
     })
     .await
 }
