@@ -12,6 +12,7 @@ const HARD: &[&str] = &["и", "and"];
 const SOFT: &[&str] = &["потом", "затем", "then", "только"];
 const AFTER: &[&str] = &["него", "этого", "нее", "нее"];
 const FIRST: &str = "сначала";
+const ALSO: &str = "еще";
 const THEN: &[&str] = &["потом", "затем", "then"];
 
 pub(crate) enum Side {
@@ -23,6 +24,7 @@ pub(crate) enum Side {
 struct Link {
     len: usize,
     soft: bool,
+    also: bool,
 }
 
 pub fn parse(text: &str, names: &Names) -> Vec<Parsed> {
@@ -82,20 +84,19 @@ fn without_order_word(mut toks: Vec<Tok>) -> Vec<Tok> {
 
 fn link(toks: &[Tok], i: usize) -> Option<Link> {
     let w = toks[i].w.as_str();
-    if HARD.contains(&w) {
-        return Some(Link {
-            len: 1,
-            soft: false,
-        });
-    }
-    if SOFT.contains(&w) {
-        return Some(Link { len: 1, soft: true });
-    }
     let next = toks.get(i + 1).map(|t| t.w.as_str()).unwrap_or("");
-    if w == "после" && AFTER.contains(&next) {
-        return Some(Link { len: 2, soft: true });
-    }
-    None
+    let (len, soft, also) = if HARD.contains(&w) {
+        (1, false, false)
+    } else if SOFT.contains(&w) {
+        (1, true, false)
+    } else if w == "после" && AFTER.contains(&next) {
+        (2, true, false)
+    } else if w == ALSO {
+        (1, false, true)
+    } else {
+        return None;
+    };
+    Some(Link { len, soft, also })
 }
 
 pub(crate) fn side(toks: &[Tok], text: &str) -> Side {
@@ -117,7 +118,8 @@ fn linked(toks: &[Tok], text: &str, inherit: bool) -> Option<Vec<Parsed>> {
     for i in 1..toks.len().saturating_sub(1) {
         let Some(l) = link(toks, i) else { continue };
         let mut start = i + l.len;
-        while start < toks.len() && (link(toks, start).is_some() || toks[start].w == FIRST) {
+        let joins = |at: usize| link(toks, at).is_some_and(|l| !l.also);
+        while start < toks.len() && (joins(start) || toks[start].w == FIRST) {
             start += 1;
         }
         if start >= toks.len() {
@@ -169,6 +171,9 @@ fn linked(toks: &[Tok], text: &str, inherit: bool) -> Option<Vec<Parsed>> {
                 },
             },
         };
+        if l.also && !(plays && rest.iter().all(|p| p.intent.is_control())) {
+            continue;
+        }
         left.append(&mut rest);
         if !left.is_empty() {
             return Some(left);

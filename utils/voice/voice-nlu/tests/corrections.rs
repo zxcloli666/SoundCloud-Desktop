@@ -354,3 +354,30 @@ fn first_and_then_put_two_names_in_order() {
     );
     assert_eq!(steps("включи сначала"), ["seek_to"]);
 }
+
+#[test]
+fn also_links_a_setting_to_what_is_played() {
+    let said = read("включи колдплей а ещё звук на половину");
+    assert_eq!(said.len(), 2);
+    assert_eq!(said[0].intent, Intent::Play);
+    assert!(asks_for(&said[0], "колдплей"));
+    assert_eq!(
+        (said[1].intent, said[1].number),
+        (Intent::VolumeSet, Some(50))
+    );
+    assert_eq!(
+        steps("поставь земфиру а ещё громкость на тридцать"),
+        ["play", "volume_set"]
+    );
+    assert_eq!(
+        steps("добавь в очередь сплин ещё звук на максимум"),
+        ["queue_add", "volume_set"]
+    );
+    assert_eq!(steps("громче ещё громче"), ["volume_up"]);
+    assert_eq!(steps("включи ещё раз"), ["resume"]);
+    assert_eq!(steps("включи земфиру ещё раз"), ["play"]);
+    assert_eq!(
+        steps("перемотай назад и ещё раз"),
+        ["seek_backward", "seek_to"]
+    );
+}
