@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { chatBridge } from '../../../lib/chat/bridge';
+import { isActiveMember } from '../../../lib/chat/membership';
 import type { ConversationPage, ConversationSummary } from '../../../lib/chat/types';
 import { foldName } from '../../../lib/track-display';
 import { useChatListStore } from '../../../stores/chat/list';
@@ -11,7 +12,7 @@ const LIST_STALE_MS = 15_000;
 const ROOM_STALE_MS = 60_000;
 
 function canReceive(conversation: ConversationSummary): boolean {
-  return conversation.state === 'active' && conversation.accepted && conversation.kind !== 'room';
+  return isActiveMember(conversation) && conversation.kind !== 'room';
 }
 
 function cachedPage(): ConversationPage | undefined {

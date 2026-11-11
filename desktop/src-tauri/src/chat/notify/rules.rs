@@ -65,7 +65,6 @@ fn about_me(event: &SystemEvent, me: &str) -> Option<SystemKind> {
 fn silenced(chat: &ConversationSummary, now: Millis) -> bool {
     chat.kind == ConversationKind::Saved
         || chat.state != MemberState::Active
-        || request(chat)
         || chat.notify == NotifyLevel::None
         || chat
             .muted_until
@@ -76,11 +75,4 @@ fn quiet(chat: &ConversationSummary, now: Millis) -> bool {
     chat.kind == ConversationKind::Room
         || chat.notify == NotifyLevel::Mentions
         || chat.muted_until.is_some_and(|until| until > now)
-}
-
-fn request(chat: &ConversationSummary) -> bool {
-    matches!(
-        chat.kind,
-        ConversationKind::Direct | ConversationKind::Group
-    ) && !chat.accepted
 }
