@@ -1,5 +1,6 @@
 import type { PlayerPort } from '../../execute.ts';
 import type { Entity, EntityKind } from '../../types';
+import { entityRef } from '../context.ts';
 import type { AppPort } from '../ports';
 import type { Args, ArgsSchema, ChatTool, ToolEnv, ToolRun } from '../types';
 import { fail, ok, runIntent } from './intent.ts';
@@ -62,7 +63,7 @@ function search(app: AppPort, found: Map<string, Entity>): ChatTool {
     run: async (args) => {
       const matches = (await lookup(app, args)).slice(0, MATCHES);
       for (const entity of matches) found.set(keyOf(entity.kind, entity.id), entity);
-      return { result: ok({ matches: matches.map((e) => ({ ...brief(e), id: e.id })) }) };
+      return { result: ok({ matches: matches.map(entityRef) }) };
     },
   };
 }
@@ -71,7 +72,7 @@ function playFound(player: PlayerPort, found: Map<string, Entity>): ChatTool {
   return {
     name: 'play_found',
     description:
-      'Play a match returned by search, by its kind and id. queue=true adds it to the queue instead.',
+      'Play a match by its kind and id. Ids come from search results or from context.candidates. queue=true adds it to the queue instead.',
     args: {
       type: 'object',
       properties: {
@@ -89,8 +90,8 @@ function playFound(player: PlayerPort, found: Map<string, Entity>): ChatTool {
   };
 }
 
-export function catalogTools(player: PlayerPort, app: AppPort): ChatTool[] {
-  const found = new Map<string, Entity>();
+export function catalogTools(player: PlayerPort, app: AppPort, offered: Entity[]): ChatTool[] {
+  const found = new Map(offered.map((entity) => [keyOf(entity.kind, entity.id), entity]));
   return [
     byName(player, app, false),
     byName(player, app, true),

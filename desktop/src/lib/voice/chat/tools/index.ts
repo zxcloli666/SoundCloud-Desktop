@@ -1,4 +1,5 @@
 import type { PlayerPort } from '../../execute.ts';
+import type { Entity } from '../../types';
 import { readArgs } from '../args.ts';
 import type { AppPort } from '../ports';
 import type { ChatTool, Ran, ToolEnv, ToolRun } from '../types';
@@ -7,10 +8,10 @@ import { catalogTools } from './catalog.ts';
 import { memoryTools } from './memory.ts';
 import { playerTools } from './player.ts';
 
-export function chatTools(player: PlayerPort, app: AppPort): ChatTool[] {
+export function chatTools(player: PlayerPort, app: AppPort, offered: Entity[]): ChatTool[] {
   return [
     ...playerTools(player, app),
-    ...catalogTools(player, app),
+    ...catalogTools(player, app, offered),
     ...appTools(player, app),
     ...memoryTools(app),
   ];

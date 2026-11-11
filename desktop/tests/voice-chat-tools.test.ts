@@ -6,15 +6,16 @@ import { NOTES_CAP } from '../src/lib/voice/chat/notes.ts';
 import { parseSetting, SETTING_KEYS } from '../src/lib/voice/chat/settings.ts';
 import { chatTools, runTool } from '../src/lib/voice/chat/tools/index.ts';
 import type { ChatTool } from '../src/lib/voice/chat/types';
+import type { Entity } from '../src/lib/voice/types';
 import { fakeApp, TRACK, toolEnv } from './voice-chat-fakes.ts';
 import { ARTIST, fakePort } from './voice-fake-port.ts';
 
 const NAME = /^[a-z][a-z0-9_]{0,31}$/;
 const PRIMITIVES = ['string', 'number', 'integer', 'boolean'];
 
-function setup(player = fakePort()) {
+function setup(player = fakePort(), offered: Entity[] = []) {
   const app = fakeApp();
-  const tools = chatTools(player, app);
+  const tools = chatTools(player, app, offered);
   const env = toolEnv();
   const run = (name: string, args: unknown = {}) => runTool(tools, name, args, env);
   return { player, app, tools, env, run };
@@ -222,6 +223,28 @@ test('search returns the top matches and play_found only plays what search retur
   const stranger = await run('play_found', { kind: 'track', id: 'x5' });
   assert.deepEqual(stranger.result, { ok: false, reason: 'unknown_id' });
   assert.deepEqual(player.calls, ['play:track:t7', 'queue:a1']);
+});
+
+test('play_found also plays what the command offered, and nothing else without a search', async () => {
+  const offered = setup(fakePort(), [TRACK, ARTIST]);
+  const played = await offered.run('play_found', { kind: 'track', id: 't7' });
+  assert.deepEqual(played.result, {
+    ok: true,
+    started: { kind: 'track', name: 'Положение', artist: 'Скриптонит' },
+  });
+  const queued = await offered.run('play_found', { kind: 'artist', id: 'a1', queue: true });
+  assert.equal(queued.result.ok, true);
+  const wrongKind = await offered.run('play_found', { kind: 'album', id: 't7' });
+  assert.deepEqual(wrongKind.result, { ok: false, reason: 'unknown_id' });
+  assert.deepEqual(offered.player.calls, ['play:track:t7', 'queue:a1']);
+  const bare = setup();
+  const stranger = await bare.run('play_found', { kind: 'track', id: 't7' });
+  assert.deepEqual(stranger.result, { ok: false, reason: 'unknown_id' });
+  assert.deepEqual(bare.player.calls, []);
+  assert.match(
+    bare.tools.find((t) => t.name === 'play_found')?.description ?? '',
+    /search results or from context\.candidates/,
+  );
 });
 
 test('navigation passes the page, query and settings section to the app', async () => {

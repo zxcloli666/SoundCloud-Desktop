@@ -1,7 +1,9 @@
+import type { Entity, VoiceCommand } from '../types';
 import type { RepeatMode } from '../undo';
 
 const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 export const QUEUE_TAIL = 5;
+const CANDIDATES_MAX = 5;
 
 export interface Brief {
   title: string;
@@ -18,6 +20,7 @@ export interface ContextInput {
   shuffle: boolean;
   repeat: RepeatMode;
   next: Brief[];
+  candidates: Entity[];
   page: string;
   now: Date;
   appLanguage: string;
@@ -32,7 +35,16 @@ export function localTime(now: Date): string {
   return `${date} ${two(now.getHours())}:${two(now.getMinutes())}`;
 }
 
+export function candidatesOf(cmd: VoiceCommand): Entity[] {
+  return (cmd.candidates ?? []).slice(0, CANDIDATES_MAX);
+}
+
+export function entityRef(entity: Entity) {
+  return { kind: entity.kind, name: entity.name, artist: entity.artist, id: entity.id };
+}
+
 export function buildContext(input: ContextInput): Record<string, unknown> {
+  const candidates = input.candidates.map(entityRef);
   return {
     now_playing: input.track
       ? {
@@ -52,5 +64,6 @@ export function buildContext(input: ContextInput): Record<string, unknown> {
     time: localTime(input.now),
     weekday: WEEKDAYS[input.now.getDay()],
     app_language: input.appLanguage,
+    ...(candidates.length > 0 ? { candidates } : {}),
   };
 }

@@ -9,7 +9,7 @@ import {
   TEXT_MAX,
   TOOLS_MAX,
 } from '../src/lib/voice/chat/body.ts';
-import { buildContext } from '../src/lib/voice/chat/context.ts';
+import { buildContext, candidatesOf } from '../src/lib/voice/chat/context.ts';
 import {
   DIALOG_TTL_MS,
   DIALOG_TURNS,
@@ -20,10 +20,11 @@ import {
 } from '../src/lib/voice/chat/dialog.ts';
 import { addNote, dropNote, NOTE_MAX, NOTES_CAP } from '../src/lib/voice/chat/notes.ts';
 import { pageName, pageTarget } from '../src/lib/voice/chat/pages.ts';
-import { chatTools } from '../src/lib/voice/chat/tools/index.ts';
+import { chatTools, runTool } from '../src/lib/voice/chat/tools/index.ts';
 import type { CallResult, ChatMessage, ChatTool } from '../src/lib/voice/chat/types';
-import { fakeApp } from './voice-chat-fakes.ts';
-import { fakePort } from './voice-fake-port.ts';
+import type { Entity } from '../src/lib/voice/types';
+import { fakeApp, TRACK, toolEnv } from './voice-chat-fakes.ts';
+import { command, fakePort } from './voice-fake-port.ts';
 
 const NOW = 10_000_000;
 
@@ -35,10 +36,28 @@ function input(extra: Partial<Parameters<typeof buildBody>[0]> = {}) {
     context: { playing: true },
     history: [] as ChatMessage[],
     notes: [] as string[],
-    tools: chatTools(fakePort(), fakeApp()),
+    tools: chatTools(fakePort(), fakeApp(), []),
     results: [] as CallResult[],
     ...extra,
   };
+}
+
+function idleContext(candidates: Entity[]) {
+  return buildContext({
+    track: null,
+    liked: false,
+    position: 0,
+    duration: 0,
+    playing: false,
+    volume: 50,
+    shuffle: false,
+    repeat: 'off',
+    next: [],
+    candidates,
+    page: 'home',
+    now: new Date(2026, 10, 15, 23, 59),
+    appLanguage: 'en',
+  });
 }
 
 function exchange(n: number, at: number): Exchange {
@@ -85,7 +104,7 @@ test('history keeps the latest messages and starts with the user', () => {
 
 test('notes and tools are capped', () => {
   const notes = Array.from({ length: 40 }, (_, i) => `факт ${i}`);
-  const tool = chatTools(fakePort(), fakeApp())[0];
+  const tool = chatTools(fakePort(), fakeApp(), [])[0];
   const tools: ChatTool[] = Array.from({ length: 80 }, (_, i) => ({ ...tool, name: `t${i}` }));
   const body = buildBody(input({ notes, tools }));
   assert.equal(body.notes.length, NOTES_MAX);
@@ -93,8 +112,12 @@ test('notes and tools are capped', () => {
   assert.equal(body.tools.length, TOOLS_MAX);
 });
 
-test('an oversized context drops the queue, then the track, never the limit', () => {
+test('an oversized context drops the candidates, then the queue, then the track', () => {
   const big = 'x'.repeat(BLOCK_BYTES);
+  const offered = buildBody(
+    input({ context: { playing: true, queue_next: ['next'], candidates: [big] } }),
+  );
+  assert.deepEqual(offered.context, { playing: true, queue_next: ['next'] });
   const queue = buildBody(input({ context: { playing: true, queue_next: [big] } }));
   assert.deepEqual(queue.context, { playing: true });
   const track = buildBody(
@@ -128,7 +151,7 @@ test('results stay under the limit: the newest are kept, a huge one is replaced'
 });
 
 test('the real tool list and a full context fit the request limits', () => {
-  const tools = chatTools(fakePort(), fakeApp());
+  const tools = chatTools(fakePort(), fakeApp(), []);
   assert.ok(bytesOf(tools) < 16 * 1024);
   const context = buildContext({
     track: { title: 'Положение', artist: 'Скриптонит' },
@@ -140,6 +163,7 @@ test('the real tool list and a full context fit the request limits', () => {
     shuffle: false,
     repeat: 'all',
     next: Array.from({ length: 9 }, (_, i) => ({ title: `T${i}`, artist: 'A' })),
+    candidates: [],
     page: 'likes',
     now: new Date(2026, 10, 11, 8, 5),
     appLanguage: 'ru',
@@ -158,22 +182,58 @@ test('the real tool list and a full context fit the request limits', () => {
   assert.equal(context.app_language, 'ru');
   assert.ok(!('user' in context));
   assert.ok(bytesOf(context) < BLOCK_BYTES);
-  const idle = buildContext({
-    track: null,
-    liked: false,
-    position: 0,
-    duration: 0,
-    playing: false,
-    volume: 50,
-    shuffle: false,
-    repeat: 'off',
-    next: [],
-    page: 'home',
-    now: new Date(2026, 10, 15, 23, 59),
-    appLanguage: 'en',
-  });
+  const idle = idleContext([]);
   assert.equal(idle.now_playing, null);
   assert.equal(idle.weekday, 'Sunday');
+});
+
+test('a command with candidates sends them in the context, best first, five at most', async () => {
+  const candidates = [1, 2, 3, 4, 5, 6, 7].map((n) => ({
+    ...TRACK,
+    name: `Как дела ${n}`,
+    id: `t${n}`,
+  }));
+  const cmd = command('none', { heard: 'привет, как дела?', candidates });
+  const offered = candidatesOf(cmd);
+  const body = buildBody(input({ text: cmd.heard, context: idleContext(offered) }));
+  assert.equal(
+    JSON.stringify(body.context.candidates),
+    JSON.stringify([
+      { kind: 'track', name: 'Как дела 1', artist: 'Скриптонит', id: 't1' },
+      { kind: 'track', name: 'Как дела 2', artist: 'Скриптонит', id: 't2' },
+      { kind: 'track', name: 'Как дела 3', artist: 'Скриптонит', id: 't3' },
+      { kind: 'track', name: 'Как дела 4', artist: 'Скриптонит', id: 't4' },
+      { kind: 'track', name: 'Как дела 5', artist: 'Скриптонит', id: 't5' },
+    ]),
+  );
+  const player = fakePort();
+  const tools = chatTools(player, fakeApp(), offered);
+  const play = (id: string) => runTool(tools, 'play_found', { kind: 'track', id }, toolEnv());
+  assert.equal((await play('t5')).result.ok, true);
+  assert.deepEqual((await play('t6')).result, { ok: false, reason: 'unknown_id' });
+  assert.deepEqual(player.calls, ['play:track:t5']);
+});
+
+test('a command without candidates leaves the context and the playable ids as they were', async () => {
+  for (const cmd of [command('none'), command('none', { candidates: [] })]) {
+    const offered = candidatesOf(cmd);
+    assert.deepEqual(offered, []);
+    assert.deepEqual(Object.keys(idleContext(offered)), [
+      'now_playing',
+      'playing',
+      'volume',
+      'shuffle',
+      'repeat',
+      'queue_next',
+      'page',
+      'time',
+      'weekday',
+      'app_language',
+    ]);
+    const tools = chatTools(fakePort(), fakeApp(), offered);
+    const played = await runTool(tools, 'play_found', { kind: 'track', id: 't7' }, toolEnv());
+    assert.deepEqual(played.result, { ok: false, reason: 'unknown_id' });
+  }
 });
 
 test('the dialog lives for 30 minutes of silence and keeps the last turns', () => {

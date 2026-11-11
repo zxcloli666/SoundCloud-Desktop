@@ -6,6 +6,7 @@ export const HISTORY_MAX = 20;
 export const NOTES_MAX = 30;
 export const TOOLS_MAX = 64;
 export const BLOCK_BYTES = 8 * 1024;
+const SHED_FIRST = ['candidates', 'queue_next', 'now_playing'];
 
 export interface BodyInput {
   text: string;
@@ -30,11 +31,13 @@ export function clip(text: string, max: number): string {
 }
 
 function fitContext(context: Record<string, unknown>): Record<string, unknown> {
-  if (bytesOf(context) <= BLOCK_BYTES) return context;
-  const { queue_next: _queue, ...rest } = context;
-  if (bytesOf(rest) <= BLOCK_BYTES) return rest;
-  const { now_playing: _track, ...bare } = rest;
-  return bytesOf(bare) <= BLOCK_BYTES ? bare : {};
+  let kept = context;
+  for (const key of SHED_FIRST) {
+    if (bytesOf(kept) <= BLOCK_BYTES) return kept;
+    const { [key]: _shed, ...rest } = kept;
+    kept = rest;
+  }
+  return bytesOf(kept) <= BLOCK_BYTES ? kept : {};
 }
 
 function fitResults(results: CallResult[]): CallResult[] {

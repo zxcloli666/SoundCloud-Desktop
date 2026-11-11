@@ -4,10 +4,10 @@ import { getIsPremium } from '../../premium-cache';
 import type { ExecuteContext, PlayerPort, StepResult } from '../execute';
 import { useVoiceRuntime } from '../runtime';
 import { type RowReply, useVoiceStore } from '../store';
-import type { VoiceCommand, VoiceSource } from '../types';
+import type { Entity, VoiceCommand, VoiceSource } from '../types';
 import { appPort, briefOf } from './app-port';
 import { buildBody } from './body';
-import { buildContext, QUEUE_TAIL } from './context';
+import { buildContext, candidatesOf, QUEUE_TAIL } from './context';
 import { dialogMessages, withExchange } from './dialog';
 import { chatIpc } from './ipc';
 import { addMark, appendSay, openReply } from './live';
@@ -39,7 +39,7 @@ function voiced(source: VoiceSource): boolean {
   return source !== 'typed' && source !== 'remote';
 }
 
-function contextNow(port: PlayerPort): Record<string, unknown> {
+function contextNow(port: PlayerPort, candidates: Entity[]): Record<string, unknown> {
   const shot = port.shot();
   return buildContext({
     track: shot.track ? briefOf(shot.track) : null,
@@ -51,6 +51,7 @@ function contextNow(port: PlayerPort): Record<string, unknown> {
     shuffle: shot.shuffle,
     repeat: shot.repeat,
     next: appPort.upNext(QUEUE_TAIL),
+    candidates,
     page: pageName(currentPage()),
     now: new Date(),
     appLanguage: useSettingsStore.getState().language,
@@ -64,7 +65,8 @@ export async function chatStep(
 ): Promise<ChatStep> {
   const { config } = useVoiceStore.getState();
   const env: ToolEnv = { cmd, lang: ctx.lang, now: ctx.now, stack: ctx.stack, undo: false };
-  const tools = chatTools(port, appPort);
+  const candidates = candidatesOf(cmd);
+  const tools = chatTools(port, appPort, candidates);
   const history = dialogMessages(useVoiceRuntime.getState().dialog, ctx.now);
   const abort = new AbortController();
   active = { id: cmd.id, abort };
@@ -88,7 +90,7 @@ export async function chatStep(
         text: cmd.heard,
         persona: config.speak.voice,
         language: config.language,
-        context: contextNow(port),
+        context: contextNow(port, candidates),
         history,
         notes: useVoiceStore.getState().notes,
         tools,
