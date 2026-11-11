@@ -2,10 +2,10 @@
   "voice": {
     "category": "Voz",
     "assistant": "Loli",
-    "wakeWord": "Loli",
     "quote": "“{{text}}”",
     "mic": {
-      "talk": "Falar"
+      "talk": "Falar",
+      "button": "Botão de voz"
     },
     "hero": {
       "state": {
@@ -22,6 +22,7 @@
         "error": "Erro"
       },
       "toggle": "Controle por voz",
+      "language": "Idioma da voz",
       "example": "toque Billie Eilish",
       "sayIt": "Fale agora",
       "typeLabel": "Digite um comando",
@@ -72,10 +73,10 @@
     },
     "activation": {
       "title": "Como chamar",
-      "hotkey": "Tecla",
+      "hotkey": "Apertar para falar",
       "hold": "Segurar",
       "tap": "Tocar",
-      "headset": "Botão do fone",
+      "headset": "Botão do headset",
       "gesture": {
         "off": "Desl.",
         "double": "2×",
@@ -89,7 +90,7 @@
       "stopTest": "Parar",
       "headsetWorks": "Funciona",
       "again": "De novo",
-      "wake": "Diga “{{phrase}}”",
+      "wake": "Diga “Loli”",
       "needsEcho": "Sem cancelamento de eco a música acorda a Loli",
       "echoOn": "Ligar",
       "rarer": "Menos",
@@ -125,7 +126,7 @@
       "bluetooth": "Bluetooth",
       "btWarning": "O fone muda para qualidade de chamada",
       "none": "Nenhum microfone",
-      "refresh": "Atualizar",
+      "refresh": "Procurar de novo",
       "echo": "Cancelamento de eco",
       "echoMode": {
         "auto": "Auto",
@@ -137,7 +138,7 @@
       "title": "Voz da resposta",
       "preview": "Ouvir: {{name}}",
       "stopPreview": "Parar",
-      "sound": "Som",
+      "sound": "Tom e ritmo",
       "speed": "Velocidade",
       "pitch": "Tom",
       "speakOn": "Onde falar",
@@ -212,7 +213,7 @@
       "clear": "clara"
     },
     "speakers": {
-      "title": "Caixas de som",
+      "title": "Alice e Salut",
       "alice": "Alice",
       "salut": "Salut",
       "connect": "Conectar",

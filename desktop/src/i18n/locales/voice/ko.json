@@ -2,10 +2,10 @@
   "voice": {
     "category": "음성",
     "assistant": "롤리",
-    "wakeWord": "롤리",
     "quote": "“{{text}}”",
     "mic": {
-      "talk": "말하기"
+      "talk": "말하기",
+      "button": "음성 버튼"
     },
     "hero": {
       "state": {
@@ -22,6 +22,7 @@
         "error": "오류"
       },
       "toggle": "음성 제어",
+      "language": "음성 언어",
       "example": "빌리 아일리시 틀어줘",
       "sayIt": "말씀하세요",
       "typeLabel": "명령 입력",
@@ -72,7 +73,7 @@
     },
     "activation": {
       "title": "부르는 방법",
-      "hotkey": "키",
+      "hotkey": "눌러서 말하기",
       "hold": "누르고 있기",
       "tap": "누르기",
       "headset": "헤드셋 버튼",
@@ -87,7 +88,7 @@
       "stopTest": "중지",
       "headsetWorks": "작동함",
       "again": "다시",
-      "wake": "“{{phrase}}”라고 말하기",
+      "wake": "“롤리”라고 말하기",
       "needsEcho": "에코 제거 없이는 음악이 롤리를 깨웁니다",
       "echoOn": "켜기",
       "rarer": "덜 자주",
@@ -119,7 +120,7 @@
       "bluetooth": "Bluetooth",
       "btWarning": "헤드폰이 통화 품질로 전환돼요",
       "none": "마이크를 찾지 못함",
-      "refresh": "새로 고침",
+      "refresh": "다시 찾기",
       "echo": "에코 제거",
       "echoMode": {
         "auto": "자동",
@@ -131,7 +132,7 @@
       "title": "응답 목소리",
       "preview": "듣기: {{name}}",
       "stopPreview": "정지",
-      "sound": "소리",
+      "sound": "음색과 빠르기",
       "speed": "속도",
       "pitch": "음높이",
       "speakOn": "출력 위치",
@@ -206,7 +207,7 @@
       "clear": "또렷함"
     },
     "speakers": {
-      "title": "스피커",
+      "title": "알리사와 살류트",
       "alice": "알리사",
       "salut": "살류트",
       "connect": "연결",

@@ -86,7 +86,11 @@ export function VoicePickerCard() {
         ))}
       </div>
       <div className="mt-5 divide-y divide-ink/[0.05] border-t border-ink/[0.05] pt-1">
-        <Block icon={<SlidersHorizontal size={14} />} title={t('voice.voice.sound')}>
+        <Block
+          data-ui="settings-row"
+          icon={<SlidersHorizontal size={14} />}
+          title={t('voice.voice.sound')}
+        >
           <div className="flex flex-col gap-5 sm:flex-row">
             <Slider label={t('voice.voice.speed')} value={`${speak.speed.toFixed(2)}×`}>
               <RangeSlider
@@ -108,7 +112,7 @@ export function VoicePickerCard() {
             </Slider>
           </div>
         </Block>
-        <Block icon={<Speaker size={14} />} title={t('voice.voice.speakOn')}>
+        <Block data-ui="settings-row" icon={<Speaker size={14} />} title={t('voice.voice.speakOn')}>
           <Segmented
             value={speak.mode}
             options={SPEAK_MODES.map((id) => ({ id, label: t(`voice.voice.speakMode.${id}`) }))}
@@ -145,7 +149,7 @@ export function VoicePickerCard() {
             </div>
           )}
         </Block>
-        <Block icon={<Music size={14} />} title={t('voice.voice.duck')}>
+        <Block data-ui="settings-row" icon={<Music size={14} />} title={t('voice.voice.duck')}>
           <Slider
             label={t('voice.voice.duckLabel')}
             value={`${Math.round(duck * 100)}%`}
@@ -161,6 +165,7 @@ export function VoicePickerCard() {
           </Slider>
         </Block>
         <Block
+          data-ui="settings-row"
           icon={<Volume2 size={14} />}
           title={t('voice.voice.replies')}
           control={

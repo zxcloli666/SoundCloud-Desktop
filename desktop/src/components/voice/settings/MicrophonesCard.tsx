@@ -96,7 +96,10 @@ export function MicrophonesCard() {
           </div>
         </div>
       )}
-      <div className="mt-5 flex items-center gap-3 border-t border-ink/[0.05] pt-4">
+      <div
+        data-ui="settings-row"
+        className="mt-5 flex items-center gap-3 border-t border-ink/[0.05] pt-4"
+      >
         <span className="flex size-8 shrink-0 items-center justify-center rounded-xl border border-ink/[0.06] bg-ink/[0.04] text-ink-55">
           <AudioWaveform size={14} />
         </span>

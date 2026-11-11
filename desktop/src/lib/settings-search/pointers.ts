@@ -60,4 +60,15 @@ export const pointers: SettingsEntry[] = [
     keys: ['kb.showBindings', 'kb.groupPlayback', 'kb.groupNavigation', 'kb.groupPanels'],
     place: 'settings.pointerApp',
   },
+  {
+    id: 'elsewhere.voice',
+    kind: 'pointer',
+    category: '',
+    card: '',
+    title: ['voice.mic.button'],
+    desc: [],
+    keys: ['voice.mic.talk'],
+    place: PLAYER,
+    trigger: 'voice-mic',
+  },
 ];

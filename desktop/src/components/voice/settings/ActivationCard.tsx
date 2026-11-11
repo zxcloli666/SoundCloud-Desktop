@@ -51,6 +51,7 @@ export function ActivationCard() {
     <Card title={t('voice.activation.title')} icon={<Hand size={17} />}>
       <div className="divide-y divide-ink/[0.05]">
         <Block
+          data-ui="settings-row"
           icon={<Keyboard size={14} />}
           title={t('voice.activation.hotkey')}
           control={
@@ -87,6 +88,7 @@ export function ActivationCard() {
           </div>
         </Block>
         <Block
+          data-ui="settings-row"
           icon={<Headset size={14} />}
           title={t('voice.activation.headset')}
           control={
@@ -104,13 +106,14 @@ export function ActivationCard() {
           )}
         </Block>
         <Block
+          data-ui="settings-row"
           icon={<WandSparkles size={14} />}
-          title={t('voice.activation.wake', { phrase: t('voice.wakeWord') })}
+          title={t('voice.activation.wake')}
           control={
             <Toggle
               checked={activation.wake.on}
               onChange={() => patchWake({ on: !activation.wake.on })}
-              label={t('voice.activation.wake', { phrase: t('voice.wakeWord') })}
+              label={t('voice.activation.wake')}
             />
           }
         >

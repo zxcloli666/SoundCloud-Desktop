@@ -509,6 +509,8 @@
   ],
   "settings.audioDevice": [
     "escolher fone",
+    "fone de ouvido",
+    "caixa de som",
     "mandar pro alto-falante",
     "sem som",
     "dispositivo de saída",
@@ -913,6 +915,170 @@
     "erro de sincronização",
     "não enviado"
   ],
+  "voice.assistant": [
+    "assistente de voz",
+    "loli",
+    "lolya",
+    "assistente",
+    "digitar um comando",
+    "ajudante de voz",
+    "tipo siri"
+  ],
+  "voice.hero.language": [
+    "idioma de reconhecimento",
+    "idioma dos comandos de voz",
+    "em que língua falar",
+    "não entende inglês",
+    "reconhecimento de fala em português"
+  ],
+  "voice.hero.toggle": [
+    "comandos de voz",
+    "controlar por voz",
+    "ligar o controle por voz",
+    "desligar o controle por voz",
+    "desativar a assistente",
+    "controlar a música falando"
+  ],
+  "voice.activation.title": [
+    "como chamar a loli",
+    "chamar a assistente",
+    "começar a falar",
+    "ativar por voz",
+    "formas de chamar"
+  ],
+  "voice.activation.hotkey": [
+    "aperte e fale",
+    "tecla para falar",
+    "segurar e falar",
+    "atalho de voz",
+    "ptt",
+    "tecla do microfone"
+  ],
+  "voice.activation.headset": [
+    "dois toques no headset",
+    "botão do airpods",
+    "chamar pelo headset",
+    "três toques",
+    "botão do headset chama a assistente"
+  ],
+  "voice.activation.wake": [
+    "palavra de ativação",
+    "ei loli",
+    "chamar pelo nome",
+    "sempre ouvindo",
+    "ativa sozinha",
+    "sensibilidade",
+    "disparos falsos",
+    "ensinar a palavra"
+  ],
+  "voice.mics.title": [
+    "microfone",
+    "escolher microfone",
+    "qual microfone escuta",
+    "não me ouve",
+    "dispositivo de entrada",
+    "microfone não funciona",
+    "permissão do microfone"
+  ],
+  "voice.mics.echo": [
+    "eco no microfone",
+    "ouve a música",
+    "ouve a própria voz",
+    "a música ativa a assistente",
+    "cancelar eco",
+    "aec"
+  ],
+  "voice.voice.title": [
+    "trocar a voz",
+    "voz da assistente",
+    "escolher voz",
+    "voz masculina",
+    "voz feminina",
+    "moriarty",
+    "narração",
+    "personagem"
+  ],
+  "voice.voice.sound": [
+    "velocidade da fala",
+    "fala rápido demais",
+    "tom da voz",
+    "falar mais devagar",
+    "timbre"
+  ],
+  "voice.voice.speakOn": [
+    "saída da voz",
+    "resposta no headset",
+    "dispositivo separado para a voz",
+    "onde a resposta toca",
+    "voz em outro dispositivo"
+  ],
+  "voice.voice.duck": [
+    "baixar a música quando ela fala",
+    "volume da música na resposta",
+    "música cobre a resposta",
+    "ducking",
+    "música mais baixa sob a voz"
+  ],
+  "voice.voice.replies": [
+    "respostas faladas",
+    "não falar em voz alta",
+    "assistente silenciosa",
+    "desligar a narração",
+    "só texto"
+  ],
+  "voice.chat.title": [
+    "conversar com a loli",
+    "bater papo com a assistente",
+    "chat com ia",
+    "perguntar qualquer coisa",
+    "chatbot",
+    "llm",
+    "papo com a lolya"
+  ],
+  "voice.chat.toggle": [
+    "desligar a conversa",
+    "desativar a ia",
+    "o que vai para o servidor",
+    "privacidade da voz",
+    "minha voz é gravada",
+    "só comandos"
+  ],
+  "voice.chat.memory": [
+    "o que ela lembra",
+    "lembre disso",
+    "esquecer tudo",
+    "memória da assistente",
+    "fatos sobre mim",
+    "apagar lembranças",
+    "limpar a memória dela"
+  ],
+  "voice.speakers.title": [
+    "caixa inteligente",
+    "alice",
+    "yandex station",
+    "salut",
+    "sber",
+    "vincular caixa inteligente",
+    "controlar pela caixa inteligente",
+    "código de vínculo"
+  ],
+  "voice.models.title": [
+    "modelos de voz",
+    "baixar a voz",
+    "modelos de reconhecimento",
+    "tamanho dos modelos",
+    "apagar modelos",
+    "reconhecimento offline",
+    "modelo não baixa"
+  ],
+  "voice.history.title": [
+    "histórico de comandos",
+    "o que ela ouviu",
+    "o que eu disse",
+    "entendeu errado",
+    "desfazer comando de voz",
+    "limpar histórico de voz"
+  ],
   "elsewhere.equalizer": [
     "equalizador",
     "eq",
@@ -945,5 +1111,12 @@
     "janela de atalhos",
     "tecla para pausar",
     "guia de teclas"
+  ],
+  "elsewhere.voice": [
+    "botão do microfone",
+    "microfone no player",
+    "onde fica o botão de voz",
+    "ícone do microfone",
+    "apertar e falar"
   ]
 }

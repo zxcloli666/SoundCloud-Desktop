@@ -191,22 +191,26 @@ export function HeroCard() {
               <p className="mb-1 text-[11px] font-bold uppercase tracking-[0.22em] text-ink-35">
                 {t(`voice.hero.state.${state}`)}
               </p>
-              <h2 className="truncate text-[28px] font-black leading-none tracking-tight text-ink">
+              <h3 className="truncate text-[28px] font-black leading-none tracking-tight text-ink">
                 {t('voice.assistant')}
-              </h2>
+              </h3>
             </div>
-            <div className="w-[104px] shrink-0">
+            <div data-ui="settings-row" className="w-[104px] shrink-0">
+              <span className="sr-only">{t('voice.hero.language')}</span>
               <Segmented
                 value={config.language}
                 options={LANGS.map((id) => ({ id, label: id.toUpperCase() }))}
                 onChange={(language) => patch({ language })}
               />
             </div>
-            <Toggle
-              checked={config.enabled}
-              onChange={() => patch({ enabled: !config.enabled })}
-              label={t('voice.hero.toggle')}
-            />
+            <span data-ui="settings-row" className="flex shrink-0">
+              <span className="sr-only">{t('voice.hero.toggle')}</span>
+              <Toggle
+                checked={config.enabled}
+                onChange={() => patch({ enabled: !config.enabled })}
+                label={t('voice.hero.toggle')}
+              />
+            </span>
           </div>
           <SpeechBar example={t('voice.hero.example')} />
           <div className="flex flex-wrap items-center gap-3">

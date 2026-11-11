@@ -517,6 +517,8 @@
   ],
   "settings.audioDevice": [
     "kulaklık seç",
+    "kulaklık",
+    "hoparlör",
     "hoparlöre ver",
     "ses gelmiyor",
     "çıkış cihazı",
@@ -924,6 +926,171 @@
     "dock",
     "sohbeti gizle göster tuşu"
   ],
+  "voice.assistant": [
+    "sesli asistan",
+    "loli",
+    "lolya",
+    "asistan",
+    "komut yaz",
+    "sesli yardımcı",
+    "siri gibi"
+  ],
+  "voice.hero.language": [
+    "tanıma dili",
+    "sesli komut dili",
+    "hangi dilde konuşayım",
+    "ingilizce anlamıyor",
+    "konuşma tanıma dili"
+  ],
+  "voice.hero.toggle": [
+    "sesli komutlar",
+    "sesle kontrol",
+    "sesli kontrolü aç",
+    "sesli kontrolü kapat",
+    "asistanı kapat",
+    "müziği sesle yönet"
+  ],
+  "voice.activation.title": [
+    "loli nasıl çağrılır",
+    "asistanı çağır",
+    "konuşmaya başla",
+    "sesle etkinleştirme",
+    "çağırma yolları"
+  ],
+  "voice.activation.hotkey": [
+    "konuşmak için tuş",
+    "konuşma tuşu",
+    "basılı tut konuş",
+    "ses kısayolu",
+    "ptt",
+    "mikrofon tuşu"
+  ],
+  "voice.activation.headset": [
+    "kulaklıkta çift basma",
+    "airpods düğmesi",
+    "kulaklık düğmesi",
+    "üç kez basma",
+    "kulaklık tuşuyla asistan"
+  ],
+  "voice.activation.wake": [
+    "uyandırma kelimesi",
+    "hey loli",
+    "adıyla çağır",
+    "sürekli dinliyor",
+    "yanlış tetikleme",
+    "hassasiyet",
+    "kendi kendine açılıyor",
+    "kelimeyi öğret"
+  ],
+  "voice.mics.title": [
+    "mikrofon",
+    "mikrofon seç",
+    "hangi mikrofon dinliyor",
+    "beni duymuyor",
+    "giriş cihazı",
+    "mikrofon çalışmıyor",
+    "mikrofon izni"
+  ],
+  "voice.mics.echo": [
+    "mikrofonda yankı",
+    "müziği duyuyor",
+    "kendini duyuyor",
+    "müzik asistanı tetikliyor",
+    "yankı engelleme",
+    "aec"
+  ],
+  "voice.voice.title": [
+    "sesi değiştir",
+    "asistan sesi",
+    "ses seç",
+    "erkek sesi",
+    "kadın sesi",
+    "moriarty",
+    "seslendirme",
+    "karakter"
+  ],
+  "voice.voice.sound": [
+    "konuşma hızı",
+    "çok hızlı konuşuyor",
+    "ses perdesi",
+    "daha yavaş konuş",
+    "ses tonu"
+  ],
+  "voice.voice.speakOn": [
+    "yanıt nereden çıksın",
+    "yanıt kulaklıktan",
+    "ses için ayrı cihaz",
+    "yanıt çıkış cihazı",
+    "yanıt başka cihazdan"
+  ],
+  "voice.voice.duck": [
+    "konuşurken müziği kıs",
+    "yanıtta müzik sesi",
+    "müzik yanıtı bastırıyor",
+    "ducking",
+    "yanıtta müzik kısılsın"
+  ],
+  "voice.voice.replies": [
+    "sesli yanıt",
+    "konuşmasın",
+    "sessiz asistan",
+    "seslendirmeyi kapat",
+    "yalnızca yazı",
+    "sesli cevap verme"
+  ],
+  "voice.chat.title": [
+    "loli ile konuş",
+    "asistanla muhabbet",
+    "yapay zeka sohbeti",
+    "her şeyi sor",
+    "sohbet botu",
+    "llm",
+    "lolya ile konuş"
+  ],
+  "voice.chat.toggle": [
+    "muhabbeti kapat",
+    "yapay zekayı kapat",
+    "sunucuya ne gidiyor",
+    "ses gizliliği",
+    "sesim kaydediliyor mu",
+    "yalnızca komutlar"
+  ],
+  "voice.chat.memory": [
+    "ne hatırlıyor",
+    "bunu hatırla",
+    "her şeyi unut",
+    "asistan hafızası",
+    "hakkımdaki bilgiler",
+    "hafızayı temizle",
+    "anıları sil"
+  ],
+  "voice.speakers.title": [
+    "akıllı hoparlör",
+    "alisa",
+    "yandex station",
+    "salut",
+    "sber",
+    "akıllı hoparlörü bağla",
+    "akıllı hoparlörden kontrol",
+    "eşleştirme kodu"
+  ],
+  "voice.models.title": [
+    "ses modelleri",
+    "sesi indir",
+    "tanıma modelleri",
+    "modeller ne kadar yer kaplıyor",
+    "modelleri sil",
+    "çevrimdışı tanıma",
+    "model inmiyor"
+  ],
+  "voice.history.title": [
+    "komut geçmişi",
+    "ne duydu",
+    "ne dedim",
+    "yanlış anladı",
+    "sesli komutu geri al",
+    "ses geçmişini temizle"
+  ],
   "elsewhere.equalizer": [
     "ekolayzır",
     "eq",
@@ -956,5 +1123,12 @@
     "tuş listesi",
     "duraklatmak için ne basılır",
     "kısayollar penceresi"
+  ],
+  "elsewhere.voice": [
+    "mikrofon düğmesi",
+    "oynatıcıda mikrofon",
+    "ses düğmesi nerede",
+    "mikrofon simgesi",
+    "bas ve söyle"
   ]
 }
