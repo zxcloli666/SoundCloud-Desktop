@@ -260,3 +260,20 @@ fn a_name_introduced_as_a_name_is_found_without_the_introduction() {
         ("как называется эта песня", "now_playing"),
     ]);
 }
+
+#[test]
+fn an_unknown_title_after_an_artist_of_three_words_falls_back_to_the_artist() {
+    heard_either_way(&[
+        (
+            "включи короля и шута проклятый старый дом",
+            "play Король и Шут",
+        ),
+        ("включи короля и шута дом", "play Король и Шут"),
+        (
+            "включи miyagi и эндшпиль самурай в огне",
+            "play Miyagi & Эндшпиль",
+        ),
+        ("включи руки вверх чужие губы", "play Руки Вверх"),
+        ("включи на ютубе тот ролик про скриптонита", "none"),
+    ]);
+}

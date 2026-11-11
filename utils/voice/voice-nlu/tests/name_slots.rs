@@ -109,3 +109,26 @@ fn words_that_only_say_a_name_follows_are_left_out() {
         assert_eq!(names(text)[0], name, "{text}");
     }
 }
+
+fn ends(text: &str) -> Vec<String> {
+    let steps = said(text);
+    let parts = steps[0].queries.iter().filter(|q| q.fallback);
+    parts.map(|q| q.text.clone()).collect()
+}
+
+#[test]
+fn up_to_three_words_at_an_end_of_a_name_of_five_may_be_the_artist() {
+    let named = [
+        ("включи короля и шута проклятый старый дом", "король и шут"),
+        (
+            "включи наутилус помпилиус прогулки по воде",
+            "наутилус помпилиус",
+        ),
+        ("включи проклятый старый дом короля и шута", "король и шут"),
+        ("включи кино про войну и мир", "кино"),
+    ];
+    for (text, artist) in named {
+        assert!(ends(text).iter().any(|part| part == artist), "{text}");
+    }
+    assert!(ends("включи на ютубе тот ролик про скриптонита").is_empty());
+}
