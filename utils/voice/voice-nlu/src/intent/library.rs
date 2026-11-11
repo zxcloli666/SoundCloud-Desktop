@@ -237,7 +237,7 @@ pub fn shuffle(c: &Ctx) -> Option<Detected> {
     }
     let word = c.has(SHUFFLE_WORDS) || c.has_stem(&["перемеш", "перемиш", "шафл"]);
     let ordered = c.has(&["порядку"]) && c.has(&["по"]);
-    let random_order = c.has(&["случайном"]) && c.has(&["порядке"]);
+    let random_order = c.has_stem(&["случайн"]) && c.has_stem(&["поряд"]);
     if !word && !ordered && !random_order {
         return None;
     }
@@ -249,7 +249,7 @@ pub fn shuffle(c: &Ctx) -> Option<Detected> {
             || GENERIC.contains(&w)
             || TRANSPORT_VERBS.contains(&w)
             || SHUFFLE_FILL.contains(&w)
-            || stem(&["перемеш", "перемиш", "шафл"], w)
+            || stem(&["перемеш", "перемиш", "шафл", "случайн", "поряд"], w)
     };
     if !c.w.iter().all(|w| known(w)) {
         return None;

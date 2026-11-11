@@ -596,3 +596,26 @@ fn a_hiccup_or_a_cough_around_a_command_is_noise() {
         assert_eq!(steps(silent), ["none"], "{silent}");
     }
 }
+
+#[test]
+fn a_random_order_in_any_form_is_shuffle_and_playing_in_order_ends_it() {
+    for (heard, want) in [
+        ("отключи случайны порядок", "shuffle_off"),
+        ("выключи случайный порядок", "shuffle_off"),
+        ("включи случайный порядок", "shuffle_on"),
+        ("играй случайным порядком", "shuffle_on"),
+        ("хватит мешать играй по порядку", "shuffle_off"),
+        ("играй по порядку", "shuffle_off"),
+    ] {
+        assert_eq!(steps(heard), [want], "{heard}");
+    }
+    for silent in [
+        "хватит мешать",
+        "не мешай",
+        "наведи порядок",
+        "случайный прохожий",
+        "все в порядке",
+    ] {
+        assert_eq!(steps(silent), ["none"], "{silent}");
+    }
+}

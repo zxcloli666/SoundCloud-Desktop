@@ -154,6 +154,7 @@ pub const SHUFFLE_FILL: &[&str] = &[
     "случайный",
     "случайно",
     "смешай",
+    "мешать",
 ];
 
 pub const REPEAT_FILL: &[&str] = &[
