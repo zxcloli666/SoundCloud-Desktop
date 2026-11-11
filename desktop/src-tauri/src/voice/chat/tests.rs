@@ -8,8 +8,8 @@ use tokio::net::TcpListener;
 use tokio::sync::{Notify, oneshot};
 use voice_chat::ChatEvent;
 
-use super::Refused;
 use super::stream::{Patience, exchange};
+use super::{CANCELLED_KEPT, Refused, Rounds};
 use crate::network::fetch::configured;
 
 const TOKEN: &str = "session-for-tests";
@@ -367,4 +367,39 @@ async fn cancel_before_the_answer_closes_the_request() {
     assert_eq!(result, Ok(()));
     assert_eq!(heard.list(), [ChatEvent::Cancelled]);
     assert!(tokio::time::timeout(LONG, left).await.is_ok());
+}
+
+#[test]
+fn a_cancelled_turn_takes_no_more_rounds_until_it_is_done() {
+    let rounds = Rounds::default();
+    let (_, mut stopped) = rounds.begin("turn").unwrap();
+    rounds.cancel("turn");
+    assert_eq!(stopped.try_recv(), Ok(()));
+    assert!(rounds.begin("turn").is_none());
+    assert!(rounds.begin("other").is_some());
+    rounds.settle("turn");
+    assert!(rounds.begin("turn").is_some());
+}
+
+#[test]
+fn a_cancel_between_rounds_is_remembered() {
+    let rounds = Rounds::default();
+    let (serial, _stopped) = rounds.begin("turn").unwrap();
+    rounds.end("turn", serial);
+    rounds.cancel("turn");
+    rounds.cancel("turn");
+    assert!(rounds.begin("turn").is_none());
+    rounds.settle("turn");
+    assert!(rounds.begin("turn").is_some());
+}
+
+#[test]
+fn only_the_latest_cancelled_turns_are_remembered() {
+    let rounds = Rounds::default();
+    for turn in 0..=CANCELLED_KEPT {
+        rounds.cancel(&format!("turn-{turn}"));
+    }
+    assert!(rounds.begin("turn-0").is_some());
+    assert!(rounds.begin("turn-1").is_none());
+    assert!(rounds.begin(&format!("turn-{CANCELLED_KEPT}")).is_none());
 }

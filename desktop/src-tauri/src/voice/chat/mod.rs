@@ -3,7 +3,7 @@ mod stream;
 #[cfg(test)]
 mod tests;
 
-use std::collections::HashMap;
+use std::collections::{HashMap, VecDeque};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Mutex, MutexGuard};
 use std::time::{Duration, Instant};
@@ -27,6 +27,7 @@ const PATIENCE: Patience = Patience {
     answer: Duration::from_secs(30),
     silence: Duration::from_secs(40),
 };
+const CANCELLED_KEPT: usize = 32;
 
 #[derive(Deserialize)]
 pub struct Turn {
@@ -42,8 +43,14 @@ pub struct Refused {
 
 #[derive(Default)]
 pub struct Rounds {
-    running: Mutex<HashMap<String, (u64, oneshot::Sender<()>)>>,
+    book: Mutex<Book>,
     last: AtomicU64,
+}
+
+#[derive(Default)]
+struct Book {
+    running: HashMap<String, (u64, oneshot::Sender<()>)>,
+    cancelled: VecDeque<String>,
 }
 
 struct Tally {
@@ -66,7 +73,10 @@ pub async fn round(
     turn: Turn,
     events: &Channel<ChatEvent>,
 ) -> Result<(), Refused> {
-    let (serial, cancelled) = voice.rounds.begin(&turn.id);
+    let Some((serial, cancelled)) = voice.rounds.begin(&turn.id) else {
+        let _ = events.send(ChatEvent::Cancelled);
+        return Ok(());
+    };
     let tell = |step: Chat| {
         let id = turn.id.clone();
         voice.engine.send(Command::Chat { id, step });
@@ -122,31 +132,47 @@ impl Refused {
 }
 
 impl Rounds {
-    fn begin(&self, id: &str) -> (u64, oneshot::Receiver<()>) {
+    fn begin(&self, id: &str) -> Option<(u64, oneshot::Receiver<()>)> {
+        let mut book = self.book();
+        if book.cancelled.iter().any(|gone| gone == id) {
+            return None;
+        }
         let serial = self.last.fetch_add(1, Ordering::Relaxed) + 1;
         let (stop, stopped) = oneshot::channel();
-        let earlier = self.running().insert(id.to_string(), (serial, stop));
+        let earlier = book.running.insert(id.to_string(), (serial, stop));
         if let Some((_, stop)) = earlier {
             let _ = stop.send(());
         }
-        (serial, stopped)
+        Some((serial, stopped))
     }
 
     fn end(&self, id: &str, serial: u64) {
-        let mut running = self.running();
-        if running.get(id).is_some_and(|(at, _)| *at == serial) {
-            running.remove(id);
+        let mut book = self.book();
+        if book.running.get(id).is_some_and(|(at, _)| *at == serial) {
+            book.running.remove(id);
         }
     }
 
     pub fn cancel(&self, id: &str) {
-        if let Some((_, stop)) = self.running().remove(id) {
+        let mut book = self.book();
+        if let Some((_, stop)) = book.running.remove(id) {
             let _ = stop.send(());
         }
+        if book.cancelled.iter().any(|gone| gone == id) {
+            return;
+        }
+        if book.cancelled.len() == CANCELLED_KEPT {
+            book.cancelled.pop_front();
+        }
+        book.cancelled.push_back(id.to_string());
     }
 
-    fn running(&self) -> MutexGuard<'_, HashMap<String, (u64, oneshot::Sender<()>)>> {
-        self.running
+    pub fn settle(&self, id: &str) {
+        self.book().cancelled.retain(|gone| gone != id);
+    }
+
+    fn book(&self) -> MutexGuard<'_, Book> {
+        self.book
             .lock()
             .unwrap_or_else(|poison| poison.into_inner())
     }

@@ -77,6 +77,7 @@ pub fn voice_answer(voice: Managed<'_, Voice>, choice: String) {
 
 #[tauri::command]
 pub fn voice_done(voice: Managed<'_, Voice>, id: String, outcome: Outcome) {
+    voice.rounds.settle(&id);
     voice.engine.send(Command::Done { id, outcome });
 }
 
