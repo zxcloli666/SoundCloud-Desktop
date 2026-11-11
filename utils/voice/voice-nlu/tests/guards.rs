@@ -246,3 +246,15 @@ fn a_no_inside_a_retold_exchange_is_the_other_person_answering() {
         ("сделай громче она говорит тихо", "volume_up"),
     ]);
 }
+
+#[test]
+fn a_wish_word_said_alone_names_nothing_and_is_not_a_command() {
+    stays_silent(&["хочу", "ну хочу", "хочется", "хотим", "я хочу", "дай"]);
+    acts(&[
+        ("давай", "resume"),
+        ("го", "resume"),
+        ("включи", "resume"),
+        ("хочу скриптонита", "play"),
+        ("хочу музыку", "play_wave"),
+    ]);
+}

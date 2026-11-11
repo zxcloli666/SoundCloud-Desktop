@@ -248,7 +248,11 @@ pub fn detect(c: &Ctx, forced: bool) -> Detected {
     let strays = entity_tokens(c, &used);
     if strays == 0 {
         if !v.strong && c.len() == 1 {
-            return Detected::new(Intent::Resume, used);
+            return if GO_AHEAD.contains(&c.w[0]) {
+                Detected::new(Intent::Resume, used)
+            } else {
+                Detected::none()
+            };
         }
         let only_kinds =
             c.w.iter()
@@ -258,7 +262,7 @@ pub fn detect(c: &Ctx, forced: bool) -> Detected {
         if only_kinds && !greeted {
             return Detected::new(Intent::PlayWave, used);
         }
-        if v.strong || c.len() == 1 {
+        if v.strong {
             return Detected::new(Intent::Resume, used);
         }
         return Detected::none();

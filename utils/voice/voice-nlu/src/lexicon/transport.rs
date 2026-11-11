@@ -69,6 +69,7 @@ pub const RESUME_WORDS: &[&str] = &[
     "продолжайте",
     "продолжаем",
 ];
+pub const GO_AHEAD: &[&str] = &["давай", "давайте", "го"];
 pub const RESUME_FILL: &[&str] = &["обратно", "снова", "опять", "дальше", "еще", "уже", "play"];
 
 pub const PLAYING_WORDS: &[&str] = &["играет", "playing", "звучит", "играло"];
