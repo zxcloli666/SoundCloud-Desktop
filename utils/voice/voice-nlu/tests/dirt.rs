@@ -435,3 +435,29 @@ fn naming_the_player_as_this_thing_adds_nothing_to_a_command() {
         assert_eq!(steps(silent), ["none"], "{silent}");
     }
 }
+
+#[test]
+fn an_endearment_in_a_question_to_the_assistant_is_not_part_of_the_question() {
+    for (heard, want) in [
+        ("что ты вообще можешь милая", "help"),
+        ("что ты умеешь дорогая", "help"),
+        ("подруга какие у тебя есть команды", "help"),
+        ("что сейчас играет милая", "now_playing"),
+        ("как называется эта песня красавица", "now_playing"),
+        ("детка кто это поет", "now_playing"),
+    ] {
+        assert_eq!(steps(heard), [want], "{heard}");
+    }
+    for silent in [
+        "милая",
+        "тише милая",
+        "помоги милая",
+        "ты что милая",
+        "кто это милая",
+        "это любовь детка",
+    ] {
+        assert_eq!(steps(silent), ["none"], "{silent}");
+    }
+    assert_eq!(steps("включи милая"), ["play"]);
+    assert!(names("включи милая").contains(&"милая".to_string()));
+}

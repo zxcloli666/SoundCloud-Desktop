@@ -76,19 +76,20 @@ const HELP_SET: &[&str] = &[
 ];
 
 pub fn help(c: &Ctx) -> Option<Detected> {
-    if c.len() > 6
-        || !c
-            .w
-            .iter()
-            .all(|w| HELP_SET.contains(w) || PRE.contains(w) || GENERIC.contains(w))
-    {
+    let asked = |w: &str| {
+        HELP_SET.contains(&w)
+            || PRE.contains(&w)
+            || GENERIC.contains(&w)
+            || ENDEARMENTS.contains(&w)
+    };
+    if c.len() > 6 || !c.w.iter().all(|w| asked(w)) {
         return None;
     }
     let ability = c.has(&["умеешь", "умеете", "можешь", "can"]) && c.has(&["что", "чего", "what"]);
     let how = c.has(&["как"]) && c.has_stem(&["пользов"]);
     let commands = c.has(&["команды", "возможности"])
         || (c.has(&["что"]) && c.has(&["можно"]) && c.has(&["сказать", "спросить", "делать"]));
-    let direct = c.has(&["помощь", "помоги", "помогите", "справка", "help"]);
+    let direct = c.has(&["помощь", "помоги", "помогите", "справка", "help"]) && !c.has(ENDEARMENTS);
     if ability || how || direct || commands {
         return Some(Detected::new(Intent::Help, vec![]));
     }
@@ -352,7 +353,11 @@ pub fn now_playing(c: &Ctx) -> Option<Detected> {
         return None;
     }
     if !c.w.iter().all(|w| {
-        NOW_SET.contains(w) || PRE.contains(w) || GENERIC.contains(w) || KIND_ARTIST.contains(w)
+        NOW_SET.contains(w)
+            || PRE.contains(w)
+            || GENERIC.contains(w)
+            || KIND_ARTIST.contains(w)
+            || ENDEARMENTS.contains(w)
     }) {
         return None;
     }
