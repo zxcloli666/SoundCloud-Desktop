@@ -9,7 +9,7 @@ use wreq::Method;
 use wreq::header::{ACCEPT, CONTENT_TYPE};
 
 use super::Refused;
-use crate::network::edge::{self, Hop};
+use crate::network::edge::{self, Hop, Tier};
 use crate::network::fail::FailKind;
 use crate::network::netcheck::model::Role;
 use crate::network::traced::{self, Flight};
@@ -22,6 +22,8 @@ const REFUSAL_MOST: usize = 4096;
 #[derive(Clone, Copy)]
 pub struct Patience {
     pub answer: Duration,
+    pub hop: Duration,
+    pub pro_hop: Duration,
     pub silence: Duration,
 }
 
@@ -41,7 +43,7 @@ pub async fn exchange(
     pass: &(dyn Fn(ChatEvent) + Sync),
 ) -> Result<(), Refused> {
     let told = async {
-        let response = answer(client, urls, token, body, patience.answer).await?;
+        let response = answer(client, urls, token, body, patience).await?;
         relay(response, patience.silence, pass).await;
         Ok(())
     };
@@ -59,22 +61,24 @@ async fn answer(
     urls: &[String],
     token: &str,
     body: &Value,
-    patience: Duration,
+    patience: Patience,
 ) -> Result<wreq::Response, Refused> {
-    let until = Instant::now() + patience;
+    let until = Instant::now() + patience.answer;
     let mut refused = Refused::NETWORK;
     for url in urls {
         for (at, hop) in edge::plan(url).iter().enumerate() {
-            if Instant::now() >= until {
+            let now = Instant::now();
+            if now >= until {
                 return Err(Refused::NETWORK);
             }
+            let limit = until.min(now + patience.of(hop.tier));
             let (request, flight) =
                 traced::begin(client, Method::POST, hop, Role::of_index(at), "voice");
             let request = request
                 .header("x-session-id", token)
                 .header(ACCEPT, EVENT_STREAM)
                 .json(body);
-            match told(request, flight, hop, until).await {
+            match told(request, flight, hop, limit).await {
                 Told::Stream(response) => return Ok(response),
                 Told::Refused(UNAVAILABLE) => {
                     refused = Refused { code: UNAVAILABLE };
@@ -160,6 +164,15 @@ async fn relay(response: wreq::Response, silence: Duration, pass: &(dyn Fn(ChatE
             if last {
                 return;
             }
+        }
+    }
+}
+
+impl Patience {
+    fn of(&self, tier: Tier) -> Duration {
+        match tier {
+            Tier::Direct | Tier::Relay => self.hop,
+            Tier::Pro => self.pro_hop,
         }
     }
 }

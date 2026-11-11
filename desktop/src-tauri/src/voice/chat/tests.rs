@@ -81,6 +81,8 @@ fn body() -> Value {
 fn patient() -> Patience {
     Patience {
         answer: LONG,
+        hop: LONG,
+        pro_hop: LONG,
         silence: LONG,
     }
 }
@@ -325,6 +327,24 @@ async fn a_host_that_fails_gives_way_to_the_next_one() {
         code: "unavailable",
     };
     assert_eq!(talk(&[down.url], patient(), &heard).await, Err(unavailable));
+}
+
+#[tokio::test]
+async fn a_host_that_takes_the_request_and_says_nothing_gives_way_to_the_next_one() {
+    let silent = serve(vec![Step::Hold]).await;
+    let good = serve(vec![send(STREAM), send(HELLO), send(DONE)]).await;
+    let heard = Heard::default();
+    let brief = Patience {
+        hop: Duration::from_millis(300),
+        ..patient()
+    };
+    let asked = Instant::now();
+    let urls = [silent.url, good.url];
+    assert_eq!(talk(&urls, brief, &heard).await, Ok(()));
+    assert_eq!(heard.list(), [say("Сделала "), ChatEvent::Done]);
+    assert!(asked.elapsed() < LONG / 2, "{:?}", asked.elapsed());
+    assert_eq!(silent.calls.load(Ordering::Relaxed), 1);
+    assert!(tokio::time::timeout(LONG, silent.left).await.is_ok());
 }
 
 #[tokio::test]

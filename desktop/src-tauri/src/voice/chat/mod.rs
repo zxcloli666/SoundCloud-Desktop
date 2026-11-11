@@ -25,6 +25,8 @@ use crate::rt::AppHandle;
 const BASES: [&str; 2] = ["api-star", "api"];
 const PATIENCE: Patience = Patience {
     answer: Duration::from_secs(30),
+    hop: Duration::from_secs(8),
+    pro_hop: Duration::from_secs(20),
     silence: Duration::from_secs(40),
 };
 const CANCELLED_KEPT: usize = 32;
