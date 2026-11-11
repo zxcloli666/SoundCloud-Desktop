@@ -40,6 +40,8 @@ pub const ASK_RATIO: f32 = 0.92;
 const EXACT_LEAD: f32 = 0.07;
 const FALLBACK_YIELD: f32 = 0.76;
 const POPULARITY_GAP: u64 = 50;
+const HEARD_MIN: f32 = 0.99;
+const NAMED_MIN: f32 = 0.9;
 
 fn popularity_factor(pop: u64) -> f32 {
     let norm = ((1.0 + pop as f32).ln() / (1.0f32 + 1e8).ln()).clamp(0.0, 1.0);
@@ -61,6 +63,7 @@ fn kind_factor(kind: Kind, hint: Option<Kind>) -> f32 {
 
 pub fn rank(parsed: &Parsed, cands: Vec<Entity>, boosts: &Boosts) -> Vec<Scored> {
     let queries: Vec<QueryKeys> = QueryKeys::list(&parsed.queries);
+    let named_is_missing = names_a_missing_artist(&queries, &cands);
     let mut out: Vec<Scored> = cands
         .into_iter()
         .map(|entity| {
@@ -83,11 +86,14 @@ pub fn rank(parsed: &Parsed, cands: Vec<Entity>, boosts: &Boosts) -> Vec<Scored>
     if out.iter().any(|s| !s.fallback && s.sim >= FALLBACK_YIELD) {
         out.retain(|s| !s.fallback);
     }
+    if named_is_missing {
+        out.retain(|s| s.sim >= HEARD_MIN);
+    }
     if let Some(top) = out.first().filter(|s| s.alias) {
         let floor = top.entity.popularity / POPULARITY_GAP;
-        let heard = out
-            .iter()
-            .position(|s| !s.alias && !s.fallback && s.sim >= 0.99 && s.entity.popularity >= floor);
+        let heard = out.iter().position(|s| {
+            !s.alias && !s.fallback && s.sim >= HEARD_MIN && s.entity.popularity >= floor
+        });
         if let Some(i) = heard {
             let exact = out.remove(i);
             out.insert(0, exact);
@@ -106,6 +112,15 @@ pub fn rank(parsed: &Parsed, cands: Vec<Entity>, boosts: &Boosts) -> Vec<Scored>
         }
     }
     out
+}
+
+fn names_a_missing_artist(queries: &[QueryKeys], cands: &[Entity]) -> bool {
+    let named: Vec<&QueryKeys> = queries.iter().filter(|q| q.names_an_artist()).collect();
+    !named.is_empty()
+        && !cands.iter().any(|entity| {
+            let keys = Keys::new(entity);
+            named.iter().any(|q| keys.sim(q) >= NAMED_MIN)
+        })
 }
 
 pub fn fitting(ranked: Vec<Scored>) -> Vec<Scored> {

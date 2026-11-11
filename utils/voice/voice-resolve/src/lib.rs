@@ -282,6 +282,27 @@ album\tГруппа крови\tКино\t2000000\t
     }
 
     #[test]
+    fn a_known_artist_missing_from_the_catalog_is_not_swapped_for_a_lookalike() {
+        let lookalike = format!("{ROWS}track\tРоманс\tСплин\t2000000\t\n");
+        let heard = |rows: &str| {
+            interpret_one(
+                "поставь рамонс",
+                &FixtureCatalog::from_tsv(rows, true),
+                &Boosts::none(),
+                Bare::Popular,
+            )
+        };
+        assert!(!heard(&lookalike).acts());
+        let with_the_artist = format!("{lookalike}artist\tRamones\t\t5000000\t\n");
+        match heard(&with_the_artist).decision {
+            Some(Decision::Act { pick }) => assert_eq!(pick.entity.label(), "Ramones"),
+            other => panic!("the artist is not played: {other:?}"),
+        }
+        let exact = format!("{ROWS}track\tРамонс\tСплин\t2000000\t\n");
+        assert!(heard(&exact).acts());
+    }
+
+    #[test]
     fn only_the_asked_kinds_come_back() {
         assert_eq!(search("скриптонит", &[Kind::Artist]), ["Скриптонит"]);
         assert!(search("скриптонит", &[Kind::Album]).is_empty());
