@@ -150,11 +150,23 @@ async fn serve(steps: Vec<Step>) -> Served {
 }
 
 async fn refusing(status: &str, body: &str) -> Served {
+    answering(status, "application/json", body).await
+}
+
+async fn answering(status: &str, kind: &str, body: &str) -> Served {
     let size = body.len();
     let reply = format!(
-        "HTTP/1.1 {status}\r\ncontent-type: application/json\r\ncontent-length: {size}\r\n\r\n{body}"
+        "HTTP/1.1 {status}\r\ncontent-type: {kind}\r\ncontent-length: {size}\r\n\r\n{body}"
     );
     serve(vec![Step::Send(reply)]).await
+}
+
+fn api(status: u16, code: &str) -> String {
+    json!({"statusCode": status, "code": code, "message": "why", "error": "Reason"}).to_string()
+}
+
+fn reason(status: u16) -> String {
+    json!({"statusCode": status, "message": "why", "error": "Reason"}).to_string()
 }
 
 async fn nowhere() -> String {
@@ -232,32 +244,61 @@ async fn an_error_from_the_server_ends_the_round_at_once() {
 }
 
 #[tokio::test]
-async fn answers_before_the_stream_are_refusals_with_their_codes() {
+async fn the_api_refuses_before_the_stream_with_its_codes() {
     let cases = [
+        ("403 Forbidden", api(403, "star_required"), "star_required"),
         (
             "403 Forbidden",
-            "{\"error\":\"star_required\"}",
+            "{\"error\":\"star_required\"}".to_string(),
             "star_required",
         ),
         (
             "429 Too Many Requests",
-            "{\"error\":\"rate_limited\"}",
+            api(429, "voice_chat_limited"),
             "rate_limited",
         ),
+        ("401 Unauthorized", reason(401), "session"),
         (
-            "503 Service Unavailable",
-            "{\"error\":\"chat_unavailable\"}",
-            "unavailable",
+            "400 Bad Request",
+            api(400, "voice_chat_invalid"),
+            "bad_request",
         ),
-        ("401 Unauthorized", "{}", "session"),
-        ("400 Bad Request", "{}", "bad_request"),
+        ("403 Forbidden", reason(403), "bad_request"),
     ];
     for (status, reply, code) in cases {
-        let served = refusing(status, reply).await;
+        let served = refusing(status, &reply).await;
+        let spare = serve(vec![send(STREAM), send(DONE)]).await;
         let heard = Heard::default();
-        let result = talk(&[served.url], patient(), &heard).await;
+        let result = talk(&[served.url, spare.url], patient(), &heard).await;
         assert_eq!(result, Err(Refused { code }), "{status}");
         assert!(heard.list().is_empty(), "{status}");
+        assert_eq!(spare.calls.load(Ordering::Relaxed), 0, "{status}");
+    }
+}
+
+#[tokio::test]
+async fn an_answer_that_is_not_the_api_is_a_failed_host_not_a_refusal() {
+    let page = "<html><body>Access denied</body></html>";
+    let strangers = [
+        ("403 Forbidden", "text/html", page),
+        ("403 Forbidden", "application/json", "{}"),
+        ("401 Unauthorized", "text/plain", "Unauthorized"),
+        ("429 Too Many Requests", "text/html", page),
+        ("502 Bad Gateway", "text/html", page),
+        ("200 OK", "text/html", page),
+    ];
+    for (status, kind, body) in strangers {
+        let stranger = answering(status, kind, body).await;
+        let good = serve(vec![send(STREAM), send(HELLO), send(DONE)]).await;
+        let heard = Heard::default();
+        let urls = [stranger.url, good.url];
+        assert_eq!(talk(&urls, patient(), &heard).await, Ok(()), "{status}");
+        assert_eq!(heard.list(), [say("Сделала "), ChatEvent::Done], "{status}");
+
+        let stranger = answering(status, kind, body).await;
+        let heard = Heard::default();
+        let alone = talk(&[stranger.url], patient(), &heard).await;
+        assert_eq!(alone, Err(Refused::NETWORK), "{status}");
     }
 }
 
@@ -271,27 +312,19 @@ async fn a_host_that_fails_gives_way_to_the_next_one() {
     assert_eq!(talk(&urls, patient(), &heard).await, Ok(()));
     assert_eq!(heard.list(), [say("Сделала "), ChatEvent::Done]);
 
-    let down = refusing("503 Service Unavailable", "{}").await;
+    let down = refusing("503 Service Unavailable", &api(503, "chat_unavailable")).await;
     let good = serve(stream()).await;
     let heard = Heard::default();
     assert_eq!(talk(&[down.url, good.url], patient(), &heard).await, Ok(()));
     assert_eq!(heard.list(), [say("Сделала "), ChatEvent::Done]);
     assert_eq!(down.calls.load(Ordering::Relaxed), 1);
-}
 
-#[tokio::test]
-async fn a_refusal_is_final_and_the_next_host_is_not_asked() {
-    let limited = refusing("429 Too Many Requests", "{}").await;
-    let spare = serve(vec![send(STREAM), send(DONE)]).await;
+    let down = refusing("503 Service Unavailable", &api(503, "voice_busy")).await;
     let heard = Heard::default();
-    let result = talk(&[limited.url, spare.url], patient(), &heard).await;
-    assert_eq!(
-        result,
-        Err(Refused {
-            code: "rate_limited"
-        })
-    );
-    assert_eq!(spare.calls.load(Ordering::Relaxed), 0);
+    let unavailable = Refused {
+        code: "unavailable",
+    };
+    assert_eq!(talk(&[down.url], patient(), &heard).await, Err(unavailable));
 }
 
 #[tokio::test]
@@ -308,13 +341,15 @@ async fn no_answer_in_time_is_a_network_refusal() {
     let heard = Heard::default();
     let brief = Patience {
         answer: Duration::from_millis(300),
-        silence: LONG,
+        ..patient()
     };
+    let spare = serve(vec![send(STREAM), send(DONE)]).await;
     assert_eq!(
-        talk(&[silent.url], brief, &heard).await,
+        talk(&[silent.url, spare.url], brief, &heard).await,
         Err(Refused::NETWORK)
     );
     assert!(tokio::time::timeout(LONG, silent.left).await.is_ok());
+    assert_eq!(spare.calls.load(Ordering::Relaxed), 0);
 }
 
 #[tokio::test]
@@ -322,8 +357,8 @@ async fn a_reply_that_goes_silent_ends_with_a_network_error() {
     let served = serve(vec![send(STREAM), send(HELLO), Step::Hold]).await;
     let heard = Heard::default();
     let brief = Patience {
-        answer: LONG,
         silence: Duration::from_millis(300),
+        ..patient()
     };
     assert_eq!(talk(&[served.url], brief, &heard).await, Ok(()));
     assert_eq!(heard.list(), [say("Сделала "), ChatEvent::error("network")]);

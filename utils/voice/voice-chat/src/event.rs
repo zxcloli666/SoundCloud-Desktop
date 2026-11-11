@@ -4,6 +4,7 @@ use serde_json::{Map, Value};
 use crate::sse::Frame;
 
 const BROKEN: &str = "provider_failed";
+const STAR: &str = "star_required";
 
 #[derive(Clone, Debug, PartialEq, Serialize)]
 #[serde(tag = "kind", rename_all = "snake_case")]
@@ -71,14 +72,19 @@ impl ChatEvent {
     }
 }
 
-pub fn refusal(status: u16) -> &'static str {
-    match status {
+pub fn refusal(status: u16, body: &[u8]) -> Option<&'static str> {
+    let said: Value = serde_json::from_slice(body).ok()?;
+    let named = |field: &str| said.get(field).and_then(Value::as_str);
+    let code = named("code").or(named("error"))?;
+    if code == STAR {
+        return Some(STAR);
+    }
+    Some(match status {
         401 => "session",
-        403 => "star_required",
         429 => "rate_limited",
         400..=499 => "bad_request",
         _ => "unavailable",
-    }
+    })
 }
 
 #[cfg(test)]
@@ -173,15 +179,46 @@ mod tests {
         assert_eq!(json(ChatEvent::Cancelled), json!({"kind": "cancelled"}));
     }
 
+    fn api(status: u16, code: Option<&str>) -> Vec<u8> {
+        let mut said = json!({"statusCode": status, "message": "why", "error": "Reason"});
+        if let Some(code) = code {
+            said["code"] = json!(code);
+        }
+        said.to_string().into_bytes()
+    }
+
     #[test]
-    fn answers_before_the_stream_map_to_codes() {
-        assert_eq!(refusal(401), "session");
-        assert_eq!(refusal(403), "star_required");
-        assert_eq!(refusal(429), "rate_limited");
-        assert_eq!(refusal(400), "bad_request");
-        assert_eq!(refusal(413), "bad_request");
-        assert_eq!(refusal(422), "bad_request");
-        assert_eq!(refusal(500), "unavailable");
-        assert_eq!(refusal(503), "unavailable");
+    fn the_api_refuses_with_its_error_body() {
+        let coded = |status, code| refusal(status, &api(status, Some(code)));
+        let plain = |status| refusal(status, &api(status, None));
+        assert_eq!(coded(403, "star_required"), Some("star_required"));
+        assert_eq!(
+            refusal(403, br#"{"error":"star_required"}"#),
+            Some("star_required")
+        );
+        assert_eq!(plain(401), Some("session"));
+        assert_eq!(coded(429, "voice_chat_limited"), Some("rate_limited"));
+        assert_eq!(coded(400, "voice_chat_invalid"), Some("bad_request"));
+        assert_eq!(plain(413), Some("bad_request"));
+        assert_eq!(plain(403), Some("bad_request"));
+        assert_eq!(coded(503, "voice_busy"), Some("unavailable"));
+        assert_eq!(plain(500), Some("unavailable"));
+    }
+
+    #[test]
+    fn an_answer_without_the_api_error_body_is_not_a_refusal() {
+        let pages: [&[u8]; 6] = [
+            b"",
+            b"<html><body>403 Forbidden</body></html>",
+            b"Forbidden",
+            b"{}",
+            br#"{"error":{"code":1020}}"#,
+            br#"["star_required"]"#,
+        ];
+        for page in pages {
+            for status in [401, 403, 429, 502, 503] {
+                assert_eq!(refusal(status, page), None, "{status}");
+            }
+        }
     }
 }

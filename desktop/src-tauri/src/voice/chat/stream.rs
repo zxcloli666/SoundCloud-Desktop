@@ -6,21 +6,29 @@ use tokio::sync::oneshot;
 use tokio::time::Instant;
 use voice_chat::{ChatEvent, Parser, refusal};
 use wreq::Method;
-use wreq::header::ACCEPT;
+use wreq::header::{ACCEPT, CONTENT_TYPE};
 
 use super::Refused;
-use crate::network::edge;
+use crate::network::edge::{self, Hop};
 use crate::network::fail::FailKind;
 use crate::network::netcheck::model::Role;
-use crate::network::traced;
+use crate::network::traced::{self, Flight};
 
 const EVENT_STREAM: &str = "text/event-stream";
 const BROKEN: &str = "network";
+const UNAVAILABLE: &str = "unavailable";
+const REFUSAL_MOST: usize = 4096;
 
 #[derive(Clone, Copy)]
 pub struct Patience {
     pub answer: Duration,
     pub silence: Duration,
+}
+
+enum Told {
+    Stream(wreq::Response),
+    Refused(&'static str),
+    Lost,
 }
 
 pub async fn exchange(
@@ -57,44 +65,82 @@ async fn answer(
     let mut refused = Refused::NETWORK;
     for url in urls {
         for (at, hop) in edge::plan(url).iter().enumerate() {
+            if Instant::now() >= until {
+                return Err(Refused::NETWORK);
+            }
             let (request, flight) =
                 traced::begin(client, Method::POST, hop, Role::of_index(at), "voice");
             let request = request
                 .header("x-session-id", token)
                 .header(ACCEPT, EVENT_STREAM)
                 .json(body);
-            let response = match tokio::time::timeout_at(until, request.send()).await {
-                Ok(Ok(response)) => response,
-                Ok(Err(error)) => {
-                    flight.broke(&error);
-                    hop.note(false);
-                    continue;
+            match told(request, flight, hop, until).await {
+                Told::Stream(response) => return Ok(response),
+                Told::Refused(UNAVAILABLE) => {
+                    refused = Refused { code: UNAVAILABLE };
+                    break;
                 }
-                Err(_) => {
-                    flight.failed(FailKind::Timeout, "no answer in time");
-                    hop.note(false);
-                    return Err(Refused::NETWORK);
-                }
-            };
-            let status = response.status();
-            flight.answered(status.as_u16(), 0);
-            if !edge::hop_ok(hop, &response) {
-                continue;
+                Told::Refused(code) => return Err(Refused { code }),
+                Told::Lost => {}
             }
-            hop.note(true);
-            if status.is_success() {
-                return Ok(response);
-            }
-            refused = Refused {
-                code: refusal(status.as_u16()),
-            };
-            if status.is_client_error() {
-                return Err(refused);
-            }
-            break;
         }
     }
     Err(refused)
+}
+
+async fn told(request: wreq::RequestBuilder, flight: Flight, hop: &Hop, limit: Instant) -> Told {
+    let response = match tokio::time::timeout_at(limit, request.send()).await {
+        Ok(Ok(response)) => response,
+        Ok(Err(error)) => {
+            flight.broke(&error);
+            hop.note(false);
+            return Told::Lost;
+        }
+        Err(_) => {
+            flight.failed(FailKind::Timeout, "no answer in time");
+            hop.note(false);
+            return Told::Lost;
+        }
+    };
+    let status = response.status();
+    let code = status.as_u16();
+    let told = if status.is_success() {
+        streams(&response).then_some(Told::Stream(response))
+    } else {
+        refusal(code, &said(response, limit).await).map(Told::Refused)
+    };
+    match told {
+        Some(told) => {
+            flight.answered(code, 0);
+            hop.note(true);
+            told
+        }
+        None => {
+            flight.cut(FailKind::Status, "not the api's answer", code);
+            hop.note(false);
+            Told::Lost
+        }
+    }
+}
+
+fn streams(response: &wreq::Response) -> bool {
+    response
+        .headers()
+        .get(CONTENT_TYPE)
+        .and_then(|kind| kind.to_str().ok())
+        .is_some_and(|kind| kind.trim_start().starts_with(EVENT_STREAM))
+}
+
+async fn said(response: wreq::Response, limit: Instant) -> Vec<u8> {
+    let mut said = Vec::new();
+    let mut chunks = std::pin::pin!(response.bytes_stream());
+    while said.len() <= REFUSAL_MOST {
+        match tokio::time::timeout_at(limit, chunks.next()).await {
+            Ok(Some(Ok(chunk))) => said.extend_from_slice(&chunk),
+            _ => break,
+        }
+    }
+    said
 }
 
 async fn relay(response: wreq::Response, silence: Duration, pass: &(dyn Fn(ChatEvent) + Sync)) {
