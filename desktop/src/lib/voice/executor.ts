@@ -1,5 +1,6 @@
 import { chatOn, chatStep, closeChatHud, interruptChat, rowReply, stopChat } from './chat/session';
 import { execute, revert, type StepResult } from './execute';
+import { dismiss } from './hud';
 import { voiceIpc } from './ipc';
 import { playerPort } from './player-port';
 import { answerLink, markActive, settleRemote } from './remote';
@@ -32,8 +33,6 @@ const ROW_RESULT: Record<StepResult['kind'], RowResult> = {
   chat: 'replied',
   cancelled: 'ignored',
 };
-
-const CANCELS_ENGINE = new Set(['asking', 'listening', 'thinking', 'speaking']);
 
 const REMOTE_STATE: Record<StepResult['kind'], RemoteState> = {
   done: 'done',
@@ -196,9 +195,11 @@ export function answerAsk(choice: string) {
 }
 
 export function dismissHud() {
-  const hud = useVoiceRuntime.getState().hud;
-  if (hud.kind === 'link_confirm') return answerLink(hud.id, false);
-  if (hud.kind === 'chat') stopChat(hud.id);
-  if (CANCELS_ENGINE.has(hud.kind)) void voiceIpc.cancel().catch(() => {});
-  useVoiceRuntime.getState().hideHud();
+  const runtime = useVoiceRuntime.getState();
+  dismiss(runtime.hud, {
+    declineLink: (id) => answerLink(id, false),
+    stopChat,
+    cancelEngine: () => void voiceIpc.cancel().catch(() => {}),
+    hide: runtime.hideHud,
+  });
 }
