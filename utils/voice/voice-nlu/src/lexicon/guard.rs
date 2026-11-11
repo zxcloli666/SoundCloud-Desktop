@@ -147,6 +147,11 @@ pub const AGREEMENT: &[(&[&str], &str)] = &[
     (&["ие", "ые"], "ыиая"),
 ];
 
+pub const COMPOUNDS: &[(&str, &[&str])] = &[
+    ("стоп", &["кран", "сигнал", "слов", "кадр", "лист", "лини"]),
+    ("play", &["off"]),
+];
+
 pub const SWEARS_AMB: &[&str] = &["нахер", "нахрен", "нафиг", "нафик"];
 
 pub const COMPLAINT: &[&str] = &[
