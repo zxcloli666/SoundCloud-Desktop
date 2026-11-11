@@ -71,3 +71,16 @@ fn an_ordinal_before_a_time_unit_is_that_second_or_minute() {
         assert_eq!(words(name), name);
     }
 }
+
+#[test]
+fn a_fond_name_for_a_round_amount_is_that_amount() {
+    for (text, want) in [
+        ("громкость на соточку", "volume_set 100"),
+        ("звук на полтосик", "volume_set 50"),
+        ("сделай громкость двадцаточку", "volume_set 20"),
+        ("вперед на тридцаточку", "seek_forward 30"),
+        ("назад на пятнашку", "seek_backward 15"),
+    ] {
+        assert_eq!(steps(text), want, "{text}");
+    }
+}
