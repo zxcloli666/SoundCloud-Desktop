@@ -352,3 +352,20 @@ fn a_verb_in_the_first_person_says_what_the_speaker_will_do_and_is_not_a_command
         ("поставь на пауза", "pause"),
     ]);
 }
+
+#[test]
+fn a_phrase_that_opens_with_what_the_speaker_will_do_is_not_a_command() {
+    stays_silent(&[
+        "я перемотаю",
+        "я перемешаю",
+        "я сама перемотаю на начало",
+        "я сейчас сам переключу",
+        "я потом лайкну",
+    ]);
+    acts(&[
+        ("перемотай", "seek_forward"),
+        ("перемешай", "shuffle_on"),
+        ("пауза я потом сама включу", "pause"),
+        ("я хочу музыку", "play_wave"),
+    ]);
+}

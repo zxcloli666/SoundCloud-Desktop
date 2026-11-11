@@ -4,7 +4,7 @@ use super::library::NOW_SET;
 use crate::anchor::finite;
 use crate::lexicon::{
     self, AGREEMENT, ASKING, BACKWARD, CLAUSE_SUBJECTS, COMPLAINT, COMPOUNDS, DEMONSTRATIVES, DENY,
-    DOWN_WORDS, FORWARD, LISTENERS, MUSIC_STEMS, NEXT_STRONG, OTHERS, OWN, PLAY_STRONG,
+    DOWN_WORDS, FORWARD, LISTENERS, MUSIC_STEMS, NEG_STEMS, NEXT_STRONG, OTHERS, OWN, PLAY_STRONG,
     PREV_STRONG, REMARK_START, RINGS, STRIDES, SWEARS_AMB, TASTE, UP_WORDS, WAS, WHICH,
 };
 
@@ -18,6 +18,7 @@ pub fn sentence(c: &Ctx) -> bool {
         || thing_made_louder(c)
         || question_with_its_own_verb(c)
         || question_to_a_person(c)
+        || plan_of_the_speaker(c)
 }
 
 pub fn marching(c: &Ctx) -> bool {
@@ -113,6 +114,14 @@ fn question_to_a_person(c: &Ctx) -> bool {
                 && LISTENERS.contains(&c.w[i - 1])
                 && c.w[i..].iter().any(|w| own_verb(w))
         })
+}
+
+fn plan_of_the_speaker(c: &Ctx) -> bool {
+    let Some(at) = c.pos(&["я"]) else {
+        return false;
+    };
+    let will_do = |w: &&str| (w.ends_with('у') || w.ends_with('ю')) && lexicon::stem(NEG_STEMS, w);
+    c.only_pre(0..at) && c.w[at + 1..].iter().any(will_do)
 }
 
 fn own_verb(w: &str) -> bool {
