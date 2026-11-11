@@ -3,9 +3,9 @@ use super::indirect;
 use super::library::NOW_SET;
 use crate::anchor::finite;
 use crate::lexicon::{
-    self, AGREEMENT, BACKWARD, CLAUSE_SUBJECTS, COMPLAINT, COMPOUNDS, DEMONSTRATIVES, DENY,
-    DOWN_WORDS, FORWARD, MUSIC_STEMS, NEXT_STRONG, OTHERS, OWN, PLAY_STRONG, PREV_STRONG,
-    REMARK_START, RINGS, SWEARS_AMB, TASTE, UP_WORDS, WAS, WHICH,
+    self, AGREEMENT, ASKING, BACKWARD, CLAUSE_SUBJECTS, COMPLAINT, COMPOUNDS, DEMONSTRATIVES, DENY,
+    DOWN_WORDS, FORWARD, LISTENERS, MUSIC_STEMS, NEXT_STRONG, OTHERS, OWN, PLAY_STRONG,
+    PREV_STRONG, REMARK_START, RINGS, SWEARS_AMB, TASTE, UP_WORDS, WAS, WHICH,
 };
 
 pub fn sentence(c: &Ctx) -> bool {
@@ -17,6 +17,7 @@ pub fn sentence(c: &Ctx) -> bool {
         || thing_of_another(c)
         || thing_made_louder(c)
         || question_with_its_own_verb(c)
+        || question_to_a_person(c)
 }
 
 fn adverb_of_a_clause(c: &Ctx) -> bool {
@@ -98,6 +99,15 @@ fn question_with_its_own_verb(c: &Ctx) -> bool {
         return false;
     };
     !c.has(PLAY_STRONG) && c.w[at + 1..].iter().any(|w| own_verb(w))
+}
+
+fn question_to_a_person(c: &Ctx) -> bool {
+    !c.has(PLAY_STRONG)
+        && (2..c.len()).any(|i| {
+            ASKING.contains(&c.w[i - 2])
+                && LISTENERS.contains(&c.w[i - 1])
+                && c.w[i..].iter().any(|w| own_verb(w))
+        })
 }
 
 fn own_verb(w: &str) -> bool {

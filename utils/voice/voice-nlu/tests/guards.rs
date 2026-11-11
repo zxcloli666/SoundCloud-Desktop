@@ -191,3 +191,21 @@ fn a_which_question_with_a_verb_that_is_not_about_playing_asks_something_else() 
         ("как называется этот трек", "now_playing"),
     ]);
 }
+
+#[test]
+fn a_state_phrase_that_goes_on_to_ask_a_person_what_they_do_is_talk() {
+    stays_silent(&[
+        "я ничего не слышу что ты там бормочешь",
+        "ничего не слышно что ты там говоришь",
+        "не слышу чего ты там бубнишь",
+        "плохо слышно чего ты хочешь",
+        "ничего не слышу как ты там стучишь",
+    ]);
+    acts(&[
+        ("я ничего не слышу", "volume_up"),
+        ("ничего не слышно", "volume_up"),
+        ("сделай погромче а то не слышно ничего", "volume_up"),
+        ("что ты умеешь", "help"),
+        ("скажи что ты умеешь", "help"),
+    ]);
+}
