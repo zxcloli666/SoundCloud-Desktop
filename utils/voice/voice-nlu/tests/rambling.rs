@@ -123,3 +123,29 @@ fn a_pronoun_after_a_preposition_points_at_the_current_track() {
         assert_eq!(intents(text), [intent], "{text}");
     }
 }
+
+#[test]
+fn bringing_the_track_back_by_a_time_seeks_backward() {
+    let cases = [
+        (
+            "верни чуть назад секунд на пять",
+            Intent::SeekBackward,
+            Some(5),
+        ),
+        (
+            "верни назад на десять секунд",
+            Intent::SeekBackward,
+            Some(10),
+        ),
+        ("верни на тридцать секунд", Intent::SeekBackward, Some(30)),
+        ("верни на минуту назад", Intent::SeekBackward, Some(60)),
+        ("верни назад", Intent::Previous, None),
+        ("верни как было", Intent::Undo, None),
+        ("верни звук", Intent::Unmute, None),
+    ];
+    for (text, intent, number) in cases {
+        let said = steps(text);
+        assert_eq!(said.len(), 1, "{text}");
+        assert_eq!((said[0].intent, said[0].number), (intent, number), "{text}");
+    }
+}

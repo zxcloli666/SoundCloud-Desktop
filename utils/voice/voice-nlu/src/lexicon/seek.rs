@@ -29,7 +29,7 @@ pub const JUMP_VERBS: &[&str] = &[
     "goto",
 ];
 pub const SKIP_VERBS: &[&str] = &["пропусти", "пропустить", "skip", "скипни"];
-pub const BACK_VERBS: &[&str] = &["отмотай", "отмотать", "rewind"];
+pub const BACK_VERBS: &[&str] = &["отмотай", "отмотать", "rewind", "верни", "вернуть"];
 
 pub const SEC_UNITS: &[&str] = &[
     "секунд",
