@@ -2153,6 +2153,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "voice-chat"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "voice-engine"
 version = "0.1.0"
 dependencies = [
