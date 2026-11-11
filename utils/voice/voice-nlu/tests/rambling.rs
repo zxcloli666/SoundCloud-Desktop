@@ -478,3 +478,47 @@ fn a_pointing_word_before_a_kind_word_is_not_part_of_the_name() {
     }
     assert!(asks_for(&steps("включи это любовь")[0], "это любовь"));
 }
+
+#[test]
+fn a_play_verb_that_points_back_plays_the_name_said_before_it() {
+    let cases = [
+        (
+            "блин я вчера в машине у друга слышал такую песню мокрые кроссы вроде называется поставь её а",
+            "мокрые кроссы",
+        ),
+        (
+            "лоля ну ты же знаешь что я люблю короля и шута вот его и включи",
+            "короля и шута",
+        ),
+        (
+            "а помнишь была такая песня у земфиры искала вот её поставь пожалуйста",
+            "земфира искал",
+        ),
+        ("мне нравится земфира вот её и включи", "земфира"),
+        ("есть такая группа сплин включи их", "сплин"),
+        (
+            "помнишь у кино песню группа крови вот её включи",
+            "группа крови",
+        ),
+    ];
+    for (text, name) in cases {
+        let said = steps(text);
+        assert_eq!(said.len(), 1, "{text}");
+        assert_eq!(said[0].intent, Intent::Play, "{text}");
+        assert!(asks_for(&said[0], name), "{text}");
+    }
+    let nameless = [
+        "мне нравится эта песня включи её",
+        "помнишь ту песню включи её",
+        "я купил новую лампу включи её",
+        "включи её",
+        "вот её и включи",
+    ];
+    for text in nameless {
+        assert!(steps(text)[0].queries.is_empty(), "{text}");
+    }
+    for text in ["я люблю тишину включи её", "я люблю чай поставь его"]
+    {
+        assert_eq!(intents(text), [Intent::None], "{text}");
+    }
+}

@@ -7,6 +7,7 @@ mod names;
 mod normalize;
 mod numbers;
 mod rambling;
+mod recall;
 mod repair;
 mod slots;
 mod steps;
@@ -53,7 +54,8 @@ pub fn parse_name(text: &str) -> Parsed {
     }
 }
 
-pub(crate) fn parse_toks(text: &str, mut toks: Vec<Tok>) -> (Parsed, bool) {
+pub(crate) fn parse_toks(text: &str, toks: Vec<Tok>) -> (Parsed, bool) {
+    let mut toks = recall::named(toks);
     let original = toks.clone();
     let mut cut = false;
     let buried = rambling::find(&toks);
