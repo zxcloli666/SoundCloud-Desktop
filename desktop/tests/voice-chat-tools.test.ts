@@ -271,11 +271,19 @@ test('remember and forget keep notes through the app', async () => {
   const { app, run } = setup();
   assert.deepEqual((await run('remember', { note: 'Любит джаз' })).result, { ok: true });
   assert.deepEqual(app.notes, ['Любит джаз']);
-  assert.deepEqual((await run('forget', { note: 'Любит джаз' })).result, { ok: true, removed: 1 });
+  assert.deepEqual((await run('forget', { note: 'Любит джаз' })).result, { ok: true });
   assert.deepEqual((await run('forget', { note: 'Любит рок' })).result, {
     ok: false,
     reason: 'not_found',
   });
+  app.notes = ['Любит джаз', 'Любит рок', 'Зовут Аня'];
+  assert.deepEqual((await run('forget', { note: 'любит' })).result, {
+    ok: false,
+    reason: 'ambiguous',
+  });
+  assert.equal(app.notes.length, 3);
+  assert.deepEqual((await run('forget', { note: 'аня' })).result, { ok: true });
+  assert.deepEqual(app.notes, ['Любит джаз', 'Любит рок']);
   assert.deepEqual((await run('remember', {})).result, { ok: false, reason: 'bad_args:note' });
 });
 

@@ -20,12 +20,13 @@ export function memoryTools(app: AppPort): ChatTool[] {
     },
     {
       name: 'forget',
-      description: 'Drop a remembered fact. Pass the note text as it appears in notes.',
+      description:
+        'Drop one remembered fact. Pass the note text as it appears in notes; a part of it works only when it fits a single note.',
       args: NOTE,
       returns: false,
       run: async (args) => {
-        const removed = app.forget(String(args.note));
-        return removed > 0 ? { result: ok({ removed }) } : fail('not_found');
+        const state = app.forget(String(args.note));
+        return state === 'ok' ? { result: ok() } : fail(state);
       },
     },
   ];

@@ -1,5 +1,6 @@
 import type { Entity, EntityKind } from '../types';
 import type { Brief } from './context';
+import type { Forgot } from './notes';
 import type { Page, SettingsSection } from './pages';
 import type { SettingKey, SettingValue } from './settings';
 
@@ -16,5 +17,5 @@ export interface AppPort {
   settings(): Record<SettingKey, SettingValue>;
   applySetting(key: SettingKey, value: SettingValue): void;
   remember(note: string): boolean;
-  forget(note: string): number;
+  forget(note: string): Forgot;
 }

@@ -1,4 +1,5 @@
 import type { Brief } from '../src/lib/voice/chat/context';
+import { dropNote } from '../src/lib/voice/chat/notes.ts';
 import type { AppPort } from '../src/lib/voice/chat/ports';
 import type { SettingKey, SettingValue } from '../src/lib/voice/chat/settings';
 import type {
@@ -90,9 +91,9 @@ export function fakeApp(): FakeApp {
       return true;
     },
     forget: (note) => {
-      const before = app.notes.length;
-      app.notes = app.notes.filter((n) => n !== note);
-      return before - app.notes.length;
+      const res = dropNote(app.notes, note);
+      app.notes = res.notes;
+      return res.state;
     },
   };
   return app;

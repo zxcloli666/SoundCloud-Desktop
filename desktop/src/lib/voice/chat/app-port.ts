@@ -9,7 +9,7 @@ import { applySetting, readSettings } from './app-settings';
 import type { Brief } from './context';
 import { chatIpc } from './ipc';
 import { goTo } from './navigator';
-import { addNote, dropNotes } from './notes';
+import { addNote, dropNote, type Forgot } from './notes';
 import { type CurrentLinks, type Page, pageTarget, type SettingsSection } from './pages';
 import type { AppPort, OpenResult } from './ports';
 
@@ -68,11 +68,11 @@ function remember(note: string): boolean {
   return true;
 }
 
-function forget(note: string): number {
+function forget(note: string): Forgot {
   const store = useVoiceStore.getState();
-  const next = dropNotes(store.notes, note);
-  store.setNotes(next);
-  return store.notes.length - next.length;
+  const res = dropNote(store.notes, note);
+  if (res.state === 'ok') store.setNotes(res.notes);
+  return res.state;
 }
 
 export const appPort: AppPort = {

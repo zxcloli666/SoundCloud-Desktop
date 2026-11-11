@@ -18,7 +18,7 @@ import {
   liveDialog,
   withExchange,
 } from '../src/lib/voice/chat/dialog.ts';
-import { addNote, dropNotes, NOTE_MAX, NOTES_CAP } from '../src/lib/voice/chat/notes.ts';
+import { addNote, dropNote, NOTE_MAX, NOTES_CAP } from '../src/lib/voice/chat/notes.ts';
 import { pageName, pageTarget } from '../src/lib/voice/chat/pages.ts';
 import { chatTools } from '../src/lib/voice/chat/tools/index.ts';
 import type { CallResult, ChatMessage, ChatTool } from '../src/lib/voice/chat/types';
@@ -223,13 +223,25 @@ test('notes: trimmed, deduplicated, capped, the oldest goes first', () => {
   assert.equal(notes[NOTES_CAP - 1], `факт ${NOTES_CAP + 4}`);
 });
 
-test('notes: forget by the same text, then by a part of it, never by a scrap', () => {
+test('notes: forget by the same text, or by a part that fits one note only', () => {
+  const notes = ['Зовут Аня', 'Любит джаз и босса-нову', 'Не любит рэп', 'Любит'];
+  assert.deepEqual(dropNote(notes, 'зовут аня.'), { notes: notes.slice(1), state: 'ok' });
+  assert.deepEqual(dropNote(notes, 'джаз'), {
+    notes: ['Зовут Аня', 'Не любит рэп', 'Любит'],
+    state: 'ok',
+  });
+  assert.deepEqual(dropNote(notes, 'любит'), {
+    notes: ['Зовут Аня', 'Любит джаз и босса-нову', 'Не любит рэп'],
+    state: 'ok',
+  });
+});
+
+test('notes: a part that fits several notes removes none of them', () => {
   const notes = ['Зовут Аня', 'Любит джаз и босса-нову', 'Не любит рэп'];
-  assert.deepEqual(dropNotes(notes, 'зовут аня.'), notes.slice(1));
-  assert.deepEqual(dropNotes(notes, 'джаз'), ['Зовут Аня', 'Не любит рэп']);
-  assert.equal(dropNotes(notes, 'а'), notes);
-  assert.equal(dropNotes(notes, '  '), notes);
-  assert.deepEqual(dropNotes(notes, 'любит'), ['Зовут Аня']);
+  assert.deepEqual(dropNote(notes, 'любит'), { notes, state: 'ambiguous' });
+  assert.deepEqual(dropNote(notes, 'металл'), { notes, state: 'not_found' });
+  assert.deepEqual(dropNote(notes, 'а'), { notes, state: 'not_found' });
+  assert.deepEqual(dropNote(notes, '  '), { notes, state: 'not_found' });
 });
 
 test('pages map to routes; pages of the current track need one', () => {
