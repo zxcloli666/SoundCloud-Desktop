@@ -1,3 +1,5 @@
+use super::ctx::Ctx;
+use super::talk;
 use crate::lexicon::{self, IMPERATIVES, NEG_FOLLOW, NEG_STEMS, PLAY_STRONG, REMARK_START};
 use crate::normalize::Tok;
 use crate::types::Intent;
@@ -60,6 +62,9 @@ fn cuttable(toks: &[Tok], k: usize) -> bool {
 }
 
 pub fn remark(toks: &[Tok]) -> Option<usize> {
+    if talk::sentence(&Ctx::new(toks)) {
+        return None;
+    }
     (1..toks.len().saturating_sub(1))
         .filter(|&k| REMARK_START.contains(&toks[k].w.as_str()))
         .filter(|&k| {

@@ -135,6 +135,10 @@ pub const REPORT: &[&str] = &[
 
 pub const SUBJECTS: &[&str] = &["я", "мы", "он", "она", "они"];
 
+pub const CLAUSE_SUBJECTS: &[&str] = &[
+    "я", "ты", "мы", "вы", "он", "она", "они", "сам", "сама", "сами",
+];
+
 pub const SWEARS_AMB: &[&str] = &["нахер", "нахрен", "нафиг", "нафик"];
 
 pub const COMPLAINT: &[&str] = &[

@@ -4,6 +4,7 @@ mod indirect;
 mod library;
 mod play;
 mod seek;
+mod talk;
 mod transport;
 mod volume;
 
@@ -28,7 +29,7 @@ pub fn detect(toks: &[Tok]) -> Detected {
         c.w.windows(2)
             .any(|p| lexicon::stem(lexicon::NEXT_STRONG, p[0]) && p[1] == "раз");
     let sarcasm = c.has(&["еще"]) && c.has(&["раз"]) && c.has(lexicon::JUNK);
-    if next_time || sarcasm {
+    if next_time || sarcasm || talk::sentence(&c) {
         return Detected::blocked();
     }
     if let Some(d) = indirect::detect(&c) {
