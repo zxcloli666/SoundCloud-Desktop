@@ -85,6 +85,20 @@ test('seek forward defaults to ten seconds', async () => {
   assert.equal(port.state.position, 39);
 });
 
+test('a position is said in minutes and seconds and shown as a clock', async () => {
+  const said = async (seconds: number, lang: 'ru' | 'en') => {
+    const res = await execute(command('seek_to', { number: seconds }), fakePort(), ctx([], lang));
+    return [res.outcome.speech, res.outcome.display];
+  };
+  assert.deepEqual(await said(90, 'ru'), ['Перематываю на 1 минуту 30 секунд', '1:30']);
+  assert.deepEqual(await said(600, 'ru'), ['Перематываю на 10 минут', '10:00']);
+  assert.deepEqual(await said(45, 'ru'), ['Перематываю на 45 секунд', '0:45']);
+  assert.deepEqual(await said(122, 'ru'), ['Перематываю на 2 минуты 2 секунды', '2:02']);
+  assert.deepEqual(await said(90, 'en'), ['Jumping to 1 minute 30 seconds', '1:30']);
+  assert.deepEqual(await said(600, 'en'), ['Jumping to 10 minutes', '10:00']);
+  assert.deepEqual(await said(61, 'en'), ['Jumping to 1 minute 1 second', '1:01']);
+});
+
 test('commands that need a track fail politely without one', async () => {
   const port = fakePort({ track: null, queue: [] });
   const res = await execute(command('like'), port, ctx());

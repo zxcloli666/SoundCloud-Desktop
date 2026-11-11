@@ -55,12 +55,35 @@ export interface ReplyVars {
 
 type Line = (v: ReplyVars) => Reply;
 
-function ruSeconds(n: number): string {
+type Forms = [one: string, few: string, many: string];
+
+const RU_SECONDS: Forms = ['секунду', 'секунды', 'секунд'];
+const RU_MINUTES: Forms = ['минуту', 'минуты', 'минут'];
+const EN_SECONDS: Forms = ['second', 'seconds', 'seconds'];
+const EN_MINUTES: Forms = ['minute', 'minutes', 'minutes'];
+
+function ruCount(n: number, [one, few, many]: Forms): string {
   const mod10 = n % 10;
   const mod100 = n % 100;
-  if (mod10 === 1 && mod100 !== 11) return `${n} секунду`;
-  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return `${n} секунды`;
-  return `${n} секунд`;
+  if (mod10 === 1 && mod100 !== 11) return `${n} ${one}`;
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return `${n} ${few}`;
+  return `${n} ${many}`;
+}
+
+function enCount(n: number, [one, , many]: Forms): string {
+  return `${n} ${n === 1 ? one : many}`;
+}
+
+function ruSeconds(n: number): string {
+  return ruCount(n, RU_SECONDS);
+}
+
+function position(n: number, count: typeof ruCount, minutes: Forms, seconds: Forms): string {
+  const m = Math.floor(n / 60);
+  const s = Math.floor(n % 60);
+  if (m === 0) return count(s, seconds);
+  if (s === 0) return count(m, minutes);
+  return `${count(m, minutes)} ${count(s, seconds)}`;
 }
 
 function clock(n: number): string {
@@ -89,7 +112,10 @@ const RU: Record<ReplyKey, Line> = {
   previous: () => ({ speech: 'Предыдущий трек', display: 'Назад' }),
   seek_forward: (v) => ({ speech: `Вперёд на ${ruSeconds(v.n ?? 0)}`, display: `+${v.n} с` }),
   seek_backward: (v) => ({ speech: `Назад на ${ruSeconds(v.n ?? 0)}`, display: `−${v.n} с` }),
-  seek_to: (v) => ({ speech: `Перематываю на ${clock(v.n ?? 0)}`, display: clock(v.n ?? 0) }),
+  seek_to: (v) => ({
+    speech: `Перематываю на ${position(v.n ?? 0, ruCount, RU_MINUTES, RU_SECONDS)}`,
+    display: clock(v.n ?? 0),
+  }),
   volume_set: (v) => same(`Громкость ${v.n}`),
   volume_up: (v) => ({ speech: `Громче, ${v.n}`, display: `Громкость ${v.n}` }),
   volume_down: (v) => ({ speech: `Тише, ${v.n}`, display: `Громкость ${v.n}` }),
@@ -145,7 +171,10 @@ const EN: Record<ReplyKey, Line> = {
   previous: () => ({ speech: 'Previous track', display: 'Back' }),
   seek_forward: (v) => ({ speech: `Forward ${v.n} seconds`, display: `+${v.n} s` }),
   seek_backward: (v) => ({ speech: `Back ${v.n} seconds`, display: `−${v.n} s` }),
-  seek_to: (v) => ({ speech: `Jumping to ${clock(v.n ?? 0)}`, display: clock(v.n ?? 0) }),
+  seek_to: (v) => ({
+    speech: `Jumping to ${position(v.n ?? 0, enCount, EN_MINUTES, EN_SECONDS)}`,
+    display: clock(v.n ?? 0),
+  }),
   volume_set: (v) => same(`Volume ${v.n}`),
   volume_up: (v) => ({ speech: `Louder, ${v.n}`, display: `Volume ${v.n}` }),
   volume_down: (v) => ({ speech: `Quieter, ${v.n}`, display: `Volume ${v.n}` }),
