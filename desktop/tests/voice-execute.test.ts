@@ -178,6 +178,47 @@ test('chat failures speak nothing and carry their code for the interface to word
   }
 });
 
+test('help goes to the chat when it is on and the reply is the answer', async () => {
+  const { asked, chat } = chatting({ status: 'ok', say: 'Умею вот что.', marks: [] });
+  const cmd = command('help', { heard: 'что умеешь' });
+  const res = await execute(cmd, fakePort(), { ...ctx(), chat });
+  assert.deepEqual(asked, ['что умеешь']);
+  assert.equal(res.kind, 'chat');
+  assert.deepEqual(res.outcome, { ok: true, speech: '', display: 'Умею вот что.', undo: false });
+});
+
+test('help keeps the fixed reply when the chat is off, fails or says nothing', async () => {
+  const cmd = command('help', { heard: 'что умеешь' });
+  const fixed = await execute(cmd, fakePort(), ctx());
+  assert.equal(fixed.kind, 'done');
+  assert.match(fixed.outcome.speech, /пауза.*громкость/);
+  const ends: TurnEnd[] = [
+    { status: 'failed', code: 'unavailable', say: 'Ну', marks: [] },
+    { status: 'failed', code: 'rate_limited', say: '', marks: [] },
+    { status: 'ok', say: ' ', marks: [] },
+  ];
+  for (const end of ends) {
+    const { asked, chat } = chatting(end);
+    const res = await execute(cmd, fakePort(), { ...ctx(), chat });
+    assert.deepEqual(asked, ['что умеешь']);
+    assert.equal(res.kind, 'done');
+    assert.deepEqual(res.outcome, fixed.outcome);
+    assert.equal(res.chat, undefined);
+  }
+  const remote = chatting({ status: 'ok', say: 'Умею вот что.', marks: [] });
+  const speaker = command('help', { heard: 'что умеешь', source: 'remote' });
+  const res = await execute(speaker, fakePort(), { ...ctx(), chat: remote.chat });
+  assert.deepEqual(res.outcome, fixed.outcome);
+  assert.deepEqual(remote.asked, []);
+});
+
+test('help cancelled in the chat stays quiet, the fixed reply is not spoken after it', async () => {
+  const { chat } = chatting({ status: 'cancelled', say: 'Умею', marks: [] });
+  const res = await execute(command('help', { heard: 'помощь' }), fakePort(), { ...ctx(), chat });
+  assert.equal(res.kind, 'cancelled');
+  assert.equal(res.outcome.speech, '');
+});
+
 test('a cancelled chat is quiet and an empty reply is ignored', async () => {
   const cancelled = chatting({ status: 'cancelled', say: 'Сей', marks: [] });
   const res = await execute(command('none'), fakePort(), { ...ctx(), chat: cancelled.chat });

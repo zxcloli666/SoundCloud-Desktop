@@ -205,6 +205,16 @@ export async function revert(
   return removeEntry(stack, entry.id);
 }
 
+async function talk(cmd: VoiceCommand, port: PlayerPort, ctx: ExecuteContext): Promise<StepResult> {
+  const help = cmd.intent === 'help';
+  const plain = help
+    ? result('done', reply(ctx.lang, 'help'), cmd, ctx.stack)
+    : result('ignored', { speech: '', display: cmd.heard }, cmd, ctx.stack);
+  if (!ctx.chat || !cmd.heard.trim() || cmd.source === 'remote') return plain;
+  const res = chatResult(cmd, await ctx.chat(cmd, port, ctx), plain);
+  return help && res.kind === 'failed' ? { ...plain, stack: res.stack } : res;
+}
+
 export async function execute(
   cmd: VoiceCommand,
   port: PlayerPort,
@@ -220,12 +230,7 @@ export async function execute(
       : reply(lang, 'ask_one', { first });
     return result('ask', r, cmd, stack);
   }
-  if (cmd.intent === 'none') {
-    const ignored = result('ignored', { speech: '', display: cmd.heard }, cmd, stack);
-    if (!ctx.chat || !cmd.heard.trim() || cmd.source === 'remote') return ignored;
-    return chatResult(cmd, await ctx.chat(cmd, port, ctx), ignored);
-  }
-  if (cmd.intent === 'help') return result('done', reply(lang, 'help'), cmd, stack);
+  if (cmd.intent === 'none' || cmd.intent === 'help') return talk(cmd, port, ctx);
 
   if (cmd.intent === 'undo') {
     const next = await undoTop(port, ctx);
