@@ -995,3 +995,178 @@ undo плиз	undo				english		both
 красава лоля	none				bare		both
 как дела	none				bare		both
 лолечка	none				bare		both
+плэй	resume				translit		both
+астанави музыку	stop				asr	pause	both
+стоп стоп стоп всё хватит	stop				asr		both
+перемотай на 1 30	seek_to			90	numbers	seek_forward	both
+назад на пол минуты	seek_backward			30	numbers		both
+в перед на трицать сек	seek_forward			30	asr		both
+включи с сорок пятой секунды	seek_to			45	numbers		both
+перемотай на две минуты пять секунд от начала	seek_to			125	numbers		both
+пере мотай секунд на двадцать примерно	seek_forward			20	numbers		both
+перемотай на пол торы минуты назад	seek_backward			90	asr		both
+сделайпотише	volume_down				asr		both
+громкость на тридцать 5	volume_set			35	numbers		both
+замьють звук	mute				translit		both
+добавь в избраное	like				asr		both
+отключи случайны порядок	shuffle_off				asr		both
+убери рипит	repeat_off				translit		both
+поставь на рипит	repeat_one				translit	repeat_all	both
+в очереть поставь земфиру	queue_add	artist	Земфира		asr		both
+следущим поставь сплин орбит бес сахара	queue_add	track	Сплин - Орбит без сахара		asr		both
+што это за трэк	now_playing				asr		both
+кто это по ёт	now_playing				asr		both
+как называеца эта песня	now_playing				asr		both
+поставь мои трэки	play_likes				asr		both
+за пусти мою валну	play_wave				asr		both
+рекомендацыи включи	play_wave				asr		both
+верни как была	undo				morphology		both
+какие есть каманды	help				asr		both
+включи короля льва	none				notfound		both
+в ключи кино ой нет не кино сплин давай	play	artist	Сплин		correction		both
+стоп кран сорвали	none				false_act		both
+следующую стой нет оставь эту	none				correction		both
+перемотай на тридцать секунд назад то есть вперёд	seek_forward			30	correction		both
+поставь на паузу а нет нет пусть играет	none				correction	resume	both
+ладно играй дальше	resume				command_name		both
+включи кукушку только не кино а гагариной	play	track	Полина Гагарина - Кукушка		correction		both
+добавь в очередь цепи нет не цепи притон	queue_add	track	Скриптонит - Притон		correction		both
+вперёд на десять нет на двадцать секунд	seek_forward			20	correction		both
+поставь плейлист для сна нет рано еще давай вечеринку	play	playlist	Вечеринка		correction		both
+включи дрейка тьфу ты дору	play	artist	Дора		correction		both
+перемотай на минуту тридцать ой нет на две тридцать	seek_to			150	correction		both
+пауза ой не пауза а следующий я хотел сказать	next				correction		both
+лайкни ой нет это не та песня не лайкай	none				correction		both
+звук на ноль а нет на десять хотя бы	volume_set			10	correction		both
+выключи нет не выключай просто на паузу поставь	pause				correction		both
+поставь на паузу нет не так сделай потише и переключи	volume_down+next				correction		both
+включи колдплей а ещё звук на половину	play+volume_set	artist	Coldplay	50	two_part		both
+включи уже что-нибудь и побыстрее	play_wave				two_part		both
+включи группу аукцион и сделай погромче	volume_up				notfound	none	both
+слушай лоля я тут устал как собака после работы включи пожалуйста что-нибудь спокойное а то голова раскалывается	play_wave				filler		both
+так ладно хватит этого нытья давай следующую уже сил нет это слушать	next				filler		both
+блин я вчера в машине у друга слышал такую песню мокрые кроссы вроде называется поставь её а	play	track	Тима Белорусских - Мокрые кроссы		filler		both
+поставь на паузу мне мама звонит я потом сама включу	pause				filler		both
+лоля ну ты же знаешь что я люблю короля и шута вот его и включи	play	artist	Король и Шут		filler		both
+ой всё надоело это старьё лоля включи мне пожалуйста макса коржа малый повзрослел и больше ничего не трогай	play	track	Макс Корж - Малый повзрослел		filler		both
+я не знаю что хочу послушать ну давай наверное нирвану что ли	play	artist	Nirvana		filler		both
+так стоп подожди выключи музыку мне надо подумать	stop				filler	pause	both
+вот эта песня огонь прям в сердечко добавь её в любимые	like				filler		both
+знаешь что мне этот трек вообще не нравится убери с него лайк	unlike				filler		both
+ну что ты молчишь лоля я же сказал музыку включи	play_wave				filler	resume	both
+короче слушай я сейчас в душ пойду сделай погромче чтобы там слышно было	volume_up				filler		both
+окей лоля спасибо хватит на сегодня выключай	stop				filler	pause	both
+мне кажется или стало слишком громко убавь немного	volume_down				filler		both
+гости расходятся так что давай звук на двадцать и хватит уже этого рэпа переключи	volume_set+next			20	filler		both
+ой подожди подожди вот это место классное верни чуть назад секунд на пять	seek_backward			5	filler		both
+лоля я на минутку отойду поставь пока на паузу ничего не переключай	pause				filler		both
+включи пожалуйста вот этот ну как его плейлист для тренировок воркаут	play	playlist	Workout		filler		both
+а помнишь была такая песня у земфиры искала вот её поставь пожалуйста	play	track	Земфира - Искала		filler		both
+а после этого включи мне пожалуйста экспонат ленинграда	queue_add	track	Ленинград - Экспонат		filler		both
+я не просил паузу включи обратно	resume				negative		both
+да не выключай ты совсем просто потише сделай	volume_down				negative		both
+а что это сейчас за песня играет не подскажешь	now_playing				indirect		both
+не могла бы ты поставить на паузу на секундочку	pause				indirect		both
+хочется чего-нибудь похожего на это	play_similar				indirect		both
+кто это поёт вообще и как называется	now_playing				indirect		both
+верни как было я случайно	undo				indirect		both
+сколько можно одно и то же выруби повтор	repeat_off				slang		both
+следующий раз я сама выберу что слушать	none				false_act		both
+я ему говорю сделай громче а он мне нет тише	none				false_act		both
+дальше я не помню как там поётся	none				false_act		both
+сделай потише свой телефон люди же спят	none				false_act		both
+тебе нравится эта песня или переключить	none				false_act		both
+назад назад отходим нас тут всех положат	none				false_act		both
+следующий пациент заходите	none				false_act		both
+шаг вперёд и два назад	none				false_act		both
+баста я больше в это не играю	none				false_act		both
+какой трек у тебя на звонке стоит	none				false_act		both
+дальше я сам разберусь спасибо	none				false_act		both
+хочу	none				bare	play	off
+хочу	none				bare		on
+группа крови	play	track	Кино - Группа крови		bare	album:Кино - Группа крови	off
+лоля выключи немедленно музыку	stop				plain	pause	both
+включи громче соседей всё равно нет дома	volume_up				plain		both
+плейлист тише едешь	play	playlist	Тише едешь		command_name		both
+группу брат поставь	play	artist	Брат		command_name		both
+сделай громче ничего не слышно	volume_up				plain		both
+бибера включи лоля	play	artist	Justin Bieber		slang		both
+слушай включи скрипа	play	artist	Скриптонит		slang		both
+коржа поставь лоля	play	artist	Макс Корж		morphology		both
+горшка нам поставь	play	artist	Король и Шут		slang		both
+включи быстренько мокрые кроссовки	play	track	Тима Белорусских - Мокрые кроссы		slang		both
+вруби нау	play	artist	Наутилус Помпилиус		slang		both
+включи ка арбенину	play	artist	Ночные Снайперы		slang		both
+запусти ариану пожалуйста	play	artist	Ariana Grande		slang		both
+мотыльков вруби лоля	play	artist	Мотыльки		ambiguous		both
+поставь быстренько некст левел	play	artist	Next Level		command_name		both
+плейлист чилл поставь	play	playlist	Chill		ambiguous		both
+группу альбом включи	play	artist	Альбом		command_name		both
+альбом дальше включи	play	album	Мот - Дальше		command_name		both
+поставь группу которая называется плей	play	artist	Play		command_name		both
+включи притон в исполнении дорадуры	play	track	Дорадура - Притон		ambiguous		both
+включи притон только оригинал не трибьют	play	track	Скриптонит - Притон		ambiguous		both
+включи караоке версию блайндинг лайтс	play	track	Weeknd Karaoke - Blinding Lights		ambiguous		both
+давай земфиру только не хочу а искала	play	track	Земфира - Искала		correction		both
+включи короля и шута проклятый старый дом	play	artist	Король и Шут		notfound		both
+включи сначала притон а потом цепи	play+queue_add	track+track	Скриптонит - Притон+Скриптонит - Цепи		two_part		both
+кино вчера смотрели такое себе	none				false_act		both
+звери а не люди	none				false_act		both
+зашафли плейлист	shuffle_on				slang		both
+анлайкни	unlike				slang		both
+замьють нахрен	mute				slang		both
+рестартни трек	seek_to			0	slang	previous	both
+паузни на секунду	pause				slang		both
+сейвни в лайки	like				slang		both
+отжми паузу	resume				slang		both
+продолжай чё встала	resume				filler		both
+громкость на соточку	volume_set			100	numbers		both
+э слышь убавь звук в натуре	volume_down				slang		both
+братва врубай музон по красоте	play_wave				slang		both
+завязывай с этой музыкой	stop				slang	pause	both
+харэ орать сделай тише	volume_down				slang		both
+откати как было	undo				slang		both
+сука громче сделай нихуя не слышно	volume_up				filler		both
+да заткнись ты нахуй	mute				slang	pause;stop	both
+переключи блять эту хуйню	next				filler		both
+следующую сука следующую	next				filler		both
+заебала эта песня	next				indirect		both
+да не выключай а потише сделай	volume_down				correction		both
+ну ё моё опять эта песня дальше давай	next				filler		both
+в ключи что нибудь душевное	play_wave				asr		both
+сделай по громче ик	volume_up				asr		both
+всё хватит выключай	stop				filler	pause	both
+що це грає	now_playing				regional		both
+та выключи ты цю музыку	stop				regional	pause	both
+што зараз грае	now_playing				regional		both
+убавь маленько	volume_down				regional		both
+сделай пожалуйста чтобы играло	resume				indirect	play_wave	both
+убавь звук в этой штуке	volume_down				filler		both
+а ну ка верни ту песню что была до этого	previous				plain		both
+какая это мелодия играет скажи пожалуйста	now_playing				filler		both
+что ты вообще можешь милая	help				filler		both
+skip this shit	next				english		both
+i can't hear anything	volume_up				indirect		both
+shut up	mute				english	pause;stop	both
+плиз стоп зе мьюзик	stop				translit	pause	both
+плей май лайкс	play_likes				translit		both
+тёрн ит ап	volume_up				translit		both
+вольюм даун	volume_down				translit		both
+рипит офф	repeat_off				translit		both
+вот из зис сонг	now_playing				translit		both
+хелп ми что ты умеешь	help				translit		both
+мотни на две тридцать	seek_to			150	numbers		both
+кинь в любимые	like				slang		both
+хватит мешать играй по порядку	shuffle_off				indirect		both
+крути по кругу весь плейлист	repeat_all				slang		both
+сними с повтора	repeat_off				plain		both
+выруби рандом	shuffle_off				slang		both
+включи чё нить по кайфу	play_wave				slang		both
+поставь что нибудь для души	play_wave				plain		both
+не не не верни как было	undo				filler		both
+я ничего не слышу что ты там бормочешь	none				false_act		both
+достала уже эта жара	none				false_act		both
+дальше сам разберёшься	none				false_act		both
+я сказал не громче а тише	volume_down				correction		both
+след трек	next				asr		both
+ну такое	none				bare		both
