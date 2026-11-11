@@ -8,7 +8,7 @@ struct Time {
     found: bool,
     clock: bool,
     ordinal: bool,
-    counted: bool,
+    measured: bool,
     bare: Option<u32>,
 }
 
@@ -32,7 +32,7 @@ fn time(c: &Ctx) -> Time {
         found: false,
         clock: false,
         ordinal: false,
-        counted: false,
+        measured: false,
         bare: None,
     };
     let n = c.len();
@@ -43,14 +43,14 @@ fn time(c: &Ctx) -> Time {
             t.secs += v;
             t.found = true;
             t.clock = true;
-            t.counted = true;
+            t.measured = true;
             i += 1;
             continue;
         }
         if HALF_MINUTE.contains(&w) {
             t.secs += 30;
             t.found = true;
-            t.counted = true;
+            t.measured = true;
             i += 1;
             continue;
         }
@@ -58,7 +58,7 @@ fn time(c: &Ctx) -> Time {
             if let Some(per) = unit_secs(c.at(i + 1)) {
                 t.secs += per * 3 / 2;
                 t.found = true;
-                t.counted = true;
+                t.measured = true;
                 i += 2;
                 continue;
             }
@@ -76,21 +76,21 @@ fn time(c: &Ctx) -> Time {
             t.secs += count * per;
             t.found = true;
             if given.is_some() {
-                t.counted = true;
+                t.measured |= count != 1;
                 at += 1;
             } else if per == 60 {
                 if let Some(extra) = numbers::value(c.at(at)) {
                     if unit_secs(c.at(at + 1)).is_none() {
                         t.secs += extra;
                         t.clock = true;
-                        t.counted = true;
+                        t.measured = true;
                         at += 1;
                     }
                 }
             }
             if half_after(c, at) {
                 t.secs += per / 2;
-                t.counted = true;
+                t.measured = true;
                 at += 2;
             }
             i = at;
@@ -100,7 +100,7 @@ fn time(c: &Ctx) -> Time {
             i += 1;
             continue;
         };
-        t.counted = true;
+        t.measured |= count != 1;
         if let Some(position) = minutes_and_seconds(c, i) {
             t.secs += position;
             t.found = true;
@@ -157,8 +157,8 @@ fn minutes_and_seconds(c: &Ctx, i: usize) -> Option<u32> {
     let led = i > 0 && matches!(c.w[i - 1], "на" | "к" | "с" | "до");
     let mins = numbers::value(c.at(i)).filter(|m| *m < 60)?;
     let secs = numbers::value(c.at(i + 1)).filter(|s| *s < 60)?;
-    let counted = unit_secs(c.at(i + 2)).is_some() || matches!(c.at(i + 2), "ордин" | "доля");
-    (led && !counted).then_some(mins * 60 + secs)
+    let unit_next = unit_secs(c.at(i + 2)).is_some() || matches!(c.at(i + 2), "ордин" | "доля");
+    (led && !unit_next).then_some(mins * 60 + secs)
 }
 
 fn starts_time(w: &str) -> bool {
@@ -269,10 +269,11 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
     let minus = c.has(&["минус"]);
     let back_verb =
         c.has(BACK_VERBS) || c.has_stem(&["отмот"]) || c.has(&["вернись", "вернуться"]) || minus;
-    let on_time = c.at(0) == "на" && t.found && t.counted && !fwd && !back && !plus && !minus;
+    let on_time = c.at(0) == "на" && t.found && t.measured && !fwd && !back && !plus && !minus;
     let explicit_dir = back || (fwd && c.at(0) != "дальше");
     let has_dir = explicit_dir || (fwd && t.found);
-    let placed = !back && (from_start(c) || (t.found && since(c)));
+    let from = !back && t.found && since(c);
+    let placed = from || (!back && from_start(c));
 
     let triggered = if t.found || t.bare.is_some() {
         seek_verb
@@ -282,7 +283,7 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
             || (explicit_dir && t.bare.is_some())
             || ((skip_verb || has_dir || plus || minus) && t.found)
             || (back_verb && t.found)
-            || (placed && t.found && c.has(PLAY_STRONG))
+            || (from && c.has(PLAY_STRONG))
             || on_time
     } else {
         seek_verb && c.len() <= 4

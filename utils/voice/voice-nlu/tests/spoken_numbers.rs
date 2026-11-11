@@ -143,6 +143,10 @@ fn a_time_counted_from_the_start_or_played_from_is_a_position() {
     ] {
         assert_eq!(steps(text), want, "{text}");
     }
+    for name in ["включи 5 минут сначала", "включи 30 секунд от начала"]
+    {
+        assert_eq!(steps(name), "play", "{name}");
+    }
 }
 
 #[test]
@@ -183,6 +187,8 @@ fn a_length_of_time_after_a_pause_or_a_volume_step_is_not_a_seek() {
         ("на секунду", "none"),
         ("на секундочку", "none"),
         ("на минутку", "none"),
+        ("на одну секундочку", "none"),
+        ("на одну минуту", "none"),
         ("пауза на минуту тридцать", "pause"),
         ("пауза на 1:30", "pause"),
         ("стоп через 5 минут", "none"),
@@ -197,6 +203,8 @@ fn a_length_of_time_after_a_pause_or_a_volume_step_is_not_a_seek() {
         ),
         ("потише на 10", "volume_down 10"),
         ("на минуту тридцать", "seek_to 90"),
+        ("на одну минуту тридцать секунд", "seek_to 90"),
+        ("на две минуты", "seek_to 120"),
         ("на полминуты", "seek_to 30"),
         ("вперед на минутку", "seek_forward 60"),
         ("секундочку", "pause"),

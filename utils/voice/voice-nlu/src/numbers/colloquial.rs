@@ -150,10 +150,10 @@ pub fn colloquial(words: Vec<String>) -> Vec<String> {
 
 fn ordinal(w: &str, next: &str) -> Option<u32> {
     let listed = ORDINALS.iter().find(|(k, _)| *k == w).map(|(_, v)| *v);
-    listed.or_else(|| counting(w).filter(|_| time_unit(next)))
+    listed.or_else(|| stemmed(w).filter(|_| time_unit(next)))
 }
 
-fn counting(w: &str) -> Option<u32> {
+fn stemmed(w: &str) -> Option<u32> {
     let said = |stem: &str| {
         w.strip_prefix(stem)
             .is_some_and(|end| ORDINAL_ENDINGS.contains(&end))
