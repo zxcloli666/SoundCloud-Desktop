@@ -2,12 +2,15 @@ use super::ctx::Ctx;
 use super::indirect;
 use crate::anchor::finite;
 use crate::lexicon::{
-    self, AGREEMENT, BACKWARD, CLAUSE_SUBJECTS, COMPLAINT, COMPOUNDS, FORWARD, NEXT_STRONG,
-    PLAY_STRONG, PREV_STRONG, REMARK_START,
+    self, AGREEMENT, BACKWARD, CLAUSE_SUBJECTS, COMPLAINT, COMPOUNDS, DEMONSTRATIVES, DENY,
+    FORWARD, MUSIC_STEMS, NEXT_STRONG, PLAY_STRONG, PREV_STRONG, REMARK_START, SWEARS_AMB,
 };
 
 pub fn sentence(c: &Ctx) -> bool {
-    adverb_of_a_clause(c) || attribute_of_a_noun(c) || half_of_a_compound(c)
+    adverb_of_a_clause(c)
+        || attribute_of_a_noun(c)
+        || half_of_a_compound(c)
+        || complaint_about_a_thing(c)
 }
 
 fn adverb_of_a_clause(c: &Ctx) -> bool {
@@ -48,6 +51,23 @@ fn half_of_a_compound(c: &Ctx) -> bool {
     })
 }
 
+fn complaint_about_a_thing(c: &Ctx) -> bool {
+    complains(c) && !about_music(c) && names_a_thing(c, DEMONSTRATIVES)
+}
+
+fn complains(c: &Ctx) -> bool {
+    c.w.iter()
+        .any(|w| COMPLAINT.contains(w) && !SWEARS_AMB.contains(w))
+}
+
+fn about_music(c: &Ctx) -> bool {
+    c.has_stem(MUSIC_STEMS)
+}
+
+fn names_a_thing(c: &Ctx, determiners: &[&str]) -> bool {
+    (1..c.len()).any(|i| determiners.contains(&c.w[i - 1]) && own_noun(c.w[i]))
+}
+
 fn own_verb(w: &str) -> bool {
     finite(w) && !command_word(w)
 }
@@ -57,5 +77,5 @@ fn own_noun(w: &str) -> bool {
 }
 
 fn command_word(w: &str) -> bool {
-    lexicon::ALL_LISTS.iter().any(|list| list.contains(&w))
+    !DENY.contains(&w) && lexicon::ALL_LISTS.iter().any(|list| list.contains(&w))
 }
