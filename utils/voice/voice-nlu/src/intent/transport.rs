@@ -70,6 +70,9 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
             return Some(Detected::new(Intent::Stop, vec![i]));
         }
     }
+    if plays_on(c) {
+        return Some(Detected::new(Intent::Resume, vec![]));
+    }
     if let Some(i) = c.pos(RESUME_WORDS) {
         let strays = c.stray_words(&base(c, i));
         if strays.len() <= 1
@@ -94,4 +97,10 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
         }
     }
     None
+}
+
+fn plays_on(c: &Ctx) -> bool {
+    (1..c.len()).any(|i| {
+        PLAYING_ON.contains(&c.w[i - 1]) && c.w[i] == "дальше" && c.stray(&[i - 1, i]) == 0
+    })
 }

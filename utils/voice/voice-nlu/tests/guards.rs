@@ -258,3 +258,18 @@ fn a_wish_word_said_alone_names_nothing_and_is_not_a_command() {
         ("хочу музыку", "play_wave"),
     ]);
 }
+
+#[test]
+fn playing_on_further_is_resume_not_the_next_track() {
+    acts(&[
+        ("ладно играй дальше", "resume"),
+        ("играй дальше", "resume"),
+        ("играйте дальше пожалуйста", "resume"),
+        ("пусть играет дальше", "resume"),
+        ("хочу слушать дальше", "resume"),
+        ("давай дальше", "next"),
+        ("включи дальше", "next"),
+        ("дальше давай", "next"),
+        ("дальше", "next"),
+    ]);
+}
