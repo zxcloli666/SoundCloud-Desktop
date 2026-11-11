@@ -458,3 +458,23 @@ fn the_listener_after_a_play_verb_does_not_start_a_remark() {
         assert_eq!(intents(text), [intent], "{text}");
     }
 }
+
+#[test]
+fn a_pointing_word_before_a_kind_word_is_not_part_of_the_name() {
+    let cases = [
+        (
+            "включи пожалуйста вот этот ну как его плейлист для тренировок воркаут",
+            "для тренировок воркаут",
+        ),
+        ("включи вот эту песню кукушка", "кукушка"),
+        ("поставь этот альбом группа крови", "группа крови"),
+    ];
+    for (text, name) in cases {
+        let said = steps(text);
+        assert_eq!(said[0].intent, Intent::Play, "{text}");
+        assert!(asks_for(&said[0], name), "{text}");
+        let pointed = |q: &voice_nlu::Variant| q.text.contains("эт") || q.text.contains("вот");
+        assert!(!said[0].queries.iter().any(pointed), "{text}");
+    }
+    assert!(asks_for(&steps("включи это любовь")[0], "это любовь"));
+}
