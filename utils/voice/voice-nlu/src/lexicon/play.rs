@@ -190,6 +190,9 @@ pub const PRE: &[&str] = &[
     "okay",
     "ok",
     "on",
+    "немедленно",
+    "срочно",
+    "живо",
 ];
 
 pub const GENERIC: &[&str] = &[

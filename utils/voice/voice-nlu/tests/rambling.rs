@@ -60,3 +60,34 @@ fn a_word_said_again_around_an_interjection_is_said_once() {
     }
     assert_eq!(words("следующую сука следующую"), "следующую");
 }
+
+#[test]
+fn street_padding_around_a_command_is_left_out() {
+    let cases = [
+        ("э слышь убавь звук в натуре", Intent::VolumeDown),
+        ("в натуре сделай потише", Intent::VolumeDown),
+        ("слышь убавь звук по-братски", Intent::VolumeDown),
+        ("ну ё моё опять эта песня дальше давай", Intent::Next),
+        ("ёлки-палки выключи", Intent::Stop),
+    ];
+    for (text, intent) in cases {
+        assert_eq!(intents(text), [intent], "{text}");
+    }
+}
+
+#[test]
+fn a_word_of_hurry_is_not_part_of_the_command() {
+    let cases = [
+        ("лоля выключи немедленно музыку", Intent::Stop),
+        ("срочно поставь на паузу", Intent::Pause),
+        ("живо переключи", Intent::Next),
+        ("сделай немедленно потише", Intent::VolumeDown),
+    ];
+    for (text, intent) in cases {
+        assert_eq!(intents(text), [intent], "{text}");
+    }
+    let named = &steps("включи немедленно кино")[0];
+    assert_eq!(named.intent, Intent::Play);
+    let said = |q: &&voice_nlu::Variant| !q.kept_fillers;
+    assert!(named.queries.iter().filter(said).all(|q| q.text == "кино"));
+}
