@@ -138,8 +138,13 @@ fn a_loan_verb_keeps_its_meaning_under_russian_prefixes_and_endings() {
     ] {
         assert_eq!(steps(heard), [want], "{heard}");
     }
-    for silent in ["рестартни сервер", "загрузи сейв", "где мой сейв"]
-    {
+    for silent in [
+        "рестартни сервер",
+        "нужен рестарт",
+        "после рестарта",
+        "загрузи сейв",
+        "где мой сейв",
+    ] {
         assert_eq!(steps(silent), ["none"], "{silent}");
     }
     assert_eq!(steps("замути что нибудь"), ["play_wave"]);
