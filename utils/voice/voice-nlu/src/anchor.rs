@@ -8,7 +8,7 @@ pub struct Found {
     pub det: Detected,
 }
 
-fn allowed(i: Intent) -> bool {
+pub fn allowed(i: Intent) -> bool {
     !matches!(
         i,
         Intent::None
@@ -22,7 +22,7 @@ fn allowed(i: Intent) -> bool {
     )
 }
 
-fn finite(w: &str) -> bool {
+pub fn finite(w: &str) -> bool {
     VERB_ENDINGS.iter().any(|e| w.ends_with(e))
 }
 
@@ -55,7 +55,7 @@ fn single_command(t: &Tok) -> bool {
     !intent::indirect_hit(one) && intent::detect(one).intent != Intent::None
 }
 
-fn tail_ok(tail: &[Tok], window: &[Tok]) -> bool {
+pub fn tail_ok(tail: &[Tok], window: &[Tok]) -> bool {
     let last = window.last().map(|t| t.w.as_str()).unwrap_or("");
     if BLOCK_TAIL.contains(&last) {
         return false;

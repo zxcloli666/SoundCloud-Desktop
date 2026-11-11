@@ -149,3 +149,174 @@ fn bringing_the_track_back_by_a_time_seeks_backward() {
         assert_eq!((said[0].intent, said[0].number), (intent, number), "{text}");
     }
 }
+
+fn acts_on_its_own(step: &Parsed) -> bool {
+    !matches!(
+        step.intent,
+        Intent::None | Intent::Play | Intent::QueueAdd | Intent::PlaySimilar
+    )
+}
+
+#[test]
+fn a_command_said_after_talk_is_found() {
+    let cases = [
+        ("я сейчас в душ пойду сделай погромче", Intent::VolumeUp),
+        ("у меня голова болит сделай потише", Intent::VolumeDown),
+        ("дети спят сделай потише", Intent::VolumeDown),
+        ("я на минутку отойду поставь на паузу", Intent::Pause),
+        ("мне звонят поставь на паузу", Intent::Pause),
+        ("мы уходим выключи музыку", Intent::Stop),
+        (
+            "ой подожди подожди вот это место классное верни чуть назад секунд на пять",
+            Intent::SeekBackward,
+        ),
+        (
+            "вот эта песня огонь прям в сердечко добавь её в любимые",
+            Intent::Like,
+        ),
+        (
+            "знаешь что мне этот трек вообще не нравится убери с него лайк",
+            Intent::Unlike,
+        ),
+        (
+            "мне кажется или стало слишком громко убавь немного",
+            Intent::VolumeDown,
+        ),
+        (
+            "так стоп подожди выключи музыку мне надо подумать",
+            Intent::Stop,
+        ),
+        (
+            "короче слушай я сейчас в душ пойду сделай погромче чтобы там слышно было",
+            Intent::VolumeUp,
+        ),
+        ("мне скучно включи что-нибудь весёлое", Intent::PlayWave),
+        (
+            "сколько можно одно и то же выруби повтор",
+            Intent::RepeatOff,
+        ),
+    ];
+    for (text, intent) in cases {
+        assert_eq!(intents(text), [intent], "{text}");
+    }
+    assert_eq!(
+        intents(
+            "гости расходятся так что давай звук на двадцать и хватит уже этого рэпа переключи"
+        ),
+        [Intent::VolumeSet, Intent::Next]
+    );
+}
+
+#[test]
+fn a_lone_verb_after_talk_acts_only_on_talk_about_the_music() {
+    let asked = [
+        ("хватит уже этого рэпа переключи", Intent::Next),
+        ("окей лоля спасибо хватит на сегодня выключай", Intent::Stop),
+        ("достало уже переключи", Intent::Next),
+        ("это не та песня переключи", Intent::Next),
+        ("музыка мешает выключи", Intent::Stop),
+        ("мне кажется слишком громко убавь", Intent::VolumeDown),
+    ];
+    for (text, intent) in asked {
+        assert_eq!(intents(text), [intent], "{text}");
+    }
+    let room = [
+        "там суп кипит выключи",
+        "там суп кипит убавь",
+        "ребёнок проснулся выключи",
+        "чайник свистит выключи",
+        "этот сериал надоел выключи",
+        "хватит болтать переключи канал",
+        "я не расслышал повтори",
+        "ну я не знаю давай дальше",
+        "ну ладно я понял давай следующую",
+    ];
+    for text in room {
+        assert_eq!(intents(text), [Intent::None], "{text}");
+    }
+}
+
+#[test]
+fn a_play_request_after_a_complaint_or_a_wish_to_listen_names_what_to_play() {
+    let cases = [
+        ("надоело это старьё включи кино", "кино"),
+        ("задолбала эта песня поставь басту", "баста"),
+        (
+            "я не знаю что хочу послушать ну давай наверное нирвану что ли",
+            "наверное нирвана",
+        ),
+        ("чего бы послушать давай сплин", "сплин"),
+    ];
+    for (text, name) in cases {
+        let said = steps(text);
+        assert_eq!(said.len(), 1, "{text}");
+        assert_eq!(said[0].intent, Intent::Play, "{text}");
+        assert!(said[0].queries.iter().any(|q| q.text == name), "{text}");
+    }
+    for text in ["я устал давай завтра", "я пошёл давай до завтра"]
+    {
+        assert_eq!(intents(text), [Intent::None], "{text}");
+    }
+}
+
+#[test]
+fn the_speaker_insisting_on_their_own_words_is_not_a_report() {
+    let insisted = [
+        (
+            "ну что ты молчишь лоля я же сказал музыку включи",
+            Intent::PlayWave,
+        ),
+        ("я же просила сделай потише", Intent::VolumeDown),
+    ];
+    for (text, intent) in insisted {
+        assert_eq!(intents(text), [intent], "{text}");
+    }
+    let reported = [
+        "она сказала включи музыку",
+        "я сказал поставь на паузу",
+        "жена сказала сделай потише",
+        "он крикнул давай следующую",
+        "я ему говорю сделай потише а он не слышит",
+        "я такой сделай потише а она ноль внимания",
+        "мне мама всегда говорила сделай потише",
+        "в фильме он говорит поставь на паузу",
+        "я читаю инструкцию тут написано нажми стоп",
+    ];
+    for text in reported {
+        assert!(!steps(text).iter().any(acts_on_its_own), "{text}");
+    }
+}
+
+#[test]
+fn talk_that_only_mentions_command_words_stays_silent() {
+    let room = [
+        "я вчера включил басту и уснул",
+        "давай потом включим",
+        "если включишь громче соседи придут",
+        "я пошла в магазин выключи плиту через десять минут",
+        "я не слышу телевизор сделай потише",
+        "ты куда пошёл поставь на место",
+        "я занята поставь чайник",
+        "мы уже уходим выключи утюг",
+        "мне жарко убавь отопление",
+        "я за рулём переключи передачу",
+        "я сейчас приду не переключай",
+        "ты не туда повернул сдай назад",
+        "я плохо слышу говори громче",
+        "убавь огонь и перемешай а то пригорит",
+        "я устал как собака после работы",
+        "паузу поставь лайк поставь я сказал",
+    ];
+    for text in room {
+        assert!(!steps(text).iter().any(acts_on_its_own), "{text}");
+    }
+    let named = [
+        ("басту дальше поставь", "басту дальше"),
+        ("тише едешь плейлист включи", "тише едешь"),
+    ];
+    for (text, name) in named {
+        let said = steps(text);
+        assert_eq!(said[0].intent, Intent::Play, "{text}");
+        assert!(said[0].queries.iter().any(|q| q.text == name), "{text}");
+    }
+}
