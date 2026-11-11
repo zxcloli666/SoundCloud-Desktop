@@ -53,6 +53,27 @@ fn intents_and_numbers() {
 }
 
 #[test]
+fn a_greeting_after_a_play_verb_is_kept_as_a_name() {
+    let named = [
+        "включи привет",
+        "поставь привет, пожалуйста",
+        "вруби привет",
+    ];
+    let plain = ["включи", "включи, пожалуйста", "привет, включи"];
+    for text in named {
+        let p = parse(text);
+        assert_eq!(p.intent, Intent::Resume, "{text}");
+        assert!(!p.alt.is_empty(), "{text}");
+        assert!(p.alt.iter().all(|name| name.text == "привет"), "{text}");
+    }
+    for text in plain {
+        let p = parse(text);
+        assert_eq!(p.intent, Intent::Resume, "{text}");
+        assert!(p.alt.is_empty(), "{text}");
+    }
+}
+
+#[test]
 fn slots_split_artist_and_title() {
     let p = parse("включи песню притон от скриптонита");
     assert_eq!(p.intent, Intent::Play);

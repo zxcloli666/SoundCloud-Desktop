@@ -102,6 +102,8 @@ pub(crate) fn parse_toks(text: &str, mut toks: Vec<Tok>) -> (Parsed, bool) {
     };
     let alt = if cut {
         whole_name(&original)
+    } else if det.intent == Intent::Resume {
+        greeting(&toks)
     } else {
         Vec::new()
     };
@@ -144,6 +146,23 @@ pub(crate) fn whole_name(toks: &[Tok]) -> Vec<Variant> {
     }
     let s = slots::extract(&rest, &intent::Detected::none());
     variants::expand(&s.raw, false)
+}
+
+fn greeting(toks: &[Tok]) -> Vec<Variant> {
+    let verb = toks
+        .iter()
+        .position(|t| lexicon::PLAY_STRONG.contains(&t.w.as_str()));
+    let after = verb.map_or(&[][..], |at| &toks[at + 1..]);
+    let said = after
+        .iter()
+        .filter(|t| lexicon::GREETINGS.contains(&t.w.as_str()));
+    let name: Vec<Tok> = said.cloned().collect();
+    let raw = slots::Raw {
+        full: name.clone(),
+        plain: name,
+        ..slots::Raw::default()
+    };
+    variants::expand(&raw, false)
 }
 
 fn cancelled(text: &str, toks: &[Tok]) -> Parsed {

@@ -201,6 +201,24 @@ fn a_phrase_with_a_verb_is_read_the_same_either_way() {
 }
 
 #[test]
+fn a_greeting_after_a_play_verb_plays_the_title_it_names_either_way() {
+    let nameless = "kind\tname\tartist\tpopularity\taliases\ntrack\tАло\tМакс Корж\t1500000\t\n";
+    let named = ["включи привет", "поставь привет, пожалуйста"];
+    let plain = ["включи", "включи, пожалуйста", "привет, включи"];
+    for bare in BOTH {
+        for text in named {
+            let outcome = heard(text, bare);
+            assert_eq!(told(&outcome), "play act Zivert - Привет", "{text}");
+        }
+        for text in plain {
+            assert_eq!(told(&heard(text, bare)), "resume", "{text}");
+        }
+        let outcome = heard_in(nameless, "включи привет", bare);
+        assert_eq!(told(&outcome), "resume");
+    }
+}
+
+#[test]
 fn nothing_found_hands_over_nothing() {
     assert!(handed("абракадабра").is_empty());
 }

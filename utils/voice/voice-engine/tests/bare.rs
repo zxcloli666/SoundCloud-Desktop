@@ -158,6 +158,20 @@ fn a_phrase_with_a_verb_is_read_the_same_with_the_chat_on_or_off() {
 }
 
 #[test]
+fn a_greeting_after_a_play_verb_plays_its_title_with_the_chat_on_or_off() {
+    for chat in [true, false] {
+        let rig = rig(chat);
+        let named = settled(&rig, "включи привет");
+        let Some(DecisionEvent::Act { pick }) = &named.decision else {
+            panic!("expected act, got {:?}", named.decision);
+        };
+        assert_eq!(named.intent, "play");
+        assert_eq!(pick.entity.name, "Привет");
+        assert_eq!(settled(&rig, "включи, пожалуйста").intent, "resume");
+    }
+}
+
+#[test]
 fn the_hits_reach_the_ui_as_entities_and_are_left_out_when_there_are_none() {
     let rig = rig(true);
     let command = settled(&rig, "привет, как дела?");

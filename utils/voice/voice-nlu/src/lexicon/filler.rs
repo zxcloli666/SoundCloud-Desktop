@@ -91,6 +91,8 @@ pub const AMBIGUOUS: &[&str] = &[
     "вот",
 ];
 
+pub const GREETINGS: &[&str] = &["привет"];
+
 pub const DROP_PHRASES: &[&[&str]] = &[
     &["где", "поют"],
     &["где", "поется"],
