@@ -562,3 +562,22 @@ fn rude_and_roundabout_english_is_read_like_its_russian_counterpart() {
     }
     assert_eq!(steps("i can't hear my neighbours"), ["play"]);
 }
+
+#[test]
+fn a_clipped_next_or_previous_before_a_track_word_is_the_full_word() {
+    for (heard, want) in [
+        ("след трек", "next"),
+        ("след песню", "next"),
+        ("включи след трек", "next"),
+        ("давай след песню", "next"),
+        ("пред трек", "previous"),
+        ("пред песню верни", "previous"),
+    ] {
+        assert_eq!(steps(heard), [want], "{heard}");
+    }
+    for silent in ["след", "след в след", "оставил след", "пред"] {
+        assert_eq!(steps(silent), ["none"], "{silent}");
+    }
+    assert_eq!(words("включи след"), "включи след");
+    assert_eq!(words("включи трек след"), "включи трек след");
+}

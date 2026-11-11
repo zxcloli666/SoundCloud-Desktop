@@ -1,4 +1,4 @@
-use crate::lexicon::{self, FILLERS, PAUSE_WORDS, PRE, STOP_WORDS};
+use crate::lexicon::{self, FILLERS, KIND_TRACK, PAUSE_WORDS, PRE, STOP_WORDS};
 
 const GLUE_VERBS: &[&str] = &["включи", "вруби", "поставь", "запусти", "сыграй"];
 const GLUED_FROM: usize = 4;
@@ -28,6 +28,8 @@ pub fn context(words: Vec<String>) -> Vec<String> {
                 "играй"
             }
             "ван" if i > 0 && words[i - 1] == "репит" => "one",
+            "след" if KIND_TRACK.contains(&next) => "следующий",
+            "пред" if KIND_TRACK.contains(&next) => "предыдущий",
             _ => continue,
         };
         out[i] = to.to_string();
