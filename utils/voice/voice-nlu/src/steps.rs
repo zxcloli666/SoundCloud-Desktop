@@ -1,6 +1,6 @@
 use crate::correct;
 use crate::intent;
-use crate::lexicon::{LONE_VERBS, ON_VERB_FORMS, PLAY_STRONG, PLAY_WEAK};
+use crate::lexicon::{ADD_WORDS, LONE_VERBS, ON_VERB_FORMS, PLAY_STRONG, PLAY_WEAK};
 use crate::names::Names;
 use crate::normalize::{Tok, normalize};
 use crate::objection;
@@ -45,6 +45,12 @@ pub fn parse(text: &str, names: &Names) -> Vec<Parsed> {
     }
     if whole.intent.is_control() {
         return vec![whole];
+    }
+    if whole.intent == Intent::QueueAdd {
+        match played_then_queued(toks, text) {
+            Some(steps) if steps.len() <= MAX_STEPS => return collapse(steps),
+            _ => {}
+        }
     }
     let raw = crate::normalize::words(text_in);
     let repeated = raw.windows(2).any(|p| p[0] == p[1]);
@@ -130,10 +136,10 @@ fn linked(toks: &[Tok], text: &str, inherit: bool) -> Option<Vec<Parsed>> {
         }
         let mut left: Vec<Parsed> = match side(&toks[..i], text) {
             Side::Cmd(p) => {
-                let inner = if p.intent == Intent::Play {
-                    juxtaposed(&toks[..i], text)
-                } else {
-                    None
+                let inner = match p.intent {
+                    Intent::Play => juxtaposed(&toks[..i], text),
+                    Intent::QueueAdd => played_then_queued(&toks[..i], text),
+                    _ => None,
                 };
                 inner.unwrap_or_else(|| vec![p])
             }
@@ -237,10 +243,12 @@ fn juxtaposed(toks: &[Tok], text: &str) -> Option<Vec<Parsed>> {
         {
             continue;
         }
-        if left.intent == Intent::Play && !rest.iter().all(|r| after_play(r.intent)) {
+        let queued = ADD_WORDS.contains(&tail[0].w.as_str()) && rest[0].intent == Intent::QueueAdd;
+        let follows = |(at, r): (usize, &Parsed)| after_play(r.intent) || (at == 0 && queued);
+        if left.intent == Intent::Play && !rest.iter().enumerate().all(follows) {
             continue;
         }
-        if !control(&left) && !rest.iter().any(control) {
+        if !control(&left) && !rest.iter().any(control) && !queued {
             continue;
         }
         let strong_start = PLAY_STRONG.contains(&toks[0].w.as_str());
@@ -255,6 +263,10 @@ fn juxtaposed(toks: &[Tok], text: &str) -> Option<Vec<Parsed>> {
         return Some(steps);
     }
     None
+}
+
+fn played_then_queued(toks: &[Tok], text: &str) -> Option<Vec<Parsed>> {
+    juxtaposed(toks, text).filter(|steps| steps[0].intent == Intent::Play)
 }
 
 fn shared_verb(toks: &[Tok], text: &str, queue: bool) -> Option<Parsed> {

@@ -381,3 +381,27 @@ fn also_links_a_setting_to_what_is_played() {
         ["seek_backward", "seek_to"]
     );
 }
+
+#[test]
+fn a_queue_command_with_its_own_verb_after_a_play_command_is_a_step() {
+    let said = read("включи скриптонита добавь в очередь басту и перемешай");
+    assert_eq!(said.len(), 3);
+    assert_eq!(said[0].intent, Intent::Play);
+    assert!(asks_for(&said[0], "скриптонита"));
+    assert_eq!(said[1].intent, Intent::QueueAdd);
+    assert!(asks_for(&said[1], "басту"));
+    assert_eq!(said[2].intent, Intent::ShuffleOn);
+    let said = read("включи кино добавь в очередь сплин");
+    assert_eq!(said.len(), 2);
+    assert!(asks_for(&said[0], "кино"));
+    assert!(asks_for(&said[1], "сплин"));
+    assert_eq!(
+        steps("поставь земфиру закинь в очередь монеточку и сделай погромче"),
+        ["play", "queue_add", "volume_up"]
+    );
+    let p = one("включи скриптонита добавь в очередь");
+    assert_eq!(p.intent, Intent::QueueAdd);
+    assert!(asks_for(&p, "скриптонита"));
+    let p = one("включи кино в очередь");
+    assert_eq!(p.intent, Intent::QueueAdd);
+}
