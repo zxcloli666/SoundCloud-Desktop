@@ -521,3 +521,23 @@ fn a_wish_that_it_played_is_a_request_to_play() {
     }
     assert_eq!(words("что там играло"), "что там играло");
 }
+
+#[test]
+fn giving_back_the_song_that_was_before_this_one_is_previous() {
+    for heard in [
+        "а ну ка верни ту песню что была до этого",
+        "верни трек который был перед этим",
+        "верни ту что играла раньше",
+        "верни песню которая была",
+    ] {
+        assert_eq!(steps(heard), ["previous"], "{heard}");
+    }
+    for silent in [
+        "верни ту книгу что была у меня",
+        "верни деньги",
+        "она была до этого",
+        "что была до этого",
+    ] {
+        assert_eq!(steps(silent), ["none"], "{silent}");
+    }
+}
