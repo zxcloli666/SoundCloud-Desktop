@@ -216,6 +216,9 @@ fn a_lone_verb_after_talk_acts_only_on_talk_about_the_music() {
         ("это не та песня переключи", Intent::Next),
         ("музыка мешает выключи", Intent::Stop),
         ("мне кажется слишком громко убавь", Intent::VolumeDown),
+        ("надоело выключи", Intent::Stop),
+        ("всё надоело выключай", Intent::Stop),
+        ("достало уже убавь", Intent::VolumeDown),
     ];
     for (text, intent) in asked {
         assert_eq!(intents(text), [intent], "{text}");
@@ -226,6 +229,10 @@ fn a_lone_verb_after_talk_acts_only_on_talk_about_the_music() {
         "ребёнок проснулся выключи",
         "чайник свистит выключи",
         "этот сериал надоел выключи",
+        "эта дрель достала выключи",
+        "сосед достал выключи",
+        "работа достала убавь",
+        "вот эта собака опять лает выключи",
         "хватит болтать переключи канал",
         "я не расслышал повтори",
         "ну я не знаю давай дальше",

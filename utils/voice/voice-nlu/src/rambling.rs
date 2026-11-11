@@ -121,8 +121,8 @@ fn fits(c: &Clause, det: &Detected) -> bool {
         Intent::Undo => c.said.len() > 1 && remark(c, det.intent),
         Intent::Resume if !c.said.iter().any(resumes) => false,
         i if anchor::allowed(i) => {
-            let complained = fed_up(c.head) || c.head.iter().any(player);
-            let about_playback = specific(c.said) || (complained && !denied(c.head));
+            let complained = complained(c.head, i) && !denied(c.head);
+            let about_playback = specific(c.said) || complained;
             (c.head.is_empty() || about_playback) && remark(c, i)
         }
         _ => false,
@@ -144,6 +144,12 @@ fn listening(head: &[Tok]) -> bool {
         .any(|t| PLAY_STRONG.contains(&t.w.as_str()) && t.w.ends_with("ть"))
 }
 
+fn complained(head: &[Tok], asked: Intent) -> bool {
+    let foreign = |t: &Tok| !(lexicon::is_known(&t.w) || calls(&t.w));
+    let tired = fed_up(head) && (asked == Intent::Next || !head.iter().any(foreign));
+    tired || had_enough(head) || head.iter().any(player)
+}
+
 fn specific(said: &[Tok]) -> bool {
     let filling = |w: &str| PRE.contains(&w) || GENERIC.contains(&w) || RESUME_FILL.contains(&w);
     let meant = said.iter().filter(|t| !filling(&t.w)).count();
@@ -157,9 +163,11 @@ fn player(t: &Tok) -> bool {
 }
 
 fn fed_up(words: &[Tok]) -> bool {
-    words
-        .iter()
-        .any(|t| COMPLAINT.contains(&t.w.as_str()) || FED_UP.contains(&t.w.as_str()))
+    had_enough(words) || words.iter().any(|t| COMPLAINT.contains(&t.w.as_str()))
+}
+
+fn had_enough(words: &[Tok]) -> bool {
+    words.iter().any(|t| FED_UP.contains(&t.w.as_str()))
 }
 
 fn reason(tail: &[Tok]) -> bool {
