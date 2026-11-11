@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { isMac } from '../../lib/platform';
+import { replyLength } from '../../lib/voice/chat/live';
 import { answerAsk, dismissHud, undoById } from '../../lib/voice/executor';
 import { voiceIpc } from '../../lib/voice/ipc';
 import { type HudView, summarize, useVoiceRuntime } from '../../lib/voice/runtime';
@@ -13,6 +14,24 @@ const HIDE_AFTER: Partial<Record<HudView['kind'], number>> = {
   failed: 4500,
   asking: 15000,
 };
+
+const READ_BASE_MS = 4000;
+const READ_PER_CHAR_MS = 55;
+const READ_MAX_MS = 30_000;
+const AFTER_SPEECH_MS = 4000;
+
+function hideAfter(hud: HudView, spoken: boolean): number | undefined {
+  if (hud.kind !== 'chat') return HIDE_AFTER[hud.kind];
+  if (hud.phase === 'live') return undefined;
+  if (hud.phase === 'failed') return HIDE_AFTER.failed;
+  if (spoken) return AFTER_SPEECH_MS;
+  return Math.min(READ_MAX_MS, READ_BASE_MS + replyLength() * READ_PER_CHAR_MS);
+}
+
+function undoTarget(hud: HudView): string | null {
+  if (hud.kind === 'done') return hud.undo ? hud.id : null;
+  return hud.kind === 'chat' && hud.phase === 'done' ? hud.undo : null;
+}
 
 function typing(target: EventTarget | null): boolean {
   const el = target as HTMLElement | null;
@@ -35,9 +54,11 @@ export function VoiceIsland() {
   const mac = isMac();
   const hudRef = useRef(hud);
   hudRef.current = hud;
+  const spokenRef = useRef<HudView | null>(null);
+  if (speaking) spokenRef.current = hud;
 
   useEffect(() => {
-    const wait = HIDE_AFTER[hud.kind];
+    const wait = hideAfter(hud, spokenRef.current === hud);
     if (!wait || hovered || speaking) return;
     const timer = setTimeout(() => {
       if (hudRef.current !== hud) return;
@@ -63,14 +84,10 @@ export function VoiceIsland() {
         answerAsk(e.key === '1' ? 'first' : 'second');
         return;
       }
-      if (
-        current.kind === 'done' &&
-        current.undo &&
-        e.code === 'KeyZ' &&
-        (mac ? e.metaKey : e.ctrlKey)
-      ) {
+      const undo = undoTarget(current);
+      if (undo && e.code === 'KeyZ' && (mac ? e.metaKey : e.ctrlKey)) {
         e.preventDefault();
-        void undoById(current.id);
+        void undoById(undo);
       }
     };
     window.addEventListener('keydown', onKey, true);

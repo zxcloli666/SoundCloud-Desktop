@@ -1,11 +1,15 @@
 import type { ReactNode } from 'react';
 import {
+  Compass,
   Disc3,
   FastForward,
   Heart,
   Info,
   ListMusic,
   ListPlus,
+  ListX,
+  MessageCircle,
+  MicVocal,
   Music,
   Pause,
   Play,
@@ -13,6 +17,8 @@ import {
   Repeat,
   Repeat1,
   Rewind,
+  Search,
+  Settings,
   Shuffle,
   SkipBack,
   SkipForward,
@@ -21,9 +27,10 @@ import {
   Volume2,
   VolumeX,
 } from '../../lib/icons';
+import type { ToolMark } from '../../lib/voice/chat/types';
 import type { DoneItem } from '../../lib/voice/runtime';
 import type { EntityKind, Intent } from '../../lib/voice/types';
-import { AudioWaveform, Undo2 } from './icons';
+import { AudioWaveform, Brain, Eraser, Gauge, Undo2 } from './icons';
 
 export function kindIcon(kind: EntityKind, size: number): ReactNode {
   if (kind === 'artist') return <User size={size} />;
@@ -60,6 +67,7 @@ const INTENT_ICONS: Partial<Record<Intent, (size: number) => ReactNode>> = {
   play_similar: (s) => <Sparkles size={s} />,
   undo: (s) => <Undo2 size={s} />,
   help: (s) => <Info size={s} />,
+  none: (s) => <MessageCircle size={s} />,
 };
 
 export function intentIcon(intent: Intent, size: number): ReactNode {
@@ -71,4 +79,24 @@ export function itemIcon(item: DoneItem, size: number): ReactNode {
     return kindIcon(item.entity.kind, size);
   }
   return intentIcon(item.intent, size);
+}
+
+const TOOL_ICONS: Record<string, (size: number) => ReactNode> = {
+  speed: (s) => <Gauge size={s} />,
+  search: (s) => <Search size={s} />,
+  open_page: (s) => <Compass size={s} />,
+  get_settings: (s) => <Settings size={s} />,
+  set_setting: (s) => <Settings size={s} />,
+  lyrics: (s) => <MicVocal size={s} />,
+  queue_list: (s) => <ListMusic size={s} />,
+  queue_clear: (s) => <ListX size={s} />,
+  add_to_playlist: (s) => <ListPlus size={s} />,
+  remember: (s) => <Brain size={s} />,
+  forget: (s) => <Eraser size={s} />,
+};
+
+export function markIcon(mark: ToolMark, size: number): ReactNode {
+  if (mark.kind) return kindIcon(mark.kind, size);
+  if (mark.intent) return intentIcon(mark.intent, size);
+  return TOOL_ICONS[mark.tool]?.(size) ?? <Play size={size} />;
 }

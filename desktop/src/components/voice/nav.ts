@@ -1,5 +1,6 @@
-import { useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useCallback, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { bindNavigator, setPage } from '../../lib/voice/chat/navigator';
 import { useSearchQueryStore } from '../../stores/searchQuery';
 
 export const VOICE_CATEGORY = 'voice';
@@ -21,4 +22,18 @@ export function useSearchFor() {
     },
     [navigate],
   );
+}
+
+export function NavBridge() {
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    bindNavigator(navigate);
+    return () => bindNavigator(null);
+  }, [navigate]);
+
+  useEffect(() => setPage(pathname), [pathname]);
+
+  return null;
 }

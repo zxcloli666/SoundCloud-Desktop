@@ -4,6 +4,7 @@ import { initVoice } from '../../lib/voice';
 import { syncRemote } from '../../lib/voice/remote';
 import { useVoiceStore } from '../../lib/voice/store';
 import { VOICE_KEYFRAMES } from './keyframes';
+import { NavBridge } from './nav';
 import { VoiceIsland } from './VoiceIsland';
 
 export function VoiceHost() {
@@ -20,6 +21,7 @@ export function VoiceHost() {
   return (
     <>
       <style>{VOICE_KEYFRAMES}</style>
+      <NavBridge />
       <VoiceIsland />
     </>
   );

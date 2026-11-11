@@ -150,6 +150,46 @@
       "duckLabel": "Volume da música",
       "replies": "Responder por voz"
     },
+    "chat": {
+      "title": "Conversa",
+      "toggle": "Conversar com a personagem",
+      "toggleDesc": "O texto da sua frase vai para o nosso servidor e para o provedor do modelo. O áudio não sai deste computador.",
+      "memory": "Memória",
+      "memoryEmpty": "Diga “lembre que…” e aparece aqui",
+      "memoryAdd": "Adicionar um fato",
+      "memoryClear": "Esquecer tudo",
+      "memoryClearYes": "Sim, esquecer tudo",
+      "memoryForget": "Esquecer",
+      "tools": {
+        "pause": "Pausar",
+        "resume": "Continuar",
+        "next": "Próxima faixa",
+        "previous": "Faixa anterior",
+        "seek": "Avançar ou voltar",
+        "volume": "Volume",
+        "like": "Curtida",
+        "shuffle": "Aleatório",
+        "repeat": "Repetição",
+        "speed": "Velocidade",
+        "play_likes": "Minhas curtidas",
+        "play_wave": "Minha onda",
+        "play_similar": "Parecidas",
+        "undo": "Desfazer",
+        "play": "Tocar",
+        "queue_add": "Adicionar à fila",
+        "search": "Busca",
+        "play_found": "Tocar",
+        "open_page": "Página aberta",
+        "get_settings": "Configurações",
+        "set_setting": "Configuração alterada",
+        "lyrics": "Letra",
+        "queue_list": "Fila",
+        "queue_clear": "Fila limpa",
+        "add_to_playlist": "Adicionar à playlist",
+        "remember": "Memorizado",
+        "forget": "Esquecido"
+      }
+    },
     "voices": {
       "loli": {
         "name": "Loli"

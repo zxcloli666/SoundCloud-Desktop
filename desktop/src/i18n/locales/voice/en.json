@@ -147,6 +147,46 @@
       "duckLabel": "Music level",
       "replies": "Reply by voice"
     },
+    "chat": {
+      "title": "Conversation",
+      "toggle": "Talk with the character",
+      "toggleDesc": "The text of your phrase goes to our server and the model provider. Audio never leaves this computer.",
+      "memory": "Memory",
+      "memoryEmpty": "Say “remember that…” and it shows up here",
+      "memoryAdd": "Add a fact",
+      "memoryClear": "Forget all",
+      "memoryClearYes": "Yes, forget all",
+      "memoryForget": "Forget",
+      "tools": {
+        "pause": "Pause",
+        "resume": "Resume",
+        "next": "Next track",
+        "previous": "Previous track",
+        "seek": "Seek",
+        "volume": "Volume",
+        "like": "Like",
+        "shuffle": "Shuffle",
+        "repeat": "Repeat",
+        "speed": "Playback speed",
+        "play_likes": "My likes",
+        "play_wave": "My wave",
+        "play_similar": "Similar",
+        "undo": "Undo",
+        "play": "Play",
+        "queue_add": "Add to queue",
+        "search": "Search",
+        "play_found": "Play",
+        "open_page": "Page opened",
+        "get_settings": "Settings",
+        "set_setting": "Setting changed",
+        "lyrics": "Lyrics",
+        "queue_list": "Queue",
+        "queue_clear": "Queue cleared",
+        "add_to_playlist": "Add to playlist",
+        "remember": "Remembered",
+        "forget": "Forgotten"
+      }
+    },
     "voices": {
       "loli": {
         "name": "Loli"

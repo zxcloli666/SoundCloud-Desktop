@@ -1,6 +1,4 @@
-import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { canUndo, onUndoChange } from '../../../lib/voice/executor';
 import type { DoneItem } from '../../../lib/voice/runtime';
 import { useVoiceRuntime } from '../../../lib/voice/runtime';
 import { useVoiceStore } from '../../../lib/voice/store';
@@ -11,18 +9,9 @@ import { itemIcon } from '../intentIcon';
 import { VoiceAvatar } from '../VoiceAvatar';
 import { voiceById } from '../voices';
 import { IconTile, IslandText } from './parts';
+import { useUndoable } from './useUndoable';
 
 export const UNDO_WINDOW_MS = 6000;
-
-function useUndoable(id: string, wanted: boolean): boolean {
-  const [ok, setOk] = useState(() => wanted && canUndo(id));
-  useEffect(() => {
-    if (!wanted) return;
-    setOk(canUndo(id));
-    return onUndoChange(() => setOk(canUndo(id)));
-  }, [id, wanted]);
-  return ok;
-}
 
 function Stack({ items }: { items: DoneItem[] }) {
   if (items.length === 1) {

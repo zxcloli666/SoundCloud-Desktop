@@ -147,6 +147,46 @@
       "duckLabel": "Müzik seviyesi",
       "replies": "Sesle yanıtla"
     },
+    "chat": {
+      "title": "Muhabbet",
+      "toggle": "Karakterle muhabbet",
+      "toggleDesc": "Cümlenizin metni sunucumuza ve model sağlayıcısına gider. Ses bu bilgisayardan çıkmaz.",
+      "memory": "Hafıza",
+      "memoryEmpty": "“Şunu hatırla…” deyin, burada görünsün",
+      "memoryAdd": "Bilgi ekle",
+      "memoryClear": "Hepsini unut",
+      "memoryClearYes": "Evet, hepsini unut",
+      "memoryForget": "Unut",
+      "tools": {
+        "pause": "Duraklat",
+        "resume": "Devam et",
+        "next": "Sonraki parça",
+        "previous": "Önceki parça",
+        "seek": "İleri geri sarma",
+        "volume": "Ses düzeyi",
+        "like": "Beğeni",
+        "shuffle": "Karıştırma",
+        "repeat": "Tekrar",
+        "speed": "Çalma hızı",
+        "play_likes": "Beğendiklerim",
+        "play_wave": "Dalgam",
+        "play_similar": "Benzerleri",
+        "undo": "Geri al",
+        "play": "Çal",
+        "queue_add": "Sıraya ekle",
+        "search": "Arama",
+        "play_found": "Çal",
+        "open_page": "Sayfa açıldı",
+        "get_settings": "Ayarlar",
+        "set_setting": "Ayar değişti",
+        "lyrics": "Şarkı sözleri",
+        "queue_list": "Sıra",
+        "queue_clear": "Sıra temizlendi",
+        "add_to_playlist": "Çalma listesine ekle",
+        "remember": "Hatırlandı",
+        "forget": "Unutuldu"
+      }
+    },
     "voices": {
       "loli": {
         "name": "Loli"

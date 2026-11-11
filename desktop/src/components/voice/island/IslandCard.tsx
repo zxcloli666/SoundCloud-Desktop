@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { usePerfMode } from '../../../lib/perf';
 import type { HudView, ModelSummary } from '../../../lib/voice/runtime';
 import { AskView } from './AskView';
+import { ChatView } from './ChatView';
 import { DoneView } from './DoneView';
 import { DownloadView } from './DownloadView';
 import { LinkConfirmView } from './LinkConfirmView';
@@ -74,6 +75,17 @@ function Body({
       return <ErrorView code={hud.code} onClose={onClose} />;
     case 'speaking':
       return <SpeakingView onClose={onClose} />;
+    case 'chat':
+      return (
+        <ChatView
+          heard={hud.heard}
+          phase={hud.phase}
+          undo={hud.undo}
+          line={hud.line}
+          onUndo={() => hud.undo && handlers.onUndo(hud.undo)}
+          onClose={onClose}
+        />
+      );
     default:
       return summary ? <DownloadView summary={summary} /> : null;
   }
@@ -93,8 +105,9 @@ export function IslandCard({
   handlers: IslandHandlers;
 }) {
   const blur = usePerfMode().blur(30);
-  const live = hud.kind === 'listening' || hud.kind === 'thinking';
-  const wide = hud.kind === 'asking';
+  const chatting = hud.kind === 'chat' && hud.phase === 'live';
+  const live = hud.kind === 'listening' || hud.kind === 'thinking' || chatting;
+  const wide = hud.kind === 'asking' || hud.kind === 'chat';
   return (
     <div
       data-ui="voice-island"
