@@ -1035,6 +1035,9 @@
   },
   "settings": {
     "title": "Ayarlar",
+    "search": "Ara",
+    "searchClear": "Temizle",
+    "searchEmpty": "Sonuç yok",
     "cache": "Önbellek",
     "total": "Toplam",
     "audioCacheSize": "Ses",
@@ -1478,6 +1481,8 @@
     "searchPlaybackResults": "Arama sonuçları",
     "searchPlaybackSimilarDesc": "Seçilen parça, sonraki arama sonucu yerine benzer müzik dalgası başlatır",
     "searchPlaybackResultsDesc": "Arama sonuçları sırayla art arda çalar",
+    "pointerPlayer": "Oynatıcı",
+    "pointerApp": "Uygulama",
     "storageLocation": "Önbellek konumu",
     "storageLocationDesc": "Önbelleğe alınan parçaların ve beğenilerin saklandığı yer",
     "storageDefault": "Varsayılan",
@@ -2630,7 +2635,8 @@
     "sync": {
       "free": "Şimdi",
       "freeTime": "saat",
-      "starTime": "~2 dk"
+      "starTime": "~2 dk",
+      "queued": "Sırada"
     },
     "year": {
       "cta": "Yıl",

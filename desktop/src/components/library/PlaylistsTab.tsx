@@ -1,10 +1,12 @@
 import React, {useEffect, useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
 import {type Playlist, useInfiniteScroll, useMyLikedPlaylists, useMyPlaylists} from '../../lib/hooks';
-import {Loader2} from '../../lib/icons';
+import {Bookmark, ListMusic, Loader2} from '../../lib/icons';
 import {splitReleases} from '../../lib/playlist-kind';
+import {isWaitKind, waitKindOf} from '../../lib/sync-wait';
 import {matchesTerms, queryTerms} from '../../lib/text-match';
 import {PlaylistCard} from '../music/PlaylistCard';
+import {WaitStrip} from '../sync-wait/WaitStrip';
 import {SyncNotice, syncNoticeOf} from '../ui/SyncNotice';
 import {VirtualGrid} from '../ui/VirtualGrid';
 
@@ -79,18 +81,40 @@ export const PlaylistsTab = React.memo(function PlaylistsTab({filter}: { filter:
         void myPlaylistsQuery.refetch();
         void likedPlaylistsQuery.refetch();
     };
+    const mineWait = !filter && createdPlaylists.length === 0 && likedPlaylists.length > 0
+        ? waitKindOf(myPlaylistsQuery)
+        : null;
+    const likedWait = !filter && likedPlaylists.length === 0 && createdPlaylists.length > 0
+        ? waitKindOf(likedPlaylistsQuery)
+        : null;
 
     return (
         <div className="min-h-[400px]">
             <div className="space-y-10">
                 {myPlaylistsQuery.isLoading ? (
                     <SectionLoader/>
+                ) : mineWait ? (
+                    <WaitStrip
+                        kind={mineWait}
+                        since={myPlaylistsQuery.syncInfo.waitingSince}
+                        scope="playlists"
+                        icon={<ListMusic size={16}/>}
+                        title={t('library.yourPlaylists')}
+                    />
                 ) : (
                     <PlaylistSection title={t('library.yourPlaylists')} playlists={filteredCreated}/>
                 )}
 
                 {likedPlaylistsQuery.isLoading ? (
                     <SectionLoader/>
+                ) : likedWait ? (
+                    <WaitStrip
+                        kind={likedWait}
+                        since={likedPlaylistsQuery.syncInfo.waitingSince}
+                        scope="playlists"
+                        icon={<Bookmark size={16}/>}
+                        title={t('library.likedPlaylists')}
+                    />
                 ) : (
                     <>
                         <PlaylistSection title={t('library.likedPlaylists')} playlists={liked.sets}/>
@@ -103,8 +127,8 @@ export const PlaylistsTab = React.memo(function PlaylistsTab({filter}: { filter:
                     filteredCreated.length === 0 &&
                     filteredLiked.length === 0 &&
                     (!filter && notice ? (
-                        <div className="py-20">
-                            <SyncNotice kind={notice} info={noticeQuery.syncInfo} ownedByMe onRetry={retry}/>
+                        <div className={isWaitKind(notice) ? 'py-8' : 'py-20'}>
+                            <SyncNotice kind={notice} info={noticeQuery.syncInfo} ownedByMe scope="playlists" onRetry={retry}/>
                         </div>
                     ) : (
                         <div className="py-20 text-center text-ink-20">

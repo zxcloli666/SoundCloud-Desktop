@@ -34,7 +34,7 @@ export function PinnedEditor() {
   const urns = pinned.map((p) => p.urn);
 
   return (
-    <div className="space-y-2.5">
+    <div data-ui="settings-row" className="space-y-2.5">
       <SubHeading title={t('settings.layoutPinned')} />
       {pinned.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-ink/[0.08] px-4 py-4 text-center text-[12px] text-ink-30">
@@ -68,7 +68,7 @@ export function RiverSections() {
     setHidden(hidden.includes(id) ? hidden.filter((h) => h !== id) : [...hidden, id]);
 
   return (
-    <div className="space-y-2.5">
+    <div data-ui="settings-row" className="space-y-2.5">
       <SubHeading
         title={t('settings.layoutRiverSections')}
         desc={t('settings.layoutRiverSectionsDesc')}

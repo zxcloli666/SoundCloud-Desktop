@@ -16,9 +16,11 @@ import {
 import { Loader2, Music } from '../../lib/icons';
 import {usePerfMode} from '../../lib/perf';
 import { useCatalogPlaylists, useCatalogTracks } from '../../lib/search';
+import { isWaitKind } from '../../lib/sync-wait';
 import { useAuthStore } from '../../stores/auth';
 import { PlaylistCard } from '../music/PlaylistCard';
 import { SearchState } from '../search/SearchState';
+import type { WaitScope } from '../sync-wait/scope';
 import { Avatar } from '../ui/Avatar';
 import { type SyncedQuery, SyncNotice, syncNoticeOf } from '../ui/SyncNotice';
 import { VirtualGrid } from '../ui/VirtualGrid';
@@ -33,6 +35,7 @@ interface TabWrapperProps {
   onRetry?: () => void;
   query?: SyncedQuery & { refetch: () => unknown };
   ownerUrn?: string;
+  scope?: WaitScope;
   children: React.ReactNode;
 }
 
@@ -45,6 +48,7 @@ function TabWrapperImpl({
   onRetry,
   query,
   ownerUrn,
+  scope,
 }: TabWrapperProps) {
   const { t } = useTranslation();
   const ownedByMe = useAuthStore((s) => !!ownerUrn && s.user?.urn === ownerUrn);
@@ -56,11 +60,12 @@ function TabWrapperImpl({
           <Loader2 size={28} className="text-ink-20 animate-spin" />
         </div>
       ) : isEmpty && notice && query ? (
-        <div className="py-24">
+        <div className={ownedByMe && isWaitKind(notice) ? 'py-8' : 'py-24'}>
           <SyncNotice
             kind={notice}
             info={query.syncInfo}
             ownedByMe={ownedByMe}
+            scope={scope}
             onRetry={() => void query.refetch()}
           />
         </div>
@@ -151,7 +156,13 @@ export function UserPlaylistsTab({ urn }: { urn: string }) {
     [],
   );
   return (
-    <TabWrapper isLoading={q.isLoading} isEmpty={q.playlists.length === 0} query={q} ownerUrn={urn}>
+    <TabWrapper
+      isLoading={q.isLoading}
+      isEmpty={q.playlists.length === 0}
+      query={q}
+      ownerUrn={urn}
+      scope="playlists"
+    >
       <VirtualGrid
         items={q.playlists}
         itemHeight={320}
@@ -178,7 +189,13 @@ export function UserLikesTab({ urn, aura }: { urn: string; aura: Aura }) {
     [aura, q.tracks],
   );
   return (
-    <TabWrapper isLoading={q.isLoading} isEmpty={q.tracks.length === 0} query={q} ownerUrn={urn}>
+    <TabWrapper
+      isLoading={q.isLoading}
+      isEmpty={q.tracks.length === 0}
+      query={q}
+      ownerUrn={urn}
+      scope="likes"
+    >
       <VirtualList
         items={q.tracks}
         rowHeight={72}
@@ -339,6 +356,7 @@ export function UserConnectionsTab({
       emptyText={emptyText}
       query={q}
       ownerUrn={urn}
+      scope="followings"
     >
       <VirtualGrid
         items={q.users}

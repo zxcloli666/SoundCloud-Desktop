@@ -1,0 +1,1113 @@
+{
+  "settings.language": [
+    "interface language",
+    "change language",
+    "russian english",
+    "translation",
+    "localization",
+    "switch to russian",
+    "app language",
+    "wrong language"
+  ],
+  "settings.startup": [
+    "start page",
+    "opening page",
+    "what opens on launch",
+    "default tab",
+    "first screen",
+    "open library on start",
+    "home page at startup",
+    "landing page"
+  ],
+  "settings.autostart": [
+    "autostart",
+    "run on boot",
+    "start with windows",
+    "start with system",
+    "startup apps",
+    "open at startup",
+    "launch on boot",
+    "login item"
+  ],
+  "settings.autostartMinimized": [
+    "start hidden",
+    "silent start",
+    "no window on boot",
+    "start in background",
+    "minimized at launch",
+    "hide window on startup",
+    "tray on boot",
+    "start in tray"
+  ],
+  "settings.closeButton": [
+    "x button",
+    "close window",
+    "music stops when i close",
+    "minimize instead of quit",
+    "keep playing in background",
+    "app closes",
+    "exit completely",
+    "close to tray",
+    "quit on close"
+  ],
+  "hotkeys.title": [
+    "hotkeys",
+    "shortcuts",
+    "keybinds",
+    "keyboard control",
+    "media keys",
+    "pause with a key",
+    "skip track from keyboard",
+    "control music in game",
+    "key bindings",
+    "global shortcuts"
+  ],
+  "settings.updates": [
+    "update app",
+    "new version",
+    "check for updates",
+    "app version",
+    "latest version",
+    "auto update",
+    "upgrade",
+    "install update"
+  ],
+  "settings.diagnostics": [
+    "app crashes",
+    "logs",
+    "log folder",
+    "playback errors",
+    "something broke",
+    "debug",
+    "crash log",
+    "not playing",
+    "troubleshooting"
+  ],
+  "diag.sendReports": [
+    "telemetry",
+    "send errors to developers",
+    "anonymous reports",
+    "crash reports",
+    "analytics",
+    "tracking",
+    "stop sending data",
+    "privacy errors"
+  ],
+  "blocklist.cardTitle": [
+    "block artist",
+    "blacklist",
+    "i hate this artist",
+    "ban artist",
+    "remove artist from recommendations",
+    "never play this artist",
+    "block user",
+    "mute artist"
+  ],
+  "keywordFilter.cardTitle": [
+    "word filter",
+    "mute words",
+    "hide tracks by word",
+    "stop words",
+    "no remixes",
+    "exclude genre",
+    "filter by title",
+    "unwanted tags",
+    "ban keywords"
+  ],
+  "settings.notifications": [
+    "notifications",
+    "pop ups",
+    "alerts",
+    "toasts",
+    "turn off notifications",
+    "system notifications",
+    "push",
+    "desktop alerts"
+  ],
+  "settings.showErrorToasts": [
+    "error popups",
+    "red popups",
+    "annoying errors",
+    "hide network errors",
+    "track failed to load message",
+    "disable toasts",
+    "error messages",
+    "stop error pop ups"
+  ],
+  "settings.releaseNotifications": [
+    "new release alerts",
+    "new tracks from followed",
+    "artist uploaded notification",
+    "notify new album",
+    "do not miss releases",
+    "following notifications",
+    "fresh drops alert"
+  ],
+  "settings.help": [
+    "help",
+    "support",
+    "faq",
+    "contact developers",
+    "report a problem",
+    "need help",
+    "where to ask"
+  ],
+  "settings.helpErrors": [
+    "error 404",
+    "error 500",
+    "error 503",
+    "what does the error mean",
+    "error codes",
+    "why it does not work",
+    "http errors"
+  ],
+  "settings.helpNetCheck": [
+    "no connection",
+    "network diagnostics",
+    "connection blocked",
+    "test connection",
+    "why no internet",
+    "ping test",
+    "connection failed"
+  ],
+  "diag.report": [
+    "support report",
+    "send report",
+    "diagnostic report",
+    "report a bug",
+    "send logs",
+    "tell developers",
+    "bug report"
+  ],
+  "settings.helpLog": [
+    "desktop.log",
+    "open log",
+    "app logs",
+    "attach log",
+    "where are logs",
+    "log file",
+    "error file"
+  ],
+  "settings.helpDiscord": [
+    "community",
+    "user chat",
+    "ask developers",
+    "outage news",
+    "support server",
+    "discord community",
+    "developers channel",
+    "join discord"
+  ],
+  "settings.android": [
+    "android",
+    "iphone",
+    "ios",
+    "mobile app",
+    "phone app",
+    "download for phone",
+    "apk",
+    "smartphone",
+    "tablet"
+  ],
+  "settings.support": [
+    "donate",
+    "support developer",
+    "tip",
+    "sponsor",
+    "help the project",
+    "github star",
+    "buy a coffee",
+    "contribute"
+  ],
+  "settings.appearance": [
+    "look and feel",
+    "design",
+    "customization",
+    "skin",
+    "personalize",
+    "reset appearance",
+    "change how it looks",
+    "visual style"
+  ],
+  "settings.themePreset": [
+    "color theme",
+    "preset",
+    "neon",
+    "forest",
+    "crimson",
+    "dark theme",
+    "app colors",
+    "custom colors",
+    "skin",
+    "skins"
+  ],
+  "settings.accentColor": [
+    "button color",
+    "main color",
+    "highlight color",
+    "change orange",
+    "slider color",
+    "ui color",
+    "accent"
+  ],
+  "settings.scheme": [
+    "dark mode",
+    "light mode",
+    "white theme",
+    "night mode",
+    "follow system",
+    "white background",
+    "day night",
+    "dark or light",
+    "darkmode"
+  ],
+  "settings.themesTitle": [
+    "download theme",
+    "theme catalog",
+    "community themes",
+    "theme store",
+    "install theme",
+    "make my own theme",
+    "theme updates",
+    "themes",
+    "more themes",
+    "new themes"
+  ],
+  "settings.uiScale": [
+    "text too small",
+    "text too big",
+    "bigger interface",
+    "zoom",
+    "ui size",
+    "window scale",
+    "ctrl plus",
+    "dpi",
+    "button size",
+    "high dpi",
+    "text size"
+  ],
+  "settings.coverTitle": [
+    "dynamic colors",
+    "colors from artwork",
+    "match track colors",
+    "album colors",
+    "adaptive color",
+    "material you",
+    "color from cover"
+  ],
+  "settings.coverTint": [
+    "gradient background",
+    "cover colored window",
+    "ambient glow",
+    "tinted window",
+    "artwork background",
+    "color wash",
+    "soft glow"
+  ],
+  "settings.coverAccent": [
+    "buttons match cover",
+    "dynamic accent",
+    "slider takes cover color",
+    "player color from art",
+    "accent follows track",
+    "highlight from artwork"
+  ],
+  "settings.fontTitle": [
+    "font",
+    "change font",
+    "custom font",
+    "typeface",
+    "upload font",
+    "hard to read",
+    "ttf",
+    "text style",
+    "letters"
+  ],
+  "settings.backgroundImage": [
+    "wallpaper",
+    "background picture",
+    "custom background",
+    "anime wallpaper",
+    "wallhaven",
+    "set photo",
+    "gif background",
+    "app background",
+    "backdrop",
+    "own picture",
+    "own image as background"
+  ],
+  "settings.bgDim": [
+    "background too bright",
+    "darken wallpaper",
+    "image brightness",
+    "text unreadable on background",
+    "wallpaper opacity",
+    "dim"
+  ],
+  "settings.bgOpacity": [
+    "vignette",
+    "dark edges",
+    "edge shadow",
+    "darker corners",
+    "frame around background",
+    "center brighter",
+    "darken edges"
+  ],
+  "settings.bgBlur": [
+    "blur background",
+    "blurry wallpaper",
+    "soften image",
+    "defocus",
+    "frosted",
+    "sharpness of wallpaper"
+  ],
+  "settings.wpSlideshow": [
+    "rotate wallpapers",
+    "auto change background",
+    "wallpaper timer",
+    "background carousel",
+    "several pictures in turn",
+    "wallpaper cycling",
+    "random backgrounds"
+  ],
+  "settings.wpSlideshowInterval": [
+    "how often change wallpaper",
+    "change interval",
+    "background timer",
+    "minutes hours",
+    "wallpaper frequency",
+    "slideshow period"
+  ],
+  "settings.wpSlideshowOrder": [
+    "random wallpapers",
+    "sequential",
+    "shuffle backgrounds",
+    "picture order",
+    "in a loop",
+    "wallpaper shuffle"
+  ],
+  "settings.layoutTitle": [
+    "block order",
+    "hide section",
+    "remove block from home",
+    "drag and drop",
+    "sidebar",
+    "left menu",
+    "rearrange tabs",
+    "hide menu item",
+    "library sections",
+    "reorder"
+  ],
+  "settings.layoutPinned": [
+    "pin playlist",
+    "playlists in sidebar",
+    "unpin",
+    "quick access playlist",
+    "pinned",
+    "playlist shortcuts"
+  ],
+  "settings.layoutRiverSections": [
+    "infinite mix",
+    "home sections",
+    "wave on home",
+    "recommendations feed",
+    "deep cuts",
+    "fresh drops home",
+    "what shows on home",
+    "shelves",
+    "remove recommendations"
+  ],
+  "trayMenu.mini": [
+    "mini player",
+    "small window",
+    "compact player",
+    "floating player",
+    "corner player",
+    "widget player",
+    "mini player transparency",
+    "from tray"
+  ],
+  "settings.performance": [
+    "app is slow",
+    "lag",
+    "freezes",
+    "weak computer",
+    "stutters",
+    "low end pc",
+    "turn off animations",
+    "fps",
+    "blur is slow",
+    "effects",
+    "battery saving"
+  ],
+  "settings.softwareRendering": [
+    "black screen",
+    "flickering window",
+    "graphics glitch",
+    "gpu driver",
+    "disable gpu",
+    "hardware acceleration",
+    "white screen",
+    "artifacts",
+    "window blinks"
+  ],
+  "settings.customCssTitle": [
+    "css",
+    "styles",
+    "custom code",
+    "mods",
+    "userstyle",
+    "edit look with code",
+    "broke the interface",
+    "color variables",
+    "hooks"
+  ],
+  "settings.customCssAssets": [
+    "images for css",
+    "upload image to styles",
+    "image url in css",
+    "assets for theme",
+    "own files for styling",
+    "icons in css"
+  ],
+  "settings.playback": [
+    "playback",
+    "player",
+    "sound",
+    "how music plays",
+    "player settings",
+    "audio options",
+    "music"
+  ],
+  "settings.floatingComments": [
+    "comments on waveform",
+    "comments over track",
+    "popup comments",
+    "listener comments",
+    "hide comments",
+    "timed comments",
+    "comments in player"
+  ],
+  "settings.lyricsVisualizer": [
+    "equalizer behind lyrics",
+    "music animation",
+    "audio visualization",
+    "wave behind text",
+    "fft",
+    "spectrum",
+    "dancing wave",
+    "visualizer",
+    "gpu usage"
+  ],
+  "settings.lyricsHighlight": [
+    "karaoke",
+    "word highlight",
+    "highlight line",
+    "lyrics highlight",
+    "word by word",
+    "synced lyrics",
+    "whole line",
+    "lyrics"
+  ],
+  "settings.normalizeVolume": [
+    "volume jumps",
+    "tracks different loudness",
+    "even out sound",
+    "quiet then loud",
+    "same volume",
+    "loudness normalization",
+    "volume leveling",
+    "replaygain",
+    "songs too quiet",
+    "songs too loud",
+    "quiet tracks"
+  ],
+  "settings.skipSilence": [
+    "silence at start of track",
+    "remove pauses",
+    "empty seconds",
+    "silence at the end",
+    "jump over quiet part",
+    "dead air",
+    "silence"
+  ],
+  "settings.autoplay": [
+    "keep playing after queue",
+    "endless playback",
+    "similar tracks after",
+    "queue ended",
+    "radio mode",
+    "wave after track",
+    "music stops after last song",
+    "autoplay"
+  ],
+  "settings.altUploads": [
+    "track unavailable",
+    "blocked in my country",
+    "grayed out track",
+    "replace track",
+    "duplicate on another account",
+    "not available in region",
+    "alternative upload",
+    "unavailable track"
+  ],
+  "settings.streamQuality": [
+    "sound quality",
+    "bitrate",
+    "hq",
+    "sq",
+    "uq",
+    "save traffic",
+    "lossless",
+    "best quality",
+    "bad sound",
+    "data usage",
+    "flac"
+  ],
+  "settings.searchPlayback": [
+    "search starts wave",
+    "play from search",
+    "what plays after search track",
+    "results in order",
+    "similar music after search",
+    "next search result"
+  ],
+  "settings.crossfade": [
+    "crossfade",
+    "smooth transition",
+    "overlap tracks",
+    "no gap between songs",
+    "dj style mix",
+    "fade between songs",
+    "gapless",
+    "track transition"
+  ],
+  "settings.skipStuck": [
+    "track stuck",
+    "track not loading",
+    "music stopped",
+    "stuck on loading",
+    "skip broken track",
+    "endless loading",
+    "track will not play",
+    "stuck"
+  ],
+  "settings.audioDevice": [
+    "headphones",
+    "speakers",
+    "sound output",
+    "where sound goes",
+    "playback device",
+    "bluetooth",
+    "no sound",
+    "select speakers",
+    "output device"
+  ],
+  "netCheck.title": [
+    "no internet",
+    "cannot connect",
+    "server blocked",
+    "check network",
+    "isp blocks",
+    "connection diagnostics",
+    "vpn",
+    "dns",
+    "nothing loads",
+    "cloudflare",
+    "does not work without vpn"
+  ],
+  "call.title": [
+    "p2p",
+    "peer to peer",
+    "user network",
+    "star subscription network",
+    "through other users",
+    "bypass blocks",
+    "proxy",
+    "mesh",
+    "relay"
+  ],
+  "settings.discordRpc": [
+    "discord",
+    "rpc",
+    "discord status",
+    "my track in discord",
+    "rich presence",
+    "show friends what i play",
+    "discord activity",
+    "discord rpc"
+  ],
+  "settings.discordRpcMode": [
+    "what to show in discord",
+    "track or artist",
+    "activity only",
+    "status mode",
+    "name in discord",
+    "rpc format",
+    "how to show in discord profile"
+  ],
+  "settings.discordRpcStatus": [
+    "listening to",
+    "line under nickname",
+    "status text",
+    "what is written by name",
+    "app name in status",
+    "discord status line"
+  ],
+  "settings.discordRpcLyrics": [
+    "lyrics in discord",
+    "song line in status",
+    "lyrics in status",
+    "text in discord",
+    "karaoke in profile",
+    "synced lyrics in rpc"
+  ],
+  "settings.discordRpcButton": [
+    "button under status",
+    "track link in discord",
+    "open track button",
+    "listen button",
+    "share track in status",
+    "button"
+  ],
+  "settings.scrobble": [
+    "scrobbling",
+    "scrobble",
+    "last.fm",
+    "lastfm",
+    "listenbrainz",
+    "listening stats",
+    "listening history",
+    "music diary",
+    "play count"
+  ],
+  "settings.scrobbleNowPlaying": [
+    "now playing on profile",
+    "now playing",
+    "current track on last.fm",
+    "show current song",
+    "listening now status",
+    "display on profile"
+  ],
+  "settings.obs": [
+    "obs",
+    "stream",
+    "broadcast",
+    "twitch",
+    "overlay",
+    "stream widget",
+    "what is playing on stream",
+    "streamlabs",
+    "streamer",
+    "now playing widget",
+    "song on stream",
+    "current song on stream"
+  ],
+  "settings.obsOverlay": [
+    "browser source",
+    "obs widget",
+    "stream overlay",
+    "track animation",
+    "widget preview",
+    "now playing overlay"
+  ],
+  "settings.obsTheme": [
+    "widget look",
+    "vinyl",
+    "card",
+    "minimal",
+    "overlay design",
+    "widget theme",
+    "overlay style",
+    "how the widget looks"
+  ],
+  "settings.obsProgress": [
+    "progress bar on stream",
+    "track time in widget",
+    "elapsed time",
+    "track timer",
+    "show time",
+    "playback bar"
+  ],
+  "settings.obsHidePaused": [
+    "hide on pause",
+    "widget disappears",
+    "hide overlay",
+    "do not show when silent",
+    "fades on pause",
+    "fade"
+  ],
+  "settings.obsLink": [
+    "obs link",
+    "widget url",
+    "copy link",
+    "overlay address",
+    "paste into obs",
+    "localhost link"
+  ],
+  "settings.obsApi": [
+    "json",
+    "api",
+    "current track api",
+    "chat bot",
+    "nightbot",
+    "!song command",
+    "twitch bot",
+    "get track name",
+    "http request",
+    "track as text"
+  ],
+  "settings.obsPort": [
+    "port in use",
+    "change port",
+    "port number",
+    "port",
+    "widget server port",
+    "port conflict"
+  ],
+  "settings.obsText": [
+    "txt",
+    "text file",
+    "track to file",
+    "write title to file",
+    "now playing txt",
+    "file for obs",
+    "text source",
+    "name as text for stream"
+  ],
+  "settings.obsTemplate": [
+    "text template",
+    "record format",
+    "artist and title",
+    "how to format line",
+    "title template",
+    "template",
+    "tokens",
+    "artist title order",
+    "line format"
+  ],
+  "settings.import": [
+    "transfer playlists",
+    "import from spotify",
+    "yandex music",
+    "move my music",
+    "import likes",
+    "from youtube",
+    "playlist by link",
+    "migrate",
+    "import"
+  ],
+  "importer.sync.title": [
+    "auto update import",
+    "spotify sync",
+    "playlist updates itself",
+    "keep in sync",
+    "pull new tracks",
+    "refresh imported",
+    "yandex sync"
+  ],
+  "importer.sync.ymConnected": [
+    "disconnect yandex",
+    "log out of yandex music",
+    "unlink account",
+    "yandex token",
+    "ym",
+    "reconnect yandex",
+    "remove yandex music"
+  ],
+  "chat.settings.whoCanWrite.title": [
+    "who can dm me",
+    "block messages",
+    "direct messages",
+    "chat spam",
+    "following only",
+    "close dms",
+    "dm",
+    "nobody can write",
+    "who can message",
+    "strangers",
+    "stranger messages",
+    "random people writing"
+  ],
+  "chat.settings.visibility.title": [
+    "chat privacy",
+    "hide activity",
+    "invisible",
+    "what others see",
+    "visibility",
+    "privacy"
+  ],
+  "chat.settings.visibility.presence": [
+    "hide what i listen to",
+    "do not show my track",
+    "music visible in chat",
+    "listening status",
+    "friends see my track",
+    "stalking my tracks"
+  ],
+  "chat.settings.visibility.receipts": [
+    "seen",
+    "double check",
+    "hide that i read",
+    "two ticks",
+    "read receipts",
+    "they see i read",
+    "read mark"
+  ],
+  "chat.settings.visibility.typing": [
+    "typing",
+    "typing indicator",
+    "hide that i am typing",
+    "writing message",
+    "they see me typing",
+    "is typing"
+  ],
+  "chat.settings.blocked.title": [
+    "block chat user",
+    "chat blacklist",
+    "unblock",
+    "ban user",
+    "chat ban",
+    "blocked users",
+    "block in chat"
+  ],
+  "chat.settings.notify.title": [
+    "message sound",
+    "chat push",
+    "message notifications",
+    "message preview",
+    "hide notification text",
+    "dm alerts",
+    "who wrote notification"
+  ],
+  "chat.settings.notify.streamMode": [
+    "streamer mode",
+    "hide messages on stream",
+    "no text on broadcast",
+    "stream safe",
+    "privacy on air",
+    "stream mode",
+    "notifications during obs"
+  ],
+  "chat.settings.notify.sound": [
+    "notification sound",
+    "message beep",
+    "mute chat sound",
+    "quiet chat",
+    "message tone",
+    "mute chat",
+    "ding"
+  ],
+  "chat.settings.dock.title": [
+    "chat shortcut",
+    "open chat with key",
+    "chat hotkey",
+    "floating chat",
+    "dock",
+    "chat window",
+    "minimize chat"
+  ],
+  "chat.devices.list.title": [
+    "my devices",
+    "where am i signed in",
+    "sessions",
+    "sign out on other computer",
+    "unknown login",
+    "remove device",
+    "multiple devices",
+    "end session",
+    "hacked"
+  ],
+  "chat.settings.keys.title": [
+    "encryption",
+    "encryption keys",
+    "lost messages",
+    "reset keys",
+    "chat history gone",
+    "e2e",
+    "cannot read messages",
+    "keychain",
+    "restore chat"
+  ],
+  "chat.storage.entry.title": [
+    "chat images",
+    "how much space photos take",
+    "files from chat",
+    "disk space chat",
+    "chat media",
+    "clear chat photos",
+    "attachments",
+    "where chat photos are stored",
+    "pictures from chats"
+  ],
+  "chat.settings.policy.title": [
+    "chat rules",
+    "report",
+    "spam not allowed",
+    "is chat encrypted",
+    "moderation",
+    "what is not allowed",
+    "why banned",
+    "confidentiality",
+    "report user"
+  ],
+  "forge.title": [
+    "conversion",
+    "m4a",
+    "ffmpeg",
+    "transcoding",
+    "forge",
+    "processing downloaded tracks",
+    "codec",
+    "audio compression",
+    "processing queue",
+    "transcode"
+  ],
+  "settings.cache": [
+    "cache",
+    "free up space",
+    "clear memory",
+    "takes too much space",
+    "downloaded",
+    "save likes to disk",
+    "music without internet",
+    "listen offline",
+    "offline mode",
+    "disk full"
+  ],
+  "settings.audioCacheSize": [
+    "how much music takes",
+    "clear audio",
+    "delete tracks from disk",
+    "audio size",
+    "track cache",
+    "wipe downloaded music"
+  ],
+  "settings.assetsCacheSize": [
+    "clear pictures",
+    "cover cache",
+    "space taken by covers",
+    "delete avatars",
+    "assets",
+    "images on disk",
+    "image cache size"
+  ],
+  "settings.likedCacheSize": [
+    "likes on disk",
+    "offline playlists size",
+    "saved tracks",
+    "protected cache",
+    "clear likes",
+    "how much likes take",
+    "delete offline"
+  ],
+  "settings.audioCacheLimit": [
+    "cache limit",
+    "limit space",
+    "max gigabytes",
+    "do not save tracks",
+    "do not cache music",
+    "auto delete after playing",
+    "unlimited cache",
+    "music cache size"
+  ],
+  "settings.imageCacheLimit": [
+    "picture limit",
+    "limit cover cache",
+    "max for images",
+    "auto clean pictures",
+    "cover limit",
+    "image cache size"
+  ],
+  "settings.hoverPreload": [
+    "tracks load faster",
+    "instant start",
+    "preload",
+    "load in advance",
+    "hover and play",
+    "fast track start",
+    "delay before start"
+  ],
+  "settings.storageLocation": [
+    "different drive",
+    "move cache",
+    "music folder",
+    "move to d",
+    "where tracks are stored",
+    "change folder",
+    "storage place",
+    "ssd hdd",
+    "cache path",
+    "external drive"
+  ],
+  "settings.account": [
+    "sign out",
+    "sign in",
+    "switch account",
+    "login",
+    "log out",
+    "login by qr",
+    "authorization",
+    "transfer session",
+    "another account"
+  ],
+  "sync.title": [
+    "likes sync",
+    "likes not saving",
+    "soundcloud limits",
+    "changes not sent",
+    "429",
+    "sync queue",
+    "soundcloud rate limit",
+    "sign in again",
+    "sync",
+    "actions not going through"
+  ],
+  "elsewhere.equalizer": [
+    "equalizer",
+    "eq",
+    "audio equalizer",
+    "frequency bands",
+    "tune frequencies",
+    "preamp",
+    "equalizer preset",
+    "adjust sound for headphones",
+    "boost treble and bass",
+    "import apo preset"
+  ],
+  "elsewhere.effects": [
+    "bass boost",
+    "boost the bass",
+    "more bass",
+    "reverb",
+    "8d audio",
+    "8d",
+    "echo",
+    "sound effects",
+    "nightcore",
+    "slowed and reverb",
+    "club sound"
+  ],
+  "elsewhere.speed": [
+    "playback speed",
+    "speed up a track",
+    "slow down a track",
+    "pitch",
+    "change key",
+    "change song speed",
+    "faster slower",
+    "nightcore",
+    "slowed",
+    "sped up"
+  ],
+  "elsewhere.shortcuts": [
+    "keyboard shortcuts",
+    "shortcut list",
+    "list of hotkeys",
+    "shortcuts window",
+    "which keys are there",
+    "key cheat sheet",
+    "what to press to pause",
+    "all app keys"
+  ]
+}

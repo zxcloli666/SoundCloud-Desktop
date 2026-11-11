@@ -3,6 +3,7 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { readFileSync, realpathSync } from "node:fs";
 import { resolve } from "node:path";
+import { settingsIndexPlugin } from "./scripts/settings-index-plugin.mjs";
 
 // @ts-expect-error process is a nodejs global
 const host = process.env.TAURI_DEV_HOST;
@@ -38,7 +39,7 @@ export default defineConfig(async ({ command }) => ({
   define: {
     __APP_VERSION__: JSON.stringify(pkg.version),
   },
-  plugins: [react(), tailwindcss(), ...(chatLab ? [chatLabServer] : [])],
+  plugins: [react(), tailwindcss(), settingsIndexPlugin(), ...(chatLab ? [chatLabServer] : [])],
   build: {
     sourcemap: 'hidden',
     rollupOptions: {

@@ -1018,6 +1018,9 @@
   },
   "settings": {
     "title": "Configurações",
+    "search": "Buscar",
+    "searchClear": "Limpar",
+    "searchEmpty": "Nada encontrado",
     "cache": "Cache",
     "total": "Total",
     "audioCacheSize": "Áudio",
@@ -1468,6 +1471,8 @@
     "searchPlaybackResults": "Resultados da busca",
     "searchPlaybackSimilarDesc": "A faixa escolhida inicia uma onda de músicas parecidas, em vez do próximo resultado da busca",
     "searchPlaybackResultsDesc": "Os resultados da busca tocam um após o outro, na ordem",
+    "pointerPlayer": "Player",
+    "pointerApp": "App",
     "storageLocation": "Local do cache",
     "storageLocationDesc": "Onde ficam as faixas em cache e as faixas curtidas",
     "storageDefault": "Padrão",
@@ -2692,7 +2697,8 @@
     "sync": {
       "free": "Agora",
       "freeTime": "horas",
-      "starTime": "~2 min"
+      "starTime": "~2 min",
+      "queued": "Na fila"
     },
     "year": {
       "cta": "Ano",

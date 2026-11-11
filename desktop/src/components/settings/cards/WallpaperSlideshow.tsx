@@ -86,7 +86,7 @@ export function WallpaperSlideshow({ available }: { available: string[] }) {
             </button>
           </div>
 
-          <div className="space-y-2">
+          <div data-ui="settings-row" className="space-y-2">
             <span className="text-[12px] text-ink-40 font-medium">
               {t('settings.wpSlideshowInterval')}
             </span>
@@ -97,7 +97,7 @@ export function WallpaperSlideshow({ available }: { available: string[] }) {
             />
           </div>
 
-          <div className="space-y-2">
+          <div data-ui="settings-row" className="space-y-2">
             <span className="text-[12px] text-ink-40 font-medium">
               {t('settings.wpSlideshowOrder')}
             </span>

@@ -51,6 +51,9 @@
 | `[data-ui="player-title"]` | Название трека в плеере |
 | `[data-ui="player-rating"]` | Чип рейтинга трека (A, C, F) в плеере |
 | `[data-ui="play-button"]` | Пуск и пауза |
+| `[data-ui="player-tuning"]` | Кнопка скорости и питча в плеере |
+| `[data-ui="player-eq"]` | Кнопка эквалайзера в плеере |
+| `[data-ui="player-effects"]` | Кнопка эффектов в плеере (реверб, 8D, бас) |
 | `[data-ui="progress"]` | Полоса прогресса |
 | `[data-ui="volume"]` | Громкость |
 | `[data-ui="namecard"]` | Карточка, которая открывается по названию трека |
@@ -88,6 +91,7 @@
 | `[data-ui="tab"]` | Вкладка |
 | `[data-ui="chip"]` | Чипы жанров и фильтров |
 | `[data-ui="shelf"]` | Горизонтальная лента |
+| `[data-ui="sync-wait"]` | Библиотека ещё в очереди синхронизации: заготовки, карточка очереди, полоса на месте ленты, дорожка STAR. `[data-stage]`: `calm`, `long` или `priority`, `[data-kind]`: `syncing` или `stalled` |
 
 ### Элементы
 
@@ -104,6 +108,12 @@
 | `[data-ui="settings-nav"]` | Список разделов в Настройках |
 | `[data-ui="settings-nav-item"]` | Раздел в этом списке |
 | `[data-ui="settings-row"]` | Строка настройки |
+| `[data-ui="settings-search"]` | Поле поиска над списком разделов Настроек |
+| `[data-ui="settings-search-result"]` | Строка результата поиска, `[data-active]` равен `true` у подсвеченной |
+| `[data-ui="settings-search-results"]` | Список результатов поиска в Настройках |
+| `[data-ui="settings-search-count"]` | Число результатов рядом с заголовком поиска |
+| `[data-ui="settings-search-empty"]` | Блок «ничего не найдено» в поиске |
+| `[data-ui="settings-search-clear"]` | Кнопка очистки в поле поиска |
 | `[data-ui="switch"]` | Переключатель |
 | `[data-ui="segmented"]` | Группа вариантов |
 | `[data-ui="segment"]` | Вариант в группе |

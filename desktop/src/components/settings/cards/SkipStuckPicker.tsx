@@ -10,7 +10,7 @@ export function SkipStuckPicker() {
   const setSkipStuckAfterSec = useSettingsStore((s) => s.setSkipStuckAfterSec);
 
   return (
-    <div className="space-y-3 py-3 first:pt-0 last:pb-0">
+    <div data-ui="settings-row" className="space-y-3 py-3 first:pt-0 last:pb-0">
       <div className="min-w-0">
         <div className="text-[13.5px] text-ink-80 font-medium">{t('settings.skipStuck')}</div>
         <p className="text-[11.5px] text-ink-35 mt-0.5 leading-snug">

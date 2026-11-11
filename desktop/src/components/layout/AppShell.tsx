@@ -15,6 +15,7 @@ import {toggleWindowFullscreen} from '../../lib/window';
 import {useLyricsStore} from '../../stores/lyrics';
 import {usePlayerStore} from '../../stores/player';
 import {useSettingsStore} from '../../stores/settings';
+import {useShortcutsStore} from '../../stores/shortcuts';
 import {ChatDock} from '../chat/shell/ChatDock';
 import {ImportHost} from '../import/ImportHost';
 import {AddToPlaylistHost} from '../music/AddToPlaylistHost';
@@ -293,7 +294,8 @@ const isInputEl = (el: EventTarget | null) =>
 
 export const AppShell = React.memo(() => {
   const [queueOpen, setQueueOpen] = useState(false);
-  const [kbOpen, setKbOpen] = useState(false);
+  const kbOpen = useShortcutsStore((s) => s.open);
+  const setKbOpen = useShortcutsStore((s) => s.setOpen);
   const lyricsOpen = useLyricsStore((s) => s.open);
   const volumeHoldRef = useRef<{ key: string | null; repeatCount: number; lastAt: number }>({
     key: null,
@@ -302,7 +304,7 @@ export const AppShell = React.memo(() => {
   });
   const onQueueToggle = useCallback(() => setQueueOpen((v) => !v), []);
   const onQueueClose = useCallback(() => setQueueOpen(false), []);
-  const onShowShortcuts = useCallback(() => setKbOpen(true), []);
+  const onShowShortcuts = useCallback(() => useShortcutsStore.getState().setOpen(true), []);
   useAppContextMenu({ queueOpen, toggleQueue: onQueueToggle, showShortcuts: onShowShortcuts });
     const mainRef = useRef<HTMLElement>(null);
 
@@ -352,7 +354,7 @@ export const AppShell = React.memo(() => {
       // Ctrl+/ — toggle keybindings dialog (always)
       if ((e.key === '/' || code === 'Slash') && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
-        setKbOpen((v) => !v);
+        useShortcutsStore.getState().toggle();
         return;
       }
 
@@ -444,7 +446,7 @@ export const AppShell = React.memo(() => {
           break;
         case 'Escape':
             if (kbOpenRef.current) {
-            setKbOpen(false);
+            useShortcutsStore.getState().setOpen(false);
             break;
           }
           if (useLyricsStore.getState().open) useLyricsStore.getState().close();

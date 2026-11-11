@@ -30,7 +30,7 @@ export function SchemePicker() {
     const locked = useThemesStore(activeLook) !== null;
 
     return (
-        <div className="space-y-3">
+        <div data-ui="settings-row" className="space-y-3">
             <label className="text-[13px] text-ink-50 font-medium">{t('settings.scheme')}</label>
             <div className={`grid grid-cols-3 gap-3 ${locked ? 'opacity-50 pointer-events-none' : ''}`}>
                 {CHOICES.map((id) => {
