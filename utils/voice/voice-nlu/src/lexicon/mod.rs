@@ -11,6 +11,7 @@ mod noise;
 mod play;
 mod regional;
 mod seek;
+mod talk;
 mod transport;
 mod volume;
 
@@ -24,6 +25,7 @@ pub use noise::*;
 pub use play::*;
 pub use regional::*;
 pub use seek::*;
+pub use talk::*;
 pub use transport::*;
 pub use volume::*;
 
