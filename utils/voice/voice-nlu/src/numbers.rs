@@ -101,6 +101,7 @@ struct Acc {
     total: u32,
     cur: u32,
     open: bool,
+    said: bool,
 }
 
 impl Acc {
@@ -109,6 +110,7 @@ impl Acc {
             total: 0,
             cur: 0,
             open: false,
+            said: false,
         }
     }
 
@@ -139,48 +141,53 @@ impl Acc {
     fn value(&self) -> u32 {
         self.total + self.cur
     }
+
+    fn close(&mut self, out: &mut Vec<String>) {
+        if self.open {
+            out.push(self.value().to_string());
+        }
+        *self = Acc::new();
+    }
 }
 
 pub fn merge(tokens: &[String], spelled: bool) -> Vec<String> {
     let mut out = Vec::new();
     let mut acc = Acc::new();
     for t in tokens {
-        let w = word(t).or_else(|| {
-            if spelled {
-                spelled_english(t).map(|n| {
-                    if n >= 20 {
-                        Word::Ten(n)
-                    } else if n >= 10 {
-                        Word::Teen(n)
-                    } else {
-                        Word::Unit(n)
-                    }
-                })
-            } else {
-                None
-            }
-        });
-        match w {
-            Some(w) => {
-                if !acc.accept(w) {
-                    out.push(acc.value().to_string());
-                    acc = Acc::new();
-                    acc.accept(w);
-                }
-            }
-            None => {
-                if acc.open {
-                    out.push(acc.value().to_string());
-                    acc = Acc::new();
-                }
-                out.push(t.clone());
-            }
+        let said = word(t).or_else(|| english(t).filter(|_| spelled));
+        let Some(part) = said.or_else(|| written(t)) else {
+            acc.close(&mut out);
+            out.push(t.clone());
+            continue;
+        };
+        let joins = (said.is_some() || acc.said) && acc.accept(part);
+        if !joins {
+            acc.close(&mut out);
+            acc.accept(part);
         }
+        acc.said |= said.is_some();
     }
-    if acc.open {
-        out.push(acc.value().to_string());
-    }
+    acc.close(&mut out);
     out
+}
+
+fn english(w: &str) -> Option<Word> {
+    spelled_english(w).map(|n| match n {
+        20.. => Word::Ten(n),
+        10.. => Word::Teen(n),
+        _ => Word::Unit(n),
+    })
+}
+
+fn written(w: &str) -> Option<Word> {
+    let n = value(w).filter(|n| n.to_string() == w)?;
+    match n {
+        1..=9 => Some(Word::Unit(n)),
+        10..=19 => Some(Word::Teen(n)),
+        20..=99 if n % 10 == 0 => Some(Word::Ten(n)),
+        100..=999 if n % 100 == 0 => Some(Word::Hundred(n)),
+        _ => None,
+    }
 }
 
 pub fn is_number(w: &str) -> bool {
