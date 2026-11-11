@@ -74,6 +74,16 @@ fn a_greeting_after_a_play_verb_is_kept_as_a_name() {
 }
 
 #[test]
+fn a_greeting_said_alone_is_not_a_name_to_look_up() {
+    for text in ["привет", "hi", "hello", "Hello!"] {
+        let p = parse(text);
+        assert_eq!(p.intent, Intent::None, "{text}");
+        assert!(p.queries.is_empty(), "{text}");
+    }
+    assert!(!parse("hello from the other side").queries.is_empty());
+}
+
+#[test]
 fn slots_split_artist_and_title() {
     let p = parse("включи песню притон от скриптонита");
     assert_eq!(p.intent, Intent::Play);

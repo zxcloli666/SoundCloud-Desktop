@@ -90,9 +90,11 @@ pub(crate) fn parse_toks(text: &str, mut toks: Vec<Tok>) -> (Parsed, bool) {
                     || lexicon::PLAY_WEAK.contains(&w))
         })
     };
+    let greets = |t: &Tok| lexicon::GREETINGS.contains(&t.w.as_str());
     let bare = det.intent == Intent::None
         && queries.iter().any(|q| !q.kept_fillers)
         && toks.len() <= 8
+        && !toks.iter().all(greets)
         && !edge(toks.first())
         && !edge(toks.last());
     let queries = if det.intent == Intent::None && !bare {
