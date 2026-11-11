@@ -3,6 +3,7 @@ use crate::lexicon::{self, FILLERS, PAUSE_WORDS, PRE, STOP_WORDS};
 const GLUE_VERBS: &[&str] = &["включи", "вруби", "поставь", "запусти", "сыграй"];
 const GLUED_FROM: usize = 4;
 const WHAT_IS: (&str, &str) = ("вот", "из");
+const WISH: &[&str] = &["чтобы", "чтоб", "шоб"];
 
 fn known(w: &str) -> bool {
     lexicon::is_known(w) || lexicon::slang(w).is_some()
@@ -14,8 +15,8 @@ pub fn context(words: Vec<String>) -> Vec<String> {
     for i in 0..words.len() {
         let next = words.get(i + 1).map(String::as_str).unwrap_or("");
         let loud = next.starts_with("громк") || next.starts_with("звук");
-        let after_wish = i > 0 && (words[i - 1] == "чтобы" || words[i - 1] == "шоб")
-            || i > 1 && (words[i - 2] == "чтобы" || words[i - 2] == "шоб");
+        let wish = |back: usize| i >= back && WISH.contains(&words[i - back].as_str());
+        let after_wish = wish(1) || wish(2);
         let to = match words[i].as_str() {
             "накинь" | "подкинь" | "подкрути" | "добавь" if loud => {
                 "прибавь"
@@ -23,6 +24,9 @@ pub fn context(words: Vec<String>) -> Vec<String> {
             "скинь" | "сбрось" | "скрути" | "прикрути" if loud => "убавь",
             "включила" | "включил" if after_wish => "включи",
             "поставила" | "поставил" if after_wish => "поставь",
+            "играло" | "играла" | "заиграло" | "заиграла" if after_wish => {
+                "играй"
+            }
             "ван" if i > 0 && words[i - 1] == "репит" => "one",
             _ => continue,
         };

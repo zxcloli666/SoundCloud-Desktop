@@ -501,3 +501,23 @@ fn playing_in_a_circle_is_repeat() {
     assert_eq!(steps("включи песню по кругу"), ["play"]);
     assert_eq!(steps("давай по кругу"), ["play"]);
 }
+
+#[test]
+fn a_wish_that_it_played_is_a_request_to_play() {
+    for (heard, want) in [
+        ("сделай пожалуйста чтобы играло", "resume"),
+        ("хочу чтобы играло", "resume"),
+        ("надо чтоб заиграло", "resume"),
+        ("сделай чтобы играла музыка", "play_wave"),
+    ] {
+        assert_eq!(steps(heard), [want], "{heard}");
+    }
+    for silent in [
+        "я хотел чтобы она играла на пианино",
+        "она играла на пианино",
+        "играло и играло",
+    ] {
+        assert_eq!(steps(silent), ["none"], "{silent}");
+    }
+    assert_eq!(words("что там играло"), "что там играло");
+}
