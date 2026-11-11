@@ -581,3 +581,18 @@ fn a_clipped_next_or_previous_before_a_track_word_is_the_full_word() {
     assert_eq!(words("включи след"), "включи след");
     assert_eq!(words("включи трек след"), "включи трек след");
 }
+
+#[test]
+fn a_hiccup_or_a_cough_around_a_command_is_noise() {
+    for (heard, want) in [
+        ("сделай по громче ик", "volume_up"),
+        ("ик пауза", "pause"),
+        ("следующий кхм", "next"),
+        ("стоп кхе кхе", "stop"),
+    ] {
+        assert_eq!(steps(heard), [want], "{heard}");
+    }
+    for silent in ["ик", "кхм кхм", "ик ик ик"] {
+        assert_eq!(steps(silent), ["none"], "{silent}");
+    }
+}
