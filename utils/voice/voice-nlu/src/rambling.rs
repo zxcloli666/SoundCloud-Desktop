@@ -1,9 +1,9 @@
 use crate::anchor::{self, Found};
 use crate::intent::{self, Detected, Negation};
 use crate::lexicon::{
-    self, ATTENTION, COMPLAINT, DENY, DOWN_WORDS, FED_UP, GENERIC, IMPERATIVES, OBJECT_VERBS,
-    PLAY_STRONG, PLAY_WEAK, PLAYER, PRE, REMARK_START, REPORT, RESUME_FILL, RESUME_WORDS, ROOM,
-    UP_WORDS,
+    self, ATTENTION, COMPLAINT, DENY, DOWN_WORDS, FED_UP, GENERIC, IDLE, IMPERATIVES, NEG_STEMS,
+    OBJECT_VERBS, PLAY_STRONG, PLAY_WEAK, PLAYER, PRE, REASON, REMARK_START, REPORT, RESUME_FILL,
+    RESUME_WORDS, ROOM, UP_WORDS, WARNING,
 };
 use crate::normalize::Tok;
 use crate::numbers;
@@ -115,12 +115,15 @@ fn fits(c: &Clause, det: &Detected) -> bool {
     let resumes = |t: &Tok| RESUME_WORDS.contains(&t.w.as_str());
     match det.intent {
         Intent::Play => named(c, det),
-        Intent::PlayWave | Intent::PlayLikes => c.said.len() > 1 && c.tail.is_empty(),
+        Intent::PlayWave | Intent::PlayLikes => {
+            c.said.len() > 1 && (c.tail.is_empty() || reason(c.tail))
+        }
+        Intent::Undo => c.said.len() > 1 && remark(c, det.intent),
         Intent::Resume if !c.said.iter().any(resumes) => false,
         i if anchor::allowed(i) => {
             let complained = fed_up(c.head) || c.head.iter().any(player);
             let about_playback = specific(c.said) || (complained && !denied(c.head));
-            (c.head.is_empty() || about_playback) && remark(c)
+            (c.head.is_empty() || about_playback) && remark(c, i)
         }
         _ => false,
     }
@@ -159,15 +162,52 @@ fn fed_up(words: &[Tok]) -> bool {
         .any(|t| COMPLAINT.contains(&t.w.as_str()) || FED_UP.contains(&t.w.as_str()))
 }
 
+fn reason(tail: &[Tok]) -> bool {
+    let that_which = tail.len() > 1 && tail[0].w == "то" && tail[1].w == "что";
+    REASON.contains(&tail[0].w.as_str()) && !that_which && !denied(tail)
+}
+
 fn denied(tail: &[Tok]) -> bool {
     tail.iter().any(|t| DENY.contains(&t.w.as_str()))
 }
 
-fn remark(c: &Clause) -> bool {
-    c.tail.is_empty() || (!denied(c.tail) && anchor::tail_ok(c.tail, c.said))
+fn remark(c: &Clause, intent: Intent) -> bool {
+    let tail = c.tail;
+    if tail.is_empty() {
+        return true;
+    }
+    !denied(tail)
+        && (forbids_other(c)
+            || urges(tail)
+            || fed_up(tail)
+            || intent::detect(tail).intent == intent
+            || anchor::tail_ok(tail, c.said)
+            || (intent == Intent::Undo && anchor::remark_after(tail, c.said)))
+}
+
+fn forbids_other(c: &Clause) -> bool {
+    let padding = |t: &Tok| WARNING.contains(&t.w.as_str());
+    let Some(not) = c.tail.iter().position(|t| t.w == "не") else {
+        return false;
+    };
+    let Some((verb, after)) = c.tail[not + 1..].split_first() else {
+        return false;
+    };
+    let mut stems = NEG_STEMS.iter().filter(|stem| verb.w.starts_with(**stem));
+    let same_action = |stem: &str| c.said.iter().any(|t| t.w.contains(stem));
+    c.tail[..not].iter().all(padding)
+        && after.iter().all(padding)
+        && lexicon::stem(NEG_STEMS, &verb.w)
+        && !stems.any(|stem| same_action(stem))
+}
+
+fn urges(tail: &[Tok]) -> bool {
+    let asks = matches!(tail[0].w.as_str(), "что" | "чего");
+    let you = usize::from(tail.get(1).is_some_and(|t| t.w == "ты"));
+    asks && tail.len() == you + 2 && IDLE.contains(&tail[you + 1].w.as_str())
 }
 
 fn affirmed(toks: &[Tok], end: usize, c: &Clause) -> bool {
     let clear = |words: &[Tok]| matches!(intent::negation(words), Negation::Clear);
-    clear(&toks[..end]) && clear(c.tail)
+    clear(&toks[..end]) && (clear(c.tail) || forbids_other(c))
 }

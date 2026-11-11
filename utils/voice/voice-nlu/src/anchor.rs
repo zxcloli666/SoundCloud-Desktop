@@ -57,9 +57,10 @@ fn single_command(t: &Tok) -> bool {
 
 pub fn tail_ok(tail: &[Tok], window: &[Tok]) -> bool {
     let last = window.last().map(|t| t.w.as_str()).unwrap_or("");
-    if BLOCK_TAIL.contains(&last) {
-        return false;
-    }
+    !BLOCK_TAIL.contains(&last) && remark_after(tail, window)
+}
+
+pub fn remark_after(tail: &[Tok], window: &[Tok]) -> bool {
     let (Some(first), Some(last_tail)) = (tail.first(), tail.last()) else {
         return true;
     };

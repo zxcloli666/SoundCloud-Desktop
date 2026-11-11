@@ -320,3 +320,78 @@ fn talk_that_only_mentions_command_words_stays_silent() {
         assert!(said[0].queries.iter().any(|q| q.text == name), "{text}");
     }
 }
+
+#[test]
+fn a_ban_on_another_action_after_a_command_leaves_the_command() {
+    let cases = [
+        (
+            "лоля я на минутку отойду поставь пока на паузу ничего не переключай",
+            Intent::Pause,
+        ),
+        ("поставь на паузу и ничего не трогай", Intent::Pause),
+        ("сделай потише только не выключай", Intent::VolumeDown),
+        ("включи кино и больше ничего не трогай", Intent::Play),
+    ];
+    for (text, intent) in cases {
+        assert_eq!(intents(text), [intent], "{text}");
+    }
+    let taken_back = [
+        "поставь на паузу не надо",
+        "переключи не переключай",
+        "сделай потише не делай потише",
+        "не трогай",
+    ];
+    for text in taken_back {
+        assert_eq!(intents(text), [Intent::None], "{text}");
+    }
+}
+
+#[test]
+fn a_nudge_or_a_complaint_after_a_command_is_a_remark() {
+    let cases = [
+        ("продолжай чё встала", Intent::Resume),
+        ("переключи чего ждёшь", Intent::Next),
+        ("выключи что ты молчишь", Intent::Stop),
+        ("переключи надоела эта песня", Intent::Next),
+        ("сделай потише достало уже", Intent::VolumeDown),
+        ("верни как было я случайно", Intent::Undo),
+    ];
+    for (text, intent) in cases {
+        assert_eq!(intents(text), [intent], "{text}");
+    }
+    let object = [
+        "выключи музыку и свет",
+        "повтори что ты сказала",
+        "повтори ещё раз что ты сказал",
+    ];
+    for text in object {
+        assert!(!steps(text).iter().any(acts_on_its_own), "{text}");
+    }
+}
+
+#[test]
+fn the_same_request_said_in_two_ways_is_one_command() {
+    let cases = [
+        ("сука громче сделай нихуя не слышно", Intent::VolumeUp),
+        ("сделай потише слишком громко", Intent::VolumeDown),
+        ("убавь звук оглохнуть можно", Intent::VolumeDown),
+    ];
+    for (text, intent) in cases {
+        assert_eq!(intents(text), [intent], "{text}");
+    }
+}
+
+#[test]
+fn a_reason_after_a_request_for_any_music_is_not_a_name() {
+    let cases = [
+        "слушай лоля я тут устал как собака после работы включи пожалуйста что-нибудь спокойное а то голова раскалывается",
+        "включи что-нибудь спокойное а то голова раскалывается",
+        "включи музыку а то скучно",
+        "поставь что-нибудь весёлое чтобы не уснуть",
+    ];
+    for text in cases {
+        assert_eq!(intents(text), [Intent::PlayWave], "{text}");
+    }
+    let named = &steps("включи музыку то что вчера играло")[0];
+    assert_eq!(named.intent, Intent::Play);
+}

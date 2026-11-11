@@ -40,6 +40,7 @@ pub const NEG_STEMS: &[&str] = &[
     "убира",
     "отключа",
     "выключа",
+    "трога",
     "mute",
     "unmute",
     "skip",
