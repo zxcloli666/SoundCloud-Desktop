@@ -321,3 +321,14 @@ fn the_same_question_or_state_asked_twice_is_one_step() {
     assert_eq!(steps("поставь на паузу и останови"), ["pause", "stop"]);
     assert_eq!(steps("громче и ещё громче"), ["volume_up", "volume_up"]);
 }
+
+#[test]
+fn a_hurry_word_after_a_link_is_not_a_second_command_or_a_name() {
+    assert_eq!(steps("включи уже что-нибудь и побыстрее"), ["play_wave"]);
+    assert_eq!(steps("давай что-нибудь поскорее"), ["play_wave"]);
+    assert_eq!(steps("включи музыку и побыстрее"), ["play_wave"]);
+    assert_eq!(steps("поставь на паузу побыстрее"), ["pause"]);
+    assert_eq!(steps("следующую и поскорее"), ["next"]);
+    let p = one("включи кино побыстрее");
+    assert!(asks_for(&p, "кино"));
+}
