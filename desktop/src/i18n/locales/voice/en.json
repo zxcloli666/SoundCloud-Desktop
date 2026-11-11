@@ -158,6 +158,7 @@
       "memoryClear": "Forget all",
       "memoryClearYes": "Yes, forget all",
       "memoryForget": "Forget",
+      "memoryFull": "Memory is full",
       "busy": "Too many questions in a row, give me a minute",
       "down": "Can't answer right now",
       "lost": "The reply didn't come through",

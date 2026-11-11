@@ -9,7 +9,7 @@ import { applySetting, readSettings } from './app-settings';
 import type { Brief } from './context';
 import { chatIpc } from './ipc';
 import { goTo } from './navigator';
-import { addNote, dropNote, type Forgot } from './notes';
+import { addNote, dropNote, type Forgot, type Kept } from './notes';
 import { type CurrentLinks, type Page, pageTarget, type SettingsSection } from './pages';
 import type { AppPort, OpenResult } from './ports';
 
@@ -60,12 +60,11 @@ function showLyrics(shown: boolean) {
   else useLyricsStore.getState().close();
 }
 
-function remember(note: string): boolean {
+function remember(note: string): Kept {
   const store = useVoiceStore.getState();
-  const next = addNote(store.notes, note);
-  if (next === store.notes) return false;
-  store.setNotes(next);
-  return true;
+  const res = addNote(store.notes, note);
+  if (res.state === 'ok') store.setNotes(res.notes);
+  return res.state;
 }
 
 function forget(note: string): Forgot {

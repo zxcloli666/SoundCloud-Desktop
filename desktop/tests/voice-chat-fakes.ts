@@ -1,5 +1,5 @@
 import type { Brief } from '../src/lib/voice/chat/context';
-import { dropNote } from '../src/lib/voice/chat/notes.ts';
+import { addNote, dropNote } from '../src/lib/voice/chat/notes.ts';
 import type { AppPort } from '../src/lib/voice/chat/ports';
 import type { SettingKey, SettingValue } from '../src/lib/voice/chat/settings';
 import type {
@@ -86,9 +86,9 @@ export function fakeApp(): FakeApp {
       app.values[key] = value;
     },
     remember: (note) => {
-      if (!note.trim()) return false;
-      app.notes.push(note);
-      return true;
+      const res = addNote(app.notes, note);
+      app.notes = res.notes;
+      return res.state;
     },
     forget: (note) => {
       const res = dropNote(app.notes, note);

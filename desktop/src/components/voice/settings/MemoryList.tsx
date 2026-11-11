@@ -1,8 +1,9 @@
 import { type FormEvent, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Plus, X } from '../../../lib/icons';
-import { addNote, NOTE_MAX } from '../../../lib/voice/chat/notes';
+import { addNote, NOTE_MAX, NOTES_CAP } from '../../../lib/voice/chat/notes';
 import { useVoiceStore } from '../../../lib/voice/store';
+import { CircleAlert } from '../icons';
 
 function Note({ text, onForget }: { text: string; onForget: () => void }) {
   const { t } = useTranslation();
@@ -27,7 +28,7 @@ function Note({ text, onForget }: { text: string; onForget: () => void }) {
   );
 }
 
-function AddNote({ onAdd }: { onAdd: (text: string) => void }) {
+function AddNote({ full, onAdd }: { full: boolean; onAdd: (text: string) => void }) {
   const { t } = useTranslation();
   const [text, setText] = useState('');
   const submit = (e: FormEvent) => {
@@ -39,19 +40,25 @@ function AddNote({ onAdd }: { onAdd: (text: string) => void }) {
   return (
     <form
       onSubmit={submit}
-      className="group flex h-9 items-center gap-2 rounded-xl border border-dashed border-ink/[0.12] px-3 transition-colors duration-300 focus-within:border-accent/50 focus-within:border-solid hover:border-ink/[0.2]"
+      data-full={full}
+      className="group flex h-9 items-center gap-2 rounded-xl border border-dashed border-ink/[0.12] px-3 transition-colors duration-300 focus-within:border-accent/50 focus-within:border-solid hover:border-ink/[0.2] data-[full=true]:cursor-not-allowed data-[full=true]:border-solid data-[full=true]:border-amber-400/25 data-[full=true]:bg-amber-400/[0.06]"
     >
-      <Plus
-        size={13}
-        className="shrink-0 text-ink-30 transition-colors group-focus-within:text-accent"
-      />
+      {full ? (
+        <CircleAlert size={13} className="shrink-0 text-amber-300" />
+      ) : (
+        <Plus
+          size={13}
+          className="shrink-0 text-ink-30 transition-colors group-focus-within:text-accent"
+        />
+      )}
       <input
         value={text}
         maxLength={NOTE_MAX}
+        disabled={full}
         onChange={(e) => setText(e.target.value)}
-        placeholder={t('voice.chat.memoryAdd')}
+        placeholder={t(full ? 'voice.chat.memoryFull' : 'voice.chat.memoryAdd')}
         aria-label={t('voice.chat.memoryAdd')}
-        className="min-w-0 flex-1 bg-transparent text-[12.5px] text-ink-90 outline-none placeholder:text-ink-30"
+        className="min-w-0 flex-1 bg-transparent text-[12.5px] text-ink-90 outline-none placeholder:text-ink-30 disabled:cursor-not-allowed disabled:placeholder:text-ink-60"
       />
     </form>
   );
@@ -77,7 +84,10 @@ export function MemoryList() {
           ))}
         </ul>
       )}
-      <AddNote onAdd={(text) => setNotes(addNote(notes, text))} />
+      <AddNote
+        full={notes.length >= NOTES_CAP}
+        onAdd={(text) => setNotes(addNote(notes, text).notes)}
+      />
     </div>
   );
 }

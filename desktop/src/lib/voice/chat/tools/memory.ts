@@ -13,10 +13,13 @@ export function memoryTools(app: AppPort): ChatTool[] {
     {
       name: 'remember',
       description:
-        'Keep a short fact the user asked to remember, in one sentence. It comes back in notes.',
+        'Keep a short fact the user asked to remember, in one sentence. It comes back in notes. Fails with full when there is no room: one has to be forgotten first.',
       args: NOTE,
       returns: false,
-      run: async (args) => (app.remember(String(args.note)) ? { result: ok() } : fail('empty')),
+      run: async (args) => {
+        const state = app.remember(String(args.note));
+        return state === 'ok' ? { result: ok() } : fail(state);
+      },
     },
     {
       name: 'forget',

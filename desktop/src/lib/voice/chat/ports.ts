@@ -1,6 +1,6 @@
 import type { Entity, EntityKind } from '../types';
 import type { Brief } from './context';
-import type { Forgot } from './notes';
+import type { Forgot, Kept } from './notes';
 import type { Page, SettingsSection } from './pages';
 import type { SettingKey, SettingValue } from './settings';
 
@@ -16,6 +16,6 @@ export interface AppPort {
   pickPlaylist(): boolean;
   settings(): Record<SettingKey, SettingValue>;
   applySetting(key: SettingKey, value: SettingValue): void;
-  remember(note: string): boolean;
+  remember(note: string): Kept;
   forget(note: string): Forgot;
 }

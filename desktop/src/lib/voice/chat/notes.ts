@@ -2,6 +2,7 @@ export const NOTES_CAP = 30;
 export const NOTE_MAX = 160;
 const LOOSE_MIN = 3;
 
+export type Kept = 'ok' | 'empty' | 'full';
 export type Forgot = 'ok' | 'not_found' | 'ambiguous';
 
 function tidy(text: string): string {
@@ -14,11 +15,13 @@ function fold(text: string): string {
     .replace(/[.!?…]+$/u, '');
 }
 
-export function addNote(notes: string[], text: string): string[] {
+export function addNote(notes: string[], text: string): { notes: string[]; state: Kept } {
   const note = tidy(text);
-  if (!note) return notes;
+  if (!note) return { notes, state: 'empty' };
   const key = fold(note);
-  return [...notes.filter((n) => fold(n) !== key), note].slice(-NOTES_CAP);
+  const rest = notes.filter((n) => fold(n) !== key);
+  if (rest.length >= NOTES_CAP) return { notes, state: 'full' };
+  return { notes: [...rest, note], state: 'ok' };
 }
 
 export function dropNote(notes: string[], text: string): { notes: string[]; state: Forgot } {

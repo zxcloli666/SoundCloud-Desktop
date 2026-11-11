@@ -57,7 +57,7 @@ export function ChatCard() {
           title={t('voice.chat.memory')}
           control={
             <>
-              <Pill tone={count > 0 ? 'accent' : 'muted'}>
+              <Pill tone={count >= NOTES_CAP ? 'warn' : count > 0 ? 'accent' : 'muted'}>
                 <span className="font-mono tabular-nums">
                   {count}/{NOTES_CAP}
                 </span>

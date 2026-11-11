@@ -208,19 +208,27 @@ test('a new exchange after the silence starts the dialog over; empty replies are
   assert.equal(silent.length, 1);
 });
 
-test('notes: trimmed, deduplicated, capped, the oldest goes first', () => {
-  let notes: string[] = [];
-  notes = addNote(notes, '  Любит   джаз. ');
+test('notes: trimmed, cut to length, a repeat replaces the older wording', () => {
+  let notes = addNote([], '  Любит   джаз. ').notes;
   assert.deepEqual(notes, ['Любит джаз.']);
-  assert.equal(addNote(notes, '   '), notes);
-  notes = addNote(notes, 'Зовут Аня');
-  notes = addNote(notes, 'любит джаз');
-  assert.deepEqual(notes, ['Зовут Аня', 'любит джаз']);
-  assert.equal(Array.from(addNote([], 'я'.repeat(400))[0]).length, NOTE_MAX);
-  for (let n = 0; n < NOTES_CAP + 5; n++) notes = addNote(notes, `факт ${n}`);
-  assert.equal(notes.length, NOTES_CAP);
-  assert.equal(notes[0], 'факт 5');
-  assert.equal(notes[NOTES_CAP - 1], `факт ${NOTES_CAP + 4}`);
+  assert.deepEqual(addNote(notes, '   '), { notes, state: 'empty' });
+  notes = addNote(notes, 'Зовут Аня').notes;
+  assert.deepEqual(addNote(notes, 'любит джаз'), {
+    notes: ['Зовут Аня', 'любит джаз'],
+    state: 'ok',
+  });
+  assert.equal(Array.from(addNote([], 'я'.repeat(400)).notes[0]).length, NOTE_MAX);
+});
+
+test('notes: a full memory refuses a new fact and loses none, a repeat still fits', () => {
+  const full = Array.from({ length: NOTES_CAP }, (_, n) => `факт ${n}`);
+  assert.deepEqual(addNote(full, 'ещё один'), { notes: full, state: 'full' });
+  const again = addNote(full, 'Факт 0.');
+  assert.equal(again.state, 'ok');
+  assert.deepEqual(again.notes, [...full.slice(1), 'Факт 0.']);
+  const room = addNote(full.slice(1), 'ещё один');
+  assert.equal(room.state, 'ok');
+  assert.equal(room.notes.length, NOTES_CAP);
 });
 
 test('notes: forget by the same text, or by a part that fits one note only', () => {

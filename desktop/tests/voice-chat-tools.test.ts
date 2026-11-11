@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { readArgs } from '../src/lib/voice/chat/args.ts';
+import { NOTES_CAP } from '../src/lib/voice/chat/notes.ts';
 import { parseSetting, SETTING_KEYS } from '../src/lib/voice/chat/settings.ts';
 import { chatTools, runTool } from '../src/lib/voice/chat/tools/index.ts';
 import type { ChatTool } from '../src/lib/voice/chat/types';
@@ -285,6 +286,20 @@ test('remember and forget keep notes through the app', async () => {
   assert.deepEqual((await run('forget', { note: 'аня' })).result, { ok: true });
   assert.deepEqual(app.notes, ['Любит джаз', 'Любит рок']);
   assert.deepEqual((await run('remember', {})).result, { ok: false, reason: 'bad_args:note' });
+});
+
+test('remember refuses when the memory is full and evicts nothing', async () => {
+  const { app, run } = setup();
+  const full = Array.from({ length: NOTES_CAP }, (_, n) => `факт ${n}`);
+  app.notes = full;
+  assert.deepEqual((await run('remember', { note: 'Любит джаз' })).result, {
+    ok: false,
+    reason: 'full',
+  });
+  assert.deepEqual(app.notes, full);
+  await run('forget', { note: 'факт 0' });
+  assert.deepEqual((await run('remember', { note: 'Любит джаз' })).result, { ok: true });
+  assert.equal(app.notes.length, NOTES_CAP);
 });
 
 test('undo reverts the last voice action and reports when there is none', async () => {
