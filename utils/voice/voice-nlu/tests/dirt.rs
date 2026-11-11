@@ -153,7 +153,6 @@ fn english_command_words_written_in_cyrillic_are_read_as_english() {
         ("тёрн ит ап", "turn it up"),
         ("вольюм даун", "volume down"),
         ("рипит офф", "repeat off"),
-        ("репит он", "repeat on"),
         ("вот из зис сонг", "what is this song"),
         ("вотс плейинг нау", "whats playing now"),
         ("скип зис сонг", "skip this song"),
@@ -194,8 +193,10 @@ fn a_russian_word_that_sounds_english_stays_russian_among_russian_words() {
     assert_eq!(words("вот скип"), "вот skip");
     assert_eq!(words("плей ласковый май"), "play ласковый май");
     assert_eq!(steps("вот скип"), ["next"]);
-    assert_eq!(steps("вот он"), ["none"]);
-    assert_eq!(steps("он даун"), ["none"]);
+    for silent in ["вот он", "он даун", "он офф", "шат"] {
+        assert_eq!(steps(silent), ["none"], "{silent}");
+    }
+    assert!(names("включи зис").contains(&"зис".to_string()));
 }
 
 #[test]
@@ -553,7 +554,6 @@ fn rude_and_roundabout_english_is_read_like_its_russian_counterpart() {
         ("can't hear the music", "volume_up"),
         ("shut up", "stop"),
         ("just shut the fuck up", "stop"),
-        ("шат ап", "stop"),
     ] {
         assert_eq!(steps(heard), [want], "{heard}");
     }

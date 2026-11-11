@@ -1,4 +1,4 @@
-use crate::lexicon::{self, FILLERS, KIND_TRACK, PAUSE_WORDS, PRE, STOP_WORDS};
+use crate::lexicon::{self, ENGLISH_LOANS, FILLERS, KIND_TRACK, PAUSE_WORDS, PRE, STOP_WORDS};
 
 const GLUE_VERBS: &[&str] = &["включи", "вруби", "поставь", "запусти", "сыграй"];
 const GLUED_FROM: usize = 4;
@@ -43,6 +43,7 @@ fn english_by_ear(words: Vec<String>) -> Vec<String> {
             english(w)
                 || w == WHAT_IS.0
                 || lexicon::english_among_english(w).is_some()
+                || lexicon::has(ENGLISH_LOANS, w)
                 || lexicon::has(FILLERS, w)
         });
     let read = |i: usize| {

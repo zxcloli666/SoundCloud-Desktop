@@ -106,8 +106,6 @@ pub const EXACT: &[(&str, &str)] = &[
 ];
 
 const ENGLISH: &[(&str, &str)] = &[
-    ("зе", "the"),
-    ("зис", "this"),
     ("сонг", "song"),
     ("мьюзик", "music"),
     ("хелп", "help"),
@@ -116,15 +114,15 @@ const ENGLISH: &[(&str, &str)] = &[
     ("вотс", "whats"),
     ("плейинг", "playing"),
     ("лаудер", "louder"),
-    ("шат", "shut"),
 ];
 
 const ENGLISH_PRONOUNS: &[(&str, &str)] =
     &[("ми", "me"), ("май", "my"), ("ит", "it"), ("ю", "you")];
 
 const ENGLISH_AMONG_ENGLISH: &[(&str, &str)] = &[
+    ("зе", "the"),
+    ("зис", "this"),
     ("из", "is"),
-    ("он", "on"),
     ("нау", "now"),
     ("терн", "turn"),
     ("ту", "to"),
@@ -132,26 +130,11 @@ const ENGLISH_AMONG_ENGLISH: &[(&str, &str)] = &[
     ("кен", "can"),
 ];
 
+pub const ENGLISH_LOANS: &[&str] = &["стоп", "трек", "лайк", "плейлист"];
+
 const ENDINGS: &[&str] = &[
-    "",
-    "й",
-    "и",
-    "ь",
-    "йте",
-    "ите",
-    "ни",
-    "нить",
-    "нуть",
-    "ть",
-    "ай",
-    "ать",
-    "ну",
-    "ем",
-    "нем",
-    "уй",
-    "уйте",
-    "ани",
-    "ануть",
+    "", "й", "и", "ь", "йте", "ите", "ни", "нить", "нуть", "ть", "ай", "ать", "ну", "ем", "нем",
+    "уй", "уйте", "ани",
 ];
 
 const STEMS: &[(&str, &str)] = &[
@@ -190,17 +173,17 @@ pub fn canon(w: &str) -> Option<&'static str> {
     written(w).or_else(|| heard(w))
 }
 
-fn heard(w: &str) -> Option<&'static str> {
-    let word = super::by_ear(w)?;
-    Some(written(word).or_else(|| super::slang(word)).unwrap_or(word))
+pub fn english_among_english(w: &str) -> Option<&'static str> {
+    english_pronoun(w).or_else(|| read(ENGLISH_AMONG_ENGLISH, w))
 }
 
 pub fn english_pronoun(w: &str) -> Option<&'static str> {
     read(ENGLISH_PRONOUNS, w)
 }
 
-pub fn english_among_english(w: &str) -> Option<&'static str> {
-    english_pronoun(w).or_else(|| read(ENGLISH_AMONG_ENGLISH, w))
+fn heard(w: &str) -> Option<&'static str> {
+    let word = super::by_ear(w)?;
+    Some(written(word).or_else(|| super::slang(word)).unwrap_or(word))
 }
 
 fn written(w: &str) -> Option<&'static str> {
@@ -215,14 +198,14 @@ fn written(w: &str) -> Option<&'static str> {
     })
 }
 
-fn read(pairs: &[(&str, &'static str)], w: &str) -> Option<&'static str> {
-    pairs.iter().find(|(from, _)| *from == w).map(|(_, to)| *to)
-}
-
 fn loan(w: &str) -> Option<&'static str> {
     let w = w.replace('э', "е");
     STEMS.iter().find_map(|(stem, to)| {
         let ending = w.strip_prefix(stem)?;
         ENDINGS.contains(&ending).then_some(*to)
     })
+}
+
+fn read(pairs: &[(&str, &'static str)], w: &str) -> Option<&'static str> {
+    pairs.iter().find(|(from, _)| *from == w).map(|(_, to)| *to)
 }
