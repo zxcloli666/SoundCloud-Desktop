@@ -110,6 +110,9 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
     used.extend(noun);
     used.extend((0..c.len()).filter(|&i| crate::numbers::is_number(c.w[i])));
     used.extend(c.all(PLAY_STRONG));
+    used.extend(super::seek::hedges(c));
+    let wait = super::seek::wait(c);
+    used.extend(wait.iter().copied());
     used.extend(c.all(&[
         "up",
         "down",
@@ -124,9 +127,13 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
     if (up || down) && c.stray(&used) > 0 {
         return None;
     }
+    let step = (0..c.len())
+        .filter(|i| !wait.contains(i))
+        .find_map(|i| crate::numbers::value(c.w[i]))
+        .filter(|_| !times);
     let found = |intent| {
         let d = Detected::new(intent, used.clone());
-        match number {
+        match step {
             Some(n) => d.number(n.min(100)),
             None => d,
         }

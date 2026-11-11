@@ -11,6 +11,12 @@ fn base(c: &Ctx, i: usize) -> Vec<usize> {
     used
 }
 
+fn held(c: &Ctx, i: usize) -> Vec<usize> {
+    let mut used = base(c, i);
+    used.extend(super::seek::wait(c));
+    used
+}
+
 fn complaint(c: &Ctx) -> bool {
     let marked = c.has(COMPLAINT) || (c.has(&["не"]) && c.has(&["то"]));
     marked
@@ -61,12 +67,12 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
         .pos_stem(&["пауз", "запауз", "pause"])
         .or_else(|| c.pos(PAUSE_WORDS))
     {
-        if c.stray(&base(c, i)) == 0 {
+        if c.stray(&held(c, i)) == 0 {
             return Some(Detected::new(Intent::Pause, vec![i]));
         }
     }
     if let Some(i) = c.pos_stem(&["стоп", "stop"]).or_else(|| c.pos(STOP_WORDS)) {
-        if c.stray(&base(c, i)) == 0 {
+        if c.stray(&held(c, i)) == 0 {
             return Some(Detected::new(Intent::Stop, vec![i]));
         }
     }

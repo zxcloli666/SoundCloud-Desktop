@@ -36,6 +36,7 @@ pub const SEC_UNITS: &[&str] = &[
     "секунду",
     "секунды",
     "секунда",
+    "секундочку",
     "сек",
     "second",
     "seconds",
@@ -59,6 +60,8 @@ pub const MIN_UNITS: &[&str] = &[
 pub const HALF_MINUTE: &[&str] = &["полминуты", "полминуту", "полминутки"];
 
 pub const ONE_AND_HALF: &[&str] = &["полторы", "полтора"];
+
+pub const ROUGHLY: &[&str] = &["примерно", "приблизительно", "около", "гдето", "этак"];
 
 pub const SET_VERBS: &[&str] = &["поставь", "переведи", "поставить", "установи"];
 
