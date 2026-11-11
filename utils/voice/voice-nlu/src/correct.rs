@@ -20,6 +20,7 @@ const REPLACE: &[&[&str]] = &[
 ];
 
 const AT_LEAST: &[&str] = &["хотя", "бы"];
+const RESTART: &str = "давай";
 
 const NEGATING: &[&[&str]] = &[&["а", "не"], &["только", "не"], &["но", "не"], &["и", "не"]];
 
@@ -28,84 +29,89 @@ fn starts(ws: &[String], at: usize, marker: &[&str]) -> bool {
 }
 
 fn skip_noise(ws: &[String], mut at: usize) -> usize {
-    while at + 1 < ws.len() && CORRECTION_NOISE.contains(&ws[at].as_str()) {
+    while at + 1 < ws.len() && noise(&ws[at]) {
         at += 1;
     }
     at
+}
+
+fn noise(w: &str) -> bool {
+    CORRECTION_NOISE.contains(&w)
 }
 
 fn toks(ws: &[String]) -> Vec<Tok> {
     normalize(&ws.join(" ")).toks
 }
 
+#[derive(Default)]
+struct Version {
+    words: Vec<String>,
+    marked: bool,
+}
+
 pub fn resolve(text: &str) -> Option<Vec<Tok>> {
-    let ws = words(text);
-    let mut segs: Vec<Vec<String>> = Vec::new();
-    let mut cur: Vec<String> = Vec::new();
+    let versions = versions(&words(text))?;
+    Some(versions.into_iter().fold(Vec::new(), merge))
+}
+
+fn versions(ws: &[String]) -> Option<Vec<Version>> {
+    let mut said: Vec<Version> = Vec::new();
+    let mut cur = Version::default();
     let mut dropping = false;
     let mut found = false;
     let mut i = 0;
     while i < ws.len() {
-        let negating = NEGATING.iter().find(|m| i > 0 && starts(&ws, i, m));
-        let loose = ws[i] == "лучше" && i >= 2 && i + 1 < ws.len();
-        let replace = REPLACE
-            .iter()
-            .find(|m| starts(&ws, i, m) && !starts(&ws, i, AT_LEAST))
-            .map(|m| m.len())
-            .or(loose.then_some(1))
-            .filter(|len| skip_noise(&ws, i + len) < ws.len());
-        if let Some(m) = negating {
+        if let Some(len) = rejected(ws, i) {
             found = true;
-            if !dropping {
-                segs.push(std::mem::take(&mut cur));
-            }
             dropping = true;
-            i += m.len();
-            continue;
-        }
-        if let Some(len) = replace {
+            i += len;
+        } else if let Some(end) = marker(ws, i) {
             found = true;
-            if !dropping {
-                segs.push(std::mem::take(&mut cur));
-            }
             dropping = false;
-            i = skip_noise(&ws, i + len);
-            continue;
+            let next = Version {
+                words: Vec::new(),
+                marked: true,
+            };
+            said.push(std::mem::replace(&mut cur, next));
+            i = end;
+        } else {
+            if !dropping {
+                cur.words.push(ws[i].clone());
+            }
+            i += 1;
         }
-        if !dropping {
-            cur.push(ws[i].clone());
-        }
-        i += 1;
     }
-    if !found {
-        return None;
-    }
-    if !dropping {
-        segs.push(cur);
-    }
-    let mut acc: Vec<Tok> = Vec::new();
-    for seg in segs.into_iter().filter(|s| !s.is_empty()) {
-        acc = merge(acc, seg);
-    }
-    Some(acc)
+    said.push(cur);
+    found.then_some(said)
 }
 
-fn after_not(seg: &[String]) -> Option<Vec<String>> {
-    if seg.first().map(String::as_str) != Some("не") {
-        return None;
-    }
-    let cut = seg.iter().position(|w| w == "а")?;
-    Some(seg[cut + 1..].to_vec())
+fn rejected(ws: &[String], i: usize) -> Option<usize> {
+    let negating = NEGATING.iter().find(|m| i > 0 && starts(ws, i, m));
+    negating.map(|m| m.len())
 }
 
-fn merge(prev: Vec<Tok>, seg: Vec<String>) -> Vec<Tok> {
-    let (seg, via_not) = match after_not(&seg) {
+fn marker(ws: &[String], i: usize) -> Option<usize> {
+    let loose = ws[i] == "лучше" && i >= 2 && i + 1 < ws.len();
+    let len = REPLACE
+        .iter()
+        .find(|m| starts(ws, i, m) && !starts(ws, i, AT_LEAST))
+        .map(|m| m.len())
+        .or(loose.then_some(1))?;
+    let end = skip_noise(ws, i + len);
+    (end < ws.len()).then_some(end)
+}
+
+fn merge(said: Vec<Tok>, version: Version) -> Vec<Tok> {
+    if !version.marked {
+        return toks(&version.words);
+    }
+    let (words, alternative) = match after_not(&version.words) {
         Some(rest) => (rest, true),
-        None => (seg, false),
+        None => (version.words.as_slice(), false),
     };
-    let next = toks(&seg);
+    let next = toks(after_remark(words));
     if next.is_empty() {
-        return prev;
+        return said;
     }
     if next[0].w == "оставь" {
         return if next.len() == 1 {
@@ -114,7 +120,7 @@ fn merge(prev: Vec<Tok>, seg: Vec<String>) -> Vec<Tok> {
             toks(&["верни".into(), "как".into(), "было".into()])
         };
     }
-    let part = reworded::amount(&prev, &next).or_else(|| reworded::direction(&prev, &next));
+    let part = reworded::amount(&said, &next).or_else(|| reworded::direction(&said, &next));
     if let Some(same_command) = part {
         return same_command;
     }
@@ -122,22 +128,38 @@ fn merge(prev: Vec<Tok>, seg: Vec<String>) -> Vec<Tok> {
     if found.intent != crate::types::Intent::None && !found.blocked {
         return next;
     }
-    let slot = prev.iter().rposition(|t| numbers::is_number(&t.w));
+    let slot = said.iter().rposition(|t| numbers::is_number(&t.w));
     let digit = next.iter().find(|t| numbers::is_number(&t.w));
     if let (Some(at), Some(d)) = (slot, digit) {
-        let mut out = prev;
+        let mut out = said;
         out[at] = d.clone();
         return out;
     }
-    let before = intent::detect(&prev);
+    let before = intent::detect(&said);
     let mut head: Vec<Tok> = before
         .used
         .iter()
-        .filter_map(|&i| prev.get(i).cloned())
+        .filter_map(|&i| said.get(i).cloned())
         .collect();
-    if head.is_empty() && via_not {
+    if head.is_empty() && alternative {
         head = toks(&["включи".into()]);
     }
     head.extend(next);
     head
+}
+
+fn after_not(said: &[String]) -> Option<&[String]> {
+    if said.first().map(String::as_str) != Some("не") {
+        return None;
+    }
+    let cut = said.iter().position(|w| w == "а")?;
+    Some(&said[cut + 1..])
+}
+
+fn after_remark(said: &[String]) -> &[String] {
+    let restart = said.iter().rposition(|w| w == RESTART).filter(|&at| at > 0);
+    match restart {
+        Some(at) if said[at + 1..].iter().any(|w| !noise(w)) => &said[skip_noise(said, at + 1)..],
+        _ => said,
+    }
 }

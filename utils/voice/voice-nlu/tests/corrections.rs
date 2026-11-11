@@ -111,3 +111,24 @@ fn a_corrected_direction_keeps_the_amount() {
     assert_eq!(steps("поставь на паузу а нет дальше"), ["next"]);
     assert_eq!(steps("перемотай назад нет дальше"), ["next"]);
 }
+
+#[test]
+fn a_remark_before_the_new_version_is_left_out() {
+    let p = one("поставь плейлист для сна нет рано еще давай вечеринку");
+    assert_eq!(p.intent, Intent::Play);
+    assert!(asks_for(&p, "вечеринку"));
+    assert!(!mentions(&p, "сна"));
+    let p = one("включи земфиру нет слишком грустно давай монеточку");
+    assert!(asks_for(&p, "монеточку"));
+    assert!(!mentions(&p, "грустно"));
+    let p = one("громкость на семьдесят ой много давай на тридцать");
+    assert_eq!((p.intent, p.number), (Intent::VolumeSet, Some(30)));
+    assert_eq!(
+        steps("следующий нет не хочу давай предыдущий"),
+        ["previous"]
+    );
+    let p = one("включи кино нет сплин давай");
+    assert!(asks_for(&p, "сплин"));
+    let p = one("земфиру давай включи а не сплин");
+    assert!(asks_for(&p, "земфиру"));
+}
