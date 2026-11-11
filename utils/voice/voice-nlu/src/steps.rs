@@ -11,7 +11,7 @@ const HARD: &[&str] = &["и", "and"];
 const SOFT: &[&str] = &["потом", "затем", "then", "только"];
 const AFTER: &[&str] = &["него", "этого", "нее", "нее"];
 
-enum Side {
+pub(crate) enum Side {
     Cmd(Parsed),
     Foreign,
     Other,
@@ -84,7 +84,7 @@ fn link(toks: &[Tok], i: usize) -> Option<Link> {
     None
 }
 
-fn side(toks: &[Tok], text: &str) -> Side {
+pub(crate) fn side(toks: &[Tok], text: &str) -> Side {
     let (p, blocked) = parse_toks(text, toks.to_vec());
     if p.intent != Intent::None && (!p.intent.needs_entity() || !p.queries.is_empty()) {
         Side::Cmd(p)
@@ -95,7 +95,7 @@ fn side(toks: &[Tok], text: &str) -> Side {
     }
 }
 
-fn plan(toks: &[Tok], text: &str, inherit: bool) -> Option<Vec<Parsed>> {
+pub(crate) fn plan(toks: &[Tok], text: &str, inherit: bool) -> Option<Vec<Parsed>> {
     linked(toks, text, inherit).or_else(|| juxtaposed(toks, text))
 }
 

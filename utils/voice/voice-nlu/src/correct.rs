@@ -3,6 +3,7 @@ use crate::lexicon::CORRECTION_NOISE;
 use crate::normalize::{Tok, normalize, words};
 use crate::numbers;
 use crate::reworded;
+use crate::steps::{self, Side};
 
 const REPLACE: &[&[&str]] = &[
     &["или", "нет"],
@@ -124,8 +125,7 @@ fn merge(said: Vec<Tok>, version: Version) -> Vec<Tok> {
     if let Some(same_command) = part {
         return same_command;
     }
-    let found = intent::detect(&next);
-    if found.intent != crate::types::Intent::None && !found.blocked {
+    if orders(&next) {
         return next;
     }
     let slot = said.iter().rposition(|t| numbers::is_number(&t.w));
@@ -162,4 +162,8 @@ fn after_remark(said: &[String]) -> &[String] {
         Some(at) if said[at + 1..].iter().any(|w| !noise(w)) => &said[skip_noise(said, at + 1)..],
         _ => said,
     }
+}
+
+fn orders(said: &[Tok]) -> bool {
+    matches!(steps::side(said, ""), Side::Cmd(_)) || steps::plan(said, "", false).is_some()
 }

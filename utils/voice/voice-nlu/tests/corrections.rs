@@ -132,3 +132,23 @@ fn a_remark_before_the_new_version_is_left_out() {
     let p = one("земфиру давай включи а не сплин");
     assert!(asks_for(&p, "земфиру"));
 }
+
+#[test]
+fn the_new_version_is_read_the_way_a_whole_phrase_is() {
+    assert_eq!(
+        steps("поставь на паузу нет сделай потише и переключи"),
+        ["volume_down", "next"]
+    );
+    assert_eq!(
+        steps("включи кино нет поставь на паузу и сделай тише"),
+        ["pause", "volume_down"]
+    );
+    assert_eq!(steps("пауза ой следующий я хотел сказать"), ["next"]);
+    assert_eq!(steps("громче нет тише я сказал"), ["volume_down"]);
+    assert_eq!(
+        steps("лайкни нет лучше перемешай и поставь на повтор"),
+        ["shuffle_on", "repeat_one"]
+    );
+    assert_ne!(steps("включи а нет погоди я сам"), ["pause"]);
+    assert_eq!(steps("следующий нет погоди предыдущий"), ["previous"]);
+}
