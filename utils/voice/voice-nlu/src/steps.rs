@@ -45,7 +45,7 @@ pub fn parse(text: &str, names: &Names) -> Vec<Parsed> {
     let raw = crate::normalize::words(text_in);
     let repeated = raw.windows(2).any(|p| p[0] == p[1]);
     if whole.intent == Intent::None {
-        if repeated {
+        if repeated || correct::denies(text_in) {
             whole.bare = false;
             whole.queries.clear();
         }

@@ -85,6 +85,11 @@ pub fn resolve(text: &str) -> Option<Vec<Tok>> {
     Some(acc)
 }
 
+pub fn denies(text: &str) -> bool {
+    let ws = words(text);
+    (1..ws.len()).any(|i| NEGATING.iter().any(|m| starts(&ws, i, m)))
+}
+
 fn after_not(seg: &[String]) -> Option<Vec<String>> {
     if seg.first().map(String::as_str) != Some("не") {
         return None;

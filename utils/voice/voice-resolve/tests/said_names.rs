@@ -340,3 +340,17 @@ fn what_the_speaker_says_they_do_is_not_a_misheard_command() {
         ("паусу", "pause"),
     ]);
 }
+
+#[test]
+fn a_phrase_without_a_verb_that_takes_back_a_part_of_itself_is_talk() {
+    heard_either_way(&[
+        ("звери а не люди", "none"),
+        ("кино а не звери", "none"),
+        ("скриптонит но не баста", "none"),
+        ("ленинград это город а не группа", "none"),
+        ("включи кино а не звери", "play Кино"),
+        ("вруби басту а не стой лучше скриптонита", "play Скриптонит"),
+        ("не кино а звери", "play Звери"),
+        ("звери", "play Звери"),
+    ]);
+}
