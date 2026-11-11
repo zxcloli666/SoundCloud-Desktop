@@ -293,3 +293,21 @@ fn such_said_alone_or_as_so_so_is_an_opinion_not_a_request_for_similar_music() {
         ("включи похожее", "play_similar"),
     ]);
 }
+
+#[test]
+fn a_halt_asked_for_a_while_is_that_halt_and_its_time_is_not_a_seek() {
+    acts(&[
+        ("не могла бы ты поставить на паузу на секундочку", "pause"),
+        ("поставь на паузу на секундочку", "pause"),
+        ("на секундочку паузу", "pause"),
+        ("пауза на минуту", "pause"),
+        ("поставь на паузу на пару минут", "pause"),
+        ("пауза на 30 секунд", "pause"),
+        ("поставь на паузу на полчаса", "pause"),
+        ("стоп на минуту", "stop"),
+        ("останови на секунду", "stop"),
+        ("перемотай на минуту", "seek_forward"),
+        ("на 30 секунд назад", "seek_backward"),
+    ]);
+    stays_silent(&["пауза в разговоре затянулась", "пауза на обед"]);
+}
