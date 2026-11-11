@@ -186,3 +186,34 @@ fn an_album_or_a_playlist_called_by_its_kind_plays_however_little_known() {
         assert_eq!(heard("тише едешь", bare), "none");
     }
 }
+
+const SAME_WORD: &str = "kind\tname\tartist\tpopularity\taliases
+playlist\tChill Vibes\t\t900000\tчилл
+track\tChill\tНикто\t800000\t
+";
+
+#[test]
+fn a_name_said_exactly_goes_before_a_better_known_one_that_is_only_called_so() {
+    heard_either_way(&[
+        ("плейлист чилл поставь", "play Chill?"),
+        ("поставь плейлист чилл", "play Chill?"),
+        ("включи чилл", "play Chill?"),
+        ("включи чил вайбс", "play Chill Vibes"),
+    ]);
+    for bare in BOTH {
+        let asked_kind = heard_in(SAME_WORD, "плейлист чилл поставь", bare);
+        assert_eq!(asked_kind, "play Chill Vibes");
+        let any_kind = heard_in(SAME_WORD, "включи чилл", bare);
+        assert_eq!(any_kind, "play Никто - Chill");
+    }
+}
+
+#[test]
+fn a_far_less_known_name_said_exactly_stays_behind_the_known_one() {
+    heard_either_way(&[
+        ("включи викенд", "play The Weeknd"),
+        ("включи weekend", "play The Weeknd"),
+        ("включи скриптонид", "play Скриптонит"),
+        ("включи макс корш", "play Макс Корж"),
+    ]);
+}

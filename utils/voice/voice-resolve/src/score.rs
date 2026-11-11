@@ -93,11 +93,13 @@ pub fn rank(parsed: &Parsed, cands: Vec<Entity>, boosts: &Boosts) -> Vec<Scored>
     if named_is_missing {
         out.retain(|s| s.sim >= HEARD_MIN);
     }
-    if let Some(top) = out.first().filter(|s| s.alias) {
+    if let Some(top) = out.first().filter(|s| s.alias || s.sim < HEARD_MIN) {
         let floor = top.entity.popularity / POPULARITY_GAP;
-        let heard = out.iter().position(|s| {
-            !s.alias && !s.fallback && s.sim >= HEARD_MIN && s.entity.popularity >= floor
-        });
+        let asked = |s: &Scored| parsed.kind_hint.is_none_or(|kind| s.entity.kind == kind);
+        let named = |s: &Scored| !s.alias && !s.fallback && s.sim >= HEARD_MIN;
+        let heard = out
+            .iter()
+            .position(|s| named(s) && asked(s) && s.entity.popularity >= floor);
         if let Some(i) = heard {
             let exact = out.remove(i);
             out.insert(0, exact);
