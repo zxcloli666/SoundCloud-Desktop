@@ -2697,7 +2697,8 @@
     "sync": {
       "free": "Agora",
       "freeTime": "horas",
-      "starTime": "~2 min"
+      "starTime": "~2 min",
+      "queued": "Na fila"
     },
     "year": {
       "cta": "Ano",

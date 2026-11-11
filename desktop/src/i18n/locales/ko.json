@@ -2554,7 +2554,8 @@
     "sync": {
       "free": "지금",
       "freeTime": "시간",
-      "starTime": "약 2분"
+      "starTime": "약 2분",
+      "queued": "대기 중"
     },
     "year": {
       "cta": "1년",

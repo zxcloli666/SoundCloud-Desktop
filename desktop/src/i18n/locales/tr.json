@@ -2635,7 +2635,8 @@
     "sync": {
       "free": "Şimdi",
       "freeTime": "saat",
-      "starTime": "~2 dk"
+      "starTime": "~2 dk",
+      "queued": "Sırada"
     },
     "year": {
       "cta": "Yıl",

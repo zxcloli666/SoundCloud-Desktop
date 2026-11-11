@@ -16,6 +16,7 @@ import {SequenceList} from '../components/playlist/SequenceList';
 import {SetRibbon} from '../components/playlist/SetRibbon';
 import {usePlaylistAura} from '../components/playlist/usePlaylistAura';
 import {Atmosphere} from '../components/search/Atmosphere';
+import {WaitStrip} from '../components/sync-wait/WaitStrip';
 import {LoadErrorState, RefreshPendingHint} from '../components/ui/LoadErrorState';
 import {SyncNotice, syncNoticeOf} from '../components/ui/SyncNotice';
 import {playlistScope} from '../lib/bulk-cache';
@@ -28,10 +29,11 @@ import {
     useUpdatePlaylistTracks,
 } from '../lib/hooks';
 import {usePlaylistDelivery} from '../lib/playlist-delivery';
-import {AlertCircle, Check, ChevronLeft, X} from '../lib/icons';
+import {AlertCircle, Check, ChevronLeft, ListMusic, X} from '../lib/icons';
 import {usePerfMode} from '../lib/perf';
 import {rawPlaylistCover} from '../lib/playlist-cover';
 import {armPlaylistContinuation} from '../lib/queue-continuation';
+import {isWaitKind} from '../lib/sync-wait';
 import {type ArrangeMode, arrangeTracks} from '../lib/track-order';
 import {sortTracks, type TrackSort} from '../lib/track-sort';
 import {useAuthStore} from '../stores/auth';
@@ -329,6 +331,21 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
     });
     if (notice === 'refused' && tracksSyncInfo.errorCode === 'auth_required' && !isOwner) {
       return <SyncNotice kind="refused" text={t('playlist.tracksUnavailable')} onRetry={retry} />;
+    }
+    if (isWaitKind(notice) && isOwner && serverTracks.length > 0) {
+      return (
+        <WaitStrip
+          kind={notice}
+          since={tracksSyncInfo.waitingSince}
+          scope="tracks"
+          icon={<ListMusic size={16} />}
+          title={t('playlist.partialTracks', {
+            shown: serverTracks.length,
+            total: declaredCount,
+            count: declaredCount,
+          })}
+        />
+      );
     }
     if (notice) {
       return <SyncNotice kind={notice} info={tracksSyncInfo} ownedByMe={isOwner} onRetry={retry} />;
