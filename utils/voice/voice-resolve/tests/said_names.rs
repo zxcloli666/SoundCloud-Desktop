@@ -372,3 +372,29 @@ fn a_version_of_a_title_is_the_title_by_the_artist_who_plays_that_version() {
         ),
     ]);
 }
+
+#[test]
+fn of_two_names_to_ask_about_the_one_closer_to_what_was_said_goes_first() {
+    heard_either_way(&[
+        ("мотыльков вруби", "play Мотыльки?"),
+        ("мотыльков вруби лоля", "play Мотыльки?"),
+        (
+            "включи караоке версию блайндинг лайтс",
+            "play Weeknd Karaoke - Blinding Lights?",
+        ),
+        (
+            "включи блайндинг лайтс караоке",
+            "play Weeknd Karaoke - Blinding Lights?",
+        ),
+    ]);
+}
+
+#[test]
+fn of_two_names_equally_close_the_better_known_one_still_goes_first() {
+    heard_either_way(&[
+        ("включи кукушку", "play Кино - Кукушка?"),
+        ("включи хочу", "play Земфира - Хочу?"),
+        ("включи группу крови", "play Кино - Группа крови?"),
+        ("включи мотылька", "play Макс Корж - Мотылёк"),
+    ]);
+}

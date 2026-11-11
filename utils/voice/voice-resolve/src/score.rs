@@ -38,6 +38,7 @@ pub const BARE_MIN: f32 = 0.88;
 pub const WEAK_VERB_MIN: f32 = 0.88;
 pub const ASK_RATIO: f32 = 0.92;
 const EXACT_LEAD: f32 = 0.07;
+const CLOSER_LEAD: f32 = 0.04;
 const FALLBACK_YIELD: f32 = 0.76;
 const POPULARITY_GAP: u64 = 50;
 const HEARD_MIN: f32 = 0.99;
@@ -186,10 +187,7 @@ pub fn decide(ranked: &[Scored], bare: bool) -> Decision {
         .find(|s| top.fallback || !s.fallback)
         .filter(|s| s.sim.min(1.0) >= ask);
     if sim < act {
-        return Decision::Ask {
-            first: top.clone(),
-            second: second.cloned(),
-        };
+        return asked(top, second);
     }
     if let Some(second) = second {
         let clear_lead = top.sim >= 0.95 && second.sim <= top.sim - EXACT_LEAD;
@@ -197,11 +195,19 @@ pub fn decide(ranked: &[Scored], bare: bool) -> Decision {
             || top.entity.popularity > second.entity.popularity.saturating_mul(POPULARITY_GAP)
                 && (top.sim - second.sim).abs() < 0.03;
         if !dominant && second.sim.min(1.0) >= act && second.score >= top.score * ASK_RATIO {
-            return Decision::Ask {
-                first: top.clone(),
-                second: Some(second.clone()),
-            };
+            return asked(top, Some(second));
         }
     }
     Decision::Act { pick: top.clone() }
+}
+
+fn asked(top: &Scored, second: Option<&Scored>) -> Decision {
+    let (first, second) = match second {
+        Some(closer) if closer.sim >= top.sim + CLOSER_LEAD => (closer, Some(top)),
+        _ => (top, second),
+    };
+    Decision::Ask {
+        first: first.clone(),
+        second: second.cloned(),
+    }
 }
