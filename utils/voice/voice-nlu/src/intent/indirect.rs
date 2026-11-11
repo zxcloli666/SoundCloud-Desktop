@@ -1,5 +1,5 @@
 use super::ctx::{Ctx, Detected};
-use crate::lexicon::PRE;
+use crate::lexicon::{BEFORE_THIS, PRE};
 use crate::types::Intent;
 
 const FILL: &[&str] = &[
@@ -42,7 +42,7 @@ const COMMANDING: &[&str] = &[
     "сделать",
 ];
 
-struct Rule {
+pub(super) struct Rule {
     min: usize,
     needs: &'static [&'static [&'static str]],
     extra: &'static [&'static str],
@@ -57,7 +57,7 @@ impl Rule {
     }
 }
 
-const fn rule(
+pub(super) const fn rule(
     needs: &'static [&'static [&'static str]],
     extra: &'static [&'static str],
     forbid: &'static [&'static str],
@@ -72,7 +72,7 @@ const fn rule(
     }
 }
 
-const THIS: &[&str] = &[
+pub(super) const THIS: &[&str] = &[
     "этот",
     "эта",
     "эту",
@@ -91,21 +91,6 @@ const PAST: &[&str] = &[
     "поставила",
     "выбрала",
     "выбрал",
-];
-
-const BEFORE_THIS: &[&str] = &[
-    "которая",
-    "который",
-    "была",
-    "был",
-    "играла",
-    "играл",
-    "до",
-    "перед",
-    "этого",
-    "этой",
-    "этим",
-    "раньше",
 ];
 
 const RULES: &[Rule] = &[
@@ -357,36 +342,6 @@ const RULES: &[Rule] = &[
         Intent::PlayWave,
     ),
     rule(&[&["музыку"]], &[], &[], Intent::PlayWave),
-    rule(
-        &[&["завязывай", "заканчивай", "кончай"]],
-        &["с", "этой", "музыкой", "музыку", "эту", "песней", "уже"],
-        &["не"],
-        Intent::Stop,
-    ),
-    rule(
-        &[&["hear"], &["cant", "cannot", "barely", "hardly"]],
-        &["anything", "it", "the", "music", "this", "a", "thing"],
-        &[],
-        Intent::VolumeUp,
-    ),
-    rule(
-        &[&["shut"], &["up"]],
-        &["the", "hell", "fuck", "already"],
-        &[],
-        Intent::Stop,
-    ),
-    rule(
-        &[&["заебала", "заебало", "заебал"], THIS],
-        &[],
-        &[],
-        Intent::Next,
-    ),
-    rule(
-        &[&["орать", "орет", "орешь", "ори"], &["тише", "потише"]],
-        &["хватит", "сделай", "чего", "давай"],
-        &[],
-        Intent::VolumeDown,
-    ),
 ];
 
 pub fn detect(c: &Ctx) -> Option<Detected> {
@@ -399,7 +354,7 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
     if c.w.iter().filter(|w| **w == "снова").count() >= 2 {
         return Some(Detected::new(Intent::RepeatOne, vec![]));
     }
-    for r in RULES {
+    for r in RULES.iter().chain(super::blunt::RULES) {
         if c.len() < r.min {
             continue;
         }
