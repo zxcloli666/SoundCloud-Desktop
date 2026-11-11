@@ -97,7 +97,7 @@ impl Default for Timing {
             ask: Duration::from_secs(8),
             done: Duration::from_secs(10),
             chat: Duration::from_secs(60),
-            synth: Duration::from_secs(20),
+            synth: Duration::from_secs(30),
             release: Duration::from_millis(80),
         }
     }

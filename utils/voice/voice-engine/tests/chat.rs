@@ -49,6 +49,24 @@ impl Voice for Tone {
     }
 }
 
+struct Restarted {
+    wait: Duration,
+}
+
+impl Voice for Restarted {
+    fn rate(&self) -> u32 {
+        RATE
+    }
+
+    fn say(&mut self, text: &str, sink: &mut dyn Sink) -> Result<(), String> {
+        std::thread::sleep(self.wait);
+        sink.again();
+        std::thread::sleep(self.wait);
+        sink.audio(vec![tone(text); length(text)]);
+        Ok(())
+    }
+}
+
 fn length(text: &str) -> usize {
     text.chars().count() * PER_CHAR
 }
@@ -358,4 +376,23 @@ fn a_command_reply_is_still_one_phrase() {
         ["Ставлю на паузу. Потом продолжу, если захочешь."]
     );
     assert_eq!(streams(&rig), 1);
+}
+
+#[test]
+fn a_voice_that_starts_the_phrase_over_is_waited_for_anew() {
+    let mut brief = timing();
+    brief.synth = Duration::from_secs(4);
+    let wait = Duration::from_millis(2500);
+    let rig = rig_speaking(Restarted { wait }, brief);
+    rig.engine.send(Command::Text {
+        text: "пауза".into(),
+        source: Source::Button,
+        id: None,
+    });
+    rig.expect_state(State::Thinking);
+    let command = rig.command();
+    rig.done(&command.id, "Ставлю на паузу.");
+    rig.expect_state(State::Speaking);
+    rig.expect_state(State::Idle);
+    assert_eq!(rig.heard.voiced(), length("Ставлю на паузу."));
 }

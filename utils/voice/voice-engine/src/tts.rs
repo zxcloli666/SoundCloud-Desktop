@@ -4,13 +4,13 @@ use std::sync::mpsc::{RecvTimeoutError, Sender, channel};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
-use voice_qwen::Sink;
+use voice_qwen::{Paths, Qwen, RATE, Sink};
 
 use crate::cache::{self, Cache};
 use crate::clip::Clip;
 use crate::config::Language;
 use crate::kokoro::{Frontends, Line};
-use crate::qwen::{self, Paths, Qwen};
+use crate::qwen;
 use crate::shape::Shaper;
 
 const REST: Duration = Duration::from_secs(120);
@@ -48,6 +48,8 @@ pub enum Piece {
     Audio { rate: u32, samples: Vec<f32> },
     End,
     Failed(String),
+    Again,
+    Trouble(String),
 }
 
 pub type Reply = Box<dyn Fn(u64, Piece) + Send>;
@@ -103,7 +105,8 @@ impl Tts {
                         Ok(Job::Warm(paths, speaker)) => {
                             let at = asked.load(Ordering::Relaxed);
                             let busy = || asked.load(Ordering::Relaxed) != at;
-                            voices.qwen.warm(&paths, speaker, &busy);
+                            voices.qwen.warm(&paths, &qwen::trial(speaker), &busy);
+                            voices.tell(&reply);
                         }
                         Ok(Job::Say(say)) => {
                             let out = Out {
@@ -120,6 +123,7 @@ impl Tts {
                                     Ordering::Relaxed,
                                 );
                             }
+                            voices.tell(&reply);
                         }
                         Err(RecvTimeoutError::Timeout) => voices.qwen.rest(),
                         Err(RecvTimeoutError::Disconnected) => return,
@@ -158,16 +162,24 @@ impl Out<'_> {
             (self.reply)(self.r#gen, Piece::Audio { rate, samples });
         }
     }
+
+    fn again(&self) {
+        (self.reply)(self.r#gen, Piece::Again);
+    }
 }
 
 impl Sink for Live<'_> {
     fn audio(&mut self, samples: Vec<f32>) {
         self.raw.extend_from_slice(&samples);
-        self.out.audio(qwen::RATE, self.shaper.push(samples));
+        self.out.audio(RATE, self.shaper.push(samples));
     }
 
     fn wanted(&self) -> bool {
         self.out.wanted()
+    }
+
+    fn again(&mut self) {
+        self.out.again();
     }
 }
 
@@ -179,9 +191,19 @@ impl Sink for Plain<'_> {
     fn wanted(&self) -> bool {
         self.out.wanted()
     }
+
+    fn again(&mut self) {
+        self.out.again();
+    }
 }
 
 impl Voices {
+    fn tell(&mut self, reply: &Reply) {
+        for trouble in self.qwen.troubles() {
+            reply(0, Piece::Trouble(trouble));
+        }
+    }
+
     fn say(&mut self, say: &Say, out: &Out) -> bool {
         let result = match &say.source {
             Source::Kokoro { dir, file, speaker } => self.kokoro(say, dir, file, *speaker, out),
@@ -230,11 +252,11 @@ impl Voices {
         cached_as: &str,
         out: &Out,
     ) -> Result<(), String> {
-        let mut shaper = Shaper::new(qwen::RATE, say.speed, say.pitch);
+        let mut shaper = Shaper::new(RATE, say.speed, say.pitch);
         let key = cache::key(&[cached_as, &say.text]);
-        if let Some(clip) = self.cache.get(&key).filter(|clip| clip.rate == qwen::RATE) {
-            out.audio(qwen::RATE, shaper.push(clip.samples));
-            out.audio(qwen::RATE, shaper.finish());
+        if let Some(clip) = self.cache.get(&key).filter(|clip| clip.rate == RATE) {
+            out.audio(RATE, shaper.push(clip.samples));
+            out.audio(RATE, shaper.finish());
             return Ok(());
         }
         let mut live = Live {
@@ -242,15 +264,16 @@ impl Voices {
             shaper: &mut shaper,
             raw: Vec::new(),
         };
-        self.qwen.say(paths, speaker, &say.text, &mut live)?;
+        let request = qwen::request(&say.text, speaker);
+        self.qwen.say(paths, &request, &mut live)?;
         let raw = live.raw;
         if out.wanted() {
-            out.audio(qwen::RATE, shaper.finish());
+            out.audio(RATE, shaper.finish());
             self.cache.put(
                 &key,
                 &Clip {
                     samples: raw,
-                    rate: qwen::RATE,
+                    rate: RATE,
                 },
             );
         }

@@ -8,7 +8,7 @@ use voice_audio::routing::same_physical;
 use crate::clip::Clip;
 use crate::config::{Config, Language, SpeakMode};
 use crate::draft::Draft;
-use crate::event::State;
+use crate::event::{Event, State};
 use crate::machine::{Core, Msg, Phase};
 use crate::speech::Speech;
 use crate::stream::Stream;
@@ -148,6 +148,9 @@ impl Core {
     }
 
     pub fn synthesized(&mut self, r#gen: u64, piece: Piece) {
+        if let Piece::Trouble(trouble) = piece {
+            return self.emit(Event::Trouble(trouble));
+        }
         let now = Instant::now();
         let until = now + self.deps.timing.synth;
         let Some(reply) = self.reply.as_mut() else {
@@ -172,6 +175,8 @@ impl Core {
                 self.rest(now);
             }
             Piece::Failed(error) => self.mute(error, now),
+            Piece::Again => reply.until = Some(until),
+            Piece::Trouble(_) => {}
         }
     }
 

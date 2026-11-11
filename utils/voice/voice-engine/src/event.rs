@@ -109,6 +109,7 @@ pub enum Event {
     Command(Box<CommandEvent>),
     Error(ErrorEvent),
     Cancelled(TurnEvent),
+    Trouble(String),
 }
 
 impl Event {
@@ -120,6 +121,7 @@ impl Event {
             Event::Command(_) => "voice:command",
             Event::Error(_) => "voice:error",
             Event::Cancelled(_) => "voice:cancelled",
+            Event::Trouble(_) => "voice:trouble",
         }
     }
 

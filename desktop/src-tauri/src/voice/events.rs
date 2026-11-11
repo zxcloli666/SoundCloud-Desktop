@@ -4,6 +4,7 @@ use tauri::{Emitter, Manager};
 use voice_engine::Event;
 
 use super::{MAIN, Voice};
+use crate::app::diagnostics;
 use crate::rt::AppHandle;
 
 pub fn forward(app: AppHandle, events: Receiver<Event>) {
@@ -22,10 +23,14 @@ pub fn forward(app: AppHandle, events: Receiver<Event>) {
                     Event::Command(payload) => app.emit_to(MAIN, name, payload),
                     Event::Error(payload) => app.emit_to(MAIN, name, payload),
                     Event::Cancelled(_) => Ok(()),
+                    Event::Trouble(trouble) => {
+                        diagnostics::warn(format!("[Voice] {trouble}"));
+                        Ok(())
+                    }
                 };
             }
         });
     if let Err(error) = spawned {
-        crate::app::diagnostics::error(format!("[Voice] events thread: {error}"));
+        diagnostics::error(format!("[Voice] events thread: {error}"));
     }
 }

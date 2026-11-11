@@ -1,10 +1,10 @@
 use std::path::PathBuf;
 
 use voice_models::{Kind, Status, Store};
+use voice_qwen::Paths;
 use voice_speech::Model;
 
 use crate::config::{Config, Language};
-use crate::qwen::Paths;
 use crate::tts::Source;
 use crate::voices::{self, Voice};
 
