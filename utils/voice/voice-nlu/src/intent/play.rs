@@ -66,9 +66,7 @@ pub fn forced(c: &Ctx) -> bool {
     let after: Vec<&str> = c.w[k + 1..]
         .iter()
         .copied()
-        .filter(|w| {
-            !PRE.contains(w) && !GREETINGS.contains(w) || matches!(*w, "брат" | "братан" | "бро")
-        })
+        .filter(|w| !PRE.contains(w) && !GREETINGS.contains(w) || addresses(w))
         .collect();
     if after.is_empty() {
         return false;
@@ -257,7 +255,12 @@ pub fn detect(c: &Ctx, forced: bool) -> Detected {
                 .any(|(i, w)| !used.contains(&i) && is_kind(w));
         let greeted = v.strong && c.w[v.idx + 1..].iter().any(|w| GREETINGS.contains(w));
         if only_kinds && !greeted {
-            return Detected::new(Intent::PlayWave, used);
+            let mut d = Detected::new(Intent::PlayWave, used);
+            if named_after_kind(c, &v) {
+                d.intent = Intent::Play;
+                d.weak = !v.strong;
+            }
+            return d;
         }
         if v.strong || c.len() == 1 {
             return Detected::new(Intent::Resume, used);
@@ -270,4 +273,20 @@ pub fn detect(c: &Ctx, forced: bool) -> Detected {
     let mut d = Detected::new(Intent::Play, used);
     d.weak = !v.strong;
     d
+}
+
+fn named_after_kind(c: &Ctx, v: &Verb) -> bool {
+    let Some(k) = (0..v.idx).find(|&i| is_kind(c.w[i])) else {
+        return false;
+    };
+    let names = |w: &&str| is_kind(w) || addresses(w) || goes_on(w);
+    !v.front && c.only_pre(0..k) && c.w[k + 1..v.idx].iter().any(names)
+}
+
+fn addresses(w: &str) -> bool {
+    matches!(w, "брат" | "братан" | "бро")
+}
+
+fn goes_on(w: &str) -> bool {
+    RESUME_FILL.contains(&w) && !PRE.contains(&w)
 }

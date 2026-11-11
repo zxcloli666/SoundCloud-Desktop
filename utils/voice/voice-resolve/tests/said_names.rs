@@ -83,3 +83,31 @@ fn something_like_this_wished_for_plays_similar_and_nothing_like_it_is_talk() {
         ("нет ничего похожего на это", "none"),
     ]);
 }
+
+#[test]
+fn a_kind_word_said_first_makes_the_kind_or_command_word_after_it_the_name() {
+    heard_either_way(&[
+        ("группу брат поставь", "play Брат"),
+        ("группу альбом включи", "play Альбом"),
+        ("альбом дальше включи", "play Мот - Дальше"),
+        ("плейлист дальше включи", "play Дальше"),
+        ("исполнителя трек запусти", "play Трек"),
+        ("группу плей поставь", "play Play"),
+    ]);
+}
+
+#[test]
+fn a_kind_word_before_the_verb_with_no_name_after_it_still_starts_the_wave() {
+    heard_either_way(&[
+        ("песню включи", "play_wave"),
+        ("альбом включи", "play_wave"),
+        ("песню любую включи", "play_wave"),
+        ("песню эту включи", "play_wave"),
+        ("группу какую-нибудь включи", "play_wave"),
+        ("альбом снова включи", "play_wave"),
+        ("брат группу включи", "play_wave"),
+        ("группу включи брат", "play_wave"),
+        ("песню дальше включи", "next"),
+        ("плейлист мой включи", "play_likes"),
+    ]);
+}
