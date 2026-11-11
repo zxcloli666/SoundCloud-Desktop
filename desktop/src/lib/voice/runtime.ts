@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import type { Exchange } from './chat/dialog';
 import type { LinkAsk, SpeakerProvider } from './remote-types';
 import type {
   Devices,
@@ -29,7 +30,15 @@ export type HudView =
   | { kind: 'not_found'; heard: string }
   | { kind: 'failed'; display: string }
   | { kind: 'error'; code: VoiceErrorCode }
-  | { kind: 'speaking' };
+  | { kind: 'speaking' }
+  | {
+      kind: 'chat';
+      id: string;
+      heard: string;
+      phase: 'live' | 'done' | 'failed';
+      undo: string | null;
+      line: string;
+    };
 
 export type Availability = 'unknown' | 'ready' | 'missing';
 export type RemoteLoop = 'off' | 'live' | 'retrying';
@@ -48,6 +57,7 @@ interface VoiceRuntime {
   remote: RemoteLoop;
   linkAsk: LinkAsk | null;
   settingsOpen: boolean;
+  dialog: Exchange[];
   setHud: (hud: HudView) => void;
   hideHud: () => void;
   setModels: (models: Model[]) => void;
@@ -70,6 +80,7 @@ export const useVoiceRuntime = create<VoiceRuntime>((set) => ({
   remote: 'off',
   linkAsk: null,
   settingsOpen: false,
+  dialog: [],
   setHud: (hud) => set({ hud }),
   hideHud: () => set({ hud: { kind: 'hidden' } }),
   setModels: (models) => set({ models }),

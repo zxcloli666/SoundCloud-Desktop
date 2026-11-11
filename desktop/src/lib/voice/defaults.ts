@@ -33,7 +33,7 @@ export function defaultConfig(): VoiceConfig {
     },
     duck: 0.3,
     echo: 'auto',
-    llm: false,
+    llm: true,
     boosts: { artists: [] },
   };
 }

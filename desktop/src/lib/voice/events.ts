@@ -14,7 +14,7 @@ import type {
 } from './types';
 import { wakeConfirmed, wakeHeard } from './wake';
 
-const KEEP_ON_IDLE = new Set(['done', 'not_found', 'failed', 'error', 'asking']);
+const KEEP_ON_IDLE = new Set(['done', 'not_found', 'failed', 'error', 'asking', 'chat']);
 
 function onState(e: StateEvent) {
   const runtime = useVoiceRuntime.getState();

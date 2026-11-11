@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { tauriStorage } from '../tauri-storage';
+import type { ToolMark } from './chat/types';
 import { defaultConfig } from './defaults';
 import type {
   ActivationConfig,
@@ -15,7 +16,13 @@ import type {
 const HISTORY_CAP = 60;
 const WAKE_WINDOW_MS = 24 * 60 * 60 * 1000;
 
-export type RowResult = 'done' | 'asked' | 'not_found' | 'failed' | 'ignored';
+export type RowResult = 'done' | 'asked' | 'not_found' | 'failed' | 'ignored' | 'replied';
+
+export interface RowReply {
+  voice: string;
+  text: string;
+  marks: ToolMark[];
+}
 
 export interface HistoryRow {
   id: string;
@@ -27,6 +34,7 @@ export interface HistoryRow {
   result: RowResult;
   undoable: boolean;
   wrong: boolean;
+  reply?: RowReply;
 }
 
 export interface WakeMark {
@@ -37,6 +45,7 @@ export interface WakeMark {
 interface VoiceStore {
   config: VoiceConfig;
   history: HistoryRow[];
+  notes: string[];
   wakeLog: WakeMark[];
   wakeTaught: boolean;
   patch: (patch: Partial<VoiceConfig>) => void;
@@ -47,6 +56,7 @@ interface VoiceStore {
   addRow: (row: HistoryRow) => void;
   toggleWrong: (id: string) => void;
   clearHistory: () => void;
+  setNotes: (notes: string[]) => void;
   markWake: (mark: WakeMark) => void;
   setWakeTaught: (taught: boolean) => void;
 }
@@ -56,6 +66,7 @@ export const useVoiceStore = create<VoiceStore>()(
     (set) => ({
       config: defaultConfig(),
       history: [],
+      notes: [],
       wakeLog: [],
       wakeTaught: false,
       patch: (patch) => set((s) => ({ config: { ...s.config, ...patch } })),
@@ -84,6 +95,7 @@ export const useVoiceStore = create<VoiceStore>()(
           history: s.history.map((r) => (r.id === id ? { ...r, wrong: !r.wrong } : r)),
         })),
       clearHistory: () => set({ history: [] }),
+      setNotes: (notes) => set({ notes }),
       markWake: (mark) =>
         set((s) => ({
           wakeLog: [...s.wakeLog.filter((m) => mark.at - m.at < WAKE_WINDOW_MS), mark],
@@ -92,11 +104,17 @@ export const useVoiceStore = create<VoiceStore>()(
     }),
     {
       name: 'sc-voice',
-      version: 1,
+      version: 2,
       storage: createJSONStorage(() => tauriStorage),
+      migrate: (persisted, version) => {
+        const saved = (persisted ?? {}) as Partial<VoiceStore>;
+        if (version >= 2 || !saved.config) return saved;
+        return { ...saved, config: { ...saved.config, llm: true } };
+      },
       partialize: (s) => ({
         config: s.config,
         history: s.history,
+        notes: s.notes,
         wakeLog: s.wakeLog,
         wakeTaught: s.wakeTaught,
       }),

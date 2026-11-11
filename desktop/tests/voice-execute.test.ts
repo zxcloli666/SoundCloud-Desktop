@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import type { ChatStep } from '../src/lib/voice/chat/step';
+import type { TurnEnd } from '../src/lib/voice/chat/types';
 import { execute } from '../src/lib/voice/execute.ts';
 import type { UndoEntry } from '../src/lib/voice/undo';
 import { ARTIST, act, command, fakePort } from './voice-fake-port.ts';
@@ -124,4 +126,74 @@ test('a port failure turns into a failed outcome', async () => {
   const res = await execute(command('play_wave'), port, ctx());
   assert.equal(res.kind, 'failed');
   assert.equal(res.outcome.speech, 'Не получилось');
+});
+
+function chatting(end: TurnEnd, undo = false) {
+  const asked: string[] = [];
+  const chat = async (cmd: { heard: string }): Promise<ChatStep> => {
+    asked.push(cmd.heard);
+    return { end, stack: [], undo };
+  };
+  return { asked, chat };
+}
+
+test('no intent goes to the chat when it is on and returns the reply as display only', async () => {
+  const { asked, chat } = chatting({ status: 'ok', say: 'Привет!', marks: [] }, true);
+  const res = await execute(command('none', { heard: 'как дела' }), fakePort(), {
+    ...ctx(),
+    chat,
+  });
+  assert.deepEqual(asked, ['как дела']);
+  assert.equal(res.kind, 'chat');
+  assert.deepEqual(res.outcome, { ok: true, speech: '', display: 'Привет!', undo: true });
+  assert.equal(res.chat?.status, 'ok');
+});
+
+test('no intent stays ignored without the chat, for empty text and for smart speakers', async () => {
+  const { asked, chat } = chatting({ status: 'ok', say: 'Привет!', marks: [] });
+  const off = await execute(command('none', { heard: 'как дела' }), fakePort(), ctx());
+  assert.equal(off.kind, 'ignored');
+  const empty = await execute(command('none', { heard: '  ' }), fakePort(), { ...ctx(), chat });
+  assert.equal(empty.kind, 'ignored');
+  const remote = command('none', { heard: 'как дела', source: 'remote' });
+  assert.equal((await execute(remote, fakePort(), { ...ctx(), chat })).kind, 'ignored');
+  assert.deepEqual(asked, []);
+});
+
+test('commands with an intent never reach the chat', async () => {
+  const { asked, chat } = chatting({ status: 'ok', say: 'Привет!', marks: [] });
+  const res = await execute(command('pause'), fakePort(), { ...ctx(), chat });
+  assert.equal(res.kind, 'done');
+  assert.deepEqual(asked, []);
+});
+
+test('chat failures speak nothing and get their own lines', async () => {
+  const lines: Record<string, string> = {
+    rate_limited: 'Слишком много вопросов подряд, минутку',
+    unavailable: 'Сейчас не могу ответить',
+    deadline: 'Ответ не дошёл',
+    network: 'Ответ не дошёл',
+  };
+  for (const [code, display] of Object.entries(lines)) {
+    const { chat } = chatting({ status: 'failed', code, say: 'Ну', marks: [] });
+    const res = await execute(command('none'), fakePort(), { ...ctx(), chat });
+    assert.equal(res.kind, 'failed');
+    assert.deepEqual(res.outcome, { ok: false, speech: '', display, undo: false });
+  }
+  const { chat } = chatting({ status: 'failed', code: 'rate_limited', say: '', marks: [] });
+  const en = await execute(command('none'), fakePort(), { ...ctx([], 'en'), chat });
+  assert.equal(en.outcome.display, 'Too many questions in a row, give me a minute');
+});
+
+test('a cancelled chat is quiet and an empty reply is ignored', async () => {
+  const cancelled = chatting({ status: 'cancelled', say: 'Сей', marks: [] });
+  const res = await execute(command('none'), fakePort(), { ...ctx(), chat: cancelled.chat });
+  assert.equal(res.kind, 'cancelled');
+  assert.deepEqual(res.outcome, { ok: false, speech: '', display: '', undo: false });
+  const silent = chatting({ status: 'ok', say: ' ', marks: [] });
+  const empty = await execute(command('none'), fakePort(), { ...ctx(), chat: silent.chat });
+  assert.equal(empty.kind, 'ignored');
+  const acted = chatting({ status: 'ok', say: '', marks: [{ tool: 'pause', ok: true }] });
+  const done = await execute(command('none'), fakePort(), { ...ctx(), chat: acted.chat });
+  assert.equal(done.kind, 'chat');
 });

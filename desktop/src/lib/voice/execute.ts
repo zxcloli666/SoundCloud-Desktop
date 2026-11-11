@@ -1,3 +1,5 @@
+import { type ChatStep, chatResult } from './chat/step.ts';
+import type { TurnEnd } from './chat/types';
 import { entityReply, entityTitle, type Reply, reply } from './replies.ts';
 import type { Entity, Intent, Outcome, VoiceCommand, VoiceLanguage } from './types';
 import {
@@ -32,7 +34,7 @@ export interface PlayerPort {
   setRepeat(mode: RepeatMode): void;
 }
 
-export type StepKind = 'done' | 'ask' | 'not_found' | 'failed' | 'ignored';
+export type StepKind = 'done' | 'ask' | 'not_found' | 'failed' | 'ignored' | 'chat' | 'cancelled';
 
 export interface StepResult {
   kind: StepKind;
@@ -40,12 +42,14 @@ export interface StepResult {
   intent: Intent;
   entity: Entity | null;
   stack: UndoEntry[];
+  chat?: TurnEnd;
 }
 
 export interface ExecuteContext {
   lang: VoiceLanguage;
   now: number;
   stack: UndoEntry[];
+  chat?: (cmd: VoiceCommand, port: PlayerPort, ctx: ExecuteContext) => Promise<ChatStep>;
 }
 
 export const DEFAULT_SEEK_SECONDS = 10;
@@ -66,6 +70,10 @@ const NEEDS_TRACK = new Set<Intent>([
   'unlike',
   'play_similar',
 ]);
+
+export function needsTrack(intent: Intent): boolean {
+  return NEEDS_TRACK.has(intent);
+}
 
 function clampVolume(v: number): number {
   return Math.max(0, Math.min(VOLUME_MAX, Math.round(v)));
@@ -212,8 +220,11 @@ export async function execute(
       : reply(lang, 'ask_one', { first });
     return result('ask', r, cmd, stack);
   }
-  if (cmd.intent === 'none')
-    return result('ignored', { speech: '', display: cmd.heard }, cmd, stack);
+  if (cmd.intent === 'none') {
+    const ignored = result('ignored', { speech: '', display: cmd.heard }, cmd, stack);
+    if (!ctx.chat || !cmd.heard.trim() || cmd.source === 'remote') return ignored;
+    return chatResult(cmd, lang, await ctx.chat(cmd, port, ctx), ignored);
+  }
   if (cmd.intent === 'help') return result('done', reply(lang, 'help'), cmd, stack);
 
   if (cmd.intent === 'undo') {

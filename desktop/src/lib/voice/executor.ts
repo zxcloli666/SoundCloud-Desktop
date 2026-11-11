@@ -1,3 +1,4 @@
+import { chatOn, chatStep, closeChatHud, interruptChat, rowReply, stopChat } from './chat/session';
 import { execute, revert, type StepResult } from './execute';
 import { voiceIpc } from './ipc';
 import { playerPort } from './player-port';
@@ -28,7 +29,11 @@ const ROW_RESULT: Record<StepResult['kind'], RowResult> = {
   not_found: 'not_found',
   failed: 'failed',
   ignored: 'ignored',
+  chat: 'replied',
+  cancelled: 'ignored',
 };
+
+const CANCELS_ENGINE = new Set(['asking', 'listening', 'thinking', 'speaking']);
 
 const REMOTE_STATE: Record<StepResult['kind'], RemoteState> = {
   done: 'done',
@@ -36,6 +41,8 @@ const REMOTE_STATE: Record<StepResult['kind'], RemoteState> = {
   not_found: 'not_found',
   failed: 'failed',
   ignored: 'failed',
+  chat: 'done',
+  cancelled: 'failed',
 };
 
 function language() {
@@ -66,6 +73,7 @@ function isLastStep(cmd: VoiceCommand): boolean {
 }
 
 function show(cmd: VoiceCommand, res: StepResult, run: GroupRun) {
+  if (res.chat) return closeChatHud(cmd.id, res, run.undo ? run.id : null);
   const runtime = useVoiceRuntime.getState();
   const decision = cmd.decision;
   if (res.kind === 'ask' && decision?.decision === 'ask') {
@@ -94,10 +102,12 @@ function show(cmd: VoiceCommand, res: StepResult, run: GroupRun) {
 }
 
 function displayOf(res: StepResult, run: GroupRun): string {
-  return run.items.length > 0 ? run.items.map((i) => i.display).join(', ') : res.outcome.display;
+  if (run.items.length > 0) return run.items.map((i) => i.display).join(', ');
+  return res.kind === 'chat' ? '' : res.outcome.display;
 }
 
 function record(cmd: VoiceCommand, res: StepResult, run: GroupRun) {
+  if (res.kind === 'cancelled') return;
   if (res.kind === 'ignored' && cmd.source !== 'typed') return;
   const store = useVoiceStore.getState();
   const label = displayOf(res, run);
@@ -112,23 +122,29 @@ function record(cmd: VoiceCommand, res: StepResult, run: GroupRun) {
     result: run.items.length > 0 ? 'done' : ROW_RESULT[res.kind],
     undoable: run.undo,
     wrong: previous?.wrong ?? false,
+    reply: res.kind === 'chat' && res.chat ? rowReply(res.chat) : previous?.reply,
   });
 }
 
 async function handle(cmd: VoiceCommand) {
   if (cmd.source !== 'remote') markActive();
   const run = groupOf(cmd);
-  const res = await execute(cmd, playerPort, { lang: language(), now: Date.now(), stack });
+  const res = await execute(cmd, playerPort, {
+    lang: language(),
+    now: Date.now(),
+    stack,
+    chat: chatOn() ? chatStep : undefined,
+  });
   stack = res.stack;
   if (res.kind === 'done') {
     run.items = [
       ...run.items,
       { intent: cmd.intent, entity: res.entity, display: res.outcome.display },
     ];
-    run.undo = run.undo || res.outcome.undo;
   }
+  run.undo = run.undo || res.outcome.undo;
   if (res.outcome.speech) run.speech.push(res.outcome.speech);
-  run.ok = run.ok && res.kind === 'done';
+  run.ok = run.ok && res.outcome.ok;
   show(cmd, res, run);
   record(cmd, res, run);
   notifyUndo();
@@ -145,6 +161,7 @@ async function handle(cmd: VoiceCommand) {
 }
 
 export function enqueueCommand(cmd: VoiceCommand) {
+  interruptChat();
   chain = chain.then(() => handle(cmd)).catch(() => {});
 }
 
@@ -181,8 +198,7 @@ export function answerAsk(choice: string) {
 export function dismissHud() {
   const hud = useVoiceRuntime.getState().hud;
   if (hud.kind === 'link_confirm') return answerLink(hud.id, false);
-  if (hud.kind === 'asking' || hud.kind === 'listening' || hud.kind === 'thinking') {
-    void voiceIpc.cancel().catch(() => {});
-  }
+  if (hud.kind === 'chat') stopChat(hud.id);
+  if (CANCELS_ENGINE.has(hud.kind)) void voiceIpc.cancel().catch(() => {});
   useVoiceRuntime.getState().hideHud();
 }
