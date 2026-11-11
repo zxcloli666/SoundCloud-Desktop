@@ -1,5 +1,8 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
+import type { TFunction } from 'i18next';
+import { failureLine } from '../src/components/voice/chatFailure.ts';
 import { afterError, type DismissPort, dismiss } from '../src/lib/voice/hud.ts';
 import type { HudView } from '../src/lib/voice/runtime';
 
@@ -12,7 +15,7 @@ function chatHud(phase: ChatHud['phase']): ChatHud {
     heard: 'привет',
     phase,
     undo: null,
-    line: '',
+    code: '',
     voiceLost: false,
   };
 }
@@ -93,4 +96,28 @@ test('other errors, and a speech failure outside a chat, show the error island',
     kind: 'error',
     code: 'mic_denied',
   });
+});
+
+test('each chat failure has its own line and unknown codes share one', () => {
+  const key = ((name: string) => name) as TFunction;
+  assert.equal(failureLine('rate_limited', key), 'voice.chat.busy');
+  assert.equal(failureLine('unavailable', key), 'voice.chat.down');
+  for (const code of ['deadline', 'provider_failed', 'network', 'failed', '']) {
+    assert.equal(failureLine(code, key), 'voice.chat.lost');
+  }
+});
+
+test('chat failure lines are written in all five interface languages', () => {
+  const lines = (lang: string): string[] => {
+    const file = new URL(`../src/i18n/locales/voice/${lang}.json`, import.meta.url);
+    const { chat } = JSON.parse(readFileSync(file, 'utf8')).voice;
+    return [chat.busy, chat.down, chat.lost];
+  };
+  const english = lines('en');
+  for (const lang of ['ru', 'tr', 'ko', 'pt']) {
+    lines(lang).forEach((line, i) => {
+      assert.ok(line, `${lang} line ${i}`);
+      assert.notEqual(line, english[i], `${lang} line ${i} is not translated`);
+    });
+  }
 });

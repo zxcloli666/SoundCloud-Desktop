@@ -81,7 +81,7 @@ function Body({
           heard={hud.heard}
           phase={hud.phase}
           undo={hud.undo}
-          line={hud.line}
+          code={hud.code}
           voiceLost={hud.voiceLost}
           onUndo={() => hud.undo && handlers.onUndo(hud.undo)}
           onClose={onClose}

@@ -158,6 +158,9 @@
       "memoryClear": "Forget all",
       "memoryClearYes": "Yes, forget all",
       "memoryForget": "Forget",
+      "busy": "Too many questions in a row, give me a minute",
+      "down": "Can't answer right now",
+      "lost": "The reply didn't come through",
       "tools": {
         "pause": "Pause",
         "resume": "Resume",

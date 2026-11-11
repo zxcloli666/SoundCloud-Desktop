@@ -155,6 +155,9 @@
       "memoryClear": "모두 잊기",
       "memoryClearYes": "네, 모두 잊기",
       "memoryForget": "잊기",
+      "busy": "질문이 너무 많아요, 잠시만요",
+      "down": "지금은 답할 수 없어요",
+      "lost": "답변이 도착하지 않았어요",
       "tools": {
         "pause": "일시정지",
         "resume": "계속 재생",

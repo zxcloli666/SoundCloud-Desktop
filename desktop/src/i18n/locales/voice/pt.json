@@ -161,6 +161,9 @@
       "memoryClear": "Esquecer tudo",
       "memoryClearYes": "Sim, esquecer tudo",
       "memoryForget": "Esquecer",
+      "busy": "Muitas perguntas seguidas, um minutinho",
+      "down": "Não consigo responder agora",
+      "lost": "A resposta não chegou",
       "tools": {
         "pause": "Pausar",
         "resume": "Continuar",

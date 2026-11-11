@@ -121,7 +121,7 @@ function record(cmd: VoiceCommand, res: StepResult, run: GroupRun) {
     result: run.items.length > 0 ? 'done' : ROW_RESULT[res.kind],
     undoable: run.undo,
     wrong: previous?.wrong ?? false,
-    reply: res.kind === 'chat' && res.chat ? rowReply(res.chat) : previous?.reply,
+    reply: res.chat ? rowReply(res.chat) : previous?.reply,
   });
 }
 

@@ -23,6 +23,7 @@ export interface RowReply {
   voice: string;
   text: string;
   marks: ToolMark[];
+  failed?: string;
 }
 
 export interface HistoryRow {

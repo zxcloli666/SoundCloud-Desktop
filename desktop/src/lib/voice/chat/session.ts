@@ -75,7 +75,7 @@ export async function chatStep(
     heard: cmd.heard,
     phase: 'live',
     undo: null,
-    line: '',
+    code: '',
     voiceLost: false,
   });
   const end = await runTurn({
@@ -115,7 +115,7 @@ export function closeChatHud(id: string, res: StepResult, undo: string | null) {
   if (res.chat.status === 'ok') runtime.setHud({ ...hud, phase: 'done', undo });
   else if (res.chat.status === 'cancelled') runtime.hideHud();
   else if (res.chat.code === 'star_required') runtime.setHud({ kind: 'error', code: 'not_star' });
-  else runtime.setHud({ ...hud, phase: 'failed', line: res.outcome.display });
+  else runtime.setHud({ ...hud, phase: 'failed', code: res.chat.code });
 }
 
 export function rowReply(end: TurnEnd): RowReply {
@@ -123,5 +123,6 @@ export function rowReply(end: TurnEnd): RowReply {
     voice: useVoiceStore.getState().config.speak.voice,
     text: end.say.slice(0, REPLY_KEPT),
     marks: end.marks,
+    failed: end.status === 'failed' ? end.code : undefined,
   };
 }

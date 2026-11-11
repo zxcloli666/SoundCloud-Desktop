@@ -37,10 +37,7 @@ export type ReplyKey =
   | 'ask'
   | 'ask_one'
   | 'not_found'
-  | 'failed'
-  | 'chat_busy'
-  | 'chat_down'
-  | 'chat_failed';
+  | 'failed';
 
 export interface Reply {
   speech: string;
@@ -74,10 +71,6 @@ function clock(n: number): string {
 
 function same(text: string): Reply {
   return { speech: text, display: text };
-}
-
-function shown(text: string): Reply {
-  return { speech: '', display: text };
 }
 
 const RU: Record<ReplyKey, Line> = {
@@ -131,9 +124,6 @@ const RU: Record<ReplyKey, Line> = {
   ask_one: (v) => ({ speech: `Включить ${v.first}?`, display: `${v.first}?` }),
   not_found: (v) => ({ speech: `Не нашлось «${v.heard}»`, display: v.heard ?? '' }),
   failed: () => same('Не получилось'),
-  chat_busy: () => shown('Слишком много вопросов подряд, минутку'),
-  chat_down: () => shown('Сейчас не могу ответить'),
-  chat_failed: () => shown('Ответ не дошёл'),
 };
 
 const EN: Record<ReplyKey, Line> = {
@@ -187,9 +177,6 @@ const EN: Record<ReplyKey, Line> = {
   ask_one: (v) => ({ speech: `Play ${v.first}?`, display: `${v.first}?` }),
   not_found: (v) => ({ speech: `I couldn't find "${v.heard}"`, display: v.heard ?? '' }),
   failed: () => same("Couldn't do that"),
-  chat_busy: () => shown('Too many questions in a row, give me a minute'),
-  chat_down: () => shown("Can't answer right now"),
-  chat_failed: () => shown("The reply didn't come through"),
 };
 
 export function reply(lang: VoiceLanguage, key: ReplyKey, vars: ReplyVars = {}): Reply {

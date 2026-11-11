@@ -37,7 +37,7 @@ export type HudView =
       heard: string;
       phase: 'live' | 'done' | 'failed';
       undo: string | null;
-      line: string;
+      code: string;
       voiceLost: boolean;
     };
 

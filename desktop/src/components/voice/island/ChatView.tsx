@@ -3,6 +3,7 @@ import { VolumeX } from '../../../lib/icons';
 import { useChatLive } from '../../../lib/voice/chat/live';
 import { useVoiceRuntime } from '../../../lib/voice/runtime';
 import { useVoiceStore } from '../../../lib/voice/store';
+import { failureLine } from '../chatFailure';
 import { VoiceAvatar } from '../VoiceAvatar';
 import { type VoiceInfo, voiceById } from '../voices';
 import { ChatMarks } from './ChatMarks';
@@ -41,7 +42,7 @@ export function ChatView({
   heard,
   phase,
   undo,
-  line,
+  code,
   voiceLost,
   onUndo,
   onClose,
@@ -49,7 +50,7 @@ export function ChatView({
   heard: string;
   phase: Phase;
   undo: string | null;
-  line: string;
+  code: string;
   voiceLost: boolean;
   onUndo: () => void;
   onClose: () => void;
@@ -72,7 +73,7 @@ export function ChatView({
         </span>
         {phase === 'failed' ? (
           <span className="mt-0.5 block text-[13px] font-medium leading-[1.4] text-ink-55">
-            {line}
+            {failureLine(code, t)}
           </span>
         ) : (
           <ReplyText live={phase === 'live'} />

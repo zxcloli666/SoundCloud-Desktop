@@ -223,7 +223,7 @@ export async function execute(
   if (cmd.intent === 'none') {
     const ignored = result('ignored', { speech: '', display: cmd.heard }, cmd, stack);
     if (!ctx.chat || !cmd.heard.trim() || cmd.source === 'remote') return ignored;
-    return chatResult(cmd, lang, await ctx.chat(cmd, port, ctx), ignored);
+    return chatResult(cmd, await ctx.chat(cmd, port, ctx), ignored);
   }
   if (cmd.intent === 'help') return result('done', reply(lang, 'help'), cmd, stack);
 

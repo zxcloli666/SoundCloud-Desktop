@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import type { RowReply } from '../../../lib/voice/store';
+import { failureLine } from '../chatFailure';
 import { MarkChip } from '../island/ChatMarks';
 import { VoiceAvatar } from '../VoiceAvatar';
 import { voiceById } from '../voices';
@@ -29,6 +30,11 @@ export function HistoryReply({ reply }: { reply: RowReply }) {
               <MarkChip key={i} mark={mark} labelled={reply.marks.length <= LABELLED} />
             ))}
           </span>
+        )}
+        {reply.failed && (
+          <p className="mt-1 text-[11.5px] leading-snug text-ink-45">
+            {failureLine(reply.failed, t)}
+          </p>
         )}
       </div>
     </div>

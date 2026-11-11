@@ -167,22 +167,15 @@ test('commands with an intent never reach the chat', async () => {
   assert.deepEqual(asked, []);
 });
 
-test('chat failures speak nothing and get their own lines', async () => {
-  const lines: Record<string, string> = {
-    rate_limited: 'Слишком много вопросов подряд, минутку',
-    unavailable: 'Сейчас не могу ответить',
-    deadline: 'Ответ не дошёл',
-    network: 'Ответ не дошёл',
-  };
-  for (const [code, display] of Object.entries(lines)) {
-    const { chat } = chatting({ status: 'failed', code, say: 'Ну', marks: [] });
+test('chat failures speak nothing and carry their code for the interface to word', async () => {
+  for (const code of ['rate_limited', 'unavailable', 'deadline', 'network']) {
+    const end: TurnEnd = { status: 'failed', code, say: 'Ну', marks: [] };
+    const { chat } = chatting(end);
     const res = await execute(command('none'), fakePort(), { ...ctx(), chat });
     assert.equal(res.kind, 'failed');
-    assert.deepEqual(res.outcome, { ok: false, speech: '', display, undo: false });
+    assert.deepEqual(res.outcome, { ok: false, speech: '', display: '', undo: false });
+    assert.deepEqual(res.chat, end);
   }
-  const { chat } = chatting({ status: 'failed', code: 'rate_limited', say: '', marks: [] });
-  const en = await execute(command('none'), fakePort(), { ...ctx([], 'en'), chat });
-  assert.equal(en.outcome.display, 'Too many questions in a row, give me a minute');
 });
 
 test('a cancelled chat is quiet and an empty reply is ignored', async () => {

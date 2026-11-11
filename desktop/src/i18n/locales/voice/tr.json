@@ -158,6 +158,9 @@
       "memoryClear": "Hepsini unut",
       "memoryClearYes": "Evet, hepsini unut",
       "memoryForget": "Unut",
+      "busy": "Art arda çok soru geldi, bir dakika",
+      "down": "Şu an cevap veremiyorum",
+      "lost": "Yanıt ulaşmadı",
       "tools": {
         "pause": "Duraklat",
         "resume": "Devam et",
