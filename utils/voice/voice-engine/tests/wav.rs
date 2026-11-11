@@ -1,6 +1,7 @@
 mod common;
 
 use std::path::PathBuf;
+use std::sync::Arc;
 use std::time::Duration;
 
 use common::{feeding, models_ready, models_root, rig_with, timing};
@@ -33,7 +34,7 @@ fn hear(path: &str, language: Language) -> Option<(Vec<String>, voice_engine::Co
     slow.no_speech = Duration::from_secs(10);
     let rig = rig_with(
         feeding(samples, rate),
-        Box::new(FixtureCatalog::from_tsv(common::CATALOG, true)),
+        Arc::new(FixtureCatalog::from_tsv(common::CATALOG, true)),
         models_root(),
         slow,
     );
@@ -56,7 +57,7 @@ fn hear(path: &str, language: Language) -> Option<(Vec<String>, voice_engine::Co
             Event::Command(command) => return Some((partials, *command)),
             Event::State(s) => assert_ne!(s.state, State::Idle, "went idle without a command"),
             Event::Error(e) => panic!("error {e:?}"),
-            Event::Level(_) | Event::Cancelled(_) | Event::Trouble(_) => {}
+            Event::Level(_) | Event::Cancelled(_) | Event::Trouble(_) | Event::Timed(_) => {}
         }
     }
 }
@@ -117,7 +118,7 @@ fn a_reply_is_spoken_with_kokoro_and_drives_speech_levels() {
     slow.synth = Duration::from_secs(60);
     let rig = rig_with(
         feeding(samples, rate),
-        Box::new(FixtureCatalog::from_tsv(common::CATALOG, true)),
+        Arc::new(FixtureCatalog::from_tsv(common::CATALOG, true)),
         models_root(),
         slow,
     );

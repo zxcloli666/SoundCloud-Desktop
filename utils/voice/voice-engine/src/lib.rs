@@ -8,6 +8,7 @@ mod gesture;
 mod hotwords;
 mod kokoro;
 mod listen;
+mod lookup;
 mod machine;
 mod models;
 mod output;
@@ -38,8 +39,8 @@ pub use config::{
     Activation, Boosts, Config, Echo, Headset, Language, Listen, ListenMode, Speak, SpeakMode, Wake,
 };
 pub use event::{
-    CommandEvent, DecisionEvent, EntityEvent, ErrorEvent, Event, LevelEvent, Outcome, PartialEvent,
-    ScoredEvent, Source, State, StateEvent, TurnEvent,
+    CommandEvent, DecisionEvent, EntityEvent, ErrorEvent, Event, LevelEvent, Looked, Outcome,
+    PartialEvent, ScoredEvent, Source, State, StateEvent, Timed, TurnEvent,
 };
 pub use gesture::{Press, Presses};
 pub use models::{ASR_EN, ASR_RU, VAD, hearing, required};
@@ -84,6 +85,7 @@ pub struct Timing {
     pub max_utterance: Duration,
     pub ask: Duration,
     pub done: Duration,
+    pub lookup: Duration,
     pub chat: Duration,
     pub synth: Duration,
     pub release: Duration,
@@ -96,6 +98,7 @@ impl Default for Timing {
             max_utterance: Duration::from_secs(12),
             ask: Duration::from_secs(8),
             done: Duration::from_secs(10),
+            lookup: Duration::from_millis(1500),
             chat: Duration::from_secs(60),
             synth: Duration::from_secs(30),
             release: Duration::from_millis(80),
@@ -106,7 +109,7 @@ impl Default for Timing {
 pub struct Deps {
     pub capture: Capture,
     pub store: Arc<Store>,
-    pub catalog: Box<dyn Catalog>,
+    pub catalog: Arc<dyn Catalog>,
     pub output: Box<dyn Output>,
     pub devices: DeviceList,
     pub timing: Timing,

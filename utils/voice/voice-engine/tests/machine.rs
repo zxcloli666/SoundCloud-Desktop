@@ -1,5 +1,6 @@
 mod common;
 
+use std::sync::Arc;
 use std::time::Duration;
 
 use common::{Offline, models_ready, models_root, refusing, rig, rig_with, silent, timing};
@@ -177,7 +178,7 @@ fn missing_models_refuse_to_listen() {
 fn a_catalog_that_cannot_be_reached_is_a_network_error() {
     let rig = rig_with(
         silent(),
-        Box::new(Offline),
+        Arc::new(Offline),
         std::env::temp_dir().join("voice-engine-no-models"),
         timing(),
     );
@@ -244,7 +245,7 @@ fn silence_ends_listening_without_a_command() {
     }
     let rig = rig_with(
         silent(),
-        Box::new(FixtureCatalog::from_tsv(common::CATALOG, true)),
+        Arc::new(FixtureCatalog::from_tsv(common::CATALOG, true)),
         models_root(),
         timing(),
     );
@@ -265,7 +266,7 @@ fn a_denied_microphone_is_mic_denied() {
     }
     let rig = rig_with(
         refusing(CaptureError::new(ErrorCode::MicDenied, "access denied")),
-        Box::new(FixtureCatalog::from_tsv(common::CATALOG, true)),
+        Arc::new(FixtureCatalog::from_tsv(common::CATALOG, true)),
         models_root(),
         timing(),
     );
@@ -283,7 +284,7 @@ fn hold_mode_listens_while_held_and_ignores_key_repeat() {
     slow.no_speech = Duration::from_secs(10);
     let rig = rig_with(
         silent(),
-        Box::new(FixtureCatalog::from_tsv(common::CATALOG, true)),
+        Arc::new(FixtureCatalog::from_tsv(common::CATALOG, true)),
         models_root(),
         slow,
     );
@@ -306,7 +307,7 @@ fn tap_mode_second_press_ends_listening() {
     slow.no_speech = Duration::from_secs(10);
     let rig = rig_with(
         silent(),
-        Box::new(FixtureCatalog::from_tsv(common::CATALOG, true)),
+        Arc::new(FixtureCatalog::from_tsv(common::CATALOG, true)),
         models_root(),
         slow,
     );
@@ -333,7 +334,7 @@ fn cancel_stops_listening_and_releases_the_duck() {
     slow.no_speech = Duration::from_secs(10);
     let rig = rig_with(
         silent(),
-        Box::new(FixtureCatalog::from_tsv(common::CATALOG, true)),
+        Arc::new(FixtureCatalog::from_tsv(common::CATALOG, true)),
         models_root(),
         slow,
     );

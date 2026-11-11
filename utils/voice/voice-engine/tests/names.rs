@@ -1,5 +1,7 @@
 mod common;
 
+use std::sync::Arc;
+
 use common::{Offline, Rig, rig_with, silent, timing};
 use voice_engine::{Catalog, Command, CommandEvent, Config, DecisionEvent, State};
 use voice_resolve::FixtureCatalog;
@@ -19,13 +21,13 @@ artist\tQueen\t\t50000000\t
 track\tHeart of Glass\tBlondie\t8000000\t
 ";
 
-fn rig(catalog: Box<dyn Catalog>) -> Rig {
+fn rig(catalog: Arc<dyn Catalog>) -> Rig {
     let root = std::env::temp_dir().join("voice-engine-no-models");
     rig_with(silent(), catalog, root, timing())
 }
 
 fn fixture(chat: bool, names: &[&str]) -> Rig {
-    let rig = rig(Box::new(FixtureCatalog::from_tsv(CATALOG, true)));
+    let rig = rig(Arc::new(FixtureCatalog::from_tsv(CATALOG, true)));
     voice(&rig, chat, names);
     rig
 }
@@ -75,7 +77,7 @@ fn a_name_said_to_the_assistant_goes_out_as_none_without_a_lookup_and_keeps_what
         "loli, hi",
     ];
     for chat in [true, false] {
-        let rig = rig(Box::new(Offline));
+        let rig = rig(Arc::new(Offline));
         voice(&rig, chat, &LOLI);
         for text in phrases {
             let command = settled(&rig, text);
@@ -162,7 +164,7 @@ fn the_name_of_such_a_voice_said_to_it_is_left_out_with_the_chat_on_or_off() {
         ("michael", "none"),
     ];
     for chat in [true, false] {
-        let rig = rig(Box::new(Offline));
+        let rig = rig(Arc::new(Offline));
         voice(&rig, chat, &MICHAEL);
         for (text, intent) in said {
             let command = settled(&rig, text);

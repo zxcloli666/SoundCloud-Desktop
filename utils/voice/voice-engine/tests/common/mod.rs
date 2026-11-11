@@ -226,17 +226,18 @@ pub fn timing() -> Timing {
         max_utterance: Duration::from_secs(12),
         ask: Duration::from_millis(400),
         done: Duration::from_millis(600),
+        lookup: Duration::from_millis(300),
         chat: Duration::from_secs(20),
         synth: Duration::from_secs(5),
         release: Duration::from_millis(80),
     }
 }
 
-pub fn rig_with(open: OpenFn, catalog: Box<dyn Catalog>, root: PathBuf, timing: Timing) -> Rig {
+pub fn rig_with(open: OpenFn, catalog: Arc<dyn Catalog>, root: PathBuf, timing: Timing) -> Rig {
     rig_on(open, catalog, store(root), timing)
 }
 
-pub fn rig_on(open: OpenFn, catalog: Box<dyn Catalog>, store: Arc<Store>, timing: Timing) -> Rig {
+pub fn rig_on(open: OpenFn, catalog: Arc<dyn Catalog>, store: Arc<Store>, timing: Timing) -> Rig {
     let rig = rig_of(open, catalog, store, timing, None);
     let mut config = Config {
         enabled: true,
@@ -250,7 +251,7 @@ pub fn rig_on(open: OpenFn, catalog: Box<dyn Catalog>, store: Arc<Store>, timing
 pub fn rig_speaking(voice: impl Voice + 'static, timing: Timing) -> Rig {
     let rig = rig_of(
         silent(),
-        Box::new(FixtureCatalog::from_tsv(CATALOG, true)),
+        Arc::new(FixtureCatalog::from_tsv(CATALOG, true)),
         store(std::env::temp_dir().join("voice-engine-no-models")),
         timing,
         Some(Arc::new(Mutex::new(voice))),
@@ -265,7 +266,7 @@ pub fn rig_speaking(voice: impl Voice + 'static, timing: Timing) -> Rig {
 
 fn rig_of(
     open: OpenFn,
-    catalog: Box<dyn Catalog>,
+    catalog: Arc<dyn Catalog>,
     store: Arc<Store>,
     timing: Timing,
     voice: Option<Arc<Mutex<dyn Voice>>>,
@@ -304,7 +305,7 @@ fn rig_of(
 pub fn rig() -> Rig {
     rig_with(
         silent(),
-        Box::new(FixtureCatalog::from_tsv(CATALOG, true)),
+        Arc::new(FixtureCatalog::from_tsv(CATALOG, true)),
         std::env::temp_dir().join("voice-engine-no-models"),
         timing(),
     )
@@ -316,7 +317,7 @@ impl Rig {
         loop {
             let left = until.saturating_duration_since(Instant::now());
             match self.events.recv_timeout(left) {
-                Ok(Event::Level(_)) | Ok(Event::Partial(_)) => continue,
+                Ok(Event::Level(_) | Event::Partial(_) | Event::Timed(_)) => continue,
                 Ok(event) => return event,
                 Err(_) => panic!("no event in 20 s"),
             }
@@ -328,7 +329,7 @@ impl Rig {
         loop {
             let left = until.saturating_duration_since(Instant::now());
             match self.events.recv_timeout(left) {
-                Ok(Event::Level(_)) | Ok(Event::Partial(_)) => continue,
+                Ok(Event::Level(_) | Event::Partial(_) | Event::Timed(_)) => continue,
                 Ok(event) => return Some(event),
                 Err(_) => return None,
             }

@@ -48,7 +48,7 @@ pub fn init(app: &AppHandle, data_dir: &Path, cache_dir: &Path, rt: Handle, prem
     let deps = Deps {
         capture: Capture::new(tap.clone()),
         store: store.clone(),
-        catalog: Box::new(catalog::ResolveCatalog {
+        catalog: Arc::new(catalog::ResolveCatalog {
             app: app.clone(),
             rt,
         }),

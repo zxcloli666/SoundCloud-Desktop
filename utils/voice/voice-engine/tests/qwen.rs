@@ -135,7 +135,7 @@ fn rig_with_voice(store: Arc<Store>, voice: &str) -> Rig {
     patient.synth = Duration::from_secs(90);
     let rig = rig_on(
         silent(),
-        Box::new(FixtureCatalog::from_tsv(common::CATALOG, true)),
+        Arc::new(FixtureCatalog::from_tsv(common::CATALOG, true)),
         store,
         patient,
     );

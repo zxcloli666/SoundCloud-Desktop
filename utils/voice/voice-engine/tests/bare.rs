@@ -1,5 +1,7 @@
 mod common;
 
+use std::sync::Arc;
+
 use common::{Rig, rig_with, silent, timing};
 use serde_json::json;
 use voice_engine::{Command, CommandEvent, Config, DecisionEvent, State};
@@ -19,7 +21,7 @@ playlist\tДля сна\t\t500000\t
 fn rig(chat: bool) -> Rig {
     let rig = rig_with(
         silent(),
-        Box::new(FixtureCatalog::from_tsv(CATALOG, true)),
+        Arc::new(FixtureCatalog::from_tsv(CATALOG, true)),
         std::env::temp_dir().join("voice-engine-no-models"),
         timing(),
     );
