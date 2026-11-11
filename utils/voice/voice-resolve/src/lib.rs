@@ -95,10 +95,10 @@ pub fn understand(
 ) -> Vec<Outcome> {
     let reading = phrase.reading(catalog, boosts);
     let split = |parsed: &Parsed| interpret_split(parsed.clone(), catalog, boosts, bare);
-    found(reading.iter().flat_map(split).collect())
+    runnable(reading.iter().flat_map(split).collect())
 }
 
-fn found(mut steps: Vec<Outcome>) -> Vec<Outcome> {
+fn runnable(mut steps: Vec<Outcome>) -> Vec<Outcome> {
     let nothing = |step: &Outcome| step.intent == Intent::None;
     if steps.len() > 1 && nothing(&steps[0]) {
         steps.truncate(1);

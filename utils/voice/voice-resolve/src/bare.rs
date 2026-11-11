@@ -47,8 +47,8 @@ impl Bare {
 
 fn called_by_kind(parsed: &Parsed, hit: &Scored) -> bool {
     let kind = hit.entity.kind;
-    let kind_said_first = parsed.kind_alt.is_some() && parsed.kind_hint == Some(kind);
-    matches!(kind, Kind::Album | Kind::Playlist) && kind_said_first && hit.sim >= WHOLE_NAME_MIN
+    let kind_before_name = parsed.kind_alt.is_some() && parsed.kind_hint == Some(kind);
+    matches!(kind, Kind::Album | Kind::Playlist) && kind_before_name && hit.sim >= WHOLE_NAME_MIN
 }
 
 fn certain(parsed: &Parsed, hit: &Entity) -> bool {
