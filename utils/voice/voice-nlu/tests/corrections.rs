@@ -466,3 +466,22 @@ fn a_no_said_last_takes_the_command_back() {
     let p = one("включи где нас нет");
     assert!(asks_for(&p, "где нас нет"));
 }
+
+#[test]
+fn a_corrected_volume_is_read_on_the_scale_of_the_first_one() {
+    for (text, number) in [
+        ("звук на ноль а нет на десять хотя бы", 10),
+        ("громкость на тридцать нет на пять", 5),
+        ("громкость на сто ой нет на десять", 10),
+        ("громкость на пять нет на семь", 70),
+        ("громкость на семь нет на тридцать", 30),
+        ("громкость на двадцать процентов нет на пять", 5),
+    ] {
+        let p = one(text);
+        assert_eq!(
+            (p.intent, p.number),
+            (Intent::VolumeSet, Some(number)),
+            "{text}"
+        );
+    }
+}

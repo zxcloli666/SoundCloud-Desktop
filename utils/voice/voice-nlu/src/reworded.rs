@@ -7,6 +7,8 @@ use crate::types::Intent;
 const BEFORE_AMOUNT: &[&str] = &["на", "до", "в", "к"];
 const SCALE_MARKS: &[&str] = &["доля", "ордин"];
 const NEXT_TRACK: &str = "дальше";
+const TENTHS: std::ops::RangeInclusive<u32> = 1..=10;
+const PERCENT: &str = "процентов";
 
 enum Place {
     Said(usize),
@@ -25,10 +27,27 @@ pub fn part(said: &[Tok], again: &[Tok]) -> Option<Vec<Tok>> {
     let turned: Vec<Tok> = again.iter().filter(|t| turns(&t.w)).cloned().collect();
     match (given.is_empty(), turned.is_empty()) {
         (true, true) => None,
-        (false, true) => amount(said, given),
+        (false, true) => amount(said, given).map(|sized| on_the_same_scale(said, sized)),
         (true, false) => direction(said, turned),
         (false, false) => direction(&amount(said, given)?, turned),
     }
+}
+
+fn on_the_same_scale(said: &[Tok], mut sized: Vec<Tok>) -> Vec<Tok> {
+    let tenth = |t: &Tok| numbers::value(&t.w).is_some_and(|n| TENTHS.contains(&n));
+    let number = |toks: &[Tok]| toks.iter().rposition(|t| numbers::is_number(&t.w));
+    let sets = intent::detect(said).intent == Intent::VolumeSet;
+    let named = sized.iter().any(|t| unit(&t.w));
+    if let (true, false, Some(was), Some(now)) = (sets, named, number(said), number(&sized)) {
+        if !tenth(&said[was]) && tenth(&sized[now]) {
+            let percent = Tok {
+                w: PERCENT.into(),
+                amb: false,
+            };
+            sized.insert(now + 1, percent);
+        }
+    }
+    sized
 }
 
 fn amount(said: &[Tok], given: Vec<Tok>) -> Option<Vec<Tok>> {
