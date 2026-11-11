@@ -82,7 +82,7 @@ fn commands(before: &[Tok]) -> bool {
     let said = intent::detect(before);
     let asked = said.intent != Intent::None && !said.intent.needs_entity();
     let hinted = intent::indirect_hit(before) || fed_up(before);
-    said.blocked || (asked && !hinted)
+    (said.blocked && !fed_up(before)) || (asked && !hinted)
 }
 
 fn talk(head: &[Tok], command_follows: bool) -> bool {

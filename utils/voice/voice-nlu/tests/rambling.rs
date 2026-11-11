@@ -535,3 +535,25 @@ fn a_play_verb_that_points_back_plays_the_name_said_before_it() {
         assert_eq!(intents(text), [Intent::None], "{text}");
     }
 }
+
+#[test]
+fn a_complaint_about_any_thing_before_a_play_request_is_not_a_command_of_its_own() {
+    let cases = [
+        ("надоело это старьё включи кино", "кино"),
+        ("надоела эта работа включи кино", "кино"),
+        ("задолбала эта реклама поставь басту", "басту"),
+    ];
+    for (text, name) in cases {
+        let said = steps(text);
+        assert_eq!(said.len(), 1, "{text}");
+        assert_eq!(said[0].intent, Intent::Play, "{text}");
+        assert!(asks_for(&said[0], name), "{text}");
+    }
+    for text in [
+        "достала эта жара выключи",
+        "надоела мне эта работа переключи",
+        "эта жара уже достала сделай потише",
+    ] {
+        assert_eq!(intents(text), [Intent::None], "{text}");
+    }
+}
