@@ -59,6 +59,7 @@ bytes = "1"
 call-client = { path = "../../utils/call/client" }
 decrypt-client = { path = "../../utils/decrypt-client" }
 voice-audio = { path = "../../utils/voice/voice-audio" }
+voice-chat = { path = "../../utils/voice/voice-chat" }
 voice-engine = { path = "../../utils/voice/voice-engine" }
 voice-models = { path = "../../utils/voice/voice-models" }
 voice-nlu = { path = "../../utils/voice/voice-nlu" }

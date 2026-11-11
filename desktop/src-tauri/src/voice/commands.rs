@@ -1,10 +1,13 @@
 use serde::Serialize;
 use tauri::State as Managed;
-use voice_engine::{Command, Config, ErrorEvent, Outcome, Source, State};
+use tauri::ipc::Channel;
+use voice_chat::ChatEvent;
+use voice_engine::{Command, Config, EntityEvent, ErrorEvent, Outcome, Source, State};
 
+use super::chat::{self, Refused, Turn};
 use super::devices::{self, Devices};
 use super::models::{self, ModelInfo};
-use super::{Voice, previews};
+use super::{Voice, catalog, previews};
 use crate::rt::AppHandle;
 
 #[derive(Serialize)]
@@ -75,6 +78,31 @@ pub fn voice_answer(voice: Managed<'_, Voice>, choice: String) {
 #[tauri::command]
 pub fn voice_done(voice: Managed<'_, Voice>, id: String, outcome: Outcome) {
     voice.engine.send(Command::Done { id, outcome });
+}
+
+#[tauri::command]
+pub async fn voice_chat(
+    app: AppHandle,
+    voice: Managed<'_, Voice>,
+    turn: Turn,
+    events: Channel<ChatEvent>,
+) -> Result<(), Refused> {
+    chat::round(&app, &voice, turn, &events).await
+}
+
+#[tauri::command]
+pub fn voice_chat_cancel(voice: Managed<'_, Voice>, id: String) {
+    chat::cancel(&voice, id);
+}
+
+#[tauri::command]
+pub async fn voice_resolve(
+    app: AppHandle,
+    voice: Managed<'_, Voice>,
+    query: String,
+    kinds: Vec<String>,
+) -> Result<Vec<EntityEvent>, String> {
+    catalog::search(&app, &voice, &query, &kinds).await
 }
 
 #[tauri::command]

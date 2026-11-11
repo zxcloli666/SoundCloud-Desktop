@@ -1,4 +1,5 @@
 mod catalog;
+mod chat;
 pub mod commands;
 mod devices;
 mod events;
@@ -36,6 +37,7 @@ pub struct Voice {
     pub last: Mutex<(State, Option<ErrorEvent>)>,
     pub installs: Mutex<HashMap<String, Cancel>>,
     pub progress: Mutex<HashMap<String, (u64, u64)>>,
+    pub rounds: chat::Rounds,
 }
 
 pub fn init(app: &AppHandle, data_dir: &Path, cache_dir: &Path, rt: Handle, premium: bool) {
@@ -72,6 +74,7 @@ pub fn init(app: &AppHandle, data_dir: &Path, cache_dir: &Path, rt: Handle, prem
         last: Mutex::new((State::Idle, None)),
         installs: Mutex::new(HashMap::new()),
         progress: Mutex::new(HashMap::new()),
+        rounds: chat::Rounds::default(),
     });
     events::forward(app.clone(), events);
 }
@@ -87,6 +90,7 @@ impl Voice {
                 }
             }
             Event::Error(error) => last.1 = Some(error.clone()),
+            Event::Cancelled(turn) => self.rounds.cancel(&turn.id),
             _ => {}
         }
     }

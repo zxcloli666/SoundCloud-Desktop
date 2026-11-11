@@ -6239,6 +6239,7 @@ dependencies = [
  "urlencoding",
  "uuid 1.29.0",
  "voice-audio",
+ "voice-chat",
  "voice-engine",
  "voice-models",
  "voice-nlu",
@@ -7831,6 +7832,14 @@ dependencies = [
  "rubato 0.16.2",
  "serde_json",
  "sonora",
+]
+
+[[package]]
+name = "voice-chat"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
 ]
 
 [[package]]

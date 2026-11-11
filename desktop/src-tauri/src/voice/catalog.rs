@@ -1,11 +1,12 @@
 use std::time::Duration;
 
 use tokio::runtime::Handle;
+use voice_engine::EntityEvent;
 use voice_nlu::{Kind, Variant};
-use voice_resolve::Entity;
+use voice_resolve::{Boosts, Entity};
 use wreq::Method;
 
-use super::resolve;
+use super::{Voice, resolve};
 use crate::network::edge;
 use crate::network::netcheck::model::Role;
 use crate::network::{fetch, traced};
@@ -13,6 +14,7 @@ use crate::rt::AppHandle;
 
 const TIMEOUT: Duration = Duration::from_secs(4);
 const BASES: [&str; 2] = ["api-star", "api"];
+const BEST: usize = 8;
 
 pub struct ResolveCatalog {
     pub app: AppHandle,
@@ -27,6 +29,34 @@ impl voice_engine::Catalog for ResolveCatalog {
         }
         self.rt.block_on(post(&self.app, &body))
     }
+}
+
+pub async fn search(
+    app: &AppHandle,
+    voice: &Voice,
+    name: &str,
+    kinds: &[String],
+) -> Result<Vec<EntityEvent>, String> {
+    let asked: Vec<Kind> = kinds.iter().filter_map(|k| Kind::from_name(k)).collect();
+    let kinds = if asked.is_empty() {
+        Kind::ALL.to_vec()
+    } else {
+        asked
+    };
+    let readings = voice_resolve::named(name);
+    let variants: Vec<Variant> = readings.iter().flat_map(|r| r.queries.clone()).collect();
+    let body = resolve::request(&variants, &kinds);
+    if body.variants.is_empty() {
+        return Ok(Vec::new());
+    }
+    let liked = voice.config.lock().unwrap().boosts.artists.clone();
+    let found = post(app, &body).await?;
+    let fit = voice_resolve::matches(&readings, &found, &kinds, &Boosts::liked_artists(&liked));
+    Ok(fit
+        .iter()
+        .take(BEST)
+        .map(|s| EntityEvent::from(&s.entity))
+        .collect())
 }
 
 async fn post(app: &AppHandle, body: &resolve::Request) -> Result<Vec<Entity>, String> {
