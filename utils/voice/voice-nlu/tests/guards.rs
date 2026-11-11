@@ -446,3 +446,20 @@ fn carrying_on_with_something_that_is_not_playing_is_talk() {
         ("продолжи воспроизведение", "resume"),
     ]);
 }
+
+#[test]
+fn only_a_form_of_the_word_start_restarts_the_track() {
+    stays_silent(&[
+        "начальник опять орёт",
+        "начальника нет на месте",
+        "начали",
+        "началось в колхозе утро",
+    ]);
+    acts(&[
+        ("в начало", "seek_to"),
+        ("с начала", "seek_to"),
+        ("перемотай в начало", "seek_to"),
+        ("к началу трека", "seek_to"),
+        ("начальник звонит", "pause"),
+    ]);
+}

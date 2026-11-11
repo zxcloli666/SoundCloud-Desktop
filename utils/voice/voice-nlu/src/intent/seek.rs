@@ -155,7 +155,8 @@ fn vocabulary(w: &str) -> bool {
         || PRE.contains(&w)
         || GENERIC.contains(&w)
         || TRANSPORT_VERBS.contains(&w)
-        || stem(&["перемот", "промот", "отмот", "начал"], w)
+        || START.contains(&w)
+        || stem(&["перемот", "промот", "отмот"], w)
 }
 
 fn foreign(c: &Ctx) -> bool {
@@ -200,7 +201,7 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
 
     let to_start = c.len() <= 6
         && !t.found
-        && (c.has(&["сначала", "заново", "restart"]) || c.has_stem(&["начал"]))
+        && (c.has(&["сначала", "заново", "restart"]) || c.has(START))
         && c.stray(&c.all(SEEK_VERBS)) <= 2;
     if to_start && !fwd {
         return Some(Detected::new(Intent::SeekTo, vec![]).number(0));

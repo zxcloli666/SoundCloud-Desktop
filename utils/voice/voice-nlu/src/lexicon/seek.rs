@@ -63,6 +63,7 @@ pub const ONE_AND_HALF: &[&str] = &["полторы", "полтора"];
 pub const SET_VERBS: &[&str] = &["поставь", "переведи", "поставить", "установи"];
 
 pub const RESTART: &[&str] = &["сначала", "заново", "restart", "начало", "начала"];
+pub const START: &[&str] = &["начало", "начала", "началу", "начале"];
 
 pub const SEEK_FILL: &[&str] = &[
     "плюс",
