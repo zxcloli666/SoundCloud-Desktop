@@ -83,6 +83,16 @@ fn a_corrected_amount_keeps_the_action_and_the_unit() {
             Intent::VolumeDown,
             5,
         ),
+        (
+            "перемотай на минуту нет на две вперёд",
+            Intent::SeekForward,
+            120,
+        ),
+        (
+            "вперёд на двадцать секунд ой на тридцать назад",
+            Intent::SeekBackward,
+            30,
+        ),
     ] {
         let p = one(text);
         assert_eq!((p.intent, p.number), (intent, Some(number)), "{text}");
@@ -283,6 +293,7 @@ fn a_command_after_a_run_of_no_stands() {
     assert_eq!(steps("не не включай"), ["none"]);
     assert_eq!(steps("не не не"), ["none"]);
     assert_eq!(steps("не-не оставь"), ["none"]);
+    assert_eq!(steps("нет не это а следующую"), ["next"]);
 }
 
 #[test]
@@ -307,6 +318,7 @@ fn a_command_after_a_denied_request_stands() {
     );
     assert_eq!(steps("я не просил паузу"), ["none"]);
     assert_eq!(steps("я не говорила включи я сказала подожди"), ["none"]);
+    assert_ne!(steps("он не сказал что включить"), ["resume"]);
 }
 
 #[test]

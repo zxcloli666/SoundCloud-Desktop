@@ -16,6 +16,7 @@ const ASKED: &[&str] = &[
     "велела",
 ];
 const ASKED_BY: usize = 2;
+const INFINITIVE: &str = "ть";
 
 pub fn command_after(text: &str) -> Option<String> {
     let said = words(text);
@@ -45,7 +46,8 @@ fn instead_of_the_denied(text: &str) -> Option<String> {
 }
 
 fn after_a_run_of_no(said: &[String]) -> Option<String> {
-    let run = said.iter().take_while(|w| *w == NOT || *w == NO).count();
+    let no = said.first().filter(|w| *w == NOT || *w == NO)?;
+    let run = said.iter().take_while(|w| *w == no).count();
     let rest = said[run..].join(" ");
     let negated = || refuses(&format!("{NOT} {rest}"));
     (run >= 2 && !rest.is_empty() && !negated()).then(|| format!("{NO} {rest}"))
@@ -62,8 +64,12 @@ fn after_what_was_not_asked(said: &[String]) -> Option<String> {
     if asked == 0 || asked > ASKED_BY || said[asked - 1] != NOT {
         return None;
     }
-    let command = (asked + 2..said.len()).find(|&at| LONE_VERBS.contains(&said[at].as_str()))?;
+    let command = (asked + 2..said.len()).find(|&at| orders(&said[at]))?;
     Some(said[command..].join(" "))
+}
+
+fn orders(w: &str) -> bool {
+    LONE_VERBS.contains(&w) && !w.ends_with(INFINITIVE)
 }
 
 fn refuses(said: &str) -> bool {
