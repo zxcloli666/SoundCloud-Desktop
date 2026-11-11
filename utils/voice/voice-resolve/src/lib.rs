@@ -11,7 +11,7 @@ pub use entity::{Decision, Entity, Scored};
 pub use score::{Boosts, rank};
 
 use serde::Serialize;
-use voice_nlu::{Intent, Kind, Parsed, parse, parse_one};
+use voice_nlu::{Intent, Kind, Parsed, parse, parse_name, parse_one};
 
 #[derive(Debug, Clone, Serialize)]
 pub struct Outcome {
@@ -38,6 +38,34 @@ pub fn resolve(parsed: &Parsed, catalog: &dyn Catalog, boosts: &Boosts, bare: bo
     let cands = catalog.candidates(&expanded.queries, &Kind::ALL);
     let ranked = rank(&expanded, cands, boosts);
     score::decide(&ranked, bare)
+}
+
+pub fn named(name: &str) -> Vec<Parsed> {
+    let mut main = parse_name(name);
+    let other = main.kind_alt.take().map(|alt| Parsed {
+        queries: alt.queries,
+        kind_hint: alt.kind_hint,
+        ..main.clone()
+    });
+    let mut readings: Vec<Parsed> = std::iter::once(main).chain(other).collect();
+    for reading in &mut readings {
+        reading.queries = alias::expand(&reading.queries);
+    }
+    readings
+}
+
+pub fn matches(
+    readings: &[Parsed],
+    found: &[Entity],
+    kinds: &[Kind],
+    boosts: &Boosts,
+) -> Vec<Scored> {
+    let wanted = || found.iter().filter(|e| kinds.contains(&e.kind)).cloned();
+    readings
+        .iter()
+        .map(|reading| score::fitting(rank(reading, wanted().collect(), boosts)))
+        .find(|fit| !fit.is_empty())
+        .unwrap_or_default()
 }
 
 pub fn interpret(text: &str, catalog: &dyn Catalog, boosts: &Boosts) -> Vec<Outcome> {
@@ -162,5 +190,68 @@ fn interpret_parsed(parsed: Parsed, catalog: &dyn Catalog, boosts: &Boosts) -> O
         intent,
         parsed,
         decision,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const ROWS: &str = "kind\tname\tartist\tpopularity\taliases
+artist\tСкриптонит\t\t6500000\tscriptonite
+artist\tКино\t\t9000000\t
+track\tЦепи\tСкриптонит\t3000000\t
+track\tПауза\tСкриптонит\t400000\t
+album\tГруппа крови\tКино\t2000000\t
+";
+
+    fn search(name: &str, kinds: &[Kind]) -> Vec<String> {
+        let catalog = FixtureCatalog::from_tsv(ROWS, true);
+        let readings = named(name);
+        let variants: Vec<_> = readings.iter().flat_map(|r| r.queries.clone()).collect();
+        let found = catalog.candidates(&variants, &Kind::ALL);
+        matches(&readings, &found, kinds, &Boosts::none())
+            .iter()
+            .map(|scored| scored.entity.label())
+            .collect()
+    }
+
+    #[test]
+    fn a_name_finds_its_entities_best_first() {
+        assert_eq!(
+            search("Скриптонит Цепи", &Kind::ALL)[0],
+            "Скриптонит - Цепи"
+        );
+        assert_eq!(search("scriptonite", &Kind::ALL)[0], "Скриптонит");
+        assert_eq!(
+            search("альбом группа крови", &Kind::ALL)[0],
+            "Кино - Группа крови"
+        );
+    }
+
+    #[test]
+    fn a_name_that_sounds_like_a_command_is_still_a_name() {
+        assert_eq!(search("Пауза", &Kind::ALL), ["Скриптонит - Пауза"]);
+        assert_eq!(
+            interpret_one(
+                "пауза",
+                &FixtureCatalog::from_tsv(ROWS, true),
+                &Boosts::none()
+            )
+            .intent,
+            Intent::Pause
+        );
+    }
+
+    #[test]
+    fn only_the_asked_kinds_come_back() {
+        assert_eq!(search("скриптонит", &[Kind::Artist]), ["Скриптонит"]);
+        assert!(search("скриптонит", &[Kind::Album]).is_empty());
+    }
+
+    #[test]
+    fn a_name_nobody_has_finds_nothing() {
+        assert!(search("абырвалгович", &Kind::ALL).is_empty());
+        assert!(search("", &Kind::ALL).is_empty());
     }
 }

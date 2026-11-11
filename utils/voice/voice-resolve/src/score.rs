@@ -108,6 +108,15 @@ pub fn rank(parsed: &Parsed, cands: Vec<Entity>, boosts: &Boosts) -> Vec<Scored>
     out
 }
 
+pub fn fitting(ranked: Vec<Scored>) -> Vec<Scored> {
+    let fits = |scored: &Scored| {
+        let (act, ask) = limits(scored.qlen, false);
+        let sim = scored.sim.min(1.0);
+        sim >= ask && (!scored.fallback || sim >= act)
+    };
+    ranked.into_iter().filter(fits).collect()
+}
+
 fn limits(qlen: usize, bare: bool) -> (f32, f32) {
     if bare {
         return (BARE_MIN, BARE_MIN);

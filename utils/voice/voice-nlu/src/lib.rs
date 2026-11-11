@@ -22,6 +22,34 @@ pub fn parse_one(text: &str) -> Parsed {
     parse_toks(text, normalize(text).toks).0
 }
 
+pub fn parse_name(text: &str) -> Parsed {
+    let toks = normalize(text).toks;
+    let s = slots::extract(&toks, &intent::Detected::none());
+    let normalized = toks
+        .iter()
+        .map(|t| t.w.as_str())
+        .collect::<Vec<_>>()
+        .join(" ");
+    let kind_alt = s.alt.map(|(kind_hint, raw)| Reading {
+        queries: variants::expand(&raw, false),
+        kind_hint,
+    });
+    Parsed {
+        intent: Intent::Play,
+        kind_hint: s.kind_hint,
+        queries: variants::expand(&s.raw, true),
+        number: None,
+        heard: text.to_string(),
+        normalized,
+        bare: false,
+        weak_verb: false,
+        fraction: None,
+        alt: Vec::new(),
+        kind_alt,
+        split: Vec::new(),
+    }
+}
+
 pub(crate) fn parse_toks(text: &str, mut toks: Vec<Tok>) -> (Parsed, bool) {
     let original = toks.clone();
     let mut cut = false;

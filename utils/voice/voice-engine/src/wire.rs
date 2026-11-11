@@ -1,5 +1,5 @@
 use voice_nlu::Intent;
-use voice_resolve::{Decision, Outcome, Scored};
+use voice_resolve::{Decision, Entity, Outcome, Scored};
 
 use crate::event::{CommandEvent, DecisionEvent, EntityEvent, ScoredEvent, Source};
 
@@ -46,15 +46,20 @@ pub fn decision(decision: &Decision) -> DecisionEvent {
 }
 
 pub fn scored(scored: &Scored) -> ScoredEvent {
-    let entity = &scored.entity;
     ScoredEvent {
-        entity: EntityEvent {
+        entity: EntityEvent::from(&scored.entity),
+        score: scored.score,
+    }
+}
+
+impl From<&Entity> for EntityEvent {
+    fn from(entity: &Entity) -> EntityEvent {
+        EntityEvent {
             kind: entity.kind.name(),
             name: entity.name.clone(),
             artist: entity.artist.clone().unwrap_or_default(),
             popularity: entity.popularity,
             id: entity.id.clone(),
-        },
-        score: scored.score,
+        }
     }
 }
