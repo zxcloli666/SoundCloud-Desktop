@@ -7,6 +7,8 @@ mod names;
 mod normalize;
 mod numbers;
 mod objection;
+mod rambling;
+mod recall;
 mod repair;
 mod reworded;
 mod slots;
@@ -23,7 +25,7 @@ pub use variants::lemma;
 pub use steps::parse;
 
 pub fn parse_one(text: &str) -> Parsed {
-    parse_toks(text, normalize(text).toks).0
+    parse_toks(text, recall::named(normalize(text).toks)).0
 }
 
 pub fn parse_name(text: &str) -> Parsed {
@@ -57,7 +59,8 @@ pub fn parse_name(text: &str) -> Parsed {
 pub(crate) fn parse_toks(text: &str, mut toks: Vec<Tok>) -> (Parsed, bool) {
     let original = toks.clone();
     let mut cut = false;
-    if !intent::indirect_hit(&toks) {
+    let buried = rambling::find(&toks);
+    if buried.is_none() && !intent::indirect_hit(&toks) {
         match intent::negation(&toks) {
             intent::Negation::Cancel => return (cancelled(text, &toks), true),
             intent::Negation::Tail(j) => toks.drain(..j).for_each(drop),
@@ -68,7 +71,13 @@ pub(crate) fn parse_toks(text: &str, mut toks: Vec<Tok>) -> (Parsed, bool) {
             cut = true;
         }
     }
-    let mut det = intent::detect(&toks);
+    let mut det = match buried {
+        Some(found) => {
+            toks = found.window;
+            found.det
+        }
+        None => intent::detect(&toks),
+    };
     if det.intent == Intent::None && !det.blocked {
         if let Some(found) = anchor::find(&toks) {
             toks = found.window;

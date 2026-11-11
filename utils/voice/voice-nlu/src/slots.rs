@@ -137,6 +137,9 @@ pub fn extract(toks: &[Tok], det: &Detected) -> Slots {
             }
             let marker = ARTIST_MARKERS.contains(&w) && !kept.is_empty() && i + 1 < rest.len();
             if !marker {
+                while kept.last().is_some_and(points) {
+                    kept.pop();
+                }
                 continue;
             }
         }
@@ -157,6 +160,10 @@ pub fn extract(toks: &[Tok], det: &Detected) -> Slots {
         raw: split(kept),
         alt: kind_name_reading(&rest),
     }
+}
+
+fn points(t: &Tok) -> bool {
+    matches!(t.w.as_str(), "вот" | "этот" | "эту" | "эта" | "эти")
 }
 
 fn without_descriptor(rest: &[Tok]) -> Option<Vec<Tok>> {

@@ -145,7 +145,7 @@ fn resumes(ws: &[String], i: usize) -> bool {
 }
 
 fn marker(ws: &[String], i: usize) -> Option<Mark> {
-    if intent::absence(ws, i) {
+    if intent::absence(ws, i) || worn_out(ws, i) {
         return None;
     }
     let takes_back = TAKES_BACK.iter().find(|m| starts(ws, i, m));
@@ -162,6 +162,11 @@ fn marker(ws: &[String], i: usize) -> Option<Mark> {
     let closes = i + len == ws.len() && len > 1 && ws[end - 1] == NO;
     let end = if closes { end - 1 } else { end };
     (end < ws.len()).then_some(Mark { end, firm })
+}
+
+fn worn_out(ws: &[String], at: usize) -> bool {
+    let near = &ws[at.saturating_sub(2)..(at + 3).min(ws.len())];
+    ws[at] == "нет" && near.iter().any(|w| w == "сил")
 }
 
 fn merge(said: Vec<Tok>, version: Version) -> Vec<Tok> {

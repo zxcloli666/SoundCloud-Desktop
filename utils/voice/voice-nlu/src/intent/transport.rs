@@ -67,12 +67,14 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
         .pos_stem(&["пауз", "запауз", "pause"])
         .or_else(|| c.pos(PAUSE_WORDS))
     {
-        if only_for_a_while(c, i) {
+        if only_for_a_while(c, &held(c, i)) {
             return Some(Detected::new(Intent::Pause, vec![i]));
         }
     }
     if let Some(i) = c.pos_stem(&["стоп", "stop"]).or_else(|| c.pos(STOP_WORDS)) {
-        if only_for_a_while(c, i) {
+        let mut said = held(c, i);
+        said.extend(c.all(STOP_WORDS));
+        if only_for_a_while(c, &said) {
             return Some(Detected::new(Intent::Stop, vec![i]));
         }
     }
@@ -105,9 +107,9 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
     None
 }
 
-fn only_for_a_while(c: &Ctx, halt: usize) -> bool {
+fn only_for_a_while(c: &Ctx, said: &[usize]) -> bool {
     let heading = c.has(FORWARD) || c.has(BACKWARD);
-    c.stray_words(&held(c, halt)).iter().all(|w| {
+    c.stray_words(said).iter().all(|w| {
         !heading
             && (A_WHILE.contains(w)
                 || SEC_UNITS.contains(w)

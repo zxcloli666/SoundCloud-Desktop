@@ -5,6 +5,7 @@ use crate::names::Names;
 use crate::normalize::{Tok, normalize};
 use crate::objection;
 use crate::parse_toks;
+use crate::recall;
 use crate::types::{Intent, Parsed};
 
 const MAX_STEPS: usize = 3;
@@ -32,7 +33,7 @@ pub fn parse(text: &str, names: &Names) -> Vec<Parsed> {
     let text_in = spoken.as_deref().unwrap_or(text);
     let fixed = correct::resolve(text_in).filter(|_| !intent::retold(&normalize(text_in).toks));
     let corrected = fixed.is_some();
-    let toks = names.drop(fixed.unwrap_or_else(|| normalize(text_in).toks));
+    let toks = recall::named(names.drop(fixed.unwrap_or_else(|| normalize(text_in).toks)));
     let toks = &without_order_word(toks);
     let mut whole = parse_toks(text, toks.to_vec()).0;
     if intent::lyric(toks) {
@@ -322,8 +323,8 @@ fn own_verb(p: &Parsed) -> bool {
 fn collapse(steps: Vec<Parsed>) -> Vec<Parsed> {
     let mut out: Vec<Parsed> = Vec::new();
     for mut p in steps {
-        let halts = |i: Intent| matches!(i, Intent::Stop | Intent::Pause);
-        if p.intent == Intent::Play && out.last().is_some_and(|l| halts(l.intent)) {
+        let replaced = |i: Intent| matches!(i, Intent::Stop | Intent::Pause | Intent::Next);
+        if p.intent == Intent::Play && out.last().is_some_and(|l| replaced(l.intent)) {
             out.pop();
         }
         if let Some(last) = out.last() {

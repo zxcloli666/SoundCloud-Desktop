@@ -24,12 +24,11 @@ pub fn normalize(input: &str) -> Normalized {
         let fixed = fix_word(raw);
         words.extend(fixed.split_whitespace().map(str::to_string));
     }
-    let words = apply_phrases(repair::stutter(repair::glue(words)));
+    let words = plain(apply_phrases(repair::stutter(repair::glue(words))));
     let words = numbers::out_of_ten(numbers::merge(&numbers::colloquial(words), false));
-    let words = drop_swears(dedupe(words));
+    let words = drop_swears(dedupe(without_fillers(words)));
     let toks: Vec<Tok> = words
         .into_iter()
-        .filter(|w| !lexicon::has(lexicon::FILLERS, w))
         .map(|w| Tok {
             amb: lexicon::has(lexicon::AMBIGUOUS, &w),
             w,
@@ -168,6 +167,21 @@ fn apply_phrases(words: Vec<String>) -> Vec<String> {
         i += 1;
     }
     out
+}
+
+fn plain(words: Vec<String>) -> Vec<String> {
+    words
+        .into_iter()
+        .map(|w| lexicon::swear(&w).unwrap_or(w))
+        .filter(|w| !w.is_empty())
+        .collect()
+}
+
+fn without_fillers(words: Vec<String>) -> Vec<String> {
+    words
+        .into_iter()
+        .filter(|w| !lexicon::has(lexicon::FILLERS, w))
+        .collect()
 }
 
 fn matches_at(words: &[String], i: usize, phrase: &[&str]) -> bool {

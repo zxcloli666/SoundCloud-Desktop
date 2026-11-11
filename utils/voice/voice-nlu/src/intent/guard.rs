@@ -101,13 +101,17 @@ fn same_ask(toks: &[Tok], k: usize) -> bool {
 
 fn started(toks: &[Tok]) -> Option<usize> {
     (1..toks.len().saturating_sub(1))
-        .filter(|&k| REMARK_START.contains(&toks[k].w.as_str()))
+        .filter(|&k| REMARK_START.contains(&toks[k].w.as_str()) && !listener(toks, k))
         .filter(|&k| {
             toks[..k]
                 .iter()
                 .all(|t| !REMARK_START.contains(&t.w.as_str()))
         })
         .find(|&k| cuttable(toks, k))
+}
+
+fn listener(toks: &[Tok], k: usize) -> bool {
+    matches!(toks[k].w.as_str(), "мне" | "нам") && PLAY_STRONG.contains(&toks[k - 1].w.as_str())
 }
 
 fn reasoned(toks: &[Tok]) -> Option<usize> {
