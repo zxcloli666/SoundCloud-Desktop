@@ -301,7 +301,7 @@ pub fn repeat(c: &Ctx) -> Option<Detected> {
     Some(Detected::new(Intent::RepeatOne, vec![]))
 }
 
-const NOW_SET: &[&str] = &[
+pub const NOW_SET: &[&str] = &[
     "что",
     "чё",
     "кто",

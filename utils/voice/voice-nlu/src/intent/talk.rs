@@ -1,10 +1,11 @@
 use super::ctx::Ctx;
 use super::indirect;
+use super::library::NOW_SET;
 use crate::anchor::finite;
 use crate::lexicon::{
     self, AGREEMENT, BACKWARD, CLAUSE_SUBJECTS, COMPLAINT, COMPOUNDS, DEMONSTRATIVES, DENY,
     DOWN_WORDS, FORWARD, MUSIC_STEMS, NEXT_STRONG, OTHERS, OWN, PLAY_STRONG, PREV_STRONG,
-    REMARK_START, RINGS, SWEARS_AMB, TASTE, UP_WORDS, WAS,
+    REMARK_START, RINGS, SWEARS_AMB, TASTE, UP_WORDS, WAS, WHICH,
 };
 
 pub fn sentence(c: &Ctx) -> bool {
@@ -15,6 +16,7 @@ pub fn sentence(c: &Ctx) -> bool {
         || taste_of_another(c)
         || thing_of_another(c)
         || thing_made_louder(c)
+        || question_with_its_own_verb(c)
 }
 
 fn adverb_of_a_clause(c: &Ctx) -> bool {
@@ -91,8 +93,15 @@ fn thing_made_louder(c: &Ctx) -> bool {
     })
 }
 
+fn question_with_its_own_verb(c: &Ctx) -> bool {
+    let Some(at) = c.pos(WHICH) else {
+        return false;
+    };
+    !c.has(PLAY_STRONG) && c.w[at + 1..].iter().any(|w| own_verb(w))
+}
+
 fn own_verb(w: &str) -> bool {
-    finite(w) && !command_word(w)
+    finite(w) && !command_word(w) && !NOW_SET.contains(&w)
 }
 
 fn own_noun(w: &str) -> bool {

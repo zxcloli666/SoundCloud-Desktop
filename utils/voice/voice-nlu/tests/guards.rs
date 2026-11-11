@@ -172,3 +172,22 @@ fn a_volume_command_about_another_thing_is_said_to_its_owner() {
         ("включи свой среди чужих", "play"),
     ]);
 }
+
+#[test]
+fn a_which_question_with_a_verb_that_is_not_about_playing_asks_something_else() {
+    stays_silent(&[
+        "какой трек у тебя на звонке стоит",
+        "какой трек у тебя на будильнике стоит",
+        "какой трек он выбрал",
+        "какая песня тебе больше заходит",
+        "какой трек у вас в машине крутится",
+        "какой трек мы вчера слушали",
+    ]);
+    acts(&[
+        ("какой трек играет", "now_playing"),
+        ("какая песня сейчас играет", "now_playing"),
+        ("какой трек у тебя сейчас играет", "now_playing"),
+        ("какая это песня", "now_playing"),
+        ("как называется этот трек", "now_playing"),
+    ]);
+}

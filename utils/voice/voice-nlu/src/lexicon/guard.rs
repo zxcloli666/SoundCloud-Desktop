@@ -212,6 +212,12 @@ pub const OWN: &[&str] = &[
 
 pub const RINGS: &[&str] = &["звон", "зазвон", "трезвон"];
 
+pub const WHICH: &[&str] = &["какой", "какая", "какую", "какое", "какие"];
+
+pub const ASKING: &[&str] = &["что", "чего", "куда", "зачем", "почему", "как"];
+
+pub const LISTENERS: &[&str] = &["ты", "вы"];
+
 pub const SWEARS_AMB: &[&str] = &["нахер", "нахрен", "нафиг", "нафик"];
 
 pub const COMPLAINT: &[&str] = &[
