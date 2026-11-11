@@ -551,3 +551,13 @@ fn asking_the_listener_why_it_stands_idle_is_a_nudge_not_a_question_to_a_person(
         "что ты молчишь",
     ]);
 }
+
+#[test]
+fn a_word_of_having_had_enough_is_not_a_noun_after_next() {
+    acts(&[
+        ("давай следующую сил нет это слушать", "next"),
+        ("переключи на следующую невмоготу уже", "next"),
+        ("давай следующую хватит уже", "next"),
+    ]);
+    stays_silent(&["следующая остановка конечная"]);
+}

@@ -4,7 +4,7 @@ use super::library::NOW_SET;
 use crate::anchor::finite;
 use crate::lexicon::{
     self, AGREEMENT, ASKING, BACKWARD, CLAUSE_SUBJECTS, COMPLAINT, COMPOUNDS, DEMONSTRATIVES, DENY,
-    DOWN_WORDS, FORWARD, IDLE, INFINITIVE_ENDINGS, INSISTING, LISTENERS, LISTENING_STEMS,
+    DOWN_WORDS, FED_UP, FORWARD, IDLE, INFINITIVE_ENDINGS, INSISTING, LISTENERS, LISTENING_STEMS,
     MUSIC_STEMS, NEG_STEMS, NEXT_STRONG, OTHERS, OWN, PLAY_STRONG, PREV_STRONG, REMARK_START,
     RESUME_WORDS, RINGS, ROUGHLY, SPEAKING, STRIDES, SWEARS_AMB, TASTE, THE_PAST, UP_WORDS, WAS,
     WHICH,
@@ -162,7 +162,11 @@ fn own_verb(w: &str) -> bool {
 }
 
 fn own_noun(w: &str) -> bool {
-    !command_word(w) && !REMARK_START.contains(&w) && !COMPLAINT.contains(&w) && !WAS.contains(&w)
+    !command_word(w)
+        && !REMARK_START.contains(&w)
+        && !COMPLAINT.contains(&w)
+        && !FED_UP.contains(&w)
+        && !WAS.contains(&w)
 }
 
 fn command_word(w: &str) -> bool {
