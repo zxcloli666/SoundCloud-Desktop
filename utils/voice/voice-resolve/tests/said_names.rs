@@ -354,3 +354,21 @@ fn a_phrase_without_a_verb_that_takes_back_a_part_of_itself_is_talk() {
         ("звери", "play Звери"),
     ]);
 }
+
+#[test]
+fn a_version_of_a_title_is_the_title_by_the_artist_who_plays_that_version() {
+    heard_either_way(&[
+        (
+            "включи караоке версию старбой",
+            "play Weeknd Karaoke - Starboy",
+        ),
+        (
+            "включи пиано версию бэд гай",
+            "play Billie Eilish Piano - bad guy",
+        ),
+        (
+            "поставь версию лесника от короля и шута",
+            "play Король и Шут - Лесник",
+        ),
+    ]);
+}

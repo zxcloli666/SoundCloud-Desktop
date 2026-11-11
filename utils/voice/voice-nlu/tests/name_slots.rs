@@ -1,4 +1,4 @@
-use voice_nlu::{Names, Parsed, Variant, parse};
+use voice_nlu::{Kind, Names, Parsed, Variant, parse};
 
 const LOLI: [&str; 3] = ["Loli", "Лоля", "롤리"];
 
@@ -131,4 +131,21 @@ fn up_to_three_words_at_an_end_of_a_name_of_five_may_be_the_artist() {
         assert!(ends(text).iter().any(|part| part == artist), "{text}");
     }
     assert!(ends("включи на ютубе тот ролик про скриптонита").is_empty());
+}
+
+#[test]
+fn the_word_version_is_a_word_for_a_track_and_not_a_part_of_its_name() {
+    let cases = [
+        (
+            "включи караоке версию блайндинг лайтс",
+            "караоке блайндинг лайтс",
+        ),
+        ("включи пиано версию бэд гай", "пиано бэд гай"),
+        ("поставь версию лесника", "лесника"),
+        ("версия кукушки включи", "кукушки"),
+    ];
+    for (text, name) in cases {
+        assert_eq!(names(text)[0], name, "{text}");
+        assert_eq!(said(text)[0].kind_hint, Some(Kind::Track), "{text}");
+    }
 }
