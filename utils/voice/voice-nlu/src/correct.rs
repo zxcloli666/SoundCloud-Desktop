@@ -48,7 +48,7 @@ pub fn resolve(text: &str) -> Option<Vec<Tok>> {
             .find(|m| starts(&ws, i, m))
             .map(|m| m.len())
             .or(loose.then_some(1))
-            .filter(|len| skip_noise(&ws, i + len) < ws.len());
+            .filter(|len| skip_noise(&ws, i + len) < ws.len() && !worn_out(&ws, i));
         if let Some(m) = negating {
             found = true;
             if !dropping {
@@ -83,6 +83,11 @@ pub fn resolve(text: &str) -> Option<Vec<Tok>> {
         acc = merge(acc, seg);
     }
     Some(acc)
+}
+
+fn worn_out(ws: &[String], at: usize) -> bool {
+    let near = &ws[at.saturating_sub(2)..(at + 3).min(ws.len())];
+    ws[at] == "нет" && near.iter().any(|w| w == "сил")
 }
 
 fn after_not(seg: &[String]) -> Option<Vec<String>> {

@@ -395,3 +395,22 @@ fn a_reason_after_a_request_for_any_music_is_not_a_name() {
     let named = &steps("включи музыку то что вчера играло")[0];
     assert_eq!(named.intent, Intent::Play);
 }
+
+#[test]
+fn having_no_strength_left_is_a_complaint_not_a_correction() {
+    let cases = [
+        (
+            "так ладно хватит этого нытья давай следующую уже сил нет это слушать",
+            Intent::Next,
+        ),
+        ("давай следующую сил нет это слушать", Intent::Next),
+        ("переключи сил моих больше нет", Intent::Next),
+        ("нет сил это слушать выключи музыку", Intent::Stop),
+    ];
+    for (text, intent) in cases {
+        assert_eq!(intents(text), [intent], "{text}");
+    }
+    let corrected = &steps("включи кино нет лучше пикник")[0];
+    assert!(corrected.queries.iter().any(|q| q.text == "пикник"));
+    assert!(corrected.queries.iter().all(|q| !q.text.contains("кино")));
+}
