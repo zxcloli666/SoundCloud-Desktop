@@ -2,7 +2,7 @@ import { type CSSProperties, memo, useId, useRef } from 'react';
 import { usePerfMode } from '../../lib/perf';
 import { SPEECH } from '../../lib/voice/levels';
 import { MARKS } from './avatars';
-import { LolyaMark } from './avatars/LolyaMark';
+import { LoliMark } from './avatars/LoliMark';
 import { useLevelDrive } from './useLevelDrive';
 import type { VoiceInfo } from './voices';
 
@@ -21,7 +21,7 @@ export const VoiceAvatar = memo(function VoiceAvatar({
   const uid = `vx${useId().replace(/[^\w-]/g, '')}`;
   const pulse = useRef<HTMLSpanElement>(null);
   useLevelDrive(pulse, SPEECH, speaking);
-  const Mark = MARKS[voice.id] ?? LolyaMark;
+  const Mark = MARKS[voice.id] ?? LoliMark;
   const body: CSSProperties = {
     transform: speaking ? 'scale(calc(1 + var(--lvl, 0) * 0.08))' : undefined,
     transition: speaking ? LEVEL_EASE : undefined,

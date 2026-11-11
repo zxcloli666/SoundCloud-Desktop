@@ -136,7 +136,7 @@ export function wire(rounds: Step[][]): Wire {
 export function bodyOf(results: ChatBody['results']): ChatBody {
   return {
     text: 'привет',
-    persona: 'lolya',
+    persona: 'loli',
     language: 'ru',
     context: {},
     history: [],

@@ -12,6 +12,7 @@ import type {
   VoiceSource,
   WakeConfig,
 } from './types';
+import { knownVoice } from './voice-ids';
 
 const HISTORY_CAP = 60;
 const WAKE_WINDOW_MS = 24 * 60 * 60 * 1000;
@@ -134,7 +135,11 @@ export const useVoiceStore = create<VoiceStore>()(
               wake: { ...base.activation.wake, ...config.activation?.wake },
             },
             listen: { ...base.listen, ...config.listen },
-            speak: { ...base.speak, ...config.speak },
+            speak: {
+              ...base.speak,
+              ...config.speak,
+              voice: knownVoice(config.speak?.voice),
+            },
             boosts: { ...base.boosts, ...config.boosts },
           },
         };

@@ -8,7 +8,7 @@ const SPARKS = [
   { x: 52, y: 47, r: 2.6, delay: 2 },
 ];
 
-export function LolyaMark({ uid, idle }: MarkProps) {
+export function LoliMark({ uid, idle }: MarkProps) {
   return (
     <svg viewBox="0 0 64 64" aria-hidden className="block size-full">
       <defs>

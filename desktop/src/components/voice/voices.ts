@@ -1,13 +1,14 @@
 import type { VoiceLanguage } from '../../lib/voice/types';
-import lolyaImage from './avatars/lolya.jpg';
+import type { VoiceId } from '../../lib/voice/voice-ids';
+import loliImage from './avatars/loli.jpg';
 import moriartyImage from './avatars/moriarty.jpg';
 
-const QWEN_LOLYA = 'qwen-lolya';
+const QWEN_LOLI = 'qwen-loli';
 const QWEN_MORIARTY = 'qwen-moriarty';
 const KOKORO = 'kokoro-int8-multi-lang-v1_0';
 
 export interface VoiceInfo {
-  id: string;
+  id: VoiceId;
   model: string;
   lang: VoiceLanguage;
   tags: string[];
@@ -17,12 +18,12 @@ export interface VoiceInfo {
 
 export const VOICES: VoiceInfo[] = [
   {
-    id: 'lolya',
-    model: QWEN_LOLYA,
+    id: 'loli',
+    model: QWEN_LOLI,
     lang: 'ru',
     tags: ['cute', 'bright'],
     glow: 'var(--color-rose-200)',
-    image: lolyaImage,
+    image: loliImage,
   },
   {
     id: 'moriarty',
@@ -43,7 +44,7 @@ export const VOICES: VoiceInfo[] = [
 ];
 
 export function voiceOfModel(model: string): VoiceInfo | undefined {
-  return [QWEN_LOLYA, QWEN_MORIARTY].includes(model)
+  return [QWEN_LOLI, QWEN_MORIARTY].includes(model)
     ? VOICES.find((v) => v.model === model)
     : undefined;
 }

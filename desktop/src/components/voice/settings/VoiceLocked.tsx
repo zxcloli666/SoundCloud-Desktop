@@ -32,8 +32,8 @@ const EXAMPLES = ['play', 'volume', 'like'];
 export function VoiceLocked() {
   const { t } = useTranslation();
   const perf = usePerfMode();
-  const lolya = VOICES[0];
-  const speaking = useVoiceRuntime((s) => s.previewing === lolya.id);
+  const loli = VOICES[0];
+  const speaking = useVoiceRuntime((s) => s.previewing === loli.id);
   const blur = perf.blur(40);
   const sparks = SPARKS.slice(0, perf.particles(SPARKS.length));
   const orbit = ORBIT.slice(0, perf.particles(ORBIT.length));
@@ -83,7 +83,7 @@ export function VoiceLocked() {
         >
           <button
             type="button"
-            onClick={() => playPreview(lolya.id)}
+            onClick={() => playPreview(loli.id)}
             aria-label={t('voice.locked.listen')}
             className="group relative shrink-0 cursor-pointer rounded-full transition-transform duration-500 ease-[var(--ease-apple)] hover:scale-[1.03] active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400/60"
           >
@@ -105,7 +105,7 @@ export function VoiceLocked() {
                 animation: perf.idleAnim ? 'vx-float 5.2s ease-in-out infinite' : undefined,
               }}
             >
-              <VoiceAvatar voice={lolya} size={136} speaking={speaking} />
+              <VoiceAvatar voice={loli} size={136} speaking={speaking} />
             </span>
             {orbit.map((s) => (
               <span
@@ -160,7 +160,7 @@ export function VoiceLocked() {
             </div>
             <div className="mt-5 flex flex-wrap items-center justify-center gap-3 sm:justify-start">
               <StarCta />
-              <SmallButton onClick={() => playPreview(lolya.id)}>
+              <SmallButton onClick={() => playPreview(loli.id)}>
                 <Play size={11} fill="currentColor" />
                 {t('voice.locked.listen')}
               </SmallButton>

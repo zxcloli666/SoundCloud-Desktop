@@ -30,7 +30,7 @@ const NOW = 10_000_000;
 function input(extra: Partial<Parameters<typeof buildBody>[0]> = {}) {
   return {
     text: 'как дела',
-    persona: 'lolya',
+    persona: 'loli',
     language: 'ru' as const,
     context: { playing: true },
     history: [] as ChatMessage[],
@@ -57,7 +57,7 @@ test('the body carries text, persona, language, context, history, notes, tools a
     'tools',
     'results',
   ]);
-  assert.equal(body.persona, 'lolya');
+  assert.equal(body.persona, 'loli');
   assert.equal(body.language, 'ru');
   assert.deepEqual(body.results, []);
   assert.deepEqual(Object.keys(body.tools[0]), ['name', 'description', 'args', 'returns']);

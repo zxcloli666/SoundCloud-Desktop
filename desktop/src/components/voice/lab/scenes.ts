@@ -54,7 +54,7 @@ function configure(enabled: boolean) {
   store.patchActivation({ headset: 'double', hold: true });
   store.patchWake({ on: true, sensitivity: 0.55 });
   store.patchListen({ mode: 'chosen', devices: ['mac-mic', 'airpods'] });
-  store.patchSpeak({ voice: 'lolya', mode: 'with_music', speed: 1.05, pitch: 1, replies: true });
+  store.patchSpeak({ voice: 'loli', mode: 'with_music', speed: 1.05, pitch: 1, replies: true });
 }
 
 function playVolume() {
