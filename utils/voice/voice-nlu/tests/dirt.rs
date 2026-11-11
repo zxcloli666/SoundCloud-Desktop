@@ -375,3 +375,27 @@ fn a_complaint_that_it_yells_belongs_to_the_request_for_quieter() {
         assert_eq!(steps(silent), ["none"], "{silent}");
     }
 }
+
+#[test]
+fn swearing_at_the_song_asks_for_the_next_one_and_a_swear_after_a_command_is_dropped() {
+    for (heard, want) in [
+        ("заебала эта песня", "next"),
+        ("заебал этот трек", "next"),
+        ("как же заебало это", "next"),
+        ("да заткнись ты нахуй", "stop"),
+        ("выруби нахуй звук", "mute"),
+        ("выключи нахуй", "stop"),
+    ] {
+        assert_eq!(steps(heard), [want], "{heard}");
+    }
+    for silent in [
+        "да ну нахуй",
+        "иди нахуй",
+        "он меня заебал своими вопросами",
+        "заебала эта работа",
+        "заебало уже все",
+        "заебала",
+    ] {
+        assert_eq!(steps(silent), ["none"], "{silent}");
+    }
+}
