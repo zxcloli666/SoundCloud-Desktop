@@ -126,6 +126,7 @@ mod tests {
                 kept_fillers: false,
                 lemmatized: false,
                 fallback,
+                alias_kind: None,
             };
         let variants = vec![
             variant("песню", None, None, true),
