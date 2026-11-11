@@ -537,3 +537,17 @@ fn the_speaker_naming_her_own_words_is_not_a_retold_exchange() {
         "я сказала стоп а он нет продолжай",
     ]);
 }
+
+#[test]
+fn asking_the_listener_why_it_stands_idle_is_a_nudge_not_a_question_to_a_person() {
+    acts(&[
+        ("выключи что ты молчишь", "stop"),
+        ("переключи чего ты ждёшь", "next"),
+        ("сделай потише что ты встала", "volume_down"),
+    ]);
+    stays_silent(&[
+        "я ничего не слышу что ты там бормочешь",
+        "плохо слышно чего ты хочешь",
+        "что ты молчишь",
+    ]);
+}

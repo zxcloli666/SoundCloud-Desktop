@@ -4,9 +4,10 @@ use super::library::NOW_SET;
 use crate::anchor::finite;
 use crate::lexicon::{
     self, AGREEMENT, ASKING, BACKWARD, CLAUSE_SUBJECTS, COMPLAINT, COMPOUNDS, DEMONSTRATIVES, DENY,
-    DOWN_WORDS, FORWARD, INFINITIVE_ENDINGS, INSISTING, LISTENERS, LISTENING_STEMS, MUSIC_STEMS,
-    NEG_STEMS, NEXT_STRONG, OTHERS, OWN, PLAY_STRONG, PREV_STRONG, REMARK_START, RESUME_WORDS,
-    RINGS, ROUGHLY, SPEAKING, STRIDES, SWEARS_AMB, TASTE, THE_PAST, UP_WORDS, WAS, WHICH,
+    DOWN_WORDS, FORWARD, IDLE, INFINITIVE_ENDINGS, INSISTING, LISTENERS, LISTENING_STEMS,
+    MUSIC_STEMS, NEG_STEMS, NEXT_STRONG, OTHERS, OWN, PLAY_STRONG, PREV_STRONG, REMARK_START,
+    RESUME_WORDS, RINGS, ROUGHLY, SPEAKING, STRIDES, SWEARS_AMB, TASTE, THE_PAST, UP_WORDS, WAS,
+    WHICH,
 };
 
 pub fn sentence(c: &Ctx) -> bool {
@@ -120,9 +121,10 @@ fn question_with_its_own_verb(c: &Ctx) -> bool {
 fn question_to_a_person(c: &Ctx) -> bool {
     !c.has(PLAY_STRONG)
         && (2..c.len()).any(|i| {
+            let deed = c.w[i..].iter().find(|w| own_verb(w));
             ASKING.contains(&c.w[i - 2])
                 && LISTENERS.contains(&c.w[i - 1])
-                && c.w[i..].iter().any(|w| own_verb(w))
+                && deed.is_some_and(|w| !IDLE.contains(w))
         })
 }
 
