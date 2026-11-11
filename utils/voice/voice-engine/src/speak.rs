@@ -13,7 +13,7 @@ use crate::machine::{Core, Msg, Phase};
 use crate::speech::Speech;
 use crate::stream::Stream;
 use crate::tts::{Piece, Say, Source};
-use crate::{models, speaker, voices};
+use crate::{models, plain, speaker, voices};
 
 const SPEECH_INPUT: &str = "speech";
 const GRACE: Duration = Duration::from_secs(3);
@@ -57,6 +57,10 @@ impl Reply {
         if let Some(turn) = turn {
             self.turn = Some(turn.to_string());
         }
+        let text = match self.source {
+            Source::Qwen { .. } => plain::text(&text, self.language),
+            _ => text,
+        };
         self.lines.push_back(Line {
             r#gen,
             draft: Some(Draft::new(&text)),
@@ -399,16 +403,69 @@ impl Core {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use std::path::PathBuf;
+    use std::sync::{Arc, Mutex};
 
-    #[test]
-    fn only_lines_outside_a_chat_turn_are_kept_for_next_time() {
-        let source = Source::Kokoro {
+    use voice_qwen::{Paths, Sink};
+
+    use super::*;
+    use crate::tts::Voice;
+
+    const WRITTEN: &str = "Громкость 50%, включаю что-нибудь…";
+    const PLAIN: &str = "Громкость пятьдесят процентов, включаю что нибудь.";
+
+    struct Mute;
+
+    impl Voice for Mute {
+        fn rate(&self) -> u32 {
+            24000
+        }
+
+        fn say(&mut self, _: &str, _: &mut dyn Sink) -> Result<(), String> {
+            Ok(())
+        }
+    }
+
+    fn kokoro() -> Source {
+        Source::Kokoro {
             dir: "voices".into(),
             file: "model.onnx",
             speaker: 0,
-        };
+        }
+    }
+
+    fn qwen() -> Source {
+        Source::Qwen {
+            paths: Paths {
+                program: PathBuf::from("scd-qwen"),
+                talker: PathBuf::from("talker.gguf"),
+                codec: PathBuf::from("codec.gguf"),
+            },
+            speaker: "loli",
+            cached_as: "loli".into(),
+        }
+    }
+
+    fn line(source: Source) -> Say {
         let mut reply = Reply::new(source, &Config::default());
+        reply.line(1, WRITTEN.into(), Instant::now(), None)
+    }
+
+    #[test]
+    fn a_qwen_voice_gets_the_text_in_plain_words() {
+        assert_eq!(line(qwen()).text, PLAIN);
+    }
+
+    #[test]
+    fn a_kokoro_voice_and_a_given_one_get_the_text_as_written() {
+        let given = Source::Given(Arc::new(Mutex::new(Mute)));
+        assert_eq!(line(kokoro()).text, WRITTEN);
+        assert_eq!(line(given).text, WRITTEN);
+    }
+
+    #[test]
+    fn only_lines_outside_a_chat_turn_are_kept_for_next_time() {
+        let mut reply = Reply::new(kokoro(), &Config::default());
         let until = Instant::now();
         assert!(reply.line(1, "Включаю.".into(), until, None).kept);
         assert!(!reply.line(2, "Привет!".into(), until, Some("turn")).kept);

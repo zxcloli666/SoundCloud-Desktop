@@ -9,7 +9,7 @@ const CLAUSE_MARKS: [char; 5] = [',', ';', ':', '—', '–'];
 const DASHES: [char; 3] = ['—', '–', '-'];
 const BULLETS: [char; 6] = ['-', '—', '–', '•', '+', '>'];
 const TIGHT: [char; 10] = [',', '.', '!', '?', ';', ':', '…', '»', ')', ']'];
-const MARKUP: [char; 4] = ['*', '`', '~', '#'];
+pub const MARKUP: [char; 4] = ['*', '`', '~', '#'];
 const VOWELS: &str = "aeiouyаеёиоуыэюя";
 
 const TITLES: [&str; 18] = [
@@ -240,7 +240,7 @@ fn clean(piece: &[char]) -> Option<String> {
         .then(|| text.to_string())
 }
 
-fn unlinked(piece: &[char]) -> Vec<char> {
+pub fn unlinked(piece: &[char]) -> Vec<char> {
     let mut out = Vec::with_capacity(piece.len());
     let mut at = 0;
     while at < piece.len() {
@@ -291,7 +291,7 @@ fn balanced(text: &[char]) -> Vec<char> {
         .collect()
 }
 
-fn spaced(text: &[char]) -> String {
+pub fn spaced(text: &[char]) -> String {
     let mut out = String::with_capacity(text.len());
     for c in text {
         if c.is_whitespace() {
@@ -325,7 +325,7 @@ fn unlisted(text: &str) -> &str {
     }
 }
 
-fn pictured(c: char) -> bool {
+pub fn pictured(c: char) -> bool {
     matches!(
         c as u32,
         0x200D

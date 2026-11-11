@@ -253,6 +253,9 @@ impl Voices {
         cached_as: &str,
         out: &Out,
     ) -> Result<(), String> {
+        if !say.text.chars().any(char::is_alphanumeric) {
+            return Ok(());
+        }
         let mut shaper = Shaper::new(RATE, say.speed, say.pitch);
         let key = cache::key(&[cached_as, &say.text]);
         if let Some(clip) = self.cache.get(&key).filter(|clip| clip.rate == RATE) {

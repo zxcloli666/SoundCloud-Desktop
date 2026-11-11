@@ -12,6 +12,7 @@ mod lookup;
 mod machine;
 mod models;
 mod output;
+mod plain;
 mod plan;
 mod qwen;
 mod sentences;

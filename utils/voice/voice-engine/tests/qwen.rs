@@ -191,6 +191,23 @@ fn a_reply_streams_from_the_qwen_voice_and_repeats_from_the_cache() {
     assert_eq!(kept(&rig), 1, "a command reply is kept for next time");
 }
 
+#[test]
+fn a_reply_in_digits_and_the_same_one_in_words_are_one_phrase_for_the_qwen_voice() {
+    let Some(rig) = speaking_rig("loli") else {
+        return;
+    };
+    let (first, written) = reply(&rig, "Громкость 50%, включаю что-нибудь…");
+    let said = "Громкость пятьдесят процентов, включаю что нибудь.";
+    let (again, plain) = reply(&rig, said);
+    eprintln!("written with digits: sound after {first:?}, in words: sound after {again:?}");
+    assert!(again < Duration::from_millis(300), "{again:?}");
+    assert!(
+        plain <= written,
+        "{plain} samples from the cache, {written} when streamed"
+    );
+    assert_eq!(kept(&rig), 1, "both are kept as one phrase");
+}
+
 fn asked(rig: &Rig) -> String {
     rig.engine.send(Command::Text {
         text: "как твои дела".into(),
