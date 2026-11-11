@@ -98,3 +98,24 @@ fn a_half_heard_apart_from_its_word_is_the_same_half() {
         assert_eq!(steps(text), want, "{text}");
     }
 }
+
+#[test]
+fn two_numbers_after_a_preposition_are_minutes_and_seconds() {
+    for (text, want) in [
+        ("перемотай на 1 30", "seek_to 90"),
+        ("мотни на две тридцать", "seek_to 150"),
+        ("перейди на три ноль пять", "seek_to 185"),
+        ("поставь на 2 15", "seek_to 135"),
+        ("перемотай к десять двадцать", "seek_to 620"),
+        ("вперед на 1 30", "seek_forward 90"),
+        ("назад на одну пятнадцать", "seek_backward 75"),
+        ("перемотай на 10 20 секунд", "seek_forward 20"),
+        ("перемотай на 1 90", "seek_forward 90"),
+        ("назад 30", "seek_backward 30"),
+    ] {
+        assert_eq!(steps(text), want, "{text}");
+    }
+    for name in ["включи 25 17", "поставь 25 17"] {
+        assert_eq!(steps(name), "play", "{name}");
+    }
+}

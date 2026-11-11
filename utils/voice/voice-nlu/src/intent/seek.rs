@@ -90,6 +90,13 @@ fn time(c: &Ctx) -> Time {
             i += 1;
             continue;
         };
+        if let Some(position) = minutes_and_seconds(c, i) {
+            t.secs += position;
+            t.found = true;
+            t.clock = true;
+            i += 2;
+            continue;
+        }
         let mut unit_at = i + 1;
         if c.at(unit_at) == "ордин" {
             t.ordinal = true;
@@ -133,6 +140,14 @@ fn time(c: &Ctx) -> Time {
         }
     }
     t
+}
+
+fn minutes_and_seconds(c: &Ctx, i: usize) -> Option<u32> {
+    let led = i > 0 && matches!(c.w[i - 1], "на" | "к" | "с" | "до");
+    let mins = numbers::value(c.at(i)).filter(|m| *m < 60)?;
+    let secs = numbers::value(c.at(i + 1)).filter(|s| *s < 60)?;
+    let counted = unit_secs(c.at(i + 2)).is_some() || matches!(c.at(i + 2), "ордин" | "доля");
+    (led && !counted).then_some(mins * 60 + secs)
 }
 
 fn vocabulary(w: &str) -> bool {
