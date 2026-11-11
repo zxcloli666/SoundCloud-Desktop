@@ -39,6 +39,7 @@ fn a_direction_word_taken_by_the_subject_or_verb_after_it_is_talk() {
         ("дальше давай", "next"),
         ("включи дальше я устала", "next"),
         ("назад верни", "previous"),
+        ("назад отмотаем", "seek_backward"),
         ("назад на 10 секунд", "seek_backward"),
         ("перемотай назад я прослушал", "seek_backward"),
         ("вперёд секунд на двадцать", "seek_forward"),
@@ -119,6 +120,8 @@ fn a_complaint_about_a_named_thing_that_is_not_music_is_talk() {
     acts(&[
         ("достала уже эта песня", "next"),
         ("достала эта дурацкая песня", "next"),
+        ("достала эта фигня", "next"),
+        ("надоела эта ерунда", "next"),
         ("надоел этот трек", "next"),
         ("бесит эта музыка", "next"),
         ("эта песня достала", "next"),
@@ -142,6 +145,7 @@ fn the_taste_of_another_person_is_not_a_like_or_a_skip() {
     ]);
     acts(&[
         ("мне нравится эта песня", "like"),
+        ("включи что тебе нравится", "play"),
         ("нравится", "like"),
         ("это мне нравится", "like"),
         ("мне не нравится эта песня", "next"),
@@ -245,6 +249,9 @@ fn a_no_inside_a_retold_exchange_is_the_other_person_answering() {
         ("включи басту нет скриптонита", "play"),
         ("сделай громче она говорит тихо", "volume_up"),
     ]);
+    let p = &parse("включи ему басту нет скриптонита", &Names::default())[0];
+    assert!(p.queries.iter().any(|q| q.text == "скриптонита"));
+    assert!(!p.queries.iter().any(|q| q.text.contains("баст")));
 }
 
 #[test]

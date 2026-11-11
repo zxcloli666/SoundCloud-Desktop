@@ -37,7 +37,8 @@ fn chanted(toks: &[Tok]) -> bool {
 
 pub fn retold(toks: &[Tok]) -> bool {
     let c = Ctx::new(toks);
-    c.has(REPORT) || (1..c.len()).any(|i| c.w[i] == "нет" && answered(&c.w[..i]))
+    let speech = |w: &&str| REPORT.contains(w) && !ADDRESSEES.contains(w);
+    c.w.iter().any(speech) || (1..c.len()).any(|i| c.w[i] == "нет" && answered(&c.w[..i]))
 }
 
 fn answered(before: &[&str]) -> bool {

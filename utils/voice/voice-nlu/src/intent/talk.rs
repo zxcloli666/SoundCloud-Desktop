@@ -82,7 +82,7 @@ fn names_a_thing(c: &Ctx, determiners: &[&str]) -> bool {
 }
 
 fn taste_of_another(c: &Ctx) -> bool {
-    (c.has(TASTE) || complains(c)) && c.has(OTHERS)
+    (c.has(TASTE) || complains(c)) && c.has(OTHERS) && !c.has(PLAY_STRONG)
 }
 
 fn thing_of_another(c: &Ctx) -> bool {
@@ -125,7 +125,7 @@ fn plan_of_the_speaker(c: &Ctx) -> bool {
 }
 
 fn own_verb(w: &str) -> bool {
-    finite(w) && !command_word(w) && !NOW_SET.contains(&w)
+    finite(w) && !command_word(w) && !NOW_SET.contains(&w) && !lexicon::stem(NEG_STEMS, w)
 }
 
 fn own_noun(w: &str) -> bool {
