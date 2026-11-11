@@ -332,3 +332,23 @@ fn a_polite_question_tail_with_not_is_courtesy_and_does_not_negate() {
         "не надо паузу",
     ]);
 }
+
+#[test]
+fn a_verb_in_the_first_person_says_what_the_speaker_will_do_and_is_not_a_command() {
+    stays_silent(&[
+        "я потом сама включу",
+        "сейчас выключу",
+        "я сам поставлю",
+        "потом продолжу",
+    ]);
+    acts(&[
+        (
+            "поставь на паузу мне мама звонит я потом сама включу",
+            "pause",
+        ),
+        ("выключи я потом сам включу", "stop"),
+        ("вклчи", "resume"),
+        ("пауз", "pause"),
+        ("поставь на пауза", "pause"),
+    ]);
+}
