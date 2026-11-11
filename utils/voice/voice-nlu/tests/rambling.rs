@@ -111,3 +111,15 @@ fn every_form_of_a_switch_off_verb_stops_or_turns_a_mode_off() {
     }
     assert_eq!(intents("не выключай"), [Intent::None]);
 }
+
+#[test]
+fn a_pronoun_after_a_preposition_points_at_the_current_track() {
+    let cases = [
+        ("убери с него лайк", Intent::Unlike),
+        ("сними с неё лайк", Intent::Unlike),
+        ("убери с этой песни лайк", Intent::Unlike),
+    ];
+    for (text, intent) in cases {
+        assert_eq!(intents(text), [intent], "{text}");
+    }
+}
