@@ -524,8 +524,14 @@ fn a_play_verb_that_points_back_plays_the_name_said_before_it() {
     for text in nameless {
         assert!(steps(text)[0].queries.is_empty(), "{text}");
     }
-    for text in ["я люблю тишину включи её", "я люблю чай поставь его"]
-    {
+    let silent = [
+        "я люблю тишину включи её",
+        "я люблю чай поставь его",
+        "я слышал как он сказал включи её",
+        "брат просил такую песню кукушка поставь её",
+        "мама сказала есть такая группа сплин включи их",
+    ];
+    for text in silent {
         assert_eq!(intents(text), [Intent::None], "{text}");
     }
 }

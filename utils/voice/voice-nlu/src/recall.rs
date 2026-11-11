@@ -1,4 +1,4 @@
-use crate::lexicon::{IMPERATIVES, INTRODUCES, NAMING, POINTS_BACK};
+use crate::lexicon::{IMPERATIVES, INTRODUCES, NAMING, POINTS_BACK, REPORT};
 use crate::normalize::Tok;
 use crate::slots::kind_of;
 
@@ -33,6 +33,9 @@ fn pointer(toks: &[Tok]) -> Option<(usize, usize)> {
 fn recalled(talk: &[Tok]) -> Option<&[Tok]> {
     let kind = |t: &Tok| kind_of(&t.w).is_some();
     let introduces = |t: &Tok| INTRODUCES.contains(&t.w.as_str()) || kind(t);
+    if talk.iter().any(|t| REPORT.contains(&t.w.as_str())) {
+        return None;
+    }
     let last = talk.iter().rposition(introduces)?;
     let kinds = talk[..=last].iter().rev().take_while(|t| kind(t)).count();
     let naming = |t: &&Tok| NAMING.contains(&t.w.as_str());

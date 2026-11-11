@@ -23,7 +23,7 @@ pub use variants::lemma;
 pub use steps::parse;
 
 pub fn parse_one(text: &str) -> Parsed {
-    parse_toks(text, normalize(text).toks).0
+    parse_toks(text, recall::named(normalize(text).toks)).0
 }
 
 pub fn parse_name(text: &str) -> Parsed {
@@ -54,8 +54,7 @@ pub fn parse_name(text: &str) -> Parsed {
     }
 }
 
-pub(crate) fn parse_toks(text: &str, toks: Vec<Tok>) -> (Parsed, bool) {
-    let mut toks = recall::named(toks);
+pub(crate) fn parse_toks(text: &str, mut toks: Vec<Tok>) -> (Parsed, bool) {
     let original = toks.clone();
     let mut cut = false;
     let buried = rambling::find(&toks);

@@ -4,6 +4,7 @@ use crate::lexicon::{LONE_VERBS, ON_VERB_FORMS, PLAY_STRONG, PLAY_WEAK};
 use crate::names::Names;
 use crate::normalize::{Tok, normalize};
 use crate::parse_toks;
+use crate::recall;
 use crate::types::{Intent, Parsed};
 
 const MAX_STEPS: usize = 3;
@@ -27,7 +28,7 @@ pub fn parse(text: &str, names: &Names) -> Vec<Parsed> {
     let text_in = spoken.as_deref().unwrap_or(text);
     let fixed = correct::resolve(text_in);
     let corrected = fixed.is_some();
-    let toks = names.drop(fixed.unwrap_or_else(|| normalize(text_in).toks));
+    let toks = recall::named(names.drop(fixed.unwrap_or_else(|| normalize(text_in).toks)));
     let from = usize::from(toks.len() > 2 && toks[0].w == "сначала");
     let toks = &toks[from..];
     let mut whole = parse_toks(text, toks.to_vec()).0;
