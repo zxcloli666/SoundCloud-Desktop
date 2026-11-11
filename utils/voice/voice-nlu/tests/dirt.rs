@@ -416,3 +416,22 @@ fn any_word_for_a_little_next_to_a_volume_word_is_a_small_step() {
         assert_eq!(steps(silent), ["none"], "{silent}");
     }
 }
+
+#[test]
+fn naming_the_player_as_this_thing_adds_nothing_to_a_command() {
+    for (heard, want) in [
+        ("убавь звук в этой штуке", "volume_down"),
+        ("сделай потише в этой штуковине", "volume_down"),
+        ("поставь на паузу в плеере", "pause"),
+        ("выключи звук в этой штуке", "mute"),
+    ] {
+        assert_eq!(steps(heard), [want], "{heard}");
+    }
+    for silent in [
+        "что это за штука",
+        "в этой штуке",
+        "я в этой штуке не разбираюсь",
+    ] {
+        assert_eq!(steps(silent), ["none"], "{silent}");
+    }
+}
