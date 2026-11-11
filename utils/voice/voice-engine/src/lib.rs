@@ -106,7 +106,7 @@ impl Default for Timing {
             max_utterance: Duration::from_secs(12),
             ask: Duration::from_secs(8),
             done: Duration::from_secs(10),
-            lookup: Duration::from_millis(1500),
+            lookup: Duration::from_millis(1200),
             chat: Duration::from_secs(60),
             synth: Duration::from_secs(30),
             release: Duration::from_millis(80),
