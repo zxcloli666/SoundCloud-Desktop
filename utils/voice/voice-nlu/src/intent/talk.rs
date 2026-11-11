@@ -4,9 +4,9 @@ use super::library::NOW_SET;
 use crate::anchor::finite;
 use crate::lexicon::{
     self, AGREEMENT, ASKING, BACKWARD, CLAUSE_SUBJECTS, COMPLAINT, COMPOUNDS, DEMONSTRATIVES, DENY,
-    DOWN_WORDS, FORWARD, INFINITIVE_ENDINGS, LISTENERS, MUSIC_STEMS, NEG_STEMS, NEXT_STRONG,
-    OTHERS, OWN, PLAY_STRONG, PREV_STRONG, REMARK_START, RESUME_WORDS, RINGS, SPEAKING, STRIDES,
-    SWEARS_AMB, TASTE, UP_WORDS, WAS, WHICH,
+    DOWN_WORDS, FORWARD, INFINITIVE_ENDINGS, INSISTING, LISTENERS, LISTENING_STEMS, MUSIC_STEMS,
+    NEG_STEMS, NEXT_STRONG, OTHERS, OWN, PLAY_STRONG, PREV_STRONG, REMARK_START, RESUME_WORDS,
+    RINGS, SPEAKING, STRIDES, SWEARS_AMB, TASTE, UP_WORDS, WAS, WHICH,
 };
 
 pub fn sentence(c: &Ctx) -> bool {
@@ -34,12 +34,13 @@ fn adverb_of_a_clause(c: &Ctx) -> bool {
         let adverb = c.w[i - 1];
         let direction = FORWARD.contains(&adverb) || BACKWARD.contains(&adverb);
         let taken = CLAUSE_SUBJECTS.contains(&c.w[i]) || own_verb(c.w[i]);
-        direction && taken && c.only_pre(0..i - 1) && !asks_by_itself(&c.w[i..])
+        direction && taken && c.only_pre(0..i - 1) && !backs_the_command(&c.w[i..])
     })
 }
 
-fn asks_by_itself(words: &[&str]) -> bool {
-    indirect::detect(&Ctx { w: words.to_vec() }).is_some()
+fn backs_the_command(words: &[&str]) -> bool {
+    let reason = |w: &&str| INSISTING.contains(w) || lexicon::stem(LISTENING_STEMS, w);
+    words.iter().any(reason) || indirect::detect(&Ctx { w: words.to_vec() }).is_some()
 }
 
 fn attribute_of_a_noun(c: &Ctx) -> bool {

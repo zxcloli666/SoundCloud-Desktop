@@ -261,6 +261,18 @@ pub const SPEAKING: &[&str] = &[
 
 pub const INFINITIVE_ENDINGS: &[&str] = &["ть", "ться", "чь", "ти"];
 
+pub const INSISTING: &[&str] = &["сказал", "сказала", "говорю", "прошу"];
+
+pub const LISTENING_STEMS: &[&str] = &[
+    "слуш",
+    "слыш",
+    "послуш",
+    "прослуш",
+    "расслыш",
+    "услыш",
+    "пропуст",
+];
+
 pub const SWEARS_AMB: &[&str] = &["нахер", "нахрен", "нафиг", "нафик"];
 
 pub const COMPLAINT: &[&str] = &[
