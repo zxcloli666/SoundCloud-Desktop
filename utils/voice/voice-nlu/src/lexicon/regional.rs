@@ -33,6 +33,26 @@ pub const EXACT: &[(&str, &str)] = &[
     ("та", "ну"),
     ("шоб", "чтобы"),
     ("ласка", "пожалуйста"),
+    ("це", "это"),
+    ("цю", "эту"),
+    ("цей", "этот"),
+    ("ця", "эта"),
+    ("гэта", "это"),
+    ("гэту", "эту"),
+    ("зараз", "сейчас"),
+    ("цяпер", "сейчас"),
+    ("грае", "играет"),
+    ("хто", "кто"),
+    ("яка", "какая"),
+    ("якая", "какая"),
+    ("який", "какой"),
+    ("співає", "поет"),
+    ("спявае", "поет"),
+    ("зупини", "останови"),
+    ("спыни", "останови"),
+    ("тихше", "тише"),
+    ("трохи", "чуть"),
+    ("крыху", "чуть"),
     ("включишь", "включи"),
     ("поставишь", "поставь"),
     ("запустишь", "запусти"),
@@ -70,16 +90,51 @@ pub const EXACT: &[(&str, &str)] = &[
     ("взад", "назад"),
     ("трег", "трек"),
     ("трэг", "трек"),
+    ("трэк", "трек"),
+    ("трэка", "трека"),
     ("вклю", "включи"),
     ("децл", "чуть"),
     ("чуток", "чуть"),
     ("чутка", "чуть"),
     ("чуточку", "чуть"),
+    ("маленько", "чуть"),
+    ("малость", "чуть"),
+    ("малехо", "чуть"),
+    ("немножко", "чуть"),
+    ("немножечко", "чуть"),
+    ("капельку", "чуть"),
 ];
+
+const ENGLISH: &[(&str, &str)] = &[
+    ("сонг", "song"),
+    ("мьюзик", "music"),
+    ("хелп", "help"),
+    ("вольюм", "volume"),
+    ("лайкс", "likes"),
+    ("вотс", "whats"),
+    ("плейинг", "playing"),
+    ("лаудер", "louder"),
+];
+
+const ENGLISH_PRONOUNS: &[(&str, &str)] =
+    &[("ми", "me"), ("май", "my"), ("ит", "it"), ("ю", "you")];
+
+const ENGLISH_AMONG_ENGLISH: &[(&str, &str)] = &[
+    ("зе", "the"),
+    ("зис", "this"),
+    ("из", "is"),
+    ("нау", "now"),
+    ("терн", "turn"),
+    ("ту", "to"),
+    ("ай", "i"),
+    ("кен", "can"),
+];
+
+pub const ENGLISH_LOANS: &[&str] = &["стоп", "трек", "лайк", "плейлист"];
 
 const ENDINGS: &[&str] = &[
     "", "й", "и", "ь", "йте", "ите", "ни", "нить", "нуть", "ть", "ай", "ать", "ну", "ем", "нем",
-    "уй", "уйте",
+    "уй", "уйте", "ани",
 ];
 
 const STEMS: &[(&str, &str)] = &[
@@ -98,6 +153,16 @@ const STEMS: &[(&str, &str)] = &[
     ("мотан", "перемотай"),
     ("пропуска", "пропусти"),
     ("шафл", "shuffle"),
+    ("зашафл", "shuffle"),
+    ("замьют", "mute"),
+    ("зарепит", "repeat"),
+    ("анлайк", "unlike"),
+    ("рестартн", "restart"),
+    ("рестартан", "restart"),
+    ("рестарту", "restart"),
+    ("сейвн", "save"),
+    ("сейван", "save"),
+    ("засейв", "save"),
 ];
 
 const PREFIXES: &[(&str, &str)] = &[
@@ -107,18 +172,42 @@ const PREFIXES: &[(&str, &str)] = &[
 ];
 
 pub fn canon(w: &str) -> Option<&'static str> {
-    if let Some((_, to)) = EXACT.iter().find(|(k, _)| *k == w) {
+    written(w).or_else(|| heard(w))
+}
+
+pub fn english_among_english(w: &str) -> Option<&'static str> {
+    english_pronoun(w).or_else(|| read(ENGLISH_AMONG_ENGLISH, w))
+}
+
+pub fn english_pronoun(w: &str) -> Option<&'static str> {
+    read(ENGLISH_PRONOUNS, w)
+}
+
+fn heard(w: &str) -> Option<&'static str> {
+    let word = super::by_ear(w)?;
+    Some(written(word).or_else(|| super::slang(word)).unwrap_or(word))
+}
+
+fn written(w: &str) -> Option<&'static str> {
+    if let Some(to) = read(EXACT, w).or_else(|| read(ENGLISH, w)) {
         return Some(to);
     }
-    for (stem, to) in STEMS {
-        if let Some(rest) = w.strip_prefix(stem) {
-            if ENDINGS.contains(&rest) {
-                return Some(to);
-            }
-        }
-    }
-    PREFIXES
-        .iter()
-        .find(|(p, _)| w.starts_with(p))
-        .map(|(_, to)| *to)
+    loan(w).or_else(|| {
+        PREFIXES
+            .iter()
+            .find(|(p, _)| w.starts_with(p))
+            .map(|(_, to)| *to)
+    })
+}
+
+fn loan(w: &str) -> Option<&'static str> {
+    let w = w.replace('э', "е");
+    STEMS.iter().find_map(|(stem, to)| {
+        let ending = w.strip_prefix(stem)?;
+        ENDINGS.contains(&ending).then_some(*to)
+    })
+}
+
+fn read(pairs: &[(&str, &'static str)], w: &str) -> Option<&'static str> {
+    pairs.iter().find(|(from, _)| *from == w).map(|(_, to)| *to)
 }

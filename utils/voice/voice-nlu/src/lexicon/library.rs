@@ -7,6 +7,9 @@ pub const UNDO_WORDS: &[&str] = &[
     "отменяй",
     "undo",
     "cancel",
+    "откати",
+    "откатить",
+    "откат",
 ];
 pub const HELP_WORDS: &[&str] = &[
     "помощь",
@@ -71,6 +74,7 @@ pub const REMOVE_WORDS: &[&str] = &[
     "снять",
     "удалить",
 ];
+pub const THROW_VERBS: &[&str] = &["кинь", "кинуть", "закинь", "закинуть"];
 pub const LIKE_OBJECT: &[&str] = &[
     "эта",
     "это",
@@ -150,6 +154,7 @@ pub const SHUFFLE_FILL: &[&str] = &[
     "случайный",
     "случайно",
     "смешай",
+    "мешать",
 ];
 
 pub const REPEAT_FILL: &[&str] = &[
@@ -212,6 +217,8 @@ pub const REPEAT_FILL: &[&str] = &[
     "повторе",
     "зациклить",
     "зацикли",
+    "крути",
+    "гоняй",
 ];
 
 pub const REPEAT_WORDS: &[&str] = &[
@@ -256,6 +263,10 @@ pub const NEGATE: &[&str] = &[
     "выключить",
     "отключить",
     "выключай",
+    "отключай",
     "выруби",
     "вырубай",
+    "сними",
+    "снимай",
+    "убирай",
 ];

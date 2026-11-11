@@ -3,27 +3,28 @@ use crate::lexicon::*;
 use crate::types::Intent;
 
 const QUEUE_PREPS: &[&str] = &["в", "во", "to", "the", "on", "into", "at"];
+const WAS: &[&str] = &["было", "была", "был", "были"];
 
 pub fn undo(c: &Ctx) -> Option<Detected> {
     if c.len() > 5 {
         return None;
     }
     let by_word = c.has(UNDO_WORDS);
-    let by_phrase = (c.has(&["верни"]) && c.has(&["как"]) && c.has(&["было"]))
+    let by_phrase = (c.has(&["верни"]) && c.has(&["как"]) && c.has(WAS))
         || (c.has(&["верни"]) && c.has(&["обратно"]) && c.len() <= 2)
         || (c.has(&["не"]) && c.has(&["то"]) && c.len() <= 3)
-        || (c.has(&["оставь"]) && c.has(&["как"]) && c.has(&["было"]))
+        || (c.has(&["оставь"]) && c.has(&["как"]) && c.has(WAS))
         || (c.len() == 1 && c.w[0] == "верни");
     let used: Vec<usize> = (0..c.len())
         .filter(|&i| {
             UNDO_WORDS.contains(&c.w[i])
+                || WAS.contains(&c.w[i])
                 || matches!(
                     c.w[i],
                     "верни"
                         | "оставь"
                         | "обратно"
                         | "как"
-                        | "было"
                         | "не"
                         | "то"
                         | "действия"
@@ -75,19 +76,20 @@ const HELP_SET: &[&str] = &[
 ];
 
 pub fn help(c: &Ctx) -> Option<Detected> {
-    if c.len() > 6
-        || !c
-            .w
-            .iter()
-            .all(|w| HELP_SET.contains(w) || PRE.contains(w) || GENERIC.contains(w))
-    {
+    let asked = |w: &str| {
+        HELP_SET.contains(&w)
+            || PRE.contains(&w)
+            || GENERIC.contains(&w)
+            || ENDEARMENTS.contains(&w)
+    };
+    if c.len() > 6 || !c.w.iter().all(|w| asked(w)) {
         return None;
     }
     let ability = c.has(&["умеешь", "умеете", "можешь", "can"]) && c.has(&["что", "чего", "what"]);
     let how = c.has(&["как"]) && c.has_stem(&["пользов"]);
     let commands = c.has(&["команды", "возможности"])
         || (c.has(&["что"]) && c.has(&["можно"]) && c.has(&["сказать", "спросить", "делать"]));
-    let direct = c.has(&["помощь", "помоги", "помогите", "справка", "help"]);
+    let direct = c.has(&["помощь", "помоги", "помогите", "справка", "help"]) && !c.has(ENDEARMENTS);
     if ability || how || direct || commands {
         return Some(Detected::new(Intent::Help, vec![]));
     }
@@ -151,9 +153,12 @@ pub fn queue(c: &Ctx) -> Option<Detected> {
 pub fn into_likes(c: &Ctx) -> Option<Detected> {
     let at = c.pos(&["в", "во"])?;
     let target = c.at(at + 1);
-    let likes = stem(&["избранн", "любим"], target);
-    (likes && c.len() <= 3 && c.pos(PLAY_STRONG).is_none())
-        .then(|| Detected::new(Intent::Like, vec![]))
+    let likes = stem(&["избранн", "любим"], target) || target == "лайки";
+    let plays =
+        c.w.iter()
+            .any(|w| PLAY_STRONG.contains(w) && !THROW_VERBS.contains(w));
+    let thrown = c.has(THROW_VERBS) && c.stray(&[at, at + 1]) == 0;
+    (likes && !plays && (c.len() <= 3 || thrown)).then(|| Detected::new(Intent::Like, vec![]))
 }
 
 pub fn like(c: &Ctx) -> Option<Detected> {
@@ -232,7 +237,7 @@ pub fn shuffle(c: &Ctx) -> Option<Detected> {
     }
     let word = c.has(SHUFFLE_WORDS) || c.has_stem(&["перемеш", "перемиш", "шафл"]);
     let ordered = c.has(&["порядку"]) && c.has(&["по"]);
-    let random_order = c.has(&["случайном"]) && c.has(&["порядке"]);
+    let random_order = c.has_stem(&["случайн"]) && c.has_stem(&["поряд"]);
     if !word && !ordered && !random_order {
         return None;
     }
@@ -244,7 +249,7 @@ pub fn shuffle(c: &Ctx) -> Option<Detected> {
             || GENERIC.contains(&w)
             || TRANSPORT_VERBS.contains(&w)
             || SHUFFLE_FILL.contains(&w)
-            || stem(&["перемеш", "перемиш", "шафл"], w)
+            || stem(&["перемеш", "перемиш", "шафл", "случайн", "поряд"], w)
     };
     if !c.w.iter().all(|w| known(w)) {
         return None;
@@ -261,8 +266,11 @@ pub fn repeat(c: &Ctx) -> Option<Detected> {
     if c.len() > 7 {
         return None;
     }
+    let circle = |w: &str| matches!(w, "по" | "кругу");
+    let round =
+        c.has(&["по"]) && c.has(&["кругу"]) && c.w.iter().any(|w| !circle(w) && !PRE.contains(w));
     let word = c.has(REPEAT_WORDS) || c.has_stem(&["повтор", "повтар", "зацикл"]);
-    if !word {
+    if !word && !round {
         return None;
     }
     let known = |w: &str| {
@@ -274,6 +282,7 @@ pub fn repeat(c: &Ctx) -> Option<Detected> {
             || TRANSPORT_VERBS.contains(&w)
             || REPEAT_FILL.contains(&w)
             || OFF_VERBS.contains(&w)
+            || NEGATE.contains(&w)
             || stem(
                 &["повтор", "повтар", "зацикл", "плейлист", "очеред", "альбом"],
                 w,
@@ -282,9 +291,7 @@ pub fn repeat(c: &Ctx) -> Option<Detected> {
     if !c.w.iter().all(|w| known(w)) {
         return None;
     }
-    let mut off = c.has(&["не", "без", "off"]) || (c.has(&["stop"]) && c.has(&["repeat"]));
-    off |= c.has(OFF_VERBS) || c.has(&["хватит", "прекрати"]);
-    if off {
+    if c.has(NEGATE) || c.has(OFF_VERBS) {
         return Some(Detected::new(Intent::RepeatOff, vec![]));
     }
     let all = c.has(REPEAT_ALL) || c.has_stem(&["плейлист", "очеред", "альбом"]);
@@ -343,6 +350,8 @@ pub const NOW_SET: &[&str] = &[
     "напомни",
     "автор",
     "зовут",
+    "мелодия",
+    "мелодию",
 ];
 
 pub fn now_playing(c: &Ctx) -> Option<Detected> {
@@ -350,7 +359,11 @@ pub fn now_playing(c: &Ctx) -> Option<Detected> {
         return None;
     }
     if !c.w.iter().all(|w| {
-        NOW_SET.contains(w) || PRE.contains(w) || GENERIC.contains(w) || KIND_ARTIST.contains(w)
+        NOW_SET.contains(w)
+            || PRE.contains(w)
+            || GENERIC.contains(w)
+            || KIND_ARTIST.contains(w)
+            || ENDEARMENTS.contains(w)
     }) {
         return None;
     }
@@ -375,6 +388,7 @@ pub fn now_playing(c: &Ctx) -> Option<Detected> {
             "артист",
             "групп",
             "певец",
+            "мелод",
         ]);
     let english = c.has(&["song", "track"]) && c.has(&["this", "is", "playing", "called"]) && what;
     let named = c.has(&["как"]) && c.has_stem(&["называ"]);

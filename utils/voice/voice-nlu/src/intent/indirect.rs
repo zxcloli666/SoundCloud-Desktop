@@ -1,5 +1,5 @@
 use super::ctx::{Ctx, Detected};
-use crate::lexicon::PRE;
+use crate::lexicon::{BEFORE_THIS, PRE};
 use crate::types::Intent;
 
 const FILL: &[&str] = &[
@@ -42,7 +42,7 @@ const COMMANDING: &[&str] = &[
     "сделать",
 ];
 
-struct Rule {
+pub(super) struct Rule {
     min: usize,
     needs: &'static [&'static [&'static str]],
     extra: &'static [&'static str],
@@ -57,7 +57,7 @@ impl Rule {
     }
 }
 
-const fn rule(
+pub(super) const fn rule(
     needs: &'static [&'static [&'static str]],
     extra: &'static [&'static str],
     forbid: &'static [&'static str],
@@ -72,7 +72,7 @@ const fn rule(
     }
 }
 
-const THIS: &[&str] = &[
+pub(super) const THIS: &[&str] = &[
     "этот",
     "эта",
     "эту",
@@ -266,7 +266,7 @@ const RULES: &[Rule] = &[
     ),
     rule(
         &[&["верни", "вернуть"], &["трек", "песню", "ту", "эту"]],
-        &[],
+        BEFORE_THIS,
         &[],
         Intent::Previous,
     ),
@@ -354,7 +354,7 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
     if c.w.iter().filter(|w| **w == "снова").count() >= 2 {
         return Some(Detected::new(Intent::RepeatOne, vec![]));
     }
-    for r in RULES {
+    for r in RULES.iter().chain(super::blunt::RULES) {
         if c.len() < r.min {
             continue;
         }
