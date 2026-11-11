@@ -296,3 +296,15 @@ fn what_to_do_instead_of_a_refused_command_is_done() {
     assert_eq!(steps("не выключай просто так"), ["none"]);
     assert_eq!(steps("да не лайкай ты всё подряд"), ["none"]);
 }
+
+#[test]
+fn a_command_after_a_denied_request_stands() {
+    assert_eq!(steps("я не просил паузу включи обратно"), ["resume"]);
+    assert_eq!(steps("я не просила следующую верни ту песню"), ["previous"]);
+    assert_eq!(
+        steps("я не говорил перемешивать выключи перемешивание"),
+        ["shuffle_off"]
+    );
+    assert_eq!(steps("я не просил паузу"), ["none"]);
+    assert_eq!(steps("я не говорила включи я сказала подожди"), ["none"]);
+}

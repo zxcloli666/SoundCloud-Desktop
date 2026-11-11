@@ -1,9 +1,21 @@
 use crate::intent::{self, Negation};
+use crate::lexicon::LONE_VERBS;
 use crate::normalize::{normalize, words};
 
 const NOT: &str = "не";
 const NO: &str = "нет";
 const JUST: &str = "просто";
+const ASKED: &[&str] = &[
+    "просил",
+    "просила",
+    "говорил",
+    "говорила",
+    "сказал",
+    "сказала",
+    "велел",
+    "велела",
+];
+const ASKED_BY: usize = 2;
 
 pub fn command_after(text: &str) -> Option<String> {
     let said = words(text);
@@ -11,6 +23,7 @@ pub fn command_after(text: &str) -> Option<String> {
         .or_else(|| instead_of_the_denied(text))
         .or_else(|| after_a_run_of_no(&said))
         .or_else(|| instead_of_the_refused(&said))
+        .or_else(|| after_what_was_not_asked(&said))
 }
 
 fn after_a_no(text: &str) -> Option<String> {
@@ -42,6 +55,15 @@ fn instead_of_the_refused(said: &[String]) -> Option<String> {
     let just = said.iter().position(|w| w == JUST)?;
     let refused = refuses(&said[..just].join(" "));
     (refused && just + 1 < said.len()).then(|| said[just..].join(" "))
+}
+
+fn after_what_was_not_asked(said: &[String]) -> Option<String> {
+    let asked = said.iter().position(|w| ASKED.contains(&w.as_str()))?;
+    if asked == 0 || asked > ASKED_BY || said[asked - 1] != NOT {
+        return None;
+    }
+    let command = (asked + 2..said.len()).find(|&at| LONE_VERBS.contains(&said[at].as_str()))?;
+    Some(said[command..].join(" "))
 }
 
 fn refuses(said: &str) -> bool {
