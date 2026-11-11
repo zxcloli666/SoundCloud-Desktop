@@ -7,6 +7,9 @@ pub const UNDO_WORDS: &[&str] = &[
     "отменяй",
     "undo",
     "cancel",
+    "откати",
+    "откатить",
+    "откат",
 ];
 pub const HELP_WORDS: &[&str] = &[
     "помощь",

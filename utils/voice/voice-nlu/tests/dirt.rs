@@ -275,6 +275,25 @@ fn a_throw_into_the_favourites_is_a_like() {
 }
 
 #[test]
+fn giving_back_how_it_was_or_rolling_back_is_undo() {
+    for heard in [
+        "верни как было",
+        "верни как была",
+        "верни как был",
+        "откати как было",
+        "откати",
+        "откати назад",
+        "сделай откат",
+    ] {
+        assert_eq!(steps(heard), ["undo"], "{heard}");
+    }
+    for silent in ["откат системы", "как была погода", "откати машину"]
+    {
+        assert_eq!(steps(silent), ["none"], "{silent}");
+    }
+}
+
+#[test]
 fn a_halting_word_said_over_and_over_is_said_once() {
     for (heard, want) in [
         ("стоп стоп стоп всё хватит", "stop"),

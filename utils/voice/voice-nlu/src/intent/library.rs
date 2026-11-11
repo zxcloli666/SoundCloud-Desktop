@@ -3,27 +3,28 @@ use crate::lexicon::*;
 use crate::types::Intent;
 
 const QUEUE_PREPS: &[&str] = &["в", "во", "to", "the", "on", "into", "at"];
+const WAS: &[&str] = &["было", "была", "был", "были"];
 
 pub fn undo(c: &Ctx) -> Option<Detected> {
     if c.len() > 5 {
         return None;
     }
     let by_word = c.has(UNDO_WORDS);
-    let by_phrase = (c.has(&["верни"]) && c.has(&["как"]) && c.has(&["было"]))
+    let by_phrase = (c.has(&["верни"]) && c.has(&["как"]) && c.has(WAS))
         || (c.has(&["верни"]) && c.has(&["обратно"]) && c.len() <= 2)
         || (c.has(&["не"]) && c.has(&["то"]) && c.len() <= 3)
-        || (c.has(&["оставь"]) && c.has(&["как"]) && c.has(&["было"]))
+        || (c.has(&["оставь"]) && c.has(&["как"]) && c.has(WAS))
         || (c.len() == 1 && c.w[0] == "верни");
     let used: Vec<usize> = (0..c.len())
         .filter(|&i| {
             UNDO_WORDS.contains(&c.w[i])
+                || WAS.contains(&c.w[i])
                 || matches!(
                     c.w[i],
                     "верни"
                         | "оставь"
                         | "обратно"
                         | "как"
-                        | "было"
                         | "не"
                         | "то"
                         | "действия"
