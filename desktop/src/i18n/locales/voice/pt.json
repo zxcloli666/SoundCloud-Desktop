@@ -154,7 +154,7 @@
     "chat": {
       "title": "Conversa",
       "toggle": "Conversar com a personagem",
-      "toggleDesc": "O texto da sua frase vai para o nosso servidor e para o provedor do modelo. O áudio não sai deste computador.",
+      "toggleDesc": "Vão para o nosso servidor e para o provedor do modelo: o texto da sua frase, o que está tocando e na fila, e os fatos lembrados. O áudio não sai deste computador.",
       "memory": "Memória",
       "memoryEmpty": "Diga “lembre que…” e aparece aqui",
       "memoryAdd": "Adicionar um fato",

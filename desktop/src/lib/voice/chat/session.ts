@@ -1,4 +1,3 @@
-import { useAuthStore } from '../../../stores/auth';
 import { useSettingsStore } from '../../../stores/settings';
 import { getDuration } from '../../audio';
 import { getIsPremium } from '../../premium-cache';
@@ -13,6 +12,7 @@ import { dialogMessages, withExchange } from './dialog';
 import { chatIpc } from './ipc';
 import { addMark, appendSay, openReply } from './live';
 import { currentPage } from './navigator';
+import { pageName } from './pages';
 import type { ChatStep } from './step';
 import { chatTools, runTool } from './tools';
 import { MAX_ROUNDS, runTurn } from './turn';
@@ -51,10 +51,9 @@ function contextNow(port: PlayerPort): Record<string, unknown> {
     shuffle: shot.shuffle,
     repeat: shot.repeat,
     next: appPort.upNext(QUEUE_TAIL),
-    page: currentPage(),
+    page: pageName(currentPage()),
     now: new Date(),
     appLanguage: useSettingsStore.getState().language,
-    userName: useAuthStore.getState().user?.username ?? null,
   });
 }
 

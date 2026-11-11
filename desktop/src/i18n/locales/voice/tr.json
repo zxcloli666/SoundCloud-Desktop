@@ -151,7 +151,7 @@
     "chat": {
       "title": "Muhabbet",
       "toggle": "Karakterle muhabbet",
-      "toggleDesc": "Cümlenizin metni sunucumuza ve model sağlayıcısına gider. Ses bu bilgisayardan çıkmaz.",
+      "toggleDesc": "Sunucumuza ve model sağlayıcısına cümlenizin metni, çalan ve sıradaki parçalar ile hatırlanan bilgiler gider. Ses bu bilgisayardan çıkmaz.",
       "memory": "Hafıza",
       "memoryEmpty": "“Şunu hatırla…” deyin, burada görünsün",
       "memoryAdd": "Bilgi ekle",

@@ -21,7 +21,6 @@ export interface ContextInput {
   page: string;
   now: Date;
   appLanguage: string;
-  userName: string | null;
 }
 
 function two(n: number): string {
@@ -34,7 +33,7 @@ export function localTime(now: Date): string {
 }
 
 export function buildContext(input: ContextInput): Record<string, unknown> {
-  const context: Record<string, unknown> = {
+  return {
     now_playing: input.track
       ? {
           title: input.track.title,
@@ -54,6 +53,4 @@ export function buildContext(input: ContextInput): Record<string, unknown> {
     weekday: WEEKDAYS[input.now.getDay()],
     app_language: input.appLanguage,
   };
-  if (input.userName) context.user = input.userName;
-  return context;
 }

@@ -19,7 +19,7 @@ import {
   withExchange,
 } from '../src/lib/voice/chat/dialog.ts';
 import { addNote, dropNotes, NOTE_MAX, NOTES_CAP } from '../src/lib/voice/chat/notes.ts';
-import { pageTarget } from '../src/lib/voice/chat/pages.ts';
+import { pageName, pageTarget } from '../src/lib/voice/chat/pages.ts';
 import { chatTools } from '../src/lib/voice/chat/tools/index.ts';
 import type { CallResult, ChatMessage, ChatTool } from '../src/lib/voice/chat/types';
 import { fakeApp } from './voice-chat-fakes.ts';
@@ -140,10 +140,9 @@ test('the real tool list and a full context fit the request limits', () => {
     shuffle: false,
     repeat: 'all',
     next: Array.from({ length: 9 }, (_, i) => ({ title: `T${i}`, artist: 'A' })),
-    page: '/library/likes',
+    page: 'likes',
     now: new Date(2026, 10, 11, 8, 5),
     appLanguage: 'ru',
-    userName: 'loli',
   });
   assert.deepEqual(context.now_playing, {
     title: 'Положение',
@@ -155,9 +154,9 @@ test('the real tool list and a full context fit the request limits', () => {
   assert.equal((context.queue_next as unknown[]).length, 5);
   assert.equal(context.time, '2026-11-11 08:05');
   assert.equal(context.weekday, 'Wednesday');
-  assert.equal(context.page, '/library/likes');
+  assert.equal(context.page, 'likes');
   assert.equal(context.app_language, 'ru');
-  assert.equal(context.user, 'loli');
+  assert.ok(!('user' in context));
   assert.ok(bytesOf(context) < BLOCK_BYTES);
   const idle = buildContext({
     track: null,
@@ -169,14 +168,12 @@ test('the real tool list and a full context fit the request limits', () => {
     shuffle: false,
     repeat: 'off',
     next: [],
-    page: '/home',
+    page: 'home',
     now: new Date(2026, 10, 15, 23, 59),
     appLanguage: 'en',
-    userName: null,
   });
   assert.equal(idle.now_playing, null);
   assert.equal(idle.weekday, 'Sunday');
-  assert.ok(!('user' in idle));
 });
 
 test('the dialog lives for 30 minutes of silence and keeps the last turns', () => {
@@ -248,4 +245,27 @@ test('pages map to routes; pages of the current track need one', () => {
   const links = { track: '/track/1', artist: '/artist/a1', album: null };
   assert.deepEqual(pageTarget('current_artist', null, links), { to: '/artist/a1' });
   assert.equal(pageTarget('current_album', null, links), null);
+});
+
+test('the page in the context is a name, never a path with ids', () => {
+  const names: Record<string, string> = {
+    '/home': 'home',
+    '/library': 'library',
+    '/library/likes': 'likes',
+    '/library/history/': 'history',
+    '/library/unknown': 'library',
+    '/settings': 'settings',
+    '/chats': 'chats',
+    '/chats/storage': 'chats',
+    '/chats/8f2c1e0a-77aa': 'chats',
+    '/user/soundcloud:users:12345': 'artist',
+    '/artist/a1': 'artist',
+    '/track/soundcloud:tracks:777': 'track',
+    '/playlist/soundcloud:playlists:5': 'playlist',
+    '/album/al9': 'album',
+    '/star': 'other',
+    '/': 'other',
+    '': 'other',
+  };
+  for (const [path, name] of Object.entries(names)) assert.equal(pageName(path), name, path);
 });

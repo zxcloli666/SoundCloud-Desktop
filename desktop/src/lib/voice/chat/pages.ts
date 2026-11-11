@@ -70,3 +70,21 @@ export function pageTarget(
   const to = STATIC[page];
   return to ? { to } : null;
 }
+
+const NAMED = new Map(Object.entries(STATIC).map(([page, to]) => [to, page]));
+
+const BY_SECTION: Record<string, string> = {
+  library: 'library',
+  settings: 'settings',
+  chats: 'chats',
+  track: 'track',
+  playlist: 'playlist',
+  album: 'album',
+  artist: 'artist',
+  user: 'artist',
+};
+
+export function pageName(path: string): string {
+  const clean = path.replace(/\/+$/, '');
+  return NAMED.get(clean) ?? BY_SECTION[clean.split('/')[1] ?? ''] ?? 'other';
+}

@@ -151,7 +151,7 @@
     "chat": {
       "title": "Conversation",
       "toggle": "Talk with the character",
-      "toggleDesc": "The text of your phrase goes to our server and the model provider. Audio never leaves this computer.",
+      "toggleDesc": "Goes to our server and the model provider: the text of your phrase, what is playing and queued, and the facts she remembers. Audio never leaves this computer.",
       "memory": "Memory",
       "memoryEmpty": "Say “remember that…” and it shows up here",
       "memoryAdd": "Add a fact",
