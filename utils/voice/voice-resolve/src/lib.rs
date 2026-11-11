@@ -75,8 +75,14 @@ pub fn matches(
         .unwrap_or_default()
 }
 
-pub fn interpret(text: &str, catalog: &dyn Catalog, boosts: &Boosts, bare: Bare) -> Vec<Outcome> {
-    parse(text, &Names::default())
+pub fn interpret(
+    text: &str,
+    catalog: &dyn Catalog,
+    boosts: &Boosts,
+    bare: Bare,
+    names: &Names,
+) -> Vec<Outcome> {
+    parse(text, names)
         .into_iter()
         .flat_map(|parsed| interpret_split(parsed, catalog, boosts, bare))
         .collect()

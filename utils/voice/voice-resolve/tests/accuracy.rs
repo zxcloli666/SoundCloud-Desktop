@@ -1,5 +1,5 @@
 use std::collections::BTreeMap;
-use voice_nlu::Intent;
+use voice_nlu::{Intent, Names};
 use voice_resolve::{Bare, Boosts, Decision, FixtureCatalog, Outcome, interpret};
 
 struct Row {
@@ -84,6 +84,8 @@ fn sets() -> Vec<Set> {
         },
     ]
 }
+
+const VOICE: [&str; 3] = ["Loli", "Лоля", "롤리"];
 
 #[derive(Default, Clone)]
 struct Stat {
@@ -189,8 +191,9 @@ fn run(
 ) -> (BTreeMap<String, Stat>, Vec<String>) {
     let mut stats: BTreeMap<String, Stat> = BTreeMap::new();
     let mut failures = Vec::new();
+    let names = Names::new(&VOICE);
     for r in data {
-        let os = interpret(&r.phrase, catalog, &Boosts::none(), bare);
+        let os = interpret(&r.phrase, catalog, &Boosts::none(), bare, &names);
         let s = stats.entry(r.category.clone()).or_default();
         s.rows += 1;
         let i_ok = intent_ok(r, &os);
@@ -382,12 +385,14 @@ fn leaving_names_said_alone_to_the_listener_changes_nothing_else() {
     let catalog = FixtureCatalog::from_tsv(include_str!("data/catalog.tsv"), true);
     let mut union = BTreeMap::new();
     let mut left = Vec::new();
+    let names = Names::new(&VOICE);
     for set in sets() {
         let (stats, _) = run(set.name, &set.rows, &catalog, Bare::Certain);
         merge(&mut union, &stats);
         for row in &set.rows {
-            let popular = interpret(&row.phrase, &catalog, &Boosts::none(), Bare::Popular);
-            let certain = interpret(&row.phrase, &catalog, &Boosts::none(), Bare::Certain);
+            let read = |bare| interpret(&row.phrase, &catalog, &Boosts::none(), bare, &names);
+            let popular = read(Bare::Popular);
+            let certain = read(Bare::Certain);
             for o in certain.iter().filter(|o| named_alone(o)) {
                 assert!(o.acts(), "{} plays {:?}", row.phrase, o.decision);
             }

@@ -1,6 +1,6 @@
 use std::time::Instant;
 
-use voice_nlu::Intent;
+use voice_nlu::{Intent, Names};
 use voice_resolve::{Bare, Boosts, Decision, Outcome as Understood, Scored, answer_ask, interpret};
 
 use crate::catalog::Probe;
@@ -50,7 +50,7 @@ impl Core {
         } else {
             Bare::Popular
         };
-        let outcomes = interpret(&text, &probe, &boosts, bare);
+        let outcomes = interpret(&text, &probe, &boosts, bare, &Names::default());
         if let Some(error) = probe.failure.take() {
             self.fail("network", Some(error));
             self.go_idle();

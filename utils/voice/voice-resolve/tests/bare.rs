@@ -1,4 +1,4 @@
-use voice_nlu::Intent;
+use voice_nlu::{Intent, Names};
 use voice_resolve::{Bare, Boosts, Decision, FixtureCatalog, Outcome, interpret};
 
 const BOTH: [Bare; 2] = [Bare::Popular, Bare::Certain];
@@ -24,7 +24,7 @@ playlist\tДля сна\t\t500000\t
 
 fn heard_in(rows: &str, text: &str, bare: Bare) -> Outcome {
     let catalog = FixtureCatalog::from_tsv(rows, true);
-    let mut steps = interpret(text, &catalog, &Boosts::none(), bare);
+    let mut steps = interpret(text, &catalog, &Boosts::none(), bare, &Names::default());
     assert_eq!(steps.len(), 1, "{text}");
     steps.remove(0)
 }
