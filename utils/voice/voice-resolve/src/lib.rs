@@ -157,12 +157,13 @@ fn whole_name(
     let mut whole = parsed.clone();
     whole.queries = parsed.alt.clone();
     let d = resolve(&whole, catalog, boosts, true);
-    let sim = match &d {
-        Decision::Act { pick } => pick.sim,
-        Decision::Ask { first, .. } => first.sim,
+    let top = match &d {
+        Decision::Act { pick } => pick,
+        Decision::Ask { first, .. } => first,
         Decision::NotFound => return None,
     };
-    if sim < WHOLE_NAME_MIN {
+    let of_another_kind = whole.kind_hint.is_some_and(|kind| kind != top.entity.kind);
+    if top.sim < WHOLE_NAME_MIN || parsed.intent.is_control() && of_another_kind {
         return None;
     }
     if parsed.intent == Intent::None && !bare.trusts(&whole, &d) {

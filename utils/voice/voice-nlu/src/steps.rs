@@ -55,7 +55,7 @@ pub fn parse(text: &str, names: &Names) -> Vec<Parsed> {
         }
     }
     if corrected && whole.alt.is_empty() {
-        whole.alt = crate::whole_name(&names.drop(normalize(text_in).toks));
+        whole.alt = crate::whole_name(&names.drop(normalize(text_in).toks)).queries;
     }
     whole.split = entity_splits(toks, text);
     if whole.intent == Intent::Play {

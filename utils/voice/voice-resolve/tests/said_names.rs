@@ -20,6 +20,16 @@ fn heard_in(rows: &str, text: &str, bare: Bare) -> String {
     told.join(" + ")
 }
 
+fn picked(text: &str, bare: Bare) -> String {
+    let steps = read(&CATALOG, text, bare);
+    match steps.first().and_then(|step| step.decision.as_ref()) {
+        Some(Decision::Act { pick }) => {
+            format!("{} {}", pick.entity.kind.name(), pick.entity.label())
+        }
+        _ => steps[0].intent.name().to_string(),
+    }
+}
+
 fn handed(text: &str) -> Vec<String> {
     let steps = read(&CATALOG, text, Bare::Certain);
     let hits = steps.iter().flat_map(|step| &step.candidates);
@@ -397,4 +407,28 @@ fn of_two_names_equally_close_the_better_known_one_still_goes_first() {
         ("включи группу крови", "play Кино - Группа крови?"),
         ("включи мотылька", "play Макс Корж - Мотылёк"),
     ]);
+}
+
+#[test]
+fn a_command_word_after_a_kind_word_names_what_that_kind_has_under_it() {
+    let named = [
+        ("плейлист пауза", "playlist Пауза"),
+        ("плейлист громче", "playlist Громче"),
+        ("плейлист дальше", "playlist Дальше"),
+        ("альбом дальше", "album Мот - Дальше"),
+        ("группа пауза", "artist Пауза"),
+        ("группа стоп", "artist Стоп"),
+    ];
+    let commands = [
+        ("альбом громче", "volume_up"),
+        ("группа громче", "volume_up"),
+        ("плейлист тише", "volume_down"),
+        ("альбом стоп", "stop"),
+        ("трек дальше", "next"),
+    ];
+    for bare in BOTH {
+        for (text, read) in named.iter().chain(&commands) {
+            assert_eq!(picked(text, bare), *read, "{text}");
+        }
+    }
 }
