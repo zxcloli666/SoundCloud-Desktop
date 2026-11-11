@@ -10,7 +10,8 @@ const RATE: u32 = 24000;
 const PER_CHAR: usize = 240;
 const CHUNK: usize = 480;
 const BROKEN: &str = "сломайся";
-const LONG: &str = "Это довольно длинная фраза, чтобы речь шла заметное время и её можно было оборвать.";
+const LONG: &str =
+    "Это довольно длинная фраза, чтобы речь шла заметное время и её можно было оборвать.";
 
 #[derive(Clone, Default)]
 struct Said(Arc<Mutex<Vec<String>>>);
@@ -94,16 +95,35 @@ fn streams(rig: &Rig) -> usize {
 fn a_streamed_reply_is_spoken_sentence_by_sentence_in_order() {
     let (rig, said) = speaking(timing());
     let id = asked(&rig, Source::Button);
-    stream(&rig, &id, &["Привет! Как де", "ла у тебя? Сейчас вклю", "чу что-нибудь. Вот"]);
+    stream(
+        &rig,
+        &id,
+        &[
+            "Привет! Как де",
+            "ла у тебя? Сейчас вклю",
+            "чу что-нибудь. Вот",
+        ],
+    );
     rig.expect_state(State::Speaking);
     rig.done(&id, "");
     rig.expect_state(State::Idle);
-    let lines = ["Привет!", "Как дела у тебя?", "Сейчас включу что-нибудь.", "Вот"];
+    let lines = [
+        "Привет!",
+        "Как дела у тебя?",
+        "Сейчас включу что-нибудь.",
+        "Вот",
+    ];
     assert_eq!(said.list(), lines);
     assert_eq!(rig.heard.tones(), lines.map(tone));
-    assert_eq!(rig.heard.voiced(), lines.iter().map(|l| length(l)).sum::<usize>());
+    assert_eq!(
+        rig.heard.voiced(),
+        lines.iter().map(|l| length(l)).sum::<usize>()
+    );
     assert_eq!(streams(&rig), 1);
-    assert_eq!(rig.calls.list().last().map(String::as_str), Some("duck 1.00"));
+    assert_eq!(
+        rig.calls.list().last().map(String::as_str),
+        Some("duck 1.00")
+    );
 }
 
 #[test]
@@ -165,7 +185,10 @@ fn cancel_stops_the_speech_and_tells_the_network_side() {
     let (rig, _) = speaking(timing());
     let id = asked(&rig, Source::Button);
     rig.chat(&id, Chat::Open { speak: true });
-    rig.chat(&id, Chat::Text(format!("{LONG} И ещё одна такая же длинная фраза следом. ")));
+    rig.chat(
+        &id,
+        Chat::Text(format!("{LONG} И ещё одна такая же длинная фраза следом. ")),
+    );
     rig.expect_state(State::Speaking);
     rig.engine.send(Command::Cancel);
     assert_eq!(rig.cancelled(), id);
@@ -324,9 +347,15 @@ fn a_command_reply_is_still_one_phrase() {
     });
     rig.expect_state(State::Thinking);
     let command = rig.command();
-    rig.done(&command.id, "Ставлю на паузу. Потом продолжу, если захочешь.");
+    rig.done(
+        &command.id,
+        "Ставлю на паузу. Потом продолжу, если захочешь.",
+    );
     rig.expect_state(State::Speaking);
     rig.expect_state(State::Idle);
-    assert_eq!(said.list(), ["Ставлю на паузу. Потом продолжу, если захочешь."]);
+    assert_eq!(
+        said.list(),
+        ["Ставлю на паузу. Потом продолжу, если захочешь."]
+    );
     assert_eq!(streams(&rig), 1);
 }

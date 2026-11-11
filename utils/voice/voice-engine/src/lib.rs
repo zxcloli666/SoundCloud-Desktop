@@ -25,8 +25,8 @@ mod voices;
 mod wire;
 
 use std::path::PathBuf;
-use std::sync::{Arc, Mutex};
 use std::sync::mpsc::{Receiver, Sender, channel};
+use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 use voice_audio::{Capture, DeviceList};
