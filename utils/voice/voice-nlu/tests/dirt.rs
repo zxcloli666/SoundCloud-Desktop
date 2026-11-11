@@ -399,3 +399,20 @@ fn swearing_at_the_song_asks_for_the_next_one_and_a_swear_after_a_command_is_dro
         assert_eq!(steps(silent), ["none"], "{silent}");
     }
 }
+
+#[test]
+fn any_word_for_a_little_next_to_a_volume_word_is_a_small_step() {
+    for (heard, want) in [
+        ("убавь маленько", "volume_down"),
+        ("сделай малость потише", "volume_down"),
+        ("убавь капельку", "volume_down"),
+        ("прибавь немножко", "volume_up"),
+        ("сделай немножечко громче", "volume_up"),
+        ("малехо погромче", "volume_up"),
+    ] {
+        assert_eq!(steps(heard), [want], "{heard}");
+    }
+    for silent in ["маленько", "малость устал", "дай капельку"] {
+        assert_eq!(steps(silent), ["none"], "{silent}");
+    }
+}
