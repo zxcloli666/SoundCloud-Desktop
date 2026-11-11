@@ -412,3 +412,20 @@ fn a_clause_that_says_who_is_absent_is_a_reason_and_its_no_is_not_a_correction()
         "сделай громче или нет",
     ]);
 }
+
+#[test]
+fn a_volume_word_said_with_a_verb_of_speaking_is_about_a_voice() {
+    stays_silent(&[
+        "говори громче",
+        "говорите потише пожалуйста",
+        "погромче говори я не слышу",
+        "не ори говори тише",
+        "алло громче говори тебя вообще не слышно",
+    ]);
+    acts(&[
+        ("громче", "volume_up"),
+        ("сделай громче", "volume_up"),
+        ("тише пожалуйста я говорю по телефону", "volume_down"),
+        ("сделай потише я разговариваю по телефону", "volume_down"),
+    ]);
+}

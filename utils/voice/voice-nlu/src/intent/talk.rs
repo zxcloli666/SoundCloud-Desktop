@@ -5,7 +5,7 @@ use crate::anchor::finite;
 use crate::lexicon::{
     self, AGREEMENT, ASKING, BACKWARD, CLAUSE_SUBJECTS, COMPLAINT, COMPOUNDS, DEMONSTRATIVES, DENY,
     DOWN_WORDS, FORWARD, LISTENERS, MUSIC_STEMS, NEG_STEMS, NEXT_STRONG, OTHERS, OWN, PLAY_STRONG,
-    PREV_STRONG, REMARK_START, RINGS, STRIDES, SWEARS_AMB, TASTE, UP_WORDS, WAS, WHICH,
+    PREV_STRONG, REMARK_START, RINGS, SPEAKING, STRIDES, SWEARS_AMB, TASTE, UP_WORDS, WAS, WHICH,
 };
 
 pub fn sentence(c: &Ctx) -> bool {
@@ -19,6 +19,7 @@ pub fn sentence(c: &Ctx) -> bool {
         || question_with_its_own_verb(c)
         || question_to_a_person(c)
         || plan_of_the_speaker(c)
+        || voice_of_a_person(c)
 }
 
 pub fn marching(c: &Ctx) -> bool {
@@ -122,6 +123,10 @@ fn plan_of_the_speaker(c: &Ctx) -> bool {
     };
     let will_do = |w: &&str| (w.ends_with('у') || w.ends_with('ю')) && lexicon::stem(NEG_STEMS, w);
     c.only_pre(0..at) && c.w[at + 1..].iter().any(will_do)
+}
+
+fn voice_of_a_person(c: &Ctx) -> bool {
+    c.has(SPEAKING) && c.w.iter().any(|w| volume_word(w))
 }
 
 fn own_verb(w: &str) -> bool {
