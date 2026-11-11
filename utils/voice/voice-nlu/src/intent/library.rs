@@ -153,7 +153,7 @@ pub fn queue(c: &Ctx) -> Option<Detected> {
 pub fn into_likes(c: &Ctx) -> Option<Detected> {
     let at = c.pos(&["в", "во"])?;
     let target = c.at(at + 1);
-    let likes = stem(&["избранн", "любим", "лайк"], target);
+    let likes = stem(&["избранн", "любим"], target) || target == "лайки";
     let plays =
         c.w.iter()
             .any(|w| PLAY_STRONG.contains(w) && !THROW_VERBS.contains(w));
