@@ -492,3 +492,21 @@ fn the_past_said_as_a_noun_is_not_the_previous_track() {
         ("включи прошлое лето", "play"),
     ]);
 }
+
+#[test]
+fn a_time_said_with_a_direction_after_a_halt_is_how_far_to_seek() {
+    assert_eq!(
+        steps("пауза назад на 10 секунд"),
+        ["pause", "seek_backward"]
+    );
+    assert_eq!(
+        steps("пауза на 10 секунд назад"),
+        ["pause", "seek_backward"]
+    );
+    assert_eq!(steps("стоп вперед на 30 секунд"), ["stop", "seek_forward"]);
+    acts(&[
+        ("пауза на 30 секунд", "pause"),
+        ("стоп на минуту", "stop"),
+        ("поставь на паузу на секундочку", "pause"),
+    ]);
+}

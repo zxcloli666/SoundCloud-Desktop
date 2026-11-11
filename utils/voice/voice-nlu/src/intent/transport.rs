@@ -106,11 +106,13 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
 }
 
 fn only_for_a_while(c: &Ctx, halt: usize) -> bool {
+    let heading = c.has(FORWARD) || c.has(BACKWARD);
     c.stray_words(&held(c, halt)).iter().all(|w| {
-        A_WHILE.contains(w)
-            || SEC_UNITS.contains(w)
-            || MIN_UNITS.contains(w)
-            || crate::numbers::is_number(w)
+        !heading
+            && (A_WHILE.contains(w)
+                || SEC_UNITS.contains(w)
+                || MIN_UNITS.contains(w)
+                || crate::numbers::is_number(w))
     })
 }
 
