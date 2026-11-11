@@ -159,6 +159,19 @@ const DEMOS: { words: string[]; command: Omit<VoiceCommand, 'id' | 'source'>[] }
     ],
   },
   {
+    words: ['включи', 'включи что-нибудь', 'включи что-нибудь под настроение'],
+    command: [
+      {
+        heard: 'включи что-нибудь под настроение',
+        normalized: 'включи что-нибудь под настроение',
+        intent: 'none',
+        kind_hint: null,
+        number: null,
+        decision: null,
+      },
+    ],
+  },
+  {
     words: ['поставь', 'поставь абырвалг'],
     command: [
       {
@@ -202,6 +215,7 @@ export async function runDemo(source: string) {
     void emit('voice:state', { state: 'asking', source });
     return;
   }
+  if (script.command[0].intent === 'none') return;
   await wait(300);
   await speak(source, 1800);
 }

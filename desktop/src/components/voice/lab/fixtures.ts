@@ -1,3 +1,4 @@
+import type { ToolMark } from '../../../lib/voice/chat/types';
 import type { RemoteLink } from '../../../lib/voice/remote-types';
 import type { HistoryRow, WakeMark } from '../../../lib/voice/store';
 import type { Devices, Entity, Model } from '../../../lib/voice/types';
@@ -112,6 +113,16 @@ export const KHOCHU_M: Entity = {
   id: '1002',
 };
 
+export const LAB_MARKS: ToolMark[] = [
+  { tool: 'play', ok: true, intent: 'play', kind: 'track', text: 'Хочу' },
+  { tool: 'volume', ok: true, intent: 'volume_set' },
+  { tool: 'like', ok: true, intent: 'like' },
+];
+
+export function labNotes(): string[] {
+  return ['По утрам любит пост-панк', 'Не ставить ремиксы', 'Зовут Саша'];
+}
+
 export function labHistory(now: number): HistoryRow[] {
   const at = (min: number) => now - min * 60_000;
   return [
@@ -125,6 +136,22 @@ export function labHistory(now: number): HistoryRow[] {
       result: 'done',
       undoable: false,
       wrong: false,
+    },
+    {
+      id: 'h-chat',
+      at: at(6),
+      source: 'wake',
+      heard: 'включи что-нибудь под настроение',
+      intents: ['none'],
+      label: 'Включила «Хочу» Земфиры и убавила громкость, чтобы не пугать соседей.',
+      result: 'replied',
+      undoable: false,
+      wrong: false,
+      reply: {
+        voice: 'loli',
+        text: 'Включила «Хочу» Земфиры и убавила громкость, чтобы не пугать соседей.',
+        marks: LAB_MARKS,
+      },
     },
     {
       id: 'h2',

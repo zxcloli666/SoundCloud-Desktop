@@ -35,4 +35,10 @@ export function installLabPort() {
     usePlayerStore.getState().addToQueueNext([fakeTrack(entity, 7)]);
     return true;
   };
+  playerPort.setLiked = async (liked) => {
+    const track = usePlayerStore.getState().currentTrack;
+    if (!track) return false;
+    usePlayerStore.setState({ currentTrack: { ...track, user_favorite: liked } });
+    return true;
+  };
 }

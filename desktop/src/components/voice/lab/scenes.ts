@@ -1,4 +1,5 @@
 import { setIsPremium } from '../../../lib/premium-cache';
+import { useChatLive } from '../../../lib/voice/chat/live';
 import { enqueueCommand } from '../../../lib/voice/executor';
 import { useVoiceRuntime } from '../../../lib/voice/runtime';
 import { useVoiceStore } from '../../../lib/voice/store';
@@ -7,8 +8,10 @@ import { setOffline, setSpeech, startDownload, stopDownloads } from './engine';
 import {
   downloadingModels,
   firstRunModels,
+  LAB_MARKS,
   labDevices,
   labHistory,
+  labNotes,
   labWakeLog,
   readyModels,
 } from './fixtures';
@@ -20,6 +23,7 @@ export const SCENES = [
   'errors',
   'missing',
   'free',
+  'chat',
   'hud',
 ] as const;
 export type Scene = (typeof SCENES)[number];
@@ -67,6 +71,31 @@ function playVolume() {
     kind_hint: null,
     number: 50,
     decision: null,
+  });
+}
+
+let asking: ReturnType<typeof setTimeout> | null = null;
+
+function askLoli() {
+  if (asking) clearTimeout(asking);
+  asking = setTimeout(() => {
+    enqueueCommand({
+      id: `lab-chat-${Date.now()}`,
+      source: 'hotkey',
+      heard: 'включи что-нибудь под настроение',
+      normalized: 'включи что-нибудь под настроение',
+      intent: 'none',
+      kind_hint: null,
+      number: null,
+      decision: null,
+    });
+  }, 300);
+}
+
+function showReply() {
+  useChatLive.setState({
+    parts: ['Включила «Хочу» Земфиры и убавила громкость, чтобы не пугать соседей.'],
+    marks: LAB_MARKS,
   });
 }
 
@@ -123,7 +152,16 @@ export function applyScene(scene: Scene) {
   }
   base(readyModels());
   configure(true);
-  useVoiceStore.setState({ history: labHistory(now), wakeLog: labWakeLog(now), wakeTaught: true });
+  useVoiceStore.setState({
+    history: labHistory(now),
+    notes: labNotes(),
+    wakeLog: labWakeLog(now),
+    wakeTaught: true,
+  });
   if (scene === 'ready' || scene === 'hud') playVolume();
-  if (scene === 'hud') setSpeech(true);
+  if (scene === 'chat') askLoli();
+  if (scene === 'hud') {
+    setSpeech(true);
+    showReply();
+  }
 }

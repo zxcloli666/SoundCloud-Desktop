@@ -6,6 +6,7 @@ import { useVoiceRuntime } from '../../../lib/voice/runtime';
 import { Settings } from '../../../pages/Settings';
 import { useSettingsStore } from '../../../stores/settings';
 import { VOICE_KEYFRAMES } from '../keyframes';
+import { NavBridge } from '../nav';
 import { VoiceIsland } from '../VoiceIsland';
 import { HudGallery } from './HudGallery';
 import { applyScene, SCENES, type Scene } from './scenes';
@@ -80,6 +81,7 @@ export function VoiceLab() {
       data-lab-perf={profile.mode}
     >
       <style>{VOICE_KEYFRAMES}</style>
+      <NavBridge />
       {chrome && (
         <div className="sticky top-0 z-[80] flex flex-wrap items-center gap-3 border-b border-ink/[0.08] bg-surface/90 px-4 py-2.5">
           <span className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-accent">

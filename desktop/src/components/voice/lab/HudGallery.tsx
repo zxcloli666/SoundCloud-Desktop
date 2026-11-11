@@ -65,6 +65,28 @@ const CARDS: { label: string; hud: HudView }[] = [
     label: 'link confirm',
     hud: { kind: 'link_confirm', id: 'lab-link', provider: 'alice', hint: '47' },
   },
+  {
+    label: 'chat',
+    hud: {
+      kind: 'chat',
+      id: 'lab-chat',
+      heard: 'включи что-нибудь под настроение',
+      phase: 'done',
+      undo: 'lab-volume',
+      line: '',
+    },
+  },
+  {
+    label: 'chat failed',
+    hud: {
+      kind: 'chat',
+      id: 'lab-chat-failed',
+      heard: 'расскажи про этот трек',
+      phase: 'failed',
+      undo: null,
+      line: 'Сейчас не могу ответить',
+    },
+  },
   { label: 'not found', hud: { kind: 'not_found', heard: 'поставь абырвалг' } },
   { label: 'failed', hud: { kind: 'failed', display: 'Сейчас ничего не играет' } },
   { label: 'speaking', hud: { kind: 'speaking' } },
