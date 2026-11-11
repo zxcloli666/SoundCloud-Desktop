@@ -1,4 +1,5 @@
 import { listen } from '@tauri-apps/api/event';
+import { startChatAhead } from './chat/session';
 import { enqueueCommand } from './executor';
 import { afterError } from './hud';
 import { pushLevel, resetLevels } from './levels';
@@ -6,6 +7,7 @@ import { useVoiceRuntime } from './runtime';
 import type {
   Devices,
   ErrorEvent,
+  HeardEvent,
   LevelEvent,
   ModelProgress,
   PartialEvent,
@@ -55,6 +57,7 @@ export function listenVoiceEvents() {
   void listen<PartialEvent>('voice:partial', (e) =>
     useVoiceRuntime.setState({ partial: e.payload.text }),
   );
+  void listen<HeardEvent>('voice:heard', (e) => startChatAhead(e.payload));
   void listen<VoiceCommand>('voice:command', (e) => onCommand(e.payload));
   void listen<ErrorEvent>('voice:error', (e) => onError(e.payload));
   void listen<ModelProgress>('voice:models', (e) =>

@@ -98,12 +98,11 @@ pub fn voice_chat_cancel(voice: Managed<'_, Voice>, id: String) {
 
 #[tauri::command]
 pub async fn voice_resolve(
-    app: AppHandle,
     voice: Managed<'_, Voice>,
     query: String,
     kinds: Vec<String>,
 ) -> Result<Vec<EntityEvent>, String> {
-    catalog::search(&app, &voice, &query, &kinds).await
+    catalog::search(&voice, &query, &kinds).await
 }
 
 #[tauri::command]

@@ -2,13 +2,15 @@ import { useSettingsStore } from '../../../stores/settings';
 import { getDuration } from '../../audio';
 import { getIsPremium } from '../../premium-cache';
 import type { ExecuteContext, PlayerPort, StepResult } from '../execute';
+import { playerPort } from '../player-port';
 import { useVoiceRuntime } from '../runtime';
 import { type RowReply, useVoiceStore } from '../store';
-import type { Entity, VoiceCommand, VoiceSource } from '../types';
+import type { Entity, HeardEvent, VoiceCommand, VoiceSource } from '../types';
 import { appPort, briefOf } from './app-port';
 import { buildBody } from './body';
 import { buildContext, candidatesOf, QUEUE_TAIL } from './context';
 import { dialogMessages, withExchange } from './dialog';
+import { chatAhead, startsAhead } from './early';
 import { chatIpc } from './ipc';
 import { addMark, appendSay, openReply } from './live';
 import { currentPage } from './navigator';
@@ -17,11 +19,12 @@ import { withRest } from './rest';
 import type { ChatStep } from './step';
 import { chatTools, runTool } from './tools';
 import { MAX_ROUNDS, runTurn } from './turn';
-import type { ToolEnv, TurnEnd } from './types';
+import type { CallResult, ChatBody, ToolEnv, TurnEnd } from './types';
 
 const REPLY_KEPT = 600;
 
-const send = withRest(chatIpc.chat);
+const early = chatAhead(chatIpc.chat, (id) => void chatIpc.cancel(id).catch(() => {}));
+const send = withRest(early.send);
 
 let active: { id: string; abort: AbortController } | null = null;
 
@@ -61,16 +64,49 @@ function contextNow(port: PlayerPort, candidates: Entity[]): Record<string, unkn
   });
 }
 
+function speaks(source: VoiceSource): boolean {
+  return voiced(source) && useVoiceStore.getState().config.speak.replies;
+}
+
+function bodyOf(heard: string, port: PlayerPort, candidates: Entity[], now: number) {
+  const { config } = useVoiceStore.getState();
+  const tools = chatTools(port, appPort, candidates);
+  const history = dialogMessages(useVoiceRuntime.getState().dialog, now);
+  const body = (results: CallResult[]): ChatBody =>
+    buildBody({
+      text: heard,
+      persona: config.speak.voice,
+      language: config.language,
+      context: contextNow(port, candidates),
+      history,
+      notes: useVoiceStore.getState().notes,
+      tools,
+      results,
+    });
+  return { tools, body };
+}
+
+export function startChatAhead(heard: HeardEvent) {
+  if (!startsAhead(heard, { on: chatOn(), resting: send.resting() })) return;
+  const { body } = bodyOf(heard.heard, playerPort, [], Date.now());
+  early.start({ id: heard.id, speak: speaks(heard.source), body: body([]) });
+}
+
+export function keepChatAhead(id: string) {
+  early.keepOnly(id);
+}
+
+export function dropChatAhead(id: string) {
+  early.drop(id);
+}
+
 export async function chatStep(
   cmd: VoiceCommand,
   port: PlayerPort,
   ctx: ExecuteContext,
 ): Promise<ChatStep> {
-  const { config } = useVoiceStore.getState();
   const env: ToolEnv = { cmd, lang: ctx.lang, now: ctx.now, stack: ctx.stack, undo: false };
-  const candidates = candidatesOf(cmd);
-  const tools = chatTools(port, appPort, candidates);
-  const history = dialogMessages(useVoiceRuntime.getState().dialog, ctx.now);
+  const { tools, body } = bodyOf(cmd.heard, port, candidatesOf(cmd), ctx.now);
   const abort = new AbortController();
   active = { id: cmd.id, abort };
   openReply();
@@ -85,20 +121,10 @@ export async function chatStep(
   });
   const end = await runTurn({
     id: cmd.id,
-    speak: voiced(cmd.source) && config.speak.replies,
+    speak: speaks(cmd.source),
     rounds: MAX_ROUNDS,
     signal: abort.signal,
-    body: (results) =>
-      buildBody({
-        text: cmd.heard,
-        persona: config.speak.voice,
-        language: config.language,
-        context: contextNow(port, candidates),
-        history,
-        notes: useVoiceStore.getState().notes,
-        tools,
-        results,
-      }),
+    body,
     send,
     act: (name, args) => runTool(tools, name, args, env),
     onSay: appendSay,

@@ -1,12 +1,13 @@
 use std::time::Duration;
 
 use tokio::runtime::Handle;
-use voice_engine::EntityEvent;
+use voice_engine::{Engine, EntityEvent};
 use voice_nlu::{Kind, Variant};
 use voice_resolve::{Boosts, Entity};
 use wreq::Method;
 
 use super::{Voice, resolve};
+use crate::app::diagnostics;
 use crate::network::edge;
 use crate::network::netcheck::model::Role;
 use crate::network::{fetch, traced};
@@ -32,7 +33,6 @@ impl voice_engine::Catalog for ResolveCatalog {
 }
 
 pub async fn search(
-    app: &AppHandle,
     voice: &Voice,
     name: &str,
     kinds: &[String],
@@ -45,18 +45,27 @@ pub async fn search(
     };
     let readings = voice_resolve::named(name);
     let variants: Vec<Variant> = readings.iter().flat_map(|r| r.queries.clone()).collect();
-    let body = resolve::request(&variants, &kinds);
-    if body.variants.is_empty() {
-        return Ok(Vec::new());
-    }
     let liked = voice.config.lock().unwrap().boosts.artists.clone();
-    let found = post(app, &body).await?;
+    let found = looked_up(voice.engine.clone(), variants, kinds.clone()).await?;
     let fit = voice_resolve::matches(&readings, &found, &kinds, &Boosts::liked_artists(&liked));
     Ok(fit
         .iter()
         .take(BEST)
         .map(|s| EntityEvent::from(&s.entity))
         .collect())
+}
+
+async fn looked_up(
+    engine: Engine,
+    variants: Vec<Variant>,
+    kinds: Vec<Kind>,
+) -> Result<Vec<Entity>, String> {
+    let asked = move || engine.candidates(&variants, &kinds);
+    let (found, looked) = tokio::task::spawn_blocking(asked)
+        .await
+        .map_err(|error| error.to_string())?;
+    diagnostics::log("INFO", format!("[Voice] search: {looked}"));
+    found
 }
 
 async fn post(app: &AppHandle, body: &resolve::Request) -> Result<Vec<Entity>, String> {

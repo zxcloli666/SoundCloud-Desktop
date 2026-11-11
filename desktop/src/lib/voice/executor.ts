@@ -1,4 +1,13 @@
-import { chatOn, chatStep, closeChatHud, interruptChat, rowReply, stopChat } from './chat/session';
+import {
+  chatOn,
+  chatStep,
+  closeChatHud,
+  dropChatAhead,
+  interruptChat,
+  keepChatAhead,
+  rowReply,
+  stopChat,
+} from './chat/session';
 import { execute, revert, type StepResult } from './execute';
 import { dismiss } from './hud';
 import { voiceIpc } from './ipc';
@@ -134,6 +143,7 @@ async function handle(cmd: VoiceCommand) {
     stack,
     chat: chatOn() ? chatStep : undefined,
   });
+  dropChatAhead(cmd.id);
   stack = res.stack;
   if (res.kind === 'done') {
     run.items = [
@@ -161,6 +171,7 @@ async function handle(cmd: VoiceCommand) {
 
 export function enqueueCommand(cmd: VoiceCommand) {
   interruptChat();
+  keepChatAhead(cmd.id);
   chain = chain.then(() => handle(cmd)).catch(() => {});
 }
 

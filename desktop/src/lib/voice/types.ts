@@ -57,6 +57,12 @@ export interface StateEvent {
   input?: string;
 }
 
+export interface HeardEvent {
+  id: string;
+  source: VoiceSource;
+  heard: string;
+}
+
 export interface LevelEvent {
   input: string;
   rms: number;
