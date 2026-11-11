@@ -1,6 +1,12 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { MAX_ACTIONS, MAX_ROUNDS, runTurn, type TurnInput } from '../src/lib/voice/chat/turn.ts';
+import {
+  LAST_EVENT_WAIT_MS,
+  MAX_ACTIONS,
+  MAX_ROUNDS,
+  runTurn,
+  type TurnInput,
+} from '../src/lib/voice/chat/turn.ts';
 import type { Ran, ToolMark } from '../src/lib/voice/chat/types';
 import { bodyOf, ranOf, type Step, wire } from './voice-chat-fakes.ts';
 
@@ -229,10 +235,40 @@ test('an error event after the stream started fails the turn', async () => {
   assert.equal(end.status === 'failed' && end.code, 'deadline');
 });
 
-test('a stream that closes without a final event is a failure', async () => {
+async function settled() {
+  for (let i = 0; i < 5; i++) await new Promise((next) => setImmediate(next));
+}
+
+test('a call that returns without a final event fails only after the wait', async (t) => {
+  t.mock.timers.enable({ apis: ['setTimeout'] });
   const { done } = turn([[{ kind: 'say', text: 'Ну' }]]);
-  const end = await done;
-  assert.equal(end.status === 'failed' && end.code, 'failed');
+  let end: Awaited<typeof done> | null = null;
+  void done.then((result) => {
+    end = result;
+  });
+  await settled();
+  t.mock.timers.tick(LAST_EVENT_WAIT_MS - 1);
+  await settled();
+  assert.equal(end, null);
+  t.mock.timers.tick(1);
+  assert.deepEqual(await done, { status: 'failed', code: 'failed', say: 'Ну', marks: [] });
+});
+
+test('a final event seconds after the call returned still ends the round well', async (t) => {
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  const { done } = turn(
+    [],
+    {},
+    {
+      send: async (_request, onEvent) => {
+        onEvent({ kind: 'say', text: 'Готово.' });
+        setTimeout(() => onEvent({ kind: 'done' }), 3000);
+      },
+    },
+  );
+  await settled();
+  t.mock.timers.tick(3000);
+  assert.deepEqual(await done, { status: 'ok', say: 'Готово.', marks: [] });
 });
 
 test('events after the final one are ignored', async () => {

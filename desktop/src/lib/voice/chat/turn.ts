@@ -2,7 +2,7 @@ import type { CallResult, ChatBody, ChatEvent, ChatRequest, Ran, ToolMark, TurnE
 
 export const MAX_ROUNDS = 3;
 export const MAX_ACTIONS = 8;
-const LAST_EVENT_GRACE_MS = 300;
+export const LAST_EVENT_WAIT_MS = 5000;
 
 export interface TurnInput {
   id: string;
@@ -77,7 +77,7 @@ async function playRound(
     else round.acting = round.acting.then(() => act(event.name, event.args));
   };
   const closed = t.send({ id: t.id, speak: t.speak, body: t.body([...results]) }, onEvent).then(
-    () => (round.end ? undefined : Promise.race([ended, pause(LAST_EVENT_GRACE_MS)])),
+    () => (round.end ? undefined : Promise.race([ended, pause(LAST_EVENT_WAIT_MS)])),
     (err) => finish({ kind: 'error', code: failureCode(err) }),
   );
   const stream = closed.then(() => finish({ kind: 'error', code: 'failed' }));
