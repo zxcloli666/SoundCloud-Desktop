@@ -3,21 +3,30 @@ import type { ReactNode } from 'react';
 export function Block({
   icon,
   title,
+  desc,
   control,
   children,
+  'data-ui': mark,
 }: {
   icon: ReactNode;
   title: ReactNode;
+  desc?: ReactNode;
   control?: ReactNode;
   children?: ReactNode;
+  'data-ui'?: string;
 }) {
   return (
-    <div className="py-4 first:pt-0 last:pb-0">
+    <div data-ui={mark} className="py-4 first:pt-0 last:pb-0">
       <div className="flex items-center gap-3">
         <span className="flex size-8 shrink-0 items-center justify-center rounded-xl border border-ink/[0.06] bg-ink/[0.04] text-ink-55">
           {icon}
         </span>
-        <span className="min-w-0 flex-1 text-[13.5px] font-medium text-ink-80">{title}</span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-[13.5px] font-medium text-ink-80">{title}</span>
+          {desc && (
+            <span className="mt-0.5 block text-[11.5px] leading-snug text-ink-40">{desc}</span>
+          )}
+        </span>
         {control && <span className="flex shrink-0 items-center gap-2">{control}</span>}
       </div>
       {children && <div className="mt-3 pl-11">{children}</div>}

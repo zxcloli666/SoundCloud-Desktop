@@ -6,6 +6,7 @@ import { useVoiceStore } from '../../lib/voice/store';
 import { refreshEngine } from '../../lib/voice/sync';
 import { VOICE_KEYFRAMES } from './keyframes';
 import { ActivationCard } from './settings/ActivationCard';
+import { ChatCard } from './settings/ChatCard';
 import { HeroCard } from './settings/HeroCard';
 import { HistoryCard } from './settings/HistoryCard';
 import { MicrophonesCard } from './settings/MicrophonesCard';
@@ -35,6 +36,7 @@ export function VoiceSettings() {
           <ActivationCard />
           <MicrophonesCard />
           <VoicePickerCard />
+          <ChatCard />
           <SpeakersCard />
           <ModelsCard />
           <HistoryCard canTalk={enabled && ready} />
