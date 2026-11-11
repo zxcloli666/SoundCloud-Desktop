@@ -325,3 +325,18 @@ fn nothing_runs_after_a_first_step_that_names_nothing_found() {
         ("включи абракадабру потом швабракадабру", "none"),
     ]);
 }
+
+#[test]
+fn what_the_speaker_says_they_do_is_not_a_misheard_command() {
+    heard_either_way(&[
+        ("баста я больше в это не играю", "none"),
+        ("я сейчас включу кино", "none"),
+        ("кино я сейчас поставлю", "none"),
+        ("я потом сам включу кино", "none"),
+        ("земфиру играю", "none"),
+        ("продолжу потом", "none"),
+        ("вклчи кино", "play Кино"),
+        ("запусьти кино", "play Кино"),
+        ("паусу", "pause"),
+    ]);
+}

@@ -105,13 +105,20 @@ fn closest(w: &str, subjunctive: bool) -> Option<&'static str> {
     }
     let limit = if len >= 8 { 2 } else { 1 };
     let mut best: Option<(&'static str, usize)> = None;
-    for &target in lexicon::FUZZY_TARGETS {
+    let heard = lexicon::FUZZY_TARGETS
+        .iter()
+        .filter(|target| !own_action(w) || own_action(target));
+    for &target in heard {
         let d = edit_distance(w, target);
         if d <= limit && best.is_none_or(|(_, b)| d < b) {
             best = Some((target, d));
         }
     }
     best.map(|(t, _)| t)
+}
+
+fn own_action(w: &str) -> bool {
+    w.ends_with('у') || w.ends_with('ю')
 }
 
 pub fn edit_distance(a: &str, b: &str) -> usize {
