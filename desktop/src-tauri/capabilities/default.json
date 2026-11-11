@@ -110,6 +110,9 @@
           "path": "$APPDATA/sc-track-sound.json"
         },
         {
+          "path": "$APPDATA/sc-voice.json"
+        },
+        {
           "path": "$APPDATA/star-moments.json"
         },
         {
