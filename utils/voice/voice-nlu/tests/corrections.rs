@@ -248,3 +248,29 @@ fn a_command_taken_back_for_words_that_are_not_understood_is_not_done() {
     assert_eq!(steps("сделай потише ой голова болит"), ["volume_down"]);
     assert_eq!(steps("пауза ой звонят"), ["pause"]);
 }
+
+#[test]
+fn a_turned_down_alternative_gives_way_to_the_one_said_after_it() {
+    let p = one("включи кукушку только не кино а гагариной");
+    assert_eq!(p.intent, Intent::Play);
+    assert!(asks_for(&p, "кукушку гагариной"));
+    assert!(!mentions(&p, "кино"));
+    let p = one("давай земфиру только не хочу а искала");
+    assert!(asks_for(&p, "земфиру искала"));
+    let p = one("включи не кино а сплин");
+    assert!(asks_for(&p, "сплин"));
+    assert!(!mentions(&p, "кино"));
+    assert_eq!(steps("поставь не на паузу а на повтор"), ["repeat_one"]);
+    assert_eq!(steps("я сказал не громче а тише"), ["volume_down"]);
+    assert_eq!(steps("да не выключай а потише сделай"), ["volume_down"]);
+    assert_eq!(
+        steps("ну я же говорю не следующий а предыдущий"),
+        ["previous"]
+    );
+    let p = one("включи лесника а не куклу колдуна");
+    assert!(asks_for(&p, "лесника"));
+    assert_eq!(
+        steps("поставь на паузу и не лайкай а то надоело"),
+        ["pause"]
+    );
+}

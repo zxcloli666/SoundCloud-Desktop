@@ -21,6 +21,21 @@ const TAKES_BACK: &[&[&str]] = &[
 const WAVERS: &[&[&str]] = &[&["хотя"], &["ой"]];
 const LOOSE: &str = "лучше";
 const NO: &str = "нет";
+const NOT: &str = "не";
+const INSTEAD: &str = "а";
+const NOT_INSTEAD: &[&str] = &["не", "нет", "то"];
+const SWAPPED_MAX: usize = 3;
+const SAYING: &[&str] = &[
+    "да",
+    "ну",
+    "я",
+    "же",
+    "сказал",
+    "сказала",
+    "говорю",
+    "говорил",
+    "говорила",
+];
 
 const AT_LEAST: &[&str] = &["хотя", "бы"];
 const RESTART: &str = "давай";
@@ -88,10 +103,13 @@ fn versions(ws: &[String]) -> Option<Vec<Version>> {
     let mut found = false;
     let mut i = 0;
     while i < ws.len() {
-        if let Some(len) = rejected(ws, i) {
+        if let Some(len) = rejected(ws, i, &cur) {
             found = true;
             dropping = true;
             i += len;
+            if cur.words.iter().all(|w| SAYING.contains(&w.as_str())) {
+                cur.words.clear();
+            }
         } else if let Some(mark) = marker(ws, i) {
             found = true;
             dropping = false;
@@ -102,6 +120,9 @@ fn versions(ws: &[String]) -> Option<Vec<Version>> {
             };
             said.push(std::mem::replace(&mut cur, next));
             i = mark.end;
+        } else if dropping && resumes(ws, i) {
+            dropping = false;
+            i += 1;
         } else {
             if !dropping {
                 cur.words.push(ws[i].clone());
@@ -113,9 +134,17 @@ fn versions(ws: &[String]) -> Option<Vec<Version>> {
     found.then_some(said)
 }
 
-fn rejected(ws: &[String], i: usize) -> Option<usize> {
+fn rejected(ws: &[String], i: usize, cur: &Version) -> Option<usize> {
     let negating = NEGATING.iter().find(|m| i > 0 && starts(ws, i, m));
-    negating.map(|m| m.len())
+    let swapped = (i + 2..=i + 1 + SWAPPED_MAX).any(|j| resumes(ws, j));
+    let alone = ws[i] == NOT && !cur.words.is_empty() && swapped;
+    negating.map(|m| m.len()).or(alone.then_some(1))
+}
+
+fn resumes(ws: &[String], i: usize) -> bool {
+    let instead = ws.get(i).is_some_and(|w| w == INSTEAD);
+    let next = ws.get(i + 1).map(String::as_str);
+    instead && next.is_some_and(|w| !NOT_INSTEAD.contains(&w)) && marker(ws, i + 1).is_none()
 }
 
 fn marker(ws: &[String], i: usize) -> Option<Mark> {
@@ -191,15 +220,15 @@ fn merge(said: Vec<Tok>, version: Version) -> Vec<Tok> {
 }
 
 fn after_not(said: &[String]) -> Option<&[String]> {
-    if said.first().map(String::as_str) != Some("не") {
+    if said.first().map(String::as_str) != Some(NOT) {
         return None;
     }
-    let cut = said.iter().position(|w| w == "а")?;
+    let cut = said.iter().position(|w| w == INSTEAD)?;
     Some(&said[cut + 1..])
 }
 
 fn after_rejection<'a>(words: &'a [String], said: &[Tok]) -> Option<&'a [String]> {
-    let denies = words.first().is_some_and(|w| w == "не");
+    let denies = words.first().is_some_and(|w| w == NOT);
     let own_meaning = MERGE_PHRASES.iter().any(|(p, _)| starts(words, 0, p));
     let again = words
         .iter()
