@@ -199,7 +199,7 @@ fn merge(said: Vec<Tok>, version: Version) -> Vec<Tok> {
         return same_command;
     }
     let read = steps::side(&next, "");
-    if matches!(read, Side::Foreign) {
+    if matches!(read, Side::Foreign) && !said.is_empty() {
         return Vec::new();
     }
     if orders(read, &next, &said) {

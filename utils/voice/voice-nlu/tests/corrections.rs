@@ -485,3 +485,23 @@ fn a_corrected_volume_is_read_on_the_scale_of_the_first_one() {
         );
     }
 }
+
+#[test]
+fn a_change_of_mind_with_nothing_said_before_it_takes_nothing_back() {
+    assert_eq!(
+        steps("ой всё надоело это старьё включи кино и больше ничего не трогай"),
+        ["play"]
+    );
+    assert_eq!(steps("ой поставь на паузу и ничего не трогай"), ["pause"]);
+    assert_eq!(
+        steps("хотя включи кино и больше ничего не трогай"),
+        ["play"]
+    );
+    for text in [
+        "ой не трогай",
+        "ой нет не надо",
+        "включи басту хотя нет не надо",
+    ] {
+        assert_eq!(steps(text), ["none"], "{text}");
+    }
+}
