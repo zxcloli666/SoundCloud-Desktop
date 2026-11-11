@@ -143,6 +143,18 @@ pub fn slang(w: &str) -> Option<&'static str> {
     SLANG.iter().find(|(k, _)| *k == w).map(|(_, v)| *v)
 }
 
+pub fn swear(w: &str) -> Option<String> {
+    if let Some((_, plain)) = SWEARS.iter().find(|(k, _)| *k == w) {
+        return Some(plain.to_string());
+    }
+    let (stem, plain) = SWEAR_STEMS.iter().find(|(stem, _)| w.starts_with(stem))?;
+    Some(if plain.is_empty() {
+        String::new()
+    } else {
+        format!("{plain}{}", &w[stem.len()..])
+    })
+}
+
 pub const FUZZY_TARGETS: &[&str] = &[
     "включи",
     "выключи",
