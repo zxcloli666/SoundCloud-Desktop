@@ -1,13 +1,12 @@
-use std::fs;
 use std::path::PathBuf;
 use std::time::Instant;
 
+use crate::choice::{self, Choice};
 use crate::engine::{Engine, Error, Launch, Request, Sink};
 
 pub const RATE: u32 = 24000;
 pub const CPU: &str = "CPU";
 
-const BEST: &str = "best";
 const CHOICE: &str = "device";
 const REAL_TIME: f32 = 1.0;
 
@@ -21,7 +20,7 @@ pub struct Paths {
 #[derive(Default)]
 pub struct Qwen {
     running: Option<(Paths, Engine)>,
-    cpu_only: bool,
+    retried: bool,
     troubles: Vec<String>,
 }
 
@@ -85,8 +84,12 @@ impl Paths {
         self.program.with_file_name(CHOICE)
     }
 
-    fn choose(&self, device: &str) {
-        let _ = fs::write(self.choice(), device);
+    fn chosen(&self) -> Choice {
+        Choice::kept(&self.choice())
+    }
+
+    fn choose(&self, choice: Choice) {
+        choice.keep(&self.choice());
     }
 
     fn launch(&self, device: Option<&str>) -> Launch {
@@ -104,27 +107,27 @@ impl Qwen {
         let Ok(device) = self.device(paths) else {
             return;
         };
-        if device == CPU || paths.choice().exists() {
+        if device == CPU || paths.chosen().settled() {
             return;
         }
         let Some(best) = self.pace(paths, trial, busy) else {
             return;
         };
-        if self.cpu_only {
+        if self.runs_on() != Some(device.as_str()) {
             return;
         }
         if best >= REAL_TIME {
-            return paths.choose(BEST);
+            return paths.choose(Choice::Best);
         }
         self.running = None;
         let Ok(engine) = Engine::start(&paths.launch(Some(CPU))) else {
-            return paths.choose(BEST);
+            return paths.choose(Choice::Best);
         };
         self.running = Some((paths.clone(), engine));
         match self.pace(paths, trial, busy) {
-            Some(cpu) if cpu > best => paths.choose(CPU),
+            Some(cpu) if cpu > best => paths.choose(Choice::Cpu),
             Some(_) => {
-                paths.choose(BEST);
+                paths.choose(Choice::Best);
                 self.running = None;
                 let _ = self.engine(paths);
             }
@@ -150,7 +153,12 @@ impl Qwen {
         let device = self.device(paths)?;
         let why = match self.speak(paths, request, &mut once) {
             Err(Error::Stopped(why)) if device != CPU => why,
-            spoken => return spoken.map_err(|e| e.to_string()),
+            spoken => {
+                if spoken.is_ok() && once.given > 0 {
+                    self.trusted(paths);
+                }
+                return spoken.map_err(|e| e.to_string());
+            }
         };
         once.again();
         let engine = self.cpu_instead(paths, &device, &why)?;
@@ -181,6 +189,10 @@ impl Qwen {
         }
     }
 
+    fn runs_on(&self) -> Option<&str> {
+        self.running.as_ref().map(|(_, engine)| engine.device())
+    }
+
     fn pace(&mut self, paths: &Paths, trial: &Request, busy: &dyn Fn() -> bool) -> Option<f32> {
         let mut timed = Timed {
             busy,
@@ -207,10 +219,12 @@ impl Qwen {
     }
 
     fn start(&mut self, paths: &Paths) -> Result<Engine, String> {
-        let chosen = fs::read_to_string(paths.choice()).unwrap_or_default();
-        if self.cpu_only || chosen == CPU {
+        let chosen = paths.chosen();
+        if chosen.on_cpu(choice::now()) {
+            self.retried = false;
             return on_cpu(paths);
         }
+        self.retried = matches!(chosen, Choice::Stopped { .. });
         match Engine::start(&paths.launch(None)).and_then(at_rate) {
             Ok(engine) => Ok(engine),
             Err(why) => self.cpu_instead(paths, "the default device", &why),
@@ -218,13 +232,22 @@ impl Qwen {
     }
 
     fn cpu_instead(&mut self, paths: &Paths, device: &str, why: &str) -> Result<Engine, String> {
-        self.cpu_only = true;
+        self.retried = false;
         let engine =
             on_cpu(paths).map_err(|cpu| format!("{cpu}\nafter {device} stopped: {why}"))?;
-        paths.choose(CPU);
-        self.troubles
-            .push(format!("speech engine left {device} for the CPU: {why}"));
+        let choice = paths.chosen().stopped(choice::now());
+        paths.choose(choice);
+        let lasts = choice.lasts();
+        self.troubles.push(format!(
+            "speech engine left {device} for the CPU {lasts}: {why}"
+        ));
         Ok(engine)
+    }
+
+    fn trusted(&mut self, paths: &Paths) {
+        if std::mem::take(&mut self.retried) {
+            paths.choose(Choice::Open);
+        }
     }
 }
 

@@ -1,3 +1,4 @@
+mod choice;
 mod engine;
 mod qwen;
 mod wire;
