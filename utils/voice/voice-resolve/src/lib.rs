@@ -13,7 +13,7 @@ pub use entity::{Decision, Entity, Scored};
 pub use score::{Boosts, rank};
 
 use serde::Serialize;
-use voice_nlu::{Intent, Kind, Parsed, parse, parse_name, parse_one};
+use voice_nlu::{Intent, Kind, Names, Parsed, parse, parse_name, parse_one};
 
 #[derive(Debug, Clone, Serialize)]
 pub struct Outcome {
@@ -76,7 +76,7 @@ pub fn matches(
 }
 
 pub fn interpret(text: &str, catalog: &dyn Catalog, boosts: &Boosts, bare: Bare) -> Vec<Outcome> {
-    parse(text)
+    parse(text, &Names::default())
         .into_iter()
         .flat_map(|parsed| interpret_split(parsed, catalog, boosts, bare))
         .collect()

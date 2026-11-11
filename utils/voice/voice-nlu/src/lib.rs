@@ -3,6 +3,7 @@ mod correct;
 mod fold;
 mod intent;
 mod lexicon;
+mod names;
 mod normalize;
 mod numbers;
 mod repair;
@@ -12,6 +13,7 @@ mod types;
 mod variants;
 
 pub use fold::{distance, fold, fold_words, similarity, skeleton, strict_similarity};
+pub use names::Names;
 pub use normalize::{Normalized, Tok, normalize};
 pub use types::{Intent, Kind, Parsed, Reading, Variant};
 pub use variants::lemma;

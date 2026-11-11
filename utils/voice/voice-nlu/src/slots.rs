@@ -35,7 +35,7 @@ fn kind_name_reading(rest: &[Tok]) -> Option<(Option<Kind>, Raw)> {
     Some((hint, split(trim(kept))))
 }
 
-fn kind_of(w: &str) -> Option<Kind> {
+pub(crate) fn kind_of(w: &str) -> Option<Kind> {
     if KIND_TRACK.contains(&w) {
         Some(Kind::Track)
     } else if KIND_TRACK_PLURAL.contains(&w) {

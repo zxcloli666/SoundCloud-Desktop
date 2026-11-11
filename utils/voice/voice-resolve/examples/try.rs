@@ -30,7 +30,7 @@ fn main() {
         let line = serde_json::json!({ "phrase": phrase, "steps": steps });
         println!("{line}");
         if std::env::var("TOP").is_ok() {
-            for p in voice_nlu::parse(phrase) {
+            for p in voice_nlu::parse(phrase, &voice_nlu::Names::default()) {
                 let cands = catalog.candidates(&p.queries, &voice_nlu::Kind::ALL);
                 for r in rank(&p, cands, &boosts).iter().take(3) {
                     eprintln!(

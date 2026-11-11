@@ -1,6 +1,7 @@
 use crate::correct;
 use crate::intent;
 use crate::lexicon::{LONE_VERBS, ON_VERB_FORMS, PLAY_STRONG, PLAY_WEAK};
+use crate::names::Names;
 use crate::normalize::{Tok, normalize};
 use crate::parse_toks;
 use crate::types::{Intent, Parsed};
@@ -21,12 +22,12 @@ struct Link {
     soft: bool,
 }
 
-pub fn parse(text: &str) -> Vec<Parsed> {
+pub fn parse(text: &str, names: &Names) -> Vec<Parsed> {
     let spoken = correction(text);
     let text_in = spoken.as_deref().unwrap_or(text);
     let fixed = correct::resolve(text_in);
     let corrected = fixed.is_some();
-    let toks = fixed.unwrap_or_else(|| normalize(text_in).toks);
+    let toks = names.drop(fixed.unwrap_or_else(|| normalize(text_in).toks));
     let from = usize::from(toks.len() > 2 && toks[0].w == "сначала");
     let toks = &toks[from..];
     let mut whole = parse_toks(text, toks.to_vec()).0;
@@ -54,7 +55,7 @@ pub fn parse(text: &str) -> Vec<Parsed> {
         }
     }
     if corrected && whole.alt.is_empty() {
-        whole.alt = crate::whole_name(&normalize(text_in).toks);
+        whole.alt = crate::whole_name(&names.drop(normalize(text_in).toks));
     }
     whole.split = entity_splits(toks, text);
     if whole.intent == Intent::Play {

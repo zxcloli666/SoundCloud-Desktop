@@ -1,4 +1,4 @@
-use voice_nlu::{Intent, Kind, normalize, parse_one as parse};
+use voice_nlu::{Intent, Kind, Names, normalize, parse_one as parse};
 
 fn words(text: &str) -> String {
     normalize(text).text
@@ -136,7 +136,7 @@ fn lemma_rules_cover_common_case_forms() {
 #[test]
 fn two_part_commands_run_in_order() {
     let names = |t: &str| -> Vec<&'static str> {
-        voice_nlu::parse(t)
+        voice_nlu::parse(t, &Names::default())
             .iter()
             .map(|p| p.intent.name())
             .collect()
@@ -154,7 +154,7 @@ fn two_part_commands_run_in_order() {
 }
 
 fn steps(t: &str) -> Vec<&'static str> {
-    voice_nlu::parse(t)
+    voice_nlu::parse(t, &Names::default())
         .iter()
         .map(|p| p.intent.name())
         .collect()
@@ -164,9 +164,9 @@ fn steps(t: &str) -> Vec<&'static str> {
 fn corrections_keep_the_last_version() {
     assert_eq!(steps("громче нет тише"), ["volume_down"]);
     assert_eq!(steps("следующий ой назад"), ["previous"]);
-    let p = &voice_nlu::parse("громкость на тридцать нет на сорок")[0];
+    let p = &voice_nlu::parse("громкость на тридцать нет на сорок", &Names::default())[0];
     assert_eq!((p.intent, p.number), (Intent::VolumeSet, Some(40)));
-    let p = &voice_nlu::parse("включи басту нет скриптонита")[0];
+    let p = &voice_nlu::parse("включи басту нет скриптонита", &Names::default())[0];
     assert!(p.queries.iter().any(|q| q.text == "скриптонита"));
     assert!(!p.queries.iter().any(|q| q.text.contains("баст")));
 }
@@ -211,7 +211,7 @@ fn loan_slang_and_regional_forms_by_stem() {
 
 #[test]
 fn numbers_fractions_and_signed_seeks() {
-    let one = |t: &str| voice_nlu::parse(t).remove(0);
+    let one = |t: &str| voice_nlu::parse(t, &Names::default()).remove(0);
     assert_eq!(one("громкость на семь из десяти").number, Some(70));
     assert_eq!(one("громкость три").number, Some(30));
     assert_eq!(one("на середину").fraction, Some(0.5));
