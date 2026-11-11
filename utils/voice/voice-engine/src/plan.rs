@@ -45,7 +45,12 @@ impl Core {
         self.plan = None;
         let boosts = Boosts::liked_artists(&self.config.boosts.artists);
         let probe = Probe::new(self.deps.catalog.as_ref());
-        let outcomes = interpret(&text, &probe, &boosts, Bare::Popular);
+        let bare = if self.config.llm {
+            Bare::SureArtist
+        } else {
+            Bare::Popular
+        };
+        let outcomes = interpret(&text, &probe, &boosts, bare);
         if let Some(error) = probe.failure.take() {
             self.fail("network", Some(error));
             self.go_idle();

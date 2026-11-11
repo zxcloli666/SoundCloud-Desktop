@@ -79,6 +79,8 @@ pub struct CommandEvent {
     pub kind_hint: Option<&'static str>,
     pub number: Option<u32>,
     pub decision: Option<DecisionEvent>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub candidates: Vec<EntityEvent>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub remote_id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]

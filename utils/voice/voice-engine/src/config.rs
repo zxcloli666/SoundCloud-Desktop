@@ -133,7 +133,7 @@ impl Default for Config {
             speak: Speak::default(),
             duck: 0.3,
             echo: Echo::Auto,
-            llm: false,
+            llm: true,
             boosts: Boosts::default(),
         }
     }

@@ -27,6 +27,7 @@ pub fn command(outcome: &Outcome, id: String, origin: &Origin) -> CommandEvent {
         kind_hint: parsed.kind_hint.map(|k| k.name()),
         number: parsed.number,
         decision: outcome.decision.as_ref().map(decision),
+        candidates: outcome.candidates.iter().map(EntityEvent::from).collect(),
         remote_id: origin.remote_id.clone(),
         group: None,
         step: None,
