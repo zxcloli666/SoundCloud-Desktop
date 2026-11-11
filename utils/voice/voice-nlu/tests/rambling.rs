@@ -414,3 +414,13 @@ fn having_no_strength_left_is_a_complaint_not_a_correction() {
     assert!(corrected.queries.iter().any(|q| q.text == "пикник"));
     assert!(corrected.queries.iter().all(|q| !q.text.contains("кино")));
 }
+
+#[test]
+fn a_play_request_replaces_the_complaint_before_it() {
+    let text = "ой всё надоело это старьё лоля включи мне пожалуйста макса коржа малый повзрослел и больше ничего не трогай";
+    let said = steps(text);
+    assert_eq!(said.len(), 1);
+    assert_eq!(said[0].intent, Intent::Play);
+    let name = "макс корж малый повзрослел";
+    assert!(said[0].queries.iter().any(|q| q.text == name));
+}

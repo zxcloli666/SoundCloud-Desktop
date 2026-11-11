@@ -289,8 +289,8 @@ fn own_verb(p: &Parsed) -> bool {
 fn collapse(steps: Vec<Parsed>) -> Vec<Parsed> {
     let mut out: Vec<Parsed> = Vec::new();
     for mut p in steps {
-        let halts = |i: Intent| matches!(i, Intent::Stop | Intent::Pause);
-        if p.intent == Intent::Play && out.last().is_some_and(|l| halts(l.intent)) {
+        let replaced = |i: Intent| matches!(i, Intent::Stop | Intent::Pause | Intent::Next);
+        if p.intent == Intent::Play && out.last().is_some_and(|l| replaced(l.intent)) {
             out.pop();
         }
         if let Some(last) = out.last() {
