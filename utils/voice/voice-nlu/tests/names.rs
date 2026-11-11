@@ -81,3 +81,28 @@ fn only_the_names_of_the_active_voice_are_left_out() {
     steps[0].heard.clear();
     assert_eq!(steps, without("привет"));
 }
+
+#[test]
+fn a_name_left_out_is_in_doubt_unless_a_verb_follows_it() {
+    let loli = Names::new(&LOLI);
+    let michael = Names::new(&["Michael"]);
+    let doubt = ["включи кино, лоля", "привет, лоля, как дела?", "лоля"];
+    for text in doubt {
+        assert!(loli.in_doubt(text), "{text}");
+    }
+    for text in ["michael jackson", "play george michael", "thanks michael"] {
+        assert!(michael.in_doubt(text), "{text}");
+    }
+    let sure = [
+        "лоля, включи кино",
+        "лоля, давай следующий",
+        "включи лолю",
+        "привет",
+    ];
+    for text in sure {
+        assert!(!loli.in_doubt(text), "{text}");
+    }
+    for text in ["michael, play queen", "michael, can you play queen"] {
+        assert!(!michael.in_doubt(text), "{text}");
+    }
+}
