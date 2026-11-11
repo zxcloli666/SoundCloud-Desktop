@@ -38,13 +38,13 @@ export async function runTool(
   const tool = tools.find((t) => t.name === name);
   if (!tool) return missed(name, 'unknown_tool', false);
   const read = readArgs(tool.args, raw);
-  if (!read.ok) return missed(name, read.reason, tool.returns);
+  if (!read.ok) return missed(name, read.reason, true);
   const { result, intent, kind, text } = await attempt(tool, read.args, env);
   return {
     name,
     args: read.args,
     result,
-    returns: tool.returns,
+    returns: tool.returns || !result.ok,
     mark: { tool: name, ok: result.ok, intent, kind, text },
   };
 }

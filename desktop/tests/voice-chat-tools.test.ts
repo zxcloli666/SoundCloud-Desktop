@@ -46,6 +46,17 @@ test('only the tools the model must hear back from ask for another round', () =>
   );
 });
 
+test('a failed action always goes back to the model, an unknown tool never does', async () => {
+  const { app, run } = setup(fakePort({ track: null, queue: [] }));
+  assert.equal((await run('lyrics', { open: true })).returns, false);
+  assert.equal((await run('like', { on: true })).returns, true);
+  assert.equal((await run('volume', { mode: 'louder' })).returns, true);
+  app.notes = ['Любит джаз', 'Любит рок'];
+  assert.equal((await run('forget', { note: 'любит' })).returns, true);
+  assert.equal((await run('forget', { note: 'Любит рок' })).returns, false);
+  assert.equal((await run('format_disk')).returns, false);
+});
+
 test('arguments are checked against the schema before a tool runs', () => {
   const schema: ChatTool['args'] = {
     type: 'object',
