@@ -219,6 +219,39 @@ fn ukrainian_and_belarusian_command_words_are_read_as_their_russian_forms() {
 }
 
 #[test]
+fn a_verb_that_takes_a_state_away_turns_it_off() {
+    for (heard, want) in [
+        ("отжми паузу", "resume"),
+        ("отожми паузу", "resume"),
+        ("сними с паузы", "resume"),
+        ("убери паузу", "resume"),
+        ("отмени паузу", "resume"),
+        ("выключи паузу", "resume"),
+        ("сними с повтора", "repeat_off"),
+        ("сними повтор", "repeat_off"),
+        ("выруби повтор", "repeat_off"),
+        ("убери рипит", "repeat_off"),
+        ("отмени повтор", "repeat_off"),
+        ("выруби рандом", "shuffle_off"),
+        ("вырубай перемешивание", "shuffle_off"),
+        ("сними шафл", "shuffle_off"),
+    ] {
+        assert_eq!(steps(heard), [want], "{heard}");
+    }
+    for (heard, want) in [
+        ("поставь на паузу", "pause"),
+        ("поставь на повтор", "repeat_one"),
+        ("поставь на рипит", "repeat_one"),
+        ("включи рандом", "shuffle_on"),
+        ("сними", "none"),
+        ("выруби свет", "none"),
+        ("сними трубку", "none"),
+    ] {
+        assert_eq!(steps(heard), [want], "{heard}");
+    }
+}
+
+#[test]
 fn a_halting_word_said_over_and_over_is_said_once() {
     for (heard, want) in [
         ("стоп стоп стоп всё хватит", "stop"),

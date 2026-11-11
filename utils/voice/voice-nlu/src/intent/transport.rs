@@ -29,8 +29,7 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
     if complaint(c) {
         return Some(Detected::new(Intent::Next, vec![]));
     }
-    if c.has(&["сними", "снимай", "убери"]) && c.has_stem(&["пауз"]) && c.len() <= 4
-    {
+    if c.has(PAUSE_LIFTING) && c.has_stem(&["пауз"]) && c.len() <= 4 {
         return Some(Detected::new(Intent::Resume, vec![]));
     }
     if c.has(STOP_WORDS)

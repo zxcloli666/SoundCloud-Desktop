@@ -273,6 +273,7 @@ pub fn repeat(c: &Ctx) -> Option<Detected> {
             || GENERIC.contains(&w)
             || TRANSPORT_VERBS.contains(&w)
             || REPEAT_FILL.contains(&w)
+            || NEGATE.contains(&w)
             || stem(
                 &["повтор", "повтар", "зацикл", "плейлист", "очеред", "альбом"],
                 w,
@@ -281,17 +282,7 @@ pub fn repeat(c: &Ctx) -> Option<Detected> {
     if !c.w.iter().all(|w| known(w)) {
         return None;
     }
-    let mut off = c.has(&["не", "без", "off"]) || (c.has(&["stop"]) && c.has(&["repeat"]));
-    off |= c.has(&[
-        "выключи",
-        "отключи",
-        "хватит",
-        "прекрати",
-        "убери",
-        "выключить",
-        "отключить",
-    ]);
-    if off {
+    if c.has(NEGATE) {
         return Some(Detected::new(Intent::RepeatOff, vec![]));
     }
     let all = c.has(REPEAT_ALL) || c.has_stem(&["плейлист", "очеред", "альбом"]);
