@@ -15,6 +15,10 @@ fn negated_verb(w: &str) -> bool {
 }
 
 pub fn lyric(toks: &[Tok]) -> bool {
+    chanted(toks) || talk::marching(&Ctx::new(toks))
+}
+
+fn chanted(toks: &[Tok]) -> bool {
     let half = toks.len() / 2;
     if toks.len() >= 4 && toks.len() % 2 == 0 && toks[..half] == toks[half..] {
         return true;

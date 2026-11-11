@@ -5,7 +5,7 @@ use crate::anchor::finite;
 use crate::lexicon::{
     self, AGREEMENT, ASKING, BACKWARD, CLAUSE_SUBJECTS, COMPLAINT, COMPOUNDS, DEMONSTRATIVES, DENY,
     DOWN_WORDS, FORWARD, LISTENERS, MUSIC_STEMS, NEXT_STRONG, OTHERS, OWN, PLAY_STRONG,
-    PREV_STRONG, REMARK_START, RINGS, SWEARS_AMB, TASTE, UP_WORDS, WAS, WHICH,
+    PREV_STRONG, REMARK_START, RINGS, STRIDES, SWEARS_AMB, TASTE, UP_WORDS, WAS, WHICH,
 };
 
 pub fn sentence(c: &Ctx) -> bool {
@@ -18,6 +18,11 @@ pub fn sentence(c: &Ctx) -> bool {
         || thing_made_louder(c)
         || question_with_its_own_verb(c)
         || question_to_a_person(c)
+}
+
+pub fn marching(c: &Ctx) -> bool {
+    let heading = c.has(FORWARD) || c.has(BACKWARD);
+    heading && c.has(STRIDES) && !c.has(PLAY_STRONG)
 }
 
 fn adverb_of_a_clause(c: &Ctx) -> bool {

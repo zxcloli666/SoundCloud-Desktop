@@ -218,6 +218,17 @@ pub const ASKING: &[&str] = &["что", "чего", "куда", "зачем", "�
 
 pub const LISTENERS: &[&str] = &["ты", "вы"];
 
+pub const STRIDES: &[&str] = &[
+    "шаг",
+    "шага",
+    "шагу",
+    "шагов",
+    "шагом",
+    "шаги",
+    "марш",
+    "полный",
+];
+
 pub const SWEARS_AMB: &[&str] = &["нахер", "нахрен", "нафиг", "нафик"];
 
 pub const COMPLAINT: &[&str] = &[

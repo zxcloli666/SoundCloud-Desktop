@@ -209,3 +209,21 @@ fn a_state_phrase_that_goes_on_to_ask_a_person_what_they_do_is_talk() {
         ("скажи что ты умеешь", "help"),
     ]);
 }
+
+#[test]
+fn a_direction_said_with_a_word_of_marching_is_movement_and_voids_the_phrase() {
+    stays_silent(&[
+        "шаг вперёд и два назад",
+        "шаг вперёд",
+        "два шага назад",
+        "сделай шаг назад",
+        "полный вперёд",
+        "ни шагу назад",
+    ]);
+    acts(&[
+        ("вперёд", "next"),
+        ("назад", "previous"),
+        ("вперёд на 10 секунд", "seek_forward"),
+        ("включи песню шаг вперёд", "play"),
+    ]);
+}
