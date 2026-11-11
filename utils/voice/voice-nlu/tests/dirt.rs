@@ -73,11 +73,13 @@ fn a_word_that_only_resembles_a_command_word_is_left_as_heard() {
         "включит",
         "валера",
         "громка",
+        "група крови",
     ] {
         assert_eq!(words(kept), kept, "{kept}");
     }
     assert!(names("включи дабро").contains(&"дабро".to_string()));
     assert!(names("включи том йорк").contains(&"том йорк".to_string()));
+    assert!(names("включи кино група крови").contains(&"кино група крови".to_string()));
     assert_eq!(steps("мы всю дорогу слушали валеру"), ["none"]);
 }
 
