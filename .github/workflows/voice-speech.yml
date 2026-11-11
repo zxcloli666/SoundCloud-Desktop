@@ -52,4 +52,7 @@ jobs:
           SCD_QWEN: ${{ github.workspace }}/models/qwen-engine-${{ matrix.platform }}/scd-qwen
           SCD_QWEN_TALKER: ${{ github.workspace }}/models/qwen-loli/qwen-talker-1.7b-loli-Q4_K_M.gguf
           SCD_QWEN_CODEC: ${{ github.workspace }}/models/qwen-codec/qwen-tokenizer-12hz-Q8_0.gguf
-        run: cargo test -p voice-qwen --test engine -- --nocapture --test-threads 1
+        run: |
+          cargo test -p voice-qwen --test fallback
+          cargo test -p voice-qwen --test engine -- --nocapture --test-threads 1 2>&1 | tee speak.log
+          grep -oE '(starts on|runs on|speech engine left) .*' speak.log >> "$GITHUB_STEP_SUMMARY" || true
