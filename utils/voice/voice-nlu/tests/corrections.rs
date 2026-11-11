@@ -316,6 +316,9 @@ fn a_command_after_a_run_of_no_stands() {
     assert_eq!(steps("не не не"), ["none"]);
     assert_eq!(steps("не-не оставь"), ["none"]);
     assert_eq!(steps("нет не это а следующую"), ["next"]);
+    let p = one("не не кино");
+    assert!(!p.bare);
+    assert_eq!(p.intent, Intent::None);
 }
 
 #[test]
@@ -328,6 +331,10 @@ fn what_to_do_instead_of_a_refused_command_is_done() {
     assert_eq!(steps("не надо паузу просто убавь звук"), ["volume_down"]);
     assert_eq!(steps("не выключай просто так"), ["none"]);
     assert_eq!(steps("да не лайкай ты всё подряд"), ["none"]);
+    assert_eq!(
+        steps("не переключай просто эта песня мне нравится"),
+        ["none"]
+    );
 }
 
 #[test]

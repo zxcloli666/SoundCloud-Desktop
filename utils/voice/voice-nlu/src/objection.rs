@@ -1,5 +1,5 @@
 use crate::intent::{self, Negation};
-use crate::lexicon::LONE_VERBS;
+use crate::lexicon::{LONE_VERBS, REMARK_START};
 use crate::normalize::{normalize, words};
 
 const NOT: &str = "не";
@@ -50,13 +50,16 @@ fn after_a_run_of_no(said: &[String]) -> Option<String> {
     let run = said.iter().take_while(|w| *w == no).count();
     let rest = said[run..].join(" ");
     let negated = || refuses(&format!("{NOT} {rest}"));
-    (run >= 2 && !rest.is_empty() && !negated()).then(|| format!("{NO} {rest}"))
+    (run >= 2 && !rest.is_empty() && !negated()).then(|| format!("{NO} {NO} {rest}"))
 }
 
 fn instead_of_the_refused(said: &[String]) -> Option<String> {
     let just = said.iter().position(|w| w == JUST)?;
     let refused = refuses(&said[..just].join(" "));
-    (refused && just + 1 < said.len()).then(|| said[just..].join(" "))
+    let remark = said[just..]
+        .iter()
+        .any(|w| REMARK_START.contains(&w.as_str()));
+    (refused && !remark && just + 1 < said.len()).then(|| said[just..].join(" "))
 }
 
 fn after_what_was_not_asked(said: &[String]) -> Option<String> {
