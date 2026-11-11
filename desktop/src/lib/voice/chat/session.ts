@@ -13,12 +13,15 @@ import { chatIpc } from './ipc';
 import { addMark, appendSay, openReply } from './live';
 import { currentPage } from './navigator';
 import { pageName } from './pages';
+import { withRest } from './rest';
 import type { ChatStep } from './step';
 import { chatTools, runTool } from './tools';
 import { MAX_ROUNDS, runTurn } from './turn';
 import type { ToolEnv, TurnEnd } from './types';
 
 const REPLY_KEPT = 600;
+
+const send = withRest(chatIpc.chat);
 
 let active: { id: string; abort: AbortController } | null = null;
 
@@ -96,7 +99,7 @@ export async function chatStep(
         tools,
         results,
       }),
-    send: chatIpc.chat,
+    send,
     act: (name, args) => runTool(tools, name, args, env),
     onSay: appendSay,
     onMark: addMark,
