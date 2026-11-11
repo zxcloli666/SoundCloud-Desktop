@@ -1,4 +1,7 @@
-use crate::lexicon::{self, DROP_PHRASES, MERGE_PHRASES, PLAY_STRONG, STOP_WORDS, SWEARS_AMB};
+use crate::lexicon::{
+    self, COMPLAINT, DEMONSTRATIVES, DROP_PHRASES, MERGE_PHRASES, MUSIC_STEMS, PLAY_STRONG,
+    STOP_WORDS, SWEARS_AMB,
+};
 use crate::numbers;
 use crate::repair;
 
@@ -170,9 +173,16 @@ fn apply_phrases(words: Vec<String>) -> Vec<String> {
 }
 
 fn plain(words: Vec<String>) -> Vec<String> {
+    let said_of = words
+        .iter()
+        .any(|w| DEMONSTRATIVES.contains(&w.as_str()) || lexicon::stem(MUSIC_STEMS, w));
     words
         .into_iter()
-        .map(|w| lexicon::swear(&w).unwrap_or(w))
+        .map(|w| match lexicon::swear(&w) {
+            Some(read) if COMPLAINT.contains(&read.as_str()) && !said_of => String::new(),
+            Some(read) => read,
+            None => w,
+        })
         .filter(|w| !w.is_empty())
         .collect()
 }

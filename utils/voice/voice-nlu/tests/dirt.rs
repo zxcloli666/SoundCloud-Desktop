@@ -636,3 +636,21 @@ fn a_random_order_in_any_form_is_shuffle_and_playing_in_order_ends_it() {
         assert_eq!(steps(silent), ["none"], "{silent}");
     }
 }
+
+#[test]
+fn a_swear_that_reads_as_a_complaint_counts_only_when_said_of_this_or_the_music() {
+    for (heard, want) in [
+        ("нахуй эту песню", "next"),
+        ("заебала эта песня", "next"),
+        ("как же заебало это", "next"),
+        ("выключи нахуй", "stop"),
+    ] {
+        assert_eq!(steps(heard), [want], "{heard}");
+    }
+    for silent in ["да ну нахуй", "иди нахуй", "заебала", "заебало уже все"]
+    {
+        assert_eq!(steps(silent), ["none"], "{silent}");
+    }
+    assert_eq!(words("нахуй эту песню"), "нахер эту песню");
+    assert_eq!(words("заебала эта песня"), "надоела эта песня");
+}
