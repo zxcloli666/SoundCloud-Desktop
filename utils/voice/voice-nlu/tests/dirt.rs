@@ -461,3 +461,19 @@ fn an_endearment_in_a_question_to_the_assistant_is_not_part_of_the_question() {
     assert_eq!(steps("включи милая"), ["play"]);
     assert!(names("включи милая").contains(&"милая".to_string()));
 }
+
+#[test]
+fn asking_about_the_melody_is_asking_what_plays() {
+    for heard in [
+        "какая это мелодия играет скажи пожалуйста",
+        "какая мелодия играет",
+        "что за мелодия",
+        "как называется эта мелодия",
+    ] {
+        assert_eq!(steps(heard), ["now_playing"], "{heard}");
+    }
+    for silent in ["красивая мелодия", "мелодия", "мелодия дождя"]
+    {
+        assert_eq!(steps(silent), ["none"], "{silent}");
+    }
+}

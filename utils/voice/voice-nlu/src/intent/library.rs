@@ -346,6 +346,8 @@ const NOW_SET: &[&str] = &[
     "напомни",
     "автор",
     "зовут",
+    "мелодия",
+    "мелодию",
 ];
 
 pub fn now_playing(c: &Ctx) -> Option<Detected> {
@@ -382,6 +384,7 @@ pub fn now_playing(c: &Ctx) -> Option<Detected> {
             "артист",
             "групп",
             "певец",
+            "мелод",
         ]);
     let english = c.has(&["song", "track"]) && c.has(&["this", "is", "playing", "called"]) && what;
     let named = c.has(&["как"]) && c.has_stem(&["называ"]);
