@@ -13,6 +13,7 @@ track\tКак дела\tT-Fest\t3000000\t
 track\tКак дела\tKIZARU\t2800000\t
 track\tСпасибо\tЗемфира\t2200000\t
 track\tЧто нового\tЛСП\t600000\t
+playlist\tДля сна\t\t500000\t
 ";
 
 fn rig(chat: bool) -> Rig {
@@ -112,6 +113,27 @@ fn an_artist_said_alone_plays_at_once_with_the_chat_on_or_off() {
         };
         assert_eq!((command.intent, pick.entity.kind), ("play", "artist"));
         assert!(command.candidates.is_empty());
+    }
+}
+
+#[test]
+fn a_title_said_with_its_artist_plays_at_once_with_the_chat_on_or_off() {
+    let cases = [
+        ("ало макс корж", "track", "Ало"),
+        ("ЛСП - Что нового", "track", "Что нового"),
+        ("плейлист для сна", "playlist", "Для сна"),
+    ];
+    for chat in [true, false] {
+        let rig = rig(chat);
+        for (text, kind, name) in cases {
+            let command = settled(&rig, text);
+            let Some(DecisionEvent::Act { pick }) = &command.decision else {
+                panic!("{text}: expected act, got {:?}", command.decision);
+            };
+            let played = (pick.entity.kind, pick.entity.name.as_str());
+            assert_eq!((command.intent, played), ("play", (kind, name)), "{text}");
+            assert!(command.candidates.is_empty(), "{text}");
+        }
     }
 }
 
