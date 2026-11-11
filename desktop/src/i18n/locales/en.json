@@ -2736,7 +2736,8 @@
     "sync": {
       "free": "Now",
       "freeTime": "hours",
-      "starTime": "~2 min"
+      "starTime": "~2 min",
+      "queued": "Queued"
     },
     "year": {
       "cta": "Year",

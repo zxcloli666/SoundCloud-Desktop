@@ -91,6 +91,7 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="tab"]` | A tab |
 | `[data-ui="chip"]` | Genre and filter chips |
 | `[data-ui="shelf"]` | Horizontal shelf |
+| `[data-ui="sync-wait"]` | Your library is still in the sync queue: placeholders, the queue card, a strip in place of a shelf, the STAR lane. `[data-stage]` is `calm`, `long` or `priority`, `[data-kind]` is `syncing` or `stalled` |
 
 ### Controls
 

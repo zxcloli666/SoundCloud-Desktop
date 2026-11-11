@@ -33,6 +33,7 @@ import {
   updatePlaylistDetails,
 } from './playlist-edits';
 import {fetchRelatedTracks} from './related';
+import {waitAnchor} from './sync-wait';
 import {
   deleteTrack,
   type TrackDetails,
@@ -664,6 +665,12 @@ export function useUserPopularTracks(userUrn: string | undefined) {
     state: syncState,
     errorCode,
     queuedSince: sync?.queuedSince ?? null,
+    waitingSince: waitAnchor(
+      queryKey.join('/'),
+      query.data ? syncState : null,
+      sync?.queuedSince ?? null,
+      Date.now(),
+    ),
     retryAt: query.dataUpdatedAt + (sync?.retryAfterSeconds ?? 0) * 1000,
   };
   return { ...query, tracks: query.data?.tracks ?? EMPTY_TRACKS, syncState, syncInfo };

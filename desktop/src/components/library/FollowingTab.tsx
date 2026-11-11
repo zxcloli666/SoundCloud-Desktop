@@ -56,6 +56,7 @@ export const FollowingTab = React.memo(function FollowingTab({filter}: { filter:
                         kind={notice}
                         info={followingsQuery.syncInfo}
                         ownedByMe
+                        scope="followings"
                         onRetry={() => void followingsQuery.refetch()}
                     />
                 </div>

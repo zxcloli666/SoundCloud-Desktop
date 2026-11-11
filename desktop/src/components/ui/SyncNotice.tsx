@@ -5,7 +5,9 @@ import { askRelogin } from '../../lib/auth-recovery';
 import type { CollectionSyncInfo } from '../../lib/collection-sync';
 import { helpUrl } from '../../lib/help-url';
 import { ExternalLink, Loader2, Lock, RotateCcw } from '../../lib/icons';
-import { SyncStarHint } from '../star-moments/SyncStarHint';
+import { usePremium } from '../../lib/premium-cache';
+import type { WaitScope } from '../sync-wait/scope';
+import { SyncWait } from '../sync-wait/SyncWait';
 import { syncTimeText } from '../sync/useSyncCopy';
 
 export type SyncNoticeKind = 'failed' | 'syncing' | 'stalled' | 'refused';
@@ -47,15 +49,18 @@ export const SyncNotice = React.memo(function SyncNotice({
   text,
   info,
   ownedByMe = false,
+  scope = 'tracks',
   onRetry,
 }: {
   kind: SyncNoticeKind;
   text?: string;
   info?: CollectionSyncInfo;
   ownedByMe?: boolean;
+  scope?: WaitScope;
   onRetry: () => void;
 }) {
   const { t, i18n } = useTranslation();
+  const premium = usePremium();
   const [now, setNow] = useState(Date.now);
   const queuedAt = info?.queuedSince ? Date.parse(info.queuedSince) : Number.NaN;
   const waiting = kind === 'syncing' && !Number.isNaN(queuedAt);
@@ -71,24 +76,34 @@ export const SyncNotice = React.memo(function SyncNotice({
 
   if (kind === 'syncing') {
     const waitedSec = (now - queuedAt) / 1000;
+    const note = waiting
+      ? t('common.syncWaiting', { time: syncTimeText(t, waitedSec) })
+      : (text ?? t(DEFAULT_TEXT.syncing));
+    if (ownedByMe) {
+      return (
+        <SyncWait kind={kind} scope={scope} since={info?.waitingSince ?? Number.NaN} note={note} />
+      );
+    }
     return (
       <div className="flex flex-col items-center gap-3">
         <div className="flex items-center justify-center gap-2 text-[13px] text-ink-30">
           <Loader2 size={14} className="animate-spin" />
-          {waiting
-            ? t('common.syncWaiting', { time: syncTimeText(t, waitedSec) })
-            : (text ?? t(DEFAULT_TEXT.syncing))}
+          {note}
         </div>
-        {ownedByMe && <SyncStarHint />}
       </div>
     );
   }
 
   if (kind === 'stalled') {
+    const note = text ?? t(DEFAULT_TEXT.stalled);
+    if (ownedByMe && !premium) {
+      return (
+        <SyncWait kind={kind} scope={scope} since={info?.waitingSince ?? Number.NaN} note={note} />
+      );
+    }
     return (
       <div className="flex flex-col items-center gap-3 text-center text-[13px] text-ink-30">
-        {text ?? t(DEFAULT_TEXT.stalled)}
-        {ownedByMe && <SyncStarHint />}
+        {note}
         <button
           type="button"
           onClick={() => void openUrl(helpUrl('fix/sync', i18n.language)).catch(() => undefined)}

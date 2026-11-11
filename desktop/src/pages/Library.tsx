@@ -15,7 +15,10 @@ import {SuperlikesRail} from '../components/library/superlikes/SuperlikesRail';
 import {useSoundprint} from '../components/library/useSoundprint';
 import {PlaylistCard} from '../components/music/PlaylistCard';
 import {TrackCard} from '../components/music/TrackCard';
+import type {WaitScope} from '../components/sync-wait/scope';
+import {WaitStrip} from '../components/sync-wait/WaitStrip';
 import {SyncNotice, syncNoticeOf} from '../components/ui/SyncNotice';
+import type {CollectionSyncInfo} from '../lib/collection-sync';
 import {useLikedTracks, useMyFollowings, useMyLikedPlaylists, useMyPlaylists} from '../lib/hooks';
 import {Bookmark, Disc3, Heart, ListMusic, Users} from '../lib/icons';
 import type {LayoutId} from '../lib/layout';
@@ -23,8 +26,25 @@ import {likedTracksCount} from '../lib/likes';
 import {splitReleases} from '../lib/playlist-kind';
 import {armLikesContinuation} from '../lib/queue-continuation';
 import {recapYear} from '../lib/recap-window';
+import {waitKindOf} from '../lib/sync-wait';
 import {useVisibleBlocks} from '../lib/use-layout';
 import {useAuthStore} from '../stores/auth';
+
+type RailId = 'playlists' | 'likedPlaylists' | 'likedAlbums' | 'artists' | 'likes';
+
+const WAIT_RAILS: Record<RailId, {Icon: typeof Heart; title: string; scope: WaitScope}> = {
+  playlists: {Icon: ListMusic, title: 'library.yourPlaylists', scope: 'playlists'},
+  likedPlaylists: {Icon: Bookmark, title: 'library.likedPlaylists', scope: 'playlists'},
+  likedAlbums: {Icon: Disc3, title: 'library.likedAlbums', scope: 'playlists'},
+  artists: {Icon: Users, title: 'library.artists', scope: 'followings'},
+  likes: {Icon: Heart, title: 'library.likedTracks', scope: 'likes'},
+};
+
+interface WaitQuery {
+  items: unknown[];
+  isError: boolean;
+  syncInfo: CollectionSyncInfo;
+}
 
 /** Library "Hub" — a living home base. Your identity up top, then the reason to
  *  come back (fresh drops from who you follow), then a way back into what you
@@ -58,6 +78,25 @@ export const Library = React.memo(() => {
   const libraryEmpty = collections.every((query) => !query.isLoading && query.items.length === 0);
   const noticeQuery = collections.find((query) => syncNoticeOf(query) !== null);
   const notice = noticeQuery ? syncNoticeOf(noticeQuery) : null;
+  const noticeScope: WaitScope =
+    noticeQuery === likesQuery
+      ? 'likes'
+      : noticeQuery === followingsQuery
+        ? 'followings'
+        : 'playlists';
+  const railQueries: Record<RailId, WaitQuery | undefined> = {
+    playlists: playlistsQuery,
+    likedPlaylists: likedPlaylistsQuery,
+    likedAlbums: blocks.includes('likedPlaylists') ? undefined : likedPlaylistsQuery,
+    artists: followingsQuery,
+    likes: likesQuery,
+  };
+  const waitingRails = libraryEmpty
+    ? []
+    : blocks.filter((id): id is RailId => {
+        const query = railQueries[id as RailId];
+        return !!query && query.items.length === 0 && waitKindOf(query) !== null;
+      });
   const retryAll = () => {
     for (const query of collections) void query.refetch();
   };
@@ -169,6 +208,20 @@ export const Library = React.memo(() => {
     superlikes: <SuperlikesRail genre={genre} />,
     dislikes: !genre && <DislikesLink />,
   };
+  waitingRails.forEach((id, index) => {
+    const query = railQueries[id]!;
+    const {Icon, title, scope} = WAIT_RAILS[id];
+    sections[id] = (
+      <WaitStrip
+        kind={waitKindOf(query)!}
+        since={query.syncInfo.waitingSince}
+        scope={scope}
+        icon={<Icon size={16} />}
+        title={t(title)}
+        cta={index === 0}
+      />
+    );
+  });
 
   return (
     <LibraryFrame sound={sound}>
@@ -188,6 +241,7 @@ export const Library = React.memo(() => {
                 kind={notice}
                 info={noticeQuery?.syncInfo}
                 ownedByMe
+                scope={noticeScope}
                 onRetry={retryAll}
               />
             ) : (
