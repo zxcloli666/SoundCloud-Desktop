@@ -440,3 +440,22 @@ fn a_queue_command_with_its_own_verb_after_a_play_command_is_a_step() {
     let p = one("включи кино в очередь");
     assert_eq!(p.intent, Intent::QueueAdd);
 }
+
+#[test]
+fn a_no_said_last_takes_the_command_back() {
+    for text in [
+        "пауза а нет",
+        "следующий ой нет",
+        "пауза хотя нет",
+        "включи кино хотя нет",
+        "включи кино а нет",
+        "сделай громче а нет нет нет",
+        "да да да нет нет",
+    ] {
+        assert_eq!(steps(text), ["none"], "{text}");
+    }
+    let p = one("включи сплин выхода нет");
+    assert!(asks_for(&p, "сплин выхода нет"));
+    let p = one("включи где нас нет");
+    assert!(asks_for(&p, "где нас нет"));
+}

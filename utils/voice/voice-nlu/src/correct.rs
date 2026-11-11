@@ -156,6 +156,8 @@ fn marker(ws: &[String], i: usize) -> Option<Mark> {
         .or(loose.then_some(1))?;
     let end = skip_noise(ws, i + len);
     let firm = takes_back.is_some() || ws[i + len..end].iter().any(|w| w == NO);
+    let closes = i + len == ws.len() && len > 1 && ws[end - 1] == NO;
+    let end = if closes { end - 1 } else { end };
     (end < ws.len()).then_some(Mark { end, firm })
 }
 
@@ -173,6 +175,9 @@ fn merge(said: Vec<Tok>, version: Version) -> Vec<Tok> {
     let next = toks(after_remark(words));
     if next.is_empty() {
         return said;
+    }
+    if next.iter().all(|t| t.w == NO) {
+        return Vec::new();
     }
     if left_as_it_is(&next) {
         let undone = said.is_empty() && next.len() > 1 && next[0].w == LEAVE;
