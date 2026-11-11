@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { VolumeX } from '../../../lib/icons';
 import { useChatLive } from '../../../lib/voice/chat/live';
 import { useVoiceRuntime } from '../../../lib/voice/runtime';
 import { useVoiceStore } from '../../../lib/voice/store';
@@ -41,6 +42,7 @@ export function ChatView({
   phase,
   undo,
   line,
+  voiceLost,
   onUndo,
   onClose,
 }: {
@@ -48,6 +50,7 @@ export function ChatView({
   phase: Phase;
   undo: string | null;
   line: string;
+  voiceLost: boolean;
   onUndo: () => void;
   onClose: () => void;
 }) {
@@ -75,6 +78,12 @@ export function ChatView({
           <ReplyText live={phase === 'live'} />
         )}
         <ChatMarks undo={phase === 'done' ? undo : null} onUndo={onUndo} />
+        {voiceLost && (
+          <span className="mt-1 flex items-center gap-1 text-[11px] text-ink-45">
+            <VolumeX size={11} />
+            {t('voice.error.tts_failed')}
+          </span>
+        )}
       </span>
       <CloseX onClick={onClose} label={busy ? t('voice.hud.hush') : t('common.close')} />
     </span>

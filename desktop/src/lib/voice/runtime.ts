@@ -38,6 +38,7 @@ export type HudView =
       phase: 'live' | 'done' | 'failed';
       undo: string | null;
       line: string;
+      voiceLost: boolean;
     };
 
 export type Availability = 'unknown' | 'ready' | 'missing';

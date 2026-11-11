@@ -70,9 +70,15 @@ export async function chatStep(
   const abort = new AbortController();
   active = { id: cmd.id, abort };
   openReply();
-  useVoiceRuntime
-    .getState()
-    .setHud({ kind: 'chat', id: cmd.id, heard: cmd.heard, phase: 'live', undo: null, line: '' });
+  useVoiceRuntime.getState().setHud({
+    kind: 'chat',
+    id: cmd.id,
+    heard: cmd.heard,
+    phase: 'live',
+    undo: null,
+    line: '',
+    voiceLost: false,
+  });
   const end = await runTurn({
     id: cmd.id,
     speak: voiced(cmd.source) && config.speak.replies,

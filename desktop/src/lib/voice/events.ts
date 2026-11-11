@@ -1,5 +1,6 @@
 import { listen } from '@tauri-apps/api/event';
 import { enqueueCommand } from './executor';
+import { afterError } from './hud';
 import { pushLevel, resetLevels } from './levels';
 import { useVoiceRuntime } from './runtime';
 import type {
@@ -38,7 +39,7 @@ function onState(e: StateEvent) {
 
 function onError(e: ErrorEvent) {
   useVoiceRuntime.setState((s) => ({
-    hud: { kind: 'error', code: e.code },
+    hud: afterError(s.hud, e.code),
     status: s.status ? { ...s.status, error: e } : s.status,
   }));
 }

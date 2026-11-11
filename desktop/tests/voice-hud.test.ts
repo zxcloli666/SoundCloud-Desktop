@@ -1,12 +1,20 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { type DismissPort, dismiss } from '../src/lib/voice/hud.ts';
+import { afterError, type DismissPort, dismiss } from '../src/lib/voice/hud.ts';
 import type { HudView } from '../src/lib/voice/runtime';
 
 type ChatHud = Extract<HudView, { kind: 'chat' }>;
 
 function chatHud(phase: ChatHud['phase']): ChatHud {
-  return { kind: 'chat', id: 'turn-1', heard: 'привет', phase, undo: null, line: '' };
+  return {
+    kind: 'chat',
+    id: 'turn-1',
+    heard: 'привет',
+    phase,
+    undo: null,
+    line: '',
+    voiceLost: false,
+  };
 }
 
 function dismissed(hud: HudView): string[] {
@@ -61,4 +69,28 @@ test('closing a link question declines it and nothing else', () => {
   assert.deepEqual(dismissed({ kind: 'link_confirm', id: 'link-1', provider: 'alice' }), [
     'decline:link-1',
   ]);
+});
+
+test('a speech failure keeps the chat island and marks the voice as lost', () => {
+  for (const phase of ['live', 'done', 'failed'] as const) {
+    assert.deepEqual(afterError(chatHud(phase), 'tts_failed'), {
+      ...chatHud(phase),
+      voiceLost: true,
+    });
+  }
+});
+
+test('other errors, and a speech failure outside a chat, show the error island', () => {
+  assert.deepEqual(afterError(chatHud('live'), 'engine_missing'), {
+    kind: 'error',
+    code: 'engine_missing',
+  });
+  assert.deepEqual(afterError({ kind: 'speaking' }, 'tts_failed'), {
+    kind: 'error',
+    code: 'tts_failed',
+  });
+  assert.deepEqual(afterError({ kind: 'hidden' }, 'mic_denied'), {
+    kind: 'error',
+    code: 'mic_denied',
+  });
 });

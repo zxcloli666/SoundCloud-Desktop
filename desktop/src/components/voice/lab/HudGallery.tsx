@@ -74,6 +74,19 @@ const CARDS: { label: string; hud: HudView }[] = [
       phase: 'done',
       undo: 'lab-volume',
       line: '',
+      voiceLost: false,
+    },
+  },
+  {
+    label: 'chat no voice',
+    hud: {
+      kind: 'chat',
+      id: 'lab-chat-mute',
+      heard: 'включи что-нибудь под настроение',
+      phase: 'done',
+      undo: null,
+      line: '',
+      voiceLost: true,
     },
   },
   {
@@ -85,6 +98,7 @@ const CARDS: { label: string; hud: HudView }[] = [
       phase: 'failed',
       undo: null,
       line: 'Сейчас не могу ответить',
+      voiceLost: false,
     },
   },
   { label: 'not found', hud: { kind: 'not_found', heard: 'поставь абырвалг' } },
