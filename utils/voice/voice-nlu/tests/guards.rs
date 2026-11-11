@@ -70,3 +70,16 @@ fn next_or_previous_said_of_a_thing_that_is_not_music_is_talk() {
         ("прошлый трек", "previous"),
     ]);
 }
+
+#[test]
+fn a_phrase_blocked_as_a_whole_is_not_cut_into_commands() {
+    stays_silent(&[
+        "следующий раз я сама выберу что слушать",
+        "в следующий раз включи что-нибудь повеселее",
+        "следующий раз ставь потише",
+        "дальше сам разберёшься пауза",
+        "следующий пациент следующий",
+    ]);
+    acts(&[("следующий", "next"), ("следующий трек", "next")]);
+    assert_eq!(steps("следующий и погромче"), ["next", "volume_up"]);
+}
