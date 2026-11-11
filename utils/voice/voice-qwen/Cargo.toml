@@ -3,3 +3,9 @@ name = "voice-qwen"
 version.workspace = true
 edition.workspace = true
 publish.workspace = true
+
+[[bin]]
+name = "fake-qwen"
+path = "fake/main.rs"
+test = false
+doc = false

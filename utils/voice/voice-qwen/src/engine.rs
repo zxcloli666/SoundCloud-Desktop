@@ -9,11 +9,13 @@ use std::time::{Duration, Instant};
 
 use crate::wire::{self, Frame};
 
+pub const STALL: Duration = Duration::from_secs(20);
+
 const READY: Duration = Duration::from_secs(120);
-const STALL: Duration = Duration::from_secs(20);
 const POLL: Duration = Duration::from_millis(40);
 const EXIT: Duration = Duration::from_secs(2);
-const LOG_LINES: usize = 20;
+const LAST_WORDS: Duration = Duration::from_secs(1);
+const LOG_LINES: usize = 40;
 
 pub struct Launch {
     pub program: PathBuf,
@@ -33,6 +35,7 @@ pub struct Request<'a> {
 pub trait Sink {
     fn audio(&mut self, samples: Vec<f32>);
     fn wanted(&self) -> bool;
+    fn again(&mut self) {}
 }
 
 #[derive(Debug)]
@@ -57,6 +60,7 @@ pub struct Engine {
     stdin: Option<ChildStdin>,
     frames: Receiver<Frame>,
     log: Log,
+    log_ended: Receiver<()>,
     rate: u32,
     device: String,
     last: u32,
@@ -82,12 +86,13 @@ impl Engine {
             .map_err(|e| format!("speech engine did not start: {e}"))?;
         let stdin = child.stdin.take();
         let frames = read_frames(&mut child);
-        let log = read_log(&mut child);
+        let (log, log_ended) = read_log(&mut child);
         let mut engine = Engine {
             child,
             stdin,
             frames,
             log,
+            log_ended,
             rate: 0,
             device: String::new(),
             last: 0,
@@ -105,7 +110,7 @@ impl Engine {
                 Ok(engine)
             }
             Ok(frame) if frame.kind == wire::FAILED => Err(engine.detail(&frame.payload)),
-            _ => Err(engine.detail(&[])),
+            _ => Err(engine.ended()),
         }
     }
 
@@ -159,10 +164,15 @@ impl Engine {
     }
 
     fn stopped(&mut self) -> Error {
+        Error::Stopped(self.ended())
+    }
+
+    fn ended(&mut self) -> String {
         self.stdin = None;
         let _ = self.child.kill();
         let _ = self.child.wait();
-        Error::Stopped(self.detail(&[]))
+        let _ = self.log_ended.recv_timeout(LAST_WORDS);
+        self.detail(&[])
     }
 
     fn detail(&self, payload: &[u8]) -> String {
@@ -171,7 +181,13 @@ impl Engine {
             return said;
         }
         let log = self.log.lock().unwrap();
-        log.back().cloned().unwrap_or_else(|| "no detail".into())
+        if log.is_empty() {
+            return "no detail".into();
+        }
+        log.iter()
+            .map(String::as_str)
+            .collect::<Vec<_>>()
+            .join("\n")
     }
 }
 
@@ -206,23 +222,31 @@ fn read_frames(child: &mut Child) -> Receiver<Frame> {
     frames
 }
 
-fn read_log(child: &mut Child) -> Log {
+fn read_log(child: &mut Child) -> (Log, Receiver<()>) {
     let log = Log::default();
+    let (ended, log_ended) = channel();
     if let Some(stderr) = child.stderr.take() {
         let lines = log.clone();
         let _ = std::thread::Builder::new()
             .name("voice-qwen-log".into())
             .spawn(move || {
-                for line in BufReader::new(stderr).lines().map_while(Result::ok) {
+                let mut stderr = BufReader::new(stderr);
+                let mut line = Vec::new();
+                while stderr
+                    .read_until(b'\n', &mut line)
+                    .is_ok_and(|read| read > 0)
+                {
                     let mut lines = lines.lock().unwrap();
                     if lines.len() == LOG_LINES {
                         lines.pop_front();
                     }
-                    lines.push_back(line);
+                    lines.push_back(String::from_utf8_lossy(&line).trim_end().to_string());
+                    line.clear();
                 }
+                let _ = ended.send(());
             });
     }
-    log
+    (log, log_ended)
 }
 
 #[cfg(windows)]
