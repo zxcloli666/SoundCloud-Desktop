@@ -1,11 +1,13 @@
 mod alias;
 mod answer;
+mod bare;
 mod catalog;
 mod entity;
 mod keys;
 mod score;
 
 pub use answer::answer_ask;
+pub use bare::Bare;
 pub use catalog::{Catalog, FixtureCatalog};
 pub use entity::{Decision, Entity, Scored};
 pub use score::{Boosts, rank};
@@ -18,6 +20,8 @@ pub struct Outcome {
     pub intent: Intent,
     pub parsed: Parsed,
     pub decision: Option<Decision>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub candidates: Vec<Entity>,
 }
 
 impl Outcome {
@@ -33,11 +37,14 @@ impl Outcome {
 }
 
 pub fn resolve(parsed: &Parsed, catalog: &dyn Catalog, boosts: &Boosts, bare: bool) -> Decision {
+    score::decide(&ranked(parsed, catalog, boosts), bare)
+}
+
+fn ranked(parsed: &Parsed, catalog: &dyn Catalog, boosts: &Boosts) -> Vec<Scored> {
     let mut expanded = parsed.clone();
     expanded.queries = alias::expand(&parsed.queries);
     let cands = catalog.candidates(&expanded.queries, &Kind::ALL);
-    let ranked = rank(&expanded, cands, boosts);
-    score::decide(&ranked, bare)
+    rank(&expanded, cands, boosts)
 }
 
 pub fn named(name: &str) -> Vec<Parsed> {
@@ -68,14 +75,13 @@ pub fn matches(
         .unwrap_or_default()
 }
 
-pub fn interpret(text: &str, catalog: &dyn Catalog, boosts: &Boosts) -> Vec<Outcome> {
+pub fn interpret(text: &str, catalog: &dyn Catalog, boosts: &Boosts, bare: Bare) -> Vec<Outcome> {
     parse(text)
         .into_iter()
-        .flat_map(|parsed| interpret_split(parsed, catalog, boosts))
+        .flat_map(|parsed| interpret_split(parsed, catalog, boosts, bare))
         .collect()
 }
 
-const BARE_POP_MIN: u64 = 20_000;
 const WHOLE_NAME_MIN: f32 = 0.97;
 const SPLIT_PART_MIN: f32 = 0.95;
 
@@ -90,16 +96,21 @@ fn sure(o: &Outcome, min: f32) -> bool {
     }
 }
 
-fn interpret_split(mut parsed: Parsed, catalog: &dyn Catalog, boosts: &Boosts) -> Vec<Outcome> {
+fn interpret_split(
+    mut parsed: Parsed,
+    catalog: &dyn Catalog,
+    boosts: &Boosts,
+    bare: Bare,
+) -> Vec<Outcome> {
     let splits = std::mem::take(&mut parsed.split);
-    let joined = interpret_parsed(parsed, catalog, boosts);
+    let joined = interpret_parsed(parsed, catalog, boosts, bare);
     if splits.is_empty() || sure(&joined, WHOLE_NAME_MIN) {
         return vec![joined];
     }
     for parts in splits {
         let outs: Vec<Outcome> = parts
             .into_iter()
-            .map(|p| interpret_parsed(p, catalog, boosts))
+            .map(|p| interpret_parsed(p, catalog, boosts, bare))
             .collect();
         if outs.iter().all(|o| sure(o, SPLIT_PART_MIN)) {
             return outs;
@@ -108,7 +119,12 @@ fn interpret_split(mut parsed: Parsed, catalog: &dyn Catalog, boosts: &Boosts) -
     vec![joined]
 }
 
-fn whole_name(parsed: &Parsed, catalog: &dyn Catalog, boosts: &Boosts) -> Option<Outcome> {
+fn whole_name(
+    parsed: &Parsed,
+    catalog: &dyn Catalog,
+    boosts: &Boosts,
+    bare: Bare,
+) -> Option<Outcome> {
     if parsed.alt.is_empty() {
         return None;
     }
@@ -123,41 +139,45 @@ fn whole_name(parsed: &Parsed, catalog: &dyn Catalog, boosts: &Boosts) -> Option
     if sim < WHOLE_NAME_MIN {
         return None;
     }
+    if parsed.intent == Intent::None && !bare.trusts(&d) {
+        return None;
+    }
     Some(Outcome {
         intent: Intent::Play,
         parsed: whole,
         decision: Some(d),
+        candidates: Vec::new(),
     })
 }
 
-pub fn interpret_one(text: &str, catalog: &dyn Catalog, boosts: &Boosts) -> Outcome {
-    interpret_parsed(parse_one(text), catalog, boosts)
+pub fn interpret_one(text: &str, catalog: &dyn Catalog, boosts: &Boosts, bare: Bare) -> Outcome {
+    interpret_parsed(parse_one(text), catalog, boosts, bare)
 }
 
-fn interpret_parsed(parsed: Parsed, catalog: &dyn Catalog, boosts: &Boosts) -> Outcome {
-    if let Some(whole) = whole_name(&parsed, catalog, boosts) {
+fn interpret_parsed(parsed: Parsed, catalog: &dyn Catalog, boosts: &Boosts, bare: Bare) -> Outcome {
+    if let Some(whole) = whole_name(&parsed, catalog, boosts, bare) {
         return whole;
     }
     let mut intent = parsed.intent;
     let mut decision = None;
+    let mut candidates = Vec::new();
     if parsed.queries.is_empty() {
         return Outcome {
             intent,
             parsed,
             decision,
+            candidates,
         };
     }
     if intent == Intent::None {
         if parsed.bare {
-            let d = resolve(&parsed, catalog, boosts, true);
-            let popular = match &d {
-                Decision::Act { pick } => pick.entity.popularity >= BARE_POP_MIN,
-                Decision::Ask { first, .. } => first.entity.popularity >= BARE_POP_MIN,
-                Decision::NotFound => false,
-            };
-            if popular {
+            let ranked = ranked(&parsed, catalog, boosts);
+            let d = score::decide(&ranked, true);
+            if bare.plays(&d) {
                 intent = Intent::Play;
                 decision = Some(d);
+            } else {
+                candidates = bare.hands(ranked);
             }
         }
     } else if matches!(
@@ -190,6 +210,7 @@ fn interpret_parsed(parsed: Parsed, catalog: &dyn Catalog, boosts: &Boosts) -> O
         intent,
         parsed,
         decision,
+        candidates,
     }
 }
 
@@ -236,7 +257,8 @@ album\tГруппа крови\tКино\t2000000\t
             interpret_one(
                 "пауза",
                 &FixtureCatalog::from_tsv(ROWS, true),
-                &Boosts::none()
+                &Boosts::none(),
+                Bare::Popular
             )
             .intent,
             Intent::Pause

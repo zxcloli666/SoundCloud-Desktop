@@ -1,5 +1,5 @@
 use std::io::BufRead;
-use voice_resolve::{Boosts, Catalog, FixtureCatalog, interpret, rank};
+use voice_resolve::{Bare, Boosts, Catalog, FixtureCatalog, interpret, rank};
 
 fn main() {
     let path = std::env::var("CATALOG").ok();
@@ -10,6 +10,10 @@ fn main() {
     let aliases = std::env::var("NO_ALIASES").is_err();
     let catalog = FixtureCatalog::from_tsv(&text, aliases);
     let boosts = Boosts::none();
+    let bare = match std::env::var("CHAT") {
+        Ok(_) => Bare::SureArtist,
+        Err(_) => Bare::Popular,
+    };
 
     let args: Vec<String> = std::env::args().skip(1).collect();
     let phrases: Vec<String> = if args.is_empty() {
@@ -22,7 +26,7 @@ fn main() {
         args
     };
     for phrase in phrases.iter().filter(|p| !p.trim().is_empty()) {
-        let steps = interpret(phrase, &catalog, &boosts);
+        let steps = interpret(phrase, &catalog, &boosts, bare);
         let line = serde_json::json!({ "phrase": phrase, "steps": steps });
         println!("{line}");
         if std::env::var("TOP").is_ok() {

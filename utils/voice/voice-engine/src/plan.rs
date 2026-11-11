@@ -1,7 +1,7 @@
 use std::time::Instant;
 
 use voice_nlu::Intent;
-use voice_resolve::{Boosts, Decision, Outcome as Understood, Scored, answer_ask, interpret};
+use voice_resolve::{Bare, Boosts, Decision, Outcome as Understood, Scored, answer_ask, interpret};
 
 use crate::catalog::Probe;
 use crate::event::{Event, Outcome, Source, State};
@@ -45,7 +45,7 @@ impl Core {
         self.plan = None;
         let boosts = Boosts::liked_artists(&self.config.boosts.artists);
         let probe = Probe::new(self.deps.catalog.as_ref());
-        let outcomes = interpret(&text, &probe, &boosts);
+        let outcomes = interpret(&text, &probe, &boosts, Bare::Popular);
         if let Some(error) = probe.failure.take() {
             self.fail("network", Some(error));
             self.go_idle();

@@ -1,5 +1,6 @@
 use std::collections::BTreeMap;
-use voice_resolve::{Boosts, Decision, FixtureCatalog, Outcome, interpret};
+use voice_nlu::{Intent, Kind};
+use voice_resolve::{Bare, Boosts, Decision, FixtureCatalog, Outcome, interpret};
 
 struct Row {
     phrase: String,
@@ -184,11 +185,12 @@ fn run(
     name: &str,
     data: &[Row],
     catalog: &FixtureCatalog,
+    bare: Bare,
 ) -> (BTreeMap<String, Stat>, Vec<String>) {
     let mut stats: BTreeMap<String, Stat> = BTreeMap::new();
     let mut failures = Vec::new();
     for r in data {
-        let os = interpret(&r.phrase, catalog, &Boosts::none());
+        let os = interpret(&r.phrase, catalog, &Boosts::none(), bare);
         let s = stats.entry(r.category.clone()).or_default();
         s.rows += 1;
         let i_ok = intent_ok(r, &os);
@@ -329,7 +331,7 @@ fn targets_with_aliases() {
     let mut bad = Vec::new();
     let mut failures = Vec::new();
     for set in sets() {
-        let (stats, f) = run(set.name, &set.rows, &catalog);
+        let (stats, f) = run(set.name, &set.rows, &catalog, Bare::Popular);
         println!("set {}\n{}", set.name, report(&stats));
         bad.extend(check(set.name, &stats));
         merge(&mut union, &stats);
@@ -349,7 +351,7 @@ fn targets_without_catalog_aliases() {
     let mut union = BTreeMap::new();
     let mut failures = Vec::new();
     for set in sets() {
-        let (stats, f) = run(set.name, &set.rows, &catalog);
+        let (stats, f) = run(set.name, &set.rows, &catalog, Bare::Popular);
         merge(&mut union, &stats);
         failures.extend(f);
     }
@@ -363,4 +365,53 @@ fn targets_without_catalog_aliases() {
     }
     let entity = pct(total.entity_ok, total.entity_rows);
     assert!(entity >= 97.0, "entity {entity:.1}% < 97");
+}
+
+fn named_alone(o: &Outcome) -> bool {
+    o.parsed.intent == Intent::None && o.intent == Intent::Play
+}
+
+fn sure_artist(o: &Outcome) -> bool {
+    matches!(&o.decision, Some(Decision::Act { pick }) if pick.entity.kind == Kind::Artist)
+}
+
+fn understood(os: &[Outcome]) -> Vec<String> {
+    os.iter()
+        .map(|o| format!("{:?} {:?} {:?}", o.intent, o.parsed, o.decision))
+        .collect()
+}
+
+#[test]
+fn leaving_names_said_alone_to_the_listener_changes_nothing_else() {
+    let catalog = FixtureCatalog::from_tsv(include_str!("data/catalog.tsv"), true);
+    let mut union = BTreeMap::new();
+    let mut left = Vec::new();
+    for set in sets() {
+        let (stats, _) = run(set.name, &set.rows, &catalog, Bare::SureArtist);
+        merge(&mut union, &stats);
+        for row in &set.rows {
+            let popular = interpret(&row.phrase, &catalog, &Boosts::none(), Bare::Popular);
+            let artist = interpret(&row.phrase, &catalog, &Boosts::none(), Bare::SureArtist);
+            for o in artist.iter().filter(|o| named_alone(o)) {
+                assert!(sure_artist(o), "{} plays {:?}", row.phrase, o.decision);
+            }
+            for o in &popular {
+                assert!(o.candidates.is_empty(), "{}", row.phrase);
+            }
+            if understood(&popular) == understood(&artist) {
+                continue;
+            }
+            let unsure = |o: &Outcome| named_alone(o) && !sure_artist(o);
+            assert!(popular.iter().any(unsure), "{}", row.phrase);
+            left.push(format!("{} [{}] {:?}", set.name, row.category, row.phrase));
+        }
+    }
+    println!(
+        "names said alone are left to the listener, all sets\n{}",
+        report(&union)
+    );
+    println!("{} phrases are understood differently", left.len());
+    for phrase in &left {
+        println!("{phrase}");
+    }
 }
