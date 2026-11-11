@@ -213,12 +213,20 @@ pub fn content(c: &Ctx) -> Option<Detected> {
         if let Some(w) = c.pos(WAVE_NEEDS_VERB) {
             let mut u = used.clone();
             u.push(w);
+            u.extend(manner(c));
             if entity_tokens(c, &u) == 0 {
                 return Some(Detected::new(Intent::PlayWave, u));
             }
         }
     }
     None
+}
+
+fn manner(c: &Ctx) -> Vec<usize> {
+    (1..c.len())
+        .filter(|&i| WAVE_MANNER.contains(&[c.w[i - 1], c.w[i]]))
+        .flat_map(|i| [i - 1, i])
+        .collect()
 }
 
 fn denied(c: &Ctx, used: &[usize]) -> bool {

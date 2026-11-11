@@ -314,3 +314,27 @@ fn a_halting_word_said_over_and_over_is_said_once() {
         assert_eq!(steps(lyric), ["none"], "{lyric}");
     }
 }
+
+#[test]
+fn a_mood_or_a_manner_after_a_word_for_some_music_is_the_wave() {
+    for heard in [
+        "в ключи что нибудь душевное",
+        "включи душевное",
+        "включи чё нить по кайфу",
+        "поставь что нибудь для души",
+        "включи музыку для души",
+        "братва врубай музон по красоте",
+        "поставь что нибудь под настроение",
+    ] {
+        assert_eq!(steps(heard), ["play_wave"], "{heard}");
+    }
+    for silent in [
+        "расскажи что нибудь душевное",
+        "это было по красоте",
+        "душевное кино",
+    ] {
+        assert_eq!(steps(silent), ["none"], "{silent}");
+    }
+    assert_eq!(steps("включи по красоте"), ["play"]);
+    assert_eq!(steps("включи для души"), ["play"]);
+}
