@@ -248,8 +248,8 @@ pub fn hedges(c: &Ctx) -> Vec<usize> {
 }
 
 fn unhedged<'a>(c: &Ctx<'a>) -> Ctx<'a> {
-    let hedges = hedges(c);
-    let kept = (0..c.len()).filter(|i| !hedges.contains(i));
+    let skipped = hedges(c);
+    let kept = (0..c.len()).filter(|i| !skipped.contains(i));
     Ctx {
         w: kept.map(|i| c.w[i]).collect(),
     }
@@ -279,10 +279,11 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
     let on_time = c.at(0) == "на" && t.found && t.measured && !fwd && !back && !plus && !minus;
     let explicit_dir = back || (fwd && c.at(0) != "дальше");
     let has_dir = explicit_dir || (fwd && t.found);
+    let amount = t.found || t.bare.is_some();
     let from = !back && t.found && since(c);
-    let placed = from || (!back && from_start(c));
+    let placed = from || (!back && amount && from_start(c));
 
-    let triggered = if t.found || t.bare.is_some() {
+    let triggered = if amount {
         seek_verb
             || jump_verb
             || set_verb

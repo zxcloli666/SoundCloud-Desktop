@@ -139,6 +139,7 @@ fn a_time_counted_from_the_start_or_played_from_is_a_position() {
         ("перемотай на 30 секунд", "seek_forward 30"),
         ("назад на 10 секунд", "seek_backward 10"),
         ("перемотай в начало", "seek_to 0"),
+        ("перемотай вперед от начала", "seek_forward 10"),
         ("с минуты на минуту", "none"),
     ] {
         assert_eq!(steps(text), want, "{text}");
