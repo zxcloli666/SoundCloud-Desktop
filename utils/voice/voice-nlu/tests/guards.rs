@@ -561,3 +561,17 @@ fn a_word_of_having_had_enough_is_not_a_noun_after_next() {
     ]);
     stays_silent(&["следующая остановка конечная"]);
 }
+
+#[test]
+fn a_volume_word_with_a_verb_of_making_asks_the_player_even_beside_a_verb_of_speaking() {
+    acts(&[
+        ("не ори сделай потише", "volume_down"),
+        ("не ори сделай тише", "volume_down"),
+        ("сделай потише не ори", "volume_down"),
+    ]);
+    stays_silent(&[
+        "не ори говори тише",
+        "давай говори тише",
+        "говорите потише пожалуйста",
+    ]);
+}

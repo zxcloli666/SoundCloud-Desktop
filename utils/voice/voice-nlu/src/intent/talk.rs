@@ -5,9 +5,9 @@ use crate::anchor::finite;
 use crate::lexicon::{
     self, AGREEMENT, ASKING, BACKWARD, CLAUSE_SUBJECTS, COMPLAINT, COMPOUNDS, DEMONSTRATIVES, DENY,
     DOWN_WORDS, FED_UP, FORWARD, IDLE, INFINITIVE_ENDINGS, INSISTING, LISTENERS, LISTENING_STEMS,
-    MUSIC_STEMS, NEG_STEMS, NEXT_STRONG, OTHERS, OWN, PLAY_STRONG, PREV_STRONG, REMARK_START,
-    RESUME_WORDS, RINGS, ROUGHLY, SPEAKING, STRIDES, SWEARS_AMB, TASTE, THE_PAST, UP_WORDS, WAS,
-    WHICH,
+    MAKING, MUSIC_STEMS, NEG_STEMS, NEXT_STRONG, OTHERS, OWN, PLAY_STRONG, PREV_STRONG,
+    REMARK_START, RESUME_WORDS, RINGS, ROUGHLY, SPEAKING, STRIDES, SWEARS_AMB, TASTE, THE_PAST,
+    UP_WORDS, WAS, WHICH,
 };
 
 pub fn sentence(c: &Ctx) -> bool {
@@ -137,7 +137,8 @@ fn plan_of_the_speaker(c: &Ctx) -> bool {
 }
 
 fn voice_of_a_person(c: &Ctx) -> bool {
-    c.has(SPEAKING) && !c.has(PLAY_STRONG) && c.w.iter().any(|w| volume_word(w))
+    let made = c.has(MAKING);
+    c.has(SPEAKING) && !c.has(PLAY_STRONG) && !made && c.w.iter().any(|w| volume_word(w))
 }
 
 fn carrying_on_with_something_else(c: &Ctx) -> bool {

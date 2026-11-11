@@ -262,6 +262,8 @@ pub const SPEAKING: &[&str] = &[
     "шепчи",
 ];
 
+pub const MAKING: &[&str] = &["сделай", "сделайте", "сделать"];
+
 pub const INFINITIVE_ENDINGS: &[&str] = &["ть", "ться", "чь", "ти"];
 
 pub const INSISTING: &[&str] = &["сказал", "сказала", "говорю", "прошу"];
