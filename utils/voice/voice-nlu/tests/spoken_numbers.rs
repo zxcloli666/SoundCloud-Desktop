@@ -119,3 +119,28 @@ fn two_numbers_after_a_preposition_are_minutes_and_seconds() {
         assert_eq!(steps(name), "play", "{name}");
     }
 }
+
+#[test]
+fn a_time_counted_from_the_start_or_played_from_is_a_position() {
+    for (text, want) in [
+        (
+            "перемотай на две минуты пять секунд от начала",
+            "seek_to 125",
+        ),
+        ("перемотай на 30 секунд с начала", "seek_to 30"),
+        ("промотай на минуту от начала трека", "seek_to 60"),
+        ("перемотай на 30 от начала", "seek_to 30"),
+        ("перемотай на минуту сначала", "seek_to 60"),
+        ("включи с 45 секунды", "seek_to 45"),
+        ("включи с двух минут", "seek_to 120"),
+        ("включи с минуты тридцать", "seek_to 90"),
+        ("играй с 2:30", "seek_to 150"),
+        ("перемотай на две минуты", "seek_forward 120"),
+        ("перемотай на 30 секунд", "seek_forward 30"),
+        ("назад на 10 секунд", "seek_backward 10"),
+        ("перемотай в начало", "seek_to 0"),
+        ("с минуты на минуту", "none"),
+    ] {
+        assert_eq!(steps(text), want, "{text}");
+    }
+}

@@ -59,7 +59,9 @@ fn time(c: &Ctx) -> Time {
             }
         }
         if let Some(per) = unit_secs(w) {
-            let plural = matches!(w, "секунд" | "секунды" | "сек" | "минут" | "минуты" | "мин");
+            let single = i > 0 && matches!(c.w[i - 1], "с" | "со");
+            let plural =
+                !single && matches!(w, "секунд" | "секунды" | "сек" | "минут" | "минуты" | "мин");
             let mut at = i + 1;
             if plural && c.at(at) == "на" {
                 at += 1;
@@ -150,6 +152,26 @@ fn minutes_and_seconds(c: &Ctx, i: usize) -> Option<u32> {
     (led && !counted).then_some(mins * 60 + secs)
 }
 
+fn starts_time(w: &str) -> bool {
+    numbers::is_number(w)
+        || numbers::clock(w).is_some()
+        || unit_secs(w).is_some()
+        || HALF_MINUTE.contains(&w)
+        || ONE_AND_HALF.contains(&w)
+}
+
+fn since(c: &Ctx) -> bool {
+    c.w.windows(2)
+        .any(|p| matches!(p[0], "с" | "со") && starts_time(p[1]))
+}
+
+fn from_start(c: &Ctx) -> bool {
+    let apart =
+        c.w.windows(2)
+            .any(|p| matches!(p[0], "от" | "с") && matches!(p[1], "начала" | "начало"));
+    apart || (c.len() > 1 && c.w.last() == Some(&"сначала"))
+}
+
 fn vocabulary(w: &str) -> bool {
     numbers::is_number(w)
         || numbers::clock(w).is_some()
@@ -195,6 +217,7 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
     let on_time = c.at(0) == "на" && t.found && !fwd && !back && !plus && !minus;
     let explicit_dir = back || (fwd && c.at(0) != "дальше");
     let has_dir = explicit_dir || (fwd && t.found);
+    let placed = !back && (from_start(c) || (t.found && since(c)));
 
     let triggered = if t.found || t.bare.is_some() {
         seek_verb
@@ -204,6 +227,7 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
             || (explicit_dir && t.bare.is_some())
             || ((skip_verb || has_dir || plus || minus) && t.found)
             || (back_verb && t.found)
+            || (placed && t.found && c.has(PLAY_STRONG))
             || on_time
     } else {
         seek_verb && c.len() <= 4
@@ -227,7 +251,7 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
         } else {
             t.bare.unwrap_or(10)
         };
-        let absolute = t.ordinal || jump_verb || set_verb || on_time;
+        let absolute = t.ordinal || jump_verb || set_verb || on_time || placed;
         let intent = if absolute || (t.clock && !has_dir) {
             Intent::SeekTo
         } else if back || back_verb {
