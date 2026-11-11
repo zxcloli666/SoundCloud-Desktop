@@ -1,3 +1,5 @@
+use crate::lexicon::{MIN_UNITS, SEC_UNITS};
+
 #[derive(Clone, Copy)]
 enum Word {
     Unit(u32),
@@ -271,12 +273,53 @@ const ORDINALS: &[(&str, u32)] = &[
     ("шестидесятой", 60),
 ];
 
+const ORDINAL_STEMS: &[(&str, u32)] = &[
+    ("перв", 1),
+    ("втор", 2),
+    ("четверт", 4),
+    ("пят", 5),
+    ("шест", 6),
+    ("седьм", 7),
+    ("восьм", 8),
+    ("девят", 9),
+    ("десят", 10),
+    ("одиннадцат", 11),
+    ("двенадцат", 12),
+    ("тринадцат", 13),
+    ("четырнадцат", 14),
+    ("пятнадцат", 15),
+    ("шестнадцат", 16),
+    ("семнадцат", 17),
+    ("восемнадцат", 18),
+    ("девятнадцат", 19),
+    ("двадцат", 20),
+    ("тридцат", 30),
+    ("сороков", 40),
+    ("пятидесят", 50),
+    ("шестидесят", 60),
+    ("семидесят", 70),
+    ("восьмидесят", 80),
+    ("девяност", 90),
+    ("сот", 100),
+];
+
+const ORDINAL_ENDINGS: &[&str] = &["ую", "ой"];
+
+const WRITTEN_ORDINAL_ENDINGS: &[&str] = &["й", "ю", "ую"];
+
 pub fn colloquial(words: Vec<String>) -> Vec<String> {
     let mut out: Vec<String> = Vec::new();
     let mut i = 0;
     while i < words.len() {
         let w = words[i].as_str();
         let next = words.get(i + 1).map(String::as_str).unwrap_or("");
+        let after = words.get(i + 2).map(String::as_str).unwrap_or("");
+        if is_number(w) && WRITTEN_ORDINAL_ENDINGS.contains(&next) && time_unit(after) {
+            out.push(words[i].clone());
+            out.push("ордин".into());
+            i += 2;
+            continue;
+        }
         match (w, next) {
             ("три", "четверти") => {
                 out.push("75".into());
@@ -297,7 +340,7 @@ pub fn colloquial(words: Vec<String>) -> Vec<String> {
             if matches!(w, "четверть" | "треть") {
                 out.push("доля".into());
             }
-        } else if let Some((_, v)) = ORDINALS.iter().find(|(k, _)| *k == w) {
+        } else if let Some(v) = ordinal(w, next) {
             out.push(v.to_string());
             out.push("ордин".into());
         } else {
@@ -306,6 +349,26 @@ pub fn colloquial(words: Vec<String>) -> Vec<String> {
         i += 1;
     }
     out
+}
+
+fn ordinal(w: &str, next: &str) -> Option<u32> {
+    let listed = ORDINALS.iter().find(|(k, _)| *k == w).map(|(_, v)| *v);
+    listed.or_else(|| counting(w).filter(|_| time_unit(next)))
+}
+
+fn counting(w: &str) -> Option<u32> {
+    let said = |stem: &str| {
+        w.strip_prefix(stem)
+            .is_some_and(|end| ORDINAL_ENDINGS.contains(&end))
+    };
+    ORDINAL_STEMS
+        .iter()
+        .find(|(stem, _)| said(stem))
+        .map(|(_, v)| *v)
+}
+
+fn time_unit(w: &str) -> bool {
+    SEC_UNITS.contains(&w) || MIN_UNITS.contains(&w)
 }
 
 pub fn out_of_ten(words: Vec<String>) -> Vec<String> {

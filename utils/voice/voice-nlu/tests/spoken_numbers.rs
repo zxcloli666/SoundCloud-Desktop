@@ -51,3 +51,23 @@ fn a_number_said_in_words_and_finished_in_digits_is_one_number() {
         assert_eq!(kept, 2, "{apart}");
     }
 }
+
+#[test]
+fn an_ordinal_before_a_time_unit_is_that_second_or_minute() {
+    for (text, want) in [
+        ("включи с сорок пятой секунды", "seek_to 45"),
+        ("перемотай на сорок седьмую секунду", "seek_to 47"),
+        ("перейди на двадцать первую секунду", "seek_to 21"),
+        ("включи с пятнадцатой секунды", "seek_to 15"),
+        ("поставь на сто двадцатую секунду", "seek_to 120"),
+        ("перемотай на четвертую минуту", "seek_to 240"),
+        ("включи с 45-й секунды", "seek_to 45"),
+        ("перемотай на 30-ю секунду", "seek_to 30"),
+    ] {
+        assert_eq!(steps(text), want, "{text}");
+    }
+    for name in ["шестой лесничий", "седьмой лепесток", "восьмую милю"]
+    {
+        assert_eq!(words(name), name);
+    }
+}
