@@ -1,8 +1,8 @@
 {
   "voice": {
     "category": "Ses",
-    "assistant": "Lolya",
-    "wakeWord": "Lolya",
+    "assistant": "Loli",
+    "wakeWord": "Loli",
     "quote": "“{{text}}”",
     "mic": {
       "talk": "Konuş"
@@ -90,7 +90,7 @@
       "headsetWorks": "Çalışıyor",
       "again": "Tekrar",
       "wake": "“{{phrase}}” deyin",
-      "needsEcho": "Yankı giderme olmadan müzik Lolya'yı uyandırır",
+      "needsEcho": "Yankı giderme olmadan müzik Loli'yi uyandırır",
       "echoOn": "Aç",
       "rarer": "Daha az",
       "oftener": "Daha kolay",
@@ -102,8 +102,8 @@
       "open": "Sesimi öğret",
       "retrain": "Yeniden öğret",
       "taught": "Sesinizi tanıyor",
-      "prompt": "Beş kez “Lolya” deyin",
-      "speak": "“Lolya” deyin",
+      "prompt": "Beş kez “Loli” deyin",
+      "speak": "“Loli” deyin",
       "saving": "Kaydediliyor",
       "done": "Sesiniz kaydedildi",
       "failed": "Olmadı",
@@ -149,7 +149,7 @@
     },
     "voices": {
       "lolya": {
-        "name": "Lolya"
+        "name": "Loli"
       },
       "moriarty": {
         "name": "Moriarty"
@@ -179,8 +179,8 @@
       "linked_other": "{{count}} bağlı",
       "justLinked": "Bağlandı",
       "how": {
-        "alice": "“Alice, Lolya becerisini başlat” deyin ve kodu girin",
-        "salut": "“Salut, Lolya'yı başlat” deyin ve kodu söyleyin"
+        "alice": "“Alice, Loli becerisini başlat” deyin ve kodu girin",
+        "salut": "“Salut, Loli'yi başlat” deyin ve kodu söyleyin"
       },
       "copy": "Kopyala",
       "copied": "Kopyalandı",
@@ -242,13 +242,13 @@
     "locked": {
       "badge": "STAR",
       "title": "Sesi dinleyen müzik",
-      "sub": "Lolya tek cümleyle çalar, geçer ve beğenir",
+      "sub": "Loli tek cümleyle çalar, geçer ve beğenir",
       "example": {
         "play": "Billie Eilish çal",
         "volume": "Ses 50",
         "like": "Beğen"
       },
-      "listen": "Lolya'yı dinle",
+      "listen": "Loli'yi dinle",
       "voices": "Sesler"
     },
     "units": {

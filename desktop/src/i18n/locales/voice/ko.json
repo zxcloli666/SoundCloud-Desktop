@@ -1,8 +1,8 @@
 {
   "voice": {
     "category": "음성",
-    "assistant": "롤랴",
-    "wakeWord": "롤랴",
+    "assistant": "롤리",
+    "wakeWord": "롤리",
     "quote": "“{{text}}”",
     "mic": {
       "talk": "말하기"
@@ -88,7 +88,7 @@
       "headsetWorks": "작동함",
       "again": "다시",
       "wake": "“{{phrase}}”라고 말하기",
-      "needsEcho": "에코 제거 없이는 음악이 롤랴를 깨웁니다",
+      "needsEcho": "에코 제거 없이는 음악이 롤리를 깨웁니다",
       "echoOn": "켜기",
       "rarer": "덜 자주",
       "oftener": "더 쉽게",
@@ -99,8 +99,8 @@
       "open": "내 목소리 학습",
       "retrain": "다시 학습",
       "taught": "목소리를 알아요",
-      "prompt": "“롤랴”를 다섯 번 말하세요",
-      "speak": "“롤랴”라고 말하세요",
+      "prompt": "“롤리”를 다섯 번 말하세요",
+      "speak": "“롤리”라고 말하세요",
       "saving": "저장 중",
       "done": "목소리를 기억했어요",
       "failed": "실패",
@@ -146,7 +146,7 @@
     },
     "voices": {
       "lolya": {
-        "name": "롤랴"
+        "name": "롤리"
       },
       "moriarty": {
         "name": "모리아티"
@@ -175,8 +175,8 @@
       "linked_other": "{{count}}개 연결됨",
       "justLinked": "연결됨",
       "how": {
-        "alice": "“알리사, 롤랴 스킬 실행”이라고 말하고 코드를 입력하세요",
-        "salut": "“살류트, 롤랴 실행”이라고 말하고 코드를 말하세요"
+        "alice": "“알리사, 롤리 스킬 실행”이라고 말하고 코드를 입력하세요",
+        "salut": "“살류트, 롤리 실행”이라고 말하고 코드를 말하세요"
       },
       "copy": "복사",
       "copied": "복사됨",
@@ -237,13 +237,13 @@
     "locked": {
       "badge": "STAR",
       "title": "목소리를 듣는 음악",
-      "sub": "롤랴가 한마디로 재생, 넘기기, 좋아요까지",
+      "sub": "롤리가 한마디로 재생, 넘기기, 좋아요까지",
       "example": {
         "play": "빌리 아일리시 틀어줘",
         "volume": "볼륨 50",
         "like": "좋아요"
       },
-      "listen": "롤랴 듣기",
+      "listen": "롤리 듣기",
       "voices": "목소리"
     },
     "units": {

@@ -1,8 +1,8 @@
 {
   "voice": {
     "category": "Voz",
-    "assistant": "Lolya",
-    "wakeWord": "Lolya",
+    "assistant": "Loli",
+    "wakeWord": "Loli",
     "quote": "“{{text}}”",
     "mic": {
       "talk": "Falar"
@@ -90,7 +90,7 @@
       "headsetWorks": "Funciona",
       "again": "De novo",
       "wake": "Diga “{{phrase}}”",
-      "needsEcho": "Sem cancelamento de eco a música acorda a Lolya",
+      "needsEcho": "Sem cancelamento de eco a música acorda a Loli",
       "echoOn": "Ligar",
       "rarer": "Menos",
       "oftener": "Mais fácil",
@@ -105,8 +105,8 @@
       "open": "Ensinar minha voz",
       "retrain": "Reensinar",
       "taught": "Conhece sua voz",
-      "prompt": "Diga “Lolya” cinco vezes",
-      "speak": "Diga “Lolya”",
+      "prompt": "Diga “Loli” cinco vezes",
+      "speak": "Diga “Loli”",
       "saving": "Salvando",
       "done": "Sua voz foi salva",
       "failed": "Não deu certo",
@@ -152,7 +152,7 @@
     },
     "voices": {
       "lolya": {
-        "name": "Lolya"
+        "name": "Loli"
       },
       "moriarty": {
         "name": "Moriarty"
@@ -182,8 +182,8 @@
       "linked_other": "{{count}} conectadas",
       "justLinked": "Conectada",
       "how": {
-        "alice": "Diga “Alice, abra a skill Lolya” e digite o código",
-        "salut": "Diga “Salut, abra a Lolya” e fale o código"
+        "alice": "Diga “Alice, abra a skill Loli” e digite o código",
+        "salut": "Diga “Salut, abra a Loli” e fale o código"
       },
       "copy": "Copiar",
       "copied": "Copiado",
@@ -247,13 +247,13 @@
     "locked": {
       "badge": "STAR",
       "title": "Música que escuta você",
-      "sub": "A Lolya toca, pula e curte com uma frase",
+      "sub": "A Loli toca, pula e curte com uma frase",
       "example": {
         "play": "Toque Billie Eilish",
         "volume": "Volume 50",
         "like": "Curtir"
       },
-      "listen": "Ouvir a Lolya",
+      "listen": "Ouvir a Loli",
       "voices": "Vozes"
     },
     "units": {

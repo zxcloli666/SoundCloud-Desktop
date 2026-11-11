@@ -1,8 +1,8 @@
 {
   "voice": {
     "category": "Voice",
-    "assistant": "Lolya",
-    "wakeWord": "Lolya",
+    "assistant": "Loli",
+    "wakeWord": "Loli",
     "quote": "“{{text}}”",
     "mic": {
       "talk": "Talk"
@@ -90,7 +90,7 @@
       "headsetWorks": "Works",
       "again": "Again",
       "wake": "Say “{{phrase}}”",
-      "needsEcho": "Without echo cancellation music will wake Lolya",
+      "needsEcho": "Without echo cancellation music will wake Loli",
       "echoOn": "Turn on",
       "rarer": "Rarer",
       "oftener": "Easier",
@@ -102,8 +102,8 @@
       "open": "Teach my voice",
       "retrain": "Retrain",
       "taught": "Knows your voice",
-      "prompt": "Say “Lolya” five times",
-      "speak": "Say “Lolya”",
+      "prompt": "Say “Loli” five times",
+      "speak": "Say “Loli”",
       "saving": "Saving",
       "done": "Got your voice",
       "failed": "Didn't work",
@@ -149,7 +149,7 @@
     },
     "voices": {
       "lolya": {
-        "name": "Lolya"
+        "name": "Loli"
       },
       "moriarty": {
         "name": "Moriarty"
@@ -179,8 +179,8 @@
       "linked_other": "{{count}} connected",
       "justLinked": "Connected",
       "how": {
-        "alice": "Say “Alice, launch the Lolya skill” and enter the code",
-        "salut": "Say “Salut, launch Lolya” and read the code"
+        "alice": "Say “Alice, launch the Loli skill” and enter the code",
+        "salut": "Say “Salut, launch Loli” and read the code"
       },
       "copy": "Copy",
       "copied": "Copied",
@@ -242,13 +242,13 @@
     "locked": {
       "badge": "STAR",
       "title": "Music that listens",
-      "sub": "Lolya plays, skips and likes from one phrase",
+      "sub": "Loli plays, skips and likes from one phrase",
       "example": {
         "play": "Play Billie Eilish",
         "volume": "Volume 50",
         "like": "Like it"
       },
-      "listen": "Hear Lolya",
+      "listen": "Hear Loli",
       "voices": "Voices"
     },
     "units": {
