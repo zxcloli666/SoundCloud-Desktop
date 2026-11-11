@@ -229,3 +229,17 @@ fn a_refusal_in_the_new_version_takes_the_command_back() {
         assert_eq!(steps(text), ["none"], "{text}");
     }
 }
+
+#[test]
+fn a_command_taken_back_for_words_that_are_not_understood_is_not_done() {
+    for text in [
+        "поставь на паузу нет ну его",
+        "следующий то есть этот самый",
+        "выключи звук нет фигня какая то",
+        "перемешай хотя нет пусть по порядку идет",
+    ] {
+        assert_eq!(steps(text), ["none"], "{text}");
+    }
+    assert_eq!(steps("сделай потише ой голова болит"), ["volume_down"]);
+    assert_eq!(steps("пауза ой звонят"), ["pause"]);
+}

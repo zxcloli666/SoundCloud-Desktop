@@ -5,7 +5,7 @@ use crate::numbers;
 use crate::reworded;
 use crate::steps::{self, Side};
 
-const REPLACE: &[&[&str]] = &[
+const TAKES_BACK: &[&[&str]] = &[
     &["или", "нет"],
     &["а", "нет"],
     &["ой", "нет"],
@@ -14,11 +14,12 @@ const REPLACE: &[&[&str]] = &[
     &["тьфу", "ты"],
     &["вернее"],
     &["точнее"],
-    &["хотя"],
     &["тьфу"],
-    &["ой"],
     &["нет"],
 ];
+const WAVERS: &[&[&str]] = &[&["хотя"], &["ой"]];
+const LOOSE: &str = "лучше";
+const NO: &str = "нет";
 
 const AT_LEAST: &[&str] = &["хотя", "бы"];
 const RESTART: &str = "давай";
@@ -66,6 +67,12 @@ fn toks(ws: &[String]) -> Vec<Tok> {
 struct Version {
     words: Vec<String>,
     marked: bool,
+    firm: bool,
+}
+
+struct Mark {
+    end: usize,
+    firm: bool,
 }
 
 pub fn resolve(text: &str) -> Option<Vec<Tok>> {
@@ -84,15 +91,16 @@ fn versions(ws: &[String]) -> Option<Vec<Version>> {
             found = true;
             dropping = true;
             i += len;
-        } else if let Some(end) = marker(ws, i) {
+        } else if let Some(mark) = marker(ws, i) {
             found = true;
             dropping = false;
             let next = Version {
                 words: Vec::new(),
                 marked: true,
+                firm: mark.firm,
             };
             said.push(std::mem::replace(&mut cur, next));
-            i = end;
+            i = mark.end;
         } else {
             if !dropping {
                 cur.words.push(ws[i].clone());
@@ -109,15 +117,19 @@ fn rejected(ws: &[String], i: usize) -> Option<usize> {
     negating.map(|m| m.len())
 }
 
-fn marker(ws: &[String], i: usize) -> Option<usize> {
-    let loose = ws[i] == "лучше" && i >= 2 && i + 1 < ws.len();
-    let len = REPLACE
+fn marker(ws: &[String], i: usize) -> Option<Mark> {
+    let takes_back = TAKES_BACK.iter().find(|m| starts(ws, i, m));
+    let wavers = WAVERS
         .iter()
-        .find(|m| starts(ws, i, m) && !starts(ws, i, AT_LEAST))
+        .find(|m| starts(ws, i, m) && !starts(ws, i, AT_LEAST));
+    let loose = ws[i] == LOOSE && i >= 2 && i + 1 < ws.len();
+    let len = takes_back
+        .or(wavers)
         .map(|m| m.len())
         .or(loose.then_some(1))?;
     let end = skip_noise(ws, i + len);
-    (end < ws.len()).then_some(end)
+    let firm = takes_back.is_some() || ws[i + len..end].iter().any(|w| w == NO);
+    (end < ws.len()).then_some(Mark { end, firm })
 }
 
 fn merge(said: Vec<Tok>, version: Version) -> Vec<Tok> {
@@ -162,6 +174,9 @@ fn merge(said: Vec<Tok>, version: Version) -> Vec<Tok> {
         return out;
     }
     let before = intent::detect(&said);
+    if version.firm && before.intent.is_control() {
+        return Vec::new();
+    }
     let mut head: Vec<Tok> = before
         .used
         .iter()
