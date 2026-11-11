@@ -66,7 +66,9 @@ pub fn forced(c: &Ctx) -> bool {
     let after: Vec<&str> = c.w[k + 1..]
         .iter()
         .copied()
-        .filter(|w| !PRE.contains(w) || matches!(*w, "брат" | "братан" | "бро"))
+        .filter(|w| {
+            !PRE.contains(w) && !GREETINGS.contains(w) || matches!(*w, "брат" | "братан" | "бро")
+        })
         .collect();
     if after.is_empty() {
         return false;
@@ -111,6 +113,7 @@ fn entity_tokens(c: &Ctx, used: &[usize]) -> usize {
             let w = c.w[i];
             let weak_after = WEAK_ENTITY.contains(&w) && i > 0;
             (weak_after || !PRE.contains(&w))
+                && !GREETINGS.contains(&w)
                 && !GENERIC.contains(&w)
                 && !is_kind(w)
                 && !WAVE_NEEDS_VERB.contains(&w)

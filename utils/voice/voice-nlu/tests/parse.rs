@@ -74,6 +74,19 @@ fn a_greeting_after_a_play_verb_is_kept_as_a_name() {
 }
 
 #[test]
+fn every_greeting_after_a_play_verb_is_kept_as_a_name() {
+    for greeting in ["привет", "hi", "hello", "thanks"] {
+        let said = ["включи", "play", "поставь песню"].map(|verb| format!("{verb} {greeting}"));
+        for text in said {
+            let p = parse(&text);
+            assert_eq!(p.intent, Intent::Resume, "{text}");
+            assert!(!p.alt.is_empty(), "{text}");
+            assert!(p.alt.iter().all(|name| name.text == greeting), "{text}");
+        }
+    }
+}
+
+#[test]
 fn a_greeting_after_a_play_verb_and_a_kind_is_kept_as_a_name() {
     for text in ["включи песню привет", "поставь трек привет"] {
         let p = parse(text);
@@ -87,7 +100,7 @@ fn a_greeting_after_a_play_verb_and_a_kind_is_kept_as_a_name() {
 
 #[test]
 fn a_greeting_said_alone_is_not_a_name_to_look_up() {
-    for text in ["привет", "hi", "hello", "Hello!"] {
+    for text in ["привет", "hi", "hello", "Hello!", "thanks"] {
         let p = parse(text);
         assert_eq!(p.intent, Intent::None, "{text}");
         assert!(p.queries.is_empty(), "{text}");

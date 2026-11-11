@@ -225,6 +225,31 @@ fn a_greeting_after_a_play_verb_plays_the_title_it_names_either_way() {
 }
 
 #[test]
+fn every_greeting_after_a_play_verb_plays_its_title_or_resumes_either_way() {
+    let titles = "kind\tname\tartist\tpopularity\taliases
+track\tПривет\tZivert\t4000000\t
+track\tHi\tTexas\t300000\t
+track\tHello\tAdele\t90000000\t
+track\tThanks\tJunk\t200000\t
+";
+    let nameless = "kind\tname\tartist\tpopularity\taliases\ntrack\tАло\tМакс Корж\t1500000\t\n";
+    let played = [
+        ("привет", "Zivert - Привет"),
+        ("hi", "Texas - Hi"),
+        ("hello", "Adele - Hello"),
+        ("thanks", "Junk - Thanks"),
+    ];
+    for bare in BOTH {
+        for (greeting, title) in played {
+            let text = format!("включи {greeting}");
+            let outcome = heard_in(titles, &text, bare);
+            assert_eq!(told(&outcome), format!("play act {title}"), "{text}");
+            assert_eq!(told(&heard_in(nameless, &text, bare)), "resume", "{text}");
+        }
+    }
+}
+
+#[test]
 fn nothing_found_hands_over_nothing() {
     assert!(handed("абракадабра").is_empty());
 }
