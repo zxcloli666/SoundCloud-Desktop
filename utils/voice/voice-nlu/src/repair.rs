@@ -17,6 +17,7 @@ pub fn context(words: Vec<String>) -> Vec<String> {
         let loud = next.starts_with("громк") || next.starts_with("звук");
         let wish = |back: usize| i >= back && WISH.contains(&words[i - back].as_str());
         let after_wish = wish(1) || wish(2);
+        let asked = !WISH.contains(&words[0].as_str());
         let to = match words[i].as_str() {
             "накинь" | "подкинь" | "подкрути" | "добавь" if loud => {
                 "прибавь"
@@ -24,7 +25,7 @@ pub fn context(words: Vec<String>) -> Vec<String> {
             "скинь" | "сбрось" | "скрути" | "прикрути" if loud => "убавь",
             "включила" | "включил" if after_wish => "включи",
             "поставила" | "поставил" if after_wish => "поставь",
-            "играло" | "играла" | "заиграло" | "заиграла" if after_wish => {
+            "играло" | "играла" | "заиграло" | "заиграла" if after_wish && asked => {
                 "играй"
             }
             "ван" if i > 0 && words[i - 1] == "репит" => "one",
