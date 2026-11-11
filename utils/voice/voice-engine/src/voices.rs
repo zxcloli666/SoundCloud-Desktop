@@ -59,6 +59,12 @@ pub fn find(id: &str) -> &'static Voice {
     VOICES.iter().find(|v| v.id == id).unwrap_or(&VOICES[0])
 }
 
+impl Voice {
+    pub fn streams(&self) -> bool {
+        matches!(self.kind, Kind::Qwen { .. })
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -23,6 +23,8 @@ const SHORTENED: [&str; 12] = [
 pub struct Splitter {
     pending: Vec<char>,
     opening: bool,
+    least: usize,
+    held: String,
 }
 
 enum Dot {
@@ -31,16 +33,16 @@ enum Dot {
     EndsBeforeCapital,
 }
 
-impl Default for Splitter {
-    fn default() -> Self {
-        Self {
+impl Splitter {
+    pub fn new(least: usize) -> Splitter {
+        Splitter {
             pending: Vec::new(),
             opening: true,
+            least,
+            held: String::new(),
         }
     }
-}
 
-impl Splitter {
     pub fn push(&mut self, text: &str) -> Vec<String> {
         let spoken = text.chars().map(|c| if pictured(c) { ' ' } else { c });
         self.pending.extend(spoken);
@@ -55,18 +57,50 @@ impl Splitter {
         let mut sentences = Vec::new();
         while let Some(end) = self.end(last) {
             let piece: Vec<char> = self.pending.drain(..end).collect();
-            if let Some(sentence) = clean(&piece) {
-                sentences.push(sentence);
-                self.opening = false;
-            }
+            let sentence = clean(&piece).and_then(|sentence| self.grown(sentence));
+            sentences.extend(sentence);
+        }
+        if last || self.waited() {
+            sentences.extend(self.release());
         }
         sentences
+    }
+
+    fn grown(&mut self, sentence: String) -> Option<String> {
+        if !self.opening {
+            return Some(sentence);
+        }
+        if self.held.ends_with(char::is_alphanumeric) {
+            self.held.push('.');
+        }
+        if !self.held.is_empty() {
+            self.held.push(' ');
+        }
+        self.held.push_str(&sentence);
+        let enough = self.held.chars().count() >= self.least;
+        enough.then(|| self.release()).flatten()
+    }
+
+    fn waited(&self) -> bool {
+        self.pending.len() >= OPENING_READY && !unsettled(&self.pending)
+    }
+
+    fn release(&mut self) -> Option<String> {
+        if self.held.is_empty() {
+            return None;
+        }
+        self.opening = false;
+        Some(std::mem::take(&mut self.held))
     }
 
     fn end(&self, last: bool) -> Option<usize> {
         let text = &self.pending;
         let rest = (last && !text.is_empty()).then_some(text.len());
-        let early = || (self.opening && !last).then(|| opening_clause(text)).flatten();
+        let early = || {
+            (self.opening && !last)
+                .then(|| opening_clause(text))
+                .flatten()
+        };
         let end = sentence_end(text).or_else(early).or(rest);
         match end {
             Some(end) if end > LONGEST => Some(capped(&text[..end])),
@@ -131,7 +165,10 @@ fn sentence_end(text: &[char]) -> Option<usize> {
 
 fn dot(text: &[char], at: usize) -> Dot {
     let start = at - count_back(&text[..at], char::is_alphanumeric);
-    let word: String = text[start..at].iter().flat_map(|c| c.to_lowercase()).collect();
+    let word: String = text[start..at]
+        .iter()
+        .flat_map(|c| c.to_lowercase())
+        .collect();
     let letters = text[start..at].iter().all(|c| c.is_alphabetic());
     let size = at - start;
     if size == 0 {
@@ -159,13 +196,16 @@ fn dot(text: &[char], at: usize) -> Dot {
 }
 
 fn opening_clause(text: &[char]) -> Option<usize> {
-    let said = text.len() - count_back(text, char::is_whitespace);
-    let closed = said - count_back(&text[..said], |c| CLOSERS.contains(&c));
-    let ended = closed > 0 && ENDS.contains(&text[closed - 1]);
-    if text.len() < OPENING_READY || ended {
+    if text.len() < OPENING_READY || unsettled(text) {
         return None;
     }
     clause(text, text.len(), OPENING_LEAST)
+}
+
+fn unsettled(text: &[char]) -> bool {
+    let said = text.len() - count_back(text, char::is_whitespace);
+    let closed = said - count_back(&text[..said], |c| CLOSERS.contains(&c));
+    closed > 0 && ENDS.contains(&text[closed - 1])
 }
 
 fn capped(text: &[char]) -> usize {
@@ -324,8 +364,10 @@ fn count_back(text: &[char], matches: impl Fn(char) -> bool) -> usize {
 mod tests {
     use super::*;
 
+    const STREAMED: usize = 20;
+
     fn whole(text: &str) -> Vec<String> {
-        let mut splitter = Splitter::default();
+        let mut splitter = Splitter::new(0);
         let mut out = splitter.push(text);
         out.extend(splitter.finish());
         out
@@ -333,7 +375,7 @@ mod tests {
 
     fn streamed(text: &str, size: usize) -> Vec<String> {
         let chars: Vec<char> = text.chars().collect();
-        let mut splitter = Splitter::default();
+        let mut splitter = Splitter::new(0);
         let mut out = Vec::new();
         for piece in chars.chunks(size) {
             out.extend(splitter.push(&piece.iter().collect::<String>()));
@@ -356,7 +398,7 @@ mod tests {
 
     #[test]
     fn a_sentence_waits_for_what_follows_the_dot() {
-        let mut splitter = Splitter::default();
+        let mut splitter = Splitter::new(0);
         assert!(splitter.push("Громкость 3").is_empty());
         assert!(splitter.push(".").is_empty());
         assert!(splitter.push("5 из десяти. ").is_empty());
@@ -366,7 +408,7 @@ mod tests {
 
     #[test]
     fn a_loud_mark_does_not_wait() {
-        let mut splitter = Splitter::default();
+        let mut splitter = Splitter::new(0);
         assert!(splitter.push("Конечно!").is_empty());
         assert_eq!(splitter.push(" "), ["Конечно!"]);
         assert!(splitter.push("Что?!").is_empty());
@@ -377,9 +419,15 @@ mod tests {
     fn numbers_versions_and_names_with_dots_stay_whole() {
         assert_eq!(
             whole("Версия 2.0.1 вышла 12.05.2024 на soundcloud.com. Обновись."),
-            ["Версия 2.0.1 вышла 12.05.2024 на soundcloud.com.", "Обновись."]
+            [
+                "Версия 2.0.1 вышла 12.05.2024 на soundcloud.com.",
+                "Обновись."
+            ]
         );
-        assert_eq!(whole("It costs 3.5 dollars. Ok."), ["It costs 3.5 dollars.", "Ok."]);
+        assert_eq!(
+            whole("It costs 3.5 dollars. Ok."),
+            ["It costs 3.5 dollars.", "Ok."]
+        );
     }
 
     #[test]
@@ -390,11 +438,18 @@ mod tests {
         );
         assert_eq!(
             whole("Рок, поп и т. д. и т. п. звучат тут. Dr. Dre feat. Eminem vs. Mr. Nobody."),
-            ["Рок, поп и т. д. и т. п. звучат тут.", "Dr. Dre feat. Eminem vs. Mr. Nobody."]
+            [
+                "Рок, поп и т. д. и т. п. звучат тут.",
+                "Dr. Dre feat. Eminem vs. Mr. Nobody."
+            ]
         );
         assert_eq!(
             whole("Живёт на ул. Ленина, т.е. рядом. Осталось 5 мин. Потом выключу."),
-            ["Живёт на ул. Ленина, т.е. рядом.", "Осталось 5 мин.", "Потом выключу."]
+            [
+                "Живёт на ул. Ленина, т.е. рядом.",
+                "Осталось 5 мин.",
+                "Потом выключу."
+            ]
         );
         assert_eq!(whole("Это я. Привет."), ["Это я.", "Привет."]);
     }
@@ -419,7 +474,12 @@ mod tests {
     fn quotes_close_with_their_sentence() {
         assert_eq!(
             whole("Он сказал: «Включай!» И я включила. \"Done.\" Next."),
-            ["Он сказал: «Включай!»", "И я включила.", "\"Done.\"", "Next."]
+            [
+                "Он сказал: «Включай!»",
+                "И я включила.",
+                "\"Done.\"",
+                "Next."
+            ]
         );
         assert_eq!(
             whole("«Привет!» — сказал он. Она спросила «Зачем?» и ушла."),
@@ -438,32 +498,112 @@ mod tests {
             ["Смотри тут или на", "Ок"]
         );
         assert_eq!(whole("😊🔥"), Vec::<String>::new());
-        assert_eq!(whole("Привет (как обычно) всем)"), ["Привет (как обычно) всем"]);
+        assert_eq!(
+            whole("Привет (как обычно) всем)"),
+            ["Привет (как обычно) всем"]
+        );
     }
 
     #[test]
     fn list_lines_are_sentences_without_their_markers() {
         assert_eq!(
             whole("# Вот список\n- первый трек\n- второй трек\n1. третий\n2) четвёртый\n\nВсё"),
-            ["Вот список", "первый трек", "второй трек", "третий", "четвёртый", "Всё"]
+            [
+                "Вот список",
+                "первый трек",
+                "второй трек",
+                "третий",
+                "четвёртый",
+                "Всё"
+            ]
         );
     }
 
     #[test]
+    fn a_short_opening_waits_for_the_next_sentence_when_the_voice_streams() {
+        let mut splitter = Splitter::new(STREAMED);
+        assert!(splitter.push("Привет! ").is_empty());
+        assert!(splitter.push("Сейчас включу что-нибудь").is_empty());
+        assert_eq!(
+            splitter.push(" спокойное. Думаю"),
+            ["Привет! Сейчас включу что-нибудь спокойное."]
+        );
+        assert_eq!(
+            splitter.push(", понравится. Да! "),
+            ["Думаю, понравится.", "Да!"]
+        );
+
+        let mut splitter = Splitter::new(STREAMED);
+        assert_eq!(
+            splitter.push("Да. Нет. Не знаю, честно говоря. Вот"),
+            ["Да. Нет. Не знаю, честно говоря."]
+        );
+        assert_eq!(splitter.finish(), ["Вот"]);
+    }
+
+    #[test]
+    fn a_short_opening_does_not_wait_longer_than_a_few_words() {
+        let mut splitter = Splitter::new(STREAMED);
+        assert!(
+            splitter
+                .push("Хорошо! Сейчас я подберу для тебя")
+                .is_empty()
+        );
+        assert_eq!(
+            splitter.push(" что-нибудь, что точно понравится"),
+            ["Хорошо! Сейчас я подберу для тебя что-нибудь,"]
+        );
+
+        let mut splitter = Splitter::new(STREAMED);
+        assert!(
+            splitter
+                .push("Хорошо! Сейчас я подберу для тебя")
+                .is_empty()
+        );
+        assert_eq!(splitter.push(" что-нибудь совсем особенное"), ["Хорошо!"]);
+        assert_eq!(
+            splitter.push(" и приятное. Вот"),
+            ["Сейчас я подберу для тебя что-нибудь совсем особенное и приятное."]
+        );
+    }
+
+    #[test]
+    fn a_short_reply_is_spoken_whole_when_it_ends() {
+        let mut splitter = Splitter::new(STREAMED);
+        assert!(splitter.push("Привет! Пока.").is_empty());
+        assert_eq!(splitter.finish(), ["Привет! Пока."]);
+
+        let mut splitter = Splitter::new(STREAMED);
+        assert!(splitter.push("Ок").is_empty());
+        assert_eq!(splitter.finish(), ["Ок"]);
+        assert!(splitter.finish().is_empty());
+
+        let mut splitter = Splitter::new(STREAMED);
+        assert!(splitter.push("Вот список\n- раз\n").is_empty());
+        assert_eq!(splitter.push("- два\nВсё"), ["Вот список. раз. два"]);
+    }
+
+    #[test]
     fn a_long_opening_sentence_starts_with_its_first_clause() {
-        let mut splitter = Splitter::default();
+        let mut splitter = Splitter::new(0);
         let early = splitter.push("Сейчас поищу что-нибудь подходящее под настроение, ");
-        assert_eq!(early, ["Сейчас поищу что-нибудь подходящее под настроение,"]);
+        assert_eq!(
+            early,
+            ["Сейчас поищу что-нибудь подходящее под настроение,"]
+        );
         assert!(splitter.push("подожди секунду, я быстро, ").is_empty());
-        assert_eq!(splitter.push("честно. Вот"), ["подожди секунду, я быстро, честно."]);
+        assert_eq!(
+            splitter.push("честно. Вот"),
+            ["подожди секунду, я быстро, честно."]
+        );
     }
 
     #[test]
     fn a_short_or_finished_opening_is_not_cut_at_a_comma() {
-        let mut splitter = Splitter::default();
+        let mut splitter = Splitter::new(0);
         assert!(splitter.push("Конечно, сейчас включу, ").is_empty());
         assert!(splitter.push("погоди.").is_empty());
-        let mut splitter = Splitter::default();
+        let mut splitter = Splitter::new(0);
         let done = "Сейчас поищу что-нибудь подходящее, подожди секунду.";
         assert!(splitter.push(done).is_empty());
         assert_eq!(splitter.finish(), [done]);
@@ -475,7 +615,10 @@ mod tests {
         let cut = whole(&clause.repeat(8));
         assert!(cut.len() >= 2, "{cut:?}");
         assert!(cut.iter().all(|s| s.chars().count() <= LONGEST), "{cut:?}");
-        assert!(cut[..cut.len() - 1].iter().all(|s| s.ends_with(',')), "{cut:?}");
+        assert!(
+            cut[..cut.len() - 1].iter().all(|s| s.ends_with(',')),
+            "{cut:?}"
+        );
 
         let words = whole(&"слово ".repeat(100));
         assert!(words.len() >= 3, "{words:?}");

@@ -4,6 +4,9 @@ use crate::event::{Event, State, TurnEvent};
 use crate::machine::{Core, Phase};
 use crate::plan::voiced;
 use crate::sentences::Splitter;
+use crate::voices;
+
+const STREAMED_OPENING: usize = 20;
 
 pub enum Chat {
     Open { speak: bool },
@@ -36,16 +39,26 @@ impl Core {
     }
 
     fn open_turn(&mut self, id: String, speak: bool) {
-        let step = self.plan.as_ref().filter(|plan| plan.waiting.as_deref() == Some(id.as_str()));
+        let step = self
+            .plan
+            .as_ref()
+            .filter(|plan| plan.waiting.as_deref() == Some(id.as_str()));
         let Some(source) = step.map(|plan| plan.origin.source) else {
             return self.emit(Event::Cancelled(TurnEvent { id }));
         };
         let speak = speak && self.config.speak.replies && voiced(source);
+        let least = self.opening();
         self.turn = Some(Turn {
             id,
-            splitter: speak.then(Splitter::default),
+            splitter: speak.then(|| Splitter::new(least)),
         });
         self.watch_turn();
+    }
+
+    fn opening(&self) -> usize {
+        let voice = voices::find(&self.config.speak.voice);
+        let streams = self.deps.voice.is_none() && voice.streams();
+        if streams { STREAMED_OPENING } else { 0 }
     }
 
     fn watch_turn(&mut self) {
