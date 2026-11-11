@@ -147,7 +147,11 @@ fn merge(said: Vec<Tok>, version: Version) -> Vec<Tok> {
     if let Some(same_command) = part {
         return same_command;
     }
-    if orders(&next, &said) {
+    let read = steps::side(&next, "");
+    if matches!(read, Side::Foreign) {
+        return Vec::new();
+    }
+    if orders(read, &next, &said) {
         return next;
     }
     let slot = said.iter().rposition(|t| numbers::is_number(&t.w));
@@ -218,8 +222,8 @@ fn left_as_it_is(next: &[Tok]) -> bool {
     next[0].w == LEAVE || (next[0].w == LET && nothing_else)
 }
 
-fn orders(next: &[Tok], said: &[Tok]) -> bool {
-    match steps::side(next, "") {
+fn orders(read: Side, next: &[Tok], said: &[Tok]) -> bool {
+    match read {
         Side::Cmd(p) => !(p.weak_verb && intent::detect(said).intent.needs_entity()),
         _ => steps::plan(next, "", false).is_some(),
     }

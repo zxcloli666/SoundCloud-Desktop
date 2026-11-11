@@ -217,3 +217,15 @@ fn a_correction_that_leaves_things_as_they_are_does_nothing() {
     }
     assert_eq!(steps("нет оставь как было"), ["undo"]);
 }
+
+#[test]
+fn a_refusal_in_the_new_version_takes_the_command_back() {
+    for text in [
+        "лайкни ой нет это не та песня не лайкай",
+        "включи басту хотя нет не надо",
+        "следующий нет стой не переключай",
+        "поставь на паузу то есть нет не ставь",
+    ] {
+        assert_eq!(steps(text), ["none"], "{text}");
+    }
+}
