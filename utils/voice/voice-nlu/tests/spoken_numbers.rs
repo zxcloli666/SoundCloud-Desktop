@@ -144,3 +144,22 @@ fn a_time_counted_from_the_start_or_played_from_is_a_position() {
         assert_eq!(steps(text), want, "{text}");
     }
 }
+
+#[test]
+fn a_hedge_beside_an_amount_leaves_the_command_as_it_is() {
+    for (text, want) in [
+        ("пере мотай секунд на двадцать примерно", "seek_forward 20"),
+        ("перемотай примерно на минуту вперед", "seek_forward 60"),
+        ("перемотай где-то на минуту назад", "seek_backward 60"),
+        ("назад секунд на десять приблизительно", "seek_backward 10"),
+        ("вперед около минуты", "seek_forward 60"),
+        ("погромче примерно на десять", "volume_up 10"),
+        ("потише где-то на двадцать", "volume_down 20"),
+        ("громкость примерно тридцать", "volume_set 30"),
+        ("где начало", "none"),
+        ("примерно", "none"),
+        ("перемотай примерно", "none"),
+    ] {
+        assert_eq!(steps(text), want, "{text}");
+    }
+}

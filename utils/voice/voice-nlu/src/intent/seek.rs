@@ -199,11 +199,34 @@ fn foreign(c: &Ctx) -> bool {
     !c.w.iter().all(|w| vocabulary(w))
 }
 
+pub fn hedges(c: &Ctx) -> Vec<usize> {
+    let hedge = |i: usize| {
+        ROUGHLY.contains(&c.w[i])
+            || (c.w[i] == "где" && c.at(i + 1) == "то")
+            || (c.w[i] == "то" && i > 0 && c.w[i - 1] == "где")
+    };
+    (0..c.len()).filter(|&i| hedge(i)).collect()
+}
+
+fn unhedged<'a>(c: &Ctx<'a>) -> Ctx<'a> {
+    let hedges = hedges(c);
+    let kept = (0..c.len()).filter(|i| !hedges.contains(i));
+    Ctx {
+        w: kept.map(|i| c.w[i]).collect(),
+    }
+}
+
 pub fn detect(c: &Ctx) -> Option<Detected> {
+    let plain = unhedged(c);
+    let t = time(&plain);
+    let c = if t.found || t.bare.is_some() {
+        &plain
+    } else {
+        c
+    };
     if c.len() > 10 || foreign(c) {
         return None;
     }
-    let t = time(c);
     let fwd = c.has(FORWARD);
     let back = c.has(BACKWARD);
     let seek_verb = c.has(SEEK_VERBS) || c.has_stem(&["перемот", "промот", "отмот"]);

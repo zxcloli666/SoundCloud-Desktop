@@ -110,6 +110,7 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
     used.extend(noun);
     used.extend((0..c.len()).filter(|&i| crate::numbers::is_number(c.w[i])));
     used.extend(c.all(PLAY_STRONG));
+    used.extend(super::seek::hedges(c));
     used.extend(c.all(&[
         "up",
         "down",
