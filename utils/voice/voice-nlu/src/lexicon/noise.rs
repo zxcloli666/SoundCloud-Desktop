@@ -214,6 +214,7 @@ pub const OBJECT_VERBS: &[&str] = &[
     "mute",
     "unmute",
     "заглуши",
+    "выключай",
 ];
 
 pub const DEVICES: &[&str] = &[
@@ -275,6 +276,7 @@ pub const LONE_VERBS: &[&str] = &[
     "хватит",
     "off",
     "on",
+    "выключай",
 ];
 
 pub const ON_VERB_FORMS: &[&str] = &[

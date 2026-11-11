@@ -55,6 +55,7 @@ pub const STOP_WORDS: &[&str] = &[
     "отключить",
     "выключайте",
     "off",
+    "выключай",
 ];
 pub const RESUME_WORDS: &[&str] = &[
     "продолжи",

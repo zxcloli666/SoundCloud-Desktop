@@ -91,3 +91,23 @@ fn a_word_of_hurry_is_not_part_of_the_command() {
     let said = |q: &&voice_nlu::Variant| !q.kept_fillers;
     assert!(named.queries.iter().filter(said).all(|q| q.text == "кино"));
 }
+
+#[test]
+fn every_form_of_a_switch_off_verb_stops_or_turns_a_mode_off() {
+    let cases = [
+        ("выключай", Intent::Stop),
+        ("всё хватит выключай", Intent::Stop),
+        ("выключай музыку", Intent::Stop),
+        ("хватит выключай", Intent::Stop),
+        ("стоп выключи музыку", Intent::Stop),
+        ("выруби повтор", Intent::RepeatOff),
+        ("вырубай повтор", Intent::RepeatOff),
+        ("выключай повтор", Intent::RepeatOff),
+        ("выруби перемешивание", Intent::ShuffleOff),
+        ("выключай перемешивание", Intent::ShuffleOff),
+    ];
+    for (text, intent) in cases {
+        assert_eq!(intents(text), [intent], "{text}");
+    }
+    assert_eq!(intents("не выключай"), [Intent::None]);
+}

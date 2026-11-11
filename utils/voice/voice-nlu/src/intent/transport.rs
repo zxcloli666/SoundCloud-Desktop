@@ -66,7 +66,9 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
         }
     }
     if let Some(i) = c.pos_stem(&["стоп", "stop"]).or_else(|| c.pos(STOP_WORDS)) {
-        if c.stray(&base(c, i)) == 0 {
+        let mut said = base(c, i);
+        said.extend(c.all(STOP_WORDS));
+        if c.stray(&said) == 0 {
             return Some(Detected::new(Intent::Stop, vec![i]));
         }
     }
