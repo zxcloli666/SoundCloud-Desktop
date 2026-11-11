@@ -132,7 +132,7 @@ fn merge(said: Vec<Tok>, version: Version) -> Vec<Tok> {
     if let Some(same_command) = part {
         return same_command;
     }
-    if orders(&next) {
+    if orders(&next, &said) {
         return next;
     }
     let slot = said.iter().rposition(|t| numbers::is_number(&t.w));
@@ -195,6 +195,9 @@ fn after_remark(said: &[String]) -> &[String] {
     }
 }
 
-fn orders(said: &[Tok]) -> bool {
-    matches!(steps::side(said, ""), Side::Cmd(_)) || steps::plan(said, "", false).is_some()
+fn orders(next: &[Tok], said: &[Tok]) -> bool {
+    match steps::side(next, "") {
+        Side::Cmd(p) => !(p.weak_verb && intent::detect(said).intent.needs_entity()),
+        _ => steps::plan(next, "", false).is_some(),
+    }
 }

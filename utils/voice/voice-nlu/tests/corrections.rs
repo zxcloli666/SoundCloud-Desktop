@@ -192,3 +192,13 @@ fn a_rejection_with_nothing_after_it_takes_the_command_back() {
         assert_eq!(steps(text), ["none"], "{text}");
     }
 }
+
+#[test]
+fn a_name_said_with_a_weak_verb_stays_under_the_first_verb() {
+    let p = one("добавь в очередь цепи нет притон давай");
+    assert_eq!(p.intent, Intent::QueueAdd);
+    assert!(asks_for(&p, "притон"));
+    let p = one("добавь в очередь басту нет хочу скриптонита");
+    assert_eq!(p.intent, Intent::QueueAdd);
+    assert!(asks_for(&p, "скриптонита"));
+}
