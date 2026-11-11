@@ -1,5 +1,5 @@
 use crate::intent;
-use crate::lexicon::CORRECTION_NOISE;
+use crate::lexicon::{CORRECTION_NOISE, MERGE_PHRASES};
 use crate::normalize::{Tok, normalize, words};
 use crate::numbers;
 use crate::reworded;
@@ -22,6 +22,10 @@ const REPLACE: &[&[&str]] = &[
 
 const AT_LEAST: &[&str] = &["хотя", "бы"];
 const RESTART: &str = "давай";
+const ECHO_MIN: usize = 4;
+const POINTERS: &[&str] = &[
+    "так", "то", "туда", "ту", "тот", "та", "те", "это", "эту", "этот", "эта", "их", "его", "ее",
+];
 
 const NEGATING: &[&[&str]] = &[&["а", "не"], &["только", "не"], &["но", "не"], &["и", "не"]];
 
@@ -110,6 +114,9 @@ fn merge(said: Vec<Tok>, version: Version) -> Vec<Tok> {
         Some(rest) => (rest, true),
         None => (version.words.as_slice(), false),
     };
+    let Some(words) = after_rejection(words, &said) else {
+        return Vec::new();
+    };
     let next = toks(after_remark(words));
     if next.is_empty() {
         return said;
@@ -154,6 +161,30 @@ fn after_not(said: &[String]) -> Option<&[String]> {
     }
     let cut = said.iter().position(|w| w == "а")?;
     Some(&said[cut + 1..])
+}
+
+fn after_rejection<'a>(words: &'a [String], said: &[Tok]) -> Option<&'a [String]> {
+    let denies = words.first().is_some_and(|w| w == "не");
+    let own_meaning = MERGE_PHRASES.iter().any(|(p, _)| starts(words, 0, p));
+    let again = words
+        .iter()
+        .skip(1)
+        .take_while(|w| POINTERS.contains(&w.as_str()) || echoes(w, said))
+        .count();
+    if !denies || own_meaning || again == 0 {
+        return Some(words);
+    }
+    let rest = &words[1 + again..];
+    let from = rest.iter().position(|w| !noise(w))?;
+    Some(&rest[from..])
+}
+
+fn echoes(word: &str, said: &[Tok]) -> bool {
+    let shared = |t: &Tok| {
+        let same = t.w.chars().zip(word.chars()).take_while(|(a, b)| a == b);
+        same.count()
+    };
+    said.iter().any(|t| t.w == word || shared(t) >= ECHO_MIN)
 }
 
 fn after_remark(said: &[String]) -> &[String] {

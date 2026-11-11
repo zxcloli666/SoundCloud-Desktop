@@ -152,3 +152,43 @@ fn the_new_version_is_read_the_way_a_whole_phrase_is() {
     assert_ne!(steps("включи а нет погоди я сам"), ["pause"]);
     assert_eq!(steps("следующий нет погоди предыдущий"), ["previous"]);
 }
+
+#[test]
+fn the_new_version_may_open_by_rejecting_the_first_one() {
+    let p = one("в ключи кино ой нет не кино сплин давай");
+    assert_eq!(p.intent, Intent::Play);
+    assert!(asks_for(&p, "сплин"));
+    assert!(!mentions(&p, "кино"));
+    let p = one("добавь в очередь цепи нет не цепи притон");
+    assert_eq!(p.intent, Intent::QueueAdd);
+    assert!(asks_for(&p, "притон"));
+    assert!(!mentions(&p, "цепи"));
+    let p = one("включи басту нет не басту скриптонита");
+    assert!(asks_for(&p, "скриптонита"));
+    let p = one("включи имэджин драгонс нет не их билли айлиш");
+    assert!(asks_for(&p, "билли айлиш"));
+    let p = one("включи кино нет не то сплин");
+    assert!(asks_for(&p, "сплин"));
+    assert_eq!(
+        steps("выключи нет не выключай просто на паузу поставь"),
+        ["pause"]
+    );
+    assert_eq!(
+        steps("поставь на паузу нет не так сделай потише и переключи"),
+        ["volume_down", "next"]
+    );
+    assert_eq!(steps("сделай громче нет не так громко"), ["volume_down"]);
+}
+
+#[test]
+fn a_rejection_with_nothing_after_it_takes_the_command_back() {
+    for text in [
+        "включи басту то есть нет не включай",
+        "лайкни нет не лайкай",
+        "включи кино нет не кино",
+        "следующий ой нет не то",
+        "перемешай а нет не перемешивай",
+    ] {
+        assert_eq!(steps(text), ["none"], "{text}");
+    }
+}
