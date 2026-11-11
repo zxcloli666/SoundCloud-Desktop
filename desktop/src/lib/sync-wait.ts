@@ -1,6 +1,6 @@
 import type { CollectionSyncInfo, CollectionSyncState } from './collection-sync';
 
-export const LONG_WAIT_MS = 20_000;
+export const LONG_WAIT_MS = 4_000;
 
 export type WaitKind = 'syncing' | 'stalled';
 
@@ -21,13 +21,17 @@ export function waitAnchor(
   return seen;
 }
 
+export function isWaitKind(kind: string | null | undefined): kind is WaitKind {
+  return kind === 'syncing' || kind === 'stalled';
+}
+
 export function waitKindOf(query: {
   isError: boolean;
   syncInfo?: CollectionSyncInfo;
 }): WaitKind | null {
   if (query.isError) return null;
   const state = query.syncInfo?.state;
-  return state === 'syncing' || state === 'stalled' ? state : null;
+  return isWaitKind(state) ? state : null;
 }
 
 export function longWaitLeft(kind: WaitKind, since: number, now: number): number {

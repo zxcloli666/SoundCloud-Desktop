@@ -4,6 +4,7 @@ import {useInfiniteScroll, useLikedTracks} from '../../lib/hooks';
 import {Heart, Loader2} from '../../lib/icons';
 import {LIKED_ORDER_SCOPE, likesOrder} from '../../lib/likes-order';
 import {armLikesContinuation} from '../../lib/queue-continuation';
+import {isWaitKind} from '../../lib/sync-wait';
 import {filterTracks} from '../../lib/text-match';
 import {sortTracks} from '../../lib/track-sort';
 import {useAppMode} from '../../stores/app-status';
@@ -100,7 +101,7 @@ export const LikesTab = React.memo(function LikesTab({filter}: { filter: string 
                         {likesQuery.hasNextPage ? t('common.loading') : t('library.noMatches')}
                     </div>
                 ) : notice ? (
-                    <div className="py-20">
+                    <div className={isWaitKind(notice) ? 'py-8' : 'py-20'}>
                         <SyncNotice kind={notice} text={noticeText} info={syncInfo} ownedByMe scope="likes" onRetry={retry}/>
                     </div>
                 ) : (
@@ -120,7 +121,7 @@ export const LikesTab = React.memo(function LikesTab({filter}: { filter: string 
             ) : null}
             {!loadAll && notice && likedTracks.length > 0 && !likesQuery.hasNextPage && (
                 <div className="pb-6">
-                    {notice === 'syncing' || notice === 'stalled' ? (
+                    {isWaitKind(notice) ? (
                         <WaitStrip
                             kind={notice}
                             since={syncInfo.waitingSince}

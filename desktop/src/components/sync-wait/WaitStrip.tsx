@@ -18,19 +18,19 @@ export const WaitStrip = memo(function WaitStrip({
   scope,
   icon,
   title,
-  cta = true,
+  lead = true,
 }: {
   kind: WaitKind;
   since: number;
   scope: WaitScope;
   icon: ReactNode;
   title: string;
-  cta?: boolean;
+  lead?: boolean;
 }) {
   const { t } = useTranslation();
   const premium = usePremium();
   const { long, from } = useLongWait(kind, since);
-  const lane = long && !(premium && kind === 'stalled');
+  const lane = lead && long && !(premium && kind === 'stalled');
 
   return (
     <section
@@ -67,7 +67,6 @@ export const WaitStrip = memo(function WaitStrip({
             kind="star"
             shape={SHAPE_OF[scope]}
             size="sm"
-            still={!cta}
             className="min-w-[72px] max-w-[420px] flex-1"
           />
           <span className="flex shrink-0 items-center gap-1.5 text-[10.5px]">
@@ -76,7 +75,7 @@ export const WaitStrip = memo(function WaitStrip({
               {t('starMoments.sync.starTime')}
             </span>
           </span>
-          {cta && !premium && <StarCta size="sm" />}
+          {!premium && <StarCta size="sm" />}
         </div>
       )}
       {long && kind === 'stalled' && (

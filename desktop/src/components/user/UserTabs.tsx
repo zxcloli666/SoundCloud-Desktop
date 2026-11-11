@@ -16,6 +16,7 @@ import {
 import { Loader2, Music } from '../../lib/icons';
 import {usePerfMode} from '../../lib/perf';
 import { useCatalogPlaylists, useCatalogTracks } from '../../lib/search';
+import { isWaitKind } from '../../lib/sync-wait';
 import { useAuthStore } from '../../stores/auth';
 import { PlaylistCard } from '../music/PlaylistCard';
 import { SearchState } from '../search/SearchState';
@@ -59,7 +60,7 @@ function TabWrapperImpl({
           <Loader2 size={28} className="text-ink-20 animate-spin" />
         </div>
       ) : isEmpty && notice && query ? (
-        <div className="py-24">
+        <div className={ownedByMe && isWaitKind(notice) ? 'py-8' : 'py-24'}>
           <SyncNotice
             kind={notice}
             info={query.syncInfo}

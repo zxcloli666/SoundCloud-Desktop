@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
   clockText,
+  isWaitKind,
   LONG_WAIT_MS,
   longWaitLeft,
   waitAnchor,
@@ -12,7 +13,8 @@ const NOW = Date.parse('2026-11-11T12:00:00Z');
 
 test('a fresh wait stays calm until the threshold', () => {
   assert.equal(longWaitLeft('syncing', NOW, NOW), LONG_WAIT_MS);
-  assert.equal(longWaitLeft('syncing', NOW - 5_000, NOW), LONG_WAIT_MS - 5_000);
+  assert.equal(longWaitLeft('syncing', NOW - 1_500, NOW), LONG_WAIT_MS - 1_500);
+  assert.equal(longWaitLeft('syncing', NOW + 60_000, NOW), LONG_WAIT_MS + 60_000);
   assert.equal(longWaitLeft('syncing', NOW - LONG_WAIT_MS, NOW), 0);
   assert.equal(longWaitLeft('syncing', NOW - 14 * 60_000, NOW), 0);
 });
@@ -34,6 +36,9 @@ test('only syncing and stalled queries wait', () => {
   assert.equal(waitKindOf({ isError: false, syncInfo: info('complete') }), null);
   assert.equal(waitKindOf({ isError: false, syncInfo: info('refused') }), null);
   assert.equal(waitKindOf({ isError: true, syncInfo: info('syncing') }), null);
+  assert.equal(isWaitKind('stalled'), true);
+  assert.equal(isWaitKind('failed'), false);
+  assert.equal(isWaitKind(null), false);
 });
 
 test('the clock reads m:ss under an hour and h:mm:ss past it', () => {

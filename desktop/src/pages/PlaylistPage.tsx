@@ -33,6 +33,7 @@ import {AlertCircle, Check, ChevronLeft, ListMusic, X} from '../lib/icons';
 import {usePerfMode} from '../lib/perf';
 import {rawPlaylistCover} from '../lib/playlist-cover';
 import {armPlaylistContinuation} from '../lib/queue-continuation';
+import {isWaitKind} from '../lib/sync-wait';
 import {type ArrangeMode, arrangeTracks} from '../lib/track-order';
 import {sortTracks, type TrackSort} from '../lib/track-sort';
 import {useAuthStore} from '../stores/auth';
@@ -331,7 +332,7 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
     if (notice === 'refused' && tracksSyncInfo.errorCode === 'auth_required' && !isOwner) {
       return <SyncNotice kind="refused" text={t('playlist.tracksUnavailable')} onRetry={retry} />;
     }
-    if ((notice === 'syncing' || notice === 'stalled') && isOwner && serverTracks.length > 0) {
+    if (isWaitKind(notice) && isOwner && serverTracks.length > 0) {
       return (
         <WaitStrip
           kind={notice}

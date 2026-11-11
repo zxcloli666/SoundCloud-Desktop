@@ -218,7 +218,7 @@ export const Library = React.memo(() => {
         scope={scope}
         icon={<Icon size={16} />}
         title={t(title)}
-        cta={index === 0}
+        lead={index === 0}
       />
     );
   });

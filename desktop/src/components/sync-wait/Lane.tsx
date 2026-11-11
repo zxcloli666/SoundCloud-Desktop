@@ -23,13 +23,11 @@ export const Lane = memo(function Lane({
   kind,
   shape,
   size,
-  still = false,
   className = '',
 }: {
   kind: 'free' | 'star';
   shape: WaitShape;
   size: 'md' | 'sm';
-  still?: boolean;
   className?: string;
 }) {
   const perf = usePerfMode();
@@ -39,7 +37,7 @@ export const Lane = memo(function Lane({
   const pitch = width + gap;
   const count = Math.ceil((REACH - box.pad) / pitch);
   const star = kind === 'star';
-  const moving = perf.idleAnim && !still;
+  const moving = perf.idleAnim;
 
   return (
     <div

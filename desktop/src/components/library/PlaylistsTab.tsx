@@ -3,7 +3,7 @@ import {useTranslation} from 'react-i18next';
 import {type Playlist, useInfiniteScroll, useMyLikedPlaylists, useMyPlaylists} from '../../lib/hooks';
 import {Bookmark, ListMusic, Loader2} from '../../lib/icons';
 import {splitReleases} from '../../lib/playlist-kind';
-import {waitKindOf} from '../../lib/sync-wait';
+import {isWaitKind, waitKindOf} from '../../lib/sync-wait';
 import {matchesTerms, queryTerms} from '../../lib/text-match';
 import {PlaylistCard} from '../music/PlaylistCard';
 import {WaitStrip} from '../sync-wait/WaitStrip';
@@ -127,7 +127,7 @@ export const PlaylistsTab = React.memo(function PlaylistsTab({filter}: { filter:
                     filteredCreated.length === 0 &&
                     filteredLiked.length === 0 &&
                     (!filter && notice ? (
-                        <div className="py-20">
+                        <div className={isWaitKind(notice) ? 'py-8' : 'py-20'}>
                             <SyncNotice kind={notice} info={noticeQuery.syncInfo} ownedByMe scope="playlists" onRetry={retry}/>
                         </div>
                     ) : (
