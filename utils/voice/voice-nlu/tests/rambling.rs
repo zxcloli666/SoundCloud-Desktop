@@ -424,3 +424,37 @@ fn a_play_request_replaces_the_complaint_before_it() {
     let name = "макс корж малый повзрослел";
     assert!(said[0].queries.iter().any(|q| q.text == name));
 }
+
+fn asks_for(step: &Parsed, name: &str) -> bool {
+    step.queries.iter().any(|q| q.text == name)
+}
+
+#[test]
+fn the_listener_after_a_play_verb_does_not_start_a_remark() {
+    let cases = [
+        (
+            "а после этого включи мне пожалуйста экспонат ленинграда",
+            Intent::QueueAdd,
+            "экспонат ленинграда",
+        ),
+        (
+            "после этого поставь нам кукушку",
+            Intent::QueueAdd,
+            "кукушка",
+        ),
+        ("потом включи мне сплин", Intent::QueueAdd, "сплин"),
+    ];
+    for (text, intent, name) in cases {
+        let said = steps(text);
+        assert_eq!(said.len(), 1, "{text}");
+        assert_eq!(said[0].intent, intent, "{text}");
+        assert!(asks_for(&said[0], name), "{text}");
+    }
+    let remarked = [
+        ("выключи музыку мне надо подумать", Intent::Stop),
+        ("поставь на паузу мне звонят", Intent::Pause),
+    ];
+    for (text, intent) in remarked {
+        assert_eq!(intents(text), [intent], "{text}");
+    }
+}
