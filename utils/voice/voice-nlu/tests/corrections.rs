@@ -308,3 +308,16 @@ fn a_command_after_a_denied_request_stands() {
     assert_eq!(steps("я не просил паузу"), ["none"]);
     assert_eq!(steps("я не говорила включи я сказала подожди"), ["none"]);
 }
+
+#[test]
+fn the_same_question_or_state_asked_twice_is_one_step() {
+    assert_eq!(
+        steps("кто это поёт вообще и как называется"),
+        ["now_playing"]
+    );
+    assert_eq!(steps("что это играет и кто поёт"), ["now_playing"]);
+    assert_eq!(steps("лайкни и поставь лайк"), ["like"]);
+    assert_eq!(steps("перемешай и включи рандом"), ["shuffle_on"]);
+    assert_eq!(steps("поставь на паузу и останови"), ["pause", "stop"]);
+    assert_eq!(steps("громче и ещё громче"), ["volume_up", "volume_up"]);
+}

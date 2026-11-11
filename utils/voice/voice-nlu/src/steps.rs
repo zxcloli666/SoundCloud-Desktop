@@ -287,12 +287,35 @@ fn own_verb(p: &Parsed) -> bool {
         .any(|w| LONE_VERBS.contains(&w) || ON_VERB_FORMS.contains(&w))
 }
 
+fn asked_once(i: Intent) -> bool {
+    matches!(
+        i,
+        Intent::NowPlaying
+            | Intent::Help
+            | Intent::Pause
+            | Intent::Stop
+            | Intent::Resume
+            | Intent::Mute
+            | Intent::Unmute
+            | Intent::Like
+            | Intent::Unlike
+            | Intent::ShuffleOn
+            | Intent::ShuffleOff
+            | Intent::RepeatOne
+            | Intent::RepeatAll
+            | Intent::RepeatOff
+    )
+}
+
 fn collapse(steps: Vec<Parsed>) -> Vec<Parsed> {
     let mut out: Vec<Parsed> = Vec::new();
     for mut p in steps {
         let halts = |i: Intent| matches!(i, Intent::Stop | Intent::Pause);
         if p.intent == Intent::Play && out.last().is_some_and(|l| halts(l.intent)) {
             out.pop();
+        }
+        if out.last().is_some_and(|l| l.intent == p.intent) && asked_once(p.intent) {
+            continue;
         }
         if let Some(last) = out.last() {
             if matches!(last.intent, Intent::ShuffleOff | Intent::RepeatOff) && !own_verb(&p) {
