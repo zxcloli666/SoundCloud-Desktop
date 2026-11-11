@@ -203,7 +203,12 @@ fn a_phrase_with_a_verb_is_read_the_same_either_way() {
 #[test]
 fn a_greeting_after_a_play_verb_plays_the_title_it_names_either_way() {
     let nameless = "kind\tname\tartist\tpopularity\taliases\ntrack\tАло\tМакс Корж\t1500000\t\n";
-    let named = ["включи привет", "поставь привет, пожалуйста"];
+    let named = [
+        "включи привет",
+        "поставь привет, пожалуйста",
+        "включи песню привет",
+        "поставь трек привет",
+    ];
     let plain = ["включи", "включи, пожалуйста", "привет, включи"];
     for bare in BOTH {
         for text in named {
@@ -213,8 +218,9 @@ fn a_greeting_after_a_play_verb_plays_the_title_it_names_either_way() {
         for text in plain {
             assert_eq!(told(&heard(text, bare)), "resume", "{text}");
         }
-        let outcome = heard_in(nameless, "включи привет", bare);
-        assert_eq!(told(&outcome), "resume");
+        for text in ["включи привет", "включи песню привет"] {
+            assert_eq!(told(&heard_in(nameless, text, bare)), "resume", "{text}");
+        }
     }
 }
 

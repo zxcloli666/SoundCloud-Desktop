@@ -251,7 +251,8 @@ pub fn detect(c: &Ctx, forced: bool) -> Detected {
             c.w.iter()
                 .enumerate()
                 .any(|(i, w)| !used.contains(&i) && is_kind(w));
-        if only_kinds {
+        let greeted = v.strong && c.w[v.idx + 1..].iter().any(|w| GREETINGS.contains(w));
+        if only_kinds && !greeted {
             return Detected::new(Intent::PlayWave, used);
         }
         if v.strong || c.len() == 1 {

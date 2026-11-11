@@ -74,6 +74,18 @@ fn a_greeting_after_a_play_verb_is_kept_as_a_name() {
 }
 
 #[test]
+fn a_greeting_after_a_play_verb_and_a_kind_is_kept_as_a_name() {
+    for text in ["включи песню привет", "поставь трек привет"] {
+        let p = parse(text);
+        assert_eq!(p.intent, Intent::Resume, "{text}");
+        assert!(!p.alt.is_empty(), "{text}");
+        assert!(p.alt.iter().all(|name| name.text == "привет"), "{text}");
+    }
+    let wave = parse("включи песню");
+    assert_eq!((wave.intent, wave.alt.len()), (Intent::PlayWave, 0));
+}
+
+#[test]
 fn a_greeting_said_alone_is_not_a_name_to_look_up() {
     for text in ["привет", "hi", "hello", "Hello!"] {
         let p = parse(text);
