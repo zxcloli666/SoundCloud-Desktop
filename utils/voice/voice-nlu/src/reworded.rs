@@ -8,14 +8,28 @@ const BEFORE_AMOUNT: &[&str] = &["на", "до", "в", "к"];
 const SCALE_MARKS: &[&str] = &["доля", "ордин"];
 const NEXT_TRACK: &str = "дальше";
 
-pub fn amount(said: &[Tok], again: &[Tok]) -> Option<Vec<Tok>> {
-    let only_amount = again
-        .iter()
-        .all(|t| measures(&t.w) || BEFORE_AMOUNT.contains(&t.w.as_str()));
+pub fn part(said: &[Tok], again: &[Tok]) -> Option<Vec<Tok>> {
+    let known = |t: &Tok| {
+        let w = t.w.as_str();
+        measures(w) || turns(w) || BEFORE_AMOUNT.contains(&w)
+    };
+    if !again.iter().all(known) {
+        return None;
+    }
     let given: Vec<Tok> = again.iter().filter(|t| measures(&t.w)).cloned().collect();
+    let turned: Vec<Tok> = again.iter().filter(|t| turns(&t.w)).cloned().collect();
+    match (given.is_empty(), turned.is_empty()) {
+        (true, true) => None,
+        (false, true) => amount(said, given),
+        (true, false) => direction(said, turned),
+        (false, false) => direction(&amount(said, given)?, turned),
+    }
+}
+
+fn amount(said: &[Tok], given: Vec<Tok>) -> Option<Vec<Tok>> {
     let counts = given.iter().filter(|t| count(&t.w)).count();
     let own_unit = given.iter().any(|t| unit(&t.w));
-    if !only_amount || (counts == 0 && !own_unit) {
+    if counts == 0 && !own_unit {
         return None;
     }
     let first = said.iter().position(|t| measures(&t.w))?;
@@ -29,16 +43,16 @@ pub fn amount(said: &[Tok], again: &[Tok]) -> Option<Vec<Tok>> {
     Some(out)
 }
 
-pub fn direction(said: &[Tok], again: &[Tok]) -> Option<Vec<Tok>> {
+fn direction(said: &[Tok], turned: Vec<Tok>) -> Option<Vec<Tok>> {
     let rewinds = matches!(
         intent::detect(said).intent,
         Intent::SeekForward | Intent::SeekBackward
     );
-    if !rewinds || !again.iter().all(|t| turns(&t.w)) {
+    if !rewinds {
         return None;
     }
     let mut out: Vec<Tok> = said.iter().filter(|t| !turns(&t.w)).cloned().collect();
-    out.extend(again.iter().cloned());
+    out.extend(turned);
     Some(out)
 }
 

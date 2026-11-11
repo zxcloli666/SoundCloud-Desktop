@@ -185,8 +185,7 @@ fn merge(said: Vec<Tok>, version: Version) -> Vec<Tok> {
             Vec::new()
         };
     }
-    let part = reworded::amount(&said, &next).or_else(|| reworded::direction(&said, &next));
-    if let Some(same_command) = part {
+    if let Some(same_command) = reworded::part(&said, &next) {
         return same_command;
     }
     let read = steps::side(&next, "");
