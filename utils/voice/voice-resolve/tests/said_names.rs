@@ -1,7 +1,7 @@
 use std::sync::LazyLock;
 
 use voice_nlu::Names;
-use voice_resolve::{Bare, Boosts, Decision, FixtureCatalog, Outcome, interpret};
+use voice_resolve::{Bare, Boosts, Decision, Entity, FixtureCatalog, Outcome, interpret};
 
 const BOTH: [Bare; 2] = [Bare::Popular, Bare::Certain];
 const VOICE: [&str; 3] = ["Loli", "Лоля", "롤리"];
@@ -10,9 +10,24 @@ static CATALOG: LazyLock<FixtureCatalog> =
     LazyLock::new(|| FixtureCatalog::from_tsv(include_str!("data/catalog.tsv"), true));
 
 fn heard(text: &str, bare: Bare) -> String {
-    let steps = interpret(text, &*CATALOG, &Boosts::none(), bare, &Names::new(&VOICE));
-    let told: Vec<String> = steps.iter().map(told).collect();
+    let told: Vec<String> = read(&CATALOG, text, bare).iter().map(told).collect();
     told.join(" + ")
+}
+
+fn heard_in(rows: &str, text: &str, bare: Bare) -> String {
+    let catalog = FixtureCatalog::from_tsv(rows, true);
+    let told: Vec<String> = read(&catalog, text, bare).iter().map(told).collect();
+    told.join(" + ")
+}
+
+fn handed(text: &str) -> Vec<String> {
+    let steps = read(&CATALOG, text, Bare::Certain);
+    let hits = steps.iter().flat_map(|step| &step.candidates);
+    hits.map(Entity::label).collect()
+}
+
+fn read(catalog: &FixtureCatalog, text: &str, bare: Bare) -> Vec<Outcome> {
+    interpret(text, catalog, &Boosts::none(), bare, &Names::new(&VOICE))
 }
 
 fn told(outcome: &Outcome) -> String {
@@ -110,4 +125,28 @@ fn a_kind_word_before_the_verb_with_no_name_after_it_still_starts_the_wave() {
         ("песню дальше включи", "next"),
         ("плейлист мой включи", "play_likes"),
     ]);
+}
+
+const KIND_NAMES: &str = "kind\tname\tartist\tpopularity\taliases
+track\tПесня года\tНикто\t900000\t
+playlist\tПлейлист дня\t\t700000\t
+artist\tКрови\t\t300\t
+";
+
+#[test]
+fn a_name_that_starts_with_a_kind_word_is_found_when_said_alone() {
+    for text in ["группа крови", "кино группа крови"] {
+        assert_eq!(heard(text, Bare::Popular), "play Кино - Группа крови?");
+        assert_eq!(heard(text, Bare::Certain), "none", "{text}");
+        assert_eq!(handed(text)[0], "Кино - Группа крови", "{text}");
+    }
+    let named = [
+        ("песня года", "play Никто - Песня года"),
+        ("плейлист дня", "play Плейлист дня"),
+        ("группа крови", "none"),
+    ];
+    for (text, read) in named {
+        assert_eq!(heard_in(KIND_NAMES, text, Bare::Popular), read, "{text}");
+        assert_eq!(heard_in(KIND_NAMES, text, Bare::Certain), "none", "{text}");
+    }
 }
