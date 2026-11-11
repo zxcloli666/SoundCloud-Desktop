@@ -8,6 +8,11 @@ const BEFORE_AMOUNT: &[&str] = &["на", "до", "в", "к"];
 const SCALE_MARKS: &[&str] = &["доля", "ордин"];
 const NEXT_TRACK: &str = "дальше";
 
+enum Place {
+    Said(usize),
+    Implied(usize),
+}
+
 pub fn part(said: &[Tok], again: &[Tok]) -> Option<Vec<Tok>> {
     let known = |t: &Tok| {
         let w = t.w.as_str();
@@ -27,20 +32,45 @@ pub fn part(said: &[Tok], again: &[Tok]) -> Option<Vec<Tok>> {
 }
 
 fn amount(said: &[Tok], given: Vec<Tok>) -> Option<Vec<Tok>> {
-    let counts = given.iter().filter(|t| count(&t.w)).count();
     let own_unit = given.iter().any(|t| unit(&t.w));
-    if counts == 0 && !own_unit {
-        return None;
-    }
     let first = said.iter().position(|t| measures(&t.w))?;
     let last = said.iter().rposition(|t| measures(&t.w))?;
     let mut out = said.to_vec();
-    match said.iter().rposition(|t| count(&t.w)) {
-        _ if own_unit || counts > 1 => drop(out.splice(first..=last, given)),
-        Some(at) => out[at] = given[0].clone(),
-        None => out.insert(first, given[0].clone()),
+    if own_unit {
+        out.splice(first..=last, given);
+        return Some(out);
+    }
+    let counts: Vec<Tok> = given.into_iter().filter(|t| count(&t.w)).collect();
+    let places = places(said);
+    let filled = match counts.len() {
+        0 => return None,
+        said_all if said_all == places.len() => places.as_slice(),
+        1 => std::slice::from_ref(places.last()?),
+        _ => {
+            out.splice(first..=last, counts);
+            return Some(out);
+        }
+    };
+    for (place, number) in filled.iter().zip(counts).rev() {
+        match *place {
+            Place::Said(at) => out[at] = number,
+            Place::Implied(at) => out.insert(at, number),
+        }
     }
     Some(out)
+}
+
+fn places(said: &[Tok]) -> Vec<Place> {
+    let mut out = Vec::new();
+    for (at, t) in said.iter().enumerate() {
+        let counted = at > 0 && count(&said[at - 1].w);
+        if count(&t.w) {
+            out.push(Place::Said(at));
+        } else if unit(&t.w) && !counted {
+            out.push(Place::Implied(at));
+        }
+    }
+    out
 }
 
 fn direction(said: &[Tok], turned: Vec<Tok>) -> Option<Vec<Tok>> {
