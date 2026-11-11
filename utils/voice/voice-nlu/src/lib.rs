@@ -6,6 +6,7 @@ mod lexicon;
 mod names;
 mod normalize;
 mod numbers;
+mod objection;
 mod repair;
 mod reworded;
 mod slots;

@@ -3,6 +3,7 @@ use crate::intent;
 use crate::lexicon::{LONE_VERBS, ON_VERB_FORMS, PLAY_STRONG, PLAY_WEAK};
 use crate::names::Names;
 use crate::normalize::{Tok, normalize};
+use crate::objection;
 use crate::parse_toks;
 use crate::types::{Intent, Parsed};
 
@@ -23,7 +24,7 @@ struct Link {
 }
 
 pub fn parse(text: &str, names: &Names) -> Vec<Parsed> {
-    let spoken = correction(text);
+    let spoken = objection::command_after(text);
     let text_in = spoken.as_deref().unwrap_or(text);
     let fixed = correct::resolve(text_in);
     let corrected = fixed.is_some();
@@ -306,18 +307,4 @@ fn collapse(steps: Vec<Parsed>) -> Vec<Parsed> {
         out.push(p);
     }
     out
-}
-
-fn correction(text: &str) -> Option<String> {
-    let lower = text.to_lowercase();
-    let words: Vec<&str> = lower.split_whitespace().collect();
-    let first = words.first()?;
-    if matches!(*first, "не," | "нет," | "не.") && words.len() > 1 {
-        return Some(words[1..].join(" "));
-    }
-    if *first != "не" || words.len() < 3 {
-        return None;
-    }
-    let cut = words.iter().position(|w| matches!(*w, "а" | "а,"))?;
-    (cut + 1 < words.len()).then(|| words[cut + 1..].join(" "))
 }

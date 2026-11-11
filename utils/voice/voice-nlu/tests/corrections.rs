@@ -274,3 +274,13 @@ fn a_turned_down_alternative_gives_way_to_the_one_said_after_it() {
         ["pause"]
     );
 }
+
+#[test]
+fn a_command_after_a_run_of_no_stands() {
+    assert_eq!(steps("не не не верни как было"), ["undo"]);
+    assert_eq!(steps("нет нет нет следующий"), ["next"]);
+    assert_eq!(steps("не не не громче сделай"), ["volume_up"]);
+    assert_eq!(steps("не не включай"), ["none"]);
+    assert_eq!(steps("не не не"), ["none"]);
+    assert_eq!(steps("не-не оставь"), ["none"]);
+}
