@@ -46,7 +46,7 @@ impl Core {
         let boosts = Boosts::liked_artists(&self.config.boosts.artists);
         let probe = Probe::new(self.deps.catalog.as_ref());
         let bare = if self.config.llm {
-            Bare::SureArtist
+            Bare::Certain
         } else {
             Bare::Popular
         };

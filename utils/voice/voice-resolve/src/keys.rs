@@ -178,25 +178,9 @@ impl Keys {
             }
         }
         if let (Some(qa), Some(qt)) = (&v.artist, &v.title) {
-            let mut st = 0.0f32;
-            for (name, w) in &self.names {
-                st = st.max(near(qt, name) * w);
-            }
-            let sa = match &self.artist {
-                Some(artist) => self
-                    .artist_parts
-                    .iter()
-                    .map(|p| near(qa, p) * 0.95)
-                    .fold(near(qa, artist), f32::max),
-                None => {
-                    if self.own_artist_name {
-                        0.0
-                    } else {
-                        0.2
-                    }
-                }
-            };
-            best = best.max(st * (0.35 + 0.65 * sa));
+            let lone = if self.own_artist_name { 0.0 } else { 0.2 };
+            let sa = self.by(qa).unwrap_or(lone);
+            best = best.max(self.titled(qt) * (0.35 + 0.65 * sa));
         }
         if v.alias_kind.is_some() {
             best *= ALIAS_FACTOR;
@@ -209,9 +193,30 @@ impl Keys {
         }
         best
     }
+
+    pub fn credited(&self, v: &QueryKeys) -> bool {
+        let said = v.alias_kind.is_none_or(|kind| kind == Kind::Artist);
+        let (Some(artist), Some(title), true) = (&v.artist, &v.title, said) else {
+            return false;
+        };
+        let credits = |part: &String| self.by(part).is_some_and(|sim| sim >= CREDIT_MIN);
+        credits(artist) || credits(title)
+    }
+
+    fn titled(&self, title: &str) -> f32 {
+        let sims = self.names.iter().map(|(name, w)| near(title, name) * w);
+        sims.fold(0.0f32, f32::max)
+    }
+
+    fn by(&self, artist: &str) -> Option<f32> {
+        let whole = near(artist, self.artist.as_ref()?);
+        let parts = self.artist_parts.iter().map(|p| near(artist, p) * 0.95);
+        Some(parts.fold(whole, f32::max))
+    }
 }
 
 const STRICT_SLACK: f32 = 0.2;
+const CREDIT_MIN: f32 = 0.88;
 const FALLBACK_FACTOR: f32 = 0.92;
 const ALIAS_FACTOR: f32 = 0.96;
 

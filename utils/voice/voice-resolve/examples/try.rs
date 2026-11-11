@@ -11,7 +11,7 @@ fn main() {
     let catalog = FixtureCatalog::from_tsv(&text, aliases);
     let boosts = Boosts::none();
     let bare = match std::env::var("CHAT") {
-        Ok(_) => Bare::SureArtist,
+        Ok(_) => Bare::Certain,
         Err(_) => Bare::Popular,
     };
 

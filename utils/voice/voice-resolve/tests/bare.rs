@@ -1,7 +1,7 @@
 use voice_nlu::Intent;
 use voice_resolve::{Bare, Boosts, Decision, FixtureCatalog, Outcome, interpret};
 
-const BOTH: [Bare; 2] = [Bare::Popular, Bare::SureArtist];
+const BOTH: [Bare; 2] = [Bare::Popular, Bare::Certain];
 const ROWS: &str = "kind\tname\tartist\tpopularity\taliases
 artist\tСкриптонит\t\t6500000\tscriptonite
 artist\tНервы\t\t2000000\t
@@ -12,6 +12,14 @@ track\tКак дела\tT-Fest\t3000000\t
 track\tКак дела\tKIZARU\t2800000\t
 track\tСпасибо\tЗемфира\t2200000\t
 track\tЧто нового\tЛСП\t600000\t
+track\tКукушка\tКино\t5000000\t
+track\tКукушка\tПолина Гагарина\t1200000\t
+track\tDu Hast\tRammstein\t30000000\t
+track\tСинева\tНикто\t500\t
+track\tХорошая\tЗиверт\t800000\t
+track\tГоргород\tOxxxymiron\t2100000\t
+album\tГоргород\tOxxxymiron\t2000000\t
+playlist\tДля сна\t\t500000\t
 ";
 
 fn heard_in(rows: &str, text: &str, bare: Bare) -> Outcome {
@@ -47,7 +55,7 @@ fn hits(outcome: &Outcome) -> Vec<String> {
 }
 
 fn handed(text: &str) -> Vec<String> {
-    let outcome = heard(text, Bare::SureArtist);
+    let outcome = heard(text, Bare::Certain);
     assert_eq!(outcome.intent, Intent::None, "{text}");
     assert!(outcome.decision.is_none(), "{text}");
     hits(&outcome)
@@ -108,6 +116,71 @@ fn an_artist_that_is_not_sure_is_handed_over() {
 }
 
 #[test]
+fn a_title_said_with_its_artist_plays_either_way() {
+    let cases = [
+        ("кино кукушка", "play act Кино - Кукушка"),
+        ("кукушка гагарина", "play act Полина Гагарина - Кукушка"),
+        ("цоя кукушку", "play act Кино - Кукушка"),
+        ("ЛСП - Что нового", "play act ЛСП - Что нового"),
+        ("Что нового - ЛСП", "play act ЛСП - Что нового"),
+        ("рамштайн дю хаст", "play act Rammstein - Du Hast"),
+        ("ало макс корж", "play act Макс Корж - Ало"),
+    ];
+    for bare in BOTH {
+        for (text, played) in cases {
+            let outcome = heard(text, bare);
+            assert_eq!(told(&outcome), played, "{text}");
+            assert!(outcome.candidates.is_empty(), "{text}");
+        }
+    }
+}
+
+#[test]
+fn the_title_alone_is_handed_over() {
+    let both = ["Кино - Кукушка", "Полина Гагарина - Кукушка"];
+    assert_eq!(handed("кукушка"), both);
+    assert_eq!(handed("дю хаст"), ["Rammstein - Du Hast"]);
+}
+
+#[test]
+fn an_artist_with_a_title_that_is_not_sure_is_handed_over() {
+    let twice = ["Oxxxymiron - Горгород", "Oxxxymiron - Горгород"];
+    let popular = heard("oxxxymiron горгород", Bare::Popular);
+    assert_eq!(
+        told(&popular),
+        "play ask Oxxxymiron - Горгород | Oxxxymiron - Горгород"
+    );
+    assert_eq!(handed("oxxxymiron горгород"), twice);
+    assert_eq!(told(&heard("никто синева", Bare::Popular)), "none");
+    assert_eq!(handed("никто синева"), ["Никто - Синева"]);
+}
+
+#[test]
+fn an_album_or_a_playlist_called_by_its_kind_plays_either_way() {
+    let cases = [
+        ("альбом горгород", "play act Oxxxymiron - Горгород"),
+        ("плейлист для сна", "play act Для сна"),
+    ];
+    for bare in BOTH {
+        for (text, played) in cases {
+            let outcome = heard(text, bare);
+            assert_eq!(told(&outcome), played, "{text}");
+            assert!(outcome.candidates.is_empty(), "{text}");
+        }
+    }
+}
+
+#[test]
+fn a_word_for_a_track_does_not_make_its_title_sure() {
+    assert_eq!(handed("хорошая песня"), ["Зиверт - Хорошая"]);
+    assert_eq!(handed("трек ало"), ["Макс Корж - Ало"]);
+    assert_eq!(
+        told(&heard("хорошая песня", Bare::Popular)),
+        "play act Зиверт - Хорошая"
+    );
+}
+
+#[test]
 fn a_phrase_with_a_verb_is_read_the_same_either_way() {
     let cases = [
         (
@@ -139,7 +212,7 @@ fn at_most_five_hits_are_handed_over_best_first() {
         let plays = 8_000_000 / nth;
         rows.push_str(&format!("track\tДоброе утро\tПевец {nth}\t{plays}\t\n"));
     }
-    let outcome = heard_in(&rows, "доброе утро", Bare::SureArtist);
+    let outcome = heard_in(&rows, "доброе утро", Bare::Certain);
     assert_eq!(told(&outcome), "none");
     let best = [1, 2, 3, 4, 5].map(|nth| format!("Певец {nth} - Доброе утро"));
     assert_eq!(hits(&outcome), best);

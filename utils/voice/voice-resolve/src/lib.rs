@@ -139,7 +139,7 @@ fn whole_name(
     if sim < WHOLE_NAME_MIN {
         return None;
     }
-    if parsed.intent == Intent::None && !bare.trusts(&d) {
+    if parsed.intent == Intent::None && !bare.trusts(&whole, &d) {
         return None;
     }
     Some(Outcome {
@@ -173,7 +173,7 @@ fn interpret_parsed(parsed: Parsed, catalog: &dyn Catalog, boosts: &Boosts, bare
         if parsed.bare {
             let ranked = ranked(&parsed, catalog, boosts);
             let d = score::decide(&ranked, true);
-            if bare.plays(&d) {
+            if bare.plays(&parsed, &d) {
                 intent = Intent::Play;
                 decision = Some(d);
             } else {

@@ -1,5 +1,5 @@
 use std::collections::BTreeMap;
-use voice_nlu::{Intent, Kind};
+use voice_nlu::Intent;
 use voice_resolve::{Bare, Boosts, Decision, FixtureCatalog, Outcome, interpret};
 
 struct Row {
@@ -371,10 +371,6 @@ fn named_alone(o: &Outcome) -> bool {
     o.parsed.intent == Intent::None && o.intent == Intent::Play
 }
 
-fn sure_artist(o: &Outcome) -> bool {
-    matches!(&o.decision, Some(Decision::Act { pick }) if pick.entity.kind == Kind::Artist)
-}
-
 fn understood(os: &[Outcome]) -> Vec<String> {
     os.iter()
         .map(|o| format!("{:?} {:?} {:?}", o.intent, o.parsed, o.decision))
@@ -387,22 +383,21 @@ fn leaving_names_said_alone_to_the_listener_changes_nothing_else() {
     let mut union = BTreeMap::new();
     let mut left = Vec::new();
     for set in sets() {
-        let (stats, _) = run(set.name, &set.rows, &catalog, Bare::SureArtist);
+        let (stats, _) = run(set.name, &set.rows, &catalog, Bare::Certain);
         merge(&mut union, &stats);
         for row in &set.rows {
             let popular = interpret(&row.phrase, &catalog, &Boosts::none(), Bare::Popular);
-            let artist = interpret(&row.phrase, &catalog, &Boosts::none(), Bare::SureArtist);
-            for o in artist.iter().filter(|o| named_alone(o)) {
-                assert!(sure_artist(o), "{} plays {:?}", row.phrase, o.decision);
+            let certain = interpret(&row.phrase, &catalog, &Boosts::none(), Bare::Certain);
+            for o in certain.iter().filter(|o| named_alone(o)) {
+                assert!(o.acts(), "{} plays {:?}", row.phrase, o.decision);
             }
             for o in &popular {
                 assert!(o.candidates.is_empty(), "{}", row.phrase);
             }
-            if understood(&popular) == understood(&artist) {
+            if understood(&popular) == understood(&certain) {
                 continue;
             }
-            let unsure = |o: &Outcome| named_alone(o) && !sure_artist(o);
-            assert!(popular.iter().any(unsure), "{}", row.phrase);
+            assert!(popular.iter().any(named_alone), "{}", row.phrase);
             left.push(format!("{} [{}] {:?}", set.name, row.category, row.phrase));
         }
     }
