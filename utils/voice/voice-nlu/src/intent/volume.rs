@@ -111,6 +111,8 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
     used.extend((0..c.len()).filter(|&i| crate::numbers::is_number(c.w[i])));
     used.extend(c.all(PLAY_STRONG));
     used.extend(super::seek::hedges(c));
+    let wait = super::seek::wait(c);
+    used.extend(wait.iter().copied());
     used.extend(c.all(&[
         "up",
         "down",
@@ -127,7 +129,7 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
     }
     let found = |intent| {
         let d = Detected::new(intent, used.clone());
-        match number {
+        match number.filter(|_| wait.is_empty()) {
             Some(n) => d.number(n.min(100)),
             None => d,
         }

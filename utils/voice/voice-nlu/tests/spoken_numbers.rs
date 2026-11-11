@@ -163,3 +163,44 @@ fn a_hedge_beside_an_amount_leaves_the_command_as_it_is() {
         assert_eq!(steps(text), want, "{text}");
     }
 }
+
+#[test]
+fn a_length_of_time_after_a_pause_or_a_volume_step_is_not_a_seek() {
+    for (text, want) in [
+        ("паузни на секунду", "pause"),
+        ("пауза на секундочку", "pause"),
+        ("поставь на паузу на минутку", "pause"),
+        ("пауза на 5 минут", "pause"),
+        ("пауза минут на пять", "pause"),
+        ("тормозни на пару секунд", "pause"),
+        ("на минуту пауза", "pause"),
+        ("стоп на минутку", "stop"),
+        ("останови музыку на минуту", "stop"),
+        ("потише на минуту", "volume_down"),
+        ("сделай потише на 5 минут", "volume_down"),
+        ("убавь звук на минутку", "volume_down"),
+        ("выключи звук на минуту", "mute"),
+        ("на секунду", "none"),
+        ("на секундочку", "none"),
+        ("на минутку", "none"),
+        ("пауза на минуту тридцать", "pause"),
+        ("пауза на 1:30", "pause"),
+        ("стоп через 5 минут", "none"),
+    ] {
+        assert_eq!(steps(text), want, "{text}");
+    }
+    for (text, want) in [
+        ("пауза назад на 10 секунд", "pause + seek_backward 10"),
+        (
+            "пауза и перемотай на минуту назад",
+            "pause + seek_backward 60",
+        ),
+        ("потише на 10", "volume_down 10"),
+        ("на минуту тридцать", "seek_to 90"),
+        ("на полминуты", "seek_to 30"),
+        ("вперед на минутку", "seek_forward 60"),
+        ("секундочку", "pause"),
+    ] {
+        assert_eq!(steps(text), want, "{text}");
+    }
+}
