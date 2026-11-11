@@ -117,7 +117,11 @@ mod tests {
     fn faster_speech_is_shorter_and_stays_in_place() {
         let out = shaped(1.25, 0.0, 1920);
         let want = (burst().len() as f32 / 1.25) as i64;
-        assert!((out.len() as i64 - want).abs() < 50, "{} vs {want}", out.len());
+        assert!(
+            (out.len() as i64 - want).abs() < 50,
+            "{} vs {want}",
+            out.len()
+        );
         let (first, last) = loud_span(&out);
         assert!((first as i64 - 9600).abs() < 600, "{first}");
         assert!((last as i64 - 19200).abs() < 600, "{last}");
@@ -126,7 +130,11 @@ mod tests {
     #[test]
     fn a_pitch_shift_keeps_the_length_and_the_timing() {
         let out = shaped(1.0, 3.0, 700);
-        assert!((out.len() as i64 - burst().len() as i64).abs() < 50, "{}", out.len());
+        assert!(
+            (out.len() as i64 - burst().len() as i64).abs() < 50,
+            "{}",
+            out.len()
+        );
         let (first, last) = loud_span(&out);
         assert!((first as i64 - 12000).abs() < 600, "{first}");
         assert!((last as i64 - 24000).abs() < 600, "{last}");
