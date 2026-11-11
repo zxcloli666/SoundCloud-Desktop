@@ -8,6 +8,7 @@ import type { VoiceErrorCode } from '../../../lib/voice/types';
 import { StarCta } from '../../star-moments/StarCta';
 import { CircleAlert, SearchX } from '../icons';
 import { useOpenVoiceSettings, useSearchFor } from '../nav';
+import { useVoiceGender } from '../useVoiceGender';
 import { CloseX, IconTile, IslandAction, IslandText } from './parts';
 
 export function NotFoundView({ heard, onClose }: { heard: string; onClose: () => void }) {
@@ -110,12 +111,13 @@ function FixAction({ code, onClose }: { code: VoiceErrorCode; onClose: () => voi
 
 export function ErrorView({ code, onClose }: { code: VoiceErrorCode; onClose: () => void }) {
   const { t } = useTranslation();
+  const gender = useVoiceGender();
   return (
     <>
       <IconTile tone="bad">
         <CircleAlert size={17} />
       </IconTile>
-      <IslandText title={t(`voice.error.${code}`)} />
+      <IslandText title={t(`voice.error.${code}`, { context: gender })} />
       <FixAction code={code} onClose={onClose} />
       <CloseX onClick={onClose} label={t('common.close')} />
     </>

@@ -5,6 +5,7 @@ import { voiceIpc } from '../../../lib/voice/ipc';
 import { useVoiceStore } from '../../../lib/voice/store';
 import { Mic } from '../icons';
 import { useLevelDrive } from '../useLevelDrive';
+import { useVoiceGender } from '../useVoiceGender';
 import { SmallButton } from './Block';
 
 export const TEACH_SAMPLES = 5;
@@ -14,6 +15,7 @@ type Phase = 'idle' | 'recording' | 'saving' | 'done' | 'failed';
 export function TeachPanel({ onClose }: { onClose: () => void }) {
   const { t } = useTranslation();
   const setTaught = useVoiceStore((s) => s.setWakeTaught);
+  const gender = useVoiceGender();
   const [count, setCount] = useState(0);
   const [phase, setPhase] = useState<Phase>('idle');
   const micRef = useRef<HTMLSpanElement>(null);
@@ -65,7 +67,7 @@ export function TeachPanel({ onClose }: { onClose: () => void }) {
         <div className="min-w-0 flex-1">
           <p className="text-[13.5px] font-semibold text-ink-90">
             {phase === 'done'
-              ? t('voice.teach.done')
+              ? t('voice.teach.done', { context: gender })
               : phase === 'failed'
                 ? t('voice.teach.failed')
                 : phase === 'recording'

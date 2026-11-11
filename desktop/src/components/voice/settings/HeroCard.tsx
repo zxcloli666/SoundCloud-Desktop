@@ -15,6 +15,7 @@ import { KeyCaps } from '../../ui/KeyCap';
 import { percent, useFormatBytes } from '../format';
 import { Mic, StopSquare } from '../icons';
 import { Orb, type OrbMode } from '../Orb';
+import { useVoiceGender } from '../useVoiceGender';
 import { Pill, SmallButton } from './Block';
 import { SpeechBar } from './SpeechBar';
 
@@ -138,6 +139,7 @@ export function HeroCard() {
   const canTalk = config.enabled && ready && !missing;
   const phase = useVoiceRuntime((s) => modelsState(s.models));
   const state = heroState(missing, config.enabled, ready, phase, engine);
+  const gender = useVoiceGender();
 
   return (
     <section
@@ -189,7 +191,7 @@ export function HeroCard() {
           <div className="flex items-center gap-3">
             <div className="min-w-0 flex-1">
               <p className="mb-1 text-[11px] font-bold uppercase tracking-[0.22em] text-ink-35">
-                {t(`voice.hero.state.${state}`)}
+                {t(`voice.hero.state.${state}`, { context: gender })}
               </p>
               <h3 className="truncate text-[28px] font-black leading-none tracking-tight text-ink">
                 {t('voice.assistant')}

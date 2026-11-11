@@ -11,10 +11,12 @@
       "state": {
         "missing": "Sem motor",
         "off": "Desligada",
+        "off_male": "Desligado",
         "models": "Faltam modelos",
         "downloading": "Baixando",
         "broken": "Modelo danificado",
         "ready": "Pronta",
+        "ready_male": "Pronto",
         "listening": "Ouvindo",
         "thinking": "Pensando",
         "asking": "Perguntando",
