@@ -369,3 +369,20 @@ fn a_phrase_that_opens_with_what_the_speaker_will_do_is_not_a_command() {
         ("я хочу музыку", "play_wave"),
     ]);
 }
+
+#[test]
+fn a_command_followed_by_a_state_phrase_that_asks_the_same_is_that_command() {
+    acts(&[
+        ("сделай громче ничего не слышно", "volume_up"),
+        ("включи громче ничего не слышно", "volume_up"),
+        ("громче я ничего не слышу", "volume_up"),
+        ("сделай потише слишком громко", "volume_down"),
+        ("переключи надоела эта песня", "next"),
+        ("поставь на паузу у меня звонок", "pause"),
+    ]);
+    stays_silent(&[
+        "сделай громче телевизор ничего не слышно",
+        "сделай громче не надо",
+        "громче не делай",
+    ]);
+}

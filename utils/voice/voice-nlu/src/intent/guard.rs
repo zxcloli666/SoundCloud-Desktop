@@ -1,4 +1,5 @@
 use super::ctx::Ctx;
+use super::indirect;
 use super::talk;
 use crate::lexicon::{
     self, ADDRESSEES, IMPERATIVES, NEG_FOLLOW, NEG_STEMS, PLAY_STRONG, REMARK_START, REPORT,
@@ -67,6 +68,33 @@ pub fn negation(toks: &[Tok]) -> Negation {
     Negation::Clear
 }
 
+pub fn remark(toks: &[Tok]) -> Option<usize> {
+    if talk::sentence(&Ctx::new(toks)) {
+        return None;
+    }
+    restated(toks).or_else(|| started(toks))
+}
+
+fn restated(toks: &[Tok]) -> Option<usize> {
+    (1..toks.len().saturating_sub(1)).find(|&k| cuttable(toks, k) && same_ask(toks, k))
+}
+
+fn same_ask(toks: &[Tok], k: usize) -> bool {
+    let said = super::detect(&toks[..k]).intent;
+    indirect::detect(&Ctx::new(&toks[k..])).is_some_and(|state| state.intent == said)
+}
+
+fn started(toks: &[Tok]) -> Option<usize> {
+    (1..toks.len().saturating_sub(1))
+        .filter(|&k| REMARK_START.contains(&toks[k].w.as_str()))
+        .filter(|&k| {
+            toks[..k]
+                .iter()
+                .all(|t| !REMARK_START.contains(&t.w.as_str()))
+        })
+        .find(|&k| cuttable(toks, k))
+}
+
 fn cuttable(toks: &[Tok], k: usize) -> bool {
     match super::detect(&toks[..k]).intent {
         Intent::None
@@ -79,18 +107,4 @@ fn cuttable(toks: &[Tok], k: usize) -> bool {
         Intent::Play | Intent::QueueAdd => k >= 2,
         _ => true,
     }
-}
-
-pub fn remark(toks: &[Tok]) -> Option<usize> {
-    if talk::sentence(&Ctx::new(toks)) {
-        return None;
-    }
-    (1..toks.len().saturating_sub(1))
-        .filter(|&k| REMARK_START.contains(&toks[k].w.as_str()))
-        .filter(|&k| {
-            toks[..k]
-                .iter()
-                .all(|t| !REMARK_START.contains(&t.w.as_str()))
-        })
-        .find(|&k| cuttable(toks, k))
 }
