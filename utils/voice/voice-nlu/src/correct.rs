@@ -1,5 +1,5 @@
 use crate::intent;
-use crate::lexicon::{CORRECTION_NOISE, MERGE_PHRASES};
+use crate::lexicon::{CORRECTION_NOISE, GENERIC, MERGE_PHRASES, PRE};
 use crate::normalize::{Tok, normalize, words};
 use crate::numbers;
 use crate::reworded;
@@ -22,6 +22,20 @@ const REPLACE: &[&[&str]] = &[
 
 const AT_LEAST: &[&str] = &["хотя", "бы"];
 const RESTART: &str = "давай";
+const LEAVE: &str = "оставь";
+const LET: &str = "пусть";
+const AS_IT_IS: &[&str] = &[
+    "играет",
+    "будет",
+    "идет",
+    "остается",
+    "как",
+    "есть",
+    "было",
+    "дальше",
+];
+const AS_IT_WAS: &str = "верни как было";
+const PLAY: &str = "включи";
 const ECHO_MIN: usize = 4;
 const POINTERS: &[&str] = &[
     "так", "то", "туда", "ту", "тот", "та", "те", "это", "эту", "этот", "эта", "их", "его", "ее",
@@ -121,11 +135,12 @@ fn merge(said: Vec<Tok>, version: Version) -> Vec<Tok> {
     if next.is_empty() {
         return said;
     }
-    if next[0].w == "оставь" {
-        return if next.len() == 1 {
-            Vec::new()
+    if left_as_it_is(&next) {
+        let undone = said.is_empty() && next.len() > 1 && next[0].w == LEAVE;
+        return if undone {
+            normalize(AS_IT_WAS).toks
         } else {
-            toks(&["верни".into(), "как".into(), "было".into()])
+            Vec::new()
         };
     }
     let part = reworded::amount(&said, &next).or_else(|| reworded::direction(&said, &next));
@@ -149,7 +164,7 @@ fn merge(said: Vec<Tok>, version: Version) -> Vec<Tok> {
         .filter_map(|&i| said.get(i).cloned())
         .collect();
     if head.is_empty() && alternative {
-        head = toks(&["включи".into()]);
+        head = normalize(PLAY).toks;
     }
     head.extend(next);
     head
@@ -193,6 +208,14 @@ fn after_remark(said: &[String]) -> &[String] {
         Some(at) if said[at + 1..].iter().any(|w| !noise(w)) => &said[skip_noise(said, at + 1)..],
         _ => said,
     }
+}
+
+fn left_as_it_is(next: &[Tok]) -> bool {
+    let nothing_else = next[1..].iter().all(|t| {
+        let w = t.w.as_str();
+        AS_IT_IS.contains(&w) || GENERIC.contains(&w) || PRE.contains(&w)
+    });
+    next[0].w == LEAVE || (next[0].w == LET && nothing_else)
 }
 
 fn orders(next: &[Tok], said: &[Tok]) -> bool {

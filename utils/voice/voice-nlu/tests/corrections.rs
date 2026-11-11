@@ -202,3 +202,18 @@ fn a_name_said_with_a_weak_verb_stays_under_the_first_verb() {
     assert_eq!(p.intent, Intent::QueueAdd);
     assert!(asks_for(&p, "скриптонита"));
 }
+
+#[test]
+fn a_correction_that_leaves_things_as_they_are_does_nothing() {
+    for text in [
+        "следующую стой нет оставь эту",
+        "поставь на паузу а нет нет пусть играет",
+        "выключи а нет пусть будет",
+        "громче нет оставь как есть",
+        "следующий а нет оставь",
+        "включи кино нет пусть играет это",
+    ] {
+        assert_eq!(steps(text), ["none"], "{text}");
+    }
+    assert_eq!(steps("нет оставь как было"), ["undo"]);
+}
