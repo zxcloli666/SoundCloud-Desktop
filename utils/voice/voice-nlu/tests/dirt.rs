@@ -80,3 +80,35 @@ fn a_word_that_only_resembles_a_command_word_is_left_as_heard() {
     assert!(names("включи том йорк").contains(&"том йорк".to_string()));
     assert_eq!(steps("мы всю дорогу слушали валеру"), ["none"]);
 }
+
+#[test]
+fn two_command_words_run_together_or_one_cut_in_two_are_read_apart_and_whole() {
+    for (heard, meant) in [
+        ("сделайпотише", "сделай потише"),
+        ("сделайгромче", "сделай громче"),
+        ("следующийтрек", "следующий трек"),
+        ("кто это по ёт", "кто это поет"),
+        ("сделай по громче", "сделай погромче"),
+        ("за пусти", "запусти"),
+        ("в ключи чтонибудь", "включи чтонибудь"),
+    ] {
+        assert_eq!(words(heard), meant, "{heard}");
+    }
+    for (heard, want) in [
+        ("сделайпотише", "volume_down"),
+        ("следующийтрек", "next"),
+        ("кто это по ёт", "now_playing"),
+        ("кто по ёт", "now_playing"),
+    ] {
+        assert_eq!(steps(heard), [want], "{heard}");
+    }
+    for kept in [
+        "плейстейшен",
+        "радиохед",
+        "скриптонит",
+        "стопхам",
+        "звукорежиссер",
+    ] {
+        assert_eq!(words(kept), kept, "{kept}");
+    }
+}

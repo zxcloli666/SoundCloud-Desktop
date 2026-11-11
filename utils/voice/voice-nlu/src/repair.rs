@@ -1,6 +1,7 @@
 use crate::lexicon::{self, PRE};
 
 const GLUE_VERBS: &[&str] = &["включи", "вруби", "поставь", "запусти", "сыграй"];
+const GLUED_FROM: usize = 4;
 
 fn known(w: &str) -> bool {
     lexicon::is_known(w) || lexicon::slang(w).is_some()
@@ -49,10 +50,27 @@ pub fn glue(words: Vec<String>) -> Vec<String> {
                 continue;
             }
         }
+        if let Some((first, second)) = run_together(w) {
+            out.push(first.to_string());
+            out.push(second.to_string());
+            i += 1;
+            continue;
+        }
         out.push(w.clone());
         i += 1;
     }
     out
+}
+
+fn run_together(w: &str) -> Option<(&str, &str)> {
+    if known(w) || lexicon::canon(w).is_some() {
+        return None;
+    }
+    let cuts: Vec<usize> = w.char_indices().map(|(at, _)| at).collect();
+    let last = cuts.len().checked_sub(GLUED_FROM)?;
+    (GLUED_FROM..=last)
+        .map(|n| w.split_at(cuts[n]))
+        .find(|(first, second)| known(first) && known(second))
 }
 
 pub fn stutter(words: Vec<String>) -> Vec<String> {
