@@ -6,7 +6,7 @@ use crate::lexicon::{
     self, AGREEMENT, ASKING, BACKWARD, CLAUSE_SUBJECTS, COMPLAINT, COMPOUNDS, DEMONSTRATIVES, DENY,
     DOWN_WORDS, FORWARD, INFINITIVE_ENDINGS, INSISTING, LISTENERS, LISTENING_STEMS, MUSIC_STEMS,
     NEG_STEMS, NEXT_STRONG, OTHERS, OWN, PLAY_STRONG, PREV_STRONG, REMARK_START, RESUME_WORDS,
-    RINGS, SPEAKING, STRIDES, SWEARS_AMB, TASTE, UP_WORDS, WAS, WHICH,
+    RINGS, SPEAKING, STRIDES, SWEARS_AMB, TASTE, THE_PAST, UP_WORDS, WAS, WHICH,
 };
 
 pub fn sentence(c: &Ctx) -> bool {
@@ -22,6 +22,7 @@ pub fn sentence(c: &Ctx) -> bool {
         || plan_of_the_speaker(c)
         || voice_of_a_person(c)
         || carrying_on_with_something_else(c)
+        || the_past(c)
 }
 
 pub fn marching(c: &Ctx) -> bool {
@@ -144,6 +145,10 @@ fn carrying_on_with_something_else(c: &Ctx) -> bool {
         let musical = command_word(deed) || lexicon::stem(NEG_STEMS, deed);
         RESUME_WORDS.contains(&c.w[i - 1]) && infinitive && !musical
     })
+}
+
+fn the_past(c: &Ctx) -> bool {
+    c.has(THE_PAST) && !about_music(c) && !c.has(PLAY_STRONG)
 }
 
 fn own_verb(w: &str) -> bool {

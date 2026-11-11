@@ -470,3 +470,21 @@ fn only_a_form_of_the_word_start_restarts_the_track() {
         ("начальник звонит", "pause"),
     ]);
 }
+
+#[test]
+fn the_past_said_as_a_noun_is_not_the_previous_track() {
+    stays_silent(&[
+        "назад в прошлое",
+        "прошлое не вернуть",
+        "вернуться в прошлое",
+        "забудь прошлое",
+        "всё в прошлом",
+    ]);
+    acts(&[
+        ("прошлый трек", "previous"),
+        ("прошлую верни", "previous"),
+        ("верни прошлую песню", "previous"),
+        ("вернись к прошлому треку", "previous"),
+        ("включи прошлое лето", "play"),
+    ]);
+}

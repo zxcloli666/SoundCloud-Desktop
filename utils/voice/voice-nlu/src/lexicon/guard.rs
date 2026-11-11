@@ -273,6 +273,8 @@ pub const LISTENING_STEMS: &[&str] = &[
     "пропуст",
 ];
 
+pub const THE_PAST: &[&str] = &["прошлое", "прошлом", "прошлому"];
+
 pub const SWEARS_AMB: &[&str] = &["нахер", "нахрен", "нафиг", "нафик"];
 
 pub const COMPLAINT: &[&str] = &[
