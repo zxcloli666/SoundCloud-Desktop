@@ -259,6 +259,8 @@ pub const SPEAKING: &[&str] = &[
     "шепчи",
 ];
 
+pub const INFINITIVE_ENDINGS: &[&str] = &["ть", "ться", "чь", "ти"];
+
 pub const SWEARS_AMB: &[&str] = &["нахер", "нахрен", "нафиг", "нафик"];
 
 pub const COMPLAINT: &[&str] = &[

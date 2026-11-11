@@ -4,8 +4,9 @@ use super::library::NOW_SET;
 use crate::anchor::finite;
 use crate::lexicon::{
     self, AGREEMENT, ASKING, BACKWARD, CLAUSE_SUBJECTS, COMPLAINT, COMPOUNDS, DEMONSTRATIVES, DENY,
-    DOWN_WORDS, FORWARD, LISTENERS, MUSIC_STEMS, NEG_STEMS, NEXT_STRONG, OTHERS, OWN, PLAY_STRONG,
-    PREV_STRONG, REMARK_START, RINGS, SPEAKING, STRIDES, SWEARS_AMB, TASTE, UP_WORDS, WAS, WHICH,
+    DOWN_WORDS, FORWARD, INFINITIVE_ENDINGS, LISTENERS, MUSIC_STEMS, NEG_STEMS, NEXT_STRONG,
+    OTHERS, OWN, PLAY_STRONG, PREV_STRONG, REMARK_START, RESUME_WORDS, RINGS, SPEAKING, STRIDES,
+    SWEARS_AMB, TASTE, UP_WORDS, WAS, WHICH,
 };
 
 pub fn sentence(c: &Ctx) -> bool {
@@ -20,6 +21,7 @@ pub fn sentence(c: &Ctx) -> bool {
         || question_to_a_person(c)
         || plan_of_the_speaker(c)
         || voice_of_a_person(c)
+        || carrying_on_with_something_else(c)
 }
 
 pub fn marching(c: &Ctx) -> bool {
@@ -127,6 +129,15 @@ fn plan_of_the_speaker(c: &Ctx) -> bool {
 
 fn voice_of_a_person(c: &Ctx) -> bool {
     c.has(SPEAKING) && c.w.iter().any(|w| volume_word(w))
+}
+
+fn carrying_on_with_something_else(c: &Ctx) -> bool {
+    (1..c.len()).any(|i| {
+        let deed = c.w[i];
+        let infinitive = INFINITIVE_ENDINGS.iter().any(|e| deed.ends_with(e));
+        let musical = command_word(deed) || lexicon::stem(NEG_STEMS, deed);
+        RESUME_WORDS.contains(&c.w[i - 1]) && infinitive && !musical
+    })
 }
 
 fn own_verb(w: &str) -> bool {

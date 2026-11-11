@@ -429,3 +429,20 @@ fn a_volume_word_said_with_a_verb_of_speaking_is_about_a_voice() {
         ("сделай потише я разговариваю по телефону", "volume_down"),
     ]);
 }
+
+#[test]
+fn carrying_on_with_something_that_is_not_playing_is_talk() {
+    stays_silent(&[
+        "продолжай говорить",
+        "продолжай рассказывать",
+        "продолжайте работать",
+        "продолжим обсуждать завтра",
+        "ну продолжай читать",
+    ]);
+    acts(&[
+        ("продолжай", "resume"),
+        ("продолжай играть", "resume"),
+        ("продолжай дальше", "resume"),
+        ("продолжи воспроизведение", "resume"),
+    ]);
+}
