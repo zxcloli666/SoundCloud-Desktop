@@ -10,6 +10,17 @@ pub fn fold(text: &str) -> String {
     dedupe(&key)
 }
 
+pub fn word_ends(text: &str) -> Vec<usize> {
+    let mut key = String::new();
+    let mut ends = Vec::new();
+    for word in fold_words(text) {
+        key.push_str(&word);
+        key = dedupe(&key);
+        ends.push(key.chars().count());
+    }
+    ends
+}
+
 pub fn fold_words(text: &str) -> Vec<String> {
     let words = split_words(text);
     let words = numbers::merge(&words, true);

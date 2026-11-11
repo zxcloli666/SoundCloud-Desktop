@@ -1,5 +1,5 @@
 use crate::entity::Entity;
-use voice_nlu::{Kind, Variant, fold, skeleton};
+use voice_nlu::{Kind, Variant, fold, skeleton, word_ends};
 
 type Grams = Vec<(char, char)>;
 
@@ -171,9 +171,9 @@ impl Keys {
         for (name, w) in &self.names {
             best = best.max(near(&v.text, name) * w);
             if let Some(artist) = &self.artist {
-                best = best.max(combo(&v.text, artist, name) * w);
+                best = best.max(combo(v, artist, name) * w);
                 for part in &self.artist_parts {
-                    best = best.max(combo(&v.text, part, name) * w * 0.95);
+                    best = best.max(combo(v, part, name) * w * 0.95);
                 }
             }
         }
@@ -220,11 +220,12 @@ const CREDIT_MIN: f32 = 0.88;
 const FALLBACK_FACTOR: f32 = 0.92;
 const ALIAS_FACTOR: f32 = 0.96;
 
-fn near(a: &str, b: &str) -> f32 {
+pub fn near(a: &str, b: &str) -> f32 {
     voice_nlu::similarity(a, b).min(voice_nlu::strict_similarity(a, b) + STRICT_SLACK)
 }
 
-fn combo(q: &str, artist: &str, name: &str) -> f32 {
+fn combo(query: &QueryKeys, artist: &str, name: &str) -> f32 {
+    let q = query.text.as_str();
     let qc: Vec<char> = q.chars().collect();
     let total = qc.len();
     if total < 3 {
@@ -239,7 +240,7 @@ fn combo(q: &str, artist: &str, name: &str) -> f32 {
         let l1 = first.chars().count();
         let lo = l1.saturating_sub(3).max(1);
         let hi = (l1 + 3).min(total - 1);
-        for p in lo..=hi {
+        for p in (lo..=hi).filter(|p| query.meets_at(*p)) {
             let left: String = qc[..p].iter().collect();
             let right: String = qc[p..].iter().collect();
             let s1 = near(&left, first);
@@ -264,6 +265,7 @@ pub struct QueryKeys {
     pub alias_kind: Option<Kind>,
     grams: Grams,
     title_grams: Option<Grams>,
+    word_ends: Vec<usize>,
 }
 
 impl QueryKeys {
@@ -273,6 +275,7 @@ impl QueryKeys {
         QueryKeys {
             grams: grams(&text),
             title_grams: title.as_deref().map(grams),
+            word_ends: word_ends(&v.text),
             text,
             artist: v.artist.as_deref().map(fold),
             title,
@@ -281,6 +284,10 @@ impl QueryKeys {
             fallback: v.fallback,
             alias_kind: v.alias_kind,
         }
+    }
+
+    fn meets_at(&self, split: usize) -> bool {
+        self.word_ends.len() < 2 || self.word_ends.contains(&split)
     }
 
     pub fn names_an_artist(&self) -> bool {

@@ -302,6 +302,48 @@ album\tГруппа крови\tКино\t2000000\t
         assert!(heard(&exact).acts());
     }
 
+    const LOOKALIKES: &str = "kind\tname\tartist\tpopularity\taliases
+artist\tЛенинград\t\t2600000\t
+artist\tЛенинградка\t\t5000\t
+artist\tЛенинград Cover\t\t3000\t
+track\tWWW\tЛенинград\t2500000\t
+playlist\tЛенинград Mix\t\t40000\t
+artist\tDrake\t\t78000000\t
+artist\tDrake Bell\t\t300000\t
+";
+
+    fn played(text: &str) -> String {
+        let catalog = FixtureCatalog::from_tsv(LOOKALIKES, true);
+        match interpret_one(text, &catalog, &Boosts::none(), Bare::Popular).decision {
+            Some(Decision::Act { pick }) => pick.entity.label(),
+            other => format!("{other:?}"),
+        }
+    }
+
+    #[test]
+    fn words_after_an_artist_do_not_turn_into_a_title_of_one_sound() {
+        for text in [
+            "включи ленинград вася",
+            "включи ленинград вова",
+            "включи ленинград новая",
+            "включи вову ленинград",
+        ] {
+            assert_eq!(played(text), "Ленинград", "{text}");
+        }
+        assert_eq!(played("включи ленинград www"), "Ленинград - WWW");
+        assert_eq!(played("включи www ленинграда"), "Ленинград - WWW");
+    }
+
+    #[test]
+    fn a_longer_name_wins_over_the_artist_only_when_the_rest_is_said() {
+        assert_eq!(played("включи ленинград кавер"), "Ленинград Cover");
+        assert_eq!(played("включи ленинград микс"), "Ленинград Mix");
+        assert_eq!(played("включи дрейка белла"), "Drake Bell");
+        assert_eq!(played("включи дрейк белл"), "Drake Bell");
+        assert_eq!(played("включи ленинград каждый"), "Ленинград");
+        assert_eq!(played("включи дрейка блин"), "Drake");
+    }
+
     #[test]
     fn only_the_asked_kinds_come_back() {
         assert_eq!(search("скриптонит", &[Kind::Artist]), ["Скриптонит"]);

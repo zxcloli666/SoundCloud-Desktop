@@ -12,7 +12,7 @@ mod steps;
 mod types;
 mod variants;
 
-pub use fold::{distance, fold, fold_words, similarity, skeleton, strict_similarity};
+pub use fold::{distance, fold, fold_words, similarity, skeleton, strict_similarity, word_ends};
 pub use names::Names;
 pub use normalize::{Normalized, Tok, normalize};
 pub use types::{Intent, Kind, Parsed, Reading, Variant};

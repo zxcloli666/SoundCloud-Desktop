@@ -1,5 +1,5 @@
 use crate::entity::{Decision, Entity, Scored};
-use crate::keys::{Keys, QueryKeys, best_match};
+use crate::keys::{Keys, QueryKeys, best_match, near};
 use std::collections::HashSet;
 use voice_nlu::{Kind, Parsed, fold};
 
@@ -42,6 +42,7 @@ const FALLBACK_YIELD: f32 = 0.76;
 const POPULARITY_GAP: u64 = 50;
 const HEARD_MIN: f32 = 0.99;
 const NAMED_MIN: f32 = 0.9;
+const ADDED_MIN: f32 = 0.6;
 
 fn popularity_factor(pop: u64) -> f32 {
     let norm = ((1.0 + pop as f32).ln() / (1.0f32 + 1e8).ln()).clamp(0.0, 1.0);
@@ -83,9 +84,12 @@ pub fn rank(parsed: &Parsed, cands: Vec<Entity>, boosts: &Boosts) -> Vec<Scored>
         })
         .collect();
     out.sort_by(|a, b| b.score.total_cmp(&a.score));
-    if out.iter().any(|s| !s.fallback && s.sim >= FALLBACK_YIELD) {
-        out.retain(|s| !s.fallback);
-    }
+    let whole: Vec<Scored> = out
+        .iter()
+        .filter(|s| !s.fallback && s.sim >= FALLBACK_YIELD)
+        .cloned()
+        .collect();
+    out.retain(|part| !part.fallback || !whole.iter().any(|hit| outdoes(hit, part, &queries)));
     if named_is_missing {
         out.retain(|s| s.sim >= HEARD_MIN);
     }
@@ -112,6 +116,28 @@ pub fn rank(parsed: &Parsed, cands: Vec<Entity>, boosts: &Boosts) -> Vec<Scored>
         }
     }
     out
+}
+
+fn outdoes(whole: &Scored, part: &Scored, queries: &[QueryKeys]) -> bool {
+    whole.sim >= part.sim || says_what_is_added(queries, &whole.entity, &part.entity)
+}
+
+fn says_what_is_added(queries: &[QueryKeys], longer: &Entity, named: &Entity) -> bool {
+    let (long, short) = (fold(&longer.name), fold(&named.name));
+    let Some(added) = long.strip_prefix(short.as_str()).filter(|a| !a.is_empty()) else {
+        return true;
+    };
+    let parts = || queries.iter().filter(|q| q.fallback);
+    let says = |rest: &str| near(rest, added) >= ADDED_MIN;
+    let said = |q: &QueryKeys| parts().any(|part| beside(&q.text, &part.text).is_some_and(says));
+    queries.iter().filter(|q| !q.fallback).any(said)
+}
+
+fn beside<'a>(whole: &'a str, part: &str) -> Option<&'a str> {
+    let rest = whole
+        .strip_prefix(part)
+        .or_else(|| whole.strip_suffix(part));
+    rest.filter(|rest| !rest.is_empty())
 }
 
 fn names_a_missing_artist(queries: &[QueryKeys], cands: &[Entity]) -> bool {
