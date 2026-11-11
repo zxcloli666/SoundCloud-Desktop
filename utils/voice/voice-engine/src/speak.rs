@@ -132,17 +132,14 @@ impl Core {
         if let Some(given) = &self.deps.voice {
             return Some(Source::Given(given.clone()));
         }
-        let voice = voices::find(&self.config.speak.voice)?;
-        models::source(&self.deps.store, voice)
+        models::source(&self.deps.store, voices::find(&self.config.speak.voice))
     }
 
     pub fn warm_voice(&self) {
         if !self.config.speak.replies {
             return;
         }
-        let Some(voice) = voices::find(&self.config.speak.voice) else {
-            return;
-        };
+        let voice = voices::find(&self.config.speak.voice);
         if let voices::Kind::Qwen { speaker, .. } = voice.kind
             && let Some(paths) = models::qwen(&self.deps.store, voice)
         {

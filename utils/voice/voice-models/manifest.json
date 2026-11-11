@@ -163,7 +163,7 @@
       ]
     },
     {
-      "id": "qwen-lolya",
+      "id": "qwen-loli",
       "version": "1",
       "kind": "tts",
       "language": "ru",
@@ -174,9 +174,9 @@
       ],
       "files": [
         {
-          "path": "qwen-talker-1.7b-lolya-Q4_K_M.gguf",
+          "path": "qwen-talker-1.7b-loli-Q4_K_M.gguf",
           "size": 1182631008,
-          "sha256": "02b4d61a479ca6b3d8b484ad809178aca3efdb177f226ede7121fe0db51bd30a"
+          "sha256": "dadc36ad7c33ffe2334a06f52cc8f7f498320e7b3834556703e2c0f8b33bc944"
         }
       ]
     },

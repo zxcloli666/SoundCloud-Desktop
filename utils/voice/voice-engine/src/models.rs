@@ -48,8 +48,7 @@ pub fn hearing(config: &Config) -> [&'static str; 2] {
 pub fn required(config: &Config, store: &Store) -> Vec<String> {
     let mut ids: Vec<String> = hearing(config).iter().map(|id| id.to_string()).collect();
     if config.speak.replies
-        && let Some(voice) = voices::find(&config.speak.voice)
-        && let Some(parts) = parts(voice, store)
+        && let Some(parts) = parts(voices::find(&config.speak.voice), store)
     {
         ids.extend(parts.into_iter().map(str::to_string));
     }

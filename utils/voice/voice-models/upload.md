@@ -73,13 +73,13 @@ Total 291150624 bytes. Source: `voice-data/train-work/gguf/models/`. The 12 Hz s
 |---|---|---|
 | voice-models/qwen-codec/1/qwen-tokenizer-12hz-Q8_0.gguf | 291150624 | 1883beeed99348fc35e23dd225e9082f93f6f8c109330a33d935baa8acdbfd94 |
 
-## qwen-lolya (version 1, tts, ru, own)
+## qwen-loli (version 1, tts, ru, own)
 
-Total 1182631008 bytes. Source: `voice-data/train-work/gguf/models/`. Qwen3-TTS-12Hz-1.7B-Base with our Lolya adapter (epoch 8) merged, Q4_K_M. Speaker name inside the file: `lolya`.
+Total 1182631008 bytes. Source: `voice-data/train-work/gguf/models/`. Qwen3-TTS-12Hz-1.7B-Base with our Loli adapter (epoch 8) merged, Q4_K_M. Speaker name inside the file: `loli`.
 
 | target path | size | sha256 |
 |---|---|---|
-| voice-models/qwen-lolya/1/qwen-talker-1.7b-lolya-Q4_K_M.gguf | 1182631008 | 02b4d61a479ca6b3d8b484ad809178aca3efdb177f226ede7121fe0db51bd30a |
+| voice-models/qwen-loli/1/qwen-talker-1.7b-loli-Q4_K_M.gguf | 1182631008 | dadc36ad7c33ffe2334a06f52cc8f7f498320e7b3834556703e2c0f8b33bc944 |
 
 ## qwen-moriarty (version 1, tts, ru, own)
 

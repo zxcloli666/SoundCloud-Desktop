@@ -1,3 +1,4 @@
+pub const DEFAULT: &str = "loli";
 pub const KOKORO: &str = "kokoro-int8-multi-lang-v1_0";
 pub const QWEN_CODEC: &str = "qwen-codec";
 pub const QWEN_CODEC_FILE: &str = "qwen-tokenizer-12hz-Q8_0.gguf";
@@ -21,11 +22,11 @@ pub struct Voice {
 
 const VOICES: [Voice; 4] = [
     Voice {
-        id: "lolya",
-        model: "qwen-lolya",
+        id: DEFAULT,
+        model: "qwen-loli",
         kind: Kind::Qwen {
-            file: "qwen-talker-1.7b-lolya-Q4_K_M.gguf",
-            speaker: "lolya",
+            file: "qwen-talker-1.7b-loli-Q4_K_M.gguf",
+            speaker: "loli",
         },
     },
     Voice {
@@ -54,6 +55,19 @@ const VOICES: [Voice; 4] = [
     },
 ];
 
-pub fn find(id: &str) -> Option<&'static Voice> {
-    VOICES.iter().find(|v| v.id == id)
+pub fn find(id: &str) -> &'static Voice {
+    VOICES.iter().find(|v| v.id == id).unwrap_or(&VOICES[0])
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn an_unknown_voice_is_the_default_one() {
+        assert_eq!(find("moriarty").id, "moriarty");
+        assert_eq!(find("lolya").id, DEFAULT);
+        assert_eq!(find("").id, DEFAULT);
+        assert_eq!(crate::Config::default().speak.voice, DEFAULT);
+    }
 }

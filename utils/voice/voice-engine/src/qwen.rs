@@ -251,13 +251,13 @@ mod tests {
             eprintln!("no faster device than the CPU here, nothing to pick");
             return;
         }
-        eprintln!("{best} pace {:?}", qwen.pace(&paths, "lolya", &|| false));
+        eprintln!("{best} pace {:?}", qwen.pace(&paths, "loli", &|| false));
 
-        qwen.warm(&paths, "lolya", &|| true);
+        qwen.warm(&paths, "loli", &|| true);
         assert!(!paths.choice().exists(), "a trial cut short decides nothing");
 
         let started = Instant::now();
-        qwen.warm(&paths, "lolya", &|| false);
+        qwen.warm(&paths, "loli", &|| false);
         let chosen = fs::read_to_string(paths.choice()).unwrap();
         eprintln!("chose {chosen} in {:?}", started.elapsed());
         assert!(chosen == BEST || chosen == CPU, "{chosen}");
@@ -266,7 +266,7 @@ mod tests {
         let mut later = Qwen::default();
         assert_eq!(device(&mut later, &paths) == CPU, chosen == CPU);
         let started = Instant::now();
-        later.warm(&paths, "lolya", &|| false);
+        later.warm(&paths, "loli", &|| false);
         assert!(started.elapsed().as_secs_f32() < 0.5, "a made choice is not tried again");
     }
 

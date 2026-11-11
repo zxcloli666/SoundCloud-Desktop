@@ -76,7 +76,7 @@ fn spoken_play_command_from_a_wav_reaches_a_command_event() {
 }
 
 #[test]
-fn lolya_saying_stop_is_a_stop_command() {
+fn loli_saying_stop_is_a_stop_command() {
     let Some((_, command)) = hear("audio/100.wav", Language::Ru) else {
         return;
     };

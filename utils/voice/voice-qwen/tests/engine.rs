@@ -50,7 +50,7 @@ fn request<'a>(text: &'a str, speaker: &'a str) -> Request<'a> {
 }
 
 fn speaker() -> String {
-    std::env::var("SCD_QWEN_SPEAKER").unwrap_or_else(|_| "lolya".into())
+    std::env::var("SCD_QWEN_SPEAKER").unwrap_or_else(|_| "loli".into())
 }
 
 #[test]

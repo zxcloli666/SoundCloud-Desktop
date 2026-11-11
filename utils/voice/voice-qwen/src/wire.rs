@@ -57,12 +57,12 @@ mod tests {
     #[test]
     fn a_frame_survives_the_pipe() {
         let mut pipe = Vec::new();
-        write(&mut pipe, SAY, 7, "1\n300\nlolya\nauto\nпривет".as_bytes()).unwrap();
+        write(&mut pipe, SAY, 7, "1\n300\nloli\nauto\nпривет".as_bytes()).unwrap();
         write(&mut pipe, CANCEL, 7, &[]).unwrap();
         let mut input = pipe.as_slice();
         let say = read(&mut input).unwrap();
         assert_eq!((say.kind, say.id), (SAY, 7));
-        assert_eq!(say.payload, "1\n300\nlolya\nauto\nпривет".as_bytes());
+        assert_eq!(say.payload, "1\n300\nloli\nauto\nпривет".as_bytes());
         let cancel = read(&mut input).unwrap();
         assert_eq!((cancel.kind, cancel.id, cancel.payload.len()), (CANCEL, 7, 0));
         assert!(read(&mut input).is_err());

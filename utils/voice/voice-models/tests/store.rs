@@ -386,8 +386,8 @@ fn embedded_manifest_is_valid() {
             .url
             .starts_with("https://storage.scnative.dev/voice-models/")
     );
-    let lolya = m.get("qwen-lolya").unwrap();
-    assert_eq!(lolya.requires, vec!["qwen-codec".to_string()]);
+    let loli = m.get("qwen-loli").unwrap();
+    assert_eq!(loli.requires, vec!["qwen-codec".to_string()]);
     assert!(m.get("qwen-moriarty").is_ok());
 }
 

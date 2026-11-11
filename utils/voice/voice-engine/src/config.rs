@@ -115,7 +115,7 @@ impl Default for Speak {
         Self {
             mode: SpeakMode::WithMusic,
             device: None,
-            voice: "lolya".into(),
+            voice: crate::voices::DEFAULT.into(),
             speed: 1.0,
             pitch: 0.0,
             replies: true,

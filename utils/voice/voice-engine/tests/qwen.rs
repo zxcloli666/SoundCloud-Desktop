@@ -55,9 +55,9 @@ fn voice_store() -> Option<Arc<Store>> {
         model(&root, "qwen-codec", Kind::Tts, "qwen-tokenizer-12hz-Q8_0.gguf", &codec),
         model(
             &root,
-            "qwen-lolya",
+            "qwen-loli",
             Kind::Tts,
-            "qwen-talker-1.7b-lolya-Q4_K_M.gguf",
+            "qwen-talker-1.7b-loli-Q4_K_M.gguf",
             &talker,
         ),
     ];
@@ -120,7 +120,7 @@ fn reply(rig: &Rig, speech: &str) -> (Duration, usize) {
 
 #[test]
 fn a_reply_streams_from_the_qwen_voice_and_repeats_from_the_cache() {
-    let Some(rig) = speaking_rig("lolya") else {
+    let Some(rig) = speaking_rig("loli") else {
         return;
     };
     let (first, played) = reply(&rig, "Ставлю на паузу, а потом продолжу с того же места.");

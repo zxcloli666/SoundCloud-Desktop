@@ -117,7 +117,7 @@ mod tests {
     #[test]
     fn a_phrase_comes_back_as_it_was_said() {
         let cache = Cache::new(dir("round"));
-        let key = key(&["qwen-lolya", "1", "Включаю."]);
+        let key = key(&["qwen-loli", "1", "Включаю."]);
         assert!(cache.get(&key).is_none());
         let said = clip(0.5);
         cache.put(&key, &said);
@@ -135,9 +135,9 @@ mod tests {
 
     #[test]
     fn keys_differ_by_voice_and_by_text() {
-        let base = key(&["qwen-lolya", "1", "Включаю."]);
+        let base = key(&["qwen-loli", "1", "Включаю."]);
         assert_ne!(base, key(&["qwen-moriarty", "1", "Включаю."]));
-        assert_ne!(base, key(&["qwen-lolya", "1", "Выключаю."]));
+        assert_ne!(base, key(&["qwen-loli", "1", "Выключаю."]));
         assert_ne!(key(&["ab", "c"]), key(&["a", "bc"]));
         assert_eq!(base.len(), 64);
     }
