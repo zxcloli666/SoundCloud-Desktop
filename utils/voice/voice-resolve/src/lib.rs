@@ -95,7 +95,17 @@ pub fn understand(
 ) -> Vec<Outcome> {
     let reading = phrase.reading(catalog, boosts);
     let split = |parsed: &Parsed| interpret_split(parsed.clone(), catalog, boosts, bare);
-    reading.iter().flat_map(split).collect()
+    found(reading.iter().flat_map(split).collect())
+}
+
+fn found(mut steps: Vec<Outcome>) -> Vec<Outcome> {
+    let nothing = |step: &Outcome| step.intent == Intent::None;
+    if steps.len() > 1 && nothing(&steps[0]) {
+        steps.truncate(1);
+    } else if steps.len() > 1 {
+        steps.retain(|step| !nothing(step));
+    }
+    steps
 }
 
 const WHOLE_NAME_MIN: f32 = 0.97;

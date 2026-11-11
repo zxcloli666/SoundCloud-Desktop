@@ -300,3 +300,28 @@ fn a_kind_word_is_read_into_the_name_only_when_that_name_is_found_as_said() {
         ("включи группу кино", "play Кино"),
     ]);
 }
+
+#[test]
+fn a_chain_runs_without_a_later_step_that_names_nothing_found() {
+    heard_either_way(&[
+        (
+            "включи кино потом абракадабру и сделай погромче",
+            "play Кино + volume_up",
+        ),
+        (
+            "включи притон только оригинал не трибьют",
+            "play Скриптонит - Притон",
+        ),
+        ("сделай погромче и включи аукцион", "volume_up"),
+        ("включи кино и сделай погромче", "play Кино + volume_up"),
+    ]);
+}
+
+#[test]
+fn nothing_runs_after_a_first_step_that_names_nothing_found() {
+    heard_either_way(&[
+        ("включи группу аукцион и сделай погромче", "none"),
+        ("включи абракадабру и лайкни", "none"),
+        ("включи абракадабру потом швабракадабру", "none"),
+    ]);
+}
