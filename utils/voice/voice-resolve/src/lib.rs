@@ -4,13 +4,14 @@ mod bare;
 mod catalog;
 mod entity;
 mod keys;
-mod named;
+mod phrase;
 mod score;
 
 pub use answer::answer_ask;
 pub use bare::Bare;
 pub use catalog::{Catalog, FixtureCatalog};
 pub use entity::{Decision, Entity, Scored};
+pub use phrase::{Lookup, Phrase};
 pub use score::{Boosts, rank};
 
 use serde::Serialize;
@@ -83,10 +84,18 @@ pub fn interpret(
     bare: Bare,
     names: &Names,
 ) -> Vec<Outcome> {
-    named::reading(text, names, catalog, boosts)
-        .into_iter()
-        .flat_map(|parsed| interpret_split(parsed, catalog, boosts, bare))
-        .collect()
+    understand(&Phrase::read(text, names), catalog, boosts, bare)
+}
+
+pub fn understand(
+    phrase: &Phrase,
+    catalog: &dyn Catalog,
+    boosts: &Boosts,
+    bare: Bare,
+) -> Vec<Outcome> {
+    let reading = phrase.reading(catalog, boosts);
+    let split = |parsed: &Parsed| interpret_split(parsed.clone(), catalog, boosts, bare);
+    reading.iter().flat_map(split).collect()
 }
 
 const WHOLE_NAME_MIN: f32 = 0.97;

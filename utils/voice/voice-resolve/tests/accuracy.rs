@@ -1,6 +1,10 @@
+use std::cell::RefCell;
 use std::collections::BTreeMap;
-use voice_nlu::{Intent, Names};
-use voice_resolve::{Bare, Boosts, Decision, FixtureCatalog, Outcome, interpret};
+use voice_nlu::{Intent, Kind, Names, Variant};
+use voice_resolve::{
+    Bare, Boosts, Catalog, Decision, Entity, FixtureCatalog, Lookup, Outcome, Phrase, interpret,
+    understand,
+};
 
 struct Row {
     phrase: String,
@@ -414,4 +418,46 @@ fn leaving_names_said_alone_to_the_listener_changes_nothing_else() {
     for phrase in &left {
         println!("{phrase}");
     }
+}
+
+struct Watched<'a> {
+    rows: &'a FixtureCatalog,
+    made: RefCell<Vec<Lookup>>,
+}
+
+impl Catalog for Watched<'_> {
+    fn candidates(&self, variants: &[Variant], kinds: &[Kind]) -> Vec<Entity> {
+        self.made.borrow_mut().push(Lookup {
+            variants: variants.to_vec(),
+            kinds: kinds.to_vec(),
+        });
+        self.rows.candidates(variants, kinds)
+    }
+}
+
+#[test]
+fn every_lookup_of_a_phrase_is_known_before_any_is_made() {
+    let catalog = FixtureCatalog::from_tsv(include_str!("data/catalog.tsv"), true);
+    let names = Names::new(&VOICE);
+    let (mut phrases, mut known, mut made, mut most) = (0, 0, 0, 0);
+    for set in sets() {
+        for row in &set.rows {
+            let phrase = Phrase::read(&row.phrase, &names);
+            let ahead = phrase.lookups();
+            let watched = Watched {
+                rows: &catalog,
+                made: RefCell::default(),
+            };
+            understand(&phrase, &watched, &Boosts::none(), Bare::Certain);
+            let asked = watched.made.into_inner();
+            for lookup in &asked {
+                assert!(ahead.contains(lookup), "{} looks up more", row.phrase);
+            }
+            phrases += 1;
+            known += ahead.len();
+            made += asked.len();
+            most = most.max(ahead.len());
+        }
+    }
+    println!("{phrases} phrases: {made} lookups made, {known} known ahead, at most {most}");
 }
