@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { MAX_ROUNDS, runTurn, type TurnInput } from '../src/lib/voice/chat/turn.ts';
+import { MAX_ACTIONS, MAX_ROUNDS, runTurn, type TurnInput } from '../src/lib/voice/chat/turn.ts';
 import type { Ran, ToolMark } from '../src/lib/voice/chat/types';
 import { bodyOf, ranOf, type Step, wire } from './voice-chat-fakes.ts';
 
@@ -94,6 +94,27 @@ test('rounds stop at the limit even when tools keep returning', async () => {
   assert.equal(end.status, 'ok');
   assert.equal(link.requests.length, MAX_ROUNDS);
   assert.equal(link.requests[2].body.results.length, 2);
+});
+
+test('a round runs a limited number of actions and answers the rest with too_many', async () => {
+  const spam: Step[] = Array.from({ length: MAX_ACTIONS + 2 }, (_, i) => ({
+    kind: 'action',
+    name: i === 0 ? 'search' : 'next',
+    args: {},
+  }));
+  const { seen, link, done } = turn([[...spam, { kind: 'done' }], [{ kind: 'done' }]], {
+    search: ranOf('search', true),
+  });
+  const end = await done;
+  assert.equal(end.status, 'ok');
+  assert.equal(seen.log.filter((line) => line.startsWith('act:')).length, MAX_ACTIONS);
+  assert.equal(end.marks.length, MAX_ACTIONS);
+  const results = link.requests[1].body.results;
+  assert.equal(results.length, MAX_ACTIONS + 2);
+  assert.deepEqual(results.slice(MAX_ACTIONS), [
+    { name: 'next', args: {}, result: { ok: false, reason: 'too_many' } },
+    { name: 'next', args: {}, result: { ok: false, reason: 'too_many' } },
+  ]);
 });
 
 test('a cancelled event ends the turn quietly and keeps what was done', async () => {

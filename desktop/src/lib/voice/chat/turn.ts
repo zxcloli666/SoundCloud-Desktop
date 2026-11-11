@@ -1,6 +1,7 @@
 import type { CallResult, ChatBody, ChatEvent, ChatRequest, Ran, ToolMark, TurnEnd } from './types';
 
 export const MAX_ROUNDS = 3;
+export const MAX_ACTIONS = 8;
 const LAST_EVENT_GRACE_MS = 300;
 
 export interface TurnInput {
@@ -20,6 +21,7 @@ type RoundEnd = { kind: 'done' } | { kind: 'cancelled' } | { kind: 'error'; code
 interface Round {
   end: RoundEnd | null;
   ran: Ran[];
+  refused: CallResult[];
   acting: Promise<void>;
 }
 
@@ -35,6 +37,10 @@ function aborted(signal: AbortSignal): Promise<void> {
   );
 }
 
+function tooMany(name: string): CallResult {
+  return { name, args: {}, result: { ok: false, reason: 'too_many' } };
+}
+
 function pause(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -44,7 +50,8 @@ async function playRound(
   results: CallResult[],
   hear: (delta: string) => void,
 ): Promise<Round> {
-  const round: Round = { end: null, ran: [], acting: Promise.resolve() };
+  const round: Round = { end: null, ran: [], refused: [], acting: Promise.resolve() };
+  let asked = 0;
   if (t.signal.aborted) return { ...round, end: { kind: 'cancelled' } };
   let settle = () => {};
   const ended = new Promise<void>((resolve) => {
@@ -65,9 +72,9 @@ async function playRound(
   const onEvent = (event: ChatEvent) => {
     if (round.end) return;
     if (event.kind === 'say') hear(event.text);
-    else if (event.kind === 'action')
-      round.acting = round.acting.then(() => act(event.name, event.args));
-    else finish(event);
+    else if (event.kind !== 'action') finish(event);
+    else if (++asked > MAX_ACTIONS) round.refused.push(tooMany(event.name));
+    else round.acting = round.acting.then(() => act(event.name, event.args));
   };
   const closed = t.send({ id: t.id, speak: t.speak, body: t.body([...results]) }, onEvent).then(
     () => (round.end ? undefined : Promise.race([ended, pause(LAST_EVENT_GRACE_MS)])),
@@ -97,7 +104,10 @@ export async function runTurn(t: TurnInput): Promise<TurnEnd> {
     marks.push(...round.ran.map((r) => r.mark));
     if (round.end?.kind === 'cancelled') return { status: 'cancelled', say, marks };
     if (round.end?.kind === 'error') return { status: 'failed', code: round.end.code, say, marks };
-    results.push(...round.ran.map(({ name, args, result }) => ({ name, args, result })));
+    results.push(
+      ...round.ran.map(({ name, args, result }) => ({ name, args, result })),
+      ...round.refused,
+    );
     if (n >= t.rounds || !round.ran.some((r) => r.returns)) return { status: 'ok', say, marks };
     gap = true;
   }
