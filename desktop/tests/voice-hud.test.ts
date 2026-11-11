@@ -102,6 +102,7 @@ test('each chat failure has its own line and unknown codes share one', () => {
   const key = ((name: string) => name) as TFunction;
   assert.equal(failureLine('rate_limited', key), 'voice.chat.busy');
   assert.equal(failureLine('unavailable', key), 'voice.chat.down');
+  assert.equal(failureLine('star_required', key), 'voice.error.not_star');
   for (const code of ['deadline', 'provider_failed', 'network', 'failed', '']) {
     assert.equal(failureLine(code, key), 'voice.chat.lost');
   }
