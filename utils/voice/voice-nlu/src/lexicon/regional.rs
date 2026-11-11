@@ -70,6 +70,8 @@ pub const EXACT: &[(&str, &str)] = &[
     ("взад", "назад"),
     ("трег", "трек"),
     ("трэг", "трек"),
+    ("трэк", "трек"),
+    ("трэка", "трека"),
     ("вклю", "включи"),
     ("децл", "чуть"),
     ("чуток", "чуть"),
@@ -107,6 +109,15 @@ const PREFIXES: &[(&str, &str)] = &[
 ];
 
 pub fn canon(w: &str) -> Option<&'static str> {
+    written(w).or_else(|| heard(w))
+}
+
+fn heard(w: &str) -> Option<&'static str> {
+    let word = super::by_ear(w)?;
+    Some(written(word).or_else(|| super::slang(word)).unwrap_or(word))
+}
+
+fn written(w: &str) -> Option<&'static str> {
     if let Some((_, to)) = EXACT.iter().find(|(k, _)| *k == w) {
         return Some(to);
     }

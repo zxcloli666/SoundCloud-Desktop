@@ -2,6 +2,7 @@ use std::collections::HashSet;
 use std::sync::OnceLock;
 
 mod content;
+mod ear;
 mod filler;
 mod guard;
 mod kinds;
@@ -15,6 +16,7 @@ mod transport;
 mod volume;
 
 pub use content::*;
+pub use ear::*;
 pub use filler::*;
 pub use guard::*;
 pub use kinds::*;
@@ -76,6 +78,9 @@ pub const ALL_LISTS: &[&[&str]] = &[
     PLAYING_WORDS,
     GENERIC,
     DENY,
+    WHO_WORDS,
+    ADD_WORDS,
+    REMOVE_WORDS,
 ];
 
 pub const EXTRA_KNOWN: &[&str] = &[
@@ -111,20 +116,20 @@ pub const EXTRA_KNOWN: &[&str] = &[
     "андеграунд",
     "все",
     "нет",
+    "называется",
+    "следующим",
+    "следующей",
 ];
 
 fn set() -> &'static HashSet<&'static str> {
     static SET: OnceLock<HashSet<&'static str>> = OnceLock::new();
-    SET.get_or_init(|| {
-        let mut s = HashSet::new();
-        for list in ALL_LISTS {
-            s.extend(list.iter().copied());
-        }
-        s.extend(EXTRA_KNOWN.iter().copied());
-        s.extend(SLANG.iter().map(|(k, _)| *k));
-        s.extend(SLANG.iter().map(|(_, v)| *v));
-        s
-    })
+    SET.get_or_init(|| known_words().collect())
+}
+
+pub fn known_words() -> impl Iterator<Item = &'static str> {
+    let listed = ALL_LISTS.iter().flat_map(|list| list.iter().copied());
+    let slang = SLANG.iter().flat_map(|(from, to)| [*from, *to]);
+    listed.chain(EXTRA_KNOWN.iter().copied()).chain(slang)
 }
 
 pub fn is_known(w: &str) -> bool {
