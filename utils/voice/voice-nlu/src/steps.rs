@@ -1,8 +1,9 @@
 use crate::correct;
 use crate::intent;
-use crate::lexicon::{LONE_VERBS, ON_VERB_FORMS, PLAY_STRONG, PLAY_WEAK};
+use crate::lexicon::{ADD_WORDS, LONE_VERBS, ON_VERB_FORMS, PLAY_STRONG, PLAY_WEAK};
 use crate::names::Names;
 use crate::normalize::{Tok, normalize};
+use crate::objection;
 use crate::parse_toks;
 use crate::types::{Intent, Parsed};
 
@@ -10,8 +11,11 @@ const MAX_STEPS: usize = 3;
 const HARD: &[&str] = &["и", "and"];
 const SOFT: &[&str] = &["потом", "затем", "then", "только"];
 const AFTER: &[&str] = &["него", "этого", "нее", "нее"];
+const FIRST: &str = "сначала";
+const ALSO: &str = "еще";
+const THEN: &[&str] = &["потом", "затем", "then"];
 
-enum Side {
+pub(crate) enum Side {
     Cmd(Parsed),
     Foreign,
     Other,
@@ -20,16 +24,16 @@ enum Side {
 struct Link {
     len: usize,
     soft: bool,
+    also: bool,
 }
 
 pub fn parse(text: &str, names: &Names) -> Vec<Parsed> {
-    let spoken = correction(text);
+    let spoken = objection::command_after(text);
     let text_in = spoken.as_deref().unwrap_or(text);
     let fixed = correct::resolve(text_in);
     let corrected = fixed.is_some();
     let toks = names.drop(fixed.unwrap_or_else(|| normalize(text_in).toks));
-    let from = usize::from(toks.len() > 2 && toks[0].w == "сначала");
-    let toks = &toks[from..];
+    let toks = &without_order_word(toks);
     let mut whole = parse_toks(text, toks.to_vec()).0;
     if intent::lyric(toks) {
         return vec![whole];
@@ -41,6 +45,12 @@ pub fn parse(text: &str, names: &Names) -> Vec<Parsed> {
     }
     if whole.intent.is_control() {
         return vec![whole];
+    }
+    if whole.intent == Intent::QueueAdd {
+        match played_then_queued(toks, text) {
+            Some(steps) if steps.len() <= MAX_STEPS => return collapse(steps),
+            _ => {}
+        }
     }
     let raw = crate::normalize::words(text_in);
     let repeated = raw.windows(2).any(|p| p[0] == p[1]);
@@ -66,25 +76,36 @@ pub fn parse(text: &str, names: &Names) -> Vec<Parsed> {
     vec![whole]
 }
 
-fn link(toks: &[Tok], i: usize) -> Option<Link> {
-    let w = toks[i].w.as_str();
-    if HARD.contains(&w) {
-        return Some(Link {
-            len: 1,
-            soft: false,
-        });
+fn without_order_word(mut toks: Vec<Tok>) -> Vec<Tok> {
+    let Some(at) = toks.iter().position(|t| t.w == FIRST) else {
+        return toks;
+    };
+    let leads = at == 0 && toks.len() > 2;
+    let then = |t: &Tok| THEN.contains(&t.w.as_str());
+    if leads || toks.iter().skip(at + 2).any(then) {
+        toks.remove(at);
     }
-    if SOFT.contains(&w) {
-        return Some(Link { len: 1, soft: true });
-    }
-    let next = toks.get(i + 1).map(|t| t.w.as_str()).unwrap_or("");
-    if w == "после" && AFTER.contains(&next) {
-        return Some(Link { len: 2, soft: true });
-    }
-    None
+    toks
 }
 
-fn side(toks: &[Tok], text: &str) -> Side {
+fn link(toks: &[Tok], i: usize) -> Option<Link> {
+    let w = toks[i].w.as_str();
+    let next = toks.get(i + 1).map(|t| t.w.as_str()).unwrap_or("");
+    let (len, soft, also) = if HARD.contains(&w) {
+        (1, false, false)
+    } else if SOFT.contains(&w) {
+        (1, true, false)
+    } else if w == "после" && AFTER.contains(&next) {
+        (2, true, false)
+    } else if w == ALSO {
+        (1, false, true)
+    } else {
+        return None;
+    };
+    Some(Link { len, soft, also })
+}
+
+pub(crate) fn side(toks: &[Tok], text: &str) -> Side {
     let (p, blocked) = parse_toks(text, toks.to_vec());
     if p.intent != Intent::None && (!p.intent.needs_entity() || !p.queries.is_empty()) {
         Side::Cmd(p)
@@ -95,7 +116,7 @@ fn side(toks: &[Tok], text: &str) -> Side {
     }
 }
 
-fn plan(toks: &[Tok], text: &str, inherit: bool) -> Option<Vec<Parsed>> {
+pub(crate) fn plan(toks: &[Tok], text: &str, inherit: bool) -> Option<Vec<Parsed>> {
     linked(toks, text, inherit).or_else(|| juxtaposed(toks, text))
 }
 
@@ -103,8 +124,8 @@ fn linked(toks: &[Tok], text: &str, inherit: bool) -> Option<Vec<Parsed>> {
     for i in 1..toks.len().saturating_sub(1) {
         let Some(l) = link(toks, i) else { continue };
         let mut start = i + l.len;
-        while start < toks.len() && (link(toks, start).is_some() || toks[start].w == "сначала")
-        {
+        let joins = |at: usize| link(toks, at).is_some_and(|l| !l.also);
+        while start < toks.len() && (joins(start) || toks[start].w == FIRST) {
             start += 1;
         }
         if start >= toks.len() {
@@ -115,10 +136,10 @@ fn linked(toks: &[Tok], text: &str, inherit: bool) -> Option<Vec<Parsed>> {
         }
         let mut left: Vec<Parsed> = match side(&toks[..i], text) {
             Side::Cmd(p) => {
-                let inner = if p.intent == Intent::Play {
-                    juxtaposed(&toks[..i], text)
-                } else {
-                    None
+                let inner = match p.intent {
+                    Intent::Play => juxtaposed(&toks[..i], text),
+                    Intent::QueueAdd => played_then_queued(&toks[..i], text),
+                    _ => None,
                 };
                 inner.unwrap_or_else(|| vec![p])
             }
@@ -156,6 +177,9 @@ fn linked(toks: &[Tok], text: &str, inherit: bool) -> Option<Vec<Parsed>> {
                 },
             },
         };
+        if l.also && !(plays && rest.iter().all(|p| p.intent.is_control())) {
+            continue;
+        }
         left.append(&mut rest);
         if !left.is_empty() {
             return Some(left);
@@ -219,10 +243,13 @@ fn juxtaposed(toks: &[Tok], text: &str) -> Option<Vec<Parsed>> {
         {
             continue;
         }
-        if left.intent == Intent::Play && !rest.iter().all(|r| after_play(r.intent)) {
+        let adds = ADD_WORDS.contains(&tail[0].w.as_str());
+        let queued = adds && rest.first().is_some_and(|r| r.intent == Intent::QueueAdd);
+        let follows = |(at, r): (usize, &Parsed)| after_play(r.intent) || (at == 0 && queued);
+        if left.intent == Intent::Play && !rest.iter().enumerate().all(follows) {
             continue;
         }
-        if !control(&left) && !rest.iter().any(control) {
+        if !control(&left) && !rest.iter().any(control) && !queued {
             continue;
         }
         let strong_start = PLAY_STRONG.contains(&toks[0].w.as_str());
@@ -237,6 +264,10 @@ fn juxtaposed(toks: &[Tok], text: &str) -> Option<Vec<Parsed>> {
         return Some(steps);
     }
     None
+}
+
+fn played_then_queued(toks: &[Tok], text: &str) -> Option<Vec<Parsed>> {
+    juxtaposed(toks, text).filter(|steps| steps[0].intent == Intent::Play)
 }
 
 fn shared_verb(toks: &[Tok], text: &str, queue: bool) -> Option<Parsed> {
@@ -303,21 +334,30 @@ fn collapse(steps: Vec<Parsed>) -> Vec<Parsed> {
                 p.intent = Intent::Unmute;
             }
         }
+        if out.last().is_some_and(|l| l.intent == p.intent) && asked_once(p.intent) {
+            continue;
+        }
         out.push(p);
     }
     out
 }
 
-fn correction(text: &str) -> Option<String> {
-    let lower = text.to_lowercase();
-    let words: Vec<&str> = lower.split_whitespace().collect();
-    let first = words.first()?;
-    if matches!(*first, "не," | "нет," | "не.") && words.len() > 1 {
-        return Some(words[1..].join(" "));
-    }
-    if *first != "не" || words.len() < 3 {
-        return None;
-    }
-    let cut = words.iter().position(|w| matches!(*w, "а" | "а,"))?;
-    (cut + 1 < words.len()).then(|| words[cut + 1..].join(" "))
+fn asked_once(i: Intent) -> bool {
+    matches!(
+        i,
+        Intent::NowPlaying
+            | Intent::Help
+            | Intent::Pause
+            | Intent::Stop
+            | Intent::Resume
+            | Intent::Mute
+            | Intent::Unmute
+            | Intent::Like
+            | Intent::Unlike
+            | Intent::ShuffleOn
+            | Intent::ShuffleOff
+            | Intent::RepeatOne
+            | Intent::RepeatAll
+            | Intent::RepeatOff
+    )
 }

@@ -303,6 +303,7 @@ pub const WATCH: &[&str] = &[
 pub const CORRECTION_NOISE: &[&str] = &[
     "стоп",
     "подожди",
+    "погоди",
     "давай",
     "лучше",
     "все",
