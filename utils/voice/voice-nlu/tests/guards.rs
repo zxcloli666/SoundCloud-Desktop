@@ -510,3 +510,14 @@ fn a_time_said_with_a_direction_after_a_halt_is_how_far_to_seek() {
         ("поставь на паузу на секундочку", "pause"),
     ]);
 }
+
+#[test]
+fn a_hedge_before_an_amount_is_not_the_verb_of_a_clause() {
+    acts(&[
+        ("вперед около минуты", "seek_forward"),
+        ("назад около десяти секунд", "seek_backward"),
+        ("вперед около полминуты", "seek_forward"),
+        ("перемотай вперед около минуты", "seek_forward"),
+    ]);
+    stays_silent(&["назад около дома", "вперёд мы не пойдём"]);
+}

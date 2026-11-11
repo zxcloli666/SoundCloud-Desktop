@@ -6,7 +6,7 @@ use crate::lexicon::{
     self, AGREEMENT, ASKING, BACKWARD, CLAUSE_SUBJECTS, COMPLAINT, COMPOUNDS, DEMONSTRATIVES, DENY,
     DOWN_WORDS, FORWARD, INFINITIVE_ENDINGS, INSISTING, LISTENERS, LISTENING_STEMS, MUSIC_STEMS,
     NEG_STEMS, NEXT_STRONG, OTHERS, OWN, PLAY_STRONG, PREV_STRONG, REMARK_START, RESUME_WORDS,
-    RINGS, SPEAKING, STRIDES, SWEARS_AMB, TASTE, THE_PAST, UP_WORDS, WAS, WHICH,
+    RINGS, ROUGHLY, SPEAKING, STRIDES, SWEARS_AMB, TASTE, THE_PAST, UP_WORDS, WAS, WHICH,
 };
 
 pub fn sentence(c: &Ctx) -> bool {
@@ -152,7 +152,11 @@ fn the_past(c: &Ctx) -> bool {
 }
 
 fn own_verb(w: &str) -> bool {
-    finite(w) && !command_word(w) && !NOW_SET.contains(&w) && !lexicon::stem(NEG_STEMS, w)
+    finite(w)
+        && !command_word(w)
+        && !NOW_SET.contains(&w)
+        && !ROUGHLY.contains(&w)
+        && !lexicon::stem(NEG_STEMS, w)
 }
 
 fn own_noun(w: &str) -> bool {
