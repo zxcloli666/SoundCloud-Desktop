@@ -71,6 +71,7 @@ pub const REMOVE_WORDS: &[&str] = &[
     "снять",
     "удалить",
 ];
+pub const THROW_VERBS: &[&str] = &["кинь", "кинуть", "закинь", "закинуть"];
 pub const LIKE_OBJECT: &[&str] = &[
     "эта",
     "это",

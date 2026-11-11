@@ -252,6 +252,29 @@ fn a_verb_that_takes_a_state_away_turns_it_off() {
 }
 
 #[test]
+fn a_throw_into_the_favourites_is_a_like() {
+    for heard in [
+        "кинь в любимые",
+        "закинь в избранное",
+        "кинь в лайки",
+        "добавь в лайки",
+        "кинь этот трек в любимые",
+        "закинь песню в избранное",
+    ] {
+        assert_eq!(steps(heard), ["like"], "{heard}");
+    }
+    for (heard, want) in [
+        ("включи любимые", "play_likes"),
+        ("кинь любимые", "play_likes"),
+        ("включи из избранного", "play_likes"),
+        ("включи мои лайки", "play_likes"),
+        ("кинь в очередь земфиру", "queue_add"),
+    ] {
+        assert_eq!(steps(heard), [want], "{heard}");
+    }
+}
+
+#[test]
 fn a_halting_word_said_over_and_over_is_said_once() {
     for (heard, want) in [
         ("стоп стоп стоп всё хватит", "stop"),

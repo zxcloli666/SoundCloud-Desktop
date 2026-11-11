@@ -151,9 +151,12 @@ pub fn queue(c: &Ctx) -> Option<Detected> {
 pub fn into_likes(c: &Ctx) -> Option<Detected> {
     let at = c.pos(&["в", "во"])?;
     let target = c.at(at + 1);
-    let likes = stem(&["избранн", "любим"], target);
-    (likes && c.len() <= 3 && c.pos(PLAY_STRONG).is_none())
-        .then(|| Detected::new(Intent::Like, vec![]))
+    let likes = stem(&["избранн", "любим", "лайк"], target);
+    let plays =
+        c.w.iter()
+            .any(|w| PLAY_STRONG.contains(w) && !THROW_VERBS.contains(w));
+    let thrown = c.has(THROW_VERBS) && c.stray(&[at, at + 1]) == 0;
+    (likes && !plays && (c.len() <= 3 || thrown)).then(|| Detected::new(Intent::Like, vec![]))
 }
 
 pub fn like(c: &Ctx) -> Option<Detected> {
