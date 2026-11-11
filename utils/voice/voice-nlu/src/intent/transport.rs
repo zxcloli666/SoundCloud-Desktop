@@ -29,8 +29,10 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
     if complaint(c) {
         return Some(Detected::new(Intent::Next, vec![]));
     }
-    if c.has(PAUSE_LIFTING) && c.has_stem(&["пауз"]) && c.len() <= 4 {
-        return Some(Detected::new(Intent::Resume, vec![]));
+    if let (Some(lift), Some(pause)) = (c.pos(PAUSE_LIFTING), c.pos_stem(&["пауз"])) {
+        if c.stray(&[lift, pause]) == 0 {
+            return Some(Detected::new(Intent::Resume, vec![]));
+        }
     }
     if c.has(STOP_WORDS)
         && c.w.iter().all(|w| {

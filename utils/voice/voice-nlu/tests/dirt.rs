@@ -252,6 +252,8 @@ fn a_verb_that_takes_a_state_away_turns_it_off() {
         ("сними", "none"),
         ("выруби свет", "none"),
         ("сними трубку", "none"),
+        ("убери паузу между треками", "none"),
+        ("отмени паузу в разговоре", "none"),
     ] {
         assert_eq!(steps(heard), [want], "{heard}");
     }
