@@ -217,3 +217,25 @@ fn ukrainian_and_belarusian_command_words_are_read_as_their_russian_forms() {
     assert_eq!(steps("я зараз приду"), ["none"]);
     assert_eq!(steps("хто там"), ["none"]);
 }
+
+#[test]
+fn a_halting_word_said_over_and_over_is_said_once() {
+    for (heard, want) in [
+        ("стоп стоп стоп всё хватит", "stop"),
+        ("стоп стоп стоп", "stop"),
+        ("хватит хватит хватит", "stop"),
+        ("stop stop stop", "stop"),
+        ("пауза пауза пауза", "pause"),
+    ] {
+        assert_eq!(steps(heard), [want], "{heard}");
+    }
+    for lyric in [
+        "давай давай давай",
+        "люби люби люби",
+        "танцуй танцуй танцуй",
+        "стоп стоп стоп не говори ничего",
+        "громче громче громче",
+    ] {
+        assert_eq!(steps(lyric), ["none"], "{lyric}");
+    }
+}
