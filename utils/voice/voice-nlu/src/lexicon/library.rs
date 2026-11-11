@@ -216,6 +216,8 @@ pub const REPEAT_FILL: &[&str] = &[
     "повторе",
     "зациклить",
     "зацикли",
+    "крути",
+    "гоняй",
 ];
 
 pub const REPEAT_WORDS: &[&str] = &[

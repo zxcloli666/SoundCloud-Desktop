@@ -477,3 +477,25 @@ fn asking_about_the_melody_is_asking_what_plays() {
         assert_eq!(steps(silent), ["none"], "{silent}");
     }
 }
+
+#[test]
+fn playing_in_a_circle_is_repeat() {
+    for (heard, want) in [
+        ("крути по кругу весь плейлист", "repeat_all"),
+        ("гоняй эту песню по кругу", "repeat_one"),
+        ("включи по кругу", "repeat_one"),
+        ("по кругу всё", "repeat_all"),
+        ("хватит по кругу", "repeat_off"),
+    ] {
+        assert_eq!(steps(heard), [want], "{heard}");
+    }
+    for silent in [
+        "мы ходим по кругу",
+        "бег по кругу",
+        "крути педали",
+        "гоняй мяч",
+    ] {
+        assert_eq!(steps(silent), ["none"], "{silent}");
+    }
+    assert_eq!(steps("включи песню по кругу"), ["play"]);
+}
