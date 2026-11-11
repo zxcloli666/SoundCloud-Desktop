@@ -84,3 +84,17 @@ fn a_fond_name_for_a_round_amount_is_that_amount() {
         assert_eq!(steps(text), want, "{text}");
     }
 }
+
+#[test]
+fn a_half_heard_apart_from_its_word_is_the_same_half() {
+    for (text, want) in [
+        ("назад на пол минуты", "seek_backward 30"),
+        ("вперед на пол минутки", "seek_forward 30"),
+        ("отмотай пол минуты", "seek_backward 30"),
+        ("перемотай на пол торы минуты назад", "seek_backward 90"),
+        ("вперед на пол тора минуты", "seek_forward 90"),
+        ("громкость на пол", "volume_set 50"),
+    ] {
+        assert_eq!(steps(text), want, "{text}");
+    }
+}

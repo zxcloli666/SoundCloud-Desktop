@@ -35,7 +35,7 @@ pub fn glue(words: Vec<String>) -> Vec<String> {
         let w = &words[i];
         if let Some(next) = words.get(i + 1) {
             let joined = format!("{w}{next}");
-            if known(&joined) && (!known(w) || !known(next) || w == "по") {
+            if known(&joined) && (!known(w) || !known(next) || w == "по" || w == "пол") {
                 out.push(joined);
                 i += 2;
                 continue;

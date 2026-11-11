@@ -60,6 +60,8 @@ pub const ALL_LISTS: &[&[&str]] = &[
     SKIP_VERBS,
     SEC_UNITS,
     MIN_UNITS,
+    HALF_MINUTE,
+    ONE_AND_HALF,
     RESTART,
     UNDO_WORDS,
     HELP_WORDS,
