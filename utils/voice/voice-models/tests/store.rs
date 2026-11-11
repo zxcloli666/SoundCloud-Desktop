@@ -232,6 +232,51 @@ fn same_model_cannot_download_twice_at_once() {
 }
 
 #[test]
+fn a_model_waits_for_a_dependency_that_downloads_elsewhere() {
+    let f = fixture("shared", &[50_000]);
+    let part = f.manifest.get("m1").unwrap().clone();
+    let mut whole = part.clone();
+    whole.id = "m2".into();
+    whole.requires = vec!["m1".into()];
+    let manifest = Manifest::from_models(vec![part, whole]).unwrap();
+    let (started_tx, started_rx) = mpsc::channel();
+    let (release_tx, release_rx) = mpsc::channel();
+    let gate = Gate {
+        started: Mutex::new(started_tx),
+        release: Mutex::new(release_rx),
+    };
+    let first = Store::with_manifest(&f.root, manifest.clone(), Arc::new(gate), fast_options());
+    let worker = thread::spawn(move || first.install("m1", &Cancel::new(), None));
+    started_rx.recv().unwrap();
+
+    let second = Arc::new(Store::with_manifest(
+        &f.root,
+        manifest,
+        Arc::new(HttpFetch),
+        fast_options(),
+    ));
+    let cancel = Cancel::new();
+    let gave_up = {
+        let (second, cancel) = (second.clone(), cancel.clone());
+        thread::spawn(move || second.install("m2", &cancel, None))
+    };
+    let waiting = {
+        let second = second.clone();
+        thread::spawn(move || second.install("m2", &Cancel::new(), None))
+    };
+    thread::sleep(std::time::Duration::from_millis(300));
+    assert!(!waiting.is_finished());
+    cancel.cancel();
+    assert!(matches!(gave_up.join().unwrap(), Err(Error::Cancelled)));
+
+    release_tx.send(()).unwrap();
+    worker.join().unwrap().unwrap();
+    waiting.join().unwrap().unwrap();
+    assert_eq!(second.status("m1").unwrap(), Status::Ready);
+    assert_eq!(second.status("m2").unwrap(), Status::Ready);
+}
+
+#[test]
 fn delete_removes_everything() {
     let f = fixture("delete", &[30_000, 40_000]);
     let s = store(&f);

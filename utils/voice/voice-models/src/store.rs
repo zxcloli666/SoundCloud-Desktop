@@ -12,6 +12,8 @@ use crate::lock::ModelLock;
 use crate::manifest::{Manifest, Model};
 use crate::progress::Progress;
 
+const BUSY_POLL: Duration = Duration::from_millis(200);
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Status {
     Missing,
@@ -129,7 +131,7 @@ impl Store {
     ) -> Result<(), Error> {
         let model = self.manifest.get(id)?;
         for dep in &model.requires {
-            self.install_one(self.manifest.get(dep)?, cancel, progress)?;
+            self.install_shared(self.manifest.get(dep)?, cancel, progress)?;
         }
         self.install_one(model, cancel, progress)
     }
@@ -149,6 +151,21 @@ impl Store {
 
     fn dir_of(&self, model: &Model) -> PathBuf {
         self.root.join(&model.id).join(&model.version)
+    }
+
+    fn install_shared(
+        &self,
+        model: &Model,
+        cancel: &Cancel,
+        progress: Option<&Sender<Progress>>,
+    ) -> Result<(), Error> {
+        loop {
+            match self.install_one(model, cancel, progress) {
+                Err(Error::Busy(_)) if cancel.is_cancelled() => return Err(Error::Cancelled),
+                Err(Error::Busy(_)) => std::thread::sleep(BUSY_POLL),
+                done => return done,
+            }
+        }
     }
 
     fn install_one(
