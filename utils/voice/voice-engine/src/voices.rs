@@ -10,7 +10,6 @@ pub enum Kind {
     Qwen {
         file: &'static str,
         speaker: &'static str,
-        robot: bool,
     },
 }
 
@@ -20,17 +19,13 @@ pub struct Voice {
     pub kind: Kind,
 }
 
-const LOLYA: &str = "qwen-lolya";
-const LOLYA_FILE: &str = "qwen-talker-1.7b-lolya-Q4_K_M.gguf";
-
-const VOICES: [Voice; 5] = [
+const VOICES: [Voice; 4] = [
     Voice {
         id: "lolya",
-        model: LOLYA,
+        model: "qwen-lolya",
         kind: Kind::Qwen {
-            file: LOLYA_FILE,
+            file: "qwen-talker-1.7b-lolya-Q4_K_M.gguf",
             speaker: "lolya",
-            robot: false,
         },
     },
     Voice {
@@ -39,16 +34,6 @@ const VOICES: [Voice; 5] = [
         kind: Kind::Qwen {
             file: "qwen-talker-1.7b-moriarty-Q4_K_M.gguf",
             speaker: "moriarty",
-            robot: false,
-        },
-    },
-    Voice {
-        id: "robot",
-        model: LOLYA,
-        kind: Kind::Qwen {
-            file: LOLYA_FILE,
-            speaker: "lolya",
-            robot: true,
         },
     },
     Voice {

@@ -157,9 +157,6 @@
       "moriarty": {
         "name": "Moriarty"
       },
-      "robot": {
-        "name": "Robô"
-      },
       "af_heart": {
         "name": "Heart"
       },
@@ -171,8 +168,6 @@
       "cute": "fofa",
       "bright": "viva",
       "deep": "grave",
-      "synth": "sintética",
-      "fun": "divertida",
       "warm": "quente",
       "clear": "clara"
     },

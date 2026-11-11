@@ -32,7 +32,6 @@ export const VOICES: VoiceInfo[] = [
     glow: 'var(--color-amber-500)',
     image: moriartyImage,
   },
-  { id: 'robot', model: QWEN_LOLYA, lang: 'ru', tags: ['synth', 'fun'], glow: 'rgb(var(--mint))' },
   { id: 'af_heart', model: KOKORO, lang: 'en', tags: ['warm'], glow: 'var(--color-rose-400)' },
   {
     id: 'am_michael',

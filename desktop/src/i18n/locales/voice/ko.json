@@ -151,9 +151,6 @@
       "moriarty": {
         "name": "모리아티"
       },
-      "robot": {
-        "name": "로봇"
-      },
       "af_heart": {
         "name": "Heart"
       },
@@ -165,8 +162,6 @@
       "cute": "귀여움",
       "bright": "밝음",
       "deep": "낮음",
-      "synth": "합성",
-      "fun": "재미",
       "warm": "따뜻함",
       "clear": "또렷함"
     },

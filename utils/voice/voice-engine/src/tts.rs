@@ -24,7 +24,6 @@ pub enum Source {
     Qwen {
         paths: Paths,
         speaker: &'static str,
-        robot: bool,
         cached_as: String,
     },
 }
@@ -157,9 +156,8 @@ impl Voices {
             Source::Qwen {
                 paths,
                 speaker,
-                robot,
                 cached_as,
-            } => self.qwen(say, paths, speaker, *robot, cached_as, out),
+            } => self.qwen(say, paths, speaker, cached_as, out),
         };
         let piece = match result {
             Ok(()) => Piece::End,
@@ -194,11 +192,10 @@ impl Voices {
         say: &Say,
         paths: &Paths,
         speaker: &str,
-        robot: bool,
         cached_as: &str,
         out: &Out,
     ) -> Result<(), String> {
-        let mut shaper = Shaper::new(qwen::RATE, say.speed, say.pitch, robot);
+        let mut shaper = Shaper::new(qwen::RATE, say.speed, say.pitch);
         let key = cache::key(&[cached_as, &say.text]);
         if let Some(clip) = self.cache.get(&key).filter(|clip| clip.rate == qwen::RATE) {
             out.audio(qwen::RATE, shaper.push(clip.samples));

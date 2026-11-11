@@ -86,12 +86,11 @@ pub fn source(store: &Store, voice: &Voice) -> Option<Source> {
             file,
             speaker,
         }),
-        voices::Kind::Qwen { speaker, robot, .. } => {
+        voices::Kind::Qwen { speaker, .. } => {
             let version = &store.manifest().get(voice.model).ok()?.version;
             Some(Source::Qwen {
                 paths: qwen(store, voice)?,
                 speaker,
-                robot,
                 cached_as: format!("{}/{version}/{speaker}", voice.model),
             })
         }

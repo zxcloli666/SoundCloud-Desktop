@@ -133,12 +133,3 @@ fn a_reply_streams_from_the_qwen_voice_and_repeats_from_the_cache() {
     assert!((-0.05..0.3).contains(&gaps), "{gaps}");
     assert!(again < Duration::from_millis(300), "{again:?}");
 }
-
-#[test]
-fn the_robot_speaks_with_the_same_engine() {
-    let Some(rig) = speaking_rig("robot") else {
-        return;
-    };
-    let (_, samples) = reply(&rig, "Готово.");
-    assert!(samples > 12000, "{samples}");
-}

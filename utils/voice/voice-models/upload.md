@@ -75,7 +75,7 @@ Total 291150624 bytes. Source: `voice-data/train-work/gguf/models/`. The 12 Hz s
 
 ## qwen-lolya (version 1, tts, ru, own)
 
-Total 1182631008 bytes. Source: `voice-data/train-work/gguf/models/`. Qwen3-TTS-12Hz-1.7B-Base with our Lolya adapter (epoch 8) merged, Q4_K_M. Speaker name inside the file: `lolya`. The robot voice uses this file too.
+Total 1182631008 bytes. Source: `voice-data/train-work/gguf/models/`. Qwen3-TTS-12Hz-1.7B-Base with our Lolya adapter (epoch 8) merged, Q4_K_M. Speaker name inside the file: `lolya`.
 
 | target path | size | sha256 |
 |---|---|---|

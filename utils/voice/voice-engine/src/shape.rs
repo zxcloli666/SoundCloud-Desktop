@@ -1,13 +1,7 @@
 use signalsmith_stretch::Stretch;
 
-const RING_HZ: f32 = 55.0;
-const RING_MIX: f32 = 0.5;
-const HOLD: usize = 2;
-const STEPS: f32 = 32.0;
-
 pub struct Shaper {
     stretch: Option<Stretching>,
-    robot: Option<Robot>,
 }
 
 struct Stretching {
@@ -17,48 +11,28 @@ struct Stretching {
     skip: usize,
 }
 
-struct Robot {
-    rate: f32,
-    at: usize,
-    held: f32,
-}
-
 impl Shaper {
-    pub fn new(rate: u32, speed: f32, pitch: f32, robot: bool) -> Shaper {
+    pub fn new(rate: u32, speed: f32, pitch: f32) -> Shaper {
         let speed = speed.clamp(0.5, 2.0);
         let pitch = pitch.clamp(-12.0, 12.0);
         let shaped = (speed - 1.0).abs() >= 0.01 || pitch.abs() >= 0.05;
         Shaper {
             stretch: shaped.then(|| Stretching::new(rate, speed, pitch)),
-            robot: robot.then_some(Robot {
-                rate: rate as f32,
-                at: 0,
-                held: 0.0,
-            }),
         }
     }
 
     pub fn push(&mut self, samples: Vec<f32>) -> Vec<f32> {
-        let stretched = match self.stretch.as_mut() {
+        match self.stretch.as_mut() {
             Some(stretch) => stretch.push(&samples),
             None => samples,
-        };
-        self.voiced(stretched)
+        }
     }
 
     pub fn finish(&mut self) -> Vec<f32> {
-        let tail = match self.stretch.as_mut() {
+        match self.stretch.as_mut() {
             Some(stretch) => stretch.finish(),
             None => Vec::new(),
-        };
-        self.voiced(tail)
-    }
-
-    fn voiced(&mut self, mut samples: Vec<f32>) -> Vec<f32> {
-        if let Some(robot) = self.robot.as_mut() {
-            robot.apply(&mut samples);
         }
-        samples
     }
 }
 
@@ -102,19 +76,6 @@ impl Stretching {
     }
 }
 
-impl Robot {
-    fn apply(&mut self, samples: &mut [f32]) {
-        for sample in samples {
-            if self.at % HOLD == 0 {
-                self.held = (*sample * STEPS).round() / STEPS;
-            }
-            let phase = 2.0 * std::f32::consts::PI * RING_HZ * self.at as f32 / self.rate;
-            *sample = self.held * (1.0 - RING_MIX + RING_MIX * phase.sin());
-            self.at += 1;
-        }
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -132,7 +93,7 @@ mod tests {
     }
 
     fn shaped(speed: f32, pitch: f32, chunk: usize) -> Vec<f32> {
-        let mut shaper = Shaper::new(RATE, speed, pitch, false);
+        let mut shaper = Shaper::new(RATE, speed, pitch);
         let mut out = Vec::new();
         for part in burst().chunks(chunk) {
             out.extend(shaper.push(part.to_vec()));
@@ -174,15 +135,5 @@ mod tests {
     #[test]
     fn chunk_size_does_not_change_the_result_length() {
         assert_eq!(shaped(0.8, -2.0, 240).len(), shaped(0.8, -2.0, 4800).len());
-    }
-
-    #[test]
-    fn the_robot_keeps_the_length_and_changes_the_sound() {
-        let mut shaper = Shaper::new(RATE, 1.0, 0.0, true);
-        let mut out = shaper.push(burst());
-        out.extend(shaper.finish());
-        assert_eq!(out.len(), burst().len());
-        assert!(out.iter().zip(burst()).any(|(a, b)| (a - b).abs() > 0.05));
-        assert!(out.iter().all(|s| s.abs() <= 0.5));
     }
 }
