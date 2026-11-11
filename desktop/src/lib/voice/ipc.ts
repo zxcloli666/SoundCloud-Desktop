@@ -1,17 +1,17 @@
 import { trackedInvoke as invoke } from '../diagnostics';
 import type {
   Devices,
+  EngineConfig,
   Model,
   Outcome,
   StartSource,
   Status,
-  VoiceConfig,
   WakeTeachStep,
 } from './types';
 
 export const voiceIpc = {
   status: () => invoke<Status>('voice_status'),
-  apply: (config: VoiceConfig) => invoke<void>('voice_apply', { config }),
+  apply: (config: EngineConfig) => invoke<void>('voice_apply', { config }),
   start: (source: StartSource) => invoke<void>('voice_start', { source }),
   stop: () => invoke<void>('voice_stop'),
   cancel: () => invoke<void>('voice_cancel'),

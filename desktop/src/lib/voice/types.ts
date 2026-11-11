@@ -43,6 +43,10 @@ export interface VoiceConfig {
   boosts: { artists: string[] };
 }
 
+export interface EngineConfig extends VoiceConfig {
+  names: string[];
+}
+
 export type EngineState = 'idle' | 'listening' | 'thinking' | 'asking' | 'speaking' | 'error';
 export type VoiceSource = 'hotkey' | 'headset' | 'wake' | 'button' | 'hud' | 'typed' | 'remote';
 export type StartSource = 'button' | 'hud';

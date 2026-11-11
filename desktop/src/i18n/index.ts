@@ -65,6 +65,10 @@ async function loadLanguage(language: AppLanguage) {
   loadedLanguages.add(language);
 }
 
+export function loadVoiceLocales() {
+  return Promise.all(Object.values(voiceLoaders).map(async (load) => (await load()).default));
+}
+
 export async function ensureLocaleLoaded(language: string) {
   const normalized = normalizeLanguage(language);
   await initPromise;

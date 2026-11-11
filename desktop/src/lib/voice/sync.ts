@@ -1,12 +1,14 @@
+import { loadVoiceLocales } from '../../i18n';
 import { voiceIpc } from './ipc';
+import { engineConfig } from './names';
 import { useVoiceRuntime } from './runtime';
 import { useVoiceStore } from './store';
 
 const APPLY_DEBOUNCE_MS = 120;
 
 function push() {
-  voiceIpc
-    .apply(useVoiceStore.getState().config)
+  loadVoiceLocales()
+    .then((locales) => voiceIpc.apply(engineConfig(useVoiceStore.getState().config, locales)))
     .then(() => useVoiceRuntime.setState({ availability: 'ready' }))
     .catch(() => useVoiceRuntime.setState({ availability: 'missing' }));
 }
