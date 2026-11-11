@@ -4,6 +4,7 @@ mod bare;
 mod catalog;
 mod entity;
 mod keys;
+mod named;
 mod score;
 
 pub use answer::answer_ask;
@@ -13,7 +14,7 @@ pub use entity::{Decision, Entity, Scored};
 pub use score::{Boosts, rank};
 
 use serde::Serialize;
-use voice_nlu::{Intent, Kind, Names, Parsed, parse, parse_name, parse_one};
+use voice_nlu::{Intent, Kind, Names, Parsed, parse_name, parse_one};
 
 #[derive(Debug, Clone, Serialize)]
 pub struct Outcome {
@@ -82,7 +83,7 @@ pub fn interpret(
     bare: Bare,
     names: &Names,
 ) -> Vec<Outcome> {
-    parse(text, names)
+    named::reading(text, names, catalog, boosts)
         .into_iter()
         .flat_map(|parsed| interpret_split(parsed, catalog, boosts, bare))
         .collect()
