@@ -2,8 +2,8 @@ use super::ctx::Ctx;
 use super::indirect;
 use super::talk;
 use crate::lexicon::{
-    self, ADDRESSEES, AFTER_ABSENT, BEFORE_ABSENT, DENY, IMPERATIVES, LONE_VERBS, NEG_FOLLOW,
-    NEG_STEMS, PLAY_STRONG, REMARK_START, REPORT, SUBJECTS,
+    self, ABOUT_OWN_WORDS, ADDRESSEES, AFTER_ABSENT, BEFORE_ABSENT, DENY, IMPERATIVES, LONE_VERBS,
+    NEG_FOLLOW, NEG_STEMS, PLAY_STRONG, REMARK_START, REPORT, SUBJECTS,
 };
 use crate::normalize::Tok;
 use crate::types::Intent;
@@ -37,8 +37,20 @@ fn chanted(toks: &[Tok]) -> bool {
 
 pub fn retold(toks: &[Tok]) -> bool {
     let c = Ctx::new(toks);
-    let speech = |w: &&str| REPORT.contains(w) && !ADDRESSEES.contains(w);
-    c.w.iter().any(speech) || (1..c.len()).any(|i| c.w[i] == "нет" && answered(&c.w[..i]))
+    let speech = |i: usize| {
+        let w = c.w[i];
+        REPORT.contains(&w) && !ADDRESSEES.contains(&w) && !own_words(&c.w[..i], &c.w[i + 1..])
+    };
+    (0..c.len()).any(speech) || (1..c.len()).any(|i| c.w[i] == "нет" && answered(&c.w[..i]))
+}
+
+fn own_words(before: &[&str], after: &[&str]) -> bool {
+    let by_the_speaker = match before {
+        [.., "я"] => true,
+        [.., "я", between] => ABOUT_OWN_WORDS.contains(between),
+        _ => false,
+    };
+    by_the_speaker && after.first().is_none_or(|w| matches!(*w, "не" | "нет"))
 }
 
 fn answered(before: &[&str]) -> bool {

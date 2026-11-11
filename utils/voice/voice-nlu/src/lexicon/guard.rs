@@ -139,6 +139,8 @@ pub const REPORT: &[&str] = &[
     "им",
 ];
 
+pub const ABOUT_OWN_WORDS: &[&str] = &["же", "ведь", "тебе", "хотел", "хотела"];
+
 pub const SUBJECTS: &[&str] = &["я", "мы", "он", "она", "они"];
 
 pub const ADDRESSEES: &[&str] = &["мне", "нам", "ему", "ей", "им"];
