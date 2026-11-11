@@ -1,4 +1,4 @@
-use voice_nlu::{Names, Parsed, parse};
+use voice_nlu::{Names, Parsed, Variant, parse};
 
 const LOLI: [&str; 3] = ["Loli", "Лоля", "롤리"];
 
@@ -64,6 +64,46 @@ fn a_word_for_haste_next_to_the_verb_is_not_part_of_the_name() {
         ("поставь по-быстрому земфиру", "земфиру"),
         ("немедленно включи лесника", "лесника"),
         ("скорей поставь сплин", "сплин"),
+    ];
+    for (text, name) in cases {
+        assert_eq!(names(text)[0], name, "{text}");
+    }
+}
+
+#[test]
+fn the_one_who_performs_a_title_is_its_artist() {
+    let cases = [
+        ("включи притон в исполнении дорадуры", "притон", "дорадуры"),
+        (
+            "поставь кукушку в исполнении гагариной",
+            "кукушку",
+            "гагариной",
+        ),
+        (
+            "включи лесника в исполнение короля и шута",
+            "лесника",
+            "короля и шута",
+        ),
+    ];
+    for (text, title, artist) in cases {
+        let steps = said(text);
+        let split = |q: &&Variant| q.title.as_deref() == Some(title);
+        let joint = steps[0].queries.iter().find(split);
+        let by = joint.and_then(|q| q.artist.as_deref());
+        assert_eq!(by, Some(artist), "{text}");
+    }
+}
+
+#[test]
+fn words_that_only_say_a_name_follows_are_left_out() {
+    let cases = [
+        ("поставь группу которая называется плей", "play"),
+        ("включи песню под названием лесник", "лесник"),
+        (
+            "поставь альбом который называется группа крови",
+            "группа крови",
+        ),
+        ("включи плейлист с названием дорога домой", "дорога домой"),
     ];
     for (text, name) in cases {
         assert_eq!(names(text)[0], name, "{text}");
