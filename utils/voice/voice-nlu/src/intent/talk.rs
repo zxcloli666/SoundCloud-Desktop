@@ -3,8 +3,8 @@ use super::indirect;
 use crate::anchor::finite;
 use crate::lexicon::{
     self, AGREEMENT, BACKWARD, CLAUSE_SUBJECTS, COMPLAINT, COMPOUNDS, DEMONSTRATIVES, DENY,
-    FORWARD, MUSIC_STEMS, NEXT_STRONG, OTHERS, PLAY_STRONG, PREV_STRONG, REMARK_START, SWEARS_AMB,
-    TASTE, WAS,
+    DOWN_WORDS, FORWARD, MUSIC_STEMS, NEXT_STRONG, OTHERS, OWN, PLAY_STRONG, PREV_STRONG,
+    REMARK_START, RINGS, SWEARS_AMB, TASTE, UP_WORDS, WAS,
 };
 
 pub fn sentence(c: &Ctx) -> bool {
@@ -13,6 +13,8 @@ pub fn sentence(c: &Ctx) -> bool {
         || half_of_a_compound(c)
         || complaint_about_a_thing(c)
         || taste_of_another(c)
+        || thing_of_another(c)
+        || thing_made_louder(c)
 }
 
 fn adverb_of_a_clause(c: &Ctx) -> bool {
@@ -72,6 +74,21 @@ fn names_a_thing(c: &Ctx, determiners: &[&str]) -> bool {
 
 fn taste_of_another(c: &Ctx) -> bool {
     (c.has(TASTE) || complains(c)) && c.has(OTHERS)
+}
+
+fn thing_of_another(c: &Ctx) -> bool {
+    let names_a_title = c.has(PLAY_STRONG) && !c.w.iter().any(|w| volume_word(w));
+    !names_a_title && !about_music(c) && names_a_thing(c, OWN)
+}
+
+fn volume_word(w: &str) -> bool {
+    UP_WORDS.contains(&w) || DOWN_WORDS.contains(&w)
+}
+
+fn thing_made_louder(c: &Ctx) -> bool {
+    (1..c.len()).any(|i| {
+        volume_word(c.w[i - 1]) && DENY.contains(&c.w[i]) && !lexicon::stem(RINGS, c.at(i + 1))
+    })
 }
 
 fn own_verb(w: &str) -> bool {
