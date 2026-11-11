@@ -22,6 +22,7 @@ alias	name	kind
 наутилус	Наутилус Помпилиус	artist
 наутилус помпилиус бутусов	Наутилус Помпилиус	artist
 наутилус помпилус	Наутилус Помпилиус	artist
+нау	Наутилус Помпилиус	artist
 гребенщиков	Аквариум	artist
 борис гребенщиков	Аквариум	artist
 бг	Аквариум	artist
@@ -42,6 +43,7 @@ alias	name	kind
 макс корш	Макс Корж	artist
 макса коржа	Макс Корж	artist
 адиль жалелов	Скриптонит	artist
+скрип	Скриптонит	artist
 морген	Моргенштерн	artist
 алишер	Моргенштерн	artist
 алишер моргенштерн	Моргенштерн	artist
@@ -123,6 +125,7 @@ ja khalib	Jah Khalib	artist
 снайперы	Ночные Снайперы	artist
 диана арбенина	Ночные Снайперы	artist
 ночные снайперы арбенина	Ночные Снайперы	artist
+арбенина	Ночные Снайперы	artist
 шахрин	Чайф	artist
 владимир шахрин	Чайф	artist
 чайфы	Чайф	artist
@@ -148,6 +151,7 @@ ja khalib	Jah Khalib	artist
 кишей	Король и Шут	artist
 киша	Король и Шут	artist
 горшок	Король и Шут	artist
+горшка	Король и Шут	artist
 король и шут горшок	Король и Шут	artist
 михаил горшенёв	Король и Шут	artist
 михаил горшенев	Король и Шут	artist
@@ -441,6 +445,7 @@ weeknd	The Weeknd	artist
 ариана гранде	Ariana Grande	artist
 ариана гранди	Ariana Grande	artist
 ариана гранд	Ariana Grande	artist
+ариана	Ariana Grande	artist
 бибер	Justin Bieber	artist
 джастин бибер	Justin Bieber	artist
 джастин бибера	Justin Bieber	artist

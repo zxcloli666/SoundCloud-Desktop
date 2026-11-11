@@ -57,3 +57,17 @@ fn a_word_for_haste_next_to_the_verb_is_not_looked_up() {
         ("поставь по-быстрому земфиру", "play Земфира"),
     ]);
 }
+
+#[test]
+fn a_short_name_people_call_an_artist_by_finds_the_artist() {
+    heard_either_way(&[
+        ("включи скрипа", "play Скриптонит"),
+        ("вруби нау", "play Наутилус Помпилиус"),
+        ("горшка нам поставь", "play Король и Шут"),
+        ("включи ка арбенину", "play Ночные Снайперы"),
+        ("запусти ариану", "play Ariana Grande"),
+        ("включи скрипа цепи", "play Скриптонит - Цепи"),
+        ("включи риану", "play Rihanna"),
+        ("включи донт старт нау", "play Dua Lipa - Don't Start Now"),
+    ]);
+}
