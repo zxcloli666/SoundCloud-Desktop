@@ -50,3 +50,22 @@ fn the_name_after_a_verb_with_nothing_named_before_it_is_still_what_to_play() {
         assert!(names(text).iter().any(|q| q == name), "{text}");
     }
 }
+
+#[test]
+fn a_word_for_haste_next_to_the_verb_is_not_part_of_the_name() {
+    let cases = [
+        ("включи быстренько мокрые кроссовки", "мокрые кроссовки"),
+        (
+            "поставь побыстрее дом с нормальными явлениями",
+            "дом с нормальными явлениями",
+        ),
+        ("вруби поскорее кино", "кино"),
+        ("запусти срочно басту", "басту"),
+        ("поставь по-быстрому земфиру", "земфиру"),
+        ("немедленно включи лесника", "лесника"),
+        ("скорей поставь сплин", "сплин"),
+    ];
+    for (text, name) in cases {
+        assert_eq!(names(text)[0], name, "{text}");
+    }
+}

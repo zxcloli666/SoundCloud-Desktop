@@ -43,3 +43,17 @@ fn the_assistant_called_after_a_command_that_ends_with_its_verb_is_not_looked_up
         ("бибера включи лолю", "none"),
     ]);
 }
+
+#[test]
+fn a_word_for_haste_next_to_the_verb_is_not_looked_up() {
+    heard_either_way(&[
+        (
+            "включи быстренько мокрые кроссовки",
+            "play Тима Белорусских - Мокрые кроссы",
+        ),
+        ("поставь быстренько некст левел", "play Next Level"),
+        ("вруби поскорее кино", "play Кино"),
+        ("запусти срочно басту сансару", "play Баста - Сансара"),
+        ("поставь по-быстрому земфиру", "play Земфира"),
+    ]);
+}
