@@ -432,3 +432,19 @@ fn a_command_word_after_a_kind_word_names_what_that_kind_has_under_it() {
         }
     }
 }
+
+const KNOWN_BY_A_SHORT_NAME: &str = "kind\tname\tartist\tpopularity\taliases
+artist\tThe Weeknd\t\t92000000\t
+artist\tWeekend\t\t900000\t
+";
+
+#[test]
+fn a_name_found_by_the_name_it_is_known_by_stays_first_when_asking() {
+    for bare in BOTH {
+        for text in ["включи уикенд", "поставь зе уикенд", "включи уик энд"]
+        {
+            let read = heard_in(KNOWN_BY_A_SHORT_NAME, text, bare);
+            assert_eq!(read, "play The Weeknd?", "{text}");
+        }
+    }
+}

@@ -203,7 +203,7 @@ pub fn decide(ranked: &[Scored], bare: bool) -> Decision {
 
 fn asked(top: &Scored, second: Option<&Scored>) -> Decision {
     let (first, second) = match second {
-        Some(closer) if closer.sim >= top.sim + CLOSER_LEAD => (closer, Some(top)),
+        Some(closer) if !top.alias && closer.sim >= top.sim + CLOSER_LEAD => (closer, Some(top)),
         _ => (top, second),
     };
     Decision::Ask {
