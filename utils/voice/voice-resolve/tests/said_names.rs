@@ -277,3 +277,15 @@ fn an_unknown_title_after_an_artist_of_three_words_falls_back_to_the_artist() {
         ("включи на ютубе тот ролик про скриптонита", "none"),
     ]);
 }
+
+#[test]
+fn one_name_of_a_credit_next_to_other_words_is_not_the_artist() {
+    heard_either_way(&[
+        ("включи короля льва", "none"),
+        ("включи короля льва проклятый старый дом", "none"),
+        ("включи шута горохового", "none"),
+        ("билли джоэла поставь", "none"),
+        ("включи короля ричарда", "play Король Ричард"),
+        ("включи короля", "play Король и Шут"),
+    ]);
+}
