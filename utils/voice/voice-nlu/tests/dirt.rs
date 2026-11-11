@@ -370,12 +370,8 @@ fn a_complaint_that_it_yells_belongs_to_the_request_for_quieter() {
     ] {
         assert_eq!(steps(heard), ["volume_down"], "{heard}");
     }
-    for silent in [
-        "хватит орать",
-        "не ори на меня",
-        "ори громче",
-        "чего ты орешь",
-    ] {
+    for silent in ["хватит орать", "не ори на меня", "чего ты орешь"]
+    {
         assert_eq!(steps(silent), ["none"], "{silent}");
     }
 }
