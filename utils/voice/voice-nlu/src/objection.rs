@@ -3,12 +3,14 @@ use crate::normalize::{normalize, words};
 
 const NOT: &str = "не";
 const NO: &str = "нет";
+const JUST: &str = "просто";
 
 pub fn command_after(text: &str) -> Option<String> {
     let said = words(text);
     after_a_no(text)
         .or_else(|| instead_of_the_denied(text))
         .or_else(|| after_a_run_of_no(&said))
+        .or_else(|| instead_of_the_refused(&said))
 }
 
 fn after_a_no(text: &str) -> Option<String> {
@@ -34,6 +36,12 @@ fn after_a_run_of_no(said: &[String]) -> Option<String> {
     let rest = said[run..].join(" ");
     let negated = || refuses(&format!("{NOT} {rest}"));
     (run >= 2 && !rest.is_empty() && !negated()).then(|| format!("{NO} {rest}"))
+}
+
+fn instead_of_the_refused(said: &[String]) -> Option<String> {
+    let just = said.iter().position(|w| w == JUST)?;
+    let refused = refuses(&said[..just].join(" "));
+    (refused && just + 1 < said.len()).then(|| said[just..].join(" "))
 }
 
 fn refuses(said: &str) -> bool {

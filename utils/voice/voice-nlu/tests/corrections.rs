@@ -284,3 +284,15 @@ fn a_command_after_a_run_of_no_stands() {
     assert_eq!(steps("не не не"), ["none"]);
     assert_eq!(steps("не-не оставь"), ["none"]);
 }
+
+#[test]
+fn what_to_do_instead_of_a_refused_command_is_done() {
+    assert_eq!(
+        steps("да не выключай ты совсем просто потише сделай"),
+        ["volume_down"]
+    );
+    assert_eq!(steps("не переключай просто сделай тише"), ["volume_down"]);
+    assert_eq!(steps("не надо паузу просто убавь звук"), ["volume_down"]);
+    assert_eq!(steps("не выключай просто так"), ["none"]);
+    assert_eq!(steps("да не лайкай ты всё подряд"), ["none"]);
+}
