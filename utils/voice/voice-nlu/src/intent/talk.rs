@@ -33,9 +33,14 @@ fn adverb_of_a_clause(c: &Ctx) -> bool {
     (1..c.len()).any(|i| {
         let adverb = c.w[i - 1];
         let direction = FORWARD.contains(&adverb) || BACKWARD.contains(&adverb);
-        let taken = CLAUSE_SUBJECTS.contains(&c.w[i]) || own_verb(c.w[i]);
+        let taken = CLAUSE_SUBJECTS.contains(&c.w[i]) || has_its_own_verb(&c.w[i..]);
         direction && taken && c.only_pre(0..i - 1) && !backs_the_command(&c.w[i..])
     })
+}
+
+fn has_its_own_verb(clause: &[&str]) -> bool {
+    let verb = clause.iter().take(3).position(|w| own_verb(w));
+    verb.is_some_and(|at| clause[..at].iter().all(|w| own_noun(w)))
 }
 
 fn backs_the_command(words: &[&str]) -> bool {
