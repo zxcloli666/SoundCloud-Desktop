@@ -203,6 +203,9 @@ fn a_rejection_with_nothing_after_it_takes_the_command_back() {
         "включи кино нет не кино",
         "следующий ой нет не то",
         "перемешай а нет не перемешивай",
+        "включи кино нет это не то",
+        "включи кино нет не та песня",
+        "следующий а нет это не то",
     ] {
         assert_eq!(steps(text), ["none"], "{text}");
     }
@@ -257,6 +260,10 @@ fn a_command_taken_back_for_words_that_are_not_understood_is_not_done() {
     }
     assert_eq!(steps("сделай потише ой голова болит"), ["volume_down"]);
     assert_eq!(steps("пауза ой звонят"), ["pause"]);
+    let p = one("громче нет на двадцать");
+    assert_eq!((p.intent, p.number), (Intent::VolumeUp, Some(20)));
+    let p = one("громкость тридцать нет сорок процентов нет лучше половину");
+    assert_eq!((p.intent, p.number), (Intent::VolumeSet, Some(50)));
 }
 
 #[test]

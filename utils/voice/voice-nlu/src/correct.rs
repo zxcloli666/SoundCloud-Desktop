@@ -4,7 +4,7 @@ use crate::normalize::{Tok, normalize, words};
 use crate::numbers;
 use crate::reworded;
 use crate::steps::{self, Side};
-use crate::types::Parsed;
+use crate::types::{Intent, Parsed};
 
 const TAKES_BACK: &[&[&str]] = &[
     &["или", "нет"],
@@ -55,7 +55,23 @@ const AS_IT_WAS: &str = "верни как было";
 const PLAY: &str = "включи";
 const ECHO_MIN: usize = 4;
 const POINTERS: &[&str] = &[
-    "так", "то", "туда", "ту", "тот", "та", "те", "это", "эту", "этот", "эта", "их", "его", "ее",
+    "так",
+    "то",
+    "туда",
+    "ту",
+    "тот",
+    "та",
+    "те",
+    "это",
+    "эту",
+    "этот",
+    "эта",
+    "их",
+    "его",
+    "ее",
+    "песня",
+    "песню",
+    "трек",
 ];
 
 const NEGATING: &[&[&str]] = &[&["а", "не"], &["только", "не"], &["но", "не"], &["и", "не"]];
@@ -203,9 +219,6 @@ fn merge(said: Vec<Tok>, version: Version) -> Vec<Tok> {
         return out;
     }
     let before = intent::detect(&said);
-    if version.firm && before.intent.is_control() {
-        return Vec::new();
-    }
     let mut head: Vec<Tok> = before
         .used
         .iter()
@@ -214,8 +227,20 @@ fn merge(said: Vec<Tok>, version: Version) -> Vec<Tok> {
     if head.is_empty() && alternative {
         head = normalize(PLAY).toks;
     }
+    let first = command(&head);
     head.extend(next);
+    let taken_back = version.firm && before.intent.is_control();
+    if taken_back && (command(&head).is_none() || command(&head) == first) {
+        return Vec::new();
+    }
     head
+}
+
+fn command(said: &[Tok]) -> Option<(Intent, Option<u32>, Option<f32>)> {
+    match steps::side(said, "") {
+        Side::Cmd(p) => Some((p.intent, p.number, p.fraction)),
+        _ => None,
+    }
 }
 
 fn after_not(said: &[String]) -> Option<&[String]> {
@@ -227,17 +252,19 @@ fn after_not(said: &[String]) -> Option<&[String]> {
 }
 
 fn after_rejection<'a>(words: &'a [String], said: &[Tok]) -> Option<&'a [String]> {
-    let denies = words.first().is_some_and(|w| w == NOT);
-    let own_meaning = MERGE_PHRASES.iter().any(|(p, _)| starts(words, 0, p));
+    let points = |w: &&String| POINTERS.contains(&w.as_str());
+    let not = words.iter().take_while(points).count();
+    let denies = words.get(not).is_some_and(|w| w == NOT);
+    let own_meaning = MERGE_PHRASES.iter().any(|(p, _)| starts(words, not, p));
     let again = words
         .iter()
-        .skip(1)
-        .take_while(|w| POINTERS.contains(&w.as_str()) || echoes(w, said))
+        .skip(not + 1)
+        .take_while(|w| points(w) || echoes(w, said))
         .count();
     if said.is_empty() || !denies || own_meaning || again == 0 {
         return Some(words);
     }
-    let rest = &words[1 + again..];
+    let rest = &words[not + 1 + again..];
     let from = rest.iter().position(|w| !noise(w))?;
     Some(&rest[from..])
 }
