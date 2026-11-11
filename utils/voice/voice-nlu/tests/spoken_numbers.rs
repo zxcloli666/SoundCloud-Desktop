@@ -185,6 +185,8 @@ fn a_length_of_time_after_a_pause_or_a_volume_step_is_not_a_seek() {
         ("потише на минуту", "volume_down"),
         ("сделай потише на 5 минут", "volume_down"),
         ("убавь звук на минутку", "volume_down"),
+        ("громче на 20 на минуту", "volume_up 20"),
+        ("убавь на 10 на пару минут", "volume_down 10"),
         ("выключи звук на минуту", "mute"),
         ("на секунду", "none"),
         ("на секундочку", "none"),

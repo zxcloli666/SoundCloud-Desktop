@@ -127,9 +127,13 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
     if (up || down) && c.stray(&used) > 0 {
         return None;
     }
+    let step = (0..c.len())
+        .filter(|i| !wait.contains(i))
+        .find_map(|i| crate::numbers::value(c.w[i]))
+        .filter(|_| !times);
     let found = |intent| {
         let d = Detected::new(intent, used.clone());
-        match number.filter(|_| wait.is_empty()) {
+        match step {
             Some(n) => d.number(n.min(100)),
             None => d,
         }

@@ -217,16 +217,23 @@ pub fn wait(c: &Ctx) -> Vec<usize> {
     if c.has(FORWARD) || c.has(BACKWARD) {
         return said;
     }
+    let opens = |j: usize| c.w[j] == "на" && unit_secs(c.w[j - 1]).is_none();
     let mut i = 0;
     while i < c.len() {
-        let end = (i..c.len()).find(|&j| !lasting(c.w[j])).unwrap_or(c.len());
+        if !lasting(c.w[i]) {
+            i += 1;
+            continue;
+        }
+        let end = (i + 1..c.len())
+            .find(|&j| !lasting(c.w[j]) || opens(j))
+            .unwrap_or(c.len());
         let span = Ctx {
             w: c.w[i..end].to_vec(),
         };
         if span.has(&["на"]) && time(&span).found {
             said.extend(i..end);
         }
-        i = end + 1;
+        i = end;
     }
     said
 }
