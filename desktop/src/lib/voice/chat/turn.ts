@@ -45,6 +45,7 @@ async function playRound(
   hear: (delta: string) => void,
 ): Promise<Round> {
   const round: Round = { end: null, ran: [], acting: Promise.resolve() };
+  if (t.signal.aborted) return { ...round, end: { kind: 'cancelled' } };
   let settle = () => {};
   const ended = new Promise<void>((resolve) => {
     settle = resolve;
@@ -74,8 +75,8 @@ async function playRound(
   );
   const stream = closed.then(() => finish({ kind: 'error', code: 'failed' }));
   await Promise.race([stream, aborted(t.signal)]);
-  if (t.signal.aborted) finish({ kind: 'cancelled' });
-  if (!cancelled()) await round.acting;
+  if (!t.signal.aborted && !cancelled()) await Promise.race([round.acting, aborted(t.signal)]);
+  if (t.signal.aborted) round.end = { kind: 'cancelled' };
   return round;
 }
 

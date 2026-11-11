@@ -150,6 +150,43 @@ test('actions queued behind a cancel do not run', async () => {
   assert.deepEqual(seen.log, ['act:play']);
 });
 
+test('a cancel that lands while a returning tool runs does not start another round', async () => {
+  let release = () => {};
+  const slow = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  const { seen, link, done } = turn(
+    [
+      [{ kind: 'action', name: 'search', args: {} }, { kind: 'done' }],
+      [{ kind: 'say', text: 'Нашла.' }, { kind: 'done' }],
+    ],
+    {},
+    {
+      act: async (name) => {
+        seen.log.push(`act:${name}`);
+        await slow;
+        return ranOf(name, true);
+      },
+    },
+  );
+  for (let i = 0; i < 5; i++) await new Promise((next) => setImmediate(next));
+  seen.abort.abort();
+  const end = await done;
+  release();
+  await slow;
+  await new Promise((next) => setImmediate(next));
+  assert.deepEqual(end, { status: 'cancelled', say: '', marks: [] });
+  assert.equal(link.requests.length, 1);
+  assert.deepEqual(seen.marks, []);
+});
+
+test('a turn cancelled before it starts sends nothing', async () => {
+  const { link, done } = turn([[{ kind: 'done' }]], {}, { signal: AbortSignal.abort() });
+  const end = await done;
+  assert.deepEqual(end, { status: 'cancelled', say: '', marks: [] });
+  assert.equal(link.requests.length, 0);
+});
+
 test('a rejected call fails with its code and runs nothing', async () => {
   for (const code of ['rate_limited', 'unavailable', 'star_required', 'network']) {
     const { seen, done } = turn([[{ reject: { code } }]]);
