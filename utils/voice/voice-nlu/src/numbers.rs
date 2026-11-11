@@ -9,6 +9,23 @@ enum Word {
 }
 
 fn word(w: &str) -> Option<Word> {
+    full(w).or_else(|| {
+        SWALLOWED.iter().find_map(|(heard, said)| {
+            let stem = w.strip_suffix(heard)?;
+            full(&format!("{stem}{said}"))
+        })
+    })
+}
+
+const SWALLOWED: &[(&str, &str)] = &[
+    ("тцать", "дцать"),
+    ("ццать", "дцать"),
+    ("цать", "дцать"),
+    ("ьсят", "ьдесят"),
+    ("сят", "ьдесят"),
+];
+
+fn full(w: &str) -> Option<Word> {
     let v = match w {
         "ноль" | "нуль" | "ноля" | "нуля" | "zero" => return Some(Word::Zero),
         "один" | "одна" | "одно" | "одну" | "одного" | "одной" | "one" => {
@@ -23,12 +40,12 @@ fn word(w: &str) -> Option<Word> {
         "восемь" | "восьми" | "eight" => Word::Unit(8),
         "девять" | "девяти" | "nine" => Word::Unit(9),
         "десять" | "десяти" | "ten" => Word::Teen(10),
-        "одиннадцать" | "eleven" => Word::Teen(11),
+        "одиннадцать" | "одинадцать" | "eleven" => Word::Teen(11),
         "двенадцать" | "twelve" => Word::Teen(12),
         "тринадцать" | "thirteen" => Word::Teen(13),
         "четырнадцать" | "fourteen" => Word::Teen(14),
         "пятнадцать" | "fifteen" => Word::Teen(15),
-        "шестнадцать" | "sixteen" => Word::Teen(16),
+        "шестнадцать" | "шеснадцать" | "sixteen" => Word::Teen(16),
         "семнадцать" | "seventeen" => Word::Teen(17),
         "восемнадцать" | "eighteen" => Word::Teen(18),
         "девятнадцать" | "nineteen" => Word::Teen(19),
@@ -49,9 +66,8 @@ fn word(w: &str) -> Option<Word> {
         "семьсот" | "семисот" => Word::Hundred(700),
         "восемьсот" | "восьмисот" => Word::Hundred(800),
         "девятьсот" | "девятисот" => Word::Hundred(900),
-        "тысяча" | "тысячу" | "тысячи" | "тысяч" | "thousand" => {
-            Word::Thousand
-        }
+        "тысяча" | "тысячу" | "тысячи" | "тысяч" | "тыща" | "тыщу" | "тыщи" | "тыщ"
+        | "thousand" => Word::Thousand,
         _ => return None,
     };
     Some(v)
