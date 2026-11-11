@@ -112,3 +112,33 @@ fn two_command_words_run_together_or_one_cut_in_two_are_read_apart_and_whole() {
         assert_eq!(words(kept), kept, "{kept}");
     }
 }
+
+#[test]
+fn a_loan_verb_keeps_its_meaning_under_russian_prefixes_and_endings() {
+    for (heard, want) in [
+        ("зашафли плейлист", "shuffle_on"),
+        ("зашафль", "shuffle_on"),
+        ("шафлани", "shuffle_on"),
+        ("замьють звук", "mute"),
+        ("замьють нахрен", "mute"),
+        ("замьюти", "mute"),
+        ("мьютани", "mute"),
+        ("зарепить этот трек", "repeat_one"),
+        ("анлайкни", "unlike"),
+        ("анлайкнуть этот трек", "unlike"),
+        ("рестартни трек", "seek_to"),
+        ("рестартани", "seek_to"),
+        ("рестартуй песню", "seek_to"),
+        ("сейвни в лайки", "like"),
+        ("сейвани", "like"),
+        ("засейвь трек", "like"),
+        ("плэйни", "resume"),
+    ] {
+        assert_eq!(steps(heard), [want], "{heard}");
+    }
+    for silent in ["рестартни сервер", "загрузи сейв", "где мой сейв"]
+    {
+        assert_eq!(steps(silent), ["none"], "{silent}");
+    }
+    assert_eq!(steps("замути что нибудь"), ["play_wave"]);
+}

@@ -80,8 +80,25 @@ pub const EXACT: &[(&str, &str)] = &[
 ];
 
 const ENDINGS: &[&str] = &[
-    "", "й", "и", "ь", "йте", "ите", "ни", "нить", "нуть", "ть", "ай", "ать", "ну", "ем", "нем",
-    "уй", "уйте",
+    "",
+    "й",
+    "и",
+    "ь",
+    "йте",
+    "ите",
+    "ни",
+    "нить",
+    "нуть",
+    "ть",
+    "ай",
+    "ать",
+    "ну",
+    "ем",
+    "нем",
+    "уй",
+    "уйте",
+    "ани",
+    "ануть",
 ];
 
 const STEMS: &[(&str, &str)] = &[
@@ -100,6 +117,14 @@ const STEMS: &[(&str, &str)] = &[
     ("мотан", "перемотай"),
     ("пропуска", "пропусти"),
     ("шафл", "shuffle"),
+    ("зашафл", "shuffle"),
+    ("замьют", "mute"),
+    ("зарепит", "repeat"),
+    ("анлайк", "unlike"),
+    ("рестарт", "restart"),
+    ("сейвн", "save"),
+    ("сейван", "save"),
+    ("засейв", "save"),
 ];
 
 const PREFIXES: &[(&str, &str)] = &[
@@ -121,15 +146,18 @@ fn written(w: &str) -> Option<&'static str> {
     if let Some((_, to)) = EXACT.iter().find(|(k, _)| *k == w) {
         return Some(to);
     }
-    for (stem, to) in STEMS {
-        if let Some(rest) = w.strip_prefix(stem) {
-            if ENDINGS.contains(&rest) {
-                return Some(to);
-            }
-        }
-    }
-    PREFIXES
-        .iter()
-        .find(|(p, _)| w.starts_with(p))
-        .map(|(_, to)| *to)
+    loan(w).or_else(|| {
+        PREFIXES
+            .iter()
+            .find(|(p, _)| w.starts_with(p))
+            .map(|(_, to)| *to)
+    })
+}
+
+fn loan(w: &str) -> Option<&'static str> {
+    let w = w.replace('э', "е");
+    STEMS.iter().find_map(|(stem, to)| {
+        let ending = w.strip_prefix(stem)?;
+        ENDINGS.contains(&ending).then_some(*to)
+    })
 }
