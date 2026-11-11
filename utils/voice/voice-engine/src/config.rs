@@ -96,6 +96,7 @@ pub struct Config {
     pub duck: f32,
     pub echo: Echo,
     pub llm: bool,
+    pub names: Vec<String>,
     pub boosts: Boosts,
 }
 
@@ -134,6 +135,7 @@ impl Default for Config {
             duck: 0.3,
             echo: Echo::Auto,
             llm: true,
+            names: Vec::new(),
             boosts: Boosts::default(),
         }
     }

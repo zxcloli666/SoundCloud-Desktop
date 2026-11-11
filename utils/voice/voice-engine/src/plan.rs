@@ -50,7 +50,8 @@ impl Core {
         } else {
             Bare::Popular
         };
-        let outcomes = interpret(&text, &probe, &boosts, bare, &Names::default());
+        let names = Names::new(&self.config.names);
+        let outcomes = interpret(&text, &probe, &boosts, bare, &names);
         if let Some(error) = probe.failure.take() {
             self.fail("network", Some(error));
             self.go_idle();
