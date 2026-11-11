@@ -1,13 +1,15 @@
-use crate::lexicon::{self, PRE};
+use crate::lexicon::{self, FILLERS, PRE};
 
 const GLUE_VERBS: &[&str] = &["включи", "вруби", "поставь", "запусти", "сыграй"];
 const GLUED_FROM: usize = 4;
+const WHAT_IS: (&str, &str) = ("вот", "из");
 
 fn known(w: &str) -> bool {
     lexicon::is_known(w) || lexicon::slang(w).is_some()
 }
 
 pub fn context(words: Vec<String>) -> Vec<String> {
+    let words = english_by_ear(words);
     let mut out = words.clone();
     for i in 0..words.len() {
         let next = words.get(i + 1).map(String::as_str).unwrap_or("");
@@ -27,6 +29,37 @@ pub fn context(words: Vec<String>) -> Vec<String> {
         out[i] = to.to_string();
     }
     out
+}
+
+fn english_by_ear(words: Vec<String>) -> Vec<String> {
+    let whole = words.iter().any(|w| english(w))
+        && words.iter().all(|w| {
+            english(w)
+                || w == WHAT_IS.0
+                || lexicon::english_among_english(w).is_some()
+                || lexicon::has(FILLERS, w)
+        });
+    let read = |i: usize| {
+        let w = words[i].as_str();
+        if whole && w == WHAT_IS.0 {
+            let is = words.get(i + 1).is_some_and(|next| next == WHAT_IS.1);
+            return is.then_some("what");
+        }
+        if whole {
+            return lexicon::english_among_english(w);
+        }
+        let after_english = i > 0 && english(&words[i - 1]);
+        lexicon::english_pronoun(w).filter(|_| after_english)
+    };
+    (0..words.len())
+        .map(|i| read(i).unwrap_or(&words[i]).to_string())
+        .collect()
+}
+
+fn english(w: &str) -> bool {
+    lexicon::canon(w)
+        .or_else(|| lexicon::slang(w))
+        .is_some_and(|read| read.is_ascii())
 }
 
 pub fn glue(words: Vec<String>) -> Vec<String> {

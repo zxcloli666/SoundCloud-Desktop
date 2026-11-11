@@ -142,3 +142,56 @@ fn a_loan_verb_keeps_its_meaning_under_russian_prefixes_and_endings() {
     }
     assert_eq!(steps("замути что нибудь"), ["play_wave"]);
 }
+
+#[test]
+fn english_command_words_written_in_cyrillic_are_read_as_english() {
+    for (heard, meant) in [
+        ("плиз стоп зе мьюзик", "стоп the music"),
+        ("плей май лайкс", "play my likes"),
+        ("тёрн ит ап", "turn it up"),
+        ("вольюм даун", "volume down"),
+        ("рипит офф", "repeat off"),
+        ("репит он", "repeat on"),
+        ("вот из зис сонг", "what is this song"),
+        ("вотс плейинг нау", "whats playing now"),
+        ("скип зис сонг", "skip this song"),
+        ("хелп ми что ты умеешь", "help me что ты умеешь"),
+    ] {
+        assert_eq!(words(heard), meant, "{heard}");
+    }
+    for (heard, want) in [
+        ("плиз стоп зе мьюзик", "stop"),
+        ("плей май лайкс", "play_likes"),
+        ("тёрн ит ап", "volume_up"),
+        ("вольюм даун", "volume_down"),
+        ("рипит офф", "repeat_off"),
+        ("вот из зис сонг", "now_playing"),
+        ("вотс плейинг нау", "now_playing"),
+        ("хелп ми что ты умеешь", "help"),
+        ("скип зис сонг", "next"),
+        ("мьют ит", "mute"),
+    ] {
+        assert_eq!(steps(heard), [want], "{heard}");
+    }
+}
+
+#[test]
+fn a_russian_word_that_sounds_english_stays_russian_among_russian_words() {
+    for kept in [
+        "вот он",
+        "вот это трек",
+        "включи ласковый май",
+        "включи шейп оф ю",
+        "включи нау",
+        "из плейлиста включи",
+        "он из москвы",
+        "ту песню включи",
+    ] {
+        assert_eq!(words(kept), kept, "{kept}");
+    }
+    assert_eq!(words("вот скип"), "вот skip");
+    assert_eq!(words("плей ласковый май"), "play ласковый май");
+    assert_eq!(steps("вот скип"), ["next"]);
+    assert_eq!(steps("вот он"), ["none"]);
+    assert_eq!(steps("он даун"), ["none"]);
+}

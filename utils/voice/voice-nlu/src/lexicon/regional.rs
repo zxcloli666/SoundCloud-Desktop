@@ -79,6 +79,33 @@ pub const EXACT: &[(&str, &str)] = &[
     ("чуточку", "чуть"),
 ];
 
+const ENGLISH: &[(&str, &str)] = &[
+    ("зе", "the"),
+    ("зис", "this"),
+    ("сонг", "song"),
+    ("мьюзик", "music"),
+    ("хелп", "help"),
+    ("вольюм", "volume"),
+    ("лайкс", "likes"),
+    ("вотс", "whats"),
+    ("плейинг", "playing"),
+    ("лаудер", "louder"),
+    ("шат", "shut"),
+];
+
+const ENGLISH_PRONOUNS: &[(&str, &str)] =
+    &[("ми", "me"), ("май", "my"), ("ит", "it"), ("ю", "you")];
+
+const ENGLISH_AMONG_ENGLISH: &[(&str, &str)] = &[
+    ("из", "is"),
+    ("он", "on"),
+    ("нау", "now"),
+    ("терн", "turn"),
+    ("ту", "to"),
+    ("ай", "i"),
+    ("кен", "can"),
+];
+
 const ENDINGS: &[&str] = &[
     "",
     "й",
@@ -142,8 +169,16 @@ fn heard(w: &str) -> Option<&'static str> {
     Some(written(word).or_else(|| super::slang(word)).unwrap_or(word))
 }
 
+pub fn english_pronoun(w: &str) -> Option<&'static str> {
+    read(ENGLISH_PRONOUNS, w)
+}
+
+pub fn english_among_english(w: &str) -> Option<&'static str> {
+    english_pronoun(w).or_else(|| read(ENGLISH_AMONG_ENGLISH, w))
+}
+
 fn written(w: &str) -> Option<&'static str> {
-    if let Some((_, to)) = EXACT.iter().find(|(k, _)| *k == w) {
+    if let Some(to) = read(EXACT, w).or_else(|| read(ENGLISH, w)) {
         return Some(to);
     }
     loan(w).or_else(|| {
@@ -152,6 +187,10 @@ fn written(w: &str) -> Option<&'static str> {
             .find(|(p, _)| w.starts_with(p))
             .map(|(_, to)| *to)
     })
+}
+
+fn read(pairs: &[(&str, &'static str)], w: &str) -> Option<&'static str> {
+    pairs.iter().find(|(from, _)| *from == w).map(|(_, to)| *to)
 }
 
 fn loan(w: &str) -> Option<&'static str> {
