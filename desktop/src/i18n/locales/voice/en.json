@@ -181,15 +181,15 @@
         "queue_add": "Add to queue",
         "search": "Search",
         "play_found": "Play",
-        "open_page": "Page opened",
+        "open_page": "Open page",
         "get_settings": "Settings",
-        "set_setting": "Setting changed",
+        "set_setting": "Change setting",
         "lyrics": "Lyrics",
         "queue_list": "Queue",
-        "queue_clear": "Queue cleared",
+        "queue_clear": "Clear queue",
         "add_to_playlist": "Add to playlist",
-        "remember": "Remembered",
-        "forget": "Forgotten"
+        "remember": "Remember",
+        "forget": "Forget"
       }
     },
     "voices": {

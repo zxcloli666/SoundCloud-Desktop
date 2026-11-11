@@ -187,15 +187,15 @@
         "queue_add": "В очередь",
         "search": "Поиск",
         "play_found": "Включить",
-        "open_page": "Страница открыта",
+        "open_page": "Открыть страницу",
         "get_settings": "Настройки",
-        "set_setting": "Настройка изменена",
+        "set_setting": "Изменить настройку",
         "lyrics": "Текст песни",
         "queue_list": "Очередь",
-        "queue_clear": "Очередь очищена",
+        "queue_clear": "Очистить очередь",
         "add_to_playlist": "В плейлист",
-        "remember": "Запомнено",
-        "forget": "Забыто"
+        "remember": "Запомнить",
+        "forget": "Забыть"
       }
     },
     "voices": {

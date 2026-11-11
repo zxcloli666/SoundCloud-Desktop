@@ -181,15 +181,15 @@
         "queue_add": "Sıraya ekle",
         "search": "Arama",
         "play_found": "Çal",
-        "open_page": "Sayfa açıldı",
+        "open_page": "Sayfayı aç",
         "get_settings": "Ayarlar",
-        "set_setting": "Ayar değişti",
+        "set_setting": "Ayarı değiştir",
         "lyrics": "Şarkı sözleri",
         "queue_list": "Sıra",
-        "queue_clear": "Sıra temizlendi",
+        "queue_clear": "Sırayı temizle",
         "add_to_playlist": "Çalma listesine ekle",
-        "remember": "Hatırlandı",
-        "forget": "Unutuldu"
+        "remember": "Hatırla",
+        "forget": "Unut"
       }
     },
     "voices": {

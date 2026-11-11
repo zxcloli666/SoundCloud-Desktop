@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { readArgs } from '../src/lib/voice/chat/args.ts';
 import { NOTES_CAP } from '../src/lib/voice/chat/notes.ts';
@@ -44,6 +45,17 @@ test('only the tools the model must hear back from ask for another round', () =>
     tools.filter((t) => t.returns).map((t) => t.name),
     ['play', 'queue_add', 'search', 'get_settings', 'queue_list'],
   );
+});
+
+test('every tool has a chip label in all five interface languages and none is left over', () => {
+  const { tools } = setup();
+  const names = tools.map((t) => t.name).sort();
+  for (const lang of ['en', 'ru', 'tr', 'ko', 'pt']) {
+    const file = new URL(`../src/i18n/locales/voice/${lang}.json`, import.meta.url);
+    const labels: Record<string, string> = JSON.parse(readFileSync(file, 'utf8')).voice.chat.tools;
+    assert.deepEqual(Object.keys(labels).sort(), names, lang);
+    for (const name of names) assert.ok(labels[name].trim(), `${lang}: ${name}`);
+  }
 });
 
 test('a failed action always goes back to the model, an unknown tool never does', async () => {

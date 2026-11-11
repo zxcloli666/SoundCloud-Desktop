@@ -184,15 +184,15 @@
         "queue_add": "Adicionar à fila",
         "search": "Busca",
         "play_found": "Tocar",
-        "open_page": "Página aberta",
+        "open_page": "Abrir página",
         "get_settings": "Configurações",
-        "set_setting": "Configuração alterada",
+        "set_setting": "Alterar configuração",
         "lyrics": "Letra",
         "queue_list": "Fila",
-        "queue_clear": "Fila limpa",
+        "queue_clear": "Limpar fila",
         "add_to_playlist": "Adicionar à playlist",
-        "remember": "Memorizado",
-        "forget": "Esquecido"
+        "remember": "Memorizar",
+        "forget": "Esquecer"
       }
     },
     "voices": {

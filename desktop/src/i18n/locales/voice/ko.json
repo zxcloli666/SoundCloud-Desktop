@@ -178,15 +178,15 @@
         "queue_add": "대기열에 추가",
         "search": "검색",
         "play_found": "재생",
-        "open_page": "페이지 열림",
+        "open_page": "페이지 열기",
         "get_settings": "설정",
-        "set_setting": "설정 변경됨",
+        "set_setting": "설정 변경",
         "lyrics": "가사",
         "queue_list": "대기열",
-        "queue_clear": "대기열 비움",
+        "queue_clear": "대기열 비우기",
         "add_to_playlist": "플레이리스트에 추가",
-        "remember": "기억함",
-        "forget": "잊음"
+        "remember": "기억하기",
+        "forget": "잊기"
       }
     },
     "voices": {
