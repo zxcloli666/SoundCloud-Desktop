@@ -181,7 +181,9 @@ pub fn content(c: &Ctx) -> Option<Detected> {
         }
     }
 
-    let similar_word = c.pos(SIMILAR);
+    let similar_word = c
+        .pos(SIMILAR)
+        .filter(|&i| !SUCH.contains(&c.w[i]) || asks_for_such(c, i));
     let like_this = c.has(&["like"]) && c.has(&["this", "that"]) && (has_verb || c.has(&["more"]));
     if (similar_word.is_some() || like_this) && (has_verb || c.len() <= 4) {
         let mut u = used.clone();
@@ -219,6 +221,10 @@ pub fn content(c: &Ctx) -> Option<Detected> {
         }
     }
     None
+}
+
+fn asks_for_such(c: &Ctx, at: usize) -> bool {
+    c.at(at + 1) != "себе" && (find_verb(c).is_some() || c.has(SUCH_COMPANY))
 }
 
 fn denied(c: &Ctx, used: &[usize]) -> bool {

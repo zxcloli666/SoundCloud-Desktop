@@ -273,3 +273,23 @@ fn playing_on_further_is_resume_not_the_next_track() {
         ("дальше", "next"),
     ]);
 }
+
+#[test]
+fn such_said_alone_or_as_so_so_is_an_opinion_not_a_request_for_similar_music() {
+    stays_silent(&[
+        "ну такое",
+        "такое",
+        "такое себе",
+        "кино вчера смотрели такое себе",
+        "да такое себе кино",
+        "что это такое",
+    ]);
+    acts(&[
+        ("ещё такого же", "play_similar"),
+        ("ещё что-нибудь такое же", "play_similar"),
+        ("включи такое же", "play_similar"),
+        ("давай ещё такое", "play_similar"),
+        ("побольше такого", "play_similar"),
+        ("включи похожее", "play_similar"),
+    ]);
+}
