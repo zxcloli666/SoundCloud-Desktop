@@ -6,10 +6,17 @@ use voice_resolve::FixtureCatalog;
 
 const LOLI: [&str; 3] = ["Loli", "Лоля", "롤리"];
 const MORIARTY: [&str; 3] = ["Moriarty", "Мориарти", "모리아티"];
+const MICHAEL: [&str; 1] = ["Michael"];
+const HEART: [&str; 1] = ["Heart"];
 const CATALOG: &str = "kind\tname\tartist\tpopularity\taliases
 artist\tЛоля\t\t300000\tloli
 artist\tКино\t\t9000000\t
 track\tПривет\tZivert\t4000000\t
+artist\tMichael Jackson\t\t40000000\tмайкл джексон
+artist\tJanet Jackson\t\t9000000\t
+artist\tGeorge Michael\t\t12000000\t
+artist\tQueen\t\t50000000\t
+track\tHeart of Glass\tBlondie\t8000000\t
 ";
 
 fn rig(catalog: Box<dyn Catalog>) -> Rig {
@@ -121,5 +128,51 @@ fn only_the_names_of_the_voice_in_use_are_left_out() {
         assert_eq!(other, read(&fixture(chat, &[]), "привет, лоля"));
         assert_eq!(played(&other), ("play", "Лоля"));
         assert_eq!(settled(&rig, "привет, мориарти").intent, "none");
+    }
+}
+
+#[test]
+fn a_longer_name_with_the_name_of_the_voice_in_it_is_kept_with_the_chat_on_or_off() {
+    let cases = [
+        (&MICHAEL[..], "michael jackson"),
+        (&MICHAEL[..], "play george michael"),
+        (&HEART[..], "heart of glass"),
+        (&MICHAEL[..], "майкл джексон"),
+    ];
+    for chat in [true, false] {
+        let rig = fixture(chat, &[]);
+        let plain = fixture(chat, &[]);
+        for (names, text) in cases {
+            voice(&rig, chat, names);
+            assert_eq!(read(&rig, text), read(&plain, text), "{text}");
+        }
+        voice(&rig, chat, &MICHAEL);
+        let jackson = settled(&rig, "michael jackson");
+        assert_eq!(played(&jackson), ("play", "Michael Jackson"));
+        let george = settled(&rig, "play george michael");
+        assert_eq!(played(&george), ("play", "George Michael"));
+    }
+}
+
+#[test]
+fn the_name_of_such_a_voice_said_to_it_is_left_out_with_the_chat_on_or_off() {
+    let said = [
+        ("michael, pause", "pause"),
+        ("thanks michael", "none"),
+        ("michael", "none"),
+    ];
+    for chat in [true, false] {
+        let rig = rig(Box::new(Offline));
+        voice(&rig, chat, &MICHAEL);
+        for (text, intent) in said {
+            let command = settled(&rig, text);
+            assert_eq!(command.intent, intent, "{text}");
+            assert_eq!(command.decision, None, "{text}");
+            assert!(command.candidates.is_empty(), "{text}");
+        }
+        let queen = fixture(chat, &HEART);
+        let heard = read(&queen, "heart, play queen");
+        assert_eq!(heard, read(&queen, "play queen"));
+        assert_eq!(played(&heard), ("play", "Queen"));
     }
 }
