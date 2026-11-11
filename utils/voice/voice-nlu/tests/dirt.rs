@@ -541,3 +541,24 @@ fn giving_back_the_song_that_was_before_this_one_is_previous() {
         assert_eq!(steps(silent), ["none"], "{silent}");
     }
 }
+
+#[test]
+fn rude_and_roundabout_english_is_read_like_its_russian_counterpart() {
+    for (heard, want) in [
+        ("skip this shit", "next"),
+        ("skip this fucking song", "next"),
+        ("stop this crap", "stop"),
+        ("i can't hear anything", "volume_up"),
+        ("i can barely hear it", "volume_up"),
+        ("can't hear the music", "volume_up"),
+        ("shut up", "stop"),
+        ("just shut the fuck up", "stop"),
+        ("шат ап", "stop"),
+    ] {
+        assert_eq!(steps(heard), [want], "{heard}");
+    }
+    for silent in ["shut the door", "shut down", "what the shit"] {
+        assert_eq!(steps(silent), ["none"], "{silent}");
+    }
+    assert_eq!(steps("i can't hear my neighbours"), ["play"]);
+}
