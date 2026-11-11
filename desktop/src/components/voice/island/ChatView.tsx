@@ -4,6 +4,7 @@ import { useChatLive } from '../../../lib/voice/chat/live';
 import { useVoiceRuntime } from '../../../lib/voice/runtime';
 import { useVoiceStore } from '../../../lib/voice/store';
 import { failureLine } from '../chatFailure';
+import { CircleAlert } from '../icons';
 import { VoiceAvatar } from '../VoiceAvatar';
 import { type VoiceInfo, voiceById } from '../voices';
 import { ChatMarks } from './ChatMarks';
@@ -34,6 +35,24 @@ function Face({ voice, phase, speaking }: { voice: VoiceInfo; phase: Phase; spea
           }}
         />
       )}
+    </span>
+  );
+}
+
+function Failure({ code }: { code: string }) {
+  const { t } = useTranslation();
+  const alone = useChatLive((s) => s.parts.length === 0 && s.marks.length === 0);
+  if (alone) {
+    return (
+      <span className="mt-0.5 block text-[13px] font-medium leading-[1.4] text-ink-55">
+        {failureLine(code, t)}
+      </span>
+    );
+  }
+  return (
+    <span className="mt-1 flex items-center gap-1 text-[11px] text-ink-45">
+      <CircleAlert size={11} />
+      {failureLine(code, t)}
     </span>
   );
 }
@@ -71,14 +90,9 @@ export function ChatView({
             {t('voice.quote', { text: heard })}
           </span>
         </span>
-        {phase === 'failed' ? (
-          <span className="mt-0.5 block text-[13px] font-medium leading-[1.4] text-ink-55">
-            {failureLine(code, t)}
-          </span>
-        ) : (
-          <ReplyText live={phase === 'live'} />
-        )}
+        <ReplyText live={phase === 'live'} />
         <ChatMarks undo={phase === 'done' ? undo : null} onUndo={onUndo} />
+        {phase === 'failed' && <Failure code={code} />}
         {voiceLost && (
           <span className="mt-1 flex items-center gap-1 text-[11px] text-ink-45">
             <VolumeX size={11} />

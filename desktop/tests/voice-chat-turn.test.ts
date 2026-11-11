@@ -223,16 +223,16 @@ test('a rejected call fails with its code and runs nothing', async () => {
   }
 });
 
-test('an error event after the stream started fails the turn', async () => {
-  const { done } = turn([
+test('an error event after the stream started fails the turn and keeps what was said', async () => {
+  const { seen, done } = turn([
     [
-      { kind: 'say', text: 'Ну' },
+      { kind: 'say', text: 'Ну ' },
+      { kind: 'say', text: 'смотри' },
       { kind: 'error', code: 'deadline' },
     ],
   ]);
-  const end = await done;
-  assert.equal(end.status, 'failed');
-  assert.equal(end.status === 'failed' && end.code, 'deadline');
+  assert.deepEqual(await done, { status: 'failed', code: 'deadline', say: 'Ну смотри', marks: [] });
+  assert.deepEqual(seen.log, ['say:Ну ', 'say:смотри']);
 });
 
 async function settled() {

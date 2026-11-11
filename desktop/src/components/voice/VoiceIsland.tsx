@@ -23,7 +23,7 @@ const AFTER_SPEECH_MS = 4000;
 function hideAfter(hud: HudView, spoken: boolean): number | undefined {
   if (hud.kind !== 'chat') return HIDE_AFTER[hud.kind];
   if (hud.phase === 'live') return undefined;
-  if (hud.phase === 'failed') return HIDE_AFTER.failed;
+  if (hud.phase === 'failed' && replyLength() === 0) return HIDE_AFTER.failed;
   if (spoken) return AFTER_SPEECH_MS;
   return Math.min(READ_MAX_MS, READ_BASE_MS + replyLength() * READ_PER_CHAR_MS);
 }
