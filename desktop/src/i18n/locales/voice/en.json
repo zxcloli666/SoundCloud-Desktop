@@ -224,8 +224,8 @@
       "linked_other": "{{count}} connected",
       "justLinked": "Connected",
       "how": {
-        "alice": "Say “Alice, launch the Loli skill” and enter the code",
-        "salut": "Say “Salut, launch Loli” and read the code"
+        "alice": "Say “Алиса, запусти навык Саунд Клауд” and enter the code",
+        "salut": "Say “Салют, запусти Саунд” and read the code"
       },
       "copy": "Copy",
       "copied": "Copied",

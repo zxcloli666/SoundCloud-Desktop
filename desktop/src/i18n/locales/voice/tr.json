@@ -224,8 +224,8 @@
       "linked_other": "{{count}} bağlı",
       "justLinked": "Bağlandı",
       "how": {
-        "alice": "“Alice, Loli becerisini başlat” deyin ve kodu girin",
-        "salut": "“Salut, Loli'yi başlat” deyin ve kodu söyleyin"
+        "alice": "“Алиса, запусти навык Саунд Клауд” deyin ve kodu girin",
+        "salut": "“Салют, запусти Саунд” deyin ve kodu söyleyin"
       },
       "copy": "Kopyala",
       "copied": "Kopyalandı",
