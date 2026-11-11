@@ -1,3 +1,4 @@
+use std::collections::VecDeque;
 use std::sync::mpsc::Receiver;
 use std::time::{Duration, Instant};
 
@@ -5,134 +6,93 @@ use voice_audio::OutputInfo;
 use voice_audio::routing::same_physical;
 
 use crate::clip::Clip;
-use crate::config::SpeakMode;
+use crate::config::{Config, Language, SpeakMode};
+use crate::draft::Draft;
 use crate::event::State;
 use crate::machine::{Core, Msg, Phase};
-use crate::stream::{Feed, Stream};
-use crate::tts::{Piece, Say};
-use crate::{models, qwen, speaker, voices};
+use crate::speech::Speech;
+use crate::stream::Stream;
+use crate::tts::{Piece, Say, Source};
+use crate::{models, speaker, voices};
 
-const TICK: Duration = Duration::from_millis(33);
 const SPEECH_INPUT: &str = "speech";
 const GRACE: Duration = Duration::from_secs(3);
-const STALL: Duration = Duration::from_secs(20);
-const BURST: f32 = 0.64;
-const HEADROOM: f32 = 1.2;
 
-pub struct Draft {
-    rate: u32,
-    samples: Vec<f32>,
-    expected: f32,
-    first: Option<(Instant, usize)>,
+pub struct Reply {
+    source: Source,
+    language: Language,
+    speed: f32,
+    pitch: f32,
+    lines: VecDeque<Line>,
+    speech: Option<Speech>,
+    broken: bool,
+    until: Option<Instant>,
 }
 
-pub struct Speech {
-    pub r#gen: u64,
-    rate: u32,
-    feed: Option<Feed>,
-    levels: Levels,
-    samples: usize,
-    started: Instant,
-    next_tick: Instant,
-    until: Instant,
+struct Line {
+    r#gen: u64,
+    draft: Option<Draft>,
 }
 
-struct Levels {
-    window: usize,
-    sum: f32,
-    count: usize,
-    done: Vec<f32>,
-}
-
-impl Draft {
-    fn new(text: &str) -> Draft {
-        Draft {
-            rate: 0,
-            samples: Vec::new(),
-            expected: qwen::seconds(text),
-            first: None,
+impl Reply {
+    fn new(source: Source, config: &Config) -> Reply {
+        Reply {
+            source,
+            language: config.language,
+            speed: config.speak.speed,
+            pitch: config.speak.pitch,
+            lines: VecDeque::new(),
+            speech: None,
+            broken: false,
+            until: None,
         }
     }
 
-    fn take(&mut self, rate: u32, samples: Vec<f32>, now: Instant) {
-        if self.first.is_none() {
-            self.first = Some((now, samples.len()));
+    fn line(&mut self, r#gen: u64, text: String, until: Instant) -> Say {
+        if self.lines.is_empty() {
+            self.until = Some(until);
         }
-        self.rate = rate;
-        self.samples.extend(samples);
-    }
-
-    fn ready(&self, now: Instant) -> bool {
-        let Some((at, lead)) = self.first else {
-            return false;
-        };
-        let rate = self.rate.max(1) as f32;
-        let waited = now.saturating_duration_since(at).as_secs_f32();
-        let made = (self.samples.len() - lead) as f32 / rate;
-        if made <= 0.0 {
-            return false;
-        }
-        let pace = made / waited.max(0.001);
-        let behind = (1.0 - pace).max(0.0) * self.expected * HEADROOM;
-        self.samples.len() as f32 / rate >= BURST / pace + behind
-    }
-}
-
-impl Speech {
-    fn new(r#gen: u64, rate: u32, feed: Feed, now: Instant) -> Speech {
-        Speech {
+        self.lines.push_back(Line {
             r#gen,
-            rate,
-            feed: Some(feed),
-            levels: Levels::new(rate),
-            samples: 0,
-            started: now,
-            next_tick: now,
-            until: now + STALL,
+            draft: Some(Draft::new(&text)),
+        });
+        Say {
+            r#gen,
+            text,
+            language: self.language,
+            source: self.source.clone(),
+            speed: self.speed,
+            pitch: self.pitch,
         }
     }
 
-    fn take(&mut self, samples: Vec<f32>, now: Instant) {
-        let Some(feed) = &self.feed else {
-            return;
+    fn take(&mut self, rate: u32, samples: Vec<f32>, now: Instant) -> bool {
+        let Some(line) = self.lines.front_mut() else {
+            return false;
         };
-        self.levels.push(&samples);
-        self.samples += samples.len();
-        feed.push(samples);
-        self.until = now + STALL;
-    }
-
-    fn close(&mut self, now: Instant) {
-        self.feed = None;
-        let length = Duration::from_secs_f32(self.samples as f32 / self.rate.max(1) as f32);
-        self.until = (self.started + length).max(now) + GRACE;
-    }
-
-    pub fn deadline(&self) -> Instant {
-        self.next_tick.min(self.until)
-    }
-}
-
-impl Levels {
-    fn new(rate: u32) -> Levels {
-        Levels {
-            window: (rate as usize / 30).max(1),
-            sum: 0.0,
-            count: 0,
-            done: Vec::new(),
-        }
-    }
-
-    fn push(&mut self, samples: &[f32]) {
-        for sample in samples {
-            self.sum += sample * sample;
-            self.count += 1;
-            if self.count == self.window {
-                self.done.push((self.sum / self.window as f32).sqrt());
-                self.sum = 0.0;
-                self.count = 0;
+        let Some(draft) = line.draft.as_mut() else {
+            if let Some(speech) = self.speech.as_mut() {
+                speech.take(samples, now);
             }
-        }
+            return false;
+        };
+        draft.take(rate, samples, now);
+        let lead = self.speech.as_ref().map_or(0.0, |speech| speech.lead(now));
+        draft.ready(now, lead)
+    }
+
+    fn draft(&mut self) -> Option<Draft> {
+        let draft = self.lines.front_mut()?.draft.take()?;
+        Some(draft).filter(|draft| !draft.samples.is_empty())
+    }
+
+    fn busy(&self, now: Instant) -> bool {
+        !self.lines.is_empty() || self.speech.as_ref().is_some_and(|s| s.dry() > now)
+    }
+
+    fn deadline(&self) -> Option<Instant> {
+        let tick = self.speech.as_ref().and_then(Speech::tick);
+        [self.until, tick].into_iter().flatten().min()
     }
 }
 
@@ -146,24 +106,34 @@ fn wait(ended: Receiver<()>, inbox: std::sync::mpsc::Sender<Msg>, msg: Msg) {
 }
 
 impl Core {
-    pub fn say(&mut self, text: String) {
-        let source = voices::find(&self.config.speak.voice)
-            .and_then(|voice| models::source(&self.deps.store, voice));
-        let Some(source) = source else {
-            return self.go_idle();
-        };
+    pub fn say(&mut self, text: String) -> bool {
+        let fresh = self.reply.is_none();
+        if fresh {
+            let Some(source) = self.voice() else {
+                return false;
+            };
+            self.reply = Some(Reply::new(source, &self.config));
+        }
         let r#gen = self.next_gen();
-        self.synth = Some(r#gen);
-        self.draft = Some(Draft::new(&text));
-        self.phase = Phase::Thinking(Instant::now() + self.deps.timing.synth);
-        self.tts.say(Say {
-            r#gen,
-            text,
-            language: self.config.language,
-            source,
-            speed: self.config.speak.speed,
-            pitch: self.config.speak.pitch,
-        });
+        let until = Instant::now() + self.deps.timing.synth;
+        let Some(reply) = self.reply.as_mut().filter(|reply| !reply.broken) else {
+            return false;
+        };
+        let say = reply.line(r#gen, text, until);
+        if fresh {
+            self.tts.say(say);
+        } else {
+            self.tts.then(say);
+        }
+        true
+    }
+
+    fn voice(&self) -> Option<Source> {
+        if let Some(given) = &self.deps.voice {
+            return Some(Source::Given(given.clone()));
+        }
+        let voice = voices::find(&self.config.speak.voice)?;
+        models::source(&self.deps.store, voice)
     }
 
     pub fn warm_voice(&self) {
@@ -181,70 +151,133 @@ impl Core {
     }
 
     pub fn synthesized(&mut self, r#gen: u64, piece: Piece) {
-        if self.synth != Some(r#gen) {
-            return;
-        }
         let now = Instant::now();
+        let until = now + self.deps.timing.synth;
+        let Some(reply) = self.reply.as_mut() else {
+            return;
+        };
+        if reply.lines.front().map(|line| line.r#gen) != Some(r#gen) {
+            return;
+        }
         match piece {
-            Piece::Audio { rate, samples } => self.heard(rate, samples, now),
+            Piece::Audio { rate, samples } => {
+                reply.until = Some(until);
+                if reply.take(rate, samples, now) {
+                    self.play_line(now);
+                }
+            }
             Piece::End => {
-                self.synth = None;
-                self.voiced(now);
+                self.play_line(now);
+                if let Some(reply) = self.reply.as_mut() {
+                    reply.lines.pop_front();
+                    reply.until = Some(until).filter(|_| !reply.lines.is_empty());
+                }
+                self.rest(now);
             }
-            Piece::Failed(error) => {
-                self.synth = None;
-                self.draft = None;
-                self.fail("tts_failed", Some(error));
-                self.voiced(now);
-            }
+            Piece::Failed(error) => self.mute(error, now),
         }
     }
 
-    fn heard(&mut self, rate: u32, samples: Vec<f32>, now: Instant) {
-        if let Phase::Speaking(speech) = &mut self.phase {
-            return speech.take(samples, now);
-        }
-        let Some(draft) = self.draft.as_mut() else {
+    fn play_line(&mut self, now: Instant) {
+        let Some(draft) = self.reply.as_mut().and_then(Reply::draft) else {
             return;
         };
-        draft.take(rate, samples, now);
-        if draft.ready(now) {
-            self.play_speech(now);
-        } else {
-            self.phase = Phase::Thinking(now + self.deps.timing.synth);
+        let silent = self.reply.as_ref().is_some_and(|r| r.speech.is_none());
+        if silent && let Err(error) = self.open_speech(draft.rate, now) {
+            return self.mute(error, now);
+        }
+        if let Some(speech) = self.reply.as_mut().and_then(|r| r.speech.as_mut()) {
+            speech.take(draft.samples, now);
         }
     }
 
-    fn voiced(&mut self, now: Instant) {
-        if self.draft.is_some() {
-            self.play_speech(now);
-        }
-        match &mut self.phase {
-            Phase::Speaking(speech) => speech.close(now),
-            Phase::Thinking(_) => self.go_idle(),
-            _ => {}
-        }
-    }
-
-    fn play_speech(&mut self, now: Instant) {
-        let Some(draft) = self.draft.take().filter(|draft| !draft.samples.is_empty()) else {
-            return;
-        };
-        let (feed, stream) = Stream::open(draft.rate);
+    fn open_speech(&mut self, rate: u32, now: Instant) -> Result<(), String> {
+        let (feed, stream) = Stream::open(rate);
         let r#gen = self.next_gen();
-        match self.route(stream) {
-            Ok(ended) => {
-                wait(ended, self.inbox.clone(), Msg::Spoken(r#gen));
-                self.deps.output.duck(self.config.duck);
-                let mut speech = Speech::new(r#gen, draft.rate, feed, now);
-                speech.take(draft.samples, now);
-                self.phase = Phase::Speaking(Box::new(speech));
-                self.emit_state(State::Speaking, None);
+        let ended = self.route(stream)?;
+        wait(ended, self.inbox.clone(), Msg::Spoken(r#gen));
+        self.deps.output.duck(self.config.duck);
+        if let Some(reply) = self.reply.as_mut() {
+            reply.speech = Some(Speech::new(r#gen, rate, feed, now));
+        }
+        self.emit_state(State::Speaking, None);
+        Ok(())
+    }
+
+    fn mute(&mut self, error: String, now: Instant) {
+        self.fail("tts_failed", Some(error));
+        self.tts.forget();
+        if let Some(reply) = self.reply.as_mut() {
+            reply.lines.clear();
+            reply.broken = true;
+            reply.until = None;
+        }
+        self.rest(now);
+    }
+
+    pub fn rest(&mut self, now: Instant) {
+        if self.running() {
+            return;
+        }
+        let Some(reply) = self.reply.as_mut().filter(|r| r.lines.is_empty()) else {
+            return;
+        };
+        match reply.speech.as_mut() {
+            Some(speech) if speech.open() => {
+                speech.close();
+                reply.until = Some(speech.dry().max(now) + GRACE);
             }
-            Err(error) => {
-                self.fail("tts_failed", Some(error));
-                self.go_idle();
+            Some(_) => {}
+            None => {
+                self.reply = None;
+                self.unspoken();
             }
+        }
+    }
+
+    pub fn settle(&mut self) {
+        if self.reply.is_none() {
+            return self.go_idle();
+        }
+        self.phase = Phase::Speaking;
+        self.rest(Instant::now());
+    }
+
+    fn unspoken(&mut self) {
+        if matches!(self.phase, Phase::Speaking) {
+            self.go_idle();
+        }
+    }
+
+    pub fn audible(&self) -> bool {
+        self.reply.as_ref().is_some_and(|r| r.speech.is_some())
+    }
+
+    pub fn speaking(&self, now: Instant) -> bool {
+        self.reply.as_ref().is_some_and(|reply| reply.busy(now))
+    }
+
+    pub fn speech_deadline(&self) -> Option<Instant> {
+        self.reply.as_ref().and_then(Reply::deadline)
+    }
+
+    pub fn hush(&mut self) {
+        self.deps.output.hush();
+        if let Some(playing) = self.playing.take() {
+            playing.stop();
+        }
+        self.preview = None;
+        if self.reply.take().is_some() {
+            self.tts.forget();
+        }
+    }
+
+    pub fn drop_reply(&mut self) {
+        if self.audible() {
+            self.hush();
+        }
+        if self.reply.take().is_some() {
+            self.tts.forget();
         }
     }
 
@@ -283,30 +316,40 @@ impl Core {
     }
 
     pub fn spoken(&mut self, r#gen: u64) {
-        let current = matches!(&self.phase, Phase::Speaking(speech) if speech.r#gen == r#gen);
-        if current {
-            self.playing = None;
-            self.level(SPEECH_INPUT.into(), 0.0);
+        let speech = self.reply.as_ref().and_then(|r| r.speech.as_ref());
+        if speech.is_none_or(|speech| speech.r#gen != r#gen) {
+            return;
+        }
+        self.playing = None;
+        self.level(SPEECH_INPUT.into(), 0.0);
+        if self.reply.take().is_some_and(|r| !r.lines.is_empty()) {
+            self.tts.forget();
+        }
+        if matches!(self.phase, Phase::Speaking) {
             self.go_idle();
+        } else {
+            self.emit_state(self.state(), None);
         }
     }
 
     pub fn speech_tick(&mut self, now: Instant) {
-        let Phase::Speaking(speech) = &mut self.phase else {
+        let Some(reply) = self.reply.as_mut() else {
             return;
         };
-        if now >= speech.until {
-            self.hush();
-            return self.go_idle();
-        }
-        if now < speech.next_tick {
+        if reply.until.is_some_and(|until| now >= until) {
+            let spoke = self.audible();
+            self.drop_reply();
+            if matches!(self.phase, Phase::Speaking) {
+                self.go_idle();
+            } else if spoke {
+                self.emit_state(self.state(), None);
+            }
             return;
         }
-        let elapsed = now.saturating_duration_since(speech.started);
-        let index = (elapsed.as_millis() / TICK.as_millis()) as usize;
-        let rms = speech.levels.done.get(index).copied().unwrap_or(0.0);
-        speech.next_tick = speech.started + TICK * (index as u32 + 1);
-        self.level(SPEECH_INPUT.into(), rms);
+        let level = reply.speech.as_mut().and_then(|speech| speech.level(now));
+        if let Some(rms) = level {
+            self.level(SPEECH_INPUT.into(), rms);
+        }
     }
 
     pub fn play_preview(&mut self, wav: &[u8]) {
@@ -325,67 +368,5 @@ impl Core {
             }
             Err(error) => self.fail("tts_failed", Some(error)),
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    const RATE: u32 = 24000;
-
-    fn chunk(seconds: f32) -> Vec<f32> {
-        vec![0.1; (RATE as f32 * seconds) as usize]
-    }
-
-    fn draft_after(chunks: &[(f32, f32)]) -> (Draft, Instant) {
-        let start = Instant::now();
-        let mut draft = Draft::new("Включаю Скриптонита.");
-        let mut now = start;
-        for (at, seconds) in chunks {
-            now = start + Duration::from_secs_f32(*at);
-            draft.take(RATE, chunk(*seconds), now);
-        }
-        (draft, now)
-    }
-
-    #[test]
-    fn one_piece_is_not_enough_to_know_the_pace() {
-        let (draft, now) = draft_after(&[(0.1, 2.0)]);
-        assert!(!draft.ready(now));
-    }
-
-    #[test]
-    fn a_fast_engine_starts_after_a_short_lead() {
-        let (draft, now) = draft_after(&[(0.05, 0.08), (0.09, 0.16), (0.17, 0.32)]);
-        assert!(draft.ready(now));
-    }
-
-    #[test]
-    fn a_real_time_engine_waits_for_one_full_burst() {
-        let early = [(0.1, 0.08), (0.26, 0.16), (0.58, 0.32)];
-        let (draft, now) = draft_after(&early);
-        assert!(!draft.ready(now));
-        let later = [(0.1, 0.08), (0.26, 0.16), (0.58, 0.32), (1.22, 0.64)];
-        let (draft, now) = draft_after(&later);
-        assert!(draft.ready(now));
-    }
-
-    #[test]
-    fn a_slow_engine_buffers_most_of_the_phrase() {
-        let slow = [(0.2, 0.08), (0.52, 0.16), (1.16, 0.32), (2.44, 0.64)];
-        let (draft, now) = draft_after(&slow);
-        assert!(!draft.ready(now));
-    }
-
-    #[test]
-    fn levels_follow_the_loudness_across_chunks() {
-        let mut levels = Levels::new(RATE);
-        levels.push(&vec![0.5; 400]);
-        levels.push(&vec![0.5; 400]);
-        levels.push(&vec![0.0; 800]);
-        assert_eq!(levels.done.len(), 2);
-        assert!((levels.done[0] - 0.5).abs() < 1e-4);
-        assert_eq!(levels.done[1], 0.0);
     }
 }

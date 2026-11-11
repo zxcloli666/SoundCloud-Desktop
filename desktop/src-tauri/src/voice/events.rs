@@ -21,6 +21,7 @@ pub fn forward(app: AppHandle, events: Receiver<Event>) {
                     Event::Partial(payload) => app.emit_to(MAIN, name, payload),
                     Event::Command(payload) => app.emit_to(MAIN, name, payload),
                     Event::Error(payload) => app.emit_to(MAIN, name, payload),
+                    Event::Cancelled(_) => Ok(()),
                 };
             }
         });

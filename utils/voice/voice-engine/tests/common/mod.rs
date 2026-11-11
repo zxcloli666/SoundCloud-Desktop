@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 
 use std::path::PathBuf;
-use std::sync::atomic::Ordering;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::mpsc::{Receiver, channel};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
@@ -9,7 +9,8 @@ use std::time::{Duration, Instant};
 use voice_audio::source::{Msg, OpenFn, SourceCtx};
 use voice_audio::{Capture, CaptureError, Device, DeviceList, RefTap, Transport};
 use voice_engine::{
-    Catalog, Command, Config, Deps, Engine, Event, Output, Source, State, Stream, Timing,
+    Catalog, Chat, Command, Config, Deps, Engine, Event, Output, Source, State, Stream, Timing,
+    Voice,
 };
 use voice_models::{Fetch, FetchError, Response, Store};
 use voice_nlu::{Kind, Variant};
@@ -37,8 +38,34 @@ impl Calls {
     }
 }
 
+#[derive(Clone, Default)]
+pub struct Heard(pub Arc<Mutex<Vec<f32>>>);
+
+impl Heard {
+    pub fn samples(&self) -> Vec<f32> {
+        self.0.lock().unwrap().clone()
+    }
+
+    pub fn voiced(&self) -> usize {
+        self.samples().iter().filter(|s| **s != 0.0).count()
+    }
+
+    pub fn clear(&self) {
+        self.0.lock().unwrap().clear();
+    }
+
+    pub fn tones(&self) -> Vec<f32> {
+        let mut tones = self.samples();
+        tones.retain(|s| *s != 0.0);
+        tones.dedup();
+        tones
+    }
+}
+
 pub struct FakeOutput {
     pub calls: Calls,
+    pub heard: Heard,
+    pub hushed: Mutex<Arc<AtomicBool>>,
 }
 
 impl Output for FakeOutput {
@@ -56,19 +83,26 @@ impl Output for FakeOutput {
 
     fn speak(&self, stream: Stream) -> Result<Receiver<()>, String> {
         let calls = self.calls.clone();
+        let heard = self.heard.clone();
+        let hushed = Arc::new(AtomicBool::new(false));
+        let previous = std::mem::replace(&mut *self.hushed.lock().unwrap(), hushed.clone());
+        previous.store(true, Ordering::Relaxed);
         let (tx, rx) = channel();
         std::thread::spawn(move || {
             let mut stream = stream;
             let rate = stream.rate();
-            let tick = rate as usize / 100;
+            let started = Instant::now();
             let mut count = 0;
-            loop {
-                let played = stream.by_ref().take(tick).count();
-                count += played;
-                if played < tick {
+            while !hushed.load(Ordering::Relaxed) {
+                let due = (started.elapsed().as_secs_f64() * rate as f64) as usize;
+                let wanted = due.saturating_sub(count);
+                let played: Vec<f32> = stream.by_ref().take(wanted).collect();
+                count += played.len();
+                heard.0.lock().unwrap().extend_from_slice(&played);
+                if played.len() < wanted {
                     break;
                 }
-                std::thread::sleep(Duration::from_millis(10));
+                std::thread::sleep(Duration::from_millis(5));
             }
             calls.push(format!("speak {count} at {rate}"));
             let _ = tx.send(());
@@ -78,6 +112,7 @@ impl Output for FakeOutput {
 
     fn hush(&self) {
         self.calls.push("hush".into());
+        self.hushed.lock().unwrap().store(true, Ordering::Relaxed);
     }
 }
 
@@ -179,6 +214,7 @@ pub struct Rig {
     pub engine: Engine,
     pub events: Receiver<Event>,
     pub calls: Calls,
+    pub heard: Heard,
 }
 
 pub fn timing() -> Timing {
@@ -187,6 +223,7 @@ pub fn timing() -> Timing {
         max_utterance: Duration::from_secs(12),
         ask: Duration::from_millis(400),
         done: Duration::from_millis(600),
+        chat: Duration::from_secs(20),
         synth: Duration::from_secs(5),
         release: Duration::from_millis(80),
     }
@@ -197,30 +234,62 @@ pub fn rig_with(open: OpenFn, catalog: Box<dyn Catalog>, root: PathBuf, timing: 
 }
 
 pub fn rig_on(open: OpenFn, catalog: Box<dyn Catalog>, store: Arc<Store>, timing: Timing) -> Rig {
+    let rig = rig_of(open, catalog, store, timing, None);
+    let mut config = Config {
+        enabled: true,
+        ..Config::default()
+    };
+    config.speak.replies = false;
+    rig.engine.send(Command::Apply(Box::new(config)));
+    rig
+}
+
+pub fn rig_speaking(voice: impl Voice + 'static, timing: Timing) -> Rig {
+    let rig = rig_of(
+        silent(),
+        Box::new(FixtureCatalog::from_tsv(CATALOG, true)),
+        store(std::env::temp_dir().join("voice-engine-no-models")),
+        timing,
+        Some(Arc::new(Mutex::new(voice))),
+    );
+    let config = Config {
+        enabled: true,
+        ..Config::default()
+    };
+    rig.engine.send(Command::Apply(Box::new(config)));
+    rig
+}
+
+fn rig_of(
+    open: OpenFn,
+    catalog: Box<dyn Catalog>,
+    store: Arc<Store>,
+    timing: Timing,
+    voice: Option<Arc<Mutex<dyn Voice>>>,
+) -> Rig {
     let calls = Calls::default();
+    let heard = Heard::default();
     let deps = Deps {
         capture: Capture::with_source(RefTap::new(), open),
         store,
         catalog,
         output: Box::new(FakeOutput {
             calls: calls.clone(),
+            heard: heard.clone(),
+            hushed: Mutex::default(),
         }),
         devices: devices(),
         timing,
         phrases: std::env::temp_dir().join(format!("voice-engine-phrases-{}", std::process::id())),
+        voice,
     };
     let (engine, events) = Engine::start(deps);
-    let mut config = Config {
-        enabled: true,
-        ..Config::default()
-    };
-    config.speak.replies = false;
-    engine.send(Command::Apply(Box::new(config)));
     engine.send(Command::Star(true));
     Rig {
         engine,
         events,
         calls,
+        heard,
     }
 }
 
@@ -281,6 +350,20 @@ impl Rig {
             Event::Error(e) => e.code,
             other => panic!("expected an error, got {other:?}"),
         }
+    }
+
+    pub fn cancelled(&self) -> String {
+        match self.next() {
+            Event::Cancelled(turn) => turn.id,
+            other => panic!("expected a cancelled turn, got {other:?}"),
+        }
+    }
+
+    pub fn chat(&self, id: &str, step: Chat) {
+        self.engine.send(Command::Chat {
+            id: id.into(),
+            step,
+        });
     }
 
     pub fn text(&self, text: &str) {

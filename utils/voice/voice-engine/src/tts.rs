@@ -1,6 +1,6 @@
 use std::path::PathBuf;
-use std::sync::Arc;
 use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::{Arc, Mutex};
 use std::sync::mpsc::{RecvTimeoutError, Sender, channel};
 use std::time::Duration;
 
@@ -15,6 +15,12 @@ use crate::shape::Shaper;
 
 const REST: Duration = Duration::from_secs(120);
 
+pub trait Voice: Send {
+    fn rate(&self) -> u32;
+    fn say(&mut self, text: &str, sink: &mut dyn Sink) -> Result<(), String>;
+}
+
+#[derive(Clone)]
 pub enum Source {
     Kokoro {
         dir: PathBuf,
@@ -26,6 +32,7 @@ pub enum Source {
         speaker: &'static str,
         cached_as: String,
     },
+    Given(Arc<Mutex<dyn Voice>>),
 }
 
 pub struct Say {
@@ -52,7 +59,7 @@ enum Job {
 
 pub struct Tts {
     jobs: Sender<Job>,
-    wanted: Arc<AtomicU64>,
+    floor: Arc<AtomicU64>,
 }
 
 struct Voices {
@@ -64,7 +71,7 @@ struct Voices {
 struct Out<'a> {
     r#gen: u64,
     reply: &'a Reply,
-    wanted: &'a AtomicU64,
+    floor: &'a AtomicU64,
 }
 
 struct Live<'a> {
@@ -73,11 +80,16 @@ struct Live<'a> {
     raw: Vec<f32>,
 }
 
+struct Plain<'a> {
+    out: &'a Out<'a>,
+    rate: u32,
+}
+
 impl Tts {
     pub fn start(reply: Reply, phrases: PathBuf) -> Tts {
         let (jobs, inbox) = channel::<Job>();
-        let wanted = Arc::new(AtomicU64::new(0));
-        let asked = wanted.clone();
+        let floor = Arc::new(AtomicU64::new(0));
+        let asked = floor.clone();
         std::thread::Builder::new()
             .name("voice-tts".into())
             .spawn(move || {
@@ -97,10 +109,16 @@ impl Tts {
                             let out = Out {
                                 r#gen: say.r#gen,
                                 reply: &reply,
-                                wanted: &asked,
+                                floor: &asked,
                             };
-                            if out.wanted() {
-                                voices.say(&say, &out);
+                            let floor = asked.load(Ordering::Relaxed);
+                            if out.wanted() && !voices.say(&say, &out) {
+                                let _ = asked.compare_exchange(
+                                    floor,
+                                    u64::MAX,
+                                    Ordering::Relaxed,
+                                    Ordering::Relaxed,
+                                );
                             }
                         }
                         Err(RecvTimeoutError::Timeout) => voices.qwen.rest(),
@@ -109,11 +127,15 @@ impl Tts {
                 }
             })
             .expect("spawn voice-tts");
-        Tts { jobs, wanted }
+        Tts { jobs, floor }
     }
 
     pub fn say(&self, say: Say) {
-        self.wanted.store(say.r#gen, Ordering::Relaxed);
+        self.floor.store(say.r#gen, Ordering::Relaxed);
+        self.then(say);
+    }
+
+    pub fn then(&self, say: Say) {
         let _ = self.jobs.send(Job::Say(say));
     }
 
@@ -122,13 +144,13 @@ impl Tts {
     }
 
     pub fn forget(&self) {
-        self.wanted.store(0, Ordering::Relaxed);
+        self.floor.store(u64::MAX, Ordering::Relaxed);
     }
 }
 
 impl Out<'_> {
     fn wanted(&self) -> bool {
-        self.wanted.load(Ordering::Relaxed) == self.r#gen
+        self.r#gen >= self.floor.load(Ordering::Relaxed)
     }
 
     fn audio(&self, rate: u32, samples: Vec<f32>) {
@@ -149,8 +171,18 @@ impl Sink for Live<'_> {
     }
 }
 
+impl Sink for Plain<'_> {
+    fn audio(&mut self, samples: Vec<f32>) {
+        self.out.audio(self.rate, samples);
+    }
+
+    fn wanted(&self) -> bool {
+        self.out.wanted()
+    }
+}
+
 impl Voices {
-    fn say(&mut self, say: &Say, out: &Out) {
+    fn say(&mut self, say: &Say, out: &Out) -> bool {
         let result = match &say.source {
             Source::Kokoro { dir, file, speaker } => self.kokoro(say, dir, file, *speaker, out),
             Source::Qwen {
@@ -158,12 +190,15 @@ impl Voices {
                 speaker,
                 cached_as,
             } => self.qwen(say, paths, speaker, cached_as, out),
+            Source::Given(voice) => given(say, voice, out),
         };
+        let spoke = result.is_ok();
         let piece = match result {
             Ok(()) => Piece::End,
             Err(error) => Piece::Failed(error),
         };
         (out.reply)(out.r#gen, piece);
+        spoke
     }
 
     fn kokoro(
@@ -221,4 +256,10 @@ impl Voices {
         }
         Ok(())
     }
+}
+
+fn given(say: &Say, voice: &Mutex<dyn Voice>, out: &Out) -> Result<(), String> {
+    let mut voice = voice.lock().map_err(|_| "the voice is broken")?;
+    let rate = voice.rate();
+    voice.say(&say.text, &mut Plain { out, rate })
 }

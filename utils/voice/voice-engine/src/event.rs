@@ -96,6 +96,11 @@ pub struct ErrorEvent {
     pub detail: Option<String>,
 }
 
+#[derive(Clone, Debug, PartialEq, Serialize)]
+pub struct TurnEvent {
+    pub id: String,
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub enum Event {
     State(StateEvent),
@@ -103,6 +108,7 @@ pub enum Event {
     Partial(PartialEvent),
     Command(Box<CommandEvent>),
     Error(ErrorEvent),
+    Cancelled(TurnEvent),
 }
 
 impl Event {
@@ -113,6 +119,7 @@ impl Event {
             Event::Partial(_) => "voice:partial",
             Event::Command(_) => "voice:command",
             Event::Error(_) => "voice:error",
+            Event::Cancelled(_) => "voice:cancelled",
         }
     }
 

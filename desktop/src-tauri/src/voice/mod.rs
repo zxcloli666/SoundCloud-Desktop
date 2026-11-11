@@ -58,6 +58,7 @@ pub fn init(app: &AppHandle, data_dir: &Path, cache_dir: &Path, rt: Handle, prem
         devices: DeviceList::default(),
         timing: Timing::default(),
         phrases: cache_dir.join(PHRASES_DIR),
+        voice: None,
     };
     let (engine, events) = Engine::start(deps);
     engine.send(Command::Star(premium));

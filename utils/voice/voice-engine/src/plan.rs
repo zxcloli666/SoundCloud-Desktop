@@ -23,6 +23,10 @@ pub fn voiced(source: Source) -> bool {
 }
 
 impl Core {
+    pub fn running(&self) -> bool {
+        self.plan.as_ref().is_some_and(|plan| plan.asking.is_none())
+    }
+
     pub fn think(&mut self, text: String, remote_id: Option<String>) {
         self.phase = Phase::Thinking(Instant::now() + self.deps.timing.done);
         self.emit_state(State::Thinking, None);
@@ -36,6 +40,7 @@ impl Core {
             self.choose(index);
             return;
         }
+        self.drop_turn();
         self.plan = None;
         let boosts = Boosts::liked_artists(&self.config.boosts.artists);
         let probe = Probe::new(self.deps.catalog.as_ref());
@@ -169,6 +174,7 @@ impl Core {
     fn enter_ask(&mut self) {
         self.phase = Phase::Asking(Instant::now() + self.deps.timing.ask);
         if voiced(self.source) {
+            self.drop_reply();
             self.listen(true);
         }
         if matches!(self.phase, Phase::Asking(_)) {
@@ -188,6 +194,7 @@ impl Core {
         if !speech.is_empty() {
             plan.speech.push(speech.to_string());
         }
+        self.close_turn();
         self.advance();
     }
 
@@ -196,9 +203,9 @@ impl Core {
             return self.go_idle();
         };
         let text = plan.speech.join(". ");
-        if text.is_empty() || !self.config.speak.replies || !voiced(plan.origin.source) {
-            return self.go_idle();
+        if !text.is_empty() && self.config.speak.replies && voiced(plan.origin.source) {
+            self.say(text);
         }
-        self.say(text);
+        self.settle();
     }
 }

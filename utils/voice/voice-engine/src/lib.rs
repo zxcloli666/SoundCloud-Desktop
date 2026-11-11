@@ -2,6 +2,7 @@ mod cache;
 mod catalog;
 mod clip;
 mod config;
+mod draft;
 mod event;
 mod gesture;
 mod hotwords;
@@ -12,16 +13,19 @@ mod models;
 mod output;
 mod plan;
 mod qwen;
+mod sentences;
 mod shape;
 mod speak;
 mod speaker;
+mod speech;
 mod stream;
 mod tts;
+mod turn;
 mod voices;
 mod wire;
 
 use std::path::PathBuf;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use std::sync::mpsc::{Receiver, Sender, channel};
 use std::time::Duration;
 
@@ -35,12 +39,15 @@ pub use config::{
 };
 pub use event::{
     CommandEvent, DecisionEvent, EntityEvent, ErrorEvent, Event, LevelEvent, Outcome, PartialEvent,
-    ScoredEvent, Source, State, StateEvent,
+    ScoredEvent, Source, State, StateEvent, TurnEvent,
 };
 pub use gesture::{Press, Presses};
 pub use models::{ASR_EN, ASR_RU, VAD, hearing, required};
 pub use output::Output;
 pub use stream::Stream;
+pub use tts::Voice;
+pub use turn::Chat;
+pub use voice_qwen::Sink;
 pub use voices::KOKORO;
 
 pub enum Command {
@@ -63,6 +70,10 @@ pub enum Command {
         id: String,
         outcome: Outcome,
     },
+    Chat {
+        id: String,
+        step: Chat,
+    },
     Meter(bool),
     Preview(Vec<u8>),
 }
@@ -73,6 +84,7 @@ pub struct Timing {
     pub max_utterance: Duration,
     pub ask: Duration,
     pub done: Duration,
+    pub chat: Duration,
     pub synth: Duration,
     pub release: Duration,
 }
@@ -84,6 +96,7 @@ impl Default for Timing {
             max_utterance: Duration::from_secs(12),
             ask: Duration::from_secs(8),
             done: Duration::from_secs(10),
+            chat: Duration::from_secs(60),
             synth: Duration::from_secs(20),
             release: Duration::from_millis(80),
         }
@@ -98,6 +111,7 @@ pub struct Deps {
     pub devices: DeviceList,
     pub timing: Timing,
     pub phrases: PathBuf,
+    pub voice: Option<Arc<Mutex<dyn Voice>>>,
 }
 
 #[derive(Clone)]

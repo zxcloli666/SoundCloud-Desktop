@@ -8,9 +8,10 @@ use crate::config::Config;
 use crate::event::{Event, LevelEvent, Source, State, StateEvent};
 use crate::listen::Listen;
 use crate::plan::Plan;
-use crate::speak::{Draft, Speech};
+use crate::speak::Reply;
 use crate::speaker::Playing;
 use crate::tts::{Piece, Tts};
+use crate::turn::Turn;
 use crate::{Command, Deps};
 
 const IDLE_WAIT: Duration = Duration::from_secs(3600);
@@ -30,7 +31,7 @@ pub enum Phase {
     Listening(Box<Listen>),
     Thinking(Instant),
     Asking(Instant),
-    Speaking(Box<Speech>),
+    Speaking,
 }
 
 pub struct Core {
@@ -44,8 +45,8 @@ pub struct Core {
     pub plan: Option<Plan>,
     pub listener: Option<(String, Vec<String>, Listener)>,
     pub tts: Tts,
-    pub synth: Option<u64>,
-    pub draft: Option<Draft>,
+    pub reply: Option<Reply>,
+    pub turn: Option<Turn>,
     pub playing: Option<Playing>,
     pub meter: Option<(u64, Session)>,
     pub preview: Option<u64>,
@@ -80,8 +81,8 @@ impl Core {
             plan: None,
             listener: None,
             tts,
-            synth: None,
-            draft: None,
+            reply: None,
+            turn: None,
             playing: None,
             meter: None,
             preview: None,
@@ -139,39 +140,23 @@ impl Core {
         if let Phase::Listening(listen) = phase {
             self.close(*listen);
         }
+        self.drop_turn();
         self.drop_reply();
         self.release_at = None;
         self.deps.output.duck(1.0);
         self.emit_state(State::Idle, None);
     }
 
-    pub fn hush(&mut self) {
-        self.deps.output.hush();
-        if let Some(playing) = self.playing.take() {
-            playing.stop();
-        }
-        self.preview = None;
-        self.drop_reply();
-    }
-
-    fn drop_reply(&mut self) {
-        if self.synth.take().is_some() {
-            self.tts.forget();
-        }
-        self.draft = None;
-    }
-
     fn deadline(&self) -> Option<Instant> {
         let phase = match &self.phase {
-            Phase::Idle => None,
+            Phase::Idle | Phase::Speaking => None,
             Phase::Listening(listen) => Some(listen.deadline(&self.deps.timing)),
             Phase::Thinking(until) | Phase::Asking(until) => Some(*until),
-            Phase::Speaking(speech) => Some(speech.deadline()),
         };
-        match (phase, self.release_at) {
-            (Some(a), Some(b)) => Some(a.min(b)),
-            (a, b) => a.or(b),
-        }
+        [phase, self.speech_deadline(), self.release_at]
+            .into_iter()
+            .flatten()
+            .min()
     }
 
     fn tick(&mut self, now: Instant) {
@@ -182,8 +167,9 @@ impl Core {
                 return;
             }
         }
+        self.speech_tick(now);
         match &self.phase {
-            Phase::Idle => {}
+            Phase::Idle | Phase::Speaking => {}
             Phase::Listening(listen) => {
                 if now >= listen.deadline(&self.deps.timing) {
                     self.listen_timeout();
@@ -191,11 +177,9 @@ impl Core {
             }
             Phase::Thinking(until) | Phase::Asking(until) => {
                 if now >= *until {
-                    self.plan = self.plan.take().filter(|plan| plan.asking.is_some());
-                    self.go_idle();
+                    self.overdue(now);
                 }
             }
-            Phase::Speaking(_) => self.speech_tick(now),
         }
     }
 
@@ -221,9 +205,9 @@ impl Core {
             Phase::Idle => State::Idle,
             Phase::Listening(listen) if listen.for_ask => State::Asking,
             Phase::Listening(_) => State::Listening,
-            Phase::Thinking(_) => State::Thinking,
             Phase::Asking(_) => State::Asking,
-            Phase::Speaking(_) => State::Speaking,
+            Phase::Thinking(_) | Phase::Speaking if self.audible() => State::Speaking,
+            Phase::Thinking(_) | Phase::Speaking => State::Thinking,
         }
     }
 
@@ -254,6 +238,7 @@ impl Core {
             Command::Text { text, source, id } => self.text(text, source, id),
             Command::Answer(choice) => self.answer(&choice),
             Command::Done { id, outcome } => self.done(&id, outcome),
+            Command::Chat { id, step } => self.chat(id, step),
             Command::Meter(on) => self.set_meter(on),
             Command::Preview(wav) => self.play_preview(&wav),
         }
@@ -276,6 +261,7 @@ impl Core {
     }
 
     pub fn cancel(&mut self) {
+        self.drop_turn();
         self.hush();
         self.plan = None;
         if let Some(listener) = self.listener.as_mut() {
@@ -333,7 +319,8 @@ impl Core {
     }
 
     fn interrupt(&mut self) {
-        if matches!(self.phase, Phase::Speaking(_)) || self.preview.is_some() {
+        self.drop_turn();
+        if self.audible() || self.preview.is_some() {
             self.hush();
         }
         let asking = self.plan.as_ref().is_some_and(|plan| plan.asking.is_some());
@@ -355,9 +342,8 @@ impl Core {
                 self.close(*listen);
             }
         }
-        if matches!(self.phase, Phase::Speaking(_)) {
-            self.hush();
-        }
+        self.drop_turn();
+        self.drop_reply();
         self.source = source;
         self.think(text.trim().to_string(), id);
     }
