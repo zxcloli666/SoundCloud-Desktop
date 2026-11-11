@@ -10,20 +10,12 @@ pub struct Origin {
 
 pub fn command(outcome: &Outcome, id: String, origin: &Origin) -> CommandEvent {
     let parsed = &outcome.parsed;
-    let not_found = outcome.intent == Intent::None
-        && parsed.intent == Intent::Play
-        && matches!(outcome.decision, Some(Decision::NotFound));
-    let intent = if not_found {
-        Intent::Play
-    } else {
-        outcome.intent
-    };
     CommandEvent {
         id,
         source: origin.source,
         heard: parsed.heard.clone(),
         normalized: parsed.normalized.clone(),
-        intent: intent.name(),
+        intent: intent(outcome).name(),
         kind_hint: parsed.kind_hint.map(|k| k.name()),
         number: parsed.number,
         decision: outcome.decision.as_ref().map(decision),
@@ -32,6 +24,22 @@ pub fn command(outcome: &Outcome, id: String, origin: &Origin) -> CommandEvent {
         group: None,
         step: None,
         steps: None,
+    }
+}
+
+pub fn talks(outcome: &Outcome) -> bool {
+    let asks = matches!(outcome.decision, Some(Decision::Ask { .. }));
+    intent(outcome) == Intent::None && !asks
+}
+
+fn intent(outcome: &Outcome) -> Intent {
+    let not_found = outcome.intent == Intent::None
+        && outcome.parsed.intent == Intent::Play
+        && matches!(outcome.decision, Some(Decision::NotFound));
+    if not_found {
+        Intent::Play
+    } else {
+        outcome.intent
     }
 }
 

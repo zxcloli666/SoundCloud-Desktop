@@ -8,6 +8,7 @@ use voice_resolve::{Entity, Lookup};
 
 use crate::catalog::Catalog;
 use crate::event::{Looked, Timed};
+use crate::memory::Memory;
 
 const STOPPED: &str = "the lookup stopped";
 
@@ -15,34 +16,44 @@ type Found = Result<Vec<Entity>, String>;
 
 pub struct Lookups {
     catalog: Arc<dyn Catalog>,
+    memory: Arc<Memory>,
     asked: Vec<Lookup>,
-    found: RefCell<Vec<Option<(Found, Duration)>>>,
-    arrivals: Receiver<(usize, Found, Duration)>,
+    found: RefCell<Vec<Option<(Found, Looked)>>>,
+    arrivals: Receiver<(usize, Found, Looked)>,
     until: Option<Instant>,
     late: Cell<bool>,
     failure: RefCell<Option<String>>,
 }
 
 impl Lookups {
-    pub fn start(catalog: &Arc<dyn Catalog>, asked: Vec<Lookup>, budget: Option<Duration>) -> Self {
+    pub fn start(
+        catalog: &Arc<dyn Catalog>,
+        memory: &Arc<Memory>,
+        asked: Vec<Lookup>,
+        budget: Option<Duration>,
+    ) -> Self {
         let started = Instant::now();
         let (arrived, arrivals) = channel();
         let mut found = vec![None; asked.len()];
         for (at, lookup) in asked.iter().cloned().enumerate() {
-            let catalog = catalog.clone();
-            let arrived = arrived.clone();
+            if let Some(remembered) = memory.recalled(&lookup.variants, &lookup.kinds) {
+                found[at] = Some((Ok(remembered), Looked::Remembered));
+                continue;
+            }
+            let (catalog, memory, arrived) = (catalog.clone(), memory.clone(), arrived.clone());
             let spawned = std::thread::Builder::new()
                 .name("voice-lookup".into())
                 .spawn(move || {
-                    let found = catalog.candidates(&lookup.variants, &lookup.kinds);
-                    let _ = arrived.send((at, found, started.elapsed()));
+                    let found = memory.asked(&*catalog, &lookup.variants, &lookup.kinds);
+                    let _ = arrived.send((at, found, Looked::In(started.elapsed())));
                 });
             if let Err(error) = spawned {
-                found[at] = Some((Err(error.to_string()), started.elapsed()));
+                found[at] = Some((Err(error.to_string()), Looked::In(started.elapsed())));
             }
         }
         Lookups {
             catalog: catalog.clone(),
+            memory: memory.clone(),
             asked,
             found: RefCell::new(found),
             arrivals,
@@ -50,6 +61,10 @@ impl Lookups {
             late: Cell::new(false),
             failure: RefCell::new(None),
         }
+    }
+
+    pub fn awaited(&self) -> bool {
+        self.found.borrow().iter().any(Option::is_none)
     }
 
     pub fn late(&self) -> bool {
@@ -69,19 +84,20 @@ impl Lookups {
         } else {
             Looked::Unused
         };
-        let looked = |found: &Option<(Found, Duration)>| match found {
-            Some((_, took)) => Looked::In(*took),
+        let looked = |found: &Option<(Found, Looked)>| match found {
+            Some((_, looked)) => *looked,
             None => waiting,
         };
         Timed {
             read,
             lookups: self.found.borrow().iter().map(looked).collect(),
             total,
+            ahead: None,
         }
     }
 
-    fn keep(&self, (at, found, took): (usize, Found, Duration)) {
-        self.found.borrow_mut()[at] = Some((found, took));
+    fn keep(&self, (at, found, looked): (usize, Found, Looked)) {
+        self.found.borrow_mut()[at] = Some((found, looked));
     }
 
     fn arrived(&self, at: usize) -> Option<Found> {
@@ -115,7 +131,7 @@ impl voice_resolve::Catalog for Lookups {
         }
         let same = |lookup: &Lookup| lookup.variants == variants && lookup.kinds == kinds;
         let Some(at) = self.asked.iter().position(same) else {
-            return self.told(self.catalog.candidates(variants, kinds));
+            return self.told(self.memory.asked(&*self.catalog, variants, kinds));
         };
         match self.arrived(at) {
             Some(found) => self.told(found),
@@ -132,6 +148,7 @@ mod tests {
     use voice_resolve::Catalog as _;
 
     use super::*;
+    use crate::fixtures::{entity, variant};
 
     const WAIT: Duration = Duration::from_millis(400);
     const BUDGET: Duration = Duration::from_millis(60);
@@ -149,40 +166,25 @@ mod tests {
             if name == "broken" {
                 return Err("no route".into());
             }
-            Ok(vec![Entity {
-                kind: Kind::Artist,
-                name,
-                artist: None,
-                popularity: 1,
-                id: "a1".into(),
-                aliases: Vec::new(),
-                artist_aliases: Vec::new(),
-            }])
+            Ok(vec![entity(Kind::Artist, &name)])
         }
     }
 
     fn lookup(text: &str) -> Lookup {
         Lookup {
-            variants: vec![Variant {
-                text: text.into(),
-                artist: None,
-                title: None,
-                kept_fillers: false,
-                lemmatized: false,
-                fallback: false,
-                alias_kind: None,
-            }],
+            variants: vec![variant(text)],
             kinds: Kind::ALL.to_vec(),
         }
     }
 
     fn started(asked: &[&str], budget: Option<Duration>) -> Lookups {
+        started_with(&Arc::default(), asked, budget)
+    }
+
+    fn started_with(memory: &Arc<Memory>, asked: &[&str], budget: Option<Duration>) -> Lookups {
         let catalog: Arc<dyn Catalog> = Arc::new(Named { wait: WAIT });
-        Lookups::start(
-            &catalog,
-            asked.iter().map(|text| lookup(text)).collect(),
-            budget,
-        )
+        let asked = asked.iter().map(|text| lookup(text)).collect();
+        Lookups::start(&catalog, memory, asked, budget)
     }
 
     fn found(lookups: &Lookups, text: &str) -> Vec<String> {
@@ -240,5 +242,27 @@ mod tests {
         let timed = lookups.timed(Duration::ZERO, asked.elapsed());
         assert!(asked.elapsed() < WAIT);
         assert!(matches!(timed.lookups[..], [Looked::Unused, Looked::In(_)]));
+    }
+
+    #[test]
+    fn a_lookup_that_came_after_the_budget_is_remembered_for_the_next_time() {
+        let memory = Arc::default();
+        let lookups = started_with(&memory, &["slow"], Some(BUDGET));
+        assert_eq!(found(&lookups, "slow"), Vec::<String>::new());
+        assert!(lookups.late());
+        let slow = lookup("slow");
+        while memory.recalled(&slow.variants, &slow.kinds).is_none() {
+            std::thread::sleep(BUDGET);
+        }
+        let again = started_with(&memory, &["slow", "кино"], Some(BUDGET));
+        let asked = Instant::now();
+        assert_eq!(found(&again, "slow"), ["slow"]);
+        assert!(asked.elapsed() < BUDGET);
+        assert_eq!(found(&again, "кино"), ["кино"]);
+        let timed = again.timed(Duration::ZERO, BUDGET);
+        assert!(matches!(
+            timed.lookups[..],
+            [Looked::Remembered, Looked::In(_)]
+        ));
     }
 }

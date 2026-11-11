@@ -4,17 +4,21 @@ mod clip;
 mod config;
 mod draft;
 mod event;
+#[cfg(test)]
+mod fixtures;
 mod gesture;
 mod hotwords;
 mod kokoro;
 mod listen;
 mod lookup;
 mod machine;
+mod memory;
 mod models;
 mod output;
 mod plain;
 mod plan;
 mod qwen;
+mod read;
 mod sentences;
 mod shape;
 mod speak;
@@ -29,10 +33,13 @@ mod wire;
 use std::path::PathBuf;
 use std::sync::mpsc::{Receiver, Sender, channel};
 use std::sync::{Arc, Mutex};
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
+use memory::Memory;
 use voice_audio::{Capture, DeviceList};
 use voice_models::Store;
+use voice_nlu::{Kind, Variant};
+use voice_resolve::Entity;
 
 pub use catalog::Catalog;
 pub use clip::Clip;
@@ -40,8 +47,8 @@ pub use config::{
     Activation, Boosts, Config, Echo, Headset, Language, Listen, ListenMode, Speak, SpeakMode, Wake,
 };
 pub use event::{
-    CommandEvent, DecisionEvent, EntityEvent, ErrorEvent, Event, LevelEvent, Looked, Outcome,
-    PartialEvent, ScoredEvent, Source, State, StateEvent, Timed, TurnEvent,
+    Ahead, CommandEvent, DecisionEvent, EntityEvent, ErrorEvent, Event, HeardEvent, LevelEvent,
+    Looked, Outcome, PartialEvent, ScoredEvent, Source, State, StateEvent, Timed, TurnEvent,
 };
 pub use gesture::{Press, Presses};
 pub use models::{ASR_EN, ASR_RU, VAD, hearing, required};
@@ -121,21 +128,41 @@ pub struct Deps {
 #[derive(Clone)]
 pub struct Engine {
     inbox: Sender<machine::Msg>,
+    catalog: Arc<dyn Catalog>,
+    memory: Arc<Memory>,
 }
 
 impl Engine {
     pub fn start(deps: Deps) -> (Engine, Receiver<Event>) {
         let (inbox, messages) = channel();
         let (events_tx, events) = channel();
-        let own = inbox.clone();
+        let engine = Engine {
+            inbox: inbox.clone(),
+            catalog: deps.catalog.clone(),
+            memory: Arc::default(),
+        };
+        let memory = engine.memory.clone();
         std::thread::Builder::new()
             .name("voice-engine".into())
-            .spawn(move || machine::Core::new(deps, events_tx, own).run(messages))
+            .spawn(move || machine::Core::new(deps, memory, events_tx, inbox).run(messages))
             .expect("spawn voice-engine");
-        (Engine { inbox }, events)
+        (engine, events)
     }
 
     pub fn send(&self, command: Command) {
         let _ = self.inbox.send(machine::Msg::Command(command));
+    }
+
+    pub fn candidates(
+        &self,
+        variants: &[Variant],
+        kinds: &[Kind],
+    ) -> (Result<Vec<Entity>, String>, Looked) {
+        if let Some(found) = self.memory.recalled(variants, kinds) {
+            return (Ok(found), Looked::Remembered);
+        }
+        let asked = Instant::now();
+        let found = self.memory.asked(&*self.catalog, variants, kinds);
+        (found, Looked::In(asked.elapsed()))
     }
 }

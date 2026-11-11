@@ -1,3 +1,4 @@
+use std::sync::Arc;
 use std::sync::mpsc::{Receiver, RecvTimeoutError, Sender};
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
@@ -7,7 +8,9 @@ use voice_speech::Listener;
 use crate::config::Config;
 use crate::event::{Event, LevelEvent, Source, State, StateEvent};
 use crate::listen::Listen;
+use crate::memory::Memory;
 use crate::plan::Plan;
+use crate::read::{Read, Reading};
 use crate::speak::Reply;
 use crate::speaker::Playing;
 use crate::tts::{Piece, Tts};
@@ -24,6 +27,7 @@ pub enum Msg {
     Synth(u64, Piece),
     Spoken(u64),
     Previewed(u64),
+    Read(u64, Read),
 }
 
 pub enum Phase {
@@ -42,6 +46,8 @@ pub struct Core {
     pub inbox: Sender<Msg>,
     pub phase: Phase,
     pub source: Source,
+    pub reading: Option<Reading>,
+    pub memory: Arc<Memory>,
     pub plan: Option<Plan>,
     pub listener: Option<(String, Vec<String>, Listener)>,
     pub tts: Tts,
@@ -58,7 +64,7 @@ pub struct Core {
 }
 
 impl Core {
-    pub fn new(deps: Deps, events: Sender<Event>, inbox: Sender<Msg>) -> Self {
+    pub fn new(deps: Deps, memory: Arc<Memory>, events: Sender<Event>, inbox: Sender<Msg>) -> Self {
         let reply = inbox.clone();
         let tts = Tts::start(
             Box::new(move |r#gen, piece| {
@@ -78,6 +84,8 @@ impl Core {
             inbox,
             phase: Phase::Idle,
             source: Source::Button,
+            reading: None,
+            memory,
             plan: None,
             listener: None,
             tts,
@@ -141,6 +149,7 @@ impl Core {
             self.close(*listen);
         }
         self.drop_turn();
+        self.drop_reading();
         self.drop_reply();
         self.release_at = None;
         self.deps.output.duck(1.0);
@@ -191,6 +200,7 @@ impl Core {
             Msg::Meter(r#gen, event) => self.meter_event(r#gen, event),
             Msg::Synth(r#gen, piece) => self.synthesized(r#gen, piece),
             Msg::Spoken(r#gen) => self.spoken(r#gen),
+            Msg::Read(serial, read) => self.understood(serial, read),
             Msg::Previewed(r#gen) => {
                 if self.preview == Some(r#gen) {
                     self.preview = None;
@@ -320,6 +330,7 @@ impl Core {
 
     fn interrupt(&mut self) {
         self.drop_turn();
+        self.drop_reading();
         if self.audible() || self.preview.is_some() {
             self.hush();
         }
@@ -343,6 +354,7 @@ impl Core {
             }
         }
         self.drop_turn();
+        self.drop_reading();
         self.drop_reply();
         self.source = source;
         self.think(text.trim().to_string(), id);

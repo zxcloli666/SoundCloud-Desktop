@@ -106,11 +106,25 @@ pub struct TurnEvent {
     pub id: String,
 }
 
+#[derive(Clone, Debug, PartialEq, Serialize)]
+pub struct HeardEvent {
+    pub id: String,
+    pub source: Source,
+    pub heard: String,
+}
+
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Looked {
     In(Duration),
+    Remembered,
     Late,
     Unused,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Ahead {
+    pub chat: Option<Duration>,
+    pub kept: bool,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -118,6 +132,7 @@ pub struct Timed {
     pub read: Duration,
     pub lookups: Vec<Looked>,
     pub total: Duration,
+    pub ahead: Option<Ahead>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -130,6 +145,7 @@ pub enum Event {
     Cancelled(TurnEvent),
     Trouble(String),
     Timed(Timed),
+    Heard(HeardEvent),
 }
 
 impl Event {
@@ -143,6 +159,7 @@ impl Event {
             Event::Cancelled(_) => "voice:cancelled",
             Event::Trouble(_) => "voice:trouble",
             Event::Timed(_) => "voice:timed",
+            Event::Heard(_) => "voice:heard",
         }
     }
 
@@ -155,6 +172,7 @@ impl fmt::Display for Looked {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Looked::In(took) => write!(f, "{} ms", took.as_millis()),
+            Looked::Remembered => f.write_str("remembered"),
             Looked::Late => f.write_str("late"),
             Looked::Unused => f.write_str("unused"),
         }
@@ -171,7 +189,21 @@ impl fmt::Display for Timed {
             lookups.len(),
             lookups.join(", "),
             self.total.as_millis()
-        )
+        )?;
+        match self.ahead {
+            Some(ahead) => write!(f, ", {ahead}"),
+            None => Ok(()),
+        }
+    }
+}
+
+impl fmt::Display for Ahead {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let end = if self.kept { "kept" } else { "dropped" };
+        match self.chat {
+            Some(ahead) => write!(f, "chat {} ms ahead, {end}", ahead.as_millis()),
+            None => f.write_str("no chat ahead"),
+        }
     }
 }
 
@@ -195,6 +227,7 @@ mod tests {
             read: ms(2),
             lookups: vec![Looked::In(ms(640)), Looked::Late, Looked::Unused],
             total: ms(1502),
+            ahead: None,
         };
         assert_eq!(
             timed.to_string(),
@@ -204,10 +237,41 @@ mod tests {
             read: ms(0),
             lookups: Vec::new(),
             total: ms(0),
+            ahead: None,
         };
         assert_eq!(
             plain.to_string(),
             "phrase: parse 0 ms, lookups 0 [], total 0 ms"
+        );
+    }
+
+    #[test]
+    fn the_timing_line_tells_a_remembered_lookup_and_the_chat_started_ahead() {
+        let ms = Duration::from_millis;
+        let line = |lookups: Vec<Looked>, chat: Option<u64>, kept: bool| {
+            let ahead = Some(Ahead {
+                chat: chat.map(ms),
+                kept,
+            });
+            let timed = Timed {
+                read: ms(1),
+                lookups,
+                total: ms(1503),
+                ahead,
+            };
+            timed.to_string()
+        };
+        assert_eq!(
+            line(vec![Looked::Late], Some(1490), true),
+            "phrase: parse 1 ms, lookups 1 [late], total 1503 ms, chat 1490 ms ahead, kept"
+        );
+        assert_eq!(
+            line(vec![Looked::Remembered], Some(3), false),
+            "phrase: parse 1 ms, lookups 1 [remembered], total 1503 ms, chat 3 ms ahead, dropped"
+        );
+        assert_eq!(
+            line(vec![Looked::In(ms(700))], None, true),
+            "phrase: parse 1 ms, lookups 1 [700 ms], total 1503 ms, no chat ahead"
         );
     }
 }

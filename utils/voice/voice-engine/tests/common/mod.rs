@@ -249,9 +249,18 @@ pub fn rig_on(open: OpenFn, catalog: Arc<dyn Catalog>, store: Arc<Store>, timing
 }
 
 pub fn rig_speaking(voice: impl Voice + 'static, timing: Timing) -> Rig {
+    let catalog = Arc::new(FixtureCatalog::from_tsv(CATALOG, true));
+    rig_speaking_on(voice, catalog, timing)
+}
+
+pub fn rig_speaking_on(
+    voice: impl Voice + 'static,
+    catalog: Arc<dyn Catalog>,
+    timing: Timing,
+) -> Rig {
     let rig = rig_of(
         silent(),
-        Arc::new(FixtureCatalog::from_tsv(CATALOG, true)),
+        catalog,
         store(std::env::temp_dir().join("voice-engine-no-models")),
         timing,
         Some(Arc::new(Mutex::new(voice))),
@@ -317,7 +326,9 @@ impl Rig {
         loop {
             let left = until.saturating_duration_since(Instant::now());
             match self.events.recv_timeout(left) {
-                Ok(Event::Level(_) | Event::Partial(_) | Event::Timed(_)) => continue,
+                Ok(Event::Level(_) | Event::Partial(_) | Event::Timed(_) | Event::Heard(_)) => {
+                    continue;
+                }
                 Ok(event) => return event,
                 Err(_) => panic!("no event in 20 s"),
             }
@@ -329,7 +340,9 @@ impl Rig {
         loop {
             let left = until.saturating_duration_since(Instant::now());
             match self.events.recv_timeout(left) {
-                Ok(Event::Level(_) | Event::Partial(_) | Event::Timed(_)) => continue,
+                Ok(Event::Level(_) | Event::Partial(_) | Event::Timed(_) | Event::Heard(_)) => {
+                    continue;
+                }
                 Ok(event) => return Some(event),
                 Err(_) => return None,
             }

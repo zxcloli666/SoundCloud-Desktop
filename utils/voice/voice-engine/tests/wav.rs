@@ -57,7 +57,11 @@ fn hear(path: &str, language: Language) -> Option<(Vec<String>, voice_engine::Co
             Event::Command(command) => return Some((partials, *command)),
             Event::State(s) => assert_ne!(s.state, State::Idle, "went idle without a command"),
             Event::Error(e) => panic!("error {e:?}"),
-            Event::Level(_) | Event::Cancelled(_) | Event::Trouble(_) | Event::Timed(_) => {}
+            Event::Level(_)
+            | Event::Cancelled(_)
+            | Event::Trouble(_)
+            | Event::Timed(_)
+            | Event::Heard(_) => {}
         }
     }
 }

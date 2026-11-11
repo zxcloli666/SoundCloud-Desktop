@@ -1,12 +1,9 @@
 use std::time::Instant;
 
-use voice_nlu::{Intent, Names};
-use voice_resolve::{
-    Bare, Boosts, Decision, Outcome as Understood, Phrase, Scored, answer_ask, understand,
-};
+use voice_nlu::Intent;
+use voice_resolve::{Decision, Outcome as Understood, Scored, answer_ask};
 
 use crate::event::{Event, Outcome, Source, State};
-use crate::lookup::Lookups;
 use crate::machine::{Core, Phase};
 use crate::wire::{self, Origin};
 
@@ -19,6 +16,7 @@ pub struct Plan {
     pub hushed: bool,
     pub speech: Vec<String>,
     pub asking: Option<(usize, Scored, Option<Scored>)>,
+    pub ahead: Option<String>,
 }
 
 pub fn voiced(source: Source) -> bool {
@@ -44,52 +42,29 @@ impl Core {
             return;
         }
         self.drop_turn();
+        self.drop_reading();
         self.plan = None;
-        let outcomes = match self.understood(&text) {
-            Ok(outcomes) => outcomes,
-            Err(error) => {
-                self.fail("network", Some(error));
-                return self.go_idle();
-            }
+        let origin = Origin {
+            source: self.source,
+            remote_id,
         };
+        self.read(text, origin);
+    }
+
+    pub fn begin(&mut self, origin: Origin, outcomes: Vec<Understood>, ahead: Option<String>) {
         let group = self.next_id();
         self.plan = Some(Plan {
             group,
-            origin: Origin {
-                source: self.source,
-                remote_id,
-            },
+            origin,
             outcomes,
             next: 0,
             waiting: None,
             hushed: false,
             speech: Vec::new(),
             asking: None,
+            ahead,
         });
         self.advance();
-    }
-
-    fn understood(&self, text: &str) -> Result<Vec<Understood>, String> {
-        let started = Instant::now();
-        let boosts = Boosts::liked_artists(&self.config.boosts.artists);
-        let bare = if self.config.llm {
-            Bare::Certain
-        } else {
-            Bare::Popular
-        };
-        let phrase = Phrase::read(text, &Names::new(&self.config.names));
-        let read = started.elapsed();
-        let budget = (self.config.llm && !phrase.commands()).then_some(self.deps.timing.lookup);
-        let lookups = Lookups::start(&self.deps.catalog, phrase.lookups(), budget);
-        let mut outcomes = understand(&phrase, &lookups, &boosts, bare);
-        if lookups.late() {
-            outcomes = understand(&phrase, &lookups, &boosts, bare);
-        }
-        self.emit(Event::Timed(lookups.timed(read, started.elapsed())));
-        match lookups.failure().filter(|_| !lookups.late()) {
-            Some(error) => Err(error),
-            None => Ok(outcomes),
-        }
     }
 
     pub fn spoken_answer(&mut self, text: String) {
@@ -160,10 +135,11 @@ impl Core {
     }
 
     fn send_step(&mut self, step: usize, outcome: &Understood) {
-        let id = self.next_id();
+        let fresh = self.next_id();
         let Some(plan) = self.plan.as_mut() else {
             return;
         };
+        let id = plan.ahead.take().unwrap_or(fresh);
         let mut command = wire::command(outcome, id.clone(), &plan.origin);
         let steps = plan.outcomes.len();
         if steps > 1 {

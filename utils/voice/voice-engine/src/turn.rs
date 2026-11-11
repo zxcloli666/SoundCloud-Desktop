@@ -23,6 +23,9 @@ pub struct Turn {
 
 impl Core {
     pub fn chat(&mut self, id: String, step: Chat) {
+        let Some(step) = self.hold(&id, step) else {
+            return;
+        };
         let open = self.turn.as_ref().is_some_and(|turn| turn.id == id);
         match step {
             Chat::Open { speak } => self.open_turn(id, speak),
@@ -128,6 +131,10 @@ impl Core {
     }
 
     pub fn overdue(&mut self, now: Instant) {
+        if self.reading.is_some() {
+            self.phase = Phase::Thinking(now + self.deps.timing.done);
+            return;
+        }
         if self.turn.is_some() && self.speaking(now) {
             return self.watch_turn();
         }

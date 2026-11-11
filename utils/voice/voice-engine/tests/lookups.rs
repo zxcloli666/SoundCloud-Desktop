@@ -84,7 +84,7 @@ fn heard(rig: &Rig, text: &str) -> (Timed, CommandEvent, Duration) {
                 rig.expect_state(State::Idle);
                 return (timed.expect("a timing line"), *command, took);
             }
-            Ok(Event::State(_)) => {}
+            Ok(Event::State(_) | Event::Heard(_)) => {}
             other => panic!("expected a command, got {other:?}"),
         }
     }
@@ -161,4 +161,102 @@ fn a_phrase_that_needs_no_lookup_is_timed_too() {
     assert!(timed.lookups.is_empty());
     assert!(took < BUDGET, "{took:?}");
     assert_eq!(seen.most.load(Ordering::SeqCst), 0);
+}
+
+fn finished(seen: &Seen, lookups: usize) {
+    let until = Instant::now() + Duration::from_secs(10);
+    while seen.finished.load(Ordering::SeqCst) < lookups && Instant::now() < until {
+        std::thread::sleep(Duration::from_millis(10));
+    }
+    assert_eq!(seen.finished.load(Ordering::SeqCst), lookups);
+}
+
+#[test]
+fn a_phrase_cancelled_while_it_is_looked_up_does_nothing() {
+    let (rig, seen) = rig(SLOW, true, &[]);
+    let asked = Instant::now();
+    rig.text("включи скриптонита");
+    rig.expect_state(State::Thinking);
+    std::thread::sleep(QUICK);
+    rig.engine.send(Command::Cancel);
+    rig.expect_state(State::Idle);
+    assert!(asked.elapsed() < SLOW, "{:?}", asked.elapsed());
+    finished(&seen, 1);
+    assert_eq!(rig.quiet_for(Duration::from_millis(200)), None);
+}
+
+#[test]
+fn a_new_phrase_replaces_one_that_is_still_looked_up() {
+    let (rig, seen) = rig(SLOW, true, &[]);
+    rig.text("включи скриптонита");
+    rig.expect_state(State::Thinking);
+    std::thread::sleep(QUICK);
+    rig.text("пауза");
+    rig.expect_state(State::Thinking);
+    let command = rig.command();
+    assert_eq!(command.intent, "pause");
+    rig.done(&command.id, "");
+    rig.expect_state(State::Idle);
+    finished(&seen, 1);
+    assert_eq!(rig.quiet_for(Duration::from_millis(200)), None);
+}
+
+#[test]
+fn a_late_lookup_is_remembered_for_the_phrase_said_again() {
+    let (rig, seen) = rig(SLOW, true, &[]);
+    let (timed, late, _) = heard(&rig, "как дела");
+    assert_eq!(timed.lookups, [Looked::Late]);
+    assert!(late.candidates.is_empty());
+    for asked in Phrase::read("как дела", &Names::default()).lookups() {
+        rig.engine
+            .candidates(&asked.variants, &asked.kinds)
+            .0
+            .unwrap();
+    }
+    let (timed, again, took) = heard(&rig, "как дела");
+    assert_eq!(timed.lookups, [Looked::Remembered]);
+    assert_eq!(again.candidates.len(), 2);
+    assert!(took < BUDGET, "{took:?}");
+    assert_eq!(seen.finished.load(Ordering::SeqCst), 1);
+}
+
+#[test]
+fn a_search_for_the_name_a_phrase_looked_up_is_answered_from_memory() {
+    let (rig, seen) = rig(QUICK, true, &[]);
+    let said = heard(&rig, "скриптонит").1;
+    assert_eq!(said.intent, "play");
+    let named = voice_resolve::named("Скриптонит");
+    let variants: Vec<Variant> = named.iter().flat_map(|n| n.queries.clone()).collect();
+    let kinds = [Kind::Track, Kind::Artist, Kind::Album, Kind::Playlist];
+    let (found, looked) = rig.engine.candidates(&variants, &kinds);
+    assert_eq!(looked, Looked::Remembered);
+    assert!(found.unwrap().iter().any(|hit| hit.name == "Скриптонит"));
+    assert_eq!(seen.finished.load(Ordering::SeqCst), 1);
+
+    let (found, looked) = rig.engine.candidates(&variants, &[Kind::Artist]);
+    assert_eq!(looked, Looked::Remembered);
+    let found: Vec<String> = found.unwrap().into_iter().map(|hit| hit.name).collect();
+    assert_eq!(found, ["Скриптонит"]);
+    assert_eq!(seen.finished.load(Ordering::SeqCst), 1);
+
+    let other = voice_resolve::named("Michael Jackson");
+    let variants: Vec<Variant> = other.iter().flat_map(|n| n.queries.clone()).collect();
+    let (found, looked) = rig.engine.candidates(&variants, &[Kind::Artist]);
+    assert!(matches!(looked, Looked::In(took) if took >= QUICK));
+    assert_eq!(found.unwrap().len(), 1);
+    assert_eq!(seen.finished.load(Ordering::SeqCst), 2);
+}
+
+#[test]
+fn a_search_made_while_the_same_lookup_runs_waits_for_it() {
+    let (rig, seen) = rig(SLOW, true, &[]);
+    let asked = Phrase::read("как дела", &Names::default()).lookups();
+    rig.text("как дела");
+    rig.expect_state(State::Thinking);
+    std::thread::sleep(QUICK);
+    let (found, looked) = rig.engine.candidates(&asked[0].variants, &asked[0].kinds);
+    assert_eq!(found.unwrap().len(), 2);
+    assert!(matches!(looked, Looked::In(took) if took < SLOW));
+    assert_eq!(seen.most.load(Ordering::SeqCst), 1);
+    assert_eq!(seen.finished.load(Ordering::SeqCst), 1);
 }
