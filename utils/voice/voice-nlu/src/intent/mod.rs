@@ -4,13 +4,14 @@ mod indirect;
 mod library;
 mod play;
 mod seek;
+mod talk;
 mod transport;
 mod volume;
 
 use crate::lexicon;
 use crate::normalize::Tok;
 pub use ctx::{Ctx, Detected};
-pub use guard::{Negation, lyric, negation, remark};
+pub use guard::{Negation, absence, lyric, negation, remark, retold};
 
 pub fn indirect_hit(toks: &[Tok]) -> bool {
     indirect::detect(&Ctx::new(toks)).is_some()
@@ -28,7 +29,7 @@ pub fn detect(toks: &[Tok]) -> Detected {
         c.w.windows(2)
             .any(|p| lexicon::stem(lexicon::NEXT_STRONG, p[0]) && p[1] == "раз");
     let sarcasm = c.has(&["еще"]) && c.has(&["раз"]) && c.has(lexicon::JUNK);
-    if next_time || sarcasm {
+    if next_time || sarcasm || talk::sentence(&c) {
         return Detected::blocked();
     }
     if let Some(d) = indirect::detect(&c) {
@@ -105,13 +106,20 @@ fn closest(w: &str, subjunctive: bool) -> Option<&'static str> {
     }
     let limit = if len >= 8 { 2 } else { 1 };
     let mut best: Option<(&'static str, usize)> = None;
-    for &target in lexicon::FUZZY_TARGETS {
+    let targets = lexicon::FUZZY_TARGETS
+        .iter()
+        .filter(|t| !first_person(w) || first_person(t));
+    for &target in targets {
         let d = edit_distance(w, target);
         if d <= limit && best.is_none_or(|(_, b)| d < b) {
             best = Some((target, d));
         }
     }
     best.map(|(t, _)| t)
+}
+
+fn first_person(w: &str) -> bool {
+    w.ends_with('у') || w.ends_with('ю')
 }
 
 pub fn edit_distance(a: &str, b: &str) -> usize {

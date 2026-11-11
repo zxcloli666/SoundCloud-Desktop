@@ -181,7 +181,9 @@ pub fn content(c: &Ctx) -> Option<Detected> {
         }
     }
 
-    let similar_word = c.pos(SIMILAR);
+    let similar_word = c
+        .pos(SIMILAR)
+        .filter(|&i| !SUCH.contains(&c.w[i]) || asks_for_such(c, i));
     let like_this = c.has(&["like"]) && c.has(&["this", "that"]) && (has_verb || c.has(&["more"]));
     if (similar_word.is_some() || like_this) && (has_verb || c.len() <= 4) {
         let mut u = used.clone();
@@ -221,6 +223,10 @@ pub fn content(c: &Ctx) -> Option<Detected> {
     None
 }
 
+fn asks_for_such(c: &Ctx, at: usize) -> bool {
+    c.at(at + 1) != "себе" && (find_verb(c).is_some() || c.has(SUCH_COMPANY))
+}
+
 fn denied(c: &Ctx, used: &[usize]) -> bool {
     let first = (0..c.len())
         .filter(|i| !used.contains(i))
@@ -248,7 +254,11 @@ pub fn detect(c: &Ctx, forced: bool) -> Detected {
     let strays = entity_tokens(c, &used);
     if strays == 0 {
         if !v.strong && c.len() == 1 {
-            return Detected::new(Intent::Resume, used);
+            return if GO_AHEAD.contains(&c.w[0]) {
+                Detected::new(Intent::Resume, used)
+            } else {
+                Detected::none()
+            };
         }
         let only_kinds =
             c.w.iter()
@@ -258,7 +268,7 @@ pub fn detect(c: &Ctx, forced: bool) -> Detected {
         if only_kinds && !greeted {
             return Detected::new(Intent::PlayWave, used);
         }
-        if v.strong || c.len() == 1 {
+        if v.strong {
             return Detected::new(Intent::Resume, used);
         }
         return Detected::none();

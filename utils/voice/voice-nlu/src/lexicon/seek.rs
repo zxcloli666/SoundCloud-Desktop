@@ -66,6 +66,7 @@ pub const ROUGHLY: &[&str] = &["примерно", "приблизительно
 pub const SET_VERBS: &[&str] = &["поставь", "переведи", "поставить", "установи"];
 
 pub const RESTART: &[&str] = &["сначала", "заново", "restart", "начало", "начала"];
+pub const START: &[&str] = &["начало", "начала", "началу", "начале"];
 
 pub const SEEK_FILL: &[&str] = &[
     "плюс",

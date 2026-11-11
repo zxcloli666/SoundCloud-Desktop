@@ -22,7 +22,7 @@ fn allowed(i: Intent) -> bool {
     )
 }
 
-fn finite(w: &str) -> bool {
+pub fn finite(w: &str) -> bool {
     VERB_ENDINGS.iter().any(|e| w.ends_with(e))
 }
 

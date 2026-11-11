@@ -67,14 +67,17 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
         .pos_stem(&["пауз", "запауз", "pause"])
         .or_else(|| c.pos(PAUSE_WORDS))
     {
-        if c.stray(&held(c, i)) == 0 {
+        if only_for_a_while(c, i) {
             return Some(Detected::new(Intent::Pause, vec![i]));
         }
     }
     if let Some(i) = c.pos_stem(&["стоп", "stop"]).or_else(|| c.pos(STOP_WORDS)) {
-        if c.stray(&held(c, i)) == 0 {
+        if only_for_a_while(c, i) {
             return Some(Detected::new(Intent::Stop, vec![i]));
         }
+    }
+    if plays_on(c) {
+        return Some(Detected::new(Intent::Resume, vec![]));
     }
     if let Some(i) = c.pos(RESUME_WORDS) {
         let strays = c.stray_words(&base(c, i));
@@ -100,4 +103,19 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
         }
     }
     None
+}
+
+fn only_for_a_while(c: &Ctx, halt: usize) -> bool {
+    c.stray_words(&held(c, halt)).iter().all(|w| {
+        A_WHILE.contains(w)
+            || SEC_UNITS.contains(w)
+            || MIN_UNITS.contains(w)
+            || crate::numbers::is_number(w)
+    })
+}
+
+fn plays_on(c: &Ctx) -> bool {
+    (1..c.len()).any(|i| {
+        PLAYING_ON.contains(&c.w[i - 1]) && c.w[i] == "дальше" && c.stray(&[i - 1, i]) == 0
+    })
 }

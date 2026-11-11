@@ -145,6 +145,9 @@ fn resumes(ws: &[String], i: usize) -> bool {
 }
 
 fn marker(ws: &[String], i: usize) -> Option<Mark> {
+    if intent::absence(ws, i) {
+        return None;
+    }
     let takes_back = TAKES_BACK.iter().find(|m| starts(ws, i, m));
     let wavers = WAVERS
         .iter()

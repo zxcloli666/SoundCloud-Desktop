@@ -30,7 +30,7 @@ struct Link {
 pub fn parse(text: &str, names: &Names) -> Vec<Parsed> {
     let spoken = objection::command_after(text);
     let text_in = spoken.as_deref().unwrap_or(text);
-    let fixed = correct::resolve(text_in);
+    let fixed = correct::resolve(text_in).filter(|_| !intent::retold(&normalize(text_in).toks));
     let corrected = fixed.is_some();
     let toks = names.drop(fixed.unwrap_or_else(|| normalize(text_in).toks));
     let toks = &without_order_word(toks);
@@ -212,8 +212,10 @@ fn juxtaposed(toks: &[Tok], text: &str) -> Option<Vec<Parsed>> {
     if toks.len() < 2 || toks.len() > 10 {
         return None;
     }
-    if matches!(side(toks, text), Side::Cmd(p) if p.intent.is_control()) {
-        return None;
+    match side(toks, text) {
+        Side::Cmd(p) if p.intent.is_control() => return None,
+        Side::Foreign => return None,
+        _ => {}
     }
     for i in 1..toks.len() {
         if lone_verb(&toks[..i]) || lone_verb(&toks[i..]) {
