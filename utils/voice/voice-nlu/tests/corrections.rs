@@ -150,6 +150,10 @@ fn the_new_version_is_read_the_way_a_whole_phrase_is() {
         ["shuffle_on", "repeat_one"]
     );
     assert_ne!(steps("включи а нет погоди я сам"), ["pause"]);
+    assert_eq!(
+        steps("включи цоя ой нет то есть звери и громче"),
+        ["play", "volume_up"]
+    );
     assert_eq!(steps("следующий нет погоди предыдущий"), ["previous"]);
 }
 
@@ -178,6 +182,7 @@ fn the_new_version_may_open_by_rejecting_the_first_one() {
         ["volume_down", "next"]
     );
     assert_eq!(steps("сделай громче нет не так громко"), ["volume_down"]);
+    assert_eq!(steps("ой не то"), ["next"]);
 }
 
 #[test]

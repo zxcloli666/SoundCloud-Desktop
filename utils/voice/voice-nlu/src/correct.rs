@@ -4,6 +4,7 @@ use crate::normalize::{Tok, normalize, words};
 use crate::numbers;
 use crate::reworded;
 use crate::steps::{self, Side};
+use crate::types::Parsed;
 
 const TAKES_BACK: &[&[&str]] = &[
     &["или", "нет"],
@@ -205,7 +206,7 @@ fn after_rejection<'a>(words: &'a [String], said: &[Tok]) -> Option<&'a [String]
         .skip(1)
         .take_while(|w| POINTERS.contains(&w.as_str()) || echoes(w, said))
         .count();
-    if !denies || own_meaning || again == 0 {
+    if said.is_empty() || !denies || own_meaning || again == 0 {
         return Some(words);
     }
     let rest = &words[1 + again..];
@@ -239,7 +240,13 @@ fn left_as_it_is(next: &[Tok]) -> bool {
 
 fn orders(read: Side, next: &[Tok], said: &[Tok]) -> bool {
     match read {
-        Side::Cmd(p) => !(p.weak_verb && intent::detect(said).intent.needs_entity()),
+        Side::Cmd(p) if p.weak_verb && intent::detect(said).intent.needs_entity() => false,
+        Side::Cmd(p) => from_its_start(&p, next),
         _ => steps::plan(next, "", false).is_some(),
     }
+}
+
+fn from_its_start(read: &Parsed, next: &[Tok]) -> bool {
+    let mut kept = read.normalized.split(' ');
+    kept.clone().count() == next.len() || kept.next() == Some(next[0].w.as_str())
 }
