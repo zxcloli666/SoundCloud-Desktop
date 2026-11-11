@@ -75,7 +75,7 @@ fn half_of_a_compound(c: &Ctx) -> bool {
 }
 
 fn complaint_about_a_thing(c: &Ctx) -> bool {
-    complains(c) && !about_music(c) && names_a_thing(c, DEMONSTRATIVES)
+    complains(c) && !about_music(c) && !c.has(PLAY_STRONG) && names_a_thing(c, DEMONSTRATIVES)
 }
 
 fn complains(c: &Ctx) -> bool {
@@ -135,7 +135,7 @@ fn plan_of_the_speaker(c: &Ctx) -> bool {
 }
 
 fn voice_of_a_person(c: &Ctx) -> bool {
-    c.has(SPEAKING) && c.w.iter().any(|w| volume_word(w))
+    c.has(SPEAKING) && !c.has(PLAY_STRONG) && c.w.iter().any(|w| volume_word(w))
 }
 
 fn carrying_on_with_something_else(c: &Ctx) -> bool {

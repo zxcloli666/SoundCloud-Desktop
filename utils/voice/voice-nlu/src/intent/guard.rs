@@ -108,7 +108,8 @@ fn reasoned(toks: &[Tok]) -> Option<usize> {
 
 fn full_command(said: &[Tok]) -> bool {
     let verb = |t: &Tok| LONE_VERBS.contains(&t.w.as_str()) || PLAY_STRONG.contains(&t.w.as_str());
-    said.iter().any(verb) && !said.last().is_some_and(verb)
+    let names_music = super::detect(said).intent.needs_entity();
+    said.iter().any(verb) && !said.last().is_some_and(verb) && !names_music
 }
 
 fn states_absence(after: &[Tok]) -> bool {

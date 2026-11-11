@@ -128,6 +128,7 @@ fn a_complaint_about_a_named_thing_that_is_not_music_is_talk() {
         ("достала уже эта песня", "next"),
         ("достала эта дурацкая песня", "next"),
         ("достала эта фигня", "next"),
+        ("включи надоела эта зима", "play"),
         ("надоела эта ерунда", "next"),
         ("надоел этот трек", "next"),
         ("бесит эта музыка", "next"),
@@ -418,6 +419,8 @@ fn a_clause_that_says_who_is_absent_is_a_reason_and_its_no_is_not_a_correction()
         "назад дороги нет",
         "сделай громче или нет",
     ]);
+    let p = &parse("включи песню когда тебя нет рядом", &Names::default())[0];
+    assert!(p.queries.iter().any(|q| q.text.contains("рядом")));
 }
 
 #[test]
@@ -434,6 +437,7 @@ fn a_volume_word_said_with_a_verb_of_speaking_is_about_a_voice() {
         ("сделай громче", "volume_up"),
         ("тише пожалуйста я говорю по телефону", "volume_down"),
         ("сделай потише я разговариваю по телефону", "volume_down"),
+        ("включи песню говори тише", "play"),
     ]);
 }
 
