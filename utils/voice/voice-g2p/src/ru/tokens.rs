@@ -131,35 +131,30 @@ fn word_at(chars: &[char], i: usize) -> usize {
 }
 
 pub fn tokenize(text: &str) -> Vec<Tok> {
+    written(text).into_iter().map(|(tok, _)| tok).collect()
+}
+
+pub fn written(text: &str) -> Vec<(Tok, String)> {
     let chars: Vec<char> = text.chars().collect();
-    let mut out = Vec::new();
+    let mut out: Vec<(Tok, String)> = Vec::new();
     let mut i = 0;
     while i < chars.len() {
         let c = chars[i];
-        if c.is_ascii_digit() {
-            if let Some((tok, end)) = date_at(&chars, i).or_else(|| time_at(&chars, i)) {
-                out.push(tok);
-                i = end;
-            } else {
-                let (tok, end) = number_at(&chars, i);
-                out.push(tok);
-                i = end;
-            }
+        let (tok, end) = if c.is_ascii_digit() {
+            date_at(&chars, i).or_else(|| time_at(&chars, i)).unwrap_or_else(|| number_at(&chars, i))
         } else if is_letter(c) || (c == '+' && chars.get(i + 1).is_some_and(|n| is_letter(*n)) && !chars.get(i.wrapping_sub(1)).is_some_and(|p| p.is_ascii_digit())) {
             let end = word_at(&chars, i);
-            out.push(Tok::Word(chars[i..end].iter().collect()));
-            i = end;
-        } else if c.is_whitespace() {
-            if c == '\n' {
-                out.push(Tok::Sym('\n'));
-            } else if out.last() != Some(&Tok::Space) {
-                out.push(Tok::Space);
-            }
+            (Tok::Word(chars[i..end].iter().collect()), end)
+        } else if c == '\n' || !c.is_whitespace() {
+            (Tok::Sym(c), i + 1)
+        } else if out.last().is_some_and(|(last, _)| *last == Tok::Space) {
             i += 1;
+            continue;
         } else {
-            out.push(Tok::Sym(c));
-            i += 1;
-        }
+            (Tok::Space, i + 1)
+        };
+        out.push((tok, chars[i..end].iter().collect()));
+        i = end;
     }
     out
 }

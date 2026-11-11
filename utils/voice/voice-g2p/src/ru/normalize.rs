@@ -149,7 +149,7 @@ impl Normalizer {
                     i += 1;
                 }
                 Tok::Num(n) => {
-                    let used = self.number(&toks, i, n, prev.as_deref(), &mut out);
+                    let used = Self::number(&toks, i, n, prev.as_deref(), &mut out);
                     prev = None;
                     i += used;
                 }
@@ -171,6 +171,24 @@ impl Normalizer {
             }
         }
         out.render()
+    }
+
+    pub(crate) fn figure(toks: &[Tok], i: usize, prev: Option<&str>) -> Option<(Vec<String>, usize)> {
+        let mut out = Out { parts: Vec::new() };
+        let used = match toks.get(i)? {
+            Tok::Num(_) if matches!(toks.get(i + 1), Some(Tok::Word(_))) && unit_at(toks, i + 1).is_none() => return None,
+            Tok::Num(n) => Self::number(toks, i, n, prev, &mut out),
+            Tok::Time(h, m) => {
+                out.words(time_words(*h, *m));
+                1
+            }
+            Tok::Date(d, m, y) => {
+                out.words(date_words(*d, *m, *y, case_after(prev)));
+                1
+            }
+            _ => return None,
+        };
+        Some((out.parts, used))
     }
 
     fn symbol(&self, toks: &[Tok], i: usize, c: char, out: &mut Out) -> usize {
@@ -208,14 +226,7 @@ impl Normalizer {
         1
     }
 
-    fn number(
-        &self,
-        toks: &[Tok],
-        i: usize,
-        n: &Number,
-        prev: Option<&str>,
-        out: &mut Out,
-    ) -> usize {
+    fn number(toks: &[Tok], i: usize, n: &Number, prev: Option<&str>, out: &mut Out) -> usize {
         let case = case_after(prev);
         let next = next_significant(toks, i + 1);
         let next_word = next.and_then(|j| match &toks[j] {
@@ -264,10 +275,10 @@ impl Normalizer {
             }
             words.push(fraction_denominator(frac.len(), count_class(fv) == 0).to_string());
             out.words(words);
-            return 1 + self.fraction_unit(toks, i, out);
+            return 1 + Self::fraction_unit(toks, i, out);
         }
 
-        if let Some(used) = self.unit_phrase(toks, i, value, case, out) {
+        if let Some(used) = Self::unit_phrase(toks, i, value, case, out) {
             return used;
         }
 
@@ -277,7 +288,7 @@ impl Normalizer {
         1
     }
 
-    fn fraction_unit(&self, toks: &[Tok], i: usize, out: &mut Out) -> usize {
+    fn fraction_unit(toks: &[Tok], i: usize, out: &mut Out) -> usize {
         if let Some(j) = next_significant(toks, i + 1) {
             if let Some((unit, last)) = unit_at(toks, j) {
                 out.word(unit.few);
@@ -287,7 +298,7 @@ impl Normalizer {
         0
     }
 
-    fn unit_phrase(&self, toks: &[Tok], i: usize, value: u64, case: Case, out: &mut Out) -> Option<usize> {
+    fn unit_phrase(toks: &[Tok], i: usize, value: u64, case: Case, out: &mut Out) -> Option<usize> {
         let j = next_significant(toks, i + 1)?;
         let (unit, last) = unit_at(toks, j)?;
         let class = count_class(value);

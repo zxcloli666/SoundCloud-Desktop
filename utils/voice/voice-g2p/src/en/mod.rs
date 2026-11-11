@@ -1,5 +1,5 @@
 mod lexicon;
-mod normalize;
+pub(crate) mod normalize;
 pub mod numbers;
 
 pub use lexicon::Lexicon;

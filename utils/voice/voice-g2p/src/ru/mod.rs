@@ -3,13 +3,13 @@ mod data;
 mod g2p;
 mod latin;
 mod latin_table;
-mod normalize;
+pub(crate) mod normalize;
 mod nouns;
 pub mod numbers;
 mod respell;
 mod speak;
 mod stress;
-mod tokens;
+pub(crate) mod tokens;
 
 pub use data::Data;
 pub use normalize::Normalizer;

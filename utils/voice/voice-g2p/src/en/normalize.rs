@@ -14,7 +14,7 @@ fn push_words(out: &mut Vec<Piece>, words: Vec<String>) {
     }
 }
 
-fn number_words(int: &str, frac: Option<&str>, suffix: &str) -> Vec<String> {
+pub(crate) fn number_words(int: &str, frac: Option<&str>, suffix: &str) -> Vec<String> {
     let value: u64 = int.parse().unwrap_or(0);
     if int.len() > 12 || (int.len() > 1 && int.starts_with('0') && frac.is_none()) {
         return numbers::digits(int);
@@ -31,6 +31,19 @@ fn number_words(int: &str, frac: Option<&str>, suffix: &str) -> Vec<String> {
         words.push("point".to_string());
         words.extend(numbers::digits(f));
     }
+    words
+}
+
+pub(crate) fn time_words(hours: u64, minutes: u64) -> Vec<String> {
+    let mut words = numbers::cardinal(hours);
+    if minutes == 0 {
+        words.push("o'clock".to_string());
+        return words;
+    }
+    if minutes < 10 {
+        words.push("oh".to_string());
+    }
+    words.extend(numbers::cardinal(minutes));
     words
 }
 
@@ -52,16 +65,7 @@ pub fn pieces(text: &str) -> Vec<Piece> {
                     k += 1;
                 }
                 let minutes: String = chars[j + 1..k].iter().collect();
-                push_words(&mut out, numbers::cardinal(int.parse().unwrap_or(0)));
-                let m: u64 = minutes.parse().unwrap_or(0);
-                if m == 0 {
-                    out.push(Piece::Word("o'clock".to_string()));
-                } else {
-                    if m < 10 {
-                        out.push(Piece::Word("oh".to_string()));
-                    }
-                    push_words(&mut out, numbers::cardinal(m));
-                }
+                push_words(&mut out, time_words(int.parse().unwrap_or(0), minutes.parse().unwrap_or(0)));
                 i = k;
                 continue;
             }
