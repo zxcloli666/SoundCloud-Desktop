@@ -9,12 +9,16 @@ const REPLACE: &[&[&str]] = &[
     &["ой", "нет"],
     &["то", "есть"],
     &["в", "смысле"],
+    &["тьфу", "ты"],
     &["вернее"],
     &["точнее"],
     &["хотя"],
+    &["тьфу"],
     &["ой"],
     &["нет"],
 ];
+
+const AT_LEAST: &[&str] = &["хотя", "бы"];
 
 const NEGATING: &[&[&str]] = &[&["а", "не"], &["только", "не"], &["но", "не"], &["и", "не"]];
 
@@ -45,7 +49,7 @@ pub fn resolve(text: &str) -> Option<Vec<Tok>> {
         let loose = ws[i] == "лучше" && i >= 2 && i + 1 < ws.len();
         let replace = REPLACE
             .iter()
-            .find(|m| starts(&ws, i, m))
+            .find(|m| starts(&ws, i, m) && !starts(&ws, i, AT_LEAST))
             .map(|m| m.len())
             .or(loose.then_some(1))
             .filter(|len| skip_noise(&ws, i + len) < ws.len());
