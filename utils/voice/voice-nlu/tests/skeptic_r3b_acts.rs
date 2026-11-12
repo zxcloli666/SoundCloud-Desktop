@@ -319,3 +319,13 @@ fn a_kind_word_with_a_command_word_after_then_following_a_play_is_queued_as_the_
         ("пауза а потом группу стоп", &["pause", "stop"]),
     ]);
 }
+
+#[test]
+fn a_swear_beside_a_mute_verb_is_dropped_and_does_not_hide_its_object() {
+    stays_silent(&["заглуши нахрен мотор", "заглуши нафиг двигатель"]);
+    acts(&[
+        ("заглуши нахрен", "mute"),
+        ("замьють нахрен", "mute"),
+        ("выключи нахрен", "stop"),
+    ]);
+}
