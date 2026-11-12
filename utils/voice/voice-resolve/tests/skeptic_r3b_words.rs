@@ -98,3 +98,11 @@ fn a_word_naming_the_version_picks_that_version() {
         "The Weeknd - Blinding Lights"
     );
 }
+
+#[test]
+fn one_said_in_russian_letters_names_the_title() {
+    plays(&[
+        ("включи уан дэнс", "Drake - One Dance"),
+        ("включи ван дэнс", "Drake - One Dance"),
+    ]);
+}
