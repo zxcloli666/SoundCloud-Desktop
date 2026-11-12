@@ -1,6 +1,6 @@
 use std::time::Instant;
 
-use crate::qwen;
+use crate::{pauses, qwen};
 
 const BURST: f32 = 0.64;
 const HEADROOM: f32 = 1.2;
@@ -28,6 +28,17 @@ impl Draft {
         }
         self.rate = rate;
         self.samples.extend(samples);
+    }
+
+    pub fn seconds(&self) -> f32 {
+        self.samples.len() as f32 / self.rate.max(1) as f32
+    }
+
+    pub fn after(mut self, waited: f32) -> Vec<f32> {
+        let waited = (waited * self.rate as f32) as usize;
+        let cut = pauses::lead_in(&self.samples, self.rate).min(waited);
+        self.samples.drain(..cut);
+        self.samples
     }
 
     pub fn ready(&self, now: Instant, lead: f32) -> bool {
@@ -97,6 +108,19 @@ mod tests {
         let slow = [(0.2, 0.08), (0.52, 0.16), (1.16, 0.32), (2.44, 0.64)];
         let (draft, now) = draft_after(&slow);
         assert!(!draft.ready(now, 0.0));
+    }
+
+    #[test]
+    fn a_line_played_late_gives_up_the_silence_it_opens_with() {
+        let line = || {
+            let mut draft = Draft::new("Включаю Скриптонита.");
+            draft.take(RATE, vec![0.0; 4800], Instant::now());
+            draft.take(RATE, chunk(0.3), Instant::now());
+            draft
+        };
+        assert_eq!(line().after(0.0).len(), 12000);
+        assert_eq!(line().after(0.1).len(), 9600);
+        assert_eq!(line().after(5.0).len(), 7680);
     }
 
     #[test]

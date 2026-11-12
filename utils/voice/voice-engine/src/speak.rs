@@ -10,6 +10,7 @@ use crate::config::{Config, Language, SpeakMode};
 use crate::draft::Draft;
 use crate::event::{Event, State};
 use crate::machine::{Core, Msg, Phase};
+use crate::pauses::{Mark, Pauses};
 use crate::speech::Speech;
 use crate::stream::Stream;
 use crate::tts::{Piece, Say, Source};
@@ -17,6 +18,7 @@ use crate::{models, plain, speaker, voices};
 
 const SPEECH_INPUT: &str = "speech";
 const GRACE: Duration = Duration::from_secs(3);
+const SPARE: f32 = 0.4;
 
 pub struct Reply {
     source: Source,
@@ -24,6 +26,7 @@ pub struct Reply {
     speed: f32,
     pitch: f32,
     lines: VecDeque<Line>,
+    pauses: Option<Pauses>,
     speech: Option<Speech>,
     broken: bool,
     until: Option<Instant>,
@@ -33,6 +36,7 @@ pub struct Reply {
 struct Line {
     r#gen: u64,
     draft: Option<Draft>,
+    mark: Mark,
 }
 
 impl Reply {
@@ -43,6 +47,7 @@ impl Reply {
             speed: config.speak.speed,
             pitch: config.speak.pitch,
             lines: VecDeque::new(),
+            pauses: None,
             speech: None,
             broken: false,
             until: None,
@@ -57,6 +62,7 @@ impl Reply {
         if let Some(turn) = turn {
             self.turn = Some(turn.to_string());
         }
+        let mark = Mark::of(&text);
         let text = match self.source {
             Source::Qwen { .. } => plain::text(&text, self.language),
             _ => text,
@@ -64,6 +70,7 @@ impl Reply {
         self.lines.push_back(Line {
             r#gen,
             draft: Some(Draft::new(&text)),
+            mark,
         });
         Say {
             r#gen,
@@ -80,6 +87,13 @@ impl Reply {
         let Some(line) = self.lines.front_mut() else {
             return false;
         };
+        let queued = self.speech.as_ref().map_or(0.0, |speech| speech.lead(now));
+        let drafted = line.draft.as_ref().map_or(0.0, Draft::seconds);
+        let pauses = self.pauses.get_or_insert_with(|| Pauses::new(rate));
+        let samples = pauses.push(samples, queued + drafted >= SPARE);
+        if samples.is_empty() {
+            return false;
+        }
         let Some(draft) = line.draft.as_mut() else {
             if let Some(speech) = self.speech.as_mut() {
                 speech.take(samples, now);
@@ -94,6 +108,17 @@ impl Reply {
     fn draft(&mut self) -> Option<Draft> {
         let draft = self.lines.front_mut()?.draft.take()?;
         Some(draft).filter(|draft| !draft.samples.is_empty())
+    }
+
+    fn ended(&mut self) {
+        let line = self.lines.pop_front();
+        if let (Some(line), Some(pauses)) = (line, self.pauses.as_mut()) {
+            pauses.line_ended(line.mark);
+        }
+    }
+
+    fn last_sound(&mut self) -> Vec<f32> {
+        self.pauses.as_mut().map(Pauses::finish).unwrap_or_default()
     }
 
     fn busy(&self, now: Instant) -> bool {
@@ -187,7 +212,7 @@ impl Core {
             Piece::End => {
                 self.play_line(now);
                 if let Some(reply) = self.reply.as_mut() {
-                    reply.lines.pop_front();
+                    reply.ended();
                     reply.until = Some(until).filter(|_| !reply.lines.is_empty());
                 }
                 self.rest(now);
@@ -207,7 +232,8 @@ impl Core {
             return self.mute(error, now);
         }
         if let Some(speech) = self.reply.as_mut().and_then(|r| r.speech.as_mut()) {
-            speech.take(draft.samples, now);
+            let waited = speech.starved(now);
+            speech.take(draft.after(waited), now);
         }
     }
 
@@ -242,8 +268,12 @@ impl Core {
         let Some(reply) = self.reply.as_mut().filter(|r| r.lines.is_empty()) else {
             return;
         };
+        let last = reply.last_sound();
         match reply.speech.as_mut() {
             Some(speech) if speech.open() => {
+                if !last.is_empty() {
+                    speech.take(last, now);
+                }
                 speech.close();
                 reply.until = Some(speech.dry().max(now) + GRACE);
             }

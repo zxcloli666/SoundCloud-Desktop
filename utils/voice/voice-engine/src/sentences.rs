@@ -3,9 +3,9 @@ const CLAUSE_LEAST: usize = 40;
 const OPENING_READY: usize = 48;
 const OPENING_LEAST: usize = 16;
 
-const ENDS: [char; 4] = ['.', '!', '?', '…'];
-const CLOSERS: [char; 11] = ['"', '\'', '»', '”', '’', ')', ']', '*', '_', '`', '~'];
-const CLAUSE_MARKS: [char; 5] = [',', ';', ':', '—', '–'];
+pub const ENDS: [char; 4] = ['.', '!', '?', '…'];
+pub const CLOSERS: [char; 11] = ['"', '\'', '»', '”', '’', ')', ']', '*', '_', '`', '~'];
+pub const CLAUSE_MARKS: [char; 5] = [',', ';', ':', '—', '–'];
 const DASHES: [char; 3] = ['—', '–', '-'];
 const BULLETS: [char; 6] = ['-', '—', '–', '•', '+', '>'];
 const TIGHT: [char; 10] = [',', '.', '!', '?', ';', ':', '…', '»', ')', ']'];

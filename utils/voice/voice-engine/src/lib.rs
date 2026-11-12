@@ -15,6 +15,7 @@ mod machine;
 mod memory;
 mod models;
 mod output;
+mod pauses;
 mod plain;
 mod plan;
 mod qwen;

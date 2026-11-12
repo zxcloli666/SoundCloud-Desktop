@@ -325,6 +325,21 @@ fn report(name: &str, told: &Told) -> f32 {
     lost
 }
 
+fn longest_pause(told: &Told) -> f32 {
+    let mut fed = Vec::with_capacity(told.heard.len());
+    let mut zeros = 0;
+    for sample in &told.heard {
+        zeros = if *sample == 0.0 { zeros + 1 } else { 0 };
+        if zeros as f32 / RATE < 0.03 {
+            fed.push(*sample);
+        }
+    }
+    runs(&fed, 0.15, |sample| sample.abs() < 0.02)
+        .iter()
+        .map(|(_, length)| *length)
+        .fold(0.0, f32::max)
+}
+
 fn kept(rig: &Rig) -> usize {
     std::fs::read_dir(&rig.phrases).map_or(0, |files| files.count())
 }
@@ -352,6 +367,8 @@ fn a_streamed_reply_from_the_qwen_voice_starts_early_keeps_going_and_stops_on_ca
     for told in [&once, &slowly] {
         let seconds = told.heard.len() as f32 / RATE;
         assert!((8.0..40.0).contains(&seconds), "{seconds}");
+        let pause = longest_pause(told);
+        assert!(pause < 0.3, "a pause of {pause} s");
     }
     assert!(stopped < Duration::from_secs(1), "{stopped:?}");
     assert!(late < 0.3, "{late}");

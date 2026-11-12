@@ -65,6 +65,10 @@ impl Speech {
         self.dry.saturating_duration_since(now).as_secs_f32()
     }
 
+    pub fn starved(&self, now: Instant) -> f32 {
+        now.saturating_duration_since(self.dry).as_secs_f32()
+    }
+
     pub fn tick(&self) -> Option<Instant> {
         self.tick
     }
