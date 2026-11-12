@@ -303,6 +303,12 @@ pub const SPEAKING: &[&str] = &[
     "шепчи",
 ];
 
+pub const SPEECH: &[&str] = &["говор", "сказ", "разговарива", "шепч", "крич", "болта"];
+
+pub const HEARING: &[&str] = &["слыш", "расслыш", "услыш"];
+
+pub const POORLY: &[&str] = &["не", "плохо", "еле"];
+
 pub const MAKING: &[&str] = &["сделай", "сделайте", "сделать"];
 
 pub const INFINITIVE_ENDINGS: &[&str] = &["ть", "ться", "чь", "ти"];

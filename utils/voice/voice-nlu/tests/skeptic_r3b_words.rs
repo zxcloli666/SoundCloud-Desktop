@@ -93,3 +93,18 @@ fn an_order_said_right_after_calling_mom_or_dad_is_for_them() {
         ("мам лоля включи кино", "play"),
     ]);
 }
+
+#[test]
+fn not_hearing_what_a_person_says_is_about_that_person() {
+    stays_silent(&[
+        "не слышно что мама говорит",
+        "не слышу что папа сказал",
+        "плохо слышно что говорят",
+    ]);
+    acts(&[
+        ("не слышно ничего", "volume_up"),
+        ("плохо слышно", "volume_up"),
+        ("не слышно ничего сделай громче", "volume_up"),
+        ("ты слышишь я говорю пауза", "pause"),
+    ]);
+}

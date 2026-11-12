@@ -4,11 +4,11 @@ use super::library::NOW_SET;
 use crate::anchor::finite;
 use crate::lexicon::{
     self, ABOUT, AGREEMENT, ASKING, ASKING_ANOTHER, BACKWARD, CLAUSE_SUBJECTS, COMPLAINT,
-    COMPOUNDS, DEMONSTRATIVES, DENY, DESCRIBING, DOWN_WORDS, FED_UP, FIRST_PERSON, FORWARD, IDLE,
-    IN_TURN, INFINITIVE_ENDINGS, INSISTING, LISTENERS, LISTENING_STEMS, MAKING, MUSIC_STEMS,
-    NEG_STEMS, NEXT_STRONG, NOISES, NOMINATIVE, NOT_NOW, OTHERS, OWN, PLAY_STRONG, POINTS_BACK,
-    PREV_STRONG, REMARK_START, RESUME_WORDS, ROUGHLY, SILENCE, SPEAKING, STRIDES, SWEARS_AMB,
-    TASTE, THE_PAST, TO_THE_LISTENER, UP_WORDS, WAS, WHICH,
+    COMPOUNDS, DEMONSTRATIVES, DENY, DESCRIBING, DOWN_WORDS, FED_UP, FIRST_PERSON, FORWARD,
+    HEARING, IDLE, IN_TURN, INFINITIVE_ENDINGS, INSISTING, LISTENERS, LISTENING_STEMS, MAKING,
+    MUSIC_STEMS, NEG_STEMS, NEXT_STRONG, NOISES, NOMINATIVE, NOT_NOW, OTHERS, OWN, PLAY_STRONG,
+    POINTS_BACK, POORLY, PREV_STRONG, REMARK_START, RESUME_WORDS, ROUGHLY, SILENCE, SPEAKING,
+    SPEECH, STRIDES, SWEARS_AMB, TASTE, THE_PAST, TO_THE_LISTENER, UP_WORDS, WAS, WHICH,
 };
 
 pub fn sentence(c: &Ctx) -> bool {
@@ -29,6 +29,7 @@ pub fn sentence(c: &Ctx) -> bool {
         || silence_of_a_room(c)
         || plan_of_the_speaker(c)
         || voice_of_a_person(c)
+        || speech_not_heard(c)
         || carrying_on_with_something_else(c)
         || the_past(c)
 }
@@ -205,6 +206,14 @@ fn plan_for_later(c: &Ctx) -> bool {
 fn voice_of_a_person(c: &Ctx) -> bool {
     let made = c.has(MAKING);
     c.has(SPEAKING) && !c.has(PLAY_STRONG) && !made && c.w.iter().any(|w| volume_word(w))
+}
+
+fn speech_not_heard(c: &Ctx) -> bool {
+    let unheard =
+        (1..c.len()).any(|i| POORLY.contains(&c.w[i - 1]) && lexicon::stem(HEARING, c.w[i]));
+    let spoken = c.w.iter().any(|w| lexicon::stem(SPEECH, w) && finite(w));
+    let asks = c.has(PLAY_STRONG) || c.has(MAKING) || c.w.iter().any(|w| volume_word(w));
+    unheard && spoken && !asks
 }
 
 fn carrying_on_with_something_else(c: &Ctx) -> bool {
