@@ -68,8 +68,7 @@ fn before_insisting(head: &[Tok]) -> &[Tok] {
     let Some(at) = me.filter(|&at| rest[at].w == "я") else {
         return head;
     };
-    let now = !verb.w.ends_with('л') && !verb.w.ends_with("ла");
-    let again = between > 0 || now || head[..at].iter().any(|t| LISTENERS.contains(&t.w.as_str()));
+    let again = between > 0 || head[..at].iter().any(|t| LISTENERS.contains(&t.w.as_str()));
     if INSISTING.contains(&verb.w.as_str()) && again {
         &head[..at]
     } else {
