@@ -9,7 +9,9 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
     if c.has(PLAY_STRONG) && c.has(&["музыку", "музыка"]) {
         return None;
     }
-    let noun = c.pos_stem(&["громк", "звук", "volume", "vol", "sound"]);
+    let noun =
+        c.w.iter()
+            .position(|w| stem(VOL_STEMS, w) && !LOUD_ADJECTIVES.contains(w));
     let times = c.has(&["раза", "раз"]);
     let number = c.number().filter(|_| !times);
     let implicit = c.pos(&["выкрути", "выкручивай", "накрути", "выкрутить"]);

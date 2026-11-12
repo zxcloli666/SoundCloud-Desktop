@@ -47,6 +47,22 @@ pub const VOL_NOUNS: &[&str] = &[
     "sound",
 ];
 
+pub const VOL_STEMS: &[&str] = &["громк", "звук", "volume", "vol", "sound"];
+
+pub const LOUD_ADJECTIVES: &[&str] = &[
+    "громкий",
+    "громкая",
+    "громкое",
+    "громкие",
+    "громкой",
+    "громкую",
+    "громкого",
+    "громкому",
+    "громким",
+    "громких",
+    "громкими",
+];
+
 pub const ON_VERBS: &[&str] = &[
     "включи",
     "включить",

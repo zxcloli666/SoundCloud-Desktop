@@ -84,3 +84,18 @@ fn listening_planned_for_later_is_talk() {
         ("может послушаем земфиру", "play"),
     ]);
 }
+
+#[test]
+fn a_loudness_adjective_describes_a_noun_and_is_not_the_volume() {
+    stays_silent(&[
+        "мы же договорились без громкой музыки после десяти",
+        "громкая музыка мешает спать",
+        "громкий звук пугает кошку",
+    ]);
+    acts(&[
+        ("громкость 50", "volume_set"),
+        ("громкость на максимум", "volume_set"),
+        ("сделай громкость 7", "volume_set"),
+        ("звук громче", "volume_up"),
+    ]);
+}
