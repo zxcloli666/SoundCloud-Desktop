@@ -9,6 +9,8 @@ const POPULARITY_SCALE: f64 = 18.0;
 pub struct Request {
     pub variants: Vec<String>,
     pub kinds: Vec<&'static str>,
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub known: bool,
 }
 
 #[derive(Deserialize)]
@@ -41,9 +43,15 @@ pub fn request(variants: &[Variant], kinds: &[Kind]) -> Request {
             texts.push(text);
         }
     }
+    let first = texts.first();
+    let known = variants
+        .iter()
+        .filter(|v| !v.fallback && v.alias_kind.is_some())
+        .any(|v| first.is_some_and(|first| first == v.text.trim()));
     Request {
         variants: texts,
         kinds: kinds.iter().map(|k| k.name()).collect(),
+        known,
     }
 }
 
@@ -140,5 +148,43 @@ mod tests {
             vec!["земфира хочу", "земфира", "хочу", "песню"]
         );
         assert_eq!(request.kinds, vec!["artist", "track", "album", "playlist"]);
+        assert!(!request.known);
+    }
+
+    fn said(text: &str, alias_kind: Option<Kind>) -> Variant {
+        Variant {
+            text: text.into(),
+            artist: None,
+            title: None,
+            kept_fillers: false,
+            lemmatized: false,
+            fallback: false,
+            alias_kind,
+        }
+    }
+
+    #[test]
+    fn a_curated_name_asked_first_is_sent_as_known() {
+        let variants = vec![
+            said("Bruce Springsteen", Some(Kind::Artist)),
+            said("брюс спрингстин", None),
+        ];
+        let request = request(&variants, &Kind::ALL);
+        assert_eq!(request.variants[0], "Bruce Springsteen");
+        assert!(request.known);
+        let body = serde_json::to_value(&request).unwrap();
+        assert_eq!(body["known"], true);
+    }
+
+    #[test]
+    fn a_curated_name_asked_after_what_was_said_is_not_sent_as_known() {
+        let variants = vec![
+            said("намб линкин парк", None),
+            said("намб Linkin Park", Some(Kind::Artist)),
+        ];
+        let request = request(&variants, &Kind::ALL);
+        assert!(!request.known);
+        let body = serde_json::to_value(&request).unwrap();
+        assert!(body.get("known").is_none());
     }
 }
