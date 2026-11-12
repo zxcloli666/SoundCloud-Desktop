@@ -46,3 +46,28 @@ fn only_a_phrase_with_a_verb_commands() {
     assert!(!read("ало, ты тут?", &[]).commands());
     assert!(!read("скриптонит", &[]).commands());
 }
+
+#[test]
+fn a_curated_name_of_the_whole_phrase_is_asked_first() {
+    let known = [
+        ("включи тейлор свифт", "Taylor Swift"),
+        ("включи уикенд", "The Weeknd"),
+    ];
+    for (said, name) in known {
+        let lookups = read(said, &[]).lookups();
+        assert_eq!(lookups[0].variants[0].text, name, "{said}");
+    }
+}
+
+#[test]
+fn a_curated_name_of_a_part_of_the_phrase_is_asked_after_what_was_said() {
+    let lookups = read("включи линкин парк намб", &[]).lookups();
+    let asked: Vec<&str> = lookups[0]
+        .variants
+        .iter()
+        .filter(|v| !v.fallback)
+        .map(|v| v.text.as_str())
+        .collect();
+    assert_eq!(asked.first(), Some(&"линкин парк намб"), "{asked:?}");
+    assert!(asked.contains(&"намб Linkin Park"), "{asked:?}");
+}

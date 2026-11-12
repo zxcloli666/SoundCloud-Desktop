@@ -86,9 +86,8 @@ fn with_rest(v: &Variant, canonical: &str, rest: &str) -> Variant {
     )
 }
 
-fn expand_one(v: &Variant, out: &mut Vec<Variant>) {
-    let table = table();
-    for a in table.get(&fold(&v.text)).into_iter().flatten() {
+fn named_whole(v: &Variant, out: &mut Vec<Variant>) {
+    for a in table().get(&fold(&v.text)).into_iter().flatten() {
         match track_parts(&a.canonical) {
             Some((artist, title)) if a.kind != Kind::Artist => {
                 out.push(titled(v, a, artist, title))
@@ -96,6 +95,10 @@ fn expand_one(v: &Variant, out: &mut Vec<Variant>) {
             _ => out.push(aliased(v, a.kind, a.canonical.clone(), None)),
         }
     }
+}
+
+fn named_in_part(v: &Variant, out: &mut Vec<Variant>) {
+    let table = table();
     if let (Some(artist), Some(title)) = (&v.artist, &v.title) {
         for a in table.get(&fold(artist)).into_iter().flatten() {
             if a.kind == Kind::Artist {
@@ -143,17 +146,23 @@ fn disabled() -> bool {
 }
 
 pub fn expand(variants: &[Variant]) -> Vec<Variant> {
-    let mut out: Vec<Variant> = variants.to_vec();
     if disabled() {
-        return out;
+        return variants.to_vec();
     }
+    let mut whole = Vec::new();
+    let mut in_part = Vec::new();
     for v in variants.iter().filter(|v| v.alias_kind.is_none()) {
-        let mut found = Vec::new();
-        expand_one(v, &mut found);
-        for x in found {
-            if !out.contains(&x) {
-                out.push(x);
-            }
+        named_whole(v, &mut whole);
+        named_in_part(v, &mut in_part);
+    }
+    let mut out: Vec<Variant> = Vec::new();
+    for v in whole
+        .into_iter()
+        .chain(variants.iter().cloned())
+        .chain(in_part)
+    {
+        if !out.contains(&v) {
+            out.push(v);
         }
     }
     out
