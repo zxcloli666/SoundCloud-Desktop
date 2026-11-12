@@ -7,6 +7,7 @@ use crate::types::Intent;
 const BEFORE_AMOUNT: &[&str] = &["на", "до", "в", "к"];
 const SCALE_MARKS: &[&str] = &["доля", "ордин"];
 const NEXT_TRACK: &str = "дальше";
+const LOUDNESS_TURNS: &[&str] = &["up", "down"];
 const TENTHS: std::ops::RangeInclusive<u32> = 1..=10;
 const PERCENT: &str = "процентов";
 
@@ -93,11 +94,11 @@ fn places(said: &[Tok]) -> Vec<Place> {
 }
 
 fn direction(said: &[Tok], turned: Vec<Tok>) -> Option<Vec<Tok>> {
-    let rewinds = matches!(
+    let steps = matches!(
         intent::detect(said).intent,
-        Intent::SeekForward | Intent::SeekBackward
+        Intent::SeekForward | Intent::SeekBackward | Intent::VolumeUp | Intent::VolumeDown
     );
-    if !rewinds {
+    if !steps {
         return None;
     }
     let mut out: Vec<Tok> = said.iter().filter(|t| !turns(&t.w)).cloned().collect();
@@ -124,5 +125,6 @@ fn unit(w: &str) -> bool {
 }
 
 fn turns(w: &str) -> bool {
-    (FORWARD.contains(&w) || BACKWARD.contains(&w)) && w != NEXT_TRACK
+    let heading = FORWARD.contains(&w) || BACKWARD.contains(&w) || LOUDNESS_TURNS.contains(&w);
+    heading && w != NEXT_TRACK
 }

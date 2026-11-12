@@ -199,3 +199,17 @@ fn a_no_right_after_a_lone_play_verb_begins_the_name() {
     let named = parse("включи а нет погоди кино", &Names::new(&["Лоля"]));
     assert!(named[0].queries.iter().all(|q| !q.text.contains("нет")));
 }
+
+#[test]
+fn an_english_no_takes_back_the_step_before_it() {
+    acts(&[
+        ("pause no wait resume", "resume"),
+        ("volume down no up", "volume_up"),
+        ("volume up no down", "volume_down"),
+        ("turn it up no down", "volume_down"),
+        ("next no previous", "previous"),
+    ]);
+    stays_silent(&["no", "stop no wait", "pause no"]);
+    let named = parse("play no doubt", &Names::new(&["Loli"]));
+    assert!(named[0].queries.iter().any(|q| q.text == "no doubt"));
+}
