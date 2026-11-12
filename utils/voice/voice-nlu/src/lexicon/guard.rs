@@ -240,6 +240,8 @@ pub const LISTENERS: &[&str] = &["ты", "вы"];
 
 pub const TO_THE_LISTENER: &[&str] = &["тебе", "тебя", "тобой", "вам", "вас", "вами"];
 
+pub const ASKING_ANOTHER: &[&str] = &["попроси", "попросить", "попросите"];
+
 pub const ABOUT: &[&str] = &["про", "об", "обо"];
 
 pub const NOT_NOW: &[&str] = &[

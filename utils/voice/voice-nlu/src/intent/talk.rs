@@ -3,10 +3,10 @@ use super::indirect;
 use super::library::NOW_SET;
 use crate::anchor::finite;
 use crate::lexicon::{
-    self, ABOUT, AGREEMENT, ASKING, BACKWARD, CLAUSE_SUBJECTS, COMPLAINT, COMPOUNDS,
-    DEMONSTRATIVES, DENY, DESCRIBING, DOWN_WORDS, FED_UP, FIRST_PERSON, FORWARD, IDLE,
+    self, ABOUT, AGREEMENT, ASKING, ASKING_ANOTHER, BACKWARD, CLAUSE_SUBJECTS, COMPLAINT,
+    COMPOUNDS, DEMONSTRATIVES, DENY, DESCRIBING, DOWN_WORDS, FED_UP, FIRST_PERSON, FORWARD, IDLE,
     INFINITIVE_ENDINGS, INSISTING, LISTENERS, LISTENING_STEMS, MAKING, MUSIC_STEMS, NEG_STEMS,
-    NEXT_STRONG, NOISES, NOT_NOW, OTHERS, OWN, PLAY_STRONG, PREV_STRONG, REMARK_START,
+    NEXT_STRONG, NOISES, NOT_NOW, OTHERS, OWN, PLAY_STRONG, POINTS_BACK, PREV_STRONG, REMARK_START,
     RESUME_WORDS, ROUGHLY, SILENCE, SPEAKING, STRIDES, SWEARS_AMB, TASTE, THE_PAST,
     TO_THE_LISTENER, UP_WORDS, WAS, WHICH,
 };
@@ -22,6 +22,7 @@ pub fn sentence(c: &Ctx) -> bool {
         || question_with_its_own_verb(c)
         || question_to_a_person(c)
         || meant_for_someone_else(c)
+        || order_passed_on(c)
         || music_as_a_topic(c)
         || silence_of_a_room(c)
         || plan_of_the_speaker(c)
@@ -139,6 +140,16 @@ fn meant_for_someone_else(c: &Ctx) -> bool {
         .any(|i| not(i - 1) || (i >= 2 && c.w[i - 1] == "с" && not(i - 2)))
 }
 
+fn order_passed_on(c: &Ctx) -> bool {
+    (1..c.len()).any(|i| {
+        let whom = c.w[i];
+        let listener = TO_THE_LISTENER.contains(&whom);
+        let deed = command_word(whom) || infinitive(whom);
+        let third = POINTS_BACK.contains(&whom) || !(listener || deed);
+        ASKING_ANOTHER.contains(&c.w[i - 1]) && third
+    })
+}
+
 fn music_as_a_topic(c: &Ctx) -> bool {
     let asks = c.has(PLAY_STRONG) || c.w.iter().any(|w| volume_word(w));
     let named = |w: &str| command_word(w) || lexicon::stem(MUSIC_STEMS, w);
@@ -173,14 +184,17 @@ fn voice_of_a_person(c: &Ctx) -> bool {
 fn carrying_on_with_something_else(c: &Ctx) -> bool {
     (1..c.len()).any(|i| {
         let deed = c.w[i];
-        let infinitive = INFINITIVE_ENDINGS.iter().any(|e| deed.ends_with(e));
         let musical = command_word(deed) || lexicon::stem(NEG_STEMS, deed);
-        RESUME_WORDS.contains(&c.w[i - 1]) && infinitive && !musical
+        RESUME_WORDS.contains(&c.w[i - 1]) && infinitive(deed) && !musical
     })
 }
 
 fn the_past(c: &Ctx) -> bool {
     c.has(THE_PAST) && !about_music(c) && !c.has(PLAY_STRONG)
+}
+
+fn infinitive(w: &str) -> bool {
+    INFINITIVE_ENDINGS.iter().any(|e| w.ends_with(e))
 }
 
 fn own_verb(w: &str) -> bool {
