@@ -29,6 +29,7 @@ pub fn context(words: Vec<String>) -> Vec<String> {
                 "играй"
             }
             "ван" if i > 0 && words[i - 1] == "репит" => "one",
+            "ол" | "олл" if i > 0 && words[i - 1] == "репит" => "all",
             "след" if KIND_TRACK.contains(&next) => "следующий",
             "пред" if KIND_TRACK.contains(&next) => "предыдущий",
             _ => continue,

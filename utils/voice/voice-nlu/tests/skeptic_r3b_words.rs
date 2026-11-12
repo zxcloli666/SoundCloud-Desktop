@@ -255,3 +255,12 @@ fn an_unstressed_o_heard_as_a_or_a_doubled_letter_is_the_same_word() {
     ]);
     amounts(&[("громкасть на палавину", "volume_set", 50)]);
 }
+
+#[test]
+fn all_after_repeat_said_in_russian_letters_is_english() {
+    acts(&[
+        ("репит ол", "repeat_all"),
+        ("репит олл", "repeat_all"),
+        ("репит ван", "repeat_one"),
+    ]);
+}
