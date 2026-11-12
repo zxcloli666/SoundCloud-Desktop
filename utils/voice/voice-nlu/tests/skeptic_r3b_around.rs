@@ -210,8 +210,24 @@ fn an_english_no_takes_back_the_step_before_it() {
         ("next no previous", "previous"),
     ]);
     stays_silent(&["no", "stop no wait", "pause no"]);
-    let named = parse("play no doubt", &Names::new(&["Loli"]));
-    assert!(named[0].queries.iter().any(|q| q.text == "no doubt"));
+}
+
+#[test]
+fn an_english_no_inside_a_play_request_is_a_word_of_the_name() {
+    for (said, name) in [
+        ("play no doubt", "no doubt"),
+        ("включи песню no doubt", "no doubt"),
+        ("включи группу no doubt", "no doubt"),
+        ("поставь трек no scrubs", "no scrubs"),
+        ("включи no woman no cry", "no woman no cry"),
+        ("включи альбом no time to die", "no time to die"),
+        ("play no time to die", "no time to die"),
+        ("добавь в очередь no diggity", "no diggity"),
+    ] {
+        let named = parse(said, &Names::new(&["Loli"]));
+        assert_eq!(named.len(), 1, "{said}");
+        assert!(named[0].queries.iter().any(|q| q.text == name), "{said}");
+    }
 }
 
 #[test]

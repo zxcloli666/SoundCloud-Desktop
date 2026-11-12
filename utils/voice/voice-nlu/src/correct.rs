@@ -24,6 +24,7 @@ const TAKES_BACK: &[&[&str]] = &[
 const WAVERS: &[&[&str]] = &[&["хотя"], &["ой"], &["ладно"]];
 const LOOSE: &str = "лучше";
 const NO: &str = "нет";
+const ENGLISH_NO: &str = "no";
 const NOT: &str = "не";
 const INSTEAD: &str = "а";
 const NOT_INSTEAD: &[&str] = &["не", "нет", "то"];
@@ -140,6 +141,7 @@ fn versions(ws: &[String]) -> Option<Vec<Version>> {
         } else if let Some(mark) = marker(ws, i)
             .filter(|m| m.firm || opened(&cur))
             .filter(|m| !starts_a_name(&cur, ws, i, m.end))
+            .filter(|_| !word_of_a_name(&cur, &ws[i]))
         {
             found = true;
             dropping = false;
@@ -169,6 +171,11 @@ fn starts_a_name(cur: &Version, ws: &[String], at: usize, end: usize) -> bool {
     let bare_no = end == at + 1;
     let named = ws[end..].iter().all(|w| !lexicon::is_known(w));
     lone_verb && bare_no && named
+}
+
+fn word_of_a_name(cur: &Version, said: &str) -> bool {
+    let controls = || command(&toks(&cur.words)).is_some_and(|(asked, ..)| asked.is_control());
+    said == ENGLISH_NO && !cur.words.is_empty() && !controls()
 }
 
 fn opened(cur: &Version) -> bool {
