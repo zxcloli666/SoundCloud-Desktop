@@ -211,9 +211,9 @@ fn interpret_parsed(parsed: Parsed, catalog: &dyn Catalog, boosts: &Boosts, bare
         Intent::Play | Intent::QueueAdd | Intent::PlaySimilar
     ) {
         let d = resolve(&parsed, catalog, boosts, false);
-        let d = match (&d, with_kind_in_name(&parsed)) {
-            (Decision::NotFound, Some(again)) => resolve(&again, catalog, boosts, true),
-            _ => d,
+        let d = match with_kind_in_name(&parsed) {
+            Some(again) => kind_in_the_name(d, resolve(&again, catalog, boosts, true)),
+            None => d,
         };
         let sure = match &d {
             Decision::Act { pick } => pick.sim >= score::WEAK_VERB_MIN,
@@ -253,6 +253,20 @@ fn said_alone(
         }
     }
     Err(handed)
+}
+
+fn kind_in_the_name(plain: Decision, named: Decision) -> Decision {
+    let found = |d: &Decision| match d {
+        Decision::Act { pick } => pick.sim,
+        Decision::Ask { first, .. } => first.sim,
+        Decision::NotFound => 0.0,
+    };
+    let sure = found(&named) >= SPLIT_PART_MIN && found(&named) > found(&plain);
+    if matches!(plain, Decision::NotFound) || sure {
+        named
+    } else {
+        plain
+    }
 }
 
 fn with_kind_in_name(parsed: &Parsed) -> Option<Parsed> {

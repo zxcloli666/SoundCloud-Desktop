@@ -82,3 +82,16 @@ fn a_kind_word_right_before_a_command_word_keeps_it_a_name() {
     );
     assert_eq!(heard("поставь песню погромче"), ["play_wave", "volume_up"]);
 }
+
+#[test]
+fn a_title_that_starts_with_a_kind_word_wins_when_it_is_named_whole() {
+    finds(&[
+        ("включи группу крови кино", "Кино - Группа крови"),
+        (
+            "включи кукушку нет не эту а группу крови кино",
+            "Кино - Группа крови",
+        ),
+        ("включи группу кино", "Кино"),
+        ("включи песню кукушка кино", "Кино - Кукушка"),
+    ]);
+}
