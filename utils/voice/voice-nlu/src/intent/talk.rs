@@ -4,10 +4,11 @@ use super::library::NOW_SET;
 use crate::anchor::finite;
 use crate::lexicon::{
     self, ABOUT, AGREEMENT, ASKING, BACKWARD, CLAUSE_SUBJECTS, COMPLAINT, COMPOUNDS,
-    DEMONSTRATIVES, DENY, DESCRIBING, DOWN_WORDS, FED_UP, FORWARD, IDLE, INFINITIVE_ENDINGS,
-    INSISTING, LISTENERS, LISTENING_STEMS, MAKING, MUSIC_STEMS, NEG_STEMS, NEXT_STRONG, OTHERS,
-    OWN, PLAY_STRONG, PREV_STRONG, REMARK_START, RESUME_WORDS, RINGS, ROUGHLY, SILENCE, SPEAKING,
-    STRIDES, SWEARS_AMB, TASTE, THE_PAST, TO_THE_LISTENER, UP_WORDS, WAS, WHICH,
+    DEMONSTRATIVES, DENY, DESCRIBING, DOWN_WORDS, FED_UP, FIRST_PERSON, FORWARD, IDLE,
+    INFINITIVE_ENDINGS, INSISTING, LISTENERS, LISTENING_STEMS, MAKING, MUSIC_STEMS, NEG_STEMS,
+    NEXT_STRONG, NOT_NOW, OTHERS, OWN, PLAY_STRONG, PREV_STRONG, REMARK_START, RESUME_WORDS, RINGS,
+    ROUGHLY, SILENCE, SPEAKING, STRIDES, SWEARS_AMB, TASTE, THE_PAST, TO_THE_LISTENER, UP_WORDS,
+    WAS, WHICH,
 };
 
 pub fn sentence(c: &Ctx) -> bool {
@@ -149,11 +150,19 @@ fn silence_of_a_room(c: &Ctx) -> bool {
 }
 
 fn plan_of_the_speaker(c: &Ctx) -> bool {
-    let Some(at) = c.pos(&["я"]) else {
-        return false;
-    };
     let will_do = |w: &&str| (w.ends_with('у') || w.ends_with('ю')) && lexicon::stem(NEG_STEMS, w);
-    c.only_pre(0..at) && c.w[at + 1..].iter().any(will_do)
+    let mine = c
+        .pos(&["я"])
+        .is_some_and(|at| c.only_pre(0..at) && c.w[at + 1..].iter().any(will_do));
+    mine || plan_for_later(c)
+}
+
+fn plan_for_later(c: &Ctx) -> bool {
+    let ours = |w: &&str| {
+        let musical = lexicon::stem(NEG_STEMS, w) || lexicon::stem(LISTENING_STEMS, w);
+        musical && FIRST_PERSON.iter().any(|e| w.ends_with(e))
+    };
+    c.has(NOT_NOW) && c.w.iter().any(ours)
 }
 
 fn voice_of_a_person(c: &Ctx) -> bool {
