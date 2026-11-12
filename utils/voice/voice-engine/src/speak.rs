@@ -8,7 +8,7 @@ use voice_audio::routing::same_physical;
 use crate::clip::Clip;
 use crate::config::{Config, Language, SpeakMode};
 use crate::draft::Draft;
-use crate::event::{Event, State};
+use crate::event::{Event, Spoke, State};
 use crate::machine::{Core, Msg, Phase};
 use crate::pauses::{Mark, Pauses};
 use crate::speech::Speech;
@@ -18,7 +18,6 @@ use crate::{models, plain, speaker, voices};
 
 const SPEECH_INPUT: &str = "speech";
 const GRACE: Duration = Duration::from_secs(3);
-const SPARE: f32 = 0.4;
 
 pub struct Reply {
     source: Source,
@@ -31,6 +30,9 @@ pub struct Reply {
     broken: bool,
     until: Option<Instant>,
     turn: Option<String>,
+    asked: Instant,
+    first: Option<Duration>,
+    said: (usize, usize),
 }
 
 struct Line {
@@ -52,6 +54,9 @@ impl Reply {
             broken: false,
             until: None,
             turn: None,
+            asked: Instant::now(),
+            first: None,
+            said: (0, 0),
         }
     }
 
@@ -63,6 +68,8 @@ impl Reply {
             self.turn = Some(turn.to_string());
         }
         let mark = Mark::of(&text);
+        self.said.0 += 1;
+        self.said.1 += text.chars().count();
         let text = match self.source {
             Source::Qwen { .. } => plain::text(&text, self.language),
             _ => text,
@@ -90,7 +97,7 @@ impl Reply {
         let queued = self.speech.as_ref().map_or(0.0, |speech| speech.lead(now));
         let drafted = line.draft.as_ref().map_or(0.0, Draft::seconds);
         let pauses = self.pauses.get_or_insert_with(|| Pauses::new(rate));
-        let samples = pauses.push(samples, queued + drafted >= SPARE);
+        let samples = pauses.push(samples, queued + drafted);
         if samples.is_empty() {
             return false;
         }
@@ -119,6 +126,19 @@ impl Reply {
 
     fn last_sound(&mut self) -> Vec<f32> {
         self.pauses.as_mut().map(Pauses::finish).unwrap_or_default()
+    }
+
+    fn spoke(&self) -> Option<Spoke> {
+        let speech = self.speech.as_ref()?;
+        let (waited, gaps) = speech.waited();
+        Some(Spoke {
+            lines: self.said.0,
+            chars: self.said.1,
+            first: self.first?,
+            voiced: speech.voiced(),
+            waited,
+            gaps,
+        })
     }
 
     fn busy(&self, now: Instant) -> bool {
@@ -245,6 +265,7 @@ impl Core {
         self.deps.output.duck(self.config.duck);
         if let Some(reply) = self.reply.as_mut() {
             reply.speech = Some(Speech::new(r#gen, rate, feed, now));
+            reply.first = Some(now.saturating_duration_since(reply.asked));
         }
         self.emit_state(State::Speaking, None);
         Ok(())
@@ -389,8 +410,12 @@ impl Core {
         }
         self.playing = None;
         self.level(SPEECH_INPUT.into(), 0.0);
-        if self.reply.take().is_some_and(|r| !r.lines.is_empty()) {
+        let reply = self.reply.take();
+        if reply.as_ref().is_some_and(|r| !r.lines.is_empty()) {
             self.tts.forget();
+        }
+        if let Some(spoke) = reply.as_ref().and_then(Reply::spoke) {
+            self.emit(Event::Spoke(spoke));
         }
         if matches!(self.phase, Phase::Speaking) {
             self.go_idle();

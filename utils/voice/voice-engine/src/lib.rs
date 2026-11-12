@@ -49,7 +49,7 @@ pub use config::{
 };
 pub use event::{
     Ahead, CommandEvent, DecisionEvent, EntityEvent, ErrorEvent, Event, HeardEvent, LevelEvent,
-    Looked, Outcome, PartialEvent, ScoredEvent, Source, State, StateEvent, Timed, TurnEvent,
+    Looked, Outcome, PartialEvent, ScoredEvent, Source, Spoke, State, StateEvent, Timed, TurnEvent,
 };
 pub use gesture::{Press, Presses};
 pub use models::{ASR_EN, ASR_RU, VAD, hearing, required};
@@ -98,6 +98,7 @@ pub struct Timing {
     pub chat: Duration,
     pub synth: Duration,
     pub release: Duration,
+    pub opening: Duration,
 }
 
 impl Default for Timing {
@@ -111,6 +112,7 @@ impl Default for Timing {
             chat: Duration::from_secs(60),
             synth: Duration::from_secs(30),
             release: Duration::from_millis(80),
+            opening: Duration::from_millis(700),
         }
     }
 }

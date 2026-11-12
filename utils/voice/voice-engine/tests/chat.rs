@@ -67,6 +67,36 @@ impl Voice for Restarted {
     }
 }
 
+struct Halting;
+
+impl Voice for Halting {
+    fn rate(&self) -> u32 {
+        RATE
+    }
+
+    fn say(&mut self, _: &str, sink: &mut dyn Sink) -> Result<(), String> {
+        let part = |level: f32, seconds: f32| vec![level; (RATE as f32 * seconds) as usize];
+        sink.audio([part(0.5, 0.6), part(0.0005, 0.5), part(0.5, 0.6)].concat());
+        Ok(())
+    }
+}
+
+fn pause_between_words(heard: &[f32]) -> f32 {
+    let spoken = |sample: &f32| sample.abs() > 0.1;
+    let first = heard.iter().position(spoken).unwrap_or(0);
+    let mut longest = 0;
+    let mut run = 0;
+    for sample in &heard[first..] {
+        if spoken(sample) {
+            longest = longest.max(run);
+            run = 0;
+        } else {
+            run += 1;
+        }
+    }
+    longest as f32 / RATE as f32
+}
+
 fn length(text: &str) -> usize {
     text.chars().count() * PER_CHAR
 }
@@ -158,6 +188,63 @@ fn speech_starts_while_the_text_is_still_coming() {
     rig.expect_state(State::Idle);
     assert_eq!(said.list(), ["Сейчас найду.", "А потом включу."]);
     assert_eq!(streams(&rig), 1);
+}
+
+#[test]
+fn an_opening_that_comes_in_time_is_spoken_whole() {
+    let (rig, said) = speaking(timing());
+    let id = asked(&rig, Source::Button);
+    let start = "Сейчас поищу что-нибудь подходящее под настроение, подожди";
+    stream(&rig, &id, &[start, " секунду. Вот"]);
+    rig.expect_state(State::Speaking);
+    rig.done(&id, "");
+    rig.expect_state(State::Idle);
+    assert_eq!(said.list(), [&format!("{start} секунду."), "Вот"]);
+}
+
+#[test]
+fn an_opening_that_is_late_starts_with_its_first_clause() {
+    let (rig, said) = speaking(timing());
+    let id = asked(&rig, Source::Button);
+    rig.chat(&id, Chat::Open { speak: true });
+    let start = "Сейчас поищу что-нибудь подходящее под настроение, подожди";
+    rig.chat(&id, Chat::Text(start.into()));
+    rig.expect_state(State::Speaking);
+    let clause = "Сейчас поищу что-нибудь подходящее под настроение,";
+    assert_eq!(said.list(), [clause]);
+    rig.chat(&id, Chat::Text(" секунду.".into()));
+    rig.chat(&id, Chat::Close);
+    rig.done(&id, "");
+    rig.expect_state(State::Idle);
+    assert_eq!(said.list(), [clause, "подожди секунду."]);
+}
+
+#[test]
+fn the_end_of_a_spoken_reply_tells_how_the_speech_went() {
+    let (rig, _) = speaking(timing());
+    let id = asked(&rig, Source::Button);
+    stream(&rig, &id, &["Привет! Как дела у тебя?"]);
+    rig.expect_state(State::Speaking);
+    rig.done(&id, "");
+    rig.expect_state(State::Idle);
+    let spoke = rig.spoke.lock().unwrap().clone();
+    assert_eq!(spoke.len(), 1, "{spoke:?}");
+    assert_eq!((spoke[0].lines, spoke[0].chars), (2, 23));
+    let sound = (length("Привет!") + length("Как дела у тебя?")) as f32 / RATE as f32;
+    assert!((spoke[0].voiced.as_secs_f32() - sound).abs() < 0.001);
+    assert!(spoke[0].first < Duration::from_secs(2));
+}
+
+#[test]
+fn a_long_pause_of_the_voice_is_shortened_on_the_way_to_the_speaker() {
+    let rig = rig_speaking(Halting, timing());
+    let id = asked(&rig, Source::Button);
+    stream(&rig, &id, &["Раз и два."]);
+    rig.expect_state(State::Speaking);
+    rig.done(&id, "");
+    rig.expect_state(State::Idle);
+    let pause = pause_between_words(&rig.heard.samples());
+    assert!((0.2..0.3).contains(&pause), "{pause}");
 }
 
 #[test]

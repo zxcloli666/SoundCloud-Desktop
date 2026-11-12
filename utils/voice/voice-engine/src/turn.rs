@@ -19,6 +19,7 @@ pub enum Chat {
 pub struct Turn {
     pub id: String,
     splitter: Option<Splitter>,
+    late: Option<Instant>,
 }
 
 impl Core {
@@ -50,6 +51,7 @@ impl Core {
         self.turn = Some(Turn {
             id,
             splitter: speak.then(|| Splitter::new(least)),
+            late: None,
         });
         self.watch_turn();
     }
@@ -66,8 +68,30 @@ impl Core {
 
     fn turn_text(&mut self, text: &str) {
         self.watch_turn();
-        let splitter = self.turn.as_mut().and_then(|turn| turn.splitter.as_mut());
-        let sentences = splitter.map(|s| s.push(text)).unwrap_or_default();
+        let late = Instant::now() + self.deps.timing.opening;
+        let Some(turn) = self.turn.as_mut() else {
+            return;
+        };
+        let Some(splitter) = turn.splitter.as_mut() else {
+            return;
+        };
+        let sentences = splitter.push(text);
+        turn.late = turn.late.or(Some(late)).filter(|_| splitter.patient());
+        self.speak(sentences);
+    }
+
+    pub fn turn_deadline(&self) -> Option<Instant> {
+        self.turn.as_ref().and_then(|turn| turn.late)
+    }
+
+    pub fn turn_tick(&mut self, now: Instant) {
+        let late = |turn: &&mut Turn| turn.late.is_some_and(|at| now >= at);
+        let Some(turn) = self.turn.as_mut().filter(late) else {
+            return;
+        };
+        turn.late = None;
+        let splitter = turn.splitter.as_mut();
+        let sentences = splitter.map(Splitter::hurry).unwrap_or_default();
         self.speak(sentences);
     }
 

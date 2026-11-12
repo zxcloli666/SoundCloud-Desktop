@@ -162,10 +162,13 @@ impl Core {
             Phase::Listening(listen) => Some(listen.deadline(&self.deps.timing)),
             Phase::Thinking(until) | Phase::Asking(until) => Some(*until),
         };
-        [phase, self.speech_deadline(), self.release_at]
-            .into_iter()
-            .flatten()
-            .min()
+        let waits = [
+            phase,
+            self.speech_deadline(),
+            self.turn_deadline(),
+            self.release_at,
+        ];
+        waits.into_iter().flatten().min()
     }
 
     fn tick(&mut self, now: Instant) {
@@ -177,6 +180,7 @@ impl Core {
             }
         }
         self.speech_tick(now);
+        self.turn_tick(now);
         match &self.phase {
             Phase::Idle | Phase::Speaking => {}
             Phase::Listening(listen) => {

@@ -23,6 +23,7 @@ const SHORTENED: [&str; 12] = [
 pub struct Splitter {
     pending: Vec<char>,
     opening: bool,
+    late: bool,
     least: usize,
     held: String,
 }
@@ -38,6 +39,7 @@ impl Splitter {
         Splitter {
             pending: Vec::new(),
             opening: true,
+            late: false,
             least,
             held: String::new(),
         }
@@ -51,6 +53,15 @@ impl Splitter {
 
     pub fn finish(&mut self) -> Vec<String> {
         self.cut(true)
+    }
+
+    pub fn hurry(&mut self) -> Vec<String> {
+        self.late = true;
+        self.cut(false)
+    }
+
+    pub fn patient(&self) -> bool {
+        self.opening && !self.late
     }
 
     fn cut(&mut self, last: bool) -> Vec<String> {
@@ -82,7 +93,7 @@ impl Splitter {
     }
 
     fn waited(&self) -> bool {
-        self.pending.len() >= OPENING_READY && !unsettled(&self.pending)
+        self.late && self.pending.len() >= OPENING_READY && !unsettled(&self.pending)
     }
 
     fn release(&mut self) -> Option<String> {
@@ -97,7 +108,7 @@ impl Splitter {
         let text = &self.pending;
         let rest = (last && !text.is_empty()).then_some(text.len());
         let early = || {
-            (self.opening && !last)
+            (self.opening && self.late && !last)
                 .then(|| opening_clause(text))
                 .flatten()
         };
@@ -542,13 +553,14 @@ mod tests {
     }
 
     #[test]
-    fn a_short_opening_does_not_wait_longer_than_a_few_words() {
+    fn a_short_opening_that_is_late_does_not_wait_longer_than_a_few_words() {
         let mut splitter = Splitter::new(STREAMED);
         assert!(
             splitter
                 .push("Хорошо! Сейчас я подберу для тебя")
                 .is_empty()
         );
+        assert!(splitter.hurry().is_empty());
         assert_eq!(
             splitter.push(" что-нибудь, что точно понравится"),
             ["Хорошо! Сейчас я подберу для тебя что-нибудь,"]
@@ -557,10 +569,10 @@ mod tests {
         let mut splitter = Splitter::new(STREAMED);
         assert!(
             splitter
-                .push("Хорошо! Сейчас я подберу для тебя")
+                .push("Хорошо! Сейчас я подберу для тебя что-нибудь совсем особенное")
                 .is_empty()
         );
-        assert_eq!(splitter.push(" что-нибудь совсем особенное"), ["Хорошо!"]);
+        assert_eq!(splitter.hurry(), ["Хорошо!"]);
         assert_eq!(
             splitter.push(" и приятное. Вот"),
             ["Сейчас я подберу для тебя что-нибудь совсем особенное и приятное."]
@@ -584,9 +596,36 @@ mod tests {
     }
 
     #[test]
-    fn a_long_opening_sentence_starts_with_its_first_clause() {
+    fn an_opening_that_comes_in_time_is_spoken_whole() {
+        let mut splitter = Splitter::new(STREAMED);
+        assert!(splitter.patient());
+        let start = "Могу включать музыку по названию, исполнителю или настроению, ставить";
+        assert!(splitter.push(start).is_empty());
+        assert_eq!(
+            splitter.push(" на паузу и переключать треки. Ещё"),
+            [format!("{start} на паузу и переключать треки.")]
+        );
+        assert!(!splitter.patient());
+
+        let mut splitter = Splitter::new(STREAMED);
+        let start = "Хорошо! Сейчас я подберу для тебя что-нибудь совсем особенное";
+        assert!(splitter.push(start).is_empty());
+        assert_eq!(
+            splitter.push(" и приятное. Вот"),
+            [format!("{start} и приятное.")]
+        );
+    }
+
+    #[test]
+    fn a_long_opening_sentence_that_is_late_starts_with_its_first_clause() {
         let mut splitter = Splitter::new(0);
-        let early = splitter.push("Сейчас поищу что-нибудь подходящее под настроение, ");
+        assert!(
+            splitter
+                .push("Сейчас поищу что-нибудь подходящее под настроение, ")
+                .is_empty()
+        );
+        let early = splitter.hurry();
+        assert!(!splitter.patient());
         assert_eq!(
             early,
             ["Сейчас поищу что-нибудь подходящее под настроение,"]
@@ -599,13 +638,15 @@ mod tests {
     }
 
     #[test]
-    fn a_short_or_finished_opening_is_not_cut_at_a_comma() {
+    fn a_short_or_finished_opening_is_not_cut_at_a_comma_even_when_late() {
         let mut splitter = Splitter::new(0);
+        assert!(splitter.hurry().is_empty());
         assert!(splitter.push("Конечно, сейчас включу, ").is_empty());
         assert!(splitter.push("погоди.").is_empty());
         let mut splitter = Splitter::new(0);
         let done = "Сейчас поищу что-нибудь подходящее, подожди секунду.";
         assert!(splitter.push(done).is_empty());
+        assert!(splitter.hurry().is_empty());
         assert_eq!(splitter.finish(), [done]);
     }
 

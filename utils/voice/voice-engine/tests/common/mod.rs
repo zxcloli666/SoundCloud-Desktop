@@ -9,8 +9,8 @@ use std::time::{Duration, Instant};
 use voice_audio::source::{Msg, OpenFn, SourceCtx};
 use voice_audio::{Capture, CaptureError, Device, DeviceList, RefTap, Transport};
 use voice_engine::{
-    Catalog, Chat, Command, Config, Deps, Engine, Event, Output, Source, State, Stream, Timing,
-    Voice,
+    Catalog, Chat, Command, Config, Deps, Engine, Event, Output, Source, Spoke, State, Stream,
+    Timing, Voice,
 };
 use voice_models::{Fetch, FetchError, Response, Store};
 use voice_nlu::{Kind, Variant};
@@ -216,6 +216,7 @@ pub struct Rig {
     pub calls: Calls,
     pub heard: Heard,
     pub phrases: PathBuf,
+    pub spoke: Mutex<Vec<Spoke>>,
 }
 
 static RIGS: AtomicUsize = AtomicUsize::new(0);
@@ -230,6 +231,7 @@ pub fn timing() -> Timing {
         chat: Duration::from_secs(20),
         synth: Duration::from_secs(5),
         release: Duration::from_millis(80),
+        opening: Duration::from_millis(150),
     }
 }
 
@@ -308,6 +310,7 @@ fn rig_of(
         calls,
         heard,
         phrases,
+        spoke: Mutex::default(),
     }
 }
 
@@ -329,6 +332,7 @@ impl Rig {
                 Ok(Event::Level(_) | Event::Partial(_) | Event::Timed(_) | Event::Heard(_)) => {
                     continue;
                 }
+                Ok(Event::Spoke(spoke)) => self.spoke.lock().unwrap().push(spoke),
                 Ok(event) => return event,
                 Err(_) => panic!("no event in 20 s"),
             }
@@ -343,6 +347,7 @@ impl Rig {
                 Ok(Event::Level(_) | Event::Partial(_) | Event::Timed(_) | Event::Heard(_)) => {
                     continue;
                 }
+                Ok(Event::Spoke(spoke)) => self.spoke.lock().unwrap().push(spoke),
                 Ok(event) => return Some(event),
                 Err(_) => return None,
             }

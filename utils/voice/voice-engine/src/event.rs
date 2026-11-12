@@ -138,6 +138,16 @@ pub struct Timed {
 }
 
 #[derive(Clone, Debug, PartialEq)]
+pub struct Spoke {
+    pub lines: usize,
+    pub chars: usize,
+    pub first: Duration,
+    pub voiced: Duration,
+    pub waited: Duration,
+    pub gaps: u32,
+}
+
+#[derive(Clone, Debug, PartialEq)]
 pub enum Event {
     State(StateEvent),
     Level(LevelEvent),
@@ -147,6 +157,7 @@ pub enum Event {
     Cancelled(TurnEvent),
     Trouble(String),
     Timed(Timed),
+    Spoke(Spoke),
     Heard(HeardEvent),
 }
 
@@ -161,6 +172,7 @@ impl Event {
             Event::Cancelled(_) => "voice:cancelled",
             Event::Trouble(_) => "voice:trouble",
             Event::Timed(_) => "voice:timed",
+            Event::Spoke(_) => "voice:spoke",
             Event::Heard(_) => "voice:heard",
         }
     }
@@ -196,6 +208,21 @@ impl fmt::Display for Timed {
             Some(ahead) => write!(f, ", {ahead}"),
             None => Ok(()),
         }
+    }
+}
+
+impl fmt::Display for Spoke {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "speech: {} lines of {} chars, first sound after {} ms, {} ms of sound, waited {} ms in {} gaps",
+            self.lines,
+            self.chars,
+            self.first.as_millis(),
+            self.voiced.as_millis(),
+            self.waited.as_millis(),
+            self.gaps
+        )
     }
 }
 
@@ -244,6 +271,23 @@ mod tests {
         assert_eq!(
             plain.to_string(),
             "phrase: parse 0 ms, lookups 0 [], total 0 ms"
+        );
+    }
+
+    #[test]
+    fn the_speech_line_tells_the_first_sound_and_the_waits_between_lines() {
+        let ms = Duration::from_millis;
+        let spoke = Spoke {
+            lines: 3,
+            chars: 230,
+            first: ms(840),
+            voiced: ms(17250),
+            waited: ms(1310),
+            gaps: 2,
+        };
+        assert_eq!(
+            spoke.to_string(),
+            "speech: 3 lines of 230 chars, first sound after 840 ms, 17250 ms of sound, waited 1310 ms in 2 gaps"
         );
     }
 

@@ -9,6 +9,7 @@ const ATTACK: f32 = 0.02;
 const KEPT: f32 = 0.09;
 const SHARE: f32 = 0.4;
 const HELD: f32 = 2.0;
+const SPARE: f32 = 0.4;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Mark {
@@ -69,8 +70,7 @@ impl Pauses {
         self.after = self.after.filter(longer).or(Some(mark));
     }
 
-    pub fn push(&mut self, samples: Vec<f32>, spare: bool) -> Vec<f32> {
-        self.spare = spare;
+    pub fn push(&mut self, samples: Vec<f32>, ahead: f32) -> Vec<f32> {
         self.carry.extend(samples);
         let whole = self.carry.len() / self.window * self.window;
         let windows: Vec<f32> = self.carry.drain(..whole).collect();
@@ -79,6 +79,7 @@ impl Pauses {
             if quiet(window) {
                 self.rest(window, &mut out);
             } else {
+                self.spare = ahead + out.len() as f32 / self.rate >= SPARE;
                 self.sound(window, &mut out);
             }
         }
@@ -164,7 +165,7 @@ mod tests {
 
     fn speaking() -> Pauses {
         let mut pauses = Pauses::new(RATE);
-        pauses.push(loud(0.5), true);
+        pauses.push(loud(0.5), 1.0);
         pauses
     }
 
@@ -185,7 +186,7 @@ mod tests {
     fn said(pauses: &mut Pauses, parts: &[Vec<f32>]) -> Vec<f32> {
         let mut out = Vec::new();
         for part in parts {
-            out.extend(pauses.push(part.clone(), true));
+            out.extend(pauses.push(part.clone(), 1.0));
         }
         out.extend(pauses.finish());
         out
@@ -216,10 +217,10 @@ mod tests {
     fn the_pause_between_two_lines_follows_the_mark_that_ended_the_first() {
         let between = |mark| {
             let mut pauses = speaking();
-            let mut heard = pauses.push(still(0.3), true);
+            let mut heard = pauses.push(still(0.3), 1.0);
             pauses.line_ended(mark);
-            heard.extend(pauses.push(still(0.2), true));
-            heard.extend(pauses.push(loud(0.3), true));
+            heard.extend(pauses.push(still(0.2), 1.0));
+            heard.extend(pauses.push(loud(0.3), 1.0));
             silences(&heard)[0]
         };
         assert!(near(between(Mark::Sentence), 0.22));
@@ -230,10 +231,10 @@ mod tests {
     #[test]
     fn a_pause_shorter_than_its_mark_allows_is_not_made_longer() {
         let mut pauses = speaking();
-        let mut heard = pauses.push(still(0.04), true);
+        let mut heard = pauses.push(still(0.04), 1.0);
         pauses.line_ended(Mark::Sentence);
-        heard.extend(pauses.push(still(0.05), true));
-        heard.extend(pauses.push(loud(0.3), true));
+        heard.extend(pauses.push(still(0.05), 1.0));
+        heard.extend(pauses.push(loud(0.3), 1.0));
         assert!(near(silences(&heard)[0], 0.09));
     }
 
@@ -257,18 +258,30 @@ mod tests {
     #[test]
     fn pauses_stay_as_the_voice_made_them_when_no_sound_is_ready_ahead() {
         let mut pauses = Pauses::new(RATE);
-        let mut heard = pauses.push(still(0.3), false);
-        heard.extend(pauses.push(loud(0.5), false));
-        heard.extend(pauses.push(still(0.3), false));
+        let mut heard = pauses.push(still(0.3), 0.0);
+        heard.extend(pauses.push(loud(0.5), 0.0));
+        heard.extend(pauses.push(still(0.3), 0.0));
         pauses.line_ended(Mark::Clause);
-        heard.extend(pauses.push(still(0.2), false));
-        heard.extend(pauses.push(loud(0.3), false));
-        heard.extend(pauses.push(still(0.4), false));
-        heard.extend(pauses.push(loud(0.3), false));
+        heard.extend(pauses.push(still(0.2), 0.0));
+        heard.extend(pauses.push(loud(0.3), 0.0));
+        heard.extend(pauses.push(still(0.4), 0.0));
+        heard.extend(pauses.push(loud(0.3), 0.0));
         let found = silences(&heard);
         assert!(near(found[0], 0.02), "{found:?}");
         assert!(near(found[1], 0.5), "{found:?}");
         assert!(near(found[2], 0.4), "{found:?}");
+    }
+
+    #[test]
+    fn sound_that_came_in_the_same_piece_counts_as_ready_ahead() {
+        let line: Vec<f32> = [loud(0.5), still(0.49), loud(0.3)].concat();
+        let mut pauses = Pauses::new(RATE);
+        let heard = pauses.push(line.clone(), 0.0);
+        assert!(near(silences(&heard)[0], 0.25), "{:?}", silences(&heard));
+        let mut pauses = Pauses::new(RATE);
+        let mut heard = pauses.push(line[..RATE as usize / 5].to_vec(), 0.0);
+        heard.extend(pauses.push(line[RATE as usize / 5..].to_vec(), 0.0));
+        assert!(near(silences(&heard)[0], 0.49), "{:?}", silences(&heard));
     }
 
     #[test]

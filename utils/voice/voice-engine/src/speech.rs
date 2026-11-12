@@ -3,6 +3,7 @@ use std::time::{Duration, Instant};
 use crate::stream::Feed;
 
 const FRAMES: u32 = 30;
+const GAP: f32 = 0.02;
 
 pub struct Speech {
     pub r#gen: u64,
@@ -13,6 +14,9 @@ pub struct Speech {
     dry: Instant,
     tick: Option<Instant>,
     silent: bool,
+    voiced: usize,
+    waited: f32,
+    gaps: u32,
 }
 
 struct Levels {
@@ -33,6 +37,9 @@ impl Speech {
             dry: now,
             tick: None,
             silent: true,
+            voiced: 0,
+            waited: 0.0,
+            gaps: 0,
         }
     }
 
@@ -42,6 +49,11 @@ impl Speech {
         };
         let rate = self.rate.max(1) as f32;
         let gap = now.saturating_duration_since(self.dry).as_secs_f32();
+        if self.voiced > 0 && gap >= GAP {
+            self.waited += gap;
+            self.gaps += 1;
+        }
+        self.voiced += samples.len();
         self.levels.rest((gap * rate) as usize);
         self.levels.push(&samples);
         self.dry = self.dry.max(now) + Duration::from_secs_f32(samples.len() as f32 / rate);
@@ -71,6 +83,14 @@ impl Speech {
 
     pub fn tick(&self) -> Option<Instant> {
         self.tick
+    }
+
+    pub fn voiced(&self) -> Duration {
+        Duration::from_secs_f32(self.voiced as f32 / self.rate.max(1) as f32)
+    }
+
+    pub fn waited(&self) -> (Duration, u32) {
+        (Duration::from_secs_f32(self.waited), self.gaps)
     }
 
     pub fn level(&mut self, now: Instant) -> Option<f32> {

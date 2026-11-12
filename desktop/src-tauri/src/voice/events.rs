@@ -32,6 +32,10 @@ pub fn forward(app: AppHandle, events: Receiver<Event>) {
                         diagnostics::log("INFO", format!("[Voice] {timed}"));
                         Ok(())
                     }
+                    Event::Spoke(spoke) => {
+                        diagnostics::log("INFO", format!("[Voice] {spoke}"));
+                        Ok(())
+                    }
                 };
             }
         });
