@@ -77,6 +77,7 @@ const POINTERS: &[&str] = &[
     "трек",
 ];
 
+const TO_THE_ROOM: &[&str] = &["кто", "где", "мама", "папа", "мам", "пап"];
 const TOO_MUCH: &[&str] = &["слишком", "чересчур", "очень", "совсем"];
 
 const NEGATING: &[&[&str]] = &[&["а", "не"], &["только", "не"], &["но", "не"], &["и", "не"]];
@@ -224,7 +225,11 @@ fn merge(said: Vec<Tok>, version: Version) -> Vec<Tok> {
         return Vec::new();
     };
     let next = toks(after_remark(words));
-    if next.is_empty() {
+    let to_the_room = next
+        .first()
+        .is_some_and(|t| TO_THE_ROOM.contains(&t.w.as_str()));
+    let aside = to_the_room && command(&next).is_none();
+    if next.is_empty() || (aside && !version.firm) {
         return if version.firm { Vec::new() } else { said };
     }
     if next.iter().all(|t| t.w == NO) {
