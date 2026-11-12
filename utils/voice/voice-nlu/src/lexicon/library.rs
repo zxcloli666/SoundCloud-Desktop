@@ -250,6 +250,7 @@ pub const REPEAT_ALL: &[&str] = &[
     "всю",
     "весь",
     "всех",
+    "подряд",
 ];
 pub const NEGATE: &[&str] = &[
     "не",

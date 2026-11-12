@@ -205,3 +205,12 @@ fn restarting_the_track_or_playing_it_anew_goes_to_its_start() {
     ]);
     stays_silent(&["перезапусти компьютер", "перезапусти приложение"]);
 }
+
+#[test]
+fn all_in_a_row_repeats_all() {
+    acts(&[
+        ("повторяй всё подряд", "repeat_all"),
+        ("повторяй подряд", "repeat_all"),
+        ("повтори эту песню подряд", "repeat_one"),
+    ]);
+}
