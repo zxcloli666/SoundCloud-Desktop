@@ -120,3 +120,21 @@ fn a_name_glued_to_a_command_or_started_twice_is_still_the_name() {
     let kept = parse("включи лолиту", &Names::new(&["Лоля"]));
     assert!(kept[0].queries.iter().any(|q| q.text == "лолиту"));
 }
+
+#[test]
+fn a_rude_word_inside_a_command_only_stresses_it() {
+    acts(&[
+        ("нахрен следующий", "next"),
+        ("тише ппц", "volume_down"),
+        ("давай мля следующий трек", "next"),
+        ("заебал этот трек следующий", "next"),
+        ("достала эта песня следующая", "next"),
+    ]);
+    stays_silent(&[
+        "нахрен следующий урок",
+        "заебал этот сосед следующий",
+        "надоел этот урок следующий",
+        "ппц",
+        "мля",
+    ]);
+}
