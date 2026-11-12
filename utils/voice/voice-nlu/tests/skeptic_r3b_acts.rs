@@ -112,3 +112,13 @@ fn a_mute_verb_with_an_object_that_is_not_the_music_is_about_something_else() {
         ("заглуши на минуту", "mute"),
     ]);
 }
+
+#[test]
+fn a_direction_word_after_not_is_denied() {
+    stays_silent(&["не смотри назад", "не назад", "не вперед", "не дальше"]);
+    acts(&[
+        ("назад", "previous"),
+        ("не назад а вперед", "next"),
+        ("перемотай назад", "seek_backward"),
+    ]);
+}

@@ -2,8 +2,8 @@ use super::ctx::Ctx;
 use super::indirect;
 use super::talk;
 use crate::lexicon::{
-    self, ABOUT_OWN_WORDS, ADDRESSEES, AFTER_ABSENT, BEFORE_ABSENT, DENY, IMPERATIVES, LONE_VERBS,
-    NEG_FOLLOW, NEG_STEMS, PLAY_STRONG, REMARK_START, REPORT, SUBJECTS,
+    self, ABOUT_OWN_WORDS, ADDRESSEES, AFTER_ABSENT, BACKWARD, BEFORE_ABSENT, DENY, FORWARD,
+    IMPERATIVES, LONE_VERBS, NEG_FOLLOW, NEG_STEMS, PLAY_STRONG, REMARK_START, REPORT, SUBJECTS,
 };
 use crate::normalize::Tok;
 use crate::types::Intent;
@@ -15,7 +15,8 @@ pub enum Negation {
 }
 
 fn negated_verb(w: &str) -> bool {
-    NEG_FOLLOW.contains(&w) || PLAY_STRONG.contains(&w) || lexicon::stem(NEG_STEMS, w)
+    let heading = FORWARD.contains(&w) || BACKWARD.contains(&w);
+    heading || NEG_FOLLOW.contains(&w) || PLAY_STRONG.contains(&w) || lexicon::stem(NEG_STEMS, w)
 }
 
 pub fn lyric(toks: &[Tok]) -> bool {
