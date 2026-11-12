@@ -340,3 +340,16 @@ fn a_nudge_to_the_listener_after_a_command_word_only_hurries_it() {
         "тише что ты орешь",
     ]);
 }
+
+#[test]
+fn a_kind_word_to_the_listener_after_a_command_is_only_an_address() {
+    acts(&[
+        ("давай другую песню милая", "next"),
+        ("следующую милая", "next"),
+        ("пауза дорогая", "pause"),
+        ("сделай потише милая", "volume_down"),
+    ]);
+    stays_silent(&["милая моя", "мама дорогая", "тише милая", "громче дорогая"]);
+    let titled = parse("включи песню милая", &Names::new(&["Лоля"]));
+    assert!(titled[0].queries.iter().any(|q| q.text.contains("милая")));
+}

@@ -2,9 +2,9 @@ use super::ctx::Ctx;
 use super::indirect;
 use super::talk;
 use crate::lexicon::{
-    self, ABOUT_OWN_WORDS, ADDRESSEES, AFTER_ABSENT, BACKWARD, BEFORE_ABSENT, DENY, FORWARD,
-    IMPERATIVES, LONE_VERBS, NEG_FOLLOW, NEG_STEMS, OBJECT_VERBS, PLAY_STRONG, REMARK_START,
-    REPORT, SUBJECTS,
+    self, ABOUT_OWN_WORDS, ADDRESSEES, AFTER_ABSENT, BACKWARD, BEFORE_ABSENT, DENY, DOWN_WORDS,
+    ENDEARMENTS, FORWARD, IMPERATIVES, LONE_VERBS, NEG_FOLLOW, NEG_STEMS, OBJECT_VERBS,
+    PLAY_STRONG, REMARK_START, REPORT, SUBJECTS, UP_WORDS,
 };
 use crate::normalize::Tok;
 use crate::types::Intent;
@@ -107,14 +107,25 @@ fn same_ask(toks: &[Tok], k: usize) -> bool {
 }
 
 fn started(toks: &[Tok]) -> Option<usize> {
-    (1..toks.len().saturating_sub(1))
-        .filter(|&k| REMARK_START.contains(&toks[k].w.as_str()) && !listener(toks, k))
+    let opens = |k: usize| {
+        let inside = k + 1 < toks.len();
+        let remark = REMARK_START.contains(&toks[k].w.as_str()) && inside && !listener(toks, k);
+        remark || addressed(toks, k)
+    };
+    (1..toks.len())
+        .filter(|&k| opens(k))
         .filter(|&k| {
             toks[..k]
                 .iter()
                 .all(|t| !REMARK_START.contains(&t.w.as_str()))
         })
         .find(|&k| cuttable(toks, k))
+}
+
+fn addressed(toks: &[Tok], k: usize) -> bool {
+    let hushing = matches!(&toks[..k], [t] if UP_WORDS.contains(&t.w.as_str()) || DOWN_WORDS.contains(&t.w.as_str()));
+    let commanded = super::detect(&toks[..k]).intent.is_control();
+    ENDEARMENTS.contains(&toks[k].w.as_str()) && commanded && !hushing
 }
 
 fn listener(toks: &[Tok], k: usize) -> bool {
