@@ -1,12 +1,19 @@
 use crate::intent;
 use crate::lexicon::{
     self, ADD_WORDS, ARTIST_MARKERS, GREETINGS, NAME_FORMS, OBJECT_VERBS, PLAY_STRONG, PLAY_WEAK,
-    PRE,
+    PRE, REPORT,
 };
 use crate::normalize::{Tok, normalize};
 use crate::slots::kind_of;
+use crate::types::Intent;
 
 const GLUED_FROM: usize = 4;
+
+struct Heard {
+    kept: Vec<Tok>,
+    doubt: bool,
+    turned: Option<usize>,
+}
 
 #[derive(Debug, Default)]
 pub struct Names {
@@ -31,23 +38,31 @@ impl Names {
     }
 
     pub fn in_doubt(&self, text: &str) -> bool {
-        self.split(normalize(text).toks).1
+        self.split(normalize(text).toks).doubt
     }
 
     pub(crate) fn drop(&self, toks: Vec<Tok>) -> Vec<Tok> {
-        self.split(toks).0
+        let Heard { kept, turned, .. } = self.split(toks);
+        match turned {
+            Some(at) if at > 0 && aside(&kept[..at]) => kept[at..].to_vec(),
+            _ => kept,
+        }
     }
 
-    fn split(&self, toks: Vec<Tok>) -> (Vec<Tok>, bool) {
+    fn split(&self, toks: Vec<Tok>) -> Heard {
         let toks = self.unglued(toks);
         let mut kept: Vec<Tok> = Vec::with_capacity(toks.len());
         let mut doubt = false;
+        let mut turned = None;
         let mut at = 0;
         while at < toks.len() {
             match self.starts(&toks[at..]) {
                 Some(len) if !object(&kept) || self.calls(&kept, &toks[at..at + len]) => {
                     at += len;
                     doubt |= !verb_next(&toks[at..]);
+                    if ordered(&toks[at..]) {
+                        turned = Some(kept.len());
+                    }
                 }
                 _ => {
                     kept.push(toks[at].clone());
@@ -55,7 +70,11 @@ impl Names {
                 }
             }
         }
-        (kept, doubt)
+        Heard {
+            kept,
+            doubt,
+            turned,
+        }
     }
 
     fn unglued(&self, toks: Vec<Tok>) -> Vec<Tok> {
@@ -143,6 +162,16 @@ fn named_before_verb(before: &[Tok]) -> bool {
     let front = &before[..at];
     let named = front.iter().any(|t| !PRE.contains(&t.w.as_str()));
     commands(&before[at].w) && named && !front.iter().any(|t| commands(&t.w))
+}
+
+fn ordered(after: &[Tok]) -> bool {
+    let next = after.iter().find(|t| !soft(t));
+    next.is_some_and(|t| intent::orders(&t.w) || PLAY_STRONG.contains(&t.w.as_str()))
+}
+
+fn aside(before: &[Tok]) -> bool {
+    let retold = before.iter().any(|t| REPORT.contains(&t.w.as_str()));
+    !retold && intent::detect(before).intent == Intent::None
 }
 
 fn verb_next(after: &[Tok]) -> bool {

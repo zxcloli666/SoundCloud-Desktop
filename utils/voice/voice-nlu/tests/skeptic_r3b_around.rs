@@ -244,3 +244,21 @@ fn a_remark_after_a_command_that_has_its_object_is_a_remark() {
         "поставь чайник гости пришли",
     ]);
 }
+
+#[test]
+fn the_name_said_before_an_order_turns_the_speech_to_the_listener() {
+    acts(&[
+        ("тише тише дети лоля сделай потише", "volume_down"),
+        ("слушай я потом тебе перезвоню Лоля выключи музыку", "stop"),
+        ("дети идите спать лоля выключи музыку", "stop"),
+        ("выключи свет лоля включи музыку", "play_wave"),
+    ]);
+    stays_silent(&[
+        "мама сказала лоля выключи музыку",
+        "дети тише лоля спит",
+        "я лоле сказала выключи",
+        "Лоля это не тебе я с мамой разговариваю",
+    ]);
+    let kept = parse("включи кино лоля сделай погромче", &Names::new(&["Лоля"]));
+    assert!(kept[0].queries.iter().any(|q| q.text.contains("кино")));
+}
