@@ -122,3 +122,17 @@ fn a_direction_word_after_not_is_denied() {
         ("перемотай назад", "seek_backward"),
     ]);
 }
+
+#[test]
+fn me_right_after_a_command_verb_is_who_it_is_for_not_a_remark() {
+    stays_silent(&[
+        "выключи мне телевизор",
+        "перемотай мне кассету в телевизоре",
+    ]);
+    acts(&[
+        ("выключи мне музыку", "stop"),
+        ("перемотай мне на минуту вперед", "seek_forward"),
+        ("перемотай мне", "seek_forward"),
+        ("выключи я сплю", "stop"),
+    ]);
+}

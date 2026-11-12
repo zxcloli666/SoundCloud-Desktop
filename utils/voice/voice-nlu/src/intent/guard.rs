@@ -3,7 +3,8 @@ use super::indirect;
 use super::talk;
 use crate::lexicon::{
     self, ABOUT_OWN_WORDS, ADDRESSEES, AFTER_ABSENT, BACKWARD, BEFORE_ABSENT, DENY, FORWARD,
-    IMPERATIVES, LONE_VERBS, NEG_FOLLOW, NEG_STEMS, PLAY_STRONG, REMARK_START, REPORT, SUBJECTS,
+    IMPERATIVES, LONE_VERBS, NEG_FOLLOW, NEG_STEMS, OBJECT_VERBS, PLAY_STRONG, REMARK_START,
+    REPORT, SUBJECTS,
 };
 use crate::normalize::Tok;
 use crate::types::Intent;
@@ -112,7 +113,9 @@ fn started(toks: &[Tok]) -> Option<usize> {
 }
 
 fn listener(toks: &[Tok], k: usize) -> bool {
-    matches!(toks[k].w.as_str(), "мне" | "нам") && PLAY_STRONG.contains(&toks[k - 1].w.as_str())
+    let verb = toks[k - 1].w.as_str();
+    let commanded = PLAY_STRONG.contains(&verb) || OBJECT_VERBS.contains(&verb);
+    matches!(toks[k].w.as_str(), "мне" | "нам") && commanded
 }
 
 fn reasoned(toks: &[Tok]) -> Option<usize> {
