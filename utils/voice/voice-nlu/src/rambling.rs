@@ -98,8 +98,10 @@ fn talk(head: &[Tok], command_follows: bool) -> bool {
 fn statement(head: &[Tok], command_follows: bool) -> bool {
     let about = |w: &str| REMARK_START.contains(&w) || matches!(w, "ты" | "этот" | "эту");
     let told = |w: &str| command_follows && anchor::finite(w);
-    head.iter()
-        .any(|t| about(&t.w) || calls(&t.w) || told(&t.w))
+    let said = head
+        .iter()
+        .any(|t| about(&t.w) || calls(&t.w) || told(&t.w));
+    said || intent::indirect_hit(head)
 }
 
 fn calls(w: &str) -> bool {
@@ -147,7 +149,8 @@ fn listening(head: &[Tok]) -> bool {
 fn complained(head: &[Tok], asked: Intent) -> bool {
     let foreign = |t: &Tok| !(lexicon::is_known(&t.w) || calls(&t.w));
     let tired = fed_up(head) && (asked == Intent::Next || !head.iter().any(foreign));
-    tired || had_enough(head) || head.iter().any(player)
+    let same = intent::indirect_hit(head) && intent::detect(head).intent == asked;
+    tired || same || had_enough(head) || head.iter().any(player)
 }
 
 fn specific(said: &[Tok]) -> bool {

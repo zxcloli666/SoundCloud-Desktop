@@ -213,3 +213,19 @@ fn an_english_no_takes_back_the_step_before_it() {
     let named = parse("play no doubt", &Names::new(&["Loli"]));
     assert!(named[0].queries.iter().any(|q| q.text == "no doubt"));
 }
+
+#[test]
+fn a_complaint_said_before_a_command_that_fixes_it_is_its_reason() {
+    acts(&[
+        ("не слышно ничего сделай громче", "volume_up"),
+        ("я не слышу вообще ничего прибавь", "volume_up"),
+        ("ой что то не слышно сделай громкость побольше", "volume_up"),
+        ("не слышно сделай тише", "volume_down"),
+    ]);
+    stays_silent(&[
+        "я не слышу маму выключи",
+        "не слышно включи свет",
+        "не слышно сделай потише телевизор",
+        "не слышно что ты говоришь сделай потише",
+    ]);
+}
