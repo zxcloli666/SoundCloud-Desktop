@@ -130,3 +130,20 @@ fn the_speaker_saying_they_said_a_command_word_and_nothing_more_insists_on_it() 
         "я лоле сказала пауза",
     ]);
 }
+
+#[test]
+fn a_pet_name_after_a_command_is_only_an_address() {
+    acts(&[
+        ("пауза зайка", "pause"),
+        ("следующую солнышко", "next"),
+        ("стоп котик", "stop"),
+    ]);
+    stays_silent(&["зайка", "тише зайка", "солнышко моё"]);
+    let titled = parse("включи песню солнышко", &Names::new(&["Лоля"]));
+    assert!(
+        titled[0]
+            .queries
+            .iter()
+            .any(|q| q.text.contains("солнышко"))
+    );
+}
