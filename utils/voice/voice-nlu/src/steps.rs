@@ -327,6 +327,9 @@ fn collapse(steps: Vec<Parsed>) -> Vec<Parsed> {
         if p.intent == Intent::Play && out.last().is_some_and(|l| replaced(l.intent)) {
             out.pop();
         }
+        if p.intent == Intent::Undo && out.last().is_some_and(|l| l.intent == Intent::Next) {
+            out.pop();
+        }
         if let Some(last) = out.last() {
             if matches!(last.intent, Intent::ShuffleOff | Intent::RepeatOff) && !own_verb(&p) {
                 if let Some(off) = off_form(p.intent) {

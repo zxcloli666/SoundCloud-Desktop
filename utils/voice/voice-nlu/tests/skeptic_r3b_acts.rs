@@ -278,3 +278,12 @@ fn a_command_taken_back_with_undo_in_the_same_breath_does_nothing() {
         ("верни как было", "undo"),
     ]);
 }
+
+#[test]
+fn a_complaint_said_before_undo_is_its_reason_and_not_a_step() {
+    acts(&[
+        ("ой не то не то верни как было", "undo"),
+        ("опять ты не то включила верни как было", "undo"),
+        ("опять ты не то включила", "next"),
+    ]);
+}
