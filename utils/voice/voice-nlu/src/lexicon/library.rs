@@ -236,6 +236,7 @@ pub const REPEAT_WORDS: &[&str] = &[
     "повтора",
     "повтарять",
 ];
+pub const PRESENT_ENDINGS: &[&str] = &["ешь", "ет", "ете", "ют", "ется", "ются"];
 pub const REPEAT_ALL: &[&str] = &[
     "все",
     "всё",

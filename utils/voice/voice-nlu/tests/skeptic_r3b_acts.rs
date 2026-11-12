@@ -146,3 +146,20 @@ fn a_tape_recorder_is_a_device_of_its_own() {
     ]);
     acts(&[("включи мотылька", "play"), ("включи видеоклипы", "play")]);
 }
+
+#[test]
+fn a_verb_of_repeating_in_the_present_tells_what_happens() {
+    stays_silent(&[
+        "ты повторяешь одно и то же",
+        "она всё время повторяет",
+        "опять повторяется",
+    ]);
+    acts(&[
+        ("повтори", "repeat_one"),
+        ("повторишь", "repeat_one"),
+        ("повторяй", "repeat_one"),
+        ("на повтор", "repeat_one"),
+        ("повторить", "repeat_one"),
+        ("не повторяй", "repeat_off"),
+    ]);
+}

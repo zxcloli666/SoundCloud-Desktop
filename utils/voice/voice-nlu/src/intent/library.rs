@@ -269,7 +269,11 @@ pub fn repeat(c: &Ctx) -> Option<Detected> {
     let circle = |w: &str| matches!(w, "по" | "кругу");
     let round =
         c.has(&["по"]) && c.has(&["кругу"]) && c.w.iter().any(|w| !circle(w) && !PRE.contains(w));
-    let word = c.has(REPEAT_WORDS) || c.has_stem(&["повтор", "повтар", "зацикл"]);
+    let asked = |w: &&str| {
+        let told = PRESENT_ENDINGS.iter().any(|e| w.ends_with(e));
+        stem(&["повтор", "повтар", "зацикл"], w) && !told
+    };
+    let word = c.has(REPEAT_WORDS) || c.w.iter().any(asked);
     if !word && !round {
         return None;
     }
