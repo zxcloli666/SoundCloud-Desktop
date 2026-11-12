@@ -249,6 +249,7 @@ pub const REPEAT_ALL: &[&str] = &[
     "всего",
     "всю",
     "весь",
+    "всех",
 ];
 pub const NEGATE: &[&str] = &[
     "не",

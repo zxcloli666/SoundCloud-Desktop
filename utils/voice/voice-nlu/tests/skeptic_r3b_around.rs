@@ -138,3 +138,13 @@ fn a_rude_word_inside_a_command_only_stresses_it() {
         "мля",
     ]);
 }
+
+#[test]
+fn a_repeat_of_all_of_them_repeats_all() {
+    acts(&[
+        ("повтор всех", "repeat_all"),
+        ("поставь на повтор всех", "repeat_all"),
+        ("повтор одного трека нет повтор всех", "repeat_all"),
+    ]);
+    stays_silent(&["всех", "мы повторим для всех", "повторяй за всеми"]);
+}
