@@ -1,4 +1,4 @@
-use crate::lexicon::{self, ENGLISH_LOANS, FILLERS, KIND_TRACK, PAUSE_WORDS, PRE, STOP_WORDS};
+use crate::lexicon::{self, ENGLISH_LOANS, FILLERS, KIND_TRACK, PRE};
 
 const GLUE_VERBS: &[&str] = &["включи", "вруби", "поставь", "запусти", "сыграй"];
 const GLUED_FROM: usize = 4;
@@ -115,7 +115,6 @@ fn run_together(w: &str) -> Option<(&str, &str)> {
 }
 
 pub fn stutter(words: Vec<String>) -> Vec<String> {
-    let words = insistence(words);
     let mut out = Vec::new();
     for i in 0..words.len() {
         let w = &words[i];
@@ -131,17 +130,6 @@ pub fn stutter(words: Vec<String>) -> Vec<String> {
             });
         if !cut {
             out.push(w.clone());
-        }
-    }
-    out
-}
-
-fn insistence(words: Vec<String>) -> Vec<String> {
-    let mut out: Vec<String> = Vec::new();
-    for w in words {
-        let halting = STOP_WORDS.contains(&w.as_str()) || PAUSE_WORDS.contains(&w.as_str());
-        if !halting || out.last() != Some(&w) {
-            out.push(w);
         }
     }
     out

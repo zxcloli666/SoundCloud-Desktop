@@ -1,6 +1,7 @@
 use crate::lexicon::{
-    self, COMPLAINT, DEMONSTRATIVES, DROP_PHRASES, MERGE_PHRASES, MUSIC_STEMS, MUTE_WORDS,
-    PLAY_STRONG, STOP_WORDS, SWEARS_AMB,
+    self, COMPLAINT, DEMONSTRATIVES, DOWN_WORDS, DROP_PHRASES, MERGE_PHRASES, MUSIC_STEMS,
+    MUTE_WORDS, NEXT_STRONG, PAUSE_WORDS, PLAY_STRONG, PREV_STRONG, STOP_WORDS, SWEARS_AMB,
+    UP_WORDS,
 };
 use crate::numbers;
 use crate::repair;
@@ -207,11 +208,22 @@ fn dedupe(words: Vec<String>) -> Vec<String> {
             j += 1;
         }
         let alpha = words[i].chars().all(char::is_alphabetic) && words[i].chars().count() >= 4;
-        let keep = if j - i == 2 && alpha { 1 } else { j - i };
+        let keep = if (j - i == 2 && alpha) || insisted(&words[i]) {
+            1
+        } else {
+            j - i
+        };
         out.extend(std::iter::repeat_n(words[i].clone(), keep));
         i = j;
     }
     out
+}
+
+fn insisted(w: &str) -> bool {
+    let whole_command = [STOP_WORDS, PAUSE_WORDS, UP_WORDS, DOWN_WORDS]
+        .iter()
+        .any(|list| list.contains(&w));
+    whole_command || lexicon::stem(NEXT_STRONG, w) || lexicon::stem(PREV_STRONG, w)
 }
 
 fn drop_swears(words: Vec<String>) -> Vec<String> {

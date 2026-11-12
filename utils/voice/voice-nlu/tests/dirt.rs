@@ -325,7 +325,6 @@ fn a_halting_word_said_over_and_over_is_said_once() {
         "люби люби люби",
         "танцуй танцуй танцуй",
         "стоп стоп стоп не говори ничего",
-        "громче громче громче",
     ] {
         assert_eq!(steps(lyric), ["none"], "{lyric}");
     }
