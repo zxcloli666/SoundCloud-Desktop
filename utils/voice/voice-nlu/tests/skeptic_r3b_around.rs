@@ -181,3 +181,21 @@ fn saying_the_step_taken_back_was_too_much_is_the_reason_for_the_new_one() {
         "потише нет это слишком",
     ]);
 }
+
+#[test]
+fn a_no_right_after_a_lone_play_verb_begins_the_name() {
+    let heard = parse("включи нет выхода", &Names::new(&["Лоля"]));
+    assert!(
+        heard[0]
+            .queries
+            .iter()
+            .any(|q| q.text.contains("нет выхода"))
+    );
+    acts(&[
+        ("включи нет лучше поставь на паузу", "pause"),
+        ("включи нет выключи", "stop"),
+    ]);
+    stays_silent(&["включи нет ладно", "включи нет не надо"]);
+    let named = parse("включи а нет погоди кино", &Names::new(&["Лоля"]));
+    assert!(named[0].queries.iter().all(|q| !q.text.contains("нет")));
+}

@@ -1,5 +1,7 @@
 use crate::intent;
-use crate::lexicon::{self, CORRECTION_NOISE, DROP_PHRASES, FILLERS, GENERIC, MERGE_PHRASES, PRE};
+use crate::lexicon::{
+    self, CORRECTION_NOISE, DROP_PHRASES, FILLERS, GENERIC, MERGE_PHRASES, PLAY_STRONG, PRE,
+};
 use crate::normalize::{Tok, normalize, words};
 use crate::numbers;
 use crate::reworded;
@@ -133,7 +135,10 @@ fn versions(ws: &[String]) -> Option<Vec<Version>> {
             if cur.words.iter().all(|w| SAYING.contains(&w.as_str())) {
                 cur.words.clear();
             }
-        } else if let Some(mark) = marker(ws, i).filter(|m| m.firm || opened(&cur)) {
+        } else if let Some(mark) = marker(ws, i)
+            .filter(|m| m.firm || opened(&cur))
+            .filter(|m| !starts_a_name(&cur, ws, i, m.end))
+        {
             found = true;
             dropping = false;
             let next = Version {
@@ -155,6 +160,13 @@ fn versions(ws: &[String]) -> Option<Vec<Version>> {
     }
     said.push(cur);
     found.then_some(said)
+}
+
+fn starts_a_name(cur: &Version, ws: &[String], at: usize, end: usize) -> bool {
+    let lone_verb = matches!(cur.words.as_slice(), [w] if PLAY_STRONG.contains(&w.as_str()));
+    let bare_no = end == at + 1;
+    let named = ws[end..].iter().all(|w| !lexicon::is_known(w));
+    lone_verb && bare_no && named
 }
 
 fn opened(cur: &Version) -> bool {
