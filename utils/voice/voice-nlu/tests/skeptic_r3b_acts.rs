@@ -99,3 +99,16 @@ fn a_loudness_adjective_describes_a_noun_and_is_not_the_volume() {
         ("звук громче", "volume_up"),
     ]);
 }
+
+#[test]
+fn a_mute_verb_with_an_object_that_is_not_the_music_is_about_something_else() {
+    stays_silent(&["заглуши мотор", "заглуши двигатель", "заглуши машину"]);
+    acts(&[
+        ("заглуши", "mute"),
+        ("заглуши музыку", "mute"),
+        ("заглуши звук", "mute"),
+        ("заглуши эту песню", "mute"),
+        ("заглуши его", "mute"),
+        ("заглуши на минуту", "mute"),
+    ]);
+}

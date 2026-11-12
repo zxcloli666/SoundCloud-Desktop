@@ -66,8 +66,13 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
     if c.has(&["unmute"]) {
         return Some(Detected::new(Intent::Unmute, vec![]));
     }
-    if c.has(MUTE_WORDS) {
-        return Some(Detected::new(Intent::Mute, vec![]));
+    if let Some(m) = c.pos(MUTE_WORDS) {
+        let mut said = vec![m];
+        said.extend(noun);
+        said.extend(super::seek::wait(c));
+        if c.stray(&said) == 0 {
+            return Some(Detected::new(Intent::Mute, vec![]));
+        }
     }
     if c.has(&["без"]) && c.has_stem(&["звук"]) {
         return Some(Detected::new(Intent::Mute, vec![]));
