@@ -136,3 +136,13 @@ fn me_right_after_a_command_verb_is_who_it_is_for_not_a_remark() {
         ("выключи я сплю", "stop"),
     ]);
 }
+
+#[test]
+fn a_tape_recorder_is_a_device_of_its_own() {
+    stays_silent(&[
+        "перемотай мне плёнку в видеомагнитофоне",
+        "включи магнитофон",
+        "перемотай кассету в видике",
+    ]);
+    acts(&[("включи мотылька", "play"), ("включи видеоклипы", "play")]);
+}
