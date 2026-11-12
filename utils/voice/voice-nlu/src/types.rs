@@ -151,6 +151,8 @@ pub struct Parsed {
     pub normalized: String,
     pub bare: bool,
     pub weak_verb: bool,
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub talk: bool,
     pub fraction: Option<f32>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub alt: Vec<Variant>,

@@ -56,10 +56,12 @@ pub fn parse(text: &str, names: &Names) -> Vec<Parsed> {
     let raw = crate::normalize::words(text_in);
     let repeated = raw.windows(2).any(|p| p[0] == p[1]);
     if whole.intent == Intent::None {
-        if repeated || correct::denies(text_in) {
+        let denied = correct::denies(text_in);
+        if repeated || denied {
             whole.bare = false;
             whole.queries.clear();
         }
+        whole.talk |= denied;
         match juxtaposed(toks, text) {
             Some(steps) if steps.len() <= MAX_STEPS => return collapse(steps),
             _ => {}
