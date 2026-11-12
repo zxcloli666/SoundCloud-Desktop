@@ -117,7 +117,7 @@ pub(crate) fn parse_toks(text: &str, mut toks: Vec<Tok>) -> (Parsed, bool) {
         queries
     };
     let whole = if cut {
-        whole_name(&original)
+        beyond_the_command(whole_name(&original), &toks)
     } else if det.intent == Intent::Resume {
         of_any_kind(greeting(&toks))
     } else {
@@ -167,6 +167,17 @@ pub(crate) fn whole_name(toks: &[Tok]) -> Reading {
         queries: variants::expand(&s.raw, false),
         kind_hint: s.kind_hint,
     }
+}
+
+fn beyond_the_command(whole: Reading, window: &[Tok]) -> Reading {
+    let said: Vec<&str> = window.iter().map(|t| t.w.as_str()).collect();
+    let said = said.join(" ");
+    let plain = whole.queries.iter().filter(|q| !q.kept_fillers);
+    let named = whole.kind_hint.is_some();
+    if !named && plain.clone().count() > 0 && plain.into_iter().all(|q| q.text == said) {
+        return of_any_kind(Vec::new());
+    }
+    whole
 }
 
 fn of_any_kind(queries: Vec<Variant>) -> Reading {

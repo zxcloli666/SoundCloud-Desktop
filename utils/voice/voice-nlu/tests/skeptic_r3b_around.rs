@@ -308,3 +308,19 @@ fn mom_called_by_her_short_name_is_someone_else_like_mom() {
     ]);
     stays_silent(&["мам сделай потише", "мам выключи телевизор", "мам пауза"]);
 }
+
+#[test]
+fn a_name_reading_that_keeps_only_the_command_word_is_the_command() {
+    let names = Names::new(&["Лоля"]);
+    for text in [
+        "дальше не эту",
+        "дальше дальше не эту",
+        "пауза ну пожалуйста",
+    ] {
+        let p = &parse(text, &names)[0];
+        assert!(p.intent.is_control(), "{text}");
+        assert!(p.alt.is_empty(), "{text}");
+    }
+    let named = &parse("группу стоп", &names)[0];
+    assert!(named.alt.iter().any(|q| q.text == "стоп"));
+}
