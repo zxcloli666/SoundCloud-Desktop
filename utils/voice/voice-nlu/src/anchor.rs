@@ -1,5 +1,7 @@
 use crate::intent::{self, Detected};
-use crate::lexicon::{self, BLOCK_HEAD, BLOCK_TAIL, DENY, OBJECT_VERBS, PLAY_STRONG, TAIL_REMARK};
+use crate::lexicon::{
+    self, BLOCK_HEAD, BLOCK_TAIL, DENY, OBJECT_VERBS, PLAY_STRONG, PLAYER, TAIL_REMARK,
+};
 use crate::normalize::Tok;
 use crate::types::Intent;
 
@@ -80,6 +82,7 @@ pub fn remark_after(tail: &[Tok], window: &[Tok]) -> bool {
     }
     let transitive = window.iter().any(|t| OBJECT_VERBS.contains(&t.w.as_str()));
     let denied = transitive && tail.iter().any(|t| DENY.contains(&t.w.as_str()));
+    let object = window.iter().any(|t| lexicon::stem(PLAYER, &t.w));
     if denied
         || tail
             .iter()
@@ -92,7 +95,7 @@ pub fn remark_after(tail: &[Tok], window: &[Tok]) -> bool {
     }
     let praise = tail.len() >= 2 && lexicon::KIND_TRACK.contains(&last_tail.w.as_str());
     let finite = tail.len() >= 2 && finite(&last_tail.w);
-    praise || (finite && !transitive)
+    praise || (finite && (!transitive || object))
 }
 
 pub fn find(toks: &[Tok]) -> Option<Found> {
