@@ -252,3 +252,60 @@ fn the_hits_reach_the_ui_as_entities_and_are_left_out_when_there_are_none() {
     assert_eq!(plain["intent"], "none");
     assert!(plain.get("candidates").is_none());
 }
+
+fn reread(rig: &Rig, text: &str) -> CommandEvent {
+    let left = heard(rig, text);
+    assert_eq!(left.intent, "none", "{text}");
+    assert!(!left.chatless, "{text}");
+    rig.engine.send(Command::Reread(left.id.clone()));
+    let again = rig.command();
+    assert!(again.chatless, "{text}");
+    assert_ne!(again.id, left.id, "{text}");
+    assert!(again.candidates.is_empty(), "{text}");
+    again
+}
+
+#[test]
+fn a_phrase_the_chat_gave_no_answer_to_is_read_again_as_with_the_chat_off() {
+    let rig = rig(true);
+    let sure = reread(&rig, "ало");
+    let Some(DecisionEvent::Act { pick }) = &sure.decision else {
+        panic!("expected act, got {:?}", sure.decision);
+    };
+    let artist = pick.entity.artist.as_str();
+    assert_eq!((sure.intent, artist), ("play", "Макс Корж"));
+    rig.done(&sure.id, "");
+    rig.expect_state(State::Idle);
+    let missing = reread(&rig, "включи абырвалгович");
+    assert_eq!(missing.intent, "play");
+    assert_eq!(missing.decision, Some(DecisionEvent::NotFound));
+    rig.done(&missing.id, "");
+    rig.expect_state(State::Idle);
+    let talk = reread(&rig, "привет");
+    assert_eq!((talk.intent, &talk.decision), ("none", &None));
+    rig.done(&talk.id, "");
+    rig.expect_state(State::Idle);
+    let asked = reread(&rig, "включи как дела");
+    assert_eq!(asked.intent, "play");
+    assert!(matches!(asked.decision, Some(DecisionEvent::Ask { .. })));
+    rig.expect_state(State::Asking);
+}
+
+#[test]
+fn a_phrase_nobody_waits_for_is_not_read_again() {
+    let rig = rig(true);
+    let over = settled(&rig, "привет");
+    rig.engine.send(Command::Reread(over.id));
+    assert!(
+        rig.quiet_for(std::time::Duration::from_millis(300))
+            .is_none()
+    );
+    let left = heard(&rig, "привет");
+    rig.engine.send(Command::Reread("v0-0".into()));
+    assert!(
+        rig.quiet_for(std::time::Duration::from_millis(300))
+            .is_none()
+    );
+    rig.done(&left.id, "");
+    rig.expect_state(State::Idle);
+}

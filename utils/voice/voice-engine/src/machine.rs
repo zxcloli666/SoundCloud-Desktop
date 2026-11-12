@@ -253,6 +253,7 @@ impl Core {
             Command::Answer(choice) => self.answer(&choice),
             Command::Done { id, outcome } => self.done(&id, outcome),
             Command::Chat { id, step } => self.chat(id, step),
+            Command::Reread(id) => self.reread(&id),
             Command::Meter(on) => self.set_meter(on),
             Command::Preview(wav) => self.play_preview(&wav),
         }

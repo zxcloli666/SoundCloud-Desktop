@@ -37,7 +37,8 @@ export type ReplyKey =
   | 'ask'
   | 'ask_one'
   | 'not_found'
-  | 'failed';
+  | 'failed'
+  | 'chat_away';
 
 export interface Reply {
   speech: string;
@@ -150,6 +151,7 @@ const RU: Record<ReplyKey, Line> = {
   ask_one: (v) => ({ speech: `Включить ${v.first}?`, display: `${v.first}?` }),
   not_found: (v) => ({ speech: `Не нашлось «${v.heard}»`, display: v.heard ?? '' }),
   failed: () => same('Не получилось'),
+  chat_away: () => same('Сейчас не могу поболтать, но музыку включу — скажи, что поставить'),
 };
 
 const EN: Record<ReplyKey, Line> = {
@@ -206,6 +208,7 @@ const EN: Record<ReplyKey, Line> = {
   ask_one: (v) => ({ speech: `Play ${v.first}?`, display: `${v.first}?` }),
   not_found: (v) => ({ speech: `I couldn't find "${v.heard}"`, display: v.heard ?? '' }),
   failed: () => same("Couldn't do that"),
+  chat_away: () => same("I can't chat right now, but I can still play music. Just say what"),
 };
 
 export function reply(lang: VoiceLanguage, key: ReplyKey, vars: ReplyVars = {}): Reply {

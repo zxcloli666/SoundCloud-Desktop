@@ -33,10 +33,8 @@ impl Core {
         self.emit_state(State::Thinking, None);
         if let Some(index) = self.match_answer(&text) {
             if let Some(plan) = self.plan.as_mut() {
-                plan.origin = Origin {
-                    source: self.source,
-                    remote_id,
-                };
+                plan.origin.source = self.source;
+                plan.origin.remote_id = remote_id;
             }
             self.choose(index);
             return;
@@ -47,8 +45,27 @@ impl Core {
         let origin = Origin {
             source: self.source,
             remote_id,
+            chatless: false,
         };
         self.read(text, origin);
+    }
+
+    pub fn reread(&mut self, id: &str) {
+        let waited = |plan: &mut Plan| plan.waiting.as_deref() == Some(id);
+        let Some(plan) = self.plan.take_if(waited) else {
+            return;
+        };
+        let origin = Origin {
+            chatless: true,
+            ..plan.origin
+        };
+        let step = plan.next.checked_sub(1);
+        let Some(left) = step.and_then(|step| plan.outcomes.into_iter().nth(step)) else {
+            return self.go_idle();
+        };
+        self.close_turn();
+        self.phase = Phase::Thinking(Instant::now() + self.deps.timing.done);
+        self.read(left.parsed.heard, origin);
     }
 
     pub fn begin(&mut self, origin: Origin, outcomes: Vec<Understood>, ahead: Option<String>) {

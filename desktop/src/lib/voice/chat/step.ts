@@ -1,4 +1,5 @@
 import type { StepResult } from '../execute';
+import type { Reply } from '../replies';
 import type { VoiceCommand } from '../types';
 import type { UndoEntry } from '../undo';
 import type { TurnEnd } from './types';
@@ -7,6 +8,18 @@ export interface ChatStep {
   end: TurnEnd;
   stack: UndoEntry[];
   undo: boolean;
+}
+
+export function unanswered(res: StepResult): boolean {
+  const end = res.chat;
+  if (end?.status !== 'failed' || end.code === 'star_required') return false;
+  return !end.say.trim() && end.marks.length === 0;
+}
+
+export function awayResult(cmd: VoiceCommand, line: Reply, stack: UndoEntry[]): StepResult {
+  const outcome = { ok: true, speech: line.speech, display: line.display, undo: false };
+  const chat: TurnEnd = { status: 'ok', say: line.display, marks: [] };
+  return { kind: 'chat', outcome, intent: cmd.intent, entity: null, stack, chat };
 }
 
 export function chatResult(cmd: VoiceCommand, step: ChatStep, ignored: StepResult): StepResult {

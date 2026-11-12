@@ -84,6 +84,7 @@ pub enum Command {
         id: String,
         step: Chat,
     },
+    Reread(String),
     Meter(bool),
     Preview(Vec<u8>),
 }

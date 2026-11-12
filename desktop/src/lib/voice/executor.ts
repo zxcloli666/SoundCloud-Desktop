@@ -5,9 +5,11 @@ import {
   dropChatAhead,
   interruptChat,
   keepChatAhead,
+  openChatHud,
   rowReply,
   stopChat,
 } from './chat/session';
+import { unanswered } from './chat/step';
 import { execute, revert, type StepResult } from './execute';
 import { dismiss } from './hud';
 import { voiceIpc } from './ipc';
@@ -81,7 +83,10 @@ function isLastStep(cmd: VoiceCommand): boolean {
 }
 
 function show(cmd: VoiceCommand, res: StepResult, run: GroupRun) {
-  if (res.chat) return closeChatHud(cmd.id, res, run.undo ? run.id : null);
+  if (res.chat) {
+    if (cmd.chatless) openChatHud(cmd, res.chat.say);
+    return closeChatHud(cmd.id, res, run.undo ? run.id : null);
+  }
   const runtime = useVoiceRuntime.getState();
   const decision = cmd.decision;
   if (res.kind === 'ask' && decision?.decision === 'ask') {
@@ -134,6 +139,14 @@ function record(cmd: VoiceCommand, res: StepResult, run: GroupRun) {
   });
 }
 
+async function reread(id: string): Promise<boolean> {
+  if (useVoiceRuntime.getState().engine !== 'thinking') return false;
+  return voiceIpc.reread(id).then(
+    () => true,
+    () => false,
+  );
+}
+
 async function handle(cmd: VoiceCommand) {
   if (cmd.source !== 'remote') markActive();
   const run = groupOf(cmd);
@@ -145,6 +158,7 @@ async function handle(cmd: VoiceCommand) {
   });
   dropChatAhead(cmd.id);
   stack = res.stack;
+  if (unanswered(res) && (await reread(cmd.id))) return;
   if (res.kind === 'done') {
     run.items = [
       ...run.items,

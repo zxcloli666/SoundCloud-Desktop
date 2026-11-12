@@ -6,6 +6,13 @@ use crate::event::{CommandEvent, DecisionEvent, EntityEvent, ScoredEvent, Source
 pub struct Origin {
     pub source: Source,
     pub remote_id: Option<String>,
+    pub chatless: bool,
+}
+
+impl Origin {
+    pub fn chats(&self) -> bool {
+        self.source != Source::Remote && !self.chatless
+    }
 }
 
 pub fn command(outcome: &Outcome, id: String, origin: &Origin) -> CommandEvent {
@@ -20,6 +27,7 @@ pub fn command(outcome: &Outcome, id: String, origin: &Origin) -> CommandEvent {
         number: parsed.number,
         decision: outcome.decision.as_ref().map(decision),
         talk: parsed.talk && talks(outcome),
+        chatless: origin.chatless,
         candidates: outcome.candidates.iter().map(EntityEvent::from).collect(),
         remote_id: origin.remote_id.clone(),
         group: None,
@@ -89,6 +97,7 @@ mod tests {
         let origin = Origin {
             source: Source::Typed,
             remote_id: None,
+            chatless: false,
         };
         command(&outcome, "1".into(), &origin)
     }

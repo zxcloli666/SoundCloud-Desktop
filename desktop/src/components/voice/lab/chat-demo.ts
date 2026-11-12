@@ -94,6 +94,7 @@ const SCRIPTS: Script[] = [
   },
 ];
 
+const typed = new Map<string, string>();
 let streaming: string | null = null;
 let stopped = false;
 let quiet: ReturnType<typeof setTimeout> | null = null;
@@ -133,10 +134,7 @@ async function stream(turn: ChatRequest, events: ChatEvent[], send: (event: Chat
 export async function chatDemo(turn: ChatRequest, send: (event: ChatEvent) => void) {
   const script = SCRIPTS.find((s) => s.match.test(turn.body.text)) ?? SCRIPTS[SCRIPTS.length - 1];
   await wait(200);
-  if (script.reject) {
-    settle(0);
-    return Promise.reject({ code: script.reject });
-  }
+  if (script.reject) return Promise.reject({ code: script.reject });
   streaming = turn.id;
   stopped = false;
   const round = turn.body.results.length > 0 ? script.rounds.length - 1 : 0;
@@ -153,10 +151,9 @@ export function resolveDemo(kinds: EntityKind[]): Entity[] {
   return [KHOCHU_Z, KHOCHU_M, SCRIPTONITE].filter((e) => kinds.includes(e.kind));
 }
 
-export async function textDemo(text: string, id?: string) {
-  await wait(250);
-  void emit('voice:command', {
-    id: id ?? `typed-${Date.now()}`,
+function heard(id: string, text: string, chatless: boolean) {
+  return {
+    id,
     source: 'typed',
     heard: text,
     normalized: text,
@@ -164,5 +161,24 @@ export async function textDemo(text: string, id?: string) {
     kind_hint: null,
     number: null,
     decision: null,
-  });
+    chatless,
+  };
+}
+
+export async function textDemo(text: string, id = `typed-${Date.now()}`) {
+  await wait(250);
+  typed.set(id, text);
+  await emit('voice:state', { state: 'thinking', source: 'typed' });
+  void emit('voice:command', heard(id, text, false));
+}
+
+export async function rereadDemo(id: string) {
+  const text = typed.get(id);
+  if (text === undefined) {
+    settle(0);
+    throw new Error('nobody waits for this phrase');
+  }
+  typed.delete(id);
+  void emit('voice:command', heard(`again-${Date.now()}`, text, true));
+  settle(SPEECH_TAIL_MS);
 }

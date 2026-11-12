@@ -82,6 +82,12 @@ pub fn voice_done(voice: Managed<'_, Voice>, id: String, outcome: Outcome) {
 }
 
 #[tauri::command]
+pub fn voice_reread(voice: Managed<'_, Voice>, id: String) {
+    voice.rounds.settle(&id);
+    voice.engine.send(Command::Reread(id));
+}
+
+#[tauri::command]
 pub async fn voice_chat(
     app: AppHandle,
     voice: Managed<'_, Voice>,

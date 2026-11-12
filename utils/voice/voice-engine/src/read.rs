@@ -44,7 +44,7 @@ impl Core {
         let started = Instant::now();
         let phrase = Phrase::read(&text, &Names::new(&self.config.names));
         let parsed = started.elapsed();
-        let chat = self.config.llm && origin.source != Source::Remote;
+        let chat = self.config.llm && origin.chats();
         let talk = chat && !phrase.commands();
         let budget = talk.then_some(self.deps.timing.lookup);
         let lookups = Lookups::start(&self.deps.catalog, &self.memory, phrase.lookups(), budget);

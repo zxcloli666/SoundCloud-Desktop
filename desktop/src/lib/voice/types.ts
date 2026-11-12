@@ -133,6 +133,7 @@ export interface VoiceCommand {
   number: number | null;
   decision: Decision | null;
   talk?: boolean;
+  chatless?: boolean;
   candidates?: Entity[];
   remote_id?: string;
   group?: string;

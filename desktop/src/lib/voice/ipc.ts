@@ -19,6 +19,7 @@ export const voiceIpc = {
     invoke<void>('voice_text', { text, source, id }),
   answer: (choice: string) => invoke<void>('voice_answer', { choice }),
   done: (id: string, outcome: Outcome) => invoke<void>('voice_done', { id, outcome }),
+  reread: (id: string) => invoke<void>('voice_reread', { id }),
   devices: () => invoke<Devices>('voice_devices'),
   meter: (on: boolean) => invoke<void>('voice_meter', { on }),
   models: () => invoke<Model[]>('voice_models'),

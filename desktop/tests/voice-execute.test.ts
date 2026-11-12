@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import type { ChatStep } from '../src/lib/voice/chat/step';
+import { type ChatStep, unanswered } from '../src/lib/voice/chat/step.ts';
 import type { TurnEnd } from '../src/lib/voice/chat/types';
 import { execute } from '../src/lib/voice/execute.ts';
 import type { UndoEntry } from '../src/lib/voice/undo';
@@ -244,4 +244,48 @@ test('a cancelled chat is quiet and an empty reply is ignored', async () => {
   const acted = chatting({ status: 'ok', say: '', marks: [{ tool: 'pause', ok: true }] });
   const done = await execute(command('none'), fakePort(), { ...ctx(), chat: acted.chat });
   assert.equal(done.kind, 'chat');
+});
+
+test('a phrase read again without the chat gets a fixed line and the chat is not asked', async () => {
+  const { asked, chat } = chatting({ status: 'ok', say: 'Привет!', marks: [] });
+  const cmd = command('none', { heard: 'как дела', chatless: true });
+  const res = await execute(cmd, fakePort(), { ...ctx(), chat });
+  assert.equal(res.kind, 'chat');
+  assert.match(res.outcome.speech, /не могу поболтать/);
+  assert.deepEqual(res.outcome, {
+    ok: true,
+    speech: res.outcome.speech,
+    display: res.outcome.speech,
+    undo: false,
+  });
+  assert.deepEqual(res.chat, { status: 'ok', say: res.outcome.speech, marks: [] });
+  const english = await execute(cmd, fakePort(), { ...ctx([], 'en'), chat });
+  assert.match(english.outcome.speech, /can't chat right now/);
+  const help = command('help', { heard: 'что умеешь', chatless: true });
+  const fixed = await execute(help, fakePort(), { ...ctx(), chat });
+  assert.equal(fixed.kind, 'done');
+  assert.match(fixed.outcome.speech, /пауза.*громкость/);
+  assert.equal((await execute(cmd, fakePort(), ctx())).kind, 'ignored');
+  assert.deepEqual(asked, []);
+});
+
+test('a phrase is unanswered only when the chat failed before it said or did anything', async () => {
+  const left = async (end: TurnEnd) => {
+    const { chat } = chatting(end);
+    return unanswered(await execute(command('none'), fakePort(), { ...ctx(), chat }));
+  };
+  for (const code of ['rate_limited', 'unavailable', 'network', 'deadline', 'failed']) {
+    assert.equal(await left({ status: 'failed', code, say: ' ', marks: [] }), true, code);
+  }
+  const answered: TurnEnd[] = [
+    { status: 'failed', code: 'star_required', say: '', marks: [] },
+    { status: 'failed', code: 'network', say: 'Ну', marks: [] },
+    { status: 'failed', code: 'network', say: '', marks: [{ tool: 'pause', ok: true }] },
+    { status: 'cancelled', say: '', marks: [] },
+    { status: 'ok', say: 'Привет!', marks: [] },
+    { status: 'ok', say: '', marks: [] },
+  ];
+  for (const end of answered) assert.equal(await left(end), false, JSON.stringify(end));
+  const plain = await execute(command('pause'), fakePort(), ctx());
+  assert.equal(unanswered(plain), false);
 });

@@ -3,7 +3,7 @@ import { getDuration } from '../../audio';
 import { getIsPremium } from '../../premium-cache';
 import type { ExecuteContext, PlayerPort, StepResult } from '../execute';
 import { playerPort } from '../player-port';
-import { useVoiceRuntime } from '../runtime';
+import { type HudView, useVoiceRuntime } from '../runtime';
 import { type RowReply, useVoiceStore } from '../store';
 import type { Entity, HeardEvent, VoiceCommand, VoiceSource } from '../types';
 import { appPort, briefOf } from './app-port';
@@ -64,6 +64,24 @@ function contextNow(port: PlayerPort, candidates: Entity[]): Record<string, unkn
   });
 }
 
+function liveHud(cmd: VoiceCommand): HudView {
+  return {
+    kind: 'chat',
+    id: cmd.id,
+    heard: cmd.heard,
+    phase: 'live',
+    undo: null,
+    code: '',
+    voiceLost: false,
+  };
+}
+
+export function openChatHud(cmd: VoiceCommand, said = '') {
+  openReply();
+  appendSay(said);
+  useVoiceRuntime.getState().setHud(liveHud(cmd));
+}
+
 function speaks(source: VoiceSource): boolean {
   return voiced(source) && useVoiceStore.getState().config.speak.replies;
 }
@@ -120,16 +138,7 @@ export async function chatStep(
   const { tools, body } = bodyOf(cmd.heard, port, offered, candidatesOf(cmd), ctx.now, quiet);
   const abort = new AbortController();
   active = { id: cmd.id, abort };
-  openReply();
-  useVoiceRuntime.getState().setHud({
-    kind: 'chat',
-    id: cmd.id,
-    heard: cmd.heard,
-    phase: 'live',
-    undo: null,
-    code: '',
-    voiceLost: false,
-  });
+  if (!send.resting()) openChatHud(cmd);
   const end = await runTurn({
     id: cmd.id,
     speak: speaks(cmd.source),
