@@ -123,6 +123,10 @@ pub fn rank(parsed: &Parsed, cands: Vec<Entity>, boosts: &Boosts) -> Vec<Scored>
         let curated = out.remove(i);
         out.insert(0, curated);
     }
+    if let Some(i) = credited_with_what_is_said(&out, &queries) {
+        let fuller = out.remove(i);
+        out.insert(0, fuller);
+    }
     out
 }
 
@@ -131,6 +135,28 @@ fn named_by_a_curated_alias(out: &[Scored], parsed: &Parsed) -> Option<usize> {
     let asked = |s: &Scored| parsed.kind_hint.is_none_or(|kind| s.entity.kind == kind);
     let curated = |s: &Scored| s.alias && !s.fallback && s.sim >= CURATED_MIN && asked(s);
     out.iter().position(|s| curated(s) && s.sim > top.sim)
+}
+
+fn credited_with_what_is_said(out: &[Scored], queries: &[QueryKeys]) -> Option<usize> {
+    let top = out.first()?;
+    let fuller = |s: &Scored| {
+        s.sim >= top.sim + CLOSER_LEAD && credits_what_is_added(queries, &s.entity, &top.entity)
+    };
+    out.iter().position(fuller)
+}
+
+fn credits_what_is_added(queries: &[QueryKeys], longer: &Entity, named: &Entity) -> bool {
+    let (Some(long), Some(short)) = (&longer.artist, &named.artist) else {
+        return false;
+    };
+    let (long, short) = (fold(long), fold(short));
+    let Some(added) = long.strip_prefix(short.as_str()).filter(|a| !a.is_empty()) else {
+        return false;
+    };
+    let title = fold(&longer.name);
+    let says = |rest: &str| near(rest, added) >= ADDED_MIN;
+    let said = |q: &QueryKeys| beside(&q.text, &title).is_some_and(says);
+    queries.iter().filter(|q| !q.fallback).any(said)
 }
 
 fn outdoes(whole: &Scored, part: &Scored, queries: &[QueryKeys]) -> bool {

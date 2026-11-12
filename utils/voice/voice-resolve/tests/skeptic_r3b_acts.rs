@@ -104,3 +104,17 @@ fn a_name_the_curated_aliases_give_beats_one_that_only_sounds_close() {
         ("включи дрейк белл", "Drake Bell"),
     ]);
 }
+
+#[test]
+fn a_release_credited_with_the_words_said_beats_the_more_popular_original() {
+    finds(&[
+        (
+            "включи альбом дом с нормальными явлениями кавер бэнд",
+            "Скриптонит Cover Band - Дом с нормальными явлениями?",
+        ),
+        (
+            "включи альбом дом с нормальными явлениями",
+            "Скриптонит - Дом с нормальными явлениями",
+        ),
+    ]);
+}
