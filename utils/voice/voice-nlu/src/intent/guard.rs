@@ -123,7 +123,8 @@ fn started(toks: &[Tok]) -> Option<usize> {
 }
 
 fn addressed(toks: &[Tok], k: usize) -> bool {
-    let hushing = matches!(&toks[..k], [t] if UP_WORDS.contains(&t.w.as_str()) || DOWN_WORDS.contains(&t.w.as_str()));
+    let loudness = |t: &Tok| UP_WORDS.contains(&t.w.as_str()) || DOWN_WORDS.contains(&t.w.as_str());
+    let hushing = matches!(&toks[..k], [t] if loudness(t));
     let commanded = super::detect(&toks[..k]).intent.is_control();
     ENDEARMENTS.contains(&toks[k].w.as_str()) && commanded && !hushing
 }

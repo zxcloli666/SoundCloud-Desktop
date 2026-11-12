@@ -103,7 +103,7 @@ impl Names {
                 return None;
             };
             let rest = w.strip_prefix(form.as_str())?;
-            let ordered = rest.chars().count() >= GLUED_FROM && command(rest);
+            let ordered = rest.chars().count() >= GLUED_FROM && an_order(rest);
             ordered.then(|| w.split_at(form.len()))
         })
     }
@@ -198,7 +198,7 @@ fn commands(w: &str) -> bool {
     PLAY_STRONG.contains(&w) || ADD_WORDS.contains(&w)
 }
 
-fn command(w: &str) -> bool {
+fn an_order(w: &str) -> bool {
     let alone = [Tok {
         w: w.to_string(),
         amb: false,

@@ -1,7 +1,7 @@
 use crate::correct;
 use crate::intent;
 use crate::lexicon::{
-    self, ADD_WORDS, KIND_ARTIST, LONE_VERBS, ON_VERB_FORMS, PLAY_STRONG, PLAY_WEAK,
+    self, ADD_WORDS, KIND_ARTIST, LONE_VERBS, ON_VERB_FORMS, ORDER_ENDINGS, PLAY_STRONG, PLAY_WEAK,
 };
 use crate::names::Names;
 use crate::normalize::{Tok, normalize};
@@ -17,7 +17,6 @@ const AFTER: &[&str] = &["него", "этого", "нее", "нее"];
 const FIRST: &str = "сначала";
 const ALSO: &str = "еще";
 const THEN: &[&str] = &["потом", "затем", "then"];
-const ORDER_ENDINGS: &[&str] = &["и", "й", "ь", "те"];
 
 pub(crate) enum Side {
     Cmd(Parsed),

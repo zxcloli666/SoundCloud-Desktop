@@ -120,6 +120,8 @@ pub const IMPERATIVES: &[&str] = &[
     "запустите",
 ];
 
+pub const ORDER_ENDINGS: &[&str] = &["и", "й", "ь", "те"];
+
 pub const REPORT: &[&str] = &[
     "сказал",
     "сказала",

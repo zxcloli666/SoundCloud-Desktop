@@ -2,8 +2,8 @@ use crate::anchor::{self, Found};
 use crate::intent::{self, Detected, Negation};
 use crate::lexicon::{
     self, ATTENTION, COMPLAINT, DENY, DOWN_WORDS, FED_UP, GENERIC, HELLO_ON_THE_PHONE, IMPERATIVES,
-    NEG_STEMS, OBJECT_VERBS, PLAY_STRONG, PLAY_WEAK, PLAYER, PRE, REASON, REMARK_START, REPORT,
-    RESUME_FILL, RESUME_WORDS, ROOM, TIME_SPANS, UP_WORDS, WARNING,
+    NEG_STEMS, OBJECT_VERBS, ORDER_ENDINGS, PLAY_STRONG, PLAY_WEAK, PLAYER, PRE, REASON,
+    REMARK_START, REPORT, RESUME_FILL, RESUME_WORDS, ROOM, TIME_SPANS, UP_WORDS, WARNING,
 };
 use crate::normalize::Tok;
 use crate::numbers;
@@ -66,8 +66,6 @@ fn addressed(w: &str) -> bool {
         || matches!(w, "давай" | "давайте");
     command && ORDER_ENDINGS.iter().any(|e| w.ends_with(e)) && !w.ends_with("ть")
 }
-
-const ORDER_ENDINGS: &[&str] = &["и", "й", "ь", "те"];
 
 fn said_before(toks: &[Tok], verb: usize) -> usize {
     let command_word = |t: &Tok| {
