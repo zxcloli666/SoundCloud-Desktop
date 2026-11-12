@@ -1330,7 +1330,7 @@ play something by taylor swift	play	artist	Taylor Swift		english		both
 включи мне доченька короля и шута	play	artist	Король и Шут		morphology		both
 а поставь ка мне мою любимую музыку	play_likes				indirect		both
 ой не то не то верни как было	undo				indirect		both
-сынок остановись	stop				indirect	pause	both
+сынок остановись	none				indirect		both
 голубушка спой нам что нибудь	play_wave				indirect		both
 включи ка наутилус помпилиус батюшка	play	artist	Наутилус Помпилиус		morphology		both
 алла пугачёва миленькая поставь	play	artist	Алла Пугачёва		morphology		both
