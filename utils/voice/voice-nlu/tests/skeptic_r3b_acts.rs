@@ -35,3 +35,20 @@ fn a_phrase_that_says_it_is_not_for_the_listener_is_talk() {
         ("Лоля следующий", "next"),
     ]);
 }
+
+#[test]
+fn music_named_after_about_is_the_topic_of_talk() {
+    stays_silent(&[
+        "я тебе не про музыку",
+        "я про музыку",
+        "это не про музыку",
+        "мы про громкость говорили",
+        "я про паузу спрашивала",
+    ]);
+    acts(&[
+        ("музыку", "play_wave"),
+        ("давай музыку", "play_wave"),
+        ("включи песню про любовь", "play"),
+        ("сделай потише я про громкость", "volume_down"),
+    ]);
+}

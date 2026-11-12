@@ -3,11 +3,11 @@ use super::indirect;
 use super::library::NOW_SET;
 use crate::anchor::finite;
 use crate::lexicon::{
-    self, AGREEMENT, ASKING, BACKWARD, CLAUSE_SUBJECTS, COMPLAINT, COMPOUNDS, DEMONSTRATIVES, DENY,
-    DOWN_WORDS, FED_UP, FORWARD, IDLE, INFINITIVE_ENDINGS, INSISTING, LISTENERS, LISTENING_STEMS,
-    MAKING, MUSIC_STEMS, NEG_STEMS, NEXT_STRONG, OTHERS, OWN, PLAY_STRONG, PREV_STRONG,
-    REMARK_START, RESUME_WORDS, RINGS, ROUGHLY, SPEAKING, STRIDES, SWEARS_AMB, TASTE, THE_PAST,
-    TO_THE_LISTENER, UP_WORDS, WAS, WHICH,
+    self, ABOUT, AGREEMENT, ASKING, BACKWARD, CLAUSE_SUBJECTS, COMPLAINT, COMPOUNDS,
+    DEMONSTRATIVES, DENY, DOWN_WORDS, FED_UP, FORWARD, IDLE, INFINITIVE_ENDINGS, INSISTING,
+    LISTENERS, LISTENING_STEMS, MAKING, MUSIC_STEMS, NEG_STEMS, NEXT_STRONG, OTHERS, OWN,
+    PLAY_STRONG, PREV_STRONG, REMARK_START, RESUME_WORDS, RINGS, ROUGHLY, SPEAKING, STRIDES,
+    SWEARS_AMB, TASTE, THE_PAST, TO_THE_LISTENER, UP_WORDS, WAS, WHICH,
 };
 
 pub fn sentence(c: &Ctx) -> bool {
@@ -21,6 +21,7 @@ pub fn sentence(c: &Ctx) -> bool {
         || question_with_its_own_verb(c)
         || question_to_a_person(c)
         || meant_for_someone_else(c)
+        || music_as_a_topic(c)
         || plan_of_the_speaker(c)
         || voice_of_a_person(c)
         || carrying_on_with_something_else(c)
@@ -134,6 +135,12 @@ fn meant_for_someone_else(c: &Ctx) -> bool {
     (1..c.len())
         .filter(|&i| TO_THE_LISTENER.contains(&c.w[i]))
         .any(|i| not(i - 1) || (i >= 2 && c.w[i - 1] == "с" && not(i - 2)))
+}
+
+fn music_as_a_topic(c: &Ctx) -> bool {
+    let asks = c.has(PLAY_STRONG) || c.w.iter().any(|w| volume_word(w));
+    let named = |w: &str| command_word(w) || lexicon::stem(MUSIC_STEMS, w);
+    !asks && (1..c.len()).any(|i| ABOUT.contains(&c.w[i - 1]) && named(c.w[i]))
 }
 
 fn plan_of_the_speaker(c: &Ctx) -> bool {
