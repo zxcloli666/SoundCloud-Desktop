@@ -90,7 +90,7 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
             let on = c.all(ON_VERBS);
             let mut used = on.clone();
             used.push(n);
-            used.extend(c.all(&["обратно"]));
+            used.extend(c.all(AS_BEFORE));
             if !on.is_empty() && !c.has(UP_WORDS) && !c.has(DOWN_WORDS) && c.stray(&used) == 0 {
                 return Some(Detected::new(Intent::Unmute, vec![n]));
             }

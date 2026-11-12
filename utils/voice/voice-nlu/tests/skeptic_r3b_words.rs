@@ -214,3 +214,13 @@ fn all_in_a_row_repeats_all() {
         ("повтори эту песню подряд", "repeat_one"),
     ]);
 }
+
+#[test]
+fn the_sound_back_as_it_was_unmutes() {
+    acts(&[
+        ("верни звук как был", "unmute"),
+        ("верни звук как раньше", "unmute"),
+        ("верни звук", "unmute"),
+        ("верни как было", "undo"),
+    ]);
+}

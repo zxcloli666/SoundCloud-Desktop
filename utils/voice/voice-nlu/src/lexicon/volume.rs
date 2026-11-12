@@ -100,6 +100,8 @@ pub const OFF_VERBS: &[&str] = &[
     "выключай",
 ];
 
+pub const AS_BEFORE: &[&str] = &["обратно", "как", "был", "было", "раньше"];
+
 pub const MUTE_WORDS: &[&str] = &["заглуши", "заглушить", "mute", "глуши"];
 pub const UNMUTE_WORDS: &[&str] = &["unmute"];
 
