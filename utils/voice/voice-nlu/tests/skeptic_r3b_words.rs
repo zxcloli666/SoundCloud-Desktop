@@ -246,3 +246,12 @@ fn the_full_amount_said_with_a_play_verb_is_the_full_volume() {
     ]);
     acts(&[("включи полную версию", "play")]);
 }
+
+#[test]
+fn an_unstressed_o_heard_as_a_or_a_doubled_letter_is_the_same_word() {
+    acts(&[
+        ("включи пахожее", "play_similar"),
+        ("подними воллюм", "volume_up"),
+    ]);
+    amounts(&[("громкасть на палавину", "volume_set", 50)]);
+}

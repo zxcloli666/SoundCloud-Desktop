@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::sync::OnceLock;
 
-use super::{DENY, FUZZY_TARGETS, KIND_ARTIST, SLURRED_TARGETS, is_known, known_words};
+use super::{DENY, EXACT, FUZZY_TARGETS, KIND_ARTIST, SLURRED_TARGETS, is_known, known_words};
 
 const SPELLED_FROM: usize = 3;
 const REDUCED_FROM: usize = 5;
@@ -35,8 +35,9 @@ fn sounds() -> &'static Sounds {
             reduced: HashMap::new(),
         };
         let name_like = |w: &str| DENY.contains(&w) || KIND_ARTIST.contains(&w);
-        let words = known_words().filter(|w| w.chars().all(cyrillic) && !name_like(w));
-        for word in words {
+        let written = EXACT.iter().map(|(from, _)| *from);
+        let words = known_words().chain(written);
+        for word in words.filter(|w| w.chars().all(cyrillic) && !name_like(w)) {
             sounds.spelled.entry(spelled(word)).or_insert(word);
         }
         for word in FUZZY_TARGETS.iter().chain(SLURRED_TARGETS) {
