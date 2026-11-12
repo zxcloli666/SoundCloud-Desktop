@@ -1,7 +1,8 @@
 use crate::intent::{self, Detected};
 use crate::lexicon::{
-    self, ABOUT_OWN_WORDS, BLOCK_HEAD, BLOCK_TAIL, DENY, HELLO_ON_THE_PHONE, IDLE, INSISTING,
-    LISTENERS, OBJECT_VERBS, PLAY_STRONG, PLAYER, SUBJECTS, TAIL_REMARK,
+    self, ABOUT_OWN_WORDS, BLOCK_HEAD, BLOCK_TAIL, DENY, FED_UP, HELLO_ON_THE_PHONE, IDLE,
+    INSISTING, LISTENERS, NEXT_STRONG, OBJECT_VERBS, ORDER_ENDINGS, PAUSE_WORDS, PLAY_STRONG,
+    PLAYER, PREV_STRONG, STOP_WORDS, SUBJECTS, TAIL_REMARK, TO_THE_LISTENER,
 };
 use crate::normalize::Tok;
 use crate::types::Intent;
@@ -39,8 +40,9 @@ fn head_intent(i: Intent) -> bool {
 fn head_ok(head: &[Tok], window: &[Tok], tail: &[Tok]) -> bool {
     let answered = |t: &Tok| SUBJECTS.contains(&t.w.as_str()) && t.w != "я";
     let insists = window[0].w != "не" && !tail.iter().any(answered);
+    let last_word = tail.is_empty() && bare_command_word(window);
     let head = if insists {
-        before_insisting(head)
+        before_insisting(head, last_word)
     } else {
         head
     };
@@ -55,8 +57,23 @@ fn head_ok(head: &[Tok], window: &[Tok], tail: &[Tok]) -> bool {
         })
 }
 
-fn before_insisting(head: &[Tok]) -> &[Tok] {
-    let Some((verb, rest)) = head.split_last() else {
+fn bare_command_word(window: &[Tok]) -> bool {
+    let [said] = window else {
+        return false;
+    };
+    let w = said.w.as_str();
+    let ordinal = lexicon::stem(NEXT_STRONG, w) || lexicon::stem(PREV_STRONG, w);
+    let verb = ORDER_ENDINGS.iter().any(|e| w.ends_with(e)) || FED_UP.contains(&w);
+    let halt = STOP_WORDS.contains(&w) || PAUSE_WORDS.contains(&w);
+    ordinal || (halt && !verb)
+}
+
+fn before_insisting(head: &[Tok], last_word: bool) -> &[Tok] {
+    let to_you = head
+        .last()
+        .is_some_and(|t| TO_THE_LISTENER.contains(&t.w.as_str()));
+    let said = &head[..head.len() - usize::from(to_you)];
+    let Some((verb, rest)) = said.split_last() else {
         return head;
     };
     let between = rest
@@ -68,7 +85,8 @@ fn before_insisting(head: &[Tok]) -> &[Tok] {
     let Some(at) = me.filter(|&at| rest[at].w == "я") else {
         return head;
     };
-    let again = between > 0 || head[..at].iter().any(|t| LISTENERS.contains(&t.w.as_str()));
+    let listener = head[..at].iter().any(|t| LISTENERS.contains(&t.w.as_str()));
+    let again = to_you || last_word || between > 0 || listener;
     if INSISTING.contains(&verb.w.as_str()) && again {
         &head[..at]
     } else {

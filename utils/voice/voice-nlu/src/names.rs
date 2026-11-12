@@ -56,7 +56,9 @@ impl Names {
         let mut turned = None;
         let mut at = 0;
         while at < toks.len() {
-            match self.starts(&toks[at..]) {
+            let heard = self.starts(&toks[at..]);
+            let told = heard.is_some_and(|len| reported(&toks[at + len..]));
+            match heard.filter(|_| !told) {
                 Some(len) if !object(&kept) || self.calls(&kept, &toks[at..at + len]) => {
                     at += len;
                     doubt |= !verb_next(&toks[at..]);
@@ -170,6 +172,12 @@ fn named_before_verb(before: &[Tok]) -> bool {
 fn ordered(after: &[Tok]) -> bool {
     let next = after.iter().find(|t| !soft(t));
     next.is_some_and(|t| intent::orders(&t.w) || PLAY_STRONG.contains(&t.w.as_str()))
+}
+
+fn reported(after: &[Tok]) -> bool {
+    after
+        .first()
+        .is_some_and(|t| REPORT.contains(&t.w.as_str()))
 }
 
 fn aside(before: &[Tok]) -> bool {
