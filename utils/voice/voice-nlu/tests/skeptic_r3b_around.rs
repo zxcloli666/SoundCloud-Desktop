@@ -105,3 +105,18 @@ fn not_wanting_this_one_and_naming_another_asks_for_the_next() {
         "не хочу другую",
     ]);
 }
+
+#[test]
+fn a_name_glued_to_a_command_or_started_twice_is_still_the_name() {
+    acts(&[
+        ("лоляпауза", "pause"),
+        ("лоляпотише", "volume_down"),
+        ("лолюпауза", "pause"),
+        ("лолявключи баста", "play"),
+        ("ло лоля пауза", "pause"),
+        ("lo loli pause", "pause"),
+    ]);
+    stays_silent(&["лолита", "лолипоп", "ло лоля"]);
+    let kept = parse("включи лолиту", &Names::new(&["Лоля"]));
+    assert!(kept[0].queries.iter().any(|q| q.text == "лолиту"));
+}

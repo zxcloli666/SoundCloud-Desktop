@@ -1,8 +1,12 @@
+use crate::intent;
 use crate::lexicon::{
-    ADD_WORDS, ARTIST_MARKERS, GREETINGS, NAME_FORMS, PLAY_STRONG, PLAY_WEAK, PRE,
+    self, ADD_WORDS, ARTIST_MARKERS, GREETINGS, NAME_FORMS, OBJECT_VERBS, PLAY_STRONG, PLAY_WEAK,
+    PRE,
 };
 use crate::normalize::{Tok, normalize};
 use crate::slots::kind_of;
+
+const GLUED_FROM: usize = 4;
 
 #[derive(Debug, Default)]
 pub struct Names {
@@ -35,6 +39,7 @@ impl Names {
     }
 
     fn split(&self, toks: Vec<Tok>) -> (Vec<Tok>, bool) {
+        let toks = self.unglued(toks);
         let mut kept: Vec<Tok> = Vec::with_capacity(toks.len());
         let mut doubt = false;
         let mut at = 0;
@@ -53,11 +58,54 @@ impl Names {
         (kept, doubt)
     }
 
+    fn unglued(&self, toks: Vec<Tok>) -> Vec<Tok> {
+        let mut out = Vec::with_capacity(toks.len());
+        for t in toks {
+            match self.glued_to(&t.w) {
+                Some((name, rest)) => {
+                    out.push(Tok {
+                        w: name.to_string(),
+                        amb: false,
+                    });
+                    out.push(Tok {
+                        w: rest.to_string(),
+                        amb: t.amb,
+                    });
+                }
+                None => out.push(t),
+            }
+        }
+        out
+    }
+
+    fn glued_to<'a>(&self, w: &'a str) -> Option<(&'a str, &'a str)> {
+        self.said.iter().find_map(|name| {
+            let [form] = name.as_slice() else {
+                return None;
+            };
+            let rest = w.strip_prefix(form.as_str())?;
+            let ordered = rest.chars().count() >= GLUED_FROM && command(rest);
+            ordered.then(|| w.split_at(form.len()))
+        })
+    }
+
     fn starts(&self, toks: &[Tok]) -> Option<usize> {
         let said = |name: &&Vec<String>| {
             name.len() <= toks.len() && name.iter().zip(toks).all(|(w, t)| *w == t.w)
         };
-        self.said.iter().find(said).map(Vec::len)
+        let whole = self.said.iter().find(said).map(Vec::len);
+        whole.or_else(|| self.restarted(toks))
+    }
+
+    fn restarted(&self, toks: &[Tok]) -> Option<usize> {
+        let (first, rest) = toks.split_first()?;
+        let len = self.starts(rest)?;
+        let next = rest[0].w.as_str();
+        let broken = first.w.chars().count() >= 2
+            && next.len() > first.w.len()
+            && next.starts_with(first.w.as_str())
+            && !lexicon::is_known(&first.w);
+        broken.then_some(len + 1)
     }
 
     fn calls(&self, before: &[Tok], form: &[Tok]) -> bool {
@@ -116,4 +164,13 @@ fn leads(w: &str) -> bool {
 
 fn commands(w: &str) -> bool {
     PLAY_STRONG.contains(&w) || ADD_WORDS.contains(&w)
+}
+
+fn command(w: &str) -> bool {
+    let alone = [Tok {
+        w: w.to_string(),
+        amb: false,
+    }];
+    let asked = intent::detect(&alone).intent;
+    OBJECT_VERBS.contains(&w) || PLAY_STRONG.contains(&w) || asked.is_control()
 }
