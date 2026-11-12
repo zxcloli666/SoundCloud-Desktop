@@ -40,3 +40,16 @@ fn a_command_word_right_after_not_is_denied_and_the_one_before_it_stands() {
         ("не не не стоп стоп стоп", "stop"),
     ]);
 }
+
+#[test]
+fn a_word_that_turns_the_track_said_again_and_again_is_said_once() {
+    acts(&[
+        ("назад назад назад", "previous"),
+        ("дальше дальше дальше", "next"),
+        ("обратно обратно обратно", "previous"),
+    ]);
+    stays_silent(&[
+        "вперед вперед вперед",
+        "дальше дальше дальше будет только хуже",
+    ]);
+}

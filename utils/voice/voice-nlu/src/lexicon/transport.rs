@@ -22,6 +22,7 @@ pub const PREV_STRONG: &[&str] = &[
     "прошедш",
 ];
 pub const PREV_WEAK: &[&str] = &["обратно", "назад", "back", "вернись", "вернуться"];
+pub const CHEERS: &[&str] = &["вперед"];
 
 pub const PAUSE_WORDS: &[&str] = &[
     "пауза",
