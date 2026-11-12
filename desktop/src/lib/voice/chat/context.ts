@@ -40,7 +40,13 @@ export function candidatesOf(cmd: VoiceCommand): Entity[] {
 }
 
 export function entityRef(entity: Entity) {
-  return { kind: entity.kind, name: entity.name, artist: entity.artist, id: entity.id };
+  return {
+    kind: entity.kind,
+    name: entity.name,
+    artist: entity.artist,
+    popularity: entity.popularity,
+    id: entity.id,
+  };
 }
 
 export function buildContext(input: ContextInput): Record<string, unknown> {

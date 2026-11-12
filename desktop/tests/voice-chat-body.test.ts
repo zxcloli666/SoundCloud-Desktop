@@ -203,11 +203,11 @@ test('a command with candidates sends them in the context, best first, five at m
   assert.equal(
     JSON.stringify(body.context.candidates),
     JSON.stringify([
-      { kind: 'track', name: 'Как дела 1', artist: 'Скриптонит', id: 't1' },
-      { kind: 'track', name: 'Как дела 2', artist: 'Скриптонит', id: 't2' },
-      { kind: 'track', name: 'Как дела 3', artist: 'Скриптонит', id: 't3' },
-      { kind: 'track', name: 'Как дела 4', artist: 'Скриптонит', id: 't4' },
-      { kind: 'track', name: 'Как дела 5', artist: 'Скриптонит', id: 't5' },
+      { kind: 'track', name: 'Как дела 1', artist: 'Скриптонит', popularity: 9, id: 't1' },
+      { kind: 'track', name: 'Как дела 2', artist: 'Скриптонит', popularity: 9, id: 't2' },
+      { kind: 'track', name: 'Как дела 3', artist: 'Скриптонит', popularity: 9, id: 't3' },
+      { kind: 'track', name: 'Как дела 4', artist: 'Скриптонит', popularity: 9, id: 't4' },
+      { kind: 'track', name: 'Как дела 5', artist: 'Скриптонит', popularity: 9, id: 't5' },
     ]),
   );
   const player = fakePort();

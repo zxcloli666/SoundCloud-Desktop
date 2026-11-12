@@ -212,6 +212,7 @@ test('search returns the top matches and play_found only plays what search retur
     kind: 'track',
     name: 'Положение',
     artist: 'Скриптонит',
+    popularity: 9,
     id: 't7',
   });
   assert.deepEqual(player.calls, []);
