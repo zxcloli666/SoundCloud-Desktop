@@ -212,6 +212,9 @@ fn merge(said: Vec<Tok>, version: Version) -> Vec<Tok> {
             Vec::new()
         };
     }
+    if command(&said).is_some() && intent::detect(&next).intent == Intent::Undo {
+        return Vec::new();
+    }
     if let Some(same_command) = reworded::part(&said, &next) {
         return same_command;
     }

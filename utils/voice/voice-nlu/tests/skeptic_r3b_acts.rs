@@ -264,3 +264,17 @@ fn okay_after_something_said_takes_it_back_for_what_follows() {
         ("ладно включи земфиру", "play"),
     ]);
 }
+
+#[test]
+fn a_command_taken_back_with_undo_in_the_same_breath_does_nothing() {
+    stays_silent(&[
+        "выключи звук нет верни обратно",
+        "отключи звук нет верни обратно",
+        "включи земфиру нет отмени",
+    ]);
+    acts(&[
+        ("блин нет верни как было", "undo"),
+        ("нет верни как было", "undo"),
+        ("верни как было", "undo"),
+    ]);
+}
