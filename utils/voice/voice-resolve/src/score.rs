@@ -44,6 +44,7 @@ const POPULARITY_GAP: u64 = 50;
 const HEARD_MIN: f32 = 0.99;
 const NAMED_MIN: f32 = 0.9;
 const ADDED_MIN: f32 = 0.6;
+const CURATED_MIN: f32 = 0.95;
 
 fn popularity_factor(pop: u64) -> f32 {
     let norm = ((1.0 + pop as f32).ln() / (1.0f32 + 1e8).ln()).clamp(0.0, 1.0);
@@ -118,7 +119,18 @@ pub fn rank(parsed: &Parsed, cands: Vec<Entity>, boosts: &Boosts) -> Vec<Scored>
             out.insert(0, exact);
         }
     }
+    if let Some(i) = named_by_a_curated_alias(&out, parsed) {
+        let curated = out.remove(i);
+        out.insert(0, curated);
+    }
     out
+}
+
+fn named_by_a_curated_alias(out: &[Scored], parsed: &Parsed) -> Option<usize> {
+    let top = out.first().filter(|s| !s.alias && s.sim < HEARD_MIN)?;
+    let asked = |s: &Scored| parsed.kind_hint.is_none_or(|kind| s.entity.kind == kind);
+    let curated = |s: &Scored| s.alias && !s.fallback && s.sim >= CURATED_MIN && asked(s);
+    out.iter().position(|s| curated(s) && s.sim > top.sim)
 }
 
 fn outdoes(whole: &Scored, part: &Scored, queries: &[QueryKeys]) -> bool {

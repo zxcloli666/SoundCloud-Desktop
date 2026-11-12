@@ -95,3 +95,12 @@ fn a_title_that_starts_with_a_kind_word_wins_when_it_is_named_whole() {
         ("включи песню кукушка кино", "Кино - Кукушка"),
     ]);
 }
+
+#[test]
+fn a_name_the_curated_aliases_give_beats_one_that_only_sounds_close() {
+    finds(&[
+        ("включи дрейко", "Drakeo?"),
+        ("включи дрейка", "Drake"),
+        ("включи дрейк белл", "Drake Bell"),
+    ]);
+}
