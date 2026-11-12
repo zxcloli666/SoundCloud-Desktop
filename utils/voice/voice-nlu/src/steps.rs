@@ -1,6 +1,8 @@
 use crate::correct;
 use crate::intent;
-use crate::lexicon::{ADD_WORDS, KIND_ARTIST, LONE_VERBS, ON_VERB_FORMS, PLAY_STRONG, PLAY_WEAK};
+use crate::lexicon::{
+    self, ADD_WORDS, KIND_ARTIST, LONE_VERBS, ON_VERB_FORMS, PLAY_STRONG, PLAY_WEAK,
+};
 use crate::names::Names;
 use crate::normalize::{Tok, normalize};
 use crate::objection;
@@ -15,6 +17,7 @@ const AFTER: &[&str] = &["него", "этого", "нее", "нее"];
 const FIRST: &str = "сначала";
 const ALSO: &str = "еще";
 const THEN: &[&str] = &["потом", "затем", "then"];
+const ORDER_ENDINGS: &[&str] = &["и", "й", "ь", "те"];
 
 pub(crate) enum Side {
     Cmd(Parsed),
@@ -169,6 +172,7 @@ fn linked(toks: &[Tok], text: &str, inherit: bool) -> Option<Vec<Parsed>> {
             None => match side(right, text) {
                 Side::Cmd(p) => vec![p],
                 Side::Foreign => Vec::new(),
+                Side::Other if controls(&left) && order_to_someone(right) => Vec::new(),
                 Side::Other => match left.last() {
                     Some(lp) if l.soft && matches!(lp.intent, Intent::Play | Intent::QueueAdd) => {
                         match shared_verb(right, text, true) {
@@ -192,6 +196,16 @@ fn linked(toks: &[Tok], text: &str, inherit: bool) -> Option<Vec<Parsed>> {
         }
     }
     None
+}
+
+fn controls(steps: &[Parsed]) -> bool {
+    steps.last().is_some_and(|p| p.intent.is_control())
+}
+
+fn order_to_someone(toks: &[Tok]) -> bool {
+    let w = toks[0].w.as_str();
+    let ordered = ORDER_ENDINGS.iter().any(|e| w.ends_with(e)) && !w.ends_with("ть");
+    ordered && toks.len() > 1 && !lexicon::is_known(w)
 }
 
 fn queued_after(rest: &mut [Parsed]) {

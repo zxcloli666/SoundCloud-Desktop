@@ -409,3 +409,17 @@ fn a_time_span_said_before_a_command_tells_when_and_is_not_its_object() {
         "соседи сверлят свет выключи",
     ]);
 }
+
+#[test]
+fn an_order_to_someone_joined_by_and_after_a_command_leaves_the_command() {
+    acts(&[
+        ("следующая и позови маму", "next"),
+        ("пауза и иди спать", "pause"),
+        ("громче и позови маму", "volume_up"),
+    ]);
+    stays_silent(&[
+        "позови маму",
+        "выключи свет и позови маму",
+        "следующая и звери",
+    ]);
+}
