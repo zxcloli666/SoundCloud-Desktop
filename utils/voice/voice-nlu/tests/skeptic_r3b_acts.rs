@@ -186,3 +186,15 @@ fn a_swear_beside_a_mute_verb_only_stresses_it() {
     ]);
     stays_silent(&["заглуши мотор"]);
 }
+
+#[test]
+fn a_seek_by_zero_goes_to_the_start() {
+    acts(&[
+        ("перемотай на ноль", "seek_to"),
+        ("перемотай на 0", "seek_to"),
+        ("отмотай на ноль", "seek_to"),
+        ("перемотай на 10", "seek_forward"),
+        ("отмотай на 10", "seek_backward"),
+        ("перемотай на 0:30", "seek_to"),
+    ]);
+}

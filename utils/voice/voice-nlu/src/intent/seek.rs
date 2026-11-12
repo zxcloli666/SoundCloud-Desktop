@@ -316,7 +316,8 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
         } else {
             t.bare.unwrap_or(10)
         };
-        let absolute = t.ordinal || jump_verb || set_verb || on_time || placed;
+        let to_zero = !t.found && t.bare == Some(0);
+        let absolute = t.ordinal || jump_verb || set_verb || on_time || placed || to_zero;
         let intent = if absolute || (t.clock && !has_dir) {
             Intent::SeekTo
         } else if back || back_verb {
