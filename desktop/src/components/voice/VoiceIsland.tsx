@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { useShallow } from 'zustand/shallow';
 import { isMac } from '../../lib/platform';
 import { replyLength } from '../../lib/voice/chat/live';
@@ -50,23 +50,35 @@ export function VoiceIsland() {
   const speaking = useVoiceRuntime((s) => s.engine === 'speaking');
   const settingsOpen = useVoiceRuntime((s) => s.settingsOpen);
   const summary = useVoiceRuntime(useShallow((s) => summarize(s.models)));
-  const [hovered, setHovered] = useState(false);
   const mac = isMac();
   const hudRef = useRef(hud);
   hudRef.current = hud;
   const spokenRef = useRef<HudView | null>(null);
   if (speaking) spokenRef.current = hud;
+  const hovered = useRef(false);
+  const arm = useRef(() => {});
 
   useEffect(() => {
-    const wait = hideAfter(hud, spokenRef.current === hud);
-    if (!wait || hovered || speaking) return;
-    const timer = setTimeout(() => {
-      if (hudRef.current !== hud) return;
-      if (hud.kind === 'asking') dismissHud();
-      else useVoiceRuntime.getState().hideHud();
-    }, wait);
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    if (hud.kind === 'hidden') hovered.current = false;
+    arm.current = () => {
+      clearTimeout(timer);
+      const wait = hideAfter(hud, spokenRef.current === hud);
+      if (!wait || hovered.current || speaking) return;
+      timer = setTimeout(() => {
+        if (hudRef.current !== hud) return;
+        if (hud.kind === 'asking') dismissHud();
+        else useVoiceRuntime.getState().hideHud();
+      }, wait);
+    };
+    arm.current();
     return () => clearTimeout(timer);
-  }, [hud, hovered, speaking]);
+  }, [hud, speaking]);
+
+  const hover = (over: boolean) => {
+    hovered.current = over;
+    arm.current();
+  };
 
   useEffect(() => {
     if (hud.kind === 'hidden') return;
@@ -100,14 +112,14 @@ export function VoiceIsland() {
   return (
     <div
       className="pointer-events-none fixed bottom-[128px] left-1/2 z-[70] -translate-x-1/2 animate-fade-in-up motion-reduce:animate-none"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      onMouseEnter={() => hover(true)}
+      onMouseLeave={() => hover(false)}
     >
       <IslandCard
         hud={hud}
         summary={showDownload ? summary : null}
         mac={mac}
-        paused={hovered}
+        paused={false}
         handlers={handlers}
       />
     </div>

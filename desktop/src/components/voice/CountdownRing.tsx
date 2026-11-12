@@ -30,10 +30,11 @@ export function CountdownRing({
           strokeWidth="2"
           strokeLinecap="round"
           strokeDasharray={LEN}
+          className="vx-ring"
           style={{
             ['--len' as string]: `${LEN}`,
             animation: `vx-countdown ${ms}ms linear forwards`,
-            animationPlayState: paused ? 'paused' : 'running',
+            animationPlayState: paused ? 'paused' : undefined,
           }}
         />
       </svg>

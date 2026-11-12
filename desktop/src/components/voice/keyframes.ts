@@ -17,5 +17,6 @@ export const VOICE_KEYFRAMES = `
 @keyframes vx-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
 @keyframes vx-glow { 0%, 100% { opacity: 0.55; transform: scale(0.96); } 50% { opacity: 0.9; transform: scale(1.04); } }
 @keyframes vx-ink { from { opacity: 0; } to { opacity: 1; } }
+[data-ui="voice-island"]:hover .vx-ring { animation-play-state: paused; }
 @media (prefers-reduced-motion: reduce) { [style*="vx-"] { animation: none !important; } }
 `;
