@@ -13,13 +13,37 @@ enum Word {
 }
 
 fn word(w: &str) -> Option<Word> {
-    full(w).or_else(|| {
-        SWALLOWED.iter().find_map(|(heard, said)| {
-            let stem = w.strip_suffix(heard)?;
-            full(&format!("{stem}{said}"))
+    full(w)
+        .or_else(|| {
+            SWALLOWED.iter().find_map(|(heard, said)| {
+                let stem = w.strip_suffix(heard)?;
+                full(&format!("{stem}{said}"))
+            })
         })
-    })
+        .or_else(|| unsoftened(w))
 }
+
+fn unsoftened(w: &str) -> Option<Word> {
+    let heard = sounded(w);
+    let said = SOFT_INSIDE.iter().find(|said| sounded(said) == heard)?;
+    full(said)
+}
+
+fn sounded(w: &str) -> String {
+    w.replace('ь', "").replace("тд", "д").replace("тс", "с")
+}
+
+const SOFT_INSIDE: &[&str] = &[
+    "пятьдесят",
+    "шестьдесят",
+    "семьдесят",
+    "восемьдесят",
+    "пятьсот",
+    "шестьсот",
+    "семьсот",
+    "восемьсот",
+    "девятьсот",
+];
 
 const SWALLOWED: &[(&str, &str)] = &[
     ("тцать", "дцать"),

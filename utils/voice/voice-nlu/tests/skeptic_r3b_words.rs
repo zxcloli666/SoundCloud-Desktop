@@ -224,3 +224,14 @@ fn the_sound_back_as_it_was_unmutes() {
         ("верни как было", "undo"),
     ]);
 }
+
+#[test]
+fn a_number_heard_without_its_soft_sign_is_still_that_number() {
+    amounts(&[
+        ("громкость на пятдесят", "volume_set", 50),
+        ("громкость пядесят процентов", "volume_set", 50),
+        ("громкость на семдесят", "volume_set", 70),
+        ("громкость на восемдесят", "volume_set", 80),
+        ("громкость на пятьдесят", "volume_set", 50),
+    ]);
+}
