@@ -65,7 +65,7 @@ pub fn parse(text: &str, names: &Names) -> Vec<Parsed> {
             _ => {}
         }
     }
-    if corrected && whole.alt.is_empty() {
+    if corrected && whole.alt.is_empty() && !correct::by_a_filler(text_in) {
         whole.alt = crate::whole_name(&names.drop(normalize(text_in).toks)).queries;
     }
     whole.split = entity_splits(toks, text);

@@ -250,3 +250,17 @@ fn such_after_a_question_word_asks_what_and_not_for_something_similar() {
         ("включи такое же", "play_similar"),
     ]);
 }
+
+#[test]
+fn okay_after_something_said_takes_it_back_for_what_follows() {
+    acts(&[
+        ("включи стоп ладно играй", "resume"),
+        ("поставь паузу ладно продолжай", "resume"),
+        ("ну ладно стоп", "stop"),
+        (
+            "так ладно хватит этого нытья давай следующую уже сил нет это слушать",
+            "next",
+        ),
+        ("ладно включи земфиру", "play"),
+    ]);
+}

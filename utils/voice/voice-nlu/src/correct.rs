@@ -1,5 +1,5 @@
 use crate::intent;
-use crate::lexicon::{CORRECTION_NOISE, GENERIC, MERGE_PHRASES, PRE};
+use crate::lexicon::{self, CORRECTION_NOISE, FILLERS, GENERIC, MERGE_PHRASES, PRE};
 use crate::normalize::{Tok, normalize, words};
 use crate::numbers;
 use crate::reworded;
@@ -18,7 +18,7 @@ const TAKES_BACK: &[&[&str]] = &[
     &["тьфу"],
     &["нет"],
 ];
-const WAVERS: &[&[&str]] = &[&["хотя"], &["ой"]];
+const WAVERS: &[&[&str]] = &[&["хотя"], &["ой"], &["ладно"]];
 const LOOSE: &str = "лучше";
 const NO: &str = "нет";
 const NOT: &str = "не";
@@ -93,6 +93,14 @@ pub fn resolve(text: &str) -> Option<Vec<Tok>> {
     Some(versions.into_iter().fold(Vec::new(), merge))
 }
 
+pub fn by_a_filler(text: &str) -> bool {
+    let ws = words(text);
+    let mut marks = (0..ws.len())
+        .filter(|&i| marker(&ws, i).is_some())
+        .peekable();
+    marks.peek().is_some() && marks.all(|i| lexicon::has(FILLERS, &ws[i]))
+}
+
 pub fn denies(text: &str) -> bool {
     let ws = words(text);
     (1..ws.len()).any(|i| NEGATING.iter().any(|m| starts(&ws, i, m)))
@@ -112,7 +120,7 @@ fn versions(ws: &[String]) -> Option<Vec<Version>> {
             if cur.words.iter().all(|w| SAYING.contains(&w.as_str())) {
                 cur.words.clear();
             }
-        } else if let Some(mark) = marker(ws, i) {
+        } else if let Some(mark) = marker(ws, i).filter(|m| m.firm || opened(&cur)) {
             found = true;
             dropping = false;
             let next = Version {
@@ -134,6 +142,10 @@ fn versions(ws: &[String]) -> Option<Vec<Version>> {
     }
     said.push(cur);
     found.then_some(said)
+}
+
+fn opened(cur: &Version) -> bool {
+    cur.words.iter().any(|w| !lexicon::has(FILLERS, w))
 }
 
 fn rejected(ws: &[String], i: usize, cur: &Version) -> Option<usize> {
