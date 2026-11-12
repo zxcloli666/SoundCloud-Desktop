@@ -7,7 +7,7 @@ use crate::lexicon::{
     DOWN_WORDS, FED_UP, FORWARD, IDLE, INFINITIVE_ENDINGS, INSISTING, LISTENERS, LISTENING_STEMS,
     MAKING, MUSIC_STEMS, NEG_STEMS, NEXT_STRONG, OTHERS, OWN, PLAY_STRONG, PREV_STRONG,
     REMARK_START, RESUME_WORDS, RINGS, ROUGHLY, SPEAKING, STRIDES, SWEARS_AMB, TASTE, THE_PAST,
-    UP_WORDS, WAS, WHICH,
+    TO_THE_LISTENER, UP_WORDS, WAS, WHICH,
 };
 
 pub fn sentence(c: &Ctx) -> bool {
@@ -20,6 +20,7 @@ pub fn sentence(c: &Ctx) -> bool {
         || thing_made_louder(c)
         || question_with_its_own_verb(c)
         || question_to_a_person(c)
+        || meant_for_someone_else(c)
         || plan_of_the_speaker(c)
         || voice_of_a_person(c)
         || carrying_on_with_something_else(c)
@@ -126,6 +127,13 @@ fn question_to_a_person(c: &Ctx) -> bool {
                 && LISTENERS.contains(&c.w[i - 1])
                 && deed.is_some_and(|w| !IDLE.contains(w))
         })
+}
+
+fn meant_for_someone_else(c: &Ctx) -> bool {
+    let not = |at: usize| c.w[at] == "не";
+    (1..c.len())
+        .filter(|&i| TO_THE_LISTENER.contains(&c.w[i]))
+        .any(|i| not(i - 1) || (i >= 2 && c.w[i - 1] == "с" && not(i - 2)))
 }
 
 fn plan_of_the_speaker(c: &Ctx) -> bool {
