@@ -57,6 +57,7 @@ phrase	intent	kind	entity	number	category	alt	mode
 предидущую песню	previous				asr		both
 прэдыдущий	previous				asr		both
 давай предыдущую	previous				filler		both
+вернись на прошлый трек	previous				plain		both
 следуйщий нет предыдущий	previous				correction		both
 погромчи	volume_up				asr		both
 погрумче	volume_up				asr		both
@@ -72,6 +73,7 @@ phrase	intent	kind	entity	number	category	alt	mode
 ещё громче	volume_up				plain		both
 громче чуть чуть	volume_up				plain		both
 громч	volume_up				asr		both
+громкость выше	volume_up				plain		both
 прибавь громкость	volume_up				plain		both
 добавь громкости	volume_up				morphology		both
 сделай погромче музыку	volume_up				plain		both
@@ -88,18 +90,23 @@ phrase	intent	kind	entity	number	category	alt	mode
 ну давай потише уже	volume_down				filler		both
 уменьши громкасть	volume_down				asr		both
 убавь громкось	volume_down				asr		both
+громкость ниже	volume_down				plain		both
 музыку потише	volume_down				plain		both
 сделай звук потише	volume_down				plain		both
 волюм даун	volume_down				english		both
 включи потише	volume_down				command_name		both
 громче нет тише	volume_down				correction		both
 громче ой нет патише	volume_down				correction		both
+громкость на пятдесят	volume_set			50	numbers		both
+громкость пядесят процентов	volume_set			50	numbers		both
 громкость на 30	volume_set			30	numbers		both
 громкость тридцать пять	volume_set			35	numbers		both
 громкость на сто	volume_set			100	numbers		both
 громкость на сто процентов	volume_set			100	numbers		both
 громкость на ноль	volume_set			0	numbers	mute	both
+громкость на семдесят	volume_set			70	numbers		both
 поставь громкость на двадцать	volume_set			20	numbers		both
+громкасть на палавину	volume_set			50	asr		both
 гром кость на 40	volume_set			40	asr		both
 звук на 80	volume_set			80	numbers		both
 громкость на двадцать 5	volume_set			25	numbers		both
@@ -177,6 +184,7 @@ phrase	intent	kind	entity	number	category	alt	mode
 повтори весь плейлист	repeat_all				plain		both
 зацикли всё	repeat_all				slang		both
 пусти по кругу	repeat_all				slang	repeat_one	both
+репит ол	repeat_all				english		both
 выключи повтор	repeat_off				plain		both
 атключи павтор	repeat_off				asr		both
 убери повтор	repeat_off				plain		both
@@ -201,12 +209,14 @@ phrase	intent	kind	entity	number	category	alt	mode
 включи любимае	play_likes				asr		both
 моя волна	play_wave				plain		both
 включи мою волну	play_wave				morphology		both
+включи чёнить	play_wave				slang		both
 включи что нибудь	play_wave				plain		both
 включи чтонибудь весёлое	play_wave				asr		both
 паставь музыку	play_wave				asr		both
 музыку давай	play_wave				plain		both
 рекомендации	play_wave				plain		both
 включи похожее	play_similar				plain		both
+включи пахожее	play_similar				asr		both
 включи что-то похожее на это	play_similar				plain		both
 похожее на это включи	play_similar				plain		both
 включи скрипт онита	play	artist	Скриптонит		translit		both
@@ -493,6 +503,8 @@ volume down no up	volume_up						both
 следующим поставь ели мясо мужики ой нет лесник	queue_add	track	Король и Шут - Лесник		correction		both
 после этой песни включи эд ширана	queue_add	artist	Ed Sheeran		plain		both
 сделай звук потише а то сосед стучит в стену	volume_down						both
+звук слишком громкий вообще уши болят	volume_down						both
+чёт тихо как-то	volume_up						both
 ну и тишина тут	none				ambiguous		both
 я не слышу вообще ничего прибавь	volume_up						both
 можешь ещё чуть погромче	volume_up						both
@@ -662,6 +674,7 @@ volume down no up	volume_up						both
 следующий трек	next				plain		both
 ставь следующую	next				plain		both
 следующая и позови маму	next				filler		both
+вернись на предыдущий трек	previous				plain		both
 верни прошлую песню	previous				plain		both
 назад на прошлую песню	previous				plain		both
 хватит уже выключи музыку	stop				false_act		both
@@ -702,6 +715,7 @@ volume down no up	volume_up						both
 перемешай треки	shuffle_on				plain		both
 включи случайный порядок	shuffle_on				plain		both
 выключи перемешивание	shuffle_off				plain		both
+повторяй всё подряд	repeat_all				plain		both
 перемотай вперёд на тридцать секунд	seek_forward			30	numbers		both
 отмотай назад на минуту	seek_backward			60	numbers		both
 перемотай на вторую минуту	seek_to			120	numbers		both
@@ -902,6 +916,7 @@ volume down no up	volume_up						both
 включи энти хиро	play	track	Taylor Swift - Anti-Hero		translit		both
 включи круэл саммер	play	track	Taylor Swift - Cruel Summer		translit		both
 включи гоз план	play	track	Drake - God's Plan		translit		both
+включи уан дэнс	play	track	Drake - One Dance		translit		both
 включи хотлайн блинг	play	track	Drake - Hotline Bling		translit		both
 включи ин да клаб	play	track	50 Cent - In Da Club		translit		both
 включи калифорния лав	play	track	2Pac - California Love		translit		both
@@ -1026,6 +1041,8 @@ the weeknd	play	artist	The Weeknd		bare		both
 кукушка кино	play	track	Кино - Кукушка		bare		both
 скриптонит притон	play	track	Скриптонит - Притон		bare		both
 притон скриптонит	play	track	Скриптонит - Притон		bare		both
+притон дорадура	play	track	Дорадура - Притон		bare		both
+притон скриптонит трибьют	play	track	Scriptonite Tribute - Притон		bare		both
 баста сансара	play	track	Баста - Сансара		bare		both
 сансара баста	play	track	Баста - Сансара		bare		both
 сансара бастард	play	track	Бастард - Сансара		bare		both
@@ -1033,13 +1050,19 @@ the weeknd	play	artist	The Weeknd		bare		both
 хочу земфира трибьют	play	artist	Земфира Tribute		bare	track:Земфира Tribute - Хочу	both
 ленинград экспонат	play	track	Ленинград - Экспонат		bare		both
 король и шут лесник	play	track	Король и Шут - Лесник		bare		both
+лесник король и шут трибьют	play	track	Король и Шут Tribute - Лесник		bare		both
 блайндинг лайтс уикнд	play	track	The Weeknd - Blinding Lights		bare		both
+блайндинг лайтс караоке	play	track	Weeknd Karaoke - Blinding Lights		bare		both
 старбой караоке	play	track	Weeknd Karaoke - Starboy		bare		both
 бэд гай билли айлиш	play	track	Billie Eilish - bad guy		bare		both
+лавли билли айлиш пиано	play	track	Billie Eilish Piano - Lovely		bare		both
+кукушка звери леса	play	track	Звери Леса - Кукушка		bare		both
 кукушка полина гагарина	play	track	Полина Гагарина - Кукушка		bare		both
 цепи мот	play	track	Мот - Цепи		bare		both
 цепи скриптонит	play	track	Скриптонит - Цепи		bare		both
+минор скриптонид	play	track	Скриптонид - Минор		bare		both
 минор мияги	play	track	Miyagi & Эндшпиль - Minor		bare		both
+группа крови кинолента	play	track	Кинолента - Группа крови		bare		both
 альбом группа крови	play	album	Кино - Группа крови		bare		both
 альбом горгород	none				notfound		both
 альбом views	play	album	Drake - Views		bare		both
@@ -1211,6 +1234,7 @@ play something by taylor swift	play	artist	Taylor Swift		english		both
 вруби кино кукушка	play	track	Кино - Кукушка		slang		both
 накати сплин	play	artist	Сплин		slang		both
 кинь мне ленинград	play	artist	Ленинград		slang		both
+гони эминема	play	artist	Eminem		slang		both
 дай послушать нирвану	play	artist	Nirvana		slang		both
 хочу слушать куин	play	artist	Queen		slang		both
 лоля включи скриптонита	play	artist	Скриптонит		plain		both
@@ -1241,13 +1265,16 @@ play something by taylor swift	play	artist	Taylor Swift		english		both
 что играет у скриптонита	none				false_act		both
 кто поёт кукушка	none				indirect	now_playing	both
 вруби скриптонита	play	artist	Скриптонит		slang		both
+кидай басту	play	artist	Баста		slang		both
 вруби мне элджея чел	play	artist	Элджей		slang		both
+вруби что нибудь годное	play_wave				slang		both
 лоля сделай погромче бро	volume_up				slang		both
 давай скипай дальше	next				slang		both
 зафигачь кукушку кино	play	track	Кино - Кукушка		slang		both
 ставь паузу братан	pause				slang		both
 лайкни это	like				slang		both
 это бомба лайк	like				slang		both
+врубай на полную	volume_set			100	slang	volume_up	both
 шаффл включи	shuffle_on				slang		both
 вруби рандом	shuffle_on				slang		both
 выруби рандом	shuffle_off				slang		both
@@ -1317,6 +1344,7 @@ play something by taylor swift	play	artist	Taylor Swift		english		both
 вернись на песню назад	previous				indirect		both
 включи вечерний плейлист для сна	none				indirect	play	both
 поставь мне колыбельную	none				notfound		both
+хватит на сегодня спасибо лоля	stop				indirect	pause	both
 ой не ругайся там бабушка не любит эту песню	none				false_act		both
 дед выключи телевизор	none				false_act		both
 сынок включи свет в сенях	none				false_act		both
@@ -1329,6 +1357,7 @@ play something by taylor swift	play	artist	Taylor Swift		english		both
 поставь паузу я писать	pause				filler		both
 хочу тимы белорусских	play	artist	Тима Белорусских		morphology		both
 включи мои любимые песенки	play_likes				indirect		both
+сделай тихонько	volume_down				morphology		both
 хочу ещё раз эту же песню	repeat_one				indirect	previous;seek_to	both
 хочу сначала	seek_to			0	indirect	previous;repeat_one	both
 ляля ляля ляля	none				false_act		both
@@ -1338,6 +1367,7 @@ play something by taylor swift	play	artist	Taylor Swift		english		both
 шо там с музыкой включи ка кино	play	artist	Кино		regional		both
 ну давай уже вруби зверей хорош тут тишину гонять	play	artist	Звери		regional		both
 вруби гарненько скриптонита	play	artist	Скриптонит		regional		both
+убавь трошки	volume_down				regional		both
 прибавь чуток	volume_up				regional		both
 вруби ка чайф однако	play	artist	Чайф		regional		both
 включай чайф паря	play	artist	Чайф		regional		both
@@ -1364,10 +1394,12 @@ play something by taylor swift	play	artist	Taylor Swift		english		both
 лоля поставь на паузу митинг начался	pause				filler		both
 сделай volume на сорок	volume_set			40	english		both
 запусти плейлист workout	play	playlist	Workout		english		both
+перезапусти трек	seek_to			0	english	previous;repeat_one	both
 сделай мьют	mute				english		both
 поставь репит ван	repeat_one				english		both
 скипни трек	next				english		both
 ставь лайк	like				english		both
+подними воллюм	volume_up				english		both
 дай мне в бэкграунде workout hits	none				english	play	both
 у меня колл через пять минут	none				false_act		both
 пингани меня когда будет готово	none				false_act		both
@@ -1443,6 +1475,7 @@ turn the volume down a bit	volume_down				english		both
 не включай эту дрянь	none				negative		both
 не ставь ленинград	none				negative		both
 да не так громко	volume_down				indirect		both
+вырубись	stop				slang	pause	both
 отстань	none				false_act		both
 опять ты не то включила верни как было	undo				slang	previous	both
 ты тупая	none				false_act		both
@@ -1461,6 +1494,7 @@ turn the volume down a bit	volume_down				english		both
 громкость на четверть	volume_set			25	numbers		both
 громкость на три четверти	volume_set			75	numbers		both
 половину громкости	volume_set			50	numbers		both
+звук на максималку	volume_set			100	numbers	volume_up	both
 перемотай вперёд на полторы минуты	seek_forward			90	numbers		both
 перемотай немного вперёд	seek_forward			10	numbers		both
 включи кино и сделай погромче	play+volume_up	artist	Кино		two_part		both
@@ -1551,8 +1585,10 @@ turn the volume down a bit	volume_down				english		both
 повторять всё	repeat_all				plain		both
 не лайкай	none				negative		both
 дизлайкни эту дичь	unlike				slang		both
+верни звук как был	unmute				indirect	undo	both
 заводи дальше	next				slang		both
 дальше скажи а ты вообще слышишь меня	none				false_act		both
+давай по новой эту песню	repeat_one				slang	previous;seek_to	both
 включи тишину	none				false_act	mute;pause;stop	both
 ставь предыдущую	previous				slang		both
 верни прошлую пасню	previous				regional		both
