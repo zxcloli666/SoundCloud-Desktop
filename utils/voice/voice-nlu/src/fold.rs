@@ -1,6 +1,14 @@
 use crate::numbers;
 
 const DROPPED: &[&str] = &["the", "зе", "зэ", "and", "и", "ze"];
+const LONG_BEFORE: &str = "bcdfgklmnpstvz";
+const SHORT_ANYWAY: &[&str] = &["have", "give", "live"];
+const READ_AS: &[(&str, &str)] = &[
+    ("michael", "maikl"),
+    ("girl", "gerl"),
+    ("girls", "gerls"),
+    ("gucci", "guCi"),
+];
 
 pub fn fold(text: &str) -> String {
     let mut key = String::new();
@@ -194,6 +202,9 @@ fn is_vowel_letter(c: char) -> bool {
 }
 
 fn latin(word: &str) -> String {
+    if let Some((_, read)) = READ_AS.iter().find(|(spelled, _)| *spelled == word) {
+        return (*read).to_owned();
+    }
     let c: Vec<char> = word.chars().collect();
     let n = c.len();
     let at = |i: usize, pat: &str| -> bool {
@@ -201,6 +212,20 @@ fn latin(word: &str) -> String {
         i + p.len() <= n && c[i..i + p.len()] == p[..]
     };
     let ch = |i: usize| -> char { c.get(i).copied().unwrap_or(' ') };
+    let greek = |i: usize| -> bool {
+        (i >= 3 && at(i - 3, "psy"))
+            || (i >= 2 && at(i - 2, "te"))
+            || at(0, "echo")
+            || at(i, "chaos")
+    };
+    let long = |i: usize| -> bool {
+        (4..=5).contains(&n)
+            && i + 3 == n
+            && c[n - 1] == 'e'
+            && (i == 0 || !is_vowel_letter(c[i - 1]))
+            && (LONG_BEFORE.contains(c[i + 1]) || (c[i] == 'i' && c[i + 1] == 'r'))
+            && !SHORT_ANYWAY.contains(&word)
+    };
     let mut out = String::new();
     let mut i = 0;
     if at(0, "kn") {
@@ -233,6 +258,14 @@ fn latin(word: &str) -> String {
                 out.push('c');
                 step = 2;
             }
+            'c' if at(i, "ch") && greek(i) => {
+                out.push('h');
+                step = 2;
+            }
+            'c' if at(i, "chr") || at(i, "chl") => {
+                out.push('k');
+                step = 2;
+            }
             'c' if at(i, "ch") => {
                 out.push('C');
                 step = 2;
@@ -243,6 +276,10 @@ fn latin(word: &str) -> String {
             }
             'c' if matches!(next, 'e' | 'i' | 'y') => out.push('s'),
             'c' => out.push('k'),
+            's' if at(i, "schoo") => {
+                out.push_str("sk");
+                step = 3;
+            }
             's' if at(i, "sch") => {
                 out.push_str("Sk");
                 step = 3;
@@ -332,6 +369,10 @@ fn latin(word: &str) -> String {
                 out.push_str("ai");
                 step = 3;
             }
+            'i' if at(i, "iew") => {
+                out.push('u');
+                step = 3;
+            }
             'i' if at(i, "ie") => {
                 out.push('i');
                 step = 2;
@@ -340,6 +381,8 @@ fn latin(word: &str) -> String {
                 out.push('i');
                 step = 2;
             }
+            'a' if long(i) => out.push_str("ei"),
+            'i' if long(i) => out.push_str("ai"),
             'a' | 'e' | 'i' | 'o' | 'u' => out.push(cur),
             'b' | 'd' | 'f' | 'h' | 'k' | 'l' | 'm' | 'n' | 'p' | 'r' | 's' | 't' | 'v' => {
                 out.push(cur)
