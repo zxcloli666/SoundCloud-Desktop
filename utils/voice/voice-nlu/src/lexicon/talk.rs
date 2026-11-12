@@ -32,6 +32,8 @@ pub const ROOM: &[&str] = &[
 
 pub const ATTENTION: &[&str] = &["стоп", "подожди", "погоди", "постой", "стой"];
 
+pub const HELLO_ON_THE_PHONE: &[&str] = &["алло", "ало"];
+
 pub const SILENCE: &[&str] = &["тишина"];
 
 pub const DESCRIBING: &[&str] = &[

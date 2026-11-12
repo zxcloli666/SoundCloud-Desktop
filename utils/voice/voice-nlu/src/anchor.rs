@@ -1,7 +1,7 @@
 use crate::intent::{self, Detected};
 use crate::lexicon::{
-    self, ABOUT_OWN_WORDS, BLOCK_HEAD, BLOCK_TAIL, DENY, INSISTING, LISTENERS, OBJECT_VERBS,
-    PLAY_STRONG, PLAYER, SUBJECTS, TAIL_REMARK,
+    self, ABOUT_OWN_WORDS, BLOCK_HEAD, BLOCK_TAIL, DENY, HELLO_ON_THE_PHONE, INSISTING, LISTENERS,
+    OBJECT_VERBS, PLAY_STRONG, PLAYER, SUBJECTS, TAIL_REMARK,
 };
 use crate::normalize::Tok;
 use crate::types::Intent;
@@ -50,7 +50,7 @@ fn head_ok(head: &[Tok], window: &[Tok], tail: &[Tok]) -> bool {
             !BLOCK_HEAD.contains(&w)
                 && !PLAY_STRONG.contains(&w)
                 && !DENY.contains(&w)
-                && !finite(w)
+                && (!finite(w) || HELLO_ON_THE_PHONE.contains(&w))
                 && !single_command(t)
         })
 }
@@ -128,6 +128,13 @@ pub fn remark_after(tail: &[Tok], window: &[Tok]) -> bool {
     praise || (finite && (!transitive || object))
 }
 
+fn answers_a_call(head: &[Tok], asked: Intent) -> bool {
+    let hello = head
+        .iter()
+        .any(|t| HELLO_ON_THE_PHONE.contains(&t.w.as_str()));
+    hello && asked == Intent::NowPlaying
+}
+
 pub fn find(toks: &[Tok]) -> Option<Found> {
     let n = toks.len();
     if !(2..=12).contains(&n) {
@@ -141,6 +148,9 @@ pub fn find(toks: &[Tok]) -> Option<Found> {
                 continue;
             }
             let det = intent::detect(window);
+            if answers_a_call(head, det.intent) {
+                continue;
+            }
             let head_only = end == n && start > 0 && head_intent(det.intent);
             if (allowed(det.intent) || head_only) && !det.blocked {
                 return Some(Found {

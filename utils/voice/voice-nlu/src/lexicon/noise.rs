@@ -141,6 +141,8 @@ pub const TAIL_REMARK: &[&str] = &[
     "кстати",
     "вроде",
     "срочно",
+    "алло",
+    "ало",
 ];
 
 pub const OBJECT_VERBS: &[&str] = &[

@@ -281,3 +281,19 @@ fn the_speaker_saying_they_said_it_insists_on_the_command() {
         "я сказал не громче",
     ]);
 }
+
+#[test]
+fn a_hello_on_the_phone_before_a_command_checks_the_listener_hears() {
+    acts(&[
+        ("ало лоля ало поставь на паузу ало", "pause"),
+        ("лоля лоля ты слышишь алло я говорю пауза", "pause"),
+        ("алло пауза", "pause"),
+    ]);
+    stays_silent(&[
+        "алло кто это",
+        "алло мам привет",
+        "алло ты где",
+        "алло мама выключи телевизор",
+        "алло он сказал пауза",
+    ]);
+}
