@@ -163,3 +163,16 @@ fn a_verb_of_repeating_in_the_present_tells_what_happens() {
         ("не повторяй", "repeat_off"),
     ]);
 }
+
+#[test]
+fn a_take_back_followed_only_by_fillers_takes_the_wish_back() {
+    stays_silent(&[
+        "может ленинград хотя нет ладно",
+        "включи земфиру нет ладно",
+        "может ленинград хотя нет",
+    ]);
+    acts(&[
+        ("может ленинград хотя нет включи кино", "play"),
+        ("включи земфиру ой ладно", "play"),
+    ]);
+}

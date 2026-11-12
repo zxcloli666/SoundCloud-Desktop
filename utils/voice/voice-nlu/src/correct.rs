@@ -187,7 +187,7 @@ fn merge(said: Vec<Tok>, version: Version) -> Vec<Tok> {
     };
     let next = toks(after_remark(words));
     if next.is_empty() {
-        return said;
+        return if version.firm { Vec::new() } else { said };
     }
     if next.iter().all(|t| t.w == NO) {
         return Vec::new();
