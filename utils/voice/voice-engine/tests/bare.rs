@@ -4,7 +4,7 @@ use std::sync::Arc;
 
 use common::{Rig, rig_with, silent, timing};
 use serde_json::json;
-use voice_engine::{Command, CommandEvent, Config, DecisionEvent, Source, State};
+use voice_engine::{Chat, Command, CommandEvent, Config, DecisionEvent, Source, State};
 use voice_resolve::FixtureCatalog;
 
 const CATALOG: &str = "kind\tname\tartist\tpopularity\taliases
@@ -307,5 +307,19 @@ fn a_phrase_nobody_waits_for_is_not_read_again() {
             .is_none()
     );
     rig.done(&left.id, "");
+    rig.expect_state(State::Idle);
+}
+
+#[test]
+fn a_turn_the_chat_opened_and_left_silent_ends_quietly_before_the_second_reading() {
+    let rig = rig(true);
+    let left = heard(&rig, "ало");
+    rig.chat(&left.id, Chat::Open { speak: false });
+    rig.chat(&left.id, Chat::Cut);
+    rig.engine.send(Command::Reread(left.id.clone()));
+    let again = rig.command();
+    assert!(again.chatless);
+    assert!(matches!(again.decision, Some(DecisionEvent::Act { .. })));
+    rig.done(&again.id, "");
     rig.expect_state(State::Idle);
 }
