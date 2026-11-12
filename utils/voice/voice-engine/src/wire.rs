@@ -19,6 +19,7 @@ pub fn command(outcome: &Outcome, id: String, origin: &Origin) -> CommandEvent {
         kind_hint: parsed.kind_hint.map(|k| k.name()),
         number: parsed.number,
         decision: outcome.decision.as_ref().map(decision),
+        talk: parsed.talk && talks(outcome),
         candidates: outcome.candidates.iter().map(EntityEvent::from).collect(),
         remote_id: origin.remote_id.clone(),
         group: None,
@@ -70,5 +71,33 @@ impl From<&Entity> for EntityEvent {
             popularity: entity.popularity,
             id: entity.id.clone(),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn heard(text: &str) -> CommandEvent {
+        let parsed = voice_nlu::parse_one(text);
+        let outcome = Outcome {
+            intent: parsed.intent,
+            parsed,
+            decision: None,
+            candidates: Vec::new(),
+        };
+        let origin = Origin {
+            source: Source::Typed,
+            remote_id: None,
+        };
+        command(&outcome, "1".into(), &origin)
+    }
+
+    #[test]
+    fn a_phrase_the_parser_heard_as_talk_says_so_in_its_event() {
+        assert!(heard("не лайкай").talk);
+        assert!(heard("следующий слайд пожалуйста").talk);
+        assert!(!heard("я устал").talk);
+        assert!(!heard("пауза").talk);
     }
 }

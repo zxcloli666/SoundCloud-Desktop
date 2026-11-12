@@ -17,9 +17,9 @@ import { currentPage } from './navigator';
 import { pageName } from './pages';
 import { withRest } from './rest';
 import type { ChatStep } from './step';
-import { chatTools, runTool } from './tools';
+import { chatTools, runTool, toolsOf } from './tools';
 import { MAX_ROUNDS, runTurn } from './turn';
-import type { CallResult, ChatBody, ToolEnv, TurnEnd } from './types';
+import type { CallResult, ChatBody, ChatTool, ToolEnv, TurnEnd } from './types';
 
 const REPLY_KEPT = 600;
 
@@ -68,9 +68,14 @@ function speaks(source: VoiceSource): boolean {
   return voiced(source) && useVoiceStore.getState().config.speak.replies;
 }
 
-function bodyOf(heard: string, port: PlayerPort, candidates: Entity[], now: number) {
+function bodyOf(
+  heard: string,
+  port: PlayerPort,
+  tools: ChatTool[],
+  candidates: Entity[],
+  now: number,
+) {
   const { config } = useVoiceStore.getState();
-  const tools = chatTools(port, appPort, candidates);
   const history = dialogMessages(useVoiceRuntime.getState().dialog, now);
   const body = (results: CallResult[]): ChatBody =>
     buildBody({
@@ -88,7 +93,8 @@ function bodyOf(heard: string, port: PlayerPort, candidates: Entity[], now: numb
 
 export function startChatAhead(heard: HeardEvent) {
   if (!startsAhead(heard, { on: chatOn(), resting: send.resting() })) return;
-  const { body } = bodyOf(heard.heard, playerPort, [], Date.now());
+  const tools = chatTools(playerPort, appPort, []);
+  const { body } = bodyOf(heard.heard, playerPort, tools, [], Date.now());
   early.start({ id: heard.id, speak: speaks(heard.source), body: body([]) });
 }
 
@@ -106,7 +112,9 @@ export async function chatStep(
   ctx: ExecuteContext,
 ): Promise<ChatStep> {
   const env: ToolEnv = { cmd, lang: ctx.lang, now: ctx.now, stack: ctx.stack, undo: false };
-  const { tools, body } = bodyOf(cmd.heard, port, candidatesOf(cmd), ctx.now);
+  if (cmd.talk) early.drop(cmd.id);
+  const offered = toolsOf(cmd, port, appPort);
+  const { tools, body } = bodyOf(cmd.heard, port, offered, candidatesOf(cmd), ctx.now);
   const abort = new AbortController();
   active = { id: cmd.id, abort };
   openReply();

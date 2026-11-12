@@ -4,11 +4,11 @@ import { test } from 'node:test';
 import { readArgs } from '../src/lib/voice/chat/args.ts';
 import { NOTES_CAP } from '../src/lib/voice/chat/notes.ts';
 import { parseSetting, SETTING_KEYS } from '../src/lib/voice/chat/settings.ts';
-import { chatTools, runTool } from '../src/lib/voice/chat/tools/index.ts';
+import { chatTools, runTool, toolsOf } from '../src/lib/voice/chat/tools/index.ts';
 import type { ChatTool } from '../src/lib/voice/chat/types';
 import type { Entity } from '../src/lib/voice/types';
 import { fakeApp, TRACK, toolEnv } from './voice-chat-fakes.ts';
-import { ARTIST, fakePort } from './voice-fake-port.ts';
+import { ARTIST, command, fakePort } from './voice-fake-port.ts';
 
 const NAME = /^[a-z][a-z0-9_]{0,31}$/;
 const PRIMITIVES = ['string', 'number', 'integer', 'boolean'];
@@ -357,4 +357,14 @@ test('undo reverts the last voice action and reports when there is none', async 
   assert.equal(undone.mark.intent, 'undo');
   assert.equal(player.state.volume, 40);
   assert.equal(env.stack.length, 0);
+});
+
+test('a phrase heard as talk is offered no tools, any other phrase is offered all of them', () => {
+  const all = chatTools(fakePort(), fakeApp(), []).map((t) => t.name);
+  const offered = (talk: boolean) => toolsOf(command('none', { talk }), fakePort(), fakeApp());
+  assert.deepEqual(offered(true), []);
+  assert.deepEqual(
+    offered(false).map((t) => t.name),
+    all,
+  );
 });

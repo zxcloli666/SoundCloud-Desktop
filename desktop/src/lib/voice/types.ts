@@ -132,6 +132,7 @@ export interface VoiceCommand {
   kind_hint: EntityKind | null;
   number: number | null;
   decision: Decision | null;
+  talk?: boolean;
   candidates?: Entity[];
   remote_id?: string;
   group?: string;

@@ -1,6 +1,7 @@
 import type { PlayerPort } from '../../execute.ts';
-import type { Entity } from '../../types';
+import type { Entity, VoiceCommand } from '../../types';
 import { readArgs } from '../args.ts';
+import { candidatesOf } from '../context.ts';
 import type { AppPort } from '../ports';
 import type { ChatTool, Ran, ToolEnv, ToolRun } from '../types';
 import { appTools } from './app.ts';
@@ -15,6 +16,10 @@ export function chatTools(player: PlayerPort, app: AppPort, offered: Entity[]): 
     ...appTools(player, app),
     ...memoryTools(app),
   ];
+}
+
+export function toolsOf(cmd: VoiceCommand, player: PlayerPort, app: AppPort): ChatTool[] {
+  return cmd.talk ? [] : chatTools(player, app, candidatesOf(cmd));
 }
 
 function missed(name: string, reason: string, returns: boolean): Ran {
