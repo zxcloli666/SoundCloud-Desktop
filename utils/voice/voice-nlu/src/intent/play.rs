@@ -10,8 +10,9 @@ pub struct Verb {
 
 fn rambling(c: &Ctx) -> Option<Verb> {
     let limit = c.len().min(10);
+    let someone_else = |w: &&str| REPORT.contains(w) || KIN.contains(w);
     (1..limit)
-        .find(|&i| IMPERATIVES.contains(&c.w[i]) && !c.w[..i].iter().any(|w| REPORT.contains(w)))
+        .find(|&i| IMPERATIVES.contains(&c.w[i]) && !c.w[..i].iter().any(someone_else))
         .map(|idx| Verb {
             idx,
             strong: true,

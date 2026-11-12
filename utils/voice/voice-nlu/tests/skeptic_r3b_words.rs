@@ -79,3 +79,17 @@ fn next_said_of_a_thing_or_a_person_tells_their_place() {
         ("ты давай следующий", "next"),
     ]);
 }
+
+#[test]
+fn an_order_said_right_after_calling_mom_or_dad_is_for_them() {
+    stays_silent(&[
+        "папа включи кино",
+        "мама поставь земфиру",
+        "мам включи кино",
+    ]);
+    acts(&[
+        ("слушай включи кино", "play"),
+        ("ну короче включи кино", "play"),
+        ("мам лоля включи кино", "play"),
+    ]);
+}

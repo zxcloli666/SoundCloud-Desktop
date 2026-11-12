@@ -32,6 +32,8 @@ pub const ROOM: &[&str] = &[
     "написано",
 ];
 
+pub const KIN: &[&str] = &["мама", "папа", "мам", "пап"];
+
 pub const ATTENTION: &[&str] = &["стоп", "подожди", "погоди", "постой", "стой"];
 
 pub const HELLO_ON_THE_PHONE: &[&str] = &["алло", "ало"];
