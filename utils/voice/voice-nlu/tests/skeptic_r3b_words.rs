@@ -307,3 +307,12 @@ fn enough_for_today_stops() {
         ("пауза на сегодня", "pause"),
     ]);
 }
+
+#[test]
+fn turn_yourself_off_said_to_the_listener_stops() {
+    acts(&[
+        ("вырубись", "stop"),
+        ("отключись", "stop"),
+        ("выключись", "stop"),
+    ]);
+}
