@@ -423,3 +423,15 @@ fn an_order_to_someone_joined_by_and_after_a_command_leaves_the_command() {
         "следующая и звери",
     ]);
 }
+
+#[test]
+fn a_like_joined_to_another_order_is_a_call_to_an_audience() {
+    acts(&[("поставь лайк", "like"), ("лайкни этот трек", "like")]);
+    for text in [
+        "поставь лайк и подпишись на канал",
+        "лайкни и поделись с друзьями",
+        "поставь лайк и напиши комментарий",
+    ] {
+        assert!(!steps(text).contains(&"like"), "{text}");
+    }
+}

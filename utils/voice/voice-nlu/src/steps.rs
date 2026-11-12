@@ -198,7 +198,10 @@ fn linked(toks: &[Tok], text: &str, inherit: bool) -> Option<Vec<Parsed>> {
 }
 
 fn controls(steps: &[Parsed]) -> bool {
-    steps.last().is_some_and(|p| p.intent.is_control())
+    let verdict = |i: Intent| matches!(i, Intent::Like | Intent::Unlike);
+    steps
+        .last()
+        .is_some_and(|p| p.intent.is_control() && !verdict(p.intent))
 }
 
 fn order_to_someone(toks: &[Tok]) -> bool {
