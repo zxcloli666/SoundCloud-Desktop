@@ -239,3 +239,14 @@ fn more_or_less_beside_a_volume_noun_steps_the_volume() {
     ]);
     acts_in_steps(&[("громкость побольше и следующий", &["volume_up", "next"])]);
 }
+
+#[test]
+fn such_after_a_question_word_asks_what_and_not_for_something_similar() {
+    acts(&[
+        ("так что бы такое послушать ну вот включи кино", "play"),
+        ("чего бы такого поставить включи земфиру", "play"),
+        ("включи что-нибудь такое", "play_similar"),
+        ("давай ещё такое", "play_similar"),
+        ("включи такое же", "play_similar"),
+    ]);
+}

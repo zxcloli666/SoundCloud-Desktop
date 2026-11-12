@@ -225,7 +225,9 @@ pub fn content(c: &Ctx) -> Option<Detected> {
 }
 
 fn asks_for_such(c: &Ctx, at: usize) -> bool {
-    c.at(at + 1) != "себе" && (find_verb(c).is_some() || c.has(SUCH_COMPANY))
+    let before = c.w[..at].iter().rev().find(|w| **w != "бы");
+    let wondering = before.is_some_and(|w| WONDERING.contains(w));
+    c.at(at + 1) != "себе" && !wondering && (find_verb(c).is_some() || c.has(SUCH_COMPANY))
 }
 
 fn manner(c: &Ctx) -> Vec<usize> {

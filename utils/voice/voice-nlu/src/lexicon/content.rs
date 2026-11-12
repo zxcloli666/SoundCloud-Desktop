@@ -133,4 +133,6 @@ pub const SUCH: &[&str] = &["такое", "такого", "такую", "так�
 
 pub const SUCH_COMPANY: &[&str] = &["же", "еще", "побольше", "чтонибудь", "чтото"];
 
+pub const WONDERING: &[&str] = &["что", "чего", "чем"];
+
 pub const SIMILAR_WISHED: &[&str] = &["похожего", "подобного"];
