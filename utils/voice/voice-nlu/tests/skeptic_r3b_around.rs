@@ -166,3 +166,18 @@ fn a_refusal_followed_by_a_new_order_gives_that_order() {
         "не надо включать телевизор выключи свет",
     ]);
 }
+
+#[test]
+fn saying_the_step_taken_back_was_too_much_is_the_reason_for_the_new_one() {
+    acts(&[
+        ("ой погромче а нет это слишком потише", "volume_down"),
+        ("погромче нет слишком громко потише", "volume_down"),
+        ("потише ой нет это слишком тихо погромче", "volume_up"),
+        ("громче нет это слишком громко", "volume_down"),
+    ]);
+    stays_silent(&[
+        "погромче а нет это слишком",
+        "погромче а нет это слишком мама спит",
+        "потише нет это слишком",
+    ]);
+}

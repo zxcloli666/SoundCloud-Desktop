@@ -74,6 +74,8 @@ const POINTERS: &[&str] = &[
     "трек",
 ];
 
+const TOO_MUCH: &[&str] = &["слишком", "чересчур", "очень", "совсем"];
+
 const NEGATING: &[&[&str]] = &[&["а", "не"], &["только", "не"], &["но", "не"], &["и", "не"]];
 
 #[derive(Default)]
@@ -327,8 +329,23 @@ fn orders(read: Side, next: &[Tok], said: &[Tok]) -> bool {
 }
 
 fn from_its_start(read: &Parsed, next: &[Tok]) -> bool {
-    let mut kept = read.normalized.split(' ');
-    kept.clone().count() == next.len() || kept.next() == Some(next[0].w.as_str())
+    let kept: Vec<&str> = read.normalized.split(' ').collect();
+    let from = |start: usize| {
+        let first = next.get(start).map(|t| t.w.as_str());
+        kept.len() == next.len() - start || kept.first().copied() == first
+    };
+    (0..=said_too_much(next)).any(from)
+}
+
+fn said_too_much(next: &[Tok]) -> usize {
+    let too = |t: &Tok| TOO_MUCH.contains(&t.w.as_str());
+    let judging = |t: &&Tok| POINTERS.contains(&t.w.as_str()) || too(t);
+    let lead = next.iter().take_while(judging).count();
+    if !next[..lead].iter().any(too) {
+        return 0;
+    }
+    let quality = next.get(lead..=lead).filter(|_| lead + 1 < next.len());
+    lead + usize::from(quality.is_some_and(|q| command(q).is_none()))
 }
 
 fn starts(ws: &[String], at: usize, marker: &[&str]) -> bool {
