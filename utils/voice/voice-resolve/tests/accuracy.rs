@@ -105,10 +105,16 @@ fn sets() -> Vec<Set> {
 }
 
 fn sets_for_both_modes() -> Vec<Set> {
-    vec![Set {
-        name: "skeptic_r3_pass",
-        rows: rows(include_str!("data/phrases_skeptic_r3_pass.tsv")),
-    }]
+    vec![
+        Set {
+            name: "skeptic_r3_pass",
+            rows: rows(include_str!("data/phrases_skeptic_r3_pass.tsv")),
+        },
+        Set {
+            name: "skeptic_r3b_pass",
+            rows: rows(include_str!("data/phrases_skeptic_r3b_pass.tsv")),
+        },
+    ]
 }
 
 const VOICE: [&str; 3] = ["Loli", "Лоля", "롤리"];
