@@ -3,7 +3,7 @@ use crate::intent::{self, Detected, Negation};
 use crate::lexicon::{
     self, ATTENTION, COMPLAINT, DENY, DOWN_WORDS, FED_UP, GENERIC, HELLO_ON_THE_PHONE, IMPERATIVES,
     NEG_STEMS, OBJECT_VERBS, PLAY_STRONG, PLAY_WEAK, PLAYER, PRE, REASON, REMARK_START, REPORT,
-    RESUME_FILL, RESUME_WORDS, ROOM, UP_WORDS, WARNING,
+    RESUME_FILL, RESUME_WORDS, ROOM, TIME_SPANS, UP_WORDS, WARNING,
 };
 use crate::normalize::Tok;
 use crate::numbers;
@@ -92,7 +92,12 @@ fn talk(head: &[Tok], command_follows: bool) -> bool {
         && !head.iter().any(foreign)
         && !reported(head)
         && !matches!(last, "не" | "ни" | "такой" | "такая")
-        && !DENY.contains(&last)
+        && !(DENY.contains(&last) && !lasted(head))
+}
+
+fn lasted(head: &[Tok]) -> bool {
+    let span = head.len().checked_sub(2).map(|at| head[at].w.as_str());
+    span.is_some_and(|w| TIME_SPANS.contains(&w))
 }
 
 fn statement(head: &[Tok], command_follows: bool) -> bool {

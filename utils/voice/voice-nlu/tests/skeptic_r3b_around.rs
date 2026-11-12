@@ -393,3 +393,19 @@ fn words_to_the_room_after_a_waver_leave_the_command_as_it_was() {
     ]);
     stays_silent(&["пауза нет кто там", "стоп нет мама пришла", "кто там"]);
 }
+
+#[test]
+fn a_time_span_said_before_a_command_tells_when_and_is_not_its_object() {
+    acts(&[
+        (
+            "у меня тут соседи сверлят весь день сделай погромче",
+            "volume_up",
+        ),
+        ("соседи сверлят всю ночь сделай погромче", "volume_up"),
+    ]);
+    stays_silent(&[
+        "весь день свет выключи",
+        "целый день телевизор сделай потише",
+        "соседи сверлят свет выключи",
+    ]);
+}

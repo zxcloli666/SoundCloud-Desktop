@@ -53,6 +53,18 @@ pub const DESCRIBING: &[&str] = &[
 
 pub const FED_UP: &[&str] = &["хватит", "невмоготу"];
 
+pub const TIME_SPANS: &[&str] = &[
+    "весь",
+    "всю",
+    "все",
+    "целый",
+    "целую",
+    "целое",
+    "каждый",
+    "каждую",
+    "каждое",
+];
+
 pub const PLAYER: &[&str] = &[
     "музык",
     "песн",
