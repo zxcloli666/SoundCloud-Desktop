@@ -95,3 +95,13 @@ fn a_family_word_inside_a_name_after_a_play_verb_stays_in_the_name() {
         ("включи хаски мама", "хаски мама"),
     ]);
 }
+
+#[test]
+fn going_on_to_tell_what_a_family_member_did_is_a_story() {
+    stays_silent(&[
+        "дальше мама пошла домой",
+        "дальше бабушка пошла спать",
+        "назад дедушка пришел",
+    ]);
+    acts(&[("дальше", "next"), ("давай дальше", "next")]);
+}

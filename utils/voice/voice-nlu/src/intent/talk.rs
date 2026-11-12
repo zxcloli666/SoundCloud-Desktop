@@ -2,6 +2,7 @@ use super::ctx::Ctx;
 use super::indirect;
 use super::library::NOW_SET;
 use crate::anchor::finite;
+use crate::kin;
 use crate::lexicon::{
     self, ABOUT, AGREEMENT, ASKING, ASKING_ANOTHER, BACKWARD, CLAUSE_SUBJECTS, COMPLAINT,
     COMPOUNDS, DEMONSTRATIVES, DENY, DESCRIBING, DOWN_WORDS, FED_UP, FIRST_PERSON, FORWARD,
@@ -43,7 +44,8 @@ fn adverb_of_a_clause(c: &Ctx) -> bool {
     (1..c.len()).any(|i| {
         let adverb = c.w[i - 1];
         let direction = FORWARD.contains(&adverb) || BACKWARD.contains(&adverb);
-        let taken = CLAUSE_SUBJECTS.contains(&c.w[i]) || has_its_own_verb(&c.w[i..]);
+        let subject = CLAUSE_SUBJECTS.contains(&c.w[i]) || kin::subject(&c.w, i);
+        let taken = subject || has_its_own_verb(&c.w[i..]);
         direction && taken && c.only_pre(0..i - 1) && !backs_the_command(&c.w[i..])
     })
 }

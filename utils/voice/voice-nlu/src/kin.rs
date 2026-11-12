@@ -11,6 +11,10 @@ pub fn called<S: AsRef<str>>(words: &[S], at: usize) -> bool {
     kin(words[at].as_ref()) && verb_of(words, at).is_none()
 }
 
+pub fn subject<S: AsRef<str>>(words: &[S], at: usize) -> bool {
+    kin(words[at].as_ref()) && verb_of(words, at).is_some()
+}
+
 pub fn told_of<S: AsRef<str>>(words: &[S], at: usize) -> bool {
     let doer = |who: usize| kin(words[who].as_ref()) && verb_of(words, who) == Some(at);
     (at.saturating_sub(REACH)..at).any(doer)
