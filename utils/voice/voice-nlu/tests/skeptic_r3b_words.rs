@@ -281,3 +281,11 @@ fn something_good_to_play_is_the_wave() {
         ("включи что-нибудь хорошее", "play_wave"),
     ]);
 }
+
+#[test]
+fn a_bit_said_the_southern_way_is_a_bit() {
+    acts(&[
+        ("убавь трошки", "volume_down"),
+        ("прибавь трошки", "volume_up"),
+    ]);
+}
