@@ -5,15 +5,17 @@ use crate::anchor::finite;
 use crate::lexicon::{
     self, ABOUT, AGREEMENT, ASKING, ASKING_ANOTHER, BACKWARD, CLAUSE_SUBJECTS, COMPLAINT,
     COMPOUNDS, DEMONSTRATIVES, DENY, DESCRIBING, DOWN_WORDS, FED_UP, FIRST_PERSON, FORWARD, IDLE,
-    INFINITIVE_ENDINGS, INSISTING, LISTENERS, LISTENING_STEMS, MAKING, MUSIC_STEMS, NEG_STEMS,
-    NEXT_STRONG, NOISES, NOT_NOW, OTHERS, OWN, PLAY_STRONG, POINTS_BACK, PREV_STRONG, REMARK_START,
-    RESUME_WORDS, ROUGHLY, SILENCE, SPEAKING, STRIDES, SWEARS_AMB, TASTE, THE_PAST,
-    TO_THE_LISTENER, UP_WORDS, WAS, WHICH,
+    IN_TURN, INFINITIVE_ENDINGS, INSISTING, LISTENERS, LISTENING_STEMS, MAKING, MUSIC_STEMS,
+    NEG_STEMS, NEXT_STRONG, NOISES, NOMINATIVE, NOT_NOW, OTHERS, OWN, PLAY_STRONG, POINTS_BACK,
+    PREV_STRONG, REMARK_START, RESUME_WORDS, ROUGHLY, SILENCE, SPEAKING, STRIDES, SWEARS_AMB,
+    TASTE, THE_PAST, TO_THE_LISTENER, UP_WORDS, WAS, WHICH,
 };
 
 pub fn sentence(c: &Ctx) -> bool {
     adverb_of_a_clause(c)
         || attribute_of_a_noun(c)
+        || said_of_this_thing(c)
+        || place_in_a_line(c)
         || half_of_a_compound(c)
         || complaint_about_a_thing(c)
         || taste_of_another(c)
@@ -58,10 +60,34 @@ fn backs_the_command(words: &[&str]) -> bool {
 fn attribute_of_a_noun(c: &Ctx) -> bool {
     (1..c.len()).any(|i| {
         let (adjective, noun) = (c.w[i - 1], c.w[i]);
-        let ordinal =
-            lexicon::stem(NEXT_STRONG, adjective) || lexicon::stem(PREV_STRONG, adjective);
-        ordinal && c.only_pre(0..i - 1) && agrees(adjective, noun) && own_noun(noun)
+        ordinal(adjective) && c.only_pre(0..i - 1) && agrees(adjective, noun) && own_noun(noun)
     })
+}
+
+fn said_of_this_thing(c: &Ctx) -> bool {
+    (2..c.len()).any(|i| {
+        let (this, noun, adjective) = (c.w[i - 2], c.w[i - 1], c.w[i]);
+        let thing = own_noun(noun) && !lexicon::stem(MUSIC_STEMS, noun);
+        DEMONSTRATIVES.contains(&this) && ordinal(adjective) && agrees(adjective, noun) && thing
+    })
+}
+
+fn place_in_a_line(c: &Ctx) -> bool {
+    let Some((last, before)) = c.w.split_last() else {
+        return false;
+    };
+    let Some(who) = before.iter().position(|w| CLAUSE_SUBJECTS.contains(w)) else {
+        return false;
+    };
+    let between = &before[who + 1..];
+    ordinal(last)
+        && NOMINATIVE.iter().any(|e| last.ends_with(e))
+        && c.only_pre(0..who)
+        && between.iter().all(|w| IN_TURN.contains(w))
+}
+
+fn ordinal(w: &str) -> bool {
+    lexicon::stem(NEXT_STRONG, w) || lexicon::stem(PREV_STRONG, w)
 }
 
 fn agrees(adjective: &str, noun: &str) -> bool {
