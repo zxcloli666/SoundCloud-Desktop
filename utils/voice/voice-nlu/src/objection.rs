@@ -1,5 +1,5 @@
 use crate::intent::{self, Negation};
-use crate::lexicon::REMARK_START;
+use crate::lexicon::{self, REMARK_START};
 use crate::normalize::{normalize, words};
 
 const NOT: &str = "не";
@@ -48,7 +48,8 @@ fn after_a_run_of_no(said: &[String]) -> Option<String> {
     let no = said.first().filter(|w| *w == NOT || *w == NO)?;
     let run = said.iter().take_while(|w| *w == no).count();
     let rest = said[run..].join(" ");
-    let negated = || refuses(&format!("{NOT} {rest}"));
+    let protest = said.get(run).is_some_and(|w| lexicon::whole_command(w));
+    let negated = || !protest && refuses(&format!("{NOT} {rest}"));
     (run >= 2 && !rest.is_empty() && !negated()).then(|| format!("{NO} {NO} {rest}"))
 }
 

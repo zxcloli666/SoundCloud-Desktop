@@ -65,6 +65,7 @@ pub(crate) fn parse_toks(text: &str, mut toks: Vec<Tok>) -> (Parsed, bool) {
         match intent::negation(&toks) {
             intent::Negation::Cancel => return (cancelled(text, &toks), true),
             intent::Negation::Tail(j) => toks.drain(..j).for_each(drop),
+            intent::Negation::Head(i) => toks.truncate(i),
             intent::Negation::Clear => {}
         }
         if let Some(k) = intent::remark(&toks) {

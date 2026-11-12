@@ -4,7 +4,7 @@ use super::talk;
 use crate::lexicon::{
     self, ABOUT_OWN_WORDS, ADDRESSEES, AFTER_ABSENT, BACKWARD, BEFORE_ABSENT, DENY, DOWN_WORDS,
     ENDEARMENTS, FORWARD, IMPERATIVES, LONE_VERBS, NEG_FOLLOW, NEG_STEMS, OBJECT_VERBS,
-    PLAY_STRONG, REMARK_START, REPORT, SUBJECTS, UP_WORDS,
+    PLAY_STRONG, PRE, REMARK_START, REPORT, SUBJECTS, UP_WORDS,
 };
 use crate::normalize::Tok;
 use crate::types::Intent;
@@ -13,11 +13,25 @@ pub enum Negation {
     Clear,
     Cancel,
     Tail(usize),
+    Head(usize),
 }
 
 fn negated_verb(w: &str) -> bool {
-    let heading = FORWARD.contains(&w) || BACKWARD.contains(&w);
-    heading || NEG_FOLLOW.contains(&w) || PLAY_STRONG.contains(&w) || lexicon::stem(NEG_STEMS, w)
+    let named = command_word(w) || NEG_FOLLOW.contains(&w);
+    named || PLAY_STRONG.contains(&w) || lexicon::stem(NEG_STEMS, w)
+}
+
+fn command_word(w: &str) -> bool {
+    FORWARD.contains(&w) || BACKWARD.contains(&w) || lexicon::whole_command(w)
+}
+
+fn contrasted(toks: &[Tok], not: usize) -> bool {
+    let after = &toks[not + 2..];
+    let said_first = super::detect(&toks[..not]).intent.is_control();
+    not > 0
+        && command_word(&toks[not + 1].w)
+        && after.iter().all(|t| PRE.contains(&t.w.as_str()))
+        && said_first
 }
 
 pub fn lyric(toks: &[Tok]) -> bool {
@@ -73,6 +87,9 @@ pub fn negation(toks: &[Tok]) -> Negation {
     for i in 0..toks.len().saturating_sub(1) {
         if toks[i].w != "не" || !negated_verb(&toks[i + 1].w) {
             continue;
+        }
+        if contrasted(toks, i) {
+            return Negation::Head(i);
         }
         let ordered = |j: usize| orders(&toks[j].w) && toks[j - 1].w != "не";
         let tail = (i + 2..toks.len()).find(|&j| ordered(j));

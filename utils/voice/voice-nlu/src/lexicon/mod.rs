@@ -149,6 +149,13 @@ pub fn stem(list: &[&str], w: &str) -> bool {
     list.iter().any(|s| w.starts_with(s))
 }
 
+pub fn whole_command(w: &str) -> bool {
+    let said = [STOP_WORDS, PAUSE_WORDS, UP_WORDS, DOWN_WORDS]
+        .iter()
+        .any(|list| list.contains(&w));
+    said || stem(NEXT_STRONG, w) || stem(PREV_STRONG, w)
+}
+
 pub fn slang(w: &str) -> Option<&'static str> {
     SLANG.iter().find(|(k, _)| *k == w).map(|(_, v)| *v)
 }

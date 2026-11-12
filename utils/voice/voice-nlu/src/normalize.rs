@@ -1,7 +1,6 @@
 use crate::lexicon::{
-    self, COMPLAINT, DEMONSTRATIVES, DOWN_WORDS, DROP_PHRASES, MERGE_PHRASES, MUSIC_STEMS,
-    MUTE_WORDS, NEXT_STRONG, PAUSE_WORDS, PLAY_STRONG, PREV_STRONG, STOP_WORDS, SWEARS_AMB,
-    UP_WORDS,
+    self, COMPLAINT, DEMONSTRATIVES, DROP_PHRASES, MERGE_PHRASES, MUSIC_STEMS, MUTE_WORDS,
+    PLAY_STRONG, STOP_WORDS, SWEARS_AMB,
 };
 use crate::numbers;
 use crate::repair;
@@ -220,10 +219,7 @@ fn dedupe(words: Vec<String>) -> Vec<String> {
 }
 
 fn insisted(w: &str) -> bool {
-    let whole_command = [STOP_WORDS, PAUSE_WORDS, UP_WORDS, DOWN_WORDS]
-        .iter()
-        .any(|list| list.contains(&w));
-    whole_command || lexicon::stem(NEXT_STRONG, w) || lexicon::stem(PREV_STRONG, w)
+    lexicon::whole_command(w)
 }
 
 fn drop_swears(words: Vec<String>) -> Vec<String> {
