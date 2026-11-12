@@ -264,3 +264,12 @@ fn all_after_repeat_said_in_russian_letters_is_english() {
         ("репит ван", "repeat_one"),
     ]);
 }
+
+#[test]
+fn something_said_short_is_something() {
+    acts(&[
+        ("включи чёнить", "play_wave"),
+        ("вруби чонить", "play_wave"),
+        ("чёт тихо как-то", "volume_up"),
+    ]);
+}
