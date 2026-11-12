@@ -287,3 +287,15 @@ fn a_complaint_said_before_undo_is_its_reason_and_not_a_step() {
         ("опять ты не то включила", "next"),
     ]);
 }
+
+#[test]
+fn a_word_right_after_an_artist_kind_word_is_a_name() {
+    acts_in_steps(&[
+        (
+            "включи группу пауза а потом группу стоп",
+            &["play", "queue_add"],
+        ),
+        ("включи группу кино", &["play"]),
+    ]);
+    stays_silent(&["группу стоп"]);
+}

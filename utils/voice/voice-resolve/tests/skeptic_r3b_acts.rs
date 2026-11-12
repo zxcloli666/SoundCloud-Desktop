@@ -73,3 +73,12 @@ fn which_by_before_the_artist_marks_the_artist() {
         ("включи цепи скриптонита", "Скриптонит - Цепи"),
     ]);
 }
+
+#[test]
+fn a_kind_word_right_before_a_command_word_keeps_it_a_name() {
+    assert_eq!(
+        heard("включи группу пауза а потом группу стоп"),
+        ["Пауза", "Стоп"]
+    );
+    assert_eq!(heard("поставь песню погромче"), ["play_wave", "volume_up"]);
+}

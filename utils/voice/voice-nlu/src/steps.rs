@@ -1,6 +1,6 @@
 use crate::correct;
 use crate::intent;
-use crate::lexicon::{ADD_WORDS, LONE_VERBS, ON_VERB_FORMS, PLAY_STRONG, PLAY_WEAK};
+use crate::lexicon::{ADD_WORDS, KIND_ARTIST, LONE_VERBS, ON_VERB_FORMS, PLAY_STRONG, PLAY_WEAK};
 use crate::names::Names;
 use crate::normalize::{Tok, normalize};
 use crate::objection;
@@ -219,7 +219,7 @@ fn juxtaposed(toks: &[Tok], text: &str) -> Option<Vec<Parsed>> {
         _ => {}
     }
     for i in 1..toks.len() {
-        if lone_verb(&toks[..i]) || lone_verb(&toks[i..]) {
+        if lone_verb(&toks[..i]) || lone_verb(&toks[i..]) || names_next(&toks[i - 1]) {
             continue;
         }
         let Side::Cmd(left) = side(&toks[..i], text) else {
@@ -267,6 +267,10 @@ fn juxtaposed(toks: &[Tok], text: &str) -> Option<Vec<Parsed>> {
         return Some(steps);
     }
     None
+}
+
+fn names_next(t: &Tok) -> bool {
+    KIND_ARTIST.contains(&t.w.as_str())
 }
 
 fn played_then_queued(toks: &[Tok], text: &str) -> Option<Vec<Parsed>> {
