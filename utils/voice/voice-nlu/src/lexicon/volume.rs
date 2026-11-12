@@ -127,5 +127,7 @@ pub const MAX_WORDS: &[&str] = &[
     "max",
     "maximum",
     "full",
+    "максималку",
+    "максималка",
 ];
 pub const MIN_WORDS: &[&str] = &["минимум", "минимальную", "минимально", "min", "minimum"];

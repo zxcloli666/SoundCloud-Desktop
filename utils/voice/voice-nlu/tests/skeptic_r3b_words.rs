@@ -235,3 +235,14 @@ fn a_number_heard_without_its_soft_sign_is_still_that_number() {
         ("громкость на пятьдесят", "volume_set", 50),
     ]);
 }
+
+#[test]
+fn the_full_amount_said_with_a_play_verb_is_the_full_volume() {
+    amounts(&[
+        ("звук на максималку", "volume_set", 100),
+        ("врубай на полную", "volume_set", 100),
+        ("включи на полную", "volume_set", 100),
+        ("поставь на полную", "volume_set", 100),
+    ]);
+    acts(&[("включи полную версию", "play")]);
+}

@@ -56,7 +56,9 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
 
     if max && noun.is_none() && implicit.is_none() {
         let at = c.pos(MAX_WORDS).unwrap_or(0);
-        if c.stray(&[at]) == 0 && c.len() <= 4 {
+        let mut said = c.all(PLAY_STRONG);
+        said.push(at);
+        if c.stray(&said) == 0 && c.len() <= 4 {
             return Some(Detected::new(Intent::VolumeSet, vec![at]).number(100));
         }
     }
