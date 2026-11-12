@@ -262,3 +262,22 @@ fn the_name_said_before_an_order_turns_the_speech_to_the_listener() {
     let kept = parse("включи кино лоля сделай погромче", &Names::new(&["Лоля"]));
     assert!(kept[0].queries.iter().any(|q| q.text.contains("кино")));
 }
+
+#[test]
+fn the_speaker_saying_they_said_it_insists_on_the_command() {
+    acts(&[
+        ("я же сказал тише", "volume_down"),
+        ("я тебе говорю пауза", "pause"),
+        ("я говорю пауза", "pause"),
+        ("ты глухая что ли я сказал тише", "volume_down"),
+    ]);
+    stays_silent(&[
+        "я сказал тише",
+        "я сказала стоп а он нет продолжай",
+        "я говорю маме пауза",
+        "он сказал пауза",
+        "я сказал ему тише",
+        "мама сказала тише",
+        "я сказал не громче",
+    ]);
+}

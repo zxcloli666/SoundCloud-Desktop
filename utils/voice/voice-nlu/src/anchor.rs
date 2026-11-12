@@ -1,6 +1,7 @@
 use crate::intent::{self, Detected};
 use crate::lexicon::{
-    self, BLOCK_HEAD, BLOCK_TAIL, DENY, OBJECT_VERBS, PLAY_STRONG, PLAYER, TAIL_REMARK,
+    self, ABOUT_OWN_WORDS, BLOCK_HEAD, BLOCK_TAIL, DENY, INSISTING, LISTENERS, OBJECT_VERBS,
+    PLAY_STRONG, PLAYER, SUBJECTS, TAIL_REMARK,
 };
 use crate::normalize::Tok;
 use crate::types::Intent;
@@ -35,7 +36,14 @@ fn head_intent(i: Intent) -> bool {
     )
 }
 
-fn head_ok(head: &[Tok]) -> bool {
+fn head_ok(head: &[Tok], window: &[Tok], tail: &[Tok]) -> bool {
+    let answered = |t: &Tok| SUBJECTS.contains(&t.w.as_str()) && t.w != "я";
+    let insists = window[0].w != "не" && !tail.iter().any(answered);
+    let head = if insists {
+        before_insisting(head)
+    } else {
+        head
+    };
     head.len() <= 4
         && head.iter().all(|t| {
             let w = t.w.as_str();
@@ -45,6 +53,28 @@ fn head_ok(head: &[Tok]) -> bool {
                 && !finite(w)
                 && !single_command(t)
         })
+}
+
+fn before_insisting(head: &[Tok]) -> &[Tok] {
+    let Some((verb, rest)) = head.split_last() else {
+        return head;
+    };
+    let between = rest
+        .iter()
+        .rev()
+        .take_while(|t| ABOUT_OWN_WORDS.contains(&t.w.as_str()))
+        .count();
+    let me = rest.len().checked_sub(between + 1);
+    let Some(at) = me.filter(|&at| rest[at].w == "я") else {
+        return head;
+    };
+    let now = !verb.w.ends_with('л') && !verb.w.ends_with("ла");
+    let again = between > 0 || now || head[..at].iter().any(|t| LISTENERS.contains(&t.w.as_str()));
+    if INSISTING.contains(&verb.w.as_str()) && again {
+        &head[..at]
+    } else {
+        head
+    }
 }
 
 const VERB_ENDINGS: &[&str] = &[
@@ -106,14 +136,15 @@ pub fn find(toks: &[Tok]) -> Option<Found> {
     for len in (1..n).rev() {
         for start in 0..=n - len {
             let end = start + len;
-            if !head_ok(&toks[..start]) || !tail_ok(&toks[end..], &toks[start..end]) {
+            let (head, window, tail) = (&toks[..start], &toks[start..end], &toks[end..]);
+            if !head_ok(head, window, tail) || !tail_ok(tail, window) {
                 continue;
             }
-            let det = intent::detect(&toks[start..end]);
+            let det = intent::detect(window);
             let head_only = end == n && start > 0 && head_intent(det.intent);
             if (allowed(det.intent) || head_only) && !det.blocked {
                 return Some(Found {
-                    window: toks[start..end].to_vec(),
+                    window: window.to_vec(),
                     det,
                 });
             }
