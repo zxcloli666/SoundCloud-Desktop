@@ -39,7 +39,9 @@ fn machine(name: &str, plan: &str) -> Paths {
     fs::create_dir_all(&dir).unwrap();
     let built = PathBuf::from(env!("CARGO_BIN_EXE_fake-qwen"));
     let program = dir.join(built.file_name().unwrap());
-    fs::copy(built, &program).unwrap();
+    if fs::hard_link(&built, &program).is_err() {
+        fs::copy(&built, &program).unwrap();
+    }
     fs::write(dir.join("plan"), plan).unwrap();
     Paths {
         program,
