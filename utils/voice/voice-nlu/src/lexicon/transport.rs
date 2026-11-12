@@ -45,6 +45,7 @@ pub const A_WHILE: &[&str] = &[
     "полминуты",
     "час",
     "часик",
+    "сегодня",
 ];
 pub const STOP_WORDS: &[&str] = &[
     "стоп",

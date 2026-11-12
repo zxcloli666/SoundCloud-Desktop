@@ -298,3 +298,12 @@ fn quietly_after_make_turns_the_volume_down() {
         ("сделай тихо", "volume_down"),
     ]);
 }
+
+#[test]
+fn enough_for_today_stops() {
+    acts(&[
+        ("хватит на сегодня спасибо лоля", "stop"),
+        ("хватит на сегодня", "stop"),
+        ("пауза на сегодня", "pause"),
+    ]);
+}
