@@ -210,3 +210,13 @@ fn a_final_consonant_is_heard_without_its_voice() {
         ("включи мот", "play"),
     ]);
 }
+
+#[test]
+fn turn_off_said_with_a_southern_vowel_is_still_turn_off() {
+    acts(&[
+        ("атключи павтор", "repeat_off"),
+        ("атключи звук", "mute"),
+        ("отключи повтор", "repeat_off"),
+        ("выключи повтор", "repeat_off"),
+    ]);
+}
