@@ -198,3 +198,15 @@ fn a_seek_by_zero_goes_to_the_start() {
         ("перемотай на 0:30", "seek_to"),
     ]);
 }
+
+#[test]
+fn a_final_consonant_is_heard_without_its_voice() {
+    acts(&[
+        ("поставь лайг", "like"),
+        ("стоб", "stop"),
+        ("назат", "previous"),
+        ("поставь лайк", "like"),
+        ("стоп", "stop"),
+        ("включи мот", "play"),
+    ]);
+}

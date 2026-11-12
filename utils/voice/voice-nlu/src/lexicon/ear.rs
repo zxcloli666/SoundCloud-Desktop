@@ -66,10 +66,10 @@ fn spelled(w: &str) -> String {
     if let Some(stem) = REFLEXIVE.iter().find_map(|end| out.strip_suffix(end)) {
         out = format!("{stem}ца");
     }
-    match out.strip_prefix("чт") {
+    devoiced(match out.strip_prefix("чт") {
         Some(rest) => format!("шт{rest}"),
         None => out,
-    }
+    })
 }
 
 fn reduced(w: &str) -> String {
