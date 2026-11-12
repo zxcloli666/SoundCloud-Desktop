@@ -109,16 +109,19 @@ impl Names {
     }
 
     fn starts(&self, toks: &[Tok]) -> Option<usize> {
+        self.whole(toks).or_else(|| self.restarted(toks))
+    }
+
+    fn whole(&self, toks: &[Tok]) -> Option<usize> {
         let said = |name: &&Vec<String>| {
             name.len() <= toks.len() && name.iter().zip(toks).all(|(w, t)| *w == t.w)
         };
-        let whole = self.said.iter().find(said).map(Vec::len);
-        whole.or_else(|| self.restarted(toks))
+        self.said.iter().find(said).map(Vec::len)
     }
 
     fn restarted(&self, toks: &[Tok]) -> Option<usize> {
         let (first, rest) = toks.split_first()?;
-        let len = self.starts(rest)?;
+        let len = self.whole(rest)?;
         let next = rest[0].w.as_str();
         let broken = first.w.chars().count() >= 2
             && next.len() > first.w.len()
