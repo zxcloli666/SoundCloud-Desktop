@@ -52,6 +52,19 @@ fn table() -> &'static HashMap<String, Vec<Alias>> {
     })
 }
 
+fn artists() -> &'static HashMap<String, &'static str> {
+    static ARTISTS: OnceLock<HashMap<String, &'static str>> = OnceLock::new();
+    ARTISTS.get_or_init(|| {
+        let rows = DATA.lines().skip(1).map(|line| line.split('\t'));
+        rows.filter_map(|mut cols| {
+            let canonical = cols.nth(1)?.trim();
+            let kind = Kind::from_name(cols.next()?.trim())?;
+            (kind == Kind::Artist).then(|| (fold(canonical), canonical))
+        })
+        .collect()
+    })
+}
+
 fn aliased(v: &Variant, kind: Kind, text: String, parts: Option<(&str, &str)>) -> Variant {
     let mut out = v.clone();
     out.alias_kind = Some(kind);
@@ -87,13 +100,17 @@ fn with_rest(v: &Variant, canonical: &str, rest: &str) -> Variant {
 }
 
 fn named_whole(v: &Variant, out: &mut Vec<Variant>) {
-    for a in table().get(&fold(&v.text)).into_iter().flatten() {
+    let said = fold(&v.text);
+    for a in table().get(&said).into_iter().flatten() {
         match track_parts(&a.canonical) {
             Some((artist, title)) if a.kind != Kind::Artist => {
                 out.push(titled(v, a, artist, title))
             }
             _ => out.push(aliased(v, a.kind, a.canonical.clone(), None)),
         }
+    }
+    if let Some(own) = artists().get(&said) {
+        out.push(aliased(v, Kind::Artist, own.to_string(), None));
     }
 }
 

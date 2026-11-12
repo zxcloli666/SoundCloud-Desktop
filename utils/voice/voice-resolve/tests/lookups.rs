@@ -60,6 +60,21 @@ fn a_curated_name_of_the_whole_phrase_is_asked_first() {
 }
 
 #[test]
+fn a_curated_artist_said_by_its_own_name_is_asked_first_as_an_artist() {
+    let known = [
+        ("включи руки вверх", "Руки Вверх"),
+        ("включи машина времени", "Машина Времени"),
+        ("включи филипп киркоров", "Филипп Киркоров"),
+    ];
+    for (said, name) in known {
+        let lookups = read(said, &[]).lookups();
+        let first = &lookups[0].variants[0];
+        assert_eq!(first.text, name, "{said}");
+        assert_eq!(first.alias_kind, Some(Kind::Artist), "{said}");
+    }
+}
+
+#[test]
 fn a_curated_name_of_a_part_of_the_phrase_is_asked_after_what_was_said() {
     let lookups = read("включи линкин парк намб", &[]).lookups();
     let asked: Vec<&str> = lookups[0]
