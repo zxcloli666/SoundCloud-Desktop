@@ -1,7 +1,9 @@
 phrase	intent	kind	entity	number	category	alt	mode
 паууза	pause				asr		both
 пааауза пожалуйста	pause				asr		both
+лоляпауза	pause				asr		both
 лоля пауза	pause				plain		both
+ло лоля пауза	pause				filler		both
 поставь на паузу	pause				plain		both
 по ставь на паузу	pause				asr		both
 пауза пауза пауза	pause				asr		both
@@ -46,6 +48,7 @@ phrase	intent	kind	entity	number	category	alt	mode
 скипни ещё	next				slang		both
 пропусти эту	next				plain		both
 гони следующий	next				slang		both
+нахрен следующий	next				slang		both
 ну дальше давай	next				filler		both
 включи дальше	next				command_name		both
 лол лоля следующий	next				filler		both
@@ -61,9 +64,11 @@ phrase	intent	kind	entity	number	category	alt	mode
 громчее	volume_up				asr		both
 по громче	volume_up				asr		both
 пооогромче	volume_up				asr		both
+громче громче громче	volume_up				asr		both
 громче мм	volume_up				filler		both
 бля громче	volume_up				slang		both
 лоля громче	volume_up				plain		both
+лоляпотише	volume_down				asr		both
 ещё громче	volume_up				plain		both
 громче чуть чуть	volume_up				plain		both
 громч	volume_up				asr		both
@@ -78,6 +83,7 @@ phrase	intent	kind	entity	number	category	alt	mode
 по тише	volume_down				asr		both
 потише ээ	volume_down				filler		both
 блин потише	volume_down				slang		both
+тише ппц	volume_down				slang		both
 чуть тише	volume_down				plain		both
 ну давай потише уже	volume_down				filler		both
 уменьши громкасть	volume_down				asr		both
@@ -246,6 +252,7 @@ phrase	intent	kind	entity	number	category	alt	mode
 включи басту новую песню ээ	play	artist	Баста		filler		both
 включи что-нибудь новое у скриптонита	play	artist	Скриптонит		filler		both
 врубай кино кукушка	play	track	Кино - Кукушка		slang		both
+лолявключи баста	play	artist	Баста		asr		both
 лоля включи кино	play	artist	Кино		plain		both
 включи басту ой нет скриптонита	play	artist	Скриптонит		correction		both
 включи басту и потом сделай погромче	play+volume_up	artist	Баста		two_part		both
@@ -306,6 +313,7 @@ phrase	intent	kind	entity	number	category	alt	mode
 перемотай на минуту нет на две минуты	seek_to			120	correction	seek_forward	both
 перемотай вперёд на двадцать секунд нет на тридцать	seek_forward			30	correction		both
 включи кино нет не надо ничего не включай	none				correction		both
+поставь на паузу ладно не надо играй дальше	resume						both
 следующий нет предыдущий нет всё-таки следующий	next						both
 включи басту нет скриптонита нет лучше кино	play	artist	Кино		correction		both
 поставь ленинград нет не ленинград а сплин	play	artist	Сплин		correction		both
@@ -316,6 +324,8 @@ phrase	intent	kind	entity	number	category	alt	mode
 громкость на сто нет на девяносто	volume_set			90	correction		both
 отмотай на пять секунд нет на пятнадцать	seek_backward			15	correction		both
 включи перемешивание нет выключи перемешивание	shuffle_off						both
+повтор одного трека нет повтор всех	repeat_all						both
+поставь на повтор нет не надо выключи повтор	repeat_off						both
 лайкни нет стой не лайкай	none				correction		both
 выключи звук нет верни обратно	unmute					none	both
 включи эминема ой нет не эминема а рианну	play	artist	Rihanna		correction		both
@@ -351,6 +361,7 @@ phrase	intent	kind	entity	number	category	alt	mode
 блин я вообще весь день на работе замотался устал короче включи что-нибудь спокойное	play_wave						both
 так значит ужин приготовить надо ещё хлеба купить ой лоля поставь паузу	pause						both
 поставь паузу а то мне жена звонит	pause						both
+у меня тут соседи сверлят весь день сделай погромче	volume_up						both
 надоело это слушать следующий	next						both
 эта песня бесит дальше	next						both
 громко слишком у меня голова болит потише	volume_down						both
@@ -360,10 +371,13 @@ phrase	intent	kind	entity	number	category	alt	mode
 не хочешь включить басту	play	artist	Баста		indirect	none	both
 ты не могла бы убавить звук	volume_down						both
 мне бы громкость поменьше	volume_down						both
+извини что отвлекаю но не мог бы ты поставить на паузу	pause						both
 будь добра поставь земфиру пожалуйста спасибо	play	artist	Земфира		indirect		both
 сынок иди кушать лоля выключи музыку	stop				false_act	pause	both
+пауза мам я перезвоню	pause						both
 коля подай ключи следующая песня	next						both
 ты видел вчера футбол включи скриптонита	play	artist	Скриптонит		false_act		both
+тише тише дети лоля сделай потише	volume_down						both
 так что бы такое послушать ну вот включи кино	play	artist	Кино		filler		both
 что бы послушать хм может басту ну да включи басту	play	artist	Баста		filler		both
 что бы такое включить хм даже не знаю ладно потом	none				ambiguous		both
@@ -374,6 +388,7 @@ phrase	intent	kind	entity	number	category	alt	mode
 где же эта песня как её там ну включи что-нибудь	play_wave						both
 включи кино включи кино ну включи кино	play	artist	Кино		plain		both
 лоля включи сплин лоля ты слышишь включи сплин	play	artist	Сплин		plain		both
+следующий следующий ну следующий же	next						both
 мам включи телевизор пожалуйста	none				false_act		both
 папа сделай потише телевизор	none				false_act		both
 ты чего вчера не пришёл громче говори не слышно	none				false_act		both
@@ -388,9 +403,11 @@ phrase	intent	kind	entity	number	category	alt	mode
 включи звук а то ничего не слышно	unmute						both
 верни звук пожалуйста	unmute						both
 отключи звук нет верни обратно	unmute					none	both
+не слышно ничего сделай громче	volume_up						both
 плохо слышно поставь на максимум	volume_up+volume_set			100	filler	volume_set	both
 стоп хватит на сегодня	stop						both
 хватит выключи всё	stop						both
+достаточно музыки спасибо	stop				indirect	pause	both
 как называется эта песня лоля	now_playing						both
 кто это поёт и добавь в лайки	now_playing+like						both
 верни как было извини это я нечаянно	undo						both
@@ -404,6 +421,8 @@ phrase	intent	kind	entity	number	category	alt	mode
 включи стоп ладно играй	resume						both
 поставь паузу и потом включи дальше	pause+next						both
 плей блайнд лайтс уикнд нет стоп	stop						both
+pause no wait resume	resume						both
+volume down no up	volume_up						both
 эй лоля пауза плиз	pause						both
 вруби ленинград короче	play	artist	Ленинград		slang		both
 ну типа это блин врубай басту короче	play	artist	Баста		slang		both
@@ -433,6 +452,8 @@ phrase	intent	kind	entity	number	category	alt	mode
 крути весь плейлист по кругу	repeat_all						both
 сделай тише на чуть-чуть ну или нет оставь	none				correction		both
 эй лоля ты там уснула включи музыку	play_wave				filler	resume	both
+лоля лоля ты слышишь алло я говорю пауза	pause						both
+ало лоля ало поставь на паузу ало	pause						both
 громкость на пятьдесят процентов ой на шестьдесят	volume_set			60	correction		both
 громкость на половину нет на четверть	volume_set			25	correction	volume_set	both
 вперёд на десять секунд нет на двадцать нет на тридцать	seek_forward			30	correction		both
@@ -455,8 +476,11 @@ phrase	intent	kind	entity	number	category	alt	mode
 включи печку	none				false_act		both
 выключи свет и включи музыку	play_wave				false_act	none	both
 выключи свет	none				false_act		both
+сделай громче чайник кипит	volume_up						both
+дальше дальше не эту	next						both
 предыдущую ой нет не предыдущую следующую	next						both
 верни прошлую песню пожалуйста я не дослушал	previous						both
+назад ну назад же что непонятного	previous						both
 давай ещё раз с начала эту же песню	previous				plain	seek_to	both
 поставь на паузу нет не на паузу а стоп	stop						both
 продолжай нет стоп нет продолжай	resume						both
@@ -470,9 +494,11 @@ phrase	intent	kind	entity	number	category	alt	mode
 после этой песни включи эд ширана	queue_add	artist	Ed Sheeran		plain		both
 сделай звук потише а то сосед стучит в стену	volume_down						both
 ну и тишина тут	none				ambiguous		both
+я не слышу вообще ничего прибавь	volume_up						both
 можешь ещё чуть погромче	volume_up						both
 громкость побольше и следующий	volume_up+next						both
 сделай погромче да ещё погромче	volume_up						both
+ой погромче а нет это слишком потише	volume_down						both
 всё нормально не меняй громкость	none				negative		both
 не ставь на паузу пусть играет	none				negative		both
 не надо лайк	none				negative		both
@@ -635,11 +661,14 @@ phrase	intent	kind	entity	number	category	alt	mode
 переключи на следующую песню	next				plain		both
 следующий трек	next				plain		both
 ставь следующую	next				plain		both
+следующая и позови маму	next				filler		both
 верни прошлую песню	previous				plain		both
 назад на прошлую песню	previous				plain		both
 хватит уже выключи музыку	stop				false_act		both
+достаточно музыки	stop				false_act		both
 останови музыку	stop				plain		both
 ну всё стоп музыка	stop				plain		both
+слушай я потом тебе перезвоню Лоля выключи музыку	stop				filler		both
 включи музыку	play_wave				plain		both
 поставь музыку	play_wave				plain		both
 включи что-нибудь весёлое	play_wave				plain		both
@@ -1189,6 +1218,7 @@ play something by taylor swift	play	artist	Taylor Swift		english		both
 лоля включи группу пауза	play	artist	Пауза		command_name		both
 лоля включи паузу	pause				command_name		both
 включи скриптонита курьер пришёл	play	artist	Скриптонит		filler		both
+включи кукушку кино ой кто там	play	track	Кино - Кукушка		filler		both
 включиии басту пожалуйста	play	artist	Баста		filler		both
 включы монеточку	play	artist	Монеточка		asr		both
 включи скрептонита	play	artist	Скриптонит		asr		both
@@ -1242,12 +1272,15 @@ play something by taylor swift	play	artist	Taylor Swift		english		both
 блин поставь ленинград а то задолбала тишина	play	artist	Ленинград		slang		both
 сука дальше	next				slang		both
 ёпрст тише там заказ диктуют	volume_down				slang		both
+давай мля следующий трек	next				slang		both
+лоля вруби мне в дорогу чё нибудь	play_wave				slang		both
 пиздец какая жара кондей включи	none				false_act		both
 включи печку сделай теплее	none				false_act		both
 ало да я в пути	none				false_act		both
 щас буду через пять минут	none				false_act		both
 вот ж ты чёрт перемотай назад на двадцать секунд	seek_backward			20	slang		both
 не не не стоп стоп стоп	stop				slang	pause	both
+заебал этот трек следующий	next				slang		both
 выруби нахрен	stop				slang	pause	both
 плейлист дорога домой врубай	play	playlist	Дорога домой		slang		both
 плейлист ночная поездка давай	play	playlist	Ночная поездка		slang		both
@@ -1274,6 +1307,9 @@ play something by taylor swift	play	artist	Taylor Swift		english		both
 голубушка спой нам что нибудь	play_wave				indirect		both
 включи ка наутилус помпилиус батюшка	play	artist	Наутилус Помпилиус		morphology		both
 алла пугачёва миленькая поставь	play	artist	Алла Пугачёва		morphology		both
+давай другую песню милая	next				indirect		both
+ой что то не слышно сделай громкость побольше	volume_up				indirect		both
+вырубай эту музыку уши вянут	stop				slang	pause	both
 ты умеешь частушки	none				false_act	help	both
 как там погода в деревне	none				false_act		both
 машенька иди чай пить	none				false_act		both
@@ -1289,6 +1325,7 @@ play something by taylor swift	play	artist	Taylor Swift		english		both
 лоля ты где	none				false_act		both
 а можно потише	volume_down				morphology		both
 ещё ещё ещё громче	volume_up				filler		both
+не хочу эту пусть другая будет	next				indirect		both
 поставь паузу я писать	pause				filler		both
 хочу тимы белорусских	play	artist	Тима Белорусских		morphology		both
 включи мои любимые песенки	play_likes				indirect		both
@@ -1324,6 +1361,7 @@ play something by taylor swift	play	artist	Taylor Swift		english		both
 давай наступну лоля	next				regional		both
 ага ну включи ленинград да	play	artist	Ленинград		regional		both
 на двор вышла дождь идёт	none				regional		both
+лоля поставь на паузу митинг начался	pause				filler		both
 сделай volume на сорок	volume_set			40	english		both
 запусти плейлист workout	play	playlist	Workout		english		both
 сделай мьют	mute				english		both
@@ -1408,6 +1446,7 @@ turn the volume down a bit	volume_down				english		both
 отстань	none				false_act		both
 опять ты не то включила верни как было	undo				slang	previous	both
 ты тупая	none				false_act		both
+лоля ты глухая что ли я сказал тише	volume_down				slang		both
 ну давай врубай уже музыку	play_wave				slang	resume	both
 громкость на сорок два	volume_set			42	numbers		both
 звук сделай девяносто	volume_set			90	numbers		both
