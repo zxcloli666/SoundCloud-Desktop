@@ -4,10 +4,10 @@ use super::library::NOW_SET;
 use crate::anchor::finite;
 use crate::lexicon::{
     self, ABOUT, AGREEMENT, ASKING, BACKWARD, CLAUSE_SUBJECTS, COMPLAINT, COMPOUNDS,
-    DEMONSTRATIVES, DENY, DOWN_WORDS, FED_UP, FORWARD, IDLE, INFINITIVE_ENDINGS, INSISTING,
-    LISTENERS, LISTENING_STEMS, MAKING, MUSIC_STEMS, NEG_STEMS, NEXT_STRONG, OTHERS, OWN,
-    PLAY_STRONG, PREV_STRONG, REMARK_START, RESUME_WORDS, RINGS, ROUGHLY, SPEAKING, STRIDES,
-    SWEARS_AMB, TASTE, THE_PAST, TO_THE_LISTENER, UP_WORDS, WAS, WHICH,
+    DEMONSTRATIVES, DENY, DESCRIBING, DOWN_WORDS, FED_UP, FORWARD, IDLE, INFINITIVE_ENDINGS,
+    INSISTING, LISTENERS, LISTENING_STEMS, MAKING, MUSIC_STEMS, NEG_STEMS, NEXT_STRONG, OTHERS,
+    OWN, PLAY_STRONG, PREV_STRONG, REMARK_START, RESUME_WORDS, RINGS, ROUGHLY, SILENCE, SPEAKING,
+    STRIDES, SWEARS_AMB, TASTE, THE_PAST, TO_THE_LISTENER, UP_WORDS, WAS, WHICH,
 };
 
 pub fn sentence(c: &Ctx) -> bool {
@@ -22,6 +22,7 @@ pub fn sentence(c: &Ctx) -> bool {
         || question_to_a_person(c)
         || meant_for_someone_else(c)
         || music_as_a_topic(c)
+        || silence_of_a_room(c)
         || plan_of_the_speaker(c)
         || voice_of_a_person(c)
         || carrying_on_with_something_else(c)
@@ -141,6 +142,10 @@ fn music_as_a_topic(c: &Ctx) -> bool {
     let asks = c.has(PLAY_STRONG) || c.w.iter().any(|w| volume_word(w));
     let named = |w: &str| command_word(w) || lexicon::stem(MUSIC_STEMS, w);
     !asks && (1..c.len()).any(|i| ABOUT.contains(&c.w[i - 1]) && named(c.w[i]))
+}
+
+fn silence_of_a_room(c: &Ctx) -> bool {
+    c.has(SILENCE) && c.has(DESCRIBING)
 }
 
 fn plan_of_the_speaker(c: &Ctx) -> bool {

@@ -52,3 +52,20 @@ fn music_named_after_about_is_the_topic_of_talk() {
         ("сделай потише я про громкость", "volume_down"),
     ]);
 }
+
+#[test]
+fn silence_said_with_a_describing_word_describes_the_room() {
+    stays_silent(&[
+        "ну и тишина тут",
+        "тут такая тишина",
+        "какая тишина",
+        "тишина здесь",
+        "в комнате тишина",
+    ]);
+    acts(&[
+        ("тишина", "pause"),
+        ("тишина пожалуйста", "pause"),
+        ("тишину", "pause"),
+        ("давай тишину", "pause"),
+    ]);
+}

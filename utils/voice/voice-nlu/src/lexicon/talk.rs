@@ -32,6 +32,21 @@ pub const ROOM: &[&str] = &[
 
 pub const ATTENTION: &[&str] = &["стоп", "подожди", "погоди", "постой", "стой"];
 
+pub const SILENCE: &[&str] = &["тишина"];
+
+pub const DESCRIBING: &[&str] = &[
+    "и",
+    "такая",
+    "какая",
+    "тут",
+    "здесь",
+    "там",
+    "комнате",
+    "квартире",
+    "доме",
+    "вокруг",
+];
+
 pub const FED_UP: &[&str] = &["хватит", "невмоготу"];
 
 pub const PLAYER: &[&str] = &[
