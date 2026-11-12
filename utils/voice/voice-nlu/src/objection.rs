@@ -1,5 +1,5 @@
 use crate::intent::{self, Negation};
-use crate::lexicon::{LONE_VERBS, REMARK_START};
+use crate::lexicon::REMARK_START;
 use crate::normalize::{normalize, words};
 
 const NOT: &str = "не";
@@ -16,7 +16,6 @@ const ASKED: &[&str] = &[
     "велела",
 ];
 const ASKED_BY: usize = 2;
-const INFINITIVE: &str = "ть";
 
 pub fn command_after(text: &str) -> Option<String> {
     let said = words(text);
@@ -67,12 +66,8 @@ fn after_what_was_not_asked(said: &[String]) -> Option<String> {
     if asked == 0 || asked > ASKED_BY || said[asked - 1] != NOT {
         return None;
     }
-    let command = (asked + 2..said.len()).find(|&at| orders(&said[at]))?;
+    let command = (asked + 2..said.len()).find(|&at| intent::orders(&said[at]))?;
     Some(said[command..].join(" "))
-}
-
-fn orders(w: &str) -> bool {
-    LONE_VERBS.contains(&w) && !w.ends_with(INFINITIVE)
 }
 
 fn refuses(said: &str) -> bool {
