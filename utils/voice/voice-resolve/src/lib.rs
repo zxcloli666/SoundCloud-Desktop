@@ -245,7 +245,7 @@ fn said_alone(
     for reading in std::iter::once(parsed.clone()).chain(with_kind_in_name(parsed)) {
         let ranked = ranked(&reading, catalog, boosts);
         let d = score::decide(&ranked, true);
-        if bare.plays(&reading, &d) {
+        if bare.plays(&reading, &d, &ranked) {
             return Ok(d);
         }
         if handed.is_empty() {
