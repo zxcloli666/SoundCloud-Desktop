@@ -147,3 +147,17 @@ fn a_pet_name_after_a_command_is_only_an_address() {
             .any(|q| q.text.contains("солнышко"))
     );
 }
+
+#[test]
+fn the_name_said_before_a_bare_command_word_turns_the_speech_to_the_listener() {
+    acts(&[
+        ("дети идите ужинать лоля пауза", "pause"),
+        ("ребята потише там лоля следующий", "next"),
+        ("так всё лоля стоп", "stop"),
+    ]);
+    stays_silent(&[
+        "дети тише лоля спит",
+        "мама сказала лоля пауза",
+        "я лоле сказала пауза",
+    ]);
+}

@@ -171,7 +171,9 @@ fn named_before_verb(before: &[Tok]) -> bool {
 
 fn ordered(after: &[Tok]) -> bool {
     let next = after.iter().find(|t| !soft(t));
-    next.is_some_and(|t| intent::orders(&t.w) || PLAY_STRONG.contains(&t.w.as_str()))
+    let order =
+        |w: &str| intent::orders(w) || PLAY_STRONG.contains(&w) || lexicon::whole_command(w);
+    next.is_some_and(|t| order(&t.w))
 }
 
 fn reported(after: &[Tok]) -> bool {
