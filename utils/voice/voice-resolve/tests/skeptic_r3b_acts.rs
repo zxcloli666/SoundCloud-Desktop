@@ -118,3 +118,12 @@ fn a_release_credited_with_the_words_said_beats_the_more_popular_original() {
         ),
     ]);
 }
+
+#[test]
+fn a_cover_of_a_title_by_an_artist_is_that_artists_track() {
+    finds(&[
+        ("включи кавер на притон от дорадура", "Дорадура - Притон"),
+        ("включи притон от дорадура", "Дорадура - Притон"),
+        ("включи кавер на экспонат", "Ленинград Cover - Экспонат"),
+    ]);
+}

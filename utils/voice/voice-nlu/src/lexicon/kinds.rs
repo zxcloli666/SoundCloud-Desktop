@@ -143,6 +143,8 @@ pub const ARTIST_MARKERS: &[&str] = &[
     "рэпера",
 ];
 
+pub const COVER_OF: &[&str] = &["кавер", "на"];
+
 pub const DENY: &[&str] = &[
     "зарядку",
     "место",

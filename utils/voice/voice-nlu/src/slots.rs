@@ -250,11 +250,21 @@ fn split(kept: Vec<Tok>) -> Raw {
             title: None,
         };
     }
+    let before = own_version(before);
     let plain: Vec<Tok> = before.iter().chain(after.iter()).cloned().collect();
     Raw {
         full: kept.clone(),
         plain,
         artist: Some(after),
         title: Some(before),
+    }
+}
+
+fn own_version(title: Vec<Tok>) -> Vec<Tok> {
+    let opens = title.len() > COVER_OF.len() && title.iter().zip(COVER_OF).all(|(t, w)| t.w == *w);
+    if opens {
+        title[COVER_OF.len()..].to_vec()
+    } else {
+        title
     }
 }
