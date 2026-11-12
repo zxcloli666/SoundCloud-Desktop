@@ -289,3 +289,12 @@ fn a_bit_said_the_southern_way_is_a_bit() {
         ("прибавь трошки", "volume_up"),
     ]);
 }
+
+#[test]
+fn quietly_after_make_turns_the_volume_down() {
+    acts(&[
+        ("сделай тихонько", "volume_down"),
+        ("сделай потихоньку", "volume_down"),
+        ("сделай тихо", "volume_down"),
+    ]);
+}
