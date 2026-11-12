@@ -174,3 +174,14 @@ fn up_or_down_beside_a_volume_noun_steps_the_volume() {
     ]);
     stays_silent(&["вниз", "выше", "иди вниз"]);
 }
+
+#[test]
+fn going_back_to_the_previous_track_is_the_previous_track() {
+    acts(&[
+        ("вернись на прошлый трек", "previous"),
+        ("вернись на предыдущий трек", "previous"),
+        ("вернись на прошлую песню", "previous"),
+        ("верни прошлый трек", "previous"),
+    ]);
+    stays_silent(&["вернись на прошлую работу", "вернись домой"]);
+}

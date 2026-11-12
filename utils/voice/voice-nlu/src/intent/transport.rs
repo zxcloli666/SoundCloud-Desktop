@@ -6,7 +6,10 @@ fn base(c: &Ctx, i: usize) -> Vec<usize> {
     let mut used = vec![i];
     used.extend((0..c.len()).filter(|&j| {
         PLAY_STRONG.contains(&c.w[j])
-            || matches!(c.w[j], "верни" | "вернуть" | "верну" | "переключи")
+            || matches!(
+                c.w[j],
+                "верни" | "вернуть" | "верну" | "вернись" | "вернуться" | "переключи"
+            )
     }));
     used
 }
