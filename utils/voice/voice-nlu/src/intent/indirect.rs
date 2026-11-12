@@ -1,5 +1,5 @@
 use super::ctx::{Ctx, Detected};
-use crate::lexicon::{BEFORE_THIS, PRE};
+use crate::lexicon::{ASKS_TO_TALK, BEFORE_THIS, PRE};
 use crate::types::Intent;
 
 const FILL: &[&str] = &[
@@ -366,7 +366,7 @@ const RULES: &[Rule] = &[
     rule(
         &[&["чтонибудь"]],
         &["для", "настроения", "из", "старого", "нового", "фоном"],
-        &[],
+        ASKS_TO_TALK,
         Intent::PlayWave,
     ),
     rule(
