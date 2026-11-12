@@ -273,3 +273,11 @@ fn something_said_short_is_something() {
         ("чёт тихо как-то", "volume_up"),
     ]);
 }
+
+#[test]
+fn something_good_to_play_is_the_wave() {
+    acts(&[
+        ("вруби что нибудь годное", "play_wave"),
+        ("включи что-нибудь хорошее", "play_wave"),
+    ]);
+}
