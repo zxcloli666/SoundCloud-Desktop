@@ -298,3 +298,13 @@ fn a_hello_on_the_phone_before_a_command_checks_the_listener_hears() {
         "алло он сказал пауза",
     ]);
 }
+
+#[test]
+fn mom_called_by_her_short_name_is_someone_else_like_mom() {
+    acts(&[
+        ("пауза мам я перезвоню", "pause"),
+        ("пауза мам", "pause"),
+        ("сделай потише пап спит", "volume_down"),
+    ]);
+    stays_silent(&["мам сделай потише", "мам выключи телевизор", "мам пауза"]);
+}
