@@ -19,6 +19,15 @@ fn acts(rows: &[(&str, &str)]) {
     }
 }
 
+fn amounts(rows: &[(&str, &str, u32)]) {
+    for (text, want, number) in rows {
+        let heard = parse(text, &Names::new(&["Loli", "Лоля"]));
+        assert_eq!(heard.len(), 1, "{text}");
+        assert_eq!(heard[0].intent.name(), *want, "{text}");
+        assert_eq!(heard[0].number, Some(*number), "{text}");
+    }
+}
+
 #[test]
 fn a_command_word_right_after_not_is_denied_and_the_one_before_it_stands() {
     stays_silent(&[
@@ -184,4 +193,15 @@ fn going_back_to_the_previous_track_is_the_previous_track() {
         ("верни прошлый трек", "previous"),
     ]);
     stays_silent(&["вернись на прошлую работу", "вернись домой"]);
+}
+
+#[test]
+fn restarting_the_track_or_playing_it_anew_goes_to_its_start() {
+    amounts(&[
+        ("перезапусти трек", "seek_to", 0),
+        ("перезапусти песню", "seek_to", 0),
+        ("давай по новой эту песню", "seek_to", 0),
+        ("давай заново", "seek_to", 0),
+    ]);
+    stays_silent(&["перезапусти компьютер", "перезапусти приложение"]);
 }

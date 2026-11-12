@@ -304,7 +304,7 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
 
     let to_start = c.len() <= 6
         && !t.found
-        && (c.has(&["сначала", "заново", "restart"]) || c.has(START))
+        && (c.has(FROM_THE_TOP) || c.has(START))
         && c.stray(&c.all(SEEK_VERBS)) <= 2;
     if to_start && !fwd {
         return Some(Detected::new(Intent::SeekTo, vec![]).number(0));
@@ -334,8 +334,7 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
     }
 
     if c.len() <= 5 && (c.has(RESTART) || c.has(&["начала"])) && !t.found {
-        if c.has(&["сначала", "заново", "restart"])
-            || (c.has(&["с", "в"]) && c.has(&["начала", "начало"]))
+        if c.has(FROM_THE_TOP) || (c.has(&["с", "в"]) && c.has(&["начала", "начало"]))
         {
             return Some(Detected::new(Intent::SeekTo, vec![]).number(0));
         }
