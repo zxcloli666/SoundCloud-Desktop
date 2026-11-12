@@ -42,6 +42,9 @@ const COMMANDING: &[&str] = &[
     "сделать",
 ];
 
+const THE_PLAYER: &[&str] = &["звук", "музыка", "громкость"];
+const TOO: &[&str] = &["слишком", "очень", "чересчур"];
+
 pub(super) struct Rule {
     min: usize,
     needs: &'static [&'static [&'static str]],
@@ -154,6 +157,18 @@ const RULES: &[Rule] = &[
         Intent::VolumeUp,
     ),
     rule(&[&["громко"]], &["играет"], COMMANDING, Intent::VolumeDown).len(2),
+    rule(
+        &[THE_PLAYER, TOO, &["громкий", "громкая", "громко"]],
+        &[],
+        &[],
+        Intent::VolumeDown,
+    ),
+    rule(
+        &[THE_PLAYER, TOO, &["тихий", "тихая", "тихо"]],
+        &[],
+        &[],
+        Intent::VolumeUp,
+    ),
     rule(&[&["громковато"]], &[], COMMANDING, Intent::VolumeDown),
     rule(
         &[&[

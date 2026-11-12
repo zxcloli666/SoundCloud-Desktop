@@ -326,3 +326,17 @@ fn slang_verbs_of_driving_and_throwing_before_a_name_play_it() {
     ]);
     stays_silent(&["гони быстрее", "гони", "не кидай"]);
 }
+
+#[test]
+fn the_sound_called_too_loud_or_too_quiet_steps_the_volume() {
+    acts(&[
+        ("звук слишком громкий вообще уши болят", "volume_down"),
+        ("музыка слишком громкая", "volume_down"),
+        ("звук очень тихий", "volume_up"),
+    ]);
+    stays_silent(&[
+        "телевизор слишком громкий",
+        "соседи слишком громкие",
+        "громкая музыка мешает спать",
+    ]);
+}
