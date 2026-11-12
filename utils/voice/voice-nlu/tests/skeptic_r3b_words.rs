@@ -316,3 +316,13 @@ fn turn_yourself_off_said_to_the_listener_stops() {
         ("выключись", "stop"),
     ]);
 }
+
+#[test]
+fn slang_verbs_of_driving_and_throwing_before_a_name_play_it() {
+    acts(&[
+        ("гони эминема", "play"),
+        ("кидай басту", "play"),
+        ("гони следующий", "next"),
+    ]);
+    stays_silent(&["гони быстрее", "гони", "не кидай"]);
+}
