@@ -70,6 +70,7 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
         let mut said = vec![m];
         said.extend(noun);
         said.extend(super::seek::wait(c));
+        said.extend(c.all(SWEARS_AMB));
         if c.stray(&said) == 0 {
             return Some(Detected::new(Intent::Mute, vec![]));
         }

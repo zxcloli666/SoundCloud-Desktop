@@ -176,3 +176,13 @@ fn a_take_back_followed_only_by_fillers_takes_the_wish_back() {
         ("включи земфиру ой ладно", "play"),
     ]);
 }
+
+#[test]
+fn a_swear_beside_a_mute_verb_only_stresses_it() {
+    acts(&[
+        ("замьють нахрен", "mute"),
+        ("заглуши нахрен", "mute"),
+        ("заглуши нафиг эту песню", "mute"),
+    ]);
+    stays_silent(&["заглуши мотор"]);
+}
