@@ -340,3 +340,17 @@ fn the_sound_called_too_loud_or_too_quiet_steps_the_volume() {
         "громкая музыка мешает спать",
     ]);
 }
+
+#[test]
+fn quiet_said_of_a_place_is_about_the_place_unless_it_is_too_quiet() {
+    acts(&[
+        ("тихо как-то", "volume_up"),
+        ("в комнате слишком тихо", "volume_up"),
+        ("в машине слишком громко", "volume_down"),
+    ]);
+    stays_silent(&[
+        "в комнате тихо как-то",
+        "в машине тихо",
+        "тихо как в библиотеке",
+    ]);
+}
