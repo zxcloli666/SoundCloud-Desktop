@@ -3,6 +3,24 @@ use std::sync::OnceLock;
 use voice_nlu::{Kind, Variant, fold};
 
 const DATA: &str = include_str!("../data/aliases.tsv");
+const SAME_WORD: f32 = 0.85;
+const VERSIONS: &[&str] = &[
+    "караоке",
+    "пиано",
+    "трибьют",
+    "кавер",
+    "ремикс",
+    "акустика",
+    "инструментал",
+    "минусовка",
+    "karaoke",
+    "piano",
+    "tribute",
+    "cover",
+    "remix",
+    "acoustic",
+    "instrumental",
+];
 
 struct Alias {
     canonical: String,
@@ -102,11 +120,21 @@ fn expand_one(v: &Variant, out: &mut Vec<Variant>) {
                     {
                         out.push(titled(v, a, artist, title))
                     }
+                    Some((_, title)) if a.kind == Kind::Track && names_a_version(&rest) => {
+                        out.push(titled(v, a, &rest, title))
+                    }
                     _ => {}
                 }
             }
         }
     }
+}
+
+fn names_a_version(said: &str) -> bool {
+    let heard = fold(said);
+    VERSIONS
+        .iter()
+        .any(|word| voice_nlu::similarity(&heard, &fold(word)) >= SAME_WORD)
 }
 
 fn disabled() -> bool {

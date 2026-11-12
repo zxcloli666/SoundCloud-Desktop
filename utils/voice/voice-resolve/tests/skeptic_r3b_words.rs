@@ -76,3 +76,25 @@ fn a_known_title_said_with_the_artist_of_another_version_plays_that_version() {
         assert_eq!(heard("звери леса", bare), "none");
     }
 }
+
+#[test]
+fn a_word_naming_the_version_picks_that_version() {
+    plays(&[
+        (
+            "блайндинг лайтс караоке",
+            "Weeknd Karaoke - Blinding Lights",
+        ),
+        ("лавли билли айлиш пиано", "Billie Eilish Piano - Lovely"),
+        ("притон скриптонит трибьют", "Scriptonite Tribute - Притон"),
+        (
+            "лесник король и шут трибьют",
+            "Король и Шут Tribute - Лесник",
+        ),
+        ("лавли билли айлиш", "Billie Eilish - Lovely"),
+        ("лесник король и шут", "Король и Шут - Лесник"),
+    ]);
+    assert_eq!(
+        heard("блайндинг лайтс", Bare::Popular),
+        "The Weeknd - Blinding Lights"
+    );
+}

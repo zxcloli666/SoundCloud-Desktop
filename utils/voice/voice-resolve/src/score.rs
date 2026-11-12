@@ -153,9 +153,8 @@ fn credits_what_is_added(queries: &[QueryKeys], longer: &Entity, named: &Entity)
     let Some(added) = long.strip_prefix(short.as_str()).filter(|a| !a.is_empty()) else {
         return false;
     };
-    let title = fold(&longer.name);
-    let says = |rest: &str| near(rest, added) >= ADDED_MIN;
-    let said = |q: &QueryKeys| beside(&q.text, &title).is_some_and(says);
+    let says = |word: &String| near(word, added) >= ADDED_MIN;
+    let said = |q: &QueryKeys| q.edge_words().iter().any(says);
     queries.iter().filter(|q| !q.fallback).any(said)
 }
 

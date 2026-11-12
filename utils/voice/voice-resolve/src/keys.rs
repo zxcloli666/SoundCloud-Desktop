@@ -293,6 +293,20 @@ impl QueryKeys {
         self.word_ends.len() < 2 || self.word_ends.contains(&split)
     }
 
+    pub fn edge_words(&self) -> Vec<String> {
+        let chars: Vec<char> = self.text.chars().collect();
+        let ends = &self.word_ends;
+        if ends.len() < 2 {
+            return Vec::new();
+        }
+        let first = ends[0].min(chars.len());
+        let last = ends[ends.len() - 2].min(chars.len());
+        vec![
+            chars[..first].iter().collect(),
+            chars[last..].iter().collect(),
+        ]
+    }
+
     pub fn names_an_artist(&self) -> bool {
         self.alias_kind == Some(Kind::Artist) && self.title.is_none()
     }
