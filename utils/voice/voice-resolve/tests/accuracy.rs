@@ -426,6 +426,15 @@ fn named_alone(o: &Outcome) -> bool {
     o.parsed.intent == Intent::None && o.intent == Intent::Play
 }
 
+fn asked(o: &Outcome) -> bool {
+    matches!(o.decision, Some(Decision::Ask { .. }))
+}
+
+fn unsure(o: &Outcome) -> bool {
+    let found = matches!(o.decision, None | Some(Decision::Act { .. }));
+    !found && o.intent != Intent::PlaySimilar
+}
+
 fn understood(os: &[Outcome]) -> Vec<String> {
     os.iter()
         .map(|o| format!("{:?} {:?} {:?}", o.intent, o.parsed, o.decision))
@@ -433,7 +442,7 @@ fn understood(os: &[Outcome]) -> Vec<String> {
 }
 
 #[test]
-fn leaving_names_said_alone_to_the_listener_changes_nothing_else() {
+fn leaving_names_said_alone_and_unsure_names_to_the_listener_changes_nothing_else() {
     let catalog = FixtureCatalog::from_tsv(include_str!("data/catalog.tsv"), true);
     let mut union = BTreeMap::new();
     let mut left = Vec::new();
@@ -451,15 +460,26 @@ fn leaving_names_said_alone_to_the_listener_changes_nothing_else() {
             for o in &popular {
                 assert!(o.candidates.is_empty(), "{}", row.phrase);
             }
+            if let [only] = certain.as_slice() {
+                assert!(!unsure(only), "{} has {:?}", row.phrase, only.decision);
+            }
+            let unsure_alone = matches!(popular.as_slice(), [only] if unsure(only));
+            if let ([was], [now]) = (popular.as_slice(), certain.as_slice())
+                && unsure(was)
+            {
+                assert_eq!(now.intent, Intent::None, "{}", row.phrase);
+                assert!(!asked(was) || !now.candidates.is_empty(), "{}", row.phrase);
+            }
             if understood(&popular) == understood(&certain) {
                 continue;
             }
-            assert!(popular.iter().any(named_alone), "{}", row.phrase);
+            let differs = unsure_alone || popular.iter().any(named_alone);
+            assert!(differs, "{}", row.phrase);
             left.push(format!("{} [{}] {:?}", set.name, row.category, row.phrase));
         }
     }
     println!(
-        "names said alone are left to the listener, all sets\n{}",
+        "names said alone and unsure names are left to the listener, all sets\n{}",
         report(&union)
     );
     println!("{} phrases are understood differently", left.len());

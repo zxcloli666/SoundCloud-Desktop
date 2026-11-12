@@ -4,7 +4,7 @@ use std::sync::Arc;
 
 use common::{Rig, rig_with, silent, timing};
 use serde_json::json;
-use voice_engine::{Command, CommandEvent, Config, DecisionEvent, State};
+use voice_engine::{Command, CommandEvent, Config, DecisionEvent, Source, State};
 use voice_resolve::FixtureCatalog;
 
 const CATALOG: &str = "kind\tname\tartist\tpopularity\taliases
@@ -140,23 +140,63 @@ fn a_title_said_with_its_artist_plays_at_once_with_the_chat_on_or_off() {
 }
 
 #[test]
-fn a_phrase_with_a_verb_is_read_the_same_with_the_chat_on_or_off() {
-    for chat in [true, false] {
-        let rig = rig(chat);
-        let missing = settled(&rig, "включи абырвалгович");
-        assert_eq!(missing.intent, "play");
-        assert_eq!(missing.decision, Some(DecisionEvent::NotFound));
-        let sure = settled(&rig, "поставь трек что нового");
-        assert_eq!(sure.intent, "play");
-        assert!(matches!(sure.decision, Some(DecisionEvent::Act { .. })));
-        let asked = heard(&rig, "включи как дела");
-        assert_eq!(asked.intent, "play");
-        assert!(matches!(asked.decision, Some(DecisionEvent::Ask { .. })));
-        rig.expect_state(State::Asking);
-        for command in [missing, sure, asked] {
-            assert!(command.candidates.is_empty());
-        }
+fn with_the_chat_off_a_name_after_a_verb_is_played_asked_about_or_not_found() {
+    let rig = rig(false);
+    let missing = settled(&rig, "включи абырвалгович");
+    assert_eq!(missing.intent, "play");
+    assert_eq!(missing.decision, Some(DecisionEvent::NotFound));
+    let sure = settled(&rig, "поставь трек что нового");
+    assert_eq!(sure.intent, "play");
+    assert!(matches!(sure.decision, Some(DecisionEvent::Act { .. })));
+    let asked = heard(&rig, "включи как дела");
+    assert_eq!(asked.intent, "play");
+    assert!(matches!(asked.decision, Some(DecisionEvent::Ask { .. })));
+    rig.expect_state(State::Asking);
+    for command in [missing, sure, asked] {
+        assert!(command.candidates.is_empty());
     }
+}
+
+#[test]
+fn with_the_chat_on_a_name_after_a_verb_is_played_when_sure_and_left_to_the_chat_when_not() {
+    let rig = rig(true);
+    let sure = settled(&rig, "поставь трек что нового");
+    assert_eq!(sure.intent, "play");
+    assert!(matches!(sure.decision, Some(DecisionEvent::Act { .. })));
+    assert!(sure.candidates.is_empty());
+    let both = vec!["T-Fest - Как дела", "KIZARU - Как дела"];
+    for (text, found) in [("включи абырвалгович", vec![]), ("включи как дела", both)]
+    {
+        let left = settled(&rig, text);
+        assert_eq!(left.intent, "none", "{text}");
+        assert_eq!(left.decision, None, "{text}");
+        assert_eq!(hits(&left), found, "{text}");
+    }
+}
+
+#[test]
+fn a_phrase_from_a_skill_is_read_as_with_the_chat_off() {
+    let said = |rig: &Rig, text: &str| {
+        rig.engine.send(Command::Text {
+            text: text.into(),
+            source: Source::Remote,
+            id: Some("r-1".into()),
+        });
+        rig.expect_state(State::Thinking);
+        rig.command()
+    };
+    let rig = rig(true);
+    let alone = said(&rig, "что нового");
+    let Some(DecisionEvent::Act { pick }) = &alone.decision else {
+        panic!("expected act, got {:?}", alone.decision);
+    };
+    assert_eq!((alone.intent, pick.entity.artist.as_str()), ("play", "ЛСП"));
+    rig.done(&alone.id, "");
+    rig.expect_state(State::Idle);
+    let asked = said(&rig, "включи как дела");
+    assert_eq!(asked.intent, "play");
+    assert!(matches!(asked.decision, Some(DecisionEvent::Ask { .. })));
+    rig.expect_state(State::Asking);
 }
 
 #[test]

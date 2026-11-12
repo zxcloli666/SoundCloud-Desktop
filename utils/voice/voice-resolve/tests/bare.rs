@@ -181,14 +181,9 @@ fn a_word_for_a_track_does_not_make_its_title_sure() {
 }
 
 #[test]
-fn a_phrase_with_a_verb_is_read_the_same_either_way() {
+fn a_sure_name_after_a_verb_and_a_plain_command_are_read_the_same_either_way() {
     let cases = [
-        (
-            "включи как дела",
-            "play ask T-Fest - Как дела | KIZARU - Как дела",
-        ),
         ("поставь трек что нового", "play act ЛСП - Что нового"),
-        ("включи абырвалгович", "none not_found"),
         ("пауза", "pause"),
     ];
     for bare in BOTH {
@@ -197,6 +192,32 @@ fn a_phrase_with_a_verb_is_read_the_same_either_way() {
             assert_eq!(told(&outcome), read, "{text}");
             assert!(outcome.candidates.is_empty(), "{text}");
         }
+    }
+}
+
+#[test]
+fn an_unsure_name_after_a_verb_is_asked_about_without_the_chat_and_left_to_it_with_one() {
+    let both = ["T-Fest - Как дела", "KIZARU - Как дела"];
+    let asked = heard("включи как дела", Bare::Popular);
+    assert_eq!(told(&asked), format!("play ask {} | {}", both[0], both[1]));
+    assert!(asked.candidates.is_empty());
+    assert_eq!(handed("включи как дела"), both);
+    assert_eq!(handed("добавь в очередь как дела"), both);
+
+    let missing = heard("включи абырвалгович", Bare::Popular);
+    assert_eq!(told(&missing), "none not_found");
+    assert!(handed("включи абырвалгович").is_empty());
+}
+
+#[test]
+fn a_question_in_a_phrase_of_several_steps_stays_a_question_with_the_chat() {
+    let catalog = FixtureCatalog::from_tsv(ROWS, true);
+    let text = "включи скриптонита а потом добавь в очередь как дела";
+    for bare in BOTH {
+        let steps = interpret(text, &catalog, &Boosts::none(), bare, &Names::default());
+        let read: Vec<String> = steps.iter().map(told).collect();
+        let asked = "queue_add ask T-Fest - Как дела | KIZARU - Как дела";
+        assert_eq!(read, ["play act Скриптонит", asked], "{bare:?}");
     }
 }
 

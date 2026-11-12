@@ -95,7 +95,20 @@ pub fn understand(
 ) -> Vec<Outcome> {
     let reading = phrase.reading(catalog, boosts);
     let split = |parsed: &Parsed| interpret_split(parsed.clone(), catalog, boosts, bare);
-    runnable(reading.iter().flat_map(split).collect())
+    let mut steps = runnable(reading.iter().flat_map(split).collect());
+    if let [only] = steps.as_mut_slice() {
+        leave_unsure(only, catalog, boosts, bare);
+    }
+    steps
+}
+
+fn leave_unsure(step: &mut Outcome, catalog: &dyn Catalog, boosts: &Boosts, bare: Bare) {
+    let named = matches!(step.intent, Intent::Play | Intent::QueueAdd | Intent::None);
+    let Some(unsure) = step.decision.take_if(|d| named && bare.leaves(d)) else {
+        return;
+    };
+    step.intent = Intent::None;
+    step.candidates = bare.hands_after(&unsure, ranked(&step.parsed, catalog, boosts));
 }
 
 fn runnable(mut steps: Vec<Outcome>) -> Vec<Outcome> {

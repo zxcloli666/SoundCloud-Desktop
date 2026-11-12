@@ -328,7 +328,8 @@ phrase	intent	kind	entity	number	category	alt	mode
 включи басту нет скриптонита нет лучше кино	play	artist	Кино		correction		both
 поставь ленинград нет не ленинград а сплин	play	artist	Сплин		correction		both
 перемотай на десять секунд назад нет вперёд	seek_forward			10	correction		both
-включи кукушку нет не эту а группу крови кино	play	track	Кино - Группа крови		correction		both
+включи кукушку нет не эту а группу крови кино	play	track	Кино - Группа крови		correction		off
+включи кукушку нет не эту а группу крови кино	none				correction		on
 включи мои лайки нет лучше мою волну	play_wave						both
 убавь звук нет прибавь	volume_up						both
 громкость на сто нет на девяносто	volume_set			90	correction		both
@@ -762,7 +763,8 @@ volume down no up	volume_up						both
 включи тэйлор свифт	play	artist	Taylor Swift		translit		both
 включи дрэйк	play	artist	Drake		translit		both
 включи дрейк белл	play	artist	Drake Bell		translit		both
-включи дрейко	play	artist	Drakeo		translit		both
+включи дрейко	play	artist	Drakeo		translit		off
+включи дрейко	none				translit		on
 включи эминэм	play	artist	Eminem		translit		both
 включи рихану	play	artist	Rihanna		translit		both
 включи эд ширан	play	artist	Ed Sheeran		translit		both
@@ -879,14 +881,16 @@ volume down no up	volume_up						both
 включи тише едешь	play	playlist	Тише едешь		command_name	volume_down	both
 дальше баста	play	track	Баста - Дальше		command_name	next	both
 включи притон	play	track	Скриптонит - Притон		plain		both
-включи цепи	play	track	Скриптонит - Цепи		plain	track:Мот - Цепи	both
+включи цепи	play	track	Скриптонит - Цепи		plain	track:Мот - Цепи	off
+включи цепи	none				plain		on
 включи положение	play	track	Скриптонит - Положение		plain		both
 включи это любовь	play	track	Скриптонит - Это любовь		plain		both
 включи тепло	play	track	Макс Корж - Тепло		plain		both
 включи небо поможет нам	play	track	Макс Корж - Небо поможет нам		plain		both
 включи малый повзрослел	play	track	Макс Корж - Малый повзрослел		plain		both
 включи мотылёк	play	track	Макс Корж - Мотылёк		plain	track:Мотыльки - Мотылёк	both
-включи хочу	play	track	Земфира - Хочу		plain	track:Мот - Хочу	both
+включи хочу	play	track	Земфира - Хочу		plain	track:Мот - Хочу	off
+включи хочу	none				plain		on
 включи искала	play	track	Земфира - Искала		plain		both
 включи бесконечность	play	track	Земфира - Бесконечность		plain		both
 включи кадиллак	play	track	Моргенштерн - Cadillac		translit		both
@@ -915,7 +919,8 @@ volume down no up	volume_up						both
 включи бланк спейс	play	track	Taylor Swift - Blank Space		translit		both
 включи энти хиро	play	track	Taylor Swift - Anti-Hero		translit		both
 включи круэл саммер	play	track	Taylor Swift - Cruel Summer		translit		both
-включи гоз план	play	track	Drake - God's Plan		translit		both
+включи гоз план	play	track	Drake - God's Plan		translit		off
+включи гоз план	none				translit		on
 включи уан дэнс	play	track	Drake - One Dance		translit		both
 включи хотлайн блинг	play	track	Drake - Hotline Bling		translit		both
 включи ин да клаб	play	track	50 Cent - In Da Club		translit		both
@@ -967,15 +972,20 @@ volume down no up	volume_up						both
 включи романс	play	track	Сплин - Романс		plain		both
 включи пачку сигарет	play	track	Кино - Пачка сигарет		morphology		both
 включи районы кварталы	play	track	Звери - Районы-кварталы		plain		both
-включи для тебя звери	play	track	Звери - Для тебя		plain	album:Звери Леса - Для тебя	both
+включи для тебя звери	play	track	Звери - Для тебя		plain	album:Звери Леса - Для тебя	off
+включи для тебя звери	none				plain		on
 включи солдат пять найза	play	track	5'Nizza - Солдат		translit		both
-включи кукушку	play	track	Кино - Кукушка		plain	track:Полина Гагарина - Кукушка	both
-включи группу крови	play	track	Кино - Группа крови		plain	album:Кино - Группа крови	both
+включи кукушку	play	track	Кино - Кукушка		plain	track:Полина Гагарина - Кукушка	off
+включи кукушку	none				plain		on
+включи группу крови	play	track	Кино - Группа крови		plain	album:Кино - Группа крови	off
+включи группу крови	none				plain		on
 включи трек группа крови	play	track	Кино - Группа крови		plain		both
-включи песню кукушка	play	track	Кино - Кукушка		plain	track:Полина Гагарина - Кукушка	both
+включи песню кукушка	play	track	Кино - Кукушка		plain	track:Полина Гагарина - Кукушка	off
+включи песню кукушка	none				plain		on
 включи альбом группа крови	play	album	Кино - Группа крови		plain		both
 включи альбом дом с нормальными явлениями	play	album	Скриптонит - Дом с нормальными явлениями		plain		both
-включи альбом дом с нормальными явлениями кавер бэнд	play	album	Скриптонит Cover Band - Дом с нормальными явлениями		plain		both
+включи альбом дом с нормальными явлениями кавер бэнд	play	album	Скриптонит Cover Band - Дом с нормальными явлениями		plain		off
+включи альбом дом с нормальными явлениями кавер бэнд	none				plain		on
 включи альбом афтер аурс	play	album	The Weeknd - After Hours		translit		both
 включи альбом афтер аурс караоке	play	album	Weeknd Karaoke - After Hours		translit		both
 включи альбом хэппиер зэн эвер	play	album	Billie Eilish - Happier Than Ever		translit		both
@@ -995,7 +1005,8 @@ volume down no up	volume_up						both
 включи плейлист русский рэп	play	playlist	Русский рэп		plain		both
 включи плейлист русский рок	play	playlist	Русский рок		plain		both
 включи плейлист чилл вайбс	play	playlist	Chill Vibes		translit		both
-включи плейлист чил	play	playlist	Chill		translit		both
+включи плейлист чил	play	playlist	Chill		translit		off
+включи плейлист чил	none				translit		on
 включи плейлист воркаут	play	playlist	Workout		translit		both
 включи плейлист воркаут хитс	play	playlist	Workout Hits		translit		both
 включи плейлист утренний кофе	play	playlist	Утренний кофе		plain		both
@@ -1129,7 +1140,8 @@ the weeknd	play	artist	The Weeknd		bare		both
 включи макс фадеев	none				notfound		both
 включи моргенштерн джуниор	none				notfound	play	both
 включи катю лель	none				notfound		both
-включи песню вечная любовь	none				notfound	play	both
+включи песню вечная любовь	none				notfound	play	off
+включи песню вечная любовь	none				notfound		on
 поставь трек про бобра и ёжика	none				notfound		both
 восьмиклассница	none				notfound		both
 включи у кино кукушку	play	track	Кино - Кукушка		plain		both
@@ -1138,7 +1150,8 @@ the weeknd	play	artist	The Weeknd		bare		both
 включи песню притон исполнителя скриптонит	play	track	Скриптонит - Притон		plain		both
 поставь у скриптонита притон	play	track	Скриптонит - Притон		plain		both
 включи у басты сансару	play	track	Баста - Сансара		plain		both
-включи у земфиры хочу	play	track	Земфира - Хочу		plain		both
+включи у земфиры хочу	play	track	Земфира - Хочу		plain		off
+включи у земфиры хочу	none				plain		on
 включи песню хочу у мота	play	track	Мот - Хочу		plain		both
 включи кукушку в исполнении полины гагариной	play	track	Полина Гагарина - Кукушка		plain		both
 включи кукушку гагариной	play	track	Полина Гагарина - Кукушка		plain		both
@@ -1161,7 +1174,8 @@ the weeknd	play	artist	The Weeknd		bare		both
 включи куин оф зе стоун эйдж	play	artist	Queens of the Stone Age		translit		both
 включи тейлор свифт луллабайс	play	artist	Taylor Swift Lullabies		translit		both
 включи ленинград кавер	play	artist	Ленинград Cover		plain		both
-добавь в очередь кукушку	queue_add	track	Кино - Кукушка		plain	track:Полина Гагарина - Кукушка	both
+добавь в очередь кукушку	queue_add	track	Кино - Кукушка		plain	track:Полина Гагарина - Кукушка	off
+добавь в очередь кукушку	none				plain		on
 добавь в очередь скриптонита	queue_add	artist	Скриптонит		plain		both
 следующей поставь притон скриптонита	queue_add	track	Скриптонит - Притон		plain		both
 добавь в очередь плейлист утренний кофе	queue_add	playlist	Утренний кофе		plain		both
@@ -1224,7 +1238,8 @@ play something by taylor swift	play	artist	Taylor Swift		english		both
 включи кукушку нет стоп	stop				correction		both
 поставь дрейка ой нет эминема	play	artist	Eminem		correction		both
 включи скриптонита то есть нет макса коржа	play	artist	Макс Корж		correction		both
-включи притон нет цепи	play	track	Скриптонит - Цепи		correction		both
+включи притон нет цепи	play	track	Скриптонит - Цепи		correction		off
+включи притон нет цепи	none				correction		on
 включи кино нет подожди звери	play	artist	Звери		correction		both
 включи ну это типа скриптонита	play	artist	Скриптонит		filler		both
 эээ поставь пожалуйста ммм монеточку	play	artist	Монеточка		filler		both
@@ -1407,7 +1422,8 @@ play something by taylor swift	play	artist	Taylor Swift		english		both
 сделай зум потише ребят не слышно	none				false_act		both
 плиз пауза	pause				english		both
 включи chill vibes	play	playlist	Chill Vibes		english		both
-запусти плейлист chill	play	playlist	Chill		english		both
+запусти плейлист chill	play	playlist	Chill		english		off
+запусти плейлист chill	none				english		on
 включи radioactive imagine dragons на фоне	play	track	Imagine Dragons - Radioactive		english		both
 нужно зашарить экран	none				false_act		both
 pause	pause				english		both

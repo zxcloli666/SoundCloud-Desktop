@@ -49,10 +49,25 @@ fn told(outcome: &Outcome) -> String {
     format!("{}{hit}", outcome.intent.name())
 }
 
+fn asked_about(read: &str) -> Option<&str> {
+    let (_, name) = read.strip_suffix('?')?.split_once(' ')?;
+    (!read.contains(" + ")).then_some(name)
+}
+
+fn first_left(catalog: &FixtureCatalog, text: &str) -> String {
+    let steps = read(catalog, text, Bare::Certain);
+    let told: Vec<String> = steps.iter().map(told).collect();
+    assert_eq!(told, ["none"], "{text}");
+    let first = steps[0].candidates.first();
+    first.map(Entity::label).unwrap_or_default()
+}
+
 fn heard_either_way(cases: &[(&str, &str)]) {
-    for bare in BOTH {
-        for (text, read) in cases {
-            assert_eq!(heard(text, bare), *read, "{text}");
+    for (text, read) in cases {
+        assert_eq!(heard(text, Bare::Popular), *read, "{text}");
+        match asked_about(read) {
+            Some(name) => assert_eq!(first_left(&CATALOG, text), name, "{text}"),
+            None => assert_eq!(heard(text, Bare::Certain), *read, "{text}"),
         }
     }
 }
@@ -440,11 +455,11 @@ artist\tWeekend\t\t900000\t
 
 #[test]
 fn a_name_found_by_the_name_it_is_known_by_stays_first_when_asking() {
-    for bare in BOTH {
-        for text in ["включи уикенд", "поставь зе уикенд", "включи уик энд"]
-        {
-            let read = heard_in(KNOWN_BY_A_SHORT_NAME, text, bare);
-            assert_eq!(read, "play The Weeknd?", "{text}");
-        }
+    let catalog = FixtureCatalog::from_tsv(KNOWN_BY_A_SHORT_NAME, true);
+    for text in ["включи уикенд", "поставь зе уикенд", "включи уик энд"]
+    {
+        let asked = heard_in(KNOWN_BY_A_SHORT_NAME, text, Bare::Popular);
+        assert_eq!(asked, "play The Weeknd?", "{text}");
+        assert_eq!(first_left(&catalog, text), "The Weeknd", "{text}");
     }
 }

@@ -95,7 +95,8 @@ phrase	intent	kind	entity	number	category	alt	mode
 поставь били айлиш бед гай	play	track	Billie Eilish - bad guy		translit		both
 включи имя джин драгонс биливер	play	track	Imagine Dragons - Believer		asr		both
 включи король и шут лестник	play	track	Король и Шут - Лесник		asr	artist:Король и Шут	both
-включи кино група крови	play	track	Кино - Группа крови		asr	album:Кино - Группа крови	both
+включи кино група крови	play	track	Кино - Группа крови		asr	album:Кино - Группа крови	off
+включи кино група крови	none				asr		on
 включи руки в верх	play	artist	Руки Вверх		asr		both
 включи дэ дэ тэ	play	artist	ДДТ		asr		both
 включи би 2	play	artist	Би-2		numbers		both
@@ -116,7 +117,8 @@ phrase	intent	kind	entity	number	category	alt	mode
 включи пасту сансара	play	track	Баста - Сансара		asr		both
 включи два липа левитейтинг	play	track	Dua Lipa - Levitating		asr		both
 включи колд плей йеллоу	play	track	Coldplay - Yellow		asr		both
-поставь песня кукушка	play	track	Кино - Кукушка		morphology	track:Полина Гагарина - Кукушка	both
+поставь песня кукушка	play	track	Кино - Кукушка		morphology	track:Полина Гагарина - Кукушка	off
+поставь песня кукушка	none				morphology		on
 включи акустический альбом	play	album	Король и Шут - Акустический альбом		command_name		both
 включи басту медлячок	play	track	Баста - Выпускной (Медлячок)		plain		both
 включи сто четыре	play	artist	104		numbers		both
@@ -508,7 +510,8 @@ oxymiron мне поставь	play	artist	Oxxxymiron		english		both
 вруби нам miyagi & эндшпиль	play	artist	Miyagi & Эндшпиль		english		both
 запусти сейчас max korzh	play	artist	Макс Корж		english		both
 давай вруби коржика	play	artist	Макс Корж		slang		both
-запусти макса лоля	play	artist	Макс Корж		ambiguous	artist:Макс Барских	both
+запусти макса лоля	play	artist	Макс Корж		ambiguous	artist:Макс Барских	off
+запусти макса лоля	none				ambiguous		on
 а киша включи	play	artist	Король и Шут		slang		both
 вруби тогда цоя	play	artist	Кино		slang		both
 ну шнура запусти	play	artist	Ленинград		slang		both
@@ -543,7 +546,8 @@ oxymiron мне поставь	play	artist	Oxxxymiron		english		both
 братьев грим включи	play	artist	Братья Грим		morphology		both
 поставь ка дору	play	artist	Дора		ambiguous		both
 вруби мне хочу	none				ambiguous	play	both
-запусти пожалуйста цепи	play	track	Скриптонит - Цепи		ambiguous		both
+запусти пожалуйста цепи	play	track	Скриптонит - Цепи		ambiguous		off
+запусти пожалуйста цепи	none				ambiguous		on
 включи тепло пожалуйста	play	track	Макс Корж - Тепло		ambiguous		both
 а поставь стоп игру	play	artist	Стоп Игра		command_name		both
 ну вруби металлику	none				notfound		both
@@ -608,7 +612,8 @@ drake gods plan	play	track	Drake - God's Plan		bare		both
 поставь виктора цоя пачку сигарет	play	track	Кино - Пачка сигарет		slang		both
 медлячок басты включи	play	track	Баста - Выпускной (Медлячок)		slang		both
 включи ленинград на лабутенах	play	track	Ленинград - Экспонат		slang	artist:Ленинград	both
-включи макс корш жить в кайф	play	track	Макс Корж - Жить в кайф		asr	track:Макс Корш - Жить в кайф	both
+включи макс корш жить в кайф	play	track	Макс Корж - Жить в кайф		asr	track:Макс Корш - Жить в кайф	off
+включи макс корш жить в кайф	none				asr		on
 зверей районы кварталы включи	play	track	Звери - Районы-кварталы		morphology		both
 поставь что нибудь агаты кристи	play	artist	Агата Кристи		morphology		both
 включи макс коржа небо поможет нам	play	track	Макс Корж - Небо поможет нам		morphology		both
@@ -618,12 +623,15 @@ drake gods plan	play	track	Drake - God's Plan		bare		both
 поставь экспонат у ленинграда	play	track	Ленинград - Экспонат		morphology		both
 лоля включи пожалуйста эту ну как её звезду по имени солнце	play	track	Кино - Звезда по имени Солнце		filler		both
 включи эээ макса этого ну коржа блин мотылёк	play	track	Макс Корж - Мотылёк		filler		both
-включи кукушку	play	track	Кино - Кукушка		ambiguous	track:Полина Гагарина - Кукушка	both
-включи группу крови	play	track	Кино - Группа крови		ambiguous	album:Кино - Группа крови	both
+включи кукушку	play	track	Кино - Кукушка		ambiguous	track:Полина Гагарина - Кукушка	off
+включи кукушку	none				ambiguous		on
+включи группу крови	play	track	Кино - Группа крови		ambiguous	album:Кино - Группа крови	off
+включи группу крови	none				ambiguous		on
 включи паузу тишины	play	artist	Пауза Тишины		command_name		both
 включи альбом группа крови	play	album	Кино - Группа крови		ambiguous		both
 трек группа крови включи	play	track	Кино - Группа крови		ambiguous		both
-поставь жить в кайф	play	track	Макс Корж - Жить в кайф		ambiguous	album:Макс Корж - Жить в кайф	both
+поставь жить в кайф	play	track	Макс Корж - Жить в кайф		ambiguous	album:Макс Корж - Жить в кайф	off
+поставь жить в кайф	none				ambiguous		on
 жить в кайф альбом поставь	play	album	Макс Корж - Жить в кайф		ambiguous		both
 включи альбом земфиры прости меня моя любовь	play	album	Земфира - Прости меня моя любовь		ambiguous		both
 поставь исполнителя трек	play	artist	Трек		command_name		both
@@ -653,7 +661,8 @@ drake gods plan	play	track	Drake - God's Plan		bare		both
 включи кино	play	artist	Кино		ambiguous		both
 поставь песню кино	play	artist	Кино		ambiguous	track:Кино Orchestra - Кино	both
 включи кино на телевизоре	none				false_act		both
-поставь хочу мота	play	track	Мот - Хочу		ambiguous		both
+поставь хочу мота	play	track	Мот - Хочу		ambiguous		off
+поставь хочу мота	none				ambiguous		on
 включи кино только не оркестр	play	artist	Кино		ambiguous		both
 включи кавер на экспонат	play	track	Ленинград Cover - Экспонат		ambiguous		both
 включи сансару бастарда	play	track	Бастард - Сансара		ambiguous		both
@@ -838,7 +847,8 @@ drake gods plan	play	track	Drake - God's Plan		bare		both
 нука включи ка музычку	play_wave				regional		both
 прибавь чуток	volume_up				regional		both
 пущай играет дальше	resume				regional	none	both
-ихнюю песню включи группа крови	play	track	Кино - Группа крови		regional	album:Кино - Группа крови	both
+ихнюю песню включи группа крови	play	track	Кино - Группа крови		regional	album:Кино - Группа крови	off
+ихнюю песню включи группа крови	none				regional		on
 ложи на паузу	pause				regional		both
 та зроби ж ты потише	volume_down				regional		both
 верни взад	undo				regional	previous	both
@@ -855,7 +865,8 @@ drake gods plan	play	track	Drake - God's Plan		bare		both
 как сделать чтобы песни шли вперемешку	none				indirect	shuffle_on;help	both
 выключи эту шайтан машину	none				slang	stop;pause	both
 верни звук	unmute				plain		both
-включи песенку про кукушку	play	track	Кино - Кукушка		morphology		both
+включи песенку про кукушку	play	track	Кино - Кукушка		morphology		off
+включи песенку про кукушку	none				morphology		on
 сделай гломче	volume_up				asr		both
 не хочу эту песню	next				indirect	none	both
 лоля поставь мультики	none				notfound		both
@@ -1060,7 +1071,8 @@ undo плиз	undo				english		both
 гости расходятся так что давай звук на двадцать и хватит уже этого рэпа переключи	volume_set+next			20	filler		both
 ой подожди подожди вот это место классное верни чуть назад секунд на пять	seek_backward			5	filler		both
 лоля я на минутку отойду поставь пока на паузу ничего не переключай	pause				filler		both
-включи пожалуйста вот этот ну как его плейлист для тренировок воркаут	play	playlist	Workout		filler		both
+включи пожалуйста вот этот ну как его плейлист для тренировок воркаут	play	playlist	Workout		filler		off
+включи пожалуйста вот этот ну как его плейлист для тренировок воркаут	none				filler		on
 а помнишь была такая песня у земфиры искала вот её поставь пожалуйста	play	track	Земфира - Искала		filler		both
 а после этого включи мне пожалуйста экспонат ленинграда	queue_add	track	Ленинград - Экспонат		filler		both
 я не просил паузу включи обратно	resume				negative		both
@@ -1098,15 +1110,18 @@ undo плиз	undo				english		both
 вруби нау	play	artist	Наутилус Помпилиус		slang		both
 включи ка арбенину	play	artist	Ночные Снайперы		slang		both
 запусти ариану пожалуйста	play	artist	Ariana Grande		slang		both
-мотыльков вруби лоля	play	artist	Мотыльки		ambiguous		both
+мотыльков вруби лоля	play	artist	Мотыльки		ambiguous		off
+мотыльков вруби лоля	none				ambiguous		on
 поставь быстренько некст левел	play	artist	Next Level		command_name		both
-плейлист чилл поставь	play	playlist	Chill		ambiguous		both
+плейлист чилл поставь	play	playlist	Chill		ambiguous		off
+плейлист чилл поставь	none				ambiguous		on
 группу альбом включи	play	artist	Альбом		command_name		both
 альбом дальше включи	play	album	Мот - Дальше		command_name		both
 поставь группу которая называется плей	play	artist	Play		command_name		both
 включи притон в исполнении дорадуры	play	track	Дорадура - Притон		ambiguous		both
 включи притон только оригинал не трибьют	play	track	Скриптонит - Притон		ambiguous		both
-включи караоке версию блайндинг лайтс	play	track	Weeknd Karaoke - Blinding Lights		ambiguous		both
+включи караоке версию блайндинг лайтс	play	track	Weeknd Karaoke - Blinding Lights		ambiguous		off
+включи караоке версию блайндинг лайтс	none				ambiguous		on
 давай земфиру только не хочу а искала	play	track	Земфира - Искала		correction		both
 включи короля и шута проклятый старый дом	play	artist	Король и Шут		notfound		both
 включи сначала притон а потом цепи	play+queue_add	track+track	Скриптонит - Притон+Скриптонит - Цепи		two_part		both

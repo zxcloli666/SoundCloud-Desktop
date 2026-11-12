@@ -3,10 +3,22 @@ mod common;
 use std::sync::Arc;
 use std::time::Duration;
 
-use common::{Offline, models_ready, models_root, refusing, rig, rig_with, silent, timing};
+use common::{Offline, Rig, models_ready, models_root, refusing, rig, rig_with, silent, timing};
 use voice_audio::{CaptureError, ErrorCode};
 use voice_engine::{Command, Config, DecisionEvent, Event, Press, Presses, Source, State};
 use voice_resolve::FixtureCatalog;
+
+fn rig_without_chat() -> Rig {
+    let rig = rig();
+    let mut config = Config {
+        enabled: true,
+        llm: false,
+        ..Config::default()
+    };
+    config.speak.replies = false;
+    rig.engine.send(Command::Apply(Box::new(config)));
+    rig
+}
 
 #[test]
 fn typed_command_goes_out_and_waits_for_done() {
@@ -46,7 +58,7 @@ fn steps_go_one_by_one_and_wait_for_each_done() {
 
 #[test]
 fn close_titles_ask_and_the_answer_comes_back_as_a_new_command() {
-    let rig = rig();
+    let rig = rig_without_chat();
     rig.text("включи хочу");
     rig.expect_state(State::Thinking);
     let asked = rig.command();
@@ -71,7 +83,7 @@ fn close_titles_ask_and_the_answer_comes_back_as_a_new_command() {
 
 #[test]
 fn an_ask_that_timed_out_can_still_be_answered() {
-    let rig = rig();
+    let rig = rig_without_chat();
     rig.text("включи хочу");
     rig.expect_state(State::Thinking);
     rig.command();
@@ -88,7 +100,7 @@ fn an_ask_that_timed_out_can_still_be_answered() {
 
 #[test]
 fn an_answer_by_text_while_asking_picks_by_name() {
-    let rig = rig();
+    let rig = rig_without_chat();
     rig.text("включи хочу");
     rig.expect_state(State::Thinking);
     rig.command();
@@ -104,7 +116,7 @@ fn an_answer_by_text_while_asking_picks_by_name() {
 
 #[test]
 fn nothing_found_is_a_play_with_not_found() {
-    let rig = rig();
+    let rig = rig_without_chat();
     rig.text("включи абырвалгович");
     rig.expect_state(State::Thinking);
     let command = rig.command();

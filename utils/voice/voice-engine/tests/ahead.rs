@@ -316,15 +316,20 @@ fn nothing_is_announced_when_the_phrase_cannot_end_in_the_chat_or_has_nothing_to
     on.done(&plain.command.id, "");
     on.expect_state(State::Idle);
 
-    let remote = heard(&on, "как дела", Source::Remote);
-    assert_eq!((remote.command.intent, remote.announced()), ("none", None));
-    on.done(&remote.command.id, "");
+    let first = heard(&on, "как дела", Source::Button);
+    assert!(first.announced().is_some());
+    on.done(&first.command.id, "");
     on.expect_state(State::Idle);
 
     let remembered = heard(&on, "как дела", Source::Button);
     assert_eq!(remembered.announced(), None);
     assert_eq!(remembered.command.candidates.len(), 2);
     assert!(remembered.took < QUICK, "{:?}", remembered.took);
+
+    let (skill, _) = rig(QUICK, true);
+    let remote = heard(&skill, "как дела", Source::Remote);
+    assert_eq!((remote.command.intent, remote.announced()), ("play", None));
+    skill.expect_state(State::Asking);
 }
 
 #[test]

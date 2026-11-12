@@ -38,6 +38,26 @@ impl Bare {
         }
     }
 
+    pub(crate) fn leaves(self, decision: &Decision) -> bool {
+        self == Bare::Certain && !matches!(decision, Decision::Act { .. })
+    }
+
+    pub(crate) fn hands_after(self, unsure: &Decision, ranked: Vec<Scored>) -> Vec<Entity> {
+        let mut handed = Vec::new();
+        if let Decision::Ask { first, second } = unsure {
+            handed.push(first.entity.clone());
+            handed.extend(second.iter().map(|hit| hit.entity.clone()));
+        }
+        for entity in self.hands(ranked) {
+            let known = |hit: &Entity| hit.kind == entity.kind && hit.id == entity.id;
+            if !handed.iter().any(known) {
+                handed.push(entity);
+            }
+        }
+        handed.truncate(HANDED);
+        handed
+    }
+
     pub(crate) fn hands(self, ranked: Vec<Scored>) -> Vec<Entity> {
         match self {
             Bare::Popular => Vec::new(),

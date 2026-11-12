@@ -44,19 +44,16 @@ impl Core {
         let started = Instant::now();
         let phrase = Phrase::read(&text, &Names::new(&self.config.names));
         let parsed = started.elapsed();
-        let talk = self.config.llm && !phrase.commands();
+        let chat = self.config.llm && origin.source != Source::Remote;
+        let talk = chat && !phrase.commands();
         let budget = talk.then_some(self.deps.timing.lookup);
         let lookups = Lookups::start(&self.deps.catalog, &self.memory, phrase.lookups(), budget);
-        let ahead = talk && lookups.awaited() && origin.source != Source::Remote;
+        let ahead = talk && lookups.awaited();
         let early = ahead.then(|| self.announce(text, origin.source));
         let job = Job {
             phrase,
             lookups,
-            bare: if self.config.llm {
-                Bare::Certain
-            } else {
-                Bare::Popular
-            },
+            bare: if chat { Bare::Certain } else { Bare::Popular },
             liked: self.config.boosts.artists.clone(),
             started,
             parsed,
