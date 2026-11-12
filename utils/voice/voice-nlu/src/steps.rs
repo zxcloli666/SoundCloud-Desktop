@@ -181,12 +181,21 @@ fn linked(toks: &[Tok], text: &str, inherit: bool) -> Option<Vec<Parsed>> {
         if l.also && !(plays && rest.iter().all(|p| p.intent.is_control())) {
             continue;
         }
+        if l.soft && plays {
+            queued_after(&mut rest);
+        }
         left.append(&mut rest);
         if !left.is_empty() {
             return Some(left);
         }
     }
     None
+}
+
+fn queued_after(rest: &mut [Parsed]) {
+    if let Some(next) = rest.first_mut().filter(|p| p.intent == Intent::Play) {
+        next.intent = Intent::QueueAdd;
+    }
 }
 
 fn after_play(i: Intent) -> bool {

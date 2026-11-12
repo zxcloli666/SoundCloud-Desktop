@@ -299,3 +299,13 @@ fn a_word_right_after_an_artist_kind_word_is_a_name() {
     ]);
     stays_silent(&["группу стоп"]);
 }
+
+#[test]
+fn a_play_after_then_following_a_play_is_queued() {
+    acts_in_steps(&[
+        ("включи кино а потом включи земфиру", &["play", "queue_add"]),
+        ("включи кино потом поставь земфиру", &["play", "queue_add"]),
+        ("включи кино и включи земфиру", &["play", "play"]),
+        ("пауза а потом громче", &["pause", "volume_up"]),
+    ]);
+}
