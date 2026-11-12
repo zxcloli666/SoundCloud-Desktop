@@ -1,9 +1,9 @@
 use crate::anchor::{self, Found};
 use crate::intent::{self, Detected, Negation};
 use crate::lexicon::{
-    self, ATTENTION, COMPLAINT, DENY, DOWN_WORDS, FED_UP, GENERIC, HELLO_ON_THE_PHONE, IDLE,
-    IMPERATIVES, NEG_STEMS, OBJECT_VERBS, PLAY_STRONG, PLAY_WEAK, PLAYER, PRE, REASON,
-    REMARK_START, REPORT, RESUME_FILL, RESUME_WORDS, ROOM, UP_WORDS, WARNING,
+    self, ATTENTION, COMPLAINT, DENY, DOWN_WORDS, FED_UP, GENERIC, HELLO_ON_THE_PHONE, IMPERATIVES,
+    NEG_STEMS, OBJECT_VERBS, PLAY_STRONG, PLAY_WEAK, PLAYER, PRE, REASON, REMARK_START, REPORT,
+    RESUME_FILL, RESUME_WORDS, ROOM, UP_WORDS, WARNING,
 };
 use crate::normalize::Tok;
 use crate::numbers;
@@ -190,7 +190,7 @@ fn remark(c: &Clause, intent: Intent) -> bool {
     }
     !denied(tail)
         && (forbids_other(c)
-            || urges(tail)
+            || anchor::urges(tail)
             || fed_up(tail)
             || intent::detect(tail).intent == intent
             || anchor::tail_ok(tail, c.said)
@@ -211,12 +211,6 @@ fn forbids_other(c: &Clause) -> bool {
         && after.iter().all(padding)
         && lexicon::stem(NEG_STEMS, &verb.w)
         && !stems.any(|stem| same_action(stem))
-}
-
-fn urges(tail: &[Tok]) -> bool {
-    let asks = matches!(tail[0].w.as_str(), "что" | "чего");
-    let you = usize::from(tail.get(1).is_some_and(|t| t.w == "ты"));
-    asks && tail.len() == you + 2 && IDLE.contains(&tail[you + 1].w.as_str())
 }
 
 fn affirmed(toks: &[Tok], end: usize, c: &Clause) -> bool {

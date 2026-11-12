@@ -324,3 +324,19 @@ fn a_name_reading_that_keeps_only_the_command_word_is_the_command() {
     let named = &parse("группу стоп", &names)[0];
     assert!(named.alt.iter().any(|q| q.text == "стоп"));
 }
+
+#[test]
+fn a_nudge_to_the_listener_after_a_command_word_only_hurries_it() {
+    acts(&[
+        ("назад ну назад же что непонятного", "previous"),
+        ("дальше что непонятного", "next"),
+        ("пауза что ты стоишь", "pause"),
+        ("громче чего ты ждешь", "volume_up"),
+    ]);
+    stays_silent(&[
+        "что непонятного",
+        "мама что непонятного",
+        "я не понимаю что непонятного",
+        "тише что ты орешь",
+    ]);
+}

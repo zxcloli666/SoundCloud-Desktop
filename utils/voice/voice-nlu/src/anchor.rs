@@ -1,7 +1,7 @@
 use crate::intent::{self, Detected};
 use crate::lexicon::{
-    self, ABOUT_OWN_WORDS, BLOCK_HEAD, BLOCK_TAIL, DENY, HELLO_ON_THE_PHONE, INSISTING, LISTENERS,
-    OBJECT_VERBS, PLAY_STRONG, PLAYER, SUBJECTS, TAIL_REMARK,
+    self, ABOUT_OWN_WORDS, BLOCK_HEAD, BLOCK_TAIL, DENY, HELLO_ON_THE_PHONE, IDLE, INSISTING,
+    LISTENERS, OBJECT_VERBS, PLAY_STRONG, PLAYER, SUBJECTS, TAIL_REMARK,
 };
 use crate::normalize::Tok;
 use crate::types::Intent;
@@ -88,7 +88,16 @@ fn single_command(t: &Tok) -> bool {
 
 pub fn tail_ok(tail: &[Tok], window: &[Tok]) -> bool {
     let last = window.last().map(|t| t.w.as_str()).unwrap_or("");
-    !BLOCK_TAIL.contains(&last) && remark_after(tail, window)
+    urges(tail) || (!BLOCK_TAIL.contains(&last) && remark_after(tail, window))
+}
+
+pub fn urges(tail: &[Tok]) -> bool {
+    let Some(first) = tail.first() else {
+        return false;
+    };
+    let asks = matches!(first.w.as_str(), "что" | "чего");
+    let you = usize::from(tail.get(1).is_some_and(|t| t.w == "ты"));
+    asks && tail.len() == you + 2 && IDLE.contains(&tail[you + 1].w.as_str())
 }
 
 pub fn remark_after(tail: &[Tok], window: &[Tok]) -> bool {
