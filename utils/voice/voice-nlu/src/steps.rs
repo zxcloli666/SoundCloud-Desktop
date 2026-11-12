@@ -6,7 +6,7 @@ use crate::normalize::{Tok, normalize};
 use crate::objection;
 use crate::parse_toks;
 use crate::recall;
-use crate::types::{Intent, Parsed};
+use crate::types::{Intent, Kind, Parsed};
 
 const MAX_STEPS: usize = 3;
 const HARD: &[&str] = &["и", "and"];
@@ -193,7 +193,15 @@ fn linked(toks: &[Tok], text: &str, inherit: bool) -> Option<Vec<Parsed>> {
 }
 
 fn queued_after(rest: &mut [Parsed]) {
-    if let Some(next) = rest.first_mut().filter(|p| p.intent == Intent::Play) {
+    let Some(next) = rest.first_mut() else {
+        return;
+    };
+    let named = next.intent.is_control() && next.kind_hint == Some(Kind::Artist);
+    if named && !next.alt.is_empty() {
+        next.queries = std::mem::take(&mut next.alt);
+        next.intent = Intent::QueueAdd;
+    }
+    if next.intent == Intent::Play {
         next.intent = Intent::QueueAdd;
     }
 }

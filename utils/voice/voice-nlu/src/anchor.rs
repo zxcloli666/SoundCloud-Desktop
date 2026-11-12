@@ -1,7 +1,5 @@
 use crate::intent::{self, Detected};
-use crate::lexicon::{
-    self, BLOCK_HEAD, BLOCK_TAIL, DENY, KIND_ARTIST, OBJECT_VERBS, PLAY_STRONG, TAIL_REMARK,
-};
+use crate::lexicon::{self, BLOCK_HEAD, BLOCK_TAIL, DENY, OBJECT_VERBS, PLAY_STRONG, TAIL_REMARK};
 use crate::normalize::Tok;
 use crate::types::Intent;
 
@@ -105,8 +103,7 @@ pub fn find(toks: &[Tok]) -> Option<Found> {
     for len in (1..n).rev() {
         for start in 0..=n - len {
             let end = start + len;
-            let named = start > 0 && KIND_ARTIST.contains(&toks[start - 1].w.as_str());
-            if named || !head_ok(&toks[..start]) || !tail_ok(&toks[end..], &toks[start..end]) {
+            if !head_ok(&toks[..start]) || !tail_ok(&toks[end..], &toks[start..end]) {
                 continue;
             }
             let det = intent::detect(&toks[start..end]);

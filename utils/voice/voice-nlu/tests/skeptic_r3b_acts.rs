@@ -297,7 +297,6 @@ fn a_word_right_after_an_artist_kind_word_is_a_name() {
         ),
         ("включи группу кино", &["play"]),
     ]);
-    stays_silent(&["группу стоп"]);
 }
 
 #[test]
@@ -307,5 +306,16 @@ fn a_play_after_then_following_a_play_is_queued() {
         ("включи кино потом поставь земфиру", &["play", "queue_add"]),
         ("включи кино и включи земфиру", &["play", "play"]),
         ("пауза а потом громче", &["pause", "volume_up"]),
+    ]);
+}
+
+#[test]
+fn a_kind_word_with_a_command_word_after_then_following_a_play_is_queued_as_the_name() {
+    acts_in_steps(&[
+        ("включи кино потом группу стоп", &["play", "queue_add"]),
+        ("включи кино а потом группу пауза", &["play", "queue_add"]),
+        ("включи кино а потом пауза", &["play", "pause"]),
+        ("группу стоп", &["stop"]),
+        ("пауза а потом группу стоп", &["pause", "stop"]),
     ]);
 }
