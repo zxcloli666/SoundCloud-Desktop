@@ -63,6 +63,24 @@
 | `[data-ui="lyrics-line"]` | Строка текста, состояние в `data-state` |
 | `[data-ui="waveform"]` | Волна трека |
 
+### Голос
+
+| Селектор | Элемент |
+|---|---|
+| `[data-ui="voice-mic"]` | Кнопка голоса в плеере |
+| `[data-ui="voice-island"]` | Окно голоса над плеером, вид в `data-state` |
+| `[data-ui="voice-orb"]` | Шар прослушивания, режим в `data-mode` |
+| `[data-ui="voice-avatar"]` | Аватар ассистента |
+| `[data-ui="voice-hero"]` | Верхний блок в Настройки > Голос |
+| `[data-ui="voice-locked"]` | Блок голоса без STAR |
+| `[data-ui="voice-device"]` | Плитка микрофона, выбор в `data-on` |
+| `[data-ui="voice-teach"]` | Панель обучения слову-триггеру |
+| `[data-ui="voice-speaker"]` | Плитка Алисы или Салюта |
+| `[data-ui="voice-link-code"]` | Панель с кодом привязки |
+| `[data-ui="voice-link-confirm"]` | Вопрос «Подключить Алису?» в плитке колонки |
+| `[data-ui="voice-model"]` | Строка модели, состояние в `data-state` |
+| `[data-ui="voice-history-row"]` | Строка в истории голоса |
+
 ### Контент
 
 | Селектор | Элемент |
