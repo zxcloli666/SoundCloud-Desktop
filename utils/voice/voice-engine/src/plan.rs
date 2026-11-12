@@ -65,7 +65,14 @@ impl Core {
         };
         self.close_turn();
         self.phase = Phase::Thinking(Instant::now() + self.deps.timing.done);
-        self.read(left.parsed.heard, origin);
+        if left.parsed.intent.needs_entity() {
+            return self.read(left.parsed.heard, origin);
+        }
+        let talk = Understood {
+            candidates: Vec::new(),
+            ..left
+        };
+        self.begin(origin, vec![talk], None);
     }
 
     pub fn begin(&mut self, origin: Origin, outcomes: Vec<Understood>, ahead: Option<String>) {

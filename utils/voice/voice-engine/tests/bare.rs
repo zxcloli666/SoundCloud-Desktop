@@ -261,34 +261,34 @@ fn reread(rig: &Rig, text: &str) -> CommandEvent {
     let again = rig.command();
     assert!(again.chatless, "{text}");
     assert_ne!(again.id, left.id, "{text}");
+    assert_eq!(again.heard, left.heard, "{text}");
     assert!(again.candidates.is_empty(), "{text}");
     again
 }
 
 #[test]
-fn a_phrase_the_chat_gave_no_answer_to_is_read_again_as_with_the_chat_off() {
+fn a_name_after_a_verb_the_chat_gave_no_answer_to_is_read_again_as_with_the_chat_off() {
     let rig = rig(true);
-    let sure = reread(&rig, "ало");
-    let Some(DecisionEvent::Act { pick }) = &sure.decision else {
-        panic!("expected act, got {:?}", sure.decision);
-    };
-    let artist = pick.entity.artist.as_str();
-    assert_eq!((sure.intent, artist), ("play", "Макс Корж"));
-    rig.done(&sure.id, "");
-    rig.expect_state(State::Idle);
     let missing = reread(&rig, "включи абырвалгович");
     assert_eq!(missing.intent, "play");
     assert_eq!(missing.decision, Some(DecisionEvent::NotFound));
     rig.done(&missing.id, "");
     rig.expect_state(State::Idle);
-    let talk = reread(&rig, "привет");
-    assert_eq!((talk.intent, &talk.decision), ("none", &None));
-    rig.done(&talk.id, "");
-    rig.expect_state(State::Idle);
     let asked = reread(&rig, "включи как дела");
     assert_eq!(asked.intent, "play");
     assert!(matches!(asked.decision, Some(DecisionEvent::Ask { .. })));
     rig.expect_state(State::Asking);
+}
+
+#[test]
+fn a_phrase_without_a_verb_the_chat_gave_no_answer_to_stays_talk_and_plays_nothing() {
+    let rig = rig(true);
+    for text in ["привет", "ало", "как дела", "что нового"] {
+        let talk = reread(&rig, text);
+        assert_eq!((talk.intent, &talk.decision), ("none", &None), "{text}");
+        rig.done(&talk.id, "");
+        rig.expect_state(State::Idle);
+    }
 }
 
 #[test]
@@ -319,7 +319,7 @@ fn a_turn_the_chat_opened_and_left_silent_ends_quietly_before_the_second_reading
     rig.engine.send(Command::Reread(left.id.clone()));
     let again = rig.command();
     assert!(again.chatless);
-    assert!(matches!(again.decision, Some(DecisionEvent::Act { .. })));
+    assert_eq!((again.intent, &again.decision), ("none", &None));
     rig.done(&again.id, "");
     rig.expect_state(State::Idle);
 }
