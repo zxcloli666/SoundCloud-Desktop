@@ -9,7 +9,7 @@ use tokio::sync::{Notify, oneshot};
 use voice_chat::ChatEvent;
 
 use super::stream::{Patience, exchange};
-use super::{CANCELLED_KEPT, Refused, Rounds};
+use super::{CANCELLED_KEPT, Refused, Rounds, Tally, spoken};
 use crate::network::fetch::configured;
 
 const TOKEN: &str = "session-for-tests";
@@ -18,6 +18,7 @@ const STREAM: &str =
 const ACTION: &str = "event: action\ndata: {\"name\":\"volume_set\",\"args\":{\"level\":40}}\n\n";
 const HELLO: &str = "event: say\ndata: {\"text\":\"Сделала \"}\n\n";
 const WORLD: &str = "event: say\ndata: {\"text\":\"потише.\"}\n\n";
+const QUIET: &str = "event: quiet\ndata: {}\n\n";
 const DONE: &str = "event: done\ndata: {}\n\n";
 const DEADLINE: &str = "event: error\ndata: {\"code\":\"deadline\"}\n\n";
 const LONG: Duration = Duration::from_secs(20);
@@ -217,6 +218,22 @@ async fn events_arrive_while_the_reply_is_still_coming() {
     assert!(head.contains("accept: text/event-stream"), "{head}");
     assert!(head.contains("content-type: application/json"), "{head}");
     assert_eq!(serde_json::from_str::<Value>(sent).unwrap(), body());
+}
+
+#[tokio::test]
+async fn a_quiet_answer_says_nothing_and_is_logged_as_quiet() {
+    let served = serve(vec![send(STREAM), send(QUIET), send(DONE), Step::Hold]).await;
+    let heard = Heard::default();
+    let result = talk(&[served.url], patient(), &heard).await;
+    assert_eq!(result, Ok(()));
+    assert_eq!(heard.list(), [ChatEvent::Quiet, ChatEvent::Done]);
+    assert!(spoken(&ChatEvent::Quiet).is_none());
+
+    let tally = Tally::start();
+    for event in heard.list() {
+        tally.note(&event);
+    }
+    assert_eq!(tally.counts.lock().unwrap().ended.as_deref(), Some("quiet"));
 }
 
 #[tokio::test]

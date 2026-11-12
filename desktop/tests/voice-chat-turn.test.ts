@@ -137,6 +137,13 @@ test('a cancelled event ends the turn quietly and keeps what was done', async ()
   assert.equal(link.requests.length, 1);
 });
 
+test('a quiet answer ends the turn well with nothing said and nothing done', async () => {
+  const { seen, link, done } = turn([[{ kind: 'quiet' }, { kind: 'done' }]]);
+  assert.deepEqual(await done, { status: 'ok', say: '', marks: [] });
+  assert.deepEqual(seen.log, []);
+  assert.equal(link.requests.length, 1);
+});
+
 test('a local abort ends the turn without waiting for the stream', async () => {
   const never = new Promise(() => {});
   const { seen, done } = turn([[{ kind: 'say', text: 'Дол' }, { wait: never }, { kind: 'done' }]]);

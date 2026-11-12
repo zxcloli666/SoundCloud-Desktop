@@ -4,6 +4,7 @@ import type { UndoEntry } from '../undo';
 export type ChatEvent =
   | { kind: 'action'; name: string; args: Record<string, unknown> }
   | { kind: 'say'; text: string }
+  | { kind: 'quiet' }
   | { kind: 'done' }
   | { kind: 'error'; code: string }
   | { kind: 'cancelled' };
@@ -89,6 +90,7 @@ export interface ChatBody {
   notes: string[];
   tools: ToolSpec[];
   results: CallResult[];
+  quiet: boolean;
 }
 
 export interface ChatRequest {

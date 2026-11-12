@@ -11,6 +11,7 @@ const STAR: &str = "star_required";
 pub enum ChatEvent {
     Action { name: String, args: Value },
     Say { text: String },
+    Quiet,
     Done,
     Error { code: String },
     Cancelled,
@@ -48,6 +49,7 @@ impl ChatEvent {
                 let say: Say = serde_json::from_str(&frame.data).ok()?;
                 (!say.text.is_empty()).then_some(ChatEvent::Say { text: say.text })
             }
+            "quiet" => Some(ChatEvent::Quiet),
             "done" => Some(ChatEvent::Done),
             "error" => {
                 let failure: Failure = serde_json::from_str(&frame.data).unwrap_or_default();
@@ -115,6 +117,7 @@ mod tests {
                 text: "Сделала потише".into()
             })
         );
+        assert_eq!(decoded("quiet", "{}"), Some(ChatEvent::Quiet));
         assert_eq!(decoded("done", "{ }"), Some(ChatEvent::Done));
         assert_eq!(
             decoded("error", r#"{"code":"deadline"}"#),
@@ -171,6 +174,7 @@ mod tests {
             }),
             json!({"kind": "say", "text": "да"})
         );
+        assert_eq!(json(ChatEvent::Quiet), json!({"kind": "quiet"}));
         assert_eq!(json(ChatEvent::Done), json!({"kind": "done"}));
         assert_eq!(
             json(ChatEvent::error("deadline")),

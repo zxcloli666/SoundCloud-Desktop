@@ -17,6 +17,7 @@ export interface BodyInput {
   notes: string[];
   tools: ChatTool[];
   results: CallResult[];
+  quiet: boolean;
 }
 
 const encoder = new TextEncoder();
@@ -78,5 +79,6 @@ export function buildBody(input: BodyInput): ChatBody {
     notes: input.notes.slice(-NOTES_MAX),
     tools: input.tools.slice(0, TOOLS_MAX).map(spec),
     results: fitResults(input.results),
+    quiet: input.quiet,
   };
 }

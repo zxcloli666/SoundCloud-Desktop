@@ -144,6 +144,7 @@ export function bodyOf(results: ChatBody['results']): ChatBody {
     notes: [],
     tools: [],
     results,
+    quiet: false,
   };
 }
 

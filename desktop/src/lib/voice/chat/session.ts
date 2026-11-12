@@ -74,6 +74,7 @@ function bodyOf(
   tools: ChatTool[],
   candidates: Entity[],
   now: number,
+  quiet: boolean,
 ) {
   const { config } = useVoiceStore.getState();
   const history = dialogMessages(useVoiceRuntime.getState().dialog, now);
@@ -87,6 +88,7 @@ function bodyOf(
       notes: useVoiceStore.getState().notes,
       tools,
       results,
+      quiet,
     });
   return { tools, body };
 }
@@ -94,7 +96,7 @@ function bodyOf(
 export function startChatAhead(heard: HeardEvent) {
   if (!startsAhead(heard, { on: chatOn(), resting: send.resting() })) return;
   const tools = chatTools(playerPort, appPort, []);
-  const { body } = bodyOf(heard.heard, playerPort, tools, [], Date.now());
+  const { body } = bodyOf(heard.heard, playerPort, tools, [], Date.now(), voiced(heard.source));
   early.start({ id: heard.id, speak: speaks(heard.source), body: body([]) });
 }
 
@@ -114,7 +116,8 @@ export async function chatStep(
   const env: ToolEnv = { cmd, lang: ctx.lang, now: ctx.now, stack: ctx.stack, undo: false };
   if (cmd.talk) early.drop(cmd.id);
   const offered = toolsOf(cmd, port, appPort);
-  const { tools, body } = bodyOf(cmd.heard, port, offered, candidatesOf(cmd), ctx.now);
+  const quiet = voiced(cmd.source);
+  const { tools, body } = bodyOf(cmd.heard, port, offered, candidatesOf(cmd), ctx.now, quiet);
   const abort = new AbortController();
   active = { id: cmd.id, abort };
   openReply();

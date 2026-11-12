@@ -38,6 +38,7 @@ function input(extra: Partial<Parameters<typeof buildBody>[0]> = {}) {
     notes: [] as string[],
     tools: chatTools(fakePort(), fakeApp(), []),
     results: [] as CallResult[],
+    quiet: false,
     ...extra,
   };
 }
@@ -75,10 +76,13 @@ test('the body carries text, persona, language, context, history, notes, tools a
     'notes',
     'tools',
     'results',
+    'quiet',
   ]);
   assert.equal(body.persona, 'loli');
   assert.equal(body.language, 'ru');
   assert.deepEqual(body.results, []);
+  assert.equal(body.quiet, false);
+  assert.equal(buildBody(input({ quiet: true })).quiet, true);
   assert.deepEqual(Object.keys(body.tools[0]), ['name', 'description', 'args', 'returns']);
   assert.ok(bytesOf(body) < 256 * 1024);
 });

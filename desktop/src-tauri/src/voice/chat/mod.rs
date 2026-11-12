@@ -124,7 +124,7 @@ fn spoken(event: &ChatEvent) -> Option<Chat> {
         ChatEvent::Say { text } => Some(Chat::Text(text.clone())),
         ChatEvent::Done => Some(Chat::Close),
         ChatEvent::Error { .. } => Some(Chat::Cut),
-        ChatEvent::Action { .. } | ChatEvent::Cancelled => None,
+        ChatEvent::Action { .. } | ChatEvent::Quiet | ChatEvent::Cancelled => None,
     }
 }
 
@@ -200,7 +200,10 @@ impl Tally {
                 counts.chars += text.chars().count();
             }
             ChatEvent::Action { .. } => counts.actions += 1,
-            ChatEvent::Done => counts.ended = Some("done".into()),
+            ChatEvent::Quiet => counts.ended = Some("quiet".into()),
+            ChatEvent::Done => {
+                counts.ended.get_or_insert_with(|| "done".into());
+            }
             ChatEvent::Error { code } => counts.ended = Some(format!("error {code}")),
             ChatEvent::Cancelled => counts.ended = Some("cancelled".into()),
         }

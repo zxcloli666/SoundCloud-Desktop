@@ -70,7 +70,7 @@ async function playRound(
     t.onMark(ran.mark);
   };
   const onEvent = (event: ChatEvent) => {
-    if (round.end) return;
+    if (round.end || event.kind === 'quiet') return;
     if (event.kind === 'say') hear(event.text);
     else if (event.kind !== 'action') finish(event);
     else if (++asked > MAX_ACTIONS) round.refused.push(tooMany(event.name));
