@@ -1,4 +1,5 @@
 use crate::intent::{self, Negation};
+use crate::kin;
 use crate::lexicon::{self, REMARK_START};
 use crate::normalize::{normalize, words};
 
@@ -58,7 +59,7 @@ fn instead_of_the_refused(said: &[String]) -> Option<String> {
     let refused = refuses(&said[..just].join(" "));
     let remark = said[just..]
         .iter()
-        .any(|w| REMARK_START.contains(&w.as_str()));
+        .any(|w| REMARK_START.contains(&w.as_str()) || kin::kin(w));
     (refused && !remark && just + 1 < said.len()).then(|| said[just..].join(" "))
 }
 

@@ -1,5 +1,6 @@
 use crate::intent;
 use crate::lexicon::{self, CLAUSE_SUBJECTS, KIN, PLAY_STRONG, REPORT, SPEECH, THIRD_PERSON};
+use crate::normalize::Tok;
 
 const REACH: usize = 2;
 
@@ -18,6 +19,12 @@ pub fn subject<S: AsRef<str>>(words: &[S], at: usize) -> bool {
 pub fn told_of<S: AsRef<str>>(words: &[S], at: usize) -> bool {
     let doer = |who: usize| kin(words[who].as_ref()) && verb_of(words, who) == Some(at);
     (at.saturating_sub(REACH)..at).any(doer)
+}
+
+pub fn ordered_to(said: &[Tok], rest: &[Tok]) -> bool {
+    let imperative = said.iter().any(|t| intent::orders(&t.w));
+    let addressed = intent::hushing(said) || imperative;
+    addressed && !rest.is_empty() && called(rest, 0)
 }
 
 fn verb_of<S: AsRef<str>>(words: &[S], who: usize) -> Option<usize> {

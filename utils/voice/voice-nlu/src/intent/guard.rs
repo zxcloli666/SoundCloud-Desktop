@@ -1,6 +1,7 @@
 use super::ctx::Ctx;
 use super::indirect;
 use super::talk;
+use crate::kin;
 use crate::lexicon::{
     self, ABOUT_OWN_WORDS, ADDRESSEES, AFTER_ABSENT, BACKWARD, BEFORE_ABSENT, DENY, DOWN_WORDS,
     ENDEARMENTS, FORWARD, IMPERATIVES, LONE_VERBS, NEG_FOLLOW, NEG_STEMS, OBJECT_VERBS,
@@ -124,26 +125,27 @@ fn same_ask(toks: &[Tok], k: usize) -> bool {
 }
 
 fn started(toks: &[Tok]) -> Option<usize> {
+    let remark_word = |t: &Tok| REMARK_START.contains(&t.w.as_str()) || kin::kin(&t.w);
     let opens = |k: usize| {
         let inside = k + 1 < toks.len();
-        let remark = REMARK_START.contains(&toks[k].w.as_str()) && inside && !listener(toks, k);
+        let to_them = kin::ordered_to(&toks[..k], &toks[k..]);
+        let remark = remark_word(&toks[k]) && inside && !listener(toks, k) && !to_them;
         remark || addressed(toks, k)
     };
     (1..toks.len())
         .filter(|&k| opens(k))
-        .filter(|&k| {
-            toks[..k]
-                .iter()
-                .all(|t| !REMARK_START.contains(&t.w.as_str()))
-        })
+        .filter(|&k| !toks[..k].iter().any(remark_word))
         .find(|&k| cuttable(toks, k))
 }
 
 fn addressed(toks: &[Tok], k: usize) -> bool {
-    let loudness = |t: &Tok| UP_WORDS.contains(&t.w.as_str()) || DOWN_WORDS.contains(&t.w.as_str());
-    let hushing = matches!(&toks[..k], [t] if loudness(t));
     let commanded = super::detect(&toks[..k]).intent.is_control();
-    ENDEARMENTS.contains(&toks[k].w.as_str()) && commanded && !hushing
+    ENDEARMENTS.contains(&toks[k].w.as_str()) && commanded && !hushing(&toks[..k])
+}
+
+pub fn hushing(said: &[Tok]) -> bool {
+    let loudness = |t: &Tok| UP_WORDS.contains(&t.w.as_str()) || DOWN_WORDS.contains(&t.w.as_str());
+    matches!(said, [t] if loudness(t))
 }
 
 fn listener(toks: &[Tok], k: usize) -> bool {

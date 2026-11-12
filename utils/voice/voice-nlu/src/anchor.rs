@@ -136,9 +136,10 @@ pub fn remark_after(tail: &[Tok], window: &[Tok]) -> bool {
     if tail.len() == 1 && w == "было" {
         return true;
     }
-    if tail.len() > 8 || BLOCK_TAIL.contains(&w) {
+    if tail.len() > 8 || BLOCK_TAIL.contains(&w) || kin::ordered_to(window, tail) {
         return false;
     }
+    let remark = TAIL_REMARK.contains(&w) || kin::kin(w);
     let transitive = window.iter().any(|t| OBJECT_VERBS.contains(&t.w.as_str()));
     let denied = transitive && tail.iter().any(|t| DENY.contains(&t.w.as_str()));
     let object = window.iter().any(|t| lexicon::stem(PLAYER, &t.w));
@@ -147,9 +148,9 @@ pub fn remark_after(tail: &[Tok], window: &[Tok]) -> bool {
             .iter()
             .any(|t| t.w == "не" || t.w == "нет" || single_command(t))
     {
-        return !denied && TAIL_REMARK.contains(&w);
+        return !denied && remark;
     }
-    if TAIL_REMARK.contains(&w) {
+    if remark {
         return true;
     }
     let praise = tail.len() >= 2 && lexicon::KIND_TRACK.contains(&last_tail.w.as_str());
