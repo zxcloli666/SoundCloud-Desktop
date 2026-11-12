@@ -1,5 +1,6 @@
 use crate::anchor::{self, Found};
 use crate::intent::{self, Detected, Negation};
+use crate::kin;
 use crate::lexicon::{
     self, ATTENTION, COMPLAINT, DENY, DOWN_WORDS, FED_UP, GENERIC, HELLO_ON_THE_PHONE, IMPERATIVES,
     NEG_STEMS, OBJECT_VERBS, ORDER_ENDINGS, PLAY_STRONG, PLAY_WEAK, PLAYER, PRE, REASON,
@@ -84,10 +85,13 @@ fn commands(before: &[Tok]) -> bool {
 }
 
 fn talk(head: &[Tok], command_follows: bool) -> bool {
-    let foreign = |t: &Tok| ROOM.contains(&t.w.as_str()) || addressed(&t.w);
+    let foreign = |at: usize| {
+        let w = head[at].w.as_str();
+        ROOM.contains(&w) || kin::called(head, at) || addressed(w)
+    };
     let last = head.last().map_or("", |t| t.w.as_str());
     (head.is_empty() || statement(head, command_follows))
-        && !head.iter().any(foreign)
+        && !(0..head.len()).any(foreign)
         && !reported(head)
         && !matches!(last, "не" | "ни" | "такой" | "такая")
         && !(DENY.contains(&last) && !lasted(head))
@@ -99,7 +103,8 @@ fn lasted(head: &[Tok]) -> bool {
 }
 
 fn statement(head: &[Tok], command_follows: bool) -> bool {
-    let about = |w: &str| REMARK_START.contains(&w) || matches!(w, "ты" | "этот" | "эту");
+    let about =
+        |w: &str| REMARK_START.contains(&w) || kin::kin(w) || matches!(w, "ты" | "этот" | "эту");
     let told = |w: &str| command_follows && anchor::finite(w);
     let said = head
         .iter()

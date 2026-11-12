@@ -1,4 +1,5 @@
 use super::ctx::{Ctx, Detected};
+use crate::kin;
 use crate::lexicon::*;
 use crate::types::Intent;
 
@@ -10,9 +11,9 @@ pub struct Verb {
 
 fn rambling(c: &Ctx) -> Option<Verb> {
     let limit = c.len().min(10);
-    let someone_else = |w: &&str| REPORT.contains(w) || KIN.contains(w);
+    let someone_else = |at: usize| REPORT.contains(&c.w[at]) || kin::called(&c.w, at);
     (1..limit)
-        .find(|&i| IMPERATIVES.contains(&c.w[i]) && !c.w[..i].iter().any(someone_else))
+        .find(|&i| IMPERATIVES.contains(&c.w[i]) && !(0..i).any(someone_else))
         .map(|idx| Verb {
             idx,
             strong: true,

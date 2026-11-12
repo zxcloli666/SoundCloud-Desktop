@@ -1,4 +1,5 @@
 use crate::intent::{self, Detected};
+use crate::kin;
 use crate::lexicon::{
     self, ABOUT_OWN_WORDS, BLOCK_HEAD, BLOCK_TAIL, DENY, FED_UP, HELLO_ON_THE_PHONE, IDLE,
     INSISTING, LISTENERS, NEXT_STRONG, OBJECT_VERBS, ORDER_ENDINGS, PAUSE_WORDS, PLAY_STRONG,
@@ -47,13 +48,15 @@ fn head_ok(head: &[Tok], window: &[Tok], tail: &[Tok]) -> bool {
         head
     };
     head.len() <= 4
-        && head.iter().all(|t| {
-            let w = t.w.as_str();
+        && (0..head.len()).all(|at| {
+            let w = head[at].w.as_str();
+            let told = HELLO_ON_THE_PHONE.contains(&w) || kin::told_of(head, at);
             !BLOCK_HEAD.contains(&w)
+                && !kin::called(head, at)
                 && !PLAY_STRONG.contains(&w)
                 && !DENY.contains(&w)
-                && (!finite(w) || HELLO_ON_THE_PHONE.contains(&w))
-                && !single_command(t)
+                && (!finite(w) || told)
+                && !single_command(&head[at])
         })
 }
 

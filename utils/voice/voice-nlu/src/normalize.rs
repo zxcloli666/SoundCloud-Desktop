@@ -11,6 +11,12 @@ pub struct Tok {
     pub amb: bool,
 }
 
+impl AsRef<str> for Tok {
+    fn as_ref(&self) -> &str {
+        &self.w
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct Normalized {
     pub toks: Vec<Tok>,

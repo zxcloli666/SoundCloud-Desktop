@@ -2,6 +2,7 @@ mod anchor;
 mod correct;
 mod fold;
 mod intent;
+mod kin;
 mod lexicon;
 mod names;
 mod normalize;

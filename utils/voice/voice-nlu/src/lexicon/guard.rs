@@ -279,6 +279,10 @@ pub const NOT_NOW: &[&str] = &[
 
 pub const FIRST_PERSON: &[&str] = &["у", "ю", "ем", "им"];
 
+pub const THIRD_PERSON: &[&str] = &[
+    "ет", "ит", "ют", "ут", "ат", "ят", "тся", "л", "ла", "ли", "ло", "лся", "лась", "лись", "лось",
+];
+
 pub const STRIDES: &[&str] = &[
     "шаг",
     "шага",
