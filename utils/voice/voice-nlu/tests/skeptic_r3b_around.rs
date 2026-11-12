@@ -39,3 +39,19 @@ fn a_whole_command_word_said_again_and_again_is_said_once() {
         "тише тише тише дети",
     ]);
 }
+
+#[test]
+fn a_thing_named_after_a_volume_step_with_the_noise_it_makes_is_the_reason() {
+    acts(&[
+        ("сделай громче чайник кипит", "volume_up"),
+        ("сделай громче чайник свистит", "volume_up"),
+        ("громче чайник кипит", "volume_up"),
+        ("сделай тише телефон звонит", "volume_down"),
+    ]);
+    stays_silent(&[
+        "сделай громче чайник",
+        "сделай громче будильник",
+        "сделай тише телевизор орет",
+        "выключи чайник кипит",
+    ]);
+}
