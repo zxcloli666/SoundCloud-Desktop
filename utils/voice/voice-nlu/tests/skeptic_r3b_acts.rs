@@ -19,6 +19,12 @@ fn acts(rows: &[(&str, &str)]) {
     }
 }
 
+fn acts_in_steps(rows: &[(&str, &[&str])]) {
+    for (text, want) in rows {
+        assert_eq!(steps(text), *want, "{text}");
+    }
+}
+
 #[test]
 fn a_phrase_that_says_it_is_not_for_the_listener_is_talk() {
     stays_silent(&[
@@ -219,4 +225,17 @@ fn turn_off_said_with_a_southern_vowel_is_still_turn_off() {
         ("отключи повтор", "repeat_off"),
         ("выключи повтор", "repeat_off"),
     ]);
+}
+
+#[test]
+fn more_or_less_beside_a_volume_noun_steps_the_volume() {
+    acts(&[
+        ("громкость побольше", "volume_up"),
+        ("звук поменьше", "volume_down"),
+        ("сделай звук побольше", "volume_up"),
+        ("громкость больше", "volume_up"),
+        ("поставь побольше земфиры", "play"),
+        ("громкость 50", "volume_set"),
+    ]);
+    acts_in_steps(&[("громкость побольше и следующий", &["volume_up", "next"])]);
 }

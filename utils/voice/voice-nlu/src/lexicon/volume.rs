@@ -47,6 +47,10 @@ pub const VOL_NOUNS: &[&str] = &[
     "sound",
 ];
 
+pub const MORE: &[&str] = &["больше", "побольше"];
+
+pub const LESS: &[&str] = &["меньше", "поменьше"];
+
 pub const VOL_STEMS: &[&str] = &["громк", "звук", "volume", "vol", "sound"];
 
 pub const LOUD_ADJECTIVES: &[&str] = &[
