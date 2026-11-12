@@ -1,5 +1,5 @@
 use crate::intent;
-use crate::lexicon::{self, CORRECTION_NOISE, FILLERS, GENERIC, MERGE_PHRASES, PRE};
+use crate::lexicon::{self, CORRECTION_NOISE, DROP_PHRASES, FILLERS, GENERIC, MERGE_PHRASES, PRE};
 use crate::normalize::{Tok, normalize, words};
 use crate::numbers;
 use crate::reworded;
@@ -103,7 +103,18 @@ pub fn by_a_filler(text: &str) -> bool {
 
 pub fn denies(text: &str) -> bool {
     let ws = words(text);
-    (1..ws.len()).any(|i| NEGATING.iter().any(|m| starts(&ws, i, m)))
+    (1..ws.len()).any(|i| negating(&ws, i).is_some())
+}
+
+fn negating(ws: &[String], i: usize) -> Option<&'static [&'static str]> {
+    let polite = |m: &[&str]| {
+        let not = i + m.len() - 1;
+        DROP_PHRASES.iter().any(|p| starts(ws, not, p))
+    };
+    NEGATING
+        .iter()
+        .copied()
+        .find(|m| starts(ws, i, m) && !polite(m))
 }
 
 fn versions(ws: &[String]) -> Option<Vec<Version>> {
@@ -149,10 +160,10 @@ fn opened(cur: &Version) -> bool {
 }
 
 fn rejected(ws: &[String], i: usize, cur: &Version) -> Option<usize> {
-    let negating = NEGATING.iter().find(|m| i > 0 && starts(ws, i, m));
+    let denial = negating(ws, i).filter(|_| i > 0);
     let swapped = (i + 2..=i + 1 + SWAPPED_MAX).any(|j| resumes(ws, j));
     let alone = ws[i] == NOT && !cur.words.is_empty() && swapped;
-    negating.map(|m| m.len()).or(alone.then_some(1))
+    denial.map(|m| m.len()).or(alone.then_some(1))
 }
 
 fn resumes(ws: &[String], i: usize) -> bool {
