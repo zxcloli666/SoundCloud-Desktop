@@ -1,5 +1,7 @@
 use crate::intent;
-use crate::lexicon::{self, BACKWARD, FORWARD, HALF_MINUTE, MIN_UNITS, ONE_AND_HALF, SEC_UNITS};
+use crate::lexicon::{
+    self, BACKWARD, FORWARD, HALF_MINUTE, HIGHER, LOWER, MIN_UNITS, ONE_AND_HALF, SEC_UNITS,
+};
 use crate::normalize::Tok;
 use crate::numbers;
 use crate::types::Intent;
@@ -125,6 +127,7 @@ fn unit(w: &str) -> bool {
 }
 
 fn turns(w: &str) -> bool {
-    let heading = FORWARD.contains(&w) || BACKWARD.contains(&w) || LOUDNESS_TURNS.contains(&w);
+    let loudness = LOUDNESS_TURNS.contains(&w) || HIGHER.contains(&w) || LOWER.contains(&w);
+    let heading = FORWARD.contains(&w) || BACKWARD.contains(&w) || loudness;
     heading && w != NEXT_TRACK
 }

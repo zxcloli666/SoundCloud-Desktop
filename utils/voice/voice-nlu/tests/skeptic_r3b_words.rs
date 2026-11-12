@@ -161,3 +161,16 @@ fn the_name_said_before_a_bare_command_word_turns_the_speech_to_the_listener() {
         "я лоле сказала пауза",
     ]);
 }
+
+#[test]
+fn up_or_down_beside_a_volume_noun_steps_the_volume() {
+    acts(&[
+        ("громкость вниз", "volume_down"),
+        ("громкость вверх", "volume_up"),
+        ("громкость выше", "volume_up"),
+        ("громкость ниже", "volume_down"),
+        ("звук повыше", "volume_up"),
+        ("громкость вниз нет вверх", "volume_up"),
+    ]);
+    stays_silent(&["вниз", "выше", "иди вниз"]);
+}

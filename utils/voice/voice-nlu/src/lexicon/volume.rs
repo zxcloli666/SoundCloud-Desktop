@@ -51,6 +51,10 @@ pub const MORE: &[&str] = &["больше", "побольше"];
 
 pub const LESS: &[&str] = &["меньше", "поменьше"];
 
+pub const HIGHER: &[&str] = &["вверх", "выше", "повыше"];
+
+pub const LOWER: &[&str] = &["вниз", "ниже", "пониже"];
+
 pub const VOL_STEMS: &[&str] = &["громк", "звук", "volume", "vol", "sound"];
 
 pub const LOUD_ADJECTIVES: &[&str] = &[

@@ -33,7 +33,7 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
                 return Some(Detected::new(Intent::Unmute, vec![n]));
             }
         }
-        let compared = c.has(MORE) || c.has(LESS);
+        let compared = c.has(MORE) || c.has(LESS) || c.has(HIGHER) || c.has(LOWER);
         let stepped = (c.has(UP_WORDS) || c.has(DOWN_WORDS) || compared) && !c.has(&["до"]);
         let value = if stepped {
             None
@@ -103,11 +103,11 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
         || english_dir("up")
         || (c.has(&["increase", "raise"]) && noun.is_some())
         || (noun.is_some() && c.has(&["добавь", "добавить"]))
-        || (noun.is_some() && c.has(MORE));
+        || (noun.is_some() && (c.has(MORE) || c.has(HIGHER)));
     let down = c.has(DOWN_WORDS)
         || english_dir("down")
         || (c.has(&["decrease", "lower", "reduce"]) && noun.is_some())
-        || (noun.is_some() && c.has(LESS));
+        || (noun.is_some() && (c.has(LESS) || c.has(LOWER)));
     if c.has(&["до"]) && (up || down || noun.is_some()) {
         if let Some(v) = number.or(max.then_some(100)) {
             return Some(Detected::new(Intent::VolumeSet, vec![]).number(v.min(100)));
@@ -121,6 +121,7 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
     used.extend(noun);
     if noun.is_some() {
         used.extend(c.all(MORE).into_iter().chain(c.all(LESS)));
+        used.extend(c.all(HIGHER).into_iter().chain(c.all(LOWER)));
     }
     used.extend((0..c.len()).filter(|&i| crate::numbers::is_number(c.w[i])));
     used.extend(c.all(PLAY_STRONG));
