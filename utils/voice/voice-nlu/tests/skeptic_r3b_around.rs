@@ -353,3 +353,18 @@ fn a_kind_word_to_the_listener_after_a_command_is_only_an_address() {
     let titled = parse("включи песню милая", &Names::new(&["Лоля"]));
     assert!(titled[0].queries.iter().any(|q| q.text.contains("милая")));
 }
+
+#[test]
+fn some_music_for_the_road_is_the_wave() {
+    acts(&[
+        ("лоля вруби мне в дорогу чё нибудь", "play_wave"),
+        ("включи что нибудь в дорогу", "play_wave"),
+        ("включи мне что нибудь для дороги", "play_wave"),
+    ]);
+    stays_silent(&[
+        "в дорогу",
+        "собери что нибудь в дорогу",
+        "купи что нибудь в дорогу",
+        "включи навигатор в дорогу",
+    ]);
+}
