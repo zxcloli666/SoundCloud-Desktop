@@ -1071,6 +1071,15 @@
     "reconhecimento offline",
     "modelo não baixa"
   ],
+  "voice.credits.title": [
+    "licenças",
+    "licenças dos modelos",
+    "créditos",
+    "código aberto",
+    "bibliotecas de terceiros",
+    "atribuição",
+    "de onde vêm os dados"
+  ],
   "voice.history.title": [
     "histórico de comandos",
     "o que ela ouviu",

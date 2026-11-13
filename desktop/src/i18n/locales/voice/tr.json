@@ -273,6 +273,32 @@
         "qwen-codec": "Ses çözücü"
       }
     },
+    "credits": {
+      "title": "Lisanslar",
+      "open": "Kaynağı aç: {{name}}",
+      "group": {
+        "data": "Uygulamadaki veriler",
+        "models": "Modeller",
+        "code": "Kütüphaneler"
+      },
+      "use": {
+        "stress": "Rusça vurgu ve ё, veriler yeniden işlendi",
+        "lexicon": "İngilizce telaffuz",
+        "vad": "Konuşma algılama",
+        "asrRu": "Rusça tanıma",
+        "asrEn": "İngilizce tanıma",
+        "voiceEn": "İngilizce sesler",
+        "voiceData": "Kokoro seslerinin kayıtları",
+        "voiceBase": "Seslerimizin temeli",
+        "engine": "Konuşma motoru",
+        "tensor": "Konuşma motorundaki hesaplar",
+        "runtime": "Tanıma ve sesleri çalıştırır",
+        "inference": "Modelleri çalıştırır",
+        "echo": "Yankı giderme",
+        "resample": "Örnekleme hızı dönüşümü",
+        "stretch": "Konuşma hızı"
+      }
+    },
     "history": {
       "title": "Geçmiş",
       "empty": "Komutlarınız burada görünecek",

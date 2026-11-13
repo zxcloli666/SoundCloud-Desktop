@@ -279,6 +279,32 @@
         "qwen-codec": "Decodificador de voz"
       }
     },
+    "credits": {
+      "title": "Licenças",
+      "open": "Abrir a fonte: {{name}}",
+      "group": {
+        "data": "Dados no aplicativo",
+        "models": "Modelos",
+        "code": "Bibliotecas"
+      },
+      "use": {
+        "stress": "Acentos e ё do russo, dados retrabalhados",
+        "lexicon": "Pronúncia do inglês",
+        "vad": "Detector de fala",
+        "asrRu": "Reconhecimento de russo",
+        "asrEn": "Reconhecimento de inglês",
+        "voiceEn": "Vozes em inglês",
+        "voiceData": "Gravações das vozes Kokoro",
+        "voiceBase": "Base das nossas vozes",
+        "engine": "Motor de voz",
+        "tensor": "Cálculos do motor de voz",
+        "runtime": "Executa reconhecimento e vozes",
+        "inference": "Executa os modelos",
+        "echo": "Cancelamento de eco",
+        "resample": "Conversão de taxa de amostragem",
+        "stretch": "Velocidade da fala"
+      }
+    },
     "history": {
       "title": "Histórico",
       "empty": "Seus comandos aparecem aqui",

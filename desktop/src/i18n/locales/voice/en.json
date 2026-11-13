@@ -273,6 +273,32 @@
         "qwen-codec": "Voice decoder"
       }
     },
+    "credits": {
+      "title": "Licenses",
+      "open": "Open the source of {{name}}",
+      "group": {
+        "data": "Data inside the app",
+        "models": "Models",
+        "code": "Libraries"
+      },
+      "use": {
+        "stress": "Russian stress and ё, reworked data",
+        "lexicon": "English pronunciation",
+        "vad": "Speech detector",
+        "asrRu": "Russian recognition",
+        "asrEn": "English recognition",
+        "voiceEn": "English voices",
+        "voiceData": "Recordings behind Kokoro voices",
+        "voiceBase": "Base of our voices",
+        "engine": "Speech engine",
+        "tensor": "Math inside the speech engine",
+        "runtime": "Runs recognition and voices",
+        "inference": "Runs the models",
+        "echo": "Echo cancellation",
+        "resample": "Sample rate conversion",
+        "stretch": "Speech speed"
+      }
+    },
     "history": {
       "title": "History",
       "empty": "Your commands will show up here",

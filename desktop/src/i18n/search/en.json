@@ -1241,6 +1241,19 @@
     "model download stuck",
     "repair models"
   ],
+  "voice.credits.title": [
+    "licenses",
+    "model licenses",
+    "credits",
+    "attribution",
+    "acknowledgements",
+    "third party",
+    "open source",
+    "who made the models",
+    "where the data comes from",
+    "wiktionary",
+    "cc by-sa"
+  ],
   "voice.history.title": [
     "voice history",
     "command history",

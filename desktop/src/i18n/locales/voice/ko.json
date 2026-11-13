@@ -269,6 +269,32 @@
         "qwen-codec": "음성 디코더"
       }
     },
+    "credits": {
+      "title": "라이선스",
+      "open": "출처 열기: {{name}}",
+      "group": {
+        "data": "앱에 포함된 데이터",
+        "models": "모델",
+        "code": "라이브러리"
+      },
+      "use": {
+        "stress": "러시아어 강세와 ё, 가공한 데이터",
+        "lexicon": "영어 발음",
+        "vad": "음성 감지",
+        "asrRu": "러시아어 인식",
+        "asrEn": "영어 인식",
+        "voiceEn": "영어 음성",
+        "voiceData": "Kokoro 음성의 녹음 자료",
+        "voiceBase": "자체 음성의 기반",
+        "engine": "음성 엔진",
+        "tensor": "음성 엔진의 연산",
+        "runtime": "인식과 음성 실행",
+        "inference": "모델 실행",
+        "echo": "에코 제거",
+        "resample": "샘플링 속도 변환",
+        "stretch": "말하기 속도"
+      }
+    },
     "history": {
       "title": "기록",
       "empty": "명령이 여기에 표시돼요",
