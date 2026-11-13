@@ -1727,10 +1727,10 @@
     "ignite": "Acenda sua estrela",
     "back": "Voltar",
     "perMonthShort": "mês",
-    "recurringSub_one": "cobrança automática a cada {{count}} dia. Esqueceu de desativar? Envie um e-mail em até 7 dias e devolvemos tudo",
-    "recurringSub_other": "cobrança automática a cada {{count}} dias. Esqueceu de desativar? Envie um e-mail em até 7 dias e devolvemos tudo",
-    "recurringSub_many": "cobrança automática a cada {{count}} dias. Esqueceu de desativar? Envie um e-mail em até 7 dias e devolvemos tudo",
-    "recurringSub_zero": "cobrança automática a cada {{count}} dias. Esqueceu de desativar? Envie um e-mail em até 7 dias e devolvemos tudo",
+    "recurringSub_one": "cobrança automática a cada {{count}} dia. Esqueceu de desativar? Envie um e-mail em até 7 dias e devolvemos tudo, uma vez a cada 6 meses",
+    "recurringSub_other": "cobrança automática a cada {{count}} dias. Esqueceu de desativar? Envie um e-mail em até 7 dias e devolvemos tudo, uma vez a cada 6 meses",
+    "recurringSub_many": "cobrança automática a cada {{count}} dias. Esqueceu de desativar? Envie um e-mail em até 7 dias e devolvemos tudo, uma vez a cada 6 meses",
+    "recurringSub_zero": "cobrança automática a cada {{count}} dias. Esqueceu de desativar? Envie um e-mail em até 7 dias e devolvemos tudo, uma vez a cada 6 meses",
     "legal": "Ao pagar, você aceita os <offer>termos de venda</offer> e a <refund>política de reembolso</refund>.",
     "perk": {
       "goPlus": {

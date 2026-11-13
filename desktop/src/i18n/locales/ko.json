@@ -1657,7 +1657,7 @@
     "ignite": "나의 별 밝히기",
     "back": "뒤로",
     "perMonthShort": "월",
-    "recurringSub_other": "{{count}}일마다 자동 결제돼요. 끄는 걸 잊었다면 7일 안에 이메일로 알려 주세요, 전액 환불해 드려요",
+    "recurringSub_other": "{{count}}일마다 자동 결제돼요. 끄는 걸 잊었다면 7일 안에 이메일로 알려 주세요, 전액 환불해 드려요. 6개월에 한 번 가능해요",
     "legal": "결제하면 <offer>판매 약관</offer>과 <refund>환불 정책</refund>에 동의하게 돼요.",
     "perk": {
       "goPlus": {

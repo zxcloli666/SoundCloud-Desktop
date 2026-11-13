@@ -1813,8 +1813,8 @@
     "ignite": "Ignite your star",
     "back": "Back",
     "perMonthShort": "mo",
-    "recurringSub_one": "charged automatically every {{count}} day. Forgot to turn it off? Email us within 7 days for a full refund",
-    "recurringSub_other": "charged automatically every {{count}} days. Forgot to turn it off? Email us within 7 days for a full refund",
+    "recurringSub_one": "charged automatically every {{count}} day. Forgot to turn it off? Email us within 7 days for a full refund, once every 6 months",
+    "recurringSub_other": "charged automatically every {{count}} days. Forgot to turn it off? Email us within 7 days for a full refund, once every 6 months",
     "legal": "By paying you accept the <offer>terms of sale</offer> and the <refund>refund policy</refund>.",
     "perk": {
       "goPlus": {
