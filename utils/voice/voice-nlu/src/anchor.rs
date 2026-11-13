@@ -1,10 +1,10 @@
 use crate::intent::{self, Detected};
 use crate::kin;
 use crate::lexicon::{
-    self, ABOUT_OWN_WORDS, ASKS_TO_TALK, BLOCK_HEAD, BLOCK_TAIL, DENY, DOWN_WORDS, FED_UP,
-    HELLO_ON_THE_PHONE, IDLE, INSISTING, LIKE_HEDGES, LISTENERS, NEXT_STRONG, OBJECT_VERBS,
-    ORDER_ENDINGS, PAUSE_WORDS, PLAY_STRONG, PLAY_WEAK, PLAYER, PREV_STRONG, STOP_WORDS, SUBJECTS,
-    TAIL_REMARK, TO_THE_LISTENER,
+    self, ABOUT_OWN_WORDS, ASKS_A_PERSON, ASKS_TO_TALK, BLOCK_HEAD, BLOCK_TAIL, DENY, DOWN_WORDS,
+    FED_UP, HELLO_ON_THE_PHONE, IDLE, INSISTING, LIKE_HEDGES, LISTENERS, NEXT_STRONG, OBJECT_VERBS,
+    ORDER_ENDINGS, PAUSE_WORDS, PEOPLE, PLAY_STRONG, PLAY_WEAK, PLAYER, PREV_STRONG, STOP_WORDS,
+    SUBJECTS, TAIL_REMARK, TO_THE_LISTENER,
 };
 use crate::normalize::Tok;
 use crate::types::Intent;
@@ -55,6 +55,7 @@ fn head_ok(head: &[Tok], window: &[Tok], tail: &[Tok]) -> bool {
     head.len() <= 4
         && !asks(head, window)
         && !tells_of_the_past(head)
+        && !names_a_person(head)
         && !names_the_word(head)
         && !liked_in_passing(head, window)
         && (0..head.len()).all(|at| {
@@ -75,6 +76,13 @@ fn asks(head: &[Tok], window: &[Tok]) -> bool {
     let what_it_does = said(0) == "what" && matches!(said(1), "does" | "do" | "did");
     let what_it_is_like = matches!(said(0), "what" | "whats" | "how");
     what_it_does || (what_it_is_like && matches!(window, [only] if only.w == "like"))
+}
+
+pub(crate) fn names_a_person(head: &[Tok]) -> bool {
+    let person = |t: &Tok| PEOPLE.contains(&t.w.as_str());
+    let asks = |t: &Tok| ASKS_A_PERSON.contains(&t.w.as_str());
+    let called_first = matches!(head, [who, rest @ ..] if person(who) && rest.iter().all(asks));
+    called_first || head.last().is_some_and(person)
 }
 
 fn tells_of_the_past(head: &[Tok]) -> bool {

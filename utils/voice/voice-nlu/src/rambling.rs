@@ -93,6 +93,7 @@ fn talk(head: &[Tok], command_follows: bool) -> bool {
     (head.is_empty() || statement(head, command_follows))
         && !(0..head.len()).any(foreign)
         && !reported(head)
+        && !anchor::names_a_person(head)
         && !matches!(last, "не" | "ни" | "такой" | "такая")
         && !(DENY.contains(&last) && !lasted(head))
 }

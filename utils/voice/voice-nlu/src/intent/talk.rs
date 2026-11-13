@@ -4,12 +4,12 @@ use super::library::NOW_SET;
 use crate::anchor::finite;
 use crate::kin;
 use crate::lexicon::{
-    self, ABOUT, AGREEMENT, ASKING, ASKING_ANOTHER, BACKWARD, CLAUSE_SUBJECTS, COMPLAINT,
-    COMPOUNDS, DEMONSTRATIVES, DENY, DESCRIBING, DOWN_WORDS, FED_UP, FIRST_PERSON, FORWARD,
-    HEARING, IDLE, IN_TURN, INFINITIVE_ENDINGS, INSISTING, LISTENERS, LISTENING_STEMS, MAKING,
-    MUSIC_STEMS, NEG_STEMS, NEXT_STRONG, NOISES, NOMINATIVE, NOT_NOW, OTHERS, OWN, PLAY_STRONG,
-    POINTS_BACK, POORLY, PREV_STRONG, REMARK_START, RESUME_WORDS, ROUGHLY, SILENCE, SPEAKING,
-    SPEECH, STRIDES, SWEARS_AMB, TASTE, THE_PAST, TO_THE_LISTENER, UP_WORDS, WAS, WHICH,
+    self, ABOUT, AGREEMENT, ASKING, ASKING_ANOTHER, ASKS_A_PERSON, BACKWARD, CLAUSE_SUBJECTS,
+    COMPLAINT, COMPOUNDS, DEMONSTRATIVES, DENY, DESCRIBING, DOWN_WORDS, FED_UP, FIRST_PERSON,
+    FORWARD, HEARING, IDLE, IN_TURN, INFINITIVE_ENDINGS, INSISTING, LISTENERS, LISTENING_STEMS,
+    MAKING, MUSIC_STEMS, NEG_STEMS, NEXT_STRONG, NOISES, NOMINATIVE, NOT_NOW, OTHERS, OWN, PEOPLE,
+    PLAY_STRONG, POINTS_BACK, POORLY, PREV_STRONG, REMARK_START, RESUME_WORDS, ROUGHLY, SILENCE,
+    SPEAKING, SPEECH, STRIDES, SWEARS_AMB, TASTE, THE_PAST, TO_THE_LISTENER, UP_WORDS, WAS, WHICH,
 };
 
 const RINGING: &[&str] = &["звонк", "будильник", "уведомлен", "телефон", "микрофон"];
@@ -37,6 +37,7 @@ pub fn sentence(c: &Ctx) -> bool {
         || radio_heard_loud(c)
         || threat_of_the_speaker(c)
         || said_in_english_to_someone(c)
+        || told_to_a_person(c)
         || question_with_its_own_verb(c)
         || question_to_a_person(c)
         || meant_for_someone_else(c)
@@ -206,6 +207,13 @@ fn plays_an_instrument(c: &Ctx) -> bool {
 
 fn best_way(c: &Ctx) -> bool {
     c.w.windows(2).any(|said| said == ["best", "way"])
+}
+
+fn told_to_a_person(c: &Ctx) -> bool {
+    let orders =
+        |w: &&str| PLAY_STRONG.contains(w) || super::orders(w) || lexicon::whole_command(w);
+    let told = c.w.iter().skip(1).find(|w| !ASKS_A_PERSON.contains(w));
+    c.len() > 1 && PEOPLE.contains(&c.w[0]) && told.is_some_and(orders)
 }
 
 fn told_after_an_order(c: &Ctx) -> bool {
