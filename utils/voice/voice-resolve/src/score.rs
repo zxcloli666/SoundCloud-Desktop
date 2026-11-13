@@ -39,6 +39,8 @@ pub const WEAK_VERB_MIN: f32 = 0.88;
 pub const ASK_RATIO: f32 = 0.92;
 const EXACT_LEAD: f32 = 0.07;
 const CLOSER_LEAD: f32 = 0.04;
+const IN_FULL: f32 = 1.02;
+const IN_FULL_RATIO: f32 = 0.8;
 const FALLBACK_YIELD: f32 = 0.76;
 const POPULARITY_GAP: u64 = 50;
 const HEARD_MIN: f32 = 0.99;
@@ -235,7 +237,18 @@ pub fn decide(ranked: &[Scored], bare: bool) -> Decision {
             return asked(top, Some(second));
         }
     }
+    if let Some(fuller) = said_in_full(ranked, top) {
+        return asked(top, Some(fuller));
+    }
     Decision::Act { pick: top.clone() }
+}
+
+fn said_in_full<'a>(ranked: &'a [Scored], top: &Scored) -> Option<&'a Scored> {
+    let closer = |s: &&Scored| !s.fallback && s.sim >= IN_FULL.max(top.sim + CLOSER_LEAD);
+    let others = ranked.iter().skip(1).filter(closer);
+    others
+        .into_iter()
+        .find(|s| s.score >= top.score * IN_FULL_RATIO)
 }
 
 fn asked(top: &Scored, second: Option<&Scored>) -> Decision {

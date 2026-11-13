@@ -82,11 +82,19 @@ fn without_parens(name: &str) -> Option<String> {
     (!head.is_empty()).then(|| head.to_string())
 }
 
+fn parts_swapped(e: &Entity) -> Option<String> {
+    let (first, second) = e.name.split_once(" - ")?;
+    (e.kind != Kind::Artist).then(|| format!("{second} {first}"))
+}
+
 impl Keys {
     pub fn new(e: &Entity) -> Keys {
         let mut names = vec![(fold(&e.name), 1.0)];
         if let Some(head) = without_parens(&e.name) {
             names.push((fold(&head), 1.0));
+        }
+        if let Some(turned) = parts_swapped(e) {
+            names.push((fold(&turned), 1.0));
         }
         for a in &e.aliases {
             names.push((fold(a), CALLED));

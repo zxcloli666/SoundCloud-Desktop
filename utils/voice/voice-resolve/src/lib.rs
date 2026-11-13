@@ -422,11 +422,33 @@ track\tРайоны-кварталы\tЗвери\t4000000\t
     }
 
     fn offered_first(text: &str) -> String {
-        let catalog = FixtureCatalog::from_tsv(PARTS, true);
+        offered_first_from(PARTS, text)
+    }
+
+    fn offered_first_from(rows: &str, text: &str) -> String {
+        let catalog = FixtureCatalog::from_tsv(rows, true);
         match interpret_one(text, &catalog, &Boosts::none(), Bare::Popular).decision {
             Some(Decision::Ask { first, .. }) => first.entity.label(),
             other => format!("{other:?}"),
         }
+    }
+
+    #[test]
+    fn a_track_whose_name_holds_its_artist_is_offered_when_both_are_said_in_either_order() {
+        let rows = "kind\tname\tartist\tpopularity\taliases
+artist\tЗвери\t\t5000000\t
+track\tЗвери - Для тебя\tSomeone\t30000\t
+track\tРайоны-кварталы\tЗвери\t4000000\t
+";
+        for said in ["включи для тебя звери", "включи звери для тебя"]
+        {
+            assert_eq!(
+                offered_first_from(rows, said),
+                "Someone - Звери - Для тебя",
+                "{said}"
+            );
+        }
+        assert_eq!(played_from(rows, "включи звери"), "Звери");
     }
 
     #[test]
