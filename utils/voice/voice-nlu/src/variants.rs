@@ -146,6 +146,15 @@ fn join(toks: &[Tok], strategy: u8, keep_amb: bool) -> String {
         .join(" ")
 }
 
+fn part(toks: &[Tok], strategy: u8) -> String {
+    let sure = join(toks, strategy, false);
+    if sure.is_empty() {
+        join(toks, strategy, true)
+    } else {
+        sure
+    }
+}
+
 fn has_amb(toks: &[Tok]) -> bool {
     toks.iter().any(|t| t.amb)
 }
@@ -224,12 +233,7 @@ pub fn expand(raw: &Raw, with_spans: bool) -> Vec<Variant> {
                     for st in 0..2u8 {
                         push(
                             &mut out,
-                            joint(
-                                join(title, st, false),
-                                join(artist, sa, false),
-                                false,
-                                sa > 0 || st > 0,
-                            ),
+                            joint(part(title, st), part(artist, sa), false, sa > 0 || st > 0),
                         );
                     }
                 }

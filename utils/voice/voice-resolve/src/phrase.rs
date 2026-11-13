@@ -39,7 +39,8 @@ impl Lookup {
 
     pub fn fuller(&self) -> Vec<String> {
         let own = self.variants.iter().filter(|v| v.alias_kind.is_none());
-        let fuller = own.filter(|v| v.kept_fillers && !v.lemmatized && !v.fallback);
+        let said = own.filter(|v| !v.lemmatized && !v.fallback);
+        let fuller = said.filter(|v| v.kept_fillers || v.artist.is_some() && v.title.is_some());
         distinct(fuller.map(|v| v.text.clone()))
     }
 }

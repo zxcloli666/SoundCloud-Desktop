@@ -186,6 +186,15 @@ fn what_says_more_than_the_name_is_asked_right_after_it_and_whatever_it_finds() 
 }
 
 #[test]
+fn a_title_said_apart_from_its_artist_is_asked_whatever_the_artist_alone_finds() {
+    let lookup = &read("включи песню для тебя группы звери", &[]).lookups()[0];
+    let texts = lookup.texts();
+    assert_eq!(texts[0], "звери");
+    assert_eq!(texts[1], "для тебя звери");
+    assert!(lookup.fuller().contains(&texts[1]), "{:?}", lookup.fuller());
+}
+
+#[test]
 fn a_curated_artist_asked_for_as_another_kind_is_not_the_first_asked() {
     let other = [
         ("включи песню звери", "Звери"),

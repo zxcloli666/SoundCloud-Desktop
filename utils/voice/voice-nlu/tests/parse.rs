@@ -109,6 +109,22 @@ fn a_greeting_said_alone_is_not_a_name_to_look_up() {
 }
 
 #[test]
+fn a_title_made_of_words_usually_left_out_is_kept_when_its_artist_is_named_apart() {
+    let apart = [
+        ("включи песню для тебя группы звери", "для тебя", "звери"),
+        ("включи песню хочу у земфиры", "хочу", "земфиры"),
+        ("включи звери - для тебя", "для тебя", "звери"),
+    ];
+    for (text, title, artist) in apart {
+        let p = parse(text);
+        let joint = p.queries.iter().find(|q| q.title.is_some()).expect(text);
+        assert_eq!(joint.title.as_deref(), Some(title), "{text}");
+        assert_eq!(joint.artist.as_deref(), Some(artist), "{text}");
+        assert_eq!(joint.text, format!("{title} {artist}"), "{text}");
+    }
+}
+
+#[test]
 fn slots_split_artist_and_title() {
     let p = parse("включи песню притон от скриптонита");
     assert_eq!(p.intent, Intent::Play);

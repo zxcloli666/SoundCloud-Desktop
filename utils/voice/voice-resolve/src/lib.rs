@@ -406,6 +406,21 @@ track\tCan't Feel My Face\tThe Weeknd\t45000000\t
         );
     }
 
+    #[test]
+    fn a_title_made_of_words_usually_left_out_is_played_when_its_artist_is_named_apart() {
+        let rows = "kind\tname\tartist\tpopularity\taliases
+artist\tЗвери\t\t5000000\t
+track\tДля тебя\tЗвери\t900000\t
+track\tРайоны-кварталы\tЗвери\t4000000\t
+";
+        let played = |text: &str| played_from(rows, text);
+        assert_eq!(
+            played("включи песню для тебя группы звери"),
+            "Звери - Для тебя"
+        );
+        assert_eq!(played("включи группу звери"), "Звери");
+    }
+
     fn offered_first(text: &str) -> String {
         let catalog = FixtureCatalog::from_tsv(PARTS, true);
         match interpret_one(text, &catalog, &Boosts::none(), Bare::Popular).decision {
