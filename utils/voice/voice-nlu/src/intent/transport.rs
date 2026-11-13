@@ -87,7 +87,9 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
     }
     if let Some(i) = c.pos(RESUME_WORDS) {
         let strays = c.stray_words(&base(c, i));
-        if strays.len() <= 1
+        let announced = c.w[i] == "продолжение" && !strays.is_empty();
+        if !announced
+            && strays.len() <= 1
             && !strays
                 .iter()
                 .any(|w| w.ends_with('й') || w.ends_with("йте"))

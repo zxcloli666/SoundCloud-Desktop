@@ -2,7 +2,7 @@ use super::ctx::{Ctx, Detected};
 use crate::lexicon::*;
 use crate::types::Intent;
 
-const QUEUE_PREPS: &[&str] = &["в", "во", "to", "the", "on", "into", "at"];
+const QUEUE_PREPS: &[&str] = &["в", "во", "конец", "to", "the", "on", "into", "at"];
 const WAS: &[&str] = &["было", "была", "был", "были"];
 
 pub fn undo(c: &Ctx) -> Option<Detected> {

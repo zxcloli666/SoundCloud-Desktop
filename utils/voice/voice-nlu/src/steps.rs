@@ -160,10 +160,12 @@ fn linked(toks: &[Tok], text: &str, inherit: bool) -> Option<Vec<Parsed>> {
                 inner.unwrap_or_else(|| vec![p])
             }
             Side::Foreign => Vec::new(),
-            Side::Other if inherit && l.soft => match shared_verb(&toks[..i], text, true) {
-                Some(p) => vec![p],
-                None => continue,
-            },
+            Side::Other if inherit && (l.soft || controls_follow(&toks[start..], text)) => {
+                match shared_verb(&toks[..i], text, true) {
+                    Some(p) => vec![p],
+                    None => continue,
+                }
+            }
             Side::Other => continue,
         };
         let right = &toks[start..];
@@ -206,6 +208,10 @@ fn linked(toks: &[Tok], text: &str, inherit: bool) -> Option<Vec<Parsed>> {
         }
     }
     None
+}
+
+fn controls_follow(toks: &[Tok], text: &str) -> bool {
+    matches!(side(toks, text), Side::Cmd(p) if p.intent.is_control())
 }
 
 fn controls(steps: &[Parsed]) -> bool {

@@ -238,7 +238,9 @@ pub fn content(c: &Ctx) -> Option<Detected> {
 fn anything_of_a_kind(c: &Ctx) -> bool {
     let anything = |w: &&str| matches!(*w, "чтонибудь" | "чтото");
     let which = |w: &&str| WAVE_NEEDS_VERB.contains(w) && !anything(w);
-    (2..=3).contains(&c.len()) && c.w[0] == "чтонибудь" && c.w[1..].iter().all(which)
+    let new = |w: &&str| matches!(*w, "новое" | "новенькое" | "свежее");
+    let asked = c.w[0] == "чтонибудь" || c.w[0] == "чтото" && c.w[1..].iter().all(new);
+    (2..=3).contains(&c.len()) && asked && c.w[1..].iter().all(which)
 }
 
 fn asks_for_such(c: &Ctx, at: usize) -> bool {

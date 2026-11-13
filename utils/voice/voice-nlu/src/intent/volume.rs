@@ -2,6 +2,8 @@ use super::ctx::{Ctx, Detected};
 use crate::lexicon::*;
 use crate::types::Intent;
 
+const GIVE_BACK: &[&str] = &["верни", "вернуть", "возвращай"];
+
 pub fn detect(c: &Ctx) -> Option<Detected> {
     if c.len() > 8 {
         return None;
@@ -98,7 +100,13 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
     }
     if let Some(n) = noun {
         if c.at(n).starts_with("звук") || c.at(n).starts_with("sound") {
-            if c.has(OFF_VERBS) && !c.has(UP_WORDS) && !c.has(DOWN_WORDS) {
+            let mut off = c.all(OFF_VERBS);
+            let asked = !off.is_empty() && !c.has(UP_WORDS) && !c.has(DOWN_WORDS);
+            off.push(n);
+            off.extend(super::seek::wait(c));
+            off.extend(c.all(&["полностью", "совсем", "целиком"]));
+            off.extend(c.all(SWEARS_AMB));
+            if asked && c.stray(&off) == 0 {
                 return Some(Detected::new(Intent::Mute, vec![n]));
             }
             let on = c.all(ON_VERBS);
@@ -106,6 +114,15 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
             used.push(n);
             used.extend(c.all(AS_BEFORE));
             if !on.is_empty() && !c.has(UP_WORDS) && !c.has(DOWN_WORDS) && c.stray(&used) == 0 {
+                return Some(Detected::new(Intent::Unmute, vec![n]));
+            }
+        }
+        let given_back = c.all(GIVE_BACK);
+        if c.at(n).starts_with("громкост") && !given_back.is_empty() {
+            let mut used = given_back;
+            used.push(n);
+            used.extend(c.all(AS_BEFORE));
+            if c.stray(&used) == 0 {
                 return Some(Detected::new(Intent::Unmute, vec![n]));
             }
         }

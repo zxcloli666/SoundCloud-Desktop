@@ -28,6 +28,7 @@ pub fn context(words: Vec<String>) -> Vec<String> {
             "играло" | "играла" | "заиграло" | "заиграла" if after_wish && asked => {
                 "играй"
             }
+            "играет" | "заиграет" | "звучит" if let_play(&words, i) => "играй",
             "ван" if i > 0 && words[i - 1] == "репит" => "one",
             "ол" | "олл" if i > 0 && words[i - 1] == "репит" => "all",
             "след" if KIND_TRACK.contains(&next) => "следующий",
@@ -37,6 +38,12 @@ pub fn context(words: Vec<String>) -> Vec<String> {
         out[i] = to.to_string();
     }
     out
+}
+
+fn let_play(words: &[String], verb: usize) -> bool {
+    let let_it = verb > 0 && matches!(words[verb - 1].as_str(), "пусть" | "пускай");
+    let named = words.get(verb + 1).is_some_and(|next| !known(next));
+    let_it && named
 }
 
 fn english_by_ear(words: Vec<String>) -> Vec<String> {

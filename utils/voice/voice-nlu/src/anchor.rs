@@ -1,9 +1,10 @@
 use crate::intent::{self, Detected};
 use crate::kin;
 use crate::lexicon::{
-    self, ABOUT_OWN_WORDS, ASKS_TO_TALK, BLOCK_HEAD, BLOCK_TAIL, DENY, FED_UP, HELLO_ON_THE_PHONE,
-    IDLE, INSISTING, LISTENERS, NEXT_STRONG, OBJECT_VERBS, ORDER_ENDINGS, PAUSE_WORDS, PLAY_STRONG,
-    PLAY_WEAK, PLAYER, PREV_STRONG, STOP_WORDS, SUBJECTS, TAIL_REMARK, TO_THE_LISTENER,
+    self, ABOUT_OWN_WORDS, ASKS_TO_TALK, BLOCK_HEAD, BLOCK_TAIL, DENY, DOWN_WORDS, FED_UP,
+    HELLO_ON_THE_PHONE, IDLE, INSISTING, LISTENERS, NEXT_STRONG, OBJECT_VERBS, ORDER_ENDINGS,
+    PAUSE_WORDS, PLAY_STRONG, PLAY_WEAK, PLAYER, PREV_STRONG, STOP_WORDS, SUBJECTS, TAIL_REMARK,
+    TO_THE_LISTENER,
 };
 use crate::normalize::Tok;
 use crate::types::Intent;
@@ -47,10 +48,15 @@ fn head_ok(head: &[Tok], window: &[Tok], tail: &[Tok]) -> bool {
     } else {
         head
     };
+    let hushed = window.iter().any(|t| {
+        let w = t.w.as_str();
+        DOWN_WORDS.contains(&w) || PAUSE_WORDS.contains(&w) || STOP_WORDS.contains(&w)
+    });
     head.len() <= 4
         && (0..head.len()).all(|at| {
             let w = head[at].w.as_str();
-            let told = HELLO_ON_THE_PHONE.contains(&w) || kin::told_of(head, at);
+            let resting = hushed && at + 1 == head.len() && RESTING.contains(&w);
+            let told = HELLO_ON_THE_PHONE.contains(&w) || kin::told_of(head, at) || resting;
             !BLOCK_HEAD.contains(&w)
                 && !kin::called(head, at)
                 && !PLAY_STRONG.contains(&w)
@@ -96,6 +102,18 @@ fn before_insisting(head: &[Tok], last_word: bool) -> &[Tok] {
         head
     }
 }
+
+const RESTING: &[&str] = &[
+    "спит",
+    "спят",
+    "уснул",
+    "уснула",
+    "уснули",
+    "засыпает",
+    "засыпают",
+    "отдыхает",
+    "отдыхают",
+];
 
 const VERB_ENDINGS: &[&str] = &[
     "ет", "ит", "ют", "ут", "ат", "ят", "ешь", "ишь", "ем", "им", "ете", "ите", "ал", "ала", "ел",

@@ -1,7 +1,8 @@
 use crate::intent;
 use crate::kin;
 use crate::lexicon::{
-    self, CORRECTION_NOISE, DROP_PHRASES, FILLERS, GENERIC, MERGE_PHRASES, PLAY_STRONG, PRE,
+    self, CORRECTION_NOISE, DROP_PHRASES, FILLERS, GENERIC, MERGE_PHRASES, NEXT_STRONG, NEXT_WEAK,
+    PLAY_STRONG, PRE,
 };
 use crate::normalize::{Tok, normalize, words};
 use crate::numbers;
@@ -204,7 +205,9 @@ fn marker(ws: &[String], i: usize) -> Option<Mark> {
     let wavers = WAVERS
         .iter()
         .find(|m| starts(ws, i, m) && !starts(ws, i, AT_LEAST));
-    let loose = ws[i] == LOOSE && i >= 2 && i + 1 < ws.len();
+    let another = |w: &String| lexicon::has(NEXT_WEAK, w) || lexicon::stem(NEXT_STRONG, w);
+    let after_a_no = ws[i] == RESTART && ws[0] == NOT && !ws[i + 1..].iter().any(another);
+    let loose = (ws[i] == LOOSE || after_a_no) && i >= 2 && i + 1 < ws.len();
     let len = takes_back
         .or(wavers)
         .map(|m| m.len())
