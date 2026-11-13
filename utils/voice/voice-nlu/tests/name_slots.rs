@@ -149,3 +149,38 @@ fn the_word_version_is_a_word_for_a_track_and_not_a_part_of_its_name() {
         assert_eq!(said(text)[0].kind_hint, Some(Kind::Track), "{text}");
     }
 }
+
+#[test]
+fn a_word_usually_left_out_is_the_name_when_it_is_all_that_follows_its_kind() {
+    let named = [
+        ("включи песню знаешь", "знаешь", Kind::Track),
+        ("включи группу алиса", "алиса", Kind::Artist),
+        ("поставь трек смотри", "смотри", Kind::Track),
+        ("включи плейлист окей", "окей", Kind::Playlist),
+    ];
+    for (text, name, kind) in named {
+        let steps = said(text);
+        assert_eq!(steps[0].queries[0].text, name, "{text}");
+        assert_eq!(steps[0].kind_hint, Some(kind), "{text}");
+    }
+    let steps = said("включи песню знаешь а потом кино");
+    assert_eq!(steps.len(), 2);
+    assert_eq!(steps[0].queries[0].text, "знаешь");
+    assert_eq!(steps[1].queries[0].text, "кино");
+}
+
+#[test]
+fn a_sound_of_doubt_or_a_polite_word_after_a_kind_is_not_its_name() {
+    let unnamed = [
+        "включи песню пожалуйста",
+        "включи трек ну",
+        "включи песню эээ",
+        "включи альбом спасибо",
+        "поставь песню please",
+    ];
+    for text in unnamed {
+        assert_eq!(names(text), Vec::<String>::new(), "{text}");
+    }
+    assert_eq!(names("включи группу алиса трасса е 95")[0], "трасса е 95");
+    assert_eq!(names("алиса включи кино")[0], "кино");
+}

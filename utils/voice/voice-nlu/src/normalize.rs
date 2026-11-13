@@ -4,6 +4,7 @@ use crate::lexicon::{
 };
 use crate::numbers;
 use crate::repair;
+use crate::slots;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Tok {
@@ -194,10 +195,19 @@ fn plain(words: Vec<String>) -> Vec<String> {
 }
 
 fn without_fillers(words: Vec<String>) -> Vec<String> {
-    words
-        .into_iter()
-        .filter(|w| !lexicon::has(lexicon::FILLERS, w))
-        .collect()
+    let filler = |w: &String| lexicon::has(lexicon::FILLERS, w);
+    let kept: Vec<bool> = (0..words.len())
+        .map(|at| !filler(&words[at]) || names_a_kind(&words, at))
+        .collect();
+    let left = words.into_iter().zip(kept).filter(|(_, kept)| *kept);
+    left.map(|(word, _)| word).collect()
+}
+
+fn names_a_kind(words: &[String], at: usize) -> bool {
+    let filler = |w: &String| lexicon::has(lexicon::FILLERS, w);
+    let after_kind = at > 0 && slots::kind_of(&words[at - 1]).is_some();
+    let last = words.get(at + 1).is_none_or(filler);
+    after_kind && last && !lexicon::has(lexicon::NAMELESS, &words[at])
 }
 
 fn matches_at(words: &[String], i: usize, phrase: &[&str]) -> bool {

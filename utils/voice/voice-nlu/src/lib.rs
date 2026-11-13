@@ -30,7 +30,15 @@ pub fn parse_one(text: &str) -> Parsed {
 }
 
 pub fn parse_name(text: &str) -> Parsed {
-    let toks = normalize(text).toks;
+    let cleaned = named(text, normalize(text).toks);
+    if cleaned.queries.is_empty() {
+        named(text, as_said(text))
+    } else {
+        cleaned
+    }
+}
+
+fn named(text: &str, toks: Vec<Tok>) -> Parsed {
     let s = slots::extract(&toks, &intent::Detected::none());
     let normalized = toks
         .iter()
@@ -56,6 +64,11 @@ pub fn parse_name(text: &str) -> Parsed {
         kind_alt,
         split: Vec::new(),
     }
+}
+
+fn as_said(text: &str) -> Vec<Tok> {
+    let words = normalize::words(text).into_iter();
+    words.map(|w| Tok { w, amb: false }).collect()
 }
 
 pub(crate) fn parse_toks(text: &str, mut toks: Vec<Tok>) -> (Parsed, bool) {
