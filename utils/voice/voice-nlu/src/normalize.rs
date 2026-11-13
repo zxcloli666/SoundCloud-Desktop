@@ -1,6 +1,6 @@
 use crate::lexicon::{
     self, CHEERS, COMPLAINT, DEMONSTRATIVES, DROP_PHRASES, MERGE_PHRASES, MUSIC_STEMS, MUTE_WORDS,
-    NEXT_WEAK, PLAY_STRONG, PREV_WEAK, STOP_WORDS, SWEARS_AMB,
+    NEXT_STRONG, NEXT_WEAK, PLAY_STRONG, PREV_STRONG, PREV_WEAK, STOP_WORDS, SWEARS_AMB,
 };
 use crate::numbers;
 use crate::repair;
@@ -36,7 +36,7 @@ pub fn normalize(input: &str) -> Normalized {
     }
     let words = plain(apply_phrases(repair::stutter(repair::glue(words))));
     let words = numbers::out_of_ten(numbers::merge(&numbers::colloquial(words), false));
-    let words = drop_swears(dedupe(without_fillers(words)));
+    let words = drop_swears(dedupe(said_once(without_fillers(words))));
     let toks: Vec<Tok> = words
         .into_iter()
         .map(|w| Tok {
@@ -205,7 +205,7 @@ fn without_fillers(words: Vec<String>) -> Vec<String> {
 
 fn is_the_name(words: &[String], at: usize) -> bool {
     let filler = |w: &String| lexicon::has(lexicon::FILLERS, w);
-    let after_kind = at > 0 && slots::kind_of(&words[at - 1]).is_some();
+    let after_kind = at > 0 && slots::kind_of(&words[at - 1]).is_some() && !in_a_row(words, at - 1);
     let after_the_verb = at > 0
         && lexicon::has(lexicon::PLAY_STRONG, &words[at - 1])
         && words[..at - 1].iter().all(filler);
@@ -215,8 +215,44 @@ fn is_the_name(words: &[String], at: usize) -> bool {
     named && last && !lexicon::has(lexicon::NAMELESS, &words[at])
 }
 
+fn in_a_row(words: &[String], kind: usize) -> bool {
+    let ordinal = |w: &String| lexicon::stem(NEXT_STRONG, w) || lexicon::stem(PREV_STRONG, w);
+    kind > 0 && ordinal(&words[kind - 1])
+}
+
 fn matches_at(words: &[String], i: usize, phrase: &[&str]) -> bool {
     i + phrase.len() <= words.len() && phrase.iter().zip(&words[i..]).all(|(p, w)| p == w)
+}
+
+pub(crate) fn sung(words: &[String]) -> bool {
+    let over_and_over = |n: usize| {
+        let mut lines = words.chunks(n);
+        let first = lines.next();
+        words.len() % n == 0 && lines.all(|line| Some(line) == first)
+    };
+    (1..=words.len() / 2).any(over_and_over)
+}
+
+fn said_once(words: Vec<String>) -> Vec<String> {
+    let alpha = |w: &String| w.chars().all(char::is_alphabetic);
+    let twice = |at: usize, n: usize| {
+        let (first, second) = (at..at + n, at + n..at + 2 * n);
+        second.end <= words.len()
+            && words[first.clone()] == words[second]
+            && words[first].iter().all(alpha)
+    };
+    let mut out: Vec<String> = Vec::new();
+    let mut at = 0;
+    while at < words.len() {
+        match [3, 2].into_iter().find(|&n| twice(at, n)) {
+            Some(n) => at += n,
+            None => {
+                out.push(words[at].clone());
+                at += 1;
+            }
+        }
+    }
+    out
 }
 
 fn dedupe(words: Vec<String>) -> Vec<String> {

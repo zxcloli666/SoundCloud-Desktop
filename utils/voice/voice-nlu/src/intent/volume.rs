@@ -9,6 +9,10 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
     if c.has(PLAY_STRONG) && c.has(&["музыку", "музыка"]) {
         return None;
     }
+    let turned = c.has(UP_WORDS) || c.has(DOWN_WORDS);
+    if c.has(&["радио"]) && turned && !c.has(PLAY_STRONG) {
+        return Some(Detected::blocked());
+    }
     let noun =
         c.w.iter()
             .position(|w| stem(VOL_STEMS, w) && !LOUD_ADJECTIVES.contains(w));
@@ -70,12 +74,20 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
         return Some(Detected::new(Intent::Unmute, vec![]));
     }
     if let Some(m) = c.pos(MUTE_WORDS) {
+        let named = c.w[m] == "mute";
+        let lifted: Vec<usize> = c.all(OFF_VERBS).into_iter().filter(|&i| i != m).collect();
         let mut said = vec![m];
         said.extend(noun);
         said.extend(super::seek::wait(c));
         said.extend(c.all(SWEARS_AMB));
+        if named {
+            said.extend(c.all(ON_VERBS));
+            said.extend(lifted.iter().copied());
+        }
         if c.stray(&said) == 0 {
-            return Some(Detected::new(Intent::Mute, vec![]));
+            let lifts = named && !lifted.is_empty();
+            let intent = if lifts { Intent::Unmute } else { Intent::Mute };
+            return Some(Detected::new(intent, vec![]));
         }
     }
     if c.has(&["без"]) && c.has_stem(&["звук"]) {

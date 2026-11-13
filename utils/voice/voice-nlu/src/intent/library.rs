@@ -50,6 +50,9 @@ const HELP_SET: &[&str] = &[
     "умеешь",
     "умеете",
     "можешь",
+    "можете",
+    "чем",
+    "помочь",
     "делать",
     "какие",
     "у",
@@ -90,7 +93,8 @@ pub fn help(c: &Ctx) -> Option<Detected> {
     let commands = c.has(&["команды", "возможности"])
         || (c.has(&["что"]) && c.has(&["можно"]) && c.has(&["сказать", "спросить", "делать"]));
     let direct = c.has(&["помощь", "помоги", "помогите", "справка", "help"]) && !c.has(ENDEARMENTS);
-    if ability || how || direct || commands {
+    let of_use = c.has(&["чем"]) && c.has(&["можешь", "можете"]) && c.has(&["помочь"]);
+    if ability || how || direct || commands || of_use {
         return Some(Detected::new(Intent::Help, vec![]));
     }
     None

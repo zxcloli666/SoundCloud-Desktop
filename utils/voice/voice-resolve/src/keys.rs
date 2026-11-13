@@ -82,9 +82,27 @@ fn without_parens(name: &str) -> Option<String> {
     (!head.is_empty()).then(|| head.to_string())
 }
 
+const DASHES: &[&str] = &[" - ", " — ", " – "];
+
+fn halves(e: &Entity) -> Option<(&str, &str)> {
+    let cut = DASHES.iter().find_map(|dash| e.name.split_once(dash))?;
+    (e.kind != Kind::Artist).then_some(cut)
+}
+
 fn parts_swapped(e: &Entity) -> Option<String> {
-    let (first, second) = e.name.split_once(" - ")?;
-    (e.kind != Kind::Artist).then(|| format!("{second} {first}"))
+    let (first, second) = halves(e)?;
+    Some(format!("{second} {first}"))
+}
+
+fn title_beside_its_artist(e: &Entity) -> Option<&str> {
+    let (first, second) = halves(e)?;
+    let by = fold(e.artist.as_deref()?);
+    let credits = |half: &str| near(&fold(half), &by) >= CREDIT_MIN;
+    match (credits(first), credits(second)) {
+        (true, false) => Some(second),
+        (false, true) => Some(first),
+        _ => None,
+    }
 }
 
 impl Keys {
@@ -95,6 +113,9 @@ impl Keys {
         }
         if let Some(turned) = parts_swapped(e) {
             names.push((fold(&turned), 1.0));
+        }
+        if let Some(title) = title_beside_its_artist(e) {
+            names.push((fold(title), 1.0));
         }
         for a in &e.aliases {
             names.push((fold(a), CALLED));

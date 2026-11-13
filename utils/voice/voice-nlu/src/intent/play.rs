@@ -27,10 +27,11 @@ pub fn find_verb(c: &Ctx) -> Option<Verb> {
             if !list.contains(&c.w[i]) {
                 continue;
             }
-            if !strong && c.w[..i].iter().any(|w| SUBJECTS.contains(w)) {
+            let wished = !strong && wished_by_me(c, i);
+            if !strong && !wished && c.w[..i].iter().any(|w| SUBJECTS.contains(w)) {
                 continue;
             }
-            if c.only_pre(0..i) {
+            if c.only_pre(0..i) || wished {
                 return Some(Verb {
                     idx: i,
                     strong,
@@ -47,6 +48,11 @@ pub fn find_verb(c: &Ctx) -> Option<Verb> {
         }
     }
     rambling(c)
+}
+
+fn wished_by_me(c: &Ctx, verb: usize) -> bool {
+    let clause = matches!(c.at(verb + 1), "чтобы" | "чтоб" | "шоб");
+    verb == 1 && c.w[0] == "я" && c.w[1] == "хочу" && !clause
 }
 
 fn is_kind(w: &str) -> bool {
@@ -213,6 +219,9 @@ pub fn content(c: &Ctx) -> Option<Detected> {
         return Some(Detected::new(Intent::PlaySimilar, u));
     }
 
+    if !has_verb && anything_of_a_kind(c) {
+        return Some(Detected::new(Intent::PlayWave, (0..c.len()).collect()));
+    }
     if has_verb {
         if let Some(w) = c.pos(WAVE_NEEDS_VERB) {
             let mut u = used.clone();
@@ -224,6 +233,12 @@ pub fn content(c: &Ctx) -> Option<Detected> {
         }
     }
     None
+}
+
+fn anything_of_a_kind(c: &Ctx) -> bool {
+    let anything = |w: &&str| matches!(*w, "чтонибудь" | "чтото");
+    let which = |w: &&str| WAVE_NEEDS_VERB.contains(w) && !anything(w);
+    (2..=3).contains(&c.len()) && c.w[0] == "чтонибудь" && c.w[1..].iter().all(which)
 }
 
 fn asks_for_such(c: &Ctx, at: usize) -> bool {

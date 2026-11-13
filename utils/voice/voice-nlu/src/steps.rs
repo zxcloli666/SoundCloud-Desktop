@@ -12,11 +12,11 @@ use crate::types::{Intent, Kind, Parsed};
 
 const MAX_STEPS: usize = 3;
 const HARD: &[&str] = &["и", "and"];
-const SOFT: &[&str] = &["потом", "затем", "then", "только"];
+const SOFT: &[&str] = &["потом", "затем", "следом", "then", "только"];
 const AFTER: &[&str] = &["него", "этого", "нее", "нее"];
 const FIRST: &str = "сначала";
 const ALSO: &str = "еще";
-const THEN: &[&str] = &["потом", "затем", "then"];
+const THEN: &[&str] = &["потом", "затем", "следом", "then"];
 
 pub(crate) enum Side {
     Cmd(Parsed),
@@ -41,6 +41,12 @@ pub fn parse(text: &str, names: &Names) -> Vec<Parsed> {
     if intent::lyric(toks) {
         return vec![whole];
     }
+    let raw = crate::normalize::words(text_in);
+    let sung = crate::normalize::sung(&raw);
+    if sung && !whole.alt.is_empty() {
+        whole.intent = Intent::None;
+        whole.alt.clear();
+    }
     if let Some(steps) = linked(toks, text, false) {
         if steps.len() <= MAX_STEPS {
             return collapse(steps);
@@ -55,8 +61,9 @@ pub fn parse(text: &str, names: &Names) -> Vec<Parsed> {
             _ => {}
         }
     }
-    let raw = crate::normalize::words(text_in);
-    let repeated = raw.windows(2).any(|p| p[0] == p[1]);
+    let babbled = |w: &str| w.chars().count() < 4 || lexicon::is_known(w);
+    let stuttered = raw.windows(2).any(|p| p[0] == p[1] && babbled(&p[0]));
+    let repeated = stuttered || sung;
     if whole.intent == Intent::None {
         let denied = correct::denies(text_in);
         if repeated || denied {

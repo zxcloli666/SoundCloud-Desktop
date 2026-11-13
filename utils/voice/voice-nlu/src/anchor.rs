@@ -109,8 +109,18 @@ fn single_command(t: &Tok) -> bool {
 
 pub fn tail_ok(tail: &[Tok], window: &[Tok]) -> bool {
     let last = window.last().map(|t| t.w.as_str()).unwrap_or("");
-    urges(tail) || (!BLOCK_TAIL.contains(&last) && remark_after(tail, window))
+    let about_the_tail = !tail.is_empty() && oblique_ordinal(last);
+    !about_the_tail && (urges(tail) || (!BLOCK_TAIL.contains(&last) && remark_after(tail, window)))
 }
+
+fn oblique_ordinal(w: &str) -> bool {
+    let ordinal = lexicon::stem(NEXT_STRONG, w) || lexicon::stem(PREV_STRONG, w);
+    ordinal && OBLIQUE_ENDINGS.iter().any(|e| w.ends_with(e))
+}
+
+const OBLIQUE_ENDINGS: &[&str] = &[
+    "ем", "ом", "им", "ым", "ему", "ому", "его", "ого", "ими", "ыми", "их", "ых",
+];
 
 pub fn urges(tail: &[Tok]) -> bool {
     let Some(first) = tail.first() else {

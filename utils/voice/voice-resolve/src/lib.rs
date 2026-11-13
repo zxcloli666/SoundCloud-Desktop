@@ -452,6 +452,24 @@ track\tРайоны-кварталы\tЗвери\t4000000\t
     }
 
     #[test]
+    fn a_track_named_with_its_artist_is_found_by_its_title_and_a_word_of_the_artist() {
+        let rows = "kind\tname\tartist\tpopularity\taliases
+artist\tПолина Гагарина\t\t580000\t
+track\tПолина Гагарина - Смотри\tПолина Гагарина\t1000000\t
+track\tТак красиво — Сергей Лазарев\tSomeone\t170000\t
+";
+        let played = |text: &str| played_from(rows, text);
+        let track = "Полина Гагарина - Полина Гагарина - Смотри";
+        assert_eq!(played("включи смотри гагарина"), track);
+        assert_eq!(played("включи гагарина смотри"), track);
+        assert_eq!(played("включи гагарину"), "Полина Гагарина");
+        assert_eq!(
+            played("включи сергей лазарев так красиво"),
+            "Someone - Так красиво — Сергей Лазарев"
+        );
+    }
+
+    #[test]
     fn a_name_that_holds_every_said_word_is_offered_before_a_more_popular_part_of_it() {
         let played = |text: &str| played_from(PARTS, text);
         assert_eq!(
