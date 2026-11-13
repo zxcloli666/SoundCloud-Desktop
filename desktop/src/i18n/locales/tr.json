@@ -1729,8 +1729,8 @@
     "ignite": "Yıldızını yak",
     "back": "Geri",
     "perMonthShort": "ay",
-    "recurringSub_one": "her {{count}} günde bir otomatik tahsil edilir. Kapatmayı unuttun mu? 7 gün içinde e-posta yaz, tamamını iade ederiz",
-    "recurringSub_other": "her {{count}} günde bir otomatik tahsil edilir. Kapatmayı unuttun mu? 7 gün içinde e-posta yaz, tamamını iade ederiz",
+    "recurringSub_one": "her {{count}} günde bir otomatik tahsil edilir. Kapatmayı unuttun mu? 7 gün içinde e-posta yaz, tamamını iade ederiz, 6 ayda bir kez",
+    "recurringSub_other": "her {{count}} günde bir otomatik tahsil edilir. Kapatmayı unuttun mu? 7 gün içinde e-posta yaz, tamamını iade ederiz, 6 ayda bir kez",
     "legal": "Ödeme yaparak <offer>satış koşullarını</offer> ve <refund>iade politikasını</refund> kabul edersin.",
     "perk": {
       "goPlus": {
