@@ -1759,6 +1759,9 @@
     "title": "Star Subscription",
     "active": "Active",
     "getIt": "Learn more",
+    "until": "until {{date}}",
+    "in_one": "in {{count}} day",
+    "in_other": "in {{count}} days",
     "modalTitle": "Star",
     "modalSub": "Support the project — get perks",
     "perkGoPlus": "Access to GO+ tracks",
@@ -1810,7 +1813,8 @@
     "ignite": "Ignite your star",
     "back": "Back",
     "perMonthShort": "mo",
-    "recurringSub": "charged automatically every 30 days. Forgot to turn it off? Email us within 7 days for a full refund",
+    "recurringSub_one": "charged automatically every {{count}} day. Forgot to turn it off? Email us within 7 days for a full refund",
+    "recurringSub_other": "charged automatically every {{count}} days. Forgot to turn it off? Email us within 7 days for a full refund",
     "legal": "By paying you accept the <offer>terms of sale</offer> and the <refund>refund policy</refund>.",
     "perk": {
       "goPlus": {
@@ -1899,7 +1903,7 @@
     "toActivation": "To activation",
     "providerTitle": "Payment method",
     "providerSub": "One price — your choice of route.",
-    "recurring": "Auto-renew (Telegram Stars, monthly)",
+    "recurring": "Auto-renew",
     "creating": "Creating order…",
     "continueWith": "Continue with {{method}}",
     "continue": "Continue",
@@ -1956,7 +1960,7 @@
       "title": "Your pass",
       "sub": "Term, auto-renew and source.",
       "autoRenew": "Auto-renew",
-      "autoRenewOn": "we'll charge again on {{date}}",
+      "refund": "Refund policy",
       "autoRenewOff": "Off. Access lasts to the end of the paid term.",
       "source": "Source",
       "sourceSub": "Where it came from",
@@ -2713,6 +2717,16 @@
     "gift": "Gift STAR",
     "invite": "Invite",
     "later": "Later",
+    "charge": {
+      "off": "Turn off",
+      "keep": "Keep"
+    },
+    "os": {
+      "ends_one": "Ends in {{count}} day",
+      "ends_other": "Ends in {{count}} days",
+      "charge_one": "{{charge}} will be charged in {{count}} day",
+      "charge_other": "{{charge}} will be charged in {{count}} days"
+    },
     "expiry": {
       "trial": "STAR trial",
       "left_one": "{{count}} day left",

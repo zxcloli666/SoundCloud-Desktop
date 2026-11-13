@@ -1675,6 +1675,9 @@
     "title": "Star Abonelik",
     "active": "Aktif",
     "getIt": "Daha fazla bilgi",
+    "until": "{{date}} tarihine kadar",
+    "in_one": "{{count}} gün sonra",
+    "in_other": "{{count}} gün sonra",
     "modalTitle": "Star",
     "modalSub": "Projeyi destekle — bonuslar kazan",
     "perkGoPlus": "GO+ parçalarına erişim",
@@ -1726,7 +1729,8 @@
     "ignite": "Yıldızını yak",
     "back": "Geri",
     "perMonthShort": "ay",
-    "recurringSub": "her 30 günde bir otomatik tahsil edilir. Kapatmayı unuttun mu? 7 gün içinde e-posta yaz, tamamını iade ederiz",
+    "recurringSub_one": "her {{count}} günde bir otomatik tahsil edilir. Kapatmayı unuttun mu? 7 gün içinde e-posta yaz, tamamını iade ederiz",
+    "recurringSub_other": "her {{count}} günde bir otomatik tahsil edilir. Kapatmayı unuttun mu? 7 gün içinde e-posta yaz, tamamını iade ederiz",
     "legal": "Ödeme yaparak <offer>satış koşullarını</offer> ve <refund>iade politikasını</refund> kabul edersin.",
     "perk": {
       "goPlus": {
@@ -1822,7 +1826,7 @@
     "toActivation": "Aktivasyona geç",
     "providerTitle": "Aktivasyon yöntemi",
     "providerSub": "Tek paso — ona birkaç yol. Uygun olanı seç, fiyat değişmez.",
-    "recurring": "Otomatik yenileme (Telegram Stars, aylık)",
+    "recurring": "Otomatik yenileme",
     "creating": "Sipariş oluşturuluyor…",
     "continueWith": "{{method}} ile devam et",
     "continue": "Devam et",
@@ -1879,7 +1883,7 @@
       "title": "Pasın",
       "sub": "Pasın süresi, otomatik yenileme ve kaynağı.",
       "autoRenew": "Otomatik yenileme",
-      "autoRenewOn": "{{date}} tarihinde tekrar tahsil edeceğiz",
+      "refund": "İade politikası",
       "autoRenewOff": "Kapalı. Erişim ödenen sürenin sonuna kadar.",
       "source": "Kaynak",
       "sourceSub": "Nereden geldiği",
@@ -2612,6 +2616,16 @@
     "gift": "STAR hediye et",
     "invite": "Davet et",
     "later": "Sonra",
+    "charge": {
+      "off": "Kapat",
+      "keep": "Kalsın"
+    },
+    "os": {
+      "ends_one": "{{count}} gün sonra bitiyor",
+      "ends_other": "{{count}} gün sonra bitiyor",
+      "charge_one": "{{count}} gün sonra {{charge}} tahsil edilecek",
+      "charge_other": "{{count}} gün sonra {{charge}} tahsil edilecek"
+    },
     "expiry": {
       "trial": "STAR deneme",
       "left_one": "{{count}} gün kaldı",

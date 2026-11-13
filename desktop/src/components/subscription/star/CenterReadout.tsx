@@ -1,8 +1,9 @@
 import { memo, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Check, Loader2 } from '../../../lib/icons';
+import { Check, Loader2, RefreshCw } from '../../../lib/icons';
 import type { Plan } from '../../../lib/pay-client';
 import { daysUntil, passDate, passSerial } from '../../../lib/star-format';
+import type { StarStatus } from '../../../lib/star-status';
 import type { PayPhase } from '../PayStatus';
 import { monthsKey, type Step } from './meta';
 
@@ -57,6 +58,29 @@ function Caption({ children }: { children: ReactNode }) {
   );
 }
 
+const LEFT_TONE = { calm: 'text-accent', soon: 'text-amber-400', urgent: 'text-bad' } as const;
+
+function StatusCaption({ status }: { status: StarStatus }) {
+  const { t } = useTranslation();
+  if (status.kind === 'open') return t('star.active');
+  if (status.kind === 'renews') {
+    return (
+      <span className="inline-flex items-center gap-1.5 tabular-nums">
+        <RefreshCw size={13} strokeWidth={2.4} className="text-accent" />
+        {passDate(status.at)} ·<span className="font-semibold text-accent">{status.charge}</span>
+      </span>
+    );
+  }
+  return (
+    <>
+      {t('starpass.until')} {passDate(status.at)} ·{' '}
+      <span className={`font-semibold ${LEFT_TONE[status.level]}`}>
+        {t('starpass.daysLeft', { count: status.days })}
+      </span>
+    </>
+  );
+}
+
 /** The content that lives inside the living core's dark "well", per flow state. */
 export const CenterReadout = memo(function CenterReadout({
   step,
@@ -64,6 +88,7 @@ export const CenterReadout = memo(function CenterReadout({
   handle,
   plan,
   endsAt,
+  status,
   serialSeed,
   gift,
   inviteDays,
@@ -74,6 +99,7 @@ export const CenterReadout = memo(function CenterReadout({
   handle: string;
   plan: Plan | null;
   endsAt: number;
+  status: StarStatus | null;
   serialSeed: string;
   gift: boolean;
   inviteDays: number | null;
@@ -125,10 +151,16 @@ export const CenterReadout = memo(function CenterReadout({
           {passSerial(serialSeed)}
         </div>
         <Caption>
-          {t('starpass.until')} {passDate(endsAt)} ·{' '}
-          <span className="font-semibold text-accent">
-            {t('starpass.daysLeft', { count: daysUntil(endsAt) })}
-          </span>
+          {step === 'manage' && status ? (
+            <StatusCaption status={status} />
+          ) : (
+            <>
+              {t('starpass.until')} {passDate(endsAt)} ·{' '}
+              <span className="font-semibold text-accent">
+                {t('starpass.daysLeft', { count: daysUntil(endsAt) })}
+              </span>
+            </>
+          )}
         </Caption>
       </div>
     );

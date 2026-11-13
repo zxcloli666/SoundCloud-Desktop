@@ -3,7 +3,7 @@ import { memo, type ReactNode } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { siteUrl } from '../../../lib/site-url';
 
-function PageLink({ page, children }: { page: string; children?: ReactNode }) {
+export function PageLink({ page, children }: { page: string; children?: ReactNode }) {
   const { i18n } = useTranslation();
   return (
     <button

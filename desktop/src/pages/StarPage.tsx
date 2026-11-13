@@ -8,6 +8,7 @@ import { phaseOf } from '../components/subscription/PayStatus';
 import {
   type ActivationOption,
   activationOptions,
+  recurringRule,
   toCheckout,
 } from '../components/subscription/providers';
 import { StarAtmosphere } from '../components/subscription/StarAtmosphere';
@@ -50,6 +51,7 @@ import {
   useSharedOverview,
   useSharedPreview,
 } from '../lib/star-shared';
+import { useStarStatus } from '../lib/star-status';
 import { useOrderPoll } from '../lib/useOrderPoll';
 import { useAuthStore } from '../stores/auth';
 
@@ -157,6 +159,7 @@ const StarFlow = memo(function StarFlow({
   // Active-membership end date (manage/success centre readout) — comes from the
   // subscription, not the in-flight order. Shared cache with ManagePane.
   const subQuery = usePaySubscription();
+  const status = useStarStatus();
   const trialAvailable = !premium && subQuery.data?.trial_available === true;
   const referral = useQuery({
     queryKey: REFERRAL_KEY,
@@ -191,12 +194,13 @@ const StarFlow = memo(function StarFlow({
     : 0;
   const centerEndsAt = step === 'manage' ? subEndsAt : (order.data?.premium_until ?? subEndsAt);
 
+  const renewRule = gift ? null : recurringRule(plansQuery.data?.recurring, option, planId);
+  const canRecur = !!renewRule;
   const checkoutMut = useMutation({
     mutationFn: () => {
       if (!option || !planId) throw new Error('no selection');
-      const allowRecurring = !gift && option.recurring && selectedPlan?.months === 1 && recurring;
       return payApi.checkout({
-        ...toCheckout(option, planId, allowRecurring),
+        ...toCheckout(option, planId, canRecur && recurring),
         gift: gift || undefined,
         tier: tier === 'solo' ? undefined : (tier as SharedTierId),
         ref: !gift && refBonus ? refBonus.code : undefined,
@@ -229,7 +233,6 @@ const StarFlow = memo(function StarFlow({
     setStep('method');
   }, [reset]);
 
-  const canRecur = !gift && !!option?.recurring && selectedPlan?.months === 1;
   const lit = step === 'success' || step === 'manage';
   // Where the header "back" returns to, per step (null = no back button).
   const backTarget: Step | null =
@@ -322,6 +325,7 @@ const StarFlow = memo(function StarFlow({
                   handle={handle}
                   plan={selectedPlan}
                   endsAt={centerEndsAt}
+                  status={status}
                   serialSeed={checkout?.order_id ?? handle}
                   gift={gift}
                   inviteDays={inviteDays}
@@ -374,7 +378,7 @@ const StarFlow = memo(function StarFlow({
                 options={options}
                 selected={option}
                 onSelect={setOption}
-                canRecur={canRecur}
+                renewDays={renewRule?.period_days ?? null}
                 recurring={recurring}
                 onRecurring={setRecurring}
                 amount={selectedPlan ? `${selectedPlan.price_rub} ₽` : ''}
