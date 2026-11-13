@@ -45,6 +45,8 @@ pub fn init(app: &AppHandle, data_dir: &Path, cache_dir: &Path, rt: Handle, prem
     let tap = RefTap::new();
     let fetch = Arc::new(fetch::ModelFetch { rt: rt.clone() });
     let store = Arc::new(Store::new(data_dir.join(MODELS_DIR), fetch));
+    let retired = store.clone();
+    rt.spawn_blocking(move || retired.drop_retired());
     let deps = Deps {
         capture: Capture::new(tap.clone()),
         store: store.clone(),

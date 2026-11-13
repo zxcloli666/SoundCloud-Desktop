@@ -448,5 +448,6 @@
         }
       ]
     }
-  ]
+  ],
+  "retired": ["kokoro-int8-multi-lang-v1_0"]
 }

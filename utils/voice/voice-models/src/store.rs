@@ -145,6 +145,12 @@ impl Store {
         }
     }
 
+    pub fn drop_retired(&self) {
+        for id in &self.manifest.retired {
+            let _ = fs::remove_dir_all(self.root.join(id));
+        }
+    }
+
     pub fn disk_usage(&self) -> u64 {
         dir_size(&self.root)
     }

@@ -330,6 +330,39 @@ fn old_version_dir_is_removed_after_install() {
     assert!(!stale.exists());
 }
 
+#[test]
+fn a_retired_model_is_removed_and_the_rest_stays() {
+    let mut f = fixture("retired", &[10_000]);
+    f.manifest.retired = vec!["old".to_string()];
+    let old = f.root.join("old").join("1");
+    fs::create_dir_all(&old).unwrap();
+    fs::write(old.join("model.bin"), b"old").unwrap();
+    let s = store(&f);
+    s.install("m1", &Cancel::new(), None).unwrap();
+    s.drop_retired();
+    assert!(!f.root.join("old").exists());
+    assert_eq!(s.status("m1").unwrap(), Status::Ready);
+    s.drop_retired();
+}
+
+#[test]
+fn a_model_in_the_manifest_or_a_path_cannot_be_retired() {
+    let sha = "0".repeat(64);
+    for retired in ["m1", "../m2", "a/b", ".locks", ""] {
+        let text = format!(
+            r#"{{"models":[{{"id":"m1","version":"1","kind":"tts","language":"en","license":"MIT",
+            "unpacked_size":1,"files":[{{"path":"a","size":1,"sha256":"{sha}"}}]}}],
+            "retired":["{retired}"]}}"#
+        );
+        assert!(
+            matches!(Manifest::parse(&text), Err(Error::Manifest(_))),
+            "{retired}"
+        );
+    }
+    let kept = Manifest::embedded();
+    assert!(kept.retired.iter().all(|id| kept.get(id).is_err()));
+}
+
 #[cfg(unix)]
 #[test]
 fn an_executable_file_can_run_after_install() {

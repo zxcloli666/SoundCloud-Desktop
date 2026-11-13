@@ -49,11 +49,14 @@ pub struct Model {
 #[derive(Deserialize)]
 struct Raw {
     models: Vec<Model>,
+    #[serde(default)]
+    retired: Vec<String>,
 }
 
 #[derive(Clone, Debug)]
 pub struct Manifest {
     pub models: Vec<Model>,
+    pub retired: Vec<String>,
 }
 
 impl Manifest {
@@ -82,13 +85,19 @@ impl Manifest {
                 }
             }
         }
-        let manifest = Manifest { models: raw.models };
+        let manifest = Manifest {
+            models: raw.models,
+            retired: raw.retired,
+        };
         manifest.check()?;
         Ok(manifest)
     }
 
     pub fn from_models(models: Vec<Model>) -> Result<Manifest, Error> {
-        let manifest = Manifest { models };
+        let manifest = Manifest {
+            models,
+            retired: Vec::new(),
+        };
         manifest.check()?;
         Ok(manifest)
     }
@@ -141,6 +150,12 @@ impl Manifest {
                 if !self.models.iter().any(|m| &m.id == dep) {
                     return Err(bad(format!("{} requires unknown {dep}", model.id)));
                 }
+            }
+        }
+        for id in &self.retired {
+            let named = !id.is_empty() && !id.starts_with('.') && !id.contains(['/', '\\']);
+            if !named || ids.contains(id.as_str()) {
+                return Err(bad(format!("{id} cannot be retired")));
             }
         }
         Ok(())

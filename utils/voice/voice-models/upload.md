@@ -8,6 +8,8 @@ License field: third-party models keep their license name (MIT, Apache-2.0, ...)
 
 Cache: objects are immutable per version path; long Cache-Control is fine. Range requests must work (206 with Content-Range).
 
+Retired: a model id that is dropped from `manifest.json` goes into its `retired` list, and the app deletes that folder from the disk on the next start. The objects stay in the storage for older app versions.
+
 ## silero-vad (version 1, vad, any, MIT)
 
 Total 643854 bytes.
