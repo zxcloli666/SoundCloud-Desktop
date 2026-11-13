@@ -17,8 +17,14 @@ fn main() {
     if !phonemes.unknown.is_empty() {
         println!("unknown words: {:?}", phonemes.unknown);
     }
-    let tts = Kokoro::open(dir, model, 2).expect("open kokoro");
-    let spoken = tts.speak(&split_sentences(&phonemes.text), sid, 1.0).expect("speak");
+    let threads = std::env::var("KOKORO_THREADS")
+        .ok()
+        .and_then(|said| said.parse().ok())
+        .unwrap_or(2);
+    let tts = Kokoro::open(dir, model, threads).expect("open kokoro");
+    let spoken = tts
+        .speak(&split_sentences(&phonemes.text), sid, 1.0)
+        .expect("speak");
     let spec = hound::WavSpec {
         channels: 1,
         sample_rate: spoken.sample_rate as u32,
@@ -27,7 +33,9 @@ fn main() {
     };
     let mut writer = hound::WavWriter::create(out, spec).unwrap();
     for s in &spoken.samples {
-        writer.write_sample((s.clamp(-1.0, 1.0) * 32767.0) as i16).unwrap();
+        writer
+            .write_sample((s.clamp(-1.0, 1.0) * 32767.0) as i16)
+            .unwrap();
     }
     writer.finalize().unwrap();
     println!(

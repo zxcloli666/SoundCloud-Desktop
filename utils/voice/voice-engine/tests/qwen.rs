@@ -118,7 +118,7 @@ fn voice_store() -> Option<Arc<Store>> {
 fn kokoro_store() -> Option<Arc<Store>> {
     let from = PathBuf::from(std::env::var_os("SCD_KOKORO")?);
     let root = fresh_root("kokoro");
-    let files = ["model.int8.onnx", "tokens.txt", "voices.bin"].map(|name| (name, from.join(name)));
+    let files = ["model.onnx", "tokens.txt", "voices.bin"].map(|name| (name, from.join(name)));
     Some(store(vec![model(&root, KOKORO, Kind::Tts, &files)], root))
 }
 

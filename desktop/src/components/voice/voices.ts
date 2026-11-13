@@ -5,7 +5,7 @@ import moriartyImage from './avatars/moriarty.jpg';
 
 const QWEN_LOLI = 'qwen-loli';
 const QWEN_MORIARTY = 'qwen-moriarty';
-const KOKORO = 'kokoro-int8-multi-lang-v1_0';
+const KOKORO = 'kokoro-multi-lang-v1_0';
 
 export interface VoiceInfo {
   id: VoiceId;

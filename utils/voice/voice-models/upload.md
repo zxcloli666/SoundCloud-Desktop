@@ -51,15 +51,15 @@ Total 141300566 bytes.
 | voice-models/sherpa-onnx-moonshine-base-en-quantized-2026-02-27/1/tokens.txt | 549350 | 2870d843e14c1e187bf1913a521562a63b53933814bd7f2145120468f494a049 |
 
 
-## kokoro-int8-multi-lang-v1_0 (version 1, tts, en, Apache-2.0)
+## kokoro-multi-lang-v1_0 (version 1, tts, en, Apache-2.0)
 
-Total 142404640 bytes. Source: `voice-cache/tts/kokoro8/kokoro-int8-multi-lang-v1_0/` (sherpa-onnx `tts-models` release `kokoro-int8-multi-lang-v1_0.tar.bz2`, unchanged). Only these three files: the engine passes our own phonemes, so the lexicons, `dict/`, the zh fst files and espeak data are not shipped. Speakers used: af_heart 3, am_michael 16 (read from the model's `speaker2id` metadata).
+Total 353762203 bytes. Source: sherpa-onnx `tts-models` release `kokoro-multi-lang-v1_0.tar.bz2`, unchanged. Only these three files: the engine passes our own phonemes, so the lexicons, `dict/`, the zh fst files and espeak data are not shipped. Speakers used: af_heart 3, am_michael 16 (read from the model's `speaker2id` metadata). The int8 build of the same model (`kokoro-int8-multi-lang-v1_0`, 142404640 bytes) was shipped first and is slower than real time on Apple M1; this one takes about half the time on two threads.
 
 | target path | size | sha256 |
 |---|---|---|
-| voice-models/kokoro-int8-multi-lang-v1_0/1/model.int8.onnx | 114202993 | 75635ea3b85a32d00094dcdd61a258aba87c160f7c264c304a7b3ae9d734195e |
-| voice-models/kokoro-int8-multi-lang-v1_0/1/voices.bin | 28200960 | 1c5a5b983d3d50d8586d437a51f3faa2da7919ce76a013c081e65671a3447c29 |
-| voice-models/kokoro-int8-multi-lang-v1_0/1/tokens.txt | 687 | 6ebb6bb288f20f3ae8d004d3c2ca27697da27c037d75e81a60e2a6a663f95425 |
+| voice-models/kokoro-multi-lang-v1_0/1/model.onnx | 325560556 | b40f62b166ac8164b0627ef48a0b358eda0985e272fb03ef5252e7206305da11 |
+| voice-models/kokoro-multi-lang-v1_0/1/voices.bin | 28200960 | 1c5a5b983d3d50d8586d437a51f3faa2da7919ce76a013c081e65671a3447c29 |
+| voice-models/kokoro-multi-lang-v1_0/1/tokens.txt | 687 | 6ebb6bb288f20f3ae8d004d3c2ca27697da27c037d75e81a60e2a6a663f95425 |
 
 # Qwen voices
 

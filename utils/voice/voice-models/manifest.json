@@ -121,18 +121,18 @@
       ]
     },
     {
-      "id": "kokoro-int8-multi-lang-v1_0",
+      "id": "kokoro-multi-lang-v1_0",
       "version": "1",
       "kind": "tts",
       "language": "en",
       "license": "Apache-2.0",
-      "unpacked_size": 142404640,
+      "unpacked_size": 353762203,
       "requires": [],
       "files": [
         {
-          "path": "model.int8.onnx",
-          "size": 114202993,
-          "sha256": "75635ea3b85a32d00094dcdd61a258aba87c160f7c264c304a7b3ae9d734195e"
+          "path": "model.onnx",
+          "size": 325560556,
+          "sha256": "b40f62b166ac8164b0627ef48a0b358eda0985e272fb03ef5252e7206305da11"
         },
         {
           "path": "voices.bin",

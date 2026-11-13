@@ -9,7 +9,8 @@ use voice_tts::Kokoro;
 use crate::clip::Clip;
 use crate::config::Language;
 
-const THREADS: i32 = 2;
+const FEWEST_THREADS: usize = 2;
+const MOST_THREADS: usize = 4;
 
 pub struct Line<'a> {
     pub text: &'a str,
@@ -46,7 +47,7 @@ impl Frontends {
         if fresh {
             self.kokoro = None;
             let kokoro =
-                Kokoro::open(line.dir, line.file, THREADS).ok_or("tts model did not load")?;
+                Kokoro::open(line.dir, line.file, threads()).ok_or("tts model did not load")?;
             self.kokoro = Some((line.dir.to_path_buf(), kokoro));
         }
         let (_, kokoro) = self.kokoro.as_ref().ok_or("tts model did not load")?;
@@ -62,6 +63,11 @@ impl Frontends {
         };
         Ok(Clip { samples, rate })
     }
+}
+
+fn threads() -> i32 {
+    let cores = std::thread::available_parallelism().map_or(FEWEST_THREADS, |cores| cores.get());
+    (cores / 2).clamp(FEWEST_THREADS, MOST_THREADS) as i32
 }
 
 fn shift(samples: &[f32], rate: u32, semitones: f32) -> Vec<f32> {

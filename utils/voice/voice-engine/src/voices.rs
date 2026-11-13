@@ -1,5 +1,5 @@
 pub const DEFAULT: &str = "loli";
-pub const KOKORO: &str = "kokoro-int8-multi-lang-v1_0";
+pub const KOKORO: &str = "kokoro-multi-lang-v1_0";
 pub const QWEN_CODEC: &str = "qwen-codec";
 pub const QWEN_CODEC_FILE: &str = "qwen-tokenizer-12hz-Q8_0.gguf";
 
@@ -41,7 +41,7 @@ const VOICES: [Voice; 4] = [
         id: "af_heart",
         model: KOKORO,
         kind: Kind::Kokoro {
-            file: "model.int8.onnx",
+            file: "model.onnx",
             speaker: 3,
         },
     },
@@ -49,7 +49,7 @@ const VOICES: [Voice; 4] = [
         id: "am_michael",
         model: KOKORO,
         kind: Kind::Kokoro {
-            file: "model.int8.onnx",
+            file: "model.onnx",
             speaker: 16,
         },
     },
