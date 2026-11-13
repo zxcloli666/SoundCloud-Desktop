@@ -661,8 +661,7 @@ drake gods plan	play	track	Drake - God's Plan		bare		both
 включи кино	play	artist	Кино		ambiguous		both
 поставь песню кино	play	artist	Кино		ambiguous	track:Кино Orchestra - Кино	both
 включи кино на телевизоре	none				false_act		both
-поставь хочу мота	play	track	Мот - Хочу		ambiguous		off
-поставь хочу мота	none				ambiguous		on
+поставь хочу мота	play	track	Мот - Хочу		ambiguous		
 включи кино только не оркестр	play	artist	Кино		ambiguous		both
 включи кавер на экспонат	play	track	Ленинград Cover - Экспонат		ambiguous		both
 включи сансару бастарда	play	track	Бастард - Сансара		ambiguous		both

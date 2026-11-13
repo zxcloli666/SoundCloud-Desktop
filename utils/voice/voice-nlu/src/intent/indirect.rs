@@ -1,5 +1,5 @@
 use super::ctx::{Ctx, Detected};
-use crate::lexicon::{ASKS_TO_TALK, BEFORE_THIS, PRE};
+use crate::lexicon::{ASKS_TO_TALK, BEFORE_THIS, JUNK, PRE};
 use crate::types::Intent;
 
 const FILL: &[&str] = &[
@@ -56,7 +56,24 @@ const WHY_REST: &[&str] = &[
     "орет",
     "орешь",
 ];
-const JUNK_PLAYED: &[&str] = &["херню", "хрень", "фигню", "ерунду", "дичь"];
+const NOT_NEEDED: &[&str] = &["надо", "нужно"];
+const ANOTHER: &[&str] = &[
+    "следующую",
+    "следующий",
+    "другую",
+    "другой",
+    "другое",
+    "дальше",
+    "давай",
+];
+const HEARD: &[&str] = &[
+    "слышал",
+    "слышала",
+    "слышали",
+    "слушал",
+    "слушала",
+    "слушали",
+];
 const TOO: &[&str] = &["слишком", "очень", "чересчур"];
 const TOO_MUCH: &[&str] = &["слишком", "чересчур"];
 
@@ -201,7 +218,7 @@ const RULES: &[Rule] = &[
         Intent::VolumeDown,
     ),
     rule(
-        &[JUNK_PLAYED, &["играет", "играешь"]],
+        &[JUNK, &["играет", "играешь"]],
         &["и", "опять", "какуюто"],
         &["что", "за"],
         Intent::Next,
@@ -235,7 +252,7 @@ const RULES: &[Rule] = &[
     ),
     rule(
         &[&["соседи"], &["стучат", "жалуются", "недовольны"]],
-        &[],
+        &["на", "шум", "опять", "снова", "уже"],
         &[],
         Intent::VolumeDown,
     ),
@@ -246,21 +263,13 @@ const RULES: &[Rule] = &[
         Intent::Next,
     ),
     rule(
-        &[
-            &[
-                "слышал",
-                "слышала",
-                "слышали",
-                "слушал",
-                "слушала",
-                "слушали",
-            ],
-            &["раз", "раза"],
-        ],
+        &[HEARD, &["раз", "раза"]],
         &["1", "уже", "100", "10"],
         &[],
         Intent::Next,
     ),
+    rule(&[HEARD, &["уже"], THIS], ANOTHER, &["не"], Intent::Next),
+    rule(&[&["не"], NOT_NEEDED, THIS], ANOTHER, &[], Intent::Next),
     rule(
         &[&["фу"]],
         &["что", "это", "такое", "за"],
@@ -379,7 +388,7 @@ const RULES: &[Rule] = &[
     ),
     rule(
         &[&["звонят", "звонок", "звонит", "позвонили"]],
-        &["у", "меня", "мне", "тихо"],
+        &["у", "меня", "мне", "тихо", "в", "дверь", "домофон"],
         &[],
         Intent::Pause,
     ),
@@ -431,9 +440,6 @@ const RULES: &[Rule] = &[
 ];
 
 pub fn detect(c: &Ctx) -> Option<Detected> {
-    if c.len() > 8 {
-        return None;
-    }
     if c.len() > 8 {
         return None;
     }

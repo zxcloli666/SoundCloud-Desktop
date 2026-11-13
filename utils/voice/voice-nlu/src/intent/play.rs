@@ -157,7 +157,11 @@ pub fn content(c: &Ctx) -> Option<Detected> {
         "убери",
         "сними",
     ]);
+    let refused = c
+        .pos(&["не"])
+        .is_some_and(|not| likes_word.or(plural) > Some(not));
     if !saving
+        && !refused
         && (likes_word.is_some()
             || mine_things
             || (plural.is_some() && has_verb && c.w[plural.unwrap()] != "лайк"))

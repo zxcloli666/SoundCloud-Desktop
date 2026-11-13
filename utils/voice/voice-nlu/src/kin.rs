@@ -1,5 +1,7 @@
 use crate::intent;
-use crate::lexicon::{self, CLAUSE_SUBJECTS, KIN, PLAY_STRONG, REPORT, SPEECH, THIRD_PERSON};
+use crate::lexicon::{
+    self, CLAUSE_SUBJECTS, KIN, PLAY_STRONG, REPORT, SENT_AWAY, SPEECH, THIRD_PERSON, UP_WORDS,
+};
 use crate::normalize::Tok;
 
 const REACH: usize = 2;
@@ -24,7 +26,12 @@ pub fn told_of<S: AsRef<str>>(words: &[S], at: usize) -> bool {
 pub fn ordered_to(said: &[Tok], rest: &[Tok]) -> bool {
     let imperative = said.iter().any(|t| intent::orders(&t.w));
     let addressed = intent::hushing(said) || imperative;
-    addressed && !rest.is_empty() && called(rest, 0)
+    addressed && !rest.is_empty() && called(rest, 0) && !louder_without_them(said, rest)
+}
+
+fn louder_without_them(said: &[Tok], rest: &[Tok]) -> bool {
+    let louder = matches!(said, [t] if UP_WORDS.contains(&t.w.as_str()));
+    louder && rest.iter().any(|t| SENT_AWAY.contains(&t.w.as_str()))
 }
 
 fn verb_of<S: AsRef<str>>(words: &[S], who: usize) -> Option<usize> {

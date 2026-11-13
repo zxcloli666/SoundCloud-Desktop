@@ -125,9 +125,12 @@ fn single_command(t: &Tok) -> bool {
     !intent::indirect_hit(one) && intent::detect(one).intent != Intent::None
 }
 
+const SAID_ALONE: &[&str] = &["паузе", lexicon::HALT];
+const SUMMONS: &[&str] = &["иди", "идите", "подойди", "подойдите"];
+
 pub fn tail_ok(tail: &[Tok], window: &[Tok]) -> bool {
     let last = window.last().map(|t| t.w.as_str()).unwrap_or("");
-    let about_the_tail = !tail.is_empty() && oblique_ordinal(last);
+    let about_the_tail = !tail.is_empty() && (oblique_ordinal(last) || SAID_ALONE.contains(&last));
     !about_the_tail && (urges(tail) || (!BLOCK_TAIL.contains(&last) && remark_after(tail, window)))
 }
 
@@ -178,7 +181,7 @@ pub fn remark_after(tail: &[Tok], window: &[Tok]) -> bool {
     {
         return !denied && remark;
     }
-    if remark {
+    if remark || tail.iter().any(|t| SUMMONS.contains(&t.w.as_str())) {
         return true;
     }
     let praise = tail.len() >= 2 && lexicon::KIND_TRACK.contains(&last_tail.w.as_str());

@@ -153,10 +153,22 @@ fn interpret_split(
             .map(|p| interpret_parsed(p, catalog, boosts, bare))
             .collect();
         if outs.iter().all(|o| sure(o, SPLIT_PART_MIN)) {
-            return outs;
+            let kept = outs.len() - usize::from(one_thing(&outs));
+            return outs.into_iter().take(kept).collect();
         }
     }
     vec![joined]
+}
+
+fn one_thing(outs: &[Outcome]) -> bool {
+    let picked = |o: &Outcome| match &o.decision {
+        Some(Decision::Act { pick }) => Some((pick.entity.kind, pick.entity.id.clone())),
+        _ => None,
+    };
+    let [first, second] = outs else {
+        return false;
+    };
+    picked(first).is_some() && picked(first) == picked(second)
 }
 
 fn whole_name(

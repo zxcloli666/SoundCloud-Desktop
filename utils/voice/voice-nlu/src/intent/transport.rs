@@ -2,6 +2,8 @@ use super::ctx::{Ctx, Detected};
 use crate::lexicon::*;
 use crate::types::Intent;
 
+const ANNOUNCED: &[&str] = &["продолжение", "продолжим", "продолжаем"];
+
 fn base(c: &Ctx, i: usize) -> Vec<usize> {
     let mut used = vec![i];
     used.extend((0..c.len()).filter(|&j| {
@@ -37,6 +39,9 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
     }
     if complaint(c) {
         return Some(Detected::new(Intent::Next, vec![]));
+    }
+    if c.w == [HALT] {
+        return Some(Detected::new(Intent::Stop, vec![0]));
     }
     if let (Some(lift), Some(pause)) = (c.pos(PAUSE_LIFTING), c.pos_stem(&["пауз"])) {
         if c.stray(&[lift, pause]) == 0 {
@@ -87,7 +92,8 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
     }
     if let Some(i) = c.pos(RESUME_WORDS) {
         let strays = c.stray_words(&base(c, i));
-        let announced = c.w[i] == "продолжение" && !strays.is_empty();
+        let told = strays.iter().any(|w| !crate::lexicon::is_known(w));
+        let announced = ANNOUNCED.contains(&c.w[i]) && told;
         if !announced
             && strays.len() <= 1
             && !strays

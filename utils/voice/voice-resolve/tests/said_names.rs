@@ -463,3 +463,49 @@ fn a_name_found_by_the_name_it_is_known_by_stays_first_when_asking() {
         assert_eq!(first_left(&catalog, text), "The Weeknd", "{text}");
     }
 }
+
+#[test]
+fn a_title_said_with_its_artist_plays_the_track_and_not_the_artist() {
+    let tracks = [
+        ("включи для тебя звери", "track Звери - Для тебя"),
+        ("включи земфира хочу", "track Земфира - Хочу"),
+        ("земфира хочу", "track Земфира - Хочу"),
+        ("мот хочу", "track Мот - Хочу"),
+    ];
+    let artists = [
+        ("хочу земфиру", "artist Земфира"),
+        ("земфиру хочу", "artist Земфира"),
+        ("хочу земфира", "artist Земфира"),
+        ("хочу мота", "artist Мот"),
+        ("включи звери", "artist Звери"),
+    ];
+    for bare in BOTH {
+        for (text, read) in tracks.iter().chain(&artists) {
+            assert_eq!(picked(text, bare), *read, "{text}");
+        }
+    }
+}
+
+#[test]
+fn two_halves_of_one_name_joined_by_and_play_it_once() {
+    for bare in BOTH {
+        let read = heard("включи эндшпиль и миаги", bare);
+        assert_eq!(read, "play Miyagi & Эндшпиль");
+    }
+}
+
+#[test]
+fn a_name_and_a_volume_level_after_it_are_two_steps() {
+    for bare in BOTH {
+        let read = heard("включи звери на половину громкости", bare);
+        assert_eq!(read, "play Звери + volume_set");
+    }
+}
+
+#[test]
+fn a_name_said_to_come_behind_another_is_queued_after_it() {
+    for bare in BOTH {
+        let read = heard("включи ленинград а за ним сплин", bare);
+        assert_eq!(read, "play Ленинград + queue_add Сплин");
+    }
+}

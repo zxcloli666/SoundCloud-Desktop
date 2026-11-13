@@ -61,6 +61,11 @@ pub const KIN: &[&str] = &[
     "ребятки",
 ];
 
+pub const SENT_AWAY: &[&str] = &["мешай", "отстань", "отвали", "лезь", "отвлекай"];
+
+pub const HALT: &str = "стой";
+pub const STANDING_PLACES: &[&str] = &["тут", "здесь", "там", "рядом"];
+
 pub const ATTENTION: &[&str] = &["стоп", "подожди", "погоди", "постой", "стой"];
 
 pub const HELLO_ON_THE_PHONE: &[&str] = &["алло", "ало"];

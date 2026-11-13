@@ -43,6 +43,19 @@ const SAYING: &[&str] = &[
     "говорила",
 ];
 
+const HOLDS: &[&str] = &["погоди", "подожди", "постой", "стой"];
+const A_MOMENT: &[&str] = &[
+    "минутку",
+    "минуточку",
+    "минуту",
+    "секунду",
+    "секундочку",
+    "сек",
+    "момент",
+    "немного",
+    "1",
+    "одну",
+];
 const AT_LEAST: &[&str] = &["хотя", "бы"];
 const RESTART: &str = "давай";
 const LEAVE: &str = "оставь";
@@ -83,6 +96,7 @@ const POINTERS: &[&str] = &[
 const TO_THE_ROOM: &[&str] = &["кто", "где"];
 const TOO_MUCH: &[&str] = &["слишком", "чересчур", "очень", "совсем"];
 
+const THE_MUSIC: &[&str] = &["песня", "музыка", "трек"];
 const NEGATING: &[&[&str]] = &[&["а", "не"], &["только", "не"], &["но", "не"], &["и", "не"]];
 
 #[derive(Default)]
@@ -120,10 +134,14 @@ fn negating(ws: &[String], i: usize) -> Option<&'static [&'static str]> {
         let not = i + m.len() - 1;
         DROP_PHRASES.iter().any(|p| starts(ws, not, p))
     };
+    let judged = |m: &[&str]| {
+        let thing = ws.get(i + m.len()).map(String::as_str);
+        thing.is_some_and(|w| THE_MUSIC.contains(&w))
+    };
     NEGATING
         .iter()
         .copied()
-        .find(|m| starts(ws, i, m) && !polite(m))
+        .find(|m| starts(ws, i, m) && !polite(m) && !judged(m))
 }
 
 fn versions(ws: &[String]) -> Option<Vec<Version>> {
@@ -141,7 +159,7 @@ fn versions(ws: &[String]) -> Option<Vec<Version>> {
                 cur.words.clear();
             }
         } else if let Some(mark) = marker(ws, i)
-            .filter(|m| m.firm || opened(&cur))
+            .filter(|m| m.firm || opened(&cur) || held_back(ws, i))
             .filter(|m| !starts_a_name(&cur, ws, i, m.end))
             .filter(|_| !word_of_a_name(&cur, &ws[i]))
         {
@@ -211,12 +229,22 @@ fn marker(ws: &[String], i: usize) -> Option<Mark> {
     let len = takes_back
         .or(wavers)
         .map(|m| m.len())
-        .or(loose.then_some(1))?;
+        .or((loose || held_back(ws, i)).then_some(1))?;
     let end = skip_noise(ws, i + len);
     let firm = takes_back.is_some() || ws[i + len..end].iter().any(|w| w == NO);
     let closes = i + len == ws.len() && len > 1 && ws[end - 1] == NO;
     let end = if closes { end - 1 } else { end };
     (end < ws.len()).then_some(Mark { end, firm })
+}
+
+fn held_back(ws: &[String], at: usize) -> bool {
+    let controls = |said: &[String]| {
+        let asked = command(&toks(said)).map(|(asked, ..)| asked);
+        !said.is_empty() && asked.is_some_and(|i| i.is_control() || i == Intent::Resume)
+    };
+    let rest = &ws[at + 1..];
+    let a_while = rest.iter().all(|w| A_MOMENT.contains(&w.as_str()));
+    HOLDS.contains(&ws[at].as_str()) && !a_while && controls(&ws[..at]) && controls(rest)
 }
 
 fn worn_out(ws: &[String], at: usize) -> bool {

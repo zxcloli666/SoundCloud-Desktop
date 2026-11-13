@@ -18,6 +18,15 @@ pub struct Slots {
     pub alt: Option<(Option<Kind>, Raw)>,
 }
 
+const WISHES: &[&str] = &["хочу", "хочется", "хотим"];
+const OBJECT_ENDINGS: &[char] = &['у', 'ю'];
+
+fn wished_last(toks: &[Tok], at: usize) -> bool {
+    let named = at.checked_sub(1).map(|before| toks[before].w.as_str());
+    let wish = at + 1 == toks.len() && WISHES.contains(&toks[at].w.as_str());
+    wish && named.is_some_and(|name| !name.ends_with(OBJECT_ENDINGS))
+}
+
 fn kind_name_reading(rest: &[Tok]) -> Option<(Option<Kind>, Raw)> {
     let first = (0..rest.len().saturating_sub(1))
         .rev()
@@ -95,7 +104,7 @@ pub fn extract(toks: &[Tok], det: &Detected) -> Slots {
     let rest: Vec<Tok> = toks
         .iter()
         .enumerate()
-        .filter(|(i, _)| !det.used.contains(i))
+        .filter(|(i, _)| !det.used.contains(i) || (wants_entity && wished_last(toks, *i)))
         .map(|(_, t)| t.clone())
         .collect();
     let rest: Vec<Tok> = rest

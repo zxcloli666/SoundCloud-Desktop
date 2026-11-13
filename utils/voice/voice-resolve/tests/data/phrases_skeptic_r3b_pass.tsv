@@ -972,8 +972,7 @@ volume down no up	volume_up						both
 включи романс	play	track	Сплин - Романс		plain		both
 включи пачку сигарет	play	track	Кино - Пачка сигарет		morphology		both
 включи районы кварталы	play	track	Звери - Районы-кварталы		plain		both
-включи для тебя звери	play	track	Звери - Для тебя		plain	album:Звери Леса - Для тебя	off
-включи для тебя звери	none				plain		on
+включи для тебя звери	play	track	Звери - Для тебя		plain	album:Звери Леса - Для тебя	
 включи солдат пять найза	play	track	5'Nizza - Солдат		translit		both
 включи кукушку	play	track	Кино - Кукушка		plain	track:Полина Гагарина - Кукушка	off
 включи кукушку	none				plain		on

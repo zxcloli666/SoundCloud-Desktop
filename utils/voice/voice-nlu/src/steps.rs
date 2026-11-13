@@ -14,6 +14,7 @@ const MAX_STEPS: usize = 3;
 const HARD: &[&str] = &["и", "and"];
 const SOFT: &[&str] = &["потом", "затем", "следом", "then", "только"];
 const AFTER: &[&str] = &["него", "этого", "нее", "нее"];
+const BEHIND: &[&str] = &["ним", "ней", "этим"];
 const FIRST: &str = "сначала";
 const ALSO: &str = "еще";
 const THEN: &[&str] = &["потом", "затем", "следом", "then"];
@@ -111,7 +112,8 @@ fn link(toks: &[Tok], i: usize) -> Option<Link> {
         (1, false, false)
     } else if SOFT.contains(&w) {
         (1, true, false)
-    } else if w == "после" && AFTER.contains(&next) {
+    } else if (w == "после" && AFTER.contains(&next)) || (w == "за" && BEHIND.contains(&next))
+    {
         (2, true, false)
     } else if w == ALSO {
         (1, false, true)

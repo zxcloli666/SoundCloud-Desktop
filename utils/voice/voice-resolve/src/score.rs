@@ -212,6 +212,35 @@ fn limits(qlen: usize, bare: bool) -> (f32, f32) {
 }
 
 pub fn decide(ranked: &[Scored], bare: bool) -> Decision {
+    match weigh(ranked, bare) {
+        Decision::Ask {
+            first,
+            second: Some(second),
+        } => match named_with_its_artist(&first, &second, ranked) {
+            Some(work) => Decision::Act { pick: work },
+            None => Decision::Ask {
+                first,
+                second: Some(second),
+            },
+        },
+        decided => decided,
+    }
+}
+
+fn named_with_its_artist(a: &Scored, b: &Scored, ranked: &[Scored]) -> Option<Scored> {
+    let in_full = |s: &&Scored| !s.fallback && s.sim >= IN_FULL;
+    let (work, artist) = if a.entity.kind == Kind::Artist {
+        (b, a)
+    } else {
+        (a, b)
+    };
+    let by = fold(work.entity.artist.as_deref()?);
+    let own = artist.entity.kind == Kind::Artist && fold(&artist.entity.name) == by;
+    let only = ranked.iter().filter(in_full).count() == 1;
+    (own && only && in_full(&work)).then(|| work.clone())
+}
+
+fn weigh(ranked: &[Scored], bare: bool) -> Decision {
     let Some(top) = ranked.first() else {
         return Decision::NotFound;
     };

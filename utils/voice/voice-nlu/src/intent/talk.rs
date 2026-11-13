@@ -12,6 +12,8 @@ use crate::lexicon::{
     SPEECH, STRIDES, SWEARS_AMB, TASTE, THE_PAST, TO_THE_LISTENER, UP_WORDS, WAS, WHICH,
 };
 
+const RINGING: &[&str] = &["звонк", "будильник", "уведомлен", "телефон", "микрофон"];
+
 pub fn sentence(c: &Ctx) -> bool {
     adverb_of_a_clause(c)
         || attribute_of_a_noun(c)
@@ -22,6 +24,7 @@ pub fn sentence(c: &Ctx) -> bool {
         || taste_of_another(c)
         || thing_of_another(c)
         || thing_made_louder(c)
+        || volume_of_a_thing(c)
         || question_with_its_own_verb(c)
         || question_to_a_person(c)
         || meant_for_someone_else(c)
@@ -143,6 +146,11 @@ fn thing_made_louder(c: &Ctx) -> bool {
     (1..c.len()).any(|i| {
         volume_word(c.w[i - 1]) && DENY.contains(&c.w[i]) && !lexicon::stem(NOISES, c.at(i + 1))
     })
+}
+
+fn volume_of_a_thing(c: &Ctx) -> bool {
+    let rings = |w: &str| DENY.contains(&w) || lexicon::stem(RINGING, w);
+    (1..c.len()).any(|i| lexicon::stem(lexicon::VOL_STEMS, c.w[i - 1]) && rings(c.w[i]))
 }
 
 fn question_with_its_own_verb(c: &Ctx) -> bool {

@@ -4,6 +4,14 @@ use crate::types::Intent;
 
 const GIVE_BACK: &[&str] = &["верни", "вернуть", "возвращай"];
 
+fn names_what_to_play(c: &Ctx, noun: usize) -> bool {
+    let of_the_volume = |i: usize| {
+        let w = c.w[i];
+        i == noun || crate::numbers::is_number(w) || is_known(w) || stem(&["процент"], w)
+    };
+    c.has(PLAY_STRONG) && !(0..c.len()).all(of_the_volume)
+}
+
 pub fn detect(c: &Ctx) -> Option<Detected> {
     if c.len() > 8 {
         return None;
@@ -55,7 +63,7 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
         } else {
             None
         };
-        if let Some(v) = value {
+        if let Some(v) = value.filter(|_| !names_what_to_play(c, n)) {
             return Some(Detected::new(Intent::VolumeSet, vec![n]).number(v));
         }
     }

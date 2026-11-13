@@ -135,7 +135,13 @@ fn started(toks: &[Tok]) -> Option<usize> {
     (1..toks.len())
         .filter(|&k| opens(k))
         .filter(|&k| !toks[..k].iter().any(remark_word))
+        .filter(|&k| !stands_there(toks, k))
         .find(|&k| cuttable(toks, k))
+}
+
+fn stands_there(toks: &[Tok], k: usize) -> bool {
+    let halted = matches!(&toks[..k], [t] if t.w == lexicon::HALT);
+    halted && lexicon::STANDING_PLACES.contains(&toks[k].w.as_str())
 }
 
 fn addressed(toks: &[Tok], k: usize) -> bool {
