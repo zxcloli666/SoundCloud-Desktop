@@ -32,7 +32,7 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="sidebar"]` | Left navigation |
 | `[data-ui="nav-item"]` | A link in the left navigation |
 | `[data-ui="sidebar-pins"]` | Pinned artists in the left navigation |
-| `[data-ui="star-card"]` | STAR card in the left navigation |
+| `[data-ui="star-card"]` | STAR card in the left navigation; `data-tone` is `calm`, `warn` (7 days or less left, or a charge within 3 days) or `bad` (3 days or less left) |
 | `[data-ui="profile"]` | Your profile at the bottom of the left navigation |
 | `[data-ui="main"]` | Scrollable page area |
 | `[data-ui="page"]` | A page. `data-page` names it: `home`, `search`, `library`, `history`, `discover`, `star`, `track`, `playlist`, `user`, `artist`, `album`, `offline`, `recap`, `settings`, `login` |

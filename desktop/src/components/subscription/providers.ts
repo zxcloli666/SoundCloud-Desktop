@@ -1,4 +1,10 @@
-import type { CheckoutReq, PlansResponse, PlategaMethod, ProviderId } from '../../lib/pay-client';
+import type {
+  CheckoutReq,
+  PlansResponse,
+  PlategaMethod,
+  ProviderId,
+  RecurringRule,
+} from '../../lib/pay-client';
 
 // A user-facing "activation method" flattens the pay backend's
 // provider × method matrix into the five concrete options the concept shows.
@@ -18,23 +24,16 @@ export interface ActivationOption {
   i18n: string;
   /** mono tag, e.g. "TON / USDT" */
   tag: string;
-  /**
-   * Whether this method can auto-renew. The recurring toggle is shown ONLY for
-   * options that support it (data-driven — add a new recurring method here and
-   * it surfaces on its own; no hardcoded "TG Stars only" copy anywhere).
-   */
-  recurring: boolean;
 }
 
 const ORDER: Omit<ActivationOption, 'tag'>[] = [
-  { kind: 'sbp', provider: 'platega', method: 'sbp', i18n: 'sbp', recurring: false },
-  { kind: 'card_ru', provider: 'platega', method: 'card_ru', i18n: 'cardRu', recurring: false },
+  { kind: 'sbp', provider: 'platega', method: 'sbp', i18n: 'sbp' },
+  { kind: 'card_ru', provider: 'platega', method: 'card_ru', i18n: 'cardRu' },
   {
     kind: 'card_intl',
     provider: 'platega',
     method: 'card_intl',
     i18n: 'cardIntl',
-    recurring: false,
   },
   // Two crypto rails: Platega = pay in crypto on-chain (crypto as crypto);
   // CryptoBot = a hot wallet for users who already hold a balance in the bot.
@@ -43,10 +42,9 @@ const ORDER: Omit<ActivationOption, 'tag'>[] = [
     provider: 'platega',
     method: 'crypto',
     i18n: 'cryptoPlatega',
-    recurring: false,
   },
-  { kind: 'crypto_bot', provider: 'cryptobot', i18n: 'cryptoBot', recurring: false },
-  { kind: 'tgstars', provider: 'tgstars', i18n: 'tgStars', recurring: true },
+  { kind: 'crypto_bot', provider: 'cryptobot', i18n: 'cryptoBot' },
+  { kind: 'tgstars', provider: 'tgstars', i18n: 'tgStars' },
 ];
 
 const TAGS: Record<ActivationKind, string> = {
@@ -66,6 +64,22 @@ export function activationOptions(plans: PlansResponse): ActivationOption[] {
     if (o.provider === 'platega' && o.method) return plategaMethods.has(o.method);
     return true;
   }).map((o) => ({ ...o, tag: TAGS[o.kind] }));
+}
+
+export function recurringRule(
+  rules: RecurringRule[] | undefined,
+  opt: ActivationOption | null,
+  planId: string | null,
+): RecurringRule | null {
+  if (!rules || !opt || !planId) return null;
+  return (
+    rules.find(
+      (rule) =>
+        rule.provider === opt.provider &&
+        (!rule.method || rule.method === opt.method) &&
+        rule.plans.includes(planId),
+    ) ?? null
+  );
 }
 
 /** Map an activation option + plan into a checkout request body. */

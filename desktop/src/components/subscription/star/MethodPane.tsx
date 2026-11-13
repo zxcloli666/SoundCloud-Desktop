@@ -5,12 +5,12 @@ import { ProviderGlyph } from '../ProviderGlyph';
 import type { ActivationOption } from '../providers';
 import { PrimaryBtn, Ttl } from './StarConsole';
 
-/** Method select — five payment routes; recurring toggle only when supported. */
+/** Method select — five payment routes; recurring toggle only when pay allows it for the method and plan. */
 export const MethodPane = memo(function MethodPane({
   options,
   selected,
   onSelect,
-  canRecur,
+  renewDays,
   recurring,
   onRecurring,
   amount,
@@ -21,7 +21,7 @@ export const MethodPane = memo(function MethodPane({
   options: ActivationOption[];
   selected: ActivationOption | null;
   onSelect: (o: ActivationOption) => void;
-  canRecur: boolean;
+  renewDays: number | null;
   recurring: boolean;
   onRecurring: (v: boolean) => void;
   amount: string;
@@ -67,7 +67,7 @@ export const MethodPane = memo(function MethodPane({
       </div>
 
       {/* recurring — only for methods that support it (custom checkbox) */}
-      {canRecur && (
+      {renewDays !== null && (
         <button
           type="button"
           role="checkbox"
@@ -89,7 +89,9 @@ export const MethodPane = memo(function MethodPane({
             <span className="block text-[12.5px] font-medium text-ink-85">
               {t('starpass.recurring')}
             </span>
-            <span className="block text-[11px] text-ink-40">{t('starpass.recurringSub')}</span>
+            <span className="block text-[11px] text-ink-40">
+              {t('starpass.recurringSub', { count: renewDays })}
+            </span>
           </span>
         </button>
       )}

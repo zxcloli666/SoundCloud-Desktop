@@ -1,6 +1,6 @@
-import React, { type ReactNode, useCallback } from 'react';
+import React, { type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { useShallow } from 'zustand/shallow';
 import { changeAppLanguage } from '../../i18n';
 import { Clock, Globe, PanelLeftClose, PanelLeftOpen, Settings } from '../../lib/icons';
@@ -20,7 +20,8 @@ import { SidebarPins } from './SidebarPins';
 import { SortableSlot, SortableStack } from './SortableStack';
 import { useOwnTenure } from '../../lib/star-tenure';
 import { useLayout } from '../../lib/use-layout';
-import { StarBadge, StarCard, useStarSubscription } from './StarSubscription';
+import { StarCard } from './StarCard';
+import { StarBadge, useStarSubscription } from './StarSubscription';
 
 const languages = [
   { code: 'en', label: 'English' },
@@ -106,8 +107,6 @@ export const Sidebar = React.memo(() => {
   const moveNav = (from: string, to: string) => setLayout('sidebar', moveEntry(layout, from, to));
   const { isPremium } = useStarSubscription();
   const ownTenure = useOwnTenure();
-  const navigate = useNavigate();
-  const openStar = useCallback(() => navigate('/star'), [navigate]);
   const perf = usePerfMode();
   const superlikeCount = useSuperlikeCount();
   const { unheard } = useReleaseFeed();
@@ -196,7 +195,7 @@ export const Sidebar = React.memo(() => {
 
       <div className="px-2 pb-1 flex flex-col gap-0.5">
         <div className="mb-1">
-          <StarCard collapsed={collapsed} isPremium={isPremium} onOpen={openStar} />
+          <StarCard collapsed={collapsed} />
         </div>
 
         <button

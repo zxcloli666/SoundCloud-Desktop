@@ -3,12 +3,14 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { BOOSTY_URL } from '../../../lib/constants';
 import { ChevronRight, ExternalLink, Heart, Star } from '../../../lib/icons';
+import { useStarLine, useStarStatus } from '../../../lib/star-status';
 import { LinkOption } from '../LinkOption';
 import { Card } from '../primitives';
 
 export function SupportCard() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const starLine = useStarLine(useStarStatus());
 
   return (
     <Card
@@ -27,7 +29,7 @@ export function SupportCard() {
         <LinkOption
           icon={<Star size={17} fill="currentColor" />}
           title={t('settings.supportStar')}
-          desc={t('settings.supportStarDesc')}
+          desc={starLine ?? t('settings.supportStarDesc')}
           trailing={<ChevronRight size={16} />}
           onClick={() => navigate('/star')}
         />

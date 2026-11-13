@@ -1605,6 +1605,8 @@
     "title": "Star 구독",
     "active": "활성",
     "getIt": "자세히 알아보기",
+    "until": "{{date}}까지",
+    "in_other": "{{count}}일 후",
     "modalTitle": "Star",
     "modalSub": "프로젝트를 후원하고 혜택을 받으세요",
     "perkGoPlus": "GO+ 트랙 이용",
@@ -1655,7 +1657,7 @@
     "ignite": "나의 별 밝히기",
     "back": "뒤로",
     "perMonthShort": "월",
-    "recurringSub": "30일마다 자동 결제돼요. 끄는 걸 잊었다면 7일 안에 이메일로 알려 주세요, 전액 환불해 드려요",
+    "recurringSub_other": "{{count}}일마다 자동 결제돼요. 끄는 걸 잊었다면 7일 안에 이메일로 알려 주세요, 전액 환불해 드려요",
     "legal": "결제하면 <offer>판매 약관</offer>과 <refund>환불 정책</refund>에 동의하게 돼요.",
     "perk": {
       "goPlus": {
@@ -1744,7 +1746,7 @@
     "toActivation": "활성화 단계로",
     "providerTitle": "결제 수단",
     "providerSub": "가격은 같아요. 결제 방법만 고르세요.",
-    "recurring": "자동 갱신 (Telegram Stars, 매월)",
+    "recurring": "자동 갱신",
     "creating": "주문 생성 중…",
     "continueWith": "{{method}}(으)로 계속",
     "continue": "계속",
@@ -1801,7 +1803,7 @@
       "title": "내 패스",
       "sub": "기간, 자동 갱신, 출처.",
       "autoRenew": "자동 갱신",
-      "autoRenewOn": "{{date}}에 다시 결제돼요",
+      "refund": "환불 정책",
       "autoRenewOff": "꺼짐. 결제한 기간이 끝날 때까지 이용할 수 있어요.",
       "source": "출처",
       "sourceSub": "패스를 받은 경로",
@@ -2532,6 +2534,14 @@
     "gift": "STAR 선물하기",
     "invite": "초대하기",
     "later": "나중에",
+    "charge": {
+      "off": "끄기",
+      "keep": "유지"
+    },
+    "os": {
+      "ends_other": "{{count}}일 후 종료돼요",
+      "charge_other": "{{count}}일 후 {{charge}} 결제 예정"
+    },
     "expiry": {
       "trial": "STAR 체험판",
       "left_other": "{{count}}일 남음",
