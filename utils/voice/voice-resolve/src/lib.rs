@@ -395,6 +395,17 @@ artist\tКино\t\t9000000\t
 track\tНу кино\tНикто\t900\t
 ";
 
+    #[test]
+    fn a_curated_track_is_played_though_an_artist_named_by_one_of_its_words_is_not_found() {
+        let rows = "kind\tname\tartist\tpopularity\taliases
+track\tCan't Feel My Face\tThe Weeknd\t45000000\t
+";
+        assert_eq!(
+            played_from(rows, "включи кант фил май фейс"),
+            "The Weeknd - Can't Feel My Face"
+        );
+    }
+
     fn offered_first(text: &str) -> String {
         let catalog = FixtureCatalog::from_tsv(PARTS, true);
         match interpret_one(text, &catalog, &Boosts::none(), Bare::Popular).decision {

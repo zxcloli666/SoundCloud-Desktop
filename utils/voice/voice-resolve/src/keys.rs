@@ -308,7 +308,7 @@ impl QueryKeys {
     }
 
     pub fn names_an_artist(&self) -> bool {
-        self.alias_kind == Some(Kind::Artist) && self.title.is_none()
+        self.alias_kind == Some(Kind::Artist) && self.title.is_none() && !self.fallback
     }
 
     pub fn list(variants: &[Variant]) -> Vec<QueryKeys> {
