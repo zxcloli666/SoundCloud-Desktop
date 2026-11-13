@@ -187,7 +187,7 @@ el jey	Элджей	artist
 артик асти	Artik & Asti	artist
 артик и ясти	Artik & Asti	artist
 артик	Artik & Asti	artist
-анна асти	Asti	artist
+анна асти	ANNA ASTI	artist
 эльман	Elman	artist
 макан	MACAN	artist
 макаан	MACAN	artist
@@ -347,15 +347,15 @@ kalush	Kalush Orchestra	artist
 хлывнюк	Бумбокс	artist
 андрей хлывнюк	Бумбокс	artist
 антитіла	Антитела	artist
-вопли видопляссова	Вопли Видоплясова	artist
+вопли видопляссова	Воплі Відоплясова	artist
 грин грей	Green Grey	artist
 грин грэй	Green Grey	artist
 казка	KAZKA	artist
 тіна кароль	Тина Кароль	artist
 андрей данилко	Верка Сердючка	artist
 сердючка	Верка Сердючка	artist
-лявон	Лявон Вольский	artist
-левон вольский	Лявон Вольский	artist
+лявон	Лявон Вольскі	artist
+левон вольский	Лявон Вольскі	artist
 ляпис	Ляпис Трубецкой	artist
 сергей михалок	Ляпис Трубецкой	artist
 михалок	Ляпис Трубецкой	artist
@@ -591,11 +591,11 @@ weeknd	The Weeknd	artist
 кендрик	Kendrick Lamar	artist
 кендрик ламара	Kendrick Lamar	artist
 кендрик ламарр	Kendrick Lamar	artist
-эйсап рокки	A$AP Rocky	artist
-асап рокки	A$AP Rocky	artist
-эй сап рокки	A$AP Rocky	artist
-эйсэп роки	A$AP Rocky	artist
-асап роки	A$AP Rocky	artist
+эйсап рокки	ASAP Rocky	artist
+асап рокки	ASAP Rocky	artist
+эй сап рокки	ASAP Rocky	artist
+эйсэп роки	ASAP Rocky	artist
+асап роки	ASAP Rocky	artist
 питбуль	Pitbull	artist
 питбуля	Pitbull	artist
 фло райда	Flo Rida	artist
@@ -1010,6 +1010,465 @@ weeknd	The Weeknd	artist
 снэп	Snap!	artist
 ту анлимитед	2 Unlimited	artist
 ту анлимитэд	2 Unlimited	artist
+брюс спрингстин	Bruce Springsteen	artist
+дэвид боуи	David Bowie	artist
+девид боуи	David Bowie	artist
+боб дилан	Bob Dylan	artist
+дорс	The Doors	artist
+зе дорс	The Doors	artist
+дип пёрпл	Deep Purple	artist
+дип перпл	Deep Purple	artist
+блэк саббат	Black Sabbath	artist
+блэк сабат	Black Sabbath	artist
+оззи осборн	Ozzy Osbourne	artist
+ози осборн	Ozzy Osbourne	artist
+айрон мейден	Iron Maiden	artist
+айрон мэйден	Iron Maiden	artist
+мегадет	Megadeth	artist
+слэйер	Slayer	artist
+слеер	Slayer	artist
+моторхед	Motorhead	artist
+найтвиш	Nightwish	artist
+сабатон	Sabaton	artist
+дистурбед	Disturbed	artist
+мэрилин мэнсон	Marilyn Manson	artist
+мерлин мэнсон	Marilyn Manson	artist
+дефтонс	Deftones	artist
+брейкинг бенджамин	Breaking Benjamin	artist
+холливуд андед	Hollywood Undead	artist
+голливуд андед	Hollywood Undead	artist
+бринг ми зе хорайзон	Bring Me The Horizon	artist
+папа роуч	Papa Roach	artist
+оффспринг	The Offspring	artist
+зе оффспринг	The Offspring	artist
+сёрти секондс ту марс	Thirty Seconds To Mars	artist
+тридцать секунд до марса	Thirty Seconds To Mars	artist
+пласибо	Placebo	artist
+крэнберрис	The Cranberries	artist
+кранберрис	The Cranberries	artist
+перл джем	Pearl Jam	artist
+найн инч нейлс	Nine Inch Nails	artist
+авенджед севенфолд	Avenged Sevenfold	artist
+буллет фор май валентайн	Bullet For My Valentine	artist
+аскинг александрия	Asking Alexandria	artist
+слип токен	Sleep Token	artist
+симпл план	Simple Plan	artist
+райз эгейнст	Rise Against	artist
+джудас прист	Judas Priest	artist
+ван хален	Van Halen	artist
+деф леппард	Def Leppard	artist
+уайтснейк	Whitesnake	artist
+юрай хип	Uriah Heep	artist
+назарет	Nazareth	artist
+смоки	Smokie	artist
+флитвуд мак	Fleetwood Mac	artist
+криденс	Creedence Clearwater Revival	artist
+криденс клируотер ривайвл	Creedence Clearwater Revival	artist
+эрик клэптон	Eric Clapton	artist
+джими хендрикс	Jimi Hendrix	artist
+джон леннон	John Lennon	artist
+пол маккартни	Paul McCartney	artist
+стиви уандер	Stevie Wonder	artist
+рэй чарльз	Ray Charles	artist
+эми уайнхаус	Amy Winehouse	artist
+эми вайнхаус	Amy Winehouse	artist
+нина симон	Nina Simone	artist
+арета франклин	Aretha Franklin	artist
+элла фицджеральд	Ella Fitzgerald	artist
+джеймс браун	James Brown	artist
+дюран дюран	Duran Duran	artist
+пет шоп бойз	Pet Shop Boys	artist
+джой дивижн	Joy Division	artist
+зе смитс	The Smiths	artist
+секс пистолс	Sex Pistols	artist
+брайан адамс	Bryan Adams	artist
+робби уильямс	Robbie Williams	artist
+бэкстрит бойз	Backstreet Boys	artist
+спайс гёрлз	Spice Girls	artist
+джастин тимберлейк	Justin Timberlake	artist
+нелли фуртадо	Nelly Furtado	artist
+тимбалэнд	Timbaland	artist
+тимбаленд	Timbaland	artist
+шон пол	Sean Paul	artist
+алиша киз	Alicia Keys	artist
+алисия киз	Alicia Keys	artist
+мэрайя кэри	Mariah Carey	artist
+джон ледженд	John Legend	artist
+джейсон деруло	Jason Derulo	artist
+ни йо	Ne-Yo	artist
+келли кларксон	Kelly Clarkson	artist
+кайли миноуг	Kylie Minogue	artist
+бонни тайлер	Bonnie Tyler	artist
+лайонел ричи	Lionel Richie	artist
+бони эм	Boney M.	artist
+крафтверк	Kraftwerk	artist
+энигма	Enigma	artist
+милен фармер	Mylene Farmer	artist
+лара фабиан	Lara Fabian	artist
+далида	Dalida	artist
+хулио иглесиас	Julio Iglesias	artist
+джипси кингс	Gipsy Kings	artist
+рикки э повери	Ricchi e Poveri	artist
+рики и повери	Ricchi e Poveri	artist
+лучано паваротти	Luciano Pavarotti	artist
+паваротти	Luciano Pavarotti	artist
+людовико эйнауди	Ludovico Einaudi	artist
+эйнауди	Ludovico Einaudi	artist
+ханс циммер	Hans Zimmer	artist
+ганс циммер	Hans Zimmer	artist
+эннио морриконе	Ennio Morricone	artist
+морриконе	Ennio Morricone	artist
+линдси стирлинг	Lindsey Stirling	artist
+кейт буш	Kate Bush	artist
+бьорк	Björk	artist
+дайдо	Dido	artist
+массив аттак	Massive Attack	artist
+мэссив аттак	Massive Attack	artist
+портисхед	Portishead	artist
+тейм импала	Tame Impala	artist
+зе строукс	The Strokes	artist
+франц фердинанд	Franz Ferdinand	artist
+касабиан	Kasabian	artist
+флоренс энд зе машин	Florence + The Machine	artist
+хёртс	Hurts	artist
+калео	Kaleo	artist
+фостер зе пипл	Foster The People	artist
+кейдж зе элефант	Cage The Elephant	artist
+мак демарко	Mac DeMarco	artist
+ти ви гёрл	TV Girl	artist
+митски	Mitski	artist
+клайро	Clairo	artist
+чейз атлантик	Chase Atlantic	artist
+мазер мазер	Mother Mother	artist
+бич хаус	Beach House	artist
+слоудайв	Slowdive	artist
+кристал каслс	Crystal Castles	artist
+кристал кастлс	Crystal Castles	artist
+мистер китти	Mr.Kitty	artist
+афекс твин	Aphex Twin	artist
+бонобо	Bonobo	artist
+ройксопп	Röyksopp	artist
+кавински	Kavinsky	artist
+скриллекс	Skrillex	artist
+дэдмаус	deadmau5	artist
+дедмаус	deadmau5	artist
+дипло	Diplo	artist
+мейджор лейзер	Major Lazer	artist
+диджей снейк	DJ Snake	artist
+армин ван бюрен	Armin van Buuren	artist
+хардвелл	Hardwell	artist
+стив аоки	Steve Aoki	artist
+дон диабло	Don Diablo	artist
+робин шульц	Robin Schulz	artist
+лост фрикуэнсис	Lost Frequencies	artist
+иманбек	Imanbek	artist
+махмут орхан	Mahmut Orhan	artist
+борис брейча	Boris Brejcha	artist
+бенни бенасси	Benny Benassi	artist
+джиджи дагостино	Gigi D’Agostino	artist
+крейзи фрог	Crazy Frog	artist
+о зон	O-Zone	artist
+озон	O-Zone	artist
+дан балан	Dan Balan	artist
+александра стан	Alexandra Stan	artist
+эдвард майя	Edward Maya	artist
+араш	Arash	artist
+дон омар	Don Omar	artist
+озуна	Ozuna	artist
+кароль джи	Karol G	artist
+росалия	Rosalia	artist
+джонас бразерс	Jonas Brothers	artist
+зейн	Zayn	artist
+джеймс артур	James Arthur	artist
+том оделл	Tom Odell	artist
+сабрина карпентер	Sabrina Carpenter	artist
+чаппел роан	Chappell Roan	artist
+тейт макрей	Tate McRae	artist
+конан грей	Conan Gray	artist
+трой сиван	Troye Sivan	artist
+мелани мартинес	Melanie Martinez	artist
+эйва макс	Ava Max	artist
+рита ора	Rita Ora	artist
+чарли экс си экс	Charli XCX	artist
+клин бэндит	Clean Bandit	artist
+фред эгейн	Fred again..	artist
+пегги гу	Peggy Gou	artist
+флюм	Flume	artist
+инфектед машрум	Infected Mushroom	artist
+пендулум	Pendulum	artist
+нойзия	Noisia	artist
+пол калькбреннер	Paul Kalkbrenner	artist
+нина кравиц	Nina Kraviz	artist
+шарлотта де витте	Charlotte de Witte	artist
+соломун	Solomun	artist
+паров стелар	Parov Stelar	artist
+карпентер брют	Carpenter Brut	artist
+гезаффельштейн	Gesaffelstein	artist
+плейбой карти	Playboi Carti	artist
+гостмейн	Ghostemane	artist
+найт ловелл	Night Lovell	artist
+поп смоук	Pop Smoke	artist
+сикс найн	6ix9ine	artist
+текаши	6ix9ine	artist
+дабейби	DaBaby	artist
+меган зи стэльон	Megan Thee Stallion	artist
+лил дёрк	Lil Durk	artist
+кодак блэк	Kodak Black	artist
+дон толивер	Don Toliver	artist
+метро бумин	Metro Boomin	artist
+янг таг	Young Thug	artist
+ганна	Gunna	artist
+кид кади	Kid Cudi	artist
+ву танг клан	Wu-Tang Clan	artist
+сайпресс хилл	Cypress Hill	artist
+ди эм икс	DMX	artist
+баста раймс	Busta Rhymes	artist
+ауткаст	OutKast	artist
+джи изи	G-Eazy	artist
+мэшин ган келли	Machine Gun Kelly	artist
+машин ган келли	Machine Gun Kelly	artist
+янгблад	Yungblud	artist
+сентрал си	Central Cee	artist
+айс спайс	Ice Spice	artist
+йит	Yeat	artist
+кен карсон	Ken Carson	artist
+дестрой лонли	Destroy Lonely	artist
+триппи ред	Trippie Redd	artist
+ски маск	Ski Mask The Slump God	artist
+дензел карри	Denzel Curry	artist
+лил яхти	Lil Yachty	artist
+лил текка	Lil Tecca	artist
+стив лейси	Steve Lacy	artist
+брент фаяз	Brent Faiyaz	artist
+халид	Khalid	artist
+янг лин	Yung Lean	artist
+блейди	Bladee	artist
+лил трейси	Lil Tracy	artist
+лил дарки	Lil Darkie	artist
+скарлорд	Scarlxrd	artist
+поуя	Pouya	artist
+ксавьер вульф	Xavier Wulf	artist
+фредди дредд	Freddie Dredd	artist
+кордхелл	Kordhell	artist
+диверст	DVRST	artist
+гостфейс плая	Ghostface Playa	artist
+мун дейти	MoonDeity	artist
+интерворлд	INTERWORLD	artist
+хенсон	Hensonn	artist
+ашникко	Ashnikko	artist
+сто гекс	100 gecs	artist
+ливинг томбстоун	The Living Tombstone	artist
+энхайпен	ENHYPEN	artist
+эйтиз	ATEEZ	artist
+итзи	ITZY	artist
+ле серафим	LE SSERAFIM	artist
+ред вельвет	Red Velvet	artist
+джи айдл	(G)I‐DLE	artist
+чонгук	Jung Kook	artist
+чимин	Jimin	artist
+мамаму	MAMAMOO	artist
+йоасоби	YOASOBI	artist
+рэдвимпс	RADWIMPS	artist
+нервы	Нервы	artist
+порнофильмы	Порнофильмы	artist
+люмен	Lumen	artist
+стигмата	Stigmata	artist
+аматори	[AMATORY]	artist
+кукрыниксы	Кукрыниксы	artist
+северный флот	Северный Флот	artist
+эпидемия	Эпидемия	artist
+тараканы	Тараканы!	artist
+наив	НАИВ	artist
+элизиум	Элизиум	artist
+ёрш	Йорш	artist
+операция пластилин	Операция Пластилин	artist
+дайте танк	Дайте танк	artist
+анакондаз	Anacondaz	artist
+валентин стрыкало	Валентин Стрыкало	artist
+кис кис	Кис-кис	artist
+молчат дома	Молчат Дома	artist
+айспик	IC3PEAK	artist
+шортпарис	Shortparis	artist
+буерак	Буерак	artist
+электрофорез	Электрофорез	artist
+перемотка	Перемотка	artist
+пасош	Пасош	artist
+папин олимпос	Папин Олимпос	artist
+аигел	АИГЕЛ	artist
+крем сода	Cream Soda	artist
+антоха мс	Антоха МС	artist
+сбпч	СБПЧ	artist
+нейромонах феофан	Нейромонах Феофан	artist
+хэттерс	The Hatters	artist
+зе хэттерс	The Hatters	artist
+сироткин	Сироткин	artist
+полналюбви	polnalyubvi	artist
+мукка	Мукка	artist
+тринадцать карат	Тринадцать карат	artist
+алёна швец	Алёна Швец	artist
+дора	Дора	artist
+мэйби бэйби	Мэйби Бэйби	artist
+френдзона	Френдзона	artist
+крематорий	Крематорий	artist
+чиж	Чиж И Ко	artist
+чиж и ко	Чиж И Ко	artist
+чичерина	Чичерина	artist
+смысловые галлюцинации	Смысловые Галлюцинации	artist
+ногу свело	Ногу Свело	artist
+несчастный случай	Несчастный случай	artist
+моральный кодекс	Моральный кодекс	artist
+ундервуд	Ундервуд	artist
+аукцыон	АукцЫон	artist
+гарик сукачёв	Гарик Сукачёв	artist
+янка дягилева	Янка Дягилева	artist
+александр башлачёв	Александр Башлачёв	artist
+башлачёв	Александр Башлачёв	artist
+земляне	Земляне	artist
+песняры	Песняры	artist
+софия ротару	София Ротару	artist
+ротару	София Ротару	artist
+ирина аллегрова	Ирина Аллегрова	artist
+аллегрова	Ирина Аллегрова	artist
+лариса долина	Лариса Долина	artist
+кристина орбакайте	Кристина Орбакайте	artist
+орбакайте	Кристина Орбакайте	artist
+валерия	Валерия	artist
+анжелика варум	Анжелика Варум	artist
+леонид агутин	Леонид Агутин	artist
+агутин	Леонид Агутин	artist
+наташа королёва	Наташа Королёва	artist
+татьяна буланова	Татьяна Буланова	artist
+буланова	Татьяна Буланова	artist
+алсу	Алсу	artist
+жанна фриске	Жанна Фриске	artist
+блестящие	Блестящие	artist
+серебро	SEREBRO	artist
+винтаж	Винтаж	artist
+градусы	Градусы	artist
+файв ста фэмили	5sta Family	artist
+бандэрос	БАНД’ЭРОС	artist
+банд эрос	БАНД’ЭРОС	artist
+дискотека авария	Дискотека Авария	artist
+отпетые мошенники	Отпетые мошенники	artist
+комбинация	Комбинация	artist
+кар мэн	Кар Мэн	artist
+гости из будущего	Гости из будущего	artist
+хай фай	Hi-Fi	artist
+чай вдвоём	Чай вдвоём	artist
+дмитрий маликов	Дмитрий Маликов	artist
+дима маликов	Дмитрий Маликов	artist
+валерий сюткин	Валерий Сюткин	artist
+игорь николаев	Игорь Николаев	artist
+александр серов	Александр Серов	artist
+лев лещенко	Лев Лещенко	artist
+лещенко	Лев Лещенко	artist
+муслим магомаев	Муслим Магомаев	artist
+магомаев	Муслим Магомаев	artist
+анна герман	Анна Герман	artist
+андрей губин	Андрей Губин	artist
+губин	Андрей Губин	artist
+шура	Шура	artist
+юлия савичева	Юлия Савичева	artist
+ани лорак	Ани Лорак	artist
+лобода	LOBODA	artist
+светлана лобода	Светлана Лобода	artist
+ольга бузова	Ольга Бузова	artist
+бузова	Ольга Бузова	artist
+ханна	Ханна	artist
+нилетто	NILETTO	artist
+рауф и фаик	Rauf & Faik	artist
+рауф фаик	Rauf & Faik	artist
+миа бойка	MIA BOYKA	artist
+ваня дмитриенко	Ваня Дмитриенко	artist
+гаязовс бразерс	GAYAZOV$ BROTHER$	artist
+гаязов бразерс	GAYAZOV$ BROTHER$	artist
+братья гаязовы	GAYAZOV$ BROTHER$	artist
+конфуз	Konfuz	artist
+хчо	Xcho	artist
+рамиль	Ramil’	artist
+султан лагучев	Султан Лагучев	artist
+ислам итляшев	Ислам Итляшев	artist
+эльбрус джанмирзоев	Эльбрус Джанмирзоев	artist
+тимур муцураев	Тимур Муцураев	artist
+муцураев	Тимур Муцураев	artist
+михаил шуфутинский	Михаил Шуфутинский	artist
+шуфутинский	Михаил Шуфутинский	artist
+любовь успенская	Любовь Успенская	artist
+успенская	Любовь Успенская	artist
+лесоповал	Лесоповал	artist
+бутырка	Бутырка	artist
+иван кучин	Иван Кучин	artist
+сергей наговицын	Сергей Наговицын	artist
+наговицын	Сергей Наговицын	artist
+петлюра	Петлюра	artist
+александр новиков	Александр Новиков	artist
+елена ваенга	Елена Ваенга	artist
+ваенга	Елена Ваенга	artist
+ирина круг	Ирина Круг	artist
+булат окуджава	Булат Окуджава	artist
+окуджава	Булат Окуджава	artist
+каста	Каста	artist
+птаха	Птаха	artist
+ак 47	АК-47	artist
+ак сорок семь	АК-47	artist
+триагрутрика	Триагрутрика	artist
+смоки мо	Смоки Мо	artist
+кровосток	Кровосток	artist
+слава кпсс	Слава КПСС	artist
+джиган	Джиган	artist
+скруджи	Скруджи	artist
+ти фест	T-Fest	artist
+маркул	Markul	artist
+обладает	OBLADAET	artist
+платина	Платина	artist
+скалли милано	Scally Milano	artist
+сода лав	SODA LUV	artist
+бушидо жо	Bushido Zho	artist
+воскресенский	Voskresenskii	artist
+френдли таг	Friendly Thug 52 NGG	artist
+айсгергерт	ICEGERGERT	artist
+салуки	SALUKI	artist
+лок дог	Loc-Dog	artist
+гио пика	Гио Пика	artist
+энди панда	Andy Panda	artist
+ганвест	Ганвест	artist
+дабро	Dabro	artist
+лёша свик	Леша Свик	artist
+лав 66	Lovv66	artist
+лав шестьдесят шесть	Lovv66	artist
+сквоз баб	SQWOZ BAB	artist
+лимба	The Limba	artist
+зе лимба	The Limba	artist
+гафур	Gafur	artist
+егор шип	Егор Шип	artist
+даня милохин	Даня Милохин	artist
+многознаал	Mnogoznaal	artist
+айко	aikko	artist
+букер	Booker	artist
+кай энджел	Kai Angel	artist
+кай ангел	Kai Angel	artist
+найн майс	9mice	artist
+яникс	Yanix	artist
+джимбо	Jeembo	artist
+лил драг хилл	LILDRUGHILL	artist
+сими	SEEMEE	artist
+трилл пилл	Thrill Pill	artist
+биг рашн босс	Big Russian Boss	artist
+си эм эйч	CMH	artist
+мальбэк	Мальбэк	artist
+ирина кайратовна	Ирина Кайратовна	artist
+масло чёрного тмина	Масло чёрного тмина	artist
+трувер	Truwer	artist
+кайрат нуртас	Кайрат Нуртас	artist
+хардкисс	The Hardkiss	artist
+дорофеева	DOROFEEVA	artist
+артём пивоваров	Артём Пивоваров	artist
+веллбой	Wellboy	artist
+дахабраха	ДахаБраха	artist
+один в каное	Один в каное	artist
+дай дарогу	Дай Дарогу!	artist
+петля пристрастия	Петля Пристрастия	artist
+серёга	Серёга	artist
 блайндинг лайтс	The Weeknd - Blinding Lights	track
 блайнд лайтс	The Weeknd - Blinding Lights	track
 блайндинг лайт	The Weeknd - Blinding Lights	track
