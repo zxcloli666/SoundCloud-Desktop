@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useSyncExternalStore } from 'react';
 import { useTranslation } from 'react-i18next';
 import { notifyOs } from '../../lib/notify';
 import { type StarStatus, URGENT_DAYS, useStarStatus } from '../../lib/star-status';
@@ -17,14 +17,18 @@ export function useStarReminder() {
   const key = reminderKey(status);
   const due = useStarMoments((s) => key !== null && !s.seen.includes(key));
   const mark = useStarMoments((s) => s.mark);
+  const hydrated = useSyncExternalStore(
+    useStarMoments.persist.onFinishHydration,
+    useStarMoments.persist.hasHydrated,
+  );
 
   useEffect(() => {
-    if (!due || !key || !status || status.kind === 'open') return;
+    if (!hydrated || !due || !key || !status || status.kind === 'open') return;
     mark(key);
     const body =
       status.kind === 'renews'
         ? t('starMoments.os.charge', { count: status.days, charge: status.charge })
         : t('starMoments.os.ends', { count: status.days });
     void notifyOs(t('star.title'), body);
-  }, [due, key, status, mark, t]);
+  }, [hydrated, due, key, status, mark, t]);
 }
