@@ -1,6 +1,6 @@
 use std::cell::RefCell;
 use std::collections::BTreeMap;
-use voice_nlu::{Intent, Kind, Names, Variant};
+use voice_nlu::{Intent, Kind, Names, Variant, fold};
 use voice_resolve::{
     Bare, Boosts, Catalog, Decision, Entity, FixtureCatalog, Lookup, Outcome, Phrase, interpret,
     understand,
@@ -218,7 +218,7 @@ fn entity_ok(r: &Row, os: &[Outcome]) -> bool {
 fn run(
     name: &str,
     data: &[Row],
-    catalog: &FixtureCatalog,
+    catalog: &dyn Catalog,
     bare: Bare,
 ) -> (BTreeMap<String, Stat>, Vec<String>) {
     let mut stats: BTreeMap<String, Stat> = BTreeMap::new();
@@ -397,6 +397,74 @@ fn targets_with_the_chat_on() {
         println!("chat on, {f}");
     }
     bad.extend(check("all", &union));
+    assert!(bad.is_empty(), "under target: {bad:#?}");
+}
+
+const WELL_KNOWN: u64 = 1_800_000;
+
+struct EndsEarly<'a> {
+    rows: &'a FixtureCatalog,
+}
+
+impl Catalog for EndsEarly<'_> {
+    fn candidates(&self, variants: &[Variant], kinds: &[Kind]) -> Vec<Entity> {
+        let lookup = Lookup {
+            variants: variants.to_vec(),
+            kinds: kinds.to_vec(),
+        };
+        let texts = lookup.texts();
+        let Some(name) = texts.first() else {
+            return Vec::new();
+        };
+        let asked = |text: &str| -> Vec<Variant> {
+            let said = variants.iter().filter(|v| !v.fallback);
+            said.filter(|v| v.text.trim() == text).cloned().collect()
+        };
+        let known = lookup.known();
+        let exact = |e: &Entity| {
+            let whole = match &e.artist {
+                Some(artist) => format!("{} {artist}", e.name),
+                None => e.name.clone(),
+            };
+            fold(&whole) == fold(name) && (known || e.popularity >= WELL_KNOWN)
+        };
+        let named = self.rows.candidates(&asked(name), kinds);
+        if !named.iter().any(exact) {
+            return self.rows.candidates(variants, kinds);
+        }
+        let artist = |e: &Entity| e.kind == Kind::Artist;
+        let only_artists = known && named.iter().any(|e| artist(e) && exact(e));
+        let mut found: Vec<Entity> = named
+            .into_iter()
+            .filter(|e| !only_artists || artist(e))
+            .collect();
+        for text in lookup.fuller() {
+            for e in self.rows.candidates(&asked(&text), kinds) {
+                if !found.iter().any(|known| known.id == e.id) {
+                    found.push(e);
+                }
+            }
+        }
+        found
+    }
+}
+
+#[test]
+fn targets_when_a_lookup_ends_at_a_name_found_exactly() {
+    let rows = FixtureCatalog::from_tsv(include_str!("data/catalog.tsv"), true);
+    let catalog = EndsEarly { rows: &rows };
+    let mut union = BTreeMap::new();
+    let mut failures = Vec::new();
+    for set in sets() {
+        let (stats, f) = run(set.name, &set.rows, &catalog, Bare::Popular);
+        merge(&mut union, &stats);
+        failures.extend(f);
+    }
+    println!("ends early, all sets\n{}", report(&union));
+    for f in &failures {
+        println!("ends early, {f}");
+    }
+    let bad = check("all", &union);
     assert!(bad.is_empty(), "under target: {bad:#?}");
 }
 

@@ -19,6 +19,41 @@ pub struct Lookup {
     pub kinds: Vec<Kind>,
 }
 
+impl Lookup {
+    pub fn texts(&self) -> Vec<String> {
+        let said = self.variants.iter().filter(|v| !v.fallback);
+        let parts = said
+            .clone()
+            .flat_map(|v| [v.artist.clone(), v.title.clone()]);
+        let fallbacks = self.variants.iter().filter(|v| v.fallback);
+        let texts = said.map(|v| v.text.clone()).chain(parts.flatten());
+        distinct(texts.chain(fallbacks.map(|v| v.text.clone())))
+    }
+
+    pub fn known(&self) -> bool {
+        let first = self.texts().into_iter().next();
+        let curated = self.variants.iter().filter(|v| !v.fallback);
+        let mut curated = curated.filter(|v| v.alias_kind.is_some());
+        curated.any(|v| first.as_deref() == Some(v.text.trim()))
+    }
+
+    pub fn fuller(&self) -> Vec<String> {
+        let own = self.variants.iter().filter(|v| v.alias_kind.is_none());
+        let fuller = own.filter(|v| v.kept_fillers && !v.lemmatized && !v.fallback);
+        distinct(fuller.map(|v| v.text.clone()))
+    }
+}
+
+fn distinct(texts: impl Iterator<Item = String>) -> Vec<String> {
+    let mut out: Vec<String> = Vec::new();
+    for text in texts.map(|text| text.trim().to_string()) {
+        if !text.is_empty() && !out.contains(&text) {
+            out.push(text);
+        }
+    }
+    out
+}
+
 #[derive(Default)]
 struct Asked(RefCell<Vec<Lookup>>);
 

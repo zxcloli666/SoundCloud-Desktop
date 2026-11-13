@@ -230,11 +230,25 @@ pub fn expand(parsed: &Parsed) -> Vec<Variant> {
         named_whole(v, &mut whole);
         named_in_part(v, &mut in_part);
     }
+    let of_the_kind = |v: &Variant| {
+        parsed
+            .kind_hint
+            .is_none_or(|kind| v.alias_kind == Some(kind))
+    };
+    let (named, of_another_kind): (Vec<Variant>, Vec<Variant>) =
+        whole.into_iter().partition(of_the_kind);
+    let said = variants.iter().filter(|v| !v.lemmatized);
+    let cleaned = said.clone().filter(|v| !v.kept_fillers).cloned();
+    let fuller = said.filter(|v| v.kept_fillers).cloned();
+    let derived = variants.iter().filter(|v| v.lemmatized).cloned();
     let mut out: Vec<Variant> = Vec::new();
-    for v in whole
+    for v in named
         .into_iter()
+        .chain(cleaned)
         .chain(spoken::uncut(parsed))
-        .chain(variants.iter().cloned())
+        .chain(fuller)
+        .chain(of_another_kind)
+        .chain(derived)
         .chain(in_part)
     {
         if !out.contains(&v) {

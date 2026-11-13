@@ -137,7 +137,7 @@ fn kept(said: &str) -> Vec<String> {
 }
 
 #[test]
-fn a_name_the_cleanup_cuts_is_asked_as_it_was_said_and_then_cleaned() {
+fn a_name_the_cleanup_cuts_is_asked_cleaned_and_then_as_it_was_said() {
     let cut = [
         ("включи эй мама", "мама", "эй мама"),
         ("включи talk talk", "talk", "talk talk"),
@@ -158,9 +158,49 @@ fn a_name_the_cleanup_cuts_is_asked_as_it_was_said_and_then_cleaned() {
     ];
     for (said, cleaned, name) in cut {
         let asked = heard(said);
-        assert_eq!(asked[0], name, "{said}");
-        assert_eq!(asked[1], cleaned, "{said}");
+        assert_eq!(asked[0], cleaned, "{said}");
+        assert_eq!(asked[1], name, "{said}");
+        let fuller = read(said, &[]).lookups()[0].fuller();
+        assert!(fuller.iter().any(|text| text == name), "{said}: {fuller:?}");
     }
+}
+
+#[test]
+fn what_says_more_than_the_name_is_asked_right_after_it_and_whatever_it_finds() {
+    let fuller = [
+        ("включи для тебя звери", "Звери", "для тебя звери"),
+        ("поставь земфиру хочу", "Земфира", "земфиру хочу"),
+        ("включи ну кино", "Кино", "ну кино"),
+    ];
+    for (said, name, whole) in fuller {
+        let lookup = &read(said, &[]).lookups()[0];
+        let texts = lookup.texts();
+        assert_eq!(texts[0], name, "{said}");
+        assert!(lookup.known(), "{said}");
+        assert_eq!(lookup.fuller(), [whole], "{said}");
+        let at = texts.iter().position(|text| text == whole);
+        assert!(at.is_some_and(|at| at <= 2), "{said}: {texts:?}");
+    }
+    let plain = read("включи кино", &[]).lookups();
+    assert_eq!(plain[0].fuller(), Vec::<String>::new());
+}
+
+#[test]
+fn a_curated_artist_asked_for_as_another_kind_is_not_the_first_asked() {
+    let other = [
+        ("включи песню звери", "Звери"),
+        ("включи альбом кино", "Кино"),
+    ];
+    for (said, name) in other {
+        let lookup = &read(said, &[]).lookups()[0];
+        let texts = lookup.texts();
+        assert_ne!(texts[0], name, "{said}");
+        assert!(!lookup.known(), "{said}");
+        assert!(texts.iter().any(|text| text == name), "{said}: {texts:?}");
+    }
+    let lookup = &read("включи группу кино", &[]).lookups()[0];
+    assert_eq!(lookup.texts()[0], "Кино");
+    assert!(lookup.known());
 }
 
 #[test]

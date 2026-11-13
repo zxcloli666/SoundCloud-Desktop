@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use voice_nlu::{Kind, Variant};
-use voice_resolve::Entity;
+use voice_resolve::{Entity, Lookup};
 
 const POPULARITY_SCALE: f64 = 18.0;
 
@@ -11,6 +11,8 @@ pub struct Request {
     pub kinds: Vec<&'static str>,
     #[serde(skip_serializing_if = "std::ops::Not::not")]
     pub known: bool,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub fuller: Vec<String>,
 }
 
 #[derive(Deserialize)]
@@ -27,31 +29,15 @@ struct Hit {
 }
 
 pub fn request(variants: &[Variant], kinds: &[Kind]) -> Request {
-    let mut texts: Vec<String> = Vec::new();
-    let main = variants.iter().filter(|v| !v.fallback);
-    let extras = main
-        .clone()
-        .flat_map(|v| [v.artist.clone(), v.title.clone()])
-        .flatten();
-    let fallbacks = variants
-        .iter()
-        .filter(|v| v.fallback)
-        .map(|v| v.text.clone());
-    for text in main.map(|v| v.text.clone()).chain(extras).chain(fallbacks) {
-        let text = text.trim().to_string();
-        if !text.is_empty() && !texts.contains(&text) {
-            texts.push(text);
-        }
-    }
-    let first = texts.first();
-    let known = variants
-        .iter()
-        .filter(|v| !v.fallback && v.alias_kind.is_some())
-        .any(|v| first.is_some_and(|first| first == v.text.trim()));
+    let lookup = Lookup {
+        variants: variants.to_vec(),
+        kinds: kinds.to_vec(),
+    };
     Request {
-        variants: texts,
+        variants: lookup.texts(),
         kinds: kinds.iter().map(|k| k.name()).collect(),
-        known,
+        known: lookup.known(),
+        fuller: lookup.fuller(),
     }
 }
 
@@ -186,5 +172,19 @@ mod tests {
         assert!(!request.known);
         let body = serde_json::to_value(&request).unwrap();
         assert!(body.get("known").is_none());
+        assert!(body.get("fuller").is_none());
+    }
+
+    #[test]
+    fn a_variant_that_says_more_than_the_name_is_sent_as_fuller() {
+        let fuller = Variant {
+            kept_fillers: true,
+            ..said("для тебя звери", None)
+        };
+        let variants = vec![said("Звери", Some(Kind::Artist)), said("звери", None), fuller];
+        let request = request(&variants, &Kind::ALL);
+        assert!(request.known);
+        let body = serde_json::to_value(&request).unwrap();
+        assert_eq!(body["fuller"], serde_json::json!(["для тебя звери"]));
     }
 }
