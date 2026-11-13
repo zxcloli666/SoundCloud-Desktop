@@ -1,5 +1,6 @@
 #![allow(dead_code)]
 
+use std::collections::VecDeque;
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::sync::mpsc::{Receiver, channel};
@@ -184,6 +185,29 @@ pub fn feeding(samples: Vec<f32>, rate: u32) -> OpenFn {
                 input: ctx.input,
                 samples: chunk.to_vec(),
                 rate,
+            });
+        }
+        wait_stop(&ctx);
+    })
+}
+
+pub type Clips = Arc<Mutex<VecDeque<Vec<f32>>>>;
+
+pub fn in_real_time(clips: Clips) -> OpenFn {
+    Arc::new(move |ctx: SourceCtx| {
+        let _ = ctx.ready.send(Ok(()));
+        let clip = clips.lock().unwrap().pop_front().unwrap_or_default();
+        let started = Instant::now();
+        for (at, chunk) in clip.chunks(160).enumerate() {
+            if ctx.stop.load(Ordering::Relaxed) {
+                return;
+            }
+            let due = started + Duration::from_millis(10) * at as u32;
+            std::thread::sleep(due.saturating_duration_since(Instant::now()));
+            let _ = ctx.out.send(Msg::Chunk {
+                input: ctx.input,
+                samples: chunk.to_vec(),
+                rate: 16_000,
             });
         }
         wait_stop(&ctx);

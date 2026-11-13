@@ -4,6 +4,7 @@ mod clip;
 mod config;
 mod draft;
 mod event;
+mod fell_quiet;
 #[cfg(test)]
 mod fixtures;
 mod gesture;

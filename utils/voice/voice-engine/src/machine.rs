@@ -273,6 +273,9 @@ impl Core {
                 self.cancel();
             }
         }
+        if enabled && self.star && matches!(self.phase, Phase::Idle) {
+            let _ = self.ensure_listener();
+        }
     }
 
     pub fn cancel(&mut self) {

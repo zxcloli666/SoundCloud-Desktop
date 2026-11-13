@@ -1,3 +1,4 @@
+use std::path::PathBuf;
 use std::sync::mpsc::{Receiver, Sender, channel};
 use std::time::Instant;
 
@@ -9,11 +10,13 @@ use voice_speech::{Event as Heard, Listener, Options};
 use crate::Timing;
 use crate::config::{Echo, Language, ListenMode as Mode};
 use crate::event::{Event, PartialEvent, State};
+use crate::fell_quiet::Loudness;
 use crate::hotwords;
 use crate::machine::{Core, Msg, Phase};
 use crate::models;
 
 const CHUNK: usize = 1600;
+const HEARD_OUT: usize = CHUNK * 4;
 const HOTWORDS_SCORE: f32 = 1.5;
 const THREADS: i32 = 2;
 
@@ -25,6 +28,8 @@ pub struct Listen {
     pub speech_seen: bool,
     pub finals: Vec<String>,
     pub buffer: Vec<f32>,
+    pub said: Vec<f32>,
+    pub loudness: Loudness,
     pub lost: Option<CaptureError>,
 }
 
@@ -79,14 +84,17 @@ impl Core {
         if !self.star {
             return self.refuse("not_star", None, for_ask);
         }
-        if let Err(code) = self.ensure_listener() {
-            return self.refuse(code, None, for_ask);
+        if self.listener_models().is_none() {
+            return self.refuse("no_models", None, for_ask);
         }
         let request = self.request(Purpose::Utterance);
         let mut session = match self.deps.capture.start(&request, &self.deps.devices) {
             Ok(session) => session,
             Err(error) => return self.refuse(capture_code(&error), Some(error.detail), for_ask),
         };
+        if let Err(code) = self.ensure_listener() {
+            return self.refuse(code, None, for_ask);
+        }
         let r#gen = self.next_gen();
         forward(take_events(&mut session), self.inbox.clone(), r#gen, false);
         let input = session.inputs.first().map(|d| d.id.clone());
@@ -108,6 +116,8 @@ impl Core {
             speech_seen: false,
             finals: Vec::new(),
             buffer: Vec::with_capacity(CHUNK * 2),
+            said: Vec::new(),
+            loudness: Loudness::default(),
             lost: None,
         }));
         let state = if for_ask {
@@ -157,11 +167,18 @@ impl Core {
         }
     }
 
-    fn ensure_listener(&mut self) -> Result<(), &'static str> {
+    fn listener_models(&self) -> Option<(PathBuf, PathBuf)> {
         let store = &self.deps.store;
+        let (asr_id, _) = models::asr(self.config.language);
+        Some((
+            models::dir(store, models::VAD)?,
+            models::dir(store, asr_id)?,
+        ))
+    }
+
+    pub fn ensure_listener(&mut self) -> Result<(), &'static str> {
         let (asr_id, model) = models::asr(self.config.language);
-        let (Some(vad), Some(asr)) = (models::dir(store, models::VAD), models::dir(store, asr_id))
-        else {
+        let Some((vad, asr)) = self.listener_models() else {
             return Err("no_models");
         };
         let hotwords = match self.config.language {
@@ -225,11 +242,14 @@ impl Core {
             return;
         };
         let heard = listener.push(&listen.buffer);
+        let fell_quiet = listen.loudness.push(&listen.buffer);
+        listen.said.extend_from_slice(&listen.buffer);
         listen.buffer.clear();
         if listener.in_speech() {
             listen.speech_seen = true;
         }
         let hold = self.config.activation.hold && self.source == crate::Source::Hotkey;
+        let ends_itself = listen.for_ask || !hold;
         let mut done = false;
         let mut partials = Vec::new();
         for event in heard {
@@ -241,16 +261,40 @@ impl Core {
                 Heard::Final(text) => {
                     listen.speech_seen = true;
                     listen.finals.push(text);
-                    done = listen.for_ask || !hold;
+                    done = ends_itself;
                 }
             }
         }
+        let fell_quiet = fell_quiet.filter(|_| ends_itself && listen.speech_seen);
         for text in partials {
             self.emit(Event::Partial(PartialEvent { text }));
         }
         if done {
             self.finish_listen();
+        } else if let Some(end) = fell_quiet {
+            self.finish_at(end);
         }
+    }
+
+    fn finish_at(&mut self, end: usize) {
+        let Phase::Listening(listen) = &mut self.phase else {
+            return;
+        };
+        let Some((_, _, listener)) = self.listener.as_mut() else {
+            return;
+        };
+        listener.reset();
+        listen.buffer.clear();
+        listen.finals.clear();
+        let end = (end + HEARD_OUT).min(listen.said.len());
+        for chunk in listen.said[..end].chunks(CHUNK) {
+            for event in listener.push(chunk) {
+                if let Heard::Final(text) = event {
+                    listen.finals.push(text);
+                }
+            }
+        }
+        self.finish_listen();
     }
 
     pub fn close(&mut self, listen: Listen) {
