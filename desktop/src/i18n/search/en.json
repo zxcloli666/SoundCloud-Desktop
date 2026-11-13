@@ -1114,19 +1114,6 @@
     "earphone button for voice",
     "media button calls the assistant"
   ],
-  "voice.activation.wake": [
-    "wake word",
-    "hey loli",
-    "hey lolya",
-    "hotword",
-    "always listening",
-    "call by name",
-    "false triggers",
-    "wake sensitivity",
-    "teach the wake word",
-    "activates by itself",
-    "hands free"
-  ],
   "voice.mics.title": [
     "microphone",
     "mic",
