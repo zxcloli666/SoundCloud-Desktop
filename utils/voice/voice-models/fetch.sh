@@ -15,7 +15,7 @@ for id in "$@"; do
     fi
     mkdir -p "$out/$id"
     echo "$files" | while IFS="$(printf '\t')" read -r version path sha256 executable; do
-        curl -fsSL --retry 3 -o "$out/$id/$path" "$base/$id/$version/$path"
+        curl -fsSL --retry 8 --retry-all-errors --retry-max-time 300 -o "$out/$id/$path" "$base/$id/$version/$path"
         got=$(openssl dgst -sha256 -r "$out/$id/$path" | cut -d' ' -f1)
         if [ "$got" != "$sha256" ]; then
             echo "$id/$path: sha256 $got, expected $sha256" >&2
