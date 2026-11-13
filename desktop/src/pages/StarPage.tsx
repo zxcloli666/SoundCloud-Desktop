@@ -14,6 +14,7 @@ import { StarAtmosphere } from '../components/subscription/StarAtmosphere';
 import { CenterReadout } from '../components/subscription/star/CenterReadout';
 import { GIFTS_KEY, GiftsPane } from '../components/subscription/star/GiftsPane';
 import { InvitePane, REFERRAL_KEY } from '../components/subscription/star/InvitePane';
+import { LegalNote } from '../components/subscription/star/LegalNote';
 import { ManagePane } from '../components/subscription/star/ManagePane';
 import { MethodPane } from '../components/subscription/star/MethodPane';
 import {
@@ -391,6 +392,7 @@ const StarFlow = memo(function StarFlow({
                 onRefresh={refreshQr}
               />
             )}
+            {(step === 'method' || step === 'pay') && <LegalNote />}
             {step === 'success' && (
               <SuccessPane
                 onMusic={() => navigate('/home')}

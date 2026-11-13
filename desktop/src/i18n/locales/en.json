@@ -1810,7 +1810,8 @@
     "ignite": "Ignite your star",
     "back": "Back",
     "perMonthShort": "mo",
-    "recurringSub": "charged automatically, cancel anytime",
+    "recurringSub": "charged automatically every 30 days. Forgot to turn it off? Email us within 7 days for a full refund",
+    "legal": "By paying you accept the <offer>terms of sale</offer> and the <refund>refund policy</refund>.",
     "perk": {
       "goPlus": {
         "title": "Full catalog",

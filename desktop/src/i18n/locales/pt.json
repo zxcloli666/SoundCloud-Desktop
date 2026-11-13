@@ -1722,7 +1722,8 @@
     "ignite": "Acenda sua estrela",
     "back": "Voltar",
     "perMonthShort": "mês",
-    "recurringSub": "cobrança automática, cancele quando quiser",
+    "recurringSub": "cobrança automática a cada 30 dias. Esqueceu de desativar? Envie um e-mail em até 7 dias e devolvemos tudo",
+    "legal": "Ao pagar, você aceita os <offer>termos de venda</offer> e a <refund>política de reembolso</refund>.",
     "perk": {
       "goPlus": {
         "title": "Catálogo completo",

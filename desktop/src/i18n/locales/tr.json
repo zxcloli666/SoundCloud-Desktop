@@ -1726,7 +1726,8 @@
     "ignite": "Yıldızını yak",
     "back": "Geri",
     "perMonthShort": "ay",
-    "recurringSub": "otomatik tahsil edilir, istediğin zaman iptal et",
+    "recurringSub": "her 30 günde bir otomatik tahsil edilir. Kapatmayı unuttun mu? 7 gün içinde e-posta yaz, tamamını iade ederiz",
+    "legal": "Ödeme yaparak <offer>satış koşullarını</offer> ve <refund>iade politikasını</refund> kabul edersin.",
     "perk": {
       "goPlus": {
         "title": "GO+ parçalar",
