@@ -61,6 +61,18 @@ pub const BLOCK_HEAD: &[&str] = &[
     "ага",
     "угу",
     "тренер",
+    "not",
+    "dont",
+    "didnt",
+    "never",
+    "nobody",
+    "said",
+    "says",
+    "told",
+    "he",
+    "she",
+    "they",
+    "if",
 ];
 
 pub const BLOCK_TAIL: &[&str] = &[

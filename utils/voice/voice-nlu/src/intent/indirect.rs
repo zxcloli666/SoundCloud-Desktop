@@ -375,6 +375,12 @@ const RULES: &[Rule] = &[
     rule(&[&["кто"], &["это"]], &["автор"], &[], Intent::NowPlaying),
     rule(&[&["кто"], &["автор"]], &[], &[], Intent::NowPlaying),
     rule(
+        &[&["who", "whos"], &["this", "that"]],
+        &["is", "singing", "artist"],
+        &[],
+        Intent::NowPlaying,
+    ),
+    rule(
         &[&["зовут"], &["исполнителя", "артиста", "певца", "певицу"]],
         &["как"],
         &[],

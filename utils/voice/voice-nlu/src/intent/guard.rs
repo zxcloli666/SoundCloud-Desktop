@@ -86,13 +86,13 @@ pub fn negation(toks: &[Tok]) -> Negation {
         return Negation::Cancel;
     }
     for i in 0..toks.len().saturating_sub(1) {
-        if toks[i].w != "не" || !negated_verb(&toks[i + 1].w) {
+        if !denies(toks, i) || !negated_verb(&toks[i + 1].w) {
             continue;
         }
         if contrasted(toks, i) {
             return Negation::Head(i);
         }
-        let ordered = |j: usize| orders(&toks[j].w) && toks[j - 1].w != "не";
+        let ordered = |j: usize| orders(&toks[j].w) && !denies(toks, j - 1);
         let tail = (i + 2..toks.len()).find(|&j| ordered(j));
         return match tail {
             Some(j) => Negation::Tail(j),
@@ -100,6 +100,17 @@ pub fn negation(toks: &[Tok]) -> Negation {
         };
     }
     Negation::Clear
+}
+
+const DONT: &[&str] = &["dont", "never"];
+
+fn denies(toks: &[Tok], at: usize) -> bool {
+    let w = toks[at].w.as_str();
+    let asked_before = toks[..at]
+        .iter()
+        .any(|t| PLAY_STRONG.contains(&t.w.as_str()));
+    let do_not = w == "not" && at > 0 && toks[at - 1].w == "do";
+    w == "не" || ((DONT.contains(&w) || do_not) && !asked_before)
 }
 
 pub fn orders(w: &str) -> bool {

@@ -4,8 +4,13 @@ use crate::types::Intent;
 
 const ANNOUNCED: &[&str] = &["продолжение", "продолжим", "продолжаем"];
 
+const THAT_ONE: &str = "1";
+
 fn base(c: &Ctx, i: usize) -> Vec<usize> {
     let mut used = vec![i];
+    if c.at(i + 1) == THAT_ONE {
+        used.push(i + 1);
+    }
     used.extend((0..c.len()).filter(|&j| {
         PLAY_STRONG.contains(&c.w[j])
             || matches!(
@@ -60,7 +65,9 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
         return Some(Detected::new(Intent::Stop, vec![]));
     }
     if let Some(i) = c.pos_stem(PREV_STRONG).filter(|_| !c.has_stem(NEXT_STRONG)) {
-        if c.stray(&base(c, i)) == 0 {
+        let mut said = base(c, i);
+        said.extend(c.all(&["back", "to"]));
+        if c.stray(&said) == 0 {
             return Some(Detected::new(Intent::Previous, vec![i]));
         }
     }

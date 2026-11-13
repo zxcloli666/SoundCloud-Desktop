@@ -21,8 +21,17 @@ const TAKES_BACK: &[&[&str]] = &[
     &["точнее"],
     &["тьфу"],
     &["нет"],
+    &["no", "wait"],
+    &["no", "sorry"],
+    &["no", "actually"],
+    &["wait", "no"],
+    &["i", "mean"],
+    &["or", "rather"],
+    &["scratch", "that"],
+    &["actually"],
     &["no"],
 ];
+const SECOND_THOUGHT: &[&str] = &["wait", "sorry", "actually"];
 const WAVERS: &[&[&str]] = &[&["хотя"], &["ой"], &["ладно"]];
 const LOOSE: &str = "лучше";
 const NO: &str = "нет";
@@ -161,7 +170,7 @@ fn versions(ws: &[String]) -> Option<Vec<Version>> {
         } else if let Some(mark) = marker(ws, i)
             .filter(|m| m.firm || opened(&cur) || held_back(ws, i))
             .filter(|m| !starts_a_name(&cur, ws, i, m.end))
-            .filter(|_| !word_of_a_name(&cur, &ws[i]))
+            .filter(|_| !word_of_a_name(&cur, ws, i))
         {
             found = true;
             dropping = false;
@@ -193,9 +202,12 @@ fn starts_a_name(cur: &Version, ws: &[String], at: usize, end: usize) -> bool {
     lone_verb && bare_no && named
 }
 
-fn word_of_a_name(cur: &Version, said: &str) -> bool {
+fn word_of_a_name(cur: &Version, ws: &[String], at: usize) -> bool {
     let controls = || command(&toks(&cur.words)).is_some_and(|(asked, ..)| asked.is_control());
-    said == ENGLISH_NO && !cur.words.is_empty() && !controls()
+    let rethought = ws
+        .get(at + 1)
+        .is_some_and(|w| SECOND_THOUGHT.contains(&w.as_str()));
+    ws[at] == ENGLISH_NO && !rethought && !cur.words.is_empty() && !controls()
 }
 
 fn opened(cur: &Version) -> bool {
