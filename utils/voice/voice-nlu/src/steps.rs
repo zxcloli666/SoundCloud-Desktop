@@ -83,6 +83,12 @@ pub fn parse(text: &str, names: &Names) -> Vec<Parsed> {
         whole.alt = crate::whole_name(&names.drop(normalize(text_in).toks)).queries;
     }
     whole.split = entity_splits(toks, text);
+    if whole.intent.needs_entity() {
+        if let Some(said) = correct::renamed(text_in) {
+            let taken_back = parse_toks(text, recall::named(names.drop(said))).0;
+            whole.split.insert(0, vec![taken_back]);
+        }
+    }
     if ordered && whole.intent == Intent::None {
         whole.split.extend(named_in_order(toks, text));
     }
@@ -274,7 +280,7 @@ fn juxtaposed(toks: &[Tok], text: &str) -> Option<Vec<Parsed>> {
         return None;
     }
     match side(toks, text) {
-        Side::Cmd(p) if p.intent.is_control() => return None,
+        Side::Cmd(p) if p.intent.is_control() || p.intent == Intent::PlaySimilar => return None,
         Side::Foreign => return None,
         _ => {}
     }

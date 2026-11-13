@@ -4,6 +4,7 @@ use crate::types::Intent;
 
 const GIVE_BACK: &[&str] = &["верни", "вернуть", "возвращай"];
 const AS_IT_IS: &[&str] = &["сейчас", "было", "есть", "раньше"];
+const SET_TO: &[&str] = &["set", "it", "to", "a", "at", "percent"];
 
 fn than_it_is(c: &Ctx) -> Vec<usize> {
     match c.pos(&["чем"]) {
@@ -152,10 +153,12 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
         || english_dir("down")
         || (c.has(&["decrease", "lower", "reduce"]) && noun.is_some())
         || (noun.is_some() && (c.has(LESS) || c.has(LOWER)));
-    let to_a_level =
-        c.w.windows(2)
-            .any(|p| p[0] == "to" && crate::numbers::is_number(p[1]));
-    if (c.has(&["до"]) || to_a_level) && (up || down || noun.is_some()) {
+    let level = |after: usize| c.w.get(after).is_some_and(|w| crate::numbers::is_number(w));
+    let to_a_level = (0..c.len())
+        .any(|i| c.w[i] == "to" && (level(i + 1) || (c.at(i + 1) == "a" && level(i + 2))));
+    let set_to = |w: &&str| SET_TO.contains(w) || crate::numbers::is_number(w);
+    let only_set = c.has(&["set"]) && c.w.iter().all(set_to);
+    if (c.has(&["до"]) || to_a_level) && (up || down || noun.is_some() || only_set) {
         if let Some(v) = number.or(max.then_some(100)) {
             return Some(Detected::new(Intent::VolumeSet, vec![]).number(v.min(100)));
         }

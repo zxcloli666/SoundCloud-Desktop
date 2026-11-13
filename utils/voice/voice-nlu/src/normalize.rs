@@ -159,22 +159,23 @@ fn collapse(w: &str) -> String {
 fn apply_phrases(words: Vec<String>) -> Vec<String> {
     let mut out: Vec<String> = Vec::new();
     let mut i = 0;
-    'outer: while i < words.len() {
-        for phrase in DROP_PHRASES {
-            if matches_at(&words, i, phrase) {
-                i += phrase.len();
-                continue 'outer;
-            }
-        }
-        for (phrase, to) in MERGE_PHRASES {
-            if matches_at(&words, i, phrase) {
+    while i < words.len() {
+        let said = |phrase: &[&str]| matches_at(&words, i, phrase);
+        let dropped = DROP_PHRASES.iter().find(|phrase| said(phrase));
+        let dropped = dropped.map_or(0, |phrase| phrase.len());
+        let merged = MERGE_PHRASES.iter().filter(|(phrase, _)| said(phrase));
+        let merged = merged.max_by_key(|(phrase, _)| phrase.len());
+        match merged {
+            Some((phrase, to)) if phrase.len() > dropped => {
                 out.push(to.to_string());
                 i += phrase.len();
-                continue 'outer;
+            }
+            _ if dropped > 0 => i += dropped,
+            _ => {
+                out.push(words[i].clone());
+                i += 1;
             }
         }
-        out.push(words[i].clone());
-        i += 1;
     }
     out
 }

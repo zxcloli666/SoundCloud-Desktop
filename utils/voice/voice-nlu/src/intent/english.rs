@@ -15,6 +15,7 @@ const POOR: &[&str] = &[
 
 const TRACK: &[&str] = &["music", "song", "track", "tunes", "tune"];
 const SOUND: &[&str] = &["sound", "audio", "volume"];
+const REPEATS: &[&str] = &["repeat", "repeating", "loop", "looping"];
 const NOT_THE_TRACK: &[&str] = &[
     "dont", "not", "would", "to", "what", "whats", "you", "me", "us", "him", "her", "them",
 ];
@@ -97,7 +98,9 @@ pub(super) const RULES: &[Rule] = &[
     ),
     rule(
         &[&["how"], &["use"]],
-        &["do", "i", "you", "can", "to", "does", "work"],
+        &[
+            "do", "i", "you", "can", "to", "does", "work", "dont", "know",
+        ],
         &[],
         Intent::Help,
     ),
@@ -127,15 +130,88 @@ pub(super) const RULES: &[Rule] = &[
     ),
     rule(&[&["carry"], &["on"]], &[], &[], Intent::Resume),
     rule(
-        &[
-            &["bring", "turn", "put", "get"],
-            &["sound", "audio", "volume"],
-            &["back"],
-        ],
-        &["on", "up"],
+        &[SOUND, &["back"]],
+        &["bring", "turn", "put", "get", "on", "up"],
         &[],
         Intent::Unmute,
     ),
+    rule(
+        &[
+            &["bring", "turn", "put", "get"],
+            &["back"],
+            &["music", "tunes"],
+        ],
+        &["on"],
+        &[],
+        Intent::Resume,
+    ),
+    rule(&[&["no"], REPEATS], &["more"], &[], Intent::RepeatOff),
+    rule(
+        &[&["no"], &["shuffle", "shuffling"]],
+        &["more"],
+        &[],
+        Intent::ShuffleOff,
+    ),
+    rule(
+        &[&["crank", "bump"]],
+        &["up", "notch", "bit", "little", "tad", "volume", "sound"],
+        &["down"],
+        Intent::VolumeUp,
+    ),
+    rule(
+        &[
+            &["take", "bring", "knock", "turn"],
+            &["down"],
+            &["notch", "tad"],
+        ],
+        &["volume", "sound"],
+        &[],
+        Intent::VolumeDown,
+    ),
+    rule(
+        &[&["hear"], &["nothing"]],
+        &["i", "can"],
+        &[],
+        Intent::VolumeUp,
+    ),
+    rule(
+        &[&["racket", "noise"], &["down"]],
+        &["turn", "keep"],
+        &[],
+        Intent::VolumeDown,
+    ),
+    rule(
+        &[&["dont"], &["make"], &["loud"]],
+        &["so", "too"],
+        &[],
+        Intent::VolumeDown,
+    ),
+    rule(
+        &[&["enough"], &["of"]],
+        &["1", "ive", "had", "i", "have"],
+        &[],
+        Intent::Next,
+    ),
+    rule(
+        &[&["something"], &["else"]],
+        &["play", "put", "on", "hear", "i", "want", "to"],
+        &[],
+        Intent::Next,
+    ),
+    rule(
+        &[&["what"], &["say"]],
+        &["can", "i", "to", "you", "do", "could", "should"],
+        &[],
+        Intent::Help,
+    ),
+    rule(
+        &[&["dont"], &["like"], &["anymore"]],
+        &["i", "really"],
+        &[],
+        Intent::Unlike,
+    ),
+    rule(&[&["stop"], &["already"]], &[], &[], Intent::Stop),
+    rule(&[&["skip", "next"], &["already"]], &[], &[], Intent::Next),
     rule(
         &[&["add", "save", "put"], LIKES],
         &["to", "my", "in", "into", "1", "songs"],
@@ -172,7 +248,7 @@ pub(super) const RULES: &[Rule] = &[
             &["back"],
             &["was", "before"],
         ],
-        &["how", "way", "to"],
+        &["how", "way", "to", "like", "oops"],
         &[],
         Intent::Undo,
     ),
@@ -266,7 +342,9 @@ pub(super) const RULES: &[Rule] = &[
     rule(&[&["run"], &["back"]], &["1"], &[], Intent::SeekTo),
     rule(
         &[&["silence"]],
-        &["i", "need", "want", "some", "please", "bit", "of", "little"],
+        &[
+            "i", "need", "want", "some", "please", "bit", "of", "little", "and", "quiet", "peace",
+        ],
         &[],
         Intent::Pause,
     ),

@@ -28,8 +28,22 @@ const TAKES_BACK: &[&[&str]] = &[
     &["i", "mean"],
     &["or", "rather"],
     &["scratch", "that"],
+    &["sorry", "i", "meant"],
+    &["sorry", "i", "mean"],
+    &["i", "meant"],
     &["actually"],
+    &["sorry"],
     &["no"],
+];
+const SORRY: &str = "sorry";
+const BARE: &[&str] = &[ENGLISH_NO, SORRY];
+const SWITCHES: &[&str] = &[
+    "repeat",
+    "repeating",
+    "loop",
+    "looping",
+    "shuffle",
+    "shuffling",
 ];
 const SECOND_THOUGHT: &[&str] = &["wait", "sorry", "actually"];
 const WAVERS: &[&[&str]] = &[&["хотя"], &["ой"], &["ладно"]];
@@ -121,7 +135,17 @@ struct Mark {
 }
 
 pub fn resolve(text: &str) -> Option<Vec<Tok>> {
-    let versions = versions(&words(text))?;
+    last_said(&words(text), false)
+}
+
+pub fn renamed(text: &str) -> Option<Vec<Tok>> {
+    let ws = words(text);
+    let taken_back = last_said(&ws, true).filter(|said| !said.is_empty())?;
+    (last_said(&ws, false).as_ref() != Some(&taken_back)).then_some(taken_back)
+}
+
+fn last_said(ws: &[String], names_taken_back: bool) -> Option<Vec<Tok>> {
+    let versions = versions(ws, names_taken_back)?;
     Some(versions.into_iter().fold(Vec::new(), merge))
 }
 
@@ -153,7 +177,7 @@ fn negating(ws: &[String], i: usize) -> Option<&'static [&'static str]> {
         .find(|m| starts(ws, i, m) && !polite(m) && !judged(m))
 }
 
-fn versions(ws: &[String]) -> Option<Vec<Version>> {
+fn versions(ws: &[String], names_taken_back: bool) -> Option<Vec<Version>> {
     let mut said: Vec<Version> = Vec::new();
     let mut cur = Version::default();
     let mut dropping = false;
@@ -170,16 +194,20 @@ fn versions(ws: &[String]) -> Option<Vec<Version>> {
         } else if let Some(mark) = marker(ws, i)
             .filter(|m| m.firm || opened(&cur) || held_back(ws, i))
             .filter(|m| !starts_a_name(&cur, ws, i, m.end))
-            .filter(|_| !word_of_a_name(&cur, ws, i))
+            .filter(|m| names_taken_back || !word_of_a_name(&cur, ws, i, m.end))
         {
             found = true;
             dropping = false;
-            let next = Version {
-                words: Vec::new(),
-                marked: true,
-                firm: mark.firm,
-            };
-            said.push(std::mem::replace(&mut cur, next));
+            if cur.marked && cur.words.is_empty() {
+                cur.firm |= mark.firm;
+            } else {
+                let next = Version {
+                    words: Vec::new(),
+                    marked: true,
+                    firm: mark.firm,
+                };
+                said.push(std::mem::replace(&mut cur, next));
+            }
             i = mark.end;
         } else if dropping && resumes(ws, i) {
             dropping = false;
@@ -198,16 +226,17 @@ fn versions(ws: &[String]) -> Option<Vec<Version>> {
 fn starts_a_name(cur: &Version, ws: &[String], at: usize, end: usize) -> bool {
     let lone_verb = matches!(cur.words.as_slice(), [w] if PLAY_STRONG.contains(&w.as_str()));
     let bare_no = end == at + 1;
-    let named = ws[end..].iter().all(|w| !lexicon::is_known(w));
+    let named = ws[at] == SORRY || ws[end..].iter().all(|w| !lexicon::is_known(w));
     lone_verb && bare_no && named
 }
 
-fn word_of_a_name(cur: &Version, ws: &[String], at: usize) -> bool {
+fn word_of_a_name(cur: &Version, ws: &[String], at: usize, end: usize) -> bool {
     let controls = || command(&toks(&cur.words)).is_some_and(|(asked, ..)| asked.is_control());
     let restarts =
         |w: &String| SECOND_THOUGHT.contains(&w.as_str()) || PLAY_STRONG.contains(&w.as_str());
     let rethought = ws.get(at + 1).is_some_and(restarts);
-    ws[at] == ENGLISH_NO && !rethought && !cur.words.is_empty() && !controls()
+    let bare = end == at + 1 && BARE.contains(&ws[at].as_str());
+    bare && !rethought && !cur.words.is_empty() && !controls()
 }
 
 fn opened(cur: &Version) -> bool {
@@ -228,7 +257,7 @@ fn resumes(ws: &[String], i: usize) -> bool {
 }
 
 fn marker(ws: &[String], i: usize) -> Option<Mark> {
-    if intent::absence(ws, i) || worn_out(ws, i) {
+    if intent::absence(ws, i) || worn_out(ws, i) || switched_off(ws, i) {
         return None;
     }
     let takes_back = TAKES_BACK.iter().find(|m| starts(ws, i, m));
@@ -257,6 +286,11 @@ fn held_back(ws: &[String], at: usize) -> bool {
     let rest = &ws[at + 1..];
     let a_while = rest.iter().all(|w| A_MOMENT.contains(&w.as_str()));
     HOLDS.contains(&ws[at].as_str()) && !a_while && controls(&ws[..at]) && controls(rest)
+}
+
+fn switched_off(ws: &[String], at: usize) -> bool {
+    let switch = |w: &String| SWITCHES.contains(&w.as_str());
+    at == 0 && ws[at] == ENGLISH_NO && ws.get(1).is_some_and(switch)
 }
 
 fn worn_out(ws: &[String], at: usize) -> bool {

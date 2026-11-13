@@ -563,3 +563,33 @@ playlist\tWorkout Hits\t\t120000\t
         assert_eq!(heard_in(rows, "turn the volume up on the tv", bare), "none");
     }
 }
+
+#[test]
+fn a_name_taken_back_gives_way_to_the_name_said_after_it() {
+    let rows = "kind\tname\tartist\tpopularity\taliases
+artist\tQueen\t\t50000000\t
+artist\tEminem\t\t60000000\t
+artist\tDrake\t\t78000000\t
+artist\tTaylor Swift\t\t88000000\t
+artist\tNo Doubt\t\t9000000\t
+track\tThunder\tImagine Dragons\t30000000\t
+track\tBeliever\tImagine Dragons\t40000000\t
+track\tNo Woman No Cry\tBob Marley\t20000000\t
+";
+    let said = [
+        ("play eminem uh no queen", "play Queen"),
+        ("play taylor swift no drake", "play Drake"),
+        ("put on drake no no taylor swift", "play Taylor Swift"),
+        (
+            "play believer sorry thunder",
+            "play Imagine Dragons - Thunder",
+        ),
+        ("play no doubt", "play No Doubt"),
+        ("play no woman no cry", "play Bob Marley - No Woman No Cry"),
+    ];
+    for bare in BOTH {
+        for (text, read) in said {
+            assert_eq!(heard_in(rows, text, bare), read, "{text}");
+        }
+    }
+}

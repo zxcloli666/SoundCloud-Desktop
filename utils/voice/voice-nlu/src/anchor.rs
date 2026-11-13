@@ -53,6 +53,7 @@ fn head_ok(head: &[Tok], window: &[Tok], tail: &[Tok]) -> bool {
         DOWN_WORDS.contains(&w) || PAUSE_WORDS.contains(&w) || STOP_WORDS.contains(&w)
     });
     head.len() <= 4
+        && !asks(head, window)
         && !names_the_word(head)
         && !liked_in_passing(head, window)
         && (0..head.len()).all(|at| {
@@ -66,6 +67,13 @@ fn head_ok(head: &[Tok], window: &[Tok], tail: &[Tok]) -> bool {
                 && (!finite(w) || told)
                 && !single_command(&head[at])
         })
+}
+
+fn asks(head: &[Tok], window: &[Tok]) -> bool {
+    let said = |at: usize| head.get(at).map_or("", |t| t.w.as_str());
+    let what_it_does = said(0) == "what" && matches!(said(1), "does" | "do" | "did");
+    let what_it_is_like = matches!(said(0), "what" | "whats" | "how");
+    what_it_does || (what_it_is_like && matches!(window, [only] if only.w == "like"))
 }
 
 const WORD: &[&str] = &["слово", "слова", "словом"];
@@ -215,10 +223,16 @@ const DETERMINERS: &[&str] = &[
     "the", "my", "a", "an", "our", "his", "her", "their", "someone", "somebody",
 ];
 
+const SPEAKER: &[&str] = &["i", "we"];
+const HAS_TO: &[&str] = &["need", "have", "gotta", "got", "must", "cant", "am", "will"];
+
 fn clause_of_its_own(tail: &[Tok]) -> bool {
     let copula = |t: &Tok| COPULAS.contains(&t.w.as_str());
     let opens = DETERMINERS.contains(&tail[0].w.as_str());
-    opens && tail.iter().skip(1).take(4).any(copula)
+    let has_to = |t: &Tok| HAS_TO.contains(&t.w.as_str());
+    let about_the_speaker =
+        SPEAKER.contains(&tail[0].w.as_str()) && tail.get(1).is_some_and(has_to);
+    about_the_speaker || (opens && tail.iter().skip(1).take(4).any(copula))
 }
 
 fn answers_a_call(head: &[Tok], asked: Intent) -> bool {

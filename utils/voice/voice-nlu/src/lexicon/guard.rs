@@ -8,6 +8,8 @@ pub const NEG_FOLLOW: &[&str] = &[
     "будем",
     "нельзя",
     "хватит",
+    "queue",
+    "add",
 ];
 
 pub const NEG_STEMS: &[&str] = &[

@@ -2,6 +2,7 @@ use crate::intent::{self, Negation};
 use crate::kin;
 use crate::lexicon::{self, REMARK_START};
 use crate::normalize::{normalize, words};
+use crate::types::Intent;
 
 const NOT: &str = "не";
 const NO: &str = "нет";
@@ -17,6 +18,8 @@ const ASKED: &[&str] = &[
     "велела",
 ];
 const ASKED_BY: usize = 2;
+const BUT: &str = "but";
+const CONCEDED_BY: usize = 6;
 
 pub fn command_after(text: &str) -> Option<String> {
     let said = words(text);
@@ -25,6 +28,19 @@ pub fn command_after(text: &str) -> Option<String> {
         .or_else(|| after_a_run_of_no(&said))
         .or_else(|| instead_of_the_refused(&said))
         .or_else(|| after_what_was_not_asked(&said))
+        .or_else(|| after_a_concession(&said))
+}
+
+fn after_a_concession(said: &[String]) -> Option<String> {
+    let but = said.iter().position(|w| w == BUT)?;
+    let asks = |said: &[String]| {
+        let text = said.join(" ");
+        let (read, blocked) = crate::parse_toks(&text, normalize(&text).toks);
+        read.intent != Intent::None && !blocked
+    };
+    let rest = &said[but + 1..];
+    let conceded = (1..=CONCEDED_BY).contains(&but) && !asks(&said[..but]);
+    (conceded && asks(rest)).then(|| rest.join(" "))
 }
 
 fn after_a_no(text: &str) -> Option<String> {
