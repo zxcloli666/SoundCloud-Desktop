@@ -197,17 +197,22 @@ fn plain(words: Vec<String>) -> Vec<String> {
 fn without_fillers(words: Vec<String>) -> Vec<String> {
     let filler = |w: &String| lexicon::has(lexicon::FILLERS, w);
     let kept: Vec<bool> = (0..words.len())
-        .map(|at| !filler(&words[at]) || names_a_kind(&words, at))
+        .map(|at| !filler(&words[at]) || is_the_name(&words, at))
         .collect();
     let left = words.into_iter().zip(kept).filter(|(_, kept)| *kept);
     left.map(|(word, _)| word).collect()
 }
 
-fn names_a_kind(words: &[String], at: usize) -> bool {
+fn is_the_name(words: &[String], at: usize) -> bool {
     let filler = |w: &String| lexicon::has(lexicon::FILLERS, w);
     let after_kind = at > 0 && slots::kind_of(&words[at - 1]).is_some();
+    let after_the_verb = at > 0
+        && lexicon::has(lexicon::PLAY_STRONG, &words[at - 1])
+        && words[..at - 1].iter().all(filler);
+    let another_assistant = lexicon::has(lexicon::ASSISTANTS, &words[at]);
     let last = words.get(at + 1).is_none_or(filler);
-    after_kind && last && !lexicon::has(lexicon::NAMELESS, &words[at])
+    let named = after_kind || after_the_verb && another_assistant;
+    named && last && !lexicon::has(lexicon::NAMELESS, &words[at])
 }
 
 fn matches_at(words: &[String], i: usize, phrase: &[&str]) -> bool {

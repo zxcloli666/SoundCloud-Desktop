@@ -170,6 +170,23 @@ fn a_word_usually_left_out_is_the_name_when_it_is_all_that_follows_its_kind() {
 }
 
 #[test]
+fn the_name_of_another_assistant_right_after_the_verb_is_what_to_play() {
+    let named = [
+        ("включи алиса", "алиса"),
+        ("а ну поставь салют", "салют"),
+        ("алиса включи алиса", "алиса"),
+        ("включи джой пожалуйста", "джой"),
+    ];
+    for (text, name) in named {
+        assert_eq!(names(text)[0], name, "{text}");
+    }
+    assert_eq!(names("бибера включи алиса")[0], "бибера");
+    assert_eq!(names("алиса включи"), Vec::<String>::new());
+    let called = names("включи алиса земфиру");
+    assert_eq!(called[0], "земфиру", "{called:?}");
+}
+
+#[test]
 fn a_sound_of_doubt_or_a_polite_word_after_a_kind_is_not_its_name() {
     let unnamed = [
         "включи песню пожалуйста",

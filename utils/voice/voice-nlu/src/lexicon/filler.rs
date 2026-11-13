@@ -74,6 +74,8 @@ pub const FILLERS: &[&str] = &[
     "смотри",
 ];
 
+pub const ASSISTANTS: &[&str] = &["алиса", "маруся", "салют", "джой"];
+
 pub const NAMELESS: &[&str] = &[
     "э",
     "эм",
