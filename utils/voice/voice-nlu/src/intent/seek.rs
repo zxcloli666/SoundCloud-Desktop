@@ -296,7 +296,8 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
     } else {
         c
     };
-    if c.len() > 10 || foreign(c) {
+    let counts_tracks = !t.found && t.bare.is_some() && c.has(TRACKS_COUNTED);
+    if c.len() > 10 || foreign(c) || counts_tracks {
         return None;
     }
     let fwd = c.has(FORWARD);

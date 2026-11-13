@@ -190,17 +190,30 @@ fn joint(title: String, artist: String, kept: bool, lemmatized: bool) -> Variant
     }
 }
 
+const SHORT_NAME: usize = 5;
+const LONG_NAME: usize = 7;
+
 fn spans(out: &mut Vec<Variant>, toks: &[Tok]) {
     let toks: Vec<Tok> = toks.iter().filter(|t| !t.amb).cloned().collect();
     let n = toks.len();
-    let said = toks.iter().filter(|t| !JOINS.contains(&t.w.as_str()));
-    if n < 2 || !(2..=5).contains(&said.count()) {
+    let said = toks
+        .iter()
+        .filter(|t| !JOINS.contains(&t.w.as_str()))
+        .count();
+    if n < 2 || !(2..=LONG_NAME).contains(&said) {
         return;
     }
+    let long = said > SHORT_NAME;
     for len in 1..=3.min(n - 1) {
-        for part in [&toks[..len], &toks[n - len..]] {
+        let ends: &[&[Tok]] = if long {
+            &[&toks[..len]]
+        } else {
+            &[&toks[..len], &toks[n - len..]]
+        };
+        for part in ends.iter().copied() {
             let command = part.iter().any(|t| {
                 crate::lexicon::LIKES_PLURAL.contains(&t.w.as_str())
+                    || (long && crate::lexicon::is_known(&t.w))
                     || crate::intent::detect(std::slice::from_ref(t)).intent
                         != crate::types::Intent::None
             });

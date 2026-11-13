@@ -14,12 +14,15 @@ pub const NEXT_WEAK: &[&str] = &[
     "сменить",
     "next",
     "forward",
+    "change",
+    "switch",
 ];
 pub const PREV_STRONG: &[&str] = &[
     "предыдущ",
     "предидущ",
     "previous",
     "prev",
+    "last",
     "прошл",
     "прошедш",
 ];

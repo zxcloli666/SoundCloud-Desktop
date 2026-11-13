@@ -1,4 +1,5 @@
 pub const BLOCK_HEAD: &[&str] = &[
+    "wish",
     "в",
     "во",
     "на",

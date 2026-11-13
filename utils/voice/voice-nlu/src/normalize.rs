@@ -202,11 +202,15 @@ fn without_fillers(words: Vec<String>) -> Vec<String> {
                 || is_the_name(&words, at)
                 || is_the_place(&words, at)
                 || asks_the_meaning(&words, at);
-            said && !like_before_an_order(&words, at)
+            said && !like_before_an_order(&words, at) && !introduces_a_name(&words, at)
         })
         .collect();
     let left = words.into_iter().zip(kept).filter(|(_, kept)| *kept);
     left.map(|(word, _)| word).collect()
+}
+
+fn introduces_a_name(words: &[String], at: usize) -> bool {
+    at > 0 && at + 1 < words.len() && matches!(words[at].as_str(), "called" | "named" | "titled")
 }
 
 fn like_before_an_order(words: &[String], at: usize) -> bool {

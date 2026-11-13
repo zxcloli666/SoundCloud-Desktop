@@ -17,6 +17,7 @@ pub const UP_WORDS: &[&str] = &[
 ];
 
 pub const DOWN_WORDS: &[&str] = &[
+    "lower",
     "тише",
     "потише",
     "тиши",

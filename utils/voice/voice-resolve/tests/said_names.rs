@@ -538,3 +538,28 @@ artist\tDua Lipa\t\t40000000\t
         "play Workout Hits"
     );
 }
+
+#[test]
+fn a_long_unknown_title_after_a_known_artist_plays_the_artist() {
+    let rows = "kind\tname\tartist\tpopularity\taliases
+artist\tQueen\t\t50000000\t
+artist\tEd Sheeran\t\t45000000\t
+artist\tVolume\t\t18000\t
+playlist\tWorkout\t\t700000\t
+playlist\tWorkout Hits\t\t120000\t
+";
+    let said = [
+        ("play queen another one bites the dust", "play Queen"),
+        (
+            "i want to hear ed sheeran castle on the hill",
+            "play Ed Sheeran",
+        ),
+        ("play workout hits playlist", "play Workout Hits"),
+    ];
+    for bare in BOTH {
+        for (text, read) in said {
+            assert_eq!(heard_in(rows, text, bare), read, "{text}");
+        }
+        assert_eq!(heard_in(rows, "turn the volume up on the tv", bare), "none");
+    }
+}

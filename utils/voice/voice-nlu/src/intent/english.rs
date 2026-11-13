@@ -2,6 +2,8 @@ use super::indirect::{Rule, rule};
 use crate::types::Intent;
 
 const TOO: &[&str] = &["to", "too", "so", "way"];
+const RATHER: &[&str] = &["bit", "little", "kinda", "pretty", "quite", "rather"];
+const ITS_SAID: &[&str] = &["its", "is", "thats", "getting", "a", "in", "here"];
 const ITS: &[&str] = &[
     "its", "is", "thats", "getting", "a", "much", "in", "here", "pretty",
 ];
@@ -21,10 +23,84 @@ pub(super) const RULES: &[Rule] = &[
     rule(
         &[TOO, &["loud", "noisy"]],
         ITS,
-        &["not"],
+        &["not", "why"],
         Intent::VolumeDown,
     ),
-    rule(&[TOO, &["quiet"]], ITS, &["not"], Intent::VolumeUp),
+    rule(
+        &[TOO, &["quiet", "low"]],
+        ITS,
+        &["not", "why"],
+        Intent::VolumeUp,
+    ),
+    rule(
+        &[RATHER, &["loud", "noisy"]],
+        ITS_SAID,
+        &["not", "why"],
+        Intent::VolumeDown,
+    ),
+    rule(
+        &[RATHER, &["quiet", "low"]],
+        ITS_SAID,
+        &["not", "why"],
+        Intent::VolumeUp,
+    ),
+    rule(
+        &[&["what", "whats"], &["called"]],
+        &["is"],
+        &[],
+        Intent::NowPlaying,
+    ),
+    rule(
+        &[&["name", "title"], &["of"]],
+        &["tell", "me", "give"],
+        &[],
+        Intent::NowPlaying,
+    ),
+    rule(&[&["getting"], &["old"]], &["is", "its"], &[], Intent::Next),
+    rule(
+        &[&["dont"], &["like"]],
+        &["i", "really", "at", "all"],
+        &[],
+        Intent::Next,
+    ),
+    rule(
+        &[&["another"]],
+        &["play", "put", "on", "1", "give", "me", "gimme"],
+        &[],
+        Intent::Next,
+    ),
+    rule(
+        &[&["different"]],
+        &["a", "play", "put", "on", "something", "1"],
+        &[],
+        Intent::Next,
+    ),
+    rule(&[&["restore"], SOUND], &[], &[], Intent::Unmute),
+    rule(&[&["mix"], &["up"]], &["things"], &[], Intent::ShuffleOn),
+    rule(
+        &[&["play", "put"], &["whatever", "anything"]],
+        &["on", "you", "want"],
+        &[],
+        Intent::PlayWave,
+    ),
+    rule(
+        &[&["random"], &["order"]],
+        &["in", "play", "put", "on"],
+        &[],
+        Intent::ShuffleOn,
+    ),
+    rule(
+        &[&["stop", "quit"], &["shuffling"]],
+        &[],
+        &[],
+        Intent::ShuffleOff,
+    ),
+    rule(
+        &[&["how"], &["use"]],
+        &["do", "i", "you", "can", "to", "does", "work"],
+        &[],
+        Intent::Help,
+    ),
     rule(
         &[&["not"], &["again"]],
         &["oh", "god", "please"],
@@ -91,7 +167,11 @@ pub(super) const RULES: &[Rule] = &[
         Intent::NowPlaying,
     ),
     rule(
-        &[&["put", "change", "set"], &["back"], &["was", "before"]],
+        &[
+            &["put", "change", "set", "go"],
+            &["back"],
+            &["was", "before"],
+        ],
         &["how", "way", "to"],
         &[],
         Intent::Undo,
@@ -109,6 +189,7 @@ pub(super) const RULES: &[Rule] = &[
             "use",
             "say",
             "understand",
+            "know",
         ],
         &[],
         Intent::Help,

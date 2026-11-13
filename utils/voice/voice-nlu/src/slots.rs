@@ -32,10 +32,9 @@ fn kind_name_reading(rest: &[Tok]) -> Option<(Option<Kind>, Raw)> {
     let before_a_name = (0..rest.len().saturating_sub(1))
         .rev()
         .find(|&i| kind(i) && !kind(i + 1));
-    let after_a_name = rest
-        .len()
-        .checked_sub(1)
-        .filter(|&i| i > 0 && kind(i) && !kind(i - 1));
+    let after_a_name = (1..rest.len())
+        .find(|&i| kind(i) && !kind(i - 1))
+        .filter(|&i| (i..rest.len()).all(kind));
     let first = before_a_name.or(after_a_name)?;
     let mut hint = None;
     let mut kept: Vec<Tok> = Vec::new();
@@ -68,7 +67,7 @@ pub(crate) fn kind_of(w: &str) -> Option<Kind> {
 
 const ENGLISH_EDGE: &[&str] = &[
     "you", "me", "for", "now", "right", "man", "dude", "bro", "some", "just", "maybe", "really",
-    "like", "whatever", "know", "that", "new", "latest", "thing", "stuff",
+    "like", "whatever", "know", "that", "new", "latest", "thing", "stuff", "a", "bit", "of",
 ];
 const ANYTHING: &[&str] = &["чтонибудь", "чтото", "something", "anything"];
 

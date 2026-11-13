@@ -264,6 +264,22 @@ fn worn_out(ws: &[String], at: usize) -> bool {
     ws[at] == "нет" && near.iter().any(|w| w == "сил")
 }
 
+const STATES: &[&str] = &["on", "off"];
+
+fn other_state(said: &[Tok], next: &[Tok]) -> Option<Vec<Tok>> {
+    let [state] = next else {
+        return None;
+    };
+    let state_word = |t: &Tok| STATES.contains(&t.w.as_str());
+    let at = said
+        .iter()
+        .rposition(state_word)
+        .filter(|_| state_word(state))?;
+    let mut switched = said.to_vec();
+    switched[at] = state.clone();
+    Some(switched)
+}
+
 fn merge(said: Vec<Tok>, version: Version) -> Vec<Tok> {
     if !version.marked {
         return toks(&version.words);
@@ -296,6 +312,9 @@ fn merge(said: Vec<Tok>, version: Version) -> Vec<Tok> {
     }
     if command(&said).is_some() && intent::detect(&next).intent == Intent::Undo {
         return Vec::new();
+    }
+    if let Some(switched) = other_state(&said, &next) {
+        return switched;
     }
     if let Some(same_command) = reworded::part(&said, &next) {
         return same_command;

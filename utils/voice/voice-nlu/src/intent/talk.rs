@@ -175,8 +175,27 @@ fn said_in_english_to_someone(c: &Ctx) -> bool {
     let muted_mic = c.has(&["mute", "muted"]) && c.has(&["on"]) && c.has(YOU_ARE);
     let hears_us = (1..c.len()).any(|i| c.w[i - 1] == "hear" && TO_US.contains(&c.w[i]));
     let asked_if_heard = c.has(&["hear", "heard"]) && matches!(c.at(0), "did" | "have");
-    passed_on || muted_mic || hears_us || asked_if_heard
+    let another_thing = c.has(THINGS) && !c.has(PLAY_STRONG);
+    let asks_you = c.at(0) == "do" && c.at(1) == "you" && YOUR_MIND.contains(&c.at(2));
+    let asked = ASKED_FIRST.contains(&c.at(0)) || asks_you;
+    passed_on || muted_mic || hears_us || asked_if_heard || another_thing || asked
 }
+
+const THINGS: &[&str] = &[
+    "phone",
+    "tv",
+    "telly",
+    "laptop",
+    "computer",
+    "tablet",
+    "mic",
+    "microphone",
+    "headphones",
+];
+const ASKED_FIRST: &[&str] = &[
+    "did", "does", "why", "was", "were", "has", "had", "should", "shall", "is", "are", "am",
+];
+const YOUR_MIND: &[&str] = &["want", "think", "know", "like", "hear"];
 
 fn question_with_its_own_verb(c: &Ctx) -> bool {
     let Some(at) = c.pos(WHICH) else {

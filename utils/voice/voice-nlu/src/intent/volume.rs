@@ -56,7 +56,7 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
         let value = if stepped {
             None
         } else if let Some(v) = number {
-            let tenths = (1..=10).contains(&v) && !c.has_stem(&["процент"]);
+            let tenths = (1..=10).contains(&v) && !c.has_stem(&["процент", "percent"]);
             Some(if tenths { v * 10 } else { v.min(100) })
         } else if half {
             Some(50)

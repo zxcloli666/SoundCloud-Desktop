@@ -48,6 +48,7 @@ pub const PLAY_STRONG: &[&str] = &[
     "воспроизвести",
     "play",
     "gimme",
+    "blast",
     "put",
     "start",
     "listen",

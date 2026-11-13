@@ -191,7 +191,7 @@ pub fn remark_after(tail: &[Tok], window: &[Tok]) -> bool {
     if tail.len() > 8 || (BLOCK_TAIL.contains(&w) && !someone) || kin::ordered_to(window, tail) {
         return false;
     }
-    let remark = TAIL_REMARK.contains(&w) || kin::kin(w) || someone;
+    let remark = TAIL_REMARK.contains(&w) || kin::kin(w) || someone || clause_of_its_own(tail);
     let transitive = window.iter().any(|t| OBJECT_VERBS.contains(&t.w.as_str()));
     let denied = transitive && tail.iter().any(|t| DENY.contains(&t.w.as_str()));
     let object = window.iter().any(|t| lexicon::stem(PLAYER, &t.w));
@@ -208,6 +208,17 @@ pub fn remark_after(tail: &[Tok], window: &[Tok]) -> bool {
     let praise = tail.len() >= 2 && lexicon::KIND_TRACK.contains(&last_tail.w.as_str());
     let finite = tail.len() >= 2 && finite(&last_tail.w);
     praise || (finite && (!transitive || object))
+}
+
+const COPULAS: &[&str] = &["is", "are"];
+const DETERMINERS: &[&str] = &[
+    "the", "my", "a", "an", "our", "his", "her", "their", "someone", "somebody",
+];
+
+fn clause_of_its_own(tail: &[Tok]) -> bool {
+    let copula = |t: &Tok| COPULAS.contains(&t.w.as_str());
+    let opens = DETERMINERS.contains(&tail[0].w.as_str());
+    opens && tail.iter().skip(1).take(4).any(copula)
 }
 
 fn answers_a_call(head: &[Tok], asked: Intent) -> bool {

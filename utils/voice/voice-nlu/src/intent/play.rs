@@ -74,7 +74,7 @@ pub fn forced(c: &Ctx) -> bool {
     let after: Vec<&str> = c.w[k + 1..]
         .iter()
         .copied()
-        .filter(|w| !PRE.contains(w) && !GREETINGS.contains(w) || addresses(w))
+        .filter(|w| !PRE.contains(w) && !GREETINGS.contains(w) && *w != "again" || addresses(w))
         .collect();
     if after.is_empty() {
         return false;

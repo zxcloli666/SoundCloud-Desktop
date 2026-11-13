@@ -64,6 +64,8 @@ pub const ONE_AND_HALF: &[&str] = &["полторы", "полтора"];
 
 pub const ROUGHLY: &[&str] = &["примерно", "приблизительно", "около", "гдето", "этак"];
 
+pub const TRACKS_COUNTED: &[&str] = &["song", "songs", "track", "tracks"];
+
 pub const SLIGHTLY: &[&str] = &[
     "чуть",
     "немного",

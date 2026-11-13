@@ -66,7 +66,7 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
     }
     if let Some(i) = c.pos_stem(PREV_STRONG).filter(|_| !c.has_stem(NEXT_STRONG)) {
         let mut said = base(c, i);
-        said.extend(c.all(&["back", "to"]));
+        said.extend(c.all(&["back", "to", "again"]));
         if c.stray(&said) == 0 {
             return Some(Detected::new(Intent::Previous, vec![i]));
         }
