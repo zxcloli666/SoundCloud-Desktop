@@ -36,6 +36,7 @@ pub fn parse(text: &str, names: &Names) -> Vec<Parsed> {
     let fixed = correct::resolve(text_in).filter(|_| !intent::retold(&normalize(text_in).toks));
     let corrected = fixed.is_some();
     let toks = recall::named(names.drop(fixed.unwrap_or_else(|| normalize(text_in).toks)));
+    let ordered = toks.first().is_some_and(|t| t.w == FIRST);
     let toks = &without_order_word(toks);
     let mut whole = parse_toks(text, toks.to_vec()).0;
     if intent::lyric(toks) {
@@ -80,6 +81,9 @@ pub fn parse(text: &str, names: &Names) -> Vec<Parsed> {
         whole.alt = crate::whole_name(&names.drop(normalize(text_in).toks)).queries;
     }
     whole.split = entity_splits(toks, text);
+    if ordered && whole.intent == Intent::None {
+        whole.split.extend(named_in_order(toks, text));
+    }
     if whole.intent == Intent::Play {
         whole
             .split
@@ -331,6 +335,13 @@ fn shared_verb(toks: &[Tok], text: &str, queue: bool) -> Option<Parsed> {
         Intent::Play
     };
     Some(p)
+}
+
+fn named_in_order(toks: &[Tok], text: &str) -> Option<Vec<Parsed>> {
+    let then = toks.iter().position(|t| THEN.contains(&t.w.as_str()))?;
+    let first = shared_verb(&toks[..then], text, false)?;
+    let next = shared_verb(&toks[then + 1..], text, true)?;
+    Some(vec![first, next])
 }
 
 fn entity_splits(toks: &[Tok], text: &str) -> Vec<Vec<Parsed>> {

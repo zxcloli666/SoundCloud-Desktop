@@ -157,3 +157,15 @@ fn a_name_said_twice_in_a_row_is_asked_once() {
         assert!(!step.bare && step.queries.is_empty(), "{text}");
     }
 }
+
+#[test]
+fn names_said_in_order_without_a_verb_may_be_played_and_queued() {
+    let said = &read("сначала скриптонит потом макс корж")[0];
+    assert_eq!(said.intent.name(), "none");
+    let steps: Vec<(&str, &str)> = said.split[0]
+        .iter()
+        .map(|p| (p.intent.name(), p.queries[0].text.as_str()))
+        .collect();
+    assert_eq!(steps, [("play", "скриптонит"), ("queue_add", "макс корж")]);
+    assert!(read("скриптонит потом макс корж")[0].split.is_empty());
+}
