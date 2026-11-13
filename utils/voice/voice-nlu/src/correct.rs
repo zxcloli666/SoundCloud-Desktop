@@ -11,6 +11,7 @@ use crate::steps::{self, Side};
 use crate::types::{Intent, Parsed};
 
 const TAKES_BACK: &[&[&str]] = &[
+    &["on", "second", "thought"],
     &["или", "нет"],
     &["а", "нет"],
     &["ой", "нет"],

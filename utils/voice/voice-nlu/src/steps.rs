@@ -15,7 +15,8 @@ const HARD: &[&str] = &["и", "and"];
 const SOFT: &[&str] = &["потом", "затем", "следом", "then", "только"];
 const AFTER: &[&str] = &["него", "этого", "нее", "нее"];
 const BEHIND: &[&str] = &["ним", "ней", "этим"];
-const AFTER_THAT: &[&str] = &["that", "this", "it"];
+const AFTER_THAT: &[&str] = &["that", "this", "it", "him", "her", "them"];
+const NEXT: &str = "next";
 const FIRST: &str = "сначала";
 const ALSO: &str = "еще";
 const THEN: &[&str] = &["потом", "затем", "следом", "then"];
@@ -115,7 +116,10 @@ fn without_order_word(mut toks: Vec<Tok>) -> Vec<Tok> {
 fn link(toks: &[Tok], i: usize) -> Option<Link> {
     let w = toks[i].w.as_str();
     let next = toks.get(i + 1).map(|t| t.w.as_str()).unwrap_or("");
-    let (len, soft, also) = if HARD.contains(&w) {
+    let names_the_next = w == "and" && next == NEXT && i + 2 < toks.len();
+    let (len, soft, also) = if names_the_next {
+        (2, true, false)
+    } else if HARD.contains(&w) {
         (1, false, false)
     } else if SOFT.contains(&w) {
         (1, true, false)
@@ -156,7 +160,7 @@ fn linked(toks: &[Tok], text: &str, inherit: bool) -> Option<Vec<Parsed>> {
         let joins = |at: usize| link(toks, at).filter(|l| !l.also);
         while start < toks.len() && (joins(start).is_some() || toks[start].w == FIRST) {
             soft |= joins(start).is_some_and(|l| l.soft);
-            start += 1;
+            start += joins(start).map_or(1, |l| l.len);
         }
         if start >= toks.len() {
             continue;

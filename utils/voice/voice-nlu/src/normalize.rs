@@ -35,9 +35,9 @@ pub fn normalize(input: &str) -> Normalized {
         words.extend(fixed.split_whitespace().map(str::to_string));
     }
     let words = plain(apply_phrases(repair::stutter(repair::glue(words))));
-    let words = without_a_closing_already(words);
+    let words = queued_after_this(without_a_closing_already(words));
     let words = numbers::out_of_ten(numbers::merge(&numbers::colloquial(words), false));
-    let words = drop_swears(dedupe(said_once(without_fillers(words))));
+    let words = had_enough(drop_swears(dedupe(said_once(without_fillers(words)))));
     let toks: Vec<Tok> = words
         .into_iter()
         .map(|w| Tok {
@@ -162,6 +162,45 @@ fn without_a_closing_already(mut words: Vec<String>) -> Vec<String> {
         words.pop();
     }
     words
+}
+
+const AFTER_THIS: &[&[&str]] = &[
+    &["after", "this", "1"],
+    &["after", "this", "song"],
+    &["after", "this", "track"],
+    &["after", "this"],
+];
+const ASKS_FOR_MUSIC: &[&str] = &["add", "play", "put", "queue"];
+const QUEUE: &str = "queue";
+const STOP: &str = "stop";
+
+fn queued_after_this(mut words: Vec<String>) -> Vec<String> {
+    let asks_for_music = words
+        .first()
+        .is_some_and(|w| ASKS_FOR_MUSIC.contains(&w.as_str()));
+    let closing = AFTER_THIS.iter().find(|said| closes_with(&words, said));
+    if let Some(said) = closing.filter(|_| asks_for_music) {
+        words.truncate(words.len() - said.len());
+        words.push(QUEUE.to_string());
+    }
+    words
+}
+
+fn closes_with(words: &[String], said: &[&str]) -> bool {
+    let named = words.len() > said.len() + 1;
+    named
+        && words
+            .iter()
+            .rev()
+            .zip(said.iter().rev())
+            .all(|(w, s)| w == s)
+}
+
+fn had_enough(words: Vec<String>) -> Vec<String> {
+    match words.as_slice() {
+        [only] if only == lexicon::ENOUGH => vec![STOP.to_string()],
+        _ => words,
+    }
 }
 
 fn apply_phrases(words: Vec<String>) -> Vec<String> {

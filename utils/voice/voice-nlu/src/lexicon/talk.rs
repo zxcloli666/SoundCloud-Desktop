@@ -129,6 +129,7 @@ pub const DESCRIBING: &[&str] = &[
 ];
 
 pub const FED_UP: &[&str] = &["хватит", "невмоготу"];
+pub const ENOUGH: &str = "enough";
 
 pub const TIME_SPANS: &[&str] = &[
     "весь",

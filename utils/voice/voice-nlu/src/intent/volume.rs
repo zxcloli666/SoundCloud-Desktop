@@ -4,7 +4,10 @@ use crate::types::Intent;
 
 const GIVE_BACK: &[&str] = &["верни", "вернуть", "возвращай"];
 const AS_IT_IS: &[&str] = &["сейчас", "было", "есть", "раньше"];
-const SET_TO: &[&str] = &["set", "it", "to", "a", "at", "percent"];
+const SET_TO: &[&str] = &["set", "turn", "make", "it", "to", "a", "at", "percent"];
+const SETS: &[&str] = &["set", "turn", "make"];
+const QUARTER: &str = "quarter";
+const PERCENT: &str = "percent";
 
 fn than_it_is(c: &Ctx) -> Vec<usize> {
     match c.pos(&["чем"]) {
@@ -59,6 +62,8 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
         } else if let Some(v) = number {
             let tenths = (1..=10).contains(&v) && !c.has_stem(&["процент", "percent"]);
             Some(if tenths { v * 10 } else { v.min(100) })
+        } else if c.w.windows(2).any(|said| said == ["a", QUARTER]) {
+            Some(25)
         } else if half {
             Some(50)
         } else if max {
@@ -157,8 +162,10 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
     let to_a_level = (0..c.len())
         .any(|i| c.w[i] == "to" && (level(i + 1) || (c.at(i + 1) == "a" && level(i + 2))));
     let set_to = |w: &&str| SET_TO.contains(w) || crate::numbers::is_number(w);
-    let only_set = c.has(&["set"]) && c.w.iter().all(set_to);
-    if (c.has(&["до"]) || to_a_level) && (up || down || noun.is_some() || only_set) {
+    let only_set = c.has(SETS) && c.w.iter().all(set_to);
+    let in_percent = (1..c.len()).any(|i| c.w[i] == PERCENT && level(i - 1));
+    if (c.has(&["до"]) || to_a_level || in_percent) && (up || down || noun.is_some() || only_set)
+    {
         if let Some(v) = number.or(max.then_some(100)) {
             return Some(Detected::new(Intent::VolumeSet, vec![]).number(v.min(100)));
         }

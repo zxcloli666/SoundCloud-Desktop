@@ -72,7 +72,7 @@ const ENGLISH_EDGE: &[&str] = &[
     "greatest",
 ];
 const ANYTHING: &[&str] = &["чтонибудь", "чтото", "something", "anything"];
-const OWNED: &[&str] = &["hits", "songs", "tracks"];
+const OWNED: &[&str] = &["hits", "songs", "tracks", "stuff", "music"];
 
 fn edge_noise(t: &Tok) -> bool {
     t.amb

@@ -193,6 +193,65 @@ pub(super) const RULES: &[Rule] = &[
         Intent::Next,
     ),
     rule(
+        &[&["need", "want"], &["music", "tunes"]],
+        &["i", "some", "right", "now", "here", "in"],
+        &["dont", "not", "no"],
+        Intent::PlayWave,
+    ),
+    rule(
+        &[
+            &["play", "put"],
+            &["what", "stuff", "songs", "tracks", "things", "music"],
+            &["i"],
+            &["like", "liked", "love"],
+        ],
+        &["on", "some", "of", "ive"],
+        &[],
+        Intent::PlayLikes,
+    ),
+    rule(
+        &[
+            &["something", "anything", "more"],
+            &["like"],
+            &["this", "that", "it", "playing"],
+        ],
+        &[
+            "play", "me", "some", "what", "is", "whats", "1", "right", "now", "on",
+        ],
+        &["i", "dont", "not"],
+        Intent::PlaySimilar,
+    ),
+    rule(
+        &[&["what"], &["you"], &["know"], &["do"]],
+        &["how", "to", "can"],
+        &[],
+        Intent::Help,
+    ),
+    rule(
+        &[&["heart"], &["this", "it", "that"]],
+        &["1"],
+        &[],
+        Intent::Like,
+    ),
+    rule(
+        &[&["1", "song", "track"], &["before"], &["this"]],
+        &["play", "go", "to", "back", "1"],
+        &[],
+        Intent::Previous,
+    ),
+    rule(
+        &[&["twice"], &["loud"]],
+        &["make", "as"],
+        &[],
+        Intent::VolumeUp,
+    ),
+    rule(
+        &[&["silent"], &["want", "need", "make", "go", "be"]],
+        &["i", "to"],
+        &[],
+        Intent::Mute,
+    ),
+    rule(
         &[&["something"], &["else"]],
         &["play", "put", "on", "hear", "i", "want", "to"],
         &[],

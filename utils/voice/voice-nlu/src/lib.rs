@@ -125,7 +125,8 @@ pub(crate) fn parse_toks(text: &str, mut toks: Vec<Tok>) -> (Parsed, bool) {
         && toks.len() <= 8
         && !toks.iter().all(greets)
         && !edge(toks.first())
-        && !edge(toks.last());
+        && !edge(toks.last())
+        && toks.first().is_none_or(|t| t.w != lexicon::ENOUGH);
     let queries = if det.intent == Intent::None && !bare {
         Vec::new()
     } else {

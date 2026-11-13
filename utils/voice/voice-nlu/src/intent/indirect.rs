@@ -489,7 +489,11 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
                 || PRE.contains(w)
         });
         if covered {
-            let d = Detected::new(r.intent, vec![]);
+            let said = match r.intent {
+                Intent::PlaySimilar => (0..c.len()).collect(),
+                _ => vec![],
+            };
+            let d = Detected::new(r.intent, said);
             return Some(match r.intent {
                 Intent::SeekTo => d.number(0),
                 Intent::VolumeSet => d.number(100),

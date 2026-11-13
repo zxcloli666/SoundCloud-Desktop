@@ -40,6 +40,8 @@ pub const WAVE_NEEDS_VERB: &[&str] = &[
     "something",
     "anything",
     "music",
+    "tunes",
+    "new",
     "random",
     "surprise",
     "удиви",

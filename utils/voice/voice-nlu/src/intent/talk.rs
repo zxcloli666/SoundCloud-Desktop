@@ -175,12 +175,16 @@ fn said_in_english_to_someone(c: &Ctx) -> bool {
     let muted_mic = c.has(&["mute", "muted"]) && c.has(&["on"]) && c.has(YOU_ARE);
     let hears_us = (1..c.len()).any(|i| c.w[i - 1] == "hear" && TO_US.contains(&c.w[i]));
     let asked_if_heard = c.has(&["hear", "heard"]) && matches!(c.at(0), "did" | "have");
-    let another_thing = c.has(THINGS) && !c.has(PLAY_STRONG);
+    let another_thing = c.has(THINGS) && !c.has(PLAY_STRONG) && !told_after_an_order(c);
     let asks_you = c.at(0) == "do" && c.at(1) == "you" && YOUR_MIND.contains(&c.at(2));
     let asked = ASKED_FIRST.contains(&c.at(0)) || asks_you;
     let how_to = c.at(0) == "how" && HOW_TO.contains(&c.at(1)) && !c.has(&["use"]);
-    let said_aside =
-        comes_back(c) || left_unsaid(c) || plays_an_instrument(c) || best_way(c) || how_to;
+    let said_aside = comes_back(c)
+        || left_unsaid(c)
+        || plays_an_instrument(c)
+        || best_way(c)
+        || how_to
+        || asks_about_it(c);
     passed_on || muted_mic || hears_us || asked_if_heard || another_thing || asked || said_aside
 }
 
@@ -203,6 +207,24 @@ fn plays_an_instrument(c: &Ctx) -> bool {
 fn best_way(c: &Ctx) -> bool {
     c.w.windows(2).any(|said| said == ["best", "way"])
 }
+
+fn told_after_an_order(c: &Ctx) -> bool {
+    let does = |at: usize| matches!(c.at(at), "is" | "are");
+    (2..c.len()).any(|at| THINGS.contains(&c.w[at]) && c.w[at - 1] == "the" && does(at + 1))
+}
+
+fn asks_about_it(c: &Ctx) -> bool {
+    let what_it_is = matches!(
+        c.w.as_slice(),
+        ["what", "is", named] | ["whats", named] if SWITCHES.contains(named)
+    );
+    let who_did = c.at(0) == "who" && c.at(1).ends_with("ed");
+    let how_much = c.at(0) == "how" && HOW_MUCH.contains(&c.at(1));
+    what_it_is || who_did || how_much
+}
+
+const SWITCHES: &[&str] = &["shuffle", "repeat", "loop", "mute", "autoplay"];
+const HOW_MUCH: &[&str] = &["loud", "quiet"];
 
 const HOW_TO: &[&str] = &["do", "can", "to", "does", "would", "should"];
 const OPEN_ENDS: &[&str] = &["is", "was", "are", "were"];

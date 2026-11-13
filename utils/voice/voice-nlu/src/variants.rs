@@ -298,7 +298,8 @@ fn enumerate(out: &mut Vec<Variant>, toks: &[Tok]) {
 const OWNER_MIN: usize = 3;
 
 fn owner(toks: &[Tok]) -> Option<String> {
-    let (last, before) = toks.split_last()?;
+    let sure: Vec<&Tok> = toks.iter().filter(|t| !t.amb).collect();
+    let (last, before) = sure.split_last()?;
     let latin = last.w.chars().all(|c| c.is_ascii_lowercase());
     let name = last.w.strip_suffix('s').filter(|_| latin)?;
     if name.len() < OWNER_MIN || name.ends_with('s') {

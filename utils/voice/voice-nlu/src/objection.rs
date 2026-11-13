@@ -19,7 +19,10 @@ const ASKED: &[&str] = &[
 ];
 const ASKED_BY: usize = 2;
 const BUT: &str = "but";
-const CONCEDED_BY: usize = 6;
+const CONCEDED_BY: usize = 8;
+const ASKS_YOU: &[&str] = &["could", "can", "would", "will"];
+const YOU: &str = "you";
+const LEAD_IN_FROM: usize = 3;
 
 pub fn command_after(text: &str) -> Option<String> {
     let said = words(text);
@@ -29,18 +32,31 @@ pub fn command_after(text: &str) -> Option<String> {
         .or_else(|| instead_of_the_refused(&said))
         .or_else(|| after_what_was_not_asked(&said))
         .or_else(|| after_a_concession(&said))
+        .or_else(|| after_a_lead_in(&said))
 }
 
 fn after_a_concession(said: &[String]) -> Option<String> {
     let but = said.iter().position(|w| w == BUT)?;
-    let asks = |said: &[String]| {
-        let text = said.join(" ");
-        let (read, blocked) = crate::parse_toks(&text, normalize(&text).toks);
-        read.intent != Intent::None && !blocked
-    };
     let rest = &said[but + 1..];
-    let conceded = (1..=CONCEDED_BY).contains(&but) && !asks(&said[..but]);
-    (conceded && asks(rest)).then(|| rest.join(" "))
+    let conceded = (1..=CONCEDED_BY).contains(&but) && ordered(&said[..but]).is_none();
+    (conceded && ordered(rest).is_some()).then(|| rest.join(" "))
+}
+
+fn after_a_lead_in(said: &[String]) -> Option<String> {
+    let asks_you = |at: &usize| {
+        ASKS_YOU.contains(&said[*at].as_str()) && said.get(at + 1).is_some_and(|w| w == YOU)
+    };
+    let at = (LEAD_IN_FROM..said.len()).find(asks_you)?;
+    let (lead_in, rest) = said.split_at(at);
+    let to_someone = lead_in.iter().any(|w| kin::kin(w));
+    let names_music = ordered(rest).is_some_and(|intent| intent.needs_entity());
+    (!to_someone && ordered(lead_in).is_none() && names_music).then(|| rest.join(" "))
+}
+
+fn ordered(said: &[String]) -> Option<Intent> {
+    let text = said.join(" ");
+    let (read, blocked) = crate::parse_toks(&text, normalize(&text).toks);
+    (read.intent != Intent::None && !blocked).then_some(read.intent)
 }
 
 fn after_a_no(text: &str) -> Option<String> {

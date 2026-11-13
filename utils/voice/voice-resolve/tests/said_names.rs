@@ -601,6 +601,7 @@ artist\tDrake\t\t78000000\t
 artist\tDrake Bell\t\t300000\t
 artist\tDrakeo\t\t200000\t
 artist\tTaylor Swift\t\t88000000\t
+artist\tQueen\t\t40000000\t
 artist\tQueens of the Stone Age\t\t9000000\t
 track\tOne Dance\tDrake\t55000000\t
 track\tHotline Bling\tDrake\t50000000\t
@@ -622,6 +623,8 @@ track\tNo One Knows\tQueens of the Stone Age\t8000000\t
             "play queens of the stone age",
             "play Queens of the Stone Age",
         ),
+        ("play some queens songs", "play Queen"),
+        ("play some of drakes stuff", "play Drake"),
     ];
     for bare in BOTH {
         for (text, read) in said {
