@@ -1,9 +1,10 @@
 use std::collections::HashMap;
 use std::sync::OnceLock;
-use voice_nlu::{Kind, Variant, fold};
+use voice_nlu::{Kind, Parsed, Variant, fold, lemma};
 
 const DATA: &str = include_str!("../data/aliases.tsv");
 const SAME_WORD: f32 = 0.85;
+const SAID_WORDS: usize = 6;
 const VERSIONS: &[&str] = &[
     "караоке",
     "пиано",
@@ -25,6 +26,7 @@ const VERSIONS: &[&str] = &[
 struct Alias {
     canonical: String,
     kind: Kind,
+    words: usize,
 }
 
 fn table() -> &'static HashMap<String, Vec<Alias>> {
@@ -46,6 +48,7 @@ fn table() -> &'static HashMap<String, Vec<Alias>> {
             map.entry(key).or_default().push(Alias {
                 canonical: cols[1].trim().to_string(),
                 kind,
+                words: word_count(cols[0]),
             });
         }
         map
@@ -99,9 +102,66 @@ fn with_rest(v: &Variant, canonical: &str, rest: &str) -> Variant {
     )
 }
 
+fn named_as_said(parsed: &Parsed, out: &mut Vec<Variant>) {
+    let words: Vec<String> = parsed.heard.split_whitespace().map(bare).collect();
+    for len in (1..=SAID_WORDS.min(words.len())).rev() {
+        for span in words.windows(len) {
+            let mut forms: Vec<String> = (0..=2).map(|by| lemmatized(span, by)).collect();
+            forms.dedup();
+            let said = span.join(" ");
+            let count = Some(word_count(&said));
+            let mut named = Vec::new();
+            for form in forms {
+                named_by(&as_said(form.clone()), &fold(&form), count, &mut named);
+            }
+            if !named.is_empty() && cut_from(&said, &parsed.normalized) {
+                out.extend(named);
+            }
+        }
+    }
+}
+
+fn word_count(text: &str) -> usize {
+    let words = text.split(|c: char| !c.is_alphanumeric());
+    words.filter(|word| !word.is_empty()).count()
+}
+
+fn bare(word: &str) -> String {
+    let word = word.trim_matches(|c: char| !c.is_alphanumeric());
+    word.to_lowercase()
+}
+
+fn lemmatized(words: &[String], strategy: u8) -> String {
+    let words: Vec<String> = words.iter().map(|w| lemma(w, strategy)).collect();
+    words.join(" ")
+}
+
+fn cut_from(said: &str, cleaned: &str) -> bool {
+    let left = voice_nlu::normalize(said).text;
+    let cut = fold(&left) != fold(said);
+    cut && !left.is_empty() && format!(" {cleaned} ").contains(&format!(" {left} "))
+}
+
+fn as_said(text: String) -> Variant {
+    Variant {
+        text,
+        artist: None,
+        title: None,
+        kept_fillers: false,
+        lemmatized: false,
+        fallback: false,
+        alias_kind: None,
+    }
+}
+
 fn named_whole(v: &Variant, out: &mut Vec<Variant>) {
-    let said = fold(&v.text);
-    for a in table().get(&said).into_iter().flatten() {
+    named_by(v, &fold(&v.text), None, out);
+}
+
+fn named_by(v: &Variant, said: &str, words: Option<usize>, out: &mut Vec<Variant>) {
+    let fits = |count: usize| words.is_none_or(|said| said == count);
+    let rows = table().get(said).into_iter().flatten();
+    for a in rows.filter(|a| fits(a.words)) {
         match track_parts(&a.canonical) {
             Some((artist, title)) if a.kind != Kind::Artist => {
                 out.push(titled(v, a, artist, title))
@@ -109,7 +169,8 @@ fn named_whole(v: &Variant, out: &mut Vec<Variant>) {
             _ => out.push(aliased(v, a.kind, a.canonical.clone(), None)),
         }
     }
-    if let Some(own) = artists().get(&said) {
+    let own = artists().get(said);
+    if let Some(own) = own.filter(|own| fits(word_count(own))) {
         out.push(aliased(v, Kind::Artist, own.to_string(), None));
     }
 }
@@ -162,12 +223,14 @@ fn disabled() -> bool {
     *OFF.get_or_init(|| std::env::var_os("VOICE_NO_CURATED").is_some())
 }
 
-pub fn expand(variants: &[Variant]) -> Vec<Variant> {
+pub fn expand(parsed: &Parsed) -> Vec<Variant> {
+    let variants = &parsed.queries;
     if disabled() {
         return variants.to_vec();
     }
     let mut whole = Vec::new();
     let mut in_part = Vec::new();
+    named_as_said(parsed, &mut whole);
     for v in variants.iter().filter(|v| v.alias_kind.is_none()) {
         named_whole(v, &mut whole);
         named_in_part(v, &mut in_part);

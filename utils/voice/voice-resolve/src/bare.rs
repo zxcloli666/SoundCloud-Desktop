@@ -95,6 +95,6 @@ fn certain(parsed: &Parsed, hit: &Entity) -> bool {
 
 fn credited(parsed: &Parsed, hit: &Entity) -> bool {
     let keys = Keys::new(hit);
-    let said = QueryKeys::list(&alias::expand(&parsed.queries));
+    let said = QueryKeys::list(&alias::expand(parsed));
     said.iter().any(|query| keys.credited(query))
 }

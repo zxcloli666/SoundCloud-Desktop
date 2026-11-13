@@ -44,7 +44,7 @@ pub fn resolve(parsed: &Parsed, catalog: &dyn Catalog, boosts: &Boosts, bare: bo
 
 fn ranked(parsed: &Parsed, catalog: &dyn Catalog, boosts: &Boosts) -> Vec<Scored> {
     let mut expanded = parsed.clone();
-    expanded.queries = alias::expand(&parsed.queries);
+    expanded.queries = alias::expand(parsed);
     let cands = catalog.candidates(&expanded.queries, &Kind::ALL);
     rank(&expanded, cands, boosts)
 }
@@ -58,7 +58,7 @@ pub fn named(name: &str) -> Vec<Parsed> {
     });
     let mut readings: Vec<Parsed> = std::iter::once(main).chain(other).collect();
     for reading in &mut readings {
-        reading.queries = alias::expand(&reading.queries);
+        reading.queries = alias::expand(reading);
     }
     readings
 }
