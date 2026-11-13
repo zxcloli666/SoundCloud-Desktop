@@ -13,6 +13,7 @@ use crate::lexicon::{
 };
 
 const RINGING: &[&str] = &["звонк", "будильник", "уведомлен", "телефон", "микрофон"];
+const HEARD_LOUD: &[&str] = &["громко", "тихо"];
 
 pub fn sentence(c: &Ctx) -> bool {
     adverb_of_a_clause(c)
@@ -25,6 +26,7 @@ pub fn sentence(c: &Ctx) -> bool {
         || thing_of_another(c)
         || thing_made_louder(c)
         || volume_of_a_thing(c)
+        || radio_heard_loud(c)
         || question_with_its_own_verb(c)
         || question_to_a_person(c)
         || meant_for_someone_else(c)
@@ -151,6 +153,11 @@ fn thing_made_louder(c: &Ctx) -> bool {
 fn volume_of_a_thing(c: &Ctx) -> bool {
     let rings = |w: &str| DENY.contains(&w) || lexicon::stem(RINGING, w);
     (1..c.len()).any(|i| lexicon::stem(lexicon::VOL_STEMS, c.w[i - 1]) && rings(c.w[i]))
+}
+
+fn radio_heard_loud(c: &Ctx) -> bool {
+    let heard = c.has(HEARD_LOUD) || c.w.iter().any(|w| volume_word(w));
+    c.has(&["радио"]) && heard && !c.has(PLAY_STRONG)
 }
 
 fn question_with_its_own_verb(c: &Ctx) -> bool {

@@ -3,6 +3,14 @@ use crate::lexicon::*;
 use crate::types::Intent;
 
 const GIVE_BACK: &[&str] = &["верни", "вернуть", "возвращай"];
+const AS_IT_IS: &[&str] = &["сейчас", "было", "есть", "раньше"];
+
+fn than_it_is(c: &Ctx) -> Vec<usize> {
+    match c.pos(&["чем"]) {
+        Some(at) if AS_IT_IS.contains(&c.at(at + 1)) => vec![at, at + 1],
+        _ => Vec::new(),
+    }
+}
 
 fn names_what_to_play(c: &Ctx, noun: usize) -> bool {
     let of_the_volume = |i: usize| {
@@ -18,10 +26,6 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
     }
     if c.has(PLAY_STRONG) && c.has(&["музыку", "музыка"]) {
         return None;
-    }
-    let turned = c.has(UP_WORDS) || c.has(DOWN_WORDS);
-    if c.has(&["радио"]) && turned && !c.has(PLAY_STRONG) {
-        return Some(Detected::blocked());
     }
     let noun =
         c.w.iter()
@@ -165,6 +169,7 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
     used.extend((0..c.len()).filter(|&i| crate::numbers::is_number(c.w[i])));
     used.extend(c.all(PLAY_STRONG));
     used.extend(super::seek::hedges(c));
+    used.extend(than_it_is(c));
     let wait = super::seek::wait(c);
     used.extend(wait.iter().copied());
     used.extend(c.all(&[

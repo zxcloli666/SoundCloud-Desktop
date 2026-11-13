@@ -53,6 +53,7 @@ fn head_ok(head: &[Tok], window: &[Tok], tail: &[Tok]) -> bool {
         DOWN_WORDS.contains(&w) || PAUSE_WORDS.contains(&w) || STOP_WORDS.contains(&w)
     });
     head.len() <= 4
+        && !names_the_word(head)
         && (0..head.len()).all(|at| {
             let w = head[at].w.as_str();
             let resting = hushed && at + 1 == head.len() && RESTING.contains(&w);
@@ -64,6 +65,14 @@ fn head_ok(head: &[Tok], window: &[Tok], tail: &[Tok]) -> bool {
                 && (!finite(w) || told)
                 && !single_command(&head[at])
         })
+}
+
+const WORD: &[&str] = &["слово", "слова", "словом"];
+
+fn names_the_word(head: &[Tok]) -> bool {
+    let said = |back: usize| head.len().checked_sub(back).map(|at| head[at].w.as_str());
+    let what_is = said(1) == Some("такое") && said(2) == Some("что");
+    what_is || said(1).is_some_and(|w| WORD.contains(&w))
 }
 
 fn bare_command_word(window: &[Tok]) -> bool {
@@ -126,6 +135,8 @@ fn single_command(t: &Tok) -> bool {
 }
 
 const SAID_ALONE: &[&str] = &["паузе", lexicon::HALT];
+const INDEFINITE: &[&str] = &["кто", "где"];
+const SOMETHING: &str = "чтото";
 const SUMMONS: &[&str] = &["иди", "идите", "подойди", "подойдите"];
 
 pub fn tail_ok(tail: &[Tok], window: &[Tok]) -> bool {
@@ -167,10 +178,12 @@ pub fn remark_after(tail: &[Tok], window: &[Tok]) -> bool {
     if tail.len() == 1 && w == "было" {
         return true;
     }
-    if tail.len() > 8 || BLOCK_TAIL.contains(&w) || kin::ordered_to(window, tail) {
+    let some = tail.len() > 2 && INDEFINITE.contains(&w) && tail[1].w == "то";
+    let someone = some || (tail.len() > 1 && w == SOMETHING);
+    if tail.len() > 8 || (BLOCK_TAIL.contains(&w) && !someone) || kin::ordered_to(window, tail) {
         return false;
     }
-    let remark = TAIL_REMARK.contains(&w) || kin::kin(w);
+    let remark = TAIL_REMARK.contains(&w) || kin::kin(w) || someone;
     let transitive = window.iter().any(|t| OBJECT_VERBS.contains(&t.w.as_str()));
     let denied = transitive && tail.iter().any(|t| DENY.contains(&t.w.as_str()));
     let object = window.iter().any(|t| lexicon::stem(PLAYER, &t.w));

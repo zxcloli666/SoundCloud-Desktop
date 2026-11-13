@@ -197,10 +197,19 @@ fn plain(words: Vec<String>) -> Vec<String> {
 fn without_fillers(words: Vec<String>) -> Vec<String> {
     let filler = |w: &String| lexicon::has(lexicon::FILLERS, w);
     let kept: Vec<bool> = (0..words.len())
-        .map(|at| !filler(&words[at]) || is_the_name(&words, at) || is_the_place(&words, at))
+        .map(|at| {
+            !filler(&words[at])
+                || is_the_name(&words, at)
+                || is_the_place(&words, at)
+                || asks_the_meaning(&words, at)
+        })
         .collect();
     let left = words.into_iter().zip(kept).filter(|(_, kept)| *kept);
     left.map(|(word, _)| word).collect()
+}
+
+fn asks_the_meaning(words: &[String], at: usize) -> bool {
+    at > 0 && words[at] == lexicon::MEANS && words[at - 1] == "что"
 }
 
 fn is_the_place(words: &[String], at: usize) -> bool {
