@@ -122,6 +122,121 @@ fn a_cut_word_next_to_a_name_does_not_make_another_curated_name() {
     }
 }
 
+fn heard(said: &str) -> Vec<String> {
+    let lookups = read(said, &[]).lookups();
+    let asked = lookups[0].variants.iter();
+    let own = asked.filter(|v| v.alias_kind.is_none() && !v.fallback);
+    own.map(|v| v.text.clone()).collect()
+}
+
+fn kept(said: &str) -> Vec<String> {
+    let lookups = read(said, &[]).lookups();
+    let asked = lookups[0].variants.iter();
+    let kept = asked.filter(|v| v.kept_fillers);
+    kept.map(|v| v.text.clone()).collect()
+}
+
+#[test]
+fn a_name_the_cleanup_cuts_is_asked_as_it_was_said_and_then_cleaned() {
+    let cut = [
+        ("включи эй мама", "мама", "эй мама"),
+        ("включи talk talk", "talk", "talk talk"),
+        ("включи малинки малинки", "малинки", "малинки малинки"),
+        ("включи эм си хаммер", "си хаммер", "эм си хаммер"),
+        ("включи а эс а пи рокки", "эс пи рокки", "а эс а пи рокки"),
+        ("включи смотри гагариной", "гагариной", "смотри гагариной"),
+        ("включи пет шоп бойз", "пет чтобы бойз", "пет шоп бойз"),
+        ("поставь песню а я иду", "иду", "а я иду"),
+        ("включи спасибо земфиры", "земфиры", "спасибо земфиры"),
+        ("включи hey jude", "jude", "hey jude"),
+        ("включи сто четыре дня", "104 дня", "сто четыре дня"),
+        (
+            "поставь группу алиса трасса е 95",
+            "трасса е 95",
+            "алиса трасса е 95",
+        ),
+    ];
+    for (said, cleaned, name) in cut {
+        let asked = heard(said);
+        assert_eq!(asked[0], name, "{said}");
+        assert_eq!(asked[1], cleaned, "{said}");
+    }
+}
+
+#[test]
+fn a_name_the_cleanup_leaves_whole_is_not_asked_twice() {
+    let whole = [
+        "включи кино",
+        "включи бай бай бай",
+        "включи ток ток",
+        "включи пятьдесят оттенков серого",
+        "включи скриптонита цепи",
+    ];
+    for said in whole {
+        assert_eq!(kept(said), Vec::<String>::new(), "{said}");
+    }
+}
+
+#[test]
+fn a_polite_word_is_not_a_part_of_the_name() {
+    let polite = [
+        "включи пожалуйста кино",
+        "включи кино пожалуйста",
+        "включи земфиру спасибо",
+        "включи плиз кино",
+        "play nirvana please",
+    ];
+    for said in polite {
+        assert_eq!(kept(said), Vec::<String>::new(), "{said}");
+    }
+}
+
+#[test]
+fn a_name_made_of_words_the_cleanup_drops_is_still_looked_up() {
+    let dropped = [
+        ("Алиса", "Алиса"),
+        ("Спасибо", "спасибо"),
+        ("hey", "hey"),
+        ("Please Please Me", "please please me"),
+    ];
+    for (name, asked) in dropped {
+        let readings = voice_resolve::named(name);
+        let asked_as = readings[0].queries.iter().map(|v| v.text.as_str());
+        let texts: Vec<&str> = asked_as.collect();
+        assert!(texts.contains(&asked), "{name}: {texts:?}");
+    }
+}
+
+#[test]
+fn spoken_numbers_do_not_name_a_curated_artist_of_the_number_alone() {
+    let lookups = read("включи сто четыре дня", &[]).lookups();
+    let asked = lookups[0].variants.iter();
+    let whole: Vec<&str> = asked
+        .filter(|v| v.alias_kind.is_some() && v.title.is_none() && !v.fallback)
+        .map(|v| v.text.as_str())
+        .collect();
+    assert_eq!(whole, Vec::<&str>::new());
+}
+
+#[test]
+fn a_cut_name_ends_where_the_next_step_begins() {
+    assert_eq!(kept("включи эй мама а потом кино"), ["эй мама"]);
+    assert_eq!(kept("включи эй мама а потом включи ну погоди"), ["эй мама"]);
+}
+
+#[test]
+fn a_cut_name_said_with_its_title_is_restored_in_its_part() {
+    let titled = ["включи рио группы толк толк", "включи толк толк - рио"];
+    for said in titled {
+        let lookups = read(said, &[]).lookups();
+        let mut asked = lookups[0].variants.iter();
+        let restored = asked.find(|v| v.kept_fillers).expect(said);
+        assert_eq!(restored.artist.as_deref(), Some("толк толк"), "{said}");
+        assert_eq!(restored.title.as_deref(), Some("рио"), "{said}");
+        assert_eq!(restored.text, "рио толк толк", "{said}");
+    }
+}
+
 #[test]
 fn every_curated_artist_is_asked_first_by_each_of_its_said_forms() {
     let rows = include_str!("../data/aliases.tsv").lines().skip(1);

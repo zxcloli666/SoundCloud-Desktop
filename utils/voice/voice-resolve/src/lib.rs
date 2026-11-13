@@ -6,6 +6,7 @@ mod entity;
 mod keys;
 mod phrase;
 mod score;
+mod spoken;
 
 pub use answer::answer_ask;
 pub use bare::Bare;
@@ -374,11 +375,44 @@ artist\tDrake Bell\t\t300000\t
 ";
 
     fn played(text: &str) -> String {
-        let catalog = FixtureCatalog::from_tsv(LOOKALIKES, true);
+        played_from(LOOKALIKES, text)
+    }
+
+    fn played_from(rows: &str, text: &str) -> String {
+        let catalog = FixtureCatalog::from_tsv(rows, true);
         match interpret_one(text, &catalog, &Boosts::none(), Bare::Popular).decision {
             Some(Decision::Act { pick }) => pick.entity.label(),
             other => format!("{other:?}"),
         }
+    }
+
+    const PARTS: &str = "kind\tname\tartist\tpopularity\taliases
+track\tКрасиво\tВалерий Меладзе\t3000000\t
+track\tТак красиво\tСергей Лазарев\t100000\t
+track\tМама\tБаста\t2500000\t
+track\tЭй мама\tНикто\t300\t
+artist\tКино\t\t9000000\t
+track\tНу кино\tНикто\t900\t
+";
+
+    fn offered_first(text: &str) -> String {
+        let catalog = FixtureCatalog::from_tsv(PARTS, true);
+        match interpret_one(text, &catalog, &Boosts::none(), Bare::Popular).decision {
+            Some(Decision::Ask { first, .. }) => first.entity.label(),
+            other => format!("{other:?}"),
+        }
+    }
+
+    #[test]
+    fn a_name_that_holds_every_said_word_is_offered_before_a_more_popular_part_of_it() {
+        let played = |text: &str| played_from(PARTS, text);
+        assert_eq!(
+            offered_first("включи так красиво"),
+            "Сергей Лазарев - Так красиво"
+        );
+        assert_eq!(played("включи красиво"), "Валерий Меладзе - Красиво");
+        assert_eq!(played("включи ну кино"), "Кино");
+        assert_eq!(played("включи эй мама"), "Баста - Мама");
     }
 
     #[test]

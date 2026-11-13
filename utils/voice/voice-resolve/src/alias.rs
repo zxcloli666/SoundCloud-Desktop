@@ -2,9 +2,10 @@ use std::collections::HashMap;
 use std::sync::OnceLock;
 use voice_nlu::{Kind, Parsed, Variant, fold, lemma};
 
+use crate::spoken;
+
 const DATA: &str = include_str!("../data/aliases.tsv");
 const SAME_WORD: f32 = 0.85;
-const SAID_WORDS: usize = 6;
 const VERSIONS: &[&str] = &[
     "караоке",
     "пиано",
@@ -103,8 +104,8 @@ fn with_rest(v: &Variant, canonical: &str, rest: &str) -> Variant {
 }
 
 fn named_as_said(parsed: &Parsed, out: &mut Vec<Variant>) {
-    let words: Vec<String> = parsed.heard.split_whitespace().map(bare).collect();
-    for len in (1..=SAID_WORDS.min(words.len())).rev() {
+    let words = spoken::words(&parsed.heard);
+    for len in (1..=spoken::WORDS.min(words.len())).rev() {
         for span in words.windows(len) {
             let mut forms: Vec<String> = (0..=2).map(|by| lemmatized(span, by)).collect();
             forms.dedup();
@@ -126,20 +127,14 @@ fn word_count(text: &str) -> usize {
     words.filter(|word| !word.is_empty()).count()
 }
 
-fn bare(word: &str) -> String {
-    let word = word.trim_matches(|c: char| !c.is_alphanumeric());
-    word.to_lowercase()
-}
-
 fn lemmatized(words: &[String], strategy: u8) -> String {
     let words: Vec<String> = words.iter().map(|w| lemma(w, strategy)).collect();
     words.join(" ")
 }
 
 fn cut_from(said: &str, cleaned: &str) -> bool {
-    let left = voice_nlu::normalize(said).text;
-    let cut = fold(&left) != fold(said);
-    cut && !left.is_empty() && format!(" {cleaned} ").contains(&format!(" {left} "))
+    let within = |left: String| format!(" {cleaned} ").contains(&format!(" {left} "));
+    spoken::cleaned(said).is_some_and(within)
 }
 
 fn as_said(text: String) -> Variant {
@@ -238,6 +233,7 @@ pub fn expand(parsed: &Parsed) -> Vec<Variant> {
     let mut out: Vec<Variant> = Vec::new();
     for v in whole
         .into_iter()
+        .chain(spoken::uncut(parsed))
         .chain(variants.iter().cloned())
         .chain(in_part)
     {
