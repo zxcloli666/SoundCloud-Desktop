@@ -490,10 +490,10 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
         });
         if covered {
             let d = Detected::new(r.intent, vec![]);
-            return Some(if r.intent == Intent::SeekTo {
-                d.number(0)
-            } else {
-                d
+            return Some(match r.intent {
+                Intent::SeekTo => d.number(0),
+                Intent::VolumeSet => d.number(100),
+                _ => d,
             });
         }
     }

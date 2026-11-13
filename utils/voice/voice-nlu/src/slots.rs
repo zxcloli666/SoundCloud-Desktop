@@ -9,6 +9,7 @@ pub struct Raw {
     pub full: Vec<Tok>,
     pub artist: Option<Vec<Tok>>,
     pub title: Option<Vec<Tok>>,
+    pub owner: bool,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -68,8 +69,10 @@ pub(crate) fn kind_of(w: &str) -> Option<Kind> {
 const ENGLISH_EDGE: &[&str] = &[
     "you", "me", "for", "now", "right", "man", "dude", "bro", "some", "just", "maybe", "really",
     "like", "whatever", "know", "that", "new", "latest", "thing", "stuff", "a", "bit", "of",
+    "greatest",
 ];
 const ANYTHING: &[&str] = &["чтонибудь", "чтото", "something", "anything"];
+const OWNED: &[&str] = &["hits", "songs", "tracks"];
 
 fn edge_noise(t: &Tok) -> bool {
     t.amb
@@ -141,7 +144,7 @@ pub fn extract(toks: &[Tok], det: &Detected) -> Slots {
             after_generic = true;
             continue;
         }
-        if after_generic && matches!(w, "из" | "от" | "у" | "of" | "by") {
+        if after_generic && matches!(w, "из" | "от" | "у" | "of" | "by" | "from") {
             after_generic = false;
             continue;
         }
@@ -175,10 +178,13 @@ pub fn extract(toks: &[Tok], det: &Detected) -> Slots {
     } else {
         kept
     };
-    let kept = trim(kept);
+    let mut raw = split(trim(kept));
+    raw.owner = rest
+        .windows(2)
+        .any(|said| OWNED.contains(&said[1].w.as_str()));
     Slots {
         kind_hint: hint,
-        raw: split(kept),
+        raw,
         alt: kind_name_reading(&rest),
     }
 }
@@ -193,7 +199,8 @@ fn without_descriptor(rest: &[Tok]) -> Option<Vec<Tok>> {
     for i in 0..rest.len() {
         let release = RECENT.contains(&word(i)) && is_release(word(i + 1));
         let generic = i > 0 && ANYTHING.contains(&word(i - 1));
-        let edge = i + 1 == rest.len() || ARTIST_MARKERS.contains(&word(i + 1));
+        let by = ARTIST_MARKERS.contains(&word(i + 1)) || word(i + 1) == "from";
+        let edge = i + 1 == rest.len() || by;
         let alone = RECENT_ALONE.contains(&word(i)) && (generic || edge);
         if !release && !alone {
             continue;
@@ -240,6 +247,7 @@ fn split(kept: Vec<Tok>) -> Raw {
                 plain,
                 artist: Some(left),
                 title: Some(right),
+                owner: false,
             };
         }
     }
@@ -270,6 +278,7 @@ fn split(kept: Vec<Tok>) -> Raw {
             plain: after.clone(),
             artist: Some(after),
             title: None,
+            owner: false,
         };
     }
     let before = own_version(before);
@@ -279,6 +288,7 @@ fn split(kept: Vec<Tok>) -> Raw {
         plain,
         artist: Some(after),
         title: Some(before),
+        owner: false,
     }
 }
 

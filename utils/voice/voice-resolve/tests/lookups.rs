@@ -312,3 +312,22 @@ fn a_curated_name_of_a_part_of_the_phrase_is_asked_after_what_was_said() {
     assert_eq!(asked.first(), Some(&"линкин парк намб"), "{asked:?}");
     assert!(asked.contains(&"намб Linkin Park"), "{asked:?}");
 }
+
+#[test]
+fn a_name_said_after_a_take_back_is_looked_up_on_its_own() {
+    for (text, name) in [
+        ("play drake no taylor swift", "taylor swift"),
+        ("play believer sorry thunder", "thunder"),
+    ] {
+        let lookups = read(text, &[]).lookups();
+        let first_said = |texts: Vec<String>| texts.first().cloned();
+        let asked: Vec<String> = lookups
+            .iter()
+            .filter_map(|lookup| first_said(lookup.texts()))
+            .collect();
+        assert!(
+            asked.iter().any(|said| said.to_lowercase() == name),
+            "{text}: {asked:?}"
+        );
+    }
+}

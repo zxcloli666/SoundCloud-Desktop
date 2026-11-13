@@ -302,7 +302,8 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
     }
     let fwd = c.has(FORWARD);
     let back = c.has(BACKWARD);
-    let seek_verb = c.has(SEEK_VERBS) || c.has_stem(&["перемот", "промот", "отмот"]);
+    let winds = |w: &&str| SEEK_VERBS.contains(w) && (*w != "fast" || fwd || back);
+    let seek_verb = c.w.iter().any(winds) || c.has_stem(&["перемот", "промот", "отмот"]);
     let to_place = c.has(&["to"]) && c.has(&["go", "skip", "jump"]);
     let jump_verb = c.has(JUMP_VERBS) || to_place;
     let set_verb = c.has(SET_VERBS) && t.found;

@@ -50,6 +50,8 @@ const WAVERS: &[&[&str]] = &[&["хотя"], &["ой"], &["ладно"]];
 const LOOSE: &str = "лучше";
 const NO: &str = "нет";
 const ENGLISH_NO: &str = "no";
+const ENGLISH_NOT: &str = "not";
+const MORE: &str = "more";
 const NOT: &str = "не";
 const INSTEAD: &str = "а";
 const NOT_INSTEAD: &[&str] = &["не", "нет", "то"];
@@ -234,7 +236,8 @@ fn word_of_a_name(cur: &Version, ws: &[String], at: usize, end: usize) -> bool {
     let controls = || command(&toks(&cur.words)).is_some_and(|(asked, ..)| asked.is_control());
     let restarts =
         |w: &String| SECOND_THOUGHT.contains(&w.as_str()) || PLAY_STRONG.contains(&w.as_str());
-    let rethought = ws.get(at + 1).is_some_and(restarts);
+    let orders_again = |w: &String| PLAY_STRONG.contains(&w.as_str());
+    let rethought = ws.get(at + 1).is_some_and(restarts) || ws[at + 1..].iter().any(orders_again);
     let bare = end == at + 1 && BARE.contains(&ws[at].as_str());
     bare && !rethought && !cur.words.is_empty() && !controls()
 }
@@ -290,7 +293,8 @@ fn held_back(ws: &[String], at: usize) -> bool {
 
 fn switched_off(ws: &[String], at: usize) -> bool {
     let switch = |w: &String| SWITCHES.contains(&w.as_str());
-    at == 0 && ws[at] == ENGLISH_NO && ws.get(1).is_some_and(switch)
+    let named = 1 + usize::from(ws.get(1).is_some_and(|w| w == MORE));
+    at == 0 && ws[at] == ENGLISH_NO && ws.get(named).is_some_and(switch)
 }
 
 fn worn_out(ws: &[String], at: usize) -> bool {
@@ -403,7 +407,9 @@ fn after_not(said: &[String]) -> Option<&[String]> {
 fn after_rejection<'a>(words: &'a [String], said: &[Tok]) -> Option<&'a [String]> {
     let points = |w: &&String| POINTERS.contains(&w.as_str());
     let lead = words.iter().take_while(points).count();
-    let denies = words.get(lead).is_some_and(|w| w == NOT);
+    let denies = words
+        .get(lead)
+        .is_some_and(|w| w == NOT || w == ENGLISH_NOT);
     let own_meaning = MERGE_PHRASES.iter().any(|(p, _)| starts(words, lead, p));
     let again = words
         .iter()

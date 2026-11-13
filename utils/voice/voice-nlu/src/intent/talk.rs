@@ -178,8 +178,54 @@ fn said_in_english_to_someone(c: &Ctx) -> bool {
     let another_thing = c.has(THINGS) && !c.has(PLAY_STRONG);
     let asks_you = c.at(0) == "do" && c.at(1) == "you" && YOUR_MIND.contains(&c.at(2));
     let asked = ASKED_FIRST.contains(&c.at(0)) || asks_you;
-    passed_on || muted_mic || hears_us || asked_if_heard || another_thing || asked
+    let how_to = c.at(0) == "how" && HOW_TO.contains(&c.at(1)) && !c.has(&["use"]);
+    let said_aside =
+        comes_back(c) || left_unsaid(c) || plays_an_instrument(c) || best_way(c) || how_to;
+    passed_on || muted_mic || hears_us || asked_if_heard || another_thing || asked || said_aside
 }
+
+fn comes_back(c: &Ctx) -> bool {
+    let back = |at: usize| c.at(at) == "back" || (c.at(at) == "right" && c.at(at + 1) == "back");
+    (0..c.len()).any(|at| c.w[at] == "be" && back(at + 1))
+}
+
+fn left_unsaid(c: &Ctx) -> bool {
+    let open = c.w.last().is_some_and(|w| OPEN_ENDS.contains(w));
+    let about = c.len() > 3 && !CLOSES.contains(&c.at(c.len() - 2));
+    open && about && !c.has(ASKS_WHAT) && !c.has(PLAY_STRONG)
+}
+
+fn plays_an_instrument(c: &Ctx) -> bool {
+    let named = c.len() > 3 && INSTRUMENTS.contains(&c.at(c.len() - 1));
+    named && c.at(c.len() - 2) == "the" && c.has(PLAYERS)
+}
+
+fn best_way(c: &Ctx) -> bool {
+    c.w.windows(2).any(|said| said == ["best", "way"])
+}
+
+const HOW_TO: &[&str] = &["do", "can", "to", "does", "would", "should"];
+const OPEN_ENDS: &[&str] = &["is", "was", "are", "were"];
+const CLOSES: &[&str] = &[
+    "it", "this", "that", "there", "he", "she", "they", "you", "we", "i",
+];
+const ASKS_WHAT: &[&str] = &["what", "whats", "which", "who", "how"];
+const PLAYERS: &[&str] = &["you", "i", "he", "she", "we", "they"];
+const INSTRUMENTS: &[&str] = &[
+    "piano",
+    "guitar",
+    "drums",
+    "violin",
+    "flute",
+    "saxophone",
+    "trumpet",
+    "ukulele",
+    "cello",
+    "harmonica",
+    "banjo",
+    "bass",
+    "keyboard",
+];
 
 const THINGS: &[&str] = &[
     "phone",

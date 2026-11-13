@@ -35,6 +35,7 @@ pub fn normalize(input: &str) -> Normalized {
         words.extend(fixed.split_whitespace().map(str::to_string));
     }
     let words = plain(apply_phrases(repair::stutter(repair::glue(words))));
+    let words = without_a_closing_already(words);
     let words = numbers::out_of_ten(numbers::merge(&numbers::colloquial(words), false));
     let words = drop_swears(dedupe(said_once(without_fillers(words))));
     let toks: Vec<Tok> = words
@@ -154,6 +155,13 @@ fn collapse(w: &str) -> String {
         }
     }
     w.to_string()
+}
+
+fn without_a_closing_already(mut words: Vec<String>) -> Vec<String> {
+    if words.len() > 2 && words.last().is_some_and(|w| w == "already") {
+        words.pop();
+    }
+    words
 }
 
 fn apply_phrases(words: Vec<String>) -> Vec<String> {

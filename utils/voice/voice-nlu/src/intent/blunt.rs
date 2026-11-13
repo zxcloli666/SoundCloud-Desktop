@@ -11,7 +11,7 @@ pub(super) const RULES: &[Rule] = &[
     rule(
         &[&["hear"], &["cant", "cannot", "barely", "hardly"]],
         &[
-            "anything", "it", "the", "music", "this", "a", "thing", "turn", "up",
+            "anything", "it", "the", "music", "this", "a", "thing", "turn", "up", "shit", "damn",
         ],
         &["you", "myself"],
         Intent::VolumeUp,

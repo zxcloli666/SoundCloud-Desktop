@@ -238,6 +238,9 @@ pub fn expand(raw: &Raw, with_spans: bool) -> Vec<Variant> {
     for s in 0..2u8 {
         push(&mut out, plain(join_small(&raw.plain, s), false, true));
     }
+    if let Some(name) = owner(&raw.plain).filter(|_| raw.owner) {
+        push(&mut out, plain(name, false, true));
+    }
     if split {
         let artist = raw.artist.as_deref().unwrap_or(&[]);
         match raw.title.as_deref() {
@@ -286,5 +289,21 @@ fn enumerate(out: &mut Vec<Variant>, toks: &[Tok]) {
             out,
             joint(join(a, 0, false), join(b, 1, false), false, true),
         );
+        if let Some(artist) = owner(a) {
+            push(out, joint(join(b, 0, false), artist, false, true));
+        }
     }
+}
+
+const OWNER_MIN: usize = 3;
+
+fn owner(toks: &[Tok]) -> Option<String> {
+    let (last, before) = toks.split_last()?;
+    let latin = last.w.chars().all(|c| c.is_ascii_lowercase());
+    let name = last.w.strip_suffix('s').filter(|_| latin)?;
+    if name.len() < OWNER_MIN || name.ends_with('s') {
+        return None;
+    }
+    let said = before.iter().map(|t| t.w.as_str()).chain([name]);
+    Some(said.collect::<Vec<_>>().join(" "))
 }

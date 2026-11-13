@@ -127,6 +127,11 @@ pub fn remark(toks: &[Tok]) -> Option<usize> {
     restated(toks)
         .or_else(|| started(toks))
         .or_else(|| reasoned(toks))
+        .or_else(|| said_of_something_else(toks))
+}
+
+fn said_of_something_else(toks: &[Tok]) -> Option<usize> {
+    (1..toks.len()).find(|&k| crate::anchor::clause_of_its_own(&toks[k..]) && cuttable(toks, k))
 }
 
 fn restated(toks: &[Tok]) -> Option<usize> {

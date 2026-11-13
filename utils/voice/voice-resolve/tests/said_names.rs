@@ -593,3 +593,39 @@ track\tNo Woman No Cry\tBob Marley\t20000000\t
         }
     }
 }
+
+#[test]
+fn an_artist_said_as_the_owner_of_a_track_plays_the_track() {
+    let rows = "kind\tname\tartist\tpopularity\taliases
+artist\tDrake\t\t78000000\t
+artist\tDrake Bell\t\t300000\t
+artist\tDrakeo\t\t200000\t
+artist\tTaylor Swift\t\t88000000\t
+artist\tQueens of the Stone Age\t\t9000000\t
+track\tOne Dance\tDrake\t55000000\t
+track\tHotline Bling\tDrake\t50000000\t
+track\tShake It Off\tTaylor Swift\t70000000\t
+track\tNo One Knows\tQueens of the Stone Age\t8000000\t
+";
+    let said = [
+        ("play drakes one dance", "play Drake - One Dance"),
+        ("play drakes hotline bling", "play Drake - Hotline Bling"),
+        (
+            "put on taylor swifts shake it off",
+            "play Taylor Swift - Shake It Off",
+        ),
+        (
+            "play no one knows by queens of the stone age",
+            "play Queens of the Stone Age - No One Knows",
+        ),
+        (
+            "play queens of the stone age",
+            "play Queens of the Stone Age",
+        ),
+    ];
+    for bare in BOTH {
+        for (text, read) in said {
+            assert_eq!(heard_in(rows, text, bare), read, "{text}");
+        }
+    }
+}
