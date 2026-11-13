@@ -313,7 +313,7 @@ pub const MAKING: &[&str] = &["сделай", "сделайте", "сделат�
 
 pub const INFINITIVE_ENDINGS: &[&str] = &["ть", "ться", "чь", "ти"];
 
-pub const INSISTING: &[&str] = &["сказал", "сказала", "говорю", "прошу"];
+pub const INSISTING: &[&str] = &["сказал", "сказала", "говорю", "прошу", "said"];
 
 pub const LISTENING_STEMS: &[&str] = &[
     "слуш",

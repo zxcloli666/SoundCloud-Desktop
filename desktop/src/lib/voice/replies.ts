@@ -171,8 +171,14 @@ const EN: Record<ReplyKey, Line> = {
   stop: () => same('Stopped'),
   next: () => ({ speech: 'Next track', display: 'Next' }),
   previous: () => ({ speech: 'Previous track', display: 'Back' }),
-  seek_forward: (v) => ({ speech: `Forward ${v.n} seconds`, display: `+${v.n} s` }),
-  seek_backward: (v) => ({ speech: `Back ${v.n} seconds`, display: `−${v.n} s` }),
+  seek_forward: (v) => ({
+    speech: `Forward ${enCount(v.n ?? 0, EN_SECONDS)}`,
+    display: `+${v.n} s`,
+  }),
+  seek_backward: (v) => ({
+    speech: `Back ${enCount(v.n ?? 0, EN_SECONDS)}`,
+    display: `−${v.n} s`,
+  }),
   seek_to: (v) => ({
     speech: `Jumping to ${position(v.n ?? 0, enCount, EN_MINUTES, EN_SECONDS)}`,
     display: clock(v.n ?? 0),

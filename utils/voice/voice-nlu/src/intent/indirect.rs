@@ -89,7 +89,7 @@ pub(super) struct Rule {
 }
 
 impl Rule {
-    const fn len(mut self, min: usize) -> Rule {
+    pub(super) const fn len(mut self, min: usize) -> Rule {
         self.min = min;
         self
     }

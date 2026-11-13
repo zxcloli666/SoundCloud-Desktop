@@ -152,7 +152,10 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
         || english_dir("down")
         || (c.has(&["decrease", "lower", "reduce"]) && noun.is_some())
         || (noun.is_some() && (c.has(LESS) || c.has(LOWER)));
-    if c.has(&["до"]) && (up || down || noun.is_some()) {
+    let to_a_level =
+        c.w.windows(2)
+            .any(|p| p[0] == "to" && crate::numbers::is_number(p[1]));
+    if (c.has(&["до"]) || to_a_level) && (up || down || noun.is_some()) {
         if let Some(v) = number.or(max.then_some(100)) {
             return Some(Detected::new(Intent::VolumeSet, vec![]).number(v.min(100)));
         }

@@ -41,7 +41,7 @@ pub fn parse(text: &str, names: &Names) -> Vec<Parsed> {
     let ordered = toks.first().is_some_and(|t| t.w == FIRST);
     let toks = &without_order_word(toks);
     let mut whole = parse_toks(text, toks.to_vec()).0;
-    if intent::lyric(toks) {
+    if intent::lyric(toks) || intent::threat(toks) {
         return vec![whole];
     }
     let raw = crate::normalize::words(text_in);

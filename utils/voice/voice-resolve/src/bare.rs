@@ -71,8 +71,16 @@ impl Bare {
 
 fn called_by_kind(parsed: &Parsed, hit: &Scored) -> bool {
     let kind = hit.entity.kind;
-    let kind_before_name = parsed.kind_alt.is_some() && parsed.kind_hint == Some(kind);
-    matches!(kind, Kind::Album | Kind::Playlist) && kind_before_name && hit.sim >= WHOLE_NAME_MIN
+    let called = kind_before_name(parsed) && parsed.kind_hint == Some(kind);
+    matches!(kind, Kind::Album | Kind::Playlist) && called && hit.sim >= WHOLE_NAME_MIN
+}
+
+fn kind_before_name(parsed: &Parsed) -> bool {
+    let with_kind = parsed.kind_alt.as_ref().and_then(|alt| alt.queries.first());
+    let name = parsed.queries.first();
+    with_kind
+        .zip(name)
+        .is_some_and(|(whole, name)| whole.text.ends_with(&name.text))
 }
 
 fn other_version(parsed: &Parsed, hit: &Scored, ranked: &[Scored]) -> bool {

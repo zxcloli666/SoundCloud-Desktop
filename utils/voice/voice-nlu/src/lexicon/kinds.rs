@@ -117,6 +117,9 @@ pub const RECENT: &[&str] = &[
 ];
 
 pub const RECENT_ALONE: &[&str] = &[
+    "new",
+    "newest",
+    "latest",
     "старое",
     "старенькое",
     "популярное",

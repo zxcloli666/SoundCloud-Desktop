@@ -416,7 +416,7 @@ fn also_links_a_setting_to_what_is_played() {
         ["queue_add", "volume_set"]
     );
     assert_eq!(steps("громче ещё громче"), ["volume_up"]);
-    assert_eq!(steps("включи ещё раз"), ["resume"]);
+    assert_eq!(steps("включи ещё раз"), ["seek_to"]);
     assert_eq!(steps("включи земфиру ещё раз"), ["play"]);
     assert_eq!(
         steps("перемотай назад и ещё раз"),

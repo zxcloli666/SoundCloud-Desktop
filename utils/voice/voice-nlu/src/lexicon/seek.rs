@@ -17,6 +17,7 @@ pub const SEEK_VERBS: &[&str] = &[
     "перемотаем",
     "fast",
     "промотка",
+    "scrub",
 ];
 pub const JUMP_VERBS: &[&str] = &[
     "прыгни",
@@ -62,6 +63,47 @@ pub const HALF_MINUTE: &[&str] = &["полминуты", "полминуту", "
 pub const ONE_AND_HALF: &[&str] = &["полторы", "полтора"];
 
 pub const ROUGHLY: &[&str] = &["примерно", "приблизительно", "около", "гдето", "этак"];
+
+pub const SLIGHTLY: &[&str] = &[
+    "чуть",
+    "немного",
+    "немножко",
+    "чутьчуть",
+    "слегка",
+    "bit",
+    "little",
+    "tad",
+];
+
+pub const SEEK_FILL_EN: &[&str] = &[
+    "an",
+    "of",
+    "and",
+    "half",
+    "mark",
+    "point",
+    "in",
+    "into",
+    "at",
+    "from",
+    "few",
+    "couple",
+    "first",
+    "up",
+    "over",
+    "again",
+    "top",
+    "beginning",
+    "end",
+    "middle",
+    "halfway",
+    "take",
+    "move",
+    "bring",
+    "tad",
+    "немножко",
+    "слегка",
+];
 
 pub const SET_VERBS: &[&str] = &["поставь", "переведи", "поставить", "установи"];
 
@@ -113,6 +155,7 @@ pub const SEEK_FILL: &[&str] = &[
     "доля",
     "самое",
     "самый",
+    "самого",
     "немного",
     "чуть",
     "вперед",

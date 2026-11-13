@@ -108,7 +108,7 @@ fn before_insisting(head: &[Tok], last_word: bool) -> &[Tok] {
         .take_while(|t| ABOUT_OWN_WORDS.contains(&t.w.as_str()))
         .count();
     let me = rest.len().checked_sub(between + 1);
-    let Some(at) = me.filter(|&at| rest[at].w == "я") else {
+    let Some(at) = me.filter(|&at| matches!(rest[at].w.as_str(), "я" | "i")) else {
         return head;
     };
     let listener = head[..at].iter().any(|t| LISTENERS.contains(&t.w.as_str()));

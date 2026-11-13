@@ -509,3 +509,32 @@ fn a_name_said_to_come_behind_another_is_queued_after_it() {
         assert_eq!(read, "play Ленинград + queue_add Сплин");
     }
 }
+
+#[test]
+fn a_kind_word_said_last_stays_in_the_name_that_has_it() {
+    let rows = "kind\tname\tartist\tpopularity\taliases
+playlist\tWorkout\t\t700000\t
+playlist\tWorkout Hits\t\t120000\t
+artist\tRammstein\t\t30000000\t
+artist\tRammstein Cover Band\t\t10000\t
+artist\tDua Lipa\t\t40000000\t
+";
+    let said = [
+        ("put on workout hits", "play Workout Hits"),
+        ("play workout", "play Workout"),
+        ("play the workout playlist", "play Workout"),
+        ("play rammstein cover band", "play Rammstein Cover Band"),
+        ("play rammstein", "play Rammstein"),
+        ("play that new dua lipa thing", "play Dua Lipa"),
+        ("play something new by dua lipa", "play Dua Lipa"),
+    ];
+    for bare in BOTH {
+        for (text, read) in said {
+            assert_eq!(heard_in(rows, text, bare), read, "{text}");
+        }
+    }
+    assert_eq!(
+        heard_in(rows, "workout hits", Bare::Popular),
+        "play Workout Hits"
+    );
+}

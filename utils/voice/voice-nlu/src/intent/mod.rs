@@ -15,6 +15,10 @@ use crate::normalize::Tok;
 pub use ctx::{Ctx, Detected};
 pub use guard::{Negation, absence, hushing, lyric, negation, orders, remark, retold};
 
+pub fn threat(toks: &[Tok]) -> bool {
+    talk::threat_of_the_speaker(&Ctx::new(toks))
+}
+
 pub fn indirect_hit(toks: &[Tok]) -> bool {
     indirect::detect(&Ctx::new(toks)).is_some()
 }

@@ -18,6 +18,11 @@ const TOLD: &[&str] = &["tell", "ask"];
 const TO_US: &[&str] = &["me", "us"];
 const YOU_ARE: &[&str] = &["you", "youre", "im", "hes", "shes", "were", "theyre"];
 
+pub fn threat_of_the_speaker(c: &Ctx) -> bool {
+    let threat = |at: usize| lexicon::THREATS.contains(&c.at(at));
+    (0..c.len()).any(|i| c.w[i] == "я" && (threat(i + 1) || threat(i + 2)))
+}
+
 pub fn sentence(c: &Ctx) -> bool {
     adverb_of_a_clause(c)
         || attribute_of_a_noun(c)
@@ -30,6 +35,7 @@ pub fn sentence(c: &Ctx) -> bool {
         || thing_made_louder(c)
         || volume_of_a_thing(c)
         || radio_heard_loud(c)
+        || threat_of_the_speaker(c)
         || said_in_english_to_someone(c)
         || question_with_its_own_verb(c)
         || question_to_a_person(c)

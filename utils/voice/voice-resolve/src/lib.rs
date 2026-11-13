@@ -16,7 +16,7 @@ pub use phrase::{Lookup, Phrase};
 pub use score::{Boosts, rank};
 
 use serde::Serialize;
-use voice_nlu::{Intent, Kind, Names, Parsed, parse_name, parse_one};
+use voice_nlu::{Intent, Kind, Names, Parsed, fold, parse_name, parse_one};
 
 #[derive(Debug, Clone, Serialize)]
 pub struct Outcome {
@@ -268,17 +268,20 @@ fn said_alone(
     bare: Bare,
 ) -> Result<Decision, Vec<Entity>> {
     let mut handed = Vec::new();
+    let mut played: Option<Decision> = None;
     for reading in std::iter::once(parsed.clone()).chain(with_kind_in_name(parsed)) {
         let ranked = ranked(&reading, catalog, boosts);
         let d = score::decide(&ranked, true);
         if bare.plays(&reading, &d, &ranked) {
-            return Ok(d);
-        }
-        if handed.is_empty() {
+            played = Some(match played {
+                Some(plain) => kind_in_the_name(plain, d),
+                None => d,
+            });
+        } else if handed.is_empty() {
             handed = bare.hands(ranked);
         }
     }
-    Err(handed)
+    played.ok_or(handed)
 }
 
 fn kind_in_the_name(plain: Decision, named: Decision) -> Decision {
@@ -287,12 +290,25 @@ fn kind_in_the_name(plain: Decision, named: Decision) -> Decision {
         Decision::Ask { first, .. } => first.sim,
         Decision::NotFound => 0.0,
     };
-    let sure = found(&named) >= SPLIT_PART_MIN && found(&named) > found(&plain);
+    let closer = found(&named) > found(&plain)
+        || (found(&named) >= found(&plain) && adds_to_the_name(&named, &plain));
+    let sure = found(&named) >= SPLIT_PART_MIN && closer;
     if matches!(plain, Decision::NotFound) || sure {
         named
     } else {
         plain
     }
+}
+
+fn adds_to_the_name(named: &Decision, plain: &Decision) -> bool {
+    let name = |d: &Decision| match d {
+        Decision::Act { pick } => Some(fold(&pick.entity.name)),
+        _ => None,
+    };
+    let (Some(long), Some(short)) = (name(named), name(plain)) else {
+        return false;
+    };
+    long.len() > short.len() && long.starts_with(&short)
 }
 
 fn with_kind_in_name(parsed: &Parsed) -> Option<Parsed> {

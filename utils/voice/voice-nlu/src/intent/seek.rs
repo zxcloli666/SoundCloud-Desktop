@@ -3,6 +3,8 @@ use crate::lexicon::*;
 use crate::numbers;
 use crate::types::Intent;
 
+mod english;
+
 struct Time {
     secs: u32,
     found: bool,
@@ -12,8 +14,17 @@ struct Time {
     bare: Option<u32>,
 }
 
-fn half_after(c: &Ctx, i: usize) -> bool {
-    c.at(i) == "с" && c.at(i + 1) == "половиной"
+fn half_after(c: &Ctx, i: usize) -> usize {
+    if c.at(i) == "с" && c.at(i + 1) == "половиной" {
+        2
+    } else {
+        english::and_a_half(c, i)
+    }
+}
+
+fn counted(c: &Ctx, i: usize) -> Option<(u32, usize)> {
+    let said = numbers::value(c.w[i]).map(|n| (n, i + 1));
+    said.or_else(|| english::several(c, i))
 }
 
 fn unit_secs(unit: &str) -> Option<u32> {
@@ -63,6 +74,16 @@ fn time(c: &Ctx) -> Time {
                 continue;
             }
         }
+        let halved = english::half(c, i).map(|said| (said, false));
+        let spoken = halved.or_else(|| english::position(c, i).map(|said| (said, true)));
+        if let Some(((secs, next), position)) = spoken {
+            t.secs += secs;
+            t.found = true;
+            t.measured = true;
+            t.ordinal |= position;
+            i = next;
+            continue;
+        }
         if let Some(per) = unit_secs(w) {
             let single = i > 0 && matches!(c.w[i - 1], "с" | "со");
             let plural =
@@ -88,15 +109,16 @@ fn time(c: &Ctx) -> Time {
                     }
                 }
             }
-            if half_after(c, at) {
+            let half = half_after(c, at);
+            if half > 0 {
                 t.secs += per / 2;
                 t.measured = true;
-                at += 2;
+                at += half;
             }
             i = at;
             continue;
         }
-        let Some(count) = numbers::value(w) else {
+        let Some((count, mut unit_at)) = counted(c, i) else {
             i += 1;
             continue;
         };
@@ -108,7 +130,6 @@ fn time(c: &Ctx) -> Time {
             i += 2;
             continue;
         }
-        let mut unit_at = i + 1;
         if c.at(unit_at) == "ордин" {
             t.ordinal = true;
             unit_at += 1;
@@ -118,9 +139,7 @@ fn time(c: &Ctx) -> Time {
             unit_at += 1;
         }
         let halves = half_after(c, unit_at);
-        if halves {
-            unit_at += 2;
-        }
+        unit_at += halves;
         let Some(per) = unit_secs(c.at(unit_at)) else {
             t.bare = Some(count);
             i += 1;
@@ -131,14 +150,16 @@ fn time(c: &Ctx) -> Time {
         } else {
             count * per
         };
-        if halves {
+        if halves > 0 {
             t.secs += per / 2;
+            t.measured = true;
         }
         t.found = true;
         i = unit_at + 1;
-        if half_after(c, i) {
+        let half = half_after(c, i);
+        if half > 0 {
             t.secs += per / 2;
-            i += 2;
+            i += half;
         } else if per == 60 {
             if let Some(extra) = numbers::value(c.at(i)) {
                 let followed = unit_secs(c.at(i + 1)).is_some();
@@ -154,7 +175,7 @@ fn time(c: &Ctx) -> Time {
 }
 
 fn minutes_and_seconds(c: &Ctx, i: usize) -> Option<u32> {
-    let led = i > 0 && matches!(c.w[i - 1], "на" | "к" | "с" | "до");
+    let led = i > 0 && matches!(c.w[i - 1], "на" | "к" | "с" | "до" | "to" | "at" | "from");
     let mins = numbers::value(c.at(i)).filter(|m| *m < 60)?;
     let secs = numbers::value(c.at(i + 1)).filter(|s| *s < 60)?;
     let unit_next = unit_secs(c.at(i + 2)).is_some() || matches!(c.at(i + 2), "ордин" | "доля");
@@ -171,7 +192,7 @@ fn starts_time(w: &str) -> bool {
 
 fn since(c: &Ctx) -> bool {
     c.w.windows(2)
-        .any(|p| matches!(p[0], "с" | "со") && starts_time(p[1]))
+        .any(|p| matches!(p[0], "с" | "со" | "from") && starts_time(p[1]))
 }
 
 fn from_start(c: &Ctx) -> bool {
@@ -185,6 +206,7 @@ fn vocabulary(w: &str) -> bool {
     numbers::is_number(w)
         || numbers::clock(w).is_some()
         || SEEK_FILL.contains(&w)
+        || SEEK_FILL_EN.contains(&w)
         || SEEK_VERBS.contains(&w)
         || JUMP_VERBS.contains(&w)
         || SKIP_VERBS.contains(&w)
@@ -203,6 +225,16 @@ fn vocabulary(w: &str) -> bool {
         || TRANSPORT_VERBS.contains(&w)
         || START.contains(&w)
         || stem(&["перемот", "промот", "отмот"], w)
+}
+
+pub fn restarts(c: &Ctx) -> bool {
+    let named = c.has(FROM_THE_TOP) || c.has(START) || played_again(c);
+    named && !foreign(c) && !time(c).found
+}
+
+fn played_again(c: &Ctx) -> bool {
+    let once_more = c.w.windows(2).any(|p| p == ["еще", "раз"]);
+    (once_more && c.has(PLAY_STRONG)) || english::to_the_start(c)
 }
 
 fn foreign(c: &Ctx) -> bool {
@@ -270,7 +302,8 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
     let fwd = c.has(FORWARD);
     let back = c.has(BACKWARD);
     let seek_verb = c.has(SEEK_VERBS) || c.has_stem(&["перемот", "промот", "отмот"]);
-    let jump_verb = c.has(JUMP_VERBS) || (c.has(&["to"]) && c.has(&["go", "skip"]));
+    let to_place = c.has(&["to"]) && c.has(&["go", "skip", "jump"]);
+    let jump_verb = c.has(JUMP_VERBS) || to_place;
     let set_verb = c.has(SET_VERBS) && t.found;
     let skip_verb = c.has(SKIP_VERBS);
     let plus = c.has(&["плюс"]);
@@ -282,7 +315,9 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
     let has_dir = explicit_dir || (fwd && t.found);
     let amount = t.found || t.bare.is_some();
     let from = !back && t.found && since(c);
-    let placed = from || (!back && amount && from_start(c));
+    let marked = t.found && english::placed(c);
+    let placed = from || marked || (!back && amount && from_start(c));
+    let nudged = explicit_dir && (c.has(SLIGHTLY) || c.has(JUMP_VERBS));
 
     let triggered = if amount {
         seek_verb
@@ -294,20 +329,25 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
             || (back_verb && t.found)
             || (from && c.has(PLAY_STRONG))
             || on_time
+            || marked
     } else {
-        seek_verb && c.len() <= 4
+        (seek_verb && c.len() <= 4) || nudged
     };
 
-    if c.has_stem(&["середин"]) && (seek_verb || c.at(0) == "на") && c.len() <= 6 {
+    let middle = c.has_stem(&["середин"]) && (seek_verb || c.at(0) == "на") && c.len() <= 6;
+    if middle || english::halfway(c) {
         return Some(Detected::new(Intent::SeekTo, vec![]).fraction(0.5));
     }
 
-    let to_start = c.len() <= 6
-        && !t.found
-        && (c.has(FROM_THE_TOP) || c.has(START))
-        && c.stray(&c.all(SEEK_VERBS)) <= 2;
-    if to_start && !fwd {
+    let mut turned = c.all(SEEK_VERBS);
+    turned.extend(c.all(&["самого"]));
+    let to_start =
+        c.len() <= 6 && !t.found && (c.has(FROM_THE_TOP) || c.has(START)) && c.stray(&turned) <= 2;
+    if (to_start && !fwd) || (!amount && played_again(c)) {
         return Some(Detected::new(Intent::SeekTo, vec![]).number(0));
+    }
+    if to_place && !amount && c.has(&["end"]) {
+        return Some(Detected::new(Intent::Next, vec![]));
     }
 
     if triggered {
@@ -317,7 +357,8 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
             t.bare.unwrap_or(10)
         };
         let to_zero = !t.found && t.bare == Some(0);
-        let absolute = t.ordinal || jump_verb || set_verb || on_time || placed || to_zero;
+        let jumped = to_place || (jump_verb && !explicit_dir);
+        let absolute = t.ordinal || jumped || set_verb || on_time || placed || to_zero;
         let intent = if absolute || (t.clock && !has_dir) {
             Intent::SeekTo
         } else if back || back_verb {

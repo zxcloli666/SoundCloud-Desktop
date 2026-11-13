@@ -111,7 +111,9 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
         }
     }
     if let Some(i) = c.pos(NEXT_WEAK) {
-        if c.stray(&base(c, i)) == 0 {
+        let mut said = base(c, i);
+        said.extend(c.all(FORWARD));
+        if c.stray(&said) == 0 {
             return Some(Detected::new(Intent::Next, vec![i]));
         }
     }
@@ -119,7 +121,9 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
         .pos(PREV_WEAK)
         .filter(|&i| !(c.w[i] == "обратно" && c.has(PLAY_STRONG)))
     {
-        if c.stray(&base(c, i)) == 0 {
+        let mut said = base(c, i);
+        said.extend(c.all(SKIP_VERBS));
+        if c.stray(&said) == 0 {
             return Some(Detected::new(Intent::Previous, vec![i]));
         }
     }

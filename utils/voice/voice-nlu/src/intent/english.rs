@@ -11,6 +11,12 @@ const POOR: &[&str] = &[
     "sucks", "awful", "terrible", "boring", "garbage", "trash", "annoying",
 ];
 
+const TRACK: &[&str] = &["music", "song", "track", "tunes", "tune"];
+const SOUND: &[&str] = &["sound", "audio", "volume"];
+const NOT_THE_TRACK: &[&str] = &[
+    "dont", "not", "would", "to", "what", "whats", "you", "me", "us", "him", "her", "them",
+];
+
 pub(super) const RULES: &[Rule] = &[
     rule(
         &[TOO, &["loud", "noisy"]],
@@ -19,6 +25,18 @@ pub(super) const RULES: &[Rule] = &[
         Intent::VolumeDown,
     ),
     rule(&[TOO, &["quiet"]], ITS, &["not"], Intent::VolumeUp),
+    rule(
+        &[&["not"], &["again"]],
+        &["oh", "god", "please"],
+        &[],
+        Intent::Next,
+    ),
+    rule(
+        &[&["dial"], &["back", "down"]],
+        &["a", "bit", "little", "notch", "tad"],
+        &[],
+        Intent::VolumeDown,
+    ),
     rule(
         &[&["cant", "cannot"], &["hear"], &["myself"]],
         &["i", "think", "talk", "even"],
@@ -118,6 +136,58 @@ pub(super) const RULES: &[Rule] = &[
         &["i", "1", "so", "much"],
         &["dont", "not"],
         Intent::Next,
+    ),
+    rule(
+        &[&["thumbs"], &["up"]],
+        &["a", "big", "give", "2"],
+        &[],
+        Intent::Like,
+    ),
+    rule(
+        &[&["love"]],
+        &["i", "so", "much", "absolutely", "1"],
+        NOT_THE_TRACK,
+        Intent::Like,
+    )
+    .len(2),
+    rule(
+        &[&["play", "playing", "go"], &["order"]],
+        &["in", "them", "back", "to"],
+        &[],
+        Intent::ShuffleOff,
+    ),
+    rule(&[&["surprise"]], &["me", "us"], &[], Intent::PlayWave),
+    rule(
+        &[&["recommend", "suggest"]],
+        &[
+            "me",
+            "us",
+            "something",
+            "anything",
+            "some",
+            "new",
+            "good",
+            "can",
+            "you",
+        ],
+        &[],
+        Intent::PlayWave,
+    ),
+    rule(&[&["take"], &["back"]], &[], &[], Intent::Undo),
+    rule(
+        &[&["ears"], &["bleeding", "hurt", "hurting", "ringing"]],
+        &["my", "are"],
+        &[],
+        Intent::VolumeDown,
+    ),
+    rule(&[&["kill", "cut"], TRACK], &[], &[], Intent::Stop),
+    rule(&[&["kill", "cut"], SOUND], &[], &[], Intent::Mute),
+    rule(&[&["run"], &["back"]], &["1"], &[], Intent::SeekTo),
+    rule(
+        &[&["silence"]],
+        &["i", "need", "want", "some", "please", "bit", "of", "little"],
+        &[],
+        Intent::Pause,
     ),
     rule(
         &[&["dont"], &["wanna", "want"], &["hear", "listen"]],

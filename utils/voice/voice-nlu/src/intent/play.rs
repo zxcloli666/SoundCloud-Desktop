@@ -65,7 +65,7 @@ fn is_kind(w: &str) -> bool {
 
 pub fn forced(c: &Ctx) -> bool {
     let Some(v) = find_verb(c) else { return false };
-    if !v.strong || !v.front {
+    if !v.strong || !v.front || super::seek::restarts(c) {
         return false;
     }
     let Some(k) = (v.idx + 1..c.len()).find(|&i| is_kind(c.w[i])) else {

@@ -192,6 +192,11 @@ pub const DROP_PHRASES: &[&[&str]] = &[
     &["с", "названием"],
 ];
 
+pub const ENGLISH_ORDERS: &[&str] = &[
+    "skip", "pause", "stop", "make", "go", "shuffle", "mute", "unmute", "resume", "rewind",
+    "switch", "change", "queue", "add", "crank", "lower", "raise", "restart", "repeat",
+];
+
 pub const MERGE_PHRASES: &[(&[&str], &str)] = &[
     (&["на", "хрен"], "нахрен"),
     (&["на", "хер"], "нахер"),
@@ -212,6 +217,11 @@ pub const MERGE_PHRASES: &[(&[&str], &str)] = &[
     (&["putting", "on"], "play"),
     (&["fire", "up"], "play"),
     (&["like", "to", "hear"], "play"),
+    (&["like", "to", "play"], "play"),
+    (&["im", "in", "the", "mood", "for"], "play"),
+    (&["in", "the", "mood", "for"], "play"),
+    (&["like", "to", "listen", "to"], "play"),
+    (&["love", "to", "hear"], "play"),
     (&["hit", "me", "with"], "play"),
     (&["i", "feel", "like", "hearing"], "play"),
     (&["по", "новой"], "заново"),

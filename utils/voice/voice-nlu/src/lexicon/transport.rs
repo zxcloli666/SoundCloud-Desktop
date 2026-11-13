@@ -13,6 +13,7 @@ pub const NEXT_WEAK: &[&str] = &[
     "смени",
     "сменить",
     "next",
+    "forward",
 ];
 pub const PREV_STRONG: &[&str] = &[
     "предыдущ",

@@ -28,9 +28,15 @@ fn wished_last(toks: &[Tok], at: usize) -> bool {
 }
 
 fn kind_name_reading(rest: &[Tok]) -> Option<(Option<Kind>, Raw)> {
-    let first = (0..rest.len().saturating_sub(1))
+    let kind = |i: usize| kind_of(&rest[i].w).is_some();
+    let before_a_name = (0..rest.len().saturating_sub(1))
         .rev()
-        .find(|&i| kind_of(&rest[i].w).is_some() && kind_of(&rest[i + 1].w).is_none())?;
+        .find(|&i| kind(i) && !kind(i + 1));
+    let after_a_name = rest
+        .len()
+        .checked_sub(1)
+        .filter(|&i| i > 0 && kind(i) && !kind(i - 1));
+    let first = before_a_name.or(after_a_name)?;
     let mut hint = None;
     let mut kept: Vec<Tok> = Vec::new();
     for (i, t) in rest.iter().enumerate() {
@@ -62,8 +68,9 @@ pub(crate) fn kind_of(w: &str) -> Option<Kind> {
 
 const ENGLISH_EDGE: &[&str] = &[
     "you", "me", "for", "now", "right", "man", "dude", "bro", "some", "just", "maybe", "really",
-    "like", "whatever", "know",
+    "like", "whatever", "know", "that", "new", "latest", "thing", "stuff",
 ];
+const ANYTHING: &[&str] = &["чтонибудь", "чтото", "something", "anything"];
 
 fn edge_noise(t: &Tok) -> bool {
     t.amb
@@ -131,7 +138,7 @@ pub fn extract(toks: &[Tok], det: &Detected) -> Slots {
     let mut seen_kind = false;
     for (i, t) in rest.iter().enumerate() {
         let w = t.w.as_str();
-        if matches!(w, "чтонибудь" | "чтото") {
+        if ANYTHING.contains(&w) {
             after_generic = true;
             continue;
         }
@@ -186,7 +193,7 @@ fn without_descriptor(rest: &[Tok]) -> Option<Vec<Tok>> {
     let mut dropped = vec![false; rest.len()];
     for i in 0..rest.len() {
         let release = RECENT.contains(&word(i)) && is_release(word(i + 1));
-        let generic = i > 0 && matches!(word(i - 1), "чтонибудь" | "чтото");
+        let generic = i > 0 && ANYTHING.contains(&word(i - 1));
         let edge = i + 1 == rest.len() || ARTIST_MARKERS.contains(&word(i + 1));
         let alone = RECENT_ALONE.contains(&word(i)) && (generic || edge);
         if !release && !alone {
@@ -219,7 +226,8 @@ fn is_name(t: &Tok) -> bool {
     !edge_noise(t)
         && kind_of(w).is_none()
         && !ARTIST_MARKERS.contains(&w)
-        && !matches!(w, "чтонибудь" | "чтото" | "из" | "-")
+        && !ANYTHING.contains(&w)
+        && !matches!(w, "из" | "-")
 }
 
 fn split(kept: Vec<Tok>) -> Raw {

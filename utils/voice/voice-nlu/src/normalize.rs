@@ -198,14 +198,21 @@ fn without_fillers(words: Vec<String>) -> Vec<String> {
     let filler = |w: &String| lexicon::has(lexicon::FILLERS, w);
     let kept: Vec<bool> = (0..words.len())
         .map(|at| {
-            !filler(&words[at])
+            let said = !filler(&words[at])
                 || is_the_name(&words, at)
                 || is_the_place(&words, at)
-                || asks_the_meaning(&words, at)
+                || asks_the_meaning(&words, at);
+            said && !like_before_an_order(&words, at)
         })
         .collect();
     let left = words.into_iter().zip(kept).filter(|(_, kept)| *kept);
     left.map(|(word, _)| word).collect()
+}
+
+fn like_before_an_order(words: &[String], at: usize) -> bool {
+    let order =
+        |w: &String| lexicon::has(PLAY_STRONG, w) || lexicon::has(lexicon::ENGLISH_ORDERS, w);
+    words[at] == "like" && words.get(at + 1).is_some_and(order)
 }
 
 fn asks_the_meaning(words: &[String], at: usize) -> bool {
