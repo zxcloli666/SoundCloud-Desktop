@@ -29,6 +29,18 @@ pub const ROOM: &[&str] = &[
 ];
 
 pub const KIN: &[&str] = &[
+    "mom",
+    "mommy",
+    "mum",
+    "mummy",
+    "dad",
+    "daddy",
+    "grandma",
+    "grandpa",
+    "granny",
+    "honey",
+    "sweetie",
+    "darling",
     "мама",
     "мам",
     "мамочка",

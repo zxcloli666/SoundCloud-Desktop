@@ -8,6 +8,7 @@ enum Word {
     Teen(u32),
     Ten(u32),
     Hundred(u32),
+    Hundreds,
     Thousand,
     Zero,
 }
@@ -85,7 +86,8 @@ fn full(w: &str) -> Option<Word> {
         "семьдесят" | "семидесяти" | "seventy" => Word::Ten(70),
         "восемьдесят" | "восьмидесяти" | "eighty" => Word::Ten(80),
         "девяносто" | "девяноста" | "ninety" => Word::Ten(90),
-        "сто" | "ста" | "hundred" => Word::Hundred(100),
+        "сто" | "ста" => Word::Hundred(100),
+        "hundred" => Word::Hundreds,
         "двести" | "двухсот" => Word::Hundred(200),
         "триста" | "трехсот" => Word::Hundred(300),
         "четыреста" | "четырехсот" => Word::Hundred(400),
@@ -149,6 +151,7 @@ impl Acc {
             Word::Unit(_) => tail == 0 || (tail >= 20 && tail % 10 == 0),
             Word::Teen(_) | Word::Ten(_) => tail == 0,
             Word::Hundred(_) => self.cur == 0,
+            Word::Hundreds => self.cur < 10,
             Word::Thousand => self.cur > 0 || !self.open,
         };
         if !ok {
@@ -157,6 +160,7 @@ impl Acc {
         match w {
             Word::Zero => {}
             Word::Unit(n) | Word::Teen(n) | Word::Ten(n) | Word::Hundred(n) => self.cur += n,
+            Word::Hundreds => self.cur = self.cur.max(1) * 100,
             Word::Thousand => {
                 self.total += self.cur.max(1) * 1000;
                 self.cur = 0;

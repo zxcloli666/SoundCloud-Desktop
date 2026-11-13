@@ -204,9 +204,9 @@ fn starts_a_name(cur: &Version, ws: &[String], at: usize, end: usize) -> bool {
 
 fn word_of_a_name(cur: &Version, ws: &[String], at: usize) -> bool {
     let controls = || command(&toks(&cur.words)).is_some_and(|(asked, ..)| asked.is_control());
-    let rethought = ws
-        .get(at + 1)
-        .is_some_and(|w| SECOND_THOUGHT.contains(&w.as_str()));
+    let restarts =
+        |w: &String| SECOND_THOUGHT.contains(&w.as_str()) || PLAY_STRONG.contains(&w.as_str());
+    let rethought = ws.get(at + 1).is_some_and(restarts);
     ws[at] == ENGLISH_NO && !rethought && !cur.words.is_empty() && !controls()
 }
 

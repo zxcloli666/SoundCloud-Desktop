@@ -137,6 +137,28 @@ pub fn queue(c: &Ctx) -> Option<Detected> {
             return Some(Detected::new(Intent::QueueAdd, used));
         }
     }
+    let queued = |used: &[usize]| {
+        let named = |i: &usize| !PRE.contains(&c.w[*i]) && !GENERIC.contains(&c.w[*i]);
+        (0..c.len())
+            .filter(|i| !used.contains(i))
+            .any(|i| named(&i))
+    };
+    if c.has(PLAY_STRONG) && c.w.last() == Some(&"next") {
+        let mut used = c.all(PLAY_STRONG);
+        used.push(c.len() - 1);
+        if queued(&used) {
+            return Some(Detected::new(Intent::QueueAdd, used));
+        }
+    }
+    if let Some(a) = c.pos(&["after"]).filter(|_| c.has(PLAY_STRONG)) {
+        if matches!(c.at(a + 1), "this" | "that" | "it") {
+            let mut used = vec![a, a + 1];
+            used.extend(c.all(PLAY_STRONG));
+            if queued(&used) {
+                return Some(Detected::new(Intent::QueueAdd, used));
+            }
+        }
+    }
     let after = c.pos(&["после"]);
     if let Some(a) = after {
         let obj = c.at(a + 1);
@@ -165,8 +187,18 @@ pub fn into_likes(c: &Ctx) -> Option<Detected> {
     (likes && !plays && (c.len() <= 3 || thrown)).then(|| Detected::new(Intent::Like, vec![]))
 }
 
+const LIKED_THINGS: &[&str] = &["this", "that", "it", "the", "song", "track", "1"];
+
+fn like_as_a_filler(c: &Ctx) -> bool {
+    let Some(at) = c.pos(&["like"]) else {
+        return false;
+    };
+    let hedged = at > 0 && LIKE_HEDGES.contains(&c.w[at - 1]);
+    hedged && !LIKED_THINGS.contains(&c.at(at + 1))
+}
+
 pub fn like(c: &Ctx) -> Option<Detected> {
-    if c.len() > 6 {
+    if c.len() > 6 || like_as_a_filler(c) {
         return None;
     }
     let unlike_word = c.has(UNLIKE_WORDS) || c.has_stem(&["разлайк", "дизлайк"]);
@@ -302,7 +334,9 @@ pub fn repeat(c: &Ctx) -> Option<Detected> {
     if c.has(NEGATE) || c.has(OFF_VERBS) {
         return Some(Detected::new(Intent::RepeatOff, vec![]));
     }
-    let all = c.has(REPEAT_ALL) || c.has_stem(&["плейлист", "очеред", "альбом"]);
+    let all = c.has(REPEAT_ALL)
+        || c.has_stem(&["плейлист", "очеред", "альбом"])
+        || c.has(&["playlist", "album", "queue", "everything"]);
     if all && !c.has(&["1", "one", "трек", "песню", "эту", "этот"]) {
         return Some(Detected::new(Intent::RepeatAll, vec![]));
     }

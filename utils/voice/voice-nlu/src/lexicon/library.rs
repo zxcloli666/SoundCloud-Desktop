@@ -43,6 +43,10 @@ pub const ADD_WORDS: &[&str] = &[
 pub const QUEUE_WORDS: &[&str] = &["очередь", "очереди", "очередь", "queue", "очеред"];
 pub const QUEUE_AFTER: &[&str] = &["потом", "затем", "следом"];
 
+pub const LIKE_HEDGES: &[&str] = &[
+    "you", "so", "just", "id", "would", "feel", "and", "was", "its", "be",
+];
+
 pub const LIKE_WORDS: &[&str] = &[
     "сердечко",
     "сердце",

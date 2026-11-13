@@ -45,6 +45,9 @@ const ASKED_OR_PLACED: &[&str] = &[
     "у",
 ];
 
+const ENGLISH_FILL: &[&str] = &[
+    "the", "this", "that", "it", "a", "song", "track", "music", "just", "really",
+];
 const THE_PLAYER: &[&str] = &["звук", "музыка", "громкость"];
 const WHY: &[&str] = &["чего", "почему", "зачем", "какого"];
 const WHY_REST: &[&str] = &[
@@ -463,7 +466,8 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
     if c.w.iter().filter(|w| **w == "снова").count() >= 2 {
         return Some(Detected::new(Intent::RepeatOne, vec![]));
     }
-    for r in RULES.iter().chain(super::blunt::RULES) {
+    let rules = RULES.iter().chain(super::blunt::RULES);
+    for r in rules.chain(super::english::RULES) {
         if c.len() < r.min {
             continue;
         }
@@ -481,6 +485,7 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
             r.needs.iter().any(|g| g.contains(w))
                 || r.extra.contains(w)
                 || FILL.contains(w)
+                || ENGLISH_FILL.contains(w)
                 || PRE.contains(w)
         });
         if covered {

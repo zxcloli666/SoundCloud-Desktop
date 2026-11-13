@@ -93,7 +93,9 @@ pub fn negation(toks: &[Tok]) -> Negation {
             return Negation::Head(i);
         }
         let ordered = |j: usize| orders(&toks[j].w) && !denies(toks, j - 1);
-        let tail = (i + 2..toks.len()).find(|&j| ordered(j));
+        let particle = |t: &Tok| PARTICLES.contains(&t.w.as_str());
+        let from = i + 2 + usize::from(toks.get(i + 2).is_some_and(particle));
+        let tail = (from..toks.len()).find(|&j| ordered(j));
         return match tail {
             Some(j) => Negation::Tail(j),
             None => Negation::Cancel,
@@ -103,6 +105,7 @@ pub fn negation(toks: &[Tok]) -> Negation {
 }
 
 const DONT: &[&str] = &["dont", "never"];
+const PARTICLES: &[&str] = &["on", "off", "up", "down"];
 
 fn denies(toks: &[Tok], at: usize) -> bool {
     let w = toks[at].w.as_str();

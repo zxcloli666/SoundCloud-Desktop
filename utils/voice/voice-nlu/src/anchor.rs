@@ -2,9 +2,9 @@ use crate::intent::{self, Detected};
 use crate::kin;
 use crate::lexicon::{
     self, ABOUT_OWN_WORDS, ASKS_TO_TALK, BLOCK_HEAD, BLOCK_TAIL, DENY, DOWN_WORDS, FED_UP,
-    HELLO_ON_THE_PHONE, IDLE, INSISTING, LISTENERS, NEXT_STRONG, OBJECT_VERBS, ORDER_ENDINGS,
-    PAUSE_WORDS, PLAY_STRONG, PLAY_WEAK, PLAYER, PREV_STRONG, STOP_WORDS, SUBJECTS, TAIL_REMARK,
-    TO_THE_LISTENER,
+    HELLO_ON_THE_PHONE, IDLE, INSISTING, LIKE_HEDGES, LISTENERS, NEXT_STRONG, OBJECT_VERBS,
+    ORDER_ENDINGS, PAUSE_WORDS, PLAY_STRONG, PLAY_WEAK, PLAYER, PREV_STRONG, STOP_WORDS, SUBJECTS,
+    TAIL_REMARK, TO_THE_LISTENER,
 };
 use crate::normalize::Tok;
 use crate::types::Intent;
@@ -54,6 +54,7 @@ fn head_ok(head: &[Tok], window: &[Tok], tail: &[Tok]) -> bool {
     });
     head.len() <= 4
         && !names_the_word(head)
+        && !liked_in_passing(head, window)
         && (0..head.len()).all(|at| {
             let w = head[at].w.as_str();
             let resting = hushed && at + 1 == head.len() && RESTING.contains(&w);
@@ -73,6 +74,13 @@ fn names_the_word(head: &[Tok]) -> bool {
     let said = |back: usize| head.len().checked_sub(back).map(|at| head[at].w.as_str());
     let what_is = said(1) == Some("такое") && said(2) == Some("что");
     what_is || said(1).is_some_and(|w| WORD.contains(&w))
+}
+
+fn liked_in_passing(head: &[Tok], window: &[Tok]) -> bool {
+    let hedged = head
+        .last()
+        .is_some_and(|t| LIKE_HEDGES.contains(&t.w.as_str()));
+    hedged && window[0].w == "like"
 }
 
 fn bare_command_word(window: &[Tok]) -> bool {

@@ -15,6 +15,7 @@ const HARD: &[&str] = &["и", "and"];
 const SOFT: &[&str] = &["потом", "затем", "следом", "then", "только"];
 const AFTER: &[&str] = &["него", "этого", "нее", "нее"];
 const BEHIND: &[&str] = &["ним", "ней", "этим"];
+const AFTER_THAT: &[&str] = &["that", "this", "it"];
 const FIRST: &str = "сначала";
 const ALSO: &str = "еще";
 const THEN: &[&str] = &["потом", "затем", "следом", "then"];
@@ -112,7 +113,10 @@ fn link(toks: &[Tok], i: usize) -> Option<Link> {
         (1, false, false)
     } else if SOFT.contains(&w) {
         (1, true, false)
-    } else if (w == "после" && AFTER.contains(&next)) || (w == "за" && BEHIND.contains(&next))
+    } else if (w == "после" && AFTER.contains(&next))
+        || (w == "за" && BEHIND.contains(&next))
+        || (w == "followed" && next == "by")
+        || (w == "after" && AFTER_THAT.contains(&next))
     {
         (2, true, false)
     } else if w == ALSO {
@@ -142,8 +146,10 @@ fn linked(toks: &[Tok], text: &str, inherit: bool) -> Option<Vec<Parsed>> {
     for i in 1..toks.len().saturating_sub(1) {
         let Some(l) = link(toks, i) else { continue };
         let mut start = i + l.len;
-        let joins = |at: usize| link(toks, at).is_some_and(|l| !l.also);
-        while start < toks.len() && (joins(start) || toks[start].w == FIRST) {
+        let mut soft = l.soft;
+        let joins = |at: usize| link(toks, at).filter(|l| !l.also);
+        while start < toks.len() && (joins(start).is_some() || toks[start].w == FIRST) {
+            soft |= joins(start).is_some_and(|l| l.soft);
             start += 1;
         }
         if start >= toks.len() {
@@ -162,7 +168,7 @@ fn linked(toks: &[Tok], text: &str, inherit: bool) -> Option<Vec<Parsed>> {
                 inner.unwrap_or_else(|| vec![p])
             }
             Side::Foreign => Vec::new(),
-            Side::Other if inherit && (l.soft || controls_follow(&toks[start..], text)) => {
+            Side::Other if inherit && (soft || controls_follow(&toks[start..], text)) => {
                 match shared_verb(&toks[..i], text, true) {
                     Some(p) => vec![p],
                     None => continue,
@@ -181,14 +187,14 @@ fn linked(toks: &[Tok], text: &str, inherit: bool) -> Option<Vec<Parsed>> {
         let plays = left
             .last()
             .is_some_and(|p| matches!(p.intent, Intent::Play | Intent::QueueAdd));
-        let mut rest = match plan(right, text, l.soft && plays) {
+        let mut rest = match plan(right, text, soft && plays) {
             Some(steps) => steps,
             None => match side(right, text) {
                 Side::Cmd(p) => vec![p],
                 Side::Foreign => Vec::new(),
                 Side::Other if controls(&left) && order_to_someone(right) => Vec::new(),
                 Side::Other => match left.last() {
-                    Some(lp) if l.soft && matches!(lp.intent, Intent::Play | Intent::QueueAdd) => {
+                    Some(lp) if soft && matches!(lp.intent, Intent::Play | Intent::QueueAdd) => {
                         match shared_verb(right, text, true) {
                             Some(p) => vec![p],
                             None => continue,
@@ -201,7 +207,7 @@ fn linked(toks: &[Tok], text: &str, inherit: bool) -> Option<Vec<Parsed>> {
         if l.also && !(plays && rest.iter().all(|p| p.intent.is_control())) {
             continue;
         }
-        if l.soft && plays {
+        if soft && plays {
             queued_after(&mut rest);
         }
         left.append(&mut rest);

@@ -95,6 +95,7 @@ pub fn detect(c: &Ctx) -> Option<Detected> {
         said.extend(super::seek::wait(c));
         said.extend(c.all(SWEARS_AMB));
         if named {
+            said.extend(c.all(PLAY_STRONG));
             said.extend(c.all(ON_VERBS));
             said.extend(lifted.iter().copied());
         }

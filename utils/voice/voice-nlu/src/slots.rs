@@ -60,6 +60,11 @@ pub(crate) fn kind_of(w: &str) -> Option<Kind> {
     }
 }
 
+const ENGLISH_EDGE: &[&str] = &[
+    "you", "me", "for", "now", "right", "man", "dude", "bro", "some", "just", "maybe", "really",
+    "like", "whatever", "know",
+];
+
 fn edge_noise(t: &Tok) -> bool {
     t.amb
         || PRE.contains(&t.w.as_str())
@@ -75,6 +80,7 @@ fn edge_noise(t: &Tok) -> bool {
                 | "музыка"
                 | "для"
         )
+        || ENGLISH_EDGE.contains(&t.w.as_str())
         || TRANSPORT_VERBS.contains(&t.w.as_str())
 }
 

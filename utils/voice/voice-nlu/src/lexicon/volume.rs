@@ -109,6 +109,7 @@ pub const MUTE_WORDS: &[&str] = &["заглуши", "заглушить", "mute"
 pub const UNMUTE_WORDS: &[&str] = &["unmute"];
 
 pub const HALF: &[&str] = &[
+    "half",
     "половину",
     "половина",
     "половины",

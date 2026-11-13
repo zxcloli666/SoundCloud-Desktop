@@ -13,7 +13,10 @@ use crate::lexicon::{
 };
 
 const RINGING: &[&str] = &["звонк", "будильник", "уведомлен", "телефон", "микрофон"];
-const HEARD_LOUD: &[&str] = &["громко", "тихо"];
+const HEARD_LOUD: &[&str] = &["громко", "тихо", "loud", "quiet"];
+const TOLD: &[&str] = &["tell", "ask"];
+const TO_US: &[&str] = &["me", "us"];
+const YOU_ARE: &[&str] = &["you", "youre", "im", "hes", "shes", "were", "theyre"];
 
 pub fn sentence(c: &Ctx) -> bool {
     adverb_of_a_clause(c)
@@ -27,6 +30,7 @@ pub fn sentence(c: &Ctx) -> bool {
         || thing_made_louder(c)
         || volume_of_a_thing(c)
         || radio_heard_loud(c)
+        || said_in_english_to_someone(c)
         || question_with_its_own_verb(c)
         || question_to_a_person(c)
         || meant_for_someone_else(c)
@@ -157,7 +161,15 @@ fn volume_of_a_thing(c: &Ctx) -> bool {
 
 fn radio_heard_loud(c: &Ctx) -> bool {
     let heard = c.has(HEARD_LOUD) || c.w.iter().any(|w| volume_word(w));
-    c.has(&["радио"]) && heard && !c.has(PLAY_STRONG)
+    c.has(&["радио", "radio"]) && heard && !c.has(PLAY_STRONG)
+}
+
+fn said_in_english_to_someone(c: &Ctx) -> bool {
+    let passed_on = (1..c.len()).any(|i| TOLD.contains(&c.w[i - 1]) && !TO_US.contains(&c.w[i]));
+    let muted_mic = c.has(&["mute", "muted"]) && c.has(&["on"]) && c.has(YOU_ARE);
+    let hears_us = (1..c.len()).any(|i| c.w[i - 1] == "hear" && TO_US.contains(&c.w[i]));
+    let asked_if_heard = c.has(&["hear", "heard"]) && matches!(c.at(0), "did" | "have");
+    passed_on || muted_mic || hears_us || asked_if_heard
 }
 
 fn question_with_its_own_verb(c: &Ctx) -> bool {
